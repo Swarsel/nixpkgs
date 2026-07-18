@@ -1,8 +1,8 @@
 {
   lib,
   stdenv,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   icontract,
   pytestCheckHook,
   replaceVars,
@@ -13,7 +13,6 @@
 buildPythonPackage rec {
   pname = "pylddwrap";
   version = "1.2.2";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "Parquery";
@@ -28,6 +27,13 @@ buildPythonPackage rec {
     })
   ];
 
+  propagatedBuildInputs = [
+    icontract
+    typing-extensions
+  ];
+
+  nativeCheckInputs = [ pytestCheckHook ];
+
   # Upstream adds some plain text files direct to the package's root directory
   # https://github.com/Parquery/pylddwrap/blob/master/setup.py#L71
   postInstall = ''
@@ -36,24 +42,17 @@ buildPythonPackage rec {
 
   build-system = [ setuptools ];
 
-  propagatedBuildInputs = [
-    icontract
-    typing-extensions
-  ];
-
-  nativeCheckInputs = [ pytestCheckHook ];
-
   # uses mocked ldd from PATH, but we are patching the source to not look at PATH
   disabledTests = [
     "TestAgainstMockLdd"
     "TestMain"
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "lddwrap" ];
 
   meta = {
     description = "Python wrapper around ldd *nix utility to determine shared libraries of a program";
-    mainProgram = "pylddwrap";
     homepage = "https://github.com/Parquery/pylddwrap";
     changelog = "https://github.com/Parquery/pylddwrap/blob/v${version}/CHANGELOG.rst";
     license = lib.licenses.mit;
@@ -61,5 +60,6 @@ buildPythonPackage rec {
     # should work in any Unix platform that uses glibc, except for darwin
     # since it has its own tool (`otool`)
     badPlatforms = lib.platforms.darwin;
+    mainProgram = "pylddwrap";
   };
 }

@@ -5,22 +5,23 @@
   fetchPypi,
   gql,
   pyyaml,
-  requests-toolbelt,
   requests,
+  requests-toolbelt,
   setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "python-gitlab";
   version = "8.4.0";
-  pyproject = true;
 
   src = fetchPypi {
-    pname = "python_gitlab";
     inherit version;
     hash = "sha256-828g7D8JE487EgiTlJQfTb5aQHAhvtcbcKBLvdN7inQ=";
+    pname = "python_gitlab";
   };
 
+  # Tests rely on a gitlab instance on a local docker setup
+  doCheck = false;
   build-system = [ setuptools ];
 
   dependencies = [
@@ -34,9 +35,7 @@ buildPythonPackage rec {
     yaml = [ pyyaml ];
   };
 
-  # Tests rely on a gitlab instance on a local docker setup
-  doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "gitlab" ];
 
   meta = {

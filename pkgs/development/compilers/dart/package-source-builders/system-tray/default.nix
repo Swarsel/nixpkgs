@@ -3,12 +3,12 @@
   libayatana-appindicator,
 }:
 
-{ version, src, ... }:
+{ src, version, ... }:
 
 stdenv.mkDerivation rec {
-  pname = "system-tray";
   inherit version src;
   inherit (src) passthru;
+  pname = "system-tray";
 
   installPhase = ''
     runHook preInstall

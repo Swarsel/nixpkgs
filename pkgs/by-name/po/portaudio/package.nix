@@ -17,11 +17,18 @@ stdenv.mkDerivation (finalAttrs: {
     sha256 = "1vrdrd42jsnffh6rq8ap2c6fr4g9fcld89z649fs06bwqx1bzvs7";
   };
 
+  postPatch = ''
+    # workaround for the configure script which expects an absolute path
+    export AR=$(which $AR)
+  '';
+
   strictDeps = true;
+
   nativeBuildInputs = [
     pkg-config
     which
   ];
+
   buildInputs = [
     libjack2
   ]
@@ -35,18 +42,6 @@ stdenv.mkDerivation (finalAttrs: {
 
   env.NIX_CFLAGS_COMPILE = lib.optionalString stdenv.cc.isClang "-Wno-error=nullability-inferred-on-nested-type -Wno-error=nullability-completeness-on-arrays -Wno-error=implicit-const-int-float-conversion";
 
-  # Disable parallel build as it fails as:
-  #   make: *** No rule to make target '../../../lib/libportaudio.la',
-  #     needed by 'libportaudiocpp.la'.  Stop.
-  # Next release should address it with
-  #     https://github.com/PortAudio/portaudio/commit/28d2781d9216115543aa3f0a0ffb7b4ee0fac551.patch
-  enableParallelBuilding = false;
-
-  postPatch = ''
-    # workaround for the configure script which expects an absolute path
-    export AR=$(which $AR)
-  '';
-
   # not sure why, but all the headers seem to be installed by the make install
   installPhase = ''
     make install
@@ -59,6 +54,17 @@ stdenv.mkDerivation (finalAttrs: {
     cp include/pa_mac_core.h $out/include/pa_mac_core.h
   '';
 
+  # Disable parallel build as it fails as:
+  #   make: *** No rule to make target '../../../lib/libportaudio.la',
+  #     needed by 'libportaudiocpp.la'.  Stop.
+  # Next release should address it with
+  #     https://github.com/PortAudio/portaudio/commit/28d2781d9216115543aa3f0a0ffb7b4ee0fac551.patch
+  enableParallelBuilding = false;
+
+  passthru = {
+    api_version = 19;
+  };
+
   meta = {
     description = "Portable cross-platform Audio API";
     homepage = "https://www.portaudio.com/";
@@ -66,9 +72,5 @@ stdenv.mkDerivation (finalAttrs: {
     license = lib.licenses.mit;
     maintainers = [ ];
     platforms = lib.platforms.unix;
-  };
-
-  passthru = {
-    api_version = 19;
   };
 })

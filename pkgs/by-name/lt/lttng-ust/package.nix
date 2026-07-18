@@ -2,15 +2,15 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  autoreconfHook,
-  pkg-config,
   asciidoc,
-  xmlto,
+  autoreconfHook,
   liburcu,
+  nix-update-script,
   numactl,
+  pkg-config,
   python3,
   testers,
-  nix-update-script,
+  xmlto,
 }:
 
 # NOTE:
@@ -42,20 +42,6 @@ stdenv.mkDerivation (finalAttrs: {
     "devdoc"
   ];
 
-  nativeBuildInputs = [
-    autoreconfHook
-    pkg-config
-    asciidoc
-    xmlto
-  ];
-
-  propagatedBuildInputs = [ liburcu ];
-
-  buildInputs = [
-    numactl
-    python3
-  ];
-
   postPatch = ''
     # to build the manpages, xmlto uses xmllint which tries to fetch a dtd schema
     # from the internet - just don't validate to work around this
@@ -63,9 +49,21 @@ stdenv.mkDerivation (finalAttrs: {
       --replace-fail '$(XMLTO)' '$(XMLTO) --skip-validation'
   '';
 
-  preConfigure = ''
-    patchShebangs .
-  '';
+  strictDeps = true;
+
+  nativeBuildInputs = [
+    autoreconfHook
+    pkg-config
+    asciidoc
+    xmlto
+  ];
+
+  buildInputs = [
+    numactl
+    python3
+  ];
+
+  propagatedBuildInputs = [ liburcu ];
 
   configureFlags = [
     "--disable-examples"
@@ -77,14 +75,16 @@ stdenv.mkDerivation (finalAttrs: {
     "CFLAGS=-Wl,-z,stack-size=2097152"
   ];
 
+  preConfigure = ''
+    patchShebangs .
+  '';
+
   doCheck = true;
-
-  strictDeps = true;
-
   enableParallelBuilding = true;
 
   passthru = {
     tests.pkg-config = testers.testMetaPkgConfig finalAttrs.finalPackage;
+
     updateScript = nix-update-script {
       extraArgs = [
         "--version-regex"
@@ -95,19 +95,22 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "LTTng Userspace Tracer libraries";
-    mainProgram = "lttng-gen-tp";
     homepage = "https://lttng.org/";
     changelog = "https://github.com/lttng/lttng-ust/blob/v${finalAttrs.version}/ChangeLog";
+
     license = with lib.licenses; [
       lgpl21Only
       gpl2Only
       mit
     ];
+
+    maintainers = [ lib.maintainers.bjornfor ];
     platforms = lib.intersectLists lib.platforms.linux liburcu.meta.platforms;
+    mainProgram = "lttng-gen-tp";
+
     pkgConfigModules = [
       "lttng-ust-ctl"
       "lttng-ust"
     ];
-    maintainers = [ lib.maintainers.bjornfor ];
   };
 })

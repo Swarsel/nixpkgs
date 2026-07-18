@@ -3,9 +3,10 @@
   stdenv,
   fetchFromGitHub,
   cmake,
+  gitUpdater,
+  libpthread-stubs,
   libsm,
   libxdmcp,
-  libpthread-stubs,
   lxqt-build-tools,
   openbox,
   pcre,
@@ -14,7 +15,6 @@
   qttools,
   qtwayland,
   wrapQtAppsHook,
-  gitUpdater,
 }:
 
 stdenv.mkDerivation rec {
@@ -49,11 +49,11 @@ stdenv.mkDerivation rec {
   passthru.updateScript = gitUpdater { };
 
   meta = {
-    homepage = "https://github.com/lxqt/obconf-qt";
     description = "Qt port of obconf, the Openbox configuration tool";
-    mainProgram = "obconf-qt";
+    homepage = "https://github.com/lxqt/obconf-qt";
     license = lib.licenses.gpl2Plus;
     platforms = lib.platforms.unix;
+    mainProgram = "obconf-qt";
     teams = [ lib.teams.lxqt ];
   };
 }

@@ -1,7 +1,7 @@
 {
   config,
-  pkgs,
   lib,
+  pkgs,
   ...
 }:
 
@@ -17,10 +17,6 @@ let
   pkg =
     hostName: cfg:
     pkgs.stdenv.mkDerivation rec {
-      pname = "kimai-${hostName}";
-      src = cfg.package;
-      version = src.version;
-
       installPhase = ''
         mkdir -p $out
         cp -r * $out/
@@ -38,6 +34,10 @@ let
         # Symlink local.yaml.
         ln -s ${kimaiConfig hostName cfg} $out/share/php/kimai/config/packages/local.yaml
       '';
+
+      pname = "kimai-${hostName}";
+      src = cfg.package;
+      version = src.version;
     };
 
   kimaiConfig =
@@ -49,9 +49,9 @@ let
 
   siteOpts =
     {
+      config,
       lib,
       name,
-      config,
       ...
     }:
     {
@@ -59,72 +59,102 @@ let
         package = mkPackageOption pkgs "kimai" { };
 
         database = {
-          host = mkOption {
+          charset = mkOption {
+            default = "utf8mb4";
+            description = "Database charset.";
             type = types.str;
-            default = "localhost";
-            description = "Database host address.";
           };
 
-          port = mkOption {
-            type = types.port;
-            default = 3306;
-            description = "Database host port.";
+          createLocally = mkOption {
+            default = true;
+            description = "Create the database and database user locally.";
+            type = types.bool;
+          };
+
+          host = mkOption {
+            default = "localhost";
+            description = "Database host address.";
+            type = types.str;
           };
 
           name = mkOption {
-            type = types.str;
             default = "kimai";
             description = "Database name.";
-          };
-
-          user = mkOption {
             type = types.str;
-            default = "kimai";
-            description = "Database user.";
           };
 
           passwordFile = mkOption {
-            type = types.nullOr types.path;
             default = null;
-            example = "/run/keys/kimai-dbpassword";
+
             description = ''
               A file containing the password corresponding to
               {option}`database.user`.
             '';
-          };
 
-          socket = mkOption {
+            example = "/run/keys/kimai-dbpassword";
             type = types.nullOr types.path;
-            default = null;
-            defaultText = literalExpression "/run/mysqld/mysqld.sock";
-            description = "Path to the unix socket file to use for authentication.";
           };
 
-          charset = mkOption {
-            type = types.str;
-            default = "utf8mb4";
-            description = "Database charset.";
+          port = mkOption {
+            default = 3306;
+            description = "Database host port.";
+            type = types.port;
           };
 
           serverVersion = mkOption {
-            type = types.nullOr types.str;
             default = null;
+
             description = ''
               MySQL *exact* version string. Not used if `createdLocally` is set,
               but must be set otherwise. See
               <https://www.kimai.org/documentation/installation.html#column-table_name-in-where-clause-is-ambiguous>
               for how to set this value, especially if you're using MariaDB.
             '';
+
+            type = types.nullOr types.str;
           };
 
-          createLocally = mkOption {
-            type = types.bool;
-            default = true;
-            description = "Create the database and database user locally.";
+          socket = mkOption {
+            default = null;
+            defaultText = literalExpression "/run/mysqld/mysqld.sock";
+            description = "Path to the unix socket file to use for authentication.";
+            type = types.nullOr types.path;
+          };
+
+          user = mkOption {
+            default = "kimai";
+            description = "Database user.";
+            type = types.str;
           };
         };
 
+        environmentFile = mkOption {
+          default = null;
+
+          description = ''
+            Securely pass environment variabels to Kimai. This can be used to
+            set other environement variables such as MAILER_URL.
+          '';
+
+          example = "/run/secrets/kimai.env";
+          type = types.nullOr types.path;
+        };
+
         poolConfig = mkOption {
+          default = {
+            "pm" = "dynamic";
+            "pm.max_children" = 32;
+            "pm.max_requests" = 500;
+            "pm.max_spare_servers" = 4;
+            "pm.min_spare_servers" = 2;
+            "pm.start_servers" = 2;
+          };
+
+          description = ''
+            Options for the Kimai PHP pool. See the documentation on `php-fpm.conf`
+            for details on configuration directives.
+          '';
+
           type =
             with types;
             attrsOf (oneOf [
@@ -132,28 +162,17 @@ let
               int
               bool
             ]);
-          default = {
-            "pm" = "dynamic";
-            "pm.max_children" = 32;
-            "pm.start_servers" = 2;
-            "pm.min_spare_servers" = 2;
-            "pm.max_spare_servers" = 4;
-            "pm.max_requests" = 500;
-          };
-          description = ''
-            Options for the Kimai PHP pool. See the documentation on `php-fpm.conf`
-            for details on configuration directives.
-          '';
         };
 
         settings = mkOption {
-          type = types.attrsOf types.anything;
           default = { };
+
           description = ''
             Structural Kimai's local.yaml configuration.
             Refer to <https://www.kimai.org/documentation/local-yaml.html#localyaml>
             for details.
           '';
+
           example = literalExpression ''
             {
               kimai = {
@@ -168,16 +187,8 @@ let
               };
             }
           '';
-        };
 
-        environmentFile = mkOption {
-          type = types.nullOr types.path;
-          default = null;
-          example = "/run/secrets/kimai.env";
-          description = ''
-            Securely pass environment variabels to Kimai. This can be used to
-            set other environement variables such as MAILER_URL.
-          '';
+          type = types.attrsOf types.anything;
         };
       };
     };
@@ -187,20 +198,22 @@ in
   options = {
     services.kimai = {
       sites = mkOption {
-        type = types.attrsOf (types.submodule siteOpts);
         default = { };
         description = "Specification of one or more Kimai sites to serve";
+        type = types.attrsOf (types.submodule siteOpts);
       };
 
       webserver = mkOption {
-        type = types.enum [ "nginx" ];
         default = "nginx";
+
         description = ''
           The webserver to configure for the PHP frontend.
 
           At the moment, only `nginx` is supported. PRs are welcome for support
           for other web servers.
         '';
+
+        type = types.enum [ "nginx" ];
       };
     };
   };
@@ -227,23 +240,26 @@ in
         enable = true;
         package = mkDefault pkgs.mariadb;
         ensureDatabases = mapAttrsToList (hostName: cfg: cfg.database.name) eachSite;
+
         ensureUsers = mapAttrsToList (hostName: cfg: {
-          name = cfg.database.user;
           ensurePermissions = {
             "${cfg.database.name}.*" = "ALL PRIVILEGES";
           };
+
+          name = cfg.database.user;
         }) eachSite;
       };
 
       services.phpfpm.pools = mapAttrs' (
         hostName: cfg:
         (nameValuePair "kimai-${hostName}" {
-          phpPackage = cfg.package.php;
           inherit user;
           group = webserver.group;
+          phpPackage = cfg.package.php;
+
           settings = {
-            "listen.owner" = webserver.user;
             "listen.group" = webserver.group;
+            "listen.owner" = webserver.user;
           }
           // cfg.poolConfig;
         })
@@ -252,19 +268,13 @@ in
     }
 
     {
-      systemd.tmpfiles.rules = flatten (
-        mapAttrsToList (hostName: cfg: [
-          "d '${stateDir hostName}' 0770 ${user} ${webserver.group} - -"
-        ]) eachSite
-      );
-
       systemd.services = mkMerge [
         (mapAttrs' (
           hostName: cfg:
           (nameValuePair "kimai-init-${hostName}" {
-            wantedBy = [ "multi-user.target" ];
-            before = [ "phpfpm-kimai-${hostName}.service" ];
             after = optional cfg.database.createLocally "mysql.service";
+            before = [ "phpfpm-kimai-${hostName}.service" ];
+
             script =
               let
                 envFile = "${stateDir hostName}/.env";
@@ -337,11 +347,13 @@ in
               '';
 
             serviceConfig = {
+              EnvironmentFile = [ cfg.environmentFile ];
+              Group = webserver.group;
               Type = "oneshot";
               User = user;
-              Group = webserver.group;
-              EnvironmentFile = [ cfg.environmentFile ];
             };
+
+            wantedBy = [ "multi-user.target" ];
           })
         ) eachSite)
 
@@ -359,6 +371,12 @@ in
         })
       ];
 
+      systemd.tmpfiles.rules = flatten (
+        mapAttrsToList (hostName: cfg: [
+          "d '${stateDir hostName}' 0770 ${user} ${webserver.group} - -"
+        ]) eachSite
+      );
+
       users.users.${user} = {
         group = webserver.group;
         isSystemUser = true;
@@ -368,21 +386,30 @@ in
     (mkIf (cfg.webserver == "nginx") {
       services.nginx = {
         enable = true;
+
         virtualHosts = mapAttrs (hostName: cfg: {
-          serverName = mkDefault hostName;
-          root = "${pkg hostName cfg}/share/php/kimai/public";
           extraConfig = ''
             index index.php;
           '';
+
           locations = {
             "/" = {
-              priority = 200;
               extraConfig = ''
                 try_files $uri /index.php$is_args$args;
               '';
+
+              priority = 200;
             };
+
+            "~ \\.php$" = {
+              extraConfig = ''
+                return 404;
+              '';
+
+              priority = 800;
+            };
+
             "~ ^/index\\.php(/|$)" = {
-              priority = 500;
               extraConfig = ''
                 fastcgi_split_path_info ^(.+\.php)(/.+)$;
                 fastcgi_pass unix:${config.services.phpfpm.pools."kimai-${hostName}".socket};
@@ -399,14 +426,13 @@ in
                 fastcgi_send_timeout 300;
                 fastcgi_read_timeout 300;
               '';
-            };
-            "~ \\.php$" = {
-              priority = 800;
-              extraConfig = ''
-                return 404;
-              '';
+
+              priority = 500;
             };
           };
+
+          root = "${pkg hostName cfg}/share/php/kimai/public";
+          serverName = mkDefault hostName;
         }) eachSite;
       };
     })

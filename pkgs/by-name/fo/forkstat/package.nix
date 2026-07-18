@@ -1,6 +1,6 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
 }:
 
@@ -23,10 +23,10 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Process fork/exec/exit monitoring tool";
-    mainProgram = "forkstat";
     homepage = "https://github.com/ColinIanKing/forkstat";
     license = lib.licenses.gpl2Plus;
-    platforms = lib.platforms.linux;
     maintainers = with lib.maintainers; [ womfoo ];
+    platforms = lib.platforms.linux;
+    mainProgram = "forkstat";
   };
 })

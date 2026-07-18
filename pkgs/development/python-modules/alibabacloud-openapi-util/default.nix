@@ -10,14 +10,15 @@
 buildPythonPackage (finalAttrs: {
   pname = "alibabacloud-openapi-util";
   version = "0.2.4";
-  pyproject = true;
 
   src = fetchPypi {
-    pname = "alibabacloud_openapi_util";
     inherit (finalAttrs) version;
     hash = "sha256-hwIrnct1k6YB96QMppgiesPMt3a1jLewa43H9RCZXDQ=";
+    pname = "alibabacloud_openapi_util";
   };
 
+  # Module has only tests in the untagged upstream repo
+  doCheck = false;
   build-system = [ setuptools ];
 
   dependencies = [
@@ -25,10 +26,8 @@ buildPythonPackage (finalAttrs: {
     cryptography
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "alibabacloud_openapi_util" ];
-
-  # Module has only tests in the untagged upstream repo
-  doCheck = false;
 
   meta = {
     description = "Aliyun Tea OpenApi Library for Python";

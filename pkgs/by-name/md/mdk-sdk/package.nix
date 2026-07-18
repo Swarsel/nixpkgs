@@ -2,26 +2,26 @@
   lib,
   stdenv,
   fetchurl,
-  autoPatchelfHook,
+  addDriverRunpath,
   alsa-lib,
+  autoPatchelfHook,
+  fontconfig,
+  freetype,
+  fribidi,
   gcc-unwrapped,
-  libx11,
+  harfbuzz,
   libcxx,
   libdrm,
   libgbm,
   libglvnd,
   libpulseaudio,
+  libva,
+  libvdpau,
+  libx11,
   libxcb,
   wayland,
   xz,
   zlib,
-  libva,
-  libvdpau,
-  addDriverRunpath,
-  freetype,
-  harfbuzz,
-  fontconfig,
-  fribidi,
 }:
 let
   arch =
@@ -61,14 +61,6 @@ stdenv.mkDerivation rec {
     fribidi
   ];
 
-  appendRunpaths = lib.makeLibraryPath [
-    libva
-    libvdpau
-    addDriverRunpath.driverLink
-  ];
-
-  autoPatchelfIgnoreMissingDeps = [ "librockchip_mpp.so.1" ];
-
   installPhase = ''
     runHook preInstall
 
@@ -81,11 +73,20 @@ stdenv.mkDerivation rec {
     runHook postInstall
   '';
 
+  appendRunpaths = lib.makeLibraryPath [
+    libva
+    libvdpau
+    addDriverRunpath.driverLink
+  ];
+
+  autoPatchelfIgnoreMissingDeps = [ "librockchip_mpp.so.1" ];
+
   meta = {
     description = "Multimedia development kit";
     homepage = "https://github.com/wang-bin/mdk-sdk";
     license = lib.licenses.unfree;
     maintainers = [ ];
+
     platforms = [
       "x86_64-linux"
       "aarch64-linux"

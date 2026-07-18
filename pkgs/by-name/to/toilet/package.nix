@@ -2,10 +2,10 @@
   lib,
   stdenv,
   fetchurl,
-  pkg-config,
   libcaca,
-  toilet,
+  pkg-config,
   testers,
+  toilet,
 }:
 
 stdenv.mkDerivation (finalAttrs: {

@@ -1,19 +1,19 @@
 {
   lib,
-  mkDerivation,
   fetchurl,
   fetchFromGitHub,
+  mkDerivation,
 }:
 let
   pcFile = fetchurl {
-    url = "https://raw.githubusercontent.com/freebsd/freebsd-ports/a613e66a54d54251878412b74c1e99defdac4192/devel/libsysinfo/files/libsysinfo.pc.in";
     hash = "sha256-KeCOYLCYeoJm+AwaagygKve2f+jNaIfaO7c/UnMegAg=";
+    url = "https://raw.githubusercontent.com/freebsd/freebsd-ports/a613e66a54d54251878412b74c1e99defdac4192/devel/libsysinfo/files/libsysinfo.pc.in";
   };
 in
 mkDerivation rec {
   pname = "libsysinfo";
-  path = "...";
   version = "0.0.3";
+
   src = fetchFromGitHub {
     owner = "bsdimp";
     repo = "libsysinfo";
@@ -27,13 +27,13 @@ mkDerivation rec {
     "debug"
   ];
 
-  env.NIX_LDFLAGS = "-lkvm";
-
   # bash-sh syntax differences
   postPatch = ''
     substituteInPlace Makefile --replace-fail 'then else' 'then :; else'
     substituteInPlace Makefile --replace-fail 'mkdir' 'mkdir -p'
   '';
+
+  env.NIX_LDFLAGS = "-lkvm";
 
   postInstall = ''
     mkdir -p $out/lib/pkgconfig
@@ -45,6 +45,8 @@ mkDerivation rec {
     mkdir -p $out/include/sys
     ln -s ../sysinfo.h $out/include/sys/sysinfo.h
   '';
+
+  path = "...";
 
   meta = {
     description = "GNU libc's sysinfo port for FreeBSD";

@@ -1,17 +1,16 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  sphinx,
-  packaging,
+  buildPythonPackage,
   flit-core,
+  packaging,
+  sphinx,
   sphinx-notfound-page,
 }:
 
 buildPythonPackage rec {
   pname = "pallets-sphinx-themes";
   version = "2.3.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "pallets";
@@ -30,11 +29,12 @@ buildPythonPackage rec {
     sphinx-notfound-page
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "pallets_sphinx_themes" ];
 
   meta = {
-    homepage = "https://github.com/pallets/pallets-sphinx-themes";
     description = "Sphinx theme for Pallets projects";
+    homepage = "https://github.com/pallets/pallets-sphinx-themes";
     license = lib.licenses.bsd3;
     maintainers = with lib.maintainers; [ kaction ];
   };

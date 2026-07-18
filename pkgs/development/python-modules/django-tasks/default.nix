@@ -1,34 +1,29 @@
 {
   lib,
   stdenv,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # build-system
-  setuptools,
-
+  buildPythonPackage,
+  # tests
+  dj-database-url,
   # dependencies
   django,
+  django-rq,
   django-stubs-ext,
-  typing-extensions,
-
+  fakeredis,
   # optional-dependencies
   mysqlclient,
   psycopg,
-
-  # tests
-  dj-database-url,
-  django-rq,
-  fakeredis,
-  pytestCheckHook,
   pytest-django,
+  pytestCheckHook,
   redisTestHook,
+  # build-system
+  setuptools,
+  typing-extensions,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "django-tasks";
   version = "0.12.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "RealOrangeOne";
@@ -36,27 +31,6 @@ buildPythonPackage (finalAttrs: {
     tag = finalAttrs.version;
     hash = "sha256-pAVpsQXoiqneQaXrHNbBW7LumyYeJ4/9b0dg2qx7LZo=";
   };
-
-  build-system = [
-    setuptools
-  ];
-
-  dependencies = [
-    django
-    django-stubs-ext
-    typing-extensions
-  ];
-
-  optional-dependencies = {
-    mysql = [
-      mysqlclient
-    ];
-    postgres = [
-      psycopg
-    ];
-  };
-
-  pythonImportsCheck = [ "django_tasks" ];
 
   # redis hook does not support darwin
   doCheck = !stdenv.hostPlatform.isDarwin;
@@ -68,6 +42,20 @@ buildPythonPackage (finalAttrs: {
     pytestCheckHook
     pytest-django
     redisTestHook
+  ];
+
+  preCheck = ''
+    export DJANGO_SETTINGS_MODULE="tests.settings"
+  '';
+
+  build-system = [
+    setuptools
+  ];
+
+  dependencies = [
+    django
+    django-stubs-ext
+    typing-extensions
   ];
 
   disabledTests = [
@@ -85,9 +73,18 @@ buildPythonPackage (finalAttrs: {
     "test_uses_lib_tasks_by_default"
   ];
 
-  preCheck = ''
-    export DJANGO_SETTINGS_MODULE="tests.settings"
-  '';
+  optional-dependencies = {
+    mysql = [
+      mysqlclient
+    ];
+
+    postgres = [
+      psycopg
+    ];
+  };
+
+  pyproject = true;
+  pythonImportsCheck = [ "django_tasks" ];
 
   meta = {
     description = "Reference implementation and backport of background workers and tasks in Django";

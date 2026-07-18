@@ -2,11 +2,11 @@
   lib,
   stdenv,
   fetchFromGitLab,
+  dfl-ipc,
   meson,
   ninja,
   pkg-config,
   qt6,
-  dfl-ipc,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -20,6 +20,11 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-VDkJkrkhjWi61YD7qNQSF9/ctXtvVf+nh/zUVxAAE4Q=";
   };
 
+  outputs = [
+    "out"
+    "dev"
+  ];
+
   nativeBuildInputs = [
     meson
     ninja
@@ -32,11 +37,6 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   dontWrapQtApps = true;
-
-  outputs = [
-    "out"
-    "dev"
-  ];
 
   meta = {
     description = "Thin wrapper around QApplication, QGuiApplication and QCoreApplication";

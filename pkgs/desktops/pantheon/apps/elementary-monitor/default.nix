@@ -1,16 +1,10 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
   desktop-file-utils,
-  gettext,
-  meson,
-  ninja,
-  pkg-config,
-  sassc,
-  vala,
-  wrapGAppsHook4,
   flatpak,
+  gettext,
   glib,
   granite7,
   gtk4,
@@ -21,10 +15,16 @@
   libx11,
   linuxPackages,
   live-chart,
-  pciutils,
-  udisks,
-  wingpanel,
+  meson,
+  ninja,
   nix-update-script,
+  pciutils,
+  pkg-config,
+  sassc,
+  udisks,
+  vala,
+  wingpanel,
+  wrapGAppsHook4,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -77,9 +77,9 @@ stdenv.mkDerivation (finalAttrs: {
   meta = {
     description = "Manage processes and monitor system resources";
     homepage = "https://github.com/elementary/monitor";
-    teams = [ lib.teams.pantheon ];
-    platforms = lib.platforms.linux;
     license = lib.licenses.gpl3Plus;
+    platforms = lib.platforms.linux;
     mainProgram = "io.elementary.monitor";
+    teams = [ lib.teams.pantheon ];
   };
 })

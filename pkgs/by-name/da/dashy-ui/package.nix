@@ -3,36 +3,51 @@
   stdenv,
   fetchFromGitHub,
   fetchYarnDeps,
-  yarnConfigHook,
-  yarnBuildHook,
-  yarn,
   fixup-yarn-lock,
-  prefetch-yarn-deps,
-  nixosTests,
-  nodejs_24,
-  nodejs-slim_24,
-  remarshal_0_17,
   nix-update-script,
+  nixosTests,
+  nodejs-slim_24,
+  nodejs_24,
+  prefetch-yarn-deps,
+  remarshal_0_17,
+  yarn,
+  yarnBuildHook,
+  yarnConfigHook,
   settings ? { },
 }:
 stdenv.mkDerivation (finalAttrs: {
   pname = "dashy-ui";
   version = "4.4.2";
+
   src = fetchFromGitHub {
     owner = "lissy93";
     repo = "dashy";
     tag = finalAttrs.version;
     hash = "sha256-4AJx/BoRVYA8dU6HrIvGYWflvppxNsi2PWSpnJLWR0w=";
   };
-  yarnOfflineCache = fetchYarnDeps {
-    yarnLock = finalAttrs.src + "/yarn.lock";
-    hash = "sha256-oxVxzdap3dWi1ORP+eviFabO+G8GcFd0ZM3/a20Qbog=";
-  };
 
-  passthru = {
-    tests.dashy = nixosTests.dashy;
-    updateScript = nix-update-script { };
-  };
+  nativeBuildInputs = [
+    # This is required to fully pin the NodeJS version, since yarn*Hooks pull in the latest LTS in nixpkgs
+    # The yarn override is the only one technically required (fixup-yarn-lock and prefetch-yarn-deps' node version doesn't affect the end result),
+    # but they've been overridden for the sake of consistency/in case future updates to dashy/node would cause issues with differing major versions
+    (yarnConfigHook.override {
+      fixup-yarn-lock = fixup-yarn-lock.override {
+        nodejs-slim = nodejs-slim_24;
+      };
+
+      prefetch-yarn-deps = prefetch-yarn-deps.override {
+        nodejs-slim = nodejs-slim_24;
+      };
+
+      yarn = yarn.override {
+        nodejs = nodejs_24;
+      };
+    })
+    yarnBuildHook
+    nodejs_24
+    # For yaml conversion
+    remarshal_0_17
+  ];
 
   # - If no settings are passed, use the default config provided by upstream
   # - Despite JSON being valid YAML (and the JSON passing the config validator),
@@ -45,32 +60,24 @@ stdenv.mkDerivation (finalAttrs: {
     json2yaml '${builtins.toFile "conf.json" (builtins.toJSON settings)}' user-data/conf.yml
     yarn validate-config --offline
   '';
+
   installPhase = ''
     mkdir $out
     cp -R dist/* $out
   '';
 
-  nativeBuildInputs = [
-    # This is required to fully pin the NodeJS version, since yarn*Hooks pull in the latest LTS in nixpkgs
-    # The yarn override is the only one technically required (fixup-yarn-lock and prefetch-yarn-deps' node version doesn't affect the end result),
-    # but they've been overridden for the sake of consistency/in case future updates to dashy/node would cause issues with differing major versions
-    (yarnConfigHook.override {
-      fixup-yarn-lock = fixup-yarn-lock.override {
-        nodejs-slim = nodejs-slim_24;
-      };
-      prefetch-yarn-deps = prefetch-yarn-deps.override {
-        nodejs-slim = nodejs-slim_24;
-      };
-      yarn = yarn.override {
-        nodejs = nodejs_24;
-      };
-    })
-    yarnBuildHook
-    nodejs_24
-    # For yaml conversion
-    remarshal_0_17
-  ];
   doDist = false;
+
+  yarnOfflineCache = fetchYarnDeps {
+    hash = "sha256-oxVxzdap3dWi1ORP+eviFabO+G8GcFd0ZM3/a20Qbog=";
+    yarnLock = finalAttrs.src + "/yarn.lock";
+  };
+
+  passthru = {
+    tests.dashy = nixosTests.dashy;
+    updateScript = nix-update-script { };
+  };
+
   meta = {
     description = "Open source, highly customizable, easy-to-use, privacy-respecting dashboard app";
     homepage = "https://dashy.to";

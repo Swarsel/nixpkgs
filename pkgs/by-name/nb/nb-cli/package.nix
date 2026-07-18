@@ -1,15 +1,14 @@
 {
   lib,
   fetchFromGitHub,
-  python3,
   nb-cli,
+  python3,
   testers,
 }:
 
 python3.pkgs.buildPythonApplication (finalAttrs: {
   pname = "nb-cli";
   version = "1.7.4";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "nonebot";
@@ -18,10 +17,8 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     hash = "sha256-Vo+MmbaC+i/FZfrZywb2vgNQotafLyXpdBo6pDlZeaE=";
   };
 
-  pythonRemoveDeps = [ "pip" ];
-
-  # too strict
-  pythonRelaxDeps = true;
+  # no test
+  doCheck = false;
 
   build-system = with python3.pkgs; [
     babel
@@ -49,8 +46,7 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     wcwidth
   ];
 
-  # no test
-  doCheck = false;
+  pyproject = true;
 
   pythonImportsCheck = [
     "nb_cli"
@@ -61,6 +57,10 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     "nb_cli.i18n"
     "nb_cli.log"
   ];
+
+  # too strict
+  pythonRelaxDeps = true;
+  pythonRemoveDeps = [ "pip" ];
 
   passthru.tests = {
     version = testers.testVersion { package = nb-cli; };

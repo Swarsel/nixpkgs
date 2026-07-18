@@ -1,7 +1,7 @@
 {
+  lib,
   fetchFromGitHub,
   kcl,
-  lib,
   pkg-config,
   protobuf,
   rustPlatform,
@@ -18,7 +18,10 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-5yX9TYmn0nGlSI8jiAwxuYpBXq9ie+yVDHwcC1FLcBk=";
   };
 
-  sourceRoot = "${finalAttrs.src.name}/kclvm";
+  nativeBuildInputs = [
+    pkg-config
+    protobuf
+  ];
 
   cargoHash = "sha256-FulW9qNVVZtOoRfm+NPwQENJU9Ib1GBzcjHxk5QS70g=";
 
@@ -27,6 +30,7 @@ rustPlatform.buildRustPackage (finalAttrs: {
     PROTOC_INCLUDE = "${protobuf}/include";
   };
 
+  doCheck = false;
   buildAndTestSubdir = "tools/src/LSP";
 
   buildPhaseCargoFlags = [
@@ -35,21 +39,16 @@ rustPlatform.buildRustPackage (finalAttrs: {
     "--offline"
   ];
 
-  nativeBuildInputs = [
-    pkg-config
-    protobuf
-  ];
-
-  doCheck = false;
+  sourceRoot = "${finalAttrs.src.name}/kclvm";
 
   meta = {
-    changelog = "https://github.com/kcl-lang/kcl/releases/tag/v${finalAttrs.version}";
     description = "High-performance implementation of KCL written in Rust that uses LLVM as the compiler backend";
-    downloadPage = "https://github.com/kcl-lang/kcl/tree/v${finalAttrs.version}/kclvm/tools/src/LSP";
     homepage = "https://www.kcl-lang.io/";
+    changelog = "https://github.com/kcl-lang/kcl/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.asl20;
-    platforms = lib.platforms.linux;
     maintainers = kcl.meta.maintainers;
+    platforms = lib.platforms.linux;
     mainProgram = "kcl-language-server";
+    downloadPage = "https://github.com/kcl-lang/kcl/tree/v${finalAttrs.version}/kclvm/tools/src/LSP";
   };
 })

@@ -1,19 +1,18 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools_80,
-  six,
-  webencodings,
+  buildPythonPackage,
   pytest-expect,
   pytestCheckHook,
+  setuptools_80,
+  six,
   unstableGitUpdater,
+  webencodings,
 }:
 
 buildPythonPackage {
   pname = "html5lib";
   version = "1.1-unstable-2024-02-21";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "html5lib";
@@ -29,6 +28,11 @@ buildPythonPackage {
     ./pytest9-compat.patch
   ];
 
+  nativeCheckInputs = [
+    pytest-expect
+    pytestCheckHook
+  ];
+
   build-system = [ setuptools_80 ];
 
   dependencies = [
@@ -36,27 +40,28 @@ buildPythonPackage {
     webencodings
   ];
 
-  nativeCheckInputs = [
-    pytest-expect
-    pytestCheckHook
-  ];
+  pyproject = true;
 
   passthru.updateScript = unstableGitUpdater {
     branch = "master";
   };
 
   meta = {
-    homepage = "https://github.com/html5lib/html5lib-python";
-    downloadPage = "https://github.com/html5lib/html5lib-python/releases";
     description = "HTML parser based on WHAT-WG HTML5 specification";
+
     longDescription = ''
       html5lib is a pure-python library for parsing HTML. It is designed to
       conform to the WHATWG HTML specification, as is implemented by all
       major web browsers.
     '';
+
+    homepage = "https://github.com/html5lib/html5lib-python";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       prikhi
     ];
+
+    downloadPage = "https://github.com/html5lib/html5lib-python/releases";
   };
 }

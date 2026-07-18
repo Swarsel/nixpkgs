@@ -1,8 +1,7 @@
 {
   lib,
-  fetchPypi,
   buildPythonPackage,
-
+  fetchPypi,
   # build-system
   setuptools,
 }:
@@ -10,20 +9,20 @@
 buildPythonPackage (finalAttrs: {
   pname = "pymorphy2-dicts-ru";
   version = "2.4.417127.4579844";
-  pyproject = true;
 
   src = fetchPypi {
     inherit (finalAttrs) pname version;
     hash = "sha256-eMrQOtymBQIavTh6Oy61FchRuG6UaCoe8jVKLHT8wZY=";
   };
 
+  # has no tests
+  doCheck = false;
+
   build-system = [
     setuptools
   ];
 
-  # has no tests
-  doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "pymorphy2_dicts_ru" ];
 
   meta = {

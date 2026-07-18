@@ -2,9 +2,9 @@
   lib,
   stdenv,
   fetchurl,
-  zlib,
   htslib,
   perl,
+  zlib,
   ncurses ? null,
 }:
 
@@ -17,9 +17,6 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-Aqpc0LpS4GwggAVOBZ19d6iF3+lxfDHNid/npAR+2g4=";
   };
 
-  # tests require `bgzip` from the htslib package
-  nativeCheckInputs = [ htslib ];
-
   nativeBuildInputs = [ perl ];
 
   buildInputs = [
@@ -28,16 +25,21 @@ stdenv.mkDerivation (finalAttrs: {
     htslib
   ];
 
-  preConfigure = lib.optional stdenv.hostPlatform.isStatic ''
-    export LIBS="-lz -lbz2 -llzma"
-  '';
-  makeFlags = lib.optional stdenv.hostPlatform.isStatic "AR=${stdenv.cc.targetPrefix}ar";
-
   configureFlags = [
     "--with-htslib=${htslib}"
   ]
   ++ lib.optional (ncurses == null) "--without-curses"
   ++ lib.optionals stdenv.hostPlatform.isStatic [ "--without-curses" ];
+
+  makeFlags = lib.optional stdenv.hostPlatform.isStatic "AR=${stdenv.cc.targetPrefix}ar";
+
+  preConfigure = lib.optional stdenv.hostPlatform.isStatic ''
+    export LIBS="-lz -lbz2 -llzma"
+  '';
+
+  doCheck = true;
+  # tests require `bgzip` from the htslib package
+  nativeCheckInputs = [ htslib ];
 
   preCheck = ''
     patchShebangs test/
@@ -45,16 +47,16 @@ stdenv.mkDerivation (finalAttrs: {
 
   enableParallelBuilding = true;
 
-  doCheck = true;
-
   meta = {
     description = "Tools for manipulating SAM/BAM/CRAM format";
-    license = lib.licenses.mit;
     homepage = "http://www.htslib.org/";
-    platforms = lib.platforms.unix;
+    license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       mimame
       unode
     ];
+
+    platforms = lib.platforms.unix;
   };
 })

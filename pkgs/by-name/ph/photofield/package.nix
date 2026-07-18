@@ -3,12 +3,12 @@
   fetchFromGitHub,
   buildGoModule,
   buildNpmPackage,
-  makeWrapper,
   exiftool,
   ffmpeg,
-  testers,
-  photofield,
+  makeWrapper,
   nix-update-script,
+  photofield,
+  testers,
 }:
 
 let
@@ -24,40 +24,28 @@ let
   webui = buildNpmPackage {
     inherit src version;
     pname = "photofield-ui";
-
-    sourceRoot = "${src.name}/ui";
-
     npmDepsHash = "sha256-ULl4wHEo/PP0Y0O5po7eRDd+T/UjkZhQGIj262WFtFU=";
 
     installPhase = ''
       mkdir -p $out/share
       mv dist $out/share/photofield-ui
     '';
+
+    sourceRoot = "${src.name}/ui";
   };
 in
 
 buildGoModule {
-  pname = "photofield";
   inherit version src;
-
+  pname = "photofield";
+  nativeBuildInputs = [ makeWrapper ];
   vendorHash = "sha256-m0RJgwDO+IcMCbtq2WZixMzZWtglHM6wpoPKOEU0CCw=";
 
   preBuild = ''
     cp -r ${webui}/share/photofield-ui ui/dist
   '';
 
-  ldflags = [
-    "-s"
-    "-w"
-    "-X main.version=${version}"
-    "-X main.builtBy=Nix"
-  ];
-
-  tags = [ "embedui" ];
-
   doCheck = false; # tries to modify filesytem
-
-  nativeBuildInputs = [ makeWrapper ];
 
   postInstall = ''
     wrapProgram $out/bin/photofield \
@@ -69,19 +57,29 @@ buildGoModule {
       }"
   '';
 
+  ldflags = [
+    "-s"
+    "-w"
+    "-X main.version=${version}"
+    "-X main.builtBy=Nix"
+  ];
+
+  tags = [ "embedui" ];
+
   passthru = {
-    updateScript = nix-update-script { };
     tests.version = testers.testVersion {
-      package = photofield;
       command = "photofield -version";
+      package = photofield;
     };
+
+    updateScript = nix-update-script { };
   };
 
   meta = {
     description = "Experimental fast photo viewer";
     homepage = "https://github.com/SmilyOrg/photofield";
     license = lib.licenses.mit;
-    mainProgram = "photofield";
     maintainers = [ ];
+    mainProgram = "photofield";
   };
 }

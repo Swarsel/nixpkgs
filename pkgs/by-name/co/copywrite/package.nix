@@ -1,8 +1,8 @@
 {
   lib,
   stdenv,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   installShellFiles,
   versionCheckHook,
   writeScript,
@@ -23,22 +23,14 @@ buildGoModule (finalAttrs: {
     hash = "sha256-/ltP6ySkmeRQSmgTtF2Fa1RFbhFqiK9iI6ttKirweBk=";
   };
 
+  nativeBuildInputs = [ installShellFiles ];
   vendorHash = "sha256-tMKJGEAry9eL87y+yyEEQD4ZaDM573srNvAmAd59VwY=";
-
-  ldflags = [
-    "-s"
-    "-w"
-    "-X github.com/hashicorp/copywrite/cmd.version=${finalAttrs.version}"
-    "-X github.com/hashicorp/copywrite/cmd.commit=${shortCommitHash}"
-  ];
-
   env.CGO_ENABLED = 0;
 
   checkFlags = [
     "-skip=Test_FormatCopyrightYears_AutoDetect|Test_FormatCopyrightYearsForNewHeaders_AutoDetect" # depends on git metadata
   ];
 
-  nativeBuildInputs = [ installShellFiles ];
   postInstall = lib.optionalString (stdenv.buildPlatform.canExecute stdenv.hostPlatform) ''
     $out/bin/copywrite completion bash > copywrite.bash
     $out/bin/copywrite completion zsh > copywrite.zsh
@@ -46,8 +38,15 @@ buildGoModule (finalAttrs: {
     installShellCompletion copywrite.{bash,zsh,fish}
   '';
 
-  nativeInstallCheckInputs = [ versionCheckHook ];
   doInstallCheck = true;
+  nativeInstallCheckInputs = [ versionCheckHook ];
+
+  ldflags = [
+    "-s"
+    "-w"
+    "-X github.com/hashicorp/copywrite/cmd.version=${finalAttrs.version}"
+    "-X github.com/hashicorp/copywrite/cmd.commit=${shortCommitHash}"
+  ];
 
   passthru.updateScript = writeScript "update-copywrite" ''
     #!/usr/bin/env nix-shell
@@ -67,10 +66,10 @@ buildGoModule (finalAttrs: {
 
   meta = {
     description = "Automate copyright headers and license files at scale";
-    mainProgram = "copywrite";
     homepage = "https://github.com/hashicorp/copywrite";
     changelog = "https://github.com/hashicorp/copywrite/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.mpl20;
     maintainers = with lib.maintainers; [ dvcorreia ];
+    mainProgram = "copywrite";
   };
 })

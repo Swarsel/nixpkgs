@@ -7,7 +7,6 @@
 buildPythonPackage rec {
   pname = "ntplib";
   version = "0.4.0";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
@@ -16,6 +15,7 @@ buildPythonPackage rec {
 
   # Require networking
   doCheck = false;
+  format = "setuptools";
 
   meta = {
     description = "Python NTP library";

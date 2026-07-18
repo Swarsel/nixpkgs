@@ -15,24 +15,30 @@ in
   options.services.vsmartcard-vpcd = {
     enable = lib.mkEnableOption "Virtual smart card driver.";
 
-    port = lib.mkOption {
-      type = lib.types.port;
-      default = 35963;
-      description = ''
-        Port number vpcd will be listening on.
-      '';
-    };
-
     hostname = lib.mkOption {
-      type = lib.types.str;
       default = "/dev/null";
+
       description = ''
         Hostname of a waiting vpicc server vpcd will be connecting to. Use /dev/null for listening mode.
       '';
+
+      type = lib.types.str;
+    };
+
+    port = lib.mkOption {
+      default = 35963;
+
+      description = ''
+        Port number vpcd will be listening on.
+      '';
+
+      type = lib.types.port;
     };
   };
 
   config = lib.mkIf cfg.enable {
+    environment.systemPackages = [ pkgs.vsmartcard-vpcd ];
+
     services.pcscd.readerConfigs = [
       ''
         FRIENDLYNAME "Virtual PCD"
@@ -41,8 +47,6 @@ in
         CHANNELID    0x${lib.toHexString cfg.port}
       ''
     ];
-
-    environment.systemPackages = [ pkgs.vsmartcard-vpcd ];
   };
 
   meta.maintainers = with lib.maintainers; [ stargate01 ];

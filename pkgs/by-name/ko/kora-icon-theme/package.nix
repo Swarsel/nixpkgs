@@ -1,12 +1,12 @@
 {
   lib,
-  stdenvNoCC,
   fetchFromGitHub,
-  gtk3,
   adwaita-icon-theme,
-  kdePackages,
-  hicolor-icon-theme,
   gitUpdater,
+  gtk3,
+  hicolor-icon-theme,
+  kdePackages,
+  stdenvNoCC,
 }:
 
 stdenvNoCC.mkDerivation rec {
@@ -30,11 +30,6 @@ stdenvNoCC.mkDerivation rec {
     hicolor-icon-theme
   ];
 
-  # breeze-icons propagates qtbase
-  dontWrapQtApps = true;
-
-  dontDropIconThemeCache = true;
-
   installPhase = ''
     runHook preInstall
 
@@ -49,6 +44,10 @@ stdenvNoCC.mkDerivation rec {
     runHook postInstall
   '';
 
+  dontDropIconThemeCache = true;
+  # breeze-icons propagates qtbase
+  dontWrapQtApps = true;
+
   passthru.updateScript = gitUpdater {
     rev-prefix = "v";
   };
@@ -57,7 +56,7 @@ stdenvNoCC.mkDerivation rec {
     description = "SVG icon theme in four variants";
     homepage = "https://github.com/bikass/kora";
     license = lib.licenses.gpl3Plus;
-    platforms = lib.platforms.linux;
     maintainers = with lib.maintainers; [ romildo ];
+    platforms = lib.platforms.linux;
   };
 }

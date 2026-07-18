@@ -1,9 +1,9 @@
 {
   lib,
+  fetchFromGitHub,
   buildPythonPackage,
   colorama,
   docstring-parser,
-  fetchFromGitHub,
   pytestCheckHook,
   setuptools,
 }:
@@ -11,7 +11,6 @@
 buildPythonPackage rec {
   pname = "targ";
   version = "0.6.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "piccolo-orm";
@@ -20,6 +19,7 @@ buildPythonPackage rec {
     hash = "sha256-myQe8Gpnx5CqKnYNK0PZ2P7o+eVWKLInjyTaZd30WxU=";
   };
 
+  nativeCheckInputs = [ pytestCheckHook ];
   build-system = [ setuptools ];
 
   dependencies = [
@@ -27,8 +27,7 @@ buildPythonPackage rec {
     docstring-parser
   ];
 
-  nativeCheckInputs = [ pytestCheckHook ];
-
+  pyproject = true;
   pythonImportsCheck = [ "targ" ];
 
   meta = {

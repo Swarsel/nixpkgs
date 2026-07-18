@@ -20,7 +20,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "pyface";
   version = "8.0.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "enthought";
@@ -29,44 +28,16 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-i97cosaFc5GTv5GJgpx1xc81mir/IWljSrAORUapymM=";
   };
 
-  build-system = [ setuptools ];
-
-  dependencies = [
-    traits
-  ];
-
-  optional-dependencies = {
-    pillow = [ pillow ];
-    pyqt5 = [
-      pygments
-      pyqt5
-    ];
-    pyqt6 = [
-      pygments
-      pyqt6
-    ];
-    pyside2 = [
-      pygments
-      pyside2
-    ];
-    pyside6 = [
-      pygments
-      pyside6
-    ];
-    numpy = [ numpy ];
-    traitsui = [ traitsui ];
-    wx = [
-      wxpython
-      numpy
-    ];
-  };
-
   nativeCheckInputs = [
     pytestCheckHook
     writableTmpDirAsHomeHook
   ];
 
-  enabledTestPaths = "pyface/tests";
+  build-system = [ setuptools ];
+
+  dependencies = [
+    traits
+  ];
 
   disabledTestPaths = [
     # tests need an X server
@@ -79,13 +50,48 @@ buildPythonPackage (finalAttrs: {
     "pyface/tests/test_widget.py"
   ];
 
+  enabledTestPaths = "pyface/tests";
+
+  optional-dependencies = {
+    numpy = [ numpy ];
+    pillow = [ pillow ];
+
+    pyqt5 = [
+      pygments
+      pyqt5
+    ];
+
+    pyqt6 = [
+      pygments
+      pyqt6
+    ];
+
+    pyside2 = [
+      pygments
+      pyside2
+    ];
+
+    pyside6 = [
+      pygments
+      pyside6
+    ];
+
+    traitsui = [ traitsui ];
+
+    wx = [
+      wxpython
+      numpy
+    ];
+  };
+
+  pyproject = true;
   pythonImportsCheck = [ "pyface" ];
 
   meta = {
     description = "Traits-capable windowing framework";
     homepage = "https://github.com/enthought/pyface";
     changelog = "https://github.com/enthought/pyface/releases/tag/${finalAttrs.src.tag}";
-    maintainers = [ ];
     license = lib.licenses.bsdOriginal;
+    maintainers = [ ];
   };
 })

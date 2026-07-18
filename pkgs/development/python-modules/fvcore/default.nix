@@ -2,18 +2,18 @@
   lib,
   buildPythonPackage,
   fetchPypi,
+  iopath,
   # build inputs
   numpy,
-  yacs,
-  pyyaml,
-  tqdm,
-  termcolor,
   pillow,
-  tabulate,
-  iopath,
+  pyyaml,
   shapely,
+  tabulate,
+  termcolor,
   # check inputs
   torch,
+  tqdm,
+  yacs,
 }:
 let
   pname = "fvcore";
@@ -24,7 +24,6 @@ let
 in
 buildPythonPackage {
   inherit pname version;
-  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
@@ -42,14 +41,12 @@ buildPythonPackage {
     iopath
   ];
 
-  nativeCheckInputs = [ torch ];
-
   # TypeError: flop_count() missing 2 required positional arguments: 'model' and 'inputs'
   doCheck = false;
-
-  pythonImportsCheck = [ "fvcore" ];
-
+  nativeCheckInputs = [ torch ];
+  format = "setuptools";
   optional-dependencies = optional-dependencies;
+  pythonImportsCheck = [ "fvcore" ];
 
   meta = {
     description = "Collection of common code that's shared among different research projects in FAIR computer vision team";

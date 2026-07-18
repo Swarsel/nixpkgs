@@ -2,17 +2,17 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  libffi,
-  libxml2,
-  makeBinaryWrapper,
+  autoPatchelfHook,
   cmake,
   glibc,
-  rustPlatform,
-  zig_0_13,
+  libffi,
+  libxml2,
   llvmPackages_18,
-  writableTmpDirAsHomeHook,
+  makeBinaryWrapper,
+  rustPlatform,
   valgrind,
-  autoPatchelfHook,
+  writableTmpDirAsHomeHook,
+  zig_0_13,
 }:
 
 let
@@ -30,10 +30,6 @@ rustPlatform.buildRustPackage {
     rev = "d73ea109cc21442da01387c1e5e911607c74692d";
     hash = "sha256-pPnOM4hpbAkGCV47aw5eHbpOujjFtJa3v/3/D8gybO8=";
   };
-
-  dontUseZigBuild = true;
-  dontUseZigCheck = true;
-  dontUseZigInstall = true;
 
   nativeBuildInputs = [
     cmake
@@ -66,17 +62,6 @@ rustPlatform.buildRustPackage {
       export LLVM_SYS_${llvmMajorMinorStr}_PREFIX=${llvmPackages.llvm.dev}
     '';
 
-  postInstall =
-    lib.optionalString stdenv.hostPlatform.isLinux ''
-      wrapProgram $out/bin/roc \
-        --set NIX_GLIBC_PATH ${glibc.out}/lib \
-        --set NIX_LIBGCC_S_PATH ${stdenv.cc.cc.lib}/lib \
-        --prefix PATH : ${lib.makeBinPath [ stdenv.cc ]}
-    ''
-    + lib.optionalString (!stdenv.hostPlatform.isLinux) ''
-      wrapProgram $out/bin/roc --prefix PATH : ${lib.makeBinPath [ stdenv.cc ]}
-    '';
-
   nativeCheckInputs = [
     writableTmpDirAsHomeHook
     llvmPackages.clang
@@ -95,17 +80,34 @@ rustPlatform.buildRustPackage {
       runHook postCheck
     '';
 
+  postInstall =
+    lib.optionalString stdenv.hostPlatform.isLinux ''
+      wrapProgram $out/bin/roc \
+        --set NIX_GLIBC_PATH ${glibc.out}/lib \
+        --set NIX_LIBGCC_S_PATH ${stdenv.cc.cc.lib}/lib \
+        --prefix PATH : ${lib.makeBinPath [ stdenv.cc ]}
+    ''
+    + lib.optionalString (!stdenv.hostPlatform.isLinux) ''
+      wrapProgram $out/bin/roc --prefix PATH : ${lib.makeBinPath [ stdenv.cc ]}
+    '';
+
+  dontUseZigBuild = true;
+  dontUseZigCheck = true;
+  dontUseZigInstall = true;
+
   meta = {
     description = "Fast, friendly, functional programming language";
-    mainProgram = "roc";
     homepage = "https://www.roc-lang.org/";
     changelog = "https://github.com/roc-lang/roc/releases/tag/alpha4-rolling";
     license = lib.licenses.upl;
+
     maintainers = [
       lib.maintainers.anton-4
       lib.maintainers.bhansconnect
       lib.maintainers.rtfeldman
     ];
+
     platforms = [ "x86_64-linux" ];
+    mainProgram = "roc";
   };
 }

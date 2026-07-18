@@ -1,8 +1,8 @@
 {
   lib,
-  mkTclDerivation,
   fetchFromGitHub,
   lmdb,
+  mkTclDerivation,
 }:
 
 mkTclDerivation rec {
@@ -16,12 +16,12 @@ mkTclDerivation rec {
     hash = "sha256-HrR8VQ9cE9jkESqvKkLnYbZLErUVxau2z8xcFImH9lc=";
   };
 
-  configureFlags = [
-    "--with-system-lmdb=yes"
-  ];
-
   buildInputs = [
     lmdb
+  ];
+
+  configureFlags = [
+    "--with-system-lmdb=yes"
   ];
 
   meta = {

@@ -1,21 +1,20 @@
 {
   lib,
   stdenv,
-  buildPythonPackage,
   fetchFromGitHub,
-  pytestCheckHook,
-  setuptools,
+  buildPythonPackage,
   matplotlib,
-  numpy,
   networkx,
+  numpy,
   pypng,
+  pytestCheckHook,
   scipy,
+  setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "matplotx";
   version = "0.3.10";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "nschloe";
@@ -30,37 +29,39 @@ buildPythonPackage rec {
     numpy
   ];
 
-  optional-dependencies = {
-    all = [
-      networkx
-      pypng
-      scipy
-    ];
-    contour = [ networkx ];
-    spy = [
-      pypng
-      scipy
-    ];
-  };
-
   # This variable is needed to suppress the "Trace/BPT trap: 5" error in Darwin's checkPhase.
   # Not sure of the details, but we can avoid it by changing the matplotlib backend during testing.
   env.MPLBACKEND = lib.optionalString stdenv.hostPlatform.isDarwin "Agg";
-
   nativeCheckInputs = [ pytestCheckHook ] ++ optional-dependencies.all;
 
   disabledTestPaths = [
     "tests/test_spy.py" # Requires meshzoo (non-free) and pytest-codeblocks (not packaged)
   ];
 
+  optional-dependencies = {
+    all = [
+      networkx
+      pypng
+      scipy
+    ];
+
+    contour = [ networkx ];
+
+    spy = [
+      pypng
+      scipy
+    ];
+  };
+
+  pyproject = true;
   pythonImportsCheck = [ "matplotx" ];
 
   meta = {
-    homepage = "https://github.com/nschloe/matplotx";
     description = "More styles and useful extensions for Matplotlib";
-    mainProgram = "matplotx";
+    homepage = "https://github.com/nschloe/matplotx";
     changelog = "https://github.com/nschloe/matplotx/releases/tag/v${version}";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ swflint ];
+    mainProgram = "matplotx";
   };
 }

@@ -17,17 +17,17 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-MwQKTxrQqfoASCRk+vBeS9EHvmh6sqrpqygQVrdGkWw=";
   };
 
-  cmakeFlags = [
-    "-DZENOHCXX_ZENOHC=ON"
-    "-DZENOHCXX_ZENOHPICO=OFF"
-  ];
-
   nativeBuildInputs = [
     cmake
   ];
 
   propagatedBuildInputs = [
     zenoh-c
+  ];
+
+  cmakeFlags = [
+    "-DZENOHCXX_ZENOHC=ON"
+    "-DZENOHCXX_ZENOHPICO=OFF"
   ];
 
   postInstall = ''
@@ -38,10 +38,12 @@ stdenv.mkDerivation (finalAttrs: {
   meta = {
     description = "C++ API for zenoh";
     homepage = "https://github.com/eclipse-zenoh/zenoh-cpp";
+
     license = with lib.licenses; [
       asl20
       epl20
     ];
+
     maintainers = with lib.maintainers; [ markuskowa ];
   };
 })

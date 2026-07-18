@@ -3,6 +3,8 @@
 # { prismlauncher-unwrapped = pandora-launcher-unwrapped; }` though, since
 # pandora isn't a QT app (and most likely future subtle differences).
 {
+  lib,
+  stdenv,
   addDriverRunpath,
   alsa-lib,
   flite,
@@ -12,7 +14,6 @@
   jdk21,
   jdk25,
   jdk8,
-  lib,
   libGL,
   libjack2,
   libpulseaudio,
@@ -27,12 +28,10 @@
   pandora-launcher-unwrapped,
   pciutils,
   pipewire,
-  stdenv,
   symlinkJoin,
   udev,
   vulkan-loader,
   xrandr,
-
   additionalLibs ? [ ],
   additionalPrograms ? [ ],
   controllerSupport ? stdenv.hostPlatform.isLinux,
@@ -60,15 +59,16 @@ let
 in
 
 symlinkJoin {
-  pname = "pandora-launcher";
   inherit (pandora-launcher') version;
-
+  pname = "pandora-launcher";
   strictDeps = true;
-  __structuredAttrs = true;
-
-  paths = [ pandora-launcher' ];
-
   nativeBuildInputs = [ makeWrapper ];
+
+  postBuild = ''
+    wrapProgram $out/bin/pandora_launcher "''${makeWrapperArgs[@]}"
+  '';
+
+  __structuredAttrs = true;
 
   makeWrapperArgs =
     let
@@ -126,9 +126,7 @@ symlinkJoin {
       (lib.makeBinPath runtimePrograms)
     ];
 
-  postBuild = ''
-    wrapProgram $out/bin/pandora_launcher "''${makeWrapperArgs[@]}"
-  '';
+  paths = [ pandora-launcher' ];
 
   meta = {
     inherit (pandora-launcher'.meta)

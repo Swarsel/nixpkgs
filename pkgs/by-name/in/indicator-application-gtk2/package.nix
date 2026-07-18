@@ -1,17 +1,17 @@
 {
+  lib,
   stdenv,
   fetchurl,
-  lib,
-  file,
-  pkg-config,
   autoconf,
-  glib,
   dbus-glib,
-  json-glib,
+  file,
+  glib,
   gtk2,
-  libindicator-gtk2,
-  libdbusmenu-gtk2,
+  json-glib,
   libappindicator-gtk2,
+  libdbusmenu-gtk2,
+  libindicator-gtk2,
+  pkg-config,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -22,6 +22,19 @@ stdenv.mkDerivation (finalAttrs: {
     url = "${finalAttrs.meta.homepage}/indicator-application-gtk2/i-a-${finalAttrs.version}/+download/indicator-application-${finalAttrs.version}.tar.gz";
     sha256 = "1xqsb6c1pwawabw854f7aybjrgyhc2r1316i9lyjspci51zk5m7v";
   };
+
+  postPatch = ''
+    substituteInPlace configure.ac \
+      --replace 'DBUSSERVICEDIR=`$PKG_CONFIG --variable=session_bus_services_dir dbus-1`' \
+                "DBUSSERVICEDIR=$out/share/dbus-1/services"
+    autoconf
+    for f in {configure,ltmain.sh,m4/libtool.m4}; do
+      substituteInPlace $f \
+        --replace /usr/bin/file ${file}/bin/file
+    done
+    substituteInPlace src/Makefile.in \
+      --replace 'applicationlibdir = $(INDICATORDIR)' "applicationlibdir = $out/lib"
+  '';
 
   nativeBuildInputs = [
     pkg-config
@@ -39,19 +52,6 @@ stdenv.mkDerivation (finalAttrs: {
     libappindicator-gtk2
   ];
 
-  postPatch = ''
-    substituteInPlace configure.ac \
-      --replace 'DBUSSERVICEDIR=`$PKG_CONFIG --variable=session_bus_services_dir dbus-1`' \
-                "DBUSSERVICEDIR=$out/share/dbus-1/services"
-    autoconf
-    for f in {configure,ltmain.sh,m4/libtool.m4}; do
-      substituteInPlace $f \
-        --replace /usr/bin/file ${file}/bin/file
-    done
-    substituteInPlace src/Makefile.in \
-      --replace 'applicationlibdir = $(INDICATORDIR)' "applicationlibdir = $out/lib"
-  '';
-
   configureFlags = [
     "CFLAGS=-Wno-error"
     "--sysconfdir=/etc"
@@ -67,7 +67,7 @@ stdenv.mkDerivation (finalAttrs: {
     description = "Indicator to take menus from applications and place them in the panel (GTK 2 library for Xfce/LXDE)";
     homepage = "https://launchpad.net/indicators-gtk2";
     license = lib.licenses.gpl3;
-    platforms = lib.platforms.linux;
     maintainers = [ lib.maintainers.msteen ];
+    platforms = lib.platforms.linux;
   };
 })

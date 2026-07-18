@@ -1,9 +1,9 @@
 {
+  lib,
+  fetchFromGitHub,
   aiohttp,
   buildPythonPackage,
-  fetchFromGitHub,
   httpx,
-  lib,
   lxml,
   pkce,
   setuptools,
@@ -13,7 +13,6 @@
 buildPythonPackage rec {
   pname = "wolf-comm";
   version = "0.0.52";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "janrothkegel";
@@ -22,6 +21,8 @@ buildPythonPackage rec {
     hash = "sha256-IdV52+/2GTsAtlN3mvdtSf6B2WS6w3SvAOaZyZA/e+I=";
   };
 
+  # upstream has no tests
+  doCheck = false;
   build-system = [ setuptools ];
 
   dependencies = [
@@ -32,15 +33,13 @@ buildPythonPackage rec {
     shortuuid
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "wolf_comm" ];
 
-  # upstream has no tests
-  doCheck = false;
-
   meta = {
-    changelog = "https://github.com/janrothkegel/wolf-comm/releases/tag/${src.tag}";
     description = "Communicate with Wolf SmartSet Cloud";
     homepage = "https://github.com/janrothkegel/wolf-comm";
+    changelog = "https://github.com/janrothkegel/wolf-comm/releases/tag/${src.tag}";
     license = lib.licenses.asl20;
     maintainers = with lib.maintainers; [ dotlambda ];
   };

@@ -1,16 +1,15 @@
 {
   lib,
   fetchFromGitHub,
-  python3Packages,
   gobject-introspection,
   libnotify,
+  python3Packages,
   wrapGAppsNoGuiHook,
 }:
 
 python3Packages.buildPythonApplication (finalAttrs: {
   pname = "proton-vpn-cli";
   version = "1.0.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "ProtonVPN";
@@ -29,6 +28,22 @@ python3Packages.buildPythonApplication (finalAttrs: {
     libnotify # gir typelib is used
   ];
 
+  nativeCheckInputs = with python3Packages; [
+    pytestCheckHook
+    pytest-asyncio
+    pytest-cov-stub
+  ];
+
+  preCheck = ''
+    # Needed for Permission denied: '/homeless-shelter'
+    export HOME=$(mktemp -d)
+    export XDG_RUNTIME_DIR=$(mktemp -d)
+  '';
+
+  preFixup = ''
+    makeWrapperArgs+=("''${gappsWrapperArgs[@]}")
+  '';
+
   build-system = with python3Packages; [
     setuptools
   ];
@@ -45,28 +60,13 @@ python3Packages.buildPythonApplication (finalAttrs: {
   ];
 
   dontWrapGApps = true;
-
-  preFixup = ''
-    makeWrapperArgs+=("''${gappsWrapperArgs[@]}")
-  '';
-
-  preCheck = ''
-    # Needed for Permission denied: '/homeless-shelter'
-    export HOME=$(mktemp -d)
-    export XDG_RUNTIME_DIR=$(mktemp -d)
-  '';
-
-  nativeCheckInputs = with python3Packages; [
-    pytestCheckHook
-    pytest-asyncio
-    pytest-cov-stub
-  ];
+  pyproject = true;
 
   meta = {
     description = "Official ProtonVPN CLI Linux app";
     homepage = "https://github.com/ProtonVPN/proton-vpn-cli";
     license = lib.licenses.gpl3Plus;
-    mainProgram = "protonvpn";
     maintainers = with lib.maintainers; [ anthonyroussel ];
+    mainProgram = "protonvpn";
   };
 })

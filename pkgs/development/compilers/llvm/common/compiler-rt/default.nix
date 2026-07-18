@@ -1,26 +1,32 @@
 {
   lib,
   stdenv,
-  llvm_meta,
-  release_version,
-  version,
-  src ? null,
-  monorepoSrc ? null,
-  runCommand,
   cmake,
-  ninja,
-  python3,
+  fetchpatch,
+  freebsd,
+  getVersionFile,
   jq,
   libcxx,
   linuxHeaders,
-  freebsd,
-
+  llvm_meta,
+  ninja,
+  python3,
+  release_version,
+  runCommand,
+  version,
+  devExtraCmakeFlags ? [ ],
   # Some platforms have switched to using compiler-rt, but still want a
   # libgcc.a for ABI compat purposes. The use case would be old code that
   # expects to link `-lgcc` but doesn't care exactly what its contents
   # are, so long as it provides some builtins.
   doFakeLibgcc ? stdenv.hostPlatform.isFreeBSD,
-
+  # In recent releases, the compiler-rt build seems to produce
+  # many `libclang_rt*` libraries, but not a single unified
+  # `libcompiler_rt` library, at least under certain configurations. Some
+  # platforms still expect this, however, so we symlink one into place.
+  forceLinkCompilerRt ? stdenv.hostPlatform.isOpenBSD,
+  monorepoSrc ? null,
+  src ? null,
   # Whether to build the set of __atomic_* routines that would typically
   # be provided by libatomic in gcc environments.
   withAtomics ?
@@ -37,15 +43,6 @@
   # using ad-hoc mutexes (which doesn't depend on libc at all).
   # Use of pthreads helps code play better with sanitizers.
   withAtomicsPthread ? lib.versionAtLeast release_version "19" && stdenv.cc.libc != null,
-
-  # In recent releases, the compiler-rt build seems to produce
-  # many `libclang_rt*` libraries, but not a single unified
-  # `libcompiler_rt` library, at least under certain configurations. Some
-  # platforms still expect this, however, so we symlink one into place.
-  forceLinkCompilerRt ? stdenv.hostPlatform.isOpenBSD,
-  devExtraCmakeFlags ? [ ],
-  getVersionFile,
-  fetchpatch,
 }:
 
 let
@@ -62,8 +59,8 @@ let
 in
 
 stdenv.mkDerivation (finalAttrs: {
-  pname = "compiler-rt${lib.optionalString haveLibc "-libc"}";
   inherit version;
+  pname = "compiler-rt${lib.optionalString haveLibc "-libc"}";
 
   src =
     if monorepoSrc != null then
@@ -83,7 +80,10 @@ stdenv.mkDerivation (finalAttrs: {
     else
       src;
 
-  sourceRoot = "${finalAttrs.src.name}/compiler-rt";
+  outputs = [
+    "out"
+    "dev"
+  ];
 
   patches = [
     (getVersionFile "compiler-rt/X86-support-extension.patch") # Add support for i486 i586 i686 by reusing i386 config
@@ -99,15 +99,51 @@ stdenv.mkDerivation (finalAttrs: {
     (getVersionFile "compiler-rt/armv6-scudo-libatomic.patch")
   ]
   ++ lib.optional (lib.versions.major release_version == "19") (fetchpatch {
-    url = "https://github.com/llvm/llvm-project/pull/99837/commits/14ae0a660a38e1feb151928a14f35ff0f4487351.patch";
     hash = "sha256-JykABCaNNhYhZQxCvKiBn54DZ5ZguksgCHnpdwWF2no=";
     relative = "compiler-rt";
+    url = "https://github.com/llvm/llvm-project/pull/99837/commits/14ae0a660a38e1feb151928a14f35ff0f4487351.patch";
   })
   ++ lib.optional (lib.strings.versionOlder (lib.versions.major release_version) "20") (fetchpatch {
-    url = "https://github.com/llvm/llvm-project/commit/59978b21ad9c65276ee8e14f26759691b8a65763.patch";
     hash = "sha256-ys5SMLfO3Ay9nCX9GV5yRCQ6pLsseFu/ZY6Xd6OL4p0=";
     relative = "compiler-rt";
+    url = "https://github.com/llvm/llvm-project/commit/59978b21ad9c65276ee8e14f26759691b8a65763.patch";
   });
+
+  postPatch =
+    lib.optionalString (!stdenv.hostPlatform.isDarwin) ''
+      substituteInPlace cmake/builtin-config-ix.cmake \
+        --replace-fail 'set(X86 i386)' 'set(X86 i386 i486 i586 i686)'
+    ''
+    + lib.optionalString (!haveLibc) (
+      (lib.optionalString (lib.versions.major release_version == "18") ''
+        substituteInPlace lib/builtins/aarch64/sme-libc-routines.c \
+          --replace-fail "<stdlib.h>" "<stddef.h>"
+      '')
+      + ''
+        substituteInPlace lib/builtins/int_util.c \
+          --replace-fail "#include <stdlib.h>" ""
+      ''
+      + (lib.optionalString (!stdenv.hostPlatform.isFreeBSD)
+        # On FreeBSD, assert/static_assert are macros and allowing them to be implicitly declared causes link errors.
+        # see description above for why we're nuking assert.h normally but that doesn't work here.
+        # instead, we add the freebsd.include dependency explicitly
+        ''
+          substituteInPlace lib/builtins/clear_cache.c \
+            --replace-fail "#include <assert.h>" ""
+          substituteInPlace lib/builtins/cpu_model/x86.c \
+            --replace-fail "#include <assert.h>" ""
+        ''
+      )
+    )
+    +
+      lib.optionalString (lib.versionAtLeast release_version "19")
+        # codesign in sigtool doesn't support the various options used by the build
+        # and is present in the bootstrap-tools. Removing find_program prevents the
+        # build from trying to use it and failing.
+        ''
+          substituteInPlace cmake/Modules/AddCompilerRT.cmake \
+            --replace-fail 'find_program(CODESIGN codesign)' ""
+        '';
 
   nativeBuildInputs = [
     cmake
@@ -115,28 +151,10 @@ stdenv.mkDerivation (finalAttrs: {
     ninja
   ]
   ++ lib.optionals stdenv.hostPlatform.isDarwin [ jq ];
+
   buildInputs =
     lib.optional (stdenv.hostPlatform.isLinux && stdenv.hostPlatform.isRiscV) linuxHeaders
     ++ lib.optional (stdenv.hostPlatform.isFreeBSD) freebsd.include;
-
-  env = {
-    NIX_CFLAGS_COMPILE = toString (
-      [
-        "-DSCUDO_DEFAULT_OPTIONS=delete_size_mismatch=false:dealloc_type_mismatch=false"
-      ]
-      ++ lib.optionals (!haveLibc) [
-        # The compiler got stricter about this, and there is a usellvm patch below
-        # which patches out the assert include causing an implicit definition of
-        # assert. It would be nicer to understand why compiler-rt thinks it should
-        # be able to #include <assert.h> in the first place; perhaps it's in the
-        # wrong, or perhaps there is a way to provide an assert.h.
-        "-Wno-error=implicit-function-declaration"
-      ]
-    );
-
-    # Work around clang’s trying to invoke unprefixed-ld on Darwin when `-target` is passed.
-    NIX_CFLAGS_LINK = lib.optionalString (stdenv.hostPlatform.isDarwin) "--ld-path=${stdenv.cc.bintools}/bin/${stdenv.cc.targetPrefix}ld";
-  };
 
   cmakeFlags = [
     (lib.cmakeBool "COMPILER_RT_DEFAULT_TARGET_ONLY" true)
@@ -214,46 +232,24 @@ stdenv.mkDerivation (finalAttrs: {
   ]
   ++ devExtraCmakeFlags;
 
-  outputs = [
-    "out"
-    "dev"
-  ];
+  env = {
+    NIX_CFLAGS_COMPILE = toString (
+      [
+        "-DSCUDO_DEFAULT_OPTIONS=delete_size_mismatch=false:dealloc_type_mismatch=false"
+      ]
+      ++ lib.optionals (!haveLibc) [
+        # The compiler got stricter about this, and there is a usellvm patch below
+        # which patches out the assert include causing an implicit definition of
+        # assert. It would be nicer to understand why compiler-rt thinks it should
+        # be able to #include <assert.h> in the first place; perhaps it's in the
+        # wrong, or perhaps there is a way to provide an assert.h.
+        "-Wno-error=implicit-function-declaration"
+      ]
+    );
 
-  postPatch =
-    lib.optionalString (!stdenv.hostPlatform.isDarwin) ''
-      substituteInPlace cmake/builtin-config-ix.cmake \
-        --replace-fail 'set(X86 i386)' 'set(X86 i386 i486 i586 i686)'
-    ''
-    + lib.optionalString (!haveLibc) (
-      (lib.optionalString (lib.versions.major release_version == "18") ''
-        substituteInPlace lib/builtins/aarch64/sme-libc-routines.c \
-          --replace-fail "<stdlib.h>" "<stddef.h>"
-      '')
-      + ''
-        substituteInPlace lib/builtins/int_util.c \
-          --replace-fail "#include <stdlib.h>" ""
-      ''
-      + (lib.optionalString (!stdenv.hostPlatform.isFreeBSD)
-        # On FreeBSD, assert/static_assert are macros and allowing them to be implicitly declared causes link errors.
-        # see description above for why we're nuking assert.h normally but that doesn't work here.
-        # instead, we add the freebsd.include dependency explicitly
-        ''
-          substituteInPlace lib/builtins/clear_cache.c \
-            --replace-fail "#include <assert.h>" ""
-          substituteInPlace lib/builtins/cpu_model/x86.c \
-            --replace-fail "#include <assert.h>" ""
-        ''
-      )
-    )
-    +
-      lib.optionalString (lib.versionAtLeast release_version "19")
-        # codesign in sigtool doesn't support the various options used by the build
-        # and is present in the bootstrap-tools. Removing find_program prevents the
-        # build from trying to use it and failing.
-        ''
-          substituteInPlace cmake/Modules/AddCompilerRT.cmake \
-            --replace-fail 'find_program(CODESIGN codesign)' ""
-        '';
+    # Work around clang’s trying to invoke unprefixed-ld on Darwin when `-target` is passed.
+    NIX_CFLAGS_LINK = lib.optionalString (stdenv.hostPlatform.isDarwin) "--ld-path=${stdenv.cc.bintools}/bin/${stdenv.cc.targetPrefix}ld";
+  };
 
   preConfigure = lib.optionalString stdenv.hostPlatform.isDarwin ''
     cmakeFlagsArray+=(
@@ -291,9 +287,11 @@ stdenv.mkDerivation (finalAttrs: {
       ln -s $out/lib/*/libclang_rt.atomic-*.so $out/lib/
     '';
 
+  sourceRoot = "${finalAttrs.src.name}/compiler-rt";
+
   meta = llvm_meta // {
-    homepage = "https://compiler-rt.llvm.org/";
     description = "Compiler runtime libraries";
+
     longDescription = ''
       The compiler-rt project provides highly tuned implementations of the
       low-level code generator support routines like "__fixunsdfdi" and other
@@ -302,12 +300,16 @@ stdenv.mkDerivation (finalAttrs: {
       implementations of run-time libraries for dynamic testing tools such as
       AddressSanitizer, ThreadSanitizer, MemorySanitizer, and DataFlowSanitizer.
     '';
+
+    homepage = "https://compiler-rt.llvm.org/";
+
     # "All of the code in the compiler-rt project is dual licensed under the MIT
     # license and the UIUC License (a BSD-like license)":
     license = with lib.licenses; [
       mit
       ncsa
     ];
+
     broken =
       # compiler-rt requires a Clang stdenv on 32-bit RISC-V:
       # https://reviews.llvm.org/D43106#1019077

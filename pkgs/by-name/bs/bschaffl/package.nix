@@ -2,10 +2,10 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  pkg-config,
   cairo,
   libx11,
   lv2,
+  pkg-config,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -20,21 +20,21 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   nativeBuildInputs = [ pkg-config ];
+
   buildInputs = [
     cairo
     libx11
     lv2
   ];
 
+  enableParallelBuilding = true;
   installFlags = [ "PREFIX=$(out)" ];
 
-  enableParallelBuilding = true;
-
   meta = {
-    homepage = "https://github.com/sjaehn/BSchaffl";
     description = "Pattern-controlled MIDI amp & time stretch LV2 plugin";
+    homepage = "https://github.com/sjaehn/BSchaffl";
+    license = lib.licenses.gpl3;
     maintainers = [ lib.maintainers.magnetophon ];
     platforms = lib.platforms.linux;
-    license = lib.licenses.gpl3;
   };
 })

@@ -1,9 +1,9 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
-  testers,
+  buildGoModule,
   osv-scanner,
+  testers,
 }:
 
 buildGoModule (finalAttrs: {
@@ -18,10 +18,8 @@ buildGoModule (finalAttrs: {
   };
 
   vendorHash = "sha256-tSvKKX4P3XzHMF7jYnupZ5Fd9DUfIHT9a1bOHhB2gMs=";
-
-  subPackages = [
-    "cmd/osv-scanner"
-  ];
+  # Tests require network connectivity to query https://api.osv.dev.
+  doCheck = false;
 
   ldflags = [
     "-s"
@@ -31,8 +29,9 @@ buildGoModule (finalAttrs: {
     "-X=main.date=1970-01-01T00:00:00Z"
   ];
 
-  # Tests require network connectivity to query https://api.osv.dev.
-  doCheck = false;
+  subPackages = [
+    "cmd/osv-scanner"
+  ];
 
   passthru.tests.version = testers.testVersion {
     package = osv-scanner;
@@ -40,12 +39,14 @@ buildGoModule (finalAttrs: {
 
   meta = {
     description = "Vulnerability scanner written in Go which uses the data provided by https://osv.dev";
-    mainProgram = "osv-scanner";
     homepage = "https://github.com/google/osv-scanner";
     changelog = "https://github.com/google/osv-scanner/releases/tag/${finalAttrs.src.tag}";
     license = lib.licenses.asl20;
+
     maintainers = with lib.maintainers; [
       stehessel
     ];
+
+    mainProgram = "osv-scanner";
   };
 })

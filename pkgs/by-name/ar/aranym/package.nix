@@ -1,12 +1,12 @@
 {
   lib,
+  stdenv,
+  fetchFromGitHub,
   SDL2,
   autoreconfHook,
-  fetchFromGitHub,
   libGLU,
   libx11,
   pkg-config,
-  stdenv,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -20,6 +20,8 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-dtcLIA1oC6sPOeGTRmXhMEbuLan9/JWTbQvO5lp3gKo=";
   };
 
+  strictDeps = true;
+
   nativeBuildInputs = [
     autoreconfHook
     pkg-config
@@ -31,11 +33,9 @@ stdenv.mkDerivation (finalAttrs: {
     SDL2
   ];
 
-  strictDeps = true;
-
   meta = {
-    homepage = "https://aranym.github.io";
     description = "Atari Running on Any Machine";
+
     longDescription = ''
       ARAnyM is a software virtual machine (similar to VirtualBox or Bochs)
       designed and developed for running 32-bit Atari ST/TT/Falcon operating
@@ -52,10 +52,12 @@ stdenv.mkDerivation (finalAttrs: {
       and direct access to various host resources including sound, disk drives,
       optical storage devices (CD/DVD-ROMs), parallel port and more.
     '';
+
+    homepage = "https://aranym.github.io";
     license = with lib.licenses; [ gpl2Plus ];
-    mainProgram = "aranym";
     maintainers = [ ];
     platforms = lib.platforms.unix;
+    mainProgram = "aranym";
     # never successfully built on Hydra for darwin or aarch64 linux
     broken = stdenv.hostPlatform.isDarwin || stdenv.hostPlatform.isAarch64;
   };

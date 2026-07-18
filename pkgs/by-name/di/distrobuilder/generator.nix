@@ -1,25 +1,22 @@
 {
-  stdenvNoCC,
   lib,
-  src,
-  version,
-  makeWrapper,
   coreutils,
   findutils,
   gnugrep,
+  makeWrapper,
+  src,
+  stdenvNoCC,
   systemd,
+  version,
 }:
 
 stdenvNoCC.mkDerivation {
-  name = "distrobuilder-nixos-generator";
-
   inherit src version;
 
   patches = [
     ./nixos-generator.patch
   ];
 
-  dontBuild = true;
   nativeBuildInputs = [ makeWrapper ];
 
   installPhase = ''
@@ -33,4 +30,7 @@ stdenvNoCC.mkDerivation {
       ]
     }:${systemd}/lib/systemd
   '';
+
+  dontBuild = true;
+  name = "distrobuilder-nixos-generator";
 }

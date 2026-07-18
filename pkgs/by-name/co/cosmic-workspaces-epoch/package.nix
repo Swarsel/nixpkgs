@@ -1,15 +1,15 @@
 {
   lib,
   stdenv,
-  rustPlatform,
   fetchFromGitHub,
   libcosmicAppHook,
-  pkg-config,
-  libinput,
   libgbm,
-  udev,
+  libinput,
   nix-update-script,
   nixosTests,
+  pkg-config,
+  rustPlatform,
+  udev,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -24,11 +24,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-riiveHFtRF3rtOhbbUtfYRoAlqc7TCRr8aer0dgBY7g=";
   };
 
-  cargoHash = "sha256-Z5dC3W8QoDBZWBjHwRj9MC8EScDjQwUiUcOPTRDToDA=";
-
-  separateDebugInfo = true;
-  __structuredAttrs = true;
-
   nativeBuildInputs = [
     pkg-config
     libcosmicAppHook
@@ -40,12 +35,16 @@ rustPlatform.buildRustPackage (finalAttrs: {
     udev
   ];
 
+  cargoHash = "sha256-Z5dC3W8QoDBZWBjHwRj9MC8EScDjQwUiUcOPTRDToDA=";
+
   makeFlags = [
     "prefix=${placeholder "out"}"
     "CARGO_TARGET_DIR=target/${stdenv.hostPlatform.rust.cargoShortTarget}"
   ];
 
+  __structuredAttrs = true;
   dontCargoInstall = true;
+  separateDebugInfo = true;
 
   passthru = {
     tests = {
@@ -66,11 +65,11 @@ rustPlatform.buildRustPackage (finalAttrs: {
   };
 
   meta = {
-    homepage = "https://github.com/pop-os/cosmic-workspaces-epoch";
     description = "Workspaces Epoch for the COSMIC Desktop Environment";
-    mainProgram = "cosmic-workspaces";
+    homepage = "https://github.com/pop-os/cosmic-workspaces-epoch";
     license = lib.licenses.gpl3Only;
-    teams = [ lib.teams.cosmic ];
     platforms = lib.platforms.linux;
+    mainProgram = "cosmic-workspaces";
+    teams = [ lib.teams.cosmic ];
   };
 })

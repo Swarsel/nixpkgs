@@ -1,12 +1,11 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   versionCheckHook,
 }:
 
 buildGoModule (finalAttrs: {
-  __structuredAttrs = true;
   pname = "sonar";
   version = "0.4.0";
 
@@ -18,14 +17,15 @@ buildGoModule (finalAttrs: {
   };
 
   vendorHash = "sha256-komX1AmHt2NoF1x6xsNa2RFkfVzOXfYEMPhT0zwMxjw=";
+  doInstallCheck = true;
+  nativeInstallCheckInputs = [ versionCheckHook ];
+  __structuredAttrs = true;
 
   ldflags = [
     "-s -w -X github.com/raskrebs/sonar/internal/selfupdate.Version=v${finalAttrs.version}"
   ];
 
-  nativeInstallCheckInputs = [ versionCheckHook ];
   versionCheckProgramArg = "version";
-  doInstallCheck = true;
 
   meta = {
     description = "CLI tool for inspecting and managing services listening on localhost ports";

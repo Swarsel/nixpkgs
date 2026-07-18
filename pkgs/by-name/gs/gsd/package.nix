@@ -1,20 +1,18 @@
 {
   lib,
-  buildNpmPackage,
   fetchFromGitHub,
-  fetchNpmDeps,
-  nodejs_22,
-  makeWrapper,
+  buildNpmPackage,
   fd,
-  ripgrep,
+  fetchNpmDeps,
   gh,
+  makeWrapper,
+  nodejs_22,
+  ripgrep,
 }:
 
 buildNpmPackage (finalAttrs: {
   pname = "gsd";
   version = "3.0.0";
-
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "gsd-build";
@@ -22,27 +20,6 @@ buildNpmPackage (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-IXdsW7rUE6TIaIVqLSzVDwYZE+plvRwCXfepoMj/wQQ=";
   };
-
-  npmDepsHash = "sha256-qOrMx2yBywxjavt7g5253mcWmYhTO6bbS6eecn04Kew=";
-
-  webNpmDeps = fetchNpmDeps {
-    name = "${finalAttrs.pname}-web-${finalAttrs.version}-npm-deps";
-    inherit (finalAttrs) src;
-    sourceRoot = "${finalAttrs.src.name}/web";
-    hash = "sha256-K6WndhLeST6jDgCetvUDeiJVkdPDzg6gz7pJjBqSi34=";
-  };
-
-  nodejs = nodejs_22;
-
-  nativeBuildInputs = [ makeWrapper ];
-
-  env.PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD = "1";
-
-  # buildNpmPackage's hooks read these as plain env vars; under
-  # __structuredAttrs they are bash variables that need to be exported.
-  prePatch = ''
-    export npmDeps webNpmDeps
-  '';
 
   postPatch = ''
     # The npm "files" array omits "extensions/" so workspace symlinks under
@@ -52,6 +29,10 @@ buildNpmPackage (finalAttrs: {
       --replace-fail '"packages",' '"packages",
         "extensions",'
   '';
+
+  nativeBuildInputs = [ makeWrapper ];
+  npmDepsHash = "sha256-qOrMx2yBywxjavt7g5253mcWmYhTO6bbS6eecn04Kew=";
+  env.PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD = "1";
 
   preBuild = ''
     pushd web
@@ -72,6 +53,22 @@ buildNpmPackage (finalAttrs: {
         wrapProgram $out/bin/$bin --prefix PATH : ${binPath}
       done
     '';
+
+  __structuredAttrs = true;
+  nodejs = nodejs_22;
+
+  # buildNpmPackage's hooks read these as plain env vars; under
+  # __structuredAttrs they are bash variables that need to be exported.
+  prePatch = ''
+    export npmDeps webNpmDeps
+  '';
+
+  webNpmDeps = fetchNpmDeps {
+    inherit (finalAttrs) src;
+    hash = "sha256-K6WndhLeST6jDgCetvUDeiJVkdPDzg6gz7pJjBqSi34=";
+    name = "${finalAttrs.pname}-web-${finalAttrs.version}-npm-deps";
+    sourceRoot = "${finalAttrs.src.name}/web";
+  };
 
   meta = {
     description = "Meta-prompting and spec-driven development system for autonomous coding agents";

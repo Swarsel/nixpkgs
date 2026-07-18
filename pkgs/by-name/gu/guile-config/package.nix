@@ -3,9 +3,9 @@
   stdenv,
   fetchFromGitLab,
   autoreconfHook,
+  guile,
   pkg-config,
   texinfo,
-  guile,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -29,10 +29,8 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   buildInputs = [ guile ];
-
-  enableParallelBuilding = true;
-
   doCheck = true;
+  enableParallelBuilding = true;
 
   meta = {
     description = "Configuration management library for GNU Guile";

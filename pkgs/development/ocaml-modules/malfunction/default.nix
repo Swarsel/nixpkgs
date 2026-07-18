@@ -1,11 +1,11 @@
 {
   lib,
-  fetchzip,
   buildDunePackage,
-  ocaml,
-  findlib,
-  zarith,
   cppo,
+  fetchzip,
+  findlib,
+  ocaml,
+  zarith,
 }:
 
 buildDunePackage (finalAttrs: {
@@ -17,17 +17,18 @@ buildDunePackage (finalAttrs: {
     hash = "sha256-Cpe5rSBvsr3pqbucGZelutPoI+bcQPFCbdcKsE/HieY=";
   };
 
-  propagatedBuildInputs = [
-    findlib
-    zarith
-  ];
   nativeBuildInputs = [
     cppo
   ];
 
+  propagatedBuildInputs = [
+    findlib
+    zarith
+  ];
+
   meta = {
-    homepage = "http://github.com/stedolan/malfunction";
     description = "Malfunction is a high-performance, low-level untyped program representation, designed as a target for compilers of functional programming languages.";
+    homepage = "http://github.com/stedolan/malfunction";
     license = lib.licenses.lgpl21;
     maintainers = with lib.maintainers; [ _4ever2 ];
     mainProgram = "malfunction";

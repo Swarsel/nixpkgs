@@ -1,7 +1,7 @@
 {
   lib,
-  buildNpmPackage,
   fetchFromGitHub,
+  buildNpmPackage,
   pkg-config,
   vips,
 }:
@@ -17,13 +17,22 @@ buildNpmPackage (finalAttrs: {
     hash = "sha256-A26Mse69+ChyqUKhx5TlIdZYVC5e5bOPQ4DX8eVKcHw=";
   };
 
+  postPatch = ''
+    rm -r public/app
+    cp -r ${finalAttrs.app} public/app
+  '';
+
+  nativeBuildInputs = [ pkg-config ];
+
+  buildInputs = [
+    vips # for 'sharp' dependency
+  ];
+
   npmDepsHash = "sha256-IgPqX6nxxTWA6gLr2NP42vnGS+e98mWUWBIMSsIriRY=";
 
   app = buildNpmPackage {
-    pname = "psitransfer-app";
     inherit (finalAttrs) version src;
-
-    npmDepsHash = "sha256-PpUO1u7TcH8ZcTekLcGOn07EnCHqUlbEMS/YzMLSMAs=";
+    pname = "psitransfer-app";
 
     postPatch = ''
       # https://github.com/psi-4ward/psitransfer/pull/284
@@ -31,23 +40,14 @@ buildNpmPackage (finalAttrs: {
       cd app
     '';
 
+    npmDepsHash = "sha256-PpUO1u7TcH8ZcTekLcGOn07EnCHqUlbEMS/YzMLSMAs=";
+
     installPhase = ''
       cp -r ../public/app $out
     '';
   };
 
-  nativeBuildInputs = [ pkg-config ];
-  buildInputs = [
-    vips # for 'sharp' dependency
-  ];
-
-  postPatch = ''
-    rm -r public/app
-    cp -r ${finalAttrs.app} public/app
-  '';
-
   dontBuild = true;
-
   passthru.updateScript = ./update.sh;
 
   meta = {

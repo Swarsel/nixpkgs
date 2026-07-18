@@ -4,8 +4,8 @@
   buildDunePackage,
   camlidl,
   dune-configurator,
-  pkg-config,
   fuse3,
+  pkg-config,
 }:
 
 buildDunePackage (finalAttrs: {
@@ -34,7 +34,7 @@ buildDunePackage (finalAttrs: {
   meta = {
     description = "OCaml bindings for libfuse 3";
     homepage = "https://github.com/astrada/ocamlfuse/";
-    platforms = lib.platforms.linux;
     license = lib.licenses.gpl2Plus;
+    platforms = lib.platforms.linux;
   };
 })

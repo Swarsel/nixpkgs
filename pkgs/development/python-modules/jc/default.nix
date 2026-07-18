@@ -1,20 +1,19 @@
 {
   lib,
   stdenv,
+  fetchFromGitHub,
   buildPackages,
   buildPythonPackage,
-  fetchFromGitHub,
   installShellFiles,
-  ruamel-yaml,
-  xmltodict,
   pygments,
   pytestCheckHook,
+  ruamel-yaml,
+  xmltodict,
 }:
 
 buildPythonPackage rec {
   pname = "jc";
   version = "1.25.7";
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "kellyjonbrazil";
@@ -23,13 +22,17 @@ buildPythonPackage rec {
     hash = "sha256-aufAR+Y5ocJNWSr8CLIb0TZM6a3B6jqS3Ji1WIOLzBU=";
   };
 
+  nativeBuildInputs = [ installShellFiles ];
+
   propagatedBuildInputs = [
     ruamel-yaml
     xmltodict
     pygments
   ];
 
-  nativeBuildInputs = [ installShellFiles ];
+  # tests require timezone to set America/Los_Angeles
+  doCheck = false;
+  nativeCheckInputs = [ pytestCheckHook ];
 
   postInstall =
     let
@@ -41,19 +44,15 @@ buildPythonPackage rec {
         --zsh  <(${emulator} $out/bin/jc --zsh-comp)
     '';
 
-  nativeCheckInputs = [ pytestCheckHook ];
-
+  format = "setuptools";
   pythonImportsCheck = [ "jc" ];
-
-  # tests require timezone to set America/Los_Angeles
-  doCheck = false;
 
   meta = {
     description = "This tool serializes the output of popular command line tools and filetypes to structured JSON output";
     homepage = "https://github.com/kellyjonbrazil/jc";
+    changelog = "https://github.com/kellyjonbrazil/jc/blob/${src.tag}/CHANGELOG";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ atemu ];
-    changelog = "https://github.com/kellyjonbrazil/jc/blob/${src.tag}/CHANGELOG";
     mainProgram = "jc";
   };
 }

@@ -2,23 +2,22 @@
   lib,
   stdenv,
   fetchFromGitHub,
+  cmake,
   fetchpatch2,
-  python3Packages,
   fixDarwinDylibNames,
+  ninja,
   nix-update-script,
+  python3Packages,
+  testers,
   versionCheckHook,
-
+  findlib ? null,
   javaBindings ? false,
-  ocamlBindings ? false,
-  pythonBindings ? (!stdenv.hostPlatform.isStatic),
   jdk ? null,
   ocaml ? null,
-  findlib ? null,
-  zarith ? null,
-  cmake,
-  ninja,
-  testers,
+  ocamlBindings ? false,
+  pythonBindings ? (!stdenv.hostPlatform.isStatic),
   useCmakeBuild ? (!ocamlBindings), # TODO: remove gnu make build once cmake supports ocaml
+  zarith ? null,
 }:
 
 assert pythonBindings -> !stdenv.hostPlatform.isStatic;
@@ -38,9 +37,23 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-DnhX3kxggnFmyYwXEPBsBA1rh4oor1oIJR5TMJk/jvc=";
   };
 
+  outputs = [
+    "out"
+    "lib"
+    "dev"
+  ]
+  ++ lib.optionals pythonBindings [ "python" ]
+  ++ lib.optionals javaBindings [ "java" ]
+  ++ lib.optionals ocamlBindings [ "ocaml" ];
+
   patches = lib.optionals useCmakeBuild [
     ./fix-pkg-config-paths.patch
   ];
+
+  postPatch = lib.optionalString ocamlBindings ''
+    export OCAMLFIND_DESTDIR=$ocaml/lib/ocaml/${ocaml.version}/site-lib
+    mkdir -p $OCAMLFIND_DESTDIR/stublibs
+  '';
 
   strictDeps = true;
 
@@ -60,27 +73,6 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   propagatedBuildInputs = lib.optionals ocamlBindings [ zarith ];
-  enableParallelBuilding = true;
-
-  postPatch = lib.optionalString ocamlBindings ''
-    export OCAMLFIND_DESTDIR=$ocaml/lib/ocaml/${ocaml.version}/site-lib
-    mkdir -p $OCAMLFIND_DESTDIR/stublibs
-  '';
-
-  configurePhase = lib.optionalString (!useCmakeBuild) ''
-    runHook preConfigure
-
-    ${python3Packages.python.pythonOnBuildForHost.interpreter} \
-      scripts/mk_make.py \
-      --prefix=$out \
-      ${lib.optionalString javaBindings "--java"} \
-      ${lib.optionalString ocamlBindings "--ml"} \
-      ${lib.optionalString pythonBindings "--python --pypkgdir=$out/${python3Packages.python.sitePackages}"}
-
-    cd build
-
-    runHook postConfigure
-  '';
 
   cmakeFlags = [
     (lib.cmakeBool "Z3_BUILD_PYTHON_BINDINGS" pythonBindings)
@@ -104,6 +96,7 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   doCheck = true;
+
   checkPhase = ''
     runHook preCheck
 
@@ -144,43 +137,54 @@ stdenv.mkDerivation (finalAttrs: {
   ]
   ++ lib.optionals pythonBindings [ python3Packages.pythonImportsCheckHook ];
 
+  configurePhase = lib.optionalString (!useCmakeBuild) ''
+    runHook preConfigure
+
+    ${python3Packages.python.pythonOnBuildForHost.interpreter} \
+      scripts/mk_make.py \
+      --prefix=$out \
+      ${lib.optionalString javaBindings "--java"} \
+      ${lib.optionalString ocamlBindings "--ml"} \
+      ${lib.optionalString pythonBindings "--python --pypkgdir=$out/${python3Packages.python.sitePackages}"}
+
+    cd build
+
+    runHook postConfigure
+  '';
+
+  enableParallelBuilding = true;
+
   pythonImportsCheck = [
     "z3"
   ];
 
-  outputs = [
-    "out"
-    "lib"
-    "dev"
-  ]
-  ++ lib.optionals pythonBindings [ "python" ]
-  ++ lib.optionals javaBindings [ "java" ]
-  ++ lib.optionals ocamlBindings [ "ocaml" ];
-
   passthru = {
+    tests = lib.optionalAttrs useCmakeBuild {
+      pkg-config = testers.testMetaPkgConfig finalAttrs.finalPackage;
+    };
+
     updateScript = nix-update-script {
       extraArgs = [
         "--version-regex"
         "^z3-([0-9]+\\.[0-9]+\\.[0-9]+)$"
       ];
     };
-    tests = lib.optionalAttrs useCmakeBuild {
-      pkg-config = testers.testMetaPkgConfig finalAttrs.finalPackage;
-    };
   };
 
   meta = {
     description = "High-performance theorem prover and SMT solver";
-    mainProgram = "z3";
     homepage = "https://github.com/Z3Prover/z3";
     changelog = "https://github.com/Z3Prover/z3/releases/tag/z3-${finalAttrs.version}";
     license = lib.licenses.mit;
-    platforms = lib.platforms.unix;
+
     maintainers = with lib.maintainers; [
       thoughtpolice
       numinit
     ];
-    pkgConfigModules = lib.optionals useCmakeBuild [ "z3" ];
+
+    platforms = lib.platforms.unix;
+    mainProgram = "z3";
     broken = useCmakeBuild && ocamlBindings;
+    pkgConfigModules = lib.optionals useCmakeBuild [ "z3" ];
   };
 })

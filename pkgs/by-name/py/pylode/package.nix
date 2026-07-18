@@ -1,13 +1,12 @@
 {
   lib,
-  python3,
   fetchFromGitHub,
+  python3,
 }:
 
 python3.pkgs.buildPythonApplication (finalAttrs: {
   pname = "pylode";
   version = "3.2.3";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "RDFLib";
@@ -16,8 +15,8 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     hash = "sha256-b1asjzkatSbe5HRqGPf808wjnJTwOaYKABPyO+jSd8c=";
   };
 
-  pythonRelaxDeps = [ "rdflib" ];
-
+  # Path issues with the tests
+  doCheck = false;
   build-system = with python3.pkgs; [ poetry-core ];
 
   dependencies = with python3.pkgs; [
@@ -29,10 +28,9 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     rdflib
   ];
 
-  # Path issues with the tests
-  doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "pylode" ];
+  pythonRelaxDeps = [ "rdflib" ];
 
   meta = {
     description = "OWL ontology documentation tool using Python and templating, based on LODE";

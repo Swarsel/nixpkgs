@@ -1,7 +1,7 @@
 {
   lib,
-  appimageTools,
   fetchurl,
+  appimageTools,
 }:
 
 let
@@ -38,9 +38,9 @@ appimageTools.wrapType2 {
     description = "Desktop client for Zoho Mail";
     homepage = "https://www.zoho.com/mail/desktop/";
     license = lib.licenses.unfree;
-    platforms = [ "x86_64-linux" ];
-    maintainers = with lib.maintainers; [ rohi-devs ];
-    mainProgram = "zoho-mail-desktop";
     sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
+    maintainers = with lib.maintainers; [ rohi-devs ];
+    platforms = [ "x86_64-linux" ];
+    mainProgram = "zoho-mail-desktop";
   };
 }

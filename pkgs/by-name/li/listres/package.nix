@@ -2,12 +2,12 @@
   lib,
   stdenv,
   fetchurl,
-  pkg-config,
   libxaw,
   libxmu,
-  xorgproto,
   libxt,
+  pkg-config,
   writeScript,
+  xorgproto,
 }:
 stdenv.mkDerivation (finalAttrs: {
   pname = "listres";
@@ -19,7 +19,6 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   strictDeps = true;
-
   nativeBuildInputs = [ pkg-config ];
 
   buildInputs = [
@@ -44,8 +43,8 @@ stdenv.mkDerivation (finalAttrs: {
     description = "Utility to list X resources for a widget written using a toolkit based on libxt";
     homepage = "https://gitlab.freedesktop.org/xorg/app/listres";
     license = lib.licenses.x11;
-    mainProgram = "listres";
     maintainers = [ ];
     platforms = lib.platforms.unix;
+    mainProgram = "listres";
   };
 })

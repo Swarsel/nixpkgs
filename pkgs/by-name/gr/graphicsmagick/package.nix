@@ -1,29 +1,29 @@
 {
   lib,
+  stdenv,
+  fetchurl,
   bzip2,
   callPackage,
   coreutils,
-  fetchurl,
   fixDarwinDylibNames,
   freetype,
   ghostscript,
   graphviz,
-  libx11,
+  libheif,
   libjpeg,
   libjxl,
   libpng,
   libtiff,
   libtool,
   libwebp,
+  libx11,
   libxml2,
-  libheif,
   nukeReferences,
   pkg-config,
-  quantumdepth ? 8,
   runCommand,
-  stdenv,
   xz,
   zlib,
+  quantumdepth ? 8,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -39,6 +39,13 @@ stdenv.mkDerivation (finalAttrs: {
     "out"
     "man"
   ];
+
+  nativeBuildInputs = [
+    nukeReferences
+    pkg-config
+    xz
+  ]
+  ++ lib.optionals stdenv.hostPlatform.isDarwin [ fixDarwinDylibNames ];
 
   buildInputs = [
     bzip2
@@ -56,13 +63,6 @@ stdenv.mkDerivation (finalAttrs: {
     libxml2
     zlib
   ];
-
-  nativeBuildInputs = [
-    nukeReferences
-    pkg-config
-    xz
-  ]
-  ++ lib.optionals stdenv.hostPlatform.isDarwin [ fixDarwinDylibNames ];
 
   configureFlags = [
     # specify delegates explicitly otherwise `gm` will invoke the build
@@ -89,6 +89,7 @@ stdenv.mkDerivation (finalAttrs: {
     imagemagick-compat = callPackage ./imagemagick-compat.nix {
       graphicsmagick = finalAttrs.finalPackage;
     };
+
     tests = {
       issue-157920 =
         runCommand "issue-157920-regression-test"
@@ -102,8 +103,8 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   meta = {
-    homepage = "http://www.graphicsmagick.org";
     description = "Swiss army knife of image processing";
+
     longDescription = ''
       GraphicsMagick is the swiss army knife of image processing, providing a
       robust and efficient collection of tools and libraries which support
@@ -111,9 +112,11 @@ stdenv.mkDerivation (finalAttrs: {
       including important formats like DPX, GIF, JPEG, JPEG-2000, JXL, PNG, PDF,
       PNM, TIFF, and WebP.
     '';
+
+    homepage = "http://www.graphicsmagick.org";
     license = with lib.licenses; [ mit ];
     maintainers = with lib.maintainers; [ ambossmann ];
-    mainProgram = "gm";
     platforms = lib.platforms.all;
+    mainProgram = "gm";
   };
 })

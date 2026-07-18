@@ -7,7 +7,6 @@
 python3Packages.buildPythonApplication (finalAttrs: {
   pname = "tt-burnin";
   version = "0.4.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "tenstorrent";
@@ -15,6 +14,10 @@ python3Packages.buildPythonApplication (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-NI32BerBCuMMulB2fsseeoWI50iklpNqMyTs4BArl2A=";
   };
+
+  nativeCheckInputs = [
+    versionCheckHook
+  ];
 
   build-system = with python3Packages; [
     setuptools
@@ -27,16 +30,14 @@ python3Packages.buildPythonApplication (finalAttrs: {
     jsons
   ];
 
-  nativeCheckInputs = [
-    versionCheckHook
-  ];
+  pyproject = true;
 
   meta = {
-    mainProgram = "tt-burnin";
     description = "Command line utility to run a high power consumption workload on TT devices";
     homepage = "https://github.com/tenstorrent/tt-burnin";
     changelog = "https://github.com/tenstorrent/tt-burnin/blob/${finalAttrs.src.tag}/CHANGELOG.md";
-    maintainers = with lib.maintainers; [ RossComputerGuy ];
     license = with lib.licenses; [ asl20 ];
+    maintainers = with lib.maintainers; [ RossComputerGuy ];
+    mainProgram = "tt-burnin";
   };
 })

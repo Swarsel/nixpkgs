@@ -1,26 +1,22 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
-  cmake,
-  pkg-config,
   check,
-  libxcrypt,
-  subunit,
-  python3Packages,
-  nix-update-script,
-
-  withDoc ? false,
+  cmake,
   graphviz-nox,
-
-  withExamples ? false,
-
-  withEncryption ? false, # or "openssl" or "mbedtls"
-  openssl,
+  libxcrypt,
   mbedtls,
-
+  nix-update-script,
   # for passthru.tests only
   open62541,
+  openssl,
+  pkg-config,
+  python3Packages,
+  subunit,
+  withDoc ? false,
+  withEncryption ? false, # or "openssl" or "mbedtls"
+  withExamples ? false,
 }:
 
 let
@@ -43,21 +39,6 @@ stdenv.mkDerivation (finalAttrs: {
     fetchSubmodules = true;
   };
 
-  cmakeFlags = [
-    (lib.cmakeFeature "OPEN62541_VERSION" finalAttrs.src.rev)
-    (lib.cmakeFeature "UA_NAMESPACE_ZERO" "FULL")
-    (lib.cmakeBool "BUILD_SHARED_LIBS" (!stdenv.hostPlatform.isStatic))
-
-    # Note comment near doCheck
-    (lib.cmakeBool "UA_BUILD_UNIT_TESTS" finalAttrs.finalPackage.doCheck)
-    (lib.cmakeBool "UA_ENABLE_ALLOW_REUSEADDR" finalAttrs.finalPackage.doCheck)
-
-    (lib.cmakeBool "UA_BUILD_EXAMPLES" withExamples)
-  ]
-  ++ lib.optionals (withEncryption != false) [
-    (lib.cmakeFeature "UA_ENABLE_ENCRYPTION" (lib.toUpper withEncryption))
-  ];
-
   nativeBuildInputs = [
     cmake
     pkg-config
@@ -74,8 +55,22 @@ stdenv.mkDerivation (finalAttrs: {
 
   buildInputs = lib.optional (withEncryption != false) encryptionBackend;
 
-  buildFlags = [ "all" ] ++ lib.optional withDoc "doc";
+  cmakeFlags = [
+    (lib.cmakeFeature "OPEN62541_VERSION" finalAttrs.src.rev)
+    (lib.cmakeFeature "UA_NAMESPACE_ZERO" "FULL")
+    (lib.cmakeBool "BUILD_SHARED_LIBS" (!stdenv.hostPlatform.isStatic))
 
+    # Note comment near doCheck
+    (lib.cmakeBool "UA_BUILD_UNIT_TESTS" finalAttrs.finalPackage.doCheck)
+    (lib.cmakeBool "UA_ENABLE_ALLOW_REUSEADDR" finalAttrs.finalPackage.doCheck)
+
+    (lib.cmakeBool "UA_BUILD_EXAMPLES" withExamples)
+  ]
+  ++ lib.optionals (withEncryption != false) [
+    (lib.cmakeFeature "UA_ENABLE_ENCRYPTION" (lib.toUpper withEncryption))
+  ];
+
+  buildFlags = [ "all" ] ++ lib.optional withDoc "doc";
   # Tests must normally be disabled because they require
   # -DUA_ENABLE_ALLOW_REUSEADDR=ON. The option must not be used in production,
   # since it is a security risk.
@@ -87,9 +82,6 @@ stdenv.mkDerivation (finalAttrs: {
     libxcrypt
     subunit
   ];
-
-  # Tests must run sequentially to avoid port collisions on localhost
-  enableParallelChecking = false;
 
   preCheck =
     let
@@ -149,8 +141,8 @@ stdenv.mkDerivation (finalAttrs: {
     '';
 
   __darwinAllowLocalNetworking = true;
-
-  passthru.updateScript = nix-update-script { };
+  # Tests must run sequentially to avoid port collisions on localhost
+  enableParallelChecking = false;
 
   passthru.tests =
     let
@@ -167,16 +159,20 @@ stdenv.mkDerivation (finalAttrs: {
           };
     in
     {
+      open62541Full = open62541Full false;
+      open62541Full-mbedtls = open62541Full "mbedtls";
+      open62541Full-openssl = open62541Full "openssl";
+
       open62541WithTests = finalAttrs.finalPackage.overrideAttrs (_: {
         doCheck = true;
       });
-      open62541Full = open62541Full false;
-      open62541Full-openssl = open62541Full "openssl";
-      open62541Full-mbedtls = open62541Full "mbedtls";
     };
+
+  passthru.updateScript = nix-update-script { };
 
   meta = {
     description = "Open source implementation of OPC UA";
+
     longDescription = ''
       open62541 (http://open62541.org) is an open source and free implementation
       of OPC UA (OPC Unified Architecture) written in the common subset of the
@@ -185,6 +181,7 @@ stdenv.mkDerivation (finalAttrs: {
       tools to implement dedicated OPC UA clients and servers, or to integrate
       OPC UA-based communication into existing applications.
     '';
+
     homepage = "https://www.open62541.org";
     changelog = "https://github.com/open62541/open62541/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.mpl20;

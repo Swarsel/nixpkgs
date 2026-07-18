@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   jq,
   makeWrapper,
 }:
@@ -17,10 +17,8 @@ buildGoModule (finalAttrs: {
     sha256 = "sha256-txhttYngN+dofA3Yp3gZUZPRRZWGug9ysXq1Q0RP7ig=";
   };
 
-  vendorHash = "sha256-ZUmOhPGy+24AuxdeRVF0Vnu8zDGFrHoUlYiDdfIV5lc=";
-
   nativeBuildInputs = [ makeWrapper ];
-
+  vendorHash = "sha256-ZUmOhPGy+24AuxdeRVF0Vnu8zDGFrHoUlYiDdfIV5lc=";
   nativeCheckInputs = [ jq ];
 
   postInstall = ''
@@ -29,10 +27,10 @@ buildGoModule (finalAttrs: {
   '';
 
   meta = {
+    description = "Interactive JSON query tool using jq expressions";
     homepage = "https://github.com/fiatjaf/jiq";
     license = lib.licenses.mit;
-    description = "Interactive JSON query tool using jq expressions";
-    mainProgram = "jiq";
     maintainers = [ ];
+    mainProgram = "jiq";
   };
 })

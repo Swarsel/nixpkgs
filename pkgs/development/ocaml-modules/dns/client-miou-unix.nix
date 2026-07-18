@@ -3,16 +3,16 @@
   dns,
   dns-client,
   domain-name,
+  happy-eyeballs,
+  happy-eyeballs-miou-unix,
   ipaddr,
   miou,
   tls-miou-unix,
-  happy-eyeballs,
-  happy-eyeballs-miou-unix,
 }:
 
 buildDunePackage {
-  pname = "dns-client-miou-unix";
   inherit (dns) src version;
+  pname = "dns-client-miou-unix";
 
   propagatedBuildInputs = [
     dns-client

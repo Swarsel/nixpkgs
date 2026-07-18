@@ -1,12 +1,12 @@
 {
+  lib,
+  fetchurl,
   afl-persistent,
   alcotest,
   buildDunePackage,
   calendar,
   cmdliner,
-  fetchurl,
   fpath,
-  lib,
   ocaml,
   pprint,
   uucp,
@@ -16,8 +16,6 @@
 buildDunePackage (finalAttrs: {
   pname = "alcobar";
   version = "0.3.1";
-  minimalOCamlVersion = "4.10";
-  __structuredAttrs = true;
 
   src = fetchurl {
     url = "https://github.com/samoht/alcobar/releases/download/v${finalAttrs.version}/alcobar-${finalAttrs.version}.tbz";
@@ -30,6 +28,8 @@ buildDunePackage (finalAttrs: {
     cmdliner
   ];
 
+  doCheck = lib.versionAtLeast ocaml.version "5.0";
+
   checkInputs = [
     calendar
     fpath
@@ -37,7 +37,9 @@ buildDunePackage (finalAttrs: {
     uucp
     uunf
   ];
-  doCheck = lib.versionAtLeast ocaml.version "5.0";
+
+  __structuredAttrs = true;
+  minimalOCamlVersion = "4.10";
 
   meta = {
     description = "Crowbar with an Alcotest-compatible API";

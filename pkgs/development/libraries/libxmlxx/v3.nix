@@ -2,25 +2,24 @@
   lib,
   stdenv,
   fetchurl,
-  pkg-config,
-  libxml2,
+  dblatex,
+  docbook-xsl-ns,
+  docbook5,
+  doxygen,
+  fop,
   glibmm,
-  perl,
   gnome,
+  graphviz,
+  libxml2,
+  libxslt,
   meson,
   ninja,
-  docbook5,
-  docbook-xsl-ns,
-  doxygen,
-  libxslt,
-  fop,
-  dblatex,
-  graphviz,
-
+  perl,
+  pkg-config,
   withDocumentation ? false,
+  withExamples ? false,
   withManual ? false, # Broken due to not being allowed to fetch file from web
   withPDF ? false,
-  withExamples ? false,
 }:
 
 stdenv.mkDerivation rec {
@@ -62,7 +61,6 @@ stdenv.mkDerivation rec {
   ];
 
   buildInputs = [ glibmm ];
-
   propagatedBuildInputs = [ libxml2 ];
 
   mesonFlags = [
@@ -78,6 +76,8 @@ stdenv.mkDerivation rec {
     doxygen -u docs/reference/Doxyfile
   '';
 
+  doCheck = true;
+
   postFixup = ''
     substituteInPlace $dev/lib/pkgconfig/libxml++-3.0.pc \
       --replace-fail 'docdir=''${datarootdir}' "docdir=$doc/share"
@@ -86,19 +86,17 @@ stdenv.mkDerivation rec {
   passthru = {
     updateScript = gnome.updateScript {
       attrPath = "libxmlxx3";
+      freeze = true;
       packageName = "libxml++";
       versionPolicy = "odd-unstable";
-      freeze = true;
     };
   };
 
-  doCheck = true;
-
   meta = {
-    homepage = "https://libxmlplusplus.sourceforge.net/";
     description = "C++ wrapper for the libxml2 XML parser library, version 3";
+    homepage = "https://libxmlplusplus.sourceforge.net/";
     license = lib.licenses.lgpl2Plus;
-    platforms = lib.platforms.unix;
     maintainers = with lib.maintainers; [ willow ];
+    platforms = lib.platforms.unix;
   };
 }

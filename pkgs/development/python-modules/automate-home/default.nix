@@ -16,10 +16,6 @@
 buildPythonPackage rec {
   pname = "automate-home";
   version = "0.9.1";
-  pyproject = true;
-
-  # Typing issue
-  disabled = pythonAtLeast "3.12";
 
   src = fetchPypi {
     inherit pname version;
@@ -33,6 +29,7 @@ buildPythonPackage rec {
       --replace-fail "aioredis==1.3.1" "aioredis"
   '';
 
+  nativeCheckInputs = [ pytestCheckHook ];
   build-system = [ setuptools ];
 
   dependencies = [
@@ -44,8 +41,9 @@ buildPythonPackage rec {
     pyyaml
   ];
 
-  nativeCheckInputs = [ pytestCheckHook ];
-
+  # Typing issue
+  disabled = pythonAtLeast "3.12";
+  pyproject = true;
   pythonImportsCheck = [ "home" ];
 
   meta = {

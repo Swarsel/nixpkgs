@@ -1,31 +1,27 @@
 {
   lib,
   stdenv,
-  rustPlatform,
   fetchFromGitHub,
-
+  buildPackages,
   # nativeBuildInputs
   installShellFiles,
-
+  nix-update-script,
   # buildInputs
   rust-jemalloc-sys,
-
-  buildPackages,
+  rustPlatform,
   versionCheckHook,
-  nix-update-script,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
   pname = "ty";
   version = "0.0.56";
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "astral-sh";
     repo = "ty";
     tag = finalAttrs.version;
-    fetchSubmodules = true;
     hash = "sha256-H5Tin3+OFSmlC2b86gPISE0ZK6+vR+ijYtJBzeyBgL4=";
+    fetchSubmodules = true;
   };
 
   # For Darwin platforms, remove the integration test for file notifications,
@@ -34,32 +30,9 @@ rustPlatform.buildRustPackage (finalAttrs: {
     rm ${finalAttrs.cargoRoot}/crates/ty/tests/file_watching.rs
   '';
 
-  cargoRoot = "ruff";
-  buildAndTestSubdir = finalAttrs.cargoRoot;
-
-  cargoBuildFlags = [ "--package=ty" ];
-
-  cargoHash = "sha256-suXPAZAQ4dddcHBwmdrpC4cUEs7CgTmW9Bn/v9Roe0U=";
-
   nativeBuildInputs = [ installShellFiles ];
   buildInputs = [ rust-jemalloc-sys ];
-
-  # `ty`'s tests use `insta-cmd`, which depends on the structure of the `target/` directory,
-  # and also fails to find the environment variable `$CARGO_BIN_EXE_ty`, which leads to tests failing.
-  # Instead, we specify the path ourselves and forgo the lookup.
-  # As the patches occur solely in test code, they have no effect on the packaged `ty` binary itself.
-  #
-  # `stdenv.hostPlatform.rust.cargoShortTarget` is taken from `cargoSetupHook`'s `installPhase`,
-  # which constructs a path as below to reference the built binary.
-  preCheck = ''
-    export CARGO_BIN_EXE_ty="$PWD"/target/${stdenv.hostPlatform.rust.cargoShortTarget}/release/ty
-  '';
-
-  cargoTestFlags = [
-    "--package=ty" # CLI tests; file-watching tests only on Linux platforms
-    "--package=ty_python_semantic" # core type checking tests
-    "--package=ty_test" # test framework tests
-  ];
+  cargoHash = "sha256-suXPAZAQ4dddcHBwmdrpC4cUEs7CgTmW9Bn/v9Roe0U=";
 
   checkFlags = [
     # Flaky:
@@ -74,8 +47,16 @@ rustPlatform.buildRustPackage (finalAttrs: {
     "--skip=mdtest::generics/pep695/functions.md"
   ];
 
-  nativeInstallCheckInputs = [ versionCheckHook ];
-  doInstallCheck = true;
+  # `ty`'s tests use `insta-cmd`, which depends on the structure of the `target/` directory,
+  # and also fails to find the environment variable `$CARGO_BIN_EXE_ty`, which leads to tests failing.
+  # Instead, we specify the path ourselves and forgo the lookup.
+  # As the patches occur solely in test code, they have no effect on the packaged `ty` binary itself.
+  #
+  # `stdenv.hostPlatform.rust.cargoShortTarget` is taken from `cargoSetupHook`'s `installPhase`,
+  # which constructs a path as below to reference the built binary.
+  preCheck = ''
+    export CARGO_BIN_EXE_ty="$PWD"/target/${stdenv.hostPlatform.rust.cargoShortTarget}/release/ty
+  '';
 
   postInstall = lib.optionalString (stdenv.hostPlatform.emulatorAvailable buildPackages) (
     let
@@ -89,6 +70,19 @@ rustPlatform.buildRustPackage (finalAttrs: {
     ''
   );
 
+  doInstallCheck = true;
+  nativeInstallCheckInputs = [ versionCheckHook ];
+  __structuredAttrs = true;
+  buildAndTestSubdir = finalAttrs.cargoRoot;
+  cargoBuildFlags = [ "--package=ty" ];
+  cargoRoot = "ruff";
+
+  cargoTestFlags = [
+    "--package=ty" # CLI tests; file-watching tests only on Linux platforms
+    "--package=ty_python_semantic" # core type checking tests
+    "--package=ty_test" # test framework tests
+  ];
+
   passthru = {
     updateScript = nix-update-script { };
   };
@@ -98,12 +92,14 @@ rustPlatform.buildRustPackage (finalAttrs: {
     homepage = "https://github.com/astral-sh/ty";
     changelog = "https://github.com/astral-sh/ty/blob/${finalAttrs.version}/CHANGELOG.md";
     license = lib.licenses.mit;
-    mainProgram = "ty";
+
     maintainers = with lib.maintainers; [
       bengsparks
       ddogfoodd
       figsoda
       GaetanLepage
     ];
+
+    mainProgram = "ty";
   };
 })

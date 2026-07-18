@@ -2,8 +2,8 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  cmake,
   asio,
+  cmake,
   obs-studio,
   qtbase,
   websocketpp,
@@ -21,14 +21,13 @@ stdenv.mkDerivation rec {
   };
 
   nativeBuildInputs = [ cmake ];
+
   buildInputs = [
     asio
     obs-studio
     qtbase
     websocketpp
   ];
-
-  dontWrapQtApps = true;
 
   postInstall = ''
     mkdir $out/lib $out/share
@@ -37,11 +36,13 @@ stdenv.mkDerivation rec {
     mv $out/data $out/share/obs
   '';
 
+  dontWrapQtApps = true;
+
   meta = {
+    inherit (obs-studio.meta) platforms;
     description = "Legacy websocket 4.9.1 protocol support for OBS Studio 28 or above";
     homepage = "https://github.com/obsproject/obs-websocket";
-    maintainers = with lib.maintainers; [ flexiondotorg ];
     license = lib.licenses.gpl2Plus;
-    inherit (obs-studio.meta) platforms;
+    maintainers = with lib.maintainers; [ flexiondotorg ];
   };
 }

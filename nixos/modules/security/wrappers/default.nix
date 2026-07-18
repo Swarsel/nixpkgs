@@ -32,11 +32,12 @@ let
       unsecvars = lib.overrideDerivation (pkgs.srcOnly pkgs.glibc) (
         { name, ... }:
         {
-          name = "${name}-unsecvars";
           installPhase = ''
             mkdir $out
             cp sysdeps/generic/unsecvars.h $out
           '';
+
+          name = "${name}-unsecvars";
         }
       );
     };
@@ -51,44 +52,11 @@ let
     lib.types.strMatching mode // { description = "file mode string"; };
 
   wrapperType = lib.types.submodule (
-    { name, config, ... }:
+    { config, name, ... }:
     {
-      options.enable = lib.mkOption {
-        type = lib.types.bool;
-        default = true;
-        description = "Whether to enable the wrapper.";
-      };
-      options.source = lib.mkOption {
-        type = lib.types.path;
-        description = "The absolute path to the program to be wrapped.";
-      };
-      options.program = lib.mkOption {
-        type = with lib.types; nullOr str;
-        default = name;
-        description = ''
-          The name of the wrapper program. Defaults to the attribute name.
-        '';
-      };
-      options.owner = lib.mkOption {
-        type = lib.types.str;
-        description = "The owner of the wrapper program.";
-      };
-      options.group = lib.mkOption {
-        type = lib.types.str;
-        description = "The group of the wrapper program.";
-      };
-      options.permissions = lib.mkOption {
-        type = fileModeType;
-        default = "u+rx,g+x,o+x";
-        example = "a+rx";
-        description = ''
-          The permissions of the wrapper program. The format is that of a
-          symbolic or numeric file mode understood by {command}`chmod`.
-        '';
-      };
       options.capabilities = lib.mkOption {
-        type = lib.types.commas;
         default = "";
+
         description = ''
           A comma-separated list of capability clauses to be given to the
           wrapper program. The format for capability clauses is described in the
@@ -105,16 +73,63 @@ let
           security paranoid vs. too relaxed.
           :::
         '';
+
+        type = lib.types.commas;
       };
-      options.setuid = lib.mkOption {
+
+      options.enable = lib.mkOption {
+        default = true;
+        description = "Whether to enable the wrapper.";
         type = lib.types.bool;
-        default = false;
-        description = "Whether to add the setuid bit the wrapper program.";
       };
+
+      options.group = lib.mkOption {
+        description = "The group of the wrapper program.";
+        type = lib.types.str;
+      };
+
+      options.owner = lib.mkOption {
+        description = "The owner of the wrapper program.";
+        type = lib.types.str;
+      };
+
+      options.permissions = lib.mkOption {
+        default = "u+rx,g+x,o+x";
+
+        description = ''
+          The permissions of the wrapper program. The format is that of a
+          symbolic or numeric file mode understood by {command}`chmod`.
+        '';
+
+        example = "a+rx";
+        type = fileModeType;
+      };
+
+      options.program = lib.mkOption {
+        default = name;
+
+        description = ''
+          The name of the wrapper program. Defaults to the attribute name.
+        '';
+
+        type = with lib.types; nullOr str;
+      };
+
       options.setgid = lib.mkOption {
-        type = lib.types.bool;
         default = false;
         description = "Whether to add the setgid bit the wrapper program.";
+        type = lib.types.bool;
+      };
+
+      options.setuid = lib.mkOption {
+        default = false;
+        description = "Whether to add the setuid bit the wrapper program.";
+        type = lib.types.bool;
+      };
+
+      options.source = lib.mkOption {
+        description = "The absolute path to the program to be wrapped.";
+        type = lib.types.path;
       };
     }
   );
@@ -122,12 +137,12 @@ let
   ###### Activation script for the setcap wrappers
   mkSetcapProgram =
     {
-      program,
       capabilities,
-      source,
-      owner,
       group,
+      owner,
       permissions,
+      program,
+      source,
       ...
     }:
     ''
@@ -149,13 +164,13 @@ let
   ###### Activation script for the setuid wrappers
   mkSetuidProgram =
     {
-      program,
-      source,
-      owner,
       group,
-      setuid,
-      setgid,
+      owner,
       permissions,
+      program,
+      setgid,
+      setuid,
+      source,
       ...
     }:
     ''
@@ -183,6 +198,7 @@ in
   options = {
     security.enableWrappers = lib.mkEnableOption "" // {
       default = true;
+
       description = ''
         Whether to enable SUID/SGID wrappers.
 
@@ -200,9 +216,40 @@ in
       '';
     };
 
+    security.wrapperDir = lib.mkOption {
+      default = "/run/wrappers/bin";
+
+      description = ''
+        This option defines the path to the wrapper programs. It
+        should not be overridden.
+      '';
+
+      internal = true;
+      type = lib.types.path;
+    };
+
+    security.wrapperDirSize = lib.mkOption {
+      default = "50%";
+
+      description = ''
+        Size limit for the /run/wrappers tmpfs. Look at {manpage}`mount(8)`, tmpfs size option,
+        for the accepted syntax. WARNING: don't set to less than 64MB.
+      '';
+
+      example = "10G";
+      type = lib.types.str;
+    };
+
     security.wrappers = lib.mkOption {
-      type = lib.types.attrsOf wrapperType;
       default = { };
+
+      description = ''
+        This option effectively allows adding setuid/setgid bits, capabilities,
+        changing file ownership and permissions of a program without directly
+        modifying it. This works by creating a wrapper program in a directory
+        (not configurable), which is then added to the shell `PATH`.
+      '';
+
       example = lib.literalExpression ''
         {
           # a setuid root program
@@ -230,32 +277,8 @@ in
             };
         }
       '';
-      description = ''
-        This option effectively allows adding setuid/setgid bits, capabilities,
-        changing file ownership and permissions of a program without directly
-        modifying it. This works by creating a wrapper program in a directory
-        (not configurable), which is then added to the shell `PATH`.
-      '';
-    };
 
-    security.wrapperDirSize = lib.mkOption {
-      default = "50%";
-      example = "10G";
-      type = lib.types.str;
-      description = ''
-        Size limit for the /run/wrappers tmpfs. Look at {manpage}`mount(8)`, tmpfs size option,
-        for the accepted syntax. WARNING: don't set to less than 64MB.
-      '';
-    };
-
-    security.wrapperDir = lib.mkOption {
-      type = lib.types.path;
-      default = "/run/wrappers/bin";
-      internal = true;
-      description = ''
-        This option defines the path to the wrapper programs. It
-        should not be overridden.
-      '';
+      type = lib.types.attrsOf wrapperType;
     };
   };
 
@@ -264,26 +287,12 @@ in
 
     assertions = lib.mapAttrsToList (name: opts: {
       assertion = opts.setuid || opts.setgid -> opts.capabilities == "";
+
       message = ''
         The security.wrappers.${name} wrapper is not valid:
             setuid/setgid and capabilities are mutually exclusive.
       '';
     }) wrappers;
-
-    security.wrappers =
-      let
-        mkSetuidRoot = source: {
-          setuid = true;
-          owner = "root";
-          group = "root";
-          inherit source;
-        };
-      in
-      {
-        # These are mount related wrappers that require the +s permission.
-        mount = mkSetuidRoot "${lib.getBin pkgs.util-linux}/bin/mount";
-        umount = mkSetuidRoot "${lib.getBin pkgs.util-linux}/bin/umount";
-      };
 
     # Make sure our wrapperDir exports to the PATH env variable when
     # initializing the shell
@@ -304,60 +313,20 @@ in
       ''
     ) wrappers;
 
-    systemd.mounts = [
+    security.wrappers =
+      let
+        mkSetuidRoot = source: {
+          inherit source;
+          group = "root";
+          owner = "root";
+          setuid = true;
+        };
+      in
       {
-        where = parentWrapperDir;
-        what = "tmpfs";
-        type = "tmpfs";
-        options = lib.concatStringsSep "," [
-          "nodev"
-          "mode=755"
-          "size=${config.security.wrapperDirSize}"
-        ];
-      }
-    ];
-
-    systemd.services.suid-sgid-wrappers = {
-      description = "Create SUID/SGID Wrappers";
-      wantedBy = [ "sysinit.target" ];
-      before = [
-        "sysinit.target"
-        "shutdown.target"
-      ];
-      conflicts = [ "shutdown.target" ];
-      after = [ "systemd-sysusers.service" ];
-      unitConfig.DefaultDependencies = false;
-      unitConfig.RequiresMountsFor = [
-        "/nix/store"
-        "/run/wrappers"
-      ];
-      serviceConfig.RestrictSUIDSGID = false;
-      serviceConfig.Type = "oneshot";
-      script = ''
-        chmod 755 "${parentWrapperDir}"
-
-        # We want to place the tmpdirs for the wrappers to the parent dir.
-        wrapperDir=$(mktemp --directory --tmpdir="${parentWrapperDir}" wrappers.XXXXXXXXXX)
-        chmod a+rx "$wrapperDir"
-
-        ${lib.concatStringsSep "\n" mkWrappedPrograms}
-
-        if [ -L ${wrapperDir} ]; then
-          # Atomically replace the symlink
-          # See https://axialcorps.com/2013/07/03/atomically-replacing-files-and-directories/
-          old=$(readlink -f ${wrapperDir})
-          if [ -e "${wrapperDir}-tmp" ]; then
-            rm --force --recursive "${wrapperDir}-tmp"
-          fi
-          ln --symbolic --force --no-dereference "$wrapperDir" "${wrapperDir}-tmp"
-          mv --no-target-directory "${wrapperDir}-tmp" "${wrapperDir}"
-          rm --force --recursive "$old"
-        else
-          # For initial setup
-          ln --symbolic "$wrapperDir" "${wrapperDir}"
-        fi
-      '';
-    };
+        # These are mount related wrappers that require the +s permission.
+        mount = mkSetuidRoot "${lib.getBin pkgs.util-linux}/bin/mount";
+        umount = mkSetuidRoot "${lib.getBin pkgs.util-linux}/bin/umount";
+      };
 
     ###### wrappers consistency checks
     system.checks = lib.singleton (
@@ -389,5 +358,67 @@ in
           echo "OK"
         ''
     );
+
+    systemd.mounts = [
+      {
+        options = lib.concatStringsSep "," [
+          "nodev"
+          "mode=755"
+          "size=${config.security.wrapperDirSize}"
+        ];
+
+        type = "tmpfs";
+        what = "tmpfs";
+        where = parentWrapperDir;
+      }
+    ];
+
+    systemd.services.suid-sgid-wrappers = {
+      after = [ "systemd-sysusers.service" ];
+
+      before = [
+        "sysinit.target"
+        "shutdown.target"
+      ];
+
+      conflicts = [ "shutdown.target" ];
+      description = "Create SUID/SGID Wrappers";
+
+      script = ''
+        chmod 755 "${parentWrapperDir}"
+
+        # We want to place the tmpdirs for the wrappers to the parent dir.
+        wrapperDir=$(mktemp --directory --tmpdir="${parentWrapperDir}" wrappers.XXXXXXXXXX)
+        chmod a+rx "$wrapperDir"
+
+        ${lib.concatStringsSep "\n" mkWrappedPrograms}
+
+        if [ -L ${wrapperDir} ]; then
+          # Atomically replace the symlink
+          # See https://axialcorps.com/2013/07/03/atomically-replacing-files-and-directories/
+          old=$(readlink -f ${wrapperDir})
+          if [ -e "${wrapperDir}-tmp" ]; then
+            rm --force --recursive "${wrapperDir}-tmp"
+          fi
+          ln --symbolic --force --no-dereference "$wrapperDir" "${wrapperDir}-tmp"
+          mv --no-target-directory "${wrapperDir}-tmp" "${wrapperDir}"
+          rm --force --recursive "$old"
+        else
+          # For initial setup
+          ln --symbolic "$wrapperDir" "${wrapperDir}"
+        fi
+      '';
+
+      serviceConfig.RestrictSUIDSGID = false;
+      serviceConfig.Type = "oneshot";
+      unitConfig.DefaultDependencies = false;
+
+      unitConfig.RequiresMountsFor = [
+        "/nix/store"
+        "/run/wrappers"
+      ];
+
+      wantedBy = [ "sysinit.target" ];
+    };
   };
 }

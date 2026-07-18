@@ -1,13 +1,12 @@
 {
-  fetchFromGitHub,
   lib,
+  fetchFromGitHub,
   python3,
 }:
 
 python3.pkgs.buildPythonApplication (finalAttrs: {
   pname = "keymapviz";
   version = "1.14.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "yskoht";
@@ -17,9 +16,8 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
   };
 
   build-system = with python3.pkgs; [ setuptools ];
-
   dependencies = with python3.pkgs; [ regex ];
-
+  pyproject = true;
   pythonImportsCheck = [ "keymapviz" ];
 
   meta = {

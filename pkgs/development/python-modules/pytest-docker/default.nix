@@ -1,13 +1,13 @@
 {
   lib,
+  fetchFromGitHub,
   attrs,
   buildPythonPackage,
-  fetchFromGitHub,
   py,
+  pytest,
   pytest-mypy,
   pytest-pycodestyle,
   pytest-pylint,
-  pytest,
   pytestCheckHook,
   requests,
   setuptools,
@@ -19,7 +19,6 @@
 buildPythonPackage rec {
   pname = "pytest-docker";
   version = "3.2.5";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "avast";
@@ -28,11 +27,7 @@ buildPythonPackage rec {
     hash = "sha256-AkVLfCt2aQZrvSfa/5oXr95XUIR5mRqcMRz67kmuKKw=";
   };
 
-  build-system = [ setuptools ];
-
   buildInputs = [ pytest ];
-
-  dependencies = [ attrs ];
 
   nativeCheckInputs = [
     py
@@ -46,13 +41,17 @@ buildPythonPackage rec {
     writableTmpDirAsHomeHook
   ];
 
-  pythonImportsCheck = [ "pytest_docker" ];
+  build-system = [ setuptools ];
+  dependencies = [ attrs ];
 
   disabledTests = [
     # Tests wants to run docker
     "test_containers_and_volumes_get_cleaned_up"
     "test_main_fixtures_work"
   ];
+
+  pyproject = true;
+  pythonImportsCheck = [ "pytest_docker" ];
 
   meta = {
     description = "Docker-based integration tests";

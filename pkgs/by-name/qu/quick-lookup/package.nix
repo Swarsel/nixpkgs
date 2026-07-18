@@ -2,16 +2,16 @@
   lib,
   stdenv,
   fetchFromGitHub,
+  desktop-file-utils,
+  gjs,
+  glib-networking,
+  gobject-introspection,
+  libadwaita,
   meson,
   ninja,
   pkg-config,
-  gobject-introspection,
-  wrapGAppsHook4,
-  desktop-file-utils,
-  libadwaita,
-  gjs,
   webkitgtk_6_0,
-  glib-networking,
+  wrapGAppsHook4,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -50,8 +50,8 @@ stdenv.mkDerivation (finalAttrs: {
     description = "Simple GTK dictionary application powered by Wiktionary";
     homepage = "https://github.com/johnfactotum/quick-lookup";
     license = lib.licenses.gpl3Plus;
-    mainProgram = "quick-lookup";
     maintainers = with lib.maintainers; [ aleksana ];
     platforms = lib.platforms.linux;
+    mainProgram = "quick-lookup";
   };
 })

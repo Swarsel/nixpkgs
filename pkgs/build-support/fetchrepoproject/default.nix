@@ -1,24 +1,24 @@
 {
   lib,
-  stdenvNoCC,
-  gitRepo,
   cacert,
   copyPathsToStore,
+  gitRepo,
+  stdenvNoCC,
 }:
 lib.fetchers.withNormalizedHash { } (
   {
-    name,
     manifest,
-    rev ? "HEAD",
+    name,
     outputHash,
     outputHashAlgo,
+    createMirror ? false,
+    localManifests ? [ ],
+    manifestName ? "",
+    referenceDir ? "",
+    repoRepoRev ? "",
     # Optional parameters:
     repoRepoURL ? "",
-    repoRepoRev ? "",
-    referenceDir ? "",
-    manifestName ? "",
-    localManifests ? [ ],
-    createMirror ? false,
+    rev ? "HEAD",
     useArchive ? false,
   }:
 
@@ -65,15 +65,6 @@ lib.fetchers.withNormalizedHash { } (
       ; # TODO
 
     inherit outputHash outputHashAlgo;
-    outputHashMode = "recursive";
-
-    preferLocalBuild = true;
-    enableParallelBuilding = true;
-
-    impureEnvVars = fetchers.proxyImpureEnvVars ++ [
-      "GIT_PROXY_COMMAND"
-      "SOCKS_SERVER"
-    ];
 
     nativeBuildInputs = [
       gitRepo
@@ -108,5 +99,15 @@ lib.fetchers.withNormalizedHash { } (
         find -type d -name '.git' -prune -exec rm -rf {} +
       ''}
     '';
+
+    enableParallelBuilding = true;
+
+    impureEnvVars = fetchers.proxyImpureEnvVars ++ [
+      "GIT_PROXY_COMMAND"
+      "SOCKS_SERVER"
+    ];
+
+    outputHashMode = "recursive";
+    preferLocalBuild = true;
   }
 )

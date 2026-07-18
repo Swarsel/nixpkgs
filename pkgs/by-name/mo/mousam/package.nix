@@ -1,21 +1,19 @@
 {
   lib,
-  python3Packages,
   fetchFromGitHub,
+  desktop-file-utils,
+  gobject-introspection,
+  libadwaita,
   meson,
   ninja,
   pkg-config,
-  gobject-introspection,
+  python3Packages,
   wrapGAppsHook4,
-  desktop-file-utils,
-  libadwaita,
 }:
 
 python3Packages.buildPythonApplication (finalAttrs: {
   pname = "mousam";
   version = "2.0.2";
-  # built with meson, not a python format
-  pyproject = false;
 
   src = fetchFromGitHub {
     owner = "amit9838";
@@ -37,23 +35,25 @@ python3Packages.buildPythonApplication (finalAttrs: {
     libadwaita
   ];
 
+  preFixup = ''
+    makeWrapperArgs+=("''${gappsWrapperArgs[@]}")
+  '';
+
   dependencies = with python3Packages; [
     pygobject3
     requests
   ];
 
   dontWrapGApps = true;
-
-  preFixup = ''
-    makeWrapperArgs+=("''${gappsWrapperArgs[@]}")
-  '';
+  # built with meson, not a python format
+  pyproject = false;
 
   meta = {
     description = "Beautiful and lightweight weather app based on Python and GTK4";
     homepage = "https://amit9838.github.io/mousam";
     license = with lib.licenses; [ gpl3Plus ];
-    mainProgram = "mousam";
     maintainers = with lib.maintainers; [ aleksana ];
     platforms = lib.platforms.unix;
+    mainProgram = "mousam";
   };
 })

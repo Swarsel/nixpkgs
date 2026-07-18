@@ -1,8 +1,8 @@
 {
   lib,
+  fetchFromGitHub,
   aiohttp,
   buildPythonPackage,
-  fetchFromGitHub,
   setuptools,
   wheel,
 }:
@@ -10,7 +10,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "pyyardian";
   version = "1.4.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "h3l1o5";
@@ -19,13 +18,11 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-xikLOZjoa8XQ9v8odJRJpqM94zAjMPpSVH9uJSFvk68=";
   };
 
-  build-system = [ setuptools ];
-
-  dependencies = [ aiohttp ];
-
   # Tests require network access
   doCheck = false;
-
+  build-system = [ setuptools ];
+  dependencies = [ aiohttp ];
+  pyproject = true;
   pythonImportsCheck = [ "pyyardian" ];
 
   meta = {

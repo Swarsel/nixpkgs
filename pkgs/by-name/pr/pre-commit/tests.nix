@@ -5,6 +5,10 @@
   testers,
 }:
 {
+  version = testers.testVersion {
+    package = pre-commit;
+  };
+
   check-meta-hooks =
     runCommand "check-meta-hooks"
       {
@@ -38,8 +42,4 @@
         pre-commit run --all-files
         touch $out
       '';
-
-  version = testers.testVersion {
-    package = pre-commit;
-  };
 }

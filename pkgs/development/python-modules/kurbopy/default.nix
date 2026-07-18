@@ -10,25 +10,20 @@
 buildPythonPackage rec {
   pname = "kurbopy";
   version = "0.13.1";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
     hash = "sha256-JiXNgUeY2booOp1zaWtCuEqdyp/CxXy4rUo5kKmq0eQ=";
   };
 
-  propagatedBuildInputs = [ fonttools ];
   nativeBuildInputs = [
     rustPlatform.cargoSetupHook
     rustPlatform.maturinBuildHook
   ];
 
-  cargoDeps = rustPlatform.fetchCargoVendor {
-    inherit pname version src;
-    hash = "sha256-dWYOQk6kSGRL8nl3f89FWzdB17hgBALvsQkjeT9oKNc=";
-  };
-
+  propagatedBuildInputs = [ fonttools ];
   nativeCheckInputs = [ pytestCheckHook ];
+
   preCheck = ''
     # pytestCheckHook puts . at the front of Python's sys.path, due to:
     # https://github.com/NixOS/nixpkgs/issues/255262
@@ -37,6 +32,13 @@ buildPythonPackage rec {
     # We want it to import kurbopy from the nix store via $PYTHONPATH instead.
     rm -r kurbopy
   '';
+
+  cargoDeps = rustPlatform.fetchCargoVendor {
+    inherit pname version src;
+    hash = "sha256-dWYOQk6kSGRL8nl3f89FWzdB17hgBALvsQkjeT9oKNc=";
+  };
+
+  format = "setuptools";
 
   meta = {
     description = "Python wrapper around the Rust kurbo library for 2D curve manipulation";

@@ -1,10 +1,10 @@
 {
   lib,
   fetchFromGitHub,
-  rustPlatform,
   cmake,
   fuse3,
   pkg-config,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -19,27 +19,14 @@ rustPlatform.buildRustPackage (finalAttrs: {
     fetchSubmodules = true;
   };
 
-  cargoHash = "sha256-SSSXqgJ3OERCVw81iXqXRRpVXgdwhlefHhI/qvQyl4g=";
-
-  # thread 'main' panicked at cargo-auditable/src/collect_audit_data.rs:77:9:
-  # cargo metadata failure: error: none of the selected packages contains these features: libfuse3
-  auditable = false;
-
   nativeBuildInputs = [
     cmake
     pkg-config
     rustPlatform.bindgenHook
   ];
-  buildInputs = [ fuse3 ];
 
-  # The S3CrtClient doctest in mountpoint-s3-client constructs a real client,
-  # which requires a TLS trust store unavailable in the sandbox.
-  cargoTestFlags = [
-    "--workspace"
-    "--lib"
-    "--bins"
-    "--tests"
-  ];
+  buildInputs = [ fuse3 ];
+  cargoHash = "sha256-SSSXqgJ3OERCVw81iXqXRRpVXgdwhlefHhI/qvQyl4g=";
 
   checkFlags = [
     #thread 's3_crt_client::tests::test_expected_bucket_owner' panicked at mountpoint-s3-client/src/s3_crt_client.rs:1123:47:
@@ -73,9 +60,22 @@ rustPlatform.buildRustPackage (finalAttrs: {
     "--skip=test_get_identity_document"
   ];
 
+  # thread 'main' panicked at cargo-auditable/src/collect_audit_data.rs:77:9:
+  # cargo metadata failure: error: none of the selected packages contains these features: libfuse3
+  auditable = false;
+
+  # The S3CrtClient doctest in mountpoint-s3-client constructs a real client,
+  # which requires a TLS trust store unavailable in the sandbox.
+  cargoTestFlags = [
+    "--workspace"
+    "--lib"
+    "--bins"
+    "--tests"
+  ];
+
   meta = {
-    homepage = "https://github.com/awslabs/mountpoint-s3";
     description = "Simple, high-throughput file client for mounting an Amazon S3 bucket as a local file system";
+    homepage = "https://github.com/awslabs/mountpoint-s3";
     license = lib.licenses.asl20;
     maintainers = with lib.maintainers; [ lblasc ];
     platforms = lib.platforms.linux;

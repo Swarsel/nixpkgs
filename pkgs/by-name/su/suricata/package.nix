@@ -1,12 +1,12 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchurl,
+  cargo,
   clang,
-  llvm,
-  pkg-config,
   elfutils,
   file,
+  hiredis,
   jansson,
   libbpf_0,
   libcap_ng,
@@ -18,20 +18,20 @@
   libnfnetlink,
   libpcap,
   libyaml,
+  llvm,
   luajit,
   lz4,
+  nixosTests,
   nspr,
   pcre2,
+  pkg-config,
   python3,
+  rustc,
+  valkey,
   vectorscan,
   zlib,
   redisSupport ? true,
-  valkey,
-  hiredis,
   rustSupport ? true,
-  rustc,
-  cargo,
-  nixosTests,
 }:
 let
   libmagic = file;
@@ -50,6 +50,11 @@ stdenv.mkDerivation (finalAttrs: {
     ./bpf_stubs_workaround.patch
   ];
 
+  postPatch = ''
+    mkdir -p bpf_stubs_workaround/gnu
+    touch bpf_stubs_workaround/gnu/stubs-32.h
+  '';
+
   nativeBuildInputs = [
     clang
     llvm
@@ -58,10 +63,6 @@ stdenv.mkDerivation (finalAttrs: {
   ++ lib.optionals rustSupport [
     rustc
     cargo
-  ];
-
-  propagatedBuildInputs = with python3.pkgs; [
-    pyyaml
   ];
 
   buildInputs = [
@@ -91,12 +92,9 @@ stdenv.mkDerivation (finalAttrs: {
     hiredis
   ];
 
-  enableParallelBuilding = true;
-
-  postPatch = ''
-    mkdir -p bpf_stubs_workaround/gnu
-    touch bpf_stubs_workaround/gnu/stubs-32.h
-  '';
+  propagatedBuildInputs = with python3.pkgs; [
+    pyyaml
+  ];
 
   configureFlags = [
     "--disable-gccmarch-native"
@@ -130,13 +128,20 @@ stdenv.mkDerivation (finalAttrs: {
     sed -i 's|${builtins.storeDir}/\(.\{8\}\)[^-]*-|${builtins.storeDir}/\1...-|g' ./src/build-info.h
   '';
 
+  doCheck = true;
+
+  postInstall = ''
+    substituteInPlace "$out/etc/suricata/suricata.yaml" \
+      --replace-fail "/etc/suricata" "${placeholder "out"}/etc/suricata"
+  '';
+
+  enableParallelBuilding = true;
+
   # zerocallusedregs interferes during BPF compilation; TODO: perhaps improve
   hardeningDisable = [
     "stackprotector"
     "zerocallusedregs"
   ];
-
-  doCheck = true;
 
   installFlags = [
     "DESTDIR=\${out}"
@@ -147,11 +152,6 @@ stdenv.mkDerivation (finalAttrs: {
     "install"
     "install-conf"
   ];
-
-  postInstall = ''
-    substituteInPlace "$out/etc/suricata/suricata.yaml" \
-      --replace-fail "/etc/suricata" "${placeholder "out"}/etc/suricata"
-  '';
 
   passthru.tests = { inherit (nixosTests) suricata; };
 

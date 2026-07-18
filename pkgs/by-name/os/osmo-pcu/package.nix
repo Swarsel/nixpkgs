@@ -3,8 +3,8 @@
   stdenv,
   fetchFromGitHub,
   autoreconfHook,
-  pkg-config,
   libosmocore,
+  pkg-config,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -35,10 +35,10 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Osmocom Packet control Unit (PCU): Network-side GPRS (RLC/MAC); BTS- or BSC-colocated";
-    mainProgram = "osmo-pcu";
     homepage = "https://osmocom.org/projects/osmopcu";
     license = lib.licenses.gpl2Only;
     maintainers = [ lib.maintainers.markuskowa ];
     platforms = lib.platforms.linux;
+    mainProgram = "osmo-pcu";
   };
 })

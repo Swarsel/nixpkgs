@@ -1,7 +1,7 @@
 {
   lib,
-  rustPlatform,
   fetchCrate,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -17,12 +17,14 @@ rustPlatform.buildRustPackage (finalAttrs: {
 
   meta = {
     description = "Converts Specr lang code to Rust";
-    mainProgram = "specr-transpile";
     homepage = "https://github.com/RalfJung/minirust-tooling";
+
     license = with lib.licenses; [
       asl20
       mit
     ];
+
     maintainers = [ ];
+    mainProgram = "specr-transpile";
   };
 })

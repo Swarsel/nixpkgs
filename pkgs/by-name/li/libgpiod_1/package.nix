@@ -2,14 +2,14 @@
   lib,
   stdenv,
   fetchurl,
-  autoreconfHook,
   autoconf-archive,
-  pkg-config,
+  autoreconfHook,
   kmod,
+  ncurses,
+  pkg-config,
+  python3,
   enable-tools ? true,
   enablePython ? false,
-  python3,
-  ncurses,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -27,17 +27,18 @@ stdenv.mkDerivation (finalAttrs: {
     ./0001-Drop-AC_FUNC_MALLOC-and-_REALLOC-and-check-for-them-.patch
   ];
 
+  nativeBuildInputs = [
+    autoconf-archive
+    pkg-config
+    autoreconfHook
+  ];
+
   buildInputs = [
     kmod
   ]
   ++ lib.optionals enablePython [
     python3
     ncurses
-  ];
-  nativeBuildInputs = [
-    autoconf-archive
-    pkg-config
-    autoreconfHook
   ];
 
   configureFlags = [
@@ -49,11 +50,13 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "C library and tools for interacting with the linux GPIO character device";
+
     longDescription = ''
       Since linux 4.8 the GPIO sysfs interface is deprecated. User space should use
       the character device instead. This library encapsulates the ioctl calls and
       data structures behind a straightforward API.
     '';
+
     homepage = "https://git.kernel.org/pub/scm/libs/libgpiod/libgpiod.git/about/";
     license = lib.licenses.lgpl2;
     maintainers = [ ];

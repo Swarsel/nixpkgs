@@ -2,14 +2,14 @@
   lib,
   stdenv,
   fetchFromGitHub,
+  gitUpdater,
+  glib,
+  gobject-introspection,
+  gtk3-x11,
+  libxklavier,
   meson,
   ninja,
   pkg-config,
-  glib,
-  gtk3-x11,
-  gobject-introspection,
-  libxklavier,
-  gitUpdater,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -24,8 +24,6 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   strictDeps = true;
-
-  depsBuildBuild = [ pkg-config ];
 
   nativeBuildInputs = [
     meson
@@ -45,9 +43,11 @@ stdenv.mkDerivation (finalAttrs: {
     glib-compile-schemas $out/share/glib-2.0/schemas
   '';
 
+  depsBuildBuild = [ pkg-config ];
+
   passthru.updateScript = gitUpdater {
-    rev-prefix = "v";
     odd-unstable = true;
+    rev-prefix = "v";
   };
 
   meta = {

@@ -1,20 +1,19 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   cython,
+  numpy,
   oldest-supported-numpy,
+  pytestCheckHook,
+  scipy,
   setuptools,
   wheel,
-  scipy,
-  numpy,
-  pytestCheckHook,
 }:
 
 buildPythonPackage rec {
   pname = "dtw-python";
   version = "1.7.5";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "DynamicTimeWarping";
@@ -22,6 +21,15 @@ buildPythonPackage rec {
     tag = "v${version}";
     hash = "sha256-4OP6Fop04HLHURUagLMW4D93zTv9FwAtZ6xyNFbJILA=";
   };
+
+  nativeCheckInputs = [ pytestCheckHook ];
+
+  # We need to run tests on real built package: https://github.com/NixOS/nixpkgs/issues/255262
+  # tests/ are not included to output package, so we have to set path explicitly
+  preCheck = ''
+    appendToVar enabledTestPaths "$src/tests"
+    cd $out
+  '';
 
   build-system = [
     cython
@@ -35,15 +43,7 @@ buildPythonPackage rec {
     numpy
   ];
 
-  # We need to run tests on real built package: https://github.com/NixOS/nixpkgs/issues/255262
-  # tests/ are not included to output package, so we have to set path explicitly
-  preCheck = ''
-    appendToVar enabledTestPaths "$src/tests"
-    cd $out
-  '';
-
-  nativeCheckInputs = [ pytestCheckHook ];
-
+  pyproject = true;
   pythonImportsCheck = [ "dtw" ];
 
   meta = {

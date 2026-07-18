@@ -11,14 +11,13 @@
 buildPythonPackage rec {
   pname = "embrace";
   version = "4.2.1";
-  format = "setuptools";
 
   src = fetchFromSourcehut {
-    vc = "hg";
     owner = "~olly";
     repo = "embrace-sql";
     rev = "v${version}-release";
     hash = "sha256-B/xW5EfaQWW603fjKYcf+RHQJVZrnFoqVnIl6xSwS0E=";
+    vc = "hg";
   };
 
   propagatedBuildInputs = [
@@ -26,13 +25,12 @@ buildPythonPackage rec {
     wrapt
   ];
 
-  nativeCheckInputs = [ pytestCheckHook ];
-
-  pythonImportsCheck = [ "embrace" ];
-
   # Some test for hot-reload fails on Darwin, but the rest of the library
   # should remain usable. (https://todo.sr.ht/~olly/embrace-sql/4)
   doCheck = !stdenv.hostPlatform.isDarwin;
+  nativeCheckInputs = [ pytestCheckHook ];
+  format = "setuptools";
+  pythonImportsCheck = [ "embrace" ];
 
   meta = {
     description = "Embrace SQL keeps your SQL queries in SQL files";

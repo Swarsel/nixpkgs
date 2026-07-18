@@ -1,35 +1,36 @@
 {
+  lib,
   stdenv,
   fetchFromGitHub,
-  lib,
   autoconf,
   automake,
-  libtool,
+  cjson,
+  expat,
+  findutils,
+  gawk,
   gnum4,
+  hwloc,
+  krb5,
+  libedit,
+  libical,
+  libpq,
+  libtool,
+  libx11,
+  libxt,
+  munge,
+  openssl,
+  pkg-config,
+  python3,
+  swig,
   symlinkJoin,
   tcl-8_5,
   tk-8_5,
-  swig,
-  pkg-config,
-  cjson,
-  openssl,
   zlib,
-  libxt,
-  libx11,
-  libpq,
-  python3,
-  expat,
-  libedit,
-  hwloc,
-  libical,
-  krb5,
-  munge,
-  findutils,
-  gawk,
 }:
 let
   tclWithTk = symlinkJoin {
     name = "tcl-with-tk";
+
     paths = [
       tcl-8_5
       tk-8_5
@@ -48,6 +49,11 @@ stdenv.mkDerivation {
     hash = "sha256-FQgps7vdxz4gIAEE333MvELWf+Qx7dhnpoH4hLwOp5Q=";
   };
 
+  postPatch = ''
+    substituteInPlace src/cmds/scripts/Makefile.am --replace-fail "/etc/profile.d" "$out/etc/profile.d"
+    substituteInPlace m4/pbs_systemd_unitdir.m4 --replace-fail "/usr/lib/systemd/system" "$out/lib/systemd/system"
+  '';
+
   nativeBuildInputs = [
     autoconf
     automake
@@ -58,6 +64,7 @@ stdenv.mkDerivation {
     pkg-config
     cjson
   ];
+
   buildInputs = [
     openssl
     zlib
@@ -73,25 +80,15 @@ stdenv.mkDerivation {
     munge
   ];
 
-  # https://github.com/openpbs/openpbs/issues/2713
-  hardeningDisable = [ "fortify" ];
-
-  enableParallelBuilding = true;
-
-  postPatch = ''
-    substituteInPlace src/cmds/scripts/Makefile.am --replace-fail "/etc/profile.d" "$out/etc/profile.d"
-    substituteInPlace m4/pbs_systemd_unitdir.m4 --replace-fail "/usr/lib/systemd/system" "$out/lib/systemd/system"
-  '';
-
-  preConfigure = ''
-    ./autogen.sh
-  '';
-
   configureFlags = [
     "--with-tcl=${tclWithTk}"
     "--with-swig=${swig}"
     "--sysconfdir=$out/etc"
   ];
+
+  preConfigure = ''
+    ./autogen.sh
+  '';
 
   postInstall = ''
     cp src/scheduler/pbs_{dedicated,holidays,resource_group,sched_config} $out/etc/
@@ -103,6 +100,10 @@ stdenv.mkDerivation {
       awk -F: '/ELF/ {print $1}' |
       xargs patchelf --add-needed libmunge.so --add-rpath ${munge}/lib
   '';
+
+  enableParallelBuilding = true;
+  # https://github.com/openpbs/openpbs/issues/2713
+  hardeningDisable = [ "fortify" ];
 
   meta = {
     description = "HPC workload manager and job scheduler for desktops, clusters, and clouds";

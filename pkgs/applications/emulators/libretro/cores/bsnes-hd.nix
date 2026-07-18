@@ -1,12 +1,11 @@
 {
   lib,
   fetchFromGitHub,
-  mkLibretroCore,
-  libxext,
   libx11,
+  libxext,
+  mkLibretroCore,
 }:
 mkLibretroCore {
-  core = "bsnes-hd-beta";
   version = "0-unstable-2025-12-05";
 
   src = fetchFromGitHub {
@@ -16,12 +15,6 @@ mkLibretroCore {
     hash = "sha256-Bim8N3rkGNnHQhaA+wVALSM3ZBBTk0Zt9xct5qVnXzM=";
   };
 
-  extraBuildInputs = [
-    libx11
-    libxext
-  ];
-
-  makefile = "GNUmakefile";
   makeFlags = [
     "-C"
     "bsnes"
@@ -30,6 +23,14 @@ mkLibretroCore {
   ];
 
   postBuild = "cd bsnes/out";
+  core = "bsnes-hd-beta";
+
+  extraBuildInputs = [
+    libx11
+    libxext
+  ];
+
+  makefile = "GNUmakefile";
 
   meta = {
     description = "Port of bsnes-hd to libretro";

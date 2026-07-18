@@ -1,8 +1,8 @@
 {
   lib,
   stdenv,
-  rustPlatform,
   fetchFromGitHub,
+  rustPlatform,
   sqlite,
   xdg-utils,
 }:
@@ -18,16 +18,16 @@ rustPlatform.buildRustPackage rec {
     hash = "sha256-4pXF4p4K8+YihVB9NdgT6bOidmQEgWXUbcbvgXJ0IDA=";
   };
 
-  cargoHash = "sha256-925R5pG514JiA7iUegFkxrDpA3o7T/Ct4Igqqcdo3rw=";
-
   buildInputs = [
     sqlite
     xdg-utils
   ];
 
+  cargoHash = "sha256-925R5pG514JiA7iUegFkxrDpA3o7T/Ct4Igqqcdo3rw=";
+
   meta = {
-    homepage = "https://github.com/jonathanlmc/anup";
     description = "Anime tracker for AniList featuring a TUI";
+    homepage = "https://github.com/jonathanlmc/anup";
     license = lib.licenses.agpl3Only;
     maintainers = with lib.maintainers; [ natto1784 ];
     mainProgram = "anup";

@@ -1,8 +1,8 @@
 {
-  rustPlatform,
-  fetchFromGitHub,
   lib,
   stdenv,
+  fetchFromGitHub,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -16,19 +16,14 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-4/x3kUIKi3xnDRznr+6xmPeWHmhlpbuwSNH3Ej6+Ifc=";
   };
 
+  postPatch = ''
+    ln -s ${./Cargo.lock} Cargo.lock
+  '';
+
   cargoLock = {
     # generated using `cargo generate-lockfile` since repo is missing lockfile
     lockFile = ./Cargo.lock;
   };
-
-  cargoBuildFlags = [
-    "-p"
-    "rustc-demangle-capi"
-  ];
-
-  postPatch = ''
-    ln -s ${./Cargo.lock} Cargo.lock
-  '';
 
   postInstall = ''
     mkdir -p $out/lib
@@ -36,14 +31,21 @@ rustPlatform.buildRustPackage (finalAttrs: {
     cp -R crates/capi/include $out
   '';
 
+  cargoBuildFlags = [
+    "-p"
+    "rustc-demangle-capi"
+  ];
+
   meta = {
     description = "Rust symbol demangling";
     homepage = "https://github.com/rust-lang/rustc-demangle";
+
     license = with lib.licenses; [
       asl20
       mit
     ];
-    platforms = lib.platforms.unix;
+
     maintainers = with lib.maintainers; [ sledgehammervampire ];
+    platforms = lib.platforms.unix;
   };
 })

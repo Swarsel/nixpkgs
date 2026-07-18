@@ -1,15 +1,13 @@
 {
   buildDunePackage,
   dream,
-  pure-html,
   ppxlib,
+  pure-html,
 }:
 
 buildDunePackage {
-  pname = "dream-html";
   inherit (pure-html) src version meta;
-
-  minimalOCamlVersion = "5.3";
+  pname = "dream-html";
 
   buildInputs = [
     ppxlib
@@ -19,4 +17,6 @@ buildDunePackage {
     pure-html
     dream
   ];
+
+  minimalOCamlVersion = "5.3";
 }

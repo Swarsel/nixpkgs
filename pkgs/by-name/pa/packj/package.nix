@@ -1,13 +1,12 @@
 {
   lib,
-  python3,
   fetchFromGitHub,
+  python3,
 }:
 
 python3.pkgs.buildPythonApplication (finalAttrs: {
   pname = "packj";
   version = "0.15-beta";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "ossillate-inc";
@@ -15,10 +14,6 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-OWcJE2Gtjgoj9bCGZcHDfAFLWRP4wdENeJAnILMdUXY=";
   };
-
-  preBuild = ''
-    export HOME=$(mktemp -d)
-  '';
 
   nativeBuildInputs = with python3.pkgs; [
     setuptools
@@ -47,6 +42,12 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     six
     tldextract
   ];
+
+  preBuild = ''
+    export HOME=$(mktemp -d)
+  '';
+
+  pyproject = true;
 
   pythonImportsCheck = [
     "packj"

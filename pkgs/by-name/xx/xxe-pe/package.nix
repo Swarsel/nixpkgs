@@ -1,13 +1,13 @@
 {
+  lib,
   stdenv,
   fetchurl,
-  lib,
-  unzip,
+  config,
+  icoutils,
+  makeDesktopItem,
   makeWrapper,
   openjdk11,
-  makeDesktopItem,
-  icoutils,
-  config,
+  unzip,
   acceptLicense ? config.xxe-pe.acceptLicense or false,
 }:
 
@@ -15,17 +15,18 @@ let
   pkg_path = "$out/lib/xxe";
 
   desktopItem = makeDesktopItem {
-    name = "XMLmind XML Editor Personal Edition";
-    exec = "xxe";
-    icon = "xxe";
-    desktopName = "xxe";
-    genericName = "XML Editor";
     categories = [
       "Development"
       "IDE"
       "TextEditor"
       "Java"
     ];
+
+    desktopName = "xxe";
+    exec = "xxe";
+    genericName = "XML Editor";
+    icon = "xxe";
+    name = "XMLmind XML Editor Personal Edition";
   };
 in
 stdenv.mkDerivation rec {
@@ -45,6 +46,7 @@ stdenv.mkDerivation rec {
       url = "https://www.xmlmind.com/xmleditor/_download/xxe-perso-${
         builtins.replaceStrings [ "." ] [ "_" ] version
       }.zip";
+
       sha256 = "sha256-JZ9nQwMrQL/1HKGwvXoWlnTx55ZK/UYjMJAddCtm0rw=";
     };
 
@@ -53,8 +55,6 @@ stdenv.mkDerivation rec {
     makeWrapper
     icoutils
   ];
-
-  dontStrip = true;
 
   installPhase = ''
     mkdir -p "${pkg_path}"
@@ -76,6 +76,8 @@ stdenv.mkDerivation rec {
     makeWrapper "${pkg_path}/bin/xxe" "$out/bin/xxe" \
       --prefix PATH : ${lib.makeBinPath [ openjdk11 ]}
   '';
+
+  dontStrip = true;
 
   meta = {
     description = "Strictly validating, near WYSIWYG, XML editor with DocBook support";

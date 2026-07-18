@@ -2,13 +2,13 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  re2,
-  openfx,
-  zlib,
   ilmbase,
-  libGLU,
   libGL,
+  libGLU,
   openexr,
+  openfx,
+  re2,
+  zlib,
 }:
 
 stdenv.mkDerivation {
@@ -35,12 +35,6 @@ stdenv.mkDerivation {
         --replace g++ c++
   '';
 
-  env.NIX_CFLAGS_COMPILE = ''
-    -I${ilmbase.dev}/include/OpenEXR
-    -I${openexr.dev}/include/OpenEXR
-    -I${openfx.dev}/include/OpenFX
-  '';
-
   buildInputs = [
     re2
     openfx
@@ -51,7 +45,11 @@ stdenv.mkDerivation {
     openexr
   ];
 
-  enableParallelBuilding = true;
+  env.NIX_CFLAGS_COMPILE = ''
+    -I${ilmbase.dev}/include/OpenEXR
+    -I${openexr.dev}/include/OpenEXR
+    -I${openfx.dev}/include/OpenFX
+  '';
 
   buildPhase = ''
     mkdir openexrid/release
@@ -68,11 +66,13 @@ stdenv.mkDerivation {
     mv $out/lib $lib/
   '';
 
+  enableParallelBuilding = true;
+
   meta = {
     description = "OpenEXR files able to isolate any object of a CG image with a perfect antialiazing";
     homepage = "https://github.com/MercenariesEngineering/openexrid";
+    license = lib.licenses.mit;
     maintainers = [ lib.maintainers.guibou ];
     platforms = lib.platforms.all;
-    license = lib.licenses.mit;
   };
 }

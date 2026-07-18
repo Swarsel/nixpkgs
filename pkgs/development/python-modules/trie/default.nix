@@ -1,25 +1,24 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
+  buildPythonPackage,
   # dependencies
   eth-hash,
   eth-utils,
   hexbytes,
-  rlp,
-  sortedcontainers,
   # nativeCheckInputs
   hypothesis,
-  pytestCheckHook,
-  pytest-xdist,
   pydantic,
+  pytest-xdist,
+  pytestCheckHook,
+  rlp,
+  setuptools,
+  sortedcontainers,
 }:
 
 buildPythonPackage rec {
   pname = "trie";
   version = "3.1.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "ethereum";
@@ -27,6 +26,14 @@ buildPythonPackage rec {
     tag = "v${version}";
     hash = "sha256-QDywlAyFbQGgkATVifdixlnob4Tmsvr/VZ1rafzWKrU=";
   };
+
+  nativeCheckInputs = [
+    hypothesis
+    pytestCheckHook
+    pytest-xdist
+    pydantic
+  ]
+  ++ eth-hash.optional-dependencies.pycryptodome;
 
   build-system = [ setuptools ];
 
@@ -38,13 +45,7 @@ buildPythonPackage rec {
     sortedcontainers
   ];
 
-  nativeCheckInputs = [
-    hypothesis
-    pytestCheckHook
-    pytest-xdist
-    pydantic
-  ]
-  ++ eth-hash.optional-dependencies.pycryptodome;
+  disabledTestPaths = [ "tests/core/test_iter.py" ];
 
   disabledTests = [
     # some core tests require fixture submodule and execution spec
@@ -53,8 +54,8 @@ buildPythonPackage rec {
     "test_branch_updates"
     "test_install_local_wheel"
   ];
-  disabledTestPaths = [ "tests/core/test_iter.py" ];
 
+  pyproject = true;
   pythonImportsCheck = [ "trie" ];
 
   meta = {

@@ -2,18 +2,18 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  meson,
-  vala,
-  pkg-config,
+  clutter-gst,
+  clutter-gtk,
   glib,
   gtk3,
   libgee,
-  webkitgtk_4_1,
-  clutter-gtk,
-  clutter-gst,
+  meson,
   ninja,
-  wrapGAppsHook3,
+  pkg-config,
   testers,
+  vala,
+  webkitgtk_4_1,
+  wrapGAppsHook3,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -26,6 +26,10 @@ stdenv.mkDerivation (finalAttrs: {
     rev = "v${finalAttrs.version}";
     hash = "sha256-vER69dSxu4JuWNAADpkxHE/zjOMhQp+Fc21J+JHQ8xk=";
   };
+
+  postPatch = ''
+    substituteInPlace meson.build --replace-fail "webkit2gtk-4.0" "webkit2gtk-4.1"
+  '';
 
   nativeBuildInputs = [
     meson
@@ -44,9 +48,6 @@ stdenv.mkDerivation (finalAttrs: {
     clutter-gst
   ];
 
-  postPatch = ''
-    substituteInPlace meson.build --replace-fail "webkit2gtk-4.0" "webkit2gtk-4.1"
-  '';
   passthru.tests.version = testers.testVersion { package = finalAttrs.finalPackage; };
 
   meta = {

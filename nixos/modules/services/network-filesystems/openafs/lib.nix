@@ -10,23 +10,31 @@ let
     ;
   cellServDBMemberType = types.submodule {
     options = {
-      ip = mkOption {
-        type = types.str;
-        default = "";
-        example = "1.2.3.4";
-        description = "IP Address of a database server";
-      };
       dnsname = mkOption {
-        type = types.str;
         default = "";
-        example = "afs.example.org";
         description = "DNS full-qualified domain name of a database server";
+        example = "afs.example.org";
+        type = types.str;
+      };
+
+      ip = mkOption {
+        default = "";
+        description = "IP Address of a database server";
+        example = "1.2.3.4";
+        type = types.str;
       };
     };
   };
   cellServDBCellType = types.listOf cellServDBMemberType;
 in
 {
+
+  # CellServDB configuration type
+  cellServDBType =
+    thisCell:
+    types.coercedTo (types.listOf types.anything) (m: { "${thisCell}" = m; }) (
+      types.attrsOf cellServDBCellType
+    );
 
   mkCellServDB = concatMapAttrsStringSep "" (
     cellName: db:
@@ -39,14 +47,7 @@ in
     + "\n"
   );
 
-  # CellServDB configuration type
-  cellServDBType =
-    thisCell:
-    types.coercedTo (types.listOf types.anything) (m: { "${thisCell}" = m; }) (
-      types.attrsOf cellServDBCellType
-    );
-
-  openafsMod = config.services.openafsClient.packages.module;
   openafsBin = config.services.openafsClient.packages.programs;
+  openafsMod = config.services.openafsClient.packages.module;
   openafsSrv = config.services.openafsServer.package;
 }

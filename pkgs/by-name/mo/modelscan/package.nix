@@ -1,13 +1,12 @@
 {
   lib,
-  python3,
   fetchFromGitHub,
+  python3,
 }:
 
 python3.pkgs.buildPythonApplication (finalAttrs: {
   pname = "modelscan";
   version = "0.8.8";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "protectai";
@@ -16,10 +15,16 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     hash = "sha256-mN2X6Zbai7xm8bdr2hi9fwzIsfQtukeGcOIS32G4hA0=";
   };
 
-  pythonRelaxDeps = [
-    "rich"
-    "tomlkit"
-  ];
+  # tensorflow doesn0t support Python 3.12
+  doCheck = false;
+
+  nativeCheckInputs =
+    with python3.pkgs;
+    [
+      dill
+      pytestCheckHook
+    ]
+    ++ lib.concatAttrValues optional-dependencies;
 
   build-system = with python3.pkgs; [
     poetry-core
@@ -38,18 +43,13 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     # tensorflow = [ tensorflow ];
   };
 
-  nativeCheckInputs =
-    with python3.pkgs;
-    [
-      dill
-      pytestCheckHook
-    ]
-    ++ lib.concatAttrValues optional-dependencies;
-
-  # tensorflow doesn0t support Python 3.12
-  doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "modelscan" ];
+
+  pythonRelaxDeps = [
+    "rich"
+    "tomlkit"
+  ];
 
   meta = {
     description = "Protection against Model Serialization Attacks";

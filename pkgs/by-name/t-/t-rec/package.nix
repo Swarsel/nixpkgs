@@ -1,14 +1,14 @@
 {
   lib,
   stdenv,
-  rustPlatform,
   fetchFromGitHub,
-  makeWrapper,
+  ffmpeg,
   imagemagick,
   libiconv,
-  ffmpeg,
-  versionCheckHook,
+  makeWrapper,
   nix-update-script,
+  rustPlatform,
+  versionCheckHook,
 }:
 rustPlatform.buildRustPackage (finalAttrs: {
   pname = "t-rec";
@@ -21,15 +21,16 @@ rustPlatform.buildRustPackage (finalAttrs: {
     sha256 = "sha256-61wK2rtW6+C0SwrM8UJuMPe7WAkPGd6PrKt0KB52v7I=";
   };
 
-  cargoHash = "sha256-RcEWQLH170ycqwQVdbkzX/RrVTTMtc3mCg3/6cy8IH0=";
-
   nativeBuildInputs = [ makeWrapper ];
+
   buildInputs = [
     imagemagick
   ]
   ++ lib.optionals stdenv.hostPlatform.isDarwin [
     libiconv
   ];
+
+  cargoHash = "sha256-RcEWQLH170ycqwQVdbkzX/RrVTTMtc3mCg3/6cy8IH0=";
 
   postInstall = ''
     wrapProgram "$out/bin/t-rec" --prefix PATH : "${
@@ -42,7 +43,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
 
   doInstallCheck = true;
   nativeInstallCheckInputs = [ versionCheckHook ];
-
   passthru.updateScript = nix-update-script { };
 
   meta = {
@@ -50,10 +50,12 @@ rustPlatform.buildRustPackage (finalAttrs: {
     homepage = "https://github.com/sassman/t-rec-rs";
     changelog = "https://github.com/sassman/t-rec-rs/releases/tag/v${finalAttrs.version}";
     license = with lib.licenses; [ gpl3Only ];
+
     maintainers = with lib.maintainers; [
       hoverbear
       matthiasbeyer
     ];
+
     mainProgram = "t-rec";
   };
 })

@@ -19,14 +19,13 @@ in
 
       settings = lib.mkOption {
         default = { };
+
         description = ''
           Configuration for go-autoconfig. See
           <https://github.com/L11R/go-autoconfig/blob/master/config.yml>
           for more information.
         '';
-        type = lib.types.submodule {
-          freeformType = format.type;
-        };
+
         example = lib.literalExpression ''
           {
             service_addr = ":1323";
@@ -41,6 +40,10 @@ in
             };
           }
         '';
+
+        type = lib.types.submodule {
+          freeformType = format.type;
+        };
       };
 
     };
@@ -50,15 +53,17 @@ in
 
     systemd = {
       services.go-autoconfig = {
-        wantedBy = [ "multi-user.target" ];
-        description = "IMAP/SMTP autodiscover server";
         after = [ "network.target" ];
+        description = "IMAP/SMTP autodiscover server";
+
         serviceConfig = {
+          DynamicUser = true;
           ExecStart = "${pkgs.go-autoconfig}/bin/go-autoconfig -config ${configFile}";
           Restart = "on-failure";
           WorkingDirectory = "${pkgs.go-autoconfig}/";
-          DynamicUser = true;
         };
+
+        wantedBy = [ "multi-user.target" ];
       };
     };
 

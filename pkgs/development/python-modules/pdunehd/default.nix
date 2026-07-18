@@ -1,14 +1,13 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   requests,
 }:
 
 buildPythonPackage rec {
   pname = "pdunehd";
   version = "1.3.3";
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "valentinalexeev";
@@ -18,10 +17,9 @@ buildPythonPackage rec {
   };
 
   propagatedBuildInputs = [ requests ];
-
   # no tests implemented
   doCheck = false;
-
+  format = "setuptools";
   pythonImportsCheck = [ "pdunehd" ];
 
   meta = {

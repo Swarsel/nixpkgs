@@ -1,13 +1,13 @@
 {
   lib,
+  stdenv,
+  fetchFromGitHub,
   buildGoModule,
   buildPackages,
-  fetchFromGitHub,
   installShellFiles,
   libisoburn,
   libvirt,
   pkg-config,
-  stdenv,
 }:
 
 buildGoModule (finalAttrs: {
@@ -23,25 +23,17 @@ buildGoModule (finalAttrs: {
 
   patches = [ ./respect-home-env.patch ];
 
-  vendorHash = "sha256-8QP4NziLwEo0M4NW5UgSEMAVgBDxmnE+PLbpyclK9RQ=";
-
-  tags = [
-    "exclude_graphdriver_btrfs"
-    "btrfs_noversion"
-    "exclude_graphdriver_devicemapper"
-    "containers_image_openpgp"
-    "remote"
-  ];
-
   nativeBuildInputs = [
     pkg-config
     installShellFiles
   ];
+
   buildInputs = [
     libvirt
     libisoburn
   ];
 
+  vendorHash = "sha256-8QP4NziLwEo0M4NW5UgSEMAVgBDxmnE+PLbpyclK9RQ=";
   # All tests depend on booting virtual machines, which is infeasible here.
   doCheck = false;
 
@@ -60,17 +52,27 @@ buildGoModule (finalAttrs: {
         --zsh <(${podman-bootc} completion zsh)
     '';
 
+  tags = [
+    "exclude_graphdriver_btrfs"
+    "btrfs_noversion"
+    "exclude_graphdriver_devicemapper"
+    "containers_image_openpgp"
+    "remote"
+  ];
+
   meta = {
     description = "Streamlining podman+bootc interactions";
     homepage = "https://github.com/bootc-dev/podman-bootc";
     changelog = "https://github.com/bootc-dev/podman-bootc/releases/tag/${finalAttrs.src.tag}";
-    maintainers = with lib.maintainers; [ evan-goode ];
     license = lib.licenses.asl20;
+    maintainers = with lib.maintainers; [ evan-goode ];
+
     platforms = [
       "aarch64-linux"
       "aarch64-darwin"
       "x86_64-linux"
     ];
+
     mainProgram = "podman-bootc";
   };
 })

@@ -9,7 +9,6 @@
 buildPythonPackage rec {
   pname = "sphinx-comments";
   version = "0.0.3";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
@@ -17,9 +16,8 @@ buildPythonPackage rec {
   };
 
   nativeBuildInputs = [ setuptools ];
-
   propagatedBuildInputs = [ sphinx ];
-
+  pyproject = true;
   pythonImportsCheck = [ "sphinx_comments" ];
 
   meta = {

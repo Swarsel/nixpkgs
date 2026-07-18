@@ -1,23 +1,23 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitLab,
-  meson,
-  ninja,
-  pkg-config,
-  wrapGAppsHook3,
   dbus,
   dbus-glib,
-  gst_all_1,
+  gitUpdater,
   glib,
+  gst_all_1,
   gtk3,
   libnotify,
   libx11,
   libxfce4ui,
   libxfce4util,
+  meson,
+  ninja,
+  pkg-config,
   taglib,
+  wrapGAppsHook3,
   xfconf,
-  gitUpdater,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -25,11 +25,11 @@ stdenv.mkDerivation (finalAttrs: {
   version = "4.20.0";
 
   src = fetchFromGitLab {
-    domain = "gitlab.xfce.org";
     owner = "apps";
     repo = "parole";
     tag = "parole-${finalAttrs.version}";
     hash = "sha256-I1wZsuZ/NM5bH6QTJpwd5WL9cIGNtkAxA2j5vhhdaTE=";
+    domain = "gitlab.xfce.org";
   };
 
   strictDeps = true;
@@ -66,8 +66,8 @@ stdenv.mkDerivation (finalAttrs: {
     description = "Modern simple media player";
     homepage = "https://gitlab.xfce.org/apps/parole";
     license = lib.licenses.gpl2Plus;
+    platforms = lib.platforms.linux;
     mainProgram = "parole";
     teams = [ lib.teams.xfce ];
-    platforms = lib.platforms.linux;
   };
 })

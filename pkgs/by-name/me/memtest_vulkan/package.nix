@@ -1,8 +1,8 @@
 {
   lib,
   stdenv,
-  rustPlatform,
   fetchFromGitHub,
+  rustPlatform,
   vulkan-loader,
 }:
 
@@ -33,6 +33,7 @@ rustPlatform.buildRustPackage (finalAttrs: {
     license = lib.licenses.zlib;
     maintainers = with lib.maintainers; [ atemu ];
     mainProgram = "memtest_vulkan";
+
     broken =
       stdenv.system == "aarch64-linux" # error: linker `aarch64-linux-gnu-gcc` not found
       || stdenv.hostPlatform.isDarwin; # Can't find Vulkan; might work though?

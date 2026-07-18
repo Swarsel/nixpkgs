@@ -1,30 +1,30 @@
 {
+  lib,
+  stdenv,
+  fetchurl,
   autoPatchelfHook,
   bash,
   bbe,
   coreutils,
   cups,
   dbus,
-  fetchurl,
   fuse,
   gawk,
   glib,
-  lib,
+  libx11,
+  libxcomposite,
+  libxext,
+  libxi,
+  libxinerama,
+  libxrandr,
   makeWrapper,
   netcat,
   p7zip,
   perl,
-  stdenv,
   timetrap,
   undmg,
   util-linux,
   wayland,
-  libxrandr,
-  libxi,
-  libxinerama,
-  libxext,
-  libxcomposite,
-  libx11,
 }:
 
 let
@@ -54,11 +54,6 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-Qkul+hZh0J7g8+D+T7RLmfrtK2i90+wlsrfm5tNaYug=";
   };
 
-  hardeningDisable = [
-    "pic"
-    "format"
-  ];
-
   nativeBuildInputs = [
     autoPatchelfHook
     bbe
@@ -78,23 +73,6 @@ stdenv.mkDerivation (finalAttrs: {
     libxi
     libxinerama
   ];
-
-  runtimeDependencies = [
-    dbus
-    glib
-    libxrandr
-  ];
-
-  unpackPhase = ''
-    runHook preUnpack
-
-    undmg $src
-    export sourceRoot=prl-tools-build
-    7z x "Parallels Desktop.app/Contents/Resources/Tools/prl-tools-lin${lib.optionalString stdenv.hostPlatform.isAarch64 "-arm"}.iso" -o$sourceRoot
-    runHook postUnpack
-  '';
-
-  dontBuild = true;
 
   installPhase = ''
     runHook preInstall
@@ -162,16 +140,40 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  dontBuild = true;
+
+  hardeningDisable = [
+    "pic"
+    "format"
+  ];
+
+  runtimeDependencies = [
+    dbus
+    glib
+    libxrandr
+  ];
+
+  unpackPhase = ''
+    runHook preUnpack
+
+    undmg $src
+    export sourceRoot=prl-tools-build
+    7z x "Parallels Desktop.app/Contents/Resources/Tools/prl-tools-lin${lib.optionalString stdenv.hostPlatform.isAarch64 "-arm"}.iso" -o$sourceRoot
+    runHook postUnpack
+  '';
+
   passthru.updateScript = ./update.sh;
 
   meta = {
     description = "Parallels Tools for Linux guests";
     homepage = "https://parallels.com";
     license = lib.licenses.unfree;
+
     maintainers = with lib.maintainers; [
       wegank
       codgician
     ];
+
     platforms = lib.platforms.linux;
   };
 })

@@ -1,8 +1,8 @@
 {
-  stdenv,
   lib,
-  buildPythonPackage,
+  stdenv,
   fetchFromGitHub,
+  buildPythonPackage,
   matplotlib,
   numpy,
   pandas,
@@ -17,7 +17,6 @@
 buildPythonPackage rec {
   pname = "pytest-regressions";
   version = "2.9.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "ESSS";
@@ -26,29 +25,7 @@ buildPythonPackage rec {
     hash = "sha256-pqlRfpi5Z9b6zrvU6M1sNRz5ltZLAFiJITFvex7YqcE=";
   };
 
-  build-system = [ setuptools-scm ];
-
   buildInputs = [ pytest ];
-
-  dependencies = [
-    pytest-datadir
-    pyyaml
-  ];
-
-  optional-dependencies = {
-    dataframe = [
-      pandas
-      numpy
-    ];
-    image = [
-      numpy
-      pillow
-    ];
-    num = [
-      numpy
-      pandas
-    ];
-  };
 
   nativeCheckInputs = [
     matplotlib
@@ -57,8 +34,11 @@ buildPythonPackage rec {
   ]
   ++ lib.concatAttrValues optional-dependencies;
 
-  pytestFlags = [
-    "-Wignore::DeprecationWarning"
+  build-system = [ setuptools-scm ];
+
+  dependencies = [
+    pytest-datadir
+    pyyaml
   ];
 
   disabledTests = [
@@ -76,21 +56,46 @@ buildPythonPackage rec {
     "test_common_case" # not listed in the issue, but fails after the above is skipped
   ];
 
+  optional-dependencies = {
+    dataframe = [
+      pandas
+      numpy
+    ];
+
+    image = [
+      numpy
+      pillow
+    ];
+
+    num = [
+      numpy
+      pandas
+    ];
+  };
+
+  pyproject = true;
+
+  pytestFlags = [
+    "-Wignore::DeprecationWarning"
+  ];
+
   pythonImportsCheck = [
     "pytest_regressions"
     "pytest_regressions.plugin"
   ];
 
   meta = {
-    changelog = "https://github.com/ESSS/pytest-regressions/blob/${src.tag}/CHANGELOG.rst";
     description = "Pytest fixtures to write regression tests";
+
     longDescription = ''
       pytest-regressions makes it simple to test general data, images,
       files, and numeric tables by saving expected data in a data
       directory (courtesy of pytest-datadir) that can be used to verify
       that future runs produce the same data.
     '';
+
     homepage = "https://github.com/ESSS/pytest-regressions";
+    changelog = "https://github.com/ESSS/pytest-regressions/blob/${src.tag}/CHANGELOG.rst";
     license = lib.licenses.mit;
     maintainers = [ ];
   };

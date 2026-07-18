@@ -1,15 +1,14 @@
 {
   lib,
-  python3Packages,
   fetchFromGitHub,
   fetchpatch,
+  python3Packages,
   extras ? [ "all" ],
 }:
 
 python3Packages.buildPythonApplication (finalAttrs: {
   pname = "browsr";
   version = "1.22.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "juftin";
@@ -21,10 +20,16 @@ python3Packages.buildPythonApplication (finalAttrs: {
   patches = [
     # https://github.com/juftin/browsr/pull/55
     (fetchpatch {
+      hash = "sha256-vAJ+M6Eg7N2NV7Cb2DWPYqLJIeq/DY1COECEQOnkpXE=";
       name = "textual-6-compat.patch";
       url = "https://github.com/juftin/browsr/commit/ab958ac982e14e836a0e44080a53c920ad50b256.patch";
-      hash = "sha256-vAJ+M6Eg7N2NV7Cb2DWPYqLJIeq/DY1COECEQOnkpXE=";
     })
+  ];
+
+  nativeCheckInputs = with python3Packages; [
+    pytest-cov-stub
+    pytest-textual-snapshot
+    pytestCheckHook
   ];
 
   build-system = with python3Packages; [
@@ -48,23 +53,33 @@ python3Packages.buildPythonApplication (finalAttrs: {
     ]
     ++ lib.flatten (lib.attrVals extras finalAttrs.passthru.optional-dependencies);
 
+  disabledTests = [
+    # Tests require internet access
+    "test_github_screenshot"
+    "test_github_screenshot_license"
+    "test_textual_app_context_path_github"
+    "test_mkdocs_screenshot"
+  ];
+
   optional-dependencies = with python3Packages; {
     all = [
       pyarrow
       textual-universal-directorytree.optional-dependencies.remote
     ];
+
     parquet = [
       pyarrow
     ];
+
     remote = [
       textual-universal-directorytree.optional-dependencies.remote
     ];
   };
 
-  nativeCheckInputs = with python3Packages; [
-    pytest-cov-stub
-    pytest-textual-snapshot
-    pytestCheckHook
+  pyproject = true;
+
+  pythonImportsCheck = [
+    "browsr"
   ];
 
   pythonRelaxDeps = [
@@ -80,24 +95,12 @@ python3Packages.buildPythonApplication (finalAttrs: {
     "universal-pathlib"
   ];
 
-  pythonImportsCheck = [
-    "browsr"
-  ];
-
-  disabledTests = [
-    # Tests require internet access
-    "test_github_screenshot"
-    "test_github_screenshot_license"
-    "test_textual_app_context_path_github"
-    "test_mkdocs_screenshot"
-  ];
-
   meta = {
     description = "File explorer in your terminal";
-    mainProgram = "browsr";
     homepage = "https://juftin.com/browsr";
     changelog = "https://github.com/juftin/browsr/releases/tag/${finalAttrs.src.tag}";
     license = lib.licenses.mit;
     maintainers = [ ];
+    mainProgram = "browsr";
   };
 })

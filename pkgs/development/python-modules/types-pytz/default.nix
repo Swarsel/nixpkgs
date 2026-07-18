@@ -8,19 +8,17 @@
 buildPythonPackage (finalAttrs: {
   pname = "types-pytz";
   version = "2026.1.1.20260304";
-  pyproject = true;
 
   src = fetchPypi {
-    pname = "types_pytz";
     inherit (finalAttrs) version;
     hash = "sha256-DDVC2OmwFgtCQjNEDFK4PW9YyuS4UzPVTk+WHPAT4Rc=";
+    pname = "types_pytz";
   };
-
-  build-system = [ setuptools ];
 
   # Modules doesn't have tests
   doCheck = false;
-
+  build-system = [ setuptools ];
+  pyproject = true;
   pythonImportsCheck = [ "pytz-stubs" ];
 
   meta = {

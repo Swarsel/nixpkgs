@@ -13,12 +13,13 @@
 buildPythonPackage rec {
   pname = "nitransforms";
   version = "25.1.0";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
     hash = "sha256-Wcs0iV/ENCLhsjH6hTDmxoAsNAN9qzd9n+wWbiA04aU=";
   };
+
+  doCheck = false;
 
   build-system = [
     setuptools
@@ -32,7 +33,8 @@ buildPythonPackage rec {
     scipy
   ];
 
-  doCheck = false;
+  pyproject = true;
+
   # relies on data repo (https://github.com/nipreps-data/nitransforms-tests);
   # probably too heavy
   pythonImportsCheck = [
@@ -47,11 +49,11 @@ buildPythonPackage rec {
   ];
 
   meta = {
-    homepage = "https://nitransforms.readthedocs.io";
     description = "Geometric transformations for images and surfaces";
-    mainProgram = "nb-transform";
+    homepage = "https://nitransforms.readthedocs.io";
     changelog = "https://github.com/nipy/nitransforms/releases/tag/${version}";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ bcdarwin ];
+    mainProgram = "nb-transform";
   };
 }

@@ -1,12 +1,12 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
-  pkg-config,
   libgit2,
-  oniguruma,
-  zlib,
   nix-update-script,
+  oniguruma,
+  pkg-config,
+  rustPlatform,
+  zlib,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -20,8 +20,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-5AVKBew+HShWFZwm4xRmRSL76N2c84Yi97jgcqsslxM=";
   };
 
-  cargoHash = "sha256-Z+Y6h9QYszpXFmahU5qXNHvuC4uJ4wJiCd39wndxw5c=";
-
   nativeBuildInputs = [ pkg-config ];
 
   buildInputs = [
@@ -29,6 +27,8 @@ rustPlatform.buildRustPackage (finalAttrs: {
     oniguruma
     zlib
   ];
+
+  cargoHash = "sha256-Z+Y6h9QYszpXFmahU5qXNHvuC4uJ4wJiCd39wndxw5c=";
 
   env = {
     RUSTONIG_SYSTEM_LIBONIG = true;

@@ -1,17 +1,17 @@
 {
   lib,
   fetchFromGitHub,
-  makeWrapper,
-  rustPlatform,
-  marked-man,
   coreutils,
-  vulkan-loader,
-  wayland,
+  dbus,
+  makeWrapper,
+  marked-man,
+  nix-update-script,
   pkg-config,
+  rustPlatform,
   udev,
   v4l-utils,
-  dbus,
-  nix-update-script,
+  vulkan-loader,
+  wayland,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -34,8 +34,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
       'ExecStart=/usr/bin/wluma' 'ExecStart=${placeholder "out"}/bin/wluma'
   '';
 
-  cargoHash = "sha256-qL+OnnPlQoGj7gvpYegjwN42skKUsbg+FV3cnTBwNpo=";
-
   nativeBuildInputs = [
     makeWrapper
     pkg-config
@@ -50,6 +48,8 @@ rustPlatform.buildRustPackage (finalAttrs: {
     dbus
   ];
 
+  cargoHash = "sha256-qL+OnnPlQoGj7gvpYegjwN42skKUsbg+FV3cnTBwNpo=";
+
   postInstall = ''
     wrapProgram $out/bin/wluma \
       --prefix LD_LIBRARY_PATH : "${lib.makeLibraryPath [ wayland ]}"
@@ -62,12 +62,14 @@ rustPlatform.buildRustPackage (finalAttrs: {
     homepage = "https://github.com/maximbaz/wluma";
     changelog = "https://github.com/maximbaz/wluma/releases/tag/${finalAttrs.version}";
     license = lib.licenses.isc;
+
     maintainers = with lib.maintainers; [
       yshym
       jmc-figueira
       atemu
       Rishik-Y
     ];
+
     platforms = lib.platforms.linux;
     mainProgram = "wluma";
   };

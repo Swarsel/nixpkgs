@@ -1,15 +1,14 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
+  buildPythonPackage,
   pytestCheckHook,
+  setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "json-api-doc";
   version = "0.15.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "julien-duponchelle";
@@ -23,10 +22,9 @@ buildPythonPackage rec {
       --replace-fail "'pytest-runner'," ""
   '';
 
-  build-system = [ setuptools ];
-
   nativeCheckInputs = [ pytestCheckHook ];
-
+  build-system = [ setuptools ];
+  pyproject = true;
   pythonImportsCheck = [ "json_api_doc" ];
 
   meta = {

@@ -1,6 +1,6 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchurl,
   ruby,
 }:
@@ -11,13 +11,12 @@ in
 stdenv.mkDerivation (finalAttrs: {
   pname = "snmpcheck";
   version = "1.9";
+
   src = fetchurl {
     url = "https://www.nothink.org/codes/snmpcheck/snmpcheck-${finalAttrs.version}.rb";
     sha256 = "sha256-9xkLqbgxU1uykx+M9QsbPAH8OI/Cqn9uw6ALe23Lbq0=";
     executable = true;
   };
-
-  dontUnpack = true;
 
   buildInputs = [ rubyEnv.wrappedRuby ];
 
@@ -25,6 +24,8 @@ stdenv.mkDerivation (finalAttrs: {
     mkdir -p $out/bin
     cp $src $out/bin/snmp-check
   '';
+
+  dontUnpack = true;
 
   meta = {
     description = "SNMP enumerator";

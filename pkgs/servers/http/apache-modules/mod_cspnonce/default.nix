@@ -1,6 +1,6 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
   apacheHttpd,
 }:
@@ -33,7 +33,7 @@ stdenv.mkDerivation rec {
     description = "Apache2 module that makes it dead simple to add nonce values to the CSP";
     homepage = "https://github.com/wyattoday/mod_cspnonce";
     license = lib.licenses.asl20;
-    platforms = lib.platforms.unix;
     maintainers = with lib.maintainers; [ dasj19 ];
+    platforms = lib.platforms.unix;
   };
 }

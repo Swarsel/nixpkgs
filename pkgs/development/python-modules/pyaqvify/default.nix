@@ -1,15 +1,14 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
   aiohttp,
+  buildPythonPackage,
+  setuptools,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "pyaqvify";
   version = "0.0.12";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "astrandb";
@@ -18,13 +17,11 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-ZSSr7cWDvPxVq8YIqCPpE+nxrk/UHuNGZ/muyiGyp/c=";
   };
 
-  build-system = [ setuptools ];
-
-  dependencies = [ aiohttp ];
-
-  pythonImportsCheck = [ "pyaqvify" ];
-
   doCheck = false; # no tests
+  build-system = [ setuptools ];
+  dependencies = [ aiohttp ];
+  pyproject = true;
+  pythonImportsCheck = [ "pyaqvify" ];
 
   meta = {
     description = "Python async library for Aqvify integration with Home Assistant";

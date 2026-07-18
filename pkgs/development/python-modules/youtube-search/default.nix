@@ -8,19 +8,17 @@
 buildPythonPackage rec {
   pname = "youtube-search";
   version = "2.2.0";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit version;
-    pname = "youtube_search";
     hash = "sha256-U5inzWXZt1qLrCfvaJ7ARKurPL+h8g0Z2wJ3ZZrHDZg=";
+    pname = "youtube_search";
   };
 
   propagatedBuildInputs = [ requests ];
-
   # Tests require network connection
   doCheck = false;
-
+  format = "setuptools";
   pythonImportsCheck = [ "youtube_search" ];
 
   meta = {

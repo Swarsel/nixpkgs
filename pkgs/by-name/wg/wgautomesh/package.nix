@@ -8,11 +8,11 @@ rustPlatform.buildRustPackage {
   version = "unstable-20240524";
 
   src = fetchFromGitea {
-    domain = "git.deuxfleurs.fr";
     owner = "Deuxfleurs";
     repo = "wgautomesh";
     rev = "59d315b853d4251dfdfd8229152bc151655da438";
     hash = "sha256-1xphnyuRMZEeq907nyhAW7iERYJLS1kxH0wRBsfYL40=";
+    domain = "git.deuxfleurs.fr";
   };
 
   cargoHash = "sha256-Lshj8L880gGLi5xY1H/7twrL3YHolqloOfXeckGw/VE=";

@@ -1,16 +1,15 @@
 {
   lib,
   fetchFromGitHub,
-  python3Packages,
   prometheus-alertmanager,
-  runCommand,
   prometheus-xmpp-alerts,
+  python3Packages,
+  runCommand,
 }:
 
 python3Packages.buildPythonApplication rec {
   pname = "prometheus-xmpp-alerts";
   version = "0.6.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "jelmer";
@@ -43,6 +42,7 @@ python3Packages.buildPythonApplication rec {
     pytz
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "prometheus_xmpp" ];
 
   passthru.tests = {
@@ -55,9 +55,9 @@ python3Packages.buildPythonApplication rec {
 
   meta = {
     description = "XMPP Web hook for Prometheus";
-    mainProgram = "prometheus-xmpp-alerts";
     homepage = "https://github.com/jelmer/prometheus-xmpp-alerts";
-    maintainers = with lib.maintainers; [ fpletz ];
     license = with lib.licenses; [ asl20 ];
+    maintainers = with lib.maintainers; [ fpletz ];
+    mainProgram = "prometheus-xmpp-alerts";
   };
 }

@@ -1,16 +1,16 @@
 {
   lib,
-  buildDunePackage,
   fetchFromGitHub,
-  ppx_expect,
+  alcotest,
   astring,
+  buildDunePackage,
   curly,
   fmt,
   logs,
+  ppx_expect,
   ppx_yojson_conv,
   ppx_yojson_conv_lib,
   yojson,
-  alcotest,
 }:
 
 buildDunePackage (finalAttrs: {
@@ -24,8 +24,6 @@ buildDunePackage (finalAttrs: {
     hash = "sha256-QU/LPIxcem5nFvSxcNApOuBu6UHqLHIXVSOJ2UT0eKA=";
   };
 
-  minimalOCamlVersion = "4.08";
-
   buildInputs = [ ppx_yojson_conv ];
 
   propagatedBuildInputs = [
@@ -37,18 +35,20 @@ buildDunePackage (finalAttrs: {
     yojson
   ];
 
+  doCheck = true;
+
   checkInputs = [
     ppx_expect
     alcotest
   ];
 
-  doCheck = true;
+  minimalOCamlVersion = "4.08";
 
   meta = {
-    homepage = "https://github.com/tarides/get-activity";
     description = "Collect activity and format as markdown for a journal (lib)";
-    license = lib.licenses.mit;
+    homepage = "https://github.com/tarides/get-activity";
     changelog = "https://github.com/tarides/get-activity/releases/tag/${finalAttrs.version}";
+    license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ zazedd ];
   };
 })

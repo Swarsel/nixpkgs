@@ -25,7 +25,7 @@ stdenv.mkDerivation (finalAttrs: {
     description = "Gruvbox theme for GTK based desktop environments";
     homepage = "https://github.com/jmattheis/gruvbox-dark-gtk";
     license = lib.licenses.gpl3Only;
-    platforms = lib.platforms.unix;
     maintainers = [ lib.maintainers.nomisiv ];
+    platforms = lib.platforms.unix;
   };
 })

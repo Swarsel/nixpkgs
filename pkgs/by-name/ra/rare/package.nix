@@ -1,15 +1,14 @@
 {
   lib,
   fetchFromGitHub,
-  qt5,
   legendary-gl,
   python3Packages,
+  qt5,
 }:
 
 python3Packages.buildPythonApplication (finalAttrs: {
   pname = "rare";
   version = "1.10.11";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "RareDevs";
@@ -26,6 +25,18 @@ python3Packages.buildPythonApplication (finalAttrs: {
     legendary-gl
   ];
 
+  # Project has no tests
+  doCheck = false;
+
+  postInstall = ''
+    install -Dm644 misc/rare.desktop -t $out/share/applications/
+    install -Dm644 $out/${python3Packages.python.sitePackages}/rare/resources/images/Rare.png $out/share/icons/rare.png
+  '';
+
+  preFixup = ''
+    makeWrapperArgs+=("''${qtWrapperArgs[@]}")
+  '';
+
   build-system = with python3Packages; [
     setuptools
   ];
@@ -40,24 +51,13 @@ python3Packages.buildPythonApplication (finalAttrs: {
   ];
 
   dontWrapQtApps = true;
-
-  postInstall = ''
-    install -Dm644 misc/rare.desktop -t $out/share/applications/
-    install -Dm644 $out/${python3Packages.python.sitePackages}/rare/resources/images/Rare.png $out/share/icons/rare.png
-  '';
-
-  preFixup = ''
-    makeWrapperArgs+=("''${qtWrapperArgs[@]}")
-  '';
-
-  # Project has no tests
-  doCheck = false;
+  pyproject = true;
 
   meta = {
     description = "GUI for Legendary, an Epic Games Launcher open source alternative";
     homepage = "https://github.com/RareDevs/Rare";
-    maintainers = [ ];
     license = lib.licenses.gpl3Only;
+    maintainers = [ ];
     platforms = lib.platforms.linux;
     mainProgram = "rare";
   };

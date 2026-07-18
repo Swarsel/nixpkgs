@@ -3,18 +3,18 @@
   stdenv,
   fetchFromGitHub,
   autoreconfHook,
-  intltool,
-  pkg-config,
-  gtk3,
-  vte,
-  wrapGAppsHook3,
-  libxslt,
   docbook_xml_dtd_412,
   docbook_xsl,
-  libxml2,
   findXMLCatalogs,
+  gtk3,
+  intltool,
+  libxml2,
+  libxslt,
   nixosTests,
   pcre2,
+  pkg-config,
+  vte,
+  wrapGAppsHook3,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -28,9 +28,8 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-oDWh0U4QWJ84hTfq1oaAmDJM+IY0eJqOUey0qBgZN5U=";
   };
 
-  configureFlags = [
-    "--enable-man"
-    "--enable-gtk3"
+  patches = [
+    ./respect-xml-catalog-files-var.patch
   ];
 
   nativeBuildInputs = [
@@ -51,21 +50,23 @@ stdenv.mkDerivation (finalAttrs: {
     pcre2
   ];
 
-  patches = [
-    ./respect-xml-catalog-files-var.patch
+  configureFlags = [
+    "--enable-man"
+    "--enable-gtk3"
   ];
 
   doCheck = true;
-
   passthru.tests.test = nixosTests.terminal-emulators.lxterminal;
 
   meta = {
     description = "Standard terminal emulator of LXDE";
+
     longDescription = ''
       LXTerminal is the standard terminal emulator of LXDE. The terminal is a
       desktop-independent VTE-based terminal emulator for LXDE without any
       unnecessary dependencies.
     '';
+
     homepage = "https://www.lxde.org/";
     license = lib.licenses.gpl2Only;
     maintainers = [ lib.maintainers.pbsds ];

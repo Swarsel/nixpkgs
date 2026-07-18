@@ -1,9 +1,9 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
-  gitMinimal,
+  buildGoModule,
   ghq,
+  gitMinimal,
 }:
 
 buildGoModule rec {
@@ -17,22 +17,15 @@ buildGoModule rec {
     hash = "sha256-NhbGHTYucfqCloVirkaDlAtQfhWP2cw4I+t/ysvvkR0=";
   };
 
-  vendorHash = "sha256-kGPg6NyhVfVOn0BFQY83/VYdpUjOqaf5I4bev0uhvUw=";
-
-  doCheck = false;
-
   nativeBuildInputs = [
     gitMinimal
     ghq
   ];
 
-  ldflags = [
-    "-s"
-    "-w"
-    "-X=main.Version=${version}"
-  ];
-
+  vendorHash = "sha256-kGPg6NyhVfVOn0BFQY83/VYdpUjOqaf5I4bev0uhvUw=";
+  doCheck = false;
   doInstallCheck = true;
+
   installCheckPhase = ''
     if [[ "$("$out/bin/${pname}" --version)" == "${pname} version ${version}" ]]; then
       export HOME=$(mktemp -d)
@@ -50,11 +43,17 @@ buildGoModule rec {
     fi
   '';
 
+  ldflags = [
+    "-s"
+    "-w"
+    "-X=main.Version=${version}"
+  ];
+
   meta = {
     description = "Supercharge your ghq workflow";
     homepage = "https://github.com/uetchy/gst";
-    maintainers = with lib.maintainers; [ _0x4A6F ];
     license = lib.licenses.asl20;
+    maintainers = with lib.maintainers; [ _0x4A6F ];
     mainProgram = "gst";
   };
 }

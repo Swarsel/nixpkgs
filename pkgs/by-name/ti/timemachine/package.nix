@@ -4,15 +4,16 @@
   fetchFromGitHub,
   autoconf,
   automake,
-  pkg-config,
   gtk2,
   libjack2,
   libsndfile,
+  pkg-config,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
   pname = "timemachine";
   version = "0.3.4";
+
   src = fetchFromGitHub {
     owner = "swh";
     repo = "timemachine";
@@ -25,22 +26,22 @@ stdenv.mkDerivation (finalAttrs: {
     autoconf
     automake
   ];
+
   buildInputs = [
     gtk2
     libjack2
     libsndfile
   ];
 
-  preConfigure = "./autogen.sh";
-
   env.NIX_LDFLAGS = "-lm";
+  preConfigure = "./autogen.sh";
 
   meta = {
     description = "JACK audio recorder";
     homepage = "http://plugin.org.uk/timemachine/";
     license = lib.licenses.lgpl2;
-    platforms = lib.platforms.linux;
     maintainers = [ lib.maintainers.nico202 ];
+    platforms = lib.platforms.linux;
     mainProgram = "timemachine";
   };
 })

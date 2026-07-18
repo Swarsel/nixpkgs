@@ -2,34 +2,30 @@
   lib,
   stdenv,
   fetchurl,
+  alsa-lib,
+  autoPatchelfHook,
+  cups,
+  dbus,
+  dpkg,
+  fontconfig,
   freetype,
   glib,
+  gst_all_1,
   libGL,
   libGLU,
+  libproxy,
+  libsForQt5,
   libsm,
-
+  libx11,
+  libxcb,
   libxcomposite,
   libxi,
-  libxrender,
-  libx11,
-
-  libxcb,
-  sqlite,
-  zlib,
-  fontconfig,
-  dpkg,
-  libproxy,
   libxml2_13,
-  gst_all_1,
-  dbus,
+  libxrender,
   makeWrapper,
-
-  cups,
-  alsa-lib,
-
+  sqlite,
   xkeyboard-config,
-  autoPatchelfHook,
-  libsForQt5,
+  zlib,
 }:
 let
   arch =
@@ -53,7 +49,7 @@ stdenv.mkDerivation rec {
     autoPatchelfHook
     libsForQt5.wrapQtAppsHook
   ];
-  propagatedBuildInputs = [ xkeyboard-config ];
+
   buildInputs = [
     dbus
     cups
@@ -77,19 +73,7 @@ stdenv.mkDerivation rec {
     alsa-lib
   ];
 
-  doInstallCheck = true;
-
-  dontBuild = true;
-
-  unpackPhase = ''
-    runHook preUnpack
-
-    # deb file contains a setuid binary, so 'dpkg -x' doesn't work here
-    mkdir deb
-    dpkg --fsys-tarfile $src | tar --extract -C deb
-
-    runHook postUnpack
-  '';
+  propagatedBuildInputs = [ xkeyboard-config ];
 
   installPhase = ''
     runHook preInstall
@@ -118,6 +102,8 @@ stdenv.mkDerivation rec {
     runHook postInstall
   '';
 
+  doInstallCheck = true;
+
   installCheckPhase = ''
     $out/bin/gpsbabel -V > /dev/null
   '';
@@ -129,15 +115,30 @@ stdenv.mkDerivation rec {
       --set QT_XKB_CONFIG_ROOT "${xkeyboard-config}/share/X11/xkb"
   '';
 
+  dontBuild = true;
+
+  unpackPhase = ''
+    runHook preUnpack
+
+    # deb file contains a setuid binary, so 'dpkg -x' doesn't work here
+    mkdir deb
+    dpkg --fsys-tarfile $src | tar --extract -C deb
+
+    runHook postUnpack
+  '';
+
   meta = {
     description = "World sphere viewer";
     homepage = "https://www.google.com/earth/";
-    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
     license = lib.licenses.unfree;
+    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
+
     maintainers = with lib.maintainers; [
       xddxdd
     ];
+
     platforms = lib.platforms.linux;
+
     knownVulnerabilities = [
       "Includes vulnerable versions of bundled libraries: openssl, ffmpeg, gdal, and proj."
     ];

@@ -13,8 +13,8 @@ let
   };
 
   isoents = fetchurl {
-    url = "https://web.archive.org/web/20250220122223/http://xml.coverpages.org/ISOEnts.zip";
     sha256 = "1clrkaqnvc1ja4lj8blr0rdlphngkcda3snm7b9jzvcn76d3br6w";
+    url = "https://web.archive.org/web/20250220122223/http://xml.coverpages.org/ISOEnts.zip";
   };
 
 in
@@ -22,9 +22,6 @@ in
 stdenv.mkDerivation {
   pname = "docbook-sgml";
   version = "4.1";
-
-  dontUnpack = true;
-
   nativeBuildInputs = [ unzip ];
 
   installPhase = ''
@@ -35,6 +32,8 @@ stdenv.mkDerivation {
     unzip ${isoents}
     sed -e "s/iso-/ISO/" -e "s/.gml//" -i docbook.cat
   '';
+
+  dontUnpack = true;
 
   meta = {
     platforms = lib.platforms.unix;

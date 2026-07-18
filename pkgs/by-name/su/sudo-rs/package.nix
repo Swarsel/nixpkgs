@@ -4,10 +4,10 @@
   installShellFiles,
   nix-update-script,
   nixosTests,
-  versionCheckHook,
   pam,
   rustPlatform,
   tzdata,
+  versionCheckHook,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -21,28 +21,15 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-ym+Kc/J6ssE0j67aRguig6EjBT6W24WmGTounVJBhX0=";
   };
 
-  cargoHash = "sha256-wuvMo17kh3T4tFnbh557QPDyw997YKXssYspUsHFTU0=";
-
-  nativeBuildInputs = [ installShellFiles ];
-
-  buildInputs = [ pam ];
-
   postPatch = ''
     substituteInPlace src/system/audit.rs \
       --replace-fail '/usr/share/zoneinfo' '/etc/zoneinfo' \
       --replace-fail '/usr/share/lib/zoneinfo' '${tzdata}/share/zoneinfo'
   '';
 
-  postInstall = ''
-    for man_fn in docs/man/*.man; do
-      man_fn_fixed="$(echo "$man_fn" | sed -e 's,\.man$,,')"
-      ln -vs $(basename "$man_fn") "$man_fn_fixed"
-      installManPage "$man_fn_fixed"
-    done
-
-    ln -s $out/share/man/man8/{sudo,sudoedit}.8.gz
-    ln -s $out/bin/{sudo,sudoedit}
-  '';
+  nativeBuildInputs = [ installShellFiles ];
+  buildInputs = [ pam ];
+  cargoHash = "sha256-wuvMo17kh3T4tFnbh557QPDyw997YKXssYspUsHFTU0=";
 
   checkFlags = map (t: "--skip=${t}") [
     # Those tests make path assumptions
@@ -75,36 +62,50 @@ rustPlatform.buildRustPackage (finalAttrs: {
     "su::context::tests::invalid_shell"
   ];
 
-  nativeInstallCheckInputs = [ versionCheckHook ];
+  postInstall = ''
+    for man_fn in docs/man/*.man; do
+      man_fn_fixed="$(echo "$man_fn" | sed -e 's,\.man$,,')"
+      ln -vs $(basename "$man_fn") "$man_fn_fixed"
+      installManPage "$man_fn_fixed"
+    done
+
+    ln -s $out/share/man/man8/{sudo,sudoedit}.8.gz
+    ln -s $out/bin/{sudo,sudoedit}
+  '';
 
   doInstallCheck = true;
-  # sudo binary fails because it checks if it is suid 0
-  versionCheckProgram = "${placeholder "out"}/bin/su";
+  nativeInstallCheckInputs = [ versionCheckHook ];
 
   postInstallCheck = ''
     [ -e ${placeholder "out"}/share/man/man8/sudo.8.gz ] || \
       ( echo "Error: Some manpages might be missing!"; exit 1 )
   '';
 
+  # sudo binary fails because it checks if it is suid 0
+  versionCheckProgram = "${placeholder "out"}/bin/su";
+
   passthru = {
-    updateScript = nix-update-script { };
     tests = nixosTests.sudo-rs;
+    updateScript = nix-update-script { };
   };
 
   meta = {
     description = "Memory safe implementation of sudo and su";
     homepage = "https://github.com/trifectatechfoundation/sudo-rs";
     changelog = "${finalAttrs.meta.homepage}/blob/v${finalAttrs.version}/CHANGELOG.md";
+
     license = with lib.licenses; [
       asl20
       mit
     ];
+
     maintainers = with lib.maintainers; [
       adamcstephens
       nicoo
       rvdp
     ];
-    mainProgram = "sudo";
+
     platforms = lib.platforms.linux;
+    mainProgram = "sudo";
   };
 })

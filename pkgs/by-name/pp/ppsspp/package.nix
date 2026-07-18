@@ -1,25 +1,24 @@
 {
   lib,
+  stdenv,
+  fetchFromGitHub,
   SDL2,
   cmake,
   copyDesktopItems,
-  fetchFromGitHub,
   ffmpeg_6,
   glew,
   libffi,
   libsForQt5,
-  libzip,
   libx11,
+  libzip,
   makeDesktopItem,
   makeWrapper,
   pkg-config,
   python3,
   snappy,
-  stdenv,
   vulkan-loader,
   wayland,
   zlib,
-
   enableQt ? false,
   enableVulkan ? true,
   forceWayland ? false,
@@ -40,14 +39,15 @@ stdenv.mkDerivation (finalAttrs: {
     + lib.optionalString enableQt "-qt"
     + lib.optionalString (!enableQt) "-sdl"
     + lib.optionalString forceWayland "-wayland";
+
   version = "1.20.4";
 
   src = fetchFromGitHub {
     owner = "hrydgard";
     repo = "ppsspp";
     rev = "v${finalAttrs.version}";
-    fetchSubmodules = true;
     hash = "sha256-SWGlclmKXLLMYMmdfXyp4/g/mB4KKSIJdB5M9GW9HzI=";
+    fetchSubmodules = true;
   };
 
   patches = lib.optionals useSystemFfmpeg [
@@ -91,8 +91,6 @@ stdenv.mkDerivation (finalAttrs: {
     libffi
   ];
 
-  dontWrapQtApps = true;
-
   cmakeFlags = [
     (lib.cmakeBool "HEADLESS" (!enableQt))
     (lib.cmakeBool "USE_SYSTEM_FFMPEG" useSystemFfmpeg)
@@ -101,20 +99,6 @@ stdenv.mkDerivation (finalAttrs: {
     (lib.cmakeBool "USE_WAYLAND_WSI" vulkanWayland)
     (lib.cmakeBool "USING_QT_UI" enableQt)
     (lib.cmakeFeature "OpenGL_GL_PREFERENCE" "GLVND")
-  ];
-
-  desktopItems = [
-    (makeDesktopItem {
-      desktopName = "PPSSPP";
-      name = "ppsspp";
-      exec = "ppsspp";
-      icon = "ppsspp";
-      comment = "Play PSP games on your computer";
-      categories = [
-        "Game"
-        "Emulator"
-      ];
-    })
   ];
 
   installPhase = lib.concatStringsSep "\n" (
@@ -166,12 +150,29 @@ stdenv.mkDerivation (finalAttrs: {
     in
     "makeWrapper $out/share/ppsspp/bin/${binToBeWrapped} $out/bin/ppsspp ${wrapperArgs}";
 
+  desktopItems = [
+    (makeDesktopItem {
+      categories = [
+        "Game"
+        "Emulator"
+      ];
+
+      comment = "Play PSP games on your computer";
+      desktopName = "PPSSPP";
+      exec = "ppsspp";
+      icon = "ppsspp";
+      name = "ppsspp";
+    })
+  ];
+
+  dontWrapQtApps = true;
+
   meta = {
-    homepage = "https://www.ppsspp.org/";
     description =
       "HLE Playstation Portable emulator, written in C++ ("
       + (if enableQt then "Qt" else "SDL + headless")
       + ")";
+
     longDescription = ''
       PPSSPP is a PSP emulator, which means that it can run games and other
       software that was originally made for the Sony PSP.
@@ -182,9 +183,11 @@ stdenv.mkDerivation (finalAttrs: {
       discs, and PS1 games that could run in a proprietary emulator. PPSSPP does
       not run those.
     '';
+
+    homepage = "https://www.ppsspp.org/";
     license = lib.licenses.gpl2Plus;
     maintainers = [ ];
-    mainProgram = "ppsspp";
     platforms = lib.platforms.linux;
+    mainProgram = "ppsspp";
   };
 })

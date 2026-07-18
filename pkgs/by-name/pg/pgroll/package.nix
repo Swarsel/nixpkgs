@@ -1,10 +1,10 @@
 {
-  buildGoModule,
-  fetchFromGitHub,
   lib,
+  fetchFromGitHub,
+  buildGoModule,
   libpg_query,
-  xxhash,
   testers,
+  xxhash,
 }:
 
 buildGoModule (finalAttrs: {
@@ -18,18 +18,18 @@ buildGoModule (finalAttrs: {
     hash = "sha256-pvc+hKWUY8OPKMU4QNwuTlw8ewhiDrFcS1q/hcOzqSk=";
   };
 
-  proxyVendor = true;
+  buildInputs = [
+    libpg_query
+    xxhash
+  ];
 
   vendorHash = "sha256-/oEZbST2Q2HG+qu8nH+mdk/U58aTMznndDHDbFg8fCk=";
+  # Tests require a running docker daemon
+  doCheck = false;
 
   excludedPackages = [
     "dev"
     "tools"
-  ];
-
-  buildInputs = [
-    libpg_query
-    xxhash
   ];
 
   ldflags = [
@@ -38,8 +38,7 @@ buildGoModule (finalAttrs: {
     "-X github.com/xataio/pgroll/cmd.Version=${finalAttrs.version}"
   ];
 
-  # Tests require a running docker daemon
-  doCheck = false;
+  proxyVendor = true;
 
   passthru.tests.version = testers.testVersion {
     package = finalAttrs.finalPackage;
@@ -47,9 +46,9 @@ buildGoModule (finalAttrs: {
 
   meta = {
     description = "PostgreSQL zero-downtime migrations made easy";
-    license = lib.licenses.asl20;
-    mainProgram = "pgroll";
     homepage = "https://github.com/xataio/pgroll";
+    license = lib.licenses.asl20;
     maintainers = with lib.maintainers; [ ilyakooo0 ];
+    mainProgram = "pgroll";
   };
 })

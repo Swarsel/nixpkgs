@@ -23,6 +23,7 @@ stdenv.mkDerivation {
     autoreconfHook
     pkg-config
   ];
+
   buildInputs = [
     guile_2_2
     texinfo
@@ -38,8 +39,8 @@ stdenv.mkDerivation {
   ];
 
   meta = {
-    homepage = "https://github.com/mwitmer/guile-xcb";
     description = "XCB bindings for Guile";
+    homepage = "https://github.com/mwitmer/guile-xcb";
     license = lib.licenses.gpl3Plus;
     maintainers = [ ];
     platforms = guile_2_2.meta.platforms;

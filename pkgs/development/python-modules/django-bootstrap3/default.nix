@@ -1,23 +1,19 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # build-system
-  uv-build,
-
+  buildPythonPackage,
   # dependencies
   django,
-
   # tests
   pytest-django,
   pytestCheckHook,
+  # build-system
+  uv-build,
 }:
 
 buildPythonPackage rec {
   pname = "django-bootstrap3";
   version = "26.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "zostera";
@@ -31,18 +27,17 @@ buildPythonPackage rec {
       --replace-fail "uv_build>=0.9.6,<0.10.0" uv_build
   '';
 
-  build-system = [ uv-build ];
-
-  dependencies = [ django ];
-
-  pythonImportsCheck = [ "bootstrap3" ];
+  env.DJANGO_SETTINGS_MODULE = "tests.app.settings";
 
   nativeCheckInputs = [
     pytest-django
     pytestCheckHook
   ];
 
-  env.DJANGO_SETTINGS_MODULE = "tests.app.settings";
+  build-system = [ uv-build ];
+  dependencies = [ django ];
+  pyproject = true;
+  pythonImportsCheck = [ "bootstrap3" ];
 
   meta = {
     description = "Bootstrap 3 integration for Django";

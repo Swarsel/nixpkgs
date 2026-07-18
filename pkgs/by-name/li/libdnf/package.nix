@@ -2,36 +2,30 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  cmake,
-  gettext,
-  pkg-config,
-  libsolv,
-  openssl,
   check,
+  cmake,
+  cppunit,
+  gettext,
   json_c,
   libmodulemd,
-  util-linux,
-  sqlite,
   librepo,
+  libsolv,
   libyaml,
-  rpm,
-  zchunk,
-  cppunit,
-  python3,
-  swig,
+  openssl,
   pcre2,
+  pkg-config,
+  python3,
+  rpm,
   sphinx,
+  sqlite,
+  swig,
+  util-linux,
+  zchunk,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
   pname = "libdnf";
   version = "0.75.0";
-
-  outputs = [
-    "out"
-    "dev"
-    "py"
-  ];
 
   src = fetchFromGitHub {
     owner = "rpm-software-management";
@@ -39,6 +33,22 @@ stdenv.mkDerivation (finalAttrs: {
     tag = finalAttrs.version;
     hash = "sha256-ujkJVeI6wgapTW1DBIhj4F/rXJFBb+KdREpc5jfU124=";
   };
+
+  outputs = [
+    "out"
+    "dev"
+    "py"
+  ];
+
+  patches = [ ./fix-python-install-dir.patch ];
+
+  postPatch = ''
+    # https://github.com/rpm-software-management/libdnf/issues/1518
+    substituteInPlace libdnf/libdnf.pc.in \
+      --replace '$'{prefix}/@CMAKE_INSTALL_LIBDIR@ @CMAKE_INSTALL_FULL_LIBDIR@
+    substituteInPlace cmake/modules/FindPythonInstDir.cmake \
+      --replace "@PYTHON_INSTALL_DIR@" "$out/${python3.sitePackages}"
+  '';
 
   nativeBuildInputs = [
     cmake
@@ -68,21 +78,6 @@ stdenv.mkDerivation (finalAttrs: {
     rpm
   ];
 
-  # See https://github.com/NixOS/nixpkgs/issues/107430
-  prePatch = ''
-    cp ${libsolv}/share/cmake/Modules/FindLibSolv.cmake cmake/modules/
-  '';
-
-  patches = [ ./fix-python-install-dir.patch ];
-
-  postPatch = ''
-    # https://github.com/rpm-software-management/libdnf/issues/1518
-    substituteInPlace libdnf/libdnf.pc.in \
-      --replace '$'{prefix}/@CMAKE_INSTALL_LIBDIR@ @CMAKE_INSTALL_FULL_LIBDIR@
-    substituteInPlace cmake/modules/FindPythonInstDir.cmake \
-      --replace "@PYTHON_INSTALL_DIR@" "$out/${python3.sitePackages}"
-  '';
-
   cmakeFlags = [
     "-DWITH_GTKDOC=OFF"
     "-DWITH_HTML=OFF"
@@ -97,12 +92,17 @@ stdenv.mkDerivation (finalAttrs: {
     moveToOutput "lib/${python3.libPrefix}" "$py"
   '';
 
+  # See https://github.com/NixOS/nixpkgs/issues/107430
+  prePatch = ''
+    cp ${libsolv}/share/cmake/Modules/FindLibSolv.cmake cmake/modules/
+  '';
+
   meta = {
     description = "Package management library";
     homepage = "https://github.com/rpm-software-management/libdnf";
     changelog = "https://github.com/rpm-software-management/libdnf/releases/tag/${finalAttrs.version}";
     license = lib.licenses.gpl2Plus;
-    platforms = lib.platforms.linux ++ lib.platforms.darwin;
     maintainers = with lib.maintainers; [ katexochen ];
+    platforms = lib.platforms.linux ++ lib.platforms.darwin;
   };
 })

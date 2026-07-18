@@ -2,13 +2,13 @@
   lib,
   stdenv,
   fetchFromGitHub,
+  gdk-pixbuf,
+  gtk-engine-murrine,
+  gtk_engines,
+  librsvg,
   meson,
   ninja,
   sassc,
-  gdk-pixbuf,
-  librsvg,
-  gtk_engines,
-  gtk-engine-murrine,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -40,7 +40,7 @@ stdenv.mkDerivation (finalAttrs: {
     description = "Minimalistic GTK, gnome shell and Xfce themes";
     homepage = "https://github.com/lassekongo83/stilo-themes";
     license = lib.licenses.gpl3Only;
-    platforms = lib.platforms.linux;
     maintainers = [ lib.maintainers.romildo ];
+    platforms = lib.platforms.linux;
   };
 })

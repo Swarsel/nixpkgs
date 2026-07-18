@@ -1,8 +1,8 @@
 {
   lib,
-  stdenvNoCC,
   fetchFromGitHub,
   installFonts,
+  stdenvNoCC,
 }:
 
 stdenvNoCC.mkDerivation {
@@ -16,20 +16,19 @@ stdenvNoCC.mkDerivation {
     hash = "sha256-1DgSx2L+OpXuPVSXbbl/hcZUyBK9ikPyGWuk6wNzlwc=";
   };
 
-  preInstall = "rm xkcd/build/xkcd.otf";
-
-  nativeBuildInputs = [ installFonts ];
-
   outputs = [
     "out"
     "webfont"
   ];
 
+  nativeBuildInputs = [ installFonts ];
+  preInstall = "rm xkcd/build/xkcd.otf";
+
   meta = {
     description = "Xkcd font";
     homepage = "https://github.com/ipython/xkcd-font";
     license = lib.licenses.cc-by-nc-30;
-    platforms = lib.platforms.all;
     maintainers = with lib.maintainers; [ pancaek ];
+    platforms = lib.platforms.all;
   };
 }

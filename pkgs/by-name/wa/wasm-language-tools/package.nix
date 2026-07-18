@@ -1,10 +1,10 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
-  versionCheckHook,
   _experimental-update-script-combinators,
   nix-update-script,
+  rustPlatform,
+  versionCheckHook,
   vscode-extension-update-script,
 }:
 
@@ -20,15 +20,15 @@ rustPlatform.buildRustPackage (finalAttrs: {
   };
 
   cargoHash = "sha256-VoApXHdD8SF8ZqnDVynxunjVoZ5WKai2Xzw0UYy7hSg=";
-
+  doInstallCheck = true;
   nativeInstallCheckInputs = [ versionCheckHook ];
   versionCheckProgram = "${placeholder "out"}/bin/wat_server";
-  doInstallCheck = true;
 
   passthru.updateScript = _experimental-update-script-combinators.sequence [
     (nix-update-script { })
     (vscode-extension-update-script {
       attrPath = "vscode-extensions.gplane.wasm-language-tools";
+
       extraArgs = [
         "--override-filename"
         "pkgs/applications/editors/vscode/extensions/gplane.wasm-language-tools/default.nix"

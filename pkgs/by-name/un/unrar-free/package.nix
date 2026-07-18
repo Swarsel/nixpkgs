@@ -1,8 +1,8 @@
 {
   lib,
   stdenv,
-  argp-standalone,
   fetchFromGitLab,
+  argp-standalone,
   autoreconfHook,
   libarchive,
   pkg-config,
@@ -33,14 +33,13 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   env.NIX_LDFLAGS = lib.optionalString stdenv.hostPlatform.isDarwin "-largp";
-
-  setupHook = ./setup-hook.sh;
-
-  nativeInstallCheckInputs = [ versionCheckHook ];
   doInstallCheck = true;
+  nativeInstallCheckInputs = [ versionCheckHook ];
+  setupHook = ./setup-hook.sh;
 
   meta = {
     description = "Free utility to extract files from RAR archives";
+
     longDescription = ''
       unrar-free is a free software version of the non-free unrar utility.
 
@@ -50,13 +49,16 @@ stdenv.mkDerivation (finalAttrs: {
       It does not rival the non-free unrar in terms of features, but
       special care has been taken to ensure it meets most user's needs.
     '';
+
     homepage = "https://gitlab.com/bgermann/unrar-free";
     license = lib.licenses.gpl2Plus;
-    mainProgram = "unrar-free";
+
     maintainers = with lib.maintainers; [
       anthonyroussel
       thiagokokada
     ];
+
     platforms = lib.platforms.unix;
+    mainProgram = "unrar-free";
   };
 })

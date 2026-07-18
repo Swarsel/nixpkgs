@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   fetchpatch,
   numpy,
   pytestCheckHook,
@@ -10,7 +10,6 @@
 buildPythonPackage rec {
   pname = "opytimark";
   version = "1.0.8";
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "gugarosa";
@@ -21,13 +20,12 @@ buildPythonPackage rec {
 
   patches = [
     (fetchpatch {
-      url = "https://patch-diff.githubusercontent.com/raw/gugarosa/opytimark/pull/2.patch";
       hash = "sha256-r/oCKI9Q1nuCZDGHx7UW8j523sFe4EFmguMOJTs/LOU=";
+      url = "https://patch-diff.githubusercontent.com/raw/gugarosa/opytimark/pull/2.patch";
     })
   ];
 
   propagatedBuildInputs = [ numpy ];
-
   nativeCheckInputs = [ pytestCheckHook ];
 
   # several tests are failing
@@ -38,6 +36,7 @@ buildPythonPackage rec {
     "cec_benchmark"
   ];
 
+  format = "setuptools";
   pythonImportsCheck = [ "opytimark" ];
 
   meta = {

@@ -1,16 +1,16 @@
 {
-  faad2,
+  lib,
+  stdenv,
   fetchFromGitHub,
+  faad2,
   flac,
   lame,
-  lib,
   makeWrapper,
   monkeys-audio,
   nix-update-script,
   nixosTests,
   perlPackages,
   sox,
-  stdenv,
   wavpack,
   zlib,
   enableUnfreeFirmware ? false,
@@ -44,6 +44,7 @@ perlPackages.buildPerlPackage rec {
     hash = "sha256-+GvP4+DdJs7NLB/V2uLq28Pa3K3M9u1Ni86k+PYECOo=";
   };
 
+  outputs = [ "out" ];
   nativeBuildInputs = [ makeWrapper ];
 
   # slimserver vendors quite a few CPAN packages
@@ -78,6 +79,17 @@ perlPackages.buildPerlPackage rec {
       LinuxInotify2
     ];
 
+  doCheck = false;
+
+  installPhase = ''
+    cp -r . $out
+    wrapProgram $out/slimserver.pl --prefix LD_LIBRARY_PATH : "${libPath}" --prefix PATH : "${binPath}"
+    chmod +x $out/scanner.pl
+    wrapProgram $out/scanner.pl --prefix LD_LIBRARY_PATH : "${libPath}" --prefix PATH : "${binPath}"
+    mkdir $out/bin
+    ln -s $out/slimserver.pl $out/bin/slimserver
+  '';
+
   prePatch = ''
     # remove vendored binaries
     rm -rf Bin
@@ -111,19 +123,6 @@ perlPackages.buildPerlPackage rec {
     touch Makefile.PL
   '';
 
-  doCheck = false;
-
-  installPhase = ''
-    cp -r . $out
-    wrapProgram $out/slimserver.pl --prefix LD_LIBRARY_PATH : "${libPath}" --prefix PATH : "${binPath}"
-    chmod +x $out/scanner.pl
-    wrapProgram $out/scanner.pl --prefix LD_LIBRARY_PATH : "${libPath}" --prefix PATH : "${binPath}"
-    mkdir $out/bin
-    ln -s $out/slimserver.pl $out/bin/slimserver
-  '';
-
-  outputs = [ "out" ];
-
   passthru = {
     tests = {
       inherit (nixosTests) slimserver;
@@ -138,17 +137,19 @@ perlPackages.buildPerlPackage rec {
   };
 
   meta = {
+    description = "Lyrion Music Server (formerly Logitech Media Server) is open-source server software which controls a wide range of Squeezebox audio players";
     homepage = "https://lyrion.org/";
     changelog = "https://lyrion.org/getting-started/changelog-lms${lib.versions.major version}";
-    description = "Lyrion Music Server (formerly Logitech Media Server) is open-source server software which controls a wide range of Squeezebox audio players";
     # the firmware is not under a free license, so we do not include firmware in the default package
     # https://github.com/LMS-Community/slimserver/blob/public/8.3/License.txt
     license = if enableUnfreeFirmware then lib.licenses.unfree else lib.licenses.gpl2Only;
-    mainProgram = "slimserver";
+
     maintainers = with lib.maintainers; [
       adamcstephens
       jecaro
     ];
+
     platforms = lib.platforms.linux;
+    mainProgram = "slimserver";
   };
 }

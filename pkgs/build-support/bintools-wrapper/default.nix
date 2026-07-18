@@ -6,42 +6,15 @@
 # compiler and the linker just "work".
 
 {
-  name ? "",
   lib,
-  stdenvNoCC,
-  runtimeShell,
-  bintools ? null,
-  libc ? null,
-  coreutils ? null,
-  gnugrep ? null,
-  apple-sdk ? null,
-  netbsd ? null,
-  sharedLibraryLoader ?
-    if libc == null then
-      null
-    else if stdenvNoCC.targetPlatform.isNetBSD then
-      if !(targetPackages ? netbsd) then
-        netbsd.ld_elf_so
-      else if libc != targetPackages.netbsd.headers then
-        targetPackages.netbsd.ld_elf_so
-      else
-        null
-    else
-      lib.getLib libc,
-  nativeTools,
-  noLibc ? false,
-  nativeLibc,
-  nativePrefix ? "",
-  propagateDoc ? bintools != null && bintools ? man,
-  extraPackages ? [ ],
-  extraBuildCommands ? "",
-  isGNU ? bintools.isGNU or false,
-  isLLVM ? bintools.isLLVM or false,
-  isCCTools ? bintools.isCCTools or false,
   expand-response-params,
-  targetPackages ? { },
-  wrapGas ? false,
-
+  nativeLibc,
+  nativeTools,
+  runtimeShell,
+  stdenvNoCC,
+  apple-sdk ? null,
+  bintools ? null,
+  coreutils ? null,
   # Note: the hardening flags are part of the bintools-wrapper, rather than
   # the cc-wrapper, because a few of them are handled by the linker.
   defaultHardeningFlags ? [
@@ -58,6 +31,32 @@
     "strictoverflow"
     "zerocallusedregs"
   ],
+  extraBuildCommands ? "",
+  extraPackages ? [ ],
+  gnugrep ? null,
+  isCCTools ? bintools.isCCTools or false,
+  isGNU ? bintools.isGNU or false,
+  isLLVM ? bintools.isLLVM or false,
+  libc ? null,
+  name ? "",
+  nativePrefix ? "",
+  netbsd ? null,
+  noLibc ? false,
+  propagateDoc ? bintools != null && bintools ? man,
+  sharedLibraryLoader ?
+    if libc == null then
+      null
+    else if stdenvNoCC.targetPlatform.isNetBSD then
+      if !(targetPackages ? netbsd) then
+        netbsd.ld_elf_so
+      else if libc != targetPackages.netbsd.headers then
+        targetPackages.netbsd.ld_elf_so
+      else
+        null
+    else
+      lib.getLib libc,
+  targetPackages ? { },
+  wrapGas ? false,
 }:
 
 assert propagateDoc -> bintools ? man;
@@ -167,45 +166,44 @@ in
 stdenvNoCC.mkDerivation {
   pname = targetPrefix + (if name != "" then name else "${bintoolsName}-wrapper");
   version = optionalString (bintools != null) bintoolsVersion;
-
-  preferLocalBuild = true;
-
   outputs = [ "out" ] ++ optionals propagateDoc ([ "man" ] ++ optional (bintools ? info) "info");
+  strictDeps = true;
 
-  passthru = {
-    inherit targetPrefix suffixSalt;
+  env = {
     inherit
-      bintools
-      libc
-      nativeTools
-      nativeLibc
-      nativePrefix
-      isGNU
-      isLLVM
+      dynamicLinker
+      targetPrefix
+      suffixSalt
+      coreutils_bin
       ;
 
-    emacsBufferSetup = pkgs: ''
-      ; We should handle propagation here too
-      (mapc
-        (lambda (arg)
-          (when (file-directory-p (concat arg "/lib"))
-            (setenv "NIX_LDFLAGS_${suffixSalt}" (concat (getenv "NIX_LDFLAGS_${suffixSalt}") " -L" arg "/lib")))
-          (when (file-directory-p (concat arg "/lib64"))
-            (setenv "NIX_LDFLAGS_${suffixSalt}" (concat (getenv "NIX_LDFLAGS_${suffixSalt}") " -L" arg "/lib64"))))
-        '(${concatStringsSep " " (map (pkg: "\"${pkg}\"") pkgs)}))
-    '';
+    inherit
+      bintools_bin
+      libc_bin
+      libc_dev
+      libc_lib
+      ;
 
-    inherit defaultHardeningFlags;
+    # Wrapped compilers should do something useful even when no SDK is provided at `DEVELOPER_DIR`.
+    ${if stdenvNoCC.targetPlatform.isDarwin && apple-sdk != null then "fallback_sdk" else null} =
+      apple-sdk.__spliced.buildTarget or apple-sdk;
+
+    darwinMinVersion = lib.optionalString targetPlatform.isDarwin targetPlatform.darwinMinVersion;
+    darwinMinVersionVariable = lib.optionalString targetPlatform.isDarwin targetPlatform.darwinMinVersionVariable;
+    # These will become empty strings when not targeting Darwin.
+    darwinPlatform = lib.optionalString targetPlatform.isDarwin targetPlatform.darwinPlatform;
+    darwinSdkVersion = lib.optionalString targetPlatform.isDarwin targetPlatform.darwinSdkVersion;
+    default_hardening_flags_str = toString defaultHardeningFlags;
+    # for substitution in utils.bash
+    # TODO(@sternenseemann): invent something cleaner than passing in "" in case of absence
+    expandResponseParams = "${expand-response-params}/bin/expand-response-params";
+    gnugrep_bin = optionalString (!nativeTools) gnugrep;
+    mktemp = if nativeTools then "mktemp" else lib.getExe' coreutils "mktemp";
+    rm = if nativeTools then "rm" else lib.getExe' coreutils "rm";
+    # TODO(@sternenseemann): rename env var via stdenv rebuild
+    shell = (getBin runtimeShell + runtimeShell.shellPath or "");
+    wrapperName = "BINTOOLS_WRAPPER";
   };
-
-  dontBuild = true;
-  dontConfigure = true;
-
-  enableParallelBuilding = true;
-
-  unpackPhase = ''
-    src=$PWD
-  '';
 
   installPhase = ''
     mkdir -p $out/bin $out/nix-support
@@ -272,14 +270,6 @@ stdenvNoCC.mkDerivation {
       wrap $basename ${./ld-wrapper.sh} $variant
     done
   '';
-
-  strictDeps = true;
-  depsTargetTargetPropagated = extraPackages;
-
-  setupHooks = [
-    ../setup-hooks/role.bash
-    ./setup-hook.sh
-  ];
 
   postFixup =
     ##
@@ -445,37 +435,46 @@ stdenvNoCC.mkDerivation {
     ##
     + extraBuildCommands;
 
-  env = {
-    # for substitution in utils.bash
-    # TODO(@sternenseemann): invent something cleaner than passing in "" in case of absence
-    expandResponseParams = "${expand-response-params}/bin/expand-response-params";
-    # TODO(@sternenseemann): rename env var via stdenv rebuild
-    shell = (getBin runtimeShell + runtimeShell.shellPath or "");
-    gnugrep_bin = optionalString (!nativeTools) gnugrep;
-    rm = if nativeTools then "rm" else lib.getExe' coreutils "rm";
-    mktemp = if nativeTools then "mktemp" else lib.getExe' coreutils "mktemp";
-    wrapperName = "BINTOOLS_WRAPPER";
+  depsTargetTargetPropagated = extraPackages;
+  dontBuild = true;
+  dontConfigure = true;
+  enableParallelBuilding = true;
+  preferLocalBuild = true;
+
+  setupHooks = [
+    ../setup-hooks/role.bash
+    ./setup-hook.sh
+  ];
+
+  unpackPhase = ''
+    src=$PWD
+  '';
+
+  passthru = {
+    inherit targetPrefix suffixSalt;
+
     inherit
-      dynamicLinker
-      targetPrefix
-      suffixSalt
-      coreutils_bin
+      bintools
+      libc
+      nativeTools
+      nativeLibc
+      nativePrefix
+      isGNU
+      isLLVM
       ;
-    inherit
-      bintools_bin
-      libc_bin
-      libc_dev
-      libc_lib
-      ;
-    default_hardening_flags_str = toString defaultHardeningFlags;
-    # These will become empty strings when not targeting Darwin.
-    darwinPlatform = lib.optionalString targetPlatform.isDarwin targetPlatform.darwinPlatform;
-    darwinSdkVersion = lib.optionalString targetPlatform.isDarwin targetPlatform.darwinSdkVersion;
-    darwinMinVersion = lib.optionalString targetPlatform.isDarwin targetPlatform.darwinMinVersion;
-    darwinMinVersionVariable = lib.optionalString targetPlatform.isDarwin targetPlatform.darwinMinVersionVariable;
-    # Wrapped compilers should do something useful even when no SDK is provided at `DEVELOPER_DIR`.
-    ${if stdenvNoCC.targetPlatform.isDarwin && apple-sdk != null then "fallback_sdk" else null} =
-      apple-sdk.__spliced.buildTarget or apple-sdk;
+
+    inherit defaultHardeningFlags;
+
+    emacsBufferSetup = pkgs: ''
+      ; We should handle propagation here too
+      (mapc
+        (lambda (arg)
+          (when (file-directory-p (concat arg "/lib"))
+            (setenv "NIX_LDFLAGS_${suffixSalt}" (concat (getenv "NIX_LDFLAGS_${suffixSalt}") " -L" arg "/lib")))
+          (when (file-directory-p (concat arg "/lib64"))
+            (setenv "NIX_LDFLAGS_${suffixSalt}" (concat (getenv "NIX_LDFLAGS_${suffixSalt}") " -L" arg "/lib64"))))
+        '(${concatStringsSep " " (map (pkg: "\"${pkg}\"") pkgs)}))
+    '';
   };
 
   meta =
@@ -486,6 +485,7 @@ stdenvNoCC.mkDerivation {
     // {
       description =
         attrByPath [ "meta" "description" ] "System binary utilities" bintools_ + " (wrapper script)";
+
       priority = 10;
     };
 }

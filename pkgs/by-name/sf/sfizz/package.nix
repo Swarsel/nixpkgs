@@ -2,30 +2,30 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  libjack2,
-  libsndfile,
-  libxcb-util,
-  libxcb-render-util,
-  libxcb-keysyms,
-  libxcb-image,
-  libxcb-cursor,
-  libxdmcp,
-  libxau,
-  libx11,
-  libxcb,
-  freetype,
-  libxkbcommon,
   cairo,
-  glib,
-  zenity,
-  flac,
-  libogg,
-  libvorbis,
-  libopus,
+  catch2,
   cmake,
+  flac,
+  freetype,
+  glib,
+  libjack2,
+  libogg,
+  libopus,
+  libsndfile,
+  libvorbis,
+  libx11,
+  libxau,
+  libxcb,
+  libxcb-cursor,
+  libxcb-image,
+  libxcb-keysyms,
+  libxcb-render-util,
+  libxcb-util,
+  libxdmcp,
+  libxkbcommon,
   pango,
   pkg-config,
-  catch2,
+  zenity,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -39,6 +39,11 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-347olgxCyCRmKX0jxgBkYkoBuy9TMbsQgWOIoMppUAo=";
     fetchSubmodules = true;
   };
+
+  nativeBuildInputs = [
+    cmake
+    pkg-config
+  ];
 
   buildInputs = [
     libjack2
@@ -64,11 +69,6 @@ stdenv.mkDerivation (finalAttrs: {
     pango
   ];
 
-  nativeBuildInputs = [
-    cmake
-    pkg-config
-  ];
-
   cmakeFlags = [
     (lib.cmakeBool "SFIZZ_TESTS" true)
   ];
@@ -76,8 +76,8 @@ stdenv.mkDerivation (finalAttrs: {
   doCheck = true;
 
   meta = {
-    homepage = "https://github.com/sfztools/sfizz";
     description = "SFZ jack client and LV2 plugin";
+    homepage = "https://github.com/sfztools/sfizz";
     license = lib.licenses.bsd2;
     maintainers = with lib.maintainers; [ magnetophon ];
     platforms = lib.platforms.linux;

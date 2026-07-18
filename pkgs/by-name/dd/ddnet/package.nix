@@ -2,30 +2,30 @@
   lib,
   stdenv,
   fetchFromGitHub,
+  SDL2,
   cargo,
   cmake,
-  ninja,
-  pkg-config,
-  rustPlatform,
-  rustc,
   curl,
+  ffmpeg,
   freetype,
+  glslang,
+  gtest,
   libGLU,
   libnotify,
   libogg,
   libx11,
+  ninja,
   opusfile,
+  pkg-config,
   python3,
-  SDL2,
+  rustPlatform,
+  rustc,
+  spirv-tools,
   sqlite,
-  wavpack,
-  ffmpeg,
-  x264,
   vulkan-headers,
   vulkan-loader,
-  glslang,
-  spirv-tools,
-  gtest,
+  wavpack,
+  x264,
   buildClient ? true,
 }:
 
@@ -40,10 +40,10 @@ stdenv.mkDerivation rec {
     hash = "sha256-/SfUDliB6fdc/yf2yVXHiqYlH+cIIoxz3RkP8SxsgA4=";
   };
 
-  cargoDeps = rustPlatform.fetchCargoVendor {
-    inherit pname version src;
-    hash = "sha256-VKGc4LQjt2FHbELLBKtV8rKpxjGBrzlA3m9BSdZ/6Z0=";
-  };
+  postPatch = ''
+    substituteInPlace src/engine/shared/storage.cpp \
+      --replace /usr/ $out/
+  '';
 
   nativeBuildInputs = [
     cmake
@@ -52,10 +52,6 @@ stdenv.mkDerivation rec {
     rustc
     cargo
     rustPlatform.cargoSetupHook
-  ];
-
-  nativeCheckInputs = [
-    gtest
   ];
 
   buildInputs = [
@@ -84,11 +80,6 @@ stdenv.mkDerivation rec {
     ]
   );
 
-  postPatch = ''
-    substituteInPlace src/engine/shared/storage.cpp \
-      --replace /usr/ $out/
-  '';
-
   cmakeFlags = [
     "-DAUTOUPDATE=OFF"
     "-DCLIENT=${if buildClient then "ON" else "OFF"}"
@@ -96,7 +87,10 @@ stdenv.mkDerivation rec {
 
   # Tests loop forever on Darwin for some reason
   doCheck = !stdenv.hostPlatform.isDarwin;
-  checkTarget = "run_tests";
+
+  nativeCheckInputs = [
+    gtest
+  ];
 
   postInstall = lib.optionalString (!buildClient) ''
     # DDNet's CMakeLists.txt automatically installs .desktop
@@ -112,8 +106,16 @@ stdenv.mkDerivation rec {
     install_name_tool -change "$out/lib/libsteam_api.dylib" "$out/lib/ddnet/libsteam_api.dylib" "$out/bin/DDNet"
   '';
 
+  cargoDeps = rustPlatform.fetchCargoVendor {
+    inherit pname version src;
+    hash = "sha256-VKGc4LQjt2FHbELLBKtV8rKpxjGBrzlA3m9BSdZ/6Z0=";
+  };
+
+  checkTarget = "run_tests";
+
   meta = {
     description = "Teeworlds modification with a unique cooperative gameplay";
+
     longDescription = ''
       DDraceNetwork (DDNet) is an actively maintained version of DDRace,
       a Teeworlds modification with a unique cooperative gameplay.
@@ -121,16 +123,20 @@ stdenv.mkDerivation rec {
       compete against the best in international tournaments,
       design your own maps, or run your own server.
     '';
+
     homepage = "https://ddnet.org";
+
     license = with lib.licenses; [
       zlib
       ofl
       cc-by-sa-30
     ];
+
     maintainers = with lib.maintainers; [
       Scrumplex
       sirseruju
     ];
+
     mainProgram = "DDNet${lib.optionalString (!buildClient) "-Server"}";
   };
 }

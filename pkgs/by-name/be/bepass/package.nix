@@ -1,17 +1,17 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
-  enableGUI ? false, # upstream working in progress
-  pkg-config,
+  buildGoModule,
   glfw,
-  libxft,
   libxcursor,
-  libxrandr,
-  libxinerama,
-  xinput,
+  libxft,
   libxi,
+  libxinerama,
+  libxrandr,
   libxxf86vm,
+  pkg-config,
+  xinput,
+  enableGUI ? false, # upstream working in progress
 }:
 buildGoModule (finalAttrs: {
   pname = "bepass";
@@ -24,13 +24,8 @@ buildGoModule (finalAttrs: {
     hash = "sha256-ruOhPWNs1WWM3r6X+6ch0HoDCu/a+IkBQiCr0Wh6yS8=";
   };
 
-  vendorHash = "sha256-Juie/Hq3i6rvAK19x6ah3SCQJL0uCrmV9gvzHih3crY=";
-
-  subPackages = [
-    "cmd/cli"
-  ];
-  proxyVendor = true;
   nativeBuildInputs = lib.optionals enableGUI [ pkg-config ];
+
   buildInputs = lib.optionals enableGUI [
     glfw
     libxft
@@ -42,21 +37,29 @@ buildGoModule (finalAttrs: {
     libxxf86vm
   ];
 
-  ldflags = [
-    "-s"
-    "-w"
-  ];
+  vendorHash = "sha256-Juie/Hq3i6rvAK19x6ah3SCQJL0uCrmV9gvzHih3crY=";
 
   postInstall = ''
     mv $out/bin/cli $out/bin/bepass
   '';
 
+  ldflags = [
+    "-s"
+    "-w"
+  ];
+
+  proxyVendor = true;
+
+  subPackages = [
+    "cmd/cli"
+  ];
+
   meta = {
-    homepage = "https://github.com/bepass-org/bepass";
     description = "Simple DPI bypass tool written in go";
+    homepage = "https://github.com/bepass-org/bepass";
     license = lib.licenses.mit;
-    mainProgram = "bepass";
     maintainers = with lib.maintainers; [ oluceps ];
+    mainProgram = "bepass";
     broken = enableGUI;
   };
 })

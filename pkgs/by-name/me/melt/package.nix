@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule (finalAttrs: {
@@ -25,10 +25,10 @@ buildGoModule (finalAttrs: {
 
   meta = {
     description = "Backup and restore Ed25519 SSH keys with seed words";
-    mainProgram = "melt";
     homepage = "https://github.com/charmbracelet/melt";
     changelog = "https://github.com/charmbracelet/melt/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.mit;
     maintainers = [ ];
+    mainProgram = "melt";
   };
 })

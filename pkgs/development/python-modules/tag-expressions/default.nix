@@ -9,18 +9,16 @@
 buildPythonPackage rec {
   pname = "tag-expressions";
   version = "2.0.1";
-  pyproject = true;
 
   src = fetchPypi {
-    pname = "tag_expressions";
     inherit version;
     hash = "sha256-EbSwfAH+sL3JGW+COfDA2f7cLGyKmQMsbyyDGy13Lkg=";
+    pname = "tag_expressions";
   };
 
-  build-system = [ setuptools ];
-
   nativeCheckInputs = [ pytestCheckHook ];
-
+  build-system = [ setuptools ];
+  pyproject = true;
   pythonImportsCheck = [ "tagexpressions" ];
 
   meta = {

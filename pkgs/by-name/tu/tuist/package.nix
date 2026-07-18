@@ -1,9 +1,9 @@
 {
   lib,
-  stdenvNoCC,
   fetchurl,
-  unzip,
   nix-update-script,
+  stdenvNoCC,
+  unzip,
   versionCheckHook,
 }:
 
@@ -15,12 +15,6 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     url = "https://github.com/tuist/tuist/releases/download/${finalAttrs.version}/tuist.zip";
     hash = "sha256-J/xlwRRW3zLr03jA6Xpa5frlRQGHa/nmzzlj35/30tw=";
   };
-
-  dontUnpack = true;
-  dontPatch = true;
-  dontConfigure = true;
-  dontBuild = true;
-  dontFixup = true;
 
   nativeBuildInputs = [ unzip ];
 
@@ -37,16 +31,17 @@ stdenvNoCC.mkDerivation (finalAttrs: {
   '';
 
   doInstallCheck = true;
+
   nativeInstallCheckInputs = [
     versionCheckHook
   ];
-  versionCheckProgramArg = "version";
-  versionCheckKeepEnvironment = [
-    "HOME"
-    "XDG_CACHE_HOME"
-    "XDG_CONFIG_HOME"
-    "XDG_STATE_HOME"
-  ];
+
+  dontBuild = true;
+  dontConfigure = true;
+  dontFixup = true;
+  dontPatch = true;
+  dontUnpack = true;
+
   preVersionCheck = ''
     export HOME=$(mktemp -d)
     export XDG_CACHE_HOME=$HOME/.cache
@@ -54,6 +49,14 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     export XDG_STATE_HOME=$HOME/.local/state
   '';
 
+  versionCheckKeepEnvironment = [
+    "HOME"
+    "XDG_CACHE_HOME"
+    "XDG_CONFIG_HOME"
+    "XDG_STATE_HOME"
+  ];
+
+  versionCheckProgramArg = "version";
   passthru.updateScript = nix-update-script { extraArgs = [ "--version-regex=^([0-9.]+)$" ]; };
 
   meta = {

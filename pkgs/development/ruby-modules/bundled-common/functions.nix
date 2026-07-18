@@ -12,12 +12,15 @@ let
 
 in
 rec {
+  applyGemConfigs =
+    attrs: (if gemConfig ? ${attrs.gemName} then attrs // gemConfig.${attrs.gemName} attrs else attrs);
+
   bundlerFiles =
     {
-      gemfile ? null,
-      lockfile ? null,
-      gemset ? null,
       gemdir ? null,
+      gemfile ? null,
+      gemset ? null,
+      lockfile ? null,
       ...
     }:
     {
@@ -30,23 +33,36 @@ rec {
         else
           gemfile;
 
-      lockfile =
-        if lockfile == null then
-          assert gemdir != null;
-          gemdir + "/Gemfile.lock"
-        else
-          lockfile;
-
       gemset =
         if gemset == null then
           assert gemdir != null;
           gemdir + "/gemset.nix"
         else
           gemset;
+
+      lockfile =
+        if lockfile == null then
+          assert gemdir != null;
+          gemdir + "/Gemfile.lock"
+        else
+          lockfile;
     };
 
+  composeGemAttrs =
+    ruby: gems: name: attrs:
+    (
+      (removeAttrs attrs [ "platforms" ])
+      // {
+        inherit ruby;
+        inherit (attrs.source) type;
+        gemName = name;
+        gemPath = map (gemName: gems.${gemName}) (attrs.dependencies or [ ]);
+        source = removeAttrs attrs.source [ "type" ];
+      }
+    );
+
   filterGemset =
-    { ruby, groups, ... }:
+    { groups, ruby, ... }:
     gemset:
     let
       platformGems = filterAttrs (_: platformMatches ruby) gemset;
@@ -62,36 +78,15 @@ rec {
     in
     converge expandDependencies directlyMatchingGems;
 
-  platformMatches =
-    { rubyEngine, version, ... }:
-    attrs:
-    (
-      !(attrs ? platforms)
-      || builtins.length attrs.platforms == 0
-      || builtins.any (
-        platform:
-        platform.engine == rubyEngine && (!(platform ? version) || platform.version == version.majMin)
-      ) attrs.platforms
-    );
-
-  groupMatches =
-    groups: attrs:
-    groups == null
-    || !(attrs ? groups)
-    || (intersectLists (groups ++ [ "default" ]) attrs.groups) != [ ];
-
-  applyGemConfigs =
-    attrs: (if gemConfig ? ${attrs.gemName} then attrs // gemConfig.${attrs.gemName} attrs else attrs);
-
   genStubsScript =
     {
       lib,
-      runCommand,
-      ruby,
-      confFiles,
-      bundler,
-      groups,
       binPaths,
+      bundler,
+      confFiles,
+      groups,
+      ruby,
+      runCommand,
       ...
     }:
     let
@@ -117,39 +112,44 @@ rec {
         ${lib.escapeShellArg groups}
     '';
 
+  groupMatches =
+    groups: attrs:
+    groups == null
+    || !(attrs ? groups)
+    || (intersectLists (groups ++ [ "default" ]) attrs.groups) != [ ];
+
   pathDerivation =
     {
       gemName,
-      version,
       path,
+      version,
       ...
     }:
     let
       res = {
-        type = "derivation";
-        bundledByPath = true;
-        name = gemName;
         version = version;
-        outPath = "${path}";
         outputs = [ "out" ];
+        bundledByPath = true;
+        gemType = "path";
+        name = gemName;
         out = res;
+        outPath = "${path}";
         outputName = "out";
         suffix = version;
-        gemType = "path";
+        type = "derivation";
       };
     in
     res;
 
-  composeGemAttrs =
-    ruby: gems: name: attrs:
+  platformMatches =
+    { rubyEngine, version, ... }:
+    attrs:
     (
-      (removeAttrs attrs [ "platforms" ])
-      // {
-        inherit ruby;
-        inherit (attrs.source) type;
-        source = removeAttrs attrs.source [ "type" ];
-        gemName = name;
-        gemPath = map (gemName: gems.${gemName}) (attrs.dependencies or [ ]);
-      }
+      !(attrs ? platforms)
+      || builtins.length attrs.platforms == 0
+      || builtins.any (
+        platform:
+        platform.engine == rubyEngine && (!(platform ? version) || platform.version == version.majMin)
+      ) attrs.platforms
     );
 }

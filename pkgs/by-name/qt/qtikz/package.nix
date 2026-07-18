@@ -3,10 +3,10 @@
   stdenv,
   fetchFromGitHub,
   fetchpatch,
-  pkg-config,
-  libsForQt5,
-  poppler,
   gnuplot,
+  libsForQt5,
+  pkg-config,
+  poppler,
 }:
 
 # This package only builds ktikz without KDE integration because KDE4 is
@@ -14,20 +14,8 @@
 # See historical versions of this file for building ktikz with KDE4.
 
 stdenv.mkDerivation rec {
-  version = "0.12";
   pname = "qtikz";
-
-  meta = {
-    description = "Editor for the TikZ language";
-    mainProgram = "qtikz";
-    homepage = "https://github.com/fhackenberger/ktikz";
-    license = lib.licenses.gpl2;
-    platforms = lib.platforms.linux;
-    maintainers = [ lib.maintainers.layus ];
-    longDescription = ''
-      You will also need a working *tex installation in your PATH, containing at least `preview` and `pgf`.
-    '';
-  };
+  version = "0.12";
 
   src = fetchFromGitHub {
     owner = "fhackenberger";
@@ -39,13 +27,13 @@ stdenv.mkDerivation rec {
   patches = [
     # Fix version in qtikz.pro
     (fetchpatch {
-      url = "https://github.com/fhackenberger/ktikz/commit/972685a406517bb85eb561f2c8e26f029eacd7db.patch";
       sha256 = "13z40rcd4m4n088v7z2ns17lnpn0z3rzp31lsamic3qdcwjwa5k8";
+      url = "https://github.com/fhackenberger/ktikz/commit/972685a406517bb85eb561f2c8e26f029eacd7db.patch";
     })
     # Fix missing qt5.15 QPainterPath include
     (fetchpatch {
-      url = "https://github.com/fhackenberger/ktikz/commit/ebe4dfb72ac8a137b475ef688b9f7ac3e5c7f242.patch";
       sha256 = "GIgPh+iUBPftHKIpZR3a0FxmLhMLuPUapF/t+bCuqMs=";
+      url = "https://github.com/fhackenberger/ktikz/commit/ebe4dfb72ac8a137b475ef688b9f7ac3e5c7f242.patch";
     })
   ];
 
@@ -55,12 +43,13 @@ stdenv.mkDerivation rec {
     libsForQt5.qmake
     libsForQt5.wrapQtAppsHook
   ];
-  env.QT_PLUGIN_PATH = "${libsForQt5.qtbase}/${libsForQt5.qtbase.qtPluginPrefix}";
 
   buildInputs = [
     libsForQt5.qtbase
     libsForQt5.poppler
   ];
+
+  env.QT_PLUGIN_PATH = "${libsForQt5.qtbase}/${libsForQt5.qtbase.qtPluginPrefix}";
 
   qmakeFlags = [
     "DESKTOP_INSTALL_DIR=${placeholder "out"}/share/applications"
@@ -71,4 +60,18 @@ stdenv.mkDerivation rec {
   ];
 
   qtWrapperArgs = [ ''--prefix PATH : "${gnuplot}/bin"'' ];
+
+  meta = {
+    description = "Editor for the TikZ language";
+
+    longDescription = ''
+      You will also need a working *tex installation in your PATH, containing at least `preview` and `pgf`.
+    '';
+
+    homepage = "https://github.com/fhackenberger/ktikz";
+    license = lib.licenses.gpl2;
+    maintainers = [ lib.maintainers.layus ];
+    platforms = lib.platforms.linux;
+    mainProgram = "qtikz";
+  };
 }

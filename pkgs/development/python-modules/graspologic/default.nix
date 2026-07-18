@@ -1,16 +1,11 @@
 {
   lib,
   stdenv,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # build-system
-  poetry-core,
-  poetry-dynamic-versioning,
-
   # dependencies
   anytree,
   beartype,
+  buildPythonPackage,
   future,
   gensim,
   graspologic-native,
@@ -19,23 +14,24 @@
   matplotlib,
   networkx,
   numpy,
+  # build-system
+  poetry-core,
+  poetry-dynamic-versioning,
   pot,
+  # tests
+  pytestCheckHook,
   scikit-learn,
   scipy,
   seaborn,
   statsmodels,
+  testfixtures,
   typing-extensions,
   umap-learn,
-
-  # tests
-  pytestCheckHook,
-  testfixtures,
 }:
 
 buildPythonPackage rec {
   pname = "graspologic";
   version = "3.4.4";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "graspologic-org";
@@ -54,16 +50,16 @@ buildPythonPackage rec {
         "A = np.asarray(graphs)"
   '';
 
+  env.NUMBA_CACHE_DIR = "$TMPDIR";
+
+  nativeCheckInputs = [
+    pytestCheckHook
+    testfixtures
+  ];
+
   build-system = [
     poetry-core
     poetry-dynamic-versioning
-  ];
-
-  pythonRelaxDeps = [
-    "beartype"
-    "hyppo"
-    "numpy"
-    "scipy"
   ];
 
   dependencies = [
@@ -86,19 +82,6 @@ buildPythonPackage rec {
     umap-learn
   ];
 
-  env.NUMBA_CACHE_DIR = "$TMPDIR";
-
-  nativeCheckInputs = [
-    pytestCheckHook
-    testfixtures
-  ];
-
-  enabledTestPaths = [
-    "tests"
-  ];
-
-  disabledTests = [ "gridplot_outputs" ];
-
   disabledTestPaths = [
     "docs"
   ]
@@ -109,6 +92,21 @@ buildPythonPackage rec {
 
     # Hang forever
     "tests/pipeline/embed/"
+  ];
+
+  disabledTests = [ "gridplot_outputs" ];
+
+  enabledTestPaths = [
+    "tests"
+  ];
+
+  pyproject = true;
+
+  pythonRelaxDeps = [
+    "beartype"
+    "hyppo"
+    "numpy"
+    "scipy"
   ];
 
   meta = {

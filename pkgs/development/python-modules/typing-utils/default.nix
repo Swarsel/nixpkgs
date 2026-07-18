@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   pytestCheckHook,
   setuptools,
 }:
@@ -9,7 +9,6 @@
 buildPythonPackage rec {
   pname = "typing-utils";
   version = "0.1.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "bojiang";
@@ -18,10 +17,9 @@ buildPythonPackage rec {
     hash = "sha256-eXVGpe1wCH1JG+7ZP0evlxhw189GrrRzTwNDCALn3JI=";
   };
 
-  build-system = [ setuptools ];
-
   nativeCheckInputs = [ pytestCheckHook ];
-
+  build-system = [ setuptools ];
+  pyproject = true;
   pythonImportsCheck = [ "typing_utils" ];
 
   meta = {

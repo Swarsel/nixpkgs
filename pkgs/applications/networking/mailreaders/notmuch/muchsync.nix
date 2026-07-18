@@ -10,16 +10,16 @@
   zlib,
 }:
 stdenv.mkDerivation rec {
-  version = "7";
   pname = "muchsync";
-  passthru = {
-    inherit version;
-  };
+  version = "7";
+
   src = fetchurl {
     url = "https://www.muchsync.org/src/${pname}-${version}.tar.gz";
     hash = "sha256-+D4vb80O9IE0df3cjTkoVoZlTaX0FWWh6ams14Gjvqw=";
   };
+
   nativeBuildInputs = [ pkg-config ];
+
   buildInputs = [
     notmuch
     openssl
@@ -27,13 +27,19 @@ stdenv.mkDerivation rec {
     xapian
     zlib
   ];
+
   env.XAPIAN_CONFIG = "${xapian}/bin/xapian-config";
+
+  passthru = {
+    inherit version;
+  };
+
   meta = {
     description = "Synchronize maildirs and notmuch databases";
-    mainProgram = "muchsync";
     homepage = "http://www.muchsync.org/";
-    platforms = lib.platforms.unix;
-    maintainers = [ ];
     license = lib.licenses.gpl2Plus;
+    maintainers = [ ];
+    platforms = lib.platforms.unix;
+    mainProgram = "muchsync";
   };
 }

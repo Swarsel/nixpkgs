@@ -1,21 +1,21 @@
 {
   lib,
-  buildPlatform,
-  hostPlatform,
   fetchurl,
+  bash,
   bootBash,
+  buildPlatform,
+  coreutils,
+  derivationWithMeta,
+  diffutils,
+  gawk,
+  gnugrep,
   gnumake,
   gnupatch,
   gnused,
-  gnugrep,
   gnutar,
-  gawk,
   gzip,
-  diffutils,
+  hostPlatform,
   tinycc,
-  derivationWithMeta,
-  bash,
-  coreutils,
 }:
 let
   inherit (import ./common.nix { inherit lib; }) meta;
@@ -54,7 +54,17 @@ bootBash.runCommand "${pname}-${version}"
       derivationWithMeta (
         {
           inherit name buildCommand;
-          builder = "${bash}/bin/bash";
+
+          PATH = lib.makeBinPath (
+            (env.nativeBuildInputs or [ ])
+            ++ [
+              bash
+              coreutils
+            ]
+          );
+
+          SHELL = "${bash}/bin/bash";
+
           args = [
             "-e"
             (builtins.toFile "bash-builder.sh" ''
@@ -73,16 +83,10 @@ bootBash.runCommand "${pname}-${version}"
               bash -eux $buildCommandPath
             '')
           ];
+
+          builder = "${bash}/bin/bash";
           passAsFile = [ "buildCommand" ];
 
-          SHELL = "${bash}/bin/bash";
-          PATH = lib.makeBinPath (
-            (env.nativeBuildInputs or [ ])
-            ++ [
-              bash
-              coreutils
-            ]
-          );
           passthru = (env.passthru or { }) // {
             isFromMinBootstrap = true;
           };
@@ -92,6 +96,7 @@ bootBash.runCommand "${pname}-${version}"
           "passthru"
         ])
       );
+
     passthru.tests.get-version =
       result:
       bootBash.runCommand "${pname}-get-version-${version}" { } ''

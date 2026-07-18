@@ -1,45 +1,47 @@
 {
   lib,
+  stdenv,
+  fetchFromGitHub,
   applyPatches,
   bundlerEnv,
-  fetchFromGitHub,
   fetchNpmDeps,
   nixosTests,
   nodejs,
   npmHooks,
   ruby_3_4,
-  stdenv,
   tailwindcss_3,
   gemset ? import ./gemset.nix,
   sources ? lib.importJSON ./sources.json,
   unpatchedSource ? fetchFromGitHub {
+    inherit (sources) hash;
     owner = "Freika";
     repo = "dawarich";
     tag = sources.version;
-    inherit (sources) hash;
   },
 }:
 let
   ruby = ruby_3_4;
 in
 stdenv.mkDerivation (finalAttrs: {
-  pname = "dawarich";
   inherit (sources) version;
+  pname = "dawarich";
 
   # Use `applyPatches` here because bundix in the update script (see ./update.sh)
   # needs to run on the already patched Gemfile and Gemfile.lock.
   # Only patches changing these two files should be here;
   # patches for other parts of the application should go directly into mkDerivation.
   src = applyPatches {
-    src = unpatchedSource;
     patches = [
       # bundix and bundlerEnv fail with system-specific gems
       ./0001-build-ffi-gem.diff
     ];
+
     postPatch = ''
       substituteInPlace ./Gemfile \
         --replace-fail "ruby File.read('.ruby-version').strip" "ruby '>= 3.4.0'"
     '';
+
+    src = unpatchedSource;
   };
 
   postPatch = ''
@@ -48,36 +50,26 @@ stdenv.mkDerivation (finalAttrs: {
       --replace-fail 'tmp/imports/watched' 'storage/imports/watched'
   '';
 
-  dawarichGems = bundlerEnv {
-    name = "${finalAttrs.pname}-gems-${finalAttrs.version}";
-    inherit gemset ruby;
-    inherit (finalAttrs) version;
-    gemdir = finalAttrs.src;
-  };
-
-  npmDeps = fetchNpmDeps {
-    inherit (finalAttrs) src;
-    hash = sources.npmHash;
-  };
-
-  env = {
-    RAILS_ENV = "production";
-    NODE_ENV = "production";
-    TAILWINDCSS_INSTALL_DIR = "${tailwindcss_3}/bin";
-  };
-
   nativeBuildInputs = [
     nodejs
     npmHooks.npmConfigHook
     finalAttrs.dawarichGems
     finalAttrs.dawarichGems.wrappedRuby
   ];
-  propagatedBuildInputs = [
-    finalAttrs.dawarichGems.wrappedRuby
-  ];
+
   buildInputs = [
     finalAttrs.dawarichGems
   ];
+
+  propagatedBuildInputs = [
+    finalAttrs.dawarichGems.wrappedRuby
+  ];
+
+  env = {
+    NODE_ENV = "production";
+    RAILS_ENV = "production";
+    TAILWINDCSS_INSTALL_DIR = "${tailwindcss_3}/bin";
+  };
 
   buildPhase = ''
     runHook preBuild
@@ -118,23 +110,38 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  dawarichGems = bundlerEnv {
+    inherit gemset ruby;
+    inherit (finalAttrs) version;
+    gemdir = finalAttrs.src;
+    name = "${finalAttrs.pname}-gems-${finalAttrs.version}";
+  };
+
+  npmDeps = fetchNpmDeps {
+    inherit (finalAttrs) src;
+    hash = sources.npmHash;
+  };
+
   passthru = {
     tests = {
       inherit (nixosTests) dawarich;
     };
+
     # run with: nix-shell ./maintainers/scripts/update.nix --argstr package dawarich
     updateScript = ./update.sh;
   };
 
   meta = {
-    changelog = "https://github.com/Freika/dawarich/blob/${finalAttrs.version}/CHANGELOG.md";
     description = "Self-hostable alternative to Google Location History (Google Maps Timeline)";
     homepage = "https://dawarich.app/";
+    changelog = "https://github.com/Freika/dawarich/blob/${finalAttrs.version}/CHANGELOG.md";
     license = lib.licenses.agpl3Only;
+
     maintainers = with lib.maintainers; [
       diogotcorreia
       tmarkus
     ];
+
     platforms = lib.platforms.linux;
   };
 })

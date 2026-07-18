@@ -1,6 +1,6 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
   cmake,
 }:
@@ -27,10 +27,10 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   meta = {
-    homepage = "https://github.com/szpajder/libacars";
     description = "Aircraft Communications Addressing and Reporting System (ACARS) message decoder";
+    homepage = "https://github.com/szpajder/libacars";
     license = lib.licenses.mit;
-    platforms = lib.platforms.unix;
     maintainers = [ lib.maintainers.mafo ];
+    platforms = lib.platforms.unix;
   };
 })

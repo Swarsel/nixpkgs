@@ -2,12 +2,12 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  rustPlatform,
+  glib,
   just,
   libcosmicAppHook,
-  glib,
   nix-update-script,
   nixosTests,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -22,13 +22,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-ZjV5HkVzDHH96OcaHSKKrTJdOSp3NqWHbLgtq/GOQ+M=";
   };
 
-  cargoHash = "sha256-HWkuWaF2UP5brDW39nq1pn9Zp1XgEUToumuD4MmHhU8=";
-
-  separateDebugInfo = true;
-  __structuredAttrs = true;
-
-  env.VERGEN_GIT_SHA = finalAttrs.src.tag;
-
   nativeBuildInputs = [
     just
     libcosmicAppHook
@@ -36,18 +29,8 @@ rustPlatform.buildRustPackage (finalAttrs: {
   ];
 
   buildInputs = [ glib ];
-
-  dontUseJustBuild = true;
-  dontUseJustCheck = true;
-
-  justFlags = [
-    "--set"
-    "prefix"
-    (placeholder "out")
-    "--set"
-    "cargo-target-dir"
-    "target/${stdenv.hostPlatform.rust.cargoShortTarget}"
-  ];
+  cargoHash = "sha256-HWkuWaF2UP5brDW39nq1pn9Zp1XgEUToumuD4MmHhU8=";
+  env.VERGEN_GIT_SHA = finalAttrs.src.tag;
 
   # This is needed since by setting cargoBuildFlags, it would build both the applet and the main binary
   # at the same time, which would cause problems with the desktop items applet
@@ -79,6 +62,21 @@ rustPlatform.buildRustPackage (finalAttrs: {
     runHook postCheck
   '';
 
+  __structuredAttrs = true;
+  dontUseJustBuild = true;
+  dontUseJustCheck = true;
+
+  justFlags = [
+    "--set"
+    "prefix"
+    (placeholder "out")
+    "--set"
+    "cargo-target-dir"
+    "target/${stdenv.hostPlatform.rust.cargoShortTarget}"
+  ];
+
+  separateDebugInfo = true;
+
   passthru = {
     tests = {
       inherit (nixosTests)
@@ -98,11 +96,11 @@ rustPlatform.buildRustPackage (finalAttrs: {
   };
 
   meta = {
-    homepage = "https://github.com/pop-os/cosmic-files";
     description = "File Manager for the COSMIC Desktop Environment";
+    homepage = "https://github.com/pop-os/cosmic-files";
     license = lib.licenses.gpl3Only;
+    platforms = lib.platforms.linux;
     mainProgram = "cosmic-files";
     teams = [ lib.teams.cosmic ];
-    platforms = lib.platforms.linux;
   };
 })

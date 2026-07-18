@@ -1,11 +1,11 @@
 {
   lib,
-  cmake,
+  stdenv,
   fetchFromGitHub,
+  cmake,
   fetchpatch2,
   libuv,
   nix-update-script,
-  stdenv,
   testers,
   validatePkgConfig,
 }:
@@ -29,16 +29,17 @@ stdenv.mkDerivation (finalAttrs: {
     cmake
     validatePkgConfig
   ];
+
   buildInputs = [
     libuv
   ];
 
   passthru = {
-    updateScript = nix-update-script { };
-
     tests.pkg-config = testers.hasPkgConfigModules {
       package = finalAttrs.finalPackage;
     };
+
+    updateScript = nix-update-script { };
   };
 
   meta = {

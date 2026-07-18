@@ -14,15 +14,14 @@ let
   version = "4.2.0";
 
   src = fetchPypi {
-    pname = "pytest_html";
     inherit version;
     hash = "sha256-tqiMulB1ANhwmVkgHi51fTlB6Fn9F8/U7Yexb8DGeRI=";
+    pname = "pytest_html";
   };
 
   web-assets = buildNpmPackage {
-    pname = "${pname}-web-assets";
     inherit version src;
-
+    pname = "${pname}-web-assets";
     npmDepsHash = "sha256-WJ0Ff0Y1u4EiIauEDGeOqLwY5Wk9wgjIvOGUmDog8rQ=";
 
     installPhase = ''
@@ -37,16 +36,17 @@ in
 
 buildPythonPackage {
   inherit pname version src;
-  pyproject = true;
 
   nativeBuildInputs = [
     hatch-vcs
     hatchling
   ];
+
   buildInputs = [
     pytest
     web-assets
   ];
+
   propagatedBuildInputs = [
     jinja2
     pytest-metadata
@@ -60,7 +60,7 @@ buildPythonPackage {
 
   # tests require network access
   doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "pytest_html" ];
 
   meta = {

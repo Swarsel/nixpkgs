@@ -3,21 +3,19 @@
   stdenv,
   fetchFromGitHub,
   cmake,
-  makeWrapper,
-  pkg-config,
-  which,
-  xxd,
   ffmpeg,
   libcamera,
   live555,
+  makeWrapper,
   openssl,
+  pkg-config,
   v4l-utils,
+  which,
+  xxd,
 }:
 stdenv.mkDerivation rec {
   pname = "camera-streamer";
   version = "0.4.2";
-
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "ayufan";
@@ -52,8 +50,6 @@ stdenv.mkDerivation rec {
     openssl
   ];
 
-  dontUseCmakeConfigure = true;
-
   makeFlags = [
     "GIT_VERSION=${src.tag}"
     "GIT_REVISION=${src.rev}"
@@ -68,10 +64,13 @@ stdenv.mkDerivation rec {
     runHook postInstall
   '';
 
+  __structuredAttrs = true;
+  dontUseCmakeConfigure = true;
+
   meta = {
+    description = "High-performance low-latency camera streamer for Raspberry PI's";
     homepage = "https://github.com/ayufan/camera-streamer";
     changelog = "https://github.com/ayufan/camera-streamer/releases/tag/v${version}";
-    description = "High-performance low-latency camera streamer for Raspberry PI's";
     license = lib.licenses.gpl3Only;
     maintainers = with lib.maintainers; [ _30350n ];
     platforms = lib.platforms.linux;

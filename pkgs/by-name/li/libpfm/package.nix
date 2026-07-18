@@ -2,13 +2,13 @@
   lib,
   stdenv,
   fetchurl,
-  enableShared ? !stdenv.hostPlatform.isStatic,
   windows,
+  enableShared ? !stdenv.hostPlatform.isStatic,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
-  version = "4.13.0";
   pname = "libpfm";
+  version = "4.13.0";
 
   src = fetchurl {
     url = "mirror://sourceforge/perfmon2/libpfm4/libpfm-${finalAttrs.version}.tar.gz";
@@ -26,6 +26,8 @@ stdenv.mkDerivation (finalAttrs: {
       --replace '($(SYS),WINDOWS)' '($(SYS),Windows)'
   '';
 
+  buildInputs = lib.optional stdenv.hostPlatform.isMinGW windows.libgnurx;
+
   makeFlags = [
     "PREFIX=${placeholder "out"}"
     "LDCONFIG=true"
@@ -33,24 +35,26 @@ stdenv.mkDerivation (finalAttrs: {
     "SYS=${stdenv.hostPlatform.uname.system}"
   ];
 
-  env.NIX_CFLAGS_COMPILE = "-Wno-error";
   env.CONFIG_PFMLIB_SHARED = if enableShared then "y" else "n";
-
-  buildInputs = lib.optional stdenv.hostPlatform.isMinGW windows.libgnurx;
+  env.NIX_CFLAGS_COMPILE = "-Wno-error";
 
   meta = {
     description = "Helper library to program the performance monitoring events";
+
     longDescription = ''
       This package provides a library, called libpfm4 which is used to
       develop monitoring tools exploiting the performance monitoring
       events such as those provided by the Performance Monitoring Unit
       (PMU) of modern processors.
     '';
+
     license = lib.licenses.gpl2;
+
     maintainers = with lib.maintainers; [
       pierron
       t4ccer
     ];
+
     platforms = lib.platforms.linux ++ lib.platforms.windows;
   };
 })

@@ -1,18 +1,17 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   cython,
-  setuptools,
-  wheel,
   pysam,
+  setuptools,
   unittestCheckHook,
+  wheel,
 }:
 
 buildPythonPackage rec {
   pname = "pywfa";
   version = "0.5.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "kcleal";
@@ -35,6 +34,8 @@ buildPythonPackage rec {
   preCheck = ''
     cd pywfa/tests
   '';
+
+  pyproject = true;
 
   pythonImportsCheck = [
     "pywfa"

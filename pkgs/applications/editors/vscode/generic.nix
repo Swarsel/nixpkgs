@@ -1,84 +1,80 @@
 {
-  stdenv,
   lib,
-  coreutils,
-  gawk,
-  getconf,
-  gnugrep,
-  gnused,
-  jq,
-  copyDesktopItems,
-  makeDesktopItem,
-  unzip,
-  libsecret,
-  buildPackages,
-  at-spi2-atk,
-  autoPatchelfHook,
-  buildFHSEnv,
+  stdenv,
   alsa-lib,
-  libgbm,
-  nss,
-  nspr,
-  libxrandr,
-  libxfixes,
-  libxext,
-  libxdamage,
-  libxcomposite,
-  libx11,
-  libxkbfile,
-  libxcb,
-  systemdLibs,
-  fontconfig,
-  imagemagick,
-  libdbusmenu,
-  glib,
-  wayland,
-  libglvnd,
-  openssl,
-  webkitgtk_4_1,
-  ripgrep,
-  which,
-  libxtst,
-  libjpeg8,
-  pipewire,
-  libei,
-
   # needed to fix "Save as Root"
   asar,
+  at-spi2-atk,
+  autoPatchelfHook,
   bash,
+  buildFHSEnv,
+  buildPackages,
+  copyDesktopItems,
+  coreutils,
+  fontconfig,
+  gawk,
+  getconf,
+  glib,
+  gnugrep,
+  gnused,
+  imagemagick,
+  jq,
+  libdbusmenu,
+  libei,
+  libgbm,
+  libglvnd,
+  libjpeg8,
+  libsecret,
+  libx11,
+  libxcb,
+  libxcomposite,
+  libxdamage,
+  libxext,
+  libxfixes,
+  libxkbfile,
+  libxrandr,
+  libxtst,
+  makeDesktopItem,
+  nspr,
+  nss,
+  openssl,
+  pipewire,
+  ripgrep,
+  systemdLibs,
+  unzip,
+  wayland,
+  webkitgtk_4_1,
+  which,
 }:
 
 {
-  # Attributes inherit from specific versions
-  version,
-  vscodeVersion ? version,
-  src,
-  meta,
-  sourceRoot,
   commandLineArgs,
   executableName,
   longName,
-  shortName,
+  meta,
   pname,
-  libraryName ? "vscode",
-  iconName ? "vs${executableName}",
-  updateScript,
-  dontFixup ? false,
-  rev ? null,
-  vscodeServer ? null,
-  sourceExecutableName ? executableName,
-  useVSCodeRipgrep ? false,
-  hasVsceSign ? false,
-  patchVSCodePath ? true,
-
+  shortName,
+  sourceRoot,
+  src,
   # Populate passthru.tests
   tests,
-
-  extraNativeBuildInputs ? [ ],
-
+  updateScript,
+  # Attributes inherit from specific versions
+  version,
   # Customize FHS environment
   # Function that takes default buildFHSEnv arguments and returns modified arguments
   customizeFHSEnv ? args: args,
+  dontFixup ? false,
+  extraNativeBuildInputs ? [ ],
+  hasVsceSign ? false,
+  iconName ? "vs${executableName}",
+  libraryName ? "vscode",
+  patchVSCodePath ? true,
+  rev ? null,
+  sourceExecutableName ? executableName,
+  useVSCodeRipgrep ? false,
+  vscodeServer ? null,
+  vscodeVersion ? version,
 }:
 
 stdenv.mkDerivation (
@@ -100,9 +96,25 @@ stdenv.mkDerivation (
       }:
       let
         defaultArgs = {
+          inherit version;
           # also determines the name of the wrapped command
           pname = executableName;
-          inherit version;
+          # vscode likes to kill the parent so that the
+          # gui application isn't attached to the terminal session
+          dieWithParent = false;
+
+          extraBwrapArgs = [
+            "--bind-try /etc/nixos/ /etc/nixos/"
+            "--ro-bind-try /etc/xdg/ /etc/xdg/"
+            "--ro-bind-try /etc/vscode/policy.json /etc/vscode/policy.json"
+          ];
+
+          # symlink shared assets, including icons and desktop entries
+          extraInstallCommands = ''
+            ln -s "${finalAttrs.finalPackage}/share" "$out/"
+          '';
+
+          runScript = "${finalAttrs.finalPackage}/bin/${executableName}";
 
           # additional libraries which are commonly needed for extensions
           targetPkgs =
@@ -150,23 +162,6 @@ stdenv.mkDerivation (
             ])
             ++ additionalPkgs pkgs;
 
-          extraBwrapArgs = [
-            "--bind-try /etc/nixos/ /etc/nixos/"
-            "--ro-bind-try /etc/xdg/ /etc/xdg/"
-            "--ro-bind-try /etc/vscode/policy.json /etc/vscode/policy.json"
-          ];
-
-          # symlink shared assets, including icons and desktop entries
-          extraInstallCommands = ''
-            ln -s "${finalAttrs.finalPackage}/share" "$out/"
-          '';
-
-          runScript = "${finalAttrs.finalPackage}/bin/${executableName}";
-
-          # vscode likes to kill the parent so that the
-          # gui application isn't attached to the terminal session
-          dieWithParent = false;
-
           passthru = {
             inherit executableName;
             inherit (finalAttrs.finalPackage) pname version; # for home-manager module
@@ -190,67 +185,97 @@ stdenv.mkDerivation (
       dontFixup
       ;
 
-    passthru = {
-      inherit
-        executableName
-        iconName
-        longName
-        tests
-        updateScript
-        vscodeVersion
-        ;
-      fhs = fhs { };
-      fhsWithPackages = f: fhs { additionalPkgs = f; };
-    }
-    // lib.optionalAttrs (vscodeServer != null) {
-      inherit rev vscodeServer;
-    };
+    inherit meta;
 
-    desktopItems = [
-      (makeDesktopItem {
-        name = executableName;
-        desktopName = longName;
-        comment = "Code Editing. Redefined.";
-        genericName = "Text Editor";
-        exec = "${executableName} %F";
-        icon = iconName;
-        startupNotify = true;
-        startupWMClass = shortName;
-        categories = [
-          "Utility"
-          "TextEditor"
-          "Development"
-          "IDE"
-        ];
-        keywords = [ "vscode" ];
-        actions.new-empty-window = {
-          name = "New Empty Window";
-          exec = "${executableName} --new-window %F";
-          icon = iconName;
-        };
-      })
-      (makeDesktopItem {
-        name = executableName + "-url-handler";
-        desktopName = longName + " - URL Handler";
-        comment = "Code Editing. Redefined.";
-        genericName = "Text Editor";
-        exec = executableName + " --open-url %U";
-        icon = iconName;
-        startupNotify = true;
-        categories = [
-          "Utility"
-          "TextEditor"
-          "Development"
-          "IDE"
-        ];
-        mimeTypes = [ "x-scheme-handler/${iconName}" ];
-        keywords = [ "vscode" ];
-        noDisplay = true;
-      })
-    ];
+    # See https://github.com/NixOS/nixpkgs/issues/49643#issuecomment-873853897
+    # linux only because of https://github.com/NixOS/nixpkgs/issues/138729
+    postPatch =
+      lib.optionalString stdenv.hostPlatform.isLinux (
+        # disable update checks
+        ''
+          tmpProductJson="$(mktemp)"
+          jq 'del(.updateUrl, .backupUpdateUrl)' resources/app/product.json > "$tmpProductJson"
+          mv "$tmpProductJson" resources/app/product.json
+        ''
+        # this is a fix for "save as root" functionality
+        + ''
+          packed="resources/app/node_modules.asar"
+          unpacked="resources/app/node_modules"
+          asar extract "$packed" "$unpacked"
+          substituteInPlace $unpacked/@vscode/sudo-prompt/index.js \
+            --replace-fail "/usr/bin/pkexec" "/run/wrappers/bin/pkexec" \
+            --replace-fail "/bin/bash" "${bash}/bin/bash"
+          rm -rf "$packed"
+        ''
+        # without this symlink loading JsChardet, the library that is used for auto encoding detection when files.autoGuessEncoding is true,
+        # fails to load with: electron/js2c/renderer_init: Error: Cannot find module 'jschardet'
+        # and the window immediately closes which renders VSCode unusable
+        # see https://github.com/NixOS/nixpkgs/issues/152939 for full log
+        + ''
+          ln -rs "$unpacked" "$packed"
+        ''
+      )
+      + (
+        let
+          nodeModulesPath =
+            if stdenv.hostPlatform.isDarwin then
+              if lib.versionAtLeast vscodeVersion "1.94.0" then
+                "Contents/Resources/app/node_modules"
+              else
+                "Contents/Resources/app/node_modules.asar.unpacked"
+            else
+              "resources/app/node_modules";
+
+          # see https://www.npmjs.com/package/@vscode/ripgrep-universal?activeTab=code
+          ripgrepSystem =
+            {
+              aarch64-darwin = "darwin-arm64";
+              aarch64-linux = "linux-arm64";
+              armv7l-linux = "linux-arm";
+              i686-linux = "linux-ia32";
+              powerpc64-linux = "linux-ppc64";
+              riscv64-linux = "linux-riscv64";
+              s390x-linux = "linux-s390x";
+              x86_64-linux = "linux-x64";
+            }
+            .${stdenv.hostPlatform.system}
+              or (throw "Unknown system for ripgrep-universal: ${stdenv.hostPlatform.system}");
+
+          ripgrepPath =
+            if lib.versionAtLeast vscodeVersion "1.122.0" then
+              "@vscode/ripgrep-universal/bin/${ripgrepSystem}/rg"
+            else
+              "@vscode/ripgrep/bin/rg";
+
+          vscodeRipgrep = "${nodeModulesPath}/${ripgrepPath}";
+        in
+        if !useVSCodeRipgrep then
+          ''
+            rm ${vscodeRipgrep}
+            ln -s ${ripgrep}/bin/rg ${vscodeRipgrep}
+          ''
+        else
+          ''
+            chmod +x ${vscodeRipgrep}
+          ''
+      );
 
     strictDeps = true;
-    __structuredAttrs = true;
+
+    nativeBuildInputs = [
+      unzip
+      imagemagick
+    ]
+    ++ extraNativeBuildInputs
+    ++ lib.optionals stdenv.hostPlatform.isLinux [
+      autoPatchelfHook
+      asar
+      copyDesktopItems
+      jq
+      # override doesn't preserve splicing https://github.com/NixOS/nixpkgs/issues/132651
+      # Has to use `makeShellWrapper` from `buildPackages` even though `makeShellWrapper` from the inputs is spliced because `propagatedBuildInputs` would pick the wrong one because of a different offset.
+      (buildPackages.wrapGAppsHook3.override { makeWrapper = buildPackages.makeShellWrapper; })
+    ];
 
     buildInputs = [
       libsecret
@@ -269,44 +294,6 @@ stdenv.mkDerivation (
       pipewire
       libei
     ];
-
-    runtimeDependencies = lib.optionals stdenv.hostPlatform.isLinux [
-      systemdLibs
-      fontconfig.lib
-      libdbusmenu
-      wayland
-      libsecret
-    ];
-
-    nativeBuildInputs = [
-      unzip
-      imagemagick
-    ]
-    ++ extraNativeBuildInputs
-    ++ lib.optionals stdenv.hostPlatform.isLinux [
-      autoPatchelfHook
-      asar
-      copyDesktopItems
-      jq
-      # override doesn't preserve splicing https://github.com/NixOS/nixpkgs/issues/132651
-      # Has to use `makeShellWrapper` from `buildPackages` even though `makeShellWrapper` from the inputs is spliced because `propagatedBuildInputs` would pick the wrong one because of a different offset.
-      (buildPackages.wrapGAppsHook3.override { makeWrapper = buildPackages.makeShellWrapper; })
-    ];
-
-    # autoPatchelfHook cannot index libwebkit2gtk-4.1.so because pyelftools
-    # fails to parse it (ELFError: String Table not found).  Ignore the
-    # missing dep and add the library path via appendRunpaths so it is still
-    # available at runtime for libmsalruntime.so (Microsoft Authentication).
-    autoPatchelfIgnoreMissingDeps = lib.optionals stdenv.hostPlatform.isLinux [
-      "libwebkit2gtk-4.1.so.0"
-    ];
-    appendRunpaths = lib.optionals stdenv.hostPlatform.isLinux [
-      "${webkitgtk_4_1}/lib"
-    ];
-
-    dontBuild = true;
-    dontConfigure = true;
-    noDumpEnvVars = true;
 
     installPhase = ''
       runHook preInstall
@@ -387,79 +374,6 @@ stdenv.mkDerivation (
       )
     '';
 
-    # See https://github.com/NixOS/nixpkgs/issues/49643#issuecomment-873853897
-    # linux only because of https://github.com/NixOS/nixpkgs/issues/138729
-    postPatch =
-      lib.optionalString stdenv.hostPlatform.isLinux (
-        # disable update checks
-        ''
-          tmpProductJson="$(mktemp)"
-          jq 'del(.updateUrl, .backupUpdateUrl)' resources/app/product.json > "$tmpProductJson"
-          mv "$tmpProductJson" resources/app/product.json
-        ''
-        # this is a fix for "save as root" functionality
-        + ''
-          packed="resources/app/node_modules.asar"
-          unpacked="resources/app/node_modules"
-          asar extract "$packed" "$unpacked"
-          substituteInPlace $unpacked/@vscode/sudo-prompt/index.js \
-            --replace-fail "/usr/bin/pkexec" "/run/wrappers/bin/pkexec" \
-            --replace-fail "/bin/bash" "${bash}/bin/bash"
-          rm -rf "$packed"
-        ''
-        # without this symlink loading JsChardet, the library that is used for auto encoding detection when files.autoGuessEncoding is true,
-        # fails to load with: electron/js2c/renderer_init: Error: Cannot find module 'jschardet'
-        # and the window immediately closes which renders VSCode unusable
-        # see https://github.com/NixOS/nixpkgs/issues/152939 for full log
-        + ''
-          ln -rs "$unpacked" "$packed"
-        ''
-      )
-      + (
-        let
-          nodeModulesPath =
-            if stdenv.hostPlatform.isDarwin then
-              if lib.versionAtLeast vscodeVersion "1.94.0" then
-                "Contents/Resources/app/node_modules"
-              else
-                "Contents/Resources/app/node_modules.asar.unpacked"
-            else
-              "resources/app/node_modules";
-
-          # see https://www.npmjs.com/package/@vscode/ripgrep-universal?activeTab=code
-          ripgrepSystem =
-            {
-              aarch64-darwin = "darwin-arm64";
-              armv7l-linux = "linux-arm";
-              aarch64-linux = "linux-arm64";
-              i686-linux = "linux-ia32";
-              powerpc64-linux = "linux-ppc64";
-              riscv64-linux = "linux-riscv64";
-              s390x-linux = "linux-s390x";
-              x86_64-linux = "linux-x64";
-            }
-            .${stdenv.hostPlatform.system}
-              or (throw "Unknown system for ripgrep-universal: ${stdenv.hostPlatform.system}");
-
-          ripgrepPath =
-            if lib.versionAtLeast vscodeVersion "1.122.0" then
-              "@vscode/ripgrep-universal/bin/${ripgrepSystem}/rg"
-            else
-              "@vscode/ripgrep/bin/rg";
-
-          vscodeRipgrep = "${nodeModulesPath}/${ripgrepPath}";
-        in
-        if !useVSCodeRipgrep then
-          ''
-            rm ${vscodeRipgrep}
-            ln -s ${ripgrep}/bin/rg ${vscodeRipgrep}
-          ''
-        else
-          ''
-            chmod +x ${vscodeRipgrep}
-          ''
-      );
-
     postFixup = lib.optionalString stdenv.hostPlatform.isLinux (
       ''
         patchelf \
@@ -477,6 +391,93 @@ stdenv.mkDerivation (
       '')
     );
 
-    inherit meta;
+    __structuredAttrs = true;
+
+    appendRunpaths = lib.optionals stdenv.hostPlatform.isLinux [
+      "${webkitgtk_4_1}/lib"
+    ];
+
+    # autoPatchelfHook cannot index libwebkit2gtk-4.1.so because pyelftools
+    # fails to parse it (ELFError: String Table not found).  Ignore the
+    # missing dep and add the library path via appendRunpaths so it is still
+    # available at runtime for libmsalruntime.so (Microsoft Authentication).
+    autoPatchelfIgnoreMissingDeps = lib.optionals stdenv.hostPlatform.isLinux [
+      "libwebkit2gtk-4.1.so.0"
+    ];
+
+    desktopItems = [
+      (makeDesktopItem {
+        actions.new-empty-window = {
+          exec = "${executableName} --new-window %F";
+          icon = iconName;
+          name = "New Empty Window";
+        };
+
+        categories = [
+          "Utility"
+          "TextEditor"
+          "Development"
+          "IDE"
+        ];
+
+        comment = "Code Editing. Redefined.";
+        desktopName = longName;
+        exec = "${executableName} %F";
+        genericName = "Text Editor";
+        icon = iconName;
+        keywords = [ "vscode" ];
+        name = executableName;
+        startupNotify = true;
+        startupWMClass = shortName;
+      })
+      (makeDesktopItem {
+        categories = [
+          "Utility"
+          "TextEditor"
+          "Development"
+          "IDE"
+        ];
+
+        comment = "Code Editing. Redefined.";
+        desktopName = longName + " - URL Handler";
+        exec = executableName + " --open-url %U";
+        genericName = "Text Editor";
+        icon = iconName;
+        keywords = [ "vscode" ];
+        mimeTypes = [ "x-scheme-handler/${iconName}" ];
+        name = executableName + "-url-handler";
+        noDisplay = true;
+        startupNotify = true;
+      })
+    ];
+
+    dontBuild = true;
+    dontConfigure = true;
+    noDumpEnvVars = true;
+
+    runtimeDependencies = lib.optionals stdenv.hostPlatform.isLinux [
+      systemdLibs
+      fontconfig.lib
+      libdbusmenu
+      wayland
+      libsecret
+    ];
+
+    passthru = {
+      inherit
+        executableName
+        iconName
+        longName
+        tests
+        updateScript
+        vscodeVersion
+        ;
+
+      fhs = fhs { };
+      fhsWithPackages = f: fhs { additionalPkgs = f; };
+    }
+    // lib.optionalAttrs (vscodeServer != null) {
+      inherit rev vscodeServer;
+    };
   }
 )

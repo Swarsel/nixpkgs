@@ -2,8 +2,8 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  cmake,
   alsa-lib,
+  cmake,
   libx11,
 }:
 
@@ -43,8 +43,8 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   meta = {
-    homepage = "https://github.com/llloret/osmid";
     description = "Lightweight, portable, easy to use tool to convert MIDI to OSC and OSC to MIDI";
+    homepage = "https://github.com/llloret/osmid";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ c0deaddict ];
     platforms = lib.platforms.linux;

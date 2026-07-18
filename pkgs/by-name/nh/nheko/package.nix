@@ -2,26 +2,26 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  cmake,
   asciidoc,
-  pkg-config,
+  cmake,
   cmark,
   coeurl,
   curl,
+  fetchpatch,
+  gst_all_1,
   kdsingleapplication,
   libevent,
+  libnice,
   libsecret,
   lmdb,
   lmdbxx,
   mtxclient,
   nlohmann_json,
   olm,
+  pkg-config,
+  qt6Packages,
   re2,
   spdlog,
-  gst_all_1,
-  libnice,
-  qt6Packages,
-  fetchpatch,
   withVoipSupport ? stdenv.hostPlatform.isLinux,
 }:
 
@@ -39,14 +39,14 @@ stdenv.mkDerivation (finalAttrs: {
   patches = [
     # Fixes rendering replies with QT 6.9.2
     (fetchpatch {
-      url = "https://github.com/Nheko-Reborn/nheko/commit/2769642d3c7bd3c0d830b2f18ef6b3bf6a710bf4.patch";
       hash = "sha256-y8aiS6h5CSJYBdsAH4jYhAyrFug7aH2H8L6rBfULnQQ=";
+      url = "https://github.com/Nheko-Reborn/nheko/commit/2769642d3c7bd3c0d830b2f18ef6b3bf6a710bf4.patch";
     })
     ./fix-darwin-build.patch
     # Fix for Qt 6.10
     (fetchpatch {
-      url = "https://github.com/Nheko-Reborn/nheko/commit/af2ca72030deb14a920a888e807dc732d93e3714.patch";
       hash = "sha256-tlYrfEoUkdJoVzvfF34IhXdn1AxLO0MOlp9rzuFivws=";
+      url = "https://github.com/Nheko-Reborn/nheko/commit/af2ca72030deb14a920a888e807dc732d93e3714.patch";
     })
   ];
 
@@ -113,12 +113,14 @@ stdenv.mkDerivation (finalAttrs: {
     description = "Desktop client for the Matrix protocol";
     homepage = "https://github.com/Nheko-Reborn/nheko";
     license = lib.licenses.gpl3Plus;
-    mainProgram = "nheko";
+
     maintainers = with lib.maintainers; [
       fpletz
       rebmit
       rnhmjoj
     ];
+
     platforms = lib.platforms.all;
+    mainProgram = "nheko";
   };
 })

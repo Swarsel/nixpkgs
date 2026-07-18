@@ -19,9 +19,9 @@ rustPlatform.buildRustPackage (finalAttrs: {
 
   meta = {
     description = "Colourise your checksum output";
-    mainProgram = "coloursum";
     homepage = "https://github.com/ticky/coloursum";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ fgaz ];
+    mainProgram = "coloursum";
   };
 })

@@ -1,33 +1,36 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # build-system
-  setuptools,
-  setuptools-scm,
-
-  # dependencies
-  python-dateutil,
-
-  # tests
-  pytestCheckHook,
+  buildPythonPackage,
   duckdb,
   numpy,
   pandas,
+  # tests
+  pytestCheckHook,
+  # dependencies
+  python-dateutil,
+  # build-system
+  setuptools,
+  setuptools-scm,
 }:
 
 buildPythonPackage rec {
   pname = "sqlglot";
   version = "28.9.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
-    repo = "sqlglot";
     owner = "tobymao";
+    repo = "sqlglot";
     tag = "v${version}";
     hash = "sha256-2AmHKGAoDF8w9k8VN9d25Js3UiSh8YNqdGRHN7VqRpw=";
   };
+
+  nativeCheckInputs = [
+    pytestCheckHook
+    duckdb
+    numpy
+    pandas
+  ];
 
   build-system = [
     setuptools
@@ -39,13 +42,7 @@ buildPythonPackage rec {
     python-dateutil
   ];
 
-  nativeCheckInputs = [
-    pytestCheckHook
-    duckdb
-    numpy
-    pandas
-  ];
-
+  pyproject = true;
   pythonImportsCheck = [ "sqlglot" ];
 
   meta = {

@@ -1,17 +1,16 @@
 {
   lib,
   stdenv,
-  catch2_3,
   fetchFromGitHub,
-  cmake,
   boehmgc,
   boost,
+  catch2_3,
+  cmake,
   fmt,
   nix-update-script,
 }:
 stdenv.mkDerivation (finalAttrs: {
   pname = "immer";
-
   version = "0.9.1";
 
   src = fetchFromGitHub {
@@ -21,32 +20,31 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-Qrr5mDbPF9cbLi9T2IVAKPN3CkTxffoivvqGNGLdkxE=";
   };
 
+  strictDeps = true;
   nativeBuildInputs = [ cmake ];
-
   cmakeFlags = [ (lib.cmakeBool "immer_BUILD_TESTS" finalAttrs.finalPackage.doCheck) ];
-
+  doCheck = false;
   # immer is a header only library
   dontBuild = true;
   dontUseCmakeBuildDir = true;
-
-  doCheck = false;
-
-  strictDeps = true;
 
   passthru = {
     tests.test = finalAttrs.finalPackage.overrideAttrs (attrs: {
       pname = "${attrs.pname}-test";
       doCheck = true;
+
       checkInputs = [
         catch2_3
         boehmgc
         boost
         fmt
       ];
+
       checkPhase = ''
         make check
       '';
     });
+
     updateScript = nix-update-script { };
   };
 

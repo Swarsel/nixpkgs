@@ -3,8 +3,8 @@
   stdenv,
   fetchFromGitHub,
   cmake,
-  qt6,
   kdePackages,
+  qt6,
   wrapGAppsHook4,
 }:
 
@@ -19,6 +19,12 @@ stdenv.mkDerivation (finalAttrs: {
     sha256 = "sha256-2gwzk23t9WRHrXlASzba9HQRijHjH0nfWsBjMcqgq68=";
   };
 
+  nativeBuildInputs = [
+    cmake
+    wrapGAppsHook4
+    qt6.wrapQtAppsHook
+  ];
+
   buildInputs = [
     qt6.qtbase
     qt6.qtmultimedia
@@ -27,36 +33,36 @@ stdenv.mkDerivation (finalAttrs: {
     qt6.qt5compat
     kdePackages.mpvqt
   ];
-  nativeBuildInputs = [
-    cmake
-    wrapGAppsHook4
-    qt6.wrapQtAppsHook
-  ];
+
   cmakeFlags = [
     (lib.cmakeFeature "CMAKE_BUILD_TYPE" "\"Release\"")
   ];
-
-  dontWrapGApps = true;
 
   preFixup = ''
     qtWrapperArgs+=("''${gappsWrapperArgs[@]}")
   '';
 
+  dontWrapGApps = true;
+
   meta = {
     description = "Simple RSS/Atom feed reader with online synchronization";
-    mainProgram = "rssguard";
+
     longDescription = ''
       RSS Guard is a simple, light and easy-to-use RSS/ATOM feed aggregator
       developed using Qt framework and with online feed synchronization support
       for ownCloud/Nextcloud.
     '';
+
     homepage = "https://github.com/martinrotter/rssguard";
     changelog = "https://github.com/martinrotter/rssguard/releases/tag/${finalAttrs.version}";
     license = lib.licenses.gpl3Plus;
-    platforms = lib.platforms.linux;
+
     maintainers = with lib.maintainers; [
       jluttine
       tebriel
     ];
+
+    platforms = lib.platforms.linux;
+    mainProgram = "rssguard";
   };
 })

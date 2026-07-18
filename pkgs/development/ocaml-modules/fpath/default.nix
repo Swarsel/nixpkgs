@@ -1,15 +1,16 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchurl,
-  ocaml,
+  astring,
   findlib,
+  ocaml,
   ocamlbuild,
   topkg,
-  astring,
 }:
 
 stdenv.mkDerivation rec {
+  inherit (topkg) buildPhase installPhase;
   pname = "ocaml${ocaml.version}-fpath";
   version = "0.7.3";
 
@@ -18,26 +19,24 @@ stdenv.mkDerivation rec {
     sha256 = "03z7mj0sqdz465rc4drj1gr88l9q3nfs374yssvdjdyhjbqqzc0j";
   };
 
+  strictDeps = true;
+
   nativeBuildInputs = [
     ocaml
     findlib
     ocamlbuild
     topkg
   ];
-  buildInputs = [ topkg ];
 
+  buildInputs = [ topkg ];
   propagatedBuildInputs = [ astring ];
 
-  strictDeps = true;
-
-  inherit (topkg) buildPhase installPhase;
-
   meta = {
+    inherit (ocaml.meta) platforms;
     description = "OCaml module for handling file system paths with POSIX and Windows conventions";
     homepage = "https://erratique.ch/software/fpath";
     license = lib.licenses.isc;
     maintainers = [ lib.maintainers.vbgl ];
-    inherit (ocaml.meta) platforms;
     broken = lib.versionOlder ocaml.version "4.03";
   };
 }

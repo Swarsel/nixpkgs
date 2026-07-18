@@ -1,10 +1,9 @@
 {
   lib,
   fetchFromGitHub,
-  rustPlatform,
-
   ffmpeg,
   makeWrapper,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -18,13 +17,9 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-ACYbSQKaOJ2hS8NbOAppfKo+Mk3CKg0OAwb56AH42Zs=";
   };
 
-  cargoHash = "sha256-S+/Oh1Cwulw8FyakF+d2E51AioFuQBGMAOG3y27YM2Q=";
-
   nativeBuildInputs = [ makeWrapper ];
-
+  cargoHash = "sha256-S+/Oh1Cwulw8FyakF+d2E51AioFuQBGMAOG3y27YM2Q=";
   nativeCheckInputs = [ ffmpeg ];
-
-  cargoBuildFlags = [ "-p substudy" ];
 
   checkFlags = [
     # flaky: relies on sqlite ms timestamps differing across 3 quick inserts
@@ -42,11 +37,13 @@ rustPlatform.buildRustPackage (finalAttrs: {
       --prefix PATH : ${lib.makeBinPath [ ffmpeg ]}
   '';
 
+  cargoBuildFlags = [ "-p substudy" ];
+
   meta = {
     description = "Learn foreign languages using audio and subtitles extracted from video files";
     homepage = "https://www.randomhacks.net/substudy";
     license = lib.licenses.asl20;
-    mainProgram = "substudy";
     maintainers = [ ];
+    mainProgram = "substudy";
   };
 })

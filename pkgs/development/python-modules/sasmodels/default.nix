@@ -2,36 +2,31 @@
   lib,
   fetchFromGitHub,
   buildPythonPackage,
-
+  bumps,
   # build-system
   columnize,
+  docutils,
   hatch-requirements-txt,
   hatch-sphinx,
   hatch-vcs,
   hatchling,
-  siphash24,
-  sphinx,
-
-  numpy,
-  scipy,
-  bumps,
-  docutils,
   matplotlib,
+  numpy,
   opencl-headers,
   pycuda,
   pyopencl,
-
   # optional-dependencies
-
   # tests
   pytestCheckHook,
+  scipy,
+  siphash24,
+  sphinx,
   writableTmpDirAsHomeHook,
 }:
 
 buildPythonPackage rec {
   pname = "sasmodels";
   version = "1.0.12";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "SasView";
@@ -45,6 +40,14 @@ buildPythonPackage rec {
       --replace-fail '"tccbox",' ""
   '';
 
+  buildInputs = [ opencl-headers ];
+
+  nativeCheckInputs = [
+    pytestCheckHook
+    writableTmpDirAsHomeHook
+  ]
+  ++ optional-dependencies.full;
+
   build-system = [
     columnize
     hatch-requirements-txt
@@ -55,35 +58,31 @@ buildPythonPackage rec {
     sphinx
   ];
 
-  buildInputs = [ opencl-headers ];
-
-  pythonRemoveDeps = [
-    "tccbox" # unpackaged
-  ];
   dependencies = [
     numpy
     scipy
   ];
 
   optional-dependencies = {
+    cuda = [ pycuda ];
+
     full = [
       docutils
       bumps
       matplotlib
       columnize
     ];
-    server = [ bumps ];
+
     opencl = [ pyopencl ];
-    cuda = [ pycuda ];
+    server = [ bumps ];
   };
 
-  nativeCheckInputs = [
-    pytestCheckHook
-    writableTmpDirAsHomeHook
-  ]
-  ++ optional-dependencies.full;
-
+  pyproject = true;
   pythonImportsCheck = [ "sasmodels" ];
+
+  pythonRemoveDeps = [
+    "tccbox" # unpackaged
+  ];
 
   meta = {
     description = "Library of small angle scattering models";

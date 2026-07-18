@@ -1,7 +1,7 @@
 {
   lib,
-  stdenvNoCC,
   fetchFromGitHub,
+  stdenvNoCC,
   unstableGitUpdater,
 }:
 
@@ -29,7 +29,7 @@ stdenvNoCC.mkDerivation {
     description = "Marwaita theme for Kvantum";
     homepage = "https://github.com/darkomarko42/KvMarwaita";
     license = lib.licenses.gpl3Only;
-    platforms = lib.platforms.unix;
     maintainers = with lib.maintainers; [ romildo ];
+    platforms = lib.platforms.unix;
   };
 }

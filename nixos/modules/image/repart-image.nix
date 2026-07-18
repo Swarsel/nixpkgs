@@ -3,44 +3,41 @@
 
 {
   lib,
-  stdenvNoCC,
-  runCommand,
-  python3,
+  baseName,
   black,
-  ruff,
-  mypy,
-  systemd,
-  fakeroot,
-  util-linux,
-
+  btrfs-progs,
+  compression,
+  definitionsDirectory,
   # filesystem tools
   dosfstools,
-  mtools,
   e2fsprogs,
-  squashfsTools,
   erofs-utils,
-  btrfs-progs,
-  xfsprogs,
-
-  # compression tools
-  zstd,
-  xz,
-  zeekstd,
-
-  # arguments
-  name,
-  version,
-  baseName,
-  compression,
+  fakeroot,
   fileSystems,
   finalPartitions,
-  split,
-  seed,
-  definitionsDirectory,
-  imageSize ? "auto",
+  mtools,
+  mypy,
+  # arguments
+  name,
+  python3,
+  ruff,
+  runCommand,
   sectorSize,
-  mkfsEnv ? { },
+  seed,
+  split,
+  squashfsTools,
+  stdenvNoCC,
+  systemd,
+  util-linux,
+  version,
+  xfsprogs,
+  xz,
+  zeekstd,
+  # compression tools
+  zstd,
   createEmpty ? true,
+  imageSize ? "auto",
+  mkfsEnv ? { },
 }:
 
 let
@@ -84,6 +81,7 @@ let
       {
         # TODO: ruff does not splice properly in nativeBuildInputs
         depsBuildBuild = [ ruff ];
+
         nativeBuildInputs = [
           python3
           black
@@ -100,32 +98,35 @@ let
       '';
 
   fileSystemToolMapping = {
+    "btrfs" = [ btrfs-progs ];
+    "erofs" = [ erofs-utils ];
+    "ext4" = [ e2fsprogs.bin ];
+    "squashfs" = [ squashfsTools ];
+    "swap" = [ util-linux ];
+
     "vfat" = [
       dosfstools
       mtools
     ];
-    "ext4" = [ e2fsprogs.bin ];
-    "squashfs" = [ squashfsTools ];
-    "erofs" = [ erofs-utils ];
-    "btrfs" = [ btrfs-progs ];
+
     "xfs" = [ xfsprogs ];
-    "swap" = [ util-linux ];
   };
 
   fileSystemTools = builtins.concatMap (f: fileSystemToolMapping."${f}") fileSystems;
 
   compressionPkg =
     {
-      "zstd" = zstd;
       "xz" = xz;
+      "zstd" = zstd;
       "zstd-seekable" = zeekstd;
     }
     ."${compression.algorithm}";
 
   compressionCommand =
     {
-      "zstd" = "zstd --no-progress --threads=$NIX_BUILD_CORES -${toString compression.level}";
       "xz" = "xz --keep --verbose --threads=$NIX_BUILD_CORES -${toString compression.level}";
+      "zstd" = "zstd --no-progress --threads=$NIX_BUILD_CORES -${toString compression.level}";
+
       "zstd-seekable" =
         "zeekstd --no-progress --frame-size 2M --compression-level ${toString compression.level}";
     }
@@ -136,69 +137,15 @@ stdenvNoCC.mkDerivation (
   (
     if (version != null) then
       {
-        pname = name;
         inherit version;
+        pname = name;
       }
     else
       { inherit name; }
   )
   // {
-    __structuredAttrs = true;
-
-    # the image will be self-contained so we can drop references
-    # to the closure that was used to build it
-    unsafeDiscardReferences.out = true;
-
-    nativeBuildInputs = [
-      systemd
-      util-linux
-      fakeroot
-    ]
-    ++ lib.optionals (compression.enable) [
-      compressionPkg
-    ]
-    ++ fileSystemTools;
-
-    env = mkfsEnv;
-
     inherit finalPartitions definitionsDirectory;
-
-    partitionsJSON = builtins.toJSON finalAttrs.finalPartitions;
-
-    # relative path to the repart definitions that are read by systemd-repart
-    finalRepartDefinitions = "repart.d";
-
-    systemdRepartFlags = [
-      "--architecture=${systemdArch}"
-      "--dry-run=no"
-      "--size=${imageSize}"
-      "--definitions=${finalAttrs.finalRepartDefinitions}"
-      "--split=${lib.boolToString split}"
-      "--json=pretty"
-    ]
-    ++ lib.optionals (seed != null) [
-      "--seed=${seed}"
-    ]
-    ++ lib.optionals createEmpty [
-      "--empty=create"
-    ]
-    ++ lib.optionals (sectorSize != null) [
-      "--sector-size=${toString sectorSize}"
-    ];
-
-    dontUnpack = true;
-    dontConfigure = true;
-    dontFixup = true;
-    doCheck = false;
-
-    patchPhase = ''
-      runHook prePatch
-
-      amendedRepartDefinitionsDir=$(${amendRepartDefinitions} <(echo "$partitionsJSON") $definitionsDirectory)
-      ln -vs $amendedRepartDefinitionsDir $finalRepartDefinitions
-
-      runHook postPatch
-    '';
+    __structuredAttrs = true;
 
     buildPhase = ''
       runHook preBuild
@@ -211,6 +158,14 @@ stdenvNoCC.mkDerivation (
 
       runHook postBuild
     '';
+
+    doCheck = false;
+    dontConfigure = true;
+    dontFixup = true;
+    dontUnpack = true;
+    env = mkfsEnv;
+    # relative path to the repart definitions that are read by systemd-repart
+    finalRepartDefinitions = "repart.d";
 
     installPhase = ''
       runHook preInstall
@@ -233,8 +188,51 @@ stdenvNoCC.mkDerivation (
       runHook postInstall
     '';
 
+    nativeBuildInputs = [
+      systemd
+      util-linux
+      fakeroot
+    ]
+    ++ lib.optionals (compression.enable) [
+      compressionPkg
+    ]
+    ++ fileSystemTools;
+
+    partitionsJSON = builtins.toJSON finalAttrs.finalPartitions;
+
     passthru = {
       inherit amendRepartDefinitions;
     };
+
+    patchPhase = ''
+      runHook prePatch
+
+      amendedRepartDefinitionsDir=$(${amendRepartDefinitions} <(echo "$partitionsJSON") $definitionsDirectory)
+      ln -vs $amendedRepartDefinitionsDir $finalRepartDefinitions
+
+      runHook postPatch
+    '';
+
+    systemdRepartFlags = [
+      "--architecture=${systemdArch}"
+      "--dry-run=no"
+      "--size=${imageSize}"
+      "--definitions=${finalAttrs.finalRepartDefinitions}"
+      "--split=${lib.boolToString split}"
+      "--json=pretty"
+    ]
+    ++ lib.optionals (seed != null) [
+      "--seed=${seed}"
+    ]
+    ++ lib.optionals createEmpty [
+      "--empty=create"
+    ]
+    ++ lib.optionals (sectorSize != null) [
+      "--sector-size=${toString sectorSize}"
+    ];
+
+    # the image will be self-contained so we can drop references
+    # to the closure that was used to build it
+    unsafeDiscardReferences.out = true;
   }
 )

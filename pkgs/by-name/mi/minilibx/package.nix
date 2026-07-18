@@ -34,10 +34,6 @@ stdenv.mkDerivation {
     libxext
   ];
 
-  dontConfigure = true;
-
-  makefile = "Makefile.mk";
-
   makeFlags = [
     "CC=${stdenv.cc.targetPrefix}cc"
   ];
@@ -54,6 +50,9 @@ stdenv.mkDerivation {
 
     runHook postInstall
   '';
+
+  dontConfigure = true;
+  makefile = "Makefile.mk";
 
   passthru = {
     updateScript = unstableGitUpdater { };

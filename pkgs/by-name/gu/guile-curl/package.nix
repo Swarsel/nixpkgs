@@ -3,11 +3,11 @@
   stdenv,
   fetchFromGitHub,
   autoreconfHook,
+  curl,
   gettext,
   guile,
   pkg-config,
   texinfo,
-  curl,
 }:
 
 stdenv.mkDerivation (finalAttrs: {

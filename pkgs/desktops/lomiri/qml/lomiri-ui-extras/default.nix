@@ -1,12 +1,12 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitLab,
-  gitUpdater,
   cmake,
   cmake-extras,
   cups,
   exiv2,
+  gitUpdater,
   lomiri-ui-toolkit,
   mesa,
   pam,
@@ -48,18 +48,6 @@ stdenv.mkDerivation (finalAttrs: {
     qtdeclarative
   ];
 
-  nativeCheckInputs = [
-    mesa.llvmpipeHook # ShapeMaterial needs an OpenGL context: https://gitlab.com/ubports/development/core/lomiri-ui-toolkit/-/issues/35
-    qtdeclarative # qmltestrunner
-    xvfb-run
-  ];
-
-  checkInputs = [
-    lomiri-ui-toolkit
-  ];
-
-  dontWrapQtApps = true;
-
   cmakeFlags = [
     (lib.cmakeBool "ENABLE_TESTS" finalAttrs.finalPackage.doCheck)
     (lib.cmakeBool "ENABLE_QT6" (lib.strings.versionAtLeast qtbase.version "6"))
@@ -79,8 +67,15 @@ stdenv.mkDerivation (finalAttrs: {
 
   doCheck = stdenv.buildPlatform.canExecute stdenv.hostPlatform;
 
-  # Parallelism breaks xvfb-run-launched script for QML tests
-  enableParallelChecking = false;
+  nativeCheckInputs = [
+    mesa.llvmpipeHook # ShapeMaterial needs an OpenGL context: https://gitlab.com/ubports/development/core/lomiri-ui-toolkit/-/issues/35
+    qtdeclarative # qmltestrunner
+    xvfb-run
+  ];
+
+  checkInputs = [
+    lomiri-ui-toolkit
+  ];
 
   preCheck =
     let
@@ -100,21 +95,27 @@ stdenv.mkDerivation (finalAttrs: {
       export XDG_RUNTIME_DIR=$PWD
     '';
 
+  dontWrapQtApps = true;
+  # Parallelism breaks xvfb-run-launched script for QML tests
+  enableParallelChecking = false;
+
   passthru = {
     updateScript = gitUpdater { };
   };
 
   meta = {
     description = "Lomiri UI Extra Components";
+
     longDescription = ''
       A collection of UI components that for various reasons can't be included in
       the main Lomiri UI toolkit - mostly because of the level of quality, lack of
       documentation and/or lack of automated tests.
     '';
+
     homepage = "https://gitlab.com/ubports/development/core/lomiri-ui-extras";
     changelog = "https://gitlab.com/ubports/development/core/lomiri-ui-extras/-/blob/${finalAttrs.version}/ChangeLog";
     license = lib.licenses.gpl3Only;
-    teams = [ lib.teams.lomiri ];
     platforms = lib.platforms.linux;
+    teams = [ lib.teams.lomiri ];
   };
 })

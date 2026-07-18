@@ -17,12 +17,14 @@ in
   options = {
 
     services.logmein-hamachi.enable = lib.mkOption {
-      type = lib.types.bool;
       default = false;
+
       description = ''
         Whether to enable LogMeIn Hamachi, a proprietary
         (closed source) commercial VPN software.
       '';
+
+      type = lib.types.bool;
     };
 
   };
@@ -31,19 +33,19 @@ in
 
   config = lib.mkIf cfg.enable {
 
+    environment.systemPackages = [ pkgs.logmein-hamachi ];
+
     systemd.services.logmein-hamachi = {
+      after = [ "network.target" ];
       description = "LogMeIn Hamachi Daemon";
 
-      wantedBy = [ "multi-user.target" ];
-      after = [ "network.target" ];
-
       serviceConfig = {
-        Type = "forking";
         ExecStart = "${pkgs.logmein-hamachi}/bin/hamachid";
+        Type = "forking";
       };
-    };
 
-    environment.systemPackages = [ pkgs.logmein-hamachi ];
+      wantedBy = [ "multi-user.target" ];
+    };
 
   };
 

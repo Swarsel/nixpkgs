@@ -2,6 +2,7 @@
   lib,
   stdenv,
   fetchurl,
+  emacs,
   fig2dev,
   gettext,
   ghostscript,
@@ -9,16 +10,15 @@
   guile-lib,
   guile-reader,
   imagemagick,
+  lout,
   makeWrapper,
   pkg-config,
-  enableEmacs ? false,
-  emacs,
-  enableLout ? stdenv.hostPlatform.isLinux,
-  lout,
-  enablePloticus ? stdenv.hostPlatform.isLinux,
   ploticus,
-  enableTex ? true,
   texliveSmall,
+  enableEmacs ? false,
+  enableLout ? stdenv.hostPlatform.isLinux,
+  enablePloticus ? stdenv.hostPlatform.isLinux,
+  enableTex ? true,
 }:
 
 let
@@ -59,8 +59,8 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   meta = {
-    homepage = "https://www.nongnu.org/skribilo/";
     description = "Ultimate Document Programming Framework";
+
     longDescription = ''
       Skribilo is a free document production tool that takes a structured
       document representation as its input and renders that document in a
@@ -73,6 +73,8 @@ stdenv.mkDerivation (finalAttrs: {
       "markup-less" format that borrows from Emacs' outline mode and from other
       conventions used in emails, Usenet and text.
     '';
+
+    homepage = "https://www.nongnu.org/skribilo/";
     license = lib.licenses.gpl3Plus;
     maintainers = [ ];
     platforms = lib.platforms.unix;

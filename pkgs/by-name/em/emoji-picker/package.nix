@@ -1,7 +1,7 @@
 {
-  buildGoModule,
-  fetchFromGitHub,
   lib,
+  fetchFromGitHub,
+  buildGoModule,
 }:
 buildGoModule (finalAttrs: {
   pname = "emoji-picker";
@@ -15,7 +15,6 @@ buildGoModule (finalAttrs: {
   };
 
   patches = [ ./xsys.patch ];
-
   vendorHash = "sha256-Xeh5JKIBiyOXRGVx9udoUNs+Wv49BMyFvmnAbDfG3rA=";
 
   meta = {

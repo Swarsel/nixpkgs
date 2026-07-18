@@ -2,15 +2,15 @@
   lib,
   stdenv,
   fetchurl,
-  makeWrapper,
   jre,
+  makeWrapper,
 }:
 
 let
   playerglobal_ver = "27.0";
   playerglobal = fetchurl {
-    url = "https://fpdownload.macromedia.com/get/flashplayer/updaters/27/playerglobal27_0.swc";
     sha256 = "0qw2bgls8qsmp80j8vpd4c7s0c8anlrk0ac8z42w89bajcdbwk2f";
+    url = "https://fpdownload.macromedia.com/get/flashplayer/updaters/27/playerglobal27_0.swc";
   };
 in
 stdenv.mkDerivation (finalAttrs: {
@@ -22,18 +22,15 @@ stdenv.mkDerivation (finalAttrs: {
     sha256 = "13iq16dqvgcpb0p35x66hzxsq5pkbr2lbwr766nnqiryinnagz8p";
   };
 
-  nativeBuildInputs = [ makeWrapper ];
-
-  buildInputs = [ jre ];
-
-  dontBuild = true;
-
   postPatch = ''
     shopt -s extglob
     for i in bin/!(aasdoc|acompc|amxmlc); do
       substituteInPlace $i --replace "java " "${jre}/bin/java "
     done
   '';
+
+  nativeBuildInputs = [ makeWrapper ];
+  buildInputs = [ jre ];
 
   installPhase = ''
     t=$out/opt/apache-flex-sdk
@@ -52,6 +49,7 @@ stdenv.mkDerivation (finalAttrs: {
     cp ${playerglobal} $t/frameworks/libs/player/${playerglobal_ver}/playerglobal.swc
   '';
 
+  dontBuild = true;
   dontFixup = true;
 
   meta = {

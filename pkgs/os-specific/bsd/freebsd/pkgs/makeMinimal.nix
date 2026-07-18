@@ -1,31 +1,28 @@
 {
   lib,
   stdenv,
-  mkDerivation,
-  make,
   bsdSetupHook,
   freebsdSetupHook,
+  make,
+  mkDerivation,
 }:
 
 mkDerivation {
   inherit (make) path;
-
-  buildInputs = [ ];
-  nativeBuildInputs = [
-    bsdSetupHook
-    freebsdSetupHook
-  ];
-
-  skipIncludesPhase = true;
-
-  makeFlags = [ ];
 
   postPatch = ''
     patchShebangs configure
     ${make.postPatch}
   '';
 
+  nativeBuildInputs = [
+    bsdSetupHook
+    freebsdSetupHook
+  ];
+
+  buildInputs = [ ];
   configureFlags = [ "--with-filemon=no" ];
+  makeFlags = [ ];
 
   buildPhase = ''
     runHook preBuild
@@ -65,4 +62,5 @@ mkDerivation {
   '';
 
   extraPaths = make.extraPaths;
+  skipIncludesPhase = true;
 }

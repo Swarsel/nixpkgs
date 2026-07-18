@@ -3,15 +3,15 @@
   stdenv,
   fetchurl,
   gettext,
+  gitUpdater,
+  glib,
+  gtk3,
+  libxfce4ui,
+  libxfce4util,
   meson,
   ninja,
   pkg-config,
-  libxfce4util,
   xfce4-panel,
-  libxfce4ui,
-  glib,
-  gtk3,
-  gitUpdater,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -41,15 +41,15 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   passthru.updateScript = gitUpdater {
-    url = "https://gitlab.xfce.org/panel-plugins/xfce4-timer-plugin";
     rev-prefix = "xfce4-timer-plugin-";
+    url = "https://gitlab.xfce.org/panel-plugins/xfce4-timer-plugin";
   };
 
   meta = {
-    homepage = "https://docs.xfce.org/panel-plugins/xfce4-timer-plugin";
     description = "Simple countdown and alarm plugin for the Xfce panel";
-    platforms = lib.platforms.linux;
+    homepage = "https://docs.xfce.org/panel-plugins/xfce4-timer-plugin";
     license = lib.licenses.gpl2Plus;
+    platforms = lib.platforms.linux;
     teams = [ lib.teams.xfce ];
   };
 })

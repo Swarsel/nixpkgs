@@ -1,10 +1,10 @@
 {
-  rustPlatform,
+  lib,
   fetchFromGitHub,
   fetchpatch,
-  lib,
   helix,
   helix-unwrapped,
+  rustPlatform,
 }:
 let
   steelix-unwrapped = helix-unwrapped.overrideAttrs (
@@ -19,18 +19,6 @@ let
         hash = "sha256-qAUODNxHM9K6CrRCFgfBcbqzRd+YHiWn9fEfmIzrohA=";
       };
 
-      cargoDeps = rustPlatform.fetchCargoVendor {
-        inherit (finalAttrs) src pname version;
-        hash = "sha256-6bu8sIM4So3AbnHHYbh8uu+rEB4IjMQjDgh7/AkLQs0=";
-      };
-
-      cargoBuildFlags = [
-        "--package"
-        "helix-term"
-        "--features"
-        "steel,git"
-      ];
-
       # This fork is built from Helix master, whose loader expects tree-sitter
       # grammars with the platform-native extension (`.dylib` on Darwin) since
       # helix-editor/helix#14982. We reuse the grammars from `helix.runtime`, built
@@ -39,14 +27,26 @@ let
       # release ships #14982 and nixpkgs' grammars switch to `.dylib`.
       patches = [
         (fetchpatch {
-          name = "revert-dylib-grammar-extension.patch";
-          url = "https://github.com/helix-editor/helix/commit/430914b298a32653ab1847fdfdf2177a002be04c.patch";
-          revert = true;
           hash = "sha256-4KUFppkso4/XwNU+mGIgLvl+mJXHZWkmaguYMy8oTyI=";
+          name = "revert-dylib-grammar-extension.patch";
+          revert = true;
+          url = "https://github.com/helix-editor/helix/commit/430914b298a32653ab1847fdfdf2177a002be04c.patch";
         })
       ];
 
       doInstallCheck = false;
+
+      cargoBuildFlags = [
+        "--package"
+        "helix-term"
+        "--features"
+        "steel,git"
+      ];
+
+      cargoDeps = rustPlatform.fetchCargoVendor {
+        inherit (finalAttrs) src pname version;
+        hash = "sha256-6bu8sIM4So3AbnHHYbh8uu+rEB4IjMQjDgh7/AkLQs0=";
+      };
     }
   );
 in
@@ -58,23 +58,27 @@ in
       pname = "steelix";
       strictDeps = true;
 
+      passthru = previousAttrs.passthru // {
+        updateScript = ./update.sh;
+      };
+
       meta = previousAttrs.meta // {
         description = "Helix editor with Steel (Scheme) scripting support";
+
         longDescription = ''
           Steelix is a fork of the Helix editor with Steel (Scheme) scripting support.
         '';
+
         homepage = "https://github.com/mattwparas/helix";
         changelog = "https://github.com/mattwparas/helix/blob/${steelix-unwrapped.src.rev}/CHANGELOG.md";
         license = lib.licenses.mpl20;
-        mainProgram = "hx";
+
         maintainers = with lib.maintainers; [
           aciceri
           Ra77a3l3-jar
         ];
-      };
 
-      passthru = previousAttrs.passthru // {
-        updateScript = ./update.sh;
+        mainProgram = "hx";
       };
     }
   )

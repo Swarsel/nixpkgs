@@ -15,7 +15,10 @@ stdenv.mkDerivation (finalAttrs: {
     sha256 = "sha256-Zm83gxdZH2XQCc/Dihp7vumF9WAvKgt6OORns5Mua7M=";
   };
 
-  buildInputs = [ perl ];
+  outputs = [
+    "out"
+    "man"
+  ];
 
   postPatch = ''
     substituteInPlace eeprom/decode-edid \
@@ -25,12 +28,8 @@ stdenv.mkDerivation (finalAttrs: {
       --replace "/sbin/" ""
   '';
 
+  buildInputs = [ perl ];
   makeFlags = [ "PREFIX=${placeholder "out"}" ];
-
-  outputs = [
-    "out"
-    "man"
-  ];
 
   postInstall = ''
     rm -rf $out/include/linux/i2c-dev.h # conflics with kernel headers
@@ -39,11 +38,13 @@ stdenv.mkDerivation (finalAttrs: {
   meta = {
     description = "Set of I2C tools for Linux";
     homepage = "https://i2c.wiki.kernel.org/index.php/I2C_Tools";
+
     # library is LGPL 2.1 or later; "most tools" GPL 2 or later
     license = with lib.licenses; [
       lgpl21Plus
       gpl2Plus
     ];
+
     maintainers = [ ];
     platforms = lib.platforms.linux;
   };

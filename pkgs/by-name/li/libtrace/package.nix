@@ -3,15 +3,15 @@
   stdenv,
   fetchFromGitHub,
   autoreconfHook,
-  pkg-config,
   bison,
-  flex,
-  zlib,
   bzip2,
-  xz,
+  flex,
   libpcap,
-  wandio,
   nix-update-script,
+  pkg-config,
+  wandio,
+  xz,
+  zlib,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -33,6 +33,7 @@ stdenv.mkDerivation (finalAttrs: {
     bison
     flex
   ];
+
   buildInputs = [
     zlib
     bzip2

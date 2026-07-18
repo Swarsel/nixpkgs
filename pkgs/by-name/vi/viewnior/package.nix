@@ -2,24 +2,24 @@
   lib,
   stdenv,
   fetchFromGitHub,
+  desktop-file-utils,
+  exiv2,
+  gdk-pixbuf,
+  gettext,
+  glib,
+  gnome,
+  gtk3,
+  intltool,
+  lcms,
+  libpng,
+  librsvg,
   meson,
   ninja,
-  pkg-config,
-  desktop-file-utils,
-  gtk3,
-  libpng,
-  exiv2,
-  lcms,
-  intltool,
-  gettext,
-  shared-mime-info,
-  glib,
-  gdk-pixbuf,
   perl,
-  wrapGAppsHook3,
+  pkg-config,
+  shared-mime-info,
   webp-pixbuf-loader,
-  gnome,
-  librsvg,
+  wrapGAppsHook3,
 }:
 
 stdenv.mkDerivation {
@@ -76,6 +76,7 @@ stdenv.mkDerivation {
 
   meta = {
     description = "Fast and simple image viewer";
+
     longDescription = ''
       Viewnior is insipred by big projects like Eye of Gnome, because of it's
       usability and richness,and by GPicView, because of it's lightweight design and
@@ -83,11 +84,14 @@ stdenv.mkDerivation {
       with the quality of it's functions. The program is made with better integration
       in mind (follows Gnome HIG2).
     '';
-    license = lib.licenses.gpl3;
+
     homepage = "https://siyanpanayotov.com/project/viewnior/";
+    license = lib.licenses.gpl3;
+
     maintainers = with lib.maintainers; [
       artturin
     ];
+
     platforms = lib.platforms.gnu ++ lib.platforms.linux;
     mainProgram = "viewnior";
   };

@@ -17,10 +17,7 @@ let
 in
 stdenv.mkDerivation {
   inherit pname version src;
-
   nativeBuildInputs = [ dpkg ];
-
-  dontBuild = true;
 
   installPhase = ''
     runHook preInstall
@@ -34,19 +31,23 @@ stdenv.mkDerivation {
     runHook postInstall
   '';
 
+  dontBuild = true;
+
   passthru.tests = {
     single-node-smoke-test = nixosTests.jitsi-meet;
   };
 
   meta = {
     description = "Server-side application that allows regular SIP clients to join Jitsi Meet conferences";
-    mainProgram = "jigasi";
+
     longDescription = ''
       Jitsi Gateway to SIP: a server-side application that allows regular SIP clients to join Jitsi Meet conferences hosted by Jitsi Videobridge.
     '';
+
     homepage = "https://github.com/jitsi/jigasi";
     license = lib.licenses.asl20;
-    teams = [ lib.teams.jitsi ];
     platforms = lib.platforms.linux;
+    mainProgram = "jigasi";
+    teams = [ lib.teams.jitsi ];
   };
 }

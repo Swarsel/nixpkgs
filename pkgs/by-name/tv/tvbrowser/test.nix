@@ -1,19 +1,21 @@
 {
   lib,
-  xvfb-run,
-  tvbrowser,
   runCommand,
+  tvbrowser,
   writeShellApplication,
+  xvfb-run,
   xwininfo,
 }:
 
 let
   testScript = writeShellApplication {
     name = "tvbrowser-test-script";
+
     runtimeInputs = [
       xwininfo
       tvbrowser
     ];
+
     text = ''
       function find_tvbrowser_windows {
         for window_name in java tvbrowser-TVBrowser 'Setup assistant' ; do

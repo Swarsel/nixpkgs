@@ -1,8 +1,8 @@
 {
   lib,
-  rustPlatform,
-  fetchFromGitHub,
   stdenv,
+  fetchFromGitHub,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -22,10 +22,12 @@ rustPlatform.buildRustPackage (finalAttrs: {
     description = "Command line tool to show clear git graphs arranged for your branching model";
     homepage = "https://github.com/git-bahn/git-graph";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       cafkafk
       matthiasbeyer
     ];
+
     mainProgram = "git-graph";
   };
 })

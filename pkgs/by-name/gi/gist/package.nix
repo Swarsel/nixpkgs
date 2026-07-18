@@ -1,14 +1,14 @@
 {
-  buildRubyGem,
   lib,
+  buildRubyGem,
   ruby,
 }:
 
 buildRubyGem rec {
   inherit ruby;
-  name = "${gemName}-${version}";
-  gemName = "gist";
   version = "6.0.0";
+  gemName = "gist";
+  name = "${gemName}-${version}";
   source.sha256 = "0qnd1jqd7b04871v4l73grcmi7c0pivm8nsfrqvwivm4n4b3c2hd";
 
   meta = {

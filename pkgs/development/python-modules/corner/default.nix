@@ -1,34 +1,29 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # build-system
-  hatch-vcs,
-  hatchling,
-
-  # dependencies
-  matplotlib,
-
   # optional-dependencies
   arviz,
   arviz-base,
+  buildPythonPackage,
+  # build-system
+  hatch-vcs,
+  hatchling,
   ipython,
+  # dependencies
+  matplotlib,
   myst-nb,
   pandoc,
-  sphinx,
-  sphinx-book-theme,
   pytest,
-  scipy,
-
   # tests
   pytestCheckHook,
+  scipy,
+  sphinx,
+  sphinx-book-theme,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "corner";
   version = "2.3.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "dfm";
@@ -37,41 +32,18 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-H59IVXKPT4CLApn4kUuSuiYA9EWdOaH88Rd4YXf0VlQ=";
   };
 
+  nativeCheckInputs = [
+    arviz
+    pytestCheckHook
+    scipy
+  ];
+
   build-system = [
     hatch-vcs
     hatchling
   ];
 
   dependencies = [ matplotlib ];
-
-  optional-dependencies = {
-    arviz = [
-      arviz
-      arviz-base
-    ];
-    docs = [
-      arviz
-      arviz-base
-      ipython
-      myst-nb
-      pandoc
-      sphinx
-      sphinx-book-theme
-    ];
-    test = [
-      arviz
-      pytest
-      scipy
-    ];
-  };
-
-  pythonImportsCheck = [ "corner" ];
-
-  nativeCheckInputs = [
-    arviz
-    pytestCheckHook
-    scipy
-  ];
 
   disabledTests = [
     # matplotlib.testing.exceptions.ImageComparisonFailure: images not close
@@ -108,6 +80,32 @@ buildPythonPackage (finalAttrs: {
     "test_top_ticks"
     "test_truths"
   ];
+
+  optional-dependencies = {
+    arviz = [
+      arviz
+      arviz-base
+    ];
+
+    docs = [
+      arviz
+      arviz-base
+      ipython
+      myst-nb
+      pandoc
+      sphinx
+      sphinx-book-theme
+    ];
+
+    test = [
+      arviz
+      pytest
+      scipy
+    ];
+  };
+
+  pyproject = true;
+  pythonImportsCheck = [ "corner" ];
 
   meta = {
     description = "Make some beautiful corner plots";

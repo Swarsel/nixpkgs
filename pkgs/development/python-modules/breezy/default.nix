@@ -1,36 +1,35 @@
 {
   lib,
   stdenv,
-  buildPythonPackage,
   fetchFromGitHub,
+  breezy,
+  buildPythonPackage,
   cargo,
   configobj,
   cython,
   dulwich,
   fastbencode,
   fastimport,
-  pygithub,
+  installShellFiles,
+  launchpadlib,
   libiconv,
   merge3,
   patiencediff,
+  pygithub,
   pyyaml,
-  tzlocal,
-  urllib3,
-  breezy,
-  launchpadlib,
-  testtools,
-  installShellFiles,
   rustPlatform,
   rustc,
   setuptools-gettext,
   setuptools-rust,
   testers,
+  testtools,
+  tzlocal,
+  urllib3,
 }:
 
 buildPythonPackage rec {
   pname = "breezy";
   version = "3.3.21";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "breezy-team";
@@ -38,8 +37,6 @@ buildPythonPackage rec {
     tag = "brz-${version}";
     hash = "sha256-S8YHFEWiSnkBFO75jMuEcvVZSnoV9SGCH/Ueodq2zow=";
   };
-
-  cargoDeps = rustPlatform.importCargoLock { lockFile = ./Cargo.lock; };
 
   postPatch = ''
     ln -s ${./Cargo.lock} Cargo.lock
@@ -53,37 +50,9 @@ buildPythonPackage rec {
   ];
 
   buildInputs = lib.optionals stdenv.hostPlatform.isDarwin [ libiconv ];
-
-  build-system = [
-    cython
-    setuptools-gettext
-    setuptools-rust
-  ];
-
-  dependencies = [
-    configobj
-    dulwich
-    fastbencode
-    merge3
-    patiencediff
-    pyyaml
-    tzlocal
-    urllib3
-  ]
-  ++ optional-dependencies.launchpad
-  ++ optional-dependencies.fastimport
-  ++ optional-dependencies.github;
-
-  optional-dependencies = {
-    launchpad = [ launchpadlib ];
-    fastimport = [ fastimport ];
-    github = [ pygithub ];
-  };
-
-  nativeCheckInputs = [ testtools ];
-
   # multiple failures on sandbox
   doCheck = false;
+  nativeCheckInputs = [ testtools ];
 
   checkPhase = ''
     runHook preCheck
@@ -102,6 +71,36 @@ buildPythonPackage rec {
     installShellCompletion --cmd brz --bash contrib/bash/brz
   '';
 
+  build-system = [
+    cython
+    setuptools-gettext
+    setuptools-rust
+  ];
+
+  cargoDeps = rustPlatform.importCargoLock { lockFile = ./Cargo.lock; };
+
+  dependencies = [
+    configobj
+    dulwich
+    fastbencode
+    merge3
+    patiencediff
+    pyyaml
+    tzlocal
+    urllib3
+  ]
+  ++ optional-dependencies.launchpad
+  ++ optional-dependencies.fastimport
+  ++ optional-dependencies.github;
+
+  optional-dependencies = {
+    fastimport = [ fastimport ];
+    github = [ pygithub ];
+    launchpad = [ launchpadlib ];
+  };
+
+  pyproject = true;
+
   pythonImportsCheck = [
     "breezy"
     "breezy.bzr.rio"
@@ -109,8 +108,8 @@ buildPythonPackage rec {
 
   passthru = {
     tests.version = testers.testVersion {
-      package = breezy;
       command = "HOME=$TMPDIR brz --version";
+      package = breezy;
     };
   };
 

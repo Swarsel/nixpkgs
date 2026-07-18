@@ -4,20 +4,21 @@
   fetchPypi,
   requests,
   requests-oauthlib,
-  voluptuous,
   setuptools,
+  voluptuous,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "pybotvac";
   version = "0.0.29";
-  pyproject = true;
 
   src = fetchPypi {
     inherit (finalAttrs) pname version;
     hash = "sha256-9mapPFzdAAzHJFuFaxiyGh0utznzTSXzRa6AZRj/Oq8=";
   };
 
+  # Module no tests
+  doCheck = false;
   build-system = [ setuptools ];
 
   dependencies = [
@@ -26,9 +27,7 @@ buildPythonPackage (finalAttrs: {
     voluptuous
   ];
 
-  # Module no tests
-  doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "pybotvac" ];
 
   meta = {

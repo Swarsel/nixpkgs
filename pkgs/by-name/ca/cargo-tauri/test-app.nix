@@ -2,40 +2,27 @@
   lib,
   stdenv,
   cargo-tauri,
+  fetchPnpmDeps,
   glib-networking,
   libayatana-appindicator,
   nodejs,
   openssl,
   pkg-config,
-  pnpm_10,
-  fetchPnpmDeps,
   pnpmConfigHook,
+  pnpm_10,
   rustPlatform,
   webkitgtk_4_1,
   wrapGAppsHook4,
 }:
 stdenv.mkDerivation (finalAttrs: {
-  pname = "test-app";
   inherit (cargo-tauri) version src;
+  inherit (cargo-tauri) cargoDeps;
+  pname = "test-app";
 
   postPatch = lib.optionalString stdenv.hostPlatform.isLinux ''
     substituteInPlace $cargoDepsCopy/*/libappindicator-sys-*/src/lib.rs \
       --replace "libayatana-appindicator3.so.1" "${libayatana-appindicator}/lib/libayatana-appindicator3.so.1"
   '';
-
-  inherit (cargo-tauri) cargoDeps;
-
-  pnpmDeps = fetchPnpmDeps {
-    inherit (finalAttrs)
-      pname
-      version
-      src
-      ;
-    pnpm = pnpm_10;
-
-    fetcherVersion = 4;
-    hash = "sha256-m7haAF5ZIYG5NfsPwtzVF6Z83h/I4uT0YhNBk4ZXdpo=";
-  };
 
   nativeBuildInputs = [
     cargo-tauri.hook
@@ -58,22 +45,20 @@ stdenv.mkDerivation (finalAttrs: {
     webkitgtk_4_1
   ];
 
-  buildAndTestSubdir = "examples/api/src-tauri";
-
   # This example depends on the actual `api` package to be built in-tree
   preBuild = ''
     pnpm --filter '@tauri-apps/api' build
   '';
+
   postBuild = lib.optionalString stdenv.hostPlatform.isDarwin ''
     bundleDir="target/${stdenv.hostPlatform.rust.cargoShortTarget}/''${cargoBuildType:-release}/bundle/macos"
     touch "$bundleDir/.test-hidden-entry"
     touch "$bundleDir/test-visible-entry"
   '';
 
-  # No one should be actually running this, so lets save some time
-  buildType = "debug";
   doCheck = false;
   doInstallCheck = stdenv.hostPlatform.isDarwin;
+
   installCheckPhase = lib.optionalString stdenv.hostPlatform.isDarwin ''
     runHook preInstallCheck
 
@@ -98,6 +83,22 @@ stdenv.mkDerivation (finalAttrs: {
 
     runHook postInstallCheck
   '';
+
+  buildAndTestSubdir = "examples/api/src-tauri";
+  # No one should be actually running this, so lets save some time
+  buildType = "debug";
+
+  pnpmDeps = fetchPnpmDeps {
+    inherit (finalAttrs)
+      pname
+      version
+      src
+      ;
+
+    fetcherVersion = 4;
+    hash = "sha256-m7haAF5ZIYG5NfsPwtzVF6Z83h/I4uT0YhNBk4ZXdpo=";
+    pnpm = pnpm_10;
+  };
 
   meta = {
     inherit (cargo-tauri.hook.meta) platforms;

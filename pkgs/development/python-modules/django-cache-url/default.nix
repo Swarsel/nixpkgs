@@ -1,8 +1,8 @@
 {
   lib,
+  fetchFromGitHub,
   buildPythonPackage,
   django,
-  fetchFromGitHub,
   pytest-cov-stub,
   pytestCheckHook,
   setuptools,
@@ -11,7 +11,6 @@
 buildPythonPackage rec {
   pname = "django-cache-url";
   version = "3.4.6";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "epicserve";
@@ -20,14 +19,14 @@ buildPythonPackage rec {
     hash = "sha256-nXn/aDTMla4Pi6v93LoElxCpL6AFbbWKTd4TMFaK+Nk=";
   };
 
-  build-system = [ setuptools ];
-
   nativeCheckInputs = [
     django
     pytest-cov-stub
     pytestCheckHook
   ];
 
+  build-system = [ setuptools ];
+  pyproject = true;
   pythonImportsCheck = [ "django_cache_url" ];
 
   meta = {

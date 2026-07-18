@@ -8,6 +8,12 @@
 stdenv.mkDerivation (finalAttrs: {
   pname = "mpdecimal";
   version = "4.0.1";
+
+  src = fetchurl {
+    url = "https://www.bytereef.org/software/mpdecimal/releases/mpdecimal-${finalAttrs.version}.tar.gz";
+    hash = "sha256-ltM6u0uwBwx74P7UJGzThBYYgyX4IEaCFEcZOFRbGsg=";
+  };
+
   outputs = [
     "out"
     "cxx"
@@ -15,14 +21,7 @@ stdenv.mkDerivation (finalAttrs: {
     "dev"
   ];
 
-  src = fetchurl {
-    url = "https://www.bytereef.org/software/mpdecimal/releases/mpdecimal-${finalAttrs.version}.tar.gz";
-    hash = "sha256-ltM6u0uwBwx74P7UJGzThBYYgyX4IEaCFEcZOFRbGsg=";
-  };
-
   nativeBuildInputs = [ autoreconfHook ];
-
-  enableParallelBuilding = true;
 
   postInstall = ''
     mkdir -p $cxx/lib
@@ -31,6 +30,8 @@ stdenv.mkDerivation (finalAttrs: {
     mkdir -p $dev/nix-support
     echo -n $cxx >> $dev/nix-support/propagated-build-inputs
   '';
+
+  enableParallelBuilding = true;
 
   meta = {
     description = "Library for arbitrary precision decimal floating point arithmetic";
@@ -53,15 +54,10 @@ stdenv.mkDerivation (finalAttrs: {
     '';
 
     homepage = "https://www.bytereef.org/mpdecimal/index.html";
-
-    downloadPage = "https://www.bytereef.org/mpdecimal/download.html";
-
     changelog = "https://www.bytereef.org/mpdecimal/changelog.html";
-
     license = lib.licenses.bsd2;
-
     maintainers = with lib.maintainers; [ kaction ];
-
     platforms = lib.platforms.unix ++ lib.platforms.windows;
+    downloadPage = "https://www.bytereef.org/mpdecimal/download.html";
   };
 })

@@ -1,25 +1,29 @@
 {
   lib,
   buildPythonPackage,
-  fetchPypi,
-  numpy,
-  scipy,
-  sympy,
-  setuptools,
-  pytestCheckHook,
   cython,
+  fetchPypi,
   nix-update-script,
+  numpy,
+  pytestCheckHook,
+  scipy,
+  setuptools,
+  sympy,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "pydy";
   version = "0.8.0";
-  pyproject = true;
 
   src = fetchPypi {
     inherit (finalAttrs) pname version;
     hash = "sha256-G3iqMzy/W3ctz/c4T3LqYyTTMVbly1GMkmMLi96mzMc=";
   };
+
+  nativeCheckInputs = [
+    pytestCheckHook
+    cython
+  ];
 
   build-system = [ setuptools ];
 
@@ -29,13 +33,8 @@ buildPythonPackage (finalAttrs: {
     sympy
   ];
 
-  nativeCheckInputs = [
-    pytestCheckHook
-    cython
-  ];
-
+  pyproject = true;
   pythonImportsCheck = [ "pydy" ];
-
   passthru.updateScript = nix-update-script { };
 
   meta = {

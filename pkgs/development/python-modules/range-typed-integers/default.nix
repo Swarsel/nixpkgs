@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   pytestCheckHook,
   setuptools,
 }:
@@ -17,11 +17,9 @@ buildPythonPackage rec {
     sha256 = "sha256-4+XdalHq6Q2cBbuYi4x7kmCNQh1MwYf+XlLP9FzzzgE=";
   };
 
-  pyproject = true;
-
   nativeBuildInputs = [ setuptools ];
-
   checkInputs = [ pytestCheckHook ];
+  pyproject = true;
 
   meta = {
     description = "Package provides integer types that have a specific range of valid values";

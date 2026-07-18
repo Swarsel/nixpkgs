@@ -1,12 +1,12 @@
 {
   lib,
-  stdenvNoCC,
   fetchFromGitHub,
   gdk-pixbuf,
+  gitUpdater,
   gtk-engine-murrine,
   jdupes,
   librsvg,
-  gitUpdater,
+  stdenvNoCC,
   colorVariants ? [ ], # default: all
   themeVariants ? [ ], # default: blue
 }:
@@ -33,6 +33,10 @@ lib.checkListOfEnum "${pname}: color variants" [ "standard" "light" "dark" ] col
       sha256 = "sha256-vPAGEa3anWAynEg2AYme4qpHJdLDKk2CmL5iQ1mBYgM=";
     };
 
+    postPatch = ''
+      patchShebangs install.sh
+    '';
+
     nativeBuildInputs = [
       jdupes
     ];
@@ -41,14 +45,6 @@ lib.checkListOfEnum "${pname}: color variants" [ "standard" "light" "dark" ] col
       gdk-pixbuf
       librsvg
     ];
-
-    propagatedUserEnvPkgs = [
-      gtk-engine-murrine
-    ];
-
-    postPatch = ''
-      patchShebangs install.sh
-    '';
 
     installPhase = ''
       runHook preInstall
@@ -68,13 +64,17 @@ lib.checkListOfEnum "${pname}: color variants" [ "standard" "light" "dark" ] col
       runHook postInstall
     '';
 
+    propagatedUserEnvPkgs = [
+      gtk-engine-murrine
+    ];
+
     passthru.updateScript = gitUpdater { };
 
     meta = {
       description = "Stylish flat Design theme for GTK based desktop environments";
       homepage = "https://vinceliuice.github.io/theme-matcha";
       license = lib.licenses.gpl3Only;
-      platforms = lib.platforms.unix;
       maintainers = [ lib.maintainers.romildo ];
+      platforms = lib.platforms.unix;
     };
   }

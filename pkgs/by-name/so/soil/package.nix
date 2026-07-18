@@ -1,6 +1,6 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchzip,
   libGL,
   libx11,
@@ -25,6 +25,7 @@ stdenv.mkDerivation {
     $CC $NIX_CFLAGS_COMPILE -c *.c
     $AR rcs libSOIL.a *.o
   '';
+
   installPhase = ''
     mkdir -p $out/lib $out/include/SOIL
     cp libSOIL.a $out/lib/
@@ -33,13 +34,15 @@ stdenv.mkDerivation {
 
   meta = {
     description = "Simple OpenGL Image Library";
+
     longDescription = ''
       SOIL is a tiny C library used primarily for uploading textures
       into OpenGL.
     '';
+
     homepage = "https://www.lonesock.net/soil.html";
     license = lib.licenses.publicDomain;
-    platforms = lib.platforms.unix;
     maintainers = with lib.maintainers; [ r-burns ];
+    platforms = lib.platforms.unix;
   };
 }

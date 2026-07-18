@@ -9,21 +9,18 @@
 buildPythonPackage rec {
   pname = "py-dmidecode";
   version = "0.1.3";
-  pyproject = true;
 
   src = fetchPypi {
-    pname = "py_dmidecode";
     inherit version;
     hash = "sha256-pS1fRWuWLnXuNEGYXU/j1njC8THWQOHbnVOF9+c13Cw=";
+    pname = "py_dmidecode";
   };
 
   nativeBuildInputs = [ poetry-core ];
-
   propagatedBuildInputs = [ dmidecode ];
-
   # Module has no tests
   doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "dmidecode" ];
 
   meta = {

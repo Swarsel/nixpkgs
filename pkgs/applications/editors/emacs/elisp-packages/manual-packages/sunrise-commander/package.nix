@@ -1,12 +1,11 @@
 {
   lib,
-  melpaBuild,
   fetchFromGitHub,
+  melpaBuild,
 }:
 
 melpaBuild {
   pname = "sunrise-commander";
-  ename = "sunrise";
   version = "0-unstable-2021-09-27";
 
   src = fetchFromGitHub {
@@ -16,9 +15,11 @@ melpaBuild {
     hash = "sha256-D36qiRi5OTZrBtJ/bD/javAWizZ8NLlC/YP4rdLCSsw=";
   };
 
+  ename = "sunrise";
+
   meta = {
-    homepage = "https://github.com/sunrise-commander/sunrise-commander/";
     description = "Orthodox (two-pane) file manager for Emacs";
+    homepage = "https://github.com/sunrise-commander/sunrise-commander/";
     license = lib.licenses.gpl3Plus;
     maintainers = [ ];
     platforms = lib.platforms.all;

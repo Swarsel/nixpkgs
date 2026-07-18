@@ -2,23 +2,23 @@
   lib,
   stdenv,
   fetchurl,
-  makeWrapper,
-  makeDesktopItem,
-  copyDesktopItems,
-  versionCheckHook,
   cairo,
+  copyDesktopItems,
+  dotnet-runtime_10,
   libGLU,
   libglvnd,
-  pipewire,
   libpulseaudio,
-  dotnet-runtime_10,
-  x11Support ? true,
-  libxi,
-  libxcursor,
   libx11,
-  waylandSupport ? false,
-  wayland ? null,
+  libxcursor,
+  libxi,
+  makeDesktopItem,
+  makeWrapper,
+  pipewire,
+  versionCheckHook,
   libxkbcommon ? null,
+  wayland ? null,
+  waylandSupport ? false,
+  x11Support ? true,
 }:
 
 assert x11Support || waylandSupport;
@@ -34,32 +34,9 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-sa4Pj1DwT6W6LJCAYznmbyqPtMUTaLSNTkXS1imQp04=";
   };
 
-  __structuredAttrs = true;
-
   nativeBuildInputs = [
     makeWrapper
     copyDesktopItems
-  ];
-
-  desktopItems = [
-    (makeDesktopItem {
-      name = "vintagestory";
-      desktopName = "Vintage Story";
-      exec = "vintagestory";
-      icon = "vintagestory";
-      comment = "Innovate and explore in a sandbox world";
-      categories = [ "Game" ];
-    })
-
-    (makeDesktopItem {
-      name = "vsmodinstall-handler";
-      desktopName = "Vintage Story 1-click Mod Install Handler";
-      comment = "Handler for vintagestorymodinstall:// URI scheme";
-      exec = "vintagestory -i %u";
-      mimeTypes = [ "x-scheme-handler/vintagestorymodinstall" ];
-      noDisplay = true;
-      terminal = false;
-    })
   ];
 
   installPhase = ''
@@ -75,18 +52,8 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
-  makeWrapperArgs = [
-    "--set-default"
-    "mesa_glthread"
-    "true"
-  ]
-  ++ lib.optionals waylandSupport [
-    "--set-default"
-    "OPENTK_4_USE_WAYLAND"
-    "1"
-  ];
+  doInstallCheck = true;
 
-  runtimeLibraryPath = lib.makeLibraryPath finalAttrs.passthru.runtimeLibs;
   preFixup = ''
      makeWrapperArgs+=(--prefix LD_LIBRARY_PATH : "$runtimeLibraryPath")
 
@@ -104,11 +71,45 @@ stdenv.mkDerivation (finalAttrs: {
      done
   '';
 
-  doInstallCheck = true;
+  __structuredAttrs = true;
+
+  desktopItems = [
+    (makeDesktopItem {
+      categories = [ "Game" ];
+      comment = "Innovate and explore in a sandbox world";
+      desktopName = "Vintage Story";
+      exec = "vintagestory";
+      icon = "vintagestory";
+      name = "vintagestory";
+    })
+
+    (makeDesktopItem {
+      comment = "Handler for vintagestorymodinstall:// URI scheme";
+      desktopName = "Vintage Story 1-click Mod Install Handler";
+      exec = "vintagestory -i %u";
+      mimeTypes = [ "x-scheme-handler/vintagestorymodinstall" ];
+      name = "vsmodinstall-handler";
+      noDisplay = true;
+      terminal = false;
+    })
+  ];
+
   installCheckInputs = [ versionCheckHook ];
 
+  makeWrapperArgs = [
+    "--set-default"
+    "mesa_glthread"
+    "true"
+  ]
+  ++ lib.optionals waylandSupport [
+    "--set-default"
+    "OPENTK_4_USE_WAYLAND"
+    "1"
+  ];
+
+  runtimeLibraryPath = lib.makeLibraryPath finalAttrs.passthru.runtimeLibs;
+
   passthru = {
-    updateScript = ./update.sh;
     runtimeLibs = [
       cairo
       libGLU
@@ -125,6 +126,8 @@ stdenv.mkDerivation (finalAttrs: {
       wayland
       libxkbcommon
     ];
+
+    updateScript = ./update.sh;
   };
 
   meta = {
@@ -132,13 +135,15 @@ stdenv.mkDerivation (finalAttrs: {
     homepage = "https://www.vintagestory.at/";
     license = lib.licenses.unfree;
     sourceProvenance = [ lib.sourceTypes.binaryBytecode ];
-    platforms = [ "x86_64-linux" ];
+
     maintainers = with lib.maintainers; [
       artturin
       gigglesquid
       dtomvan
       bubylou
     ];
+
+    platforms = [ "x86_64-linux" ];
     mainProgram = "vintagestory";
   };
 })

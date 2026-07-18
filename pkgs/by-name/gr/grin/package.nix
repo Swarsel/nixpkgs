@@ -7,8 +7,6 @@
 python3Packages.buildPythonApplication {
   pname = "grin";
   version = "1.3.0-unstable-2023-08-30";
-  namePrefix = "";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "matthew-brett";
@@ -17,14 +15,15 @@ python3Packages.buildPythonApplication {
     hash = "sha256-0lrCOXFb2v0hCxWd9O7ysbn8CjPd8NHOJhARYzJJcYg=";
   };
 
-  build-system = [ python3Packages.setuptools ];
-
   nativeCheckInputs = [ python3Packages.pytestCheckHook ];
+  build-system = [ python3Packages.setuptools ];
+  namePrefix = "";
+  pyproject = true;
 
   meta = {
-    homepage = "https://github.com/matthew-brett/grin";
     description = "Grep program configured the way I like it";
-    platforms = lib.platforms.all;
+    homepage = "https://github.com/matthew-brett/grin";
     maintainers = [ lib.maintainers.sjagoe ];
+    platforms = lib.platforms.all;
   };
 }

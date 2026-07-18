@@ -2,8 +2,8 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  fetchpatch,
   cmake,
+  fetchpatch,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -20,17 +20,17 @@ stdenv.mkDerivation (finalAttrs: {
   patches = [
     # cmake-4 compatibility
     (fetchpatch {
+      hash = "sha256-EbOmZYhFN8t8E/GW9ctcvhYfQauGZnX+5ZQmrEl6F18=";
       name = "cmake-4.patch";
       url = "https://github.com/bo0ts/ddate/commit/0fbae46cb004c0acc48982b8e3533556d7b2edcc.patch?full_index=1";
-      hash = "sha256-EbOmZYhFN8t8E/GW9ctcvhYfQauGZnX+5ZQmrEl6F18=";
     })
   ];
 
   nativeBuildInputs = [ cmake ];
 
   meta = {
-    homepage = "https://github.com/bo0ts/ddate";
     description = "Discordian version of the date program";
+    homepage = "https://github.com/bo0ts/ddate";
     license = lib.licenses.publicDomain;
     maintainers = with lib.maintainers; [ kovirobi ];
     platforms = lib.platforms.all;

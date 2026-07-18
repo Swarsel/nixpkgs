@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule (finalAttrs: {
@@ -16,6 +16,12 @@ buildGoModule (finalAttrs: {
   };
 
   vendorHash = "sha256-Ma5/S2PXQ9lByIpIfkkLeiw/9rvmasSMElE1VoGIEHc=";
+  # TestClaimsHMAC requires network access to validate HMAC signatures
+  checkFlags = [ "-skip=TestClaimsHMAC" ];
+
+  preCheck = ''
+    export VOUCH_ROOT=$PWD
+  '';
 
   ldflags = [
     "-s"
@@ -23,22 +29,17 @@ buildGoModule (finalAttrs: {
     "-X main.version=${finalAttrs.version}"
   ];
 
-  preCheck = ''
-    export VOUCH_ROOT=$PWD
-  '';
-
-  # TestClaimsHMAC requires network access to validate HMAC signatures
-  checkFlags = [ "-skip=TestClaimsHMAC" ];
-
   meta = {
-    homepage = "https://github.com/vouch/vouch-proxy";
     description = "SSO and OAuth / OIDC login solution for NGINX using the auth_request module";
+    homepage = "https://github.com/vouch/vouch-proxy";
     changelog = "https://github.com/vouch/vouch-proxy/blob/v${finalAttrs.version}/CHANGELOG.md";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       leona
       erictapen
     ];
+
     platforms = lib.platforms.linux;
     mainProgram = "vouch-proxy";
   };

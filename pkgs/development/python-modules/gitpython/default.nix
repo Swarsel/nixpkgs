@@ -1,8 +1,8 @@
 {
   lib,
+  fetchFromGitHub,
   buildPythonPackage,
   ddt,
-  fetchFromGitHub,
   gitdb,
   pkgs,
   setuptools,
@@ -11,7 +11,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "gitpython";
   version = "3.1.50";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "gitpython-developers";
@@ -25,6 +24,8 @@ buildPythonPackage (finalAttrs: {
       --replace 'git_exec_name = "git"' 'git_exec_name = "${pkgs.gitMinimal}/bin/git"'
   '';
 
+  # Tests require a git repo
+  doCheck = false;
   build-system = [ setuptools ];
 
   dependencies = [
@@ -33,9 +34,7 @@ buildPythonPackage (finalAttrs: {
     pkgs.gitMinimal
   ];
 
-  # Tests require a git repo
-  doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "git" ];
 
   meta = {

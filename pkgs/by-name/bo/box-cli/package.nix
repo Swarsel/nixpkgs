@@ -13,19 +13,15 @@ let
 in
 
 stdenv.mkDerivation (finalAttrs: {
-  pname = "box-cli";
   inherit (sources) version;
-
-  strictDeps = true;
-  __structuredAttrs = true;
+  pname = "box-cli";
 
   src = fetchurl {
-    url = "https://github.com/ariana-dot-dev/agent-server/releases/download/${sources.tag}/${platform.filename}";
     inherit (platform) hash;
+    url = "https://github.com/ariana-dot-dev/agent-server/releases/download/${sources.tag}/${platform.filename}";
   };
 
-  dontUnpack = true;
-
+  strictDeps = true;
   nativeBuildInputs = [ installShellFiles ];
 
   installPhase = ''
@@ -36,6 +32,8 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  __structuredAttrs = true;
+  dontUnpack = true;
   passthru.updateScript = ./update.sh;
 
   meta = {
@@ -44,7 +42,7 @@ stdenv.mkDerivation (finalAttrs: {
     license = lib.licenses.unfree;
     sourceProvenance = [ lib.sourceTypes.binaryNativeCode ];
     maintainers = with lib.maintainers; [ pwnwriter ];
-    mainProgram = "box";
     platforms = lib.attrNames sources.platforms;
+    mainProgram = "box";
   };
 })

@@ -1,23 +1,22 @@
 {
   lib,
   stdenv,
-  buildPythonPackage,
   fetchFromGitHub,
-  six,
-  setuptools_80,
-  setuptools-scm,
+  buildPythonPackage,
   libx11,
-  xvfb,
-  xauth,
   mock,
   pytestCheckHook,
+  setuptools-scm,
+  setuptools_80,
+  six,
   util-linux,
+  xauth,
+  xvfb,
 }:
 
 buildPythonPackage rec {
   pname = "python-xlib";
   version = "0.33";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "python-xlib";
@@ -26,14 +25,7 @@ buildPythonPackage rec {
     hash = "sha256-u06OWlMIOUzHOVS4hvm72jGgTSXWUqMvEQd8bTpFog0=";
   };
 
-  build-system = [
-    (setuptools-scm.override { setuptools = setuptools_80; })
-  ];
-
   buildInputs = [ libx11 ];
-
-  dependencies = [ six ];
-
   doCheck = !stdenv.hostPlatform.isDarwin;
 
   nativeCheckInputs = [
@@ -44,15 +36,23 @@ buildPythonPackage rec {
     xvfb
   ];
 
+  build-system = [
+    (setuptools-scm.override { setuptools = setuptools_80; })
+  ];
+
+  dependencies = [ six ];
+
   disabledTestPaths = [
     # requires x session
     "test/test_xlib_display.py"
   ];
 
+  pyproject = true;
+
   meta = {
-    changelog = "https://github.com/python-xlib/python-xlib/releases/tag/${version}";
     description = "Fully functional X client library for Python programs";
     homepage = "https://github.com/python-xlib/python-xlib";
+    changelog = "https://github.com/python-xlib/python-xlib/releases/tag/${version}";
     license = lib.licenses.lgpl21Plus;
     maintainers = [ ];
   };

@@ -1,8 +1,8 @@
 {
   lib,
   fetchFromGitHub,
-  rustPlatform,
   nix-update-script,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -28,10 +28,12 @@ rustPlatform.buildRustPackage (finalAttrs: {
     description = "Unreal Engine .pak file library and CLI in rust";
     homepage = "https://github.com/trumank/repak";
     changelog = "https://github.com/trumank/repak/releases/tag/v${finalAttrs.version}";
+
     license = with lib.licenses; [
       mit
       asl20
     ];
+
     maintainers = with lib.maintainers; [ florensie ];
     mainProgram = "repak";
   };

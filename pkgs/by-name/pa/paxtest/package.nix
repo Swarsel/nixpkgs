@@ -14,21 +14,21 @@ stdenv.mkDerivation (finalAttrs: {
     sha256 = "0zv6vlaszlik98gj9200sv0irvfzrvjn46rnr2v2m37x66288lym";
   };
 
-  enableParallelBuilding = true;
-
-  makefile = "Makefile.psm";
   makeFlags = [
     "PAXBIN=${paxctl}/bin/paxctl"
     "BINDIR=$(out)/bin"
     "RUNDIR=$(out)/lib/paxtest"
   ];
+
+  enableParallelBuilding = true;
   installFlags = [ "DESTDIR=\"\"" ];
+  makefile = "Makefile.psm";
 
   meta = {
     description = "Test various memory protection measures";
-    mainProgram = "paxtest";
     license = lib.licenses.gpl2Only;
-    platforms = lib.platforms.linux;
     maintainers = [ ];
+    platforms = lib.platforms.linux;
+    mainProgram = "paxtest";
   };
 })

@@ -1,31 +1,28 @@
 {
   lib,
-  buildPythonPackage,
-  setuptools,
-  btrfs-progs,
   autoreconfHook,
-  pkg-config,
+  btrfs-progs,
+  buildPythonPackage,
   e2fsprogs,
   libuuid,
+  pkg-config,
+  setuptools,
   zlib,
 }:
 buildPythonPackage {
-  pname = "btrfsutil";
   inherit (btrfs-progs) version src;
-  pyproject = true;
+  pname = "btrfsutil";
 
-  build-system = [
-    setuptools
+  nativeBuildInputs = [
+    autoreconfHook
+    pkg-config
   ];
+
   buildInputs = [
     btrfs-progs
     e2fsprogs
     libuuid
     zlib
-  ];
-  nativeBuildInputs = [
-    autoreconfHook
-    pkg-config
   ];
 
   configureFlags = [
@@ -41,12 +38,19 @@ buildPythonPackage {
 
   # No tests
   doCheck = false;
+
+  build-system = [
+    setuptools
+  ];
+
+  pyproject = true;
   pythonImportsCheck = [ "btrfsutil" ];
 
   meta = {
     description = "Library for managing Btrfs filesystems";
     homepage = "https://btrfs.readthedocs.io/";
     license = lib.licenses.lgpl21Plus;
+
     maintainers = with lib.maintainers; [
       raskin
       lopsided98

@@ -1,25 +1,25 @@
 {
   lib,
   stdenv,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
-  installShellFiles,
   argcomplete,
-  pytestCheckHook,
-  p7zip,
+  buildPythonPackage,
+  bzip2,
   cabextract,
-  zip,
-  lzip,
-  zpaq,
-  gnutar,
-  unar, # Free alternative to unrar
-  gnugrep,
   diffutils,
   file,
+  gnugrep,
+  gnutar,
   gzip,
-  bzip2,
+  installShellFiles,
+  lzip,
+  p7zip,
+  pytestCheckHook,
+  setuptools,
+  unar, # Free alternative to unrar
   xz,
+  zip,
+  zpaq,
 }:
 
 let
@@ -42,7 +42,6 @@ in
 buildPythonPackage rec {
   pname = "patool";
   version = "4.0.5";
-  format = "setuptools";
 
   #pypi doesn't have test data
   src = fetchFromGitHub {
@@ -57,16 +56,15 @@ buildPythonPackage rec {
       --replace-fail 'path = os.environ.get("PATH", os.defpath)' 'path = os.environ.get("PATH", os.defpath) + ":${lib.makeBinPath compression-utilities}"'
   '';
 
+  nativeBuildInputs = [ installShellFiles ];
+  nativeCheckInputs = [ pytestCheckHook ] ++ compression-utilities;
+
   postInstall = lib.optionalString (stdenv.buildPlatform.canExecute stdenv.hostPlatform) ''
     installShellCompletion --cmd patool \
       --bash <(${argcomplete}/bin/register-python-argcomplete -s bash $out/bin/patool) \
       --fish <(${argcomplete}/bin/register-python-argcomplete -s fish $out/bin/patool) \
       --zsh <(${argcomplete}/bin/register-python-argcomplete -s zsh $out/bin/patool)
   '';
-
-  nativeBuildInputs = [ installShellFiles ];
-
-  nativeCheckInputs = [ pytestCheckHook ] ++ compression-utilities;
 
   disabledTests = [
     "test_unzip"
@@ -80,11 +78,13 @@ buildPythonPackage rec {
   ]
   ++ lib.optionals stdenv.hostPlatform.isDarwin [ "test_ar" ];
 
+  format = "setuptools";
+
   meta = {
     description = "Portable archive file manager";
-    mainProgram = "patool";
     homepage = "https://wummel.github.io/patool/";
     license = lib.licenses.gpl3;
     maintainers = with lib.maintainers; [ marius851000 ];
+    mainProgram = "patool";
   };
 }

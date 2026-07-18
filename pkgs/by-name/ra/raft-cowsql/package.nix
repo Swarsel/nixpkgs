@@ -3,11 +3,11 @@
   stdenv,
   fetchFromGitHub,
   autoreconfHook,
+  gitUpdater,
+  incus,
   libuv,
   lz4,
   pkg-config,
-  incus,
-  gitUpdater,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -21,16 +21,10 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-aGw/ATu8Xdjfqa0qWg8Sld9PKCmQsMtZhuNBwagER7M=";
   };
 
-  nativeBuildInputs = [
-    autoreconfHook
-    pkg-config
+  outputs = [
+    "dev"
+    "out"
   ];
-  buildInputs = [
-    libuv
-    lz4
-  ];
-
-  enableParallelBuilding = true;
 
   patches = [
     # network tests either hang indefinitely, or fail outright
@@ -40,16 +34,22 @@ stdenv.mkDerivation (finalAttrs: {
     ./disable-missing-dir-test.patch
   ];
 
+  nativeBuildInputs = [
+    autoreconfHook
+    pkg-config
+  ];
+
+  buildInputs = [
+    libuv
+    lz4
+  ];
+
   preConfigure = ''
     substituteInPlace configure --replace /usr/bin/ " "
   '';
 
   doCheck = true;
-
-  outputs = [
-    "dev"
-    "out"
-  ];
+  enableParallelBuilding = true;
 
   passthru = {
     inherit (incus) tests;

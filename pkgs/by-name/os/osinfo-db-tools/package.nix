@@ -2,20 +2,20 @@
   lib,
   stdenv,
   fetchurl,
-  pkg-config,
-  meson,
-  ninja,
+  bzip2,
   gettext,
   glib,
-  libxml2,
-  perl,
-  python3,
-  libxslt,
-  libarchive,
-  bzip2,
-  xz,
   json-glib,
+  libarchive,
   libsoup_3,
+  libxml2,
+  libxslt,
+  meson,
+  ninja,
+  perl,
+  pkg-config,
+  python3,
+  xz,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -52,7 +52,7 @@ stdenv.mkDerivation (finalAttrs: {
     homepage = "https://libosinfo.org/";
     changelog = "https://gitlab.com/libosinfo/osinfo-db-tools/-/blob/v${finalAttrs.version}/NEWS";
     license = lib.licenses.lgpl2Plus;
-    platforms = lib.platforms.unix;
     maintainers = [ lib.maintainers.bjornfor ];
+    platforms = lib.platforms.unix;
   };
 })

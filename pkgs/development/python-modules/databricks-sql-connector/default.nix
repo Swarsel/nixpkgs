@@ -1,8 +1,8 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
   alembic,
+  buildPythonPackage,
   lz4,
   numpy,
   oauthlib,
@@ -13,16 +13,15 @@
   pybreaker,
   pyjwt,
   pytestCheckHook,
+  requests,
   sqlalchemy,
   thrift,
-  requests,
   urllib3,
 }:
 
 buildPythonPackage rec {
   pname = "databricks-sql-connector";
   version = "4.2.4";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "databricks";
@@ -31,11 +30,7 @@ buildPythonPackage rec {
     hash = "sha256-QoauhA2Zx2UvlCuKe9mxaOFJKpglVHQmPVVS56np4A0=";
   };
 
-  pythonRelaxDeps = [
-    "pandas"
-    "pyarrow"
-    "thrift"
-  ];
+  nativeCheckInputs = [ pytestCheckHook ];
 
   build-system = [
     poetry-core
@@ -57,11 +52,15 @@ buildPythonPackage rec {
     urllib3
   ];
 
-  nativeCheckInputs = [ pytestCheckHook ];
-
   enabledTestPaths = [ "tests/unit" ];
-
+  pyproject = true;
   pythonImportsCheck = [ "databricks" ];
+
+  pythonRelaxDeps = [
+    "pandas"
+    "pyarrow"
+    "thrift"
+  ];
 
   meta = {
     description = "Databricks SQL Connector for Python";

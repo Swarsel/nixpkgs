@@ -1,8 +1,8 @@
 {
   lib,
-  stdenvNoCC,
   fetchFromGitHub,
   installFonts,
+  stdenvNoCC,
 }:
 
 stdenvNoCC.mkDerivation {
@@ -17,7 +17,6 @@ stdenvNoCC.mkDerivation {
   };
 
   nativeBuildInputs = [ installFonts ];
-
   preInstall = "rm -r legacy";
 
   meta = {
@@ -25,7 +24,7 @@ stdenvNoCC.mkDerivation {
     longDescription = "A lively casual script where the letters bounce and change size slightly.";
     homepage = "https://github.com/impallari/DancingScript";
     license = lib.licenses.ofl;
-    platforms = lib.platforms.all;
     maintainers = with lib.maintainers; [ wdavidw ];
+    platforms = lib.platforms.all;
   };
 }

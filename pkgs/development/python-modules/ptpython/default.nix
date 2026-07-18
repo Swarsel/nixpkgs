@@ -1,8 +1,8 @@
 {
   lib,
+  appdirs,
   buildPythonPackage,
   fetchPypi,
-  appdirs,
   jedi,
   prompt-toolkit,
   pygments,
@@ -12,13 +12,14 @@
 buildPythonPackage rec {
   pname = "ptpython";
   version = "3.0.32";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
     hash = "sha256-EWUXeCNt6VxYK0JzcpTlCma6SiH6AcAJDqcIFa9Hj+A=";
   };
 
+  # no tests to run
+  doCheck = false;
   build-system = [ setuptools ];
 
   dependencies = [
@@ -28,9 +29,7 @@ buildPythonPackage rec {
     pygments
   ];
 
-  # no tests to run
-  doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "ptpython" ];
 
   meta = {

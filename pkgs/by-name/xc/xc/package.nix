@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   gitUpdater,
   versionCheckHook,
 }:
@@ -18,10 +18,9 @@ buildGoModule (finalAttrs: {
   };
 
   vendorHash = "sha256-EbIuktQ2rExa2DawyCamTrKRC1yXXMleRB8/pcKFY5c=";
-
-  subPackages = [ "cmd/xc" ];
-
   env.CGO_ENABLED = 0;
+  doInstallCheck = true;
+  nativeInstallCheckInputs = [ versionCheckHook ];
 
   ldflags = [
     "-s"
@@ -29,11 +28,6 @@ buildGoModule (finalAttrs: {
     "-X=main.version=${finalAttrs.version}"
   ];
 
-  nativeInstallCheckInputs = [ versionCheckHook ];
-
-  versionCheckProgramArg = "-version";
-
-  doInstallCheck = true;
   postInstallCheck = ''
     cp ${./example.md} example.md
     $out/bin/xc -file ./example.md example
@@ -43,16 +37,20 @@ buildGoModule (finalAttrs: {
     fi
   '';
 
+  subPackages = [ "cmd/xc" ];
+  versionCheckProgramArg = "-version";
   passthru.updateScript = gitUpdater { rev-prefix = "v"; };
 
   meta = {
     description = "Markdown defined task runner";
-    mainProgram = "xc";
     homepage = "https://xcfile.dev/";
     changelog = "https://github.com/joerdav/xc/releases/tag/${finalAttrs.src.tag}";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       joerdav
     ];
+
+    mainProgram = "xc";
   };
 })

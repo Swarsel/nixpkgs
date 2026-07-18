@@ -1,14 +1,13 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
+  buildPythonPackage,
   pytestCheckHook,
+  setuptools,
 }:
 buildPythonPackage rec {
   pname = "condense-json";
   version = "0.1.3";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "simonw";
@@ -17,14 +16,15 @@ buildPythonPackage rec {
     hash = "sha256-vMh6GLWqae0Ave3FmrGQuVCgFzYMGCIe76mGNDMrBdU=";
   };
 
-  build-system = [
-    setuptools
-  ];
-
   nativeCheckInputs = [
     pytestCheckHook
   ];
 
+  build-system = [
+    setuptools
+  ];
+
+  pyproject = true;
   pythonImportsCheck = [ "condense_json" ];
 
   meta = {

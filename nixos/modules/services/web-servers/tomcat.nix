@@ -12,14 +12,7 @@ let
 in
 
 {
-  meta = {
-    maintainers = with lib.maintainers; [
-      anthonyroussel
-    ];
-  };
-
   ###### interface
-
   options = {
     services.tomcat = {
       enable = lib.mkEnableOption "Apache Tomcat";
@@ -28,17 +21,99 @@ in
         example = "tomcat10";
       };
 
+      axis2 = {
+        enable = lib.mkEnableOption "Apache Axis2 container";
+
+        services = lib.mkOption {
+          default = [ ];
+          description = "List containing AAR files or directories with AAR files which are web services to be deployed on Axis2";
+          type = lib.types.listOf lib.types.str;
+        };
+      };
+
+      baseDir = lib.mkOption {
+        default = "/var/tomcat";
+
+        description = ''
+          Location where Tomcat stores configuration files, web applications
+          and logfiles. Note that it is partially cleared on each service startup
+          if `purifyOnStart` is enabled.
+        '';
+
+        type = lib.types.path;
+      };
+
+      catalinaOpts = lib.mkOption {
+        default = "";
+        description = "Parameters to pass to the Java Virtual Machine which spawns the Catalina servlet container";
+        type = lib.types.either (lib.types.listOf lib.types.str) lib.types.str;
+      };
+
+      commonLibs = lib.mkOption {
+        default = [ ];
+        description = "List containing JAR files or directories with JAR files which are libraries shared by the web applications and the servlet container";
+        type = lib.types.listOf lib.types.str;
+      };
+
+      extraConfigFiles = lib.mkOption {
+        default = [ ];
+        description = "Extra configuration files to pull into the tomcat conf directory";
+        type = lib.types.listOf lib.types.path;
+      };
+
+      extraEnvironment = lib.mkOption {
+        default = [ ];
+        description = "Environment Variables to pass to the tomcat service";
+        example = [ "ENVIRONMENT=production" ];
+        type = lib.types.listOf lib.types.str;
+      };
+
+      extraGroups = lib.mkOption {
+        default = [ ];
+        description = "Defines extra groups to which the tomcat user belongs.";
+        example = [ "users" ];
+        type = lib.types.listOf lib.types.str;
+      };
+
+      group = lib.mkOption {
+        default = "tomcat";
+        description = "Group account under which Apache Tomcat runs.";
+        type = lib.types.str;
+      };
+
+      javaOpts = lib.mkOption {
+        default = "";
+        description = "Parameters to pass to the Java Virtual Machine which spawns Apache Tomcat";
+        type = lib.types.either (lib.types.listOf lib.types.str) lib.types.str;
+      };
+
+      jdk = lib.mkPackageOption pkgs "jdk" { };
+
+      logDirs = lib.mkOption {
+        default = [ ];
+        description = "Directories to create in baseDir/logs/";
+        type = lib.types.listOf lib.types.path;
+      };
+
+      logPerVirtualHost = lib.mkOption {
+        default = false;
+        description = "Whether to enable logging per virtual host.";
+        type = lib.types.bool;
+      };
+
       port = lib.mkOption {
-        type = lib.types.port;
         default = 8080;
+
         description = ''
           The TCP port Tomcat should listen on.
         '';
+
+        type = lib.types.port;
       };
 
       purifyOnStart = lib.mkOption {
-        type = lib.types.bool;
         default = false;
+
         description = ''
           On startup, the `baseDir` directory is populated with various files,
           subdirectories and symlinks. If this option is enabled, these items
@@ -46,162 +121,81 @@ in
           This prevents interference from remainders of an old configuration
           (libraries, webapps, etc.), so it's recommended to enable this option.
         '';
-      };
 
-      baseDir = lib.mkOption {
-        type = lib.types.path;
-        default = "/var/tomcat";
-        description = ''
-          Location where Tomcat stores configuration files, web applications
-          and logfiles. Note that it is partially cleared on each service startup
-          if `purifyOnStart` is enabled.
-        '';
-      };
-
-      logDirs = lib.mkOption {
-        default = [ ];
-        type = lib.types.listOf lib.types.path;
-        description = "Directories to create in baseDir/logs/";
-      };
-
-      extraConfigFiles = lib.mkOption {
-        default = [ ];
-        type = lib.types.listOf lib.types.path;
-        description = "Extra configuration files to pull into the tomcat conf directory";
-      };
-
-      extraEnvironment = lib.mkOption {
-        type = lib.types.listOf lib.types.str;
-        default = [ ];
-        example = [ "ENVIRONMENT=production" ];
-        description = "Environment Variables to pass to the tomcat service";
-      };
-
-      extraGroups = lib.mkOption {
-        default = [ ];
-        type = lib.types.listOf lib.types.str;
-        example = [ "users" ];
-        description = "Defines extra groups to which the tomcat user belongs.";
-      };
-
-      user = lib.mkOption {
-        type = lib.types.str;
-        default = "tomcat";
-        description = "User account under which Apache Tomcat runs.";
-      };
-
-      group = lib.mkOption {
-        type = lib.types.str;
-        default = "tomcat";
-        description = "Group account under which Apache Tomcat runs.";
-      };
-
-      javaOpts = lib.mkOption {
-        type = lib.types.either (lib.types.listOf lib.types.str) lib.types.str;
-        default = "";
-        description = "Parameters to pass to the Java Virtual Machine which spawns Apache Tomcat";
-      };
-
-      catalinaOpts = lib.mkOption {
-        type = lib.types.either (lib.types.listOf lib.types.str) lib.types.str;
-        default = "";
-        description = "Parameters to pass to the Java Virtual Machine which spawns the Catalina servlet container";
-      };
-
-      sharedLibs = lib.mkOption {
-        type = lib.types.listOf lib.types.str;
-        default = [ ];
-        description = "List containing JAR files or directories with JAR files which are libraries shared by the web applications";
+        type = lib.types.bool;
       };
 
       serverXml = lib.mkOption {
-        type = lib.types.lines;
         default = "";
+
         description = ''
           Verbatim server.xml configuration.
           This is mutually exclusive with the virtualHosts options.
         '';
+
+        type = lib.types.lines;
       };
 
-      commonLibs = lib.mkOption {
-        type = lib.types.listOf lib.types.str;
+      sharedLibs = lib.mkOption {
         default = [ ];
-        description = "List containing JAR files or directories with JAR files which are libraries shared by the web applications and the servlet container";
+        description = "List containing JAR files or directories with JAR files which are libraries shared by the web applications";
+        type = lib.types.listOf lib.types.str;
       };
 
-      webapps = lib.mkOption {
-        type = lib.types.listOf lib.types.path;
-        default = [ tomcat.webapps ];
-        defaultText = lib.literalExpression "[ config.services.tomcat.package.webapps ]";
-        description = "List containing WAR files or directories with WAR files which are web applications to be deployed on Tomcat";
+      user = lib.mkOption {
+        default = "tomcat";
+        description = "User account under which Apache Tomcat runs.";
+        type = lib.types.str;
       };
 
       virtualHosts = lib.mkOption {
+        default = [ ];
+        description = "List consisting of a virtual host name and a list of web applications to deploy on each virtual host";
+
         type = lib.types.listOf (
           lib.types.submodule {
             options = {
-              name = lib.mkOption {
-                type = lib.types.str;
-                description = "name of the virtualhost";
-              };
               aliases = lib.mkOption {
-                type = lib.types.listOf lib.types.str;
-                description = "aliases of the virtualhost";
                 default = [ ];
+                description = "aliases of the virtualhost";
+                type = lib.types.listOf lib.types.str;
               };
+
+              name = lib.mkOption {
+                description = "name of the virtualhost";
+                type = lib.types.str;
+              };
+
               webapps = lib.mkOption {
-                type = lib.types.listOf lib.types.path;
+                default = [ ];
+
                 description = ''
                   List containing web application WAR files and/or directories containing
                   web applications and configuration files for the virtual host.
                 '';
-                default = [ ];
+
+                type = lib.types.listOf lib.types.path;
               };
             };
           }
         );
-        default = [ ];
-        description = "List consisting of a virtual host name and a list of web applications to deploy on each virtual host";
       };
 
-      logPerVirtualHost = lib.mkOption {
-        type = lib.types.bool;
-        default = false;
-        description = "Whether to enable logging per virtual host.";
-      };
-
-      jdk = lib.mkPackageOption pkgs "jdk" { };
-
-      axis2 = {
-        enable = lib.mkEnableOption "Apache Axis2 container";
-
-        services = lib.mkOption {
-          default = [ ];
-          type = lib.types.listOf lib.types.str;
-          description = "List containing AAR files or directories with AAR files which are web services to be deployed on Axis2";
-        };
+      webapps = lib.mkOption {
+        default = [ tomcat.webapps ];
+        defaultText = lib.literalExpression "[ config.services.tomcat.package.webapps ]";
+        description = "List containing WAR files or directories with WAR files which are web applications to be deployed on Tomcat";
+        type = lib.types.listOf lib.types.path;
       };
     };
   };
 
   ###### implementation
-
   config = lib.mkIf config.services.tomcat.enable {
 
-    users.groups.tomcat.gid = config.ids.gids.tomcat;
-
-    users.users.tomcat = {
-      uid = config.ids.uids.tomcat;
-      description = "Tomcat user";
-      home = "/homeless-shelter";
-      group = "tomcat";
-      extraGroups = cfg.extraGroups;
-    };
-
     systemd.services.tomcat = {
-      description = "Apache Tomcat server";
-      wantedBy = [ "multi-user.target" ];
       after = [ "network.target" ];
+      description = "Apache Tomcat server";
 
       preStart = ''
         ${lib.optionalString cfg.purifyOnStart ''
@@ -415,11 +409,6 @@ in
       '';
 
       serviceConfig = {
-        Type = "forking";
-        PermissionsStartOnly = true;
-        PIDFile = "/run/tomcat/tomcat.pid";
-        RuntimeDirectory = "tomcat";
-        User = cfg.user;
         Environment = [
           "CATALINA_BASE=${cfg.baseDir}"
           "CATALINA_PID=/run/tomcat/tomcat.pid"
@@ -428,9 +417,33 @@ in
           "CATALINA_OPTS='${toString cfg.catalinaOpts}'"
         ]
         ++ cfg.extraEnvironment;
+
         ExecStart = "${tomcat}/bin/startup.sh";
         ExecStop = "${tomcat}/bin/shutdown.sh";
+        PIDFile = "/run/tomcat/tomcat.pid";
+        PermissionsStartOnly = true;
+        RuntimeDirectory = "tomcat";
+        Type = "forking";
+        User = cfg.user;
       };
+
+      wantedBy = [ "multi-user.target" ];
     };
+
+    users.groups.tomcat.gid = config.ids.gids.tomcat;
+
+    users.users.tomcat = {
+      description = "Tomcat user";
+      extraGroups = cfg.extraGroups;
+      group = "tomcat";
+      home = "/homeless-shelter";
+      uid = config.ids.uids.tomcat;
+    };
+  };
+
+  meta = {
+    maintainers = with lib.maintainers; [
+      anthonyroussel
+    ];
   };
 }

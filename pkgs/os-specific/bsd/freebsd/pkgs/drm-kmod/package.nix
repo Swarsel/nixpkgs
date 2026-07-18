@@ -1,10 +1,10 @@
 {
   lib,
-  mkDerivation,
   fetchFromGitHub,
-  xargs-j,
-  versionData,
+  mkDerivation,
   sys,
+  versionData,
+  xargs-j,
 }:
 let
   # Based off ports tree versions
@@ -22,13 +22,8 @@ let
   fetchOptions = (lib.importJSON ./versions.json).${branch};
 in
 mkDerivation rec {
-  # this derivation is tricky; it is not an in-tree FreeBSD build but it is meant to be built
-  # at the same time as the in-tree FreeBSD code, so it expects the same environment. Therefore,
-  # it is appropriate to use the freebsd mkDerivation.
-  path = "...";
   pname = "drm-kmod";
   version = branch;
-
   src = fetchFromGitHub fetchOptions;
 
   outputs = [
@@ -36,12 +31,21 @@ mkDerivation rec {
     "debug"
   ];
 
-  extraNativeBuildInputs = [ xargs-j ];
-
-  hardeningDisable = [
-    "pic" # generates relocations the linker can't handle
-    "stackprotector" # generates stack protection for the function generating the stack canary
+  makeFlags = [
+    "DEBUG_FLAGS=-g"
+    "XARGS_J=xargs-j"
   ];
+
+  env = sys.passthru.env;
+
+  preBuild = ''
+    mkdir -p linuxkpi/dummy/include
+  '';
+
+  KERN_DEBUGDIR = "${placeholder "debug"}/lib/debug";
+  KERN_DEBUGDIR_KMODDIR = "${KERN_DEBUGDIR}/kernel";
+  KERN_DEBUGDIR_KODIR = "${KERN_DEBUGDIR}/kernel";
+  KMODDIR = "${placeholder "out"}/kernel";
 
   # hardeningDisable = stackprotector doesn't seem to be enough, put it in cflags too
   NIX_CFLAGS_COMPILE = [
@@ -55,29 +59,27 @@ mkDerivation rec {
     "-Wno-default-const-init-var-unsafe"
   ];
 
-  env = sys.passthru.env;
   SYSDIR = "${sys.src}/sys";
+  extraNativeBuildInputs = [ xargs-j ];
 
-  KMODDIR = "${placeholder "out"}/kernel";
-  KERN_DEBUGDIR = "${placeholder "debug"}/lib/debug";
-  KERN_DEBUGDIR_KODIR = "${KERN_DEBUGDIR}/kernel";
-  KERN_DEBUGDIR_KMODDIR = "${KERN_DEBUGDIR}/kernel";
-
-  preBuild = ''
-    mkdir -p linuxkpi/dummy/include
-  '';
-
-  makeFlags = [
-    "DEBUG_FLAGS=-g"
-    "XARGS_J=xargs-j"
+  hardeningDisable = [
+    "pic" # generates relocations the linker can't handle
+    "stackprotector" # generates stack protection for the function generating the stack canary
   ];
+
+  # this derivation is tricky; it is not an in-tree FreeBSD build but it is meant to be built
+  # at the same time as the in-tree FreeBSD code, so it expects the same environment. Therefore,
+  # it is appropriate to use the freebsd mkDerivation.
+  path = "...";
 
   meta = {
     description = "Linux drm driver, ported to FreeBSD";
-    platforms = lib.platforms.freebsd;
+
     license = with lib.licenses; [
       bsd2
       gpl2Only
     ];
+
+    platforms = lib.platforms.freebsd;
   };
 }

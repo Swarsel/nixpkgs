@@ -1,32 +1,28 @@
 {
   lib,
   stdenv,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # build-system
-  setuptools,
-  setuptools-scm,
-
+  # tests
+  accelerate,
+  buildPythonPackage,
   # dependencies
   frozendict,
   loguru,
-  pydantic,
-  torch,
-  transformers,
-
-  # tests
-  accelerate,
   nbconvert,
   nbformat,
+  pydantic,
   pytestCheckHook,
+  # build-system
+  setuptools,
+  setuptools-scm,
+  torch,
+  transformers,
   writableTmpDirAsHomeHook,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "compressed-tensors";
   version = "0.17.1";
-  pyproject = true;
 
   # Release on PyPI is missing the `utils` directory, which `setup.py` wants to import
   src = fetchFromGitHub {
@@ -41,6 +37,14 @@ buildPythonPackage (finalAttrs: {
       --replace-fail "setuptools_scm==8.2.0" "setuptools_scm"
   '';
 
+  nativeCheckInputs = [
+    accelerate
+    nbconvert
+    nbformat
+    pytestCheckHook
+    writableTmpDirAsHomeHook
+  ];
+
   build-system = [
     setuptools
     setuptools-scm
@@ -54,14 +58,35 @@ buildPythonPackage (finalAttrs: {
     transformers
   ];
 
-  pythonImportsCheck = [ "compressed_tensors" ];
+  disabledTestPaths = [
+    # these try to download models from HF Hub
+    "tests/test_quantization/lifecycle/test_apply.py"
+    # RuntimeError: The weights trying to be saved contained shared tensors
+    "tests/test_transform/factory/test_serialization.py::test_serialization[True-hadamard]"
+    "tests/test_transform/factory/test_serialization.py::test_serialization[True-random-hadamard]"
+    "tests/test_transform/factory/test_serialization.py::test_serialization[False-hadamard]"
+    "tests/test_transform/factory/test_serialization.py::test_serialization[False-random-hadamard]"
+    "tests/test_transform/factory/test_serialization.py::test_serialization[False-True-hadamard]"
+    "tests/test_transform/factory/test_serialization.py::test_serialization[False-True-random-hadamard]"
+    "tests/test_transform/factory/test_serialization.py::test_serialization[False-False-hadamard]"
+    "tests/test_transform/factory/test_serialization.py::test_serialization[False-False-random-hadamard]"
 
-  nativeCheckInputs = [
-    accelerate
-    nbconvert
-    nbformat
-    pytestCheckHook
-    writableTmpDirAsHomeHook
+    # AssertionError: Torch not compiled with CUDA enabled
+    "tests/test_transform/factory/test_serialization.py::test_serialization[True-True-hadamard]"
+    "tests/test_transform/factory/test_serialization.py::test_serialization[True-True-random-hadamard]"
+    "tests/test_transform/factory/test_serialization.py::test_serialization[True-False-hadamard]"
+    "tests/test_transform/factory/test_serialization.py::test_serialization[True-False-random-hadamard]"
+
+    # AttributeError: 'NoneType' object has no attribute 'type'
+    "tests/test_compressors/distributed/test_distributed_compression.py"
+    "tests/test_compressors/distributed/test_module_parallel.py"
+    "tests/test_compressors/model_compressors/test_model_compressor_distributed.py"
+    "tests/test_offload"
+  ]
+  ++ lib.optionals stdenv.hostPlatform.isDarwin [
+    # AssertionError: Torch not compiled with CUDA enabled
+    "tests/test_transform/utils/test_hadamard.py"
+    "tests/test_utils/test_match.py"
   ];
 
   disabledTests = [
@@ -129,36 +154,8 @@ buildPythonPackage (finalAttrs: {
     "test_compressed_model_inference_with_hook"
   ];
 
-  disabledTestPaths = [
-    # these try to download models from HF Hub
-    "tests/test_quantization/lifecycle/test_apply.py"
-    # RuntimeError: The weights trying to be saved contained shared tensors
-    "tests/test_transform/factory/test_serialization.py::test_serialization[True-hadamard]"
-    "tests/test_transform/factory/test_serialization.py::test_serialization[True-random-hadamard]"
-    "tests/test_transform/factory/test_serialization.py::test_serialization[False-hadamard]"
-    "tests/test_transform/factory/test_serialization.py::test_serialization[False-random-hadamard]"
-    "tests/test_transform/factory/test_serialization.py::test_serialization[False-True-hadamard]"
-    "tests/test_transform/factory/test_serialization.py::test_serialization[False-True-random-hadamard]"
-    "tests/test_transform/factory/test_serialization.py::test_serialization[False-False-hadamard]"
-    "tests/test_transform/factory/test_serialization.py::test_serialization[False-False-random-hadamard]"
-
-    # AssertionError: Torch not compiled with CUDA enabled
-    "tests/test_transform/factory/test_serialization.py::test_serialization[True-True-hadamard]"
-    "tests/test_transform/factory/test_serialization.py::test_serialization[True-True-random-hadamard]"
-    "tests/test_transform/factory/test_serialization.py::test_serialization[True-False-hadamard]"
-    "tests/test_transform/factory/test_serialization.py::test_serialization[True-False-random-hadamard]"
-
-    # AttributeError: 'NoneType' object has no attribute 'type'
-    "tests/test_compressors/distributed/test_distributed_compression.py"
-    "tests/test_compressors/distributed/test_module_parallel.py"
-    "tests/test_compressors/model_compressors/test_model_compressor_distributed.py"
-    "tests/test_offload"
-  ]
-  ++ lib.optionals stdenv.hostPlatform.isDarwin [
-    # AssertionError: Torch not compiled with CUDA enabled
-    "tests/test_transform/utils/test_hadamard.py"
-    "tests/test_utils/test_match.py"
-  ];
+  pyproject = true;
+  pythonImportsCheck = [ "compressed_tensors" ];
 
   meta = {
     description = "Safetensors extension to efficiently store sparse quantized tensors on disk";

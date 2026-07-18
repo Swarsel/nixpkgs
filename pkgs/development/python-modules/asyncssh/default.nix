@@ -1,5 +1,6 @@
 {
   lib,
+  stdenv,
   bcrypt,
   buildPythonPackage,
   cryptography,
@@ -16,48 +17,17 @@
   pytestCheckHook,
   python-pkcs11,
   setuptools,
-  stdenv,
   typing-extensions,
 }:
 
 buildPythonPackage rec {
   pname = "asyncssh";
   version = "2.24.0";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
     hash = "sha256-QGTFkOWc4ujYKi9m018xINdlgotN9ePb+we0qMJGhsk=";
   };
-
-  build-system = [ setuptools ];
-
-  dependencies = [
-    cryptography
-    nettle
-    typing-extensions
-  ];
-
-  buildInputs = [ libsodium ];
-
-  optional-dependencies = {
-    bcrypt = [ bcrypt ];
-    fido2 = [ fido2 ];
-    ifaddr = [ ifaddr ];
-    gssapi = [ gssapi ];
-    libnacl = [ libnacl ];
-    pkcs11 = [ python-pkcs11 ];
-    pyOpenSSL = [ pyopenssl ];
-  };
-
-  __darwinAllowLocalNetworking = true;
-
-  nativeCheckInputs = [
-    openssh
-    openssl
-    pytestCheckHook
-  ]
-  ++ lib.concatAttrValues optional-dependencies;
 
   patches = [
     # Reverts https://github.com/ronf/asyncssh/commit/4b3dec994b3aa821dba4db507030b569c3a32730
@@ -67,6 +37,24 @@ buildPythonPackage rec {
     # However that broke the test on NixOS, failing with
     # "Operation not permitted"
     ./fix-sftp-chmod-test-nixos.patch
+  ];
+
+  buildInputs = [ libsodium ];
+
+  nativeCheckInputs = [
+    openssh
+    openssl
+    pytestCheckHook
+  ]
+  ++ lib.concatAttrValues optional-dependencies;
+
+  __darwinAllowLocalNetworking = true;
+  build-system = [ setuptools ];
+
+  dependencies = [
+    cryptography
+    nettle
+    typing-extensions
   ];
 
   disabledTestPaths = [
@@ -91,16 +79,29 @@ buildPythonPackage rec {
     "test_canonicalize_failure"
   ];
 
+  optional-dependencies = {
+    bcrypt = [ bcrypt ];
+    fido2 = [ fido2 ];
+    gssapi = [ gssapi ];
+    ifaddr = [ ifaddr ];
+    libnacl = [ libnacl ];
+    pkcs11 = [ python-pkcs11 ];
+    pyOpenSSL = [ pyopenssl ];
+  };
+
+  pyproject = true;
   pythonImportsCheck = [ "asyncssh" ];
 
   meta = {
     description = "Asynchronous SSHv2 Python client and server library";
     homepage = "https://asyncssh.readthedocs.io/";
     changelog = "https://github.com/ronf/asyncssh/blob/v${version}/docs/changes.rst";
+
     license = with lib.licenses; [
       epl20 # or
       gpl2Plus
     ];
+
     maintainers = [ ];
   };
 }

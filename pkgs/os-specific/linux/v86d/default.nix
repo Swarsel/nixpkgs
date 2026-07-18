@@ -24,20 +24,20 @@ stdenv.mkDerivation {
     patchShebangs configure
   '';
 
-  # GCC 14 makes this an error by default, remove when fixed upstream
-  env.NIX_CFLAGS_COMPILE = "-Wno-implicit-function-declaration -Wno-implicit-int";
+  buildInputs = [ klibc ];
 
   configureFlags = [
     "--with-klibc"
     "--with-x86emu"
   ];
 
-  hardeningDisable = [ "stackprotector" ];
-
   makeFlags = [
     "KDIR=${kernel.dev}/lib/modules/${kernel.modDirVersion}/source"
     "DESTDIR=$(out)"
   ];
+
+  # GCC 14 makes this an error by default, remove when fixed upstream
+  env.NIX_CFLAGS_COMPILE = "-Wno-implicit-function-declaration -Wno-implicit-int";
 
   configurePhase = ''
     runHook preConfigure
@@ -47,17 +47,19 @@ stdenv.mkDerivation {
     runHook postConfigure
   '';
 
-  buildInputs = [ klibc ];
+  hardeningDisable = [ "stackprotector" ];
 
   meta = {
     description = "Daemon to run x86 code in an emulated environment";
-    mainProgram = "v86d";
     homepage = "https://github.com/mjanusz/v86d";
     license = lib.licenses.gpl2Only;
     maintainers = [ ];
+
     platforms = [
       "i686-linux"
       "x86_64-linux"
     ];
+
+    mainProgram = "v86d";
   };
 }

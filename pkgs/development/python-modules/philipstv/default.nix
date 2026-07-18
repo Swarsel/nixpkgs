@@ -1,24 +1,23 @@
 {
   lib,
-  fetchFromGitHub,
-  buildPythonPackage,
-  hatchling,
-  hatch-vcs,
-  installShellFiles,
-  pytestCheckHook,
-  requests-mock,
-  requests,
-  pydantic,
-  click,
-  appdirs,
   stdenv,
+  fetchFromGitHub,
+  appdirs,
+  buildPythonPackage,
+  click,
+  hatch-vcs,
+  hatchling,
+  installShellFiles,
   nix-update-script,
+  pydantic,
+  pytestCheckHook,
+  requests,
+  requests-mock,
 }:
 
 buildPythonPackage rec {
   pname = "philipstv";
   version = "3.1.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "bcyran";
@@ -27,20 +26,8 @@ buildPythonPackage rec {
     hash = "sha256-AShWm9dsA9+HKuvQ7JzFjN9sn5V13MDyoxtufST4hJA=";
   };
 
-  build-system = [
-    hatchling
-    hatch-vcs
-  ];
-
   nativeBuildInputs = [
     installShellFiles
-  ];
-
-  dependencies = [
-    requests
-    pydantic
-    click
-    appdirs
   ];
 
   nativeCheckInputs = [
@@ -55,8 +42,20 @@ buildPythonPackage rec {
       --fish <(_PHILIPSTV_COMPLETE=fish_source $out/bin/philipstv)
   '';
 
-  pythonImportsCheck = [ "philipstv" ];
+  build-system = [
+    hatchling
+    hatch-vcs
+  ];
 
+  dependencies = [
+    requests
+    pydantic
+    click
+    appdirs
+  ];
+
+  pyproject = true;
+  pythonImportsCheck = [ "philipstv" ];
   passthru.updateScript = nix-update-script { };
 
   meta = {
@@ -64,7 +63,7 @@ buildPythonPackage rec {
     homepage = "https://github.com/bcyran/philipstv";
     changelog = "https://github.com/bcyran/philipstv/releases/tag/${src.tag}";
     license = lib.licenses.mit;
-    mainProgram = "philipstv";
     maintainers = with lib.maintainers; [ bcyran ];
+    mainProgram = "philipstv";
   };
 }

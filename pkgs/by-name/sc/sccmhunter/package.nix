@@ -8,7 +8,6 @@
 python312Packages.buildPythonApplication (finalAttrs: {
   pname = "sccmhunter";
   version = "2.0.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "garrettfoster13";
@@ -40,12 +39,14 @@ python312Packages.buildPythonApplication (finalAttrs: {
     pycryptodome
   ];
 
+  pyproject = true;
+
   meta = {
     description = "Post exploitation tool to identify and attack SCCM related assets in an Active Directory domain";
     homepage = "https://github.com/garrettfoster13/sccmhunter";
     changelog = "https://github.com/garrettfoster13/sccmhunter/blob/${finalAttrs.src.tag}/changelog.md";
     license = lib.licenses.mit;
-    mainProgram = "sccmhunter.py";
     maintainers = with lib.maintainers; [ purpole ];
+    mainProgram = "sccmhunter.py";
   };
 })

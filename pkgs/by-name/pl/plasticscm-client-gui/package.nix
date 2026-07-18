@@ -1,62 +1,16 @@
 {
   buildFHSEnv,
-  extraLibs ? _: [ ],
-  extraPkgs ? _: [ ],
   imagemagick,
   makeWrapper,
   plasticscm-client-core-unwrapped,
   plasticscm-client-gui-unwrapped,
   plasticscm-theme,
+  extraLibs ? _: [ ],
+  extraPkgs ? _: [ ],
 }:
 buildFHSEnv {
-  pname = "plasticscm-client-gui";
   inherit (plasticscm-client-gui-unwrapped) version meta;
-
-  runScript = "";
-
-  targetPkgs =
-    pkgs:
-    with pkgs;
-    [
-      plasticscm-client-gui-unwrapped
-
-      # Dependencies from the Debian package
-      plasticscm-client-core-unwrapped
-
-      fontconfig
-    ]
-    ++ extraPkgs pkgs;
-
-  multiPkgs =
-    pkgs:
-    with pkgs;
-    [
-      # Dependencies from the Debian package
-      glibc.out
-      libgcc
-      krb5.lib
-      lttng-ust.out
-      openssl_3.out
-      icu76
-      plasticscm-theme
-
-      # Transitive dependencies from the Debian package
-      libidn2.out
-      libunistring
-      e2fsprogs.out
-      keyutils.lib
-      numactl.out
-      libz
-
-      # Undocumented dependencies discovered from testing
-      gtk3
-      libice
-      libsm
-      libx11
-      libxcursor
-      libxi
-    ]
-    ++ extraLibs pkgs;
+  pname = "plasticscm-client-gui";
 
   nativeBuildInputs = [
     makeWrapper
@@ -99,4 +53,50 @@ buildFHSEnv {
       done
     done
   '';
+
+  multiPkgs =
+    pkgs:
+    with pkgs;
+    [
+      # Dependencies from the Debian package
+      glibc.out
+      libgcc
+      krb5.lib
+      lttng-ust.out
+      openssl_3.out
+      icu76
+      plasticscm-theme
+
+      # Transitive dependencies from the Debian package
+      libidn2.out
+      libunistring
+      e2fsprogs.out
+      keyutils.lib
+      numactl.out
+      libz
+
+      # Undocumented dependencies discovered from testing
+      gtk3
+      libice
+      libsm
+      libx11
+      libxcursor
+      libxi
+    ]
+    ++ extraLibs pkgs;
+
+  runScript = "";
+
+  targetPkgs =
+    pkgs:
+    with pkgs;
+    [
+      plasticscm-client-gui-unwrapped
+
+      # Dependencies from the Debian package
+      plasticscm-client-core-unwrapped
+
+      fontconfig
+    ]
+    ++ extraPkgs pkgs;
 }

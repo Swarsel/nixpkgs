@@ -1,7 +1,7 @@
 {
   lib,
-  buildNpmPackage,
   fetchFromGitHub,
+  buildNpmPackage,
   versionCheckHook,
 }:
 
@@ -17,19 +17,18 @@ buildNpmPackage rec {
   };
 
   npmDepsHash = "sha256-bGtiGLwr9Bmi3Jx2DImpyLhPnxUo7q6YcMCxoxqOkGY=";
-
   env.PUPPETEER_SKIP_CHROMIUM_DOWNLOAD = true;
+  doInstallCheck = true;
 
   nativeInstallCheckInputs = [
     versionCheckHook
   ];
-  doInstallCheck = true;
 
   meta = {
     description = "Spectacular Test Runner for JavaScript";
     homepage = "http://karma-runner.github.io/";
     license = lib.licenses.mit;
-    mainProgram = "karma";
     maintainers = [ ];
+    mainProgram = "karma";
   };
 }

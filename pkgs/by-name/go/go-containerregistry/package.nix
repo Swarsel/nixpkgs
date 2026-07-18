@@ -1,8 +1,8 @@
 {
   lib,
   stdenv,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   installShellFiles,
 }:
 
@@ -23,27 +23,12 @@ buildGoModule (finalAttrs: {
     rev = "v${finalAttrs.version}";
     sha256 = "sha256-qqtcvpxqvOG+zVGse5vCdxaA8tgH3WrKjfLUTRLxA7s=";
   };
-  vendorHash = null;
-
-  nativeBuildInputs = [ installShellFiles ];
-
-  subPackages = [
-    "cmd/crane"
-    "cmd/gcrane"
-  ];
 
   outputs = [ "out" ] ++ bins;
-
-  ldflags =
-    let
-      t = "github.com/google/go-containerregistry";
-    in
-    [
-      "-s"
-      "-w"
-      "-X ${t}/cmd/crane/cmd.Version=v${finalAttrs.version}"
-      "-X ${t}/pkg/v1/remote/transport.Version=${finalAttrs.version}"
-    ];
+  nativeBuildInputs = [ installShellFiles ];
+  vendorHash = null;
+  # NOTE: no tests
+  doCheck = false;
 
   postInstall =
     lib.concatStringsSep "\n" (
@@ -62,17 +47,32 @@ buildGoModule (finalAttrs: {
       done
     '';
 
-  # NOTE: no tests
-  doCheck = false;
+  ldflags =
+    let
+      t = "github.com/google/go-containerregistry";
+    in
+    [
+      "-s"
+      "-w"
+      "-X ${t}/cmd/crane/cmd.Version=v${finalAttrs.version}"
+      "-X ${t}/pkg/v1/remote/transport.Version=${finalAttrs.version}"
+    ];
+
+  subPackages = [
+    "cmd/crane"
+    "cmd/gcrane"
+  ];
 
   meta = {
     description = "Tools for interacting with remote images and registries including crane and gcrane";
     homepage = "https://github.com/google/go-containerregistry";
     license = lib.licenses.asl20;
-    mainProgram = "crane";
+
     maintainers = with lib.maintainers; [
       yurrriq
       ryan4yin
     ];
+
+    mainProgram = "crane";
   };
 })

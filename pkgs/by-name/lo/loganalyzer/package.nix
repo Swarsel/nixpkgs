@@ -13,20 +13,18 @@ stdenv.mkDerivation rec {
     owner = "pbek";
     repo = "loganalyzer";
     rev = "v${version}";
-    fetchSubmodules = true;
     hash = "sha256-k9hOGI/TmiftwhSHQEh3ZVV8kkMSs1yKejqHelFSQJ4=";
+    fetchSubmodules = true;
   };
-
-  buildInputs = [
-    libsForQt5.qtbase
-    libsForQt5.qtsvg
-  ];
 
   nativeBuildInputs = [
     libsForQt5.wrapQtAppsHook
   ];
 
-  sourceRoot = "${src.name}/src";
+  buildInputs = [
+    libsForQt5.qtbase
+    libsForQt5.qtsvg
+  ];
 
   buildPhase = ''
     runHook preBuild
@@ -36,8 +34,6 @@ stdenv.mkDerivation rec {
 
     runHook postBuild
   '';
-
-  installFlags = [ "INSTALL_ROOT=$(out)" ];
 
   postInstall =
     let
@@ -51,13 +47,16 @@ stdenv.mkDerivation rec {
       ln -s $out/bin/${outBin} $out/bin/loganalyzer
     '';
 
+  installFlags = [ "INSTALL_ROOT=$(out)" ];
+  sourceRoot = "${src.name}/src";
+
   meta = {
     description = "Tool that helps you to analyze your log files by reducing the content with patterns you define";
     homepage = "https://github.com/pbek/loganalyzer";
     changelog = "https://github.com/pbek/loganalyzer/blob/develop/CHANGELOG.md";
-    downloadPage = "https://github.com/pbek/loganalyzer/releases/tag/v${version}";
     license = lib.licenses.gpl2Only;
     maintainers = with lib.maintainers; [ pbek ];
     platforms = lib.platforms.unix;
+    downloadPage = "https://github.com/pbek/loganalyzer/releases/tag/v${version}";
   };
 }

@@ -1,11 +1,9 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
+  buildPythonPackage,
   # build-system
   hatchling,
-
   # dependencies
   numpy,
   opencv-python,
@@ -18,8 +16,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "trackers";
   version = "2.5.0";
-  pyproject = true;
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "roboflow";
@@ -27,6 +23,10 @@ buildPythonPackage (finalAttrs: {
     tag = finalAttrs.version;
     hash = "sha256-DSyBzI+hz0o7d8SfpGav5Ezhs3RtjR3pxElOZyCDQwY=";
   };
+
+  # Tests require external data downloads and GPU resources.
+  doCheck = false;
+  __structuredAttrs = true;
 
   build-system = [
     hatchling
@@ -41,9 +41,7 @@ buildPythonPackage (finalAttrs: {
     supervision
   ];
 
-  # Tests require external data downloads and GPU resources.
-  doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "trackers" ];
 
   meta = {

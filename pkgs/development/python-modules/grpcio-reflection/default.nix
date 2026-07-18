@@ -2,9 +2,9 @@
   lib,
   buildPythonPackage,
   fetchPypi,
-  setuptools,
   grpcio,
   protobuf,
+  setuptools,
 }:
 
 # This package should be updated together with the main grpc package and other
@@ -13,30 +13,29 @@
 buildPythonPackage rec {
   pname = "grpcio-reflection";
   version = "1.81.0";
-  pyproject = true;
 
   src = fetchPypi {
-    pname = "grpcio_reflection";
     inherit version;
     hash = "sha256-UZHbeqbKsbaYGwh5+kT9zdQ7pkTwMBxAuXb4E+tO/wY=";
+    pname = "grpcio_reflection";
   };
 
+  # no tests
+  doCheck = false;
   build-system = [ setuptools ];
-
-  pythonRelaxDeps = [
-    "grpcio"
-    "protobuf"
-  ];
 
   dependencies = [
     grpcio
     protobuf
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "grpc_reflection" ];
 
-  # no tests
-  doCheck = false;
+  pythonRelaxDeps = [
+    "grpcio"
+    "protobuf"
+  ];
 
   meta = {
     description = "Standard Protobuf Reflection Service for gRPC";

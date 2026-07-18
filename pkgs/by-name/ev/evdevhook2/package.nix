@@ -2,26 +2,26 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  meson,
-  ninja,
-  pkg-config,
-  vala,
   glib,
   libevdev,
   libgee,
-  udev,
-  testers,
+  meson,
+  ninja,
   nix-update-script,
+  pkg-config,
+  testers,
+  udev,
+  vala,
 }:
 
 let
   # https://github.com/v1993/evdevhook2/blob/main/subprojects/gcemuhook.wrap
   gcemuhook = fetchFromGitHub {
+    hash = "sha256-CPjSuKtoqSDKd+vEBgFy3qh33TkCVbxBEnwiBAkaADs=";
     name = "gcemuhook";
     owner = "v1993";
     repo = "gcemuhook";
     rev = "91ef61cca809f5f3b9fa6e5304aba284a56c06dc";
-    hash = "sha256-CPjSuKtoqSDKd+vEBgFy3qh33TkCVbxBEnwiBAkaADs=";
   };
 in
 
@@ -50,28 +50,28 @@ stdenv.mkDerivation (finalAttrs: {
     udev
   ];
 
+  mesonBuildType = "release";
+
   postUnpack = ''
     ln -sf ${gcemuhook} source/subprojects/gcemuhook
   '';
 
-  mesonBuildType = "release";
-
   passthru = {
     tests.version = testers.testVersion {
-      package = finalAttrs.finalPackage;
       version = "Evdevhook ${finalAttrs.version}";
+      package = finalAttrs.finalPackage;
     };
 
     updateScript = nix-update-script { };
   };
 
   meta = {
-    changelog = "https://github.com/v1993/evdevhook2/releases/tag/v${finalAttrs.version}";
     description = "Cemuhook UDP server for devices with modern Linux drivers";
     homepage = "https://github.com/v1993/evdevhook2";
+    changelog = "https://github.com/v1993/evdevhook2/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.gpl3Only;
-    mainProgram = "evdevhook2";
     maintainers = with lib.maintainers; [ azuwis ];
     platforms = lib.platforms.linux;
+    mainProgram = "evdevhook2";
   };
 })

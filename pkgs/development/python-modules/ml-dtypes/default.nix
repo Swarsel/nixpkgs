@@ -1,24 +1,20 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  fetchpatch2,
-
-  # build-system
-  setuptools,
-
-  # dependencies
-  numpy,
-
   # tests
   absl-py,
+  buildPythonPackage,
+  fetchpatch2,
+  # dependencies
+  numpy,
   pytestCheckHook,
+  # build-system
+  setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "ml-dtypes";
   version = "0.5.4";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "jax-ml";
@@ -35,8 +31,8 @@ buildPythonPackage rec {
     # Fix tests for numpy 2.4.3, which changed the way testing assertions
     # handle behaviors with NaN equivalence on the custom numeric types.
     (fetchpatch2 {
-      url = "https://github.com/jax-ml/ml_dtypes/commit/04c4dc8b23720d9d92f3cc849ffc387d5798db84.patch?full_index=1";
       hash = "sha256-jqqiDYcHq58JxSqtHfXcNWFbMFhvufqafDPHmORe6F0=";
+      url = "https://github.com/jax-ml/ml_dtypes/commit/04c4dc8b23720d9d92f3cc849ffc387d5798db84.patch?full_index=1";
     })
   ];
 
@@ -44,10 +40,6 @@ buildPythonPackage rec {
     substituteInPlace pyproject.toml \
       --replace-fail "setuptools~=" "setuptools>="
   '';
-
-  build-system = [ setuptools ];
-
-  dependencies = [ numpy ];
 
   nativeCheckInputs = [
     absl-py
@@ -60,6 +52,9 @@ buildPythonPackage rec {
     rm -rf ./ml_dtypes
   '';
 
+  build-system = [ setuptools ];
+  dependencies = [ numpy ];
+  pyproject = true;
   pythonImportsCheck = [ "ml_dtypes" ];
 
   meta = {
@@ -67,6 +62,7 @@ buildPythonPackage rec {
     homepage = "https://github.com/jax-ml/ml_dtypes";
     changelog = "https://github.com/jax-ml/ml_dtypes/releases/tag/v${version}";
     license = lib.licenses.asl20;
+
     maintainers = with lib.maintainers; [
       GaetanLepage
       samuela

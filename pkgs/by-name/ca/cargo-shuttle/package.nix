@@ -1,12 +1,12 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
-  pkg-config,
-  openssl,
-  zlib,
-  versionCheckHook,
   nix-update-script,
+  openssl,
+  pkg-config,
+  rustPlatform,
+  versionCheckHook,
+  zlib,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -20,14 +20,16 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-qPevl75wmOYVhTgMiJOi+6j8LBWKzM7HPhd5mdf2B+8=";
   };
 
-  cargoHash = "sha256-H2fy2NQvLQEzbQik+nrUvoYZaWQRXX6PpO9LcYfiF2I=";
-
   nativeBuildInputs = [ pkg-config ];
 
   buildInputs = [
     openssl
     zlib
   ];
+
+  cargoHash = "sha256-H2fy2NQvLQEzbQik+nrUvoYZaWQRXX6PpO9LcYfiF2I=";
+  doInstallCheck = true;
+  nativeInstallCheckInputs = [ versionCheckHook ];
 
   cargoBuildFlags = [
     "-p"
@@ -39,18 +41,15 @@ rustPlatform.buildRustPackage (finalAttrs: {
     "init::shuttle_init_tests::"
   ];
 
-  doInstallCheck = true;
-  nativeInstallCheckInputs = [ versionCheckHook ];
   versionCheckProgramArg = "--version";
-
   passthru.updateScript = nix-update-script { };
 
   meta = {
     description = "Cargo command for the shuttle platform";
-    mainProgram = "cargo-shuttle";
     homepage = "https://shuttle.rs";
     changelog = "https://github.com/shuttle-hq/shuttle/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.asl20;
     maintainers = [ lib.maintainers.progrm_jarvis ];
+    mainProgram = "cargo-shuttle";
   };
 })

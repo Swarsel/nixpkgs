@@ -2,10 +2,10 @@
   lib,
   stdenv,
   fetchurl,
-  pkg-config,
+  cairo,
   gtk3,
   pango,
-  cairo,
+  pkg-config,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -29,7 +29,7 @@ stdenv.mkDerivation (finalAttrs: {
     description = "GTK widget for displaying large amounts of numerical data";
     homepage = "https://gtkdatabox.sourceforge.io/";
     license = lib.licenses.lgpl2Only;
-    platforms = lib.platforms.unix;
     maintainers = with lib.maintainers; [ yl3dy ];
+    platforms = lib.platforms.unix;
   };
 })

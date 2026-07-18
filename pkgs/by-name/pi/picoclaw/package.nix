@@ -1,11 +1,11 @@
 {
   lib,
+  fetchFromGitHub,
   buildGoModule,
   callPackage,
-  fetchFromGitHub,
+  nix-update-script,
   olm,
   versionCheckHook,
-  nix-update-script,
 }:
 
 buildGoModule (finalAttrs: {
@@ -19,10 +19,8 @@ buildGoModule (finalAttrs: {
     hash = "sha256-oMees7EKANS5dkMHIqAHfGcumrNMtTEEA+dmpl8/dLE=";
   };
 
-  proxyVendor = true;
-  vendorHash = "sha256-LjTLLeK2M8W34z1M11wKuBAoDI6ciCG3f4FRWAre/sY=";
-
   buildInputs = [ olm ];
+  vendorHash = "sha256-LjTLLeK2M8W34z1M11wKuBAoDI6ciCG3f4FRWAre/sY=";
 
   preBuild = ''
     rm -rf web/backend/dist
@@ -30,22 +28,6 @@ buildGoModule (finalAttrs: {
 
     go generate ./...
   '';
-
-  ldflags = [
-    "-s"
-    "-w"
-    "-X github.com/sipeed/picoclaw/pkg/config.Version=${finalAttrs.version}"
-  ];
-
-  postInstall = ''
-    ln -sf $out/bin/{backend,picoclaw-launcher}
-    install -Dm644 web/picoclaw-launcher.png -t $out/share/icons/hicolor/256x256/apps
-    install -Dm444 web/picoclaw-launcher.desktop -t $out/share/applications
-  '';
-
-  doInstallCheck = true;
-  nativeInstallCheckInputs = [ versionCheckHook ];
-  versionCheckProgramArg = "version";
 
   checkFlags =
     let
@@ -60,6 +42,24 @@ buildGoModule (finalAttrs: {
     in
     [ "-skip=^${builtins.concatStringsSep "$|^" skippedTests}$" ];
 
+  postInstall = ''
+    ln -sf $out/bin/{backend,picoclaw-launcher}
+    install -Dm644 web/picoclaw-launcher.png -t $out/share/icons/hicolor/256x256/apps
+    install -Dm444 web/picoclaw-launcher.desktop -t $out/share/applications
+  '';
+
+  doInstallCheck = true;
+  nativeInstallCheckInputs = [ versionCheckHook ];
+
+  ldflags = [
+    "-s"
+    "-w"
+    "-X github.com/sipeed/picoclaw/pkg/config.Version=${finalAttrs.version}"
+  ];
+
+  proxyVendor = true;
+  versionCheckProgramArg = "version";
+
   passthru = {
     frontend = callPackage ./frontend.nix { picoclaw = finalAttrs.finalPackage; };
     updateScript = nix-update-script { extraArgs = [ "--subpackage=frontend" ]; };
@@ -69,10 +69,12 @@ buildGoModule (finalAttrs: {
     description = "Tiny, Fast, and Deployable anywhere - automate the mundane, unleash your creativity";
     homepage = "https://github.com/sipeed/picoclaw";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       manfredmacx
       drupol
     ];
+
     mainProgram = "picoclaw";
   };
 })

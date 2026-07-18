@@ -2,15 +2,15 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  pkg-config,
-  libxcb,
+  alsa-lib,
   cmake,
-  qt6,
   ffmpeg,
   gst_all_1,
-  libpulseaudio,
-  alsa-lib,
   jack2,
+  libpulseaudio,
+  libxcb,
+  pkg-config,
+  qt6,
   v4l-utils,
 }:
 
@@ -24,6 +24,12 @@ stdenv.mkDerivation rec {
     tag = version;
     hash = "sha256-KU5iJqCGbqTZebP5yWb5VcxRGcRjQYQHn+GP6W57D9I=";
   };
+
+  nativeBuildInputs = [
+    pkg-config
+    cmake
+    qt6.wrapQtAppsHook
+  ];
 
   buildInputs = [
     libxcb
@@ -39,19 +45,13 @@ stdenv.mkDerivation rec {
     v4l-utils
   ];
 
-  nativeBuildInputs = [
-    pkg-config
-    cmake
-    qt6.wrapQtAppsHook
-  ];
-
   meta = {
     description = "Webcam Capture Software";
     longDescription = "Webcamoid is a full featured and multiplatform webcam suite.";
     homepage = "https://github.com/webcamoid/webcamoid/";
     license = with lib.licenses; [ gpl3Plus ];
-    platforms = lib.platforms.linux;
     maintainers = with lib.maintainers; [ robaca ];
+    platforms = lib.platforms.linux;
     mainProgram = "webcamoid";
   };
 }

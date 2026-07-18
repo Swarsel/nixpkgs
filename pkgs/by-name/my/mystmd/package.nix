@@ -1,21 +1,18 @@
 {
-  bun,
   lib,
-  fetchFromGitHub,
-  mystmd,
-  nodejs,
   stdenv,
-  testers,
-  nix-update-script,
+  fetchFromGitHub,
+  bun,
   makeWrapper,
+  mystmd,
+  nix-update-script,
+  nodejs,
+  testers,
   writableTmpDirAsHomeHook,
 }:
 stdenv.mkDerivation (finalAttrs: {
   pname = "mystmd";
   version = "1.9.1";
-
-  strictDeps = true;
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "jupyter-book";
@@ -24,48 +21,7 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-SopL2yIFWWCMm7afjkMrG4Z7Ohxxb5gfCrKNRX5tyo8=";
   };
 
-  node_modules = stdenv.mkDerivation {
-    inherit (finalAttrs) src version;
-    pname = "${finalAttrs.pname}-node_modules";
-
-    nativeBuildInputs = [
-      bun
-      nodejs
-      writableTmpDirAsHomeHook
-      makeWrapper
-    ];
-
-    dontConfigure = true;
-    dontFixup = true;
-
-    buildPhase = ''
-      runHook preBuild
-      export BUN_INSTALL_CACHE_DIR=$(mktemp -d)
-      bun install --no-progress --frozen-lockfile --no-cache
-
-      runHook postBuild
-    '';
-
-    installPhase = ''
-      runHook preInstall
-
-      mkdir -p $out/node_modules
-      cp -R ./node_modules $out
-
-      runHook postInstall
-    '';
-
-    outputHash =
-      {
-        x86_64-linux = "sha256-4EQkvsoji9M4VCrdwyHm+ncd4XFjgAf34Kt+YeM3qjs=";
-        aarch64-linux = "sha256-xm4T1BL3AyRsYOERz4LhG4ZJQkSMzspoA+l60OND3E0=";
-        aarch64-darwin = "sha256-ZUx+jF7IcEbUCnUUeW0uOFgEpO9UIJpP3/VpUJ5ulAM=";
-      }
-      .${stdenv.hostPlatform.system} or (throw "unsupported system ${stdenv.hostPlatform.system}");
-
-    outputHashAlgo = "sha256";
-    outputHashMode = "recursive";
-  };
+  strictDeps = true;
 
   nativeBuildInputs = [
     bun
@@ -98,11 +54,57 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  __structuredAttrs = true;
+
+  node_modules = stdenv.mkDerivation {
+    inherit (finalAttrs) src version;
+    pname = "${finalAttrs.pname}-node_modules";
+
+    nativeBuildInputs = [
+      bun
+      nodejs
+      writableTmpDirAsHomeHook
+      makeWrapper
+    ];
+
+    buildPhase = ''
+      runHook preBuild
+      export BUN_INSTALL_CACHE_DIR=$(mktemp -d)
+      bun install --no-progress --frozen-lockfile --no-cache
+
+      runHook postBuild
+    '';
+
+    installPhase = ''
+      runHook preInstall
+
+      mkdir -p $out/node_modules
+      cp -R ./node_modules $out
+
+      runHook postInstall
+    '';
+
+    dontConfigure = true;
+    dontFixup = true;
+
+    outputHash =
+      {
+        aarch64-darwin = "sha256-ZUx+jF7IcEbUCnUUeW0uOFgEpO9UIJpP3/VpUJ5ulAM=";
+        aarch64-linux = "sha256-xm4T1BL3AyRsYOERz4LhG4ZJQkSMzspoA+l60OND3E0=";
+        x86_64-linux = "sha256-4EQkvsoji9M4VCrdwyHm+ncd4XFjgAf34Kt+YeM3qjs=";
+      }
+      .${stdenv.hostPlatform.system} or (throw "unsupported system ${stdenv.hostPlatform.system}");
+
+    outputHashAlgo = "sha256";
+    outputHashMode = "recursive";
+  };
+
   passthru = {
     tests.version = testers.testVersion {
-      package = finalAttrs.finalPackage;
       version = "v${finalAttrs.version}";
+      package = finalAttrs.finalPackage;
     };
+
     updateScript = nix-update-script { };
   };
 

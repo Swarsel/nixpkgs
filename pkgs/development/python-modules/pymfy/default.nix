@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   httpretty,
   poetry-core,
   pytestCheckHook,
@@ -12,7 +12,6 @@
 buildPythonPackage rec {
   pname = "pymfy";
   version = "0.11.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "tetienne";
@@ -21,7 +20,10 @@ buildPythonPackage rec {
     hash = "sha256-G/4aBtsN20QtQnMiBBQWg0mqrmR8FuU2f9g77qvk8nI=";
   };
 
-  pythonRelaxDeps = [ "requests-oauthlib" ];
+  nativeCheckInputs = [
+    httpretty
+    pytestCheckHook
+  ];
 
   build-system = [ poetry-core ];
 
@@ -30,12 +32,9 @@ buildPythonPackage rec {
     requests-oauthlib
   ];
 
-  nativeCheckInputs = [
-    httpretty
-    pytestCheckHook
-  ];
-
+  pyproject = true;
   pythonImportsCheck = [ "pymfy" ];
+  pythonRelaxDeps = [ "requests-oauthlib" ];
 
   meta = {
     description = "Python client for the Somfy Open API";

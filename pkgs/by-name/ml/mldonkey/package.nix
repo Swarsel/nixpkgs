@@ -2,8 +2,8 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  autoreconfHook,
   autoconf-archive,
+  autoreconfHook,
   ocaml-ng,
   pkg-config,
   zlib,
@@ -33,7 +33,6 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   strictDeps = true;
-  __structuredAttrs = true;
 
   nativeBuildInputs = [
     autoreconfHook
@@ -49,14 +48,6 @@ stdenv.mkDerivation (finalAttrs: {
     zlib
   ];
 
-  preAutoreconf = ''
-    cd config
-  '';
-
-  postAutoreconf = ''
-    cd ..
-  '';
-
   env = {
     NIX_CFLAGS_COMPILE = "-Wno-error=implicit-function-declaration -Wno-error=implicit-int -Wno-error=incompatible-pointer-types -DPROTOTYPES=1";
   }
@@ -67,6 +58,16 @@ stdenv.mkDerivation (finalAttrs: {
   // lib.optionalAttrs stdenv.hostPlatform.isDarwin {
     NIX_LDFLAGS = "-liconv";
   };
+
+  __structuredAttrs = true;
+
+  postAutoreconf = ''
+    cd ..
+  '';
+
+  preAutoreconf = ''
+    cd config
+  '';
 
   meta = {
     description = "Client for many p2p networks, with multiple frontends";

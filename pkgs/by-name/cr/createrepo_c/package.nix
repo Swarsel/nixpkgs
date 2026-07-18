@@ -2,23 +2,23 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  cmake,
-  pkg-config,
+  bash-completion,
   bzip2,
-  doxygen,
-  glib,
+  cmake,
   curl,
+  doxygen,
+  file,
+  glib,
+  libmodulemd,
   libxml2,
+  openssl,
+  pkg-config,
   python3,
   rpm,
-  openssl,
   sqlite,
-  file,
   xz,
-  bash-completion,
-  zstd,
   zchunk,
-  libmodulemd,
+  zstd,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -70,7 +70,7 @@ stdenv.mkDerivation (finalAttrs: {
     description = "C implementation of createrepo";
     homepage = "https://rpm-software-management.github.io/createrepo_c/";
     license = lib.licenses.gpl2Plus;
-    platforms = lib.platforms.unix;
     maintainers = [ ];
+    platforms = lib.platforms.unix;
   };
 })

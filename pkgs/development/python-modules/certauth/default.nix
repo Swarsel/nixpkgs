@@ -1,18 +1,17 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
+  buildPythonPackage,
   pyopenssl,
-  tldextract,
   pytest-cov-stub,
   pytestCheckHook,
+  setuptools,
+  tldextract,
 }:
 
 buildPythonPackage {
   pname = "certauth";
   version = "1.3.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "ikreymer";
@@ -34,8 +33,6 @@ buildPythonPackage {
     pytestCheckHook
   ];
 
-  pythonImportsCheck = [ "certauth" ];
-
   disabledTests = [
     # https://github.com/ikreymer/certauth/issues/23
     "test_ca_cert_in_mem"
@@ -48,11 +45,14 @@ buildPythonPackage {
     "test_in_mem_parent_wildcard_cert_2"
   ];
 
+  pyproject = true;
+  pythonImportsCheck = [ "certauth" ];
+
   meta = {
     description = "Simple CertificateAuthority and host certificate creation, useful for man-in-the-middle HTTPS proxy";
-    mainProgram = "certauth";
     homepage = "https://github.com/ikreymer/certauth";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ Luflosi ];
+    mainProgram = "certauth";
   };
 }

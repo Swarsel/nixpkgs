@@ -25,9 +25,6 @@ stdenv.mkDerivation {
     ncurses
   ];
 
-  configureScript = "./Configure";
-  dontAddPrefix = true;
-
   configureFlags = [
     "--cc"
     "${stdenv.cc.targetPrefix}cc"
@@ -39,12 +36,15 @@ stdenv.mkDerivation {
     cp ./netris $out/bin
   '';
 
+  configureScript = "./Configure";
+  dontAddPrefix = true;
+
   meta = {
     description = "Free networked version of T*tris";
     homepage = "https://github.com/naclander/netris";
-    mainProgram = "netris";
     license = lib.licenses.gpl2Plus;
     maintainers = with lib.maintainers; [ patryk27 ];
     platforms = lib.platforms.unix;
+    mainProgram = "netris";
   };
 }

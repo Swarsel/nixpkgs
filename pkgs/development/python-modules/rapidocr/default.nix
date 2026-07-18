@@ -1,26 +1,23 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
+  buildPythonPackage,
+  colorlog,
   fetchpatch,
   fetchzip,
-  replaceVars,
-
-  setuptools,
-  colorlog,
-  pyclipper,
-  opencv-python,
-  omegaconf,
   numpy,
-  six,
-  shapely,
-  pyyaml,
-  pillow,
+  omegaconf,
   onnxruntime,
-  tqdm,
-
+  opencv-python,
+  pillow,
+  pyclipper,
+  pyyaml,
+  replaceVars,
   requests,
+  setuptools,
+  shapely,
+  six,
+  tqdm,
 }:
 let
   version = "3.8.1";
@@ -34,25 +31,21 @@ let
 
   models =
     fetchzip {
-      url = "https://github.com/RapidAI/RapidOCR/releases/download/v1.1.0/required_for_whl_v1.3.0.zip";
       hash = "sha256-j/0nzyvu/HfNTt5EZ+2Phe5dkyPOdQw/OZTz0yS63aA=";
       stripRoot = false;
+      url = "https://github.com/RapidAI/RapidOCR/releases/download/v1.1.0/required_for_whl_v1.3.0.zip";
     }
     + "/required_for_whl_v1.3.0/resources/models";
 in
 buildPythonPackage {
-  pname = "rapidocr";
   inherit version src;
-  pyproject = true;
-
-  sourceRoot = "${src.name}/python";
+  pname = "rapidocr";
 
   # HACK:
   # Upstream uses a very unconventional structure to organize the packages, and we have to coax the
   # existing infrastructure to work with it.
   # See https://github.com/RapidAI/RapidOCR/blob/02829ef986bc2a5c4f33e9c45c9267bcf2d07a1d/.github/workflows/gen_whl_to_pypi_rapidocr_ort.yml#L80-L92
   # for the "intended" way of building this package.
-
   # The setup.py supplied by upstream tries to determine the current version by
   # fetching the latest version of the package from PyPI, and then bumping the version number.
   # This is not allowed in the Nix build environment as we do not have internet access,
@@ -63,9 +56,9 @@ buildPythonPackage {
     })
     # Fix type error in Immich which is caused by passing null to Path() when model_root_dir is the default null
     (fetchpatch {
-      url = "https://github.com/RapidAI/RapidOCR/commit/57dfac08d8de63c4c00d21a1ab14a4a3b5c01975.patch";
-      stripLen = 1;
       hash = "sha256-G49mTvBOm20BFOll4Pc0X397ZABT1tWMXd8nlDjBr7E=";
+      stripLen = 1;
+      url = "https://github.com/RapidAI/RapidOCR/commit/57dfac08d8de63c4c00d21a1ab14a4a3b5c01975.patch";
     })
   ];
 
@@ -91,6 +84,10 @@ buildPythonPackage {
     mv rapidocr_t/* .
   '';
 
+  # As of version 2.1.0, 61 out of 70 tests require internet access.
+  # It's just not plausible to manually pick out ones that actually work
+  # in a hermetic build environment anymore :(
+  doCheck = false;
   build-system = [ setuptools ];
 
   dependencies = [
@@ -108,17 +105,14 @@ buildPythonPackage {
     tqdm
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "rapidocr" ];
-
-  # As of version 2.1.0, 61 out of 70 tests require internet access.
-  # It's just not plausible to manually pick out ones that actually work
-  # in a hermetic build environment anymore :(
-  doCheck = false;
+  sourceRoot = "${src.name}/python";
 
   meta = {
-    changelog = "https://github.com/RapidAI/RapidOCR/releases/tag/${src.tag}";
     description = "Cross platform OCR Library based on OnnxRuntime";
     homepage = "https://github.com/RapidAI/RapidOCR";
+    changelog = "https://github.com/RapidAI/RapidOCR/releases/tag/${src.tag}";
     license = with lib.licenses; [ asl20 ];
     maintainers = with lib.maintainers; [ pluiedev ];
     mainProgram = "rapidocr";

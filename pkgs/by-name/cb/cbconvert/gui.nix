@@ -8,8 +8,6 @@
 }:
 
 buildGoModule (finalAttrs: {
-  pname = "cbconvert-gui";
-
   inherit (cbconvert)
     patches
     src
@@ -17,20 +15,15 @@ buildGoModule (finalAttrs: {
     version
     ;
 
+  pname = "cbconvert-gui";
+
   nativeBuildInputs = [
     pkg-config
     wrapGAppsHook3
   ];
+
   buildInputs = cbconvert.buildInputs ++ [ gtk3 ];
-
   vendorHash = "sha256-oMW5zfAw2VQSVaB+Z1pE51OtNIFr+PnRMM+oBYNLWxk=";
-  modRoot = "cmd/cbconvert-gui";
-
-  ldflags = [
-    "-s"
-    "-w"
-    "-X main.appVersion=${finalAttrs.version}"
-  ];
 
   postInstall = ''
     install -D --mode=0644 --target-directory=$out/share/icons/hicolor/256x256/apps dist/linux/io.github.gen2brain.cbconvert.png
@@ -41,6 +34,14 @@ buildGoModule (finalAttrs: {
 
   doInstallCheck = true;
   nativeInstallCheckInputs = [ versionCheckHook ];
+
+  ldflags = [
+    "-s"
+    "-w"
+    "-X main.appVersion=${finalAttrs.version}"
+  ];
+
+  modRoot = "cmd/cbconvert-gui";
   versionCheckProgramArg = "version";
 
   meta = cbconvert.meta // {

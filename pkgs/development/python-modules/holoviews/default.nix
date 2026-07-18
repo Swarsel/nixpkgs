@@ -1,31 +1,27 @@
 {
   lib,
   stdenv,
-  buildPythonPackage,
   fetchFromGitHub,
-
+  buildPythonPackage,
+  # dependencies
+  colorcet,
+  flaky,
   # build-system
   hatch-vcs,
   hatchling,
-
-  # dependencies
-  colorcet,
   numpy,
   pandas,
   panel,
   param,
-  pyviz-comms,
-
+  pytest-asyncio,
   # tests
   pytestCheckHook,
-  pytest-asyncio,
-  flaky,
+  pyviz-comms,
 }:
 
 buildPythonPackage rec {
   pname = "holoviews";
   version = "1.22.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "holoviz";
@@ -39,6 +35,12 @@ buildPythonPackage rec {
       --replace '"ignore:No data was collected:coverage.exceptions.CoverageWarning",' ""
   '';
 
+  nativeCheckInputs = [
+    pytestCheckHook
+    pytest-asyncio
+    flaky
+  ];
+
   build-system = [
     hatch-vcs
     hatchling
@@ -51,16 +53,6 @@ buildPythonPackage rec {
     panel
     param
     pyviz-comms
-  ];
-
-  nativeCheckInputs = [
-    pytestCheckHook
-    pytest-asyncio
-    flaky
-  ];
-
-  pytestFlags = [
-    "-Wignore::FutureWarning"
   ];
 
   disabledTests = [
@@ -83,14 +75,20 @@ buildPythonPackage rec {
     "test_categorical_axis_fontsize_both"
   ];
 
+  pyproject = true;
+
+  pytestFlags = [
+    "-Wignore::FutureWarning"
+  ];
+
   pythonImportsCheck = [ "holoviews" ];
 
   meta = {
     description = "Python data analysis and visualization seamless and simple";
-    changelog = "https://github.com/holoviz/holoviews/releases/tag/${src.tag}";
-    mainProgram = "holoviews";
     homepage = "https://www.holoviews.org/";
+    changelog = "https://github.com/holoviz/holoviews/releases/tag/${src.tag}";
     license = lib.licenses.bsd3;
     maintainers = [ ];
+    mainProgram = "holoviews";
   };
 }

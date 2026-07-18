@@ -1,19 +1,17 @@
 {
   lib,
   stdenv,
-  fetchzip,
-  makeDesktopItem,
-  nix-update-script,
-
   copyDesktopItems,
-  icoutils,
-  makeWrapper,
-
+  fetchzip,
   ffmpeg,
   gtk2,
   hunspell,
+  icoutils,
+  makeDesktopItem,
+  makeWrapper,
   mono,
   mpv,
+  nix-update-script,
   tesseract4,
 }:
 
@@ -25,6 +23,7 @@ stdenv.mkDerivation rec {
     url = "https://github.com/SubtitleEdit/subtitleedit/releases/download/${version}/SE${
       lib.replaceStrings [ "." ] [ "" ] version
     }.zip";
+
     hash = "sha256-SXM5aMBNXI/ClrhvoXDeo86KUntU2Ad3fxx8O3dr+j0=";
     stripRoot = false;
   };
@@ -33,19 +32,6 @@ stdenv.mkDerivation rec {
     copyDesktopItems
     icoutils
     makeWrapper
-  ];
-
-  runtimeLibs = lib.makeLibraryPath [
-    gtk2
-    hunspell
-    mpv
-    tesseract4
-  ];
-
-  runtimeBins = lib.makeBinPath [
-    ffmpeg
-    hunspell
-    tesseract4
   ];
 
   installPhase = ''
@@ -72,29 +58,44 @@ stdenv.mkDerivation rec {
 
   desktopItems = [
     (makeDesktopItem {
-      name = pname;
+      categories = [ "AudioVideo" ];
+      comment = meta.description;
       desktopName = "Subtitle Edit";
       exec = "subtitleedit";
       icon = "subtitleedit";
-      comment = meta.description;
-      categories = [ "AudioVideo" ];
+      name = pname;
     })
+  ];
+
+  runtimeBins = lib.makeBinPath [
+    ffmpeg
+    hunspell
+    tesseract4
+  ];
+
+  runtimeLibs = lib.makeLibraryPath [
+    gtk2
+    hunspell
+    mpv
+    tesseract4
   ];
 
   passthru.updateScript = nix-update-script { };
 
   meta = {
     description = "Subtitle editor";
+
     longDescription = ''
       With Subtitle Edit you can easily adjust a subtitle if it is out of sync with
       the video in several different ways. You can also use it for making
       new subtitles from scratch (using the time-line /waveform/spectrogram)
       or for translating subtitles.
     '';
+
     homepage = "https://nikse.dk/subtitleedit";
     license = lib.licenses.gpl3Plus;
-    platforms = lib.platforms.all;
     sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
     maintainers = [ ];
+    platforms = lib.platforms.all;
   };
 }

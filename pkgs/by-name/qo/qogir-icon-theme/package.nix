@@ -1,11 +1,11 @@
 {
   lib,
-  stdenvNoCC,
   fetchFromGitHub,
-  unstableGitUpdater,
   gtk3,
   hicolor-icon-theme,
   jdupes,
+  stdenvNoCC,
+  unstableGitUpdater,
   colorVariants ? [ ], # default is all
   themeVariants ? [ ], # default is all
 }:
@@ -32,19 +32,6 @@ lib.checkListOfEnum "${pname}: color variants" [ "standard" "dark" "all" ] color
       hash = "sha256-VJHhyKk1f/25CNkqNM7+WQqQRdqBNgWD3XrJ+whOcd0=";
     };
 
-    nativeBuildInputs = [
-      gtk3
-      jdupes
-    ];
-
-    propagatedBuildInputs = [ hicolor-icon-theme ];
-
-    dontDropIconThemeCache = true;
-
-    # These fixup steps are slow and unnecessary.
-    dontPatchELF = true;
-    dontRewriteSymlinks = true;
-
     patches = [
       ./2026-03-20-missing-icons.patch
     ];
@@ -52,6 +39,13 @@ lib.checkListOfEnum "${pname}: color variants" [ "standard" "dark" "all" ] color
     postPatch = ''
       patchShebangs install.sh
     '';
+
+    nativeBuildInputs = [
+      gtk3
+      jdupes
+    ];
+
+    propagatedBuildInputs = [ hicolor-icon-theme ];
 
     installPhase = ''
       runHook preInstall
@@ -68,13 +62,17 @@ lib.checkListOfEnum "${pname}: color variants" [ "standard" "dark" "all" ] color
       runHook postInstall
     '';
 
+    dontDropIconThemeCache = true;
+    # These fixup steps are slow and unnecessary.
+    dontPatchELF = true;
+    dontRewriteSymlinks = true;
     passthru.updateScript = unstableGitUpdater { hardcodeZeroVersion = true; };
 
     meta = {
       description = "Flat colorful design icon theme";
       homepage = "https://github.com/vinceliuice/Qogir-icon-theme";
       license = with lib.licenses; [ gpl3Only ];
-      platforms = lib.platforms.linux;
       maintainers = with lib.maintainers; [ romildo ];
+      platforms = lib.platforms.linux;
     };
   }

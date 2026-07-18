@@ -1,29 +1,26 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
+  atk,
+  cairo,
   coreutils,
-  lazarus,
   fpc,
-  libx11,
-
+  gdk-pixbuf,
+  glib,
+  gtk3,
   # GTK3
   harfbuzz,
-  pango,
-  cairo,
-  glib,
-  atk,
-  gtk3,
-  gdk-pixbuf,
-  python3,
-  wrapGAppsHook3,
-
+  lazarus,
   # Qt5
   libsForQt5,
-
-  widgetset ? "qt5",
+  libx11,
+  pango,
+  python3,
+  wrapGAppsHook3,
   # See https://github.com/Alexey-T/CudaText-lexers
   additionalLexers ? [ "Nix" ],
+  widgetset ? "qt5",
 }:
 
 assert builtins.elem widgetset [
@@ -35,8 +32,8 @@ let
   deps = lib.mapAttrs (
     name: spec:
     fetchFromGitHub {
-      repo = name;
       inherit (spec) owner rev hash;
+      repo = name;
     }
   ) (lib.importJSON ./deps.json);
 in
@@ -131,11 +128,13 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Cross-platform code editor";
+
     longDescription = ''
       Text/code editor with lite UI. Syntax highlighting for 200+ languages.
       Config system in JSON files. Multi-carets and multi-selections.
       Search and replace with RegEx. Extendable by Python plugins and themes.
     '';
+
     homepage = "https://cudatext.github.io/";
     changelog = "https://cudatext.github.io/history.txt";
     license = lib.licenses.mpl20;

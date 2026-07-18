@@ -4,7 +4,7 @@
 yadm.override {
   withAwk = false;
   withEsh = false;
-  withJ2 = false;
   withGpg = false;
+  withJ2 = false;
   withOpenssl = false;
 }

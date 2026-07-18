@@ -1,10 +1,10 @@
 {
   lib,
-  buildDotnetModule,
   fetchFromGitHub,
+  buildDotnetModule,
   dotnetCorePackages,
-  testers,
   nix-update-script,
+  testers,
 }:
 
 buildDotnetModule (finalAttrs: {
@@ -18,8 +18,6 @@ buildDotnetModule (finalAttrs: {
     hash = "sha256-1WK6vb/UfqnF5KlwrjmGTPeAnEgwPswcYweeotB6j00=";
   };
 
-  nugetDeps = ./deps.json;
-
   postPatch = ''
     rm global.json
 
@@ -27,12 +25,11 @@ buildDotnetModule (finalAttrs: {
       --replace-fail TargetFrameworks TargetFramework
   '';
 
-  dotnet-sdk = dotnetCorePackages.sdk_8_0;
   dotnet-runtime = dotnetCorePackages.sdk_8_0;
-
-  projectFile = "src/FsAutoComplete/FsAutoComplete.fsproj";
+  dotnet-sdk = dotnetCorePackages.sdk_8_0;
   executables = [ "fsautocomplete" ];
-
+  nugetDeps = ./deps.json;
+  projectFile = "src/FsAutoComplete/FsAutoComplete.fsproj";
   useDotnetFromEnv = true;
 
   passthru = {
@@ -42,14 +39,16 @@ buildDotnetModule (finalAttrs: {
 
   meta = {
     description = "Backend service for rich editing or intellisense features for editors";
-    mainProgram = "fsautocomplete";
     homepage = "https://github.com/ionide/FsAutoComplete";
     changelog = "https://github.com/ionide/FsAutoComplete/releases/tag/${finalAttrs.src.tag}";
     license = lib.licenses.asl20;
-    platforms = lib.platforms.unix;
+
     maintainers = with lib.maintainers; [
       gbtb
       mdarocha
     ];
+
+    platforms = lib.platforms.unix;
+    mainProgram = "fsautocomplete";
   };
 })

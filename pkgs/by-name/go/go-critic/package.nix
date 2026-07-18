@@ -1,10 +1,10 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
-  testers,
-  nix-update-script,
+  buildGoModule,
   go-critic,
+  nix-update-script,
+  testers,
 }:
 
 buildGoModule (finalAttrs: {
@@ -19,22 +19,22 @@ buildGoModule (finalAttrs: {
   };
 
   vendorHash = "sha256-2tzBJI2d9/EY1lPgJDrOGfgh8dz2bYwP5kWifJ46a8I=";
-
-  subPackages = [
-    "cmd/gocritic"
-  ];
-
   allowGoReference = true;
 
   ldflags = [
     "-X main.Version=${finalAttrs.version}"
   ];
 
+  subPackages = [
+    "cmd/gocritic"
+  ];
+
   passthru = {
     tests.version = testers.testVersion {
-      package = go-critic;
       command = "gocritic version";
+      package = go-critic;
     };
+
     updateScript = nix-update-script { };
   };
 
@@ -43,7 +43,7 @@ buildGoModule (finalAttrs: {
     homepage = "https://go-critic.com/";
     changelog = "https://github.com/go-critic/go-critic/releases/tag/${finalAttrs.src.rev}";
     license = lib.licenses.mit;
-    mainProgram = "gocritic";
     maintainers = with lib.maintainers; [ katexochen ];
+    mainProgram = "gocritic";
   };
 })

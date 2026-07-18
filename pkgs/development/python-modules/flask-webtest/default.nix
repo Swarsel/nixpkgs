@@ -1,19 +1,18 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
-  flask,
-  webtest,
   blinker,
+  buildPythonPackage,
+  flask,
   flask-sqlalchemy,
   greenlet,
+  setuptools,
+  webtest,
 }:
 
 buildPythonPackage rec {
   pname = "flask-webtest";
   version = "0.1.6";
-  pyproject = true;
 
   # Pypi tarball doesn't include version.py
   src = fetchFromGitHub {
@@ -23,6 +22,11 @@ buildPythonPackage rec {
     hash = "sha256-wcEc9j62bQXAmXczsunITQP3sU040d6Ws8cz0w7+5r4=";
   };
 
+  nativeCheckInputs = [
+    flask-sqlalchemy
+    greenlet
+  ];
+
   build-system = [ setuptools ];
 
   dependencies = [
@@ -31,11 +35,7 @@ buildPythonPackage rec {
     blinker
   ];
 
-  nativeCheckInputs = [
-    flask-sqlalchemy
-    greenlet
-  ];
-
+  pyproject = true;
   pythonImportsCheck = [ "flask_webtest" ];
 
   meta = {

@@ -7,7 +7,6 @@
 buildPythonPackage rec {
   pname = "environmental-override";
   version = "0.1.2";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
@@ -16,7 +15,7 @@ buildPythonPackage rec {
 
   # No tests have been written for this library.
   doCheck = false;
-
+  format = "setuptools";
   pythonImportsCheck = [ "environmental_override" ];
 
   meta = {

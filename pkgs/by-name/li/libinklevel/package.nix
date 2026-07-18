@@ -2,8 +2,8 @@
   lib,
   stdenv,
   fetchurl,
-  pkg-config,
   libusb1,
+  pkg-config,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -15,19 +15,21 @@ stdenv.mkDerivation (finalAttrs: {
     sha256 = "sha256-J0cEaC5v4naO4GGUzdfV55kB7KzA+q+v64i5y5Xbp9Q=";
   };
 
-  nativeBuildInputs = [ pkg-config ];
-  buildInputs = [
-    libusb1
-  ];
-
   outputs = [
     "out"
     "dev"
     "doc"
   ];
 
+  nativeBuildInputs = [ pkg-config ];
+
+  buildInputs = [
+    libusb1
+  ];
+
   meta = {
     description = "Library for checking the ink level of your printer";
+
     longDescription = ''
       Libinklevel is a library for checking the ink level of your printer on a
       system which runs Linux or FreeBSD. It supports printers attached via
@@ -37,9 +39,10 @@ stdenv.mkDerivation (finalAttrs: {
       project is to create a vendor independent API for retrieving the ink
       level of a printer connected to a Linux or FreeBSD box.
     '';
+
     homepage = "https://libinklevel.sourceforge.net/";
     license = lib.licenses.gpl2;
-    platforms = lib.platforms.linux ++ lib.platforms.freebsd;
     maintainers = with lib.maintainers; [ samb96 ];
+    platforms = lib.platforms.linux ++ lib.platforms.freebsd;
   };
 })

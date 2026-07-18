@@ -1,10 +1,10 @@
 {
   lib,
   stdenv,
-  melpaBuild,
   fetchFromGitHub,
   hydra,
   ivy,
+  melpaBuild,
   pkg-config,
   tclap,
   unstableGitUpdater,
@@ -27,19 +27,10 @@ melpaBuild {
     hash = "sha256-B8aVRb8hyAKmHTTVCtDRcb2F0Rs5zhlqyfRe7IxH5jc=";
   };
 
-  packageRequires = lib.optional withHydra hydra ++ lib.optional withIvy ivy;
-
   postPatch = ''
     substituteInPlace notdeft-xapian.el \
       --replace-fail 'defcustom notdeft-xapian-program nil' \
                      "defcustom notdeft-xapian-program \"$out/bin/notdeft-xapian\""
-  '';
-
-  files = ''
-    (:defaults
-     ${lib.optionalString withHydra ''"extras/notdeft-global-hydra.el"''}
-     ${lib.optionalString withHydra ''"extras/notdeft-mode-hydra.el"''}
-     ${lib.optionalString withIvy ''"extras/notdeft-ivy.el"''})
   '';
 
   nativeBuildInputs = [ pkg-config ];
@@ -57,15 +48,24 @@ melpaBuild {
     install -D --target-directory=$out/bin notdeft-xapian
   '';
 
+  files = ''
+    (:defaults
+     ${lib.optionalString withHydra ''"extras/notdeft-global-hydra.el"''}
+     ${lib.optionalString withHydra ''"extras/notdeft-mode-hydra.el"''}
+     ${lib.optionalString withIvy ''"extras/notdeft-ivy.el"''})
+  '';
+
+  packageRequires = lib.optional withHydra hydra ++ lib.optional withIvy ivy;
+
   passthru = {
     updateScript = unstableGitUpdater { hardcodeZeroVersion = true; };
   };
 
   meta = {
-    homepage = "https://tero.hasu.is/notdeft/";
     description = "Fork of Deft that uses Xapian as a search engine";
-    maintainers = [ lib.maintainers.nessdoor ];
+    homepage = "https://tero.hasu.is/notdeft/";
     license = lib.licenses.bsd3;
+    maintainers = [ lib.maintainers.nessdoor ];
     platforms = lib.platforms.linux;
   };
 }

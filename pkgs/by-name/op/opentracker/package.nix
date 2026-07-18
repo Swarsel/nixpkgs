@@ -3,8 +3,8 @@
   stdenv,
   fetchzip,
   libowfat,
-  zlib,
   nixosTests,
+  zlib,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -38,11 +38,11 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   meta = {
+    description = "Bittorrent tracker project which aims for minimal resource usage and is intended to run at your wlan router";
     homepage = "https://erdgeist.org/arts/software/opentracker/";
     license = lib.licenses.beerware;
-    platforms = lib.platforms.linux;
-    description = "Bittorrent tracker project which aims for minimal resource usage and is intended to run at your wlan router";
-    mainProgram = "opentracker";
     maintainers = with lib.maintainers; [ makefu ];
+    platforms = lib.platforms.linux;
+    mainProgram = "opentracker";
   };
 })

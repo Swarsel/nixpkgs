@@ -1,42 +1,42 @@
 {
   lib,
   stdenv,
-  intltool,
-  installShellFiles,
-  pkg-config,
   fetchFromGitHub,
   dbus-glib,
   desktop-file-utils,
-  hicolor-icon-theme,
-  sqlite,
-  taglib,
-  zlib,
+  glyr,
+  gst_all_1,
   gtk3,
-  libpeas,
+  hicolor-icon-theme,
+  installShellFiles,
+  intltool,
+  keybinder3,
   libcddb,
   libcdio,
-  gst_all_1,
-  libsForQt5,
-  withGstPlugins ? true,
-  glyr,
-  withGlyr ? true,
-  liblastfm-vambrose,
-  withLastfm ? true,
   libcdio-paranoia,
-  withCD ? true,
-  keybinder3,
-  withKeybinder ? false,
-  libnotify,
-  withLibnotify ? false,
   libgudev,
-  withGudev ? false, # experimental
+  liblastfm-vambrose,
   libmtp,
-  withMtp ? false, # experimental
+  libnotify,
+  libpeas,
+  libsForQt5,
   libxfce4ui,
-  xfce4-dev-tools,
-  withXfce4ui ? false,
+  pkg-config,
+  sqlite,
+  taglib,
   totem-pl-parser,
+  xfce4-dev-tools,
+  zlib,
+  withCD ? true,
+  withGlyr ? true,
+  withGstPlugins ? true,
+  withGudev ? false, # experimental
+  withKeybinder ? false,
+  withLastfm ? true,
+  withLibnotify ? false,
+  withMtp ? false, # experimental
   withTotemPlParser ? false,
+  withXfce4ui ? false,
   # , grilo, withGrilo ? false
   # , rygel, withRygel ? true
 }:
@@ -115,10 +115,10 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Lightweight GTK+ music manager - fork of Consonance Music Manager";
-    mainProgram = "pragha";
     homepage = "https://pragha-music-player.github.io/";
     license = lib.licenses.gpl3Plus;
     maintainers = [ ];
     platforms = lib.platforms.unix;
+    mainProgram = "pragha";
   };
 })

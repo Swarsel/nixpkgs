@@ -1,35 +1,24 @@
 {
   lib,
   stdenv,
-
   fetchFromGitHub,
-
   cmake,
-  ninja,
-
-  folly,
-  fizz,
-  openssl,
-  glog,
-  gflags,
-  libevent,
-  double-conversion,
-
   ctestCheckHook,
-
+  double-conversion,
+  fizz,
+  folly,
+  gflags,
+  glog,
   gtest,
-
+  libevent,
+  ninja,
   nix-update-script,
+  openssl,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
   pname = "wangle";
   version = "2026.01.19.00";
-
-  outputs = [
-    "out"
-    "dev"
-  ];
 
   src = fetchFromGitHub {
     owner = "facebook";
@@ -37,6 +26,11 @@ stdenv.mkDerivation (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-tGq6jbBPotuBK1PuRRGvdNb208glzlt7dehjIY+4nvk=";
   };
+
+  outputs = [
+    "out"
+    "dev"
+  ];
 
   patches = [
     ./glog-0.7.patch
@@ -57,16 +51,6 @@ stdenv.mkDerivation (finalAttrs: {
     double-conversion
   ];
 
-  nativeCheckInputs = [
-    ctestCheckHook
-  ];
-
-  checkInputs = [
-    gtest
-  ];
-
-  cmakeDir = "../wangle";
-
   cmakeFlags = [
     (lib.cmakeBool "BUILD_SHARED_LIBS" (!stdenv.hostPlatform.isStatic))
 
@@ -77,11 +61,18 @@ stdenv.mkDerivation (finalAttrs: {
     (lib.cmakeFeature "CMAKE_INSTALL_DIR" "${placeholder "dev"}/lib/cmake/wangle")
   ];
 
-  __darwinAllowLocalNetworking = true;
-
   doCheck = true;
 
-  dontUseNinjaCheck = true;
+  nativeCheckInputs = [
+    ctestCheckHook
+  ];
+
+  checkInputs = [
+    gtest
+  ];
+
+  __darwinAllowLocalNetworking = true;
+  cmakeDir = "../wangle";
 
   disabledTests = [
     # Deterministic glibc abort 🫠
@@ -92,18 +83,21 @@ stdenv.mkDerivation (finalAttrs: {
     "SSLContextManagerTest"
   ];
 
+  dontUseNinjaCheck = true;
   passthru.updateScript = nix-update-script { };
 
   meta = {
     description = "Open-source C++ networking library";
+
     longDescription = ''
       Wangle is a framework providing a set of common client/server
       abstractions for building services in a consistent, modular, and
       composable way.
     '';
+
     homepage = "https://github.com/facebook/wangle";
     license = lib.licenses.asl20;
-    platforms = lib.platforms.unix;
+
     maintainers = with lib.maintainers; [
       pierreis
       kylesferrazza
@@ -111,5 +105,7 @@ stdenv.mkDerivation (finalAttrs: {
       techknowlogick
       lf-
     ];
+
+    platforms = lib.platforms.unix;
   };
 })

@@ -1,9 +1,9 @@
 {
   lib,
   stdenv,
-  tests,
   autoPatchelfHook,
   patchelf,
+  tests,
 }:
 
 let
@@ -14,15 +14,13 @@ let
   # binary and libraries in the same output, and only
   # $ORIGIN/../lib in RUNPATH.
   lib-check = stdenv.mkDerivation {
-    name = "lib-check-bundle";
+    nativeBuildInputs = [
+      patchelf
+    ];
 
     buildInputs = [
       foo
       bar
-    ];
-
-    nativeBuildInputs = [
-      patchelf
     ];
 
     buildCommand = ''
@@ -45,21 +43,17 @@ let
       (lib.getDev foo)
       (lib.getDev bar)
     ];
+
+    name = "lib-check-bundle";
   };
   # We treat `lib-check` as binaries and libraries coming from somewhere,
   # and run `autoPatchelfHook` on them, but setting `--preserve-origin`.
   # If we wouldn't,`autoPatchelfHook` would replace `RUNPATH` with a
   # (self-)reference.
   lib-check-autopatchelfed = stdenv.mkDerivation {
-    name = "lib-check-autopatchelfed";
-
     nativeBuildInputs = [
       autoPatchelfHook
     ];
-
-    autoPatchelfFlags = [ "--preserve-origin" ];
-
-    dontUnpack = true;
 
     # we don't set buildCommand because we want to ensure fixupPhase
     # (containing autoPatchelfHook) is run.
@@ -68,24 +62,30 @@ let
       cp -R ${lib-check}/* $out
     '';
 
+    autoPatchelfFlags = [ "--preserve-origin" ];
+
     # Should not refer to our source nor to itself.
     disallowedReferences = [
       lib-check
       "out"
     ];
+
+    dontUnpack = true;
+    name = "lib-check-autopatchelfed";
   };
 in
 stdenv.mkDerivation {
-  name = "auto-patchelf-hook-preserve-origin";
-
   buildCommand = ''
     # Ensure the binary still works
     ${lib-check-autopatchelfed}/bin/lib-check
     touch $out
   '';
 
-  meta.platforms = lib.platforms.all;
+  name = "auto-patchelf-hook-preserve-origin";
+
   passthru = {
     inherit lib-check lib-check-autopatchelfed;
   };
+
+  meta.platforms = lib.platforms.all;
 }

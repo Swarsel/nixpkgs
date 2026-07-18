@@ -1,16 +1,16 @@
 {
   lib,
   stdenv,
+  fetchFromGitHub,
   meson,
   ninja,
+  nix-update-script,
+  pixman,
   pkg-config,
   scdoc,
   wayland,
   wayland-protocols,
-  pixman,
   wayland-scanner,
-  nix-update-script,
-  fetchFromGitHub,
 }:
 stdenv.mkDerivation (finalAttrs: {
   pname = "still";
@@ -22,6 +22,8 @@ stdenv.mkDerivation (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-bZo4SvBB5pSdvwxuE3+A2iz1um1kSZQ62chR0lOjpj8=";
   };
+
+  strictDeps = true;
 
   nativeBuildInputs = [
     meson
@@ -37,21 +39,19 @@ stdenv.mkDerivation (finalAttrs: {
     wayland-protocols
   ];
 
-  strictDeps = true;
-  __structuredAttrs = true;
-
   postInstall = ''
     install -Dm644 $src/LICENSE $out/share/licenses/still/LICENSE
   '';
 
+  __structuredAttrs = true;
   passthru.updateScript = nix-update-script { };
 
   meta = {
     description = "Freeze the screen of a Wayland compositor until a provided command exits";
     homepage = "https://github.com/faergeek/still";
     license = lib.licenses.mit;
+    maintainers = [ lib.maintainers.fazzi ];
     platforms = lib.platforms.linux;
     mainProgram = "still";
-    maintainers = [ lib.maintainers.fazzi ];
   };
 })

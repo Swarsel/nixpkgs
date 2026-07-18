@@ -1,7 +1,7 @@
 {
-  buildPythonPackage,
-  fetchFromGitHub,
   lib,
+  fetchFromGitHub,
+  buildPythonPackage,
   cryptography,
   defusedxml,
   lxml,
@@ -15,7 +15,6 @@
 buildPythonPackage rec {
   pname = "python-pskc";
   version = "1.4";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "arthurdejong";
@@ -23,6 +22,16 @@ buildPythonPackage rec {
     tag = version;
     hash = "sha256-WBpS0EJA4arAn7O47ZHq3sBOd9D4tjYZKIi24xX5Hvs=";
   };
+
+  nativeCheckInputs = [
+    pytest-cov-stub
+    pytestCheckHook
+  ]
+  ++ lib.concatAttrValues optional-dependencies;
+
+  preCheck = ''
+    export TZ=Europe/Amsterdam
+  '';
 
   build-system = [
     setuptools
@@ -39,22 +48,13 @@ buildPythonPackage rec {
     signature = [ signxml ];
   };
 
-  nativeCheckInputs = [
-    pytest-cov-stub
-    pytestCheckHook
-  ]
-  ++ lib.concatAttrValues optional-dependencies;
-
-  preCheck = ''
-    export TZ=Europe/Amsterdam
-  '';
-
+  pyproject = true;
   pythonImportsCheck = [ "pskc" ];
 
   meta = {
-    changelog = "https://github.com/arthurdejong/python-pskc/releases/tag/${version}";
     description = "Python module for handling PSKC files";
     homepage = "https://github.com/arthurdejong/python-pskc";
+    changelog = "https://github.com/arthurdejong/python-pskc/releases/tag/${version}";
     license = lib.licenses.lgpl21Plus;
     maintainers = [ ];
   };

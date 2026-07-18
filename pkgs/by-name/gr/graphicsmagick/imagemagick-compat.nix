@@ -5,16 +5,13 @@
 }:
 
 stdenvNoCC.mkDerivation {
-  pname = "graphicsmagick-imagemagick-compat";
   inherit (graphicsmagick) version;
+  pname = "graphicsmagick-imagemagick-compat";
 
   outputs = [
     "out"
     "man"
   ];
-
-  dontUnpack = true;
-  dontBuild = true;
 
   # TODO: symlink libraries?
   installPhase =
@@ -47,6 +44,9 @@ stdenvNoCC.mkDerivation {
 
       runHook postInstall
     '';
+
+  dontBuild = true;
+  dontUnpack = true;
 
   meta = graphicsmagick.meta // {
     description = "Repack of GraphicsMagick that provides compatibility with ImageMagick interfaces";

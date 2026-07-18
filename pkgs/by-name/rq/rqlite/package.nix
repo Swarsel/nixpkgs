@@ -1,8 +1,8 @@
 {
   lib,
-  buildGoModule,
-  fetchFromGitHub,
   stdenv,
+  fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule (
@@ -22,12 +22,7 @@ buildGoModule (
     };
 
     vendorHash = "sha256-hfuVxcI1tGdkY1CWP1p5r1kMJfvNzqZlVI3Ge/gRNqo=";
-
-    subPackages = [
-      "cmd/rqlite"
-      "cmd/rqlited"
-      "cmd/rqbench"
-    ];
+    doCheck = true;
 
     # Mirror the upstream release build metadata
     ldflags = [
@@ -39,15 +34,19 @@ buildGoModule (
       "-X ${cmdPackage}.Buildtime=1970-01-01T00:00:00Z"
     ];
 
-    doCheck = true;
+    subPackages = [
+      "cmd/rqlite"
+      "cmd/rqlited"
+      "cmd/rqbench"
+    ];
 
     meta = {
       description = "Lightweight, fault-tolerant, distributed relational database built on SQLite";
       homepage = "https://github.com/rqlite/rqlite";
       changelog = "https://github.com/rqlite/rqlite/blob/${finalAttrs.src.tag}/CHANGELOG.md";
       license = lib.licenses.mit;
-      mainProgram = "rqlite";
       maintainers = with lib.maintainers; [ iamanaws ];
+      mainProgram = "rqlite";
     };
   }
 )

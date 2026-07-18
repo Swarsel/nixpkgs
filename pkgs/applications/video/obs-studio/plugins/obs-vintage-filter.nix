@@ -28,10 +28,10 @@ stdenv.mkDerivation rec {
   '';
 
   meta = {
+    inherit (obs-studio.meta) platforms;
     description = "OBS Studio filter where the source can be set to be black & white or sepia";
     homepage = "https://github.com/cg2121/obs-vintage-filter";
-    maintainers = with lib.maintainers; [ flexiondotorg ];
     license = lib.licenses.gpl2Plus;
-    inherit (obs-studio.meta) platforms;
+    maintainers = with lib.maintainers; [ flexiondotorg ];
   };
 }

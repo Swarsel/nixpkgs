@@ -1,18 +1,17 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  fetchpatch,
-
+  buildPythonPackage,
   # dependencies
   cmake,
-  python-dateutil,
   dbus-python,
   dnf4,
+  fetchpatch,
   gettext,
   libcomps,
   libdnf,
   python,
+  python-dateutil,
   rpm,
   sphinx,
   systemd-python,
@@ -25,12 +24,6 @@ in
 buildPythonPackage rec {
   pname = "dnf-plugins-core";
   version = "4.10.1";
-  pyproject = false;
-
-  outputs = [
-    "out"
-    "man"
-  ];
 
   src = fetchFromGitHub {
     owner = "rpm-software-management";
@@ -39,11 +32,16 @@ buildPythonPackage rec {
     hash = "sha256-nZyM61bQ9L4t3/fa9cP+xo9ke00e6w2Obt80OpqOG8A=";
   };
 
+  outputs = [
+    "out"
+    "man"
+  ];
+
   patches = [
     # Fix building with CMake 4
     (fetchpatch {
-      url = "https://github.com/rpm-software-management/dnf-plugins-core/commit/1f5d725d857b61760174dd09165e885dd63762c5.patch?full_index=1";
       hash = "sha256-dI6tVokgenb4aaLH5YuG3EZ1Ehgf/NwwPprcDWcHt2Q=";
+      url = "https://github.com/rpm-software-management/dnf-plugins-core/commit/1f5d725d857b61760174dd09165e885dd63762c5.patch?full_index=1";
     })
   ];
 
@@ -81,11 +79,6 @@ buildPythonPackage rec {
     make doc-man
   '';
 
-  pythonImportsCheck = [
-    # This is the python module imported by dnf4 when plugins are loaded.
-    "dnfpluginscore"
-  ];
-
   # Don't use symbolic links so argv[0] is set to the correct value.
   postInstall = ''
     # See https://github.com/rpm-software-management/dnf-plugins-core/blob/aee9cacdeb50768c1e869122cd432924ec533213/dnf-plugins-core.spec#L478
@@ -118,6 +111,12 @@ buildPythonPackage rec {
   '';
 
   makeWrapperArgs = [ ''--add-flags "--setopt=pluginpath=$out/${python.sitePackages}/dnf-plugins"'' ];
+  pyproject = false;
+
+  pythonImportsCheck = [
+    # This is the python module imported by dnf4 when plugins are loaded.
+    "dnfpluginscore"
+  ];
 
   meta = {
     description = "Core plugins to use with DNF package manager";

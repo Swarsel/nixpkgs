@@ -23,6 +23,7 @@ let
       path: value:
       lib.optionalAttrs (value != null) {
         name = lib.toUpper "RSSBRIDGE_${lib.concatStringsSep "_" path}";
+
         value =
           if lib.isList value then
             lib.concatStringsSep "," value
@@ -56,88 +57,13 @@ in
 
   options = {
     services.rss-bridge = {
-      enable = mkEnableOption "rss-bridge";
-
-      user = mkOption {
-        type = types.str;
-        default = if cfg.webserver == null then "rss-bridge" else cfg.webserver;
-        defaultText = "{option}`config.services.rss-bridge.webserver` or \"rss-bridge\"";
-        description = ''
-          The user account under which both the service and the web application run.
-        '';
-      };
-
-      group = mkOption {
-        type = types.str;
-        default = if cfg.webserver == null then "rss-bridge" else cfg.webserver;
-        defaultText = "{option}`config.services.rss-bridge.webserver` or \"rss-bridge\"";
-        description = ''
-          The group under which the web application runs.
-        '';
-      };
-
-      package = mkPackageOption pkgs "rss-bridge" { };
-
-      pool = mkOption {
-        type = types.nullOr types.str;
-        default = "rss-bridge";
-        description = ''
-          Name of phpfpm pool that is used to run web-application.
-          If `null` specified none will be created, otherwise automatically created with default values.
-        '';
-      };
-
-      dataDir = mkOption {
-        type = types.str;
-        default = "/var/lib/rss-bridge";
-        description = ''
-          Location in which cache directory will be created.
-          You can put `config.ini.php` in here.
-        '';
-      };
-
-      virtualHost = mkOption {
-        type = types.nullOr types.str;
-        default = "rss-bridge";
-        description = ''
-          Name of the nginx or caddy virtualhost to use and setup. If null, do not setup any virtualhost.
-        '';
-      };
-
-      webserver = mkOption {
-        type = types.nullOr (
-          types.enum [
-            "nginx"
-            "caddy"
-          ]
-        );
-        default = "nginx";
-        description = ''
-          Type of virtualhost to use and setup. If null, do not setup any virtualhost.
-        '';
-      };
-
       config = mkOption {
-        type = types.submodule {
-          freeformType = (pkgs.formats.ini { }).type;
-          options = {
-            system = {
-              enabled_bridges = mkOption {
-                type = with types; nullOr (either str (listOf str));
-                description = "Only enabled bridges are available for feed production";
-                default = null;
-              };
-            };
-            FileCache = {
-              path = mkOption {
-                type = types.str;
-                description = "Directory where to store cache files (if cache.type = \"file\").";
-                default = "${cfg.dataDir}/cache/";
-                defaultText = literalExpression "\${config.services.rss-bridge.dataDir}/cache/";
-              };
-            };
-          };
-        };
+        description = ''
+          Attribute set of arbitrary config options.
+          Please consult the documentation at the [wiki](https://rss-bridge.github.io/rss-bridge/For_Hosts/Custom_Configuration.html)
+          and [sample config](https://github.com/RSS-Bridge/rss-bridge/blob/master/config.default.ini.php) to see a list of available options.
+        '';
+
         example = literalExpression ''
           {
             system.enabled_bridges = [ "*" ];
@@ -150,48 +76,125 @@ in
             };
           }
         '';
+
+        type = types.submodule {
+          options = {
+            FileCache = {
+              path = mkOption {
+                default = "${cfg.dataDir}/cache/";
+                defaultText = literalExpression "\${config.services.rss-bridge.dataDir}/cache/";
+                description = "Directory where to store cache files (if cache.type = \"file\").";
+                type = types.str;
+              };
+            };
+
+            system = {
+              enabled_bridges = mkOption {
+                default = null;
+                description = "Only enabled bridges are available for feed production";
+                type = with types; nullOr (either str (listOf str));
+              };
+            };
+          };
+
+          freeformType = (pkgs.formats.ini { }).type;
+        };
+      };
+
+      enable = mkEnableOption "rss-bridge";
+      package = mkPackageOption pkgs "rss-bridge" { };
+
+      dataDir = mkOption {
+        default = "/var/lib/rss-bridge";
+
         description = ''
-          Attribute set of arbitrary config options.
-          Please consult the documentation at the [wiki](https://rss-bridge.github.io/rss-bridge/For_Hosts/Custom_Configuration.html)
-          and [sample config](https://github.com/RSS-Bridge/rss-bridge/blob/master/config.default.ini.php) to see a list of available options.
+          Location in which cache directory will be created.
+          You can put `config.ini.php` in here.
         '';
+
+        type = types.str;
+      };
+
+      group = mkOption {
+        default = if cfg.webserver == null then "rss-bridge" else cfg.webserver;
+        defaultText = "{option}`config.services.rss-bridge.webserver` or \"rss-bridge\"";
+
+        description = ''
+          The group under which the web application runs.
+        '';
+
+        type = types.str;
+      };
+
+      pool = mkOption {
+        default = "rss-bridge";
+
+        description = ''
+          Name of phpfpm pool that is used to run web-application.
+          If `null` specified none will be created, otherwise automatically created with default values.
+        '';
+
+        type = types.nullOr types.str;
+      };
+
+      user = mkOption {
+        default = if cfg.webserver == null then "rss-bridge" else cfg.webserver;
+        defaultText = "{option}`config.services.rss-bridge.webserver` or \"rss-bridge\"";
+
+        description = ''
+          The user account under which both the service and the web application run.
+        '';
+
+        type = types.str;
+      };
+
+      virtualHost = mkOption {
+        default = "rss-bridge";
+
+        description = ''
+          Name of the nginx or caddy virtualhost to use and setup. If null, do not setup any virtualhost.
+        '';
+
+        type = types.nullOr types.str;
+      };
+
+      webserver = mkOption {
+        default = "nginx";
+
+        description = ''
+          Type of virtualhost to use and setup. If null, do not setup any virtualhost.
+        '';
+
+        type = types.nullOr (
+          types.enum [
+            "nginx"
+            "caddy"
+          ]
+        );
       };
     };
   };
 
   config = mkIf cfg.enable {
-    services.phpfpm.pools = mkIf (cfg.pool != null) {
-      ${cfg.pool} = {
-        user = cfg.user;
-        settings = lib.mapAttrs (name: mkDefault) {
-          "listen.owner" = cfg.user;
-          "listen.group" = cfg.group;
-          "listen.mode" = "0600";
-          "pm" = "dynamic";
-          "pm.max_children" = 75;
-          "pm.start_servers" = 10;
-          "pm.min_spare_servers" = 5;
-          "pm.max_spare_servers" = 20;
-          "pm.max_requests" = 500;
-          "catch_workers_output" = 1;
-        };
-      };
-    };
+    services.caddy = mkIf (cfg.virtualHost != null && cfg.webserver == "caddy") {
+      enable = true;
 
-    systemd.tmpfiles.settings.rss-bridge = {
-      "${cfg.config.FileCache.path}".d = {
-        mode = "0750";
-        user = cfg.user;
-        group = cfg.group;
+      virtualHosts.${cfg.virtualHost} = {
+        extraConfig = ''
+          root * ${cfg.package}
+          file_server
+          php_fastcgi unix/${config.services.phpfpm.pools.${cfg.pool}.socket} {
+          ${lib.concatStringsSep "\n" (lib.mapAttrsToList (n: v: "  env ${n} \"${v}\"") cfgEnv)}
+          }
+        '';
       };
     };
 
     services.nginx = mkIf (cfg.virtualHost != null && cfg.webserver == "nginx") {
       enable = true;
+
       virtualHosts = {
         ${cfg.virtualHost} = {
-          root = "${cfg.package}";
-
           locations."/" = {
             tryFiles = "$uri /index.php$is_args$args";
           };
@@ -205,20 +208,36 @@ in
               ${lib.concatStringsSep "\n" (lib.mapAttrsToList (n: v: "fastcgi_param \"${n}\" \"${v}\";") cfgEnv)}
             '';
           };
+
+          root = "${cfg.package}";
         };
       };
     };
 
-    services.caddy = mkIf (cfg.virtualHost != null && cfg.webserver == "caddy") {
-      enable = true;
-      virtualHosts.${cfg.virtualHost} = {
-        extraConfig = ''
-          root * ${cfg.package}
-          file_server
-          php_fastcgi unix/${config.services.phpfpm.pools.${cfg.pool}.socket} {
-          ${lib.concatStringsSep "\n" (lib.mapAttrsToList (n: v: "  env ${n} \"${v}\"") cfgEnv)}
-          }
-        '';
+    services.phpfpm.pools = mkIf (cfg.pool != null) {
+      ${cfg.pool} = {
+        settings = lib.mapAttrs (name: mkDefault) {
+          "catch_workers_output" = 1;
+          "listen.group" = cfg.group;
+          "listen.mode" = "0600";
+          "listen.owner" = cfg.user;
+          "pm" = "dynamic";
+          "pm.max_children" = 75;
+          "pm.max_requests" = 500;
+          "pm.max_spare_servers" = 20;
+          "pm.min_spare_servers" = 5;
+          "pm.start_servers" = 10;
+        };
+
+        user = cfg.user;
+      };
+    };
+
+    systemd.tmpfiles.settings.rss-bridge = {
+      "${cfg.config.FileCache.path}".d = {
+        group = cfg.group;
+        mode = "0750";
+        user = cfg.user;
       };
     };
   };

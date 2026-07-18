@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule (finalAttrs: {
@@ -16,15 +16,7 @@ buildGoModule (finalAttrs: {
     fetchSubmodules = true;
   };
 
-  subPackages = [ "." ];
-
   vendorHash = "sha256-8t3JBQEAmWcAlgA729IRpiewlgnRd5DQxHLTfwquE3o=";
-
-  ldflags = [
-    "-s"
-    "-w"
-    "-X main.dataDir=${placeholder "out"}/share/hilbish"
-  ];
 
   postInstall = ''
     mkdir -p "$out/share/hilbish"
@@ -35,12 +27,20 @@ buildGoModule (finalAttrs: {
     cp -r nature $out/share/hilbish/
   '';
 
+  ldflags = [
+    "-s"
+    "-w"
+    "-X main.dataDir=${placeholder "out"}/share/hilbish"
+  ];
+
+  subPackages = [ "." ];
+
   meta = {
     description = "Interactive Unix-like shell written in Go";
-    mainProgram = "hilbish";
-    changelog = "https://github.com/sammy-ette/Hilbish/releases/tag/v${finalAttrs.version}";
     homepage = "https://github.com/sammy-ette/Hilbish";
-    maintainers = with lib.maintainers; [ moni ];
+    changelog = "https://github.com/sammy-ette/Hilbish/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.mit;
+    maintainers = with lib.maintainers; [ moni ];
+    mainProgram = "hilbish";
   };
 })

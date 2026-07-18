@@ -16,6 +16,7 @@ stdenv.mkDerivation {
   };
 
   strictDeps = true;
+
   installPhase = ''
     install -Dm0644 lambda-mod.zsh-theme $out/share/zsh/themes/lambda-mod.zsh-theme
   '';
@@ -24,7 +25,7 @@ stdenv.mkDerivation {
     description = "ZSH theme optimized for people who use Git & Unicode-compatible fonts and terminals";
     homepage = "https://github.com/halfo/lambda-mod-zsh-theme/";
     license = lib.licenses.mit;
-    platforms = lib.platforms.all;
     maintainers = [ ];
+    platforms = lib.platforms.all;
   };
 }

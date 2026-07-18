@@ -2,29 +2,29 @@
   lib,
   stdenv,
   fetchurl,
-  fetchpatch,
-  ncurses,
-  which,
-  perl,
-  gdbm,
-  openssl,
   cyrus_sasl,
+  fetchpatch,
+  gdbm,
   gnupg,
   gpgme,
   libkrb5,
+  ncurses,
+  openssl,
+  perl,
+  which,
+  writeScript,
   zlib,
-  headerCache ? true,
-  sslSupport ? true,
-  saslSupport ? true,
-  smimeSupport ? false,
   gpgSupport ? false,
   gpgmeSupport ? true,
+  gssSupport ? true,
+  headerCache ? true,
   imapSupport ? true,
   pop3Support ? true,
+  saslSupport ? true,
+  smimeSupport ? false,
   smtpSupport ? true,
+  sslSupport ? true,
   withSidebar ? true,
-  gssSupport ? true,
-  writeScript,
 }:
 assert smimeSupport -> sslSupport;
 assert gpgmeSupport -> sslSupport;
@@ -32,27 +32,31 @@ assert gpgmeSupport -> sslSupport;
 stdenv.mkDerivation rec {
   pname = "mutt";
   version = "2.4.1";
-  outputs = [
-    "out"
-    "doc"
-    "info"
-  ];
 
   src = fetchurl {
     url = "http://ftp.mutt.org/pub/mutt/${pname}-${version}.tar.gz";
     hash = "sha256-ViQyHwscwe/2yrnvCPJZVP9kxRsz1L87mUhM8e3Yz/8=";
   };
 
+  outputs = [
+    "out"
+    "doc"
+    "info"
+  ];
+
   patches = [
     # Avoid build-only references embedding into 'mutt -v' output.
     ./no-build-only-refs.patch
   ]
   ++ lib.optional smimeSupport (fetchpatch {
-    url = "https://salsa.debian.org/mutt-team/mutt/raw/debian/1.10.1-2/debian/patches/misc/smime.rc.patch";
     sha256 = "0b4i00chvx6zj9pcb06x2jysmrcb2znn831lcy32cgfds6gr3nsi";
+    url = "https://salsa.debian.org/mutt-team/mutt/raw/debian/1.10.1-2/debian/patches/misc/smime.rc.patch";
   });
 
-  enableParallelBuilding = true;
+  postPatch = lib.optionalString (smimeSupport || gpgmeSupport) ''
+    sed -i 's#/usr/bin/openssl#${openssl}/bin/openssl#' smime_keys.pl
+  '';
+
   strictDeps = true;
 
   nativeBuildInputs = [
@@ -94,10 +98,6 @@ stdenv.mkDerivation rec {
   ++ lib.optional saslSupport "--with-sasl"
   ++ lib.optional gpgmeSupport "--with-gpgme-prefix=${lib.getDev gpgme}";
 
-  postPatch = lib.optionalString (smimeSupport || gpgmeSupport) ''
-    sed -i 's#/usr/bin/openssl#${openssl}/bin/openssl#' smime_keys.pl
-  '';
-
   postInstall =
     lib.optionalString smimeSupport ''
       # S/MIME setup
@@ -111,6 +111,8 @@ stdenv.mkDerivation rec {
       sed -i 's#\(command="\)gpg #\1${gnupg}/bin/gpg #' $out/etc/gpg.rc
       echo "source $out/etc/gpg.rc" >> $out/etc/Muttrc
     '';
+
+  enableParallelBuilding = true;
 
   passthru = {
     updateScript = writeScript "update-mutt" ''
@@ -129,9 +131,9 @@ stdenv.mkDerivation rec {
   meta = {
     description = "Small but very powerful text-based mail client";
     homepage = "http://www.mutt.org";
-    mainProgram = "mutt";
     license = lib.licenses.gpl2Plus;
-    platforms = lib.platforms.unix;
     maintainers = with lib.maintainers; [ rnhmjoj ];
+    platforms = lib.platforms.unix;
+    mainProgram = "mutt";
   };
 }

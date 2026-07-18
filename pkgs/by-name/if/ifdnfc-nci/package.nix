@@ -2,10 +2,10 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  pkg-config,
   cmake,
-  pcsclite,
   libnfc-nci,
+  pcsclite,
+  pkg-config,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -33,7 +33,7 @@ stdenv.mkDerivation (finalAttrs: {
     description = "PC/SC IFD Handler based on linux_libnfc-nci";
     homepage = "https://github.com/StarGate01/ifdnfc-nci";
     license = lib.licenses.gpl3Only;
-    platforms = lib.platforms.linux;
     maintainers = with lib.maintainers; [ stargate01 ];
+    platforms = lib.platforms.linux;
   };
 })

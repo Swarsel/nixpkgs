@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   hatchling,
   typing-extensions,
 }:
@@ -9,7 +9,6 @@
 buildPythonPackage rec {
   pname = "diskcache-stubs";
   version = "5.6.3.6";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "phi-friday";
@@ -18,14 +17,12 @@ buildPythonPackage rec {
     hash = "sha256-yYds/00K9XyJirreBGG/r30HZTyBQbFa6N4EizsmdKg=";
   };
 
-  build-system = [ hatchling ];
-
-  dependencies = [ typing-extensions ];
-
-  pythonImportsCheck = [ "diskcache-stubs" ];
-
   # Module has no tests
   doCheck = false;
+  build-system = [ hatchling ];
+  dependencies = [ typing-extensions ];
+  pyproject = true;
+  pythonImportsCheck = [ "diskcache-stubs" ];
 
   meta = {
     description = "Diskcache stubs";

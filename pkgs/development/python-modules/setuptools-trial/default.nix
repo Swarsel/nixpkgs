@@ -9,21 +9,18 @@
 buildPythonPackage rec {
   pname = "setuptools-trial";
   version = "0.6.0";
-  pyproject = true;
 
   src = fetchPypi {
-    pname = "setuptools_trial";
     inherit version;
     hash = "sha256-FCIPj3YcSLoeJSbwhxlQd89U+tcJizgs4iBCLw/1mxI=";
+    pname = "setuptools_trial";
   };
 
   nativeBuildInputs = [ setuptools ];
-
   propagatedBuildInputs = [ twisted ];
-
   # Couldn't get tests working
   doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "setuptools_trial" ];
 
   meta = {

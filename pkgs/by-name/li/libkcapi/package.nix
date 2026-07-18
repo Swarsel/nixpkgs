@@ -4,13 +4,13 @@
   fetchFromGitHub,
   autoreconfHook,
   buildPackages,
-  # libkcapi offers multiple tools. They can be disabled for minimization.
-  kcapi-test ? true,
-  kcapi-speed ? true,
+  kcapi-dgstapp ? true,
+  kcapi-encapp ? true,
   kcapi-hasher ? true,
   kcapi-rngapp ? true,
-  kcapi-encapp ? true,
-  kcapi-dgstapp ? true,
+  kcapi-speed ? true,
+  # libkcapi offers multiple tools. They can be disabled for minimization.
+  kcapi-test ? true,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -31,17 +31,8 @@ stdenv.mkDerivation (finalAttrs: {
     "selftests"
   ];
 
-  nativeBuildInputs = [ autoreconfHook ];
-
-  # libkcapi looks also for a host c compiler when cross-compiling
-  # otherwise you obtain following error message:
-  # "error: no acceptable C compiler found in $PATH"
-  depsBuildBuild = [
-    buildPackages.stdenv.cc
-  ];
-
   strictDeps = true;
-  enableParallelBuilding = true;
+  nativeBuildInputs = [ autoreconfHook ];
 
   configureFlags =
     lib.optional kcapi-test "--enable-kcapi-test"
@@ -56,17 +47,29 @@ stdenv.mkDerivation (finalAttrs: {
     find $out -iname '*.sh' -exec mv {} $selftests/bin/ \;
   '';
 
+  # libkcapi looks also for a host c compiler when cross-compiling
+  # otherwise you obtain following error message:
+  # "error: no acceptable C compiler found in $PATH"
+  depsBuildBuild = [
+    buildPackages.stdenv.cc
+  ];
+
+  enableParallelBuilding = true;
+
   meta = {
-    homepage = "http://www.chronox.de/libkcapi.html";
     description = "Linux Kernel Crypto API User Space Interface Library";
+    homepage = "http://www.chronox.de/libkcapi.html";
+
     license = with lib.licenses; [
       bsd3
       gpl2Only
     ];
-    platforms = lib.platforms.linux;
+
     maintainers = with lib.maintainers; [
       orichter
       thillux
     ];
+
+    platforms = lib.platforms.linux;
   };
 })

@@ -1,25 +1,21 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # build dependencies
-  poetry-core,
-
   # dependencies
   babelfish,
+  buildPythonPackage,
+  # build dependencies
+  poetry-core,
+  # tests
+  pytestCheckHook,
   pyyaml,
   rebulk,
   unidecode,
-
-  # tests
-  pytestCheckHook,
 }:
 
 buildPythonPackage rec {
   pname = "trakit";
   version = "0.2.5";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "ratoaq2";
@@ -27,6 +23,11 @@ buildPythonPackage rec {
     tag = version;
     hash = "sha256-x/83yRzvQ81+wS0lJr52KYBMoPvSVDr17ppxG/lSfUg=";
   };
+
+  nativeCheckInputs = [
+    pytestCheckHook
+    unidecode
+  ];
 
   build-system = [ poetry-core ];
 
@@ -36,16 +37,12 @@ buildPythonPackage rec {
     rebulk
   ];
 
-  nativeCheckInputs = [
-    pytestCheckHook
-    unidecode
-  ];
-
   disabledTests = [
     # requires network access
     "test_generate_config"
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "trakit" ];
 
   meta = {

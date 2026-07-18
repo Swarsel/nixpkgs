@@ -1,10 +1,10 @@
 {
   lib,
-  makeWrapper,
   fetchFromGitHub,
-  rustPackages,
-  pkg-config,
   elfutils,
+  makeWrapper,
+  pkg-config,
+  rustPackages,
   zlib,
 }:
 let
@@ -45,10 +45,10 @@ let
   };
 
   vmlinux-headers = fetchFromGitHub {
+    hash = "sha256-CVEmKkzdFNLKCbcbeSIoM5QjYVLQglpz6gy7+ZFPgCY=";
     owner = "eunomia-bpf";
     repo = "vmlinux";
     rev = "933f83becb45f5586ed5fd089e60d382aeefb409";
-    hash = "sha256-CVEmKkzdFNLKCbcbeSIoM5QjYVLQglpz6gy7+ZFPgCY=";
   };
 
 in
@@ -63,10 +63,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-KfYCC+TJbmjHrV46LoshD+uXcaBVMKk6+cN7TZKKYp4=";
   };
 
-  sourceRoot = "${finalAttrs.src.name}/compiler/cmd";
-
-  cargoHash = "sha256-iYceYwRqnYA6KxCQxOieR8JZ6TQlIL+OSzAjyr4Cu/g=";
-
   nativeBuildInputs = [
     pkg-config
     makeWrapper
@@ -78,6 +74,7 @@ rustPlatform.buildRustPackage (finalAttrs: {
     zlib
   ];
 
+  cargoHash = "sha256-iYceYwRqnYA6KxCQxOieR8JZ6TQlIL+OSzAjyr4Cu/g=";
   env.CARGO_TARGET_AARCH64_UNKNOWN_LINUX_GNU_LINKER = "gcc";
 
   preBuild = ''
@@ -86,10 +83,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
     # specify dependencies' location
     export VMLINUX_DIR=${vmlinux-headers}
     export BPFTOOL_DIR=${bpftool}
-  '';
-
-  preCheck = ''
-    export HOME=$NIX_BUILD_TOP
   '';
 
   checkFlags = [
@@ -105,9 +98,9 @@ rustPlatform.buildRustPackage (finalAttrs: {
     "--skip=document_parser::test::test_parse_variables"
   ];
 
-  passthru = {
-    inherit bpftool;
-  };
+  preCheck = ''
+    export HOME=$NIX_BUILD_TOP
+  '';
 
   postFixup = ''
     wrapProgram $out/bin/ecc-rs \
@@ -123,12 +116,18 @@ rustPlatform.buildRustPackage (finalAttrs: {
       }
   '';
 
+  sourceRoot = "${finalAttrs.src.name}/compiler/cmd";
+
+  passthru = {
+    inherit bpftool;
+  };
+
   meta = {
-    homepage = "https://eunomia.dev";
     description = "EBPF compile toolchain for eunomia-bpf";
-    mainProgram = "ecc-rs";
+    homepage = "https://eunomia.dev";
+    license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ oluceps ];
     platforms = lib.platforms.linux;
-    license = lib.licenses.mit;
+    mainProgram = "ecc-rs";
   };
 })

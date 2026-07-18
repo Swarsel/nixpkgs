@@ -15,23 +15,24 @@ in
   options = {
 
     services.fluentd = {
-      enable = lib.mkEnableOption "fluentd, a data/log collector";
-
       config = lib.mkOption {
-        type = lib.types.lines;
         default = "";
         description = "Fluentd config.";
+        type = lib.types.lines;
       };
 
+      enable = lib.mkEnableOption "fluentd, a data/log collector";
       package = lib.mkPackageOption pkgs "fluentd" { };
 
       plugins = lib.mkOption {
-        type = lib.types.listOf lib.types.path;
         default = [ ];
+
         description = ''
           A list of plugin paths to pass into fluentd. It will make plugins defined in ruby files
           there available in your config.
         '';
+
+        type = lib.types.listOf lib.types.path;
       };
     };
   };
@@ -41,11 +42,13 @@ in
   config = lib.mkIf cfg.enable {
     systemd.services.fluentd = {
       description = "Fluentd Daemon";
-      wantedBy = [ "multi-user.target" ];
+
       serviceConfig = {
-        ExecStart = "${cfg.package}/bin/fluentd -c ${pkgs.writeText "fluentd.conf" cfg.config} ${pluginArgs}";
         ExecReload = "${pkgs.coreutils}/bin/kill -HUP $MAINPID";
+        ExecStart = "${cfg.package}/bin/fluentd -c ${pkgs.writeText "fluentd.conf" cfg.config} ${pluginArgs}";
       };
+
+      wantedBy = [ "multi-user.target" ];
     };
   };
 }

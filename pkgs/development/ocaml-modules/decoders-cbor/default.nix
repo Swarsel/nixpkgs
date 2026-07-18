@@ -1,19 +1,16 @@
 {
   lib,
   buildDunePackage,
-  decoders,
   cbor,
   containers,
+  decoders,
   ounit2,
 }:
 
 buildDunePackage (finalAttrs: {
-  pname = "decoders-cbor";
-
   # sub-package built separately from the same source
   inherit (decoders) src version;
-
-  minimalOCamlVersion = "4.03.0";
+  pname = "decoders-cbor";
 
   propagatedBuildInputs = [
     decoders
@@ -21,10 +18,13 @@ buildDunePackage (finalAttrs: {
   ];
 
   doCheck = true;
+
   checkInputs = [
     containers
     ounit2
   ];
+
+  minimalOCamlVersion = "4.03.0";
 
   meta = {
     description = "CBOR backend for decoders";

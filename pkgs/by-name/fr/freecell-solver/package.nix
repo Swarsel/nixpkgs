@@ -30,12 +30,7 @@ stdenv.mkDerivation (finalAttrs: {
     "man"
   ];
 
-  pythonPath = with python3.pkgs; [
-    cffi
-    pysol-cards
-    random2
-    six
-  ];
+  strictDeps = true;
 
   nativeBuildInputs = [
     cmake
@@ -68,12 +63,13 @@ stdenv.mkDerivation (finalAttrs: {
     rinutils
   ];
 
-  strictDeps = true;
-
   cmakeFlags = [
     (lib.cmakeBool "FCS_WITH_TEST_SUITE" false) # needs freecell-solver
     (lib.cmakeBool "BUILD_STATIC_LIBRARY" false)
   ];
+
+  doInstallCheck = true;
+  nativeInstallCheckInputs = [ versionCheckHook ];
 
   preFixup = ''
     # This is a module and should not be wrapped, or it causes import errors
@@ -85,7 +81,8 @@ stdenv.mkDerivation (finalAttrs: {
     wrapPythonProgramsIn "$out/bin" "$out ''${pythonPath[*]}"
   '';
 
-  nativeInstallCheckInputs = [ versionCheckHook ];
+  __structuredAttrs = true;
+
   postInstallCheck = ''
     # Check that the python wrappers work correctly:
     # * fc_solve_find_index_s2ints.py should be unwrapped (we get SyntaxError otherwise)
@@ -94,21 +91,27 @@ stdenv.mkDerivation (finalAttrs: {
     unset PYTHONPATH
     ($out/bin/make_pysol_freecell_board.py 2>&1 | tee /dev/stderr || true) | grep -q "IndexError:"
   '';
-  doInstallCheck = true;
 
-  __structuredAttrs = true;
+  pythonPath = with python3.pkgs; [
+    cffi
+    pysol-cards
+    random2
+    six
+  ];
 
   meta = {
-    homepage = "https://fc-solve.shlomifish.org/";
     description = "FreeCell automatic solver";
+
     longDescription = ''
       FreeCell Solver is a program that automatically solves layouts of Freecell
       and similar variants of Card Solitaire such as Eight Off, Forecell, and
       Seahaven Towers, as well as Simple Simon boards.
     '';
+
+    homepage = "https://fc-solve.shlomifish.org/";
     license = lib.licenses.mit;
-    mainProgram = "fc-solve";
     maintainers = [ ];
     platforms = lib.platforms.unix;
+    mainProgram = "fc-solve";
   };
 })

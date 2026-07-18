@@ -7,7 +7,6 @@
 python3.pkgs.buildPythonApplication (finalAttrs: {
   pname = "kb";
   version = "0.1.8";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "gnebbia";
@@ -25,6 +24,11 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
         "install_requires=[\"colored\",\"toml\",\"attrs\",\"gitpython\"],"
   '';
 
+  nativeCheckInputs = with python3.pkgs; [
+    pytest-cov-stub
+    pytestCheckHook
+  ];
+
   build-system = with python3.pkgs; [
     setuptools
   ];
@@ -36,15 +40,12 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     gitpython
   ];
 
-  nativeCheckInputs = with python3.pkgs; [
-    pytest-cov-stub
-    pytestCheckHook
-  ];
-
+  pyproject = true;
   pythonImportsCheck = [ "kb" ];
 
   meta = {
     description = "Minimalist command line knowledge base manager";
+
     longDescription = ''
       kb is a text-oriented minimalist command line knowledge base manager. kb
       can be considered a quick note collection and access tool oriented toward
@@ -53,6 +54,7 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
       targeted on text-based note collection, it supports non-text files as well
       (e.g., images, pdf, videos and others).
     '';
+
     homepage = "https://github.com/gnebbia/kb";
     changelog = "https://github.com/gnebbia/kb/blob/${finalAttrs.src.tag}/CHANGELOG.md";
     license = lib.licenses.gpl3Plus;

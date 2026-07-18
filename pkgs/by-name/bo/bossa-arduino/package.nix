@@ -1,4 +1,4 @@
-{ bossa, fetchFromGitHub }:
+{ fetchFromGitHub, bossa }:
 
 bossa.overrideAttrs (attrs: rec {
   pname = "bossa-arduino";

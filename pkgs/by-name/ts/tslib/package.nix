@@ -18,15 +18,14 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   nativeBuildInputs = [ cmake ];
-
   passthru.updateScript = nix-update-script { };
 
   meta = {
     description = "Touchscreen access library";
     homepage = "http://www.tslib.org/";
     license = lib.licenses.lgpl21;
-    platforms = lib.platforms.linux; # requires linux headers <linux/input.h>
     maintainers = with lib.maintainers; [ shogo ];
+    platforms = lib.platforms.linux; # requires linux headers <linux/input.h>
     teams = with lib.teams; [ ngi ];
   };
 })

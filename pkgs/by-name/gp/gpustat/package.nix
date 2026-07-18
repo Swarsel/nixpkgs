@@ -1,18 +1,18 @@
 {
   lib,
   fetchFromGitHub,
-  rustPlatform,
-  pkg-config,
+  cmake,
   fontconfig,
   libGL,
   libx11,
   libxcursor,
   libxi,
-  libxrandr,
-  cmake,
   libxkbcommon,
-  wayland,
+  libxrandr,
   makeWrapper,
+  pkg-config,
+  rustPlatform,
+  wayland,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -25,8 +25,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
     rev = "v${finalAttrs.version}";
     hash = "sha256-M9P/qfw/tp9ogkNOE3b2fD2rGFnii1/VwmqJHqXb7Mg=";
   };
-
-  cargoHash = "sha256-8uD4zc33CeImvMW0mOTqws4S2xXQ3Ff9nPxocof0Xm4=";
 
   nativeBuildInputs = [
     cmake
@@ -44,6 +42,8 @@ rustPlatform.buildRustPackage (finalAttrs: {
     libxkbcommon
     wayland
   ];
+
+  cargoHash = "sha256-8uD4zc33CeImvMW0mOTqws4S2xXQ3Ff9nPxocof0Xm4=";
 
   postInstall = ''
     install -D assets/gpustat.desktop -t $out/share/applications
@@ -68,7 +68,7 @@ rustPlatform.buildRustPackage (finalAttrs: {
     homepage = "https://github.com/arduano/gpustat";
     license = lib.licenses.asl20;
     maintainers = with lib.maintainers; [ arduano ];
-    mainProgram = "gpustat";
     platforms = lib.platforms.linux;
+    mainProgram = "gpustat";
   };
 })

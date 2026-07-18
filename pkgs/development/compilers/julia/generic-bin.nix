@@ -1,14 +1,14 @@
 {
-  version,
   sha256,
+  version,
   patches ? [ ],
 }:
 
 {
-  autoPatchelfHook,
-  fetchurl,
   lib,
   stdenv,
+  fetchurl,
+  autoPatchelfHook,
 }:
 
 let
@@ -59,23 +59,24 @@ let
   ];
 in
 stdenv.mkDerivation {
-  pname = "julia-bin";
-
   inherit version patches;
+  pname = "julia-bin";
 
   src =
     {
-      x86_64-linux = fetchurl {
-        url = "https://julialang-s3.julialang.org/bin/linux/x64/${lib.versions.majorMinor version}/julia-${version}-linux-x86_64.tar.gz";
-        sha256 = sha256.x86_64-linux;
-      };
-      aarch64-linux = fetchurl {
-        url = "https://julialang-s3.julialang.org/bin/linux/aarch64/${lib.versions.majorMinor version}/julia-${version}-linux-aarch64.tar.gz";
-        sha256 = sha256.aarch64-linux;
-      };
       aarch64-darwin = fetchurl {
-        url = "https://julialang-s3.julialang.org/bin/mac/aarch64/${lib.versions.majorMinor version}/julia-${version}-macaarch64.tar.gz";
         sha256 = sha256.aarch64-darwin;
+        url = "https://julialang-s3.julialang.org/bin/mac/aarch64/${lib.versions.majorMinor version}/julia-${version}-macaarch64.tar.gz";
+      };
+
+      aarch64-linux = fetchurl {
+        sha256 = sha256.aarch64-linux;
+        url = "https://julialang-s3.julialang.org/bin/linux/aarch64/${lib.versions.majorMinor version}/julia-${version}-linux-aarch64.tar.gz";
+      };
+
+      x86_64-linux = fetchurl {
+        sha256 = sha256.x86_64-linux;
+        url = "https://julialang-s3.julialang.org/bin/linux/x64/${lib.versions.majorMinor version}/julia-${version}-linux-x86_64.tar.gz";
       };
     }
     .${stdenv.hostPlatform.system} or (throw "Unsupported system: ${stdenv.hostPlatform.system}");
@@ -108,18 +109,7 @@ stdenv.mkDerivation {
     runHook postInstall
   '';
 
-  # Breaks backtraces, etc.
-  dontStrip = true;
-  dontAutoPatchelf = true;
-
   doInstallCheck = true;
-
-  preInstallCheck = ''
-    export JULIA_TEST_USE_MULTIPLE_WORKERS=true
-    # Some tests require read/write access to $HOME.
-    # And $HOME cannot be equal to $TMPDIR as it causes test failures
-    export HOME=$(mktemp -d)
-  '';
 
   installCheckPhase = ''
     runHook preInstallCheck
@@ -133,22 +123,36 @@ stdenv.mkDerivation {
     runHook postInstallCheck
   '';
 
+  dontAutoPatchelf = true;
+  # Breaks backtraces, etc.
+  dontStrip = true;
+
+  preInstallCheck = ''
+    export JULIA_TEST_USE_MULTIPLE_WORKERS=true
+    # Some tests require read/write access to $HOME.
+    # And $HOME cannot be equal to $TMPDIR as it causes test failures
+    export HOME=$(mktemp -d)
+  '';
+
   meta = {
     description = "High-level, high-performance, dynamic language for technical computing";
     homepage = "https://julialang.org";
     # Bundled and linked with various GPL code, although Julia itself is MIT.
     license = lib.licenses.gpl2Plus;
+
     maintainers = with lib.maintainers; [
       raskin
       nickcao
       wegank
       thomasjm
     ];
+
     platforms = [
       "x86_64-linux"
       "aarch64-linux"
       "aarch64-darwin"
     ];
+
     mainProgram = "julia";
   };
 }

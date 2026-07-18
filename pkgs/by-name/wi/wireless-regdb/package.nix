@@ -1,8 +1,8 @@
 {
   lib,
-  stdenvNoCC,
   fetchurl,
   directoryListingUpdater,
+  stdenvNoCC,
 }:
 
 stdenvNoCC.mkDerivation rec {
@@ -14,20 +14,19 @@ stdenvNoCC.mkDerivation rec {
     hash = "sha256-iie/wIG6/tjCTdcPqw2W8JjloL/NCNPaZyWV8iWriZM=";
   };
 
-  dontBuild = true;
-
   makeFlags = [
     "DESTDIR=${placeholder "out"}"
     "PREFIX="
   ];
 
+  dontBuild = true;
   passthru.updateScript = directoryListingUpdater { };
 
   meta = {
     description = "Wireless regulatory database for CRDA";
     homepage = "https://wireless.docs.kernel.org/en/latest/en/developers/regulatory/wireless-regdb.html";
     license = lib.licenses.isc;
-    platforms = lib.platforms.all;
     maintainers = with lib.maintainers; [ fpletz ];
+    platforms = lib.platforms.all;
   };
 }

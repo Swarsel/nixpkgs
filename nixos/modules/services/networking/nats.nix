@@ -16,7 +16,7 @@ let
   validateConfig =
     file:
     pkgs.callPackage (
-      { runCommand, nats-server }:
+      { nats-server, runCommand }:
       runCommand "validate-nats-conf"
         {
           nativeBuildInputs = [ nats-server ];
@@ -40,40 +40,9 @@ in
     services.nats = {
       enable = mkEnableOption "NATS messaging system";
 
-      user = mkOption {
-        type = types.str;
-        default = "nats";
-        description = "User account under which NATS runs.";
-      };
-
-      group = mkOption {
-        type = types.str;
-        default = "nats";
-        description = "Group under which NATS runs.";
-      };
-
-      serverName = mkOption {
-        default = "nats";
-        example = "n1-c3";
-        type = types.str;
-        description = ''
-          Name of the NATS server, must be unique if clustered.
-        '';
-      };
-
-      jetstream = mkEnableOption "JetStream";
-
-      port = mkOption {
-        default = 4222;
-        type = types.port;
-        description = ''
-          Port on which to listen.
-        '';
-      };
-
       dataDir = mkOption {
         default = "/var/lib/nats";
-        type = types.path;
+
         description = ''
           The NATS data directory. Only used if JetStream is enabled, for
           storing stream metadata and messages.
@@ -83,11 +52,48 @@ in
           responsible for ensuring the directory exists with appropriate
           ownership and permissions.
         '';
+
+        type = types.path;
+      };
+
+      group = mkOption {
+        default = "nats";
+        description = "Group under which NATS runs.";
+        type = types.str;
+      };
+
+      jetstream = mkEnableOption "JetStream";
+
+      port = mkOption {
+        default = 4222;
+
+        description = ''
+          Port on which to listen.
+        '';
+
+        type = types.port;
+      };
+
+      serverName = mkOption {
+        default = "nats";
+
+        description = ''
+          Name of the NATS server, must be unique if clustered.
+        '';
+
+        example = "n1-c3";
+        type = types.str;
       };
 
       settings = mkOption {
         default = { };
-        type = format.type;
+
+        description = ''
+          Declarative NATS configuration. See the
+          [
+          NATS documentation](https://docs.nats.io/nats-server/configuration) for a list of options.
+        '';
+
         example = literalExpression ''
           {
             jetstream = {
@@ -96,21 +102,26 @@ in
             };
           };
         '';
-        description = ''
-          Declarative NATS configuration. See the
-          [
-          NATS documentation](https://docs.nats.io/nats-server/configuration) for a list of options.
-        '';
+
+        type = format.type;
+      };
+
+      user = mkOption {
+        default = "nats";
+        description = "User account under which NATS runs.";
+        type = types.str;
       };
 
       validateConfig = mkOption {
-        type = types.bool;
         default = true;
+
         description = ''
           If true, validate nats config at build time. When the config can't
           be checked during build time, for example when it includes other
           files, disable this option.
         '';
+
+        type = types.bool;
       };
     };
   };
@@ -119,15 +130,14 @@ in
 
   config = mkIf cfg.enable {
     services.nats.settings = {
-      server_name = cfg.serverName;
-      port = cfg.port;
       jetstream = optionalAttrs cfg.jetstream { store_dir = cfg.dataDir; };
+      port = cfg.port;
+      server_name = cfg.serverName;
     };
 
     systemd.services.nats = {
-      description = "NATS messaging system";
-      wantedBy = [ "multi-user.target" ];
       after = [ "network.target" ];
+      description = "NATS messaging system";
 
       serviceConfig = mkMerge [
         (mkIf (cfg.dataDir == "/var/lib/nats") {
@@ -135,25 +145,13 @@ in
           StateDirectoryMode = "0750";
         })
         {
-          Type = "simple";
-          ExecStart = "${pkgs.nats-server}/bin/nats-server -c ${configFile}";
-          ExecReload = "${pkgs.coreutils}/bin/kill -HUP $MAINPID";
-
-          KillMode = "mixed";
-          KillSignal = "SIGUSR2";
-          SuccessExitStatus = [
-            0
-            "SIGUSR2"
-          ];
-
-          TimeoutStopSec = "150"; # must exceed lame_duck_duration, which defaults to 2min
-          Restart = "on-failure";
-
-          User = cfg.user;
-          Group = cfg.group;
-
           # Hardening
           CapabilityBoundingSet = "";
+          ExecReload = "${pkgs.coreutils}/bin/kill -HUP $MAINPID";
+          ExecStart = "${pkgs.nats-server}/bin/nats-server -c ${configFile}";
+          Group = cfg.group;
+          KillMode = "mixed";
+          KillSignal = "SIGUSR2";
           LimitNOFILE = 800000; # JetStream requires 2 FDs open per stream.
           LockPersonality = true;
           MemoryDenyWriteExecute = true;
@@ -173,32 +171,47 @@ in
           ProtectSystem = "strict";
           ReadOnlyPaths = [ ];
           ReadWritePaths = [ cfg.dataDir ];
+          Restart = "on-failure";
+
           RestrictAddressFamilies = [
             "AF_INET"
             "AF_INET6"
           ];
+
           RestrictNamespaces = true;
           RestrictRealtime = true;
           RestrictSUIDSGID = true;
+
+          SuccessExitStatus = [
+            0
+            "SIGUSR2"
+          ];
+
           SystemCallFilter = [
             "@system-service"
             "~@privileged"
           ];
+
+          TimeoutStopSec = "150"; # must exceed lame_duck_duration, which defaults to 2min
+          Type = "simple";
           UMask = "0077";
+          User = cfg.user;
         }
       ];
+
+      wantedBy = [ "multi-user.target" ];
     };
+
+    users.groups = mkIf (cfg.group == "nats") { nats = { }; };
 
     users.users = mkIf (cfg.user == "nats") {
       nats = {
         description = "NATS daemon user";
-        isSystemUser = true;
         group = cfg.group;
         home = cfg.dataDir;
+        isSystemUser = true;
       };
     };
-
-    users.groups = mkIf (cfg.group == "nats") { nats = { }; };
   };
 
 }

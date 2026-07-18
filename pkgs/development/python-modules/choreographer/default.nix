@@ -1,20 +1,17 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # build-system
-  setuptools,
-
+  buildPythonPackage,
   # dependencies
   logistro,
+  # build-system
+  setuptools,
   simplejson,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "choreographer";
   version = "1.2.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "plotly";
@@ -29,6 +26,9 @@ buildPythonPackage (finalAttrs: {
       --replace-fail 'dynamic = ["version"]' 'version = "${finalAttrs.version}"'
   '';
 
+  # Tests require running chrome
+  doCheck = false;
+
   build-system = [
     setuptools
   ];
@@ -38,10 +38,8 @@ buildPythonPackage (finalAttrs: {
     simplejson
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "choreographer" ];
-
-  # Tests require running chrome
-  doCheck = false;
 
   meta = {
     description = "Devtools Protocol implementation for chrome";

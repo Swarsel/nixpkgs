@@ -1,24 +1,13 @@
 {
-  mkDerivation,
   lib,
-  libgeom,
-  libzfs,
-  libdevdctl,
-  libsbuf,
   libbsdxml,
+  libdevdctl,
+  libgeom,
+  libsbuf,
+  libzfs,
+  mkDerivation,
 }:
 mkDerivation {
-  path = "cddl/usr.sbin/zfsd";
-  extraPaths = [
-    "sys/contrib/openzfs"
-  ];
-  clangFixup = false;
-  ouptuts = [
-    "out"
-    "man"
-    "debug"
-  ];
-
   buildInputs = [
     libgeom
     libzfs
@@ -27,16 +16,29 @@ mkDerivation {
     libbsdxml
   ];
 
-  MK_TESTS = "no";
-
   env.NIX_CFLAGS_COMPILE = "-std=c++23 -Wno-nullability-completeness";
+  MK_TESTS = "no";
+  clangFixup = false;
+
+  extraPaths = [
+    "sys/contrib/openzfs"
+  ];
+
+  ouptuts = [
+    "out"
+    "man"
+    "debug"
+  ];
+
+  path = "cddl/usr.sbin/zfsd";
 
   meta = {
-    mainProgram = "zfsd";
-    platforms = lib.platforms.freebsd;
     license = with lib.licenses; [
       cddl
       bsd2
     ];
+
+    platforms = lib.platforms.freebsd;
+    mainProgram = "zfsd";
   };
 }

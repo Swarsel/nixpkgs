@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   hatchling,
   pytestCheckHook,
 }:
@@ -9,7 +9,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "protego";
   version = "0.6.2";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "scrapy";
@@ -18,10 +17,9 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-vAX7l0Xq2itQwBkNYobOWae1qHVVcD7M/o43GpIwEVo=";
   };
 
-  build-system = [ hatchling ];
-
   nativeCheckInputs = [ pytestCheckHook ];
-
+  build-system = [ hatchling ];
+  pyproject = true;
   pythonImportsCheck = [ "protego" ];
 
   meta = {

@@ -2,19 +2,19 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  nix-update-script,
-  meson,
-  ninja,
-  pkg-config,
-  python3,
   curl,
-  icu,
-  libzim,
-  pugixml,
-  zlib,
-  libmicrohttpd,
-  mustache-hpp,
   gtest,
+  icu,
+  libmicrohttpd,
+  libzim,
+  meson,
+  mustache-hpp,
+  ninja,
+  nix-update-script,
+  pkg-config,
+  pugixml,
+  python3,
+  zlib,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -27,6 +27,10 @@ stdenv.mkDerivation (finalAttrs: {
     rev = finalAttrs.version;
     hash = "sha256-wkUcQSBXrKw4Jx/ij12Nj45Jem6i7kun/gu1pJDOQeA=";
   };
+
+  postPatch = ''
+    patchShebangs scripts
+  '';
 
   nativeBuildInputs = [
     meson
@@ -48,18 +52,14 @@ stdenv.mkDerivation (finalAttrs: {
     pugixml
   ];
 
+  doCheck = true;
+
   nativeCheckInputs = [
     gtest
   ];
 
-  doCheck = true;
   # Required for server tests on Darwin
   __darwinAllowLocalNetworking = true;
-
-  postPatch = ''
-    patchShebangs scripts
-  '';
-
   passthru.updateScript = nix-update-script { };
 
   meta = {
@@ -67,7 +67,7 @@ stdenv.mkDerivation (finalAttrs: {
     homepage = "https://kiwix.org";
     changelog = "https://github.com/kiwix/libkiwix/releases/tag/${finalAttrs.version}";
     license = lib.licenses.gpl3Plus;
-    platforms = lib.platforms.linux ++ lib.platforms.darwin;
     maintainers = with lib.maintainers; [ colinsane ];
+    platforms = lib.platforms.linux ++ lib.platforms.darwin;
   };
 })

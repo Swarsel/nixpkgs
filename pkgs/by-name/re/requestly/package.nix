@@ -1,7 +1,7 @@
 {
   lib,
-  appimageTools,
   fetchurl,
+  appimageTools,
 }:
 
 let
@@ -25,9 +25,9 @@ appimageTools.wrapType2 {
 
   meta = {
     description = "Intercept & Modify HTTP Requests";
-    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
     homepage = "https://requestly.io";
     license = lib.licenses.agpl3Only;
+    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
     maintainers = [ ];
     mainProgram = "requestly";
   };

@@ -1,16 +1,15 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
+  buildPythonPackage,
   pytest,
   pytestCheckHook,
+  setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "pytest-reverse";
   version = "1.9.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "adamchainz";
@@ -19,12 +18,10 @@ buildPythonPackage rec {
     hash = "sha256-d9wx4N3RnPbOk+dZuJaCdbtXfQQwjGo5MwVNrNVGtlo=";
   };
 
-  build-system = [ setuptools ];
-
   buildInputs = [ pytest ];
-
   nativeCheckInputs = [ pytestCheckHook ];
-
+  build-system = [ setuptools ];
+  pyproject = true;
   pythonImportsCheck = [ "pytest_reverse" ];
 
   meta = {

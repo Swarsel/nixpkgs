@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   flit-core,
   typing-extensions,
 }:
@@ -9,7 +9,6 @@
 buildPythonPackage rec {
   pname = "stringly";
   version = "1.0b3";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "evalf";
@@ -18,13 +17,11 @@ buildPythonPackage rec {
     hash = "sha256-OAATONkok9M2pVoChtwWMPPU/bhAxGf+BFawy9g3iZI=";
   };
 
-  build-system = [ flit-core ];
-
-  dependencies = [ typing-extensions ];
-
-  pythonImportsCheck = [ "stringly" ];
-
   doCheck = false; # no tests
+  build-system = [ flit-core ];
+  dependencies = [ typing-extensions ];
+  pyproject = true;
+  pythonImportsCheck = [ "stringly" ];
 
   meta = {
     description = "Stringly: Human Readable Object Serialization";

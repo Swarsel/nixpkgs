@@ -17,12 +17,20 @@
 buildPythonPackage rec {
   pname = "txtorcon";
   version = "26.6.0";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
     hash = "sha256-BAjwY6n8uN9Snayle7c3PqD1tOuv/NUQN1S3xWF3P2g=";
   };
+
+  doCheck = !(stdenv.hostPlatform.isDarwin && stdenv.hostPlatform.isAarch64);
+
+  nativeCheckInputs = [
+    pytestCheckHook
+    mock
+    lsof
+    geoip
+  ];
 
   build-system = [ setuptools ];
 
@@ -34,25 +42,18 @@ buildPythonPackage rec {
   ]
   ++ twisted.optional-dependencies.tls;
 
-  nativeCheckInputs = [
-    pytestCheckHook
-    mock
-    lsof
-    geoip
-  ];
-
-  doCheck = !(stdenv.hostPlatform.isDarwin && stdenv.hostPlatform.isAarch64);
-
+  pyproject = true;
   pythonImportsCheck = [ "txtorcon" ];
 
   meta = {
     description = "Twisted-based Tor controller client, with state-tracking and configuration abstractions";
     homepage = "https://github.com/meejah/txtorcon";
     changelog = "https://github.com/meejah/txtorcon/releases/tag/v${version}";
+    license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       jluttine
       exarkun
     ];
-    license = lib.licenses.mit;
   };
 }

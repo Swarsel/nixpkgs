@@ -1,9 +1,9 @@
 {
-  buildGoModule,
-  fetchFromGitHub,
-  installShellFiles,
   lib,
   stdenv,
+  fetchFromGitHub,
+  buildGoModule,
+  installShellFiles,
 }:
 buildGoModule (finalAttrs: {
   pname = "devbox";
@@ -16,20 +16,10 @@ buildGoModule (finalAttrs: {
     hash = "sha256-m7FMUjKZZsmnjtnjPyyq0YUIjDQiyb5zBbpGiH4cdyw=";
   };
 
-  ldflags = [
-    "-s"
-    "-w"
-    "-X go.jetify.com/devbox/internal/build.Version=${finalAttrs.version}"
-  ];
-
-  subPackages = [ "cmd/devbox" ];
-
+  nativeBuildInputs = [ installShellFiles ];
+  vendorHash = "sha256-zZUE0J6w1QbdMAKOt1xH3ql4G5FbaUgtD4Xpsw/tmIk=";
   # integration tests want file system access
   doCheck = false;
-
-  vendorHash = "sha256-zZUE0J6w1QbdMAKOt1xH3ql4G5FbaUgtD4Xpsw/tmIk=";
-
-  nativeBuildInputs = [ installShellFiles ];
 
   postInstall = lib.optionalString (stdenv.buildPlatform.canExecute stdenv.hostPlatform) ''
     installShellCompletion --cmd devbox \
@@ -38,10 +28,19 @@ buildGoModule (finalAttrs: {
       --zsh <($out/bin/devbox completion zsh)
   '';
 
+  ldflags = [
+    "-s"
+    "-w"
+    "-X go.jetify.com/devbox/internal/build.Version=${finalAttrs.version}"
+  ];
+
+  subPackages = [ "cmd/devbox" ];
+
   meta = {
     description = "Instant, easy, predictable shells and containers";
     homepage = "https://www.jetify.com/devbox";
     license = lib.licenses.asl20;
+
     maintainers = with lib.maintainers; [
       lagoja
       madeddie

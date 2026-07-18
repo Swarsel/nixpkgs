@@ -1,18 +1,17 @@
 {
-  buildPythonPackage,
-  fetchFromGitHub,
   lib,
+  fetchFromGitHub,
+  buildPythonPackage,
   cmake,
-  setuptools,
-  typing-extensions,
   pybind11,
   pytestCheckHook,
+  setuptools,
+  typing-extensions,
 }:
 
 buildPythonPackage rec {
   pname = "optree";
   version = "0.18.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "metaopt";
@@ -21,20 +20,20 @@ buildPythonPackage rec {
     hash = "sha256-i/vn9Lo5UiY3+1Mh6FMSMjEyDcs8dtWSL3ESZ8CyHPw=";
   };
 
-  dontUseCmakeConfigure = true;
-
-  propagatedBuildInputs = [ typing-extensions ];
   nativeBuildInputs = [
     setuptools
     pybind11
     cmake
   ];
 
+  propagatedBuildInputs = [ typing-extensions ];
   nativeCheckInputs = [ pytestCheckHook ];
+
   # prevent import failures from pytest
   preCheck = ''
     rm -r optree
   '';
+
   disabledTests = [
     # Fails because the 'test_treespec' module can't be found
     "test_treespec_pickle_missing_registration"
@@ -43,6 +42,9 @@ buildPythonPackage rec {
     "test_import_no_warnings"
     "test_treespec_construct"
   ];
+
+  dontUseCmakeConfigure = true;
+  pyproject = true;
   pythonImportsCheck = [ "optree" ];
 
   meta = {

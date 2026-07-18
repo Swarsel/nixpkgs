@@ -1,21 +1,21 @@
 args@{
-  klipper-firmware,
-  stdenv,
   lib,
-  pkg-config,
-  pkgsCross,
+  stdenv,
+  avrdude,
   bintools-unwrapped,
-  libffi,
-  libusb1,
-  wxwidgets_3_2,
-  python3,
   gcc-arm-embedded,
   klipper,
-  avrdude,
-  stm32flash,
+  klipper-firmware,
   klipper-flash,
-  mcu ? "mcu",
+  libffi,
+  libusb1,
+  pkg-config,
+  pkgsCross,
+  python3,
+  stm32flash,
+  wxwidgets_3_2,
   firmwareConfig ? ./simulator.cfg,
+  mcu ? "mcu",
 }:
 # are used by flash scripts
 # find those with `rg '\[\"lib'` inside of klipper repo
@@ -36,6 +36,10 @@ stdenv.mkDerivation {
   version = klipper.version;
   src = klipper.src;
 
+  postPatch = ''
+    patchShebangs .
+  '';
+
   nativeBuildInputs = [
     python3
     pkgsCross.avr.stdenv.cc
@@ -49,28 +53,15 @@ stdenv.mkDerivation {
   ]
   ++ lib.optional needsBossac wxwidgets_3_2;
 
-  configurePhase = ''
-    cp ${firmwareConfig} ./.config
-    chmod +w ./.config
-    echo qy | { make menuconfig >/dev/null || true; }
-    if ! diff ${firmwareConfig} ./.config; then
-      echo " !!! Klipper KConfig has changed. Please run klipper-genconf to update your configuration."
-    fi
-  '';
-
-  postPatch = ''
-    patchShebangs .
-  '';
+  makeFlags = [
+    "V=1"
+    "WXVERSION=3.2"
+  ];
 
   postBuild = ''
     # build flash binaries
     ${with builtins; concatStringsSep "\n" (map (path: "make ${path} $out/bin/ || true") flashBinaries)}
   '';
-
-  makeFlags = [
-    "V=1"
-    "WXVERSION=3.2"
-  ];
 
   installPhase = ''
     mkdir -p $out
@@ -97,17 +88,25 @@ stdenv.mkDerivation {
 
   '';
 
+  configurePhase = ''
+    cp ${firmwareConfig} ./.config
+    chmod +w ./.config
+    echo qy | { make menuconfig >/dev/null || true; }
+    if ! diff ${firmwareConfig} ./.config; then
+      echo " !!! Klipper KConfig has changed. Please run klipper-genconf to update your configuration."
+    fi
+  '';
+
   dontFixup = true;
 
   passthru = {
     makeFlasher =
       {
-        flashDevice ? null,
-        canbusNetwork ? null,
         canbusDevice ? null,
+        canbusNetwork ? null,
+        flashDevice ? null,
       }:
       klipper-flash.override {
-        klipper-firmware = klipper-firmware.override args;
         inherit
           klipper
           firmwareConfig
@@ -116,16 +115,20 @@ stdenv.mkDerivation {
           canbusNetwork
           canbusDevice
           ;
+
+        klipper-firmware = klipper-firmware.override args;
       };
   };
 
   meta = {
     inherit (klipper.meta) homepage license;
     description = "Firmware part of Klipper";
+
     maintainers = with lib.maintainers; [
       vtuan10
       cab404
     ];
+
     platforms = lib.platforms.linux;
   };
 }

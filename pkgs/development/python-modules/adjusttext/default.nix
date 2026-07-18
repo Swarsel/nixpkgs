@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   matplotlib,
   numpy,
   packaging,
@@ -12,7 +12,6 @@
 buildPythonPackage rec {
   pname = "adjusttext";
   version = "1.4.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "Phlya";
@@ -20,6 +19,9 @@ buildPythonPackage rec {
     tag = "v${version}";
     hash = "sha256-MzVyY5GKy41kaGnV234OHmokrUarrV3HCq5GnrdjibM=";
   };
+
+  # Project has no tests
+  doCheck = false;
 
   build-system = [
     packaging
@@ -32,9 +34,7 @@ buildPythonPackage rec {
     scipy
   ];
 
-  # Project has no tests
-  doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "adjustText" ];
 
   meta = {

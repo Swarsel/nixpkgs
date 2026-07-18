@@ -1,27 +1,36 @@
 {
-  stdenv,
   lib,
-  fetchFromSourcehut,
+  stdenv,
   asciidoc,
   cmocka,
   docbook_xsl,
-  libxslt,
-  meson,
-  ninja,
-  pkg-config,
-  tinyxxd,
+  fetchFromSourcehut,
   icu,
-  pango,
   inih,
-  withWindowSystem ? if stdenv.hostPlatform.isLinux then "all" else "x11",
+  libGL,
+  libheif,
+  libjpeg_turbo,
+  libjxl,
+  libnsbmp,
+  libnsgif,
+  libpng,
+  librsvg,
+  libtiff,
+  libwebp,
   libx11,
   libxcb,
   libxkbcommon,
-  libGL,
+  libxslt,
+  meson,
+  ninja,
+  pango,
+  pkg-config,
+  qoi,
+  tinyxxd,
+  versionCheckHook,
   wayland,
   wayland-protocols,
   wayland-scanner,
-  versionCheckHook,
   withBackends ? [
     "farbfeld"
     "libjxl"
@@ -35,29 +44,22 @@
     "libwebp"
     "qoi"
   ],
-  libtiff,
-  libjpeg_turbo,
-  libjxl,
-  libpng,
-  librsvg,
-  libnsgif,
-  libheif,
-  libnsbmp,
-  libwebp,
-  qoi,
+  withWindowSystem ? if stdenv.hostPlatform.isLinux then "all" else "x11",
 }:
 
 let
   windowSystems = {
     all = windowSystems.x11 ++ windowSystems.wayland;
-    x11 = [
-      libxcb
-      libx11
-    ];
+
     wayland = [
       wayland
       wayland-scanner
       wayland-protocols
+    ];
+
+    x11 = [
+      libxcb
+      libx11
     ];
   };
 
@@ -73,6 +75,7 @@ let
       libwebp
       qoi
       ;
+
     farbfeld = null; # builtin
     libjpeg = libjpeg_turbo;
   };
@@ -90,10 +93,6 @@ assert builtins.all (
 stdenv.mkDerivation (finalAttrs: {
   pname = "imv";
   version = "5.0.1";
-  outputs = [
-    "out"
-    "man"
-  ];
 
   src = fetchFromSourcehut {
     owner = "~exec64";
@@ -102,12 +101,10 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-2JTs/hj6t9wEZKoUpcLDFulbdU/grDlQkuEAE7uayDs=";
   };
 
-  mesonFlags = [
-    (lib.mesonOption "windows" withWindowSystem)
-    (lib.mesonEnable "test" finalAttrs.finalPackage.doCheck)
-    (lib.mesonEnable "man" true)
-  ]
-  ++ backendFlags;
+  outputs = [
+    "out"
+    "man"
+  ];
 
   strictDeps = true;
 
@@ -130,10 +127,19 @@ stdenv.mkDerivation (finalAttrs: {
   ++ windowSystems."${withWindowSystem}"
   ++ map (b: backends."${b}") withBackends;
 
+  mesonFlags = [
+    (lib.mesonOption "windows" withWindowSystem)
+    (lib.mesonEnable "test" finalAttrs.finalPackage.doCheck)
+    (lib.mesonEnable "man" true)
+  ]
+  ++ backendFlags;
+
   doCheck = true;
+
   nativeCheckInputs = [
     tinyxxd
   ];
+
   checkInputs = [
     cmocka
   ];
@@ -146,10 +152,12 @@ stdenv.mkDerivation (finalAttrs: {
     description = "Command line image viewer for tiling window managers";
     homepage = "https://sr.ht/~exec64/imv/";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       rnhmjoj
       markus1189
     ];
+
     platforms = lib.platforms.all;
     badPlatforms = lib.platforms.darwin;
     mainProgram = "imv";

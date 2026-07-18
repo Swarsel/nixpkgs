@@ -2,8 +2,8 @@
 {
   config,
   lib,
-  options,
   pkgs,
+  options,
   ...
 }:
 let
@@ -29,36 +29,140 @@ in
 
   options = {
 
+    networking.extraHosts = lib.mkOption {
+      default = "";
+
+      description = ''
+        Additional verbatim entries to be appended to {file}`/etc/hosts`.
+        For adding hosts from derivation results, use {option}`networking.hostFiles` instead.
+      '';
+
+      example = "192.168.0.1 lanlocalhost";
+      type = lib.types.lines;
+    };
+
+    networking.hostFiles = lib.mkOption {
+      defaultText = lib.literalMD "Hosts from {option}`networking.hosts` and {option}`networking.extraHosts`";
+
+      description = ''
+        Files that should be concatenated together to form {file}`/etc/hosts`.
+      '';
+
+      example = lib.literalExpression ''[ "''${pkgs.my-blocklist-package}/share/my-blocklist/hosts" ]'';
+      type = lib.types.listOf lib.types.path;
+    };
+
     networking.hosts = lib.mkOption {
-      type = lib.types.attrsOf (lib.types.listOf lib.types.str);
+      description = ''
+        Locally defined maps of hostnames to IP addresses.
+      '';
+
       example = lib.literalExpression ''
         {
           "127.0.0.1" = [ "foo.bar.baz" ];
           "192.168.0.2" = [ "fileserver.local" "nameserver.local" ];
         };
       '';
-      description = ''
-        Locally defined maps of hostnames to IP addresses.
-      '';
+
+      type = lib.types.attrsOf (lib.types.listOf lib.types.str);
     };
 
-    networking.hostFiles = lib.mkOption {
-      type = lib.types.listOf lib.types.path;
-      defaultText = lib.literalMD "Hosts from {option}`networking.hosts` and {option}`networking.extraHosts`";
-      example = lib.literalExpression ''[ "''${pkgs.my-blocklist-package}/share/my-blocklist/hosts" ]'';
-      description = ''
-        Files that should be concatenated together to form {file}`/etc/hosts`.
-      '';
-    };
+    networking.proxy = {
 
-    networking.extraHosts = lib.mkOption {
-      type = lib.types.lines;
-      default = "";
-      example = "192.168.0.1 lanlocalhost";
-      description = ''
-        Additional verbatim entries to be appended to {file}`/etc/hosts`.
-        For adding hosts from derivation results, use {option}`networking.hostFiles` instead.
-      '';
+      allProxy = lib.mkOption {
+        default = cfg.proxy.default;
+        defaultText = lib.literalExpression "config.${opt.proxy.default}";
+
+        description = ''
+          This option specifies the all_proxy environment variable.
+        '';
+
+        example = "http://127.0.0.1:3128";
+        type = lib.types.nullOr lib.types.str;
+      };
+
+      default = lib.mkOption {
+        default = null;
+
+        description = ''
+          This option specifies the default value for httpProxy, httpsProxy, ftpProxy and rsyncProxy.
+        '';
+
+        example = "http://127.0.0.1:3128";
+        type = lib.types.nullOr lib.types.str;
+      };
+
+      envVars = lib.mkOption {
+        default = { };
+
+        description = ''
+          Environment variables used for the network proxy.
+        '';
+
+        internal = true;
+        type = lib.types.attrs;
+      };
+
+      ftpProxy = lib.mkOption {
+        default = cfg.proxy.default;
+        defaultText = lib.literalExpression "config.${opt.proxy.default}";
+
+        description = ''
+          This option specifies the ftp_proxy environment variable.
+        '';
+
+        example = "http://127.0.0.1:3128";
+        type = lib.types.nullOr lib.types.str;
+      };
+
+      httpProxy = lib.mkOption {
+        default = cfg.proxy.default;
+        defaultText = lib.literalExpression "config.${opt.proxy.default}";
+
+        description = ''
+          This option specifies the http_proxy environment variable.
+        '';
+
+        example = "http://127.0.0.1:3128";
+        type = lib.types.nullOr lib.types.str;
+      };
+
+      httpsProxy = lib.mkOption {
+        default = cfg.proxy.default;
+        defaultText = lib.literalExpression "config.${opt.proxy.default}";
+
+        description = ''
+          This option specifies the https_proxy environment variable.
+        '';
+
+        example = "http://127.0.0.1:3128";
+        type = lib.types.nullOr lib.types.str;
+      };
+
+      noProxy = lib.mkOption {
+        default = null;
+
+        description = ''
+          This option specifies the no_proxy environment variable.
+          If a default proxy is used and noProxy is null,
+          then noProxy will be set to 127.0.0.1,localhost.
+        '';
+
+        example = "127.0.0.1,localhost,.localdomain";
+        type = lib.types.nullOr lib.types.str;
+      };
+
+      rsyncProxy = lib.mkOption {
+        default = cfg.proxy.default;
+        defaultText = lib.literalExpression "config.${opt.proxy.default}";
+
+        description = ''
+          This option specifies the rsync_proxy environment variable.
+        '';
+
+        example = "http://127.0.0.1:3128";
+        type = lib.types.nullOr lib.types.str;
+      };
     };
 
     networking.timeServers = lib.mkOption {
@@ -68,92 +172,12 @@ in
         "2.nixos.pool.ntp.org"
         "3.nixos.pool.ntp.org"
       ];
-      type = lib.types.listOf lib.types.str;
+
       description = ''
         The set of NTP servers from which to synchronise.
       '';
-    };
 
-    networking.proxy = {
-
-      default = lib.mkOption {
-        type = lib.types.nullOr lib.types.str;
-        default = null;
-        description = ''
-          This option specifies the default value for httpProxy, httpsProxy, ftpProxy and rsyncProxy.
-        '';
-        example = "http://127.0.0.1:3128";
-      };
-
-      httpProxy = lib.mkOption {
-        type = lib.types.nullOr lib.types.str;
-        default = cfg.proxy.default;
-        defaultText = lib.literalExpression "config.${opt.proxy.default}";
-        description = ''
-          This option specifies the http_proxy environment variable.
-        '';
-        example = "http://127.0.0.1:3128";
-      };
-
-      httpsProxy = lib.mkOption {
-        type = lib.types.nullOr lib.types.str;
-        default = cfg.proxy.default;
-        defaultText = lib.literalExpression "config.${opt.proxy.default}";
-        description = ''
-          This option specifies the https_proxy environment variable.
-        '';
-        example = "http://127.0.0.1:3128";
-      };
-
-      ftpProxy = lib.mkOption {
-        type = lib.types.nullOr lib.types.str;
-        default = cfg.proxy.default;
-        defaultText = lib.literalExpression "config.${opt.proxy.default}";
-        description = ''
-          This option specifies the ftp_proxy environment variable.
-        '';
-        example = "http://127.0.0.1:3128";
-      };
-
-      rsyncProxy = lib.mkOption {
-        type = lib.types.nullOr lib.types.str;
-        default = cfg.proxy.default;
-        defaultText = lib.literalExpression "config.${opt.proxy.default}";
-        description = ''
-          This option specifies the rsync_proxy environment variable.
-        '';
-        example = "http://127.0.0.1:3128";
-      };
-
-      allProxy = lib.mkOption {
-        type = lib.types.nullOr lib.types.str;
-        default = cfg.proxy.default;
-        defaultText = lib.literalExpression "config.${opt.proxy.default}";
-        description = ''
-          This option specifies the all_proxy environment variable.
-        '';
-        example = "http://127.0.0.1:3128";
-      };
-
-      noProxy = lib.mkOption {
-        type = lib.types.nullOr lib.types.str;
-        default = null;
-        description = ''
-          This option specifies the no_proxy environment variable.
-          If a default proxy is used and noProxy is null,
-          then noProxy will be set to 127.0.0.1,localhost.
-        '';
-        example = "127.0.0.1,localhost,.localdomain";
-      };
-
-      envVars = lib.mkOption {
-        type = lib.types.attrs;
-        internal = true;
-        default = { };
-        description = ''
-          Environment variables used for the network proxy.
-        '';
-      };
+      type = lib.types.listOf lib.types.str;
     };
   };
 
@@ -162,6 +186,7 @@ in
     assertions = [
       {
         assertion = !localhostMultiple;
+
         message = ''
           `networking.hosts` maps "localhost" to something other than "127.0.0.1"
           or "::1". This will break some applications. Please use
@@ -170,17 +195,29 @@ in
       }
     ];
 
-    # These entries are required for "hostname -f" and to resolve both the
-    # hostname and FQDN correctly:
-    networking.hosts =
-      let
-        hostnames = # Note: The FQDN (canonical hostname) has to come first:
-          lib.optional (cfg.hostName != "" && cfg.domain != null) "${cfg.hostName}.${cfg.domain}"
-          ++ lib.optional (cfg.hostName != "") cfg.hostName; # Then the hostname (without the domain)
-      in
-      {
-        "127.0.0.2" = hostnames;
-      };
+    environment.etc = {
+      # /etc/host.conf: resolver configuration file
+      "host.conf".text = ''
+        multi on
+      '';
+
+      # /etc/hosts: Hostname-to-IP mappings.
+      hosts.source = pkgs.concatText "hosts" cfg.hostFiles;
+      # /etc/netgroup: Network-wide groups.
+      netgroup.text = lib.mkDefault "";
+      # /etc/protocols: IP protocol numbers.
+      protocols.source = pkgs.iana-etc + "/etc/protocols";
+      # /etc/services: TCP/UDP port assignments.
+      services.source = pkgs.iana-etc + "/etc/services";
+
+    }
+    // lib.optionalAttrs (pkgs.stdenv.hostPlatform.libc == "glibc") {
+      # /etc/rpc: RPC program numbers.
+      rpc.source = pkgs.stdenv.cc.libc.out + "/etc/rpc";
+    };
+
+    # Install the proxy environment variables
+    environment.sessionVariables = cfg.proxy.envVars;
 
     networking.hostFiles =
       let
@@ -206,29 +243,17 @@ in
         extraHosts
       ];
 
-    environment.etc = {
-      # /etc/services: TCP/UDP port assignments.
-      services.source = pkgs.iana-etc + "/etc/services";
-
-      # /etc/protocols: IP protocol numbers.
-      protocols.source = pkgs.iana-etc + "/etc/protocols";
-
-      # /etc/hosts: Hostname-to-IP mappings.
-      hosts.source = pkgs.concatText "hosts" cfg.hostFiles;
-
-      # /etc/netgroup: Network-wide groups.
-      netgroup.text = lib.mkDefault "";
-
-      # /etc/host.conf: resolver configuration file
-      "host.conf".text = ''
-        multi on
-      '';
-
-    }
-    // lib.optionalAttrs (pkgs.stdenv.hostPlatform.libc == "glibc") {
-      # /etc/rpc: RPC program numbers.
-      rpc.source = pkgs.stdenv.cc.libc.out + "/etc/rpc";
-    };
+    # These entries are required for "hostname -f" and to resolve both the
+    # hostname and FQDN correctly:
+    networking.hosts =
+      let
+        hostnames = # Note: The FQDN (canonical hostname) has to come first:
+          lib.optional (cfg.hostName != "" && cfg.domain != null) "${cfg.hostName}.${cfg.domain}"
+          ++ lib.optional (cfg.hostName != "") cfg.hostName; # Then the hostname (without the domain)
+      in
+      {
+        "127.0.0.2" = hostnames;
+      };
 
     networking.proxy.envVars =
       lib.optionalAttrs (cfg.proxy.default != null) {
@@ -253,9 +278,6 @@ in
       // lib.optionalAttrs (cfg.proxy.noProxy != null) {
         no_proxy = cfg.proxy.noProxy;
       };
-
-    # Install the proxy environment variables
-    environment.sessionVariables = cfg.proxy.envVars;
 
   };
 

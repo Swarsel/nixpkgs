@@ -1,12 +1,12 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  fetchpatch,
-  python,
-  makeWrapper,
+  R,
   # dependencies
   biopython,
+  buildPythonPackage,
+  fetchpatch,
+  makeWrapper,
   matplotlib,
   numpy,
   pandas,
@@ -14,19 +14,17 @@
   pyfaidx,
   pyparsing,
   pysam,
-  reportlab,
-  rPackages,
-  scikit-learn,
-  scipy,
-  R,
   # tests
   pytestCheckHook,
-
+  python,
+  rPackages,
+  reportlab,
+  scikit-learn,
+  scipy,
 }:
 buildPythonPackage (finalAttrs: {
   pname = "cnvkit";
   version = "0.9.13";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "etal";
@@ -38,24 +36,9 @@ buildPythonPackage (finalAttrs: {
   patches = [
     # test: update a call to --smooth-bootstrap[=int, now]
     (fetchpatch {
-      url = "https://github.com/etal/cnvkit/commit/c5c7c06b7fb873ed7ae44593c11a91d45f433e54.patch";
       hash = "sha256-H9Nr4JL7bc9CQ/BmXkOAwjbr/ykvbnjyyWrVSrVH9kg=";
+      url = "https://github.com/etal/cnvkit/commit/c5c7c06b7fb873ed7ae44593c11a91d45f433e54.patch";
     })
-  ];
-
-  pythonRelaxDeps = [
-    # https://github.com/etal/cnvkit/issues/815
-    "pomegranate"
-    # https://github.com/etal/cnvkit/pull/1048
-    "pyparsing"
-  ];
-
-  nativeBuildInputs = [
-    makeWrapper
-  ];
-
-  buildInputs = [
-    R
   ];
 
   postPatch =
@@ -78,19 +61,17 @@ buildPythonPackage (finalAttrs: {
 
     '';
 
-  dependencies = [
-    biopython
-    matplotlib
-    numpy
-    pandas
-    pomegranate
-    pyfaidx
-    pyparsing
-    pysam
-    reportlab
-    rPackages.DNAcopy
-    scikit-learn
-    scipy
+  nativeBuildInputs = [
+    makeWrapper
+  ];
+
+  buildInputs = [
+    R
+  ];
+
+  nativeCheckInputs = [
+    pytestCheckHook
+    R
   ];
 
   # Make sure R can find the DNAcopy package
@@ -99,6 +80,8 @@ buildPythonPackage (finalAttrs: {
       --set R_LIBS_SITE "${rPackages.DNAcopy}/library" \
        --set MPLCONFIGDIR "/tmp/matplotlib-config"
   '';
+
+  doInstallCheck = true;
 
   installCheckPhase = ''
     runHook preInstallCheck
@@ -121,18 +104,34 @@ buildPythonPackage (finalAttrs: {
     runHook postInstallCheck
   '';
 
-  doInstallCheck = true;
+  dependencies = [
+    biopython
+    matplotlib
+    numpy
+    pandas
+    pomegranate
+    pyfaidx
+    pyparsing
+    pysam
+    reportlab
+    rPackages.DNAcopy
+    scikit-learn
+    scipy
+  ];
 
+  pyproject = true;
   pythonImportsCheck = [ "cnvlib" ];
 
-  nativeCheckInputs = [
-    pytestCheckHook
-    R
+  pythonRelaxDeps = [
+    # https://github.com/etal/cnvkit/issues/815
+    "pomegranate"
+    # https://github.com/etal/cnvkit/pull/1048
+    "pyparsing"
   ];
 
   meta = {
-    homepage = "https://cnvkit.readthedocs.io";
     description = "Python library and command-line software toolkit to infer and visualize copy number from high-throughput DNA sequencing data";
+    homepage = "https://cnvkit.readthedocs.io";
     changelog = "https://github.com/etal/cnvkit/releases/tag/${finalAttrs.src.tag}";
     license = lib.licenses.asl20;
     maintainers = [ lib.maintainers.jbedo ];

@@ -2,11 +2,11 @@
   lib,
   stdenv,
   fetchurl,
-  fetchpatch,
-  pkg-config,
   autoreconfHook,
-  libxaw,
+  fetchpatch,
   freetype,
+  libxaw,
+  pkg-config,
 }:
 
 stdenv.mkDerivation rec {
@@ -18,21 +18,26 @@ stdenv.mkDerivation rec {
     sha256 = "0sq6g3xaxw388akws6qrllp3kp2sxgk2dv4j79k6mm52rnihrnv8";
   };
 
+  outputs = [
+    "out"
+    "dev"
+  ];
+
   patches = [
     # https://salsa.debian.org/debian/libotf/-/tree/master/debian/patches
     # Fix cross-compilation
     (fetchpatch {
-      url = "https://salsa.debian.org/debian/libotf/-/raw/1be04cedf887720eb8f5efb3594dc2cefd96b1f1/debian/patches/0002-use-pkg-config-not-freetype-config.patch";
       sha256 = "sha256-VV9iGoNWIEie6UiLLTJBD+zxpvj0acgqkcBeAN1V6Kc=";
+      url = "https://salsa.debian.org/debian/libotf/-/raw/1be04cedf887720eb8f5efb3594dc2cefd96b1f1/debian/patches/0002-use-pkg-config-not-freetype-config.patch";
     })
     # these 2 are required by the above patch
     (fetchpatch {
-      url = "https://salsa.debian.org/debian/libotf/-/raw/1be04cedf887720eb8f5efb3594dc2cefd96b1f1/debian/patches/0001-do-not-add-flags-for-required-packages-to-pc-file.patch";
       sha256 = "sha256-3kzqNPAHNVJQ1F4fyifq3AqLdChWli/k7wOq+ha+iDs=";
+      url = "https://salsa.debian.org/debian/libotf/-/raw/1be04cedf887720eb8f5efb3594dc2cefd96b1f1/debian/patches/0001-do-not-add-flags-for-required-packages-to-pc-file.patch";
     })
     (fetchpatch {
-      url = "https://salsa.debian.org/debian/libotf/-/raw/1be04cedf887720eb8f5efb3594dc2cefd96b1f1/debian/patches/0001-libotf-config-modify-to-support-multi-arch.patch";
       sha256 = "sha256-SUlI87h+MtYWWtrAegzAnSds8JhxZwTJltDcj/se/Qc=";
+      url = "https://salsa.debian.org/debian/libotf/-/raw/1be04cedf887720eb8f5efb3594dc2cefd96b1f1/debian/patches/0001-libotf-config-modify-to-support-multi-arch.patch";
     })
   ];
 
@@ -48,11 +53,6 @@ stdenv.mkDerivation rec {
     freetype
   ];
 
-  outputs = [
-    "out"
-    "dev"
-  ];
-
   postInstall = ''
     mkdir -p $dev/bin
     mv $out/bin/libotf-config $dev/bin/
@@ -61,10 +61,10 @@ stdenv.mkDerivation rec {
   '';
 
   meta = {
-    homepage = "https://www.nongnu.org/m17n/";
     description = "Multilingual text processing library (libotf)";
+    homepage = "https://www.nongnu.org/m17n/";
     license = lib.licenses.lgpl21Plus;
-    platforms = lib.platforms.linux;
     maintainers = with lib.maintainers; [ bendlas ];
+    platforms = lib.platforms.linux;
   };
 }

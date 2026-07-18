@@ -7,7 +7,6 @@
 stdenv.mkDerivation {
   pname = "urxvt-resize-font";
   version = "2019-10-05";
-  dontPatchShebangs = true;
 
   src = fetchFromGitHub {
     owner = "simmel";
@@ -20,6 +19,8 @@ stdenv.mkDerivation {
     mkdir -p $out/lib/urxvt/perl
     cp resize-font $out/lib/urxvt/perl
   '';
+
+  dontPatchShebangs = true;
 
   meta = {
     description = "URxvt Perl extension for resizing the font";

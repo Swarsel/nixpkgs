@@ -2,8 +2,8 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  opam-installer,
   ocamlPackages,
+  opam-installer,
 }:
 stdenv.mkDerivation (finalAttrs: {
   pname = "opam2json";
@@ -16,25 +16,26 @@ stdenv.mkDerivation (finalAttrs: {
     sha256 = "sha256-rBGN9TERADPXiehNe1/9emO6QqYPrTwSoMdB+BVEWpM=";
   };
 
-  buildInputs = with ocamlPackages; [
-    yojson
-    opam-file-format
-    cmdliner
-  ];
   nativeBuildInputs = with ocamlPackages; [
     ocaml
     findlib
     opam-installer
   ];
 
+  buildInputs = with ocamlPackages; [
+    yojson
+    opam-file-format
+    cmdliner
+  ];
+
   preInstall = ''export PREFIX="$out"'';
 
   meta = {
-    platforms = lib.platforms.all;
     description = "Convert opam file syntax to JSON";
-    mainProgram = "opam2json";
-    maintainers = [ lib.maintainers.balsoft ];
-    license = lib.licenses.gpl3;
     homepage = "https://github.com/tweag/opam2json";
+    license = lib.licenses.gpl3;
+    maintainers = [ lib.maintainers.balsoft ];
+    platforms = lib.platforms.all;
+    mainProgram = "opam2json";
   };
 })

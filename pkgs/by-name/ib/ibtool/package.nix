@@ -1,13 +1,12 @@
 {
   lib,
   fetchFromGitHub,
-  python3Packages,
   icu,
+  python3Packages,
 }:
 python3Packages.buildPythonApplication (finalAttrs: {
   pname = "ibtool";
   version = "1.2.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "viraptor";
@@ -24,6 +23,8 @@ python3Packages.buildPythonApplication (finalAttrs: {
     lxml
   ];
 
+  pyproject = true;
+
   runtimeDependencies = [
     icu
   ];
@@ -32,7 +33,7 @@ python3Packages.buildPythonApplication (finalAttrs: {
     description = "Apple's ibtool reimplementation";
     homepage = "https://github.com/viraptor/ibtool";
     license = [ lib.licenses.mit ];
-    mainProgram = "ibtool";
     maintainers = [ lib.maintainers.viraptor ];
+    mainProgram = "ibtool";
   };
 })

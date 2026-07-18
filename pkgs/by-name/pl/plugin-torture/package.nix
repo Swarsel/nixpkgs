@@ -24,6 +24,7 @@ stdenv.mkDerivation {
   };
 
   nativeBuildInputs = [ pkg-config ];
+
   buildInputs = [
     boost
     ladspa-header
@@ -41,11 +42,11 @@ stdenv.mkDerivation {
   '';
 
   meta = {
-    broken = (stdenv.hostPlatform.isLinux && stdenv.hostPlatform.isAarch64);
-    homepage = "https://github.com/cth103/plugin-torture";
     description = "Tool to test LADSPA and LV2 plugins";
+    homepage = "https://github.com/cth103/plugin-torture";
     license = lib.licenses.gpl2;
     maintainers = [ lib.maintainers.magnetophon ];
     platforms = lib.platforms.linux;
+    broken = (stdenv.hostPlatform.isLinux && stdenv.hostPlatform.isAarch64);
   };
 }

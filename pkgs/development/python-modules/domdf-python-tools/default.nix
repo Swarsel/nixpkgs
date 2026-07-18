@@ -1,7 +1,7 @@
 {
+  lib,
   buildPythonPackage,
   fetchPypi,
-  lib,
   hatch-requirements-txt,
   natsort,
   typing-extensions,
@@ -9,12 +9,11 @@
 buildPythonPackage rec {
   pname = "domdf-python-tools";
   version = "3.10.0";
-  pyproject = true;
 
   src = fetchPypi {
     inherit version;
-    pname = "domdf_python_tools";
     hash = "sha256-KuMI0vTx6RRfX0ulf4QPv9HCmD7ibkgkNHeJZJ064pg=";
+    pname = "domdf_python_tools";
   };
 
   build-system = [ hatch-requirements-txt ];
@@ -23,6 +22,8 @@ buildPythonPackage rec {
     natsort
     typing-extensions
   ];
+
+  pyproject = true;
 
   meta = {
     description = "Helpful functions for Python";

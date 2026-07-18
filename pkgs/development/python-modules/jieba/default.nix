@@ -1,15 +1,14 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  python,
+  buildPythonPackage,
   isPy3k,
+  python,
 }:
 
 buildPythonPackage rec {
   pname = "jieba";
   version = "0.42.1";
-  format = "setuptools";
 
   # no tests in PyPI tarball
   src = fetchFromGitHub {
@@ -28,6 +27,8 @@ buildPythonPackage rec {
     ${python.interpreter} test/test.py
     ${python.interpreter} test/test_tokenize.py
   '';
+
+  format = "setuptools";
 
   meta = {
     description = "Chinese Words Segementation Utilities";

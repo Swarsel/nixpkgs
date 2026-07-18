@@ -14,16 +14,14 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-qQLuPr0MtwOO0HfjqoqMgzWmxHL1BW1+CK8z1+eD8Vc=";
   };
 
-  nativeBuildInputs = [ gettext ];
-
-  enableParallelBuilding = true;
-
-  makeFlags = [ "PREFIX=$(out)" ];
-
   outputs = [
     "out"
     "man"
   ];
+
+  nativeBuildInputs = [ gettext ];
+  makeFlags = [ "PREFIX=$(out)" ];
+  enableParallelBuilding = true;
 
   meta = {
     description = "Program for writing Microsoft-compatible boot records";

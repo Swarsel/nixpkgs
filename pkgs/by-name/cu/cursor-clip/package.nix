@@ -1,16 +1,16 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
-  pkg-config,
   cairo,
-  glib,
-  pango,
   gdk-pixbuf,
+  glib,
   graphene,
   gtk4,
   gtk4-layer-shell,
   libadwaita,
+  pango,
+  pkg-config,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -23,8 +23,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
     rev = "ad677e4b65340647b95b02a3cd1d955111506695";
     hash = "sha256-Hxg57v+gFjW7XyoGIGt7Pw4uXokBIWw88/0a00PzckI=";
   };
-
-  cargoHash = "sha256-5p5tt3dnluRkY0/zIXv6p8mi/hd42yV2E8qsVy+lqz0=";
 
   nativeBuildInputs = [
     pkg-config
@@ -40,6 +38,8 @@ rustPlatform.buildRustPackage (finalAttrs: {
     gtk4-layer-shell
     libadwaita
   ];
+
+  cargoHash = "sha256-5p5tt3dnluRkY0/zIXv6p8mi/hd42yV2E8qsVy+lqz0=";
 
   meta = {
     description = "Cursor Clip - GTK4 Clipboard Manager with dynamic positioning. Features a Windows 11–style clipboard history, adapted to native GNOME design";

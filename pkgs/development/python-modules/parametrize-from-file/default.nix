@@ -1,13 +1,13 @@
 {
   lib,
   buildPythonPackage,
+  decopatch,
   fetchPypi,
   flit-core,
-  pytestCheckHook,
-  numpy,
-  decopatch,
   more-itertools,
   nestedtext,
+  numpy,
+  pytestCheckHook,
   pyyaml,
   tidyexc,
   toml,
@@ -16,28 +16,14 @@
 buildPythonPackage rec {
   pname = "parametrize-from-file";
   version = "0.21.0";
-  pyproject = true;
 
   src = fetchPypi {
     inherit version;
-    pname = "parametrize_from_file";
     hash = "sha256-keKsnkMyk9du7TGvJhZXP2EpLqOKkz8vxrRzWXyGg0U=";
+    pname = "parametrize_from_file";
   };
 
-  # patch out coveralls since it doesn't provide us value
-  preBuild = ''
-    sed -i '/coveralls/d' ./pyproject.toml
-
-    substituteInPlace pyproject.toml \
-      --replace "more_itertools~=8.10" "more_itertools"
-  '';
-
   nativeBuildInputs = [ flit-core ];
-
-  nativeCheckInputs = [
-    numpy
-    pytestCheckHook
-  ];
 
   propagatedBuildInputs = [
     decopatch
@@ -48,12 +34,26 @@ buildPythonPackage rec {
     toml
   ];
 
-  pythonImportsCheck = [ "parametrize_from_file" ];
+  # patch out coveralls since it doesn't provide us value
+  preBuild = ''
+    sed -i '/coveralls/d' ./pyproject.toml
+
+    substituteInPlace pyproject.toml \
+      --replace "more_itertools~=8.10" "more_itertools"
+  '';
+
+  nativeCheckInputs = [
+    numpy
+    pytestCheckHook
+  ];
 
   disabledTests = [
     # https://github.com/kalekundert/parametrize_from_file/issues/19
     "test_load_suite_params_err"
   ];
+
+  pyproject = true;
+  pythonImportsCheck = [ "parametrize_from_file" ];
 
   meta = {
     description = "Read unit test parameters from config files";

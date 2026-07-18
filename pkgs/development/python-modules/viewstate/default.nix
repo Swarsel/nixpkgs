@@ -1,15 +1,14 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
+  buildPythonPackage,
   pytestCheckHook,
+  setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "viewstate";
   version = "0.7.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "yuvadm";
@@ -18,11 +17,12 @@ buildPythonPackage rec {
     sha256 = "sha256-fvqz03rKkA2WVVXU74eo0otnuRseE83cv6pw3rMso34=";
   };
 
-  build-system = [ setuptools ];
-
   nativeCheckInputs = [
     pytestCheckHook
   ];
+
+  build-system = [ setuptools ];
+  pyproject = true;
 
   meta = {
     description = ".NET viewstate decoder";

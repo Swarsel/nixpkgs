@@ -7,7 +7,6 @@
 buildPythonPackage rec {
   pname = "phpserialize";
   version = "1.3";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
@@ -16,6 +15,7 @@ buildPythonPackage rec {
 
   # project does not have tests at the moment
   doCheck = false;
+  format = "setuptools";
 
   meta = {
     description = "Port of the serialize and unserialize functions of PHP to Python";

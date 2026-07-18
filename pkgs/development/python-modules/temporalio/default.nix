@@ -1,65 +1,35 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  rustPlatform,
   buildPackages,
-
-  # build-system
-  maturin,
-
-  # dependencies
-  nexusrpc,
-  protobuf,
-  types-protobuf,
-  typing-extensions,
-
+  buildPythonPackage,
   # nativeBuildInputs
   cargo,
-  rustc,
-
+  # build-system
+  maturin,
+  # dependencies
+  nexusrpc,
+  nix-update-script,
   # passthru
   nixosTests,
-  nix-update-script,
+  protobuf,
+  rustPlatform,
+  rustc,
+  types-protobuf,
+  typing-extensions,
 }:
 
 buildPythonPackage rec {
   pname = "temporalio";
   version = "1.30.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "temporalio";
     repo = "sdk-python";
     tag = version;
-    fetchSubmodules = true;
     hash = "sha256-8bCkm2b66CUSfIri0PhDLCijFSQR82wzAQKjdlk8VBg=";
+    fetchSubmodules = true;
   };
-
-  cargoDeps = rustPlatform.fetchCargoVendor {
-    inherit
-      pname
-      version
-      src
-      cargoRoot
-      ;
-    hash = "sha256-CnQ3xwja9ZnQQy7OEwtX/WtYsPtyREBkXpjx3JAeBKo=";
-  };
-
-  cargoRoot = "temporalio/bridge";
-
-  build-system = [
-    maturin
-  ];
-
-  env.PROTOC = "${lib.getExe buildPackages.protobuf}";
-
-  dependencies = [
-    nexusrpc
-    protobuf
-    types-protobuf
-    typing-extensions
-  ];
 
   nativeBuildInputs = [
     cargo
@@ -68,15 +38,43 @@ buildPythonPackage rec {
     rustc
   ];
 
-  pythonRelaxDeps = [
-    "protobuf"
+  env.PROTOC = "${lib.getExe buildPackages.protobuf}";
+
+  build-system = [
+    maturin
   ];
+
+  cargoDeps = rustPlatform.fetchCargoVendor {
+    inherit
+      pname
+      version
+      src
+      cargoRoot
+      ;
+
+    hash = "sha256-CnQ3xwja9ZnQQy7OEwtX/WtYsPtyREBkXpjx3JAeBKo=";
+  };
+
+  cargoRoot = "temporalio/bridge";
+
+  dependencies = [
+    nexusrpc
+    protobuf
+    types-protobuf
+    typing-extensions
+  ];
+
+  pyproject = true;
 
   pythonImportsCheck = [
     "temporalio"
     "temporalio.bridge.temporal_sdk_bridge"
     "temporalio.client"
     "temporalio.worker"
+  ];
+
+  pythonRelaxDeps = [
+    "protobuf"
   ];
 
   passthru = {
@@ -89,6 +87,7 @@ buildPythonPackage rec {
     homepage = "https://temporal.io/";
     changelog = "https://github.com/temporalio/sdk-python/releases/tag/${version}";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       jpds
       levigross

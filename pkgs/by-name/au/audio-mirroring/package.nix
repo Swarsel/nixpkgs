@@ -1,8 +1,9 @@
 {
   lib,
+  stdenv,
+  fetchFromGitHub,
   cargo,
   desktop-file-utils,
-  fetchFromGitHub,
   glib,
   gtk4,
   libadwaita,
@@ -12,7 +13,6 @@
   pkg-config,
   rustPlatform,
   rustc,
-  stdenv,
   wrapGAppsHook4,
 }:
 
@@ -25,11 +25,6 @@ stdenv.mkDerivation rec {
     repo = "audio-mirroring";
     tag = "v${version}";
     hash = "sha256-Idu15ZfY8JYVZhub0LRXYtWdiVCMVRyC3MVTX4JcbzY=";
-  };
-
-  cargoDeps = rustPlatform.fetchCargoVendor {
-    inherit pname version src;
-    hash = "sha256-kiDGCl3De5dhDwwCf1F38gnGtfNpAVot0G0+Gxmyyp0=";
   };
 
   nativeBuildInputs = [
@@ -50,6 +45,11 @@ stdenv.mkDerivation rec {
     libadwaita
     pipewire
   ];
+
+  cargoDeps = rustPlatform.fetchCargoVendor {
+    inherit pname version src;
+    hash = "sha256-kiDGCl3De5dhDwwCf1F38gnGtfNpAVot0G0+Gxmyyp0=";
+  };
 
   meta = with lib; {
     description = "Audio Mirroring for Linux";

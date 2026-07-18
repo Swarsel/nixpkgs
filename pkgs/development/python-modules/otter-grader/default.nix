@@ -1,45 +1,44 @@
 {
   lib,
   stdenv,
-  buildPythonPackage,
   fetchFromGitHub,
-  poetry-core,
+  R,
+  buildPythonPackage,
   click,
   dill,
   fica,
+  google-api-python-client,
+  google-auth-oauthlib,
+  gspread,
+  ipykernel,
   ipylab,
   ipython,
   ipywidgets,
   jinja2,
+  jupyter-client,
   jupytext,
+  matplotlib,
   nbconvert,
   nbformat,
   pandas,
+  poetry-core,
+  pypdf,
+  pytest-html,
+  pytestCheckHook,
   python-on-whales,
   pyyaml,
-  requests,
-  wrapt,
-  ipykernel,
-  jupyter-client,
-  pypdf,
-  google-api-python-client,
-  google-auth-oauthlib,
-  gspread,
-  six,
-  rpy2,
-  pytestCheckHook,
-  writableTmpDirAsHomeHook,
-  pytest-html,
-  matplotlib,
-  tqdm,
-  R,
   rPackages,
+  requests,
+  rpy2,
+  six,
+  tqdm,
+  wrapt,
+  writableTmpDirAsHomeHook,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "otter-grader";
   version = "6.1.6";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "ucbds-infra";
@@ -47,6 +46,21 @@ buildPythonPackage (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-bqBwDbxnvRm7W9r87YK9vwi3sSyoyqbdnqVs5HxOzsg=";
   };
+
+  nativeCheckInputs = [
+    pytestCheckHook
+    writableTmpDirAsHomeHook
+    pytest-html
+    matplotlib
+    tqdm
+    R
+  ]
+  ++ lib.concatAttrValues finalAttrs.passthru.optional-dependencies;
+
+  checkInputs = [
+    rPackages.knitr
+    rPackages.ottr
+  ];
 
   build-system = [
     poetry-core
@@ -68,46 +82,6 @@ buildPythonPackage (finalAttrs: {
     pyyaml
     requests
     wrapt
-  ];
-
-  optional-dependencies = {
-    grading = [
-      ipykernel
-      jupyter-client
-      pypdf
-    ];
-    plugins = [
-      google-api-python-client
-      google-auth-oauthlib
-      gspread
-      six
-    ];
-    r = [
-      rpy2
-    ];
-  };
-
-  pythonRelaxDeps = [
-    "fica"
-  ];
-
-  pythonImportsCheck = [
-    "otter"
-  ];
-
-  nativeCheckInputs = [
-    pytestCheckHook
-    writableTmpDirAsHomeHook
-    pytest-html
-    matplotlib
-    tqdm
-    R
-  ]
-  ++ lib.concatAttrValues finalAttrs.passthru.optional-dependencies;
-
-  checkInputs = [
-    rPackages.knitr
-    rPackages.ottr
   ];
 
   disabledTests = [
@@ -141,6 +115,35 @@ buildPythonPackage (finalAttrs: {
     "test_assignment_name"
     "test_token_sanitization"
     "test_pdf_via_html"
+  ];
+
+  optional-dependencies = {
+    grading = [
+      ipykernel
+      jupyter-client
+      pypdf
+    ];
+
+    plugins = [
+      google-api-python-client
+      google-auth-oauthlib
+      gspread
+      six
+    ];
+
+    r = [
+      rpy2
+    ];
+  };
+
+  pyproject = true;
+
+  pythonImportsCheck = [
+    "otter"
+  ];
+
+  pythonRelaxDeps = [
+    "fica"
   ];
 
   meta = {

@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   mock,
   pytestCheckHook,
   requests,
@@ -12,7 +12,6 @@
 buildPythonPackage rec {
   pname = "py-canary";
   version = "0.5.4";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "snjoetw";
@@ -22,7 +21,6 @@ buildPythonPackage rec {
   };
 
   nativeBuildInputs = [ setuptools ];
-
   propagatedBuildInputs = [ requests ];
 
   nativeCheckInputs = [
@@ -31,12 +29,13 @@ buildPythonPackage rec {
     requests-mock
   ];
 
-  pythonImportsCheck = [ "canary" ];
-
   disabledTests = [
     # Test requires network access
     "test_location_with_motion_entry"
   ];
+
+  pyproject = true;
+  pythonImportsCheck = [ "canary" ];
 
   meta = {
     description = "Python package for Canary Security Camera";

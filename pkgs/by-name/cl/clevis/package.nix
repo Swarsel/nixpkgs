@@ -1,10 +1,11 @@
 {
   lib,
+  stdenv,
+  fetchFromGitHub,
   asciidoc-full,
   coreutils,
   cryptsetup,
   curl,
-  fetchFromGitHub,
   gawk,
   gnugrep,
   gnused,
@@ -17,7 +18,6 @@
   ninja,
   nixosTests,
   pkg-config,
-  stdenv,
   systemd,
   tpm2-tools,
 }:
@@ -33,40 +33,16 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-1glqXKOP0GdzbQLMzUEgacRCafneFH9+MTHRYNgjG3Q=";
   };
 
-  patches = [
-    # Replaces the clevis-decrypt 300s timeout to a 10s timeout
-    # https://github.com/latchset/clevis/issues/289
-    ./0000-tang-timeout.patch
-  ];
-
-  nativeBuildInputs = [
-    asciidoc-full
-    makeWrapper
-    meson
-    ninja
-    pkg-config
-  ];
-
-  buildInputs = [
-    cryptsetup
-    curl
-    jansson
-    jose
-    libpwquality
-    luksmeta
-    systemd
-    tpm2-tools
-  ];
-
   outputs = [
     "out"
     "man"
   ];
 
-  # TODO: investigate how to prepare the dependencies so that they can be found
-  # while setting strictDeps as true. This will require studying the dark
-  # corners of cross-compilation in Nixpkgs...
-  strictDeps = false;
+  patches = [
+    # Replaces the clevis-decrypt 300s timeout to a 10s timeout
+    # https://github.com/latchset/clevis/issues/289
+    ./0000-tang-timeout.patch
+  ];
 
   # Since 2018-07-11, upstream relies on a hardcoded /bin/cat. See:
   # https://github.com/latchset/clevis/issues/61
@@ -90,6 +66,30 @@ stdenv.mkDerivation (finalAttrs: {
       --replace-fail "unitdir = systemd.get_pkgconfig_variable('systemdsystemunitdir')" \
         "unitdir = join_paths(get_option('prefix'), 'lib', 'systemd', 'system')"
   '';
+
+  # TODO: investigate how to prepare the dependencies so that they can be found
+  # while setting strictDeps as true. This will require studying the dark
+  # corners of cross-compilation in Nixpkgs...
+  strictDeps = false;
+
+  nativeBuildInputs = [
+    asciidoc-full
+    makeWrapper
+    meson
+    ninja
+    pkg-config
+  ];
+
+  buildInputs = [
+    cryptsetup
+    curl
+    jansson
+    jose
+    libpwquality
+    luksmeta
+    systemd
+    tpm2-tools
+  ];
 
   # We wrap the main clevis binary entrypoint but not the sub-binaries.
   postInstall =
@@ -132,23 +132,27 @@ stdenv.mkDerivation (finalAttrs: {
       clevisZfs
       clevisZfsFallback
       ;
-    clevisLuksSystemdStage1 = nixosTests.installer-systemd-stage-1.clevisLuks;
-    clevisLuksFallbackSystemdStage1 = nixosTests.installer-systemd-stage-1.clevisLuksFallback;
-    clevisLuksAskpassSystemdStage1 = nixosTests.installer-systemd-stage-1.clevisLuksAskpass;
+
     clevisLuksAskpassFallbackSystemdStage1 =
       nixosTests.installer-systemd-stage-1.clevisLuksAskpassFallback;
-    clevisZfsSystemdStage1 = nixosTests.installer-systemd-stage-1.clevisZfs;
+
+    clevisLuksAskpassSystemdStage1 = nixosTests.installer-systemd-stage-1.clevisLuksAskpass;
+    clevisLuksFallbackSystemdStage1 = nixosTests.installer-systemd-stage-1.clevisLuksFallback;
+    clevisLuksSystemdStage1 = nixosTests.installer-systemd-stage-1.clevisLuks;
     clevisZfsFallbackSystemdStage1 = nixosTests.installer-systemd-stage-1.clevisZfsFallback;
+    clevisZfsSystemdStage1 = nixosTests.installer-systemd-stage-1.clevisZfs;
   };
 
   meta = {
-    homepage = "https://github.com/latchset/clevis";
     description = "Automated Encryption Framework";
+
     longDescription = ''
       Clevis is a pluggable framework for automated decryption. It can be used
       to provide automated decryption of data or even automated unlocking of
       LUKS volumes.
     '';
+
+    homepage = "https://github.com/latchset/clevis";
     changelog = "https://github.com/latchset/clevis/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.gpl3Plus;
     maintainers = [ ];

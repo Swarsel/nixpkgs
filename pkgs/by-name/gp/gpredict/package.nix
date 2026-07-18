@@ -2,14 +2,14 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  pkg-config,
-  intltool,
   autoreconfHook,
-  gtk3,
   curl,
   gpsd,
-  wrapGAppsHook3,
+  gtk3,
+  intltool,
   nix-update-script,
+  pkg-config,
+  wrapGAppsHook3,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -24,7 +24,6 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   strictDeps = true;
-  __structuredAttrs = true;
 
   nativeBuildInputs = [
     pkg-config
@@ -39,11 +38,12 @@ stdenv.mkDerivation (finalAttrs: {
     gpsd
   ];
 
+  __structuredAttrs = true;
   passthru.updateScript = nix-update-script { };
 
   meta = {
     description = "Real time satellite tracking and orbit prediction";
-    mainProgram = "gpredict";
+
     longDescription = ''
       Gpredict is a real time satellite tracking and orbit prediction program
       written using the GTK widgets. Gpredict is targetted mainly towards ham radio
@@ -51,12 +51,16 @@ stdenv.mkDerivation (finalAttrs: {
       well. Gpredict uses the SGP4/SDP4 algorithms, which are compatible with the
       NORAD Keplerian elements.
     '';
-    license = lib.licenses.gpl2Plus;
-    platforms = lib.platforms.linux;
+
     homepage = "https://oz9aec.dk/gpredict/";
+    license = lib.licenses.gpl2Plus;
+
     maintainers = with lib.maintainers; [
       cmcdragonkai
       pandapip1
     ];
+
+    platforms = lib.platforms.linux;
+    mainProgram = "gpredict";
   };
 })

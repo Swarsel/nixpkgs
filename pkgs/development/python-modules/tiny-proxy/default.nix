@@ -1,15 +1,14 @@
 {
   lib,
+  fetchFromGitHub,
   anyio,
   buildPythonPackage,
-  fetchFromGitHub,
   setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "tiny-proxy";
   version = "0.2.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "romis2012";
@@ -19,12 +18,10 @@ buildPythonPackage rec {
   };
 
   nativeBuildInputs = [ setuptools ];
-
   propagatedBuildInputs = [ anyio ];
-
   # The tests depend on httpx-socks, whose tests depend on tiny-proxy.
   doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "tiny_proxy" ];
 
   meta = {

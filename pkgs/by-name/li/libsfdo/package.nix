@@ -13,15 +13,14 @@ stdenv.mkDerivation (finalAttrs: {
   version = "0.1.4";
 
   src = fetchFromGitLab {
-    domain = "gitlab.freedesktop.org";
     owner = "vyivel";
     repo = "libsfdo";
     tag = "v${finalAttrs.version}";
     hash = "sha256-xT1pKKElwKSd43XTKuBY+9rogquV1IAAYgWV5lEpAHk=";
+    domain = "gitlab.freedesktop.org";
   };
 
   strictDeps = true;
-  doCheck = true;
 
   nativeBuildInputs = [
     meson
@@ -29,6 +28,8 @@ stdenv.mkDerivation (finalAttrs: {
     pkg-config
     validatePkgConfig
   ];
+
+  doCheck = true;
 
   passthru.tests.pkg-config = testers.hasPkgConfigModules {
     package = finalAttrs.finalPackage;
@@ -40,12 +41,13 @@ stdenv.mkDerivation (finalAttrs: {
     homepage = "https://gitlab.freedesktop.org/vyivel/libsfdo";
     license = lib.licenses.bsd2;
     maintainers = [ lib.maintainers.zi3m5f ];
+    platforms = lib.platforms.all;
+
     pkgConfigModules = [
       "libsfdo-basedir"
       "libsfdo-desktop-file"
       "libsfdo-desktop"
       "libsfdo-icon"
     ];
-    platforms = lib.platforms.all;
   };
 })

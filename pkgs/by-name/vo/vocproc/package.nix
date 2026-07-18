@@ -2,11 +2,11 @@
   lib,
   stdenv,
   fetchzip,
-  pkg-config,
-  lv2,
   fftw,
-  lv2-cpp-tools,
   gtkmm2,
+  lv2,
+  lv2-cpp-tools,
+  pkg-config,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -32,8 +32,8 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   meta = {
-    homepage = "https://hyperglitch.com/dev/VocProc";
     description = "LV2 plugin for pitch shifting (with or without formant correction), vocoding, automatic pitch correction and harmonizing of singing voice (harmonizer)";
+    homepage = "https://hyperglitch.com/dev/VocProc";
     license = lib.licenses.gpl2;
     maintainers = [ lib.maintainers.michalrus ];
     platforms = lib.platforms.linux;

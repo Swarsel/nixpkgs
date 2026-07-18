@@ -1,12 +1,10 @@
 {
   lib,
-  rustPlatform,
   makeBinaryWrapper,
+  rustPlatform,
   steel,
 }:
 rustPlatform.buildRustPackage {
-  pname = "steel-language-server";
-
   inherit (steel)
     version
     src
@@ -14,14 +12,11 @@ rustPlatform.buildRustPackage {
     postPatch
     ;
 
+  pname = "steel-language-server";
+
   nativeBuildInputs = [
     makeBinaryWrapper
     rustPlatform.bindgenHook
-  ];
-
-  cargoBuildFlags = [
-    "--package"
-    "steel-language-server"
   ];
 
   doCheck = false;
@@ -29,6 +24,11 @@ rustPlatform.buildRustPackage {
   postFixup = ''
     wrapProgram $out/bin/steel-language-server --set-default STEEL_HOME "${steel}/lib/steel"
   '';
+
+  cargoBuildFlags = [
+    "--package"
+    "steel-language-server"
+  ];
 
   meta = steel.meta // {
     description = "Steel language server";

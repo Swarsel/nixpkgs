@@ -1,25 +1,24 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  hatchling,
-  requests,
-  six,
-  uritemplate,
-  pytestCheckHook,
-  pytest-mock,
   aiohttp,
+  buildPythonPackage,
+  hatchling,
   marshmallow,
   pydantic,
   pytest-asyncio,
+  pytest-mock,
   pytest-twisted,
+  pytestCheckHook,
+  requests,
+  six,
   twisted,
+  uritemplate,
 }:
 
 buildPythonPackage rec {
   pname = "uplink";
   version = "0.10.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "prkumar";
@@ -27,6 +26,14 @@ buildPythonPackage rec {
     tag = "v${version}";
     hash = "sha256-gI7oHLyC6a5s3jhgG5jj+7q495seMSyUV4XVAp1URTA=";
   };
+
+  nativeCheckInputs = [
+    pytestCheckHook
+    pytest-mock
+    pytest-asyncio
+    pytest-twisted
+  ]
+  ++ lib.concatAttrValues optional-dependencies;
 
   build-system = [ hatchling ];
 
@@ -43,14 +50,7 @@ buildPythonPackage rec {
     twisted = [ twisted ];
   };
 
-  nativeCheckInputs = [
-    pytestCheckHook
-    pytest-mock
-    pytest-asyncio
-    pytest-twisted
-  ]
-  ++ lib.concatAttrValues optional-dependencies;
-
+  pyproject = true;
   pythonImportsCheck = [ "uplink" ];
 
   meta = {

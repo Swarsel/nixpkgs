@@ -8,29 +8,31 @@
       nixpkgs$ nix-build -A tests.nixos-functions
 */
 {
-  pkgs,
   lib,
   stdenv,
+  pkgs,
   ...
 }:
 
 let
   dummyVersioning = {
+    label = "test";
     revision = "test";
     versionSuffix = "test";
-    label = "test";
   };
 in
 lib.optionalAttrs (stdenv.hostPlatform.isLinux) (
   lib.recurseIntoAttrs {
     nixos-test =
       (pkgs.nixos {
-        system.nixos = dummyVersioning;
         boot.loader.grub.enable = false;
+
         fileSystems."/" = {
           device = "/dev/null";
           fsType = "none";
         };
+
+        system.nixos = dummyVersioning;
         system.stateVersion = lib.trivial.release;
       }).toplevel;
   }

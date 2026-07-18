@@ -1,11 +1,11 @@
 {
   lib,
   stdenv,
+  fetchFromGitHub,
   buildPythonPackage,
   callPackage,
-  fetchFromGitHub,
-  rustPlatform,
   libiconv,
+  rustPlatform,
 }:
 
 buildPythonPackage (finalAttrs: {
@@ -19,23 +19,21 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-bnGnx+CKcneBWd5tpYWxEPp5f3hvGxM+8QcD2NKX4Tw=";
   };
 
-  cargoDeps = rustPlatform.fetchCargoVendor {
-    inherit (finalAttrs) pname version src;
-    hash = "sha256-RxR1EFssGCp7etTdh56LSEfDQsx8uPrQTVqTsDVvkHo=";
-  };
-
-  pyproject = true;
-
   nativeBuildInputs = with rustPlatform; [
     cargoSetupHook
     maturinBuildHook
   ];
 
   buildInputs = lib.optionals stdenv.hostPlatform.isDarwin [ libiconv ];
-
-  pythonImportsCheck = [ "lzallright" ];
-
   doCheck = false;
+
+  cargoDeps = rustPlatform.fetchCargoVendor {
+    inherit (finalAttrs) pname version src;
+    hash = "sha256-RxR1EFssGCp7etTdh56LSEfDQsx8uPrQTVqTsDVvkHo=";
+  };
+
+  pyproject = true;
+  pythonImportsCheck = [ "lzallright" ];
 
   passthru.tests = {
     pytest = callPackage ./tests.nix { };
@@ -46,6 +44,7 @@ buildPythonPackage (finalAttrs: {
       A Python 3.8+ binding for lzokay library which is an MIT licensed
       a minimal, C++14 implementation of the LZO compression format.
     '';
+
     homepage = "https://github.com/vlaci/lzallright";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ vlaci ];

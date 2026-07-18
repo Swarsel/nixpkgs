@@ -3,13 +3,13 @@
   stdenv,
   fetchFromGitHub,
   autoreconfHook,
-  wrapGAppsHook3,
   gtk3,
   intltool,
   libgcrypt,
   pilot-link,
   pkg-config,
   sqlite,
+  wrapGAppsHook3,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -38,17 +38,17 @@ stdenv.mkDerivation (finalAttrs: {
     sqlite
   ];
 
+  configureFlags = [ "--with-pilot-prefix=${pilot-link}" ];
+
   preConfigure = ''
     NOCONFIGURE=1 ./autogen.sh
   '';
-
-  configureFlags = [ "--with-pilot-prefix=${pilot-link}" ];
 
   meta = {
     description = "Desktop organizer software for the Palm Pilot";
     homepage = "https://www.jpilot.org/";
     license = lib.licenses.gpl2;
-    mainProgram = "jpilot";
     maintainers = with lib.maintainers; [ PapayaJackal ];
+    mainProgram = "jpilot";
   };
 })

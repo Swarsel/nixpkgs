@@ -1,9 +1,9 @@
 {
   lib,
-  buildGoModule,
-  fetchFromGitHub,
-  installShellFiles,
   stdenv,
+  fetchFromGitHub,
+  buildGoModule,
+  installShellFiles,
   versionCheckHook,
 }:
 
@@ -18,20 +18,8 @@ buildGoModule (finalAttrs: {
     hash = "sha256-yPxSRg9PLfHwfv4bCTaxgvRD6UHD4A5qh68c2Dxcpn0=";
   };
 
-  vendorHash = "sha256-PevzovryzpNap8dzruYWdk07M5g9jlA8QPQcrXnO7xk=";
-
-  subPackages = [ "cmd/gcx" ];
-
-  ldflags = [
-    "-w"
-    "-X=main.version=${finalAttrs.version}"
-    "-X=main.commit=${finalAttrs.src.rev}"
-    "-X=main.date=1970-01-01T00:00:00Z"
-  ];
-
-  __structuredAttrs = true;
-
   nativeBuildInputs = [ installShellFiles ];
+  vendorHash = "sha256-PevzovryzpNap8dzruYWdk07M5g9jlA8QPQcrXnO7xk=";
 
   postInstall = lib.optionalString (stdenv.buildPlatform.canExecute stdenv.hostPlatform) ''
     installShellCompletion --cmd gcx \
@@ -40,16 +28,26 @@ buildGoModule (finalAttrs: {
       --zsh <($out/bin/gcx completion zsh)
   '';
 
-  nativeInstallCheckInputs = [ versionCheckHook ];
   doInstallCheck = true;
+  nativeInstallCheckInputs = [ versionCheckHook ];
+  __structuredAttrs = true;
+
+  ldflags = [
+    "-w"
+    "-X=main.version=${finalAttrs.version}"
+    "-X=main.commit=${finalAttrs.src.rev}"
+    "-X=main.date=1970-01-01T00:00:00Z"
+  ];
+
+  subPackages = [ "cmd/gcx" ];
 
   meta = {
     description = "Grafana Cloud CLI";
     homepage = "https://github.com/grafana/gcx";
     changelog = "https://github.com/grafana/gcx/releases/tag/${finalAttrs.src.tag}";
     license = lib.licenses.asl20;
-    mainProgram = "gcx";
-    platforms = lib.platforms.unix;
     maintainers = with lib.maintainers; [ asimpson ];
+    platforms = lib.platforms.unix;
+    mainProgram = "gcx";
   };
 })

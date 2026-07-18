@@ -1,7 +1,7 @@
 {
-  stdenvNoCC,
-  fetchFromGitHub,
   lib,
+  fetchFromGitHub,
+  stdenvNoCC,
 }:
 
 stdenvNoCC.mkDerivation rec {
@@ -25,9 +25,11 @@ stdenvNoCC.mkDerivation rec {
     description = "Cursor theme using the Nord color palette and based on Vimix and cz-Viator";
     homepage = "https://github.com/guillaumeboehm/Nordzy-cursors";
     license = lib.licenses.gpl3;
-    platforms = lib.platforms.all;
+
     maintainers = with lib.maintainers; [
       alexnortung
     ];
+
+    platforms = lib.platforms.all;
   };
 }

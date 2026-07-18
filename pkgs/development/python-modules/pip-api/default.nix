@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   pip,
   pretend,
   pytestCheckHook,
@@ -12,7 +12,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "pip-api";
   version = "0.0.34";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "di";
@@ -21,17 +20,14 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-nmCP4hp+BsD80OBjerOu+QTBBExGHvn/v19od4V3ncI=";
   };
 
-  build-system = [ setuptools ];
-
-  dependencies = [ pip ];
-
   nativeCheckInputs = [
     pretend
     pytestCheckHook
     virtualenv
   ];
 
-  pythonImportsCheck = [ "pip_api" ];
+  build-system = [ setuptools ];
+  dependencies = [ pip ];
 
   disabledTests = [
     "test_hash"
@@ -43,6 +39,9 @@ buildPythonPackage (finalAttrs: {
     # Tests fails on hydra
     "test_parse_requirements_editable"
   ];
+
+  pyproject = true;
+  pythonImportsCheck = [ "pip_api" ];
 
   meta = {
     description = "Importable pip API";

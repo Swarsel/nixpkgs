@@ -1,12 +1,12 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchurl,
   dpkg,
-  makeBinaryWrapper,
-  glib-networking,
-  wrapGAppsHook4,
   glib,
+  glib-networking,
+  makeBinaryWrapper,
+  wrapGAppsHook4,
 }:
 
 let
@@ -17,10 +17,11 @@ stdenv.mkDerivation (finalAttrs: {
   version = "2025.1.5526-1";
 
   src = fetchurl {
+    hash = "sha256-iGYKpbpzGNeEUKgozhSwVd9dWRgQEbozIAWRu7wu2D8=";
+
     urls = [
       "https://d3nt0h4h6pmmc4.cloudfront.net/ubuntu/dists/noble/main/binary-amd64/workspacesclient_${finalAttrs.version}_amd64.ubuntu2404.deb"
     ];
-    hash = "sha256-iGYKpbpzGNeEUKgozhSwVd9dWRgQEbozIAWRu7wu2D8=";
   };
 
   nativeBuildInputs = [
@@ -69,11 +70,13 @@ stdenv.mkDerivation (finalAttrs: {
     homepage = "https://clients.amazonworkspaces.com";
     license = lib.licenses.unfree;
     sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
-    mainProgram = "workspacesclient";
+
     maintainers = with lib.maintainers; [
       mausch
       dylanmtaylor
     ];
+
     platforms = [ "x86_64-linux" ]; # TODO Mac support
+    mainProgram = "workspacesclient";
   };
 })

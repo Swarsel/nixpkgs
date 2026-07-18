@@ -1,21 +1,18 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # build-system
-  setuptools,
-
-  # dependencies
-  greenlet,
-
   # optionals
   aiomysql,
   aiosqlite,
   asyncmy,
   asyncpg,
+  buildPythonPackage,
   cx-oracle,
+  # dependencies
+  greenlet,
   mariadb,
+  # tests
+  mock,
   mypy,
   mysql-connector-python,
   mysqlclient,
@@ -25,19 +22,17 @@
   # TODO: pymssql
   pymysql,
   pyodbc,
-  # TODO: sqlcipher3
-  typing-extensions,
-
-  # tests
-  mock,
   pytest-xdist,
   pytestCheckHook,
+  # build-system
+  setuptools,
+  # TODO: sqlcipher3
+  typing-extensions,
 }:
 
 buildPythonPackage rec {
   pname = "sqlalchemy";
   version = "1.4.54-unstable-2025-08-16";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "sqlalchemy";
@@ -51,38 +46,7 @@ buildPythonPackage rec {
   '';
 
   nativeBuildInputs = [ setuptools ];
-
   propagatedBuildInputs = [ greenlet ];
-
-  optional-dependencies = lib.fix (self: {
-    asyncio = [ greenlet ];
-    mypy = [ mypy ];
-    mssql = [ pyodbc ];
-    mssql_pymysql = [
-      # TODO: pymssql
-    ];
-    mssql_pyodbc = [ pyodbc ];
-    mysql = [ mysqlclient ];
-    mysql_connector = [ mysql-connector-python ];
-    mariadb_connector = [ mariadb ];
-    oracle = [ cx-oracle ];
-    postgresql = [ psycopg2 ];
-    postgresql_pg8000 = [ pg8000 ];
-    postgresql_asyncpg = [ asyncpg ] ++ self.asyncio;
-    postgresql_psycopg2binary = [ psycopg2 ];
-    postgresql_psycopg2cffi = [ psycopg2cffi ];
-    pymysql = [ pymysql ];
-    aiomysql = [ aiomysql ] ++ self.asyncio;
-    asyncmy = [ asyncmy ] ++ self.asyncio;
-    aiosqlite = [
-      aiosqlite
-      typing-extensions
-    ]
-    ++ self.asyncio;
-    sqlcipher = [
-      # TODO: sqlcipher3
-    ];
-  });
 
   nativeCheckInputs = [
     pytest-xdist
@@ -97,16 +61,54 @@ buildPythonPackage rec {
     "test/aaa_profiling"
   ];
 
+  optional-dependencies = lib.fix (self: {
+    aiomysql = [ aiomysql ] ++ self.asyncio;
+
+    aiosqlite = [
+      aiosqlite
+      typing-extensions
+    ]
+    ++ self.asyncio;
+
+    asyncio = [ greenlet ];
+    asyncmy = [ asyncmy ] ++ self.asyncio;
+    mariadb_connector = [ mariadb ];
+    mssql = [ pyodbc ];
+
+    mssql_pymysql = [
+      # TODO: pymssql
+    ];
+
+    mssql_pyodbc = [ pyodbc ];
+    mypy = [ mypy ];
+    mysql = [ mysqlclient ];
+    mysql_connector = [ mysql-connector-python ];
+    oracle = [ cx-oracle ];
+    postgresql = [ psycopg2 ];
+    postgresql_asyncpg = [ asyncpg ] ++ self.asyncio;
+    postgresql_pg8000 = [ pg8000 ];
+    postgresql_psycopg2binary = [ psycopg2 ];
+    postgresql_psycopg2cffi = [ psycopg2cffi ];
+    pymysql = [ pymysql ];
+
+    sqlcipher = [
+      # TODO: sqlcipher3
+    ];
+  });
+
+  pyproject = true;
   pythonImportsCheck = [ "sqlalchemy" ];
 
   meta = {
+    description = "Database Toolkit for Python";
+    homepage = "https://github.com/sqlalchemy/sqlalchemy";
+
     changelog =
       let
         shortVersion = lib.replaceString "." "" (lib.versions.majorMinor version);
       in
       "https://github.com/sqlalchemy/sqlalchemy/blob/${src.rev}/doc/build/changelog/changelog_${shortVersion}.rst";
-    description = "Database Toolkit for Python";
-    homepage = "https://github.com/sqlalchemy/sqlalchemy";
+
     license = lib.licenses.mit;
   };
 }

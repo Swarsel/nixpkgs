@@ -2,16 +2,16 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  dos2unix,
-  makeWrapper,
-  makeDesktopItem,
   copyDesktopItems,
+  curl,
+  dos2unix,
+  libGL,
+  liberation_ttf,
   libx11,
   libxi,
-  libGL,
-  curl,
+  makeDesktopItem,
+  makeWrapper,
   openal,
-  liberation_ttf,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -25,38 +25,10 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-AF4cr3ZXCixwiihS+2ayrzVH5eYShkjlfF0myb2PbHM=";
   };
 
-  nativeBuildInputs = [
-    dos2unix
-    makeWrapper
-    copyDesktopItems
-  ];
-
-  desktopItems = [
-    (makeDesktopItem {
-      name = finalAttrs.pname;
-      desktopName = finalAttrs.pname;
-      genericName = "Sandbox Block Game";
-      exec = "ClassiCube";
-      icon = "CCicon";
-      comment = "Minecraft Classic inspired sandbox game";
-      categories = [ "Game" ];
-    })
-  ];
-
-  prePatch = ''
-    # The ClassiCube sources have DOS-style newlines
-    # which causes problems with diff/patch.
-    dos2unix 'src/Platform_Posix.c' 'src/Core.h'
-  '';
-
   patches = [
     # Fix hardcoded font paths
     ./font-location.patch
   ];
-
-  font_path = "${liberation_ttf}/share/fonts/truetype";
-
-  enableParallelBuilding = true;
 
   postPatch = ''
     # ClassiCube hardcodes locations of fonts.
@@ -70,6 +42,12 @@ stdenv.mkDerivation (finalAttrs: {
       --replace-fail '-lX11 -lXi -lpthread -lGL -ldl -lm' \
                      '-lX11 -lXi -lpthread -lGL -ldl -lm -lcurl -lopenal'
   '';
+
+  nativeBuildInputs = [
+    dos2unix
+    makeWrapper
+    copyDesktopItems
+  ];
 
   buildInputs = [
     libx11
@@ -101,12 +79,33 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  desktopItems = [
+    (makeDesktopItem {
+      categories = [ "Game" ];
+      comment = "Minecraft Classic inspired sandbox game";
+      desktopName = finalAttrs.pname;
+      exec = "ClassiCube";
+      genericName = "Sandbox Block Game";
+      icon = "CCicon";
+      name = finalAttrs.pname;
+    })
+  ];
+
+  enableParallelBuilding = true;
+  font_path = "${liberation_ttf}/share/fonts/truetype";
+
+  prePatch = ''
+    # The ClassiCube sources have DOS-style newlines
+    # which causes problems with diff/patch.
+    dos2unix 'src/Platform_Posix.c' 'src/Core.h'
+  '';
+
   meta = {
-    homepage = "https://www.classicube.net/";
     description = "Lightweight, custom Minecraft Classic/ClassiCube client with optional additions written from scratch in C";
+    homepage = "https://www.classicube.net/";
     license = lib.licenses.bsd3;
-    platforms = lib.platforms.linux;
     maintainers = with lib.maintainers; [ _360ied ];
+    platforms = lib.platforms.linux;
     mainProgram = "ClassiCube";
   };
 })

@@ -1,16 +1,15 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
+  nix-update-script,
   pytestCheckHook,
   rustPlatform,
-  nix-update-script,
 }:
 
 buildPythonPackage rec {
   pname = "unicode-segmentation-rs";
   version = "0.2.4";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "WeblateOrg";
@@ -23,10 +22,6 @@ buildPythonPackage rec {
     ln -s '${./Cargo.lock}' Cargo.lock
   '';
 
-  cargoDeps = rustPlatform.importCargoLock {
-    lockFile = ./Cargo.lock;
-  };
-
   nativeBuildInputs = [
     rustPlatform.cargoSetupHook
     rustPlatform.maturinBuildHook
@@ -36,6 +31,11 @@ buildPythonPackage rec {
     pytestCheckHook
   ];
 
+  cargoDeps = rustPlatform.importCargoLock {
+    lockFile = ./Cargo.lock;
+  };
+
+  pyproject = true;
   pythonImportsCheck = [ "unicode_segmentation_rs" ];
 
   passthru.updateScript = nix-update-script {

@@ -1,19 +1,15 @@
 {
   lib,
-  micro,
   makeWrapper,
+  micro,
   symlinkJoin,
   # configurable options
   extraPackages ? [ ],
 }:
 
 symlinkJoin {
-  name = "micro-wrapped-${micro.version}";
   inherit (micro) pname version outputs;
-
   nativeBuildInputs = [ makeWrapper ];
-
-  paths = [ micro ];
 
   postBuild = ''
     ${lib.concatMapStringsSep "\n" (
@@ -29,5 +25,7 @@ symlinkJoin {
     popd
   '';
 
+  name = "micro-wrapped-${micro.version}";
+  paths = [ micro ];
   meta = micro.meta;
 }

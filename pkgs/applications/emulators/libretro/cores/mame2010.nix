@@ -5,7 +5,6 @@
   mkLibretroCore,
 }:
 mkLibretroCore {
-  core = "mame2010";
   version = "0-unstable-2026-07-03";
 
   src = fetchFromGitHub {
@@ -15,13 +14,15 @@ mkLibretroCore {
     hash = "sha256-CstMUeTxOsL419R2kzSK6hDd1okxsbtwMvqjwzSf3bI=";
   };
 
-  makefile = "Makefile";
   makeFlags = lib.optionals stdenv.hostPlatform.isAarch64 [
     "PTR64=1"
     "ARM_ENABLED=1"
     "X86_SH2DRC=0"
     "FORCE_DRC_C_BACKEND=1"
   ];
+
+  core = "mame2010";
+  makefile = "Makefile";
 
   meta = {
     description = "Port of MAME ~2010 to libretro, compatible with MAME 0.139 sets";

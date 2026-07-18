@@ -1,13 +1,13 @@
 {
   lib,
-  python3Packages,
   fetchFromGitHub,
-  pkgs,
-  installShellFiles,
-  nix-update-script,
-  versionCheckHook,
   dejavu_fonts,
   fetchpatch,
+  installShellFiles,
+  nix-update-script,
+  pkgs,
+  python3Packages,
+  versionCheckHook,
 }:
 python3Packages.buildPythonApplication (finalAttrs: {
   pname = "qr-backup";
@@ -20,35 +20,19 @@ python3Packages.buildPythonApplication (finalAttrs: {
     hash = "sha256-Sre8cHbrRqJTX6+3HiLj6Ky8Bw+hg6UXItwRUtLzHZA=";
   };
 
-  pyproject = false;
-
-  nativeBuildInputs = [
-    installShellFiles
-  ];
-
-  dependencies = with pkgs; [
-    python3Packages.pillow
-    python3Packages.qrcode
-    python3Packages.reedsolo
-    which
-    zbar
-    imagemagickBig
-    gnupg
-  ];
-
   patches = [
     # Backported from the upstream master branch so we can `doCheck` on
     # the latest release version without needing to vendor a patch to
     # disable the fragile regression tests
     (fetchpatch {
+      hash = "sha256-93wxmCeH3qxZkDLZa9giMGUmVHdXSitXzet6WnAbQRw=";
       name = "0001-Rename-from-regression-to-reproducibility-tests.patch";
       url = "https://github.com/za3k/qr-backup/commit/ec8ab373110de62d2e1f6f47c9a34e9e1a73c571.patch";
-      hash = "sha256-93wxmCeH3qxZkDLZa9giMGUmVHdXSitXzet6WnAbQRw=";
     })
     (fetchpatch {
+      hash = "sha256-5Ib+bs+ciqH1z0kvHBD7PrefTTwD6nWk+6pEPqxc9uU=";
       name = "0002-Add-fast-option-to-tests.patch";
       url = "https://github.com/za3k/qr-backup/commit/e7d028eb4fddaa7f8628c88e1604d5e64f546389.patch";
-      hash = "sha256-5Ib+bs+ciqH1z0kvHBD7PrefTTwD6nWk+6pEPqxc9uU=";
     })
   ];
 
@@ -57,6 +41,18 @@ python3Packages.buildPythonApplication (finalAttrs: {
       --replace-fail '"DejaVuSansMono.ttf"' "'${dejavu_fonts}/share/fonts/truetype/DejaVuSansMono.ttf'" \
       --replace-fail '"python3", sys.argv[0]' "'$out/bin/qr-backup'"
   '';
+
+  nativeBuildInputs = [
+    installShellFiles
+  ];
+
+  doCheck = true;
+
+  nativeCheckInputs = with pkgs; [
+    versionCheckHook
+    which
+    zbar
+  ];
 
   installPhase = ''
     runHook preInstall
@@ -68,13 +64,8 @@ python3Packages.buildPythonApplication (finalAttrs: {
     runHook postInstall
   '';
 
-  doCheck = true;
   doInstallCheck = true;
-  nativeCheckInputs = with pkgs; [
-    versionCheckHook
-    which
-    zbar
-  ];
+
   installCheckPhase = ''
     runHook preInstallCheck
 
@@ -86,6 +77,18 @@ python3Packages.buildPythonApplication (finalAttrs: {
     runHook postInstallCheck
   '';
 
+  dependencies = with pkgs; [
+    python3Packages.pillow
+    python3Packages.qrcode
+    python3Packages.reedsolo
+    which
+    zbar
+    imagemagickBig
+    gnupg
+  ];
+
+  pyproject = false;
+
   passthru = {
     updateScript = nix-update-script { };
   };
@@ -95,9 +98,11 @@ python3Packages.buildPythonApplication (finalAttrs: {
     homepage = "https://github.com/za3k/qr-backup";
     changelog = "https://github.com/za3k/qr-backup/blob/v${finalAttrs.version}/docs/CHANGELOG";
     license = lib.licenses.cc0;
+
     maintainers = with lib.maintainers; [
       acuteaangle
     ];
+
     mainProgram = "qr-backup";
   };
 })

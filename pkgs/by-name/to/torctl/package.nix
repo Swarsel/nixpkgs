@@ -27,7 +27,7 @@ stdenv.mkDerivation (finalAttrs: {
     homepage = "https://github.com/BlackArch/torctl";
     license = lib.licenses.gpl3Only;
     maintainers = with lib.maintainers; [ tochiaha ];
-    mainProgram = "torctl";
     platforms = lib.platforms.all;
+    mainProgram = "torctl";
   };
 })

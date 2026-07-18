@@ -1,29 +1,25 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # build-system
-  setuptools,
-  isPyPy,
-
+  buildPythonPackage,
+  cytoolz,
   # dependencies
   eth-hash,
   eth-typing,
-  cytoolz,
-  toolz,
-  pydantic,
-
   # tests
   hypothesis,
+  isPyPy,
   mypy,
+  pydantic,
   pytestCheckHook,
+  # build-system
+  setuptools,
+  toolz,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "eth-utils";
   version = "6.0.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "ethereum";
@@ -37,6 +33,14 @@ buildPythonPackage (finalAttrs: {
     sed -i 's/builtins\.//g' tests/core/functional-utils/test_type_inference.py
   '';
 
+  nativeCheckInputs = [
+    hypothesis
+    mypy
+    pytestCheckHook
+    pydantic
+  ]
+  ++ eth-hash.optional-dependencies.pycryptodome;
+
   build-system = [ setuptools ];
 
   dependencies = [
@@ -46,31 +50,24 @@ buildPythonPackage (finalAttrs: {
   ++ lib.optional (!isPyPy) cytoolz
   ++ lib.optional isPyPy toolz;
 
-  nativeCheckInputs = [
-    hypothesis
-    mypy
-    pytestCheckHook
-    pydantic
-  ]
-  ++ eth-hash.optional-dependencies.pycryptodome;
-
-  pythonImportsCheck = [ "eth_utils" ];
-
-  disabledTests = [
-    # Exception: Expected one wheel. Instead found: [] in project /build/source
-    "test_install_local_wheel"
-  ];
-
   disabledTestPaths = [
     # Typing tests fail like:
     #   Revealed type is "builtins.tuple[builtins.int, ...]"
     "tests/core/functional-utils/test_type_inference.py"
   ];
 
+  disabledTests = [
+    # Exception: Expected one wheel. Instead found: [] in project /build/source
+    "test_install_local_wheel"
+  ];
+
+  pyproject = true;
+  pythonImportsCheck = [ "eth_utils" ];
+
   meta = {
-    changelog = "https://github.com/ethereum/eth-utils/blob/${finalAttrs.src.tag}/docs/release_notes.rst";
     description = "Common utility functions for codebases which interact with ethereum";
     homepage = "https://github.com/ethereum/eth-utils";
+    changelog = "https://github.com/ethereum/eth-utils/blob/${finalAttrs.src.tag}/docs/release_notes.rst";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ siraben ];
   };

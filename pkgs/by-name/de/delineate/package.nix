@@ -1,12 +1,13 @@
 {
+  lib,
+  stdenv,
+  fetchFromGitHub,
   appstream,
   buildNpmPackage,
   cargo,
   desktop-file-utils,
-  fetchFromGitHub,
   gtk4,
   gtksourceview5,
-  lib,
   libadwaita,
   meson,
   ninja,
@@ -14,7 +15,6 @@
   pkg-config,
   rustPlatform,
   rustc,
-  stdenv,
   webkitgtk_6_0,
   wrapGAppsHook4,
 }:
@@ -31,7 +31,6 @@ let
     };
 
     npmDepsHash = "sha256-J1kptumP/8UoiYDM+AJOYUne0OSkMXCTAXW3ZmavU4E=";
-
     # keep the devDependencies, as Delineate imports d3 via node_modules
     # https://github.com/SeaDve/Delineate/blob/v0.1.0/data/graph_view/index.html#L10-L11
     npmPruneFlags = "--include=dev";
@@ -46,11 +45,6 @@ stdenv.mkDerivation (finalAttrs: {
     repo = "Delineate";
     tag = "v${finalAttrs.version}";
     hash = "sha256-6SYYDxzBzs6nSrPp9TPKnIYHdoZJklTr5K0DSFx7S0s=";
-  };
-
-  cargoDeps = rustPlatform.fetchCargoVendor {
-    inherit (finalAttrs) src;
-    hash = "sha256-G7K3aeSBnKcJHOlQQIHd3Kzoe/ienFVycTWOKOSRhZc=";
   };
 
   # rename $out/src -> $out/opt
@@ -83,6 +77,11 @@ stdenv.mkDerivation (finalAttrs: {
   postInstall = ''
     ln -s ${d3-graphviz}/lib/node_modules/d3-graphviz $out/opt/delineate/graph_view/d3-graphviz
   '';
+
+  cargoDeps = rustPlatform.fetchCargoVendor {
+    inherit (finalAttrs) src;
+    hash = "sha256-G7K3aeSBnKcJHOlQQIHd3Kzoe/ienFVycTWOKOSRhZc=";
+  };
 
   passthru.updateScript = nix-update-script { };
 

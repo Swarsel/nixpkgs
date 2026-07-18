@@ -4,10 +4,10 @@
   fetchurl,
   cpio,
   e2fsprogs,
+  glibc,
+  ocaml-ng,
   perl,
   pkg-config,
-  ocaml-ng,
-  glibc,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -19,6 +19,10 @@ stdenv.mkDerivation (finalAttrs: {
     sha256 = "sha256-0oLIHccG7+pGZIGhOfmwso0sHqagofV912GmvBG5nOI=";
   };
 
+  postPatch = ''
+    patchShebangs src/bin2c.pl
+  '';
+
   nativeBuildInputs = [
     cpio
     e2fsprogs
@@ -29,20 +33,17 @@ stdenv.mkDerivation (finalAttrs: {
     findlib
     ocaml
   ]);
+
   buildInputs = lib.optionals stdenv.hostPlatform.isGnu [
     glibc
     glibc.static
   ];
 
-  postPatch = ''
-    patchShebangs src/bin2c.pl
-  '';
-
   meta = {
-    homepage = "https://libguestfs.org/supermin.1.html";
     description = "Tool for creating and building supermin appliances";
-    maintainers = with lib.maintainers; [ qyliss ];
+    homepage = "https://libguestfs.org/supermin.1.html";
     license = lib.licenses.gpl2Plus;
+    maintainers = with lib.maintainers; [ qyliss ];
     platforms = lib.platforms.linux;
     mainProgram = "supermin";
   };

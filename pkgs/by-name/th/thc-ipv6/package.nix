@@ -3,10 +3,10 @@
   stdenv,
   fetchFromGitHub,
   fetchpatch,
-  libpcap,
-  openssl,
   libnetfilter_queue,
   libnfnetlink,
+  libpcap,
+  openssl,
 }:
 stdenv.mkDerivation (finalAttrs: {
   pname = "thc-ipv6";
@@ -23,9 +23,9 @@ stdenv.mkDerivation (finalAttrs: {
     # Fix gcc-15 build failure:
     #   https://github.com/vanhauser-thc/thc-ipv6/pull/53
     (fetchpatch {
+      hash = "sha256-4+LmRsDInzzNFHvj8WK+r1fKeoLggQW7yrahC1d6WCs=";
       name = "gcc-15.patch";
       url = "https://github.com/vanhauser-thc/thc-ipv6/commit/c9617d5638196bd88336225a6abdfd45c3df0bcf.patch";
-      hash = "sha256-4+LmRsDInzzNFHvj8WK+r1fKeoLggQW7yrahC1d6WCs=";
     })
   ];
 
@@ -45,8 +45,8 @@ stdenv.mkDerivation (finalAttrs: {
   meta = {
     description = "IPv6 attack toolkit";
     homepage = "https://github.com/vanhauser-thc/thc-ipv6";
+    license = lib.licenses.agpl3Only;
     maintainers = with lib.maintainers; [ ajs124 ];
     platforms = lib.platforms.linux;
-    license = lib.licenses.agpl3Only;
   };
 })

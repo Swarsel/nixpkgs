@@ -1,7 +1,7 @@
 {
   lib,
-  stdenvNoCC,
   fetchFromGitHub,
+  stdenvNoCC,
   unstableGitUpdater,
 }:
 
@@ -16,9 +16,6 @@ stdenvNoCC.mkDerivation {
     hash = "sha256-XYL/7Sr3Ct1n4lnji06I2EM4EQU3cNJuWbAadSz8PAE=";
   };
 
-  dontConfigure = true;
-  dontBuild = true;
-
   installPhase = ''
     runHook preInstall
 
@@ -28,13 +25,16 @@ stdenvNoCC.mkDerivation {
     runHook postInstall
   '';
 
+  dontBuild = true;
+  dontConfigure = true;
+
   passthru.updateScript = unstableGitUpdater {
     hardcodeZeroVersion = true;
   };
 
   meta = {
-    homepage = "https://github.com/kovidgoyal/kitty-themes";
     description = "Themes for the kitty terminal emulator";
+    homepage = "https://github.com/kovidgoyal/kitty-themes";
     license = lib.licenses.gpl3Only;
     maintainers = with lib.maintainers; [ sigmanificient ];
     platforms = lib.platforms.all;

@@ -1,18 +1,17 @@
 {
   lib,
+  azure-core,
   buildPythonPackage,
   fetchPypi,
-  azure-core,
+  isodate,
   msrest,
   msrestazure,
-  isodate,
   setuptools,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "azure-containerregistry";
   version = "1.2.0";
-  pyproject = true;
 
   src = fetchPypi {
     inherit (finalAttrs) pname version;
@@ -20,6 +19,9 @@ buildPythonPackage (finalAttrs: {
     extension = "zip";
   };
 
+  # tests require azure-devtools which are not published (since 2020)
+  # https://github.com/Azure/azure-sdk-for-python/blob/main/sdk/containerregistry/azure-containerregistry/dev_requirements.txt
+  doCheck = false;
   build-system = [ setuptools ];
 
   dependencies = [
@@ -29,9 +31,7 @@ buildPythonPackage (finalAttrs: {
     isodate
   ];
 
-  # tests require azure-devtools which are not published (since 2020)
-  # https://github.com/Azure/azure-sdk-for-python/blob/main/sdk/containerregistry/azure-containerregistry/dev_requirements.txt
-  doCheck = false;
+  pyproject = true;
 
   pythonImportsCheck = [
     "azure.core"

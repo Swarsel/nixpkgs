@@ -1,7 +1,7 @@
 {
-  buildNpmPackage,
-  fetchFromGitHub,
   lib,
+  fetchFromGitHub,
+  buildNpmPackage,
 }:
 
 buildNpmPackage rec {
@@ -16,14 +16,13 @@ buildNpmPackage rec {
   };
 
   npmDepsHash = "sha256-F1C/sfOT/Tf+h28g1umP6czLFIsxDkbvT14ZfWLTiCE=";
-
   dontNpmBuild = true;
 
   meta = {
-    mainProgram = "surge";
     description = "CLI for the surge.sh CDN";
     homepage = "https://surge.sh";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ MoritzBoehme ];
+    mainProgram = "surge";
   };
 }

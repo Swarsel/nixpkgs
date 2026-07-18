@@ -17,15 +17,14 @@ stdenv.mkDerivation (finalAttrs: {
     sha256 = "14y5s18g9r2c1ciw1skfksn09gvqgy8vjvwbr0z8gacf0jc2apqk";
   };
 
+  postPatch = "patchShebangs .";
+  nativeBuildInputs = [ sassc ];
+  buildInputs = [ gtk3 ];
+
   preBuild = ''
     # Shut up inkscape's warnings
     export HOME="$NIX_BUILD_ROOT"
   '';
-
-  nativeBuildInputs = [ sassc ];
-  buildInputs = [ gtk3 ];
-
-  postPatch = "patchShebangs .";
 
   installPhase = ''
     mkdir -p $out/share/themes

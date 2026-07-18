@@ -1,20 +1,20 @@
 {
-  stdenv,
-  cmake,
   lib,
+  stdenv,
   fetchFromGitHub,
-  fftw,
-  libtorch-bin,
-  portaudio,
-  eigen,
-  pkg-config,
-  autoPatchelfHook,
-  soxr,
-  libsamplerate,
   armadillo,
-  tomlplusplus,
-  libxcb,
+  autoPatchelfHook,
+  cmake,
+  eigen,
+  fftw,
   kdePackages,
+  libsamplerate,
+  libtorch-bin,
+  libxcb,
+  pkg-config,
+  portaudio,
+  soxr,
+  tomlplusplus,
 }:
 
 stdenv.mkDerivation {
@@ -65,11 +65,11 @@ stdenv.mkDerivation {
 
   meta = {
     description = "Real-time pitch and formant tracking software";
-    mainProgram = "in-formant";
     homepage = "https://github.com/in-formant/in-formant";
     license = lib.licenses.asl20;
+    maintainers = [ ];
     # currently broken on i686-linux and aarch64-linux due to other nixpkgs dependencies
     platforms = [ "x86_64-linux" ];
-    maintainers = [ ];
+    mainProgram = "in-formant";
   };
 }

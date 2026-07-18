@@ -15,29 +15,29 @@
 stdenv.mkDerivation rec {
   pname = "autoconf";
   version = "2.73";
-  outputs = [
-    "out"
-    "doc"
-  ];
 
   src = fetchurl {
     url = "mirror://gnu/autoconf/autoconf-${version}.tar.xz";
     hash = "sha256-n9ZyschCX6wvpn+gR3uZCYcmi5D/NtXwFtrle+DWtS4=";
   };
 
+  outputs = [
+    "out"
+    "doc"
+  ];
+
   strictDeps = true;
+
   nativeBuildInputs = [
     m4
     perl
     texinfo
   ];
+
   buildInputs = [ m4 ];
+
   postBuild = "
     make html
-  ";
-
-  postInstall = "
-    make install-html
   ";
 
   # Work around a known issue in Cygwin.  See
@@ -46,19 +46,21 @@ stdenv.mkDerivation rec {
   # There are many test failures on `i386-pc-solaris2.11'.
   doCheck = ((!stdenv.hostPlatform.isCygwin) && (!stdenv.hostPlatform.isSunOS));
 
-  # Don't fixup "#! /bin/sh" in Autoconf, otherwise it will use the
-  # "fixed" path in generated files!
-  dontPatchShebangs = true;
-
-  enableParallelBuilding = true;
-
   # Make the Autotest test suite run in parallel.
   preCheck = ''
     export TESTSUITEFLAGS="-j$NIX_BUILD_CORES"
   '';
 
+  postInstall = "
+    make install-html
+  ";
+
+  # Don't fixup "#! /bin/sh" in Autoconf, otherwise it will use the
+  # "fixed" path in generated files!
+  dontPatchShebangs = true;
+  enableParallelBuilding = true;
+
   meta = {
-    homepage = "https://www.gnu.org/software/autoconf/";
     description = "Part of the GNU Build System";
 
     longDescription = ''
@@ -71,8 +73,8 @@ stdenv.mkDerivation rec {
       can use, in the form of M4 macro calls.
     '';
 
+    homepage = "https://www.gnu.org/software/autoconf/";
     license = lib.licenses.gpl3Plus;
-
     platforms = lib.platforms.all;
   };
 }

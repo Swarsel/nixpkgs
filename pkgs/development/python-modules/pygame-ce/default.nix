@@ -1,50 +1,43 @@
 {
   lib,
   stdenv,
-  buildPythonPackage,
   fetchFromGitHub,
-  replaceVars,
-  python,
-
-  # build-system
-  cython,
-  meson-python,
-  ninja,
-  pyproject-metadata,
-  setuptools,
-  sphinx,
-  sphinx-autoapi,
-
+  SDL2,
+  SDL2_image,
+  SDL2_mixer,
+  SDL2_ttf,
   # nativeBuildInputs
   astroid,
-  pkg-config,
-
+  buildPythonPackage,
+  # build-system
+  cython,
   # buildInputs
   fontconfig,
   freetype,
   libjpeg,
   libpng,
   libx11,
-  portmidi,
-  SDL2,
-  SDL2_image,
-  SDL2_mixer,
-  SDL2_ttf,
-
-  # tests
-  numpy,
-  writableTmpDirAsHomeHook,
-
+  meson-python,
+  ninja,
   # passthru
   nix-update-script,
+  # tests
+  numpy,
+  pkg-config,
+  portmidi,
   pygame-gui,
+  pyproject-metadata,
+  python,
+  replaceVars,
+  setuptools,
+  sphinx,
+  sphinx-autoapi,
+  writableTmpDirAsHomeHook,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "pygame-ce";
   version = "2.5.7";
-  pyproject = true;
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "pygame-community";
@@ -64,6 +57,7 @@ buildPythonPackage (finalAttrs: {
           "${lib.getDev dep}/include/SDL2"
         ]) finalAttrs.buildInputs
       );
+
       buildinputs_lib = builtins.toJSON (
         builtins.concatMap (dep: [
           "${lib.getLib dep}/"
@@ -109,17 +103,6 @@ buildPythonPackage (finalAttrs: {
         --replace-fail "'system_test.py'," ""
     '';
 
-  build-system = [
-    astroid
-    cython
-    meson-python
-    ninja
-    pyproject-metadata
-    setuptools
-    sphinx
-    sphinx-autoapi
-  ];
-
   nativeBuildInputs = [
     pkg-config
   ];
@@ -136,21 +119,21 @@ buildPythonPackage (finalAttrs: {
     SDL2_ttf
   ];
 
-  nativeCheckInputs = [
-    numpy
-    writableTmpDirAsHomeHook
-  ];
-
-  preConfigure = ''
-    ${python.pythonOnBuildForHost.interpreter} -m buildconfig.config
-  '';
-
   env = {
     SDL_CONFIG = lib.getExe' (lib.getDev SDL2) "sdl2-config";
   }
   // lib.optionalAttrs stdenv.cc.isClang {
     NIX_CFLAGS_COMPILE = "-Wno-error=incompatible-function-pointer-types";
   };
+
+  preConfigure = ''
+    ${python.pythonOnBuildForHost.interpreter} -m buildconfig.config
+  '';
+
+  nativeCheckInputs = [
+    numpy
+    writableTmpDirAsHomeHook
+  ];
 
   preCheck = ''
     # No audio or video device in test environment
@@ -165,6 +148,21 @@ buildPythonPackage (finalAttrs: {
     ${python.interpreter} -m pygame.tests -v --exclude opengl,timing --time_out 300
     runHook postCheck
   '';
+
+  __structuredAttrs = true;
+
+  build-system = [
+    astroid
+    cython
+    meson-python
+    ninja
+    pyproject-metadata
+    setuptools
+    sphinx
+    sphinx-autoapi
+  ];
+
+  pyproject = true;
 
   pythonImportsCheck = [
     "pygame"
@@ -184,10 +182,11 @@ buildPythonPackage (finalAttrs: {
   ];
 
   passthru = {
-    updateScript = nix-update-script { };
     tests = {
       inherit pygame-gui;
     };
+
+    updateScript = nix-update-script { };
   };
 
   meta = {

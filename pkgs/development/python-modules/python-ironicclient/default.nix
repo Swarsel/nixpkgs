@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   cliff,
   dogpile-cache,
   jsonschema,
@@ -17,8 +17,8 @@
   requests,
   requests-mock,
   setuptools,
-  sphinxcontrib-apidoc,
   sphinxHook,
+  sphinxcontrib-apidoc,
   stestr,
   stevedore,
 }:
@@ -26,7 +26,6 @@
 buildPythonPackage rec {
   pname = "python-ironicclient";
   version = "6.0.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "openstack";
@@ -35,37 +34,13 @@ buildPythonPackage rec {
     hash = "sha256-AbxzRpyfplR4Mk9CcaRXi+CNo08tlRIxAFxsJjrkxvY=";
   };
 
-  build-system = [
-    openstackdocstheme
-    setuptools
-    sphinxcontrib-apidoc
-    sphinxHook
-  ];
-
-  sphinxBuilders = [ "man" ];
-
-  dependencies = [
-    cliff
-    dogpile-cache
-    jsonschema
-    keystoneauth1
-    openstacksdk
-    osc-lib
-    oslo-utils
-    pbr
-    platformdirs
-    pyyaml
-    requests
-    stevedore
-  ];
+  env.PBR_VERSION = version;
 
   nativeCheckInputs = [
     stestr
     requests-mock
     oslotest
   ];
-
-  env.PBR_VERSION = version;
 
   checkPhase = ''
     runHook preCheck
@@ -82,13 +57,37 @@ buildPythonPackage rec {
     runHook postCheck
   '';
 
+  build-system = [
+    openstackdocstheme
+    setuptools
+    sphinxcontrib-apidoc
+    sphinxHook
+  ];
+
+  dependencies = [
+    cliff
+    dogpile-cache
+    jsonschema
+    keystoneauth1
+    openstacksdk
+    osc-lib
+    oslo-utils
+    pbr
+    platformdirs
+    pyyaml
+    requests
+    stevedore
+  ];
+
+  pyproject = true;
   pythonImportsCheck = [ "ironicclient" ];
+  sphinxBuilders = [ "man" ];
 
   meta = {
     description = "Client for OpenStack bare metal provisioning API, includes a Python module (ironicclient) and CLI (baremetal)";
-    mainProgram = "baremetal";
     homepage = "https://github.com/openstack/python-ironicclient";
     license = lib.licenses.asl20;
+    mainProgram = "baremetal";
     teams = [ lib.teams.openstack ];
   };
 }

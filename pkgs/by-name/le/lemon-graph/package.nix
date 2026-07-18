@@ -15,12 +15,6 @@ stdenv.mkDerivation (finalAttrs: {
     sha256 = "1j6kp9axhgna47cfnmk1m7vnqn01hwh7pf1fp76aid60yhjwgdvi";
   };
 
-  buildInputs = [ python3 ];
-  nativeBuildInputs = [ cmake ];
-
-  # error: no viable conversion from ...
-  doCheck = !stdenv.hostPlatform.isDarwin;
-
   patches = [
     # error: ISO C++17 does not allow 'register' storage class specifier
     ./remove-register.patch
@@ -32,9 +26,14 @@ stdenv.mkDerivation (finalAttrs: {
     ./update_cxx20.patch
   ];
 
+  nativeBuildInputs = [ cmake ];
+  buildInputs = [ python3 ];
+  # error: no viable conversion from ...
+  doCheck = !stdenv.hostPlatform.isDarwin;
+
   meta = {
-    homepage = "https://lemon.cs.elte.hu/trac/lemon";
     description = "Efficient library for combinatorial optimization tasks on graphs and networks";
+    homepage = "https://lemon.cs.elte.hu/trac/lemon";
     license = lib.licenses.boost;
     maintainers = with lib.maintainers; [ hzeller ];
     platforms = lib.platforms.all;

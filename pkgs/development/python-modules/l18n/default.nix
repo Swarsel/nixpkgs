@@ -1,7 +1,7 @@
 {
+  lib,
   buildPythonPackage,
   fetchPypi,
-  lib,
   pytz,
   six,
 }:
@@ -9,7 +9,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "l18n";
   version = "2021.3";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit (finalAttrs) pname version;
@@ -23,7 +22,7 @@ buildPythonPackage (finalAttrs: {
 
   # tests are not included in sdist and building from source is none trivial
   doCheck = false;
-
+  format = "setuptools";
   pythonImportsCheck = [ "l18n" ];
 
   meta = {

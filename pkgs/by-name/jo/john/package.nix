@@ -2,26 +2,26 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  unstableGitUpdater,
-  openssl,
-  nss,
-  nspr,
-  libkrb5,
-  gmp,
-  zlib,
-  libpcap,
-  re2,
   gcc,
-  python3Packages,
+  gmp,
+  libkrb5,
+  libpcap,
+  makeWrapper,
+  nspr,
+  nss,
+  ocl-icd,
+  opencl-headers,
+  openssl,
   perl,
   perlPackages,
-  withOpenCL ? true,
-  opencl-headers,
-  ocl-icd,
+  python3Packages,
+  re2,
+  replaceVars,
+  unstableGitUpdater,
+  zlib,
   # include non-free ClamAV unrar code
   enableUnfree ? false,
-  replaceVars,
-  makeWrapper,
+  withOpenCL ? true,
 }:
 
 stdenv.mkDerivation {
@@ -52,21 +52,12 @@ stdenv.mkDerivation {
     }' run/*.conf
   '';
 
-  preConfigure = ''
-    cd src
-    # Makefile.in depends on AS and LD being set to CC, which is set by default in configure.ac.
-    # This ensures we override the environment variables set in cc-wrapper/setup-hook.sh
-    export AS=$CC
-    export LD=$CC
-  ''
-  + lib.optionalString withOpenCL ''
-    python ./opencl_generate_dynamic_loader.py  # Update opencl_dynamic_loader.c
-  '';
-  configureFlags = [
-    "--disable-native-tests"
-    "--with-systemwide"
-  ]
-  ++ lib.optionals (!enableUnfree) [ "--without-unrar" ];
+  nativeBuildInputs = [
+    gcc
+    python3Packages.wrapPython
+    perl
+    makeWrapper
+  ];
 
   buildInputs = [
     openssl
@@ -82,12 +73,7 @@ stdenv.mkDerivation {
     opencl-headers
     ocl-icd
   ];
-  nativeBuildInputs = [
-    gcc
-    python3Packages.wrapPython
-    perl
-    makeWrapper
-  ];
+
   propagatedBuildInputs =
     # For pcap2john.py
     (with python3Packages; [
@@ -109,9 +95,23 @@ stdenv.mkDerivation {
       # For sha-dump.pl
       perlldap
     ]);
-  # TODO: Get dependencies for radius2john.pl and lion2john-alt.pl
 
-  enableParallelBuilding = true;
+  configureFlags = [
+    "--disable-native-tests"
+    "--with-systemwide"
+  ]
+  ++ lib.optionals (!enableUnfree) [ "--without-unrar" ];
+
+  preConfigure = ''
+    cd src
+    # Makefile.in depends on AS and LD being set to CC, which is set by default in configure.ac.
+    # This ensures we override the environment variables set in cc-wrapper/setup-hook.sh
+    export AS=$CC
+    export LD=$CC
+  ''
+  + lib.optionalString withOpenCL ''
+    python ./opencl_generate_dynamic_loader.py  # Update opencl_dynamic_loader.c
+  '';
 
   postInstall = ''
     mkdir -p "$out/bin" "$out/etc/john" "$out/share/john" "$out/share/doc/john" "$out/share/john/rules" "$out/share/john/opencl" "$out/${perlPackages.perl.libPrefix}"
@@ -133,21 +133,27 @@ stdenv.mkDerivation {
     done
   '';
 
+  # TODO: Get dependencies for radius2john.pl and lion2john-alt.pl
+  enableParallelBuilding = true;
+
   passthru.updateScript = unstableGitUpdater {
     tagFormat = "[0-9].*";
   };
 
   meta = {
     description = "John the Ripper password cracker";
+    homepage = "https://github.com/openwall/john/";
+
     license = [
       lib.licenses.gpl2Plus
     ]
     ++ lib.optionals enableUnfree [ lib.licenses.unfreeRedistributable ];
-    homepage = "https://github.com/openwall/john/";
+
     maintainers = with lib.maintainers; [
       cherrykitten
       therealhammer
     ];
+
     platforms = lib.platforms.unix;
   };
 }

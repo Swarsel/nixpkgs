@@ -1,7 +1,7 @@
 {
   lib,
-  stdenvNoCC,
   fetchzip,
+  stdenvNoCC,
 }:
 
 stdenvNoCC.mkDerivation (finalAttrs: {
@@ -9,8 +9,8 @@ stdenvNoCC.mkDerivation (finalAttrs: {
   version = "0.593";
 
   src = fetchzip {
-    hash = "sha256-OiLmSozKiVRbnefVMmPXRaKCHZb7brynfJew1NYrT0M=";
     url = "https://github.com/arcticons-team/arcticons-font/archive/refs/tags/${finalAttrs.version}.zip";
+    hash = "sha256-OiLmSozKiVRbnefVMmPXRaKCHZb7brynfJew1NYrT0M=";
   };
 
   installPhase = ''

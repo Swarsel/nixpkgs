@@ -12,19 +12,14 @@
 buildPythonPackage rec {
   pname = "dploot";
   version = "3.2.2";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
     hash = "sha256-P2rPkBE60Ha+m1nqQULQ3k2RDUro+Zp0TUfPAQNS06g=";
   };
 
-  pythonRelaxDeps = [
-    "cryptography"
-    "lxml"
-    "pyasn1"
-  ];
-
+  # No tests
+  doCheck = false;
   build-system = [ poetry-core ];
 
   dependencies = [
@@ -34,10 +29,14 @@ buildPythonPackage rec {
     lxml
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "dploot" ];
 
-  # No tests
-  doCheck = false;
+  pythonRelaxDeps = [
+    "cryptography"
+    "lxml"
+    "pyasn1"
+  ];
 
   meta = {
     description = "DPAPI looting remotely in Python";

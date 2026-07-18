@@ -1,14 +1,12 @@
 {
   lib,
-  rustPlatform,
   fetchFromCodeberg,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
   pname = "rusty-diceware";
   version = "0.5.10";
-
-  __structuredAttrs = true;
 
   src = fetchFromCodeberg {
     owner = "kakafarm";
@@ -18,16 +16,19 @@ rustPlatform.buildRustPackage (finalAttrs: {
   };
 
   cargoHash = "sha256-TCNHtDz7dgUx5lBwwIs67mnQcAZ5Xknc6otpl8zRaVc=";
+  __structuredAttrs = true;
 
   meta = {
     description = "Commandline diceware, with or without dice, written in Rustlang";
     homepage = "https://codeberg.org/kakafarm/rusty-diceware";
     changelog = "https://codeberg.org/kakafarm/rusty-diceware/src/branch/master/CHANGELOG.md";
     license = lib.licenses.gpl3;
+
     maintainers = with lib.maintainers; [
       cherrykitten
       kybe236
     ];
+
     mainProgram = "diceware";
   };
 })

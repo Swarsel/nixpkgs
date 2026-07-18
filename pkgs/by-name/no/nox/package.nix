@@ -1,13 +1,12 @@
 {
   lib,
-  python3Packages,
   fetchurl,
+  python3Packages,
 }:
 
 python3Packages.buildPythonApplication (finalAttrs: {
   pname = "nox";
   version = "0.0.6";
-  pyproject = true;
 
   src = fetchurl {
     url = "mirror://pypi/n/nix-nox/nix-nox-${finalAttrs.version}.tar.gz";
@@ -33,13 +32,14 @@ python3Packages.buildPythonApplication (finalAttrs: {
     setuptools # pkg_resources is imported during runtime
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "nox" ];
 
   meta = {
-    homepage = "https://github.com/madjar/nox";
     description = "Tools to make nix nicer to use";
-    maintainers = [ lib.maintainers.madjar ];
+    homepage = "https://github.com/madjar/nox";
     license = lib.licenses.mit;
+    maintainers = [ lib.maintainers.madjar ];
     platforms = lib.platforms.all;
   };
 })

@@ -1,19 +1,18 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
+  cython,
+  lexbor,
+  modest,
+  pytestCheckHook,
   replaceVars,
   setuptools,
-  cython,
-  modest,
-  lexbor,
-  pytestCheckHook,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "selectolax";
   version = "0.4.10";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "rushter";
@@ -24,14 +23,9 @@ buildPythonPackage (finalAttrs: {
 
   patches = [
     (replaceVars ./0001-setup.py-devendor-modest-and-lexbor.patch {
-      modest = lib.getDev modest;
       lexbor = lib.getDev lexbor;
+      modest = lib.getDev modest;
     })
-  ];
-
-  build-system = [
-    setuptools
-    cython
   ];
 
   buildInputs = [
@@ -47,6 +41,13 @@ buildPythonPackage (finalAttrs: {
   preCheck = ''
     rm -rf selectolax
   '';
+
+  build-system = [
+    setuptools
+    cython
+  ];
+
+  pyproject = true;
 
   pythonImportsCheck = [
     "selectolax"

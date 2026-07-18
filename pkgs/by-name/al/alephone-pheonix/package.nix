@@ -1,13 +1,13 @@
-{ alephone, fetchurl }:
+{ fetchurl, alephone }:
 
 alephone.makeWrapper {
   pname = "marathon-pheonix";
-  desktopName = "Marathon-Pheonix";
   version = "1.3";
+  desktopName = "Marathon-Pheonix";
 
   zip = fetchurl {
-    url = "http://simplici7y.com/version/file/998/Marathon_Phoenix_1.3.zip";
     hash = "sha256-EicLN54di18sarKyJm2GaEJJIsvaRmlHS/TUiT6YBuQ=";
+    url = "http://simplici7y.com/version/file/998/Marathon_Phoenix_1.3.zip";
   };
 
   meta = {

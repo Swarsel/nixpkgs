@@ -22,8 +22,8 @@ buildNpmPackage rec {
 
   passthru.tests = textlint.testPackages {
     inherit (textlint-plugin-latex2e) pname;
-    rule = textlint-rule-max-comma;
     plugin = textlint-plugin-latex2e;
+    rule = textlint-rule-max-comma;
     testFile = ./test.tex;
   };
 

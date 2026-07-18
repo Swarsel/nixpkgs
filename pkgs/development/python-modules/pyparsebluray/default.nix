@@ -1,14 +1,13 @@
 {
-  buildPythonPackage,
   lib,
   fetchFromGitHub,
+  buildPythonPackage,
   setuptools,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "pyparsebluray";
   version = "0.1.4";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "Ichunjo";
@@ -20,6 +19,8 @@ buildPythonPackage (finalAttrs: {
   build-system = [
     setuptools
   ];
+
+  pyproject = true;
 
   meta = {
     description = "Parse and extract binary data from bluray files";

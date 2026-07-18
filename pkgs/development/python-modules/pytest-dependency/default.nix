@@ -10,7 +10,6 @@
 buildPythonPackage rec {
   pname = "pytest-dependency";
   version = "0.6.0";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
@@ -18,17 +17,15 @@ buildPythonPackage rec {
   };
 
   nativeBuildInputs = [ setuptools ];
-
   buildInputs = [ pytest ];
-
   nativeCheckInputs = [ pytestCheckHook ];
-
+  pyproject = true;
   pythonImportsCheck = [ "pytest_dependency" ];
 
   meta = {
+    description = "Manage dependencies of tests";
     homepage = "https://github.com/RKrahl/pytest-dependency";
     changelog = "https://github.com/RKrahl/pytest-dependency/blob/${version}/CHANGES.rst";
-    description = "Manage dependencies of tests";
     license = lib.licenses.asl20;
     maintainers = [ ];
   };

@@ -73,40 +73,54 @@ let
   );
 
   coreFileSystemOpts =
-    { name, config, ... }:
+    { config, name, ... }:
     {
 
       options = {
+        options = mkOption {
+          default = [ "defaults" ];
+
+          description = ''
+            Options used to mount the file system.
+
+            This is called `options` in {manpage}`mount(8)` and `fs_mntops` in {manpage}`fstab(5)`
+
+            Some options that can be used for all mounts are documented in {manpage}`mount(8)` under `FILESYSTEM-INDEPENDENT MOUNT OPTIONS`.
+
+            Options that systemd understands are documented in {manpage}`systemd.mount(5)` under `FSTAB`.
+
+            Each filesystem supports additional options, see the docs for that filesystem.
+          '';
+
+          example = [ "data=journal" ];
+          type = types.nonEmptyListOf nonEmptyStr;
+        };
+
         enable = mkEnableOption "the filesystem mount" // {
           default = true;
         };
 
-        mountPoint = mkOption {
-          example = "/mnt/usb";
-          type = nonEmptyWithoutTrailingSlash;
-          default = name;
+        depends = mkOption {
+          default = [ ];
+
           description = ''
-            Location where the file system will be mounted.
+            List of paths that should be mounted before this one. This filesystem's
+            {option}`device` and {option}`mountPoint` are always
+            checked and do not need to be included explicitly. If a path is added
+            to this list, any other filesystem whose mount point is a parent of
+            the path will be mounted before this filesystem. The paths do not need
+            to actually be the {option}`mountPoint` of some other filesystem.
 
-            This is called `mountpoint` in {manpage}`mount(8)` and `fs_file` in {manpage}`fstab(5)`
+            This is useful for mounts which require keys and/or configuration files residing on another filesystem.
           '';
-        };
 
-        stratis.poolUuid = mkOption {
-          type = types.uniq (types.nullOr types.str);
-          description = ''
-            UUID of the stratis pool that the fs is located in
-
-            This is only relevant if you are using [stratis](https://stratis-storage.github.io/).
-          '';
-          example = "04c68063-90a5-4235-b9dd-6180098a20d9";
-          default = null;
+          example = [ "/persist" ];
+          type = types.listOf nonEmptyWithoutTrailingSlash;
         };
 
         device = mkOption {
           default = null;
-          example = "/dev/sda";
-          type = types.nullOr nonEmptyStr;
+
           description = ''
             The device as passed to `mount`.
 
@@ -119,49 +133,46 @@ let
 
             This is called `device` in {manpage}`mount(8)` and `fs_spec` in {manpage}`fstab(5)`.
           '';
+
+          example = "/dev/sda";
+          type = types.nullOr nonEmptyStr;
         };
 
         fsType = mkOption {
-          example = "ext3";
-          type = nonEmptyStr;
           description = ''
             Type of the file system.
 
             This is the `fstype` passed to `-t` in the {manpage}`mount(8)` command, and is called `fs_vfstype` in {manpage}`fstab(5)`.
           '';
+
+          example = "ext3";
+          type = nonEmptyStr;
         };
 
-        options = mkOption {
-          default = [ "defaults" ];
-          example = [ "data=journal" ];
+        mountPoint = mkOption {
+          default = name;
+
           description = ''
-            Options used to mount the file system.
+            Location where the file system will be mounted.
 
-            This is called `options` in {manpage}`mount(8)` and `fs_mntops` in {manpage}`fstab(5)`
-
-            Some options that can be used for all mounts are documented in {manpage}`mount(8)` under `FILESYSTEM-INDEPENDENT MOUNT OPTIONS`.
-
-            Options that systemd understands are documented in {manpage}`systemd.mount(5)` under `FSTAB`.
-
-            Each filesystem supports additional options, see the docs for that filesystem.
+            This is called `mountpoint` in {manpage}`mount(8)` and `fs_file` in {manpage}`fstab(5)`
           '';
-          type = types.nonEmptyListOf nonEmptyStr;
+
+          example = "/mnt/usb";
+          type = nonEmptyWithoutTrailingSlash;
         };
 
-        depends = mkOption {
-          default = [ ];
-          example = [ "/persist" ];
-          type = types.listOf nonEmptyWithoutTrailingSlash;
-          description = ''
-            List of paths that should be mounted before this one. This filesystem's
-            {option}`device` and {option}`mountPoint` are always
-            checked and do not need to be included explicitly. If a path is added
-            to this list, any other filesystem whose mount point is a parent of
-            the path will be mounted before this filesystem. The paths do not need
-            to actually be the {option}`mountPoint` of some other filesystem.
+        stratis.poolUuid = mkOption {
+          default = null;
 
-            This is useful for mounts which require keys and/or configuration files residing on another filesystem.
+          description = ''
+            UUID of the stratis pool that the fs is located in
+
+            This is only relevant if you are using [stratis](https://stratis-storage.github.io/).
           '';
+
+          example = "04c68063-90a5-4235-b9dd-6180098a20d9";
+          type = types.uniq (types.nullOr types.str);
         };
 
       };
@@ -178,50 +189,56 @@ let
 
       options = {
 
-        label = mkOption {
-          default = null;
-          example = "root-partition";
-          type = types.nullOr nonEmptyStr;
-          description = ''
-            Label of the device. This simply sets {option}`device` to
-            `/dev/disk/by-label/''${label}`. Note that devices will not
-            have a label unless they contain a filesystem which
-            supports labels, such as ext4 or fat32.
-          '';
-        };
-
         autoFormat = mkOption {
           default = false;
-          type = types.bool;
+
           description = ''
             If the device does not currently contain a filesystem (as
             determined by {command}`blkid`), then automatically
             format it with the filesystem type specified in
             {option}`fsType`.  Use with caution.
           '';
-        };
 
-        formatOptions = mkOption {
-          visible = false;
-          type = types.unspecified;
-          default = null;
+          type = types.bool;
         };
 
         autoResize = mkOption {
           default = false;
-          type = types.bool;
+
           description = ''
             If set, the filesystem is grown to its maximum size before
             being mounted. (This is typically the size of the containing
             partition.) This is currently only supported for ext2/3/4
             filesystems that are mounted during early boot.
           '';
+
+          type = types.bool;
+        };
+
+        formatOptions = mkOption {
+          default = null;
+          type = types.unspecified;
+          visible = false;
+        };
+
+        label = mkOption {
+          default = null;
+
+          description = ''
+            Label of the device. This simply sets {option}`device` to
+            `/dev/disk/by-label/''${label}`. Note that devices will not
+            have a label unless they contain a filesystem which
+            supports labels, such as ext4 or fat32.
+          '';
+
+          example = "root-partition";
+          type = types.nullOr nonEmptyStr;
         };
 
         noCheck = mkOption {
           default = false;
-          type = types.bool;
           description = "Disable running fsck on this filesystem.";
+          type = types.bool;
         };
 
       };
@@ -331,26 +348,78 @@ in
 
   options = {
 
-    fileSystems = mkOption {
+    boot.devShmSize = mkOption {
+      default = "50%";
+
+      description = ''
+        Size limit for the /dev/shm tmpfs. Look at {manpage}`mount(8)`, tmpfs size option,
+        for the accepted syntax.
+      '';
+
+      example = "256m";
+      type = types.str;
+    };
+
+    boot.devSize = mkOption {
+      default = "5%";
+
+      description = ''
+        Size limit for the /dev tmpfs. Look at {manpage}`mount(8)`, tmpfs size option,
+        for the accepted syntax.
+      '';
+
+      example = "32m";
+      type = types.str;
+    };
+
+    boot.runSize = mkOption {
+      default = "25%";
+
+      description = ''
+        Size limit for the /run tmpfs. Look at {manpage}`mount(8)`, tmpfs size option,
+        for the accepted syntax.
+      '';
+
+      example = "256m";
+      type = types.str;
+    };
+
+    boot.specialFileSystems = mkOption {
+      apply = lib.filterAttrs (_: fs: fs.enable);
       default = { };
+
+      description = ''
+        Special filesystems that are mounted very early during boot.
+      '';
+
+      internal = true;
+      type = types.attrsOf (types.submodule coreFileSystemOpts);
+    };
+
+    boot.supportedFilesystems = mkOption {
+      default = { };
+
+      description = ''
+        Names of supported filesystem types, or an attribute set of file system types
+        and their state. The set form may be used together with `lib.mkForce` to
+        explicitly disable support for specific filesystems, e.g. to disable ZFS
+        with an unsupported kernel.
+      '';
+
       example = literalExpression ''
         {
-          "/".device = "/dev/hda1";
-          "/data" = {
-            device = "/dev/hda2";
-            fsType = "ext3";
-            options = [ "data=journal" ];
-          };
-          "/bigdisk".label = "bigdisk";
+          btrfs = true;
+          zfs = lib.mkForce false;
         }
       '';
-      type = types.attrsOf (
-        types.submodule [
-          coreFileSystemOpts
-          fileSystemOpts
-        ]
-      );
+
+      type = attrNamesToTrue;
+    };
+
+    fileSystems = mkOption {
       apply = lib.filterAttrs (_: fs: fs.enable);
+      default = { };
+
       description = ''
         The file systems to be mounted.  It must include an entry for
         the root directory (`mountPoint = "/"`).  Each
@@ -365,69 +434,31 @@ in
         specify a volume label (`label`) for file
         systems that support it, such as ext2/ext3 (see {command}`mke2fs -L`).
       '';
+
+      example = literalExpression ''
+        {
+          "/".device = "/dev/hda1";
+          "/data" = {
+            device = "/dev/hda2";
+            fsType = "ext3";
+            options = [ "data=journal" ];
+          };
+          "/bigdisk".label = "bigdisk";
+        }
+      '';
+
+      type = types.attrsOf (
+        types.submodule [
+          coreFileSystemOpts
+          fileSystemOpts
+        ]
+      );
     };
 
     system.fsPackages = mkOption {
-      internal = true;
       default = [ ];
       description = "Packages supplying file system mounters and checkers.";
-    };
-
-    boot.supportedFilesystems = mkOption {
-      default = { };
-      example = literalExpression ''
-        {
-          btrfs = true;
-          zfs = lib.mkForce false;
-        }
-      '';
-      type = attrNamesToTrue;
-      description = ''
-        Names of supported filesystem types, or an attribute set of file system types
-        and their state. The set form may be used together with `lib.mkForce` to
-        explicitly disable support for specific filesystems, e.g. to disable ZFS
-        with an unsupported kernel.
-      '';
-    };
-
-    boot.specialFileSystems = mkOption {
-      default = { };
-      type = types.attrsOf (types.submodule coreFileSystemOpts);
-      apply = lib.filterAttrs (_: fs: fs.enable);
       internal = true;
-      description = ''
-        Special filesystems that are mounted very early during boot.
-      '';
-    };
-
-    boot.devSize = mkOption {
-      default = "5%";
-      example = "32m";
-      type = types.str;
-      description = ''
-        Size limit for the /dev tmpfs. Look at {manpage}`mount(8)`, tmpfs size option,
-        for the accepted syntax.
-      '';
-    };
-
-    boot.devShmSize = mkOption {
-      default = "50%";
-      example = "256m";
-      type = types.str;
-      description = ''
-        Size limit for the /dev/shm tmpfs. Look at {manpage}`mount(8)`, tmpfs size option,
-        for the accepted syntax.
-      '';
-    };
-
-    boot.runSize = mkOption {
-      default = "25%";
-      example = "256m";
-      type = types.str;
-      description = ''
-        Size limit for the /run tmpfs. Look at {manpage}`mount(8)`, tmpfs size option,
-        for the accepted syntax.
-      '';
     };
   };
 
@@ -453,6 +484,7 @@ in
         }
         {
           assertion = !(any notAutoResizable fileSystems);
+
           message =
             let
               fs = head (filter notAutoResizable fileSystems);
@@ -465,6 +497,7 @@ in
         }
         {
           assertion = !(any (fs: fs.formatOptions != null) fileSystems);
+
           message = ''
             'fileSystems.<name>.formatOptions' has been removed, since
             systemd-makefs does not support any way to provide formatting
@@ -474,6 +507,7 @@ in
       ]
       ++ lib.map (fs: {
         assertion = fs.label != null -> fs.device == "/dev/disk/by-label/${escape fs.label}";
+
         message = ''
           The filesystem with mount point ${fs.mountPoint} has its label and device set to inconsistent values:
             label: ${toString fs.label}
@@ -482,18 +516,97 @@ in
         '';
       }) fileSystems;
 
-    # Export for use in other modules
-    system.build.fileSystems = fileSystems;
-    system.build.earlyMountScript = makeSpecialMounts (toposort fsBefore (
-      attrValues config.boot.specialFileSystems
-    )).result;
+    boot.initrd.systemd.managerEnvironment.SYSTEMD_SYSROOT_FSTAB = initrdFstab;
+    boot.initrd.systemd.services.initrd-parse-etc.environment.SYSTEMD_SYSROOT_FSTAB = initrdFstab;
+    boot.initrd.systemd.storePaths = [ initrdFstab ];
+
+    # Sync mount options with systemd's src/core/mount-setup.c: mount_table.
+    boot.specialFileSystems = {
+      # To hold secrets that shouldn't be written to disk
+      "/run/keys" = {
+        options = [
+          "nosuid"
+          "nodev"
+          "mode=750"
+        ];
+
+        fsType = "ramfs";
+      };
+    }
+    // optionalAttrs (!config.boot.isContainer) {
+      # systemd-nspawn populates /sys by itself, and remounting it causes all
+      # kinds of weird issues (most noticeably, waiting for host disk device
+      # nodes).
+      "/sys" = {
+        options = [
+          "nosuid"
+          "noexec"
+          "nodev"
+        ];
+
+        fsType = "sysfs";
+      };
+    }
+    // optionalAttrs (!config.boot.isNspawnContainer) {
+      "/dev" = {
+        options = [
+          "nosuid"
+          "strictatime"
+          "mode=755"
+          "size=${config.boot.devSize}"
+        ];
+
+        fsType = "devtmpfs";
+      };
+
+      "/dev/pts" = {
+        options = [
+          "nosuid"
+          "noexec"
+          "mode=620"
+          "ptmxmode=0666"
+          "gid=${toString config.ids.gids.tty}"
+        ];
+
+        fsType = "devpts";
+      };
+
+      "/dev/shm" = {
+        options = [
+          "nosuid"
+          "nodev"
+          "strictatime"
+          "mode=1777"
+          "size=${config.boot.devShmSize}"
+        ];
+
+        fsType = "tmpfs";
+      };
+
+      "/proc" = {
+        options = [
+          "nosuid"
+          "noexec"
+          "nodev"
+        ];
+
+        fsType = "proc";
+      };
+
+      "/run" = {
+        options = [
+          "nosuid"
+          "nodev"
+          "strictatime"
+          "mode=755"
+          "size=${config.boot.runSize}"
+        ];
+
+        fsType = "tmpfs";
+      };
+    };
 
     boot.supportedFilesystems = map (fs: fs.fsType) fileSystems;
-
-    # Add the mount helpers to the system path so that `mount' can find them.
-    system.fsPackages = [ pkgs.dosfstools ];
-
-    environment.systemPackages = config.system.fsPackages;
 
     environment.etc.fstab.text =
       let
@@ -522,13 +635,21 @@ in
         ${flip concatMapStrings config.swapDevices (sw: "${sw.realDevice} none swap ${swapOptions sw}\n")}
       '';
 
-    boot.initrd.systemd.storePaths = [ initrdFstab ];
-    boot.initrd.systemd.managerEnvironment.SYSTEMD_SYSROOT_FSTAB = initrdFstab;
-    boot.initrd.systemd.services.initrd-parse-etc.environment.SYSTEMD_SYSROOT_FSTAB = initrdFstab;
+    environment.systemPackages = config.system.fsPackages;
+
+    system.build.earlyMountScript = makeSpecialMounts (toposort fsBefore (
+      attrValues config.boot.specialFileSystems
+    )).result;
+
+    # Export for use in other modules
+    system.build.fileSystems = fileSystems;
+    # Add the mount helpers to the system path so that `mount' can find them.
+    system.fsPackages = [ pkgs.dosfstools ];
 
     # Provide a target that pulls in all filesystems.
     systemd.targets.fs = {
       description = "All File Systems";
+
       wants = [
         "local-fs.target"
         "remote-fs.target"
@@ -539,81 +660,6 @@ in
       "d /run/keys 0750 root ${toString config.ids.gids.keys}"
       "z /run/keys 0750 root ${toString config.ids.gids.keys}"
     ];
-
-    # Sync mount options with systemd's src/core/mount-setup.c: mount_table.
-    boot.specialFileSystems = {
-      # To hold secrets that shouldn't be written to disk
-      "/run/keys" = {
-        fsType = "ramfs";
-        options = [
-          "nosuid"
-          "nodev"
-          "mode=750"
-        ];
-      };
-    }
-    // optionalAttrs (!config.boot.isContainer) {
-      # systemd-nspawn populates /sys by itself, and remounting it causes all
-      # kinds of weird issues (most noticeably, waiting for host disk device
-      # nodes).
-      "/sys" = {
-        fsType = "sysfs";
-        options = [
-          "nosuid"
-          "noexec"
-          "nodev"
-        ];
-      };
-    }
-    // optionalAttrs (!config.boot.isNspawnContainer) {
-      "/proc" = {
-        fsType = "proc";
-        options = [
-          "nosuid"
-          "noexec"
-          "nodev"
-        ];
-      };
-      "/run" = {
-        fsType = "tmpfs";
-        options = [
-          "nosuid"
-          "nodev"
-          "strictatime"
-          "mode=755"
-          "size=${config.boot.runSize}"
-        ];
-      };
-      "/dev" = {
-        fsType = "devtmpfs";
-        options = [
-          "nosuid"
-          "strictatime"
-          "mode=755"
-          "size=${config.boot.devSize}"
-        ];
-      };
-      "/dev/shm" = {
-        fsType = "tmpfs";
-        options = [
-          "nosuid"
-          "nodev"
-          "strictatime"
-          "mode=1777"
-          "size=${config.boot.devShmSize}"
-        ];
-      };
-      "/dev/pts" = {
-        fsType = "devpts";
-        options = [
-          "nosuid"
-          "noexec"
-          "mode=620"
-          "ptmxmode=0666"
-          "gid=${toString config.ids.gids.tty}"
-        ];
-      };
-    };
 
   };
 

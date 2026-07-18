@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   pytestCheckHook,
   requests,
   responses,
@@ -11,7 +11,6 @@
 buildPythonPackage rec {
   pname = "nvdlib";
   version = "0.8.3";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "Vehemont";
@@ -21,7 +20,6 @@ buildPythonPackage rec {
   };
 
   nativeBuildInputs = [ setuptools ];
-
   propagatedBuildInputs = [ requests ];
 
   nativeCheckInputs = [
@@ -29,6 +27,7 @@ buildPythonPackage rec {
     responses
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "nvdlib" ];
 
   meta = {

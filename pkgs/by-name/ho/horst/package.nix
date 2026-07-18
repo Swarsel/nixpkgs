@@ -3,9 +3,9 @@
   stdenv,
   fetchFromGitHub,
   fetchpatch,
-  pkg-config,
-  ncurses,
   libnl,
+  ncurses,
+  pkg-config,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -23,19 +23,21 @@ stdenv.mkDerivation (finalAttrs: {
     # Fix pending upstream inclusion for ncurses-6.3:
     #  https://github.com/br101/horst/pull/110
     (fetchpatch {
-      name = "ncurses-6.3.patch";
-      url = "https://github.com/br101/horst/commit/c9e9b6cc1f97edb9c53f3a67b43f3588f3ac6ea7.patch";
-      sha256 = "15pahbnql44d5zzxmkd5ky8bl3c3hh3lh5190wynd90jrrhf1a26";
       # collides for context change, well apply this part in postPatch
       excludes = [ "display-main.c" ];
+      name = "ncurses-6.3.patch";
+      sha256 = "15pahbnql44d5zzxmkd5ky8bl3c3hh3lh5190wynd90jrrhf1a26";
+      url = "https://github.com/br101/horst/commit/c9e9b6cc1f97edb9c53f3a67b43f3588f3ac6ea7.patch";
     })
   ];
+
   postPatch = ''
     # Apply second part of ncurses-6.3.patch:
     substituteInPlace display-main.c --replace 'wprintw(dump_win, str);' 'wprintw(dump_win, "%s", str);'
   '';
 
   nativeBuildInputs = [ pkg-config ];
+
   buildInputs = [
     ncurses
     libnl
@@ -46,8 +48,8 @@ stdenv.mkDerivation (finalAttrs: {
   meta = {
     description = "Small and lightweight IEEE802.11 wireless LAN analyzer with a text interface";
     homepage = "https://github.com/br101/horst";
-    maintainers = [ lib.maintainers.fpletz ];
     license = lib.licenses.gpl2Plus;
+    maintainers = [ lib.maintainers.fpletz ];
     platforms = lib.platforms.linux;
     mainProgram = "horst";
   };

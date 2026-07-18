@@ -6,8 +6,9 @@
 }:
 
 stdenv.mkDerivation (finalAttrs: {
-  version = "0.4.41";
   pname = "libzen";
+  version = "0.4.41";
+
   src = fetchurl {
     url = "https://mediaarea.net/download/source/libzen/${finalAttrs.version}/libzen_${finalAttrs.version}.tar.bz2";
     sha256 = "sha256-6yN9fT3Kbca6BocZQgon3gk0p4PMrrKGdWKzWvOQHi0=";
@@ -15,18 +16,15 @@ stdenv.mkDerivation (finalAttrs: {
 
   nativeBuildInputs = [ autoreconfHook ];
   configureFlags = [ "--enable-shared" ];
-
-  sourceRoot = "ZenLib/Project/GNU/Library";
-
   preConfigure = "sh autogen.sh";
-
   enableParallelBuilding = true;
+  sourceRoot = "ZenLib/Project/GNU/Library";
 
   meta = {
     description = "Shared library for libmediainfo and mediainfo";
     homepage = "https://mediaarea.net/";
     license = lib.licenses.bsd2;
-    platforms = lib.platforms.unix;
     maintainers = [ lib.maintainers.devhell ];
+    platforms = lib.platforms.unix;
   };
 })

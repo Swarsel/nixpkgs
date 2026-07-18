@@ -2,15 +2,14 @@
   lib,
   buildPythonPackage,
   fetchPypi,
+  process-tests,
   pytest,
   requests,
-  process-tests,
 }:
 
 buildPythonPackage rec {
   pname = "manhole";
   version = "1.8.1";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
@@ -31,6 +30,7 @@ buildPythonPackage rec {
     requests
     process-tests
   ];
+
   checkPhase = ''
     # Based on its tox.ini
     export PYTHONUNBUFFERED=yes
@@ -44,11 +44,13 @@ buildPythonPackage rec {
     py.test -vv -k "not test_uwsgi"
   '';
 
+  format = "setuptools";
+
   meta = {
-    homepage = "https://github.com/ionelmc/python-manhole";
     description = "Debugging manhole for Python applications";
-    mainProgram = "manhole-cli";
+    homepage = "https://github.com/ionelmc/python-manhole";
     license = lib.licenses.bsd2;
     maintainers = [ ];
+    mainProgram = "manhole-cli";
   };
 }

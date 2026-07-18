@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   nix-update-script,
 }:
 
@@ -16,24 +16,22 @@ buildGoModule rec {
     hash = "sha256-WKtyNdb3hwveLpg3vkKFTXceE6b4AjVrzZoj9eEkdx4=";
   };
 
-  __structuredAttrs = true;
-
-  env.CGO_ENABLED = 0;
-
-  proxyVendor = true;
-
   vendorHash = "sha256-L+E6pLDi68TpXxzSwWlbwMLbnkJHvQY1kRwTtk6pWYM=";
-
+  env.CGO_ENABLED = 0;
+  __structuredAttrs = true;
+  proxyVendor = true;
   passthru.updateScript = nix-update-script { };
 
   meta = with lib; {
     description = "Minimal, filtering, DNS proxy";
     homepage = "https://github.com/tinfoil-factory/netfoil";
     license = licenses.asl20;
+
     maintainers = with maintainers; [
       sgo
       marcusramberg
     ];
+
     mainProgram = "netfoil";
   };
 }

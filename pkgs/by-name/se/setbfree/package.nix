@@ -5,21 +5,21 @@
   alsa-lib,
   freetype,
   ftgl,
+  libGL,
+  libGLU,
   libjack2,
   libx11,
   lv2,
-  libGLU,
-  libGL,
+  nix-update-script,
   pkg-config,
   ttf_bitstream_vera,
-  nix-update-script,
 }:
 let
   version = "0.8.13";
 in
 stdenv.mkDerivation {
-  pname = "setbfree";
   inherit version;
+  pname = "setbfree";
 
   src = fetchFromGitHub {
     owner = "pantherb";
@@ -35,6 +35,7 @@ stdenv.mkDerivation {
   '';
 
   nativeBuildInputs = [ pkg-config ];
+
   buildInputs = [
     alsa-lib
     freetype
@@ -57,18 +58,19 @@ stdenv.mkDerivation {
   '';
 
   enableParallelBuilding = true;
-
   passthru.updateScript = nix-update-script { };
 
   meta = {
     description = "DSP tonewheel organ emulator";
     homepage = "https://setbfree.org";
     license = lib.licenses.gpl2;
+    maintainers = [ lib.maintainers.l1npengtul ];
+
     platforms = [
       "x86_64-linux"
       "i686-linux"
     ]; # fails on ARM and Darwin
+
     broken = stdenv.hostPlatform.isAarch64;
-    maintainers = [ lib.maintainers.l1npengtul ];
   };
 }

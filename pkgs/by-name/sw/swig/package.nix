@@ -4,8 +4,8 @@
   fetchFromGitHub,
   autoconf,
   automake,
-  libtool,
   bison,
+  libtool,
   pcre2,
 }:
 
@@ -20,7 +20,13 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-jsi83v9sg0n5kUfDACqdNAS2VuLSyxv+pe2LRcO4Khc=";
   };
 
+  # Disable ccache documentation as it needs yodl
+  postPatch = ''
+    sed -i '/man1/d' CCache/Makefile.in
+  '';
+
   strictDeps = true;
+
   nativeBuildInputs = [
     autoconf
     automake
@@ -28,14 +34,9 @@ stdenv.mkDerivation (finalAttrs: {
     bison
     pcre2
   ];
+
   buildInputs = [ pcre2 ];
-
   configureFlags = [ "--without-tcl" ];
-
-  # Disable ccache documentation as it needs yodl
-  postPatch = ''
-    sed -i '/man1/d' CCache/Makefile.in
-  '';
 
   preConfigure = ''
     ./autogen.sh
@@ -44,13 +45,13 @@ stdenv.mkDerivation (finalAttrs: {
   enableParallelBuilding = true;
 
   meta = {
-    changelog = "https://github.com/swig/swig/blob/${finalAttrs.src.rev}/CHANGES.current";
     description = "Interface compiler that connects C/C++ code to higher-level languages";
     homepage = "https://swig.org/";
+    changelog = "https://github.com/swig/swig/blob/${finalAttrs.src.rev}/CHANGES.current";
     # Different types of licenses available: https://www.swig.org/Release/LICENSE .
     license = lib.licenses.gpl3Plus;
     maintainers = with lib.maintainers; [ hythera ];
-    mainProgram = "swig";
     platforms = with lib.platforms; linux ++ darwin;
+    mainProgram = "swig";
   };
 })

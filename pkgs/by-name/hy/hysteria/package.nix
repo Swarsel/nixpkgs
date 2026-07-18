@@ -16,7 +16,12 @@ buildGoModule (finalAttrs: {
   };
 
   vendorHash = "sha256-IFC/LMI28cGfUTtgTYf045OAEaMdPgd1bzhdSngQlrA=";
-  proxyVendor = true;
+  # Network required
+  doCheck = false;
+
+  postInstall = ''
+    mv $out/bin/app $out/bin/hysteria
+  '';
 
   ldflags =
     let
@@ -29,21 +34,15 @@ buildGoModule (finalAttrs: {
       "-X ${cmd}.appType=release"
     ];
 
-  postInstall = ''
-    mv $out/bin/app $out/bin/hysteria
-  '';
-
-  # Network required
-  doCheck = false;
-
+  proxyVendor = true;
   passthru.updateScript = nix-update-script { };
 
   meta = {
     description = "Feature-packed proxy & relay utility optimized for lossy, unstable connections";
     homepage = "https://github.com/apernet/hysteria";
     license = lib.licenses.mit;
-    platforms = lib.platforms.unix;
     maintainers = with lib.maintainers; [ oluceps ];
+    platforms = lib.platforms.unix;
     mainProgram = "hysteria";
   };
 })

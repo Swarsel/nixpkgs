@@ -3,12 +3,12 @@
   stdenv,
   fetchFromGitHub,
   fontconfig,
+  gd,
+  glib,
   harfbuzz,
   libx11,
   libxft,
   ncurses,
-  gd,
-  glib,
   pkg-config,
 }:
 
@@ -24,6 +24,7 @@ stdenv.mkDerivation {
   };
 
   nativeBuildInputs = [ pkg-config ];
+
   buildInputs = [
     fontconfig
     harfbuzz
@@ -38,8 +39,8 @@ stdenv.mkDerivation {
   env.TERMINFO = "${placeholder "out"}/share/terminfo";
 
   meta = {
-    homepage = "https://github.com/siduck/st";
     description = "Snazzy terminal (suckless + beautiful)";
+    homepage = "https://github.com/siduck/st";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ pouya ];
     platforms = lib.platforms.linux;

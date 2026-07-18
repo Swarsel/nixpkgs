@@ -1,16 +1,16 @@
 {
   lib,
-  stdenvNoCC,
   fetchFromGitHub,
+  gitUpdater,
   gnome-shell,
   gtk-engine-murrine,
   gtk_engines,
   jdupes,
   sassc,
-  gitUpdater,
-  themeVariants ? [ ], # default: doder (blue)
+  stdenvNoCC,
   colorVariants ? [ ], # default: all
   sizeVariants ? [ ], # default: standard
+  themeVariants ? [ ], # default: doder (blue)
   tweaks ? [ ],
 }:
 
@@ -50,6 +50,10 @@ lib.checkListOfEnum "vimix-gtk-themes: theme variants"
       sha256 = "uRm6v+Zag4FO7nFVcHhZjVhOfdOeYBZYQym0IBR8+HU=";
     };
 
+    postPatch = ''
+      patchShebangs install.sh
+    '';
+
     nativeBuildInputs = [
       gnome-shell # needed to determine the gnome-shell version
       jdupes
@@ -59,14 +63,6 @@ lib.checkListOfEnum "vimix-gtk-themes: theme variants"
     buildInputs = [
       gtk_engines
     ];
-
-    propagatedUserEnvPkgs = [
-      gtk-engine-murrine
-    ];
-
-    postPatch = ''
-      patchShebangs install.sh
-    '';
 
     installPhase = ''
       runHook preInstall
@@ -82,13 +78,17 @@ lib.checkListOfEnum "vimix-gtk-themes: theme variants"
       runHook postInstall
     '';
 
+    propagatedUserEnvPkgs = [
+      gtk-engine-murrine
+    ];
+
     passthru.updateScript = gitUpdater { };
 
     meta = {
       description = "Flat Material Design theme for GTK based desktop environments";
       homepage = "https://github.com/vinceliuice/vimix-gtk-themes";
       license = lib.licenses.gpl3Only;
-      platforms = lib.platforms.unix;
       maintainers = [ lib.maintainers.romildo ];
+      platforms = lib.platforms.unix;
     };
   }

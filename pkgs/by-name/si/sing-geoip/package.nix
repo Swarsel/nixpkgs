@@ -1,9 +1,9 @@
 {
   lib,
-  stdenvNoCC,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   dbip-country-lite,
+  stdenvNoCC,
 }:
 
 let
@@ -18,12 +18,12 @@ let
       hash = "sha256-nIrbiECK25GyuPEFqMvPdZUShC2JC1NI60Y10SsoWyY=";
     };
 
-    vendorHash = "sha256-WH0eMg06qCiVcy4H+vBtYrmLMA2KJRCPGXiEnatW+LU=";
-
     postPatch = ''
       sed -i -e '/func main()/,/^}/d' main.go
       cat ${./main.go} >> main.go
     '';
+
+    vendorHash = "sha256-WH0eMg06qCiVcy4H+vBtYrmLMA2KJRCPGXiEnatW+LU=";
 
     meta = {
       description = "GeoIP data for sing-box";
@@ -37,9 +37,6 @@ in
 stdenvNoCC.mkDerivation {
   inherit (generator) pname;
   inherit (dbip-country-lite) version;
-
-  dontUnpack = true;
-
   nativeBuildInputs = [ generator ];
 
   buildPhase = ''
@@ -58,6 +55,7 @@ stdenvNoCC.mkDerivation {
     runHook postInstall
   '';
 
+  dontUnpack = true;
   passthru = { inherit generator; };
 
   meta = generator.meta // {

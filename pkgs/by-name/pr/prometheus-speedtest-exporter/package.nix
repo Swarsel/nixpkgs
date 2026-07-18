@@ -1,11 +1,10 @@
 {
-  buildGoModule,
   lib,
   fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule (finalAttrs: {
-  __structuredAttrs = true;
   pname = "prometheus-speedtest-exporter";
   version = "1.0.0";
 
@@ -17,12 +16,13 @@ buildGoModule (finalAttrs: {
   };
 
   vendorHash = "sha256-HBg44D0CUc4HYCBwGrswnrqG5o5ltA6UT8L0oWetlIc=";
+  __structuredAttrs = true;
 
   meta = {
     description = "Speedtest.net Exporter for the Prometheus monitoring system";
-    mainProgram = "speedtest_exporter";
     homepage = "https://github.com/podocarp/speedtest_exporter";
     license = lib.licenses.gpl3Only;
     maintainers = with lib.maintainers; [ podocarp ];
+    mainProgram = "speedtest_exporter";
   };
 })

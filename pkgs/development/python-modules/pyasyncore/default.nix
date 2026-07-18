@@ -1,14 +1,13 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "pyasyncore";
   version = "1.0.5";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "simonrob";
@@ -18,10 +17,9 @@ buildPythonPackage rec {
   };
 
   nativeBuildInputs = [ setuptools ];
-
-  pythonImportsCheck = [ "asyncore" ];
-
   doCheck = false; # no tests
+  pyproject = true;
+  pythonImportsCheck = [ "asyncore" ];
 
   meta = {
     description = "Make asyncore available for Python 3.12 onwards";

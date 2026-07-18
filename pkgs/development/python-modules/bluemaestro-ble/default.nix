@@ -1,9 +1,9 @@
 {
   lib,
+  fetchFromGitHub,
   bluetooth-data-tools,
   bluetooth-sensor-state-data,
   buildPythonPackage,
-  fetchFromGitHub,
   poetry-core,
   pytest-cov-stub,
   pytestCheckHook,
@@ -13,7 +13,6 @@
 buildPythonPackage rec {
   pname = "bluemaestro-ble";
   version = "1.0.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "Bluetooth-Devices";
@@ -21,6 +20,11 @@ buildPythonPackage rec {
     tag = "v${version}";
     hash = "sha256-H7VAidnClMA/Qmc4ahzrmSaqkWj50zMjfakRD0wX8xM=";
   };
+
+  nativeCheckInputs = [
+    pytest-cov-stub
+    pytestCheckHook
+  ];
 
   build-system = [ poetry-core ];
 
@@ -30,11 +34,7 @@ buildPythonPackage rec {
     sensor-state-data
   ];
 
-  nativeCheckInputs = [
-    pytest-cov-stub
-    pytestCheckHook
-  ];
-
+  pyproject = true;
   pythonImportsCheck = [ "bluemaestro_ble" ];
 
   meta = {

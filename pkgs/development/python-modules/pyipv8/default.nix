@@ -1,26 +1,25 @@
 {
   lib,
-  fetchPypi,
+  fetchFromGitHub,
   aiohttp,
   aiohttp-apispec,
   apispec,
   buildPythonPackage,
   cryptography,
-  fetchFromGitHub,
+  fetchPypi,
   libnacl,
   marshmallow,
   packaging,
   pyasn1,
   pyopenssl,
-  setuptools,
   pytestCheckHook,
+  setuptools,
   typing-extensions,
 }:
 
 buildPythonPackage rec {
   pname = "pyipv8";
   version = "3.2";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "tribler";
@@ -29,6 +28,9 @@ buildPythonPackage rec {
     hash = "sha256-lvkMWMwpKEbHcHZQ3rbG9MOS1/tufa/KphQT9iz5PcQ=";
   };
 
+  doCheck = true;
+  nativeCheckInputs = [ pytestCheckHook ];
+  __darwinAllowLocalNetworking = true;
   build-system = [ setuptools ];
 
   dependencies = [
@@ -44,11 +46,7 @@ buildPythonPackage rec {
     apispec
   ];
 
-  doCheck = true;
-
-  __darwinAllowLocalNetworking = true;
-
-  nativeCheckInputs = [ pytestCheckHook ];
+  pyproject = true;
 
   meta = {
     description = "Python implementation of Tribler's IPv8 p2p-networking layer";

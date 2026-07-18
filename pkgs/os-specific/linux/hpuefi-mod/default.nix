@@ -1,9 +1,9 @@
 {
+  lib,
   stdenv,
   fetchzip,
   kernel,
   kernelModuleMakeFlags,
-  lib,
 }:
 stdenv.mkDerivation (finalAttrs: {
   pname = "hpuefi-mod";
@@ -15,8 +15,13 @@ stdenv.mkDerivation (finalAttrs: {
     stripRoot = false;
   };
 
-  nativeBuildInputs = kernel.moduleBuildDependencies;
+  postPatch = ''
+    substituteInPlace hpuefi.h \
+      --replace-fail '&((p)->flags)' '(unsigned long *)&((p)->flags)'
+  '';
+
   strictDeps = true;
+  nativeBuildInputs = kernel.moduleBuildDependencies;
 
   makeFlags = kernelModuleMakeFlags ++ [
     "KVERS=${kernel.modDirVersion}"
@@ -24,26 +29,21 @@ stdenv.mkDerivation (finalAttrs: {
     "DESTDIR=$(out)"
   ];
 
-  unpackPhase = ''
-    tar -xzf "$src/non-rpms/hpuefi-mod-${finalAttrs.version}.tgz"
-    cd hpuefi-mod-${finalAttrs.version}
-  '';
-
   prePatch = ''
     substituteInPlace "Makefile" \
       --replace-fail depmod \#
   '';
 
-  postPatch = ''
-    substituteInPlace hpuefi.h \
-      --replace-fail '&((p)->flags)' '(unsigned long *)&((p)->flags)'
+  unpackPhase = ''
+    tar -xzf "$src/non-rpms/hpuefi-mod-${finalAttrs.version}.tgz"
+    cd hpuefi-mod-${finalAttrs.version}
   '';
 
   meta = {
-    homepage = "https://ftp.hp.com/pub/caps-softpaq/cmit/linuxtools/HP_LinuxTools.html";
     description = "Kernel module for managing BIOS settings and updating BIOS firmware on supported HP computers";
+    homepage = "https://ftp.hp.com/pub/caps-softpaq/cmit/linuxtools/HP_LinuxTools.html";
     license = lib.licenses.gpl2Only; # See "License" section in ./non-rpms/hpuefi-mod-*.tgz/README
-    platforms = [ "x86_64-linux" ];
     maintainers = with lib.maintainers; [ tomodachi94 ];
+    platforms = [ "x86_64-linux" ];
   };
 })

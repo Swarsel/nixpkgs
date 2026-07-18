@@ -3,16 +3,16 @@
   stdenv,
   fetchFromGitHub,
   autoreconfHook,
-  pkg-config,
   libjpeg,
   libtiff,
+  pkg-config,
   proj,
   zlib,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
-  version = "1.7.4";
   pname = "libgeotiff";
+  version = "1.7.4";
 
   src = fetchFromGitHub {
     owner = "OSGeo";
@@ -26,13 +26,6 @@ stdenv.mkDerivation (finalAttrs: {
     "dev"
   ];
 
-  sourceRoot = "${finalAttrs.src.name}/libgeotiff";
-
-  configureFlags = [
-    "--with-jpeg=${libjpeg.dev}"
-    "--with-zlib=${zlib.dev}"
-  ];
-
   nativeBuildInputs = [
     autoreconfHook
     pkg-config
@@ -44,15 +37,21 @@ stdenv.mkDerivation (finalAttrs: {
     zlib
   ];
 
-  #hardeningDisable = [ "format" ];
+  configureFlags = [
+    "--with-jpeg=${libjpeg.dev}"
+    "--with-zlib=${zlib.dev}"
+  ];
 
+  sourceRoot = "${finalAttrs.src.name}/libgeotiff";
+
+  #hardeningDisable = [ "format" ];
   meta = {
     description = "Library implementing attempt to create a tiff based interchange format for georeferenced raster imagery";
     homepage = "https://github.com/OSGeo/libgeotiff";
     changelog = "https://github.com/OSGeo/libgeotiff/blob/${finalAttrs.src.rev}/libgeotiff/NEWS";
     license = lib.licenses.mit;
     maintainers = [ ];
-    teams = [ lib.teams.geospatial ];
     platforms = with lib.platforms; linux ++ darwin;
+    teams = [ lib.teams.geospatial ];
   };
 })

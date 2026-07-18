@@ -1,16 +1,15 @@
 {
   lib,
-  python3Packages,
   fetchFromGitHub,
   groff,
   nix-update-script,
+  python3Packages,
   versionCheckHook,
   writableTmpDirAsHomeHook,
 }:
 python3Packages.buildPythonApplication (finalAttrs: {
   pname = "cppman";
   version = "0.5.9";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "aitjcize";
@@ -18,6 +17,18 @@ python3Packages.buildPythonApplication (finalAttrs: {
     tag = finalAttrs.version;
     hash = "sha256-iPJR4XAjNrBhFHZVOATPi3WwTC1/Y6HK3qmKLqbaK98=";
   };
+
+  # bs4 is merely a dummy package and can be safely removed
+  # Ideally, its version would also stay fixed.
+  postPatch = ''
+    substituteInPlace requirements.txt \
+      --replace-fail "bs4==0.0.2" ""
+  '';
+
+  nativeCheckInputs = [
+    versionCheckHook
+    writableTmpDirAsHomeHook
+  ];
 
   build-system = with python3Packages; [
     setuptools
@@ -35,27 +46,16 @@ python3Packages.buildPythonApplication (finalAttrs: {
     groff
   ];
 
-  # cppman pins all dependency versions via requirements.txt as install_requires
-  pythonRelaxDeps = true;
-
-  # bs4 is merely a dummy package and can be safely removed
-  # Ideally, its version would also stay fixed.
-  postPatch = ''
-    substituteInPlace requirements.txt \
-      --replace-fail "bs4==0.0.2" ""
-  '';
+  pyproject = true;
 
   pythonImportsCheck = [
     "cppman"
   ];
 
-  nativeCheckInputs = [
-    versionCheckHook
-    writableTmpDirAsHomeHook
-  ];
+  # cppman pins all dependency versions via requirements.txt as install_requires
+  pythonRelaxDeps = true;
   # Writable $HOME is required for `cppman --version` to work
   versionCheckKeepEnvironment = "HOME";
-
   passthru.updateScript = nix-update-script { };
 
   meta = {

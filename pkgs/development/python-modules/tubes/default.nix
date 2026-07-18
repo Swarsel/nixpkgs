@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   python,
   six,
   twisted,
@@ -10,7 +10,6 @@
 buildPythonPackage {
   pname = "tubes";
   version = "0.2.1-unstable-2023-11-06";
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "twisted";
@@ -28,6 +27,7 @@ buildPythonPackage {
     ${python.interpreter} -m twisted.trial -j $NIX_BUILD_CORES tubes
   '';
 
+  format = "setuptools";
   pythonImportsCheck = [ "tubes" ];
 
   meta = {

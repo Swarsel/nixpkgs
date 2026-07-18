@@ -1,8 +1,8 @@
 {
   lib,
   fetchFromGitHub,
-  rustPlatform,
   installShellFiles,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -16,9 +16,12 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-1LsOt0+jF00EEDLALXZhrKpLTpoNINgh23OevK0KztM=";
   };
 
+  nativeBuildInputs = [ installShellFiles ];
   cargoHash = "sha256-995toHrVVEZ/24ZgEWcgXwz0AFVPdXmylKiEimEBwNQ=";
 
-  nativeBuildInputs = [ installShellFiles ];
+  preCheck = ''
+    HOME=$TMPDIR
+  '';
 
   postInstall = ''
     installManPage man/man1/shadowenv.1
@@ -28,13 +31,9 @@ rustPlatform.buildRustPackage (finalAttrs: {
     installShellCompletion --zsh sh/completions/_shadowenv
   '';
 
-  preCheck = ''
-    HOME=$TMPDIR
-  '';
-
   meta = {
-    homepage = "https://shopify.github.io/shadowenv/";
     description = "Reversible directory-local environment variable manipulations";
+    homepage = "https://shopify.github.io/shadowenv/";
     license = lib.licenses.mit;
     maintainers = [ ];
     mainProgram = "shadowenv";

@@ -1,11 +1,11 @@
 {
   lib,
   fetchurl,
-  python3Packages,
+  bash,
   libjack2,
+  python3Packages,
   qt5,
   which,
-  bash,
 }:
 
 python3Packages.buildPythonApplication (finalAttrs: {
@@ -17,30 +17,19 @@ python3Packages.buildPythonApplication (finalAttrs: {
     hash = "sha256-wlkEKkPH2C/y7TQicIVycWbtLUdX2hICcUWi7nFN51w=";
   };
 
-  pyproject = false;
-
   nativeBuildInputs = [
     python3Packages.pyqt5 # pyuic5 and pyrcc5 to build resources.
     qt5.qttools # lrelease to build translations.
     which # which to find lrelease.
     qt5.wrapQtAppsHook
   ];
+
   buildInputs = [
     libjack2
     bash
   ];
+
   propagatedBuildInputs = [ python3Packages.pyqt5 ];
-
-  dontWrapQtApps = true; # The program is a python script.
-
-  installFlags = [ "PREFIX=$(out)" ];
-
-  makeWrapperArgs = [
-    "--suffix"
-    "LD_LIBRARY_PATH"
-    ":"
-    (lib.makeLibraryPath [ libjack2 ])
-  ];
 
   preFixup = ''
     makeWrapperArgs+=("''${qtWrapperArgs[@]}")
@@ -53,12 +42,24 @@ python3Packages.buildPythonApplication (finalAttrs: {
     done
   '';
 
+  dontWrapQtApps = true; # The program is a python script.
+  installFlags = [ "PREFIX=$(out)" ];
+
+  makeWrapperArgs = [
+    "--suffix"
+    "LD_LIBRARY_PATH"
+    ":"
+    (lib.makeLibraryPath [ libjack2 ])
+  ];
+
+  pyproject = false;
+
   meta = {
-    homepage = "https://github.com/Houston4444/Patchance";
     description = "JACK Patchbay GUI";
-    mainProgram = "patchance";
+    homepage = "https://github.com/Houston4444/Patchance";
     license = lib.licenses.gpl2;
     maintainers = [ ];
     platforms = lib.platforms.linux;
+    mainProgram = "patchance";
   };
 })

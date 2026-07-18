@@ -1,8 +1,8 @@
 {
   lib,
+  fetchFromGitHub,
   bash,
   buildPythonPackage,
-  fetchFromGitHub,
   gnumake,
   h2,
   hpack,
@@ -23,7 +23,6 @@
 buildPythonPackage rec {
   pname = "proxy-py";
   version = "2.4.10";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "abhinavsingh";
@@ -36,13 +35,6 @@ buildPythonPackage rec {
     substituteInPlace Makefile \
     --replace "SHELL := /bin/bash" "SHELL := ${bash}/bin/bash"
   '';
-
-  build-system = [ setuptools-scm ];
-
-  dependencies = [
-    paramiko
-    typing-extensions
-  ];
 
   nativeCheckInputs = [
     gnumake
@@ -59,11 +51,17 @@ buildPythonPackage rec {
     requests
   ];
 
-  __darwinAllowLocalNetworking = true;
-
   preCheck = ''
     export HOME=$(mktemp -d);
   '';
+
+  __darwinAllowLocalNetworking = true;
+  build-system = [ setuptools-scm ];
+
+  dependencies = [
+    paramiko
+    typing-extensions
+  ];
 
   disabledTests = [
     # Test requires network access
@@ -80,6 +78,7 @@ buildPythonPackage rec {
     "test_grout"
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "proxy" ];
 
   meta = {

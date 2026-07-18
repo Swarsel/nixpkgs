@@ -32,10 +32,12 @@ in
 {
   options.networking.stevenblack = {
     enable = mkEnableOption "the stevenblack hosts file blocklist";
-
     package = mkPackageOption pkgs "stevenblack-blocklist" { };
 
     block = mkOption {
+      default = [ ];
+      description = "Additional blocklist extensions.";
+
       type = types.listOf (
         types.enum [
           "fakenews"
@@ -44,16 +46,14 @@ in
           "social"
         ]
       );
-      default = [ ];
-      description = "Additional blocklist extensions.";
     };
 
     whitelist = mkOption {
-      # https://datatracker.ietf.org/doc/html/rfc1035
-      type = types.listOf (types.strMatching "^[a-zA-Z0-9_-]+([.][a-zA-Z0-9_-]+)+$");
       default = [ ];
       description = "Domains to exclude from blocking.";
       example = [ "s.click.aliexpress.com" ];
+      # https://datatracker.ietf.org/doc/html/rfc1035
+      type = types.listOf (types.strMatching "^[a-zA-Z0-9_-]+([.][a-zA-Z0-9_-]+)+$");
     };
   };
 

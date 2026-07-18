@@ -1,21 +1,19 @@
 {
   lib,
-  buildHomeAssistantComponent,
   fetchFromGitHub,
-  pyhaversion,
+  aiohttp-cors,
+  buildHomeAssistantComponent,
   nix-update-script,
+  paho-mqtt,
+  pyhaversion,
+  pytest-homeassistant-custom-component,
   # Test dependencies
   pytestCheckHook,
-  pytest-homeassistant-custom-component,
-  aiohttp-cors,
-  paho-mqtt,
 }:
 let
   version = "3.0.2";
 in
 buildHomeAssistantComponent {
-  owner = "IATkachenko";
-  domain = "sleep_as_android_mqtt";
   inherit version;
 
   src = fetchFromGitHub {
@@ -31,10 +29,6 @@ buildHomeAssistantComponent {
       --replace-fail "sleep_as_android." "sleep_as_android_mqtt."
   '';
 
-  dependencies = [
-    pyhaversion
-  ];
-
   nativeCheckInputs = [
     pytestCheckHook
     pytest-homeassistant-custom-component
@@ -42,10 +36,8 @@ buildHomeAssistantComponent {
     paho-mqtt
   ];
 
-  pytestFlags = [
-    # Fixes `AttributeError: 'async_generator' object has no attribute 'data'`
-    #  See https://github.com/MatthewFlamm/pytest-homeassistant-custom-component/issues/158
-    "--asyncio-mode=auto"
+  dependencies = [
+    pyhaversion
   ];
 
   disabledTests = [
@@ -57,6 +49,15 @@ buildHomeAssistantComponent {
     # Likely fails due to --asyncio-mode=auto
     #  TypeError: object MagicMock can't be used in 'await' expression
     "test_async_setup_entry"
+  ];
+
+  domain = "sleep_as_android_mqtt";
+  owner = "IATkachenko";
+
+  pytestFlags = [
+    # Fixes `AttributeError: 'async_generator' object has no attribute 'data'`
+    #  See https://github.com/MatthewFlamm/pytest-homeassistant-custom-component/issues/158
+    "--asyncio-mode=auto"
   ];
 
   passthru.updateScript = nix-update-script { };

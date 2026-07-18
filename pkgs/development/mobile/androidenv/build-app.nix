@@ -1,22 +1,22 @@
 {
-  composeAndroidPackages,
-  stdenv,
   lib,
+  stdenv,
   ant,
-  jdk,
-  gnumake,
+  composeAndroidPackages,
   gawk,
+  gnumake,
+  jdk,
   meta,
 }:
 
 {
   name,
-  release ? false,
-  keyStore ? null,
-  keyAlias ? null,
-  keyStorePassword ? null,
-  keyAliasPassword ? null,
   antFlags ? "",
+  keyAlias ? null,
+  keyAliasPassword ? null,
+  keyStore ? null,
+  keyStorePassword ? null,
+  release ? false,
   ...
 }@args:
 
@@ -33,12 +33,13 @@ let
 in
 stdenv.mkDerivation (
   {
-    name = lib.replaceStrings [ " " ] [ "" ] name; # Android APKs may contain white spaces in their names, but Nix store paths cannot
-    ANDROID_HOME = "${androidsdk}/libexec/android-sdk";
+    inherit meta;
+
     buildInputs = [
       jdk
       ant
     ];
+
     buildPhase = ''
       ${lib.optionalString release ''
         # Provide key singing attributes
@@ -58,6 +59,7 @@ stdenv.mkDerivation (
       ''}
       ant ${antFlags} ${if release then "release" else "debug"}
     '';
+
     installPhase = ''
       mkdir -p $out
       mv bin/*-${if release then "release" else "debug"}.apk $out
@@ -66,7 +68,8 @@ stdenv.mkDerivation (
       echo "file binary-dist \"$(echo $out/*.apk)\"" > $out/nix-support/hydra-build-products
     '';
 
-    inherit meta;
+    ANDROID_HOME = "${androidsdk}/libexec/android-sdk";
+    name = lib.replaceStrings [ " " ] [ "" ] name; # Android APKs may contain white spaces in their names, but Nix store paths cannot
   }
   // extraArgs
 )

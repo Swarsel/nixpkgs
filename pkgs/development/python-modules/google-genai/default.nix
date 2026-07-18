@@ -1,12 +1,12 @@
 {
+  lib,
+  fetchFromGitHub,
   aiohttp,
   anyio,
   buildPythonPackage,
   distro,
-  fetchFromGitHub,
   google-auth,
   httpx,
-  lib,
   packaging,
   pkginfo,
   pydantic,
@@ -23,7 +23,6 @@
 buildPythonPackage rec {
   pname = "google-genai";
   version = "1.67.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "googleapis";
@@ -32,16 +31,18 @@ buildPythonPackage rec {
     hash = "sha256-1ewVg271kooPkCEtmDm1HHnJY3MkomrXKp1dK9J0RXI=";
   };
 
+  # ValueError: GOOGLE_GENAI_REPLAYS_DIRECTORY environment variable is not set
+  doCheck = false;
+
+  nativeCheckInputs = [
+    pytestCheckHook
+  ];
+
   build-system = [
     packaging
     pkginfo
     setuptools
     twine
-  ];
-
-  pythonRelaxDeps = [
-    "tenacity"
-    "websockets"
   ];
 
   dependencies = [
@@ -62,19 +63,18 @@ buildPythonPackage rec {
     aiohttp = [ aiohttp ];
   };
 
+  pyproject = true;
   pythonImportsCheck = [ "google.genai" ];
 
-  nativeCheckInputs = [
-    pytestCheckHook
+  pythonRelaxDeps = [
+    "tenacity"
+    "websockets"
   ];
 
-  # ValueError: GOOGLE_GENAI_REPLAYS_DIRECTORY environment variable is not set
-  doCheck = false;
-
   meta = {
-    changelog = "https://github.com/googleapis/python-genai/blob/${src.tag}/CHANGELOG.md";
     description = "Google Generative AI Python SDK";
     homepage = "https://github.com/googleapis/python-genai";
+    changelog = "https://github.com/googleapis/python-genai/blob/${src.tag}/CHANGELOG.md";
     license = lib.licenses.asl20;
     maintainers = with lib.maintainers; [ dotlambda ];
   };

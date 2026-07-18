@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   installShellFiles,
 }:
 
@@ -16,15 +16,8 @@ buildGoModule (finalAttrs: {
     hash = "sha256-VZXtteRXzjxXtAOYXZHBXknOyegbaCAPPXyRtig3PIs=";
   };
 
-  vendorHash = null;
-
   nativeBuildInputs = [ installShellFiles ];
-
-  ldflags = [
-    "-s -w"
-    "-X main.revision=v${finalAttrs.version}"
-  ];
-
+  vendorHash = null;
   doCheck = false;
 
   postInstall = ''
@@ -33,11 +26,16 @@ buildGoModule (finalAttrs: {
     installShellCompletion completions/*
   '';
 
+  ldflags = [
+    "-s -w"
+    "-X main.revision=v${finalAttrs.version}"
+  ];
+
   meta = {
     description = "Tool for effortless deployment and configuration management";
     homepage = "https://spot.umputun.dev/";
-    maintainers = with lib.maintainers; [ sikmir ];
     license = lib.licenses.mit;
+    maintainers = with lib.maintainers; [ sikmir ];
     mainProgram = "spot";
   };
 })

@@ -1,5 +1,28 @@
-{ _cuda, lib }:
+{ lib, _cuda }:
 {
+  /**
+    The lowest Jetson CUDA capability which uses the `linux-sbsa` redist (rather than `linux-aarch64`) for a given
+    CUDA version. Jetson capabilities below this threshold use `linux-aarch64`.
+
+    The threshold depends on the CUDA version because NVIDIA moved Jetson onto the SBSA software stack incrementally:
+    - CUDA 12 (JetPack 6): only Thor (10.1) is SBSA; Orin (8.7) is `linux-aarch64`.
+    - CUDA 13 (JetPack 7.2): Orin (8.7) and Thor (11.0) are both SBSA.
+
+    # Type
+
+    ```
+    _getJetsonMinSbsaCapability :: (cudaMajorMinorVersion :: String) -> CudaCapability
+    ```
+
+    # Inputs
+
+    `cudaMajorMinorVersion`
+
+    : The major and minor version of CUDA (e.g. "12.6")
+  */
+  _getJetsonMinSbsaCapability =
+    cudaMajorMinorVersion: if lib.versionAtLeast cudaMajorMinorVersion "13.0" then "8.7" else "10.1";
+
   /**
     Returns a boolean indicating whether the provided redist system is supported by any of the provided redist systems.
 
@@ -107,29 +130,6 @@
       ]
     else
       [ ];
-
-  /**
-    The lowest Jetson CUDA capability which uses the `linux-sbsa` redist (rather than `linux-aarch64`) for a given
-    CUDA version. Jetson capabilities below this threshold use `linux-aarch64`.
-
-    The threshold depends on the CUDA version because NVIDIA moved Jetson onto the SBSA software stack incrementally:
-    - CUDA 12 (JetPack 6): only Thor (10.1) is SBSA; Orin (8.7) is `linux-aarch64`.
-    - CUDA 13 (JetPack 7.2): Orin (8.7) and Thor (11.0) are both SBSA.
-
-    # Type
-
-    ```
-    _getJetsonMinSbsaCapability :: (cudaMajorMinorVersion :: String) -> CudaCapability
-    ```
-
-    # Inputs
-
-    `cudaMajorMinorVersion`
-
-    : The major and minor version of CUDA (e.g. "12.6")
-  */
-  _getJetsonMinSbsaCapability =
-    cudaMajorMinorVersion: if lib.versionAtLeast cudaMajorMinorVersion "13.0" then "8.7" else "10.1";
 
   /**
     Maps a Nix system to a NVIDIA redistributable system.

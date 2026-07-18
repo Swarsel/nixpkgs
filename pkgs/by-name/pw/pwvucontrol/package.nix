@@ -3,23 +3,23 @@
   stdenv,
   fetchFromGitHub,
   blueprint-compiler,
+  cairo,
   cargo,
   desktop-file-utils,
-  meson,
-  ninja,
-  pkg-config,
-  rustPlatform,
-  rustc,
-  wrapGAppsHook4,
-  cairo,
   gdk-pixbuf,
   glib,
   gtk4,
   libadwaita,
+  meson,
+  ninja,
+  nix-update-script,
   pango,
   pipewire,
+  pkg-config,
+  rustPlatform,
+  rustc,
   wireplumber,
-  nix-update-script,
+  wrapGAppsHook4,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -31,11 +31,6 @@ stdenv.mkDerivation (finalAttrs: {
     repo = "pwvucontrol";
     tag = finalAttrs.version;
     hash = "sha256-Y5O/KkYYNDysZ3H0vk0qj2DOkmx/Z4vJELr9oydxpt8=";
-  };
-
-  cargoDeps = rustPlatform.fetchCargoVendor {
-    inherit (finalAttrs) pname version src;
-    hash = "sha256-pw7UrD4EFd04mxy8Cz3tif+lzlnemIjFkB7VVOnAA1E=";
   };
 
   postPatch = ''
@@ -71,6 +66,11 @@ stdenv.mkDerivation (finalAttrs: {
   # For https://github.com/saivert/pwvucontrol/blob/7bf43c746cd49fffbfb244ac4474742c6b3737a9/src/meson.build#L45-L46
   env.CARGO_BUILD_TARGET = stdenv.hostPlatform.rust.rustcTargetSpec;
 
+  cargoDeps = rustPlatform.fetchCargoVendor {
+    inherit (finalAttrs) pname version src;
+    hash = "sha256-pw7UrD4EFd04mxy8Cz3tif+lzlnemIjFkB7VVOnAA1E=";
+  };
+
   passthru.updateScript = nix-update-script { };
 
   meta = {
@@ -78,12 +78,14 @@ stdenv.mkDerivation (finalAttrs: {
     homepage = "https://github.com/saivert/pwvucontrol";
     changelog = "https://github.com/saivert/pwvucontrol/releases/tag/${finalAttrs.version}";
     license = lib.licenses.gpl3Plus;
+
     maintainers = with lib.maintainers; [
       Guanran928
       johnrtitor
       ilkecan
     ];
-    mainProgram = "pwvucontrol";
+
     platforms = lib.platforms.linux;
+    mainProgram = "pwvucontrol";
   };
 })

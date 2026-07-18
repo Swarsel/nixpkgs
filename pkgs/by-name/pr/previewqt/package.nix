@@ -1,19 +1,19 @@
 {
   lib,
+  stdenv,
+  fetchFromGitLab,
   cmake,
   exiv2,
-  fetchFromGitLab,
   imagemagick,
+  kdePackages,
   libarchive,
   libraw,
   mpv,
   pkg-config,
   qt6Packages,
-  withSyntaxHighlighting ? stdenv.hostPlatform.isLinux,
-  kdePackages,
   resvg,
-  stdenv,
   vips,
+  withSyntaxHighlighting ? stdenv.hostPlatform.isLinux,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -26,6 +26,8 @@ stdenv.mkDerivation (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-OvLJWuLrd7A9px0fF2pRN5frLF4Q5PCG/PxKjdLmC/g=";
   };
+
+  strictDeps = true;
 
   nativeBuildInputs = [
     cmake
@@ -55,8 +57,6 @@ stdenv.mkDerivation (finalAttrs: {
     kdePackages.syntax-highlighting
   ];
 
-  strictDeps = true;
-
   cmakeFlags = [
     (lib.cmakeBool "WITH_DEVIL" false)
     (lib.cmakeBool "WITH_FREEIMAGE" false)
@@ -71,8 +71,8 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   meta = {
-    homepage = "https://previewqt.org/";
     description = "Qt-based file previewer";
+
     longDescription = ''
       PhotoQt is an image viewer that provides a simple and uncluttered
       interface. Yet, hidden beneath the surface awaits a large array of
@@ -102,10 +102,12 @@ stdenv.mkDerivation (finalAttrs: {
       - Several translations available (help wanted)
       - and much more...
     '';
+
+    homepage = "https://previewqt.org/";
     changelog = "https://gitlab.com/lspies/previewqt/-/blob/v${finalAttrs.version}/CHANGELOG";
     license = lib.licenses.gpl2Plus;
-    mainProgram = "previewqt";
     maintainers = with lib.maintainers; [ wegank ];
     platforms = lib.platforms.unix;
+    mainProgram = "previewqt";
   };
 })

@@ -1,9 +1,9 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
-  testers,
+  buildGoModule,
   ghr,
+  testers,
 }:
 
 buildGoModule (finalAttrs: {
@@ -18,19 +18,18 @@ buildGoModule (finalAttrs: {
   };
 
   vendorHash = "sha256-ZjIwmmwybkQn+GBqtYI+saU+xuWYn4Moq9zmwRQsaSA=";
-
   # Tests require a Github API token, and networking
   doCheck = false;
   doInstallCheck = true;
 
   passthru.tests.version = testers.testVersion {
-    package = ghr;
     version = "v${finalAttrs.version}";
+    package = ghr;
   };
 
   meta = {
-    homepage = "https://github.com/tcnksm/ghr";
     description = "Upload multiple artifacts to GitHub Release in parallel";
+    homepage = "https://github.com/tcnksm/ghr";
     license = lib.licenses.mit;
     maintainers = [ ];
     mainProgram = "ghr";

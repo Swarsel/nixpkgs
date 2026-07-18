@@ -1,16 +1,15 @@
 {
   lib,
+  fetchFromGitHub,
   aiohttp,
   async-timeout,
   buildPythonPackage,
-  fetchFromGitHub,
   setuptools,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "loqedapi";
   version = "2.1.11";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "cpolhout";
@@ -19,6 +18,8 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-DLnjIq0YQIspPWYP9KT0UZ9UPGg5SOjYuVM7XqCUqTo=";
   };
 
+  # Tests require network access
+  doCheck = false;
   build-system = [ setuptools ];
 
   dependencies = [
@@ -26,9 +27,7 @@ buildPythonPackage (finalAttrs: {
     async-timeout
   ];
 
-  # Tests require network access
-  doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "loqedAPI" ];
 
   meta = {

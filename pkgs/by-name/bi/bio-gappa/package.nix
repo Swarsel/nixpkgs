@@ -2,13 +2,13 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  cmake,
   autoconf,
-  pkg-config,
-  libz,
   bzip2,
-  xz,
+  cmake,
+  libz,
+  pkg-config,
   versionCheckHook,
+  xz,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -23,18 +23,6 @@ stdenv.mkDerivation (finalAttrs: {
     fetchSubmodules = true;
   };
 
-  nativeBuildInputs = [
-    cmake
-    pkg-config
-    autoconf
-  ];
-
-  buildInputs = [
-    libz
-    bzip2
-    xz
-  ];
-
   patches = [
     ./fix-cstdint.patch
   ];
@@ -48,6 +36,18 @@ stdenv.mkDerivation (finalAttrs: {
       "cmake_minimum_required (VERSION 3.10   FATAL_ERROR)"
   '';
 
+  nativeBuildInputs = [
+    cmake
+    pkg-config
+    autoconf
+  ];
+
+  buildInputs = [
+    libz
+    bzip2
+    xz
+  ];
+
   installPhase = ''
     runHook preInstall
     mkdir -p $out/bin
@@ -55,12 +55,12 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
-  nativeInstallCheckInputs = [ versionCheckHook ];
   doInstallCheck = !stdenv.hostPlatform.isDarwin; # skip on Darwin - missing /libz.1.dylib in sandbox
+  nativeInstallCheckInputs = [ versionCheckHook ];
 
   meta = {
-    homepage = "https://github.com/lczech/gappa";
     description = "Toolkit for analyzing and visualizing phylogenetic (placement) data";
+
     longDescription = ''
       gappa is a collection of commands for working with phylogenetic data. Its
       main focus are evolutionary placements of short environmental sequences
@@ -68,9 +68,11 @@ stdenv.mkDerivation (finalAttrs: {
       tools such as EPA-ng, RAxML-EPA or pplacer, and usually stored in jplace
       files.
     '';
-    platforms = lib.platforms.all;
+
+    homepage = "https://github.com/lczech/gappa";
     license = lib.licenses.gpl3Plus;
     maintainers = with lib.maintainers; [ bzizou ];
+    platforms = lib.platforms.all;
     mainProgram = "gappa";
   };
 })

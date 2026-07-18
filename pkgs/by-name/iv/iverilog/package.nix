@@ -2,8 +2,10 @@
   lib,
   stdenv,
   fetchFromGitHub,
+  addBinToPathHook,
   autoconf,
   bison,
+  buildPackages,
   bzip2,
   flex,
   gperf,
@@ -12,8 +14,6 @@
   python3,
   readline,
   zlib,
-  buildPackages,
-  addBinToPathHook,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -34,6 +34,15 @@ stdenv.mkDerivation (finalAttrs: {
     gperf
   ];
 
+  buildInputs = [
+    bzip2
+    ncurses
+    readline
+    zlib
+  ];
+
+  configureFlags = [ "CFLAGS=-std=gnu17" ];
+
   env = {
     CC_FOR_BUILD = "${lib.getExe' buildPackages.stdenv.cc "cc"}";
     CXX_FOR_BUILD = "${lib.getExe' buildPackages.stdenv.cc "cc++"}";
@@ -42,19 +51,7 @@ stdenv.mkDerivation (finalAttrs: {
     NIX_CFLAGS_COMPILE = "-Wno-error=implicit-function-declaration";
   };
 
-  buildInputs = [
-    bzip2
-    ncurses
-    readline
-    zlib
-  ];
-
   preConfigure = "sh autoconf.sh";
-
-  configureFlags = [ "CFLAGS=-std=gnu17" ];
-
-  enableParallelBuilding = true;
-
   # NOTE(jleightcap): the `make check` target only runs a "Hello, World"-esque sanity check.
   # the tests in the doInstallCheck phase run a full regression test suite.
   # however, these tests currently fail upstream on aarch64
@@ -83,15 +80,19 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstallCheck
   '';
 
+  enableParallelBuilding = true;
+
   meta = {
     description = "Icarus Verilog compiler";
     homepage = "https://steveicarus.github.io/iverilog";
-    downloadPage = "https://github.com/steveicarus/iverilog";
+
     license = with lib.licenses; [
       gpl2Plus
       lgpl21Plus
     ];
+
     maintainers = with lib.maintainers; [ thoughtpolice ];
     platforms = lib.platforms.all;
+    downloadPage = "https://github.com/steveicarus/iverilog";
   };
 })

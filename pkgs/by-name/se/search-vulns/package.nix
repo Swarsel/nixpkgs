@@ -1,13 +1,12 @@
 {
   lib,
-  python3,
   fetchFromGitHub,
+  python3,
 }:
 
 python3.pkgs.buildPythonApplication (finalAttrs: {
   pname = "search-vulns";
   version = "1.2.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "ra1nb0rn";
@@ -17,8 +16,8 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     fetchSubmodules = true;
   };
 
-  pythonRelaxDeps = [ "cpe-search" ];
-
+  # Re-evaluate with the next release
+  doCheck = false;
   build-system = with python3.pkgs; [ hatchling ];
 
   dependencies = with python3.pkgs; [
@@ -50,7 +49,9 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
       ujson
       univers
     ];
+
     mariadb = [ mariadb ];
+
     web = [
       flask
       gevent
@@ -59,10 +60,9 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     ];
   };
 
+  pyproject = true;
   pythonImportsCheck = [ "search_vulns" ];
-
-  # Re-evaluate with the next release
-  doCheck = false;
+  pythonRelaxDeps = [ "cpe-search" ];
 
   meta = {
     description = "Search for known vulnerabilities in software using software titles or a CPE 2.3 string";

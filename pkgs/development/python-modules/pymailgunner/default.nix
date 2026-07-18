@@ -1,14 +1,13 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   requests,
 }:
 
 buildPythonPackage rec {
   pname = "pymailgunner";
   version = "1.5";
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "pschmitt";
@@ -18,10 +17,9 @@ buildPythonPackage rec {
   };
 
   propagatedBuildInputs = [ requests ];
-
   # Module has no tests
   doCheck = false;
-
+  format = "setuptools";
   pythonImportsCheck = [ "pymailgunner" ];
 
   meta = {

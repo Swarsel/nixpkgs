@@ -1,8 +1,8 @@
 {
   lib,
-  clangStdenv,
-  callPackage,
   fetchFromGitHub,
+  callPackage,
+  clangStdenv,
 }:
 
 let
@@ -28,32 +28,9 @@ clangStdenv.mkDerivation (finalAttrs: {
     owner = "julelang";
     repo = "jule";
     tag = "jule${finalAttrs.version}";
-    name = "jule-${finalAttrs.version}";
     hash = "sha256-m+IJiTNOrOzx/3e67r/yWOjGRRyOy5TWHhjFZXaMOsc=";
+    name = "jule-${finalAttrs.version}";
   };
-
-  irSrc = fetchFromGitHub {
-    owner = "julelang";
-    repo = "julec-ir";
-    tag = "jule${finalAttrs.version}";
-    name = "jule-ir-${finalAttrs.version}";
-    hash = "sha256-UclKaxIBW1dqCz2Rk0If7EV3P7XrtUpKuR4ROPWw2Ao=";
-  };
-
-  dontConfigure = true;
-
-  unpackPhase = ''
-    runHook preUnpack
-
-    cp -R ${finalAttrs.src}/* .
-    cp "${finalAttrs.irSrc}/src/${irFile}" ./ir.cpp
-
-    chmod +w -R .
-
-    find ./*/* -type f -name '*.md' -exec rm -f {} +
-
-    runHook postUnpack
-  '';
 
   buildPhase = ''
     runHook preBuild
@@ -97,6 +74,29 @@ clangStdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  dontConfigure = true;
+
+  irSrc = fetchFromGitHub {
+    hash = "sha256-UclKaxIBW1dqCz2Rk0If7EV3P7XrtUpKuR4ROPWw2Ao=";
+    name = "jule-ir-${finalAttrs.version}";
+    owner = "julelang";
+    repo = "julec-ir";
+    tag = "jule${finalAttrs.version}";
+  };
+
+  unpackPhase = ''
+    runHook preUnpack
+
+    cp -R ${finalAttrs.src}/* .
+    cp "${finalAttrs.irSrc}/src/${irFile}" ./ir.cpp
+
+    chmod +w -R .
+
+    find ./*/* -type f -name '*.md' -exec rm -f {} +
+
+    runHook postUnpack
+  '';
+
   passthru = {
     # see doc/hooks/julec.section.md
     hook = callPackage ./hook.nix { julec = finalAttrs.finalPackage; };
@@ -105,23 +105,28 @@ clangStdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Jule Programming Language Compiler";
+
     longDescription = ''
       Jule is an effective programming language designed to build efficient, fast, reliable and safe software while maintaining simplicity.
       It is a statically typed, compiled language with a syntax influenced by Go, Rust, and C++.
     '';
+
     homepage = "https://jule.dev";
     changelog = "https://github.com/julelang/manual/releases/tag/jule${finalAttrs.version}";
     license = lib.licenses.bsd3;
+
+    maintainers = with lib.maintainers; [
+      koi
+      sebaguardian
+    ];
+
     platforms = [
       "x86_64-linux"
       "aarch64-linux"
       "i686-linux"
       "aarch64-darwin"
     ];
+
     mainProgram = "julec";
-    maintainers = with lib.maintainers; [
-      koi
-      sebaguardian
-    ];
   };
 })

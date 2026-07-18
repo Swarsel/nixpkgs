@@ -1,34 +1,33 @@
 {
   lib,
   stdenv,
-  buildPythonPackage,
   fetchFromGitHub,
-  fetchpatch,
-  llvmPackages,
-  zlib,
-  cython,
-  numpy,
-  setuptools,
-  versioneer,
-  wheel,
   astunparse,
-  netcdf4,
-  packaging,
-  pyparsing,
-  scipy,
+  buildPythonPackage,
+  cython,
+  fetchpatch,
   gsd,
+  llvmPackages,
+  netcdf4,
   networkx,
+  numpy,
+  packaging,
   pandas,
+  pyparsing,
   pytest-xdist,
   pytestCheckHook,
-  tables,
   pythonAtLeast,
+  scipy,
+  setuptools,
+  tables,
+  versioneer,
+  wheel,
+  zlib,
 }:
 
 buildPythonPackage rec {
   pname = "mdtraj";
   version = "1.11.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "mdtraj";
@@ -42,30 +41,13 @@ buildPythonPackage rec {
     # TODO: enable SIMD with python3.12
     # https://github.com/mdtraj/mdtraj/pull/1884
     (fetchpatch {
+      hash = "sha256-kcnlHMoA/exJzV8iQltH+LWXrvSk7gsUV+yWK6xn0jg=";
       name = "fix-intrinsics-flag.patch";
       url = "https://github.com/mdtraj/mdtraj/commit/d6041c645d51898e2a09030633210213eec7d4c5.patch";
-      hash = "sha256-kcnlHMoA/exJzV8iQltH+LWXrvSk7gsUV+yWK6xn0jg=";
     })
   ];
 
-  build-system = [
-    cython
-    numpy
-    setuptools
-    versioneer
-    wheel
-  ];
-
   buildInputs = [ zlib ] ++ lib.optionals stdenv.cc.isClang [ llvmPackages.openmp ];
-
-  dependencies = [
-    netcdf4
-    numpy
-    packaging
-    pyparsing
-    scipy
-  ];
-
   env.NIX_CFLAGS_COMPILE = lib.optionalString stdenv.cc.isClang "-Wno-incompatible-function-pointer-types";
 
   nativeCheckInputs = [
@@ -81,6 +63,29 @@ buildPythonPackage rec {
     cd tests
     export PATH=$out/bin:$PATH
   '';
+
+  build-system = [
+    cython
+    numpy
+    setuptools
+    versioneer
+    wheel
+  ];
+
+  dependencies = [
+    netcdf4
+    numpy
+    packaging
+    pyparsing
+    scipy
+  ];
+
+  # these files import distutils
+  # remove once https://github.com/mdtraj/mdtraj/pull/1916 is merged
+  disabledTestPaths = lib.optionals (pythonAtLeast "3.12") [
+    "test_mol2.py"
+    "test_netcdf.py"
+  ];
 
   disabledTests = [
     # require network access
@@ -100,13 +105,7 @@ buildPythonPackage rec {
     "test_precentered_2"
   ];
 
-  # these files import distutils
-  # remove once https://github.com/mdtraj/mdtraj/pull/1916 is merged
-  disabledTestPaths = lib.optionals (pythonAtLeast "3.12") [
-    "test_mol2.py"
-    "test_netcdf.py"
-  ];
-
+  pyproject = true;
   pythonImportsCheck = [ "mdtraj" ];
 
   meta = {

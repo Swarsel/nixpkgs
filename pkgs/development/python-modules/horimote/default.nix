@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   pytestCheckHook,
   setuptools,
 }:
@@ -9,7 +9,6 @@
 buildPythonPackage rec {
   pname = "horimote";
   version = "0.4.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "benleb";
@@ -18,10 +17,9 @@ buildPythonPackage rec {
     hash = "sha256-rEtE0Z/PV/n9pz2mLbHeREv/sl4SexTSOq2yx4LDnAo=";
   };
 
-  build-system = [ setuptools ];
-
   nativeCheckInputs = [ pytestCheckHook ];
-
+  build-system = [ setuptools ];
+  pyproject = true;
   pythonImportsCheck = [ "horimote" ];
 
   meta = {

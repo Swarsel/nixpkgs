@@ -1,18 +1,21 @@
 {
-  mkDerivation,
-  libncurses-tinfo,
   libncurses,
+  libncurses-tinfo,
+  mkDerivation,
 }:
 mkDerivation {
   pname = "ncurses-form";
-  path = "lib/ncurses/form";
+
+  buildInputs = [
+    libncurses-tinfo
+    libncurses
+  ];
+
   extraPaths = [
     "lib/ncurses"
     "contrib/ncurses"
     "lib/Makefile.inc"
   ];
-  buildInputs = [
-    libncurses-tinfo
-    libncurses
-  ];
+
+  path = "lib/ncurses/form";
 }

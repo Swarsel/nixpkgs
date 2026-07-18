@@ -9,15 +9,17 @@ let
   meta = {
     description = "Graphical Game Development Studio";
     homepage = "https://gdevelop.io/";
-    downloadPage = "https://github.com/4ian/GDevelop/releases";
     license = lib.licenses.mit;
     sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
+
     maintainers = with lib.maintainers; [
       tombert
       matteopacini
     ];
-    mainProgram = "gdevelop";
+
     platforms = [ "x86_64-linux" ] ++ lib.platforms.darwin;
+    mainProgram = "gdevelop";
+    downloadPage = "https://github.com/4ian/GDevelop/releases";
   };
   passthru.updateScript = ./update.sh;
 in

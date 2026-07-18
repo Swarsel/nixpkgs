@@ -1,35 +1,28 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchPnpmDeps,
+  giflib,
+  meta,
+  node-gyp,
+  nodejs,
+  pango,
+  pkg-config,
   pnpmConfigHook,
   pnpm_10,
-  nodejs,
-  node-gyp,
-  pkg-config,
   python3,
-  pango,
-  giflib,
-  xcbuild,
   src,
   version,
-  meta,
+  xcbuild,
 }:
 let
   pnpm = pnpm_10;
 in
 stdenv.mkDerivation (finalAttrs: {
-  pname = "paperless-ngx-frontend";
   inherit version;
-
+  inherit meta;
+  pname = "paperless-ngx-frontend";
   src = src + "/src-ui";
-
-  pnpmDeps = fetchPnpmDeps {
-    inherit pnpm;
-    inherit (finalAttrs) pname version src;
-    fetcherVersion = 3;
-    hash = "sha256-HO+IDNB3NXWgvV0cvZ5zx46JuXv6Tgroz+YfVump5MA=";
-  };
 
   nativeBuildInputs = [
     node-gyp
@@ -50,9 +43,6 @@ stdenv.mkDerivation (finalAttrs: {
     giflib
   ];
 
-  CYPRESS_INSTALL_BINARY = "0";
-  NG_CLI_ANALYTICS = "false";
-
   buildPhase = ''
     runHook preBuild
 
@@ -67,6 +57,7 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   doCheck = true;
+
   checkPhase = ''
     runHook preCheck
 
@@ -84,5 +75,13 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
-  inherit meta;
+  CYPRESS_INSTALL_BINARY = "0";
+  NG_CLI_ANALYTICS = "false";
+
+  pnpmDeps = fetchPnpmDeps {
+    inherit pnpm;
+    inherit (finalAttrs) pname version src;
+    fetcherVersion = 3;
+    hash = "sha256-HO+IDNB3NXWgvV0cvZ5zx46JuXv6Tgroz+YfVump5MA=";
+  };
 })

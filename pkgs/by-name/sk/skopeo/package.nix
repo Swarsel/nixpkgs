@@ -1,20 +1,20 @@
 {
   lib,
   stdenv,
-  buildGoModule,
   fetchFromGitHub,
-  gpgme,
-  lvm2,
   btrfs-progs,
-  pkg-config,
-  go-md2man,
-  installShellFiles,
-  makeWrapper,
-  fuse-overlayfs,
+  buildGoModule,
   dockerTools,
+  fuse-overlayfs,
+  go-md2man,
+  gpgme,
+  installShellFiles,
+  lvm2,
+  makeWrapper,
+  pkg-config,
   runCommand,
-  testers,
   skopeo,
+  testers,
 }:
 
 buildGoModule rec {
@@ -22,9 +22,9 @@ buildGoModule rec {
   version = "1.23.0";
 
   src = fetchFromGitHub {
-    rev = "v${version}";
     owner = "containers";
     repo = "skopeo";
+    rev = "v${version}";
     hash = "sha256-crt6TYEOQaBdP1lIixtnrMPeWQ/GAyA6N6K3Il+ZA1E=";
   };
 
@@ -32,10 +32,6 @@ buildGoModule rec {
     "out"
     "man"
   ];
-
-  vendorHash = null;
-
-  doCheck = false;
 
   nativeBuildInputs = [
     pkg-config
@@ -52,6 +48,8 @@ buildGoModule rec {
     btrfs-progs
   ];
 
+  vendorHash = null;
+
   buildPhase = ''
     runHook preBuild
     patchShebangs .
@@ -63,6 +61,8 @@ buildGoModule rec {
   + ''
     runHook postBuild
   '';
+
+  doCheck = false;
 
   installPhase = ''
     runHook preInstall
@@ -86,25 +86,29 @@ buildGoModule rec {
     policy = runCommand "policy" { } ''
       install ${src}/default-policy.json -Dt $out
     '';
+
     tests = {
+      inherit (dockerTools.examples) testNixFromDockerHub;
+
       version = testers.testVersion {
         package = skopeo;
       };
-      inherit (dockerTools.examples) testNixFromDockerHub;
     };
   };
 
   meta = {
-    changelog = "https://github.com/containers/skopeo/releases/tag/${src.rev}";
     description = "Command line utility for various operations on container images and image repositories";
-    mainProgram = "skopeo";
     homepage = "https://github.com/containers/skopeo";
+    changelog = "https://github.com/containers/skopeo/releases/tag/${src.rev}";
+    license = lib.licenses.asl20;
+
     maintainers = with lib.maintainers; [
       lewo
       developer-guy
       ryan4yin
     ];
+
+    mainProgram = "skopeo";
     teams = [ lib.teams.podman ];
-    license = lib.licenses.asl20;
   };
 }

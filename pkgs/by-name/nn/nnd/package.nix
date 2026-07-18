@@ -23,8 +23,8 @@ rustPlatform.buildRustPackage (finalAttrs: {
     description = "Debugger for Linux";
     homepage = "https://github.com/al13n321/nnd/tree/main";
     license = lib.licenses.asl20;
-    platforms = [ "x86_64-linux" ];
     maintainers = with lib.maintainers; [ sinjin2300 ];
+    platforms = [ "x86_64-linux" ];
     mainProgram = "nnd";
   };
 })

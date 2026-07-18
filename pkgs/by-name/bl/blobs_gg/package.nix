@@ -1,7 +1,7 @@
 {
   lib,
-  stdenvNoCC,
   fetchurl,
+  stdenvNoCC,
   unzip,
 }:
 
@@ -17,8 +17,6 @@ stdenvNoCC.mkDerivation {
     hash = "sha256-OhLzoYFnjVs1hKYglUEbDWCjNRGBNZENh5kg+K3lpX8=";
   };
 
-  sourceRoot = ".";
-
   nativeBuildInputs = [ unzip ];
 
   installPhase = ''
@@ -29,6 +27,8 @@ stdenvNoCC.mkDerivation {
 
     runHook postInstall
   '';
+
+  sourceRoot = ".";
 
   meta = {
     description = "Blob emoji from blobs.gg repacked as APNG";

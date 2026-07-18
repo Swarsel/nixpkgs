@@ -1,18 +1,17 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
+  pillow,
   poetry-core,
   pybluez,
   pytestCheckHook,
   pyusb,
-  pillow,
 }:
 
 buildPythonPackage rec {
   pname = "nxt-python";
   version = "3.5.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "schodet";
@@ -21,6 +20,7 @@ buildPythonPackage rec {
     hash = "sha256-ffJ7VhXT5I7i5JYfnjFBaud0CxoVBFWx6kRdAz+Ry00=";
   };
 
+  nativeCheckInputs = [ pytestCheckHook ];
   build-system = [ poetry-core ];
 
   dependencies = [
@@ -32,8 +32,7 @@ buildPythonPackage rec {
     bluetooth = [ pybluez ];
   };
 
-  nativeCheckInputs = [ pytestCheckHook ];
-
+  pyproject = true;
   pythonImportsCheck = [ "nxt" ];
 
   meta = {

@@ -2,13 +2,13 @@
   lib,
   fetchurl,
   bash,
-  gcc,
-  musl,
   binutils,
+  gcc,
+  gnugrep,
   gnumake,
   gnused,
-  gnugrep,
   gnutar,
+  musl,
   xz,
 }:
 let

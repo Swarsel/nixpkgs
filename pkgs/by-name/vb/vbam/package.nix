@@ -1,28 +1,29 @@
 {
   lib,
   stdenv,
+  fetchFromGitHub,
+  SDL2,
   cairo,
   cmake,
-  fetchFromGitHub,
   ffmpeg_7,
   gettext,
-  wxwidgets_3_2,
+  gsettings-desktop-schemas,
   gtk3,
-  libGLU,
   libGL,
+  libGLU,
   openal,
   pkg-config,
-  SDL2,
   sfml_2,
+  wrapGAppsHook3,
+  wxwidgets_3_2,
   zip,
   zlib,
-  wrapGAppsHook3,
-  gsettings-desktop-schemas,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
   pname = "visualboyadvance-m";
   version = "2.2.3";
+
   src = fetchFromGitHub {
     owner = "visualboyadvance-m";
     repo = "visualboyadvance-m";
@@ -61,12 +62,14 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Merge of the original Visual Boy Advance forks";
+    homepage = "https://www.visualboyadvance-m.org/";
     license = lib.licenses.gpl2;
+
     maintainers = with lib.maintainers; [
       lassulus
       netali
     ];
-    homepage = "https://www.visualboyadvance-m.org/";
+
     platforms = lib.platforms.linux;
     mainProgram = "visualboyadvance-m";
   };

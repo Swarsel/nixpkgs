@@ -2,11 +2,11 @@
   lib,
   stdenv,
   fetchFromGitHub,
+  bash,
   cmake,
+  libusb1,
   makeWrapper,
   pkg-config,
-  bash,
-  libusb1,
   qt5,
   wget,
   zenity,
@@ -22,6 +22,16 @@ stdenv.mkDerivation (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-VV4qlMd4hj37AIRSMY/EzbJEz3gRLb9Q38ujwQddi0M=";
   };
+
+  # change default hardcoded path for chip database file, udev rules et al
+  postPatch = ''
+    while IFS= read -r -d "" file ; do
+      substituteInPlace "$file" \
+        --replace-quiet '/usr/bin/' "$out/bin/" \
+        --replace-quiet '/usr/lib/' "$out/lib/" \
+        --replace-quiet '/usr/share/' "$out/share/"
+    done < <(grep --files-with-matches --null --recursive '/usr/' .)
+  '';
 
   strictDeps = true;
 
@@ -40,15 +50,7 @@ stdenv.mkDerivation (finalAttrs: {
     qt5.qtwayland
   ];
 
-  # change default hardcoded path for chip database file, udev rules et al
-  postPatch = ''
-    while IFS= read -r -d "" file ; do
-      substituteInPlace "$file" \
-        --replace-quiet '/usr/bin/' "$out/bin/" \
-        --replace-quiet '/usr/lib/' "$out/lib/" \
-        --replace-quiet '/usr/share/' "$out/share/"
-    done < <(grep --files-with-matches --null --recursive '/usr/' .)
-  '';
+  doInstallCheck = true;
 
   postFixup = ''
     wrapProgram $out/bin/IMSProg_database_update \
@@ -60,19 +62,19 @@ stdenv.mkDerivation (finalAttrs: {
       }"
   '';
 
-  doInstallCheck = true;
-
   meta = {
-    changelog = "https://github.com/bigbigmdm/IMSProg/releases/tag/v${finalAttrs.version}";
     description = "Free I2C, MicroWire and SPI EEPROM/Flash chip programmer tool for CH341A device";
     homepage = "https://github.com/bigbigmdm/IMSProg";
+    changelog = "https://github.com/bigbigmdm/IMSProg/releases/tag/v${finalAttrs.version}";
+
     license = with lib.licenses; [
       gpl3Plus
       gpl2Plus
       lgpl21Only
     ];
-    mainProgram = "IMSProg";
+
     maintainers = with lib.maintainers; [ wucke13 ];
     platforms = lib.platforms.unix;
+    mainProgram = "IMSProg";
   };
 })

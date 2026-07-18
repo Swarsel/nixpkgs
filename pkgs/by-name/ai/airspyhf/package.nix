@@ -3,8 +3,8 @@
   stdenv,
   fetchFromGitHub,
   cmake,
-  pkg-config,
   libusb1,
+  pkg-config,
 }:
 
 stdenv.mkDerivation {
@@ -29,10 +29,12 @@ stdenv.mkDerivation {
     description = "User mode driver for Airspy HF+";
     homepage = "https://github.com/airspy/airspyhf";
     license = lib.licenses.bsd3;
+
     maintainers = with lib.maintainers; [
       aciceri
       sikmir
     ];
+
     platforms = lib.platforms.unix;
   };
 }

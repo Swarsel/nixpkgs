@@ -2,14 +2,14 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  fetchpatch,
   cmake,
+  fetchpatch,
   fixDarwinDylibNames,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
-  version = "3.5.0";
   pname = "laszip";
+  version = "3.5.0";
 
   src = fetchFromGitHub {
     owner = "LASzip";
@@ -21,12 +21,10 @@ stdenv.mkDerivation (finalAttrs: {
   patches = [
     # Fix aarch64-darwin build.
     (fetchpatch {
-      url = "https://github.com/LASzip/LASzip/commit/2274e52076c5f4cbe2d826d690c21713ddd842b4.patch";
       hash = "sha256-C6AOJSY8JJCNNA5Fuz3OiQpzSFO/PwI6Wj+WBUW948k=";
+      url = "https://github.com/LASzip/LASzip/commit/2274e52076c5f4cbe2d826d690c21713ddd842b4.patch";
     })
   ];
-
-  hardeningDisable = [ "format" ]; # -Werror=format-security
 
   nativeBuildInputs = [
     cmake
@@ -34,6 +32,8 @@ stdenv.mkDerivation (finalAttrs: {
   ++ lib.optionals stdenv.hostPlatform.isDarwin [
     fixDarwinDylibNames
   ];
+
+  hardeningDisable = [ "format" ]; # -Werror=format-security
 
   meta = {
     description = "Turn quickly bulky LAS files into compact LAZ files without information loss";

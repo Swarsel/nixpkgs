@@ -1,8 +1,8 @@
 {
   lib,
-  mkRocqDerivation,
-  dune,
   coq,
+  dune,
+  mkRocqDerivation,
   stdlib,
   version ? null,
 }:
@@ -40,8 +40,6 @@ let
           "A two-level approach to prove tautologies using Stålmarck's algorithm in Coq.";
     in
     mkRocqDerivation.override { dune = dune.override { version = "3.21.1"; }; } {
-      useCoq = true;
-      namePrefix = [ "coq" ];
       inherit
         version
         pname
@@ -53,14 +51,15 @@ let
         ;
 
       mlPlugin = istac;
+      namePrefix = [ "coq" ];
+      useCoq = true;
       useDune = istac;
+      passthru = lib.genAttrs packages stalmarck_;
 
       meta = {
         inherit description;
         license = lib.licenses.lgpl21Plus;
       };
-
-      passthru = lib.genAttrs packages stalmarck_;
     };
 in
 stalmarck_ "stalmarck-tactic"

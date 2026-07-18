@@ -1,14 +1,14 @@
 {
-  stdenv,
   lib,
+  stdenv,
+  fetchFromGitLab,
   git,
+  gitUpdater,
   multipath-tools,
   openssl,
   ps,
-  fetchFromGitLab,
-  sudo,
   python3Packages,
-  gitUpdater,
+  sudo,
   util-linux,
   versionCheckHook,
 }:
@@ -16,7 +16,6 @@
 python3Packages.buildPythonApplication rec {
   pname = "pmbootstrap";
   version = "3.10.3";
-  pyproject = true;
 
   src = fetchFromGitLab {
     owner = "postmarketOS";
@@ -26,14 +25,8 @@ python3Packages.buildPythonApplication rec {
     domain = "gitlab.postmarketos.org";
   };
 
-  pmb_test = "${src}/test";
-
   # Tests depend on sudo
   doCheck = stdenv.hostPlatform.isLinux;
-
-  build-system = [
-    python3Packages.setuptools
-  ];
 
   nativeCheckInputs = [
     git
@@ -50,6 +43,10 @@ python3Packages.buildPythonApplication rec {
   preCheck = ''
     export PYTHONPATH=$PYTHONPATH:${pmb_test}
   '';
+
+  build-system = [
+    python3Packages.setuptools
+  ];
 
   # skip impure tests
   disabledTests = [
@@ -73,16 +70,20 @@ python3Packages.buildPythonApplication rec {
     }"
   ];
 
+  pmb_test = "${src}/test";
+  pyproject = true;
   passthru.updateScript = gitUpdater { };
 
   meta = {
     description = "Sophisticated chroot/build/flash tool to develop and install postmarketOS";
     homepage = "https://gitlab.postmarketos.org/postmarketOS/pmbootstrap";
     license = lib.licenses.gpl3Plus;
+
     maintainers = with lib.maintainers; [
       onny
       ungeskriptet
     ];
+
     mainProgram = "pmbootstrap";
   };
 }

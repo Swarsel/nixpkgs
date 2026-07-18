@@ -10,7 +10,6 @@
 mkKdeDerivation {
   pname = "tokodon";
 
-  extraNativeBuildInputs = [ pkg-config ];
   extraBuildInputs = [
     qtmultimedia
     qtsvg
@@ -20,6 +19,6 @@ mkKdeDerivation {
   ];
 
   extraCmakeFlags = [ "-DUSE_QTMULTIMEDIA=1" ];
-
+  extraNativeBuildInputs = [ pkg-config ];
   meta.mainProgram = "tokodon";
 }

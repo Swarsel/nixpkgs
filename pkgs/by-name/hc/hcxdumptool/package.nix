@@ -2,8 +2,8 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  openssl,
   libpcap,
+  openssl,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -25,11 +25,11 @@ stdenv.mkDerivation (finalAttrs: {
   installFlags = [ "PREFIX=$(out)" ];
 
   meta = {
-    homepage = "https://github.com/ZerBea/hcxdumptool";
     description = "Small tool to capture packets from wlan devices";
+    homepage = "https://github.com/ZerBea/hcxdumptool";
     license = lib.licenses.mit;
-    platforms = lib.platforms.linux;
     maintainers = with lib.maintainers; [ danielfullmer ];
+    platforms = lib.platforms.linux;
     mainProgram = "hcxdumptool";
   };
 })

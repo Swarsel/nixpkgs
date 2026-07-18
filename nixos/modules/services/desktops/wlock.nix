@@ -11,18 +11,17 @@ in
   options = {
     services.wlock = {
       enable = lib.mkEnableOption "wlock, a Wayland sessionlocker using the ext-session-lock-v1 protocol";
-
       package = lib.mkPackageOption pkgs "wlock" { };
     };
   };
 
   config = lib.mkIf cfg.enable {
     security.wrappers.wlock = {
-      owner = "root";
       group = "root";
+      owner = "root";
+      setgid = false;
       # mirror upstream chmod of 4755
       setuid = true;
-      setgid = false;
       source = lib.getExe cfg.package;
     };
   };

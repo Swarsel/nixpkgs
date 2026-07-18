@@ -2,13 +2,13 @@
   lib,
   stdenv,
   fetchurl,
-  flex,
+  automake,
   bison,
-  zlib,
+  ed,
+  flex,
   libpng12,
   ncurses,
-  ed,
-  automake,
+  zlib,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -20,10 +20,12 @@ stdenv.mkDerivation (finalAttrs: {
     sha256 = "16v44465ipd9yyqri9rgxp6rbgs194k4sh1kckvccvdsnnp7w3ww";
   };
 
-  texmf = fetchurl {
-    url = "https://mirrors.ctan.org/obsolete/systems/unix/teTeX/${finalAttrs.version}/distrib/tetex-texmf-${finalAttrs.version}.tar.gz";
-    sha256 = "1hj06qvm02a2hx1a67igp45kxlbkczjlg20gr8lbp73l36k8yfvc";
-  };
+  patches = [
+    ./environment.patch
+    ./getline.patch
+    ./clang.patch
+    ./extramembot.patch
+  ];
 
   buildInputs = [
     flex
@@ -33,35 +35,6 @@ stdenv.mkDerivation (finalAttrs: {
     ncurses
     ed
   ];
-
-  hardeningDisable = [ "format" ];
-
-  # fixes "error: conflicting types for 'calloc'", etc.
-  preBuild = lib.optionalString stdenv.hostPlatform.isDarwin ''
-    sed -i 57d texk/kpathsea/c-std.h
-  '';
-
-  preConfigure =
-    if stdenv.hostPlatform.isCygwin then
-      ''
-        find ./ -name "config.guess" -exec rm {} \; -exec ln -s ${automake}/share/automake-*/config.guess {} \;
-      ''
-    else
-      null;
-
-  patches = [
-    ./environment.patch
-    ./getline.patch
-    ./clang.patch
-    ./extramembot.patch
-  ];
-
-  setupHook = ./setup-hook.sh;
-
-  env = {
-    CFLAGS = "-std=gnu89";
-    CXXFLAGS = "-std=c++03";
-  };
 
   configureFlags = [
     "--disable-multiplatform"
@@ -77,6 +50,26 @@ stdenv.mkDerivation (finalAttrs: {
   # couldn't get gsftopk working on darwin
   ++ lib.optional stdenv.hostPlatform.isDarwin "--without-gsftopk";
 
+  env = {
+    CFLAGS = "-std=gnu89";
+    CXXFLAGS = "-std=c++03";
+  };
+
+  preConfigure =
+    if stdenv.hostPlatform.isCygwin then
+      ''
+        find ./ -name "config.guess" -exec rm {} \; -exec ln -s ${automake}/share/automake-*/config.guess {} \;
+      ''
+    else
+      null;
+
+  # fixes "error: conflicting types for 'calloc'", etc.
+  preBuild = lib.optionalString stdenv.hostPlatform.isDarwin ''
+    sed -i 57d texk/kpathsea/c-std.h
+  '';
+
+  hardeningDisable = [ "format" ];
+
   postUnpack = ''
     mkdir -p $out/share/texmf
     mkdir -p $out/share/texmf-dist
@@ -84,6 +77,13 @@ stdenv.mkDerivation (finalAttrs: {
 
     substituteInPlace ./tetex-src-3.0/configure --replace /usr/bin/install $(type -P install)
   '';
+
+  setupHook = ./setup-hook.sh;
+
+  texmf = fetchurl {
+    sha256 = "1hj06qvm02a2hx1a67igp45kxlbkczjlg20gr8lbp73l36k8yfvc";
+    url = "https://mirrors.ctan.org/obsolete/systems/unix/teTeX/${finalAttrs.version}/distrib/tetex-texmf-${finalAttrs.version}.tar.gz";
+  };
 
   meta = {
     description = "Full-featured (La)TeX distribution";

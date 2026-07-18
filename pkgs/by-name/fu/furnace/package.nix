@@ -1,30 +1,30 @@
 {
-  stdenv,
   lib,
-  testers,
-  furnace,
+  stdenv,
   fetchFromGitHub,
+  SDL2,
+  alsa-lib,
   cmake,
-  pkg-config,
-  makeWrapper,
   fftw,
   fmt,
   freetype,
+  furnace,
+  libGL,
+  libjack2,
   libsndfile,
   libx11,
-  libGL,
-  rtmidi,
-  SDL2,
-  zlib,
-  withJACK ? stdenv.hostPlatform.isUnix,
-  libjack2,
-  withGUI ? true,
+  makeWrapper,
+  pkg-config,
   portaudio,
-  alsa-lib,
-  # Enable GL/GLES rendering
-  withGL ? !stdenv.hostPlatform.isDarwin,
+  rtmidi,
+  testers,
+  zlib,
   # Use GLES instead of GL, some platforms have better support for one than the other
   preferGLES ? stdenv.hostPlatform.isAarch,
+  # Enable GL/GLES rendering
+  withGL ? !stdenv.hostPlatform.isDarwin,
+  withGUI ? true,
+  withJACK ? stdenv.hostPlatform.isUnix,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -35,8 +35,8 @@ stdenv.mkDerivation (finalAttrs: {
     owner = "tildearrow";
     repo = "furnace";
     tag = "v${finalAttrs.version}";
-    fetchSubmodules = true;
     hash = "sha256-miS0CMeb0KNIsFtGBDM73U/mZyDhT6hQ6o4Vc0gVNM4=";
+    fetchSubmodules = true;
   };
 
   postPatch = lib.optionalString stdenv.hostPlatform.isLinux ''
@@ -114,10 +114,11 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   passthru = {
-    updateScript = ./update.sh;
     tests.version = testers.testVersion {
       package = furnace;
     };
+
+    updateScript = ./update.sh;
   };
 
   meta = {

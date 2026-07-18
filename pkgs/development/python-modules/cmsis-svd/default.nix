@@ -1,16 +1,15 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
+  lxml,
   setuptools,
   six,
-  lxml,
 }:
 
 buildPythonPackage rec {
   pname = "cmsis-svd";
   version = "0.6";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "cmsis-svd";
@@ -30,6 +29,8 @@ buildPythonPackage rec {
     lxml
   ];
 
+  pyproject = true;
+
   pythonImportsCheck = [
     "cmsis_svd"
     "cmsis_svd.parser"
@@ -39,7 +40,7 @@ buildPythonPackage rec {
     description = "CMSIS SVD parser";
     homepage = "https://github.com/cmsis-svd/cmsis-svd";
     changelog = "https://github.com/cmsis-svd/cmsis-svd/blob/${src.rev}/CHANGELOG";
-    maintainers = [ lib.maintainers.dump_stack ];
     license = lib.licenses.asl20;
+    maintainers = [ lib.maintainers.dump_stack ];
   };
 }

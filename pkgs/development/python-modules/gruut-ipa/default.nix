@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   espeak,
   numpy,
   python,
@@ -11,7 +11,6 @@
 buildPythonPackage rec {
   pname = "gruut-ipa";
   version = "0.13.0";
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "rhasspy";
@@ -28,16 +27,15 @@ buildPythonPackage rec {
   '';
 
   propagatedBuildInputs = [ numpy ];
-
   nativeCheckInputs = [ unittestCheckHook ];
-
+  format = "setuptools";
   pythonImportsCheck = [ "gruut_ipa" ];
 
   meta = {
     description = "Library for manipulating pronunciations using the International Phonetic Alphabet (IPA)";
-    mainProgram = "gruut-ipa";
     homepage = "https://github.com/rhasspy/gruut-ipa";
     license = lib.licenses.mit;
+    mainProgram = "gruut-ipa";
     teams = [ lib.teams.tts ];
   };
 }

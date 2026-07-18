@@ -1,16 +1,15 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   poetry-core,
-  xmod,
   pytestCheckHook,
+  xmod,
 }:
 
 buildPythonPackage rec {
   pname = "dek";
   version = "1.4.2";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "rec";
@@ -19,12 +18,10 @@ buildPythonPackage rec {
     hash = "sha256-DYODdImTRCukGmGbkZ+9TQeI9DYaeRd/EHS6VND5IDs=";
   };
 
-  build-system = [ poetry-core ];
-
-  dependencies = [ xmod ];
-
   nativeBuildInputs = [ pytestCheckHook ];
-
+  build-system = [ poetry-core ];
+  dependencies = [ xmod ];
+  pyproject = true;
   pythonImportsCheck = [ "dek" ];
 
   meta = {

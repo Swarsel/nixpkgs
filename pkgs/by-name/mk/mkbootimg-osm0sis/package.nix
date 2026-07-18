@@ -30,11 +30,11 @@ stdenv.mkDerivation {
   '';
 
   meta = {
-    homepage = "https://github.com/osm0sis/mkbootimg";
     description = "C rewrite of Android's boot image tools";
+    homepage = "https://github.com/osm0sis/mkbootimg";
     license = lib.licenses.bsd3;
     maintainers = with lib.maintainers; [ ungeskriptet ];
-    teams = [ lib.teams.android ];
     mainProgram = "mkbootimg";
+    teams = [ lib.teams.android ];
   };
 }

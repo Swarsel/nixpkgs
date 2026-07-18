@@ -1,16 +1,15 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
-  pytestCheckHook,
+  buildPythonPackage,
   charset-normalizer,
+  pytestCheckHook,
+  setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "aeidon";
   version = "1.15";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "otsaloma";
@@ -26,25 +25,23 @@ buildPythonPackage rec {
     mv setup-aeidon.py setup.py
   '';
 
-  build-system = [ setuptools ];
-
-  dependencies = [ charset-normalizer ];
-
   nativeCheckInputs = [ pytestCheckHook ];
-
-  enabledTestPaths = [ "aeidon/test" ];
+  build-system = [ setuptools ];
+  dependencies = [ charset-normalizer ];
 
   disabledTests = [
     # requires gspell to work with gobject introspection
     "test_spell"
   ];
 
+  enabledTestPaths = [ "aeidon/test" ];
+  pyproject = true;
   pythonImportsCheck = [ "aeidon" ];
 
   meta = {
-    changelog = "https://github.com/otsaloma/gaupol/releases/tag/${version}";
     description = "Reading, writing and manipulationg text-based subtitle files";
     homepage = "https://github.com/otsaloma/gaupol";
+    changelog = "https://github.com/otsaloma/gaupol/releases/tag/${version}";
     license = lib.licenses.gpl3Plus;
     maintainers = with lib.maintainers; [ erictapen ];
   };

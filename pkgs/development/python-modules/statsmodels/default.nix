@@ -1,26 +1,23 @@
 {
   lib,
   stdenv,
-  buildPythonPackage,
   fetchFromGitHub,
-
+  buildPythonPackage,
   # build-system
   cython,
   numpy,
-  scipy,
-  setuptools,
-  setuptools-scm,
-
   # dependencies
   packaging,
   pandas,
   patsy,
+  scipy,
+  setuptools,
+  setuptools-scm,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "statsmodels";
   version = "0.14.6";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "statsmodels";
@@ -34,6 +31,16 @@ buildPythonPackage (finalAttrs: {
       --replace-fail 'setuptools_scm[toml]>=8,<9' 'setuptools_scm[toml]'
   '';
 
+  env = lib.optionalAttrs stdenv.cc.isClang {
+    NIX_CFLAGS_COMPILE = toString [
+      "-Wno-error=implicit-function-declaration"
+      "-Wno-error=int-conversion"
+    ];
+  };
+
+  # Huge test suites with several test failures
+  doCheck = false;
+
   build-system = [
     cython
     numpy
@@ -41,13 +48,6 @@ buildPythonPackage (finalAttrs: {
     setuptools
     setuptools-scm
   ];
-
-  env = lib.optionalAttrs stdenv.cc.isClang {
-    NIX_CFLAGS_COMPILE = toString [
-      "-Wno-error=implicit-function-declaration"
-      "-Wno-error=int-conversion"
-    ];
-  };
 
   dependencies = [
     numpy
@@ -57,9 +57,7 @@ buildPythonPackage (finalAttrs: {
     scipy
   ];
 
-  # Huge test suites with several test failures
-  doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "statsmodels" ];
 
   meta = {

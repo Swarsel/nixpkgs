@@ -1,21 +1,21 @@
 {
   lib,
   stdenv,
-  fetchpatch,
   fetchFromGitHub,
-  nix-update-script,
-  qt6Packages,
-  # nativeBuildInputs
-  pkg-config,
   cmake,
+  fetchpatch,
   kdePackages,
-  # buildInputs
-  sqlite,
-  libsecret,
-  libre-graph-api-cpp-qt-client,
   kdsingleapplication,
   ## darwin only
   libinotify-kqueue,
+  libre-graph-api-cpp-qt-client,
+  libsecret,
+  nix-update-script,
+  # nativeBuildInputs
+  pkg-config,
+  qt6Packages,
+  # buildInputs
+  sqlite,
 }:
 
 stdenv.mkDerivation rec {
@@ -55,12 +55,14 @@ stdenv.mkDerivation rec {
   meta = {
     description = "Synchronise your ownCloud with your computer using this desktop client";
     homepage = "https://owncloud.org";
+    changelog = "https://github.com/owncloud/client/releases/tag/v${version}";
+    license = lib.licenses.gpl2Plus;
+
     maintainers = with lib.maintainers; [
       qknight
       hellwolf
     ];
+
     platforms = lib.platforms.unix;
-    license = lib.licenses.gpl2Plus;
-    changelog = "https://github.com/owncloud/client/releases/tag/v${version}";
   };
 }

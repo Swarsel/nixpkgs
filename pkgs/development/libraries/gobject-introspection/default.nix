@@ -1,30 +1,30 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchurl,
-  fetchpatch,
-  glib,
-  flex,
   bison,
-  meson,
-  ninja,
-  gtk-doc,
+  buildPackages,
+  cairo,
+  cctools,
   docbook-xsl-nons,
   docbook_xml_dtd_45,
-  pkg-config,
-  libffi,
-  python3,
-  cctools,
-  cairo,
+  fetchpatch,
+  flex,
+  glib,
   gnome,
+  gobject-introspection-unwrapped,
+  gtk-doc,
+  libffi,
+  meson,
+  ninja,
+  pkg-config,
+  python3,
   replaceVars,
   replaceVarsWith,
-  buildPackages,
-  gobject-introspection-unwrapped,
-  nixStoreDir ? builtins.storeDir,
-  x11Support ? true,
   testers,
+  nixStoreDir ? builtins.storeDir,
   propagateFullGlib ? true,
+  x11Support ? true,
 }:
 
 # now that gobject-introspection creates large .gir files (eg gtk3 case)
@@ -45,6 +45,11 @@ stdenv.mkDerivation (finalAttrs: {
   pname = "gobject-introspection";
   version = "1.86.0";
 
+  src = fetchurl {
+    url = "mirror://gnome/sources/gobject-introspection/${lib.versions.majorMinor finalAttrs.version}/gobject-introspection-${finalAttrs.version}.tar.xz";
+    hash = "sha256-kg0aP87ercMqz/lcLiA7MZA53UtKCN0aLf0oPRnAua4=";
+  };
+
   # outputs TODO: share/gobject-introspection-1.0/tests is needed during build
   # by pygobject3 (and maybe others), but it's only searched in $out
   outputs = [
@@ -53,12 +58,6 @@ stdenv.mkDerivation (finalAttrs: {
     "devdoc"
     "man"
   ];
-  outputBin = "dev";
-
-  src = fetchurl {
-    url = "mirror://gnome/sources/gobject-introspection/${lib.versions.majorMinor finalAttrs.version}/gobject-introspection-${finalAttrs.version}.tar.xz";
-    hash = "sha256-kg0aP87ercMqz/lcLiA7MZA53UtKCN0aLf0oPRnAua4=";
-  };
 
   patches = [
     # Make g-ir-scanner put absolute path to GIR files it generates
@@ -72,10 +71,10 @@ stdenv.mkDerivation (finalAttrs: {
     # Hardcode the cairo shared library path in the Cairo gir shipped with this package.
     # https://github.com/NixOS/nixpkgs/issues/34080
     (replaceVars ./absolute_gir_path.patch {
-      cairoLib = "${lib.getLib cairo}/lib";
       # original source code in patch's context
       CAIRO_GIR_PACKAGE = null;
       CAIRO_SHARED_LIBRARY = null;
+      cairoLib = "${lib.getLib cairo}/lib";
     })
   ];
 
@@ -101,10 +100,6 @@ stdenv.mkDerivation (finalAttrs: {
     (python3.withPackages pythonModules)
   ];
 
-  nativeCheckInputs = lib.optionals stdenv.hostPlatform.isDarwin [
-    cctools # for otool
-  ];
-
   propagatedBuildInputs = [
     libffi
     (if propagateFullGlib then glib else glib')
@@ -118,9 +113,10 @@ stdenv.mkDerivation (finalAttrs: {
   ++ lib.optionals (!stdenv.buildPlatform.canExecute stdenv.hostPlatform) [
     "-Dgi_cross_ldd_wrapper=${
       replaceVarsWith {
-        name = "g-ir-scanner-lddwrapper";
-        isExecutable = true;
         src = ./wrappers/g-ir-scanner-lddwrapper.sh;
+        isExecutable = true;
+        name = "g-ir-scanner-lddwrapper";
+
         replacements = {
           inherit (buildPackages) bash;
           buildlddtree = "${buildPackages.pax-utils}/bin/lddtree";
@@ -134,21 +130,17 @@ stdenv.mkDerivation (finalAttrs: {
     "-Dgi_cross_use_prebuilt_gi=true"
   ];
 
-  doCheck = !stdenv.hostPlatform.isAarch64;
-
   # During configurePhase, two python scripts are generated and need this. See
   # https://github.com/NixOS/nixpkgs/pull/98316#issuecomment-695785692
   postConfigure = ''
     patchShebangs tools/*
   '';
 
-  postInstall = lib.optionalString (stdenv.hostPlatform != stdenv.buildPlatform) ''
-    cp -r ${buildPackages.gobject-introspection-unwrapped.devdoc} $devdoc
-    # these are uncompiled c and header files which aren't installed when cross-compiling because
-    # code that installs them is in tests/meson.build which is only run when not cross-compiling
-    # pygobject3 needs them
-    cp -r ${buildPackages.gobject-introspection-unwrapped.dev}/share/gobject-introspection-1.0/tests $dev/share/gobject-introspection-1.0/tests
-  '';
+  doCheck = !stdenv.hostPlatform.isAarch64;
+
+  nativeCheckInputs = lib.optionals stdenv.hostPlatform.isDarwin [
+    cctools # for otool
+  ];
 
   preCheck = ''
     # Our gobject-introspection patches make the shared library paths absolute
@@ -163,30 +155,28 @@ stdenv.mkDerivation (finalAttrs: {
     rm $out/lib/libregress-1.0${stdenv.hostPlatform.extensions.sharedLibrary}
   '';
 
+  postInstall = lib.optionalString (stdenv.hostPlatform != stdenv.buildPlatform) ''
+    cp -r ${buildPackages.gobject-introspection-unwrapped.devdoc} $devdoc
+    # these are uncompiled c and header files which aren't installed when cross-compiling because
+    # code that installs them is in tests/meson.build which is only run when not cross-compiling
+    # pygobject3 needs them
+    cp -r ${buildPackages.gobject-introspection-unwrapped.dev}/share/gobject-introspection-1.0/tests $dev/share/gobject-introspection-1.0/tests
+  '';
+
+  outputBin = "dev";
   setupHook = ./setup-hook.sh;
 
   passthru = {
+    tests.pkg-config = testers.testMetaPkgConfig finalAttrs.finalPackage;
+
     updateScript = gnome.updateScript {
       packageName = "gobject-introspection";
       versionPolicy = "odd-unstable";
     };
-    tests.pkg-config = testers.testMetaPkgConfig finalAttrs.finalPackage;
   };
 
   meta = {
     description = "Middleware layer between C libraries and language bindings";
-    homepage = "https://gi.readthedocs.io/";
-    maintainers = with lib.maintainers; [
-      artturin
-    ];
-    teams = [ lib.teams.gnome ];
-    pkgConfigModules = [ "gobject-introspection-1.0" ];
-    platforms = lib.platforms.unix;
-    badPlatforms = [ lib.systems.inspect.platformPatterns.isStatic ];
-    license = with lib.licenses; [
-      gpl2
-      lgpl2
-    ];
 
     longDescription = ''
       GObject introspection is a middleware layer between C libraries (using
@@ -195,5 +185,21 @@ stdenv.mkDerivation (finalAttrs: {
       library. Then at runtime, language bindings can read this metadata and
       automatically provide bindings to call into the C library.
     '';
+
+    homepage = "https://gi.readthedocs.io/";
+
+    license = with lib.licenses; [
+      gpl2
+      lgpl2
+    ];
+
+    maintainers = with lib.maintainers; [
+      artturin
+    ];
+
+    platforms = lib.platforms.unix;
+    badPlatforms = [ lib.systems.inspect.platformPatterns.isStatic ];
+    pkgConfigModules = [ "gobject-introspection-1.0" ];
+    teams = [ lib.teams.gnome ];
   };
 })

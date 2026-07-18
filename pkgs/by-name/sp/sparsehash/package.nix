@@ -16,10 +16,10 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   meta = {
-    homepage = "https://github.com/sparsehash/sparsehash";
     description = "Extremely memory-efficient hash_map implementation";
-    platforms = lib.platforms.all;
+    homepage = "https://github.com/sparsehash/sparsehash";
     license = lib.licenses.bsd3;
     maintainers = with lib.maintainers; [ pSub ];
+    platforms = lib.platforms.all;
   };
 })

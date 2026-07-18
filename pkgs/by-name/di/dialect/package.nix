@@ -1,37 +1,38 @@
 {
   lib,
   fetchFromGitHub,
-  wrapGAppsHook4,
-  python3,
   blueprint-compiler,
   desktop-file-utils,
-  meson,
-  ninja,
-  pkg-config,
   glib,
-  gtk4,
+  glib-networking,
   gobject-introspection,
   gst_all_1,
-  libsoup_3,
-  glib-networking,
+  gtk4,
   libadwaita,
   libsecret,
+  libsoup_3,
   libspelling,
+  meson,
+  ninja,
   nix-update-script,
+  pkg-config,
+  python3,
+  wrapGAppsHook4,
 }:
 
 python3.pkgs.buildPythonApplication (finalAttrs: {
   pname = "dialect";
   version = "2.6.1";
-  pyproject = false; # built with meson
 
   src = fetchFromGitHub {
     owner = "dialect-app";
     repo = "dialect";
     tag = finalAttrs.version;
-    fetchSubmodules = true;
     hash = "sha256-Gy5KlcY22ykoWUzVk6w46SLndOmEQxMCcvo1ClMq0LM=";
+    fetchSubmodules = true;
   };
+
+  strictDeps = true;
 
   nativeBuildInputs = [
     blueprint-compiler
@@ -56,15 +57,7 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     libspelling
   ];
 
-  dependencies = with python3.pkgs; [
-    dbus-python
-    gtts
-    pygobject3
-    beautifulsoup4
-  ];
-
-  # Prevent double wrapping, let the Python wrapper use the args in preFixup.
-  dontWrapGApps = true;
+  doCheck = false;
 
   preFixup = ''
     makeWrapperArgs+=("''${gappsWrapperArgs[@]}")
@@ -74,18 +67,24 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     patchShebangs --update --host $out/share/dialect/search_provider
   '';
 
-  doCheck = false;
+  dependencies = with python3.pkgs; [
+    dbus-python
+    gtts
+    pygobject3
+    beautifulsoup4
+  ];
 
-  strictDeps = true;
-
+  # Prevent double wrapping, let the Python wrapper use the args in preFixup.
+  dontWrapGApps = true;
+  pyproject = false; # built with meson
   passthru.updateScript = nix-update-script { };
 
   meta = {
-    homepage = "https://dialectapp.org";
     description = "Translation app for GNOME";
-    teams = [ lib.teams.gnome-circle ];
+    homepage = "https://dialectapp.org";
     license = lib.licenses.gpl3Plus;
     platforms = lib.platforms.linux;
     mainProgram = "dialect";
+    teams = [ lib.teams.gnome-circle ];
   };
 })

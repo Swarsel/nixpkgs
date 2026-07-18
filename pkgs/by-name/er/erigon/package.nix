@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   nix-update-script,
   versionCheckHook,
 }:
@@ -19,6 +19,8 @@ buildGoModule (finalAttrs: {
   };
 
   vendorHash = "sha256-+FF4L6o8gPhbFF7EXumalmz/qVQOzNcIgfek9QEYEdA=";
+  doInstallCheck = true;
+  nativeInstallCheckInputs = [ versionCheckHook ];
   proxyVendor = true;
 
   subPackages = [
@@ -42,6 +44,8 @@ buildGoModule (finalAttrs: {
     "nosilkworm"
   ];
 
+  versionCheckProgram = "${placeholder "out"}/bin/erigon";
+
   passthru.updateScript = nix-update-script {
     extraArgs = [
       # avoid testing‐releases
@@ -50,14 +54,11 @@ buildGoModule (finalAttrs: {
     ];
   };
 
-  nativeInstallCheckInputs = [ versionCheckHook ];
-  doInstallCheck = true;
-  versionCheckProgram = "${placeholder "out"}/bin/erigon";
-
   meta = {
-    homepage = "https://github.com/erigontech/erigon/";
     description = "Erigon is an implementation of Ethereum (execution layer with embeddable consensus layer), on the efficiency frontier.";
+    homepage = "https://github.com/erigontech/erigon/";
     license = lib.licenses.lgpl3;
+
     maintainers = with lib.maintainers; [
       happysalada
       pmw

@@ -2,14 +2,19 @@
 # nix-build -A tests.testers.hasPkgConfigModules
 {
   lib,
-  testers,
   miniz,
-  zlib,
   openssl,
   runCommand,
+  testers,
+  zlib,
 }:
 
 lib.recurseIntoAttrs {
+
+  miniz-no-versionCheck = testers.hasPkgConfigModules {
+    version = "1.2.3"; # Deliberately-incorrect version number
+    package = miniz;
+  };
 
   miniz-versions-match = testers.hasPkgConfigModules {
     package = miniz;
@@ -18,32 +23,18 @@ lib.recurseIntoAttrs {
 
   miniz-versions-mismatch = testers.testBuildFailure (
     testers.hasPkgConfigModules {
-      package = miniz;
       version = "1.2.3"; # Deliberately-incorrect version number
+      package = miniz;
       versionCheck = true;
     }
   );
 
-  miniz-no-versionCheck = testers.hasPkgConfigModules {
-    package = miniz;
-    version = "1.2.3"; # Deliberately-incorrect version number
-  };
-
-  zlib-has-zlib = testers.hasPkgConfigModules {
-    package = zlib;
-    moduleNames = [ "zlib" ];
-  };
-
-  zlib-has-meta-pkgConfigModules = testers.hasPkgConfigModules {
-    package = zlib;
+  openssl-has-all-meta-pkgConfigModules = testers.hasPkgConfigModules {
+    package = openssl;
   };
 
   openssl-has-openssl = testers.hasPkgConfigModules {
-    package = openssl;
     moduleNames = [ "openssl" ];
-  };
-
-  openssl-has-all-meta-pkgConfigModules = testers.hasPkgConfigModules {
     package = openssl;
   };
 
@@ -52,8 +43,8 @@ lib.recurseIntoAttrs {
       {
         failed = testers.testBuildFailure (
           testers.hasPkgConfigModules {
-            package = zlib;
             moduleNames = [ "ylib" ];
+            package = zlib;
           }
         );
       }
@@ -73,5 +64,14 @@ lib.recurseIntoAttrs {
         # done
         touch $out
       '';
+
+  zlib-has-meta-pkgConfigModules = testers.hasPkgConfigModules {
+    package = zlib;
+  };
+
+  zlib-has-zlib = testers.hasPkgConfigModules {
+    moduleNames = [ "zlib" ];
+    package = zlib;
+  };
 
 }

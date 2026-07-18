@@ -1,25 +1,27 @@
 {
-  mkKdeDerivation,
-  pkg-config,
-  ocaml,
   eigen,
+  mkKdeDerivation,
+  ocaml,
   openbabel,
-  qtsvg,
+  pkg-config,
   qtscxml,
+  qtsvg,
 }:
 mkKdeDerivation {
   pname = "kalzium";
 
-  # FIXME: look into how to make it find libfacile
-  extraNativeBuildInputs = [
-    pkg-config
-    ocaml
-  ];
   extraBuildInputs = [
     eigen
     openbabel
     qtsvg
     qtscxml
   ];
+
+  # FIXME: look into how to make it find libfacile
+  extraNativeBuildInputs = [
+    pkg-config
+    ocaml
+  ];
+
   meta.mainProgram = "kalzium";
 }

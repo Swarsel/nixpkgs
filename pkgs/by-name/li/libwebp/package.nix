@@ -2,36 +2,35 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  fetchpatch,
   cmake,
-  threadingSupport ? true, # multi-threading
-  openglSupport ? false,
-  libglut,
-  libGL,
-  libGLU, # OpenGL (required for vwebp)
-  pngSupport ? true,
-  libpng, # PNG image format
-  jpegSupport ? true,
-  libjpeg, # JPEG image format
-  tiffSupport ? true,
-  libtiff, # TIFF image format
-  gifSupport ? true,
-  giflib, # GIF image format
-  swap16bitcspSupport ? false, # Byte swap for 16bit color spaces
-  libwebpmuxSupport ? true, # Build libwebpmux
-
+  fetchpatch,
   # for passthru.tests
   gd,
+  giflib, # GIF image format
   graphicsmagick,
   haskellPackages,
   imagemagick,
   imlib2,
+  libGL,
+  libGLU, # OpenGL (required for vwebp)
+  libglut,
+  libjpeg, # JPEG image format
   libjxl,
+  libpng, # PNG image format
+  libtiff, # TIFF image format
+  libwebp,
   opencv,
   python3,
-  vips,
   testers,
-  libwebp,
+  vips,
+  gifSupport ? true,
+  jpegSupport ? true,
+  libwebpmuxSupport ? true, # Build libwebpmux
+  openglSupport ? false,
+  pngSupport ? true,
+  swap16bitcspSupport ? false, # Byte swap for 16bit color spaces
+  threadingSupport ? true, # multi-threading
+  tiffSupport ? true,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -49,11 +48,25 @@ stdenv.mkDerivation (finalAttrs: {
     # Fixes endianness-related behaviour in build result when targeting big-endian via CMake
     # https://groups.google.com/a/webmproject.org/g/webp-discuss/c/wvBsO8n8BKA/m/eKpxLuagAQAJ
     (fetchpatch {
+      hash = "sha256-VNiLv1y3cjSDCNen9KxqbdrldI6EhshTSnsq8g9x8HA=";
       name = "0001-libwebp-Fix-endianness-with-CMake.patch";
       url = "https://github.com/webmproject/libwebp/commit/0e5f4ee3deaba5c4381877764005d981f652791f.patch";
-      hash = "sha256-VNiLv1y3cjSDCNen9KxqbdrldI6EhshTSnsq8g9x8HA=";
     })
   ];
+
+  nativeBuildInputs = [ cmake ];
+
+  buildInputs =
+    [ ]
+    ++ lib.optionals openglSupport [
+      libglut
+      libGL
+      libGLU
+    ]
+    ++ lib.optionals pngSupport [ libpng ]
+    ++ lib.optionals jpegSupport [ libjpeg ]
+    ++ lib.optionals tiffSupport [ libtiff ]
+    ++ lib.optionals gifSupport [ giflib ];
 
   cmakeFlags = [
     (lib.cmakeBool "BUILD_SHARED_LIBS" true)
@@ -67,19 +80,6 @@ stdenv.mkDerivation (finalAttrs: {
     (lib.cmakeBool "WEBP_BUILD_LIBWEBPMUX" libwebpmuxSupport)
   ];
 
-  nativeBuildInputs = [ cmake ];
-  buildInputs =
-    [ ]
-    ++ lib.optionals openglSupport [
-      libglut
-      libGL
-      libGLU
-    ]
-    ++ lib.optionals pngSupport [ libpng ]
-    ++ lib.optionals jpegSupport [ libjpeg ]
-    ++ lib.optionals tiffSupport [ libtiff ]
-    ++ lib.optionals gifSupport [ giflib ];
-
   passthru.tests = {
     inherit
       gd
@@ -90,6 +90,7 @@ stdenv.mkDerivation (finalAttrs: {
       opencv
       vips
       ;
+
     inherit (python3.pkgs) pillow imread;
     haskell-webp = haskellPackages.webp;
     pkg-config = testers.hasPkgConfigModules { package = libwebp; };
@@ -99,11 +100,14 @@ stdenv.mkDerivation (finalAttrs: {
     description = "Tools and library for the WebP image format";
     homepage = "https://developers.google.com/speed/webp/";
     license = lib.licenses.bsd3;
-    platforms = lib.platforms.all;
+
     maintainers = with lib.maintainers; [
       ajs124
       savtrip
     ];
+
+    platforms = lib.platforms.all;
+
     pkgConfigModules = [
       # configure_pkg_config() calls for these are unconditional
       "libwebp"

@@ -1,7 +1,7 @@
 {
   lib,
-  buildNpmPackage,
   fetchFromGitHub,
+  buildNpmPackage,
 }:
 
 buildNpmPackage rec {
@@ -16,14 +16,13 @@ buildNpmPackage rec {
   };
 
   npmDepsHash = "sha256-zkyB3PYpfeEw5U70KewxIWd4eImIbTgy+e88264sotc=";
-
   dontNpmBuild = true;
 
   meta = {
     description = "Makes prettier fast";
     homepage = "https://github.com/mikew/prettier_d_slim";
     license = lib.licenses.mit;
-    mainProgram = "prettier_d_slim";
     maintainers = [ ];
+    mainProgram = "prettier_d_slim";
   };
 }

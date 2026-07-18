@@ -1,16 +1,15 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitLab,
-  setuptools,
-  pytestCheckHook,
   beautifulsoup4,
+  buildPythonPackage,
+  pytestCheckHook,
+  setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "airium";
   version = "0.2.7";
-  pyproject = true;
 
   src = fetchFromGitLab {
     owner = "kamichal";
@@ -19,18 +18,20 @@ buildPythonPackage rec {
     hash = "sha256-sXyqGYBjyQ3Ig1idw+omrjj+ElknN9oemzob7NxFppo=";
   };
 
-  build-system = [ setuptools ];
-
   nativeCheckInputs = [
     beautifulsoup4
     pytestCheckHook
   ];
+
+  build-system = [ setuptools ];
 
   disabledTests = [
     # Tests require internet access, broken in sandbox
     "test_get_bad_content_type"
     "test_translate_remote_file"
   ];
+
+  pyproject = true;
 
   meta = {
     description = "Bidirectional HTML-python translator";

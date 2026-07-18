@@ -10,20 +10,21 @@
 
 bundlerApp {
   pname = "overcommit";
-  gemdir = ./.;
-  exes = [ "overcommit" ];
-
   nativeBuildInputs = [ makeWrapper ];
 
   postBuild = ''
     wrapProgram $out/bin/overcommit --prefix PATH : ${lib.makeBinPath [ git ]}
   '';
 
+  exes = [ "overcommit" ];
+  gemdir = ./.;
+
   passthru = {
     tests.version = testers.testVersion {
-      package = overcommit;
       version = (import ./gemset.nix).overcommit.version;
+      package = overcommit;
     };
+
     updateScript = bundlerUpdateScript "overcommit";
   };
 
@@ -32,10 +33,12 @@ bundlerApp {
     homepage = "https://github.com/sds/overcommit";
     changelog = "https://github.com/sds/overcommit/blob/main/CHANGELOG.md";
     license = lib.licenses.mit;
-    mainProgram = "overcommit";
+
     maintainers = with lib.maintainers; [
       anthonyroussel
     ];
+
     platforms = lib.platforms.unix;
+    mainProgram = "overcommit";
   };
 }

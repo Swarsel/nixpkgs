@@ -1,13 +1,13 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
-  nix-update-script,
   cmake,
+  libxcb,
   ninja,
+  nix-update-script,
   qt5,
   qt6,
-  libxcb,
   useQt6 ? false,
 }:
 let
@@ -18,17 +18,23 @@ stdenv.mkDerivation (finalAttrs: {
   pname = "adwaita-qt";
   version = "1.4.2";
 
-  outputs = [
-    "out"
-    "dev"
-  ];
-
   src = fetchFromGitHub {
     owner = "FedoraQt";
     repo = "adwaita-qt";
     tag = finalAttrs.version;
     hash = "sha256-K/+SL52C+M2OC4NL+mhBnm/9BwH0KNNTGIDmPwuUwkM=";
   };
+
+  outputs = [
+    "out"
+    "dev"
+  ];
+
+  postPatch = ''
+    # Fix plugin dir
+    substituteInPlace src/style/CMakeLists.txt \
+       --replace-fail "DESTINATION \"\''${QT_PLUGINS_DIR}/styles" "DESTINATION \"$qtPluginPrefix/styles"
+  '';
 
   nativeBuildInputs = [
     cmake
@@ -48,18 +54,12 @@ stdenv.mkDerivation (finalAttrs: {
     qt6.qtwayland
   ];
 
-  # Qt setup hook complains about missing `wrapQtAppsHook` otherwise.
-  dontWrapQtApps = true;
-
   cmakeFlags = lib.optionals useQt6 [
     "-DUSE_QT6=true"
   ];
 
-  postPatch = ''
-    # Fix plugin dir
-    substituteInPlace src/style/CMakeLists.txt \
-       --replace-fail "DESTINATION \"\''${QT_PLUGINS_DIR}/styles" "DESTINATION \"$qtPluginPrefix/styles"
-  '';
+  # Qt setup hook complains about missing `wrapQtAppsHook` otherwise.
+  dontWrapQtApps = true;
 
   passthru = {
     updateScript = nix-update-script { };

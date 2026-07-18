@@ -1,7 +1,7 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -19,9 +19,9 @@ rustPlatform.buildRustPackage (finalAttrs: {
 
   meta = {
     description = "Lightning-fast linter for .env files. Written in Rust";
-    mainProgram = "dotenv-linter";
     homepage = "https://dotenv-linter.github.io";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ humancalico ];
+    mainProgram = "dotenv-linter";
   };
 })

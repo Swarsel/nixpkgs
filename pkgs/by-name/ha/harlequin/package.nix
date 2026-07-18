@@ -1,14 +1,14 @@
 {
   lib,
   stdenv,
-  python3,
   fetchFromGitHub,
-  nix-update-script,
   glibcLocales,
+  nix-update-script,
+  python3,
   versionCheckHook,
   writableTmpDirAsHomeHook,
-  withPostgresAdapter ? true,
   withBigQueryAdapter ? true,
+  withPostgresAdapter ? true,
 }:
 
 let
@@ -18,6 +18,7 @@ let
       # KeyError: 'textual-ansi'
       textual = prev.textual.overridePythonAttrs (old: rec {
         version = "8.2.4";
+
         src = old.src.override {
           tag = "v${version}";
           hash = "sha256-827cm9pcj1o1FYeaoWKCJ6dEyXeDop4kYd205cySTfg=";
@@ -30,7 +31,6 @@ in
 python3Packages.buildPythonApplication (finalAttrs: {
   pname = "harlequin";
   version = "2.5.2";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "tconbeer";
@@ -39,21 +39,16 @@ python3Packages.buildPythonApplication (finalAttrs: {
     hash = "sha256-ea8fR+tsur/tIQwfUS88HvjCADv8VgEjHD7JnR44Twk=";
   };
 
-  pythonRelaxDeps = [
-    "click"
-    "numpy"
-    "pyarrow"
-    "questionary"
-    "rich-click"
-    "textual"
-    "tomlkit"
-    "tree-sitter"
-    "tree-sitter-sql"
+  nativeBuildInputs = [ glibcLocales ];
+
+  nativeCheckInputs = with python3Packages; [
+    pytest-asyncio
+    pytestCheckHook
+    versionCheckHook
+    writableTmpDirAsHomeHook
   ];
 
   build-system = with python3Packages; [ hatchling ];
-
-  nativeBuildInputs = [ glibcLocales ];
 
   dependencies =
     with python3Packages;
@@ -77,22 +72,9 @@ python3Packages.buildPythonApplication (finalAttrs: {
     ++ lib.optionals withPostgresAdapter [ harlequin-postgres ]
     ++ lib.optionals withBigQueryAdapter [ harlequin-bigquery ];
 
-  pythonImportsCheck = [
-    "harlequin"
-    "harlequin_duckdb"
-    "harlequin_sqlite"
-    "harlequin_vscode"
-  ];
-
-  passthru = {
-    updateScript = nix-update-script { };
-  };
-
-  nativeCheckInputs = with python3Packages; [
-    pytest-asyncio
-    pytestCheckHook
-    versionCheckHook
-    writableTmpDirAsHomeHook
+  disabledTestPaths = [
+    # Tests requires more setup
+    "tests/functional_tests/"
   ];
 
   disabledTests = [
@@ -109,18 +91,38 @@ python3Packages.buildPythonApplication (finalAttrs: {
     "test_load_extension"
   ];
 
-  disabledTestPaths = [
-    # Tests requires more setup
-    "tests/functional_tests/"
+  pyproject = true;
+
+  pythonImportsCheck = [
+    "harlequin"
+    "harlequin_duckdb"
+    "harlequin_sqlite"
+    "harlequin_vscode"
   ];
+
+  pythonRelaxDeps = [
+    "click"
+    "numpy"
+    "pyarrow"
+    "questionary"
+    "rich-click"
+    "textual"
+    "tomlkit"
+    "tree-sitter"
+    "tree-sitter-sql"
+  ];
+
+  passthru = {
+    updateScript = nix-update-script { };
+  };
 
   meta = {
     description = "SQL IDE for Your Terminal";
     homepage = "https://harlequin.sh";
     changelog = "https://github.com/tconbeer/harlequin/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.mit;
-    mainProgram = "harlequin";
     maintainers = with lib.maintainers; [ pcboy ];
     platforms = lib.platforms.unix;
+    mainProgram = "harlequin";
   };
 })

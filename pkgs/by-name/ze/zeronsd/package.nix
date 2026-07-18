@@ -1,9 +1,9 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
-  pkg-config,
   openssl,
+  pkg-config,
+  rustPlatform,
   rustfmt,
 }:
 
@@ -18,14 +18,11 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-TL0bgzQgge6j1SpZCdxv/s4pBMSg4/3U5QisjkVE6BE=";
   };
 
-  cargoHash = "sha256-xIuMANJGRHbYBbhlVMXxIVrukW1NY7ucxO79tIdPSpI=";
-
   strictDeps = true;
-  buildInputs = [ openssl ];
   nativeBuildInputs = [ pkg-config ];
-
+  buildInputs = [ openssl ];
+  cargoHash = "sha256-xIuMANJGRHbYBbhlVMXxIVrukW1NY7ucxO79tIdPSpI=";
   env.RUSTFMT = "${rustfmt}/bin/rustfmt";
-
   # Integration tests try to access the ZeroTier API which requires an API token.
   # https://github.com/zerotier/zeronsd/blob/v0.5.2/tests/service/network.rs#L10
   doCheck = false;

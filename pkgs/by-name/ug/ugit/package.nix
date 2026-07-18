@@ -1,13 +1,13 @@
 {
   lib,
-  stdenvNoCC,
   fetchFromGitHub,
-  git,
-  fzf,
   bash,
-  ncurses,
   curl,
+  fzf,
+  git,
+  ncurses,
   nix-update-script,
+  stdenvNoCC,
   testers,
 }:
 
@@ -22,8 +22,14 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     hash = "sha256-MufnBUVjEpEpZ/zyzo2e/hj+XJlikSSaXFwscCdaU48=";
   };
 
+  postPatch = ''
+    substituteInPlace ugit \
+      --replace-fail "fzf " "${lib.getExe fzf} " \
+      --replace-fail "curl" "${lib.getExe curl}" \
+      --replace-fail "tput " "${ncurses}/bin/tput "
+  '';
+
   strictDeps = true;
-  doInstallCheck = true;
 
   buildInputs = [
     fzf
@@ -33,14 +39,6 @@ stdenvNoCC.mkDerivation (finalAttrs: {
   ];
 
   propagatedBuildInputs = [ git ];
-  nativeInstallCheckInputs = [ ncurses ];
-
-  postPatch = ''
-    substituteInPlace ugit \
-      --replace-fail "fzf " "${lib.getExe fzf} " \
-      --replace-fail "curl" "${lib.getExe curl}" \
-      --replace-fail "tput " "${ncurses}/bin/tput "
-  '';
 
   installPhase = ''
     runHook preInstall
@@ -51,6 +49,9 @@ stdenvNoCC.mkDerivation (finalAttrs: {
 
     runHook postInstall
   '';
+
+  doInstallCheck = true;
+  nativeInstallCheckInputs = [ ncurses ];
 
   installCheckPhase = ''
     runHook preInstallCheck
@@ -68,10 +69,10 @@ stdenvNoCC.mkDerivation (finalAttrs: {
   meta = {
     description = "Tool that helps undoing the last git command with grace";
     homepage = "https://github.com/Bhupesh-V/ugit";
-    downloadPage = "https://github.com/Bhupesh-V/ugit/releases";
     license = lib.licenses.mit;
-    mainProgram = "ugit";
-    platforms = lib.platforms.unix;
     maintainers = with lib.maintainers; [ d-brasher ];
+    platforms = lib.platforms.unix;
+    mainProgram = "ugit";
+    downloadPage = "https://github.com/Bhupesh-V/ugit/releases";
   };
 })

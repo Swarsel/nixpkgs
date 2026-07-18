@@ -1,14 +1,13 @@
 {
   lib,
-  python3,
   fetchFromGitHub,
   ncurses,
+  python3,
 }:
 
 python3.pkgs.buildPythonApplication {
   pname = "swaglyrics";
   version = "1.2.2-unstable-2021-06-17";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "SwagLyrics";
@@ -22,16 +21,9 @@ python3.pkgs.buildPythonApplication {
       --replace-fail "==" ">="
   '';
 
-  build-system = with python3.pkgs; [ setuptools ];
-
-  dependencies = with python3.pkgs; [
-    beautifulsoup4
-    colorama
-    flask
-    requests
-    swspotify
-    unidecode
-  ];
+  preBuild = ''
+    export HOME=$(mktemp -d)
+  '';
 
   nativeCheckInputs =
     with python3.pkgs;
@@ -46,9 +38,16 @@ python3.pkgs.buildPythonApplication {
       ncurses
     ];
 
-  preBuild = ''
-    export HOME=$(mktemp -d)
-  '';
+  build-system = with python3.pkgs; [ setuptools ];
+
+  dependencies = with python3.pkgs; [
+    beautifulsoup4
+    colorama
+    flask
+    requests
+    swspotify
+    unidecode
+  ];
 
   disabledTests = [
     # Disable tests which touch network
@@ -58,6 +57,8 @@ python3.pkgs.buildPythonApplication {
     "test_lyrics_are_shown_in_tab"
     "test_songchanged_can_raise_songplaying"
   ];
+
+  pyproject = true;
 
   pythonImportsCheck = [
     "swaglyrics"

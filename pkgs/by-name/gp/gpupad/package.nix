@@ -52,7 +52,7 @@ stdenv.mkDerivation (finalAttrs: {
     changelog = "https://github.com/houmain/gpupad/blob/${finalAttrs.src.rev}/CHANGELOG.md";
     license = lib.licenses.gpl3Only;
     maintainers = with lib.maintainers; [ tomasajt ];
-    mainProgram = "gpupad";
     platforms = lib.platforms.linux;
+    mainProgram = "gpupad";
   };
 })

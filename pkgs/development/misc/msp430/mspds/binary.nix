@@ -1,9 +1,9 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchurl,
-  unzip,
   autoPatchelfHook,
+  unzip,
 }:
 
 let
@@ -14,17 +14,11 @@ in
 stdenv.mkDerivation {
   pname = "msp-debug-stack-bin";
   version = "3.15.1.1";
+
   src = fetchurl {
     url = "https://software-dl.ti.com/msp430/msp430_public_sw/mcu/msp430/MSPDS/3_15_1_001/export/MSP430_DLL_Developer_Package_Rev_3_15_1_1.zip";
     sha256 = "1m1ssrwbhqvqwbp3m4hnjyxnz3f9d4acz9vl1av3fbnhvxr0d2hb";
   };
-  sourceRoot = ".";
-
-  libname =
-    if stdenv.hostPlatform.isWindows then
-      "MSP430${archPostfix}.dll"
-    else
-      "libmsp430${archPostfix}${stdenv.hostPlatform.extensions.sharedLibrary}";
 
   nativeBuildInputs = [ unzip ] ++ lib.optional stdenv.hostPlatform.isLinux autoPatchelfHook;
   buildInputs = [ stdenv.cc.cc ];
@@ -34,12 +28,20 @@ stdenv.mkDerivation {
     install -Dm0644 -t $out/include Inc/*.h
   '';
 
+  libname =
+    if stdenv.hostPlatform.isWindows then
+      "MSP430${archPostfix}.dll"
+    else
+      "libmsp430${archPostfix}${stdenv.hostPlatform.extensions.sharedLibrary}";
+
+  sourceRoot = ".";
+
   meta = {
     description = "Unfree binary release of the TI MSP430 FET debug driver";
     homepage = "https://www.ti.com/tool/MSPDS";
-    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
     license = lib.licenses.unfree;
-    platforms = lib.platforms.linux ++ lib.platforms.darwin;
+    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
     maintainers = with lib.maintainers; [ aerialx ];
+    platforms = lib.platforms.linux ++ lib.platforms.darwin;
   };
 }

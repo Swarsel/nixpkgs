@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   nix-update-script,
 }:
 buildGoModule (finalAttrs: {
@@ -31,13 +31,15 @@ buildGoModule (finalAttrs: {
 
   meta = {
     description = "`cat` but with syntax highlighting powered by Neovim";
-    homepage = "https://github.com/brianhuster/nvcat";
-    changelog = "https://github.com/brianhuster/nvcat/releases/tag/v${finalAttrs.version}";
-    license = lib.licenses.asl20;
+
     longDescription = ''
       A command-line utility that displays files with Neovim's syntax highlighting in the terminal.
     '';
-    mainProgram = "nvcat";
+
+    homepage = "https://github.com/brianhuster/nvcat";
+    changelog = "https://github.com/brianhuster/nvcat/releases/tag/v${finalAttrs.version}";
+    license = lib.licenses.asl20;
     maintainers = with lib.maintainers; [ olillin ];
+    mainProgram = "nvcat";
   };
 })

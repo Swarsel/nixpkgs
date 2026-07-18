@@ -1,19 +1,19 @@
 {
   lib,
-  buildPlatform,
-  hostPlatform,
   fetchurl,
   bash,
-  gcc,
-  musl,
   binutils,
-  gnumake,
-  gnused,
-  gnugrep,
-  gawk,
+  buildPlatform,
   diffutils,
   findutils,
+  gawk,
+  gcc,
+  gnugrep,
+  gnumake,
+  gnused,
   gnutar,
+  hostPlatform,
+  musl,
   xz,
 }:
 let
@@ -54,8 +54,8 @@ bash.runCommand "${pname}-${version}"
       description = "GNU implementation of the Unix grep command";
       homepage = "https://www.gnu.org/software/grep";
       license = lib.licenses.gpl3Plus;
-      mainProgram = "grep";
       platforms = lib.platforms.unix;
+      mainProgram = "grep";
       teams = [ lib.teams.minimal-bootstrap ];
     };
   }

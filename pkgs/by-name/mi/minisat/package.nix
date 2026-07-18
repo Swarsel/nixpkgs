@@ -28,11 +28,13 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Compact and readable SAT solver";
+    homepage = "http://minisat.se/";
+    license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       raskin
     ];
+
     platforms = lib.platforms.unix;
-    license = lib.licenses.mit;
-    homepage = "http://minisat.se/";
   };
 })

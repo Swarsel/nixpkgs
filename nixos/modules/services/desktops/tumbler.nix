@@ -1,8 +1,8 @@
 # Tumbler
 {
   config,
-  pkgs,
   lib,
+  pkgs,
   ...
 }:
 let
@@ -17,12 +17,7 @@ in
     (lib.mkRemovedOptionModule [ "services" "tumbler" "package" ] "")
   ];
 
-  meta = {
-    teams = [ lib.teams.pantheon ];
-  };
-
   ###### interface
-
   options = {
 
     services.tumbler = {
@@ -34,7 +29,6 @@ in
   };
 
   ###### implementation
-
   config = lib.mkIf cfg.enable {
 
     environment.systemPackages = with pkgs; [
@@ -45,6 +39,10 @@ in
       tumbler
     ];
 
+  };
+
+  meta = {
+    teams = [ lib.teams.pantheon ];
   };
 
 }

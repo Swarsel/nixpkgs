@@ -1,5 +1,6 @@
 {
   lib,
+  stdenv,
   SDL2,
   callPackage,
   cmake,
@@ -13,23 +14,25 @@
   jbig2dec,
   leptonica,
   libGL,
-  libx11,
-  libxau,
-  libxcomposite,
-  libxdmcp,
-  libxfixes,
   libdrm,
   libffi,
+  libgbm,
   libjpeg,
   libusb1,
   libuvc,
   libvlc,
   libvncserver,
+  libx11,
+  libxau,
   libxcb,
+  libxcb-util,
+  libxcb-wm,
+  libxcomposite,
+  libxdmcp,
+  libxfixes,
   libxkbcommon,
   luajit,
   makeWrapper,
-  libgbm,
   mupdf,
   openal,
   openjpeg,
@@ -37,17 +40,16 @@
   pkg-config,
   ruby,
   sqlite,
-  stdenv,
   tesseract,
   valgrind,
   wayland,
   wayland-protocols,
   wayland-scanner,
-  libxcb-util,
-  libxcb-wm,
   xz,
   # Boolean flags
   buildManPages ? true,
+  # Configurable options
+  sources ? callPackage ./sources.nix { },
   useBuiltinLua ? false,
   useEspeak ? !stdenv.hostPlatform.isDarwin,
   useStaticLibuvc ? true,
@@ -55,12 +57,27 @@
   useStaticSqlite ? true,
   # For debugging only, disabled by upstream
   useTracy ? false,
-  # Configurable options
-  sources ? callPackage ./sources.nix { },
 }:
 
 stdenv.mkDerivation (finalAttrs: {
   inherit (sources.letoram-arcan) pname version src;
+
+  outputs = [
+    "out"
+    "dev"
+    "lib"
+    "man"
+  ];
+
+  postPatch = ''
+    substituteInPlace ./src/platform/posix/paths.c \
+      --replace-fail "/usr/bin" "$out/bin" \
+      --replace-fail "/usr/share" "$out/share"
+    substituteInPlace ./src/CMakeLists.txt \
+      --replace-fail "SETUID" "# SETUID"
+  '';
+
+  strictDeps = true;
 
   nativeBuildInputs = [
     cmake
@@ -125,16 +142,15 @@ stdenv.mkDerivation (finalAttrs: {
     "../src"
   ];
 
-  outputs = [
-    "out"
-    "dev"
-    "lib"
-    "man"
-  ];
+  # INFO: Arcan build scripts require the manpages to be generated *before* the
+  # `configure` phase
+  preConfigure = lib.optionalString buildManPages ''
+    pushd doc
+    ruby docgen.rb mangen
+    popd
+  '';
 
   hardeningDisable = [ "format" ];
-
-  strictDeps = true;
 
   # Emulate external/git/clone.sh
   postUnpack =
@@ -163,43 +179,31 @@ stdenv.mkDerivation (finalAttrs: {
       popd
     '';
 
-  postPatch = ''
-    substituteInPlace ./src/platform/posix/paths.c \
-      --replace-fail "/usr/bin" "$out/bin" \
-      --replace-fail "/usr/share" "$out/share"
-    substituteInPlace ./src/CMakeLists.txt \
-      --replace-fail "SETUID" "# SETUID"
-  '';
-
-  # INFO: Arcan build scripts require the manpages to be generated *before* the
-  # `configure` phase
-  preConfigure = lib.optionalString buildManPages ''
-    pushd doc
-    ruby docgen.rb mangen
-    popd
-  '';
-
   passthru = {
     inherit sources;
     wrapper = callPackage ./wrapper.nix { };
   };
 
   meta = {
-    homepage = "https://arcan-fe.com/";
     description = "Combined Display Server, Multimedia Framework, Game Engine";
+
     longDescription = ''
       Arcan is a portable and fast self-sufficient multimedia engine for
       advanced visualization and analysis work in a wide range of applications
       e.g. game development, real-time streaming video, monitoring and
       surveillance, up to and including desktop compositors and window managers.
     '';
+
+    homepage = "https://arcan-fe.com/";
+
     license = with lib.licenses; [
       bsd3
       gpl2Plus
       lgpl2Plus
     ];
+
     maintainers = [ ];
-    teams = with lib.teams; [ ngi ];
     platforms = lib.platforms.unix;
+    teams = with lib.teams; [ ngi ];
   };
 })

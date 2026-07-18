@@ -1,10 +1,10 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   hatchling,
-  traitlets,
   pytestCheckHook,
+  traitlets,
 }:
 
 let
@@ -13,7 +13,6 @@ let
 in
 buildPythonPackage {
   inherit pname version;
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "ipython";
@@ -23,10 +22,9 @@ buildPythonPackage {
   };
 
   nativeBuildInputs = [ hatchling ];
-
   propagatedBuildInputs = [ traitlets ];
-
   nativeCheckInputs = [ pytestCheckHook ];
+  pyproject = true;
 
   meta = {
     description = "Jupyter Python Comm implementation, for usage in ipykernel, xeus-python etc";

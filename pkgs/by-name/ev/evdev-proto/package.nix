@@ -1,48 +1,45 @@
 {
   lib,
   stdenv,
-  linuxHeaders,
-  freebsd,
-  runCommandCC,
   buildPackages,
+  freebsd,
+  linuxHeaders,
+  runCommandCC,
 }:
 
 stdenv.mkDerivation {
-  pname = "evdev-proto";
   inherit (linuxHeaders) version;
-
+  pname = "evdev-proto";
   src = freebsd.ports;
-
-  sourceRoot = "${freebsd.ports.name}/devel/evdev-proto";
-
-  useTempPrefix = true;
-
   nativeBuildInputs = [ freebsd.makeMinimal ];
+  makeFlags = [ "DIST_SUBDIR=evdev-proto" ];
 
   env = {
+    ABI_FILE = runCommandCC "abifile" { } "$CC -shared -o $out";
     ARCH = freebsd.makeMinimal.MACHINE_ARCH;
-    OPSYS = "FreeBSD";
-    _OSRELEASE = "${lib.versions.majorMinor freebsd.makeMinimal.version}-RELEASE";
-
     AWK = "awk";
     CHMOD = "chmod";
+    CLEAN_FETCH_ENV = true;
     FIND = "find";
+    INSTALL_AS_USER = true;
     MKDIR = "mkdir -p";
+    NO_CHECKSUM = true;
+    NO_MTREE = true;
+    OPSYS = "FreeBSD";
     PKG_BIN = "${buildPackages.pkg}/bin/pkg";
     RM = "rm -f";
     SED = "${buildPackages.freebsd.sed}/bin/sed";
     SETENV = "env";
     SH = "sh";
+    SRC_BASE = freebsd.source;
     TOUCH = "touch";
     XARGS = "xargs";
-
-    ABI_FILE = runCommandCC "abifile" { } "$CC -shared -o $out";
-    CLEAN_FETCH_ENV = true;
-    INSTALL_AS_USER = true;
-    NO_CHECKSUM = true;
-    NO_MTREE = true;
-    SRC_BASE = freebsd.source;
+    _OSRELEASE = "${lib.versions.majorMinor freebsd.makeMinimal.version}-RELEASE";
   };
+
+  postInstall = ''
+    mv $prefix $out
+  '';
 
   preUnpack = ''
     export MAKE_JOBS_NUMBER="$NIX_BUILD_CORES"
@@ -58,17 +55,14 @@ stdenv.mkDerivation {
         linux-${linuxHeaders.version}/include/uapi/linux
   '';
 
-  makeFlags = [ "DIST_SUBDIR=evdev-proto" ];
-
-  postInstall = ''
-    mv $prefix $out
-  '';
+  sourceRoot = "${freebsd.ports.name}/devel/evdev-proto";
+  useTempPrefix = true;
 
   meta = {
     description = "Input event device header files for FreeBSD";
     homepage = "https://cgit.freebsd.org/ports";
+    license = lib.licenses.gpl2Only;
     maintainers = with lib.maintainers; [ qyliss ];
     platforms = lib.platforms.freebsd;
-    license = lib.licenses.gpl2Only;
   };
 }

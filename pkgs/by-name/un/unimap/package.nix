@@ -1,13 +1,13 @@
 {
   lib,
-  rustPlatform,
+  stdenv,
   fetchFromGitHub,
   installShellFiles,
   makeBinaryWrapper,
-  stdenv,
-  pkg-config,
-  openssl,
   nmap,
+  openssl,
+  pkg-config,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -21,8 +21,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-QQZNeZUB6aHnYz7B7uqL8I9gkk4JvQJ4TD9NxECd6JA=";
   };
 
-  cargoHash = "sha256-1haSdmhK14XvKunSbj9jPTuHJK5tWdzdFAqxhg2TI0s=";
-
   nativeBuildInputs = [
     installShellFiles
     makeBinaryWrapper
@@ -35,6 +33,8 @@ rustPlatform.buildRustPackage (finalAttrs: {
   buildInputs = lib.optionals (stdenv.hostPlatform.isAarch && stdenv.hostPlatform.isLinux) [
     openssl
   ];
+
+  cargoHash = "sha256-1haSdmhK14XvKunSbj9jPTuHJK5tWdzdFAqxhg2TI0s=";
 
   env = lib.optionalAttrs (stdenv.hostPlatform.isAarch && stdenv.hostPlatform.isLinux) {
     OPENSSL_NO_VENDOR = true;

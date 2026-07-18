@@ -1,9 +1,9 @@
 {
   lib,
+  fetchFromGitHub,
   buildPythonPackage,
   click,
   click-log,
-  fetchFromGitHub,
   pytest-asyncio,
   pytest-timeout,
   pytestCheckHook,
@@ -15,7 +15,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "bellows";
   version = "0.49.2";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "zigpy";
@@ -30,6 +29,12 @@ buildPythonPackage (finalAttrs: {
       --replace-fail 'dynamic = ["version"]' 'version = "${finalAttrs.version}"'
   '';
 
+  nativeCheckInputs = [
+    pytestCheckHook
+    pytest-asyncio
+    pytest-timeout
+  ];
+
   build-system = [ setuptools ];
 
   dependencies = [
@@ -39,12 +44,7 @@ buildPythonPackage (finalAttrs: {
     zigpy
   ];
 
-  nativeCheckInputs = [
-    pytestCheckHook
-    pytest-asyncio
-    pytest-timeout
-  ];
-
+  pyproject = true;
   pythonImportsCheck = [ "bellows" ];
 
   meta = {

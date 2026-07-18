@@ -6,8 +6,20 @@
 }:
 
 stdenv.mkDerivation rec {
-  version = "unstable-20-06-26";
   pname = "herqq";
+  version = "unstable-20-06-26";
+
+  src = fetchFromGitHub {
+    owner = "ThomArmax";
+    repo = "HUPnP";
+    rev = "c8385a8846b52def7058ae3794249d6b566a41fc";
+    sha256 = "FxN/QlLB3sZ6Vn/9VIKNUntX/B4+crQZ7t760pwFqY8=";
+  };
+
+  outputs = [
+    "out"
+    "dev"
+  ];
 
   nativeBuildInputs = [
     libsForQt5.qmake
@@ -19,23 +31,12 @@ stdenv.mkDerivation rec {
     libsForQt5.qtmultimedia
   ];
 
-  outputs = [
-    "out"
-    "dev"
-  ];
-
   sourceRoot = "${src.name}/herqq";
-  src = fetchFromGitHub {
-    owner = "ThomArmax";
-    repo = "HUPnP";
-    rev = "c8385a8846b52def7058ae3794249d6b566a41fc";
-    sha256 = "FxN/QlLB3sZ6Vn/9VIKNUntX/B4+crQZ7t760pwFqY8=";
-  };
 
   meta = {
-    homepage = "http://herqq.org";
     description = "Software library for building UPnP devices and control points";
-    platforms = lib.platforms.linux;
+    homepage = "http://herqq.org";
     maintainers = [ ];
+    platforms = lib.platforms.linux;
   };
 }

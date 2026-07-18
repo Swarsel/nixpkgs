@@ -1,10 +1,10 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  hatchling,
-  hatch-vcs,
+  buildPythonPackage,
   hatch-requirements-txt,
+  hatch-vcs,
+  hatchling,
   pytest,
   unstableGitUpdater,
 }:
@@ -12,10 +12,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "pytest-ticket";
   version = "0-unstable-2025-05-15";
-  pyproject = true;
-
-  # hatch-vcs validates this against PEP 440 and 0-unstable-* is not a valid PEP 440 version string
-  env.SETUPTOOLS_SCM_PRETEND_VERSION = builtins.elemAt (builtins.split "-" finalAttrs.version) 0;
 
   src = fetchFromGitHub {
     owner = "next-actions";
@@ -23,6 +19,14 @@ buildPythonPackage (finalAttrs: {
     rev = "9f77e77d99ee25a65cad2ab07815884bf7271552";
     hash = "sha256-oR0kwrr8nnrVpWc27pOtM+6K00llTQGRTpvKmOyCIYY=";
   };
+
+  # hatch-vcs validates this against PEP 440 and 0-unstable-* is not a valid PEP 440 version string
+  env.SETUPTOOLS_SCM_PRETEND_VERSION = builtins.elemAt (builtins.split "-" finalAttrs.version) 0;
+
+  # Patch requirements.txt out of the package
+  postInstall = ''
+    rm -f $out/lib/python*/site-packages/requirements.txt
+  '';
 
   build-system = [
     hatchling
@@ -34,11 +38,7 @@ buildPythonPackage (finalAttrs: {
     pytest
   ];
 
-  # Patch requirements.txt out of the package
-  postInstall = ''
-    rm -f $out/lib/python*/site-packages/requirements.txt
-  '';
-
+  pyproject = true;
   passthru.updateScript = unstableGitUpdater { };
 
   meta = {

@@ -1,6 +1,6 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitLab,
   cmake,
   qtbase,
@@ -17,11 +17,6 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-77G1NU7079pvqhQnSTmMdkd2g1R2hoJxn183WcsWq8c=";
   };
 
-  dontWrapQtApps = true;
-
-  cmakeFlags = [
-    "-DQT_VERSION_MAJOR=${lib.versions.major qtbase.version}"
-  ];
   nativeBuildInputs = [
     cmake
   ];
@@ -30,9 +25,15 @@ stdenv.mkDerivation (finalAttrs: {
     qtbase
   ];
 
+  cmakeFlags = [
+    "-DQT_VERSION_MAJOR=${lib.versions.major qtbase.version}"
+  ];
+
+  dontWrapQtApps = true;
+
   meta = {
-    homepage = "https://gitlab.com/mattbas/Qt-Color-Widgets";
     description = "Qt (C++) widgets to manage color inputs";
+    homepage = "https://gitlab.com/mattbas/Qt-Color-Widgets";
     license = lib.licenses.lgpl3Plus;
     maintainers = with lib.maintainers; [ dmkhitaryan ];
     platforms = lib.platforms.linux ++ lib.platforms.darwin;

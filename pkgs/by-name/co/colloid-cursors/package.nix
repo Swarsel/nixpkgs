@@ -1,8 +1,8 @@
 {
   lib,
-  stdenvNoCC,
   fetchFromGitHub,
   gitUpdater,
+  stdenvNoCC,
 }:
 
 stdenvNoCC.mkDerivation (finalAttrs: {
@@ -33,7 +33,7 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     description = "Colloid cursor theme";
     homepage = "https://github.com/vinceliuice/Colloid-icon-theme/tree/main/cursors#readme";
     license = lib.licenses.gpl3Only;
-    platforms = lib.platforms.linux;
     maintainers = with lib.maintainers; [ xelacodes ];
+    platforms = lib.platforms.linux;
   };
 })

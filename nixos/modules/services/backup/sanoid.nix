@@ -22,82 +22,112 @@ let
     };
 
   commonOptions = {
-    hourly = lib.mkOption {
-      description = "Number of hourly snapshots.";
-      type = with lib.types; nullOr ints.unsigned;
-      default = null;
-    };
-
-    daily = lib.mkOption {
-      description = "Number of daily snapshots.";
-      type = with lib.types; nullOr ints.unsigned;
-      default = null;
-    };
-
-    monthly = lib.mkOption {
-      description = "Number of monthly snapshots.";
-      type = with lib.types; nullOr ints.unsigned;
-      default = null;
-    };
-
-    yearly = lib.mkOption {
-      description = "Number of yearly snapshots.";
-      type = with lib.types; nullOr ints.unsigned;
-      default = null;
-    };
-
     autoprune = lib.mkOption {
+      default = null;
       description = "Whether to automatically prune old snapshots.";
       type = with lib.types; nullOr bool;
-      default = null;
     };
 
     autosnap = lib.mkOption {
+      default = null;
       description = "Whether to automatically take snapshots.";
       type = with lib.types; nullOr bool;
-      default = null;
     };
 
-    pre_snapshot_script = lib.mkOption {
-      description = "Script to run before taking snapshot.";
-      type = with lib.types; nullOr str;
+    daily = lib.mkOption {
       default = null;
-    };
-
-    post_snapshot_script = lib.mkOption {
-      description = "Script to run after taking snapshot.";
-      type = with lib.types; nullOr str;
-      default = null;
-    };
-
-    pruning_script = lib.mkOption {
-      description = "Script to run after pruning snapshot.";
-      type = with lib.types; nullOr str;
-      default = null;
-    };
-
-    no_inconsistent_snapshot = lib.mkOption {
-      description = "Whether to take a snapshot if the pre script fails";
-      type = with lib.types; nullOr bool;
-      default = null;
+      description = "Number of daily snapshots.";
+      type = with lib.types; nullOr ints.unsigned;
     };
 
     force_post_snapshot_script = lib.mkOption {
+      default = null;
       description = "Whether to run the post script if the pre script fails";
       type = with lib.types; nullOr bool;
+    };
+
+    hourly = lib.mkOption {
       default = null;
+      description = "Number of hourly snapshots.";
+      type = with lib.types; nullOr ints.unsigned;
+    };
+
+    monthly = lib.mkOption {
+      default = null;
+      description = "Number of monthly snapshots.";
+      type = with lib.types; nullOr ints.unsigned;
+    };
+
+    no_inconsistent_snapshot = lib.mkOption {
+      default = null;
+      description = "Whether to take a snapshot if the pre script fails";
+      type = with lib.types; nullOr bool;
+    };
+
+    post_snapshot_script = lib.mkOption {
+      default = null;
+      description = "Script to run after taking snapshot.";
+      type = with lib.types; nullOr str;
+    };
+
+    pre_snapshot_script = lib.mkOption {
+      default = null;
+      description = "Script to run before taking snapshot.";
+      type = with lib.types; nullOr str;
+    };
+
+    pruning_script = lib.mkOption {
+      default = null;
+      description = "Script to run after pruning snapshot.";
+      type = with lib.types; nullOr str;
     };
 
     script_timeout = lib.mkOption {
+      default = null;
       description = "Time limit for pre/post/pruning script execution time (<=0 for infinite).";
       type = with lib.types; nullOr int;
+    };
+
+    yearly = lib.mkOption {
       default = null;
+      description = "Number of yearly snapshots.";
+      type = with lib.types; nullOr ints.unsigned;
     };
   };
 
   datasetOptions = rec {
+    processChildrenOnly = process_children_only;
+
+    process_children_only = lib.mkOption {
+      default = false;
+      description = "Whether to only snapshot child datasets if recursing.";
+      type = lib.types.bool;
+    };
+
+    recursive = lib.mkOption {
+      default = false;
+
+      description = ''
+        Whether to recursively snapshot dataset children.
+        You can also set this to `"zfs"` to handle datasets
+        recursively in an atomic way without the possibility to
+        override settings for child datasets.
+      '';
+
+      type =
+        with lib.types;
+        oneOf [
+          bool
+          (enum [ "zfs" ])
+        ];
+    };
+
+    useTemplate = use_template;
+
     use_template = lib.mkOption {
+      default = [ ];
       description = "Names of the templates to use for this dataset.";
+
       type = lib.types.listOf (
         lib.types.str
         // {
@@ -105,32 +135,7 @@ let
           description = "configured template name";
         }
       );
-      default = [ ];
     };
-    useTemplate = use_template;
-
-    recursive = lib.mkOption {
-      description = ''
-        Whether to recursively snapshot dataset children.
-        You can also set this to `"zfs"` to handle datasets
-        recursively in an atomic way without the possibility to
-        override settings for child datasets.
-      '';
-      type =
-        with lib.types;
-        oneOf [
-          bool
-          (enum [ "zfs" ])
-        ];
-      default = false;
-    };
-
-    process_children_only = lib.mkOption {
-      description = "Whether to only snapshot child datasets if recursing.";
-      type = lib.types.bool;
-      default = false;
-    };
-    processChildrenOnly = process_children_only;
   };
 
   # Extract unique dataset names
@@ -174,102 +179,107 @@ in
 
   options.services.sanoid = {
     enable = lib.mkEnableOption "Sanoid ZFS snapshotting service";
-
     package = lib.mkPackageOption pkgs "sanoid" { };
 
+    datasets = lib.mkOption {
+      default = { };
+      description = "Datasets to snapshot.";
+
+      type = lib.types.attrsOf (
+        lib.types.submodule (
+          { config, options, ... }:
+          {
+            options = commonOptions // datasetOptions;
+
+            config.process_children_only = lib.modules.mkAliasAndWrapDefsWithPriority lib.id (
+              options.processChildrenOnly or { }
+            );
+
+            config.use_template = lib.modules.mkAliasAndWrapDefsWithPriority lib.id (
+              options.useTemplate or { }
+            );
+
+            freeformType = datasetSettingsType;
+          }
+        )
+      );
+    };
+
+    extraArgs = lib.mkOption {
+      default = [ ];
+
+      description = ''
+        Extra arguments to pass to sanoid. See
+        <https://github.com/jimsalterjrs/sanoid/#sanoid-command-line-options>
+        for allowed options.
+      '';
+
+      example = [
+        "--verbose"
+        "--readonly"
+        "--debug"
+      ];
+
+      type = lib.types.listOf lib.types.str;
+    };
+
     interval = lib.mkOption {
-      type = lib.types.str;
       default = "hourly";
-      example = "daily";
+
       description = ''
         Run sanoid at this interval. The default is to run hourly.
 
         The format is described in
         {manpage}`systemd.time(7)`.
       '';
-    };
 
-    datasets = lib.mkOption {
-      type = lib.types.attrsOf (
-        lib.types.submodule (
-          { config, options, ... }:
-          {
-            freeformType = datasetSettingsType;
-            options = commonOptions // datasetOptions;
-            config.use_template = lib.modules.mkAliasAndWrapDefsWithPriority lib.id (
-              options.useTemplate or { }
-            );
-            config.process_children_only = lib.modules.mkAliasAndWrapDefsWithPriority lib.id (
-              options.processChildrenOnly or { }
-            );
-          }
-        )
-      );
-      default = { };
-      description = "Datasets to snapshot.";
-    };
-
-    templates = lib.mkOption {
-      type = lib.types.attrsOf (
-        lib.types.submodule {
-          freeformType = datasetSettingsType;
-          options = commonOptions;
-        }
-      );
-      default = { };
-      description = "Templates for datasets.";
+      example = "daily";
+      type = lib.types.str;
     };
 
     settings = lib.mkOption {
-      type = lib.types.attrsOf datasetSettingsType;
       description = ''
         Free-form settings written directly to the config file. See
         <https://github.com/jimsalterjrs/sanoid/blob/master/sanoid.defaults.conf>
         for allowed values.
       '';
+
+      type = lib.types.attrsOf datasetSettingsType;
     };
 
-    extraArgs = lib.mkOption {
-      type = lib.types.listOf lib.types.str;
-      default = [ ];
-      example = [
-        "--verbose"
-        "--readonly"
-        "--debug"
-      ];
-      description = ''
-        Extra arguments to pass to sanoid. See
-        <https://github.com/jimsalterjrs/sanoid/#sanoid-command-line-options>
-        for allowed options.
-      '';
+    templates = lib.mkOption {
+      default = { };
+      description = "Templates for datasets.";
+
+      type = lib.types.attrsOf (
+        lib.types.submodule {
+          options = commonOptions;
+          freeformType = datasetSettingsType;
+        }
+      );
     };
   };
 
   # Implementation
 
   config = lib.mkIf cfg.enable {
+    environment.etc."sanoid/sanoid.conf".text = configFile;
+
     services.sanoid.settings = lib.mkMerge [
       (lib.mapAttrs' (d: v: lib.nameValuePair ("template_" + d) v) cfg.templates)
       (lib.mapAttrs (d: v: v) cfg.datasets)
     ];
 
     systemd.services.sanoid = {
+      after = [ "zfs.target" ];
       description = "Sanoid snapshot service";
+      # Prevents missing snapshots during DST changes
+      environment.TZ = "UTC";
+
       serviceConfig = {
-        ExecStartPre = (
-          map (buildAllowCommand "allow" [
-            "snapshot"
-            "mount"
-            "destroy"
-          ]) datasets
-        );
-        ExecStopPost = (
-          map (buildAllowCommand "unallow" [
-            "snapshot"
-            "mount"
-            "destroy"
-          ]) datasets
-        );
+        CacheDirectory = "sanoid";
+        DynamicUser = true;
+
         ExecStart = lib.escapeShellArgs (
           [
             "${cfg.package}/bin/sanoid"
@@ -279,19 +289,30 @@ in
           ]
           ++ cfg.extraArgs
         );
-        User = "sanoid";
+
+        ExecStartPre = (
+          map (buildAllowCommand "allow" [
+            "snapshot"
+            "mount"
+            "destroy"
+          ]) datasets
+        );
+
+        ExecStopPost = (
+          map (buildAllowCommand "unallow" [
+            "snapshot"
+            "mount"
+            "destroy"
+          ]) datasets
+        );
+
         Group = "sanoid";
-        DynamicUser = true;
         RuntimeDirectory = "sanoid";
-        CacheDirectory = "sanoid";
+        User = "sanoid";
       };
-      # Prevents missing snapshots during DST changes
-      environment.TZ = "UTC";
-      after = [ "zfs.target" ];
+
       startAt = cfg.interval;
     };
-
-    environment.etc."sanoid/sanoid.conf".text = configFile;
   };
 
   meta.maintainers = with lib.maintainers; [ lopsided98 ];

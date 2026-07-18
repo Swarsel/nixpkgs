@@ -1,16 +1,16 @@
 {
   lib,
-  buildLakePackage,
-  runCommand,
-  leangz,
   fetchFromGitHub,
-  batteries,
-  aesop,
-  Qq,
-  proofwidgets,
-  plausible,
   LeanSearchClient,
+  Qq,
+  aesop,
+  batteries,
+  buildLakePackage,
   importGraph,
+  leangz,
+  plausible,
+  proofwidgets,
+  runCommand,
   tests,
 }:
 
@@ -29,17 +29,6 @@ let
       tag = "v${finalAttrs.version}";
       hash = "sha256-RxOxdUiVUAxUbfVhxlkjmPX1V64EtmIIn1eW75TiJWA=";
     };
-
-    leanPackageName = "mathlib";
-    leanDeps = [
-      batteries
-      aesop
-      Qq
-      proofwidgets
-      plausible
-      LeanSearchClient
-      importGraph
-    ];
 
     nativeBuildInputs = [ leangz-raw ];
 
@@ -60,6 +49,18 @@ let
           ' _ {}
     '';
 
+    leanDeps = [
+      batteries
+      aesop
+      Qq
+      proofwidgets
+      plausible
+      LeanSearchClient
+      importGraph
+    ];
+
+    leanPackageName = "mathlib";
+
     meta = {
       description = "Mathematical library for Lean 4";
       homepage = "https://github.com/leanprover-community/mathlib4";
@@ -72,8 +73,10 @@ in
 runCommand mathlib__archive.name
   {
     nativeBuildInputs = [ leangz-raw ];
+
     passthru = {
       inherit mathlib__archive;
+
       inherit (mathlib__archive)
         src
         version
@@ -83,10 +86,12 @@ runCommand mathlib__archive.name
         computedLakeDeps
         overrideLakeDepsAttrs
         ;
+
       tests = {
         inherit (tests.lake) weak-minimax;
       };
     };
+
     meta = mathlib__archive.meta // {
       hydraPlatforms = [ ];
     };

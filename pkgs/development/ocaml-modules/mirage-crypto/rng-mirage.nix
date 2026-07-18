@@ -1,30 +1,21 @@
 {
   buildDunePackage,
-  mirage-crypto-rng,
   duration,
-  mirage-runtime,
-  mirage-mtime,
-  mirage-sleep,
-  mirage-unix,
-  mirage-time-unix,
-  mirage-clock-unix,
   logs,
   lwt,
+  mirage-clock-unix,
+  mirage-crypto-rng,
+  mirage-mtime,
+  mirage-runtime,
+  mirage-sleep,
+  mirage-time-unix,
+  mirage-unix,
   ohex,
 }:
 
 buildDunePackage {
-  pname = "mirage-crypto-rng-mirage";
-
   inherit (mirage-crypto-rng) version src;
-
-  doCheck = true;
-  checkInputs = [
-    mirage-unix
-    mirage-clock-unix
-    mirage-time-unix
-    ohex
-  ];
+  pname = "mirage-crypto-rng-mirage";
 
   propagatedBuildInputs = [
     duration
@@ -34,6 +25,15 @@ buildDunePackage {
     mirage-sleep
     logs
     lwt
+  ];
+
+  doCheck = true;
+
+  checkInputs = [
+    mirage-unix
+    mirage-clock-unix
+    mirage-time-unix
+    ohex
   ];
 
   meta = mirage-crypto-rng.meta // {

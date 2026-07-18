@@ -1,21 +1,21 @@
 {
   lib,
-  gcc15Stdenv,
   fetchFromGitHub,
-  nix-update-script,
-  pkg-config,
-  cmake,
   cairo,
+  cmake,
+  gcc15Stdenv,
   hyprutils,
   hyprwayland-scanner,
   libGL,
   libjpeg,
+  libxdmcp,
   libxkbcommon,
+  nix-update-script,
   pango,
+  pkg-config,
   wayland,
   wayland-protocols,
   wayland-scanner,
-  libxdmcp,
   debug ? false,
 }:
 gcc15Stdenv.mkDerivation (finalAttrs: {
@@ -28,11 +28,6 @@ gcc15Stdenv.mkDerivation (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-ABumeksE8Bvtdb6g4vJ2jA9BLlYHnXU86VAuKJhBPoY=";
   };
-
-  cmakeBuildType = if debug then "Debug" else "RelWithDebInfo";
-
-  dontStrip = debug;
-  separateDebugInfo = !debug;
 
   nativeBuildInputs = [
     cmake
@@ -58,6 +53,9 @@ gcc15Stdenv.mkDerivation (finalAttrs: {
     install -Dm644 $src/LICENSE -t $out/share/licenses/hyprpicker
   '';
 
+  cmakeBuildType = if debug then "Debug" else "RelWithDebInfo";
+  dontStrip = debug;
+  separateDebugInfo = !debug;
   passthru.updateScript = nix-update-script { };
 
   meta = {
@@ -65,8 +63,8 @@ gcc15Stdenv.mkDerivation (finalAttrs: {
     homepage = "https://github.com/hyprwm/hyprpicker";
     changelog = "https://github.com/hyprwm/hyprpicker/releases/tag/${finalAttrs.src.tag}";
     license = lib.licenses.bsd3;
-    teams = [ lib.teams.hyprland ];
     platforms = wayland.meta.platforms;
     mainProgram = "hyprpicker";
+    teams = [ lib.teams.hyprland ];
   };
 })

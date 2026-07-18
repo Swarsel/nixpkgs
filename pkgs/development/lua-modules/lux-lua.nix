@@ -1,8 +1,9 @@
 {
+  lib,
+  stdenv,
   gnupg,
   gpgme,
   isLuaJIT,
-  lib,
   libgit2,
   libgpg-error,
   lua,
@@ -13,7 +14,6 @@
   pkg-config,
   rustPlatform,
   toLuaModule,
-  stdenv,
 }:
 let
   luaMajorMinor = lib.take 2 (lib.splitVersion lua.version);
@@ -24,16 +24,8 @@ in
 toLuaModule (
   rustPlatform.buildRustPackage rec {
     pname = "lux-lua";
-
     version = lux-cli.version;
-
     src = lux-cli.src;
-
-    buildAndTestSubdir = "lux-lua";
-    buildNoDefaultFeatures = true;
-    buildFeatures = [ luaFeature ];
-
-    cargoHash = lux-cli.cargoHash;
 
     nativeBuildInputs = [
       perl
@@ -52,12 +44,7 @@ toLuaModule (
       lua
     ];
 
-    doCheck = false; # lux-lua tests are broken in nixpkgs
-    useNextest = true;
-    nativeCheckInputs = [
-      lua
-      nix
-    ];
+    cargoHash = lux-cli.cargoHash;
 
     env = {
       LIBGIT2_NO_VENDOR = 1;
@@ -74,6 +61,13 @@ toLuaModule (
       runHook postBuild
     '';
 
+    doCheck = false; # lux-lua tests are broken in nixpkgs
+
+    nativeCheckInputs = [
+      lua
+      nix
+    ];
+
     installPhase = ''
       runHook preInstall
       cp -r target/dist/share $out
@@ -83,18 +77,26 @@ toLuaModule (
       runHook postInstall
     '';
 
+    buildAndTestSubdir = "lux-lua";
+    buildFeatures = [ luaFeature ];
+    buildNoDefaultFeatures = true;
+
     cargoTestFlags = [
       "--lib" # Disable impure integration tests
     ];
+
+    useNextest = true;
 
     meta = {
       description = "Lua API for the Lux package manager";
       homepage = "https://lux.lumen-labs.org/";
       changelog = "https://github.com/lumen-oss/lux/blob/${src.tag}/CHANGELOG.md";
       license = lib.licenses.lgpl3Plus;
+
       maintainers = with lib.maintainers; [
         mrcjkb
       ];
+
       platforms = lib.platforms.all;
     };
   }

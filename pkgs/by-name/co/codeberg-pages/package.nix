@@ -1,7 +1,7 @@
 {
   lib,
-  fetchFromCodeberg,
   buildGoModule,
+  fetchFromCodeberg,
   nix-update-script,
 }:
 
@@ -16,12 +16,12 @@ buildGoModule (finalAttrs: {
     hash = "sha256-xNsob0fW6SaqVKBIgRFj0YZUymHKWWfWZ5UqGkHWOmA=";
   };
 
-  vendorHash = "sha256-nSFUBIO3ssnwVHcjHRgUWjIK+swZP9PEJOTwM7esIgo=";
-
   postPatch = ''
     # disable httptest
     rm server/handler/handler_test.go
   '';
+
+  vendorHash = "sha256-nSFUBIO3ssnwVHcjHRgUWjIK+swZP9PEJOTwM7esIgo=";
 
   ldflags = [
     "-s"
@@ -39,13 +39,15 @@ buildGoModule (finalAttrs: {
   passthru.updateScript = nix-update-script { };
 
   meta = {
-    mainProgram = "pages";
+    description = "Static websites hosting from Gitea repositories";
+    homepage = "https://codeberg.org/Codeberg/pages-server";
+    changelog = "https://codeberg.org/Codeberg/pages-server/releases/tag/v${finalAttrs.version}";
+    license = lib.licenses.eupl12;
+
     maintainers = with lib.maintainers; [
       christoph-heiss
     ];
-    license = lib.licenses.eupl12;
-    homepage = "https://codeberg.org/Codeberg/pages-server";
-    description = "Static websites hosting from Gitea repositories";
-    changelog = "https://codeberg.org/Codeberg/pages-server/releases/tag/v${finalAttrs.version}";
+
+    mainProgram = "pages";
   };
 })

@@ -1,14 +1,14 @@
 {
   lib,
-  stdenvNoCC,
   fetchFromGitLab,
-  gtk3,
   gnome-icon-theme,
+  gtk3,
   hicolor-icon-theme,
-  mint-x-icons,
-  pantheon,
   jdupes,
   kdePackages,
+  mint-x-icons,
+  pantheon,
+  stdenvNoCC,
 }:
 
 stdenvNoCC.mkDerivation {
@@ -36,12 +36,6 @@ stdenvNoCC.mkDerivation {
     pantheon.elementary-icon-theme
   ];
 
-  dontDropIconThemeCache = true;
-
-  dontPatchELF = true;
-  dontRewriteSymlinks = true;
-  dontWrapQtApps = true;
-
   installPhase = ''
     runHook preInstall
 
@@ -54,11 +48,16 @@ stdenvNoCC.mkDerivation {
     runHook postInstall
   '';
 
+  dontDropIconThemeCache = true;
+  dontPatchELF = true;
+  dontRewriteSymlinks = true;
+  dontWrapQtApps = true;
+
   meta = {
     description = "BeautyLine icon theme";
     homepage = "https://www.gnome-look.org/p/1425426/";
-    platforms = lib.platforms.linux;
     license = lib.licenses.publicDomain;
     maintainers = with lib.maintainers; [ lwb-2021 ];
+    platforms = lib.platforms.linux;
   };
 }

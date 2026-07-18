@@ -1,8 +1,8 @@
 {
   lib,
+  fetchFromGitHub,
   buildPythonPackage,
   cmake,
-  fetchFromGitHub,
   gitpython,
   ninja,
   setuptools,
@@ -12,7 +12,6 @@
 buildPythonPackage rec {
   pname = "cmake-build-extension";
   version = "0.6.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "diegoferigo";
@@ -32,11 +31,10 @@ buildPythonPackage rec {
     gitpython
   ];
 
-  dontUseCmakeConfigure = true;
-
-  pythonImportsCheck = [ "cmake_build_extension" ];
-
   doPythonRuntimeDepsCheck = false;
+  dontUseCmakeConfigure = true;
+  pyproject = true;
+  pythonImportsCheck = [ "cmake_build_extension" ];
 
   meta = {
     description = "Setuptools extension to build and package CMake projects";

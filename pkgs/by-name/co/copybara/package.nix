@@ -2,14 +2,14 @@
   lib,
   stdenv,
   fetchurl,
+  gawk,
+  git,
+  gnugrep,
+  gnused,
   jdk21_headless,
   makeWrapper,
-  git,
-  gnused,
-  gnugrep,
-  gawk,
-  which,
   nix-update-script,
+  which,
 }:
 stdenv.mkDerivation (finalAttrs: {
   pname = "copybara";
@@ -28,16 +28,6 @@ stdenv.mkDerivation (finalAttrs: {
     jdk21_headless
   ];
 
-  runtimeDeps = [
-    git
-    gnused
-    gnugrep
-    gawk
-    which
-  ];
-
-  dontUnpack = true;
-
   installPhase = ''
     runHook preInstall
 
@@ -52,10 +42,21 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  dontUnpack = true;
+
+  runtimeDeps = [
+    git
+    gnused
+    gnugrep
+    gawk
+    which
+  ];
+
   passthru.updateScript = nix-update-script { };
 
   meta = {
     description = "Tool for transforming and moving code between repositories";
+
     longDescription = ''
       Copybara is a tool used internally at Google for transforming and moving
       code between repositories. It allows you to maintain code in multiple
@@ -66,12 +67,13 @@ stdenv.mkDerivation (finalAttrs: {
       - Importing code from a public repository to a confidential repository
       - Moving changes between authoritative and non-authoritative repositories
     '';
+
     homepage = "https://github.com/google/copybara";
     changelog = "https://github.com/google/copybara/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.asl20;
+    sourceProvenance = with lib.sourceTypes; [ binaryBytecode ];
     maintainers = [ ];
     platforms = lib.platforms.all;
     mainProgram = "copybara";
-    sourceProvenance = with lib.sourceTypes; [ binaryBytecode ];
   };
 })

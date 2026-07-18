@@ -2,14 +2,14 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  cmake,
-  pkg-config,
-  libglut,
-  lapack,
-  libusb1,
   blas,
-  zlib,
+  cmake,
   eigen,
+  lapack,
+  libglut,
+  libusb1,
+  pkg-config,
+  zlib,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -20,10 +20,17 @@ stdenv.mkDerivation (finalAttrs: {
     owner = "collabora";
     repo = "libsurvive";
     tag = "v${finalAttrs.version}";
+    hash = "sha256-NcxdTKra+YkLt/iu9+1QCeQZLV3/qlhma2Ns/+ZYVsk=";
     # Fixes 'Unknown CMake command "cnkalman_generate_code"'
     fetchSubmodules = true;
-    hash = "sha256-NcxdTKra+YkLt/iu9+1QCeQZLV3/qlhma2Ns/+ZYVsk=";
   };
+
+  # https://github.com/collabora/libsurvive/issues/272
+  postPatch = ''
+    substituteInPlace survive.pc.in \
+      libs/cnkalman/cnkalman.pc.in libs/cnkalman/libs/cnmatrix/cnmatrix.pc.in \
+      --replace '$'{exec_prefix}/@CMAKE_INSTALL_LIBDIR@ @CMAKE_INSTALL_FULL_LIBDIR@
+  '';
 
   nativeBuildInputs = [
     cmake
@@ -38,13 +45,6 @@ stdenv.mkDerivation (finalAttrs: {
     zlib
     eigen
   ];
-
-  # https://github.com/collabora/libsurvive/issues/272
-  postPatch = ''
-    substituteInPlace survive.pc.in \
-      libs/cnkalman/cnkalman.pc.in libs/cnkalman/libs/cnmatrix/cnmatrix.pc.in \
-      --replace '$'{exec_prefix}/@CMAKE_INSTALL_LIBDIR@ @CMAKE_INSTALL_FULL_LIBDIR@
-  '';
 
   meta = {
     description = "Open Source Lighthouse Tracking System";

@@ -5,8 +5,8 @@
 }:
 
 stdenv.mkDerivation {
-  version = "unstable-2018-10-18";
   pname = "ps2client";
+  version = "unstable-2018-10-18";
 
   src = fetchFromGitHub {
     owner = "ps2dev";
@@ -15,12 +15,12 @@ stdenv.mkDerivation {
     sha256 = "1rlmns44pxm6dkh6d3cz9sw8v7pvi53r7r5r3kgwdzkhixjj0cdg";
   };
 
-  patchPhase = ''
-    sed -i -e "s|-I/usr/include||g" -e "s|-I/usr/local/include||g" Makefile
-  '';
-
   installPhase = ''
     make PREFIX=$out install
+  '';
+
+  patchPhase = ''
+    sed -i -e "s|-I/usr/include||g" -e "s|-I/usr/local/include||g" Makefile
   '';
 
   meta = {

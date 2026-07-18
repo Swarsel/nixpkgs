@@ -2,23 +2,20 @@
   lib,
   stdenv,
   fetchurl,
+  autoreconfHook,
+  binlore,
   ncurses,
   pkg-config,
-  autoreconfHook,
-
-  # `ps` with systemd support is able to properly report different
-  # attributes like unit name, so we want to have it on linux.
-  withSystemd ? lib.meta.availableOn stdenv.hostPlatform systemdLibs,
+  procps,
   systemdLibs,
-
   # procps is mostly Linux-only. Most commands require a running Linux
   # system (or very similar like that found in Cygwin). The one
   # exception is ‘watch’ which is portable enough to run on pretty much
   # any UNIX-compatible system.
   watchOnly ? !(stdenv.hostPlatform.isLinux || stdenv.hostPlatform.isCygwin),
-
-  binlore,
-  procps,
+  # `ps` with systemd support is able to properly report different
+  # attributes like unit name, so we want to have it on linux.
+  withSystemd ? lib.meta.availableOn stdenv.hostPlatform systemdLibs,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -40,17 +37,14 @@ stdenv.mkDerivation (finalAttrs: {
     "doc"
   ];
 
-  buildInputs = [ ncurses ] ++ lib.optionals withSystemd [ systemdLibs ];
+  strictDeps = true;
+
   nativeBuildInputs = [
     pkg-config
     autoreconfHook
   ];
 
-  makeFlags = [ "usrbin_execdir=$(out)/bin" ] ++ lib.optionals watchOnly [ "src/watch" ];
-
-  enableParallelBuilding = true;
-  strictDeps = true;
-  __structuredAttrs = true;
+  buildInputs = [ ncurses ] ++ lib.optionals withSystemd [ systemdLibs ];
 
   # Too red; 8bit support for fixing https://github.com/NixOS/nixpkgs/issues/275220
   configureFlags = [
@@ -65,6 +59,8 @@ stdenv.mkDerivation (finalAttrs: {
     "ac_cv_func_realloc_0_nonnull=yes"
   ];
 
+  makeFlags = [ "usrbin_execdir=$(out)/bin" ] ++ lib.optionals watchOnly [ "src/watch" ];
+
   installPhase = lib.optionalString watchOnly ''
     runHook preInstall
 
@@ -74,6 +70,9 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  __structuredAttrs = true;
+  enableParallelBuilding = true;
+
   # no obvious exec in documented arguments; haven't trawled source
   # to figure out what exec binlore hits on
   passthru.binlore.out = binlore.synthesize procps ''
@@ -81,11 +80,11 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   meta = {
-    homepage = "https://gitlab.com/procps-ng/procps";
     description = "Utilities that give information about processes using the /proc filesystem";
-    priority = 11; # less than coreutils, which also provides "kill" and "uptime"
+    homepage = "https://gitlab.com/procps-ng/procps";
     license = lib.licenses.gpl2Plus;
-    platforms = lib.platforms.unix;
     maintainers = with lib.maintainers; [ mdaniels5757 ];
+    platforms = lib.platforms.unix;
+    priority = 11; # less than coreutils, which also provides "kill" and "uptime"
   };
 })

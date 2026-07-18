@@ -1,29 +1,24 @@
 {
   lib,
   stdenv,
-  buildPythonPackage,
   fetchFromGitHub,
-
+  buildPythonPackage,
+  llvmPackages,
+  # dependencies
+  opt-einsum-fx,
+  # tests
+  pytestCheckHook,
+  scipy,
   # build-system
   setuptools,
   setuptools-scm,
-
-  # dependencies
-  opt-einsum-fx,
-  scipy,
   sympy,
   torch,
-
-  # tests
-  pytestCheckHook,
-  llvmPackages,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "e3nn";
   version = "0.6.0";
-  pyproject = true;
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "e3nn";
@@ -31,6 +26,12 @@ buildPythonPackage (finalAttrs: {
     tag = finalAttrs.version;
     hash = "sha256-gGl0DiLU8w0jqGWA/ZzvkxdZdZCvtXqtmEEZ2dIwZ2o=";
   };
+
+  nativeCheckInputs = [
+    pytestCheckHook
+  ];
+
+  __structuredAttrs = true;
 
   build-system = [
     setuptools
@@ -44,12 +45,6 @@ buildPythonPackage (finalAttrs: {
     torch
   ];
 
-  pythonImportsCheck = [ "e3nn" ];
-
-  nativeCheckInputs = [
-    pytestCheckHook
-  ];
-
   disabledTests = [
     # RuntimeError: torch.compile does not support compiling torch.jit.script or
     # torch.jit.freeze models directly
@@ -61,6 +56,9 @@ buildPythonPackage (finalAttrs: {
     "test_input_weights_jit"
     "test_variance"
   ];
+
+  pyproject = true;
+  pythonImportsCheck = [ "e3nn" ];
 
   meta = {
     description = "Modular framework for neural networks with Euclidean symmetry";

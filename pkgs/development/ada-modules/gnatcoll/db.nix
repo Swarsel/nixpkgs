@@ -1,21 +1,21 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
-  gnat,
-  gprbuild,
-  which,
-  gnatcoll-core,
   component,
+  gnat,
+  gnatcoll-core,
+  # component specific extra dependencies
+  gnatcoll-iconv,
+  gnatcoll-readline,
   # components built by this derivation other components depend on
   gnatcoll-sql,
   gnatcoll-sqlite,
   gnatcoll-xref,
-  # component specific extra dependencies
-  gnatcoll-iconv,
-  gnatcoll-readline,
-  sqlite,
+  gprbuild,
   libpq,
+  sqlite,
+  which,
 }:
 
 let
@@ -23,19 +23,23 @@ let
     gnatcoll_db2ada = [
       gnatcoll-sql
     ];
+
     gnatinspect = [
       gnatcoll-sqlite
       gnatcoll-readline
       gnatcoll-xref
     ];
+
     postgres = [
       gnatcoll-sql
       libpq
     ];
+
     sqlite = [
       gnatcoll-sql
       sqlite
     ];
+
     xref = [
       gnatcoll-iconv
       gnatcoll-sqlite
@@ -50,13 +54,14 @@ let
 in
 
 stdenv.mkDerivation (finalAttrs: {
-  version = "25.0.0";
   # executables don't adhere to the string gnatcoll-* scheme
   pname =
     if onlyExecutable then
       builtins.replaceStrings [ "_" ] [ "-" ] component
     else
       "gnatcoll-${component}";
+
+  version = "25.0.0";
 
   src = fetchFromGitHub {
     owner = "AdaCore";
@@ -79,15 +84,6 @@ stdenv.mkDerivation (finalAttrs: {
     which
   ];
 
-  # Propagate since GPRbuild needs to find referenced .gpr files
-  # and other libraries to link against when static linking is used.
-  # For executables this is of course not relevant and we can reduce
-  # the closure size dramatically
-  ${if onlyExecutable then "buildInputs" else "propagatedBuildInputs"} = [
-    gnatcoll-core
-  ]
-  ++ libsFor."${component}" or [ ];
-
   makeFlags = [
     "-C"
     component
@@ -100,6 +96,15 @@ stdenv.mkDerivation (finalAttrs: {
     # link against packaged, not vendored libsqlite3
     "GNATCOLL_SQLITE=external"
   ];
+
+  # Propagate since GPRbuild needs to find referenced .gpr files
+  # and other libraries to link against when static linking is used.
+  # For executables this is of course not relevant and we can reduce
+  # the closure size dramatically
+  ${if onlyExecutable then "buildInputs" else "propagatedBuildInputs"} = [
+    gnatcoll-core
+  ]
+  ++ libsFor."${component}" or [ ];
 
   meta = {
     description = "GNAT Components Collection - Database packages";

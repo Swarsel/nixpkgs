@@ -3,8 +3,8 @@
   stdenv,
   fetchurl,
   autoreconfHook,
-  pkg-config,
   libvdpau,
+  pkg-config,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -24,11 +24,11 @@ stdenv.mkDerivation (finalAttrs: {
   buildInputs = [ libvdpau ];
 
   meta = {
-    homepage = "https://people.freedesktop.org/~aplattner/vdpau/";
     description = "Tool to query the Video Decode and Presentation API for Unix (VDPAU) abilities of the system";
+    homepage = "https://people.freedesktop.org/~aplattner/vdpau/";
     license = lib.licenses.mit; # expat version
-    platforms = lib.platforms.unix;
     maintainers = with lib.maintainers; [ vcunat ];
+    platforms = lib.platforms.unix;
     mainProgram = "vdpauinfo";
   };
 })

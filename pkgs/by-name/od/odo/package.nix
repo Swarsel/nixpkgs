@@ -1,9 +1,9 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
-  testers,
+  buildGoModule,
   odo,
+  testers,
 }:
 
 buildGoModule (finalAttrs: {
@@ -29,17 +29,17 @@ buildGoModule (finalAttrs: {
   '';
 
   passthru.tests.version = testers.testVersion {
-    package = odo;
-    command = "odo version";
     version = "v${finalAttrs.version}";
+    command = "odo version";
+    package = odo;
   };
 
   meta = {
     description = "Developer-focused CLI for OpenShift and Kubernetes";
-    mainProgram = "odo";
-    license = lib.licenses.asl20;
     homepage = "https://odo.dev";
     changelog = "https://github.com/redhat-developer/odo/releases/v${finalAttrs.version}";
+    license = lib.licenses.asl20;
     maintainers = with lib.maintainers; [ stehessel ];
+    mainProgram = "odo";
   };
 })

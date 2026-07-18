@@ -1,17 +1,14 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  unittestCheckHook,
-
+  buildPythonPackage,
   setuptools,
+  unittestCheckHook,
 }:
 
 buildPythonPackage rec {
   pname = "khanaa";
   version = "0.1.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "cakimpei";
@@ -20,20 +17,19 @@ buildPythonPackage rec {
     hash = "sha256-QFvvahVEld3BooINeUYJDahZyfh5xmQNtWRLAOdr6lw=";
   };
 
-  build-system = [ setuptools ];
-
   patches = [
     ./001-skip-broken-test.patch
   ];
 
   nativeCheckInputs = [ unittestCheckHook ];
+  build-system = [ setuptools ];
+  pyproject = true;
+  pythonImportsCheck = [ "khanaa" ];
 
   unittestFlagsArray = [
     "-s"
     "tests"
   ];
-
-  pythonImportsCheck = [ "khanaa" ];
 
   meta = {
     description = "Tool to make spelling Thai more convenient";

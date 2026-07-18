@@ -27,29 +27,28 @@ let
 in
 {
   options.services.jirafeau = {
+    enable = mkEnableOption "Jirafeau file upload application";
+    package = mkPackageOption pkgs "jirafeau" { };
+
     adminPasswordSha256 = mkOption {
-      type = types.str;
       default = "";
+
       description = ''
         SHA-256 of the desired administration password. Leave blank/unset for no password.
       '';
+
+      type = types.str;
     };
 
     dataDir = mkOption {
-      type = types.path;
       default = "/var/lib/jirafeau/data/";
       description = "Location of Jirafeau storage directory.";
+      type = types.path;
     };
 
-    enable = mkEnableOption "Jirafeau file upload application";
-
     extraConfig = mkOption {
-      type = types.lines;
       default = "";
-      example = ''
-        $cfg['style'] = 'courgette';
-        $cfg['organisation'] = 'ACME';
-      '';
+
       description =
         let
           documentationLink = "https://gitlab.com/mojo42/Jirafeau/-/blob/${cfg.package.version}/lib/config.original.php";
@@ -58,23 +57,30 @@ in
           Jirefeau configuration. Refer to <${documentationLink}> for supported
           values.
         '';
+
+      example = ''
+        $cfg['style'] = 'courgette';
+        $cfg['organisation'] = 'ACME';
+      '';
+
+      type = types.lines;
     };
 
     hostName = mkOption {
-      type = types.str;
       default = "localhost";
       description = "URL of instance. Must have trailing slash.";
+      type = types.str;
     };
 
     maxUploadSizeMegabytes = mkOption {
-      type = types.int;
       default = 0;
       description = "Maximum upload size of accepted files.";
+      type = types.int;
     };
 
     maxUploadTimeout = mkOption {
-      type = types.str;
       default = "30m";
+
       description =
         let
           nginxCoreDocumentation = "http://nginx.org/en/docs/http/ngx_http_core_module.html";
@@ -84,22 +90,38 @@ in
           <${nginxCoreDocumentation}#client_body_timeout> and
           <${nginxCoreDocumentation}#client_header_timeout> for accepted values.
         '';
+
+      type = types.str;
     };
 
     nginxConfig = mkOption {
-      type = types.submodule (import ../web-servers/nginx/vhost-options.nix { inherit config lib; });
       default = { };
+      description = "Extra configuration for the nginx virtual host of Jirafeau.";
+
       example = literalExpression ''
         {
           serverAliases = [ "wiki.''${config.networking.domain}" ];
         }
       '';
-      description = "Extra configuration for the nginx virtual host of Jirafeau.";
+
+      type = types.submodule (import ../web-servers/nginx/vhost-options.nix { inherit config lib; });
     };
 
-    package = mkPackageOption pkgs "jirafeau" { };
-
     poolConfig = mkOption {
+      default = {
+        "pm" = "dynamic";
+        "pm.max_children" = 32;
+        "pm.max_requests" = 500;
+        "pm.max_spare_servers" = 4;
+        "pm.min_spare_servers" = 2;
+        "pm.start_servers" = 2;
+      };
+
+      description = ''
+        Options for Jirafeau PHP pool. See documentation on `php-fpm.conf` for
+        details on configuration directives.
+      '';
+
       type =
         with types;
         attrsOf (oneOf [
@@ -107,18 +129,6 @@ in
           int
           bool
         ]);
-      default = {
-        "pm" = "dynamic";
-        "pm.max_children" = 32;
-        "pm.start_servers" = 2;
-        "pm.min_spare_servers" = 2;
-        "pm.max_spare_servers" = 4;
-        "pm.max_requests" = 500;
-      };
-      description = ''
-        Options for Jirafeau PHP pool. See documentation on `php-fpm.conf` for
-        details on configuration directives.
-      '';
     };
   };
 
@@ -126,6 +136,7 @@ in
     services = {
       nginx = {
         enable = true;
+
         virtualHosts."${cfg.hostName}" = mkMerge [
           cfg.nginxConfig
           {
@@ -140,6 +151,7 @@ in
                 client_body_timeout ${cfg.maxUploadTimeout};
                 client_header_timeout ${cfg.maxUploadTimeout};
               '';
+
             locations = {
               "~ \\.php$".extraConfig = ''
                 include ${config.services.nginx.package}/conf/fastcgi_params;
@@ -150,6 +162,7 @@ in
                 fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
               '';
             };
+
             root = mkForce "${cfg.package}";
           }
         ];
@@ -158,10 +171,11 @@ in
       phpfpm.pools.jirafeau = {
         inherit group user;
         phpEnv."JIRAFEAU_CONFIG" = "${localConfig}";
+
         settings = {
+          "listen.group" = group;
           "listen.mode" = "0660";
           "listen.owner" = user;
-          "listen.group" = group;
         }
         // cfg.poolConfig;
       };

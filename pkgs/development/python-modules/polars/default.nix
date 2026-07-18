@@ -1,27 +1,25 @@
 {
   lib,
   stdenv,
+  fetchFromGitHub,
   build,
   buildPythonPackage,
   cargo,
   cmake,
-  fetchFromGitHub,
+  jemalloc,
+  mimalloc,
   pkg-config,
   pkgs, # zstd hidden by python3Packages.zstd
-  pytestCheckHook,
-  pytest-codspeed ? null, # Not in Nixpkgs
+  pytest-benchmark,
   pytest-cov-stub,
   pytest-xdist,
-  pytest-benchmark,
-  rustc,
-  rustPlatform,
+  pytestCheckHook,
+  python,
   runCommand,
-  setuptools,
-  mimalloc,
-  jemalloc,
   rust-jemalloc-sys,
-  # Another alternative is to try `mimalloc`
-  polarsMemoryAllocator ? mimalloc, # polarsJemalloc,
+  rustPlatform,
+  rustc,
+  setuptools,
   polarsJemalloc ?
     let
       jemalloc' = rust-jemalloc-sys.override {
@@ -35,8 +33,9 @@
     in
     assert builtins.elem "--disable-initial-exec-tls" jemalloc'.configureFlags;
     jemalloc',
-
-  python,
+  # Another alternative is to try `mimalloc`
+  polarsMemoryAllocator ? mimalloc, # polarsJemalloc,
+  pytest-codspeed ? null, # Not in Nixpkgs
 }:
 
 let
@@ -49,7 +48,6 @@ in
 buildPythonPackage (finalAttrs: {
   pname = "polars";
   version = "1.41.2";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "pola-rs";
@@ -57,18 +55,6 @@ buildPythonPackage (finalAttrs: {
     tag = "py-${finalAttrs.version}";
     hash = "sha256-Wys56Tj75+7sNNwi3U5a62Wwkddep/W1MjtAHOuDdwc=";
   };
-
-  cargoDeps = rustPlatform.fetchCargoVendor {
-    inherit (finalAttrs) pname version src;
-    hash = "sha256-tmc8n0TVaXmc4C8XXTgPVsTRs0C/V+88f6T1vOamt00=";
-  };
-
-  requiredSystemFeatures = [ "big-parallel" ];
-
-  build-system = [
-    setuptools
-    build
-  ];
 
   nativeBuildInputs = [
     cargo
@@ -87,8 +73,6 @@ buildPythonPackage (finalAttrs: {
   ];
 
   env = {
-    ZSTD_SYS_USE_PKG_CONFIG = true;
-
     # https://github.com/NixOS/nixpkgs/blob/5c38beb516f8da3a823d94b746dd3bf3c6b9bbd7/doc/languages-frameworks/rust.section.md#using-community-maintained-rust-toolchains-using-community-maintained-rust-toolchains
     # https://discourse.nixos.org/t/nixpkgs-rustplatform-and-nightly/22870
     RUSTC_BOOTSTRAP = true;
@@ -98,9 +82,28 @@ buildPythonPackage (finalAttrs: {
         "--cfg allocator=\"mimalloc\""
       ]
     );
+
     RUST_BACKTRACE = true;
+    ZSTD_SYS_USE_PKG_CONFIG = true;
   };
 
+  # maturin builds `_polars_runtime_32`, and we also need the pure-python `polars` wheel itself
+  preBuild = ''
+    pyproject-build --no-isolation --outdir dist/ --wheel py-polars
+  '';
+
+  build-system = [
+    setuptools
+    build
+  ];
+
+  cargoDeps = rustPlatform.fetchCargoVendor {
+    inherit (finalAttrs) pname version src;
+    hash = "sha256-tmc8n0TVaXmc4C8XXTgPVsTRs0C/V+88f6T1vOamt00=";
+  };
+
+  # Fails on polars -> polars-runtime-32 dependency between the two wheels
+  dontCheckRuntimeDeps = true;
   dontUseCmakeConfigure = true;
 
   maturinBuildFlags = [
@@ -108,17 +111,13 @@ buildPythonPackage (finalAttrs: {
     "py-polars/runtime/polars-runtime-32/Cargo.toml"
   ];
 
-  # maturin builds `_polars_runtime_32`, and we also need the pure-python `polars` wheel itself
-  preBuild = ''
-    pyproject-build --no-isolation --outdir dist/ --wheel py-polars
-  '';
-
-  # Fails on polars -> polars-runtime-32 dependency between the two wheels
-  dontCheckRuntimeDeps = true;
+  pyproject = true;
 
   pythonImportsCheck = [
     "polars"
   ];
+
+  requiredSystemFeatures = [ "big-parallel" ];
 
   passthru.tests.dynloading-1 =
     runCommand "polars-dynloading-1"
@@ -137,6 +136,7 @@ buildPythonPackage (finalAttrs: {
         EOF
         touch $out
       '';
+
   passthru.tests.dynloading-2 =
     runCommand "polars-dynloading-2"
       {
@@ -146,6 +146,7 @@ buildPythonPackage (finalAttrs: {
             finalAttrs.finalPackage
           ]))
         ];
+
         failureHook = ''
           sed "s/^/    /" $out >&2
         '';
@@ -156,14 +157,11 @@ buildPythonPackage (finalAttrs: {
         import pyarrow
         EOF
       '';
+
   passthru.tests.pytest = stdenv.mkDerivation {
+    inherit (finalAttrs) version src;
     pname = "${finalAttrs.pname}-pytest";
 
-    inherit (finalAttrs) version src;
-
-    requiredSystemFeatures = [ "big-parallel" ];
-
-    sourceRoot = "${finalAttrs.src.name}/py-polars";
     postPatch = ''
       for f in * ; do
         [[ "$f" == "tests" ]] || \
@@ -174,11 +172,7 @@ buildPythonPackage (finalAttrs: {
         find -iname "$pat" -exec rm "{}" ";"
       done
     '';
-    dontConfigure = true;
-    dontBuild = true;
 
-    doCheck = true;
-    checkPhase = "pytestCheckPhase";
     nativeBuildInputs = [
       (python.withPackages (ps: [
         finalAttrs.finalPackage
@@ -213,6 +207,9 @@ buildPythonPackage (finalAttrs: {
         ps.cloudpickle
       ]))
     ];
+
+    doCheck = true;
+
     nativeCheckInputs = [
       pytestCheckHook
       pytest-cov-stub
@@ -220,11 +217,23 @@ buildPythonPackage (finalAttrs: {
       pytest-benchmark
     ];
 
-    pytestFlags = [
-      "--benchmark-disable"
-      "-nauto"
-      "--dist=loadgroup"
+    checkPhase = "pytestCheckPhase";
+    installPhase = "touch $out";
+
+    disabledTestPaths = [
+      "tests/benchmark"
+      "tests/docs"
+
+      # Internet access
+      "tests/unit/io/cloud/test_credential_provider.py"
+
+      # adbc
+      "tests/unit/io/database/test_read.py"
+
+      # Requires pydantic 2.12
+      "tests/unit/io/test_iceberg.py"
     ];
+
     disabledTests = [
       "test_read_kuzu_graph_database" # kuzu
       "test_read_database_cx_credentials" # connectorx
@@ -269,21 +278,18 @@ buildPythonPackage (finalAttrs: {
       "test_async_index_error_25209"
       "test_parquet_schema_correctness"
     ];
-    disabledTestPaths = [
-      "tests/benchmark"
-      "tests/docs"
 
-      # Internet access
-      "tests/unit/io/cloud/test_credential_provider.py"
+    dontBuild = true;
+    dontConfigure = true;
 
-      # adbc
-      "tests/unit/io/database/test_read.py"
-
-      # Requires pydantic 2.12
-      "tests/unit/io/test_iceberg.py"
+    pytestFlags = [
+      "--benchmark-disable"
+      "-nauto"
+      "--dist=loadgroup"
     ];
 
-    installPhase = "touch $out";
+    requiredSystemFeatures = [ "big-parallel" ];
+    sourceRoot = "${finalAttrs.src.name}/py-polars";
   };
 
   meta = {
@@ -291,11 +297,13 @@ buildPythonPackage (finalAttrs: {
     homepage = "https://github.com/pola-rs/polars";
     changelog = "https://github.com/pola-rs/polars/releases/tag/py-${finalAttrs.version}";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       happysalada
       SomeoneSerge
     ];
-    mainProgram = "polars";
+
     platforms = lib.platforms.all;
+    mainProgram = "polars";
   };
 })

@@ -41,8 +41,8 @@ stdenv.mkDerivation (finalAttrs: {
     description = "Next version of neatvi (a small vi/ex editor)";
     homepage = "https://github.com/kyx0r/nextvi";
     license = lib.licenses.mit;
-    platforms = lib.platforms.unix;
     maintainers = [ lib.maintainers.sikmir ];
+    platforms = lib.platforms.unix;
     mainProgram = "nextvi";
   };
 })

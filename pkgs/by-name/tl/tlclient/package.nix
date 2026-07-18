@@ -2,8 +2,8 @@
   lib,
   stdenv,
   fetchurl,
-  autoPatchelfHook,
   alsa-lib,
+  autoPatchelfHook,
   libx11,
   pcsclite,
   testers,
@@ -32,9 +32,6 @@ stdenv.mkDerivation (finalAttrs: {
     pcsclite
   ];
 
-  dontConfigure = true;
-  dontBuild = true;
-
   installPhase = ''
     runHook preInstall
 
@@ -50,26 +47,32 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  dontBuild = true;
+  dontConfigure = true;
+
   passthru.tests.version = testers.testVersion {
-    package = finalAttrs.finalPackage;
     version = "${version} build ${buildNum}";
+    package = finalAttrs.finalPackage;
   };
 
   meta = {
     description = "Linux remote desktop client built on open source technology";
-    license = {
-      fullName = "Cendio end-user license agreement";
-      url = "https://www.cendio.com/thinlinc/docs/legal/eula";
-      free = false;
-    };
     homepage = "https://www.cendio.com/";
     changelog = "https://www.cendio.com/thinlinc/docs/relnotes/${version}/";
+
+    license = {
+      free = false;
+      fullName = "Cendio end-user license agreement";
+      url = "https://www.cendio.com/thinlinc/docs/legal/eula";
+    };
+
     maintainers = with lib.maintainers; [
       felixalbrigtsen
       kyehn
     ];
+
     platforms = with lib.platforms; linux ++ darwin ++ windows;
-    broken = !(stdenv.hostPlatform.isLinux && stdenv.hostPlatform.isx86_64);
     mainProgram = "tlclient";
+    broken = !(stdenv.hostPlatform.isLinux && stdenv.hostPlatform.isx86_64);
   };
 })

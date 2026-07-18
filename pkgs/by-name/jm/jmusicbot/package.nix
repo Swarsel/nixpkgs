@@ -1,9 +1,9 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchurl,
-  makeWrapper,
   jre_headless,
+  makeWrapper,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -15,8 +15,6 @@ stdenv.mkDerivation (finalAttrs: {
     sha256 = "sha256-7CHFc94Fe6ip7RY+XJR9gWpZPKM5JY7utHp8C3paU9s=";
   };
 
-  dontUnpack = true;
-
   nativeBuildInputs = [ makeWrapper ];
 
   installPhase = ''
@@ -27,13 +25,15 @@ stdenv.mkDerivation (finalAttrs: {
       --add-flags "-Xmx1G -Dnogui=true -Djava.util.concurrent.ForkJoinPool.common.parallelism=1 -jar $out/lib/JMusicBot"
   '';
 
+  dontUnpack = true;
+
   meta = {
+    inherit (jre_headless.meta) platforms;
     description = "Discord music bot that's easy to set up and run yourself";
     homepage = "https://github.com/jagrosh/MusicBot";
-    sourceProvenance = with lib.sourceTypes; [ binaryBytecode ];
     license = lib.licenses.asl20;
+    sourceProvenance = with lib.sourceTypes; [ binaryBytecode ];
     maintainers = [ ];
-    inherit (jre_headless.meta) platforms;
     mainProgram = "JMusicBot";
   };
 })

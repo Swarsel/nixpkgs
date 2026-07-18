@@ -2,10 +2,10 @@
   lib,
   stdenv,
   ncurses,
-  customConfig ? null,
   pname,
-  version,
   src,
+  version,
+  customConfig ? null,
   patches ? [ ],
 }:
 stdenv.mkDerivation {
@@ -17,9 +17,10 @@ stdenv.mkDerivation {
     patches
     ;
 
-  env = lib.optionalAttrs stdenv.hostPlatform.isDarwin {
-    CFLAGS = "-D_DARWIN_C_SOURCE";
-  };
+  outputs = [
+    "out"
+    "man"
+  ];
 
   postPatch = lib.optionalString (customConfig != null) ''
     cp ${builtins.toFile "config.h" customConfig} ./config.h
@@ -27,18 +28,16 @@ stdenv.mkDerivation {
 
   nativeBuildInputs = [ ncurses ];
   buildInputs = [ ncurses ];
+  makeFlags = [ "PREFIX=$(out)" ];
+
+  env = lib.optionalAttrs stdenv.hostPlatform.isDarwin {
+    CFLAGS = "-D_DARWIN_C_SOURCE";
+  };
 
   prePatch = ''
     substituteInPlace Makefile \
       --replace /usr/share/terminfo $out/share/terminfo
   '';
-
-  makeFlags = [ "PREFIX=$(out)" ];
-
-  outputs = [
-    "out"
-    "man"
-  ];
 
   meta = {
     description = "Dynamic virtual terminal manager";

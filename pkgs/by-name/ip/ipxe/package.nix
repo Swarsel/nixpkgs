@@ -1,22 +1,21 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
-  fetchpatch,
-  nix-update-script,
   buildPackages,
+  fetchpatch,
   mtools,
+  nix-update-script,
   openssl,
   perl,
+  syslinux,
   xorriso,
   xz,
-  syslinux,
-
-  embedScript ? null,
-  enableDefaultPlatformTargets ? true,
-  additionalTargets ? { },
-  enableDefaultOptions ? true,
   additionalOptions ? [ ],
+  additionalTargets ? { },
+  embedScript ? null,
+  enableDefaultOptions ? true,
+  enableDefaultPlatformTargets ? true,
   firmwareBinary ? "ipxe.efirom",
 }:
 
@@ -58,9 +57,9 @@ let
     }
     // platformTarget isx86 {
       "bin/ipxe.dsk" = null;
-      "bin/ipxe.usb" = null;
       "bin/ipxe.iso" = null;
       "bin/ipxe.lkrn" = null;
+      "bin/ipxe.usb" = null;
       "bin/undionly.kpxe" = null;
     }
     // platformTarget isAarch32 {
@@ -111,27 +110,31 @@ stdenv.mkDerivation (finalAttrs: {
     # (made fatal by -Werror), so the usage of this variable is made
     # unconditional.
     (fetchpatch {
+      hash = "sha256-p1r1iDOJbss458LlmfpuIkk+6VqthDl0mcK/EfcCqS4=";
       name = "w89c840-unused-variable.patch";
       url = "https://github.com/ipxe/ipxe/commit/2d28657ef63217b9a1774605267d84f89d751441.patch";
-      hash = "sha256-p1r1iDOJbss458LlmfpuIkk+6VqthDl0mcK/EfcCqS4=";
     })
 
     # GCC 16 adds a warning (made fatal by -Werror) for attributes that do not
     # apply. Since the regparm attribute only applies for i386, it is dropped
     # for x86_64.
     (fetchpatch {
+      hash = "sha256-spEIdyw30zYiYmhnvYQEVUrr/uMnFqJO/yLWnPb+QMc=";
       name = "x86_64-drop-regparm-attribute.patch";
       url = "https://github.com/ipxe/ipxe/commit/c18d0a23b634ae001ea877020c0236bfca1468e5.patch";
-      hash = "sha256-spEIdyw30zYiYmhnvYQEVUrr/uMnFqJO/yLWnPb+QMc=";
     })
     (fetchpatch {
+      hash = "sha256-ki6gUPC6njGvu27RsD3f1L0m82NOKj9es0/o0jXCpqk=";
       name = "librm-regparm-attribute-only-for-i386.patch";
       url = "https://github.com/ipxe/ipxe/commit/be35d67a029485f461ce83cbeda15056a52cb069.patch";
-      hash = "sha256-ki6gUPC6njGvu27RsD3f1L0m82NOKj9es0/o0jXCpqk=";
     })
   ];
 
-  enableParallelBuilding = true;
+  # Calling syslinux on a FAT image isn't going to work on Aarch64.
+  postPatch = optionalString isAarch64 ''
+    substituteInPlace src/util/genfsimg --replace-fail "	syslinux " "	true "
+  '';
+
   strictDeps = true;
 
   nativeBuildInputs = [
@@ -143,14 +146,6 @@ stdenv.mkDerivation (finalAttrs: {
   ]
   ++ optional isx86 syslinux;
 
-  depsBuildBuild = [ buildPackages.stdenv.cc ];
-
-  # Hardening is not possible due to assembler code.
-  hardeningDisable = [
-    "pic"
-    "stackprotector"
-  ];
-
   makeFlags = [
     "ECHO_E_BIN_ECHO=echo"
     "ECHO_E_BIN_ECHO_E=echo" # No /bin/echo here.
@@ -159,24 +154,6 @@ stdenv.mkDerivation (finalAttrs: {
   ++ optional (embedScript != null) "EMBED=${embedScript}";
 
   buildFlags = attrNames targets;
-
-  # Calling syslinux on a FAT image isn't going to work on Aarch64.
-  postPatch = optionalString isAarch64 ''
-    substituteInPlace src/util/genfsimg --replace-fail "	syslinux " "	true "
-  '';
-
-  configurePhase = ''
-    runHook preConfigure
-    for opt in ${escapeShellArgs options}; do echo "#define $opt" >> src/config/general.h; done
-    substituteInPlace src/Makefile.housekeeping --replace-fail '/bin/echo' echo
-  ''
-  + optionalString isx86 ''
-    substituteInPlace src/util/genfsimg --replace-fail /usr/lib/syslinux ${syslinux}/share/syslinux
-  ''
-  + ''
-    runHook postConfigure
-  '';
-
   preBuild = "cd src";
 
   installPhase = ''
@@ -196,6 +173,27 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  configurePhase = ''
+    runHook preConfigure
+    for opt in ${escapeShellArgs options}; do echo "#define $opt" >> src/config/general.h; done
+    substituteInPlace src/Makefile.housekeeping --replace-fail '/bin/echo' echo
+  ''
+  + optionalString isx86 ''
+    substituteInPlace src/util/genfsimg --replace-fail /usr/lib/syslinux ${syslinux}/share/syslinux
+  ''
+  + ''
+    runHook postConfigure
+  '';
+
+  depsBuildBuild = [ buildPackages.stdenv.cc ];
+  enableParallelBuilding = true;
+
+  # Hardening is not possible due to assembler code.
+  hardeningDisable = [
+    "pic"
+    "stackprotector"
+  ];
+
   passthru = {
     firmware = "${finalAttrs.finalPackage}/${firmwareBinary}";
     updateScript = nix-update-script { };
@@ -205,6 +203,7 @@ stdenv.mkDerivation (finalAttrs: {
     description = "Network boot firmware";
     homepage = "https://ipxe.org/";
     changelog = "https://github.com/ipxe/ipxe/releases/tag/v${finalAttrs.version}";
+
     license = with licenses; [
       bsd2
       bsd3
@@ -214,7 +213,8 @@ stdenv.mkDerivation (finalAttrs: {
       mit
       mpl11
     ];
-    platforms = platforms.linux;
+
     maintainers = with maintainers; [ sigmasquadron ];
+    platforms = platforms.linux;
   };
 })

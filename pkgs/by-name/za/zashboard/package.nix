@@ -1,11 +1,11 @@
 {
   lib,
-  buildNpmPackage,
   fetchFromGitHub,
-  pnpm_10,
+  buildNpmPackage,
   fetchPnpmDeps,
-  pnpmConfigHook,
   nix-update-script,
+  pnpmConfigHook,
+  pnpm_10,
 }:
 let
   pnpm = pnpm_10;
@@ -21,23 +21,12 @@ buildNpmPackage (finalAttrs: {
     hash = "sha256-GSzJpBGDCh7OPPr5OWfAAbraRjIhKkVo5/EMRmrLm/o=";
   };
 
-  npmDeps = null;
-  pnpmDeps = fetchPnpmDeps {
-    inherit (finalAttrs) pname version src;
-    inherit pnpm;
-    fetcherVersion = 3;
-    hash = "sha256-8EQziLcmP+bjQez+b0QdgF43XGydYC9yh4m9lEkbhCY=";
-  };
-
-  nativeBuildInputs = [ pnpm ];
-  npmConfigHook = pnpmConfigHook;
-
   postPatch = ''
     substituteInPlace vite.config.ts \
       --replace-fail "getGitCommitId()" '""'
   '';
 
-  __darwinAllowLocalNetworking = true;
+  nativeBuildInputs = [ pnpm ];
 
   installPhase = ''
     runHook preInstall
@@ -46,6 +35,17 @@ buildNpmPackage (finalAttrs: {
 
     runHook postInstall
   '';
+
+  __darwinAllowLocalNetworking = true;
+  npmConfigHook = pnpmConfigHook;
+  npmDeps = null;
+
+  pnpmDeps = fetchPnpmDeps {
+    inherit (finalAttrs) pname version src;
+    inherit pnpm;
+    fetcherVersion = 3;
+    hash = "sha256-8EQziLcmP+bjQez+b0QdgF43XGydYC9yh4m9lEkbhCY=";
+  };
 
   passthru.updateScript = nix-update-script { };
 

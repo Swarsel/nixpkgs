@@ -1,23 +1,23 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchurl,
-  squashfsTools,
+  alsa-lib,
   autoPatchelfHook,
   copyDesktopItems,
-  pango,
+  gcc-unwrapped,
   gtk3,
-  alsa-lib,
-  nss,
-  libxdamage,
   libdrm,
   libgbm,
+  libxdamage,
   libxshmfence,
   makeDesktopItem,
   makeWrapper,
-  wrapGAppsHook3,
-  gcc-unwrapped,
+  nss,
+  pango,
+  squashfsTools,
   udev,
+  wrapGAppsHook3,
 }:
 
 stdenv.mkDerivation rec {
@@ -30,22 +30,9 @@ stdenv.mkDerivation rec {
     hash = "sha512-xv7fn+VrtrxauejhgEMdTnmnDXb17TwanXZR6Lqfg5N40MbyDu76XQAWRB8xFU/+GdCTmjv47EaOC7SnnOw4EA==";
   };
 
-  desktopItems = [
-    (makeDesktopItem {
-      name = "bluemail";
-      icon = "bluemail";
-      exec = "bluemail";
-      desktopName = "BlueMail";
-      comment = meta.description;
-      genericName = "Email Reader";
-      mimeTypes = [
-        "x-scheme-handler/me.blueone.linux"
-        "x-scheme-handler/mailto"
-        "x-scheme-handler/bluemail-notif"
-      ];
-      categories = [ "Office" ];
-    })
-  ];
+  postPatch = ''
+    rm -rf usr libEGL.so libGLESv2.so libvk_swiftshader.so libvulkan.so.1
+  '';
 
   nativeBuildInputs = [
     autoPatchelfHook
@@ -54,20 +41,6 @@ stdenv.mkDerivation rec {
     squashfsTools
     wrapGAppsHook3
   ];
-
-  unpackPhase = ''
-    runHook preUnpack
-
-    unsquashfs $src
-
-    runHook postUnpack
-  '';
-
-  sourceRoot = "squashfs-root";
-
-  postPatch = ''
-    rm -rf usr libEGL.so libGLESv2.so libvk_swiftshader.so libvulkan.so.1
-  '';
 
   buildInputs = [
     pango
@@ -80,10 +53,6 @@ stdenv.mkDerivation rec {
     libxshmfence
     udev
   ];
-
-  dontBuild = true;
-  dontStrip = true;
-  dontWrapGApps = true;
 
   installPhase = ''
     runHook preInstall
@@ -98,6 +67,35 @@ stdenv.mkDerivation rec {
     runHook postInstall
   '';
 
+  preFixup = ''
+    wrapProgram $out/opt/bluemail/bluemail \
+      ''${makeWrapperArgs[@]} \
+      ''${gappsWrapperArgs[@]}
+  '';
+
+  desktopItems = [
+    (makeDesktopItem {
+      categories = [ "Office" ];
+      comment = meta.description;
+      desktopName = "BlueMail";
+      exec = "bluemail";
+      genericName = "Email Reader";
+      icon = "bluemail";
+
+      mimeTypes = [
+        "x-scheme-handler/me.blueone.linux"
+        "x-scheme-handler/mailto"
+        "x-scheme-handler/bluemail-notif"
+      ];
+
+      name = "bluemail";
+    })
+  ];
+
+  dontBuild = true;
+  dontStrip = true;
+  dontWrapGApps = true;
+
   makeWrapperArgs = [
     "--prefix LD_LIBRARY_PATH : ${
       lib.makeLibraryPath [
@@ -109,20 +107,24 @@ stdenv.mkDerivation rec {
     "--prefix PATH : ${lib.makeBinPath [ stdenv.cc ]}"
   ];
 
-  preFixup = ''
-    wrapProgram $out/opt/bluemail/bluemail \
-      ''${makeWrapperArgs[@]} \
-      ''${gappsWrapperArgs[@]}
+  sourceRoot = "squashfs-root";
+
+  unpackPhase = ''
+    runHook preUnpack
+
+    unsquashfs $src
+
+    runHook postUnpack
   '';
 
   meta = {
     description = "Cross platform email and calendar app, with AI features and a modern design";
     homepage = "https://bluemail.me";
     license = lib.licenses.unfree;
-    platforms = [ "x86_64-linux" ];
     # Vendored copy of Electron.
     sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
     maintainers = [ ];
+    platforms = [ "x86_64-linux" ];
     mainProgram = "bluemail";
   };
 }

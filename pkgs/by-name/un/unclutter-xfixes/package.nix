@@ -2,16 +2,15 @@
   lib,
   stdenv,
   fetchFromGitHub,
+  asciidoc,
+  docbook_xsl,
   libev,
   libx11,
   libxext,
-  libxi,
   libxfixes,
-  pkg-config,
-  asciidoc,
+  libxi,
   libxslt,
-  docbook_xsl,
-
+  pkg-config,
   unstableGitUpdater,
 }:
 
@@ -32,6 +31,7 @@ stdenv.mkDerivation {
     libxslt
     docbook_xsl
   ];
+
   buildInputs = [
     libev
     libx11
@@ -40,21 +40,21 @@ stdenv.mkDerivation {
     libxfixes
   ];
 
+  makeFlags = [ "CC=${stdenv.cc.targetPrefix}cc" ];
+  installFlags = [ "PREFIX=$(out)" ];
+
   prePatch = ''
     substituteInPlace Makefile --replace-fail 'PKG_CONFIG =' 'PKG_CONFIG ?='
   '';
-  makeFlags = [ "CC=${stdenv.cc.targetPrefix}cc" ];
-
-  installFlags = [ "PREFIX=$(out)" ];
 
   passthru.updateScript = unstableGitUpdater { };
 
   meta = {
     description = "Rewrite of unclutter using the X11 Xfixes extension";
     homepage = "https://github.com/Airblader/unclutter-xfixes";
-    platforms = lib.platforms.unix;
     license = lib.licenses.mit;
     maintainers = [ lib.maintainers.ryand56 ];
+    platforms = lib.platforms.unix;
     mainProgram = "unclutter";
   };
 }

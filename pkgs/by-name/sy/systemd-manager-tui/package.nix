@@ -1,6 +1,6 @@
 {
-  fetchFromGitHub,
   lib,
+  fetchFromGitHub,
   rustPlatform,
 }:
 
@@ -18,11 +18,11 @@ rustPlatform.buildRustPackage (finalAttrs: {
   cargoHash = "sha256-y3RoekDMK+COaC0zuSTD6l/Ugl81qLG/3VSWYTDRA5o=";
 
   meta = {
-    homepage = "https://github.com/Matheus-git/systemd-manager-tui";
     description = "Program for managing systemd services through a TUI";
-    mainProgram = "systemd-manager-tui";
-    platforms = lib.platforms.linux;
+    homepage = "https://github.com/Matheus-git/systemd-manager-tui";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ vuimuich ];
+    platforms = lib.platforms.linux;
+    mainProgram = "systemd-manager-tui";
   };
 })

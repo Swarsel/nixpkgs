@@ -4,22 +4,22 @@
   fetchFromGitHub,
   autoconf-archive,
   autoreconfHook,
-  pkg-config,
-  gettext,
-  perl,
-  itstool,
-  isocodes,
   enchant,
+  gettext,
+  gitUpdater,
   gtk-doc,
+  gtksourceview4,
+  isocodes,
+  itstool,
+  libpeas,
   libxml2,
   mate-common,
-  python3,
-  gtksourceview4,
-  libpeas,
   mate-desktop,
+  perl,
+  pkg-config,
+  python3,
   wrapGAppsHook3,
   yelp-tools,
-  gitUpdater,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -30,8 +30,8 @@ stdenv.mkDerivation (finalAttrs: {
     owner = "mate-desktop";
     repo = "pluma";
     tag = "v${finalAttrs.version}";
-    fetchSubmodules = true;
     hash = "sha256-+3zY3A7JRc7utYMNiQBnsy0lZr1PuDSOtdP+iigNRDQ=";
+    fetchSubmodules = true;
   };
 
   nativeBuildInputs = [
@@ -58,16 +58,16 @@ stdenv.mkDerivation (finalAttrs: {
     python3
   ];
 
+  postFixup = ''
+    buildPythonPath "''${pythonPath[*]}"
+    patchPythonScript $out/lib/pluma/plugins/snippets/Snippet.py
+  '';
+
   enableParallelBuilding = true;
 
   pythonPath = with python3.pkgs; [
     pycairo
   ];
-
-  postFixup = ''
-    buildPythonPath "''${pythonPath[*]}"
-    patchPythonScript $out/lib/pluma/plugins/snippets/Snippet.py
-  '';
 
   passthru.updateScript = gitUpdater {
     odd-unstable = true;
@@ -76,14 +76,16 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Powerful text editor for the MATE desktop";
-    mainProgram = "pluma";
     homepage = "https://mate-desktop.org";
+
     license = with lib.licenses; [
       gpl2Plus
       lgpl2Plus
       fdl11Plus
     ];
+
     platforms = lib.platforms.unix;
+    mainProgram = "pluma";
     teams = [ lib.teams.mate ];
   };
 })

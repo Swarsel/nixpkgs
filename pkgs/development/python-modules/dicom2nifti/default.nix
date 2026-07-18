@@ -1,29 +1,25 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # build-system
-  setuptools,
-
+  buildPythonPackage,
   # dependencies
   gdcm,
   nibabel,
   numpy,
-  pydicom,
-  scipy,
-
   # tests
   pillow,
+  pydicom,
   pylibjpeg,
   pylibjpeg-libjpeg,
   pytestCheckHook,
+  scipy,
+  # build-system
+  setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "dicom2nifti";
   version = "2.6.2";
-  pyproject = true;
 
   # no tests in PyPI dist
   src = fetchFromGitHub {
@@ -38,6 +34,13 @@ buildPythonPackage rec {
     substituteInPlace tests/test_ge.py --replace-fail "import convert_generic" "import dicom2nifti.convert_generic as convert_generic"
   '';
 
+  nativeCheckInputs = [
+    pillow
+    pylibjpeg
+    pylibjpeg-libjpeg
+    pytestCheckHook
+  ];
+
   build-system = [ setuptools ];
 
   dependencies = [
@@ -46,15 +49,6 @@ buildPythonPackage rec {
     numpy
     pydicom
     scipy
-  ];
-
-  pythonImportsCheck = [ "dicom2nifti" ];
-
-  nativeCheckInputs = [
-    pillow
-    pylibjpeg
-    pylibjpeg-libjpeg
-    pytestCheckHook
   ];
 
   disabledTests = [
@@ -74,11 +68,14 @@ buildPythonPackage rec {
     "test_gantry_resampling"
   ];
 
+  pyproject = true;
+  pythonImportsCheck = [ "dicom2nifti" ];
+
   meta = {
-    homepage = "https://github.com/icometrix/dicom2nifti";
     description = "Library for converting dicom files to nifti";
-    mainProgram = "dicom2nifti";
+    homepage = "https://github.com/icometrix/dicom2nifti";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ bcdarwin ];
+    mainProgram = "dicom2nifti";
   };
 }

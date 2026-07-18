@@ -3,14 +3,13 @@
   buildPythonPackage,
   fetchPypi,
   looseversion,
-  six,
   setuptools,
+  six,
 }:
 
 buildPythonPackage rec {
   pname = "rethinkdb";
   version = "2.4.10.post1";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
@@ -25,7 +24,7 @@ buildPythonPackage rec {
   ];
 
   doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "rethinkdb" ];
 
   meta = {

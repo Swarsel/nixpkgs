@@ -1,11 +1,6 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # build-system
-  setuptools,
-
   # dependencies
   attrs,
   azure-common,
@@ -18,6 +13,7 @@
   azure-monitor-query,
   beautifulsoup4,
   bokeh,
+  buildPythonPackage,
   cryptography,
   deprecated,
   dnspython,
@@ -43,6 +39,8 @@
   pygments,
   pyjwt,
   pyyaml,
+  # build-system
+  setuptools,
   tldextract,
   tqdm,
   typing-extensions,
@@ -52,8 +50,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "msticpy";
   version = "3.0.1";
-  pyproject = true;
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "microsoft";
@@ -62,14 +58,11 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-utE77oSCAAYKmsyf8ZPep7spUSIoJXBU6NzeLpDIvUs=";
   };
 
+  # Test requires network access
+  doCheck = false;
+  __structuredAttrs = true;
   build-system = [ setuptools ];
 
-  pythonRelaxDeps = [
-    "azure-kusto-data"
-    "bokeh"
-    "nest_asyncio"
-    "pandas"
-  ];
   dependencies = [
     attrs
     azure-common
@@ -113,10 +106,15 @@ buildPythonPackage (finalAttrs: {
     urllib3
   ];
 
-  # Test requires network access
-  doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "msticpy" ];
+
+  pythonRelaxDeps = [
+    "azure-kusto-data"
+    "bokeh"
+    "nest_asyncio"
+    "pandas"
+  ];
 
   meta = {
     description = "Microsoft Threat Intelligence Security Tools";

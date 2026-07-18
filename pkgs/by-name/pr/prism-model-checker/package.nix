@@ -1,15 +1,15 @@
 {
   lib,
   stdenv,
-  gccStdenv,
-  coreutils,
   fetchFromGitHub,
-  openjdk,
-  jre,
   cctools,
   copyDesktopItems,
+  coreutils,
+  gccStdenv,
+  jre,
   makeDesktopItem,
   makeWrapper,
+  openjdk,
 }:
 
 let
@@ -26,32 +26,16 @@ stdenv'.mkDerivation (finalAttrs: {
     hash = "sha256-eoyMGrXta49j2h/bStPuzrF6OZd/l2aQBngPbTZEvAo=";
   };
 
+  postPatch = ''
+    substituteInPlace prism/install.sh --replace-fail "/bin/mv" "mv"
+  '';
+
   nativeBuildInputs = [
     openjdk
     copyDesktopItems
     makeWrapper
   ]
   ++ lib.optionals stdenv'.hostPlatform.isDarwin [ cctools ];
-
-  desktopItems = [
-    (makeDesktopItem {
-      name = "prism-model-checker-xprism";
-      desktopName = "XPrism";
-      type = "Application";
-      icon = "prism-model-checker";
-      terminal = false;
-      categories = [
-        "Science"
-        "Math"
-      ];
-      exec = "xprism";
-      comment = "Probabalistic Symbolic Model Checker";
-    })
-  ];
-
-  postPatch = ''
-    substituteInPlace prism/install.sh --replace-fail "/bin/mv" "mv"
-  '';
 
   makeFlags = [
     "JAVA_DIR=${openjdk}"
@@ -60,6 +44,7 @@ stdenv'.mkDerivation (finalAttrs: {
     "all"
     "binary"
   ];
+
   preBuild = ''
     cd prism
   '';
@@ -91,9 +76,25 @@ stdenv'.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  desktopItems = [
+    (makeDesktopItem {
+      categories = [
+        "Science"
+        "Math"
+      ];
+
+      comment = "Probabalistic Symbolic Model Checker";
+      desktopName = "XPrism";
+      exec = "xprism";
+      icon = "prism-model-checker";
+      name = "prism-model-checker-xprism";
+      terminal = false;
+      type = "Application";
+    })
+  ];
+
   meta = {
     description = "Probabalistic Symbolic Model Checker";
-
     homepage = "https://www.prismmodelchecker.org";
     license = lib.licenses.gpl2Plus;
     maintainers = [ lib.maintainers.astrobeastie ];

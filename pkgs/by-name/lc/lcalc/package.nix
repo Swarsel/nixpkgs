@@ -1,16 +1,16 @@
 {
   lib,
   stdenv,
+  fetchFromGitLab,
   autoreconfHook,
   gengetopt,
-  pkg-config,
-  fetchFromGitLab,
   pari,
+  pkg-config,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
-  version = "2.2.1";
   pname = "lcalc";
+  version = "2.2.1";
 
   src = fetchFromGitLab {
     owner = "sagemath";
@@ -34,11 +34,11 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   meta = {
-    homepage = "https://gitlab.com/sagemath/lcalc";
     description = "Program for calculating with L-functions";
-    mainProgram = "lcalc";
+    homepage = "https://gitlab.com/sagemath/lcalc";
     license = with lib.licenses; [ gpl2 ];
-    teams = [ lib.teams.sage ];
     platforms = lib.platforms.all;
+    mainProgram = "lcalc";
+    teams = [ lib.teams.sage ];
   };
 })

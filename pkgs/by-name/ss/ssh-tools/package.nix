@@ -18,13 +18,6 @@ buildGoModule (finalAttrs: {
     hash = "sha256-ZMjpc2zjvuLJES5ixEHvo7oAx1JGzy60LzN09Ykn/54=";
   };
 
-  vendorHash = "sha256-GSFhz3cIRl4XUA18HUeUkrw+AJyOkU3ZrZKYTGsWbug=";
-
-  subPackages = [
-    "cmd/go/ssh-authorized-keys"
-    "cmd/go/ssh-sig"
-  ];
-
   nativeBuildInputs = [ installShellFiles ];
 
   buildInputs = [
@@ -32,10 +25,17 @@ buildGoModule (finalAttrs: {
     perl
   ];
 
+  vendorHash = "sha256-GSFhz3cIRl4XUA18HUeUkrw+AJyOkU3ZrZKYTGsWbug=";
+
   postInstall = ''
     install cmd/{bash,perl}/ssh-*/ssh-* -t $out/bin
     installManPage man/*.1
   '';
+
+  subPackages = [
+    "cmd/go/ssh-authorized-keys"
+    "cmd/go/ssh-sig"
+  ];
 
   meta = {
     description = "Making SSH more convenient";

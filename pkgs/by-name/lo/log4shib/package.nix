@@ -1,8 +1,8 @@
 {
   lib,
   stdenv,
-  fetchFromCodeberg,
   autoreconfHook,
+  fetchFromCodeberg,
   unstableGitUpdater,
 }:
 
@@ -18,16 +18,14 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   nativeBuildInputs = [ autoreconfHook ];
-
   env.CXXFLAGS = "-std=c++11";
-
   passthru.updateScript = unstableGitUpdater { };
 
   meta = {
     description = "Forked version of log4cpp that has been created for the Shibboleth project";
-    mainProgram = "log4shib-config";
-    maintainers = with lib.maintainers; [ drawbu ];
-    license = lib.licenses.lgpl21;
     homepage = "http://log4cpp.sf.net";
+    license = lib.licenses.lgpl21;
+    maintainers = with lib.maintainers; [ drawbu ];
+    mainProgram = "log4shib-config";
   };
 })

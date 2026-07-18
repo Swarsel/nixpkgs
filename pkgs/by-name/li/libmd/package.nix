@@ -10,18 +10,13 @@ stdenv.mkDerivation (finalAttrs: {
   version = "1.2.0";
 
   src = fetchurl {
+    hash = "sha256-rBX/uEMFAvuszexmxagu4OqwsPNiIN9WcQ/q3+sT0KA=";
+
     urls = [
       "https://archive.hadrons.org/software/libmd/libmd-${finalAttrs.version}.tar.xz"
       "https://libbsd.freedesktop.org/releases/libmd-${finalAttrs.version}.tar.xz"
     ];
-    hash = "sha256-rBX/uEMFAvuszexmxagu4OqwsPNiIN9WcQ/q3+sT0KA=";
   };
-
-  enableParallelBuilding = true;
-
-  doCheck = true;
-
-  nativeBuildInputs = [ autoreconfHook ];
 
   outputs = [
     "out"
@@ -29,11 +24,16 @@ stdenv.mkDerivation (finalAttrs: {
     "man"
   ];
 
+  nativeBuildInputs = [ autoreconfHook ];
+  doCheck = true;
+  enableParallelBuilding = true;
+
   meta = {
-    homepage = "https://www.hadrons.org/software/libmd/";
-    changelog = "https://archive.hadrons.org/software/libmd/libmd-${finalAttrs.version}.announce";
     # Git: https://git.hadrons.org/cgit/libmd.git
     description = "Message Digest functions from BSD systems";
+    homepage = "https://www.hadrons.org/software/libmd/";
+    changelog = "https://archive.hadrons.org/software/libmd/libmd-${finalAttrs.version}.announce";
+
     license = with lib.licenses; [
       bsd3
       bsd2
@@ -41,6 +41,7 @@ stdenv.mkDerivation (finalAttrs: {
       beerware
       publicDomain
     ];
+
     maintainers = [ ];
     platforms = lib.platforms.unix;
   };

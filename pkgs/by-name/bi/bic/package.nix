@@ -2,16 +2,16 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  readline,
-  autoreconfHook,
   autoconf-archive,
+  autoreconfHook,
+  bison,
+  flex,
   gcc,
   gmp,
-  flex,
-  bison,
   libffi,
   makeWrapper,
   pkg-config,
+  readline,
 }:
 
 stdenv.mkDerivation {
@@ -25,12 +25,6 @@ stdenv.mkDerivation {
     hash = "sha256-6na7/kCXhHN7utbvXvTWr3QG4YhDww9AkilyKf71HlM=";
   };
 
-  buildInputs = [
-    readline
-    gcc
-    gmp
-  ];
-
   nativeBuildInputs = [
     autoreconfHook
     autoconf-archive
@@ -42,6 +36,12 @@ stdenv.mkDerivation {
     pkg-config
   ];
 
+  buildInputs = [
+    readline
+    gcc
+    gmp
+  ];
+
   postInstall = ''
     wrapProgram $out/bin/bic \
       --prefix PATH : ${lib.makeBinPath [ gcc ]}
@@ -49,15 +49,17 @@ stdenv.mkDerivation {
 
   meta = {
     description = "C interpreter and API explorer";
-    mainProgram = "bic";
+
     longDescription = ''
       bic This a project that allows developers to explore and test C-APIs using a
       read eval print loop, also known as a REPL.
     '';
-    license = with lib.licenses; [ gpl2Plus ];
+
     homepage = "https://github.com/hexagonal-sun/bic";
-    platforms = lib.platforms.unix;
+    license = with lib.licenses; [ gpl2Plus ];
     maintainers = with lib.maintainers; [ hexagonal-sun ];
+    platforms = lib.platforms.unix;
+    mainProgram = "bic";
     # never built on aarch64-darwin since first introduction in nixpkgs
     broken = stdenv.hostPlatform.isDarwin && stdenv.hostPlatform.isAarch64;
   };

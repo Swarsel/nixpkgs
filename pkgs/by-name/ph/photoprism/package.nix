@@ -2,18 +2,18 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  fetchzip,
-  darktable,
-  rawtherapee,
-  ffmpeg,
-  libheif,
-  exiftool,
-  imagemagick,
-  makeWrapper,
-  testers,
   callPackage,
-  nixosTests,
+  darktable,
+  exiftool,
+  fetchzip,
+  ffmpeg,
+  imagemagick,
+  libheif,
   librsvg,
+  makeWrapper,
+  nixosTests,
+  rawtherapee,
+  testers,
 }:
 
 let
@@ -31,26 +31,26 @@ let
   frontend = callPackage ./frontend.nix { inherit src version; };
 
   fetchModel =
-    { name, hash }:
+    { hash, name }:
     fetchzip {
       inherit hash;
-      url = "https://dl.photoprism.app/tensorflow/${name}.zip";
       stripRoot = false;
+      url = "https://dl.photoprism.app/tensorflow/${name}.zip";
     };
 
   facenet = fetchModel {
-    name = "facenet";
     hash = "sha256-aS5kkNhxOLSLTH/ipxg7NAa1w9X8iiG78jmloR1hpRo=";
+    name = "facenet";
   };
 
   nasnet = fetchModel {
-    name = "nasnet";
     hash = "sha256-bF25jPmZLyeSWy/CGXZE/VE2UupEG2q9Jmr0+1rUYWE=";
+    name = "nasnet";
   };
 
   nsfw = fetchModel {
-    name = "nsfw";
     hash = "sha256-zy/HcmgaHOY7FfJUY6I/yjjsMPHR2Ote9ppwqemBlfg=";
+    name = "nsfw";
   };
 
   assets_path = "$out/share/photoprism";
@@ -61,9 +61,6 @@ stdenv.mkDerivation (finalAttrs: {
   nativeBuildInputs = [
     makeWrapper
   ];
-
-  dontUnpack = true;
-  dontBuild = true;
 
   installPhase = ''
     runHook preInstall
@@ -96,12 +93,14 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
-  passthru.tests.version = testers.testVersion { package = finalAttrs.finalPackage; };
+  dontBuild = true;
+  dontUnpack = true;
   passthru.tests.photoprism = nixosTests.photoprism;
+  passthru.tests.version = testers.testVersion { package = finalAttrs.finalPackage; };
 
   meta = {
-    homepage = "https://photoprism.app";
     description = "Personal Photo Management powered by Go and Google TensorFlow";
+    homepage = "https://photoprism.app";
     license = lib.licenses.agpl3Only;
     maintainers = with lib.maintainers; [ benesim ];
     mainProgram = "photoprism";

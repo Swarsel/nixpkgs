@@ -1,6 +1,5 @@
 { buildRedist }:
 buildRedist {
-  redistName = "nvpl";
   pname = "nvpl_fft";
 
   outputs = [
@@ -9,6 +8,8 @@ buildRedist {
     "include"
     "lib"
   ];
+
+  redistName = "nvpl";
 
   meta = {
     description = "Perform Fast Fourier Transform (FFT) calculations on ARM CPUs";

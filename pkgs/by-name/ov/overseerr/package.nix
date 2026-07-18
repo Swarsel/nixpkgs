@@ -1,13 +1,13 @@
 {
+  lib,
+  stdenv,
   fetchFromGitHub,
   fetchYarnDeps,
-  lib,
   makeWrapper,
   node-gyp,
   node-pre-gyp,
   nodejs,
   python3,
-  stdenv,
   yarnBuildHook,
   yarnConfigHook,
   yarnInstallHook,
@@ -24,13 +24,6 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-4332XsupUGjkFo0+4wn2fUyK5/y6EQoPaAuayBH/myk=";
   };
 
-  offlineCache = fetchYarnDeps {
-    yarnLock = "${finalAttrs.src}/yarn.lock";
-    hash = "sha256-f30P+/DxDz9uBmdgvaYK4YOAUmVce8MUnNHBXr8/yKc=";
-  };
-
-  env.CYPRESS_INSTALL_BINARY = 0;
-
   nativeBuildInputs = [
     makeWrapper
     node-gyp
@@ -41,6 +34,8 @@ stdenv.mkDerivation (finalAttrs: {
     yarnConfigHook
     yarnInstallHook
   ];
+
+  env.CYPRESS_INSTALL_BINARY = 0;
 
   postInstall = ''
     # Fixes "Error: Cannot find module" (bcrypt) and "SQLite package has not been found installed".
@@ -58,16 +53,23 @@ stdenv.mkDerivation (finalAttrs: {
       --add-flags "--"
   '';
 
+  offlineCache = fetchYarnDeps {
+    hash = "sha256-f30P+/DxDz9uBmdgvaYK4YOAUmVce8MUnNHBXr8/yKc=";
+    yarnLock = "${finalAttrs.src}/yarn.lock";
+  };
+
   meta = {
+    description = "Request management and media discovery tool for the Plex ecosystem";
+    homepage = "https://github.com/sct/overseerr";
+    changelog = "https://github.com/sct/overseerr/releases/tag/v${finalAttrs.version}";
+    license = lib.licenses.mit;
+    maintainers = with lib.maintainers; [ jf-uu ];
+
     badPlatforms = [
       # FileNotFoundError: [Errno 2] No such file or directory: 'xcodebuild'
       lib.systems.inspect.patterns.isDarwin
     ];
-    changelog = "https://github.com/sct/overseerr/releases/tag/v${finalAttrs.version}";
-    description = "Request management and media discovery tool for the Plex ecosystem";
-    homepage = "https://github.com/sct/overseerr";
-    license = lib.licenses.mit;
+
     mainProgram = "overseerr";
-    maintainers = with lib.maintainers; [ jf-uu ];
   };
 })

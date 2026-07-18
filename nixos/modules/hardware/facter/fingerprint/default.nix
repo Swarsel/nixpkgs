@@ -1,6 +1,6 @@
 # To update devices.json, run:
 #   $(nix-build nixos/modules/hardware/facter/fingerprint/update.nix)/bin/update-fprint-devices
-{ lib, config, ... }:
+{ config, lib, ... }:
 let
   facterLib = import ../lib.nix lib;
 
@@ -11,11 +11,11 @@ let
 
   isSupported = lib.any (
     {
-      vendor ? default,
-      device ? default,
       bus_type ? {
         name = "";
       },
+      device ? default,
+      vendor ? default,
       ...
     }:
     bus_type.name == "USB"
@@ -28,6 +28,7 @@ in
       isSupported (config.hardware.facter.report.hardware.unknown or [ ])
       || isSupported (config.hardware.facter.report.hardware.fingerprint or [ ])
       || isSupported (config.hardware.facter.report.hardware.usb or [ ]);
+
     defaultText = "hardware dependent";
   };
 

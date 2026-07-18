@@ -2,15 +2,15 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  cmake,
-  clipper,
-  nlopt,
   boost,
+  clipper,
+  cmake,
+  nlopt,
 }:
 
 stdenv.mkDerivation {
-  version = "4.12.0";
   pname = "libnest2d";
+  version = "4.12.0";
 
   # This revision is waiting to be merged upstream
   # Once it has been merged, this should be switched to it
@@ -30,16 +30,16 @@ stdenv.mkDerivation {
 
   '';
 
+  nativeBuildInputs = [ cmake ];
+
   propagatedBuildInputs = [
     clipper
     nlopt
     boost
   ];
-  nativeBuildInputs = [ cmake ];
-
-  env.CLIPPER_PATH = clipper.out;
 
   cmakeFlags = [ "-DLIBNEST2D_HEADER_ONLY=OFF" ];
+  env.CLIPPER_PATH = clipper.out;
 
   meta = {
     description = "2D irregular bin packaging and nesting library written in modern C++";

@@ -1,8 +1,8 @@
 {
   lib,
-  iosevka,
   fetchFromGitHub,
   buildNpmPackage,
+  iosevka,
 }:
 
 let
@@ -40,13 +40,14 @@ let
     in
     (iosevka.override {
       inherit set privateBuildPlan;
+
       buildNpmPackage =
         args:
         superBuildNpmPackage (
           args
           // {
-            pname = "iosevka-${set}";
             inherit version;
+            pname = "iosevka-${set}";
 
             src = fetchFromGitHub {
               owner = "be5invis";
@@ -59,14 +60,16 @@ let
 
             meta = {
               inherit (src.meta) homepage;
+
               description = ''
                 Customised build of the Iosevka typeface, with a consistent
                 rounded style and overrides for almost all individual glyphs
                 in both roman (upright) and italic (slanted) variants.
               '';
+
               license = lib.licenses.ofl;
-              platforms = iosevka.meta.platforms;
               maintainers = [ lib.maintainers.DamienCassou ];
+              platforms = iosevka.meta.platforms;
             };
           }
         );

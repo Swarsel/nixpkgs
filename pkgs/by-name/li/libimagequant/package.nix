@@ -3,14 +3,13 @@
   stdenv,
   fetchFromGitHub,
   buildPackages,
-  rustPlatform,
   cargo-c,
+  libimagequant,
   python3,
-
+  rustPlatform,
   # tests
   testers,
   vips,
-  libimagequant,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -24,16 +23,16 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-A7idjAAJ+syqIahyU+LPZBF+MLxVDymY+M3HM7d/qk0=";
   };
 
-  cargoLock = {
-    # created it by running `cargo update` in the source tree.
-    lockFile = ./Cargo.lock;
-  };
-
   postPatch = ''
     ln -s ${./Cargo.lock} Cargo.lock
   '';
 
   nativeBuildInputs = [ cargo-c ];
+
+  cargoLock = {
+    # created it by running `cargo update` in the source tree.
+    lockFile = ./Cargo.lock;
+  };
 
   postBuild = ''
     pushd imagequant-sys
@@ -52,17 +51,17 @@ rustPlatform.buildRustPackage (finalAttrs: {
     inherit (python3.pkgs) pillow;
 
     pkg-config = testers.hasPkgConfigModules {
-      package = libimagequant;
       moduleNames = [ "imagequant" ];
+      package = libimagequant;
     };
   };
 
   meta = {
-    homepage = "https://pngquant.org/lib/";
     description = "Image quantization library";
     longDescription = "Small, portable C library for high-quality conversion of RGBA images to 8-bit indexed-color (palette) images.";
+    homepage = "https://pngquant.org/lib/";
     license = lib.licenses.gpl3Plus;
-    platforms = lib.platforms.unix;
     maintainers = with lib.maintainers; [ ma9e ];
+    platforms = lib.platforms.unix;
   };
 })

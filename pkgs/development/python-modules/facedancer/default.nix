@@ -1,20 +1,19 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
+  hid-parser,
+  libusb1,
+  prompt-toolkit,
+  pyserial,
   pythonAtLeast,
   pyusb,
-  pyserial,
-  prompt-toolkit,
-  libusb1,
-  hid-parser,
   setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "facedancer";
   version = "3.1.3";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "greatscottgadgets";
@@ -41,19 +40,23 @@ buildPythonPackage rec {
     hid-parser
   ];
 
+  pyproject = true;
+
   pythonImportsCheck = [
     "facedancer"
   ];
 
   meta = {
-    changelog = "https://github.com/greatscottgadgets/facedancer/releases/tag/${src.tag}";
     description = "Implement your own USB device in Python, supported by a hardware peripheral such as Cynthion or GreatFET";
     homepage = "https://github.com/greatscottgadgets/facedancer";
+    changelog = "https://github.com/greatscottgadgets/facedancer/releases/tag/${src.tag}";
     license = lib.licenses.bsd3;
+
     maintainers = with lib.maintainers; [
       mog
       carlossless
     ];
+
     # https://github.com/greatscottgadgets/facedancer/issues/172
     broken = pythonAtLeast "3.14";
   };

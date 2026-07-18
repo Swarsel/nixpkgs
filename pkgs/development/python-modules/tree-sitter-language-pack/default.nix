@@ -1,13 +1,13 @@
 {
   lib,
+  stdenv,
+  fetchurl,
+  fetchFromGitHub,
   buildPackages,
   buildPythonPackage,
-  fetchFromGitHub,
-  fetchurl,
-  python,
   pytestCheckHook,
+  python,
   rustPlatform,
-  stdenv,
   tree-sitter,
 }:
 
@@ -17,22 +17,23 @@ let
 
   parserBundleSpecs = {
     aarch64-darwin = {
-      suffix = "macos-arm64";
       hash = "sha256-pYrgwhb3BkOEqot5JBi26aXBciGt7/zP/1+HcQT2vsw=";
+      suffix = "macos-arm64";
     };
+
     aarch64-linux = {
-      suffix = "linux-aarch64";
       hash = "sha256-t1rWm19iExYAZXluMQqlt9bOkEC2UumcxDov8YmYEEQ=";
+      suffix = "linux-aarch64";
     };
+
     x86_64-linux = {
-      suffix = "linux-x86_64";
       hash = "sha256-o4IpLZDitTsHfF2KMnyB3Wry7Hig7Byxd0JLcZPybJ0=";
+      suffix = "linux-x86_64";
     };
   };
 in
 buildPythonPackage (finalAttrs: {
   pname = "tree-sitter-language-pack";
-  pyproject = true;
   version = "1.4.1";
 
   src = fetchFromGitHub {
@@ -42,34 +43,6 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-kN2htitEOo+JF6DCrC4RHmHkZXnUA0fUo2jSbMELQHI=";
   };
 
-  cargoDeps = rustPlatform.fetchCargoVendor {
-    inherit (finalAttrs)
-      pname
-      version
-      src
-      ;
-    hash = "sha256-ii3rvAfs4xMSyEEDjUrjL2SAONd0ARCVhwQNCJLwuCk=";
-  };
-
-  buildAndTestSubdir = "crates/ts-pack-python";
-
-  # Pin the release metadata and per-platform parser archive so runtime use stays offline.
-  parserManifest = fetchurl {
-    url = "${parserReleaseUrl finalAttrs.version}/parsers.json";
-    hash = "sha256-8utASonvrLzOjxZcmRuzuFSGtYe5sEoMU+xz++bfmkk=";
-  };
-
-  parserBundle =
-    let
-      spec =
-        parserBundleSpecs.${stdenv.hostPlatform.system}
-          or (throw "tree-sitter-language-pack parser bundle is unavailable for ${stdenv.hostPlatform.system}");
-    in
-    fetchurl {
-      url = "${parserReleaseUrl finalAttrs.version}/parsers-${spec.suffix}.tar.zst";
-      inherit (spec) hash;
-    };
-
   nativeBuildInputs = [
     buildPackages.zstd
     rustPlatform.cargoSetupHook
@@ -77,17 +50,6 @@ buildPythonPackage (finalAttrs: {
   ];
 
   nativeCheckInputs = [ pytestCheckHook ];
-
-  dependencies = [ tree-sitter ];
-
-  disabledTests = [
-    # tree-sitter-language-pack 1.4.1 upstream smoke tests expect these aliases
-    # to resolve directly in the offline cache, but the packaged bundle still
-    # exposes the underlying parser library names.
-    "test_get_language_returns_non_none"
-    "test_get_parser_for_previously_broken_languages"
-    "test_has_language_for_previously_broken"
-  ];
 
   preCheck = ''
     # Mirror the upstream cache layout: libs live in cache_dir, while the manifest
@@ -127,11 +89,6 @@ buildPythonPackage (finalAttrs: {
     EOF
   '';
 
-  enabledTestPaths = [
-    "e2e/python/tests"
-    "tests/test_apps/python/smoke_test.py"
-  ];
-
   postInstall = ''
     cacheRoot=$out/share/tree-sitter-language-pack
     cacheDir="$cacheRoot/libs"
@@ -144,8 +101,53 @@ buildPythonPackage (finalAttrs: {
       --replace-fail 'SupportedLanguage: TypeAlias = str' $'configure(cache_dir="'$cacheDir$'")\n\nSupportedLanguage: TypeAlias = str'
   '';
 
-  pythonImportsCheck = [ "tree_sitter_language_pack" ];
+  buildAndTestSubdir = "crates/ts-pack-python";
 
+  cargoDeps = rustPlatform.fetchCargoVendor {
+    inherit (finalAttrs)
+      pname
+      version
+      src
+      ;
+
+    hash = "sha256-ii3rvAfs4xMSyEEDjUrjL2SAONd0ARCVhwQNCJLwuCk=";
+  };
+
+  dependencies = [ tree-sitter ];
+
+  disabledTests = [
+    # tree-sitter-language-pack 1.4.1 upstream smoke tests expect these aliases
+    # to resolve directly in the offline cache, but the packaged bundle still
+    # exposes the underlying parser library names.
+    "test_get_language_returns_non_none"
+    "test_get_parser_for_previously_broken_languages"
+    "test_has_language_for_previously_broken"
+  ];
+
+  enabledTestPaths = [
+    "e2e/python/tests"
+    "tests/test_apps/python/smoke_test.py"
+  ];
+
+  parserBundle =
+    let
+      spec =
+        parserBundleSpecs.${stdenv.hostPlatform.system}
+          or (throw "tree-sitter-language-pack parser bundle is unavailable for ${stdenv.hostPlatform.system}");
+    in
+    fetchurl {
+      inherit (spec) hash;
+      url = "${parserReleaseUrl finalAttrs.version}/parsers-${spec.suffix}.tar.zst";
+    };
+
+  # Pin the release metadata and per-platform parser archive so runtime use stays offline.
+  parserManifest = fetchurl {
+    hash = "sha256-8utASonvrLzOjxZcmRuzuFSGtYe5sEoMU+xz++bfmkk=";
+    url = "${parserReleaseUrl finalAttrs.version}/parsers.json";
+  };
+
+  pyproject = true;
+  pythonImportsCheck = [ "tree_sitter_language_pack" ];
   passthru.updateScript = ./update.sh;
 
   meta = {

@@ -1,9 +1,9 @@
 {
   lib,
-  buildGoModule,
-  fetchFromGitHub,
-  git,
   stdenv,
+  fetchFromGitHub,
+  buildGoModule,
+  git,
 }:
 
 buildGoModule (finalAttrs: {
@@ -17,13 +17,10 @@ buildGoModule (finalAttrs: {
     sha256 = "sha256-rEn9FpcRfEt2yGepIPEAO9m8JeVb+nMhYMBWhC/barc=";
   };
 
-  vendorHash = null;
-
   propagatedBuildInputs = [ git ];
-
-  nativeCheckInputs = [ git ];
-
+  vendorHash = null;
   doCheck = !stdenv.hostPlatform.isDarwin;
+  nativeCheckInputs = [ git ];
 
   preCheck = ''
     export PATH=$TMPDIR/usr/bin:$PATH
@@ -31,15 +28,17 @@ buildGoModule (finalAttrs: {
 
   meta = {
     description = "Leak git repositories from misconfigured websites";
-    mainProgram = "gitjacker";
+
     longDescription = ''
       Gitjacker downloads git repositories and extracts their contents
       from sites where the .git directory has been mistakenly uploaded.
       It will still manage to recover a significant portion of a repository
       even where directory listings are disabled.
     '';
+
     homepage = "https://github.com/liamg/gitjacker";
     license = with lib.licenses; [ unlicense ];
     maintainers = with lib.maintainers; [ fab ];
+    mainProgram = "gitjacker";
   };
 })

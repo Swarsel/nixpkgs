@@ -1,19 +1,19 @@
 {
   lib,
   stdenv,
-  buildNpmPackage,
   fetchFromGitHub,
-  electron_41,
+  actool,
+  buildNpmPackage,
+  copyDesktopItems,
   dart-sass,
-  mpv-unwrapped,
+  darwin,
+  electron_41,
   fetchPnpmDeps,
+  makeDesktopItem,
+  mpv-unwrapped,
+  nix-update-script,
   pnpmConfigHook,
   pnpm_10,
-  darwin,
-  actool,
-  copyDesktopItems,
-  makeDesktopItem,
-  nix-update-script,
   webVersion ? false,
 }:
 let
@@ -31,27 +31,13 @@ let
 in
 buildNpmPackage {
   inherit pname version;
-
   inherit src;
 
-  __structuredAttrs = true;
-
-  npmConfigHook = pnpmConfigHook;
-  npmBuildScript = if webVersion then "build:web" else "build";
-
-  npmDeps = null;
-  pnpmDeps = fetchPnpmDeps {
-    inherit
-      pname
-      version
-      src
-      ;
-    pnpm = pnpm_10;
-    fetcherVersion = 3;
-    hash = "sha256-zNOGJ24G0xcgsGK4DmbBm7d1PHTp7IJS+RTALGRtfDg=";
-  };
-
-  env.ELECTRON_SKIP_BINARY_DOWNLOAD = "1";
+  postPatch = ''
+    # release/app dependencies are installed on preConfigure
+    substituteInPlace package.json \
+      --replace-fail '"postinstall": "electron-builder install-app-deps",' ""
+  '';
 
   nativeBuildInputs = [
     pnpm_10
@@ -62,11 +48,7 @@ buildNpmPackage {
     actool
   ];
 
-  postPatch = ''
-    # release/app dependencies are installed on preConfigure
-    substituteInPlace package.json \
-      --replace-fail '"postinstall": "electron-builder install-app-deps",' ""
-  '';
+  env.ELECTRON_SKIP_BINARY_DOWNLOAD = "1";
 
   preBuild = ''
     rm -r node_modules/.pnpm/sass-embedded-*
@@ -134,22 +116,41 @@ buildNpmPackage {
     runHook postInstall
   '';
 
+  __structuredAttrs = true;
+
   desktopItems = lib.optionals (!webVersion) [
     (makeDesktopItem {
-      name = "feishin";
-      desktopName = "Feishin";
-      comment = "Full-featured Jellyfin, Navidrome, and OpenSubsonic Compatible Music Player";
-      icon = "feishin";
-      exec = "feishin %u";
       categories = [
         "Audio"
         "AudioVideo"
         "Player"
         "Music"
       ];
+
+      comment = "Full-featured Jellyfin, Navidrome, and OpenSubsonic Compatible Music Player";
+      desktopName = "Feishin";
+      exec = "feishin %u";
+      icon = "feishin";
       mimeTypes = [ "x-scheme-handler/feishin" ];
+      name = "feishin";
     })
   ];
+
+  npmBuildScript = if webVersion then "build:web" else "build";
+  npmConfigHook = pnpmConfigHook;
+  npmDeps = null;
+
+  pnpmDeps = fetchPnpmDeps {
+    inherit
+      pname
+      version
+      src
+      ;
+
+    fetcherVersion = 3;
+    hash = "sha256-zNOGJ24G0xcgsGK4DmbBm7d1PHTp7IJS+RTALGRtfDg=";
+    pnpm = pnpm_10;
+  };
 
   passthru.updateScript = nix-update-script { };
 
@@ -157,14 +158,16 @@ buildNpmPackage {
     description = "Full-featured Jellyfin, Navidrome, and OpenSubsonic Compatible Music Player";
     homepage = "https://github.com/jeffvli/feishin";
     changelog = "https://github.com/jeffvli/feishin/releases/tag/v${version}";
-    sourceProvenance = with lib.sourceTypes; [ fromSource ];
     license = lib.licenses.gpl3Plus;
-    platforms = lib.platforms.unix;
+    sourceProvenance = with lib.sourceTypes; [ fromSource ];
+
     maintainers = with lib.maintainers; [
       BatteredBunny
       onny
       jlbribeiro
     ];
+
+    platforms = lib.platforms.unix;
   }
   // lib.optionalAttrs (!webVersion) { mainProgram = "feishin"; };
 }

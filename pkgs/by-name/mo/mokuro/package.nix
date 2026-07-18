@@ -1,13 +1,12 @@
 {
   lib,
-  python3Packages,
   fetchFromGitHub,
+  python3Packages,
 }:
 
 python3Packages.buildPythonApplication (finalAttrs: {
   pname = "mokuro";
   version = "0.2.4";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "kha-white";
@@ -17,6 +16,8 @@ python3Packages.buildPythonApplication (finalAttrs: {
     fetchSubmodules = true;
   };
 
+  # tests try to use the network
+  doCheck = false;
   build-system = with python3Packages; [ setuptools-scm ];
 
   dependencies = with python3Packages; [
@@ -39,15 +40,14 @@ python3Packages.buildPythonApplication (finalAttrs: {
     yattag
   ];
 
-  # tests try to use the network
-  doCheck = false;
+  pyproject = true;
 
   meta = {
-    changelog = "https://github.com/kha-white/mokuro/releases/tag/${finalAttrs.src.tag}";
     description = "Read Japanese manga inside browser with selectable text";
     homepage = "https://github.com/kha-white/mokuro";
+    changelog = "https://github.com/kha-white/mokuro/releases/tag/${finalAttrs.src.tag}";
     license = lib.licenses.gpl3Only;
-    mainProgram = "mokuro";
     maintainers = with lib.maintainers; [ tomasajt ];
+    mainProgram = "mokuro";
   };
 })

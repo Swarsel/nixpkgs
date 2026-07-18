@@ -10,7 +10,6 @@
 buildPythonPackage rec {
   pname = "nodepy-runtime";
   version = "2.1.5";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
@@ -23,11 +22,12 @@ buildPythonPackage rec {
     six
   ];
 
+  format = "setuptools";
   pythonImportsCheck = [ "nodepy" ];
 
   meta = {
-    homepage = "https://github.com/nodepy/nodepy";
     description = "Runtime for Python inspired by Node.JS";
+
     longDescription = ''
       Node.py is a Python runtime and package manager compatible with CPython
       2.7 and 3.3 – 3.6. It provides a separate import mechanism for modules
@@ -41,6 +41,8 @@ buildPythonPackage rec {
       dependencies of the package manager you must specify the [pm] install
       extra.
     '';
+
+    homepage = "https://github.com/nodepy/nodepy";
     license = lib.licenses.mit;
     maintainers = [ ];
   };

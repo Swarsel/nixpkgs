@@ -1,10 +1,10 @@
 {
   lib,
   stdenv,
-  python3Packages,
   fetchFromGitHub,
   ffmpeg_7-headless,
   nixosTests,
+  python3Packages,
   replaceVars,
   writableTmpDirAsHomeHook,
   providers ? [ ],
@@ -41,8 +41,6 @@ assert
 pythonPackages.buildPythonApplication (finalAttrs: {
   pname = "music-assistant";
   version = "2.9.6";
-  pyproject = true;
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "music-assistant";
@@ -105,23 +103,44 @@ pythonPackages.buildPythonApplication (finalAttrs: {
     fi
   '';
 
+  nativeCheckInputs =
+    with pythonPackages;
+    [
+      pytestCheckHook
+      writableTmpDirAsHomeHook
+    ]
+    ++ lib.concatAttrValues finalAttrs.passthru.optional-dependencies
+    ++ (lib.concatMap (provider: providerPackages.${provider} pythonPackages) [
+      "acoustid_lookup"
+      "audible"
+      "dlna"
+      "fastmcp_server"
+      "jellyfin"
+      "mpd"
+      "msx_bridge"
+      "opensubsonic"
+      "sendspin"
+      "smart_fades"
+      "snapcast"
+      "sonic_analysis"
+      "sonic_similarity"
+      "tidal"
+      "wiim"
+      "ytmusic"
+    ]);
+
+  preCheck = ''
+    export NUMBA_CACHE_DIR=$(mktemp -d)
+
+    # required for smart_fades tests
+    mkdir -p $HOME/.cache/torch/hub/checkpoints/
+    cp ${pythonPackages.beat-this.passthru.small0Ckpt} $HOME/.cache/torch/hub/checkpoints/beat_this-small0.ckpt
+  '';
+
+  __structuredAttrs = true;
+
   build-system = with pythonPackages; [
     setuptools
-  ];
-
-  pythonRelaxDeps = [
-    "aiohttp"
-    "aiosqlite"
-    "cryptography"
-    "mashumaro"
-    "orjson"
-    "xmltodict"
-    "zeroconf"
-  ];
-
-  pythonRemoveDeps = [
-    # no runtime dependency resolution
-    "uv"
   ];
 
   dependencies =
@@ -173,49 +192,6 @@ pythonPackages.buildPythonApplication (finalAttrs: {
     ++ gql.optional-dependencies.all
     ++ pyjwt.optional-dependencies.crypto;
 
-  optional-dependencies = with pythonPackages; {
-    # Required subset of optional-dependencies in pyproject.toml
-    test = [
-      pytest-aiohttp
-      pytest-cov-stub
-      syrupy
-    ];
-  };
-
-  nativeCheckInputs =
-    with pythonPackages;
-    [
-      pytestCheckHook
-      writableTmpDirAsHomeHook
-    ]
-    ++ lib.concatAttrValues finalAttrs.passthru.optional-dependencies
-    ++ (lib.concatMap (provider: providerPackages.${provider} pythonPackages) [
-      "acoustid_lookup"
-      "audible"
-      "dlna"
-      "fastmcp_server"
-      "jellyfin"
-      "mpd"
-      "msx_bridge"
-      "opensubsonic"
-      "sendspin"
-      "smart_fades"
-      "snapcast"
-      "sonic_analysis"
-      "sonic_similarity"
-      "tidal"
-      "wiim"
-      "ytmusic"
-    ]);
-
-  preCheck = ''
-    export NUMBA_CACHE_DIR=$(mktemp -d)
-
-    # required for smart_fades tests
-    mkdir -p $HOME/.cache/torch/hub/checkpoints/
-    cp ${pythonPackages.beat-this.passthru.small0Ckpt} $HOME/.cache/torch/hub/checkpoints/beat_this-small0.ckpt
-  '';
-
   disabledTestPaths = [
     # no multicast support in build sandbox:
     # "OSError: [Errno 19] No such device"
@@ -242,7 +218,32 @@ pythonPackages.buildPythonApplication (finalAttrs: {
     "test_finalize_returns_none_on_early_exit"
   ];
 
+  optional-dependencies = with pythonPackages; {
+    # Required subset of optional-dependencies in pyproject.toml
+    test = [
+      pytest-aiohttp
+      pytest-cov-stub
+      syrupy
+    ];
+  };
+
+  pyproject = true;
   pythonImportsCheck = [ "music_assistant" ];
+
+  pythonRelaxDeps = [
+    "aiohttp"
+    "aiosqlite"
+    "cryptography"
+    "mashumaro"
+    "orjson"
+    "xmltodict"
+    "zeroconf"
+  ];
+
+  pythonRemoveDeps = [
+    # no runtime dependency resolution
+    "uv"
+  ];
 
   passthru = {
     inherit
@@ -251,25 +252,30 @@ pythonPackages.buildPythonApplication (finalAttrs: {
       providerPackages
       providerNames
       ;
+
     providersBuiltins = providersMeta.builtins;
     tests = nixosTests.music-assistant;
   };
 
   meta = {
-    broken = stdenv.hostPlatform.isDarwin;
-    changelog = "https://github.com/music-assistant/server/releases/tag/${finalAttrs.src.tag}";
     description = "Music Assistant is a music library manager for various music sources which can easily stream to a wide range of supported players";
+
     longDescription = ''
       Music Assistant is a free, opensource Media library manager that connects to your streaming services and a wide
       range of connected speakers. The server is the beating heart, the core of Music Assistant and must run on an
       always-on device like a Raspberry Pi, a NAS or an Intel NUC or alike.
     '';
+
     homepage = "https://github.com/music-assistant/server";
+    changelog = "https://github.com/music-assistant/server/releases/tag/${finalAttrs.src.tag}";
     license = lib.licenses.asl20;
+
     maintainers = with lib.maintainers; [
       hexa
       emilylange
     ];
+
     mainProgram = "mass";
+    broken = stdenv.hostPlatform.isDarwin;
   };
 })

@@ -2,14 +2,13 @@
   lib,
   buildPythonPackage,
   fetchPypi,
-  six,
   pytest,
+  six,
 }:
 
 buildPythonPackage rec {
   pname = "latexcodec";
   version = "3.0.1";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
@@ -17,16 +16,17 @@ buildPythonPackage rec {
   };
 
   propagatedBuildInputs = [ six ];
-
   nativeCheckInputs = [ pytest ];
 
   checkPhase = ''
     pytest
   '';
 
+  format = "setuptools";
+
   meta = {
-    homepage = "https://github.com/mcmtroffaes/latexcodec";
     description = "Lexer and codec to work with LaTeX code in Python";
+    homepage = "https://github.com/mcmtroffaes/latexcodec";
     license = lib.licenses.mit;
   };
 }

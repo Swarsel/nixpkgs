@@ -1,10 +1,10 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  aiohttp,
+  buildPythonPackage,
   fetchpatch,
   poetry-core,
-  aiohttp,
   pytest,
   pytest-asyncio,
   pytestCheckHook,
@@ -13,7 +13,6 @@
 buildPythonPackage rec {
   pname = "pytest-mockservers";
   version = "0.6.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "Gr1N";
@@ -25,14 +24,13 @@ buildPythonPackage rec {
   patches = [
     # https://github.com/Gr1N/pytest-mockservers/pull/75
     (fetchpatch {
+      hash = "sha256-/5X3xjJwt2gs3t6f/6n1QZ+CTBq/5+cQE+MgNWyz+Hs=";
       name = "use-poetry-core.patch";
       url = "https://github.com/Gr1N/pytest-mockservers/commit/c7731186a4e12851ab1c15ab56e652bb48ed59c4.patch";
-      hash = "sha256-/5X3xjJwt2gs3t6f/6n1QZ+CTBq/5+cQE+MgNWyz+Hs=";
     })
   ];
 
   nativeBuildInputs = [ poetry-core ];
-
   buildInputs = [ pytest ];
 
   propagatedBuildInputs = [
@@ -40,13 +38,11 @@ buildPythonPackage rec {
     pytest-asyncio
   ];
 
-  __darwinAllowLocalNetworking = true;
-
   nativeCheckInputs = [ pytestCheckHook ];
-
+  __darwinAllowLocalNetworking = true;
   # relies on the removed event_loop fixture
   disabledTests = [ "test_udp_server_factory" ];
-
+  pyproject = true;
   pythonImportsCheck = [ "pytest_mockservers" ];
 
   meta = {

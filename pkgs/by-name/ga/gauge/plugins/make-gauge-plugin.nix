@@ -1,19 +1,19 @@
 {
-  stdenvNoCC,
-  fetchzip,
   lib,
-  writeScript,
   autoPatchelfHook,
+  fetchzip,
+  stdenvNoCC,
   testGaugePlugins,
+  writeScript,
 }:
 
 {
-  pname,
   data,
-  repo,
-  releasePrefix,
-  isCrossArch ? false,
   meta,
+  pname,
+  releasePrefix,
+  repo,
+  isCrossArch ? false,
   ...
 }@args:
 let
@@ -45,8 +45,8 @@ in
 stdenvNoCC.mkDerivation (
   finalAttrs:
   (lib.recursiveUpdate {
-    pname = "gauge-plugin-${pname}";
     inherit (data) version;
+    pname = "gauge-plugin-${pname}";
 
     src = fetchzip {
       inherit url hash;
@@ -62,6 +62,7 @@ stdenvNoCC.mkDerivation (
 
     passthru = {
       tests.loadPlugin = testGaugePlugins { plugins = [ finalAttrs.finalPackage ]; };
+
       updateScript = writeScript "update-${finalAttrs.pname}" ''
         #!/usr/bin/env nix-shell
         #!nix-shell -i bash -p curl nix-prefetch yq-go

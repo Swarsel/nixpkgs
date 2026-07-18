@@ -1,10 +1,10 @@
 {
   lib,
+  fetchFromGitHub,
   buildPythonPackage,
   cairosvg,
-  fetchFromGitHub,
-  imageio-ffmpeg,
   imageio,
+  imageio-ffmpeg,
   numpy,
   pwkit,
   setuptools,
@@ -13,7 +13,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "drawsvg";
   version = "2.4.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "cduck";
@@ -22,6 +21,8 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-JC7u6bEB7RCJVLeYnNqACmddLI5F5PyaaBxaAZ+N/5s=";
   };
 
+  # Module has no tests
+  doCheck = false;
   build-system = [ setuptools ];
 
   optional-dependencies = {
@@ -32,21 +33,21 @@ buildPythonPackage (finalAttrs: {
       numpy
       pwkit
     ];
+
+    color = [
+      numpy
+      pwkit
+    ];
+
     raster = [
       cairosvg
       imageio
       imageio-ffmpeg
       numpy
     ];
-    color = [
-      numpy
-      pwkit
-    ];
   };
 
-  # Module has no tests
-  doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "drawsvg" ];
 
   meta = {

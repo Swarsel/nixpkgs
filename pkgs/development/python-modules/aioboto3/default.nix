@@ -1,34 +1,29 @@
 {
   lib,
   stdenv,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # build-system
-  setuptools,
-  setuptools-scm,
-
   # dependencies
   aiobotocore,
   aiofiles,
-
+  buildPythonPackage,
   # optional-dependencies
   # chalice
   chalice,
   # s3cse
   cryptography,
-
   # tests
   dill,
   moto,
   pytest-asyncio,
   pytestCheckHook,
+  # build-system
+  setuptools,
+  setuptools-scm,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "aioboto3";
   version = "15.5.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "terricain";
@@ -37,9 +32,14 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-yGKjcZlXs1f72OGX5rUWvfDKZAYU3ZV2RVQnd0InxBQ=";
   };
 
-  pythonRelaxDeps = [
-    "aiobotocore"
-  ];
+  nativeCheckInputs = [
+    dill
+    moto
+    pytest-asyncio
+    pytestCheckHook
+  ]
+  ++ moto.optional-dependencies.server
+  ++ lib.concatAttrValues finalAttrs.passthru.optional-dependencies;
 
   build-system = [
     setuptools
@@ -51,20 +51,6 @@ buildPythonPackage (finalAttrs: {
     aiofiles
   ]
   ++ aiobotocore.optional-dependencies.boto3;
-
-  optional-dependencies = {
-    chalice = [ chalice ];
-    s3cse = [ cryptography ];
-  };
-
-  nativeCheckInputs = [
-    dill
-    moto
-    pytest-asyncio
-    pytestCheckHook
-  ]
-  ++ moto.optional-dependencies.server
-  ++ lib.concatAttrValues finalAttrs.passthru.optional-dependencies;
 
   disabledTests = [
     "test_patches"
@@ -88,7 +74,17 @@ buildPythonPackage (finalAttrs: {
     "test_dynamo_resource_waiter"
   ];
 
+  optional-dependencies = {
+    chalice = [ chalice ];
+    s3cse = [ cryptography ];
+  };
+
+  pyproject = true;
   pythonImportsCheck = [ "aioboto3" ];
+
+  pythonRelaxDeps = [
+    "aiobotocore"
+  ];
 
   meta = {
     description = "Wrapper to use boto3 resources with the aiobotocore async backend";

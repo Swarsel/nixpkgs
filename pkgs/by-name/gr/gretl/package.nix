@@ -11,11 +11,11 @@
   json-glib,
   lapack,
   libxml2,
+  llvmPackages,
   mpfr,
   openblas,
-  readline,
   pkg-config,
-  llvmPackages,
+  readline,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -26,6 +26,10 @@ stdenv.mkDerivation (finalAttrs: {
     url = "mirror://sourceforge/gretl/gretl-${finalAttrs.version}.tar.xz";
     hash = "sha256-F5aV3rkZOe2g9aQBCuhUrep4O2idpVkAVtoFzuq9r2Q=";
   };
+
+  nativeBuildInputs = [
+    pkg-config
+  ];
 
   buildInputs = [
     curl
@@ -43,12 +47,7 @@ stdenv.mkDerivation (finalAttrs: {
   ]
   ++ lib.optionals stdenv.cc.isClang [ llvmPackages.openmp ];
 
-  nativeBuildInputs = [
-    pkg-config
-  ];
-
   env.NIX_LDFLAGS = lib.optionalString stdenv.cc.isClang "-lomp";
-
   enableParallelBuilding = true;
   # Missing install depends:
   #  cp: cannot stat '...-gretl-2022c/share/gretl/data/plotbars': Not a directory
@@ -57,12 +56,14 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Software package for econometric analysis";
-    homepage = "https://gretl.sourceforge.net";
-    license = lib.licenses.gpl3;
+
     longDescription = ''
       gretl is a cross-platform software package for econometric analysis,
       written in the C programming language.
     '';
+
+    homepage = "https://gretl.sourceforge.net";
+    license = lib.licenses.gpl3;
     maintainers = [ ];
     platforms = lib.platforms.all;
   };

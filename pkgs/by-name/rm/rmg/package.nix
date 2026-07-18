@@ -2,11 +2,11 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  gitUpdater,
   boost,
   cmake,
   discord-rpc,
   freetype,
+  gitUpdater,
   hidapi,
   libpng,
   libsamplerate,
@@ -22,10 +22,10 @@
   which,
   xdg-user-dirs,
   zlib,
-  withWayland ? false,
   # Affects final license
   withAngrylionRdpPlus ? false,
   withDiscordRpc ? false,
+  withWayland ? false,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -91,13 +91,15 @@ stdenv.mkDerivation (finalAttrs: {
   passthru.updateScript = gitUpdater { rev-prefix = "v"; };
 
   meta = {
-    homepage = "https://github.com/Rosalie241/RMG";
-    changelog = "https://github.com/Rosalie241/RMG/releases/tag/v${finalAttrs.version}";
     description = "Rosalie's Mupen GUI";
+
     longDescription = ''
       Rosalie's Mupen GUI is a free and open-source mupen64plus front-end
       written in C++. It offers a simple-to-use user interface.
     '';
+
+    homepage = "https://github.com/Rosalie241/RMG";
+    changelog = "https://github.com/Rosalie241/RMG/releases/tag/v${finalAttrs.version}";
     license = if withAngrylionRdpPlus then lib.licenses.unfree else lib.licenses.gpl3Only;
     platforms = lib.platforms.linux;
     mainProgram = "RMG";

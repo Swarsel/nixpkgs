@@ -14,48 +14,54 @@ in
   ###### interface
   options = {
     services.target = with types; {
-      enable = mkEnableOption "the kernel's LIO iscsi target";
-
       config = mkOption {
-        type = attrs;
         default = { };
+
         description = ''
           Content of /etc/target/saveconfig.json
           This file is normally read and written by targetcli
         '';
+
+        type = attrs;
       };
+
+      enable = mkEnableOption "the kernel's LIO iscsi target";
     };
   };
 
   ###### implementation
   config = mkIf cfg.enable {
-    environment.etc."target/saveconfig.json" = {
-      text = builtins.toJSON cfg.config;
-      mode = "0600";
-    };
-
-    environment.systemPackages = with pkgs; [ targetcli-fb ];
-
     boot.kernelModules = [
       "configfs"
       "target_core_mod"
       "iscsi_target_mod"
     ];
 
+    environment.etc."target/saveconfig.json" = {
+      mode = "0600";
+      text = builtins.toJSON cfg.config;
+    };
+
+    environment.systemPackages = with pkgs; [ targetcli-fb ];
+
     systemd.services.iscsi-target = {
       enable = true;
+
       after = [
         "network.target"
         "local-fs.target"
       ];
+
       requires = [ "sys-kernel-config.mount" ];
-      wantedBy = [ "multi-user.target" ];
+
       serviceConfig = {
-        Type = "oneshot";
         ExecStart = "${lib.getExe pkgs.python3Packages.rtslib-fb} restore";
         ExecStop = "${lib.getExe pkgs.python3Packages.rtslib-fb} clear";
         RemainAfterExit = "yes";
+        Type = "oneshot";
       };
+
+      wantedBy = [ "multi-user.target" ];
     };
 
     systemd.tmpfiles.rules = [

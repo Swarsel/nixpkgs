@@ -2,10 +2,10 @@
   lib,
   stdenv,
   fetchurl,
-  libfaketime,
-  mkfontscale,
   fonttosfnt,
   installFonts,
+  libfaketime,
+  mkfontscale,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -24,10 +24,6 @@ stdenv.mkDerivation (finalAttrs: {
     mkfontscale
   ];
 
-  unpackPhase = ''
-    tar -xzf $src --strip-components=1
-  '';
-
   buildPhase = ''
     runHook preBuild
 
@@ -44,13 +40,18 @@ stdenv.mkDerivation (finalAttrs: {
     mkfontdir "$out/share/fonts/misc"
   '';
 
+  unpackPhase = ''
+    tar -xzf $src --strip-components=1
+  '';
+
   meta = {
     description = ''
       Readable bitmap font inspired by Envy Code R
     '';
+
     homepage = "http://ywstd.fr/p/pj/#envypn";
     license = lib.licenses.miros;
-    platforms = lib.platforms.all;
     maintainers = with lib.maintainers; [ erdnaxe ];
+    platforms = lib.platforms.all;
   };
 })

@@ -1,7 +1,7 @@
 {
-  pkgs,
   config,
   lib,
+  pkgs,
   ...
 }:
 
@@ -29,6 +29,17 @@ in
   };
 
   config = lib.mkIf cfg.enable {
+    assertions = [
+      {
+        assertion = !config.programs.bash.enableLsColors;
+        message = "`programs.vivid.enable` is incompatible with `programs.bash.enableLsColors`.";
+      }
+      {
+        assertion = !config.programs.zsh.enableLsColors;
+        message = "`programs.vivid.enable` is incompatible with `programs.zsh.enableLsColors`.";
+      }
+    ];
+
     environment.systemPackages = [ cfg.package ];
 
     programs =
@@ -42,21 +53,11 @@ in
         bash = {
           inherit interactiveShellInit enableLsColors;
         };
+
         zsh = {
           inherit interactiveShellInit enableLsColors;
         };
       };
-
-    assertions = [
-      {
-        assertion = !config.programs.bash.enableLsColors;
-        message = "`programs.vivid.enable` is incompatible with `programs.bash.enableLsColors`.";
-      }
-      {
-        assertion = !config.programs.zsh.enableLsColors;
-        message = "`programs.vivid.enable` is incompatible with `programs.zsh.enableLsColors`.";
-      }
-    ];
   };
 
   meta.maintainers = with lib.maintainers; [ gdifolco ];

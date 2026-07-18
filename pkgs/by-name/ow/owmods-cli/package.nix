@@ -1,17 +1,17 @@
 {
   lib,
   stdenv,
-  nix-update-script,
   fetchFromGitHub,
-  rustPlatform,
-  pkg-config,
   installShellFiles,
-  zstd,
   libsoup_3,
   makeWrapper,
   mono,
-  wrapWithMono ? true,
+  nix-update-script,
   openssl,
+  pkg-config,
+  rustPlatform,
+  zstd,
+  wrapWithMono ? true,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -24,8 +24,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
     rev = "cli_v${finalAttrs.version}";
     hash = "sha256-ohCP0VKf2jEtjZsDN5ISZ5c/EGYANvjuCPyKQcNCwyc=";
   };
-
-  cargoHash = "sha256-oYTz7Dzdv9prHzDSSjX9PozzKToMXRW6qs8Y2dfYQ8A=";
 
   nativeBuildInputs = [
     pkg-config
@@ -41,11 +39,11 @@ rustPlatform.buildRustPackage (finalAttrs: {
     openssl
   ];
 
+  cargoHash = "sha256-oYTz7Dzdv9prHzDSSjX9PozzKToMXRW6qs8Y2dfYQ8A=";
+
   env = {
     ZSTD_SYS_USE_PKG_CONFIG = true;
   };
-
-  buildAndTestSubdir = "owmods_cli";
 
   postInstall = ''
     cargo xtask dist_cli
@@ -57,19 +55,22 @@ rustPlatform.buildRustPackage (finalAttrs: {
     wrapProgram $out/bin/${finalAttrs.meta.mainProgram} --prefix PATH : '${mono}/bin'
   '';
 
+  buildAndTestSubdir = "owmods_cli";
   passthru.updateScript = nix-update-script { };
 
   meta = {
     description = "CLI version of the mod manager for Outer Wilds Mod Loader";
     homepage = "https://github.com/ow-mods/ow-mod-man/tree/main/owmods_cli";
-    downloadPage = "https://github.com/ow-mods/ow-mod-man/releases/tag/cli_v${finalAttrs.version}";
     changelog = "https://github.com/ow-mods/ow-mod-man/releases/tag/cli_v${finalAttrs.version}";
-    mainProgram = "owmods";
     license = lib.licenses.gpl3Plus;
+
     maintainers = with lib.maintainers; [
       bwc9876
       spoonbaker
       locochoco
     ];
+
+    mainProgram = "owmods";
+    downloadPage = "https://github.com/ow-mods/ow-mod-man/releases/tag/cli_v${finalAttrs.version}";
   };
 })

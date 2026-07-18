@@ -3,12 +3,12 @@
   stdenv,
   fetchFromGitHub,
   fetchYarnDeps,
-  yarnConfigHook,
-  yarnBuildHook,
-  nodejs,
   findutils,
   makeBinaryWrapper,
   nix-update-script,
+  nodejs,
+  yarnBuildHook,
+  yarnConfigHook,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -21,22 +21,6 @@ stdenv.mkDerivation (finalAttrs: {
     tag = "gatsby-cli@${finalAttrs.version}";
     hash = "sha256-OK2GqO7UMYR7EFU4UC1cHtKfsQAMJP7KuUaQCUfyTBE=";
   };
-
-  yarnKeepDevDeps = true;
-
-  yarnOfflineCache = fetchYarnDeps {
-    yarnLock = finalAttrs.src + "/yarn.lock";
-    hash = "sha256-tmMPz/GunOMMGAHP2/nQkDBeZ+LtCdqQA/Bc6PFzOdk=";
-  };
-
-  yarnBuildScript = "lerna";
-  yarnBuildFlags = [
-    "run"
-    "build"
-    "--scope"
-    "gatsby-cli"
-    "--include-dependencies"
-  ];
 
   nativeBuildInputs = [
     yarnConfigHook
@@ -66,6 +50,22 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  yarnBuildFlags = [
+    "run"
+    "build"
+    "--scope"
+    "gatsby-cli"
+    "--include-dependencies"
+  ];
+
+  yarnBuildScript = "lerna";
+  yarnKeepDevDeps = true;
+
+  yarnOfflineCache = fetchYarnDeps {
+    hash = "sha256-tmMPz/GunOMMGAHP2/nQkDBeZ+LtCdqQA/Bc6PFzOdk=";
+    yarnLock = finalAttrs.src + "/yarn.lock";
+  };
+
   passthru.updateScript = nix-update-script {
     extraArgs = [
       # Fixes an error with having too many versions available
@@ -76,9 +76,9 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   meta = {
-    changelog = "https://github.com/gatsbyjs/gatsby/releases/tag/gatsby%2540${finalAttrs.version}";
     description = "The Gatsby command line interface";
     homepage = "https://github.com/gatsbyjs/gatsby/tree/master/packages/gatsby-cli#readme";
+    changelog = "https://github.com/gatsbyjs/gatsby/releases/tag/gatsby%2540${finalAttrs.version}";
     license = lib.licenses.mit;
     maintainers = [ ];
     mainProgram = "gatsby";

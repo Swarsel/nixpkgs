@@ -1,9 +1,7 @@
 {
   lib,
-  rustPlatform,
+  stdenv,
   fetchFromGitHub,
-  pkg-config,
-  wrapGAppsHook4,
   brightnessctl,
   cargo,
   coreutils,
@@ -14,11 +12,13 @@
   libpulseaudio,
   meson,
   ninja,
+  pkg-config,
+  rustPlatform,
   rustc,
   sassc,
-  stdenv,
   udev,
   udevCheckHook,
+  wrapGAppsHook4,
 }:
 stdenv.mkDerivation rec {
   pname = "swayosd";
@@ -31,10 +31,15 @@ stdenv.mkDerivation rec {
     hash = "sha256-NX2+QKQ7iSOkPls+nWMbwkrlK5TTMu8kGajSqJ0oGWI=";
   };
 
-  cargoDeps = rustPlatform.fetchCargoVendor {
-    inherit pname version src;
-    hash = "sha256-BctsgIuzVCt2dJlu/rNVheWZu0TGyw4hzsotUZlKmMw=";
-  };
+  patches = [
+    ./swayosd_systemd_paths.patch
+  ];
+
+  postPatch = ''
+    substituteInPlace data/udev/99-swayosd.rules \
+      --replace /bin/chgrp ${coreutils}/bin/chgrp \
+      --replace /bin/chmod ${coreutils}/bin/chmod
+  '';
 
   nativeBuildInputs = [
     wrapGAppsHook4
@@ -57,9 +62,7 @@ stdenv.mkDerivation rec {
     sassc
   ];
 
-  patches = [
-    ./swayosd_systemd_paths.patch
-  ];
+  doInstallCheck = true;
 
   preFixup = ''
     gappsWrapperArgs+=(
@@ -67,23 +70,22 @@ stdenv.mkDerivation rec {
     )
   '';
 
-  postPatch = ''
-    substituteInPlace data/udev/99-swayosd.rules \
-      --replace /bin/chgrp ${coreutils}/bin/chgrp \
-      --replace /bin/chmod ${coreutils}/bin/chmod
-  '';
-
-  doInstallCheck = true;
+  cargoDeps = rustPlatform.fetchCargoVendor {
+    inherit pname version src;
+    hash = "sha256-BctsgIuzVCt2dJlu/rNVheWZu0TGyw4hzsotUZlKmMw=";
+  };
 
   meta = {
     description = "GTK based on screen display for keyboard shortcuts";
     homepage = "https://github.com/ErikReider/SwayOSD";
     license = lib.licenses.gpl3Plus;
+
     maintainers = with lib.maintainers; [
       aleksana
       barab-i
       sergioribera
     ];
+
     platforms = lib.platforms.linux;
   };
 }

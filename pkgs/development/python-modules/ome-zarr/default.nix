@@ -1,34 +1,29 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # build-system
-  setuptools,
-  setuptools-scm,
-
   # dependencies
   aiohttp,
+  buildPythonPackage,
   dask,
   deprecated,
   fsspec,
   numpy,
-  rangehttpserver,
-  requests,
-  scikit-image,
-  toolz,
-  zarr,
-
   # tests
   ome-zarr-models,
   pytestCheckHook,
+  rangehttpserver,
+  requests,
+  scikit-image,
+  # build-system
+  setuptools,
+  setuptools-scm,
+  toolz,
+  zarr,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "ome-zarr";
   version = "0.18.0";
-  pyproject = true;
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "ome";
@@ -37,14 +32,18 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-cuvPlPvhCoivMPpesARnc0+fUqwxjeHyZ2E1e1iHUb8=";
   };
 
+  nativeCheckInputs = [
+    ome-zarr-models
+    pytestCheckHook
+  ];
+
+  __structuredAttrs = true;
+
   build-system = [
     setuptools
     setuptools-scm
   ];
 
-  pythonRelaxDeps = [
-    "dask"
-  ];
   dependencies = [
     aiohttp
     dask
@@ -59,9 +58,9 @@ buildPythonPackage (finalAttrs: {
   ]
   ++ fsspec.optional-dependencies.s3;
 
-  nativeCheckInputs = [
-    ome-zarr-models
-    pytestCheckHook
+  disabledTestPaths = [
+    # tries to access network:
+    "ome_zarr/io.py"
   ];
 
   disabledTests = [
@@ -76,10 +75,7 @@ buildPythonPackage (finalAttrs: {
     "test_write_image_compressed"
   ];
 
-  disabledTestPaths = [
-    # tries to access network:
-    "ome_zarr/io.py"
-  ];
+  pyproject = true;
 
   pythonImportsCheck = [
     "ome_zarr"
@@ -92,6 +88,10 @@ buildPythonPackage (finalAttrs: {
     "ome_zarr.writer"
     "ome_zarr.scale"
     "ome_zarr.utils"
+  ];
+
+  pythonRelaxDeps = [
+    "dask"
   ];
 
   meta = {

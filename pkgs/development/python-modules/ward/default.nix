@@ -1,11 +1,11 @@
 {
   lib,
+  fetchFromGitHub,
   buildPythonPackage,
   click,
   click-completion,
   click-default-group,
   cucumber-tag-expressions,
-  fetchFromGitHub,
   pluggy,
   poetry-core,
   pprintpp,
@@ -16,7 +16,6 @@
 buildPythonPackage rec {
   pname = "ward";
   version = "0.68.0b0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "darrenburns";
@@ -25,6 +24,8 @@ buildPythonPackage rec {
     hash = "sha256-4dEMEEPySezgw3dIcYMl56HrhyaYlql9JvtamOn7Y8g=";
   };
 
+  # Fixture is missing. Looks like an issue with the import of the sample file
+  doCheck = false;
   build-system = [ poetry-core ];
 
   dependencies = [
@@ -38,9 +39,7 @@ buildPythonPackage rec {
     pluggy
   ];
 
-  # Fixture is missing. Looks like an issue with the import of the sample file
-  doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "ward" ];
 
   meta = {

@@ -1,7 +1,7 @@
 {
-  appimageTools,
   lib,
   fetchurl,
+  appimageTools,
   makeWrapper,
   nix-update-script,
 }:
@@ -21,12 +21,6 @@ let
 in
 appimageTools.wrapType2 rec {
   inherit pname version src;
-
-  extraPkgs = pkgs: [
-    pkgs.texliveMedium
-    pkgs.pandoc
-  ];
-
   nativeBuildInputs = [ makeWrapper ];
 
   extraInstallCommands = ''
@@ -38,14 +32,19 @@ appimageTools.wrapType2 rec {
       --replace-fail 'Exec=AppRun' 'Exec=${pname}'
   '';
 
+  extraPkgs = pkgs: [
+    pkgs.texliveMedium
+    pkgs.pandoc
+  ];
+
   passthru.updateScript = nix-update-script { };
 
   meta = {
     description = "Markdown editor for writing academic texts and taking notes";
     homepage = "https://www.zettlr.com";
-    platforms = [ "x86_64-linux" ];
-    maintainers = with lib.maintainers; [ maj0e ];
     license = lib.licenses.gpl3;
+    maintainers = with lib.maintainers; [ maj0e ];
+    platforms = [ "x86_64-linux" ];
     mainProgram = "zettlr";
   };
 }

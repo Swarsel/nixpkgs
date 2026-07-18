@@ -1,4 +1,7 @@
 {
+  lib,
+  stdenv,
+  fetchurl,
   alsa-lib,
   at-spi2-atk,
   at-spi2-core,
@@ -11,44 +14,41 @@
   dnsmasq,
   dpkg,
   expat,
-  fetchurl,
   gdk-pixbuf,
   glib,
   gtk3,
   icu,
   iproute2,
   krb5,
-  lib,
   libdrm,
+  libgbm,
   libsecret,
   libuuid,
+  libx11,
   libxcb,
+  libxcomposite,
+  libxcursor,
+  libxdamage,
+  libxext,
+  libxfixes,
+  libxi,
   libxkbcommon,
+  libxkbfile,
+  libxrandr,
+  libxrender,
+  libxscrnsaver,
+  libxshmfence,
+  libxtst,
   lttng-ust,
   makeWrapper,
-  libgbm,
   networkmanager,
   nspr,
   nss,
   openssl,
   pango,
   python3,
-  stdenv,
   systemd,
   xdg-utils,
-  libxtst,
-  libxscrnsaver,
-  libxrender,
-  libxrandr,
-  libxi,
-  libxfixes,
-  libxext,
-  libxdamage,
-  libxcursor,
-  libxcomposite,
-  libx11,
-  libxshmfence,
-  libxkbfile,
   zlib,
 }:
 
@@ -106,25 +106,16 @@ stdenv.mkDerivation rec {
     sha256 = "sha256-tVHGAP90C4Jxz+Ur1hmlCmQ2tOtaSuIvAUQAqu6BKRw=";
   };
 
-  # just patch interpreter
-  autoPatchelfIgnoreMissingDeps = true;
-  dontConfigure = true;
-  dontBuild = true;
-
-  buildInputs = [
-    python3
-    python3.pkgs.dbus-python
-  ];
-
   nativeBuildInputs = [
     autoPatchelfHook
     makeWrapper
     dpkg
   ];
 
-  unpackPhase = ''
-    dpkg-deb -x $src $out
-  '';
+  buildInputs = [
+    python3
+    python3.pkgs.dbus-python
+  ];
 
   installPhase = ''
     cp -r $out/usr/share $out/share
@@ -167,13 +158,22 @@ stdenv.mkDerivation rec {
     wrapProgram $out/opt/appgate/linux/set_dns --set PYTHONPATH $PYTHONPATH
   '';
 
+  # just patch interpreter
+  autoPatchelfIgnoreMissingDeps = true;
+  dontBuild = true;
+  dontConfigure = true;
+
+  unpackPhase = ''
+    dpkg-deb -x $src $out
+  '';
+
   meta = {
     description = "Appgate SDP (Software Defined Perimeter) desktop client";
     homepage = "https://www.appgate.com/support/software-defined-perimeter-support";
-    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
     license = lib.licenses.unfree;
-    platforms = lib.platforms.linux;
+    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
     maintainers = with lib.maintainers; [ ymatsiuk ];
+    platforms = lib.platforms.linux;
     mainProgram = "appgate";
   };
 }

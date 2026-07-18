@@ -15,15 +15,14 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   makeFlags = [ "PREFIX=$(out)" ];
-
   passthru.tests.version = testers.testVersion { package = finalAttrs.finalPackage; };
 
   meta = {
-    homepage = "https://jb55.com/datefmt";
     description = "Tool that formats timestamps in text streams";
-    platforms = lib.platforms.all;
+    homepage = "https://jb55.com/datefmt";
     license = lib.licenses.gpl3Plus;
     maintainers = with lib.maintainers; [ jb55 ];
+    platforms = lib.platforms.all;
     mainProgram = "datefmt";
   };
 })

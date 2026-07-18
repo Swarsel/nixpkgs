@@ -25,15 +25,12 @@ stdenv.mkDerivation (finalAttrs: {
 
   nativeBuildInputs = [ autoreconfHook ];
   buildInputs = [ cryptsetup ];
-
+  doCheck = true;
   enableParallelBuilding = true;
 
-  doCheck = true;
-
   meta = {
-    homepage = "https://github.com/glv2/bruteforce-luks";
     description = "Cracks passwords of LUKS encrypted volumes";
-    mainProgram = "bruteforce-luks";
+
     longDescription = ''
       The program tries to decrypt at least one of the key slots by trying
       all the possible passwords. It is especially useful if you know
@@ -42,7 +39,10 @@ stdenv.mkDerivation (finalAttrs: {
       knowing anything about it would take way too much time (unless the
       password is really short and/or weak). It can also use a dictionary.
     '';
+
+    homepage = "https://github.com/glv2/bruteforce-luks";
     license = lib.licenses.gpl3Plus;
     platforms = lib.platforms.linux;
+    mainProgram = "bruteforce-luks";
   };
 })

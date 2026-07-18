@@ -2,11 +2,11 @@
   lib,
   stdenv,
   fetchFromGitLab,
+  cppcheck,
   meson,
   ninja,
   pkg-config,
   sqlite,
-  cppcheck,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -14,11 +14,11 @@ stdenv.mkDerivation (finalAttrs: {
   version = "1.4.0";
 
   src = fetchFromGitLab {
-    domain = "gitlab.freedesktop.org";
     owner = "cangjie";
     repo = "libcangjie";
     rev = "v${finalAttrs.version}";
     hash = "sha256-LZRU2hbAC8xftPAIHDKCa2SfFLuH/PVqvjZmOSoUQwc=";
+    domain = "gitlab.freedesktop.org";
   };
 
   nativeBuildInputs = [

@@ -22,19 +22,17 @@ stdenv.mkDerivation (finalAttrs: {
     patchShebangs --build Kaem/test.sh
   '';
 
-  enableParallelBuilding = true;
-
   doCheck = true;
-  checkTarget = "test";
   nativeCheckInputs = [ which ];
-
+  checkTarget = "test";
+  enableParallelBuilding = true;
   installFlags = [ "PREFIX=$(out)" ];
 
   meta = {
+    inherit (m2libc.meta) platforms;
     description = "Collection of tools written for use in bootstrapping";
     homepage = "https://savannah.nongnu.org/projects/mescc-tools";
     license = lib.licenses.gpl3Only;
     teams = [ lib.teams.minimal-bootstrap ];
-    inherit (m2libc.meta) platforms;
   };
 })

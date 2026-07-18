@@ -1,7 +1,7 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
+  rustPlatform,
   umu-launcher,
 }:
 
@@ -16,9 +16,8 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-+LQxU4jWBAOk+qHNvGxYXudX5dG6szQt3PiPI41Zxlo=";
   };
 
-  cargoHash = "sha256-X9dWIeDKy3qLmFwUevN8ZUcwNVtt7Wnecbg7M6zUXFU=";
-
   propagatedBuildInputs = [ umu-launcher ];
+  cargoHash = "sha256-X9dWIeDKy3qLmFwUevN8ZUcwNVtt7Wnecbg7M6zUXFU=";
 
   meta = {
     description = "Minimal CLI game launcher for linux";

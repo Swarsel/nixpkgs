@@ -1,24 +1,22 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  uv-build,
-  scim2-models,
-  pytestCheckHook,
-  portpicker,
-  pytest-httpserver,
-  pytest-asyncio,
-  scim2-server,
-  httpx,
-  werkzeug,
+  buildPythonPackage,
   cacert,
+  httpx,
+  portpicker,
+  pytest-asyncio,
+  pytest-httpserver,
+  pytestCheckHook,
+  scim2-models,
+  scim2-server,
+  uv-build,
+  werkzeug,
 }:
 
 buildPythonPackage rec {
   pname = "scim2-client";
   version = "0.7.5";
-
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "python-scim";
@@ -32,10 +30,6 @@ buildPythonPackage rec {
       --replace-fail 'uv_build>=0.8.9,<0.9.0' 'uv_build'
   '';
 
-  build-system = [ uv-build ];
-
-  dependencies = [ scim2-models ];
-
   nativeCheckInputs = [
     pytestCheckHook
     portpicker
@@ -47,12 +41,16 @@ buildPythonPackage rec {
   ]
   ++ optional-dependencies.httpx;
 
-  pythonImportsCheck = [ "scim2_client" ];
+  build-system = [ uv-build ];
+  dependencies = [ scim2-models ];
 
   optional-dependencies = {
     httpx = [ httpx ];
     werkzeug = [ werkzeug ];
   };
+
+  pyproject = true;
+  pythonImportsCheck = [ "scim2_client" ];
 
   meta = {
     description = "Pythonically build SCIM requests and parse SCIM responses";

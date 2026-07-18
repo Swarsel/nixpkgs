@@ -14,7 +14,6 @@
 buildPythonPackage rec {
   pname = "pytest-playwright";
   version = "0.8.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "microsoft";
@@ -29,19 +28,7 @@ buildPythonPackage rec {
     substituteInPlace pyproject.toml --replace-fail "==" ">="
   '';
 
-  build-system = [
-    setuptools
-    setuptools-scm
-  ];
-
   buildInputs = [ pytest ];
-
-  dependencies = [
-    playwright
-    pytest-base-url
-    python-slugify
-  ];
-
   # Most of the tests rely on network access, or on unavailable browsers such as
   # msedge, chrome or webkit
   doCheck = false;
@@ -51,6 +38,18 @@ buildPythonPackage rec {
     export PLAYWRIGHT_BROWSERS_PATH=${playwright-driver.browsers}
   '';
 
+  build-system = [
+    setuptools
+    setuptools-scm
+  ];
+
+  dependencies = [
+    playwright
+    pytest-base-url
+    python-slugify
+  ];
+
+  pyproject = true;
   pythonImportsCheck = [ "pytest_playwright" ];
 
   meta = {

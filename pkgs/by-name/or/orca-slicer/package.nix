@@ -1,20 +1,18 @@
 {
-  clangStdenv,
   lib,
-  binutils,
   fetchFromGitHub,
-  fetchpatch,
-  cmake,
-  pkg-config,
-  wrapGAppsHook3,
+  binutils,
   boost186,
   cereal,
   cgal_5,
+  clangStdenv,
+  cmake,
   curl,
   dbus,
   draco,
   eigen_5,
   expat,
+  fetchpatch,
   ffmpeg,
   gcc-unwrapped,
   glew,
@@ -26,31 +24,34 @@
   gtest,
   gtk3,
   hicolor-icon-theme,
-  libsecret,
+  libnoise,
   libpng,
+  libsecret,
+  libx11,
   mpfr,
   nlopt,
-  opencascade-occt_7_6,
-  openvdb,
-  opencv,
-  systemd,
   onetbb,
+  opencascade-occt_7_6,
+  opencv,
+  openvdb,
+  pkg-config,
+  systemd,
   webkitgtk_4_1,
+  wrapGAppsHook3,
   wxwidgets_3_3,
-  libx11,
-  libnoise,
-  withSystemd ? clangStdenv.hostPlatform.isLinux,
   withNvidiaGLWorkaround ? false,
+  withSystemd ? clangStdenv.hostPlatform.isLinux,
 }:
 let
   wxGTK' =
     (wxwidgets_3_3.override {
+      withEGL = true;
       withPrivateFonts = true;
       withWebKit = true;
-      withEGL = true;
     }).overrideAttrs
       (old: {
         buildInputs = old.buildInputs ++ [ libsecret ];
+
         configureFlags = old.configureFlags ++ [
           # Disable noisy debug dialogs
           "--enable-debug=no"
@@ -72,7 +73,23 @@ clangStdenv.mkDerivation (finalAttrs: {
     hash = "sha256-gUwLC0XkeohEdL0EScdOrA8MWXGuR8kUfezoQsk9i/A=";
   };
 
-  __structuredAttrs = true;
+  patches = [
+    # Fix for webkitgtk linking
+    ./patches/0001-not-for-upstream-CMakeLists-Link-against-webkit2gtk-.patch
+    # Link opencv_core and opencv_imgproc instead of opencv_world
+    ./patches/dont-link-opencv-world-orca.patch
+    # The changeset from https://github.com/OrcaSlicer/OrcaSlicer/pull/7650, can be removed when that PR gets merged
+    # Allows disabling the update nag screen
+    (fetchpatch {
+      hash = "sha256-hgQeagPhS3aNQoFSq0S+Ch60ygm81uHMIvGopw/AZT8=";
+      name = "pr-7650-configurable-update-check.patch";
+      url = "https://github.com/OrcaSlicer/OrcaSlicer/commit/300df7c99b0a2173f645c8bf40e8758eb5f2c486.patch";
+    })
+
+    # Pick https://github.com/prusa3d/PrusaSlicer/pull/14207 to remove unused and insecure ilmbase dependency
+    ./patches/no-ilmbase.patch
+  ];
+
   strictDeps = true;
 
   nativeBuildInputs = [
@@ -87,6 +104,7 @@ clangStdenv.mkDerivation (finalAttrs: {
     (boost186.override {
       enableShared = true;
       enableStatic = false;
+
       extraFeatures = [
         "log"
         "thread"
@@ -130,31 +148,22 @@ clangStdenv.mkDerivation (finalAttrs: {
   ++ lib.optionals withSystemd [ systemd ]
   ++ finalAttrs.checkInputs;
 
-  patches = [
-    # Fix for webkitgtk linking
-    ./patches/0001-not-for-upstream-CMakeLists-Link-against-webkit2gtk-.patch
-    # Link opencv_core and opencv_imgproc instead of opencv_world
-    ./patches/dont-link-opencv-world-orca.patch
-    # The changeset from https://github.com/OrcaSlicer/OrcaSlicer/pull/7650, can be removed when that PR gets merged
-    # Allows disabling the update nag screen
-    (fetchpatch {
-      name = "pr-7650-configurable-update-check.patch";
-      url = "https://github.com/OrcaSlicer/OrcaSlicer/commit/300df7c99b0a2173f645c8bf40e8758eb5f2c486.patch";
-      hash = "sha256-hgQeagPhS3aNQoFSq0S+Ch60ygm81uHMIvGopw/AZT8=";
-    })
-
-    # Pick https://github.com/prusa3d/PrusaSlicer/pull/14207 to remove unused and insecure ilmbase dependency
-    ./patches/no-ilmbase.patch
+  cmakeFlags = [
+    (lib.cmakeBool "SLIC3R_STATIC" false)
+    (lib.cmakeBool "SLIC3R_FHS" true)
+    (lib.cmakeFeature "SLIC3R_GTK" "3")
+    (lib.cmakeBool "BBL_RELEASE_TO_PUBLIC" true)
+    (lib.cmakeBool "BBL_INTERNAL_TESTING" false)
+    (lib.cmakeBool "SLIC3R_BUILD_TESTS" false)
+    (lib.cmakeFeature "CMAKE_CXX_FLAGS" "-DGL_SILENCE_DEPRECATION")
+    (lib.cmakeFeature "CMAKE_EXE_LINKER_FLAGS" "-Wl,--no-as-needed")
+    (lib.cmakeBool "ORCA_VERSION_CHECK_DEFAULT" false)
+    (lib.cmakeFeature "LIBNOISE_INCLUDE_DIR" "${libnoise}/include")
+    (lib.cmakeFeature "LIBNOISE_LIBRARY_RELEASE" "${libnoise}/lib/libnoise-static.a")
+    "-Wno-dev"
   ];
 
-  doCheck = true;
-  checkInputs = [ gtest ];
-
-  separateDebugInfo = true;
-
   env = {
-    NLOPT = nlopt;
-
     NIX_CFLAGS_COMPILE = toString [
       "-Wno-ignored-attributes"
       "-I${opencv.out}/include/opencv4"
@@ -180,31 +189,18 @@ clangStdenv.mkDerivation (finalAttrs: {
       "-lboost_log"
       "-lboost_log_setup"
     ];
+
+    NLOPT = nlopt;
   };
-
-  prePatch = ''
-    sed -i 's|nlopt_cxx|nlopt|g' cmake/modules/FindNLopt.cmake
-    sed -i 's|"libnoise/noise.h"|"noise/noise.h"|' src/libslic3r/PerimeterGenerator.cpp
-    sed -i 's|"libnoise/noise.h"|"noise/noise.h"|' src/libslic3r/Feature/FuzzySkin/FuzzySkin.cpp
-  '';
-
-  cmakeFlags = [
-    (lib.cmakeBool "SLIC3R_STATIC" false)
-    (lib.cmakeBool "SLIC3R_FHS" true)
-    (lib.cmakeFeature "SLIC3R_GTK" "3")
-    (lib.cmakeBool "BBL_RELEASE_TO_PUBLIC" true)
-    (lib.cmakeBool "BBL_INTERNAL_TESTING" false)
-    (lib.cmakeBool "SLIC3R_BUILD_TESTS" false)
-    (lib.cmakeFeature "CMAKE_CXX_FLAGS" "-DGL_SILENCE_DEPRECATION")
-    (lib.cmakeFeature "CMAKE_EXE_LINKER_FLAGS" "-Wl,--no-as-needed")
-    (lib.cmakeBool "ORCA_VERSION_CHECK_DEFAULT" false)
-    (lib.cmakeFeature "LIBNOISE_INCLUDE_DIR" "${libnoise}/include")
-    (lib.cmakeFeature "LIBNOISE_LIBRARY_RELEASE" "${libnoise}/lib/libnoise-static.a")
-    "-Wno-dev"
-  ];
 
   # Generate translation files
   postBuild = "( cd .. && ./scripts/run_gettext.sh )";
+  doCheck = true;
+  checkInputs = [ gtest ];
+
+  postInstall = ''
+    rm $out/LICENSE.txt
+  '';
 
   preFixup = ''
     gappsWrapperArgs+=(
@@ -224,15 +220,22 @@ clangStdenv.mkDerivation (finalAttrs: {
     )
   '';
 
-  postInstall = ''
-    rm $out/LICENSE.txt
+  __structuredAttrs = true;
+
+  prePatch = ''
+    sed -i 's|nlopt_cxx|nlopt|g' cmake/modules/FindNLopt.cmake
+    sed -i 's|"libnoise/noise.h"|"noise/noise.h"|' src/libslic3r/PerimeterGenerator.cpp
+    sed -i 's|"libnoise/noise.h"|"noise/noise.h"|' src/libslic3r/Feature/FuzzySkin/FuzzySkin.cpp
   '';
+
+  separateDebugInfo = true;
 
   meta = {
     description = "G-code generator for 3D printers (Bambu, Prusa, Voron, VzBot, RatRig, Creality, etc.)";
     homepage = "https://github.com/OrcaSlicer/OrcaSlicer";
     changelog = "https://github.com/OrcaSlicer/OrcaSlicer/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.agpl3Only;
+
     maintainers = with lib.maintainers; [
       zhaofengli
       ovlach
@@ -240,7 +243,8 @@ clangStdenv.mkDerivation (finalAttrs: {
       liberodark
       zraexy
     ];
-    mainProgram = "orca-slicer";
+
     platforms = lib.platforms.linux;
+    mainProgram = "orca-slicer";
   };
 })

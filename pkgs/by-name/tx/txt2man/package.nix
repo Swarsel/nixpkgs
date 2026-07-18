@@ -17,10 +17,6 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-Aqi5PNNaaM/tr9A/7vKeafYKYIs/kHbwHzE7+R/9r9s=";
   };
 
-  makeFlags = [
-    "prefix=${placeholder "out"}"
-  ];
-
   postPatch = ''
     for f in bookman src2man txt2man; do
       substituteInPlace $f \
@@ -32,6 +28,10 @@ stdenv.mkDerivation (finalAttrs: {
         --replace "(uname" "(${coreutils}/bin/uname"
     done
   '';
+
+  makeFlags = [
+    "prefix=${placeholder "out"}"
+  ];
 
   doCheck = true;
 
@@ -45,7 +45,7 @@ stdenv.mkDerivation (finalAttrs: {
     description = "Convert flat ASCII text to man page format";
     homepage = "http://mvertes.free.fr/";
     license = lib.licenses.gpl2Plus;
-    platforms = lib.platforms.unix;
     maintainers = with lib.maintainers; [ bjornfor ];
+    platforms = lib.platforms.unix;
   };
 })

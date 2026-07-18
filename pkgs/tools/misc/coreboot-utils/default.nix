@@ -1,19 +1,19 @@
 {
   lib,
   stdenv,
-  fetchgit,
-  pkg-config,
-  zlib,
-  pciutils,
-  openssl,
-  coreutils,
   acpica-tools,
-  makeWrapper,
-  go,
+  buildEnv,
+  coreutils,
+  fetchgit,
+  file,
   gnugrep,
   gnused,
-  file,
-  buildEnv,
+  go,
+  makeWrapper,
+  openssl,
+  pciutils,
+  pkg-config,
+  zlib,
 }:
 
 let
@@ -22,14 +22,17 @@ let
   commonMeta = {
     description = "Various coreboot-related tools";
     homepage = "https://www.coreboot.org";
+
     license = with lib.licenses; [
       gpl2Only
       gpl2Plus
     ];
+
     maintainers = with lib.maintainers; [
       felixsinger
       jmbaur
     ];
+
     platforms = lib.platforms.linux;
   };
 
@@ -50,8 +53,6 @@ let
           hash = "sha256-rL9txaDXUzjkC2ioYmunoNq2+9rz9wpEJ7z3GZrqOH4=";
         };
 
-        enableParallelBuilding = true;
-
         postPatch = ''
           substituteInPlace 3rdparty/vboot/Makefile --replace 'ar qc ' '$$AR qc '
           cd ${path}
@@ -63,110 +64,17 @@ let
           "PREFIX=${placeholder "out"}"
         ];
 
+        enableParallelBuilding = true;
         meta = commonMeta // args.meta;
       }
       // (removeAttrs args [ "meta" ])
     );
 
   utils = {
-    msrtool = generic {
-      pname = "msrtool";
-      meta.description = "Dump chipset-specific MSR registers";
-      meta.platforms = [
-        "x86_64-linux"
-        "i686-linux"
-      ];
-      buildInputs = [
-        pciutils
-        zlib
-      ];
-      preConfigure = "export INSTALL=install";
-    };
-    cbmem = generic {
-      pname = "cbmem";
-      meta.description = "Coreboot console log reader";
-    };
-    ifdtool = generic {
-      pname = "ifdtool";
-      meta.description = "Extract and dump Intel Firmware Descriptor information";
-    };
-    intelmetool = generic {
-      pname = "intelmetool";
-      meta.description = "Dump interesting things about Management Engine";
-      meta.platforms = [
-        "x86_64-linux"
-        "i686-linux"
-      ];
-      buildInputs = [
-        pciutils
-        zlib
-      ];
-    };
-    cbfstool = generic {
-      pname = "cbfstool";
-      meta.description = "Management utility for CBFS formatted ROM images";
-    };
-    nvramtool = generic {
-      pname = "nvramtool";
-      meta.description = "Read and write coreboot parameters and display information from the coreboot table in CMOS/NVRAM";
-      meta.mainProgram = "nvramtool";
-      meta.platforms = [
-        "x86_64-linux"
-        "i686-linux"
-      ];
-    };
-    superiotool = generic {
-      pname = "superiotool";
-      meta.description = "User-space utility to detect Super I/O of a mainboard and provide detailed information about the register contents of the Super I/O";
-      meta.platforms = [
-        "x86_64-linux"
-        "i686-linux"
-      ];
-      buildInputs = [
-        pciutils
-        zlib
-      ];
-    };
-    ectool = generic {
-      pname = "ectool";
-      meta.description = "Dump the RAM of a laptop's Embedded/Environmental Controller (EC)";
-      meta.platforms = [
-        "x86_64-linux"
-        "i686-linux"
-      ];
-      preInstall = "mkdir -p $out/sbin";
-    };
-    inteltool = generic {
-      pname = "inteltool";
-      meta.description = "Provides information about Intel CPU/chipset hardware configuration (register contents, MSRs, etc)";
-      meta.platforms = [
-        "x86_64-linux"
-        "i686-linux"
-      ];
-      buildInputs = [
-        pciutils
-        zlib
-      ];
-    };
-    amdfwtool = generic {
-      pname = "amdfwtool";
-      meta.description = "Create AMD firmware combination";
-      buildInputs = [ openssl ];
-      nativeBuildInputs = [ pkg-config ];
-      installPhase = ''
-        runHook preInstall
-
-        install -Dm755 amdfwtool $out/bin/amdfwtool
-
-        runHook postInstall
-      '';
-    };
     acpidump-all = generic {
       pname = "acpidump-all";
-      path = "util/acpi";
-      meta.description = "Walk through all ACPI tables with their addresses";
       nativeBuildInputs = [ makeWrapper ];
-      dontBuild = true;
+
       installPhase = ''
         runHook preInstall
 
@@ -174,6 +82,7 @@ let
 
         runHook postInstall
       '';
+
       postFixup = ''
         wrapProgram $out/bin/acpidump-all \
           --set PATH ${
@@ -186,16 +95,81 @@ let
             ]
           }
       '';
+
+      dontBuild = true;
+      path = "util/acpi";
+      meta.description = "Walk through all ACPI tables with their addresses";
     };
+
+    amdfwtool = generic {
+      pname = "amdfwtool";
+      nativeBuildInputs = [ pkg-config ];
+      buildInputs = [ openssl ];
+
+      installPhase = ''
+        runHook preInstall
+
+        install -Dm755 amdfwtool $out/bin/amdfwtool
+
+        runHook postInstall
+      '';
+
+      meta.description = "Create AMD firmware combination";
+    };
+
+    cbfstool = generic {
+      pname = "cbfstool";
+      meta.description = "Management utility for CBFS formatted ROM images";
+    };
+
+    cbmem = generic {
+      pname = "cbmem";
+      meta.description = "Coreboot console log reader";
+    };
+
+    ectool = generic {
+      pname = "ectool";
+      preInstall = "mkdir -p $out/sbin";
+      meta.description = "Dump the RAM of a laptop's Embedded/Environmental Controller (EC)";
+
+      meta.platforms = [
+        "x86_64-linux"
+        "i686-linux"
+      ];
+    };
+
+    ifdtool = generic {
+      pname = "ifdtool";
+      meta.description = "Extract and dump Intel Firmware Descriptor information";
+    };
+
+    intelmetool = generic {
+      pname = "intelmetool";
+
+      buildInputs = [
+        pciutils
+        zlib
+      ];
+
+      meta.description = "Dump interesting things about Management Engine";
+
+      meta.platforms = [
+        "x86_64-linux"
+        "i686-linux"
+      ];
+    };
+
     # buildGoModule for some reason does not generate a binary
     intelp2m = generic {
       pname = "intelp2m";
       version = "2.5";
-      env = {
-        VERSION = "2.5-${version}";
-        GOCACHE = "/tmp/go-cache";
-      };
       nativeBuildInputs = [ go ];
+
+      env = {
+        GOCACHE = "/tmp/go-cache";
+        VERSION = "2.5-${version}";
+      };
+
       installPhase = ''
         runHook preInstall
 
@@ -203,7 +177,68 @@ let
 
         runHook postInstall
       '';
+
       meta.description = "Convert the inteltool register dump to gpio.h with GPIO configuration for porting coreboot";
+    };
+
+    inteltool = generic {
+      pname = "inteltool";
+
+      buildInputs = [
+        pciutils
+        zlib
+      ];
+
+      meta.description = "Provides information about Intel CPU/chipset hardware configuration (register contents, MSRs, etc)";
+
+      meta.platforms = [
+        "x86_64-linux"
+        "i686-linux"
+      ];
+    };
+
+    msrtool = generic {
+      pname = "msrtool";
+
+      buildInputs = [
+        pciutils
+        zlib
+      ];
+
+      preConfigure = "export INSTALL=install";
+      meta.description = "Dump chipset-specific MSR registers";
+
+      meta.platforms = [
+        "x86_64-linux"
+        "i686-linux"
+      ];
+    };
+
+    nvramtool = generic {
+      pname = "nvramtool";
+      meta.description = "Read and write coreboot parameters and display information from the coreboot table in CMOS/NVRAM";
+      meta.mainProgram = "nvramtool";
+
+      meta.platforms = [
+        "x86_64-linux"
+        "i686-linux"
+      ];
+    };
+
+    superiotool = generic {
+      pname = "superiotool";
+
+      buildInputs = [
+        pciutils
+        zlib
+      ];
+
+      meta.description = "User-space utility to detect Super I/O of a mainboard and provide detailed information about the register contents of the Super I/O";
+
+      meta.platforms = [
+        "x86_64-linux"
+        "i686-linux"
+      ];
     };
   };
 
@@ -212,11 +247,11 @@ utils
 // {
   coreboot-utils = (
     buildEnv {
-      pname = "coreboot-utils";
       inherit version;
-      meta = commonMeta;
-      paths = lib.filter (lib.meta.availableOn stdenv.hostPlatform) (lib.attrValues utils);
+      pname = "coreboot-utils";
       postBuild = "rm -rf $out/sbin";
+      paths = lib.filter (lib.meta.availableOn stdenv.hostPlatform) (lib.attrValues utils);
+      meta = commonMeta;
     }
   );
 }

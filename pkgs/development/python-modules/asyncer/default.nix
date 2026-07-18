@@ -1,18 +1,17 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  pdm-backend,
   anyio,
+  buildPythonPackage,
+  pdm-backend,
+  pytestCheckHook,
   sniffio,
   typing-extensions,
-  pytestCheckHook,
 }:
 
 buildPythonPackage rec {
   pname = "asyncer";
   version = "0.0.17";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "fastapi";
@@ -21,6 +20,7 @@ buildPythonPackage rec {
     hash = "sha256-4h6s0jsAzTT6LbsvfQGkc7qNCcPgoyR9Qr/yro1ukbg=";
   };
 
+  nativeCheckInputs = [ pytestCheckHook ];
   build-system = [ pdm-backend ];
 
   dependencies = [
@@ -29,8 +29,7 @@ buildPythonPackage rec {
     typing-extensions
   ];
 
-  nativeCheckInputs = [ pytestCheckHook ];
-
+  pyproject = true;
   pythonImportsCheck = [ "asyncer" ];
 
   meta = {

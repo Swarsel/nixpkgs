@@ -1,8 +1,8 @@
 {
   lib,
+  stdenv,
   makeSetupHook,
   systemdMinimal,
-  stdenv,
 }:
 let
   # udev rules can only be checked if systemd (specifically, 'udevadm') can be executed on build platform
@@ -15,12 +15,14 @@ let
 in
 makeSetupHook {
   name = "udev-check-hook";
+
   substitutions = {
     udevadm = if applyHook then lib.getExe' systemdMinimal "udevadm" else "";
   };
+
   meta = {
     description = "Check validity of udev rules in outputs";
-    maintainers = with lib.maintainers; [ grimmauld ];
     license = lib.licenses.mit;
+    maintainers = with lib.maintainers; [ grimmauld ];
   };
 } ./hook.sh

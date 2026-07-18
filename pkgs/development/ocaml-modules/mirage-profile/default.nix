@@ -2,17 +2,15 @@
   lib,
   fetchurl,
   buildDunePackage,
-  ppx_cstruct,
-  stdlib-shims,
   cstruct,
   lwt,
+  ppx_cstruct,
+  stdlib-shims,
 }:
 
 buildDunePackage (finalAttrs: {
   pname = "mirage-profile";
   version = "0.9.1";
-
-  duneVersion = "3";
 
   src = fetchurl {
     url = "https://github.com/mirage/mirage-profile/releases/download/v${finalAttrs.version}/mirage-profile-v${finalAttrs.version}.tbz";
@@ -20,11 +18,14 @@ buildDunePackage (finalAttrs: {
   };
 
   buildInputs = [ ppx_cstruct ];
+
   propagatedBuildInputs = [
     cstruct
     lwt
     stdlib-shims
   ];
+
+  duneVersion = "3";
 
   meta = {
     description = "Collect runtime profiling information in CTF format";

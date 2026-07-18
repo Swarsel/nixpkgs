@@ -1,7 +1,7 @@
 {
   lib,
-  appimageTools,
   fetchurl,
+  appimageTools,
 }:
 let
   pname = "motrix";
@@ -31,9 +31,9 @@ appimageTools.wrapType2 {
     description = "Full-featured download manager";
     homepage = "https://motrix.app";
     license = lib.licenses.mit;
-    platforms = [ "x86_64-linux" ];
     sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
     maintainers = [ ];
+    platforms = [ "x86_64-linux" ];
     mainProgram = "motrix";
   };
 }

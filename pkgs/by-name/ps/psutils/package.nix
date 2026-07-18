@@ -18,17 +18,17 @@ stdenv.mkDerivation (finalAttrs: {
     sed -i 's/void main/int main/' *.c
   '';
 
+  makeFlags = [ "CC=${stdenv.cc.targetPrefix}cc" ];
+
+  preInstall = ''
+    mkdir -p $out/bin $out/share/man/man1
+  '';
+
   configurePhase = ''
     sed -e 's,/usr/local/bin/perl,${perl}/bin/perl,' \
       -e "s,/usr/local,$out," \
       -e "s,CFLAGS =,CFLAGS = -std=c89," \
       Makefile.unix > Makefile
-  '';
-
-  makeFlags = [ "CC=${stdenv.cc.targetPrefix}cc" ];
-
-  preInstall = ''
-    mkdir -p $out/bin $out/share/man/man1
   '';
 
   meta = {

@@ -2,31 +2,31 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  replaceVars,
-  meson,
-  ninja,
-  pkg-config,
   adwaita-icon-theme,
+  bash,
+  dbus,
+  docbook_xml_dtd_412,
+  docbook_xsl,
+  gettext,
   glib,
-  gtk3,
-  gsettings-desktop-schemas,
   gnome-desktop,
   gnome-settings-daemon,
-  dbus,
+  gsettings-desktop-schemas,
+  gtk3,
   json-glib,
-  libice,
-  xmlto,
-  docbook_xsl,
-  docbook_xml_dtd_412,
-  python3,
-  libxslt,
-  gettext,
-  makeWrapper,
-  nix-update-script,
-  systemd,
-  xtrans,
   libepoxy,
-  bash,
+  libice,
+  libxslt,
+  makeWrapper,
+  meson,
+  ninja,
+  nix-update-script,
+  pkg-config,
+  python3,
+  replaceVars,
+  systemd,
+  xmlto,
+  xtrans,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -47,11 +47,16 @@ stdenv.mkDerivation (finalAttrs: {
 
   patches = [
     (replaceVars ./fix-paths.patch {
-      gsettings = lib.getExe' glib "gsettings";
-      dbusLaunch = lib.getExe' dbus "dbus-launch";
       bash = lib.getExe bash;
+      dbusLaunch = lib.getExe' dbus "dbus-launch";
+      gsettings = lib.getExe' glib "gsettings";
     })
   ];
+
+  postPatch = ''
+    chmod +x meson_post_install.py # patchShebangs requires executable file
+    patchShebangs meson_post_install.py
+  '';
 
   nativeBuildInputs = [
     meson
@@ -81,11 +86,6 @@ stdenv.mkDerivation (finalAttrs: {
     libepoxy
   ];
 
-  postPatch = ''
-    chmod +x meson_post_install.py # patchShebangs requires executable file
-    patchShebangs meson_post_install.py
-  '';
-
   # `bin/budgie-session` will reset the environment when run in wayland, we
   # therefor wrap `libexec/budgie-session-binary` instead which is the actual
   # binary needing wrapping
@@ -107,7 +107,7 @@ stdenv.mkDerivation (finalAttrs: {
     homepage = "https://github.com/BuddiesOfBudgie/budgie-session";
     changelog = "https://github.com/BuddiesOfBudgie/budgie-session/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.gpl2Plus;
-    teams = [ lib.teams.budgie ];
     platforms = lib.platforms.linux;
+    teams = [ lib.teams.budgie ];
   };
 })

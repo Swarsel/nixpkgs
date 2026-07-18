@@ -5,8 +5,8 @@
   cmake,
   libsForQt5,
   nemo-qml-plugin-dbus,
-  s2geometry,
   python3,
+  s2geometry,
 }:
 
 stdenv.mkDerivation rec {
@@ -41,20 +41,20 @@ stdenv.mkDerivation rec {
 
   cmakeFlags = [ "-DFLAVOR=qtcontrols" ];
 
-  pythonPath = with python3.pkgs; [ gpxpy ];
-
   preInstall = ''
     buildPythonPath "''${pythonPath[*]}"
     qtWrapperArgs+=(--prefix PYTHONPATH : "$program_PYTHONPATH")
   '';
 
+  pythonPath = with python3.pkgs; [ gpxpy ];
+
   meta = {
     description = "Display vector and raster maps, places, routes, and provide navigation instructions with a flexible selection of data and service providers";
-    mainProgram = "pure-maps";
     homepage = "https://github.com/rinigus/pure-maps";
     changelog = "https://github.com/rinigus/pure-maps/blob/${src.rev}/NEWS.md";
     license = lib.licenses.gpl3Only;
     maintainers = [ lib.maintainers.Thra11 ];
     platforms = lib.platforms.linux;
+    mainProgram = "pure-maps";
   };
 }

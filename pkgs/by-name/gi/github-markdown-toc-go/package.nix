@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
 }:
 buildGoModule (finalAttrs: {
   pname = "github-markdown-toc-go";
@@ -17,8 +17,8 @@ buildGoModule (finalAttrs: {
   vendorHash = "sha256-K5yb7bnW6eS5UESK9wgNEUwGjB63eJk6+B0jFFiFero=";
 
   meta = {
-    homepage = "https://github.com/ekalinin/github-markdown-toc.go";
     description = "Easy TOC creation for GitHub README.md (in go)";
+    homepage = "https://github.com/ekalinin/github-markdown-toc.go";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ dannixon ];
     mainProgram = "gh-md-toc";

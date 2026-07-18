@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   pytestCheckHook,
   requests,
   setuptools,
@@ -10,7 +10,6 @@
 buildPythonPackage rec {
   pname = "pyirishrail";
   version = "0.0.2";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "ttroy50";
@@ -19,12 +18,10 @@ buildPythonPackage rec {
     hash = "sha256-NgARqhcXP0lgGpgBRiNtQaSn9JcRNtCcZPljcL7t3Xc=";
   };
 
-  build-system = [ setuptools ];
-
-  dependencies = [ requests ];
-
   nativeCheckInputs = [ pytestCheckHook ];
-
+  build-system = [ setuptools ];
+  dependencies = [ requests ];
+  pyproject = true;
   pythonImportsCheck = [ "pyirishrail" ];
 
   meta = {

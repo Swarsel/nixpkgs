@@ -1,27 +1,26 @@
 {
   lib,
-  python313Packages,
   fetchFromGitHub,
-  wrapGAppsHook4,
-  meson,
-  ninja,
-  pkg-config,
+  alsa-utils,
   blueprint-compiler,
   desktop-file-utils,
-  libadwaita,
   glib-networking,
   gst_all_1,
-  libsecret,
+  libadwaita,
   libportal,
-  alsa-utils,
-  pipewire,
+  libsecret,
+  meson,
+  ninja,
   nix-update-script,
+  pipewire,
+  pkg-config,
+  python313Packages,
+  wrapGAppsHook4,
 }:
 
 python313Packages.buildPythonApplication (finalAttrs: {
   pname = "high-tide";
   version = "1.5.0";
-  pyproject = false;
 
   src = fetchFromGitHub {
     owner = "Nokse22";
@@ -65,22 +64,23 @@ python313Packages.buildPythonApplication (finalAttrs: {
   ]);
 
   dontWrapGApps = true;
-
   makeWrapperArgs = [ "\${gappsWrapperArgs[@]}" ];
-
+  pyproject = false;
   passthru.updateScript = nix-update-script { };
 
   meta = {
     description = "Libadwaita TIDAL client for Linux";
     homepage = "https://github.com/Nokse22/high-tide";
     license = with lib.licenses; [ gpl3Plus ];
-    mainProgram = "high-tide";
+
     maintainers = with lib.maintainers; [
       drafolin
       nilathedragon
       nyabinary
       griffi-gh
     ];
+
     platforms = lib.platforms.linux;
+    mainProgram = "high-tide";
   };
 })

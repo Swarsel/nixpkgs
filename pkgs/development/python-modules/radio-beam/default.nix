@@ -1,26 +1,25 @@
 {
   lib,
-  fetchPypi,
-  buildPythonPackage,
-  setuptools-scm,
   astropy,
-  numpy,
+  buildPythonPackage,
+  fetchPypi,
   matplotlib,
-  scipy,
-  six,
-  pytestCheckHook,
+  numpy,
   pytest-astropy,
+  pytestCheckHook,
+  scipy,
+  setuptools-scm,
+  six,
 }:
 
 buildPythonPackage rec {
   pname = "radio-beam";
   version = "0.3.9";
-  pyproject = true;
 
   src = fetchPypi {
     inherit version;
-    pname = "radio_beam"; # Tarball was uploaded with an underscore in this version
     hash = "sha256-m1/qe8ybJlQyE3hGM7MugWMMnAhVB3t6v0tGz42E5kQ=";
+    pname = "radio_beam"; # Tarball was uploaded with an underscore in this version
   };
 
   nativeBuildInputs = [ setuptools-scm ];
@@ -38,6 +37,7 @@ buildPythonPackage rec {
     pytest-astropy
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "radio_beam" ];
 
   meta = {

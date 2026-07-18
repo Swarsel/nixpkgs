@@ -2,9 +2,9 @@
 # See nixos/modules/services/x11/extra-layouts.nix
 {
   lib,
-  xkeyboard-config,
   automake,
   ed,
+  xkeyboard-config,
 }:
 {
   layouts ? { },
@@ -56,9 +56,10 @@ let
   '';
 in
 xkeyboard-config.overrideAttrs (old: {
+  postPatch = lib.concatStrings (lib.mapAttrsToList patchIn layouts);
+
   nativeBuildInputs = old.nativeBuildInputs ++ [
     automake
     ed
   ];
-  postPatch = lib.concatStrings (lib.mapAttrsToList patchIn layouts);
 })

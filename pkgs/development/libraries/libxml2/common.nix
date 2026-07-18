@@ -1,30 +1,29 @@
 {
-  stdenv,
-  darwin,
   lib,
-  pkg-config,
+  stdenv,
   autoreconfHook,
-  python3,
+  darwin,
   doxygen,
-  ncurses,
   findXMLCatalogs,
-  libiconv,
-  pythonSupport ? false,
-  icuSupport ? false,
+  gnome,
   icu,
-  zlibSupport ? false,
+  libiconv,
+  ncurses,
+  pkg-config,
+  python3,
+  src,
+  testers,
+  version,
   zlib,
+  enableHttp ? false,
   enableShared ? !stdenv.hostPlatform.isMinGW && !stdenv.hostPlatform.isStatic,
   enableStatic ? !enableShared,
-  gnome,
-  testers,
-  enableHttp ? false,
-
-  version,
-  extraPatches ? [ ],
-  src,
   extraMeta ? { },
+  extraPatches ? [ ],
   freezeUpdateScript ? false,
+  icuSupport ? false,
+  pythonSupport ? false,
+  zlibSupport ? false,
 }:
 
 let
@@ -47,10 +46,8 @@ stdenv'.mkDerivation (finalAttrs: {
   ]
   ++ lib.optional pythonSupport "py"
   ++ lib.optional (enableStatic && enableShared) "static";
-  outputMan = "bin";
 
   patches = [ ] ++ extraPatches;
-
   strictDeps = true;
 
   nativeBuildInputs = [
@@ -95,14 +92,12 @@ stdenv'.mkDerivation (finalAttrs: {
     (lib.withFeature false "docs") # docs are built with xsltproc, which would be a cyclic dependency
   ];
 
-  installFlags = lib.optionals pythonSupport [
-    "pythondir=\"${placeholder "py"}/${python3.sitePackages}\""
-    "pyexecdir=\"${placeholder "py"}/${python3.sitePackages}\""
-  ];
-
-  enableParallelBuilding = true;
+  preConfigure = lib.optionalString (lib.versionAtLeast stdenv.hostPlatform.darwinMinVersion "11") ''
+    MACOSX_DEPLOYMENT_TARGET=10.16
+  '';
 
   doCheck = (stdenv.hostPlatform == stdenv.buildPlatform) && stdenv.hostPlatform.libc != "musl";
+
   preCheck =
     lib.optional stdenv.hostPlatform.isDarwin ''
       export DYLD_LIBRARY_PATH="$PWD/.libs:$DYLD_LIBRARY_PATH"
@@ -111,10 +106,6 @@ stdenv'.mkDerivation (finalAttrs: {
     ++ lib.optional (stdenv.hostPlatform.isCygwin && pythonSupport) ''
       ln -s cygxml2mod.dll python/.libs/libxml2mod.dll
     '';
-
-  preConfigure = lib.optionalString (lib.versionAtLeast stdenv.hostPlatform.darwinMinVersion "11") ''
-    MACOSX_DEPLOYMENT_TARGET=10.16
-  '';
 
   preInstall = lib.optionalString pythonSupport ''
     substituteInPlace python/libxml2mod.la --replace-fail "$dev/${python3.sitePackages}" "$py/${python3.sitePackages}"
@@ -134,32 +125,42 @@ stdenv'.mkDerivation (finalAttrs: {
     done
   '';
 
+  enableParallelBuilding = true;
+
+  installFlags = lib.optionals pythonSupport [
+    "pythondir=\"${placeholder "py"}/${python3.sitePackages}\""
+    "pyexecdir=\"${placeholder "py"}/${python3.sitePackages}\""
+  ];
+
+  outputMan = "bin";
+
   passthru = {
     inherit pythonSupport;
 
-    updateScript = gnome.updateScript {
-      packageName = "libxml2";
-      versionPolicy = "none";
-      freeze = freezeUpdateScript;
-    };
     tests = {
-      pkg-config = testers.hasPkgConfigModules {
-        package = finalAttrs.finalPackage;
-      };
       cmake-config = testers.hasCmakeConfigModules {
         moduleNames = [ "LibXml2" ];
         package = finalAttrs.finalPackage;
       };
+
+      pkg-config = testers.hasPkgConfigModules {
+        package = finalAttrs.finalPackage;
+      };
+    };
+
+    updateScript = gnome.updateScript {
+      freeze = freezeUpdateScript;
+      packageName = "libxml2";
+      versionPolicy = "none";
     };
   };
 
   meta = {
-    homepage = "https://gitlab.gnome.org/GNOME/libxml2";
     description = "XML parsing library for C";
+    homepage = "https://gitlab.gnome.org/GNOME/libxml2";
     license = lib.licenses.mit;
     platforms = lib.platforms.all;
-    pkgConfigModules = [ "libxml-2.0" ];
-    identifiers.cpeParts = lib.meta.cpeFullVersionWithVendor "xmlsoft" finalAttrs.version;
+
     # Python limits cross-compilation to an allowlist of host OSes.
     # https://github.com/python/cpython/blob/dfad678d7024ab86d265d84ed45999e031a03691/configure.ac#L534-L562
     broken =
@@ -173,6 +174,9 @@ stdenv'.mkDerivation (finalAttrs: {
           || stdenv.hostPlatform.isWasi
         )
       );
+
+    identifiers.cpeParts = lib.meta.cpeFullVersionWithVendor "xmlsoft" finalAttrs.version;
+    pkgConfigModules = [ "libxml-2.0" ];
   }
   // extraMeta;
 })

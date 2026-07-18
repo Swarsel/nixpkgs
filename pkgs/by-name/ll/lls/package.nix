@@ -1,7 +1,7 @@
 {
-  rustPlatform,
-  fetchFromGitHub,
   lib,
+  fetchFromGitHub,
+  rustPlatform,
 }:
 rustPlatform.buildRustPackage (finalAttrs: {
   pname = "lls";
@@ -18,13 +18,15 @@ rustPlatform.buildRustPackage (finalAttrs: {
 
   meta = {
     description = "Tool to list listening sockets";
+    homepage = "https://github.com/jcaesar/lls";
     license = lib.licenses.mit;
+
     maintainers = [
       lib.maintainers.k900
       lib.maintainers.jcaesar
     ];
+
     platforms = lib.platforms.linux;
-    homepage = "https://github.com/jcaesar/lls";
     mainProgram = "lls";
   };
 })

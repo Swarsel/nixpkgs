@@ -1,19 +1,17 @@
 {
-  stdenv,
   lib,
-  virtualglLib,
-  pkgsi686Linux,
-  makeWrapper,
-  vulkan-loader,
+  stdenv,
   addDriverRunpath,
+  makeWrapper,
+  pkgsi686Linux,
+  virtualglLib,
+  vulkan-loader,
   usei686VirtualglLib ? stdenv.hostPlatform.system == "x86_64-linux",
 }:
 
 stdenv.mkDerivation {
   pname = "virtualgl";
   version = lib.getVersion virtualglLib;
-
-  paths = [ virtualglLib ];
   nativeBuildInputs = [ makeWrapper ];
 
   buildCommand = ''
@@ -39,8 +37,10 @@ stdenv.mkDerivation {
     ln -sf ${pkgsi686Linux.virtualglLib}/bin/.vglrun.vars32 $out/bin
   '';
 
+  paths = [ virtualglLib ];
+
   meta = {
-    platforms = lib.platforms.linux;
     inherit (virtualglLib.meta) license;
+    platforms = lib.platforms.linux;
   };
 }

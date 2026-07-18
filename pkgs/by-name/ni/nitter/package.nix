@@ -1,7 +1,7 @@
 {
   lib,
-  buildNimPackage,
   fetchFromGitHub,
+  buildNimPackage,
   nixosTests,
   replaceVars,
   unstableGitUpdater,
@@ -18,8 +18,6 @@ buildNimPackage (
       rev = "35882ed88d422b1355b66a1ff8c1144bffdc7bdf";
       hash = "sha256-U3FDhTZIcTDNKbSjrb0F9+Y5Q6GHLmGnmwXoZ5XfATc=";
     };
-
-    lockFile = ./lock.json;
 
     patches = [
       (replaceVars ./nitter-version.patch {
@@ -39,19 +37,23 @@ buildNimPackage (
       cp -r public $out/share/nitter/public
     '';
 
+    lockFile = ./lock.json;
+
     passthru = {
       tests = { inherit (nixosTests) nitter; };
       updateScript = unstableGitUpdater { };
     };
 
     meta = {
-      homepage = "https://github.com/zedeus/nitter";
       description = "Alternative Twitter front-end";
+      homepage = "https://github.com/zedeus/nitter";
       license = lib.licenses.agpl3Only;
+
       maintainers = with lib.maintainers; [
         erdnaxe
         infinidoge
       ];
+
       mainProgram = "nitter";
     };
   }

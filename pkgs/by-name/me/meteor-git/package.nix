@@ -19,9 +19,9 @@ buildGoModule (finalAttrs: {
 
   meta = {
     description = "CLI tool for writing conventional commits";
-    mainProgram = "meteor";
     homepage = "https://github.com/stefanlogue/meteor";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ nebunebu ];
+    mainProgram = "meteor";
   };
 })

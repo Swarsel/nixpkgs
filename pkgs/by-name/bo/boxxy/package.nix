@@ -1,10 +1,10 @@
 {
   lib,
-  rustPlatform,
-  fetchFromGitHub,
-  pkg-config,
-  oniguruma,
   stdenv,
+  fetchFromGitHub,
+  oniguruma,
+  pkg-config,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -18,8 +18,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-6pb3yyC4/kpe8S67B3pzsSu3PfQyOWpiYi0JTBQk3lU=";
   };
 
-  cargoHash = "sha256-L6EL8iP8FnV2WDe4bkHG/P5Zz4S9TAiw3V+XQSTABrQ=";
-
   nativeBuildInputs = [
     pkg-config
   ];
@@ -27,6 +25,8 @@ rustPlatform.buildRustPackage (finalAttrs: {
   buildInputs = [
     oniguruma
   ];
+
+  cargoHash = "sha256-L6EL8iP8FnV2WDe4bkHG/P5Zz4S9TAiw3V+XQSTABrQ=";
 
   env = {
     RUSTONIG_SYSTEM_LIBONIG = true;
@@ -36,10 +36,12 @@ rustPlatform.buildRustPackage (finalAttrs: {
     description = "Puts bad Linux applications in a box with only their files";
     homepage = "https://github.com/queer/boxxy";
     license = lib.licenses.mit;
+
     maintainers = [
     ];
+
     platforms = lib.platforms.linux;
-    broken = stdenv.hostPlatform.isAarch64;
     mainProgram = "boxxy";
+    broken = stdenv.hostPlatform.isAarch64;
   };
 })

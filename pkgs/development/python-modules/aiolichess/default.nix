@@ -1,15 +1,14 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  hatchling,
   aiohttp,
+  buildPythonPackage,
+  hatchling,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "aiolichess";
   version = "1.3.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "aryanhasgithub";
@@ -18,13 +17,11 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-cJuaEjapvmmRypJHvkveBxjAvGpkq0tjguXJLktnb74=";
   };
 
-  build-system = [ hatchling ];
-
-  dependencies = [ aiohttp ];
-
   # upstream tests are empty
   doCheck = false;
-
+  build-system = [ hatchling ];
+  dependencies = [ aiohttp ];
+  pyproject = true;
   pythonImportsCheck = [ "aiolichess" ];
 
   meta = {

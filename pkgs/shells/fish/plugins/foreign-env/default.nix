@@ -1,8 +1,8 @@
 {
-  bash,
   lib,
-  buildFishPlugin,
   fetchFromGitHub,
+  bash,
+  buildFishPlugin,
 }:
 
 buildFishPlugin {
@@ -24,10 +24,12 @@ buildFishPlugin {
     description = "Foreign environment interface for Fish shell";
     homepage = "https://github.com/oh-my-fish/plugin-foreign-env";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       jgillich
       prince213
     ];
+
     platforms = with lib.platforms; unix;
   };
 }

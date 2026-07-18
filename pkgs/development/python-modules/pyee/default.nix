@@ -16,7 +16,6 @@
 buildPythonPackage rec {
   pname = "pyee";
   version = "13.0.0";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
@@ -44,6 +43,7 @@ buildPythonPackage rec {
     twisted
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "pyee" ];
 
   meta = {

@@ -1,9 +1,11 @@
-{ mkDerivation, buildPackages }:
+{ buildPackages, mkDerivation }:
 mkDerivation {
-  path = "lib/libifconfig";
+  LUA = "${buildPackages.lua}/bin/lua";
+
   extraPaths = [
     "tools/lua"
     "lib/libc/Versions.def"
   ];
-  LUA = "${buildPackages.lua}/bin/lua";
+
+  path = "lib/libifconfig";
 }

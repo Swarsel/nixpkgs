@@ -1,16 +1,16 @@
 {
-  buildPythonPackage,
-  fetchPypi,
   lib,
   apeye-core,
   attrs,
+  buildPythonPackage,
   click,
   consolekit,
   docutils,
   dom-toml,
   domdf-python-tools,
-  hatchling,
+  fetchPypi,
   hatch-requirements-txt,
+  hatchling,
   license-expression,
   natsort,
   packaging,
@@ -22,12 +22,11 @@
 buildPythonPackage rec {
   pname = "pyproject-parser";
   version = "0.14.0";
-  pyproject = true;
 
   src = fetchPypi {
-    pname = "pyproject_parser";
     inherit version;
     hash = "sha256-QEe9miURXkABmeZyzZ2Pi6QF2BSNZadsvzr7z3fpZuI=";
+    pname = "pyproject_parser";
   };
 
   build-system = [
@@ -49,17 +48,21 @@ buildPythonPackage rec {
 
   optional-dependencies = {
     all = lib.concatAttrValues (lib.removeAttrs optional-dependencies [ "all" ]);
+
     cli = [
       click
       consolekit
       sdjson
     ];
+
     readme = [
       docutils
       readme-renderer
     ]
     ++ readme-renderer.optional-dependencies.md;
   };
+
+  pyproject = true;
 
   meta = {
     description = "Parser for ‘pyproject.toml’";

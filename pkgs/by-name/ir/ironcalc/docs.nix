@@ -1,23 +1,23 @@
 {
   lib,
   buildNpmPackage,
-  ironcalc,
   gitMinimal,
+  ironcalc,
 }:
 
 buildNpmPackage {
-  pname = "ironcalc-docs";
   inherit (ironcalc) version src;
+  pname = "ironcalc-docs";
 
   postPatch = ''
     cd docs
   '';
 
-  npmDepsHash = "sha256-lH4HUUiVSGcF/5cSse0l2ZWial3tkwOO8peb5Wl35rI=";
-
   nativeBuildInputs = [
     gitMinimal
   ];
+
+  npmDepsHash = "sha256-lH4HUUiVSGcF/5cSse0l2ZWial3tkwOO8peb5Wl35rI=";
 
   # https://discourse.nixos.org/t/nix-build-of-vuepress-project-is-slow-or-hangs/56521/5
   buildPhase = ''

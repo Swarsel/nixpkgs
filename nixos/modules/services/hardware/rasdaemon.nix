@@ -10,45 +10,41 @@ let
 
 in
 {
-  meta = {
-    inherit (pkgs.rasdaemon.meta) maintainers;
-  };
-
   options.hardware.rasdaemon = {
 
-    enable = lib.mkEnableOption "RAS logging daemon";
+    config = lib.mkOption {
+      default = "";
 
-    package = lib.mkPackageOption pkgs "rasdaemon" { };
+      description = ''
+        rasdaemon configuration, currently only used for CE PFA
+        for details, read rasdaemon.outPath/etc/sysconfig/rasdaemon's comments
+      '';
 
-    record = lib.mkOption {
-      type = lib.types.bool;
-      default = true;
-      description = "record events via sqlite3, required for ras-mc-ctl";
+      example = ''
+        # defaults from included config
+        PAGE_CE_REFRESH_CYCLE="24h"
+        PAGE_CE_THRESHOLD="50"
+        PAGE_CE_ACTION="soft"
+      '';
+
+      type = lib.types.lines;
     };
 
-    mainboard = lib.mkOption {
-      type = lib.types.lines;
-      default = "";
-      description = "Custom mainboard description, see {manpage}`ras-mc-ctl(8)` for more details.";
-      example = ''
-        vendor = ASRock
-        model = B450M Pro4
+    enable = lib.mkEnableOption "RAS logging daemon";
+    package = lib.mkPackageOption pkgs "rasdaemon" { };
 
-        # it should default to such values from
-        # /sys/class/dmi/id/board_[vendor|name]
-        # alternatively one can supply a script
-        # that returns the same format as above
-
-        script = <path to script>
-      '';
+    extraModules = lib.mkOption {
+      default = [ ];
+      description = "extra kernel modules to load";
+      example = [ "i7core_edac" ];
+      type = lib.types.listOf lib.types.str;
     };
 
     # TODO, accept `rasdaemon.labels = " ";` or `rasdaemon.labels = { dell = " "; asrock = " "; };'
-
     labels = lib.mkOption {
-      type = lib.types.lines;
       default = "";
       description = "Additional memory module label descriptions to be placed in /etc/ras/dimm_labels.d/labels";
+
       example = ''
         # vendor and model may be shown by 'ras-mc-ctl --mainboard'
         vendor: ASRock
@@ -60,61 +56,39 @@ in
             DDR4_A1: 0.2.0;  DDR4_B1: 0.2.1;
             DDR4_A2: 0.3.0;  DDR4_B2: 0.3.1;
       '';
-    };
 
-    config = lib.mkOption {
       type = lib.types.lines;
-      default = "";
-      description = ''
-        rasdaemon configuration, currently only used for CE PFA
-        for details, read rasdaemon.outPath/etc/sysconfig/rasdaemon's comments
-      '';
-      example = ''
-        # defaults from included config
-        PAGE_CE_REFRESH_CYCLE="24h"
-        PAGE_CE_THRESHOLD="50"
-        PAGE_CE_ACTION="soft"
-      '';
     };
 
-    extraModules = lib.mkOption {
-      type = lib.types.listOf lib.types.str;
-      default = [ ];
-      description = "extra kernel modules to load";
-      example = [ "i7core_edac" ];
+    mainboard = lib.mkOption {
+      default = "";
+      description = "Custom mainboard description, see {manpage}`ras-mc-ctl(8)` for more details.";
+
+      example = ''
+        vendor = ASRock
+        model = B450M Pro4
+
+        # it should default to such values from
+        # /sys/class/dmi/id/board_[vendor|name]
+        # alternatively one can supply a script
+        # that returns the same format as above
+
+        script = <path to script>
+      '';
+
+      type = lib.types.lines;
+    };
+
+    record = lib.mkOption {
+      default = true;
+      description = "record events via sqlite3, required for ras-mc-ctl";
+      type = lib.types.bool;
     };
 
     testing = lib.mkEnableOption "error injection infrastructure";
   };
 
   config = lib.mkIf cfg.enable {
-
-    environment.etc = {
-      "ras/mainboard" = {
-        enable = cfg.mainboard != "";
-        text = cfg.mainboard;
-      };
-      # TODO, handle multiple cfg.labels.brand = " ";
-      "ras/dimm_labels.d/labels" = {
-        enable = cfg.labels != "";
-        text = cfg.labels;
-      };
-      "sysconfig/rasdaemon" = {
-        enable = cfg.config != "";
-        text = cfg.config;
-      };
-    };
-    environment.systemPackages = [
-      cfg.package
-    ]
-    ++ lib.optionals (cfg.testing) (
-      with pkgs.error-inject;
-      [
-        edac-inject
-        mce-inject
-        aer-inject
-      ]
-    );
 
     boot.initrd.kernelModules =
       cfg.extraModules
@@ -130,8 +104,6 @@ in
 
     boot.kernelPatches = lib.optionals (cfg.testing) [
       {
-        name = "rasdaemon-tests";
-        patch = null;
         extraConfig = ''
           EDAC_DEBUG y
           X86_MCE_INJECT y
@@ -140,44 +112,83 @@ in
           PCIEAER y
           PCIEAER_INJECT y
         '';
+
+        name = "rasdaemon-tests";
+        patch = null;
       }
     ];
+
+    environment.etc = {
+      # TODO, handle multiple cfg.labels.brand = " ";
+      "ras/dimm_labels.d/labels" = {
+        enable = cfg.labels != "";
+        text = cfg.labels;
+      };
+
+      "ras/mainboard" = {
+        enable = cfg.mainboard != "";
+        text = cfg.mainboard;
+      };
+
+      "sysconfig/rasdaemon" = {
+        enable = cfg.config != "";
+        text = cfg.config;
+      };
+    };
+
+    environment.systemPackages = [
+      cfg.package
+    ]
+    ++ lib.optionals (cfg.testing) (
+      with pkgs.error-inject;
+      [
+        edac-inject
+        mce-inject
+        aer-inject
+      ]
+    );
 
     # i tried to set up a group for this
     # but rasdaemon needs higher permissions?
     # `rasdaemon: Can't locate a mounted debugfs`
-
     # most of this taken from src/misc/
     systemd.services = {
+      ras-mc-ctl = lib.mkIf (cfg.labels != "") {
+        description = "register DIMM labels on startup";
+        documentation = [ "man:ras-mc-ctl(8)" ];
+
+        serviceConfig = {
+          ExecStart = "${cfg.package}/bin/ras-mc-ctl --register-labels";
+          RemainAfterExit = true;
+          Type = "oneshot";
+        };
+
+        wantedBy = [ "multi-user.target" ];
+      };
+
       rasdaemon = {
         description = "the RAS logging daemon";
         documentation = [ "man:rasdaemon(1)" ];
-        wantedBy = [ "multi-user.target" ];
 
         serviceConfig = {
-          StateDirectory = lib.optionalString (cfg.record) "rasdaemon";
-
           ExecStart =
             "${cfg.package}/bin/rasdaemon --foreground" + lib.optionalString (cfg.record) " --record";
+
           ExecStop = "${cfg.package}/bin/rasdaemon --disable";
           Restart = "on-abort";
-
+          StateDirectory = lib.optionalString (cfg.record) "rasdaemon";
           # src/misc/rasdaemon.service.in shows this:
           # ExecStartPost = ${cfg.package}/bin/rasdaemon --enable
           # but that results in unpredictable existence of the database
           # and everything seems to be enabled without this...
         };
-      };
-      ras-mc-ctl = lib.mkIf (cfg.labels != "") {
-        description = "register DIMM labels on startup";
-        documentation = [ "man:ras-mc-ctl(8)" ];
+
         wantedBy = [ "multi-user.target" ];
-        serviceConfig = {
-          Type = "oneshot";
-          ExecStart = "${cfg.package}/bin/ras-mc-ctl --register-labels";
-          RemainAfterExit = true;
-        };
       };
     };
+  };
+
+  meta = {
+    inherit (pkgs.rasdaemon.meta) maintainers;
   };
 }

@@ -1,11 +1,11 @@
 {
   lib,
+  fetchFromGitHub,
   astropy,
   bottleneck,
   buildPythonPackage,
   cython,
   extension-helpers,
-  fetchFromGitHub,
   gwcs,
   matplotlib,
   numpy,
@@ -13,8 +13,8 @@
   scikit-image,
   scikit-learn,
   scipy,
-  setuptools-scm,
   setuptools,
+  setuptools-scm,
   shapely,
   tqdm,
 }:
@@ -22,7 +22,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "photutils";
   version = "3.0.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "astropy";
@@ -31,15 +30,18 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-jfmC3pAQa/PrdEUa7QSYGW5zWzX43ghYCpmgRYup/Ks=";
   };
 
-  build-system = [
-    setuptools
-    setuptools-scm
-  ];
-
   nativeBuildInputs = [
     cython
     extension-helpers
     numpy
+  ];
+
+  # With 1.12.0 tests have issues importing modules
+  doCheck = false;
+
+  build-system = [
+    setuptools
+    setuptools-scm
   ];
 
   dependencies = [
@@ -61,9 +63,7 @@ buildPythonPackage (finalAttrs: {
     ];
   };
 
-  # With 1.12.0 tests have issues importing modules
-  doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "photutils" ];
 
   meta = {

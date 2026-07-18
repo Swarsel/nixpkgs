@@ -1,15 +1,14 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
+  buildPythonPackage,
   pytestCheckHook,
+  setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "pycdlib";
   version = "1.16.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "clalancette";
@@ -18,9 +17,8 @@ buildPythonPackage rec {
     hash = "sha256-uJ9rMriRCLXpKekG8vGsIw+s0e6wlfX0soAYs6HGe0Y=";
   };
 
-  build-system = [ setuptools ];
-
   nativeCheckInputs = [ pytestCheckHook ];
+  build-system = [ setuptools ];
 
   disabledTestPaths = [
     # These tests require a Fedora-patched genisoimage
@@ -37,6 +35,7 @@ buildPythonPackage rec {
     "test_gmtoffset_from_tm_2023_rollover"
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "pycdlib" ];
 
   meta = {

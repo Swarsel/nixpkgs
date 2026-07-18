@@ -24,23 +24,27 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   configureFlags = [ "--platform=${stdenv.hostPlatform.parsed.cpu.name}}" ];
-
   dontDisableStatic = true;
 
   meta = {
     description = "High-performance concurrency research library";
+
     longDescription = ''
       Concurrency primitives, safe memory reclamation mechanisms and non-blocking data structures for the research, design and implementation of high performance concurrent systems.
     '';
+
+    homepage = "https://concurrencykit.org/";
+
     license = with lib.licenses; [
       asl20
       bsd2
     ];
-    homepage = "https://concurrencykit.org/";
-    platforms = lib.platforms.unix;
+
     maintainers = with lib.maintainers; [
       chessai
       thoughtpolice
     ];
+
+    platforms = lib.platforms.unix;
   };
 })

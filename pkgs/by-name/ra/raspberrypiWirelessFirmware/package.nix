@@ -1,35 +1,12 @@
 {
   lib,
-  stdenvNoCC,
   fetchFromGitHub,
+  stdenvNoCC,
 }:
 
 stdenvNoCC.mkDerivation {
   pname = "raspberrypi-wireless-firmware";
   version = "0-unstable-2025-04-08";
-
-  srcs = [
-    (fetchFromGitHub {
-      name = "bluez-firmware";
-      owner = "RPi-Distro";
-      repo = "bluez-firmware";
-      rev = "2bbfb8438e824f5f61dae3f6ebb367a6129a4d63";
-      hash = "sha256-t+D4VUfEIov83KV4wiKp6TqXTHXGkxg/mANi4GW7QHs=";
-    })
-    (fetchFromGitHub {
-      name = "firmware-nonfree";
-      owner = "RPi-Distro";
-      repo = "firmware-nonfree";
-      rev = "c9d3ae6584ab79d19a4f94ccf701e888f9f87a53";
-      hash = "sha256-5ywIPs3lpmqVOVP3B75H577fYkkucDqB7htY2U1DW8U=";
-    })
-  ];
-
-  sourceRoot = ".";
-
-  dontBuild = true;
-  # Firmware blobs do not need fixing and should not be modified
-  dontFixup = true;
 
   installPhase = ''
     runHook preInstall
@@ -53,12 +30,34 @@ stdenvNoCC.mkDerivation {
     runHook postInstall
   '';
 
+  dontBuild = true;
+  # Firmware blobs do not need fixing and should not be modified
+  dontFixup = true;
+  sourceRoot = ".";
+
+  srcs = [
+    (fetchFromGitHub {
+      hash = "sha256-t+D4VUfEIov83KV4wiKp6TqXTHXGkxg/mANi4GW7QHs=";
+      name = "bluez-firmware";
+      owner = "RPi-Distro";
+      repo = "bluez-firmware";
+      rev = "2bbfb8438e824f5f61dae3f6ebb367a6129a4d63";
+    })
+    (fetchFromGitHub {
+      hash = "sha256-5ywIPs3lpmqVOVP3B75H577fYkkucDqB7htY2U1DW8U=";
+      name = "firmware-nonfree";
+      owner = "RPi-Distro";
+      repo = "firmware-nonfree";
+      rev = "c9d3ae6584ab79d19a4f94ccf701e888f9f87a53";
+    })
+  ];
+
   meta = {
     description = "Firmware for builtin Wifi/Bluetooth devices in the Raspberry Pi 3+ and Zero W";
     homepage = "https://github.com/RPi-Distro/firmware-nonfree";
     license = lib.licenses.unfreeRedistributableFirmware;
+    sourceProvenance = with lib.sourceTypes; [ binaryFirmware ];
     maintainers = with lib.maintainers; [ lopsided98 ];
     platforms = lib.platforms.linux;
-    sourceProvenance = with lib.sourceTypes; [ binaryFirmware ];
   };
 }

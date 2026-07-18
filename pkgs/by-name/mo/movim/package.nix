@@ -1,18 +1,18 @@
 {
   lib,
   fetchFromGitHub,
-  writeShellScript,
   dash,
-  gitMinimal,
-  php,
-  phpCfg ? null,
-  withPostgreSQL ? true, # “strongly recommended” according to docs
-  withMariaDB ? false,
-  minifyStaticFiles ? false, # default files are often not minified
   esbuild,
+  gitMinimal,
   lightningcss,
-  scour,
   nixosTests,
+  php,
+  scour,
+  writeShellScript,
+  minifyStaticFiles ? false, # default files are often not minified
+  phpCfg ? null,
+  withMariaDB ? false,
+  withPostgreSQL ? true, # “strongly recommended” according to docs
 }:
 
 let
@@ -21,10 +21,12 @@ let
       enable = false;
       target = "es2020";
     };
+
     style = {
-      enable = false;
       browserslist = "defaults, Firefox ESR, Firefox 91, last 20 Firefox major versions, last 20 Chrome major versions, last 3 Safari major versions, last 1 KaiOS version, and supports css-variables";
+      enable = false;
     };
+
     svg = {
       enable = false;
     };
@@ -54,62 +56,6 @@ php.buildComposerProject2 (finalAttrs: {
     hash = "sha256-2RWTx/mhMAi13v7BUfJmGvkPc4iqKdVR0B5rCbD5YaQ=";
   };
 
-  php = php.buildEnv (
-    {
-      extensions = (
-        { all, enabled }:
-        enabled
-        ++ [
-          all.curl
-          all.dom
-          all.gd
-          all.imagick
-          all.mbstring
-          all.pdo
-          all.simplexml
-        ]
-        ++ lib.optionals withPostgreSQL [
-          all.pdo_pgsql
-          all.pgsql
-        ]
-        ++ lib.optionals withMariaDB [
-          all.mysqli
-          all.mysqlnd
-          all.pdo_mysql
-        ]
-      );
-    }
-    // lib.optionalAttrs (phpCfg != null) {
-      extraConfig = phpCfg;
-    }
-  );
-
-  nativeBuildInputs =
-    lib.optional minify.script.enable esbuild
-    ++ lib.optional minify.style.enable lightningcss
-    ++ lib.optional minify.svg.enable scour;
-
-  # Composer ≥2.8 defaults preferred-install to
-  # dist only (not auto), which prevents fallback
-  # to git clone when dist downloads fail (such as
-  # MS GitHub’s codeload.* in the build sandbox).
-  composerVendor = php.mkComposerVendor {
-    inherit (finalAttrs)
-      pname
-      src
-      version
-      vendorHash
-      php
-      ;
-
-    postPatch = ''
-      composer config preferred-install auto
-    '';
-    nativeBuildInputs = [ gitMinimal ];
-  };
-
-  vendorHash = "sha256-hSXi1jKilsfhe5P7ElGydxu6uxOpYNeRhHlZGzgkUXw=";
-
   postPatch = ''
     # Our modules are already wrapped, removes missing *.so warnings;
     # replacing `$configuration` with actually-used flags.
@@ -131,6 +77,13 @@ php.buildComposerProject2 (finalAttrs: {
       --replace-fail "Imagick::ALPHACHANNEL_REMOVE" "Imagick::ALPHACHANNEL_OFF" \
       --replace-fail "Imagick::ALPHACHANNEL_ACTIVATE" "Imagick::ALPHACHANNEL_ON"
   '';
+
+  nativeBuildInputs =
+    lib.optional minify.script.enable esbuild
+    ++ lib.optional minify.style.enable lightningcss
+    ++ lib.optional minify.svg.enable scour;
+
+  vendorHash = "sha256-hSXi1jKilsfhe5P7ElGydxu6uxOpYNeRhHlZGzgkUXw=";
 
   preBuild =
     lib.optionalString minify.script.enable
@@ -191,6 +144,56 @@ php.buildComposerProject2 (finalAttrs: {
       $out/share/fish/vendor_completions.d/movim.fish \
       $out/share/zsh/site-functions/_movim
   '';
+
+  # Composer ≥2.8 defaults preferred-install to
+  # dist only (not auto), which prevents fallback
+  # to git clone when dist downloads fail (such as
+  # MS GitHub’s codeload.* in the build sandbox).
+  composerVendor = php.mkComposerVendor {
+    inherit (finalAttrs)
+      pname
+      src
+      version
+      vendorHash
+      php
+      ;
+
+    postPatch = ''
+      composer config preferred-install auto
+    '';
+
+    nativeBuildInputs = [ gitMinimal ];
+  };
+
+  php = php.buildEnv (
+    {
+      extensions = (
+        { all, enabled }:
+        enabled
+        ++ [
+          all.curl
+          all.dom
+          all.gd
+          all.imagick
+          all.mbstring
+          all.pdo
+          all.simplexml
+        ]
+        ++ lib.optionals withPostgreSQL [
+          all.pdo_pgsql
+          all.pgsql
+        ]
+        ++ lib.optionals withMariaDB [
+          all.mysqli
+          all.mysqlnd
+          all.pdo_mysql
+        ]
+      );
+    }
+    // lib.optionalAttrs (phpCfg != null) {
+      extraConfig = phpCfg;
+    }
+  );
 
   passthru = {
     tests = { inherit (nixosTests) movim; };

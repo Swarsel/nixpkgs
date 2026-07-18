@@ -1,28 +1,28 @@
 {
+  lib,
+  stdenv,
+  fetchFromGitHub,
   at-spi2-core,
   cmake,
   dbus,
   dbus-glib,
   docbook_xsl,
-  fetchFromGitHub,
   glib,
   gtk3,
   harfbuzz,
-  lib,
-  libxdmcp,
-  libxtst,
   libepoxy,
   libpthread-stubs,
   libselinux,
   libsepol,
   libtasn1,
+  libxdmcp,
   libxkbcommon,
   libxslt,
+  libxtst,
   nixosTests,
   p11-kit,
   pcre2,
   pkg-config,
-  stdenv,
   util-linuxMinimal,
   vte,
   wrapGAppsHook3,
@@ -73,8 +73,8 @@ stdenv.mkDerivation (finalAttrs: {
   passthru.tests.test = nixosTests.terminal-emulators.roxterm;
 
   meta = {
-    homepage = "https://github.com/realh/roxterm";
     description = "Highly configurable terminal emulator";
+
     longDescription = ''
       ROXTerm is a terminal emulator intended to provide similar features to
       gnome-terminal, based on the same VTE library. It was originally designed
@@ -89,14 +89,18 @@ stdenv.mkDerivation (finalAttrs: {
       but can also be installed in a more conventional manner for use in other
       desktop environments.
     '';
+
+    homepage = "https://github.com/realh/roxterm";
     changelog = "https://github.com/realh/roxterm/blob/${finalAttrs.src.rev}/debian/changelog";
+
     license = with lib.licenses; [
       gpl2Plus
       gpl3Plus
       lgpl3Plus
     ];
-    mainProgram = "roxterm";
+
     maintainers = [ ];
     platforms = lib.platforms.linux;
+    mainProgram = "roxterm";
   };
 })

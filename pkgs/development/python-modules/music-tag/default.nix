@@ -9,7 +9,6 @@
 buildPythonPackage rec {
   pname = "music-tag";
   version = "0.4.3";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
@@ -17,14 +16,11 @@ buildPythonPackage rec {
   };
 
   propagatedBuildInputs = [ mutagen ];
-
-  checkInputs = [ pytestCheckHook ];
-
-  enabledTestPaths = [ "test" ];
-
   # Tests fail: ModuleNotFoundError: No module named '_test_common'
   doCheck = false;
-
+  checkInputs = [ pytestCheckHook ];
+  enabledTestPaths = [ "test" ];
+  format = "setuptools";
   pythonImportsCheck = [ "music_tag" ];
 
   meta = {

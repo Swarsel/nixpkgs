@@ -2,17 +2,17 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  fetchpatch2,
-  cmake,
-  fuse,
-  zlib,
   bzip2,
-  openssl,
-  libxml2,
+  cmake,
+  fetchpatch2,
+  fuse,
   icu,
-  lzfse,
   libiconv,
+  libxml2,
+  lzfse,
   nixosTests,
+  openssl,
+  zlib,
 }:
 
 stdenv.mkDerivation {
@@ -29,13 +29,14 @@ stdenv.mkDerivation {
   patches = [
     # Fix compilation
     (fetchpatch2 {
+      hash = "sha256-i1lisEiwYm4IxgKmBYnjscvW6ObT7XGLVbjW2i5yXV4=";
       name = "cmake-cxx-standard-17.patch";
       url = "https://github.com/darlinghq/darling-dmg/pull/105/commits/b7c620f76a5f76748b3d14dd2a58e77f8b6ed0c0.patch";
-      hash = "sha256-i1lisEiwYm4IxgKmBYnjscvW6ObT7XGLVbjW2i5yXV4=";
     })
   ];
 
   nativeBuildInputs = [ cmake ];
+
   buildInputs = [
     fuse
     openssl
@@ -57,11 +58,11 @@ stdenv.mkDerivation {
   };
 
   meta = {
-    homepage = "https://www.darlinghq.org/";
     description = "FUSE module for .dmg files (containing an HFS+ filesystem)";
-    mainProgram = "darling-dmg";
-    platforms = lib.platforms.unix;
+    homepage = "https://www.darlinghq.org/";
     license = lib.licenses.gpl3Only;
     maintainers = with lib.maintainers; [ Luflosi ];
+    platforms = lib.platforms.unix;
+    mainProgram = "darling-dmg";
   };
 }

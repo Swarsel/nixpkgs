@@ -2,40 +2,36 @@
   lib,
   stdenv,
   fetchurl,
-  cmake,
-  ninja,
-  p7zip,
-  pkg-config,
   asciidoctor,
+  cmake,
+  curl,
+  freetype,
   gettext,
-
-  sdl3,
+  gitUpdater,
+  harfbuzz,
+  libopus,
+  libpng,
+  libsodium,
   libtheora,
   libvorbis,
-  libopus,
+  libzip,
+  miniupnpc,
+  ninja,
+  nixosTests,
   openal,
   openal-soft,
+  p7zip,
   physfs,
-  miniupnpc,
-  libsodium,
-  curl,
-  libpng,
-  freetype,
-  harfbuzz,
+  pkg-config,
+  protobuf,
+  sdl3,
+  shaderc,
   sqlite,
-  which,
+  testers,
   vulkan-headers,
   vulkan-loader,
-  shaderc,
-  protobuf,
-  libzip,
-
-  testers,
   warzone2100,
-  nixosTests,
-
-  gitUpdater,
-
+  which,
   withVideos ? true,
 }:
 
@@ -43,8 +39,8 @@ let
   pname = "warzone2100";
 
   sequences = fetchurl {
-    url = "mirror://sourceforge/warzone2100/warzone2100/Videos/high-quality-en/sequences.wz";
     hash = "sha256-kP9VLKSnDiU34CfiLFCY6k7RvBG7f8lBOMbJQac9Kfo=";
+    url = "mirror://sourceforge/warzone2100/warzone2100/Videos/high-quality-en/sequences.wz";
   };
 in
 
@@ -56,6 +52,25 @@ stdenv.mkDerivation (finalAttrs: {
     url = "mirror://sourceforge/project/warzone2100/releases/${finalAttrs.version}/warzone2100_src.tar.xz";
     hash = "sha256-le5NW4hoDqGxzyMLZ+qEAo4IokWLhGBayff7nrl8Tjc=";
   };
+
+  postPatch = ''
+    substituteInPlace lib/exceptionhandler/dumpinfo.cpp \
+                      --replace '"which "' '"${which}/bin/which "'
+    substituteInPlace lib/exceptionhandler/exceptionhandler.cpp \
+                      --replace "which %s" "${which}/bin/which %s"
+    substituteInPlace CMakeLists.txt \
+      --replace-fail "CONFIGURE_WZ_COMPILER_WARNINGS()" ""
+  '';
+
+  nativeBuildInputs = [
+    pkg-config
+    cmake
+    ninja
+    p7zip
+    asciidoctor
+    gettext
+    shaderc
+  ];
 
   buildInputs = [
     sdl3
@@ -80,25 +95,6 @@ stdenv.mkDerivation (finalAttrs: {
     vulkan-loader
   ];
 
-  nativeBuildInputs = [
-    pkg-config
-    cmake
-    ninja
-    p7zip
-    asciidoctor
-    gettext
-    shaderc
-  ];
-
-  postPatch = ''
-    substituteInPlace lib/exceptionhandler/dumpinfo.cpp \
-                      --replace '"which "' '"${which}/bin/which "'
-    substituteInPlace lib/exceptionhandler/exceptionhandler.cpp \
-                      --replace "which %s" "${which}/bin/which %s"
-    substituteInPlace CMakeLists.txt \
-      --replace-fail "CONFIGURE_WZ_COMPILER_WARNINGS()" ""
-  '';
-
   cmakeFlags = [
     "-DWZ_DISTRIBUTOR=NixOS"
     # The cmake builder automatically sets CMAKE_INSTALL_BINDIR to an absolute
@@ -120,10 +116,11 @@ stdenv.mkDerivation (finalAttrs: {
 
   passthru.tests = {
     version = testers.testVersion {
-      package = warzone2100;
       # The command always exits with code 1
       command = "(warzone2100 --version || [ $? -eq 1 ])";
+      package = warzone2100;
     };
+
     nixosTest = nixosTests.warzone2100;
   };
 
@@ -133,7 +130,7 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Free RTS game, originally developed by Pumpkin Studios";
-    mainProgram = "warzone2100";
+
     longDescription = ''
         Warzone 2100 is an open source real-time strategy and real-time tactics
       hybrid computer game, originally developed by Pumpkin Studios and
@@ -145,12 +142,16 @@ stdenv.mkDerivation (finalAttrs: {
       technologies, combined with the unit design system, allows for a wide
       variety of possible units and tactics.
     '';
+
     homepage = "https://wz2100.net";
     license = lib.licenses.gpl2Plus;
+
     maintainers = with lib.maintainers; [
       fgaz
     ];
+
     platforms = lib.platforms.all;
+    mainProgram = "warzone2100";
     # configure_mac.cmake tries to download stuff
     # https://github.com/Warzone2100/warzone2100/blob/master/macosx/README.md
     broken = stdenv.hostPlatform.isDarwin;

@@ -2,12 +2,12 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  fetchpatch,
   autoreconfHook,
-  pkg-config,
-  glib,
   expat,
+  fetchpatch,
+  glib,
   installShellFiles,
+  pkg-config,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -25,8 +25,8 @@ stdenv.mkDerivation (finalAttrs: {
     # Fix building with glib-2.82
     # https://github.com/bpeel/prevodb/issues/8
     (fetchpatch {
-      url = "https://github.com/bpeel/prevodb/commit/38474b47d0ab8ef5451997b87493f0677b8b8358.patch";
       hash = "sha256-mGHwnN4TT3jiandaN+6uNttKMg0OjV9yKLSuVn3F0CA=";
+      url = "https://github.com/bpeel/prevodb/commit/38474b47d0ab8ef5451997b87493f0677b8b8358.patch";
     })
   ];
 
@@ -35,6 +35,7 @@ stdenv.mkDerivation (finalAttrs: {
     pkg-config
     installShellFiles
   ];
+
   buildInputs = [
     glib
     expat
@@ -46,6 +47,7 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "CLI tools for the offline version of the Esperanto dictionary Reta Vortaro";
+
     longDescription = ''
       PReVo is the "portable" ReVo, i.e., the offline version
       of the Esperanto dictionary Reta Vortaro.
@@ -54,12 +56,15 @@ stdenv.mkDerivation (finalAttrs: {
       ReVo database, as well as the command line tool revodb to create such a
       database for this application or for the Android app of the same name.
     '';
+
     homepage = "https://github.com/bpeel/prevodb";
     license = lib.licenses.gpl2Only;
-    mainProgram = "prevo";
+
     maintainers = with lib.maintainers; [
       das-g
     ];
+
     platforms = lib.platforms.unix;
+    mainProgram = "prevo";
   };
 })

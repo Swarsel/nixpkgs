@@ -1,31 +1,20 @@
 {
   lib,
   stdenv,
-  makeWrapper,
   fetchFromGitHub,
+  beamPackages,
+  bun,
+  makeWrapper,
+  nix-update-script,
+  nixosTests,
   versionCheckHook,
   writableTmpDirAsHomeHook,
-
-  bun,
-  beamPackages,
-
-  nixosTests,
-  nix-update-script,
 }:
 
 beamPackages.mixRelease rec {
+  inherit (beamPackages) elixir;
   pname = "livebook";
   version = "0.19.8";
-
-  inherit (beamPackages) elixir;
-
-  buildInputs = [ beamPackages.erlang ];
-
-  nativeBuildInputs = [
-    bun
-    makeWrapper
-    writableTmpDirAsHomeHook
-  ];
 
   src = fetchFromGitHub {
     owner = "livebook-dev";
@@ -34,52 +23,20 @@ beamPackages.mixRelease rec {
     hash = "sha256-cIFnGUJ8yRnEBL9eu4Jpg1sMlTV1t/ybhHusLSFdZEY=";
   };
 
-  mixFodDeps = beamPackages.fetchMixDeps {
-    pname = "mix-deps-${pname}";
-    inherit src version;
-    hash = "sha256-T74RmUORPdNibxdl+bRGyYyOdnKs1TyjtdutLtfLNLM=";
-  };
-
-  node_modules = stdenv.mkDerivation {
-    pname = "${pname}-node_modules";
-    inherit src version;
-    nativeBuildInputs = [
-      bun
-      writableTmpDirAsHomeHook
-    ];
-    dontBuild = true;
-    dontFixup = true;
-    installPhase = ''
-      mkdir -p deps/phoenix deps/phoenix_html deps/phoenix_live_view
-      echo '{"name": "phoenix", "version": "1.0.0"}' > deps/phoenix/package.json
-      echo '{"name": "phoenix_html", "version": "1.0.0"}' > deps/phoenix_html/package.json
-      echo '{"name": "phoenix_live_view", "version": "1.0.0"}' > deps/phoenix_live_view/package.json
-      cd assets
-      bun install \
-        --no-cache \
-        --backend=copyfile \
-        --cpu="*" \
-        --frozen-lockfile \
-        --ignore-scripts \
-        --no-progress \
-        --os="*"
-      mkdir -p $out
-      cp -r node_modules $out/
-      rm -rf $out/node_modules/phoenix
-      rm -rf $out/node_modules/phoenix_html
-      rm -rf $out/node_modules/phoenix_live_view
-    '';
-    outputHashMode = "recursive";
-    outputHashAlgo = "sha256";
-    outputHash = "sha256-XtEkedj5QJh1tveKKd5sh4xcC6Gol1DUweQKEw1jLgU=";
-  };
-
   postPatch = ''
     substituteInPlace lib/mix/tasks/compile.ensure_livebook_priv.ex \
       --replace-fail 'Mix.Task.run("bun.install", ~w"--if-missing")' ':ok' \
       --replace-fail 'Mix.Task.run("bun", ~w"assets install")' ':ok' \
       --replace-fail 'Mix.Task.run("bun", ~w" assets run build")' ':ok'
   '';
+
+  nativeBuildInputs = [
+    bun
+    makeWrapper
+    writableTmpDirAsHomeHook
+  ];
+
+  buildInputs = [ beamPackages.erlang ];
 
   preBuild = ''
     cp -r ${node_modules}/node_modules assets/node_modules
@@ -108,31 +65,80 @@ beamPackages.mixRelease rec {
         --prefix PATH : ${path}
     '';
 
+  doInstallCheck = true;
+
   nativeInstallCheckInputs = [
     versionCheckHook
     writableTmpDirAsHomeHook
   ];
-  versionCheckProgramArg = [ "version" ];
+
+  mixFodDeps = beamPackages.fetchMixDeps {
+    inherit src version;
+    pname = "mix-deps-${pname}";
+    hash = "sha256-T74RmUORPdNibxdl+bRGyYyOdnKs1TyjtdutLtfLNLM=";
+  };
+
+  node_modules = stdenv.mkDerivation {
+    inherit src version;
+    pname = "${pname}-node_modules";
+
+    nativeBuildInputs = [
+      bun
+      writableTmpDirAsHomeHook
+    ];
+
+    installPhase = ''
+      mkdir -p deps/phoenix deps/phoenix_html deps/phoenix_live_view
+      echo '{"name": "phoenix", "version": "1.0.0"}' > deps/phoenix/package.json
+      echo '{"name": "phoenix_html", "version": "1.0.0"}' > deps/phoenix_html/package.json
+      echo '{"name": "phoenix_live_view", "version": "1.0.0"}' > deps/phoenix_live_view/package.json
+      cd assets
+      bun install \
+        --no-cache \
+        --backend=copyfile \
+        --cpu="*" \
+        --frozen-lockfile \
+        --ignore-scripts \
+        --no-progress \
+        --os="*"
+      mkdir -p $out
+      cp -r node_modules $out/
+      rm -rf $out/node_modules/phoenix
+      rm -rf $out/node_modules/phoenix_html
+      rm -rf $out/node_modules/phoenix_live_view
+    '';
+
+    dontBuild = true;
+    dontFixup = true;
+    outputHash = "sha256-XtEkedj5QJh1tveKKd5sh4xcC6Gol1DUweQKEw1jLgU=";
+    outputHashAlgo = "sha256";
+    outputHashMode = "recursive";
+  };
+
   versionCheckKeepEnvironment = [ "HOME" ];
-  doInstallCheck = true;
+  versionCheckProgramArg = [ "version" ];
 
   passthru = {
-    updateScript = nix-update-script { };
     tests = {
       livebook-service = nixosTests.livebook-service;
     };
+
+    updateScript = nix-update-script { };
   };
 
   meta = {
-    license = lib.licenses.asl20;
-    homepage = "https://livebook.dev/";
     description = "Automate code & data workflows with interactive Elixir notebooks";
-    mainProgram = "livebook";
+    homepage = "https://livebook.dev/";
+    license = lib.licenses.asl20;
+
     maintainers = with lib.maintainers; [
       munksgaard
       scvalex
     ];
+
     platforms = lib.platforms.unix;
+    mainProgram = "livebook";
+
     teams = [
       lib.teams.beam
       lib.teams.ngi

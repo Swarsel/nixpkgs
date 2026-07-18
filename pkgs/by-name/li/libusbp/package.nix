@@ -2,9 +2,9 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  udev,
   cmake,
   pkg-config,
+  udev,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -33,14 +33,16 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   meta = {
-    homepage = "https://github.com/pololu/libusbp";
-    changelog = "https://github.com/pololu/libusbp/blob/${finalAttrs.src.rev}/README.md#version-history";
     description = "Pololu USB Library (also known as libusbp)";
+
     longDescription = ''
       libusbp is a cross-platform C library for accessing USB devices
     '';
-    platforms = lib.platforms.all;
+
+    homepage = "https://github.com/pololu/libusbp";
+    changelog = "https://github.com/pololu/libusbp/blob/${finalAttrs.src.rev}/README.md#version-history";
     license = lib.licenses.cc-by-sa-30;
     maintainers = with lib.maintainers; [ bzizou ];
+    platforms = lib.platforms.all;
   };
 })

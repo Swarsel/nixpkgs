@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   pretix-plugin-build,
   setuptools,
 }:
@@ -9,8 +9,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "pretix-fontpack-free";
   version = "1.11.1";
-  pyproject = true;
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "pretix";
@@ -19,10 +17,14 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-eeU8awLf/PSsLuAOobZhXVyQ3KM7jOEIz1ZLt4eDxzQ=";
   };
 
+  __structuredAttrs = true;
+
   build-system = [
     pretix-plugin-build
     setuptools
   ];
+
+  pyproject = true;
 
   pythonImportsCheck = [
     "pretix_fontpackfree"

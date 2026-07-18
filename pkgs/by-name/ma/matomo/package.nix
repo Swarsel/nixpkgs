@@ -3,9 +3,9 @@
   stdenv,
   fetchurl,
   makeWrapper,
-  php,
-  nixosTests,
   nix-update-script,
+  nixosTests,
+  php,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -16,8 +16,6 @@ stdenv.mkDerivation (finalAttrs: {
     url = "https://builds.matomo.org/matomo-${finalAttrs.version}.tar.gz";
     hash = "sha256-i7nRQRY2gAzMQmRNGaksq4B516MsQuXQZbzlEUWEsQw=";
   };
-
-  nativeBuildInputs = [ makeWrapper ];
 
   patches = [
     # This changes the default value of the database server field
@@ -38,6 +36,8 @@ stdenv.mkDerivation (finalAttrs: {
   postPatch = ''
     cp ${./bootstrap.php} bootstrap.php
   '';
+
+  nativeBuildInputs = [ makeWrapper ];
 
   # TODO: future versions might rename the PIWIK_… variables to MATOMO_…
   # TODO: Move more unnecessary files from share/, especially using PIWIK_INCLUDE_PATH.
@@ -60,18 +60,6 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
-  filesToFix = [
-    "misc/composer/build-xhprof.sh"
-    "misc/composer/clean-xhprof.sh"
-    "misc/cron/archive.sh"
-    "plugins/GeoIp2/config/config.php"
-    "plugins/Installation/FormDatabaseSetup.php"
-    "vendor/pear/archive_tar/sync-php4"
-    "vendor/szymach/c-pchart/coverage.sh"
-    "vendor/matomo/matomo-php-tracker/run_tests.sh"
-    "vendor/twig/twig/drupal_test.sh"
-  ];
-
   # This fixes the consistency check in the admin interface
   #
   # The filesToFix list may contain files that are exclusive to only one of the versions we build
@@ -90,7 +78,23 @@ stdenv.mkDerivation (finalAttrs: {
     popd > /dev/null
   '';
 
+  filesToFix = [
+    "misc/composer/build-xhprof.sh"
+    "misc/composer/clean-xhprof.sh"
+    "misc/cron/archive.sh"
+    "plugins/GeoIp2/config/config.php"
+    "plugins/Installation/FormDatabaseSetup.php"
+    "vendor/pear/archive_tar/sync-php4"
+    "vendor/szymach/c-pchart/coverage.sh"
+    "vendor/matomo/matomo-php-tracker/run_tests.sh"
+    "vendor/twig/twig/drupal_test.sh"
+  ];
+
   passthru = {
+    tests = lib.optionalAttrs stdenv.hostPlatform.isLinux {
+      inherit (nixosTests) matomo;
+    };
+
     updateScript = nix-update-script {
       extraArgs = [
         "--url"
@@ -99,18 +103,14 @@ stdenv.mkDerivation (finalAttrs: {
         "^(\\d+\\.\\d+\\.\\d+)$"
       ];
     };
-    tests = lib.optionalAttrs stdenv.hostPlatform.isLinux {
-      inherit (nixosTests) matomo;
-    };
   };
 
   meta = {
     description = "Real-time web analytics application";
-    mainProgram = "matomo-console";
-    license = lib.licenses.gpl3Plus;
     homepage = "https://matomo.org/";
     changelog = "https://github.com/matomo-org/matomo/releases/tag/${finalAttrs.version}";
-    platforms = lib.platforms.all;
+    license = lib.licenses.gpl3Plus;
+
     maintainers = with lib.maintainers; [
       florianjacob
       sebbel
@@ -120,5 +120,8 @@ stdenv.mkDerivation (finalAttrs: {
       leona
       osnyx
     ];
+
+    platforms = lib.platforms.all;
+    mainProgram = "matomo-console";
   };
 })

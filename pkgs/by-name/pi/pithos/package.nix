@@ -1,20 +1,20 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
+  adwaita-icon-theme,
+  appstream-glib,
+  glib,
+  gobject-introspection,
+  gst_all_1,
+  gtk3,
+  libnotify,
+  libsecret,
   meson,
   ninja,
   pkg-config,
-  appstream-glib,
-  glib,
-  wrapGAppsHook3,
   python3Packages,
-  gtk3,
-  adwaita-icon-theme,
-  gobject-introspection,
-  libnotify,
-  libsecret,
-  gst_all_1,
+  wrapGAppsHook3,
 }:
 
 python3Packages.buildPythonApplication (finalAttrs: {
@@ -27,8 +27,6 @@ python3Packages.buildPythonApplication (finalAttrs: {
     tag = finalAttrs.version;
     hash = "sha256-3j6IoMi30BQ8WHK4BxbsW+/3XZx7rBFd47EBENa2GiQ=";
   };
-
-  pyproject = false;
 
   postPatch = ''
     chmod +x meson_post_install.py
@@ -66,12 +64,14 @@ python3Packages.buildPythonApplication (finalAttrs: {
     pylast
   ]);
 
+  pyproject = false;
+
   meta = {
-    broken = stdenv.hostPlatform.isDarwin;
     description = "Pandora Internet Radio player for GNOME";
-    mainProgram = "pithos";
     homepage = "https://pithos.github.io/";
     license = lib.licenses.gpl3;
     maintainers = with lib.maintainers; [ obadz ];
+    mainProgram = "pithos";
+    broken = stdenv.hostPlatform.isDarwin;
   };
 })

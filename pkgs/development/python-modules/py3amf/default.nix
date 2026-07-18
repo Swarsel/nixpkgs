@@ -1,15 +1,14 @@
 {
   lib,
-  buildPythonPackage,
-  setuptools,
   fetchFromGitHub,
+  buildPythonPackage,
   defusedxml,
+  setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "py3amf";
   version = "0.8.11";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "StdCarrot";
@@ -25,6 +24,8 @@ buildPythonPackage rec {
   dependencies = [
     defusedxml
   ];
+
+  pyproject = true;
 
   pythonImportsCheck = [
     "pyamf"

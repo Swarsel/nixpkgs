@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   lesscpy,
   matplotlib,
   notebook,
@@ -11,7 +11,6 @@
 buildPythonPackage rec {
   pname = "jupyter-themes";
   version = "0.20.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "dunovank";
@@ -28,6 +27,7 @@ buildPythonPackage rec {
     notebook
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "jupyterthemes" ];
 
   meta = {

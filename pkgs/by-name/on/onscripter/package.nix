@@ -1,11 +1,12 @@
 {
   lib,
+  stdenv,
+  fetchFromGitHub,
   SDL,
   SDL_image,
   SDL_mixer,
   SDL_ttf,
   bzip2,
-  fetchFromGitHub,
   fontconfig,
   freetype,
   libjpeg,
@@ -15,7 +16,6 @@
   lua5_1,
   runCommand,
   smpeg,
-  stdenv,
 }:
 
 let
@@ -46,6 +46,8 @@ stdenv.mkDerivation (finalAttrs: {
     # QuickTime framework, resulting in a build failure.
     ./fix-darwin-build.patch
   ];
+
+  strictDeps = true;
 
   nativeBuildInputs = [
     # Take cross compilation into account
@@ -84,14 +86,12 @@ stdenv.mkDerivation (finalAttrs: {
   # The build script for BSDs also fall under Makefile.Linux
   makefile = if isDarwin then "Makefile.MacOSX" else "Makefile.Linux";
 
-  strictDeps = true;
-
   meta = {
-    homepage = "https://ogapee.github.io/www/onscripter_en.html";
     description = "Japanese visual novel scripting engine";
+    homepage = "https://ogapee.github.io/www/onscripter_en.html";
     license = lib.licenses.gpl2Plus;
-    mainProgram = "onscripter";
     maintainers = with lib.maintainers; [ midchildan ];
     platforms = lib.platforms.unix;
+    mainProgram = "onscripter";
   };
 })

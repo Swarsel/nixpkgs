@@ -1,7 +1,7 @@
 {
-  buildGoModule,
-  fetchFromGitHub,
   lib,
+  fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule {
@@ -16,7 +16,6 @@ buildGoModule {
   };
 
   vendorHash = "sha256-Jl++FvKyqz5WFa/Eoly+UnFsoC9Qwdaizhkq6LyJ+XQ=";
-
   # No upstream tests
   doCheck = false;
 

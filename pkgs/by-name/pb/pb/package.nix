@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule (finalAttrs: {
@@ -28,9 +28,9 @@ buildGoModule (finalAttrs: {
   # Version test has been removed since it requires network access.
 
   meta = {
+    description = "CLI client for Parseable server";
     homepage = "https://github.com/parseablehq/pb";
     changelog = "https://github.com/parseablehq/pb/releases/tag/v${finalAttrs.version}";
-    description = "CLI client for Parseable server";
     license = lib.licenses.agpl3Plus;
     maintainers = with lib.maintainers; [ aaronjheng ];
     mainProgram = "pb";

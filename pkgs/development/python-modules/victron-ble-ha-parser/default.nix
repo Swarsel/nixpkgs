@@ -1,8 +1,8 @@
 {
   lib,
+  fetchFromGitHub,
   bluetooth-sensor-state-data,
   buildPythonPackage,
-  fetchFromGitHub,
   sensor-state-data,
   setuptools,
   victron-ble,
@@ -11,7 +11,6 @@
 buildPythonPackage rec {
   pname = "victron-ble-ha-parser";
   version = "0.7.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "rajlaud";
@@ -20,6 +19,8 @@ buildPythonPackage rec {
     hash = "sha256-WbJ0OQHTWigszOQ03427Nk6xfKqTHcPQ63tcSvG3x/k=";
   };
 
+  # upstream has no tests
+  doCheck = false;
   build-system = [ setuptools ];
 
   dependencies = [
@@ -28,9 +29,7 @@ buildPythonPackage rec {
     victron-ble
   ];
 
-  # upstream has no tests
-  doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "victron_ble_ha_parser" ];
 
   meta = {

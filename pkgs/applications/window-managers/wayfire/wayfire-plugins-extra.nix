@@ -1,21 +1,21 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
-  meson,
-  ninja,
-  pkg-config,
-  wayfire,
-  wayland-scanner,
-  wf-config,
   boost,
+  gtkmm3,
   libdrm,
   libevdev,
   libinput,
-  libxkbcommon,
-  vulkan-headers,
   libxcb-wm,
-  gtkmm3,
+  libxkbcommon,
+  meson,
+  ninja,
+  pkg-config,
+  vulkan-headers,
+  wayfire,
+  wayland-scanner,
+  wf-config,
   withFiltersPlugin ? true,
   withFocusRequestPlugin ? true,
   withPixdecorPlugin ? true,
@@ -66,10 +66,10 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   meta = {
-    homepage = "https://github.com/WayfireWM/wayfire-plugins-extra";
+    inherit (wayfire.meta) platforms;
     description = "Additional plugins for Wayfire";
+    homepage = "https://github.com/WayfireWM/wayfire-plugins-extra";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ wineee ];
-    inherit (wayfire.meta) platforms;
   };
 })

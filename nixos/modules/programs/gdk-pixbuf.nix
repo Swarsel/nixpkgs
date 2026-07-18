@@ -20,9 +20,9 @@ in
 
   options = {
     programs.gdk-pixbuf.modulePackages = lib.mkOption {
-      type = lib.types.listOf lib.types.package;
       default = [ ];
       description = "Packages providing GDK-Pixbuf modules, for cache generation.";
+      type = lib.types.listOf lib.types.package;
     };
   };
 

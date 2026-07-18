@@ -1,23 +1,27 @@
 {
   lib,
-  buildPythonPackage,
-  unbound,
-  openssl,
-  expat,
-  libevent,
-  bison,
-  flex,
-  swig,
-  python,
   stdenv,
+  bison,
+  buildPythonPackage,
+  expat,
+  flex,
+  libevent,
+  openssl,
+  python,
+  swig,
+  unbound,
 }:
 
 buildPythonPackage rec {
-  pname = "pyunbound";
   inherit (unbound) version src;
-  pyproject = false; # Built with configure script
-
+  pname = "pyunbound";
   patches = unbound.patches or null;
+
+  postPatch = ''
+    substituteInPlace Makefile.in \
+      --replace "\$(DESTDIR)\$(PYTHON_SITE_PKG)" "$out/${python.sitePackages}" \
+      --replace "\$(LIBTOOL) --mode=install cp _unbound.la" "cp _unbound.la"
+  '';
 
   nativeBuildInputs = [
     bison
@@ -31,14 +35,6 @@ buildPythonPackage rec {
     libevent
     python
   ];
-
-  postPatch = ''
-    substituteInPlace Makefile.in \
-      --replace "\$(DESTDIR)\$(PYTHON_SITE_PKG)" "$out/${python.sitePackages}" \
-      --replace "\$(LIBTOOL) --mode=install cp _unbound.la" "cp _unbound.la"
-  '';
-
-  preConfigure = "export PYTHON_VERSION=${python.pythonVersion}";
 
   configureFlags = [
     "--with-ssl=${openssl.dev}"
@@ -54,18 +50,14 @@ buildPythonPackage rec {
     "PREFIX="
   ];
 
+  preConfigure = "export PYTHON_VERSION=${python.pythonVersion}";
+
   preInstall = ''
     mkdir -p $out/${python.sitePackages} $out/etc/${pname}
     cp .libs/_unbound.so .libs/libunbound.so* $out/${python.sitePackages}
     substituteInPlace _unbound.la \
       --replace "-L.libs $PWD/libunbound.la" "-L$out/${python.sitePackages}"
   '';
-
-  installFlags = [
-    "configfile=\${out}/etc/unbound/unbound.conf"
-    "pyunbound-install"
-    "lib"
-  ];
 
   # All we want is the Unbound Python module
   postInstall = ''
@@ -81,10 +73,18 @@ buildPythonPackage rec {
     patchelf --replace-needed libunbound.so.8 $out/${python.sitePackages}/libunbound.so.8 $out/${python.sitePackages}/_unbound.so
   '';
 
+  installFlags = [
+    "configfile=\${out}/etc/unbound/unbound.conf"
+    "pyunbound-install"
+    "lib"
+  ];
+
+  pyproject = false; # Built with configure script
+
   meta = {
     description = "Python library for Unbound, the validating, recursive, and caching DNS resolver";
-    license = lib.licenses.bsd3;
     homepage = "https://www.unbound.net";
+    license = lib.licenses.bsd3;
     platforms = lib.platforms.unix;
   };
 }

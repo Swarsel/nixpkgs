@@ -1,7 +1,7 @@
 {
   config,
-  pkgs,
   lib,
+  pkgs,
   ...
 }:
 let
@@ -35,8 +35,8 @@ in
 
     settings = mkOption {
       default = { };
-      type = submodule { freeformType = format.type; };
       description = "Configuration for Watt. Options at https://github.com/notaShelf/watt";
+      type = submodule { freeformType = format.type; };
     };
   };
 
@@ -46,25 +46,24 @@ in
       message = "You have set services.${service}.enable = true; which conflicts with Watt.";
     }) conflictingServices;
 
-    environment.systemPackages = [ cfg.package ];
-
     # This is necessary for the Watt CLI. The environment variable
     # passed to the systemd service will take priority in read order.
     environment.etc."watt.toml".source = cfgFile;
-
+    environment.systemPackages = [ cfg.package ];
     services.dbus.packages = [ cfg.package ];
 
     systemd.services.watt = {
-      wantedBy = [ "multi-user.target" ];
       conflicts = map (service: "${service}.service") conflictingServices;
+
       serviceConfig = {
-        WorkingDirectory = "";
         ExecStart = getExe cfg.package;
         Restart = "on-failure";
-
         RuntimeDirectory = "watt";
         RuntimeDirectoryMode = "0755";
+        WorkingDirectory = "";
       };
+
+      wantedBy = [ "multi-user.target" ];
     };
 
   };

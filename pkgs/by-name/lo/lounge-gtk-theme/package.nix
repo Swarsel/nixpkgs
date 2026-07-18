@@ -2,14 +2,14 @@
   lib,
   stdenv,
   fetchFromGitHub,
+  gdk-pixbuf,
+  gnome-shell,
+  gtk-engine-murrine,
+  gtk3,
+  librsvg,
   meson,
   ninja,
   sassc,
-  gtk3,
-  gnome-shell,
-  gdk-pixbuf,
-  librsvg,
-  gtk-engine-murrine,
 }:
 
 stdenv.mkDerivation rec {
@@ -35,8 +35,6 @@ stdenv.mkDerivation rec {
     librsvg
   ];
 
-  propagatedUserEnvPkgs = [ gtk-engine-murrine ];
-
   mesonFlags = [
     "-D gnome_version=${lib.versions.majorMinor gnome-shell.version}"
   ];
@@ -45,11 +43,13 @@ stdenv.mkDerivation rec {
     gtk-update-icon-cache "$out"/share/icons/Lounge-aux;
   '';
 
+  propagatedUserEnvPkgs = [ gtk-engine-murrine ];
+
   meta = {
     description = "Simple and clean GTK theme with vintage scrollbars, inspired by Absolute, based on Adwaita";
     homepage = "https://github.com/monday15/lounge-gtk-theme";
     license = lib.licenses.gpl3Plus;
-    platforms = lib.platforms.unix;
     maintainers = [ lib.maintainers.romildo ];
+    platforms = lib.platforms.unix;
   };
 }

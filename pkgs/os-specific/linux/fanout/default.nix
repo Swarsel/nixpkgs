@@ -19,23 +19,23 @@ stdenv.mkDerivation {
     hash = "sha256-Q19c88KDFu0A6MejZgKYei9J2693EjRkKtR9hcRcHa0=";
   };
 
-  preBuild = ''
-    substituteInPlace Makefile --replace "modules_install" "INSTALL_MOD_PATH=$out modules_install"
-  '';
-
   patches = [
     ./remove_auto_mknod.patch
-  ];
-
-  hardeningDisable = [
-    "format"
-    "pic"
   ];
 
   nativeBuildInputs = [ kmod ] ++ kernel.moduleBuildDependencies;
 
   makeFlags = kernelModuleMakeFlags ++ [
     "KERNELDIR=${kernel.dev}/lib/modules/${kernel.modDirVersion}/build"
+  ];
+
+  preBuild = ''
+    substituteInPlace Makefile --replace "modules_install" "INSTALL_MOD_PATH=$out modules_install"
+  '';
+
+  hardeningDisable = [
+    "format"
+    "pic"
   ];
 
   passthru.tests = { inherit (nixosTests) fanout; };

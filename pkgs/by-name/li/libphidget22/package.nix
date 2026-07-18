@@ -10,19 +10,17 @@ let
   version = "1.23.20250925";
 in
 stdenv.mkDerivation {
-  pname = "libphidget22";
   inherit version;
+  pname = "libphidget22";
 
   src = fetchurl {
     url = "https://www.phidgets.com/downloads/phidget22/libraries/linux/libphidget22/libphidget22-${version}.tar.gz";
     hash = "sha256-/2OgjiuoK3+gJ95tSk809OfMABUtKPN9bb4pVH447Ik=";
   };
 
-  nativeBuildInputs = [ automake ];
-
-  buildInputs = [ libusb1 ];
-
   strictDeps = true;
+  nativeBuildInputs = [ automake ];
+  buildInputs = [ libusb1 ];
 
   meta = {
     description = "Phidget Inc sensor boards and electronics Library";

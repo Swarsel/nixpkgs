@@ -1,9 +1,9 @@
 {
   lib,
-  buildPythonPackage,
-  rustPlatform,
   fetchFromGitHub,
+  buildPythonPackage,
   pytestCheckHook,
+  rustPlatform,
 }:
 let
   pname = "netifaces2";
@@ -18,12 +18,6 @@ let
 in
 buildPythonPackage {
   inherit pname version src;
-  pyproject = true;
-
-  cargoDeps = rustPlatform.fetchCargoVendor {
-    inherit pname version src;
-    hash = "sha256-n8IDl1msu2wn6YSsRJDy48M8qo96cXD8n+2HeU2WspE=";
-  };
 
   nativeBuildInputs = with rustPlatform; [
     cargoSetupHook
@@ -31,13 +25,20 @@ buildPythonPackage {
   ];
 
   nativeCheckInputs = [ pytestCheckHook ];
+
+  cargoDeps = rustPlatform.fetchCargoVendor {
+    inherit pname version src;
+    hash = "sha256-n8IDl1msu2wn6YSsRJDy48M8qo96cXD8n+2HeU2WspE=";
+  };
+
+  pyproject = true;
   pythonImportsCheck = [ "netifaces" ];
 
   meta = {
     description = "Portable network interface information";
     homepage = "https://github.com/SamuelYvon/netifaces-2";
     license = with lib.licenses; [ mit ];
-    platforms = with lib.platforms; unix ++ windows;
     maintainers = with lib.maintainers; [ pluiedev ];
+    platforms = with lib.platforms; unix ++ windows;
   };
 }

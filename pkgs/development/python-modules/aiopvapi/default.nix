@@ -1,8 +1,8 @@
 {
   lib,
+  fetchFromGitHub,
   aiohttp,
   buildPythonPackage,
-  fetchFromGitHub,
   pytestCheckHook,
   setuptools,
 }:
@@ -10,7 +10,6 @@
 buildPythonPackage rec {
   pname = "aiopvapi";
   version = "3.3.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "sander76";
@@ -24,12 +23,10 @@ buildPythonPackage rec {
     ./fix-tests.patch
   ];
 
-  build-system = [ setuptools ];
-
-  dependencies = [ aiohttp ];
-
   nativeCheckInputs = [ pytestCheckHook ];
-
+  build-system = [ setuptools ];
+  dependencies = [ aiohttp ];
+  pyproject = true;
   pythonImportsCheck = [ "aiopvapi" ];
 
   meta = {

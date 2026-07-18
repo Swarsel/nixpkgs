@@ -1,26 +1,22 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
+  buildPythonPackage,
+  hatch-jupyter-builder,
   # build-system
   hatchling,
-  hatch-jupyter-builder,
-
+  # dependencies
+  jupyter-packaging,
   # build inputs
   jupyterlab,
   nodejs,
   writableTmpDirAsHomeHook,
   yarn-berry_3,
-
-  # dependencies
-  jupyter-packaging,
 }:
 
 buildPythonPackage rec {
   pname = "jupyterlab-execute-time";
   version = "3.3.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "deshaw";
@@ -37,11 +33,6 @@ buildPythonPackage rec {
       --replace-fail 'jlpm' 'yarn'
   '';
 
-  build-system = [
-    hatchling
-    hatch-jupyter-builder
-  ];
-
   nativeBuildInputs = [
     jupyterlab
     nodejs
@@ -50,16 +41,22 @@ buildPythonPackage rec {
     yarn-berry_3.yarnBerryConfigHook
   ];
 
-  offlineCache = yarn-berry_3.fetchYarnBerryDeps {
-    yarnLock = "${src}/yarn.lock";
-    hash = "sha256-aCuw+4FqA0JPMr++AgE4WI+KmXda1IosaU2yk/vE7vw=";
-  };
+  build-system = [
+    hatchling
+    hatch-jupyter-builder
+  ];
 
   dependencies = [
     jupyterlab
     jupyter-packaging
   ];
 
+  offlineCache = yarn-berry_3.fetchYarnBerryDeps {
+    hash = "sha256-aCuw+4FqA0JPMr++AgE4WI+KmXda1IosaU2yk/vE7vw=";
+    yarnLock = "${src}/yarn.lock";
+  };
+
+  pyproject = true;
   pythonImportsCheck = [ "jupyterlab_execute_time" ];
 
   meta = {

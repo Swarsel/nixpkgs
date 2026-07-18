@@ -2,8 +2,8 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  python3,
   installShellFiles,
+  python3,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -17,11 +17,11 @@ stdenv.mkDerivation (finalAttrs: {
     sha256 = "sha256-4BkdGvG/RyF3JBnd/X5r5nboEHG4aqahcYHDunMv2zU=";
   };
 
-  nativeBuildInputs = [ installShellFiles ];
-
   postPatch = ''
     substituteInPlace fpp --replace 'PYTHONCMD="python3"' 'PYTHONCMD="${python3.interpreter}"'
   '';
+
+  nativeBuildInputs = [ installShellFiles ];
 
   installPhase = ''
     mkdir -p $out/share/fpp $out/bin

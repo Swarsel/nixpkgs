@@ -1,9 +1,9 @@
 {
   lib,
-  python3Packages,
   fetchPypi,
-  taskwarrior2,
   glibcLocales,
+  python3Packages,
+  taskwarrior2,
 }:
 
 with python3Packages;
@@ -11,13 +11,17 @@ with python3Packages;
 buildPythonApplication (finalAttrs: {
   pname = "vit";
   version = "2.3.4";
-  pyproject = true;
-  disabled = lib.versionOlder python.version "3.7";
 
   src = fetchPypi {
     inherit (finalAttrs) pname version;
     hash = "sha256-NGohCqDedUz3ra9zcjv30syO51Tut4XrGDcNM/dOXOI=";
   };
+
+  nativeCheckInputs = [ glibcLocales ];
+
+  preCheck = ''
+    export TERM=''${TERM-linux}
+  '';
 
   build-system = with python3Packages; [ setuptools ];
 
@@ -26,7 +30,7 @@ buildPythonApplication (finalAttrs: {
     urwid
   ];
 
-  nativeCheckInputs = [ glibcLocales ];
+  disabled = lib.versionOlder python.version "3.7";
 
   makeWrapperArgs = [
     "--suffix"
@@ -35,18 +39,15 @@ buildPythonApplication (finalAttrs: {
     "${taskwarrior2}/bin"
   ];
 
-  preCheck = ''
-    export TERM=''${TERM-linux}
-  '';
-
+  pyproject = true;
   pythonImportsCheck = [ "vit" ];
 
   meta = {
-    homepage = "https://github.com/scottkosty/vit";
     description = "Visual Interactive Taskwarrior";
-    mainProgram = "vit";
+    homepage = "https://github.com/scottkosty/vit";
+    license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ arcnmx ];
     platforms = lib.platforms.all;
-    license = lib.licenses.mit;
+    mainProgram = "vit";
   };
 })

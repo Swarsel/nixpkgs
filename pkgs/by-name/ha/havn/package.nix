@@ -26,12 +26,12 @@ rustPlatform.buildRustPackage (finalAttrs: {
   ];
 
   meta = {
-    homepage = "https://github.com/mrjackwills/havn";
     description = "Fast configurable port scanner with reasonable defaults";
+    homepage = "https://github.com/mrjackwills/havn";
     changelog = "https://github.com/mrjackwills/havn/blob/v${finalAttrs.version}/CHANGELOG.md";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ luftmensch-luftmensch ];
-    mainProgram = "havn";
     platforms = lib.platforms.linux;
+    mainProgram = "havn";
   };
 })

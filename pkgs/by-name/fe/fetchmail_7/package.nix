@@ -2,12 +2,12 @@
   lib,
   stdenv,
   fetchFromGitLab,
-  openssl,
-  python3,
   autoreconfHook,
-  pkg-config,
   bison,
   flex,
+  openssl,
+  pkg-config,
+  python3,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -21,15 +21,16 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-83D2YlFCODK2YD+oLICdim2NtNkkJU67S3YLi8Q6ga8=";
   };
 
-  buildInputs = [
-    openssl
-    python3
-  ];
   nativeBuildInputs = [
     autoreconfHook
     pkg-config
     bison
     flex
+  ];
+
+  buildInputs = [
+    openssl
+    python3
   ];
 
   configureFlags = [ "--with-ssl=${openssl.dev}" ];
@@ -39,8 +40,8 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   meta = {
-    homepage = "https://www.fetchmail.info/";
     description = "Full-featured remote-mail retrieval and forwarding utility";
+
     longDescription = ''
       A full-featured, robust, well-documented remote-mail retrieval and
       forwarding utility intended to be used over on-demand TCP/IP links
@@ -49,7 +50,9 @@ stdenv.mkDerivation (finalAttrs: {
       all flavors of IMAP, ETRN, and ODMR. It can even support IPv6 and
       IPSEC.
     '';
-    platforms = lib.platforms.unix;
+
+    homepage = "https://www.fetchmail.info/";
     license = lib.licenses.gpl2Plus;
+    platforms = lib.platforms.unix;
   };
 })

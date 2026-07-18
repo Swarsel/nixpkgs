@@ -120,100 +120,9 @@ optionalAttrs allowAliases aliases
     options doc build introduced in fc614c37c653, so lazy evaluation of only the
     'type' field is required.
   */
-
   inherit (import ./formats/java-properties/default.nix { inherit lib pkgs; })
     javaProperties
     ;
-
-  libconfig = (import ./formats/libconfig/default.nix { inherit lib pkgs; }).format;
-
-  hocon = (import ./formats/hocon/default.nix { inherit lib pkgs; }).format;
-
-  php = (import ./formats/php/default.nix { inherit lib pkgs; }).format;
-
-  configobj = (import ./formats/configobj/default.nix { inherit lib pkgs; }).format;
-
-  json =
-    { }:
-    {
-
-      type = types.json;
-
-      generate =
-        name: value:
-        pkgs.callPackage (
-          { runCommand, jq }:
-          runCommand name
-            {
-              nativeBuildInputs = [ jq ];
-              inherit value;
-              preferLocalBuild = true;
-              __structuredAttrs = true;
-            }
-            # NIX_ATTRS_JSON_FILE won't have `value` if it's null, but jq returns null for missing properties anyway
-            # jsonNull test keeps this in check
-            ''
-              jq .value "$NIX_ATTRS_JSON_FILE" > $out
-            ''
-        ) { };
-
-    };
-
-  yaml = yaml_1_1;
-
-  yaml_1_1 =
-    { }:
-    {
-      generate =
-        name: value:
-        pkgs.callPackage (
-          { runCommand, remarshal_0_17 }:
-          runCommand name
-            {
-              nativeBuildInputs = [ remarshal_0_17 ];
-              inherit value;
-              preferLocalBuild = true;
-              __structuredAttrs = true;
-            }
-            ''
-              json2yaml ${
-                # attributes with null values are omitted from the JSON with structured attrs
-                # yaml_1_1Null test keeps this in check
-                if value == null then ''<(echo "null")'' else ''--unwrap value "$NIX_ATTRS_JSON_FILE"''
-              } "$out"
-            ''
-        ) { };
-
-      type = serializableValueWith { typeName = "YAML 1.1"; };
-
-    };
-
-  yaml_1_2 =
-    { }:
-    {
-      generate =
-        name: value:
-        pkgs.callPackage (
-          { runCommand, remarshal }:
-          runCommand name
-            {
-              nativeBuildInputs = [ remarshal ];
-              inherit value;
-              preferLocalBuild = true;
-              __structuredAttrs = true;
-            }
-            ''
-              json2yaml ${
-                # attributes with null values are omitted from the JSON with structured attrs
-                # yaml_1_2Null test keeps this in check
-                if value == null then ''<(echo "null")'' else ''--unwrap value "$NIX_ATTRS_JSON_FILE"''
-              } "$out"
-            ''
-        ) { };
-
-      type = serializableValueWith { typeName = "YAML 1.2"; };
-
-    };
 
   # the ini formats share a lot of code
   inherit
@@ -231,9 +140,9 @@ optionalAttrs allowAliases aliases
           };
         iniAtom =
           {
-            listsAsDuplicateKeys,
-            listToValue,
             atomsCoercedToLists,
+            listToValue,
+            listsAsDuplicateKeys,
           }:
           let
             singleIniAtomOr =
@@ -277,91 +186,6 @@ optionalAttrs allowAliases aliases
         ];
       in
       {
-        ini =
-          {
-            # Represents lists as duplicate keys
-            listsAsDuplicateKeys ? false,
-            # Alternative to listsAsDuplicateKeys, converts list to non-list
-            # listToValue :: [IniAtom] -> IniAtom
-            listToValue ? null,
-            # Merge multiple instances of the same key into a list
-            atomsCoercedToLists ? null,
-            ...
-          }@args:
-          assert listsAsDuplicateKeys -> listToValue == null;
-          assert atomsCoercedToLists != null -> (listsAsDuplicateKeys || listToValue != null);
-          let
-            atomsCoercedToLists' = if atomsCoercedToLists == null then false else atomsCoercedToLists;
-            atom = iniAtom {
-              inherit listsAsDuplicateKeys listToValue;
-              atomsCoercedToLists = atomsCoercedToLists';
-            };
-          in
-          {
-
-            type = attrsOf (iniSection atom);
-            lib.types.atom = atom;
-
-            generate =
-              name: value:
-              pipe value [
-                (maybeCoerceAllLists listToValue)
-                (toINI (removeAttrs args ignoredArgs))
-                (pkgs.writeText name)
-              ];
-          };
-
-        iniWithGlobalSection =
-          {
-            # Represents lists as duplicate keys
-            listsAsDuplicateKeys ? false,
-            # Alternative to listsAsDuplicateKeys, converts list to non-list
-            # listToValue :: [IniAtom] -> IniAtom
-            listToValue ? null,
-            # Merge multiple instances of the same key into a list
-            atomsCoercedToLists ? null,
-            ...
-          }@args:
-          assert listsAsDuplicateKeys -> listToValue == null;
-          assert atomsCoercedToLists != null -> (listsAsDuplicateKeys || listToValue != null);
-          let
-            atomsCoercedToLists' = if atomsCoercedToLists == null then false else atomsCoercedToLists;
-            atom = iniAtom {
-              inherit listsAsDuplicateKeys listToValue;
-              atomsCoercedToLists = atomsCoercedToLists';
-            };
-          in
-          {
-            type = submodule {
-              options = {
-                sections = mkOption rec {
-                  type = attrsOf (iniSection atom);
-                  default = { };
-                  description = type.description;
-                };
-                globalSection = mkOption rec {
-                  type = iniSection atom;
-                  default = { };
-                  description = "global " + type.description;
-                };
-              };
-            };
-            lib.types.atom = atom;
-            generate =
-              name:
-              {
-                sections ? { },
-                globalSection ? { },
-                ...
-              }:
-              pkgs.writeText name (
-                toINIWithGlobalSection (removeAttrs args ignoredArgs) {
-                  globalSection = maybeCoerceList listToValue globalSection;
-                  sections = maybeCoerceAllLists listToValue sections;
-                }
-              );
-          };
-
         gitIni =
           {
             listsAsDuplicateKeys ? false,
@@ -370,14 +194,102 @@ optionalAttrs allowAliases aliases
           let
             atom = iniAtom {
               inherit listsAsDuplicateKeys;
-              listToValue = null;
               atomsCoercedToLists = false;
+              listToValue = null;
             };
           in
           {
-            type = attrsOf (attrsOf (either atom (attrsOf atom)));
-            lib.types.atom = atom;
             generate = name: value: pkgs.writeText name (toGitINI value);
+            lib.types.atom = atom;
+            type = attrsOf (attrsOf (either atom (attrsOf atom)));
+          };
+
+        ini =
+          {
+            # Merge multiple instances of the same key into a list
+            atomsCoercedToLists ? null,
+            # Alternative to listsAsDuplicateKeys, converts list to non-list
+            # listToValue :: [IniAtom] -> IniAtom
+            listToValue ? null,
+            # Represents lists as duplicate keys
+            listsAsDuplicateKeys ? false,
+            ...
+          }@args:
+          assert listsAsDuplicateKeys -> listToValue == null;
+          assert atomsCoercedToLists != null -> (listsAsDuplicateKeys || listToValue != null);
+          let
+            atomsCoercedToLists' = if atomsCoercedToLists == null then false else atomsCoercedToLists;
+            atom = iniAtom {
+              inherit listsAsDuplicateKeys listToValue;
+              atomsCoercedToLists = atomsCoercedToLists';
+            };
+          in
+          {
+
+            generate =
+              name: value:
+              pipe value [
+                (maybeCoerceAllLists listToValue)
+                (toINI (removeAttrs args ignoredArgs))
+                (pkgs.writeText name)
+              ];
+
+            lib.types.atom = atom;
+            type = attrsOf (iniSection atom);
+          };
+
+        iniWithGlobalSection =
+          {
+            # Merge multiple instances of the same key into a list
+            atomsCoercedToLists ? null,
+            # Alternative to listsAsDuplicateKeys, converts list to non-list
+            # listToValue :: [IniAtom] -> IniAtom
+            listToValue ? null,
+            # Represents lists as duplicate keys
+            listsAsDuplicateKeys ? false,
+            ...
+          }@args:
+          assert listsAsDuplicateKeys -> listToValue == null;
+          assert atomsCoercedToLists != null -> (listsAsDuplicateKeys || listToValue != null);
+          let
+            atomsCoercedToLists' = if atomsCoercedToLists == null then false else atomsCoercedToLists;
+            atom = iniAtom {
+              inherit listsAsDuplicateKeys listToValue;
+              atomsCoercedToLists = atomsCoercedToLists';
+            };
+          in
+          {
+            generate =
+              name:
+              {
+                globalSection ? { },
+                sections ? { },
+                ...
+              }:
+              pkgs.writeText name (
+                toINIWithGlobalSection (removeAttrs args ignoredArgs) {
+                  globalSection = maybeCoerceList listToValue globalSection;
+                  sections = maybeCoerceAllLists listToValue sections;
+                }
+              );
+
+            lib.types.atom = atom;
+
+            type = submodule {
+              options = {
+                globalSection = mkOption rec {
+                  default = { };
+                  description = "global " + type.description;
+                  type = iniSection atom;
+                };
+
+                sections = mkOption rec {
+                  default = { };
+                  description = type.description;
+                  type = attrsOf (iniSection atom);
+                };
+              };
+            };
           };
 
       }
@@ -386,111 +298,6 @@ optionalAttrs allowAliases aliases
     iniWithGlobalSection
     gitIni
     ;
-
-  # As defined by systemd.syntax(7)
-  #
-  # null does not set any value, which allows for RFC42 modules to specify
-  # optional config options.
-  systemd =
-    let
-      mkValueString = mkValueStringDefault { };
-      mkKeyValue = k: v: if v == null then "# ${k} is unset" else "${k} = ${mkValueString v}";
-
-      rawFormat = ini {
-        listsAsDuplicateKeys = true;
-        inherit mkKeyValue;
-      };
-    in
-    rawFormat
-    // {
-      generate =
-        name: value:
-        warn
-          "Direct use of `pkgs.formats.systemd` has been deprecated, please use `pkgs.formats.systemd { }` instead."
-          rawFormat.generate
-          name
-          value;
-      __functor = self: { }: rawFormat;
-    };
-
-  keyValue =
-    {
-      # Represents lists as duplicate keys
-      listsAsDuplicateKeys ? false,
-      # Alternative to listsAsDuplicateKeys, converts list to non-list
-      # listToValue :: [Atom] -> Atom
-      listToValue ? null,
-      ...
-    }@args:
-    assert listsAsDuplicateKeys -> listToValue == null;
-    {
-
-      type =
-        let
-
-          singleAtom =
-            nullOr (oneOf [
-              bool
-              int
-              float
-              str
-            ])
-            // {
-              description = "atom (null, bool, int, float or string)";
-            };
-
-          atom =
-            if listsAsDuplicateKeys then
-              coercedTo singleAtom singleton (listOf singleAtom)
-              // {
-                description = singleAtom.description + " or a list of them for duplicate keys";
-              }
-            else if listToValue != null then
-              coercedTo singleAtom singleton (nonEmptyListOf singleAtom)
-              // {
-                description = singleAtom.description + " or a non-empty list of them";
-              }
-            else
-              singleAtom;
-
-        in
-        attrsOf atom;
-
-      generate =
-        let
-          transformValue =
-            if listToValue != null then
-              mapAttrs (key: val: if isList val then listToValue val else val)
-            else
-              id;
-          finalArgs = removeAttrs args [ "listToValue" ];
-        in
-        name: value: pkgs.writeText name (toKeyValue finalArgs (transformValue value));
-
-    };
-
-  toml =
-    { }:
-    {
-      type = types.toml;
-
-      generate =
-        name: value:
-        pkgs.callPackage (
-          { runCommand }:
-          runCommand name
-            {
-              nativeBuildInputs = [ json2x ];
-              inherit value;
-              preferLocalBuild = true;
-              __structuredAttrs = true;
-            }
-            ''
-              json2x toml --unwrap value "$NIX_ATTRS_JSON_FILE" "$out"
-            ''
-        ) { };
-
-    };
 
   /*
     dzikoysk's CDN format, see https://github.com/dzikoysk/cdn
@@ -504,18 +311,16 @@ optionalAttrs allowAliases aliases
   cdn =
     { }:
     {
-      type = serializableValueWith { typeName = "CDN"; };
-
       generate =
         name: value:
         pkgs.callPackage (
-          { runCommand, json2cdn }:
+          { json2cdn, runCommand }:
           runCommand name
             {
               nativeBuildInputs = [ json2cdn ];
-              value = toJSON value;
-              preferLocalBuild = true;
               __structuredAttrs = true;
+              preferLocalBuild = true;
+              value = toJSON value;
             }
             ''
               valuePath="$TMPDIR/value"
@@ -523,7 +328,11 @@ optionalAttrs allowAliases aliases
               json2cdn "$valuePath" > $out
             ''
         ) { };
+
+      type = serializableValueWith { typeName = "CDN"; };
     };
+
+  configobj = (import ./formats/configobj/default.nix { inherit lib pkgs; }).format;
 
   /*
     For configurations of Elixir project, like config.exs or runtime.exs
@@ -602,7 +411,7 @@ optionalAttrs allowAliases aliases
       list = values: "[" + (listContent values) + "]";
 
       specialType =
-        { value, _elixirType }:
+        { _elixirType, value }:
         if _elixirType == "raw" then
           value
         else if _elixirType == "atom" then
@@ -649,22 +458,19 @@ optionalAttrs allowAliases aliases
       elixir ? pkgs.elixir,
     }:
     {
-      type =
-        let
-          valueType =
-            nullOr (oneOf [
-              bool
-              int
-              float
-              str
-              (attrsOf valueType)
-              (listOf valueType)
-            ])
-            // {
-              description = "Elixir value";
-            };
-        in
-        attrsOf (attrsOf valueType);
+      generate =
+        name: value:
+        pkgs.runCommand name
+          {
+            nativeBuildInputs = [ elixir ];
+            __structuredAttrs = true;
+            preferLocalBuild = true;
+            value = toConf value;
+          }
+          ''
+            printf "%s" "$value" > "$out"
+            mix format "$out"
+          '';
 
       lib =
         let
@@ -676,14 +482,6 @@ optionalAttrs allowAliases aliases
         in
         {
           inherit mkRaw;
-
-          # Fetch an environment variable at runtime, with optional fallback
-          mkGetEnv =
-            {
-              envVariable,
-              fallback ? null,
-            }:
-            mkRaw "System.get_env(${toElixir envVariable}, ${toElixir fallback})";
 
           /*
             Make an Elixir atom.
@@ -701,16 +499,24 @@ optionalAttrs allowAliases aliases
             _elixirType = "charlist";
           };
 
-          # Make an Elixir tuple out of a list.
-          mkTuple = value: {
-            inherit value;
-            _elixirType = "tuple";
-          };
+          # Fetch an environment variable at runtime, with optional fallback
+          mkGetEnv =
+            {
+              envVariable,
+              fallback ? null,
+            }:
+            mkRaw "System.get_env(${toElixir envVariable}, ${toElixir fallback})";
 
           # Make an Elixir map out of an attribute set.
           mkMap = value: {
             inherit value;
             _elixirType = "map";
+          };
+
+          # Make an Elixir tuple out of a list.
+          mkTuple = value: {
+            inherit value;
+            _elixirType = "tuple";
           };
 
           /*
@@ -725,9 +531,9 @@ optionalAttrs allowAliases aliases
               isElixirType = type: x: (x._elixirType or "") == type;
 
               rawElixir = mkOptionType {
-                name = "rawElixir";
-                description = "raw elixir";
                 check = isElixirType "raw";
+                description = "raw elixir";
+                name = "rawElixir";
               };
 
               elixirOr = other: either other rawElixir;
@@ -736,27 +542,27 @@ optionalAttrs allowAliases aliases
               inherit rawElixir elixirOr;
 
               atom = elixirOr (mkOptionType {
-                name = "elixirAtom";
-                description = "elixir atom";
                 check = isElixirType "atom";
+                description = "elixir atom";
+                name = "elixirAtom";
               });
 
               charlist = elixirOr (mkOptionType {
-                name = "elixirCharlist";
-                description = "elixir charlist";
                 check = isElixirType "charlist";
-              });
-
-              tuple = elixirOr (mkOptionType {
-                name = "elixirTuple";
-                description = "elixir tuple";
-                check = isElixirType "tuple";
+                description = "elixir charlist";
+                name = "elixirCharlist";
               });
 
               map = elixirOr (mkOptionType {
-                name = "elixirMap";
-                description = "elixir map";
                 check = isElixirType "map";
+                description = "elixir map";
+                name = "elixirMap";
+              });
+
+              tuple = elixirOr (mkOptionType {
+                check = isElixirType "tuple";
+                description = "elixir tuple";
+                name = "elixirTuple";
               });
               # Wrap standard types, since anything in the Elixir configuration
               # can be raw Elixir
@@ -764,30 +570,173 @@ optionalAttrs allowAliases aliases
             // mapAttrs (_name: type: elixirOr type) types;
         };
 
+      type =
+        let
+          valueType =
+            nullOr (oneOf [
+              bool
+              int
+              float
+              str
+              (attrsOf valueType)
+              (listOf valueType)
+            ])
+            // {
+              description = "Elixir value";
+            };
+        in
+        attrsOf (attrsOf valueType);
+    };
+
+  hcl1 =
+    let
+      # Helper function to recursively transform values for HCL1 canonicalization
+      # Rule: If an attribute value is an attribute set, wrap it in a list
+      transform =
+        value:
+        if isAttrs value && !isDerivation value then
+          # If it's an attribute set, transform it recursively and wrap in a list
+          [ (mapAttrs (name: transform) value) ]
+        else if isList value then
+          # If it's already a list, transform each element
+          map transform value
+        else
+          value;
+      jsonFormat = json { };
+    in
+    args:
+    jsonFormat
+    // {
+      generate = name: value: jsonFormat.generate name (mapAttrs (_: transform) value);
+    };
+
+  hocon = (import ./formats/hocon/default.nix { inherit lib pkgs; }).format;
+
+  json =
+    { }:
+    {
+
       generate =
         name: value:
-        pkgs.runCommand name
-          {
-            value = toConf value;
-            nativeBuildInputs = [ elixir ];
-            preferLocalBuild = true;
-            __structuredAttrs = true;
-          }
-          ''
-            printf "%s" "$value" > "$out"
-            mix format "$out"
-          '';
+        pkgs.callPackage (
+          { jq, runCommand }:
+          runCommand name
+            {
+              inherit value;
+              nativeBuildInputs = [ jq ];
+              __structuredAttrs = true;
+              preferLocalBuild = true;
+            }
+            # NIX_ATTRS_JSON_FILE won't have `value` if it's null, but jq returns null for missing properties anyway
+            # jsonNull test keeps this in check
+            ''
+              jq .value "$NIX_ATTRS_JSON_FILE" > $out
+            ''
+        ) { };
+
+      type = types.json;
+
     };
+
+  keyValue =
+    {
+      # Alternative to listsAsDuplicateKeys, converts list to non-list
+      # listToValue :: [Atom] -> Atom
+      listToValue ? null,
+      # Represents lists as duplicate keys
+      listsAsDuplicateKeys ? false,
+      ...
+    }@args:
+    assert listsAsDuplicateKeys -> listToValue == null;
+    {
+
+      generate =
+        let
+          transformValue =
+            if listToValue != null then
+              mapAttrs (key: val: if isList val then listToValue val else val)
+            else
+              id;
+          finalArgs = removeAttrs args [ "listToValue" ];
+        in
+        name: value: pkgs.writeText name (toKeyValue finalArgs (transformValue value));
+
+      type =
+        let
+
+          singleAtom =
+            nullOr (oneOf [
+              bool
+              int
+              float
+              str
+            ])
+            // {
+              description = "atom (null, bool, int, float or string)";
+            };
+
+          atom =
+            if listsAsDuplicateKeys then
+              coercedTo singleAtom singleton (listOf singleAtom)
+              // {
+                description = singleAtom.description + " or a list of them for duplicate keys";
+              }
+            else if listToValue != null then
+              coercedTo singleAtom singleton (nonEmptyListOf singleAtom)
+              // {
+                description = singleAtom.description + " or a non-empty list of them";
+              }
+            else
+              singleAtom;
+
+        in
+        attrsOf atom;
+
+    };
+
+  libconfig = (import ./formats/libconfig/default.nix { inherit lib pkgs; }).format;
 
   lua =
     {
       asBindings ? false,
-      multiline ? true,
       columnWidth ? 100,
-      indentWidth ? 2,
       indentUsingTabs ? false,
+      indentWidth ? 2,
+      multiline ? true,
     }:
     {
+      generate =
+        name: value:
+        pkgs.callPackage (
+          { runCommand, stylua }:
+          runCommand name
+            {
+              inherit columnWidth;
+              inherit indentWidth;
+              nativeBuildInputs = [ stylua ];
+              __structuredAttrs = true;
+              indentType = if indentUsingTabs then "Tabs" else "Spaces";
+              preferLocalBuild = true;
+              value = toLua { inherit asBindings multiline; } value;
+            }
+            ''
+              ${optionalString (!asBindings) ''
+                echo -n 'return ' >> $out
+              ''}
+              printf "%s" "$value" >> $out
+              stylua \
+                --no-editorconfig \
+                --line-endings Unix \
+                --column-width $columnWidth \
+                --indent-width $indentWidth \
+                --indent-type $indentType \
+                $out
+            ''
+        ) { };
+
+      # Alias for mkLuaInline
+      lib.mkRaw = mkLuaInline;
+
       type =
         let
           valueType =
@@ -807,63 +756,21 @@ optionalAttrs allowAliases aliases
             };
         in
         if asBindings then attrsOf valueType else valueType;
-      generate =
-        name: value:
-        pkgs.callPackage (
-          { runCommand, stylua }:
-          runCommand name
-            {
-              nativeBuildInputs = [ stylua ];
-              inherit columnWidth;
-              inherit indentWidth;
-              indentType = if indentUsingTabs then "Tabs" else "Spaces";
-              value = toLua { inherit asBindings multiline; } value;
-              preferLocalBuild = true;
-              __structuredAttrs = true;
-            }
-            ''
-              ${optionalString (!asBindings) ''
-                echo -n 'return ' >> $out
-              ''}
-              printf "%s" "$value" >> $out
-              stylua \
-                --no-editorconfig \
-                --line-endings Unix \
-                --column-width $columnWidth \
-                --indent-width $indentWidth \
-                --indent-type $indentType \
-                $out
-            ''
-        ) { };
-      # Alias for mkLuaInline
-      lib.mkRaw = mkLuaInline;
     };
 
   nixConf =
     {
       package,
       version,
-      extraOptions ? "",
       checkAllErrors ? true,
       checkConfig ? true,
+      extraOptions ? "",
     }:
     let
       isNixAtLeast = versionAtLeast version;
     in
     assert isNixAtLeast "2.2";
     {
-      type =
-        let
-          atomType = nullOr (oneOf [
-            bool
-            int
-            float
-            str
-            path
-            types.package
-          ]);
-        in
-        attrsOf atomType;
       generate =
         let
           # note that list type has been omitted here as the separator varies, see `nix.settings.*`
@@ -897,16 +804,7 @@ optionalAttrs allowAliases aliases
         name: value:
         pkgs.writeTextFile {
           inherit name;
-          # workaround for https://github.com/NixOS/nix/issues/9487
-          # extra-* settings must come after their non-extra counterpart
-          text = ''
-            # WARNING: this file is generated from the nix.* options in
-            # your NixOS configuration, typically
-            # /etc/nixos/configuration.nix.  Do not edit it!
-            ${mkKeyValuePairs (filterAttrs (key: _: !(isExtra key)) value)}
-            ${mkKeyValuePairs (filterAttrs (key: _: isExtra key) value)}
-            ${extraOptions}
-          '';
+
           checkPhase = optionalString checkConfig (
             if pkgs.stdenv.hostPlatform != pkgs.stdenv.buildPlatform then
               ''
@@ -929,7 +827,59 @@ optionalAttrs allowAliases aliases
                 set -o pipefail
               ''
           );
+
+          # workaround for https://github.com/NixOS/nix/issues/9487
+          # extra-* settings must come after their non-extra counterpart
+          text = ''
+            # WARNING: this file is generated from the nix.* options in
+            # your NixOS configuration, typically
+            # /etc/nixos/configuration.nix.  Do not edit it!
+            ${mkKeyValuePairs (filterAttrs (key: _: !(isExtra key)) value)}
+            ${mkKeyValuePairs (filterAttrs (key: _: isExtra key) value)}
+            ${extraOptions}
+          '';
         };
+
+      type =
+        let
+          atomType = nullOr (oneOf [
+            bool
+            int
+            float
+            str
+            path
+            types.package
+          ]);
+        in
+        attrsOf atomType;
+    };
+
+  php = (import ./formats/php/default.nix { inherit lib pkgs; }).format;
+
+  plist =
+    {
+      escape ? true,
+    }:
+    {
+      generate = name: value: pkgs.writeText name (toPlist { inherit escape; } value);
+
+      type =
+        let
+          valueType =
+            nullOr (oneOf [
+              bool
+              int
+              float
+              str
+              path
+              (attrsOf valueType)
+              (listOf valueType)
+            ])
+            // {
+              description = "Property list (plist) value";
+            };
+        in
+        valueType;
     };
 
   # Outputs a succession of Python variable assignments
@@ -937,24 +887,13 @@ optionalAttrs allowAliases aliases
   pythonVars =
     { }:
     {
-      type = attrsOf (serializableValueWith {
-        typeName = "Python";
-      });
-
-      lib = {
-        mkRaw = value: {
-          inherit value;
-          _type = "raw";
-        };
-      };
-
       generate =
         name: value:
         pkgs.callPackage (
           {
-            runCommand,
-            python3,
             black,
+            python3,
+            runCommand,
           }:
           runCommand name
             {
@@ -962,10 +901,11 @@ optionalAttrs allowAliases aliases
                 python3
                 black
               ];
+
+              __structuredAttrs = true;
               imports = value._imports or [ ];
-              # value must be an attrset, type would verify that,
-              # otherwise removeAttrs will fail.
-              value = removeAttrs value [ "_imports" ];
+              preferLocalBuild = true;
+
               pythonGen = pkgs.writeText "pythonGen" ''
                 import json
                 import os
@@ -998,14 +938,77 @@ optionalAttrs allowAliases aliases
                     for key, value in attrs["value"].items():
                         print(f"{key} = {recursive_repr(value)}")
               '';
-              preferLocalBuild = true;
-              __structuredAttrs = true;
+
+              # value must be an attrset, type would verify that,
+              # otherwise removeAttrs will fail.
+              value = removeAttrs value [ "_imports" ];
             }
             ''
               python3 "$pythonGen" > $out
               black $out
             ''
         ) { };
+
+      lib = {
+        mkRaw = value: {
+          inherit value;
+          _type = "raw";
+        };
+      };
+
+      type = attrsOf (serializableValueWith {
+        typeName = "Python";
+      });
+    };
+
+  # As defined by systemd.syntax(7)
+  #
+  # null does not set any value, which allows for RFC42 modules to specify
+  # optional config options.
+  systemd =
+    let
+      mkValueString = mkValueStringDefault { };
+      mkKeyValue = k: v: if v == null then "# ${k} is unset" else "${k} = ${mkValueString v}";
+
+      rawFormat = ini {
+        inherit mkKeyValue;
+        listsAsDuplicateKeys = true;
+      };
+    in
+    rawFormat
+    // {
+      __functor = self: { }: rawFormat;
+
+      generate =
+        name: value:
+        warn
+          "Direct use of `pkgs.formats.systemd` has been deprecated, please use `pkgs.formats.systemd { }` instead."
+          rawFormat.generate
+          name
+          value;
+    };
+
+  toml =
+    { }:
+    {
+      generate =
+        name: value:
+        pkgs.callPackage (
+          { runCommand }:
+          runCommand name
+            {
+              inherit value;
+              nativeBuildInputs = [ json2x ];
+              __structuredAttrs = true;
+              preferLocalBuild = true;
+            }
+            ''
+              json2x toml --unwrap value "$NIX_ATTRS_JSON_FILE" "$out"
+            ''
+        ) { };
+
+      type = types.toml;
+
     };
 
   xml =
@@ -1015,29 +1018,26 @@ optionalAttrs allowAliases aliases
     }:
     if format == "badgerfish" then
       {
-        type =
-          attrsOf (serializableValueWith {
-            typeName = "XML";
-          })
-          // {
-            description = "XML value";
-          };
-
         generate =
           name: value:
           pkgs.callPackage (
             {
-              runCommand,
               libxml2Python,
               python3Packages,
+              runCommand,
             }:
             runCommand name
               {
+                inherit value;
+
                 nativeBuildInputs = [
                   python3Packages.xmltodict
                   libxml2Python
                 ];
-                inherit value;
+
+                __structuredAttrs = true;
+                preferLocalBuild = true;
+
                 pythonGen = pkgs.writeText "pythonGen" ''
                   import json
                   import os
@@ -1050,64 +1050,78 @@ optionalAttrs allowAliases aliases
                         if withHeader then "True" else "False"
                       }, pretty=True, indent=" " * 2))
                 '';
-                preferLocalBuild = true;
-                __structuredAttrs = true;
               }
               ''
                 python3 "$pythonGen" > $out
                 xmllint $out > /dev/null
               ''
           ) { };
+
+        type =
+          attrsOf (serializableValueWith {
+            typeName = "XML";
+          })
+          // {
+            description = "XML value";
+          };
       }
     else
       throw "pkgs.formats.xml: Unknown format: ${format}";
 
-  plist =
-    {
-      escape ? true,
-    }:
-    {
-      type =
-        let
-          valueType =
-            nullOr (oneOf [
-              bool
-              int
-              float
-              str
-              path
-              (attrsOf valueType)
-              (listOf valueType)
-            ])
-            // {
-              description = "Property list (plist) value";
-            };
-        in
-        valueType;
+  yaml = yaml_1_1;
 
-      generate = name: value: pkgs.writeText name (toPlist { inherit escape; } value);
+  yaml_1_1 =
+    { }:
+    {
+      generate =
+        name: value:
+        pkgs.callPackage (
+          { remarshal_0_17, runCommand }:
+          runCommand name
+            {
+              inherit value;
+              nativeBuildInputs = [ remarshal_0_17 ];
+              __structuredAttrs = true;
+              preferLocalBuild = true;
+            }
+            ''
+              json2yaml ${
+                # attributes with null values are omitted from the JSON with structured attrs
+                # yaml_1_1Null test keeps this in check
+                if value == null then ''<(echo "null")'' else ''--unwrap value "$NIX_ATTRS_JSON_FILE"''
+              } "$out"
+            ''
+        ) { };
+
+      type = serializableValueWith { typeName = "YAML 1.1"; };
+
     };
 
-  hcl1 =
-    let
-      # Helper function to recursively transform values for HCL1 canonicalization
-      # Rule: If an attribute value is an attribute set, wrap it in a list
-      transform =
-        value:
-        if isAttrs value && !isDerivation value then
-          # If it's an attribute set, transform it recursively and wrap in a list
-          [ (mapAttrs (name: transform) value) ]
-        else if isList value then
-          # If it's already a list, transform each element
-          map transform value
-        else
-          value;
-      jsonFormat = json { };
-    in
-    args:
-    jsonFormat
-    // {
-      generate = name: value: jsonFormat.generate name (mapAttrs (_: transform) value);
+  yaml_1_2 =
+    { }:
+    {
+      generate =
+        name: value:
+        pkgs.callPackage (
+          { remarshal, runCommand }:
+          runCommand name
+            {
+              inherit value;
+              nativeBuildInputs = [ remarshal ];
+              __structuredAttrs = true;
+              preferLocalBuild = true;
+            }
+            ''
+              json2yaml ${
+                # attributes with null values are omitted from the JSON with structured attrs
+                # yaml_1_2Null test keeps this in check
+                if value == null then ''<(echo "null")'' else ''--unwrap value "$NIX_ATTRS_JSON_FILE"''
+              } "$out"
+            ''
+        ) { };
+
+      type = serializableValueWith { typeName = "YAML 1.2"; };
+
     };
 
 }

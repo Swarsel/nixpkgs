@@ -2,12 +2,12 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  nix-update-script,
+  gtk3,
   meson,
   ninja,
+  nix-update-script,
   pkg-config,
   vala,
-  gtk3,
 }:
 
 stdenv.mkDerivation rec {
@@ -39,7 +39,7 @@ stdenv.mkDerivation rec {
     homepage = "https://github.com/elementary/print";
     license = lib.licenses.gpl3Plus;
     platforms = lib.platforms.linux;
-    teams = [ lib.teams.pantheon ];
     mainProgram = "io.elementary.print";
+    teams = [ lib.teams.pantheon ];
   };
 }

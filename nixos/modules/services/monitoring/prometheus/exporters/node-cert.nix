@@ -10,52 +10,60 @@ let
   inherit (lib) mkOption types concatStringsSep;
 in
 {
-  port = 9141;
-
   extraOpts = {
-    paths = mkOption {
-      type = types.listOf types.str;
+    excludeGlobs = mkOption {
+      default = [ ];
+
       description = ''
-        List of paths to search for SSL certificates.
+        List files matching a pattern to include. Uses Go blob pattern.
       '';
+
+      type = types.listOf types.str;
     };
 
     excludePaths = mkOption {
-      type = types.listOf types.str;
+      default = [ ];
+
       description = ''
         List of paths to exclute from searching for SSL certificates.
       '';
-      default = [ ];
+
+      type = types.listOf types.str;
     };
 
     includeGlobs = mkOption {
-      type = types.listOf types.str;
+      default = [ ];
+
       description = ''
         List files matching a pattern to include. Uses Go blob pattern.
       '';
-      default = [ ];
+
+      type = types.listOf types.str;
     };
 
-    excludeGlobs = mkOption {
-      type = types.listOf types.str;
+    paths = mkOption {
       description = ''
-        List files matching a pattern to include. Uses Go blob pattern.
+        List of paths to search for SSL certificates.
       '';
-      default = [ ];
+
+      type = types.listOf types.str;
     };
 
     user = mkOption {
-      type = types.str;
+      default = "acme";
+
       description = ''
         User owning the certs.
       '';
-      default = "acme";
+
+      type = types.str;
     };
   };
 
+  port = 9141;
+
   serviceOpts = {
     serviceConfig = {
-      User = cfg.user;
       ExecStart = ''
         ${lib.getExe pkgs.prometheus-node-cert-exporter} \
           --listen ${toString cfg.listenAddress}:${toString cfg.port} \
@@ -65,6 +73,8 @@ in
           --exclude-glob "${concatStringsSep "," cfg.excludeGlobs}" \
           ${concatStringsSep " \\\n  " cfg.extraFlags}
       '';
+
+      User = cfg.user;
     };
   };
 }

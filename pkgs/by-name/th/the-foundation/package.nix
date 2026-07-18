@@ -1,13 +1,13 @@
 {
   lib,
   stdenv,
-  fetchFromGitea,
   cmake,
-  pkg-config,
   curl,
+  fetchFromGitea,
   libunistring,
   openssl,
   pcre2,
+  pkg-config,
   zlib,
 }:
 
@@ -16,11 +16,11 @@ stdenv.mkDerivation (finalAttrs: {
   version = "1.12.2";
 
   src = fetchFromGitea {
-    domain = "git.skyjake.fi";
     owner = "skyjake";
     repo = "the_Foundation";
     rev = "v${finalAttrs.version}";
     hash = "sha256-1mHZ+ihGeslOnLATf6PjaemkJBXSbqe4ULvwAluH6JM=";
+    domain = "git.skyjake.fi";
   };
 
   nativeBuildInputs = [

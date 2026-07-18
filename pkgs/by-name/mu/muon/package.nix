@@ -2,71 +2,32 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  fetchFromSourcehut,
   callPackage,
   coreutils,
   curl,
+  fetchFromSourcehut,
+  gettext,
   libarchive,
   libpkgconf,
-  pkgconf,
-  samurai,
-  zlib,
-  embedSamurai ? false,
-  # docs
-  buildDocs ? true,
-  scdoc,
-  # tests
-  runTests ? false,
-  gettext,
   muon,
   nasm,
   pkg-config,
+  pkgconf,
   python3,
+  samurai,
+  scdoc,
   writableTmpDirAsHomeHook,
+  zlib,
+  # docs
+  buildDocs ? true,
+  embedSamurai ? false,
+  # tests
+  runTests ? false,
 }:
 stdenv.mkDerivation (finalAttrs: {
   pname = "muon" + lib.optionalString embedSamurai "-embedded-samurai";
   version = "0.5.0";
-
-  srcs = builtins.attrValues (lib.filterAttrs (_: v: v.use or true) finalAttrs.passthru.srcsAttrs);
-
-  sourceRoot = "muon-src";
-
   outputs = [ "out" ] ++ lib.optionals buildDocs [ "man" ];
-
-  nativeBuildInputs = [
-    pkgconf
-  ]
-  ++ lib.optionals (!embedSamurai) [ samurai ]
-  ++ lib.optionals buildDocs [
-    scdoc
-  ]
-  ++ lib.optionals (buildDocs || finalAttrs.doCheck) [
-    (python3.withPackages (ps: [ ps.pyyaml ]))
-  ];
-
-  buildInputs = [
-    curl
-    libarchive
-    libpkgconf
-    zlib
-  ];
-
-  strictDeps = true;
-
-  postUnpack = ''
-    for src in $srcs; do
-      name=$(stripHash $src)
-
-      # skip the main project, only move subprojects
-      [ "$name" == "$sourceRoot" ] && continue
-
-      cp -r "$name" "$sourceRoot/subprojects/$name"
-      chmod +w -R "$sourceRoot/subprojects/$name"
-      rm "$sourceRoot/subprojects/$name.wrap"
-    done
-  '';
-
   patches = [ ./darwin-clang.patch ];
 
   postPatch = ''
@@ -85,7 +46,25 @@ stdenv.mkDerivation (finalAttrs: {
         --replace-fail "['common/66 vcstag', {'python': true}]," ""
   '';
 
-  enableParallelBuilding = true;
+  strictDeps = true;
+
+  nativeBuildInputs = [
+    pkgconf
+  ]
+  ++ lib.optionals (!embedSamurai) [ samurai ]
+  ++ lib.optionals buildDocs [
+    scdoc
+  ]
+  ++ lib.optionals (buildDocs || finalAttrs.doCheck) [
+    (python3.withPackages (ps: [ ps.pyyaml ]))
+  ];
+
+  buildInputs = [
+    curl
+    libarchive
+    libpkgconf
+    zlib
+  ];
 
   buildPhase =
     let
@@ -155,29 +134,49 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  enableParallelBuilding = true;
+
+  postUnpack = ''
+    for src in $srcs; do
+      name=$(stripHash $src)
+
+      # skip the main project, only move subprojects
+      [ "$name" == "$sourceRoot" ] && continue
+
+      cp -r "$name" "$sourceRoot/subprojects/$name"
+      chmod +w -R "$sourceRoot/subprojects/$name"
+      rm "$sourceRoot/subprojects/$name.wrap"
+    done
+  '';
+
+  sourceRoot = "muon-src";
+  srcs = builtins.attrValues (lib.filterAttrs (_: v: v.use or true) finalAttrs.passthru.srcsAttrs);
+
   passthru.srcsAttrs = {
+    meson-docs = fetchFromGitHub {
+      hash = "sha256-aFpyJFIqybLNKhm/kyfCjYylj7DE6muI1+OUh4Cq4WY=";
+      name = "meson-docs";
+      owner = "muon-build";
+      repo = "meson-docs";
+      rev = "1017b3413601044fb41ad04977445e68a80e8181";
+      passthru.use = buildDocs;
+    };
+
+    meson-tests = fetchFromGitHub {
+      hash = "sha256-z4Fc1lr/m2MwIwhXJwoFWpzeNg+udzMxuw5Q/zVvpSM=";
+      name = "meson-tests";
+      owner = "muon-build";
+      repo = "meson-tests";
+      rev = "db92588773a24f67cda2f331b945825ca3a63fa7";
+      passthru.use = finalAttrs.doCheck;
+    };
+
     muon-src = fetchFromSourcehut {
+      hash = "sha256-bWEYWUD+GK8R3yVnDTnzFWmm4KAuVPI+1yMfCXWcG/A=";
       name = "muon-src";
       owner = "~lattis";
       repo = "muon";
       tag = finalAttrs.version;
-      hash = "sha256-bWEYWUD+GK8R3yVnDTnzFWmm4KAuVPI+1yMfCXWcG/A=";
-    };
-    meson-docs = fetchFromGitHub {
-      name = "meson-docs";
-      repo = "meson-docs";
-      owner = "muon-build";
-      rev = "1017b3413601044fb41ad04977445e68a80e8181";
-      hash = "sha256-aFpyJFIqybLNKhm/kyfCjYylj7DE6muI1+OUh4Cq4WY=";
-      passthru.use = buildDocs;
-    };
-    meson-tests = fetchFromGitHub {
-      name = "meson-tests";
-      repo = "meson-tests";
-      owner = "muon-build";
-      rev = "db92588773a24f67cda2f331b945825ca3a63fa7";
-      hash = "sha256-z4Fc1lr/m2MwIwhXJwoFWpzeNg+udzMxuw5Q/zVvpSM=";
-      passthru.use = finalAttrs.doCheck;
     };
   };
 
@@ -192,8 +191,8 @@ stdenv.mkDerivation (finalAttrs: {
   passthru.updateScript = callPackage ./update.nix { };
 
   meta = {
-    homepage = "https://muon.build";
     description = "Implementation of the meson build system in C99";
+    homepage = "https://muon.build";
     license = lib.licenses.gpl3Only;
     maintainers = [ ];
     platforms = lib.platforms.unix;

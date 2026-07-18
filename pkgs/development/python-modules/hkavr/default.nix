@@ -8,7 +8,6 @@
 buildPythonPackage rec {
   pname = "hkavr";
   version = "0.0.5";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
@@ -16,10 +15,9 @@ buildPythonPackage rec {
   };
 
   propagatedBuildInputs = [ requests ];
-
   # Module has no tests
   doCheck = false;
-
+  format = "setuptools";
   pythonImportsCheck = [ "hkavr" ];
 
   meta = {

@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   requests,
   xmltodict,
 }:
@@ -9,7 +9,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "meteoalertapi";
   version = "0.3.1";
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "rolfberkenbosch";
@@ -25,7 +24,7 @@ buildPythonPackage (finalAttrs: {
 
   # Tests require network access
   doCheck = false;
-
+  format = "setuptools";
   pythonImportsCheck = [ "meteoalertapi" ];
 
   meta = {

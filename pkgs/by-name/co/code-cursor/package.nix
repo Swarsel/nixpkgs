@@ -1,9 +1,9 @@
 {
   lib,
   stdenv,
-  buildVscode,
   fetchurl,
   appimageTools,
+  buildVscode,
   undmg,
   commandLineArgs ? "",
   useVSCodeRipgrep ? stdenv.hostPlatform.isDarwin,
@@ -25,21 +25,7 @@ in
 (buildVscode rec {
   inherit commandLineArgs useVSCodeRipgrep;
   inherit (sourcesJson) version;
-  # Cursor reports vscode >= 1.122 but still ships @vscode/ripgrep.
-  # Capping the build-time vscodeVersion avoids modifying the notarized app bundle on Darwin.
-  vscodeVersion =
-    if lib.versionAtLeast sourcesJson.vscodeVersion "1.122.0" then
-      "1.121.0"
-    else
-      sourcesJson.vscodeVersion;
-
   pname = "cursor";
-
-  executableName = "cursor";
-  longName = "Cursor";
-  shortName = "cursor";
-  libraryName = "cursor";
-  iconName = "cursor";
 
   src =
     if hostPlatform.isLinux then
@@ -50,23 +36,33 @@ in
     else
       source;
 
+  # Editing the `cursor` binary within the app bundle causes the bundle's signature
+  # to be invalidated, which prevents launching starting with macOS Ventura, because Cursor is notarized.
+  # See https://eclecticlight.co/2022/06/17/app-security-changes-coming-in-ventura/ for more information.
+  dontFixup = stdenv.hostPlatform.isDarwin;
+  executableName = "cursor";
   # for unpacking the DMG
   extraNativeBuildInputs = lib.optionals hostPlatform.isDarwin [ undmg ];
+  iconName = "cursor";
+  libraryName = "cursor";
+  longName = "Cursor";
+  # Cursor ships a launcher script that resolves its own VSCODE_PATH.
+  patchVSCodePath = false;
+  shortName = "cursor";
 
   sourceRoot =
     if hostPlatform.isLinux then "${pname}-${version}-extracted/usr/share/cursor" else "Cursor.app";
 
   tests = { };
-
   updateScript = ./update.sh;
 
-  # Editing the `cursor` binary within the app bundle causes the bundle's signature
-  # to be invalidated, which prevents launching starting with macOS Ventura, because Cursor is notarized.
-  # See https://eclecticlight.co/2022/06/17/app-security-changes-coming-in-ventura/ for more information.
-  dontFixup = stdenv.hostPlatform.isDarwin;
-
-  # Cursor ships a launcher script that resolves its own VSCODE_PATH.
-  patchVSCodePath = false;
+  # Cursor reports vscode >= 1.122 but still ships @vscode/ripgrep.
+  # Capping the build-time vscodeVersion avoids modifying the notarized app bundle on Darwin.
+  vscodeVersion =
+    if lib.versionAtLeast sourcesJson.vscodeVersion "1.122.0" then
+      "1.121.0"
+    else
+      sourcesJson.vscodeVersion;
 
   meta = {
     description = "AI-powered code editor built on vscode";
@@ -74,25 +70,29 @@ in
     changelog = "https://cursor.com/changelog";
     license = lib.licenses.unfree;
     sourceProvenance = [ lib.sourceTypes.binaryNativeCode ];
+
     maintainers = with lib.maintainers; [
       aspauldingcode
       prince213
       qweered
     ];
+
     platforms = [
       "aarch64-linux"
       "x86_64-linux"
     ]
     ++ lib.platforms.darwin;
+
     mainProgram = "cursor";
   };
 }).overrideAttrs
   (oldAttrs: {
-    autoPatchelfIgnoreMissingDeps =
-      (oldAttrs.autoPatchelfIgnoreMissingDeps or [ ])
-      ++ lib.optionals (stdenv.hostPlatform.isLinux && !stdenv.hostPlatform.isMusl) [
-        "libc.musl-*.so.*" # musl-based node modules are not used on glibc systems
-      ];
+    postInstall =
+      (oldAttrs.postInstall or "")
+      + lib.optionalString hostPlatform.isLinux ''
+        install -Dm644 ../mime/packages/cursor-workspace.xml -t $out/share/mime/packages
+        rm -f $out/lib/cursor/resources/appimageupdatetool.AppImage
+      '';
 
     preFixup =
       (oldAttrs.preFixup or "")
@@ -100,10 +100,10 @@ in
         sed -i '/^Keywords=/a MimeType=application/x-cursor-workspace;' \
           $out/share/applications/cursor.desktop
       '';
-    postInstall =
-      (oldAttrs.postInstall or "")
-      + lib.optionalString hostPlatform.isLinux ''
-        install -Dm644 ../mime/packages/cursor-workspace.xml -t $out/share/mime/packages
-        rm -f $out/lib/cursor/resources/appimageupdatetool.AppImage
-      '';
+
+    autoPatchelfIgnoreMissingDeps =
+      (oldAttrs.autoPatchelfIgnoreMissingDeps or [ ])
+      ++ lib.optionals (stdenv.hostPlatform.isLinux && !stdenv.hostPlatform.isMusl) [
+        "libc.musl-*.so.*" # musl-based node modules are not used on glibc systems
+      ];
   })

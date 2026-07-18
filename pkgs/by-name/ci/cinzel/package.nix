@@ -1,9 +1,9 @@
 {
   lib,
-  stdenvNoCC,
   fetchFromGitHub,
-  rename,
   nix-update-script,
+  rename,
+  stdenvNoCC,
 }:
 
 stdenvNoCC.mkDerivation {
@@ -39,10 +39,10 @@ stdenvNoCC.mkDerivation {
   };
 
   meta = {
-    homepage = "https://github.com/NDISCOVER/Cinzel";
     description = "Typeface inspired in First Century Roman Inscriptions";
+    homepage = "https://github.com/NDISCOVER/Cinzel";
     license = lib.licenses.ofl;
-    platforms = lib.platforms.all;
     maintainers = [ lib.maintainers.marijanp ];
+    platforms = lib.platforms.all;
   };
 }

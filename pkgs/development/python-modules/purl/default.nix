@@ -1,15 +1,14 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  six,
+  buildPythonPackage,
   pytestCheckHook,
+  six,
 }:
 
 buildPythonPackage rec {
   pname = "purl";
   version = "1.6";
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "codeinthehole";
@@ -19,9 +18,8 @@ buildPythonPackage rec {
   };
 
   propagatedBuildInputs = [ six ];
-
   nativeCheckInputs = [ pytestCheckHook ];
-
+  format = "setuptools";
   pythonImportsCheck = [ "purl" ];
 
   meta = {

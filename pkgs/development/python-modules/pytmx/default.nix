@@ -1,25 +1,20 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # build-system
-  setuptools-scm,
-
+  buildPythonPackage,
   # dependencies
   pygame,
   pyglet,
   pysdl2,
-
   # tests
   pytestCheckHook,
+  # build-system
+  setuptools-scm,
 }:
 
 buildPythonPackage {
   pname = "pytmx";
   version = "3.32";
-  pyproject = true;
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "bitcraft";
@@ -29,6 +24,9 @@ buildPythonPackage {
     rev = "7af805bc916e666fdf7165d5d6ba4c0eddfcde18";
     hash = "sha256-zRrMk812gAZoCAeYq4Uz/1RwJ0lJc7szyZ3IQDYZOd4=";
   };
+
+  nativeCheckInputs = [ pytestCheckHook ];
+  __structuredAttrs = true;
 
   build-system = [
     setuptools-scm
@@ -40,6 +38,13 @@ buildPythonPackage {
     pysdl2
   ];
 
+  disabledTests = [
+    # AssertionError on the property name
+    "test_contains_reserved_property_name"
+  ];
+
+  pyproject = true;
+
   pythonImportsCheck = [
     "pytmx.pytmx"
     "pytmx.util_pygame"
@@ -47,16 +52,9 @@ buildPythonPackage {
     "pytmx.util_pysdl2"
   ];
 
-  nativeCheckInputs = [ pytestCheckHook ];
-
-  disabledTests = [
-    # AssertionError on the property name
-    "test_contains_reserved_property_name"
-  ];
-
   meta = {
-    homepage = "https://github.com/bitcraft/PyTMX";
     description = "Python library to read Tiled Map Editor's TMX maps";
+    homepage = "https://github.com/bitcraft/PyTMX";
     license = lib.licenses.lgpl3Plus;
     maintainers = [ ];
   };

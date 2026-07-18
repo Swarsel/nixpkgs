@@ -1,11 +1,11 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
-  nix-update-script,
   coreutils,
-  polkit-stdin-agent,
   installShellFiles,
+  nix-update-script,
+  polkit-stdin-agent,
+  rustPlatform,
   versionCheckHook,
 }:
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -19,16 +19,12 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-J/I7VPXpOwNtEk9H+lbZVT+xJYBsSKgnMlwzlVIJSWk=";
   };
 
-  cargoHash = "sha256-JfxMmYgYLKxVqj8H0/qRGn9z8XNoNpPK3RcIhb/RKOc=";
-
-  __structuredAttrs = true;
-
   nativeBuildInputs = [
     installShellFiles
     versionCheckHook
   ];
 
-  doInstallCheck = true;
+  cargoHash = "sha256-JfxMmYgYLKxVqj8H0/qRGn9z8XNoNpPK3RcIhb/RKOc=";
 
   env = {
     POLKIT_STDIN_AGENT = lib.getExe polkit-stdin-agent;
@@ -43,17 +39,21 @@ rustPlatform.buildRustPackage (finalAttrs: {
       --zsh target/tmp/run0-sudo-shim/completion/_sudo
   '';
 
+  doInstallCheck = true;
+  __structuredAttrs = true;
   passthru.updateScript = nix-update-script { };
 
   meta = {
     description = "Shim for the sudo command that utilizes run0";
     changelog = "https://github.com/LordGrimmauld/run0-sudo-shim/releases/tag/${finalAttrs.version}";
-    mainProgram = "sudo";
     license = lib.licenses.bsd3;
+
     maintainers = with lib.maintainers; [
       zimward
       kuflierl
       grimmauld
     ];
+
+    mainProgram = "sudo";
   };
 })

@@ -1,59 +1,52 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  setuptools,
-  setuptools-scm,
-
+  aniso8601,
+  boto3,
   bottle,
+  buildPythonPackage,
   certifi,
+  cheroot,
   filelock,
+  furo,
+  graphviz,
+  holidays,
   isodate,
   jaconv,
   jsonschema,
   lxml,
+  matplotlib,
+  myst-parser,
   numpy,
   openpyxl,
-  pillow,
-  pyparsing,
-  python-dateutil,
-  regex,
-  truststore,
-  typing-extensions,
-
-  gui ? true,
-  tkinter,
-
-  aniso8601,
-  cheroot,
-  graphviz,
-  holidays,
-  matplotlib,
   pg8000,
+  pillow,
   pycryptodome,
   pymysql,
   pyodbc,
+  pyparsing,
+  pytestCheckHook,
+  python-dateutil,
   pytz,
   rdflib,
-  tinycss2,
-  tornado,
-
-  sphinxHook,
+  regex,
+  setuptools,
+  setuptools-scm,
   sphinx-autodoc2,
-  myst-parser,
   sphinx-copybutton,
-  furo,
-
+  sphinxHook,
+  tinycss2,
+  tkinter,
+  tornado,
+  truststore,
+  typing-extensions,
   writableTmpDirAsHomeHook,
-  pytestCheckHook,
-  boto3,
+  gui ? true,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "arelle${lib.optionalString (!gui) "-headless"}";
   version = "2.39.10";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "Arelle";
@@ -73,9 +66,26 @@ buildPythonPackage (finalAttrs: {
         'requires = ["setuptools", "wheel", "setuptools_scm[toml]"]'
   '';
 
-  pythonRelaxDeps = [
-    "pillow" # pillow's current version is above what arelle officially supports, but it should be fine
+  nativeBuildInputs = [
+    # deps for docs
+    sphinxHook
+    sphinx-autodoc2
+    myst-parser
+    sphinx-copybutton
+    furo
   ];
+
+  nativeCheckInputs = [
+    writableTmpDirAsHomeHook
+    pytestCheckHook
+    boto3
+  ]
+  ++ lib.concatAttrValues finalAttrs.passthru.optional-dependencies;
+
+  # the arelleGUI executable doesn't work when the gui option is false
+  postInstall = lib.optionalString (!gui) ''
+    find $out/bin -name "*arelleGUI*" -delete
+  '';
 
   build-system = [
     setuptools
@@ -101,52 +111,6 @@ buildPythonPackage (finalAttrs: {
   ]
   ++ lib.optionals gui [ tkinter ];
 
-  optional-dependencies = {
-    crypto = [ pycryptodome ];
-    db = [
-      # cx-oracle # Unfree
-      pg8000
-      pymysql
-      pyodbc
-      rdflib
-    ];
-    efm = [
-      aniso8601
-      holidays
-      matplotlib
-      pytz
-    ];
-    esef = [ tinycss2 ];
-    objectmaker = [ graphviz ];
-    # viewer = [ ixbrl-viewer ]; # Not yet packaged
-    webserver = [
-      cheroot
-      tornado
-    ];
-    xule = [ aniso8601 ];
-  };
-
-  nativeBuildInputs = [
-    # deps for docs
-    sphinxHook
-    sphinx-autodoc2
-    myst-parser
-    sphinx-copybutton
-    furo
-  ];
-
-  # the arelleGUI executable doesn't work when the gui option is false
-  postInstall = lib.optionalString (!gui) ''
-    find $out/bin -name "*arelleGUI*" -delete
-  '';
-
-  nativeCheckInputs = [
-    writableTmpDirAsHomeHook
-    pytestCheckHook
-    boto3
-  ]
-  ++ lib.concatAttrValues finalAttrs.passthru.optional-dependencies;
-
   disabledTestPaths = [
     "tests/integration_tests"
   ]
@@ -156,19 +120,59 @@ buildPythonPackage (finalAttrs: {
     "tests/unit_tests/arelle/test_import.py"
   ];
 
+  optional-dependencies = {
+    crypto = [ pycryptodome ];
+
+    db = [
+      # cx-oracle # Unfree
+      pg8000
+      pymysql
+      pyodbc
+      rdflib
+    ];
+
+    efm = [
+      aniso8601
+      holidays
+      matplotlib
+      pytz
+    ];
+
+    esef = [ tinycss2 ];
+    objectmaker = [ graphviz ];
+
+    # viewer = [ ixbrl-viewer ]; # Not yet packaged
+    webserver = [
+      cheroot
+      tornado
+    ];
+
+    xule = [ aniso8601 ];
+  };
+
+  pyproject = true;
+
+  pythonRelaxDeps = [
+    "pillow" # pillow's current version is above what arelle officially supports, but it should be fine
+  ];
+
   meta = {
     description = "Open source XBRL platform";
+
     longDescription = ''
       An open source facility for XBRL, the eXtensible Business Reporting
       Language supporting various standards, exposed through a Python or
       REST API ${lib.optionalString gui " and a graphical user interface"}.
     '';
-    mainProgram = "arelle";
+
     homepage = "http://arelle.org/";
     license = lib.licenses.asl20;
+
     maintainers = with lib.maintainers; [
       tomasajt
       roberth
     ];
+
+    mainProgram = "arelle";
   };
 })

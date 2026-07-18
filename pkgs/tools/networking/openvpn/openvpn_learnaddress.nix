@@ -1,10 +1,10 @@
 {
   lib,
   stdenv,
-  fetchgit,
-  makeWrapper,
   coreutils,
+  fetchgit,
   gawk,
+  makeWrapper,
   util-linux,
 }:
 
@@ -19,6 +19,7 @@ stdenv.mkDerivation {
   };
 
   nativeBuildInputs = [ makeWrapper ];
+
   buildInputs = [
     coreutils
     gawk

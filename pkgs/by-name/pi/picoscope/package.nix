@@ -1,21 +1,21 @@
 {
+  lib,
+  stdenv,
+  fetchurl,
   cacert,
   dpkg,
-  fetchurl,
   gdk-pixbuf,
   glib,
   glibc,
   gtk3,
   icu,
-  lib,
   libcap,
   librsvg,
   libusb1,
+  onetbb,
   openssl,
   patchelf,
-  stdenv,
   systemdMinimal,
-  onetbb,
   wrapGAppsHook3,
   writeTextDir,
 }:
@@ -42,23 +42,13 @@ let
 
 in
 stdenv.mkDerivation {
-  pname = "picoscope";
   inherit (sources.picoscope) version;
-
-  srcs = lib.mapAttrsToList (_: src: fetchurl { inherit (src) url sha256; }) sources;
-
-  unpackPhase = ''
-    for src in $srcs; do
-      dpkg-deb -x "$src" .
-    done
-  '';
+  pname = "picoscope";
 
   nativeBuildInputs = [
     dpkg
     wrapGAppsHook3
   ];
-
-  dontWrapGApps = true;
 
   buildInputs = libraries;
 
@@ -94,6 +84,14 @@ stdenv.mkDerivation {
   #   Arithmetic overflow while reading bundle.
   #   A fatal error occurred while processing application bundle
   dontStrip = true;
+  dontWrapGApps = true;
+  srcs = lib.mapAttrsToList (_: src: fetchurl { inherit (src) url sha256; }) sources;
+
+  unpackPhase = ''
+    for src in $srcs; do
+      dpkg-deb -x "$src" .
+    done
+  '';
 
   # usage:
   # services.udev.packages = [ pkgs.picoscope.rules ];
@@ -104,12 +102,8 @@ stdenv.mkDerivation {
   '';
 
   meta = {
-    homepage = "https://www.picotech.com/downloads/linux";
-    maintainers = with lib.maintainers; [ wirew0rm ];
-    platforms = [ "x86_64-linux" ];
-    license = lib.licenses.unfree;
-    sourceProvenance = with lib.sourceTypes; [ binaryBytecode ];
     description = "Oscilloscope application that works with all PicoScope models";
+
     longDescription = ''
       PicoScope for Linux is a powerful oscilloscope application that works
       with all PicoScope models. The most important features from PicoScope
@@ -121,5 +115,11 @@ stdenv.mkDerivation {
       PicoScope for Linux, PicoScope for macOS and PicoScope for Windows
       users, or exported in text, CSV and MathWorks MATLAB 4 formats.
     '';
+
+    homepage = "https://www.picotech.com/downloads/linux";
+    license = lib.licenses.unfree;
+    sourceProvenance = with lib.sourceTypes; [ binaryBytecode ];
+    maintainers = with lib.maintainers; [ wirew0rm ];
+    platforms = [ "x86_64-linux" ];
   };
 }

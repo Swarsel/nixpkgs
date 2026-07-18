@@ -4,12 +4,9 @@
 }:
 
 stdenv.mkDerivation {
-  pname = "ucg-test";
   inherit (ucg) version;
-
+  pname = "ucg-test";
   nativeBuildInputs = [ ucg ];
-
-  dontInstall = true;
 
   buildCommand = ''
     testFile=$(mktemp /tmp/ucg-test.XXXX)
@@ -22,5 +19,6 @@ stdenv.mkDerivation {
     touch $out
   '';
 
+  dontInstall = true;
   meta.timeout = 10;
 }

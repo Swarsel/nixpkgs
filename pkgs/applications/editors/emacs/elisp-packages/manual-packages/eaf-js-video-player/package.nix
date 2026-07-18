@@ -1,14 +1,14 @@
 {
   # Basic
   lib,
-  melpaBuild,
   fetchFromGitHub,
-  # JavaScript dependency
-  nodejs,
   fetchNpmDeps,
-  npmHooks,
+  melpaBuild,
   # Updater
   nix-update-script,
+  # JavaScript dependency
+  nodejs,
+  npmHooks,
 }:
 
 melpaBuild (finalAttrs: {
@@ -23,26 +23,19 @@ melpaBuild (finalAttrs: {
     hash = "sha256-tyovHnVX1kkom8W56GI/+PfaQSoCiB4OJj535Dbzah0=";
   };
 
-  env.npmDeps = fetchNpmDeps {
-    name = "${finalAttrs.pname}-npm-deps";
-    inherit (finalAttrs) src;
-    hash = "sha256-grLuq11Sgx6jYCDjWch1AYuL8d/NCsr9BmAPvEgrfG8=";
-  };
-
   nativeBuildInputs = [
     nodejs
     npmHooks.npmConfigHook
   ];
 
+  env.npmDeps = fetchNpmDeps {
+    inherit (finalAttrs) src;
+    hash = "sha256-grLuq11Sgx6jYCDjWch1AYuL8d/NCsr9BmAPvEgrfG8=";
+    name = "${finalAttrs.pname}-npm-deps";
+  };
+
   postBuild = ''
     npm run build
-  '';
-
-  files = ''
-    ("*.el"
-     "*.py"
-     "*.js"
-     "src")
   '';
 
   postInstall = ''
@@ -52,15 +45,23 @@ melpaBuild (finalAttrs: {
     cp -r dist $LISPDIR/
   '';
 
+  files = ''
+    ("*.el"
+     "*.py"
+     "*.js"
+     "src")
+  '';
+
   passthru = {
-    updateScript = nix-update-script { extraArgs = [ "--version=branch" ]; };
     eafPythonDeps = ps: [ ];
+    updateScript = nix-update-script { extraArgs = [ "--version=branch" ]; };
   };
 
   meta = {
     description = "EAF Video Player (JS) application";
     homepage = "https://github.com/emacs-eaf/eaf-js-video-player";
     license = lib.licenses.gpl3Only;
+
     maintainers = with lib.maintainers; [
       thattemperature
     ];

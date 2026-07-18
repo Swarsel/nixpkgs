@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   hypothesis,
   poetry-core,
   pytestCheckHook,
@@ -10,7 +10,6 @@
 buildPythonPackage rec {
   pname = "collections-extended";
   version = "2.0.2";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "mlenzen";
@@ -27,13 +26,13 @@ buildPythonPackage rec {
         "random_.shuffle(self._list)"
   '';
 
-  build-system = [ poetry-core ];
-
   nativeCheckInputs = [
     hypothesis
     pytestCheckHook
   ];
 
+  build-system = [ poetry-core ];
+  pyproject = true;
   pythonImportsCheck = [ "collections_extended" ];
 
   meta = {

@@ -1,9 +1,9 @@
 {
   lib,
+  fetchFromGitHub,
   aiohttp,
   aioresponses,
   buildPythonPackage,
-  fetchFromGitHub,
   mashumaro,
   orjson,
   poetry-core,
@@ -17,7 +17,6 @@
 buildPythonPackage rec {
   pname = "airgradient";
   version = "0.9.2";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "airgradienthq";
@@ -25,6 +24,14 @@ buildPythonPackage rec {
     tag = "v${version}";
     hash = "sha256-llhdLqVueATKCb4wyPYjnsdOpbbE2BnUU0PH0jwHPMU=";
   };
+
+  nativeCheckInputs = [
+    aioresponses
+    pytest-asyncio
+    pytest-cov-stub
+    pytestCheckHook
+    syrupy
+  ];
 
   build-system = [ poetry-core ];
 
@@ -35,14 +42,7 @@ buildPythonPackage rec {
     yarl
   ];
 
-  nativeCheckInputs = [
-    aioresponses
-    pytest-asyncio
-    pytest-cov-stub
-    pytestCheckHook
-    syrupy
-  ];
-
+  pyproject = true;
   pythonImportsCheck = [ "airgradient" ];
 
   meta = {

@@ -32,11 +32,11 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   meta = {
-    homepage = "https://z00m128.github.io/sjasmplus/";
     description = "Z80 assembly language cross compiler based on the SjASM source code by Sjoerd Mastijn";
-    mainProgram = "sjasmplus";
+    homepage = "https://z00m128.github.io/sjasmplus/";
     license = lib.licenses.bsd3;
-    platforms = lib.platforms.all;
     maintainers = with lib.maintainers; [ electrified ];
+    platforms = lib.platforms.all;
+    mainProgram = "sjasmplus";
   };
 })

@@ -1,13 +1,12 @@
 {
   lib,
-  buildPythonPackage,
   fetchurl,
+  buildPythonPackage,
 }:
 
 buildPythonPackage rec {
   pname = "pan-python";
   version = "0.25.0";
-  format = "wheel";
 
   # fetchPypi doesn't appear to work, possibly because the uploaded archives on PyPI
   # are named (notice '_' vs. '-'):
@@ -18,6 +17,7 @@ buildPythonPackage rec {
     hash = "sha256-IWqXsFORXzo8n+J39ZaqAK1vD1uIxy3idtt1+Sq5x+0=";
   };
 
+  format = "wheel";
   pythonImportsCheck = [ "pan" ];
 
   meta = {

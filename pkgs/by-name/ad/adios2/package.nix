@@ -2,46 +2,42 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  fetchpatch2,
-  perl,
-  cmake,
-  ninja,
-  gfortran,
-  pkg-config,
-  python3Packages,
-  mpi,
-  catalyst,
   bzip2,
   c-blosc2,
+  catalyst,
+  cmake,
+  ctestCheckHook,
+  fetchpatch2,
+  gfortran,
+  gtest,
   hdf5,
   libfabric,
+  libffi,
   libpng,
   libsodium,
+  llvmPackages,
+  mpi,
+  mpiCheckPhaseHook,
+  ninja,
+  nlohmann_json,
+  openssl,
+  perl,
+  pkg-config,
   pugixml,
+  python3Packages,
   sqlite,
+  testers,
+  ucx,
+  yaml-cpp,
   zeromq,
   zfp,
   zlib,
-  ucx,
-  libffi,
-  yaml-cpp,
-  nlohmann_json,
-  openssl,
-  llvmPackages,
-  gtest,
-  ctestCheckHook,
-  mpiCheckPhaseHook,
-  testers,
   mpiSupport ? true,
   pythonSupport ? false,
   withExamples ? false,
 }:
 let
   adios2Packages = {
-    hdf5 = hdf5.override {
-      inherit mpi mpiSupport;
-      cppSupport = !mpiSupport;
-    };
     catalyst = catalyst.override {
       inherit
         mpi
@@ -50,12 +46,18 @@ let
         pythonSupport
         ;
     };
+
+    hdf5 = hdf5.override {
+      inherit mpi mpiSupport;
+      cppSupport = !mpiSupport;
+    };
+
     mpi4py = python3Packages.mpi4py.override { inherit mpi; };
   };
 in
 stdenv.mkDerivation (finalAttrs: {
-  version = "2.11.0";
   pname = "adios2";
+  version = "2.11.0";
 
   src = fetchFromGitHub {
     owner = "ornladios";
@@ -64,28 +66,28 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-yHPI///17poiCEb7Luu5qfqxTWm9Nh+o9r57mZT26U0=";
   };
 
-  postPatch = ''
-    chmod +x cmake/install/post/adios2-config.pre.sh.in
-    patchShebangs cmake/install/post/{generate-adios2-config,adios2-config.pre}.sh.in
-  '';
-
   # TODO: remove these patches when updating to > v2.11.x, which will already include these commits
   patches = [
     # use upstream GoogleTest.cmake
     # see https://github.com/ornladios/ADIOS2/issues/4659
     (fetchpatch2 {
+      hash = "sha256-CZD3QUATX0JI75Oip0LNwirWIwgQakWuCHs1fIjwzj0=";
       name = "googletest-cmake-fix.patch";
       url = "https://github.com/ornladios/ADIOS2/commit/20aab0f99d38dc4437b086edf6b44ecf4100ed76.patch?full_index=1";
-      hash = "sha256-CZD3QUATX0JI75Oip0LNwirWIwgQakWuCHs1fIjwzj0=";
     })
     # fix double import cmake conflict
     # see https://github.com/ornladios/ADIOS2/issues/4760
     (fetchpatch2 {
+      hash = "sha256-+29a9JgiCv2kBz0uUT8Kn/Tf3KDD1JNPdzeb/DruTBo=";
       name = "cmake-target-guard-fix.patch";
       url = "https://github.com/ornladios/ADIOS2/commit/23fd08a10b52a971150f93f99d341b83b8096e3d.patch?full_index=1";
-      hash = "sha256-+29a9JgiCv2kBz0uUT8Kn/Tf3KDD1JNPdzeb/DruTBo=";
     })
   ];
+
+  postPatch = ''
+    chmod +x cmake/install/post/adios2-config.pre.sh.in
+    patchShebangs cmake/install/post/{generate-adios2-config,adios2-config.pre}.sh.in
+  '';
 
   nativeBuildInputs = [
     perl
@@ -130,6 +132,7 @@ stdenv.mkDerivation (finalAttrs: {
     ++ lib.optional pythonSupport (
       python3Packages.mkPythonMetaPackage {
         inherit (finalAttrs) pname version meta;
+
         dependencies = [
           python3Packages.numpy
         ]
@@ -191,18 +194,8 @@ stdenv.mkDerivation (finalAttrs: {
     (lib.cmakeFeature "CMAKE_INSTALL_PYTHONDIR" python3Packages.python.sitePackages)
   ];
 
-  # python binding libraries should be linked against installed libraries
-  preInstall = lib.optionalString pythonSupport ''
-    export adios2_DIR=$out/lib/cmake/adios2
-  '';
-
   # Tests are time-consuming and moved to passthru.tests.withCheck.
   doCheck = false;
-  dontUseNinjaCheck = true;
-
-  enableParallelChecking = false;
-
-  __darwinAllowLocalNetworking = finalAttrs.finalPackage.doCheck && mpiSupport;
 
   nativeCheckInputs = [
     python3Packages.python
@@ -211,6 +204,14 @@ stdenv.mkDerivation (finalAttrs: {
     mpiCheckPhaseHook
   ];
 
+  # python binding libraries should be linked against installed libraries
+  preInstall = lib.optionalString pythonSupport ''
+    export adios2_DIR=$out/lib/cmake/adios2
+  '';
+
+  __darwinAllowLocalNetworking = finalAttrs.finalPackage.doCheck && mpiSupport;
+  dontUseNinjaCheck = true;
+  enableParallelChecking = false;
   pythonImportsCheck = [ "adios2" ];
 
   passthru.tests = {
@@ -226,10 +227,10 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   meta = {
-    homepage = "https://adios2.readthedocs.io/en/latest/";
     description = "Adaptable Input/Output System version 2";
+    homepage = "https://adios2.readthedocs.io/en/latest/";
     license = lib.licenses.asl20;
-    platforms = lib.platforms.unix;
     maintainers = with lib.maintainers; [ qbisi ];
+    platforms = lib.platforms.unix;
   };
 })

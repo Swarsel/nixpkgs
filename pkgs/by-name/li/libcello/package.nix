@@ -16,8 +16,8 @@ stdenv.mkDerivation (finalAttrs: {
   makeFlags = [ "PREFIX=$(out)" ];
 
   meta = {
-    homepage = "https://libcello.org/";
     description = "Higher level programming in C";
+    homepage = "https://libcello.org/";
     license = lib.licenses.bsd3;
     maintainers = [ lib.maintainers.MostAwesomeDude ];
     platforms = lib.platforms.unix;

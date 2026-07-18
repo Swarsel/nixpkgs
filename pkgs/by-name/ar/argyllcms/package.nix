@@ -1,27 +1,27 @@
 {
+  lib,
   stdenv,
+  buildPackages,
   fetchzip,
   jam,
-  unzip,
-  libx11,
-  libxxf86vm,
-  libxrandr,
-  libxinerama,
-  libxrender,
-  libxext,
-  libtiff,
   libjpeg,
   libpng,
-  libxscrnsaver,
-  writeText,
-  libxdmcp,
+  libtiff,
+  libx11,
   libxau,
-  lib,
+  libxdmcp,
+  libxext,
+  libxinerama,
+  libxrandr,
+  libxrender,
+  libxscrnsaver,
+  libxxf86vm,
   openssl,
-  buildPackages,
   replaceVars,
   udevCheckHook,
+  unzip,
   writeScript,
+  writeText,
 }:
 
 stdenv.mkDerivation rec {
@@ -35,12 +35,6 @@ stdenv.mkDerivation rec {
     hash = "sha256-QVugWtAk8xBn+/fRFqCoi072Q2q8OlB0LRhavrHC5MI=";
   };
 
-  nativeBuildInputs = [
-    jam
-    udevCheckHook
-    unzip
-  ];
-
   patches = lib.optional (!stdenv.buildPlatform.canExecute stdenv.hostPlatform) (
     # Build process generates files by compiling and then invoking an executable.
     replaceVars ./jam-cross.patch {
@@ -52,6 +46,34 @@ stdenv.mkDerivation rec {
     substituteInPlace Jambase \
       --replace "-m64" ""
   '';
+
+  nativeBuildInputs = [
+    jam
+    udevCheckHook
+    unzip
+  ];
+
+  buildInputs = [
+    libtiff
+    libjpeg
+    libpng
+    libx11
+    libxxf86vm
+    libxrandr
+    libxinerama
+    libxext
+    libxrender
+    libxscrnsaver
+    libxdmcp
+    libxau
+    openssl
+  ];
+
+  makeFlags = [
+    "PREFIX=${placeholder "out"}"
+  ];
+
+  buildFlags = [ "all" ];
 
   preConfigure =
     let
@@ -132,28 +154,6 @@ stdenv.mkDerivation rec {
       export AR="$AR rusc"
     '';
 
-  buildInputs = [
-    libtiff
-    libjpeg
-    libpng
-    libx11
-    libxxf86vm
-    libxrandr
-    libxinerama
-    libxext
-    libxrender
-    libxscrnsaver
-    libxdmcp
-    libxau
-    openssl
-  ];
-
-  buildFlags = [ "all" ];
-
-  makeFlags = [
-    "PREFIX=${placeholder "out"}"
-  ];
-
   # Install udev rules, but remove lines that set up the udev-acl
   # stuff, since that is handled by udev's own rules (70-udev-acl.rules)
   postInstall = ''
@@ -183,8 +183,8 @@ stdenv.mkDerivation rec {
   };
 
   meta = {
-    homepage = "https://www.argyllcms.com/";
     description = "Color management system (compatible with ICC)";
+    homepage = "https://www.argyllcms.com/";
     license = lib.licenses.gpl3;
     maintainers = [ ];
     platforms = lib.platforms.linux;

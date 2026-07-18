@@ -1,32 +1,27 @@
 {
   lib,
   stdenv,
-  buildPythonPackage,
   fetchFromGitHub,
-  pythonAtLeast,
-  replaceVars,
-
-  # build-system
-  setuptools,
-
-  # nativeBuildInputs
-  cmake,
-
-  # buildInputs
-  cpuinfo,
-  llvmPackages,
-
-  # dependencies
-  torch,
-
   # tests
   bitsandbytes,
+  buildPythonPackage,
+  # nativeBuildInputs
+  cmake,
+  # buildInputs
+  cpuinfo,
   expecttest,
   fire,
+  llvmPackages,
+  parameterized,
   pytest-xdist,
   pytestCheckHook,
-  parameterized,
+  pythonAtLeast,
+  replaceVars,
+  # build-system
+  setuptools,
   tabulate,
+  # dependencies
+  torch,
   torchvision,
   transformers,
   unittest-xml-reporting,
@@ -44,7 +39,6 @@ in
 buildPythonPackage (finalAttrs: {
   pname = "torchao";
   version = "0.17.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "pytorch";
@@ -53,10 +47,6 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-Mry6jsZKkoC8dq3fYNsRyGbL4+S8ZYuHpkETNDy5qsg=";
   };
 
-  # AttributeError: 'typing.Union' object has no attribute '__module__' and no __dict__ for setting
-  # new attributes. Did you mean: '__reduce__'?
-  disabled = pythonAtLeast "3.14";
-
   patches = lib.optionals isAarch64Darwin [
     ./use-system-cpuinfo.patch
     (replaceVars ./use-llvm-openmp.patch {
@@ -64,33 +54,17 @@ buildPythonPackage (finalAttrs: {
     })
   ];
 
-  build-system = [
-    setuptools
-  ];
-
   nativeBuildInputs = lib.optionals isAarch64Darwin [
     cmake
   ];
-  dontUseCmakeConfigure = true;
 
   buildInputs = lib.optionals isAarch64Darwin [
     cpuinfo
   ];
 
-  dependencies = [
-    torch
-  ];
-
   env = {
     USE_SYSTEM_LIBS = true;
   };
-
-  # Otherwise, the tests are loading the python module from the source instead of the installed one
-  preCheck = ''
-    rm -rf torchao
-  '';
-
-  pythonImportsCheck = [ "torchao" ];
 
   nativeCheckInputs = [
     bitsandbytes
@@ -103,6 +77,54 @@ buildPythonPackage (finalAttrs: {
     torchvision
     transformers
     unittest-xml-reporting
+  ];
+
+  # Otherwise, the tests are loading the python module from the source instead of the installed one
+  preCheck = ''
+    rm -rf torchao
+  '';
+
+  __darwinAllowLocalNetworking = true;
+
+  build-system = [
+    setuptools
+  ];
+
+  dependencies = [
+    torch
+  ];
+
+  # AttributeError: 'typing.Union' object has no attribute '__module__' and no __dict__ for setting
+  # new attributes. Did you mean: '__reduce__'?
+  disabled = pythonAtLeast "3.14";
+
+  disabledTestPaths = [
+    # ImportError: cannot import name 'ToyLinearModel' from 'torchao.testing.model_architectures'
+    "benchmarks/microbenchmarks/test/test_benchmark_profiler.py"
+    "benchmarks/microbenchmarks/test/test_utils.py"
+
+    # ImportError: cannot import name 'fp8_blockwise_weight_dequant' from 'torchao.kernel.blockwise_quantization'
+    "test/kernel/test_blockwise_triton.py"
+  ]
+  ++ lib.optionals isDarwin [
+    # Require unpackaged 'coremltools'
+    "test/prototype/test_groupwise_lowbit_weight_lut_quantizer.py"
+
+    # AttributeError: '_OpNamespace' 'mkldnn' object has no attribute '_is_mkldnn_acl_supported'
+    "test/quantization/pt2e/test_arm_inductor_quantizer.py"
+    "test/quantization/pt2e/test_x86inductor_fusion.py"
+    "test/quantization/pt2e/test_x86inductor_quantizer.py"
+
+    # TypeError: Trying to convert Float8_e4m3fn to the MPS backend but it does not have support for that dtype.
+    "test/quantization/quantize_/workflows/float8/test_float8_tensor.py"
+    "test/test_low_bit_optim.py::TestOptim::test_subclass_appearance_dtype_subclass2_device_mps"
+
+    # AssertionError: Torch not compiled with CUDA enabled
+    "test/integration/test_integration.py"
+
+    # Wants network access
+    "test/test_low_bit_optim.py::TestQuantize::test_bf16_stochastic_round_dtensor_device_mps_compile_False"
+    "test/test_low_bit_optim.py::TestQuantize::test_bf16_stochastic_round_dtensor_device_mps_compile_True"
   ];
 
   disabledTests = [
@@ -299,46 +321,21 @@ buildPythonPackage (finalAttrs: {
     "test_subclass_slice"
   ];
 
-  disabledTestPaths = [
-    # ImportError: cannot import name 'ToyLinearModel' from 'torchao.testing.model_architectures'
-    "benchmarks/microbenchmarks/test/test_benchmark_profiler.py"
-    "benchmarks/microbenchmarks/test/test_utils.py"
-
-    # ImportError: cannot import name 'fp8_blockwise_weight_dequant' from 'torchao.kernel.blockwise_quantization'
-    "test/kernel/test_blockwise_triton.py"
-  ]
-  ++ lib.optionals isDarwin [
-    # Require unpackaged 'coremltools'
-    "test/prototype/test_groupwise_lowbit_weight_lut_quantizer.py"
-
-    # AttributeError: '_OpNamespace' 'mkldnn' object has no attribute '_is_mkldnn_acl_supported'
-    "test/quantization/pt2e/test_arm_inductor_quantizer.py"
-    "test/quantization/pt2e/test_x86inductor_fusion.py"
-    "test/quantization/pt2e/test_x86inductor_quantizer.py"
-
-    # TypeError: Trying to convert Float8_e4m3fn to the MPS backend but it does not have support for that dtype.
-    "test/quantization/quantize_/workflows/float8/test_float8_tensor.py"
-    "test/test_low_bit_optim.py::TestOptim::test_subclass_appearance_dtype_subclass2_device_mps"
-
-    # AssertionError: Torch not compiled with CUDA enabled
-    "test/integration/test_integration.py"
-
-    # Wants network access
-    "test/test_low_bit_optim.py::TestQuantize::test_bf16_stochastic_round_dtensor_device_mps_compile_False"
-    "test/test_low_bit_optim.py::TestQuantize::test_bf16_stochastic_round_dtensor_device_mps_compile_True"
-  ];
-
-  __darwinAllowLocalNetworking = true;
+  dontUseCmakeConfigure = true;
+  pyproject = true;
+  pythonImportsCheck = [ "torchao" ];
 
   meta = {
     description = "PyTorch native quantization and sparsity for training and inference";
     homepage = "https://github.com/pytorch/ao";
     changelog = "https://github.com/pytorch/ao/releases/tag/${finalAttrs.src.tag}";
     license = lib.licenses.bsd3;
+
     maintainers = with lib.maintainers; [
       GaetanLepage
       sarahec
     ];
+
     badPlatforms = [
       # Many tests failing and hanging indefinitely
       "aarch64-linux"

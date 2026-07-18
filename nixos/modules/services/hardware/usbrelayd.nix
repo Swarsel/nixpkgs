@@ -12,19 +12,21 @@ in
     enable = lib.mkEnableOption "USB Relay MQTT daemon";
 
     broker = lib.mkOption {
-      type = str;
-      description = "Hostname or IP address of your MQTT Broker.";
       default = "127.0.0.1";
+      description = "Hostname or IP address of your MQTT Broker.";
+
       example = [
         "mqtt"
         "192.168.1.1"
       ];
+
+      type = str;
     };
 
     clientName = lib.mkOption {
-      type = str;
-      description = "Name, your client connects as.";
       default = "MyUSBRelay";
+      description = "Name, your client connects as.";
+      type = str;
     };
   };
 

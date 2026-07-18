@@ -1,17 +1,16 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
+  buildPythonPackage,
   lxml,
   pypdf,
   pytestCheckHook,
+  setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "drafthorse";
   version = "2025.2.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "pretix";
@@ -20,6 +19,7 @@ buildPythonPackage rec {
     hash = "sha256-z8w1n/rjrVpL+3MFoTaKCI7NZpchIg4H80rNlm0sFgQ=";
   };
 
+  nativeCheckInputs = [ pytestCheckHook ];
   build-system = [ setuptools ];
 
   dependencies = [
@@ -27,8 +27,7 @@ buildPythonPackage rec {
     pypdf
   ];
 
-  nativeCheckInputs = [ pytestCheckHook ];
-
+  pyproject = true;
   pythonImportsCheck = [ "drafthorse" ];
 
   meta = {

@@ -2,9 +2,9 @@
   lib,
   stdenv,
   fetchurl,
-  fetchpatch,
   autoreconfHook,
   dbus,
+  fetchpatch,
   file,
   glib,
   gnutls,
@@ -81,23 +81,27 @@ stdenv.mkDerivation (finalAttrs: {
 
   patches = [
     (fetchpatch {
+      hash = "sha256-kPb4pZVWvnvTUcpc4wRc8x/pMUTXGIywj3w8IYKRTBs=";
       name = "CVE-2025-32366.patch";
       url = "https://git.kernel.org/pub/scm/network/connman/connman.git/patch/?id=8d3be0285f1d4667bfe85dba555c663eb3d704b4";
-      hash = "sha256-kPb4pZVWvnvTUcpc4wRc8x/pMUTXGIywj3w8IYKRTBs=";
     })
     (fetchpatch {
+      hash = "sha256-odkjYC/iM6dTIJx2WM/KKotXdTtgv8NMFNJMzx5+YU4=";
       name = "CVE-2025-32743.patch";
       url = "https://git.kernel.org/pub/scm/network/connman/connman.git/patch/?id=d90b911f6760959bdf1393c39fe8d1118315490f";
-      hash = "sha256-odkjYC/iM6dTIJx2WM/KKotXdTtgv8NMFNJMzx5+YU4=";
     })
   ]
   ++ optionals stdenv.hostPlatform.isMusl [
     # Fix Musl build by avoiding a Glibc-only API.
     (fetchurl {
-      url = "https://git.alpinelinux.org/aports/plain/community/connman/libresolv.patch?id=e393ea84386878cbde3cccadd36a30396e357d1e";
       hash = "sha256-7Q1bp8rD/gGVYUqnIXqjr9vypR8jlC926p3KYWl9kLw=";
+      url = "https://git.alpinelinux.org/aports/plain/community/connman/libresolv.patch?id=e393ea84386878cbde3cccadd36a30396e357d1e";
     })
   ];
+
+  postPatch = ''
+    sed -i "s@/usr/bin/file@file@g" ./configure
+  '';
 
   nativeBuildInputs = [
     autoreconfHook
@@ -120,10 +124,6 @@ stdenv.mkDerivation (finalAttrs: {
     pptp
     ppp
   ];
-
-  postPatch = ''
-    sed -i "s@/usr/bin/file@file@g" ./configure
-  '';
 
   configureFlags = [
     # directories flags
@@ -184,15 +184,14 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   doCheck = true;
-
   passthru.tests.connman = nixosTests.connman;
 
   meta = {
     description = "Daemon for managing internet connections";
     homepage = "https://git.kernel.org/pub/scm/network/connman/connman.git/about/";
     license = lib.licenses.gpl2Only;
-    mainProgram = "connmanctl";
     maintainers = [ ];
     platforms = lib.platforms.linux;
+    mainProgram = "connmanctl";
   };
 })

@@ -1,10 +1,10 @@
 {
   lib,
   fetchFromGitHub,
-  rustPlatform,
+  nix-update-script,
   openssl,
   pkg-config,
-  nix-update-script,
+  rustPlatform,
 }:
 rustPlatform.buildRustPackage (finalAttrs: {
   pname = "rsrpc";
@@ -17,8 +17,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-QzPFhdnZXiJZ4g+J9kB2v8duM2PgShptNRHliTYW3AU=";
   };
 
-  cargoHash = "sha256-6Krtsj9hm8NqkFQMQ0MAPrFAjnzcTt4q5C1Fs5mx2SM=";
-
   nativeBuildInputs = [
     pkg-config
   ];
@@ -27,12 +25,13 @@ rustPlatform.buildRustPackage (finalAttrs: {
     openssl
   ];
 
+  cargoHash = "sha256-6Krtsj9hm8NqkFQMQ0MAPrFAjnzcTt4q5C1Fs5mx2SM=";
   passthru.updateScript = nix-update-script { };
 
   meta = {
-    changelog = "https://github.com/SpikeHD/rsRPC/releases/tag/v${finalAttrs.version}";
     description = "Rust implementation of the Discord RPC server";
     homepage = "https://github.com/SpikeHD/rsRPC";
+    changelog = "https://github.com/SpikeHD/rsRPC/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.mit;
     maintainers = [ lib.maintainers.pyrox0 ];
     mainProgram = "rsrpc-cli";

@@ -3,8 +3,8 @@
   stdenv,
   fetchFromGitLab,
   glib,
-  openal,
   hidapi,
+  openal,
   pipewire,
   pkg-config,
   qt6Packages,
@@ -22,12 +22,6 @@ stdenv.mkDerivation (finalAttrs: {
     fetchSubmodules = true;
   };
 
-  qmakeFlags = [
-    "CONFIG+=link_pkgconfig"
-    "PKGCONFIG+=libpipewire-0.3"
-    "QT_TOOL.lrelease.binary=${lib.getDev qt6Packages.qttools}/bin/lrelease"
-  ];
-
   nativeBuildInputs = [
     pkg-config
     qt6Packages.wrapQtAppsHook
@@ -43,9 +37,15 @@ stdenv.mkDerivation (finalAttrs: {
     pipewire
   ];
 
+  qmakeFlags = [
+    "CONFIG+=link_pkgconfig"
+    "PKGCONFIG+=libpipewire-0.3"
+    "QT_TOOL.lrelease.binary=${lib.getDev qt6Packages.qttools}/bin/lrelease"
+  ];
+
   meta = {
-    homepage = "https://gitlab.com/OpenRGBDevelopers/OpenRGBEffectsPlugin";
     description = "Effects plugin for OpenRGB";
+    homepage = "https://gitlab.com/OpenRGBDevelopers/OpenRGBEffectsPlugin";
     license = lib.licenses.gpl2Plus;
     maintainers = with lib.maintainers; [ fgaz ];
     platforms = lib.platforms.linux;

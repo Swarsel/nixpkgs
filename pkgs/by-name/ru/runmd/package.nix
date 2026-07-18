@@ -1,7 +1,7 @@
 {
   lib,
-  buildNpmPackage,
   fetchFromGitHub,
+  buildNpmPackage,
 }:
 
 buildNpmPackage (finalAttrs: {
@@ -16,7 +16,6 @@ buildNpmPackage (finalAttrs: {
   };
 
   npmDepsHash = "sha256-0djcoEq1O6zubD8OTFNE0BrOebSiw4JAXxa6flbHLb0=";
-
   dontNpmBuild = true;
 
   meta = {
@@ -25,7 +24,7 @@ buildNpmPackage (finalAttrs: {
     changelog = "https://github.com/broofa/runmd/blob/${finalAttrs.src.tag}/CHANGELOG.md";
     license = lib.licenses.mit;
     maintainers = [ ];
-    mainProgram = "runmd";
     platforms = lib.platforms.all;
+    mainProgram = "runmd";
   };
 })

@@ -1,8 +1,8 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
   installShellFiles,
+  rustPlatform,
 }:
 
 let
@@ -24,16 +24,12 @@ rustPlatform.buildRustPackage (finalAttrs: {
     fetchSubmodules = true;
   };
 
-  cargoHash = "sha256-BvL1rGJcU28TLkxJ3pKah6qfaa0SdUt143UgBYJrLsE=";
-
   nativeBuildInputs = [
     rustPlatform.bindgenHook
     installShellFiles
   ];
 
-  buildAndTestSubdir = "cli";
-  buildNoDefaultFeatures = true;
-  buildFeatures = features;
+  cargoHash = "sha256-BvL1rGJcU28TLkxJ3pKah6qfaa0SdUt143UgBYJrLsE=";
 
   # Man pages and autocompletion
   postInstall = ''
@@ -45,25 +41,32 @@ rustPlatform.buildRustPackage (finalAttrs: {
     installShellCompletion --zsh --name _oxigraph "$COMPLETE_DIR/_oxigraph"
   '';
 
-  cargoCheckNoDefaultFeatures = true;
+  buildAndTestSubdir = "cli";
+  buildFeatures = features;
+  buildNoDefaultFeatures = true;
   cargoCheckFeatures = features;
+  cargoCheckNoDefaultFeatures = true;
 
   meta = {
-    homepage = "https://github.com/oxigraph/oxigraph";
     description = "SPARQL graph database";
+    homepage = "https://github.com/oxigraph/oxigraph";
+
+    license = with lib.licenses; [
+      asl20
+      mit
+    ];
+
+    maintainers = with lib.maintainers; [
+      astro
+      tnias
+    ];
+
     platforms = [
       "x86_64-linux"
       "aarch64-linux"
       "aarch64-darwin"
     ];
-    maintainers = with lib.maintainers; [
-      astro
-      tnias
-    ];
-    license = with lib.licenses; [
-      asl20
-      mit
-    ];
+
     mainProgram = "oxigraph";
   };
 })

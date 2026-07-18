@@ -11,10 +11,8 @@ in
 {
   options.programs.vim = {
     enable = lib.mkEnableOption "Vi IMproved, an advanced text editor";
-
-    defaultEditor = lib.mkEnableOption "vim as the default editor";
-
     package = lib.mkPackageOption pkgs "vim" { example = [ "vim-full" ]; };
+    defaultEditor = lib.mkEnableOption "vim as the default editor";
   };
 
   config = lib.mkIf (cfg.enable || cfg.defaultEditor) {
@@ -24,10 +22,11 @@ in
         message = "{option}`programs.vim.defaultEditor` requires {option}`programs.vim.enable` to be set to true.";
       }
     ];
+
     environment = {
-      systemPackages = [ cfg.package ];
-      sessionVariables.EDITOR = lib.mkIf cfg.defaultEditor (lib.mkOverride 900 "vim");
       pathsToLink = [ "/share/vim-plugins" ];
+      sessionVariables.EDITOR = lib.mkIf cfg.defaultEditor (lib.mkOverride 900 "vim");
+      systemPackages = [ cfg.package ];
     };
   };
 }

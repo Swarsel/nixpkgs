@@ -37,11 +37,6 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-HskhMZy8y61c/j/F5e5aM41AQ8t+TCUq/iY23SFB92o=";
   };
 
-  cargoDeps = rustPlatform.fetchCargoVendor {
-    inherit (finalAttrs) pname version src;
-    hash = "sha256-xHukIMUG5himj1umKn+IKM7kJ29MH/pt/jPEHd2EeT0=";
-  };
-
   strictDeps = true;
 
   nativeBuildInputs = [
@@ -83,10 +78,7 @@ stdenv.mkDerivation (finalAttrs: {
     gstreamer
   ]);
 
-  mesonBuildType = "release";
-
   doCheck = stdenv.buildPlatform.canExecute stdenv.hostPlatform;
-  cargoCheckType = if (finalAttrs.mesonBuildType != "debug") then "release" else "debug";
 
   checkPhase = ''
     runHook preCheck
@@ -96,6 +88,15 @@ stdenv.mkDerivation (finalAttrs: {
 
     runHook postCheck
   '';
+
+  cargoCheckType = if (finalAttrs.mesonBuildType != "debug") then "release" else "debug";
+
+  cargoDeps = rustPlatform.fetchCargoVendor {
+    inherit (finalAttrs) pname version src;
+    hash = "sha256-xHukIMUG5himj1umKn+IKM7kJ29MH/pt/jPEHd2EeT0=";
+  };
+
+  mesonBuildType = "release";
 
   passthru = {
     updateScript = nix-update-script { extraArgs = [ "--generate-lockfile" ]; };
@@ -107,7 +108,7 @@ stdenv.mkDerivation (finalAttrs: {
     changelog = "https://codeberg.org/edestcroix/Recordbox/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.gpl3Plus;
     maintainers = with lib.maintainers; [ getchoo ];
-    mainProgram = "recordbox";
     platforms = lib.platforms.linux;
+    mainProgram = "recordbox";
   };
 })

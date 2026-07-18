@@ -11,15 +11,6 @@ stdenv.mkDerivation {
   pname = "ax25-apps";
   version = "0.0.8-rc5-unstable-2021-05-13";
 
-  strictDeps = true;
-
-  nativeBuildInputs = [ autoreconfHook ];
-
-  buildInputs = [
-    libax25
-    ncurses
-  ];
-
   # src from linux-ax25.in-berlin.de remote has been
   # unreliable, pointing to github mirror from the radiocatalog
   src = fetchFromGitHub {
@@ -32,6 +23,14 @@ stdenv.mkDerivation {
   patches = [
     # Fix build against glibc-2.42
     ./glibc-2.42.patch
+  ];
+
+  strictDeps = true;
+  nativeBuildInputs = [ autoreconfHook ];
+
+  buildInputs = [
+    libax25
+    ncurses
   ];
 
   configureFlags = [

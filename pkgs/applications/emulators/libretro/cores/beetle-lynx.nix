@@ -4,7 +4,6 @@
   mkLibretroCore,
 }:
 mkLibretroCore {
-  core = "mednafen-lynx";
   version = "0-unstable-2026-04-20";
 
   src = fetchFromGitHub {
@@ -14,6 +13,7 @@ mkLibretroCore {
     hash = "sha256-yucZWgJiqlfsgd/gQSPxSdZjt+9UfJe1Jq4vMLypDhg=";
   };
 
+  core = "mednafen-lynx";
   makefile = "Makefile";
 
   meta = {

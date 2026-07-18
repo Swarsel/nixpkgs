@@ -2,21 +2,21 @@
   lib,
   stdenv,
   fetchurl,
-  python3Packages,
-  makeWrapper,
-  gawk,
   bash,
-  getopt,
-  procps,
-  which,
-  jre,
-  nixosTests,
+  callPackage,
+  gawk,
   # generation is the attribute version suffix such as 4 in pkgs.cassandra_4
   generation,
-  version,
+  getopt,
+  jre,
+  makeWrapper,
+  nixosTests,
+  procps,
+  python3Packages,
   sha256,
+  version,
+  which,
   extraMeta ? { },
-  callPackage,
 }:
 
 let
@@ -32,18 +32,15 @@ let
 in
 
 stdenv.mkDerivation rec {
-  pname = "cassandra";
   inherit version;
+  pname = "cassandra";
 
   src = fetchurl {
     inherit sha256;
     url = "mirror://apache/cassandra/${version}/apache-cassandra-${version}-bin.tar.gz";
   };
 
-  pythonPath = with python3Packages; [ cassandra-driver ];
-
   nativeBuildInputs = [ python3Packages.wrapPython ];
-
   buildInputs = [ python3Packages.python ] ++ pythonPath;
 
   installPhase = ''
@@ -116,6 +113,8 @@ stdenv.mkDerivation rec {
     wrapPythonPrograms
   '';
 
+  pythonPath = with python3Packages; [ cassandra-driver ];
+
   passthru = {
     tests =
       let
@@ -133,15 +132,17 @@ stdenv.mkDerivation rec {
   meta =
 
     {
-      homepage = "https://cassandra.apache.org/";
       description = "Massively scalable open source NoSQL database";
-      platforms = lib.platforms.unix;
+      homepage = "https://cassandra.apache.org/";
       license = lib.licenses.asl20;
+
       sourceProvenance = with lib.sourceTypes; [
         binaryBytecode
         binaryNativeCode # bundled dependency libsigar
       ];
+
       maintainers = [ lib.maintainers.roberth ];
+      platforms = lib.platforms.unix;
     }
     // extraMeta;
 }

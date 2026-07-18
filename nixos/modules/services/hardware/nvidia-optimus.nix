@@ -12,11 +12,13 @@ in
 
     hardware.nvidiaOptimus.disable = lib.mkOption {
       default = false;
-      type = lib.types.bool;
+
       description = ''
         Completely disable the NVIDIA graphics card and use the
         integrated graphics processor instead.
       '';
+
+      type = lib.types.bool;
     };
 
   };
@@ -32,19 +34,22 @@ in
       "nvidia-uvm"
       "nvidia-modeset"
     ];
-    boot.kernelModules = [ "bbswitch" ];
+
     boot.extraModulePackages = [ kernel.bbswitch ];
+    boot.kernelModules = [ "bbswitch" ];
 
     systemd.services.bbswitch = {
       description = "Disable NVIDIA Card";
-      wantedBy = [ "multi-user.target" ];
+      path = [ kernel.bbswitch ];
+
       serviceConfig = {
-        Type = "oneshot";
-        RemainAfterExit = true;
         ExecStart = "${kernel.bbswitch}/bin/discrete_vga_poweroff";
         ExecStop = "${kernel.bbswitch}/bin/discrete_vga_poweron";
+        RemainAfterExit = true;
+        Type = "oneshot";
       };
-      path = [ kernel.bbswitch ];
+
+      wantedBy = [ "multi-user.target" ];
     };
   };
 

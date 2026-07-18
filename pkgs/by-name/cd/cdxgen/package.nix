@@ -1,15 +1,15 @@
 {
-  cctools,
-  fetchFromGitHub,
   lib,
+  stdenv,
+  fetchFromGitHub,
+  cctools,
+  fetchPnpmDeps,
   makeWrapper,
   node-gyp,
   nodejs,
-  pnpm_10,
-  fetchPnpmDeps,
   pnpmConfigHook,
+  pnpm_10,
   python3,
-  stdenv,
 }:
 stdenv.mkDerivation (finalAttrs: {
   pname = "cdxgen";
@@ -31,13 +31,6 @@ stdenv.mkDerivation (finalAttrs: {
     python3 # required for sqlite3 bindings
   ]
   ++ lib.optional stdenv.hostPlatform.isDarwin cctools.libtool;
-
-  pnpmDeps = fetchPnpmDeps {
-    inherit (finalAttrs) pname version src;
-    pnpm = pnpm_10;
-    fetcherVersion = 3;
-    hash = "sha256-o7u/ZZS/5PgOtWd07zO4a01mUWZowUTL+JDJ2442mGc=";
-  };
 
   buildPhase = ''
     runHook preBuild
@@ -62,13 +55,22 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  pnpmDeps = fetchPnpmDeps {
+    inherit (finalAttrs) pname version src;
+    fetcherVersion = 3;
+    hash = "sha256-o7u/ZZS/5PgOtWd07zO4a01mUWZowUTL+JDJ2442mGc=";
+    pnpm = pnpm_10;
+  };
+
   meta = {
     description = "Creates CycloneDX Software Bill-of-Materials (SBOM) for your projects from source and container images";
-    mainProgram = "cdxgen";
     homepage = "https://github.com/cdxgen/cdxgen";
     license = lib.licenses.asl20;
+
     maintainers = with lib.maintainers; [
       quincepie
     ];
+
+    mainProgram = "cdxgen";
   };
 })

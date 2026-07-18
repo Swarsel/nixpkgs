@@ -2,8 +2,8 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  pkg-config,
   libusb1,
+  pkg-config,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -14,8 +14,8 @@ stdenv.mkDerivation (finalAttrs: {
     owner = "todbot";
     repo = "blink1-tool";
     tag = "v${finalAttrs.version}";
-    fetchSubmodules = true;
     hash = "sha256-i3DtDPAKvJ53HTgNnnf2iSGmayxg/++Kk3/4cEnD+Sk=";
+    fetchSubmodules = true;
   };
 
   postPatch = ''
@@ -41,7 +41,6 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   hardeningDisable = [ "format" ];
-
   installFlags = [ "PREFIX=${placeholder "out"}" ];
 
   meta = {

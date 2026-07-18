@@ -1,9 +1,9 @@
 {
   lib,
+  fetchFromGitHub,
   aiohttp,
   aresponses,
   buildPythonPackage,
-  fetchFromGitHub,
   poetry-core,
   pydantic,
   pytest-asyncio,
@@ -16,7 +16,6 @@
 buildPythonPackage rec {
   pname = "python-opensky";
   version = "1.0.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "joostlek";
@@ -48,6 +47,7 @@ buildPythonPackage rec {
     syrupy
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "python_opensky" ];
 
   meta = {

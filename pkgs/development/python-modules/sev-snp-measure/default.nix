@@ -1,16 +1,14 @@
 {
+  lib,
+  fetchFromGitHub,
   buildPythonPackage,
   cryptography,
-  fetchFromGitHub,
-  lib,
   setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "sev-snp-measure";
   version = "0.0.13";
-
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "virtee";
@@ -23,11 +21,10 @@ buildPythonPackage rec {
     setuptools
   ];
 
-  pythonRelaxDeps = [ "cryptography" ];
-
   propagatedBuildInputs = [ cryptography ];
-
+  pyproject = true;
   pythonImportsCheck = [ "sevsnpmeasure" ];
+  pythonRelaxDeps = [ "cryptography" ];
 
   meta = {
     description = "Calculate AMD SEV/SEV-ES/SEV-SNP measurement for confidential computing";

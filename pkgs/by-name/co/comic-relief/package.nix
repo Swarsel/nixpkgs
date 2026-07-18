@@ -1,7 +1,7 @@
 {
   lib,
-  stdenvNoCC,
   fetchzip,
+  stdenvNoCC,
 }:
 
 stdenvNoCC.mkDerivation rec {
@@ -10,8 +10,8 @@ stdenvNoCC.mkDerivation rec {
 
   src = fetchzip {
     url = "https://fontlibrary.org/assets/downloads/comic-relief/45c456b6db2aaf2f7f69ac66b5ac7239/comic-relief.zip";
-    stripRoot = false;
     hash = "sha256-lvkMfaQvLMZ8F0Q5JnpmMsIAkR+XfihoHIoS4z5QEvA=";
+    stripRoot = false;
   };
 
   installPhase = ''
@@ -28,8 +28,8 @@ stdenvNoCC.mkDerivation rec {
   '';
 
   meta = {
-    homepage = "https://fontlibrary.org/en/font/comic-relief";
     description = "Font metric-compatible with Microsoft Comic Sans";
+
     longDescription = ''
       Comic Relief is a typeface designed to be metrically equivalent
       to the popular Comic Sans MS. Comic Relief can be used in place
@@ -37,10 +37,11 @@ stdenvNoCC.mkDerivation rec {
       part of the copy. It contains all glyphs and characters
       available in Comic Sans MS.
     '';
-    license = lib.licenses.ofl;
-    platforms = lib.platforms.all;
-    maintainers = [ lib.maintainers.rycee ];
 
+    homepage = "https://fontlibrary.org/en/font/comic-relief";
+    license = lib.licenses.ofl;
+    maintainers = [ lib.maintainers.rycee ];
+    platforms = lib.platforms.all;
     # Reduce the priority of this package. The intent is that if you
     # also install the `corefonts` package, then you probably will not
     # want to install the font alias of this package.

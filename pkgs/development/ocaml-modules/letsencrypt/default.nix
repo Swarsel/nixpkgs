@@ -1,21 +1,21 @@
 {
-  buildDunePackage,
   lib,
   fetchurl,
-  uri,
   base64,
+  buildDunePackage,
   digestif,
-  logs,
+  domain-name,
   fmt,
+  logs,
   lwt,
   mirage-crypto,
   mirage-crypto-ec,
   mirage-crypto-pk,
-  x509,
-  yojson,
   ounit2,
   ptime,
-  domain-name,
+  uri,
+  x509,
+  yojson,
 }:
 
 buildDunePackage (finalAttrs: {
@@ -26,8 +26,6 @@ buildDunePackage (finalAttrs: {
     url = "https://github.com/mmaker/ocaml-letsencrypt/releases/download/v${finalAttrs.version}/letsencrypt-${finalAttrs.version}.tbz";
     hash = "sha256-Iw55GffyG5tWA49hao1z9BX6p4N2+EKuhLIoOwG8EKM=";
   };
-
-  minimalOCamlVersion = "4.08";
 
   buildInputs = [
     fmt
@@ -50,11 +48,12 @@ buildDunePackage (finalAttrs: {
 
   doCheck = true;
   checkInputs = [ ounit2 ];
+  minimalOCamlVersion = "4.08";
 
   meta = {
     description = "ACME implementation in OCaml";
+    homepage = "https://github.com/mmaker/ocaml-letsencrypt";
     license = lib.licenses.bsd2;
     maintainers = [ lib.maintainers.sternenseemann ];
-    homepage = "https://github.com/mmaker/ocaml-letsencrypt";
   };
 })

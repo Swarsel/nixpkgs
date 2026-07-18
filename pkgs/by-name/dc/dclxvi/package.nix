@@ -17,6 +17,12 @@ stdenv.mkDerivation {
 
   buildFlags = [ "libdclxvipairing.so" ];
 
+  installPhase = ''
+    mkdir -p $out/{include,lib}
+    find . -name \*.h -exec cp {} $out/include \;
+    find . -name \*.so -exec cp {} $out/lib \;
+  '';
+
   patchPhase = ''
     substituteInPlace Makefile \
       --replace "gcc" "cc"
@@ -26,16 +32,10 @@ stdenv.mkDerivation {
       --replace "-soname=libdclxvipairing.so" "-install_name,libdclxvipairing.so"
   '';
 
-  installPhase = ''
-    mkdir -p $out/{include,lib}
-    find . -name \*.h -exec cp {} $out/include \;
-    find . -name \*.so -exec cp {} $out/lib \;
-  '';
-
   meta = {
-    homepage = "https://github.com/agl/dclxvi";
     description = "Naehrig, Niederhagen and Schwabe's pairings code, massaged into a shared library";
-    platforms = lib.platforms.x86_64;
+    homepage = "https://github.com/agl/dclxvi";
     license = lib.licenses.publicDomain;
+    platforms = lib.platforms.x86_64;
   };
 }

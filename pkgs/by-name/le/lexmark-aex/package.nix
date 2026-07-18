@@ -1,21 +1,18 @@
 {
   lib,
   stdenv,
-  cups,
   fetchurl,
-  patchPpdFilesHook,
   autoPatchelfHook,
-  dpkg,
-  perl,
   avahi,
+  cups,
+  dpkg,
+  patchPpdFilesHook,
+  perl,
 }:
 
 stdenv.mkDerivation {
   pname = "lexmark-aex";
   version = "1.0";
-
-  dontPatchELF = true;
-  dontStrip = true;
 
   src = fetchurl {
     url = "https://downloads.lexmark.com/downloads/drivers/Lexmark-AEX-PPD-Files-1.0-01242019.amd64.deb";
@@ -36,14 +33,6 @@ stdenv.mkDerivation {
     cups
     # Needed for patchShebangs.
     perl
-  ];
-
-  # Needed for autoPatchelfHook.
-  runtimeDependencies = [ (lib.getLib cups) ];
-
-  ppdFileCommands = [
-    "CommandFileFilterG2"
-    "rerouteprintoption"
   ];
 
   installPhase =
@@ -76,12 +65,24 @@ stdenv.mkDerivation {
       runHook postInstall
     '';
 
+  dontPatchELF = true;
+  dontStrip = true;
+
+  ppdFileCommands = [
+    "CommandFileFilterG2"
+    "rerouteprintoption"
+  ];
+
+  # Needed for autoPatchelfHook.
+  runtimeDependencies = [ (lib.getLib cups) ];
+
   meta = {
     description = "CUPS drivers for Lexmark B2200 and MB2200 Series printers";
     homepage = "https://support.lexmark.com/en_xm/drivers-downloads.html";
-    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
     license = lib.licenses.unfree;
+    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
     maintainers = [ lib.maintainers.tobim ];
+
     platforms = [
       "x86_64-linux"
       "i686-linux"

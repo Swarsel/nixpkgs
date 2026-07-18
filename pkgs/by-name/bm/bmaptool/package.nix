@@ -7,7 +7,6 @@
 python3Packages.buildPythonApplication (finalAttrs: {
   pname = "bmaptool";
   version = "3.9.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "yoctoproject";
@@ -16,14 +15,15 @@ python3Packages.buildPythonApplication (finalAttrs: {
     hash = "sha256-9KSBv420HJvK5fUg7paFJqA2MCw36BfaeAG4NME/co8=";
   };
 
+  # tests fail only on hydra.
+  doCheck = false;
+
   build-system = [
     python3Packages.hatchling
   ];
 
   dependencies = with python3Packages; [ six ];
-
-  # tests fail only on hydra.
-  doCheck = false;
+  pyproject = true;
 
   meta = {
     description = "BMAP Tools";

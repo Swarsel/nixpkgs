@@ -1,9 +1,9 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
-  versionCheckHook,
   nix-update-script,
+  rustPlatform,
+  versionCheckHook,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -18,24 +18,23 @@ rustPlatform.buildRustPackage (finalAttrs: {
   };
 
   cargoHash = "sha256-kxnylNZ8FsaR2S1o/p7qtlaXsBLDNv2PsFye0rcf/+A=";
-
   # tests require network access
   doCheck = false;
-
   doInstallCheck = true;
   nativeInstallCheckInputs = [ versionCheckHook ];
-
   passthru.updateScript = nix-update-script { };
 
   meta = {
     description = "Run Rust files and expressions as scripts without any setup or compilation step";
-    mainProgram = "rust-script";
     homepage = "https://rust-script.org";
     changelog = "https://github.com/fornwall/rust-script/releases/tag/${finalAttrs.version}";
+
     license = with lib.licenses; [
       mit # or
       asl20
     ];
+
     maintainers = [ lib.maintainers.progrm_jarvis ];
+    mainProgram = "rust-script";
   };
 })

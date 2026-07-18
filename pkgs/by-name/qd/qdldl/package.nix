@@ -33,7 +33,7 @@ stdenv.mkDerivation (finalAttrs: {
     changelog = "https://github.com/osqp/qdldl/blob/${finalAttrs.src.tag}/CHANGELOG.md";
     license = lib.licenses.asl20;
     maintainers = with lib.maintainers; [ nim65s ];
-    mainProgram = "qdldl";
     platforms = lib.platforms.unix ++ lib.platforms.windows;
+    mainProgram = "qdldl";
   };
 })

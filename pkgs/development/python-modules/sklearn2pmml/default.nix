@@ -1,20 +1,17 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # build-system
-  setuptools,
-
+  buildPythonPackage,
   # dependencies
   dill,
-  jre_minimal,
   joblib,
+  jre_minimal,
   pandas,
-  scikit-learn,
-
   # tests
   pytestCheckHook,
+  scikit-learn,
+  # build-system
+  setuptools,
   statsmodels,
 }:
 
@@ -34,7 +31,6 @@ in
 buildPythonPackage (finalAttrs: {
   pname = "sklearn2pmml";
   version = "0.131.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "jpmml";
@@ -52,6 +48,11 @@ buildPythonPackage (finalAttrs: {
       --replace-fail "description-file" "description_file"
   '';
 
+  nativeCheckInputs = [
+    pytestCheckHook
+    statsmodels
+  ];
+
   build-system = [ setuptools ];
 
   dependencies = [
@@ -61,28 +62,26 @@ buildPythonPackage (finalAttrs: {
     scikit-learn
   ];
 
-  nativeCheckInputs = [
-    pytestCheckHook
-    statsmodels
-  ];
-
   enabledTestPaths = [
     # Only run the main test suite; subpackage tests require
     # sklearn-pandas which is not available in nixpkgs
     "sklearn2pmml/tests"
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "sklearn2pmml" ];
 
   meta = {
     description = "Python library for converting Scikit-Learn pipelines to PMML";
     homepage = "https://github.com/jpmml/sklearn2pmml";
     changelog = "https://github.com/jpmml/sklearn2pmml/blob/${finalAttrs.version}/NEWS.md";
+    license = lib.licenses.agpl3Only;
+
     sourceProvenance = with lib.sourceTypes; [
       fromSource
       binaryBytecode # bundled JAR files
     ];
-    license = lib.licenses.agpl3Only;
+
     maintainers = with lib.maintainers; [ b-rodrigues ];
   };
 })

@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   nix-update-script,
 }:
 
@@ -18,7 +18,6 @@ buildGoModule (finalAttrs: {
 
   # set the version during buildtime
   patches = [ ./version.patch ];
-
   vendorHash = null;
 
   ldflags = [
@@ -32,12 +31,14 @@ buildGoModule (finalAttrs: {
 
   meta = {
     description = "Modern full-featured open source secure mail server for low-maintenance self-hosted email";
-    mainProgram = "mox";
     homepage = "https://github.com/mjl-/mox";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       kotatsuyaki
     ];
+
+    mainProgram = "mox";
     teams = with lib.teams; [ ngi ];
   };
 })

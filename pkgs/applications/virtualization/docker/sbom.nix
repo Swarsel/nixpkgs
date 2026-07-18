@@ -1,8 +1,8 @@
 {
-  buildGoModule,
-  fetchFromGitHub,
-  docker,
   lib,
+  fetchFromGitHub,
+  buildGoModule,
+  docker,
 }:
 
 buildGoModule rec {
@@ -22,9 +22,8 @@ buildGoModule rec {
     ./sbom-disable-tests.patch
   ];
 
-  vendorHash = "sha256-XPPVAdY2NaasZ9bkf24VWWk3X5pjnryvsErYIWkeekc=";
-
   nativeBuildInputs = [ docker ];
+  vendorHash = "sha256-XPPVAdY2NaasZ9bkf24VWWk3X5pjnryvsErYIWkeekc=";
 
   installPhase = ''
     runHook preInstall
@@ -37,9 +36,9 @@ buildGoModule rec {
 
   meta = {
     description = "Plugin for Docker CLI to support SBOM creation using Syft";
-    mainProgram = "docker-sbom";
     homepage = "https://github.com/docker/sbom-cli-plugin";
     license = lib.licenses.asl20;
     maintainers = with lib.maintainers; [ raboof ];
+    mainProgram = "docker-sbom";
   };
 }

@@ -1,9 +1,9 @@
 {
   lib,
   fetchFromGitHub,
+  bos,
   buildDunePackage,
   dune-build-info,
-  bos,
 }:
 
 buildDunePackage (finalAttrs: {

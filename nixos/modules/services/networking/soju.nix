@@ -38,90 +38,99 @@ in
 
   options.services.soju = {
     enable = mkEnableOption "soju";
-
     package = mkPackageOption pkgs "soju" { };
 
-    listen = mkOption {
-      type = types.listOf types.str;
-      default = [ ":6697" ];
-      description = ''
-        Where soju should listen for incoming connections. See the
-        `listen` directive in
-        {manpage}`soju(1)`.
-      '';
-    };
-
-    hostName = mkOption {
-      type = types.str;
-      default = config.networking.hostName;
-      defaultText = literalExpression "config.networking.hostName";
-      description = "Server hostname.";
-    };
-
-    tlsCertificate = mkOption {
-      type = types.nullOr types.path;
-      default = null;
-      example = "/var/host.cert";
-      description = "Path to server TLS certificate.";
-    };
-
-    tlsCertificateKey = mkOption {
-      type = types.nullOr types.path;
-      default = null;
-      example = "/var/host.key";
-      description = "Path to server TLS certificate key.";
-    };
-
-    enableMessageLogging = mkOption {
-      type = types.bool;
-      default = true;
-      description = "Whether to enable message logging.";
-    };
-
-    adminSocket.enable = mkOption {
-      type = types.bool;
-      default = true;
-      description = ''
-        Listen for admin connections from sojuctl at /run/soju/admin.
-      '';
-    };
-
-    httpOrigins = mkOption {
-      type = types.listOf types.str;
-      default = [ ];
-      description = ''
-        List of allowed HTTP origins for WebSocket listeners. The parameters are
-        interpreted as shell patterns, see
-        {manpage}`glob(7)`.
-      '';
-    };
-
     acceptProxyIP = mkOption {
-      type = types.listOf types.str;
       default = [ ];
+
       description = ''
         Allow the specified IPs to act as a proxy. Proxys have the ability to
         overwrite the remote and local connection addresses (via the X-Forwarded-\*
         HTTP header fields). The special name "localhost" accepts the loopback
         addresses 127.0.0.0/8 and ::1/128. By default, all IPs are rejected.
       '';
+
+      type = types.listOf types.str;
     };
 
-    extraConfig = mkOption {
-      type = types.lines;
-      default = "";
-      description = "Lines added verbatim to the generated configuration file.";
+    adminSocket.enable = mkOption {
+      default = true;
+
+      description = ''
+        Listen for admin connections from sojuctl at /run/soju/admin.
+      '';
+
+      type = types.bool;
     };
 
     configFile = mkOption {
-      type = types.path;
       default = configFile;
       defaultText = "Config file generated from other options.";
+
       description = ''
         Path to config file. If this option is set, it will override any
         configuration done using other options, including {option}`extraConfig`.
       '';
+
       example = literalExpression "./soju.conf";
+      type = types.path;
+    };
+
+    enableMessageLogging = mkOption {
+      default = true;
+      description = "Whether to enable message logging.";
+      type = types.bool;
+    };
+
+    extraConfig = mkOption {
+      default = "";
+      description = "Lines added verbatim to the generated configuration file.";
+      type = types.lines;
+    };
+
+    hostName = mkOption {
+      default = config.networking.hostName;
+      defaultText = literalExpression "config.networking.hostName";
+      description = "Server hostname.";
+      type = types.str;
+    };
+
+    httpOrigins = mkOption {
+      default = [ ];
+
+      description = ''
+        List of allowed HTTP origins for WebSocket listeners. The parameters are
+        interpreted as shell patterns, see
+        {manpage}`glob(7)`.
+      '';
+
+      type = types.listOf types.str;
+    };
+
+    listen = mkOption {
+      default = [ ":6697" ];
+
+      description = ''
+        Where soju should listen for incoming connections. See the
+        `listen` directive in
+        {manpage}`soju(1)`.
+      '';
+
+      type = types.listOf types.str;
+    };
+
+    tlsCertificate = mkOption {
+      default = null;
+      description = "Path to server TLS certificate.";
+      example = "/var/host.cert";
+      type = types.nullOr types.path;
+    };
+
+    tlsCertificateKey = mkOption {
+      default = null;
+      description = "Path to server TLS certificate key.";
+      example = "/var/host.key";
+      type = types.nullOr types.path;
     };
   };
 
@@ -131,6 +140,7 @@ in
     assertions = [
       {
         assertion = (cfg.tlsCertificate != null) == (cfg.tlsCertificateKey != null);
+
         message = ''
           services.soju.tlsCertificate and services.soju.tlsCertificateKey
           must both be specified to enable TLS.
@@ -141,20 +151,22 @@ in
     environment.systemPackages = [ sojuctl ];
 
     systemd.services.soju = {
-      description = "soju IRC bouncer";
-      wantedBy = [ "multi-user.target" ];
-      wants = [ "network-online.target" ];
       after = [ "network-online.target" ];
+      description = "soju IRC bouncer";
       documentation = [ "man:soju(1)" ];
+
       serviceConfig = {
         DynamicUser = true;
-        Restart = "always";
-        ExecStart = "${lib.getExe' cfg.package "soju"} -config ${cfg.configFile}";
         ExecReload = "${lib.getExe' pkgs.coreutils "kill"} -HUP $MAINPID";
-        StateDirectory = "soju";
+        ExecStart = "${lib.getExe' cfg.package "soju"} -config ${cfg.configFile}";
+        Restart = "always";
         RuntimeDirectory = "soju";
+        StateDirectory = "soju";
         WorkingDirectory = stateDir;
       };
+
+      wantedBy = [ "multi-user.target" ];
+      wants = [ "network-online.target" ];
     };
   };
 

@@ -1,13 +1,13 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  hatchling,
-  hatch-vcs,
+  buildPythonPackage,
   click,
   click-default-group,
   cloudpickle,
   git,
+  hatch-vcs,
+  hatchling,
   msgspec,
   nbmake,
   networkx,
@@ -26,7 +26,6 @@
 buildPythonPackage rec {
   pname = "pytask";
   version = "0.6.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "pytask-dev";
@@ -34,6 +33,22 @@ buildPythonPackage rec {
     tag = "v${version}";
     hash = "sha256-l7jQAUBb8iW5S8Am2cMCgqYcvtLq8UgEhrCNnSx9N1E=";
   };
+
+  nativeCheckInputs = [
+    cloudpickle
+    git
+    nbmake
+    pexpect
+    pytest-xdist
+    pytestCheckHook
+    syrupy
+  ]
+  ++ lib.concatAttrValues optional-dependencies;
+
+  # The test suite runs the installed command for e2e tests
+  preCheck = ''
+    export PATH="$PATH:$out/bin";
+  '';
 
   build-system = [
     hatchling
@@ -53,28 +68,6 @@ buildPythonPackage rec {
   ]
   ++ msgspec.optional-dependencies.toml;
 
-  optional-dependencies = {
-    dag = [ networkx ];
-  };
-
-  nativeCheckInputs = [
-    cloudpickle
-    git
-    nbmake
-    pexpect
-    pytest-xdist
-    pytestCheckHook
-    syrupy
-  ]
-  ++ lib.concatAttrValues optional-dependencies;
-
-  pytestFlags = [ "--snapshot-warn-unused" ];
-
-  # The test suite runs the installed command for e2e tests
-  preCheck = ''
-    export PATH="$PATH:$out/bin";
-  '';
-
   disabledTests = [
     # This accesses the network
     "test_download_file"
@@ -85,6 +78,12 @@ buildPythonPackage rec {
     "test_pdb_interaction_capturing_simple"
   ];
 
+  optional-dependencies = {
+    dag = [ networkx ];
+  };
+
+  pyproject = true;
+  pytestFlags = [ "--snapshot-warn-unused" ];
   pythonImportsCheck = [ "pytask" ];
 
   meta = {

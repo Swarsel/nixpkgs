@@ -2,28 +2,28 @@
   lib,
   stdenv,
   fetchFromGitLab,
-  meson,
-  ninja,
-  pkg-config,
-  vala,
-  gettext,
-  itstool,
   blueprint-compiler,
+  borgbackup,
   desktop-file-utils,
+  duplicity,
+  gettext,
   glib,
   glib-networking,
   gtk4,
-  libsoup_3,
-  libsecret,
-  libadwaita,
-  wrapGAppsHook4,
-  libgpg-error,
+  itstool,
   json-glib,
-  borgbackup,
-  duplicity,
+  libadwaita,
+  libgpg-error,
+  libsecret,
+  libsoup_3,
+  meson,
+  ninja,
+  nix-update-script,
+  pkg-config,
   rclone,
   restic,
-  nix-update-script,
+  vala,
+  wrapGAppsHook4,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -31,12 +31,14 @@ stdenv.mkDerivation (finalAttrs: {
   version = "50.1";
 
   src = fetchFromGitLab {
-    domain = "gitlab.gnome.org";
     owner = "World";
     repo = "deja-dup";
     tag = finalAttrs.version;
     hash = "sha256-c4Myy1nV6CupGG53Iqm0Z82yVx/Llgot4IZCrnubacE=";
+    domain = "gitlab.gnome.org";
   };
+
+  patches = [ ./find-fusermount-setuid.patch ];
 
   nativeBuildInputs = [
     meson
@@ -77,25 +79,25 @@ stdenv.mkDerivation (finalAttrs: {
     )
   '';
 
-  patches = [ ./find-fusermount-setuid.patch ];
-
   passthru = {
     updateScript = nix-update-script { };
   };
 
   meta = {
     description = "Simple backup tool";
+
     longDescription = ''
       Déjà Dup is a simple backup tool. It hides the complexity
       of backing up the Right Way (encrypted, off-site, and regular)
       and uses duplicity as the backend.
     '';
+
     homepage = "https://apps.gnome.org/DejaDup/";
     changelog = "https://gitlab.gnome.org/World/deja-dup/-/releases/${finalAttrs.version}";
     license = lib.licenses.gpl3Plus;
     maintainers = with lib.maintainers; [ jtojnar ];
-    teams = [ lib.teams.gnome-circle ];
     platforms = lib.platforms.linux;
     mainProgram = "deja-dup";
+    teams = [ lib.teams.gnome-circle ];
   };
 })

@@ -2,12 +2,13 @@
   lib,
   stdenv,
   fetchurl,
-  ncurses,
   libressl,
+  ncurses,
   patches ? [ ], # allow users to easily override config.def.h
 }:
 
 stdenv.mkDerivation (finalAttrs: {
+  inherit patches;
   pname = "sacc";
   version = "1.07";
 
@@ -16,7 +17,11 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-LdEeZH+JWb7iEEzikAXaxG0N5GMPxjgTId4THLgdU2w=";
   };
 
-  inherit patches;
+  postPatch = ''
+    substituteInPlace config.mk \
+      --replace curses ncurses \
+      --replace "/usr/local" "$out"
+  '';
 
   buildInputs = [
     ncurses
@@ -27,18 +32,12 @@ stdenv.mkDerivation (finalAttrs: {
     "OSCFLAGS=-D_DARWIN_C_SOURCE"
   ];
 
-  postPatch = ''
-    substituteInPlace config.mk \
-      --replace curses ncurses \
-      --replace "/usr/local" "$out"
-  '';
-
   meta = {
     description = "Terminal gopher client";
-    mainProgram = "sacc";
     homepage = "gopher://bitreich.org/1/scm/sacc";
     license = lib.licenses.isc;
     maintainers = [ lib.maintainers.sternenseemann ];
     platforms = lib.platforms.unix;
+    mainProgram = "sacc";
   };
 })

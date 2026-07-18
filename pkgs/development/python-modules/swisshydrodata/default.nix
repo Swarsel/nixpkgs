@@ -1,23 +1,20 @@
 {
   lib,
+  fetchFromGitHub,
   aiohttp,
   buildPythonPackage,
-  fetchFromGitHub,
   pytest-asyncio,
   pytest-cov-stub,
   pytestCheckHook,
   pythonOlder,
-  requests-mock,
   requests,
+  requests-mock,
   setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "swisshydrodata";
   version = "0.3.1";
-  pyproject = true;
-
-  disabled = pythonOlder "3.12";
 
   src = fetchFromGitHub {
     owner = "Bouni";
@@ -26,13 +23,6 @@ buildPythonPackage rec {
     hash = "sha256-Yy/sc/SKKftIsZLyIJabrgcgYwbBxZMXbhTaWSIKpM8=";
   };
 
-  build-system = [ setuptools ];
-
-  dependencies = [
-    requests
-    aiohttp
-  ];
-
   nativeCheckInputs = [
     pytest-asyncio
     pytest-cov-stub
@@ -40,6 +30,15 @@ buildPythonPackage rec {
     requests-mock
   ];
 
+  build-system = [ setuptools ];
+
+  dependencies = [
+    requests
+    aiohttp
+  ];
+
+  disabled = pythonOlder "3.12";
+  pyproject = true;
   pythonImportsCheck = [ "swisshydrodata" ];
 
   meta = {

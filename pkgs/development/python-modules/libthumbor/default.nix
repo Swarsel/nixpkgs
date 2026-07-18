@@ -1,16 +1,15 @@
 {
   lib,
   buildPythonPackage,
-  fetchPypi,
   django,
-  six,
+  fetchPypi,
   pycrypto,
+  six,
 }:
 
 buildPythonPackage rec {
   pname = "libthumbor";
   version = "2.0.2";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
@@ -25,7 +24,7 @@ buildPythonPackage rec {
   ];
 
   doCheck = false;
-
+  format = "setuptools";
   pythonImportsCheck = [ "libthumbor" ];
 
   meta = {

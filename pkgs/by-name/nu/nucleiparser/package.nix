@@ -7,7 +7,6 @@
 python3.pkgs.buildPythonApplication (finalAttrs: {
   pname = "nucleiparser";
   version = "0.2.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "sinkmanu";
@@ -23,6 +22,8 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
   propagatedBuildInputs = with python3.pkgs; [
     prettytable
   ];
+
+  pyproject = true;
 
   pythonImportsCheck = [
     "nucleiparser"

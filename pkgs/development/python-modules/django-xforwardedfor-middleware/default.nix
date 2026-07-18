@@ -1,14 +1,13 @@
 {
+  lib,
+  fetchFromGitHub,
   buildPythonPackage,
   django,
-  fetchFromGitHub,
-  lib,
   setuptools,
 }:
 buildPythonPackage (finalAttrs: {
   pname = "django-xforwardedfor-middleware";
   version = "2.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "allo-";
@@ -17,15 +16,15 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-dDXSb17kXOSeIgY6wid1QFHhUjrapasWgCEb/El51eA=";
   };
 
+  # No tests on upstream
+  doCheck = false;
   build-system = [ setuptools ];
 
   dependencies = [
     django
   ];
 
-  # No tests on upstream
-  doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "x_forwarded_for" ];
 
   meta = {

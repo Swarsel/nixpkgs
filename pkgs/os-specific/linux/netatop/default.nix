@@ -14,22 +14,13 @@ let
 in
 
 stdenv.mkDerivation {
-  pname = "netatop";
   inherit version;
-  name = "netatop-${kernel.version}-${version}";
+  pname = "netatop";
 
   src = fetchurl {
     url = "https://www.atoptool.nl/download/netatop-${version}.tar.gz";
     hash = "sha256-UIqJd809HN1nWHoTwl46QUZHtI+S0c44/BOLWRSuo/Y=";
   };
-
-  nativeBuildInputs = kernel.moduleBuildDependencies;
-  buildInputs = [
-    kmod
-    zlib
-  ];
-
-  hardeningDisable = [ "pic" ];
 
   patches = [
     # fix paths in netatop.service
@@ -38,14 +29,17 @@ stdenv.mkDerivation {
     ./fix-makefile-install.patch
     # replace init_module as needed by Linux 6.15 and above (backwards compatible)
     (fetchpatch {
-      url = "https://aur.archlinux.org/cgit/aur.git/plain/netatop_kernel_6.15.patch?h=netatop-dkms&id=e5da6fa4fee5499c3e437cdd34281dd2b200508f";
       hash = "sha256-JyNQNyDJQkM/hLpb/hp3Sw2tMA8XnYogduGDFqTQ3nQ=";
+      url = "https://aur.archlinux.org/cgit/aur.git/plain/netatop_kernel_6.15.patch?h=netatop-dkms&id=e5da6fa4fee5499c3e437cdd34281dd2b200508f";
     })
   ];
-  preConfigure = ''
-    patchShebangs mkversion
-    kmod=${kmod} substituteAllInPlace netatop.service
-  '';
+
+  nativeBuildInputs = kernel.moduleBuildDependencies;
+
+  buildInputs = [
+    kmod
+    zlib
+  ];
 
   makeFlags = kernelModuleMakeFlags ++ [
     "KERNDIR=${kernel.dev}/lib/modules/${kernel.modDirVersion}/build"
@@ -55,12 +49,20 @@ stdenv.mkDerivation {
     "CC=${stdenv.cc}/bin/cc"
   ];
 
+  preConfigure = ''
+    patchShebangs mkversion
+    kmod=${kmod} substituteAllInPlace netatop.service
+  '';
+
+  hardeningDisable = [ "pic" ];
+  name = "netatop-${kernel.version}-${version}";
+
   meta = {
     description = "Network monitoring module for atop";
-    mainProgram = "netatopd";
     homepage = "https://www.atoptool.nl/downloadnetatop.php";
     license = lib.licenses.gpl2Only;
-    platforms = lib.platforms.linux;
     maintainers = [ ];
+    platforms = lib.platforms.linux;
+    mainProgram = "netatopd";
   };
 }

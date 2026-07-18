@@ -1,15 +1,14 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
+  buildPythonPackage,
   cmake,
+  setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "editorconfig";
   version = "0.17.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "editorconfig";
@@ -19,11 +18,7 @@ buildPythonPackage rec {
     fetchSubmodules = true;
   };
 
-  build-system = [ setuptools ];
-
   nativeCheckInputs = [ cmake ];
-
-  dontUseCmakeConfigure = true;
 
   checkPhase = ''
     runHook preCheck
@@ -34,13 +29,16 @@ buildPythonPackage rec {
     runHook postCheck
   '';
 
+  build-system = [ setuptools ];
+  dontUseCmakeConfigure = true;
+  pyproject = true;
   pythonImportsCheck = [ "editorconfig" ];
 
   meta = {
     description = "EditorConfig File Locator and Interpreter for Python";
-    mainProgram = "editorconfig";
     homepage = "https://github.com/editorconfig/editorconfig-core-py";
     license = lib.licenses.psfl;
     maintainers = with lib.maintainers; [ nickcao ];
+    mainProgram = "editorconfig";
   };
 }

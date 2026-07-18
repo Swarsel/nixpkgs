@@ -1,16 +1,16 @@
 {
   lib,
   stdenv,
-  fetchgit,
   autoreconfHook,
-  pkg-config,
-  wrapGAppsHook3,
+  fetchgit,
   gtk3,
   imlib2,
   libsm,
   libstartup_notification,
   libxml2,
   openbox,
+  pkg-config,
+  wrapGAppsHook3,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -24,6 +24,12 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   patches = [ ./fix-implicit-declarations.patch ];
+
+  postPatch = ''
+    substituteInPlace configure.ac --replace-fail 2.0.4 ${finalAttrs.version}
+  '';
+
+  strictDeps = true;
 
   nativeBuildInputs = [
     autoreconfHook
@@ -39,12 +45,6 @@ stdenv.mkDerivation (finalAttrs: {
     libxml2
     openbox
   ];
-
-  strictDeps = true;
-
-  postPatch = ''
-    substituteInPlace configure.ac --replace-fail 2.0.4 ${finalAttrs.version}
-  '';
 
   meta = {
     description = "GUI configuration tool for openbox";

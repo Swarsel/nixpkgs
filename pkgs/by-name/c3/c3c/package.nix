@@ -1,17 +1,17 @@
 {
-  llvmPackages,
   lib,
   fetchFromGitHub,
   cmake,
-  python3,
   curl,
-  libxml2,
   libffi,
-  xar,
+  libxml2,
+  llvmPackages,
+  python3,
   versionCheckHook,
-  rev ? "unknown",
-  debug ? false,
+  xar,
   checks ? true,
+  debug ? false,
+  rev ? "unknown",
 }:
 let
   inherit (lib.strings) optionalString;
@@ -28,8 +28,6 @@ llvmPackages.stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-6XUMlF9SRQ9aqVRl5BQdELVsj/DyXhCnH85QrbK8Xxo=";
   };
 
-  cmakeBuildType = if debug then "Debug" else "Release";
-
   postPatch = ''
     substituteInPlace git_hash.cmake \
       --replace-fail "\''${GIT_HASH}" "${rev}"
@@ -38,11 +36,6 @@ llvmPackages.stdenv.mkDerivation (finalAttrs: {
   '';
 
   nativeBuildInputs = [ cmake ];
-  cmakeFlags = [
-    "-DC3_ENABLE_CLANGD_LSP=${if debug then "ON" else "OFF"}"
-    "-DC3_LLD_DIR=${llvmPackages.lld.lib}/lib"
-    "-DLLVM_CRT_LIBRARY_DIR=${llvmPackages.compiler-rt}/lib/darwin"
-  ];
 
   buildInputs = [
     llvmPackages.llvm
@@ -54,7 +47,11 @@ llvmPackages.stdenv.mkDerivation (finalAttrs: {
   ]
   ++ lib.optionals llvmPackages.stdenv.hostPlatform.isDarwin [ xar ];
 
-  nativeCheckInputs = [ python3 ];
+  cmakeFlags = [
+    "-DC3_ENABLE_CLANGD_LSP=${if debug then "ON" else "OFF"}"
+    "-DC3_LLD_DIR=${llvmPackages.lld.lib}/lib"
+    "-DLLVM_CRT_LIBRARY_DIR=${llvmPackages.compiler-rt}/lib/darwin"
+  ];
 
   doCheck =
     lib.elem llvmPackages.stdenv.system [
@@ -63,6 +60,8 @@ llvmPackages.stdenv.mkDerivation (finalAttrs: {
     ]
     && checks;
 
+  nativeCheckInputs = [ python3 ];
+
   checkPhase = ''
     runHook preCheck
     ( cd ../resources/testproject; ../../build/c3c build --trust=full )
@@ -70,17 +69,20 @@ llvmPackages.stdenv.mkDerivation (finalAttrs: {
     runHook postCheck
   '';
 
-  nativeInstallCheckInputs = [ versionCheckHook ];
   doInstallCheck = true;
+  nativeInstallCheckInputs = [ versionCheckHook ];
+  cmakeBuildType = if debug then "Debug" else "Release";
 
   meta = {
     description = "Compiler for the C3 language";
     homepage = "https://github.com/c3lang/c3c";
     license = lib.licenses.lgpl3Only;
+
     maintainers = with lib.maintainers; [
       hucancode
       anas
     ];
+
     platforms = lib.platforms.all;
     mainProgram = "c3c";
   };

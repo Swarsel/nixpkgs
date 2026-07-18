@@ -2,6 +2,7 @@
   lib,
   stdenv,
   fetchFromGitHub,
+  makeWrapper,
   meson,
   ninja,
   pkg-config,
@@ -9,7 +10,6 @@
   wayland-protocols,
   wayland-scanner,
   xdg-utils,
-  makeWrapper,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -24,6 +24,7 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   strictDeps = true;
+
   nativeBuildInputs = [
     meson
     ninja
@@ -31,6 +32,7 @@ stdenv.mkDerivation (finalAttrs: {
     wayland-scanner
     makeWrapper
   ];
+
   buildInputs = [
     wayland
     wayland-protocols
@@ -47,13 +49,15 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   meta = {
-    homepage = "https://github.com/bugaevc/wl-clipboard";
     description = "Command-line copy/paste utilities for Wayland";
+    homepage = "https://github.com/bugaevc/wl-clipboard";
     license = lib.licenses.gpl3Plus;
+
     maintainers = with lib.maintainers; [
       dywedir
       kashw2
     ];
+
     platforms = lib.platforms.unix;
   };
 })

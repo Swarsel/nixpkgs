@@ -16,13 +16,13 @@ stdenv.mkDerivation (finalAttrs: {
     sha256 = "170cpvvivb6y2kwsqj9ppx5brgds9gkn8mixrnvj8z9c15xhvplm";
   };
 
+  buildInputs = [ libevent ];
+
   installPhase = ''
     mkdir -p $out/{bin,share}
     mv redsocks $out/bin
     mv doc $out/share
   '';
-
-  buildInputs = [ libevent ];
 
   meta = {
     description = "Transparent redirector of any TCP connection to proxy";

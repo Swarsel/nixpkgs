@@ -2,16 +2,15 @@
   lib,
   fetchFromGitHub,
   buildPythonPackage,
-  setuptools,
   pip,
-  pythonAtLeast,
   pytestCheckHook,
+  pythonAtLeast,
+  setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "pip-chill";
   version = "1.0.3";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "rbanffy";
@@ -19,10 +18,6 @@ buildPythonPackage rec {
     tag = "v${version}";
     hash = "sha256-oWq3UWBL5nsCBUkaElashZKvm7pN3StJNubgU++8YFs=";
   };
-
-  build-system = [ setuptools ];
-
-  dependencies = lib.optionals (pythonAtLeast "3.12") [ setuptools ];
 
   nativeCheckInputs = [
     pip
@@ -34,6 +29,9 @@ buildPythonPackage rec {
       --replace-fail "pip_chill/cli.py" "${placeholder "out"}/bin/pip-chill"
   '';
 
+  build-system = [ setuptools ];
+  dependencies = lib.optionals (pythonAtLeast "3.12") [ setuptools ];
+  pyproject = true;
   pythonImportsCheck = [ "pip_chill" ];
 
   meta = {

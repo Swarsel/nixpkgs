@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   home-assistant-bluetooth,
   poetry-core,
   pytest-cov-stub,
@@ -12,7 +12,6 @@
 buildPythonPackage rec {
   pname = "bluetooth-sensor-state-data";
   version = "1.9.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "Bluetooth-Devices";
@@ -21,6 +20,11 @@ buildPythonPackage rec {
     hash = "sha256-V7stHAID6zkLFYDX5HUVF38/8OHa4AZr48FPmSoDcAE=";
   };
 
+  nativeCheckInputs = [
+    pytest-cov-stub
+    pytestCheckHook
+  ];
+
   build-system = [ poetry-core ];
 
   dependencies = [
@@ -28,11 +32,7 @@ buildPythonPackage rec {
     sensor-state-data
   ];
 
-  nativeCheckInputs = [
-    pytest-cov-stub
-    pytestCheckHook
-  ];
-
+  pyproject = true;
   pythonImportsCheck = [ "bluetooth_sensor_state_data" ];
 
   meta = {

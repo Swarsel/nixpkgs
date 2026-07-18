@@ -1,31 +1,30 @@
 {
   lib,
   buildPythonPackage,
+  cryptography,
   fetchPypi,
   setuptools,
-  cryptography,
 }:
 buildPythonPackage (finalAttrs: {
   pname = "types-paramiko";
   version = "5.0.0.20260617";
-  pyproject = true;
-  __structuredAttrs = true;
 
   src = fetchPypi {
-    pname = "types_paramiko";
     inherit (finalAttrs) version;
     hash = "sha256-UKWw3GiznTAJfLfZO0kV27yX7XQOpjO9SSviXKHyXfQ=";
+    pname = "types_paramiko";
   };
 
+  # Modules doesn't have tests
+  doCheck = false;
+  __structuredAttrs = true;
   build-system = [ setuptools ];
 
   dependencies = [
     cryptography
   ];
 
-  # Modules doesn't have tests
-  doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "paramiko-stubs" ];
 
   meta = {

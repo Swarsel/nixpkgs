@@ -2,31 +2,21 @@
   lib,
   buildPythonPackage,
   fetchPypi,
-  setuptools,
-  levenshtein,
-  pytesseract,
-  opencv-python,
   fuzzywuzzy,
+  levenshtein,
+  opencv-python,
+  pytesseract,
+  setuptools,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "videocr";
   version = "0.1.6";
-  pyproject = true;
 
   src = fetchPypi {
     inherit (finalAttrs) pname version;
     hash = "sha256-w0hPfUK4un5JAjAP7vwOAuKlsZ+zv6sFV2vD/Rl3kbI=";
   };
-
-  build-system = [ setuptools ];
-
-  dependencies = [
-    levenshtein
-    pytesseract
-    opencv-python
-    fuzzywuzzy
-  ];
 
   postPatch = ''
     substituteInPlace setup.py \
@@ -39,7 +29,16 @@ buildPythonPackage (finalAttrs: {
 
   # Project has no tests
   doCheck = false;
+  build-system = [ setuptools ];
 
+  dependencies = [
+    levenshtein
+    pytesseract
+    opencv-python
+    fuzzywuzzy
+  ];
+
+  pyproject = true;
   pythonImportsCheck = [ "videocr" ];
 
   meta = {

@@ -1,12 +1,13 @@
 {
-  buildNpmPackage,
-  fetchFromGitHub,
   lib,
+  fetchFromGitHub,
+  buildNpmPackage,
   jq,
 }:
 buildNpmPackage {
   pname = "json2ts";
   version = "15.0.2";
+
   src = fetchFromGitHub {
     owner = "bcherny";
     repo = "json-schema-to-typescript";
@@ -25,12 +26,12 @@ buildNpmPackage {
   '';
 
   meta = {
-    mainProgram = "json2ts";
     description = "Compile JSON Schema to TypeScript type declarations";
     homepage = "https://github.com/bcherny/json-schema-to-typescript";
     changelog = "https://github.com/bcherny/json-schema-to-typescript/blob/master/CHANGELOG.md";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ hsjobeki ];
     platforms = lib.platforms.all;
+    mainProgram = "json2ts";
   };
 }

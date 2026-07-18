@@ -5,13 +5,9 @@
 }:
 
 stdenv.mkDerivation {
-  version = lib.getVersion aflplusplus;
   pname = "libdislocator";
-
+  version = lib.getVersion aflplusplus;
   src = aflplusplus.src;
-  postUnpack = "chmod -R +w ${aflplusplus.src.name}";
-  sourceRoot = "${aflplusplus.src.name}/utils/libdislocator";
-
   makeFlags = [ "PREFIX=${placeholder "out"}" ];
 
   preInstall = ''
@@ -27,14 +23,19 @@ stdenv.mkDerivation {
     chmod +x $out/bin/get-libdislocator-so
   '';
 
+  postUnpack = "chmod -R +w ${aflplusplus.src.name}";
+  sourceRoot = "${aflplusplus.src.name}/utils/libdislocator";
+
   meta = {
-    homepage = "https://github.com/vanhauser-thc/AFLplusplus";
     description = ''
       Drop-in replacement for the libc allocator which improves
       the odds of bumping into heap-related security bugs in
       several ways
     '';
+
+    homepage = "https://github.com/vanhauser-thc/AFLplusplus";
     license = lib.licenses.asl20;
+
     maintainers = with lib.maintainers; [
       ris
       msanft

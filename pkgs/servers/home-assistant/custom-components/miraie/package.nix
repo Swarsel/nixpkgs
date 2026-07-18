@@ -1,15 +1,13 @@
 {
   lib,
-  buildHomeAssistantComponent,
   fetchFromGitHub,
-  miraie-ac,
   aiomqtt,
+  buildHomeAssistantComponent,
+  miraie-ac,
   nix-update-script,
 }:
 
 buildHomeAssistantComponent rec {
-  owner = "rkzofficial";
-  domain = "miraie";
   version = "1.1.7";
 
   src = fetchFromGitHub {
@@ -24,13 +22,15 @@ buildHomeAssistantComponent rec {
     aiomqtt
   ];
 
+  domain = "miraie";
+  owner = "rkzofficial";
   passthru.updateScript = nix-update-script { };
 
   meta = {
-    changelog = "https://github.com/rkzofficial/ha-miraie-ac/releases/tag/v${version}";
     description = "Home Assistant component for Miraie ACs";
     homepage = "https://github.com/rkzofficial/ha-miraie-ac";
-    maintainers = with lib.maintainers; [ ananthb ];
+    changelog = "https://github.com/rkzofficial/ha-miraie-ac/releases/tag/v${version}";
     license = lib.licenses.asl20;
+    maintainers = with lib.maintainers; [ ananthb ];
   };
 }

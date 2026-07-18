@@ -2,25 +2,25 @@
   lib,
   stdenv,
   fetchurl,
-  fetchDebianPatch,
   alsa-lib,
   expat,
+  fetchDebianPatch,
   glib,
   libjack2,
-  libxext,
-  libx11,
   libpng,
   libpthread-stubs,
   libsmf,
   libsndfile,
+  libx11,
+  libxext,
   lv2,
   pkg-config,
   zita-resampler,
 }:
 
 stdenv.mkDerivation rec {
-  version = "0.9.20";
   pname = "drumgizmo";
+  version = "0.9.20";
 
   src = fetchurl {
     url = "https://www.drumgizmo.org/releases/${pname}-${version}/${pname}-${version}.tar.gz";
@@ -32,13 +32,11 @@ stdenv.mkDerivation rec {
       pname = "drumgizmo";
       version = "0.9.20";
       debianRevision = "3";
-      patch = "0005-fix_ftbfs_with_gcc13.patch";
       hash = "sha256-y5NDZ+3t6GkBeF/5UY8dwtH8k0cuM+5SGBGPSV7AX7M=";
+      patch = "0005-fix_ftbfs_with_gcc13.patch";
     })
     ./fix-non-ascii.patch
   ];
-
-  configureFlags = [ "--enable-lv2" ];
 
   nativeBuildInputs = [ pkg-config ];
 
@@ -57,11 +55,13 @@ stdenv.mkDerivation rec {
     zita-resampler
   ];
 
+  configureFlags = [ "--enable-lv2" ];
+
   meta = {
     description = "LV2 sample based drum plugin";
     homepage = "https://www.drumgizmo.org";
     license = lib.licenses.lgpl3Plus;
-    platforms = lib.platforms.linux;
     maintainers = [ lib.maintainers.nico202 ];
+    platforms = lib.platforms.linux;
   };
 }

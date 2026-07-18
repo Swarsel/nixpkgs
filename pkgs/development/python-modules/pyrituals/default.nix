@@ -1,15 +1,14 @@
 {
   lib,
+  fetchFromGitHub,
   aiohttp,
   buildPythonPackage,
-  fetchFromGitHub,
   setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "pyrituals";
   version = "0.0.7";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "milanmeu";
@@ -18,13 +17,11 @@ buildPythonPackage rec {
     hash = "sha256-nCyfwOONtpwRLFq3crRacmrWef6J3mOfKz4fvkOcb3g=";
   };
 
-  build-system = [ setuptools ];
-
-  dependencies = [ aiohttp ];
-
   # Project has no tests
   doCheck = false;
-
+  build-system = [ setuptools ];
+  dependencies = [ aiohttp ];
+  pyproject = true;
   pythonImportsCheck = [ "pyrituals" ];
 
   meta = {

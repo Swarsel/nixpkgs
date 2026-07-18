@@ -11,15 +11,14 @@
 buildPythonPackage (finalAttrs: {
   pname = "yoyo-migrations";
   version = "8.2.0";
-  pyproject = true;
-
-  __structuredAttrs = true;
 
   src = fetchPypi {
     inherit (finalAttrs) pname version;
     hash = "sha256-ggYGoD4mLPHNT1niVsKPpEZCUiTVuCo9EnX9eBeFI+Q=";
   };
 
+  doCheck = false; # pypi tarball does not contain tests
+  __structuredAttrs = true;
   build-system = [ setuptools ];
 
   dependencies = [
@@ -29,8 +28,7 @@ buildPythonPackage (finalAttrs: {
     tabulate
   ];
 
-  doCheck = false; # pypi tarball does not contain tests
-
+  pyproject = true;
   pythonImportsCheck = [ "yoyo" ];
 
   meta = {

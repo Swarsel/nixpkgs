@@ -1,7 +1,7 @@
 {
   lib,
-  stdenvNoCC,
   fetchFromGitHub,
+  stdenvNoCC,
 }:
 
 stdenvNoCC.mkDerivation {
@@ -12,14 +12,13 @@ stdenvNoCC.mkDerivation {
     owner = "googlefonts";
     repo = "comfortaa";
     rev = "2a87ac6f6ea3495150bfa00d0c0fb53dd0a2f11b";
+    hash = "sha256-4ZBRaQyYlnt9l4NgBHezuCnR3rKTJ37L41RTbGAhd0M=";
+
     postFetch = ''
       # Remove the OTF fonts as they are not needed and cause a hash mismatch
       rm -rf $out/fonts/{OTF,otf}
     '';
-    hash = "sha256-4ZBRaQyYlnt9l4NgBHezuCnR3rKTJ37L41RTbGAhd0M=";
   };
-
-  dontBuild = true;
 
   installPhase = ''
     runHook preInstall
@@ -31,11 +30,13 @@ stdenvNoCC.mkDerivation {
     runHook postInstall
   '';
 
+  dontBuild = true;
+
   meta = {
-    homepage = "http://aajohan.deviantart.com/art/Comfortaa-font-105395949";
     description = "Clean and modern font suitable for headings and logos";
+    homepage = "http://aajohan.deviantart.com/art/Comfortaa-font-105395949";
     license = lib.licenses.ofl;
-    platforms = lib.platforms.all;
     maintainers = [ lib.maintainers.rycee ];
+    platforms = lib.platforms.all;
   };
 }

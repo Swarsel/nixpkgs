@@ -1,9 +1,9 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
-  testers,
+  buildGoModule,
   kool,
+  testers,
 }:
 
 buildGoModule (finalAttrs: {
@@ -33,10 +33,10 @@ buildGoModule (finalAttrs: {
 
   meta = {
     description = "From local development to the cloud: development workflow made easy";
-    mainProgram = "kool";
     homepage = "https://kool.dev";
     changelog = "https://github.com/kool-dev/kool/releases/tag/${finalAttrs.src.rev}";
     license = lib.licenses.mit;
     maintainers = [ ];
+    mainProgram = "kool";
   };
 })

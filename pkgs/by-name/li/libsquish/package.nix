@@ -1,10 +1,10 @@
 {
-  cmake,
-  fetchurl,
   lib,
+  stdenv,
+  fetchurl,
+  cmake,
   libpng,
   ninja,
-  stdenv,
   zlib,
 }:
 stdenv.mkDerivation (finalAttrs: {
@@ -15,7 +15,6 @@ stdenv.mkDerivation (finalAttrs: {
     url = "mirror://sourceforge/project/libsquish/libsquish-${finalAttrs.version}.tgz";
     hash = "sha256-YoeW7rpgiGYYOmHQgNRpZ8ndpnI7wKPsUjJMhdIUcmk=";
   };
-  sourceRoot = ".";
 
   nativeBuildInputs = [
     cmake
@@ -33,13 +32,17 @@ stdenv.mkDerivation (finalAttrs: {
   ]
   ++ lib.optional (!stdenv.hostPlatform.isx86) (lib.cmakeBool "BUILD_SQUISH_WITH_SSE2" false);
 
+  sourceRoot = ".";
+
   meta = {
     description = "Library for compressing images with the DXT/S3TC standard";
+
     longDescription = ''
       The libSquish library compresses images with the DXT standard (also known
       as S3TC). This standard is mainly used by OpenGL and DirectX for the lossy
       compression of RGBA textures.
     '';
+
     homepage = "https://libsquish.sourceforge.io";
     license = lib.licenses.mit;
     maintainers = [ lib.maintainers.azahi ];

@@ -1,46 +1,41 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # build-system
-  setuptools,
-
   # dependencies
   aiohttp,
+  buildPythonPackage,
   eth-abi,
   eth-account,
   eth-hash,
+  # tests
+  eth-tester,
   eth-typing,
   eth-utils,
+  flaky,
   hexbytes,
+  hypothesis,
+  # optional-dependencies
+  ipfshttpclient,
   jsonschema,
   lru-dict,
   protobuf,
-  pydantic,
-  requests,
-  types-requests,
-  websockets,
-
-  # optional-dependencies
-  ipfshttpclient,
-
-  # tests
-  eth-tester,
-  flaky,
-  hypothesis,
   py-evm,
+  pydantic,
   pytest-asyncio,
   pytest-mock,
   pytest-xdist,
   pytestCheckHook,
   pyunormalize,
+  requests,
+  # build-system
+  setuptools,
+  types-requests,
+  websockets,
 }:
 
 buildPythonPackage rec {
   pname = "web3";
   version = "7.15.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "ethereum";
@@ -49,11 +44,19 @@ buildPythonPackage rec {
     hash = "sha256-BStkLH7lCnhVs2Fc3c0EBXzyZtEgI8ywA01OEBYLUeQ=";
   };
 
-  build-system = [ setuptools ];
-
-  pythonRelaxDeps = [
-    "websockets"
+  nativeCheckInputs = [
+    eth-tester
+    flaky
+    hypothesis
+    py-evm
+    pytest-asyncio
+    pytest-mock
+    pytest-xdist
+    pytestCheckHook
+    pyunormalize
   ];
+
+  build-system = [ setuptools ];
 
   dependencies = [
     aiohttp
@@ -75,21 +78,12 @@ buildPythonPackage rec {
     websockets
   ];
 
-  # Note: to reflect the extra_requires in main/setup.py.
-  optional-dependencies = {
-    ipfs = [ ipfshttpclient ];
-  };
+  disabledTestPaths = [
+    # requires geth library and binaries
+    "tests/integration/go_ethereum"
 
-  nativeCheckInputs = [
-    eth-tester
-    flaky
-    hypothesis
-    py-evm
-    pytest-asyncio
-    pytest-mock
-    pytest-xdist
-    pytestCheckHook
-    pyunormalize
+    # requires local running beacon node
+    "tests/beacon"
   ];
 
   disabledTests = [
@@ -107,15 +101,17 @@ buildPythonPackage rec {
     "test_websocket_provider_timeout"
   ];
 
-  disabledTestPaths = [
-    # requires geth library and binaries
-    "tests/integration/go_ethereum"
+  # Note: to reflect the extra_requires in main/setup.py.
+  optional-dependencies = {
+    ipfs = [ ipfshttpclient ];
+  };
 
-    # requires local running beacon node
-    "tests/beacon"
-  ];
-
+  pyproject = true;
   pythonImportsCheck = [ "web3" ];
+
+  pythonRelaxDeps = [
+    "websockets"
+  ];
 
   meta = {
     description = "Python interface for interacting with the Ethereum blockchain and ecosystem";

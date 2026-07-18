@@ -1,27 +1,35 @@
 {
   lib,
-  stdenvNoLibc,
-  symlinkJoin,
   libcMinimal,
-  librthread,
-  libm,
-  librpcsvc,
-  libutil,
   libexecinfo,
   libkvm,
+  libm,
+  librpcsvc,
+  librthread,
+  libutil,
   rtld,
+  stdenvNoLibc,
+  symlinkJoin,
   version,
 }:
 
 symlinkJoin {
-  pname = "libc-openbsd";
   inherit version;
+  pname = "libc-openbsd";
 
   outputs = [
     "out"
     "dev"
     "man"
   ];
+
+  postBuild = ''
+    rm -r "$out/nix-support"
+    mkdir -p "$man/share/man"
+    mv "$out/share"/man* "$man/share/man"
+    rmdir "$out/share"
+    fixupPhase
+  '';
 
   paths =
     lib.concatMap
@@ -42,14 +50,6 @@ symlinkJoin {
         ]
         ++ (lib.optional (!stdenvNoLibc.hostPlatform.isStatic) rtld)
       );
-
-  postBuild = ''
-    rm -r "$out/nix-support"
-    mkdir -p "$man/share/man"
-    mv "$out/share"/man* "$man/share/man"
-    rmdir "$out/share"
-    fixupPhase
-  '';
 
   meta.platforms = lib.platforms.openbsd;
 }

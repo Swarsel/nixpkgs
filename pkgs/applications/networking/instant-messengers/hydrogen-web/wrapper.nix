@@ -1,7 +1,7 @@
 {
   stdenv,
-  jq,
   hydrogen-web-unwrapped,
+  jq,
   conf ? { },
 }:
 
@@ -9,11 +9,8 @@ if (conf == { }) then
   hydrogen-web-unwrapped
 else
   stdenv.mkDerivation {
-    pname = "${hydrogen-web-unwrapped.pname}-wrapped";
     inherit (hydrogen-web-unwrapped) version meta;
-
-    dontUnpack = true;
-
+    pname = "${hydrogen-web-unwrapped.pname}-wrapped";
     nativeBuildInputs = [ jq ];
 
     installPhase = ''
@@ -26,4 +23,6 @@ else
 
       runHook postInstall
     '';
+
+    dontUnpack = true;
   }

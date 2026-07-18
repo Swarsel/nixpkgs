@@ -7,7 +7,6 @@
 buildPythonPackage rec {
   pname = "typing";
   version = "3.10.0.0";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
@@ -15,6 +14,7 @@ buildPythonPackage rec {
   };
 
   doCheck = false;
+  format = "setuptools";
 
   meta = {
     description = "Backport of typing module to Python versions older than 3.5";

@@ -1,15 +1,15 @@
 {
-  ocamlPackages,
-  fetchFromGitHub,
   lib,
-  zlib,
-  pkg-config,
+  stdenv,
+  fetchFromGitHub,
+  autoconf,
   cacert,
   gmp,
   libev,
-  autoconf,
+  ocamlPackages,
+  pkg-config,
   sqlite,
-  stdenv,
+  zlib,
 }:
 let
   mkCombyPackage =
@@ -22,9 +22,6 @@ let
     ocamlPackages.buildDunePackage rec {
       inherit pname preBuild;
       version = "1.8.1";
-      duneVersion = "3";
-      minimalOCamlVersion = "4.08.1";
-      doCheck = true;
 
       src = fetchFromGitHub {
         owner = "comby-tools";
@@ -34,7 +31,6 @@ let
       };
 
       patches = [ ./comby.patch ];
-
       nativeBuildInputs = extraNativeInputs;
 
       buildInputs = [
@@ -51,13 +47,16 @@ let
       ]
       ++ extraBuildInputs;
 
+      doCheck = true;
       nativeCheckInputs = [ cacert ];
+      duneVersion = "3";
+      minimalOCamlVersion = "4.08.1";
 
       meta = {
         description = "Tool for searching and changing code structure";
-        mainProgram = "comby";
-        license = lib.licenses.asl20;
         homepage = "https://comby.dev";
+        license = lib.licenses.asl20;
+        mainProgram = "comby";
         broken = true; # Not compatible with ocamlPackages.tar ≥ 3
       };
     };

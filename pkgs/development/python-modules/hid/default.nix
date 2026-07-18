@@ -2,14 +2,13 @@
   lib,
   buildPythonPackage,
   fetchPypi,
-  setuptools,
   hidapi,
+  setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "hid";
   version = "1.0.9";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
@@ -22,12 +21,10 @@ buildPythonPackage rec {
     sed -i -e "s|libhidapi|$hidapi/libhidapi|" hid/__init__.py
   '';
 
-  build-system = [ setuptools ];
-
-  dependencies = [ hidapi ];
-
   doCheck = false; # no tests
-
+  build-system = [ setuptools ];
+  dependencies = [ hidapi ];
+  pyproject = true;
   pythonImportsCheck = [ "hid" ];
 
   meta = {

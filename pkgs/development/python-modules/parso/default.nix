@@ -1,15 +1,14 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
+  buildPythonPackage,
   pytestCheckHook,
+  setuptools,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "parso";
   version = "0.8.7";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "davidhalter";
@@ -18,9 +17,9 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-vpWoxLIvNt4QQh/r57iAvX3Zebet3mihb5efOWLhYI8=";
   };
 
-  build-system = [ setuptools ];
-
   nativeCheckInputs = [ pytestCheckHook ];
+  build-system = [ setuptools ];
+  pyproject = true;
 
   meta = {
     description = "Python Parser";

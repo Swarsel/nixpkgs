@@ -1,104 +1,101 @@
 {
-  stdenv,
   lib,
-  fetchpatch,
+  stdenv,
   fetchurl,
-  zstd,
-  fetchFromGitiles,
-  fetchNpmDeps,
+  alsa-lib,
+  at-spi2-core,
+  bashInteractive,
+  bison,
   buildPackages,
-  pkgsBuildBuild,
-  # Channel data:
-  upstream-info,
+  bzip2,
   # Helper functions:
   chromiumVersionAtLeast,
-  versionRange,
-
-  # Native build inputs:
-  ninja,
-  bashInteractive,
-  pkg-config,
-  python3,
-  perl,
-  nodejs,
-  npmHooks,
-  which,
-  libuuid,
-  overrideCC,
-  # postPatch:
-  pkgsBuildHost,
-  # configurePhase:
-  gnChromium,
-  symlinkJoin,
-
-  # Build inputs:
-  libpng,
-  bzip2,
-  flac,
-  speex,
-  libopus,
-  libevent,
-  expat,
-  libjpeg,
-  snappy,
-  libcap,
-  minizip,
-  libwebp,
-  libusb1,
-  re2,
-  ffmpeg,
-  libxslt,
-  libxml2,
-  nasm,
-  nspr,
-  nss,
-  util-linux,
-  alsa-lib,
-  bison,
-  gperf,
-  libkrb5,
-  glib,
-  gtk3,
-  dbus-glib,
-  libxscrnsaver,
-  libxcursor,
-  libxtst,
-  libxshmfence,
-  libGLU,
-  libGL,
-  dri-pkgconfig-stub,
-  libgbm,
-  pciutils,
-  protobuf,
-  speechd-minimal,
-  libxdamage,
-  at-spi2-core,
-  pipewire,
-  libva,
-  libdrm,
-  wayland,
-  libxkbcommon, # Ozone
   curl,
-  libffi,
-  libepoxy,
-  libevdev,
+  dbus-glib,
+  dri-pkgconfig-stub,
+  expat,
+  fetchFromGitiles,
+  fetchNpmDeps,
+  fetchpatch,
+  ffmpeg,
+  flac,
+  glib,
   # postPatch:
   glibc, # gconv + locale
+  # configurePhase:
+  gnChromium,
+  gperf,
+  gtk3,
+  libGL,
+  libGLU,
+  libcap,
+  libdrm,
+  libepoxy,
+  libevdev,
+  libevent,
+  libffi,
+  libgbm,
+  libjpeg,
+  libkrb5,
+  libopus,
+  # Build inputs:
+  libpng,
+  libusb1,
+  libuuid,
+  libva,
+  libwebp,
+  libxcursor,
+  libxdamage,
+  libxkbcommon, # Ozone
+  libxml2,
+  libxscrnsaver,
+  libxshmfence,
+  libxslt,
+  libxtst,
+  minizip,
+  nasm,
+  # Native build inputs:
+  ninja,
+  nodejs,
+  npmHooks,
+  nspr,
+  nss,
+  overrideCC,
+  pciutils,
+  perl,
+  pipewire,
+  pkg-config,
+  pkgsBuildBuild,
+  # postPatch:
+  pkgsBuildHost,
+  protobuf,
+  python3,
+  re2,
+  snappy,
+  speechd-minimal,
+  speex,
+  symlinkJoin,
+  systemdLibs,
+  ungoogled-chromium,
+  # Channel data:
+  upstream-info,
+  util-linux,
+  versionRange,
   # postFixup:
   vulkan-loader,
-
+  wayland,
+  which,
+  zstd,
+  cups ? null,
   # Package customization:
   cupsSupport ? true,
-  cups ? null,
-  proprietaryCodecs ? true,
-  pulseSupport ? false,
-  libpulseaudio ? null,
-  ungoogled ? false,
-  ungoogled-chromium,
   # Optional dependencies:
   libgcrypt ? null, # cupsSupport
+  libpulseaudio ? null,
+  proprietaryCodecs ? true,
+  pulseSupport ? false,
   systemdSupport ? lib.meta.availableOn stdenv.hostPlatform systemdLibs,
-  systemdLibs,
+  ungoogled ? false,
 }:
 
 buildFun:
@@ -120,12 +117,12 @@ let
     {
       commit,
       hash,
-      revert ? false,
       excludes ? [ ],
+      revert ? false,
     }:
     fetchpatch {
-      url = "https://github.com/chromium/chromium/commit/${commit}.patch";
       inherit hash revert excludes;
+      url = "https://github.com/chromium/chromium/commit/${commit}.patch";
     };
 
   mkGnFlags =
@@ -199,6 +196,7 @@ let
 
   rustTools = symlinkJoin {
     name = "rustTools";
+
     paths = [
       buildPackages.rust-bindgen
       buildPackages.rustfmt
@@ -213,13 +211,14 @@ let
       in
       (
         {
-          "x86_64" = "x64";
-          "i686" = "x86";
-          "arm" = "arm";
           "aarch64" = "arm64";
+          "arm" = "arm";
+          "i686" = "x86";
+          "x86_64" = "x64";
         }
         .${platform.parsed.cpu.name} or (throw "no chromium Rosetta Stone entry for cpu: ${name}")
       );
+
     os =
       platform:
       if platform.isLinux then
@@ -240,10 +239,10 @@ let
     fetchFromGitiles (
       removeAttrs args [ "recompress" ]
       // lib.optionalAttrs args.recompress or false {
-        name = "source.tar.zstd";
-        downloadToTemp = false;
-        passthru.unpack = true;
         nativeBuildInputs = [ zstd ];
+        downloadToTemp = false;
+        name = "source.tar.zstd";
+
         postFetch = ''
           tar \
             --use-compress-program="zstd -T$NIX_BUILD_CORES" \
@@ -256,6 +255,8 @@ let
             -cf "$TMPDIR/source.zstd" .
           mv "$TMPDIR/source.zstd" "$out"
         '';
+
+        passthru.unpack = true;
       }
     )
   ) upstream-info.DEPS;
@@ -284,178 +285,9 @@ let
   );
 
   base = rec {
-    pname = "${lib.optionalString ungoogled "ungoogled-"}${packageName}-unwrapped";
     inherit (upstream-info) version;
     inherit packageName buildType buildPath;
-
-    unpackPhase = ''
-      runHook preUnpack
-
-      ${unpackPhaseSnippet}
-      sourceRoot=src
-
-      runHook postUnpack
-    '';
-
-    npmRoot = "third_party/node";
-    npmDeps =
-      (fetchNpmDeps {
-        src = chromiumDeps."src";
-        sourceRoot = npmRoot;
-        hash = upstream-info.deps.npmHash;
-      }).overrideAttrs
-        (p: {
-          nativeBuildInputs = p.nativeBuildInputs or [ ] ++ [ zstd ];
-        });
-
-    nativeBuildInputs = [
-      ninja
-      gnChromium
-      bashInteractive # needed for compgen in buildPhase -> process_template
-      pkg-config
-      python3WithPackages
-      perl
-      which
-      buildPackages.rustc.llvmPackages.bintools
-      bison
-      gperf
-    ]
-    ++ lib.optionals (!isElectron) [
-      nodejs
-      npmHooks.npmConfigHook
-    ];
-
-    depsBuildBuild = [
-      buildPlatformLlvmStdenv
-      buildPlatformLlvmStdenv.cc
-      pkg-config
-      libuuid
-    ]
-    # When cross-compiling, chromium builds a huge proportion of its
-    # components for both the `buildPlatform` (which it calls
-    # `host`) as well as for the `hostPlatform` -- easily more than
-    # half of the dependencies are needed here.  To avoid having to
-    # maintain a separate list of buildPlatform-dependencies, we
-    # simply throw in the kitchen sink.
-    # ** Because of overrides, we have to copy the list as it otherwise mess with splicing **
-    ++ lib.optionals needsLibpng [
-      (buildPackages.libpng.override { apngSupport = false; }) # https://bugs.chromium.org/p/chromium/issues/detail?id=752403
-    ]
-    ++ [
-      (buildPackages.libopus.override { withCustomModes = true; })
-      bzip2
-      flac
-      speex
-      libevent
-      expat
-      libjpeg
-      snappy
-      libcap
-      minizip
-      libwebp
-      libusb1
-      re2
-      ffmpeg
-      libxslt
-      libxml2
-      nasm
-      nspr
-      nss
-      util-linux
-      alsa-lib
-      libkrb5
-      glib
-      gtk3
-      dbus-glib
-      libxscrnsaver
-      libxcursor
-      libxtst
-      libxshmfence
-      libGLU
-      libGL
-      libgbm
-      pciutils
-      protobuf
-      speechd-minimal
-      libxdamage
-      at-spi2-core
-      pipewire
-      libva
-      libdrm
-      wayland
-      libxkbcommon
-      curl
-      libepoxy
-      libffi
-      libevdev
-    ]
-    ++ lib.optional systemdSupport systemdLibs
-    ++ lib.optionals cupsSupport [
-      libgcrypt
-      cups
-    ]
-    ++ lib.optional pulseSupport libpulseaudio;
-
-    buildInputs = [
-    ]
-    ++ lib.optionals needsLibpng [
-      (libpng.override { apngSupport = false; }) # https://bugs.chromium.org/p/chromium/issues/detail?id=752403
-    ]
-    ++ [
-      (libopus.override { withCustomModes = true; })
-      bzip2
-      flac
-      speex
-      libevent
-      expat
-      libjpeg
-      snappy
-      libcap
-      minizip
-      libwebp
-      libusb1
-      re2
-      ffmpeg
-      libxslt
-      libxml2
-      nasm
-      nspr
-      nss
-      util-linux
-      alsa-lib
-      libkrb5
-      glib
-      gtk3
-      dbus-glib
-      libxscrnsaver
-      libxcursor
-      libxtst
-      libxshmfence
-      libGLU
-      libGL
-      dri-pkgconfig-stub
-      libgbm
-      pciutils
-      protobuf
-      speechd-minimal
-      libxdamage
-      at-spi2-core
-      pipewire
-      libva
-      libdrm
-      wayland
-      libxkbcommon
-      curl
-      libepoxy
-      libffi
-      libevdev
-    ]
-    ++ lib.optional systemdSupport systemdLibs
-    ++ lib.optionals cupsSupport [
-      libgcrypt
-      cups
-    ]
-    ++ lib.optional pulseSupport libpulseaudio;
+    pname = "${lib.optionalString ungoogled "ungoogled-"}${packageName}-unwrapped";
 
     patches = [
       ./patches/cross-compile.patch
@@ -523,14 +355,14 @@ let
       # https://issues.chromium.org/issues/378017037
       # Started failing to apply with M145, but this is no longer needed anyway.
       (fetchpatch {
+        decode = "base64 -d";
+        extraPrefix = "v8/";
+        hash = "sha256-PuinMLhJ2W4KPXI5K0ujw85ENTB1wG7Hv785SZ55xnY=";
         name = "reverted-v8-decommit-pooled-paged-by-default.patch";
+        revert = true;
+        stripLen = 1;
         # https://chromium-review.googlesource.com/c/v8/v8/+/5864909
         url = "https://chromium.googlesource.com/v8/v8/+/1ab1a14ad97394d384d8dc6de51bb229625e66d6^!?format=TEXT";
-        decode = "base64 -d";
-        stripLen = 1;
-        extraPrefix = "v8/";
-        revert = true;
-        hash = "sha256-PuinMLhJ2W4KPXI5K0ujw85ENTB1wG7Hv785SZ55xnY=";
       })
     ]
     ++ [
@@ -542,25 +374,25 @@ let
     ]
     ++ [
       (fetchpatch {
+        decode = "base64 -d";
+        hash = "sha256-xf1Jq5v3InXkiVH0uT7+h1HPwZse5MDcHKuJNjSLR6k=";
+        includes = [ "build/rust/cargo_crate.gni" ];
         # Unbreak building with Rust 1.89+ which introduced
         # a new mismatched_lifetime_syntaxes lint.
         # https://issues.chromium.org/issues/424424323
         name = "chromium-138-rust-1.86-mismatched_lifetime_syntaxes.patch";
         # https://chromium-review.googlesource.com/c/chromium/src/+/6658267
         url = "https://chromium.googlesource.com/chromium/src/+/94a87ff38c51fd1a71980a5051d3553978391608^!?format=TEXT";
-        decode = "base64 -d";
-        includes = [ "build/rust/cargo_crate.gni" ];
-        hash = "sha256-xf1Jq5v3InXkiVH0uT7+h1HPwZse5MDcHKuJNjSLR6k=";
       })
     ]
     ++ lib.optionals (versionRange "142" "143") [
       (fetchpatch {
+        decode = "base64 -d";
+        hash = "sha256-0ueOCHYheSFHRFzEat3TDhnU3Avf0TcNBBBpTkz+saw=";
         # Fix https://issues.chromium.org/issues/450752866 by backporting
         # https://chromium-review.googlesource.com/c/chromium/src/+/7030724 from M143
         name = "chromium-142-Backport-Add-missing-include-for-FormFieldData-type-completeness.patch";
         url = "https://chromium.googlesource.com/chromium/src/+/069d424e41f42c6f4a4551334eafc7cfaed6e880^!?format=TEXT";
-        decode = "base64 -d";
-        hash = "sha256-0ueOCHYheSFHRFzEat3TDhnU3Avf0TcNBBBpTkz+saw=";
       })
     ]
     ++ lib.optionals (versionRange "144" "146") [
@@ -574,24 +406,24 @@ let
       # Ungoogled ships its own variant of this patch upstream.
       # https://issues.chromium.org/issues/461602362
       (fetchpatch {
+        decode = "base64 -d";
+        extraPrefix = "third_party/devtools-frontend/src/";
+        hash = "sha256-k+xCfhDuHxtuGhY7LVE8HvbDJt8SEFkslBcJe7t5CAg=";
         name = "revert-devtools-frontend-esbuild-instead-of-rollup.patch";
+        revert = true;
+        stripLen = 1;
         # https://chromium-review.googlesource.com/c/devtools/devtools-frontend/+/7526345
         url = "https://chromium.googlesource.com/devtools/devtools-frontend/+/f130475580017f9f87502343dbcfc0c76dccefe8^!?format=TEXT";
-        decode = "base64 -d";
-        stripLen = 1;
-        extraPrefix = "third_party/devtools-frontend/src/";
-        revert = true;
-        hash = "sha256-k+xCfhDuHxtuGhY7LVE8HvbDJt8SEFkslBcJe7t5CAg=";
       })
     ]
     ++ lib.optionals (chromiumVersionAtLeast "146" && !ungoogled) [
       # Same as the patch above, but from ungoogled-chromium and much
       # cleaner (and smaller) than reverting an endless chain of CLs.
       (fetchpatch {
+        hash = "sha256-Ho5I33FOgtYHvKSZlWXWuBaqnSHqy4+f6EZdiL+/rRQ=";
         name = "ungoogled-chromium-145-build-with-wasm-rollup.patch";
         # https://github.com/ungoogled-software/ungoogled-chromium/blob/145.0.7632.159-1/patches/core/ungoogled-chromium/build-with-wasm-rollup.patch
         url = "https://github.com/ungoogled-software/ungoogled-chromium/raw/refs/tags/145.0.7632.159-1/patches/core/ungoogled-chromium/build-with-wasm-rollup.patch";
-        hash = "sha256-Ho5I33FOgtYHvKSZlWXWuBaqnSHqy4+f6EZdiL+/rRQ=";
       })
     ]
     ++ lib.optionals (chromiumVersionAtLeast "146" && !ungoogled) [
@@ -599,23 +431,23 @@ let
       #  ERROR at //chrome/test/BUILD.gn:6355:9: Unable to load "/build/src/components/variations/test_data/cipd/BUILD.gn".
       #  "//components/variations/test_data/cipd:single_group_per_study_prefer_existing_behavior_seed",
       (fetchpatch {
+        decode = "base64 -d";
+        hash = "sha256-tJ//HE7o9R8nSQDGhi+MKXdNUwnkCZI++CzpAmFn2YY=";
         name = "chromium-146-revert-Add-finch-seeds-to-desktop-perf-builds.patch";
+        revert = true;
         # https://chromium-review.googlesource.com/c/chromium/src/+/7457194
         url = "https://chromium.googlesource.com/chromium/src/+/d2e8a550eece6051372da94a475a8661da203106^!?format=TEXT";
-        decode = "base64 -d";
-        revert = true;
-        hash = "sha256-tJ//HE7o9R8nSQDGhi+MKXdNUwnkCZI++CzpAmFn2YY=";
       })
     ]
     ++ lib.optionals (versionRange "146" "148" && lib.versionOlder llvmVersion "23") [
       # clang++: error: unknown argument: '-fsanitize-ignore-for-ubsan-feature=array-bounds'
       (fetchpatch {
+        decode = "base64 -d";
+        hash = "sha256-WZsN2qm6lX121bDf7SoN75flXtCTmPPpwtHK0ayjkPc=";
         name = "chromium-146-revert-Update-fsanitizer=array-bounds-config.patch";
+        revert = true;
         # https://chromium-review.googlesource.com/c/chromium/src/+/7539408
         url = "https://chromium.googlesource.com/chromium/src/+/acb47d9a6b56c4889a2ed4216e9968cfc740086c^!?format=TEXT";
-        decode = "base64 -d";
-        revert = true;
-        hash = "sha256-WZsN2qm6lX121bDf7SoN75flXtCTmPPpwtHK0ayjkPc=";
       })
     ]
     ++ lib.optionals (!versionRange "146" "147") [
@@ -631,31 +463,31 @@ let
     ++ lib.optionals (versionRange "148" "149" && lib.versionOlder llvmVersion "23") [
       # clang++: error: unknown argument: '-fsanitize-ignore-for-ubsan-feature=return'
       (fetchpatch {
+        decode = "base64 -d";
+        hash = "sha256-/qzzxwTdPMwIdsqD/G02S7kKHCj3QxECL+g1WYEaWmU=";
         name = "chromium-148-revert-build-Add--fsanitizer=return-config.patch";
+        revert = true;
         # https://chromium-review.googlesource.com/c/chromium/src/+/7629257
         url = "https://chromium.googlesource.com/chromium/src/+/99ba1f5302f9433efdb4df302cb7b7de56c72e4c^!?format=TEXT";
-        decode = "base64 -d";
-        revert = true;
-        hash = "sha256-/qzzxwTdPMwIdsqD/G02S7kKHCj3QxECL+g1WYEaWmU=";
       })
       # ERROR Unresolved dependencies.
       # //apps:apps(//build/toolchain/linux/unbundle:default)
       #   needs //build/config/compiler:sanitize_return(//build/toolchain/linux/unbundle:default)
       (fetchpatch {
+        decode = "base64 -d";
+        hash = "sha256-14fTHNh3vGsf4KgeH8uLX+aK3lrjK0VKd1dfK1g7r0I=";
         name = "chromium-148-revert-build-Enable--fsanitizer=return-config.patch";
+        revert = true;
         # https://chromium-review.googlesource.com/c/chromium/src/+/7629258
         url = "https://chromium.googlesource.com/chromium/src/+/9357bfbea03753fe52264c9ec36abe74f48cfef5^!?format=TEXT";
-        decode = "base64 -d";
-        revert = true;
-        hash = "sha256-14fTHNh3vGsf4KgeH8uLX+aK3lrjK0VKd1dfK1g7r0I=";
       })
       # [33377/55552] LINK ./mksnapshot
       # ld.lld: error: undefined symbol: __sanitizer_set_death_callback
       # https://gitlab.archlinux.org/archlinux/packaging/packages/chromium/-/blob/148.0.7778.96-1/PKGBUILD#L168-174
       (fetchpatch {
+        hash = "sha256-jR0G9z2R8VGl2tkB3u0368RyWM1J6qYXqNWwKkYd5zU=";
         name = "archlinux-chromium-146-drop-unknown-clang-flag.patch";
         url = "https://gitlab.archlinux.org/archlinux/packaging/packages/chromium/-/raw/148.0.7778.96-1/chromium-146-drop-unknown-clang-flag.patch";
-        hash = "sha256-jR0G9z2R8VGl2tkB3u0368RyWM1J6qYXqNWwKkYd5zU=";
       })
     ]
     ++ lib.optionals (chromiumVersionAtLeast "149" && lib.versionOlder llvmVersion "23") [
@@ -676,23 +508,23 @@ let
     ++ lib.optionals (versionRange "148" "149") [
       # ninja: error: '../../third_party/rust-toolchain/bin/rustc', needed by 'phony/default_for_rust_host_build_tools_rust_bin_inputs', missing and no known rule to make it
       (fetchpatch {
+        decode = "base64 -d";
+        hash = "sha256-7xg8IZ2gO+Wtnv7lWLVE3lLpcmMgvtDtcWwUuMBzkrE=";
         name = "chromium-148-revert-Reland-build-use-tool-inputs-instead-of-siso-config-for-rust-actions.patch";
+        revert = true;
         # https://chromium-review.googlesource.com/c/chromium/src/+/7719879
         url = "https://chromium.googlesource.com/chromium/src/+/9193ab90af24c23ee983e0a8da9bed45712f0d26^!?format=TEXT";
-        decode = "base64 -d";
-        revert = true;
-        hash = "sha256-7xg8IZ2gO+Wtnv7lWLVE3lLpcmMgvtDtcWwUuMBzkrE=";
       })
     ]
     ++ lib.optionals (versionRange "150" "151") [
       # ninja: Entering directory `out/Release'
       # ninja: error: 'ar', needed by 'default_for_rust_host_build_tools/obj/build/rust/allocator/liballoc_error_handler_impl.a', missing and no known rule to make it
       (fetchpatch {
+        decode = "base64 -d";
+        hash = "sha256-MryWxSwBxSIONhl3X1cDxTWwNWy8a4yt/sqkrueSUNs=";
         name = "chromium-150-backport-build--Omit-ar-from-inputs-when-resolved-via--PATH.patch";
         # https://chromium-review.googlesource.com/c/chromium/src/+/7904982
         url = "https://chromium.googlesource.com/chromium/src/+/60f987d8d5f7272793a40290d060b8f50933f825^!?format=TEXT";
-        decode = "base64 -d";
-        hash = "sha256-MryWxSwBxSIONhl3X1cDxTWwNWy8a4yt/sqkrueSUNs=";
       })
     ];
 
@@ -842,139 +674,112 @@ let
         ${ungoogler}/utils/domain_substitution.py apply -r ${ungoogler}/domain_regex.list -f ${ungoogler}/domain_substitution.list -c ./ungoogled-domsubcache.tar.gz .
       '';
 
-    # Sadly, Chromium is not even -fstrict-flex-array=1 clean
-    # See https://github.com/NixOS/nixpkgs/issues/499982#issuecomment-4062355720
-    hardeningDisable = [ "strictflexarrays1" ];
+    nativeBuildInputs = [
+      ninja
+      gnChromium
+      bashInteractive # needed for compgen in buildPhase -> process_template
+      pkg-config
+      python3WithPackages
+      perl
+      which
+      buildPackages.rustc.llvmPackages.bintools
+      bison
+      gperf
+    ]
+    ++ lib.optionals (!isElectron) [
+      nodejs
+      npmHooks.npmConfigHook
+    ];
 
-    llvmCcAndBintools = symlinkJoin {
-      name = "llvmCcAndBintools";
-      paths = [
-        buildPackages.rustc.llvmPackages.llvm
-        buildPackages.rustc.llvmPackages.stdenv.cc
-      ];
+    buildInputs = [
+    ]
+    ++ lib.optionals needsLibpng [
+      (libpng.override { apngSupport = false; }) # https://bugs.chromium.org/p/chromium/issues/detail?id=752403
+    ]
+    ++ [
+      (libopus.override { withCustomModes = true; })
+      bzip2
+      flac
+      speex
+      libevent
+      expat
+      libjpeg
+      snappy
+      libcap
+      minizip
+      libwebp
+      libusb1
+      re2
+      ffmpeg
+      libxslt
+      libxml2
+      nasm
+      nspr
+      nss
+      util-linux
+      alsa-lib
+      libkrb5
+      glib
+      gtk3
+      dbus-glib
+      libxscrnsaver
+      libxcursor
+      libxtst
+      libxshmfence
+      libGLU
+      libGL
+      dri-pkgconfig-stub
+      libgbm
+      pciutils
+      protobuf
+      speechd-minimal
+      libxdamage
+      at-spi2-core
+      pipewire
+      libva
+      libdrm
+      wayland
+      libxkbcommon
+      curl
+      libepoxy
+      libffi
+      libevdev
+    ]
+    ++ lib.optional systemdSupport systemdLibs
+    ++ lib.optionals cupsSupport [
+      libgcrypt
+      cups
+    ]
+    ++ lib.optional pulseSupport libpulseaudio;
+
+    env = {
+      BUILD_AR = "$AR_FOR_BUILD";
+      BUILD_CC = "$CC_FOR_BUILD";
+      BUILD_CXX = "$CXX_FOR_BUILD";
+      BUILD_NM = "$NM_FOR_BUILD";
+      BUILD_READELF = "$READELF_FOR_BUILD";
+
+      # Mute some warnings that are enabled by default. This is useful because
+      # our Clang is always older than Chromium's and the build logs have a size
+      # of approx. 25 MB without this option (and this saves e.g. 66 %).
+      NIX_CFLAGS_COMPILE =
+        "-Wno-unknown-warning-option -Wno-unused-command-line-argument -Wno-shadow"
+        # warning: '_LIBCPP_HARDENING_MODE' macro redefined [-Wmacro-redefined]
+        # because of hardeningDisable = [ "strictflexarrays1" ];
+        + lib.optionalString (chromiumVersionAtLeast "149") " -Wno-macro-redefined";
+
+      # Chromium expects nightly/bleeding edge rustc features to be available.
+      # Our rustc in nixpkgs follows stable, but since bootstrapping rustc requires
+      # nightly features too, we can (ab-)use RUSTC_BOOTSTRAP here as well to
+      # enable those features in our stable builds.
+      RUSTC_BOOTSTRAP = 1;
+    }
+    // lib.optionalAttrs (chromiumVersionAtLeast "150") {
+      # [56385/56385] LINK ./chrome
+      # FAILED: [code=1] chrome
+      # /nix/store/[...]/bin/ld.lld: line 288: /nix/store/[...]/bin/ld.lld: Argument list too long
+      NIX_LD_USE_RESPONSE_FILE = 1;
     };
-
-    gnFlags = mkGnFlags (
-      {
-        # Main build and toolchain settings:
-        # Create an official and optimized release build (only official builds
-        # should be distributed to users, as non-official builds are intended for
-        # development and may not be configured appropriately for production,
-        # e.g. unsafe developer builds have developer-friendly features that may
-        # weaken or disable security measures like sandboxing or ASLR):
-        is_official_build = true;
-        disable_fieldtrial_testing_config = true;
-
-        # note: chromium calls buildPlatform "host" and calls hostPlatform "target"
-        host_cpu = chromiumRosettaStone.cpu stdenv.buildPlatform;
-        host_os = chromiumRosettaStone.os stdenv.buildPlatform;
-        target_cpu = chromiumRosettaStone.cpu stdenv.hostPlatform;
-        v8_target_cpu = chromiumRosettaStone.cpu stdenv.hostPlatform;
-        target_os = chromiumRosettaStone.os stdenv.hostPlatform;
-
-        # Build Chromium using the system toolchain (for Linux distributions):
-        #
-        # What you would expect to be called "target_toolchain" is
-        # actually called either "default_toolchain" or "custom_toolchain",
-        # depending on which part of the codebase you are in; see:
-        # https://github.com/chromium/chromium/blob/d36462cc9279464395aea5e65d0893d76444a296/build/config/BUILDCONFIG.gn#L17-L44
-        custom_toolchain = "//build/toolchain/linux/unbundle:default";
-        host_toolchain = "//build/toolchain/linux/unbundle:default";
-        # We only build those specific toolchains when we cross-compile, as native non-cross-compilations would otherwise
-        # end up building much more things than they need to (roughly double the build steps and time/compute):
-      }
-      // lib.optionalAttrs (stdenv.buildPlatform != stdenv.hostPlatform) {
-        host_toolchain = "//build/toolchain/linux/unbundle:host";
-        v8_snapshot_toolchain = "//build/toolchain/linux/unbundle:host";
-      }
-      // {
-        host_pkg_config = "${pkgsBuildBuild.pkg-config}/bin/pkg-config";
-        pkg_config = "${pkgsBuildHost.pkg-config}/bin/${stdenv.cc.targetPrefix}pkg-config";
-
-        # Don't build against a sysroot image downloaded from Cloud Storage:
-        use_sysroot = false;
-        # Because we use a different toolchain / compiler version:
-        treat_warnings_as_errors = false;
-        # We aren't compiling with Chrome's Clang (would enable Chrome-specific
-        # plugins for enforcing coding guidelines, etc.):
-        clang_use_chrome_plugins = false;
-        # Disable symbols (they would negatively affect the performance of the
-        # build since the symbols are large and dealing with them is slow):
-        symbol_level = 0;
-        blink_symbol_level = 0;
-
-        # Google API key, see: https://www.chromium.org/developers/how-tos/api-keys
-        # Note: The API key is for NixOS/nixpkgs use ONLY.
-        # For your own distribution, please get your own set of keys.
-        google_api_key = "AIzaSyDGi15Zwl11UNe6Y-5XW_upsfyw31qwZPI";
-
-        # Optional features:
-        use_gio = true;
-        use_cups = cupsSupport;
-      }
-      // lib.optionalAttrs (packageName == "chromium") {
-        # Enabling the Widevine here doesn't affect whether we can redistribute the chromium package.
-        # Widevine in this drv is a bit more complex than just that. See Widevine patch somewhere above.
-        enable_widevine = true;
-      }
-      // {
-        # Provides the enable-webrtc-pipewire-capturer flag to support Wayland screen capture:
-        rtc_use_pipewire = true;
-        # Disable PGO because the profile data requires a newer compiler version (LLVM 14 isn't sufficient):
-        chrome_pgo_phase = 0;
-        clang_base_path = "${llvmCcAndBintools}";
-      }
-      // lib.optionalAttrs (chromiumVersionAtLeast "141") {
-        # TODO: remove opt-out of https://chromium.googlesource.com/chromium/src/+/main/docs/modules.md
-        use_clang_modules = false;
-      }
-      // lib.optionalAttrs (chromiumVersionAtLeast "150") {
-        # ERROR at //build/modules/BUILD.gn:80:23: Directory does not exist: /usr/include/
-        #     system_headers += expand_directory("${sysroot}/${root_include_dir}", true)
-        #                       ^------------------------------------------------------
-        use_unified_system_module = false;
-      }
-      // {
-        use_qt5 = false;
-        use_qt6 = false;
-
-        # LLVM < v21 does not support --warning-suppression-mappings yet:
-        clang_warning_suppression_file = "";
-
-        # To fix the build as we don't provide libffi_pic.a
-        # (ld.lld: error: unable to find library -l:libffi_pic.a):
-        use_system_libffi = true;
-        # Use nixpkgs Rust compiler instead of the one shipped by Chromium.
-        rust_sysroot_absolute = "${buildPackages.rustc}";
-        rust_bindgen_root =
-          if chromiumVersionAtLeast "144" then "${rustTools}" else "${buildPackages.rust-bindgen}";
-        enable_rust = true;
-        # While we technically don't need the cache-invalidation rustc_version provides, rustc_version
-        # is still used in some scripts (e.g. build/rust/std/find_std_rlibs.py).
-        rustc_version = rustcVersion;
-      }
-      // lib.optionalAttrs (!(stdenv.buildPlatform.canExecute stdenv.hostPlatform)) {
-        # https://www.mail-archive.com/v8-users@googlegroups.com/msg14528.html
-        arm_control_flow_integrity = "none";
-      }
-      // lib.optionalAttrs proprietaryCodecs {
-        # enable support for the H.264 codec
-        proprietary_codecs = true;
-        enable_hangout_services_extension = true;
-        ffmpeg_branding = "Chrome";
-      }
-      // lib.optionalAttrs stdenv.hostPlatform.isAarch64 {
-        # Enable v4l2 video decoder for hardware acceleratation on aarch64:
-        use_vaapi = false;
-        use_v4l2_codec = true;
-      }
-      // lib.optionalAttrs pulseSupport {
-        use_pulseaudio = true;
-        link_pulseaudio = true;
-      }
-      // lib.optionalAttrs ungoogled (lib.importTOML ./ungoogled-flags.toml)
-      // (extraAttrs.gnFlags or { })
-    );
 
     preConfigure =
       lib.optionalString (!isElectron) ''
@@ -995,49 +800,6 @@ let
       + lib.optionalString (chromiumVersionAtLeast "148") ''
         rm -r third_party/node/node_modules/@types/estree
       '';
-
-    configurePhase = ''
-      runHook preConfigure
-
-      # This is to ensure expansion of $out.
-      libExecPath="${libExecPath}"
-      ${python3.pythonOnBuildForHost}/bin/python3 build/linux/unbundle/replace_gn_files.py --system-libraries ${toString gnSystemLibraries}
-      gn gen --args=${lib.escapeShellArg gnFlags} out/Release | tee gn-gen-outputs.txt
-
-      # Fail if `gn gen` contains a WARNING.
-      grep -o WARNING gn-gen-outputs.txt && echo "Found gn WARNING, exiting nix build" && exit 1
-
-      runHook postConfigure
-    '';
-
-    env = {
-      # Chromium expects nightly/bleeding edge rustc features to be available.
-      # Our rustc in nixpkgs follows stable, but since bootstrapping rustc requires
-      # nightly features too, we can (ab-)use RUSTC_BOOTSTRAP here as well to
-      # enable those features in our stable builds.
-      RUSTC_BOOTSTRAP = 1;
-
-      # Mute some warnings that are enabled by default. This is useful because
-      # our Clang is always older than Chromium's and the build logs have a size
-      # of approx. 25 MB without this option (and this saves e.g. 66 %).
-      NIX_CFLAGS_COMPILE =
-        "-Wno-unknown-warning-option -Wno-unused-command-line-argument -Wno-shadow"
-        # warning: '_LIBCPP_HARDENING_MODE' macro redefined [-Wmacro-redefined]
-        # because of hardeningDisable = [ "strictflexarrays1" ];
-        + lib.optionalString (chromiumVersionAtLeast "149") " -Wno-macro-redefined";
-
-      BUILD_CC = "$CC_FOR_BUILD";
-      BUILD_CXX = "$CXX_FOR_BUILD";
-      BUILD_AR = "$AR_FOR_BUILD";
-      BUILD_NM = "$NM_FOR_BUILD";
-      BUILD_READELF = "$READELF_FOR_BUILD";
-    }
-    // lib.optionalAttrs (chromiumVersionAtLeast "150") {
-      # [56385/56385] LINK ./chrome
-      # FAILED: [code=1] chrome
-      # /nix/store/[...]/bin/ld.lld: line 288: /nix/store/[...]/bin/ld.lld: Argument list too long
-      NIX_LD_USE_RESPONSE_FILE = 1;
-    };
 
     buildPhase =
       let
@@ -1082,6 +844,242 @@ let
       # replace bundled vulkan-loader
       rm "$libExecPath/libvulkan.so.1"
       ln -s -t "$libExecPath" "${lib.getLib vulkan-loader}/lib/libvulkan.so.1"
+    '';
+
+    configurePhase = ''
+      runHook preConfigure
+
+      # This is to ensure expansion of $out.
+      libExecPath="${libExecPath}"
+      ${python3.pythonOnBuildForHost}/bin/python3 build/linux/unbundle/replace_gn_files.py --system-libraries ${toString gnSystemLibraries}
+      gn gen --args=${lib.escapeShellArg gnFlags} out/Release | tee gn-gen-outputs.txt
+
+      # Fail if `gn gen` contains a WARNING.
+      grep -o WARNING gn-gen-outputs.txt && echo "Found gn WARNING, exiting nix build" && exit 1
+
+      runHook postConfigure
+    '';
+
+    depsBuildBuild = [
+      buildPlatformLlvmStdenv
+      buildPlatformLlvmStdenv.cc
+      pkg-config
+      libuuid
+    ]
+    # When cross-compiling, chromium builds a huge proportion of its
+    # components for both the `buildPlatform` (which it calls
+    # `host`) as well as for the `hostPlatform` -- easily more than
+    # half of the dependencies are needed here.  To avoid having to
+    # maintain a separate list of buildPlatform-dependencies, we
+    # simply throw in the kitchen sink.
+    # ** Because of overrides, we have to copy the list as it otherwise mess with splicing **
+    ++ lib.optionals needsLibpng [
+      (buildPackages.libpng.override { apngSupport = false; }) # https://bugs.chromium.org/p/chromium/issues/detail?id=752403
+    ]
+    ++ [
+      (buildPackages.libopus.override { withCustomModes = true; })
+      bzip2
+      flac
+      speex
+      libevent
+      expat
+      libjpeg
+      snappy
+      libcap
+      minizip
+      libwebp
+      libusb1
+      re2
+      ffmpeg
+      libxslt
+      libxml2
+      nasm
+      nspr
+      nss
+      util-linux
+      alsa-lib
+      libkrb5
+      glib
+      gtk3
+      dbus-glib
+      libxscrnsaver
+      libxcursor
+      libxtst
+      libxshmfence
+      libGLU
+      libGL
+      libgbm
+      pciutils
+      protobuf
+      speechd-minimal
+      libxdamage
+      at-spi2-core
+      pipewire
+      libva
+      libdrm
+      wayland
+      libxkbcommon
+      curl
+      libepoxy
+      libffi
+      libevdev
+    ]
+    ++ lib.optional systemdSupport systemdLibs
+    ++ lib.optionals cupsSupport [
+      libgcrypt
+      cups
+    ]
+    ++ lib.optional pulseSupport libpulseaudio;
+
+    gnFlags = mkGnFlags (
+      {
+        # Build Chromium using the system toolchain (for Linux distributions):
+        #
+        # What you would expect to be called "target_toolchain" is
+        # actually called either "default_toolchain" or "custom_toolchain",
+        # depending on which part of the codebase you are in; see:
+        # https://github.com/chromium/chromium/blob/d36462cc9279464395aea5e65d0893d76444a296/build/config/BUILDCONFIG.gn#L17-L44
+        custom_toolchain = "//build/toolchain/linux/unbundle:default";
+        disable_fieldtrial_testing_config = true;
+        # note: chromium calls buildPlatform "host" and calls hostPlatform "target"
+        host_cpu = chromiumRosettaStone.cpu stdenv.buildPlatform;
+        host_os = chromiumRosettaStone.os stdenv.buildPlatform;
+        host_toolchain = "//build/toolchain/linux/unbundle:default";
+        # Main build and toolchain settings:
+        # Create an official and optimized release build (only official builds
+        # should be distributed to users, as non-official builds are intended for
+        # development and may not be configured appropriately for production,
+        # e.g. unsafe developer builds have developer-friendly features that may
+        # weaken or disable security measures like sandboxing or ASLR):
+        is_official_build = true;
+        target_cpu = chromiumRosettaStone.cpu stdenv.hostPlatform;
+        target_os = chromiumRosettaStone.os stdenv.hostPlatform;
+        v8_target_cpu = chromiumRosettaStone.cpu stdenv.hostPlatform;
+        # We only build those specific toolchains when we cross-compile, as native non-cross-compilations would otherwise
+        # end up building much more things than they need to (roughly double the build steps and time/compute):
+      }
+      // lib.optionalAttrs (stdenv.buildPlatform != stdenv.hostPlatform) {
+        host_toolchain = "//build/toolchain/linux/unbundle:host";
+        v8_snapshot_toolchain = "//build/toolchain/linux/unbundle:host";
+      }
+      // {
+        blink_symbol_level = 0;
+        # We aren't compiling with Chrome's Clang (would enable Chrome-specific
+        # plugins for enforcing coding guidelines, etc.):
+        clang_use_chrome_plugins = false;
+        # Google API key, see: https://www.chromium.org/developers/how-tos/api-keys
+        # Note: The API key is for NixOS/nixpkgs use ONLY.
+        # For your own distribution, please get your own set of keys.
+        google_api_key = "AIzaSyDGi15Zwl11UNe6Y-5XW_upsfyw31qwZPI";
+        host_pkg_config = "${pkgsBuildBuild.pkg-config}/bin/pkg-config";
+        pkg_config = "${pkgsBuildHost.pkg-config}/bin/${stdenv.cc.targetPrefix}pkg-config";
+        # Disable symbols (they would negatively affect the performance of the
+        # build since the symbols are large and dealing with them is slow):
+        symbol_level = 0;
+        # Because we use a different toolchain / compiler version:
+        treat_warnings_as_errors = false;
+        use_cups = cupsSupport;
+        # Optional features:
+        use_gio = true;
+        # Don't build against a sysroot image downloaded from Cloud Storage:
+        use_sysroot = false;
+      }
+      // lib.optionalAttrs (packageName == "chromium") {
+        # Enabling the Widevine here doesn't affect whether we can redistribute the chromium package.
+        # Widevine in this drv is a bit more complex than just that. See Widevine patch somewhere above.
+        enable_widevine = true;
+      }
+      // {
+        # Disable PGO because the profile data requires a newer compiler version (LLVM 14 isn't sufficient):
+        chrome_pgo_phase = 0;
+        clang_base_path = "${llvmCcAndBintools}";
+        # Provides the enable-webrtc-pipewire-capturer flag to support Wayland screen capture:
+        rtc_use_pipewire = true;
+      }
+      // lib.optionalAttrs (chromiumVersionAtLeast "141") {
+        # TODO: remove opt-out of https://chromium.googlesource.com/chromium/src/+/main/docs/modules.md
+        use_clang_modules = false;
+      }
+      // lib.optionalAttrs (chromiumVersionAtLeast "150") {
+        # ERROR at //build/modules/BUILD.gn:80:23: Directory does not exist: /usr/include/
+        #     system_headers += expand_directory("${sysroot}/${root_include_dir}", true)
+        #                       ^------------------------------------------------------
+        use_unified_system_module = false;
+      }
+      // {
+        # LLVM < v21 does not support --warning-suppression-mappings yet:
+        clang_warning_suppression_file = "";
+        enable_rust = true;
+
+        rust_bindgen_root =
+          if chromiumVersionAtLeast "144" then "${rustTools}" else "${buildPackages.rust-bindgen}";
+
+        # Use nixpkgs Rust compiler instead of the one shipped by Chromium.
+        rust_sysroot_absolute = "${buildPackages.rustc}";
+        # While we technically don't need the cache-invalidation rustc_version provides, rustc_version
+        # is still used in some scripts (e.g. build/rust/std/find_std_rlibs.py).
+        rustc_version = rustcVersion;
+        use_qt5 = false;
+        use_qt6 = false;
+        # To fix the build as we don't provide libffi_pic.a
+        # (ld.lld: error: unable to find library -l:libffi_pic.a):
+        use_system_libffi = true;
+      }
+      // lib.optionalAttrs (!(stdenv.buildPlatform.canExecute stdenv.hostPlatform)) {
+        # https://www.mail-archive.com/v8-users@googlegroups.com/msg14528.html
+        arm_control_flow_integrity = "none";
+      }
+      // lib.optionalAttrs proprietaryCodecs {
+        enable_hangout_services_extension = true;
+        ffmpeg_branding = "Chrome";
+        # enable support for the H.264 codec
+        proprietary_codecs = true;
+      }
+      // lib.optionalAttrs stdenv.hostPlatform.isAarch64 {
+        use_v4l2_codec = true;
+        # Enable v4l2 video decoder for hardware acceleratation on aarch64:
+        use_vaapi = false;
+      }
+      // lib.optionalAttrs pulseSupport {
+        link_pulseaudio = true;
+        use_pulseaudio = true;
+      }
+      // lib.optionalAttrs ungoogled (lib.importTOML ./ungoogled-flags.toml)
+      // (extraAttrs.gnFlags or { })
+    );
+
+    # Sadly, Chromium is not even -fstrict-flex-array=1 clean
+    # See https://github.com/NixOS/nixpkgs/issues/499982#issuecomment-4062355720
+    hardeningDisable = [ "strictflexarrays1" ];
+
+    llvmCcAndBintools = symlinkJoin {
+      name = "llvmCcAndBintools";
+
+      paths = [
+        buildPackages.rustc.llvmPackages.llvm
+        buildPackages.rustc.llvmPackages.stdenv.cc
+      ];
+    };
+
+    npmDeps =
+      (fetchNpmDeps {
+        src = chromiumDeps."src";
+        hash = upstream-info.deps.npmHash;
+        sourceRoot = npmRoot;
+      }).overrideAttrs
+        (p: {
+          nativeBuildInputs = p.nativeBuildInputs or [ ] ++ [ zstd ];
+        });
+
+    npmRoot = "third_party/node";
+
+    unpackPhase = ''
+      runHook preUnpack
+
+      ${unpackPhaseSnippet}
+      sourceRoot=src
+
+      runHook postUnpack
     '';
 
     passthru = {

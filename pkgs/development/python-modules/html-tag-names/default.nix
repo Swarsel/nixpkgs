@@ -1,14 +1,13 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   poetry-core,
 }:
 
 buildPythonPackage rec {
   pname = "html-tag-names";
   version = "0.1.2";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "Riverside-Healthcare";
@@ -18,10 +17,9 @@ buildPythonPackage rec {
   };
 
   nativeBuildInputs = [ poetry-core ];
-
   # has no tests
   doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "HtmlTagNames" ];
 
   meta = {

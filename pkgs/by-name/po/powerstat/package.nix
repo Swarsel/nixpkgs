@@ -1,6 +1,6 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
 }:
 
@@ -23,10 +23,10 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Laptop power measuring tool";
-    mainProgram = "powerstat";
     homepage = "https://github.com/ColinIanKing/powerstat";
     license = lib.licenses.gpl2Plus;
-    platforms = lib.platforms.linux;
     maintainers = with lib.maintainers; [ womfoo ];
+    platforms = lib.platforms.linux;
+    mainProgram = "powerstat";
   };
 })

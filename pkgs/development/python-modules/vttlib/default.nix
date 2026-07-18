@@ -1,20 +1,19 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
+  fonttools,
+  pyparsing,
   pytestCheckHook,
   setuptools,
   setuptools-scm,
-  fonttools,
-  pyparsing,
-  ufolib2,
   ufo2ft,
+  ufolib2,
 }:
 
 buildPythonPackage rec {
   pname = "vttlib";
   version = "0.12.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "daltonmaag";
@@ -22,6 +21,11 @@ buildPythonPackage rec {
     rev = "v${version}";
     hash = "sha256-m6oxJj6JEKo3HUMfKNIqHwOHNpuCkA0R8ZrY5HLsiKc=";
   };
+
+  nativeCheckInputs = [
+    pytestCheckHook
+    ufo2ft
+  ];
 
   build-system = [
     setuptools
@@ -34,11 +38,7 @@ buildPythonPackage rec {
     ufolib2
   ];
 
-  nativeCheckInputs = [
-    pytestCheckHook
-    ufo2ft
-  ];
-
+  pyproject = true;
   pythonImportsCheck = [ "vttLib" ];
 
   meta = {

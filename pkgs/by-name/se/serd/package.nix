@@ -17,6 +17,11 @@ stdenv.mkDerivation (finalAttrs: {
   pname = "serd";
   version = "0.32.8";
 
+  src = fetchurl {
+    url = "https://download.drobilla.net/serd-${finalAttrs.version}.tar.xz";
+    hash = "sha256-9HJZvDi6VTsN64ttq2tbc9NjBGmnyUOczcqA4G18Hs4=";
+  };
+
   outputs = [
     "out"
     "dev"
@@ -24,10 +29,9 @@ stdenv.mkDerivation (finalAttrs: {
     "man"
   ];
 
-  src = fetchurl {
-    url = "https://download.drobilla.net/serd-${finalAttrs.version}.tar.xz";
-    hash = "sha256-9HJZvDi6VTsN64ttq2tbc9NjBGmnyUOczcqA4G18Hs4=";
-  };
+  postPatch = ''
+    patchShebangs .
+  '';
 
   nativeBuildInputs = [
     doxygen
@@ -39,10 +43,6 @@ stdenv.mkDerivation (finalAttrs: {
     sphinx
     sphinxygen
   ];
-
-  postPatch = ''
-    patchShebangs .
-  '';
 
   passthru = {
     updateScript = writeScript "update-poke" ''
@@ -64,7 +64,7 @@ stdenv.mkDerivation (finalAttrs: {
     homepage = "https://drobilla.net/software/serd";
     license = lib.licenses.isc;
     maintainers = with lib.maintainers; [ samueltardieu ];
-    mainProgram = "serdi";
     platforms = lib.platforms.unix;
+    mainProgram = "serdi";
   };
 })

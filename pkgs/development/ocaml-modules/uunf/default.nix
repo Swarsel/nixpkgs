@@ -2,12 +2,12 @@
   lib,
   stdenv,
   fetchurl,
-  ocaml,
+  cmdliner,
   findlib,
+  ocaml,
   ocamlbuild,
   topkg,
   uutf,
-  cmdliner,
   cmdlinerSupport ? lib.versionAtLeast cmdliner.version "1.1",
   version ? if lib.versionAtLeast ocaml.version "4.14" then "17.0.0" else "15.0.0",
 }:
@@ -23,13 +23,15 @@ let
     ."${version}";
 in
 stdenv.mkDerivation (finallAttrs: {
-  name = "ocaml${ocaml.version}-${finallAttrs.pname}-${finallAttrs.version}";
   inherit version pname;
+  inherit (topkg) installPhase;
 
   src = fetchurl {
-    url = "${webpage}/releases/${pname}-${version}.tbz";
     inherit hash;
+    url = "${webpage}/releases/${pname}-${version}.tbz";
   };
+
+  strictDeps = true;
 
   nativeBuildInputs = [
     ocaml
@@ -37,15 +39,12 @@ stdenv.mkDerivation (finallAttrs: {
     ocamlbuild
     topkg
   ];
+
   buildInputs = [
     topkg
     uutf
   ]
   ++ lib.optional cmdlinerSupport cmdliner;
-
-  strictDeps = true;
-
-  prePatch = lib.optionalString stdenv.hostPlatform.isAarch64 "ulimit -s 16384";
 
   buildPhase = ''
     runHook preBuild
@@ -55,15 +54,16 @@ stdenv.mkDerivation (finallAttrs: {
     runHook postBuild
   '';
 
-  inherit (topkg) installPhase;
+  name = "ocaml${ocaml.version}-${finallAttrs.pname}-${finallAttrs.version}";
+  prePatch = lib.optionalString stdenv.hostPlatform.isAarch64 "ulimit -s 16384";
 
   meta = {
+    inherit (ocaml.meta) platforms;
     description = "OCaml module for normalizing Unicode text";
     homepage = webpage;
     license = lib.licenses.bsd3;
     maintainers = [ lib.maintainers.vbgl ];
     mainProgram = "unftrip";
-    inherit (ocaml.meta) platforms;
     broken = lib.versionOlder ocaml.version "4.03";
   };
 })

@@ -1,7 +1,7 @@
 {
-  fetchFromGitLab,
   lib,
   stdenv,
+  fetchFromGitLab,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -9,11 +9,11 @@ stdenv.mkDerivation (finalAttrs: {
   version = "0.70";
 
   src = fetchFromGitLab {
-    domain = "salsa.debian.org";
     owner = "debian";
     repo = "distro-info-data";
     tag = "debian/${finalAttrs.version}";
     hash = "sha256-aTQak1meAqj/bTcw0Ky9xtYAuDISZ14EuOxwKsJZMhw=";
+    domain = "salsa.debian.org";
   };
 
   makeFlags = [ "PREFIX=$(out)" ];

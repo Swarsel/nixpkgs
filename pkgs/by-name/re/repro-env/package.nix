@@ -1,7 +1,7 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
+  rustPlatform,
   versionCheckHook,
 }:
 
@@ -17,18 +17,19 @@ rustPlatform.buildRustPackage (finalAttrs: {
   };
 
   cargoHash = "sha256-HaI5oE8WVnM1h6rVaVl2qGvTndhD5cKg+Dwf707I9DA=";
-
   doInstallCheck = true;
   nativeInstallCheckInputs = [ versionCheckHook ];
 
   meta = {
-    changelog = "https://github.com/kpcyrd/repro-env/releases/tag/v${finalAttrs.version}";
     description = "Dependency lockfiles for reproducible build environments";
     homepage = "https://github.com/kpcyrd/repro-env";
+    changelog = "https://github.com/kpcyrd/repro-env/releases/tag/v${finalAttrs.version}";
+
     license = with lib.licenses; [
       asl20
       mit
     ];
+
     maintainers = [ ];
     mainProgram = "repro-env";
   };

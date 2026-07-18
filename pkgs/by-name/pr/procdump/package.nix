@@ -2,9 +2,9 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  fetchpatch,
   bash,
   coreutils,
+  fetchpatch,
   gdb,
   zlib,
 }:
@@ -25,16 +25,9 @@ stdenv.mkDerivation (finalAttrs: {
     #  https://github.com/Sysinternals/ProcDump-for-Linux/pull/133
     (fetchpatch {
       name = "parallel.patch";
-      url = "https://github.com/Sysinternals/ProcDump-for-Linux/commit/0d735836f11281cc6134be93eac8acb302f2055e.patch";
       sha256 = "sha256-zsqllPHF8ZuXAIDSAPvbzdKa43uSSx9ilUKM1vFVW90=";
+      url = "https://github.com/Sysinternals/ProcDump-for-Linux/commit/0d735836f11281cc6134be93eac8acb302f2055e.patch";
     })
-  ];
-
-  nativeBuildInputs = [ zlib ];
-  buildInputs = [
-    bash
-    coreutils
-    gdb
   ];
 
   postPatch = ''
@@ -44,17 +37,23 @@ stdenv.mkDerivation (finalAttrs: {
       --replace '/bin/bash' '${bash}/bin/bash'
   '';
 
+  nativeBuildInputs = [ zlib ];
+
+  buildInputs = [
+    bash
+    coreutils
+    gdb
+  ];
+
   makeFlags = [
     "DESTDIR=${placeholder "out"}"
     "INSTALLDIR=/bin"
     "MANDIR=/share/man/man1"
   ];
 
-  enableParallelBuilding = true;
-
   doCheck = false; # needs sudo root
-
   doInstallCheck = true;
+
   installCheckPhase = ''
     runHook preInstallCheck
     set +o pipefail
@@ -64,12 +63,14 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstallCheck
   '';
 
+  enableParallelBuilding = true;
+
   meta = {
     description = "Linux version of the ProcDump Sysinternals tool";
-    mainProgram = "procdump";
     homepage = "https://github.com/Microsoft/ProcDump-for-Linux";
     license = lib.licenses.mit;
     maintainers = [ ];
     platforms = lib.platforms.linux;
+    mainProgram = "procdump";
   };
 })

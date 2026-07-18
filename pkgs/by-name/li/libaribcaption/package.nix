@@ -22,12 +22,12 @@ stdenv.mkDerivation (finalAttrs: {
 
   nativeBuildInputs = [ cmake ];
 
-  cmakeFlags = [ "-DBUILD_SHARED_LIBS=ON" ];
-
   buildInputs = lib.optionals (!stdenv.hostPlatform.isDarwin) [
     fontconfig
     freetype
   ];
+
+  cmakeFlags = [ "-DBUILD_SHARED_LIBS=ON" ];
 
   meta = {
     description = "Portable ARIB STD-B24 Caption Decoder/Renderer";

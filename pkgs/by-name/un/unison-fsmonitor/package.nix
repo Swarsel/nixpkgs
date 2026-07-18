@@ -23,8 +23,8 @@ rustPlatform.buildRustPackage rec {
   ];
 
   meta = {
-    homepage = "https://github.com/autozimu/unison-fsmonitor";
     description = "fsmonitor implementation for darwin";
+    homepage = "https://github.com/autozimu/unison-fsmonitor";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ nevivurn ];
     platforms = lib.platforms.darwin;

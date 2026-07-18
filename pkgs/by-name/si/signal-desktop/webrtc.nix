@@ -1,27 +1,28 @@
 {
-  stdenv,
   lib,
-  fetchpatch,
-  buildPackages,
-  ninja,
-  gn,
-  symlinkJoin,
-  python3,
-  pkg-config,
-  glib,
+  stdenv,
   alsa-lib,
-  pulseaudio,
-  writeShellScriptBin,
-  gclient2nix,
-  rustc,
   apple-sdk,
-  xcodebuild,
+  buildPackages,
+  fetchpatch,
+  gclient2nix,
+  glib,
+  gn,
   llvmPackages,
+  ninja,
+  pkg-config,
+  pulseaudio,
+  python3,
+  rustc,
+  symlinkJoin,
+  writeShellScriptBin,
+  xcodebuild,
 }:
 
 let
   llvmCcAndBintools = symlinkJoin {
     name = "signal-webrtc-llvm-cc-and-bintools";
+
     paths = [
       llvmPackages.llvm
       llvmPackages.stdenv.cc
@@ -36,10 +37,10 @@ let
       in
       (
         {
-          "x86_64" = "x64";
-          "i686" = "x86";
-          "arm" = "arm";
           "aarch64" = "arm64";
+          "arm" = "arm";
+          "i686" = "x86";
+          "x86_64" = "x64";
         }
         .${name} or (throw "no chromium Rosetta Stone entry for cpu: ${name}")
       );
@@ -49,53 +50,16 @@ stdenv.mkDerivation (finalAttrs: {
   pname = "signal-webrtc";
   version = finalAttrs.gclientDeps."src".path.tag;
 
-  gclientDeps = gclient2nix.importGclientDeps ./webrtc-sources.json;
-  sourceRoot = "src";
-
-  # Chromium's Darwin toolchain defines _LIBCPP_HARDENING_MODE itself; keep
-  # cc-wrapper from injecting a conflicting default.
-  hardeningDisable = lib.optionals stdenv.hostPlatform.isDarwin [
-    "libcxxhardeningfast"
-    "libcxxhardeningextensive"
-  ];
-
-  nativeBuildInputs = [
-    gn
-    ninja
-    (writeShellScriptBin "vpython3" ''
-      exec python3 "$@"
-    '')
-    python3
-    rustc
-    pkg-config
-    gclient2nix.gclientUnpackHook
-  ]
-  ++ lib.optionals stdenv.hostPlatform.isDarwin [
-    apple-sdk
-    xcodebuild
-  ];
-
-  buildInputs = [
-    glib
-    pulseaudio
-  ]
-  ++ lib.optionals stdenv.hostPlatform.isDarwin [
-    llvmPackages.compiler-rt
-  ]
-  ++ lib.optionals stdenv.hostPlatform.isLinux [
-    alsa-lib
-  ];
-
   patches = [
     # https://github.com/NixOS/nixpkgs/blob/8e689a91c5b4e47b57dee488dd7e319cc704eb9d/pkgs/applications/networking/browsers/chromium/common.nix#L604-L612
     # clang++: error: unknown argument: '-fsanitize-ignore-for-ubsan-feature=array-bounds'
     (fetchpatch {
+      decode = "base64 -d";
+      hash = "sha256-WZsN2qm6lX121bDf7SoN75flXtCTmPPpwtHK0ayjkPc=";
       name = "chromium-146-revert-Update-fsanitizer=array-bounds-config.patch";
+      revert = true;
       # https://chromium-review.googlesource.com/c/chromium/src/+/7539408
       url = "https://chromium.googlesource.com/chromium/src/+/acb47d9a6b56c4889a2ed4216e9968cfc740086c^!?format=TEXT";
-      decode = "base64 -d";
-      revert = true;
-      hash = "sha256-WZsN2qm6lX121bDf7SoN75flXtCTmPPpwtHK0ayjkPc=";
     })
 
     # https://github.com/NixOS/nixpkgs/blob/8e689a91c5b4e47b57dee488dd7e319cc704eb9d/pkgs/applications/networking/browsers/chromium/common.nix#L620-L623
@@ -105,23 +69,23 @@ stdenv.mkDerivation (finalAttrs: {
     # https://github.com/NixOS/nixpkgs/blob/8e689a91c5b4e47b57dee488dd7e319cc704eb9d/pkgs/applications/networking/browsers/chromium/common.nix#L624-L644
     # clang++: error: unknown argument: '-fsanitize-ignore-for-ubsan-feature=return'
     (fetchpatch {
+      decode = "base64 -d";
+      hash = "sha256-/qzzxwTdPMwIdsqD/G02S7kKHCj3QxECL+g1WYEaWmU=";
       name = "chromium-148-revert-build-Add--fsanitizer=return-config.patch";
+      revert = true;
       # https://chromium-review.googlesource.com/c/chromium/src/+/7629257
       url = "https://chromium.googlesource.com/chromium/src/+/99ba1f5302f9433efdb4df302cb7b7de56c72e4c^!?format=TEXT";
-      decode = "base64 -d";
-      revert = true;
-      hash = "sha256-/qzzxwTdPMwIdsqD/G02S7kKHCj3QxECL+g1WYEaWmU=";
     })
     # ERROR Unresolved dependencies.
     # //apps:apps(//build/toolchain/linux/unbundle:default)
     #   needs //build/config/compiler:sanitize_return(//build/toolchain/linux/unbundle:default)
     (fetchpatch {
+      decode = "base64 -d";
+      hash = "sha256-14fTHNh3vGsf4KgeH8uLX+aK3lrjK0VKd1dfK1g7r0I=";
       name = "chromium-148-revert-build-Enable--fsanitizer=return-config.patch";
+      revert = true;
       # https://chromium-review.googlesource.com/c/chromium/src/+/7629258
       url = "https://chromium.googlesource.com/chromium/src/+/9357bfbea03753fe52264c9ec36abe74f48cfef5^!?format=TEXT";
-      decode = "base64 -d";
-      revert = true;
-      hash = "sha256-14fTHNh3vGsf4KgeH8uLX+aK3lrjK0VKd1dfK1g7r0I=";
     })
   ];
 
@@ -150,10 +114,47 @@ stdenv.mkDerivation (finalAttrs: {
       --replace-fail "libasound.so.2" "${alsa-lib}/lib/libasound.so.2"
   '';
 
+  nativeBuildInputs = [
+    gn
+    ninja
+    (writeShellScriptBin "vpython3" ''
+      exec python3 "$@"
+    '')
+    python3
+    rustc
+    pkg-config
+    gclient2nix.gclientUnpackHook
+  ]
+  ++ lib.optionals stdenv.hostPlatform.isDarwin [
+    apple-sdk
+    xcodebuild
+  ];
+
+  buildInputs = [
+    glib
+    pulseaudio
+  ]
+  ++ lib.optionals stdenv.hostPlatform.isDarwin [
+    llvmPackages.compiler-rt
+  ]
+  ++ lib.optionals stdenv.hostPlatform.isLinux [
+    alsa-lib
+  ];
+
   preConfigure = ''
     echo "$SOURCE_DATE_EPOCH" > build/util/LASTCHANGE.committime
     echo "generate_location_tags = true" >> build/config/gclient_args.gni
   '';
+
+  installPhase = ''
+    runHook preInstall
+
+    install -D obj/libwebrtc${stdenv.hostPlatform.extensions.staticLibrary} $out/lib/libwebrtc${stdenv.hostPlatform.extensions.staticLibrary}
+
+    runHook postInstall
+  '';
+
+  gclientDeps = gclient2nix.importGclientDeps ./webrtc-sources.json;
 
   gnFlags =
     lib.optionals stdenv.hostPlatform.isLinux [
@@ -208,15 +209,16 @@ stdenv.mkDerivation (finalAttrs: {
       ''host_toolchain="//build/toolchain/linux/unbundle:host"''
       ''v8_snapshot_toolchain="//build/toolchain/linux/unbundle:host"''
     ];
+
+  # Chromium's Darwin toolchain defines _LIBCPP_HARDENING_MODE itself; keep
+  # cc-wrapper from injecting a conflicting default.
+  hardeningDisable = lib.optionals stdenv.hostPlatform.isDarwin [
+    "libcxxhardeningfast"
+    "libcxxhardeningextensive"
+  ];
+
   ninjaFlags = [ "webrtc" ];
-
-  installPhase = ''
-    runHook preInstall
-
-    install -D obj/libwebrtc${stdenv.hostPlatform.extensions.staticLibrary} $out/lib/libwebrtc${stdenv.hostPlatform.extensions.staticLibrary}
-
-    runHook postInstall
-  '';
+  sourceRoot = "src";
 
   meta = {
     description = "WebRTC library used by Signal";

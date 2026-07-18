@@ -2,11 +2,11 @@
   lib,
   stdenv,
   fetchFromGitHub,
+  cairo,
+  freetype,
   gfortran,
   giza,
   hdf5,
-  cairo,
-  freetype,
   versionCheckHook,
 }:
 
@@ -31,24 +31,28 @@ stdenv.mkDerivation (finalAttrs: {
     freetype
     hdf5
   ];
+
   makeFlags = [
     "SYSTEM=gfortran"
     "GIZA_DIR=${giza}"
     "PREFIX=${placeholder "out"}"
   ];
+
   # Upstream's simplistic makefile doesn't even `mkdir $(PREFIX)`, so we help
   # it:
   preInstall = ''
     mkdir -p $out/bin
   '';
+
+  doInstallCheck = true;
+
   nativeInstallCheckInputs = [
     versionCheckHook
   ];
-  doInstallCheck = true;
 
   meta = {
-    description = "Interactive visualisation and plotting tool using kernel interpolation, mainly used for Smoothed Particle Hydrodynamics simulations";
     inherit (finalAttrs.src.meta) homepage;
+    description = "Interactive visualisation and plotting tool using kernel interpolation, mainly used for Smoothed Particle Hydrodynamics simulations";
     license = lib.licenses.lgpl3Plus;
     maintainers = with lib.maintainers; [ doronbehar ];
     platforms = lib.platforms.all;

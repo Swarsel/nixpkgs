@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   python,
   requests,
 }:
@@ -26,7 +26,6 @@ in
 buildPythonPackage rec {
   pname = "pyld";
   version = "1.0.5";
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "digitalbazaar";
@@ -53,6 +52,8 @@ buildPythonPackage rec {
 
     ${python.interpreter} tests/runtests.py -d ${normalization}/tests
   '';
+
+  format = "setuptools";
 
   meta = {
     description = "Python implementation of the JSON-LD API";

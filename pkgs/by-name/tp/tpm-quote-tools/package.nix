@@ -2,8 +2,8 @@
   lib,
   stdenv,
   fetchurl,
-  trousers,
   openssl,
+  trousers,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -28,11 +28,13 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Collection of programs that provide support for TPM based attestation using the TPM quote mechanism";
+
     longDescription = ''
       The TPM Quote Tools is a collection of programs that provide support
       for TPM based attestation using the TPM quote mechanism.  The manual
       page for tpm_quote_tools provides a usage overview.
     '';
+
     homepage = "http://tpmquotetools.sourceforge.net/";
     license = lib.licenses.bsd3;
     maintainers = with lib.maintainers; [ ak ];

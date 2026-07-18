@@ -2,10 +2,10 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  perl,
-  sysfsutils,
   dmidecode,
   kmod,
+  perl,
+  sysfsutils,
 }:
 
 stdenv.mkDerivation {
@@ -19,11 +19,6 @@ stdenv.mkDerivation {
     hash = "sha256-jZGRrZ1sa4x0/TBJ5GsNVuWakmPNOU+oiOoXdhARunk=";
   };
 
-  # Hard-code program paths instead of using PATH lookups. Also, labels.d and
-  # mainboard are for user-configurable data, so do not look for them in Nix
-  # store.
-  dmidecodeProgram = lib.getExe' dmidecode "dmidecode";
-  modprobeProgram = lib.getExe' kmod "modprobe";
   postPatch = ''
     substituteInPlace src/util/edac-ctl.in \
       --replace-fail 'find_prog ("dmidecode")' "\"$dmidecodeProgram\"" \
@@ -37,13 +32,10 @@ stdenv.mkDerivation {
   # fixupPhase to update the hash bang line.
   strictDeps = true;
   nativeBuildInputs = [ perl ];
+
   buildInputs = [
     perl
     sysfsutils
-  ];
-
-  installFlags = [
-    "sbindir=${placeholder "out"}/bin"
   ];
 
   # SysV init script is not relevant.
@@ -51,11 +43,22 @@ stdenv.mkDerivation {
     rm -r "$out"/etc/init.d
   '';
 
+  # Hard-code program paths instead of using PATH lookups. Also, labels.d and
+  # mainboard are for user-configurable data, so do not look for them in Nix
+  # store.
+  dmidecodeProgram = lib.getExe' dmidecode "dmidecode";
+
+  installFlags = [
+    "sbindir=${placeholder "out"}/bin"
+  ];
+
+  modprobeProgram = lib.getExe' kmod "modprobe";
+
   meta = {
-    homepage = "https://github.com/grondo/edac-utils";
     description = "Handles the reporting of hardware-related memory errors";
-    mainProgram = "edac-util";
+    homepage = "https://github.com/grondo/edac-utils";
     license = lib.licenses.gpl2Plus;
     platforms = lib.platforms.linux;
+    mainProgram = "edac-util";
   };
 }

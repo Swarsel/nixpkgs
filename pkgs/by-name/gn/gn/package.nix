@@ -1,11 +1,12 @@
 {
-  stdenv,
   lib,
-  fetchgit,
+  stdenv,
   cctools,
+  fetchgit,
   ninja,
   python3,
-
+  hash ? "sha256-BTPD8WM1pVAMkFDlHekMdWFGyf63KdhKkKwsqikqoBQ=",
+  rev ? "6e8dcdebbadf4f8aa75e6a4b6e0bdf89dce1513a",
   # Note: Please use the recommended version for Chromium stable, i.e. from
   # <nixpkgs>/pkgs/applications/networking/browsers/chromium/info.json
   version ?
@@ -14,19 +15,18 @@
       _version = "0-unstable-2026-04-01";
     in
     _version,
-  rev ? "6e8dcdebbadf4f8aa75e6a4b6e0bdf89dce1513a",
-  hash ? "sha256-BTPD8WM1pVAMkFDlHekMdWFGyf63KdhKkKwsqikqoBQ=",
 }:
 
 stdenv.mkDerivation {
-  pname = "gn";
   inherit version;
+  pname = "gn";
 
   src = fetchgit {
-    url = "https://gn.googlesource.com/gn";
     inherit rev hash;
-    leaveDotGit = true;
+    url = "https://gn.googlesource.com/gn";
     deepClone = true;
+    leaveDotGit = true;
+
     postFetch = ''
       cd "$out"
       mkdir .nix-files
@@ -40,14 +40,28 @@ stdenv.mkDerivation {
     ninja
     python3
   ];
+
   buildInputs = lib.optionals stdenv.hostPlatform.isDarwin [
     cctools
   ];
 
   env.NIX_CFLAGS_COMPILE = "-Wno-error";
-  # Relax hardening as otherwise gn unstable 2024-06-06 and later fail with:
-  # cc1plus: error: '-Wformat-security' ignored without '-Wformat' [-Werror=format-security]
-  hardeningDisable = [ "format" ];
+
+  buildPhase = ''
+    runHook preBuild
+
+    ninja -v -j $NIX_BUILD_CORES -C out gn
+
+    runHook postBuild
+  '';
+
+  installPhase = ''
+    runHook preInstall
+
+    install -vD out/gn "$out/bin/gn"
+
+    runHook postInstall
+  '';
 
   configurePhase = ''
     runHook preConfigure
@@ -66,35 +80,23 @@ stdenv.mkDerivation {
     runHook postConfigure
   '';
 
-  buildPhase = ''
-    runHook preBuild
-
-    ninja -v -j $NIX_BUILD_CORES -C out gn
-
-    runHook postBuild
-  '';
-
-  installPhase = ''
-    runHook preInstall
-
-    install -vD out/gn "$out/bin/gn"
-
-    runHook postInstall
-  '';
-
+  # Relax hardening as otherwise gn unstable 2024-06-06 and later fail with:
+  # cc1plus: error: '-Wformat-security' ignored without '-Wformat' [-Werror=format-security]
+  hardeningDisable = [ "format" ];
   setupHook = ./setup-hook.sh;
-
   passthru.updateScript = ./update.sh;
 
   meta = {
     description = "Meta-build system that generates build files for Ninja";
-    mainProgram = "gn";
     homepage = "https://gn.googlesource.com/gn";
     license = lib.licenses.bsd3;
-    platforms = lib.platforms.unix;
+
     maintainers = with lib.maintainers; [
       marcin-serwin
       emilylange
     ];
+
+    platforms = lib.platforms.unix;
+    mainProgram = "gn";
   };
 }

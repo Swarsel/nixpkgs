@@ -1,7 +1,7 @@
 {
   config,
-  pkgs,
   lib,
+  pkgs,
   ...
 }:
 
@@ -14,12 +14,12 @@ in
   };
 
   config = lib.mkIf cfg.enable {
-    environment.systemPackages = with pkgs; [
-      usbtop
-    ];
-
     boot.kernelModules = [
       "usbmon"
+    ];
+
+    environment.systemPackages = with pkgs; [
+      usbtop
     ];
   };
 }

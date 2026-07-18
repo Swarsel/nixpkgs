@@ -21,6 +21,13 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-TTW2gPa4ND6ILq4yxKEL07AQpSqfiEo66S72lVEmpFk=";
   };
 
+  patches = [
+    # sys/stat.h header missing on src/device-info.h
+    ./device-info-sys-stat.patch
+
+    ./fix-gcc15.patch
+  ];
+
   nativeBuildInputs = [
     pkg-config
     intltool
@@ -31,12 +38,6 @@ stdenv.mkDerivation (finalAttrs: {
     udev
   ];
 
-  preConfigure = ''
-    substituteInPlace src/Makefile.in --replace "-o root -g root" ""
-    # do not set setuid bit in nix store
-    substituteInPlace src/Makefile.in --replace 4755 0755
-  '';
-
   configureFlags = [
     "--with-mount-prog=${util-linux}/bin/mount"
     "--with-umount-prog=${util-linux}/bin/umount"
@@ -45,21 +46,20 @@ stdenv.mkDerivation (finalAttrs: {
     "--sysconfdir=${placeholder "out"}/etc"
   ];
 
+  preConfigure = ''
+    substituteInPlace src/Makefile.in --replace "-o root -g root" ""
+    # do not set setuid bit in nix store
+    substituteInPlace src/Makefile.in --replace 4755 0755
+  '';
+
   postInstall = ''
     substituteInPlace $out/lib/systemd/system/devmon@.service \
       --replace /usr/bin/devmon "$out/bin/devmon"
   '';
 
-  patches = [
-    # sys/stat.h header missing on src/device-info.h
-    ./device-info-sys-stat.patch
-
-    ./fix-gcc15.patch
-  ];
-
   meta = {
-    homepage = "https://ignorantguru.github.io/udevil/";
     description = "Mount without password";
+    homepage = "https://ignorantguru.github.io/udevil/";
     license = lib.licenses.gpl3Plus;
     maintainers = [ ];
     platforms = lib.platforms.linux;

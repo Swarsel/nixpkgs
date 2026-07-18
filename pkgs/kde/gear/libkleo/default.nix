@@ -1,8 +1,8 @@
 {
-  mkKdeDerivation,
-  qt5compat,
   boost,
+  mkKdeDerivation,
   qgpgme,
+  qt5compat,
 }:
 mkKdeDerivation {
   pname = "libkleo";
@@ -11,5 +11,6 @@ mkKdeDerivation {
     qt5compat
     boost
   ];
+
   extraPropagatedBuildInputs = [ qgpgme ];
 }

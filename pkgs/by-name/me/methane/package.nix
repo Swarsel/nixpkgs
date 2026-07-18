@@ -2,24 +2,24 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  pkg-config,
   SDL2,
   SDL2_image,
   SDL2_mixer,
+  alsa-lib,
+  clanlib,
   fontconfig,
   freealut,
-  libglut,
   gettext,
   libGL,
   libGLU,
-  openal,
-  quesoglc,
-  clanlib,
-  libxrender,
+  libglut,
   libmikmod,
-  alsa-lib,
-  nix-update-script,
   libxinerama,
+  libxrender,
+  nix-update-script,
+  openal,
+  pkg-config,
+  quesoglc,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -27,8 +27,8 @@ stdenv.mkDerivation (finalAttrs: {
   version = "2.1.0";
 
   src = fetchFromGitHub {
-    repo = "methane";
     owner = "rombust";
+    repo = "methane";
     tag = "v${finalAttrs.version}";
     hash = "sha256-rByJqkhYsRuv0gTug+vP2qgkRY8TnX+Qx4/MbAmPTOU=";
   };
@@ -68,11 +68,11 @@ stdenv.mkDerivation (finalAttrs: {
   passthru.updateScript = nix-update-script { };
 
   meta = {
-    homepage = "https://github.com/rombust/methane";
     description = "Clone of Taito's Bubble Bobble arcade game released for Amiga in 1993 by Apache Software";
-    mainProgram = "methane";
+    homepage = "https://github.com/rombust/methane";
     license = lib.licenses.gpl2Only;
     maintainers = [ ];
     platforms = [ "x86_64-linux" ];
+    mainProgram = "methane";
   };
 })

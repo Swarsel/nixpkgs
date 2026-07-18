@@ -26,7 +26,6 @@ stdenv.mkDerivation {
 
   nativeBuildInputs = [ makeWrapper ];
   buildInputs = [ perlPackages.perl ];
-  dontBuild = true;
 
   installPhase = ''
     runHook preInstall
@@ -45,6 +44,8 @@ stdenv.mkDerivation {
       wrapProgram "$f" --set PERL5LIB "${perlPackages.makePerlPath perlLibs}"
     done
   '';
+
+  dontBuild = true;
 
   meta = {
     description = "Bluetooth HSP/HFP daemon";

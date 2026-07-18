@@ -1,19 +1,18 @@
 {
   lib,
   fetchFromGitHub,
-  rustPlatform,
-  cmake,
-  pkg-config,
   alsa-lib,
+  cmake,
   gdk-pixbuf,
   glib,
+  installShellFiles,
   libnotify,
   libopus,
-  openssl,
-  versionCheckHook,
   nix-update-script,
-  installShellFiles,
-
+  openssl,
+  pkg-config,
+  rustPlatform,
+  versionCheckHook,
   withNotifications ? true,
   withOgg ? true,
 }:
@@ -21,14 +20,13 @@
 rustPlatform.buildRustPackage (finalAttrs: {
   pname = "mum";
   version = "0.5.1";
+
   src = fetchFromGitHub {
     owner = "mum-rs";
     repo = "mum";
     tag = "v${finalAttrs.version}";
     hash = "sha256-r2isuwXq79dOQQWB+CsofYCLQYu9VKm7kzoxw103YV4=";
   };
-
-  cargoHash = "sha256-ey3nT6vZ5YOZGk08HykK9RxI7li+Sz+sER3HioGSXP0=";
 
   nativeBuildInputs = [
     cmake
@@ -45,8 +43,7 @@ rustPlatform.buildRustPackage (finalAttrs: {
   ]
   ++ lib.optional withNotifications libnotify;
 
-  buildNoDefaultFeatures = true;
-  buildFeatures = lib.optional withNotifications "notifications" ++ lib.optional withOgg "ogg";
+  cargoHash = "sha256-ey3nT6vZ5YOZGk08HykK9RxI7li+Sz+sER3HioGSXP0=";
 
   postInstall = ''
     installManPage documentation/*.{1,5}
@@ -54,15 +51,16 @@ rustPlatform.buildRustPackage (finalAttrs: {
 
   doInstallCheck = true;
   nativeInstallCheckInputs = [ versionCheckHook ];
+  buildFeatures = lib.optional withNotifications "notifications" ++ lib.optional withOgg "ogg";
+  buildNoDefaultFeatures = true;
   versionCheckProgram = "${placeholder "out"}/bin/mumctl";
-
   passthru.updateScript = nix-update-script { };
 
   meta = {
     description = "Daemon/cli mumble client";
     homepage = "https://github.com/mum-rs/mum";
     changelog = "https://github.com/mum-rs/mum/releases/tag/v${finalAttrs.version}";
-    maintainers = with lib.maintainers; [ lykos153 ];
     license = lib.licenses.mit;
+    maintainers = with lib.maintainers; [ lykos153 ];
   };
 })

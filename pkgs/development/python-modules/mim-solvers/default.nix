@@ -1,35 +1,24 @@
 {
   lib,
-
-  toPythonModule,
-  pythonImportsCheckHook,
-
-  mim-solvers,
-
-  # nativeBuildInputs
-  python,
-
   # propagatedBuildInputs
   boost,
   crocoddyl,
   eigenpy,
+  mim-solvers,
   osqp,
   proxsuite,
-  scipy,
-
   # nativeCheckInputs
   pytest,
-
+  # nativeBuildInputs
+  python,
+  pythonImportsCheckHook,
+  scipy,
+  toPythonModule,
   buildStandalone ? true,
 }:
 toPythonModule (
   mim-solvers.overrideAttrs (super: {
     pname = "py-${super.pname}";
-
-    cmakeFlags = super.cmakeFlags ++ [
-      (lib.cmakeBool "BUILD_PYTHON_INTERFACE" true)
-      (lib.cmakeBool "BUILD_STANDALONE_PYTHON_INTERFACE" buildStandalone)
-    ];
 
     # this is used by CMake at configure/build time
     nativeBuildInputs = super.nativeBuildInputs ++ [
@@ -46,6 +35,11 @@ toPythonModule (
     ]
     ++ super.propagatedBuildInputs
     ++ lib.optional buildStandalone mim-solvers;
+
+    cmakeFlags = super.cmakeFlags ++ [
+      (lib.cmakeBool "BUILD_PYTHON_INTERFACE" true)
+      (lib.cmakeBool "BUILD_STANDALONE_PYTHON_INTERFACE" buildStandalone)
+    ];
 
     nativeCheckInputs = super.nativeCheckInputs ++ [
       pythonImportsCheckHook

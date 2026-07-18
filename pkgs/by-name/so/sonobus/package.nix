@@ -1,25 +1,25 @@
 {
   lib,
-  pkg-config,
   stdenv,
   fetchFromGitHub,
-  autoPatchelfHook,
   alsa-lib,
+  autoPatchelfHook,
   cmake,
+  copyDesktopItems,
+  curl,
   freetype,
+  gtk3,
   libGL,
+  libjack2,
+  libopus,
   libx11,
   libxcursor,
   libxext,
   libxinerama,
   libxrandr,
-  libjack2,
-  libopus,
-  curl,
-  gtk3,
-  nix-update-script,
-  copyDesktopItems,
   makeDesktopItem,
+  nix-update-script,
+  pkg-config,
 }:
 stdenv.mkDerivation (finalAttrs: {
   pname = "sonobus";
@@ -33,20 +33,9 @@ stdenv.mkDerivation (finalAttrs: {
     fetchSubmodules = true;
   };
 
-  desktopItems = [
-    (makeDesktopItem {
-      type = "Application";
-      name = "sonobus";
-      desktopName = "Sonobus";
-      comment = "High-quality network audio streaming";
-      icon = "sonobus";
-      exec = "sonobus";
-      categories = [
-        "Audio"
-        "AudioVideo"
-      ];
-    })
-  ];
+  postPatch = lib.optionalString (stdenv.hostPlatform.isLinux) ''
+    patchShebangs linux/install.sh
+  '';
 
   nativeBuildInputs = [
     autoPatchelfHook
@@ -64,18 +53,6 @@ stdenv.mkDerivation (finalAttrs: {
     gtk3
   ];
 
-  runtimeDependencies = [
-    libGL
-    libx11
-    libxcursor
-    libxext
-    libxinerama
-    libxrandr
-  ];
-
-  env.NIX_LDFLAGS = lib.optionalString stdenv.hostPlatform.isLinux "-rpath ${lib.makeLibraryPath (finalAttrs.runtimeDependencies)}";
-  dontPatchELF = true; # needed or nix will try to optimize the binary by removing "useless" rpath
-
   env.NIX_CFLAGS_COMPILE = toString [
     # juce, compiled in this build as part of a Git submodule, uses `-flto` as
     # a Link Time Optimization flag, and instructs the plugin compiled here to
@@ -87,9 +64,7 @@ stdenv.mkDerivation (finalAttrs: {
     "-ffat-lto-objects"
   ];
 
-  postPatch = lib.optionalString (stdenv.hostPlatform.isLinux) ''
-    patchShebangs linux/install.sh
-  '';
+  env.NIX_LDFLAGS = lib.optionalString stdenv.hostPlatform.isLinux "-rpath ${lib.makeLibraryPath (finalAttrs.runtimeDependencies)}";
 
   # The program does not provide any CMake install instructions
   installPhase = lib.optionalString (stdenv.hostPlatform.isLinux) ''
@@ -102,16 +77,45 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  desktopItems = [
+    (makeDesktopItem {
+      categories = [
+        "Audio"
+        "AudioVideo"
+      ];
+
+      comment = "High-quality network audio streaming";
+      desktopName = "Sonobus";
+      exec = "sonobus";
+      icon = "sonobus";
+      name = "sonobus";
+      type = "Application";
+    })
+  ];
+
+  dontPatchELF = true; # needed or nix will try to optimize the binary by removing "useless" rpath
+
+  runtimeDependencies = [
+    libGL
+    libx11
+    libxcursor
+    libxext
+    libxinerama
+    libxrandr
+  ];
+
   passthru.updateScript = nix-update-script { };
 
   meta = {
     description = "High-quality network audio streaming";
     homepage = "https://sonobus.net/";
     license = lib.licenses.gpl3Plus;
+
     maintainers = with lib.maintainers; [
       PowerUser64
       l1npengtul
     ];
+
     platforms = lib.platforms.unix;
     mainProgram = "sonobus";
   };

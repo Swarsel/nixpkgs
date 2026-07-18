@@ -1,14 +1,14 @@
 {
   lib,
   stdenv,
-  buildPythonPackage,
   fetchFromGitHub,
-  unittestCheckHook,
   altgraph,
-  setuptools,
-  pyinstaller,
   bashNonInteractive,
+  buildPythonPackage,
   coreutils,
+  pyinstaller,
+  setuptools,
+  unittestCheckHook,
 }:
 
 let
@@ -17,7 +17,6 @@ in
 buildPythonPackage rec {
   pname = "macholib";
   version = "1.16.4";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "ronaldoussoren";
@@ -36,27 +35,30 @@ buildPythonPackage rec {
       --replace-fail '"/bin"' '"${lib.getBin coreutils'}/bin"'
   '';
 
-  build-system = [ setuptools ];
-
-  dependencies = [
-    altgraph
-  ];
-
   # Checks assume to find darwin specific libraries
   doCheck = stdenv.buildPlatform.isDarwin;
+
   nativeCheckInputs = [
     bashNonInteractive
     coreutils'
     unittestCheckHook
   ];
 
-  passthru.tests = {
-    inherit pyinstaller; # Requires macholib for darwin
-  };
-
   preCheck = ''
     export PATH="$PATH:$out/bin"
   '';
+
+  build-system = [ setuptools ];
+
+  dependencies = [
+    altgraph
+  ];
+
+  pyproject = true;
+
+  passthru.tests = {
+    inherit pyinstaller; # Requires macholib for darwin
+  };
 
   meta = {
     description = "Analyze and edit Mach-O headers, the executable format used by Mac OS X";

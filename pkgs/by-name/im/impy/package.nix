@@ -2,13 +2,13 @@
   lib,
   stdenv,
   fetchFromGitHub,
+  giflib,
+  libjpeg,
+  libpng,
   meson,
   ninja,
   pkg-config,
-  libpng,
   zlib,
-  giflib,
-  libjpeg,
 }:
 
 stdenv.mkDerivation (finalAttrs: {

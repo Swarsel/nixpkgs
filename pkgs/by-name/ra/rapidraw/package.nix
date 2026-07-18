@@ -2,42 +2,42 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  fetchNpmDeps,
-  rustPlatform,
-  makeWrapper,
-  pkg-config,
-  wrapGAppsHook4,
-  openssl,
-  onnxruntime,
-  webkitgtk_4_1,
-  gtk3,
-  glib,
-  gdk-pixbuf,
-  libappindicator,
   cairo,
-  pango,
-  libxrender,
-  libxrandr,
-  libxi,
-  libxfixes,
-  libxext,
-  libxcursor,
-  libx11,
-  libxcb,
-  libxkbcommon,
-  vulkan-loader,
+  cargo-tauri,
+  dbus,
+  fetchNpmDeps,
+  gdk-pixbuf,
+  glib,
+  glib-networking,
+  gtk3,
+  gvfs,
+  libGL,
+  libappindicator,
+  libheif,
   libjpeg,
   libpng,
-  zlib,
-  libGL,
-  dbus,
-  gvfs,
-  libheif,
-  glib-networking,
+  libx11,
+  libxcb,
+  libxcursor,
+  libxext,
+  libxfixes,
+  libxi,
+  libxkbcommon,
+  libxrandr,
+  libxrender,
+  makeWrapper,
   nodejs_24,
   npmHooks,
-  cargo-tauri,
+  onnxruntime,
+  openssl,
+  pango,
+  pkg-config,
+  rustPlatform,
+  vulkan-loader,
+  webkitgtk_4_1,
+  wrapGAppsHook4,
   writableTmpDirAsHomeHook,
+  zlib,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -49,13 +49,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
     repo = "RapidRAW";
     tag = "v${finalAttrs.version}";
     hash = "sha256-LbAEQwZeFeiKV6lVt8vh+mZpqlJ02RSHs0rZEMeMRc4=";
-  };
-
-  cargoHash = "sha256-vx4+5aMxML5Cp1s7HKHSOYS4d4HaAGO2l6jMZuFPUsQ=";
-
-  npmDeps = fetchNpmDeps {
-    inherit (finalAttrs) src;
-    hash = "sha256-JtkzeCt21KIEshvoCHWo1QoxUgvVJN1loJrUHgvV4qE=";
   };
 
   nativeBuildInputs = [
@@ -102,8 +95,11 @@ rustPlatform.buildRustPackage (finalAttrs: {
     libappindicator
   ];
 
-  cargoRoot = "src-tauri";
-  buildAndTestSubdir = "src-tauri";
+  cargoHash = "sha256-vx4+5aMxML5Cp1s7HKHSOYS4d4HaAGO2l6jMZuFPUsQ=";
+
+  env = {
+    ORT_STRATEGY = "system";
+  };
 
   # Set HOME for npm to avoid permission issues and add node_modules to path
   preBuild = ''
@@ -117,12 +113,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
     substituteInPlace src-tauri/build.rs \
       --replace-fail 'if !is_valid' 'if false'
   '';
-
-  dontWrapGApps = true;
-
-  env = {
-    ORT_STRATEGY = "system";
-  };
 
   postInstall =
     lib.optionalString stdenv.hostPlatform.isLinux ''
@@ -152,15 +142,26 @@ rustPlatform.buildRustPackage (finalAttrs: {
         --set ORT_STRATEGY "system"
     '';
 
+  buildAndTestSubdir = "src-tauri";
+  cargoRoot = "src-tauri";
+  dontWrapGApps = true;
+
+  npmDeps = fetchNpmDeps {
+    inherit (finalAttrs) src;
+    hash = "sha256-JtkzeCt21KIEshvoCHWo1QoxUgvVJN1loJrUHgvV4qE=";
+  };
+
   meta = {
     description = "Blazingly-fast, non-destructive, and GPU-accelerated RAW image editor built with performance in mind";
     homepage = "https://github.com/CyberTimon/RapidRAW";
     license = lib.licenses.agpl3Only;
-    mainProgram = "rapidraw";
+
     maintainers = with lib.maintainers; [
       philipdb
       taciturnaxolotl
     ];
+
     platforms = lib.platforms.linux ++ lib.platforms.darwin;
+    mainProgram = "rapidraw";
   };
 })

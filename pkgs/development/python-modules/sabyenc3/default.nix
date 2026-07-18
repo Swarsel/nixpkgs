@@ -1,13 +1,12 @@
 {
   lib,
-  fetchPypi,
   buildPythonPackage,
+  fetchPypi,
 }:
 
 buildPythonPackage rec {
   pname = "sabyenc3";
   version = "5.4.4";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
@@ -16,7 +15,7 @@ buildPythonPackage rec {
 
   # Tests are not included in pypi distribution
   doCheck = false;
-
+  format = "setuptools";
   pythonImportsCheck = [ "sabyenc3" ];
 
   meta = {

@@ -1,18 +1,17 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  gitUpdater,
-  uv-build,
+  buildPythonPackage,
   click,
+  gitUpdater,
   quart,
   rtree,
+  uv-build,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "gerbonara";
   version = "1.6.3";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "jaseg";
@@ -21,6 +20,8 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-XWxYgnzvebO+iTL6idWyX+j7bsyvNkWdKDEuqsU/p4w=";
   };
 
+  # Test environment is exceptionally tricky to get set up, so skip for now.
+  doCheck = false;
   build-system = [ uv-build ];
 
   dependencies = [
@@ -29,11 +30,8 @@ buildPythonPackage (finalAttrs: {
     rtree
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "gerbonara" ];
-
-  # Test environment is exceptionally tricky to get set up, so skip for now.
-  doCheck = false;
-
   passthru.updateScript = gitUpdater { rev-prefix = "v"; };
 
   meta = {

@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   jupyter-core,
   notebook,
   pytestCheckHook,
@@ -10,7 +10,6 @@
 buildPythonPackage rec {
   pname = "jupyter-contrib-core";
   version = "0.4.2";
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "jupyter-contrib";
@@ -31,13 +30,14 @@ buildPythonPackage rec {
     "tests/test_application.py"
   ];
 
+  format = "setuptools";
   pythonImportsCheck = [ "jupyter_contrib_core" ];
 
   meta = {
     description = "Common utilities for jupyter-contrib projects";
-    mainProgram = "jupyter-contrib";
     homepage = "https://github.com/jupyter-contrib/jupyter_contrib_core";
     license = lib.licenses.bsd3;
     maintainers = with lib.maintainers; [ GaetanLepage ];
+    mainProgram = "jupyter-contrib";
   };
 }

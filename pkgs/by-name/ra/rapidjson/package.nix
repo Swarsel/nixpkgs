@@ -14,17 +14,17 @@ stdenv.mkDerivation (finalAttrs: {
   pname = "rapidjson";
   version = "1.1.0-unstable-2025-02-05";
 
-  outputs = [
-    "out"
-    "doc"
-  ];
-
   src = fetchFromGitHub {
     owner = "Tencent";
     repo = "rapidjson";
     rev = "24b5e7a8b27f42fa16b96fc70aade9106cf7102f";
     hash = "sha256-oHHLYRDMb7Y/k0CwsdsxPC5lglr2IChQi0AiOMiFn78=";
   };
+
+  outputs = [
+    "out"
+    "doc"
+  ];
 
   patches = [
     ./use-nixpkgs-gtest.patch
@@ -43,6 +43,8 @@ stdenv.mkDerivation (finalAttrs: {
     done
   '';
 
+  strictDeps = true;
+
   nativeBuildInputs = [
     cmake
     doxygen
@@ -52,8 +54,6 @@ stdenv.mkDerivation (finalAttrs: {
   buildInputs = [
     gtest
   ];
-
-  strictDeps = true;
 
   cmakeFlags = [
     (lib.cmakeBool "RAPIDJSON_BUILD_DOC" true)
@@ -87,10 +87,12 @@ stdenv.mkDerivation (finalAttrs: {
     description = "Fast JSON parser/generator for C++ with both SAX/DOM style API";
     homepage = "http://rapidjson.org/";
     license = lib.licenses.mit;
-    platforms = lib.platforms.unix;
+
     maintainers = [
       lib.maintainers.dotlambda
       lib.maintainers.tobim
     ];
+
+    platforms = lib.platforms.unix;
   };
 })

@@ -1,6 +1,6 @@
 {
-  lib,
   config,
+  lib,
   pkgs,
   ...
 }:
@@ -17,23 +17,16 @@ let
     ;
 
   commonServiceConfig = {
-    Type = "simple";
-    Restart = "on-failure";
-    RestartSec = 3;
-
-    EnvironmentFile = cfg.environmentFile;
-    StateDirectory = "linkwarden";
     CacheDirectory = "linkwarden";
-    User = cfg.user;
-    Group = cfg.group;
-
     # Hardening
     CapabilityBoundingSet = "";
+    EnvironmentFile = cfg.environmentFile;
+    Group = cfg.group;
     NoNewPrivileges = true;
-    PrivateUsers = true;
-    PrivateTmp = true;
     PrivateDevices = true;
     PrivateMounts = true;
+    PrivateTmp = true;
+    PrivateUsers = true;
     ProtectClock = true;
     ProtectControlGroups = true;
     ProtectHome = true;
@@ -41,14 +34,21 @@ let
     ProtectKernelLogs = true;
     ProtectKernelModules = true;
     ProtectKernelTunables = true;
+    Restart = "on-failure";
+    RestartSec = 3;
+
     RestrictAddressFamilies = [
       "AF_INET"
       "AF_INET6"
       "AF_UNIX"
     ];
+
     RestrictNamespaces = true;
     RestrictRealtime = true;
     RestrictSUIDSGID = true;
+    StateDirectory = "linkwarden";
+    Type = "simple";
+    User = cfg.user;
   };
 
   secret = types.nullOr (
@@ -77,34 +77,62 @@ in
     enable = mkEnableOption "Linkwarden";
     package = lib.mkPackageOption pkgs "linkwarden" { };
 
-    storageLocation = mkOption {
-      type = types.path;
-      default = "/var/lib/linkwarden";
-      description = "Directory used to store media files. If it is not the default, the directory has to be created manually such that the linkwarden user is able to read and write to it.";
-    };
     cacheLocation = mkOption {
-      type = types.path;
       default = "/var/cache/linkwarden";
       description = "Directory used as cache. If it is not the default, the directory has to be created manually such that the linkwarden user is able to read and write to it.";
+      type = types.path;
+    };
+
+    database = {
+      createLocally = mkEnableOption "the automatic creation of the database for Linkwarden." // {
+        default = true;
+      };
+
+      host = mkOption {
+        default = "/run/postgresql";
+        description = "Hostname or address of the postgresql server. If an absolute path is given here, it will be interpreted as a unix socket path.";
+        example = "localhost";
+        type = types.str;
+      };
+
+      name = mkOption {
+        default = "linkwarden";
+        description = "The name of the Linkwarden database.";
+        type = types.str;
+      };
+
+      port = mkOption {
+        default = 5432;
+        description = "Port of the postgresql server.";
+        type = types.port;
+      };
+
+      user = mkOption {
+        default = "linkwarden";
+        description = "The database user for Linkwarden.";
+        type = types.str;
+      };
     };
 
     enableRegistration = mkEnableOption "registration for new users";
 
     environment = mkOption {
-      type = types.attrsOf types.str;
       default = { };
-      example = {
-        PAGINATION_TAKE_COUNT = "50";
-      };
+
       description = ''
         Extra configuration environment variables. Refer to the [documentation](https://docs.linkwarden.app/self-hosting/environment-variables) for options.
       '';
+
+      example = {
+        PAGINATION_TAKE_COUNT = "50";
+      };
+
+      type = types.attrsOf types.str;
     };
 
     environmentFile = mkOption {
-      type = secret;
-      example = "/run/secrets/linkwarden";
       default = null;
+
       description = ''
         Path of a file with extra environment variables to be loaded from disk.
         This file is not added to the nix store, so it can be used to pass secrets to linkwarden.
@@ -116,15 +144,38 @@ in
         POSTGRES_PASSWORD=<pass>
         ```
       '';
+
+      example = "/run/secrets/linkwarden";
+      type = secret;
+    };
+
+    group = mkOption {
+      default = "linkwarden";
+      description = "The group Linkwarden should run as.";
+      type = types.str;
+    };
+
+    host = mkOption {
+      default = "localhost";
+      description = "The host that Linkwarden will listen on.";
+      type = types.str;
+    };
+
+    openFirewall = mkOption {
+      default = false;
+      description = "Whether to open the Linkwarden port in the firewall";
+      type = types.bool;
+    };
+
+    port = mkOption {
+      default = 3000;
+      description = "The port that Linkwarden will listen on.";
+      type = types.port;
     };
 
     secretFiles = mkOption {
-      type = types.attrsOf secret;
-      example = {
-        POSTGRES_PASSWORD = "/run/secrets/linkwarden_postgres_passwd";
-        NEXTAUTH_SECRET = "/run/secrets/linkwarden_secret";
-      };
       default = { };
+
       description = ''
         Attribute set containing paths to files to add to the environment of linkwarden.
         The files are not added to the nix store, so they can be used to pass secrets to linkwarden.
@@ -136,59 +187,25 @@ in
         POSTGRES_PASSWORD=<pass>
         ```
       '';
+
+      example = {
+        NEXTAUTH_SECRET = "/run/secrets/linkwarden_secret";
+        POSTGRES_PASSWORD = "/run/secrets/linkwarden_postgres_passwd";
+      };
+
+      type = types.attrsOf secret;
     };
 
-    host = mkOption {
-      type = types.str;
-      default = "localhost";
-      description = "The host that Linkwarden will listen on.";
+    storageLocation = mkOption {
+      default = "/var/lib/linkwarden";
+      description = "Directory used to store media files. If it is not the default, the directory has to be created manually such that the linkwarden user is able to read and write to it.";
+      type = types.path;
     };
-    port = mkOption {
-      type = types.port;
-      default = 3000;
-      description = "The port that Linkwarden will listen on.";
-    };
-    openFirewall = mkOption {
-      type = types.bool;
-      default = false;
-      description = "Whether to open the Linkwarden port in the firewall";
-    };
+
     user = mkOption {
-      type = types.str;
       default = "linkwarden";
       description = "The user Linkwarden should run as.";
-    };
-    group = mkOption {
       type = types.str;
-      default = "linkwarden";
-      description = "The group Linkwarden should run as.";
-    };
-
-    database = {
-      createLocally = mkEnableOption "the automatic creation of the database for Linkwarden." // {
-        default = true;
-      };
-      name = mkOption {
-        type = types.str;
-        default = "linkwarden";
-        description = "The name of the Linkwarden database.";
-      };
-      host = mkOption {
-        type = types.str;
-        default = "/run/postgresql";
-        example = "localhost";
-        description = "Hostname or address of the postgresql server. If an absolute path is given here, it will be interpreted as a unix socket path.";
-      };
-      port = mkOption {
-        type = types.port;
-        default = 5432;
-        description = "Port of the postgresql server.";
-      };
-      user = mkOption {
-        type = types.str;
-        default = "linkwarden";
-        description = "The database user for Linkwarden.";
-      };
     };
   };
 
@@ -200,6 +217,7 @@ in
       }
       {
         assertion = cfg.environmentFile == null -> cfg.secretFiles ? "NEXTAUTH_SECRET";
+
         message = ''
           Linkwarden needs at least a nextauth secret to run.
           Use either the environmentFile or secretFiles.NEXTAUTH_SECRET to provide one.
@@ -207,86 +225,96 @@ in
       }
     ];
 
+    networking.firewall.allowedTCPPorts = mkIf cfg.openFirewall [ cfg.port ];
+
+    services.linkwarden.environment = {
+      DATABASE_HOST = mkIf (!isPostgresUnixSocket) cfg.database.host;
+      DATABASE_NAME = cfg.database.name;
+      DATABASE_PORT = toString cfg.database.port;
+      DATABASE_URL = mkIf isPostgresUnixSocket "postgresql://${lib.strings.escapeURL cfg.database.user}@localhost/${lib.strings.escapeURL cfg.database.name}?host=${cfg.database.host}";
+      DATABASE_USER = cfg.database.user;
+      LINKWARDEN_CACHE_DIR = cfg.cacheLocation;
+      LINKWARDEN_HOST = cfg.host;
+      LINKWARDEN_PORT = toString cfg.port;
+      NEXT_PUBLIC_DISABLE_REGISTRATION = mkIf (!cfg.enableRegistration) "true";
+      NEXT_TELEMETRY_DISABLED = "1";
+      STORAGE_FOLDER = cfg.storageLocation;
+    };
+
     services.postgresql = mkIf cfg.database.createLocally {
       enable = true;
       ensureDatabases = [ cfg.database.name ];
+
       ensureUsers = [
         {
-          name = cfg.database.user;
-          ensureDBOwnership = true;
           ensureClauses.login = true;
+          ensureDBOwnership = true;
+          name = cfg.database.user;
         }
       ];
     };
 
-    networking.firewall.allowedTCPPorts = mkIf cfg.openFirewall [ cfg.port ];
-
-    services.linkwarden.environment = {
-      LINKWARDEN_HOST = cfg.host;
-      LINKWARDEN_PORT = toString cfg.port;
-      LINKWARDEN_CACHE_DIR = cfg.cacheLocation;
-      STORAGE_FOLDER = cfg.storageLocation;
-      NEXT_PUBLIC_DISABLE_REGISTRATION = mkIf (!cfg.enableRegistration) "true";
-      NEXT_TELEMETRY_DISABLED = "1";
-      DATABASE_URL = mkIf isPostgresUnixSocket "postgresql://${lib.strings.escapeURL cfg.database.user}@localhost/${lib.strings.escapeURL cfg.database.name}?host=${cfg.database.host}";
-      DATABASE_PORT = toString cfg.database.port;
-      DATABASE_HOST = mkIf (!isPostgresUnixSocket) cfg.database.host;
-      DATABASE_NAME = cfg.database.name;
-      DATABASE_USER = cfg.database.user;
-    };
-
     systemd.services.linkwarden = {
-      description = "Linkwarden (Self-hosted collaborative bookmark manager to collect, organize, and preserve webpages, articles, and more...)";
-      requires = [
-        "network-online.target"
-      ]
-      ++ lib.optionals cfg.database.createLocally [ "postgresql.target" ];
       after = [
         "network-online.target"
       ]
       ++ lib.optionals cfg.database.createLocally [ "postgresql.target" ];
-      wantedBy = [ "multi-user.target" ];
+
+      description = "Linkwarden (Self-hosted collaborative bookmark manager to collect, organize, and preserve webpages, articles, and more...)";
+
       environment = cfg.environment // {
         # Required, otherwise chrome dumps core
         CHROME_CONFIG_HOME = cfg.cacheLocation;
       };
+
+      requires = [
+        "network-online.target"
+      ]
+      ++ lib.optionals cfg.database.createLocally [ "postgresql.target" ];
 
       serviceConfig = commonServiceConfig // {
         ExecStart = startupScript "";
       };
+
+      wantedBy = [ "multi-user.target" ];
     };
 
     systemd.services.linkwarden-worker = {
-      description = "Linkwarden (worker process)";
-      requires = [
-        "network-online.target"
-        "linkwarden.service"
-      ]
-      ++ lib.optionals cfg.database.createLocally [ "postgresql.target" ];
       after = [
         "network-online.target"
         "linkwarden.service"
       ]
       ++ lib.optionals cfg.database.createLocally [ "postgresql.target" ];
-      wantedBy = [ "multi-user.target" ];
+
+      description = "Linkwarden (worker process)";
+
       environment = cfg.environment // {
         # Required, otherwise chrome dumps core
         CHROME_CONFIG_HOME = cfg.cacheLocation;
       };
 
+      requires = [
+        "network-online.target"
+        "linkwarden.service"
+      ]
+      ++ lib.optionals cfg.database.createLocally [ "postgresql.target" ];
+
       serviceConfig = commonServiceConfig // {
         ExecStart = startupScript " worker";
       };
+
+      wantedBy = [ "multi-user.target" ];
     };
+
+    users.groups = mkIf (cfg.group == "linkwarden") { linkwarden = { }; };
 
     users.users = mkIf (cfg.user == "linkwarden") {
       linkwarden = {
-        name = "linkwarden";
         group = cfg.group;
         isSystemUser = true;
+        name = "linkwarden";
       };
     };
-    users.groups = mkIf (cfg.group == "linkwarden") { linkwarden = { }; };
 
     meta.maintainers = with lib.maintainers; [ jvanbruegge ];
   };

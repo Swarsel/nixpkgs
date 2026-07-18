@@ -1,6 +1,6 @@
 {
-  fetchFromGitHub,
   lib,
+  fetchFromGitHub,
   postgresql,
   postgresqlBuildExtension,
 }:
@@ -19,8 +19,8 @@ postgresqlBuildExtension (finalAttrs: {
   meta = {
     description = "pg_relusage extension for PostgreSQL: discover and log the relations used in your statements";
     homepage = "https://github.com/adept/pg_relusage";
+    license = lib.licenses.postgresql;
     maintainers = with lib.maintainers; [ thenonameguy ];
     platforms = postgresql.meta.platforms;
-    license = lib.licenses.postgresql;
   };
 })

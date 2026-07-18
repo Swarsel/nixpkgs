@@ -1,31 +1,25 @@
 {
   lib,
-  symlinkJoin,
-  runCommand,
-  unwrapped,
-  python3,
   formats,
+  python3,
+  runCommand,
+  symlinkJoin,
+  unwrapped,
 }:
 
 let
   wrapper =
     {
-      pythonPackages ? (_: [ ]),
-      plugins ? (_: [ ]),
       baseConfig ? null,
+      plugins ? (_: [ ]),
+      pythonPackages ? (_: [ ]),
     }:
     let
       plugins' = plugins unwrapped.plugins;
       extraPythonPackages = builtins.concatLists (map (p: p.propagatedBuildInputs or [ ]) plugins');
     in
     symlinkJoin {
-      name = "${unwrapped.pname}-with-plugins-${unwrapped.version}";
-
       inherit unwrapped;
-      paths = lib.optional (baseConfig != null) unwrapped ++ plugins';
-      pythonPath =
-        lib.optional (baseConfig == null) unwrapped ++ pythonPackages python3.pkgs ++ extraPythonPackages;
-
       nativeBuildInputs = [ python3.pkgs.wrapPython ];
 
       postBuild = ''
@@ -39,6 +33,7 @@ let
                 plugin_directories = lib.optionalAttrs (plugins' != [ ]) {
                   load = [ "@out@/lib/maubot-plugins" ] ++ (baseConfig.plugin_directories.load or [ ]);
                 };
+
                 # Normally it should be set to false by default to take it from package
                 # root, but aiohttp doesn't follow symlinks when serving static files
                 # unless follow_symlinks=True is passed. Instead of patching maubot, use
@@ -63,25 +58,34 @@ let
         }''${pythonPath[*]}"
       '';
 
+      name = "${unwrapped.pname}-with-plugins-${unwrapped.version}";
+      paths = lib.optional (baseConfig != null) unwrapped ++ plugins';
+
+      pythonPath =
+        lib.optional (baseConfig == null) unwrapped ++ pythonPackages python3.pkgs ++ extraPythonPackages;
+
       passthru = {
         inherit unwrapped;
         python = python3;
-        withPythonPackages =
-          filter:
-          wrapper {
-            pythonPackages = pkgs: pythonPackages pkgs ++ filter pkgs;
-            inherit plugins baseConfig;
-          };
-        withPlugins =
-          filter:
-          wrapper {
-            plugins = pkgs: plugins pkgs ++ filter pkgs;
-            inherit pythonPackages baseConfig;
-          };
+
         withBaseConfig =
           baseConfig:
           wrapper {
             inherit baseConfig pythonPackages plugins;
+          };
+
+        withPlugins =
+          filter:
+          wrapper {
+            inherit pythonPackages baseConfig;
+            plugins = pkgs: plugins pkgs ++ filter pkgs;
+          };
+
+        withPythonPackages =
+          filter:
+          wrapper {
+            inherit plugins baseConfig;
+            pythonPackages = pkgs: pythonPackages pkgs ++ filter pkgs;
           };
       };
 

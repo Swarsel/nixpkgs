@@ -1,8 +1,8 @@
 {
-  buildPecl,
-  fetchFromGitHub,
-  fetchpatch,
   lib,
+  fetchFromGitHub,
+  buildPecl,
+  fetchpatch,
   libkrb5,
   openssl,
   pam,

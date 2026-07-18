@@ -2,15 +2,16 @@
   lib,
   stdenv,
   fetchFromSourcehut,
+  lv2,
   meson,
   ninja,
   pkg-config,
-  lv2,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
   pname = "airwindows-lv2";
   version = "38.0";
+
   src = fetchFromSourcehut {
     owner = "~hannes";
     repo = "airwindows-lv2";

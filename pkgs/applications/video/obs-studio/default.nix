@@ -1,68 +1,68 @@
 {
-  config,
-  uthash,
   lib,
   stdenv,
-  ninja,
-  nv-codec-headers-12,
-  fetchFromGitHub,
   fetchurl,
+  fetchFromGitHub,
   addDriverRunpath,
+  alsa-lib,
+  asio,
   autoAddDriverRunpath,
-  cudaSupport ? config.cudaSupport,
+  blackmagic-desktop-video,
+  cef-binary,
+  cjson,
   cmake,
+  config,
+  curl,
   fdk_aac,
   ffmpeg,
   jansson,
+  kdePackages,
+  libGL,
+  libdatachannel,
+  libdrm,
   libjack2,
-  libxkbcommon,
   libpthread-stubs,
+  libpulseaudio,
+  librist,
+  libv4l,
+  libva,
+  libvlc,
+  libvpl,
+  libx11,
   libxdmcp,
+  libxkbcommon,
+  luajit,
+  mbedtls,
+  ninja,
+  nix-update-script,
+  nlohmann_json,
+  nv-codec-headers-12,
+  pciutils,
+  pipewire,
+  pkg-config,
+  python3,
+  qrcodegencpp,
   qtbase,
   qtsvg,
-  speex,
-  libv4l,
-  x264,
-  curl,
-  wayland,
-  libx11,
-  pkg-config,
-  libvlc,
-  libGL,
-  mbedtls,
-  wrapGAppsHook3,
-  scriptingSupport ? true,
-  luajit,
-  swig,
-  python3,
-  alsaSupport ? stdenv.hostPlatform.isLinux,
-  alsa-lib,
-  pulseaudioSupport ? config.pulseaudio or stdenv.hostPlatform.isLinux,
-  libpulseaudio,
-  browserSupport ? true,
-  cef-binary,
-  pciutils,
-  pipewireSupport ? stdenv.hostPlatform.isLinux,
-  withFdk ? true,
-  pipewire,
-  libdrm,
-  librist,
-  cjson,
-  libva,
-  srt,
   qtwayland,
-  wrapQtAppsHook,
-  nlohmann_json,
-  websocketpp,
-  asio,
-  decklinkSupport ? false,
-  blackmagic-desktop-video,
-  libdatachannel,
-  libvpl,
-  qrcodegencpp,
   simde,
-  nix-update-script,
-  kdePackages,
+  speex,
+  srt,
+  swig,
+  uthash,
+  wayland,
+  websocketpp,
+  wrapGAppsHook3,
+  wrapQtAppsHook,
+  x264,
+  alsaSupport ? stdenv.hostPlatform.isLinux,
+  browserSupport ? true,
+  cudaSupport ? config.cudaSupport,
+  decklinkSupport ? false,
+  pipewireSupport ? stdenv.hostPlatform.isLinux,
+  pulseaudioSupport ? config.pulseaudio or stdenv.hostPlatform.isLinux,
+  scriptingSupport ? true,
+  withFdk ? true,
 }:
 
 let
@@ -88,6 +88,7 @@ let
             x86_64-linux = "x86_64";
           }
         }_v${revision}.tar.xz";
+
         hash = selectSystem {
           aarch64-linux = "sha256-ZCUURp6qKaXIh4kQhNLnP33C10Bfffp3JrLbwkswmZk=";
           x86_64-linux = "sha256-eWMzVRmhnM3FIz9zNMWrAjAm4vPpoMxBcAfAnYZggUY=";
@@ -108,11 +109,13 @@ stdenv.mkDerivation (finalAttrs: {
     fetchSubmodules = true;
   };
 
-  separateDebugInfo = true;
-
   patches = [
     ./fix-nix-plugin-path.patch
   ];
+
+  postPatch = ''
+    cp ${./CMakeUserPresets.json} ./CMakeUserPresets.json
+  '';
 
   nativeBuildInputs = [
     addDriverRunpath
@@ -172,15 +175,6 @@ stdenv.mkDerivation (finalAttrs: {
 
   propagatedBuildInputs = [ simde ];
 
-  # Copied from the obs-linuxbrowser
-  postUnpack = lib.optionalString browserSupport ''
-    ln -s ${cef} cef
-  '';
-
-  postPatch = ''
-    cp ${./CMakeUserPresets.json} ./CMakeUserPresets.json
-  '';
-
   cmakeFlags = [
     "--preset"
     "nixpkgs-${if stdenv.hostPlatform.isDarwin then "darwin" else "linux"}"
@@ -205,7 +199,6 @@ stdenv.mkDerivation (finalAttrs: {
     "-Wno-error=stringop-overflow="
   ];
 
-  dontWrapGApps = true;
   preFixup =
     let
       wrapperLibraries = [
@@ -243,27 +236,40 @@ stdenv.mkDerivation (finalAttrs: {
     '')
   ];
 
+  dontWrapGApps = true;
+
+  # Copied from the obs-linuxbrowser
+  postUnpack = lib.optionalString browserSupport ''
+    ln -s ${cef} cef
+  '';
+
+  separateDebugInfo = true;
   passthru.updateScript = nix-update-script { };
 
   meta = {
     description = "Free and open source software for video recording and live streaming";
+
     longDescription = ''
       This project is a rewrite of what was formerly known as "Open Broadcaster
       Software", software originally designed for recording and streaming live
       video content, efficiently
     '';
+
     homepage = "https://obsproject.com";
+    license = with lib.licenses; [ gpl2Plus ] ++ optional withFdk fraunhofer-fdk;
+
     maintainers = with lib.maintainers; [
       jb55
       materus
       fpletz
     ];
-    license = with lib.licenses; [ gpl2Plus ] ++ optional withFdk fraunhofer-fdk;
+
     platforms = [
       "x86_64-linux"
       "i686-linux"
       "aarch64-linux"
     ];
+
     mainProgram = "obs";
   };
 })

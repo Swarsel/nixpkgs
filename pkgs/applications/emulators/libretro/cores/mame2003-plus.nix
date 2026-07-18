@@ -4,7 +4,6 @@
   mkLibretroCore,
 }:
 mkLibretroCore {
-  core = "mame2003-plus";
   version = "0-unstable-2026-06-11";
 
   src = fetchFromGitHub {
@@ -14,6 +13,7 @@ mkLibretroCore {
     hash = "sha256-g4fphqSN2ray4qHI0gPrCdYjQFJP7sLAhzHaRdjN+vI=";
   };
 
+  core = "mame2003-plus";
   makefile = "Makefile";
 
   meta = {

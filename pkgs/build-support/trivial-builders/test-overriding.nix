@@ -7,12 +7,12 @@
 {
   lib,
   stdenv,
-  runtimeShell,
-  runCommand,
   callPackage,
+  runCommand,
+  runtimeShell,
   writeShellScript,
-  writeTextFile,
   writeShellScriptBin,
+  writeTextFile,
 }:
 
 let
@@ -35,13 +35,14 @@ let
 
   # building this derivation would fail without overriding
   textFileCase = writeTextFile {
-    name = "test-trivial-overriding-text-file";
     checkPhase = "false";
+    executable = true;
+    name = "test-trivial-overriding-text-file";
+
     text = ''
       #!${runtimeShell}
       echo success
     '';
-    executable = true;
   };
 
   disallowExtglob =
@@ -80,17 +81,18 @@ let
     if isBin then "${drv}/bin/${drv.name}" else drv;
 
   writeTextOverrides = {
-    # Make sure extglob works by default
-    simpleSucc = mkCase simpleCase "succ" false;
-    # Ensure it's possible to fail; in this case extglob is not enabled
-    simpleFail = mkCase simpleCase "fail" false;
+    binFail = mkCase binCase "fail" true;
+    # Do the same check using `writeShellScriptBin`
+    binSucc = mkCase binCase "succ" true;
+    callpFail = mkCase callPackageCase "fail" false;
     # Do the same checks after wrapping with callPackage
     # to make sure callPackage doesn't mess with the override
     callpSucc = mkCase callPackageCase "succ" false;
-    callpFail = mkCase callPackageCase "fail" false;
-    # Do the same check using `writeShellScriptBin`
-    binSucc = mkCase binCase "succ" true;
-    binFail = mkCase binCase "fail" true;
+    # Ensure it's possible to fail; in this case extglob is not enabled
+    simpleFail = mkCase simpleCase "fail" false;
+    # Make sure extglob works by default
+    simpleSucc = mkCase simpleCase "succ" false;
+
     # Check that we can also override plain writeTextFile
     textFileSuccess = textFileCase.overrideAttrs (_: {
       checkPhase = "true";

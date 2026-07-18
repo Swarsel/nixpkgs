@@ -1,7 +1,7 @@
 {
   config,
-  pkgs,
   lib,
+  pkgs,
   ...
 }:
 let
@@ -23,10 +23,11 @@ in
   options = {
     services.salt.master = {
       enable = lib.mkEnableOption "Salt configuration management system master service";
+
       configuration = lib.mkOption {
-        type = lib.types.attrs;
         default = { };
         description = "Salt master configuration as Nix attribute set.";
+        type = lib.types.attrs;
       };
     };
   };
@@ -40,22 +41,27 @@ in
       etc."salt/master".source = pkgs.writeText "master" (builtins.toJSON fullConfig);
       systemPackages = with pkgs; [ salt ];
     };
+
     systemd.services.salt-master = {
-      description = "Salt Master";
-      wantedBy = [ "multi-user.target" ];
       after = [ "network.target" ];
+      description = "Salt Master";
+
       path = with pkgs; [
         util-linux # for dmesg
       ];
-      serviceConfig = {
-        ExecStart = "${pkgs.salt}/bin/salt-master";
-        LimitNOFILE = 16384;
-        Type = "notify";
-        NotifyAccess = "all";
-      };
+
       restartTriggers = [
         config.environment.etc."salt/master".source
       ];
+
+      serviceConfig = {
+        ExecStart = "${pkgs.salt}/bin/salt-master";
+        LimitNOFILE = 16384;
+        NotifyAccess = "all";
+        Type = "notify";
+      };
+
+      wantedBy = [ "multi-user.target" ];
     };
   };
 

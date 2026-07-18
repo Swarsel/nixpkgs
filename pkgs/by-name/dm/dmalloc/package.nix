@@ -2,8 +2,8 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  testers,
   dmalloc,
+  testers,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -29,6 +29,7 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Debug Malloc memory allocation debugging C library";
+
     longDescription = ''
       The debug memory allocation or "dmalloc" library has been designed as a
       drop in replacement for the system's malloc, realloc, calloc, free and
@@ -37,6 +38,7 @@ stdenv.mkDerivation (finalAttrs: {
       as memory-leak tracking, fence-post write detection, file/line number
       reporting, and general logging of statistics.
     '';
+
     homepage = "https://dmalloc.com";
     license = lib.licenses.isc;
     maintainers = with lib.maintainers; [ azahi ];

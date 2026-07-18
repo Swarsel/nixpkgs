@@ -2,18 +2,16 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  unstableGitUpdater,
-  makeWrapper,
-  openssl,
   coreutils,
   gnugrep,
+  makeWrapper,
+  openssl,
+  unstableGitUpdater,
 }:
 
 stdenv.mkDerivation {
   pname = "bash-supergenpass";
   version = "0-unstable-2024-03-24";
-
-  nativeBuildInputs = [ makeWrapper ];
 
   src = fetchFromGitHub {
     owner = "lanzz";
@@ -21,6 +19,8 @@ stdenv.mkDerivation {
     rev = "03416ad4d753d825acd0443a01ac13d385d5e048";
     sha256 = "Q+xmT72UFCc71K87mAzpyTmEIXjR9SqX0xzmQfi5P9k=";
   };
+
+  nativeBuildInputs = [ makeWrapper ];
 
   installPhase = ''
     install -m755 -D supergenpass.sh "$out/bin/supergenpass"
@@ -39,6 +39,7 @@ stdenv.mkDerivation {
 
   meta = {
     description = "Bash shell-script implementation of SuperGenPass password generation";
+
     longDescription = ''
       Bash shell-script implementation of SuperGenPass password generation
       Usage: ./supergenpass.sh <domain> [ <length> ]
@@ -49,10 +50,11 @@ stdenv.mkDerivation {
 
       supergenpass will ask for your master password interactively, and it will not be displayed on your terminal.
     '';
+
     homepage = "https://github.com/lanzz/bash-supergenpass";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ fgaz ];
-    mainProgram = "supergenpass";
     platforms = lib.platforms.all;
+    mainProgram = "supergenpass";
   };
 }

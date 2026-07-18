@@ -1,8 +1,8 @@
 {
   lib,
   stdenv,
-  cmake,
   fetchFromGitHub,
+  cmake,
   git,
   pkg-config,
   python3Packages,
@@ -13,7 +13,6 @@
 python3Packages.buildPythonApplication (finalAttrs: {
   pname = "conan";
   version = "2.28.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "conan-io";
@@ -22,12 +21,22 @@ python3Packages.buildPythonApplication (finalAttrs: {
     hash = "sha256-S/IEk3fSoCzoVfyo9oaId9VGR8YTjzoCIWoZ3xYVVBc=";
   };
 
-  pythonRelaxDeps = [
-    "distro"
-    "patch-ng"
-    "urllib3"
-  ];
+  nativeCheckInputs = [
+    git
+    pkg-config
+    zlib
+  ]
+  ++ lib.optionals (stdenv.hostPlatform.isDarwin) [ xcbuild.xcrun ]
+  ++ (with python3Packages; [
+    cmake
+    mock
+    parameterized
+    pytest-xdist
+    pytestCheckHook
+    webtest
+  ]);
 
+  __darwinAllowLocalNetworking = true;
   build-system = with python3Packages; [ setuptools ];
 
   dependencies =
@@ -55,26 +64,30 @@ python3Packages.buildPythonApplication (finalAttrs: {
       pyopenssl
     ];
 
-  nativeCheckInputs = [
-    git
-    pkg-config
-    zlib
-  ]
-  ++ lib.optionals (stdenv.hostPlatform.isDarwin) [ xcbuild.xcrun ]
-  ++ (with python3Packages; [
-    cmake
-    mock
-    parameterized
-    pytest-xdist
-    pytestCheckHook
-    webtest
-  ]);
+  disabledTestPaths = [
+    # Requires cmake, meson, autotools, apt-get, etc.
+    "test/functional/command/runner_test.py"
+    "test/functional/command/test_install_deploy.py"
+    "test/functional/command/test_new.py"
+    "test/functional/layout/test_editable_cmake.py"
+    "test/functional/layout/test_editable_cmake_components.py"
+    "test/functional/layout/test_in_subfolder.py"
+    "test/functional/layout/test_source_folder.py"
+    "test/functional/test_local_recipes_index.py"
+    "test/functional/test_profile_detect_api.py"
+    "test/functional/toolchains/"
+    "test/functional/tools/scm/test_git.py"
+    "test/functional/tools/system/package_manager_test.py"
+    "test/functional/workspace/test_workspace.py"
+    "test/functional/tools_versions_test.py"
+    "test/functional/util/test_cmd_args_to_string.py"
 
-  dontUseCmakeConfigure = true;
+    # Requires network access to PyPI
+    "test/functional/tools/system/python_manager_test.py"
 
-  __darwinAllowLocalNetworking = true;
-
-  pythonImportsCheck = [ "conan" ];
+    # Test failure
+    "test/unittests/tools/env/test_env_files.py"
+  ];
 
   disabledTests = [
     # Tests require network access
@@ -103,29 +116,14 @@ python3Packages.buildPythonApplication (finalAttrs: {
     "test_qbsprofile_rcflags"
   ];
 
-  disabledTestPaths = [
-    # Requires cmake, meson, autotools, apt-get, etc.
-    "test/functional/command/runner_test.py"
-    "test/functional/command/test_install_deploy.py"
-    "test/functional/command/test_new.py"
-    "test/functional/layout/test_editable_cmake.py"
-    "test/functional/layout/test_editable_cmake_components.py"
-    "test/functional/layout/test_in_subfolder.py"
-    "test/functional/layout/test_source_folder.py"
-    "test/functional/test_local_recipes_index.py"
-    "test/functional/test_profile_detect_api.py"
-    "test/functional/toolchains/"
-    "test/functional/tools/scm/test_git.py"
-    "test/functional/tools/system/package_manager_test.py"
-    "test/functional/workspace/test_workspace.py"
-    "test/functional/tools_versions_test.py"
-    "test/functional/util/test_cmd_args_to_string.py"
+  dontUseCmakeConfigure = true;
+  pyproject = true;
+  pythonImportsCheck = [ "conan" ];
 
-    # Requires network access to PyPI
-    "test/functional/tools/system/python_manager_test.py"
-
-    # Test failure
-    "test/unittests/tools/env/test_env_files.py"
+  pythonRelaxDeps = [
+    "distro"
+    "patch-ng"
+    "urllib3"
   ];
 
   meta = {

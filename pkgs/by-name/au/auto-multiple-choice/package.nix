@@ -2,9 +2,6 @@
   lib,
   stdenv,
   fetchurl,
-  perlPackages,
-  makeWrapper,
-  wrapGAppsHook3,
   cairo,
   dblatex,
   ghostscript,
@@ -17,12 +14,15 @@
   libnotify,
   librsvg,
   libxslt,
+  makeWrapper,
   netpbm,
   opencv,
   pango,
   perl,
+  perlPackages,
   pkg-config,
   poppler,
+  wrapGAppsHook3,
 }:
 let
   perlWithPackages = perl.withPackages (
@@ -54,20 +54,44 @@ in
 stdenv.mkDerivation (finalAttrs: {
   pname = "auto-multiple-choice";
   version = "1.7.0";
+
   src = fetchurl {
     url = "https://download.auto-multiple-choice.net/auto-multiple-choice_${finalAttrs.version}_dist.tar.gz";
     # before 1.7.0, the URL pattern used "precomp" instead of "dist".
     sha256 = "sha256-37kWqgdvZopvNSU6LA/FmY2wfSJz3rRSlaQF2HSbdmA=";
   };
 
-  # There's only the Makefile
-  dontConfigure = true;
-
   outputs = [
     "out"
     "man"
     "tex"
     "texdoc"
+  ];
+
+  nativeBuildInputs = [
+    pkg-config
+    makeWrapper
+    wrapGAppsHook3
+    gobject-introspection
+  ];
+
+  buildInputs = [
+    cairo
+    cairo.dev
+    dblatex
+    gnumake
+    graphicsmagick
+    gsettings-desktop-schemas
+    gtk3
+    hicolor-icon-theme
+    libnotify
+    librsvg
+    libxslt
+    netpbm
+    opencv
+    pango
+    poppler
+    perlWithPackages
   ];
 
   makeFlags = [
@@ -119,35 +143,12 @@ stdenv.mkDerivation (finalAttrs: {
     --set TEXINPUTS ".:$tex/tex/latex:"
   '';
 
-  nativeBuildInputs = [
-    pkg-config
-    makeWrapper
-    wrapGAppsHook3
-    gobject-introspection
-  ];
-
-  buildInputs = [
-    cairo
-    cairo.dev
-    dblatex
-    gnumake
-    graphicsmagick
-    gsettings-desktop-schemas
-    gtk3
-    hicolor-icon-theme
-    libnotify
-    librsvg
-    libxslt
-    netpbm
-    opencv
-    pango
-    poppler
-    perlWithPackages
-  ];
+  # There's only the Makefile
+  dontConfigure = true;
 
   meta = {
     description = "Create and manage multiple choice questionnaires with automated marking";
-    mainProgram = "auto-multiple-choice";
+
     longDescription = ''
       Create, manage and mark multiple-choice questionnaires.
       auto-multiple-choice features automated or manual formatting with
@@ -169,10 +170,12 @@ stdenv.mkDerivation (finalAttrs: {
 
       For usage instructions, see documentation at the project's homepage.
     '';
+
     homepage = "https://www.auto-multiple-choice.net/";
     changelog = "https://gitlab.com/jojo_boulix/auto-multiple-choice/-/blob/master/ChangeLog";
     license = lib.licenses.gpl2Plus;
     maintainers = [ lib.maintainers.thblt ];
     platforms = lib.platforms.all;
+    mainProgram = "auto-multiple-choice";
   };
 })

@@ -1,20 +1,20 @@
 {
   lib,
-  maven,
   fetchFromGitHub,
   jre,
   makeWrapper,
+  maven,
 }:
 maven.buildMavenPackage rec {
   pname = "apgdiff";
   version = "2.7.0";
 
   src = fetchFromGitHub {
-    sparseCheckout = [ "src" ];
     owner = "fordfrog";
     repo = "apgdiff";
     tag = "release_${version}";
     hash = "sha256-2m+9QNwQV2tJwOabTXE2xjRB5gDrSwyL6zL2op+wmkM=";
+    sparseCheckout = [ "src" ];
   };
 
   # Fix wrong version string in --help
@@ -22,8 +22,6 @@ maven.buildMavenPackage rec {
     sed -i 's/VersionNumber=.*/VersionNumber=${version}/' \
       src/main/resources/cz/startnet/utils/pgdiff/Resources.properties
   '';
-
-  mvnHash = "sha256-zJQirS8sVqHKZsBukEOf7ox5IeiAVOP6wEHWb4CAyxc=";
 
   nativeBuildInputs = [ makeWrapper ];
 
@@ -36,12 +34,14 @@ maven.buildMavenPackage rec {
       --add-flags "-jar $out/lib/apgdiff.jar"
   '';
 
+  mvnHash = "sha256-zJQirS8sVqHKZsBukEOf7ox5IeiAVOP6wEHWb4CAyxc=";
+
   meta = {
+    inherit (jre.meta) platforms;
     description = "Another PostgreSQL diff tool";
-    mainProgram = "apgdiff";
     homepage = "https://apgdiff.com";
     license = lib.licenses.mit;
-    inherit (jre.meta) platforms;
     maintainers = [ lib.maintainers.misterio77 ];
+    mainProgram = "apgdiff";
   };
 }

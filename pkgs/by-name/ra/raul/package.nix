@@ -17,12 +17,12 @@ stdenv.mkDerivation {
     hash = "sha256-k+EU3ROVJyjJPAtNxPmRXp9DALpUHzohCLL6Xe3NUxk=";
   };
 
+  strictDeps = true;
+
   nativeBuildInputs = [
     meson
     ninja
   ];
-
-  strictDeps = true;
 
   meta = {
     description = "C++ utility library primarily aimed at audio/musical applications";

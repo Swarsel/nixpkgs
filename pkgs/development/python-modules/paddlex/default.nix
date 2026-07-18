@@ -1,34 +1,33 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
-  setuptools-scm,
-  numpy,
-  pillow,
-  pyyaml,
+  aistudio-sdk,
+  buildPythonPackage,
   chardet,
   colorlog,
   filelock,
-  pandas,
-  prettytable,
-  py-cpuinfo,
-  pydantic,
-  requests,
-  ruamel-yaml,
-  typing-extensions,
-  ujson,
   gputil,
   huggingface-hub,
   modelscope,
-  aistudio-sdk,
   nix-update-script,
+  numpy,
+  pandas,
+  pillow,
+  prettytable,
+  py-cpuinfo,
+  pydantic,
+  pyyaml,
+  requests,
+  ruamel-yaml,
+  setuptools,
+  setuptools-scm,
+  typing-extensions,
+  ujson,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "paddlex";
   version = "3.7.2";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "PaddlePaddle";
@@ -40,11 +39,6 @@ buildPythonPackage (finalAttrs: {
   build-system = [
     setuptools
     setuptools-scm
-  ];
-
-  pythonRelaxDeps = [
-    "pyyaml"
-    "numpy"
   ];
 
   dependencies = [
@@ -68,14 +62,22 @@ buildPythonPackage (finalAttrs: {
     aistudio-sdk
   ];
 
+  pyproject = true;
+
+  pythonRelaxDeps = [
+    "pyyaml"
+    "numpy"
+  ];
+
   passthru.updateScript = nix-update-script { };
 
   meta = {
-    homepage = "https://github.com/PaddlePaddle/PaddleX";
-    license = lib.licenses.asl20;
     description = "All-in-One Development Tool based on PaddlePaddle";
+    homepage = "https://github.com/PaddlePaddle/PaddleX";
     changelog = "https://github.com/PaddlePaddle/PaddleX/releases/tag/${finalAttrs.src.tag}";
+    license = lib.licenses.asl20;
     maintainers = [ ];
+
     platforms = [
       "x86_64-linux"
       "aarch64-linux"

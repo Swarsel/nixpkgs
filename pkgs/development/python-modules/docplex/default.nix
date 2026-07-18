@@ -1,16 +1,15 @@
 {
   lib,
   buildPythonPackage,
-  fetchPypi,
-  setuptools,
   docloud,
+  fetchPypi,
   requests,
+  setuptools,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "docplex";
   version = "2.32.264";
-  pyproject = true;
 
   src = fetchPypi {
     inherit (finalAttrs) pname version;
@@ -22,6 +21,8 @@ buildPythonPackage (finalAttrs: {
       --replace-fail "setuptools~=78.1.1" "setuptools"
   '';
 
+  # PypI release does not include tests
+  doCheck = false;
   build-system = [ setuptools ];
 
   dependencies = [
@@ -29,9 +30,7 @@ buildPythonPackage (finalAttrs: {
     requests
   ];
 
-  # PypI release does not include tests
-  doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "docplex" ];
 
   meta = {

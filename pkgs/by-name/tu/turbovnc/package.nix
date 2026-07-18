@@ -2,46 +2,45 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  nixosTests,
-
   # Dependencies
   bzip2,
   cmake,
   dri-pkgconfig-stub,
   freetype,
   libGL,
+  libfontenc,
   libgbm,
   libjpeg_turbo,
-  libjpeg_turbo' ? libjpeg_turbo.override { enableJava = true; },
+  libsm,
+  libx11,
+  libxdamage,
+  libxdmcp,
+  libxext,
+  libxfont_2,
+  libxi,
+  libxkbfile,
+  libxshmfence,
   makeWrapper,
   mesa-gl-headers, # for built-in 3D software rendering using swrast
+  nixosTests,
   openjdk, # for the client with Java GUI
   openjdk_headless, # for the server
   openssh,
   openssl,
   pam,
   perl,
+  pixman,
   pkg-config,
   python3,
+  tab-window-manager,
   which,
+  xauth,
   xkbcomp,
   xkeyboard_config,
-  tab-window-manager,
-  libxi,
-  libxfont_2,
-  libxext,
-  libxdmcp,
-  libxdamage,
-  libx11,
-  libsm,
-  xtrans,
   xorgproto,
-  xauth,
-  pixman,
-  libxshmfence,
-  libxkbfile,
-  libfontenc,
   xterm,
+  xtrans,
+  libjpeg_turbo' ? libjpeg_turbo.override { enableJava = true; },
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -54,6 +53,12 @@ stdenv.mkDerivation (finalAttrs: {
     rev = finalAttrs.version;
     hash = "sha256-nAlE4yJW6isst+aJ4Ryy23Cr9KF78nY769ucdQfSHXw=";
   };
+
+  postPatch = ''
+    substituteInPlace unix/Xvnc/CMakeLists.txt --replace 'string(REGEX REPLACE "X11" "Xfont2" X11_Xfont2_LIB' 'set(X11_Xfont2_LIB ${libxfont_2}/lib/libXfont2.so)  #'
+    substituteInPlace unix/Xvnc/CMakeLists.txt --replace 'string(REGEX REPLACE "X11" "fontenc" X11_Fontenc_LIB' 'set(X11_Fontenc_LIB ${libfontenc}/lib/libfontenc.so)  #'
+    substituteInPlace unix/Xvnc/CMakeLists.txt --replace 'string(REGEX REPLACE "X11" "pixman-1" X11_Pixman_LIB' 'set(X11_Pixman_LIB ${pixman}/lib/libpixman-1.so)  #'
+  '';
 
   # Notes:
   # * SSH support does not require `openssh` on PATH, because turbovnc
@@ -70,7 +75,6 @@ stdenv.mkDerivation (finalAttrs: {
   # * Add `enableClient ? true` flag that disables the client GUI
   #   so that the server can be built without openjdk dependency.
   # * Perhaps allow to build the client on non-Linux platforms.
-
   nativeBuildInputs = [
     cmake
     makeWrapper
@@ -104,12 +108,6 @@ stdenv.mkDerivation (finalAttrs: {
     xorgproto
     xtrans # for -DTVNC_SYSTEMX11=1
   ];
-
-  postPatch = ''
-    substituteInPlace unix/Xvnc/CMakeLists.txt --replace 'string(REGEX REPLACE "X11" "Xfont2" X11_Xfont2_LIB' 'set(X11_Xfont2_LIB ${libxfont_2}/lib/libXfont2.so)  #'
-    substituteInPlace unix/Xvnc/CMakeLists.txt --replace 'string(REGEX REPLACE "X11" "fontenc" X11_Fontenc_LIB' 'set(X11_Fontenc_LIB ${libfontenc}/lib/libfontenc.so)  #'
-    substituteInPlace unix/Xvnc/CMakeLists.txt --replace 'string(REGEX REPLACE "X11" "pixman-1" X11_Pixman_LIB' 'set(X11_Pixman_LIB ${pixman}/lib/libpixman-1.so)  #'
-  '';
 
   cmakeFlags = [
     # For the 3D software rendering built into TurboVNC, pass the path
@@ -176,11 +174,11 @@ stdenv.mkDerivation (finalAttrs: {
   passthru.tests.turbovnc-headless-server = nixosTests.turbovnc-headless-server;
 
   meta = {
-    homepage = "https://turbovnc.org/";
-    license = lib.licenses.gpl2Plus;
     description = "High-speed version of VNC derived from TightVNC";
+    homepage = "https://turbovnc.org/";
+    changelog = "https://github.com/TurboVNC/turbovnc/blob/${finalAttrs.version}/ChangeLog.md";
+    license = lib.licenses.gpl2Plus;
     maintainers = with lib.maintainers; [ nh2 ];
     platforms = with lib.platforms; linux;
-    changelog = "https://github.com/TurboVNC/turbovnc/blob/${finalAttrs.version}/ChangeLog.md";
   };
 })

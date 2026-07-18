@@ -32,10 +32,10 @@ stdenv.mkDerivation {
 
   meta = {
     description = "Linear logic programming system";
-    mainProgram = "celf";
     homepage = "https://github.com/clf/celf";
     license = lib.licenses.gpl3Only;
     maintainers = with lib.maintainers; [ bcdarwin ];
     platforms = lib.platforms.unix;
+    mainProgram = "celf";
   };
 }

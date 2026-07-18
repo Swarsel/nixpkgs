@@ -1,15 +1,15 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
-  cmake,
-  pkg-config,
   boost,
+  cmake,
+  geos,
+  gerbv,
   glibmm,
   gtkmm2,
-  gerbv,
-  geos,
   librsvg,
+  pkg-config,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -32,14 +32,6 @@ stdenv.mkDerivation (finalAttrs: {
     pkg-config
   ];
 
-  cmakeFlags = [
-    (lib.cmakeBool "PCB2GCODE_COMPILE_WARNING_AS_ERROR" false)
-  ];
-
-  preConfigure = lib.optionalString stdenv.isDarwin ''
-    export CXXFLAGS="$CXXFLAGS -fpermissive -Wno-error=c++20-extensions -Wno-error=invalid-constexpr"
-  '';
-
   buildInputs = [
     boost
     glibmm
@@ -49,13 +41,23 @@ stdenv.mkDerivation (finalAttrs: {
     librsvg
   ];
 
+  cmakeFlags = [
+    (lib.cmakeBool "PCB2GCODE_COMPILE_WARNING_AS_ERROR" false)
+  ];
+
+  preConfigure = lib.optionalString stdenv.isDarwin ''
+    export CXXFLAGS="$CXXFLAGS -fpermissive -Wno-error=c++20-extensions -Wno-error=invalid-constexpr"
+  '';
+
   meta = {
     description = "Command-line tool for isolation, routing and drilling of PCBs";
+
     longDescription = ''
       pcb2gcode is a command-line software for the isolation, routing and drilling of PCBs.
       It takes Gerber files as input and it outputs gcode files, suitable for the milling of PCBs.
       It also includes an Autoleveller, useful for the automatic dynamic calibration of the milling depth.
     '';
+
     homepage = "https://github.com/pcb2gcode/pcb2gcode";
     license = lib.licenses.gpl3Only;
     maintainers = with lib.maintainers; [ kritnich ];

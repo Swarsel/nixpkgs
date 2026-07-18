@@ -1,14 +1,13 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   poetry-core,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "paperbush";
   version = "0.2.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "trag1c";
@@ -18,12 +17,13 @@ buildPythonPackage (finalAttrs: {
   };
 
   build-system = [ poetry-core ];
+  pyproject = true;
   pythonImportsCheck = [ "paperbush" ];
 
   meta = {
-    changelog = "https://github.com/trag1c/paperbush/blob/${finalAttrs.src.tag}/CHANGELOG.md";
     description = "Super concise argument parsing tool for Python";
     homepage = "https://github.com/trag1c/paperbush";
+    changelog = "https://github.com/trag1c/paperbush/blob/${finalAttrs.src.tag}/CHANGELOG.md";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ sigmanificient ];
   };

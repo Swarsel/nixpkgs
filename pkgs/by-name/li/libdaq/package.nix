@@ -3,9 +3,9 @@
   stdenv,
   fetchFromGitHub,
   autoreconfHook,
-  pkg-config,
   libpcap,
   nix-update-script,
+  pkg-config,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -19,6 +19,12 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-EWWPmM3BJG6Js6RjAU+Z74cn9Xo6QTj7vuO0KgC0iLc=";
   };
 
+  outputs = [
+    "lib"
+    "dev"
+    "out"
+  ];
+
   nativeBuildInputs = [
     autoreconfHook
     pkg-config
@@ -29,16 +35,6 @@ stdenv.mkDerivation (finalAttrs: {
     stdenv.cc.cc # libstdc++
   ];
 
-  outputs = [
-    "lib"
-    "dev"
-    "out"
-  ];
-
-  autoreconfPhase = ''
-    ./bootstrap
-  '';
-
   postInstall = ''
     # remove build directory (/build/**, or /tmp/nix-build-**) from RPATHs
     for f in "$out"/bin/*; do
@@ -47,21 +43,28 @@ stdenv.mkDerivation (finalAttrs: {
     done
   '';
 
+  autoreconfPhase = ''
+    ./bootstrap
+  '';
+
   passthru.updateScript = nix-update-script { };
 
   meta = {
     description = "Data AcQuisition library (libDAQ), for snort packet I/O";
     homepage = "https://www.snort.org";
+    changelog = "https://github.com/snort3/libdaq/releases/tag/v${finalAttrs.version}";
+    license = lib.licenses.gpl2;
+
     maintainers = with lib.maintainers; [
       aycanirican
       brianmcgillion
     ];
-    changelog = "https://github.com/snort3/libdaq/releases/tag/v${finalAttrs.version}";
-    license = lib.licenses.gpl2;
+
+    platforms = with lib.platforms; linux;
+
     outputsToInstall = [
       "lib"
       "dev"
     ];
-    platforms = with lib.platforms; linux;
   };
 })

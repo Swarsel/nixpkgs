@@ -1,12 +1,12 @@
 {
   lib,
-  fetchFromGitHub,
   stdenv,
-  curl,
-  pkg-config,
+  fetchFromGitHub,
   byacc,
-  flex,
+  curl,
   fetchpatch,
+  flex,
+  pkg-config,
 }:
 
 stdenv.mkDerivation rec {
@@ -25,6 +25,7 @@ stdenv.mkDerivation rec {
     byacc
     flex
   ];
+
   buildInputs = [ curl ];
 
   meta = {
@@ -32,8 +33,8 @@ stdenv.mkDerivation rec {
     homepage = "https://herrhotzenplotz.de/gcli/";
     changelog = "https://github.com/herrhotzenplotz/gcli/releases/tag/v${version}";
     license = lib.licenses.bsd2;
-    mainProgram = "gcli";
     maintainers = with lib.maintainers; [ kenran ];
     platforms = lib.platforms.unix;
+    mainProgram = "gcli";
   };
 }

@@ -1,15 +1,15 @@
 {
   lib,
   buildPythonPackage,
+  columnize,
   fetchPypi,
-  hatchling,
+  h5py,
   hatch-requirements-txt,
   hatch-sphinx,
   hatch-vcs,
-  h5py,
+  hatchling,
   lxml,
   numpy,
-  columnize,
   pytestCheckHook,
 }:
 
@@ -19,12 +19,13 @@ let
 in
 buildPythonPackage {
   inherit pname version;
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
     hash = "sha256-HIqEFN0Y+A4C6oF8NcI1puBt4SmyoNoAFobHQcYepnI=";
   };
+
+  nativeCheckInputs = [ pytestCheckHook ];
 
   build-system = [
     hatchling
@@ -38,14 +39,13 @@ buildPythonPackage {
 
   dependencies = [ columnize ];
 
-  nativeCheckInputs = [ pytestCheckHook ];
-
   # need network
   disabledTestPaths = [
     "test/sasdataloader/utest_extension_registry.py::ExtensionRegistryTests::test_compare_remote_file_to_local"
     "test/sasdataloader/utest_sesans.py::sesans_reader::test_full_load"
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "sasdata" ];
 
   meta = {

@@ -9,19 +9,16 @@
 buildPythonPackage rec {
   pname = "looseversion";
   version = "1.3.0";
-  pyproject = true;
 
   src = fetchPypi {
     inherit version pname;
     hash = "sha256-695l8/a7lTGoEBbG/vPrlaYRga3Ee3+UnpwOpHkRZp4=";
   };
 
-  build-system = [ hatchling ];
-
   nativeCheckInputs = [ pytestCheckHook ];
-
+  build-system = [ hatchling ];
   enabledTestPaths = [ "tests.py" ];
-
+  pyproject = true;
   pythonImportsCheck = [ "looseversion" ];
 
   meta = {

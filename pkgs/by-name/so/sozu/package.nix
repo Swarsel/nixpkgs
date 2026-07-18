@@ -1,13 +1,13 @@
 {
   lib,
   stdenv,
-  rustPlatform,
   fetchFromGitHub,
   fetchpatch2,
-  protobuf,
   nix-update-script,
-  testers,
+  protobuf,
+  rustPlatform,
   sozu,
+  testers,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -21,27 +21,26 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-a/Pna2l1gRv4kxIyGUuUHlN+lIQemGjZXwM65Ccc24Y=";
   };
 
-  cargoHash = "sha256-9ZmlUUdtVAvri9v+EJb6vRQ7Yc3FjRwU5I5Xe8je9/c=";
-
   patches = [
     # Fix build with Rust 1.82+ on Darwin: extern blocks must be unsafe.
     (fetchpatch2 {
-      url = "https://github.com/sozu-proxy/sozu/commit/ec83fad967f2606d5d668679e138631a70ec7de5.patch?full_index=1";
       hash = "sha256-chXehutcI4+gDwY1uUPgE4t0fgGOsEHPP8gMsnXNB10=";
+      url = "https://github.com/sozu-proxy/sozu/commit/ec83fad967f2606d5d668679e138631a70ec7de5.patch?full_index=1";
     })
   ];
 
   nativeBuildInputs = [ protobuf ];
-
+  cargoHash = "sha256-9ZmlUUdtVAvri9v+EJb6vRQ7Yc3FjRwU5I5Xe8je9/c=";
   doCheck = false;
 
   passthru = {
-    updateScript = nix-update-script { };
     tests.version = testers.testVersion {
-      package = sozu;
-      command = "sozu --version";
       version = "${finalAttrs.version}";
+      command = "sozu --version";
+      package = sozu;
     };
+
+    updateScript = nix-update-script { };
   };
 
   meta = {

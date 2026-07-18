@@ -1,9 +1,9 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
-  writableTmpDirAsHomeHook,
+  buildGoModule,
   versionCheckHook,
+  writableTmpDirAsHomeHook,
 }:
 
 buildGoModule (finalAttrs: {
@@ -18,8 +18,9 @@ buildGoModule (finalAttrs: {
   };
 
   vendorHash = "sha256-vC5GgJI80HsDIYP0oZZk/Tlvy36QZZZDNxz68EDyb8Y=";
-
   nativeCheckInputs = [ writableTmpDirAsHomeHook ];
+  doInstallCheck = true;
+  nativeInstallCheckInputs = [ versionCheckHook ];
 
   ldflags = [
     "-s"
@@ -27,9 +28,7 @@ buildGoModule (finalAttrs: {
     "-X github.com/yonahd/kor/pkg/utils.Version=${finalAttrs.version}"
   ];
 
-  nativeInstallCheckInputs = [ versionCheckHook ];
   versionCheckProgramArg = "version";
-  doInstallCheck = true;
 
   meta = {
     description = "Golang Tool to discover unused Kubernetes Resources";

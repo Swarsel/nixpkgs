@@ -1,19 +1,18 @@
 {
-  stdenv,
   lib,
+  stdenv,
   buildPythonPackage,
   fetchPypi,
+  py,
+  pytest-benchmark,
+  pytestCheckHook,
   wasmer,
   wasmer-compiler-cranelift,
-  py,
-  pytestCheckHook,
-  pytest-benchmark,
 }:
 
 buildPythonPackage rec {
   pname = "fastdiff";
   version = "0.3.0";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
@@ -38,8 +37,8 @@ buildPythonPackage rec {
     pytest-benchmark
   ];
 
+  format = "setuptools";
   pytestFlags = [ "--benchmark-skip" ];
-
   pythonImportsCheck = [ "fastdiff" ];
 
   meta = {

@@ -2,8 +2,8 @@
   lib,
   fetchFromGitHub,
   buildGoModule,
-  versionCheckHook,
   nix-update-script,
+  versionCheckHook,
 }:
 
 buildGoModule (finalAttrs: {
@@ -17,13 +17,9 @@ buildGoModule (finalAttrs: {
     hash = "sha256-KIlCHOAHShOwrxO9F414PQ07+SzCWhpo8auhyjkuNZA=";
   };
 
-  proxyVendor = true;
   vendorHash = "sha256-uzB98AiJKw9TCbKSdQDiztfw7nIT0mVt80JALAPp2Aw=";
-
-  subPackages = [
-    "cmd/bento"
-    "cmd/serverless/bento-lambda"
-  ];
+  doInstallCheck = true;
+  nativeInstallCheckInputs = [ versionCheckHook ];
 
   ldflags = [
     "-s"
@@ -32,8 +28,12 @@ buildGoModule (finalAttrs: {
     "-X main.Version=${finalAttrs.version}"
   ];
 
-  nativeInstallCheckInputs = [ versionCheckHook ];
-  doInstallCheck = true;
+  proxyVendor = true;
+
+  subPackages = [
+    "cmd/bento"
+    "cmd/serverless/bento-lambda"
+  ];
 
   passthru.updateScript = nix-update-script { };
 

@@ -2,8 +2,8 @@
   lib,
   stdenv,
   fetchurl,
-  makeWrapper,
   jre,
+  makeWrapper,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -27,11 +27,11 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "JavaScript and CSS minifier";
-    mainProgram = "yuicompressor";
     homepage = "http://yui.github.io/yuicompressor/";
-    sourceProvenance = with lib.sourceTypes; [ binaryBytecode ];
     license = lib.licenses.bsd3;
+    sourceProvenance = with lib.sourceTypes; [ binaryBytecode ];
     maintainers = with lib.maintainers; [ jwiegley ];
     platforms = lib.platforms.all;
+    mainProgram = "yuicompressor";
   };
 })

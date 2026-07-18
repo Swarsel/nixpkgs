@@ -1,10 +1,8 @@
 {
   lib,
   stdenv,
-  buildPythonPackage,
-  python,
-  pythonAtLeast,
   arrow-cpp,
+  buildPythonPackage,
   cffi,
   cloudpickle,
   cmake,
@@ -15,9 +13,11 @@
   ninja,
   numpy,
   pandas,
-  pytestCheckHook,
-  pytest-lazy-fixture,
   pkg-config,
+  pytest-lazy-fixture,
+  pytestCheckHook,
+  python,
+  pythonAtLeast,
   scikit-build-core,
   setuptools,
   setuptools-scm,
@@ -28,11 +28,71 @@ let
 in
 
 buildPythonPackage rec {
-  pname = "pyarrow";
   inherit (arrow-cpp) version src;
-  pyproject = true;
+  pname = "pyarrow";
+  buildInputs = [ arrow-cpp ];
 
-  sourceRoot = "${src.name}/python";
+  env = {
+    ARROW_HOME = arrow-cpp;
+    PARQUET_HOME = arrow-cpp;
+    PYARROW_BUILD_TYPE = "release";
+    PYARROW_BUNDLE_ARROW_CPP_HEADERS = zero_or_one false;
+
+    PYARROW_CMAKE_OPTIONS = toString [
+      "-DCMAKE_INSTALL_RPATH=${arrow-cpp}/lib"
+    ];
+
+    PYARROW_WITH_DATASET = zero_or_one true;
+    PYARROW_WITH_FLIGHT = zero_or_one arrow-cpp.enableFlight;
+    PYARROW_WITH_GCS = zero_or_one arrow-cpp.enableGcs;
+    PYARROW_WITH_HDFS = zero_or_one true;
+    PYARROW_WITH_PARQUET = zero_or_one true;
+    PYARROW_WITH_PARQUET_ENCRYPTION = zero_or_one true;
+    PYARROW_WITH_S3 = zero_or_one arrow-cpp.enableS3;
+
+  }
+  // lib.optionalAttrs doCheck {
+    ARROW_TEST_DATA = arrow-cpp.env.ARROW_TEST_DATA;
+  };
+
+  preBuild = ''
+    export PYARROW_PARALLEL=$NIX_BUILD_CORES
+  '';
+
+  doCheck = true;
+
+  nativeCheckInputs = [
+    hypothesis
+    pandas
+    pytestCheckHook
+    pytest-lazy-fixture
+  ];
+
+  checkInputs = [
+    cloudpickle
+    fsspec
+  ];
+
+  preCheck = ''
+    export PARQUET_TEST_DATA="${arrow-cpp.env.PARQUET_TEST_DATA}"
+    shopt -s extglob
+    rm -r pyarrow/!(conftest.py|tests)
+    mv pyarrow/conftest.py pyarrow/tests/parent_conftest.py
+    substituteInPlace pyarrow/tests/conftest.py --replace-fail ..conftest .parent_conftest
+  ''
+  + lib.optionalString stdenv.hostPlatform.isDarwin ''
+    # OSError: [Errno 24] Too many open files
+    ulimit -n 1024
+  '';
+
+  postInstall = ''
+    # copy the pyarrow C++ header files to the appropriate location
+    pyarrow_include="$out/${python.sitePackages}/pyarrow/include"
+    mkdir -p "$pyarrow_include/arrow/python"
+    find "$PWD/pyarrow/src/arrow" -type f -name '*.h' -exec cp {} "$pyarrow_include/arrow/python" \;
+  '';
+
+  __darwinAllowLocalNetworking = true;
 
   build-system = [
     scikit-build-core
@@ -46,65 +106,10 @@ buildPythonPackage rec {
     setuptools-scm
   ];
 
-  buildInputs = [ arrow-cpp ];
-
   dependencies = [
     cffi
     numpy
   ];
-
-  checkInputs = [
-    cloudpickle
-    fsspec
-  ];
-
-  nativeCheckInputs = [
-    hypothesis
-    pandas
-    pytestCheckHook
-    pytest-lazy-fixture
-  ];
-
-  env = {
-    PYARROW_BUILD_TYPE = "release";
-
-    PYARROW_WITH_DATASET = zero_or_one true;
-    PYARROW_WITH_FLIGHT = zero_or_one arrow-cpp.enableFlight;
-    PYARROW_WITH_HDFS = zero_or_one true;
-    PYARROW_WITH_PARQUET = zero_or_one true;
-    PYARROW_WITH_PARQUET_ENCRYPTION = zero_or_one true;
-    PYARROW_WITH_S3 = zero_or_one arrow-cpp.enableS3;
-    PYARROW_WITH_GCS = zero_or_one arrow-cpp.enableGcs;
-    PYARROW_BUNDLE_ARROW_CPP_HEADERS = zero_or_one false;
-
-    PYARROW_CMAKE_OPTIONS = toString [
-      "-DCMAKE_INSTALL_RPATH=${arrow-cpp}/lib"
-    ];
-
-    ARROW_HOME = arrow-cpp;
-    PARQUET_HOME = arrow-cpp;
-
-  }
-  // lib.optionalAttrs doCheck {
-    ARROW_TEST_DATA = arrow-cpp.env.ARROW_TEST_DATA;
-  };
-
-  doCheck = true;
-
-  dontUseCmakeConfigure = true;
-
-  __darwinAllowLocalNetworking = true;
-
-  preBuild = ''
-    export PYARROW_PARALLEL=$NIX_BUILD_CORES
-  '';
-
-  postInstall = ''
-    # copy the pyarrow C++ header files to the appropriate location
-    pyarrow_include="$out/${python.sitePackages}/pyarrow/include"
-    mkdir -p "$pyarrow_include/arrow/python"
-    find "$PWD/pyarrow/src/arrow" -type f -name '*.h' -exec cp {} "$pyarrow_include/arrow/python" \;
-  '';
 
   disabledTestPaths = [
     # These tests require access to s3 via the internet.
@@ -166,18 +171,8 @@ buildPythonPackage rec {
   ];
 
   disabledTests = [ "GcsFileSystem" ];
-
-  preCheck = ''
-    export PARQUET_TEST_DATA="${arrow-cpp.env.PARQUET_TEST_DATA}"
-    shopt -s extglob
-    rm -r pyarrow/!(conftest.py|tests)
-    mv pyarrow/conftest.py pyarrow/tests/parent_conftest.py
-    substituteInPlace pyarrow/tests/conftest.py --replace-fail ..conftest .parent_conftest
-  ''
-  + lib.optionalString stdenv.hostPlatform.isDarwin ''
-    # OSError: [Errno 24] Too many open files
-    ulimit -n 1024
-  '';
+  dontUseCmakeConfigure = true;
+  pyproject = true;
 
   pythonImportsCheck = [
     "pyarrow"
@@ -194,14 +189,18 @@ buildPythonPackage rec {
     "parquet"
   ];
 
+  sourceRoot = "${src.name}/python";
+
   meta = {
     description = "Cross-language development platform for in-memory data";
     homepage = "https://arrow.apache.org/";
     license = lib.licenses.asl20;
-    platforms = lib.platforms.unix;
+
     maintainers = with lib.maintainers; [
       veprbl
       cpcloud
     ];
+
+    platforms = lib.platforms.unix;
   };
 }

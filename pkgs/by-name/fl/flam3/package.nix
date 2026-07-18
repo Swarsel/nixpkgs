@@ -27,8 +27,8 @@ stdenv.mkDerivation {
   ];
 
   meta = {
-    homepage = "https://flam3.com/";
     description = "Cosmic recursive fractal flames";
+
     longDescription = ''
       Flames are algorithmically generated images and animations. The software
       was originally written in 1992 and released as open source, aka free
@@ -36,6 +36,8 @@ stdenv.mkDerivation {
       used to create art and special effects. The shape and color of each image
       is specified by a long string of numbers - a genetic code of sorts.
     '';
+
+    homepage = "https://flam3.com/";
     license = lib.licenses.gpl3Plus;
     maintainers = [ ];
     platforms = lib.platforms.unix;

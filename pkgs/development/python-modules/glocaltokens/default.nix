@@ -1,29 +1,25 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # build system
-  hatchling,
-  hatch-vcs,
-
+  buildPythonPackage,
+  faker,
   # dependencies
   ghome-foyer-api,
   gpsoauth,
   grpcio,
+  hatch-vcs,
+  # build system
+  hatchling,
+  # test dependencies
+  pytestCheckHook,
   requests,
   simplejson,
   zeroconf,
-
-  # test dependencies
-  pytestCheckHook,
-  faker,
 }:
 
 buildPythonPackage rec {
   pname = "glocaltokens";
   version = "0.7.6";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "leikoilja";
@@ -31,6 +27,11 @@ buildPythonPackage rec {
     tag = "v${version}";
     hash = "sha256-+7HpyZUumu1r/UXM4awckjTkpVbCz7MsAJOp2JiJzho=";
   };
+
+  nativeCheckInputs = [
+    pytestCheckHook
+    faker
+  ];
 
   build-system = [
     hatchling
@@ -46,10 +47,7 @@ buildPythonPackage rec {
     zeroconf
   ];
 
-  nativeCheckInputs = [
-    pytestCheckHook
-    faker
-  ];
+  pyproject = true;
 
   pythonImportsCheck = [
     "glocaltokens"
@@ -62,6 +60,7 @@ buildPythonPackage rec {
     homepage = "https://github.com/leikoilja/glocaltokens";
     changelog = "https://github.com/leikoilja/glocaltokens/releases/tag/${src.tag}";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       hensoko
     ];

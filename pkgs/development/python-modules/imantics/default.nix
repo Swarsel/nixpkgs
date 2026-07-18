@@ -1,19 +1,18 @@
 {
-  buildPythonPackage,
-  fetchFromGitHub,
   lib,
-  setuptools,
+  fetchFromGitHub,
+  buildPythonPackage,
+  lxml,
   numpy,
   opencv-python,
-  lxml,
-  xmljson,
   pytestCheckHook,
+  setuptools,
+  xmljson,
 }:
 
 buildPythonPackage {
   pname = "imantics";
   version = "0.1.12";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "jsbroks";
@@ -22,6 +21,7 @@ buildPythonPackage {
     sha256 = "1zv2gj8cbakhh2fyr2611cbqhfk37a56x973ny9n43y70n26pzm8";
   };
 
+  nativeCheckInputs = [ pytestCheckHook ];
   build-system = [ setuptools ];
 
   dependencies = [
@@ -31,8 +31,7 @@ buildPythonPackage {
     xmljson
   ];
 
-  nativeCheckInputs = [ pytestCheckHook ];
-
+  pyproject = true;
   pythonImportsCheck = [ "imantics" ];
 
   meta = {

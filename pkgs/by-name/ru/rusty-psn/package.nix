@@ -1,23 +1,23 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
-  makeDesktopItem,
-  copyDesktopItems,
-  pkg-config,
   cmake,
+  copyDesktopItems,
   fontconfig,
+  freetype,
   glib,
   gtk3,
-  freetype,
-  openssl,
-  libxrandr,
-  libxi,
-  libxcursor,
+  libGL,
   libx11,
   libxcb,
-  libGL,
+  libxcursor,
+  libxi,
   libxkbcommon,
+  libxrandr,
+  makeDesktopItem,
+  openssl,
+  pkg-config,
+  rustPlatform,
   wayland,
   withGui ? false, # build GUI version
 }:
@@ -32,11 +32,6 @@ rustPlatform.buildRustPackage rec {
     tag = "v${version}";
     hash = "sha256-3sy3PBiV7ioRnYwI2vF6lGVj3Q/Ls6GmENyGePCgQ3k=";
   };
-
-  cargoHash = "sha256-orsCExYx9ZGtda13mmFk7665WFwZ7E7rr5wEcDxc+vY=";
-
-  # Tests require network access
-  doCheck = false;
 
   nativeBuildInputs = [
     pkg-config
@@ -66,8 +61,9 @@ rustPlatform.buildRustPackage rec {
     wayland
   ];
 
-  buildNoDefaultFeatures = true;
-  buildFeatures = [ (if withGui then "egui" else "cli") ];
+  cargoHash = "sha256-orsCExYx9ZGtda13mmFk7665WFwZ7E7rr5wEcDxc+vY=";
+  # Tests require network access
+  doCheck = false;
 
   postFixup = ''
     patchelf --set-rpath "${lib.makeLibraryPath buildInputs}" $out/bin/rusty-psn
@@ -76,14 +72,18 @@ rustPlatform.buildRustPackage rec {
     mv $out/bin/rusty-psn $out/bin/rusty-psn-gui
   '';
 
+  buildFeatures = [ (if withGui then "egui" else "cli") ];
+  buildNoDefaultFeatures = true;
+
   desktopItem = lib.optionalString withGui (makeDesktopItem {
-    name = "rusty-psn";
-    desktopName = "rusty-psn";
-    exec = "rusty-psn-gui";
-    comment = "A simple tool to grab updates for PS3 games, directly from Sony's servers using their updates API.";
     categories = [
       "Network"
     ];
+
+    comment = "A simple tool to grab updates for PS3 games, directly from Sony's servers using their updates API.";
+    desktopName = "rusty-psn";
+    exec = "rusty-psn-gui";
+
     keywords = [
       "psn"
       "ps3"
@@ -91,15 +91,18 @@ rustPlatform.buildRustPackage rec {
       "playstation"
       "update"
     ];
+
+    name = "rusty-psn";
   });
+
   desktopItems = lib.optionals withGui [ desktopItem ];
 
   meta = {
     description = "Simple tool to grab updates for PS3 games, directly from Sony's servers using their updates API";
     homepage = "https://github.com/RainbowCookie32/rusty-psn/";
     license = lib.licenses.mit;
-    platforms = [ "x86_64-linux" ];
     maintainers = with lib.maintainers; [ AngryAnt ];
+    platforms = [ "x86_64-linux" ];
     mainProgram = if withGui then "rusty-psn-gui" else "rusty-psn";
   };
 }

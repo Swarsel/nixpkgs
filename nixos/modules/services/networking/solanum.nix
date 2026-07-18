@@ -25,10 +25,7 @@ in
 
     services.solanum = {
 
-      enable = mkEnableOption "Solanum IRC daemon";
-
       config = mkOption {
-        type = types.str;
         default = ''
           serverinfo {
             name = "irc.example.com";
@@ -57,29 +54,38 @@ in
             default_split_user_count = 0;
           };
         '';
+
         description = ''
           Solanum IRC daemon configuration file.
           check <https://github.com/solanum-ircd/solanum/blob/main/doc/reference.conf> for all options.
         '';
+
+        type = types.str;
       };
 
-      openFilesLimit = mkOption {
-        type = types.int;
-        default = 1024;
-        description = ''
-          Maximum number of open files. Limits the clients and server connections.
-        '';
-      };
+      enable = mkEnableOption "Solanum IRC daemon";
 
       motd = mkOption {
-        type = types.nullOr types.lines;
         default = null;
+
         description = ''
           Solanum MOTD text.
 
           Solanum will read its MOTD from `/etc/solanum/ircd.motd`.
           If set, the value of this option will be written to this path.
         '';
+
+        type = types.nullOr types.lines;
+      };
+
+      openFilesLimit = mkOption {
+        default = 1024;
+
+        description = ''
+          Maximum number of open files. Limits the clients and server connections.
+        '';
+
+        type = types.int;
       };
 
     };
@@ -95,14 +101,23 @@ in
         environment.etc."solanum/ircd.conf".source = configFile;
 
         systemd.services.solanum = {
-          description = "Solanum IRC daemon";
           after = [ "network.target" ];
-          wantedBy = [ "multi-user.target" ];
+          description = "Solanum IRC daemon";
           reloadIfChanged = true;
+
           restartTriggers = [
             configFile
           ];
+
           serviceConfig = {
+            DynamicUser = true;
+
+            ExecReload = toString [
+              (lib.getExe' pkgs.util-linux "kill")
+              "-HUP"
+              "$MAINPID"
+            ];
+
             ExecStart = toString [
               (lib.getExe pkgs.solanum)
               "-foreground"
@@ -113,20 +128,17 @@ in
               "-pidfile"
               "/run/solanum/ircd.pid"
             ];
-            ExecReload = toString [
-              (lib.getExe' pkgs.util-linux "kill")
-              "-HUP"
-              "$MAINPID"
-            ];
-            DynamicUser = true;
-            User = "solanum";
-            StateDirectory = "solanum";
-            StateDiectoryMode = "0750";
+
+            LimitNOFILE = "${toString cfg.openFilesLimit}";
             RuntimeDirectory = "solanum";
             RuntimeDirectoryMode = "0700";
+            StateDiectoryMode = "0750";
+            StateDirectory = "solanum";
             UMask = "0027";
-            LimitNOFILE = "${toString cfg.openFilesLimit}";
+            User = "solanum";
           };
+
+          wantedBy = [ "multi-user.target" ];
         };
 
       }

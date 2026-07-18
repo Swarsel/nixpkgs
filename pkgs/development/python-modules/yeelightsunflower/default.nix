@@ -8,18 +8,16 @@
 buildPythonPackage rec {
   pname = "yeelightsunflower";
   version = "0.0.10";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
     hash = "sha256-l4Rl6WSCK68/XBwCndonNu3kePDXfSs/uIXaCkrIT7g==";
   };
 
-  build-system = [ setuptools ];
-
   # Module has no tests
   doCheck = false;
-
+  build-system = [ setuptools ];
+  pyproject = true;
   pythonImportsCheck = [ "yeelightsunflower" ];
 
   meta = {

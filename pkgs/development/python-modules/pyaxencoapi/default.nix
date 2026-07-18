@@ -1,9 +1,9 @@
 {
   lib,
+  fetchFromGitHub,
   aiohttp,
   aioresponses,
   buildPythonPackage,
-  fetchFromGitHub,
   pytest-asyncio,
   pytestCheckHook,
   python-socketio,
@@ -13,7 +13,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "pyaxencoapi";
   version = "1.0.7";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "AXENCO-FR";
@@ -21,6 +20,12 @@ buildPythonPackage (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-Ml58+kstIpqQUXDt/jpZeR8ueu5U3nnH7hiUcZxveAM=";
   };
+
+  nativeCheckInputs = [
+    aioresponses
+    pytest-asyncio
+    pytestCheckHook
+  ];
 
   build-system = [ setuptools ];
 
@@ -30,12 +35,7 @@ buildPythonPackage (finalAttrs: {
   ]
   ++ python-socketio.optional-dependencies.asyncio_client;
 
-  nativeCheckInputs = [
-    aioresponses
-    pytest-asyncio
-    pytestCheckHook
-  ];
-
+  pyproject = true;
   pythonImportsCheck = [ "pyaxencoapi" ];
 
   meta = {

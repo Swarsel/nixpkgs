@@ -1,8 +1,8 @@
 {
-  stdenv,
   lib,
-  buildPythonPackage,
+  stdenv,
   fetchFromGitHub,
+  buildPythonPackage,
   gdb,
   pytest,
   setuptools,
@@ -11,7 +11,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "pygdbmi";
   version = "0.11.0.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "cs01";
@@ -20,21 +19,22 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-JqEDN8Pg/JttyYQbwkxKkLYuxVnvV45VlClD23eaYyc=";
   };
 
-  build-system = [ setuptools ];
+  # tests require gcc for some reason
+  doCheck = !stdenv.hostPlatform.isDarwin;
 
   nativeCheckInputs = [
     gdb
     pytest
   ];
 
-  # tests require gcc for some reason
-  doCheck = !stdenv.hostPlatform.isDarwin;
-
   preCheck = ''
     # tries to execute flake8,
     # which is likely to break on flake8 updates
     echo "def main(): return 0" > tests/static_tests.py
   '';
+
+  build-system = [ setuptools ];
+  pyproject = true;
 
   meta = {
     description = "Parse gdb machine interface output with Python";

@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   nix-update-script,
 }:
 
@@ -18,11 +18,6 @@ buildGoModule (finalAttrs: {
 
   vendorHash = "sha256-2H9YRVCaari47ppSkcQYg/P4Dzb4k5PLjKAtfp39NR8=";
 
-  postInstall = ''
-    mkdir -p $out/share/doc/$name
-    cp README.md $out/share/doc/$name
-  '';
-
   checkPhase = ''
     output=$(echo NONE | ../go/bin/passphrase2pgp -a -u NONE -i /dev/stdin | sha256sum)
     if [[ "$output" != "23f59f4346f35e2feca6ef703ea64973524dec365ea672f23e7afe79be1049dd  -" ]] ; then
@@ -31,13 +26,18 @@ buildGoModule (finalAttrs: {
     fi
   '';
 
+  postInstall = ''
+    mkdir -p $out/share/doc/$name
+    cp README.md $out/share/doc/$name
+  '';
+
   passthru.updateScript = nix-update-script { };
 
   meta = {
     description = "Predictable, passphrase-based PGP key generator";
-    mainProgram = "passphrase2pgp";
     homepage = "https://github.com/skeeto/passphrase2pgp";
     license = lib.licenses.unlicense;
     maintainers = with lib.maintainers; [ kaction ];
+    mainProgram = "passphrase2pgp";
   };
 })

@@ -2,19 +2,19 @@
   lib,
   stdenv,
   fetchurl,
+  copyDesktopItems,
   glib,
   jre,
-  unzip,
-  makeWrapper,
   makeDesktopItem,
-  copyDesktopItems,
+  makeWrapper,
+  unzip,
   wrapGAppsHook3,
 }:
 
 let
   icon = fetchurl {
-    url = "https://imagej.net/media/icons/imagej.png";
     sha256 = "sha256-nU2nWI1wxZB/xlOKsZzdUjj+qiCTjO6GwEKYgZ5Risg=";
+    url = "https://imagej.net/media/icons/imagej.png";
   };
 in
 stdenv.mkDerivation (finalAttrs: {
@@ -25,32 +25,15 @@ stdenv.mkDerivation (finalAttrs: {
     url = "https://wsr.imagej.net/distros/cross-platform/ij${finalAttrs.version}.zip";
     sha256 = "sha256-MGuUdUDuW3s/yGC68rHr6xxzmYScUjdXRawDpc1UQqw=";
   };
+
   nativeBuildInputs = [
     copyDesktopItems
     makeWrapper
     unzip
     wrapGAppsHook3
   ];
+
   buildInputs = [ glib ];
-  dontWrapGApps = true;
-
-  desktopItems = lib.optionals stdenv.hostPlatform.isLinux [
-    (makeDesktopItem {
-      name = "ImageJ";
-      desktopName = "ImageJ";
-      icon = "imagej";
-      categories = [
-        "Science"
-        "Utility"
-        "Graphics"
-      ];
-      exec = "imagej";
-    })
-  ];
-
-  passthru = {
-    inherit jre;
-  };
 
   # JAR files that are intended to be used by other packages
   # should go to $out/share/java.
@@ -75,18 +58,41 @@ stdenv.mkDerivation (finalAttrs: {
     install -Dm644 ${icon} $out/share/icons/hicolor/128x128/apps/imagej.png
   '';
 
+  desktopItems = lib.optionals stdenv.hostPlatform.isLinux [
+    (makeDesktopItem {
+      categories = [
+        "Science"
+        "Utility"
+        "Graphics"
+      ];
+
+      desktopName = "ImageJ";
+      exec = "imagej";
+      icon = "imagej";
+      name = "ImageJ";
+    })
+  ];
+
+  dontWrapGApps = true;
+
+  passthru = {
+    inherit jre;
+  };
+
   meta = {
-    homepage = "https://imagej.nih.gov/ij/";
     description = "Image processing and analysis in Java";
+
     longDescription = ''
       ImageJ is a public domain Java image processing program
       inspired by NIH Image for the Macintosh.
       It runs on any computer with a Java 1.4 or later virtual machine.
     '';
-    sourceProvenance = with lib.sourceTypes; [ binaryBytecode ];
+
+    homepage = "https://imagej.nih.gov/ij/";
     license = lib.licenses.publicDomain;
-    platforms = lib.platforms.unix;
+    sourceProvenance = with lib.sourceTypes; [ binaryBytecode ];
     maintainers = with lib.maintainers; [ yuriaisaka ];
+    platforms = lib.platforms.unix;
     mainProgram = "imagej";
   };
 })

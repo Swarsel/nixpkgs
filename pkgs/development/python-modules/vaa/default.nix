@@ -1,22 +1,21 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  flit-core,
-  pytestCheckHook,
+  buildPythonPackage,
   cerberus,
   django,
   djangorestframework,
+  email-validator,
+  flit-core,
   marshmallow,
   pyschemes,
+  pytestCheckHook,
   wtforms,
-  email-validator,
 }:
 
 buildPythonPackage rec {
   pname = "vaa";
   version = "0.2.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "life4";
@@ -44,6 +43,7 @@ buildPythonPackage rec {
     email-validator
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "vaa" ];
 
   meta = {

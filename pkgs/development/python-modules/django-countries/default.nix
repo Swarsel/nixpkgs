@@ -1,27 +1,23 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # build-system
-  uv-build,
-
   # dependencies
   asgiref,
-  typing-extensions,
-
+  buildPythonPackage,
   # tests
   django,
   djangorestframework,
   graphene-django,
-  pytestCheckHook,
   pytest-django,
+  pytestCheckHook,
+  typing-extensions,
+  # build-system
+  uv-build,
 }:
 
 buildPythonPackage rec {
   pname = "django-countries";
   version = "8.2.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "SmileyChris";
@@ -35,13 +31,6 @@ buildPythonPackage rec {
       --replace-fail "uv_build>=0.9.6,<0.10.0" uv_build
   '';
 
-  build-system = [ uv-build ];
-
-  dependencies = [
-    asgiref
-    typing-extensions
-  ];
-
   nativeCheckInputs = [
     django
     djangorestframework
@@ -50,12 +39,23 @@ buildPythonPackage rec {
     pytest-django
   ];
 
+  build-system = [ uv-build ];
+
+  dependencies = [
+    asgiref
+    typing-extensions
+  ];
+
+  pyproject = true;
+
   meta = {
     description = "Provides a country field for Django models";
+
     longDescription = ''
       A Django application that provides country choices for use with
       forms, flag icons static files, and a country field for models.
     '';
+
     homepage = "https://github.com/SmileyChris/django-countries";
     changelog = "https://github.com/SmileyChris/django-countries/blob/v${version}/CHANGES.md";
     license = lib.licenses.mit;

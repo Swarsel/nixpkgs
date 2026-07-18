@@ -1,11 +1,11 @@
 {
   lib,
-  stdenvNoCC,
   fetchFromGitHub,
   gnome-icon-theme,
   hicolor-icon-theme,
-  pantheon,
   kdePackages,
+  pantheon,
+  stdenvNoCC,
 }:
 
 stdenvNoCC.mkDerivation (finalAttrs: {
@@ -19,22 +19,19 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     hash = "sha256-+n+GN5sCcWTyAigtgyudliOTulP7ECoOCYdm01trokU=";
   };
 
-  propagatedBuildInputs = [
-    kdePackages.breeze-icons
-    pantheon.elementary-icon-theme
-    gnome-icon-theme
-    hicolor-icon-theme
-  ];
-
-  dontDropIconThemeCache = true;
-  dontWrapQtApps = true;
-
   postPatch = ''
     patchShebangs configure
 
     substituteInPlace configure \
       --replace 'DISTRO=$(format "$(lsb_release -si 2>/dev/null)")' 'DISTRO=nixos'
   '';
+
+  propagatedBuildInputs = [
+    kdePackages.breeze-icons
+    pantheon.elementary-icon-theme
+    gnome-icon-theme
+    hicolor-icon-theme
+  ];
 
   installPhase = ''
     runHook preInstall
@@ -45,14 +42,19 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  dontDropIconThemeCache = true;
+  dontWrapQtApps = true;
+
   meta = {
     description = "Icon theme inspired by macOS and Google's Material Design";
     homepage = "https://github.com/keeferrourke/la-capitaine-icon-theme";
+
     license = with lib.licenses; [
       gpl3Plus
       mit
     ];
-    platforms = lib.platforms.linux;
+
     maintainers = with lib.maintainers; [ romildo ];
+    platforms = lib.platforms.linux;
   };
 })

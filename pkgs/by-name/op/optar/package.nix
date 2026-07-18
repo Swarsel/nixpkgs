@@ -15,10 +15,6 @@ stdenv.mkDerivation {
     sha256 = "10lr31k3xfcpa6vxkbl3abph7j3gks2210489khnnzmhmfdnm1a4";
   };
 
-  buildInputs = [ libpng ];
-
-  enableParallelBuilding = true;
-
   postPatch = ''
     substituteInPlace Makefile \
       --replace /usr/local $out
@@ -27,11 +23,14 @@ stdenv.mkDerivation {
       --replace 'convert ' "${lib.getBin imagemagick}/bin/convert "
   '';
 
+  buildInputs = [ libpng ];
   env.NIX_CFLAGS_COMPILE = toString [ "-Wno-error=implicit-int" ];
 
   preInstall = ''
     mkdir -p $out/bin
   '';
+
+  enableParallelBuilding = true;
 
   meta = {
     description = "OPTical ARchiver - it's a codec for encoding data on paper";

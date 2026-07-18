@@ -1,9 +1,9 @@
 {
-  buildLua,
+  lib,
   fetchFromGitHub,
+  buildLua,
   curl,
   unstableGitUpdater,
-  lib,
 }:
 
 buildLua rec {
@@ -27,7 +27,7 @@ buildLua rec {
   meta = {
     description = "Userscript that allows you to play 'up next'/recommended youtube videos";
     homepage = "https://github.com/cvzi/mpv-youtube-upnext";
-    maintainers = with lib.maintainers; [ bddvlpr ];
     license = lib.licenses.unfree;
+    maintainers = with lib.maintainers; [ bddvlpr ];
   };
 }

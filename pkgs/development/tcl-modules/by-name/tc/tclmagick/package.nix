@@ -1,8 +1,8 @@
 {
   lib,
-  mkTclDerivation,
   fetchzip,
   graphicsmagick,
+  mkTclDerivation,
   tcl,
   tk,
 }:
@@ -16,8 +16,6 @@ mkTclDerivation rec {
     hash = "sha256-CpZztiBF0HqH4XWIAyE9IbZVpBcgrDzyASv47wTneQ0=";
   };
 
-  sourceRoot = src.name + "/TclMagick";
-
   buildInputs = [
     graphicsmagick
     tk
@@ -29,6 +27,7 @@ mkTclDerivation rec {
   ];
 
   doInstallCheck = true;
+  sourceRoot = src.name + "/TclMagick";
 
   meta = {
     description = "Tcl and Tk Interfaces to GraphicsMagick and ImageMagick";

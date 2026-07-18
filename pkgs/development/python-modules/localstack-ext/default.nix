@@ -1,13 +1,13 @@
 {
   lib,
   buildPythonPackage,
-  fetchPypi,
-  setuptools,
-  setuptools-scm,
   click,
   dill,
   dnslib,
   dnspython,
+  fetchPypi,
+  # use for testing promoted localstack
+  pkgs,
   plux,
   pyaes,
   pyjwt,
@@ -17,33 +17,28 @@
   pyyaml,
   requests,
   rich,
-  tabulate,
   semver,
-
-  # use for testing promoted localstack
-  pkgs,
+  setuptools,
+  setuptools-scm,
+  tabulate,
 }:
 
 buildPythonPackage rec {
   pname = "localstack-ext";
   version = "4.12.0";
-  pyproject = true;
 
   src = fetchPypi {
-    pname = "localstack_ext";
     inherit version;
     hash = "sha256-AQrG6iRTBarinrGgJeLr5OYguuN7KWyxRUYNMHz4mlE=";
+    pname = "localstack_ext";
   };
+
+  # No tests in repo
+  doCheck = false;
 
   build-system = [
     setuptools
     setuptools-scm
-  ];
-
-  pythonRemoveDeps = [
-    # Avoid circular dependency
-    "localstack"
-    "build"
   ];
 
   dependencies = [
@@ -65,10 +60,14 @@ buildPythonPackage rec {
   ]
   ++ python-jose.optional-dependencies.cryptography;
 
+  pyproject = true;
   pythonImportsCheck = [ "localstack" ];
 
-  # No tests in repo
-  doCheck = false;
+  pythonRemoveDeps = [
+    # Avoid circular dependency
+    "localstack"
+    "build"
+  ];
 
   passthru.tests = {
     inherit (pkgs) localstack;

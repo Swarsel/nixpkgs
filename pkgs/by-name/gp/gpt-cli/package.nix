@@ -1,14 +1,13 @@
 {
   lib,
-  python3Packages,
   fetchFromGitHub,
+  python3Packages,
   versionCheckHook,
 }:
 
 python3Packages.buildPythonApplication (finalAttrs: {
   pname = "gpt-cli";
   version = "0.4.3";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "kharvd";
@@ -17,12 +16,19 @@ python3Packages.buildPythonApplication (finalAttrs: {
     hash = "sha256-BNSMxf3rhKieXYnFqVdpiHmNCDjotJUflwa6mAgsVCc=";
   };
 
+  nativeCheckInputs =
+    with python3Packages;
+    [
+      pytestCheckHook
+    ]
+    ++ [
+      versionCheckHook
+    ];
+
   build-system = with python3Packages; [
     pip
     setuptools
   ];
-
-  pythonRelaxDeps = true;
 
   dependencies = with python3Packages; [
     anthropic
@@ -40,15 +46,8 @@ python3Packages.buildPythonApplication (finalAttrs: {
     typing-extensions
   ];
 
-  nativeCheckInputs =
-    with python3Packages;
-    [
-      pytestCheckHook
-    ]
-    ++ [
-      versionCheckHook
-    ];
-
+  pyproject = true;
+  pythonRelaxDeps = true;
   versionCheckProgram = "${placeholder "out"}/bin/gpt";
 
   meta = {

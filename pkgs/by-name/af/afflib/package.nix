@@ -2,18 +2,18 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  zlib,
+  autoreconfHook,
   curl,
   expat,
   fuse3,
   openssl,
-  autoreconfHook,
   python3,
+  zlib,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
-  version = "3.7.22";
   pname = "afflib";
+  version = "3.7.22";
 
   src = fetchFromGitHub {
     owner = "sshock";
@@ -23,6 +23,7 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   nativeBuildInputs = [ autoreconfHook ];
+
   buildInputs = [
     zlib
     curl
@@ -35,11 +36,11 @@ stdenv.mkDerivation (finalAttrs: {
   env.CFLAGS = lib.optionalString stdenv.hostPlatform.isDarwin "-DFUSE_DARWIN_ENABLE_EXTENSIONS=0";
 
   meta = {
-    homepage = "http://afflib.sourceforge.net/";
     description = "Advanced forensic format library";
-    platforms = lib.platforms.unix;
+    homepage = "http://afflib.sourceforge.net/";
     license = lib.licenses.bsdOriginal;
     maintainers = [ lib.maintainers.raskin ];
+    platforms = lib.platforms.unix;
     downloadPage = "https://github.com/sshock/AFFLIBv3/tags";
   };
 })

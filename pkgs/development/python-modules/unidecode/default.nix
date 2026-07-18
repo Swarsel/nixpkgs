@@ -1,16 +1,15 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
+  nix-update-script,
   pytestCheckHook,
   setuptools,
-  nix-update-script,
 }:
 
 buildPythonPackage rec {
   pname = "unidecode";
   version = "1.4.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "avian2";
@@ -20,9 +19,8 @@ buildPythonPackage rec {
   };
 
   nativeBuildInputs = [ setuptools ];
-
   nativeCheckInputs = [ pytestCheckHook ];
-
+  pyproject = true;
   pythonImportsCheck = [ "unidecode" ];
 
   passthru.updateScript = nix-update-script {
@@ -34,10 +32,10 @@ buildPythonPackage rec {
 
   meta = {
     description = "ASCII transliterations of Unicode text";
-    mainProgram = "unidecode";
     homepage = "https://github.com/avian2/unidecode";
     changelog = "https://github.com/avian2/unidecode/blob/unidecode-${version}/ChangeLog";
     license = lib.licenses.gpl2Plus;
     maintainers = [ ];
+    mainProgram = "unidecode";
   };
 }

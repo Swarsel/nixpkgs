@@ -1,9 +1,9 @@
 {
+  lib,
   fetchFromGitHub,
   gnupg,
   gpgme,
   installShellFiles,
-  lib,
   libgit2,
   libgpg-error,
   lua5_4,
@@ -17,7 +17,6 @@
 }:
 rustPlatform.buildRustPackage (finalAttrs: {
   pname = "lux-cli";
-
   version = "0.36.1";
 
   src = fetchFromGitHub {
@@ -26,16 +25,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-260gORAxU0l3gxv4ojUSmdNgHvdLpQNPdLkn8ze4HGA=";
   };
-
-  buildAndTestSubdir = "lux-cli";
-
-  cargoHash = "sha256-P9XonyY+gC0ni8WqkMPWJW6AjU4EBB7BEjxZ3U/q2qM=";
-
-  nativeInstallCheckInputs = [
-    versionCheckHook
-  ];
-  versionCheckProgram = "${placeholder "out"}/bin/${finalAttrs.meta.mainProgram}";
-  doInstallCheck = true;
 
   nativeBuildInputs = [
     installShellFiles
@@ -53,45 +42,61 @@ rustPlatform.buildRustPackage (finalAttrs: {
     openssl
   ];
 
+  cargoHash = "sha256-P9XonyY+gC0ni8WqkMPWJW6AjU4EBB7BEjxZ3U/q2qM=";
+
   env = {
     LIBGIT2_NO_VENDOR = 1;
     LIBSSH2_SYS_USE_PKG_CONFIG = 1;
     LUX_SKIP_IMPURE_TESTS = 1; # Disable impure unit tests
   };
 
-  cargoTestFlags = [
-    "--lib" # Disable impure integration tests
-  ];
+  postBuild = ''
+    cargo xtask dist-man
+    cargo xtask dist-completions
+  '';
 
   nativeCheckInputs = [
     lua5_4
     nix
   ];
 
-  postBuild = ''
-    cargo xtask dist-man
-    cargo xtask dist-completions
-  '';
-
   postInstall = ''
     installManPage target/dist/*.1
     installShellCompletion target/dist/lx.{bash,fish} --zsh target/dist/_lx
   '';
 
+  doInstallCheck = true;
+
+  nativeInstallCheckInputs = [
+    versionCheckHook
+  ];
+
+  buildAndTestSubdir = "lux-cli";
+
+  cargoTestFlags = [
+    "--lib" # Disable impure integration tests
+  ];
+
+  versionCheckProgram = "${placeholder "out"}/bin/${finalAttrs.meta.mainProgram}";
+
   meta = {
     description = "Luxurious package manager for Lua";
+
     longDescription = ''
       A modern package manager for Lua.
       compatible with luarocks.org and the Rockspec specification,
       with first-class support for Nix and Neovim.
     '';
+
     homepage = "https://lux.lumen-labs.org/";
     changelog = "https://github.com/lumen-oss/lux/blob/${finalAttrs.src.tag}/CHANGELOG.md";
     license = lib.licenses.lgpl3Plus;
+
     maintainers = with lib.maintainers; [
       mrcjkb
       ALameLlama
     ];
+
     platforms = lib.platforms.all;
     mainProgram = "lx";
   };

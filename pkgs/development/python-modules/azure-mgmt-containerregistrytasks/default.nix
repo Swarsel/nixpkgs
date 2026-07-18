@@ -1,9 +1,9 @@
 {
   lib,
-  buildPythonPackage,
-  fetchPypi,
   azure-common,
   azure-mgmt-core,
+  buildPythonPackage,
+  fetchPypi,
   isodate,
   setuptools,
   typing-extensions,
@@ -12,14 +12,15 @@
 buildPythonPackage rec {
   pname = "azure-mgmt-containerregistrytasks";
   version = "1.0.0b1";
-  pyproject = true;
 
   src = fetchPypi {
-    pname = "azure_mgmt_containerregistrytasks";
     inherit version;
     hash = "sha256-1nMN1cm/yp/fD+D5M3BtPH+4VcoQxWhQZQsHDpxsr1E=";
+    pname = "azure_mgmt_containerregistrytasks";
   };
 
+  # no tests included
+  doCheck = false;
   build-system = [ setuptools ];
 
   dependencies = [
@@ -29,8 +30,7 @@ buildPythonPackage rec {
     typing-extensions
   ];
 
-  # no tests included
-  doCheck = false;
+  pyproject = true;
 
   pythonImportsCheck = [
     "azure.mgmt.containerregistrytasks"

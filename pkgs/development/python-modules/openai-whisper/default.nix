@@ -3,34 +3,28 @@
   stdenv,
   fetchFromGitHub,
   buildPythonPackage,
-  replaceVars,
-
-  # build-system
-  setuptools,
-
   # runtime
   ffmpeg-headless,
-
   # dependencies
   more-itertools,
   numba,
   numpy,
-  triton,
+  # tests
+  pytestCheckHook,
+  replaceVars,
+  scipy,
+  # build-system
+  setuptools,
   tiktoken,
   torch,
   tqdm,
-
-  # tests
-  pytestCheckHook,
-  scipy,
+  triton,
   writableTmpDirAsHomeHook,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "whisper";
   version = "20250625";
-  pyproject = true;
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "openai";
@@ -45,6 +39,13 @@ buildPythonPackage (finalAttrs: {
     })
   ];
 
+  nativeCheckInputs = [
+    pytestCheckHook
+    scipy
+    writableTmpDirAsHomeHook
+  ];
+
+  __structuredAttrs = true;
   build-system = [ setuptools ];
 
   dependencies = [
@@ -56,12 +57,6 @@ buildPythonPackage (finalAttrs: {
     tqdm
   ]
   ++ lib.optionals (lib.meta.availableOn stdenv.hostPlatform triton) [ triton ];
-
-  nativeCheckInputs = [
-    pytestCheckHook
-    scipy
-    writableTmpDirAsHomeHook
-  ];
 
   disabledTests = [
     # requires network access to download models
@@ -76,12 +71,14 @@ buildPythonPackage (finalAttrs: {
     "test_dtw"
   ];
 
+  pyproject = true;
+
   meta = {
-    changelog = "https://github.com/openai/whisper/blob/${finalAttrs.src.tag}/CHANGELOG.md";
     description = "General-purpose speech recognition model";
-    mainProgram = "whisper";
     homepage = "https://github.com/openai/whisper";
+    changelog = "https://github.com/openai/whisper/blob/${finalAttrs.src.tag}/CHANGELOG.md";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ MayNiklas ];
+    mainProgram = "whisper";
   };
 })

@@ -2,10 +2,11 @@
   lib,
   stdenv,
   fetchurl,
-  fetchpatch2,
   alsa-lib,
   boost,
   bzip2,
+  capnproto,
+  fetchpatch2,
   fftw,
   fftwFloat,
   libfishsound,
@@ -15,17 +16,16 @@
   libmad,
   liboggz,
   libpulseaudio,
+  libsForQt5,
   libsamplerate,
   libsndfile,
   lrdf,
   opusfile,
+  pkg-config,
   portaudio,
   rubberband,
   serd,
   sord,
-  capnproto,
-  libsForQt5,
-  pkg-config,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -39,18 +39,26 @@ stdenv.mkDerivation (finalAttrs: {
 
   patches = [
     (fetchpatch2 {
-      url = "https://github.com/sonic-visualiser/svcore/commit/5a7b517e43b7f0b3f03b7fc3145102cf4e5b0ffc.patch?full_index=1";
-      stripLen = 1;
       extraPrefix = "svcore/";
       hash = "sha256-ReFOGRyM7IXKOUuzNoGIVX+C+zMz3/fftQN7k5BHp0k=";
+      stripLen = 1;
+      url = "https://github.com/sonic-visualiser/svcore/commit/5a7b517e43b7f0b3f03b7fc3145102cf4e5b0ffc.patch?full_index=1";
     })
     ./match-vamp.patch
     (fetchpatch2 {
-      url = "https://github.com/piper-audio/piper-vamp-cpp/commit/6f16a09b78b995b3cf2844f00033bde90e5e0936.patch?full_index=1";
-      stripLen = 1;
       extraPrefix = "piper-vamp-cpp/";
       hash = "sha256-G9O9t1Niesffj4bDFO0q8KMgygTdYJUVHkq/7nkGSRk=";
+      stripLen = 1;
+      url = "https://github.com/piper-audio/piper-vamp-cpp/commit/6f16a09b78b995b3cf2844f00033bde90e5e0936.patch?full_index=1";
     })
+  ];
+
+  strictDeps = true;
+
+  nativeBuildInputs = [
+    capnproto # capnp
+    libsForQt5.wrapQtAppsHook
+    pkg-config
   ];
 
   buildInputs = [
@@ -79,27 +87,19 @@ stdenv.mkDerivation (finalAttrs: {
     sord
   ];
 
-  nativeBuildInputs = [
-    capnproto # capnp
-    libsForQt5.wrapQtAppsHook
-    pkg-config
-  ];
-
-  strictDeps = true;
-
-  enableParallelBuilding = true;
-
   # comment out the tests
   preConfigure = ''
     sed -i 's/sub_test_svcore_/#sub_test_svcore_/' sonic-lineup.pro
   '';
 
+  enableParallelBuilding = true;
+
   meta = {
     description = "Comparative visualisation of related audio recordings";
-    mainProgram = "sonic-lineup";
     homepage = "https://www.sonicvisualiser.org/sonic-lineup/";
     license = lib.licenses.gpl2Plus;
     maintainers = with lib.maintainers; [ vandenoever ];
     platforms = lib.platforms.linux;
+    mainProgram = "sonic-lineup";
   };
 })

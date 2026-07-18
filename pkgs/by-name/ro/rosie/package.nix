@@ -16,10 +16,12 @@ stdenv.mkDerivation (finalAttrs: {
     fetchSubmodules = true;
   };
 
-  postUnpack = ''
-    # The Makefile calls git to update submodules, unless this file exists
-    touch ${finalAttrs.src.name}/submodules/~~present~~
-  '';
+  buildInputs = [
+    libbsd
+    readline
+  ];
+
+  makeFlags = [ "DESTDIR=${placeholder "out"}" ];
 
   preConfigure = ''
     patchShebangs src/build_info.sh
@@ -48,19 +50,17 @@ stdenv.mkDerivation (finalAttrs: {
   # librosie.so is dlopen'ed , so we disable ELF patching to preserve RUNPATH .
   dontPatchELF = true;
 
-  makeFlags = [ "DESTDIR=${placeholder "out"}" ];
-
-  buildInputs = [
-    libbsd
-    readline
-  ];
+  postUnpack = ''
+    # The Makefile calls git to update submodules, unless this file exists
+    touch ${finalAttrs.src.name}/submodules/~~present~~
+  '';
 
   meta = {
-    homepage = "https://rosie-lang.org";
     description = "Tools for searching using parsing expression grammars";
-    mainProgram = "rosie";
+    homepage = "https://rosie-lang.org";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ kovirobi ];
     platforms = with lib.platforms; linux ++ darwin;
+    mainProgram = "rosie";
   };
 })

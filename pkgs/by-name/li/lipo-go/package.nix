@@ -1,10 +1,10 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
-  versionCheckHook,
-  nix-update-script,
+  buildGoModule,
   lipo-go,
+  nix-update-script,
+  versionCheckHook,
 }:
 buildGoModule (finalAttrs: {
   pname = "lipo-go";
@@ -16,6 +16,7 @@ buildGoModule (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-WLk6heSnXZjZ6PZWEiUXxx8M5t8EgjpEsTRLeCTzcr8=";
   };
+
   vendorHash = "sha256-7M6CRxJd4fgYQLJDkNa3ds3f7jOp3dyloOZtwMtCBQk=";
 
   buildPhase = ''
@@ -26,13 +27,14 @@ buildGoModule (finalAttrs: {
     runHook postBuild
   '';
 
+  doInstallCheck = true;
+
   nativeInstallCheckInputs = [
     versionCheckHook
   ];
+
   versionCheckProgram = "${placeholder "out"}/bin/lipo";
   versionCheckProgramArg = "-version";
-  doInstallCheck = true;
-
   passthru.updateScript = nix-update-script { };
 
   meta = {

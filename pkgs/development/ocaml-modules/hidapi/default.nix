@@ -1,18 +1,16 @@
 {
-  pkgs,
   lib,
   fetchFromGitHub,
-  buildDunePackage,
-  pkg-config,
-  dune-configurator,
   bigstring,
+  buildDunePackage,
+  dune-configurator,
+  pkg-config,
+  pkgs,
 }:
 
 buildDunePackage (finalAttrs: {
   pname = "hidapi";
   version = "1.2.1";
-
-  duneVersion = "3";
 
   src = fetchFromGitHub {
     owner = "vbmithr";
@@ -21,16 +19,17 @@ buildDunePackage (finalAttrs: {
     hash = "sha256-upygm5G46C65lxaiI6kBOzLrWxzW9qWb6efN/t58SRg=";
   };
 
-  minimalOCamlVersion = "4.03";
-
   nativeBuildInputs = [ pkg-config ];
+
   buildInputs = [
     pkgs.hidapi
     dune-configurator
   ];
-  propagatedBuildInputs = [ bigstring ];
 
+  propagatedBuildInputs = [ bigstring ];
   doCheck = true;
+  duneVersion = "3";
+  minimalOCamlVersion = "4.03";
 
   meta = {
     description = "Bindings to Signal11's hidapi library";

@@ -1,12 +1,12 @@
 {
   lib,
   stdenv,
+  fetchFromGitHub,
+  boost,
   cmake,
   gmp,
   mpfr,
   zlib,
-  boost,
-  fetchFromGitHub,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -20,6 +20,7 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-TW3OSBw8ok64kZedsXYjkO2eFqr0LH8uvrOsi3bwQC4=";
   };
 
+  strictDeps = true;
   nativeBuildInputs = [ cmake ];
 
   buildInputs = [
@@ -29,17 +30,15 @@ stdenv.mkDerivation (finalAttrs: {
     zlib
   ];
 
-  strictDeps = true;
-
   doCheck = true;
 
   meta = {
-    homepage = "https://soplex.zib.de/";
     description = "Sequential object-oriented simPlex";
-    license = with lib.licenses; [ asl20 ];
-    mainProgram = "soplex";
-    maintainers = with lib.maintainers; [ pmeinhold ];
+    homepage = "https://soplex.zib.de/";
     changelog = "https://soplex.zib.de/doc-${finalAttrs.version}/html/CHANGELOG.php";
+    license = with lib.licenses; [ asl20 ];
+    maintainers = with lib.maintainers; [ pmeinhold ];
     platforms = lib.platforms.unix;
+    mainProgram = "soplex";
   };
 })

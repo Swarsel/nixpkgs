@@ -1,10 +1,10 @@
 {
-  stdenvNoCC,
   lib,
   fetchurl,
-  testers,
   installShellFiles,
   platformsh,
+  stdenvNoCC,
+  testers,
 }:
 
 let
@@ -28,18 +28,12 @@ let
 
 in
 stdenvNoCC.mkDerivation (finalAttrs: {
-  pname = "platformsh";
   inherit (versions) version;
-
-  nativeBuildInputs = [ installShellFiles ];
-
+  pname = "platformsh";
   # run ./update
   src = fetchurl { inherit hash url; };
+  nativeBuildInputs = [ installShellFiles ];
 
-  dontConfigure = true;
-  dontBuild = true;
-
-  sourceRoot = ".";
   installPhase = ''
     runHook preInstall
 
@@ -51,27 +45,35 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  dontBuild = true;
+  dontConfigure = true;
+  sourceRoot = ".";
+
   passthru = {
-    updateScript = ./update.sh;
     tests.version = testers.testVersion {
       inherit (finalAttrs) version;
       package = platformsh;
     };
+
+    updateScript = ./update.sh;
   };
 
   meta = {
     description = "Unified tool for managing your Platform.sh services from the command line";
     homepage = "https://github.com/platformsh/cli";
     license = lib.licenses.mit;
-    mainProgram = "platform";
+    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
+
     maintainers = with lib.maintainers; [
       spk
     ];
+
     platforms = [
       "x86_64-linux"
       "aarch64-linux"
       "aarch64-darwin"
     ];
-    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
+
+    mainProgram = "platform";
   };
 })

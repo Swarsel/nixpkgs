@@ -3,20 +3,20 @@
   stdenv,
   fetchurl,
   SDL2,
-  ftgl,
-  autoreconfHook,
-  pkg-config,
-  libpng,
-  libjpeg,
-  pcre2,
   SDL2_image,
-  freetype,
-  glew,
-  libGLU,
-  libGL,
-  libx11,
+  autoreconfHook,
   boost,
+  freetype,
+  ftgl,
+  glew,
   glm,
+  libGL,
+  libGLU,
+  libjpeg,
+  libpng,
+  libx11,
+  pcre2,
+  pkg-config,
   tinyxml,
 }:
 
@@ -64,9 +64,8 @@ stdenv.mkDerivation (finalAttrs: {
   enableParallelBuilding = true;
 
   meta = {
-    homepage = "https://gource.io/";
     description = "Software version control visualization tool";
-    license = lib.licenses.gpl3Plus;
+
     longDescription = ''
       Software projects are displayed by Gource as an animated tree with
       the root directory of the project at its centre. Directories
@@ -77,8 +76,11 @@ stdenv.mkDerivation (finalAttrs: {
       Mercurial and Bazaar and SVN. Gource can also parse logs produced
       by several third party tools for CVS repositories.
     '';
-    platforms = lib.platforms.unix;
+
+    homepage = "https://gource.io/";
+    license = lib.licenses.gpl3Plus;
     maintainers = with lib.maintainers; [ pSub ];
+    platforms = lib.platforms.unix;
     mainProgram = "gource";
   };
 })

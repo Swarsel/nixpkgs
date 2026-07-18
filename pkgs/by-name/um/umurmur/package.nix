@@ -3,10 +3,10 @@
   stdenv,
   fetchFromGitHub,
   autoreconfHook,
-  openssl,
-  protobufc,
   libconfig,
   nixosTests,
+  openssl,
+  protobufc,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -21,6 +21,7 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   nativeBuildInputs = [ autoreconfHook ];
+
   buildInputs = [
     openssl
     protobufc
@@ -40,12 +41,12 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Minimalistic Murmur (Mumble server)";
-    license = lib.licenses.bsd3;
     homepage = "https://github.com/umurmur/umurmur";
+    license = lib.licenses.bsd3;
+    maintainers = with lib.maintainers; [ _3JlOy-PYCCKUi ];
     platforms = lib.platforms.all;
+    mainProgram = "umurmurd";
     # never built on aarch64-darwin since first introduction in nixpkgs
     broken = stdenv.hostPlatform.isDarwin && stdenv.hostPlatform.isAarch64;
-    maintainers = with lib.maintainers; [ _3JlOy-PYCCKUi ];
-    mainProgram = "umurmurd";
   };
 })

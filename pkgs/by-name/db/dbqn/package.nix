@@ -1,9 +1,9 @@
 {
   lib,
-  stdenvNoCC,
   fetchFromGitHub,
   jre,
   makeWrapper,
+  stdenvNoCC,
   buildNativeImage ? false,
 }:
 
@@ -18,16 +18,14 @@ stdenvNoCC.mkDerivation rec {
     hash = "sha256-AUfT7l7zr/pyG63wX8FMej8RUg7tXC1aroCrunjyw/8=";
   };
 
+  postPatch = ''
+    patchShebangs --build ./build8
+  '';
+
   nativeBuildInputs = [
     jre
     makeWrapper
   ];
-
-  dontConfigure = true;
-
-  postPatch = ''
-    patchShebangs --build ./build8
-  '';
 
   buildPhase = ''
     runHook preBuild
@@ -69,15 +67,21 @@ stdenvNoCC.mkDerivation rec {
     runHook postInstall
   '';
 
+  dontConfigure = true;
+
   meta = {
-    homepage = "https://github.com/dzaima/BQN";
+    inherit (jre.meta) platforms;
+
     description =
       "BQN implementation in Java" + lib.optionalString buildNativeImage ", compiled as a native image";
+
+    homepage = "https://github.com/dzaima/BQN";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       sternenseemann
     ];
-    inherit (jre.meta) platforms;
+
     broken = stdenvNoCC.hostPlatform.isDarwin; # never built on Hydra https://hydra.nixos.org/job/nixpkgs/staging-next/dbqn-native.x86_64-darwin
   };
 }

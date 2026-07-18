@@ -2,20 +2,20 @@
   lib,
   stdenv,
   fetchFromGitHub,
+  blueprint-compiler,
+  capnproto,
+  cargo,
+  desktop-file-utils,
+  gtksourceview5,
+  libadwaita,
   meson,
   ninja,
+  openssl,
   pkg-config,
   rustPlatform,
   rustc,
-  cargo,
-  capnproto,
-  blueprint-compiler,
-  wrapGAppsHook4,
-  desktop-file-utils,
-  libadwaita,
-  gtksourceview5,
-  openssl,
   sqlite,
+  wrapGAppsHook4,
 }:
 
 stdenv.mkDerivation rec {
@@ -27,11 +27,6 @@ stdenv.mkDerivation rec {
     repo = "notify";
     rev = "v${version}";
     hash = "sha256-0p/XIGaawreGHbMRoHNmUEIxgwEgigtrubeJpndHsug=";
-  };
-
-  cargoDeps = rustPlatform.fetchCargoVendor {
-    inherit pname version src;
-    hash = "sha256-hnv4XXsx/kmhH4YUTdTvvxxjbguHBx3TnUKacGwnCTw=";
   };
 
   nativeBuildInputs = [
@@ -54,12 +49,17 @@ stdenv.mkDerivation rec {
     sqlite
   ];
 
+  cargoDeps = rustPlatform.fetchCargoVendor {
+    inherit pname version src;
+    hash = "sha256-hnv4XXsx/kmhH4YUTdTvvxxjbguHBx3TnUKacGwnCTw=";
+  };
+
   meta = {
     description = "Ntfy client application to receive everyday's notifications";
     homepage = "https://github.com/ranfdev/Notify";
     license = lib.licenses.gpl3Plus;
-    mainProgram = "notify";
     maintainers = with lib.maintainers; [ aleksana ];
     platforms = lib.platforms.linux;
+    mainProgram = "notify";
   };
 }

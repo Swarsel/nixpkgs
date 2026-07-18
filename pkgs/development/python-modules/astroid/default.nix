@@ -1,17 +1,16 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
+  buildPythonPackage,
   pip,
   pylint,
   pytestCheckHook,
+  setuptools,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "astroid";
   version = "4.0.3"; # Check whether the version is compatible with pylint
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "PyCQA";
@@ -20,11 +19,16 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-5p1xY6EWviSgmrLVOx3w7RcG/Vpx+sUtVndoxXrIFTQ=";
   };
 
-  build-system = [ setuptools ];
-
   nativeCheckInputs = [
     pip
     pytestCheckHook
+  ];
+
+  build-system = [ setuptools ];
+
+  disabledTestPaths = [
+    # requires mypy
+    "tests/test_raw_building.py"
   ];
 
   disabledTests = [
@@ -32,19 +36,16 @@ buildPythonPackage (finalAttrs: {
     "test_identify_old_namespace_package_protocol"
   ];
 
-  disabledTestPaths = [
-    # requires mypy
-    "tests/test_raw_building.py"
-  ];
+  pyproject = true;
 
   passthru.tests = {
     inherit pylint;
   };
 
   meta = {
-    changelog = "https://github.com/PyCQA/astroid/blob/${finalAttrs.src.tag}/ChangeLog";
     description = "Abstract syntax tree for Python with inference support";
     homepage = "https://github.com/PyCQA/astroid";
+    changelog = "https://github.com/PyCQA/astroid/blob/${finalAttrs.src.tag}/ChangeLog";
     license = lib.licenses.lgpl21Plus;
     maintainers = with lib.maintainers; [ GaetanLepage ];
   };

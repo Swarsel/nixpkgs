@@ -1,13 +1,12 @@
 {
   lib,
-  python3Packages,
   fetchFromGitHub,
+  python3Packages,
 }:
 
 python3Packages.buildPythonApplication (finalAttrs: {
   pname = "norminette";
   version = "3.3.59";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "42School";
@@ -16,26 +15,27 @@ python3Packages.buildPythonApplication (finalAttrs: {
     hash = "sha256-XPaMQCziL9/h+AHx6I6MIRAlzscWvOTkxUP9dMI4y0o=";
   };
 
+  nativeCheckInputs = with python3Packages; [
+    pytestCheckHook
+  ];
+
   build-system = with python3Packages; [
     poetry-core
   ];
+
+  pyproject = true;
+  pythonImportsCheck = [ "norminette" ];
 
   pythonRemoveDeps = [
     # Can be removed once https://github.com/42school/norminette/issues/565 is addressed
     "argparse"
   ];
 
-  nativeCheckInputs = with python3Packages; [
-    pytestCheckHook
-  ];
-
-  pythonImportsCheck = [ "norminette" ];
-
   meta = {
     description = "Open source norminette to apply 42's norme to C files";
-    mainProgram = "norminette";
     homepage = "https://github.com/42School/norminette";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ wegank ];
+    mainProgram = "norminette";
   };
 })

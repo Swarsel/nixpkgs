@@ -3,9 +3,9 @@
   stdenv,
   buildPythonPackage,
   fetchPypi,
-  setuptools,
   pkgs,
   pytestCheckHook,
+  setuptools,
 }:
 
 let
@@ -20,18 +20,11 @@ in
 buildPythonPackage rec {
   pname = "electrum-ecc";
   version = "0.0.6";
-  pyproject = true;
-  build-system = [ setuptools ];
 
   src = fetchPypi {
-    pname = "electrum_ecc";
     inherit version;
     hash = "sha256-Y2DHH7CLUdgKRV6TjxJrpMeQvnS6ImRh1U16OqaJC4k=";
-  };
-
-  env = {
-    # Prevent compilation of the C extension as we use the system library instead.
-    ELECTRUM_ECC_DONT_COMPILE = "1";
+    pname = "electrum_ecc";
   };
 
   postPatch = ''
@@ -42,8 +35,14 @@ buildPythonPackage rec {
       --replace-fail ${libsecp256k1_name} ${pkgs.secp256k1}/lib/libsecp256k1${stdenv.hostPlatform.extensions.sharedLibrary}
   '';
 
-  nativeCheckInputs = [ pytestCheckHook ];
+  env = {
+    # Prevent compilation of the C extension as we use the system library instead.
+    ELECTRUM_ECC_DONT_COMPILE = "1";
+  };
 
+  nativeCheckInputs = [ pytestCheckHook ];
+  build-system = [ setuptools ];
+  pyproject = true;
   pythonImportsCheck = [ "electrum_ecc" ];
 
   meta = {

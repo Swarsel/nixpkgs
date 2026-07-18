@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   hatchling,
   pint,
   psychrolib,
@@ -13,7 +13,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "pyweatherflowudp";
   version = "1.5.2";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "briis";
@@ -21,6 +20,11 @@ buildPythonPackage (finalAttrs: {
     tag = finalAttrs.version;
     hash = "sha256-4zS6YQmceGfJMGR++VdymIfNq7NAB9jKDT6bVl0wHAc=";
   };
+
+  nativeCheckInputs = [
+    pytest-asyncio
+    pytestCheckHook
+  ];
 
   build-system = [
     hatchling
@@ -32,13 +36,6 @@ buildPythonPackage (finalAttrs: {
     psychrolib
   ];
 
-  nativeCheckInputs = [
-    pytest-asyncio
-    pytestCheckHook
-  ];
-
-  pythonImportsCheck = [ "pyweatherflowudp" ];
-
   disabledTests = [
     # Tests require network access
     "test_flow_control"
@@ -48,6 +45,9 @@ buildPythonPackage (finalAttrs: {
     "test_listener_connection_errors"
     "test_invalid_messages"
   ];
+
+  pyproject = true;
+  pythonImportsCheck = [ "pyweatherflowudp" ];
 
   meta = {
     description = "Library to receive UDP Packets from Weatherflow Weatherstations";

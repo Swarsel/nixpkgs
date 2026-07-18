@@ -2,30 +2,26 @@
   lib,
   buildPythonPackage,
   fetchPypi,
+  pytestCheckHook,
   setuptools,
   zope-interface,
-  pytestCheckHook,
 }:
 
 buildPythonPackage rec {
   pname = "lazr-delegates";
   version = "2.1.1";
-  pyproject = true;
 
   src = fetchPypi {
-    pname = "lazr_delegates";
     inherit version;
     hash = "sha256-rs6yYW5Rtz8yf78SxOwrfXZwy4IL1eT2hRIV+3lsAtw=";
+    pname = "lazr_delegates";
   };
 
-  build-system = [ setuptools ];
-
-  dependencies = [ zope-interface ];
-
-  pythonImportsCheck = [ "lazr.delegates" ];
-
   nativeCheckInputs = [ pytestCheckHook ];
-
+  build-system = [ setuptools ];
+  dependencies = [ zope-interface ];
+  pyproject = true;
+  pythonImportsCheck = [ "lazr.delegates" ];
   pythonNamespaces = [ "lazr" ];
 
   meta = {

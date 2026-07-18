@@ -2,10 +2,10 @@
   lib,
   stdenv,
   fetchFromGitLab,
-  perl,
-  icmake,
-  util-linux,
   bash,
+  icmake,
+  perl,
+  util-linux,
   versionCheckHook,
 }:
 
@@ -19,10 +19,6 @@ stdenv.mkDerivation (finalAttrs: {
     tag = finalAttrs.version;
     hash = "sha256-QnEjMHuZHj+iPlmiPsAcaNF8RRd/Ld59PA1neuzo1Go=";
   };
-
-  setSourceRoot = ''
-    sourceRoot=$(echo */yodl)
-  '';
 
   postPatch = ''
     for header in media/media.h stack/stack.h message/message.h symbol/symbol.ih symbol/sysp.c hashitem/hashitem.h args/args.h ostream/ostream.h; do
@@ -80,18 +76,23 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  doInstallCheck = true;
+
   nativeInstallCheckInputs = [
     versionCheckHook
   ];
-  doInstallCheck = true;
+
+  setSourceRoot = ''
+    sourceRoot=$(echo */yodl)
+  '';
 
   meta = {
-    changelog = "https://gitlab.com/fbb-git/yodl/-/blob/${finalAttrs.src.tag}/yodl/changelog";
     description = "Package that implements a pre-document language and tools to process it";
     homepage = "https://fbb-git.gitlab.io/yodl/";
-    mainProgram = "yodl";
+    changelog = "https://gitlab.com/fbb-git/yodl/-/blob/${finalAttrs.src.tag}/yodl/changelog";
     license = lib.licenses.agpl3Plus;
     maintainers = with lib.maintainers; [ pSub ];
     platforms = lib.platforms.linux;
+    mainProgram = "yodl";
   };
 })

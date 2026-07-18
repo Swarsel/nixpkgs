@@ -14,12 +14,13 @@ let
       src' =
         {
           aarch64-linux = {
-            url = "https://piston.feed-the-beast.com/app/ftb-app-linux-${version}-arm64.AppImage";
             hash = "sha256-il7DIY1c5TDmRSzc86BTOCn4P20P3Wd4STkLGyFm2+c=";
+            url = "https://piston.feed-the-beast.com/app/ftb-app-linux-${version}-arm64.AppImage";
           };
+
           x86_64-linux = {
-            url = "https://piston.feed-the-beast.com/app/ftb-app-linux-${version}-x86_64.AppImage";
             hash = "sha256-35GEI1OBvVkUvHvQAzzGz8ux9h+5W3acH0Wr5VkqyBw=";
+            url = "https://piston.feed-the-beast.com/app/ftb-app-linux-${version}-x86_64.AppImage";
           };
         }
         .${stdenv.hostPlatform.system} or (throw "Unsupported system: ${stdenv.hostPlatform.system}");
@@ -34,8 +35,8 @@ let
     changelog = "https://www.feed-the-beast.com/ftb-app/changes#${version}";
     license = lib.licenses.lgpl21Only;
     maintainers = with lib.maintainers; [ nagymathev ];
-    mainProgram = "ftb-app"; # This might need a change for darwin
     platforms = with lib.platforms; linux;
+    mainProgram = "ftb-app"; # This might need a change for darwin
   };
 in
 let

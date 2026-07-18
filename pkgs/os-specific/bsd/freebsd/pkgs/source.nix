@@ -6,7 +6,7 @@
 # Note that hashes with `forceFetchGit = true` may be different due to `export-ignore`
 # directives in gitattributes files.
 fetchFromGitHub {
+  inherit (sourceData) rev hash;
   owner = "freebsd";
   repo = "freebsd-src";
-  inherit (sourceData) rev hash;
 }

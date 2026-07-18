@@ -1,27 +1,22 @@
 {
   lib,
   fetchFromGitHub,
-  buildPythonPackage,
-
-  # build-system
-  uv-build,
-
   # native
   beets-minimal,
-
+  buildPythonPackage,
   # dependencies
   markdownify,
   natsort,
-  tldextract,
-
   # passthru
   nix-update-script,
+  tldextract,
+  # build-system
+  uv-build,
 }:
 
 buildPythonPackage rec {
   pname = "beets-audible";
   version = "1.6.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "Neurrone";
@@ -30,21 +25,22 @@ buildPythonPackage rec {
     hash = "sha256-u4EbUmUsaCs22QBGaKWzPjz0nzxH/zQBIQ8vsyVHBoE=";
   };
 
-  build-system = [
-    uv-build
-  ];
-
   nativeBuildInputs = [
     beets-minimal
   ];
 
-  pythonRelaxDeps = true;
+  build-system = [
+    uv-build
+  ];
 
   dependencies = [
     markdownify
     natsort
     tldextract
   ];
+
+  pyproject = true;
+  pythonRelaxDeps = true;
 
   passthru = {
     updateScript = nix-update-script { };
@@ -53,8 +49,8 @@ buildPythonPackage rec {
   meta = {
     description = "Beets-audible: Organize Your Audiobook Collection With Beets";
     homepage = "https://github.com/Neurrone/beets-audible";
-    platforms = with lib.platforms; linux ++ darwin ++ windows;
     license = with lib.licenses; [ mit ];
     maintainers = with lib.maintainers; [ jwillikers ];
+    platforms = with lib.platforms; linux ++ darwin ++ windows;
   };
 }

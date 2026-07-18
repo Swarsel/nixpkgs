@@ -1,10 +1,10 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
-  nix-update-script,
-  installShellFiles,
   asciidoctor,
+  buildGoModule,
+  installShellFiles,
+  nix-update-script,
   openssh,
   openssl,
 }:
@@ -20,17 +20,13 @@ buildGoModule (finalAttrs: {
     hash = "sha256-BF4O/vgguTQtgIch2akOq5ZJWyB+/evBYtxfjh9HFYI=";
   };
 
-  proxyVendor = true;
-
-  vendorHash = "sha256-N7JuMUy5Z+HVhxsqESlBkHcHVipRYM8ncx/wR77k1fw=";
-
   nativeBuildInputs = [
     installShellFiles
     asciidoctor
   ];
 
   buildInputs = [ openssl ];
-
+  vendorHash = "sha256-N7JuMUy5Z+HVhxsqESlBkHcHVipRYM8ncx/wR77k1fw=";
   nativeCheckInputs = [ openssh ];
 
   # disable broken tests, see https://github.com/NixOS/nixpkgs/pull/394097
@@ -45,6 +41,7 @@ buildGoModule (finalAttrs: {
     installManPage man/*.1
   '';
 
+  proxyVendor = true;
   passthru.updateScript = nix-update-script { };
 
   meta = {
@@ -52,11 +49,13 @@ buildGoModule (finalAttrs: {
     homepage = "https://github.com/Foxboron/ssh-tpm-agent";
     changelog = "https://github.com/Foxboron/ssh-tpm-agent/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.mit;
-    platforms = lib.platforms.linux;
+
     maintainers = with lib.maintainers; [
       sgo
       defelo
     ];
+
+    platforms = lib.platforms.linux;
     mainProgram = "ssh-tpm-agent";
   };
 })

@@ -1,12 +1,10 @@
 {
   lib,
-  gcc15Stdenv,
   fetchFromGitHub,
-  nix-update-script,
-  cmake,
-  pkg-config,
   cairo,
+  cmake,
   file,
+  gcc15Stdenv,
   hyprutils,
   lcms2,
   libGL,
@@ -16,8 +14,10 @@
   librsvg,
   libspng,
   libwebp,
+  nix-update-script,
   pango,
   pixman,
+  pkg-config,
 }:
 
 gcc15Stdenv.mkDerivation (finalAttrs: {
@@ -30,6 +30,11 @@ gcc15Stdenv.mkDerivation (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-48DubZbx8PDfuJkksNgi5aWFnX/Rq1OUaLsUvsdf2Bo=";
   };
+
+  outputs = [
+    "out"
+    "dev"
+  ];
 
   nativeBuildInputs = [
     cmake
@@ -52,13 +57,7 @@ gcc15Stdenv.mkDerivation (finalAttrs: {
     pixman
   ];
 
-  outputs = [
-    "out"
-    "dev"
-  ];
-
   doCheck = true;
-
   cmakeBuildType = "RelWithDebInfo";
   separateDebugInfo = true;
 
@@ -67,9 +66,9 @@ gcc15Stdenv.mkDerivation (finalAttrs: {
   };
 
   meta = {
+    description = "Cpp graphics library for Hypr* ecosystem";
     homepage = "https://github.com/hyprwm/hyprgraphics";
     changelog = "https://github.com/hyprwm/hyprgraphics/releases/tag/${finalAttrs.src.tag}";
-    description = "Cpp graphics library for Hypr* ecosystem";
     license = lib.licenses.bsd3;
     platforms = lib.platforms.linux ++ lib.platforms.freebsd;
     teams = [ lib.teams.hyprland ];

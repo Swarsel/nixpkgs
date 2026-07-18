@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   versionCheckHook,
 }:
 
@@ -17,7 +17,7 @@ buildGoModule (finalAttrs: {
   };
 
   vendorHash = "sha256-4wj96eDibGB3oX56yIr01CYLZCYMFnfoaPWaNdFH7IE=";
-
+  doInstallCheck = true;
   nativeInstallCheckInputs = [ versionCheckHook ];
 
   ldflags = [
@@ -25,8 +25,6 @@ buildGoModule (finalAttrs: {
     "-s"
     "-X=main.version=${finalAttrs.version}"
   ];
-
-  doInstallCheck = true;
 
   meta = {
     description = "Intelligence tool to crawl the graph of certificate alternate names";

@@ -8,34 +8,33 @@ stdenv.mkDerivation (finalAttrs: {
   pname = "migmix";
   version = "20150712";
 
-  srcs = [
-    (fetchzip {
-      url = "mirror://osdn/mix-mplus-ipa/63544/migmix-1p-${finalAttrs.version}.zip";
-      sha256 = "0wp44axcalaak04nj3dgpx0vk13nqa3ihx2vjv4acsgv83x8ciph";
-    })
-    (fetchzip {
-      url = "mirror://osdn/mix-mplus-ipa/63544/migmix-2p-${finalAttrs.version}.zip";
-      sha256 = "0y7s3rbxrp5bv56qgihk8b847lqgibfhn2wlkzx7z655fbzdgxw9";
-    })
-    (fetchzip {
-      url = "mirror://osdn/mix-mplus-ipa/63544/migmix-1m-${finalAttrs.version}.zip";
-      sha256 = "1sfym0chy8ilyd9sr3mjc0bf63vc33p05ynpdc11miivxn4qsshx";
-    })
-    (fetchzip {
-      url = "mirror://osdn/mix-mplus-ipa/63544/migmix-2m-${finalAttrs.version}.zip";
-      sha256 = "0hg04rvm39fh4my4akmv4rhfc14s3ipz2aw718h505k9hppkhkch";
-    })
-  ];
-
-  dontUnpack = true;
-
   installPhase = ''
     find $srcs -name '*.ttf' -exec install -m644 -Dt $out/share/fonts/truetype/migmix {} \;
   '';
 
+  dontUnpack = true;
+  outputHash = "1fhh8wg6lxwrnsg9rl4ihffl0bsp1wqa5gps9fx60kr6j9wpvmbg";
   outputHashAlgo = "sha256";
   outputHashMode = "recursive";
-  outputHash = "1fhh8wg6lxwrnsg9rl4ihffl0bsp1wqa5gps9fx60kr6j9wpvmbg";
+
+  srcs = [
+    (fetchzip {
+      sha256 = "0wp44axcalaak04nj3dgpx0vk13nqa3ihx2vjv4acsgv83x8ciph";
+      url = "mirror://osdn/mix-mplus-ipa/63544/migmix-1p-${finalAttrs.version}.zip";
+    })
+    (fetchzip {
+      sha256 = "0y7s3rbxrp5bv56qgihk8b847lqgibfhn2wlkzx7z655fbzdgxw9";
+      url = "mirror://osdn/mix-mplus-ipa/63544/migmix-2p-${finalAttrs.version}.zip";
+    })
+    (fetchzip {
+      sha256 = "1sfym0chy8ilyd9sr3mjc0bf63vc33p05ynpdc11miivxn4qsshx";
+      url = "mirror://osdn/mix-mplus-ipa/63544/migmix-1m-${finalAttrs.version}.zip";
+    })
+    (fetchzip {
+      sha256 = "0hg04rvm39fh4my4akmv4rhfc14s3ipz2aw718h505k9hppkhkch";
+      url = "mirror://osdn/mix-mplus-ipa/63544/migmix-2m-${finalAttrs.version}.zip";
+    })
+  ];
 
   meta = {
     description = "High-quality Japanese font based on M+ fonts and IPA fonts";

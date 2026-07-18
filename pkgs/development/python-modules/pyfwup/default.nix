@@ -1,18 +1,16 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  pyusb,
-  tqdm,
+  buildPythonPackage,
   libusb1,
+  pyusb,
   setuptools,
+  tqdm,
 }:
 
 buildPythonPackage rec {
   pname = "pyfwup";
   version = "0.5.3";
-
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "greatscottgadgets";
@@ -27,13 +25,15 @@ buildPythonPackage rec {
       --replace-fail 'dynamic = ["version"]' 'version = "${version}"'
   '';
 
+  build-system = [ setuptools ];
+
   dependencies = [
     pyusb
     tqdm
     libusb1
   ];
 
-  build-system = [ setuptools ];
+  pyproject = true;
 
   pythonImportsCheck = [
     "fwup"

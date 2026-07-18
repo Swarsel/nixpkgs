@@ -2,42 +2,42 @@
   lib,
   stdenv,
   fetchurl,
-  gettext,
-  coreutils,
-  gnused,
   adwaita-icon-theme,
-  gnugrep,
-  parted,
-  glib,
-  libuuid,
-  pkg-config,
-  gtkmm3,
-  libxml2,
-  gpart,
-  hdparm,
-  procps,
-  polkit,
-  wrapGAppsHook3,
-  replaceVars,
-  mtools,
-  xhost,
-  dosfstools,
-  e2fsprogs,
-  util-linuxMinimal,
-  withAllTools ? false,
   bcachefs-tools,
   btrfs-progs,
+  coreutils,
+  cryptsetup,
+  dosfstools,
+  e2fsprogs,
   exfatprogs,
   f2fs-tools,
+  gettext,
+  glib,
+  gnugrep,
+  gnused,
+  gpart,
+  gtkmm3,
+  hdparm,
   hfsprogs,
   jfsutils,
-  cryptsetup,
+  libuuid,
+  libxml2,
   lvm2,
+  mtools,
   nilfs-utils,
   ntfs3g,
+  parted,
+  pkg-config,
+  polkit,
+  procps,
+  replaceVars,
   udftools,
-  xfsprogs,
+  util-linuxMinimal,
+  wrapGAppsHook3,
   xfsdump,
+  xfsprogs,
+  xhost,
+  withAllTools ? false,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -58,11 +58,10 @@ stdenv.mkDerivation (finalAttrs: {
     })
   ];
 
-  enableParallelBuilding = true;
-
-  configureFlags = [
-    "--disable-doc"
-    "--enable-xhost-root"
+  nativeBuildInputs = [
+    gettext
+    pkg-config
+    wrapGAppsHook3
   ];
 
   buildInputs = [
@@ -74,36 +73,21 @@ stdenv.mkDerivation (finalAttrs: {
     polkit.bin
     adwaita-icon-theme
   ];
-  nativeBuildInputs = [
-    gettext
-    pkg-config
-    wrapGAppsHook3
-  ];
 
-  runtimeDeps = [
-    dosfstools
-    e2fsprogs
-    util-linuxMinimal
-  ]
-  ++ lib.optionals withAllTools [
-    bcachefs-tools
-    btrfs-progs
-    exfatprogs
-    f2fs-tools
-    hfsprogs
-    jfsutils
-    cryptsetup
-    lvm2
-    nilfs-utils
-    ntfs3g
-    udftools
-    xfsprogs
-    xfsdump
+  configureFlags = [
+    "--disable-doc"
+    "--enable-xhost-root"
   ];
 
   preConfigure = ''
     # For ITS rules
     addToSearchPath "XDG_DATA_DIRS" "${polkit.out}/share"
+  '';
+
+  # Doesn't get installed automatically if PREFIX != /usr
+  postInstall = ''
+    install -D -m0644 org.gnome.gparted.policy \
+      $out/share/polkit-1/actions/org.gnome.gparted.policy
   '';
 
   preFixup = ''
@@ -126,19 +110,38 @@ stdenv.mkDerivation (finalAttrs: {
     )
   '';
 
-  # Doesn't get installed automatically if PREFIX != /usr
-  postInstall = ''
-    install -D -m0644 org.gnome.gparted.policy \
-      $out/share/polkit-1/actions/org.gnome.gparted.policy
-  '';
+  enableParallelBuilding = true;
+
+  runtimeDeps = [
+    dosfstools
+    e2fsprogs
+    util-linuxMinimal
+  ]
+  ++ lib.optionals withAllTools [
+    bcachefs-tools
+    btrfs-progs
+    exfatprogs
+    f2fs-tools
+    hfsprogs
+    jfsutils
+    cryptsetup
+    lvm2
+    nilfs-utils
+    ntfs3g
+    udftools
+    xfsprogs
+    xfsdump
+  ];
 
   meta = {
     description = "Graphical disk partitioning tool";
+
     longDescription = ''
       GNOME Partition Editor for creating, reorganizing, and deleting disk
       partitions. GParted enables you to change the partition organization
       while preserving the partition contents.
     '';
+
     homepage = "https://gparted.org";
     license = lib.licenses.gpl2Plus;
     platforms = lib.platforms.linux;

@@ -2,6 +2,7 @@
   lib,
   stdenv,
   fetchurl,
+  appres,
   coreutils,
   gdk-pixbuf,
   gdk-pixbuf-xlib,
@@ -16,20 +17,19 @@
   libxft,
   libxi,
   libxinerama,
+  libxml2,
   libxrandr,
   libxt,
   libxxf86vm,
-  libxml2,
   makeWrapper,
+  nixosTests,
   pam,
   perlPackages,
-  appres,
   pkg-config,
+  replaceVars,
   systemd,
   forceInstallAllHacks ? true,
   withSystemd ? lib.meta.availableOn stdenv.hostPlatform systemd,
-  nixosTests,
-  replaceVars,
   wrapperPrefix ? "/run/wrappers/bin",
 }:
 
@@ -46,6 +46,18 @@ stdenv.mkDerivation (finalAttrs: {
     "out"
     "man"
   ];
+
+  patches = [
+    (replaceVars ./xscreensaver-wrapper-prefix.patch {
+      inherit wrapperPrefix;
+    })
+  ];
+
+  postPatch = ''
+    pushd hacks
+    patchShebangs check-configs.pl munge-ad.pl xml2man.pl
+    popd
+  '';
 
   nativeBuildInputs = [
     intltool
@@ -77,30 +89,18 @@ stdenv.mkDerivation (finalAttrs: {
   ]
   ++ lib.optionals withSystemd [ systemd ];
 
-  postPatch = ''
-    pushd hacks
-    patchShebangs check-configs.pl munge-ad.pl xml2man.pl
-    popd
-  '';
-
-  patches = [
-    (replaceVars ./xscreensaver-wrapper-prefix.patch {
-      inherit wrapperPrefix;
-    })
-  ];
-
-  preConfigure = ''
-    # Fix installation paths for GTK resources.
-    sed -e 's%@GTK_DATADIR@%@datadir@% ; s%@PO_DATADIR@%@datadir@%' \
-      -i driver/Makefile.in po/Makefile.in.in
-  '';
-
   configureFlags = [
     "--with-app-defaults=${placeholder "out"}/share/xscreensaver/app-defaults"
   ];
 
   # "marbling" has NEON code that mixes signed and unsigned vector types
   env.NIX_CFLAGS_COMPILE = lib.optionalString stdenv.hostPlatform.isAarch "-flax-vector-conversions";
+
+  preConfigure = ''
+    # Fix installation paths for GTK resources.
+    sed -e 's%@GTK_DATADIR@%@datadir@% ; s%@PO_DATADIR@%@datadir@%' \
+      -i driver/Makefile.in po/Makefile.in.in
+  '';
 
   postInstall = ''
     for bin in $out/bin/*; do
@@ -130,13 +130,15 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   meta = {
-    homepage = "https://www.jwz.org/xscreensaver/";
     description = "Set of screensavers";
-    downloadPage = "https://www.jwz.org/xscreensaver/download.html";
+    homepage = "https://www.jwz.org/xscreensaver/";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       raskin
     ];
+
     platforms = lib.platforms.unix;
+    downloadPage = "https://www.jwz.org/xscreensaver/download.html";
   };
 })

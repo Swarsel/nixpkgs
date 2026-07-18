@@ -1,9 +1,9 @@
 {
   lib,
   stdenv,
+  fetchFromGitHub,
   buildGoModule,
   callPackage,
-  fetchFromGitHub,
   iana-etc,
   installShellFiles,
   libredirect,
@@ -22,6 +22,7 @@ buildGoModule (finalAttrs: {
     # populate values that require us to use git. By doing this in postFetch we
     # can delete .git afterwards and maintain better reproducibility of the src.
     leaveDotGit = true;
+
     postFetch = ''
       cd "$out"
       git rev-parse HEAD > $out/COMMIT
@@ -31,29 +32,12 @@ buildGoModule (finalAttrs: {
     '';
   };
 
-  frontend = callPackage ./frontend.nix { };
-
-  proxyVendor = true;
-  vendorHash = "sha256-a4v2JP/+feit3uTqnACWgl77fWZU8yVE/0Hm7qxoI8E=";
-
   nativeBuildInputs = [
     installShellFiles
   ]
   ++ lib.optional stdenv.hostPlatform.isDarwin libredirect.hook;
 
-  tags = [ "jsoniter" ];
-
-  subPackages = [
-    "."
-    "pkg/gowebdav/cmd/gowebdav"
-  ];
-
-  ldflags = [
-    "-s"
-    "-X \"github.com/OpenListTeam/OpenList/v4/internal/conf.GitAuthor=The OpenList Projects Contributors <noreply@openlist.team>\""
-    "-X github.com/OpenListTeam/OpenList/v4/internal/conf.Version=${finalAttrs.version}"
-    "-X github.com/OpenListTeam/OpenList/v4/internal/conf.WebVersion=${finalAttrs.frontend.version}"
-  ];
+  vendorHash = "sha256-a4v2JP/+feit3uTqnACWgl77fWZU8yVE/0Hm7qxoI8E=";
 
   preConfigure = ''
     rm -rf public/dist
@@ -63,10 +47,6 @@ buildGoModule (finalAttrs: {
   preBuild = ''
     ldflags+=" -X \"github.com/OpenListTeam/OpenList/v4/internal/conf.BuiltAt=$(<SOURCE_DATE_EPOCH)\""
     ldflags+=" -X github.com/OpenListTeam/OpenList/v4/internal/conf.GitCommit=$(<COMMIT)"
-  '';
-
-  preCheck = lib.optionalString stdenv.hostPlatform.isDarwin ''
-    export NIX_REDIRECTS=/etc/protocols=${iana-etc}/etc/protocols:/etc/services=${iana-etc}/etc/services
   '';
 
   checkFlags =
@@ -87,6 +67,10 @@ buildGoModule (finalAttrs: {
     in
     [ "-skip=^${builtins.concatStringsSep "$|^" skippedTests}$" ];
 
+  preCheck = lib.optionalString stdenv.hostPlatform.isDarwin ''
+    export NIX_REDIRECTS=/etc/protocols=${iana-etc}/etc/protocols:/etc/services=${iana-etc}/etc/services
+  '';
+
   postInstall = lib.optionalString (stdenv.buildPlatform.canExecute stdenv.hostPlatform) ''
     installShellCompletion --cmd OpenList \
       --bash <($out/bin/OpenList completion bash) \
@@ -100,8 +84,24 @@ buildGoModule (finalAttrs: {
   # panic: open /etc/protocols: operation not permitted
   doInstallCheck = !stdenv.hostPlatform.isDarwin;
   nativeInstallCheckInputs = [ versionCheckHook ];
-  versionCheckProgramArg = "version";
+  frontend = callPackage ./frontend.nix { };
 
+  ldflags = [
+    "-s"
+    "-X \"github.com/OpenListTeam/OpenList/v4/internal/conf.GitAuthor=The OpenList Projects Contributors <noreply@openlist.team>\""
+    "-X github.com/OpenListTeam/OpenList/v4/internal/conf.Version=${finalAttrs.version}"
+    "-X github.com/OpenListTeam/OpenList/v4/internal/conf.WebVersion=${finalAttrs.frontend.version}"
+  ];
+
+  proxyVendor = true;
+
+  subPackages = [
+    "."
+    "pkg/gowebdav/cmd/gowebdav"
+  ];
+
+  tags = [ "jsoniter" ];
+  versionCheckProgramArg = "version";
   passthru.updateScript = lib.getExe (callPackage ./update.nix { });
 
   meta = {

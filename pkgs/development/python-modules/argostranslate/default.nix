@@ -1,23 +1,20 @@
 {
   lib,
   stdenv,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # build-system
-  setuptools,
-
+  buildPythonPackage,
   # dependencies
   ctranslate2,
   ctranslate2-cpp,
   minisbd,
-  sacremoses,
-  sentencepiece,
-  spacy,
-  stanza,
-
   # tests
   pytestCheckHook,
+  sacremoses,
+  sentencepiece,
+  # build-system
+  setuptools,
+  spacy,
+  stanza,
   writableTmpDirAsHomeHook,
 }:
 let
@@ -35,7 +32,6 @@ in
 buildPythonPackage (finalAttrs: {
   pname = "argostranslate";
   version = "1.11.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "argosopentech";
@@ -44,11 +40,15 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-8uzWS0YZEteeLTYAp9qpnnJhxyhxbWkKt1krqe/RF4M=";
   };
 
+  doCheck = !isAarch64Linux;
+
+  nativeCheckInputs = [
+    pytestCheckHook
+    writableTmpDirAsHomeHook
+  ];
+
   build-system = [ setuptools ];
 
-  pythonRelaxDeps = [
-    "stanza"
-  ];
   dependencies = [
     ctranslate2OneDNN
     minisbd
@@ -58,10 +58,7 @@ buildPythonPackage (finalAttrs: {
     stanza
   ];
 
-  nativeCheckInputs = [
-    pytestCheckHook
-    writableTmpDirAsHomeHook
-  ];
+  pyproject = true;
 
   # aarch64-linux fails cpuinfo test, because /sys/devices/system/cpu/ does not exist in the sandbox:
   # terminate called after throwing an instance of 'onnxruntime::OnnxRuntimeException'
@@ -69,13 +66,17 @@ buildPythonPackage (finalAttrs: {
     "argostranslate"
     "argostranslate.translate"
   ];
-  doCheck = !isAarch64Linux;
+
+  pythonRelaxDeps = [
+    "stanza"
+  ];
 
   meta = {
     description = "Open-source offline translation library written in Python";
     homepage = "https://www.argosopentech.com";
     changelog = "https://github.com/argosopentech/argos-translate/releases/tag/${finalAttrs.src.tag}";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       misuzu
       Stebalien

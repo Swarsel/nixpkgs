@@ -14,10 +14,6 @@ stdenv.mkDerivation {
     sha256 = "1vvgzscb12l3cp2nq954fx6j3awvpjsb0nqylal51ps9cq9a3wir";
   };
 
-  dontUnpack = true;
-
-  passthru.scripts = [ "highmon.pl" ];
-
   installPhase = ''
     runHook preInstall
 
@@ -26,10 +22,13 @@ stdenv.mkDerivation {
     runHook postInstall
   '';
 
+  dontUnpack = true;
+  passthru.scripts = [ "highmon.pl" ];
+
   meta = {
     inherit (weechat.meta) platforms;
-    homepage = "https://github.com/KenjiE20/highmon/";
     description = "WeeChat script that adds 'Highlight Monitor'";
+    homepage = "https://github.com/KenjiE20/highmon/";
     license = lib.licenses.gpl3Plus;
     maintainers = with lib.maintainers; [ govanify ];
   };

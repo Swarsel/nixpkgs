@@ -7,7 +7,6 @@
 buildPythonPackage rec {
   pname = "polib";
   version = "1.2.0";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
@@ -16,6 +15,7 @@ buildPythonPackage rec {
 
   # error: invalid command 'test'
   doCheck = false;
+  format = "setuptools";
 
   meta = {
     description = "Library to manipulate gettext files (po and mo files)";

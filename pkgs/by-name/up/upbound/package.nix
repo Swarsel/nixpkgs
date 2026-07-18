@@ -2,8 +2,8 @@
   lib,
   fetchurl,
   installShellFiles,
-  versionCheckHook,
   stdenvNoCC,
+  versionCheckHook,
   version-channel ? "stable",
 }:
 let
@@ -19,21 +19,8 @@ in
 stdenvNoCC.mkDerivation {
   pname = if "${version-channel}" == "main" then "upbound-main" else "upbound";
   version = sources.version;
-  srcs = [
-    (fetchurl {
-      url = sources.fetchurlAttrSet.docker-credential-up.${system}.url;
-      sha256 = sources.fetchurlAttrSet.docker-credential-up.${system}.hash;
-    })
-
-    (fetchurl {
-      url = sources.fetchurlAttrSet.up.${system}.url;
-      sha256 = sources.fetchurlAttrSet.up.${system}.hash;
-    })
-  ];
-
-  sourceRoot = ".";
-
   nativeBuildInputs = [ installShellFiles ];
+  doCheck = false;
 
   installPhase = ''
     runHook preInstall
@@ -56,14 +43,27 @@ stdenvNoCC.mkDerivation {
   # FIXME: error when running `env -i up`:
   # "up: error: $HOME is not defined"
   doInstallCheck = false;
-  versionCheckProgram = "${placeholder "out"}/bin/up";
-  versionCheckProgramArg = "version";
 
   nativeInstallCheckInputs = [
     versionCheckHook
   ];
 
-  doCheck = false;
+  sourceRoot = ".";
+
+  srcs = [
+    (fetchurl {
+      sha256 = sources.fetchurlAttrSet.docker-credential-up.${system}.hash;
+      url = sources.fetchurlAttrSet.docker-credential-up.${system}.url;
+    })
+
+    (fetchurl {
+      sha256 = sources.fetchurlAttrSet.up.${system}.hash;
+      url = sources.fetchurlAttrSet.up.${system}.url;
+    })
+  ];
+
+  versionCheckProgram = "${placeholder "out"}/bin/up";
+  versionCheckProgramArg = "version";
 
   passthru.updateScript = [
     ./update
@@ -72,14 +72,16 @@ stdenvNoCC.mkDerivation {
 
   meta = {
     description = "CLI for interacting with Upbound Cloud, Upbound Enterprise, and Universal Crossplane (UXP)";
-    changelog = "https://docs.upbound.io/reference/release-notes/up-cli";
     homepage = "https://upbound.io";
+    changelog = "https://docs.upbound.io/reference/release-notes/up-cli";
     license = lib.licenses.unfree;
+
     maintainers = with lib.maintainers; [
       lucperkins
       jljox
     ];
-    mainProgram = "up";
+
     platforms = sources.platformList;
+    mainProgram = "up";
   };
 }

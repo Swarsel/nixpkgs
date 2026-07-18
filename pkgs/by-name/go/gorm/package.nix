@@ -16,18 +16,19 @@ clangStdenv.mkDerivation (finalAttrs: {
   };
 
   nativeBuildInputs = [ wrapGNUstepAppsHook ];
-
   buildInputs = [ gnustep-back ];
 
   meta = {
     description = "Graphical Object Relationship Modeller is an easy-to-use interface designer for GNUstep";
     homepage = "https://gnustep.github.io/";
     license = lib.licenses.lgpl2Plus;
-    mainProgram = "Gorm";
+
     maintainers = with lib.maintainers; [
       ashalkhakov
       dblsaiko
     ];
+
     platforms = lib.platforms.linux;
+    mainProgram = "Gorm";
   };
 })

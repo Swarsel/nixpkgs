@@ -1,19 +1,20 @@
 {
-  melpaBuild,
-  fetchzip,
   lib,
+  fetchzip,
+  melpaBuild,
 }:
 
 melpaBuild (finalAttrs: {
   pname = "session-management-for-emacs";
-  ename = "session";
   version = "2.4b";
-  melpaVersion = "2.4"; # default value derived from version is not valid for Emacs
 
   src = fetchzip {
     url = "mirror://sourceforge/emacs-session/session-${finalAttrs.version}.tar.gz";
     hash = "sha256-xF/hyUyerZPXgklOn2DElJtbyPZqSG/6S2PPxh971F0=";
   };
+
+  ename = "session";
+  melpaVersion = "2.4"; # default value derived from version is not valid for Emacs
 
   meta = {
     /*

@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   hatchling,
   matrix-synapse-unwrapped,
   nix-update-script,
@@ -11,7 +11,6 @@
 buildPythonPackage rec {
   pname = "synapse-http-antispam";
   version = "0.5.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "maunium";
@@ -20,13 +19,11 @@ buildPythonPackage rec {
     hash = "sha256-hACoTd3qhmw4jfCphCYKm0lJzda4HVlRjyKjql6fte8=";
   };
 
-  build-system = [ hatchling ];
-
-  pythonImportsCheck = [ "synapse_http_antispam" ];
-
   buildInputs = [ matrix-synapse-unwrapped ];
+  build-system = [ hatchling ];
   dependencies = [ twisted ];
-
+  pyproject = true;
+  pythonImportsCheck = [ "synapse_http_antispam" ];
   passthru.updateScript = nix-update-script { };
 
   meta = {

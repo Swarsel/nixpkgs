@@ -38,9 +38,11 @@ stdenv.mkDerivation (finalAttrs: {
     description = "Tool to convert Android sparse images to raw images";
     homepage = "https://github.com/anestisb/android-simg2img";
     license = lib.licenses.asl20;
-    platforms = lib.platforms.unix;
+
     maintainers = with lib.maintainers; [
       arkivm
     ];
+
+    platforms = lib.platforms.unix;
   };
 })

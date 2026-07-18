@@ -1,11 +1,11 @@
 {
-  stdenvNoCC,
   lib,
   fetchFromGitHub,
   coreutils,
   gnused,
   jq,
   nix-update-script,
+  stdenvNoCC,
 }:
 
 stdenvNoCC.mkDerivation (finalAttrs: {
@@ -41,9 +41,9 @@ stdenvNoCC.mkDerivation (finalAttrs: {
   meta = {
     description = "Export Bash environment as JSON for import into modern shells like Elvish and Nushell";
     homepage = "https://github.com/tesujimath/bash-env-json";
-    mainProgram = "bash-env-json";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ jaredmontoya ];
     platforms = lib.platforms.all;
+    mainProgram = "bash-env-json";
   };
 })

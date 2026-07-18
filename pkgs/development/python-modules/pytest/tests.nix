@@ -5,18 +5,11 @@
 }:
 
 buildPythonPackage rec {
-  pname = "pytest-tests";
   inherit (pytest) version;
-  pyproject = false;
-
+  pname = "pytest-tests";
   src = pytest.testout;
-
-  dontBuild = true;
-  dontInstall = true;
-
-  nativeCheckInputs = pytest.optional-dependencies.testing;
-
   doCheck = !isPyPy; # https://github.com/pytest-dev/pytest/issues/3460
+  nativeCheckInputs = pytest.optional-dependencies.testing;
 
   # Ignored file https://github.com/pytest-dev/pytest/pull/5605#issuecomment-522243929
   # test_missing_required_plugins will emit deprecation warning which is treated as error
@@ -34,4 +27,8 @@ buildPythonPackage rec {
 
     runHook postCheck
   '';
+
+  dontBuild = true;
+  dontInstall = true;
+  pyproject = false;
 }

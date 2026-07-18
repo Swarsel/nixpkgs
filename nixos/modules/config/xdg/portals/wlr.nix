@@ -1,7 +1,7 @@
 {
   config,
-  pkgs,
   lib,
+  pkgs,
   ...
 }:
 let
@@ -11,10 +11,6 @@ let
   configFile = settingsFormat.generate "xdg-desktop-portal-wlr.ini" cfg.settings;
 in
 {
-  meta = {
-    maintainers = with lib.maintainers; [ minijackson ];
-  };
-
   options.xdg.portal.wlr = {
     enable = lib.mkEnableOption ''
       desktop portal for wlroots-based desktops.
@@ -25,18 +21,14 @@ in
     '';
 
     settings = lib.mkOption {
+      default = { };
+
       description = ''
         Configuration for `xdg-desktop-portal-wlr`.
 
         See {manpage}`xdg-desktop-portal-wlr(5)` for supported
         values.
       '';
-
-      type = lib.types.submodule {
-        freeformType = settingsFormat.type;
-      };
-
-      default = { };
 
       # Example taken from the manpage
       example = lib.literalExpression ''
@@ -51,19 +43,27 @@ in
           };
         }
       '';
+
+      type = lib.types.submodule {
+        freeformType = settingsFormat.type;
+      };
     };
   };
 
   config = lib.mkIf cfg.enable {
-    xdg.portal = {
-      enable = true;
-      extraPortals = [ package ];
-    };
-
     systemd.user.services.xdg-desktop-portal-wlr.serviceConfig.ExecStart = [
       # Empty ExecStart value to override the field
       ""
       "${package}/libexec/xdg-desktop-portal-wlr --config=${configFile}"
     ];
+
+    xdg.portal = {
+      enable = true;
+      extraPortals = [ package ];
+    };
+  };
+
+  meta = {
+    maintainers = with lib.maintainers; [ minijackson ];
   };
 }

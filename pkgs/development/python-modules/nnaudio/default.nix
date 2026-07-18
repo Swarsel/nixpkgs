@@ -2,37 +2,32 @@
   lib,
   stdenv,
   fetchurl,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # build-system
-  setuptools,
-
-  # dependencies
-  numpy,
-  scipy,
-  torch,
-
+  buildPythonPackage,
   # tests
   librosa,
+  # dependencies
+  numpy,
   pytestCheckHook,
+  scipy,
+  # build-system
+  setuptools,
+  torch,
   writableTmpDirAsHomeHook,
 }:
 let
   choice = fetchurl {
-    url = "https://librosa.org/data/audio/admiralbob77_-_Choice_-_Drum-bass.ogg";
     hash = "sha256-rGRPlkXnwVF05KT4Vh5NFEjX9uWf9rBVazEOu87Yebw=";
+    url = "https://librosa.org/data/audio/admiralbob77_-_Choice_-_Drum-bass.ogg";
   };
   vibeace = fetchurl {
-    url = "https://librosa.org/data/audio/Kevin_MacLeod_-_Vibe_Ace.ogg";
     hash = "sha256-bCOu091apX8rFlLsq2jRXZuCrSV/VOY56yiAygm8EYo=";
+    url = "https://librosa.org/data/audio/Kevin_MacLeod_-_Vibe_Ace.ogg";
   };
 in
 buildPythonPackage (finalAttrs: {
   pname = "nnaudio";
   version = "0.3.4";
-  pyproject = true;
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "KinWaiCheuk";
@@ -41,15 +36,10 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-uJySa2A7IbuY/9Wq/w9gRkBk1NhMrhipyclOWO5koHE=";
   };
 
-  sourceRoot = "${finalAttrs.src.name}/Installation";
-
-  build-system = [ setuptools ];
-
-  dependencies = [
-    numpy
-    scipy
-    torch
-  ];
+  # urllib3.exceptions.MaxRetryError
+  # On darwin the tests fail to locate the audio files and fallback to downloading them from the
+  # internet
+  doCheck = !stdenv.hostPlatform.isDarwin;
 
   nativeCheckInputs = [
     librosa
@@ -64,10 +54,14 @@ buildPythonPackage (finalAttrs: {
     export NUMBA_CACHE_DIR=$(mktemp -d)
   '';
 
-  # urllib3.exceptions.MaxRetryError
-  # On darwin the tests fail to locate the audio files and fallback to downloading them from the
-  # internet
-  doCheck = !stdenv.hostPlatform.isDarwin;
+  __structuredAttrs = true;
+  build-system = [ setuptools ];
+
+  dependencies = [
+    numpy
+    scipy
+    torch
+  ];
 
   disabledTests = [
     # AttributeError: module 'scipy.signal' has no attribute 'blackmanharris'
@@ -82,7 +76,9 @@ buildPythonPackage (finalAttrs: {
     "test_cqt_1992_v2_log[cpu]"
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "nnAudio" ];
+  sourceRoot = "${finalAttrs.src.name}/Installation";
 
   meta = {
     description = "Fast GPU audio processing toolbox with 1D convolutional neural network";

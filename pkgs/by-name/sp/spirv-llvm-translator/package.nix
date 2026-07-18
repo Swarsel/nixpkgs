@@ -1,64 +1,68 @@
 {
   lib,
   stdenv,
-  srcOnly,
   fetchFromGitHub,
-  fetchpatch,
   cmake,
-  pkg-config,
+  fetchpatch,
   lit,
   llvm,
+  pkg-config,
+  pkgs,
   spirv-headers,
   spirv-tools,
-  pkgs,
+  srcOnly,
 }:
 
 let
   llvmMajor = lib.versions.major llvm.version;
 
   versions = {
-    "22" = rec {
-      version = "22.1.3";
-      rev = "v${version}";
-      hash = "sha256-u/OytBH9LgAyGF9PX+5lmAbGPQ7iVv52w8mwQ+6fi/s=";
-    };
-    "21" = rec {
-      version = "21.1.0";
-      rev = "v${version}";
-      hash = "sha256-kk8BbPl/UBW1gaO/cuOQ9OsiNTEk0TkvRDLKUAh6exk=";
-    };
-    "20" = rec {
-      version = "20.1.5";
-      rev = "v${version}";
-      hash = "sha256-GdlC/Vl61nTNdua2s+CW2YOvkSKK6MNOvBc/393iths=";
-    };
-    "19" = rec {
-      version = "19.1.10";
-      rev = "v${version}";
-      hash = "sha256-VgA47AGMnOKYNeW95nxJZzmKnYK8D/9okgssPnPqXXI=";
-    };
     "18" = rec {
       version = "18.1.15";
-      rev = "v${version}";
       hash = "sha256-rt3RTZut41uDEh0YmpOzH3sOezeEVWtAIGMKCHLSJBw=";
+      rev = "v${version}";
+    };
+
+    "19" = rec {
+      version = "19.1.10";
+      hash = "sha256-VgA47AGMnOKYNeW95nxJZzmKnYK8D/9okgssPnPqXXI=";
+      rev = "v${version}";
+    };
+
+    "20" = rec {
+      version = "20.1.5";
+      hash = "sha256-GdlC/Vl61nTNdua2s+CW2YOvkSKK6MNOvBc/393iths=";
+      rev = "v${version}";
+    };
+
+    "21" = rec {
+      version = "21.1.0";
+      hash = "sha256-kk8BbPl/UBW1gaO/cuOQ9OsiNTEk0TkvRDLKUAh6exk=";
+      rev = "v${version}";
+    };
+
+    "22" = rec {
+      version = "22.1.3";
+      hash = "sha256-u/OytBH9LgAyGF9PX+5lmAbGPQ7iVv52w8mwQ+6fi/s=";
+      rev = "v${version}";
     };
   };
 
   branch =
     versions."${llvmMajor}" or {
       version = "${llvmMajor}.x.x";
-      rev = "";
       hash = "";
+      rev = "";
     };
 in
 stdenv.mkDerivation {
-  pname = "SPIRV-LLVM-Translator";
   inherit (branch) version;
+  pname = "SPIRV-LLVM-Translator";
 
   src = fetchFromGitHub {
+    inherit (branch) rev hash;
     owner = "KhronosGroup";
     repo = "SPIRV-LLVM-Translator";
-    inherit (branch) rev hash;
   };
 
   # TODO: Remove.
@@ -76,8 +80,6 @@ stdenv.mkDerivation {
     llvm
   ];
 
-  nativeCheckInputs = [ lit ];
-
   cmakeFlags = [
     "-DLLVM_INCLUDE_TESTS=ON"
     "-DLLVM_DIR=${llvm.dev}"
@@ -91,13 +93,14 @@ stdenv.mkDerivation {
     lib.toInt llvmMajor >= 19
   ) "-DBASE_LLVM_VERSION=${lib.versions.majorMinor llvm.version}.0";
 
-  # FIXME: CMake tries to run "/llvm-lit" which of course doesn't exist
-  doCheck = false;
-
   makeFlags = [
     "all"
     "llvm-spirv"
   ];
+
+  # FIXME: CMake tries to run "/llvm-lit" which of course doesn't exist
+  doCheck = false;
+  nativeCheckInputs = [ lit ];
 
   postInstall = ''
     install -D tools/llvm-spirv/llvm-spirv $out/bin/llvm-spirv
@@ -112,12 +115,12 @@ stdenv.mkDerivation {
   );
 
   meta = {
-    homepage = "https://github.com/KhronosGroup/SPIRV-LLVM-Translator";
     description = "Tool and a library for bi-directional translation between SPIR-V and LLVM IR";
-    mainProgram = "llvm-spirv";
+    homepage = "https://github.com/KhronosGroup/SPIRV-LLVM-Translator";
     license = lib.licenses.ncsa;
-    platforms = lib.platforms.unix;
     maintainers = with lib.maintainers; [ gloaming ];
+    platforms = lib.platforms.unix;
+    mainProgram = "llvm-spirv";
     broken = !(versions ? ${llvmMajor});
   };
 }

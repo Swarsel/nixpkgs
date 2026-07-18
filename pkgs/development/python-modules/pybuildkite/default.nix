@@ -1,24 +1,19 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # build-system
-  setuptools,
-
-  # dependencies
-  requests,
-
+  buildPythonPackage,
   # tests
   pytest-cov-stub,
   pytestCheckHook,
+  # dependencies
+  requests,
+  # build-system
+  setuptools,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "pybuildkite";
   version = "1.3.0";
-  pyproject = true;
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "pyasi";
@@ -26,6 +21,13 @@ buildPythonPackage (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-yMUZUkERfxMUkVVYNkPiFf9wrZR6d5+gqW/P6ri2Q1I=";
   };
+
+  nativeCheckInputs = [
+    pytest-cov-stub
+    pytestCheckHook
+  ];
+
+  __structuredAttrs = true;
 
   build-system = [
     setuptools
@@ -35,12 +37,8 @@ buildPythonPackage (finalAttrs: {
     requests
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "pybuildkite" ];
-
-  nativeCheckInputs = [
-    pytest-cov-stub
-    pytestCheckHook
-  ];
 
   meta = {
     description = "Python library for the Buildkite API";

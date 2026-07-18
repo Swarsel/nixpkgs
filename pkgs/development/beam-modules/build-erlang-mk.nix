@@ -1,29 +1,29 @@
 {
-  stdenv,
-  writeText,
-  erlang,
-  perl,
-  which,
-  gitMinimal,
-  wget,
   lib,
+  stdenv,
+  erlang,
+  gitMinimal,
+  perl,
+  wget,
+  which,
+  writeText,
 }:
 
 {
   name,
-  version,
   src,
-  setupHook ? null,
-  buildInputs ? [ ],
+  version,
   beamDeps ? [ ],
-  postPatch ? "",
-  compilePorts ? false,
-  installPhase ? null,
-  buildPhase ? null,
-  configurePhase ? null,
-  meta ? { },
-  enableDebugInfo ? false,
   buildFlags ? [ ],
+  buildInputs ? [ ],
+  buildPhase ? null,
+  compilePorts ? false,
+  configurePhase ? null,
+  enableDebugInfo ? false,
+  installPhase ? null,
+  meta ? { },
+  postPatch ? "",
+  setupHook ? null,
   ...
 }@attrs:
 
@@ -33,8 +33,8 @@ let
   shell =
     drv:
     stdenv.mkDerivation {
-      name = "interactive-shell-${drv.name}";
       buildInputs = [ drv ];
+      name = "interactive-shell-${drv.name}";
     };
 
   pkg =
@@ -42,21 +42,8 @@ let
     stdenv.mkDerivation (
       attrs
       // {
-        app_name = name;
-        name = "${name}-${version}";
         inherit version;
-
-        dontStrip = true;
-
         inherit src;
-
-        setupHook =
-          if setupHook == null then
-            writeText "setupHook.sh" ''
-              addToSearchPath ERL_LIBS "$1/lib/erlang/lib"
-            ''
-          else
-            setupHook;
 
         buildInputs = buildInputs ++ [
           erlang
@@ -65,6 +52,7 @@ let
           gitMinimal
           wget
         ];
+
         propagatedBuildInputs = beamDeps;
 
         buildFlags = [
@@ -72,20 +60,6 @@ let
         ]
         ++ lib.optional (enableDebugInfo || erlang.debugInfo) ''ERL_OPTS="$ERL_OPTS +debug_info"''
         ++ buildFlags;
-
-        configurePhase =
-          if configurePhase == null then
-            ''
-              runHook preConfigure
-
-              # We shouldnt need to do this, but it seems at times there is a *.app in
-              # the repo/package. This ensures we start from a clean slate
-              make SKIP_DEPS=1 clean
-
-              runHook postConfigure
-            ''
-          else
-            configurePhase;
 
         buildPhase =
           if buildPhase == null then
@@ -125,10 +99,37 @@ let
           else
             installPhase;
 
+        app_name = name;
+
+        configurePhase =
+          if configurePhase == null then
+            ''
+              runHook preConfigure
+
+              # We shouldnt need to do this, but it seems at times there is a *.app in
+              # the repo/package. This ensures we start from a clean slate
+              make SKIP_DEPS=1 clean
+
+              runHook postConfigure
+            ''
+          else
+            configurePhase;
+
+        dontStrip = true;
+        name = "${name}-${version}";
+
+        setupHook =
+          if setupHook == null then
+            writeText "setupHook.sh" ''
+              addToSearchPath ERL_LIBS "$1/lib/erlang/lib"
+            ''
+          else
+            setupHook;
+
         passthru = {
-          packageName = name;
-          env = shell self;
           inherit beamDeps;
+          env = shell self;
+          packageName = name;
         };
       }
     );

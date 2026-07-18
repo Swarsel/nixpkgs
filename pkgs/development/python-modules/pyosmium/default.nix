@@ -1,31 +1,28 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  cmake,
-  libosmium,
-  protozero,
-  expat,
+  buildPythonPackage,
   bzip2,
-  zlib,
+  cmake,
+  expat,
+  isPyPy,
+  libosmium,
+  lz4,
+  ninja,
+  protozero,
   pybind11,
   pytest-httpserver,
   pytestCheckHook,
+  requests,
   scikit-build-core,
-  ninja,
   shapely,
   werkzeug,
-  isPyPy,
-  lz4,
-  requests,
+  zlib,
 }:
 
 buildPythonPackage rec {
   pname = "pyosmium";
   version = "4.3.1";
-  pyproject = true;
-
-  disabled = isPyPy;
 
   src = fetchFromGitHub {
     owner = "osmcode";
@@ -33,11 +30,6 @@ buildPythonPackage rec {
     tag = "v${version}";
     hash = "sha256-lEkT+3R6200XarMW1oZcOzMLPviDcpG8kQilXVWOyu0=";
   };
-
-  build-system = [
-    scikit-build-core
-    ninja
-  ];
 
   nativeBuildInputs = [ cmake ];
 
@@ -51,8 +43,6 @@ buildPythonPackage rec {
     lz4
   ];
 
-  dependencies = [ requests ];
-
   preBuild = "cd ..";
 
   nativeCheckInputs = [
@@ -63,6 +53,15 @@ buildPythonPackage rec {
   ];
 
   __darwinAllowLocalNetworking = true;
+
+  build-system = [
+    scikit-build-core
+    ninja
+  ];
+
+  dependencies = [ requests ];
+  disabled = isPyPy;
+  pyproject = true;
 
   meta = {
     description = "Python bindings for libosmium";

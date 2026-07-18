@@ -1,24 +1,20 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
+  buildPythonPackage,
+  # dependencies
+  more-itertools,
+  # checks
+  pytestCheckHook,
   # build-system
   setuptools,
   setuptools-scm,
-
-  # dependencies
-  more-itertools,
   typeguard,
-
-  # checks
-  pytestCheckHook,
 }:
 
 buildPythonPackage rec {
   pname = "inflect";
   version = "7.5.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "jaraco";
@@ -26,6 +22,8 @@ buildPythonPackage rec {
     tag = "v${version}";
     hash = "sha256-JQn0JySzXFnqz/dPc7BGLzd23Bh72S+/aI40gxAgx8k=";
   };
+
+  nativeCheckInputs = [ pytestCheckHook ];
 
   build-system = [
     setuptools
@@ -37,13 +35,12 @@ buildPythonPackage rec {
     typeguard
   ];
 
-  nativeCheckInputs = [ pytestCheckHook ];
-
   disabledTests = [
     # https://errors.pydantic.dev/2.5/v/string_too_short
     "inflect.engine.compare"
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "inflect" ];
 
   meta = {

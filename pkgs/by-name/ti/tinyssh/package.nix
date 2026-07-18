@@ -17,9 +17,7 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   env.NIX_CFLAGS_COMPILE = lib.optionalString stdenv.cc.isClang "-Wno-error=implicit-function-declaration";
-
   installFlags = [ "PREFIX=${placeholder "out"}" ];
-
   passthru.updateScript = nix-update-script { };
 
   meta = {
@@ -27,7 +25,7 @@ stdenv.mkDerivation (finalAttrs: {
     homepage = "https://tinyssh.org";
     changelog = "https://github.com/janmojzis/tinyssh/releases/tag/${finalAttrs.version}";
     license = lib.licenses.cc0;
-    platforms = lib.platforms.unix;
     maintainers = with lib.maintainers; [ kaction ];
+    platforms = lib.platforms.unix;
   };
 })

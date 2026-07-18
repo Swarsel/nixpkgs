@@ -1,19 +1,18 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
+  buildPythonPackage,
   plover-dict-commands,
   plover-last-translation,
   plover-modal-dictionary,
   plover-python-dictionary,
   plover-stitching,
+  setuptools,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "plover-lapwing-aio";
   version = "1.5.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "aerickt";
@@ -39,6 +38,8 @@ buildPythonPackage (finalAttrs: {
     plover-stitching
   ];
 
+  pyproject = true;
+
   pythonImportsCheck = [
     "plover_lapwing"
   ];
@@ -47,6 +48,7 @@ buildPythonPackage (finalAttrs: {
     description = "Plover plugin to automatically install Lapwing dictionaries, dependent plugins, extra dictionaries, and fix the number key behaviour";
     homepage = "https://github.com/aerickt/plover-lapwing-aio";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       pandapip1
       ShamrockLee

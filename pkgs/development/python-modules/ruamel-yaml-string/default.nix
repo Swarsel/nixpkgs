@@ -1,30 +1,27 @@
 {
   lib,
   buildPythonPackage,
-  pythonAtLeast,
   fetchPypi,
-  setuptools,
+  pythonAtLeast,
   ruamel-yaml,
+  setuptools,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "ruamel-yaml-string";
   version = "0.1.1";
-  pyproject = true;
-
-  # ImportError: cannot import name 'Str' from 'ast'
-  disabled = pythonAtLeast "3.14";
 
   src = fetchPypi {
     inherit (finalAttrs) version;
-    pname = "ruamel.yaml.string";
     hash = "sha256-enrtzAVdRcAE04t1b1hHTr77EGhR9M5WzlhBVwl4Q1A=";
+    pname = "ruamel.yaml.string";
   };
 
   build-system = [ setuptools ];
-
   dependencies = [ ruamel-yaml ];
-
+  # ImportError: cannot import name 'Str' from 'ast'
+  disabled = pythonAtLeast "3.14";
+  pyproject = true;
   pythonImportsCheck = [ "ruamel.yaml" ];
 
   meta = {

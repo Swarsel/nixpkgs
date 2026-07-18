@@ -1,43 +1,49 @@
 {
   lib,
+  anyio,
   buildPythonPackage,
+  dirty-equals,
+  distro,
   fetchPypi,
-  hatchling,
   hatch-fancy-pypi-readme,
-  pythonOlder,
-  pythonAtLeast,
-
+  hatchling,
   # Dependencies
   httpx,
+  llama-index-core,
   pydantic,
-  anyio,
-  distro,
-  sniffio,
-
-  # Test dependencies
-  pytestCheckHook,
   pytest-asyncio,
   pytest-xdist,
-  dirty-equals,
+  # Test dependencies
+  pytestCheckHook,
+  pythonAtLeast,
+  pythonOlder,
   respx,
-  llama-index-core,
+  sniffio,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "llama-cloud";
   version = "2.11.0";
-  pyproject = true;
 
   src = fetchPypi {
-    pname = "llama_cloud";
     inherit (finalAttrs) version;
     hash = "sha256-vvyYS5vxN2cMEIEAy82qd1PCxh/TYcDOL6YivkjN9c0=";
+    pname = "llama_cloud";
   };
 
   postPatch = ''
     substituteInPlace pyproject.toml \
       --replace-fail "hatchling==1.26.3" "hatchling>=1.26.3"
   '';
+
+  nativeCheckInputs = [
+    pytestCheckHook
+    pytest-asyncio
+    pytest-xdist
+    dirty-equals
+    respx
+  ]
+  ++ lib.optional (pythonOlder "3.14") llama-index-core;
 
   build-system = [
     hatchling
@@ -52,18 +58,9 @@ buildPythonPackage (finalAttrs: {
     anyio
   ];
 
-  nativeCheckInputs = [
-    pytestCheckHook
-    pytest-asyncio
-    pytest-xdist
-    dirty-equals
-    respx
-  ]
-  ++ lib.optional (pythonOlder "3.14") llama-index-core;
-
   # Transitively requires google-pasta (broken on 3.14) through llama-index-core
   disabledTestPaths = lib.optional (pythonAtLeast "3.14") "tests/test_index.py";
-
+  pyproject = true;
   pythonImportsCheck = [ "llama_cloud" ];
 
   meta = {

@@ -1,20 +1,17 @@
 {
   lib,
-  yojson,
+  buildDunePackage,
   csexp,
   findlib,
-  buildDunePackage,
-  merlin-lib,
   merlin,
+  merlin-lib,
   result,
+  yojson,
 }:
 
 buildDunePackage rec {
-  pname = "dot-merlin-reader";
-
   inherit (merlin) version src;
-
-  minimalOCamlVersion = "4.06";
+  pname = "dot-merlin-reader";
 
   buildInputs = [
     findlib
@@ -30,11 +27,13 @@ buildDunePackage rec {
       ]
   );
 
+  minimalOCamlVersion = "4.06";
+
   meta = {
     description = "Reads config files for merlin";
-    mainProgram = "dot-merlin-reader";
     homepage = "https://github.com/ocaml/merlin";
     license = lib.licenses.mit;
     maintainers = [ lib.maintainers.hongchangwu ];
+    mainProgram = "dot-merlin-reader";
   };
 }

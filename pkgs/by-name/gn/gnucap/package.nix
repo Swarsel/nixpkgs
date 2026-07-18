@@ -1,11 +1,11 @@
 {
+  lib,
+  stdenv,
   callPackage,
   fetchgit,
   installShellFiles,
-  lib,
   readline,
   runCommand,
-  stdenv,
   termcap,
   writeScript,
 }:
@@ -36,6 +36,8 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   passthru = {
+    plugins = callPackage ./plugins.nix { };
+
     tests = {
       verilog = runCommand "gnucap-verilog-test" { } ''
         echo "attach mgsim" | ${
@@ -45,7 +47,6 @@ stdenv.mkDerivation (finalAttrs: {
       '';
     };
 
-    plugins = callPackage ./plugins.nix { };
     withPlugins =
       p:
       let
@@ -60,34 +61,34 @@ stdenv.mkDerivation (finalAttrs: {
         '';
       in
       stdenv.mkDerivation {
-        pname = "${finalAttrs.pname}-with-plugins";
         inherit (finalAttrs) version;
-
+        inherit (finalAttrs) meta;
+        pname = "${finalAttrs.pname}-with-plugins";
         propagatedBuildInputs = selectedPlugins;
-
-        dontUnpack = true;
 
         installPhase = ''
           mkdir -p $out/bin
           cp ${wrapper} $out/bin/gnucap
         '';
 
-        inherit (finalAttrs) meta;
+        dontUnpack = true;
       };
   };
 
   meta = {
     description = "Gnu Circuit Analysis Package";
+
     longDescription = ''
       Gnucap is a modern general purpose circuit simulator with several advantages over Spice derivatives.
       It performs nonlinear dc and transient analyses, fourier analysis, and ac analysis.
     '';
+
     homepage = "http://www.gnucap.org/";
     changelog = "https://gitweb.git.savannah.gnu.org/gitweb/?p=gnucap.git;a=blob;f=NEWS";
     license = lib.licenses.gpl3Only;
-    platforms = lib.platforms.all;
-    broken = stdenv.hostPlatform.isDarwin; # Relies on LD_LIBRARY_PATH
     maintainers = [ lib.maintainers.raboof ];
+    platforms = lib.platforms.all;
     mainProgram = "gnucap";
+    broken = stdenv.hostPlatform.isDarwin; # Relies on LD_LIBRARY_PATH
   };
 })

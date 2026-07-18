@@ -1,15 +1,15 @@
 {
-  cri-o-unwrapped,
-  runCommand,
-  makeWrapper,
   lib,
-  extraPackages ? [ ],
-  runc, # Default container runtime
-  conntrack-tools,
-  crun, # Container runtime (default with cgroups v2 for podman/buildah)
   conmon, # Container runtime monitor
-  util-linux, # nsenter
+  conntrack-tools,
+  cri-o-unwrapped,
+  crun, # Container runtime (default with cgroups v2 for podman/buildah)
   iptables,
+  makeWrapper,
+  runCommand,
+  runc, # Default container runtime
+  util-linux, # nsenter
+  extraPackages ? [ ],
 }:
 
 let
@@ -28,12 +28,7 @@ let
 in
 runCommand cri-o-unwrapped.name
   {
-    name = "${cri-o-unwrapped.pname}-wrapper-${cri-o-unwrapped.version}";
     inherit (cri-o-unwrapped) pname version passthru;
-
-    preferLocalBuild = true;
-
-    meta = removeAttrs cri-o-unwrapped.meta [ "outputsToInstall" ];
 
     outputs = [
       "out"
@@ -43,6 +38,10 @@ runCommand cri-o-unwrapped.name
     nativeBuildInputs = [
       makeWrapper
     ];
+
+    name = "${cri-o-unwrapped.pname}-wrapper-${cri-o-unwrapped.version}";
+    preferLocalBuild = true;
+    meta = removeAttrs cri-o-unwrapped.meta [ "outputsToInstall" ];
 
   }
   ''

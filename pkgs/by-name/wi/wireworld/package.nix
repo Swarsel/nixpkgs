@@ -2,12 +2,12 @@
   lib,
   stdenv,
   fetchFromGitLab,
-  zip,
-  love,
-  makeWrapper,
-  makeDesktopItem,
   copyDesktopItems,
+  love,
+  makeDesktopItem,
+  makeWrapper,
   strip-nondeterminism,
+  zip,
 }:
 
 stdenv.mkDerivation {
@@ -28,17 +28,6 @@ stdenv.mkDerivation {
     zip
   ];
 
-  desktopItems = [
-    (makeDesktopItem {
-      name = "Wireworld";
-      exec = "Wireworld";
-      comment = "";
-      desktopName = "Wireworld";
-      genericName = "Wireworld";
-      categories = [ "Game" ];
-    })
-  ];
-
   installPhase = ''
     runHook preInstall
     zip -9 -r Wireworld.love ./*
@@ -49,10 +38,21 @@ stdenv.mkDerivation {
     runHook postInstall
   '';
 
+  desktopItems = [
+    (makeDesktopItem {
+      categories = [ "Game" ];
+      comment = "";
+      desktopName = "Wireworld";
+      exec = "Wireworld";
+      genericName = "Wireworld";
+      name = "Wireworld";
+    })
+  ];
+
   meta = {
     description = "Fascinating electronics logic puzzles, game where you'll learn how to build clocks, diodes, and logic gates";
     homepage = "https://gitlab.com/blinry/wireworld";
-    mainProgram = "Wireworld";
+
     license = with lib.licenses; [
       mit
       ofl
@@ -60,8 +60,10 @@ stdenv.mkDerivation {
       cc-by-sa-30
       cc-by-sa-40
     ];
-    downloadPage = "https://ldjam.com/events/ludum-dare/53/wireworld";
+
     maintainers = [ ];
+    mainProgram = "Wireworld";
+    downloadPage = "https://ldjam.com/events/ludum-dare/53/wireworld";
   };
 
 }

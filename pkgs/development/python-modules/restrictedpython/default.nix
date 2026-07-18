@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   pytest-mock,
   pytestCheckHook,
   setuptools,
@@ -10,7 +10,6 @@
 buildPythonPackage rec {
   pname = "restrictedpython";
   version = "8.4";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "zopefoundation";
@@ -24,13 +23,13 @@ buildPythonPackage rec {
       --replace-fail "setuptools >= 78.1.1,< 82" setuptools
   '';
 
-  build-system = [ setuptools ];
-
   nativeCheckInputs = [
     pytestCheckHook
     pytest-mock
   ];
 
+  build-system = [ setuptools ];
+  pyproject = true;
   pythonImportsCheck = [ "RestrictedPython" ];
 
   meta = {

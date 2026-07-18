@@ -2,15 +2,15 @@
   lib,
   stdenv,
   fetchFromGitHub,
+  adwaita-icon-theme,
   fetchpatch,
+  gdl,
+  libchamplain_libsoup3,
   libxml2,
   meson,
   ninja,
-  vala,
   pkg-config,
-  adwaita-icon-theme,
-  libchamplain_libsoup3,
-  gdl,
+  vala,
   wrapGAppsHook3,
 }:
 
@@ -28,8 +28,8 @@ stdenv.mkDerivation rec {
   patches = [
     # Compile with libchamplain>=0.12.21
     (fetchpatch {
-      url = "https://github.com/DaveDavenport/gpx-viewer/commit/12ed6003bdad840586351bdb4e00c18719873c0e.patch";
       hash = "sha256-2/r0M3Yxj+vWgny1Pd5G7NYMb0uC/ByZ7y3tqLVccOc=";
+      url = "https://github.com/DaveDavenport/gpx-viewer/commit/12ed6003bdad840586351bdb4e00c18719873c0e.patch";
     })
   ];
 
@@ -51,12 +51,12 @@ stdenv.mkDerivation rec {
   hardeningDisable = [ "format" ];
 
   meta = {
-    homepage = "https://blog.sarine.nl/tag/gpxviewer/";
     description = "Simple tool to visualize tracks and waypoints stored in a gpx file";
-    mainProgram = "gpx-viewer";
+    homepage = "https://blog.sarine.nl/tag/gpxviewer/";
     changelog = "https://github.com/DaveDavenport/gpx-viewer/blob/${src.rev}/NEWS";
-    platforms = with lib.platforms; linux;
     license = lib.licenses.gpl2Plus;
     maintainers = with lib.maintainers; [ dotlambda ];
+    platforms = with lib.platforms; linux;
+    mainProgram = "gpx-viewer";
   };
 }

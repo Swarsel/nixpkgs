@@ -16,21 +16,23 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-+/TTlGk1ePPTHrSTSZmPHT2h3gKs9ouCF4ElvLWHF/g=";
   };
 
-  nativeBuildInputs = [ autoreconfHook ];
-
   outputs = [
     "out"
     "dev"
   ];
 
+  nativeBuildInputs = [ autoreconfHook ];
+
   meta = {
-    homepage = "https://libcpuid.sourceforge.net/";
     description = "Small C library for CPU detection and feature extraction";
-    mainProgram = "cpuid_tool";
+    homepage = "https://libcpuid.sourceforge.net/";
     changelog = "https://raw.githubusercontent.com/anrieff/libcpuid/master/ChangeLog";
     license = lib.licenses.bsd2;
+
     maintainers = [
     ];
+
     platforms = lib.platforms.x86 ++ lib.platforms.arm ++ lib.platforms.aarch64;
+    mainProgram = "cpuid_tool";
   };
 })

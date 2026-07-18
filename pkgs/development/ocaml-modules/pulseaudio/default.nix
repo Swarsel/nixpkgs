@@ -1,7 +1,7 @@
 {
   lib,
-  buildDunePackage,
   fetchFromGitHub,
+  buildDunePackage,
   dune-configurator,
   pkg-config,
   pulseaudio,
@@ -23,8 +23,8 @@ buildDunePackage (finalAttrs: {
   propagatedBuildInputs = [ pulseaudio ];
 
   meta = {
-    homepage = "https://github.com/savonet/ocaml-pulseaudio";
     description = "Bindings to Pulseaudio client library";
+    homepage = "https://github.com/savonet/ocaml-pulseaudio";
     license = lib.licenses.lgpl21Only;
     maintainers = with lib.maintainers; [ dandellion ];
   };

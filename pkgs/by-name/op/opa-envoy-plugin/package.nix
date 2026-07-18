@@ -1,10 +1,9 @@
 {
   lib,
   stdenv,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   installShellFiles,
-
   enableWasmEval ? false,
 }:
 
@@ -23,31 +22,15 @@ buildGoModule (finalAttrs: {
     hash = "sha256-XVdPC2kjdqXgpWfA4ysPoM6xJYuz+Dlf2IpbBDv87EQ=";
   };
 
-  vendorHash = "sha256-7AIrQmqWRprBU/wJPW+Nhz+mzWKcxMJNuvtLSMMHauc=";
-
   nativeBuildInputs = [ installShellFiles ];
-
-  subPackages = [ "./cmd/opa-envoy-plugin" ];
-
-  ldflags = [
-    "-s"
-    "-w"
-    "-X github.com/open-policy-agent/opa/v1/version.Version=${finalAttrs.version}"
-  ];
-
-  tags = lib.optional enableWasmEval (
-    builtins.trace (
-      "Warning: enableWasmEval breaks reproducability, "
-      + "ensure you need wasm evaluation. "
-      + "`opa build` does not need this feature."
-    ) "opa_wasm"
-  );
+  vendorHash = "sha256-7AIrQmqWRprBU/wJPW+Nhz+mzWKcxMJNuvtLSMMHauc=";
 
   checkPhase = ''
     go test -v $(go list ./.../ | grep -v 'vendor')
   '';
 
   doInstallCheck = true;
+
   installCheckPhase = ''
     runHook preInstallCheck
 
@@ -63,20 +46,40 @@ buildGoModule (finalAttrs: {
     runHook postInstallCheck
   '';
 
+  ldflags = [
+    "-s"
+    "-w"
+    "-X github.com/open-policy-agent/opa/v1/version.Version=${finalAttrs.version}"
+  ];
+
+  subPackages = [ "./cmd/opa-envoy-plugin" ];
+
+  tags = lib.optional enableWasmEval (
+    builtins.trace (
+      "Warning: enableWasmEval breaks reproducability, "
+      + "ensure you need wasm evaluation. "
+      + "`opa build` does not need this feature."
+    ) "opa_wasm"
+  );
+
   meta = {
-    mainProgram = "opa";
-    homepage = "https://www.openpolicyagent.org/docs/latest/envoy-introduction/";
-    changelog = "https://github.com/open-policy-agent/opa-envoy-plugin/blob/v${finalAttrs.version}/CHANGELOG.md";
     description = "Plugin to enforce OPA policies with Envoy";
+
     longDescription = ''
       OPA-Envoy extends OPA with a gRPC server that implements the Envoy
       External Authorization API. You can use this version of OPA to enforce
       fine-grained, context-aware access control policies with Envoy without
       modifying your microservice.
     '';
+
+    homepage = "https://www.openpolicyagent.org/docs/latest/envoy-introduction/";
+    changelog = "https://github.com/open-policy-agent/opa-envoy-plugin/blob/v${finalAttrs.version}/CHANGELOG.md";
     license = lib.licenses.asl20;
+
     maintainers = with lib.maintainers; [
       charlieegan3
     ];
+
+    mainProgram = "opa";
   };
 })

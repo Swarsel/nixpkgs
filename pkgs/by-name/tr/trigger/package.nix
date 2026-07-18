@@ -1,20 +1,20 @@
 {
   lib,
-  fetchurl,
   stdenv,
-  runtimeShell,
+  fetchurl,
   SDL2,
-  freealut,
   SDL2_image,
+  copyDesktopItems,
+  freealut,
+  glew,
+  libGL,
+  libGLU,
+  makeDesktopItem,
   openal,
   physfs,
-  zlib,
-  libGLU,
-  libGL,
-  glew,
+  runtimeShell,
   tinyxml-2,
-  copyDesktopItems,
-  makeDesktopItem,
+  zlib,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -41,6 +41,10 @@ stdenv.mkDerivation (finalAttrs: {
     tinyxml-2
   ];
 
+  makeFlags = [
+    "prefix=${placeholder "out"}"
+  ];
+
   preConfigure = ''
     sed s,/usr/local,$out, -i bin/*defs
 
@@ -49,12 +53,6 @@ stdenv.mkDerivation (finalAttrs: {
     sed s,lSDL2main,lSDL2, -i GNUmakefile
     export NIX_CFLAGS_COMPILE="$NIX_CFLAGS_COMPILE -I${lib.getInclude SDL2}/include/SDL2"
   '';
-
-  makeFlags = [
-    "prefix=${placeholder "out"}"
-  ];
-
-  enableParallelBuilding = true;
 
   postInstall = ''
     mkdir -p $out/bin
@@ -69,24 +67,27 @@ stdenv.mkDerivation (finalAttrs: {
 
   desktopItems = [
     (makeDesktopItem {
-      name = "Trigger";
-      exec = "trigger-rally";
-      icon = "trigger";
-      desktopName = "Trigger";
-      comment = "Fast-paced 3D single-player rally racing game";
       categories = [
         "Game"
         "ActionGame"
       ];
+
+      comment = "Fast-paced 3D single-player rally racing game";
+      desktopName = "Trigger";
+      exec = "trigger-rally";
+      icon = "trigger";
+      name = "Trigger";
     })
   ];
 
+  enableParallelBuilding = true;
+
   meta = {
     description = "Fast-paced single-player racing game";
-    mainProgram = "trigger-rally";
     homepage = "http://trigger-rally.sourceforge.net/";
     license = lib.licenses.gpl2Plus;
     maintainers = [ ];
     platforms = with lib.platforms; linux;
+    mainProgram = "trigger-rally";
   };
 })

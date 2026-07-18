@@ -1,26 +1,25 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
-  python3Packages,
-  hackrf,
-  rtl-sdr,
   airspy,
-  limesuite,
-  libiio,
-  libbladeRF,
-  makeDesktopItem,
   copyDesktopItems,
+  hackrf,
+  libbladeRF,
+  libiio,
+  limesuite,
+  makeDesktopItem,
+  python3Packages,
   qt5,
+  rtl-sdr,
+  uhd,
   wrapGAppsHook3,
   USRPSupport ? false,
-  uhd,
 }:
 
 python3Packages.buildPythonApplication (finalAttrs: {
   pname = "urh";
   version = "2.9.8-unstable-2025-07-31";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "jopohl";
@@ -29,13 +28,12 @@ python3Packages.buildPythonApplication (finalAttrs: {
     hash = "sha256-oLtMyk9szXiHSPzEzhG58FQ2HAG4JTAPhJvk2rfycAc=";
   };
 
-  build-system = [ python3Packages.setuptools ];
-
   nativeBuildInputs = [
     qt5.wrapQtAppsHook
     wrapGAppsHook3
     copyDesktopItems
   ];
+
   buildInputs = [
     hackrf
     rtl-sdr
@@ -47,6 +45,21 @@ python3Packages.buildPythonApplication (finalAttrs: {
   ++ lib.optional USRPSupport uhd
   ++ lib.optional stdenv.hostPlatform.isLinux qt5.qtwayland;
 
+  doCheck = false;
+
+  postInstall = ''
+    install -Dm644 data/icons/appicon.png $out/share/icons/hicolor/512x512/apps/urh.png
+  '';
+
+  preFixup = ''
+    makeWrapperArgs+=(
+      ''${gappsWrapperArgs[@]}
+      ''${qtWrapperArgs[@]}
+    )
+  '';
+
+  build-system = [ python3Packages.setuptools ];
+
   dependencies = with python3Packages; [
     pyqt5
     numpy
@@ -57,42 +70,32 @@ python3Packages.buildPythonApplication (finalAttrs: {
     setuptools
   ];
 
-  # dont double wrap
-  # https://nixos.org/manual/nixpkgs/stable/#ssec-gnome-common-issues-double-wrapped
-  dontWrapGApps = true;
-  dontWrapQtApps = true;
-  preFixup = ''
-    makeWrapperArgs+=(
-      ''${gappsWrapperArgs[@]}
-      ''${qtWrapperArgs[@]}
-    )
-  '';
-
-  doCheck = false;
-
   desktopItems = [
     (makeDesktopItem {
-      name = "urh";
-      exec = "urh";
-      icon = "urh";
-      desktopName = "Universal Radio Hacker";
       categories = [
         "Network"
         "HamRadio"
       ];
+
       comment = finalAttrs.meta.description;
+      desktopName = "Universal Radio Hacker";
+      exec = "urh";
+      icon = "urh";
+      name = "urh";
     })
   ];
 
-  postInstall = ''
-    install -Dm644 data/icons/appicon.png $out/share/icons/hicolor/512x512/apps/urh.png
-  '';
+  # dont double wrap
+  # https://nixos.org/manual/nixpkgs/stable/#ssec-gnome-common-issues-double-wrapped
+  dontWrapGApps = true;
+  dontWrapQtApps = true;
+  pyproject = true;
 
   meta = {
-    homepage = "https://github.com/jopohl/urh";
     description = "Universal Radio Hacker: investigate wireless protocols like a boss";
+    homepage = "https://github.com/jopohl/urh";
     license = lib.licenses.gpl3;
-    platforms = lib.platforms.unix;
     maintainers = with lib.maintainers; [ fpletz ];
+    platforms = lib.platforms.unix;
   };
 })

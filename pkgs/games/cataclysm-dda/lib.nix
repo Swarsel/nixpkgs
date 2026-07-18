@@ -1,20 +1,6 @@
 { callPackage }:
 
 rec {
-  buildMod = callPackage ./builder.nix {
-    type = "mod";
-  };
-
-  buildSoundPack = callPackage ./builder.nix {
-    type = "soundpack";
-  };
-
-  buildTileSet = callPackage ./builder.nix {
-    type = "tileset";
-  };
-
-  wrapCDDA = callPackage ./wrapper.nix { };
-
   # Required to fix `pkgs` and `withMods` attrs after applying `overrideAttrs`.
   #
   # Example:
@@ -44,4 +30,18 @@ rec {
       });
     in
     self;
+
+  buildMod = callPackage ./builder.nix {
+    type = "mod";
+  };
+
+  buildSoundPack = callPackage ./builder.nix {
+    type = "soundpack";
+  };
+
+  buildTileSet = callPackage ./builder.nix {
+    type = "tileset";
+  };
+
+  wrapCDDA = callPackage ./wrapper.nix { };
 }

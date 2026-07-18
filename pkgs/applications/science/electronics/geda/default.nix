@@ -2,15 +2,15 @@
   lib,
   stdenv,
   fetchurl,
-  fetchpatch,
   autoreconfHook,
-  groff,
-  pkg-config,
-  guile,
-  gtk2,
+  fetchpatch,
   flex,
   gawk,
+  groff,
+  gtk2,
+  guile,
   perl,
+  pkg-config,
 }:
 
 stdenv.mkDerivation rec {
@@ -24,10 +24,24 @@ stdenv.mkDerivation rec {
 
   patches = [
     (fetchpatch {
+      hash = "sha256-jPQaHjEDwCEfZqDGku+xyIMl5WlWlVcpPv1W6Xf8Grs=";
       name = "geda-1.10.2-drop-xorn.patch";
       url = "https://gitweb.gentoo.org/repo/gentoo.git/plain/sci-electronics/geda/files/geda-1.10.2-drop-xorn.patch?id=5589cc7bc6c4f18f75c40725a550b8d76e7f5ca1";
-      hash = "sha256-jPQaHjEDwCEfZqDGku+xyIMl5WlWlVcpPv1W6Xf8Grs=";
     })
+  ];
+
+  nativeBuildInputs = [
+    autoreconfHook
+    groff
+    pkg-config
+  ];
+
+  buildInputs = [
+    guile
+    gtk2
+    flex
+    gawk
+    perl
   ];
 
   configureFlags = [
@@ -38,24 +52,11 @@ stdenv.mkDerivation rec {
   # gcc 15 C23 default breaks K&R () prototypes and errors on -Wincompatible-pointer-types
   env.NIX_CFLAGS_COMPILE = "-std=gnu17";
 
-  nativeBuildInputs = [
-    autoreconfHook
-    groff
-    pkg-config
-  ];
-  buildInputs = [
-    guile
-    gtk2
-    flex
-    gawk
-    perl
-  ];
-
   meta = {
     description = "Full GPL'd suite of Electronic Design Automation tools";
     homepage = "https://geda.sourceforge.net/";
+    license = lib.licenses.gpl2;
     maintainers = with lib.maintainers; [ pjones ];
     platforms = lib.platforms.linux;
-    license = lib.licenses.gpl2;
   };
 }

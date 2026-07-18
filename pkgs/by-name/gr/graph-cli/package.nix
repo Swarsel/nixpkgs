@@ -1,24 +1,23 @@
 {
   lib,
-  python3Packages,
   fetchPypi,
+  python3Packages,
   qt5,
 }:
 
 python3Packages.buildPythonApplication (finalAttrs: {
   pname = "graph-cli";
   version = "0.1.19";
-  pyproject = true;
 
   src = fetchPypi {
     inherit (finalAttrs) version;
-    pname = "graph_cli";
     hash = "sha256-AOfUgeVgcTtuf5IuLYy1zFTBCjWZxu0OiZzUVXDIaSc=";
+    pname = "graph_cli";
   };
 
   nativeBuildInputs = [ qt5.wrapQtAppsHook ];
-
-  dontWrapQtApps = true;
+  # does not contain tests despite reference in Makefile
+  doCheck = false;
 
   preFixup = ''
     makeWrapperArgs+=("''${qtWrapperArgs[@]}")
@@ -34,8 +33,8 @@ python3Packages.buildPythonApplication (finalAttrs: {
     (matplotlib.override { enableQt = true; })
   ];
 
-  # does not contain tests despite reference in Makefile
-  doCheck = false;
+  dontWrapQtApps = true;
+  pyproject = true;
   pythonImportsCheck = [ "graph_cli" ];
 
   meta = {

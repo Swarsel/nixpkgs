@@ -2,15 +2,16 @@
   lib,
   stdenv,
   fetchurl,
-  makeBinaryWrapper,
-  jre11_minimal,
   jdk11_headless,
-  versionCheckHook,
+  jre11_minimal,
+  makeBinaryWrapper,
   nix-update-script,
+  versionCheckHook,
 }:
 let
   jre11_minimal_headless = jre11_minimal.override {
     jdk = jdk11_headless;
+
     modules = [
       "java.logging"
     ];
@@ -28,8 +29,6 @@ stdenv.mkDerivation (finalAttrs: {
   nativeBuildInputs = [ makeBinaryWrapper ];
   buildInputs = [ jre11_minimal_headless ];
 
-  dontUnpack = true;
-
   installPhase = ''
     runHook preInstall
 
@@ -43,11 +42,14 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  doInstallCheck = true;
+
   nativeInstallCheckInputs = [
     versionCheckHook
   ];
+
+  dontUnpack = true;
   versionCheckProgram = "${placeholder "out"}/bin/rd";
-  doInstallCheck = true;
 
   passthru = {
     updateScript = nix-update-script { };
@@ -55,17 +57,19 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Official CLI tool for Rundeck";
+
     longDescription = ''
       The rd command provides command line access to the Rundeck HTTP API,
       allowing you to access and control your Rundeck server from the
       command line or shell scripts.
     '';
+
     homepage = "https://github.com/rundeck/rundeck-cli";
     changelog = "https://github.com/rundeck/rundeck-cli/blob/v${finalAttrs.version}/docs/changes.md";
-    sourceProvenance = [ lib.sourceTypes.binaryBytecode ];
     license = lib.licenses.asl20;
-    platforms = lib.platforms.unix;
+    sourceProvenance = [ lib.sourceTypes.binaryBytecode ];
     maintainers = with lib.maintainers; [ liberodark ];
+    platforms = lib.platforms.unix;
     mainProgram = "rd";
   };
 })

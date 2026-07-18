@@ -3,8 +3,8 @@
   stdenv,
   fetchFromSourcehut,
   fetchpatch,
-  wayland-scanner,
   wayland,
+  wayland-scanner,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -21,8 +21,8 @@ stdenv.mkDerivation (finalAttrs: {
   patches = [
     # Subject: [PATCH] fix JSON formatting of identifier string
     (fetchpatch {
-      url = "https://git.sr.ht/~leon_plickat/lswt/commit/d35786da4383388c19f5437128fd393a6f16f74f.patch";
       hash = "sha256-3RTq8BXRR7MgKV0BueoOjPORMrYVAKNbKR74hZ75W/Y=";
+      url = "https://git.sr.ht/~leon_plickat/lswt/commit/d35786da4383388c19f5437128fd393a6f16f74f.patch";
     })
   ];
 

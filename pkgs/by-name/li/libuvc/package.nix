@@ -3,8 +3,8 @@
   stdenv,
   fetchFromGitHub,
   cmake,
-  pkg-config,
   libusb1,
+  pkg-config,
 }:
 
 stdenv.mkDerivation {
@@ -32,10 +32,10 @@ stdenv.mkDerivation {
   buildInputs = [ libusb1 ];
 
   meta = {
-    homepage = "https://ken.tossell.net/libuvc/";
     description = "Cross-platform library for USB video devices";
-    platforms = lib.platforms.linux;
+    homepage = "https://ken.tossell.net/libuvc/";
     license = lib.licenses.lgpl21Plus;
     maintainers = with lib.maintainers; [ prusnak ];
+    platforms = lib.platforms.linux;
   };
 }

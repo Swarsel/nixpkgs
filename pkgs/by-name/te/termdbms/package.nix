@@ -15,9 +15,8 @@ buildGoModule (finalAttrs: {
     hash = "sha256-+4y9JmLnu0xCJs1p1GNwqCx2xP6YvbIPb4zuClt8fbA=";
   };
 
-  vendorHash = "sha256-RtgHus8k+6lvecG7+zABTo0go3kgoQj0S+3HaJHhKkE=";
-
   patches = [ ./viewer.patch ];
+  vendorHash = "sha256-RtgHus8k+6lvecG7+zABTo0go3kgoQj0S+3HaJHhKkE=";
 
   ldflags = [
     "-s"
@@ -26,8 +25,8 @@ buildGoModule (finalAttrs: {
   ];
 
   meta = {
-    homepage = "https://github.com/mathaou/termdbms/";
     description = "TUI for viewing and editing database files";
+    homepage = "https://github.com/mathaou/termdbms/";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ izorkin ];
     mainProgram = "sqlite3-viewer";

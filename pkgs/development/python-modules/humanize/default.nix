@@ -1,19 +1,18 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   freezegun,
   gettext,
-  pytestCheckHook,
-  python,
   hatch-vcs,
   hatchling,
+  pytestCheckHook,
+  python,
 }:
 
 buildPythonPackage rec {
   pname = "humanize";
   version = "4.15.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "python-humanize";
@@ -32,15 +31,16 @@ buildPythonPackage rec {
     scripts/generate-translation-binaries.sh
   '';
 
-  postInstall = ''
-    cp -r 'src/humanize/locale' "$out/${python.sitePackages}/humanize/"
-  '';
-
   nativeCheckInputs = [
     freezegun
     pytestCheckHook
   ];
 
+  postInstall = ''
+    cp -r 'src/humanize/locale' "$out/${python.sitePackages}/humanize/"
+  '';
+
+  pyproject = true;
   pythonImportsCheck = [ "humanize" ];
 
   meta = {
@@ -48,6 +48,7 @@ buildPythonPackage rec {
     homepage = "https://github.com/python-humanize/humanize";
     changelog = "https://github.com/python-humanize/humanize/releases/tag/${src.tag}";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       rmcgibbo
       Luflosi

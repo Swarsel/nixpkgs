@@ -1,25 +1,21 @@
 {
-  stdenvNoCC,
+  lib,
   bash,
   bluesky-pds,
-  makeBinaryWrapper,
-  jq,
   curl,
+  jq,
+  makeBinaryWrapper,
   openssl,
-  lib,
+  stdenvNoCC,
 }:
 
 stdenvNoCC.mkDerivation (finalAttrs: {
-  pname = "pdsadmin";
   inherit (bluesky-pds) version src;
-
+  pname = "pdsadmin";
   patches = [ ./pdsadmin-offline.patch ];
-
-  nativeBuildInputs = [ makeBinaryWrapper ];
-
-  buildInputs = [ bash ];
-
   strictDeps = true;
+  nativeBuildInputs = [ makeBinaryWrapper ];
+  buildInputs = [ bash ];
 
   buildPhase = ''
     runHook preBuild
@@ -48,8 +44,8 @@ stdenvNoCC.mkDerivation (finalAttrs: {
   '';
 
   meta = {
-    description = "Admin scripts for Bluesky Personal Data Server (PDS)";
     inherit (bluesky-pds.meta) homepage license;
+    description = "Admin scripts for Bluesky Personal Data Server (PDS)";
     maintainers = with lib.maintainers; [ t4ccer ];
     platforms = lib.platforms.unix;
     mainProgram = "pdsadmin";

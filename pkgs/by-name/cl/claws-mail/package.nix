@@ -1,53 +1,54 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchurl,
-  wrapGAppsHook3,
   autoreconfHook,
   bison,
-  flex,
   curl,
-  gtk3,
-  pkg-config,
-  python3,
-  shared-mime-info,
-  glib-networking,
-  gsettings-desktop-schemas,
-
-  # Package compatibility: old parameters whose name were not directly derived
-  enablePgp ? true,
-  enablePluginNotificationDialogs ? true,
-  enablePluginNotificationSounds ? true,
-  enablePluginPdf ? true,
-  enablePluginRavatar ? true,
-  enableSpellcheck ? true,
-
-  # Arguments to include external libraries
-  enableLibSM ? true,
-  libsm,
-  enableGnuTLS ? true,
-  gnutls,
-  enableEnchant ? enableSpellcheck,
-  enchant,
-  enableDbus ? true,
   dbus,
   dbus-glib,
-  enableLdap ? true,
-  openldap,
-  enableNetworkManager ? true,
-  networkmanager,
-  enableLibetpan ? true,
+  enchant,
+  flex,
+  glib-networking,
+  gnupg,
+  gnutls,
+  gpgme,
+  gsettings-desktop-schemas,
+  gtk3,
+  gumbo,
+  libarchive,
+  libcanberra-gtk3,
   libetpan,
-  enableValgrind ? !stdenv.hostPlatform.isDarwin && lib.meta.availableOn stdenv.hostPlatform valgrind,
-  valgrind,
-  enableSvg ? true,
+  libical,
+  libnotify,
   librsvg,
-
+  libsm,
+  libxml2,
+  libytnef,
+  networkmanager,
+  openldap,
+  perl,
+  pkg-config,
+  poppler,
+  python3,
+  shared-mime-info,
+  valgrind,
+  webkitgtk_4_1,
+  wrapGAppsHook3,
+  enableDbus ? true,
+  enableEnchant ? enableSpellcheck,
+  enableGnuTLS ? true,
+  enableLdap ? true,
+  # Arguments to include external libraries
+  enableLibSM ? true,
+  enableLibetpan ? true,
+  enableNetworkManager ? true,
+  # Package compatibility: old parameters whose name were not directly derived
+  enablePgp ? true,
   # Configure claws-mail's plugins
   enablePluginAcpiNotifier ? true,
   enablePluginAddressKeeper ? true,
   enablePluginArchive ? true,
-  libarchive,
   enablePluginAttRemover ? true,
   enablePluginAttachWarner ? true,
   enablePluginBogofilter ? true,
@@ -55,35 +56,31 @@
   enablePluginClamd ? true,
   enablePluginDillo ? true,
   enablePluginFancy ? true,
-  webkitgtk_4_1,
   enablePluginFetchInfo ? true,
   enablePluginKeywordWarner ? true,
   enablePluginLibravatar ? enablePluginRavatar,
   enablePluginLitehtmlViewer ? true,
-  gumbo,
   enablePluginMailmbox ? true,
   enablePluginManageSieve ? true,
   enablePluginNewMail ? true,
   enablePluginNotification ? (enablePluginNotificationDialogs || enablePluginNotificationSounds),
-  libcanberra-gtk3,
-  libnotify,
+  enablePluginNotificationDialogs ? true,
+  enablePluginNotificationSounds ? true,
+  enablePluginPdf ? true,
   enablePluginPdfViewer ? enablePluginPdf,
-  poppler,
   enablePluginPerl ? true,
-  perl,
-  enablePluginPython ? true,
   enablePluginPgp ? enablePgp,
-  gnupg,
-  gpgme,
+  enablePluginPython ? true,
+  enablePluginRavatar ? true,
   enablePluginRssyl ? true,
-  libxml2,
   enablePluginSmime ? true,
-  enablePluginSpamassassin ? true,
   enablePluginSpamReport ? true,
+  enablePluginSpamassassin ? true,
   enablePluginTnefParse ? true,
-  libytnef,
   enablePluginVcalendar ? true,
-  libical,
+  enableSpellcheck ? true,
+  enableSvg ? true,
+  enableValgrind ? !stdenv.hostPlatform.isDarwin && lib.meta.availableOn stdenv.hostPlatform valgrind,
 }:
 
 let
@@ -95,181 +92,184 @@ let
 
   features = [
     {
-      flags = [ "acpi_notifier-plugin" ];
       enabled = enablePluginAcpiNotifier;
+      flags = [ "acpi_notifier-plugin" ];
     }
     {
-      flags = [ "address_keeper-plugin" ];
       enabled = enablePluginAddressKeeper;
+      flags = [ "address_keeper-plugin" ];
     }
     {
-      flags = [ "archive-plugin" ];
-      enabled = enablePluginArchive;
       deps = [ libarchive ];
+      enabled = enablePluginArchive;
+      flags = [ "archive-plugin" ];
     }
     {
-      flags = [ "att_remover-plugin" ];
       enabled = enablePluginAttRemover;
+      flags = [ "att_remover-plugin" ];
     }
     {
-      flags = [ "attachwarner-plugin" ];
       enabled = enablePluginAttachWarner;
+      flags = [ "attachwarner-plugin" ];
     }
     {
-      flags = [ "bogofilter-plugin" ];
       enabled = enablePluginBogofilter;
+      flags = [ "bogofilter-plugin" ];
     }
     {
-      flags = [ "bsfilter-plugin" ];
       enabled = enablePluginBsfilter;
+      flags = [ "bsfilter-plugin" ];
     }
     {
-      flags = [ "clamd-plugin" ];
       enabled = enablePluginClamd;
+      flags = [ "clamd-plugin" ];
     }
     {
-      flags = [ "dbus" ];
-      enabled = enableDbus;
       deps = [
         dbus
         dbus-glib
       ];
+
+      enabled = enableDbus;
+      flags = [ "dbus" ];
     }
     {
-      flags = [ "dillo-plugin" ];
       enabled = enablePluginDillo;
+      flags = [ "dillo-plugin" ];
     }
     {
-      flags = [ "enchant" ];
-      enabled = enableEnchant;
       deps = [ enchant ];
+      enabled = enableEnchant;
+      flags = [ "enchant" ];
     }
     {
-      flags = [ "fancy-plugin" ];
-      enabled = enablePluginFancy;
       deps = [ webkitgtk_4_1 ];
+      enabled = enablePluginFancy;
+      flags = [ "fancy-plugin" ];
     }
     {
-      flags = [ "fetchinfo-plugin" ];
       enabled = enablePluginFetchInfo;
+      flags = [ "fetchinfo-plugin" ];
     }
     {
-      flags = [ "keyword_warner-plugin" ];
       enabled = enablePluginKeywordWarner;
+      flags = [ "keyword_warner-plugin" ];
     }
     {
-      flags = [ "gnutls" ];
-      enabled = enableGnuTLS;
       deps = [ gnutls ];
+      enabled = enableGnuTLS;
+      flags = [ "gnutls" ];
     }
     {
-      flags = [ "ldap" ];
-      enabled = enableLdap;
       deps = [ openldap ];
+      enabled = enableLdap;
+      flags = [ "ldap" ];
     }
     {
-      flags = [ "libetpan" ];
-      enabled = enableLibetpan;
       deps = [ libetpan ];
+      enabled = enableLibetpan;
+      flags = [ "libetpan" ];
     }
     {
-      flags = [ "libravatar-plugin" ];
       enabled = enablePluginLibravatar;
+      flags = [ "libravatar-plugin" ];
     }
     {
-      flags = [ "libsm" ];
-      enabled = enableLibSM;
       deps = [ libsm ];
+      enabled = enableLibSM;
+      flags = [ "libsm" ];
     }
     {
-      flags = [ "litehtml_viewer-plugin" ];
-      enabled = enablePluginLitehtmlViewer;
       deps = [ gumbo ];
+      enabled = enablePluginLitehtmlViewer;
+      flags = [ "litehtml_viewer-plugin" ];
     }
     {
-      flags = [ "mailmbox-plugin" ];
       enabled = enablePluginMailmbox;
+      flags = [ "mailmbox-plugin" ];
     }
     {
-      flags = [ "managesieve-plugin" ];
       enabled = enablePluginManageSieve;
+      flags = [ "managesieve-plugin" ];
     }
     {
-      flags = [ "networkmanager" ];
-      enabled = enableNetworkManager;
       deps = [ networkmanager ];
+      enabled = enableNetworkManager;
+      flags = [ "networkmanager" ];
     }
     {
-      flags = [ "newmail-plugin" ];
       enabled = enablePluginNewMail;
+      flags = [ "newmail-plugin" ];
     }
     {
-      flags = [ "notification-plugin" ];
-      enabled = enablePluginNotification;
       deps = [ libnotify ] ++ [ libcanberra-gtk3 ];
+      enabled = enablePluginNotification;
+      flags = [ "notification-plugin" ];
     }
     {
-      flags = [ "pdf_viewer-plugin" ];
-      enabled = enablePluginPdfViewer;
       deps = [ poppler ];
+      enabled = enablePluginPdfViewer;
+      flags = [ "pdf_viewer-plugin" ];
     }
     {
-      flags = [ "perl-plugin" ];
-      enabled = enablePluginPerl;
       deps = [ perl ];
+      enabled = enablePluginPerl;
+      flags = [ "perl-plugin" ];
     }
     {
+      deps = [
+        gnupg
+        gpgme
+      ];
+
+      enabled = enablePluginPgp;
+
       flags = [
         "pgpcore-plugin"
         "pgpinline-plugin"
         "pgpmime-plugin"
       ];
-      enabled = enablePluginPgp;
-      deps = [
-        gnupg
-        gpgme
-      ];
     }
     {
-      flags = [ "python-plugin" ];
       enabled = enablePluginPython;
+      flags = [ "python-plugin" ];
     }
     {
-      flags = [ "rssyl-plugin" ];
-      enabled = enablePluginRssyl;
       deps = [ libxml2 ];
+      enabled = enablePluginRssyl;
+      flags = [ "rssyl-plugin" ];
     }
     {
-      flags = [ "smime-plugin" ];
       enabled = enablePluginSmime;
+      flags = [ "smime-plugin" ];
     }
     {
-      flags = [ "spam_report-plugin" ];
       enabled = enablePluginSpamReport;
+      flags = [ "spam_report-plugin" ];
     }
     {
-      flags = [ "spamassassin-plugin" ];
       enabled = enablePluginSpamassassin;
+      flags = [ "spamassassin-plugin" ];
     }
     {
-      flags = [ "svg" ];
-      enabled = enableSvg;
       deps = [ librsvg ];
+      enabled = enableSvg;
+      flags = [ "svg" ];
     }
     {
-      flags = [ "tnef_parse-plugin" ];
-      enabled = enablePluginTnefParse;
       deps = [ libytnef ];
+      enabled = enablePluginTnefParse;
+      flags = [ "tnef_parse-plugin" ];
     }
     {
-      flags = [ "valgrind" ];
-      enabled = enableValgrind;
       deps = [ valgrind ];
+      enabled = enableValgrind;
+      flags = [ "valgrind" ];
     }
     {
-      flags = [ "vcalendar-plugin" ];
-      enabled = enablePluginVcalendar;
       deps = [ libical ];
+      enabled = enablePluginVcalendar;
+      flags = [ "vcalendar-plugin" ];
     }
   ];
 in
@@ -291,13 +291,6 @@ stdenv.mkDerivation (finalAttrs: {
     ./mime.patch
   ];
 
-  preConfigure = ''
-    # autotools check tries to dlopen libpython as a requirement for the python plugin
-    export LD_LIBRARY_PATH=$LD_LIBRARY_PATH''${LD_LIBRARY_PATH:+:}${python3}/lib
-    # generate version without .git
-    [ -e version ] || echo "echo ${finalAttrs.version}" > version
-  '';
-
   postPatch = ''
     substituteInPlace configure.ac \
       --replace-fail 'm4_esyscmd([./get-git-version])' '${finalAttrs.version}'
@@ -312,7 +305,6 @@ stdenv.mkDerivation (finalAttrs: {
     flex
     wrapGAppsHook3
   ];
-  propagatedBuildInputs = pythonPkgs;
 
   buildInputs = [
     curl
@@ -321,6 +313,8 @@ stdenv.mkDerivation (finalAttrs: {
     gtk3
   ]
   ++ lib.concatMap (f: lib.optionals f.enabled f.deps) (lib.filter (f: f ? deps) features);
+
+  propagatedBuildInputs = pythonPkgs;
 
   configureFlags = [
     "--disable-manual" # Missing docbook-tools, e.g., docbook2html
@@ -331,11 +325,11 @@ stdenv.mkDerivation (finalAttrs: {
     feature: map (flag: lib.strings.enableFeature feature.enabled flag) feature.flags
   ) features);
 
-  enableParallelBuilding = true;
-
-  preFixup = ''
-    buildPythonPath "$out $pythonPkgs"
-    gappsWrapperArgs+=(--prefix XDG_DATA_DIRS : "${shared-mime-info}/share" --prefix PYTHONPATH : "$program_PYTHONPATH")
+  preConfigure = ''
+    # autotools check tries to dlopen libpython as a requirement for the python plugin
+    export LD_LIBRARY_PATH=$LD_LIBRARY_PATH''${LD_LIBRARY_PATH:+:}${python3}/lib
+    # generate version without .git
+    [ -e version ] || echo "echo ${finalAttrs.version}" > version
   '';
 
   postInstall = ''
@@ -343,15 +337,24 @@ stdenv.mkDerivation (finalAttrs: {
     cp claws-mail.desktop $out/share/applications
   '';
 
+  preFixup = ''
+    buildPythonPath "$out $pythonPkgs"
+    gappsWrapperArgs+=(--prefix XDG_DATA_DIRS : "${shared-mime-info}/share" --prefix PYTHONPATH : "$program_PYTHONPATH")
+  '';
+
+  enableParallelBuilding = true;
+
   meta = {
     description = "User-friendly, lightweight, and fast email client";
-    mainProgram = "claws-mail";
     homepage = "https://www.claws-mail.org/";
     license = lib.licenses.gpl3Plus;
-    platforms = lib.platforms.linux;
+
     maintainers = with lib.maintainers; [
       fpletz
       ajs124
     ];
+
+    platforms = lib.platforms.linux;
+    mainProgram = "claws-mail";
   };
 })

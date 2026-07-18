@@ -2,26 +2,26 @@
   lib,
   stdenv,
   fetchurl,
-  snapshotPath,
   autoPatchelfHook,
-  python3,
   libxcrypt-legacy,
+  python3,
+  snapshotPath,
 }:
 
 let
   # Mapping from GCS component architecture names to Nix architecture names
   arches = {
+    arm = "aarch64";
     x86 = "i686";
     x86_64 = "x86_64";
-    arm = "aarch64";
   };
 
   # Mapping from GCS component operating systems to Nix operating systems
   oses = {
+    CYGWIN = "cygwin";
     LINUX = "linux";
     MACOSX = "darwin";
     WINDOWS = "windows";
-    CYGWIN = "cygwin";
   };
 
   # Convert an archicecture + OS to a Nix platform
@@ -52,8 +52,8 @@ let
       version,
     }:
     builtins.toJSON {
-      components = [ component ];
       inherit revision schema_version version;
+      components = [ component ];
     };
 
   # Generate a set of components from a JSON file describing these components
@@ -70,6 +70,7 @@ let
       builtins.listToAttrs (
         map (component: {
           name = component.id;
+
           value = componentFromSnapshot self {
             inherit
               component
@@ -109,17 +110,21 @@ let
     mkComponent {
       pname = component.id;
       version = component.version.version_string;
+
       src = lib.optionalString (lib.hasAttrByPath [
         "data"
         "source"
       ] component) "${baseUrl}/${component.data.source}";
-      sha256 = lib.attrByPath [ "data" "checksum" ] "" component;
+
       dependencies = map (dep: builtins.getAttr dep components) component.dependencies;
+
       platforms =
         if component.platform == { } then
           lib.platforms.all
         else
           builtins.concatMap (arch: map (os: toNixPlatform arch os) operating_systems) architectures;
+
+      sha256 = lib.attrByPath [ "data" "checksum" ] "" component;
       snapshot = snapshotFromComponent attrs;
     };
 
@@ -130,27 +135,40 @@ let
   mkComponent =
     {
       pname,
+      # The snapshot corresponding to this component
+      snapshot,
       version,
-      # Source tarball, if any
-      src ? "",
-      # Checksum for the source tarball, if there is a source
-      sha256 ? "",
       # Other components this one depends on
       dependencies ? [ ],
       # Short text describing the component
       description ? "",
       # Platforms supported
       platforms ? lib.platforms.all,
-      # The snapshot corresponding to this component
-      snapshot,
+      # Checksum for the source tarball, if there is a source
+      sha256 ? "",
+      # Source tarball, if any
+      src ? "",
     }:
     stdenv.mkDerivation {
       inherit pname version snapshot;
+
       src = lib.optionalString (src != "") (fetchurl {
-        url = src;
         inherit sha256;
+        url = src;
       });
-      dontUnpack = true;
+
+      nativeBuildInputs = [
+        python3
+        stdenv.cc.cc
+      ]
+      ++ lib.optionals stdenv.hostPlatform.isLinux [
+        autoPatchelfHook
+      ];
+
+      buildInputs = [
+        libxcrypt-legacy
+      ];
+
       installPhase = ''
         mkdir -p $out/google-cloud-sdk/.install
 
@@ -168,20 +186,14 @@ let
         # Write the snapshot file to the `.install` folder
         printf "%s" "$snapshot" > $out/google-cloud-sdk/.install/${pname}.snapshot.json
       '';
-      nativeBuildInputs = [
-        python3
-        stdenv.cc.cc
-      ]
-      ++ lib.optionals stdenv.hostPlatform.isLinux [
-        autoPatchelfHook
-      ];
-      buildInputs = [
-        libxcrypt-legacy
-      ];
+
+      __structuredAttrs = true;
+      dontUnpack = true;
+
       passthru = {
         dependencies = filterForSystem dependencies;
       };
-      __structuredAttrs = true;
+
       meta = {
         inherit description platforms;
       };

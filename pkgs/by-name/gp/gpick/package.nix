@@ -1,14 +1,14 @@
 {
+  lib,
   stdenv,
   fetchFromGitHub,
-  cmake,
   boost,
-  ragel,
-  pkg-config,
-  wrapGAppsHook3,
-  lua,
+  cmake,
   fetchpatch,
-  lib,
+  lua,
+  pkg-config,
+  ragel,
+  wrapGAppsHook3,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -27,15 +27,16 @@ stdenv.mkDerivation (finalAttrs: {
     ./dot-version.patch
 
     (fetchpatch {
-      url = "https://patch-diff.githubusercontent.com/raw/thezbyg/gpick/pull/227.patch";
       hash = "sha256-qYspUctvlPMEK/c2hMUxYc5EYdG//CBcN2PluTtXiFc=";
+      url = "https://patch-diff.githubusercontent.com/raw/thezbyg/gpick/pull/227.patch";
     })
 
     (fetchpatch {
-      url = "https://gitlab.archlinux.org/archlinux/packaging/packages/gpick/-/raw/0.3-2/buildfix.diff";
       hash = "sha256-DnRU90VPyFhLYTk4GPJoiVYadJgtYgjMS4MLgmpYLP0=";
+      url = "https://gitlab.archlinux.org/archlinux/packaging/packages/gpick/-/raw/0.3-2/buildfix.diff";
     })
   ];
+
   # https://github.com/thezbyg/gpick/pull/227
   postPatch = ''
     sed '1i#include <boost/version.hpp>' -i source/dynv/Types.cpp

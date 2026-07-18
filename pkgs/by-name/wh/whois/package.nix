@@ -3,16 +3,16 @@
   stdenv,
   fetchFromGitHub,
   fetchpatch,
-  perl,
   gettext,
-  pkg-config,
-  libidn2,
   libiconv,
+  libidn2,
+  perl,
+  pkg-config,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
-  version = "5.6.6";
   pname = "whois";
+  version = "5.6.6";
 
   src = fetchFromGitHub {
     owner = "rfc1036";
@@ -23,26 +23,34 @@ stdenv.mkDerivation (finalAttrs: {
 
   patches = [
     (fetchpatch {
-      url = "https://github.com/macports/macports-ports/raw/93de4e9fc1e5e8427bf98f48209e783a5e8fab57/net/whois/files/implicit.patch";
       extraPrefix = "";
       hash = "sha256-ogVylQz//tpXxPNIWIHkhghvToU1z1D1FfnUBdZLyRY=";
+      url = "https://github.com/macports/macports-ports/raw/93de4e9fc1e5e8427bf98f48209e783a5e8fab57/net/whois/files/implicit.patch";
     })
   ];
-
-  env = lib.optionalAttrs stdenv.hostPlatform.isDarwin {
-    # whois fails to link libiconv on Darwin.
-    NIX_LDFLAGS = "-liconv";
-  };
 
   nativeBuildInputs = [
     perl
     gettext
     pkg-config
   ];
+
   buildInputs = [
     libidn2
     libiconv
   ];
+
+  makeFlags = [
+    "HAVE_ICONV=1"
+    "CONFIG_FILE=/etc/whois.conf"
+  ];
+
+  buildFlags = [ "whois" ];
+
+  env = lib.optionalAttrs stdenv.hostPlatform.isDarwin {
+    # whois fails to link libiconv on Darwin.
+    NIX_LDFLAGS = "-liconv";
+  };
 
   preConfigure = ''
     for i in Makefile po/Makefile; do
@@ -50,16 +58,11 @@ stdenv.mkDerivation (finalAttrs: {
     done
   '';
 
-  makeFlags = [
-    "HAVE_ICONV=1"
-    "CONFIG_FILE=/etc/whois.conf"
-  ];
-  buildFlags = [ "whois" ];
-
   installTargets = [ "install-whois" ];
 
   meta = {
     description = "Intelligent WHOIS client from Debian";
+
     longDescription = ''
       This package provides a commandline client for the WHOIS (RFC 3912)
       protocol, which queries online servers for information such as contact

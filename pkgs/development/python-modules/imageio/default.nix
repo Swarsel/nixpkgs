@@ -1,42 +1,37 @@
 {
   lib,
   stdenv,
-  buildPythonPackage,
   fetchFromGitHub,
-  isPyPy,
-
-  # build-system
-  setuptools,
-
-  # native dependencies
-  libGL,
-
-  # dependencies
-  numpy,
-  pillow,
-
   # optional-dependencies
   astropy,
   av,
-  imageio-ffmpeg,
-  pillow-heif,
-  psutil,
-  tifffile,
-
+  buildPythonPackage,
   # tests
   fsspec,
   gitMinimal,
+  imageio-ffmpeg,
+  isPyPy,
+  # native dependencies
+  libGL,
+  # dependencies
+  numpy,
+  pillow,
+  pillow-heif,
+  psutil,
   pytestCheckHook,
+  # build-system
+  setuptools,
+  tifffile,
   writableTmpDirAsHomeHook,
 }:
 
 let
   test_images = fetchFromGitHub {
+    hash = "sha256-Kh8DowuhcCT5C04bE5yJa2C+efilLxP0AM31XjnHRf4=";
+    leaveDotGit = true;
     owner = "imageio";
     repo = "test_images";
     rev = "f676c96b1af7e04bb1eed1e4551e058eb2f14acd";
-    leaveDotGit = true;
-    hash = "sha256-Kh8DowuhcCT5C04bE5yJa2C+efilLxP0AM31XjnHRf4=";
   };
   libgl = "${libGL.out}/lib/libGL${stdenv.hostPlatform.extensions.sharedLibrary}";
 in
@@ -44,7 +39,6 @@ in
 buildPythonPackage rec {
   pname = "imageio";
   version = "2.37.2";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "imageio";
@@ -58,34 +52,6 @@ buildPythonPackage rec {
       --replace-fail 'ctypes.util.find_library("GL")' '"${libgl}"'
   '';
 
-  build-system = [ setuptools ];
-
-  dependencies = [
-    numpy
-    pillow
-  ];
-
-  optional-dependencies = {
-    bsdf = [ ];
-    dicom = [ ];
-    feisem = [ ];
-    ffmpeg = [
-      imageio-ffmpeg
-      psutil
-    ];
-    fits = lib.optionals (!isPyPy) [ astropy ];
-    freeimage = [ ];
-    lytro = [ ];
-    numpy = [ ];
-    pillow = [ ];
-    simpleitk = [ ];
-    spe = [ ];
-    swf = [ ];
-    tifffile = [ tifffile ];
-    pyav = [ av ];
-    heif = [ pillow-heif ];
-  };
-
   nativeCheckInputs = [
     fsspec
     gitMinimal
@@ -96,16 +62,46 @@ buildPythonPackage rec {
   ++ fsspec.optional-dependencies.github
   ++ lib.concatAttrValues optional-dependencies;
 
-  pytestFlags = [ "--test-images=file://${test_images}" ];
-
-  disabledTestMarks = [ "needs_internet" ];
-
-  # These tests require the old and vulnerable freeimage binaries; skip.
-  disabledTestPaths = [ "tests/test_freeimage.py" ];
-
   preCheck = ''
     export IMAGEIO_USERDIR=$(mktemp -d)
   '';
+
+  build-system = [ setuptools ];
+
+  dependencies = [
+    numpy
+    pillow
+  ];
+
+  disabledTestMarks = [ "needs_internet" ];
+  # These tests require the old and vulnerable freeimage binaries; skip.
+  disabledTestPaths = [ "tests/test_freeimage.py" ];
+
+  optional-dependencies = {
+    bsdf = [ ];
+    dicom = [ ];
+    feisem = [ ];
+
+    ffmpeg = [
+      imageio-ffmpeg
+      psutil
+    ];
+
+    fits = lib.optionals (!isPyPy) [ astropy ];
+    freeimage = [ ];
+    heif = [ pillow-heif ];
+    lytro = [ ];
+    numpy = [ ];
+    pillow = [ ];
+    pyav = [ av ];
+    simpleitk = [ ];
+    spe = [ ];
+    swf = [ ];
+    tifffile = [ tifffile ];
+  };
+
+  pyproject = true;
+  pytestFlags = [ "--test-images=file://${test_images}" ];
 
   meta = {
     description = "Library for reading and writing a wide range of image, video, scientific, and volumetric data formats";

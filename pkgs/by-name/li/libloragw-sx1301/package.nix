@@ -15,8 +15,6 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-YxnFWJhH5iUR+6zA0Pf7a+VxFwYkw84CeoQmd01efqU=";
   };
 
-  passthru.updateScript = gitUpdater { rev-prefix = "v"; };
-
   makeFlags = [
     "-e"
     "-C"
@@ -33,13 +31,17 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  passthru.updateScript = gitUpdater { rev-prefix = "v"; };
+
   meta = {
     description = "Driver/HAL to build a gateway using a concentrator board based on Semtech SX1301 multi-channel modem and SX1257/SX1255 RF transceivers";
     homepage = "https://github.com/brocaar/lora_gateway";
+
     license = [
       lib.licenses.bsd3
       lib.licenses.mit
     ];
+
     maintainers = [ lib.maintainers.stv0g ];
     platforms = lib.platforms.linux;
   };

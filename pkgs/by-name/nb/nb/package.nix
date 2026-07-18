@@ -1,11 +1,11 @@
 {
-  stdenvNoCC,
   lib,
   fetchFromGitHub,
-  installShellFiles,
-  testers,
-  nix-update-script,
   bashInteractive,
+  installShellFiles,
+  nix-update-script,
+  stdenvNoCC,
+  testers,
 }:
 
 stdenvNoCC.mkDerivation (finalAttrs: {
@@ -20,10 +20,7 @@ stdenvNoCC.mkDerivation (finalAttrs: {
   };
 
   nativeBuildInputs = [ installShellFiles ];
-
   buildInputs = [ bashInteractive ];
-
-  dontBuild = true;
 
   installPhase = ''
     runHook preInstall
@@ -35,17 +32,21 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     installShellCompletion --cmd nb etc/nb-completion.{bash,zsh,fish}
   '';
 
+  dontBuild = true;
+
   passthru = {
     tests.version = testers.testVersion {
-      package = finalAttrs.finalPackage;
       # Setting EDITOR to avoid: "Command line text editor not found"
       command = "EDITOR=nano nb --version";
+      package = finalAttrs.finalPackage;
     };
+
     updateScript = nix-update-script { };
   };
 
   meta = {
     description = "Command line note-taking, bookmarking, archiving, and knowledge base application";
+
     longDescription = ''
       `nb` creates notes in text-based formats like Markdown, Emacs Org mode,
       and LaTeX, can work with files in any format, can import and export notes
@@ -78,12 +79,15 @@ stdenvNoCC.mkDerivation (finalAttrs: {
       `nb` can be used a little, a lot, once in a while, or for just a subset
       of features. `nb` is flexible.
     '';
+
     homepage = "https://xwmx.github.io/nb/";
     license = lib.licenses.agpl3Plus;
+
     maintainers = with lib.maintainers; [
       prince213
       toonn
     ];
+
     platforms = lib.platforms.all;
     mainProgram = "nb";
   };

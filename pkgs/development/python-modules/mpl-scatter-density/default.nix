@@ -1,23 +1,22 @@
 {
   lib,
   stdenv,
-  buildPythonPackage,
-  pytestCheckHook,
   fetchFromGitHub,
-  setuptools-scm,
-  setuptools,
+  buildPythonPackage,
   fast-histogram,
   matplotlib,
   numpy,
-  wheel,
   pytest-mpl,
+  pytestCheckHook,
+  setuptools,
+  setuptools-scm,
+  wheel,
   writableTmpDirAsHomeHook,
 }:
 
 buildPythonPackage rec {
   pname = "mpl-scatter-density";
   version = "0.8";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "astrofrog";
@@ -25,6 +24,16 @@ buildPythonPackage rec {
     tag = "v${version}";
     hash = "sha256-pDiKJAN/4WFf5icNU/ZGOvw0jqN3eGZHgilm2oolpbE=";
   };
+
+  # Need to set MPLBACKEND=agg for headless `matplotlib` on darwin.
+  # https://github.com/matplotlib/matplotlib/issues/26292
+  env.MPLBACKEND = lib.optionalString stdenv.hostPlatform.isDarwin "agg";
+
+  nativeCheckInputs = [
+    pytestCheckHook
+    pytest-mpl
+    writableTmpDirAsHomeHook
+  ];
 
   build-system = [
     setuptools
@@ -38,27 +47,18 @@ buildPythonPackage rec {
     fast-histogram
   ];
 
-  nativeCheckInputs = [
-    pytestCheckHook
-    pytest-mpl
-    writableTmpDirAsHomeHook
-  ];
-
-  # Need to set MPLBACKEND=agg for headless `matplotlib` on darwin.
-  # https://github.com/matplotlib/matplotlib/issues/26292
-  env.MPLBACKEND = lib.optionalString stdenv.hostPlatform.isDarwin "agg";
-
   disabledTests = [
     # AssertionError: (240, 240) != (216, 216)
     # Erroneous pinning of figure DPI, sensitive to runtime environment
     "test_default_dpi"
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "mpl_scatter_density" ];
 
   meta = {
-    homepage = "https://github.com/astrofrog/mpl-scatter-density";
     description = "Fast scatter density plots for Matplotlib";
+    homepage = "https://github.com/astrofrog/mpl-scatter-density";
     license = lib.licenses.bsd2;
     maintainers = with lib.maintainers; [ ifurther ];
   };

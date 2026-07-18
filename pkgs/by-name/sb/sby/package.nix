@@ -2,14 +2,14 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  bash,
-  python3,
-  yosys,
-  yices,
-  z3,
   aiger,
+  bash,
   btor2tools,
   nix-update-script,
+  python3,
+  yices,
+  yosys,
+  z3,
 }:
 
 let
@@ -54,7 +54,23 @@ stdenv.mkDerivation (finalAttrs: {
       --replace-fail '["btorsim", "--vcd"]' '["${lib.getExe' btor2tools "btorsim"}", "--vcd"]'
   '';
 
-  dontBuild = true;
+  doCheck = true;
+
+  nativeCheckInputs = [
+    python3
+    python3.pkgs.xmlschema
+    yosys
+    yices
+    z3
+    aiger
+    btor2tools
+  ];
+
+  checkPhase = ''
+    runHook preCheck
+    make test
+    runHook postCheck
+  '';
 
   installPhase = ''
     runHook preInstall
@@ -67,34 +83,19 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
-  nativeCheckInputs = [
-    python3
-    python3.pkgs.xmlschema
-    yosys
-    yices
-    z3
-    aiger
-    btor2tools
-  ];
-
-  doCheck = true;
-
-  checkPhase = ''
-    runHook preCheck
-    make test
-    runHook postCheck
-  '';
-
+  dontBuild = true;
   passthru.updateScript = nix-update-script { };
 
   meta = {
     description = "SymbiYosys, a front-end for Yosys-based formal verification flows";
     homepage = "https://symbiyosys.readthedocs.io/";
     license = lib.licenses.isc;
+
     maintainers = with lib.maintainers; [
       thoughtpolice
     ];
-    mainProgram = "sby";
+
     platforms = lib.platforms.all;
+    mainProgram = "sby";
   };
 })

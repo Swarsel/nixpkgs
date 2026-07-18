@@ -1,8 +1,8 @@
 {
   lib,
+  fetchFromGitHub,
   betamax,
   buildPythonPackage,
-  fetchFromGitHub,
   pytestCheckHook,
   requests-toolbelt,
   setuptools,
@@ -11,7 +11,6 @@
 buildPythonPackage rec {
   pname = "betamax-matchers";
   version = "0.4.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "betamaxpy";
@@ -20,6 +19,7 @@ buildPythonPackage rec {
     hash = "sha256-BV9DOfZLDAZIr2E75l988QxFWWvazBL9VttxGFIez1M=";
   };
 
+  nativeCheckInputs = [ pytestCheckHook ];
   build-system = [ setuptools ];
 
   dependencies = [
@@ -27,8 +27,7 @@ buildPythonPackage rec {
     requests-toolbelt
   ];
 
-  nativeCheckInputs = [ pytestCheckHook ];
-
+  pyproject = true;
   pythonImportsCheck = [ "betamax_matchers" ];
 
   meta = {

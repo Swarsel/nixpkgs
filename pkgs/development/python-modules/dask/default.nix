@@ -1,37 +1,26 @@
 {
   lib,
   stdenv,
-  buildPythonPackage,
   fetchFromGitHub,
-  pythonAtLeast,
-  util-linux,
-
-  # build-system
-  setuptools,
-  setuptools-scm,
-
+  bokeh,
+  buildPythonPackage,
   # dependencies
   click,
   cloudpickle,
-  fsspec,
-  importlib-metadata,
-  packaging,
-  partd,
-  pyyaml,
-  toolz,
-
-  # optional-dependencies
-  numpy,
-  pyarrow,
-  lz4,
-  pandas,
   distributed,
-  bokeh,
-  jinja2,
-
+  fsspec,
   # tests
   hypothesis,
+  importlib-metadata,
+  jinja2,
+  lz4,
+  # optional-dependencies
+  numpy,
+  packaging,
+  pandas,
+  partd,
   psutil,
+  pyarrow,
   pytest-asyncio,
   pytest-cov-stub,
   pytest-mock,
@@ -39,14 +28,19 @@
   pytest-timeout,
   pytest-xdist,
   pytestCheckHook,
+  pythonAtLeast,
+  pyyaml,
+  # build-system
+  setuptools,
+  setuptools-scm,
+  toolz,
+  util-linux,
   versionCheckHook,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "dask";
   version = "2026.7.0";
-  pyproject = true;
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "dask";
@@ -61,44 +55,6 @@ buildPythonPackage (finalAttrs: {
         '"taskset",' \
         '"${lib.getExe' util-linux "taskset"}",'
   '';
-
-  build-system = [
-    setuptools
-    setuptools-scm
-  ];
-
-  dependencies = [
-    click
-    cloudpickle
-    fsspec
-    importlib-metadata
-    packaging
-    partd
-    pyyaml
-    toolz
-  ];
-
-  optional-dependencies = lib.fix (self: {
-    array = [ numpy ];
-    complete = [
-      pyarrow
-      lz4
-    ]
-    ++ self.array
-    ++ self.dataframe
-    ++ self.distributed
-    ++ self.diagnostics;
-    dataframe = [
-      pandas
-      pyarrow
-    ]
-    ++ self.array;
-    distributed = [ distributed ];
-    diagnostics = [
-      bokeh
-      jinja2
-    ];
-  });
 
   nativeCheckInputs = [
     hypothesis
@@ -116,13 +72,23 @@ buildPythonPackage (finalAttrs: {
   ++ finalAttrs.passthru.optional-dependencies.array
   ++ finalAttrs.passthru.optional-dependencies.dataframe;
 
-  pytestFlags = [
-    # Rerun failed tests up to three times
-    "--reruns=3"
+  __darwinAllowLocalNetworking = true;
+  __structuredAttrs = true;
 
-    # FutureWarning: The previous implementation of stack is deprecated and will be removed in a
-    # future version of pandas.
-    "-Wignore::FutureWarning"
+  build-system = [
+    setuptools
+    setuptools-scm
+  ];
+
+  dependencies = [
+    click
+    cloudpickle
+    fsspec
+    importlib-metadata
+    packaging
+    partd
+    pyyaml
+    toolz
   ];
 
   disabledTestMarks = [
@@ -143,7 +109,42 @@ buildPythonPackage (finalAttrs: {
     "test_multiple_repartition_partition_size"
   ];
 
-  __darwinAllowLocalNetworking = true;
+  optional-dependencies = lib.fix (self: {
+    array = [ numpy ];
+
+    complete = [
+      pyarrow
+      lz4
+    ]
+    ++ self.array
+    ++ self.dataframe
+    ++ self.distributed
+    ++ self.diagnostics;
+
+    dataframe = [
+      pandas
+      pyarrow
+    ]
+    ++ self.array;
+
+    diagnostics = [
+      bokeh
+      jinja2
+    ];
+
+    distributed = [ distributed ];
+  });
+
+  pyproject = true;
+
+  pytestFlags = [
+    # Rerun failed tests up to three times
+    "--reruns=3"
+
+    # FutureWarning: The previous implementation of stack is deprecated and will be removed in a
+    # future version of pandas.
+    "-Wignore::FutureWarning"
+  ];
 
   pythonImportsCheck = [
     "dask"
@@ -161,10 +162,10 @@ buildPythonPackage (finalAttrs: {
 
   meta = {
     description = "Minimal task scheduling abstraction";
-    mainProgram = "dask";
     homepage = "https://dask.org/";
     changelog = "https://docs.dask.org/en/latest/changelog.html";
     license = lib.licenses.bsd3;
     maintainers = with lib.maintainers; [ GaetanLepage ];
+    mainProgram = "dask";
   };
 })

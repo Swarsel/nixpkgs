@@ -2,9 +2,9 @@
   lib,
   fetchFromGitHub,
   buildPythonPackage,
-  cryptography,
   click,
   construct,
+  cryptography,
   ecdsa,
   hidapi,
   intelhex,
@@ -20,7 +20,6 @@
 buildPythonPackage rec {
   pname = "ledgerwallet";
   version = "0.5.3";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "LedgerHQ";
@@ -29,10 +28,16 @@ buildPythonPackage rec {
     hash = "sha256-roDfj+igDBS+sTJL4hwYNg5vZzaq+F8QvDA9NucnrMA=";
   };
 
+  postPatch = ''
+    substituteInPlace pyproject.toml \
+      --replace-fail '"protobuf >=3.20,<4"' '"protobuf >=3.20"'
+  '';
+
   buildInputs = [
     setuptools
     setuptools-scm
   ];
+
   propagatedBuildInputs = [
     cryptography
     click
@@ -47,26 +52,24 @@ buildPythonPackage rec {
     toml
   ];
 
-  postPatch = ''
-    substituteInPlace pyproject.toml \
-      --replace-fail '"protobuf >=3.20,<4"' '"protobuf >=3.20"'
-  '';
-
   # Regenerate protobuf bindings to lift the version upper-bound and enable
   # compatibility the current default protobuf library.
   preBuild = ''
     protoc --python_out=. --pyi_out=. ledgerwallet/proto/*.proto
   '';
 
+  pyproject = true;
   pythonImportsCheck = [ "ledgerwallet" ];
 
   meta = {
-    homepage = "https://github.com/LedgerHQ/ledgerctl";
     description = "Library to control Ledger devices";
-    mainProgram = "ledgerctl";
+    homepage = "https://github.com/LedgerHQ/ledgerctl";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       erdnaxe
     ];
+
+    mainProgram = "ledgerctl";
   };
 }

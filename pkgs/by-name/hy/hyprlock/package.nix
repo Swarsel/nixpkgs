@@ -1,29 +1,29 @@
 {
   lib,
-  gcc15Stdenv,
   fetchFromGitHub,
+  cairo,
   cmake,
-  pkg-config,
-  libGL,
-  libxkbcommon,
+  file,
+  gcc15Stdenv,
   hyprgraphics,
   hyprlang,
   hyprutils,
   hyprwayland-scanner,
+  libGL,
+  libdrm,
+  libgbm,
+  libjpeg,
+  libwebp,
+  libxkbcommon,
+  nix-update-script,
   pam,
+  pango,
+  pkg-config,
   sdbus-cpp_2,
   systemdLibs,
   wayland,
   wayland-protocols,
   wayland-scanner,
-  cairo,
-  file,
-  libjpeg,
-  libwebp,
-  pango,
-  libdrm,
-  libgbm,
-  nix-update-script,
 }:
 
 gcc15Stdenv.mkDerivation (finalAttrs: {
@@ -74,7 +74,6 @@ gcc15Stdenv.mkDerivation (finalAttrs: {
 
   cmakeBuildType = "RelWithDebInfo";
   separateDebugInfo = true;
-
   passthru.updateScript = nix-update-script { };
 
   meta = {
@@ -82,11 +81,13 @@ gcc15Stdenv.mkDerivation (finalAttrs: {
     homepage = "https://github.com/hyprwm/hyprlock";
     changelog = "https://github.com/hyprwm/hyprlock/releases/tag/${finalAttrs.src.tag}";
     license = lib.licenses.bsd3;
+
     maintainers = with lib.maintainers; [
       iynaix
     ];
-    teams = [ lib.teams.hyprland ];
-    mainProgram = "hyprlock";
+
     platforms = lib.platforms.linux;
+    mainProgram = "hyprlock";
+    teams = [ lib.teams.hyprland ];
   };
 })

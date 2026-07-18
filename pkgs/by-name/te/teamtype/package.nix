@@ -1,12 +1,12 @@
 {
-  fetchFromGitHub,
   lib,
-  rustPlatform,
-  versionCheckHook,
+  fetchFromGitHub,
   installShellFiles,
+  libgit2,
   nix-update-script,
   pkg-config,
-  libgit2,
+  rustPlatform,
+  versionCheckHook,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -20,10 +20,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-74MufpLTACkPevzOyaXw2Rr7S7VvaFEYHEyTQYwKVT8=";
   };
 
-  sourceRoot = "${finalAttrs.src.name}/daemon";
-
-  cargoHash = "sha256-OIOffnCC9PlT/SXPOuTnKx3feZnkHP+jzbQIJWX0tzk=";
-
   nativeBuildInputs = [
     installShellFiles
     pkg-config
@@ -32,6 +28,8 @@ rustPlatform.buildRustPackage (finalAttrs: {
   buildInputs = [
     libgit2
   ];
+
+  cargoHash = "sha256-OIOffnCC9PlT/SXPOuTnKx3feZnkHP+jzbQIJWX0tzk=";
 
   env = {
     LIBGIT2_NO_VENDOR = 1;
@@ -49,23 +47,25 @@ rustPlatform.buildRustPackage (finalAttrs: {
     installShellCompletion --fish target/completions/teamtype.fish
   '';
 
-  nativeInstallCheckInputs = [ versionCheckHook ];
   doInstallCheck = true;
-
+  nativeInstallCheckInputs = [ versionCheckHook ];
+  sourceRoot = "${finalAttrs.src.name}/daemon";
   passthru.updateScript = nix-update-script { };
 
   meta = {
     description = "Real-time co-editing of local text files";
     homepage = "https://teamtype.github.io/teamtype/";
-    downloadPage = "https://github.com/teamtype/teamtype";
     changelog = "https://github.com/teamtype/teamtype/blob/${finalAttrs.src.tag}/CHANGELOG.md";
     license = lib.licenses.agpl3Plus;
-    mainProgram = "teamtype";
-    teams = [ lib.teams.ngi ];
+
     maintainers = with lib.maintainers; [
       alerque
       ethancedwards8
       prince213
     ];
+
+    mainProgram = "teamtype";
+    downloadPage = "https://github.com/teamtype/teamtype";
+    teams = [ lib.teams.ngi ];
   };
 })

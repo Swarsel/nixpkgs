@@ -1,8 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
-
+  buildGoModule,
   nix-update-script,
   versionCheckHook,
 }:
@@ -20,17 +19,13 @@ buildGoModule (finalAttrs: {
     hash = "sha256-5H0iF+dc+3qQrFCPiaBxHMSoHsmciKvwX1SJX7TMjeE=";
   };
 
-  vendorHash = "sha256-FqyNjnCoeOCraVv9WhQIw+PxrJVfOu2dAnINi++nsW4=";
-
-  ldflags = [
-    "-s"
-    "-X main.version=${finalAttrs.version}"
-  ];
-
   patches = [
     # https://github.com/bepass-org/warp-plus/pull/291
     ./fix-endpoints.patch
   ];
+
+  vendorHash = "sha256-FqyNjnCoeOCraVv9WhQIw+PxrJVfOu2dAnINi++nsW4=";
+  nativeCheckInputs = [ versionCheckHook ];
 
   checkFlags =
     let
@@ -44,16 +39,20 @@ buildGoModule (finalAttrs: {
     in
     [ "-skip=^${builtins.concatStringsSep "$|^" skippedTests}$" ];
 
-  nativeCheckInputs = [ versionCheckHook ];
-  versionCheckProgramArg = "version";
   doInstallCheck = true;
 
+  ldflags = [
+    "-s"
+    "-X main.version=${finalAttrs.version}"
+  ];
+
+  versionCheckProgramArg = "version";
   passthru.updateScript = nix-update-script { extraArgs = [ "--version=branch" ]; };
 
   meta = {
-    changelog = "https://github.com/bepass-org/warp-plus/releases";
     description = "Warp + Psiphon, an anti censorship utility for Iran";
     homepage = "https://github.com/bepass-org/warp-plus";
+    changelog = "https://github.com/bepass-org/warp-plus/releases";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ phanirithvij ];
     mainProgram = "warp-plus";

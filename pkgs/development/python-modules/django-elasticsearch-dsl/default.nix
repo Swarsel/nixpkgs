@@ -1,17 +1,16 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  elasticsearch-dsl,
+  buildPythonPackage,
   django,
   elastic-transport,
+  elasticsearch-dsl,
   setuptools,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "django-elasticsearch-dsl";
   version = "8.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "django-es";
@@ -20,6 +19,8 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-GizdFOM4UjI870XdE33D7uXHXkuv/bLYbyi9yyNjti8=";
   };
 
+  # Tests require running Elasticsearch daemon
+  doCheck = false;
   build-system = [ setuptools ];
 
   dependencies = [
@@ -28,9 +29,7 @@ buildPythonPackage (finalAttrs: {
     elastic-transport
   ];
 
-  # Tests require running Elasticsearch daemon
-  doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "django_elasticsearch_dsl" ];
 
   meta = {

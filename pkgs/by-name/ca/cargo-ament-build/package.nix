@@ -1,9 +1,9 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
-  pkg-config,
   nix-update-script,
+  pkg-config,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -17,14 +17,12 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-5D0eB3GCQLgVYuYkHMTkboruiYSAaWy3qZjF/hVpRP0=";
   };
 
-  cargoLock.lockFile = ./Cargo.lock;
-
   postPatch = ''
     ln -s ${./Cargo.lock} Cargo.lock
   '';
 
   nativeBuildInputs = [ pkg-config ];
-
+  cargoLock.lockFile = ./Cargo.lock;
   passthru.updateScript = nix-update-script { };
 
   meta = {

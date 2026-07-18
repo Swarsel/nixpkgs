@@ -1,9 +1,9 @@
 {
-  python312,
   lib,
   callPackage,
-  writeShellScript,
   makeWrapper,
+  python312,
+  writeShellScript,
 }:
 
 let
@@ -12,6 +12,7 @@ let
   python = python312;
   hishel_0_1 = python.pkgs.hishel.overrideAttrs (old: rec {
     version = "0.1.5";
+
     src = old.src.override {
       tag = version;
       hash = "sha256-OyQR/ruowNk5z4ITRHcIJn1kc0xLZiofmxajf6hNR9k=";
@@ -21,21 +22,8 @@ in
 
 python.pkgs.buildPythonPackage rec {
 
-  pname = "spoolman";
   inherit (common) version src;
-
-  pyproject = true;
-
-  nativeBuildInputs = [
-    makeWrapper
-    python.pkgs.setuptools
-    python.pkgs.pythonRelaxDepsHook
-  ];
-
-  pythonRelaxDeps = [
-    "setuptools"
-    "websockets"
-  ];
+  pname = "spoolman";
 
   postPatch = ''
     substituteInPlace pyproject.toml --replace-fail psycopg2-binary psycopg2
@@ -52,6 +40,12 @@ python.pkgs.buildPythonPackage rec {
     include = ["spoolman*"]
     EOF
   '';
+
+  nativeBuildInputs = [
+    makeWrapper
+    python.pkgs.setuptools
+    python.pkgs.pythonRelaxDepsHook
+  ];
 
   propagatedBuildInputs = with python.pkgs; [
     uvloop
@@ -76,8 +70,6 @@ python.pkgs.buildPythonPackage rec {
     websockets
   ];
 
-  pythonImportsCheck = [ "spoolman" ];
-
   postInstall =
     let
       start_script = writeShellScript "start-spoolman" ''
@@ -95,6 +87,14 @@ python.pkgs.buildPythonPackage rec {
       --prefix PYTHONPATH : "${python.pkgs.makePythonPath propagatedBuildInputs}" \
       --prefix PATH : "${python.pkgs.alembic}/bin"
     '';
+
+  pyproject = true;
+  pythonImportsCheck = [ "spoolman" ];
+
+  pythonRelaxDeps = [
+    "setuptools"
+    "websockets"
+  ];
 
   meta = common.meta // {
     description = "Spoolman server";

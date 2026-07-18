@@ -1,15 +1,14 @@
 {
   lib,
-  python3Packages,
   fetchFromGitHub,
-  pandoc,
   installShellFiles,
+  pandoc,
+  python3Packages,
 }:
 
 python3Packages.buildPythonPackage (finalAttrs: {
   pname = "autotrash";
   version = "0.4.7";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "bneijt";
@@ -23,29 +22,29 @@ python3Packages.buildPythonPackage (finalAttrs: {
       --replace-fail 'version = "0.0.0"' 'version = "${finalAttrs.version}"'
   '';
 
-  build-system = [ python3Packages.poetry-core ];
-
   nativeBuildInputs = [
     installShellFiles
     pandoc
   ];
 
   postBuild = "make -C doc autotrash.1";
-
-  postInstall = "installManPage doc/autotrash.1";
-
-  pythonImportsCheck = [ "autotrash" ];
   nativeCheckInputs = [ python3Packages.pytestCheckHook ];
+  postInstall = "installManPage doc/autotrash.1";
+  build-system = [ python3Packages.poetry-core ];
+  pyproject = true;
+  pythonImportsCheck = [ "autotrash" ];
 
   meta = {
     description = "Tool to automatically purge old trashed files";
-    license = lib.licenses.gpl3Plus;
     homepage = "https://bneijt.nl/pr/autotrash";
     changelog = "https://github.com/bneijt/autotrash/releases/tag/${finalAttrs.src.tag}";
+    license = lib.licenses.gpl3Plus;
+
     maintainers = with lib.maintainers; [
       sigmanificient
       mithicspirit
     ];
+
     mainProgram = "autotrash";
   };
 })

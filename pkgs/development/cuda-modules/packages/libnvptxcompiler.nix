@@ -1,9 +1,8 @@
 { buildRedist }:
 buildRedist {
-  redistName = "cuda";
   pname = "libnvptxcompiler";
-
   outputs = [ "out" ];
+  redistName = "cuda";
 
   meta = {
     description = "APIs which can be used to compile a PTX program into GPU assembly code";

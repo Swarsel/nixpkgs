@@ -1,8 +1,8 @@
 {
   lib,
+  fetchFromGitHub,
   buildPythonPackage,
   docopt,
-  fetchFromGitHub,
   poetry-core,
   pytest-vcr,
   pytestCheckHook,
@@ -14,7 +14,6 @@
 buildPythonPackage rec {
   pname = "thingspeak";
   version = "1.0.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "mchwalisz";
@@ -29,6 +28,12 @@ buildPythonPackage rec {
       --replace-fail 'requires = ["poetry>=0.12"]' 'requires = ["poetry-core"]'
   '';
 
+  nativeCheckInputs = [
+    pytest-vcr
+    pytestCheckHook
+    vcrpy
+  ];
+
   build-system = [
     poetry-core
   ];
@@ -39,16 +44,12 @@ buildPythonPackage rec {
     setuptools
   ];
 
-  nativeCheckInputs = [
-    pytest-vcr
-    pytestCheckHook
-    vcrpy
-  ];
-
   disabledTests = [
     # VCR cassette conflicts with different API keys
     "test_get_with_key"
   ];
+
+  pyproject = true;
 
   pythonImportsCheck = [
     "thingspeak"

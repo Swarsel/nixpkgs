@@ -1,52 +1,47 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  #  build-system
-  setuptools,
-
-  # dependencies
-  filelock,
-  huggingface-hub,
-  importlib-metadata,
-  numpy,
-  pillow,
-  regex,
-  requests,
-  safetensors,
-
   # optional dependencies
   accelerate,
+  buildPythonPackage,
   datasets,
+  diffusers,
+  # dependencies
+  filelock,
   flax,
+  huggingface-hub,
+  importlib-metadata,
   jax,
   jaxlib,
   jinja2,
-  peft,
-  protobuf,
-  tensorboard,
-  torch,
-
-  # tests
-  writeText,
+  numpy,
   parameterized,
+  peft,
+  pillow,
+  protobuf,
   pytest-timeout,
   pytest-xdist,
   pytestCheckHook,
+  pythonAtLeast,
+  regex,
+  requests,
   requests-mock,
+  safetensors,
   scipy,
   sentencepiece,
+  #  build-system
+  setuptools,
+  tensorboard,
+  torch,
   torchsde,
   transformers,
-  pythonAtLeast,
-  diffusers,
+  # tests
+  writeText,
 }:
 
 buildPythonPackage rec {
   pname = "diffusers";
   version = "0.38.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "huggingface";
@@ -54,45 +49,6 @@ buildPythonPackage rec {
     tag = "v${version}";
     hash = "sha256-FyXQJh4i/m9lAD2Sz45YWc+KIFMA+xQLb3ErudO9voY=";
   };
-
-  build-system = [ setuptools ];
-
-  pythonRelaxDeps = [
-    "safetensors"
-  ];
-
-  dependencies = [
-    filelock
-    huggingface-hub
-    importlib-metadata
-    numpy
-    pillow
-    regex
-    requests
-    safetensors
-  ];
-
-  optional-dependencies = {
-    flax = [
-      flax
-      jax
-      jaxlib
-    ];
-    torch = [
-      accelerate
-      torch
-    ];
-    training = [
-      accelerate
-      datasets
-      jinja2
-      peft
-      protobuf
-      tensorboard
-    ];
-  };
-
-  pythonImportsCheck = [ "diffusers" ];
 
   # it takes a few hours
   doCheck = false;
@@ -138,7 +94,18 @@ buildPythonPackage rec {
       cat ${conftestSkipNetworkErrors} >> tests/conftest.py
     '';
 
-  enabledTestPaths = [ "tests/" ];
+  build-system = [ setuptools ];
+
+  dependencies = [
+    filelock
+    huggingface-hub
+    importlib-metadata
+    numpy
+    pillow
+    regex
+    requests
+    safetensors
+  ];
 
   disabledTests = [
     # depends on current working directory
@@ -162,14 +129,45 @@ buildPythonPackage rec {
     "test_from_save_pretrained_dynamo"
   ];
 
+  enabledTestPaths = [ "tests/" ];
+
+  optional-dependencies = {
+    flax = [
+      flax
+      jax
+      jaxlib
+    ];
+
+    torch = [
+      accelerate
+      torch
+    ];
+
+    training = [
+      accelerate
+      datasets
+      jinja2
+      peft
+      protobuf
+      tensorboard
+    ];
+  };
+
+  pyproject = true;
+  pythonImportsCheck = [ "diffusers" ];
+
+  pythonRelaxDeps = [
+    "safetensors"
+  ];
+
   passthru.tests.pytest = diffusers.overridePythonAttrs { doCheck = true; };
 
   meta = {
     description = "State-of-the-art diffusion models for image and audio generation in PyTorch";
-    mainProgram = "diffusers-cli";
     homepage = "https://github.com/huggingface/diffusers";
     changelog = "https://github.com/huggingface/diffusers/releases/tag/${src.tag}";
     license = lib.licenses.asl20;
     maintainers = with lib.maintainers; [ natsukium ];
+    mainProgram = "diffusers-cli";
   };
 }

@@ -1,16 +1,13 @@
 {
   lib,
-  buildDunePackage,
   angstrom,
   async,
+  buildDunePackage,
 }:
 
 buildDunePackage {
-  pname = "angstrom-async";
-
   inherit (angstrom) version src;
-
-  minimalOCamlVersion = "4.04.1";
+  pname = "angstrom-async";
 
   propagatedBuildInputs = [
     angstrom
@@ -18,6 +15,7 @@ buildDunePackage {
   ];
 
   doCheck = true;
+  minimalOCamlVersion = "4.04.1";
 
   meta = {
     inherit (angstrom.meta) homepage license;

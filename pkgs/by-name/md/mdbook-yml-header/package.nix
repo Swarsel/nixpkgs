@@ -1,8 +1,8 @@
 {
   lib,
-  rustPlatform,
   fetchCrate,
   nix-update-script,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -15,7 +15,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
   };
 
   cargoHash = "sha256-iBvVes32G0Ji9gk97axeTzbXlVh0Qn9Bzj64G6oEDFM=";
-
   passthru.updateScript = nix-update-script { };
 
   meta = {
@@ -23,7 +22,7 @@ rustPlatform.buildRustPackage (finalAttrs: {
     homepage = "https://github.com/dvogt23/mdbook-yml-header";
     license = lib.licenses.mpl20;
     sourceProvenance = [ lib.sourceTypes.fromSource ];
-    mainProgram = "mdbook-yml-header";
     maintainers = [ lib.maintainers.pinage404 ];
+    mainProgram = "mdbook-yml-header";
   };
 })

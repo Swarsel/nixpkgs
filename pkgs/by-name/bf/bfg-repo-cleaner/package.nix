@@ -11,8 +11,6 @@ stdenv.mkDerivation rec {
   pname = "bfg-repo-cleaner";
   version = "1.15.0";
 
-  jarName = "bfg-${version}.jar";
-
   src = fetchurl {
     url = "mirror://maven/com/madgag/bfg/${version}/${jarName}";
     hash = "sha256-3+KIWtwpFjeQk/AqgBgSAFNoVsmph78hxJLkUq3v73o=";
@@ -21,8 +19,6 @@ stdenv.mkDerivation rec {
   nativeBuildInputs = [ makeWrapper ];
   buildInputs = [ jre ];
 
-  dontUnpack = true;
-
   installPhase = ''
     mkdir -p $out/share/java
     mkdir -p $out/bin
@@ -30,16 +26,20 @@ stdenv.mkDerivation rec {
     makeWrapper "${jre}/bin/java" $out/bin/bfg --add-flags "-cp $out/share/java/$jarName com.madgag.git.bfg.cli.Main"
   '';
 
+  doInstallCheck = true;
+
   nativeInstallCheckInputs = [
     versionCheckHook
   ];
-  doInstallCheck = true;
+
+  dontUnpack = true;
+  jarName = "bfg-${version}.jar";
   versionCheckProgram = "${placeholder "out"}/bin/${meta.mainProgram}";
 
   meta = {
-    homepage = "https://rtyley.github.io/bfg-repo-cleaner/";
     # Descriptions taken with minor modification from the homepage of bfg-repo-cleaner
     description = "Removes large or troublesome blobs in a git repository like git-filter-branch does, but faster";
+
     longDescription = ''
       The BFG is a simpler, faster alternative to git-filter-branch for
       cleansing bad data out of your Git repository history, in particular removing
@@ -50,11 +50,13 @@ stdenv.mkDerivation rec {
       it's faster (10-720x), simpler (dedicated to just removing things), and
       beautiful (can use Scala instead of bash to script customizations).
     '';
-    sourceProvenance = with lib.sourceTypes; [ binaryBytecode ];
+
+    homepage = "https://rtyley.github.io/bfg-repo-cleaner/";
     license = lib.licenses.gpl3;
+    sourceProvenance = with lib.sourceTypes; [ binaryBytecode ];
     maintainers = [ lib.maintainers.changlinli ];
-    mainProgram = "bfg";
     platforms = lib.platforms.unix;
+    mainProgram = "bfg";
     downloadPage = "https://mvnrepository.com/artifact/com.madgag/bfg/${version}";
   };
 

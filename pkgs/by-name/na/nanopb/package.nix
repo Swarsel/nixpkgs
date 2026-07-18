@@ -1,23 +1,23 @@
 {
-  stdenvNoCC,
-  callPackage,
+  lib,
   fetchFromGitHub,
   buildPackages,
-  lib,
-  enableMalloc ? false,
-  noPackedStructs ? false,
-  maxRequiredFields ? null,
-  field32bit ? false,
-  noErrmsg ? false,
+  callPackage,
+  stdenvNoCC,
   bufferOnly ? false,
-  systemHeader ? null,
-  without64bit ? false,
-  encodeArraysUnpacked ? false,
-  convertDoubleFloat ? false,
-  validateUtf8 ? false,
-  littleEndian8bit ? false,
   c99StaticAssert ? false,
+  convertDoubleFloat ? false,
+  enableMalloc ? false,
+  encodeArraysUnpacked ? false,
+  field32bit ? false,
+  littleEndian8bit ? false,
+  maxRequiredFields ? null,
+  noErrmsg ? false,
+  noPackedStructs ? false,
   noStaticAssert ? false,
+  systemHeader ? null,
+  validateUtf8 ? false,
+  without64bit ? false,
 }:
 stdenvNoCC.mkDerivation (
   self:
@@ -28,10 +28,11 @@ stdenvNoCC.mkDerivation (
       inherit (self.passthru) generator-out;
     };
     python3 = buildPackages.python3.override {
-      self = python3;
       packageOverrides = _: _: {
         nanopb-proto = self.passthru.python-module;
       };
+
+      self = python3;
     };
     generator = buildPackages.callPackage ./generator.nix {
       inherit python3;
@@ -41,6 +42,7 @@ stdenvNoCC.mkDerivation (
     runtime = callPackage ./runtime.nix {
       inherit python3;
       inherit (self) src version;
+
       inherit
         enableMalloc
         noPackedStructs
@@ -70,11 +72,6 @@ stdenvNoCC.mkDerivation (
       hash = "sha256-bMSZZaF8egAegi3enCM+DRyxOrPoWKAKybvWsrKZEDc=";
     };
 
-    dontPatch = true;
-    dontUnpack = true;
-
-    propagatedNativeBuildInputs = [ generator ];
-
     propagatedBuildInputs = [ runtime ];
 
     postInstall = ''
@@ -86,6 +83,10 @@ stdenvNoCC.mkDerivation (
       ln -s ${self.src}/generator/proto/nanopb.proto $out/share/nanopb/generator/proto/nanopb.proto
     '';
 
+    dontPatch = true;
+    dontUnpack = true;
+    propagatedNativeBuildInputs = [ generator ];
+
     passthru = {
       inherit
         runtime
@@ -93,24 +94,17 @@ stdenvNoCC.mkDerivation (
         python-module
         generator
         ;
+
       tests = {
-        simple-proto2 = callPackage ./test-simple-proto2 { };
-        simple-proto3 = callPackage ./test-simple-proto3 { };
         message-with-annotations = callPackage ./test-message-with-annotations { };
         message-with-options = callPackage ./test-message-with-options { };
+        simple-proto2 = callPackage ./test-simple-proto2 { };
+        simple-proto3 = callPackage ./test-simple-proto3 { };
       };
     };
 
     meta = {
-      platforms = lib.platforms.all;
-
       description = "Protocol Buffers with small code size";
-      homepage = "https://jpa.kapsi.fi/nanopb/";
-      license = lib.licenses.zlib;
-      maintainers = with lib.maintainers; [
-        kalbasit
-        liarokapisv
-      ];
 
       longDescription = ''
         Nanopb is a small code-size Protocol Buffers implementation in ansi C. It
@@ -129,6 +123,16 @@ stdenvNoCC.mkDerivation (
 
         protoc --proto_path=. --proto_path=''${nanopb}/share/nanopb/generator/proto --plugin=protoc-gen-nanopb=''${nanopb}/bin/protoc-gen-nanopb --nanopb_out=out file.proto
       '';
+
+      homepage = "https://jpa.kapsi.fi/nanopb/";
+      license = lib.licenses.zlib;
+
+      maintainers = with lib.maintainers; [
+        kalbasit
+        liarokapisv
+      ];
+
+      platforms = lib.platforms.all;
     };
   }
 )

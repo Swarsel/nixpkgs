@@ -1,19 +1,13 @@
 {
-  addDriverRunpath,
-  autoPatchelfHook,
   lib,
-  makeWrapper,
   stdenv,
-  symlinkJoin,
-  # arguments from default.nix
-  lang,
-  meta,
-  pname,
-  src,
-  version,
+  addDriverRunpath,
   # dependencies
   alsa-lib,
+  autoPatchelfHook,
   cudaPackages,
+  # options
+  cudaSupport,
   cups,
   dbus,
   flite,
@@ -23,50 +17,64 @@
   glib,
   gmpxx,
   keyutils,
+  # arguments from default.nix
+  lang,
   libGL,
   libGLU,
+  libice,
   libpcap,
+  libsm,
   libtins,
   libuuid,
+  libx11,
+  libxcb,
+  libxcb-image,
+  libxcb-keysyms,
+  libxcomposite,
+  libxcursor,
+  libxdamage,
+  libxext,
+  libxfixes,
+  libxi,
+  libxinerama,
   libxkbcommon,
   libxml2,
+  libxmu,
+  libxrandr,
+  libxrender,
+  libxscrnsaver,
+  libxtst,
   llvmPackages,
+  makeWrapper,
   matio,
+  meta,
   mpfr,
   ncurses,
   opencv4,
   openjdk11,
   openssl,
   pciutils,
+  pname,
+  src,
+  symlinkJoin,
   tre,
   unixodbc,
-  libxcb-image,
-  libxcb-keysyms,
+  version,
   xkeyboard_config,
-  libxtst,
-  libxscrnsaver,
-  libxrender,
-  libxrandr,
-  libxmu,
-  libxi,
-  libxinerama,
-  libxfixes,
-  libxext,
-  libxdamage,
-  libxcursor,
-  libxcomposite,
-  libx11,
-  libsm,
-  libice,
-  libxcb,
   zlib,
-  # options
-  cudaSupport,
 }:
 
 let
   cudaEnv = symlinkJoin {
+    postBuild = ''
+      if [ ! -e $out/lib/libcuda.so ]; then
+          ln -s ${addDriverRunpath.driverLink}/lib/libcuda.so $out/lib
+      fi
+      ln -s lib $out/lib64
+    '';
+
     name = "mathematica-cuda-env";
+
     paths = with cudaPackages; [
       cuda_cudart
       cuda_nvcc
@@ -75,12 +83,6 @@ let
       libcurand
       libcusparse
     ];
-    postBuild = ''
-      if [ ! -e $out/lib/libcuda.so ]; then
-          ln -s ${addDriverRunpath.driverLink}/lib/libcuda.so $out/lib
-      fi
-      ln -s lib $out/lib64
-    '';
   };
 
 in
@@ -151,39 +153,6 @@ stdenv.mkDerivation {
   ]
   ++ lib.optional cudaSupport cudaEnv;
 
-  wrapProgramFlags = [
-    "--prefix LD_LIBRARY_PATH : ${
-      lib.makeLibraryPath [
-        dbus
-        gcc-unwrapped.lib
-        zlib
-      ]
-    }"
-    "--prefix PATH : ${lib.makeBinPath [ stdenv.cc ]}"
-    # Fix libQt errors - #96490
-    "--set USE_WOLFRAM_LD_LIBRARY_PATH 1"
-    # Fix xkeyboard config path for Qt
-    "--set QT_XKB_CONFIG_ROOT ${xkeyboard_config}/share/X11/xkb"
-    # if wayland isn't supported we fail over to xcb
-    # see https://github.com/qt/qtbase/blob/35d0f012ee9b95e8cf3563a41d710ff3c023d841/src/gui/kernel/qguiapplication.cpp#L1218
-    "--set QT_QPA_PLATFORM wayland;xcb"
-  ]
-  ++ lib.optionals cudaSupport [
-    "--set CUDA_PATH ${cudaEnv}"
-    "--set NVIDIA_DRIVER_LIBRARY_PATH ${addDriverRunpath.driverLink}/lib/libnvidia-tls.so"
-    "--set CUDA_LIBRARY_PATH ${addDriverRunpath.driverLink}/lib/libcuda.so"
-  ];
-
-  unpackPhase = ''
-    runHook preUnpack
-
-    # Find offset from file
-    offset=$(${stdenv.shell} -c "$(grep -axm1 -e 'offset=.*' $src); echo \$offset" $src)
-    tail -c +$(($offset + 1)) $src | tar -xf -
-
-    runHook postUnpack
-  '';
-
   installPhase = ''
     runHook preInstall
 
@@ -232,15 +201,45 @@ stdenv.mkDerivation {
     done
   '';
 
-  dontConfigure = true;
+  # NOTE: Some deps are still not found; ignore for now
+  autoPatchelfIgnoreMissingDeps = true;
   dontBuild = true;
-
+  dontConfigure = true;
+  # All binaries are already stripped
+  dontStrip = true;
   # This is primarily an IO bound build; there's little benefit to building remotely
   preferLocalBuild = true;
 
-  # All binaries are already stripped
-  dontStrip = true;
+  unpackPhase = ''
+    runHook preUnpack
 
-  # NOTE: Some deps are still not found; ignore for now
-  autoPatchelfIgnoreMissingDeps = true;
+    # Find offset from file
+    offset=$(${stdenv.shell} -c "$(grep -axm1 -e 'offset=.*' $src); echo \$offset" $src)
+    tail -c +$(($offset + 1)) $src | tar -xf -
+
+    runHook postUnpack
+  '';
+
+  wrapProgramFlags = [
+    "--prefix LD_LIBRARY_PATH : ${
+      lib.makeLibraryPath [
+        dbus
+        gcc-unwrapped.lib
+        zlib
+      ]
+    }"
+    "--prefix PATH : ${lib.makeBinPath [ stdenv.cc ]}"
+    # Fix libQt errors - #96490
+    "--set USE_WOLFRAM_LD_LIBRARY_PATH 1"
+    # Fix xkeyboard config path for Qt
+    "--set QT_XKB_CONFIG_ROOT ${xkeyboard_config}/share/X11/xkb"
+    # if wayland isn't supported we fail over to xcb
+    # see https://github.com/qt/qtbase/blob/35d0f012ee9b95e8cf3563a41d710ff3c023d841/src/gui/kernel/qguiapplication.cpp#L1218
+    "--set QT_QPA_PLATFORM wayland;xcb"
+  ]
+  ++ lib.optionals cudaSupport [
+    "--set CUDA_PATH ${cudaEnv}"
+    "--set NVIDIA_DRIVER_LIBRARY_PATH ${addDriverRunpath.driverLink}/lib/libnvidia-tls.so"
+    "--set CUDA_LIBRARY_PATH ${addDriverRunpath.driverLink}/lib/libcuda.so"
+  ];
 }

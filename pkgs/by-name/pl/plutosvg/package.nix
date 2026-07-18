@@ -2,14 +2,14 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  nix-update-script,
-  validatePkgConfig,
-  testers,
   cmake,
-  ninja,
-  plutovg,
-  enableFreetype ? false,
   freetype,
+  ninja,
+  nix-update-script,
+  plutovg,
+  testers,
+  validatePkgConfig,
+  enableFreetype ? false,
 }:
 stdenv.mkDerivation (finalAttrs: {
   pname = "plutosvg";
@@ -49,20 +49,21 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   passthru.tests = {
-    pkg-config = testers.testMetaPkgConfig finalAttrs.finalPackage;
     cmake-config = testers.hasCmakeConfigModules {
-      package = finalAttrs.finalPackage;
       moduleNames = [ "plutosvg" ];
+      package = finalAttrs.finalPackage;
       versionCheck = true;
     };
+
+    pkg-config = testers.testMetaPkgConfig finalAttrs.finalPackage;
   };
 
   passthru.updateScript = nix-update-script { };
 
   meta = {
+    description = "Tiny SVG rendering library in C";
     homepage = "https://github.com/sammycage/plutosvg";
     changelog = "https://github.com/sammycage/plutosvg/releases/tag/${finalAttrs.src.tag}";
-    description = "Tiny SVG rendering library in C";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ marcin-serwin ];
     pkgConfigModules = [ "plutosvg" ];

@@ -1,17 +1,17 @@
 {
-  stdenv,
   lib,
-  runCommand,
-  patchelf,
-  makeWrapper,
-  pkg-config,
-  curl,
-  runtimeShell,
-  openssl,
-  zlib,
+  stdenv,
   fetchFromGitHub,
-  rustPlatform,
+  curl,
   libiconv,
+  makeWrapper,
+  openssl,
+  patchelf,
+  pkg-config,
+  runCommand,
+  runtimeShell,
+  rustPlatform,
+  zlib,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -25,31 +25,14 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-Ael2hla+jqiaP8FfYYQ0u3V8cVt+CEFEQU7jB3LYG2E=";
   };
 
-  cargoHash = "sha256-MDe/QBE1gd/4yMAuwBga8x9yv3duf3vaudMongurtQI=";
-
-  nativeBuildInputs = [
-    pkg-config
-    makeWrapper
-  ];
-
-  env.OPENSSL_NO_VENDOR = 1;
-  buildInputs = [
-    curl
-    zlib
-    openssl
-  ]
-  ++ lib.optional stdenv.hostPlatform.isDarwin libiconv;
-
-  buildFeatures = [ "no-self-update" ];
-
   patches = lib.optionals stdenv.hostPlatform.isLinux [
     # Run patchelf on the downloaded binaries.
     # This is necessary because Lean 4 is now dynamically linked.
     (runCommand "0001-dynamically-patchelf-binaries.patch"
       {
         CC = stdenv.cc;
-        cc = "${stdenv.cc}/bin/cc";
         ar = "${stdenv.cc}/bin/ar";
+        cc = "${stdenv.cc}/bin/cc";
         patchelf = patchelf;
         shell = runtimeShell;
       }
@@ -64,6 +47,21 @@ rustPlatform.buildRustPackage (finalAttrs: {
       ''
     )
   ];
+
+  nativeBuildInputs = [
+    pkg-config
+    makeWrapper
+  ];
+
+  buildInputs = [
+    curl
+    zlib
+    openssl
+  ]
+  ++ lib.optional stdenv.hostPlatform.isDarwin libiconv;
+
+  cargoHash = "sha256-MDe/QBE1gd/4yMAuwBga8x9yv3duf3vaudMongurtQI=";
+  env.OPENSSL_NO_VENDOR = 1;
 
   postInstall = ''
     pushd $out/bin
@@ -81,14 +79,18 @@ rustPlatform.buildRustPackage (finalAttrs: {
     $out/bin/elan completions zsh >  "$out/share/zsh/site-functions/_elan"
   '';
 
+  buildFeatures = [ "no-self-update" ];
+
   meta = {
     description = "Small tool to manage your installations of the Lean theorem prover";
     homepage = "https://github.com/leanprover/elan";
     changelog = "https://github.com/leanprover/elan/blob/v${finalAttrs.version}/CHANGELOG.md";
+
     license = with lib.licenses; [
       asl20 # or
       mit
     ];
+
     maintainers = [ ];
     mainProgram = "elan";
   };

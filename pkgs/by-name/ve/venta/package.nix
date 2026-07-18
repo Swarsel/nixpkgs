@@ -26,12 +26,6 @@ stdenv.mkDerivation (finalAttrs: {
     librsvg
   ];
 
-  propagatedUserEnvPkgs = [
-    gtk-engine-murrine
-  ];
-
-  dontBuild = true;
-
   installPhase = ''
     runHook preInstall
     mkdir -p $out/share/themes
@@ -40,11 +34,17 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  dontBuild = true;
+
+  propagatedUserEnvPkgs = [
+    gtk-engine-murrine
+  ];
+
   meta = {
     description = "Gtk theme based on windows 10 style";
     homepage = "https://www.pling.com/p/1386774/";
     license = lib.licenses.gpl3Only;
-    platforms = lib.platforms.unix;
     maintainers = [ lib.maintainers.romildo ];
+    platforms = lib.platforms.unix;
   };
 })

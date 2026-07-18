@@ -1,6 +1,6 @@
 {
-  python3,
   lib,
+  python3,
   overlay ? (_: _: { }),
 }:
 
@@ -8,6 +8,7 @@ lib.fix (
   self:
   python3.override {
     inherit self;
+
     packageOverrides =
       lib.composeExtensions
         (self: super: {

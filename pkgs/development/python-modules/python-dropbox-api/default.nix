@@ -1,15 +1,14 @@
 {
   lib,
+  fetchFromGitHub,
   aiohttp,
   buildPythonPackage,
-  fetchFromGitHub,
   poetry-core,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "python-dropbox-api";
   version = "0.1.4";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "bdr99";
@@ -19,9 +18,8 @@ buildPythonPackage (finalAttrs: {
   };
 
   build-system = [ poetry-core ];
-
   dependencies = [ aiohttp ];
-
+  pyproject = true;
   pythonImportsCheck = [ "python_dropbox_api" ];
 
   meta = {

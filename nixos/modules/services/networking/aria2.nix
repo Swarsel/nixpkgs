@@ -54,8 +54,8 @@ in
   options = {
     services.aria2 = {
       enable = lib.mkOption {
-        type = lib.types.bool;
         default = false;
+
         description = ''
           Whether or not to enable the headless Aria2 daemon service.
 
@@ -65,26 +65,13 @@ in
           Targets are downloaded to `${defaultDir}` by default and are
           accessible to users in the `aria2` group.
         '';
-      };
-      openPorts = lib.mkOption {
+
         type = lib.types.bool;
-        default = false;
-        description = ''
-          Open listen and RPC ports found in `settings.listen-port` and
-          `settings.rpc-listen-port` options in the firewall.
-        '';
       };
-      rpcSecretFile = lib.mkOption {
-        type = lib.types.path;
-        example = "/run/secrets/aria2-rpc-token.txt";
-        description = ''
-          A file containing the RPC secret authorization token.
-          Read <https://aria2.github.io/manual/en/html/aria2c.html#rpc-auth> to know how this option value is used.
-        '';
-      };
+
       downloadDirPermission = lib.mkOption {
-        type = lib.types.str;
         default = "0770";
+
         description = ''
           The permission for `settings.dir`.
 
@@ -94,11 +81,34 @@ in
           You may want to adjust `serviceUMask` as well, which further restricts
           the file permission for newly created files (i.e. the downloads).
         '';
-      };
-      serviceUMask = lib.mkOption {
+
         type = lib.types.str;
+      };
+
+      openPorts = lib.mkOption {
+        default = false;
+
+        description = ''
+          Open listen and RPC ports found in `settings.listen-port` and
+          `settings.rpc-listen-port` options in the firewall.
+        '';
+
+        type = lib.types.bool;
+      };
+
+      rpcSecretFile = lib.mkOption {
+        description = ''
+          A file containing the RPC secret authorization token.
+          Read <https://aria2.github.io/manual/en/html/aria2c.html#rpc-auth> to know how this option value is used.
+        '';
+
+        example = "/run/secrets/aria2-rpc-token.txt";
+        type = lib.types.path;
+      };
+
+      serviceUMask = lib.mkOption {
         default = "0022";
-        example = "0002";
+
         description = ''
           The file mode creation mask for Aria2 service.
 
@@ -109,16 +119,66 @@ in
           You may want to set this value to `0002` so you can manage the file
           more easily.
         '';
+
+        example = "0002";
+        type = lib.types.str;
       };
+
       settings = lib.mkOption {
+        default = { };
+
         description = ''
           Generates the {file}`aria2.conf` file. Refer to [the documentation][0] for
           all possible settings.
 
           [0]: <https://aria2.github.io/manual/en/html/aria2c.html#synopsis>
         '';
-        default = { };
+
         type = lib.types.submodule {
+          options = {
+            conf-path = lib.mkOption {
+              default = "${homeDir}/aria2.conf";
+              description = "Configuration file path.";
+              type = lib.types.singleLineStr;
+            };
+
+            dir = lib.mkOption {
+              default = defaultDir;
+              description = "Directory to store downloaded files.";
+              type = lib.types.singleLineStr;
+            };
+
+            enable-rpc = lib.mkOption {
+              default = true;
+              description = "Enable JSON-RPC/XML-RPC server.";
+              type = lib.types.bool;
+            };
+
+            listen-port = lib.mkOption {
+              default = [
+                {
+                  from = 6881;
+                  to = 6999;
+                }
+              ];
+
+              description = "Set UDP listening port range used by DHT(IPv4, IPv6) and UDP tracker.";
+              type = with lib.types; listOf (attrsOf port);
+            };
+
+            rpc-listen-port = lib.mkOption {
+              default = defaultRpcListenPort;
+              description = "Specify a port number for JSON-RPC/XML-RPC server to listen to. Possible Values: 1024-65535";
+              type = lib.types.port;
+            };
+
+            save-session = lib.mkOption {
+              default = "${homeDir}/aria2.session";
+              description = "Save error/unfinished downloads to FILE on exit.";
+              type = lib.types.singleLineStr;
+            };
+          };
+
           freeformType =
             with lib.types;
             attrsOf (oneOf [
@@ -127,43 +187,6 @@ in
               float
               singleLineStr
             ]);
-          options = {
-            save-session = lib.mkOption {
-              type = lib.types.singleLineStr;
-              default = "${homeDir}/aria2.session";
-              description = "Save error/unfinished downloads to FILE on exit.";
-            };
-            dir = lib.mkOption {
-              type = lib.types.singleLineStr;
-              default = defaultDir;
-              description = "Directory to store downloaded files.";
-            };
-            conf-path = lib.mkOption {
-              type = lib.types.singleLineStr;
-              default = "${homeDir}/aria2.conf";
-              description = "Configuration file path.";
-            };
-            enable-rpc = lib.mkOption {
-              type = lib.types.bool;
-              default = true;
-              description = "Enable JSON-RPC/XML-RPC server.";
-            };
-            listen-port = lib.mkOption {
-              type = with lib.types; listOf (attrsOf port);
-              default = [
-                {
-                  from = 6881;
-                  to = 6999;
-                }
-              ];
-              description = "Set UDP listening port range used by DHT(IPv4, IPv6) and UDP tracker.";
-            };
-            rpc-listen-port = lib.mkOption {
-              type = lib.types.port;
-              default = defaultRpcListenPort;
-              description = "Specify a port number for JSON-RPC/XML-RPC server to listen to. Possible Values: 1024-65535";
-            };
-          };
         };
       };
     };
@@ -183,29 +206,14 @@ in
 
     # Need to open ports for proper functioning
     networking.firewall = lib.mkIf cfg.openPorts {
-      allowedUDPPortRanges = config.services.aria2.settings.listen-port;
       allowedTCPPorts = [ config.services.aria2.settings.rpc-listen-port ];
+      allowedUDPPortRanges = config.services.aria2.settings.listen-port;
     };
-
-    users.users.aria2 = {
-      group = "aria2";
-      uid = config.ids.uids.aria2;
-      description = "aria2 user";
-      home = homeDir;
-      createHome = false;
-    };
-
-    users.groups.aria2.gid = config.ids.gids.aria2;
-
-    systemd.tmpfiles.rules = [
-      "d '${homeDir}' 0770 aria2 aria2 - -"
-      "d '${config.services.aria2.settings.dir}' ${config.services.aria2.downloadDirPermission} aria2 aria2 - -"
-    ];
 
     systemd.services.aria2 = {
-      description = "aria2 Service";
       after = [ "network.target" ];
-      wantedBy = [ "multi-user.target" ];
+      description = "aria2 Service";
+
       preStart = ''
         if [[ ! -e "${cfg.settings.save-session}" ]]
         then
@@ -217,14 +225,31 @@ in
       '';
 
       serviceConfig = {
-        Restart = "on-abort";
-        ExecStart = "${pkgs.aria2}/bin/aria2c --conf-path=${cfg.settings.conf-path}";
         ExecReload = "${pkgs.coreutils}/bin/kill -HUP $MAINPID";
-        User = "aria2";
+        ExecStart = "${pkgs.aria2}/bin/aria2c --conf-path=${cfg.settings.conf-path}";
         Group = "aria2";
         LoadCredential = "rpcSecretFile:${cfg.rpcSecretFile}";
+        Restart = "on-abort";
         UMask = cfg.serviceUMask;
+        User = "aria2";
       };
+
+      wantedBy = [ "multi-user.target" ];
+    };
+
+    systemd.tmpfiles.rules = [
+      "d '${homeDir}' 0770 aria2 aria2 - -"
+      "d '${config.services.aria2.settings.dir}' ${config.services.aria2.downloadDirPermission} aria2 aria2 - -"
+    ];
+
+    users.groups.aria2.gid = config.ids.gids.aria2;
+
+    users.users.aria2 = {
+      createHome = false;
+      description = "aria2 user";
+      group = "aria2";
+      home = homeDir;
+      uid = config.ids.uids.aria2;
     };
   };
 

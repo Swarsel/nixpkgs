@@ -1,10 +1,10 @@
 {
   lib,
-  stdenvNoCC,
   fetchurl,
   cpio,
-  xar,
+  stdenvNoCC,
   writeScript,
+  xar,
 }:
 
 stdenvNoCC.mkDerivation (finalAttrs: {
@@ -21,6 +21,15 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     xar
   ];
 
+  installPhase = ''
+    mkdir -p $out
+    cp -R Applications $out
+  '';
+
+  dontBuild = true;
+  # Arq is notarized
+  dontFixup = true;
+
   unpackPhase = ''
     runHook preUnpack
 
@@ -29,16 +38,6 @@ stdenvNoCC.mkDerivation (finalAttrs: {
 
     runHook postUnpack
   '';
-
-  installPhase = ''
-    mkdir -p $out
-    cp -R Applications $out
-  '';
-
-  dontBuild = true;
-
-  # Arq is notarized
-  dontFixup = true;
 
   passthru.updateScript = writeScript "update.sh" ''
     #!/usr/bin/env nix-shell
@@ -56,9 +55,9 @@ stdenvNoCC.mkDerivation (finalAttrs: {
   '';
 
   meta = {
-    changelog = "https://www.arqbackup.com/download/arqbackup/arq7_release_notes.html";
     description = "Multi-cloud backup software for your Macs";
     homepage = "https://www.arqbackup.com/";
+    changelog = "https://www.arqbackup.com/download/arqbackup/arq7_release_notes.html";
     license = lib.licenses.unfree;
     sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
     maintainers = [ lib.maintainers.Enzime ];

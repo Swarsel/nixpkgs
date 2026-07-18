@@ -5,8 +5,8 @@
 }:
 
 buildDunePackage {
-  pname = "caqti-type-calendar";
   inherit (caqti) src version;
+  pname = "caqti-type-calendar";
 
   propagatedBuildInputs = [
     calendar

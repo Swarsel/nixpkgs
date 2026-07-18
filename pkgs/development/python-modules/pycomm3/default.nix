@@ -1,15 +1,14 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
+  buildPythonPackage,
   pytestCheckHook,
+  setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "pycomm3";
   version = "1.2.16";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "ottowayi";
@@ -18,11 +17,8 @@ buildPythonPackage rec {
     hash = "sha256-xcN0TKwWg23CDBmwMRZlPFuKYpeLg7KSXzhRtNuP6Ls=";
   };
 
-  build-system = [ setuptools ];
-
   nativeCheckInputs = [ pytestCheckHook ];
-
-  pythonImportsCheck = [ "pycomm3" ];
+  build-system = [ setuptools ];
 
   disabledTestPaths = [
     # Don't test examples as some have additional requirements
@@ -30,6 +26,9 @@ buildPythonPackage rec {
     # No physical PLC available
     "tests/online/"
   ];
+
+  pyproject = true;
+  pythonImportsCheck = [ "pycomm3" ];
 
   meta = {
     description = "Python Ethernet/IP library for communicating with Allen-Bradley PLCs";

@@ -2,8 +2,8 @@
   lib,
   stdenv,
   fetchurl,
-  unixtools,
   groff,
+  unixtools,
 }:
 stdenv.mkDerivation (finalAttrs: {
   pname = "ztools";
@@ -13,8 +13,6 @@ stdenv.mkDerivation (finalAttrs: {
     url = "https://mirror.ifarchive.org/if-archive/infocom/tools/ztools/ztools731.tar.gz";
     hash = "sha256-vlQX0/fCAr88KJwMnYUSROFOg9tfVK5Hz58AUDuhNXg=";
   };
-
-  sourceRoot = ".";
 
   nativeBuildInputs = [
     groff
@@ -31,12 +29,14 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  sourceRoot = ".";
+
   meta = {
     description = "Essential set of Z-machine tools for interpreter authors, experienced Inform programmers, and Z-code hackers";
     homepage = "http://inform-fiction.org/zmachine/ztools.html";
     license = lib.licenses.cc-by-sa-40;
-    platforms = lib.platforms.unix;
     maintainers = [ lib.maintainers.haylin ];
+    platforms = lib.platforms.unix;
     mainProgram = "txd";
   };
 })

@@ -1,20 +1,19 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
   buildPythonPackage,
   objgraph,
   psutil,
-  pytestCheckHook,
   pytest-codspeed,
   pytest-cov-stub,
+  pytestCheckHook,
   setuptools,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "multidict";
   version = "6.7.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "aio-libs";
@@ -28,8 +27,6 @@ buildPythonPackage (finalAttrs: {
     substituteInPlace tests/test_circular_imports.py \
       --replace-fail '"-I",' ""
   '';
-
-  build-system = [ setuptools ];
 
   env = lib.optionalAttrs stdenv.cc.isClang {
     NIX_CFLAGS_COMPILE = "-Wno-error=unused-command-line-argument";
@@ -48,12 +45,14 @@ buildPythonPackage (finalAttrs: {
     rm -r multidict
   '';
 
+  build-system = [ setuptools ];
+  pyproject = true;
   pythonImportsCheck = [ "multidict" ];
 
   meta = {
-    changelog = "https://github.com/aio-libs/multidict/blob/${finalAttrs.src.tag}/CHANGES.rst";
     description = "Multidict implementation";
     homepage = "https://github.com/aio-libs/multidict/";
+    changelog = "https://github.com/aio-libs/multidict/blob/${finalAttrs.src.tag}/CHANGES.rst";
     license = lib.licenses.asl20;
     maintainers = with lib.maintainers; [ dotlambda ];
   };

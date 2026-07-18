@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   pycryptodomex,
   setuptools,
 }:
@@ -9,7 +9,6 @@
 buildPythonPackage rec {
   pname = "motionblinds";
   version = "0.6.30";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "starkillerOG";
@@ -18,13 +17,11 @@ buildPythonPackage rec {
     hash = "sha256-xV9od7xTKBBE4f4Mqg57Mp0MXO8/lG+bBKzG+jv6gf4=";
   };
 
-  build-system = [ setuptools ];
-
-  dependencies = [ pycryptodomex ];
-
   # Module has no tests
   doCheck = false;
-
+  build-system = [ setuptools ];
+  dependencies = [ pycryptodomex ];
+  pyproject = true;
   pythonImportsCheck = [ "motionblinds" ];
 
   meta = {

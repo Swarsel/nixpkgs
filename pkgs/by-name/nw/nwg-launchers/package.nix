@@ -3,14 +3,14 @@
   stdenv,
   fetchFromGitHub,
   cmake,
+  gtk-layer-shell,
   gtkmm3,
+  makeWrapper,
   meson,
   ninja,
   nlohmann_json,
   pkg-config,
   swaylock,
-  makeWrapper,
-  gtk-layer-shell,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -47,7 +47,7 @@ stdenv.mkDerivation (finalAttrs: {
     description = "GTK-based launchers: application grid, button bar, dmenu for sway and other window managers";
     homepage = "https://github.com/nwg-piotr/nwg-launchers";
     license = lib.licenses.gpl3;
-    platforms = lib.platforms.linux;
     maintainers = [ ];
+    platforms = lib.platforms.linux;
   };
 })

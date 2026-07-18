@@ -9,16 +9,16 @@
   glib,
   glibc,
   gtk3,
+  libx11,
+  libxext,
+  libxi,
+  libxrender,
+  libxtst,
   makeWrapper,
   musl,
   runCommandCC,
   setJavaClassPath,
   unzip,
-  libxtst,
-  libxrender,
-  libxi,
-  libxext,
-  libx11,
   zlib,
   # extra params
   extraCLibs ? [ ],
@@ -91,46 +91,11 @@ let
     {
       pname = "graalvm-ce";
 
-      unpackPhase = ''
-        runHook preUnpack
-
-        mkdir -p "$out"
-
-        # The tarball on Linux has the following directory structure:
-        #
-        #   graalvm-ce-java11-20.3.0/*
-        #
-        # while on Darwin it looks like this:
-        #
-        #   graalvm-ce-java11-20.3.0/Contents/Home/*
-        #
-        # We therefor use --strip-components=1 vs 3 depending on the platform.
-        tar xf "$src" -C "$out" --strip-components=${if stdenv.hostPlatform.isLinux then "1" else "3"}
-
-        # Sanity check
-        if [ ! -d "$out/bin" ]; then
-          echo "The `bin` is directory missing after extracting the graalvm"
-          echo "tarball, please compare the directory structure of the"
-          echo "tarball with what happens in the unpackPhase (in particular"
-          echo "with regards to the `--strip-components` flag)."
-          exit 1
-        fi
-
-        runHook postUnpack
-      '';
-
-      dontStrip = true;
-
       nativeBuildInputs = [
         unzip
         makeWrapper
       ]
       ++ lib.optional stdenv.hostPlatform.isLinux autoPatchelfHook;
-
-      propagatedBuildInputs = [
-        setJavaClassPath
-        zlib
-      ];
 
       buildInputs = lib.optionals stdenv.hostPlatform.isLinux [
         alsa-lib # libasound.so wanted by lib/libjsound.so
@@ -141,6 +106,11 @@ let
         libxi
         libxrender
         libxtst
+      ];
+
+      propagatedBuildInputs = [
+        setJavaClassPath
+        zlib
       ];
 
       postInstall =
@@ -197,13 +167,8 @@ let
             --add-flags "${toString (cLibsFlags ++ preservedNixVarFlags ++ checkToolchainFlags)}"
         '';
 
-      preFixup = lib.optionalString (stdenv.hostPlatform.isLinux) ''
-        for bin in $(find "$out/bin" -executable -type f); do
-          wrapProgram "$bin" --prefix LD_LIBRARY_PATH : "${runtimeLibraryPath}"
-        done
-      '';
-
       doInstallCheck = true;
+
       installCheckPhase = ''
         runHook preInstallCheck
 
@@ -253,8 +218,45 @@ let
         runHook postInstallCheck
       '';
 
+      preFixup = lib.optionalString (stdenv.hostPlatform.isLinux) ''
+        for bin in $(find "$out/bin" -executable -type f); do
+          wrapProgram "$bin" --prefix LD_LIBRARY_PATH : "${runtimeLibraryPath}"
+        done
+      '';
+
+      dontStrip = true;
+
+      unpackPhase = ''
+        runHook preUnpack
+
+        mkdir -p "$out"
+
+        # The tarball on Linux has the following directory structure:
+        #
+        #   graalvm-ce-java11-20.3.0/*
+        #
+        # while on Darwin it looks like this:
+        #
+        #   graalvm-ce-java11-20.3.0/Contents/Home/*
+        #
+        # We therefor use --strip-components=1 vs 3 depending on the platform.
+        tar xf "$src" -C "$out" --strip-components=${if stdenv.hostPlatform.isLinux then "1" else "3"}
+
+        # Sanity check
+        if [ ! -d "$out/bin" ]; then
+          echo "The `bin` is directory missing after extracting the graalvm"
+          echo "tarball, please compare the directory structure of the"
+          echo "tarball with what happens in the unpackPhase (in particular"
+          echo "with regards to the `--strip-components` flag)."
+          exit 1
+        fi
+
+        runHook postUnpack
+      '';
+
       passthru = {
         home = graalvm-ce;
+
         updateScript = [
           ./update.sh
           "graalvm-ce"
@@ -266,14 +268,16 @@ let
 
         (
           {
-            homepage = "https://www.graalvm.org/";
             description = "High-Performance Polyglot VM";
+            homepage = "https://www.graalvm.org/";
+
             license = with lib.licenses; [
               upl
               gpl2
               classpathException20
               bsd3
             ];
+
             sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
             mainProgram = "java";
             teams = [ lib.teams.graalvm-ce ];

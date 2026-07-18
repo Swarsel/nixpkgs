@@ -7,7 +7,7 @@
    Additional engines or mods can be added with `openraPackages.buildOpenRAEngine` (function around `engine.nix`)
    and `openraPackages.buildOpenRAMod` (function around `mod.nix`), respectively.
 */
-{ pkgs, lib }:
+{ lib, pkgs }:
 
 let
   /*
@@ -54,6 +54,7 @@ let
         f (
           {
             inherit (pkgs) fetchFromGitHub;
+
             postFetch = ''
               sed -i 's/curl/curl --insecure/g' $out/thirdparty/{fetch-thirdparty-deps,noget}.sh
               $out/thirdparty/fetch-thirdparty-deps.sh
@@ -70,11 +71,11 @@ lib.recurseIntoAttrs rec {
   # and to provide defaults for those that are optional.
   buildOpenRAEngine =
     {
-      name ? null,
-      version,
       meta,
       mods,
       src,
+      version,
+      name ? null,
     }@engine:
     # Allow specifying the name at a later point if no name has been given.
     let
@@ -94,19 +95,19 @@ lib.recurseIntoAttrs rec {
   # See `buildOpenRAEngine`.
   buildOpenRAMod =
     {
-      name ? null,
-      version,
-      title,
+      engine,
       meta,
       src,
-      engine,
+      title,
+      version,
       assetsError ? "",
+      name ? null,
     }@mod:
     (
       {
+        src,
         version,
         mods ? [ ],
-        src,
       }@engine:
       let
         builder =
@@ -114,11 +115,12 @@ lib.recurseIntoAttrs rec {
           pkgs.callPackage ./mod.nix (
             common
             // {
-              mod = mod // {
-                inherit name assetsError;
-              };
               engine = engine // {
                 inherit mods;
+              };
+
+              mod = mod // {
+                inherit name assetsError;
               };
             }
           );

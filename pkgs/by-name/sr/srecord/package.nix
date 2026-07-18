@@ -3,9 +3,9 @@
   stdenv,
   fetchurl,
   boost,
-  libtool,
-  groff,
   ghostscript,
+  groff,
+  libtool,
   libgcrypt ? null,
 }:
 

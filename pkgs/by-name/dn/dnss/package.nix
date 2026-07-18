@@ -1,12 +1,13 @@
 {
-  buildGoModule,
-  fetchFromGitHub,
   lib,
+  fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule {
   pname = "dnss";
   version = "0-unstable-2024-03-17";
+
   src = fetchFromGitHub {
     owner = "albertito";
     repo = "dnss";
@@ -20,7 +21,7 @@ buildGoModule {
     description = "Daemon for using DNS over HTTPS";
     homepage = "https://blitiri.com.ar/git/r/dnss/";
     license = lib.licenses.asl20;
-    mainProgram = "dnss";
     maintainers = with lib.maintainers; [ raspher ];
+    mainProgram = "dnss";
   };
 }

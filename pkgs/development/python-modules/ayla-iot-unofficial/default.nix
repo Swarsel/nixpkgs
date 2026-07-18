@@ -1,8 +1,8 @@
 {
+  lib,
+  fetchFromGitHub,
   aiohttp,
   buildPythonPackage,
-  fetchFromGitHub,
-  lib,
   pytest-asyncio,
   pytestCheckHook,
   requests,
@@ -13,7 +13,6 @@
 buildPythonPackage rec {
   pname = "ayla-iot-unofficial";
   version = "1.5.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "rewardone";
@@ -21,6 +20,14 @@ buildPythonPackage rec {
     tag = "v${version}";
     hash = "sha256-/Js2XMhGe4zPAjpeH2ON4377TAPaWPvA8+HEliYKxlw=";
   };
+
+  # tests interact with the actual API
+  doCheck = false;
+
+  nativeCheckInputs = [
+    pytest-asyncio
+    pytestCheckHook
+  ];
 
   build-system = [ setuptools ];
 
@@ -30,22 +37,14 @@ buildPythonPackage rec {
     ujson
   ];
 
+  enabledTestPaths = [ "tests/ayla_iot_unofficial.py" ];
+  pyproject = true;
   pythonImportsCheck = [ "ayla_iot_unofficial" ];
 
-  nativeCheckInputs = [
-    pytest-asyncio
-    pytestCheckHook
-  ];
-
-  enabledTestPaths = [ "tests/ayla_iot_unofficial.py" ];
-
-  # tests interact with the actual API
-  doCheck = false;
-
   meta = {
-    changelog = "https://github.com/rewardone/ayla-iot-unofficial/releases/tag/${src.tag}";
     description = "Unofficial python library for interacting with the Ayla IoT API";
     homepage = "https://github.com/rewardone/ayla-iot-unofficial";
+    changelog = "https://github.com/rewardone/ayla-iot-unofficial/releases/tag/${src.tag}";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ dotlambda ];
   };

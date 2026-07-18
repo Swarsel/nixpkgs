@@ -9,6 +9,24 @@
 }:
 
 {
+  # Include support for various filesystems and tools to create / manipulate them.
+  boot.supportedFilesystems = lib.mkMerge [
+    [
+      "ext2"
+      "ext3"
+      "ext4"
+      "btrfs"
+      "cifs"
+      "f2fs"
+      "ntfs"
+      "vfat"
+      "xfs"
+    ]
+    (lib.mkIf (lib.meta.availableOn pkgs.stdenv.hostPlatform config.boot.zfs.package) {
+      zfs = lib.mkDefault true;
+    })
+  ];
+
   # Include some utilities that are useful for installing or repairing
   # the system.
   environment.systemPackages = [
@@ -48,24 +66,6 @@
 
     # Some utilities
     pkgs.jq
-  ];
-
-  # Include support for various filesystems and tools to create / manipulate them.
-  boot.supportedFilesystems = lib.mkMerge [
-    [
-      "ext2"
-      "ext3"
-      "ext4"
-      "btrfs"
-      "cifs"
-      "f2fs"
-      "ntfs"
-      "vfat"
-      "xfs"
-    ]
-    (lib.mkIf (lib.meta.availableOn pkgs.stdenv.hostPlatform config.boot.zfs.package) {
-      zfs = lib.mkDefault true;
-    })
   ];
 
   # Configure host id for ZFS to work

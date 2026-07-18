@@ -3,9 +3,9 @@
   stdenv,
   fetchFromGitHub,
   autoconf,
-  libtool,
   automake,
   cyrus_sasl,
+  libtool,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -27,17 +27,17 @@ stdenv.mkDerivation (finalAttrs: {
 
   buildInputs = [ cyrus_sasl ];
 
-  preConfigure = "./autogen.sh";
-
   configureFlags = [
     "--with-cyrus-sasl=${placeholder "out"}"
   ];
 
+  preConfigure = "./autogen.sh";
+
   meta = {
-    homepage = "https://github.com/moriyoshi/cyrus-sasl-xoauth2";
     description = "XOAUTH2 mechanism plugin for cyrus-sasl";
-    platforms = lib.platforms.unix;
+    homepage = "https://github.com/moriyoshi/cyrus-sasl-xoauth2";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ wentasah ];
+    platforms = lib.platforms.unix;
   };
 })

@@ -1,15 +1,15 @@
 {
   lib,
   stdenv,
-  buildNpmPackage,
-  buildDotnetModule,
   fetchFromGitHub,
   autoPatchelfHook,
-  dotnetCorePackages,
+  buildDotnetModule,
+  buildNpmPackage,
   bun,
+  dotnetCorePackages,
   icu,
-  openssl,
   krb5,
+  openssl,
 }:
 
 let
@@ -30,15 +30,12 @@ let
       hash = ngclientHash;
     };
 
+    nativeBuildInputs = [ bun ];
     npmDepsHash = "sha256-89l/1v8dncwImDgiQic2VN65K/dxIkEPCrsHCty2VV0=";
 
-    nativeBuildInputs = [ bun ];
-
-    npmBuildScript = "build:prod";
-
     env = {
-      NG_CLI_ANALYTICS = "false";
       CI = "true";
+      NG_CLI_ANALYTICS = "false";
     };
 
     installPhase = ''
@@ -54,13 +51,13 @@ let
       substituteInPlace $out/browser/index.html \
           --replace-fail '<base href="/">' '<base href="/ngclient/">'
     '';
+
+    npmBuildScript = "build:prod";
   };
 in
 buildDotnetModule rec {
   pname = "duplicati";
   version = "2.3.0.4";
-  channel = "stable";
-  buildDate = "2026-07-09";
 
   src = fetchFromGitHub {
     owner = "duplicati";
@@ -70,12 +67,12 @@ buildDotnetModule rec {
     stripRoot = true;
   };
 
-  nugetDeps = ./deps.json;
+  postPatch = ''
+    sed -i '/Duplicati.ShellExtension.csproj/d' Duplicati.slnx
 
-  dotnet-sdk = dotnetCorePackages.sdk_10_0;
-  dotnet-runtime = dotnetCorePackages.aspnetcore_10_0;
-
-  enableParallelBuilding = false;
+    rm -rf Duplicati/Server/webroot/ngclient
+    ln -s ${ngclient}/browser Duplicati/Server/webroot/ngclient
+  '';
 
   nativeBuildInputs = lib.optionals stdenv.hostPlatform.isLinux [ autoPatchelfHook ];
 
@@ -84,38 +81,6 @@ buildDotnetModule rec {
     openssl
     krb5
   ];
-
-  autoPatchelfIgnoreMissingDeps = lib.optionals (!stdenv.hostPlatform.isMusl) [
-    "libc.musl-x86_64.so.1"
-    "libc.musl-aarch64.so.1"
-    "libc.musl-armv7.so.1"
-  ];
-
-  executables = [
-    "Duplicati.Agent"
-    "Duplicati.CommandLine"
-    "Duplicati.CommandLine.AutoUpdater"
-    "Duplicati.CommandLine.BackendTester"
-    "Duplicati.CommandLine.BackendTool"
-    "Duplicati.CommandLine.DatabaseTool"
-    "Duplicati.CommandLine.RecoveryTool"
-    "Duplicati.CommandLine.SecretTool"
-    "Duplicati.CommandLine.ServerUtil"
-    "Duplicati.CommandLine.SharpAESCrypt"
-    "Duplicati.CommandLine.Snapshots"
-    "Duplicati.CommandLine.SourceTool"
-    "Duplicati.CommandLine.SyncTool"
-    "Duplicati.GUI.TrayIcon"
-    "Duplicati.Server"
-    "Duplicati.Service"
-  ];
-
-  postPatch = ''
-    sed -i '/Duplicati.ShellExtension.csproj/d' Duplicati.slnx
-
-    rm -rf Duplicati/Server/webroot/ngclient
-    ln -s ${ngclient}/browser Duplicati/Server/webroot/ngclient
-  '';
 
   postFixup = ''
     mv $out/bin/Duplicati.Agent $out/bin/duplicati-agent
@@ -137,12 +102,45 @@ buildDotnetModule rec {
     mv $out/bin/Duplicati.CommandLine.Snapshots $out/bin/duplicati-snapshots
   '';
 
+  autoPatchelfIgnoreMissingDeps = lib.optionals (!stdenv.hostPlatform.isMusl) [
+    "libc.musl-x86_64.so.1"
+    "libc.musl-aarch64.so.1"
+    "libc.musl-armv7.so.1"
+  ];
+
+  buildDate = "2026-07-09";
+  channel = "stable";
+  dotnet-runtime = dotnetCorePackages.aspnetcore_10_0;
+  dotnet-sdk = dotnetCorePackages.sdk_10_0;
+  enableParallelBuilding = false;
+
+  executables = [
+    "Duplicati.Agent"
+    "Duplicati.CommandLine"
+    "Duplicati.CommandLine.AutoUpdater"
+    "Duplicati.CommandLine.BackendTester"
+    "Duplicati.CommandLine.BackendTool"
+    "Duplicati.CommandLine.DatabaseTool"
+    "Duplicati.CommandLine.RecoveryTool"
+    "Duplicati.CommandLine.SecretTool"
+    "Duplicati.CommandLine.ServerUtil"
+    "Duplicati.CommandLine.SharpAESCrypt"
+    "Duplicati.CommandLine.Snapshots"
+    "Duplicati.CommandLine.SourceTool"
+    "Duplicati.CommandLine.SyncTool"
+    "Duplicati.GUI.TrayIcon"
+    "Duplicati.Server"
+    "Duplicati.Service"
+  ];
+
+  nugetDeps = ./deps.json;
   passthru.updateScript = ./update.sh;
 
   meta = {
     description = "Free backup client that securely stores encrypted, incremental, compressed backups on cloud storage services and remote file servers";
     homepage = "https://www.duplicati.com/";
     license = lib.licenses.lgpl21;
+
     maintainers = with lib.maintainers; [
       nyanloutre
       bot-wxt1221

@@ -1,16 +1,13 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # build-system
-  uv-build,
-
+  buildPythonPackage,
   # dependencies
   pytest,
-
   # tests
   pytestCheckHook,
+  # build-system
+  uv-build,
 }:
 
 let
@@ -19,7 +16,6 @@ let
 in
 buildPythonPackage {
   inherit pname version;
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "pytest-dev";
@@ -33,11 +29,10 @@ buildPythonPackage {
       --replace-fail "uv_build>=0.9.4,<0.10.0" uv_build
   '';
 
-  build-system = [ uv-build ];
-
   buildInputs = [ pytest ];
-
   nativeCheckInputs = [ pytestCheckHook ];
+  build-system = [ uv-build ];
+  pyproject = true;
 
   meta = {
     description = "Describe-style plugin for the pytest framework";

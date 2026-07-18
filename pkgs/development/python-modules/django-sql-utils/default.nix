@@ -1,18 +1,17 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  hatchling,
+  buildPythonPackage,
   django,
-  sqlparse,
-  pytestCheckHook,
+  hatchling,
   pytest-django,
+  pytestCheckHook,
+  sqlparse,
 }:
 
 buildPythonPackage rec {
   pname = "django-sql-utils";
   version = "0.7.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "martsberger";
@@ -25,13 +24,6 @@ buildPythonPackage rec {
     echo -e "\n[tool.hatch.build.targets.wheel]\npackages = [ \"sql_util\" ]" >> pyproject.toml
   '';
 
-  build-system = [ hatchling ];
-
-  dependencies = [
-    django
-    sqlparse
-  ];
-
   env = {
     DJANGO_SETTINGS_MODULE = "sql_util.tests.test_sqlite_settings";
   };
@@ -41,6 +33,14 @@ buildPythonPackage rec {
     pytest-django
   ];
 
+  build-system = [ hatchling ];
+
+  dependencies = [
+    django
+    sqlparse
+  ];
+
+  pyproject = true;
   pythonImportsCheck = [ "sql_util" ];
 
   meta = {

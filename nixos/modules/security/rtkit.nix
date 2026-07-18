@@ -11,39 +11,41 @@ in
 {
   options.security.rtkit = {
     enable = lib.mkOption {
-      type = lib.types.bool;
       default = false;
+
       description = ''
         Whether to enable the RealtimeKit system service, which hands
         out realtime scheduling priority to user processes on
         demand. For example, PulseAudio and PipeWire use this to
         acquire realtime priority.
       '';
+
+      type = lib.types.bool;
     };
 
     package = lib.mkPackageOption pkgs "rtkit" { };
 
     args = lib.mkOption {
-      type = lib.types.listOf lib.types.str;
       default = [ ];
+
       description = ''
         Command-line options for `rtkit-daemon`.
       '';
+
       example = [
         "--our-realtime-priority=29"
         "--max-realtime-priority=28"
       ];
+
+      type = lib.types.listOf lib.types.str;
     };
   };
 
   config = lib.mkIf cfg.enable {
-    security.polkit.enable = true;
-
     # To make polkit pickup rtkit policies
     environment.systemPackages = [ cfg.package ];
-
+    security.polkit.enable = true;
     services.dbus.packages = [ cfg.package ];
-
     systemd.packages = [ cfg.package ];
 
     systemd.services.rtkit-daemon = {
@@ -53,19 +55,16 @@ in
           "${cfg.package}/libexec/rtkit-daemon ${utils.escapeSystemdExecArgs cfg.args}"
         ];
 
-        # Needs to verify the user of the processes.
-        PrivateUsers = false;
-        # Needs to access other processes to modify their scheduling modes.
-        ProcSubset = "all";
-        ProtectProc = "default";
-        # Canary needs to be realtime.
-        RestrictRealtime = false;
-
+        IPAddressDeny = "any";
         LockPersonality = true;
         MemoryDenyWriteExecute = true;
         NoNewPrivileges = true;
         PrivateDevices = true;
         PrivateTmp = "disconnected";
+        # Needs to verify the user of the processes.
+        PrivateUsers = false;
+        # Needs to access other processes to modify their scheduling modes.
+        ProcSubset = "all";
         ProtectClock = true;
         ProtectControlGroups = "strict";
         ProtectHome = true;
@@ -73,27 +72,32 @@ in
         ProtectKernelLogs = true;
         ProtectKernelModules = true;
         ProtectKernelTunables = true;
+        ProtectProc = "default";
         ProtectSystem = "strict";
         RemoveIPC = true;
         RestrictAddressFamilies = [ "AF_UNIX" ];
-        IPAddressDeny = "any";
         RestrictNamespaces = true;
+        # Canary needs to be realtime.
+        RestrictRealtime = false;
         RestrictSUIDSGID = true;
         SystemCallArchitectures = "native";
+
         SystemCallFilter = [
           "@system-service"
           "@mount" # Needs chroot(1)
         ];
+
         UMask = "0777";
       };
     };
 
-    users.users.rtkit = {
-      isSystemUser = true;
-      group = "rtkit";
-      description = "RealtimeKit daemon";
-    };
     users.groups.rtkit = { };
+
+    users.users.rtkit = {
+      description = "RealtimeKit daemon";
+      group = "rtkit";
+      isSystemUser = true;
+    };
   };
 
   meta = { inherit (pkgs.rtkit.meta) maintainers; };

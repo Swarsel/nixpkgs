@@ -16,17 +16,6 @@ buildGoModule (finalAttrs: {
 
   vendorHash = "sha256-kToWZCk6xAAj+t/elO9U5itoOBQ2J9sLcmzz+nNdBHg=";
 
-  proxyVendor = true;
-
-  ldflags = [
-    "-X=github.com/juicity/juicity/config.Version=${finalAttrs.version}"
-  ];
-
-  subPackages = [
-    "cmd/server"
-    "cmd/client"
-  ];
-
   postInstall = ''
     mv $out/bin/client $out/bin/juicity-client
     mv $out/bin/server $out/bin/juicity-server
@@ -38,9 +27,20 @@ buildGoModule (finalAttrs: {
       --replace /usr/bin/juicity-client $out/bin/juicity-client
   '';
 
+  ldflags = [
+    "-X=github.com/juicity/juicity/config.Version=${finalAttrs.version}"
+  ];
+
+  proxyVendor = true;
+
+  subPackages = [
+    "cmd/server"
+    "cmd/client"
+  ];
+
   meta = {
-    homepage = "https://github.com/juicity/juicity";
     description = "Quic-based proxy protocol";
+    homepage = "https://github.com/juicity/juicity";
     license = lib.licenses.agpl3Only;
     maintainers = with lib.maintainers; [ oluceps ];
   };

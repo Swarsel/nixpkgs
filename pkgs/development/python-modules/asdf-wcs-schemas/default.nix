@@ -1,21 +1,20 @@
 {
   lib,
+  fetchFromGitHub,
+  asdf,
   asdf-astropy,
   asdf-coordinates-schemas,
   asdf-standard,
   asdf-transform-schemas,
-  asdf,
   buildPythonPackage,
-  fetchFromGitHub,
   pytestCheckHook,
-  setuptools-scm,
   setuptools,
+  setuptools-scm,
 }:
 
 buildPythonPackage rec {
   pname = "asdf-wcs-schemas";
   version = "0.5.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "asdf-format";
@@ -23,6 +22,12 @@ buildPythonPackage rec {
     tag = version;
     hash = "sha256-S9SAQzy+FQ2idNDydYnexb3QJfd6vG/JKYg5z0tjkNo=";
   };
+
+  nativeCheckInputs = [
+    asdf
+    asdf-astropy
+    pytestCheckHook
+  ];
 
   build-system = [
     setuptools
@@ -35,12 +40,7 @@ buildPythonPackage rec {
     asdf-transform-schemas
   ];
 
-  nativeCheckInputs = [
-    asdf
-    asdf-astropy
-    pytestCheckHook
-  ];
-
+  pyproject = true;
   pythonImportsCheck = [ "asdf_wcs_schemas" ];
 
   meta = {

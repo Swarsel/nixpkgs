@@ -1,8 +1,8 @@
 {
   lib,
-  buildGoModule,
-  fetchFromGitHub,
   stdenv,
+  fetchFromGitHub,
+  buildGoModule,
   nix-update-script,
 }:
 
@@ -28,11 +28,13 @@ buildGoModule rec {
 
   meta = {
     description = "Easy to set up and use SSH honeypot";
+
     longDescription = ''
       A fake SSH server that lets anyone in and logs their activity.
       sshesame accepts and logs SSH connections and activity (channels, requests),
       without doing anything on the host (e.g. executing commands, making network requests).
     '';
+
     homepage = "https://github.com/jaksi/sshesame";
     license = lib.licenses.asl20;
     maintainers = [ ];

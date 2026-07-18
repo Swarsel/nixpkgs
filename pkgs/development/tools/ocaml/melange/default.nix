@@ -1,11 +1,12 @@
 {
+  lib,
+  stdenv,
+  fetchurl,
   buildDunePackage,
   cmdliner,
   cppo,
   dune-build-info,
-  fetchurl,
   jq,
-  lib,
   makeWrapper,
   menhirLib,
   merlin,
@@ -14,7 +15,6 @@
   ounit2,
   ppxlib,
   reason,
-  stdenv,
   tree,
 }:
 
@@ -59,24 +59,29 @@ in
 buildDunePackage {
   inherit pname;
   inherit version;
-  minimalOCamlVersion = "4.14";
+
   src = fetchurl {
-    url = "https://github.com/melange-re/${pname}/releases/download/${version}/${pname}-${version}.tbz";
     inherit hash;
+    url = "https://github.com/melange-re/${pname}/releases/download/${version}/${pname}-${version}.tbz";
   };
+
   nativeBuildInputs = [
     cppo
     makeWrapper
   ];
+
   buildInputs = [
     cmdliner
     dune-build-info
   ];
+
   propagatedBuildInputs = [
     menhirLib
     ppxlib
   ];
+
   doCheck = false;
+
   nativeCheckInputs = [
     jq
     merlin
@@ -84,19 +89,26 @@ buildDunePackage {
     reason
     tree
   ];
+
   checkInputs = [
     ounit2
   ];
+
   postInstall = ''
     wrapProgram "$out/bin/melc" --set MELANGELIB "$OCAMLFIND_DESTDIR/melange/melange:$OCAMLFIND_DESTDIR/melange/js/melange"
   '';
+
+  minimalOCamlVersion = "4.14";
+
   meta = {
     description = "Toolchain to produce JS from Reason/OCaml";
     homepage = "https://melange.re/";
-    mainProgram = "melc";
     license = lib.licenses.lgpl3;
+
     maintainers = [
       lib.maintainers.vog
     ];
+
+    mainProgram = "melc";
   };
 }

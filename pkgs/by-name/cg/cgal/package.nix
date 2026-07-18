@@ -2,8 +2,8 @@
   lib,
   stdenv,
   fetchurl,
-  cmake,
   boost,
+  cmake,
   gmp,
   mpfr,
   testers,
@@ -19,7 +19,6 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   patches = [ ./cgal_path.patch ];
-
   nativeBuildInputs = [ cmake ];
 
   # note: optional component libCGAL_ImageIO would need zlib and opengl;
@@ -47,15 +46,18 @@ stdenv.mkDerivation (finalAttrs: {
   meta = {
     description = "Computational Geometry Algorithms Library";
     homepage = "http://cgal.org";
+
     license = with lib.licenses; [
       gpl3Plus
       lgpl3Plus
     ];
-    platforms = lib.platforms.all;
+
     maintainers = with lib.maintainers; [
       raskin
       drew-dirac
       ylannl
     ];
+
+    platforms = lib.platforms.all;
   };
 })

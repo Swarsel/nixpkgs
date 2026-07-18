@@ -2,10 +2,10 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  perl,
   autoconf,
   automake,
   libtool,
+  perl,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -18,6 +18,15 @@ stdenv.mkDerivation (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-MYHPANQk4aUuDqUNxWPbqw45vweZ2bBcUcMTyEjcAOM=";
   };
+
+  postPatch = ''
+    patchShebangs --build build/src-first-comment.pl build/src_neaten.pl
+
+    substituteInPlace build/cpp_configure.sh \
+      --replace-fail "./configure" "./configure $configureFlags"
+    substituteInPlace build/cpp_install.sh \
+      --replace-fail "sudo " ""
+  '';
 
   strictDeps = true;
 
@@ -36,21 +45,12 @@ stdenv.mkDerivation (finalAttrs: {
     "cppcompile"
   ];
 
-  postPatch = ''
-    patchShebangs --build build/src-first-comment.pl build/src_neaten.pl
-
-    substituteInPlace build/cpp_configure.sh \
-      --replace-fail "./configure" "./configure $configureFlags"
-    substituteInPlace build/cpp_install.sh \
-      --replace-fail "sudo " ""
-  '';
-
   meta = {
-    homepage = "https://qqwing.com";
     description = "Sudoku generating and solving software";
+    homepage = "https://qqwing.com";
     license = lib.licenses.gpl2Plus;
-    platforms = lib.platforms.unix;
     maintainers = with lib.maintainers; [ nickcao ];
+    platforms = lib.platforms.unix;
     mainProgram = "qqwing";
   };
 })

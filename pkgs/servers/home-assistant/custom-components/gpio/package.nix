@@ -6,8 +6,6 @@
 }:
 
 buildHomeAssistantComponent rec {
-  owner = "raboof";
-  domain = "gpio";
   version = "0.0.4";
 
   src = fetchFromCodeberg {
@@ -18,11 +16,13 @@ buildHomeAssistantComponent rec {
   };
 
   dependencies = [ gpiod ];
+  domain = "gpio";
+  owner = "raboof";
 
   meta = {
     description = "Home Assistant GPIO custom integration";
     homepage = "https://codeberg.org/raboof/ha-gpio";
-    maintainers = with lib.maintainers; [ raboof ];
     license = lib.licenses.asl20;
+    maintainers = with lib.maintainers; [ raboof ];
   };
 }

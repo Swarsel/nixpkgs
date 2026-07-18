@@ -1,16 +1,15 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   hatchling,
-  pytestCheckHook,
   pytest-cov-stub,
+  pytestCheckHook,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "graphemeu";
   version = "0.10.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "timendum";
@@ -19,14 +18,16 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-qDspbeOmlfQ4VLPdKEuxNPYilKjwUcAJiEOMfx9fFlI=";
   };
 
-  build-system = [
-    hatchling
-  ];
-
   nativeCheckInputs = [
     pytest-cov-stub
     pytestCheckHook
   ];
+
+  build-system = [
+    hatchling
+  ];
+
+  pyproject = true;
 
   pythonImportsCheck = [
     "grapheme"

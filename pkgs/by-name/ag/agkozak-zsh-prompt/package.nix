@@ -1,7 +1,7 @@
 {
-  stdenvNoCC,
   lib,
   fetchFromGitHub,
+  stdenvNoCC,
 }:
 
 stdenvNoCC.mkDerivation (finalAttrs: {
@@ -16,8 +16,6 @@ stdenvNoCC.mkDerivation (finalAttrs: {
   };
 
   strictDeps = true;
-  dontConfigure = true;
-  dontBuild = true;
 
   installPhase = ''
     plugindir="$out/share/zsh/site-functions"
@@ -26,11 +24,14 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     cp -r -- lib/*.zsh agkozak-zsh-prompt.plugin.zsh prompt_agkozak-zsh-prompt_setup "$plugindir"/
   '';
 
+  dontBuild = true;
+  dontConfigure = true;
+
   meta = {
     description = "Fast, asynchronous Zsh prompt";
     homepage = "https://github.com/agkozak/agkozak-zsh-prompt";
     license = lib.licenses.mit;
-    platforms = lib.platforms.all;
     maintainers = with lib.maintainers; [ ambroisie ];
+    platforms = lib.platforms.all;
   };
 })

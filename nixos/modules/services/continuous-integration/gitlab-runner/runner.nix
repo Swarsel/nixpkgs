@@ -68,6 +68,7 @@ let
   configPath = ''"$HOME"/.gitlab-runner/config.toml'';
   configureScript = pkgs.writeShellApplication {
     name = "gitlab-runner-configure";
+
     runtimeInputs = [
       cfg.package
     ]
@@ -81,6 +82,7 @@ let
       perl
       python3
     ]);
+
     text =
       if (cfg.configFile != null) then
         ''
@@ -227,11 +229,107 @@ let
   '';
 in
 {
+  imports = [
+    (mkRenamedOptionModule
+      [ "services" "gitlab-runner" "packages" ]
+      [ "services" "gitlab-runner" "extraPackages" ]
+    )
+    (mkRemovedOptionModule [
+      "services"
+      "gitlab-runner"
+      "configOptions"
+    ] "Use services.gitlab-runner.services option instead")
+    (mkRemovedOptionModule [
+      "services"
+      "gitlab-runner"
+      "workDir"
+    ] "You should move contents of workDir (if any) to /var/lib/gitlab-runner")
+
+    (mkRenamedOptionModule
+      [ "services" "gitlab-runner" "checkInterval" ]
+      [ "services" "gitlab-runner" "settings" "check_interval" ]
+    )
+    (mkRenamedOptionModule
+      [ "services" "gitlab-runner" "concurrent" ]
+      [ "services" "gitlab-runner" "settings" "concurrent" ]
+    )
+    (mkRenamedOptionModule
+      [ "services" "gitlab-runner" "sentryDSN" ]
+      [ "services" "gitlab-runner" "settings" "sentry_dsn" ]
+    )
+    (mkRenamedOptionModule
+      [ "services" "gitlab-runner" "prometheusListenAddress" ]
+      [ "services" "gitlab-runner" "settings" "listen_address" ]
+    )
+
+    (mkRenamedOptionModule
+      [ "services" "gitlab-runner" "sessionServer" "listenAddress" ]
+      [ "services" "gitlab-runner" "settings" "session_server" "listen_address" ]
+    )
+    (mkRenamedOptionModule
+      [ "services" "gitlab-runner" "sessionServer" "advertiseAddress" ]
+      [ "services" "gitlab-runner" "settings" "session_server" "advertise_address" ]
+    )
+    (mkRenamedOptionModule
+      [ "services" "gitlab-runner" "sessionServer" "sessionTimeout" ]
+      [ "services" "gitlab-runner" "settings" "session_server" "session_timeout" ]
+    )
+  ];
+
   options.services.gitlab-runner = {
     enable = mkEnableOption "Gitlab Runner";
+
+    package = mkPackageOption pkgs "gitlab-runner" {
+      example = "gitlab-runner_1_11";
+    };
+
+    clear-docker-cache = {
+      enable = mkOption {
+        default = false;
+
+        description = ''
+          Whether to periodically prune gitlab runner's Docker resources. If
+          enabled, a systemd timer will run {command}`clear-docker-cache` as
+          specified by the `dates` option.
+        '';
+
+        type = types.bool;
+      };
+
+      package = mkOption {
+        default = config.virtualisation.docker.package;
+        defaultText = literalExpression "config.virtualisation.docker.package";
+        description = "Docker package to use for clearing up docker cache.";
+        example = literalExpression "pkgs.docker";
+      };
+
+      dates = mkOption {
+        default = "weekly";
+
+        description = ''
+          Specification (in the format described by
+          {manpage}`systemd.time(7)`) of the time at
+          which the prune will occur.
+        '';
+
+        type = types.str;
+      };
+
+      flags = mkOption {
+        default = [ ];
+
+        description = ''
+          Any additional flags passed to {command}`clear-docker-cache`.
+        '';
+
+        example = [ "prune" ];
+        type = types.listOf types.str;
+      };
+    };
+
     configFile = mkOption {
-      type = types.nullOr types.path;
       default = null;
+
       description = ''
         Configuration file for gitlab-runner.
 
@@ -243,49 +341,48 @@ in
         {option}`registrationFlags`
         for settings not covered by this module.
       '';
+
+      type = types.nullOr types.path;
     };
-    settings = mkOption {
-      type = types.submodule {
-        freeformType = (pkgs.formats.json { }).type;
-      };
-      default = { };
+
+    extraPackages = mkOption {
+      default = [ ];
+
       description = ''
-        Global gitlab-runner configuration. See
-        <https://docs.gitlab.com/runner/configuration/advanced-configuration.html#the-global-section>
-        for supported values.
+        Extra packages to add to `PATH` for the `gitlab-runner` process.
+        These packages won't be added to the system, use `environment.systemPackages` for that.
       '';
+
+      type = types.listOf types.package;
     };
+
     gracefulTermination = mkOption {
-      type = types.bool;
       default = false;
+
       description = ''
         Finish all remaining jobs before stopping.
         If not set gitlab-runner will stop immediately without waiting
         for jobs to finish, which will lead to failed builds.
       '';
+
+      type = types.bool;
     };
+
     gracefulTimeout = mkOption {
-      type = types.str;
       default = "infinity";
-      example = "5min 20s";
+
       description = ''
         Time to wait until a graceful shutdown is turned into a forceful one.
       '';
+
+      example = "5min 20s";
+      type = types.str;
     };
-    package = mkPackageOption pkgs "gitlab-runner" {
-      example = "gitlab-runner_1_11";
-    };
-    extraPackages = mkOption {
-      type = types.listOf types.package;
-      default = [ ];
-      description = ''
-        Extra packages to add to `PATH` for the `gitlab-runner` process.
-        These packages won't be added to the system, use `environment.systemPackages` for that.
-      '';
-    };
+
     services = mkOption {
-      description = "GitLab Runner services.";
       default = { };
+      description = "GitLab Runner services.";
+
       example = literalExpression ''
         {
           # runner for building in docker via host's nix-daemon
@@ -369,12 +466,13 @@ in
           };
         }
       '';
+
       type = types.attrsOf (
         types.submodule {
           options = {
             authenticationTokenConfigFile = mkOption {
-              type = with types; nullOr path;
               default = null;
+
               description = ''
                 Absolute path to a file containing environment variables used for
                 gitlab-runner registrations with *runner authentication tokens*.
@@ -395,10 +493,294 @@ in
 
                 [GitLab documentation]: https://docs.gitlab.com/17.0/ee/ci/runners/new_creation_workflow.html#estimated-time-frame-for-planned-changes
               '';
-            };
-            registrationConfigFile = mkOption {
+
               type = with types; nullOr path;
+            };
+
+            buildsDir = mkOption {
               default = null;
+
+              description = ''
+                Absolute path to a directory where builds will be stored
+                in context of selected executor (Locally, Docker, SSH).
+              '';
+
+              example = "/var/lib/gitlab-runner/builds";
+              type = types.nullOr types.path;
+            };
+
+            cloneUrl = mkOption {
+              default = null;
+
+              description = ''
+                Overwrite the URL for the GitLab instance. Used if the Runner can’t connect to GitLab on the URL GitLab exposes itself.
+              '';
+
+              example = "http://gitlab.example.local";
+              type = types.nullOr types.str;
+            };
+
+            debugTraceDisabled = mkOption {
+              default = false;
+
+              description = ''
+                When set to true Runner will disable the possibility of
+                using the `CI_DEBUG_TRACE` feature.
+              '';
+
+              type = types.bool;
+            };
+
+            description = mkOption {
+              default = null;
+
+              description = ''
+                Name/description of the runner.
+              '';
+
+              type = types.nullOr types.str;
+            };
+
+            dockerAllowedImages = mkOption {
+              default = [ ];
+
+              description = ''
+                Whitelist allowed images.
+              '';
+
+              example = [
+                "ruby:*"
+                "python:*"
+                "php:*"
+                "my.registry.tld:5000/*:*"
+              ];
+
+              type = types.listOf types.str;
+            };
+
+            dockerAllowedPrivilegedServices = mkOption {
+              default = [ ];
+
+              description = ''
+                Whitelist allowed privileged services.
+              '';
+
+              example = [
+                "docker.io/library/docker:*-dind-rootless"
+                "docker.io/library/docker:dind-rootless"
+                "docker:*-dind-rootless"
+                "docker:dind-rootless"
+              ];
+
+              type = types.listOf types.str;
+            };
+
+            dockerAllowedServices = mkOption {
+              default = [ ];
+
+              description = ''
+                Whitelist allowed services.
+              '';
+
+              example = [
+                "postgres:9"
+                "redis:*"
+                "mysql:*"
+              ];
+
+              type = types.listOf types.str;
+            };
+
+            dockerDisableCache = mkOption {
+              default = false;
+
+              description = ''
+                Disable all container caching.
+              '';
+
+              type = types.bool;
+            };
+
+            dockerExtraHosts = mkOption {
+              default = [ ];
+
+              description = ''
+                Add a custom host-to-IP mapping.
+              '';
+
+              example = [ "other-host:127.0.0.1" ];
+              type = types.listOf types.str;
+            };
+
+            dockerImage = mkOption {
+              default = null;
+
+              description = ''
+                Docker image to be used.
+              '';
+
+              type = types.nullOr types.str;
+            };
+
+            dockerPrivileged = mkOption {
+              default = false;
+
+              description = ''
+                Give extended privileges to container.
+              '';
+
+              type = types.bool;
+            };
+
+            dockerPullPolicy = mkOption {
+              default = null;
+
+              description = ''
+                Default pull-policy for Docker images
+              '';
+
+              type = types.nullOr (
+                types.enum [
+                  "always"
+                  "never"
+                  "if-not-present"
+                ]
+              );
+            };
+
+            dockerServicesPrivileged = mkOption {
+              default = false;
+
+              description = ''
+                Give extended privileges to services.
+              '';
+
+              type = types.bool;
+            };
+
+            dockerVolumes = mkOption {
+              default = [ ];
+
+              description = ''
+                Bind-mount a volume and create it
+                if it doesn't exist prior to mounting.
+              '';
+
+              example = [ "/var/run/docker.sock:/var/run/docker.sock" ];
+              type = types.listOf types.str;
+            };
+
+            environmentVariables = mkOption {
+              default = { };
+
+              description = ''
+                Custom environment variables injected to build environment.
+                For secrets you can use {option}`registrationConfigFile`
+                with `RUNNER_ENV` variable set.
+              '';
+
+              example = {
+                NAME = "value";
+              };
+
+              type = types.attrsOf types.str;
+            };
+
+            executor = mkOption {
+              default = "docker";
+
+              description = ''
+                Select executor, eg. shell, docker, etc.
+                See [runner executor documentation](https://docs.gitlab.com/runner/executors/) for more information.
+              '';
+
+              type = types.str;
+            };
+
+            limit = mkOption {
+              default = 0;
+
+              description = ''
+                Limit how many jobs can be handled concurrently by this service.
+                0 (default) simply means don't limit.
+              '';
+
+              type = types.int;
+            };
+
+            maximumTimeout = mkOption {
+              default = 0;
+
+              description = ''
+                What is the maximum timeout (in seconds) that will be set for
+                job when using this Runner. 0 (default) simply means don't limit.
+
+                This option has no effect for runners registered with an runner
+                authentication tokens and will be ignored.
+              '';
+
+              type = types.int;
+            };
+
+            postBuildScript = mkOption {
+              default = null;
+
+              description = ''
+                Runner-specific command script executed after code is pulled
+                and just after build executes.
+              '';
+
+              type = types.nullOr (types.either types.str types.path);
+            };
+
+            postGetSourcesScript = mkOption {
+              default = null;
+
+              description = ''
+                Runner-specific command script executed after code is pulled.
+              '';
+
+              type = types.nullOr (types.either types.str types.path);
+            };
+
+            preBuildScript = mkOption {
+              default = null;
+
+              description = ''
+                Runner-specific command script executed after code is pulled,
+                just before build executes.
+              '';
+
+              type = types.nullOr (types.either types.str types.path);
+            };
+
+            preGetSourcesScript = mkOption {
+              default = null;
+
+              description = ''
+                Runner-specific command script executed before code is pulled.
+              '';
+
+              type = types.nullOr (types.either types.str types.path);
+            };
+
+            protected = mkOption {
+              default = false;
+
+              description = ''
+                When set to true Runner will only run on pipelines
+                triggered on protected branches.
+
+                This option has no effect for runners registered with an runner
+                authentication tokens and will be ignored.
+              '';
+
+              type = types.bool;
+            };
+
+            registrationConfigFile = mkOption {
+              default = null;
+
               description = ''
                 Absolute path to a file with environment variables
                 used for gitlab-runner registration with *runner registration
@@ -426,201 +808,37 @@ in
                 [GitLab documentation]: https://docs.gitlab.com/17.0/ee/ci/runners/new_creation_workflow.html#estimated-time-frame-for-planned-changes
                 [runner authentication tokens]: https://docs.gitlab.com/17.0/ee/ci/runners/new_creation_workflow.html#the-new-runner-registration-workflow
               '';
+
+              type = with types; nullOr path;
             };
+
             registrationFlags = mkOption {
-              type = types.listOf types.str;
               default = [ ];
-              example = [ "--docker-helper-image my/gitlab-runner-helper" ];
+
               description = ''
                 Extra command-line flags passed to
                 `gitlab-runner register`.
                 Execute `gitlab-runner register --help`
                 for a list of supported flags.
               '';
-            };
-            environmentVariables = mkOption {
-              type = types.attrsOf types.str;
-              default = { };
-              example = {
-                NAME = "value";
-              };
-              description = ''
-                Custom environment variables injected to build environment.
-                For secrets you can use {option}`registrationConfigFile`
-                with `RUNNER_ENV` variable set.
-              '';
-            };
-            description = mkOption {
-              type = types.nullOr types.str;
-              default = null;
-              description = ''
-                Name/description of the runner.
-              '';
-            };
-            executor = mkOption {
-              type = types.str;
-              default = "docker";
-              description = ''
-                Select executor, eg. shell, docker, etc.
-                See [runner executor documentation](https://docs.gitlab.com/runner/executors/) for more information.
-              '';
-            };
-            buildsDir = mkOption {
-              type = types.nullOr types.path;
-              default = null;
-              example = "/var/lib/gitlab-runner/builds";
-              description = ''
-                Absolute path to a directory where builds will be stored
-                in context of selected executor (Locally, Docker, SSH).
-              '';
-            };
-            cloneUrl = mkOption {
-              type = types.nullOr types.str;
-              default = null;
-              example = "http://gitlab.example.local";
-              description = ''
-                Overwrite the URL for the GitLab instance. Used if the Runner can’t connect to GitLab on the URL GitLab exposes itself.
-              '';
-            };
-            dockerImage = mkOption {
-              type = types.nullOr types.str;
-              default = null;
-              description = ''
-                Docker image to be used.
-              '';
-            };
-            dockerPullPolicy = mkOption {
-              type = types.nullOr (
-                types.enum [
-                  "always"
-                  "never"
-                  "if-not-present"
-                ]
-              );
-              default = null;
-              description = ''
-                Default pull-policy for Docker images
-              '';
-            };
-            dockerVolumes = mkOption {
-              type = types.listOf types.str;
-              default = [ ];
-              example = [ "/var/run/docker.sock:/var/run/docker.sock" ];
-              description = ''
-                Bind-mount a volume and create it
-                if it doesn't exist prior to mounting.
-              '';
-            };
-            dockerDisableCache = mkOption {
-              type = types.bool;
-              default = false;
-              description = ''
-                Disable all container caching.
-              '';
-            };
-            dockerPrivileged = mkOption {
-              type = types.bool;
-              default = false;
-              description = ''
-                Give extended privileges to container.
-              '';
-            };
-            dockerServicesPrivileged = mkOption {
-              type = types.bool;
-              default = false;
-              description = ''
-                Give extended privileges to services.
-              '';
-            };
-            dockerExtraHosts = mkOption {
-              type = types.listOf types.str;
-              default = [ ];
-              example = [ "other-host:127.0.0.1" ];
-              description = ''
-                Add a custom host-to-IP mapping.
-              '';
-            };
-            dockerAllowedImages = mkOption {
-              type = types.listOf types.str;
-              default = [ ];
-              example = [
-                "ruby:*"
-                "python:*"
-                "php:*"
-                "my.registry.tld:5000/*:*"
-              ];
-              description = ''
-                Whitelist allowed images.
-              '';
-            };
-            dockerAllowedServices = mkOption {
-              type = types.listOf types.str;
-              default = [ ];
-              example = [
-                "postgres:9"
-                "redis:*"
-                "mysql:*"
-              ];
-              description = ''
-                Whitelist allowed services.
-              '';
-            };
-            dockerAllowedPrivilegedServices = mkOption {
-              type = types.listOf types.str;
-              default = [ ];
-              example = [
-                "docker.io/library/docker:*-dind-rootless"
-                "docker.io/library/docker:dind-rootless"
-                "docker:*-dind-rootless"
-                "docker:dind-rootless"
-              ];
-              description = ''
-                Whitelist allowed privileged services.
-              '';
-            };
-            preGetSourcesScript = mkOption {
-              type = types.nullOr (types.either types.str types.path);
-              default = null;
-              description = ''
-                Runner-specific command script executed before code is pulled.
-              '';
-            };
-            postGetSourcesScript = mkOption {
-              type = types.nullOr (types.either types.str types.path);
-              default = null;
-              description = ''
-                Runner-specific command script executed after code is pulled.
-              '';
-            };
-            preBuildScript = mkOption {
-              type = types.nullOr (types.either types.str types.path);
-              default = null;
-              description = ''
-                Runner-specific command script executed after code is pulled,
-                just before build executes.
-              '';
-            };
-            postBuildScript = mkOption {
-              type = types.nullOr (types.either types.str types.path);
-              default = null;
-              description = ''
-                Runner-specific command script executed after code is pulled
-                and just after build executes.
-              '';
-            };
-            tagList = mkOption {
-              type = types.listOf types.str;
-              default = [ ];
-              description = ''
-                Tag list.
 
-                This option has no effect for runners registered with an runner
-                authentication tokens and will be ignored.
-              '';
+              example = [ "--docker-helper-image my/gitlab-runner-helper" ];
+              type = types.listOf types.str;
             };
+
+            requestConcurrency = mkOption {
+              default = 0;
+
+              description = ''
+                Limit number of concurrent requests for new jobs from GitLab.
+              '';
+
+              type = types.int;
+            };
+
             runUntagged = mkOption {
-              type = types.bool;
               default = false;
+
               description = ''
                 Register to run untagged builds; defaults to
                 `true` when {option}`tagList` is empty.
@@ -628,100 +846,128 @@ in
                 This option has no effect for runners registered with an runner
                 authentication tokens and will be ignored.
               '';
+
+              type = types.bool;
             };
-            limit = mkOption {
-              type = types.int;
-              default = 0;
+
+            tagList = mkOption {
+              default = [ ];
+
               description = ''
-                Limit how many jobs can be handled concurrently by this service.
-                0 (default) simply means don't limit.
-              '';
-            };
-            requestConcurrency = mkOption {
-              type = types.int;
-              default = 0;
-              description = ''
-                Limit number of concurrent requests for new jobs from GitLab.
-              '';
-            };
-            maximumTimeout = mkOption {
-              type = types.int;
-              default = 0;
-              description = ''
-                What is the maximum timeout (in seconds) that will be set for
-                job when using this Runner. 0 (default) simply means don't limit.
+                Tag list.
 
                 This option has no effect for runners registered with an runner
                 authentication tokens and will be ignored.
               '';
-            };
-            protected = mkOption {
-              type = types.bool;
-              default = false;
-              description = ''
-                When set to true Runner will only run on pipelines
-                triggered on protected branches.
 
-                This option has no effect for runners registered with an runner
-                authentication tokens and will be ignored.
-              '';
-            };
-            debugTraceDisabled = mkOption {
-              type = types.bool;
-              default = false;
-              description = ''
-                When set to true Runner will disable the possibility of
-                using the `CI_DEBUG_TRACE` feature.
-              '';
+              type = types.listOf types.str;
             };
           };
         }
       );
     };
-    clear-docker-cache = {
-      enable = mkOption {
-        type = types.bool;
-        default = false;
-        description = ''
-          Whether to periodically prune gitlab runner's Docker resources. If
-          enabled, a systemd timer will run {command}`clear-docker-cache` as
-          specified by the `dates` option.
-        '';
-      };
 
-      flags = mkOption {
-        type = types.listOf types.str;
-        default = [ ];
-        example = [ "prune" ];
-        description = ''
-          Any additional flags passed to {command}`clear-docker-cache`.
-        '';
-      };
+    settings = mkOption {
+      default = { };
 
-      dates = mkOption {
-        default = "weekly";
-        type = types.str;
-        description = ''
-          Specification (in the format described by
-          {manpage}`systemd.time(7)`) of the time at
-          which the prune will occur.
-        '';
-      };
+      description = ''
+        Global gitlab-runner configuration. See
+        <https://docs.gitlab.com/runner/configuration/advanced-configuration.html#the-global-section>
+        for supported values.
+      '';
 
-      package = mkOption {
-        default = config.virtualisation.docker.package;
-        defaultText = literalExpression "config.virtualisation.docker.package";
-        example = literalExpression "pkgs.docker";
-        description = "Docker package to use for clearing up docker cache.";
+      type = types.submodule {
+        freeformType = (pkgs.formats.json { }).type;
       };
     };
   };
+
   config = mkIf cfg.enable {
     assertions = mapAttrsToList (name: serviceConfig: {
       assertion =
         serviceConfig.registrationConfigFile == null || serviceConfig.authenticationTokenConfigFile == null;
+
       message = "`services.gitlab-runner.${name}.registrationConfigFile` and `services.gitlab-runner.services.${name}.authenticationTokenConfigFile` are mutually exclusive.";
     }) cfg.services;
+
+    environment.systemPackages = [ cfg.package ];
+
+    systemd.services.gitlab-runner = {
+      after = [
+        "network.target"
+      ]
+      ++ optional hasDocker "docker.service"
+      ++ optional hasPodman "podman.service";
+
+      description = "Gitlab Runner";
+      documentation = [ "https://docs.gitlab.com/runner/" ];
+
+      environment = config.networking.proxy.envVars // {
+        HOME = "/var/lib/gitlab-runner";
+      };
+
+      path =
+        (with pkgs; [
+          bash
+          gawk
+          jq
+          moreutils
+          remarshal
+          util-linux
+        ])
+        ++ [ cfg.package ]
+        ++ cfg.extraPackages;
+
+      reloadIfChanged = true;
+      requires = optional hasDocker "docker.service" ++ optional hasPodman "podman.service";
+
+      serviceConfig = {
+        # Set `DynamicUser` under `systemd.services.gitlab-runner.serviceConfig`
+        # to `lib.mkForce false` in your configuration to run this service as root.
+        # You can also set `User` and `Group` options to run this service as desired user.
+        # Make sure to restart service or changes won't apply.
+        DynamicUser = true;
+        ExecReload = "!${configureScript}/bin/gitlab-runner-configure";
+        ExecStart = "${startScript}/bin/gitlab-runner-start";
+        ExecStartPre = "!${configureScript}/bin/gitlab-runner-configure";
+        StateDirectory = "gitlab-runner";
+        SupplementaryGroups = optional hasDocker "docker" ++ optional hasPodman "podman";
+      }
+      // optionalAttrs cfg.gracefulTermination {
+        KillMode = "process";
+        KillSignal = "SIGQUIT";
+        TimeoutStopSec = "${cfg.gracefulTimeout}";
+      };
+
+      wantedBy = [ "multi-user.target" ];
+    };
+
+    # Enable periodic clear-docker-cache script
+    systemd.services.gitlab-runner-clear-docker-cache =
+      mkIf (cfg.clear-docker-cache.enable && (any (s: s.executor == "docker") (attrValues cfg.services)))
+        {
+          description = "Prune gitlab-runner docker resources";
+
+          path = [
+            cfg.clear-docker-cache.package
+            pkgs.gawk
+          ];
+
+          restartIfChanged = false;
+
+          script = ''
+            ${pkgs.gitlab-runner}/bin/clear-docker-cache ${toString cfg.clear-docker-cache.flags}
+          '';
+
+          serviceConfig.Type = "oneshot";
+          startAt = cfg.clear-docker-cache.dates;
+          unitConfig.X-StopOnRemoval = false;
+        };
+
+    # Enable docker if `docker` executor is used in any service
+    virtualisation.docker.enable = mkIf (any (s: s.executor == "docker") (attrValues cfg.services)) (
+      mkDefault true
+    );
 
     warnings =
       mapAttrsToList (
@@ -796,126 +1042,7 @@ in
               serviceConfig.authenticationTokenConfigFile != null && serviceConfig.tagList != [ ]
             ) cfg.services
           );
-
-    environment.systemPackages = [ cfg.package ];
-    systemd.services.gitlab-runner = {
-      description = "Gitlab Runner";
-      documentation = [ "https://docs.gitlab.com/runner/" ];
-      after = [
-        "network.target"
-      ]
-      ++ optional hasDocker "docker.service"
-      ++ optional hasPodman "podman.service";
-
-      requires = optional hasDocker "docker.service" ++ optional hasPodman "podman.service";
-      wantedBy = [ "multi-user.target" ];
-      environment = config.networking.proxy.envVars // {
-        HOME = "/var/lib/gitlab-runner";
-      };
-
-      path =
-        (with pkgs; [
-          bash
-          gawk
-          jq
-          moreutils
-          remarshal
-          util-linux
-        ])
-        ++ [ cfg.package ]
-        ++ cfg.extraPackages;
-
-      reloadIfChanged = true;
-      serviceConfig = {
-        # Set `DynamicUser` under `systemd.services.gitlab-runner.serviceConfig`
-        # to `lib.mkForce false` in your configuration to run this service as root.
-        # You can also set `User` and `Group` options to run this service as desired user.
-        # Make sure to restart service or changes won't apply.
-        DynamicUser = true;
-        StateDirectory = "gitlab-runner";
-        SupplementaryGroups = optional hasDocker "docker" ++ optional hasPodman "podman";
-        ExecStartPre = "!${configureScript}/bin/gitlab-runner-configure";
-        ExecStart = "${startScript}/bin/gitlab-runner-start";
-        ExecReload = "!${configureScript}/bin/gitlab-runner-configure";
-      }
-      // optionalAttrs cfg.gracefulTermination {
-        TimeoutStopSec = "${cfg.gracefulTimeout}";
-        KillSignal = "SIGQUIT";
-        KillMode = "process";
-      };
-    };
-    # Enable periodic clear-docker-cache script
-    systemd.services.gitlab-runner-clear-docker-cache =
-      mkIf (cfg.clear-docker-cache.enable && (any (s: s.executor == "docker") (attrValues cfg.services)))
-        {
-          description = "Prune gitlab-runner docker resources";
-          restartIfChanged = false;
-          unitConfig.X-StopOnRemoval = false;
-
-          serviceConfig.Type = "oneshot";
-
-          path = [
-            cfg.clear-docker-cache.package
-            pkgs.gawk
-          ];
-
-          script = ''
-            ${pkgs.gitlab-runner}/bin/clear-docker-cache ${toString cfg.clear-docker-cache.flags}
-          '';
-
-          startAt = cfg.clear-docker-cache.dates;
-        };
-    # Enable docker if `docker` executor is used in any service
-    virtualisation.docker.enable = mkIf (any (s: s.executor == "docker") (attrValues cfg.services)) (
-      mkDefault true
-    );
   };
-  imports = [
-    (mkRenamedOptionModule
-      [ "services" "gitlab-runner" "packages" ]
-      [ "services" "gitlab-runner" "extraPackages" ]
-    )
-    (mkRemovedOptionModule [
-      "services"
-      "gitlab-runner"
-      "configOptions"
-    ] "Use services.gitlab-runner.services option instead")
-    (mkRemovedOptionModule [
-      "services"
-      "gitlab-runner"
-      "workDir"
-    ] "You should move contents of workDir (if any) to /var/lib/gitlab-runner")
-
-    (mkRenamedOptionModule
-      [ "services" "gitlab-runner" "checkInterval" ]
-      [ "services" "gitlab-runner" "settings" "check_interval" ]
-    )
-    (mkRenamedOptionModule
-      [ "services" "gitlab-runner" "concurrent" ]
-      [ "services" "gitlab-runner" "settings" "concurrent" ]
-    )
-    (mkRenamedOptionModule
-      [ "services" "gitlab-runner" "sentryDSN" ]
-      [ "services" "gitlab-runner" "settings" "sentry_dsn" ]
-    )
-    (mkRenamedOptionModule
-      [ "services" "gitlab-runner" "prometheusListenAddress" ]
-      [ "services" "gitlab-runner" "settings" "listen_address" ]
-    )
-
-    (mkRenamedOptionModule
-      [ "services" "gitlab-runner" "sessionServer" "listenAddress" ]
-      [ "services" "gitlab-runner" "settings" "session_server" "listen_address" ]
-    )
-    (mkRenamedOptionModule
-      [ "services" "gitlab-runner" "sessionServer" "advertiseAddress" ]
-      [ "services" "gitlab-runner" "settings" "session_server" "advertise_address" ]
-    )
-    (mkRenamedOptionModule
-      [ "services" "gitlab-runner" "sessionServer" "sessionTimeout" ]
-      [ "services" "gitlab-runner" "settings" "session_server" "session_timeout" ]
-    )
-  ];
 
   meta.teams = [ teams.gitlab ];
 }

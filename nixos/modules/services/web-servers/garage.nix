@@ -13,33 +13,36 @@ let
   configFile = toml.generate "garage.toml" cfg.settings;
 in
 {
-  meta = {
-    doc = ./garage.md;
-    maintainers = with lib.maintainers; [
-      mjm
-      cything
-    ];
-  };
-
   options.services.garage = {
     enable = mkEnableOption "Garage Object Storage (S3 compatible)";
 
-    extraEnvironment = mkOption {
-      type = types.attrsOf types.str;
-      description = "Extra environment variables to pass to the Garage server.";
-      default = { };
-      example = {
-        RUST_BACKTRACE = "yes";
-      };
+    package = mkOption {
+      description = "Garage package to use, needs to be set explicitly. If you are upgrading from a major version, please read NixOS and Garage release notes for upgrade instructions.";
+      type = types.package;
     };
 
     environmentFile = mkOption {
-      type = types.nullOr types.path;
-      description = "File containing environment variables to be passed to the Garage server.";
       default = null;
+      description = "File containing environment variables to be passed to the Garage server.";
+      type = types.nullOr types.path;
+    };
+
+    extraEnvironment = mkOption {
+      default = { };
+      description = "Extra environment variables to pass to the Garage server.";
+
+      example = {
+        RUST_BACKTRACE = "yes";
+      };
+
+      type = types.attrsOf types.str;
     };
 
     logLevel = mkOption {
+      default = "info";
+      description = "Garage log level, see <https://garagehq.deuxfleurs.fr/documentation/quick-start/#launching-the-garage-server> for examples.";
+      example = "debug";
+
       type = types.enum [
         "error"
         "warn"
@@ -47,44 +50,40 @@ in
         "debug"
         "trace"
       ];
-      default = "info";
-      example = "debug";
-      description = "Garage log level, see <https://garagehq.deuxfleurs.fr/documentation/quick-start/#launching-the-garage-server> for examples.";
     };
 
     settings = mkOption {
+      description = "Garage configuration, see <https://garagehq.deuxfleurs.fr/documentation/reference-manual/configuration/> for reference.";
+
       type = types.submodule {
-        freeformType = toml.type;
-
         options = {
-          metadata_dir = mkOption {
-            default = "/var/lib/garage/meta";
-            type = types.path;
-            description = "The metadata directory, put this on a fast disk (e.g. SSD) if possible.";
-          };
-
           data_dir = mkOption {
             default = "/var/lib/garage/data";
-            example = [
-              {
-                path = "/var/lib/garage/data";
-                capacity = "2T";
-              }
-            ];
-            type = with types; either path (listOf attrs);
+
             description = ''
               The directory in which Garage will store the data blocks of objects. This folder can be placed on an HDD.
               Since v0.9.0, Garage supports multiple data directories, refer to <https://garagehq.deuxfleurs.fr/documentation/reference-manual/configuration/#data_dir> for the exact format.
             '';
+
+            example = [
+              {
+                capacity = "2T";
+                path = "/var/lib/garage/data";
+              }
+            ];
+
+            type = with types; either path (listOf attrs);
+          };
+
+          metadata_dir = mkOption {
+            default = "/var/lib/garage/meta";
+            description = "The metadata directory, put this on a fast disk (e.g. SSD) if possible.";
+            type = types.path;
           };
         };
-      };
-      description = "Garage configuration, see <https://garagehq.deuxfleurs.fr/documentation/reference-manual/configuration/> for reference.";
-    };
 
-    package = mkOption {
-      type = types.package;
-      description = "Garage package to use, needs to be set explicitly. If you are upgrading from a major version, please read NixOS and Garage release notes for upgrade instructions.";
+        freeformType = toml.type;
+      };
     };
   };
 
@@ -108,20 +107,23 @@ in
     ];
 
     systemd.services.garage = {
-      description = "Garage Object Storage (S3 compatible)";
       after = [
         "network.target"
         "network-online.target"
       ];
-      wants = [
-        "network.target"
-        "network-online.target"
-      ];
-      wantedBy = [ "multi-user.target" ];
+
+      description = "Garage Object Storage (S3 compatible)";
+
+      environment = {
+        RUST_LOG = lib.mkDefault "garage=${cfg.logLevel}";
+      }
+      // cfg.extraEnvironment;
+
       restartTriggers = [
         configFile
       ]
       ++ (lib.optional (cfg.environmentFile != null) cfg.environmentFile);
+
       serviceConfig =
         let
           paths = lib.flatten (
@@ -139,21 +141,32 @@ in
           isDefaultStateDirectory = lib.any isDefault paths;
         in
         {
-          ExecStart = "${cfg.package}/bin/garage server";
-
-          StateDirectory = lib.mkIf isDefaultStateDirectory "garage";
           DynamicUser = lib.mkDefault true;
-          ProtectHome = true;
-          NoNewPrivileges = true;
           EnvironmentFile = lib.optional (cfg.environmentFile != null) cfg.environmentFile;
-          ReadWritePaths = lib.filter (x: !(isDefault x)) (lib.flatten [ paths ]);
+          ExecStart = "${cfg.package}/bin/garage server";
           # Upstream recommendation https://garagehq.deuxfleurs.fr/documentation/cookbook/systemd/
           LimitNOFILE = 42000;
+          NoNewPrivileges = true;
+          ProtectHome = true;
+          ReadWritePaths = lib.filter (x: !(isDefault x)) (lib.flatten [ paths ]);
+          StateDirectory = lib.mkIf isDefaultStateDirectory "garage";
         };
-      environment = {
-        RUST_LOG = lib.mkDefault "garage=${cfg.logLevel}";
-      }
-      // cfg.extraEnvironment;
+
+      wantedBy = [ "multi-user.target" ];
+
+      wants = [
+        "network.target"
+        "network-online.target"
+      ];
     };
+  };
+
+  meta = {
+    doc = ./garage.md;
+
+    maintainers = with lib.maintainers; [
+      mjm
+      cything
+    ];
   };
 }

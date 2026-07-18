@@ -1,18 +1,17 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchurl,
 }:
 let
   mkCmdPackDerivation =
     {
+      description,
       pname,
       postInstall ? "",
-      description,
     }:
     stdenv.mkDerivation {
       inherit pname postInstall;
-
       version = "1.03";
 
       src = fetchurl {
@@ -38,11 +37,10 @@ let
 
       meta = {
         inherit description;
-
         homepage = "https://web.archive.org/web/20140330233023/http://www.neillcorlett.com/cmdpack/";
-        platforms = lib.platforms.all;
         license = lib.licenses.gpl3Plus;
         maintainers = with lib.maintainers; [ zane ];
+        platforms = lib.platforms.all;
       };
     };
 in

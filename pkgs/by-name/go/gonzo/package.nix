@@ -1,8 +1,8 @@
 {
   lib,
-  go,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
+  go,
   nix-update-script,
   versionCheckHook,
 }:
@@ -19,6 +19,8 @@ buildGoModule (finalAttrs: {
   };
 
   vendorHash = "sha256-uYQlZvsLUOmy7P/goNpwTGQrGFMW6LSILC6VjGbNrjI=";
+  doInstallCheck = true;
+  nativeInstallCheckInputs = [ versionCheckHook ];
 
   ldflags = [
     "-s"
@@ -31,16 +33,13 @@ buildGoModule (finalAttrs: {
 
   passthru.updateScript = nix-update-script { };
 
-  doInstallCheck = true;
-  nativeInstallCheckInputs = [ versionCheckHook ];
-
   meta = {
     description = "TUI log analysis tool";
     homepage = "https://gonzo.controltheory.com/";
-    downloadPage = "https://github.com/control-theory/gonzo";
     changelog = "https://github.com/control-theory/gonzo/releases/tag/${finalAttrs.src.tag}";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ kpbaks ];
     mainProgram = "gonzo";
+    downloadPage = "https://github.com/control-theory/gonzo";
   };
 })

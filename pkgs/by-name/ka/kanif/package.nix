@@ -7,13 +7,15 @@
 }:
 
 stdenv.mkDerivation (finalAttrs: {
-  version = "1.2.2";
   pname = "kanif";
+  version = "1.2.2";
 
   src = fetchurl {
     url = "https://gforge.inria.fr/frs/download.php/26773/kanif-${finalAttrs.version}.tar.gz";
     sha256 = "3f0c549428dfe88457c1db293cfac2a22b203f872904c3abf372651ac12e5879";
   };
+
+  strictDeps = true;
 
   nativeBuildInputs = [
     perl
@@ -25,10 +27,9 @@ stdenv.mkDerivation (finalAttrs: {
     substituteInPlace ./kanif --replace-fail '$taktuk_command = "taktuk";' '$taktuk_command = "${taktuk}/bin/taktuk";'
   '';
 
-  strictDeps = true;
-
   meta = {
     description = "Cluster management and administration swiss army knife";
+
     longDescription = ''
       Kanif is a tool for high performance computing clusters management and
       administration. It combines the main functionalities of well-known cluster
@@ -38,6 +39,7 @@ stdenv.mkDerivation (finalAttrs: {
       directories to several nodes ('kaput' command), and to gather several
       remote files or directories locally ('kaget' command). It relies on TakTuk
       for efficiency and scalability.'';
+
     homepage = "http://taktuk.gforge.inria.fr/kanif";
     license = lib.licenses.gpl2;
     maintainers = [ lib.maintainers.bzizou ];

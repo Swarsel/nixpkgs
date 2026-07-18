@@ -1,19 +1,18 @@
 {
   lib,
-  fetchPypi,
   buildPythonPackage,
+  fetchPypi,
+  lxml,
+  mock,
   pbr,
+  pytest-cov-stub,
+  pytestCheckHook,
   requests,
   six,
-  lxml,
-  pytestCheckHook,
-  pytest-cov-stub,
-  mock,
 }:
 buildPythonPackage rec {
   pname = "pymaven-patch";
   version = "0.3.2";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
@@ -33,6 +32,7 @@ buildPythonPackage rec {
     mock
   ];
 
+  format = "setuptools";
   pythonImportsCheck = [ "pymaven" ];
 
   meta = {

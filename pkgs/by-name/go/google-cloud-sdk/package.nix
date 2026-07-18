@@ -8,16 +8,16 @@
 #
 
 {
-  cacert,
-  stdenv,
   lib,
+  stdenv,
   fetchurl,
-  makeWrapper,
-  python314,
-  openssl,
-  jq,
+  cacert,
   callPackage,
   installShellFiles,
+  jq,
+  makeWrapper,
+  openssl,
+  python314,
   with-gce ? false,
   # NumPy is an optional runtime dependency and only needed for IAP TCP forwarding
   # https://cloud.google.com/iap/docs/using-tcp-forwarding#increasing_the_tcp_upload_bandwidth
@@ -52,18 +52,9 @@ let
 
 in
 stdenv.mkDerivation rec {
-  pname = "google-cloud-sdk";
   inherit (data) version;
-
+  pname = "google-cloud-sdk";
   src = fetchurl (sources stdenv.hostPlatform.system);
-
-  buildInputs = [ python3 ];
-
-  nativeBuildInputs = [
-    jq
-    makeWrapper
-    installShellFiles
-  ];
 
   patches = [
     # For kubectl configs, don't store the absolute path of the `gcloud` binary as it can be garbage-collected
@@ -74,6 +65,14 @@ stdenv.mkDerivation rec {
     # Keep that vendored runtime from loading external google._upb modules.
     ./cloudsdk-vendored-protobuf-upb.patch
   ];
+
+  nativeBuildInputs = [
+    jq
+    makeWrapper
+    installShellFiles
+  ];
+
+  buildInputs = [ python3 ];
 
   installPhase = ''
     runHook preInstall
@@ -184,6 +183,7 @@ stdenv.mkDerivation rec {
   '';
 
   doInstallCheck = true;
+
   installCheckPhase = ''
     # Avoid trying to write logs to homeless-shelter
     export HOME=$(mktemp -d)
@@ -209,23 +209,27 @@ stdenv.mkDerivation rec {
 
   passthru = {
     inherit components withExtraComponents;
+
     tests.gke-gcloud-auth-plugin = withExtraComponents [
       components.gke-gcloud-auth-plugin
     ];
+
     updateScript = ./update.sh;
   };
 
   meta = {
     description = "Tools for the google cloud platform";
     longDescription = "The Google Cloud SDK for GCE hosts. Used by `google-cloud-sdk` only on GCE guests.";
+    homepage = "https://cloud.google.com/sdk/";
+    changelog = "https://cloud.google.com/sdk/docs/release-notes";
+    # This package contains vendored dependencies. All have free licenses.
+    license = lib.licenses.free;
+
     sourceProvenance = with lib.sourceTypes; [
       fromSource
       binaryNativeCode # anthoscli and possibly more
     ];
-    # This package contains vendored dependencies. All have free licenses.
-    license = lib.licenses.free;
-    homepage = "https://cloud.google.com/sdk/";
-    changelog = "https://cloud.google.com/sdk/docs/release-notes";
+
     maintainers = with lib.maintainers; [
       iammrinal0
       marcusramberg
@@ -234,6 +238,7 @@ stdenv.mkDerivation rec {
       zimbatm
       ryan4yin
     ];
+
     platforms = builtins.attrNames data.googleCloudSdkPkgs;
     mainProgram = "gcloud";
   };

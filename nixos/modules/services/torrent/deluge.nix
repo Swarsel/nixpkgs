@@ -50,19 +50,18 @@ in
   options = {
     services = {
       deluge = {
-        enable = lib.mkEnableOption "Deluge daemon";
-
-        openFilesLimit = lib.mkOption {
-          default = openFilesLimit;
-          type = lib.types.either lib.types.int lib.types.str;
-          description = ''
-            Number of files to allow deluged to open.
-          '';
-        };
-
         config = lib.mkOption {
-          type = lib.types.attrs;
           default = { };
+
+          description = ''
+            Deluge core configuration for the core.conf file. Only has an effect
+            when {option}`services.deluge.declarative` is set to
+            `true`. String values must be quoted, integer and
+            boolean values must not. See
+            <https://git.deluge-torrent.org/deluge/tree/deluge/core/preferencesmanager.py#n41>
+            for the available options.
+          '';
+
           example = lib.literalExpression ''
             {
               download_location = "/srv/torrents/";
@@ -73,19 +72,41 @@ in
               listen_ports = [ ${toString listenPortsDefault} ];
             }
           '';
+
+          type = lib.types.attrs;
+        };
+
+        enable = lib.mkEnableOption "Deluge daemon";
+        package = lib.mkPackageOption pkgs "deluge-2_x" { };
+
+        authFile = lib.mkOption {
           description = ''
-            Deluge core configuration for the core.conf file. Only has an effect
+            The file managing the authentication for deluge, the format of this
+            file is straightforward, each line contains a
+            username:password:level tuple in plaintext. It only has an effect
             when {option}`services.deluge.declarative` is set to
-            `true`. String values must be quoted, integer and
-            boolean values must not. See
-            <https://git.deluge-torrent.org/deluge/tree/deluge/core/preferencesmanager.py#n41>
-            for the available options.
+            `true`.
+            See <https://dev.deluge-torrent.org/wiki/UserGuide/Authentication> for
+            more information.
           '';
+
+          example = "/run/keys/deluge-auth";
+          type = lib.types.path;
+        };
+
+        dataDir = lib.mkOption {
+          default = "/var/lib/deluge";
+
+          description = ''
+            The directory where deluge will create files.
+          '';
+
+          type = lib.types.path;
         };
 
         declarative = lib.mkOption {
-          type = lib.types.bool;
           default = false;
+
           description = ''
             Whether to use a declarative deluge configuration.
             Only if set to `true`, the options
@@ -94,11 +115,45 @@ in
             {option}`services.deluge.authFile` will be
             applied.
           '';
+
+          type = lib.types.bool;
+        };
+
+        extraPackages = lib.mkOption {
+          default = [ ];
+
+          description = ''
+            Extra packages available at runtime to enable Deluge's plugins. For example,
+            extraction utilities are required for the built-in "Extractor" plugin.
+            This always contains unzip, gnutar, xz and bzip2.
+          '';
+
+          type = lib.types.listOf lib.types.package;
+        };
+
+        group = lib.mkOption {
+          default = "deluge";
+
+          description = ''
+            Group under which deluge runs.
+          '';
+
+          type = lib.types.str;
+        };
+
+        openFilesLimit = lib.mkOption {
+          default = openFilesLimit;
+
+          description = ''
+            Number of files to allow deluged to open.
+          '';
+
+          type = lib.types.either lib.types.int lib.types.str;
         };
 
         openFirewall = lib.mkOption {
           default = false;
-          type = lib.types.bool;
+
           description = ''
             Whether to open the firewall for the ports in
             {option}`services.deluge.config.listen_ports`. It only takes effet if
@@ -110,82 +165,68 @@ in
             <https://dev.deluge-torrent.org/wiki/UserGuide/ThinClient#CreateSSHTunnel>
             or use a VPN or configure certificates for deluge.
           '';
-        };
 
-        dataDir = lib.mkOption {
-          type = lib.types.path;
-          default = "/var/lib/deluge";
-          description = ''
-            The directory where deluge will create files.
-          '';
-        };
-
-        authFile = lib.mkOption {
-          type = lib.types.path;
-          example = "/run/keys/deluge-auth";
-          description = ''
-            The file managing the authentication for deluge, the format of this
-            file is straightforward, each line contains a
-            username:password:level tuple in plaintext. It only has an effect
-            when {option}`services.deluge.declarative` is set to
-            `true`.
-            See <https://dev.deluge-torrent.org/wiki/UserGuide/Authentication> for
-            more information.
-          '';
+          type = lib.types.bool;
         };
 
         user = lib.mkOption {
-          type = lib.types.str;
           default = "deluge";
+
           description = ''
             User account under which deluge runs.
           '';
-        };
 
-        group = lib.mkOption {
           type = lib.types.str;
-          default = "deluge";
-          description = ''
-            Group under which deluge runs.
-          '';
         };
-
-        extraPackages = lib.mkOption {
-          type = lib.types.listOf lib.types.package;
-          default = [ ];
-          description = ''
-            Extra packages available at runtime to enable Deluge's plugins. For example,
-            extraction utilities are required for the built-in "Extractor" plugin.
-            This always contains unzip, gnutar, xz and bzip2.
-          '';
-        };
-
-        package = lib.mkPackageOption pkgs "deluge-2_x" { };
       };
 
       deluge.web = {
         enable = lib.mkEnableOption "Deluge Web daemon";
 
-        port = lib.mkOption {
-          type = lib.types.port;
-          default = 8112;
-          description = ''
-            Deluge web UI port.
-          '';
-        };
-
         openFirewall = lib.mkOption {
-          type = lib.types.bool;
           default = false;
+
           description = ''
             Open ports in the firewall for deluge web daemon
           '';
+
+          type = lib.types.bool;
+        };
+
+        port = lib.mkOption {
+          default = 8112;
+
+          description = ''
+            Deluge web UI port.
+          '';
+
+          type = lib.types.port;
         };
       };
     };
   };
 
   config = lib.mkIf cfg.enable {
+
+    environment.systemPackages = [ cfg.package ];
+
+    networking.firewall = lib.mkMerge [
+      (lib.mkIf (cfg.declarative && cfg.openFirewall && !(cfg.config.random_port or true)) {
+        allowedTCPPortRanges = lib.singleton (listToRange (cfg.config.listen_ports or listenPortsDefault));
+        allowedUDPPortRanges = lib.singleton (listToRange (cfg.config.listen_ports or listenPortsDefault));
+      })
+      (lib.mkIf (cfg.web.openFirewall) {
+        allowedTCPPorts = [ cfg.web.port ];
+      })
+    ];
+
+    # Provide a default set of `extraPackages`.
+    services.deluge.extraPackages = with pkgs; [
+      unzip
+      gnutar
+      xz
+      bzip2
+    ];
 
     services.deluge.package = lib.mkDefault (
       if lib.versionAtLeast config.system.stateVersion "20.09" then
@@ -201,13 +242,55 @@ in
         pkgs.deluge-1_x
     );
 
-    # Provide a default set of `extraPackages`.
-    services.deluge.extraPackages = with pkgs; [
-      unzip
-      gnutar
-      xz
-      bzip2
-    ];
+    systemd.services.deluged = {
+      after = [ "network.target" ];
+      description = "Deluge BitTorrent Daemon";
+      path = [ cfg.package ] ++ cfg.extraPackages;
+      preStart = preStart;
+
+      serviceConfig = {
+        ExecStart = ''
+          ${cfg.package}/bin/deluged \
+            --do-not-daemonize \
+            --config ${configDir}
+        '';
+
+        Group = cfg.group;
+        LimitNOFILE = cfg.openFilesLimit;
+        # To prevent "Quit & shutdown daemon" from working; we want systemd to
+        # manage it!
+        Restart = "on-success";
+        UMask = "0002";
+        User = cfg.user;
+      };
+
+      wantedBy = [ "multi-user.target" ];
+    };
+
+    systemd.services.delugeweb = lib.mkIf cfg_web.enable {
+      after = [
+        "network.target"
+        "deluged.service"
+      ];
+
+      description = "Deluge BitTorrent WebUI";
+      path = [ cfg.package ];
+      requires = [ "deluged.service" ];
+
+      serviceConfig = {
+        ExecStart = ''
+          ${cfg.package}/bin/deluge-web \
+            ${lib.optionalString (!isDeluge1) "--do-not-daemonize"} \
+            --config ${configDir} \
+            --port ${toString cfg.web.port}
+        '';
+
+        Group = cfg.group;
+        User = cfg.user;
+      };
+
+      wantedBy = [ "multi-user.target" ];
+    };
 
     systemd.tmpfiles.settings."10-deluged" =
       let
@@ -231,73 +314,18 @@ in
         ${cfg.config.move_completed_path}.d = defaultConfig;
       };
 
-    systemd.services.deluged = {
-      after = [ "network.target" ];
-      description = "Deluge BitTorrent Daemon";
-      wantedBy = [ "multi-user.target" ];
-      path = [ cfg.package ] ++ cfg.extraPackages;
-      serviceConfig = {
-        ExecStart = ''
-          ${cfg.package}/bin/deluged \
-            --do-not-daemonize \
-            --config ${configDir}
-        '';
-        # To prevent "Quit & shutdown daemon" from working; we want systemd to
-        # manage it!
-        Restart = "on-success";
-        User = cfg.user;
-        Group = cfg.group;
-        UMask = "0002";
-        LimitNOFILE = cfg.openFilesLimit;
-      };
-      preStart = preStart;
-    };
-
-    systemd.services.delugeweb = lib.mkIf cfg_web.enable {
-      after = [
-        "network.target"
-        "deluged.service"
-      ];
-      requires = [ "deluged.service" ];
-      description = "Deluge BitTorrent WebUI";
-      wantedBy = [ "multi-user.target" ];
-      path = [ cfg.package ];
-      serviceConfig = {
-        ExecStart = ''
-          ${cfg.package}/bin/deluge-web \
-            ${lib.optionalString (!isDeluge1) "--do-not-daemonize"} \
-            --config ${configDir} \
-            --port ${toString cfg.web.port}
-        '';
-        User = cfg.user;
-        Group = cfg.group;
-      };
-    };
-
-    networking.firewall = lib.mkMerge [
-      (lib.mkIf (cfg.declarative && cfg.openFirewall && !(cfg.config.random_port or true)) {
-        allowedTCPPortRanges = lib.singleton (listToRange (cfg.config.listen_ports or listenPortsDefault));
-        allowedUDPPortRanges = lib.singleton (listToRange (cfg.config.listen_ports or listenPortsDefault));
-      })
-      (lib.mkIf (cfg.web.openFirewall) {
-        allowedTCPPorts = [ cfg.web.port ];
-      })
-    ];
-
-    environment.systemPackages = [ cfg.package ];
-
-    users.users = lib.mkIf (cfg.user == "deluge") {
-      deluge = {
-        group = cfg.group;
-        uid = config.ids.uids.deluge;
-        home = cfg.dataDir;
-        description = "Deluge Daemon user";
-      };
-    };
-
     users.groups = lib.mkIf (cfg.group == "deluge") {
       deluge = {
         gid = config.ids.gids.deluge;
+      };
+    };
+
+    users.users = lib.mkIf (cfg.user == "deluge") {
+      deluge = {
+        description = "Deluge Daemon user";
+        group = cfg.group;
+        home = cfg.dataDir;
+        uid = config.ids.uids.deluge;
       };
     };
   };

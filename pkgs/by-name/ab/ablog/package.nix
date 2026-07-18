@@ -1,17 +1,16 @@
 {
   lib,
-  python3Packages,
   fetchFromGitHub,
   gitUpdater,
+  python3Packages,
 }:
 
 let
   version = "0.11.13";
 in
 python3Packages.buildPythonApplication {
-  pname = "ablog";
   inherit version;
-  pyproject = true;
+  pname = "ablog";
 
   src = fetchFromGitHub {
     owner = "sunpy";
@@ -19,6 +18,11 @@ python3Packages.buildPythonApplication {
     tag = "v${version}";
     hash = "sha256-P1eSN3wqlPNYbYW3Rkz2Y6yFcC379dt/qK8aVNwZRSs=";
   };
+
+  nativeCheckInputs = with python3Packages; [
+    pytestCheckHook
+    defusedxml
+  ];
 
   build-system = with python3Packages; [
     setuptools
@@ -36,15 +40,6 @@ python3Packages.buildPythonApplication {
     watchdog
   ];
 
-  nativeCheckInputs = with python3Packages; [
-    pytestCheckHook
-    defusedxml
-  ];
-
-  pytestFlags = [
-    "--rootdir=src/ablog"
-  ];
-
   disabledTests = [
     # upstream investigation is still ongoing
     # https://github.com/sunpy/ablog/issues/302
@@ -53,13 +48,19 @@ python3Packages.buildPythonApplication {
     "test_feed"
   ];
 
+  pyproject = true;
+
+  pytestFlags = [
+    "--rootdir=src/ablog"
+  ];
+
   passthru.updateScript = gitUpdater { rev-prefix = "v"; };
 
   meta = {
     description = "Sphinx extension that converts any documentation or personal website project into a full-fledged blog";
-    mainProgram = "ablog";
     homepage = "https://ablog.readthedocs.io/en/latest/";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ rgrinberg ];
+    mainProgram = "ablog";
   };
 }

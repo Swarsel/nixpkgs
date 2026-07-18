@@ -1,6 +1,6 @@
 {
-  fetchFromGitHub,
   lib,
+  fetchFromGitHub,
   nix-update-script,
   python3Packages,
   qt6,
@@ -17,15 +17,6 @@ python3Packages.buildPythonApplication (finalAttrs: {
     hash = "sha256-3DTSoVnHYB8GjKw0G8O3hlkOdQmDxe6B2O7h6LT1+jg=";
   };
 
-  pyproject = true;
-
-  pythonRelaxDeps = true;
-
-  build-system = with python3Packages; [
-    pdm-backend
-    pyqt6
-  ];
-
   nativeBuildInputs = [
     qt6Packages.wrapQtAppsHook
     qt6Packages.qttools
@@ -33,14 +24,32 @@ python3Packages.buildPythonApplication (finalAttrs: {
 
   buildInputs = [ qt6.qtbase ];
 
+  preBuild = ''
+    find openfreebuds_qt/designer -name "*.ui" | while read ui_file; do
+      py_file="''${ui_file%.ui}.py"
+      pyuic6 "$ui_file" -o "$py_file"
+    done
+
+    lrelease openfreebuds_qt/assets/i18n/*.ts
+  '';
+
   nativeCheckInputs = with python3Packages; [
     pytest-asyncio
     pytestCheckHook
   ];
 
-  enabledTestPaths = [
-    "openfreebuds/driver/huawei/test/"
-    "openfreebuds/test/test_event_bus.py"
+  postInstall = ''
+    mkdir -p "$out/share/applications"
+    mv openfreebuds_qt/assets/pw.mmk.OpenFreebuds.desktop "$out/share/applications"
+  '';
+
+  preFixup = ''
+    makeWrapperArgs+=("''${qtWrapperArgs[@]}")
+  '';
+
+  build-system = with python3Packages; [
+    pdm-backend
+    pyqt6
   ];
 
   dependencies = with python3Packages; [
@@ -54,30 +63,19 @@ python3Packages.buildPythonApplication (finalAttrs: {
     qasync
   ];
 
-  preBuild = ''
-    find openfreebuds_qt/designer -name "*.ui" | while read ui_file; do
-      py_file="''${ui_file%.ui}.py"
-      pyuic6 "$ui_file" -o "$py_file"
-    done
+  enabledTestPaths = [
+    "openfreebuds/driver/huawei/test/"
+    "openfreebuds/test/test_event_bus.py"
+  ];
 
-    lrelease openfreebuds_qt/assets/i18n/*.ts
-  '';
-
-  preFixup = ''
-    makeWrapperArgs+=("''${qtWrapperArgs[@]}")
-  '';
-
-  postInstall = ''
-    mkdir -p "$out/share/applications"
-    mv openfreebuds_qt/assets/pw.mmk.OpenFreebuds.desktop "$out/share/applications"
-  '';
-
+  pyproject = true;
+  pythonRelaxDeps = true;
   passthru.updateScript = nix-update-script { };
 
   meta = {
-    changelog = "https://github.com/melianmiko/OpenFreebuds/blob/${finalAttrs.src.rev}/CHANGELOG.md";
     description = "Open source app for HUAWEI FreeBuds (Linux + Windows)";
     homepage = "https://github.com/melianmiko/OpenFreebuds";
+    changelog = "https://github.com/melianmiko/OpenFreebuds/blob/${finalAttrs.src.rev}/CHANGELOG.md";
     license = lib.licenses.gpl3Only;
     maintainers = [ lib.maintainers.znaniye ];
     platforms = lib.platforms.linux;

@@ -1,10 +1,10 @@
 {
   lib,
-  python3Packages,
   fetchFromGitHub,
-  installShellFiles,
-  testers,
   backblaze-b2,
+  installShellFiles,
+  python3Packages,
+  testers,
   # executable is renamed to backblaze-b2 by default, to avoid collision with boost's 'b2'
   execName ? "backblaze-b2",
 }:
@@ -12,7 +12,6 @@
 python3Packages.buildPythonApplication (finalAttrs: {
   pname = "backblaze-b2";
   version = "4.7.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "Backblaze";
@@ -25,6 +24,29 @@ python3Packages.buildPythonApplication (finalAttrs: {
     installShellFiles
     argcomplete
   ];
+
+  nativeCheckInputs = with python3Packages; [
+    backoff
+    more-itertools
+    pexpect
+    pytestCheckHook
+    pytest-xdist
+    tenacity
+  ];
+
+  preCheck = ''
+    export HOME=$(mktemp -d)
+  '';
+
+  postInstall =
+    lib.optionalString (execName != "b2") ''
+      mv "$out/bin/b2" "$out/bin/${execName}"
+    ''
+    + ''
+      installShellCompletion --cmd ${execName} \
+        --bash <(register-python-argcomplete ${execName}) \
+        --zsh <(register-python-argcomplete ${execName})
+    '';
 
   build-system = with python3Packages; [
     hatchling
@@ -42,24 +64,6 @@ python3Packages.buildPythonApplication (finalAttrs: {
     tabulate
     tqdm
   ];
-
-  pythonRelaxDeps = [
-    "docutils"
-    "tabulate"
-  ];
-
-  nativeCheckInputs = with python3Packages; [
-    backoff
-    more-itertools
-    pexpect
-    pytestCheckHook
-    pytest-xdist
-    tenacity
-  ];
-
-  preCheck = ''
-    export HOME=$(mktemp -d)
-  '';
 
   disabledTestPaths = [
     # Test requires network
@@ -79,20 +83,17 @@ python3Packages.buildPythonApplication (finalAttrs: {
     "test_install_autocomplete"
   ];
 
-  postInstall =
-    lib.optionalString (execName != "b2") ''
-      mv "$out/bin/b2" "$out/bin/${execName}"
-    ''
-    + ''
-      installShellCompletion --cmd ${execName} \
-        --bash <(register-python-argcomplete ${execName}) \
-        --zsh <(register-python-argcomplete ${execName})
-    '';
+  pyproject = true;
+
+  pythonRelaxDeps = [
+    "docutils"
+    "tabulate"
+  ];
 
   passthru.tests.version =
     (testers.testVersion {
-      package = backblaze-b2;
       command = "${execName} version --short";
+      package = backblaze-b2;
     }).overrideAttrs
       (old: {
         # workaround the error: Permission denied: '/homeless-shelter'
@@ -105,9 +106,9 @@ python3Packages.buildPythonApplication (finalAttrs: {
   meta = {
     description = "Command-line tool for accessing the Backblaze B2 storage service";
     homepage = "https://github.com/Backblaze/B2_Command_Line_Tool";
-    maintainers = with lib.maintainers; [ phaer ];
     changelog = "https://github.com/Backblaze/B2_Command_Line_Tool/blob/${finalAttrs.src.tag}/CHANGELOG.md";
     license = lib.licenses.mit;
+    maintainers = with lib.maintainers; [ phaer ];
     mainProgram = "backblaze-b2";
   };
 })

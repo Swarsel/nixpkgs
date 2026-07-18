@@ -17,7 +17,6 @@ in
 pythonPackages.buildPythonApplication (finalAttrs: {
   pname = "quark-engine";
   version = "25.6.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "quark-engine";
@@ -26,6 +25,8 @@ pythonPackages.buildPythonApplication (finalAttrs: {
     hash = "sha256-DAD37fzswY3c0d+ubOCYImxs4qyD4fhC3m2l0iD977A=";
   };
 
+  # Project has no tests
+  doCheck = false;
   build-system = with pythonPackages; [ setuptools ];
 
   dependencies = with pythonPackages; [
@@ -44,15 +45,13 @@ pythonPackages.buildPythonApplication (finalAttrs: {
     tqdm
   ];
 
+  pyproject = true;
+  pythonImportsCheck = [ "quark" ];
+
   pythonRelaxDeps = [
     "r2pipe"
     "androguard"
   ];
-
-  # Project has no tests
-  doCheck = false;
-
-  pythonImportsCheck = [ "quark" ];
 
   meta = {
     description = "Android malware (analysis and scoring) system";

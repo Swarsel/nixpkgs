@@ -19,8 +19,8 @@ let
 in
 
 stdenv.mkDerivation {
-  pname = "brickd";
   inherit version;
+  pname = "brickd";
 
   src = fetchFromGitHub {
     owner = "Tinkerforge";
@@ -30,16 +30,12 @@ stdenv.mkDerivation {
   };
 
   nativeBuildInputs = [ pkg-config ];
+
   buildInputs = [
     libusb1
     pmutils
     udev
   ];
-
-  # shell thing didn't work so i replaced it using nix
-  prePatch = ''
-    substituteInPlace src/brickd/Makefile --replace 'PKG_CONFIG := $(shell which pkg-config 2> /dev/null)' "PKG_CONFIG := $pkgconfig/bin/pkg_config";
-  '';
 
   buildPhase = ''
     # build the brickd binary
@@ -65,11 +61,16 @@ stdenv.mkDerivation {
     cp brickd $out/bin/brickd
   '';
 
+  # shell thing didn't work so i replaced it using nix
+  prePatch = ''
+    substituteInPlace src/brickd/Makefile --replace 'PKG_CONFIG := $(shell which pkg-config 2> /dev/null)' "PKG_CONFIG := $pkgconfig/bin/pkg_config";
+  '';
+
   meta = {
-    homepage = "https://www.tinkerforge.com/";
     description = "Daemon (or service on Windows) that acts as a bridge between the Bricks/Bricklets and the API bindings for the different programming languages";
-    maintainers = [ lib.maintainers.qknight ];
+    homepage = "https://www.tinkerforge.com/";
     license = lib.licenses.gpl2Plus;
+    maintainers = [ lib.maintainers.qknight ];
     platforms = lib.platforms.all;
     mainProgram = "brickd";
   };

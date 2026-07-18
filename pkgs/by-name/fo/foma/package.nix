@@ -20,8 +20,6 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-CXRZNcEgsjD/9PowNynPyfLVbk8KDe3T52UetYMwC6w=";
   };
 
-  sourceRoot = "${finalAttrs.src.name}/foma";
-
   outputs = [
     "out"
     "dev"
@@ -33,6 +31,7 @@ stdenv.mkDerivation (finalAttrs: {
     flex
     pkg-config
   ];
+
   buildInputs = [
     readline
     zlib
@@ -46,6 +45,8 @@ stdenv.mkDerivation (finalAttrs: {
     "-DCMAKE_INSTALL_INCLUDEDIR=include"
     "-DCMAKE_INSTALL_LIBDIR=lib"
   ];
+
+  sourceRoot = "${finalAttrs.src.name}/foma";
 
   meta = {
     description = "Multi-purpose finite-state toolkit designed for applications ranging from natural language processing to research in automata theory";

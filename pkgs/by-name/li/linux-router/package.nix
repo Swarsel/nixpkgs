@@ -2,41 +2,39 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  makeWrapper,
-
   # --- Runtime Dependencies ---
   bash,
-  procps,
-  iproute2,
-  dnsmasq,
-  iptables,
   coreutils,
+  dnsmasq,
   flock,
   gawk,
   getopt,
   gnugrep,
   gnused,
-  which,
-  # `nmcli` is not required for create_ap.
-  # Use NetworkManager by default because it is very likely already present
-  useNetworkManager ? true,
-  networkmanager,
-
-  # --- WiFi Hotspot Dependencies ---
-  useWifiDependencies ? true,
+  haveged,
   hostapd,
+  iproute2,
+  iptables,
   iw,
-  # You only need this if 'iw' can not recognize your adapter.
-  useWirelessTools ? true,
+  makeWrapper,
+  networkmanager,
+  procps,
+  qrencode,
+  which,
   wirelesstools, # for iwconfig
   # To fall back to haveged if entropy is low.
   # Defaulting to false because not having it does not break things.
   # If it is really needed, warnings will be logged to journal.
   useHaveged ? false,
-  haveged,
+  # `nmcli` is not required for create_ap.
+  # Use NetworkManager by default because it is very likely already present
+  useNetworkManager ? true,
   # You only need this if you wish to show WiFi QR codes in terminal
   useQrencode ? true,
-  qrencode,
+  # --- WiFi Hotspot Dependencies ---
+  useWifiDependencies ? true,
+  # You only need this if 'iw' can not recognize your adapter.
+  useWirelessTools ? true,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -53,8 +51,6 @@ stdenv.mkDerivation (finalAttrs: {
   nativeBuildInputs = [
     makeWrapper
   ];
-
-  dontBuild = true;
 
   installPhase =
     let
@@ -87,9 +83,11 @@ stdenv.mkDerivation (finalAttrs: {
       makeWrapper $out/.bin-wrapped/lnxrouter $out/bin/lnxrouter --prefix PATH : ${binPath}
     '';
 
+  dontBuild = true;
+
   meta = {
-    homepage = "https://github.com/garywill/linux-router";
     description = "Set Linux as router / Wifi hotspot / proxy in one command";
+
     longDescription = ''
       Features:
 
@@ -106,6 +104,8 @@ stdenv.mkDerivation (finalAttrs: {
       - DNS proxy
       - Compatible with NetworkManager (automatically set interface as unmanaged)
     '';
+
+    homepage = "https://github.com/garywill/linux-router";
     changelog = "https://github.com/garywill/linux-router/releases/tag/${finalAttrs.version}";
     license = lib.licenses.lgpl21Only;
     platforms = lib.platforms.linux;

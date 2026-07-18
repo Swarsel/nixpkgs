@@ -1,18 +1,18 @@
 {
   lib,
-  gcc15Stdenv,
   fetchFromGitHub,
+  aquamarine,
+  cairo,
   cmake,
-  pkg-config,
+  gcc15Stdenv,
+  glaze,
+  hyprgraphics,
   hyprtoolkit,
   hyprutils,
-  pixman,
   libdrm,
-  glaze,
-  aquamarine,
-  hyprgraphics,
-  cairo,
   nix-update-script,
+  pixman,
+  pkg-config,
   versionCheckHook,
 }:
 
@@ -57,8 +57,8 @@ gcc15Stdenv.mkDerivation (finalAttrs: {
     changelog = "https://github.com/hyprwm/hyprshutdown/releases/tag/${finalAttrs.src.tag}";
     license = lib.licenses.bsd3;
     maintainers = [ lib.maintainers.mithicspirit ];
-    teams = [ lib.teams.hyprland ];
-    mainProgram = "hyprshutdown";
     platforms = lib.platforms.linux;
+    mainProgram = "hyprshutdown";
+    teams = [ lib.teams.hyprland ];
   };
 })

@@ -8,7 +8,6 @@
 buildPythonPackage rec {
   pname = "serpy";
   version = "0.3.1";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
@@ -16,10 +15,9 @@ buildPythonPackage rec {
   };
 
   propagatedBuildInputs = [ six ];
-
   # ImportError: No module named 'tests
   doCheck = false;
-
+  format = "setuptools";
   pythonImportsCheck = [ "serpy" ];
 
   meta = {

@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   pytestCheckHook,
   setuptools,
 }:
@@ -9,7 +9,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "pkginfo2";
   version = "30.1.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "aboutcode-org";
@@ -18,14 +17,14 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-M6fJbW1XCe+LKyjIupKnLmVkH582r1+AH44r9JA0Sxg=";
   };
 
-  # Tries to setup python virtualenv and install dependencies
-  dontConfigure = true;
-
+  nativeCheckInputs = [ pytestCheckHook ];
   build-system = [ setuptools ];
 
-  nativeCheckInputs = [ pytestCheckHook ];
-
-  pythonImportsCheck = [ "pkginfo2" ];
+  disabledTestPaths = [
+    # disabled in upstream CI: https://github.com/aboutcode-org/pkginfo2/commit/4c9899954a154095aa3289d2a1657257f3f0d0e0
+    "tests/wonky/"
+    "tests/examples/"
+  ];
 
   disabledTests = [
     # AssertionError
@@ -33,11 +32,10 @@ buildPythonPackage (finalAttrs: {
     "test_ctor_w_egg_info_as_file"
   ];
 
-  disabledTestPaths = [
-    # disabled in upstream CI: https://github.com/aboutcode-org/pkginfo2/commit/4c9899954a154095aa3289d2a1657257f3f0d0e0
-    "tests/wonky/"
-    "tests/examples/"
-  ];
+  # Tries to setup python virtualenv and install dependencies
+  dontConfigure = true;
+  pyproject = true;
+  pythonImportsCheck = [ "pkginfo2" ];
 
   meta = {
     description = "Query metadatdata from sdists, bdists or installed packages";

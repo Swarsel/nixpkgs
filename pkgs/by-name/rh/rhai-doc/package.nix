@@ -1,7 +1,7 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -21,10 +21,12 @@ rustPlatform.buildRustPackage (finalAttrs: {
     description = "Tool to auto-generate documentation for Rhai source code";
     homepage = "https://github.com/rhaiscript/rhai-doc";
     changelog = "https://github.com/rhaiscript/rhai-doc/releases/tag/${finalAttrs.src.rev}";
+
     license = with lib.licenses; [
       asl20
       mit
     ];
+
     maintainers = [ lib.maintainers.matthiasbeyer ];
     mainProgram = "rhai-doc";
   };

@@ -1,16 +1,16 @@
 {
   lib,
-  stdenvNoCC,
   fetchFromGitHub,
-  makeWrapper,
-  gnugrep,
-  gnused,
-  curl,
-  mpv,
   aria2,
+  curl,
   ffmpeg,
   fzf,
+  gnugrep,
+  gnused,
+  makeWrapper,
+  mpv,
   openssl,
+  stdenvNoCC,
 }:
 
 stdenvNoCC.mkDerivation {
@@ -50,8 +50,8 @@ stdenvNoCC.mkDerivation {
   '';
 
   meta = {
-    homepage = "https://github.com/CoolnsX/dra-cla";
     description = "Cli tool to browse and play korean drama, chinese drama";
+    homepage = "https://github.com/CoolnsX/dra-cla";
     license = lib.licenses.gpl3Only;
     maintainers = with lib.maintainers; [ idlip ];
     platforms = lib.platforms.unix;

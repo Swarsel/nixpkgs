@@ -1,16 +1,16 @@
 {
-  buildOctavePackage,
   lib,
   fetchFromGitHub,
-  # Octave Dependencies
-  splines,
-  # Other Dependencies
-  gmsh,
-  gawk,
-  pkg-config,
-  dolfin,
   autoconf,
   automake,
+  buildOctavePackage,
+  dolfin,
+  gawk,
+  # Other Dependencies
+  gmsh,
+  pkg-config,
+  # Octave Dependencies
+  splines,
 }:
 
 buildOctavePackage rec {
@@ -46,15 +46,17 @@ buildOctavePackage rec {
   ];
 
   meta = {
-    homepage = "https://gnu-octave.github.io/packages/msh/";
-    license = lib.licenses.gpl2Plus;
-    maintainers = with lib.maintainers; [ ravenjoad ];
     description = "Create and manage triangular and tetrahedral meshes for Finite Element or Finite Volume PDE solvers";
+
     longDescription = ''
       Create and manage triangular and tetrahedral meshes for Finite Element or
       Finite Volume PDE solvers. Use a mesh data structure compatible with
       PDEtool. Rely on gmsh for unstructured mesh generation.
     '';
+
+    homepage = "https://gnu-octave.github.io/packages/msh/";
+    license = lib.licenses.gpl2Plus;
+    maintainers = with lib.maintainers; [ ravenjoad ];
     # Not technically broken, but missing some functionality.
     # dolfin needs to be its own stand-alone library for the last tests to pass.
   };

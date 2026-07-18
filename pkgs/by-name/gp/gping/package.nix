@@ -1,13 +1,13 @@
 {
   lib,
   stdenv,
-  rustPlatform,
   fetchFromGitHub,
   fetchpatch,
   installShellFiles,
   iputils,
-  versionCheckHook,
   nix-update-script,
+  rustPlatform,
+  versionCheckHook,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -21,24 +21,18 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-whHbGZnxOQ/ISyWMl6miuogppZahgXxO3XmhcP6ymIo=";
   };
 
-  cargoHash = "sha256-F0QBL7tCCdjnavClqrw8yYxFrY8y4f8h/gcHSpEqBiM=";
-
   patches = [
     (fetchpatch {
+      hash = "sha256-b3Nv+mobPUcgREaNvn7cXra24PgEUe60yE/kOPTQEos=";
       name = "fix-ipv6-addrs-by-using-ping-dash-6.patch";
       # https://github.com/orf/gping/pull/546
       url = "https://github.com/orf/gping/commit/7ef8e1ddec847681c5ef3d4a010a0ad3a7aebab0.patch";
-      hash = "sha256-b3Nv+mobPUcgREaNvn7cXra24PgEUe60yE/kOPTQEos=";
     })
   ];
 
   nativeBuildInputs = [ installShellFiles ];
-
+  cargoHash = "sha256-F0QBL7tCCdjnavClqrw8yYxFrY8y4f8h/gcHSpEqBiM=";
   nativeCheckInputs = lib.optionals stdenv.hostPlatform.isLinux [ iputils ];
-
-  postInstall = ''
-    installManPage gping.1
-  '';
 
   # Requires internet access
   checkFlags = [
@@ -47,10 +41,12 @@ rustPlatform.buildRustPackage (finalAttrs: {
     "--skip=test::tests::test_integration_ipv4"
   ];
 
+  postInstall = ''
+    installManPage gping.1
+  '';
+
   doInstallCheck = true;
-
   nativeInstallCheckInputs = [ versionCheckHook ];
-
   passthru.updateScript = nix-update-script { };
 
   meta = {

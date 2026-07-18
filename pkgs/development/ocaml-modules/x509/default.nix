@@ -1,19 +1,19 @@
 {
   lib,
   fetchurl,
-  buildDunePackage,
   alcotest,
   asn1-combinators,
+  base64,
+  buildDunePackage,
   domain-name,
   fmt,
   gmap,
+  ipaddr,
   kdf,
+  logs,
   mirage-crypto,
   mirage-crypto-ec,
   mirage-crypto-pk,
-  ipaddr,
-  logs,
-  base64,
   ohex,
 }:
 
@@ -26,7 +26,6 @@ buildDunePackage (finalAttrs: {
     hash = "sha256-trFZ3Fa6RcNzAn8g5gd5te+Nb7eFTotCio3Zr+FAylU=";
   };
 
-  checkInputs = [ alcotest ];
   propagatedBuildInputs = [
     asn1-combinators
     domain-name
@@ -43,10 +42,11 @@ buildDunePackage (finalAttrs: {
   ];
 
   doCheck = true;
+  checkInputs = [ alcotest ];
 
   meta = {
-    homepage = "https://github.com/mirleft/ocaml-x509";
     description = "X509 (RFC5280) handling in OCaml";
+    homepage = "https://github.com/mirleft/ocaml-x509";
     license = lib.licenses.bsd2;
     maintainers = [ ];
   };

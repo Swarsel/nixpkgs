@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   requests,
   requests-oauthlib,
 }:
@@ -9,7 +9,6 @@
 buildPythonPackage rec {
   pname = "twitterapi";
   version = "2.8.2";
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "geduldig";
@@ -25,7 +24,7 @@ buildPythonPackage rec {
 
   # Tests are interacting with the Twitter API
   doCheck = false;
-
+  format = "setuptools";
   pythonImportsCheck = [ "TwitterAPI" ];
 
   meta = {

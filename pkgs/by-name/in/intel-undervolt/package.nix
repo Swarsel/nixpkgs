@@ -30,9 +30,9 @@ stdenv.mkDerivation (finalAttrs: {
   meta = {
     description = "Intel CPU undervolting and throttling configuration tool";
     homepage = "https://github.com/kitsunyan/intel-undervolt";
-    mainProgram = "intel-undervolt";
     license = lib.licenses.gpl3;
-    platforms = [ "x86_64-linux" ]; # It probably compiles for aaarch64-linux too, but what's the point?
     maintainers = with lib.maintainers; [ pandapip1 ];
+    platforms = [ "x86_64-linux" ]; # It probably compiles for aaarch64-linux too, but what's the point?
+    mainProgram = "intel-undervolt";
   };
 })

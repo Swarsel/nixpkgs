@@ -15,15 +15,13 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-pejgWzHtpEBylFzG1+/8zTV7qR6gf6UuTmuH9GNPoD0=";
   };
 
-  cargoLock.lockFile = ./Cargo.lock;
-
-  # __cpuid is safe in newer Rust; suppress lint until upstream fixes it
-  env.RUSTFLAGS = "-A unused-unsafe";
-
   postPatch = ''
     ln -s ${./Cargo.lock} Cargo.lock
   '';
 
+  cargoLock.lockFile = ./Cargo.lock;
+  # __cpuid is safe in newer Rust; suppress lint until upstream fixes it
+  env.RUSTFLAGS = "-A unused-unsafe";
   passthru.updateScript = ./update.sh;
 
   meta = {

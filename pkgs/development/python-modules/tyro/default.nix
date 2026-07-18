@@ -1,32 +1,28 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  pythonAtLeast,
-
-  # build-system
-  hatchling,
-
-  # dependencies
-  docstring-parser,
-  typeguard,
-  typing-extensions,
-
   # tests
   attrs,
+  buildPythonPackage,
+  # dependencies
+  docstring-parser,
+  # build-system
+  hatchling,
   ml-collections,
   msgspec,
   omegaconf,
   pydantic,
   pytestCheckHook,
+  pythonAtLeast,
   shtab,
+  typeguard,
+  typing-extensions,
   universal-pathlib,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "tyro";
   version = "1.0.15";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "brentyi";
@@ -34,14 +30,6 @@ buildPythonPackage (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-mnYVinyys21BjHRhwOLjc3n8mShH2+krEK0dK0VBWp4=";
   };
-
-  build-system = [ hatchling ];
-
-  dependencies = [
-    docstring-parser
-    typeguard
-    typing-extensions
-  ];
 
   # Upstream's neural-network integration tests are optional and skipped when
   # flax/torch are unavailable, so keep the lightweight dev extras only.
@@ -54,6 +42,21 @@ buildPythonPackage (finalAttrs: {
     pytestCheckHook
     shtab
     universal-pathlib
+  ];
+
+  # Keep argparse help output on a single line where possible so the
+  # literal-output tests do not fail due to terminal line wrapping.
+  preCheck = ''
+    export COLUMNS=200
+    export LINES=200
+  '';
+
+  build-system = [ hatchling ];
+
+  dependencies = [
+    docstring-parser
+    typeguard
+    typing-extensions
   ];
 
   disabledTests =
@@ -69,13 +72,7 @@ buildPythonPackage (finalAttrs: {
       "test_suppress_subcommand"
     ];
 
-  # Keep argparse help output on a single line where possible so the
-  # literal-output tests do not fail due to terminal line wrapping.
-  preCheck = ''
-    export COLUMNS=200
-    export LINES=200
-  '';
-
+  pyproject = true;
   pythonImportsCheck = [ "tyro" ];
 
   meta = {

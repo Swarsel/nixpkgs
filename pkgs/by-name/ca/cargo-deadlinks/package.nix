@@ -1,8 +1,8 @@
 {
   lib,
   stdenv,
-  rustPlatform,
   fetchFromGitHub,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -35,10 +35,12 @@ rustPlatform.buildRustPackage (finalAttrs: {
     description = "Cargo subcommand to check rust documentation for broken links";
     homepage = "https://github.com/deadlinks/cargo-deadlinks";
     changelog = "https://github.com/deadlinks/cargo-deadlinks/blob/${finalAttrs.version}/CHANGELOG.md";
+
     license = with lib.licenses; [
       asl20 # or
       mit
     ];
+
     maintainers = with lib.maintainers; [
       newam
       matthiasbeyer

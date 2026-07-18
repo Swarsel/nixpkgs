@@ -2,10 +2,10 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  guile,
-  autoreconfHook,
-  pkg-config,
   aspell,
+  autoreconfHook,
+  guile,
+  pkg-config,
   texinfo,
 }:
 

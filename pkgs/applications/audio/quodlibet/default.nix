@@ -1,58 +1,47 @@
 {
   lib,
   fetchFromGitHub,
-  tag ? "",
-
-  # build time
-  gettext,
-  gobject-introspection,
-  wrapGAppsHook3,
-  writableTmpDirAsHomeHook,
-
   # runtime
   adwaita-icon-theme,
+  # tests
+  dbus,
   gdk-pixbuf,
+  # build time
+  gettext,
   glib,
   glib-networking,
+  glibcLocales,
+  gobject-introspection,
+  gst_all_1,
   gtk3,
   gtksourceview,
+  hicolor-icon-theme,
   kakasi,
   keybinder3,
   libappindicator-gtk3,
   libmodplug,
   librsvg,
   libsoup_3,
-
+  python3,
+  wrapGAppsHook3,
+  writableTmpDirAsHomeHook,
+  xine-lib,
+  xvfb-run,
+  tag ? "",
   # optional features
   withDbusPython ? false,
+  # backends
+  withGstPlugins ? withGstreamerBackend,
+  withGstreamerBackend ? true,
   withMusicBrainzNgs ? false,
   withPahoMqtt ? false,
   withPypresence ? false,
   withSoco ? false,
-
-  # backends
-  withGstPlugins ? withGstreamerBackend,
-  withGstreamerBackend ? true,
-  gst_all_1,
   withXineBackend ? !withGstreamerBackend,
-  xine-lib,
-
-  # tests
-  dbus,
-  glibcLocales,
-  hicolor-icon-theme,
-  python3,
-  xvfb-run,
 }:
 python3.pkgs.buildPythonApplication (finalAttrs: {
   pname = "quodlibet${tag}";
   version = "4.7.1";
-  pyproject = true;
-
-  outputs = [
-    "out"
-    "doc"
-  ];
 
   src = fetchFromGitHub {
     owner = "quodlibet";
@@ -61,10 +50,13 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     hash = "sha256-xr3c1e4tjw2YHuKbvNeUPBIFdHEcpztqXjHVDSSxYlo=";
   };
 
+  outputs = [
+    "out"
+    "doc"
+  ];
+
   # Fix "E   ModuleNotFoundError: No module named 'distutils'" in Python 3.12 or newer
   patches = [ ./fix-gdist-python-3.12-and-newer.patch ];
-
-  build-system = [ python3.pkgs.setuptools ];
 
   postPatch = ''
     # Fix "FileExistsError: File already exists: /nix/store/<...>-quodlibet-4.7.1/bin/quodlibet"
@@ -110,21 +102,7 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     ]
   );
 
-  dependencies =
-    with python3.pkgs;
-    [
-      feedparser
-      gst-python
-      mutagen
-      pycairo
-      pygobject3
-    ]
-    ++ lib.optionals withDbusPython [ dbus-python ]
-    ++ lib.optionals withMusicBrainzNgs [ musicbrainzngs ]
-    ++ lib.optionals withPahoMqtt [ paho-mqtt ]
-    ++ lib.optionals withPypresence [ pypresence ]
-    ++ lib.optionals withSoco [ soco ]
-    ++ lib.optionals (pythonAtLeast "3.13") [ standard-telnetlib ];
+  env.LC_ALL = "en_US.UTF-8";
 
   nativeCheckInputs = [
     dbus
@@ -139,8 +117,6 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     pytest
     pytest-xdist
   ]);
-
-  env.LC_ALL = "en_US.UTF-8";
 
   preCheck = ''
     export GDK_PIXBUF_MODULE_FILE=${librsvg}/lib/gdk-pixbuf-2.0/2.10.0/loaders.cache
@@ -178,8 +154,29 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     gappsWrapperArgs+=(--prefix PATH : ${lib.getBin kakasi})
   '';
 
+  build-system = [ python3.pkgs.setuptools ];
+
+  dependencies =
+    with python3.pkgs;
+    [
+      feedparser
+      gst-python
+      mutagen
+      pycairo
+      pygobject3
+    ]
+    ++ lib.optionals withDbusPython [ dbus-python ]
+    ++ lib.optionals withMusicBrainzNgs [ musicbrainzngs ]
+    ++ lib.optionals withPahoMqtt [ paho-mqtt ]
+    ++ lib.optionals withPypresence [ pypresence ]
+    ++ lib.optionals withSoco [ soco ]
+    ++ lib.optionals (pythonAtLeast "3.13") [ standard-telnetlib ];
+
+  pyproject = true;
+
   meta = {
     description = "GTK-based audio player written in Python, using the Mutagen tagging library";
+
     longDescription = ''
       Quod Libet is a GTK-based audio player written in Python, using
       the Mutagen tagging library. It's designed around the idea that
@@ -193,6 +190,7 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
       player, like Unicode support, tag editing, Replay Gain, podcasts
       & internet radio, and all major audio formats.
     '';
+
     homepage = "https://quodlibet.readthedocs.io/en/latest";
     license = lib.licenses.gpl2Plus;
     maintainers = [ ];

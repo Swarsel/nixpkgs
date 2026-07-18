@@ -1,7 +1,7 @@
 {
-  buildGoModule,
-  fetchFromGitHub,
   lib,
+  fetchFromGitHub,
+  buildGoModule,
   libjpeg,
   nix-update-script,
   obs-studio,
@@ -18,17 +18,12 @@ buildGoModule rec {
     sha256 = "sha256-jwoD9qz7JDOIwPY6vammtQY9Igftu9UkI7PgsyJgQZ0=";
   };
 
-  vendorHash = "sha256-5uxZr2jpzRKupDC9+H9+efiHZKTBbkyv5mQKWV+6uEo=";
-
   buildInputs = [
     libjpeg
     obs-studio
   ];
 
-  ldflags = [
-    "-s"
-    "-w"
-  ];
+  vendorHash = "sha256-5uxZr2jpzRKupDC9+H9+efiHZKTBbkyv5mQKWV+6uEo=";
 
   env = {
     CGO_CFLAGS = "-I${obs-studio}/include/obs";
@@ -48,13 +43,18 @@ buildGoModule rec {
     mv obs-teleport.so $out/lib/obs-plugins
   '';
 
+  ldflags = [
+    "-s"
+    "-w"
+  ];
+
   passthru.updateScript = nix-update-script { };
 
   meta = {
     description = "OBS Studio plugin for an open NDI-like replacement";
     homepage = "https://github.com/fzwoch/obs-teleport";
-    maintainers = [ ];
     license = lib.licenses.gpl2Plus;
+    maintainers = [ ];
     platforms = obs-studio.meta.platforms;
   };
 }

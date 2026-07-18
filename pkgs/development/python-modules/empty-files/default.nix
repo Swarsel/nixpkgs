@@ -1,14 +1,13 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   requests,
 }:
 
 buildPythonPackage rec {
   pname = "empty-files";
   version = "0.0.9";
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "approvals";
@@ -18,10 +17,9 @@ buildPythonPackage rec {
   };
 
   propagatedBuildInputs = [ requests ];
-
   # cyclic dependency with approvaltests
   doCheck = false;
-
+  format = "setuptools";
   pythonImportsCheck = [ "empty_files" ];
 
   meta = {

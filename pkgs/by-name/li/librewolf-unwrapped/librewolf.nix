@@ -1,8 +1,8 @@
 {
-  callPackage,
-  runCommand,
   lib,
   stdenv,
+  callPackage,
+  runCommand,
 }:
 let
   src = callPackage ./src.nix { };
@@ -10,8 +10,6 @@ in
 rec {
 
   inherit (src) packageVersion firefox source;
-
-  extraPatches = [ "${source}/patches/pref-pane/pref-pane-small.patch" ];
 
   extraConfigureFlags = [
     "--with-unsigned-addon-scopes=app,system"
@@ -23,6 +21,17 @@ rec {
   ++ lib.optionals stdenv.hostPlatform.isLinux [
     "--enable-lto=thin,cross"
   ];
+
+  extraPassthru = {
+    inherit extraPrefsFiles extraPoliciesFiles;
+
+    librewolf = {
+      inherit src extraPatches;
+    };
+  };
+
+  extraPatches = [ "${source}/patches/pref-pane/pref-pane-small.patch" ];
+  extraPoliciesFiles = [ "${source}/settings/distribution/policies.json" ];
 
   extraPostPatch = ''
     while read patch_name; do
@@ -56,23 +65,14 @@ rec {
     done
   '';
 
-  localSettingsPrefs = runCommand "local-settings.js" { } ''
-    # Import of `librewolf.cfg` file is already being done manually.
-    substitute ${source}/settings/defaults/pref/local-settings.js $out \
-      --replace-fail 'pref("general.config.filename", "librewolf.cfg");' ""
-  '';
-
   extraPrefsFiles = [
     "${source}/settings/librewolf.cfg"
     localSettingsPrefs
   ];
 
-  extraPoliciesFiles = [ "${source}/settings/distribution/policies.json" ];
-
-  extraPassthru = {
-    librewolf = {
-      inherit src extraPatches;
-    };
-    inherit extraPrefsFiles extraPoliciesFiles;
-  };
+  localSettingsPrefs = runCommand "local-settings.js" { } ''
+    # Import of `librewolf.cfg` file is already being done manually.
+    substitute ${source}/settings/defaults/pref/local-settings.js $out \
+      --replace-fail 'pref("general.config.filename", "librewolf.cfg");' ""
+  '';
 }

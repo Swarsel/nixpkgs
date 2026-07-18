@@ -12,9 +12,8 @@ let
   cfg = config.services.jboss;
 
   jbossService = pkgs.stdenv.mkDerivation {
-    name = "jboss-server";
-    builder = ./builder.sh;
     inherit (pkgs) jboss su;
+
     inherit (cfg)
       tempDir
       logDir
@@ -24,6 +23,9 @@ let
       user
       useJK
       ;
+
+    builder = ./builder.sh;
+    name = "jboss-server";
   };
 
 in
@@ -37,32 +39,14 @@ in
     services.jboss = {
 
       enable = mkOption {
-        type = types.bool;
         default = false;
         description = "Whether to enable JBoss. WARNING : this package is outdated and is known to have vulnerabilities.";
-      };
-
-      tempDir = mkOption {
-        default = "/tmp";
-        type = types.str;
-        description = "Location where JBoss stores its temp files";
-      };
-
-      logDir = mkOption {
-        default = "/var/log/jboss";
-        type = types.str;
-        description = "Location of the logfile directory of JBoss";
-      };
-
-      serverDir = mkOption {
-        description = "Location of the server instance files";
-        default = "/var/jboss/server";
-        type = types.str;
+        type = types.bool;
       };
 
       deployDir = mkOption {
-        description = "Location of the deployment files";
         default = "/nix/var/nix/profiles/default/server/default/deploy/";
+        description = "Location of the deployment files";
         type = types.str;
       };
 
@@ -72,16 +56,34 @@ in
         type = types.str;
       };
 
-      user = mkOption {
-        default = "nobody";
-        description = "User account under which jboss runs.";
+      logDir = mkOption {
+        default = "/var/log/jboss";
+        description = "Location of the logfile directory of JBoss";
+        type = types.str;
+      };
+
+      serverDir = mkOption {
+        default = "/var/jboss/server";
+        description = "Location of the server instance files";
+        type = types.str;
+      };
+
+      tempDir = mkOption {
+        default = "/tmp";
+        description = "Location where JBoss stores its temp files";
         type = types.str;
       };
 
       useJK = mkOption {
-        type = types.bool;
         default = false;
         description = "Whether to use to connector to the Apache HTTP server";
+        type = types.bool;
+      };
+
+      user = mkOption {
+        default = "nobody";
+        description = "User account under which jboss runs.";
+        type = types.str;
       };
 
     };

@@ -2,8 +2,8 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  fetchpatch,
   cmake,
+  fetchpatch,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -18,17 +18,18 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   patches = [ ];
-
   nativeBuildInputs = [ cmake ];
 
   meta = {
     description = "Fantasy action RPG using the FLARE engine";
     homepage = "https://github.com/flareteam/flare-game";
+    license = [ lib.licenses.cc-by-sa-30 ];
+
     maintainers = with lib.maintainers; [
       aanderse
       McSinyx
     ];
-    license = [ lib.licenses.cc-by-sa-30 ];
+
     platforms = lib.platforms.unix;
   };
 })

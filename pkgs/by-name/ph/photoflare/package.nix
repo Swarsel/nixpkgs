@@ -2,8 +2,8 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  libsForQt5,
   graphicsmagick,
+  libsForQt5,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -22,21 +22,21 @@ stdenv.mkDerivation (finalAttrs: {
     libsForQt5.wrapQtAppsHook
     libsForQt5.qttools
   ];
+
   buildInputs = [
     libsForQt5.qtbase
     graphicsmagick
   ];
 
-  qmakeFlags = [ "PREFIX=${placeholder "out"}" ];
-
   env.NIX_CFLAGS_COMPILE = "-I${graphicsmagick}/include/GraphicsMagick";
+  qmakeFlags = [ "PREFIX=${placeholder "out"}" ];
 
   meta = {
     description = "Cross-platform image editor with a powerful features and a very friendly graphical user interface";
-    mainProgram = "photoflare";
     homepage = "https://photoflare.io";
-    maintainers = [ lib.maintainers.omgbebebe ];
     license = lib.licenses.gpl3Plus;
+    maintainers = [ lib.maintainers.omgbebebe ];
     platforms = lib.platforms.linux;
+    mainProgram = "photoflare";
   };
 })

@@ -1,14 +1,13 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   hatchling,
 }:
 
 buildPythonPackage rec {
   pname = "hatch-regex-commit";
   version = "0.0.4";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "frankie567";
@@ -17,13 +16,11 @@ buildPythonPackage rec {
     hash = "sha256-xdt3qszigdCudt2+EpUZPkJzL+XQ6TnVEAMm0sV3zwY=";
   };
 
-  build-system = [ hatchling ];
-
-  dependencies = [ hatchling ];
-
   # Module has no tests
   doCheck = false;
-
+  build-system = [ hatchling ];
+  dependencies = [ hatchling ];
+  pyproject = true;
   pythonImportsCheck = [ "hatch_regex_commit" ];
 
   meta = {

@@ -1,10 +1,10 @@
 {
+  lib,
+  fetchFromGitHub,
   aiohttp,
   aresponses,
   buildPythonPackage,
-  fetchFromGitHub,
   hatchling,
-  lib,
   mashumaro,
   orjson,
   pytest-cov-stub,
@@ -16,7 +16,6 @@
 buildPythonPackage rec {
   pname = "pyfirefly";
   version = "0.1.16";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "erwindouna";
@@ -24,6 +23,13 @@ buildPythonPackage rec {
     tag = "v${version}";
     hash = "sha256-RrVjXhV42DBvmTcZMowmHXN5K4nZfKPT/CDbvf1tOAQ=";
   };
+
+  nativeCheckInputs = [
+    aresponses
+    pytest-cov-stub
+    pytestCheckHook
+    syrupy
+  ];
 
   build-system = [ hatchling ];
 
@@ -34,19 +40,13 @@ buildPythonPackage rec {
     yarl
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "pyfirefly" ];
 
-  nativeCheckInputs = [
-    aresponses
-    pytest-cov-stub
-    pytestCheckHook
-    syrupy
-  ];
-
   meta = {
-    changelog = "https://github.com/erwindouna/pyfirefly/releases/tag/${src.tag}";
     description = "Asynchronous Python client for the Firefly III API";
     homepage = "https://github.com/erwindouna/pyfirefly";
+    changelog = "https://github.com/erwindouna/pyfirefly/releases/tag/${src.tag}";
     license = lib.licenses.mit;
     maintainers = [ lib.maintainers.dotlambda ];
   };

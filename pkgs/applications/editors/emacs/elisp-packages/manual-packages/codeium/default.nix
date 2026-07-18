@@ -1,10 +1,10 @@
 {
   lib,
-  codeium,
   fetchFromGitHub,
+  codeium,
+  gitUpdater,
   melpaBuild,
   replaceVars,
-  gitUpdater,
 }:
 
 melpaBuild {
@@ -27,12 +27,12 @@ melpaBuild {
   passthru.updateScript = gitUpdater { };
 
   meta = {
+    inherit (codeium.meta) platforms;
     description = "Free, ultrafast Copilot alternative for Emacs";
     homepage = "https://github.com/Exafunction/codeium.el";
     license = lib.licenses.mit;
-    maintainers = [ ];
-    inherit (codeium.meta) platforms;
     sourceProvenance = [ lib.sourceTypes.fromSource ];
+    maintainers = [ ];
   };
 
 }

@@ -1,13 +1,12 @@
 {
   lib,
-  python3Packages,
   fetchFromGitHub,
+  python3Packages,
 }:
 
 python3Packages.buildPythonApplication (finalAttrs: {
   pname = "photon";
   version = "1.3.0";
-  pyproject = false;
 
   src = fetchFromGitHub {
     owner = "s0md3v";
@@ -16,14 +15,13 @@ python3Packages.buildPythonApplication (finalAttrs: {
     sha256 = "02z1xj72bq35dilr4b6njry4kixz6j2a3ag02nla98q0fvgmgnvy";
   };
 
-  dontBuild = true;
-  doCheck = false;
-
   propagatedBuildInputs = with python3Packages; [
     requests
     urllib3
     tld
   ];
+
+  doCheck = false;
 
   installPhase = ''
     mkdir -p "$out"/{bin,share/photon}
@@ -33,6 +31,9 @@ python3Packages.buildPythonApplication (finalAttrs: {
       --set PYTHONPATH "$PYTHONPATH:$out/share/photon" \
       --add-flags "-O $out/share/photon/photon.py"
   '';
+
+  dontBuild = true;
+  pyproject = false;
 
   meta = {
     description = "Lightning fast web crawler which extracts URLs, files, intel & endpoints from a target";

@@ -1,14 +1,14 @@
 {
   lib,
-  buildGoModule,
   stdenv,
   fetchFromGitHub,
-  installShellFiles,
   asciidoc,
-  databasePath ? "/etc/secureboot",
+  buildGoModule,
+  installShellFiles,
   nix-update-script,
-  pkg-config,
   pcsclite,
+  pkg-config,
+  databasePath ? "/etc/secureboot",
 }:
 
 buildGoModule (finalAttrs: {
@@ -22,15 +22,6 @@ buildGoModule (finalAttrs: {
     hash = "sha256-Q8uQ74XvteMRcnUPu1PjLAPWt3jeI7aF4m3QMjiZJis=";
   };
 
-  vendorHash = "sha256-PwLdWoC8tjdKoUAg2xvopggpgZ9WKaUslO3ZBtBah2k=";
-
-  ldflags = [
-    "-s"
-    "-w"
-    "-X github.com/foxboron/sbctl.DatabasePath=${databasePath}"
-    "-X github.com/foxboron/sbctl.Version=${finalAttrs.version}"
-  ];
-
   nativeBuildInputs = [
     installShellFiles
     asciidoc
@@ -38,6 +29,7 @@ buildGoModule (finalAttrs: {
   ];
 
   buildInputs = [ pcsclite ];
+  vendorHash = "sha256-PwLdWoC8tjdKoUAg2xvopggpgZ9WKaUslO3ZBtBah2k=";
 
   postBuild = ''
     make docs/sbctl.conf.5 docs/sbctl.8
@@ -59,19 +51,28 @@ buildGoModule (finalAttrs: {
       --zsh <($out/bin/sbctl completion zsh)
   '';
 
+  ldflags = [
+    "-s"
+    "-w"
+    "-X github.com/foxboron/sbctl.DatabasePath=${databasePath}"
+    "-X github.com/foxboron/sbctl.Version=${finalAttrs.version}"
+  ];
+
   passthru.updateScript = nix-update-script { };
 
   meta = {
     description = "Secure Boot key manager";
-    mainProgram = "sbctl";
     homepage = "https://github.com/Foxboron/sbctl";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       Pokeylooted
       Scrumplex
     ];
+
     # go-uefi does not support darwin at the moment:
     # see upstream on https://github.com/Foxboron/go-uefi/issues/13
     platforms = lib.platforms.linux;
+    mainProgram = "sbctl";
   };
 })

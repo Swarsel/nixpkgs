@@ -1,7 +1,7 @@
 {
+  lib,
   atLeast,
   backendStdenv,
-  lib,
   mkTester,
   older,
   sample-data,
@@ -16,16 +16,16 @@ lib.optionalAttrs (older "10.8") (
       "--datadir=${sample-data.outPath + "/mnist"}"
     ];
 
-    int8 = mkTester "sample_algorithm_selector-int8" [
-      "sample_algorithm_selector"
-      "--datadir=${sample-data.outPath + "/mnist"}"
-      "--int8"
-    ];
-
     fp16 = mkTester "sample_algorithm_selector-fp16" [
       "sample_algorithm_selector"
       "--datadir=${sample-data.outPath + "/mnist"}"
       "--fp16"
+    ];
+
+    int8 = mkTester "sample_algorithm_selector-int8" [
+      "sample_algorithm_selector"
+      "--datadir=${sample-data.outPath + "/mnist"}"
+      "--int8"
     ];
   }
   // lib.optionalAttrs (atLeast "10") {

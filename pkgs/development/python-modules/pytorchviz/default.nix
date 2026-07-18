@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   distutils,
   fsspec,
   graphviz,
@@ -12,7 +12,6 @@
 buildPythonPackage {
   pname = "pytorchviz";
   version = "0.0.2-unstable-2024-12-30";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "szagoruyko";
@@ -22,20 +21,20 @@ buildPythonPackage {
     hash = "sha256-La1X8Y64n/vNGDUEsw1iZ5Mb6/w3WayeWxa62QxLyHA=";
   };
 
-  dependencies = [
-    graphviz
-    torch
-  ];
-
   nativeCheckInputs = [
     unittestCheckHook
     distutils
     fsspec
   ];
 
-  unittestFlagsArray = [ "test/" ];
+  dependencies = [
+    graphviz
+    torch
+  ];
 
+  pyproject = true;
   pythonImportsCheck = [ "torchviz" ];
+  unittestFlagsArray = [ "test/" ];
 
   meta = {
     description = "Small package to create visualizations of PyTorch execution graphs";

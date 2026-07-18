@@ -4,19 +4,19 @@ in
 
 {
   lib,
-  stdenvNoCC,
   fetchurl,
+  stdenvNoCC,
 }:
 
 let
   withCodeAsKey = f: { code, ... }@attrs: lib.nameValuePair code (f attrs);
   mkModelPackage =
     {
-      name,
-      code,
-      version,
-      url,
       checksum,
+      code,
+      name,
+      url,
+      version,
     }:
     stdenvNoCC.mkDerivation {
       pname = "translatelocally-model-${code}";
@@ -26,7 +26,6 @@ let
         inherit url;
         sha256 = checksum;
       };
-      dontUnpack = true;
 
       installPhase = ''
         TARGET="$out/share/translateLocally/models"
@@ -36,6 +35,8 @@ let
         # avoid patching shebangs in inconsistently executable extra files
         find "$out" -type f -exec chmod -x {} +
       '';
+
+      dontUnpack = true;
 
       meta = {
         description = "TranslateLocally model - ${name}";

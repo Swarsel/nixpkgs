@@ -2,9 +2,9 @@
   lib,
   stdenv,
   fetchFromGitHub,
+  coreutils,
   fetchpatch,
   perl,
-  coreutils,
 }:
 let
   hashes = {
@@ -38,13 +38,13 @@ stdenv.mkDerivation (finalAttrs: {
   ++ lib.optionals stdenv.hostPlatform.isDarwin [
     (fetchpatch {
       name = "0001-libfaketime.c-wrap-timespec_get-in-TIME_UTC-macro.patch";
-      url = "https://github.com/wolfcw/libfaketime/commit/e0e6b79568d36a8fd2b3c41f7214769221182128.patch";
       sha256 = "sha256-KwwP76v0DXNW73p/YBvwUOPdKMAcVdbQSKexD/uFOYo=";
+      url = "https://github.com/wolfcw/libfaketime/commit/e0e6b79568d36a8fd2b3c41f7214769221182128.patch";
     })
     (fetchpatch {
+      hash = "sha256-fIXuxxcV9J2IcgwcwSrMo4maObkH9WYv1DC/wdtbq/g=";
       name = "LFS64.patch";
       url = "https://github.com/wolfcw/libfaketime/commit/f32986867addc9d22b0fab29c1c927f079d44ac1.patch";
-      hash = "sha256-fIXuxxcV9J2IcgwcwSrMo4maObkH9WYv1DC/wdtbq/g=";
     })
     # https://github.com/wolfcw/libfaketime/issues/277
     ./0001-Remove-unsupported-clang-flags.patch
@@ -58,9 +58,9 @@ stdenv.mkDerivation (finalAttrs: {
       --replace-fail @DATE_CMD@ ${lib.getExe' coreutils "date"}
   '';
 
+  strictDeps = true;
+
   env = {
-    PREFIX = placeholder "out";
-    LIBDIRNAME = "/lib";
     CFLAGS = toString (
       lib.optionals stdenv.cc.isClang [
         "-Wno-error=cast-function-type"
@@ -71,22 +71,22 @@ stdenv.mkDerivation (finalAttrs: {
         "-DFORCE_PTHREAD_NONVER"
       ]
     );
+
+    LIBDIRNAME = "/lib";
+    PREFIX = placeholder "out";
   };
 
-  nativeCheckInputs = [ perl ];
-
   doCheck = true;
-
+  nativeCheckInputs = [ perl ];
   __structuredAttrs = true;
-  strictDeps = true;
   enableParallelBuilding = true;
 
   meta = {
     description = "Report faked system time to programs without having to change the system-wide time";
     homepage = "https://github.com/wolfcw/libfaketime/";
     license = lib.licenses.gpl2;
-    platforms = lib.platforms.all;
     maintainers = [ lib.maintainers.bjornfor ];
+    platforms = lib.platforms.all;
     mainProgram = "faketime";
   };
 })

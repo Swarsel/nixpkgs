@@ -4,8 +4,8 @@
 }:
 
 buildDunePackage {
-  pname = "posix-math2";
   inherit (posix-base) src version;
+  pname = "posix-math2";
 
   propagatedBuildInputs = [
     posix-base

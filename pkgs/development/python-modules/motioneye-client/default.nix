@@ -1,9 +1,9 @@
 {
   lib,
   stdenv,
+  fetchFromGitHub,
   aiohttp,
   buildPythonPackage,
-  fetchFromGitHub,
   poetry-core,
   pytest-aiohttp,
   pytest-cov-stub,
@@ -14,7 +14,6 @@
 buildPythonPackage rec {
   pname = "motioneye-client";
   version = "0.3.14";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "dermotduffy";
@@ -29,7 +28,6 @@ buildPythonPackage rec {
   '';
 
   nativeBuildInputs = [ poetry-core ];
-
   propagatedBuildInputs = [ aiohttp ];
 
   nativeCheckInputs = [
@@ -39,6 +37,7 @@ buildPythonPackage rec {
     pytestCheckHook
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "motioneye_client" ];
 
   meta = {

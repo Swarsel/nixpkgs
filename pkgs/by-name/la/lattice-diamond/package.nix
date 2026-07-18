@@ -1,28 +1,34 @@
 {
   lib,
   stdenv,
-  rpmextract,
-  patchelf,
-  makeWrapper,
-  file,
-  requireFile,
-  glib,
-  zlib,
-  freetype,
-  fontconfig,
-  libxt,
-  libxrender,
-  libxext,
-  libx11,
-  libsm,
-  libice,
-  libusb-compat-0_1,
   coreutils,
+  file,
+  fontconfig,
+  freetype,
+  glib,
+  libice,
+  libsm,
+  libusb-compat-0_1,
+  libx11,
+  libxext,
+  libxrender,
+  libxt,
+  makeWrapper,
+  patchelf,
+  requireFile,
+  rpmextract,
+  zlib,
 }:
 
 stdenv.mkDerivation {
   pname = "diamond";
   version = "3.10";
+
+  src = requireFile {
+    url = "http://www.latticesemi.com/view_document?document_id=52180";
+    sha256 = "ec0b370cf8bd55831eeed7c5eadcabacbd6e63ac657c20209d672119a07a5c0f";
+    name = "diamond_3_10-base_x64-111-2-x86_64-linux.rpm";
+  };
 
   nativeBuildInputs = [
     rpmextract
@@ -30,12 +36,6 @@ stdenv.mkDerivation {
     makeWrapper
     file
   ];
-
-  src = requireFile {
-    name = "diamond_3_10-base_x64-111-2-x86_64-linux.rpm";
-    url = "http://www.latticesemi.com/view_document?document_id=52180";
-    sha256 = "ec0b370cf8bd55831eeed7c5eadcabacbd6e63ac657c20209d672119a07a5c0f";
-  };
 
   buildCommand = ''
     origprefix=usr/local/diamond/3.10_x64
@@ -139,11 +139,13 @@ stdenv.mkDerivation {
 
   meta = {
     description = "Vendor development tools for Lattice FPGA devices";
+
     longDescription = ''
       Lattice Diamond software is the leading-edge software design environment
       for cost- sensitive, low-power Lattice FPGA architectures. It is the
       next-generation replacement for ispLEVER.
     '';
+
     homepage = "https://www.latticesemi.com/latticediamond";
     license = lib.licenses.unfree;
     maintainers = with lib.maintainers; [ q3k ];

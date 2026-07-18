@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchurl,
+  buildGoModule,
 }:
 
 buildGoModule (finalAttrs: {
@@ -28,14 +28,16 @@ buildGoModule (finalAttrs: {
   '';
 
   meta = {
-    changelog = "https://codeberg.org/eduVPN/eduvpn-common/raw/tag/${finalAttrs.version}/CHANGES.md";
     description = "Code to be shared between eduVPN clients";
     homepage = "https://codeberg.org/eduVPN/eduvpn-common";
+    changelog = "https://codeberg.org/eduVPN/eduvpn-common/raw/tag/${finalAttrs.version}/CHANGES.md";
+    license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       benneti
       jwijenbergh
     ];
-    license = lib.licenses.mit;
+
     platforms = lib.platforms.linux;
   };
 })

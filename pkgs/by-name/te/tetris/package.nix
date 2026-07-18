@@ -1,39 +1,51 @@
 {
-  haskellPackages,
   haskell,
+  haskellPackages,
 }:
 
 haskell.lib.compose.justStaticExecutables (
   haskellPackages.callPackage (
     {
-      mkDerivation,
-      fetchFromGitHub,
       lib,
-
+      fetchFromGitHub,
       base,
-      vty,
-      lens,
       brick,
-      linear,
       containers,
+      directory,
+      extra,
+      filepath,
+      lens,
+      linear,
+      mkDerivation,
+      mtl,
+      optparse-applicative,
       random,
       transformers,
-      directory,
-      filepath,
-      optparse-applicative,
+      vty,
       vty-crossplatform,
-      mtl,
-      extra,
     }:
     mkDerivation rec {
       pname = "tetris";
       version = "0.1.6";
+
       src = fetchFromGitHub {
-        repo = "tetris";
         owner = "Samtay";
+        repo = "tetris";
         tag = "v${version}";
         hash = "sha256-xA2/n5zY01BLKlUI8BVvfuUvsqh2U23XOooTQwXkDpQ=";
       };
+
+      changelog = "https://github.com/samtay/tetris/releases/tag/v${version}";
+
+      executableHaskellDepends = [
+        base
+        directory
+        filepath
+        optparse-applicative
+      ];
+
+      homepage = "https://github.com/samtay/tetris";
+
       libraryHaskellDepends = [
         base
         brick
@@ -47,14 +59,7 @@ haskell.lib.compose.justStaticExecutables (
         vty
         vty-crossplatform
       ];
-      executableHaskellDepends = [
-        base
-        directory
-        filepath
-        optparse-applicative
-      ];
-      homepage = "https://github.com/samtay/tetris";
-      changelog = "https://github.com/samtay/tetris/releases/tag/v${version}";
+
       license = lib.licenses.bsd3;
       mainProgram = "tetris";
       maintainers = [ lib.maintainers.Svenum ];

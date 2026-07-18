@@ -1,6 +1,6 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
   imagemagick,
 }:
@@ -16,8 +16,6 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-//4BiRF1W5W2rEbw6MupiyDOjvcveqGtYjJ1mZfck9U=";
   };
 
-  sourceRoot = "${finalAttrs.src.name}/icons";
-
   strictDeps = true;
 
   nativeBuildInputs = [
@@ -29,6 +27,7 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   enableParallelBuilding = true;
+  sourceRoot = "${finalAttrs.src.name}/icons";
 
   meta = {
     description = "Icons of the Nix logo, in Freedesktop Icon Directory Layout";

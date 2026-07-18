@@ -8,8 +8,8 @@ let
   version = "1.1.1";
 in
 stdenv.mkDerivation {
-  pname = "teseq";
   inherit version;
+  pname = "teseq";
 
   src = fetchurl {
     url = "mirror://gnu/teseq/teseq-${version}.tar.gz";
@@ -17,11 +17,10 @@ stdenv.mkDerivation {
   };
 
   meta = {
-    homepage = "https://www.gnu.org/software/teseq/";
     description = "Escape sequence illuminator";
+    homepage = "https://www.gnu.org/software/teseq/";
     license = lib.licenses.gpl3;
-
-    platforms = lib.platforms.unix;
     maintainers = [ lib.maintainers.vaibhavsagar ];
+    platforms = lib.platforms.unix;
   };
 }

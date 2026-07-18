@@ -1,9 +1,9 @@
 { buildOpenRAEngine, dotnetCorePackages }:
 
 buildOpenRAEngine {
-  build = "release";
   version = "20250330";
-  hash = "sha256-chWkzn/NLZh2gOua9kE0ubRGjGCC0LvtZSWHBgXKqHw=";
+  build = "release";
   deps = ./deps.json;
   dotnet-sdk = dotnetCorePackages.sdk_8_0;
+  hash = "sha256-chWkzn/NLZh2gOua9kE0ubRGjGCC0LvtZSWHBgXKqHw=";
 }

@@ -1,11 +1,11 @@
 {
   lib,
   stdenv,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
+  installShellFiles,
   nix-update-script,
   versionCheckHook,
-  installShellFiles,
 }:
 
 buildGoModule (finalAttrs: {
@@ -19,7 +19,18 @@ buildGoModule (finalAttrs: {
     hash = "sha256-XPcgUDlIbwp278Kc9B0aXxxIX2XnsJpFzxHDaop9cLs=";
   };
 
+  nativeBuildInputs = [ installShellFiles ];
   vendorHash = "sha256-98XZe60gcRWyP0ApUV+qCJ0UoAExx7X0FPtFL0Tr0a4=";
+
+  postInstall = lib.optionalString (stdenv.buildPlatform.canExecute stdenv.hostPlatform) ''
+    installShellCompletion --cmd ${finalAttrs.meta.mainProgram} \
+      --bash <($out/bin/${finalAttrs.meta.mainProgram} completion bash) \
+      --fish <($out/bin/${finalAttrs.meta.mainProgram} completion fish) \
+      --zsh <($out/bin/${finalAttrs.meta.mainProgram} completion zsh)
+  '';
+
+  doInstallCheck = true;
+  nativeInstallCheckInputs = [ versionCheckHook ];
 
   ldflags = [
     "-s"
@@ -30,19 +41,7 @@ buildGoModule (finalAttrs: {
     "-X=main.builtBy=nixpkgs"
   ];
 
-  nativeBuildInputs = [ installShellFiles ];
-
-  nativeInstallCheckInputs = [ versionCheckHook ];
-  doInstallCheck = true;
   versionCheckProgramArg = "--version";
-
-  postInstall = lib.optionalString (stdenv.buildPlatform.canExecute stdenv.hostPlatform) ''
-    installShellCompletion --cmd ${finalAttrs.meta.mainProgram} \
-      --bash <($out/bin/${finalAttrs.meta.mainProgram} completion bash) \
-      --fish <($out/bin/${finalAttrs.meta.mainProgram} completion fish) \
-      --zsh <($out/bin/${finalAttrs.meta.mainProgram} completion zsh)
-  '';
-
   passthru.updateScript = nix-update-script { };
 
   meta = {

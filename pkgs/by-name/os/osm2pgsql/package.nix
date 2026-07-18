@@ -2,25 +2,25 @@
   lib,
   stdenv,
   fetchFromGitHub,
+  boost,
+  bzip2,
+  cli11,
   cmake,
   expat,
   fmt_11,
-  proj,
-  bzip2,
-  cli11,
-  zlib,
-  boost,
+  libosmium,
   libpq,
-  python3,
-  withLuaJIT ? false,
   lua,
   luajit,
-  libosmium,
   nlohmann_json,
   opencv,
   potrace,
+  proj,
   protozero,
+  python3,
   testers,
+  zlib,
+  withLuaJIT ? false,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -80,11 +80,13 @@ stdenv.mkDerivation (finalAttrs: {
     description = "OpenStreetMap data to PostgreSQL converter";
     homepage = "https://osm2pgsql.org";
     license = lib.licenses.gpl2Plus;
-    platforms = lib.platforms.unix;
+
     maintainers = with lib.maintainers; [
       jglukasik
       das-g
     ];
+
+    platforms = lib.platforms.unix;
     teams = [ lib.teams.geospatial ];
   };
 })

@@ -2,9 +2,9 @@
   lib,
   stdenv,
   fetchFromGitHub,
+  exiv2,
   fetchpatch,
   libsForQt5,
-  exiv2,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -20,9 +20,9 @@ stdenv.mkDerivation (finalAttrs: {
 
   patches = [
     (fetchpatch {
+      hash = "sha256-EayJYM4qobUWosxV2Ylj+2eiyhk1jM8OfnFZDbVdGII=";
       name = "exiv2-0.28.patch";
       url = "https://gitlab.archlinux.org/archlinux/packaging/packages/phototonic/-/raw/fcfa17307ad8988750cc09200188c9365c2c0b79/exiv2-0.28.patch";
-      hash = "sha256-EayJYM4qobUWosxV2Ylj+2eiyhk1jM8OfnFZDbVdGII=";
     })
   ];
 
@@ -30,6 +30,7 @@ stdenv.mkDerivation (finalAttrs: {
     libsForQt5.qmake
     libsForQt5.wrapQtAppsHook
   ];
+
   buildInputs = [
     libsForQt5.qtbase
     exiv2
@@ -41,10 +42,10 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Image viewer and organizer";
-    mainProgram = "phototonic";
     homepage = "https://github.com/oferkv/phototonic";
     license = lib.licenses.gpl3Plus;
     maintainers = with lib.maintainers; [ pSub ];
     platforms = lib.platforms.linux;
+    mainProgram = "phototonic";
   };
 })

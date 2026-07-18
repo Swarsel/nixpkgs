@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   prompt-toolkit,
   setuptools,
   winacl,
@@ -10,7 +10,6 @@
 buildPythonPackage rec {
   pname = "aiowinreg";
   version = "0.0.13";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "skelsec";
@@ -28,7 +27,7 @@ buildPythonPackage rec {
 
   # Project doesn't have tests
   doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "aiowinreg" ];
 
   meta = {

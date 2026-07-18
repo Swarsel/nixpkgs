@@ -1,38 +1,33 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # build-system
-  flit-core,
-
   # dependencies
   affine,
+  # optional-dependencies
+  botocore,
+  buildPythonPackage,
   dask,
+  distributed,
+  # build-system
+  flit-core,
+  # tests
+  geopandas,
   numpy,
   odc-geo,
   odc-loader,
   pandas,
   pystac,
+  pystac-client,
+  pytestCheckHook,
   rasterio,
   toolz,
   typing-extensions,
   xarray,
-
-  # optional-dependencies
-  botocore,
-
-  # tests
-  geopandas,
-  distributed,
-  pystac-client,
-  pytestCheckHook,
 }:
 
 buildPythonPackage rec {
   pname = "odc-stac";
   version = "0.5.2";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "opendatacube";
@@ -40,6 +35,14 @@ buildPythonPackage rec {
     tag = "v${version}";
     hash = "sha256-OlqUFyysbteZ+Ek48+F4U0YLrTx624974O7DnnUuxag=";
   };
+
+  nativeCheckInputs = [
+    geopandas
+    distributed
+    pystac-client
+    pytestCheckHook
+  ]
+  ++ optional-dependencies.botocore;
 
   build-system = [ flit-core ];
 
@@ -57,18 +60,6 @@ buildPythonPackage rec {
     xarray
   ];
 
-  optional-dependencies = {
-    botocore = [ botocore ];
-  };
-
-  nativeCheckInputs = [
-    geopandas
-    distributed
-    pystac-client
-    pytestCheckHook
-  ]
-  ++ optional-dependencies.botocore;
-
   disabledTestMarks = [ "network" ];
 
   disabledTests = [
@@ -81,6 +72,11 @@ buildPythonPackage rec {
     "test_output_geobox"
   ];
 
+  optional-dependencies = {
+    botocore = [ botocore ];
+  };
+
+  pyproject = true;
   pythonImportsCheck = [ "odc.stac" ];
 
   meta = {

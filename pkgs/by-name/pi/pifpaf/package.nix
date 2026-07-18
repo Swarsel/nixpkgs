@@ -1,19 +1,28 @@
 {
   lib,
-  python3Packages,
-  fetchPypi,
   addBinToPathHook,
+  fetchPypi,
+  python3Packages,
 }:
 
 python3Packages.buildPythonApplication (finalAttrs: {
   pname = "pifpaf";
   version = "3.4.0";
-  pyproject = true;
 
   src = fetchPypi {
     inherit (finalAttrs) pname version;
     hash = "sha256-f9nPb483tuvNk82wDtuB6553z18qY/x0tgz1NbVGUWE=";
   };
+
+  nativeCheckInputs =
+    with python3Packages;
+    [
+      requests
+      testtools
+    ]
+    ++ [
+      addBinToPathHook
+    ];
 
   build-system = with python3Packages; [
     setuptools
@@ -30,23 +39,14 @@ python3Packages.buildPythonApplication (finalAttrs: {
     xattr
   ];
 
-  nativeCheckInputs =
-    with python3Packages;
-    [
-      requests
-      testtools
-    ]
-    ++ [
-      addBinToPathHook
-    ];
-
+  pyproject = true;
   pythonImportsCheck = [ "pifpaf" ];
 
   meta = {
     description = "Suite of tools and fixtures to manage daemons for testing";
-    mainProgram = "pifpaf";
     homepage = "https://github.com/jd/pifpaf";
     license = lib.licenses.asl20;
     maintainers = [ ];
+    mainProgram = "pifpaf";
   };
 })

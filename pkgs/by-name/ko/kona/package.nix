@@ -21,9 +21,9 @@ stdenv.mkDerivation (finalAttrs: {
   meta = {
     description = "Interpreter of K, APL-like programming language";
     homepage = "https://github.com/kevinlawler/kona/";
-    maintainers = with lib.maintainers; [ raskin ];
-    mainProgram = "k";
-    platforms = lib.platforms.all;
     license = lib.licenses.isc;
+    maintainers = with lib.maintainers; [ raskin ];
+    platforms = lib.platforms.all;
+    mainProgram = "k";
   };
 })

@@ -1,18 +1,17 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
   azure-common,
   azure-core,
-  isodate,
+  buildPythonPackage,
   gitUpdater,
+  isodate,
+  setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "azure-search-documents";
   version = "11.5.2";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "Azure";
@@ -21,8 +20,8 @@ buildPythonPackage rec {
     hash = "sha256-RcVdqI50lsYed9L6Kz7faNLec1Y9zq685SGnwaEw6Qc=";
   };
 
-  sourceRoot = "${src.name}/sdk/search/azure-search-documents";
-
+  # require devtools_testutils which is a internal package for azure-sdk
+  doCheck = false;
   build-system = [ setuptools ];
 
   dependencies = [
@@ -31,10 +30,9 @@ buildPythonPackage rec {
     isodate
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "azure.search.documents" ];
-
-  # require devtools_testutils which is a internal package for azure-sdk
-  doCheck = false;
+  sourceRoot = "${src.name}/sdk/search/azure-search-documents";
 
   passthru = {
     # multiple packages in the repo and the updater picks the wrong tag

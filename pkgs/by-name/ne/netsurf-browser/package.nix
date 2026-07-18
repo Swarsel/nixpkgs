@@ -9,26 +9,12 @@
   gperf,
   gtk2,
   gtk3,
-  libxcursor,
-  libxrandr,
-  libidn,
-  libjpeg,
-  libjxl,
-  libpng,
-  libwebp,
-  libxml2,
-  makeWrapper,
-  openssl,
-  perlPackages,
-  pkg-config,
-  wrapGAppsHook3,
-  xxd,
-
-  # Netsurf-specific dependencies
-  netsurf-buildsystem,
   libcss,
   libdom,
   libhubbub,
+  libidn,
+  libjpeg,
+  libjxl,
   libnsbmp,
   libnsfb,
   libnsgif,
@@ -36,11 +22,23 @@
   libnspsl,
   libnsutils,
   libparserutils,
+  libpng,
   libsvgtiny,
   libutf8proc,
   libwapcaplet,
+  libwebp,
+  libxcursor,
+  libxml2,
+  libxrandr,
+  makeWrapper,
+  # Netsurf-specific dependencies
+  netsurf-buildsystem,
   nsgenbind,
-
+  openssl,
+  perlPackages,
+  pkg-config,
+  wrapGAppsHook3,
+  xxd,
   # Configuration
   uilib ? "gtk3",
 }:
@@ -109,20 +107,28 @@ stdenv.mkDerivation (finalAttrs: {
   ++ lib.optional (uilib == "gtk2") gtk2
   ++ lib.optional (uilib == "gtk3") gtk3;
 
+  makeFlags = [
+    "PREFIX=${placeholder "out"}"
+    "TARGET=${uilib}"
+  ];
+
+  env.CFLAGS = lib.optionalString stdenv.hostPlatform.isDarwin "-D_DARWIN_C_SOURCE";
   # Since at least 2018 AD, GCC and other compilers run in `-fno-common` mode as
   # default, in order to comply with C standards and also get rid of some bad
   # quality code. Because of this, many codebases that weren't updated need to
   # be patched -- or the `-fcommon` flag should be explicitly passed to the
   # compiler
-
   # https://gcc.gnu.org/bugzilla/show_bug.cgi?id=85678
   # https://github.com/NixOS/nixpkgs/issues/54506
-
   env.NIX_CFLAGS_COMPILE = "-fcommon";
-
-  env.CFLAGS = lib.optionalString stdenv.hostPlatform.isDarwin "-D_DARWIN_C_SOURCE";
-
   env.NIX_LDFLAGS = lib.optionalString stdenv.hostPlatform.isDarwin "-liconv";
+
+  preConfigure = ''
+    cat <<EOF > Makefile.config
+    override NETSURF_GTK_RES_PATH  := $out/share/
+    override NETSURF_USE_GRESOURCE := YES
+    EOF
+  '';
 
   patchPhase = lib.optionalString stdenv.cc.isClang ''
     runHook prePatch
@@ -134,29 +140,19 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postPatch
   '';
 
-  preConfigure = ''
-    cat <<EOF > Makefile.config
-    override NETSURF_GTK_RES_PATH  := $out/share/
-    override NETSURF_USE_GRESOURCE := YES
-    EOF
-  '';
-
-  makeFlags = [
-    "PREFIX=${placeholder "out"}"
-    "TARGET=${uilib}"
-  ];
-
   meta = {
-    homepage = "https://www.netsurf-browser.org/";
+    inherit (netsurf-buildsystem.meta) maintainers platforms;
     description = "Free, open source, small web browser";
-    mainProgram = "netsurf-gtk3";
+
     longDescription = ''
       NetSurf is a free, open source web browser. It is written in C and
       released under the GNU Public Licence version 2. NetSurf has its own
       layout and rendering engine entirely written from scratch. It is small and
       capable of handling many of the web standards in use today.
     '';
+
+    homepage = "https://www.netsurf-browser.org/";
     license = lib.licenses.gpl2Only;
-    inherit (netsurf-buildsystem.meta) maintainers platforms;
+    mainProgram = "netsurf-gtk3";
   };
 })

@@ -1,15 +1,13 @@
 {
   lib,
   fetchurl,
-  buildDunePackage,
   alcotest,
+  buildDunePackage,
 }:
 
 buildDunePackage (finalAttrs: {
   pname = "cachet";
   version = "0.0.2";
-
-  minimalOCamlVersion = "4.13";
 
   src = fetchurl {
     url = "https://github.com/robur-coop/cachet/releases/download/v${finalAttrs.version}/cachet-${finalAttrs.version}.tbz";
@@ -17,9 +15,12 @@ buildDunePackage (finalAttrs: {
   };
 
   doCheck = true;
+
   checkInputs = [
     alcotest
   ];
+
+  minimalOCamlVersion = "4.13";
 
   meta = {
     description = "A simple cache system for mmap";

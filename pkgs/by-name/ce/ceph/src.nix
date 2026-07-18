@@ -1,7 +1,7 @@
 {
+  fetchurl,
   applyPatches,
   fetchpatch2,
-  fetchurl,
 }:
 
 applyPatches (final: {
@@ -17,11 +17,11 @@ applyPatches (final: {
     # required to be able to compile s3select against nixpkgs' arrow-cpp
     # See: https://github.com/ceph/s3select/pull/169
     (fetchpatch2 {
-      name = "ceph-s3select-arrow-cpp-20.patch";
-      url = "https://github.com/ceph/s3select/pull/169.diff?full_index=1";
       extraPrefix = "src/s3select/";
-      stripLen = 1;
       hash = "sha256-0jn5X4jIdluCufFXWHeO6skMz6XQpliHkC1tPLK6dbk=";
+      name = "ceph-s3select-arrow-cpp-20.patch";
+      stripLen = 1;
+      url = "https://github.com/ceph/s3select/pull/169.diff?full_index=1";
     })
     # fixes issues when python3 is not on the PATH
     # See: https://github.com/ceph/ceph/pull/67904

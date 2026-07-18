@@ -1,8 +1,8 @@
 {
   lib,
   stdenv,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   installShellFiles,
   testers,
 }:
@@ -17,15 +17,13 @@ buildGoModule (finalAttrs: {
     hash = "sha256-HysL71PTCjWxgrqF8Ua7fUtzpxcf/XEbTlek+CvfUxA=";
   };
 
-  vendorHash = null;
-
   nativeBuildInputs = [ installShellFiles ];
-
-  ldflags = [
-    "-s"
-    "-w"
-    "-X carvel.dev/ytt/pkg/version.Version=${finalAttrs.version}"
-  ];
+  vendorHash = null;
+  # Once `__structuredArgs` is introduced, integrate checks and
+  # set some regexes `checkFlags = [ "-skip=TestDataValues.*" ]`
+  # etc. So far we dont test because passing '*' chars through the Go builder
+  # is flawed.
+  doCheck = false;
 
   postInstall = lib.optionalString (stdenv.buildPlatform.canExecute stdenv.hostPlatform) ''
     installShellCompletion --cmd ytt \
@@ -34,27 +32,29 @@ buildGoModule (finalAttrs: {
       --zsh <($out/bin/ytt completion zsh)
   '';
 
-  # Once `__structuredArgs` is introduced, integrate checks and
-  # set some regexes `checkFlags = [ "-skip=TestDataValues.*" ]`
-  # etc. So far we dont test because passing '*' chars through the Go builder
-  # is flawed.
-  doCheck = false;
+  ldflags = [
+    "-s"
+    "-w"
+    "-X carvel.dev/ytt/pkg/version.Version=${finalAttrs.version}"
+  ];
 
   passthru.tests.version = testers.testVersion {
-    package = finalAttrs.finalPackage;
-    command = "${finalAttrs.meta.mainProgram} --version";
     inherit (finalAttrs) version;
+    command = "${finalAttrs.meta.mainProgram} --version";
+    package = finalAttrs.finalPackage;
   };
 
   meta = {
     description = "YAML templating tool that allows configuration of complex software via reusable templates with user-provided values";
-    mainProgram = "ytt";
     homepage = "https://get-ytt.io";
     license = lib.licenses.asl20;
+
     maintainers = with lib.maintainers; [
       brodes
       techknowlogick
       gabyx
     ];
+
+    mainProgram = "ytt";
   };
 })

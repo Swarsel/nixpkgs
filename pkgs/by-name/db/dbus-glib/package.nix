@@ -3,12 +3,12 @@
   stdenv,
   fetchurl,
   buildPackages,
-  pkg-config,
+  dbus,
   expat,
   gettext,
-  libiconv,
-  dbus,
   glib,
+  libiconv,
+  pkg-config,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -25,7 +25,6 @@ stdenv.mkDerivation (finalAttrs: {
     "dev"
     "devdoc"
   ];
-  outputBin = "dev";
 
   nativeBuildInputs = [
     pkg-config
@@ -51,18 +50,20 @@ stdenv.mkDerivation (finalAttrs: {
   ) "--with-dbus-binding-tool=${buildPackages.dbus-glib.dev}/bin/dbus-binding-tool";
 
   doCheck = false;
-
+  outputBin = "dev";
   passthru = { inherit dbus glib; };
 
   meta = {
+    description = "Obsolete glib bindings for D-Bus lightweight IPC mechanism";
     homepage = "https://dbus.freedesktop.org";
+
     license = with lib.licenses; [
       afl21
       gpl2Plus
     ];
-    description = "Obsolete glib bindings for D-Bus lightweight IPC mechanism";
-    mainProgram = "dbus-binding-tool";
+
     maintainers = [ ];
     platforms = lib.platforms.unix;
+    mainProgram = "dbus-binding-tool";
   };
 })

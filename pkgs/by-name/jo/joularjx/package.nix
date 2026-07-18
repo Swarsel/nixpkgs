@@ -1,9 +1,9 @@
 {
-  fetchFromGitHub,
-  maven,
-  makeWrapper,
-  jre,
   lib,
+  fetchFromGitHub,
+  jre,
+  makeWrapper,
+  maven,
 }:
 
 maven.buildMavenPackage rec {
@@ -17,10 +17,6 @@ maven.buildMavenPackage rec {
     hash = "sha256-hr8a3Qr1LdFfGBLVJVkm6hhCW7knG4VpXj7nCtcptuU=";
   };
 
-  mvnHash = "sha256-XXqpajmHCjDxMZvYnW7EiCsPIuWF8tsE7RmI/gt3iZQ=";
-
-  mvnParameters = "-DskipTests -Dmaven.javadoc.skip=true";
-
   nativeBuildInputs = [ makeWrapper ];
 
   installPhase = ''
@@ -31,6 +27,9 @@ maven.buildMavenPackage rec {
       --add-flags "-javaagent:$out/share/joularjx.jar"
     runHook postInstall
   '';
+
+  mvnHash = "sha256-XXqpajmHCjDxMZvYnW7EiCsPIuWF8tsE7RmI/gt3iZQ=";
+  mvnParameters = "-DskipTests -Dmaven.javadoc.skip=true";
 
   meta = {
     description = "Java-based agent for software power monitoring at the source code level";

@@ -2,15 +2,15 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  makeWrapper,
-  cdparanoia,
   cddiscid,
+  cdparanoia,
+  makeWrapper,
   ruby,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
-  version = "0.8.0rc3";
   pname = "rubyripper";
+  version = "0.8.0rc3";
 
   src = fetchFromGitHub {
     owner = "bleskodev";
@@ -19,10 +19,6 @@ stdenv.mkDerivation (finalAttrs: {
     sha256 = "1qfwv8bgc9pyfh3d40bvyr9n7sjc2na61481693wwww640lm0f9f";
   };
 
-  preConfigure = "patchShebangs .";
-
-  configureFlags = [ "--enable-cli" ];
-
   nativeBuildInputs = [ makeWrapper ];
 
   buildInputs = [
@@ -30,6 +26,9 @@ stdenv.mkDerivation (finalAttrs: {
     cdparanoia
     ruby
   ];
+
+  configureFlags = [ "--enable-cli" ];
+  preConfigure = "patchShebangs .";
 
   postInstall = ''
     cp -r share $out/
@@ -48,9 +47,9 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "High quality CD audio ripper";
-    mainProgram = "rrip_cli";
-    platforms = lib.platforms.linux;
-    license = lib.licenses.gpl3Plus;
     homepage = "https://github.com/bleskodev/rubyripper";
+    license = lib.licenses.gpl3Plus;
+    platforms = lib.platforms.linux;
+    mainProgram = "rrip_cli";
   };
 })

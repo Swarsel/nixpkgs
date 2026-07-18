@@ -1,10 +1,10 @@
 {
   lib,
-  pkg-config,
+  fetchFromGitHub,
   cmake,
   libnotify,
+  pkg-config,
   rustPlatform,
-  fetchFromGitHub,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -18,14 +18,13 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-pq+i4NGl7yv+vmMoYVT9JRvOsuV7nBqXpsebgMcNEY0=";
   };
 
-  cargoHash = "sha256-ZVzIoq+s2Xw996NoQMIGHUqo2uXJMu9lXfY5Us9NMPg=";
-
   nativeBuildInputs = [
     pkg-config
     cmake
   ];
 
   buildInputs = [ libnotify ];
+  cargoHash = "sha256-ZVzIoq+s2Xw996NoQMIGHUqo2uXJMu9lXfY5Us9NMPg=";
 
   meta = {
     description = "Small program to send battery notifications";

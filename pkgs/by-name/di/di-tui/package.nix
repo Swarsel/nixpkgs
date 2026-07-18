@@ -1,8 +1,8 @@
 {
   lib,
-  nix-update-script,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
+  nix-update-script,
 }:
 buildGoModule (finalAttrs: {
   pname = "di-tui";
@@ -16,7 +16,6 @@ buildGoModule (finalAttrs: {
   };
 
   vendorHash = "sha256-b7dG0nSjPQpjWUbOlIxWudPZWKqtq96sQaJxKvsQT9I=";
-
   passthru.updateScript = nix-update-script { };
 
   meta = {

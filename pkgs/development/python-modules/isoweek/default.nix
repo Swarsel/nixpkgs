@@ -1,7 +1,7 @@
 {
   lib,
-  fetchPypi,
   buildPythonPackage,
+  fetchPypi,
   setuptools,
   unittestCheckHook,
 }:
@@ -9,17 +9,15 @@
 buildPythonPackage rec {
   pname = "isoweek";
   version = "1.3.3";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
     hash = "sha256-c/P3usRD4Fo6tFwypyBIsMTybVPYFGLsSxQsdYHT/+g=";
   };
 
-  build-system = [ setuptools ];
-
   nativeCheckInputs = [ unittestCheckHook ];
-
+  build-system = [ setuptools ];
+  pyproject = true;
   pythonImportsCheck = [ "isoweek" ];
 
   meta = {

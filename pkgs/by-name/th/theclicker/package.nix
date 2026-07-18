@@ -17,16 +17,15 @@ rustPlatform.buildRustPackage (finalAttrs: {
   };
 
   cargoHash = "sha256-YdeAG6+p/8MzvqEAyfzGktmnxw7hGvV/gGFg6uMwD5A=";
-
-  nativeInstallCheckInputs = [ versionCheckHook ];
   doInstallCheck = true;
+  nativeInstallCheckInputs = [ versionCheckHook ];
 
   meta = {
-    homepage = "https://github.com/konkitoman/autoclicker";
     description = "A simple autoclicker cli that works on (x11/wayland)";
-    maintainers = [ lib.maintainers.SchweGELBin ];
-    mainProgram = "theclicker";
+    homepage = "https://github.com/konkitoman/autoclicker";
     license = lib.licenses.mit;
+    maintainers = [ lib.maintainers.SchweGELBin ];
     platforms = lib.platforms.linux;
+    mainProgram = "theclicker";
   };
 })

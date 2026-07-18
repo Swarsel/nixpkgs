@@ -2,14 +2,13 @@
   lib,
   fetchFromGitHub,
   buildPythonPackage,
-  setuptools,
   requests,
+  setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "inwx-domrobot";
   version = "3.2.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "inwx";
@@ -18,13 +17,11 @@ buildPythonPackage rec {
     hash = "sha256-Nbs3xroJD61NbpaiTdjA3VFxzXIlnqmB1d7SJDj8VN8=";
   };
 
-  build-system = [ setuptools ];
-
-  dependencies = [ requests ];
-
   # No tests
   doCheck = false;
-
+  build-system = [ setuptools ];
+  dependencies = [ requests ];
+  pyproject = true;
   pythonImportsCheck = [ "INWX" ];
 
   meta = {

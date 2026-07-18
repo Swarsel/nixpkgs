@@ -30,11 +30,11 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Simple screen testing tool";
-    mainProgram = "screentest";
     homepage = "https://github.com/TobiX/screentest";
     changelog = "https://github.com/TobiX/screentest/blob/${finalAttrs.version}/CHANGELOG.md";
     license = lib.licenses.gpl2Only;
     maintainers = [ ];
     platforms = lib.platforms.unix;
+    mainProgram = "screentest";
   };
 })

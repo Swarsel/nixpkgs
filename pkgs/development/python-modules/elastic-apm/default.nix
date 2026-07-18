@@ -1,12 +1,12 @@
 {
   lib,
   stdenv,
+  fetchFromGitHub,
   aiohttp,
   blinker,
   buildPythonPackage,
   certifi,
   ecs-logging,
-  fetchFromGitHub,
   fetchpatch,
   httpx,
   jinja2,
@@ -33,7 +33,6 @@
 buildPythonPackage rec {
   pname = "elastic-apm";
   version = "6.25.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "elastic";
@@ -41,19 +40,6 @@ buildPythonPackage rec {
     tag = "v${version}";
     hash = "sha256-0RNZqQqXVI7CkzcKE0qA+iOBkjkH0s7Tre/a38LPW7c=";
   };
-
-  build-system = [ setuptools ];
-
-  dependencies = [
-    aiohttp
-    blinker
-    certifi
-    sanic
-    starlette
-    tornado
-    urllib3
-    wrapt
-  ];
 
   nativeCheckInputs = [
     ecs-logging
@@ -73,9 +59,17 @@ buildPythonPackage rec {
     webob
   ];
 
-  disabledTests = [
-    "elasticapm_client"
-    "test_get_name_from_func_partialmethod_unbound"
+  build-system = [ setuptools ];
+
+  dependencies = [
+    aiohttp
+    blinker
+    certifi
+    sanic
+    starlette
+    tornado
+    urllib3
+    wrapt
   ];
 
   disabledTestPaths = [
@@ -89,6 +83,12 @@ buildPythonPackage rec {
     "tests/utils/threading_tests.py"
   ];
 
+  disabledTests = [
+    "elasticapm_client"
+    "test_get_name_from_func_partialmethod_unbound"
+  ];
+
+  pyproject = true;
   pythonImportsCheck = [ "elasticapm" ];
 
   meta = {

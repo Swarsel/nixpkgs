@@ -1,13 +1,12 @@
 {
   lib,
-  python3,
   fetchFromGitHub,
+  python3,
 }:
 
 python3.pkgs.buildPythonApplication (finalAttrs: {
   pname = "shot-scraper";
   version = "1.9.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "simonw";
@@ -21,6 +20,8 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
       --replace-fail "uv_build>=0.9.18,<0.10.0" "uv_build"
   '';
 
+  # skip tests due to network access
+  doCheck = false;
   build-system = with python3.pkgs; [ uv-build ];
 
   dependencies = with python3.pkgs; [
@@ -30,9 +31,7 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     pyyaml
   ];
 
-  # skip tests due to network access
-  doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "shot_scraper" ];
 
   meta = {

@@ -30,7 +30,7 @@ stdenv.mkDerivation (finalAttrs: {
     homepage = "https://github.com/martin-olivier/dylib";
     changelog = "https://github.com/martin-olivier/dylib/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.mit;
-    platforms = lib.platforms.unix ++ lib.platforms.windows;
     maintainers = with lib.maintainers; [ ZZBaron ];
+    platforms = lib.platforms.unix ++ lib.platforms.windows;
   };
 })

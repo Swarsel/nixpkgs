@@ -1,21 +1,18 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  nix-update-script,
-
+  buildPythonPackage,
   # build-system
   hatchling,
-
+  langchain-mongodb,
   # dependencies
   langgraph-checkpoint,
-  langchain-mongodb,
+  nix-update-script,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "langgraph-store-mongodb";
   version = "0.3.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "langchain-ai";
@@ -24,7 +21,9 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-uivrfCTUu7Pq/ncAGH6HUzgyOGRcOzsQ+SVN6wW33tQ=";
   };
 
-  sourceRoot = "${finalAttrs.src.name}/libs/langgraph-store-mongodb";
+  # Connection Refused (to mongodb://localhost:27017)
+  # Note that `langchain-mongodb` runs the same tests with mocks.
+  doCheck = false;
 
   build-system = [
     hatchling
@@ -35,15 +34,14 @@ buildPythonPackage (finalAttrs: {
     langchain-mongodb
   ];
 
-  # Connection Refused (to mongodb://localhost:27017)
-  # Note that `langchain-mongodb` runs the same tests with mocks.
-  doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "langgraph.store.mongodb" ];
+  sourceRoot = "${finalAttrs.src.name}/libs/langgraph-store-mongodb";
 
   # updater script selects wrong tag
   passthru = {
     skipBulkUpdate = true;
+
     updateScript = nix-update-script {
       extraArgs = [
         "-vr"

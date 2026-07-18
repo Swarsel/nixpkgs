@@ -2,11 +2,11 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  fetchpatch,
   cmake,
+  fetchpatch,
+  nixosTests,
   qt6,
   xercesc,
-  nixosTests,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -21,17 +21,14 @@ stdenv.mkDerivation (finalAttrs: {
     fetchSubmodules = true;
   };
 
-  strictDeps = true;
-  __structuredAttrs = true;
-
   patches = [
     # Support loading E57 files from CLI arguments,
     # so we can use that in the NixOS VM test to load a sample file.
     # Remove with next release (see https://github.com/sisakat/e57inspector/pull/8)
     (fetchpatch {
+      hash = "sha256-QRUv0CvX+OdH88CzI/6XjPXnAVIsf6N/Ix/qqCsSaRw=";
       name = "e57inspector-Allow-loading-file-from-CLI.patch";
       url = "https://github.com/nh2/e57inspector/commit/a5a899ee58952ffc2971d18b3734ea405e0020f3.patch";
-      hash = "sha256-QRUv0CvX+OdH88CzI/6XjPXnAVIsf6N/Ix/qqCsSaRw=";
     })
   ];
 
@@ -40,6 +37,8 @@ stdenv.mkDerivation (finalAttrs: {
     substituteInPlace app/cmake/gitversion.cmake \
       --replace-fail "cmake_minimum_required(VERSION 3.0.0)" "cmake_minimum_required(VERSION 3.5)"
   '';
+
+  strictDeps = true;
 
   nativeBuildInputs = [
     cmake
@@ -62,18 +61,21 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  __structuredAttrs = true;
   passthru.tests = nixosTests.e57inspector;
 
   meta = {
     description = "Cross-platform E57 file viewer to list and view stored point clouds, images and metadata";
     homepage = "https://github.com/sisakat/e57inspector";
     license = lib.licenses.gpl3Only;
+
     maintainers = with lib.maintainers; [
       nh2
       chpatrick
     ];
-    teams = [ lib.teams.geospatial ];
+
     platforms = lib.platforms.linux;
     mainProgram = "e57inspector";
+    teams = [ lib.teams.geospatial ];
   };
 })

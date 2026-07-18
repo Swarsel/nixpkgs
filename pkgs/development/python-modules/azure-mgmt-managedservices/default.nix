@@ -12,7 +12,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "azure-mgmt-managedservices";
   version = "6.0.0";
-  pyproject = true;
 
   src = fetchPypi {
     inherit (finalAttrs) pname version;
@@ -20,6 +19,8 @@ buildPythonPackage (finalAttrs: {
     extension = "zip";
   };
 
+  # no tests included
+  doCheck = false;
   build-system = [ setuptools ];
 
   dependencies = [
@@ -29,8 +30,7 @@ buildPythonPackage (finalAttrs: {
     msrestazure
   ];
 
-  # no tests included
-  doCheck = false;
+  pyproject = true;
 
   pythonImportsCheck = [
     "azure.common"

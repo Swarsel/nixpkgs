@@ -6,17 +6,17 @@
   error: build of ‘/nix/store/3245f3dcl2wxjs4rci7n069zjlz8qg85-test-results.tap.drv’ failed
 */
 {
-  writeText,
   lib,
   callPackage,
-  testFiles,
   ruby,
+  testFiles,
+  writeText,
 }@defs:
 let
   testTools = rec {
-    test = import ./testing.nix;
-    stubs = import ./stubs.nix defs;
     should = import ./assertions.nix { inherit test lib; };
+    stubs = import ./stubs.nix defs;
+    test = import ./testing.nix;
   };
 
   tap = import ./tap-support.nix;

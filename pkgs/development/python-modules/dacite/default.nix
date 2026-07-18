@@ -10,7 +10,6 @@
 buildPythonPackage rec {
   pname = "dacite";
   version = "1.9.2";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "konradhalas";
@@ -28,13 +27,11 @@ buildPythonPackage rec {
       --replace-fail "typing.Union[int, str]" "int | str"
   '';
 
-  build-system = [ setuptools ];
-
   nativeCheckInputs = [ pytestCheckHook ];
-
-  pythonImportsCheck = [ "dacite" ];
-
+  build-system = [ setuptools ];
   disabledTestPaths = [ "tests/performance" ];
+  pyproject = true;
+  pythonImportsCheck = [ "dacite" ];
 
   meta = {
     description = "Python helper to create data classes from dictionaries";

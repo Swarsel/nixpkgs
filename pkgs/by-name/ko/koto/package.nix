@@ -1,10 +1,10 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
-  yq,
-  versionCheckHook,
   nix-update-script,
+  rustPlatform,
+  versionCheckHook,
+  yq,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -18,8 +18,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-47eDSohLH/cMmMwjUENNeT5danpgMKLPEMzEUACrpiY=";
   };
 
-  cargoHash = "sha256-mQxPwU/f7/AastJmGBZOAxGKaZBWTQUkb2KIuC6MSfE=";
-
   postPatch = ''
     tomlq -ti 'del(.bench)' crates/koto/Cargo.toml
   '';
@@ -28,11 +26,10 @@ rustPlatform.buildRustPackage (finalAttrs: {
     yq # for `tomlq`
   ];
 
-  cargoBuildFlags = [ "--package=koto_cli" ];
-
-  nativeInstallCheckInputs = [ versionCheckHook ];
+  cargoHash = "sha256-mQxPwU/f7/AastJmGBZOAxGKaZBWTQUkb2KIuC6MSfE=";
   doInstallCheck = true;
-
+  nativeInstallCheckInputs = [ versionCheckHook ];
+  cargoBuildFlags = [ "--package=koto_cli" ];
   passthru.updateScript = nix-update-script { };
 
   meta = {

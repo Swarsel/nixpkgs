@@ -1,14 +1,15 @@
 {
+  lib,
+  stdenv,
+  fetchFromGitHub,
   alsa-lib,
   avahi,
   boost,
   curl,
-  fetchFromGitHub,
   fftwFloat,
   freetype,
   glib,
   glibmm,
-  lib,
   libsndfile,
   libx11,
   libxcursor,
@@ -18,15 +19,11 @@
   lilv,
   ncurses,
   pkg-config,
-  stdenv,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
   pname = "guitarix-vst";
   version = "0.5";
-
-  __structuredAttrs = true;
-  strictDeps = true;
 
   src = fetchFromGitHub {
     owner = "brummer10";
@@ -40,6 +37,8 @@ stdenv.mkDerivation (finalAttrs: {
     substituteInPlace Builds/LinuxMakefile/Makefile \
       --replace-fail '$(shell arch)' '${stdenv.hostPlatform.uname.processor}'
   '';
+
+  strictDeps = true;
 
   nativeBuildInputs = [
     pkg-config
@@ -64,6 +63,7 @@ stdenv.mkDerivation (finalAttrs: {
     libsndfile
   ];
 
+  __structuredAttrs = true;
   installFlags = [ "JUCE_VST3DESTDIR=${placeholder "out"}/lib/vst3" ];
 
   meta = {

@@ -1,26 +1,26 @@
 {
   lib,
   stdenv,
-  fetchgit,
+  autoreconfHook,
   curl,
+  fetchgit,
+  gettext,
   gnunet,
   jansson,
+  jq,
   libgcrypt,
   libmicrohttpd,
-  libsodium,
-  libunistring,
-  pkg-config,
   libpq,
-  autoreconfHook,
+  libsodium,
+  libtool,
+  libunistring,
+  nixosTests,
+  pkg-config,
   python3,
   recutils,
-  wget,
-  jq,
-  uncrustify,
-  gettext,
   texinfo,
-  libtool,
-  nixosTests,
+  uncrustify,
+  wget,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -30,8 +30,8 @@ stdenv.mkDerivation (finalAttrs: {
   src = fetchgit {
     url = "https://git-www.taler.net/exchange.git";
     tag = "v${finalAttrs.version}";
-    fetchSubmodules = true;
     hash = "sha256-FePuJUEa01E2jlAOdHryzkFwXqNcU+AkMKs1pamNJn8=";
+    fetchSubmodules = true;
   };
 
   patches = [ ./0001-add-TALER_TEMPLATING_init_path.patch ];
@@ -41,6 +41,8 @@ stdenv.mkDerivation (finalAttrs: {
       --replace-fail "existence git" "true" \
       --replace-fail "uncrustify.cfg" "contrib/uncrustify.cfg"
   '';
+
+  strictDeps = true;
 
   nativeBuildInputs = [
     autoreconfHook
@@ -65,9 +67,20 @@ stdenv.mkDerivation (finalAttrs: {
     libunistring
   ];
 
-  strictDeps = true;
-
   propagatedBuildInputs = [ gnunet ];
+
+  configureFlags = [
+    "ac_cv_path__libcurl_config=${lib.getDev curl}/bin/curl-config"
+  ];
+
+  nativeCheckInputs = [
+    wget
+    curl
+  ];
+
+  doInstallCheck = true;
+  checkTarget = "check";
+  enableParallelBuilding = true;
 
   # From ./bootstrap
   preAutoreconf = ''
@@ -103,25 +116,11 @@ stdenv.mkDerivation (finalAttrs: {
     popd
   '';
 
-  configureFlags = [
-    "ac_cv_path__libcurl_config=${lib.getDev curl}/bin/curl-config"
-  ];
-
-  enableParallelBuilding = true;
-
-  doInstallCheck = true;
-
-  nativeCheckInputs = [
-    wget
-    curl
-  ];
-
-  checkTarget = "check";
-
   passthru.tests = nixosTests.taler.basic;
 
   meta = {
     description = "Exchange component for the GNU Taler electronic payment system";
+
     longDescription = ''
       Taler is an electronic payment system providing the ability to pay
       anonymously using digital cash.  Taler consists of a network protocol
@@ -132,11 +131,12 @@ stdenv.mkDerivation (finalAttrs: {
       Taler includes code examples to help Merchants integrate Taler as a
       payment system.
     '';
+
     homepage = "https://taler.net/";
     changelog = "https://git-www.taler.net/exchange.git/tree/ChangeLog?h=v${finalAttrs.version}";
     license = lib.licenses.agpl3Plus;
     maintainers = with lib.maintainers; [ astro ];
-    teams = with lib.teams; [ ngi ];
     platforms = lib.platforms.linux;
+    teams = with lib.teams; [ ngi ];
   };
 })

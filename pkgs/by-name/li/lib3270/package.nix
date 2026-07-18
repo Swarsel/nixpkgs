@@ -1,8 +1,8 @@
 {
   lib,
   stdenv,
-  curl,
   fetchFromGitHub,
+  curl,
   gettext,
   meson,
   ninja,

@@ -13,7 +13,8 @@ let
     let
       # Can't do types.either with multiple non-overlapping submodules, so define our own
       singleLdapValueType = lib.mkOptionType {
-        name = "LDAP";
+        check = x: lib.isString x || (lib.isAttrs x && (x ? path || x ? base64));
+
         # TODO: It would be nice to define a { secret = ...; } option, using
         # systemd's LoadCredentials for secrets. That would remove the last
         # barrier to using DynamicUser for openldap. This is blocked on
@@ -23,8 +24,9 @@ let
           `path` or `base64` for included
           values or base-64 encoded values respectively.
         '';
-        check = x: lib.isString x || (lib.isAttrs x && (x ? path || x ? base64));
+
         merge = lib.mergeEqualOption;
+        name = "LDAP";
       };
     in
     # We don't coerce to lists of single values, as some values must be unique
@@ -34,20 +36,15 @@ let
     let
       options = {
         attrs = lib.mkOption {
-          type = lib.types.attrsOf ldapValueType;
           default = { };
           description = "Attributes of the parent entry.";
+          type = lib.types.attrsOf ldapValueType;
         };
+
         children = lib.mkOption {
-          # Hide the child attributes, to avoid infinite recursion in e.g. documentation
-          # Actual Nix evaluation is lazy, so this is not an issue there
-          type =
-            let
-              hiddenOptions = lib.mapAttrs (name: attr: attr // { visible = false; }) options;
-            in
-            lib.types.attrsOf (lib.types.submodule { options = hiddenOptions; });
           default = { };
           description = "Child entries of the current entry, with recursively the same structure.";
+
           example = lib.literalExpression ''
             {
                 "cn=schema" = {
@@ -62,13 +59,24 @@ let
                 };
             }
           '';
+
+          # Hide the child attributes, to avoid infinite recursion in e.g. documentation
+          # Actual Nix evaluation is lazy, so this is not an issue there
+          type =
+            let
+              hiddenOptions = lib.mapAttrs (name: attr: attr // { visible = false; }) options;
+            in
+            lib.types.attrsOf (lib.types.submodule { options = hiddenOptions; });
         };
+
         includes = lib.mkOption {
-          type = lib.types.listOf lib.types.path;
           default = [ ];
+
           description = ''
             LDIF files to include after the parent's attributes but before its children.
           '';
+
+          type = lib.types.listOf lib.types.path;
         };
       };
     in
@@ -108,9 +116,9 @@ in
   options = {
     services.openldap = {
       enable = lib.mkOption {
-        type = lib.types.bool;
         default = false;
         description = "Whether to enable the ldap server.";
+        type = lib.types.bool;
       };
 
       package = lib.mkPackageOption pkgs "openldap" {
@@ -121,28 +129,78 @@ in
         '';
       };
 
-      user = lib.mkOption {
-        type = lib.types.str;
-        default = "openldap";
-        description = "User account under which slapd runs.";
+      # This option overrides settings
+      configDir = lib.mkOption {
+        default = null;
+
+        description = ''
+          Use this config directory instead of generating one from the
+          `settings` option. Overrides all NixOS settings.
+        '';
+
+        example = "/var/lib/openldap/slapd.d";
+        type = lib.types.nullOr lib.types.path;
+      };
+
+      declarativeContents = lib.mkOption {
+        default = { };
+
+        description = ''
+          Declarative contents for the LDAP database, in LDIF format by suffix.
+
+          All data will be erased when starting the LDAP server. Modifications
+          to the database are not prevented, they are just dropped on the next
+          reboot of the server. Performance-wise the database and indexes are
+          rebuilt on each server startup, so this will slow down server startup,
+          especially with large databases.
+
+          Note that the root of the DB must be defined in
+          `services.openldap.settings` and the
+          `olcDbDirectory` must begin with
+          `"/var/lib/openldap"`.
+        '';
+
+        example = lib.literalExpression ''
+          {
+            "dc=example,dc=org" = '''
+              dn= dn: dc=example,dc=org
+              objectClass: domain
+              dc: example
+
+              dn: ou=users,dc=example,dc=org
+              objectClass = organizationalUnit
+              ou: users
+
+              # ...
+            ''';
+          }
+        '';
+
+        type = with lib.types; attrsOf lines;
       };
 
       group = lib.mkOption {
-        type = lib.types.str;
         default = "openldap";
         description = "Group account under which slapd runs.";
+        type = lib.types.str;
       };
 
-      urlList = lib.mkOption {
-        type = lib.types.listOf lib.types.str;
-        default = [ "ldap:///" ];
-        description = "URL list slapd should listen on.";
-        example = [ "ldaps:///" ];
+      mutableConfig = lib.mkOption {
+        default = false;
+
+        description = ''
+          Whether to allow writable on-line configuration. If
+          `true`, the NixOS settings will only be used to
+          initialize the OpenLDAP configuration if it does not exist, and are
+          subsequently ignored.
+        '';
+
+        type = lib.types.bool;
       };
 
       settings = lib.mkOption {
-        type = ldapAttrsType;
         description = "Configuration for OpenLDAP, in OLC format";
+
         example = lib.literalExpression ''
           {
             attrs.olcLogLevel = [ "stats" ];
@@ -184,67 +242,24 @@ in
             };
           };
         '';
+
+        type = ldapAttrsType;
       };
 
-      # This option overrides settings
-      configDir = lib.mkOption {
-        type = lib.types.nullOr lib.types.path;
-        default = null;
-        description = ''
-          Use this config directory instead of generating one from the
-          `settings` option. Overrides all NixOS settings.
-        '';
-        example = "/var/lib/openldap/slapd.d";
+      urlList = lib.mkOption {
+        default = [ "ldap:///" ];
+        description = "URL list slapd should listen on.";
+        example = [ "ldaps:///" ];
+        type = lib.types.listOf lib.types.str;
       };
 
-      mutableConfig = lib.mkOption {
-        type = lib.types.bool;
-        default = false;
-        description = ''
-          Whether to allow writable on-line configuration. If
-          `true`, the NixOS settings will only be used to
-          initialize the OpenLDAP configuration if it does not exist, and are
-          subsequently ignored.
-        '';
-      };
-
-      declarativeContents = lib.mkOption {
-        type = with lib.types; attrsOf lines;
-        default = { };
-        description = ''
-          Declarative contents for the LDAP database, in LDIF format by suffix.
-
-          All data will be erased when starting the LDAP server. Modifications
-          to the database are not prevented, they are just dropped on the next
-          reboot of the server. Performance-wise the database and indexes are
-          rebuilt on each server startup, so this will slow down server startup,
-          especially with large databases.
-
-          Note that the root of the DB must be defined in
-          `services.openldap.settings` and the
-          `olcDbDirectory` must begin with
-          `"/var/lib/openldap"`.
-        '';
-        example = lib.literalExpression ''
-          {
-            "dc=example,dc=org" = '''
-              dn= dn: dc=example,dc=org
-              objectClass: domain
-              dc: example
-
-              dn: ou=users,dc=example,dc=org
-              objectClass = organizationalUnit
-              ou: users
-
-              # ...
-            ''';
-          }
-        '';
+      user = lib.mkOption {
+        default = "openldap";
+        description = "User account under which slapd runs.";
+        type = lib.types.str;
       };
     };
   };
-
-  meta.maintainers = with lib.maintainers; [ kwohlfahrt ];
 
   config =
     let
@@ -281,6 +296,7 @@ in
       assertions = [
         {
           assertion = (cfg.declarativeContents != { }) -> cfg.configDir == null;
+
           message = ''
             Declarative DB contents (${lib.attrNames cfg.declarativeContents}) are not
             supported with user-managed configuration.
@@ -289,6 +305,7 @@ in
       ]
       ++ (map (dn: {
         assertion = (lib.getAttr dn dbSettings) ? "olcDbDirectory";
+
         # olcDbDirectory is necessary to prepopulate database using `slapadd`.
         message = ''
           Declarative DB ${dn} does not exist in `services.openldap.settings`, or does not have
@@ -309,20 +326,23 @@ in
             -> (
               (lib.hasPrefix "/var/lib/openldap/" olcDbDirectory) && (olcDbDirectory != "/var/lib/openldap/")
             );
+
           message = ''
             Database ${dn} has `olcDbDirectory` (${olcDbDirectory}) that is not a subdirectory of
             `/var/lib/openldap/`.
           '';
         }
       ) dbSettings);
+
       environment.systemPackages = [ openldap ];
 
       # Literal attributes must always be set
       services.openldap.settings = {
         attrs = {
-          objectClass = "olcGlobal";
           cn = "config";
+          objectClass = "olcGlobal";
         };
+
         children."cn=schema".attrs = {
           cn = "schema";
           objectClass = "olcSchemaConfig";
@@ -330,18 +350,29 @@ in
       };
 
       systemd.services.openldap = {
+        after = [ "network-online.target" ];
         description = "OpenLDAP Server Daemon";
+
         documentation = [
           "man:slapd"
           "man:slapd-config"
           "man:slapd-mdb"
         ];
-        wantedBy = [ "multi-user.target" ];
-        wants = [ "network-online.target" ];
-        after = [ "network-online.target" ];
+
         serviceConfig = {
-          User = cfg.user;
-          Group = cfg.group;
+          AmbientCapabilities = [ "CAP_NET_BIND_SERVICE" ];
+          CapabilityBoundingSet = [ "CAP_NET_BIND_SERVICE" ];
+
+          ExecStart = lib.escapeShellArgs [
+            "${openldap}/libexec/slapd"
+            "-d"
+            "0"
+            "-F"
+            configDir
+            "-h"
+            (lib.concatStringsSep " " cfg.urlList)
+          ];
+
           ExecStartPre = [
             "!${pkgs.coreutils}/bin/mkdir -p ${configDir}"
             "+${pkgs.coreutils}/bin/chown $USER ${configDir}"
@@ -357,31 +388,32 @@ in
             ]
           ) contentsFiles)
           ++ [ "${openldap}/bin/slaptest -u -F ${configDir}" ];
-          ExecStart = lib.escapeShellArgs [
-            "${openldap}/libexec/slapd"
-            "-d"
-            "0"
-            "-F"
-            configDir
-            "-h"
-            (lib.concatStringsSep " " cfg.urlList)
-          ];
-          Type = "notify";
+
+          Group = cfg.group;
           # Fixes an error where openldap attempts to notify from a thread
           # outside the main process:
           #   Got notification message from PID 6378, but reception only permitted for main PID 6377
           NotifyAccess = "all";
           RuntimeDirectory = "openldap";
+
           StateDirectory = [
             "openldap"
           ]
           ++ (map ({ olcDbDirectory, ... }: lib.removePrefix "/var/lib/" olcDbDirectory) (
             lib.attrValues dbSettings
           ));
+
           StateDirectoryMode = "700";
-          AmbientCapabilities = [ "CAP_NET_BIND_SERVICE" ];
-          CapabilityBoundingSet = [ "CAP_NET_BIND_SERVICE" ];
+          Type = "notify";
+          User = cfg.user;
         };
+
+        wantedBy = [ "multi-user.target" ];
+        wants = [ "network-online.target" ];
+      };
+
+      users.groups = lib.optionalAttrs (cfg.group == "openldap") {
+        openldap = { };
       };
 
       users.users = lib.optionalAttrs (cfg.user == "openldap") {
@@ -390,9 +422,7 @@ in
           isSystemUser = true;
         };
       };
-
-      users.groups = lib.optionalAttrs (cfg.group == "openldap") {
-        openldap = { };
-      };
     };
+
+  meta.maintainers = with lib.maintainers; [ kwohlfahrt ];
 }

@@ -2,20 +2,20 @@
   lib,
   stdenv,
   fetchFromGitHub,
+  binutils,
+  buildPackages,
   flex,
+  gitUpdater,
+  kmod,
   libuuid,
   libx86emu,
   perl,
-  kmod,
+  perlPackages,
+  runCommand,
   systemdMinimal,
   testers,
-  binutils,
-  writeText,
-  runCommand,
   validatePkgConfig,
-  gitUpdater,
-  buildPackages,
-  perlPackages,
+  writeText,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -29,18 +29,11 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-XFb87IuFXYmFnlrjinz7Q+FhoRtpdToW9tos3pFzQYE=";
   };
 
-  nativeBuildInputs = [
-    flex
-    validatePkgConfig
-    perl
-    perlPackages.XMLWriter
-    perlPackages.XMLParser
-  ];
-  depsBuildBuild = [ buildPackages.stdenv.cc ];
-
-  buildInputs = [
-    libuuid
-    libx86emu
+  outputs = [
+    "bin"
+    "dev"
+    "lib"
+    "out"
   ];
 
   postPatch = ''
@@ -68,11 +61,23 @@ stdenv.mkDerivation (finalAttrs: {
     patchShebangs src/ids/convert_hd
   '';
 
-  outputs = [
-    "bin"
-    "dev"
-    "lib"
-    "out"
+  nativeBuildInputs = [
+    flex
+    validatePkgConfig
+    perl
+    perlPackages.XMLWriter
+    perlPackages.XMLParser
+  ];
+
+  buildInputs = [
+    libuuid
+    libx86emu
+  ];
+
+  makeFlags = [
+    "LIBDIR=/lib"
+    "CC=${stdenv.cc.targetPrefix}cc"
+    "ARCH=${stdenv.hostPlatform.uname.processor}"
   ];
 
   # The pci/usb ids in hwinfo are ancient. We can get a more up-to-date list simply by copying from systemd
@@ -93,46 +98,47 @@ stdenv.mkDerivation (finalAttrs: {
     make -C src/isdn/cdb CC=$CC_FOR_BUILD -j $NIX_BUILD_CORES isdn_cdb mk_isdnhwdb
   '';
 
-  makeFlags = [
-    "LIBDIR=/lib"
-    "CC=${stdenv.cc.targetPrefix}cc"
-    "ARCH=${stdenv.hostPlatform.uname.processor}"
-  ];
-  installFlags = [
-    "INSTALL_PREFIX="
-    "DESTDIR=$(out)"
-  ];
-
-  enableParallelBuilding = false; # broken parallel dependencies
-
   postInstall = ''
     moveToOutput bin "$bin"
     moveToOutput lib "$lib"
   '';
 
+  depsBuildBuild = [ buildPackages.stdenv.cc ];
+  enableParallelBuilding = false; # broken parallel dependencies
+
+  installFlags = [
+    "INSTALL_PREFIX="
+    "DESTDIR=$(out)"
+  ];
+
   passthru = {
     tests = {
       version = testers.testVersion { package = finalAttrs.finalPackage; };
-      pkg-config = testers.hasPkgConfigModules { package = finalAttrs.finalPackage; };
+
       no-usr = testers.testEqualContents {
+        actual = runCommand "actual" { nativeBuildInputs = [ binutils ]; } ''
+          strings ${finalAttrs.finalPackage}/bin/* | grep /usr/ > $out
+        '';
+
         assertion = "There should be no /usr/ paths in the binaries";
+
         # There is a bash script that refers to lshal, which is deprecated and not available in Nixpkgs.
         # We'll allow this line, but nothing else.
         expected = writeText "expected" ''
           if [ -x /usr/bin/lshal ] ; then
         '';
-        actual = runCommand "actual" { nativeBuildInputs = [ binutils ]; } ''
-          strings ${finalAttrs.finalPackage}/bin/* | grep /usr/ > $out
-        '';
       };
+
+      pkg-config = testers.hasPkgConfigModules { package = finalAttrs.finalPackage; };
     };
+
     updateScript = gitUpdater { };
   };
 
   meta = {
     description = "Hardware detection tool from openSUSE";
-    license = lib.licenses.gpl2Only;
     homepage = "https://github.com/openSUSE/hwinfo";
+    license = lib.licenses.gpl2Only;
     maintainers = with lib.maintainers; [ bobvanderlinden ];
     platforms = lib.platforms.linux;
     mainProgram = "hwinfo";

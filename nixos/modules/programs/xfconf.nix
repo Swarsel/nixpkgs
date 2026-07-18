@@ -10,10 +10,6 @@ let
 
 in
 {
-  meta = {
-    teams = [ lib.teams.xfce ];
-  };
-
   options = {
     programs.xfconf = {
       enable = lib.mkEnableOption "Xfconf, the Xfce configuration storage system";
@@ -28,5 +24,9 @@ in
     services.dbus.packages = [
       pkgs.xfconf
     ];
+  };
+
+  meta = {
+    teams = [ lib.teams.xfce ];
   };
 }

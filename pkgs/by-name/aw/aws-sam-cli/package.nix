@@ -1,18 +1,17 @@
 {
   lib,
-  python3,
   fetchFromGitHub,
-  git,
-  testers,
   aws-sam-cli,
+  git,
   nix-update-script,
+  python3,
+  testers,
   enableTelemetry ? false,
 }:
 
 python3.pkgs.buildPythonApplication rec {
   pname = "aws-sam-cli";
   version = "1.163.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "aws";
@@ -21,26 +20,31 @@ python3.pkgs.buildPythonApplication rec {
     hash = "sha256-ydyuQHdLWet5+HkPCmHiKqTFY8+nVOXTlPFfOckzOXE=";
   };
 
-  build-system = with python3.pkgs; [ setuptools ];
-
-  pythonRelaxDeps = [
-    "aws_lambda_builders"
-    "aws-sam-translator"
-    "boto3"
-    "boto3-stubs"
-    "cfn-lint"
-    "click"
-    "cookiecutter"
-    "docker"
-    "jsonschema"
-    "pyopenssl"
-    "requests"
-    "rich"
-    "ruamel-yaml"
-    "tomlkit"
-    "tzlocal"
-    "watchdog"
+  nativeCheckInputs = with python3.pkgs; [
+    filelock
+    flaky
+    jaraco-text
+    parameterized
+    psutil
+    pytest-timeout
+    pytest-xdist
+    pytestCheckHook
   ];
+
+  preCheck = ''
+    export HOME=$(mktemp -d)
+    export PATH="$PATH:$out/bin:${lib.makeBinPath [ git ]}"
+  '';
+
+  postFixup = ''
+    # Disable telemetry: https://github.com/aws/aws-sam-cli/issues/1272
+    wrapProgram $out/bin/sam \
+      --set SAM_CLI_TELEMETRY ${if enableTelemetry then "1" else "0"} \
+      --prefix PATH : $out/bin:${lib.makeBinPath [ git ]}
+  '';
+
+  __darwinAllowLocalNetworking = true;
+  build-system = with python3.pkgs; [ setuptools ];
 
   dependencies =
     with python3.pkgs;
@@ -88,36 +92,6 @@ python3.pkgs.buildPythonApplication rec {
       ]
     );
 
-  postFixup = ''
-    # Disable telemetry: https://github.com/aws/aws-sam-cli/issues/1272
-    wrapProgram $out/bin/sam \
-      --set SAM_CLI_TELEMETRY ${if enableTelemetry then "1" else "0"} \
-      --prefix PATH : $out/bin:${lib.makeBinPath [ git ]}
-  '';
-
-  nativeCheckInputs = with python3.pkgs; [
-    filelock
-    flaky
-    jaraco-text
-    parameterized
-    psutil
-    pytest-timeout
-    pytest-xdist
-    pytestCheckHook
-  ];
-
-  preCheck = ''
-    export HOME=$(mktemp -d)
-    export PATH="$PATH:$out/bin:${lib.makeBinPath [ git ]}"
-  '';
-
-  pytestFlags = [
-    # Disable warnings
-    "-Wignore::DeprecationWarning"
-  ];
-
-  enabledTestPaths = [ "tests" ];
-
   disabledTestPaths = [
     # Disable tests that requires networking or complex setup
     "tests/end_to_end"
@@ -151,13 +125,41 @@ python3.pkgs.buildPythonApplication rec {
     "TestImportModuleProxy"
   ];
 
+  enabledTestPaths = [ "tests" ];
+  pyproject = true;
+
+  pytestFlags = [
+    # Disable warnings
+    "-Wignore::DeprecationWarning"
+  ];
+
   pythonImportsCheck = [ "samcli" ];
+
+  pythonRelaxDeps = [
+    "aws_lambda_builders"
+    "aws-sam-translator"
+    "boto3"
+    "boto3-stubs"
+    "cfn-lint"
+    "click"
+    "cookiecutter"
+    "docker"
+    "jsonschema"
+    "pyopenssl"
+    "requests"
+    "rich"
+    "ruamel-yaml"
+    "tomlkit"
+    "tzlocal"
+    "watchdog"
+  ];
 
   passthru = {
     tests.version = testers.testVersion {
-      package = aws-sam-cli;
       command = "sam --version";
+      package = aws-sam-cli;
     };
+
     updateScript = nix-update-script {
       extraArgs = [
         "--version-regex"
@@ -166,17 +168,17 @@ python3.pkgs.buildPythonApplication rec {
     };
   };
 
-  __darwinAllowLocalNetworking = true;
-
   meta = {
     description = "CLI tool for local development and testing of Serverless applications";
     homepage = "https://github.com/aws/aws-sam-cli";
     changelog = "https://github.com/aws/aws-sam-cli/releases/tag/v${version}";
     license = lib.licenses.asl20;
-    mainProgram = "sam";
+
     maintainers = with lib.maintainers; [
       lo1tuma
       anthonyroussel
     ];
+
+    mainProgram = "sam";
   };
 }

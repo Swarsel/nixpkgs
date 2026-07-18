@@ -4,21 +4,22 @@
   buildPythonPackage,
   fetchPypi,
   isodate,
-  typing-extensions,
   setuptools,
+  typing-extensions,
 }:
 
 buildPythonPackage rec {
   pname = "azure-ai-documentintelligence";
   version = "1.0.2";
-  pyproject = true;
 
   src = fetchPypi {
-    pname = "azure_ai_documentintelligence";
     inherit version;
     hash = "sha256-TXWiUT8oOTZeurwODhdy9WAbOoyaceddoSRA2hO2NIQ=";
+    pname = "azure_ai_documentintelligence";
   };
 
+  # Tests are not shipped
+  doCheck = false;
   build-system = [ setuptools ];
 
   dependencies = [
@@ -27,9 +28,7 @@ buildPythonPackage rec {
     typing-extensions
   ];
 
-  # Tests are not shipped
-  doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "azure.ai.documentintelligence" ];
 
   meta = {

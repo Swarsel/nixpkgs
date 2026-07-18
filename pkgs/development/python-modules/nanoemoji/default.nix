@@ -1,19 +1,19 @@
 {
   lib,
   fetchFromGitHub,
-  buildPythonPackage,
-  pytestCheckHook,
-  setuptools,
-  setuptools-scm,
-  resvg,
-  pngquant,
   absl-py,
+  buildPythonPackage,
   fonttools,
   lxml,
   ninja,
   picosvg,
   pillow,
+  pngquant,
+  pytestCheckHook,
   regex,
+  resvg,
+  setuptools,
+  setuptools-scm,
   toml,
   tomlkit,
   ufo2ft,
@@ -24,7 +24,6 @@
 buildPythonPackage rec {
   pname = "nanoemoji";
   version = "0.15.9";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "googlefonts";
@@ -38,20 +37,25 @@ buildPythonPackage rec {
     ./test-pythonpath.patch
   ];
 
-  build-system = [
-    setuptools
-    setuptools-scm
-  ];
-
   nativeBuildInputs = [
     pngquant
     resvg
   ];
 
-  # these two packages are just prebuilt wheels containing the respective binaries
-  pythonRemoveDeps = [
-    "pngquant-cli"
-    "resvg-cli"
+  nativeCheckInputs = [
+    pytestCheckHook
+    ninja
+    picosvg
+  ];
+
+  preCheck = ''
+    # make sure the built binaries (nanoemoji/maximum_color) can be found by the test
+    export PATH="$out/bin:$PATH"
+  '';
+
+  build-system = [
+    setuptools
+    setuptools-scm
   ];
 
   dependencies = [
@@ -69,12 +73,6 @@ buildPythonPackage rec {
     zopfli
   ];
 
-  nativeCheckInputs = [
-    pytestCheckHook
-    ninja
-    picosvg
-  ];
-
   makeWrapperArgs = [
     "--prefix PATH : ${
       lib.makeBinPath [
@@ -84,10 +82,13 @@ buildPythonPackage rec {
     }"
   ];
 
-  preCheck = ''
-    # make sure the built binaries (nanoemoji/maximum_color) can be found by the test
-    export PATH="$out/bin:$PATH"
-  '';
+  pyproject = true;
+
+  # these two packages are just prebuilt wheels containing the respective binaries
+  pythonRemoveDeps = [
+    "pngquant-cli"
+    "resvg-cli"
+  ];
 
   meta = {
     description = "Wee tool to build color fonts";

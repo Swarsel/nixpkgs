@@ -17,7 +17,6 @@
 buildPythonPackage rec {
   pname = "mayavi";
   version = "4.8.3";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
@@ -39,16 +38,15 @@ buildPythonPackage rec {
   ];
 
   env.NIX_CFLAGS_COMPILE = "-Wno-error";
-
   # Needs X server
   doCheck = false;
-
-  pythonImportsCheck = [ "mayavi" ];
 
   preFixup = ''
     makeWrapperArgs+=("''${qtWrapperArgs[@]}")
   '';
 
+  format = "setuptools";
+  pythonImportsCheck = [ "mayavi" ];
   # stripping the ico file on macos cause segfault
   stripExclude = [ "*.ico" ];
 

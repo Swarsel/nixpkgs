@@ -1,20 +1,27 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
   autoconf,
   automake,
   gettext,
+  glib,
   libtool,
+  libx11,
+  libxrandr,
   perl,
   pkg-config,
-  glib,
-  libxrandr,
-  libx11,
 }:
 stdenv.mkDerivation (finalAttrs: {
   pname = "xdg-launch";
   version = "1.12";
+
+  src = fetchFromGitHub {
+    owner = "bbidulock";
+    repo = "xdg-launch";
+    rev = finalAttrs.version;
+    sha256 = "sha256-S/0Wn1T5MSOPN6QXkzfmygHL6XTAnnMJr5Z3fBzsHEw=";
+  };
 
   postPatch = ''
     # fix gettext configuration
@@ -25,21 +32,6 @@ stdenv.mkDerivation (finalAttrs: {
       -e "s,/usr/bin,/$out/bin,g"
   '';
 
-  src = fetchFromGitHub {
-    owner = "bbidulock";
-    repo = "xdg-launch";
-    rev = finalAttrs.version;
-    sha256 = "sha256-S/0Wn1T5MSOPN6QXkzfmygHL6XTAnnMJr5Z3fBzsHEw=";
-  };
-
-  preConfigure = "./autogen.sh";
-
-  buildInputs = [
-    libx11
-    libxrandr
-    glib # can be optional
-  ];
-
   nativeBuildInputs = [
     autoconf
     automake
@@ -49,11 +41,19 @@ stdenv.mkDerivation (finalAttrs: {
     pkg-config
   ];
 
+  buildInputs = [
+    libx11
+    libxrandr
+    glib # can be optional
+  ];
+
+  preConfigure = "./autogen.sh";
+
   meta = {
-    homepage = "https://github.com/bbidulock/xdg-launch";
     description = "Command line XDG compliant launcher and tools";
+    homepage = "https://github.com/bbidulock/xdg-launch";
     license = lib.licenses.gpl3;
-    platforms = lib.platforms.linux;
     maintainers = [ lib.maintainers.ck3d ];
+    platforms = lib.platforms.linux;
   };
 })

@@ -2,11 +2,11 @@
   lib,
   stdenv,
   fetchurl,
-  perl,
-  bdftopcf,
   bdf2psf,
-  mkfontscale,
+  bdftopcf,
   fonttosfnt,
+  mkfontscale,
+  perl,
   targetsDat ? null,
   variantsDat ? null,
 }:
@@ -71,10 +71,12 @@ stdenv.mkDerivation (finalAttrs: {
   meta = {
     description = "Monospace bitmap screen fonts for X11";
     homepage = "https://people.mpi-inf.mpg.de/~uwe/misc/uw-ttyp0/";
+
     license = with lib.licenses; [
       free
       mit
     ];
+
     maintainers = with lib.maintainers; [ rnhmjoj ];
   };
 

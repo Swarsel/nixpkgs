@@ -1,15 +1,14 @@
 {
   buildDunePackage,
+  faraday-lwt-unix,
+  gluten-lwt-unix,
   h2,
   h2-lwt,
-  gluten-lwt-unix,
-  faraday-lwt-unix,
 }:
 
 buildDunePackage {
-  pname = "h2-lwt-unix";
-
   inherit (h2) src version;
+  pname = "h2-lwt-unix";
 
   propagatedBuildInputs = [
     gluten-lwt-unix

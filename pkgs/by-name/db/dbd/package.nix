@@ -24,10 +24,10 @@ stdenv.mkDerivation {
 
   meta = {
     description = "Netcat-clone, designed to be portable and offer strong encryption";
-    mainProgram = "dbd";
     homepage = "https://github.com/gitdurandal/dbd";
+    license = lib.licenses.gpl2Plus;
     maintainers = [ ];
     platforms = lib.platforms.unix;
-    license = lib.licenses.gpl2Plus;
+    mainProgram = "dbd";
   };
 }

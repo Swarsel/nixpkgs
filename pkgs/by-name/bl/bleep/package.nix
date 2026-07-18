@@ -1,24 +1,24 @@
 {
-  stdenvNoCC,
-  fetchzip,
+  lib,
   autoPatchelfHook,
+  fetchzip,
   installShellFiles,
   makeWrapper,
-  lib,
-  zlib,
+  stdenvNoCC,
   testers,
+  zlib,
 }:
 let
   platform =
     {
-      x86_64-linux = "x86_64-pc-linux";
       aarch64-darwin = "arm64-apple-darwin";
+      x86_64-linux = "x86_64-pc-linux";
     }
     ."${stdenvNoCC.system}" or (throw "unsupported system ${stdenvNoCC.hostPlatform.system}");
   hash =
     {
-      x86_64-linux = "sha256-SGV0fEuwmGwpqmD42a+x0fIK50RWSHEYDesH4obgRhg=";
       aarch64-darwin = "sha256-qL0hjEdfkN62NDvhlzVgW4TYWv0IReo2Fo5eVhUaOrI=";
+      x86_64-linux = "sha256-SGV0fEuwmGwpqmD42a+x0fIK50RWSHEYDesH4obgRhg=";
     }
     ."${stdenvNoCC.system}" or (throw "unsupported system ${stdenvNoCC.hostPlatform.system}");
 in
@@ -45,8 +45,6 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
-  dontAutoPatchelf = true;
-
   postFixup =
     lib.optionalString stdenvNoCC.hostPlatform.isLinux ''
       autoPatchelf $out
@@ -58,21 +56,25 @@ stdenvNoCC.mkDerivation (finalAttrs: {
         --zsh <(bleep install-tab-completions-zsh --stdout)
     '';
 
+  dontAutoPatchelf = true;
+
   passthru.tests.version = testers.testVersion {
-    package = finalAttrs.finalPackage;
     command = "bleep --help | sed -n '/Bleeping/s/[^0-9.]//gp'";
+    package = finalAttrs.finalPackage;
   };
 
   meta = {
-    homepage = "https://bleep.build/";
-    sourceProvenance = [ lib.sourceTypes.binaryNativeCode ];
-    license = lib.licenses.mit;
     description = "Bleeping fast scala build tool";
-    mainProgram = "bleep";
+    homepage = "https://bleep.build/";
+    license = lib.licenses.mit;
+    sourceProvenance = [ lib.sourceTypes.binaryNativeCode ];
+    maintainers = with lib.maintainers; [ kristianan ];
+
     platforms = [
       "x86_64-linux"
       "aarch64-darwin"
     ];
-    maintainers = with lib.maintainers; [ kristianan ];
+
+    mainProgram = "bleep";
   };
 })

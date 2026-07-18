@@ -5,9 +5,8 @@
 }:
 
 buildPythonPackage rec {
-  version = "1.16";
-  format = "setuptools";
   pname = "patch";
+  version = "1.16";
 
   src = fetchzip {
     url = "mirror://pypi/p/${pname}/${pname}-${version}.zip";
@@ -17,6 +16,7 @@ buildPythonPackage rec {
 
   # No tests included in archive
   doCheck = false;
+  format = "setuptools";
 
   meta = {
     description = "Library to parse and apply unified diffs";

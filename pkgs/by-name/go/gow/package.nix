@@ -1,9 +1,9 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
-  makeWrapper,
+  buildGoModule,
   go,
+  makeWrapper,
 }:
 
 buildGoModule (finalAttrs: {
@@ -17,22 +17,21 @@ buildGoModule (finalAttrs: {
     hash = "sha256-vfJ6AFkCeyGKWF/a26ulyErCjCng+uHJlLyRfBmtLs0=";
   };
 
-  vendorHash = "sha256-L7H3tZQXfeDtWLMvxSMf4/Oez8OV5Q+NhKLkJ991sNA=";
-
-  # This is required for wrapProgram.
-  allowGoReference = true;
-
   nativeBuildInputs = [ makeWrapper ];
+  vendorHash = "sha256-L7H3tZQXfeDtWLMvxSMf4/Oez8OV5Q+NhKLkJ991sNA=";
 
   postFixup = ''
     wrapProgram $out/bin/gow --prefix PATH : ${lib.makeBinPath [ go ]}
   '';
 
+  # This is required for wrapProgram.
+  allowGoReference = true;
+
   meta = {
-    homepage = "https://github.com/mitranim/gow";
     description = "Missing watch mode for Go commands";
-    mainProgram = "gox";
+    homepage = "https://github.com/mitranim/gow";
     license = lib.licenses.unlicense;
     maintainers = with lib.maintainers; [ baloo ];
+    mainProgram = "gox";
   };
 })

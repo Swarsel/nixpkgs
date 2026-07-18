@@ -1,10 +1,9 @@
 {
   lib,
   stdenv,
-  makeWrapper,
-  buildEnv,
   bashNonInteractive,
   breezy,
+  buildEnv,
   cacert,
   coreutils,
   cvs,
@@ -17,6 +16,7 @@
   gnugrep,
   gnused,
   jq,
+  makeWrapper,
   mercurial,
   pijul,
   subversion,
@@ -26,14 +26,11 @@ let
   mkPrefetchScript =
     tool: src: deps:
     stdenv.mkDerivation {
-      version = lib.trivial.release;
       pname = "nix-prefetch-${tool}";
-
+      version = lib.trivial.release;
       strictDeps = true;
       nativeBuildInputs = [ makeWrapper ];
       buildInputs = [ bashNonInteractive ];
-
-      dontUnpack = true;
 
       installPhase = ''
         install -vD ${src} $out/bin/$pname;
@@ -42,6 +39,7 @@ let
           --set HOME /homeless-shelter
       '';
 
+      dontUnpack = true;
       preferLocalBuild = true;
 
       meta = {
@@ -60,13 +58,16 @@ rec {
     breezy
     gnused
   ];
+
   nix-prefetch-cvs = mkPrefetchScript "cvs" ../../../build-support/fetchcvs/nix-prefetch-cvs [ cvs ];
+
   nix-prefetch-darcs = mkPrefetchScript "darcs" ../../../build-support/fetchdarcs/nix-prefetch-darcs [
     darcs
     cacert
     gawk
     jq
   ];
+
   nix-prefetch-fossil =
     mkPrefetchScript "fossil" ../../../build-support/fetchfossil/nix-prefetch-fossil
       [
@@ -74,6 +75,7 @@ rec {
         gnugrep
         gnused
       ];
+
   nix-prefetch-git = mkPrefetchScript "git" ../../../build-support/fetchgit/nix-prefetch-git [
     findutils
     gawk
@@ -81,14 +83,11 @@ rec {
     git-lfs
     gnused
   ];
+
   nix-prefetch-hg = mkPrefetchScript "hg" ../../../build-support/fetchhg/nix-prefetch-hg [
     mercurial
   ];
-  nix-prefetch-svn = mkPrefetchScript "svn" ../../../build-support/fetchsvn/nix-prefetch-svn [
-    gnugrep
-    gnused
-    subversion
-  ];
+
   nix-prefetch-pijul = mkPrefetchScript "pijul" ../../../build-support/fetchpijul/nix-prefetch-pijul [
     gawk
     pijul
@@ -116,4 +115,10 @@ rec {
       platforms = lib.platforms.unix;
     };
   };
+
+  nix-prefetch-svn = mkPrefetchScript "svn" ../../../build-support/fetchsvn/nix-prefetch-svn [
+    gnugrep
+    gnused
+    subversion
+  ];
 }

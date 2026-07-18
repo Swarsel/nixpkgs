@@ -3,8 +3,8 @@
   stdenv,
   fetchFromGitHub,
   cmake,
-  ninja,
   gitUpdater,
+  ninja,
 }:
 
 stdenv.mkDerivation (finalAttrs: {

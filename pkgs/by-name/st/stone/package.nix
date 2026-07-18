@@ -1,6 +1,6 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchurl,
   openssl,
 }:
@@ -15,7 +15,6 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   buildInputs = [ openssl ];
-
   makeFlags = [ "linux-ssl" ];
 
   installPhase = ''
@@ -28,8 +27,8 @@ stdenv.mkDerivation (finalAttrs: {
     description = "TCP/IP repeater in the application layer";
     homepage = "http://www.gcd.org/sengoku/stone/";
     license = lib.licenses.gpl2Only;
-    platforms = lib.platforms.linux;
     maintainers = with lib.maintainers; [ corngood ];
+    platforms = lib.platforms.linux;
     mainProgram = "stone";
   };
 })

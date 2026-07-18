@@ -3,23 +3,23 @@
   stdenv,
   fetchFromGitLab,
   autoreconfHook,
+  nix-update-script,
   pkg-config,
   util-macros,
-  xorgproto,
   xorg-server,
-  nix-update-script,
+  xorgproto,
 }:
 stdenv.mkDerivation (finalAttrs: {
   pname = "xf86-video-dummy";
   version = "0.4.1";
 
   src = fetchFromGitLab {
-    domain = "gitlab.freedesktop.org";
-    group = "xorg";
     owner = "driver";
     repo = "xf86-video-dummy";
     tag = "xf86-video-dummy-${finalAttrs.version}";
     hash = "sha256-lEqA716pg1mjTLEkHLITXJMZY9Vj8VByEs49ONNxpHs=";
+    domain = "gitlab.freedesktop.org";
+    group = "xorg";
   };
 
   strictDeps = true;

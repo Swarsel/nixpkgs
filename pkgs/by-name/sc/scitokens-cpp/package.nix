@@ -3,11 +3,11 @@
   stdenv,
   fetchFromGitHub,
   cmake,
-  pkg-config,
-  libuuid,
   curl,
-  sqlite,
+  libuuid,
   openssl,
+  pkg-config,
+  sqlite,
 }:
 
 stdenv.mkDerivation {
@@ -17,7 +17,6 @@ stdenv.mkDerivation {
   src = fetchFromGitHub {
     owner = "scitokens";
     repo = "scitokens-cpp";
-
     rev = "v1.4.1";
     hash = "sha256-qZUW+b8drIAm21baUO1+O39O9FPP2McmdjsfGTRGRfQ=";
   };
@@ -26,6 +25,7 @@ stdenv.mkDerivation {
     cmake
     pkg-config
   ];
+
   buildInputs = [
     libuuid
     openssl
@@ -34,10 +34,10 @@ stdenv.mkDerivation {
   ];
 
   meta = {
-    homepage = "https://github.com/scitokens/scitokens-cpp/";
     description = "C++ implementation of the SciTokens library with a C library interface";
-    platforms = lib.platforms.unix;
+    homepage = "https://github.com/scitokens/scitokens-cpp/";
     license = lib.licenses.asl20;
     maintainers = with lib.maintainers; [ evey ];
+    platforms = lib.platforms.unix;
   };
 }

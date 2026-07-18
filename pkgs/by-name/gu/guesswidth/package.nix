@@ -1,12 +1,12 @@
 {
   lib,
   stdenv,
-  buildGoModule,
   fetchFromGitHub,
-  installShellFiles,
+  buildGoModule,
   buildPackages,
-  versionCheckHook,
+  installShellFiles,
   nix-update-script,
+  versionCheckHook,
 }:
 buildGoModule (finalAttrs: {
   pname = "guesswidth";
@@ -19,16 +19,11 @@ buildGoModule (finalAttrs: {
     hash = "sha256-MbQBfwXdmcSU6F7M+Y70lGwBwhhJvRgtevco+UPt0Po=";
   };
 
-  vendorHash = "sha256-/R/KUKQq52CnukJoQybSA4OkcHq/v8ICxxUqSc4ynEQ=";
-
-  ldflags = [
-    "-X github.com/noborus/guesswidth.version=v${finalAttrs.version}"
-    "-X github.com/noborus/guesswidth.revision=${finalAttrs.src.rev}"
-  ];
-
   nativeBuildInputs = [
     installShellFiles
   ];
+
+  vendorHash = "sha256-/R/KUKQq52CnukJoQybSA4OkcHq/v8ICxxUqSc4ynEQ=";
 
   postInstall = lib.optionalString (stdenv.hostPlatform.emulatorAvailable buildPackages) (
     let
@@ -42,10 +37,16 @@ buildGoModule (finalAttrs: {
     ''
   );
 
+  doInstallCheck = true;
+
   nativeInstallCheckInputs = [
     versionCheckHook
   ];
-  doInstallCheck = true;
+
+  ldflags = [
+    "-X github.com/noborus/guesswidth.version=v${finalAttrs.version}"
+    "-X github.com/noborus/guesswidth.revision=${finalAttrs.src.rev}"
+  ];
 
   passthru.updateScript = nix-update-script { };
 

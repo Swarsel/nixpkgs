@@ -1,9 +1,9 @@
 {
   lib,
+  fetchFromGitHub,
   aiohttp,
   aresponses,
   buildPythonPackage,
-  fetchFromGitHub,
   mashumaro,
   orjson,
   poetry-core,
@@ -16,7 +16,6 @@
 buildPythonPackage rec {
   pname = "elgato";
   version = "5.1.2";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "frenck";
@@ -31,6 +30,13 @@ buildPythonPackage rec {
       --replace "0.0.0" "${version}"
   '';
 
+  nativeCheckInputs = [
+    aresponses
+    pytest-asyncio
+    pytest-cov-stub
+    pytestCheckHook
+  ];
+
   build-system = [ poetry-core ];
 
   dependencies = [
@@ -40,13 +46,7 @@ buildPythonPackage rec {
     yarl
   ];
 
-  nativeCheckInputs = [
-    aresponses
-    pytest-asyncio
-    pytest-cov-stub
-    pytestCheckHook
-  ];
-
+  pyproject = true;
   pythonImportsCheck = [ "elgato" ];
 
   meta = {

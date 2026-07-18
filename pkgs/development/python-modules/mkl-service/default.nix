@@ -1,17 +1,16 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   cython,
-  setuptools,
   mkl,
   pytestCheckHook,
+  setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "mkl-service";
   version = "2.6.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "IntelPython";
@@ -20,28 +19,28 @@ buildPythonPackage rec {
     hash = "sha256-qiypoeCWUIghLmEYVOJaT4XUT7TNAJjWxnIq7HOZlkY=";
   };
 
-  build-system = [
-    cython
-    setuptools
-  ];
-
   env.MKLROOT = mkl;
-
-  dependencies = [ mkl ];
-
-  pythonImportsCheck = [ "mkl" ];
-
   nativeCheckInputs = [ pytestCheckHook ];
 
   preCheck = ''
     cd $out
   '';
 
+  build-system = [
+    cython
+    setuptools
+  ];
+
+  dependencies = [ mkl ];
+
   disabledTests = [
     # require SIMD compilation
     "test_cbwr_all"
     "test_cbwr_branch"
   ];
+
+  pyproject = true;
+  pythonImportsCheck = [ "mkl" ];
 
   meta = {
     description = "Python hooks for Intel(R) Math Kernel Library runtime control settings";

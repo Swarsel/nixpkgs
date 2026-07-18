@@ -1,39 +1,39 @@
 {
   lib,
   stdenv,
+  fetchFromGitHub,
+  appdirs,
+  appnope,
+  babel,
   buildPackages,
   buildPythonPackage,
-  fetchFromGitHub,
-  versionCheckHook,
-  appdirs,
-  babel,
   evdev,
+  hidapi,
   mock,
   packaging,
   pkginfo,
+  plover-stroke,
   psutil,
   pygments,
+  pyobjc-core,
+  pyobjc-framework-Cocoa,
+  pyobjc-framework-Quartz,
   pyserial,
   pyside6,
-  pytestCheckHook,
   pytest-qt,
-  plover-stroke,
+  pytestCheckHook,
+  python-xlib,
+  qtbase,
   readme-renderer,
   requests-cache,
   requests-futures,
   rtf-tokenize,
   setuptools,
+  versionCheckHook,
   wcwidth,
   wheel,
-  python-xlib,
-  qtbase,
   wrapQtAppsHook,
-  hidapi,
   xkbcommon,
-  pyobjc-framework-Quartz,
-  pyobjc-framework-Cocoa,
-  appnope,
-  pyobjc-core,
 }:
 
 let
@@ -51,11 +51,8 @@ let
   '';
 in
 buildPythonPackage (finalAttrs: {
-  __structuredAttrs = true;
-
   pname = "plover";
   version = "5.4.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "openstenoproject";
@@ -73,14 +70,30 @@ buildPythonPackage (finalAttrs: {
       --replace-fail "pyside6-uic" ${lib.getExe pyside-tools-uic}
   '';
 
-  pythonRelaxDeps = [
-    "xkbcommon"
+  nativeBuildInputs = [
+    wrapQtAppsHook
   ];
 
-  pythonRemoveDeps = [
-    # We currently don't have it in Nixpkgs.
-    "PySide6-Essentials"
+  buildInputs = [
+    qtbase
   ];
+
+  nativeCheckInputs = [
+    pytestCheckHook
+    versionCheckHook
+    pytest-qt
+    mock
+  ];
+
+  postInstall = ''
+    install -Dm 444 linux/plover.desktop $out/share/applications/plover.desktop
+  '';
+
+  preFixup = ''
+    makeWrapperArgs+=("''${qtWrapperArgs[@]}")
+  '';
+
+  __structuredAttrs = true;
 
   build-system = [
     babel
@@ -88,6 +101,7 @@ buildPythonPackage (finalAttrs: {
     pyside6
     wheel
   ];
+
   dependencies = [
     appdirs
     hidapi
@@ -115,55 +129,46 @@ buildPythonPackage (finalAttrs: {
     pyobjc-framework-Cocoa
     pyobjc-framework-Quartz
   ];
-  optional-dependencies = {
-    gui-qt = [
-      # TODO(@ShamrockLee): use PySide6-Essentials once available
-      pyside6
-    ];
-  };
-  nativeBuildInputs = [
-    wrapQtAppsHook
-  ];
-
-  buildInputs = [
-    qtbase
-  ];
-
-  nativeCheckInputs = [
-    pytestCheckHook
-    versionCheckHook
-    pytest-qt
-    mock
-  ];
 
   disabledTestPaths = [
     "test/gui_qt/test_dictionaries_widget.py" # segfaults
     "test/gui_qt/test_i18n_files.py" # babel errors
   ];
 
-  postInstall = ''
-    install -Dm 444 linux/plover.desktop $out/share/applications/plover.desktop
-  '';
-
-  preFixup = ''
-    makeWrapperArgs+=("''${qtWrapperArgs[@]}")
-  '';
-
   dontWrapQtApps = true;
 
+  optional-dependencies = {
+    gui-qt = [
+      # TODO(@ShamrockLee): use PySide6-Essentials once available
+      pyside6
+    ];
+  };
+
+  pyproject = true;
   pythonImportsCheck = [ "plover" ];
+
+  pythonRelaxDeps = [
+    "xkbcommon"
+  ];
+
+  pythonRemoveDeps = [
+    # We currently don't have it in Nixpkgs.
+    "PySide6-Essentials"
+  ];
 
   meta = {
     description = "OpenSteno Plover stenography software";
     homepage = "https://www.openstenoproject.org/plover/";
-    mainProgram = "plover";
+    license = lib.licenses.gpl2Plus;
+
     maintainers = with lib.maintainers; [
       twey
       kovirobi
       pandapip1
       ShamrockLee
     ];
-    license = lib.licenses.gpl2Plus;
+
     platforms = lib.platforms.unix;
+    mainProgram = "plover";
   };
 })

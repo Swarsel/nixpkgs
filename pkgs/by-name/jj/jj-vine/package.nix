@@ -1,13 +1,13 @@
 {
   lib,
-  rustPlatform,
-  fetchFromCodeberg,
-  jujutsu,
-  git,
-  writableTmpDirAsHomeHook,
   cacert,
-  versionCheckHook,
+  fetchFromCodeberg,
+  git,
+  jujutsu,
   nix-update-script,
+  rustPlatform,
+  versionCheckHook,
+  writableTmpDirAsHomeHook,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -22,18 +22,17 @@ rustPlatform.buildRustPackage (finalAttrs: {
   };
 
   cargoHash = "sha256-nuj0cugeK5oc+sZmm1f5dvGEjML0qkle5uO66e54VIY=";
+  env.SSL_CERT_FILE = "${cacert}/etc/ssl/certs/ca-bundle.crt";
 
   nativeCheckInputs = [
     jujutsu
     git
     writableTmpDirAsHomeHook
   ];
-  checkFeatures = [ "no-e2e-tests" ];
-  env.SSL_CERT_FILE = "${cacert}/etc/ssl/certs/ca-bundle.crt";
 
-  nativeInstallCheckInputs = [ versionCheckHook ];
   doInstallCheck = true;
-
+  nativeInstallCheckInputs = [ versionCheckHook ];
+  checkFeatures = [ "no-e2e-tests" ];
   passthru.updateScript = nix-update-script { };
 
   meta = {
@@ -41,7 +40,7 @@ rustPlatform.buildRustPackage (finalAttrs: {
     homepage = "https://codeberg.org/abrenneke/jj-vine";
     changelog = "https://codeberg.org/abrenneke/jj-vine/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.mit;
-    mainProgram = "jj-vine";
     maintainers = with lib.maintainers; [ winter ];
+    mainProgram = "jj-vine";
   };
 })

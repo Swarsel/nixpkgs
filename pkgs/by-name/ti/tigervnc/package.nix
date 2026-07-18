@@ -2,58 +2,58 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  xorg-server,
-  util-macros,
-  tab-window-manager,
-  libxtst,
-  libxrandr,
-  libxi,
-  libxft,
-  libxfont_2,
-  libxext,
-  libxdamage,
-  libx11,
-  libsm,
-  libice,
-  font-util,
-  xsetroot,
-  xorgproto,
-  xkbcomp,
-  xauth,
-  libxkbfile,
-  libpciaccess,
-  xkeyboard_config,
-  zlib,
-  libjpeg_turbo,
-  pixman,
-  fltk,
-  cmake,
-  gettext,
-  libtool,
-  libGLU,
-  gnutls,
-  gawk,
-  pam,
-  nettle,
-  xterm,
-  openssh,
-  perl,
-  makeWrapper,
-  nixosTests,
-  ffmpeg,
   autoconf,
   automake,
+  cmake,
+  ffmpeg,
+  fltk,
+  font-util,
+  gawk,
+  gettext,
+  gnutls,
+  libGLU,
+  libice,
+  libjpeg_turbo,
+  libpciaccess,
+  libsm,
+  libtool,
   libuuid,
+  libx11,
+  libxdamage,
+  libxext,
+  libxfont_2,
+  libxft,
+  libxi,
   libxkbcommon,
+  libxkbfile,
+  libxrandr,
+  libxtst,
+  makeWrapper,
+  nettle,
+  nixosTests,
+  openssh,
+  pam,
+  perl,
   pipewire,
+  pixman,
+  tab-window-manager,
+  util-macros,
   wayland,
   wayland-scanner,
+  xauth,
+  xkbcomp,
+  xkeyboard_config,
+  xorg-server,
+  xorgproto,
+  xsetroot,
+  xterm,
+  zlib,
   waylandSupport ? stdenv.hostPlatform.isLinux,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
-  version = "1.16.2";
   pname = "tigervnc";
+  version = "1.16.2";
 
   src = fetchFromGitHub {
     owner = "TigerVNC";
@@ -76,7 +76,66 @@ stdenv.mkDerivation (finalAttrs: {
       echo "mv \"\$APPROOT\" \"\$SRCDIR/\"" >> release/makemacapp.in
     '';
 
-  dontUseCmakeBuildDir = true;
+  nativeBuildInputs = [
+    cmake
+    gettext
+    autoconf
+    automake
+  ]
+  ++ lib.optionals stdenv.hostPlatform.isLinux (
+    [
+      font-util
+      libtool
+      makeWrapper
+      util-macros
+      zlib
+    ]
+    ++ xorg-server.nativeBuildInputs
+    ++ lib.optionals waylandSupport [
+      wayland-scanner
+    ]
+  );
+
+  buildInputs = [
+    fltk
+    gnutls
+    libjpeg_turbo
+    pixman
+    gawk
+    ffmpeg
+  ]
+  ++ lib.optionals stdenv.hostPlatform.isLinux (
+    [
+      nettle
+      pam
+      perl
+      xorgproto
+      util-macros
+      libxtst
+      libxext
+      libx11
+      libxext
+      libice
+      libxi
+      libsm
+      libxft
+      libxkbfile
+      libxfont_2
+      libpciaccess
+      libGLU
+      libxrandr
+      libxdamage
+    ]
+    ++ xorg-server.buildInputs
+    ++ lib.optionals waylandSupport [
+      libuuid
+      libxkbcommon
+      pipewire
+      wayland
+    ]
+  );
+
+  propagatedBuildInputs = lib.optionals stdenv.hostPlatform.isLinux xorg-server.propagatedBuildInputs;
 
   cmakeFlags = [
     (lib.cmakeFeature "CMAKE_INSTALL_PREFIX" (placeholder "out"))
@@ -150,78 +209,18 @@ stdenv.mkDerivation (finalAttrs: {
       chmod +x $out/bin/vncviewer
     '';
 
-  buildInputs = [
-    fltk
-    gnutls
-    libjpeg_turbo
-    pixman
-    gawk
-    ffmpeg
-  ]
-  ++ lib.optionals stdenv.hostPlatform.isLinux (
-    [
-      nettle
-      pam
-      perl
-      xorgproto
-      util-macros
-      libxtst
-      libxext
-      libx11
-      libxext
-      libice
-      libxi
-      libsm
-      libxft
-      libxkbfile
-      libxfont_2
-      libpciaccess
-      libGLU
-      libxrandr
-      libxdamage
-    ]
-    ++ xorg-server.buildInputs
-    ++ lib.optionals waylandSupport [
-      libuuid
-      libxkbcommon
-      pipewire
-      wayland
-    ]
-  );
-
-  nativeBuildInputs = [
-    cmake
-    gettext
-    autoconf
-    automake
-  ]
-  ++ lib.optionals stdenv.hostPlatform.isLinux (
-    [
-      font-util
-      libtool
-      makeWrapper
-      util-macros
-      zlib
-    ]
-    ++ xorg-server.nativeBuildInputs
-    ++ lib.optionals waylandSupport [
-      wayland-scanner
-    ]
-  );
-
-  propagatedBuildInputs = lib.optionals stdenv.hostPlatform.isLinux xorg-server.propagatedBuildInputs;
-
+  dontUseCmakeBuildDir = true;
   passthru.tests.tigervnc = nixosTests.tigervnc;
 
   meta = {
+    description = "Fork of tightVNC, made in cooperation with VirtualGL";
     homepage = "https://tigervnc.org/";
     license = lib.licenses.gpl2Plus;
-    description = "Fork of tightVNC, made in cooperation with VirtualGL";
     maintainers = [ ];
     platforms = lib.platforms.unix;
+    mainProgram = "vncviewer";
     broken = stdenv.hostPlatform.isDarwin;
     # Prevent a store collision.
     priority = 4;
-    mainProgram = "vncviewer";
   };
 })

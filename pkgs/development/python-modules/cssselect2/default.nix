@@ -10,7 +10,6 @@
 buildPythonPackage rec {
   pname = "cssselect2";
   version = "0.8.0";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
@@ -21,12 +20,10 @@ buildPythonPackage rec {
     sed -i '/^addopts/d' pyproject.toml
   '';
 
-  build-system = [ flit-core ];
-
-  dependencies = [ tinycss2 ];
-
   nativeCheckInputs = [ pytestCheckHook ];
-
+  build-system = [ flit-core ];
+  dependencies = [ tinycss2 ];
+  pyproject = true;
   pythonImportsCheck = [ "cssselect2" ];
 
   meta = {

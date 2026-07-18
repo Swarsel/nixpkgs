@@ -2,15 +2,15 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  qt6,
-  pkg-config,
-  taglib,
   alsa-lib,
-  pulseaudio,
   cld2,
   libbass,
   libbass_fx,
   makeDesktopItem,
+  pkg-config,
+  pulseaudio,
+  qt6,
+  taglib,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -53,19 +53,6 @@ stdenv.mkDerivation (finalAttrs: {
       src/UltraStar-Creator.pro
   '';
 
-  preConfigure = ''
-    cd src
-  '';
-
-  qtWrapperArgs = [
-    "--prefix LD_LIBRARY_PATH : ${
-      lib.makeLibraryPath [
-        alsa-lib
-        pulseaudio
-      ]
-    }"
-  ];
-
   nativeBuildInputs = [
     pkg-config
     qt6.qmake
@@ -82,6 +69,10 @@ stdenv.mkDerivation (finalAttrs: {
     pulseaudio
   ];
 
+  preConfigure = ''
+    cd src
+  '';
+
   installPhase = ''
     runHook preInstall
 
@@ -92,18 +83,27 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   desktopItem = makeDesktopItem {
-    name = finalAttrs.pname;
     desktopName = "UltraStar-Creator";
     exec = "UltraStar-Creator";
     icon = "ultrastar-creator";
+    name = finalAttrs.pname;
   };
 
+  qtWrapperArgs = [
+    "--prefix LD_LIBRARY_PATH : ${
+      lib.makeLibraryPath [
+        alsa-lib
+        pulseaudio
+      ]
+    }"
+  ];
+
   meta = {
-    mainProgram = "UltraStar-Creator";
     description = "Ultrastar karaoke song creation tool";
     homepage = "https://github.com/UltraStar-Deluxe/UltraStar-Creator";
     license = lib.licenses.gpl2Only;
     maintainers = with lib.maintainers; [ mooses ];
     platforms = lib.platforms.linux;
+    mainProgram = "UltraStar-Creator";
   };
 })

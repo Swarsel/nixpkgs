@@ -1,22 +1,17 @@
 {
   lib,
-  mkMesonLibrary,
-
-  nix-util,
-  nix-store,
-  nlohmann_json,
   libgit2,
-
+  mkMesonLibrary,
+  nix-store,
+  nix-util,
+  nlohmann_json,
   # Configuration Options
-
   version,
 }:
 
 mkMesonLibrary (finalAttrs: {
-  pname = "nix-fetchers";
   inherit version;
-
-  workDir = ./.;
+  pname = "nix-fetchers";
 
   buildInputs = [
     libgit2
@@ -27,6 +22,8 @@ mkMesonLibrary (finalAttrs: {
     nix-util
     nlohmann_json
   ];
+
+  workDir = ./.;
 
   meta = {
     platforms = lib.platforms.unix ++ lib.platforms.windows;

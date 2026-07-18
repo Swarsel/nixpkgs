@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule (finalAttrs: {
@@ -17,11 +17,6 @@ buildGoModule (finalAttrs: {
 
   vendorHash = "sha256-487PKbLfeiB2IRWGvclp/M76RprVYcaE2v8FCqlPX9I=";
 
-  ldflags = [
-    "-s"
-    "-w"
-  ];
-
   # this test requires network access, therefore it should not be run
   preCheck = ''
     rm ./pkg/edition/bedrock/geyser/managed/download_test.go
@@ -29,13 +24,20 @@ buildGoModule (finalAttrs: {
 
   excludedPackages = [ ".web" ];
 
+  ldflags = [
+    "-s"
+    "-w"
+  ];
+
   meta = {
     description = "High-Performance, Low-Memory, Lightweight, Extensible Minecraft Reverse Proxy";
+
     longDescription = ''
       Gate is an extensible, high performant & paralleled Minecraft proxy server
       with scalability, flexibility & excellent server version support - written in Go
       and ready for the cloud!
     '';
+
     homepage = "https://github.com/minekube/gate";
     license = lib.licenses.asl20;
     maintainers = with lib.maintainers; [ XBagon ];

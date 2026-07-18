@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   go,
   nix-update-script,
   testers,
@@ -20,16 +20,6 @@ buildGoModule (finalAttrs: {
   };
 
   vendorHash = null;
-
-  subPackages = [ "cmd/vclusterctl" ];
-
-  ldflags = [
-    "-s"
-    "-w"
-    "-X main.version=${finalAttrs.version}"
-    "-X main.goVersion=${lib.getVersion go}"
-  ];
-
   # Test is disabled because e2e tests expect k8s.
   doCheck = false;
 
@@ -41,23 +31,34 @@ buildGoModule (finalAttrs: {
     runHook postInstall
   '';
 
+  ldflags = [
+    "-s"
+    "-w"
+    "-X main.version=${finalAttrs.version}"
+    "-X main.goVersion=${lib.getVersion go}"
+  ];
+
+  subPackages = [ "cmd/vclusterctl" ];
+
   passthru.tests.version = testers.testVersion {
-    package = vcluster;
     command = "HOME=$(mktemp -d) vcluster --version";
+    package = vcluster;
   };
 
   passthru.updateScript = nix-update-script { };
 
   meta = {
-    changelog = "https://github.com/loft-sh/vcluster/releases/tag/v${finalAttrs.version}";
     description = "Create fully functional virtual Kubernetes clusters";
-    downloadPage = "https://github.com/loft-sh/vcluster";
     homepage = "https://www.vcluster.com/";
+    changelog = "https://github.com/loft-sh/vcluster/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.asl20;
-    mainProgram = "vcluster";
+
     maintainers = with lib.maintainers; [
       qjoly
       roehrijn
     ];
+
+    mainProgram = "vcluster";
+    downloadPage = "https://github.com/loft-sh/vcluster";
   };
 })

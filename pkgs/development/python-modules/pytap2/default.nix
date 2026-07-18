@@ -1,15 +1,14 @@
 {
   lib,
+  fetchFromGitHub,
   buildPythonPackage,
   net-tools,
-  fetchFromGitHub,
   pytestCheckHook,
 }:
 
 buildPythonPackage rec {
   pname = "pytap2";
   version = "2.3.0";
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "johnthagen";
@@ -19,9 +18,8 @@ buildPythonPackage rec {
   };
 
   propagatedBuildInputs = [ net-tools ];
-
   nativeCheckInputs = [ pytestCheckHook ];
-
+  format = "setuptools";
   pythonImportsCheck = [ "pytap2" ];
 
   meta = {

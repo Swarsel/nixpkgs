@@ -1,33 +1,28 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  fetchpatch2,
-
+  buildPythonPackage,
   # build-system
   cython,
-  meson-python,
-  ninja,
-  setuptools,
-
-  # dependencies
-  numpy,
-  scipy,
-  nibabel,
-  sympy,
-  transforms3d,
-
+  fetchpatch2,
   # optional-dependencies
   matplotlib,
-
+  meson-python,
+  nibabel,
+  ninja,
+  # dependencies
+  numpy,
   # tests
   pytestCheckHook,
+  scipy,
+  setuptools,
+  sympy,
+  transforms3d,
 }:
 
 buildPythonPackage rec {
-  version = "0.6.1";
   pname = "nipy";
-  pyproject = true;
+  version = "0.6.1";
 
   src = fetchFromGitHub {
     owner = "nipy";
@@ -39,14 +34,17 @@ buildPythonPackage rec {
   patches = [
     # https://github.com/nipy/nipy/pull/589
     (fetchpatch2 {
-      url = "https://github.com/nipy/nipy/pull/589/commits/76f2aae95dede9b8ac025dc32ce94791904f25e4.patch?full_index=1";
       hash = "sha256-Rnwfx6JKl+nE9wvBGKXFtizjuB4Bl1QDF88CvSZU/RQ=";
+      url = "https://github.com/nipy/nipy/pull/589/commits/76f2aae95dede9b8ac025dc32ce94791904f25e4.patch?full_index=1";
     })
   ];
 
   postPatch = ''
     patchShebangs nipy/_build_utils/cythoner.py
   '';
+
+  doCheck = false; # partial imports … circular dependencies. needs more time to figure out.
+  nativeCheckInputs = [ pytestCheckHook ] ++ optional-dependencies.optional;
 
   build-system = [
     cython
@@ -65,10 +63,7 @@ buildPythonPackage rec {
   ];
 
   optional-dependencies.optional = [ matplotlib ];
-
-  nativeCheckInputs = [ pytestCheckHook ] ++ optional-dependencies.optional;
-
-  doCheck = false; # partial imports … circular dependencies. needs more time to figure out.
+  pyproject = true;
 
   pythonImportsCheck = [
     "nipy"
@@ -77,9 +72,9 @@ buildPythonPackage rec {
   ];
 
   meta = {
-    homepage = "https://nipy.org/nipy";
     description = "Software for structural and functional neuroimaging analysis";
-    downloadPage = "https://github.com/nipy/nipy";
+    homepage = "https://nipy.org/nipy";
     license = lib.licenses.bsd3;
+    downloadPage = "https://github.com/nipy/nipy";
   };
 }

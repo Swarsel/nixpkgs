@@ -1,13 +1,13 @@
 {
   lib,
-  mkCoqDerivation,
   coq,
+  mkCoqDerivation,
   version ? null,
 }:
 mkCoqDerivation {
-  owner = "zhengpushi";
-  pname = "CoqMatrix";
   inherit version;
+  pname = "CoqMatrix";
+
   defaultVersion =
     with lib.versions;
     lib.switch coq.version [
@@ -16,12 +16,16 @@ mkCoqDerivation {
         out = "1.0.6";
       }
     ] null;
+
+  owner = "zhengpushi";
+
   release = {
     "1.0.6".hash = "sha256-XsM3fSstvB6GE5OqT7CFro+RWiYEgJsoQ5gXd74VaK0=";
   };
+
   meta = {
-    homepage = "https://github.com/zhengpushi/CoqMatrix";
     description = "Matrix math";
+    homepage = "https://github.com/zhengpushi/CoqMatrix";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ damhiya ];
   };

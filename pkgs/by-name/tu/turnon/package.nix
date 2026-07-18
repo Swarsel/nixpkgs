@@ -1,16 +1,16 @@
 {
   lib,
   stdenv,
-  fetchFromCodeberg,
-  rustPlatform,
-  cairo,
-  pango,
-  pkg-config,
-  libadwaita,
   blueprint-compiler,
-  wrapGAppsHook4,
+  cairo,
+  fetchFromCodeberg,
   gsettings-desktop-schemas,
   just,
+  libadwaita,
+  pango,
+  pkg-config,
+  rustPlatform,
+  wrapGAppsHook4,
 }:
 
 let
@@ -27,16 +27,16 @@ rustPlatform.buildRustPackage {
     hash = "sha256-2dPvIuD7gVfhr/E5szJ5rqWL5yRJKZoj2lV+W9CyCjI=";
   };
 
-  cargoHash = "sha256-e0Hds/y3qh7Th+ZTqHIfVleh3vmDlKKJ5Bwt64g5c60=";
+  postPatch = ''
+    substituteInPlace justfile \
+        --replace-fail "version := \`git describe\`" "version := \"${version}\"" \
+        --replace-fail "DESTPREFIX := '/app'" "DESTPREFIX := '$out'" \
+        --replace-fail "APPID := 'de.swsnr.turnon.Devel'" "APPID := 'de.swsnr.turnon'" \
+        --replace-fail "just --list" "just compile" # Replacing the default recipe with the compile command as just-hook-buildPhase runs the default recipe to compile the package.
+    substituteInPlace de.swsnr.turnon.desktop --replace-fail "DBusActivatable=true" "DBusActivatable=false"
+  '';
 
-  doCheck = true;
-
-  checkFlags = [
-    # Skipped due to "Permission denied (os error 13)"
-    "--skip=net::ping::tests::ping_loopback_ipv4"
-    "--skip=net::ping::tests::ping_loopback_ipv6"
-    "--skip=net::ping::tests::ping_with_timeout_unroutable"
-  ];
+  strictDeps = true;
 
   nativeBuildInputs = [
     cairo
@@ -52,27 +52,27 @@ rustPlatform.buildRustPackage {
     gsettings-desktop-schemas
   ];
 
-  strictDeps = true;
-
-  postPatch = ''
-    substituteInPlace justfile \
-        --replace-fail "version := \`git describe\`" "version := \"${version}\"" \
-        --replace-fail "DESTPREFIX := '/app'" "DESTPREFIX := '$out'" \
-        --replace-fail "APPID := 'de.swsnr.turnon.Devel'" "APPID := 'de.swsnr.turnon'" \
-        --replace-fail "just --list" "just compile" # Replacing the default recipe with the compile command as just-hook-buildPhase runs the default recipe to compile the package.
-    substituteInPlace de.swsnr.turnon.desktop --replace-fail "DBusActivatable=true" "DBusActivatable=false"
-  '';
+  cargoHash = "sha256-e0Hds/y3qh7Th+ZTqHIfVleh3vmDlKKJ5Bwt64g5c60=";
 
   postBuild = ''
     cargo build --release
   '';
+
+  doCheck = true;
+
+  checkFlags = [
+    # Skipped due to "Permission denied (os error 13)"
+    "--skip=net::ping::tests::ping_loopback_ipv4"
+    "--skip=net::ping::tests::ping_loopback_ipv6"
+    "--skip=net::ping::tests::ping_with_timeout_unroutable"
+  ];
 
   meta = {
     description = "Turn on devices in your local network";
     homepage = "https://codeberg.org/swsnr/turnon";
     license = lib.licenses.eupl12;
     maintainers = with lib.maintainers; [ mksafavi ];
-    mainProgram = "de.swsnr.turnon";
     platforms = lib.platforms.linux;
+    mainProgram = "de.swsnr.turnon";
   };
 }

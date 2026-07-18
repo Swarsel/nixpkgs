@@ -7,7 +7,6 @@
 python3.pkgs.buildPythonApplication (finalAttrs: {
   pname = "erosmb";
   version = "0.1.5";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "viktor02";
@@ -30,7 +29,6 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
 
   # Project has no tests
   doCheck = false;
-
   doInstallCheck = true;
 
   installCheckPhase = ''
@@ -38,6 +36,8 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     $out/bin/erosmb --help
     runHook postInstallCheck
   '';
+
+  pyproject = true;
 
   meta = {
     description = "SMB network scanner";

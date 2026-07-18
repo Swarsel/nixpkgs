@@ -2,20 +2,20 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  srt,
   bc,
-  pkg-config,
-  perl,
-  openssl,
-  zlib,
   ffmpeg,
-  libvpx,
+  hiredis,
+  jemalloc,
   libopus,
   libuuid,
-  srtp,
-  jemalloc,
+  libvpx,
+  openssl,
   pcre2,
-  hiredis,
+  perl,
+  pkg-config,
+  srt,
+  srtp,
+  zlib,
 }:
 
 stdenv.mkDerivation rec {
@@ -35,22 +35,12 @@ stdenv.mkDerivation rec {
     ./support-ffmpeg-7.patch
   ];
 
-  makeFlags = [
-    "release"
-    "CONFIG_LIBRARY_PATHS="
-    "CONFIG_PKG_PATHS="
-    "GLOBAL_CC=$(CC)"
-    "GLOBAL_CXX=$(CXX)"
-    "GLOBAL_LD=$(CXX)"
-    "SHELL=${stdenv.shell}"
-  ];
-  enableParallelBuilding = true;
-
   nativeBuildInputs = [
     bc
     pkg-config
     perl
   ];
+
   buildInputs = [
     openssl
     srt
@@ -63,6 +53,16 @@ stdenv.mkDerivation rec {
     pcre2
     libuuid
     hiredis
+  ];
+
+  makeFlags = [
+    "release"
+    "CONFIG_LIBRARY_PATHS="
+    "CONFIG_PKG_PATHS="
+    "GLOBAL_CC=$(CC)"
+    "GLOBAL_CXX=$(CXX)"
+    "GLOBAL_LD=$(CXX)"
+    "SHELL=${stdenv.shell}"
   ];
 
   preBuild = ''
@@ -83,14 +83,16 @@ stdenv.mkDerivation rec {
     install -Dm0644 ../misc/conf_examples/Logger.xml $out/share/examples/edge_conf/Logger.xml
   '';
 
+  enableParallelBuilding = true;
+
   meta = {
-    # Marked broken 2025-11-28 because it has failed on Hydra for at least one year.
-    broken = true;
     description = "Open-source streaming video service with sub-second latency";
-    mainProgram = "OvenMediaEngine";
     homepage = "https://ovenmediaengine.com";
     license = lib.licenses.agpl3Only;
     maintainers = with lib.maintainers; [ lukegb ];
     platforms = lib.platforms.linux;
+    mainProgram = "OvenMediaEngine";
+    # Marked broken 2025-11-28 because it has failed on Hydra for at least one year.
+    broken = true;
   };
 }

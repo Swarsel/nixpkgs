@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   poetry-core,
   pytest-asyncio,
   pytest-cov-stub,
@@ -11,7 +11,6 @@
 buildPythonPackage rec {
   pname = "aionut";
   version = "4.3.4";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "bdraco";
@@ -20,14 +19,14 @@ buildPythonPackage rec {
     hash = "sha256-mpWAxv6RUTecGp6Zdka+gC+12JWcPQaKgJlqGgEINu0=";
   };
 
-  build-system = [ poetry-core ];
-
   nativeCheckInputs = [
     pytest-asyncio
     pytest-cov-stub
     pytestCheckHook
   ];
 
+  build-system = [ poetry-core ];
+  pyproject = true;
   pythonImportsCheck = [ "aionut" ];
 
   meta = {

@@ -2,10 +2,9 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  fetchpatch,
-  cmake,
-  nasm,
   alsa-lib,
+  cmake,
+  fetchpatch,
   ffmpeg_7,
   glew,
   glib,
@@ -15,8 +14,9 @@
   libpng,
   libpulseaudio,
   libvorbis,
-  udev,
   libxtst,
+  nasm,
+  udev,
   zlib,
 }:
 
@@ -33,16 +33,16 @@ stdenv.mkDerivation {
 
   patches = [
     (fetchpatch {
+      hash = "sha256-m+5sP+mIpcSjioRBdzChqja5zwNcwdSNAfvSJ2Lww+g=";
       # Fix building with newer FFmpeg
       name = "fix-building-with-newer-ffmpeg.patch";
       url = "https://github.com/stepmania/stepmania/commit/3fef5ef60b7674d6431f4e1e4ba8c69b0c21c023.patch?full_index=1";
-      hash = "sha256-m+5sP+mIpcSjioRBdzChqja5zwNcwdSNAfvSJ2Lww+g=";
     })
     (fetchpatch {
+      hash = "sha256-XacaMn29FwG3WgFBfB890I8mzVrvuOL4wPWcHHNYfXM=";
       # Fix crash on loading animated previews while using newer FFmpeg
       name = "fix-crash-newer-ffmpeg.patch";
       url = "https://github.com/stepmania/stepmania/commit/e0d2a5182dcd855e181fffa086273460c553c7ff.patch?full_index=1";
-      hash = "sha256-XacaMn29FwG3WgFBfB890I8mzVrvuOL4wPWcHHNYfXM=";
     })
     # FFmpeg 7 frame_number compatibility fix
     ./ffmpeg-7.patch
@@ -93,11 +93,11 @@ stdenv.mkDerivation {
   '';
 
   meta = {
-    homepage = "https://www.stepmania.com/";
     description = "Free dance and rhythm game for Windows, Mac, and Linux";
-    platforms = lib.platforms.linux;
+    homepage = "https://www.stepmania.com/";
     license = lib.licenses.mit; # expat version
     maintainers = with lib.maintainers; [ h7x4 ];
+    platforms = lib.platforms.linux;
     mainProgram = "stepmania";
   };
 }

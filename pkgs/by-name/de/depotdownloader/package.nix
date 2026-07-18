@@ -1,7 +1,7 @@
 {
   lib,
-  buildDotnetModule,
   fetchFromGitHub,
+  buildDotnetModule,
   dotnetCorePackages,
 }:
 
@@ -16,11 +16,10 @@ buildDotnetModule rec {
     hash = "sha256-zduNWIQi+ItNSh9RfRfY0giIw/tMQIMRh9woUzQ5pJw=";
   };
 
-  projectFile = "DepotDownloader.sln";
-  nugetDeps = ./deps.json;
-  dotnet-sdk = dotnetCorePackages.sdk_9_0;
   dotnet-runtime = dotnetCorePackages.runtime_9_0;
-
+  dotnet-sdk = dotnetCorePackages.sdk_9_0;
+  nugetDeps = ./deps.json;
+  projectFile = "DepotDownloader.sln";
   passthru.updateScript = ./update.sh;
 
   meta = {
@@ -29,11 +28,13 @@ buildDotnetModule rec {
     changelog = "https://github.com/SteamRE/DepotDownloader/releases/tag/DepotDownloader_${version}";
     license = lib.licenses.gpl2Only;
     maintainers = [ lib.maintainers.babbaj ];
+
     platforms = [
       "x86_64-linux"
       "aarch64-linux"
       "aarch64-darwin"
     ];
+
     mainProgram = "DepotDownloader";
   };
 }

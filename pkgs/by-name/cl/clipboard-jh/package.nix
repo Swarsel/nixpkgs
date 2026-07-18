@@ -2,16 +2,16 @@
   lib,
   stdenv,
   fetchFromGitHub,
+  alsa-lib,
   cmake,
   libffi,
-  pkg-config,
-  wayland-protocols,
-  wayland-scanner,
-  wayland,
   libx11,
   nix-update-script,
-  alsa-lib,
   openssl,
+  pkg-config,
+  wayland,
+  wayland-protocols,
+  wayland-scanner,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -46,8 +46,6 @@ stdenv.mkDerivation (finalAttrs: {
     alsa-lib
   ];
 
-  cmakeBuildType = "MinSizeRel";
-
   cmakeFlags = [
     "-Wno-dev"
     "-DINSTALL_PREFIX=${placeholder "out"}"
@@ -57,6 +55,7 @@ stdenv.mkDerivation (finalAttrs: {
     patchelf $out/bin/cb --add-rpath $out/lib
   '';
 
+  cmakeBuildType = "MinSizeRel";
   passthru.updateScript = nix-update-script { };
 
   meta = {

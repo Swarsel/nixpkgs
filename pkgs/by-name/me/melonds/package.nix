@@ -1,11 +1,12 @@
 {
   lib,
+  stdenv,
+  fetchFromGitHub,
   SDL2,
   cmake,
   enet,
-  kdePackages,
-  fetchFromGitHub,
   faad2,
+  kdePackages,
   libGL,
   libarchive,
   libpcap,
@@ -13,7 +14,6 @@
   pipewire,
   pkg-config,
   qt6,
-  stdenv,
   unstableGitUpdater,
   wayland,
   zstd,
@@ -37,6 +37,8 @@ stdenv.mkDerivation (finalAttrs: {
     rev = "10a173b5536fc75cd93f8a3868349dad963542ef";
     hash = "sha256-YsVCU40BZgYoxyuscbD0Ab613eUIgYlXJkm0KJQg+yY=";
   };
+
+  strictDeps = true;
 
   nativeBuildInputs = [
     cmake
@@ -64,8 +66,6 @@ stdenv.mkDerivation (finalAttrs: {
 
   cmakeFlags = [ (lib.cmakeBool "USE_QT6" true) ];
 
-  strictDeps = true;
-
   qtWrapperArgs =
     lib.optionals stdenv.hostPlatform.isLinux [
       "--prefix LD_LIBRARY_PATH : ${
@@ -85,8 +85,8 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   meta = {
-    homepage = "https://melonds.kuribo64.net/";
     description = "Work in progress Nintendo DS emulator";
+
     longDescription = ''
       melonDS aims at providing fast and accurate Nintendo DS emulation. While
       it is still a work in progress, it has a pretty solid set of features:
@@ -104,12 +104,16 @@ stdenv.mkDerivation (finalAttrs: {
       - (WIP) GBA slot add-ons
       - and more are planned!
     '';
+
+    homepage = "https://melonds.kuribo64.net/";
     license = with lib.licenses; [ gpl3Plus ];
-    mainProgram = "melonDS";
+
     maintainers = with lib.maintainers; [
       artemist
       benley
     ];
+
     platforms = lib.platforms.linux ++ lib.platforms.darwin;
+    mainProgram = "melonDS";
   };
 })

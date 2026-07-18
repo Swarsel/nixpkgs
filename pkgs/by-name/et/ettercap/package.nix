@@ -1,11 +1,11 @@
 {
   lib,
   stdenv,
+  fetchFromGitHub,
   atk,
   bison,
   cmake,
   curl,
-  fetchFromGitHub,
   flex,
   geoip,
   glib,
@@ -59,12 +59,6 @@ stdenv.mkDerivation (finalAttrs: {
     zlib
   ];
 
-  preConfigure = ''
-    substituteInPlace CMakeLists.txt \
-      --replace-fail /etc \$\{INSTALL_PREFIX\}/etc \
-      --replace-fail /usr \$\{INSTALL_PREFIX\}
-  '';
-
   cmakeFlags = [
     "-DBUNDLED_LIBS=Off"
     "-DGTK3_GLIBCONFIG_INCLUDE_DIR=${glib.out}/lib/glib-2.0/include"
@@ -73,8 +67,15 @@ stdenv.mkDerivation (finalAttrs: {
   # TODO: Remove after the next release (0.8.4 should work without this):
   env.NIX_CFLAGS_COMPILE = toString [ "-I${harfbuzz.dev}/include/harfbuzz" ];
 
+  preConfigure = ''
+    substituteInPlace CMakeLists.txt \
+      --replace-fail /etc \$\{INSTALL_PREFIX\}/etc \
+      --replace-fail /usr \$\{INSTALL_PREFIX\}
+  '';
+
   meta = {
     description = "Comprehensive suite for man in the middle attacks";
+
     longDescription = ''
       Ettercap is a comprehensive suite for man in the middle attacks. It
       features sniffing of live connections, content filtering on the fly and
@@ -82,10 +83,11 @@ stdenv.mkDerivation (finalAttrs: {
       of many protocols and includes many features for network and host
       analysis.
     '';
+
     homepage = "https://www.ettercap-project.org/";
     changelog = "https://github.com/Ettercap/ettercap/blob/master/CHANGELOG";
     license = lib.licenses.gpl2Plus;
-    platforms = lib.platforms.unix;
     maintainers = with lib.maintainers; [ pSub ];
+    platforms = lib.platforms.unix;
   };
 })

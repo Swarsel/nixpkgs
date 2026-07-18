@@ -1,22 +1,23 @@
 {
-  stdenv,
   lib,
-  php,
-  autoreconfHook,
+  stdenv,
   fetchurl,
-  re2c,
+  autoreconfHook,
   nix-update-script,
+  php,
+  re2c,
 }:
 
 {
   pname,
   version,
-  internalDeps ? [ ],
-  peclDeps ? [ ],
   buildInputs ? [ ],
-  nativeBuildInputs ? [ ],
-  postPhpize ? "",
+  internalDeps ? [ ],
   makeFlags ? [ ],
+  nativeBuildInputs ? [ ],
+  passthru ? { },
+  peclDeps ? [ ],
+  postPhpize ? "",
   src ? fetchurl (
     {
       url = "https://pecl.php.net/get/${pname}-${version}.tgz";
@@ -29,28 +30,25 @@
       ]
     ) args
   ),
-  passthru ? { },
   ...
 }@args:
 
 stdenv.mkDerivation (
   args
   // {
-    name = "php-${pname}-${version}";
-    extensionName = pname;
-
     inherit src;
-
     strictDeps = true;
+
     nativeBuildInputs = [
       php
       autoreconfHook
       re2c
     ]
     ++ nativeBuildInputs;
-    buildInputs = [ php ] ++ peclDeps ++ buildInputs;
 
+    buildInputs = [ php ] ++ peclDeps ++ buildInputs;
     makeFlags = [ "EXTENSION_DIR=$(out)/lib/php/extensions" ] ++ makeFlags;
+    checkPhase = "NO_INTERACTON=yes make test";
 
     autoreconfPhase = ''
       phpize
@@ -59,7 +57,9 @@ stdenv.mkDerivation (
         dep: "mkdir -p ext; ln -s ${dep.dev}/include ext/${dep.extensionName}"
       ) internalDeps}
     '';
-    checkPhase = "NO_INTERACTON=yes make test";
+
+    extensionName = pname;
+    name = "php-${pname}-${version}";
 
     passthru = passthru // {
       # Thes flags were introduced for `nix-update` so that it can update

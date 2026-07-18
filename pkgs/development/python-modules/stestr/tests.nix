@@ -1,12 +1,9 @@
 { buildPythonPackage, stestr }:
 
 buildPythonPackage {
-  pname = "stestr-tests";
   inherit (stestr) version src;
-  pyproject = false;
+  pname = "stestr-tests";
 
-  dontBuild = true;
-  dontInstall = true;
   preConfigure = ''
     pythonOutputDistPhase() { touch $dist; }
   '';
@@ -17,4 +14,8 @@ buildPythonPackage {
     export PATH=$out/bin:$PATH
     export HOME=$TMPDIR
   '';
+
+  dontBuild = true;
+  dontInstall = true;
+  pyproject = false;
 }

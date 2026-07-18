@@ -18,12 +18,14 @@ stdenv.mkDerivation (finalAttrs: {
   makeFlags = [ "PREFIX=${placeholder "out"}" ];
 
   meta = {
-    homepage = "https://codeberg.org/jbruchon/dev86";
     description = "C compiler, assembler and linker environment for the production of 8086 executables";
+    homepage = "https://codeberg.org/jbruchon/dev86";
     license = lib.licenses.gpl2Plus;
+
     maintainers = with lib.maintainers; [
       sigmasquadron
     ];
+
     platforms = lib.platforms.linux;
   };
 })

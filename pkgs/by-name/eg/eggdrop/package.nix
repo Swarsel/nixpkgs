@@ -20,7 +20,10 @@ stdenv.mkDerivation (finalAttrs: {
     tcl
   ];
 
-  hardeningDisable = [ "format" ];
+  configureFlags = [
+    "--with-tcllib=${tcl}/lib/lib${tcl.libPrefix}${stdenv.hostPlatform.extensions.sharedLibrary}"
+    "--with-tclinc=${tcl}/include/tcl.h"
+  ];
 
   preConfigure = ''
     prefix=$out/eggdrop
@@ -31,16 +34,13 @@ stdenv.mkDerivation (finalAttrs: {
     make config
   '';
 
-  configureFlags = [
-    "--with-tcllib=${tcl}/lib/lib${tcl.libPrefix}${stdenv.hostPlatform.extensions.sharedLibrary}"
-    "--with-tclinc=${tcl}/include/tcl.h"
-  ];
+  hardeningDisable = [ "format" ];
 
   meta = {
-    license = lib.licenses.gpl2Plus;
-    platforms = lib.platforms.unix;
-    homepage = "https://www.eggheads.org";
     description = "Internet Relay Chat (IRC) bot";
+    homepage = "https://www.eggheads.org";
+    license = lib.licenses.gpl2Plus;
     maintainers = with lib.maintainers; [ EpicEric ];
+    platforms = lib.platforms.unix;
   };
 })

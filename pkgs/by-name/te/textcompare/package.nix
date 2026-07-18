@@ -5,13 +5,13 @@
   desktop-file-utils,
   gjs,
   gobject-introspection,
-  gtksourceview5,
   gtk4,
+  gtksourceview5,
   libadwaita,
   meson,
   ninja,
-  wrapGAppsHook4,
   nix-update-script,
+  wrapGAppsHook4,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -54,7 +54,7 @@ stdenv.mkDerivation (finalAttrs: {
     homepage = "https://github.com/josephmawa/TextCompare";
     license = lib.licenses.gpl3Plus;
     maintainers = with lib.maintainers; [ iamanaws ];
-    mainProgram = "io.github.josephmawa.TextCompare";
     platforms = lib.lists.intersectLists lib.platforms.linux gjs.meta.platforms;
+    mainProgram = "io.github.josephmawa.TextCompare";
   };
 })

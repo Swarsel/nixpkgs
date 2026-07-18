@@ -2,15 +2,15 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  rocmUpdateScript,
-  cmake,
-  rocm-cmake,
-  rocprim,
   clr,
-  gtest,
+  cmake,
   gbenchmark,
-  buildTests ? false,
+  gtest,
+  rocm-cmake,
+  rocmUpdateScript,
+  rocprim,
   buildBenchmarks ? false,
+  buildTests ? false,
   gpuTargets ? clr.localGpuTargets or [ ],
 }:
 
@@ -18,6 +18,18 @@
 stdenv.mkDerivation (finalAttrs: {
   pname = "hipcub";
   version = "7.2.3";
+
+  src = fetchFromGitHub {
+    owner = "ROCm";
+    repo = "rocm-libraries";
+    rev = "rocm-${finalAttrs.version}";
+    hash = "sha256-geO6LS1osKAlmVRtiZ6keqFHsJccyB7pRZdWPEkue2M=";
+
+    sparseCheckout = [
+      "projects/hipcub"
+      "shared"
+    ];
+  };
 
   outputs = [
     "out"
@@ -28,18 +40,6 @@ stdenv.mkDerivation (finalAttrs: {
   ++ lib.optionals buildBenchmarks [
     "benchmark"
   ];
-
-  src = fetchFromGitHub {
-    owner = "ROCm";
-    repo = "rocm-libraries";
-    rev = "rocm-${finalAttrs.version}";
-    sparseCheckout = [
-      "projects/hipcub"
-      "shared"
-    ];
-    hash = "sha256-geO6LS1osKAlmVRtiZ6keqFHsJccyB7pRZdWPEkue2M=";
-  };
-  sourceRoot = "${finalAttrs.src.name}/projects/hipcub";
 
   nativeBuildInputs = [
     cmake
@@ -88,13 +88,14 @@ stdenv.mkDerivation (finalAttrs: {
       rmdir $out/bin
     '';
 
+  sourceRoot = "${finalAttrs.src.name}/projects/hipcub";
   passthru.updateScript = rocmUpdateScript { inherit finalAttrs; };
 
   meta = {
     description = "Thin wrapper library on top of rocPRIM or CUB";
     homepage = "https://github.com/ROCm/rocm-libraries/tree/develop/projects/hipcub";
     license = with lib.licenses; [ bsd3 ];
-    teams = [ lib.teams.rocm ];
     platforms = lib.platforms.linux;
+    teams = [ lib.teams.rocm ];
   };
 })

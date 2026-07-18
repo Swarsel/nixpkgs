@@ -1,10 +1,10 @@
 {
-  callPackage,
   fetchFromGitHub,
-  pkgs,
   attachPkgs,
-  tiles ? true,
+  callPackage,
+  pkgs,
   debug ? false,
+  tiles ? true,
   useXdgDir ? false,
 }:
 

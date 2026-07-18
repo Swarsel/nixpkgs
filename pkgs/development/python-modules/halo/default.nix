@@ -1,8 +1,8 @@
 {
+  lib,
   buildPythonPackage,
   colorama,
   fetchPypi,
-  lib,
   log-symbols,
   six,
   spinners,
@@ -12,7 +12,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "halo";
   version = "0.0.31";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit (finalAttrs) pname version;
@@ -29,6 +28,7 @@ buildPythonPackage (finalAttrs: {
 
   # Tests are not included in the PyPI distribution and the git repo does not have tagged releases
   doCheck = false;
+  format = "setuptools";
   pythonImportsCheck = [ "halo" ];
 
   meta = {

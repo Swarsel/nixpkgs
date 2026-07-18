@@ -1,6 +1,6 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
   autoreconfHook,
   cxxtest,
@@ -18,9 +18,7 @@ stdenv.mkDerivation {
   };
 
   strictDeps = true;
-
   nativeBuildInputs = [ autoreconfHook ];
-
   doCheck = true;
   nativeCheckInputs = [ cxxtest ];
   checkInputs = [ cxxtest ];
@@ -41,6 +39,7 @@ stdenv.mkDerivation {
 
   meta = {
     description = "Simple statistics from the command line interface (CLI), fast";
+
     longDescription = ''
       This is a lightweight, fast tool for calculating basic descriptive
       statistics from the command line. Inspired by
@@ -48,8 +47,9 @@ stdenv.mkDerivation {
       in C++, allowing for faster computation of statistics given larger
       non-trivial data sets.
     '';
-    license = lib.licenses.mit;
+
     homepage = "https://github.com/simonccarter/sta";
+    license = lib.licenses.mit;
     maintainers = [ ];
     platforms = lib.platforms.all;
     mainProgram = "sta";

@@ -1,17 +1,17 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchurl,
-  perl,
-  ghostscript,
   coreutils,
-  gnugrep,
-  which,
-  file,
-  gnused,
   dpkg,
-  makeBinaryWrapper,
+  file,
+  ghostscript,
+  gnugrep,
+  gnused,
   libredirect,
+  makeBinaryWrapper,
+  perl,
+  which,
   debugLvl ? "0",
 }:
 
@@ -25,13 +25,13 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   strictDeps = true;
-  buildInputs = [ perl ];
+
   nativeBuildInputs = [
     dpkg
     makeBinaryWrapper
   ];
 
-  dontUnpack = true;
+  buildInputs = [ perl ];
 
   installPhase = ''
     runHook preInstall
@@ -100,16 +100,20 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  dontUnpack = true;
+
   meta = {
     description = "Brother DCP-T720DW printer driver";
+    homepage = "http://www.brother.com/";
     license = lib.licenses.unfree;
     sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
     maintainers = with lib.maintainers; [ mimahlavacek ];
+
     platforms = [
       "x86_64-linux"
       "i686-linux"
     ];
+
     downloadPage = "https://support.brother.com/g/b/downloadtop.aspx?c=cn_ot&lang=en&prod=dcpt720dw_all";
-    homepage = "http://www.brother.com/";
   };
 })

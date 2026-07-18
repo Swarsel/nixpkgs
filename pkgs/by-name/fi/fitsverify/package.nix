@@ -32,15 +32,17 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "FITS File Format-Verification Tool";
-    mainProgram = "fitsverify";
+
     longDescription = ''
       Fitsverify is a computer program that rigorously checks whether a FITS
       (Flexible Image Transport System) data file conforms to all the
       requirements defined in Version 3.0 of the FITS Standard document.
     '';
+
     homepage = "https://heasarc.gsfc.nasa.gov/docs/software/ftools/fitsverify/";
     license = lib.licenses.mit;
-    platforms = with lib.platforms; linux;
     maintainers = with lib.maintainers; [ panicgh ];
+    platforms = with lib.platforms; linux;
+    mainProgram = "fitsverify";
   };
 })

@@ -1,19 +1,18 @@
 {
   lib,
   fetchFromGitHub,
-  fetchpatch,
   buildPythonPackage,
-  embree,
   cython,
+  embree,
+  fetchpatch,
   numpy,
-  setuptools,
   pytestCheckHook,
+  setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "embreex";
   version = "4.4.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "trimesh";
@@ -21,6 +20,17 @@ buildPythonPackage rec {
     tag = version;
     hash = "sha256-mUPc9CMHsFYb1ELBmj+XXCjYEIW1iV8ZaRCQ40tYS8w=";
   };
+
+  buildInputs = [
+    embree
+  ];
+
+  nativeCheckInputs = [ pytestCheckHook ];
+
+  preCheck = ''
+    # conflicts with $out
+    rm -rf embreex/
+  '';
 
   build-system = [
     setuptools
@@ -32,9 +42,7 @@ buildPythonPackage rec {
     numpy
   ];
 
-  buildInputs = [
-    embree
-  ];
+  pyproject = true;
 
   pythonImportsCheck = [
     "embreex"
@@ -43,19 +51,12 @@ buildPythonPackage rec {
     "embreex.rtcore_scene"
   ];
 
-  preCheck = ''
-    # conflicts with $out
-    rm -rf embreex/
-  '';
-
-  nativeCheckInputs = [ pytestCheckHook ];
-
   meta = {
+    inherit (embree.meta) platforms;
     description = "Maintained PyEmbree fork, bindings for Intel's Embree ray engine";
     homepage = "https://github.com/trimesh/embreex";
     changelog = "https://github.com/trimesh/embreex/releases/tag/${src.tag}";
     license = lib.licenses.bsd2;
     maintainers = with lib.maintainers; [ pbsds ];
-    inherit (embree.meta) platforms;
   };
 }

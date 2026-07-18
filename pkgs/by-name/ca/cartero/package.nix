@@ -2,25 +2,25 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  rustPlatform,
+  blueprint-compiler,
+  cargo,
+  desktop-file-utils,
+  glib,
+  gtk4,
+  gtksourceview5,
+  hicolor-icon-theme,
+  libadwaita,
+  libxml2,
   meson,
   ninja,
-  pkg-config,
-  cargo,
-  rustc,
-  blueprint-compiler,
-  wrapGAppsHook4,
-  desktop-file-utils,
-  libxml2,
-  libadwaita,
-  gtksourceview5,
   openssl,
-  python313,
-  gtk4,
-  shared-mime-info,
-  glib,
-  hicolor-icon-theme,
   pango,
+  pkg-config,
+  python313,
+  rustPlatform,
+  rustc,
+  shared-mime-info,
+  wrapGAppsHook4,
 }:
 stdenv.mkDerivation (finalAttrs: {
   pname = "cartero";
@@ -33,10 +33,9 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-EBQqJuIcgpLtRu5DcAaWnCiFyiuuG+DCkdAWsoWwn3E=";
   };
 
-  cargoDeps = rustPlatform.fetchCargoVendor {
-    inherit (finalAttrs) pname version src;
-    hash = "sha256-Te6foGMcy8q0u6wn/D4RkhoOEjke5HTv3xxaS2EbiIE=";
-  };
+  postPatch = ''
+    patchShebangs --build build-aux/gen-version.py
+  '';
 
   nativeBuildInputs = [
     meson
@@ -64,12 +63,14 @@ stdenv.mkDerivation (finalAttrs: {
     libadwaita
   ];
 
-  postPatch = ''
-    patchShebangs --build build-aux/gen-version.py
-  '';
+  cargoDeps = rustPlatform.fetchCargoVendor {
+    inherit (finalAttrs) pname version src;
+    hash = "sha256-Te6foGMcy8q0u6wn/D4RkhoOEjke5HTv3xxaS2EbiIE=";
+  };
 
   meta = {
     description = "Make HTTP requests and test APIs";
+
     longDescription = ''
       Cartero is a graphical HTTP client that can be used
       as a developer tool to test web APIs and perform all
@@ -78,15 +79,18 @@ stdenv.mkDerivation (finalAttrs: {
       multiple request methods as well as attaching body
       payloads to compatible requests.
     '';
+
     homepage = "https://cartero.danirod.es";
     changelog = "https://github.com/danirod/cartero/releases";
     license = lib.licenses.gpl3Plus;
-    mainProgram = "cartero";
+
     maintainers = with lib.maintainers; [
       aleksana
       amerino
       _0xErwin1
     ];
+
     platforms = lib.platforms.linux;
+    mainProgram = "cartero";
   };
 })

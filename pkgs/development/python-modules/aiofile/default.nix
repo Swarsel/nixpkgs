@@ -1,10 +1,10 @@
 {
   lib,
+  fetchFromGitHub,
   aiomisc,
   aiomisc-pytest,
-  caio,
   buildPythonPackage,
-  fetchFromGitHub,
+  caio,
   pytestCheckHook,
   setuptools,
 }:
@@ -12,7 +12,6 @@
 buildPythonPackage rec {
   pname = "aiofile";
   version = "3.8.6";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "mosquito";
@@ -21,17 +20,14 @@ buildPythonPackage rec {
     hash = "sha256-KBly/aeHHZh7mL8MJ9gmxbqS7PmR4sedtBY/2HCXt54=";
   };
 
-  build-system = [ setuptools ];
-
-  dependencies = [ caio ];
-
   nativeCheckInputs = [
     aiomisc
     aiomisc-pytest
     pytestCheckHook
   ];
 
-  pythonImportsCheck = [ "aiofile" ];
+  build-system = [ setuptools ];
+  dependencies = [ caio ];
 
   disabledTests = [
     # Tests (SystemError) fails randomly during nixpkgs-review
@@ -53,6 +49,9 @@ buildPythonPackage rec {
     "test_unicode_writer"
     "test_write_read_nothing"
   ];
+
+  pyproject = true;
+  pythonImportsCheck = [ "aiofile" ];
 
   meta = {
     description = "File operations with asyncio support";

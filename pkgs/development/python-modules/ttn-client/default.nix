@@ -1,8 +1,8 @@
 {
   lib,
+  fetchFromGitHub,
   aiohttp,
   buildPythonPackage,
-  fetchFromGitHub,
   hatchling,
   pytest-asyncio,
   pytestCheckHook,
@@ -11,7 +11,6 @@
 buildPythonPackage rec {
   pname = "ttn-client";
   version = "1.3.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "angelnu";
@@ -20,21 +19,21 @@ buildPythonPackage rec {
     hash = "sha256-n5AvHE9oe7+vqxUsqqGeVcENU8+I0y0jikbulAHAR3Q=";
   };
 
-  build-system = [ hatchling ];
-
-  dependencies = [ aiohttp ];
-
   nativeCheckInputs = [
     pytest-asyncio
     pytestCheckHook
   ];
 
-  pythonImportsCheck = [ "ttn_client" ];
+  build-system = [ hatchling ];
+  dependencies = [ aiohttp ];
 
   disabledTests = [
     # Test require network access
     "test_connection_auth_error"
   ];
+
+  pyproject = true;
+  pythonImportsCheck = [ "ttn_client" ];
 
   meta = {
     description = "Module to fetch/receive and parse uplink messages from The Thinks Network";

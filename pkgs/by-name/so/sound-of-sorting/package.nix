@@ -2,9 +2,9 @@
   lib,
   stdenv,
   fetchFromGitHub,
+  SDL2,
   fetchpatch,
   pkg-config,
-  SDL2,
   wxwidgets_3_2,
 }:
 
@@ -21,19 +21,19 @@ stdenv.mkDerivation (finalAttrs: {
 
   patches = [
     (fetchpatch {
-      url = "https://github.com/freebsd/freebsd-ports/raw/31ec0266e31910c16b0f69e16a2a693aae20abdf/math/sound-of-sorting/files/patch-src_SortAlgo.cpp";
       extraPrefix = "";
       hash = "sha256-mOo3GsEZ8r8p9ROoel2TO9Z4yF5SmCN0/fUn/2qUKAo=";
+      url = "https://github.com/freebsd/freebsd-ports/raw/31ec0266e31910c16b0f69e16a2a693aae20abdf/math/sound-of-sorting/files/patch-src_SortAlgo.cpp";
     })
     (fetchpatch {
-      url = "https://github.com/freebsd/freebsd-ports/raw/31ec0266e31910c16b0f69e16a2a693aae20abdf/math/sound-of-sorting/files/patch-src_SortAlgo.h";
       extraPrefix = "";
       hash = "sha256-NNSPs0gT6ndeMQWHLHAwLR5nMQGP880Qd6kulDYJYF0=";
+      url = "https://github.com/freebsd/freebsd-ports/raw/31ec0266e31910c16b0f69e16a2a693aae20abdf/math/sound-of-sorting/files/patch-src_SortAlgo.h";
     })
     (fetchpatch {
-      url = "https://github.com/freebsd/freebsd-ports/raw/31ec0266e31910c16b0f69e16a2a693aae20abdf/math/sound-of-sorting/files/patch-src_SortArray.cpp";
       extraPrefix = "";
       hash = "sha256-WxqwcZ2L9HPG4QNf1Xi624aKTM3cRBWN+W00htcIJ5k=";
+      url = "https://github.com/freebsd/freebsd-ports/raw/31ec0266e31910c16b0f69e16a2a693aae20abdf/math/sound-of-sorting/files/patch-src_SortArray.cpp";
     })
   ];
 
@@ -47,11 +47,11 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   meta = {
+    inherit (SDL2.meta) platforms;
     description = "Audibilization and Visualization of Sorting Algorithms";
     homepage = "https://panthema.net/2013/sound-of-sorting/";
     license = lib.licenses.gpl3Plus;
-    mainProgram = "sound-of-sorting";
     maintainers = [ ];
-    inherit (SDL2.meta) platforms;
+    mainProgram = "sound-of-sorting";
   };
 })

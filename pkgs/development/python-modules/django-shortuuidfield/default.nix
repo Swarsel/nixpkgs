@@ -10,7 +10,6 @@
 buildPythonPackage rec {
   pname = "django-shortuuidfield";
   version = "0.1.3";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
@@ -25,7 +24,7 @@ buildPythonPackage rec {
 
   # no tests
   doCheck = false;
-
+  format = "setuptools";
   pythonImportsCheck = [ "shortuuidfield" ];
 
   meta = {

@@ -18,6 +18,19 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-zdq/YKL33jJXa10RqmQIl06rRYnrthWG+umT4dipft0=";
   };
 
+  patches = [
+    (fetchpatch2 {
+      hash = "sha256-ZTcy/EoOBoyOjtXjmT+J/JcbX8lxGKmbWer23lymbWo=";
+      url = "https://github.com/dlbeer/quirc/commit/2c350d8aaf37246e538a2c93b2cce8c78600d2fc.patch?full_index=1";
+    })
+    (fetchpatch2 {
+      hash = "sha256-WLQK7vy34VmgJzppTnRjAcZoSGWVaXQSaGq9An8W0rw=";
+      url = "https://github.com/dlbeer/quirc/commit/257c6c94d99960819ecabf72199e5822f60a3bc5.patch?full_index=1";
+    })
+    # Disable building of Demos to not pull in unwanted dependencies
+    ./0001-Don-t-build-demos.patch
+  ];
+
   postPatch = ''
     # use correct pkg-config / ar / ranlib for cross
     # don't try to change ownership
@@ -39,19 +52,6 @@ stdenv.mkDerivation (finalAttrs: {
     "SDL_LIBS="
     "-o inspect"
     "-o quirc-demo"
-  ];
-
-  patches = [
-    (fetchpatch2 {
-      url = "https://github.com/dlbeer/quirc/commit/2c350d8aaf37246e538a2c93b2cce8c78600d2fc.patch?full_index=1";
-      hash = "sha256-ZTcy/EoOBoyOjtXjmT+J/JcbX8lxGKmbWer23lymbWo=";
-    })
-    (fetchpatch2 {
-      url = "https://github.com/dlbeer/quirc/commit/257c6c94d99960819ecabf72199e5822f60a3bc5.patch?full_index=1";
-      hash = "sha256-WLQK7vy34VmgJzppTnRjAcZoSGWVaXQSaGq9An8W0rw=";
-    })
-    # Disable building of Demos to not pull in unwanted dependencies
-    ./0001-Don-t-build-demos.patch
   ];
 
   preInstall = ''

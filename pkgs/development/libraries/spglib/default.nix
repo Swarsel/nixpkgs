@@ -1,6 +1,6 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
   cmake,
   gfortran,
@@ -26,9 +26,7 @@ stdenv.mkDerivation rec {
   ];
 
   buildInputs = lib.optionals stdenv.hostPlatform.isDarwin [ openmp ];
-
   cmakeFlags = [ "-DSPGLIB_WITH_Fortran=On" ];
-
   doCheck = true;
 
   meta = {

@@ -1,37 +1,31 @@
 {
   lib,
   stdenv,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # build-system
-  pybind11,
-  setuptools,
-  setuptools-scm,
-
-  # nativeBuildInputs
-  cmake,
-  ninja,
-
+  buildPythonPackage,
   # dependencies
   cloudpickle,
+  # nativeBuildInputs
+  cmake,
+  # tests
+  h5py,
   importlib-metadata,
+  ninja,
   numpy,
   orjson,
   packaging,
-  pyvers,
-  torch,
-
-  # tests
-  h5py,
+  # build-system
+  pybind11,
   pytestCheckHook,
+  pyvers,
+  setuptools,
+  setuptools-scm,
+  torch,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "tensordict";
   version = "0.13.0";
-  pyproject = true;
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "pytorch";
@@ -45,17 +39,28 @@ buildPythonPackage (finalAttrs: {
       --replace-fail "pybind11[global]" "pybind11"
   '';
 
+  nativeBuildInputs = [
+    cmake
+    ninja
+  ];
+
+  nativeCheckInputs = [
+    h5py
+    pytestCheckHook
+  ];
+
+  # We have to delete the source because otherwise it is used instead of the installed package.
+  preCheck = ''
+    rm -rf tensordict
+  '';
+
+  __structuredAttrs = true;
+
   build-system = [
     pybind11
     setuptools
     setuptools-scm
   ];
-
-  nativeBuildInputs = [
-    cmake
-    ninja
-  ];
-  dontUseCmakeConfigure = true;
 
   dependencies = [
     cloudpickle
@@ -67,16 +72,16 @@ buildPythonPackage (finalAttrs: {
     torch
   ];
 
-  pythonImportsCheck = [ "tensordict" ];
-
-  # We have to delete the source because otherwise it is used instead of the installed package.
-  preCheck = ''
-    rm -rf tensordict
-  '';
-
-  nativeCheckInputs = [
-    h5py
-    pytestCheckHook
+  disabledTestPaths = [
+    # torch._dynamo.exc.Unsupported: Graph break due to unsupported builtin None.ReferenceType.__new__.
+    "test/test_compile.py"
+  ]
+  ++ lib.optionals stdenv.hostPlatform.isDarwin [
+    # Hangs forever
+    "test/test_distributed.py"
+    # Hangs after testing due to pool usage
+    "test/test_h5.py"
+    "test/test_memmap.py"
   ];
 
   disabledTests = [
@@ -105,22 +110,14 @@ buildPythonPackage (finalAttrs: {
     "test_multiprocessing"
   ];
 
-  disabledTestPaths = [
-    # torch._dynamo.exc.Unsupported: Graph break due to unsupported builtin None.ReferenceType.__new__.
-    "test/test_compile.py"
-  ]
-  ++ lib.optionals stdenv.hostPlatform.isDarwin [
-    # Hangs forever
-    "test/test_distributed.py"
-    # Hangs after testing due to pool usage
-    "test/test_h5.py"
-    "test/test_memmap.py"
-  ];
+  dontUseCmakeConfigure = true;
+  pyproject = true;
+  pythonImportsCheck = [ "tensordict" ];
 
   meta = {
     description = "Pytorch dedicated tensor container";
-    changelog = "https://github.com/pytorch/tensordict/releases/tag/${finalAttrs.src.tag}";
     homepage = "https://github.com/pytorch/tensordict";
+    changelog = "https://github.com/pytorch/tensordict/releases/tag/${finalAttrs.src.tag}";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ GaetanLepage ];
   };

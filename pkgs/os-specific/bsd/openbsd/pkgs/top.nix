@@ -1,6 +1,5 @@
-{ mkDerivation, libcurses }:
+{ libcurses, mkDerivation }:
 mkDerivation {
-  path = "usr.bin/top";
-
   buildInputs = [ libcurses ];
+  path = "usr.bin/top";
 }

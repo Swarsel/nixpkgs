@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   pytestCheckHook,
   pythonAtLeast,
 }:
@@ -9,7 +9,6 @@
 buildPythonPackage rec {
   pname = "py-radix-sr";
   version = "1.0.2";
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "SEKOIA-IO";
@@ -27,8 +26,6 @@ buildPythonPackage rec {
       --replace-warn assertNotEquals assertNotEqual
   '';
 
-  pythonImportsCheck = [ "radix" ];
-
   nativeCheckInputs = [ pytestCheckHook ];
 
   disabledTests = lib.optionals (pythonAtLeast "3.12") [
@@ -36,9 +33,13 @@ buildPythonPackage rec {
     "test_000_check_incref"
   ];
 
+  format = "setuptools";
+  pythonImportsCheck = [ "radix" ];
+
   meta = {
     description = "Python radix tree for IPv4 and IPv6 prefix matching";
     homepage = "https://github.com/SEKOIA-IO/py-radix";
+
     license = with lib.licenses; [
       isc
       bsdOriginal

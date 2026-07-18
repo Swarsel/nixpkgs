@@ -1,8 +1,8 @@
 {
   config,
   lib,
-  options,
   pkgs,
+  options,
   ...
 }:
 let
@@ -22,91 +22,97 @@ in
   ###### interface
   options.services.kubernetes.controllerManager = with lib.types; {
 
+    enable = lib.mkEnableOption "Kubernetes controller manager";
+
     allocateNodeCIDRs = lib.mkOption {
-      description = "Whether to automatically allocate CIDR ranges for cluster nodes.";
       default = true;
+      description = "Whether to automatically allocate CIDR ranges for cluster nodes.";
       type = bool;
     };
 
     bindAddress = lib.mkOption {
-      description = "Kubernetes controller manager listening address.";
       default = "127.0.0.1";
+      description = "Kubernetes controller manager listening address.";
       type = str;
     };
 
     clusterCidr = lib.mkOption {
-      description = "Kubernetes CIDR Range for Pods in cluster.";
       default = top.clusterCidr;
       defaultText = lib.literalExpression "config.${otop.clusterCidr}";
+      description = "Kubernetes CIDR Range for Pods in cluster.";
       type = str;
     };
 
-    enable = lib.mkEnableOption "Kubernetes controller manager";
-
     extraOpts = lib.mkOption {
-      description = "Kubernetes controller manager extra command line options.";
       default = "";
+      description = "Kubernetes controller manager extra command line options.";
       type = separatedString " ";
     };
 
     featureGates = lib.mkOption {
-      description = "Attribute set of feature gates.";
       default = top.featureGates;
       defaultText = lib.literalExpression "config.${otop.featureGates}";
+      description = "Attribute set of feature gates.";
       type = attrsOf bool;
     };
 
     kubeconfig = top.lib.mkKubeConfigOptions "Kubernetes controller manager";
 
     leaderElect = lib.mkOption {
+      default = true;
       description = "Whether to start leader election before executing main loop.";
       type = bool;
-      default = true;
     };
 
     rootCaFile = lib.mkOption {
+      default = top.caFile;
+      defaultText = lib.literalExpression "config.${otop.caFile}";
+
       description = ''
         Kubernetes controller manager certificate authority file included in
         service account's token secret.
       '';
-      default = top.caFile;
-      defaultText = lib.literalExpression "config.${otop.caFile}";
+
       type = nullOr path;
     };
 
     securePort = lib.mkOption {
-      description = "Kubernetes controller manager secure listening port.";
       default = 10252;
+      description = "Kubernetes controller manager secure listening port.";
       type = int;
     };
 
     serviceAccountKeyFile = lib.mkOption {
+      default = null;
+
       description = ''
         Kubernetes controller manager PEM-encoded private RSA key file used to
         sign service account tokens
       '';
-      default = null;
+
       type = nullOr path;
     };
 
     tlsCertFile = lib.mkOption {
-      description = "Kubernetes controller-manager certificate file.";
       default = null;
+      description = "Kubernetes controller-manager certificate file.";
       type = nullOr path;
     };
 
     tlsKeyFile = lib.mkOption {
-      description = "Kubernetes controller-manager private key file.";
       default = null;
+      description = "Kubernetes controller-manager private key file.";
       type = nullOr path;
     };
 
     verbosity = lib.mkOption {
+      default = null;
+
       description = ''
         Optional glog verbosity level for logging statements. See
         <https://github.com/kubernetes/community/blob/master/contributors/devel/logging.md>
       '';
-      default = null;
+
       type = nullOr int;
     };
 
@@ -114,14 +120,28 @@ in
 
   ###### implementation
   config = lib.mkIf cfg.enable {
+    services.kubernetes.controllerManager.kubeconfig.server = lib.mkDefault top.apiserverAddress;
+
+    services.kubernetes.pki.certs = with top.lib; {
+      controllerManager = mkCert {
+        CN = "kube-controller-manager";
+        action = "systemctl restart kube-controller-manager.service";
+        name = "kube-controller-manager";
+      };
+
+      controllerManagerClient = mkCert {
+        CN = "system:kube-controller-manager";
+        action = "systemctl restart kube-controller-manager.service";
+        name = "kube-controller-manager-client";
+      };
+    };
+
     systemd.services.kube-controller-manager = {
-      description = "Kubernetes Controller Manager Service";
-      wantedBy = [ "kubernetes.target" ];
       after = [ "kube-apiserver.service" ];
+      description = "Kubernetes Controller Manager Service";
+      path = top.path;
+
       serviceConfig = {
-        RestartSec = "30s";
-        Restart = "on-failure";
-        Slice = "kubernetes.slice";
         ExecStart = ''
           ${top.package}/bin/kube-controller-manager \
                     --allocate-node-cidrs=${lib.boolToString cfg.allocateNodeCIDRs} \
@@ -152,30 +172,21 @@ in
                     ${lib.optionalString (cfg.verbosity != null) "--v=${toString cfg.verbosity}"} \
                     ${cfg.extraOpts}
         '';
-        WorkingDirectory = top.dataDir;
-        User = "kubernetes";
+
         Group = "kubernetes";
+        Restart = "on-failure";
+        RestartSec = "30s";
+        Slice = "kubernetes.slice";
+        User = "kubernetes";
+        WorkingDirectory = top.dataDir;
       };
+
       unitConfig = {
         StartLimitIntervalSec = 0;
       };
-      path = top.path;
-    };
 
-    services.kubernetes.pki.certs = with top.lib; {
-      controllerManager = mkCert {
-        name = "kube-controller-manager";
-        CN = "kube-controller-manager";
-        action = "systemctl restart kube-controller-manager.service";
-      };
-      controllerManagerClient = mkCert {
-        name = "kube-controller-manager-client";
-        CN = "system:kube-controller-manager";
-        action = "systemctl restart kube-controller-manager.service";
-      };
+      wantedBy = [ "kubernetes.target" ];
     };
-
-    services.kubernetes.controllerManager.kubeconfig.server = lib.mkDefault top.apiserverAddress;
   };
 
   meta.buildDocsInSandbox = false;

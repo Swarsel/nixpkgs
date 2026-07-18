@@ -16,8 +16,8 @@ stdenv.mkDerivation (finalAttrs: {
 
   patches = [
     (fetchpatch2 {
-      url = "https://github.com/crigler/dtach/commit/6d80909a8c0fd19717010a3c76fec560f988ca48.patch?full_index=1";
       hash = "sha256-v3vToJdSwihiPCSjXjEJghiaynHPTEql3F7URXRjCbM=";
+      url = "https://github.com/crigler/dtach/commit/6d80909a8c0fd19717010a3c76fec560f988ca48.patch?full_index=1";
     })
   ];
 
@@ -27,7 +27,6 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   meta = {
-    homepage = "https://dtach.sourceforge.net/";
     description = "Program that emulates the detach feature of screen";
 
     longDescription = ''
@@ -39,10 +38,10 @@ stdenv.mkDerivation (finalAttrs: {
       themselves.
     '';
 
+    homepage = "https://dtach.sourceforge.net/";
     license = lib.licenses.gpl2Plus;
-
-    platforms = lib.platforms.unix;
     maintainers = [ ];
+    platforms = lib.platforms.unix;
     mainProgram = "dtach";
   };
 })

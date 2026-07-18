@@ -6,8 +6,8 @@
   perl,
   pkg-config,
   qt6,
-  xkeyboard_config,
   unstableGitUpdater,
+  xkeyboard_config,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -20,6 +20,12 @@ stdenv.mkDerivation (finalAttrs: {
     tag = finalAttrs.version;
     hash = "sha256-himbdQ3cu+9NnbO5mYOKh30WIp55lSIkwvHAC89IzC8=";
   };
+
+  postPatch = ''
+    substituteInPlace bin/gen-layout-list --replace-fail /usr/share/X11/xkb ${xkeyboard_config}/share/X11/xkb
+  '';
+
+  strictDeps = true;
 
   nativeBuildInputs = [
     cmake
@@ -34,22 +40,18 @@ stdenv.mkDerivation (finalAttrs: {
     qt6.qtwayland
   ];
 
-  strictDeps = true;
-
-  postPatch = ''
-    substituteInPlace bin/gen-layout-list --replace-fail /usr/share/X11/xkb ${xkeyboard_config}/share/X11/xkb
-  '';
-
   passthru.updateScript = unstableGitUpdater { };
 
   meta = {
-    homepage = "https://github.com/labwc/labwc-tweaks";
     description = "Configuration gui app for labwc";
-    mainProgram = "labwc-tweaks";
+    homepage = "https://github.com/labwc/labwc-tweaks";
     license = lib.licenses.gpl2Only;
-    platforms = lib.platforms.unix;
+
     maintainers = with lib.maintainers; [
       romildo
     ];
+
+    platforms = lib.platforms.unix;
+    mainProgram = "labwc-tweaks";
   };
 })

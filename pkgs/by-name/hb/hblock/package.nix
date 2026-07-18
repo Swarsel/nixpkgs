@@ -2,11 +2,11 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  makeWrapper,
   coreutils,
-  gawk,
   curl,
+  gawk,
   gnugrep,
+  makeWrapper,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -20,17 +20,15 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-cke3MppQm8p8B9+5IcvCplw6CtyRbgq46wHqli7U77I=";
   };
 
+  nativeBuildInputs = [ makeWrapper ];
+
   buildInputs = [
     coreutils
     curl
     gnugrep
     gawk
   ];
-  nativeBuildInputs = [ makeWrapper ];
 
-  installFlags = [
-    "prefix=$(out)"
-  ];
   postInstall = ''
     wrapProgram "$out/bin/hblock" \
       --prefix PATH : ${
@@ -43,12 +41,16 @@ stdenv.mkDerivation (finalAttrs: {
       }
   '';
 
+  installFlags = [
+    "prefix=$(out)"
+  ];
+
   meta = {
     description = "Improve your security and privacy by blocking ads, tracking and malware domains";
-    mainProgram = "hblock";
     homepage = "https://github.com/hectorm/hblock";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ alinnow ];
     platforms = lib.platforms.unix;
+    mainProgram = "hblock";
   };
 })

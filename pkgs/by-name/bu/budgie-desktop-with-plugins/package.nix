@@ -1,21 +1,18 @@
 {
   lib,
   stdenv,
+  budgie-desktop,
   glib,
   gobject-introspection,
   lndir,
   wrapGAppsHook3,
-  budgie-desktop,
   plugins ? [ ],
 }:
 
 stdenv.mkDerivation {
-  pname = "${budgie-desktop.pname}-with-plugins";
   inherit (budgie-desktop) version;
-
+  pname = "${budgie-desktop.pname}-with-plugins";
   src = null;
-
-  paths = [ budgie-desktop ] ++ plugins;
 
   nativeBuildInputs = [
     glib
@@ -24,13 +21,6 @@ stdenv.mkDerivation {
   ];
 
   buildInputs = lib.forEach plugins (plugin: plugin.buildInputs) ++ plugins;
-
-  dontUnpack = true;
-  dontConfigure = true;
-  dontBuild = true;
-
-  preferLocalBuild = true;
-  allowSubstitutes = false;
 
   installPhase = ''
     mkdir -p $out
@@ -49,6 +39,12 @@ stdenv.mkDerivation {
   '';
 
   __structuredAttrs = true;
+  allowSubstitutes = false;
+  dontBuild = true;
+  dontConfigure = true;
+  dontUnpack = true;
+  paths = [ budgie-desktop ] ++ plugins;
+  preferLocalBuild = true;
 
   meta = {
     inherit (budgie-desktop.meta)

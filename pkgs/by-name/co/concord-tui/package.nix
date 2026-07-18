@@ -1,14 +1,14 @@
 {
-  rustPlatform,
-  fetchFromGitHub,
-  pkg-config,
-  alsa-lib,
-  cmake,
-  opus,
   lib,
   stdenv,
+  fetchFromGitHub,
+  alsa-lib,
+  cmake,
   # TODO: Clean up on `staging`
   lld,
+  opus,
+  pkg-config,
+  rustPlatform,
 }:
 rustPlatform.buildRustPackage (finalAttrs: {
   pname = "concord-tui";
@@ -21,14 +21,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-/79Hq54qXWXLopPda6xiZ6892UpVoKXQad84QOXCTDM=";
   };
 
-  cargoHash = "sha256-Ihr4JM0hKEvJ9FMcQ5VPtemJjjPB5mXvAeDa4G0pGSo=";
-
-  buildInputs = [
-    opus
-  ]
-  ++ lib.optionals stdenv.hostPlatform.isLinux [
-    alsa-lib
-  ];
   nativeBuildInputs = [
     pkg-config
     cmake
@@ -38,24 +30,34 @@ rustPlatform.buildRustPackage (finalAttrs: {
     lld
   ];
 
-  __darwinAllowLocalNetworking = true;
+  buildInputs = [
+    opus
+  ]
+  ++ lib.optionals stdenv.hostPlatform.isLinux [
+    alsa-lib
+  ];
 
-  __structuredAttrs = true;
+  cargoHash = "sha256-Ihr4JM0hKEvJ9FMcQ5VPtemJjjPB5mXvAeDa4G0pGSo=";
 
   # TODO: Clean up on `staging`
   env = lib.optionalAttrs stdenv.hostPlatform.isDarwin {
     NIX_CFLAGS_LINK = "-fuse-ld=${lib.getExe' lld "ld64.lld"}";
   };
 
+  __darwinAllowLocalNetworking = true;
+  __structuredAttrs = true;
+
   meta = {
     description = "Feature-rich TUI client for Discord, written in Rust";
     homepage = "https://github.com/chojs23/concord";
     license = lib.licenses.gpl3Only;
+
     maintainers = with lib.maintainers; [
       Simon-Weij
       neo
       Br1ght0ne
     ];
+
     mainProgram = "concord";
   };
 })

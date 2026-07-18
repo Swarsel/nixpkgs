@@ -1,7 +1,7 @@
 {
   config,
-  pkgs,
   lib,
+  pkgs,
   ...
 }:
 let
@@ -13,6 +13,14 @@ in
 
     i18n.inputMethod.uim = {
       toolbar = lib.mkOption {
+        default = "gtk";
+
+        description = ''
+          selected UIM toolbar.
+        '';
+
+        example = "gtk-systray";
+
         type = lib.types.enum [
           "gtk"
           "gtk3"
@@ -20,24 +28,20 @@ in
           "gtk3-systray"
           "qt5"
         ];
-        default = "gtk";
-        example = "gtk-systray";
-        description = ''
-          selected UIM toolbar.
-        '';
       };
     };
 
   };
 
   config = lib.mkIf (imcfg.enable && imcfg.type == "uim") {
-    i18n.inputMethod.package = pkgs.uim;
-
     environment.variables = {
       GTK_IM_MODULE = "uim";
       QT_IM_MODULE = "uim";
       XMODIFIERS = "@im=uim";
     };
+
+    i18n.inputMethod.package = pkgs.uim;
+
     services.xserver.displayManager.sessionCommands = ''
       ${pkgs.uim}/bin/uim-xim &
       ${pkgs.uim}/bin/uim-toolbar-${cfg.toolbar} &

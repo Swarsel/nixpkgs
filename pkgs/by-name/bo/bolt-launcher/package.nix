@@ -1,37 +1,37 @@
 {
   lib,
   stdenv,
-  fetchFromCodeberg,
-  makeWrapper,
-  cmake,
-  ninja,
-  libarchive,
-  libz,
+  buildFHSEnv,
+  cairo,
   cef-binary,
-  luajit,
-  libxxf86vm,
-  libxi,
-  libxext,
-  libx11,
-  libsm,
-  libxcb,
-  libgbm,
+  cmake,
+  copyDesktopItems,
+  fetchFromCodeberg,
   glib,
   jdk17,
-  pango,
-  cairo,
-  pkg-config,
+  libarchive,
+  libgbm,
   libnotify,
-  buildFHSEnv,
+  libsm,
+  libx11,
+  libxcb,
+  libxext,
+  libxi,
+  libxxf86vm,
+  libz,
+  luajit,
   makeDesktopItem,
-  copyDesktopItems,
+  makeWrapper,
+  ninja,
+  pango,
+  pkg-config,
   enableRS3 ? false,
 }:
 let
   cef = cef-binary.override {
     version = "141.0.7";
-    gitRevision = "a5714cc";
     chromiumVersion = "141.0.7390.108";
+    gitRevision = "a5714cc";
 
     srcHashes = {
       aarch64-linux = "sha256-2A0hVzUVMBemhjnFE/CrKs4CU96Qkxy8S/SieaEJjwE=";
@@ -48,8 +48,8 @@ let
       owner = "AdamCake";
       repo = "Bolt";
       tag = finalAttrs.version;
-      fetchSubmodules = true;
       hash = "sha256-ncmyDav2CmsdDE/nCRmpWuBqutX72vD5/zNO1nvJIlE=";
+      fetchSubmodules = true;
     };
 
     nativeBuildInputs = [
@@ -94,22 +94,33 @@ let
 
     desktopItems = [
       (makeDesktopItem {
-        type = "Application";
-        terminal = false;
-        name = "Bolt";
-        desktopName = "Bolt Launcher";
-        genericName = finalAttrs.pname;
-        comment = "An alternative launcher for RuneScape";
-        exec = "bolt-launcher";
-        icon = "bolt-launcher";
         categories = [ "Game" ];
+        comment = "An alternative launcher for RuneScape";
+        desktopName = "Bolt Launcher";
+        exec = "bolt-launcher";
+        genericName = finalAttrs.pname;
+        icon = "bolt-launcher";
+        name = "Bolt";
         startupWMClass = "BoltLauncher";
+        terminal = false;
+        type = "Application";
       })
     ];
   });
 in
 buildFHSEnv {
   inherit (bolt) pname version;
+
+  extraInstallCommands = ''
+    mkdir -p $out/share/applications
+    mkdir -p $out/share/icons/hicolor/256x256/apps
+
+    ln -s ${bolt}/share/applications/*.desktop $out/share/applications/
+
+    ln -s ${bolt}/share/icons/hicolor/256x256/apps/*.png $out/share/icons/hicolor/256x256/apps/
+  '';
+
+  runScript = "${bolt.name}";
 
   targetPkgs =
     pkgs:
@@ -140,30 +151,23 @@ buildFHSEnv {
       ]
     );
 
-  extraInstallCommands = ''
-    mkdir -p $out/share/applications
-    mkdir -p $out/share/icons/hicolor/256x256/apps
-
-    ln -s ${bolt}/share/applications/*.desktop $out/share/applications/
-
-    ln -s ${bolt}/share/icons/hicolor/256x256/apps/*.png $out/share/icons/hicolor/256x256/apps/
-  '';
-
-  runScript = "${bolt.name}";
-
   meta = {
-    homepage = "https://codeberg.org/Adamcake/Bolt";
-    changelog = "https://codeberg.org/Adamcake/Bolt/releases/tag/${bolt.version}";
     description = "Alternative launcher for RuneScape";
+
     longDescription = ''
       Bolt Launcher supports HDOS/RuneLite by default with an optional feature flag for RS3 (enableRS3).
     '';
+
+    homepage = "https://codeberg.org/Adamcake/Bolt";
+    changelog = "https://codeberg.org/Adamcake/Bolt/releases/tag/${bolt.version}";
     license = lib.licenses.agpl3Plus;
+
     maintainers = with lib.maintainers; [
       nezia
       jaspersurmont
       iedame
     ];
+
     platforms = lib.platforms.linux;
     mainProgram = "bolt-launcher";
   };

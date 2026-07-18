@@ -2,17 +2,17 @@
   lib,
   stdenv,
   fetchurl,
-  makeWrapper,
   coreutils,
+  dejavu_fonts,
   ffmpeg,
   gawk,
+  getopt,
   gnugrep,
   gnused,
   imagemagick,
+  makeWrapper,
   mplayer,
   util-linux,
-  getopt,
-  dejavu_fonts,
 }:
 let
   version = "1.13.4";
@@ -29,18 +29,18 @@ let
   ];
 in
 stdenv.mkDerivation {
-  pname = "vcs";
   inherit version;
+  inherit dejavu_fonts;
+  pname = "vcs";
+
   src = fetchurl {
     url = "http://p.outlyer.net/files/vcs/vcs-${version}.bash";
     sha256 = "0nhwcpffp3skz24kdfg4445i6j37ks6a0qsbpfd3dbi4vnpa60a0";
   };
 
-  unpackCmd = "mkdir src; cp $curSrc src/vcs";
   patches = [ ./fonts.patch ];
   nativeBuildInputs = [ makeWrapper ];
 
-  inherit dejavu_fonts;
   installPhase = ''
     mkdir -p $out/bin
     mv vcs $out/bin/vcs
@@ -48,6 +48,8 @@ stdenv.mkDerivation {
     chmod +x $out/bin/vcs
     wrapProgram $out/bin/vcs --argv0 vcs --set PATH "${lib.makeBinPath runtimeDeps}"
   '';
+
+  unpackCmd = "mkdir src; cp $curSrc src/vcs";
 
   meta = {
     description = "Generates contact sheets from video files";

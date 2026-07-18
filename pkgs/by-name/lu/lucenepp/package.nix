@@ -2,8 +2,8 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  cmake,
   boost,
+  cmake,
   gtest,
   zlib,
 }:
@@ -20,6 +20,7 @@ stdenv.mkDerivation rec {
   };
 
   nativeBuildInputs = [ cmake ];
+
   buildInputs = [
     boost
     gtest
@@ -44,11 +45,13 @@ stdenv.mkDerivation rec {
   meta = {
     description = "C++ port of the popular Java Lucene search engine";
     homepage = "https://github.com/luceneplusplus/LucenePlusPlus";
+
     license = with lib.licenses; [
       asl20
       lgpl3Plus
     ];
-    platforms = lib.platforms.unix;
+
     maintainers = with lib.maintainers; [ wineee ];
+    platforms = lib.platforms.unix;
   };
 }

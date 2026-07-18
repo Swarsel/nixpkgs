@@ -20,60 +20,27 @@ with lib;
 
     netboot.squashfsCompression = mkOption {
       default = "zstd -Xcompression-level 19";
+
       description = ''
         Compression settings to use for the squashfs nix store.
       '';
+
       example = "zstd -Xcompression-level 6";
       type = types.str;
     };
 
     netboot.storeContents = mkOption {
-      example = literalExpression "[ pkgs.stdenv ]";
       description = ''
         This option lists additional derivations to be included in the
         Nix store in the generated netboot image.
       '';
+
+      example = literalExpression "[ pkgs.stdenv ]";
     };
 
   };
 
   config = {
-    # Don't build the GRUB menu builder script, since we don't need it
-    # here and it causes a cyclic dependency.
-    boot.loader.grub.enable = false;
-
-    fileSystems."/" = mkImageMediaOverride {
-      fsType = "tmpfs";
-      options = [ "mode=0755" ];
-    };
-
-    # In stage 1, mount a tmpfs on top of /nix/store (the squashfs
-    # image) to make this a live CD.
-    fileSystems."/nix/.ro-store" = mkImageMediaOverride {
-      fsType = "squashfs";
-      device = "../nix-store.squashfs";
-      options = [
-        "loop"
-      ]
-      ++ lib.optional (config.boot.kernelPackages.kernel.kernelAtLeast "6.2") "threads=multi";
-      neededForBoot = true;
-    };
-
-    fileSystems."/nix/.rw-store" = mkImageMediaOverride {
-      fsType = "tmpfs";
-      options = [ "mode=0755" ];
-      neededForBoot = true;
-    };
-
-    fileSystems."/nix/store" = mkImageMediaOverride {
-      overlay = {
-        lowerdir = [ "/nix/.ro-store" ];
-        upperdir = "/nix/.rw-store/store";
-        workdir = "/nix/.rw-store/work";
-      };
-      neededForBoot = true;
-    };
-
     boot.initrd.availableKernelModules = [
       "squashfs"
       "overlay"
@@ -84,115 +51,10 @@ with lib;
       "overlay"
     ];
 
-    # Closures to be copied to the Nix store, namely the init
-    # script and the top-level system configuration directory.
-    netboot.storeContents = [ config.system.build.toplevel ];
-
-    # Create the squashfs image that contains the Nix store.
-    system.build.squashfsStore = pkgs.callPackage ../../../lib/make-squashfs.nix {
-      storeContents = config.netboot.storeContents;
-      comp = config.netboot.squashfsCompression;
-    };
-
-    # Create the initrd
-    system.build.netbootRamdisk = pkgs.makeInitrdNG {
-      inherit (config.boot.initrd) compressor compressorArgs;
-      prepend = [ "${config.system.build.initialRamdisk}/initrd" ];
-
-      contents = [
-        {
-          source = config.system.build.squashfsStore;
-          target = "/nix-store.squashfs";
-        }
-      ];
-    };
-
-    system.build.netbootIpxeScript = pkgs.writeTextDir "netboot.ipxe" ''
-      #!ipxe
-      # Use the cmdline variable to allow the user to specify custom kernel params
-      # when chainloading this script from other iPXE scripts like netboot.xyz
-      kernel ${config.boot.kernelPackages.kernel.target} init=${config.system.build.toplevel}/init initrd=initrd ${toString config.boot.kernelParams} ''${cmdline}
-      initrd initrd
-      boot
-    '';
-
-    # A script invoking kexec on ./bzImage and ./initrd.gz.
-    # Usually used through system.build.kexecTree, but exposed here for composability.
-    system.build.kexecScript = pkgs.writeScript "kexec-boot" ''
-      #!/usr/bin/env bash
-      if ! kexec -v >/dev/null 2>&1; then
-        echo "kexec not found: please install kexec-tools" 2>&1
-        exit 1
-      fi
-      SCRIPT_DIR=$( cd -- "$( dirname -- "''${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
-      kexec --load ''${SCRIPT_DIR}/bzImage \
-        --initrd=''${SCRIPT_DIR}/initrd.gz \
-        --command-line "init=${config.system.build.toplevel}/init ${toString config.boot.kernelParams}"
-      kexec -e
-    '';
-
-    # A tree containing initrd.gz, bzImage and a kexec-boot script.
-    system.build.kexecTree = pkgs.linkFarm "kexec-tree" [
-      {
-        name = "initrd.gz";
-        path = "${config.system.build.netbootRamdisk}/initrd";
-      }
-      {
-        name = "bzImage";
-        path = "${config.system.build.kernel}/${config.system.boot.loader.kernelFile}";
-      }
-      {
-        name = "kexec-boot";
-        path = config.system.build.kexecScript;
-      }
-    ];
-
-    image.extension = "tar.xz";
-    image.filePath = "tarball/${config.image.fileName}";
-    system.nixos.tags = [ "kexec" ];
-    system.build.image = config.system.build.kexecTarball;
-    system.build.kexecTarball =
-      pkgs.callPackage "${toString modulesPath}/../lib/make-system-tarball.nix"
-        {
-          fileName = config.image.baseName;
-          storeContents = [
-            {
-              object = config.system.build.kexecScript;
-              symlink = "/kexec_nixos";
-            }
-          ];
-          contents = [ ];
-        };
-
+    # Don't build the GRUB menu builder script, since we don't need it
+    # here and it causes a cyclic dependency.
+    boot.loader.grub.enable = false;
     boot.loader.timeout = 10;
-
-    systemd.services.register-nix-paths = {
-      description = "Register Nix Store Paths";
-      unitConfig.DefaultDependencies = false;
-      wantedBy = [ "sysinit.target" ];
-      before = [
-        "sysinit.target"
-        "shutdown.target"
-        "nix-daemon.socket"
-        "nix-daemon.service"
-      ];
-      after = [ "local-fs.target" ];
-      conflicts = [ "shutdown.target" ];
-      restartIfChanged = false;
-      serviceConfig = {
-        Type = "oneshot";
-        RemainAfterExit = true;
-      };
-      script = ''
-        # After booting, register the contents of the Nix store
-        # in the Nix database in the tmpfs.
-        ${lib.getExe' config.nix.package "nix-store"} --load-db < /nix/store/nix-path-registration
-
-        # nixos-rebuild also requires a "system" profile and an /etc/NIXOS tag.
-        touch /etc/NIXOS
-        ${lib.getExe' config.nix.package "nix-env"} -p /nix/var/nix/profiles/system --set /run/current-system
-      '';
-    };
 
     boot.postBootCommands = ''
       # Set password for user nixos if specified on cmdline
@@ -210,5 +72,155 @@ with lib;
         esac
       done
     '';
+
+    fileSystems."/" = mkImageMediaOverride {
+      options = [ "mode=0755" ];
+      fsType = "tmpfs";
+    };
+
+    # In stage 1, mount a tmpfs on top of /nix/store (the squashfs
+    # image) to make this a live CD.
+    fileSystems."/nix/.ro-store" = mkImageMediaOverride {
+      options = [
+        "loop"
+      ]
+      ++ lib.optional (config.boot.kernelPackages.kernel.kernelAtLeast "6.2") "threads=multi";
+
+      device = "../nix-store.squashfs";
+      fsType = "squashfs";
+      neededForBoot = true;
+    };
+
+    fileSystems."/nix/.rw-store" = mkImageMediaOverride {
+      options = [ "mode=0755" ];
+      fsType = "tmpfs";
+      neededForBoot = true;
+    };
+
+    fileSystems."/nix/store" = mkImageMediaOverride {
+      neededForBoot = true;
+
+      overlay = {
+        lowerdir = [ "/nix/.ro-store" ];
+        upperdir = "/nix/.rw-store/store";
+        workdir = "/nix/.rw-store/work";
+      };
+    };
+
+    image.extension = "tar.xz";
+    image.filePath = "tarball/${config.image.fileName}";
+    # Closures to be copied to the Nix store, namely the init
+    # script and the top-level system configuration directory.
+    netboot.storeContents = [ config.system.build.toplevel ];
+    system.build.image = config.system.build.kexecTarball;
+
+    # A script invoking kexec on ./bzImage and ./initrd.gz.
+    # Usually used through system.build.kexecTree, but exposed here for composability.
+    system.build.kexecScript = pkgs.writeScript "kexec-boot" ''
+      #!/usr/bin/env bash
+      if ! kexec -v >/dev/null 2>&1; then
+        echo "kexec not found: please install kexec-tools" 2>&1
+        exit 1
+      fi
+      SCRIPT_DIR=$( cd -- "$( dirname -- "''${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
+      kexec --load ''${SCRIPT_DIR}/bzImage \
+        --initrd=''${SCRIPT_DIR}/initrd.gz \
+        --command-line "init=${config.system.build.toplevel}/init ${toString config.boot.kernelParams}"
+      kexec -e
+    '';
+
+    system.build.kexecTarball =
+      pkgs.callPackage "${toString modulesPath}/../lib/make-system-tarball.nix"
+        {
+          contents = [ ];
+          fileName = config.image.baseName;
+
+          storeContents = [
+            {
+              object = config.system.build.kexecScript;
+              symlink = "/kexec_nixos";
+            }
+          ];
+        };
+
+    # A tree containing initrd.gz, bzImage and a kexec-boot script.
+    system.build.kexecTree = pkgs.linkFarm "kexec-tree" [
+      {
+        name = "initrd.gz";
+        path = "${config.system.build.netbootRamdisk}/initrd";
+      }
+      {
+        name = "bzImage";
+        path = "${config.system.build.kernel}/${config.system.boot.loader.kernelFile}";
+      }
+      {
+        name = "kexec-boot";
+        path = config.system.build.kexecScript;
+      }
+    ];
+
+    system.build.netbootIpxeScript = pkgs.writeTextDir "netboot.ipxe" ''
+      #!ipxe
+      # Use the cmdline variable to allow the user to specify custom kernel params
+      # when chainloading this script from other iPXE scripts like netboot.xyz
+      kernel ${config.boot.kernelPackages.kernel.target} init=${config.system.build.toplevel}/init initrd=initrd ${toString config.boot.kernelParams} ''${cmdline}
+      initrd initrd
+      boot
+    '';
+
+    # Create the initrd
+    system.build.netbootRamdisk = pkgs.makeInitrdNG {
+      inherit (config.boot.initrd) compressor compressorArgs;
+
+      contents = [
+        {
+          source = config.system.build.squashfsStore;
+          target = "/nix-store.squashfs";
+        }
+      ];
+
+      prepend = [ "${config.system.build.initialRamdisk}/initrd" ];
+    };
+
+    # Create the squashfs image that contains the Nix store.
+    system.build.squashfsStore = pkgs.callPackage ../../../lib/make-squashfs.nix {
+      comp = config.netboot.squashfsCompression;
+      storeContents = config.netboot.storeContents;
+    };
+
+    system.nixos.tags = [ "kexec" ];
+
+    systemd.services.register-nix-paths = {
+      after = [ "local-fs.target" ];
+
+      before = [
+        "sysinit.target"
+        "shutdown.target"
+        "nix-daemon.socket"
+        "nix-daemon.service"
+      ];
+
+      conflicts = [ "shutdown.target" ];
+      description = "Register Nix Store Paths";
+      restartIfChanged = false;
+
+      script = ''
+        # After booting, register the contents of the Nix store
+        # in the Nix database in the tmpfs.
+        ${lib.getExe' config.nix.package "nix-store"} --load-db < /nix/store/nix-path-registration
+
+        # nixos-rebuild also requires a "system" profile and an /etc/NIXOS tag.
+        touch /etc/NIXOS
+        ${lib.getExe' config.nix.package "nix-env"} -p /nix/var/nix/profiles/system --set /run/current-system
+      '';
+
+      serviceConfig = {
+        RemainAfterExit = true;
+        Type = "oneshot";
+      };
+
+      unitConfig.DefaultDependencies = false;
+      wantedBy = [ "sysinit.target" ];
+    };
   };
 }

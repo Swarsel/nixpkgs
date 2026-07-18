@@ -1,13 +1,14 @@
 {
+  appmenu-glib-translator,
   buildAstalModule,
   json-glib,
-  appmenu-glib-translator,
 }:
 buildAstalModule {
-  name = "tray";
   buildInputs = [
     json-glib
     appmenu-glib-translator
   ];
+
+  name = "tray";
   meta.description = "Astal module for StatusNotifierItem";
 }

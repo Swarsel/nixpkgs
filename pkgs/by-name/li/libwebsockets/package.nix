@@ -3,9 +3,9 @@
   stdenv,
   fetchFromGitHub,
   cmake,
+  libuv,
   openssl,
   zlib,
-  libuv,
   # External poll is required for e.g. mosquitto, but discouraged by the maintainer.
   withExternalPoll ? false,
 }:
@@ -25,35 +25,6 @@ stdenv.mkDerivation (finalAttrs: {
     "out"
     "dev"
   ];
-
-  buildInputs = [
-    openssl
-    zlib
-    libuv
-  ];
-
-  nativeBuildInputs = [ cmake ];
-
-  cmakeFlags = [
-    "-DLWS_WITH_PLUGINS=ON"
-    "-DLWS_WITH_IPV6=ON"
-    "-DLWS_WITH_SOCKS5=ON"
-    "-DDISABLE_WERROR=ON"
-    "-DLWS_BUILD_HASH=no_hash"
-    # TODO(Mindavi): figure out why linking has broken for test apps between 4.3.5 and 4.4.1.
-    "-DLWS_WITHOUT_TESTAPPS=ON"
-  ]
-  ++ lib.optional (stdenv.hostPlatform != stdenv.buildPlatform) "-DLWS_WITHOUT_TESTAPPS=ON"
-  ++ lib.optional withExternalPoll "-DLWS_WITH_EXTERNAL_POLL=ON"
-  ++ (
-    if stdenv.hostPlatform.isStatic then
-      [ "-DLWS_WITH_SHARED=OFF" ]
-    else
-      [
-        "-DLWS_WITH_STATIC=OFF"
-        "-DLWS_LINK_TESTAPPS_DYNAMIC=ON"
-      ]
-  );
 
   postPatch = ''
     substituteInPlace lib/CMakeLists.txt \
@@ -78,6 +49,35 @@ stdenv.mkDerivation (finalAttrs: {
   ''
   + lib.optionalString stdenv.hostPlatform.isStatic "";
 
+  nativeBuildInputs = [ cmake ];
+
+  buildInputs = [
+    openssl
+    zlib
+    libuv
+  ];
+
+  cmakeFlags = [
+    "-DLWS_WITH_PLUGINS=ON"
+    "-DLWS_WITH_IPV6=ON"
+    "-DLWS_WITH_SOCKS5=ON"
+    "-DDISABLE_WERROR=ON"
+    "-DLWS_BUILD_HASH=no_hash"
+    # TODO(Mindavi): figure out why linking has broken for test apps between 4.3.5 and 4.4.1.
+    "-DLWS_WITHOUT_TESTAPPS=ON"
+  ]
+  ++ lib.optional (stdenv.hostPlatform != stdenv.buildPlatform) "-DLWS_WITHOUT_TESTAPPS=ON"
+  ++ lib.optional withExternalPoll "-DLWS_WITH_EXTERNAL_POLL=ON"
+  ++ (
+    if stdenv.hostPlatform.isStatic then
+      [ "-DLWS_WITH_SHARED=OFF" ]
+    else
+      [
+        "-DLWS_WITH_STATIC=OFF"
+        "-DLWS_LINK_TESTAPPS_DYNAMIC=ON"
+      ]
+  );
+
   postInstall = ''
     # Fix path that will be incorrect on move to "dev" output.
     substituteInPlace "$out/lib/cmake/libwebsockets/LibwebsocketsTargets-release.cmake" \
@@ -94,12 +94,15 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Light, portable C library for websockets";
+
     longDescription = ''
       Libwebsockets is a lightweight pure C library built to
       use minimal CPU and memory resources, and provide fast
       throughput in both directions.
     '';
+
     homepage = "https://libwebsockets.org/";
+
     # Relicensed from LGPLv2.1+ to MIT with 4.0. Licensing situation
     # is tricky, see https://github.com/warmcat/libwebsockets/blob/main/LICENSE
     license = with lib.licenses; [
@@ -108,6 +111,7 @@ stdenv.mkDerivation (finalAttrs: {
       bsd3
       asl20
     ];
+
     maintainers = with lib.maintainers; [ mindavi ];
     platforms = lib.platforms.all;
   };

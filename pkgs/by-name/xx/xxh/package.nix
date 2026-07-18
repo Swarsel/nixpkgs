@@ -1,15 +1,14 @@
 {
   lib,
   fetchFromGitHub,
-  python3,
-  openssh,
   nixosTests,
+  openssh,
+  python3,
 }:
 
 python3.pkgs.buildPythonApplication (finalAttrs: {
   pname = "xxh";
   version = "0.8.16";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "xxh";
@@ -27,6 +26,8 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     pexpect
     pyyaml
   ]);
+
+  pyproject = true;
 
   passthru.tests = {
     inherit (nixosTests) xxh;

@@ -1,8 +1,8 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
   alsa-lib,
+  buildGoModule,
 }:
 
 buildGoModule (finalAttrs: {

@@ -2,14 +2,13 @@
   lib,
   fetchFromGitHub,
   buildPythonPackage,
-  python,
   lxml,
+  python,
 }:
 
 buildPythonPackage rec {
   pname = "gpxpy";
   version = "1.6.2";
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "tkrajina";
@@ -24,12 +23,14 @@ buildPythonPackage rec {
     ${python.interpreter} -m unittest test
   '';
 
+  format = "setuptools";
+
   meta = {
     description = "Python GPX (GPS eXchange format) parser";
-    mainProgram = "gpxinfo";
     homepage = "https://github.com/tkrajina/gpxpy";
     license = lib.licenses.asl20;
-    platforms = lib.platforms.unix;
     maintainers = with lib.maintainers; [ sikmir ];
+    platforms = lib.platforms.unix;
+    mainProgram = "gpxinfo";
   };
 }

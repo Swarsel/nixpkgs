@@ -1,24 +1,20 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # build-system
-  setuptools,
-
+  buildPythonPackage,
   # dependencies
   django,
   django-appconf,
-
   # tests
   pytest-django,
   pytestCheckHook,
+  # build-system
+  setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "django-statici18n";
   version = "2.7.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "zyegfryed";
@@ -27,15 +23,6 @@ buildPythonPackage rec {
     hash = "sha256-e6sCH/9h+Ki96hfG4ftuLo34HfZbwImThi9YxmZOmRc=";
   };
 
-  build-system = [ setuptools ];
-
-  dependencies = [
-    django
-    django-appconf
-  ];
-
-  pythonImportsCheck = [ "statici18n" ];
-
   env.DJANGO_SETTINGS_MODULE = "tests.test_project.project.settings";
 
   nativeCheckInputs = [
@@ -43,10 +30,21 @@ buildPythonPackage rec {
     pytestCheckHook
   ];
 
+  build-system = [ setuptools ];
+
+  dependencies = [
+    django
+    django-appconf
+  ];
+
+  pyproject = true;
+  pythonImportsCheck = [ "statici18n" ];
+
   meta = {
     description = "Helper for generating Javascript catalog to static files";
     homepage = "https://github.com/zyegfryed/django-statici18n";
     license = lib.licenses.bsd3;
+
     maintainers = [
     ];
   };

@@ -1,14 +1,13 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   poetry-core,
 }:
 
 buildPythonPackage rec {
   pname = "logging-journald";
   version = "0.6.7";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "mosquito";
@@ -18,10 +17,9 @@ buildPythonPackage rec {
   };
 
   nativeBuildInputs = [ poetry-core ];
-
   # Circular dependency with aiomisc
   doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "logging_journald" ];
 
   meta = {

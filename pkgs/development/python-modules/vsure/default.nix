@@ -1,8 +1,8 @@
 {
   lib,
   buildPythonPackage,
-  fetchPypi,
   click,
+  fetchPypi,
   requests,
   setuptools,
 }:
@@ -10,13 +10,14 @@
 buildPythonPackage (finalAttrs: {
   pname = "vsure";
   version = "2.8.0";
-  pyproject = true;
 
   src = fetchPypi {
     inherit (finalAttrs) pname version;
     hash = "sha256-FC2aRsfxBGO8HaEHGJWweKgZzz8UG/03oB/E+hOAe/w=";
   };
 
+  # Project has no tests
+  doCheck = false;
   build-system = [ setuptools ];
 
   dependencies = [
@@ -24,9 +25,7 @@ buildPythonPackage (finalAttrs: {
     requests
   ];
 
-  # Project has no tests
-  doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "verisure" ];
 
   meta = {

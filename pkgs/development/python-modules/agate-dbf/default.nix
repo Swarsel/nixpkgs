@@ -1,18 +1,17 @@
 {
   lib,
   fetchFromGitHub,
-  buildPythonPackage,
-  setuptools,
   agate,
+  buildPythonPackage,
   dbf,
   dbfread,
   pytestCheckHook,
+  setuptools,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "agate-dbf";
   version = "0.2.4";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "wireservice";
@@ -21,6 +20,10 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-z68nYig+Z1/C+ys7HmjljdnHhUTqH58iBSbqnLnLFs4=";
   };
 
+  nativeCheckInputs = [
+    pytestCheckHook
+  ];
+
   build-system = [ setuptools ];
 
   dependencies = [
@@ -28,14 +31,12 @@ buildPythonPackage (finalAttrs: {
     dbfread
   ];
 
-  nativeCheckInputs = [
-    pytestCheckHook
-  ];
+  pyproject = true;
 
   meta = {
-    changelog = "https://github.com/wireservice/agate-dbf/blob/${finalAttrs.src.tag}/CHANGELOG.rst";
     description = "Adds read support for dbf files to agate";
     homepage = "https://github.com/wireservice/agate-dbf";
+    changelog = "https://github.com/wireservice/agate-dbf/blob/${finalAttrs.src.tag}/CHANGELOG.rst";
     license = with lib.licenses; [ mit ];
     maintainers = [ ];
   };

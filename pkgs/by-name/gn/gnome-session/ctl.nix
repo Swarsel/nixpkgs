@@ -2,10 +2,10 @@
   lib,
   stdenv,
   fetchFromGitHub,
+  glib,
   meson,
   ninja,
   pkg-config,
-  glib,
   systemd,
   wrapGAppsHook3,
 }:
@@ -37,7 +37,7 @@ stdenv.mkDerivation (finalAttrs: {
     description = "gnome-session-ctl extracted from gnome-session for nixpkgs";
     homepage = "https://github.com/nix-community/gnome-session-ctl";
     license = lib.licenses.gpl2Plus;
-    teams = [ lib.teams.gnome ];
     platforms = lib.platforms.linux;
+    teams = [ lib.teams.gnome ];
   };
 })

@@ -1,15 +1,14 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
-  versionCheckHook,
   nix-update-script,
+  rustPlatform,
+  versionCheckHook,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
   pname = "psleep";
   version = "0.3.0";
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "Yesh-02";
@@ -19,10 +18,9 @@ rustPlatform.buildRustPackage (finalAttrs: {
   };
 
   cargoHash = "sha256-5yzCQfuVSI02B9HQ9+HMkl7qSoMOH0so4zBPwop4KX4=";
-
-  nativeInstallCheckInputs = [ versionCheckHook ];
   doInstallCheck = true;
-
+  nativeInstallCheckInputs = [ versionCheckHook ];
+  __structuredAttrs = true;
   passthru.updateScript = nix-update-script { };
 
   meta = {

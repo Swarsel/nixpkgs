@@ -2,16 +2,16 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  fetchpatch,
-  cmake,
-  fparser,
-  tinyxml,
-  hdf5,
-  cgal,
-  vtk,
   boost,
+  cgal,
+  cmake,
+  fetchpatch,
+  fparser,
   gmp,
+  hdf5,
   mpfr,
+  tinyxml,
+  vtk,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -29,20 +29,22 @@ stdenv.mkDerivation (finalAttrs: {
     ./searchPath.patch
     # ref. https://github.com/thliebig/CSXCAD/pull/62 merged upstream
     (fetchpatch {
+      hash = "sha256-mpQmpvrEDjOKgEAZ5laIIepG+PWqSr637tOY7FQst2s=";
       name = "update-cmake-minimum-required.patch";
       url = "https://github.com/thliebig/CSXCAD/commit/b8ea64e11320910109a49b6da5352e1a1a18a736.patch";
-      hash = "sha256-mpQmpvrEDjOKgEAZ5laIIepG+PWqSr637tOY7FQst2s=";
     })
     # Finding `boost_system` fails because the stub compiled library of
     # Boost.System, which has been a header-only library since 1.69, was
     # removed in 1.89.
     # Upstream PR: https://github.com/thliebig/CSXCAD/pull/68
     (fetchpatch {
+      hash = "sha256-3T5m0GbDY8k1EcHWQWWXMA0S1RREpJykfgZRcPcgljQ=";
       name = "boost-1.89.patch";
       url = "https://github.com/thliebig/CSXCAD/commit/3ec8a3390eced48d919b5261fdaa140197fe40c4.patch";
-      hash = "sha256-3T5m0GbDY8k1EcHWQWWXMA0S1RREpJykfgZRcPcgljQ=";
     })
   ];
+
+  nativeBuildInputs = [ cmake ];
 
   buildInputs = [
     cgal
@@ -54,8 +56,6 @@ stdenv.mkDerivation (finalAttrs: {
     tinyxml
     hdf5
   ];
-
-  nativeBuildInputs = [ cmake ];
 
   meta = {
     description = "C++ library to describe geometrical objects";

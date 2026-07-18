@@ -1,17 +1,17 @@
 {
   lib,
   stdenv,
-  buildPackages,
   fetchurl,
-  zlib,
+  buildPackages,
   bzip2,
-  perl,
-  cpio,
-  gawk,
   coreutils,
+  cpio,
   curl,
-  sqlite,
+  gawk,
   llvmPackages,
+  perl,
+  sqlite,
+  zlib,
 }:
 stdenv.mkDerivation (finalAttrs: {
   pname = "blast";
@@ -22,7 +22,27 @@ stdenv.mkDerivation (finalAttrs: {
     sha256 = "sha256-UCBXqI6ZkONOYnWL4h6kdMwK1o1qY6LjeyNyrx5eoUc=";
   };
 
-  sourceRoot = "ncbi-blast-${finalAttrs.version}+-src/c++";
+  patches = [ ./no_slash_bin.patch ];
+  strictDeps = true;
+
+  nativeBuildInputs = [
+    cpio
+    perl
+  ];
+
+  # perl is necessary in buildInputs so that installed perl scripts get patched
+  # correctly
+  buildInputs = [
+    coreutils
+    perl
+    gawk
+    zlib
+    bzip2
+    sqlite
+  ]
+  ++ lib.optionals stdenv.isDarwin [
+    llvmPackages.openmp
+  ];
 
   configureFlags = [
     # With flat Makefile we can use all_projects in order not to build extra.
@@ -89,29 +109,8 @@ stdenv.mkDerivation (finalAttrs: {
         --replace-fail "/bin/date" "${coreutils}/bin/date"
   '';
 
-  depsBuildBuild = [ buildPackages.stdenv.cc ];
-  nativeBuildInputs = [
-    cpio
-    perl
-  ];
-
-  # perl is necessary in buildInputs so that installed perl scripts get patched
-  # correctly
-  buildInputs = [
-    coreutils
-    perl
-    gawk
-    zlib
-    bzip2
-    sqlite
-  ]
-  ++ lib.optionals stdenv.isDarwin [
-    llvmPackages.openmp
-  ];
-
-  strictDeps = true;
-
-  hardeningDisable = [ "format" ];
+  # Many tests require either network access or locally available databases
+  doCheck = false;
 
   postInstall = ''
     substituteInPlace $out/bin/get_species_taxids.sh \
@@ -120,22 +119,22 @@ stdenv.mkDerivation (finalAttrs: {
     substituteInPlace $out/bin/update_blastdb.pl \
         --replace-fail 'qw(/usr/local/bin /usr/bin)' 'qw(${lib.getBin curl}/bin)'
   '';
-  patches = [ ./no_slash_bin.patch ];
 
+  depsBuildBuild = [ buildPackages.stdenv.cc ];
   enableParallelBuilding = true;
-
-  # Many tests require either network access or locally available databases
-  doCheck = false;
+  hardeningDisable = [ "format" ];
+  sourceRoot = "ncbi-blast-${finalAttrs.version}+-src/c++";
 
   meta = {
     description = "Basic Local Alignment Search Tool (BLAST) finds regions of similarity between biological sequences";
     homepage = "https://blast.ncbi.nlm.nih.gov/Blast.cgi";
     license = lib.licenses.publicDomain;
 
-    platforms = lib.platforms.linux ++ [ "aarch64-darwin" ];
     maintainers = with lib.maintainers; [
       luispedro
       mulatta
     ];
+
+    platforms = lib.platforms.linux ++ [ "aarch64-darwin" ];
   };
 })

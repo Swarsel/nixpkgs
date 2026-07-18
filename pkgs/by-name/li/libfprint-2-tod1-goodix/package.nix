@@ -1,6 +1,6 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchgit,
   libfprint-tod,
 }:
@@ -34,8 +34,8 @@ stdenv.mkDerivation {
   meta = {
     description = "Goodix driver module for libfprint-2-tod Touch OEM Driver";
     homepage = "https://git.launchpad.net/~oem-solutions-engineers/libfprint-2-tod1-goodix/+git/libfprint-2-tod1-goodix/";
-    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
     license = lib.licenses.unfree;
+    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
     platforms = lib.platforms.linux;
   };
 }

@@ -1,15 +1,14 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
   aiohttp,
+  buildPythonPackage,
+  setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "aiosseclient";
   version = "0.1.8";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "ebraminio";
@@ -18,13 +17,11 @@ buildPythonPackage rec {
     hash = "sha256-ynWqRQsCuog8myNleJDdp+omyujmNB1Ys7O6gU2AaUc=";
   };
 
-  build-system = [ setuptools ];
-
-  dependencies = [ aiohttp ];
-
   # Test requires network access
   doCheck = false;
-
+  build-system = [ setuptools ];
+  dependencies = [ aiohttp ];
+  pyproject = true;
   pythonImportsCheck = [ "aiosseclient" ];
 
   meta = {

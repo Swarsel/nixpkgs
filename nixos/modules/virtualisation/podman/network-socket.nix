@@ -20,8 +20,8 @@ in
 
   options.virtualisation.podman.networkSocket = {
     enable = mkOption {
-      type = types.bool;
       default = false;
+
       description = ''
         Make the Podman and Docker compatibility API available over the network
         with TLS client certificate authentication.
@@ -33,61 +33,74 @@ in
 
         This option is independent of [](#opt-virtualisation.podman.dockerSocket.enable).
       '';
+
+      type = types.bool;
     };
 
-    server = mkOption {
-      type = types.enum [ ];
+    listenAddress = mkOption {
+      default = "0.0.0.0";
+
       description = ''
-        Choice of TLS proxy server.
+        Interface address for receiving TLS connections.
       '';
-      example = "ghostunnel";
+
+      type = types.str;
     };
 
     openFirewall = mkOption {
-      type = types.bool;
       default = false;
+
       description = ''
         Whether to open the port in the firewall.
       '';
+
+      type = types.bool;
+    };
+
+    port = mkOption {
+      default = 2376;
+
+      description = ''
+        TCP port number for receiving TLS connections.
+      '';
+
+      type = types.port;
+    };
+
+    server = mkOption {
+      description = ''
+        Choice of TLS proxy server.
+      '';
+
+      example = "ghostunnel";
+      type = types.enum [ ];
     };
 
     tls.cacert = mkOption {
-      type = types.path;
       description = ''
         Path to CA certificate to use for client authentication.
       '';
+
+      type = types.path;
     };
 
     tls.cert = mkOption {
-      type = types.path;
       description = ''
         Path to certificate describing the server.
       '';
+
+      type = types.path;
     };
 
     tls.key = mkOption {
-      type = types.path;
       description = ''
         Path to the private key corresponding to the server certificate.
 
         Use a string for this setting. Otherwise it will be copied to the Nix
         store first, where it is readable by any system process.
       '';
-    };
 
-    port = mkOption {
-      type = types.port;
-      default = 2376;
-      description = ''
-        TCP port number for receiving TLS connections.
-      '';
-    };
-    listenAddress = mkOption {
-      type = types.str;
-      default = "0.0.0.0";
-      description = ''
-        Interface address for receiving TLS connections.
-      '';
+      type = types.path;
     };
   };
 
@@ -95,6 +108,6 @@ in
     networking.firewall.allowedTCPPorts = lib.optional (cfg.enable && cfg.openFirewall) cfg.port;
   };
 
-  meta.teams = [ lib.teams.podman ];
   meta.maintainers = [ lib.maintainers.roberth ];
+  meta.teams = [ lib.teams.podman ];
 }

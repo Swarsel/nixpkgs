@@ -1,23 +1,22 @@
 {
   lib,
+  fetchFromGitHub,
   anyio,
   buildPythonPackage,
   curio-compat,
-  fetchFromGitHub,
   hatchling,
   hypothesis,
   pytest,
   pytestCheckHook,
   pythonOlder,
-  trio-asyncio,
   trio,
+  trio-asyncio,
   uvloop,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "pytest-aio";
   version = "2.1.7";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "klen";
@@ -26,15 +25,7 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-HvD7bBT8QX9Au5TON4yLit2AOLVSRGqdkkwenyqzhpo=";
   };
 
-  build-system = [ hatchling ];
-
   buildInputs = [ pytest ];
-
-  optional-dependencies = {
-    curio = [ curio-compat ];
-    trio = [ trio ];
-    uvloop = [ uvloop ];
-  };
 
   nativeCheckInputs = [
     anyio
@@ -47,6 +38,15 @@ buildPythonPackage (finalAttrs: {
   ]
   ++ lib.flatten (builtins.attrValues finalAttrs.passthru.optional-dependencies);
 
+  build-system = [ hatchling ];
+
+  optional-dependencies = {
+    curio = [ curio-compat ];
+    trio = [ trio ];
+    uvloop = [ uvloop ];
+  };
+
+  pyproject = true;
   pythonImportsCheck = [ "pytest_aio" ];
 
   meta = {

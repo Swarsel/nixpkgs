@@ -1,5 +1,6 @@
 {
   lib,
+  fetchFromGitHub,
   aiofiles,
   aiosqlite,
   alembic,
@@ -14,7 +15,6 @@
   factory-boy,
   faiss,
   fastapi,
-  fetchFromGitHub,
   flyingsquid,
   greenlet,
   httpx,
@@ -49,8 +49,8 @@
   seqeval,
   smart-open,
   snorkel,
-  spacy-transformers,
   spacy,
+  spacy-transformers,
   sqlalchemy,
   standardwebhooks,
   tqdm,
@@ -68,7 +68,6 @@
 buildPythonPackage rec {
   pname = "argilla";
   version = "2.8.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "argilla-io";
@@ -77,15 +76,20 @@ buildPythonPackage rec {
     hash = "sha256-8j7/Gtn4FnAZA3oIV7dLxKwNtigqB7AweHtQ/kzLwm4=";
   };
 
-  sourceRoot = "${src.name}/${pname}";
+  # Still quite a bit of optional dependencies missing
+  doCheck = false;
 
-  pythonRelaxDeps = [
-    "httpx"
-    "numpy"
-    "rich"
-    "typer"
-    "wrapt"
-  ];
+  nativeCheckInputs = [
+    pytestCheckHook
+    pytest-mock
+    pytest-asyncio
+    factory-boy
+  ]
+  ++ lib.concatAttrValues optional-dependencies;
+
+  preCheck = ''
+    export HOME=$(mktemp -d)
+  '';
 
   build-system = [ pdm-backend ];
 
@@ -106,7 +110,43 @@ buildPythonPackage rec {
     standardwebhooks
   ];
 
+  disabledTestPaths = [ "tests/server/datasets/test_dao.py" ];
+
   optional-dependencies = {
+    integrations = [
+      cleanlab
+      evaluate
+      faiss
+      flyingsquid
+      openai
+      peft
+      pgmpy
+      plotly
+      pyyaml
+      sentence-transformers
+      seqeval
+      snorkel
+      spacy
+      spacy-transformers
+      transformers
+      # flair
+      # setfit
+      # span_marker
+      # trl
+      # spacy-huggingface-hub
+    ]
+    ++ transformers.optional-dependencies.torch;
+
+    listeners = [
+      schedule
+      prodict
+    ];
+
+    postgresql = [
+      asyncpg
+      psycopg2
+    ];
+
     server = [
       aiofiles
       aiosqlite
@@ -132,55 +172,19 @@ buildPythonPackage rec {
     ++ uvicorn.optional-dependencies.standard
     ++ python-jose.optional-dependencies.cryptography
     ++ passlib.optional-dependencies.bcrypt;
-    postgresql = [
-      asyncpg
-      psycopg2
-    ];
-    listeners = [
-      schedule
-      prodict
-    ];
-    integrations = [
-      cleanlab
-      evaluate
-      faiss
-      flyingsquid
-      openai
-      peft
-      pgmpy
-      plotly
-      pyyaml
-      sentence-transformers
-      seqeval
-      snorkel
-      spacy
-      spacy-transformers
-      transformers
-      # flair
-      # setfit
-      # span_marker
-      # trl
-      # spacy-huggingface-hub
-    ]
-    ++ transformers.optional-dependencies.torch;
   };
 
-  # Still quite a bit of optional dependencies missing
-  doCheck = false;
+  pyproject = true;
 
-  preCheck = ''
-    export HOME=$(mktemp -d)
-  '';
+  pythonRelaxDeps = [
+    "httpx"
+    "numpy"
+    "rich"
+    "typer"
+    "wrapt"
+  ];
 
-  nativeCheckInputs = [
-    pytestCheckHook
-    pytest-mock
-    pytest-asyncio
-    factory-boy
-  ]
-  ++ lib.concatAttrValues optional-dependencies;
-
-  disabledTestPaths = [ "tests/server/datasets/test_dao.py" ];
+  sourceRoot = "${src.name}/${pname}";
 
   meta = {
     description = "Open-source data curation platform for LLMs";

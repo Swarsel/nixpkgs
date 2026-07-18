@@ -1,7 +1,7 @@
 {
   lib,
-  buildNpmPackage,
   fetchFromGitHub,
+  buildNpmPackage,
   nixosTests,
 }:
 
@@ -15,17 +15,17 @@ buildNpmPackage rec {
     tag = "v${version}";
     hash = "sha256-TBSc1dMOjZhJFffVm0SHbwDzDQFhXVjpeQ6qkYV14ew=";
   };
-  npmDepsHash = "sha256-AS4/eOZG2nXErCacXR4FerUkqpt4BNwUjohuLMsauks=";
 
+  npmDepsHash = "sha256-AS4/eOZG2nXErCacXR4FerUkqpt4BNwUjohuLMsauks=";
   passthru.tests.zwave-js-ui = nixosTests.zwave-js-ui;
 
   meta = {
     description = "Full featured Z-Wave Control Panel and MQTT Gateway";
     homepage = "https://zwave-js.github.io/zwave-js-ui/";
-    license = lib.licenses.mit;
-    downloadPage = "https://github.com/zwave-js/zwave-js-ui/releases";
     changelog = "https://github.com/zwave-js/zwave-js-ui/blob/v${version}/CHANGELOG.md";
-    mainProgram = "zwave-js-ui";
+    license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ cdombroski ];
+    mainProgram = "zwave-js-ui";
+    downloadPage = "https://github.com/zwave-js/zwave-js-ui/releases";
   };
 }

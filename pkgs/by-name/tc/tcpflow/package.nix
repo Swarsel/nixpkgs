@@ -1,15 +1,15 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
-  automake,
   autoconf,
+  automake,
+  boost,
+  cairo,
+  libpcap,
   openssl,
   zlib,
-  libpcap,
-  boost,
   useCairo ? false,
-  cairo,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -30,6 +30,7 @@ stdenv.mkDerivation (finalAttrs: {
     automake
     autoconf
   ];
+
   buildInputs = [
     openssl
     zlib
@@ -38,27 +39,31 @@ stdenv.mkDerivation (finalAttrs: {
   ]
   ++ lib.optional useCairo cairo;
 
+  preConfigure = "bash ./bootstrap.sh";
+
   prePatch = ''
     substituteInPlace bootstrap.sh \
       --replace ".git" "" \
       --replace "/bin/rm" "rm"
   '';
 
-  preConfigure = "bash ./bootstrap.sh";
-
   meta = {
+    inherit (finalAttrs.src.meta) homepage;
     description = "TCP stream extractor";
+
     longDescription = ''
       tcpflow is a program that captures data transmitted as part of TCP
       connections (flows), and stores the data in a way that is convenient for
       protocol analysis and debugging.
     '';
-    inherit (finalAttrs.src.meta) homepage;
+
     license = lib.licenses.gpl3;
+
     maintainers = with lib.maintainers; [
       raskin
       obadz
     ];
+
     platforms = lib.platforms.unix;
     mainProgram = "tcpflow";
   };

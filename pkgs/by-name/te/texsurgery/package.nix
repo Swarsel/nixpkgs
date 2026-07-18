@@ -7,7 +7,6 @@
 python3Packages.buildPythonApplication (finalAttrs: {
   pname = "texsurgery";
   version = "0.6.3";
-  pyproject = true;
 
   src = fetchPypi {
     inherit (finalAttrs) pname version;
@@ -23,6 +22,8 @@ python3Packages.buildPythonApplication (finalAttrs: {
     pyparsing
   ];
 
+  pyproject = true;
+
   pythonImportsCheck = [
     "texsurgery"
     "texsurgery.texsurgery"
@@ -33,7 +34,7 @@ python3Packages.buildPythonApplication (finalAttrs: {
     description = "Replace some commands and environments within a TeX document by evaluating code inside a jupyter kernel";
     homepage = "https://pypi.org/project/texsurgery";
     license = lib.licenses.mit;
-    mainProgram = "texsurgery";
     maintainers = with lib.maintainers; [ romildo ];
+    mainProgram = "texsurgery";
   };
 })

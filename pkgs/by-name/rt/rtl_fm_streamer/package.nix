@@ -3,9 +3,9 @@
   stdenv,
   fetchFromGitHub,
   cmake,
-  pkg-config,
-  libusb1,
   libev,
+  libusb1,
+  pkg-config,
   rtl-sdr,
 }:
 

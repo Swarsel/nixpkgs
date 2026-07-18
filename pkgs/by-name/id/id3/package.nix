@@ -1,8 +1,8 @@
 {
-  fetchFromGitHub,
   lib,
-  libiconv,
   stdenv,
+  fetchFromGitHub,
+  libiconv,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -17,7 +17,6 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   buildInputs = lib.optionals stdenv.hostPlatform.isDarwin [ libiconv ];
-
   makeFlags = [ "prefix=$(out)" ];
 
   meta = {

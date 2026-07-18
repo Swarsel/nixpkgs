@@ -106,41 +106,50 @@ let
     options = (getAttrs [ "enable" ] sharedOptions) // {
       execConfig = mkOption {
         default = { };
-        example = {
-          Parameters = "/bin/sh";
-        };
-        type = types.addCheck (types.attrsOf unitOption) checkExec;
+
         description = ''
           Each attribute in this set specifies an option in the
           `[Exec]` section of this unit. See
           {manpage}`systemd.nspawn(5)` for details.
         '';
+
+        example = {
+          Parameters = "/bin/sh";
+        };
+
+        type = types.addCheck (types.attrsOf unitOption) checkExec;
       };
 
       filesConfig = mkOption {
         default = { };
-        example = {
-          Bind = [ "/home/alice" ];
-        };
-        type = types.addCheck (types.attrsOf unitOption) checkFiles;
+
         description = ''
           Each attribute in this set specifies an option in the
           `[Files]` section of this unit. See
           {manpage}`systemd.nspawn(5)` for details.
         '';
+
+        example = {
+          Bind = [ "/home/alice" ];
+        };
+
+        type = types.addCheck (types.attrsOf unitOption) checkFiles;
       };
 
       networkConfig = mkOption {
         default = { };
-        example = {
-          Private = false;
-        };
-        type = types.addCheck (types.attrsOf unitOption) checkNetwork;
+
         description = ''
           Each attribute in this set specifies an option in the
           `[Network]` section of this unit. See
           {manpage}`systemd.nspawn(5)` for details.
         '';
+
+        example = {
+          Private = false;
+        };
+
+        type = types.addCheck (types.attrsOf unitOption) checkNetwork;
       };
     };
 
@@ -172,8 +181,8 @@ in
 
     systemd.nspawn = mkOption {
       default = { };
-      type = with types; attrsOf (submodule instanceOptions);
       description = "Definition of systemd-nspawn configurations.";
+      type = with types; attrsOf (submodule instanceOptions);
     };
 
   };
@@ -191,18 +200,19 @@ in
     mkMerge [
       (mkIf (cfg != { }) {
         environment.etc."systemd/nspawn".source = mkIf (cfg != { }) (generateUnits {
+          inherit units;
           allowCollisions = false;
           type = "nspawn";
-          inherit units;
           upstreamUnits = [ ];
           upstreamWants = [ ];
         });
       })
       {
-        systemd.targets.multi-user.wants = [ "machines.target" ];
         systemd.services."systemd-nspawn@".environment = {
           SYSTEMD_NSPAWN_UNIFIED_HIERARCHY = mkDefault "1";
         };
+
+        systemd.targets.multi-user.wants = [ "machines.target" ];
       }
     ];
 }

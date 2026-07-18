@@ -1,23 +1,23 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchurl,
-  fetchpatch,
   fetchFromGitHub,
-  cmake,
-  gitMinimal,
-  pkg-config,
-  python3,
   cairo,
+  cmake,
+  curl,
+  fetchpatch,
+  gitMinimal,
   libsndfile,
   libxcb,
-  libxkbcommon,
-  libxcb-util,
   libxcb-cursor,
   libxcb-keysyms,
-  zenity,
-  curl,
+  libxcb-util,
+  libxkbcommon,
+  pkg-config,
+  python3,
   rsync,
+  zenity,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -29,26 +29,28 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-k7x+s84OpazARlHWXEP1aC57+o3uEduAzYDeyBwlTgE=";
   };
 
-  extraContent = fetchFromGitHub {
-    owner = "surge-synthesizer";
-    repo = "surge-extra-content";
-    # rev from: https://github.com/surge-synthesizer/surge/blob/release_1.8.1/cmake/stage-extra-content.cmake#L6
-    # or: https://github.com/surge-synthesizer/surge/blob/main/cmake/stage-extra-content.cmake
-    # SURGE_EXTRA_CONTENT_HASH
-    rev = "afc591cc06d9adc3dc8dc515a55c66873fa10296";
-    hash = "sha256-/3wrsA7aG7Jb4ehhnKRJ6hAH0Ir5EAvCypRbcKhBG/M=";
-  };
-
   patches = [
     # Fix build error due to newer glibc version by upgrading lib "catch 2"
     # Issue: https://github.com/surge-synthesizer/surge/pull/4843
     # Patch: https://github.com/surge-synthesizer/surge/pull/4845
     (fetchpatch {
-      url = "https://github.com/surge-synthesizer/surge/commit/7a552038bab4b000d188ae425aa97963dc91db17.patch";
       hash = "sha256-5Flf0uJqEK6e+sadB+vr6phdvvdZYXcFFfm4ywhAeW0=";
       name = "glibc_build_fix.patch";
+      url = "https://github.com/surge-synthesizer/surge/commit/7a552038bab4b000d188ae425aa97963dc91db17.patch";
     })
   ];
+
+  postPatch = ''
+    substituteInPlace src/common/SurgeStorage.cpp \
+      --replace "/usr/share/Surge" "$out/share/surge"
+    substituteInPlace src/linux/UserInteractionsLinux.cpp \
+      --replace '"zenity' '"${zenity}/bin/zenity'
+    patchShebangs scripts/linux/
+    cp -r $extraContent/Skins/ resources/data/skins
+
+    substituteInPlace libs/libsamplerate/CMakeLists.txt \
+      --replace-fail "cmake_minimum_required(VERSION 3.1..3.18)" "cmake_minimum_required(VERSION 3.10)"
+  '';
 
   nativeBuildInputs = [
     cmake
@@ -72,7 +74,6 @@ stdenv.mkDerivation (finalAttrs: {
 
   # Fix build with gcc 15
   env.NIX_CFLAGS_COMPILE = "-Wno-deprecated";
-
   # The generated ScalablePiggy.S has no .note.GNU-stack section, so the linker
   # marks the LV2/VST3 plugin .so as requiring an executable stack. Since glibc
   # 2.41 dlopen() refuses to load such objects ("cannot enable executable stack
@@ -80,18 +81,6 @@ stdenv.mkDerivation (finalAttrs: {
   # the freshly built LV2 plugin to generate its .ttl manifest. Force a
   # non-executable stack at link time.
   env.NIX_LDFLAGS = "-z noexecstack";
-
-  postPatch = ''
-    substituteInPlace src/common/SurgeStorage.cpp \
-      --replace "/usr/share/Surge" "$out/share/surge"
-    substituteInPlace src/linux/UserInteractionsLinux.cpp \
-      --replace '"zenity' '"${zenity}/bin/zenity'
-    patchShebangs scripts/linux/
-    cp -r $extraContent/Skins/ resources/data/skins
-
-    substituteInPlace libs/libsamplerate/CMakeLists.txt \
-      --replace-fail "cmake_minimum_required(VERSION 3.1..3.18)" "cmake_minimum_required(VERSION 3.10)"
-  '';
 
   installPhase = ''
     cd ..
@@ -106,16 +95,29 @@ stdenv.mkDerivation (finalAttrs: {
     build/surge-headless
   '';
 
+  extraContent = fetchFromGitHub {
+    hash = "sha256-/3wrsA7aG7Jb4ehhnKRJ6hAH0Ir5EAvCypRbcKhBG/M=";
+    owner = "surge-synthesizer";
+    repo = "surge-extra-content";
+    # rev from: https://github.com/surge-synthesizer/surge/blob/release_1.8.1/cmake/stage-extra-content.cmake#L6
+    # or: https://github.com/surge-synthesizer/surge/blob/main/cmake/stage-extra-content.cmake
+    # SURGE_EXTRA_CONTENT_HASH
+    rev = "afc591cc06d9adc3dc8dc515a55c66873fa10296";
+  };
+
   meta = {
     description = ''
       LV2 & VST3 synthesizer plug-in (previously released as Vember Audio
       Surge)
     '';
+
     homepage = "https://surge-synthesizer.github.io";
     license = lib.licenses.gpl3;
-    platforms = [ "x86_64-linux" ];
+
     maintainers = with lib.maintainers; [
       magnetophon
     ];
+
+    platforms = [ "x86_64-linux" ];
   };
 })

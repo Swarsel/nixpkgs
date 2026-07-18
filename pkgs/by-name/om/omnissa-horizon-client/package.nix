@@ -1,14 +1,14 @@
 {
-  stdenv,
   lib,
+  stdenv,
+  fetchurl,
   buildFHSEnv,
   copyDesktopItems,
-  fetchurl,
   gsettings-desktop-schemas,
+  liberation_ttf,
   makeDesktopItem,
   makeWrapper,
   opensc,
-  liberation_ttf,
   writeText,
   writeTextDir,
   configText ? "",
@@ -69,13 +69,16 @@ let
   '';
 
   omnissaHorizonClientFiles = stdenv.mkDerivation {
-    pname = "omnissa-horizon-files";
     inherit version;
+    pname = "omnissa-horizon-files";
+
     src = fetchurl {
       url = "https://download3.omnissa.com/software/CART27FQ1_LIN_2603_TARBALL/Omnissa-Horizon-Client-Linux-2603-8.18.0-24120621798.tar.gz";
       hash = "sha256:acd30479cec91ee693bbd685880fa3834f3678f8dd336511bb9d732f134f71d7";
     };
+
     nativeBuildInputs = [ makeWrapper ];
+
     installPhase = ''
       mkdir ext
       find ${sysArch} -type f -print0 | xargs -0n1 tar -Cext --strip-components=1 -xf
@@ -105,7 +108,6 @@ let
     pname:
     buildFHSEnv {
       inherit pname version;
-
       runScript = "${omnissaHorizonClientFiles}/bin/${pname}_wrapper";
 
       targetPkgs =
@@ -154,26 +156,23 @@ let
     };
 
   desktopItem = makeDesktopItem {
-    name = "horizon-client";
     desktopName = "Omnissa Horizon Client";
-    icon = "${omnissaHorizonClientFiles}/share/icons/horizon-client.png";
     exec = "${omnissaFHSUserEnv mainProgram}/bin/${mainProgram} %u";
+    icon = "${omnissaHorizonClientFiles}/share/icons/horizon-client.png";
+
     mimeTypes = [
       "x-scheme-handler/horizon-client"
       "x-scheme-handler/vmware-view"
     ];
+
+    name = "horizon-client";
   };
 
 in
 stdenv.mkDerivation {
-  pname = "omnissa-horizon-client";
   inherit version;
-
-  dontUnpack = true;
-
+  pname = "omnissa-horizon-client";
   nativeBuildInputs = [ copyDesktopItems ];
-
-  desktopItems = [ desktopItem ];
 
   installPhase = ''
     runHook preInstall
@@ -183,8 +182,9 @@ stdenv.mkDerivation {
     runHook postInstall
   '';
 
+  desktopItems = [ desktopItem ];
+  dontUnpack = true;
   unwrapped = omnissaHorizonClientFiles;
-
   passthru.updateScript = ./update.sh;
 
   meta = {
@@ -192,7 +192,7 @@ stdenv.mkDerivation {
     description = "Allows you to connect to your Omnissa Horizon virtual desktop";
     homepage = "https://www.omnissa.com/products/horizon-8/";
     license = lib.licenses.unfree;
-    platforms = [ "x86_64-linux" ];
     maintainers = with lib.maintainers; [ mhutter ];
+    platforms = [ "x86_64-linux" ];
   };
 }

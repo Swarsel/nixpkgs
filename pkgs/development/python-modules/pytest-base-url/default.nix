@@ -2,19 +2,18 @@
   lib,
   fetchFromGitHub,
   buildPythonPackage,
-  hatchling,
   hatch-vcs,
+  hatchling,
   pytest,
   pytest-localserver,
   pytest-metadata,
-  requests,
   pytestCheckHook,
+  requests,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "pytest-base-url";
   version = "2.1.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "pytest-dev";
@@ -29,10 +28,7 @@ buildPythonPackage (finalAttrs: {
   ];
 
   buildInputs = [ pytest ];
-
   propagatedBuildInputs = [ requests ];
-
-  __darwinAllowLocalNetworking = true;
 
   nativeCheckInputs = [
     pytestCheckHook
@@ -40,13 +36,15 @@ buildPythonPackage (finalAttrs: {
     pytest-metadata
   ];
 
-  enabledTestPaths = [ "tests" ];
+  __darwinAllowLocalNetworking = true;
 
   disabledTests = [
     # should be xfail? or mocking doesn't work
     "test_url_fails"
   ];
 
+  enabledTestPaths = [ "tests" ];
+  pyproject = true;
   pythonImportsCheck = [ "pytest_base_url" ];
 
   meta = {

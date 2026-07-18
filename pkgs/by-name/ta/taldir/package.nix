@@ -1,8 +1,8 @@
 {
-  fetchgit,
   lib,
-  recutils,
   buildGoModule,
+  fetchgit,
+  recutils,
 }:
 buildGoModule (finalAttrs: {
   pname = "taldir";
@@ -14,11 +14,11 @@ buildGoModule (finalAttrs: {
     hash = "sha256-ZKNkMV0IV6E+yCQeabGXpIQclx1S4YEgFn4whGXTaks=";
   };
 
-  vendorHash = "sha256-QCwakJTpRP7VT69EzQeInCCGBuNu3WsNCytnQcBdKQw=";
-
   nativeBuildInputs = [
     recutils
   ];
+
+  vendorHash = "sha256-QCwakJTpRP7VT69EzQeInCCGBuNu3WsNCytnQcBdKQw=";
 
   # From Makefile
   preBuild = ''
@@ -31,20 +31,20 @@ buildGoModule (finalAttrs: {
     cp third_party/gana/gnu-taler-error-codes/taler_error_codes.go internal/gana/
   '';
 
+  # dial error (dial tcp [::1]:5432: connect: connection refused)
+  doCheck = false;
+
   subPackages = [
     "cmd/taldir-cli"
     "cmd/taldir-server"
   ];
 
-  # dial error (dial tcp [::1]:5432: connect: connection refused)
-  doCheck = false;
-
   meta = {
-    homepage = "https://git-www.taler.net/taldir.git";
     description = "Directory service to resolve wallet mailboxes by messenger addresses";
-    teams = with lib.teams; [ ngi ];
+    homepage = "https://git-www.taler.net/taldir.git";
+    license = lib.licenses.agpl3Plus;
     # themadbit will maintain after being added to maintainers
     maintainers = [ ];
-    license = lib.licenses.agpl3Plus;
+    teams = with lib.teams; [ ngi ];
   };
 })

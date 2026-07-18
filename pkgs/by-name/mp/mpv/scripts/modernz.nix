@@ -1,7 +1,7 @@
 {
   lib,
-  buildLua,
   fetchFromGitHub,
+  buildLua,
   installFonts,
   makeFontsConf,
   nix-update-script,
@@ -10,7 +10,6 @@ buildLua (finalAttrs: {
   pname = "modernz";
   version = "0.3.3";
 
-  scriptPath = "modernz.lua";
   src = fetchFromGitHub {
     owner = "Samillion";
     repo = "ModernZ";
@@ -19,6 +18,7 @@ buildLua (finalAttrs: {
   };
 
   nativeBuildInputs = [ installFonts ];
+  scriptPath = "modernz.lua";
 
   passthru.extraWrapperArgs = [
     "--set"

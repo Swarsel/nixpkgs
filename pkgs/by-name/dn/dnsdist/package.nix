@@ -1,9 +1,10 @@
 {
+  lib,
+  stdenv,
+  fetchurl,
   boost,
   cargo,
-  fetchurl,
   fstrm,
-  lib,
   libbpf,
   libcap,
   libedit,
@@ -18,7 +19,6 @@
   python3,
   re2,
   rustPlatform,
-  stdenv,
   systemd,
   xdp-tools,
   zlib,
@@ -78,25 +78,23 @@ stdenv.mkDerivation (finalAttrs: {
     "--with-boost=${boost.dev}"
   ];
 
+  doCheck = true;
+
   cargoDeps = rustPlatform.fetchCargoVendor {
     inherit (finalAttrs) cargoRoot src;
     hash = "sha256-xFh+cywfNWalzRfCtM2pPtPfq8/RAlTC1EdZYYEiwxA=";
   };
 
   cargoRoot = "dnsdist-rust-lib/rust";
-
-  doCheck = true;
-
   enableParallelBuilding = true;
-
   passthru.tests = nixosTests.dnsdist;
 
   meta = {
-    changelog = "https://www.dnsdist.org/changelog.html";
     description = "DNS Loadbalancer";
-    mainProgram = "dnsdist";
     homepage = "https://dnsdist.org";
+    changelog = "https://www.dnsdist.org/changelog.html";
     license = lib.licenses.gpl2Only;
     maintainers = with lib.maintainers; [ jojosch ];
+    mainProgram = "dnsdist";
   };
 })

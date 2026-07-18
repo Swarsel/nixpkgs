@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   hatchling,
   pytestCheckHook,
 }:
@@ -9,7 +9,6 @@
 buildPythonPackage rec {
   pname = "pyshp";
   version = "3.0.3";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "GeospatialPython";
@@ -18,16 +17,16 @@ buildPythonPackage rec {
     hash = "sha256-LsiTJpcO6KYZb3D6ysBWimFS1zEr0vQ9E9cOcC1jdLo=";
   };
 
-  build-system = [ hatchling ];
-
   nativeCheckInputs = [ pytestCheckHook ];
-
-  pythonImportsCheck = [ "shapefile" ];
+  build-system = [ hatchling ];
 
   disabledTests = [
     # Requires network access
     "test_reader_url"
   ];
+
+  pyproject = true;
+  pythonImportsCheck = [ "shapefile" ];
 
   meta = {
     description = "Python read/write support for ESRI Shapefile format";

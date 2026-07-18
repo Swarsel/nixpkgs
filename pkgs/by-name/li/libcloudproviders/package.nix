@@ -1,16 +1,16 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchurl,
-  meson,
-  ninja,
-  pkg-config,
-  gobject-introspection,
-  vala,
   gi-docgen,
   glib,
-  mesonEmulatorHook,
   gnome,
+  gobject-introspection,
+  meson,
+  mesonEmulatorHook,
+  ninja,
+  pkg-config,
+  vala,
 }:
 
 # TODO: Add installed tests once https://gitlab.gnome.org/World/libcloudproviders/issues/4 is fixed
@@ -30,15 +30,7 @@ stdenv.mkDerivation (finalAttrs: {
     "devdoc"
   ];
 
-  mesonFlags = [
-    "-Ddocumentation=true"
-  ];
-
   strictDeps = true;
-
-  depsBuildBuild = [
-    pkg-config
-  ];
 
   nativeBuildInputs = [
     meson
@@ -56,10 +48,18 @@ stdenv.mkDerivation (finalAttrs: {
     glib
   ];
 
+  mesonFlags = [
+    "-Ddocumentation=true"
+  ];
+
   postFixup = ''
     # Cannot be in postInstall, otherwise _multioutDocs hook in preFixup will move right back.
     moveToOutput "share/doc" "$devdoc"
   '';
+
+  depsBuildBuild = [
+    pkg-config
+  ];
 
   passthru = {
     updateScript = gnome.updateScript {

@@ -3,11 +3,11 @@
   stdenv,
   fetchurl,
   libGLU,
-  libxmu,
-  libxi,
   libxext,
-  testers,
+  libxi,
+  libxmu,
   mesa,
+  testers,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -19,27 +19,26 @@ stdenv.mkDerivation (finalAttrs: {
     sha256 = "01zki46dr5khzlyywr3cg615bcal32dazfazkf360s1znqh17i4r";
   };
 
-  buildInputs = lib.optionals (!stdenv.hostPlatform.isDarwin) [
-    libxmu
-    libxi
-    libxext
-  ];
-  propagatedBuildInputs = lib.optionals (!stdenv.hostPlatform.isDarwin) [ libGLU ]; # GL/glew.h includes GL/glu.h
-
   outputs = [
     "out"
     "dev"
   ];
 
-  patchPhase = ''
-    sed -i 's|lib64|lib|' config/Makefile.linux
-    ${lib.optionalString (stdenv.hostPlatform != stdenv.buildPlatform) ''
-      sed -i -e 's/\(INSTALL.*\)-s/\1/' Makefile
-    ''}
-  '';
+  buildInputs = lib.optionals (!stdenv.hostPlatform.isDarwin) [
+    libxmu
+    libxi
+    libxext
+  ];
+
+  propagatedBuildInputs = lib.optionals (!stdenv.hostPlatform.isDarwin) [ libGLU ]; # GL/glew.h includes GL/glu.h
+
+  makeFlags = [
+    "SYSTEM=${if stdenv.hostPlatform.isMinGW then "mingw" else stdenv.hostPlatform.parsed.kernel.name}"
+    "CC:=$(CC)"
+    "LD:=$(CC)"
+  ];
 
   buildFlags = [ "all" ];
-  installFlags = [ "install.all" ];
 
   preInstall = ''
     export GLEW_DEST="$out"
@@ -52,22 +51,25 @@ stdenv.mkDerivation (finalAttrs: {
     cp -r README.txt LICENSE.txt doc $out/share/doc/glew
   '';
 
-  makeFlags = [
-    "SYSTEM=${if stdenv.hostPlatform.isMinGW then "mingw" else stdenv.hostPlatform.parsed.kernel.name}"
-    "CC:=$(CC)"
-    "LD:=$(CC)"
-  ];
+  installFlags = [ "install.all" ];
+
+  patchPhase = ''
+    sed -i 's|lib64|lib|' config/Makefile.linux
+    ${lib.optionalString (stdenv.hostPlatform != stdenv.buildPlatform) ''
+      sed -i -e 's/\(INSTALL.*\)-s/\1/' Makefile
+    ''}
+  '';
 
   passthru.tests.pkg-config = testers.testMetaPkgConfig finalAttrs.finalPackage;
 
   meta = {
+    inherit (mesa.meta) platforms;
     description = "OpenGL extension loading library for C(++)";
     homepage = "https://glew.sourceforge.net/";
     license = lib.licenses.free; # different files under different licenses
-    #["BSD" "GLX" "SGI-B" "GPL2"]
-    pkgConfigModules = [ "glew" ];
-    inherit (mesa.meta) platforms;
     # The last successful Darwin Hydra build was in 2023
     broken = stdenv.hostPlatform.isDarwin;
+    #["BSD" "GLX" "SGI-B" "GPL2"]
+    pkgConfigModules = [ "glew" ];
   };
 })

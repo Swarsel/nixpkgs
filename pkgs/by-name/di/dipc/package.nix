@@ -1,7 +1,7 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage {
@@ -20,14 +20,17 @@ rustPlatform.buildRustPackage {
   meta = {
     description = "Convert your favorite images and wallpapers with your favorite color palettes/themes";
     homepage = "https://github.com/doprz/dipc";
+
     license = with lib.licenses; [
       mit
       asl20
     ];
+
     maintainers = with lib.maintainers; [
       doprz
       ByteSudoer
     ];
+
     mainProgram = "dipc";
   };
 }

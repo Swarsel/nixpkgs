@@ -1,7 +1,7 @@
 {
   lib,
-  stdenvNoCC,
   fetchFromGitHub,
+  stdenvNoCC,
 }:
 
 stdenvNoCC.mkDerivation {
@@ -36,8 +36,8 @@ stdenvNoCC.mkDerivation {
   '';
 
   meta = {
-    homepage = "https://shavian.info/shavian_fonts/";
     description = "Expansion of Inter typeface to support the Shavian alphabet, old-style figures, & refinements to IPA glyphs";
+
     longDescription = ''
           Inter Alia is an expanded version of Rasmus Andersson's beautiful open source sans serif typeface, Inter. Inter was specially designed for user interfaces with focus on high legibility of small-to-medium sized text on computer screens.
 
@@ -47,8 +47,10 @@ stdenvNoCC.mkDerivation {
           support for old-style figures or numerals, also known as text figures, with both proportional and tabular spacing
           refinements to International Phonetic Alphabet glyphs and other less common glyphs.
     '';
+
+    homepage = "https://shavian.info/shavian_fonts/";
     license = lib.licenses.ofl;
-    platforms = lib.platforms.all;
     maintainers = with lib.maintainers; [ toastal ];
+    platforms = lib.platforms.all;
   };
 }

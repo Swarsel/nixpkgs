@@ -1,18 +1,17 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools-scm,
+  buildPythonPackage,
   path,
+  pytestCheckHook,
+  setuptools-scm,
   tox,
   virtualenv,
-  pytestCheckHook,
 }:
 
 buildPythonPackage rec {
   pname = "jaraco-envs";
   version = "2.6.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "jaraco";
@@ -21,6 +20,7 @@ buildPythonPackage rec {
     hash = "sha256-yRMX0H6yWN8TiO/LGAr4HyrVS8ZhBjuR885/+UQscP0=";
   };
 
+  nativeCheckInputs = [ pytestCheckHook ];
   build-system = [ setuptools-scm ];
 
   dependencies = [
@@ -29,19 +29,18 @@ buildPythonPackage rec {
     virtualenv
   ];
 
-  pythonImportsCheck = [ "jaraco.envs" ];
-
-  nativeCheckInputs = [ pytestCheckHook ];
-
   disabledTestPaths = [
     # requires networking
     "jaraco/envs.py"
   ];
 
+  pyproject = true;
+  pythonImportsCheck = [ "jaraco.envs" ];
+
   meta = {
-    changelog = "https://github.com/jaraco/jaraco.envs/blob/${src.rev}/NEWS.rst";
     description = "Classes for orchestrating Python (virtual) environments";
     homepage = "https://github.com/jaraco/jaraco.envs";
+    changelog = "https://github.com/jaraco/jaraco.envs/blob/${src.rev}/NEWS.rst";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ dotlambda ];
   };

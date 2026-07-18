@@ -1,14 +1,14 @@
 {
   lib,
-  fetchurl,
   stdenv,
-  dpkg,
+  fetchurl,
   autoPatchelfHook,
-  wrapGAppsHook3,
   cairo,
+  dpkg,
   gdk-pixbuf,
-  webkitgtk_4_1,
   gtk3,
+  webkitgtk_4_1,
+  wrapGAppsHook3,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -45,9 +45,9 @@ stdenv.mkDerivation (finalAttrs: {
   meta = {
     description = "Protocol and desktop application for swapping Monero and Bitcoin";
     homepage = "https://eigenwallet.org";
-    maintainers = with lib.maintainers; [ JacoMalan1 ];
     license = lib.licenses.gpl3Only;
     sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
+    maintainers = with lib.maintainers; [ JacoMalan1 ];
     platforms = [ "x86_64-linux" ];
     mainProgram = "unstoppableswap-gui-rs";
   };

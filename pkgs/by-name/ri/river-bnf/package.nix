@@ -2,9 +2,9 @@
   lib,
   stdenv,
   fetchFromSourcehut,
+  unstableGitUpdater,
   wayland,
   wayland-scanner,
-  unstableGitUpdater,
 }:
 
 stdenv.mkDerivation {
@@ -18,8 +18,9 @@ stdenv.mkDerivation {
     hash = "sha256-rm9Nt3WLgq9QOXzrkYBGp45EALNYFTQGInxfYIN0XcU=";
   };
 
-  # Fix build with gcc 15
-  env.NIX_CFLAGS_COMPILE = "-std=gnu17";
+  postPatch = ''
+    substituteInPlace Makefile --replace '/usr/local' $out
+  '';
 
   nativeBuildInputs = [
     wayland-scanner
@@ -29,10 +30,8 @@ stdenv.mkDerivation {
     wayland.dev
   ];
 
-  postPatch = ''
-    substituteInPlace Makefile --replace '/usr/local' $out
-  '';
-
+  # Fix build with gcc 15
+  env.NIX_CFLAGS_COMPILE = "-std=gnu17";
   passthru.updateScript = unstableGitUpdater { };
 
   meta = {
@@ -40,7 +39,7 @@ stdenv.mkDerivation {
     homepage = "https://git.sr.ht/~leon_plickat/river-bnf";
     license = lib.licenses.gpl3Only;
     maintainers = with lib.maintainers; [ adamcstephens ];
-    mainProgram = "river-bnf";
     platforms = lib.platforms.linux;
+    mainProgram = "river-bnf";
   };
 }

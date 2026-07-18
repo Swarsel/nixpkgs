@@ -1,8 +1,8 @@
 {
   lib,
+  fetchFromGitHub,
   buildPythonPackage,
   colorlog,
-  fetchFromGitHub,
   pytest-sugar,
   pytest-timeout,
   pytestCheckHook,
@@ -15,10 +15,6 @@
 buildPythonPackage rec {
   pname = "skybellpy";
   version = "0.6.3";
-  pyproject = true;
-
-  # Still uses distrutils, https://github.com/MisterWil/skybellpy/issues/22
-  disabled = pythonAtLeast "3.12";
 
   src = fetchFromGitHub {
     owner = "MisterWil";
@@ -27,13 +23,6 @@ buildPythonPackage rec {
     hash = "sha256-/+9KYxXYTN0T6PoccAA/pwdwWqOzCSZdNxj6xi6oG74=";
   };
 
-  build-system = [ setuptools ];
-
-  dependencies = [
-    colorlog
-    requests
-  ];
-
   nativeCheckInputs = [
     pytest-sugar
     pytest-timeout
@@ -41,6 +30,16 @@ buildPythonPackage rec {
     requests-mock
   ];
 
+  build-system = [ setuptools ];
+
+  dependencies = [
+    colorlog
+    requests
+  ];
+
+  # Still uses distrutils, https://github.com/MisterWil/skybellpy/issues/22
+  disabled = pythonAtLeast "3.12";
+  pyproject = true;
   pythonImportsCheck = [ "skybellpy" ];
 
   meta = {

@@ -1,7 +1,7 @@
 {
+  config,
   lib,
   pkgs,
-  config,
   ...
 }:
 
@@ -74,191 +74,6 @@ let
 
 in
 {
-  options.services.plausible = {
-    enable = mkEnableOption "plausible";
-
-    package = mkPackageOption pkgs "plausible" { };
-
-    database = {
-      clickhouse = {
-        setup = mkEnableOption "creating a clickhouse instance" // {
-          default = true;
-        };
-        url = mkOption {
-          default = "http://localhost:8123/default";
-          type = types.str;
-          description = ''
-            The URL to be used to connect to `clickhouse`.
-          '';
-        };
-      };
-      postgres = {
-        setup = mkEnableOption "creating a postgresql instance" // {
-          default = true;
-        };
-        dbname = mkOption {
-          default = "plausible";
-          type = types.str;
-          description = ''
-            Name of the database to use.
-          '';
-        };
-        socket = mkOption {
-          default = "/run/postgresql";
-          type = types.str;
-          description = ''
-            Path to the UNIX domain-socket to communicate with `postgres`.
-          '';
-        };
-      };
-    };
-
-    adminUser = {
-      email = mkOption {
-        default = null;
-        type = types.nullOr types.str;
-        description = ''
-          Email address of an admin user to seed into the database before the
-          Plausible web server starts accepting connections.
-
-          Plausible Community Edition shows an unauthenticated "first launch"
-          setup wizard whenever no user exists in the database, which redirects
-          every page to `/register` and lets anyone reaching the instance over
-          the network create the first admin account. Setting this option (and
-          {option}`services.plausible.adminUser.passwordHashFile`) seeds an
-          admin user before the port is opened, so the wizard is never reachable
-          by strangers.
-
-          When `null`, no user is seeded and Plausible's setup wizard is used as
-          usual.
-
-          Seeding is idempotent: if any user already exists, no user is created.
-        '';
-        example = "admin@example.org";
-      };
-
-      name = mkOption {
-        default = "Admin";
-        type = types.str;
-        description = ''
-          Display name of the seeded admin user (see
-          {option}`services.plausible.adminUser.email`).
-        '';
-      };
-
-      passwordHashFile = mkOption {
-        default = null;
-        type = with types; nullOr (either str path);
-        description = ''
-          Path to a file containing the bcrypt hash of the seeded admin user's
-          password (see {option}`services.plausible.adminUser.email`).
-
-          Using a hash file (rather than the plaintext password) means the
-          plaintext never has to be stored on disk or in the Nix store. Generate
-          a hash e.g. with `mkpasswd -m bcrypt` (the resulting `$2b$...` string).
-
-          This file is read via systemd's `LoadCredential`, so it does not enter
-          the Nix store.
-        '';
-        example = "/run/secrets/plausible-admin-password-hash";
-      };
-    };
-
-    server = {
-      disableRegistration = mkOption {
-        default = true;
-        type = types.enum [
-          true
-          false
-          "invite_only"
-        ];
-        description = ''
-          Whether to prohibit creating an account in plausible's UI or allow on `invite_only`.
-        '';
-      };
-      secretKeybaseFile = mkOption {
-        type = types.either types.path types.str;
-        description = ''
-          Path to the secret used by the `phoenix`-framework. Instructions
-          how to generate one are documented in the
-          [framework docs](https://hexdocs.pm/phoenix/Mix.Tasks.Phx.Gen.Secret.html#content).
-        '';
-      };
-      listenAddress = mkOption {
-        default = "127.0.0.1";
-        type = types.str;
-        description = ''
-          The IP address on which the server is listening.
-        '';
-      };
-      port = mkOption {
-        default = 8000;
-        type = types.port;
-        description = ''
-          Port where the service should be available.
-        '';
-      };
-      baseUrl = mkOption {
-        type = types.str;
-        description = ''
-          Public URL where plausible is available.
-
-          Note that `/path` components are currently ignored:
-          <https://github.com/plausible/analytics/issues/1182>.
-        '';
-      };
-    };
-
-    mail = {
-      email = mkOption {
-        default = "hello@plausible.local";
-        type = types.str;
-        description = ''
-          The email id to use for as *from* address of all communications
-          from Plausible.
-        '';
-      };
-      smtp = {
-        hostAddr = mkOption {
-          default = "localhost";
-          type = types.str;
-          description = ''
-            The host address of your smtp server.
-          '';
-        };
-        hostPort = mkOption {
-          default = 25;
-          type = types.port;
-          description = ''
-            The port of your smtp server.
-          '';
-        };
-        user = mkOption {
-          default = null;
-          type = types.nullOr types.str;
-          description = ''
-            The username/email in case SMTP auth is enabled.
-          '';
-        };
-        passwordFile = mkOption {
-          default = null;
-          type = with types; nullOr (either str path);
-          description = ''
-            The path to the file with the password in case SMTP auth is enabled.
-          '';
-        };
-        enableSSL = mkEnableOption "SSL when connecting to the SMTP server";
-        retries = mkOption {
-          type = types.ints.unsigned;
-          default = 2;
-          description = ''
-            Number of retries to make until mailer gives up.
-          '';
-        };
-      };
-    };
-  };
-
   imports = [
     (mkRemovedOptionModule [ "services" "plausible" "releaseCookiePath" ]
       "Plausible uses no distributed Erlang features, so this option is no longer necessary and was removed"
@@ -283,6 +98,236 @@ in
     )
   ];
 
+  options.services.plausible = {
+    enable = mkEnableOption "plausible";
+    package = mkPackageOption pkgs "plausible" { };
+
+    adminUser = {
+      email = mkOption {
+        default = null;
+
+        description = ''
+          Email address of an admin user to seed into the database before the
+          Plausible web server starts accepting connections.
+
+          Plausible Community Edition shows an unauthenticated "first launch"
+          setup wizard whenever no user exists in the database, which redirects
+          every page to `/register` and lets anyone reaching the instance over
+          the network create the first admin account. Setting this option (and
+          {option}`services.plausible.adminUser.passwordHashFile`) seeds an
+          admin user before the port is opened, so the wizard is never reachable
+          by strangers.
+
+          When `null`, no user is seeded and Plausible's setup wizard is used as
+          usual.
+
+          Seeding is idempotent: if any user already exists, no user is created.
+        '';
+
+        example = "admin@example.org";
+        type = types.nullOr types.str;
+      };
+
+      name = mkOption {
+        default = "Admin";
+
+        description = ''
+          Display name of the seeded admin user (see
+          {option}`services.plausible.adminUser.email`).
+        '';
+
+        type = types.str;
+      };
+
+      passwordHashFile = mkOption {
+        default = null;
+
+        description = ''
+          Path to a file containing the bcrypt hash of the seeded admin user's
+          password (see {option}`services.plausible.adminUser.email`).
+
+          Using a hash file (rather than the plaintext password) means the
+          plaintext never has to be stored on disk or in the Nix store. Generate
+          a hash e.g. with `mkpasswd -m bcrypt` (the resulting `$2b$...` string).
+
+          This file is read via systemd's `LoadCredential`, so it does not enter
+          the Nix store.
+        '';
+
+        example = "/run/secrets/plausible-admin-password-hash";
+        type = with types; nullOr (either str path);
+      };
+    };
+
+    database = {
+      clickhouse = {
+        setup = mkEnableOption "creating a clickhouse instance" // {
+          default = true;
+        };
+
+        url = mkOption {
+          default = "http://localhost:8123/default";
+
+          description = ''
+            The URL to be used to connect to `clickhouse`.
+          '';
+
+          type = types.str;
+        };
+      };
+
+      postgres = {
+        dbname = mkOption {
+          default = "plausible";
+
+          description = ''
+            Name of the database to use.
+          '';
+
+          type = types.str;
+        };
+
+        setup = mkEnableOption "creating a postgresql instance" // {
+          default = true;
+        };
+
+        socket = mkOption {
+          default = "/run/postgresql";
+
+          description = ''
+            Path to the UNIX domain-socket to communicate with `postgres`.
+          '';
+
+          type = types.str;
+        };
+      };
+    };
+
+    mail = {
+      email = mkOption {
+        default = "hello@plausible.local";
+
+        description = ''
+          The email id to use for as *from* address of all communications
+          from Plausible.
+        '';
+
+        type = types.str;
+      };
+
+      smtp = {
+        enableSSL = mkEnableOption "SSL when connecting to the SMTP server";
+
+        hostAddr = mkOption {
+          default = "localhost";
+
+          description = ''
+            The host address of your smtp server.
+          '';
+
+          type = types.str;
+        };
+
+        hostPort = mkOption {
+          default = 25;
+
+          description = ''
+            The port of your smtp server.
+          '';
+
+          type = types.port;
+        };
+
+        passwordFile = mkOption {
+          default = null;
+
+          description = ''
+            The path to the file with the password in case SMTP auth is enabled.
+          '';
+
+          type = with types; nullOr (either str path);
+        };
+
+        retries = mkOption {
+          default = 2;
+
+          description = ''
+            Number of retries to make until mailer gives up.
+          '';
+
+          type = types.ints.unsigned;
+        };
+
+        user = mkOption {
+          default = null;
+
+          description = ''
+            The username/email in case SMTP auth is enabled.
+          '';
+
+          type = types.nullOr types.str;
+        };
+      };
+    };
+
+    server = {
+      baseUrl = mkOption {
+        description = ''
+          Public URL where plausible is available.
+
+          Note that `/path` components are currently ignored:
+          <https://github.com/plausible/analytics/issues/1182>.
+        '';
+
+        type = types.str;
+      };
+
+      disableRegistration = mkOption {
+        default = true;
+
+        description = ''
+          Whether to prohibit creating an account in plausible's UI or allow on `invite_only`.
+        '';
+
+        type = types.enum [
+          true
+          false
+          "invite_only"
+        ];
+      };
+
+      listenAddress = mkOption {
+        default = "127.0.0.1";
+
+        description = ''
+          The IP address on which the server is listening.
+        '';
+
+        type = types.str;
+      };
+
+      port = mkOption {
+        default = 8000;
+
+        description = ''
+          Port where the service should be available.
+        '';
+
+        type = types.port;
+      };
+
+      secretKeybaseFile = mkOption {
+        description = ''
+          Path to the secret used by the `phoenix`-framework. Instructions
+          how to generate one are documented in the
+          [framework docs](https://hexdocs.pm/phoenix/Mix.Tasks.Phx.Gen.Secret.html#content).
+        '';
+
+        type = types.either types.path types.str;
+      };
+    };
+  };
+
   config = mkIf cfg.enable {
     assertions = [
       {
@@ -291,45 +336,51 @@ in
       }
     ];
 
-    services.postgresql = mkIf cfg.database.postgres.setup {
-      enable = true;
-    };
+    environment.systemPackages = [ cfg.package ];
 
     services.clickhouse = mkIf cfg.database.clickhouse.setup {
       enable = true;
     };
 
-    environment.systemPackages = [ cfg.package ];
+    services.postgresql = mkIf cfg.database.postgres.setup {
+      enable = true;
+    };
 
     systemd.services = mkMerge [
       {
         plausible = {
           inherit (cfg.package.meta) description;
-          documentation = [ "https://plausible.io/docs/self-hosting" ];
-          wantedBy = [ "multi-user.target" ];
+
           after =
             optional cfg.database.clickhouse.setup "clickhouse.service"
             ++ optionals cfg.database.postgres.setup [
               "postgresql.target"
               "plausible-postgres.service"
             ];
-          requires =
-            optional cfg.database.clickhouse.setup "clickhouse.service"
-            ++ optionals cfg.database.postgres.setup [
-              "postgresql.target"
-              "plausible-postgres.service"
-            ];
+
+          documentation = [ "https://plausible.io/docs/self-hosting" ];
 
           environment = {
-            # NixOS specific option to avoid that it's trying to write into its store-path.
-            # See also https://github.com/lau/tzdata#data-directory-and-releases
-            STORAGE_DIR = "/var/lib/plausible/elixir_tzdata";
+            BASE_URL = cfg.server.baseUrl;
+            CLICKHOUSE_DATABASE_URL = cfg.database.clickhouse.url;
+            DATABASE_URL = "postgresql:///${cfg.database.postgres.dbname}?host=${cfg.database.postgres.socket}";
 
+            DISABLE_REGISTRATION =
+              if isBool cfg.server.disableRegistration then
+                boolToString cfg.server.disableRegistration
+              else
+                cfg.server.disableRegistration;
+
+            # Additional safeguard, in case `RELEASE_DISTRIBUTION=none` ever
+            # stops disabling the start of EPMD.
+            ERL_EPMD_ADDRESS = "127.0.0.1";
+            # Home is needed to connect to the node with iex
+            HOME = "/var/lib/plausible";
+            LISTEN_IP = cfg.server.listenAddress;
+            MAILER_EMAIL = cfg.mail.email;
             # Configuration options from
             # https://plausible.io/docs/self-hosting-configuration
             PORT = toString cfg.server.port;
-            LISTEN_IP = cfg.server.listenAddress;
-
             # Note [plausible-needs-no-erlang-distributed-features]:
             # Plausible does not use, and does not plan to use, any of
             # Erlang's distributed features, see:
@@ -350,38 +401,29 @@ in
             # But since Plausible does not use this feature in any way,
             # we just disable it.
             RELEASE_DISTRIBUTION = "none";
-            # Additional safeguard, in case `RELEASE_DISTRIBUTION=none` ever
-            # stops disabling the start of EPMD.
-            ERL_EPMD_ADDRESS = "127.0.0.1";
-
-            DISABLE_REGISTRATION =
-              if isBool cfg.server.disableRegistration then
-                boolToString cfg.server.disableRegistration
-              else
-                cfg.server.disableRegistration;
-
             RELEASE_TMP = "/var/lib/plausible/tmp";
-            # Home is needed to connect to the node with iex
-            HOME = "/var/lib/plausible";
-
-            DATABASE_URL = "postgresql:///${cfg.database.postgres.dbname}?host=${cfg.database.postgres.socket}";
-            CLICKHOUSE_DATABASE_URL = cfg.database.clickhouse.url;
-
-            BASE_URL = cfg.server.baseUrl;
-
-            MAILER_EMAIL = cfg.mail.email;
+            SELFHOST = "true";
             SMTP_HOST_ADDR = cfg.mail.smtp.hostAddr;
             SMTP_HOST_PORT = toString cfg.mail.smtp.hostPort;
-            SMTP_RETRIES = toString cfg.mail.smtp.retries;
             SMTP_HOST_SSL_ENABLED = boolToString cfg.mail.smtp.enableSSL;
-
-            SELFHOST = "true";
+            SMTP_RETRIES = toString cfg.mail.smtp.retries;
+            # NixOS specific option to avoid that it's trying to write into its store-path.
+            # See also https://github.com/lau/tzdata#data-directory-and-releases
+            STORAGE_DIR = "/var/lib/plausible/elixir_tzdata";
           }
           // (optionalAttrs (cfg.mail.smtp.user != null) {
             SMTP_USER_NAME = cfg.mail.smtp.user;
           });
 
           path = [ cfg.package ] ++ optional cfg.database.postgres.setup config.services.postgresql.package;
+
+          requires =
+            optional cfg.database.clickhouse.setup "clickhouse.service"
+            ++ optionals cfg.database.postgres.setup [
+              "postgresql.target"
+              "plausible-postgres.service"
+            ];
+
           script = ''
             # Elixir does not start up if `RELEASE_COOKIE` is not set,
             # even though we set `RELEASE_DISTRIBUTION=none` so the cookie should be unused.
@@ -418,9 +460,7 @@ in
 
           serviceConfig = {
             DynamicUser = true;
-            PrivateTmp = true;
-            WorkingDirectory = "/var/lib/plausible";
-            StateDirectory = "plausible";
+
             LoadCredential = [
               "SECRET_KEY_BASE:${cfg.server.secretKeybaseFile}"
             ]
@@ -430,7 +470,13 @@ in
             ++ lib.optionals seedAdminEnabled [
               "ADMIN_USER_PASSWORD_HASH:${cfg.adminUser.passwordHashFile}"
             ];
+
+            PrivateTmp = true;
+            StateDirectory = "plausible";
+            WorkingDirectory = "/var/lib/plausible";
           };
+
+          wantedBy = [ "multi-user.target" ];
         };
       }
       (mkIf cfg.database.postgres.setup {
@@ -438,11 +484,7 @@ in
         plausible-postgres = {
           after = [ "postgresql.target" ];
           partOf = [ "plausible.service" ];
-          serviceConfig = {
-            Type = "oneshot";
-            User = config.services.postgresql.superUser;
-            RemainAfterExit = true;
-          };
+
           script = with cfg.database.postgres; ''
             PSQL() {
               ${config.services.postgresql.package}/bin/psql --port=5432 "$@"
@@ -454,11 +496,17 @@ in
               PSQL -d ${dbname} -tAc "CREATE EXTENSION IF NOT EXISTS citext;"
             fi
           '';
+
+          serviceConfig = {
+            RemainAfterExit = true;
+            Type = "oneshot";
+            User = config.services.postgresql.superUser;
+          };
         };
       })
     ];
   };
 
-  meta.maintainers = [ ];
   meta.doc = ./plausible.md;
+  meta.maintainers = [ ];
 }

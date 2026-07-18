@@ -1,14 +1,14 @@
 {
   lib,
-  stdenvNoCC,
   fetchFromGitHub,
+  desktop-file-utils,
   jdk,
   jre,
-  zip,
   makeWrapper,
-  desktop-file-utils,
-  spleen,
   nix-update-script,
+  spleen,
+  stdenvNoCC,
+  zip,
 }:
 
 stdenvNoCC.mkDerivation (finalAttrs: {
@@ -30,8 +30,6 @@ stdenvNoCC.mkDerivation (finalAttrs: {
   ++ lib.optionals stdenvNoCC.hostPlatform.isLinux [
     desktop-file-utils
   ];
-
-  sourceRoot = "${finalAttrs.src.name}/main/java/BitsNPicas";
 
   installPhase = ''
     runHook preInstall
@@ -60,6 +58,17 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  doInstallCheck = true;
+
+  installCheckPhase = ''
+    runHook preInstallCheck
+
+    "$out/bin/bitsnpicas" convertbitmap -f psf "${spleen}/share/fonts/misc/spleen-8x16.bdf"
+    [[ -f Spleen.psf ]]
+
+    runHook postInstallCheck
+  '';
+
   postFixup = lib.optionalString stdenvNoCC.hostPlatform.isLinux ''
     desktop-file-edit "$out/share/applications/bitsnpicas.desktop" \
       --set-key='Exec' --set-value='bitsnpicas edit %F' \
@@ -75,15 +84,7 @@ stdenvNoCC.mkDerivation (finalAttrs: {
       --set-key='StartupWMClass' --set-value='com-kreative-keyedit-Main'
   '';
 
-  doInstallCheck = true;
-  installCheckPhase = ''
-    runHook preInstallCheck
-
-    "$out/bin/bitsnpicas" convertbitmap -f psf "${spleen}/share/fonts/misc/spleen-8x16.bdf"
-    [[ -f Spleen.psf ]]
-
-    runHook postInstallCheck
-  '';
+  sourceRoot = "${finalAttrs.src.name}/main/java/BitsNPicas";
 
   passthru = {
     updateScript = nix-update-script { };
@@ -94,10 +95,12 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     homepage = "https://github.com/kreativekorp/bitsnpicas";
     # Written in https://github.com/kreativekorp/bitsnpicas/blob/v2.1/main/java/BitsNPicas/LICENSE
     license = lib.licenses.mpl11;
-    mainProgram = "bitsnpicas";
+
     maintainers = with lib.maintainers; [
       kachick
     ];
+
     platforms = lib.lists.unique (jdk.meta.platforms ++ lib.platforms.windows);
+    mainProgram = "bitsnpicas";
   };
 })

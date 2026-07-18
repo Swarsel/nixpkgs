@@ -33,8 +33,8 @@ stdenv.mkDerivation {
     homepage = "https://gitlab.com/gerum/signal-backup-deduplicator";
     license = lib.licenses.agpl3Only;
     maintainers = with lib.maintainers; [ GaetanLepage ];
-    mainProgram = "signal_backup_deduplicate";
     platforms = lib.platforms.all;
+    mainProgram = "signal_backup_deduplicate";
     # ld: symbol(s) not found for architecture ...
     broken = stdenv.hostPlatform.isDarwin;
   };

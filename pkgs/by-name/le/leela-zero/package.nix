@@ -2,9 +2,9 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  fetchDebianPatch,
   boost,
   cmake,
+  fetchDebianPatch,
   libsForQt5,
   ocl-icd,
   opencl-headers,
@@ -28,10 +28,12 @@ stdenv.mkDerivation (finalAttrs: {
       pname = finalAttrs.pname;
       version = "0.17";
       debianRevision = "1.3";
-      patch = "boost1.90.patch";
       hash = "sha256-/vnRuRWlZl+pzJvjP6a/A9TaFNuCSkTZkd4h9zvZJis=";
+      patch = "boost1.90.patch";
     })
   ];
+
+  nativeBuildInputs = [ cmake ];
 
   buildInputs = [
     boost
@@ -40,8 +42,6 @@ stdenv.mkDerivation (finalAttrs: {
     libsForQt5.qtbase
     zlib
   ];
-
-  nativeBuildInputs = [ cmake ];
 
   cmakeFlags = [
     "-DCMAKE_POLICY_VERSION_MINIMUM=3.10"
@@ -53,9 +53,11 @@ stdenv.mkDerivation (finalAttrs: {
     description = "Go engine modeled after AlphaGo Zero";
     homepage = "https://github.com/gcp/leela-zero";
     license = lib.licenses.gpl3Plus;
+
     maintainers = with lib.maintainers; [
       omnipotententity
     ];
+
     platforms = lib.platforms.linux;
   };
 })

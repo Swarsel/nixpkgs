@@ -6,9 +6,8 @@
 
 bundlerApp {
   pname = "xcpretty";
-  gemdir = ./.;
-
   exes = [ "xcpretty" ];
+  gemdir = ./.;
 
   passthru = {
     updateScript = bundlerUpdateScript "xcpretty";
@@ -18,6 +17,7 @@ bundlerApp {
     description = "Flexible and fast xcodebuild formatter";
     homepage = "https://github.com/supermarin/xcpretty";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       nicknovitski
     ];

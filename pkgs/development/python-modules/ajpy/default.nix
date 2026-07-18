@@ -7,7 +7,6 @@
 buildPythonPackage rec {
   pname = "ajpy";
   version = "0.0.5";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
@@ -16,6 +15,7 @@ buildPythonPackage rec {
 
   # ajpy doesn't have tests
   doCheck = false;
+  format = "setuptools";
 
   meta = {
     description = "AJP package crafting library";

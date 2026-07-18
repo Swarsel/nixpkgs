@@ -2,25 +2,23 @@
   lib,
   buildPythonPackage,
   fetchPypi,
-  setuptools,
   pytestCheckHook,
+  setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "exdown";
   version = "0.9.0";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
-    extension = "zip";
     hash = "sha256-+IN+0P4SljUWxF01Ln9PgeFVA/+qGKFVoKMGluAuYDw=";
+    extension = "zip";
   };
 
   nativeBuildInputs = [ setuptools ];
-
   nativeCheckInputs = [ pytestCheckHook ];
-
+  pyproject = true;
   pythonImportsCheck = [ "exdown" ];
 
   meta = {

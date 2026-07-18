@@ -9,8 +9,8 @@ let
   version = "0.4.2";
 in
 rustPlatform.buildRustPackage {
-  pname = "ttags";
   inherit version;
+  pname = "ttags";
 
   src = fetchFromGitHub {
     owner = "npezza93";
@@ -22,14 +22,14 @@ rustPlatform.buildRustPackage {
   cargoHash = "sha256-XgtBcEVfeR0yYKJkpFfA8pXk1S1fg+2QS8o7n9G1CXU=";
 
   passthru.tests.version = testers.testVersion {
-    package = ttags;
-    command = "ttags --version";
     version = version;
+    command = "ttags --version";
+    package = ttags;
   };
 
   meta = {
     description = "Generate tags using tree-sitter";
-    mainProgram = "ttags";
+
     longDescription = ''
       ttags generates tags (similar to ctags) for various
       languages, using tree-sitter.
@@ -45,9 +45,11 @@ rustPlatform.buildRustPackage {
       - Rust
       - Swift
     '';
+
     homepage = "https://github.com/npezza93/ttags";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ mrcjkb ];
     platforms = lib.platforms.all;
+    mainProgram = "ttags";
   };
 }

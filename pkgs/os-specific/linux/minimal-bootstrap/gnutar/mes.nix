@@ -1,14 +1,14 @@
 {
   lib,
-  buildPlatform,
-  hostPlatform,
   fetchurl,
   bash,
+  buildPlatform,
   coreutils,
-  tinycc,
+  gnugrep,
   gnumake,
   gnused,
-  gnugrep,
+  hostPlatform,
+  tinycc,
 }:
 let
   inherit (import ./common.nix { inherit lib; }) meta;

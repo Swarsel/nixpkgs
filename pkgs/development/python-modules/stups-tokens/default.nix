@@ -2,18 +2,16 @@
   lib,
   fetchFromGitHub,
   buildPythonPackage,
-  setuptools,
-  requests,
+  isPy3k,
   mock,
   pytestCheckHook,
-  isPy3k,
+  requests,
+  setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "stups-tokens";
   version = "1.1.19";
-  pyproject = true;
-  disabled = !isPy3k;
 
   src = fetchFromGitHub {
     owner = "zalando-stups";
@@ -22,14 +20,15 @@ buildPythonPackage rec {
     sha256 = "09z3l3xzdlwpivbi141gk1k0zd9m75mjwbdy81zc386rr9k8s0im";
   };
 
-  build-system = [ setuptools ];
-
-  dependencies = [ requests ];
-
   nativeCheckInputs = [
     mock
     pytestCheckHook
   ];
+
+  build-system = [ setuptools ];
+  dependencies = [ requests ];
+  disabled = !isPy3k;
+  pyproject = true;
 
   meta = {
     description = "Python library that keeps OAuth 2.0 service access tokens in memory for your usage";

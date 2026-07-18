@@ -5,8 +5,8 @@
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
-  version = "0.6.4";
   pname = "fanctl";
+  version = "0.6.4";
 
   src = fetchFromGitLab {
     owner = "mcoffin";
@@ -19,10 +19,10 @@ rustPlatform.buildRustPackage (finalAttrs: {
 
   meta = {
     description = "Replacement for fancontrol with more fine-grained control interface in its config file";
-    mainProgram = "fanctl";
     homepage = "https://gitlab.com/mcoffin/fanctl";
     license = lib.licenses.gpl3Only;
     maintainers = with lib.maintainers; [ icewind1991 ];
     platforms = lib.platforms.linux;
+    mainProgram = "fanctl";
   };
 })

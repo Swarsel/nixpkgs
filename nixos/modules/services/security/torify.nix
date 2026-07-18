@@ -9,13 +9,14 @@ let
   cfg = config.services.tor;
 
   torify = pkgs.writeTextFile {
+    destination = "/bin/tsocks";
+    executable = true;
     name = "tsocks";
+
     text = ''
       #!${pkgs.runtimeShell}
       TSOCKS_CONF_FILE=${pkgs.writeText "tsocks.conf" cfg.tsocks.config} LD_PRELOAD="${pkgs.tsocks}/lib/libtsocks.so $LD_PRELOAD" "$@"
     '';
-    executable = true;
-    destination = "/bin/tsocks";
   };
 
 in
@@ -28,9 +29,20 @@ in
 
     services.tor.tsocks = {
 
+      config = lib.mkOption {
+        default = "";
+
+        description = ''
+          Extra configuration. Contents will be added verbatim to TSocks
+          configuration file.
+        '';
+
+        type = lib.types.lines;
+      };
+
       enable = lib.mkOption {
-        type = lib.types.bool;
         default = false;
+
         description = ''
           Whether to build tsocks wrapper script to relay application traffic via Tor.
 
@@ -42,24 +54,19 @@ in
           exactly the same thing as this.
           :::
         '';
+
+        type = lib.types.bool;
       };
 
       server = lib.mkOption {
-        type = lib.types.str;
         default = "localhost:9050";
-        example = "192.168.0.20";
+
         description = ''
           IP address of TOR client to use.
         '';
-      };
 
-      config = lib.mkOption {
-        type = lib.types.lines;
-        default = "";
-        description = ''
-          Extra configuration. Contents will be added verbatim to TSocks
-          configuration file.
-        '';
+        example = "192.168.0.20";
+        type = lib.types.str;
       };
 
     };

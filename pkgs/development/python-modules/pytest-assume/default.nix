@@ -1,17 +1,16 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
+  buildPythonPackage,
   pytest,
   pytestCheckHook,
+  setuptools,
   six,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "pytest-assume";
   version = "2.4.3";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "astraw38";
@@ -20,14 +19,11 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-QIwETun/n8SnBzK/axWiVTcuWiJ0ph3+2pQYVRMmVWI=";
   };
 
-  build-system = [ setuptools ];
-
   buildInputs = [ pytest ];
-
-  dependencies = [ six ];
-
   nativeCheckInputs = [ pytestCheckHook ];
-
+  build-system = [ setuptools ];
+  dependencies = [ six ];
+  pyproject = true;
   pythonImportsCheck = [ "pytest_assume" ];
 
   meta = {

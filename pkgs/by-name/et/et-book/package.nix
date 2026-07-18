@@ -1,21 +1,13 @@
 {
   lib,
-  stdenvNoCC,
   fetchFromGitHub,
   installFonts,
+  stdenvNoCC,
 }:
 
 stdenvNoCC.mkDerivation {
   pname = "et-book";
   version = "0-unstable-2015-10-05";
-
-  strictDeps = true;
-  __structuredAttrs = true;
-
-  outputs = [
-    "out"
-    "webfont"
-  ];
 
   src = fetchFromGitHub {
     owner = "edwardtufte";
@@ -24,13 +16,20 @@ stdenvNoCC.mkDerivation {
     hash = "sha256-B6ryC9ibNop08TJC/w9LSHHwqV/81EezXsTUJFq8xpo=";
   };
 
+  outputs = [
+    "out"
+    "webfont"
+  ];
+
+  strictDeps = true;
   nativeBuildInputs = [ installFonts ];
+  __structuredAttrs = true;
 
   meta = {
     description = "Typeface used in Edward Tufte’s books";
     homepage = "https://edwardtufte.github.io/et-book/";
     license = lib.licenses.mit;
-    platforms = lib.platforms.all;
     maintainers = with lib.maintainers; [ jethro ];
+    platforms = lib.platforms.all;
   };
 }

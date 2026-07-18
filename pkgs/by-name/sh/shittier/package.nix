@@ -1,7 +1,7 @@
 {
   lib,
-  buildNpmPackage,
   fetchFromGitHub,
+  buildNpmPackage,
 }:
 
 buildNpmPackage {
@@ -22,9 +22,9 @@ buildNpmPackage {
 
   meta = {
     description = "Unconventional code formatting tool for JavaScript";
-    mainProgram = "shittier";
     homepage = "https://github.com/rohitdhas/shittier";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ totoroot ];
+    mainProgram = "shittier";
   };
 }

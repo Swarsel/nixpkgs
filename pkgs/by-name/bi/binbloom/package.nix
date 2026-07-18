@@ -20,10 +20,10 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Raw binary firmware analysis software";
-    mainProgram = "binbloom";
     homepage = "https://github.com/quarkslab/binbloom";
     license = lib.licenses.asl20;
     maintainers = with lib.maintainers; [ erdnaxe ];
     platforms = lib.platforms.linux;
+    mainProgram = "binbloom";
   };
 })

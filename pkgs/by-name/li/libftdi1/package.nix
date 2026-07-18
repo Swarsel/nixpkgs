@@ -1,20 +1,20 @@
 {
   lib,
   stdenv,
+  boost,
+  cmake,
+  doxygen,
   fetchgit,
   fetchpatch,
-  cmake,
-  pkg-config,
-  libusb1,
+  graphviz,
   libconfuse,
-  cppSupport ? true,
-  boost,
-  pythonSupport ? true,
+  libusb1,
+  pkg-config,
   python3,
   swig,
+  cppSupport ? true,
   docSupport ? true,
-  doxygen,
-  graphviz,
+  pythonSupport ? true,
 }:
 
 let
@@ -33,17 +33,23 @@ stdenv.mkDerivation {
 
   patches = [
     (fetchpatch {
+      hash = "sha256-X5tqiPewnyAyvLzR6s0VbNpZKLd0idtPGU4ro36CZHI=";
       # http://developer.intra2net.com/mailarchive/html/libftdi/2024/msg00024.html
       # https://bugzilla.redhat.com/show_bug.cgi?id=2319133
       name = "swig-4.3.0-fix.patch";
       url = "https://src.fedoraproject.org/rpms/libftdi/raw/9051ea9ea767eced58b69d855a5d700a5d4602cc/f/libftdi-1.5-swig-4.3.patch";
-      hash = "sha256-X5tqiPewnyAyvLzR6s0VbNpZKLd0idtPGU4ro36CZHI=";
     })
   ];
 
-  strictDeps = true;
+  postPatch = ''
+    substituteInPlace packages/99-libftdi.rules \
+      --replace-fail 'GROUP="plugdev"' 'GROUP="ftdi"'
 
-  doInstallCheck = true;
+    substituteInPlace packages/99-libftdi.rules \
+      --replace-fail 'GROUP="ftdi"' 'GROUP="ftdi", TAG+="uaccess"'
+  '';
+
+  strictDeps = true;
 
   nativeBuildInputs = [
     cmake
@@ -56,6 +62,7 @@ stdenv.mkDerivation {
   ++ optionals pythonSupport [ swig ];
 
   buildInputs = [ libconfuse ] ++ optionals cppSupport [ boost ];
+  propagatedBuildInputs = [ libusb1 ];
 
   cmakeFlags = [
     "-DFTDIPP=${onOff cppSupport}"
@@ -69,16 +76,6 @@ stdenv.mkDerivation {
     "-DPYTHON_LIBRARY=${python3}/lib/libpython${python3.pythonVersion}${stdenv.hostPlatform.extensions.sharedLibrary}"
   ];
 
-  propagatedBuildInputs = [ libusb1 ];
-
-  postPatch = ''
-    substituteInPlace packages/99-libftdi.rules \
-      --replace-fail 'GROUP="plugdev"' 'GROUP="ftdi"'
-
-    substituteInPlace packages/99-libftdi.rules \
-      --replace-fail 'GROUP="ftdi"' 'GROUP="ftdi", TAG+="uaccess"'
-  '';
-
   postInstall = ''
     install -Dm644 ../packages/99-libftdi.rules "$out/etc/udev/rules.d/60-libftdi.rules"
   ''
@@ -86,6 +83,8 @@ stdenv.mkDerivation {
     cp -r doc/man "$out/share/"
     cp -r doc/html "$out/share/doc/libftdi1/"
   '';
+
+  doInstallCheck = true;
 
   preFixup = ''
     substituteInPlace $out/lib/pkgconfig/libftdi1.pc --replace-fail "libdir=$out/$out/lib" "libdir=$out/lib"
@@ -95,11 +94,13 @@ stdenv.mkDerivation {
   meta = {
     description = "Library to talk to FTDI chips using libusb";
     homepage = "https://www.intra2net.com/en/developer/libftdi/";
+
     license = with lib.licenses; [
       lgpl2Only
       gpl2Only
     ];
-    platforms = lib.platforms.all;
+
     maintainers = with lib.maintainers; [ bjornfor ];
+    platforms = lib.platforms.all;
   };
 }

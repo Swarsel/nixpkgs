@@ -1,16 +1,15 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
+  cython,
   gitUpdater,
   setuptools,
-  cython,
 }:
 
 buildPythonPackage rec {
   pname = "buildstream-plugins";
   version = "2.7.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "apache";
@@ -24,10 +23,10 @@ buildPythonPackage rec {
     setuptools
   ];
 
+  pyproject = true;
   # Do not run pyTest, causes infinite recursion as `buildstream-plugins`
   # depends on `Buildstream`, and vice-versa for tests.
   # May be fixable by skipping certain tests? TODO.
-
   pythonImportsCheck = [ "buildstream_plugins" ];
 
   passthru.updateScript = gitUpdater {
@@ -37,8 +36,8 @@ buildPythonPackage rec {
   meta = {
     description = "BuildStream plugins";
     homepage = "https://github.com/apache/buildstream-plugins";
-    platforms = lib.platforms.linux;
     license = lib.licenses.asl20;
     maintainers = with lib.maintainers; [ shymega ];
+    platforms = lib.platforms.linux;
   };
 }

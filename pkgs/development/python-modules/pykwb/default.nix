@@ -9,20 +9,17 @@
 buildPythonPackage (finalAttrs: {
   pname = "pykwb";
   version = "0.0.21";
-  pyproject = true;
 
   src = fetchPypi {
     inherit (finalAttrs) pname version;
     hash = "sha256-53or6KOjZujOIq9yZ30Ph704I8T93AX/EoJZeVS3ihI=";
   };
 
-  build-system = [ setuptools ];
-
-  dependencies = [ pyserial ];
-
   # Module has no tests
   doCheck = false;
-
+  build-system = [ setuptools ];
+  dependencies = [ pyserial ];
+  pyproject = true;
   pythonImportsCheck = [ "pykwb" ];
 
   meta = {

@@ -7,11 +7,11 @@
 
 {
   lib,
-  repoRevToNameMaybe,
   fetchurl,
-  withUnzip ? true,
-  unzip,
   glibcLocalesUtf8,
+  repoRevToNameMaybe,
+  unzip,
+  withUnzip ? true,
 }:
 
 lib.extendMkDerivation {
@@ -28,25 +28,22 @@ lib.extendMkDerivation {
   extendDrvArgs =
     finalAttrs:
     {
-      url ? "",
-      urls ? [ ],
-      name ? repoRevToNameMaybe (if url != "" then url else builtins.head urls) null "unpacked",
-      nativeBuildInputs ? [ ],
-      postFetch ? "",
-      extraPostFetch ? "",
-
-      # Optionally move the contents of the unpacked tree up one level.
-      stripRoot ? true,
-      # Allows to set the extension for the intermediate downloaded
-      # file. This can be used as a hint for the unpackCmdHooks to select
-      # an appropriate unpacking tool.
-      extension ? null,
-
       # Additional stdenvNoCC.mkDerivation arguments.
       # It is typically for derived fetchers to pass down additional arguments,
       # and the specified arguments have lower precedence than other mkDerivation arguments.
       derivationArgs ? { },
-
+      # Allows to set the extension for the intermediate downloaded
+      # file. This can be used as a hint for the unpackCmdHooks to select
+      # an appropriate unpacking tool.
+      extension ? null,
+      extraPostFetch ? "",
+      name ? repoRevToNameMaybe (if url != "" then url else builtins.head urls) null "unpacked",
+      nativeBuildInputs ? [ ],
+      postFetch ? "",
+      # Optionally move the contents of the unpacked tree up one level.
+      stripRoot ? true,
+      url ? "",
+      urls ? [ ],
       # the rest are given to fetchurl as is
       ...
     }@args:
@@ -61,9 +58,6 @@ lib.extendMkDerivation {
 
     {
       inherit name;
-      recursiveHash = true;
-
-      downloadToTemp = true;
 
       # Have to pull in glibcLocalesUtf8 for unzip in setup-hook.sh to handle
       # UTF-8 aware locale:
@@ -74,6 +68,17 @@ lib.extendMkDerivation {
           glibcLocalesUtf8
         ]
         ++ nativeBuildInputs;
+
+      # ^ Remove non-owner write permissions
+      # Fixes https://github.com/NixOS/nixpkgs/issues/38649
+      derivationArgs = derivationArgs // {
+        inherit
+          extension
+          stripRoot
+          ;
+      };
+
+      downloadToTemp = true;
 
       postFetch = ''
         unpackDir="$TMPDIR/unpack"
@@ -114,14 +119,7 @@ lib.extendMkDerivation {
         }
         chmod 755 "$out"
       '';
-      # ^ Remove non-owner write permissions
-      # Fixes https://github.com/NixOS/nixpkgs/issues/38649
 
-      derivationArgs = derivationArgs // {
-        inherit
-          extension
-          stripRoot
-          ;
-      };
+      recursiveHash = true;
     };
 }

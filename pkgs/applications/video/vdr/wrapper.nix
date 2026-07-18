@@ -1,7 +1,7 @@
 {
-  symlinkJoin,
   lib,
   makeWrapper,
+  symlinkJoin,
   vdr,
   plugins ? [ ],
 }:
@@ -14,10 +14,6 @@ let
 in
 symlinkJoin {
 
-  name = "vdr-with-plugins-${lib.getVersion vdr}";
-
-  paths = [ vdr ] ++ plugins;
-
   nativeBuildInputs = [ makeWrapper ];
 
   postBuild = ''
@@ -26,8 +22,12 @@ symlinkJoin {
       --prefix XINE_PLUGIN_PATH ":" ${lib.escapeShellArg (makeXinePluginPath requiredXinePlugins)}
   '';
 
+  name = "vdr-with-plugins-${lib.getVersion vdr}";
+  paths = [ vdr ] ++ plugins;
+
   meta = {
     inherit (vdr.meta) license homepage;
+
     description =
       vdr.meta.description
       + " (with plugins: "

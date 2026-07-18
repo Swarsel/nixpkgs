@@ -1,8 +1,8 @@
 {
   lib,
   stdenv,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   installShellFiles,
 }:
 
@@ -18,7 +18,6 @@ buildGoModule (finalAttrs: {
   };
 
   nativeBuildInputs = [ installShellFiles ];
-
   vendorHash = "sha256-+cgf2FxpbLu+Yuhk6T0ZBnDH7We2DVu65xFaruk9I0E=";
 
   checkFlags = [

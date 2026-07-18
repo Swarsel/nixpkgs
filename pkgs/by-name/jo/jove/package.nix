@@ -19,18 +19,16 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-y0zNrUXHXqBa6xNxRiZSUOSrFT2cDmdpMsCRHJXpUac=";
   };
 
+  postPatch = ''
+    patchShebangs testbuild.sh testmailer.sh teachjove jmake.sh
+  '';
+
   nativeBuildInputs = [ makeWrapper ];
 
   buildInputs = [
     groff
     ncurses
   ];
-
-  postPatch = ''
-    patchShebangs testbuild.sh testmailer.sh teachjove jmake.sh
-  '';
-
-  dontConfigure = true;
 
   preBuild = ''
     makeFlagsArray+=(SYSDEFS="-DSYSVR4 -D_XOPEN_SOURCE=500" \
@@ -47,9 +45,11 @@ stdenv.mkDerivation (finalAttrs: {
       --prefix PATH ":" "$out/bin"
   '';
 
+  dontConfigure = true;
+
   meta = {
-    homepage = "https://github.com/jonmacs/jove";
     description = "Jonathan's Own Version of Emacs";
+    homepage = "https://github.com/jonmacs/jove";
     changelog = "https://github.com/jonmacs/jove/releases/tag/${finalAttrs.version}";
     license = lib.licenses.bsd2;
     maintainers = [ ];

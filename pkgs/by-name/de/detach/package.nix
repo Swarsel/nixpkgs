@@ -15,24 +15,22 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   nativeBuildInputs = [ installShellFiles ];
-
-  dontConfigure = true;
-
   makeFlags = [ "PREFIX=$(out)" ];
+  doCheck = false;
 
   postInstall = ''
     installShellCompletion --cmd detach \
       --zsh contrib/zsh-completer/_detach
   '';
 
-  doCheck = false;
+  dontConfigure = true;
 
   meta = {
     description = "Utility for running a command detached from the current terminal";
     homepage = "https://inglorion.net/software/detach/";
     license = lib.licenses.mit;
-    mainProgram = "detach";
     maintainers = with lib.maintainers; [ pbsds ];
     platforms = lib.platforms.unix;
+    mainProgram = "detach";
   };
 })

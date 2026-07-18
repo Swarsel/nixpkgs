@@ -1,7 +1,7 @@
 {
   lib,
-  symlinkJoin,
   makeBinaryWrapper,
+  symlinkJoin,
   testers,
   turbo,
   turbo-unwrapped,
@@ -11,18 +11,17 @@
 }:
 
 symlinkJoin {
-  pname = "turbo";
   inherit (turbo-unwrapped) version;
-
+  pname = "turbo";
   nativeBuildInputs = [ makeBinaryWrapper ];
-
-  paths = [ turbo-unwrapped ];
 
   postBuild = ''
     wrapProgram $out/bin/turbo \
       ${lib.optionalString disableTelemetry "--set TURBO_TELEMETRY_DISABLED 1"} \
       ${lib.optionalString disableUpdateNotifier "--set TURBO_NO_UPDATE_NOTIFIER 1"}
   '';
+
+  paths = [ turbo-unwrapped ];
 
   passthru = {
     tests.version = testers.testVersion { package = turbo; };

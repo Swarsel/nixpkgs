@@ -1,20 +1,19 @@
 {
   lib,
   stdenv,
-  rustPlatform,
   fetchFromGitHub,
   libcosmicAppHook,
-  pkg-config,
   libdisplay-info_0_2,
   libgbm,
   libinput,
-  pixman,
-  seatd,
-  udev,
-  systemd,
   nix-update-script,
   nixosTests,
-
+  pixman,
+  pkg-config,
+  rustPlatform,
+  seatd,
+  systemd,
+  udev,
   useSystemd ? lib.meta.availableOn stdenv.hostPlatform systemd,
 }:
 
@@ -29,14 +28,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
     tag = "epoch-${finalAttrs.version}";
     hash = "sha256-yhgjdkAzUipGAo7Jv9hWlhOb/dLXn1/68yX+tRO6UV4=";
   };
-
-  cargoHash = "sha256-Yi1nVvWmFzlXxHN01BeeGc9YRqrRoVXTqehisOrGWS0=";
-
-  # Only default feature is systemd
-  buildNoDefaultFeatures = !useSystemd;
-
-  separateDebugInfo = true;
-  __structuredAttrs = true;
 
   nativeBuildInputs = [
     libcosmicAppHook
@@ -53,12 +44,18 @@ rustPlatform.buildRustPackage (finalAttrs: {
   ]
   ++ lib.optional useSystemd systemd;
 
+  cargoHash = "sha256-Yi1nVvWmFzlXxHN01BeeGc9YRqrRoVXTqehisOrGWS0=";
+
   makeFlags = [
     "prefix=${placeholder "out"}"
     "CARGO_TARGET_DIR=target/${stdenv.hostPlatform.rust.cargoShortTarget}"
   ];
 
+  __structuredAttrs = true;
+  # Only default feature is systemd
+  buildNoDefaultFeatures = !useSystemd;
   dontCargoInstall = true;
+  separateDebugInfo = true;
 
   passthru = {
     tests = {
@@ -79,11 +76,11 @@ rustPlatform.buildRustPackage (finalAttrs: {
   };
 
   meta = {
-    homepage = "https://github.com/pop-os/cosmic-comp";
     description = "Compositor for the COSMIC Desktop Environment";
-    mainProgram = "cosmic-comp";
+    homepage = "https://github.com/pop-os/cosmic-comp";
     license = lib.licenses.gpl3Only;
-    teams = [ lib.teams.cosmic ];
     platforms = lib.platforms.linux;
+    mainProgram = "cosmic-comp";
+    teams = [ lib.teams.cosmic ];
   };
 })

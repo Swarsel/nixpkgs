@@ -1,7 +1,7 @@
 {
   lib,
-  rustPlatform,
   fetchCrate,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -10,8 +10,8 @@ rustPlatform.buildRustPackage (finalAttrs: {
 
   src = fetchCrate {
     inherit (finalAttrs) version;
-    crateName = "svgbob_cli";
     hash = "sha256-mPF6GcsXl/Bcri9d8SS21+/sjssT4//ktwC620NrEUg=";
+    crateName = "svgbob_cli";
   };
 
   cargoHash = "sha256-ObUAN+1ZHqYjWLZe/HGwTOgGbOVCdqY27kZ2zTj0Mu0=";

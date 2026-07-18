@@ -1,18 +1,17 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
-  setuptools-scm,
+  buildPythonPackage,
   parse,
   pytestCheckHook,
+  setuptools,
+  setuptools-scm,
   six,
 }:
 
 buildPythonPackage rec {
   pname = "parse-type";
   version = "0.6.6";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "jenisys";
@@ -20,6 +19,16 @@ buildPythonPackage rec {
     tag = "v${version}";
     hash = "sha256-4ZQNxvYWqYXcMj3vEtaEdikuJ38llGpmuutIOtr3lz0=";
   };
+
+  postPatch = ''
+    substituteInPlace pytest.ini \
+      --replace "--metadata PACKAGE_UNDER_TEST parse_type" "" \
+      --replace "--metadata PACKAGE_VERSION ${version}" "" \
+      --replace "--html=build/testing/report.html --self-contained-html" "" \
+      --replace "--junit-xml=build/testing/report.xml" ""
+  '';
+
+  nativeCheckInputs = [ pytestCheckHook ];
 
   build-system = [
     setuptools
@@ -31,16 +40,7 @@ buildPythonPackage rec {
     six
   ];
 
-  nativeCheckInputs = [ pytestCheckHook ];
-
-  postPatch = ''
-    substituteInPlace pytest.ini \
-      --replace "--metadata PACKAGE_UNDER_TEST parse_type" "" \
-      --replace "--metadata PACKAGE_VERSION ${version}" "" \
-      --replace "--html=build/testing/report.html --self-contained-html" "" \
-      --replace "--junit-xml=build/testing/report.xml" ""
-  '';
-
+  pyproject = true;
   pythonImportsCheck = [ "parse_type" ];
 
   meta = {

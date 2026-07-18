@@ -2,16 +2,16 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  cmake,
-  pkg-config,
-  systemdLibs,
-  dbus,
-  protobuf,
-  jsoncpp,
-  nodejs,
-  cjson,
   bashNonInteractive,
   buildNpmPackage,
+  cjson,
+  cmake,
+  dbus,
+  jsoncpp,
+  nodejs,
+  pkg-config,
+  protobuf,
+  systemdLibs,
 }:
 let
   pname = "openthread-border-router";
@@ -26,8 +26,8 @@ let
   };
 
   frontendModules = buildNpmPackage {
-    pname = "${pname}-frontend";
     inherit version;
+    pname = "${pname}-frontend";
     src = "${src}/src/web/web-service/frontend";
     npmDepsHash = "sha256-7UVfPICyIbHEClpr3p7eDR46OUzS8mVf6P7phnDpVLk=";
     dontNpmBuild = true;
@@ -36,24 +36,18 @@ in
 stdenv.mkDerivation {
   inherit pname version src;
 
-  strictDeps = true;
-  __structuredAttrs = true;
-
   patches = [
     # Patch the firewall script so we can run it within the systemd start script
     ./firewall-script.patch
   ];
+
+  strictDeps = true;
 
   nativeBuildInputs = [
     pkg-config
     cmake
     nodejs
   ];
-
-  # Adding npmConfigHook and manually passing fetchNpmDeps was resulting in ENOTCACHED errors
-  postConfigure = ''
-    ln -sf ${frontendModules}/lib/node_modules/otbr-web/node_modules ./src/web/web-service/frontend/
-  '';
 
   buildInputs = [
     systemdLibs
@@ -63,10 +57,6 @@ stdenv.mkDerivation {
     cjson
     (lib.getBin bashNonInteractive)
   ];
-
-  postInstall = ''
-    install -Dm555 -t $out/bin ../script/otbr-firewall
-  '';
 
   cmakeFlags = [
     (lib.cmakeFeature "CMAKE_POLICY_VERSION_MINIMUM" "3.5")
@@ -102,16 +92,29 @@ stdenv.mkDerivation {
     (lib.cmakeFeature "CMAKE_CXX_STANDARD" "17")
   ];
 
+  # Adding npmConfigHook and manually passing fetchNpmDeps was resulting in ENOTCACHED errors
+  postConfigure = ''
+    ln -sf ${frontendModules}/lib/node_modules/otbr-web/node_modules ./src/web/web-service/frontend/
+  '';
+
+  postInstall = ''
+    install -Dm555 -t $out/bin ../script/otbr-firewall
+  '';
+
+  __structuredAttrs = true;
+
   meta = {
     description = "Thread border router for POSIX-based platforms";
     homepage = "https://github.com/openthread/ot-br-posix";
     license = lib.licenses.bsd3;
+
     maintainers = with lib.maintainers; [
       jamiemagee
       leonm1
       mrene
     ];
-    mainProgram = "ot-ctl";
+
     platforms = lib.platforms.linux;
+    mainProgram = "ot-ctl";
   };
 }

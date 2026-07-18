@@ -2,11 +2,11 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  pkg-config,
-  libxml2,
   glibmm,
+  libxml2,
   meson,
   ninja,
+  pkg-config,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -27,15 +27,13 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   buildInputs = [ glibmm ];
-
   propagatedBuildInputs = [ libxml2 ];
-
   doCheck = stdenv.buildPlatform.canExecute stdenv.hostPlatform;
 
   meta = {
-    changelog = "https://github.com/libxmlplusplus/libxmlplusplus/blob/${finalAttrs.src.tag}/NEWS";
     description = "C++ wrapper for the libxml2 XML parser library";
     homepage = "https://libxmlplusplus.github.io/libxmlplusplus";
+    changelog = "https://github.com/libxmlplusplus/libxmlplusplus/blob/${finalAttrs.src.tag}/NEWS";
     license = lib.licenses.lgpl21Plus;
     maintainers = [ ];
     platforms = lib.platforms.unix;

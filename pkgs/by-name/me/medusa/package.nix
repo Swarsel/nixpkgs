@@ -24,8 +24,6 @@ stdenv.mkDerivation (finalAttrs: {
     "man"
   ];
 
-  configureFlags = [ "--enable-module-ssh=yes" ];
-
   nativeBuildInputs = [ pkg-config ];
 
   buildInputs = [
@@ -33,6 +31,8 @@ stdenv.mkDerivation (finalAttrs: {
     openssl
     libssh2
   ];
+
+  configureFlags = [ "--enable-module-ssh=yes" ];
 
   meta = {
     description = "Speedy, parallel, and modular, login brute-forcer";

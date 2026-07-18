@@ -1,10 +1,10 @@
 {
   lib,
+  fetchFromGitHub,
   cacert,
+  nix-update-script,
   nixosTests,
   rustPlatform,
-  fetchFromGitHub,
-  nix-update-script,
 }:
 
 rustPlatform.buildRustPackage {
@@ -20,11 +20,9 @@ rustPlatform.buildRustPackage {
 
   cargoHash = "sha256-ageSjIX0BLVYlLAjeojQq5N6/VASOIpwXNR/3msl/p4=";
 
-  postInstall = ''
-    install --mode=444 -D contrib/redlib.service $out/lib/systemd/system/redlib.service
-    substituteInPlace $out/lib/systemd/system/redlib.service \
-      --replace-fail "/usr/bin/redlib" "$out/bin/redlib"
-  '';
+  env = {
+    SSL_CERT_FILE = "${cacert}/etc/ssl/certs/ca-bundle.crt";
+  };
 
   checkFlags = [
     # All these test try to connect to Reddit.
@@ -60,9 +58,11 @@ rustPlatform.buildRustPackage {
     "--skip=oauth::test_mobile_spoof_backend"
   ];
 
-  env = {
-    SSL_CERT_FILE = "${cacert}/etc/ssl/certs/ca-bundle.crt";
-  };
+  postInstall = ''
+    install --mode=444 -D contrib/redlib.service $out/lib/systemd/system/redlib.service
+    substituteInPlace $out/lib/systemd/system/redlib.service \
+      --replace-fail "/usr/bin/redlib" "$out/bin/redlib"
+  '';
 
   passthru = {
     tests = nixosTests.redlib;
@@ -73,10 +73,12 @@ rustPlatform.buildRustPackage {
     description = "Private front-end for Reddit (Continued fork of Libreddit)";
     homepage = "https://github.com/redlib-org/redlib";
     license = lib.licenses.agpl3Only;
-    mainProgram = "redlib";
+
     maintainers = with lib.maintainers; [
       bpeetz
       Guanran928
     ];
+
+    mainProgram = "redlib";
   };
 }

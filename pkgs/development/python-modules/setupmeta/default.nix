@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   git,
   mock,
   pep440,
@@ -14,7 +14,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "setupmeta";
   version = "3.9.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "codrsquad";
@@ -26,8 +25,6 @@ buildPythonPackage (finalAttrs: {
   preBuild = ''
     export PYGRADLE_PROJECT_VERSION=${finalAttrs.version};
   '';
-
-  build-system = [ setuptools ];
 
   nativeCheckInputs = [
     git
@@ -42,6 +39,8 @@ buildPythonPackage (finalAttrs: {
     unset PYGRADLE_PROJECT_VERSION
   '';
 
+  build-system = [ setuptools ];
+
   disabledTests = [
     # Tests want to scan site-packages
     "test_check_dependencies"
@@ -53,6 +52,7 @@ buildPythonPackage (finalAttrs: {
     "test_brand_new_project"
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "setupmeta" ];
 
   meta = {

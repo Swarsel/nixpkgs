@@ -11,22 +11,12 @@ let
   cfg = config.services.prometheus.exporters.php-fpm;
 in
 {
-  port = 9253;
   extraOpts = {
     package = lib.mkPackageOption pkgs "prometheus-php-fpm-exporter" { };
 
-    telemetryPath = lib.mkOption {
-      type = lib.types.str;
-      default = "/metrics";
-      description = ''
-        Path under which to expose metrics.
-      '';
-    };
-
     environmentFile = lib.mkOption {
-      type = lib.types.nullOr lib.types.path;
       default = null;
-      example = "/root/prometheus-php-fpm-exporter.env";
+
       description = ''
         Environment file as defined in {manpage}`systemd.exec(5)`.
 
@@ -51,12 +41,28 @@ in
         Note that this file needs to be available on the host on which
         this exporter is running.
       '';
+
+      example = "/root/prometheus-php-fpm-exporter.env";
+      type = lib.types.nullOr lib.types.path;
+    };
+
+    telemetryPath = lib.mkOption {
+      default = "/metrics";
+
+      description = ''
+        Path under which to expose metrics.
+      '';
+
+      type = lib.types.str;
     };
   };
+
+  port = 9253;
 
   serviceOpts = {
     serviceConfig = {
       EnvironmentFile = lib.mkIf (cfg.environmentFile != null) [ cfg.environmentFile ];
+
       ExecStart = ''
         ${lib.getExe cfg.package} server \
           --web.listen-address ${cfg.listenAddress}:${toString cfg.port} \

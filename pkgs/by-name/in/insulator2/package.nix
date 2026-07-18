@@ -1,26 +1,22 @@
 {
   lib,
   stdenv,
-
   fetchFromGitHub,
-  yarn-berry_4,
-
   cargo,
   cargo-tauri,
   cmake,
-  nodejs-slim,
-  pkg-config,
-  rustc,
-  rustPlatform,
-  webkitgtk_4_1,
-
+  curl,
   cyrus_sasl,
   freetype,
   libsoup_3,
-  openssl,
-  curl,
-
   nix-update-script,
+  nodejs-slim,
+  openssl,
+  pkg-config,
+  rustPlatform,
+  rustc,
+  webkitgtk_4_1,
+  yarn-berry_4,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -40,24 +36,7 @@ stdenv.mkDerivation (finalAttrs: {
     ./yarn-4.14-support.patch
   ];
 
-  missingHashes = ./missing-hashes.json;
-  offlineCache = yarn-berry_4.fetchYarnBerryDeps {
-    inherit (finalAttrs) src missingHashes patches;
-    hash = "sha256-IechRla3epfANBESCYgti5/8B3QaPCv6Gp2I4eZNiyI=";
-  };
-
-  cargoDeps = rustPlatform.fetchCargoVendor {
-    inherit (finalAttrs) src;
-    sourceRoot = finalAttrs.src.name + "/backend";
-    hash = "sha256-u5WFV7luvqSQQtEJFlN//GH6iNcQpH/o01ME1dPtOB4=";
-  };
-
-  cargoRoot = "backend/";
-  buildAndTestSubdir = finalAttrs.cargoRoot;
-
   strictDeps = true;
-
-  dontUseCmakeConfigure = true;
 
   nativeBuildInputs = [
     cargo
@@ -81,6 +60,22 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   env.OPENSSL_NO_VENDOR = 1;
+  buildAndTestSubdir = finalAttrs.cargoRoot;
+
+  cargoDeps = rustPlatform.fetchCargoVendor {
+    inherit (finalAttrs) src;
+    hash = "sha256-u5WFV7luvqSQQtEJFlN//GH6iNcQpH/o01ME1dPtOB4=";
+    sourceRoot = finalAttrs.src.name + "/backend";
+  };
+
+  cargoRoot = "backend/";
+  dontUseCmakeConfigure = true;
+  missingHashes = ./missing-hashes.json;
+
+  offlineCache = yarn-berry_4.fetchYarnBerryDeps {
+    inherit (finalAttrs) src missingHashes patches;
+    hash = "sha256-IechRla3epfANBESCYgti5/8B3QaPCv6Gp2I4eZNiyI=";
+  };
 
   passthru.updateScript = nix-update-script { };
 

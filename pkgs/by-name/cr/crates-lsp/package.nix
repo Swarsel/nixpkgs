@@ -1,8 +1,8 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
   nix-update-script,
+  rustPlatform,
 }:
 rustPlatform.buildRustPackage (finalAttrs: {
   pname = "crates-lsp";
@@ -16,13 +16,13 @@ rustPlatform.buildRustPackage (finalAttrs: {
   };
 
   cargoHash = "sha256-tQBNCTqvVNYqT5ArQE7ji0MeDWxi7Bcd9AxPP3sHvX4=";
-
   passthru.updateScript = nix-update-script { };
 
   meta = {
     description = "Language Server implementation for Cargo.toml";
     homepage = "https://github.com/MathiasPius/crates-lsp";
     license = with lib.licenses; [ mit ];
+    maintainers = with lib.maintainers; [ steveej ];
 
     platforms = [
       "x86_64-linux"
@@ -30,7 +30,7 @@ rustPlatform.buildRustPackage (finalAttrs: {
       "aarch64-darwin"
       "x86_64-windows"
     ];
-    maintainers = with lib.maintainers; [ steveej ];
+
     mainProgram = "crates-lsp";
   };
 })

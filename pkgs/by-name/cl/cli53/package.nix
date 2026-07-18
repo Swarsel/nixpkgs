@@ -1,9 +1,9 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
-  testers,
+  buildGoModule,
   cli53,
+  testers,
 }:
 
 buildGoModule (finalAttrs: {

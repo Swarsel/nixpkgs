@@ -1,15 +1,15 @@
 {
+  lib,
+  stdenv,
+  fetchFromGitHub,
   autoreconfHook,
   cups,
-  fetchFromGitHub,
   ghostscript,
-  lib,
   libcupsfilters,
   libz,
   mupdf,
   pkg-config,
   poppler-utils,
-  stdenv,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -28,6 +28,7 @@ stdenv.mkDerivation (finalAttrs: {
     pkg-config
     cups
   ];
+
   buildInputs = [
     cups
     ghostscript
@@ -35,6 +36,7 @@ stdenv.mkDerivation (finalAttrs: {
     mupdf
     libz
   ];
+
   configureFlags = [
     "--with-mutool-path=${mupdf}/bin/mutool"
     "--with-pdftops=pdftops"
@@ -42,6 +44,7 @@ stdenv.mkDerivation (finalAttrs: {
     "--with-gs-path=${ghostscript}/bin/gs"
     "--with-pdftocairo-path=${poppler-utils}/bin/pdftocairo"
   ];
+
   makeFlags = [
     "CUPS_SERVERBIN=$(out)/lib/cups"
     "CUPS_DATADIR=$(out)/share/cups"

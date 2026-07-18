@@ -3,10 +3,10 @@
   stdenv,
   fetchFromGitHub,
   cmake,
-  pkg-config,
   libusb1,
-  udev,
+  pkg-config,
   testers,
+  udev,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -31,18 +31,21 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   enableParallelBuilding = true;
-
   passthru.tests.pkg-config = testers.testMetaPkgConfig finalAttrs.finalPackage;
 
   meta = {
     description = "Library for communicating with USB and Bluetooth HID devices";
     homepage = "https://github.com/libusb/hidapi";
-    maintainers = with lib.maintainers; [ prusnak ];
+
     # You can choose between GPLv3, BSD or HIDAPI license (even more liberal)
     license = with lib.licenses; [
       bsd3 # or
       gpl3Only
     ];
+
+    maintainers = with lib.maintainers; [ prusnak ];
+    platforms = lib.platforms.unix ++ lib.platforms.windows;
+
     pkgConfigModules =
       lib.optionals stdenv.hostPlatform.isDarwin [
         "hidapi"
@@ -51,6 +54,5 @@ stdenv.mkDerivation (finalAttrs: {
         "hidapi-hidraw"
         "hidapi-libusb"
       ];
-    platforms = lib.platforms.unix ++ lib.platforms.windows;
   };
 })

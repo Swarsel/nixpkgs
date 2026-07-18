@@ -1,18 +1,18 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchurl,
-  pkg-config,
-  meson,
-  ninja,
-  udev,
+  buildPackages,
   glib,
   glibcLocales,
-  umockdev,
   gnome,
-  vala,
   gobject-introspection,
-  buildPackages,
+  meson,
+  ninja,
+  pkg-config,
+  udev,
+  umockdev,
+  vala,
   withIntrospection ?
     lib.meta.availableOn stdenv.hostPlatform gobject-introspection
     && stdenv.hostPlatform.emulatorAvailable buildPackages,
@@ -22,15 +22,15 @@ stdenv.mkDerivation (finalAttrs: {
   pname = "libgudev";
   version = "238";
 
-  outputs = [
-    "out"
-    "dev"
-  ];
-
   src = fetchurl {
     url = "mirror://gnome/sources/libgudev/${lib.versions.majorMinor finalAttrs.version}/libgudev-${finalAttrs.version}.tar.xz";
     hash = "sha256-YSZqsa/J1z28YKiyr3PpnS/f9H2ZVE0IV2Dk+mZ7XdE=";
   };
+
+  outputs = [
+    "out"
+    "dev"
+  ];
 
   patches = [
     # Conditionally disable one test that requires a locale implementation
@@ -62,16 +62,17 @@ stdenv.mkDerivation (finalAttrs: {
     glib
   ];
 
-  checkInputs = [
-    glibcLocales
-    umockdev
-  ];
-
-  doCheck = withIntrospection;
   mesonFlags = [
     (lib.mesonEnable "introspection" withIntrospection)
     (lib.mesonEnable "vapi" withIntrospection)
     (lib.mesonEnable "tests" finalAttrs.finalPackage.doCheck)
+  ];
+
+  doCheck = withIntrospection;
+
+  checkInputs = [
+    glibcLocales
+    umockdev
   ];
 
   # https://gitlab.gnome.org/GNOME/libgudev/-/issues/10
@@ -89,8 +90,8 @@ stdenv.mkDerivation (finalAttrs: {
   meta = {
     description = "Library that provides GObject bindings for libudev";
     homepage = "https://gitlab.gnome.org/GNOME/libgudev";
-    teams = [ lib.teams.gnome ];
-    platforms = lib.platforms.linux;
     license = lib.licenses.lgpl2Plus;
+    platforms = lib.platforms.linux;
+    teams = [ lib.teams.gnome ];
   };
 })

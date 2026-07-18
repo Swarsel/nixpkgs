@@ -9,8 +9,6 @@ buildDunePackage (finalAttrs: {
   pname = "ninja_utils";
   version = "1.0.0";
 
-  minimalOCamlVersion = "4.12";
-
   src = fetchFromGitHub {
     owner = "CatalaLang";
     repo = "ninja_utils";
@@ -19,6 +17,7 @@ buildDunePackage (finalAttrs: {
   };
 
   propagatedBuildInputs = [ re ];
+  minimalOCamlVersion = "4.12";
 
   meta = {
     description = "Small library used to generate Ninja build files";

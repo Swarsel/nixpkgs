@@ -1,8 +1,8 @@
 {
   lib,
+  fetchFromGitHub,
   buildPythonPackage,
   ciso8601,
-  fetchFromGitHub,
   msgpack,
   orjson,
   pendulum,
@@ -17,24 +17,12 @@
 buildPythonPackage rec {
   pname = "mashumaro";
   version = "3.21";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "Fatal1ty";
     repo = "mashumaro";
     tag = "v${version}";
     hash = "sha256-SWmZA/yoiElQ299+BkjwTdcPukKfgw/UgUwiesFRkqo=";
-  };
-
-  build-system = [ setuptools ];
-
-  dependencies = [ typing-extensions ];
-
-  optional-dependencies = {
-    orjson = [ orjson ];
-    msgpack = [ msgpack ];
-    yaml = [ pyyaml ];
-    toml = [ tomli-w ];
   };
 
   nativeCheckInputs = [
@@ -45,6 +33,17 @@ buildPythonPackage rec {
   ]
   ++ lib.concatAttrValues optional-dependencies;
 
+  build-system = [ setuptools ];
+  dependencies = [ typing-extensions ];
+
+  optional-dependencies = {
+    msgpack = [ msgpack ];
+    orjson = [ orjson ];
+    toml = [ tomli-w ];
+    yaml = [ pyyaml ];
+  };
+
+  pyproject = true;
   pythonImportsCheck = [ "mashumaro" ];
 
   meta = {

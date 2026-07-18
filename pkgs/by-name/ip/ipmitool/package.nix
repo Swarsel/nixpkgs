@@ -1,18 +1,18 @@
 {
-  stdenv,
   lib,
-  fetchFromCodeberg,
-  autoreconfHook,
-  pkg-config,
-  openssl,
-  readline,
+  stdenv,
   fetchurl,
+  autoreconfHook,
+  fetchFromCodeberg,
+  openssl,
+  pkg-config,
+  readline,
 }:
 
 let
   iana-enterprise-numbers = fetchurl {
-    url = "https://web.archive.org/web/20250113140800id_/https://www.iana.org/assignments/enterprise-numbers.txt";
     hash = "sha256-aRgBEfZYwoL6YnU3aD0WYeMnJD5ZCj34S/9aQyzBIO4=";
+    url = "https://web.archive.org/web/20250113140800id_/https://www.iana.org/assignments/enterprise-numbers.txt";
   };
 in
 stdenv.mkDerivation {
@@ -45,10 +45,10 @@ stdenv.mkDerivation {
 
   meta = {
     description = "Command-line interface to IPMI-enabled devices";
-    mainProgram = "ipmitool";
-    license = lib.licenses.bsd3;
     homepage = "https://codeberg.org/IPMITool/ipmitool";
-    platforms = lib.platforms.unix;
+    license = lib.licenses.bsd3;
     maintainers = with lib.maintainers; [ fpletz ];
+    platforms = lib.platforms.unix;
+    mainProgram = "ipmitool";
   };
 }

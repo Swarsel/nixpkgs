@@ -59,42 +59,44 @@ in
     services.mlmmj = {
 
       enable = lib.mkOption {
-        type = lib.types.bool;
         default = false;
         description = "Enable mlmmj";
-      };
-
-      user = lib.mkOption {
-        type = lib.types.str;
-        default = "mlmmj";
-        description = "mailinglist local user";
+        type = lib.types.bool;
       };
 
       group = lib.mkOption {
-        type = lib.types.str;
         default = "mlmmj";
         description = "mailinglist local group";
+        type = lib.types.str;
       };
 
       listDomain = lib.mkOption {
-        type = lib.types.str;
         default = "localhost";
         description = "Set the mailing list domain";
+        type = lib.types.str;
       };
 
       mailLists = lib.mkOption {
-        type = lib.types.listOf lib.types.str;
         default = [ ];
         description = "The collection of hosted maillists";
+        type = lib.types.listOf lib.types.str;
       };
 
       maintInterval = lib.mkOption {
-        type = lib.types.str;
         default = "20min";
+
         description = ''
           Time interval between mlmmj-maintd runs, see
           {manpage}`systemd.time(7)` for format information.
         '';
+
+        type = lib.types.str;
+      };
+
+      user = lib.mkOption {
+        default = "mlmmj";
+        description = "mailinglist local user";
+        type = lib.types.str;
       };
 
     };
@@ -105,32 +107,18 @@ in
 
   config = lib.mkIf cfg.enable {
 
-    users.users.${cfg.user} = {
-      description = "mlmmj user";
-      home = stateDir;
-      createHome = true;
-      uid = config.ids.uids.mlmmj;
-      group = cfg.group;
-      useDefaultShell = true;
-    };
-
-    users.groups.${cfg.group} = {
-      gid = config.ids.gids.mlmmj;
-    };
+    environment.systemPackages = [ pkgs.mlmmj ];
 
     services.postfix = {
       enable = true;
+      extraAliases = concatMapLines (alias cfg.listDomain) cfg.mailLists;
+
       settings.main = {
-        recipient_delimiter = "+";
         propagate_unmatched_extensions = "virtual";
+        recipient_delimiter = "+";
       };
+
       settings.master.mlmmj = {
-        type = "unix";
-        private = true;
-        privileged = true;
-        chroot = false;
-        wakeup = 0;
-        command = "pipe";
         args = [
           "flags=ORhu"
           "user=mlmmj"
@@ -139,42 +127,61 @@ in
           "-L"
           "${spoolDir}/$nexthop"
         ];
+
+        chroot = false;
+        command = "pipe";
+        private = true;
+        privileged = true;
+        type = "unix";
+        wakeup = 0;
       };
 
-      extraAliases = concatMapLines (alias cfg.listDomain) cfg.mailLists;
-
-      virtual = concatMapLines (virtual cfg.listDomain) cfg.mailLists;
       transport = concatMapLines (transport cfg.listDomain) cfg.mailLists;
-    };
-
-    environment.systemPackages = [ pkgs.mlmmj ];
-
-    systemd.tmpfiles.settings."10-mlmmj" = {
-      ${stateDir}.d = { };
-      "${spoolDir}/${cfg.listDomain}".d = { };
-      ${spoolDir}.Z = {
-        inherit (cfg) user group;
-      };
+      virtual = concatMapLines (virtual cfg.listDomain) cfg.mailLists;
     };
 
     systemd.services.mlmmj-maintd = {
       description = "mlmmj maintenance daemon";
-      serviceConfig = {
-        User = cfg.user;
-        Group = cfg.group;
-        ExecStart = "${pkgs.mlmmj}/bin/mlmmj-maintd -F -d ${spoolDir}/${cfg.listDomain}";
-      };
+
       preStart = ''
         ${concatMapLines (createList cfg.listDomain) cfg.mailLists}
         ${lib.getExe' config.services.postfix.package "postmap"} /etc/postfix/virtual
         ${lib.getExe' config.services.postfix.package "postmap"} /etc/postfix/transport
       '';
+
+      serviceConfig = {
+        ExecStart = "${pkgs.mlmmj}/bin/mlmmj-maintd -F -d ${spoolDir}/${cfg.listDomain}";
+        Group = cfg.group;
+        User = cfg.user;
+      };
     };
 
     systemd.timers.mlmmj-maintd = {
       description = "mlmmj maintenance timer";
       timerConfig.OnUnitActiveSec = cfg.maintInterval;
       wantedBy = [ "timers.target" ];
+    };
+
+    systemd.tmpfiles.settings."10-mlmmj" = {
+      ${spoolDir}.Z = {
+        inherit (cfg) user group;
+      };
+
+      "${spoolDir}/${cfg.listDomain}".d = { };
+      ${stateDir}.d = { };
+    };
+
+    users.groups.${cfg.group} = {
+      gid = config.ids.gids.mlmmj;
+    };
+
+    users.users.${cfg.user} = {
+      createHome = true;
+      description = "mlmmj user";
+      group = cfg.group;
+      home = stateDir;
+      uid = config.ids.uids.mlmmj;
+      useDefaultShell = true;
     };
   };
 

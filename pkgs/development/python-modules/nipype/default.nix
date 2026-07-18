@@ -1,56 +1,51 @@
 {
   lib,
   stdenv,
-  buildPythonPackage,
-  fetchPypi,
-
-  # build-system
-  hatchling,
-  hatch-vcs,
-
   # python dependencies
   acres,
+  bash,
+  buildPythonPackage,
   click,
-  python-dateutil,
+  # optional-dependencies
+  datalad,
+  duecredit,
   etelemetry,
+  fetchPypi,
   filelock,
+  glibcLocales,
+  hatch-vcs,
+  # build-system
+  hatchling,
   looseversion,
   lxml,
   networkx,
   nibabel,
   numpy,
   packaging,
+  pandas,
+  paramiko,
   prov,
+  psutil,
   puremagic,
   pybids,
   pydot,
-  pytestCheckHook,
-  pytest-xdist,
   pytest-cov-stub,
+  pytest-xdist,
+  pytestCheckHook,
+  python-dateutil,
   rdflib,
   scipy,
   simplejson,
-  traits,
-
-  # optional-dependencies
-  datalad,
-  duecredit,
-  pandas,
-  paramiko,
-  psutil,
   sphinx,
-  xvfbwrapper,
-
+  traits,
   # other dependencies
   which,
-  bash,
-  glibcLocales,
+  xvfbwrapper,
 }:
 
 buildPythonPackage rec {
   pname = "nipype";
   version = "1.11.0";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
@@ -63,6 +58,19 @@ buildPythonPackage rec {
     substituteInPlace nipype/pipeline/engine/tests/test_nodes.py \
       --replace-fail "/bin/bash" "${bash}/bin/bash"
   '';
+
+  # checks on darwin inspect memory which doesn't work in build environment
+  doCheck = !stdenv.hostPlatform.isDarwin;
+
+  nativeCheckInputs = [
+    glibcLocales
+    pandas
+    pytestCheckHook
+    pytest-cov-stub
+    pytest-xdist
+    sphinx
+    which
+  ];
 
   build-system = [
     hatchling
@@ -90,6 +98,14 @@ buildPythonPackage rec {
     traits
   ];
 
+  pyproject = true;
+
+  pythonImportsCheck = [
+    "nipype"
+    "nipype.algorithms"
+    "nipype.interfaces"
+  ];
+
   passthru.optional-dependencies = {
     data = [ datalad ];
     duecredit = [ duecredit ];
@@ -99,31 +115,12 @@ buildPythonPackage rec {
     xvfbwrapper = [ xvfbwrapper ];
   };
 
-  nativeCheckInputs = [
-    glibcLocales
-    pandas
-    pytestCheckHook
-    pytest-cov-stub
-    pytest-xdist
-    sphinx
-    which
-  ];
-
-  # checks on darwin inspect memory which doesn't work in build environment
-  doCheck = !stdenv.hostPlatform.isDarwin;
-
-  pythonImportsCheck = [
-    "nipype"
-    "nipype.algorithms"
-    "nipype.interfaces"
-  ];
-
   meta = {
-    homepage = "https://nipy.org/nipype";
     description = "Neuroimaging in Python: Pipelines and Interfaces";
+    homepage = "https://nipy.org/nipype";
     changelog = "https://github.com/nipy/nipype/releases/tag/${version}";
-    mainProgram = "nipypecli";
     license = lib.licenses.bsd3;
     maintainers = with lib.maintainers; [ ashgillman ];
+    mainProgram = "nipypecli";
   };
 }

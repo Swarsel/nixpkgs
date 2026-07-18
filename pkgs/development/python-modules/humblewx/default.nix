@@ -2,14 +2,13 @@
   lib,
   fetchFromGitHub,
   buildPythonPackage,
-  wxpython,
   python,
+  wxpython,
 }:
 
 buildPythonPackage rec {
   pname = "humblewx";
   version = "0.2.2";
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "thetimelineproj";
@@ -19,6 +18,9 @@ buildPythonPackage rec {
   };
 
   propagatedBuildInputs = [ wxpython ];
+  # Unable to access the X Display, is $DISPLAY set properly?
+  # would have to use nixos module tests, but it is not worth it
+  doCheck = false;
 
   checkPhase = ''
     runHook preCheck
@@ -28,15 +30,12 @@ buildPythonPackage rec {
     runHook postCheck
   '';
 
-  # Unable to access the X Display, is $DISPLAY set properly?
-  # would have to use nixos module tests, but it is not worth it
-  doCheck = false;
-
+  format = "setuptools";
   pythonImportsCheck = [ "humblewx" ];
 
   meta = {
-    homepage = "https://github.com/thetimelineproj/humblewx";
     description = "Library that simplifies creating user interfaces with wxPython";
+    homepage = "https://github.com/thetimelineproj/humblewx";
     license = lib.licenses.gpl3Only;
     maintainers = with lib.maintainers; [ davidak ];
   };

@@ -1,8 +1,8 @@
 {
+  lib,
   buildGoModule,
   fetchFromCodeberg,
   installShellFiles,
-  lib,
   nixosTests,
   pam,
   scdoc,
@@ -21,26 +21,13 @@ buildGoModule (finalAttrs: {
     hash = "sha256-kOV7EFRr+Ca9bQ1bdDMNf1FiiniIHDebsf5SpbJshsI=";
   };
 
-  vendorHash = "sha256-NP4njea0hcklxWFoxPQqrvyWExeRP/TOzUJcamRnx+s=";
-
   nativeBuildInputs = [
     installShellFiles
     scdoc
   ];
 
   buildInputs = lib.optional withPam pam;
-
-  ldflags = [
-    "-s"
-    "-w"
-    "-X codeberg.org/emersion/soju/config.DefaultPath=/etc/soju/config"
-    "-X codeberg.org/emersion/soju/config.DefaultUnixAdminPath=/run/soju/admin"
-  ];
-
-  tags =
-    lib.optional (!withSqlite) "nosqlite"
-    ++ lib.optional withModernCSqlite "moderncsqlite"
-    ++ lib.optional withPam "pam";
+  vendorHash = "sha256-NP4njea0hcklxWFoxPQqrvyWExeRP/TOzUJcamRnx+s=";
 
   postBuild = ''
     make doc/soju.1 doc/sojuctl.1
@@ -54,10 +41,23 @@ buildGoModule (finalAttrs: {
     installManPage doc/soju.1 doc/sojuctl.1
   '';
 
+  ldflags = [
+    "-s"
+    "-w"
+    "-X codeberg.org/emersion/soju/config.DefaultPath=/etc/soju/config"
+    "-X codeberg.org/emersion/soju/config.DefaultUnixAdminPath=/run/soju/admin"
+  ];
+
+  tags =
+    lib.optional (!withSqlite) "nosqlite"
+    ++ lib.optional withModernCSqlite "moderncsqlite"
+    ++ lib.optional withPam "pam";
+
   passthru.tests.soju = nixosTests.soju;
 
   meta = {
     description = "User-friendly IRC bouncer";
+
     longDescription = ''
       soju is a user-friendly IRC bouncer. soju connects to upstream IRC servers
       on behalf of the user to provide extra functionality. soju supports many
@@ -65,13 +65,16 @@ buildGoModule (finalAttrs: {
       playback and detached channels. It is well-suited for both small and large
       deployments.
     '';
+
     homepage = "https://soju.im";
     changelog = "https://codeberg.org/emersion/soju/releases/tag/${finalAttrs.src.rev}";
     license = lib.licenses.agpl3Only;
+
     maintainers = with lib.maintainers; [
       azahi
       malte-v
     ];
+
     mainProgram = "sojuctl";
   };
 })

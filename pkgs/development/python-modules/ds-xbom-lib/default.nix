@@ -8,28 +8,27 @@
 }:
 
 buildPythonPackage rec {
-  pname = "ds-xbom-lib";
   inherit (dep-scan) version src;
-  pyproject = true;
-
-  sourceRoot = "${src.name}/packages/xbom-lib";
+  pname = "ds-xbom-lib";
+  # no tests
+  doCheck = false;
 
   build-system = [
     setuptools
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "xbom_lib" ];
-
-  # no tests
-  doCheck = false;
+  sourceRoot = "${src.name}/packages/xbom-lib";
 
   meta = {
-    description = "xBOM library for owasp depscan";
     inherit (dep-scan.meta)
       homepage
       license
       maintainers
       teams
       ;
+
+    description = "xBOM library for owasp depscan";
   };
 }

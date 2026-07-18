@@ -1,17 +1,16 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   fetchpatch,
+  pytestCheckHook,
   setuptools,
   standard-cgi,
-  pytestCheckHook,
 }:
 
 buildPythonPackage rec {
   pname = "vat-moss";
   version = "0.11.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "raphaelm";
@@ -22,26 +21,24 @@ buildPythonPackage rec {
 
   patches = [
     (fetchpatch {
+      hash = "sha256-GpxaQ6/1LdFdxzXT/p4HS7FHU0WeM0i3LbdRFeqnFdw=";
       # Update API URL to HTTPS
       url = "https://github.com/raphaelm/vat_moss-python/commit/ed32b7d893da101332d3bb202d17b1bf89e5d9ed.patch";
-      hash = "sha256-GpxaQ6/1LdFdxzXT/p4HS7FHU0WeM0i3LbdRFeqnFdw=";
     })
   ];
 
-  build-system = [ setuptools ];
-
-  dependencies = [ standard-cgi ];
-
-  pythonImportsCheck = [ "vat_moss" ];
-
   nativeCheckInputs = [ pytestCheckHook ];
-
-  disabledTests = [ "test_fetch" ];
+  build-system = [ setuptools ];
+  dependencies = [ standard-cgi ];
 
   disabledTestPaths = [
     # network access
     "tests/test_id.py"
   ];
+
+  disabledTests = [ "test_fetch" ];
+  pyproject = true;
+  pythonImportsCheck = [ "vat_moss" ];
 
   meta = {
     description = "Python library for dealing with VAT MOSS and Norway VAT on digital services. Includes VAT ID validation, rate calculation based on place of supply, exchange rate and currency tools for invoices";

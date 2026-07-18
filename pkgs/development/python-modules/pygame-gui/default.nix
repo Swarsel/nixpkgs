@@ -1,32 +1,26 @@
 {
   lib,
-  pkgs,
   stdenv,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # build-system
-  setuptools,
-
-  # dependencies
-  pygame-ce,
-  python-i18n,
-
-  # tests
-  pytestCheckHook,
-  writableTmpDirAsHomeHook,
-
+  buildPythonPackage,
   # passthru
   nix-update-script,
+  pkgs,
+  # dependencies
+  pygame-ce,
+  # tests
+  pytestCheckHook,
+  python-i18n,
+  # build-system
+  setuptools,
+  writableTmpDirAsHomeHook,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "pygame-gui";
   version = "0614";
-  pyproject = true;
-  __structuredAttrs = true;
-  # nixpkgs-update: no auto update
 
+  # nixpkgs-update: no auto update
   src = fetchFromGitHub {
     owner = "MyreMylar";
     repo = "pygame_gui";
@@ -39,6 +33,17 @@ buildPythonPackage (finalAttrs: {
       --replace-fail "xsel" "${lib.getExe pkgs.xsel}"
   '';
 
+  nativeCheckInputs = [
+    pytestCheckHook
+    writableTmpDirAsHomeHook
+  ];
+
+  preCheck = ''
+    export SDL_VIDEODRIVER=dummy
+  '';
+
+  __structuredAttrs = true;
+
   build-system = [
     setuptools
   ];
@@ -48,14 +53,7 @@ buildPythonPackage (finalAttrs: {
     python-i18n
   ];
 
-  nativeCheckInputs = [
-    pytestCheckHook
-    writableTmpDirAsHomeHook
-  ];
-
-  preCheck = ''
-    export SDL_VIDEODRIVER=dummy
-  '';
+  disabledTestPaths = [ "tests/test_performance/test_text_performance.py" ];
 
   disabledTests = [
     # Clipboard doesn't exist in test environment
@@ -91,7 +89,7 @@ buildPythonPackage (finalAttrs: {
     "test_process_event"
   ];
 
-  disabledTestPaths = [ "tests/test_performance/test_text_performance.py" ];
+  pyproject = true;
 
   passthru.updateScript = nix-update-script {
     extraArgs = [
@@ -104,6 +102,7 @@ buildPythonPackage (finalAttrs: {
     description = "GUI system for pygame";
     homepage = "https://github.com/MyreMylar/pygame_gui";
     license = with lib.licenses; [ mit ];
+
     maintainers = with lib.maintainers; [
       emilytrau
       pbsds

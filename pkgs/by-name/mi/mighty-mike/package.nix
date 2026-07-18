@@ -21,6 +21,8 @@ stdenv.mkDerivation {
     fetchSubmodules = true;
   };
 
+  strictDeps = true;
+
   nativeBuildInputs = [
     SDL2
     cmake
@@ -31,8 +33,6 @@ stdenv.mkDerivation {
     SDL2
     libGL
   ];
-
-  strictDeps = true;
 
   installPhase = ''
     runHook preInstall
@@ -52,15 +52,17 @@ stdenv.mkDerivation {
 
   meta = {
     description = "Port of Mighty Mike, a 1995 Macintosh game by Pangea Software, for modern operating systems";
+
     longDescription = ''
       This is Pangea Software's Mighty Mike updated to run on modern systems.
       Set in a toy store, this top-down action game is a staple of 90's Macintosh games.
       It was initially published in 1995 under the name Power Pete.
     '';
+
     homepage = "https://jorio.itch.io/mightymike";
     license = lib.licenses.cc-by-nc-sa-40;
-    mainProgram = "MightyMike";
     maintainers = with lib.maintainers; [ nateeag ];
     platforms = lib.platforms.linux;
+    mainProgram = "MightyMike";
   };
 }

@@ -1,18 +1,18 @@
 {
   lib,
   stdenv,
-  fetchgit,
   cmake,
+  fetchgit,
+  libarchive,
+  libvorbis,
+  libxml2,
   pkg-config,
   qt6,
-  libvorbis,
-  libarchive,
-  libxml2,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
-  version = "0.9.0";
   pname = "stopmotion";
+  version = "0.9.0";
 
   src = fetchgit {
     url = "https://invent.kde.org/multimedia/stopmotion";
@@ -25,6 +25,7 @@ stdenv.mkDerivation (finalAttrs: {
     pkg-config
     qt6.wrapQtAppsHook
   ];
+
   buildInputs = [
     qt6.qtbase
     qt6.qttools
@@ -38,8 +39,8 @@ stdenv.mkDerivation (finalAttrs: {
     description = "Create stop-motion animation movies";
     homepage = "http://linuxstopmotion.org/";
     license = lib.licenses.gpl2Plus;
-    platforms = lib.platforms.linux;
     maintainers = [ lib.maintainers.bjornfor ];
+    platforms = lib.platforms.linux;
     mainProgram = "stopmotion";
   };
 })

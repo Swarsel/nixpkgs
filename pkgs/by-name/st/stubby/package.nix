@@ -8,22 +8,21 @@
   getdns,
   libyaml,
   openssl,
+  stubby,
   systemd,
   yq,
-  stubby,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
+  inherit (getdns) src;
   pname = "stubby";
   version = "0.4.3";
+
   outputs = [
     "out"
     "man"
     "stubbyExampleJson"
   ];
-
-  inherit (getdns) src;
-  sourceRoot = "${getdns.pname}-${getdns.version}/stubby";
 
   nativeBuildInputs = [
     cmake
@@ -44,11 +43,12 @@ stdenv.mkDerivation (finalAttrs: {
       > $stubbyExampleJson
   '';
 
+  sourceRoot = "${getdns.pname}-${getdns.version}/stubby";
   passthru.settingsExample = builtins.fromJSON (builtins.readFile stubby.stubbyExampleJson);
 
   meta = getdns.meta // {
     description = "Local DNS Privacy stub resolver (using DNS-over-TLS)";
-    mainProgram = "stubby";
+
     longDescription = ''
       Stubby is an application that acts as a local DNS Privacy stub
       resolver (using RFC 7858, aka DNS-over-TLS). Stubby encrypts DNS
@@ -56,6 +56,8 @@ stdenv.mkDerivation (finalAttrs: {
       Privacy resolver increasing end user privacy. Stubby is developed by
       the getdns team.
     '';
+
     homepage = "https://dnsprivacy.org/dns_privacy_daemon_-_stubby/";
+    mainProgram = "stubby";
   };
 })

@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule (finalAttrs: {
@@ -16,14 +16,13 @@ buildGoModule (finalAttrs: {
   };
 
   vendorHash = "sha256-5sUBrzo6wJfaMMvgNflcjB2QNSIeaD2TN7qBao53NFs=";
+  # Requires network
+  doCheck = false;
 
   ldflags = [
     "-w"
     "-s"
   ];
-
-  # Requires network
-  doCheck = false;
 
   meta = {
     description = "CLI tool that checks an IP address using various public services";

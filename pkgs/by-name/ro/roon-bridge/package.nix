@@ -1,13 +1,13 @@
 {
+  lib,
+  stdenv,
+  fetchurl,
   alsa-lib,
   alsa-utils,
   autoPatchelfHook,
-  fetchurl,
   ffmpeg,
-  lib,
   makeWrapper,
   openssl,
-  stdenv,
   zlib,
 }:
 let
@@ -23,6 +23,7 @@ let
       throw "Unsupported platform ${host}";
   src = fetchurl {
     url = "https://download.roonlabs.com/updates/stable/RoonBridge_${system}_${urlVersion}.tar.bz2";
+
     hash =
       if system == "linuxx64" then
         "sha256-DbtKPFEz2WIoKTxP+zoehzz+BjfsLZ2ZQk/FMh+zFBM="
@@ -33,21 +34,18 @@ let
   };
 in
 stdenv.mkDerivation {
-  pname = "roon-bridge";
   inherit src version;
+  pname = "roon-bridge";
 
-  dontConfigure = true;
-  dontBuild = true;
+  nativeBuildInputs = [
+    autoPatchelfHook
+    makeWrapper
+  ];
 
   buildInputs = [
     alsa-lib
     zlib
     (lib.getLib stdenv.cc.cc)
-  ];
-
-  nativeBuildInputs = [
-    autoPatchelfHook
-    makeWrapper
   ];
 
   installPhase =
@@ -93,17 +91,22 @@ stdenv.mkDerivation {
       runHook postInstall
     '';
 
+  dontBuild = true;
+  dontConfigure = true;
+
   meta = {
     description = "Music player for music lovers";
-    changelog = "https://community.roonlabs.com/c/roon/software-release-notes/18";
     homepage = "https://roonlabs.com";
-    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
+    changelog = "https://community.roonlabs.com/c/roon/software-release-notes/18";
     license = lib.licenses.unfree;
+    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
     maintainers = with lib.maintainers; [ lovesegfault ];
+
     platforms = [
       "aarch64-linux"
       "x86_64-linux"
     ];
+
     mainProgram = "RoonBridge";
   };
 }

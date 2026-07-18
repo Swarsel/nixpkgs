@@ -1,15 +1,14 @@
 {
   lib,
-  ruby,
   bundlerApp,
+  ruby,
 }:
 
 bundlerApp {
-  pname = "kamal";
-  gemdir = ./.;
   inherit ruby;
-
+  pname = "kamal";
   exes = [ "kamal" ];
+  gemdir = ./.;
 
   meta = {
     description = "Deploy web apps anywhere";

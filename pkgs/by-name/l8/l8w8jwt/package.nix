@@ -1,8 +1,8 @@
 {
   lib,
   stdenv,
-  fetchFromCodeberg,
   cmake,
+  fetchFromCodeberg,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -13,14 +13,19 @@ stdenv.mkDerivation (finalAttrs: {
     owner = "GlitchedPolygons";
     repo = "l8w8jwt";
     tag = finalAttrs.version;
-    fetchSubmodules = true;
     hash = "sha256-aR3r84AYvCNx3jm9lB1qtbbEh9rU3LTkI+TK9LPQaPk=";
+    fetchSubmodules = true;
   };
 
   patches = [
     # adapted from https://github.com/Mbed-TLS/mbedtls/commit/79b513894a28718604f7cb531380bfea0354844f
     ./fix-gcc15.patch
   ];
+
+  postPatch = ''
+    substituteInPlace lib/chillbuff/CMakeLists.txt \
+      --replace-fail "cmake_minimum_required(VERSION 3.1)" "cmake_minimum_required(VERSION 3.10)"
+  '';
 
   nativeBuildInputs = [ cmake ];
 
@@ -35,6 +40,7 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   doCheck = true;
+
   checkPhase = ''
     runHook preCheck
     ./run_tests
@@ -49,11 +55,6 @@ stdenv.mkDerivation (finalAttrs: {
     cp -pr l8w8jwt/bin/release/libl8w8jwt.a $out/lib64
 
     runHook postInstall
-  '';
-
-  postPatch = ''
-    substituteInPlace lib/chillbuff/CMakeLists.txt \
-      --replace-fail "cmake_minimum_required(VERSION 3.1)" "cmake_minimum_required(VERSION 3.10)"
   '';
 
   meta = {

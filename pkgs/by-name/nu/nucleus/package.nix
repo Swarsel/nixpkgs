@@ -1,25 +1,24 @@
 {
   lib,
-  python3Packages,
-  fetchFromCodeberg,
-  ninja,
-  meson,
-  pkg-config,
-  wrapGAppsHook4,
-  glib,
-  desktop-file-utils,
   appstream-glib,
   blueprint-compiler,
+  desktop-file-utils,
+  fetchFromCodeberg,
+  glib,
   libadwaita,
+  meson,
+  ninja,
   nix-update-script,
+  pkg-config,
+  python3Packages,
+  wrapGAppsHook4,
 }:
 let
   version = "3";
 in
 python3Packages.buildPythonApplication {
-  pname = "nucleus";
   inherit version;
-  pyproject = false;
+  pname = "nucleus";
 
   src = fetchFromCodeberg {
     owner = "lo-vely";
@@ -39,17 +38,17 @@ python3Packages.buildPythonApplication {
     blueprint-compiler
   ];
 
-  dependencies = with python3Packages; [
-    pygobject3
-  ];
-
   buildInputs = [
     libadwaita
   ];
 
+  dependencies = with python3Packages; [
+    pygobject3
+  ];
+
   dontWrapGApps = true;
   makeWrapperArgs = [ "\${gappsWrapperArgs[@]}" ];
-
+  pyproject = false;
   passthru.updateScript = nix-update-script { };
 
   meta = {
@@ -57,8 +56,8 @@ python3Packages.buildPythonApplication {
     homepage = "https://codeberg.org/lo-vely/nucleus";
     changelog = "https://codeberg.org/lo-vely/nucleus/releases/tag/v${version}";
     license = lib.licenses.gpl3Plus;
-    mainProgram = "nucleus";
-    platforms = lib.platforms.linux;
     maintainers = [ lib.maintainers.da157 ];
+    platforms = lib.platforms.linux;
+    mainProgram = "nucleus";
   };
 }

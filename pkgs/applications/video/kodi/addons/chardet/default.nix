@@ -1,13 +1,12 @@
 {
   lib,
-  rel,
+  addonUpdateScript,
   buildKodiAddon,
   fetchzip,
-  addonUpdateScript,
+  rel,
 }:
 buildKodiAddon rec {
   pname = "chardet";
-  namespace = "script.module.chardet";
   version = "5.1.0";
 
   src = fetchzip {
@@ -15,16 +14,19 @@ buildKodiAddon rec {
     sha256 = "sha256-cIQIX6LVAoGf1sBRKWonXJd3XYqGOa5WIUttabV0HeU=";
   };
 
+  namespace = "script.module.chardet";
+
   passthru = {
     pythonPath = "lib";
+
     updateScript = addonUpdateScript {
       attrPath = "kodi.packages.chardet";
     };
   };
 
   meta = {
-    homepage = "https://github.com/Freso/script.module.chardet";
     description = "Universal encoding detector";
+    homepage = "https://github.com/Freso/script.module.chardet";
     license = lib.licenses.lgpl2Only;
     teams = [ lib.teams.kodi ];
   };

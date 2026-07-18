@@ -1,30 +1,30 @@
 {
-  resholve,
   lib,
   stdenv,
   fetchFromGitHub,
   bash,
-  coreutils,
-  gnugrep,
-  ncurses,
-  findutils,
-  hostname,
-  parallel,
-  flock,
-  procps,
-  bats,
-  lsof,
-  callPackages,
-  symlinkJoin,
-  makeWrapper,
-  runCommand,
-  writeText,
-  doInstallCheck ? true,
   # packages that use bats (for update testing)
   bash-preexec,
+  bats,
+  callPackages,
+  coreutils,
+  findutils,
+  flock,
+  gnugrep,
+  hostname,
   kikit,
   locate-dominating-file,
+  lsof,
+  makeWrapper,
+  ncurses,
   packcc,
+  parallel,
+  procps,
+  resholve,
+  runCommand,
+  symlinkJoin,
+  writeText,
+  doInstallCheck ? true,
 }:
 
 resholve.mkDerivation (finalAttrs: {
@@ -38,74 +38,16 @@ resholve.mkDerivation (finalAttrs: {
     hash = "sha256-5VCkOzyaUOBW+HVVHDkH9oCWDI/MJW6yrLTQG60Ralk=";
   };
 
-  patchPhase = ''
-    patchShebangs .
-  '';
-
   installPhase = ''
     ./install.sh $out
   '';
 
+  patchPhase = ''
+    patchShebangs .
+  '';
+
   solutions = {
     bats = {
-      scripts = [
-        "bin/bats"
-        "libexec/bats-core/*"
-        "lib/bats-core/*"
-      ];
-      interpreter = "${bash}/bin/bash";
-      inputs = [
-        bash
-        coreutils
-        gnugrep
-        ncurses
-        findutils
-        hostname
-        parallel
-        flock
-        "lib/bats-core"
-        "libexec/bats-core"
-        procps
-      ];
-      fake = {
-        external = [
-          "greadlink"
-          "shlock"
-        ]
-        ++ lib.optionals stdenv.hostPlatform.isDarwin [
-          "pkill" # procps doesn't supply this on darwin
-        ];
-      };
-      fix = {
-        "$BATS_ROOT" = [ "${placeholder "out"}" ];
-        "$BATS_LIBDIR" = [ "lib" ];
-        "$BATS_LIBEXEC" = [ "${placeholder "out"}/libexec/bats-core" ];
-      };
-      keep = {
-        "${placeholder "out"}/libexec/bats-core/bats" = true;
-        source = [
-          "${placeholder "out"}/lib/bats-core/validator.bash"
-          "${placeholder "out"}/lib/bats-core/preprocessing.bash"
-          "$BATS_TEST_SOURCE"
-          "${placeholder "out"}/lib/bats-core/tracing.bash"
-          "${placeholder "out"}/lib/bats-core/test_functions.bash"
-          "$library_load_path"
-          "${placeholder "out"}/lib/bats-core/common.bash"
-          "${placeholder "out"}/lib/bats-core/semaphore.bash"
-          "${placeholder "out"}/lib/bats-core/formatter.bash"
-          "${placeholder "out"}/lib/bats-core/warnings.bash"
-          "$setup_suite_file" # via cli arg
-        ];
-        "$interpolated_report_formatter" = true;
-        "$interpolated_formatter" = true;
-        "$pre_command" = true;
-        "$BATS_TEST_NAME" = true;
-        "${placeholder "out"}/libexec/bats-core/bats-exec-test" = true;
-        "$BATS_LINE_REFERENCE_FORMAT" = "comma_line";
-        "$BATS_LOCKING_IMPLEMENTATION" = "${flock}/bin/flock";
-        "$parallel_binary_name" = "${parallel}/bin/parallel";
-        "${placeholder "out"}/libexec/bats-core/bats-preprocess" = true;
-      };
       execer = [
         /*
           both blatant lies for expedience; these can certainly exec args
@@ -129,34 +71,82 @@ resholve.mkDerivation (finalAttrs: {
         # checked invocations for exec
         "cannot:${procps}/bin/pkill"
       ];
+
+      fake = {
+        external = [
+          "greadlink"
+          "shlock"
+        ]
+        ++ lib.optionals stdenv.hostPlatform.isDarwin [
+          "pkill" # procps doesn't supply this on darwin
+        ];
+      };
+
+      fix = {
+        "$BATS_LIBDIR" = [ "lib" ];
+        "$BATS_LIBEXEC" = [ "${placeholder "out"}/libexec/bats-core" ];
+        "$BATS_ROOT" = [ "${placeholder "out"}" ];
+      };
+
+      inputs = [
+        bash
+        coreutils
+        gnugrep
+        ncurses
+        findutils
+        hostname
+        parallel
+        flock
+        "lib/bats-core"
+        "libexec/bats-core"
+        procps
+      ];
+
+      interpreter = "${bash}/bin/bash";
+
+      keep = {
+        "$BATS_LINE_REFERENCE_FORMAT" = "comma_line";
+        "$BATS_LOCKING_IMPLEMENTATION" = "${flock}/bin/flock";
+        "$BATS_TEST_NAME" = true;
+        "$interpolated_formatter" = true;
+        "$interpolated_report_formatter" = true;
+        "$parallel_binary_name" = "${parallel}/bin/parallel";
+        "$pre_command" = true;
+        "${placeholder "out"}/libexec/bats-core/bats" = true;
+        "${placeholder "out"}/libexec/bats-core/bats-exec-test" = true;
+        "${placeholder "out"}/libexec/bats-core/bats-preprocess" = true;
+
+        source = [
+          "${placeholder "out"}/lib/bats-core/validator.bash"
+          "${placeholder "out"}/lib/bats-core/preprocessing.bash"
+          "$BATS_TEST_SOURCE"
+          "${placeholder "out"}/lib/bats-core/tracing.bash"
+          "${placeholder "out"}/lib/bats-core/test_functions.bash"
+          "$library_load_path"
+          "${placeholder "out"}/lib/bats-core/common.bash"
+          "${placeholder "out"}/lib/bats-core/semaphore.bash"
+          "${placeholder "out"}/lib/bats-core/formatter.bash"
+          "${placeholder "out"}/lib/bats-core/warnings.bash"
+          "$setup_suite_file" # via cli arg
+        ];
+      };
+
+      scripts = [
+        "bin/bats"
+        "libexec/bats-core/*"
+        "lib/bats-core/*"
+      ];
     };
   };
 
   passthru.libraries = callPackages ./libraries.nix { };
 
-  passthru.withLibraries =
-    selector:
-    symlinkJoin {
-      name = "bats-with-libraries-${bats.version}";
-
-      paths = [
-        bats
-      ]
-      ++ selector bats.libraries;
-
-      nativeBuildInputs = [
-        makeWrapper
-      ];
-
-      postBuild = ''
-        wrapProgram "$out/bin/bats" \
-          --suffix BATS_LIB_PATH : "$out/share/bats"
-      '';
-
-      meta = removeAttrs finalAttrs.meta [ "position" ];
-    };
-
   passthru.tests = {
+    # to see when updates would break things, include packages
+    # that use nixpkgs' bats for testing (as long as they
+    # aren't massive builds)
+    inherit bash-preexec locate-dominating-file;
+
     libraries =
       let
         testScript = writeText "bats-libraries-test-script" ''
@@ -205,12 +195,11 @@ resholve.mkDerivation (finalAttrs: {
         touch "$out"
       '';
 
+    resholve = resholve.tests.cli;
+
     upstream = bats.unresholved.overrideAttrs (old: {
-      name = "${bats.name}-tests";
-      dontInstall = true; # just need the build directory
-      # after 411981, make-symlinks-relative breaks a parallelization test:
-      # "setup_file is not over parallelized"
-      dontRewriteSymlinks = true;
+      inherit doInstallCheck;
+
       nativeInstallCheckInputs = [
         ncurses
         parallel # skips some tests if it can't detect
@@ -218,7 +207,7 @@ resholve.mkDerivation (finalAttrs: {
         procps
       ]
       ++ lib.optionals stdenv.hostPlatform.isDarwin [ lsof ];
-      inherit doInstallCheck;
+
       installCheckPhase = ''
         # TODO: cut if https://github.com/bats-core/bats-core/issues/418 allows
         sed -i '/test works even if PATH is reset/a skip "disabled for nix build"' test/bats.bats
@@ -241,13 +230,13 @@ resholve.mkDerivation (finalAttrs: {
         ${bats}/bin/bats test
         touch $out
       '';
-    });
 
-    # to see when updates would break things, include packages
-    # that use nixpkgs' bats for testing (as long as they
-    # aren't massive builds)
-    inherit bash-preexec locate-dominating-file;
-    resholve = resholve.tests.cli;
+      dontInstall = true; # just need the build directory
+      # after 411981, make-symlinks-relative breaks a parallelization test:
+      # "setup_file is not over parallelized"
+      dontRewriteSymlinks = true;
+      name = "${bats.name}-tests";
+    });
   }
   // lib.optionalAttrs (!stdenv.hostPlatform.isDarwin) {
     # TODO:
@@ -257,9 +246,31 @@ resholve.mkDerivation (finalAttrs: {
     inherit kikit packcc;
   };
 
+  passthru.withLibraries =
+    selector:
+    symlinkJoin {
+      nativeBuildInputs = [
+        makeWrapper
+      ];
+
+      postBuild = ''
+        wrapProgram "$out/bin/bats" \
+          --suffix BATS_LIB_PATH : "$out/share/bats"
+      '';
+
+      name = "bats-with-libraries-${bats.version}";
+
+      paths = [
+        bats
+      ]
+      ++ selector bats.libraries;
+
+      meta = removeAttrs finalAttrs.meta [ "position" ];
+    };
+
   meta = {
-    homepage = "https://github.com/bats-core/bats-core";
     description = "Bash Automated Testing System";
+
     longDescription = ''
       Bats can be extended with libraries. The available libraries are:
 
@@ -276,9 +287,11 @@ resholve.mkDerivation (finalAttrs: {
       ])
       ```
     '';
-    mainProgram = "bats";
-    maintainers = with lib.maintainers; [ abathur ];
+
+    homepage = "https://github.com/bats-core/bats-core";
     license = lib.licenses.mit;
+    maintainers = with lib.maintainers; [ abathur ];
     platforms = lib.platforms.unix;
+    mainProgram = "bats";
   };
 })

@@ -1,17 +1,16 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitLab,
-  replaceVars,
+  buildPythonPackage,
   graphviz,
-  setuptools,
   markdown,
+  replaceVars,
+  setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "mkdocs-graphviz";
   version = "1.5";
-  pyproject = true;
 
   src = fetchFromGitLab {
     owner = "rod2ik";
@@ -27,16 +26,16 @@ buildPythonPackage rec {
     })
   ];
 
+  # Tests are not available in the source code.
+  doCheck = false;
   build-system = [ setuptools ];
 
   dependencies = [
     markdown
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "mkdocs_graphviz" ];
-
-  # Tests are not available in the source code.
-  doCheck = false;
 
   meta = {
     description = "Configurable Python markdown extension for graphviz and Mkdocs";

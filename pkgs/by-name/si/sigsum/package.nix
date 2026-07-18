@@ -1,9 +1,9 @@
 {
   lib,
-  buildGo125Module,
   fetchFromGitLab,
-  versionCheckHook,
+  buildGo125Module,
   nix-update-script,
+  versionCheckHook,
 }:
 
 buildGo125Module (finalAttrs: {
@@ -11,12 +11,12 @@ buildGo125Module (finalAttrs: {
   version = "0.14.1";
 
   src = fetchFromGitLab {
-    domain = "git.glasklar.is";
-    group = "sigsum";
     owner = "core";
     repo = "sigsum-go";
     tag = "v${finalAttrs.version}";
     hash = "sha256-ZiU5eEI2pKknpjc3HU9EqQu6u1ZD/N7sOD0DyTma0/g=";
+    domain = "git.glasklar.is";
+    group = "sigsum";
   };
 
   postPatch = ''
@@ -25,17 +25,16 @@ buildGo125Module (finalAttrs: {
   '';
 
   vendorHash = "sha256-BaN9NslTvVyIp1Gi0N3UKdTXCd5opdL6Fb0AVoy9diM=";
+  doInstallCheck = true;
+  nativeInstallCheckInputs = [ versionCheckHook ];
+  excludedPackages = [ "./test" ];
 
   ldflags = [
     "-s"
     "-w"
   ];
 
-  excludedPackages = [ "./test" ];
-
-  nativeInstallCheckInputs = [ versionCheckHook ];
   versionCheckProgram = "${placeholder "out"}/bin/sigsum-key";
-  doInstallCheck = true;
 
   passthru.updateScript = nix-update-script {
     extraArgs = [ "--version-regex=^v(\\d+\\.\\d+\\.\\d+)$" ];
@@ -44,9 +43,9 @@ buildGo125Module (finalAttrs: {
   meta = {
     description = "System for public and transparent logging of signed checksums";
     homepage = "https://www.sigsum.org/";
-    downloadPage = "https://git.glasklar.is/sigsum/core/sigsum-go";
     changelog = "https://git.glasklar.is/sigsum/core/sigsum-go/-/blob/v${finalAttrs.version}/NEWS";
     license = lib.licenses.bsd2;
     maintainers = with lib.maintainers; [ defelo ];
+    downloadPage = "https://git.glasklar.is/sigsum/core/sigsum-go";
   };
 })

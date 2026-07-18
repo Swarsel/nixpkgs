@@ -3,8 +3,8 @@
   stdenv,
   fetchFromGitHub,
   cmake,
-  pkg-config,
   pcre,
+  pkg-config,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -22,13 +22,14 @@ stdenv.mkDerivation (finalAttrs: {
     cmake
     pkg-config
   ];
-  cmakeFlags = [
-    # https://github.com/NixOS/nixpkgs/issues/445447
-    (lib.cmakeFeature "CMAKE_POLICY_VERSION_MINIMUM" "3.5")
-  ];
 
   buildInputs = [
     pcre
+  ];
+
+  cmakeFlags = [
+    # https://github.com/NixOS/nixpkgs/issues/445447
+    (lib.cmakeFeature "CMAKE_POLICY_VERSION_MINIMUM" "3.5")
   ];
 
   installPhase = ''
@@ -39,10 +40,10 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Tool to reformat the output of latex and friends into readable messages";
-    mainProgram = "pplatex";
     homepage = "https://github.com/stefanhepp/pplatex";
     license = lib.licenses.gpl3Plus;
     maintainers = [ lib.maintainers.doronbehar ];
     platforms = lib.platforms.unix;
+    mainProgram = "pplatex";
   };
 })

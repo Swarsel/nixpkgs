@@ -3,18 +3,18 @@
   stdenv,
   fetchFromGitHub,
   appstream-glib,
+  cmake,
   desktop-file-utils,
+  gettext,
+  gobject-introspection,
+  gtk4,
   libadwaita,
   meson,
   ninja,
   pkg-config,
-  wrapGAppsHook4,
-  gtk4,
   python3,
-  gettext,
-  cmake,
-  gobject-introspection,
   unstableGitUpdater,
+  wrapGAppsHook4,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -56,10 +56,10 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Drag multiple files and folders on to Collection window, drop them anywhere";
-    mainProgram = "collector";
     homepage = "https://github.com/mijorus/collector";
     license = lib.licenses.gpl3;
-    platforms = lib.platforms.linux;
     maintainers = with lib.maintainers; [ CaptainJawZ ];
+    platforms = lib.platforms.linux;
+    mainProgram = "collector";
   };
 })

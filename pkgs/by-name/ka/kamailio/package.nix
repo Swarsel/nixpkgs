@@ -1,23 +1,23 @@
 {
-  callPackage,
-  fetchurl,
   lib,
   stdenv,
-  pkg-config,
-  which,
+  fetchurl,
   bison,
+  callPackage,
+  coreutils,
   flex,
+  gawk,
+  gdb,
+  gnugrep,
+  gnused,
   json_c,
   libevent,
   libxml2,
   mariadb-connector-c,
-  pcre2,
-  gnugrep,
-  gawk,
-  coreutils,
-  gdb,
-  gnused,
   openssl,
+  pcre2,
+  pkg-config,
+  which,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -29,6 +29,13 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-LEpl8MTkNULs0EJCO2/IKe4Vqwmlauf0QbdCfWvOGzA=";
   };
 
+  nativeBuildInputs = [
+    pkg-config
+    which
+    bison
+    flex
+  ];
+
   buildInputs = [
     json_c
     libevent
@@ -38,12 +45,30 @@ stdenv.mkDerivation (finalAttrs: {
     openssl
   ];
 
-  nativeBuildInputs = [
-    pkg-config
-    which
-    bison
-    flex
-  ];
+  preInstall = ''
+    makeFlagsArray+=(PREFIX="$out" "MYSQLCFG=${lib.getDev mariadb-connector-c}/bin/mariadb_config")
+  '';
+
+  postInstall = ''
+    echo 'MD5="${coreutils}/bin/md5sum"' >> $out/etc/kamailio/kamctlrc
+    echo 'AWK="${gawk}/bin/awk"' >> $out/etc/kamailio/kamctlrc
+    echo 'GDB="${gdb}/bin/gdb"' >> $out/etc/kamailio/kamctlrc
+    echo 'GREP="${gnugrep}/bin/grep "' >> $out/etc/kamailio/kamctlrc
+    echo 'EGREP="${gnugrep}/bin/grep -E"' >> $out/etc/kamailio/kamctlrc
+    echo 'SED="${gnused}/bin/sed"' >> $out/etc/kamailio/kamctlrc
+    echo 'LAST_LINE="${coreutils}/bin/tail -n 1"' >> $out/etc/kamailio/kamctlrc
+    echo 'EXPR="${gnugrep}/bin/expr"' >> $out/etc/kamailio/kamctlrc
+  '';
+
+  configurePhase = ''
+    runHook preConfigure
+
+    make PREFIX="$out" include_modules="${lib.concatStringsSep " " finalAttrs.modules}" cfg
+
+    runHook postConfigure
+  '';
+
+  enableParallelBuilding = true;
 
   modules = [
     "db_mysql"
@@ -72,31 +97,6 @@ stdenv.mkDerivation (finalAttrs: {
     "xcap_client"
     "xcap_server"
   ];
-
-  configurePhase = ''
-    runHook preConfigure
-
-    make PREFIX="$out" include_modules="${lib.concatStringsSep " " finalAttrs.modules}" cfg
-
-    runHook postConfigure
-  '';
-
-  preInstall = ''
-    makeFlagsArray+=(PREFIX="$out" "MYSQLCFG=${lib.getDev mariadb-connector-c}/bin/mariadb_config")
-  '';
-
-  postInstall = ''
-    echo 'MD5="${coreutils}/bin/md5sum"' >> $out/etc/kamailio/kamctlrc
-    echo 'AWK="${gawk}/bin/awk"' >> $out/etc/kamailio/kamctlrc
-    echo 'GDB="${gdb}/bin/gdb"' >> $out/etc/kamailio/kamctlrc
-    echo 'GREP="${gnugrep}/bin/grep "' >> $out/etc/kamailio/kamctlrc
-    echo 'EGREP="${gnugrep}/bin/grep -E"' >> $out/etc/kamailio/kamctlrc
-    echo 'SED="${gnused}/bin/sed"' >> $out/etc/kamailio/kamctlrc
-    echo 'LAST_LINE="${coreutils}/bin/tail -n 1"' >> $out/etc/kamailio/kamctlrc
-    echo 'EXPR="${gnugrep}/bin/expr"' >> $out/etc/kamailio/kamctlrc
-  '';
-
-  enableParallelBuilding = true;
 
   passthru.tests = {
     kamailio-bin = callPackage ./test-kamailio-bin { };

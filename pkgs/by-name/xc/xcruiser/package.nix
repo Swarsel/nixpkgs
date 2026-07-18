@@ -2,13 +2,13 @@
   lib,
   stdenv,
   fetchurl,
+  copyDesktopItems,
   gccmakedep,
   imake,
-  libxt,
   libxaw,
-  libxpm,
   libxext,
-  copyDesktopItems,
+  libxpm,
+  libxt,
   makeDesktopItem,
 }:
 
@@ -26,6 +26,7 @@ stdenv.mkDerivation (finalAttrs: {
     imake
     copyDesktopItems
   ];
+
   buildInputs = [
     libxt
     libxaw
@@ -42,21 +43,23 @@ stdenv.mkDerivation (finalAttrs: {
 
   desktopItems = [
     (makeDesktopItem {
-      name = "XCruiser";
-      exec = "xcruiser";
-      desktopName = "XCruiser";
-      comment = "filesystem visualization utility";
       categories = [ "Utility" ];
+      comment = "filesystem visualization utility";
+      desktopName = "XCruiser";
+      exec = "xcruiser";
+      name = "XCruiser";
     })
   ];
 
   meta = {
     description = "Filesystem visualization utility";
+
     longDescription = ''
       XCruiser, formerly known as XCruise, is a filesystem visualization utility.
       It constructs a virtually 3-D formed universe from a directory
       tree and allows you to "cruise" within a visualized filesystem.
     '';
+
     homepage = "https://xcruiser.sourceforge.net/";
     license = lib.licenses.gpl2;
     platforms = with lib.platforms; linux;

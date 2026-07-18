@@ -1,9 +1,9 @@
 {
   lib,
-  buildNpmPackage,
   fetchFromGitHub,
-  versionCheckHook,
+  buildNpmPackage,
   nix-update-script,
+  versionCheckHook,
 }:
 
 buildNpmPackage rec {
@@ -18,22 +18,23 @@ buildNpmPackage rec {
   };
 
   npmDepsHash = "sha256-X3Yz+W7lijOLP+tEuO0JOpeOMOGdUYN6OpxPYHwFQEo=";
+  doInstallCheck = true;
 
   nativeInstallCheckInputs = [
     versionCheckHook
   ];
-  doInstallCheck = true;
+
   passthru = {
     updateScript = nix-update-script { };
   };
 
   meta = {
-    changelog = "https://github.com/anweber/httpyac/blob/${src.rev}/CHANGELOG.md";
     description = "Command Line Interface for *.http and *.rest files. Connect with http, gRPC, WebSocket and MQTT";
     homepage = "https://github.com/anweber/httpyac";
+    changelog = "https://github.com/anweber/httpyac/blob/${src.rev}/CHANGELOG.md";
     license = lib.licenses.mit;
-    mainProgram = "httpyac";
     maintainers = [ ];
     platforms = lib.platforms.all;
+    mainProgram = "httpyac";
   };
 }

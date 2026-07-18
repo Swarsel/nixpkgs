@@ -1,7 +1,7 @@
 {
   lib,
-  copyDesktopItems,
   fetchFromGitLab,
+  copyDesktopItems,
   makeDesktopItem,
   python3Packages,
   qt5,
@@ -13,7 +13,6 @@ let
   description = "Advanced typing practice program";
 in
 python3Packages.buildPythonApplication {
-  pyproject = true;
   inherit pname version;
 
   src = fetchFromGitLab {
@@ -32,6 +31,9 @@ python3Packages.buildPythonApplication {
     qt5.qtwayland
   ];
 
+  # no tests
+  doCheck = false;
+
   build-system = with python3Packages; [
     setuptools
   ];
@@ -42,32 +44,32 @@ python3Packages.buildPythonApplication {
     translitcodec
   ];
 
-  makeWrapperArgs = [
-    "\${qtWrapperArgs[@]}"
-  ];
-
-  # no tests
-  doCheck = false;
-
   desktopItems = [
     (makeDesktopItem {
-      name = "amphetype";
-      desktopName = "Amphetype";
-      genericName = "Typing Practice";
       categories = [
         "Education"
         "Qt"
       ];
-      exec = "amphetype";
+
       comment = description;
+      desktopName = "Amphetype";
+      exec = "amphetype";
+      genericName = "Typing Practice";
+      name = "amphetype";
     })
   ];
 
+  makeWrapperArgs = [
+    "\${qtWrapperArgs[@]}"
+  ];
+
+  pyproject = true;
+
   meta = {
     inherit description;
-    mainProgram = "amphetype";
     homepage = "https://gitlab.com/franksh/amphetype";
     license = lib.licenses.gpl3Only;
     maintainers = with lib.maintainers; [ rycee ];
+    mainProgram = "amphetype";
   };
 }

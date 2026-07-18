@@ -1,6 +1,6 @@
 {
-  fetchFromGitHub,
   lib,
+  fetchFromGitHub,
   nix-update-script,
   rustPlatform,
 }:
@@ -16,8 +16,6 @@ rustPlatform.buildRustPackage {
     hash = "sha256-n6RWqNKkfighoGpQkCWB7TEQ0lLo6cwGUBLN7lv3TrA=";
   };
 
-  passthru.updateScript = nix-update-script { extraArgs = [ "--version=branch=main" ]; };
-
   cargoHash = "sha256-CQn5esC31hCwEqZYX8OKeyJrwIKuo7x3aAZExBEcdB4=";
 
   checkFlags = [
@@ -29,12 +27,14 @@ rustPlatform.buildRustPackage {
     "--skip=ilorest::chif::IloRestChif"
   ];
 
+  passthru.updateScript = nix-update-script { extraArgs = [ "--version=branch=main" ]; };
+
   meta = {
     description = "CLI tool to read/get/extract and write/change/modify BIOS/UEFI settings";
     homepage = "https://github.com/linuxboot/uefisettings";
     license = with lib.licenses; [ bsd3 ];
-    mainProgram = "uefisettings";
     maintainers = with lib.maintainers; [ surfaceflinger ];
     platforms = lib.platforms.linux;
+    mainProgram = "uefisettings";
   };
 }

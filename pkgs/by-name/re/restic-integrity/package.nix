@@ -1,7 +1,7 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitea,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -9,11 +9,11 @@ rustPlatform.buildRustPackage (finalAttrs: {
   version = "1.4.0";
 
   src = fetchFromGitea {
-    domain = "git.nwex.de";
     owner = "networkException";
     repo = "restic-integrity";
     tag = finalAttrs.version;
     hash = "sha256-Nii+rdz51+Acd+lZVpBispeFfVE8buxEGHvK2zMKbOM=";
+    domain = "git.nwex.de";
   };
 
   cargoHash = "sha256-Hnr003TbG0y/Ry4yOAs6t6rhc5yEJkc+TDAuxGePb0Y=";

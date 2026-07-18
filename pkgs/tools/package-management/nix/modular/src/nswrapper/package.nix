@@ -13,10 +13,16 @@ let
 in
 
 mkMesonExecutable (finalAttrs: {
-  pname = "nix-nswrapper";
   inherit version;
+  pname = "nix-nswrapper";
 
-  workDir = ./.;
+  buildInputs = [
+    nix-util
+  ];
+
+  mesonFlags = [
+  ];
+
   fileset = fileset.unions [
     ../../nix-meson-build-support
     ./nix-meson-build-support
@@ -28,16 +34,11 @@ mkMesonExecutable (finalAttrs: {
     (fileset.fileFilter (file: file.hasExt "hh") ./.)
   ];
 
-  buildInputs = [
-    nix-util
-  ];
-
-  mesonFlags = [
-  ];
+  workDir = ./.;
 
   meta = {
-    mainProgram = "nix-nswrapper";
     platforms = lib.platforms.linux;
+    mainProgram = "nix-nswrapper";
   };
 
 })

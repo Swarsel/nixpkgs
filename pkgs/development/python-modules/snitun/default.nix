@@ -1,10 +1,10 @@
 {
   lib,
   stdenv,
+  fetchFromGitHub,
   aiohttp,
   buildPythonPackage,
   cryptography,
-  fetchFromGitHub,
   pytest-aiohttp,
   pytest-codspeed,
   pytestCheckHook,
@@ -14,7 +14,6 @@
 buildPythonPackage rec {
   pname = "snitun";
   version = "0.45.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "NabuCasa";
@@ -33,17 +32,17 @@ buildPythonPackage rec {
       --replace-fail 'version = "0.0.0"' 'version = "${version}"'
   '';
 
+  nativeCheckInputs = [
+    pytest-aiohttp
+    pytest-codspeed
+    pytestCheckHook
+  ];
+
   build-system = [ setuptools ];
 
   dependencies = [
     aiohttp
     cryptography
-  ];
-
-  nativeCheckInputs = [
-    pytest-aiohttp
-    pytest-codspeed
-    pytestCheckHook
   ];
 
   disabledTests = lib.optionals stdenv.hostPlatform.isDarwin [
@@ -55,12 +54,13 @@ buildPythonPackage rec {
     "test_peer_listener_timeout"
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "snitun" ];
 
   meta = {
     description = "SNI proxy with TCP multiplexer";
-    changelog = "https://github.com/NabuCasa/snitun/releases/tag/${src.tag}";
     homepage = "https://github.com/nabucasa/snitun";
+    changelog = "https://github.com/NabuCasa/snitun/releases/tag/${src.tag}";
     license = lib.licenses.gpl3Only;
     maintainers = with lib.maintainers; [ Scriptkiddi ];
     platforms = lib.platforms.linux;

@@ -1,15 +1,15 @@
 {
   lib,
-  buildGoModule,
-  fetchFromGitHub,
-  nix-update-script,
   stdenv,
+  fetchFromGitHub,
+  bpftrace,
+  bubblewrap,
+  buildGoModule,
+  installShellFiles,
   # linux dependencies
   makeWrapper,
-  bubblewrap,
+  nix-update-script,
   socat,
-  bpftrace,
-  installShellFiles,
 }:
 
 buildGoModule (finalAttrs: {
@@ -23,27 +23,12 @@ buildGoModule (finalAttrs: {
     hash = "sha256-uJfQFOKR3f8OjzA1z18IeKvhAgTmQQ7o4Y7K4CFbwko=";
   };
 
-  vendorHash = "sha256-aMxay3dow6mDKyv396R0j1GOKDmhkX4ebGmhca1B4WE=";
-
-  __structuredAttrs = true;
-
-  subPackages = [
-    "cmd/fence"
-  ];
-
-  ldflags = [
-    "-s"
-    "-w"
-    "-X=main.version=${finalAttrs.version}"
-    "-X=main.buildTime=1970-01-01T00:00:00Z"
-    "-X=main.gitCommit=${finalAttrs.src.rev}"
-  ];
-
   nativeBuildInputs = [
     installShellFiles
   ]
   ++ lib.optionals stdenv.hostPlatform.isLinux [ makeWrapper ];
 
+  vendorHash = "sha256-aMxay3dow6mDKyv396R0j1GOKDmhkX4ebGmhca1B4WE=";
   # Tests want to create sandbox profiles on darwin.
   # Nested sandboxes are unsupported by seatbelt, which means we cannot execute the tests inside the nix build sandbox.
   doCheck = stdenv.hostPlatform.isLinux;
@@ -71,6 +56,20 @@ buildGoModule (finalAttrs: {
           ]
         }
     '';
+
+  __structuredAttrs = true;
+
+  ldflags = [
+    "-s"
+    "-w"
+    "-X=main.version=${finalAttrs.version}"
+    "-X=main.buildTime=1970-01-01T00:00:00Z"
+    "-X=main.gitCommit=${finalAttrs.src.rev}"
+  ];
+
+  subPackages = [
+    "cmd/fence"
+  ];
 
   passthru.updateScript = nix-update-script { };
 

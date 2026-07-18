@@ -1,34 +1,34 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  pythonOlder,
-  setuptools,
+  autograd,
   autoreconfHook,
-  pkg-config,
-  mpiCheckPhaseHook,
-  gfortran,
-  mpi,
   blas,
-  lapack,
+  buildPythonPackage,
+  cython,
+  distutils,
   fftw,
-  hdf5-mpi,
-  swig,
+  gfortran,
   gsl,
+  guile,
+  h5py-mpi,
   harminv,
+  hdf5-mpi,
+  lapack,
   libctl,
   libgdsii,
-  guile,
-  mpb,
-  python,
-  numpy,
-  scipy,
   matplotlib,
-  h5py-mpi,
-  cython,
-  autograd,
+  mpb,
+  mpi,
   mpi4py,
-  distutils,
+  mpiCheckPhaseHook,
+  numpy,
+  pkg-config,
+  python,
+  pythonOlder,
+  scipy,
+  setuptools,
+  swig,
 }:
 
 assert !blas.isILP64;
@@ -44,8 +44,6 @@ buildPythonPackage rec {
     tag = "v${version}";
     hash = "sha256-k6RccmCO2of3ENW0ZEqmi5BoqE0SPgYId6VFYAAjOFA=";
   };
-
-  pyproject = false;
 
   # MPI is needed in nativeBuildInputs too, otherwise MPI libs will be missing
   # at runtime
@@ -73,32 +71,6 @@ buildPythonPackage rec {
 
   propagatedBuildInputs = [ mpi ];
 
-  dependencies = [
-    numpy
-    scipy
-    matplotlib
-    h5py-mpi
-    cython
-    autograd
-    mpi4py
-  ]
-  ++ lib.optionals (!pythonOlder "3.12") [
-    setuptools # used in python/visualization.py
-    distutils
-  ];
-
-  propagatedUserEnvPkgs = [ mpi ];
-
-  dontUseSetuptoolsBuild = true;
-  dontUsePipInstall = true;
-
-  enableParallelBuilding = true;
-
-  preConfigure = ''
-    export HDF5_MPI=ON
-    export PYTHON=${python.interpreter};
-  '';
-
   configureFlags = [
     "--without-libctl"
     "--enable-shared"
@@ -107,9 +79,10 @@ buildPythonPackage rec {
     "--enable-maintainer-mode"
   ];
 
-  passthru = {
-    inherit mpi;
-  };
+  preConfigure = ''
+    export HDF5_MPI=ON
+    export PYTHON=${python.interpreter};
+  '';
 
   /*
     This test is taken from the MEEP tutorial "Fields in a Waveguide" at
@@ -121,9 +94,7 @@ buildPythonPackage rec {
   nativeCheckInputs = [
     mpiCheckPhaseHook
   ];
-  pythonImportsCheck = [
-    "meep.mpb"
-  ];
+
   checkPhase = ''
     runHook preCheck
 
@@ -154,14 +125,44 @@ buildPythonPackage rec {
     runHook postCheck
   '';
 
+  dependencies = [
+    numpy
+    scipy
+    matplotlib
+    h5py-mpi
+    cython
+    autograd
+    mpi4py
+  ]
+  ++ lib.optionals (!pythonOlder "3.12") [
+    setuptools # used in python/visualization.py
+    distutils
+  ];
+
+  dontUsePipInstall = true;
+  dontUseSetuptoolsBuild = true;
+  enableParallelBuilding = true;
+  propagatedUserEnvPkgs = [ mpi ];
+  pyproject = false;
+
+  pythonImportsCheck = [
+    "meep.mpb"
+  ];
+
+  passthru = {
+    inherit mpi;
+  };
+
   meta = {
     description = "Free finite-difference time-domain (FDTD) software for electromagnetic simulations";
     homepage = "https://meep.readthedocs.io/en/latest/";
     license = lib.licenses.gpl2Only;
-    platforms = lib.platforms.linux;
+
     maintainers = with lib.maintainers; [
       sheepforce
       markuskowa
     ];
+
+    platforms = lib.platforms.linux;
   };
 }

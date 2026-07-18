@@ -12,29 +12,29 @@ let
   systemSpecific =
     {
       darwin = rec {
-        systemTag = "nix-darwin";
         capitalized = systemTag;
         fontFile = "JoyPixels-SBIX.ttf";
+        systemTag = "nix-darwin";
       };
     }
     .${kernel.name} or {
-      systemTag = "nixos";
       capitalized = "NixOS";
       fontFile = "joypixels-android.ttf";
+      systemTag = "nixos";
     };
 
   joypixels-free-license = {
-    spdxId = "LicenseRef-JoyPixels-Free";
-    fullName = "JoyPixels Free License Agreement";
-    url = "https://cdn.joypixels.com/free-license.pdf";
     free = false;
+    fullName = "JoyPixels Free License Agreement";
+    spdxId = "LicenseRef-JoyPixels-Free";
+    url = "https://cdn.joypixels.com/free-license.pdf";
   };
 
   joypixels-license-appendix = with systemSpecific; {
-    spdxId = "LicenseRef-JoyPixels-NixOS-Appendix";
-    fullName = "JoyPixels ${capitalized} License Appendix";
-    url = "https://cdn.joypixels.com/distributions/${systemTag}/appendix/joypixels-license-appendix.pdf";
     free = false;
+    fullName = "JoyPixels ${capitalized} License Appendix";
+    spdxId = "LicenseRef-JoyPixels-NixOS-Appendix";
+    url = "https://cdn.joypixels.com/distributions/${systemTag}/appendix/joypixels-license-appendix.pdf";
   };
 
   throwLicense = throw ''
@@ -72,16 +72,16 @@ stdenv.mkDerivation rec {
     assert !acceptLicense -> throwLicense;
     with systemSpecific;
     fetchurl {
-      name = fontFile;
       url = "https://cdn.joypixels.com/distributions/${systemTag}/font/${version}/${fontFile}";
+
       sha256 =
         {
           darwin = "sha256-muUxXzz8BePyPsiZocYvM0ebM1H+u84ysN5YUvsMLiU=";
         }
         .${kernel.name} or "sha256-pmGsVgYSK/c5OlhOXhNlRBs/XppMXmsHcZeSmIkuED4=";
-    };
 
-  dontUnpack = true;
+      name = fontFile;
+    };
 
   installPhase = with systemSpecific; ''
     runHook preInstall
@@ -91,16 +91,20 @@ stdenv.mkDerivation rec {
     runHook postInstall
   '';
 
+  dontUnpack = true;
+
   meta = {
     description = "Finest emoji you can use legally (formerly EmojiOne)";
+
     longDescription = ''
       Updated for 2024! JoyPixels 9.0 includes 3,820 originally crafted icon
       designs and is 100% Unicode 15.1 compatible. We offer the largest
       selection of files ranging from png, svg, iconjar, and fonts (sprites
       available upon request).
     '';
+
     homepage = "https://www.joypixels.com/fonts";
-    hydraPlatforms = [ ]; # Just a binary file download, nothing to cache.
+
     license =
       let
         free-license = joypixels-free-license;
@@ -108,19 +112,23 @@ stdenv.mkDerivation rec {
       in
       with systemSpecific;
       {
-        spdxId = "LicenseRef-JoyPixels-Free-with-${capitalized}-Appendix";
-        fullName = "${free-license.fullName} with ${appendix.fullName}";
-        url = free-license.url;
         appendixUrl = appendix.url;
         free = false;
+        fullName = "${free-license.fullName} with ${appendix.fullName}";
         redistributable = true;
+        spdxId = "LicenseRef-JoyPixels-Free-with-${capitalized}-Appendix";
+        url = free-license.url;
       };
+
+    # Not quite accurate since it's a font, not a program, but clearly
+    # indicates we're not actually building it from source.
+    sourceProvenance = [ lib.sourceTypes.binaryNativeCode ];
+
     maintainers = with lib.maintainers; [
       toonn
       jtojnar
     ];
-    # Not quite accurate since it's a font, not a program, but clearly
-    # indicates we're not actually building it from source.
-    sourceProvenance = [ lib.sourceTypes.binaryNativeCode ];
+
+    hydraPlatforms = [ ]; # Just a binary file download, nothing to cache.
   };
 }

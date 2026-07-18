@@ -1,8 +1,8 @@
 {
   lib,
-  php,
   fetchFromGitHub,
   makeBinaryWrapper,
+  php,
   versionCheckHook,
 }:
 
@@ -17,9 +17,8 @@ php.buildComposerProject2 (finalAttrs: {
     hash = "sha256-sieLh5CG0ev4wMco+VG9A+2GxxalN7/FLGz+IDEgH4g=";
   };
 
-  vendorHash = "sha256-hz0Fw1gR2mPGdmVi4i7yjmAJiQTfkxDUC3D2ylNpdbU=";
-
   nativeBuildInputs = [ makeBinaryWrapper ];
+  vendorHash = "sha256-hz0Fw1gR2mPGdmVi4i7yjmAJiQTfkxDUC3D2ylNpdbU=";
 
   postInstall = ''
     wrapProgram "$out/bin/phpdoc" \
@@ -27,17 +26,18 @@ php.buildComposerProject2 (finalAttrs: {
       --set-default APP_LOG_DIR /tmp/log
   '';
 
+  doInstallCheck = true;
+
   nativeInstallCheckInputs = [
     versionCheckHook
   ];
-  doInstallCheck = true;
 
   meta = {
-    changelog = "https://github.com/phpDocumentor/phpDocumentor/releases/tag/v${finalAttrs.version}";
     description = "PHP documentation generator";
     homepage = "https://phpdoc.org";
+    changelog = "https://github.com/phpDocumentor/phpDocumentor/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.mit;
-    mainProgram = "phpdoc";
     maintainers = [ lib.maintainers.patka ];
+    mainProgram = "phpdoc";
   };
 })

@@ -1,8 +1,8 @@
 {
   pkgs,
-  withDoc ? false,
-  requireSageTests ? true,
   extraPythonPackages ? ps: [ ],
+  requireSageTests ? true,
+  withDoc ? false,
 }:
 
 # Here sage and its dependencies are put together. Some dependencies may be pinned
@@ -15,6 +15,14 @@ let
   python3 = pkgs.python3 // {
     pkgs = pkgs.python3.pkgs.overrideScope (
       self: super: {
+        sage-docbuild = self.callPackage ./python-modules/sage-docbuild.nix {
+          inherit sage-src;
+        };
+
+        sage-setup = self.callPackage ./python-modules/sage-setup.nix {
+          inherit sage-src;
+        };
+
         # `sagelib`, i.e. all of sage except some wrappers and runtime dependencies
         sagelib = self.callPackage ./sagelib.nix {
           inherit flint;
@@ -23,21 +31,12 @@ let
           linbox = pkgs.linbox;
           pkg-config = pkgs.pkg-config; # not to confuse with pythonPackages.pkg-config
         };
-
-        sage-docbuild = self.callPackage ./python-modules/sage-docbuild.nix {
-          inherit sage-src;
-        };
-
-        sage-setup = self.callPackage ./python-modules/sage-setup.nix {
-          inherit sage-src;
-        };
       }
     );
   };
 
   # matches src/sage/repl/ipython_kernel/install.py:kernel_spec
   jupyter-kernel-definition = {
-    displayName = "SageMath ${sage-src.version}";
     argv = [
       "${sage-with-env}/bin/sage" # FIXME which sage
       "--python"
@@ -46,6 +45,8 @@ let
       "-f"
       "{connection_file}"
     ];
+
+    displayName = "SageMath ${sage-src.version}";
     language = "sage";
     logo32 = "${sage-src}/src/sage/ext_data/notebook-ipython/logo-64x64.png";
     logo64 = "${sage-src}/src/sage/ext_data/notebook-ipython/logo-64x64.png";
@@ -72,9 +73,8 @@ let
   # The shell file that gets sourced on every sage start. Will also source
   # the env-locations file.
   sage-env = callPackage ./sage-env.nix {
-    sagelib = python3.pkgs.sagelib;
-    sage-docbuild = python3.pkgs.sage-docbuild;
     inherit env-locations;
+
     inherit
       python3
       singular
@@ -83,7 +83,10 @@ let
       pythonEnv
       maxima
       ;
+
     pkg-config = pkgs.pkg-config; # not to confuse with pythonPackages.pkg-config
+    sage-docbuild = python3.pkgs.sage-docbuild;
+    sagelib = python3.pkgs.sagelib;
   };
 
   # The documentation for sage, building it takes a lot of ram.
@@ -152,7 +155,6 @@ let
       # (src/sage/interfaces/tests.py) and ships ecl like so.
       # https://gitlab.com/embeddable-common-lisp/ecl/-/merge_requests/1#note_1657275
       threadSupport = false;
-
       # if we don't use the system boehmgc, sending a SIGINT to ecl
       # can segfault if we it happens during memory allocation.
       # src/sage/libs/ecl.pyx would intermittently fail in this case.
@@ -170,6 +172,7 @@ let
   # in the same folder.
   palp = symlinkJoin {
     name = "palp-${pkgs.palp.version}";
+
     paths = [
       (pkgs.palp.override {
         dimensions = 4;
@@ -193,6 +196,7 @@ let
   # Sage expects those in the same directory.
   pari_data = symlinkJoin {
     name = "pari_data";
+
     paths = with pkgs; [
       pari-galdata
       pari-seadata-small
@@ -208,5 +212,6 @@ callPackage ./sage.nix {
     jupyter-kernel-definition
     jupyter-kernel-specs
     ;
+
   inherit withDoc requireSageTests;
 }

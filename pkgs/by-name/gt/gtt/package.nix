@@ -1,9 +1,9 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
-  pkg-config,
   alsa-lib,
+  buildGoModule,
+  pkg-config,
   wl-clipboard,
   xclip,
 }:
@@ -19,8 +19,6 @@ buildGoModule (finalAttrs: {
     hash = "sha256-sgWoeBdS8HymVjaTjJZDU3KNuYLRLdC5I9k/tNEd0GA=";
   };
 
-  vendorHash = "sha256-6C+++HIVwOwOmlsdwXWF/ykyK9WOlq/ktIPjRslvllk=";
-
   nativeBuildInputs = [
     pkg-config
   ];
@@ -30,6 +28,8 @@ buildGoModule (finalAttrs: {
     xclip
     wl-clipboard
   ];
+
+  vendorHash = "sha256-6C+++HIVwOwOmlsdwXWF/ykyK9WOlq/ktIPjRslvllk=";
 
   ldflags = [
     "-s"

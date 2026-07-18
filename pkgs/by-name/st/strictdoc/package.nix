@@ -1,13 +1,12 @@
 {
   lib,
-  python3,
   fetchFromGitHub,
+  python3,
 }:
 
 python3.pkgs.buildPythonApplication (finalAttrs: {
   pname = "strictdoc";
   version = "0.22.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "strictdoc-project";
@@ -63,18 +62,20 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
       invoke
       tox
     ];
+
     nuitka = [
       nuitka
       ordered-set
     ];
   };
 
+  pyproject = true;
+  pythonImportsCheck = [ "strictdoc" ];
+
   pythonRelaxDeps = [
     "python-datauri"
     "xlsxwriter"
   ];
-
-  pythonImportsCheck = [ "strictdoc" ];
 
   meta = {
     description = "Software for technical documentation and requirements management";

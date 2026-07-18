@@ -1,16 +1,15 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
+  buildPythonPackage,
   flit-core,
   pytestCheckHook,
+  setuptools,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "tinytag";
   version = "2.2.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "tinytag";
@@ -19,14 +18,15 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-WrUpP2ItXUYsX5IB5K0YmG/N2mbAeaso6i0uUXkWHlY=";
   };
 
+  nativeCheckInputs = [ pytestCheckHook ];
+
   build-system = [
     setuptools
     flit-core
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "tinytag" ];
-
-  nativeCheckInputs = [ pytestCheckHook ];
 
   meta = {
     description = "Read audio file metadata";

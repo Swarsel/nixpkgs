@@ -1,7 +1,7 @@
 {
   lib,
-  rustPlatform,
   fetchCrate,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -17,16 +17,19 @@ rustPlatform.buildRustPackage (finalAttrs: {
 
   meta = {
     description = "Simple linter for Cargo.toml manifests";
-    mainProgram = "cargo-toml-lint";
     homepage = "https://github.com/fuellabs/cargo-toml-lint";
     changelog = "https://github.com/fuellabs/cargo-toml-lint/releases/tag/v${finalAttrs.version}";
+
     license = with lib.licenses; [
       asl20 # or
       mit
     ];
+
     maintainers = with lib.maintainers; [
       mitchmindtree
       matthiasbeyer
     ];
+
+    mainProgram = "cargo-toml-lint";
   };
 })

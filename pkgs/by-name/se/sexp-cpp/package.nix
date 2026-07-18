@@ -1,6 +1,6 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
   cmake,
   gtest,
@@ -18,7 +18,13 @@ stdenv.mkDerivation {
     sha256 = "sha256-/wH9Cgo+4eyYRyUcYRNkYR38rLRv/mJq87dpE9wCPlw=";
   };
 
+  postPatch = ''
+    substituteInPlace CMakeLists.txt \
+      --replace-fail "cmake_minimum_required(VERSION 3.0)" "cmake_minimum_required(VERSION 3.10)"
+  '';
+
   nativeBuildInputs = [ cmake ];
+
   buildInputs = [
     gtest
     tinycmmc
@@ -31,16 +37,11 @@ stdenv.mkDerivation {
 
   doCheck = true;
 
-  postPatch = ''
-    substituteInPlace CMakeLists.txt \
-      --replace-fail "cmake_minimum_required(VERSION 3.0)" "cmake_minimum_required(VERSION 3.10)"
-  '';
-
   meta = {
     description = "S-Expression parser for C++";
     homepage = "https://github.com/lispparser/sexp-cpp";
+    license = lib.licenses.gpl3;
     maintainers = [ lib.maintainers.SchweGELBin ];
     platforms = lib.platforms.linux;
-    license = lib.licenses.gpl3;
   };
 }

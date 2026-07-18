@@ -1,18 +1,17 @@
 {
   lib,
   stdenv,
-  python3,
   fetchFromGitHub,
-  qt6,
   nix-update-script,
+  python3,
+  qt6,
 }:
 let
   version = "26.1";
 in
 python3.pkgs.buildPythonApplication {
-  pname = "novelwriter";
   inherit version;
-  pyproject = true;
+  pname = "novelwriter";
 
   src = fetchFromGitHub {
     owner = "vkbo";
@@ -24,13 +23,6 @@ python3.pkgs.buildPythonApplication {
   nativeBuildInputs = [ qt6.wrapQtAppsHook ];
   buildInputs = [ qt6.qtbase ];
 
-  build-system = with python3.pkgs; [ setuptools ];
-  dependencies = with python3.pkgs; [
-    pyqt6
-    pyenchant
-    qt6.qtsvg
-  ];
-
   # See setup/debian/install
   postInstall = lib.optionalString stdenv.hostPlatform.isLinux ''
     mkdir -p $out/share/icons
@@ -40,11 +32,20 @@ python3.pkgs.buildPythonApplication {
     install -Dm644 setup/data/x-novelwriter-project.xml -t $out/share/mime/packages
   '';
 
-  dontWrapQtApps = true;
-
   postFixup = ''
     wrapQtApp $out/bin/novelwriter
   '';
+
+  build-system = with python3.pkgs; [ setuptools ];
+
+  dependencies = with python3.pkgs; [
+    pyqt6
+    pyenchant
+    qt6.qtsvg
+  ];
+
+  dontWrapQtApps = true;
+  pyproject = true;
 
   passthru.updateScript = nix-update-script {
     # Stable releases only
@@ -60,9 +61,8 @@ python3.pkgs.buildPythonApplication {
     changelog = "https://github.com/vkbo/novelWriter/blob/main/CHANGELOG.md";
     license = with lib.licenses; [ gpl3Only ];
     maintainers = with lib.maintainers; [ pluiedev ];
-    mainProgram = "novelwriter";
-
     platforms = with lib.platforms; unix ++ windows;
+    mainProgram = "novelwriter";
     broken = stdenv.hostPlatform.isDarwin; # TODO awaiting build instructions for Darwin
   };
 }

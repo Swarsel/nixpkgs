@@ -1,9 +1,9 @@
 {
   lib,
-  rustPlatform,
   fetchCrate,
-  versionCheckHook,
   nix-update-script,
+  rustPlatform,
+  versionCheckHook,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -11,9 +11,9 @@ rustPlatform.buildRustPackage (finalAttrs: {
   version = "0.14.1";
 
   src = fetchCrate {
-    pname = "rune-languageserver";
     inherit (finalAttrs) version;
     hash = "sha256-0b8XGbMQqMolOdQEMjpwHAVI3A4fXemyCowN39qY16A=";
+    pname = "rune-languageserver";
   };
 
   cargoHash = "sha256-QrzOpfDpG08IUoydvSoh0qxJ0vg86391NnyEyJeZr54=";
@@ -22,10 +22,11 @@ rustPlatform.buildRustPackage (finalAttrs: {
     RUNE_VERSION = finalAttrs.version;
   };
 
+  doInstallCheck = true;
+
   nativeInstallCheckInputs = [
     versionCheckHook
   ];
-  doInstallCheck = true;
 
   passthru = {
     updateScript = nix-update-script { };
@@ -34,13 +35,15 @@ rustPlatform.buildRustPackage (finalAttrs: {
   meta = {
     description = "Language server for the Rune Language, an embeddable dynamic programming language for Rust";
     homepage = "https://crates.io/crates/rune-languageserver";
-    downloadPage = "https://github.com/rune-rs/rune";
     changelog = "https://github.com/rune-rs/rune/releases/tag/${finalAttrs.version}";
+
     license = with lib.licenses; [
       asl20
       mit
     ];
+
     maintainers = [ lib.maintainers.progrm_jarvis ];
     mainProgram = "rune-languageserver";
+    downloadPage = "https://github.com/rune-rs/rune";
   };
 })

@@ -1,12 +1,12 @@
 {
   lib,
-  wrapGAppsHook3,
-  glib,
   stdenv,
+  glib,
   lndir,
+  switchboard-with-plugs,
   wingpanel,
   wingpanelIndicators,
-  switchboard-with-plugs,
+  wrapGAppsHook3,
   indicators ? null,
   # Only useful to disable for development testing.
   useDefaultIndicators ? true,
@@ -20,17 +20,10 @@ let
       indicators ++ (lib.optionals useDefaultIndicators wingpanelIndicators);
 in
 stdenv.mkDerivation {
-  pname = "${wingpanel.pname}-with-indicators";
   inherit (wingpanel) version;
-
+  inherit (wingpanel) meta;
+  pname = "${wingpanel.pname}-with-indicators";
   src = null;
-
-  paths = [
-    wingpanel
-  ]
-  ++ selectedIndicators;
-
-  passAsFile = [ "paths" ];
 
   nativeBuildInputs = [
     glib
@@ -38,13 +31,6 @@ stdenv.mkDerivation {
   ];
 
   buildInputs = lib.concatMap (x: x.buildInputs) selectedIndicators ++ selectedIndicators;
-
-  dontUnpack = true;
-  dontConfigure = true;
-  dontBuild = true;
-
-  preferLocalBuild = true;
-  allowSubstitutes = false;
 
   installPhase = ''
     mkdir -p $out
@@ -60,5 +46,16 @@ stdenv.mkDerivation {
     )
   '';
 
-  inherit (wingpanel) meta;
+  allowSubstitutes = false;
+  dontBuild = true;
+  dontConfigure = true;
+  dontUnpack = true;
+  passAsFile = [ "paths" ];
+
+  paths = [
+    wingpanel
+  ]
+  ++ selectedIndicators;
+
+  preferLocalBuild = true;
 }

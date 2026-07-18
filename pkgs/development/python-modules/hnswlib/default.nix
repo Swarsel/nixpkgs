@@ -8,9 +8,8 @@
 }:
 
 buildPythonPackage {
-  pname = "hnswlib";
   inherit (hnswlib) version src meta;
-  pyproject = true;
+  pname = "hnswlib";
 
   nativeBuildInputs = [
     numpy
@@ -19,11 +18,11 @@ buildPythonPackage {
   ];
 
   nativeCheckInputs = [ unittestCheckHook ];
+  pyproject = true;
+  pythonImportsCheck = [ "hnswlib" ];
 
   unittestFlagsArray = [
     "tests/python"
     "--pattern 'bindings_test*.py'"
   ];
-
-  pythonImportsCheck = [ "hnswlib" ];
 }

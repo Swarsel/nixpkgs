@@ -1,9 +1,9 @@
 {
-  runCommand,
   clang,
-  gcc64,
   gcc32,
+  gcc64,
   glibc_multi,
+  runCommand,
 }:
 
 let
@@ -45,23 +45,24 @@ let
       '';
 
   clangMulti = clang.override {
-    # Only used for providing expected structure re:dynamic linkers, AFAIK Most
-    # of the magic is done by setting the --gcc-toolchain option via
-    # `gccForLibs`.
-    libc = gcc_multi_sysroot;
-
     bintools = clang.bintools.override {
       libc = gcc_multi_sysroot;
     };
 
     gccForLibs = gcc_multi_sysroot // {
       inherit (glibc_multi) libgcc;
+
       langCC =
         assert
           (gcc64.cc.langCC != gcc32.cc.langCC)
           -> throw "(gcc64.cc.langCC=${gcc64.cc.langCC}) != (gcc32.cc.langCC=${gcc32.cc.langCC})";
         gcc64.cc.langCC;
     };
+
+    # Only used for providing expected structure re:dynamic linkers, AFAIK Most
+    # of the magic is done by setting the --gcc-toolchain option via
+    # `gccForLibs`.
+    libc = gcc_multi_sysroot;
   };
 
 in

@@ -16,19 +16,18 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-YuKPRYBr1CKrwickk1T89ZCYFt99jP86tdanp+JZMO4=";
   };
 
+  patches = [ ./disable_version_check.patch ];
+
   nativeBuildInputs = [
     libsForQt5.qmake
     libsForQt5.wrapQtAppsHook
   ];
 
-  patches = [ ./disable_version_check.patch ];
-
   enableParallelBuilding = true;
 
   meta = {
-    changelog = "https://github.com/IENT/YUView/releases/tag/${finalAttrs.src.tag}";
-    homepage = "https://ient.github.io/YUView";
     description = "YUV Viewer and Analysis Tool";
+
     longDescription = ''
       YUView is a Qt based YUV player with an advanced analytic toolset for
       Linux, Windows and Mac. At its core, YUView is a powerful YUV player that
@@ -42,6 +41,9 @@ stdenv.mkDerivation (finalAttrs: {
       sequences, and many more. Further information can be found in the YUV help
       in the application itself or in our wiki.
     '';
+
+    homepage = "https://ient.github.io/YUView";
+    changelog = "https://github.com/IENT/YUView/releases/tag/${finalAttrs.src.tag}";
     license = lib.licenses.gpl3Plus;
     maintainers = with lib.maintainers; [ leixb ];
     platforms = lib.platforms.unix;

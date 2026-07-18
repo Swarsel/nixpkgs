@@ -1,21 +1,21 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
-  cmake,
   boost,
+  cmake,
   gmp,
-  mpfr,
-  libedit,
-  python3,
+  gnused,
   gpgme,
   installShellFiles,
-  texinfo,
-  gnused,
-  versionCheckHook,
+  libedit,
+  mpfr,
   nix-update-script,
-  usePython ? false,
+  python3,
+  texinfo,
+  versionCheckHook,
   gpgmeSupport ? false,
+  usePython ? false,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -29,18 +29,17 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-yk6/4ImUzgZY8O7MmQMwFkuJ/pMXo6W5TAA0GGIxYgg=";
   };
 
-  # by default, it will query the python interpreter for it's sitepackages location
-  # however, that would write to a different nixstore path, pass our own sitePackages location
-  prePatch = lib.optionalString usePython ''
-    substituteInPlace src/CMakeLists.txt \
-      --replace-fail 'DESTINATION ''${Python_SITEARCH}' 'DESTINATION "${placeholder "py"}/${python3.sitePackages}"'
-  '';
-
   outputs = [
     "out"
     "dev"
   ]
   ++ lib.optionals usePython [ "py" ];
+
+  nativeBuildInputs = [
+    cmake
+    texinfo
+    installShellFiles
+  ];
 
   buildInputs = [
     gmp
@@ -64,12 +63,6 @@ stdenv.mkDerivation (finalAttrs: {
       [ boost ]
   );
 
-  nativeBuildInputs = [
-    cmake
-    texinfo
-    installShellFiles
-  ];
-
   cmakeFlags = [
     (lib.cmakeFeature "CMAKE_INSTALL_LIBDIR" "lib")
     (lib.cmakeBool "BUILD_DOCS" true)
@@ -77,38 +70,50 @@ stdenv.mkDerivation (finalAttrs: {
     (lib.cmakeBool "USE_GPGME" gpgmeSupport)
   ];
 
+  postInstall = ''
+    installShellCompletion --cmd ledger --bash $src/contrib/ledger-completion.bash
+  '';
+
+  doInstallCheck = true;
+
+  nativeInstallCheckInputs = [
+    versionCheckHook
+  ];
+
   installTargets = [
     "doc"
     "install"
   ];
 
-  postInstall = ''
-    installShellCompletion --cmd ledger --bash $src/contrib/ledger-completion.bash
+  # by default, it will query the python interpreter for it's sitepackages location
+  # however, that would write to a different nixstore path, pass our own sitePackages location
+  prePatch = lib.optionalString usePython ''
+    substituteInPlace src/CMakeLists.txt \
+      --replace-fail 'DESTINATION ''${Python_SITEARCH}' 'DESTINATION "${placeholder "py"}/${python3.sitePackages}"'
   '';
-
-  nativeInstallCheckInputs = [
-    versionCheckHook
-  ];
-  doInstallCheck = true;
 
   passthru.updateScript = nix-update-script { };
 
   meta = {
     description = "Double-entry accounting system with a command-line reporting interface";
-    mainProgram = "ledger";
-    homepage = "https://www.ledger-cli.org/";
-    changelog = "https://github.com/ledger/ledger/raw/v${finalAttrs.version}/NEWS.md";
-    license = lib.licenses.bsd3;
+
     longDescription = ''
       Ledger is a powerful, double-entry accounting system that is accessed
       from the UNIX command-line. This may put off some users, as there is
       no flashy UI, but for those who want unparalleled reporting access to
       their data, there really is no alternative.
     '';
-    platforms = lib.platforms.all;
+
+    homepage = "https://www.ledger-cli.org/";
+    changelog = "https://github.com/ledger/ledger/raw/v${finalAttrs.version}/NEWS.md";
+    license = lib.licenses.bsd3;
+
     maintainers = with lib.maintainers; [
       jwiegley
       afh
     ];
+
+    platforms = lib.platforms.all;
+    mainProgram = "ledger";
   };
 })

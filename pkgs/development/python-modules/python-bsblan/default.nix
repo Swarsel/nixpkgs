@@ -1,10 +1,9 @@
 {
   lib,
+  fetchFromGitHub,
   aiohttp,
   aresponses,
-  python-backoff,
   buildPythonPackage,
-  fetchFromGitHub,
   hatchling,
   packaging,
   pydantic,
@@ -13,6 +12,7 @@
   pytest-mock,
   pytest-xdist,
   pytestCheckHook,
+  python-backoff,
   yarl,
   zeroconf,
 }:
@@ -20,7 +20,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "python-bsblan";
   version = "6.1.6";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "liudger";
@@ -34,18 +33,6 @@ buildPythonPackage (finalAttrs: {
       --replace-fail 'version = "0.0.0"' 'version = "${finalAttrs.version}"'
   '';
 
-  build-system = [ hatchling ];
-
-  pythonRelaxDeps = [ "async-timeout" ];
-
-  dependencies = [
-    aiohttp
-    packaging
-    pydantic
-    python-backoff
-    yarl
-  ];
-
   nativeCheckInputs = [
     aresponses
     pytest-asyncio
@@ -57,8 +44,19 @@ buildPythonPackage (finalAttrs: {
   ];
 
   __darwinAllowLocalNetworking = true;
+  build-system = [ hatchling ];
 
+  dependencies = [
+    aiohttp
+    packaging
+    pydantic
+    python-backoff
+    yarl
+  ];
+
+  pyproject = true;
   pythonImportsCheck = [ "bsblan" ];
+  pythonRelaxDeps = [ "async-timeout" ];
 
   meta = {
     description = "Module to control and monitor an BSBLan device programmatically";

@@ -1,14 +1,12 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchurl,
-  autoPatchelfHook,
-  makeShellWrapper,
-  wrapGAppsHook3,
   alsa-lib,
   at-spi2-atk,
   at-spi2-core,
   atk,
+  autoPatchelfHook,
   cairo,
   cups,
   dbus,
@@ -16,15 +14,17 @@
   glib,
   glibc,
   gtk3,
-  libsecret,
   libgbm,
+  libsecret,
+  libx11,
+  libxcb,
+  makeShellWrapper,
   musl,
   nss,
   pango,
   udev,
+  wrapGAppsHook3,
   xdg-utils,
-  libx11,
-  libxcb,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -35,10 +35,6 @@ stdenv.mkDerivation (finalAttrs: {
     url = "https://getpublii.com/download/Publii-${finalAttrs.version}.deb";
     hash = "sha256-1LzjnN0gmzE4JJdgTOUQ3n/BATg+B5Lfi0yR94TU+XE=";
   };
-
-  dontConfigure = true;
-  dontBuild = true;
-  dontWrapGApps = true;
 
   nativeBuildInputs = [
     autoPatchelfHook
@@ -67,10 +63,6 @@ stdenv.mkDerivation (finalAttrs: {
     libxcb
   ];
 
-  unpackPhase = ''
-    ar p $src data.tar.xz | tar xJ
-  '';
-
   installPhase = ''
     runHook preInstall
 
@@ -92,19 +84,31 @@ stdenv.mkDerivation (finalAttrs: {
       --prefix LD_LIBRARY_PATH : ${lib.makeLibraryPath [ udev ]}
   '';
 
+  dontBuild = true;
+  dontConfigure = true;
+  dontWrapGApps = true;
+
+  unpackPhase = ''
+    ar p $src data.tar.xz | tar xJ
+  '';
+
   meta = {
     description = "Static Site CMS with GUI to build privacy-focused SEO-friendly website";
-    mainProgram = "Publii";
+
     longDescription = ''
       Creating a website doesn't have to be complicated or expensive. With Publii, the most
       intuitive static site CMS, you can create a beautiful, safe, and privacy-friendly website
       quickly and easily; perfect for anyone who wants a fast, secure website in a flash.
     '';
+
     homepage = "https://getpublii.com";
     changelog = "https://github.com/getpublii/publii/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.gpl3Only;
+
     maintainers = [
     ];
+
     platforms = [ "x86_64-linux" ];
+    mainProgram = "Publii";
   };
 })

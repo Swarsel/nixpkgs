@@ -1,6 +1,6 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchzip,
   wxwidgets_3_2,
   zlib,
@@ -40,7 +40,7 @@ stdenv.mkDerivation (finalAttrs: {
     longDescription = "An easy to setup Open Source client/server backup system, that through a combination of image and file backups accomplishes both data safety and a fast restoration time";
     homepage = "https://www.urbackup.org/index.html";
     license = lib.licenses.agpl3Plus;
-    platforms = lib.platforms.linux;
     maintainers = [ lib.maintainers.mgttlinger ];
+    platforms = lib.platforms.linux;
   };
 })

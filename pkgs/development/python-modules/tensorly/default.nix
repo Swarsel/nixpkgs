@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   numpy,
   pytestCheckHook,
   scipy,
@@ -11,7 +11,6 @@
 buildPythonPackage rec {
   pname = "tensorly";
   version = "0.9.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "tensorly";
@@ -20,6 +19,7 @@ buildPythonPackage rec {
     hash = "sha256-A6Zlp8fa7XFgf4qpg7SEtNLlYSNtDGLuRUEfzD+crQc=";
   };
 
+  nativeCheckInputs = [ pytestCheckHook ];
   build-system = [ setuptools ];
 
   dependencies = [
@@ -27,7 +27,14 @@ buildPythonPackage rec {
     scipy
   ];
 
-  nativeCheckInputs = [ pytestCheckHook ];
+  disabledTests = [
+    # this can fail on hydra and other peoples machines, check with others before re-enabling
+    # AssertionError: Partial_SVD took too long, maybe full_matrices set wrongly
+    "test_svd_time"
+  ];
+
+  enabledTestPaths = [ "tensorly" ];
+  pyproject = true;
 
   pythonImportsCheck = [
     "tensorly"
@@ -46,14 +53,6 @@ buildPythonPackage rec {
     "tensorly.datasets"
     "tensorly.plugins"
     "tensorly.contrib"
-  ];
-
-  enabledTestPaths = [ "tensorly" ];
-
-  disabledTests = [
-    # this can fail on hydra and other peoples machines, check with others before re-enabling
-    # AssertionError: Partial_SVD took too long, maybe full_matrices set wrongly
-    "test_svd_time"
   ];
 
   meta = {

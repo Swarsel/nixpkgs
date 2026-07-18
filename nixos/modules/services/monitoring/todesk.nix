@@ -21,25 +21,27 @@ in
     systemd.services.todeskd = {
       description = "ToDesk Daemon Service";
 
+      serviceConfig = {
+        ExecReload = "${pkgs.coreutils}/bin/kill -SIGINT $MAINPID";
+        ExecStart = "${cfg.package}/bin/todesk service";
+        PrivateTmp = true;
+        ProtectHome = "read-only";
+        ProtectSystem = "strict";
+        RemoveIPC = "yes";
+        Restart = "on-failure";
+        StateDirectory = "todesk";
+        StateDirectoryMode = "0777"; # Desktop application read and write /opt/todesk/config/config.ini. Such a pain!
+        Type = "simple";
+        WorkingDirectory = "/var/lib/todesk";
+      };
+
       wantedBy = [ "multi-user.target" ];
+
       wants = [
         "network-online.target"
         "display-manager.service"
         "nss-lookup.target"
       ];
-      serviceConfig = {
-        Type = "simple";
-        ExecStart = "${cfg.package}/bin/todesk service";
-        ExecReload = "${pkgs.coreutils}/bin/kill -SIGINT $MAINPID";
-        Restart = "on-failure";
-        WorkingDirectory = "/var/lib/todesk";
-        PrivateTmp = true;
-        StateDirectory = "todesk";
-        StateDirectoryMode = "0777"; # Desktop application read and write /opt/todesk/config/config.ini. Such a pain!
-        ProtectSystem = "strict";
-        ProtectHome = "read-only";
-        RemoveIPC = "yes";
-      };
     };
   };
 }

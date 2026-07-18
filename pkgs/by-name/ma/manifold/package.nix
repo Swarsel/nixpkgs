@@ -2,8 +2,8 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  cmake,
   clipper2,
+  cmake,
   gtest,
   onetbb,
   python3Packages,
@@ -36,12 +36,14 @@ stdenv.mkDerivation (finalAttrs: {
     "-DMANIFOLD_PAR=TBB"
   ];
 
-  excludedTestPatterns = [
-  ];
   doCheck = true;
+
   checkPhase = ''
     test/manifold_test --gtest_filter=-${lib.escapeShellArg (builtins.concatStringsSep ":" finalAttrs.excludedTestPatterns)}
   '';
+
+  excludedTestPatterns = [
+  ];
 
   passthru = {
     tests = {
@@ -54,6 +56,7 @@ stdenv.mkDerivation (finalAttrs: {
     homepage = "https://github.com/elalish/manifold";
     changelog = "https://github.com/elalish/manifold/releases/tag/${finalAttrs.src.tag}";
     license = lib.licenses.asl20;
+
     maintainers =
       with lib.maintainers;
       [
@@ -61,6 +64,7 @@ stdenv.mkDerivation (finalAttrs: {
         pca006132
       ]
       ++ python3Packages.manifold3d.meta.maintainers;
+
     platforms = lib.platforms.unix;
   };
 })

@@ -1,9 +1,9 @@
 {
   lib,
   stdenv,
+  fetchFromGitHub,
   autoreconfHook,
   callPackage,
-  fetchFromGitHub,
   hunspellDicts,
   ncurses,
   nix-update-script,
@@ -16,19 +16,19 @@ stdenv.mkDerivation (finalAttrs: {
   pname = "hunspell";
   version = "1.7.3";
 
-  outputs = [
-    "bin"
-    "dev"
-    "out"
-    "man"
-  ];
-
   src = fetchFromGitHub {
     owner = "hunspell";
     repo = "hunspell";
     rev = "v${finalAttrs.version}";
     hash = "sha256-NoLlH+4Hb6w+HYl2fSBzroav1Pb3GojFSTJGBxlteBM=";
   };
+
+  outputs = [
+    "bin"
+    "dev"
+    "out"
+    "man"
+  ];
 
   patches = [ ./0001-Make-hunspell-look-in-XDG_DATA_DIRS-for-dictionaries.patch ];
 
@@ -48,28 +48,28 @@ stdenv.mkDerivation (finalAttrs: {
     readline
   ];
 
-  autoreconfFlags = [ "-vfi" ];
-
   configureFlags = [
     "--with-ui"
     "--with-readline"
   ];
 
+  autoreconfFlags = [ "-vfi" ];
   hardeningDisable = [ "format" ];
 
   passthru = {
-    withDicts = callPackage ./wrapper.nix { hunspell = finalAttrs.finalPackage; };
     tests = {
-      pkg-config = testers.hasPkgConfigModules { package = finalAttrs.finalPackage; };
       version = testers.testVersion { package = finalAttrs.finalPackage; };
+      pkg-config = testers.hasPkgConfigModules { package = finalAttrs.finalPackage; };
       wrapper = finalAttrs.finalPackage.withDicts (d: [ d.en_US ]);
     };
 
     updateScript = nix-update-script { };
+    withDicts = callPackage ./wrapper.nix { hunspell = finalAttrs.finalPackage; };
   };
 
   meta = {
     description = "Spell checker";
+
     longDescription = ''
       Hunspell is the spell checker of LibreOffice, OpenOffice.org, Mozilla
       Firefox 3 & Thunderbird, Google Chrome, and it is also used by
@@ -90,19 +90,23 @@ stdenv.mkDerivation (finalAttrs: {
             ~/Library/Spelling or /Library/Spelling for spell checking),
         * Delphi, Java (JNA, JNI), Perl, .NET, Python, Ruby ([1], [2]), UNO.
     '';
+
     homepage = "http://hunspell.github.io/";
     changelog = "https://github.com/hunspell/hunspell/releases/tag/${finalAttrs.src.rev}";
+
     license = with lib.licenses; [
       gpl2Plus
       lgpl21Plus
       mpl11
     ];
+
     maintainers = with lib.maintainers; [
       getchoo
       RossSmyth
     ];
-    mainProgram = "hunspell";
+
     platforms = lib.platforms.all;
+    mainProgram = "hunspell";
     pkgConfigModules = [ "hunspell" ];
   };
 })

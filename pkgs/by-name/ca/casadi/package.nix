@@ -1,4 +1,7 @@
 {
+  lib,
+  stdenv,
+  fetchFromGitHub,
   #alpaqa,
   blas,
   blasfeo,
@@ -9,12 +12,10 @@
   cmake,
   cplex,
   fatrop,
-  fetchFromGitHub,
   fetchpatch,
   gurobi,
   highs,
   hpipm,
-  lib,
   ipopt,
   lapack,
   llvmPackages,
@@ -22,17 +23,16 @@
   ninja,
   osqp,
   pkg-config,
-  pythonSupport ? false,
-  python3Packages,
   proxsuite,
-  stdenv,
+  python3Packages,
   sleqp,
+  spral,
   suitesparse,
   #sundials,
   superscs,
-  spral,
   swig,
   tinyxml-2,
+  pythonSupport ? false,
   withUnfree ? false,
 }:
 
@@ -51,19 +51,19 @@ stdenv.mkDerivation (finalAttrs: {
     # Add missing include
     # ref. https://github.com/casadi/casadi/pull/4192
     (fetchpatch {
-      url = "https://github.com/casadi/casadi/pull/4192/commits/fc1a83e8db37f328657eabff41f00a9a34d3cc74.patch";
       hash = "sha256-9GXOtYa/BFq5vp6tE8HxO8xW3ep3my6TPD3FvkDhUUA=";
+      url = "https://github.com/casadi/casadi/pull/4192/commits/fc1a83e8db37f328657eabff41f00a9a34d3cc74.patch";
     })
 
     # Fix build with osqp v1
     # ref. https://github.com/casadi/casadi/pull/4105
     (fetchpatch {
-      url = "https://github.com/casadi/casadi/pull/4105/commits/cca4eb5d423c9d034f0666f71338063d3f8c9c43.patch";
       hash = "sha256-pDI9x4yzPj+rjtzZpFKwfSsyE52Jt20izfqo5blkUOA=";
+      url = "https://github.com/casadi/casadi/pull/4105/commits/cca4eb5d423c9d034f0666f71338063d3f8c9c43.patch";
     })
     (fetchpatch {
-      url = "https://github.com/casadi/casadi/pull/4105/commits/6035a95e48088928134c3827ab90a2a3a82b1389.patch";
       hash = "sha256-1nOcCLXVwFBRH/abAhTly28+1oNjDumJCjT0NyRAgz0=";
+      url = "https://github.com/casadi/casadi/pull/4105/commits/6035a95e48088928134c3827ab90a2a3a82b1389.patch";
     })
   ];
 
@@ -202,6 +202,7 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Symbolic framework for numeric optimization";
+
     longDescription = ''
       CasADi is a symbolic framework for numeric optimization
       implementing automatic differentiation in forward and reverse
@@ -210,6 +211,7 @@ stdenv.mkDerivation (finalAttrs: {
       codes such as SUNDIALS, IPOPT etc. It can be used from C++,
       Python or Matlab/Octave
     '';
+
     homepage = "https://github.com/casadi/casadi";
     changelog = "https://github.com/casadi/casadi/releases/tag/${finalAttrs.version}";
     license = lib.licenses.lgpl3Only;

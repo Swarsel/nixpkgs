@@ -2,14 +2,14 @@
   lib,
   stdenv,
   fetchgit,
-  meson,
-  ninja,
-  pkg-config,
   gnunet,
-  libsodium,
   libgcrypt,
   libgnunetchat,
+  libsodium,
+  meson,
   ncurses,
+  ninja,
+  pkg-config,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -21,8 +21,6 @@ stdenv.mkDerivation (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-8Iby3IZXEZJ1dqVV62xDzXx/qq7JKhVtn6ZLb697ZSw=";
   };
-
-  env.INSTALL_DIR = (placeholder "out") + "/";
 
   strictDeps = true;
 
@@ -40,17 +38,17 @@ stdenv.mkDerivation (finalAttrs: {
     ncurses
   ];
 
+  env.INSTALL_DIR = (placeholder "out") + "/";
   preInstall = "mkdir -p $out/bin";
-
   preFixup = "mv $out/bin/messenger-cli $out/bin/gnunet-messenger-cli";
 
   meta = {
     description = "Decentralized, privacy-preserving networking framework for secure peer-to-peer communication";
     homepage = "https://git-www.taler.net/messenger-cli.git";
     license = lib.licenses.gpl3Plus;
-    platforms = lib.platforms.all;
-    teams = with lib.teams; [ ngi ];
     maintainers = [ lib.maintainers.ethancedwards8 ];
+    platforms = lib.platforms.all;
     mainProgram = "gnunet-messenger-cli";
+    teams = with lib.teams; [ ngi ];
   };
 })

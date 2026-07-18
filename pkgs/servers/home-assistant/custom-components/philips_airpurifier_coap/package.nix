@@ -1,15 +1,12 @@
 {
   lib,
-  buildHomeAssistantComponent,
   fetchFromGitHub,
-
   aioairctrl,
+  buildHomeAssistantComponent,
   getmac,
 }:
 
 buildHomeAssistantComponent rec {
-  owner = "kongo09";
-  domain = "philips_airpurifier_coap";
   version = "0.36.2";
 
   src = fetchFromGitHub {
@@ -24,9 +21,13 @@ buildHomeAssistantComponent rec {
     getmac
   ];
 
+  domain = "philips_airpurifier_coap";
+
   ignoreVersionRequirement = [
     "getmac"
   ];
+
+  owner = "kongo09";
 
   meta = {
     description = "Philips AirPurifier custom component for Home Assistant";

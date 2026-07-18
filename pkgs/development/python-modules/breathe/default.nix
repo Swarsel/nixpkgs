@@ -1,9 +1,9 @@
 {
   lib,
+  fetchFromGitHub,
   buildPythonPackage,
   defusedxml,
   flit-core,
-  fetchFromGitHub,
   pytestCheckHook,
   sphinx,
 }:
@@ -11,7 +11,6 @@
 buildPythonPackage {
   pname = "breathe";
   version = "4.35.0-unstable-2025-01-16";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "breathe-doc";
@@ -20,21 +19,20 @@ buildPythonPackage {
     hash = "sha256-Ie+8RLWeBgbC4s3TC6ege2YNdfdM0d906BPxB7EOwq8=";
   };
 
-  build-system = [ flit-core ];
-
-  dependencies = [ sphinx ];
-
   nativeCheckInputs = [
     defusedxml
     pytestCheckHook
   ];
 
+  build-system = [ flit-core ];
+  dependencies = [ sphinx ];
+  pyproject = true;
   pythonImportsCheck = [ "breathe" ];
 
   meta = {
     description = "Sphinx Doxygen renderer";
-    mainProgram = "breathe-apidoc";
     homepage = "https://github.com/breathe-doc/breathe";
     license = lib.licenses.bsd3;
+    mainProgram = "breathe-apidoc";
   };
 }

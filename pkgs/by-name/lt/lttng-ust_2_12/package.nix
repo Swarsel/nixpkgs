@@ -2,9 +2,9 @@
   lib,
   stdenv,
   fetchurl,
-  pkg-config,
   liburcu,
   numactl,
+  pkg-config,
   python3,
 }:
 
@@ -36,34 +36,35 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   nativeBuildInputs = [ pkg-config ];
+
   buildInputs = [
     numactl
     python3
   ];
 
+  propagatedBuildInputs = [ liburcu ];
+  configureFlags = [ "--disable-examples" ];
+
   preConfigure = ''
     patchShebangs .
   '';
 
-  hardeningDisable = [ "trivialautovarinit" ];
-
-  configureFlags = [ "--disable-examples" ];
-
-  propagatedBuildInputs = [ liburcu ];
-
   enableParallelBuilding = true;
+  hardeningDisable = [ "trivialautovarinit" ];
 
   meta = {
     description = "LTTng Userspace Tracer libraries";
-    mainProgram = "lttng-gen-tp";
     homepage = "https://lttng.org/";
+
     license = with lib.licenses; [
       lgpl21Only
       gpl2Only
       mit
     ];
-    platforms = lib.intersectLists lib.platforms.linux liburcu.meta.platforms;
+
     maintainers = [ lib.maintainers.bjornfor ];
+    platforms = lib.intersectLists lib.platforms.linux liburcu.meta.platforms;
+    mainProgram = "lttng-gen-tp";
   };
 
 })

@@ -1,20 +1,19 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   cargo,
-  rustPlatform,
-  rustc,
   numpy,
   pydicom,
   pylibjpeg-data,
   pytestCheckHook,
+  rustPlatform,
+  rustc,
 }:
 
 buildPythonPackage rec {
   pname = "pylibjpeg-rle";
   version = "2.2.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "pydicom";
@@ -22,22 +21,6 @@ buildPythonPackage rec {
     tag = "v${version}";
     hash = "sha256-hAtseH4akBCKhlWsPGXeQRYUK0BiytFrLFCmeg7nUXY=";
   };
-
-  cargoDeps = rustPlatform.fetchCargoVendor {
-    inherit pname version src;
-    hash = "sha256-QprjrR/AelrC+6n7uWZicO9QH0OAJCR7DSE1JuQOMCI=";
-  };
-
-  build-system = [
-    cargo
-    rustPlatform.cargoSetupHook
-    rustPlatform.maturinBuildHook
-    rustc
-  ];
-
-  dependencies = [
-    numpy
-  ];
 
   nativeCheckInputs = [
     pydicom
@@ -49,6 +32,24 @@ buildPythonPackage rec {
     mv rle/tests .
     rm -r rle
   '';
+
+  build-system = [
+    cargo
+    rustPlatform.cargoSetupHook
+    rustPlatform.maturinBuildHook
+    rustc
+  ];
+
+  cargoDeps = rustPlatform.fetchCargoVendor {
+    inherit pname version src;
+    hash = "sha256-QprjrR/AelrC+6n7uWZicO9QH0OAJCR7DSE1JuQOMCI=";
+  };
+
+  dependencies = [
+    numpy
+  ];
+
+  pyproject = true;
 
   pythonImportsCheck = [
     "rle"

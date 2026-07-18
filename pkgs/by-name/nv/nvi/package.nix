@@ -2,10 +2,10 @@
   lib,
   stdenv,
   fetchurl,
-  fetchpatch,
-  ncurses,
   db,
+  fetchpatch,
   libiconv,
+  ncurses,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -32,12 +32,6 @@ stdenv.mkDerivation (finalAttrs: {
   ]
   ++ lib.optionals stdenv.hostPlatform.isDarwin [ libiconv ];
 
-  preConfigure = ''
-    cd build.unix
-  '';
-
-  configureScript = "../dist/configure";
-
   configureFlags = [
     "vi_cv_path_preserve=/tmp"
     "--enable-widechar"
@@ -45,8 +39,15 @@ stdenv.mkDerivation (finalAttrs: {
 
   env.NIX_LDFLAGS = lib.optionalString stdenv.hostPlatform.isDarwin "-liconv";
 
+  preConfigure = ''
+    cd build.unix
+  '';
+
+  configureScript = "../dist/configure";
+
   meta = {
     description = "Berkeley Vi Editor";
+
     longDescription = ''
       nvi ("new vi") is a re-implementation of the
       classic Berkeley text editor vi, written by
@@ -56,12 +57,15 @@ stdenv.mkDerivation (finalAttrs: {
       editor and is the default vi on all major BSD
       systems as well as MINIX.
     '';
+
     license = lib.licenses.bsd3;
-    platforms = lib.platforms.unix;
-    mainProgram = "vi";
+
     maintainers = with lib.maintainers; [
       suominen
       aleksana
     ];
+
+    platforms = lib.platforms.unix;
+    mainProgram = "vi";
   };
 })

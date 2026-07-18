@@ -1,13 +1,12 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
-  gitUpdater,
-  nixosTests,
   boost,
   cmake,
   coreutils,
   dbus,
+  gitUpdater,
   glib,
   glm,
   gtest,
@@ -15,13 +14,14 @@
   gtk4-layer-shell,
   json_c,
   libevdev,
+  libgbm,
   libglvnd,
   libnotify,
   libuuid,
   libxkbcommon,
-  libgbm,
   makeWrapper,
   mir,
+  nixosTests,
   nlohmann_json,
   pcre2,
   pkg-config,
@@ -88,11 +88,6 @@ stdenv.mkDerivation (finalAttrs: {
     yaml-cpp
   ];
 
-  checkInputs = [ gtest ];
-
-  # Manually wrapping the few binaries that needs it
-  dontWrapGApps = true;
-
   cmakeFlags = [
     (lib.cmakeBool "BUILD_DEBUG_OVERLAY" true)
     (lib.cmakeBool "BUILD_ERROR_REPORTER" true)
@@ -104,6 +99,7 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   doCheck = stdenv.buildPlatform.canExecute stdenv.hostPlatform;
+  checkInputs = [ gtest ];
 
   checkPhase = ''
     runHook preCheck
@@ -131,14 +127,18 @@ stdenv.mkDerivation (finalAttrs: {
     wrapGApp $out/bin/miracle-wm-debug-overlay
   '';
 
+  # Manually wrapping the few binaries that needs it
+  dontWrapGApps = true;
+
   passthru = {
-    updateScript = gitUpdater { rev-prefix = "v"; };
     providedSessions = [ "miracle-wm" ];
     tests.vm = nixosTests.miracle-wm;
+    updateScript = gitUpdater { rev-prefix = "v"; };
   };
 
   meta = {
     description = "Tiling Wayland compositor based on Mir";
+
     longDescription = ''
       miracle-wm is a Wayland compositor based on Mir. It features a tiling window manager at its core, very much in
       the style of i3 and sway. The intention is to build a compositor that is flashier and more feature-rich than
@@ -146,11 +146,12 @@ stdenv.mkDerivation (finalAttrs: {
 
       See the user guide for info on how to use miracle-wm: https://wiki.miracle-wm.org/v${finalAttrs.version}/
     '';
+
     homepage = "https://miracle-wm.org";
     changelog = "https://github.com/miracle-wm-org/miracle-wm/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.gpl3Only;
-    mainProgram = "miracle-wm";
     maintainers = with lib.maintainers; [ OPNA2608 ];
     platforms = lib.platforms.linux;
+    mainProgram = "miracle-wm";
   };
 })

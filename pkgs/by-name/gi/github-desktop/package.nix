@@ -1,30 +1,27 @@
 {
   lib,
   stdenv,
-  copyDesktopItems,
-  desktopToDarwinBundle,
   fetchFromGitHub,
-  fetchYarnDeps,
-  makeBinaryWrapper,
-  makeDesktopItem,
-  yarnBuildHook,
-  yarnConfigHook,
-
+  copyDesktopItems,
+  curl,
+  desktopToDarwinBundle,
   electron,
+  fetchYarnDeps,
   git,
   git-lfs,
+  gnome-keyring,
+  libsecret,
+  makeBinaryWrapper,
+  makeDesktopItem,
+  nix-update-script,
   node-gyp,
   nodejs,
   pkg-config,
   python3,
   typescript,
+  yarnBuildHook,
+  yarnConfigHook,
   zip,
-
-  gnome-keyring,
-  libsecret,
-  curl,
-
-  nix-update-script,
 }:
 
 let
@@ -46,14 +43,6 @@ stdenv.mkDerivation (finalAttrs: {
     postCheckout = "git -C $out rev-parse HEAD > $out/.gitrev";
   };
 
-  yarnBuildScript = "build:prod";
-
-  buildInputs = [
-    gnome-keyring
-    libsecret
-    curl
-  ];
-
   nativeBuildInputs = [
     copyDesktopItems
     makeBinaryWrapper
@@ -71,24 +60,16 @@ stdenv.mkDerivation (finalAttrs: {
   ]
   ++ lib.optional stdenv.hostPlatform.isDarwin desktopToDarwinBundle;
 
+  buildInputs = [
+    gnome-keyring
+    libsecret
+    curl
+  ];
+
   env = {
     ELECTRON_SKIP_BINARY_DOWNLOAD = "1";
     npm_config_nodedir = electron.headers;
   };
-
-  cacheRoot = fetchYarnDeps {
-    name = "${finalAttrs.pname}-cache-root";
-    yarnLock = finalAttrs.src + "/yarn.lock";
-    hash = cacheRootHash;
-  };
-
-  cacheApp = fetchYarnDeps {
-    name = "${finalAttrs.pname}-cache-app";
-    yarnLock = finalAttrs.src + "/app/yarn.lock";
-    hash = cacheAppHash;
-  };
-
-  dontYarnInstallDeps = true;
 
   postConfigure = ''
     yarnOfflineCache="$cacheRoot" runHook yarnConfigHook
@@ -145,22 +126,6 @@ stdenv.mkDerivation (finalAttrs: {
     export CIRCLE_SHA1="$(cat .gitrev)"
   '';
 
-  desktopItems = [
-    (makeDesktopItem {
-      name = "github-desktop";
-      desktopName = "GitHub Desktop";
-      comment = "Focus on what matters instead of fighting with Git";
-      exec = "github-desktop %u";
-      icon = "github-desktop";
-      mimeTypes = [
-        "x-scheme-handler/x-github-client"
-        "x-scheme-handler/x-github-desktop-auth"
-        "x-scheme-handler/x-github-desktop-dev-auth"
-      ];
-      terminal = false;
-    })
-  ];
-
   installPhase = ''
     runHook preInstall
 
@@ -185,8 +150,42 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  cacheApp = fetchYarnDeps {
+    hash = cacheAppHash;
+    name = "${finalAttrs.pname}-cache-app";
+    yarnLock = finalAttrs.src + "/app/yarn.lock";
+  };
+
+  cacheRoot = fetchYarnDeps {
+    hash = cacheRootHash;
+    name = "${finalAttrs.pname}-cache-root";
+    yarnLock = finalAttrs.src + "/yarn.lock";
+  };
+
+  desktopItems = [
+    (makeDesktopItem {
+      comment = "Focus on what matters instead of fighting with Git";
+      desktopName = "GitHub Desktop";
+      exec = "github-desktop %u";
+      icon = "github-desktop";
+
+      mimeTypes = [
+        "x-scheme-handler/x-github-client"
+        "x-scheme-handler/x-github-desktop-auth"
+        "x-scheme-handler/x-github-desktop-dev-auth"
+      ];
+
+      name = "github-desktop";
+      terminal = false;
+    })
+  ];
+
+  dontYarnInstallDeps = true;
+  yarnBuildScript = "build:prod";
+
   passthru = {
     inherit (finalAttrs) cacheRoot cacheApp;
+
     updateScript = nix-update-script {
       extraArgs = [
         "--version-regex"
@@ -203,10 +202,10 @@ stdenv.mkDerivation (finalAttrs: {
     description = "GUI for managing Git and GitHub";
     homepage = "https://desktop.github.com";
     changelog = "https://desktop.github.com/release-notes";
-    downloadPage = "https://desktop.github.com/download";
     license = lib.licenses.mit;
-    mainProgram = "github-desktop";
     maintainers = with lib.maintainers; [ dtomvan ];
     platforms = lib.lists.intersectLists electron.meta.platforms lib.platforms.linux;
+    mainProgram = "github-desktop";
+    downloadPage = "https://desktop.github.com/download";
   };
 })

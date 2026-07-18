@@ -1,13 +1,13 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchurl,
-  pkg-config,
+  gnome,
   libsoup_3,
   libxml2,
   meson,
   ninja,
-  gnome,
+  pkg-config,
   udevCheckHook,
 }:
 
@@ -15,16 +15,16 @@ stdenv.mkDerivation rec {
   pname = "phodav";
   version = "3.0";
 
+  src = fetchurl {
+    url = "mirror://gnome/sources/phodav/${version}/phodav-${version}.tar.xz";
+    sha256 = "OS7C0G1QMA3P8e8mmiqYUwTim841IAAvyiny7cHRONE=";
+  };
+
   outputs = [
     "out"
     "dev"
     "lib"
   ];
-
-  src = fetchurl {
-    url = "mirror://gnome/sources/phodav/${version}/phodav-${version}.tar.xz";
-    sha256 = "OS7C0G1QMA3P8e8mmiqYUwTim841IAAvyiny7cHRONE=";
-  };
 
   nativeBuildInputs = [
     pkg-config
@@ -49,6 +49,11 @@ stdenv.mkDerivation rec {
     NIX_LDFLAGS = "-lintl";
   };
 
+  # We need to do this in pre-configure before the data/ folder disappears.
+  preConfigure = ''
+    install -vDt $out/lib/udev/rules.d/ data/*-spice-webdavd.rules
+  '';
+
   doInstallCheck = true;
 
   passthru = {
@@ -56,11 +61,6 @@ stdenv.mkDerivation rec {
       packageName = pname;
     };
   };
-
-  # We need to do this in pre-configure before the data/ folder disappears.
-  preConfigure = ''
-    install -vDt $out/lib/udev/rules.d/ data/*-spice-webdavd.rules
-  '';
 
   meta = {
     description = "WebDav server implementation and library using libsoup";

@@ -16,30 +16,29 @@
 buildPythonPackage rec {
   pname = "pygit2";
   version = "1.19.3";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
     hash = "sha256-pUPm1Ou0OCVWSTV1jcI053ABb+1nO4Q3DUaulYBViDE=";
   };
 
+  buildInputs = [ libgit2 ];
+  # Tests require certificates
+  # https://github.com/NixOS/nixpkgs/pull/72544#issuecomment-582674047
+  env.SSL_CERT_FILE = "${cacert}/etc/ssl/certs/ca-bundle.crt";
+
   preConfigure = lib.optionalString stdenv.hostPlatform.isDarwin ''
     export DYLD_LIBRARY_PATH="${libgit2}/lib"
   '';
 
+  nativeCheckInputs = [ pytestCheckHook ];
   build-system = [ setuptools ];
-
-  buildInputs = [ libgit2 ];
 
   dependencies = [
     cached-property
     pycparser
   ]
   ++ lib.optionals (!isPyPy) [ cffi ];
-
-  propagatedNativeBuildInputs = lib.optionals (!isPyPy) [ cffi ];
-
-  nativeCheckInputs = [ pytestCheckHook ];
 
   disabledTestPaths = [
     # Disable tests that require networking
@@ -48,10 +47,8 @@ buildPythonPackage rec {
     "test/test_submodule.py"
   ];
 
-  # Tests require certificates
-  # https://github.com/NixOS/nixpkgs/pull/72544#issuecomment-582674047
-  env.SSL_CERT_FILE = "${cacert}/etc/ssl/certs/ca-bundle.crt";
-
+  propagatedNativeBuildInputs = lib.optionals (!isPyPy) [ cffi ];
+  pyproject = true;
   pythonImportsCheck = [ "pygit2" ];
 
   meta = {

@@ -1,8 +1,8 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
   installShellFiles,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -16,11 +16,11 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-HTyLLhpCDlWoOHllVsB6V6BGvRpFQgsx7KCOfRq5UhE=";
   };
 
-  cargoHash = "sha256-PA9KP17l9EVJQn9sUoZ02EZsw3xgiIMidDXk+tYdsIY=";
-
   nativeBuildInputs = [
     installShellFiles
   ];
+
+  cargoHash = "sha256-PA9KP17l9EVJQn9sUoZ02EZsw3xgiIMidDXk+tYdsIY=";
 
   postInstall = ''
     installShellCompletion --bash completions/bash/neocmakelsp
@@ -32,11 +32,13 @@ rustPlatform.buildRustPackage (finalAttrs: {
     description = "CMake lsp based on tower-lsp and treesitter";
     homepage = "https://github.com/neocmakelsp/neocmakelsp";
     license = lib.licenses.mit;
-    platforms = lib.platforms.unix;
+
     maintainers = with lib.maintainers; [
       wineee
       multivac61
     ];
+
+    platforms = lib.platforms.unix;
     mainProgram = "neocmakelsp";
   };
 })

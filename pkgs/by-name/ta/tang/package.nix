@@ -2,19 +2,19 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  pkg-config,
   asciidoc-full,
+  gitUpdater,
+  http-parser,
   jansson,
   jose,
-  http-parser,
-  systemd,
+  makeWrapper,
   meson,
   ninja,
-  makeWrapper,
-  testers,
-  tang,
-  gitUpdater,
   nixosTests,
+  pkg-config,
+  systemd,
+  tang,
+  testers,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -27,6 +27,11 @@ stdenv.mkDerivation (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-nlC2hdNzQZrfirjS2gX4oFp2OD1OdxmLsN03hfxD3ug=";
   };
+
+  outputs = [
+    "out"
+    "man"
+  ];
 
   nativeBuildInputs = [
     asciidoc-full
@@ -43,11 +48,6 @@ stdenv.mkDerivation (finalAttrs: {
     systemd
   ];
 
-  outputs = [
-    "out"
-    "man"
-  ];
-
   postFixup = ''
     wrapProgram $out/bin/tang-show-keys --prefix PATH ":" ${lib.makeBinPath [ jose ]}
     wrapProgram $out/libexec/tangd-keygen --prefix PATH ":" ${lib.makeBinPath [ jose ]}
@@ -57,12 +57,14 @@ stdenv.mkDerivation (finalAttrs: {
   passthru = {
     tests = {
       inherit (nixosTests) tang;
+
       version = testers.testVersion {
-        package = tang;
-        command = "${tang}/libexec/tangd --version";
         version = "tangd ${finalAttrs.version}";
+        command = "${tang}/libexec/tangd --version";
+        package = tang;
       };
     };
+
     updateScript = gitUpdater { };
   };
 
@@ -70,8 +72,8 @@ stdenv.mkDerivation (finalAttrs: {
     description = "Server for binding data to network presence";
     homepage = "https://github.com/latchset/tang";
     changelog = "https://github.com/latchset/tang/releases/tag/v${finalAttrs.version}";
-    maintainers = with lib.maintainers; [ fpletz ];
     license = lib.licenses.gpl3Plus;
+    maintainers = with lib.maintainers; [ fpletz ];
     mainProgram = "tangd";
   };
 })

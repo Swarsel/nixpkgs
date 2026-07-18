@@ -1,8 +1,8 @@
 {
   lib,
+  fetchFromGitHub,
   aiohttp,
   buildPythonPackage,
-  fetchFromGitHub,
   pytest-aiohttp,
   pytestCheckHook,
   setuptools,
@@ -11,7 +11,6 @@
 buildPythonPackage rec {
   pname = "arris-tg2492lg";
   version = "2.2.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "vanbalken";
@@ -21,7 +20,6 @@ buildPythonPackage rec {
   };
 
   nativeBuildInputs = [ setuptools ];
-
   propagatedBuildInputs = [ aiohttp ];
 
   nativeCheckInputs = [
@@ -29,6 +27,7 @@ buildPythonPackage rec {
     pytestCheckHook
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "arris_tg2492lg" ];
 
   meta = {

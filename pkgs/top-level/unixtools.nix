@@ -1,11 +1,11 @@
 {
-  pkgs,
-  buildEnv,
-  runCommand,
   lib,
   stdenv,
-  freebsd,
   binlore,
+  buildEnv,
+  freebsd,
+  pkgs,
+  runCommand,
 }:
 
 # These are some unix tools that are commonly included in the /usr/bin
@@ -37,19 +37,21 @@ let
     in
     runCommand "${cmd}-${provider.name}"
       {
-        meta = {
-          mainProgram = cmd;
-          priority = 10;
-          platforms = platforms.${stdenv.hostPlatform.parsed.kernel.name} or platforms.all;
-        };
         inherit (provider) version pname;
+        preferLocalBuild = true;
+
         passthru = {
           inherit provider;
         }
         // lib.optionalAttrs (builtins.hasAttr "binlore" providers) {
           binlore.out = (binlore.synthesize (getBin bins.${cmd}) providers.binlore);
         };
-        preferLocalBuild = true;
+
+        meta = {
+          platforms = platforms.${stdenv.hostPlatform.parsed.kernel.name} or platforms.all;
+          mainProgram = cmd;
+          priority = 10;
+        };
       }
       ''
         if ! [ -x ${bin} ]; then
@@ -84,91 +86,105 @@ let
   bins = mapAttrs singleBinary {
     # singular binaries
     arp = {
-      linux = pkgs.net-tools;
       darwin = pkgs.darwin.network_cmds;
       freebsd = pkgs.freebsd.arp;
+      linux = pkgs.net-tools;
     };
+
     col = {
-      linux = pkgs.util-linux;
       darwin = pkgs.darwin.text_cmds;
+      linux = pkgs.util-linux;
     };
+
     column = {
-      linux = pkgs.util-linux;
       darwin = pkgs.darwin.text_cmds;
+      linux = pkgs.util-linux;
     };
+
     eject = {
       linux = pkgs.util-linux;
     };
+
+    fdisk = {
+      darwin = pkgs.darwin.diskdev_cmds;
+      freebsd = pkgs.freebsd.fdisk;
+      linux = pkgs.util-linux;
+    };
+
+    fsck = {
+      darwin = pkgs.darwin.diskdev_cmds;
+      linux = pkgs.util-linux;
+    };
+
     getconf = {
-      linux = if stdenv.hostPlatform.libc == "glibc" then pkgs.libc else pkgs.netbsd.getconf;
-      darwin = pkgs.darwin.system_cmds;
       # I don't see any obvious arg exec in the doc/manpage
       binlore = ''
         execer cannot bin/getconf
       '';
+
+      darwin = pkgs.darwin.system_cmds;
+      linux = if stdenv.hostPlatform.libc == "glibc" then pkgs.libc else pkgs.netbsd.getconf;
     };
+
     getent = {
-      linux = if stdenv.hostPlatform.libc == "glibc" then pkgs.libc.getent else pkgs.netbsd.getent;
       darwin = pkgs.netbsd.getent;
       freebsd = pkgs.freebsd.getent;
+      linux = if stdenv.hostPlatform.libc == "glibc" then pkgs.libc.getent else pkgs.netbsd.getent;
       openbsd = pkgs.openbsd.getent;
     };
+
     getopt = {
-      linux = pkgs.util-linux;
       darwin = pkgs.getopt;
-    };
-    fdisk = {
       linux = pkgs.util-linux;
-      darwin = pkgs.darwin.diskdev_cmds;
-      freebsd = pkgs.freebsd.fdisk;
     };
-    fsck = {
-      linux = pkgs.util-linux;
-      darwin = pkgs.darwin.diskdev_cmds;
-    };
+
     hexdump = {
-      linux = pkgs.util-linuxMinimal;
       darwin = pkgs.darwin.shell_cmds;
+      linux = pkgs.util-linuxMinimal;
     };
+
     hostname = {
-      linux = pkgs.hostname-debian;
       darwin = pkgs.darwin.shell_cmds;
       freebsd = pkgs.freebsd.bin;
+      linux = pkgs.hostname-debian;
       openbsd = pkgs.openbsd.hostname;
     };
+
     ifconfig = {
-      linux = pkgs.net-tools;
       darwin = pkgs.darwin.network_cmds;
       freebsd = pkgs.freebsd.ifconfig;
+      linux = pkgs.net-tools;
       openbsd = pkgs.openbsd.ifconfig;
     };
+
     killall = {
-      linux = pkgs.psmisc;
       darwin = pkgs.darwin.shell_cmds;
+      linux = pkgs.psmisc;
     };
+
     locale = {
-      linux = pkgs.glibc;
-      darwin = pkgs.darwin.adv_cmds;
-      freebsd = pkgs.freebsd.locale;
       # technically just targeting glibc version
       # no obvious exec in manpage
       binlore = ''
         execer cannot bin/locale
       '';
+
+      darwin = pkgs.darwin.adv_cmds;
+      freebsd = pkgs.freebsd.locale;
+      linux = pkgs.glibc;
     };
+
     logger = {
-      linux = pkgs.util-linux;
       darwin = pkgs.darwin.remote_cmds;
+      linux = pkgs.util-linux;
     };
+
     more = {
-      linux = pkgs.util-linux;
       darwin = more_compat;
-    };
-    mount = {
       linux = pkgs.util-linux;
-      darwin = pkgs.darwin.diskdev_cmds;
-      freebsd = freebsd.mount;
-      openbsd = pkgs.openbsd.mount;
+    };
+
+    mount = {
       # technically just targeting the darwin version; binlore already
       # ids the util-linux copy as 'cannot'
       # no obvious exec in manpage args; I think binlore flags 'can'
@@ -176,54 +192,64 @@ let
       binlore = ''
         execer cannot bin/mount
       '';
+
+      darwin = pkgs.darwin.diskdev_cmds;
+      freebsd = freebsd.mount;
+      linux = pkgs.util-linux;
+      openbsd = pkgs.openbsd.mount;
     };
+
     netstat = {
-      linux = pkgs.net-tools;
       darwin = pkgs.darwin.network_cmds;
       freebsd = pkgs.freebsd.netstat;
+      linux = pkgs.net-tools;
     };
+
     ping = {
-      linux = pkgs.iputils;
       darwin = pkgs.darwin.network_cmds;
       freebsd = freebsd.ping;
+      linux = pkgs.iputils;
     };
+
     ps = {
-      linux = pkgs.procps;
-      darwin = pkgs.darwin.ps;
-      freebsd = pkgs.freebsd.bin;
-      openbsd = pkgs.openbsd.ps;
       # technically just targeting procps ps (which ids as can)
       # but I don't see obvious exec in args; have yet to look
       # for underlying cause in source
       binlore = ''
         execer cannot bin/ps
       '';
+
+      darwin = pkgs.darwin.ps;
+      freebsd = pkgs.freebsd.bin;
+      linux = pkgs.procps;
+      openbsd = pkgs.openbsd.ps;
     };
+
     quota = {
-      linux = pkgs.linuxquota;
       darwin = pkgs.darwin.diskdev_cmds;
+      linux = pkgs.linuxquota;
     };
+
     route = {
-      linux = pkgs.net-tools;
       darwin = pkgs.darwin.network_cmds;
       freebsd = pkgs.freebsd.route;
+      linux = pkgs.net-tools;
       openbsd = pkgs.openbsd.route;
     };
+
     script = {
-      linux = pkgs.util-linux;
       darwin = pkgs.darwin.shell_cmds;
+      linux = pkgs.util-linux;
     };
+
     sysctl = {
-      linux = pkgs.procps;
       darwin = pkgs.darwin.system_cmds;
       freebsd = pkgs.freebsd.sysctl;
+      linux = pkgs.procps;
       openbsd = pkgs.openbsd.sysctl;
     };
+
     top = {
-      linux = pkgs.procps;
-      darwin = pkgs.darwin.top;
-      freebsd = pkgs.freebsd.top;
-      openbsd = pkgs.openbsd.top;
       # technically just targeting procps top; haven't needed this in
       # any scripts so far, but overriding it for consistency with ps
       # override above and in procps. (procps also overrides 'free',
@@ -231,36 +257,46 @@ let
       binlore = ''
         execer cannot bin/top
       '';
-    };
-    umount = {
-      linux = pkgs.util-linux;
-      darwin = pkgs.darwin.diskdev_cmds;
-    };
-    whereis = {
-      linux = pkgs.util-linux;
-      darwin = pkgs.darwin.shell_cmds;
-    };
-    wall = {
-      linux = pkgs.util-linux;
-      darwin = pkgs.darwin.remote_cmds;
-    };
-    watch = {
-      linux = pkgs.procps;
 
+      darwin = pkgs.darwin.top;
+      freebsd = pkgs.freebsd.top;
+      linux = pkgs.procps;
+      openbsd = pkgs.openbsd.top;
+    };
+
+    umount = {
+      darwin = pkgs.darwin.diskdev_cmds;
+      linux = pkgs.util-linux;
+    };
+
+    wall = {
+      darwin = pkgs.darwin.remote_cmds;
+      linux = pkgs.util-linux;
+    };
+
+    watch = {
       # watch is the only command from procps that builds currently on
       # Darwin/FreeBSD. Unfortunately no other implementations exist currently!
       darwin = pkgs.callPackage ../os-specific/linux/procps-ng { };
       freebsd = pkgs.callPackage ../os-specific/linux/procps-ng { };
+      linux = pkgs.procps;
       openbsd = pkgs.callPackage ../os-specific/linux/procps-ng { };
     };
-    write = {
+
+    whereis = {
+      darwin = pkgs.darwin.shell_cmds;
       linux = pkgs.util-linux;
-      darwin = pkgs.darwin.basic_cmds;
     };
+
+    write = {
+      darwin = pkgs.darwin.basic_cmds;
+      linux = pkgs.util-linux;
+    };
+
     xxd = {
-      linux = pkgs.tinyxxd;
       darwin = pkgs.tinyxxd;
       freebsd = pkgs.tinyxxd;
+      linux = pkgs.tinyxxd;
     };
   };
 
@@ -275,12 +311,21 @@ let
   compat =
     with bins;
     mapAttrs makeCompat {
+      net-tools = [
+        arp
+        hostname
+        ifconfig
+        netstat
+        route
+      ];
+
       procps = [
         ps
         sysctl
         top
         watch
       ];
+
       util-linux = [
         fsck
         fdisk
@@ -293,13 +338,6 @@ let
         write
         col
         column
-      ];
-      net-tools = [
-        arp
-        hostname
-        ifconfig
-        netstat
-        route
       ];
     };
 in

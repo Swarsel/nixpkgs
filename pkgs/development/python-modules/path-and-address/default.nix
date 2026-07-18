@@ -1,14 +1,13 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   pytest,
 }:
 
 buildPythonPackage rec {
-  version = "2.0.1";
-  format = "setuptools";
   pname = "path-and-address";
+  version = "2.0.1";
 
   src = fetchFromGitHub {
     owner = "joeyespo";
@@ -22,6 +21,8 @@ buildPythonPackage rec {
   checkPhase = ''
     py.test
   '';
+
+  format = "setuptools";
 
   meta = {
     description = "Functions for server CLI applications used by humans";

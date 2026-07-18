@@ -1,29 +1,29 @@
 {
-  buildDunePackage,
   lib,
-  cppo,
-  stdlib-shims,
-  ppx_yojson_conv_lib,
-  yojson_2,
-  ocaml-syntax-shims,
-  jsonrpc,
-  omd,
-  octavius,
-  dune-build-info,
-  dune-rpc,
-  uutf,
-  dyn,
-  re,
-  stdune,
+  buildDunePackage,
   chrome-trace,
-  csexp,
-  result,
-  pp,
   cmdliner,
   cmdliner_1,
-  ordering,
-  ocamlformat-rpc-lib,
+  cppo,
+  csexp,
+  dune-build-info,
+  dune-rpc,
+  dyn,
+  jsonrpc,
   ocaml,
+  ocaml-syntax-shims,
+  ocamlformat-rpc-lib,
+  octavius,
+  omd,
+  ordering,
+  pp,
+  ppx_yojson_conv_lib,
+  re,
+  result,
+  stdlib-shims,
+  stdune,
+  uutf,
+  yojson_2,
   version ?
     if lib.versionAtLeast ocaml.version "5.5" then
       "1.27.0"
@@ -49,17 +49,9 @@ let
   };
 in
 buildDunePackage {
-  pname = "lsp";
   inherit (jsonrpc_v) version src;
-  minimalOCamlVersion = if lib.versionAtLeast version "1.7.0" then "4.12" else "4.06";
-
-  # unvendor some (not all) dependencies.
-  # They are vendored by upstream only because it is then easier to install
-  # ocaml-lsp without messing with your opam switch, but nix should prevent
-  # this type of problems without resorting to vendoring.
-  preBuild = lib.optionalString (lib.versionOlder version "1.10.4") ''
-    rm -r ocaml-lsp-server/vendor/{octavius,uutf,omd,cmdliner}
-  '';
+  pname = "lsp";
+  nativeBuildInputs = lib.optional (lib.versionOlder version "1.7.0") cppo;
 
   buildInputs =
     if lib.versionAtLeast version "1.17.0" then
@@ -122,8 +114,6 @@ buildDunePackage {
         cmdliner_1
       ];
 
-  nativeBuildInputs = lib.optional (lib.versionOlder version "1.7.0") cppo;
-
   propagatedBuildInputs =
     if lib.versionAtLeast version "1.23.1" then
       [
@@ -172,6 +162,16 @@ buildDunePackage {
         stdlib-shims
         uutf
       ];
+
+  # unvendor some (not all) dependencies.
+  # They are vendored by upstream only because it is then easier to install
+  # ocaml-lsp without messing with your opam switch, but nix should prevent
+  # this type of problems without resorting to vendoring.
+  preBuild = lib.optionalString (lib.versionOlder version "1.10.4") ''
+    rm -r ocaml-lsp-server/vendor/{octavius,uutf,omd,cmdliner}
+  '';
+
+  minimalOCamlVersion = if lib.versionAtLeast version "1.7.0" then "4.12" else "4.06";
 
   meta = jsonrpc.meta // {
     description = "LSP protocol implementation in OCaml";

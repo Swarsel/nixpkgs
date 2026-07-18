@@ -1,12 +1,12 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchurl,
-  makeWrapper,
   autoPatchelfHook,
+  copyDesktopItems,
   jdk11,
   makeDesktopItem,
-  copyDesktopItems,
+  makeWrapper,
   runtimeShell,
   unzip,
   wrapGAppsHook3,
@@ -21,8 +21,6 @@ stdenv.mkDerivation (finalAttrs: {
     sha256 = "sha256-bqVrTBKII58E7WSlQfRPE0Dxd4h/oJALFvIOdAAFZoI=";
   };
 
-  dontBuild = true;
-
   nativeBuildInputs = [
     autoPatchelfHook
     wrapGAppsHook3
@@ -32,28 +30,6 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   buildInputs = [ (lib.getLib stdenv.cc.cc) ];
-
-  desktopItems = [
-    (makeDesktopItem {
-      name = "fiji";
-      exec = "fiji %F";
-      tryExec = "fiji";
-      icon = "fiji";
-      mimeTypes = [ "image/*" ];
-      comment = "Scientific Image Analysis";
-      desktopName = "Fiji Is Just ImageJ";
-      genericName = "Fiji Is Just ImageJ";
-      categories = [
-        "Education"
-        "Science"
-        "ImageProcessing"
-      ];
-      startupNotify = true;
-      startupWMClass = "fiji-Main";
-    })
-  ];
-
-  dontWrapGApps = true;
 
   installPhase = ''
     runHook preInstall
@@ -81,21 +57,48 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  desktopItems = [
+    (makeDesktopItem {
+      categories = [
+        "Education"
+        "Science"
+        "ImageProcessing"
+      ];
+
+      comment = "Scientific Image Analysis";
+      desktopName = "Fiji Is Just ImageJ";
+      exec = "fiji %F";
+      genericName = "Fiji Is Just ImageJ";
+      icon = "fiji";
+      mimeTypes = [ "image/*" ];
+      name = "fiji";
+      startupNotify = true;
+      startupWMClass = "fiji-Main";
+      tryExec = "fiji";
+    })
+  ];
+
+  dontBuild = true;
+  dontWrapGApps = true;
+
   meta = {
-    homepage = "https://imagej.net/software/fiji/";
     description = "Batteries-included distribution of ImageJ2, bundling a lot of plugins which facilitate scientific image analysis";
-    mainProgram = "fiji";
-    platforms = [ "x86_64-linux" ];
-    sourceProvenance = with lib.sourceTypes; [
-      binaryBytecode
-      binaryNativeCode
-    ];
+    homepage = "https://imagej.net/software/fiji/";
+
     license = with lib.licenses; [
       gpl2Plus
       gpl3Plus
       bsd2
       publicDomain
     ];
+
+    sourceProvenance = with lib.sourceTypes; [
+      binaryBytecode
+      binaryNativeCode
+    ];
+
     maintainers = [ ];
+    platforms = [ "x86_64-linux" ];
+    mainProgram = "fiji";
   };
 })

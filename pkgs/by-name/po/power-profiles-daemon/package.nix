@@ -1,48 +1,59 @@
 {
-  stdenv,
   lib,
+  stdenv,
+  fetchFromGitLab,
   bash-completion,
-  pkg-config,
+  dbus,
+  docbook-xsl-nons,
+  docbook_xml_dtd_412,
+  gettext,
+  glib,
+  gobject-introspection,
+  gtk-doc,
+  libgudev,
+  libxml2,
+  libxslt,
   meson,
   mesonEmulatorHook,
   ninja,
-  fetchFromGitLab,
-  libgudev,
-  glib,
-  polkit,
-  dbus,
-  gobject-introspection,
-  wrapGAppsNoGuiHook,
-  gettext,
-  gtk-doc,
-  docbook-xsl-nons,
-  docbook_xml_dtd_412,
-  libxml2,
-  libxslt,
-  upower,
-  umockdev,
-  systemd,
-  python3,
-  nixosTests,
   nix-update-script,
+  nixosTests,
+  pkg-config,
+  polkit,
+  python3,
+  systemd,
+  umockdev,
+  upower,
+  wrapGAppsNoGuiHook,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
   pname = "power-profiles-daemon";
   version = "0.30";
 
+  src = fetchFromGitLab {
+    owner = "upower";
+    repo = "power-profiles-daemon";
+    rev = finalAttrs.version;
+    hash = "sha256-iQUhA46BEln8pyIBxM/MY7An8BzfiFjxZdR/tUIj4S4=";
+    domain = "gitlab.freedesktop.org";
+  };
+
   outputs = [
     "out"
     "devdoc"
   ];
 
-  src = fetchFromGitLab {
-    domain = "gitlab.freedesktop.org";
-    owner = "upower";
-    repo = "power-profiles-daemon";
-    rev = finalAttrs.version;
-    hash = "sha256-iQUhA46BEln8pyIBxM/MY7An8BzfiFjxZdR/tUIj4S4=";
-  };
+  postPatch = ''
+    patchShebangs --build \
+      tests/integration-test.py \
+      tests/unittest_inspector.py
+
+    patchShebangs --host \
+      src/powerprofilesctl
+  '';
+
+  strictDeps = true;
 
   nativeBuildInputs = [
     pkg-config
@@ -84,17 +95,6 @@ stdenv.mkDerivation (finalAttrs: {
     ]))
   ];
 
-  strictDeps = true;
-
-  checkInputs = [
-    umockdev
-  ];
-
-  nativeCheckInputs = [
-    umockdev
-    dbus
-  ];
-
   mesonFlags = [
     "-Dsystemdsystemunitdir=${placeholder "out"}/lib/systemd/system"
     "-Dgtk_doc=true"
@@ -103,44 +103,46 @@ stdenv.mkDerivation (finalAttrs: {
     "-Dtests=${lib.boolToString (stdenv.buildPlatform.canExecute stdenv.hostPlatform)}"
   ];
 
+  env.PKG_CONFIG_POLKIT_GOBJECT_1_POLICYDIR = "${placeholder "out"}/share/polkit-1/actions";
   doCheck = true;
 
-  # Only need to wrap the Python tool (powerprofilectl)
-  dontWrapGApps = true;
+  nativeCheckInputs = [
+    umockdev
+    dbus
+  ];
 
-  env.PKG_CONFIG_POLKIT_GOBJECT_1_POLICYDIR = "${placeholder "out"}/share/polkit-1/actions";
-
-  postPatch = ''
-    patchShebangs --build \
-      tests/integration-test.py \
-      tests/unittest_inspector.py
-
-    patchShebangs --host \
-      src/powerprofilesctl
-  '';
+  checkInputs = [
+    umockdev
+  ];
 
   postFixup = ''
     wrapGApp "$out/bin/powerprofilesctl"
   '';
 
+  # Only need to wrap the Python tool (powerprofilectl)
+  dontWrapGApps = true;
+
   passthru = {
-    updateScript = nix-update-script { };
     tests = {
       nixos = nixosTests.power-profiles-daemon;
     };
+
+    updateScript = nix-update-script { };
   };
 
   meta = {
-    changelog = "https://gitlab.freedesktop.org/upower/power-profiles-daemon/-/releases/${finalAttrs.version}";
-    homepage = "https://gitlab.freedesktop.org/upower/power-profiles-daemon";
     description = "Makes user-selected power profiles handling available over D-Bus";
-    mainProgram = "powerprofilesctl";
-    platforms = lib.platforms.linux;
+    homepage = "https://gitlab.freedesktop.org/upower/power-profiles-daemon";
+    changelog = "https://gitlab.freedesktop.org/upower/power-profiles-daemon/-/releases/${finalAttrs.version}";
     license = lib.licenses.gpl3Plus;
+
     maintainers = with lib.maintainers; [
       mvnetbiz
       picnoir
       lyndeno
     ];
+
+    platforms = lib.platforms.linux;
+    mainProgram = "powerprofilesctl";
   };
 })

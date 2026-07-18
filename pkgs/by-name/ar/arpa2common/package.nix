@@ -2,16 +2,15 @@
   lib,
   stdenv,
   fetchFromGitLab,
-  fetchpatch,
-  cmake,
-
   arpa2cm,
+  cmake,
   doxygen,
   e2fsprogs,
+  fetchpatch,
   graphviz,
+  krb5,
   libsodium,
   lmdb,
-  krb5,
   pkg-config,
   ragel,
 }:
@@ -39,6 +38,10 @@ stdenv.mkDerivation (finalAttrs: {
     pkg-config
   ];
 
+  buildInputs = [
+    krb5
+  ];
+
   propagatedBuildInputs = [
     e2fsprogs
     libsodium
@@ -46,13 +49,9 @@ stdenv.mkDerivation (finalAttrs: {
     ragel
   ];
 
-  buildInputs = [
-    krb5
-  ];
-
   meta = {
-    changelog = "https://gitlab.com/arpa2/arpa2common/-/blob/v${finalAttrs.version}/CHANGES";
     description = "ARPA2 ID and ACL libraries and other core data structures for ARPA2";
+
     longDescription = ''
       The ARPA2 Common Library package offers elementary services that can
       benefit many software packages.  They are designed to be easy to
@@ -60,13 +59,17 @@ stdenv.mkDerivation (finalAttrs: {
       designed with the InternetWide Architecture in mind, thus helping to
       liberate users.
     '';
+
     homepage = "https://gitlab.com/arpa2/arpa2common";
+    changelog = "https://gitlab.com/arpa2/arpa2common/-/blob/v${finalAttrs.version}/CHANGES";
+
     license = with lib.licenses; [
       bsd2
       cc-by-sa-40
       cc0
       isc
     ];
+
     maintainers = with lib.maintainers; [ fufexan ];
     platforms = lib.platforms.linux;
   };

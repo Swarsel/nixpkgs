@@ -1,15 +1,15 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
+  gtk4,
+  libgee,
   meson,
   ninja,
+  nix-update-script,
   pkg-config,
   vala,
   xvfb-run,
-  gtk4,
-  libgee,
-  nix-update-script,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -51,7 +51,7 @@ stdenv.mkDerivation (finalAttrs: {
     description = "Real-time charting library for Vala and GTK4 based on Cairo";
     homepage = "https://github.com/elementary/live-chart";
     license = lib.licenses.mit;
-    teams = [ lib.teams.pantheon ];
     platforms = lib.platforms.linux;
+    teams = [ lib.teams.pantheon ];
   };
 })

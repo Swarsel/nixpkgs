@@ -1,13 +1,13 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
+  makeWrapper,
   python3,
   python3Packages,
-  extraPythonPackages ? ps: [ ],
   unstableGitUpdater,
-  makeWrapper,
   writeShellScript,
+  extraPythonPackages ? ps: [ ],
 }:
 let
   isCross = (stdenv.hostPlatform != stdenv.buildPlatform);
@@ -23,7 +23,22 @@ stdenv.mkDerivation rec {
     sha256 = "sha256-ZwPy1Et0ftCX8haogRSOUm1et2pvYZxvdsuM74acu6Q=";
   };
 
-  sourceRoot = "${src.name}/klippy";
+  patches = lib.optionals isCross [
+    # https://github.com/Klipper3d/klipper/pull/7254
+    ./cross-ffi.patch
+  ];
+
+  # Python 3 is already supported but shebangs aren't updated yet
+  postPatch = ''
+    for file in klippy.py console.py parsedump.py; do
+      substituteInPlace $file \
+        --replace-warn '/usr/bin/env python2' '/usr/bin/env python'
+    done
+
+    # needed for cross compilation
+    substituteInPlace ./chelper/__init__*.py \
+      --replace-warn 'GCC_CMD = "gcc"' 'GCC_CMD = "${stdenv.cc.targetPrefix}cc"'
+  '';
 
   # NB: This is needed for the postBuild step
   nativeBuildInputs = [
@@ -64,40 +79,6 @@ stdenv.mkDerivation rec {
         python ./chelper/__init__.py
       '';
 
-  prePatch = lib.optionalString isCross ''
-    cp ./chelper/__init__.py ./chelper/__init__unpatched.py
-  '';
-
-  patches = lib.optionals isCross [
-    # https://github.com/Klipper3d/klipper/pull/7254
-    ./cross-ffi.patch
-  ];
-
-  # Python 3 is already supported but shebangs aren't updated yet
-  postPatch = ''
-    for file in klippy.py console.py parsedump.py; do
-      substituteInPlace $file \
-        --replace-warn '/usr/bin/env python2' '/usr/bin/env python'
-    done
-
-    # needed for cross compilation
-    substituteInPlace ./chelper/__init__*.py \
-      --replace-warn 'GCC_CMD = "gcc"' 'GCC_CMD = "${stdenv.cc.targetPrefix}cc"'
-  '';
-
-  pythonInterpreter =
-    (python3.withPackages (
-      p: with p; [
-        numpy
-        matplotlib
-        python-can
-      ]
-    )).interpreter;
-
-  pythonScriptWrapper = writeShellScript pname ''
-    ${pythonInterpreter} "@out@/lib/scripts/@script@" "$@"
-  '';
-
   # NB: We don't move the main entry point into `/bin`, or even symlink it,
   # because it uses relative paths to find necessary modules. We could wrap but
   # this is used 99% of the time as a service, so it's not worth the effort.
@@ -136,21 +117,42 @@ stdenv.mkDerivation rec {
     runHook postInstall
   '';
 
+  prePatch = lib.optionalString isCross ''
+    cp ./chelper/__init__.py ./chelper/__init__unpatched.py
+  '';
+
+  pythonInterpreter =
+    (python3.withPackages (
+      p: with p; [
+        numpy
+        matplotlib
+        python-can
+      ]
+    )).interpreter;
+
+  pythonScriptWrapper = writeShellScript pname ''
+    ${pythonInterpreter} "@out@/lib/scripts/@script@" "$@"
+  '';
+
+  sourceRoot = "${src.name}/klippy";
+
   passthru.updateScript = unstableGitUpdater {
-    url = meta.homepage;
     tagPrefix = "v";
+    url = meta.homepage;
   };
 
   meta = {
     description = "Klipper 3D printer firmware";
-    mainProgram = "klippy";
     homepage = "https://github.com/Klipper3d/klipper";
+    license = lib.licenses.gpl3Only;
+
     maintainers = with lib.maintainers; [
       lovesegfault
       zhaofengli
       cab404
     ];
+
     platforms = lib.platforms.linux;
-    license = lib.licenses.gpl3Only;
+    mainProgram = "klippy";
   };
 }

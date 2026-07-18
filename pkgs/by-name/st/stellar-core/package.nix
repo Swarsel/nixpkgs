@@ -1,22 +1,22 @@
 {
+  lib,
+  stdenv,
+  fetchFromGitHub,
   autoconf,
   automake,
   bison,
-  fetchFromGitHub,
+  cargo,
   flex,
   gitMinimal,
-  lib,
   libpq,
   libtool,
   libunwind,
   perl,
   pkg-config,
   ripgrep,
-  rustc,
   rustPlatform,
-  stdenv,
+  rustc,
   symlinkJoin,
-  cargo,
 }:
 
 let
@@ -31,11 +31,11 @@ let
       hash = "sha256-Zvu+OYCfBZVQZCNoOG2bDFsz48NnbVH0q4q+CPth+0E=";
     };
 
-    cargoLock.lockFile = ./Cargo.lock;
-
     postPatch = ''
       cp ${./Cargo.lock} Cargo.lock
     '';
+
+    cargoLock.lockFile = ./Cargo.lock;
 
     cargoBuildFlags = [
       "--package"
@@ -57,52 +57,6 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-EXtfkjNOl3Loml7GXWYE8hh/IqItqA677YEh0Ve6dOI=";
     fetchSubmodules = true;
   };
-
-  cargoDeps =
-    let
-      sorobanProtocolHashes = {
-        p21 = "sha256-cUhi2YennW+tukwf0woP69bqf1ZMsQ4JDeNqpk0jYjg=";
-        p22 = "sha256-5mNAblS3TYXu5a1ThmIdbKC9hUg/3F8vUPvFex3G58U=";
-        p23 = "sha256-l1nqc4qrqWV8aKOd9NFUaOLw1Mags2znjbQixU5H3+Y=";
-        p24 = "sha256-P+Q8SNcuFX6diBYqGpkOwHtplK4y4PZxB+gj6MnpYDs=";
-        p25 = "sha256-9NhnB3bDQI1FLmr0zTYTjEYl8V8KteWbMefWObLDB/A=";
-        p26 = "sha256-OxkiWTzNtmYxB64OtLUwghAkcT//SnMZVfUXynFg2Bg=";
-        p27 = "sha256-KcsyPBJLUOwRAtp95IYFiZZNMi1xWmYW7XXG+bMucmY=";
-      };
-      mainCargoDeps = rustPlatform.fetchCargoVendor {
-        inherit (finalAttrs) src;
-        hash = "sha256-8seehYc2W0lvW9WPewPHC3cLR9Lgj2qCib/EXK0gwVA=";
-      };
-      sorobanCargoDeps = lib.mapAttrs (
-        protocol: hash:
-        rustPlatform.fetchCargoVendor {
-          pname = "stellar-core-${protocol}";
-          inherit (finalAttrs) version src;
-          cargoRoot = "src/rust/soroban/${protocol}";
-          inherit hash;
-        }
-      ) sorobanProtocolHashes;
-    in
-    symlinkJoin {
-      name = "stellar-core-${finalAttrs.version}-cargo-vendor-dir";
-      paths = [ mainCargoDeps ] ++ lib.attrValues sorobanCargoDeps;
-      passthru = {
-        inherit sorobanProtocolHashes mainCargoDeps sorobanCargoDeps;
-      };
-      postBuild = ''
-        # `soroban-synth-wasm` resolves this path relative to the vendored git
-        # source root, but cargo vendors the workspace crates with versioned
-        # directory names.
-        for source in "$out"/source-git-*; do
-          for dir in "$source"/soroban-env-common-*; do
-            if [ -d "$dir" ] && [ ! -e "$source"/soroban-env-common ]; then
-              ln -s "$(basename "$dir")" "$source"/soroban-env-common
-            fi
-            break
-          done
-        done
-      '';
-    };
 
   strictDeps = true;
 
@@ -126,10 +80,6 @@ stdenv.mkDerivation (finalAttrs: {
     libunwind
   ];
 
-  enableParallelBuilding = true;
-
-  doCheck = true;
-
   preConfigure = ''
     # Due to https://github.com/NixOS/nixpkgs/issues/8567 we cannot rely on
     # having the .git directory present, so directly provide the version
@@ -152,6 +102,8 @@ stdenv.mkDerivation (finalAttrs: {
     ./autogen.sh
   '';
 
+  doCheck = true;
+
   checkPhase = ''
     runHook preCheck
 
@@ -162,18 +114,70 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postCheck
   '';
 
+  cargoDeps =
+    let
+      sorobanProtocolHashes = {
+        p21 = "sha256-cUhi2YennW+tukwf0woP69bqf1ZMsQ4JDeNqpk0jYjg=";
+        p22 = "sha256-5mNAblS3TYXu5a1ThmIdbKC9hUg/3F8vUPvFex3G58U=";
+        p23 = "sha256-l1nqc4qrqWV8aKOd9NFUaOLw1Mags2znjbQixU5H3+Y=";
+        p24 = "sha256-P+Q8SNcuFX6diBYqGpkOwHtplK4y4PZxB+gj6MnpYDs=";
+        p25 = "sha256-9NhnB3bDQI1FLmr0zTYTjEYl8V8KteWbMefWObLDB/A=";
+        p26 = "sha256-OxkiWTzNtmYxB64OtLUwghAkcT//SnMZVfUXynFg2Bg=";
+        p27 = "sha256-KcsyPBJLUOwRAtp95IYFiZZNMi1xWmYW7XXG+bMucmY=";
+      };
+      mainCargoDeps = rustPlatform.fetchCargoVendor {
+        inherit (finalAttrs) src;
+        hash = "sha256-8seehYc2W0lvW9WPewPHC3cLR9Lgj2qCib/EXK0gwVA=";
+      };
+      sorobanCargoDeps = lib.mapAttrs (
+        protocol: hash:
+        rustPlatform.fetchCargoVendor {
+          inherit (finalAttrs) version src;
+          inherit hash;
+          pname = "stellar-core-${protocol}";
+          cargoRoot = "src/rust/soroban/${protocol}";
+        }
+      ) sorobanProtocolHashes;
+    in
+    symlinkJoin {
+      postBuild = ''
+        # `soroban-synth-wasm` resolves this path relative to the vendored git
+        # source root, but cargo vendors the workspace crates with versioned
+        # directory names.
+        for source in "$out"/source-git-*; do
+          for dir in "$source"/soroban-env-common-*; do
+            if [ -d "$dir" ] && [ ! -e "$source"/soroban-env-common ]; then
+              ln -s "$(basename "$dir")" "$source"/soroban-env-common
+            fi
+            break
+          done
+        done
+      '';
+
+      name = "stellar-core-${finalAttrs.version}-cargo-vendor-dir";
+      paths = [ mainCargoDeps ] ++ lib.attrValues sorobanCargoDeps;
+
+      passthru = {
+        inherit sorobanProtocolHashes mainCargoDeps sorobanCargoDeps;
+      };
+    };
+
+  enableParallelBuilding = true;
+
   passthru = {
     updateScript = ./update.sh;
   };
 
   meta = {
     description = "Reference peer-to-peer agent that manages the Stellar network";
+
     longDescription = ''
       Stellar-core is a replicated state machine that maintains a local copy of
       the Stellar cryptographic ledger and processes transactions against it in
       consensus with a set of peers. It implements the Stellar Consensus
       Protocol, a federated consensus protocol.
     '';
+
     homepage = "https://www.stellar.org/";
     changelog = "https://github.com/stellar/stellar-core/releases/tag/${finalAttrs.src.tag}";
     license = lib.licenses.asl20;

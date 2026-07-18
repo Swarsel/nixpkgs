@@ -1,20 +1,15 @@
 {
-  buildPythonPackage,
   asn1crypto,
+  buildPythonPackage,
   pykcs11,
   pytestCheckHook,
   softhsm,
 }:
 
 buildPythonPackage {
-  pname = "pykcs11-tests";
   inherit (pykcs11) version;
-  pyproject = false;
-
+  pname = "pykcs11-tests";
   src = pykcs11.testout;
-
-  dontBuild = true;
-  dontInstall = true;
 
   nativeCheckInputs = [
     asn1crypto
@@ -30,4 +25,8 @@ buildPythonPackage {
     mkdir $HOME/tokens
     ${softhsm}/bin/softhsm2-util --init-token --label "A token" --pin 1234 --so-pin 123456 --slot 0
   '';
+
+  dontBuild = true;
+  dontInstall = true;
+  pyproject = false;
 }

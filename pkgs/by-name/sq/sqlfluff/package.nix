@@ -8,7 +8,6 @@
 python3Packages.buildPythonApplication (finalAttrs: {
   pname = "sqlfluff";
   version = "4.2.2";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "sqlfluff";
@@ -17,7 +16,11 @@ python3Packages.buildPythonApplication (finalAttrs: {
     hash = "sha256-jT1kgc5NEqnYEn9+0nyUBtyDayVDPsuF0Padtw3fZDI=";
   };
 
-  pythonRelaxDeps = [ "click" ];
+  nativeCheckInputs = with python3Packages; [
+    hypothesis
+    pytestCheckHook
+    versionCheckHook
+  ];
 
   build-system = with python3Packages; [ setuptools ];
 
@@ -41,14 +44,6 @@ python3Packages.buildPythonApplication (finalAttrs: {
     typing-extensions
   ];
 
-  nativeCheckInputs = with python3Packages; [
-    hypothesis
-    pytestCheckHook
-    versionCheckHook
-  ];
-
-  versionCheckProgramArg = "--version";
-
   disabledTestPaths = [
     # Don't run the plugin related tests
     "plugins/sqlfluff-plugin-example/test/rules/rule_test_cases_test.py"
@@ -66,7 +61,10 @@ python3Packages.buildPythonApplication (finalAttrs: {
     "test_html_with_external_css"
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "sqlfluff" ];
+  pythonRelaxDeps = [ "click" ];
+  versionCheckProgramArg = "--version";
 
   meta = {
     description = "SQL linter and auto-formatter";

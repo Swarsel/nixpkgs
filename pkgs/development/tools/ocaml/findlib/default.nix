@@ -16,17 +16,13 @@ stdenv.mkDerivation rec {
     hash = "sha256-ZiyRD3dOn+46GcTgV/OAWBqy/E7lLaR2EwSsnDG4hp0=";
   };
 
-  nativeBuildInputs = [ ocaml ];
-  buildInputs = lib.optional (lib.versionOlder ocaml.version "4.07") ncurses;
-
   patches = [
     ./ldconf.patch
     ./install_topfind.patch
   ];
 
-  dontAddPrefix = true;
-  dontAddStaticConfigureFlags = true;
-  configurePlatforms = [ ];
+  nativeBuildInputs = [ ocaml ];
+  buildInputs = lib.optional (lib.versionOlder ocaml.version "4.07") ncurses;
 
   configureFlags = [
     "-bindir"
@@ -45,6 +41,10 @@ stdenv.mkDerivation rec {
   ++ lib.optionals ocaml.nativeCompilers [
     "opt"
   ];
+
+  configurePlatforms = [ ];
+  dontAddPrefix = true;
+  dontAddStaticConfigureFlags = true;
 
   setupHook = writeText "setupHook.sh" ''
     addOCamlPath () {
@@ -91,7 +91,7 @@ stdenv.mkDerivation rec {
     homepage = "http://projects.camlcity.org/projects/findlib.html";
     license = lib.licenses.mit;
     maintainers = [ ];
-    mainProgram = "ocamlfind";
     platforms = ocaml.meta.platforms or [ ];
+    mainProgram = "ocamlfind";
   };
 }

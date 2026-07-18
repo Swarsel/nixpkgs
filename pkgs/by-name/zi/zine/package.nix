@@ -1,9 +1,9 @@
 {
   lib,
-  rustPlatform,
   fetchCrate,
-  pkg-config,
   openssl,
+  pkg-config,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -15,13 +15,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-pUoMMgZQ+oDs9Yhc1rQuy9cUWiR800DlIe8wxQjnIis=";
   };
 
-  cargoHash = "sha256-6SIwOkLQ6rayhRQEMSCm72mMhGJ6NlIBq4aKukXURdM=";
-
-  cargoPatches = [
-    # fix build with rust 1.80+
-    ./update-time-crate.patch
-  ];
-
   nativeBuildInputs = [
     pkg-config
   ];
@@ -30,13 +23,22 @@ rustPlatform.buildRustPackage (finalAttrs: {
     openssl
   ];
 
+  cargoHash = "sha256-6SIwOkLQ6rayhRQEMSCm72mMhGJ6NlIBq4aKukXURdM=";
+
+  cargoPatches = [
+    # fix build with rust 1.80+
+    ./update-time-crate.patch
+  ];
+
   meta = {
     description = "Simple and opinionated tool to build your own magazine";
     homepage = "https://github.com/zineland/zine";
     changelog = "https://github.com/zineland/zine/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.asl20;
+
     maintainers = [
     ];
+
     mainProgram = "zine";
   };
 })

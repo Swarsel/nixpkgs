@@ -1,27 +1,22 @@
 {
   lib,
-  mkMesonDerivation,
-
-  meson,
-  ninja,
+  jq,
+  json-schema-for-humans,
   lowdown-unsandboxed,
   mdbook,
-  jq,
+  meson,
+  mkMesonDerivation,
+  ninja,
+  nix-cli,
   python3,
   rsync,
-  json-schema-for-humans,
-  nix-cli,
-
   # Configuration Options
-
   version,
 }:
 
 mkMesonDerivation (finalAttrs: {
-  pname = "nix-manual";
   inherit version;
-
-  workDir = ./.;
+  pname = "nix-manual";
 
   # TODO the man pages should probably be separate
   outputs = [
@@ -54,6 +49,8 @@ mkMesonDerivation (finalAttrs: {
     mkdir -p ''$out/nix-support
     echo "doc manual ''$out/share/doc/nix/manual" >> ''$out/nix-support/hydra-build-products
   '';
+
+  workDir = ./.;
 
   meta = {
     platforms = lib.platforms.all;

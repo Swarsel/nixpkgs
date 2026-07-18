@@ -5,18 +5,19 @@
 }:
 
 buildRebar3 rec {
-  name = "rebar3_proper";
   version = "0.12.1";
 
   src = fetchHex {
-    pkg = name;
     inherit version;
     sha256 = "1f174fb6h2071wr7qbw9aqqvnglzsjlylmyi8215fhrmi38w94b6";
+    pkg = name;
   };
+
+  name = "rebar3_proper";
 
   meta = {
     description = "rebar3 proper plugin";
-    license = lib.licenses.bsd3;
     homepage = "https://github.com/ferd/rebar3_proper";
+    license = lib.licenses.bsd3;
   };
 }

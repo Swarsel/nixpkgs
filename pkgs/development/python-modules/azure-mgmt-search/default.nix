@@ -11,14 +11,15 @@
 buildPythonPackage rec {
   pname = "azure-mgmt-search";
   version = "9.2.0";
-  pyproject = true;
 
   src = fetchPypi {
-    pname = "azure_mgmt_search";
     inherit version;
     hash = "sha256-oNoOwzLR9D0PastjuM/YAIWwdeka/PgS+MdprZ/crYQ=";
+    pname = "azure_mgmt_search";
   };
 
+  # Module has no tests
+  doCheck = false;
   build-system = [ setuptools ];
 
   dependencies = [
@@ -27,9 +28,7 @@ buildPythonPackage rec {
     isodate
   ];
 
-  # Module has no tests
-  doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "azure.mgmt.search" ];
 
   meta = {

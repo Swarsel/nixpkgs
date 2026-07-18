@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   pytest-asyncio,
   pytestCheckHook,
   setuptools,
@@ -11,7 +11,6 @@
 buildPythonPackage rec {
   pname = "anthemav";
   version = "1.4.2";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "nugget";
@@ -30,14 +29,15 @@ buildPythonPackage rec {
     pytestCheckHook
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "anthemav" ];
 
   meta = {
     description = "Python asyncio module to interface with Anthem AVM and MRX receivers";
-    mainProgram = "anthemav_monitor";
     homepage = "https://github.com/nugget/python-anthemav";
     changelog = "https://github.com/nugget/python-anthemav/releases/tag/v${version}";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ fab ];
+    mainProgram = "anthemav_monitor";
   };
 }

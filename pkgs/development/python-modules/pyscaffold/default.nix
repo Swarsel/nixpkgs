@@ -1,16 +1,15 @@
 {
   lib,
+  build,
   buildPythonPackage,
-  fetchPypi,
-  setuptools,
-  setuptools-scm,
-  wheel,
+  certifi,
   colorama,
   configupdater,
+  fetchPypi,
+  flake8,
   importlib-metadata,
   packaging,
   platformdirs,
-  tomlkit,
   pre-commit,
   pyscaffoldext-cookiecutter,
   pyscaffoldext-custom-extension,
@@ -18,37 +17,37 @@
   pyscaffoldext-dsproject,
   pyscaffoldext-markdown,
   pyscaffoldext-travis,
-  virtualenv,
-  build,
-  certifi,
-  flake8,
   pytest,
   pytest-cov,
   pytest-randomly,
   pytest-xdist,
+  setuptools,
+  setuptools-scm,
   sphinx,
+  tomlkit,
   tox,
+  virtualenv,
+  wheel,
 }:
 
 buildPythonPackage rec {
   pname = "pyscaffold";
   version = "4.6";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
     hash = "sha256-QIW43pIAufMZ32+Op5lyiPFZqOSyhLBi2bKk1qnBI0w=";
   };
 
+  postPatch = ''
+    substituteInPlace setup.cfg --replace "platformdirs>=2,<4" "platformdirs"
+  '';
+
   nativeBuildInputs = [
     setuptools
     setuptools-scm
     wheel
   ];
-
-  postPatch = ''
-    substituteInPlace setup.cfg --replace "platformdirs>=2,<4" "platformdirs"
-  '';
 
   propagatedBuildInputs = [
     colorama
@@ -72,8 +71,10 @@ buildPythonPackage rec {
       pyscaffoldext-travis
       virtualenv
     ];
+
     ds = [ pyscaffoldext-dsproject ];
     md = [ pyscaffoldext-markdown ];
+
     testing = [
       build
       certifi
@@ -93,13 +94,14 @@ buildPythonPackage rec {
     ];
   };
 
+  pyproject = true;
   pythonImportsCheck = [ "pyscaffold" ];
 
   meta = {
     description = "Template tool for putting up the scaffold of a Python project";
-    mainProgram = "putup";
     homepage = "https://pypi.org/project/PyScaffold/";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ matthewcroughan ];
+    mainProgram = "putup";
   };
 }

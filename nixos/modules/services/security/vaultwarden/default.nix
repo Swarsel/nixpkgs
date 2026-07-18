@@ -74,43 +74,35 @@ in
   ];
 
   options.services.vaultwarden = {
-    enable = lib.mkEnableOption "vaultwarden";
-
-    dbBackend = lib.mkOption {
-      type = lib.types.enum [
-        "sqlite"
-        "mysql"
-        "postgresql"
-      ];
-      default = "sqlite";
-      description = ''
-        Which database backend vaultwarden will be using.
-      '';
-    };
-
-    backupDir = lib.mkOption {
-      type = with lib.types; nullOr str;
-      default = null;
-      description = ''
-        The directory under which vaultwarden will backup its persistent data.
-      '';
-      example = "/var/backup/vaultwarden";
-    };
-
     config = lib.mkOption {
-      type =
-        with lib.types;
-        attrsOf (
-          nullOr (oneOf [
-            bool
-            int
-            str
-          ])
-        );
       default = {
         ROCKET_ADDRESS = "::1"; # default to localhost
         ROCKET_PORT = 8222;
       };
+
+      description = ''
+        The configuration of vaultwarden is done through environment variables,
+        therefore it is recommended to use upper snake case (e.g. {env}`DISABLE_2FA_REMEMBER`).
+
+        However, camel case (e.g. `disable2FARemember`) is also supported:
+        The NixOS module will convert it automatically to
+        upper case snake case (e.g. {env}`DISABLE_2FA_REMEMBER`).
+        In this conversion digits (0-9) are handled just like upper case characters,
+        so `foo2` would be converted to {env}`FOO_2`.
+        Names already in this format remain unchanged, so `FOO2` remains `FOO2` if passed as such,
+        even though `foo2` would have been converted to {env}`FOO_2`.
+        This allows working around any potential future conflicting naming conventions.
+
+        Based on the attributes passed to this config option an environment file will be generated
+        that is passed to vaultwarden's systemd service.
+
+        The available configuration options can be found in
+        [the environment template file](https://github.com/dani-garcia/vaultwarden/blob/${vaultwarden.version}/.env.template).
+
+        See [](#opt-services.vaultwarden.environmentFile) for how
+        to set up access to the Admin UI to invite initial users.
+      '';
+
       example = lib.literalExpression ''
         {
           DOMAIN = "https://bitwarden.example.com";
@@ -134,52 +126,67 @@ in
           SMTP_FROM_NAME = "example.com Bitwarden server";
         }
       '';
+
+      type =
+        with lib.types;
+        attrsOf (
+          nullOr (oneOf [
+            bool
+            int
+            str
+          ])
+        );
+    };
+
+    enable = lib.mkEnableOption "vaultwarden";
+    package = lib.mkPackageOption pkgs "vaultwarden" { };
+
+    backupDir = lib.mkOption {
+      default = null;
+
       description = ''
-        The configuration of vaultwarden is done through environment variables,
-        therefore it is recommended to use upper snake case (e.g. {env}`DISABLE_2FA_REMEMBER`).
-
-        However, camel case (e.g. `disable2FARemember`) is also supported:
-        The NixOS module will convert it automatically to
-        upper case snake case (e.g. {env}`DISABLE_2FA_REMEMBER`).
-        In this conversion digits (0-9) are handled just like upper case characters,
-        so `foo2` would be converted to {env}`FOO_2`.
-        Names already in this format remain unchanged, so `FOO2` remains `FOO2` if passed as such,
-        even though `foo2` would have been converted to {env}`FOO_2`.
-        This allows working around any potential future conflicting naming conventions.
-
-        Based on the attributes passed to this config option an environment file will be generated
-        that is passed to vaultwarden's systemd service.
-
-        The available configuration options can be found in
-        [the environment template file](https://github.com/dani-garcia/vaultwarden/blob/${vaultwarden.version}/.env.template).
-
-        See [](#opt-services.vaultwarden.environmentFile) for how
-        to set up access to the Admin UI to invite initial users.
+        The directory under which vaultwarden will backup its persistent data.
       '';
+
+      example = "/var/backup/vaultwarden";
+      type = with lib.types; nullOr str;
     };
 
     configureNginx = lib.mkOption {
-      type = lib.types.bool;
       default = false;
       description = "Whether to configure nginx to serve VaultWarden.";
+      type = lib.types.bool;
     };
 
     configurePostgres = lib.mkOption {
-      type = lib.types.bool;
       default = false;
       description = "Whether to configure a local PostgreSQL server.";
+      type = lib.types.bool;
+    };
+
+    dbBackend = lib.mkOption {
+      default = "sqlite";
+
+      description = ''
+        Which database backend vaultwarden will be using.
+      '';
+
+      type = lib.types.enum [
+        "sqlite"
+        "mysql"
+        "postgresql"
+      ];
     };
 
     domain = lib.mkOption {
-      type = with lib.types; nullOr str;
       default = null;
       description = "The domain under which VaultWarden will be reachable.";
+      type = with lib.types; nullOr str;
     };
 
     environmentFile = lib.mkOption {
-      type = with lib.types; coercedTo path lib.singleton (listOf path);
       default = [ ];
-      example = "/var/lib/vaultwarden.env";
+
       description = ''
         Additional environment file or files as defined in {manpage}`systemd.exec(5)`.
 
@@ -198,9 +205,10 @@ in
         ADMIN_TOKEN=...copy-paste a unique generated secret token here...
         ```
       '';
-    };
 
-    package = lib.mkPackageOption pkgs "vaultwarden" { };
+      example = "/var/lib/vaultwarden.env";
+      type = with lib.types; coercedTo path lib.singleton (listOf path);
+    };
 
     webVaultPackage = lib.mkPackageOption pkgs [ "vaultwarden" "webvault" ] { };
   };
@@ -225,14 +233,18 @@ in
       nginx = lib.mkIf cfg.configureNginx {
         enable = true;
         upstreams.vaultwarden.servers."127.0.0.1:${toString cfg.config.ROCKET_PORT}" = { };
+
         virtualHosts.${cfg.domain} = {
           forceSSL = true;
+
           locations = {
             "/".proxyPass = "http://vaultwarden";
+
             "= /notifications/anonymous-hub" = {
               proxyPass = "http://vaultwarden";
               proxyWebsockets = true;
             };
+
             "= /notifications/hub" = {
               proxyPass = "http://vaultwarden";
               proxyWebsockets = true;
@@ -244,10 +256,11 @@ in
       postgresql = lib.mkIf cfg.configurePostgres {
         enable = true;
         ensureDatabases = [ "vaultwarden" ];
+
         ensureUsers = [
           {
-            name = "vaultwarden";
             ensureDBOwnership = true;
+            name = "vaultwarden";
           }
         ];
       };
@@ -266,20 +279,43 @@ in
     };
 
     systemd = {
+      services.backup-vaultwarden = lib.mkIf (cfg.backupDir != null) {
+        # if both services are started at the same time, vaultwarden fails with "database is locked"
+        before = [ "vaultwarden.service" ];
+        description = "Backup vaultwarden";
+
+        environment = {
+          BACKUP_FOLDER = cfg.backupDir;
+          DATA_FOLDER = dataDir;
+        };
+
+        path = [ pkgs.sqlite ];
+
+        serviceConfig = {
+          ExecStart = "${pkgs.bash}/bin/bash ${./backup.sh}";
+          Group = lib.mkDefault group;
+          SyslogIdentifier = "backup-vaultwarden";
+          Type = "oneshot";
+          User = lib.mkDefault user;
+        };
+
+        wantedBy = [ "multi-user.target" ];
+      };
+
       services.vaultwarden = {
         after = [ "network-online.target" ] ++ lib.optional cfg.configurePostgres "postgresql.target";
-        requires = lib.mkIf cfg.configurePostgres [ "postgresql.target" ];
-        wants = [ "network-online.target" ];
         path = [ pkgs.openssl ];
+        requires = lib.mkIf cfg.configurePostgres [ "postgresql.target" ];
+
         serviceConfig = {
-          User = user;
-          Group = group;
-          EnvironmentFile = [ configFile ] ++ cfg.environmentFile;
-          ExecStart = lib.getExe vaultwarden;
-          LimitNOFILE = "1048576";
+          inherit StateDirectory;
           CapabilityBoundingSet = [ "" ];
           DeviceAllow = [ "" ];
           DevicePolicy = "closed";
+          EnvironmentFile = [ configFile ] ++ cfg.environmentFile;
+          ExecStart = lib.getExe vaultwarden;
+          Group = group;
+          LimitNOFILE = "1048576";
           LockPersonality = true;
           MemoryDenyWriteExecute = true;
           NoNewPrivileges = !useSendmail;
@@ -297,55 +333,44 @@ in
           ProtectProc = "noaccess";
           ProtectSystem = "strict";
           RemoveIPC = true;
+          Restart = "always";
+
           RestrictAddressFamilies = [
             "AF_INET"
             "AF_INET6"
             "AF_UNIX"
           ];
+
           RestrictNamespaces = true;
           RestrictRealtime = true;
           RestrictSUIDSGID = true;
-          inherit StateDirectory;
           StateDirectoryMode = "0700";
           SystemCallArchitectures = "native";
+
           SystemCallFilter = [
             "@system-service"
           ]
           ++ lib.optionals (!useSendmail) [
             "~@privileged"
           ];
-          Restart = "always";
-          UMask = "0077";
-        };
-        wantedBy = [ "multi-user.target" ];
-      };
 
-      services.backup-vaultwarden = lib.mkIf (cfg.backupDir != null) {
-        description = "Backup vaultwarden";
-        environment = {
-          DATA_FOLDER = dataDir;
-          BACKUP_FOLDER = cfg.backupDir;
+          UMask = "0077";
+          User = user;
         };
-        path = [ pkgs.sqlite ];
-        # if both services are started at the same time, vaultwarden fails with "database is locked"
-        before = [ "vaultwarden.service" ];
-        serviceConfig = {
-          SyslogIdentifier = "backup-vaultwarden";
-          Type = "oneshot";
-          User = lib.mkDefault user;
-          Group = lib.mkDefault group;
-          ExecStart = "${pkgs.bash}/bin/bash ${./backup.sh}";
-        };
+
         wantedBy = [ "multi-user.target" ];
+        wants = [ "network-online.target" ];
       };
 
       timers.backup-vaultwarden = lib.mkIf (cfg.backupDir != null) {
         description = "Backup vaultwarden on time";
+
         timerConfig = {
           OnCalendar = lib.mkDefault "23:00";
           Persistent = "true";
           Unit = "backup-vaultwarden.service";
         };
+
         wantedBy = [ "multi-user.target" ];
       };
 
@@ -359,6 +384,7 @@ in
 
     users = {
       groups.vaultwarden = { };
+
       users.vaultwarden = {
         inherit group;
         isSystemUser = true;
@@ -369,6 +395,7 @@ in
   meta = {
     # uses attributes of the linked package
     buildDocsInSandbox = false;
+
     maintainers = with lib.maintainers; [
       dotlambda
       SuperSandro2000

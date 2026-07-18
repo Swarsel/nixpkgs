@@ -1,24 +1,24 @@
 {
   lib,
-  buildPythonPackage,
+  stdenv,
   fetchFromGitHub,
-  setuptools,
-  py-cpuinfo,
-  h5py,
-  pkgconfig,
+  buildPythonPackage,
+  bzip2,
   c-blosc,
   c-blosc2,
-  bzip2,
   charls,
+  h5py,
   lz4,
+  pkgconfig,
+  py-cpuinfo,
+  setuptools,
   zfp,
   zlib,
   zstd,
-  stdenv,
-  sse2Support ? stdenv.hostPlatform.avx2Support,
-  ssse3Support ? stdenv.hostPlatform.ssse3Support,
   avx2Support ? stdenv.hostPlatform.avx2Support,
   avx512Support ? stdenv.hostPlatform.avx512Support,
+  sse2Support ? stdenv.hostPlatform.avx2Support,
+  ssse3Support ? stdenv.hostPlatform.ssse3Support,
 }:
 
 let
@@ -29,7 +29,6 @@ in
 buildPythonPackage (finalAttrs: {
   pname = "hdf5plugin";
   version = "7.0.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "silx-kit";
@@ -38,13 +37,15 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-wi5EITlRI8tgAXUV5u/CA3eiWjNAVs5ynT+PUsqcqVA=";
   };
 
-  build-system = [
-    setuptools
-    py-cpuinfo
-    pkgconfig # only needed if HDF5PLUGIN_SYSTEM_LIBRARIES is used
-  ];
-
-  dependencies = [ h5py ];
+  # devendor
+  postPatch = ''
+    rm -rf lib/c-blosc
+    rm -rf lib/c-blosc2
+    rm -rf lib/bzip2
+    rm -rf lib/charls
+    rm -rf lib/zfp
+    rm -rf lib/zstd
+  '';
 
   buildInputs = [
     c-blosc'
@@ -57,15 +58,15 @@ buildPythonPackage (finalAttrs: {
     zstd
   ];
 
-  # devendor
-  postPatch = ''
-    rm -rf lib/c-blosc
-    rm -rf lib/c-blosc2
-    rm -rf lib/bzip2
-    rm -rf lib/charls
-    rm -rf lib/zfp
-    rm -rf lib/zstd
-  '';
+  env.HDF5PLUGIN_AVX2 = if avx2Support then "True" else "False";
+  env.HDF5PLUGIN_AVX512 = if avx512Support then "True" else "False";
+  # These feature defaults can enable CPU-specific code during the build:
+  # most are detected from the build host CPU, while BMI2 defaults to enabled
+  # on Linux/Darwin. Pin them to keep the output generic and machine-independent.
+  # https://github.com/silx-kit/hdf5plugin/blob/v6.0.0/doc/install.rst#available-options
+  env.HDF5PLUGIN_NATIVE = "False";
+  env.HDF5PLUGIN_SSE2 = if sse2Support then "True" else "False";
+  env.HDF5PLUGIN_SSSE3 = if ssse3Support then "True" else "False";
 
   # opt-in to use use system libs instead
   env.HDF5PLUGIN_SYSTEM_LIBRARIES = lib.concatStringsSep "," [
@@ -79,22 +80,6 @@ buildPythonPackage (finalAttrs: {
     "zlib"
     "zstd"
   ];
-
-  # These feature defaults can enable CPU-specific code during the build:
-  # most are detected from the build host CPU, while BMI2 defaults to enabled
-  # on Linux/Darwin. Pin them to keep the output generic and machine-independent.
-  # https://github.com/silx-kit/hdf5plugin/blob/v6.0.0/doc/install.rst#available-options
-  env.HDF5PLUGIN_NATIVE = "False";
-  env.HDF5PLUGIN_SSE2 = if sse2Support then "True" else "False";
-  env.HDF5PLUGIN_SSSE3 = if ssse3Support then "True" else "False";
-  env.HDF5PLUGIN_AVX2 = if avx2Support then "True" else "False";
-  env.HDF5PLUGIN_AVX512 = if avx512Support then "True" else "False";
-
-  checkPhase = ''
-    python test/test.py
-  '';
-
-  pythonImportsCheck = [ "hdf5plugin" ];
 
   preBuild = ''
     mkdir src/hdf5plugin/plugins
@@ -113,12 +98,28 @@ buildPythonPackage (finalAttrs: {
     EOF
   '';
 
+  checkPhase = ''
+    python test/test.py
+  '';
+
+  build-system = [
+    setuptools
+    py-cpuinfo
+    pkgconfig # only needed if HDF5PLUGIN_SYSTEM_LIBRARIES is used
+  ];
+
+  dependencies = [ h5py ];
+  pyproject = true;
+  pythonImportsCheck = [ "hdf5plugin" ];
+
   meta = {
     description = "Additional compression filters for h5py";
+
     longDescription = ''
       hdf5plugin provides HDF5 compression filters and makes them usable from h5py.
       Supported encodings: Blosc, Blosc2, BitShuffle, BZip2, FciDecomp, LZ4, SZ, SZ3, Zfp, ZStd
     '';
+
     homepage = "http://www.silx.org/doc/hdf5plugin/latest/";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ pbsds ];

@@ -1,11 +1,11 @@
 {
   lib,
-  stdenvNoCC,
   fetchurl,
   jre,
-  rhino,
-  stripJavaArchivesHook,
   makeWrapper,
+  rhino,
+  stdenvNoCC,
+  stripJavaArchivesHook,
 }:
 
 stdenvNoCC.mkDerivation (finalAttrs: {
@@ -27,11 +27,6 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     rhino
   ];
 
-  patchPhase = ''
-    # Vendored dependencies
-    rm lib/rhino-*.jar
-  '';
-
   installPhase = ''
     mkdir -p $out/bin $out/share/java
     cp *.jar lib/*.jar $out/share/java
@@ -45,11 +40,16 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     done
   '';
 
+  patchPhase = ''
+    # Vendored dependencies
+    rm lib/rhino-*.jar
+  '';
+
   meta = {
     description = "Java based toolkit for handling SVG";
     homepage = "https://xmlgraphics.apache.org/batik";
     license = lib.licenses.asl20;
-    platforms = lib.platforms.unix;
     sourceProvenance = with lib.sourceTypes; [ binaryBytecode ];
+    platforms = lib.platforms.unix;
   };
 })

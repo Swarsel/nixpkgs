@@ -1,8 +1,8 @@
 {
   lib,
-  stdenvNoCC,
   fetchzip,
   installFonts,
+  stdenvNoCC,
 }:
 
 stdenvNoCC.mkDerivation (finalAttrs: {
@@ -19,9 +19,8 @@ stdenvNoCC.mkDerivation (finalAttrs: {
   meta = {
     description = "Unicode CJK font with over 36000 Han characters";
     homepage = "https://www.babelstone.co.uk/Fonts/Han.html";
-
     license = lib.licenses.arphicpl;
-    platforms = lib.platforms.all;
     maintainers = with lib.maintainers; [ emily ];
+    platforms = lib.platforms.all;
   };
 })

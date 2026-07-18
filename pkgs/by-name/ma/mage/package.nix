@@ -1,7 +1,7 @@
 {
-  buildGoModule,
-  fetchFromGitHub,
   lib,
+  fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule (finalAttrs: {
@@ -16,7 +16,6 @@ buildGoModule (finalAttrs: {
   };
 
   vendorHash = null;
-
   doCheck = false;
 
   ldflags = [
@@ -27,9 +26,9 @@ buildGoModule (finalAttrs: {
 
   meta = {
     description = "Make/Rake-like Build Tool Using Go";
-    mainProgram = "mage";
     homepage = "https://magefile.org/";
     license = lib.licenses.asl20;
     maintainers = with lib.maintainers; [ swdunlop ];
+    mainProgram = "mage";
   };
 })

@@ -1,13 +1,12 @@
 {
   buildDunePackage,
-  multipart_form,
   lwt,
+  multipart_form,
 }:
 
 buildDunePackage {
-  pname = "multipart_form-lwt";
-
   inherit (multipart_form) version src meta;
+  pname = "multipart_form-lwt";
 
   propagatedBuildInputs = [
     lwt

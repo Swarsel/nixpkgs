@@ -26,8 +26,8 @@ rustPlatform.buildRustPackage {
     description = "Terminal-based personal organizer";
     homepage = "https://github.com/void-rs/void";
     license = lib.licenses.gpl3Only;
-    mainProgram = "void";
     maintainers = with lib.maintainers; [ poptart ];
     platforms = lib.platforms.linux;
+    mainProgram = "void";
   };
 }

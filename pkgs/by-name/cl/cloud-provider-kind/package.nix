@@ -1,9 +1,9 @@
 {
   lib,
-  buildGoModule,
-  fetchFromGitHub,
-  gitUpdater,
   stdenv,
+  fetchFromGitHub,
+  buildGoModule,
+  gitUpdater,
 }:
 buildGoModule (finalAttrs: {
   pname = "cloud-provider-kind";
@@ -15,11 +15,10 @@ buildGoModule (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-cepXHW5L7aqo6L1rtjvH35aMxv7CcB0Ii8Ci0FXcw5k=";
   };
-  passthru.updateScript = gitUpdater { rev-prefix = "v"; };
 
   vendorHash = "sha256-kFcAY78xPGiRQ8a3mAdnO2OylrLi6JTtp0YCsc6jXvo=";
-
   checkFlags = lib.optional stdenv.hostPlatform.isDarwin "-skip=^Test_firstSuccessfulProbe$";
+  passthru.updateScript = gitUpdater { rev-prefix = "v"; };
 
   meta = {
     description = "Load Balancer implementation for Kubernetes-in-Docker";

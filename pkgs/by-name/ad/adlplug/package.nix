@@ -2,24 +2,22 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  unstableGitUpdater,
-  cmake,
-  pkg-config,
-  fmt,
-  liblo,
   alsa-lib,
+  cmake,
+  fmt,
   freetype,
+  libjack2,
+  liblo,
   libx11,
-  libxrandr,
-  libxinerama,
-  libxext,
   libxcursor,
-
+  libxext,
+  libxinerama,
+  libxrandr,
+  pkg-config,
+  unstableGitUpdater,
+  type ? "ADL",
   # Enabling JACK requires a JACK server at runtime, no fallback mechanism
   withJack ? false,
-  libjack2,
-
-  type ? "ADL",
 }:
 
 assert lib.assertOneOf "type" type [
@@ -43,14 +41,14 @@ stdenv.mkDerivation {
     owner = "jpcima";
     repo = "ADLplug";
     rev = "a488abedf1783c61cb4f0caa689f1b01bf9aa17d";
-    fetchSubmodules = true;
     sha256 = "1a5zw0rglqgc5wq1n0s5bxx7y59dsg6qy02236fakl34bvbk60yz";
+    fetchSubmodules = true;
   };
 
-  cmakeFlags = [
-    (lib.cmakeFeature "ADLplug_CHIP" chip)
-    (lib.cmakeBool "ADLplug_USE_SYSTEM_FMT" true)
-    (lib.cmakeBool "ADLplug_Jack" withJack)
+  patches = [
+    # fix for CMake v4
+    # https://github.com/jpcima/ADLplug/pull/100
+    ./cmake-v4.patch
   ];
 
   # See https://github.com/NixOS/nixpkgs/issues/445447
@@ -59,29 +57,6 @@ stdenv.mkDerivation {
       'cmake_minimum_required (VERSION 3.2)' \
       'cmake_minimum_required (VERSION 3.10)'
   '';
-
-  patches = [
-    # fix for CMake v4
-    # https://github.com/jpcima/ADLplug/pull/100
-    ./cmake-v4.patch
-  ];
-
-  env.NIX_LDFLAGS = toString (
-    lib.optionals stdenv.hostPlatform.isDarwin [
-      # Framework that JUCE needs which don't get linked properly
-      "-framework CoreAudioKit"
-      "-framework QuartzCore"
-      "-framework AudioToolbox"
-    ]
-    ++ lib.optionals stdenv.hostPlatform.isLinux [
-      # JUCE dlopen's these at runtime
-      "-lX11"
-      "-lXext"
-      "-lXcursor"
-      "-lXinerama"
-      "-lXrandr"
-    ]
-  );
 
   nativeBuildInputs = [
     cmake
@@ -103,6 +78,29 @@ stdenv.mkDerivation {
   ]
   ++ lib.optionals withJack [ libjack2 ];
 
+  cmakeFlags = [
+    (lib.cmakeFeature "ADLplug_CHIP" chip)
+    (lib.cmakeBool "ADLplug_USE_SYSTEM_FMT" true)
+    (lib.cmakeBool "ADLplug_Jack" withJack)
+  ];
+
+  env.NIX_LDFLAGS = toString (
+    lib.optionals stdenv.hostPlatform.isDarwin [
+      # Framework that JUCE needs which don't get linked properly
+      "-framework CoreAudioKit"
+      "-framework QuartzCore"
+      "-framework AudioToolbox"
+    ]
+    ++ lib.optionals stdenv.hostPlatform.isLinux [
+      # JUCE dlopen's these at runtime
+      "-lX11"
+      "-lXext"
+      "-lXcursor"
+      "-lXinerama"
+      "-lXrandr"
+    ]
+  );
+
   postInstall = lib.optionalString stdenv.hostPlatform.isDarwin ''
     mkdir -p $out/{Applications,Library/Audio/Plug-Ins/{VST,Components}}
 
@@ -114,8 +112,8 @@ stdenv.mkDerivation {
   '';
 
   passthru.updateScript = unstableGitUpdater {
-    tagPrefix = "v";
     tagFormat = "v*";
+    tagPrefix = "v";
   };
 
   meta = {
@@ -123,7 +121,7 @@ stdenv.mkDerivation {
     description = "${chip} FM Chip Synthesizer";
     homepage = "https://github.com/jpcima/ADLplug";
     license = lib.licenses.boost;
-    platforms = lib.platforms.all;
     maintainers = with lib.maintainers; [ OPNA2608 ];
+    platforms = lib.platforms.all;
   };
 }

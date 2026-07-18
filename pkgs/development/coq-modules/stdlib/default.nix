@@ -1,19 +1,30 @@
 {
+  lib,
   coq,
   mkCoqDerivation,
-  lib,
   version ? null,
 }:
 
 let
   derivation = mkCoqDerivation {
 
-    pname = "stdlib";
-    repo = "stdlib";
-    owner = "coq";
-    opam-name = "coq-stdlib";
-
     inherit version;
+    pname = "stdlib";
+
+    buildPhase = ''
+      echo building nothing
+    '';
+
+    installPhase = ''
+      echo installing nothing
+      # Make an output directory rather than a file, so this is more friendly to buildEnv
+      mkdir $out
+    '';
+
+    configurePhase = ''
+      echo no configuration
+    '';
+
     defaultVersion =
       let
         case = case: out: { inherit case out; };
@@ -23,21 +34,12 @@ let
         (case (isLe "9.1") "9.0.0")
         # the < 9.0 above is artificial as stdlib was included in Coq before
       ] null;
-    releaseRev = v: "V${v}";
 
+    opam-name = "coq-stdlib";
+    owner = "coq";
     release."9.0.0".hash = "sha256-2l7ak5Q/NbiNvUzIVXOniEneDXouBMNSSVFbD1Pf8cQ=";
-
-    configurePhase = ''
-      echo no configuration
-    '';
-    buildPhase = ''
-      echo building nothing
-    '';
-    installPhase = ''
-      echo installing nothing
-      # Make an output directory rather than a file, so this is more friendly to buildEnv
-      mkdir $out
-    '';
+    releaseRev = v: "V${v}";
+    repo = "stdlib";
 
     meta = {
       description = "Compatibility metapackage for Coq Stdlib library after the Rocq renaming";

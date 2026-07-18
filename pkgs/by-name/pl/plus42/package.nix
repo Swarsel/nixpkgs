@@ -4,10 +4,10 @@
   fetchurl,
   alsa-lib,
   copyDesktopItems,
-  wrapGAppsHook3,
   makeDesktopItem,
-  pkg-config,
   nix-update-script,
+  pkg-config,
+  wrapGAppsHook3,
 }:
 stdenv.mkDerivation (finalAttrs: {
   pname = "plus42";
@@ -18,6 +18,11 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-qJteqxEDVdqgPdIQCOsNvdPS7S7pq/nVfavfXdOrnAQ=";
   };
 
+  postPatch = ''
+    substituteInPlace gtk/Makefile \
+      --replace-fail /bin/ls ls
+  '';
+
   nativeBuildInputs = [
     copyDesktopItems
     pkg-config
@@ -25,42 +30,6 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   buildInputs = [ alsa-lib ];
-
-  postPatch = ''
-    substituteInPlace gtk/Makefile \
-      --replace-fail /bin/ls ls
-  '';
-
-  dontConfigure = true;
-
-  desktopItems = [
-    (makeDesktopItem {
-      name = "plus42bin";
-      desktopName = "Plus42Bin";
-      genericName = "Calculator";
-      exec = "plus42bin";
-      type = "Application";
-      comment = "Software clone of the HP-42S calculator (enhanced version)";
-      icon = "plus42";
-      categories = [
-        "Utility"
-        "Calculator"
-      ];
-    })
-    (makeDesktopItem {
-      name = "plus42dec";
-      desktopName = "Plus42Dec";
-      genericName = "Calculator";
-      exec = "plus42dec";
-      type = "Application";
-      comment = "Software clone of the HP-42S calculator (enhanced version)";
-      icon = "plus42";
-      categories = [
-        "Utility"
-        "Calculator"
-      ];
-    })
-  ];
 
   buildPhase = ''
     runHook preBuild
@@ -92,8 +61,6 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
-  dontWrapGApps = true;
-
   postFixup = ''
     wrapProgram $out/bin/plus42dec \
       --prefix LD_LIBRARY_PATH : ${lib.makeLibraryPath [ alsa-lib ]} \
@@ -104,17 +71,51 @@ stdenv.mkDerivation (finalAttrs: {
       "''${gappsWrapperArgs[@]}"
   '';
 
+  desktopItems = [
+    (makeDesktopItem {
+      categories = [
+        "Utility"
+        "Calculator"
+      ];
+
+      comment = "Software clone of the HP-42S calculator (enhanced version)";
+      desktopName = "Plus42Bin";
+      exec = "plus42bin";
+      genericName = "Calculator";
+      icon = "plus42";
+      name = "plus42bin";
+      type = "Application";
+    })
+    (makeDesktopItem {
+      categories = [
+        "Utility"
+        "Calculator"
+      ];
+
+      comment = "Software clone of the HP-42S calculator (enhanced version)";
+      desktopName = "Plus42Dec";
+      exec = "plus42dec";
+      genericName = "Calculator";
+      icon = "plus42";
+      name = "plus42dec";
+      type = "Application";
+    })
+  ];
+
+  dontConfigure = true;
+  dontWrapGApps = true;
+
   passthru.updateScript = nix-update-script {
     extraArgs = [ "--url=https://codeberg.org/thomasokken/plus42desktop" ];
   };
 
   meta = {
+    description = "Software clone of the HP-42S calculator (enhanced version)";
     homepage = "https://thomasokken.com/plus42/";
     changelog = "https://thomasokken.com/plus42/history.html";
-    description = "Software clone of the HP-42S calculator (enhanced version)";
     license = with lib.licenses; [ gpl2Only ];
     maintainers = with lib.maintainers; [ elfenermarcell ];
-    mainProgram = "plus42dec";
     platforms = with lib.platforms; unix;
+    mainProgram = "plus42dec";
   };
 })

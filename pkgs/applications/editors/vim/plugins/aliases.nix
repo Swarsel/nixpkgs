@@ -39,6 +39,8 @@ in
 mapAliases (
   with prev;
   {
+    SpaceVim = throw "'vimPlugins.SpaceVim' didn't work properly in vimPlugins, please use top-level 'spacevim' instead"; # Added 2024-11-27
+    Spacegray-vim = throw "'vimPlugins.Spacegray-vim' has been removed: abandoned by upstream"; # Added 2025-03-24
     # keep-sorted start case=no
     blueballs-neovim = throw "'vimPlugins.blueballs-neovim' has been removed"; # Added 2025-06-17
     coc-go = throw "'vimPlugins.coc-go' was removed, as it was unmaintained"; # Added 2026-02-12
@@ -65,8 +67,6 @@ mapAliases (
     pure-lua = lib.warnOnInstantiate "Please replace 'vimPlugins.pure-lua' with 'vimPlugins.moonlight-nvim' as this name was an error" moonlight-nvim; # Added 2025-11-17
     registers-nvim = throw "'vimPlugins.registers-nvim' has been removed: the upstream repository got deleted"; # Added 2026-04-30
     rust-tools-nvim = lib.warnOnInstantiate "'vimPlugins.rust-tools-nvim' is abandoned by upstream; you should use 'vimPlugins.rustaceanvim'" rust-tools-nvim; # Added 2026-02-04
-    Spacegray-vim = throw "'vimPlugins.Spacegray-vim' has been removed: abandoned by upstream"; # Added 2025-03-24
-    SpaceVim = throw "'vimPlugins.SpaceVim' didn't work properly in vimPlugins, please use top-level 'spacevim' instead"; # Added 2024-11-27
     spacevim = throw "'vimPlugins.spacevim' was unmaintained for the last 6 years, please use top-level 'spacevim'"; # Added 2024-11-27
     sparkup = throw "'vimPlugins.sparkup' was removed: the upstream repository got deleted"; # Added 2025-08-06
     syntax-tree-surfer = throw "'vimPlugins.syntax-tree-surfer' has been archived"; # Added 2025-12-18

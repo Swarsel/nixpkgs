@@ -10,7 +10,6 @@
 buildPythonPackage rec {
   pname = "spotipy";
   version = "2.26.0";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
@@ -25,6 +24,7 @@ buildPythonPackage rec {
 
   # Tests want to access the spotify API
   doCheck = false;
+  format = "setuptools";
 
   pythonImportsCheck = [
     "spotipy"

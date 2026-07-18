@@ -1,17 +1,14 @@
 {
   lib,
-  clangStdenv,
   fetchFromGitHub,
-
+  clangStdenv,
   cmake,
+  fmt,
   pkg-config,
   qt6,
-
-  fmt,
   sdl3,
-  toml11,
-
   shadps4,
+  toml11,
 }:
 clangStdenv.mkDerivation (finalAttrs: {
   pname = "shadps4-qtlauncher";
@@ -37,9 +34,6 @@ clangStdenv.mkDerivation (finalAttrs: {
     '';
   };
 
-  strictDeps = true;
-  __structuredAttrs = true;
-
   patches = [
     ./qt-paths.patch
     # https://github.com/shadps4-emu/shadps4-qtlauncher/pull/335
@@ -63,6 +57,8 @@ clangStdenv.mkDerivation (finalAttrs: {
     substituteInPlace src/qt_gui/version_dialog.cpp \
       --replace-fail "@shadps4-qt@" "$out"
   '';
+
+  strictDeps = true;
 
   nativeBuildInputs = [
     cmake
@@ -91,6 +87,8 @@ clangStdenv.mkDerivation (finalAttrs: {
     substitute ${./qt_ui.ini} $out/share/qt_ui.ini \
       --replace-fail @shadps4@ ${lib.getExe shadps4}
   '';
+
+  __structuredAttrs = true;
 
   meta = {
     inherit (shadps4.meta)

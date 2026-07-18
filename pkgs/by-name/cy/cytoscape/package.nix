@@ -2,10 +2,10 @@
   lib,
   stdenv,
   fetchurl,
-  openjdk17,
-  makeWrapper,
-  replaceVars,
   coreutils,
+  makeWrapper,
+  openjdk17,
+  replaceVars,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -42,11 +42,11 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   meta = {
-    homepage = "http://www.cytoscape.org";
     description = "General platform for complex network analysis and visualization";
-    mainProgram = "cytoscape";
+    homepage = "http://www.cytoscape.org";
     license = lib.licenses.lgpl21;
     maintainers = [ lib.maintainers.mimame ];
     platforms = lib.platforms.unix;
+    mainProgram = "cytoscape";
   };
 })

@@ -1,13 +1,13 @@
 {
   lib,
-  mkCoqDerivation,
-  mathcomp,
-  mathcomp-finmap,
-  mathcomp-bigenough,
+  coq,
   hierarchy-builder,
+  mathcomp,
+  mathcomp-bigenough,
+  mathcomp-finmap,
+  mkCoqDerivation,
   stdlib,
   single ? false,
-  coq,
   version ? null,
 }@args:
 
@@ -48,11 +48,12 @@ let
   defaultVersion =
     let
       case = coq: mc: out: {
+        inherit out;
+
         cases = [
           coq
           mc
         ];
-        inherit out;
       };
     in
     with lib.versions;
@@ -81,15 +82,17 @@ let
 
   # list of analysis packages sorted by dependency order
   packages = {
-    "classical" = [ ];
-    "reals" = [ "classical" ];
-    "experimental-reals" = [ "reals" ];
     "analysis" = [ "reals" ];
-    "reals-stdlib" = [ "reals" ];
+
     "analysis-stdlib" = [
       "analysis"
       "reals-stdlib"
     ];
+
+    "classical" = [ ];
+    "experimental-reals" = [ "reals" ];
+    "reals" = [ "classical" ];
+    "reals-stdlib" = [ "reals" ];
   };
 
   mathcomp_ =
@@ -139,11 +142,6 @@ let
           owner
           ;
 
-        namePrefix = [
-          "coq"
-          "mathcomp"
-        ];
-
         propagatedBuildInputs =
           intra-deps
           ++ lib.optionals (lib.elem package [
@@ -168,13 +166,18 @@ let
           cd ${pkgpath}
         '';
 
-        meta = {
-          description = "Analysis library compatible with Mathematical Components";
-          maintainers = [ lib.maintainers.cohencyril ];
-          license = lib.licenses.cecill-c;
-        };
+        namePrefix = [
+          "coq"
+          "mathcomp"
+        ];
 
         passthru = lib.mapAttrs (package: deps: mathcomp_ package) packages;
+
+        meta = {
+          description = "Analysis library compatible with Mathematical Components";
+          license = lib.licenses.cecill-c;
+          maintainers = [ lib.maintainers.cohencyril ];
+        };
       };
       # split packages didn't exist before 0.6, so building nothing in that case
       patched-derivation1 = derivation.overrideAttrs (
@@ -243,12 +246,14 @@ if
 then
   coq.rocqPackages.mathcomp-analysis.override {
     inherit version single;
+
     inherit
       mathcomp
       mathcomp-finmap
       mathcomp-bigenough
       stdlib
       ;
+
     inherit (coq.rocqPackages) rocq-core;
   }
 else

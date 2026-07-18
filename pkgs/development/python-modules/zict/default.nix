@@ -2,17 +2,16 @@
   lib,
   buildPythonPackage,
   fetchPypi,
-  pytestCheckHook,
   pytest-asyncio,
   pytest-repeat,
   pytest-timeout,
+  pytestCheckHook,
   setuptools,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "zict";
   version = "3.0.0";
-  pyproject = true;
 
   src = fetchPypi {
     inherit (finalAttrs) pname version;
@@ -32,6 +31,8 @@ buildPythonPackage (finalAttrs: {
     # timeout
     "test_stress_different_keys_threadsafe"
   ];
+
+  pyproject = true;
 
   meta = {
     description = "Mutable mapping tools";

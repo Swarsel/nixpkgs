@@ -1,19 +1,19 @@
 {
-  stdenv,
   lib,
-  config,
+  stdenv,
   fetchFromGitHub,
-  testers,
-  cmake,
-  pkg-config,
-  alsaSupport ? stdenv.hostPlatform.isLinux,
   alsa-lib,
-  pulseaudioSupport ? config.pulseaudio or stdenv.hostPlatform.isLinux,
-  libpulseaudio,
-  jackSupport ? true,
+  cmake,
+  config,
   libjack2,
-  coreaudioSupport ? stdenv.hostPlatform.isDarwin,
+  libpulseaudio,
+  pkg-config,
+  testers,
   validatePkgConfig,
+  alsaSupport ? stdenv.hostPlatform.isLinux,
+  coreaudioSupport ? stdenv.hostPlatform.isDarwin,
+  jackSupport ? true,
+  pulseaudioSupport ? config.pulseaudio or stdenv.hostPlatform.isLinux,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -62,6 +62,7 @@ stdenv.mkDerivation (finalAttrs: {
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ magnetophon ];
     platforms = lib.platforms.unix;
+
     pkgConfigModules = [
       "rtaudio"
     ];

@@ -1,11 +1,11 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
-  versionCheckHook,
   nix-update-script,
   openssl,
   pkg-config,
+  rustPlatform,
+  versionCheckHook,
 }:
 rustPlatform.buildRustPackage (finalAttrs: {
   pname = "codesnap";
@@ -18,26 +18,22 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-cMxXzLvnqsloKT7ixMlQnAq+ZempLeEzkWyWxG4jt9Y=";
   };
 
-  cargoHash = "sha256-QMpncisumxF02lFQ8xsZiR5AYZVSHWlAuuFDg0ZoPtI=";
-
   nativeBuildInputs = [ pkg-config ];
-
   buildInputs = [ openssl ];
-
-  cargoBuildFlags = [
-    "-p"
-    "codesnap-cli"
-  ];
-  cargoTestFlags = finalAttrs.cargoBuildFlags;
-
+  cargoHash = "sha256-QMpncisumxF02lFQ8xsZiR5AYZVSHWlAuuFDg0ZoPtI=";
   env.OPENSSL_NO_VENDOR = true;
+  doInstallCheck = true;
 
   nativeInstallCheckInputs = [
     versionCheckHook
   ];
 
-  doInstallCheck = true;
+  cargoBuildFlags = [
+    "-p"
+    "codesnap-cli"
+  ];
 
+  cargoTestFlags = finalAttrs.cargoBuildFlags;
   passthru.updateScript = nix-update-script { };
 
   meta = {

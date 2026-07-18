@@ -3,24 +3,24 @@
   stdenv,
   fetchFromGitLab,
   autoreconfHook,
+  nix-update-script,
   pkg-config,
+  udev,
   util-macros,
   xorg-server,
   xorgproto,
-  udev,
-  nix-update-script,
 }:
 stdenv.mkDerivation (finalAttrs: {
   pname = "xf86-input-vmmouse";
   version = "13.2.0";
 
   src = fetchFromGitLab {
-    domain = "gitlab.freedesktop.org";
-    group = "xorg";
     owner = "driver";
     repo = "xf86-input-vmmouse";
     tag = "xf86-input-vmmouse-${finalAttrs.version}";
     hash = "sha256-SasWsIzq9s8i3dabRwKGZ0NSuFqnUu4WCWYTu/ZZpS8=";
+    domain = "gitlab.freedesktop.org";
+    group = "xorg";
   };
 
   strictDeps = true;
@@ -51,10 +51,12 @@ stdenv.mkDerivation (finalAttrs: {
   meta = {
     description = "VMware guest mouse driver for the Xorg X server";
     homepage = "https://gitlab.freedesktop.org/xorg/driver/xf86-input-vmmouse";
+
     license = with lib.licenses; [
       hpndSellVariant
       x11
     ];
+
     maintainers = [ ];
     platforms = lib.intersectLists lib.platforms.linux lib.platforms.x86;
   };

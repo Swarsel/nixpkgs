@@ -2,9 +2,9 @@
   lib,
   stdenv,
   fetchurl,
-  pkg-config,
   gtk3,
   openssl,
+  pkg-config,
   versionCheckHook,
 }:
 
@@ -20,17 +20,11 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   nativeBuildInputs = [ pkg-config ];
+
   buildInputs = [
     gtk3
     openssl
   ];
-
-  preConfigure = ''
-    # Build fails on Linux with windres.
-    export ac_cv_prog_WINDRES=
-  '';
-
-  enableParallelBuilding = true;
 
   env = {
     # Workaround build failure on -fno-common toolchains:
@@ -40,16 +34,24 @@ stdenv.mkDerivation (finalAttrs: {
     NIX_LDFLAGS = "-lX11";
   };
 
+  preConfigure = ''
+    # Build fails on Linux with windres.
+    export ac_cv_prog_WINDRES=
+  '';
+
+  doInstallCheck = true;
+
   nativeInstallCheckInputs = [
     versionCheckHook
   ];
-  doInstallCheck = true;
+
+  enableParallelBuilding = true;
 
   meta = {
     description = "Mascot Constructive Pilot for X";
-    mainProgram = "macopix";
     homepage = "http://rosegray.sakura.ne.jp/macopix/index-e.html";
     license = lib.licenses.gpl2Plus;
     platforms = lib.platforms.linux;
+    mainProgram = "macopix";
   };
 })

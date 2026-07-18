@@ -2,21 +2,21 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  pkg-config,
-  gtk3,
-  libconfig,
-  libsoup_3,
-  libsecret,
-  libayatana-appindicator,
-  openssl,
+  appstream-glib,
+  dbus-glib,
   gettext,
   glib,
   glib-networking,
-  appstream-glib,
-  dbus-glib,
-  python3Packages,
+  gtk3,
+  libayatana-appindicator,
+  libconfig,
+  libsecret,
+  libsoup_3,
   meson,
   ninja,
+  openssl,
+  pkg-config,
+  python3Packages,
   wrapGAppsHook3,
 }:
 
@@ -55,10 +55,10 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Modern IRC client written in GTK";
-    mainProgram = "srain";
     homepage = "https://srain.silverrainz.me";
     license = lib.licenses.gpl3Plus;
-    platforms = lib.platforms.linux;
     maintainers = with lib.maintainers; [ wineee ];
+    platforms = lib.platforms.linux;
+    mainProgram = "srain";
   };
 })

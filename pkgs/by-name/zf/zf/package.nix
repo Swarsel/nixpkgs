@@ -2,17 +2,15 @@
   lib,
   stdenv,
   fetchFromGitHub,
+  callPackage,
   installShellFiles,
   testers,
   zig_0_15,
-  callPackage,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
   pname = "zf";
-  upstreamVersion = "0.10.3";
   version = "${finalAttrs.upstreamVersion}-unstable-2025-10-14";
-  rev = "3c52637b7e937c5ae61fd679717da3e276765b23";
 
   src = fetchFromGitHub {
     owner = "natecraddock";
@@ -26,18 +24,7 @@ stdenv.mkDerivation (finalAttrs: {
     zig_0_15
   ];
 
-  deps = callPackage ./deps.nix {
-    name = "${finalAttrs.pname}-cache-${finalAttrs.version}";
-  };
-
-  dontSetZigDefaultFlags = true;
-
-  zigBuildFlags = [
-    "--system"
-    "${finalAttrs.deps}"
-    "-Dcpu=baseline"
-    "-Doptimize=ReleaseFast"
-  ];
+  doCheck = true;
 
   postInstall = ''
     installManPage doc/zf.1
@@ -47,24 +34,41 @@ stdenv.mkDerivation (finalAttrs: {
       --zsh complete/_zf
   '';
 
-  zigCheckFlags = finalAttrs.zigBuildFlags;
-  doCheck = true;
   doInstallCheck = true;
 
+  deps = callPackage ./deps.nix {
+    name = "${finalAttrs.pname}-cache-${finalAttrs.version}";
+  };
+
+  dontSetZigDefaultFlags = true;
+  rev = "3c52637b7e937c5ae61fd679717da3e276765b23";
+  upstreamVersion = "0.10.3";
+
+  zigBuildFlags = [
+    "--system"
+    "${finalAttrs.deps}"
+    "-Dcpu=baseline"
+    "-Doptimize=ReleaseFast"
+  ];
+
+  zigCheckFlags = finalAttrs.zigBuildFlags;
+
   passthru.tests.version = testers.testVersion {
-    package = finalAttrs.finalPackage;
     version = finalAttrs.upstreamVersion;
+    package = finalAttrs.finalPackage;
   };
 
   meta = {
-    homepage = "https://github.com/natecraddock/zf";
     description = "Commandline fuzzy finder that prioritizes matches on filenames";
+    homepage = "https://github.com/natecraddock/zf";
     changelog = "https://github.com/natecraddock/zf/releases/tag/${finalAttrs.version}";
     license = lib.licenses.mit;
-    platforms = lib.platforms.unix;
+
     maintainers = with lib.maintainers; [
       mmlb
     ];
+
+    platforms = lib.platforms.unix;
     mainProgram = "zf";
   };
 })

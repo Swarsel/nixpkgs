@@ -2,12 +2,12 @@
   lib,
   stdenv,
   fetchFromGitLab,
-  qt6,
-  qtermwidget,
   cmake,
-  ninja,
   libcprime,
   libcsys,
+  ninja,
+  qt6,
+  qtermwidget,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -37,10 +37,10 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Terminal emulator from the C Suite";
-    mainProgram = "coreterminal";
     homepage = "https://gitlab.com/cubocore/coreapps/coreterminal";
     license = lib.licenses.gpl3Plus;
     maintainers = [ ];
     platforms = lib.platforms.linux;
+    mainProgram = "coreterminal";
   };
 })

@@ -1,8 +1,8 @@
 {
   lib,
+  aiohttp,
   buildPythonPackage,
   fetchPypi,
-  aiohttp,
   pyserial-asyncio-fast,
   setuptools,
 }:
@@ -10,14 +10,15 @@
 buildPythonPackage rec {
   pname = "epson-projector";
   version = "0.6.0";
-  pyproject = true;
 
   src = fetchPypi {
-    pname = "epson_projector";
     inherit version;
     hash = "sha256-/9Nc3xOxnXFfTsS8s83MXTkVAhqLwrKnmfR/E87s+Bk=";
+    pname = "epson_projector";
   };
 
+  # tests need real device
+  doCheck = false;
   build-system = [ setuptools ];
 
   dependencies = [
@@ -25,8 +26,7 @@ buildPythonPackage rec {
     pyserial-asyncio-fast
   ];
 
-  # tests need real device
-  doCheck = false;
+  pyproject = true;
 
   pythonImportsCheck = [
     "epson_projector"

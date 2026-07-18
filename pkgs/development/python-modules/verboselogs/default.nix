@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   mock,
   pytestCheckHook,
 }:
@@ -9,7 +9,6 @@
 buildPythonPackage rec {
   pname = "verboselogs";
   version = "1.7";
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "xolox";
@@ -23,12 +22,13 @@ buildPythonPackage rec {
     mock
   ];
 
-  pythonImportsCheck = [ "verboselogs" ];
-
   disabledTests = [
     # Do not run pylint plugin test
     "test_pylint_plugin"
   ];
+
+  format = "setuptools";
+  pythonImportsCheck = [ "verboselogs" ];
 
   meta = {
     description = "Verbose logging for Python's logging module";

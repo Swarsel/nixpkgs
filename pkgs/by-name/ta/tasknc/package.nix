@@ -4,14 +4,14 @@
   fetchFromGitHub,
   fetchpatch,
   makeWrapper,
-  perl,
   ncurses5,
+  perl,
   taskwarrior2,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
-  version = "2020-12-17";
   pname = "tasknc";
+  version = "2020-12-17";
 
   src = fetchFromGitHub {
     owner = "lharding";
@@ -25,8 +25,8 @@ stdenv.mkDerivation (finalAttrs: {
   patches = [
     (fetchpatch {
       name = "ncurses-6.3.patch";
-      url = "https://github.com/lharding/tasknc/commit/f74ea0641e9bf287acf22fac9f6eeea571b01800.patch";
       sha256 = "18a90zj85sw2zfnfcv055nvi0lx3h8lcgsyabdfk94ksn78pygrv";
+      url = "https://github.com/lharding/tasknc/commit/f74ea0641e9bf287acf22fac9f6eeea571b01800.patch";
     })
   ];
 
@@ -36,9 +36,6 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   buildInputs = [ ncurses5 ];
-
-  hardeningDisable = [ "format" ];
-
   buildFlags = [ "VERSION=${finalAttrs.version}" ];
 
   installPhase = ''
@@ -51,12 +48,14 @@ stdenv.mkDerivation (finalAttrs: {
     wrapProgram $out/bin/tasknc --prefix PATH : ${taskwarrior2}/bin
   '';
 
+  hardeningDisable = [ "format" ];
+
   meta = {
-    homepage = "https://github.com/lharding/tasknc";
     description = "Ncurses wrapper around taskwarrior";
-    mainProgram = "tasknc";
+    homepage = "https://github.com/lharding/tasknc";
+    license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ matthiasbeyer ];
     platforms = lib.platforms.linux; # Cannot test others
-    license = lib.licenses.mit;
+    mainProgram = "tasknc";
   };
 })

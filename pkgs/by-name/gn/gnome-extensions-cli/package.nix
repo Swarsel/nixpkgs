@@ -1,30 +1,24 @@
 {
   lib,
   fetchPypi,
-  python3Packages,
   gobject-introspection,
+  python3Packages,
   wrapGAppsNoGuiHook,
 }:
 
 python3Packages.buildPythonApplication (finalAttrs: {
   pname = "gnome-extensions-cli";
   version = "0.11.0";
-  pyproject = true;
 
   src = fetchPypi {
-    pname = "gnome_extensions_cli";
     inherit (finalAttrs) version;
     hash = "sha256-5OL0ma17rXA+USDATVQXO3ORWDAwoGB3x85BSIsRapY=";
+    pname = "gnome_extensions_cli";
   };
 
   nativeBuildInputs = [
     gobject-introspection
     wrapGAppsNoGuiHook
-  ];
-
-  pythonRelaxDeps = [
-    "more-itertools"
-    "packaging"
   ];
 
   build-system = [
@@ -40,13 +34,20 @@ python3Packages.buildPythonApplication (finalAttrs: {
     python3Packages.tqdm
   ];
 
+  pyproject = true;
+
   pythonImportsCheck = [
     "gnome_extensions_cli"
   ];
 
+  pythonRelaxDeps = [
+    "more-itertools"
+    "packaging"
+  ];
+
   meta = {
-    homepage = "https://github.com/essembeh/gnome-extensions-cli";
     description = "Command line tool to manage your GNOME Shell extensions";
+    homepage = "https://github.com/essembeh/gnome-extensions-cli";
     license = lib.licenses.asl20;
     maintainers = with lib.maintainers; [ dylanmtaylor ];
     platforms = lib.platforms.linux;

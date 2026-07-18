@@ -1,15 +1,14 @@
 {
   lib,
+  fetchFromGitHub,
   bleak,
   buildPythonPackage,
-  fetchFromGitHub,
   setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "pyswitchmate";
   version = "0.5.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "Danielhiversen";
@@ -18,13 +17,11 @@ buildPythonPackage rec {
     hash = "sha256-14rjlIsSFNP2OzuRamAJw9BaA+Z5EuQBEsrD02uQdFk=";
   };
 
-  build-system = [ setuptools ];
-
-  dependencies = [ bleak ];
-
   # Project has no tests
   doCheck = false;
-
+  build-system = [ setuptools ];
+  dependencies = [ bleak ];
+  pyproject = true;
   pythonImportsCheck = [ "switchmate" ];
 
   meta = {

@@ -14,80 +14,79 @@ in
   options = {
     services.audiobookshelf = {
       enable = mkEnableOption "Audiobookshelf, self-hosted audiobook and podcast server";
-
       package = mkPackageOption pkgs "audiobookshelf" { };
 
       dataDir = mkOption {
+        default = "audiobookshelf";
         description = "Path to Audiobookshelf config and metadata inside of /var/lib.";
-        default = "audiobookshelf";
-        type = types.str;
-      };
-
-      host = mkOption {
-        description = "The host Audiobookshelf binds to.";
-        default = "127.0.0.1";
-        example = "0.0.0.0";
-        type = types.str;
-      };
-
-      port = mkOption {
-        description = "The TCP port Audiobookshelf will listen on.";
-        default = 8000;
-        type = types.port;
-      };
-
-      user = mkOption {
-        description = "User account under which Audiobookshelf runs.";
-        default = "audiobookshelf";
         type = types.str;
       };
 
       group = mkOption {
-        description = "Group under which Audiobookshelf runs.";
         default = "audiobookshelf";
+        description = "Group under which Audiobookshelf runs.";
+        type = types.str;
+      };
+
+      host = mkOption {
+        default = "127.0.0.1";
+        description = "The host Audiobookshelf binds to.";
+        example = "0.0.0.0";
         type = types.str;
       };
 
       openFirewall = mkOption {
-        description = "Open ports in the firewall for the Audiobookshelf web interface.";
         default = false;
+        description = "Open ports in the firewall for the Audiobookshelf web interface.";
         type = types.bool;
+      };
+
+      port = mkOption {
+        default = 8000;
+        description = "The TCP port Audiobookshelf will listen on.";
+        type = types.port;
+      };
+
+      user = mkOption {
+        default = "audiobookshelf";
+        description = "User account under which Audiobookshelf runs.";
+        type = types.str;
       };
     };
   };
 
   config = mkIf cfg.enable {
-    systemd.services.audiobookshelf = {
-      description = "Audiobookshelf is a self-hosted audiobook and podcast server";
-
-      after = [ "network.target" ];
-      wantedBy = [ "multi-user.target" ];
-
-      serviceConfig = {
-        Type = "simple";
-        User = cfg.user;
-        Group = cfg.group;
-        StateDirectory = cfg.dataDir;
-        WorkingDirectory = "/var/lib/${cfg.dataDir}";
-        ExecStart = "${cfg.package}/bin/audiobookshelf --host ${cfg.host} --port ${toString cfg.port}";
-        Restart = "on-failure";
-      };
+    networking.firewall = mkIf cfg.openFirewall {
+      allowedTCPPorts = [ cfg.port ];
     };
 
-    users.users = mkIf (cfg.user == "audiobookshelf") {
-      audiobookshelf = {
-        isSystemUser = true;
-        group = cfg.group;
-        home = "/var/lib/${cfg.dataDir}";
+    systemd.services.audiobookshelf = {
+      after = [ "network.target" ];
+      description = "Audiobookshelf is a self-hosted audiobook and podcast server";
+
+      serviceConfig = {
+        ExecStart = "${cfg.package}/bin/audiobookshelf --host ${cfg.host} --port ${toString cfg.port}";
+        Group = cfg.group;
+        Restart = "on-failure";
+        StateDirectory = cfg.dataDir;
+        Type = "simple";
+        User = cfg.user;
+        WorkingDirectory = "/var/lib/${cfg.dataDir}";
       };
+
+      wantedBy = [ "multi-user.target" ];
     };
 
     users.groups = mkIf (cfg.group == "audiobookshelf") {
       audiobookshelf = { };
     };
 
-    networking.firewall = mkIf cfg.openFirewall {
-      allowedTCPPorts = [ cfg.port ];
+    users.users = mkIf (cfg.user == "audiobookshelf") {
+      audiobookshelf = {
+        group = cfg.group;
+        home = "/var/lib/${cfg.dataDir}";
+        isSystemUser = true;
+      };
     };
   };
 

@@ -1,11 +1,11 @@
 {
   lib,
-  buildDartApplication,
   fetchFromGitHub,
   _experimental-update-script-combinators,
+  buildDartApplication,
+  dart,
   gitUpdater,
   writeShellScript,
-  dart,
   yq-go,
 }:
 
@@ -20,8 +20,6 @@ buildDartApplication rec {
     hash = "sha256-/JkXGaropyDt7mofYP5sZwTKy9syAA8PgzbNOhLtApY=";
   };
 
-  pubspecLock = lib.importJSON ./pubspec.lock.json;
-
   preBuild = ''
     pushd protoc_plugin
   '';
@@ -29,6 +27,8 @@ buildDartApplication rec {
   postInstall = ''
     popd
   '';
+
+  pubspecLock = lib.importJSON ./pubspec.lock.json;
 
   passthru.updateScript = _experimental-update-script-combinators.sequence [
     (gitUpdater { rev-prefix = "protoc_plugin-v"; } // { supportedFeatures = [ ]; })
@@ -47,9 +47,9 @@ buildDartApplication rec {
 
   meta = {
     description = "Protobuf plugin for generating Dart code";
-    mainProgram = "protoc-gen-dart";
     homepage = "https://pub.dev/packages/protoc_plugin";
     license = lib.licenses.bsd3;
     maintainers = with lib.maintainers; [ lelgenio ];
+    mainProgram = "protoc-gen-dart";
   };
 }

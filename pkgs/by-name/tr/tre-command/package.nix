@@ -1,8 +1,8 @@
 {
-  rustPlatform,
-  fetchFromGitHub,
   lib,
+  fetchFromGitHub,
   installShellFiles,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -16,21 +16,20 @@ rustPlatform.buildRustPackage (finalAttrs: {
     sha256 = "sha256-JlkONhXMWLzxAf3SYoLkSvXw4bFYBnsCyyj0TUsezwg=";
   };
 
-  cargoHash = "sha256-a3k5P+i0jLqamP2CInSQjivyI/tREeJME6IqI/YiLog=";
-
   nativeBuildInputs = [ installShellFiles ];
-
-  preFixup = ''
-    installManPage manual/tre.1
-    installShellCompletion scripts/completion/tre.{bash,fish}
-    installShellCompletion --zsh scripts/completion/_tre
-  '';
+  cargoHash = "sha256-a3k5P+i0jLqamP2CInSQjivyI/tREeJME6IqI/YiLog=";
 
   # this test requires package to be in a git repo to succeed
   checkFlags = [
     "--skip"
     "respect_git_ignore"
   ];
+
+  preFixup = ''
+    installManPage manual/tre.1
+    installShellCompletion scripts/completion/tre.{bash,fish}
+    installShellCompletion --zsh scripts/completion/_tre
+  '';
 
   meta = {
     description = "Tree command, improved";

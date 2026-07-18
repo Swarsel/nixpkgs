@@ -1,8 +1,8 @@
 {
   lib,
   stdenv,
-  fetchFromGitHub,
   fetchurl,
+  fetchFromGitHub,
   cmake,
   iproute2,
   lsof,
@@ -14,8 +14,8 @@
 
 let
   makefile = fetchurl {
-    url = "https://gitlab.archlinux.org/archlinux/packaging/packages/unhide/-/raw/27c25ad5e1c6123e89f1f35423a0d50742ae69e9/Makefile";
     hash = "sha256-bSo3EzpcsFmVvwyPgjCCDOJLbzNpxJ6Eptp2hNK7ZXk=";
+    url = "https://gitlab.archlinux.org/archlinux/packaging/packages/unhide/-/raw/27c25ad5e1c6123e89f1f35423a0d50742ae69e9/Makefile";
   };
 in
 stdenv.mkDerivation (finalAttrs: {
@@ -33,10 +33,6 @@ stdenv.mkDerivation (finalAttrs: {
     cp ${makefile} Makefile
   '';
 
-  dontConfigure = true;
-
-  makeFlags = [ "PREFIX=${placeholder "out"}" ];
-
   strictDeps = true;
 
   nativeBuildInputs = [
@@ -52,13 +48,16 @@ stdenv.mkDerivation (finalAttrs: {
     psmisc
   ];
 
+  makeFlags = [ "PREFIX=${placeholder "out"}" ];
+  dontConfigure = true;
+
   meta = {
     description = "Forensic tool to find hidden processes and TCP/UDP ports by rootkits/LKMs";
     homepage = "https://github.com/YJesus/Unhide";
     changelog = "https://github.com/YJesus/Unhide/blob/${finalAttrs.src.rev}/NEWS";
     license = lib.licenses.gpl3Only;
     maintainers = with lib.maintainers; [ tochiaha ];
-    mainProgram = "unhide";
     platforms = lib.platforms.all;
+    mainProgram = "unhide";
   };
 })

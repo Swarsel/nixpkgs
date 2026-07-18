@@ -3,29 +3,29 @@
   buildPythonPackage,
   fetchPypi,
   google-api-core,
-  protobuf,
   proto-plus,
-  pytestCheckHook,
+  protobuf,
   pytest-asyncio,
+  pytestCheckHook,
   setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "google-cloud-os-config";
   version = "1.25.0";
-  pyproject = true;
 
   src = fetchPypi {
-    pname = "google_cloud_os_config";
     inherit version;
     hash = "sha256-LgJxfWoNq+j26/e5s36yi19w4zWL18rwzdvPhDswPaE=";
+    pname = "google_cloud_os_config";
   };
 
-  build-system = [ setuptools ];
-
-  pythonRelaxDeps = [
-    "protobuf"
+  nativeCheckInputs = [
+    pytest-asyncio
+    pytestCheckHook
   ];
+
+  build-system = [ setuptools ];
 
   dependencies = [
     google-api-core
@@ -34,18 +34,18 @@ buildPythonPackage rec {
   ]
   ++ google-api-core.optional-dependencies.grpc;
 
-  nativeCheckInputs = [
-    pytest-asyncio
-    pytestCheckHook
-  ];
-
-  pythonImportsCheck = [ "google.cloud.osconfig" ];
-
   disabledTests = [
     # Test requires a project ID
     "test_patch_deployment"
     "test_patch_job"
     "test_list_patch_jobs"
+  ];
+
+  pyproject = true;
+  pythonImportsCheck = [ "google.cloud.osconfig" ];
+
+  pythonRelaxDeps = [
+    "protobuf"
   ];
 
   meta = {

@@ -1,7 +1,7 @@
 {
-  buildGoModule,
-  fetchFromGitHub,
   lib,
+  fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule (finalAttrs: {
@@ -16,7 +16,6 @@ buildGoModule (finalAttrs: {
   };
 
   vendorHash = "sha256-I7StCuL8UifVXBvchG0VRWA5nZc+nwIpK6+PQfkVGGo=";
-
   subPackages = [ "cmd/aperture" ];
 
   meta = {
@@ -24,10 +23,12 @@ buildGoModule (finalAttrs: {
     homepage = "https://github.com/lightninglabs/aperture";
     changelog = "https://github.com/lightninglabs/aperture/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       sputn1ck
       HannahMR
     ];
+
     mainProgram = "aperture";
   };
 })

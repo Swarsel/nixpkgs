@@ -24,98 +24,100 @@ in
   # consider carefully before making your boot chain depend on multiple
   # machines to be up.
   options.boot.iscsi-initiator = with types; {
-    name = mkOption {
-      description = ''
-        Name of the iSCSI initiator to boot from. Note, booting from iscsi
-        requires networkd based networking.
-      '';
-      default = null;
-      example = "iqn.2020-08.org.linux-iscsi.initiatorhost:example";
-      type = nullOr str;
-    };
-
     discoverPortal = mkOption {
+      default = null;
+
       description = ''
         iSCSI portal to boot from.
       '';
-      default = null;
+
       example = "192.168.1.1:3260";
       type = nullOr str;
     };
 
-    target = mkOption {
-      description = ''
-        Name of the iSCSI target to boot from.
-      '';
-      default = null;
-      example = "iqn.2020-08.org.linux-iscsi.targethost:example";
-      type = nullOr str;
-    };
-
-    logLevel = mkOption {
-      description = ''
-        Higher numbers elicits more logs.
-      '';
-      default = 1;
-      example = 8;
-      type = int;
-    };
-
-    loginAll = mkOption {
-      description = ''
-        Do not log into a specific target on the portal, but to all that we discover.
-        This overrides setting target.
-      '';
-      type = bool;
-      default = false;
-    };
-
-    extraIscsiCommands = mkOption {
-      description = "Extra iscsi commands to run in the initrd.";
-      default = "";
-      type = lines;
-    };
-
     extraConfig = mkOption {
-      description = "Extra lines to append to /etc/iscsid.conf";
       default = null;
+      description = "Extra lines to append to /etc/iscsid.conf";
       type = nullOr lines;
     };
 
     extraConfigFile = mkOption {
+      default = null;
+
       description = ''
         Append an additional file's contents to `/etc/iscsid.conf`. Use a non-store path
         and store passwords in this file. Note: the file specified here must be available
         in the initrd, see: `boot.initrd.secrets`.
       '';
+
+      type = nullOr str;
+    };
+
+    extraIscsiCommands = mkOption {
+      default = "";
+      description = "Extra iscsi commands to run in the initrd.";
+      type = lines;
+    };
+
+    logLevel = mkOption {
+      default = 1;
+
+      description = ''
+        Higher numbers elicits more logs.
+      '';
+
+      example = 8;
+      type = int;
+    };
+
+    loginAll = mkOption {
+      default = false;
+
+      description = ''
+        Do not log into a specific target on the portal, but to all that we discover.
+        This overrides setting target.
+      '';
+
+      type = bool;
+    };
+
+    name = mkOption {
       default = null;
+
+      description = ''
+        Name of the iSCSI initiator to boot from. Note, booting from iscsi
+        requires networkd based networking.
+      '';
+
+      example = "iqn.2020-08.org.linux-iscsi.initiatorhost:example";
+      type = nullOr str;
+    };
+
+    target = mkOption {
+      default = null;
+
+      description = ''
+        Name of the iSCSI target to boot from.
+      '';
+
+      example = "iqn.2020-08.org.linux-iscsi.targethost:example";
       type = nullOr str;
     };
   };
 
   config = mkIf (cfg.name != null) {
-    # The "scripted" networking configuration (ie: non-networkd)
-    # doesn't properly order the start and stop of the interfaces, and the
-    # network interfaces are torn down before unmounting disks. Since this
-    # module is specifically for very-early-boot network mounts, we need
-    # the network to stay on.
-    #
-    # We could probably fix the scripted options to properly order, but I'm
-    # not inclined to invest that time today. Hopefully this gets users far
-    # enough along and they can just use networkd.
-    networking.useNetworkd = true;
-    networking.useDHCP = false; # Required to set useNetworkd = true
+    assertions = [
+      {
+        assertion = cfg.loginAll -> cfg.target == null;
+        message = "iSCSI target name is set while login on all portals is enabled.";
+      }
+      {
+        assertion = !config.boot.initrd.systemd.enable;
+        message = "systemd stage 1 does not support iscsi yet.";
+      }
+    ];
 
     boot.initrd = {
-      network.enable = true;
-
-      # By default, the stage-1 disables the network and resets the interfaces
-      # on startup. Since our startup disks are on the network, we can't let
-      # the network not work.
-      network.flushBeforeStage2 = false;
-
-      kernelModules = [ "iscsi_tcp" ];
-
       extraUtilsCommands = ''
         copy_bin_and_libs ${pkgs.openiscsi}/bin/iscsid
         copy_bin_and_libs ${pkgs.openiscsi}/bin/iscsiadm
@@ -135,6 +137,13 @@ in
       extraUtilsCommandsTest = ''
         $out/bin/iscsiadm --version
       '';
+
+      kernelModules = [ "iscsi_tcp" ];
+      network.enable = true;
+      # By default, the stage-1 disables the network and resets the interfaces
+      # on startup. Since our startup disks are on the network, we can't let
+      # the network not work.
+      network.flushBeforeStage2 = false;
 
       preLVMCommands =
         let
@@ -190,20 +199,21 @@ in
         '';
     };
 
-    services.openiscsi = {
-      enable = true;
-      inherit (cfg) name;
-    };
+    networking.useDHCP = false; # Required to set useNetworkd = true
+    # The "scripted" networking configuration (ie: non-networkd)
+    # doesn't properly order the start and stop of the interfaces, and the
+    # network interfaces are torn down before unmounting disks. Since this
+    # module is specifically for very-early-boot network mounts, we need
+    # the network to stay on.
+    #
+    # We could probably fix the scripted options to properly order, but I'm
+    # not inclined to invest that time today. Hopefully this gets users far
+    # enough along and they can just use networkd.
+    networking.useNetworkd = true;
 
-    assertions = [
-      {
-        assertion = cfg.loginAll -> cfg.target == null;
-        message = "iSCSI target name is set while login on all portals is enabled.";
-      }
-      {
-        assertion = !config.boot.initrd.systemd.enable;
-        message = "systemd stage 1 does not support iscsi yet.";
-      }
-    ];
+    services.openiscsi = {
+      inherit (cfg) name;
+      enable = true;
+    };
   };
 }

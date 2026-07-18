@@ -11,16 +11,16 @@
 buildPythonPackage (finalAttrs: {
   pname = "alibabacloud-gateway-sls-util";
   version = "0.4.1";
-  pyproject = true;
-
-  __structuredAttrs = true;
 
   src = fetchPypi {
-    pname = "alibabacloud_gateway_sls_util";
     inherit (finalAttrs) version;
     hash = "sha256-KJ8wLg4HRWvl+BG+m5tSZEVXauO5HxJfFYcNM1ohEjQ=";
+    pname = "alibabacloud_gateway_sls_util";
   };
 
+  # Module has no tests
+  doCheck = false;
+  __structuredAttrs = true;
   build-system = [ setuptools ];
 
   dependencies = [
@@ -29,10 +29,8 @@ buildPythonPackage (finalAttrs: {
     zstd
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "alibabacloud_gateway_sls_util" ];
-
-  # Module has no tests
-  doCheck = false;
 
   meta = {
     description = "Alibaba Gateway SLS Util Library for Python";

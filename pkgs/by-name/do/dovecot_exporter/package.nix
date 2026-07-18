@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   fetchpatch,
   nixosTests,
 }:
@@ -16,26 +16,27 @@ buildGoModule (finalAttrs: {
     hash = "sha256-qJbIBSfHYgFztuivuNjleDa+Bx0KC4OklCh3IvK2XFI=";
   };
 
-  vendorHash = "sha256-+B8sROL1h6ElBfAUBT286yJF9m9zoRvMOrf0z2SVCj0=";
-
   patches = [
     # Migrate the project to Go modules
     # https://github.com/kumina/dovecot_exporter/pull/23
     (fetchpatch {
-      url = "https://github.com/kumina/dovecot_exporter/commit/b5184dd99cf8c79facf20cea281828d302327665.patch";
       hash = "sha256-OcdI1fJ/wumDI/wk5PQVot9+Gw/PnsiwgJY7dcRyEsc=";
+      url = "https://github.com/kumina/dovecot_exporter/commit/b5184dd99cf8c79facf20cea281828d302327665.patch";
     })
   ];
 
+  vendorHash = "sha256-+B8sROL1h6ElBfAUBT286yJF9m9zoRvMOrf0z2SVCj0=";
   passthru.tests = { inherit (nixosTests.prometheus-exporters) dovecot; };
 
   meta = {
     inherit (finalAttrs.src.meta) homepage;
     description = "Prometheus metrics exporter for Dovecot";
-    mainProgram = "dovecot_exporter";
     license = lib.licenses.asl20;
+
     maintainers = with lib.maintainers; [
       globin
     ];
+
+    mainProgram = "dovecot_exporter";
   };
 })

@@ -9,12 +9,14 @@
 buildPythonPackage rec {
   pname = "tapsaff";
   version = "0.2.1";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
     hash = "sha256-Q3VLbPsgXAYvZsjcW1m3lus2SFMjNJ8AmkcNK0THB6I=";
   };
+
+  # Package does not have tests
+  doCheck = false;
 
   build-system = [
     setuptools
@@ -24,8 +26,7 @@ buildPythonPackage rec {
     requests
   ];
 
-  # Package does not have tests
-  doCheck = false;
+  pyproject = true;
 
   pythonImportsCheck = [
     "tapsaff"

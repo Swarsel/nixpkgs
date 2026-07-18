@@ -17,25 +17,23 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-UgvXaDNdH8ZN00oJ/DjIlBs86ua3JmVz1JfLk2XBVFw=";
   };
 
-  cargoHash = "sha256-C38pV8c7znbBua130qDaguUAWamGhxfI8y0Vy0yadWc=";
-
   nativeBuildInputs = [ pkg-config ];
-
   buildInputs = [ openssl ];
-
-  __structuredAttrs = true;
-
+  cargoHash = "sha256-C38pV8c7znbBua130qDaguUAWamGhxfI8y0Vy0yadWc=";
   # Tests that require network access
   doCheck = false;
+  __structuredAttrs = true;
 
   meta = {
     description = "Command-line tool to get global IP address";
     homepage = "https://github.com/dalance/gip";
     changelog = "https://github.com/dalance/gip/releases/tag/${finalAttrs.src.tag}";
+
     license = with lib.licenses; [
       mit
       asl20
     ];
+
     maintainers = with lib.maintainers; [ fab ];
     mainProgram = "gip";
   };

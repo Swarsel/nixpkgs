@@ -2,18 +2,16 @@
   lib,
   stdenv,
   fetchFromGitLab,
-
+  exempi,
+  # buildInputs
+  ghostscript,
+  installShellFiles,
+  libsForQt5,
+  pkg-config,
+  poppler-utils,
   # nativeBuildInputs
   protobuf,
   qt5,
-  libsForQt5,
-  pkg-config,
-  installShellFiles,
-
-  # buildInputs
-  ghostscript,
-  poppler-utils,
-  exempi,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -26,6 +24,7 @@ stdenv.mkDerivation (finalAttrs: {
     rev = "b7175a574379d86c43cabbdb6071f0b6d40d8e79";
     hash = "sha256-3KIJk5bTmFjaojjHDurJjEgyvuIf0LHcSi+MrmsRPcg=";
   };
+
   postPatch = ''
     substituteInPlace equalx.pro \
       --replace-fail 'git describe --abbrev=0 --tags' 'echo ${finalAttrs.version}'
@@ -63,9 +62,9 @@ stdenv.mkDerivation (finalAttrs: {
   meta = {
     description = "Graphical interface to latex and a bunch of conversion programs";
     homepage = "https://equalx.sourceforge.io/";
-    mainProgram = "equalx";
-    downloadPage = "https://gitlab.com/q-quark/equalx";
     license = lib.licenses.gpl3Plus;
     maintainers = with lib.maintainers; [ doronbehar ];
+    mainProgram = "equalx";
+    downloadPage = "https://gitlab.com/q-quark/equalx";
   };
 })

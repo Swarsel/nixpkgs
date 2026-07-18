@@ -1,14 +1,14 @@
 {
-  binutils,
   lib,
-  libucontext,
-  pkg-config,
-  clangStdenv,
   fetchFromGitHub,
+  binutils,
+  clangStdenv,
   cmake,
-  openssl,
-  zlib,
+  libucontext,
   nix-update-script,
+  openssl,
+  pkg-config,
+  zlib,
 }:
 
 let
@@ -18,11 +18,13 @@ let
   empty-libgcc_eh = clangStdenv.mkDerivation {
     pname = "empty-libgcc_eh";
     version = "0";
-    dontUnpack = true;
+
     installPhase = ''
       mkdir -p "$out"/lib
       "${binutils}"/bin/ar r "$out"/lib/libgcc_eh.a
     '';
+
+    dontUnpack = true;
   };
 in
 
@@ -52,6 +54,7 @@ clangStdenv.mkDerivation rec {
     cmake
     pkg-config
   ];
+
   propagatedBuildInputs = [
     openssl
     zlib
@@ -82,17 +85,18 @@ clangStdenv.mkDerivation rec {
   };
 
   separateDebugInfo = true;
-
   passthru.updateScript = nix-update-script { };
 
   meta = {
-    homepage = "https://capnproto.org/";
     description = "Cap'n Proto cerealization protocol";
+
     longDescription = ''
       Cap’n Proto is an insanely fast data interchange format and
       capability-based RPC system. Think JSON, except binary. Or think Protocol
       Buffers, except faster.
     '';
+
+    homepage = "https://capnproto.org/";
     license = lib.licenses.mit;
     platforms = lib.platforms.all;
     teams = [ lib.teams.lix ];

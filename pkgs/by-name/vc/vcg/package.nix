@@ -1,15 +1,12 @@
 {
   lib,
-
   stdenv,
   fetchFromGitHub,
-  fetchpatch,
-
   # nativeBuildInputs
   cmake,
-
   # propagatedBuildInputs
   eigen,
+  fetchpatch,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -28,9 +25,9 @@ stdenv.mkDerivation (finalAttrs: {
     # ref. https://github.com/cnr-isti-vclab/vcglib/pull/248
     # merged upstream
     (fetchpatch {
+      hash = "sha256-b3qsmLu+4VSs943VS3C4gdG/PDR2mhr9/dDTmkep8zo=";
       name = "cmake-install-lib-and-exports.patch";
       url = "https://github.com/cnr-isti-vclab/vcglib/commit/4a8dd8d6e54890aee76917d27aabfa7031cbc68d.patch";
-      hash = "sha256-b3qsmLu+4VSs943VS3C4gdG/PDR2mhr9/dDTmkep8zo=";
     })
   ];
 
@@ -48,10 +45,10 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   meta = {
-    homepage = "https://vcg.isti.cnr.it/vcglib/install.html";
     description = "C++ library for manipulation, processing and displaying with OpenGL of triangle and tetrahedral meshes";
+    homepage = "https://vcg.isti.cnr.it/vcglib/install.html";
     license = lib.licenses.gpl3;
-    platforms = lib.platforms.all;
     maintainers = [ lib.maintainers.nim65s ];
+    platforms = lib.platforms.all;
   };
 })

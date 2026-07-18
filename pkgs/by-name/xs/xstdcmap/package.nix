@@ -2,11 +2,11 @@
   lib,
   stdenv,
   fetchurl,
-  pkg-config,
-  xorgproto,
   libx11,
   libxmu,
+  pkg-config,
   writeScript,
+  xorgproto,
 }:
 stdenv.mkDerivation (finalAttrs: {
   pname = "xstdcmap";
@@ -18,7 +18,6 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   strictDeps = true;
-
   nativeBuildInputs = [ pkg-config ];
 
   buildInputs = [
@@ -40,16 +39,18 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "X standard colormap utility";
+
     longDescription = ''
       The xstdcmap utility can be used to selectively define standard colormap properties.
       It is intended to be run from a user's X startup script to create standard colormap
       definitions in order to facilitate sharing of scarce colormap resources among clients using
       PseudoColor visuals.
     '';
+
     homepage = "https://gitlab.freedesktop.org/xorg/app/xstdcmap";
     license = lib.licenses.mitOpenGroup;
-    mainProgram = "xstdcmap";
     maintainers = [ ];
     platforms = lib.platforms.unix;
+    mainProgram = "xstdcmap";
   };
 })

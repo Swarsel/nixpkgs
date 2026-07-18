@@ -1,21 +1,19 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
   aiohttp,
+  buildPythonPackage,
   mashumaro,
   pyprojectVersionPatchHook,
   pytest-asyncio,
   pytestCheckHook,
+  setuptools,
   zigpy,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "zigpy-ziggurat";
   version = "1.0.1";
-  pyproject = true;
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "zigpy";
@@ -34,6 +32,13 @@ buildPythonPackage (finalAttrs: {
     pyprojectVersionPatchHook
   ];
 
+  nativeCheckInputs = [
+    pytest-asyncio
+    pytestCheckHook
+  ];
+
+  __structuredAttrs = true;
+
   build-system = [
     setuptools
   ];
@@ -44,10 +49,7 @@ buildPythonPackage (finalAttrs: {
     zigpy
   ];
 
-  nativeCheckInputs = [
-    pytest-asyncio
-    pytestCheckHook
-  ];
+  pyproject = true;
 
   pythonImportsCheck = [
     "zigpy_ziggurat"

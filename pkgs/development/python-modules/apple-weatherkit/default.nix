@@ -1,17 +1,16 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  poetry-core,
   aiohttp,
   aiohttp-retry,
+  buildPythonPackage,
+  poetry-core,
   pyjwt,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "apple-weatherkit";
   version = "1.2.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "tjhorner";
@@ -20,6 +19,8 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-6dln/599XTJrIY2wL8n9WdHEjJ75goYeZC5szQ6WNsk=";
   };
 
+  # Module has no tests
+  doCheck = false;
   build-system = [ poetry-core ];
 
   dependencies = [
@@ -29,9 +30,7 @@ buildPythonPackage (finalAttrs: {
   ]
   ++ pyjwt.optional-dependencies.crypto;
 
-  # Module has no tests
-  doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "apple_weatherkit" ];
 
   meta = {

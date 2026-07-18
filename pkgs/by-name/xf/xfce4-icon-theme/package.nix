@@ -2,13 +2,13 @@
   lib,
   stdenv,
   fetchurl,
-  pkg-config,
-  intltool,
-  gtk3,
   gnome-icon-theme,
-  tango-icon-theme,
+  gtk3,
   hicolor-icon-theme,
   httpTwoLevelsUpdater,
+  intltool,
+  pkg-config,
+  tango-icon-theme,
 }:
 
 stdenv.mkDerivation rec {
@@ -40,8 +40,8 @@ stdenv.mkDerivation rec {
   };
 
   meta = {
-    homepage = "https://www.xfce.org/";
     description = "Icons for Xfce";
+    homepage = "https://www.xfce.org/";
     license = lib.licenses.gpl2Plus;
     platforms = lib.platforms.linux;
     teams = [ lib.teams.xfce ];

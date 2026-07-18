@@ -5,14 +5,14 @@
 }:
 
 stdenv.mkDerivation {
-  pname = "iio-utils";
   inherit (kernel) src version;
-
-  makeFlags = [ "bindir=${placeholder "out"}/bin" ];
+  pname = "iio-utils";
 
   postPatch = ''
     cd tools/iio
   '';
+
+  makeFlags = [ "bindir=${placeholder "out"}/bin" ];
 
   meta = {
     description = "Userspace tool for interacting with Linux IIO";

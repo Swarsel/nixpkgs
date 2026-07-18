@@ -1,7 +1,7 @@
 {
   lib,
-  buildNpmPackage,
   fetchFromGitHub,
+  buildNpmPackage,
   callPackage,
 }:
 
@@ -33,7 +33,7 @@ buildNpmPackage rec {
     homepage = "https://github.com/thlorenz/doctoc";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ tomodachi94 ];
-    mainProgram = "doctoc";
     platforms = lib.platforms.all;
+    mainProgram = "doctoc";
   };
 }

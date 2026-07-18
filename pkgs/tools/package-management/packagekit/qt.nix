@@ -2,9 +2,9 @@
   stdenv,
   fetchFromGitHub,
   cmake,
+  packagekit,
   pkg-config,
   qttools,
-  packagekit,
 }:
 
 stdenv.mkDerivation rec {
@@ -18,14 +18,13 @@ stdenv.mkDerivation rec {
     hash = "sha256-D1LsEaxc6lA0ULmYQ9n2KEs6NpoHeTgOJsKzdEnImUM=";
   };
 
-  buildInputs = [ packagekit ];
-
   nativeBuildInputs = [
     cmake
     pkg-config
     qttools
   ];
 
+  buildInputs = [ packagekit ];
   dontWrapQtApps = true;
 
   meta = packagekit.meta // {

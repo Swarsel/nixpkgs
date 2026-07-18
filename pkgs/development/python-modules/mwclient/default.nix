@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   mock,
   pytest-cov-stub,
   pytestCheckHook,
@@ -12,9 +12,8 @@
 }:
 
 buildPythonPackage rec {
-  version = "0.11.0";
   pname = "mwclient";
-  format = "setuptools";
+  version = "0.11.0";
 
   src = fetchFromGitHub {
     owner = "mwclient";
@@ -36,12 +35,13 @@ buildPythonPackage rec {
     responses
   ];
 
+  format = "setuptools";
   pythonImportsCheck = [ "mwclient" ];
 
   meta = {
     description = "Python client library to the MediaWiki API";
-    license = lib.licenses.mit;
     homepage = "https://github.com/mwclient/mwclient";
+    license = lib.licenses.mit;
     maintainers = [ ];
   };
 }

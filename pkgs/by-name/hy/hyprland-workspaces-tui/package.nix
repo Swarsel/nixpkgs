@@ -1,12 +1,12 @@
 {
   lib,
   stdenv,
-  rustPlatform,
   fetchFromGitHub,
-  makeWrapper,
   hyprland-workspaces,
   installShellFiles,
+  makeWrapper,
   nix-update-script,
+  rustPlatform,
 }:
 rustPlatform.buildRustPackage (finalAttrs: {
   pname = "hyprland-workspaces-tui";
@@ -19,14 +19,13 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-DLu7njrD5i9FeNWVZGBTKki70FurIGxtwgS6HbA7YLE=";
   };
 
-  cargoHash = "sha256-1NZrpqbFiYSJtFNnlDwXX4J4rLwa9XlwUT+boMtr4tk=";
-
   nativeBuildInputs = [
     makeWrapper
     installShellFiles
   ];
 
   buildInputs = [ hyprland-workspaces ];
+  cargoHash = "sha256-1NZrpqbFiYSJtFNnlDwXX4J4rLwa9XlwUT+boMtr4tk=";
 
   postInstall = lib.optionalString (stdenv.buildPlatform.canExecute stdenv.hostPlatform) ''
     installShellCompletion --cmd hyprland-workspaces-tui \
@@ -46,8 +45,8 @@ rustPlatform.buildRustPackage (finalAttrs: {
     description = "Terminal-based user interface (TUI) wrapper for the hyprland-workspaces CLI utility";
     homepage = "https://github.com/Levizor/hyprland-workspaces-tui";
     license = lib.licenses.mit;
-    mainProgram = "hyprland-workspaces-tui";
     maintainers = with lib.maintainers; [ Levizor ];
     platforms = lib.platforms.linux;
+    mainProgram = "hyprland-workspaces-tui";
   };
 })

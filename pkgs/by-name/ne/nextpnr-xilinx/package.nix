@@ -3,27 +3,27 @@
   stdenv,
   fetchFromGitHub,
   cmake,
+  eigen,
   gitMinimal,
+  llvmPackages,
   nix-update-script,
   python312,
   python312Packages,
-  eigen,
-  llvmPackages,
 }:
 
 let
   prjxrayDb = fetchFromGitHub {
+    hash = "sha256-tQ1KfYj6kQq3fKBv6PAsqxm9btMNWFd5fT9UzOGMlkE=";
     owner = "openxc7";
     repo = "prjxray-db";
     rev = "381966a746cb4cf4a7f854f0e53caa3bf74fbe62";
-    hash = "sha256-tQ1KfYj6kQq3fKBv6PAsqxm9btMNWFd5fT9UzOGMlkE=";
   };
 
   nextpnrXilinxMeta = fetchFromGitHub {
+    hash = "sha256-oRVFPzdw9ctzT6iQ8YI3Q92LZTIlRPBZvJVjMqvDJQE=";
     owner = "openxc7";
     repo = "nextpnr-xilinx-meta";
     rev = "491aefcc15be159efc8ad8bff2a1a4b93fe487fe";
-    hash = "sha256-oRVFPzdw9ctzT6iQ8YI3Q92LZTIlRPBZvJVjMqvDJQE=";
   };
 in
 stdenv.mkDerivation (finalAttrs: {
@@ -36,6 +36,24 @@ stdenv.mkDerivation (finalAttrs: {
     rev = "96bb068afdb941e9292509a28b079c14c26ceca6";
     hash = "sha256-l9V7glWRtt9NUAKV00zeacA4vyFjwhfxv3mfDEF4lgI=";
   };
+
+  postPatch = ''
+    # Boost.System is header-only in modern Boost; requiring the component fails
+    # with CMake's FindBoost in nixpkgs.
+    substituteInPlace CMakeLists.txt \
+      --replace-fail "set(boost_libs filesystem thread program_options iostreams system)" \
+                     "set(boost_libs filesystem thread program_options iostreams)"
+
+    # GCC 15 requires explicit <cstdint> include for uint8_t in vendored json11.
+    substituteInPlace 3rdparty/json11/json11.cpp \
+      --replace-fail "#include <climits>" $'#include <climits>\n#include <cstdint>'
+
+    rm -rf xilinx/external/prjxray-db xilinx/external/nextpnr-xilinx-meta
+    ln -s ${prjxrayDb} xilinx/external/prjxray-db
+    ln -s ${nextpnrXilinxMeta} xilinx/external/nextpnr-xilinx-meta
+  '';
+
+  strictDeps = true;
 
   nativeBuildInputs = [
     cmake
@@ -59,22 +77,6 @@ stdenv.mkDerivation (finalAttrs: {
     "-DUSE_OPENMP=ON"
   ];
 
-  postPatch = ''
-    # Boost.System is header-only in modern Boost; requiring the component fails
-    # with CMake's FindBoost in nixpkgs.
-    substituteInPlace CMakeLists.txt \
-      --replace-fail "set(boost_libs filesystem thread program_options iostreams system)" \
-                     "set(boost_libs filesystem thread program_options iostreams)"
-
-    # GCC 15 requires explicit <cstdint> include for uint8_t in vendored json11.
-    substituteInPlace 3rdparty/json11/json11.cpp \
-      --replace-fail "#include <climits>" $'#include <climits>\n#include <cstdint>'
-
-    rm -rf xilinx/external/prjxray-db xilinx/external/nextpnr-xilinx-meta
-    ln -s ${prjxrayDb} xilinx/external/prjxray-db
-    ln -s ${nextpnrXilinxMeta} xilinx/external/nextpnr-xilinx-meta
-  '';
-
   installPhase = ''
     runHook preInstall
 
@@ -90,8 +92,6 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
-  strictDeps = true;
-
   passthru.updateScript = nix-update-script {
     extraArgs = [ "--version=branch" ];
   };
@@ -100,8 +100,8 @@ stdenv.mkDerivation (finalAttrs: {
     description = "Place and route tool for Xilinx 7-series FPGAs";
     homepage = "https://github.com/openXC7/nextpnr-xilinx";
     license = lib.licenses.isc;
-    mainProgram = "nextpnr-xilinx";
     maintainers = with lib.maintainers; [ rcoeurjoly ];
     platforms = lib.platforms.unix;
+    mainProgram = "nextpnr-xilinx";
   };
 })

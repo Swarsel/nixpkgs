@@ -1,20 +1,19 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
   aiofiles,
   aiohttp,
+  buildPythonPackage,
   gtfs-realtime-bindings,
-  pytestCheckHook,
   pytest-asyncio,
+  pytestCheckHook,
+  setuptools,
   writableTmpDirAsHomeHook,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "py-nymta";
   version = "0.4.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "OnFreund";
@@ -23,11 +22,13 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-JVcdpS7qcrULOLnlV2ZJr7NQPJGGUKfrQCFcb64X2ak=";
   };
 
-  build-system = [ setuptools ];
-
-  pythonRelaxDeps = [
-    "gtfs-realtime-bindings"
+  nativeCheckInputs = [
+    pytestCheckHook
+    pytest-asyncio
+    writableTmpDirAsHomeHook
   ];
+
+  build-system = [ setuptools ];
 
   dependencies = [
     aiofiles
@@ -35,13 +36,12 @@ buildPythonPackage (finalAttrs: {
     gtfs-realtime-bindings
   ];
 
-  nativeCheckInputs = [
-    pytestCheckHook
-    pytest-asyncio
-    writableTmpDirAsHomeHook
-  ];
-
+  pyproject = true;
   pythonImportsCheck = [ "pymta" ];
+
+  pythonRelaxDeps = [
+    "gtfs-realtime-bindings"
+  ];
 
   meta = {
     description = "Python library for accessing MTA real-time transit data for NYC";

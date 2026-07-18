@@ -1,30 +1,23 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  sphinx,
+  beautifulsoup4,
+  buildPythonPackage,
+  flit-core,
   matplotlib,
   pytestCheckHook,
-  beautifulsoup4,
-  flit-core,
+  sphinx,
 }:
 
 buildPythonPackage rec {
   pname = "sphinxext-opengraph";
   version = "0.13.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "wpilibsuite";
     repo = "sphinxext-opengraph";
     tag = "v${version}";
     hash = "sha256-rdV6XWHfNj+TFgIfqFPWYxn6bGG5w/frUHl9+qMALi4=";
-  };
-
-  build-system = [ flit-core ];
-
-  optional-dependencies = {
-    social_cards_generation = [ matplotlib ];
   };
 
   propagatedBuildInputs = [ sphinx ];
@@ -35,6 +28,13 @@ buildPythonPackage rec {
   ]
   ++ optional-dependencies.social_cards_generation;
 
+  build-system = [ flit-core ];
+
+  optional-dependencies = {
+    social_cards_generation = [ matplotlib ];
+  };
+
+  pyproject = true;
   pythonImportsCheck = [ "sphinxext.opengraph" ];
 
   meta = {

@@ -1,9 +1,9 @@
 {
   lib,
-  rustPlatform,
-  fetchFromGitHub,
   stdenv,
+  fetchFromGitHub,
   nix-update-script,
+  rustPlatform,
   versionCheckHook,
 }:
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -16,12 +16,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-1ynG6A5sGHnCfAfw6MjSTghLPmicRvWPFWnL2Gtns7Y=";
   };
-
-  cargoHash = "sha256-HAeF831rPODaT5nzzq+Li8xEmT78IJiRppaKUSlPXXg=";
-
-  # Disable the `python` feature which doesn't work on Nix yet
-  buildNoDefaultFeatures = true;
-  buildAndTestSubdir = "crates/cli";
 
   # Patch the tests to find the sqruff binary
   postPatch = ''
@@ -42,8 +36,12 @@ rustPlatform.buildRustPackage (finalAttrs: {
       '"../../target/${stdenv.hostPlatform.rust.cargoShortTarget}/{}/sqruff"'
   '';
 
+  cargoHash = "sha256-HAeF831rPODaT5nzzq+Li8xEmT78IJiRppaKUSlPXXg=";
   nativeCheckInputs = [ versionCheckHook ];
   doInstallCheck = true;
+  buildAndTestSubdir = "crates/cli";
+  # Disable the `python` feature which doesn't work on Nix yet
+  buildNoDefaultFeatures = true;
 
   passthru = {
     updateScript = nix-update-script { };
@@ -54,10 +52,12 @@ rustPlatform.buildRustPackage (finalAttrs: {
     homepage = "https://github.com/quarylabs/sqruff";
     changelog = "https://github.com/quarylabs/sqruff/releases/tag/${finalAttrs.version}";
     license = lib.licenses.asl20;
-    mainProgram = "sqruff";
+
     maintainers = with lib.maintainers; [
       hasnep
       pyrox0
     ];
+
+    mainProgram = "sqruff";
   };
 })

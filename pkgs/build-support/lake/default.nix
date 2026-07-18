@@ -9,12 +9,12 @@
 {
   lib,
   stdenv,
-  lean4,
-  gitMinimal,
   cacert,
+  gitMinimal,
   jq,
-  writeText,
+  lean4,
   stdenvNoCC,
+  writeText,
 }:
 
 let
@@ -31,6 +31,7 @@ in
 
 lib.extendMkDerivation {
   constructDrv = stdenv.mkDerivation;
+
   excludeDrvArgNames = [
     "lakeHash"
     "lakeDeps"
@@ -40,31 +41,29 @@ lib.extendMkDerivation {
     "leanPackageName"
     "overrideLakeDepsAttrs"
   ];
+
   extendDrvArgs =
     finalAttrs:
     {
       pname,
       version,
-      nativeBuildInputs ? [ ],
-      passthru ? { },
-
-      # SRI hash for the Lake dependencies FOD (null = all deps nix-managed).
-      lakeHash ? null,
-      # Pre-built Lake dependencies derivation (overrides lakeHash).
-      lakeDeps ? null,
-      # Nix-packaged Lean libraries, injected via lake --packages.
-      leanDeps ? [ ],
-      # Lake package name as declared in lakefile (defaults to pname).
-      leanPackageName ? finalAttrs.pname,
       # Lake build targets (empty = default targets).
       buildTargets ? [ ],
       # Library (install .olean tree) or executable (install binaries only).
       isLibrary ? true,
+      # Pre-built Lake dependencies derivation (overrides lakeHash).
+      lakeDeps ? null,
+      # SRI hash for the Lake dependencies FOD (null = all deps nix-managed).
+      lakeHash ? null,
+      # Nix-packaged Lean libraries, injected via lake --packages.
+      leanDeps ? [ ],
+      # Lake package name as declared in lakefile (defaults to pname).
+      leanPackageName ? finalAttrs.pname,
+      meta ? { },
+      nativeBuildInputs ? [ ],
       # Override the FOD derivation attrs.
       overrideLakeDepsAttrs ? (finalAttrs: previousAttrs: { }),
-
-      meta ? { },
-
+      passthru ? { },
       ...
     }@args:
     let
@@ -82,12 +81,12 @@ lib.extendMkDerivation {
         else
           (fetchLakeDeps {
             inherit (finalAttrs) src pname version;
-            hash = lakeHash;
-            sourceRoot = finalAttrs.sourceRoot or "";
             patches = finalAttrs.patches or [ ];
-            prePatch = finalAttrs.prePatch or "";
             postPatch = finalAttrs.postPatch or "";
             excludePackages = builtins.map (dep: dep.passthru.lakePackageName or dep.pname) allLeanDeps;
+            hash = lakeHash;
+            prePatch = finalAttrs.prePatch or "";
+            sourceRoot = finalAttrs.sourceRoot or "";
           }).overrideAttrs
             (lib.toExtension overrideLakeDepsAttrs);
 
@@ -95,19 +94,19 @@ lib.extendMkDerivation {
       # --packages takes precedence over .lake/package-overrides.json.
       overridesFile = writeText "lake-overrides.json" (
         builtins.toJSON {
-          schemaVersion = "1.2.0";
           packages = map (dep: {
-            type = "path";
-            name = dep.passthru.lakePackageName or dep.pname;
-            inherited = false;
             dir = "${dep}";
+            inherited = false;
+            name = dep.passthru.lakePackageName or dep.pname;
+            type = "path";
           }) allLeanDeps;
+
+          schemaVersion = "1.2.0";
         }
       );
     in
     {
       strictDeps = true;
-      __structuredAttrs = true;
 
       nativeBuildInputs = nativeBuildInputs ++ [
         lean4
@@ -115,46 +114,8 @@ lib.extendMkDerivation {
         jq
       ];
 
-      propagatedBuildInputs = lib.optionals isLibrary leanDeps;
       buildInputs = lib.optionals (!isLibrary) leanDeps;
-
-      configurePhase =
-        args.configurePhase or ''
-          runHook preConfigure
-
-          export HOME="$TMPDIR"
-
-          # Disable cloud caching and Reservoir lookups.
-          export LAKE_NO_CACHE=1
-          export RESERVOIR_API_URL=""
-          export LEAN_CC="${stdenv.cc}/bin/cc"
-
-          if [ -n "''${LEAN_PATH:-}" ]; then
-            echo "buildLakePackage: LEAN_PATH=$LEAN_PATH"
-          fi
-
-          ${lib.optionalString (computedLakeDeps != null) ''
-            mkdir -p .lake/packages
-            for dep in ${computedLakeDeps}/*; do
-              depName="$(basename "$dep")"
-              cp -r "$dep" ".lake/packages/$depName"
-              chmod -R u+w ".lake/packages/$depName"
-            done
-
-            # FOD deps use package-overrides.json (the on-disk mechanism).
-            # Nix-managed deps use --packages (the CLI mechanism, takes precedence).
-            jq -n --argjson pkgs "$(
-              for dep in .lake/packages/*/; do
-                [ -d "$dep" ] || continue
-                depName="$(basename "$dep")"
-                jq -n --arg name "$depName" --arg dir ".lake/packages/$depName" \
-                  '{type: "path", name: $name, inherited: false, dir: $dir}'
-              done | jq -s '.'
-            )" '{schemaVersion: "1.2.0", packages: $pkgs}' > .lake/package-overrides.json
-          ''}
-
-          runHook postConfigure
-        '';
+      propagatedBuildInputs = lib.optionals isLibrary leanDeps;
 
       buildPhase =
         args.buildPhase or ''
@@ -220,6 +181,46 @@ lib.extendMkDerivation {
               runHook postInstall
             ''
         );
+
+      __structuredAttrs = true;
+
+      configurePhase =
+        args.configurePhase or ''
+          runHook preConfigure
+
+          export HOME="$TMPDIR"
+
+          # Disable cloud caching and Reservoir lookups.
+          export LAKE_NO_CACHE=1
+          export RESERVOIR_API_URL=""
+          export LEAN_CC="${stdenv.cc}/bin/cc"
+
+          if [ -n "''${LEAN_PATH:-}" ]; then
+            echo "buildLakePackage: LEAN_PATH=$LEAN_PATH"
+          fi
+
+          ${lib.optionalString (computedLakeDeps != null) ''
+            mkdir -p .lake/packages
+            for dep in ${computedLakeDeps}/*; do
+              depName="$(basename "$dep")"
+              cp -r "$dep" ".lake/packages/$depName"
+              chmod -R u+w ".lake/packages/$depName"
+            done
+
+            # FOD deps use package-overrides.json (the on-disk mechanism).
+            # Nix-managed deps use --packages (the CLI mechanism, takes precedence).
+            jq -n --argjson pkgs "$(
+              for dep in .lake/packages/*/; do
+                [ -d "$dep" ] || continue
+                depName="$(basename "$dep")"
+                jq -n --arg name "$depName" --arg dir ".lake/packages/$depName" \
+                  '{type: "path", name: $name, inherited: false, dir: $dir}'
+              done | jq -s '.'
+            )" '{schemaVersion: "1.2.0", packages: $pkgs}' > .lake/package-overrides.json
+          ''}
+
+          runHook postConfigure
+        '';
 
       passthru = passthru // {
         inherit computedLakeDeps lean4 allLeanDeps;

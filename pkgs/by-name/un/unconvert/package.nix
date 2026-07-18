@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   nix-update-script,
 }:
 
@@ -27,9 +27,9 @@ buildGoModule {
 
   meta = {
     description = "Remove unnecessary type conversions from Go source";
-    mainProgram = "unconvert";
     homepage = "https://github.com/mdempsky/unconvert";
     license = lib.licenses.bsd3;
     maintainers = with lib.maintainers; [ kalbasit ];
+    mainProgram = "unconvert";
   };
 }

@@ -1,23 +1,19 @@
 {
   lib,
   stdenv,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # build-system
-  setuptools,
-
+  buildPythonPackage,
+  busybox,
+  pyinstaller,
   # tests
   pytestCheckHook,
-  pyinstaller,
-  busybox,
+  # build-system
+  setuptools,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "isocodes";
   version = "2025.8.25";
-  pyproject = true;
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "Atem18";
@@ -26,10 +22,6 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-rGARvUNaTZ8/CuQ2vhPRx4whYty8lJLSE+5AZTS3eQw=";
   };
 
-  build-system = [
-    setuptools
-  ];
-
   nativeCheckInputs = [
     pyinstaller
     pytestCheckHook
@@ -37,6 +29,14 @@ buildPythonPackage (finalAttrs: {
   ++ lib.optionals stdenv.hostPlatform.isDarwin [
     busybox
   ];
+
+  __structuredAttrs = true;
+
+  build-system = [
+    setuptools
+  ];
+
+  pyproject = true;
   pythonImportsCheck = [ "isocodes" ];
 
   meta = {
@@ -44,6 +44,7 @@ buildPythonPackage (finalAttrs: {
     homepage = "https://github.com/Atem18/isocodes";
     changelog = "https://github.com/Atem18/isocodes/releases/tag/${finalAttrs.src.tag}";
     license = lib.licenses.lgpl21Only;
+
     maintainers = with lib.maintainers; [
       gigahawk
     ];

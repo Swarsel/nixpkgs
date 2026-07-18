@@ -1,7 +1,8 @@
 {
+  lib,
+  stdenv,
   fetchFromGitHub,
   fetchpatch2,
-  lib,
   libGL,
   libxkbcommon,
   nix-update-script,
@@ -10,7 +11,6 @@
   rustPlatform,
   shaderc,
   vulkan-loader,
-  stdenv,
 }:
 let
   platformPaths = {
@@ -30,7 +30,12 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-y/K+eXECUi9wGol0IUuIUI9hqhEN8GHaOO5i1xMFNQo=";
   };
 
-  cargoHash = "sha256-btGPIujawY5NPmx7hGBxW5ZYi2RvboyQpfw6fA3c3jE=";
+  postPatch = ''
+    substituteInPlace Cargo.toml \
+      --replace-fail 'features = ["static"]' 'features = ["linked"]'
+    substituteInPlace src/graphics_backends/gl.rs \
+      --replace-fail 'libGLX.so.0' '${lib.getLib libGL}/lib/libGLX.so.0'
+  '';
 
   nativeBuildInputs = [
     pkg-config
@@ -44,12 +49,7 @@ rustPlatform.buildRustPackage (finalAttrs: {
     openxr-loader
   ];
 
-  postPatch = ''
-    substituteInPlace Cargo.toml \
-      --replace-fail 'features = ["static"]' 'features = ["linked"]'
-    substituteInPlace src/graphics_backends/gl.rs \
-      --replace-fail 'libGLX.so.0' '${lib.getLib libGL}/lib/libGLX.so.0'
-  '';
+  cargoHash = "sha256-btGPIujawY5NPmx7hGBxW5ZYi2RvboyQpfw6fA3c3jE=";
 
   postInstall = ''
     mkdir -p $out/lib/xrizer/$platformPath
@@ -57,7 +57,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
   '';
 
   platformPath = platformPaths."${stdenv.hostPlatform.system}";
-
   passthru.updateScript = nix-update-script { };
 
   meta = {

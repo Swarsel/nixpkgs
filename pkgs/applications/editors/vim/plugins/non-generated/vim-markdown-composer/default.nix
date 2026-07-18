@@ -15,17 +15,16 @@ let
   };
 
   vim-markdown-composer-bin = rustPlatform.buildRustPackage {
-    pname = "vim-markdown-composer-bin";
     inherit src version;
-
+    pname = "vim-markdown-composer-bin";
     cargoHash = "sha256-xzlEIaDEYDbxJ6YqzF+lSHcB9O+brClw026YI1YeNUc=";
     # tests require network access
     doCheck = false;
   };
 in
 vimUtils.buildVimPlugin {
-  pname = "vim-markdown-composer";
   inherit version src;
+  pname = "vim-markdown-composer";
 
   preFixup = ''
     substituteInPlace "$out"/after/ftplugin/markdown/composer.vim \
@@ -35,13 +34,13 @@ vimUtils.buildVimPlugin {
   '';
 
   passthru = {
-    updateScript = nix-update-script {
-      extraArgs = [ "--version=branch" ];
-      attrPath = "vimPlugins.vim-markdown-composer.vim-markdown-composer-bin";
-    };
-
     # needed for the update script
     inherit vim-markdown-composer-bin;
+
+    updateScript = nix-update-script {
+      attrPath = "vimPlugins.vim-markdown-composer.vim-markdown-composer-bin";
+      extraArgs = [ "--version=branch" ];
+    };
   };
 
   meta = {

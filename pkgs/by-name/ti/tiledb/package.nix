@@ -2,29 +2,29 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  cmake,
-  zlib,
-  lz4,
-  bzip2,
-  zstd,
-  spdlog,
-  onetbb,
-  openssl,
   boost,
-  clang-tools,
+  bzip2,
+  c-blosc2,
+  capnproto,
   catch2_3,
-  python3,
+  clang-tools,
+  cmake,
+  curl,
   doxygen,
+  file,
   fixDarwinDylibNames,
   gtest,
-  rapidcheck,
   libpng,
-  file,
-  runCommand,
-  curl,
-  capnproto,
+  lz4,
   nlohmann_json,
-  c-blosc2,
+  onetbb,
+  openssl,
+  python3,
+  rapidcheck,
+  runCommand,
+  spdlog,
+  zlib,
+  zstd,
   useAVX2 ? stdenv.hostPlatform.avx2Support,
 }:
 
@@ -53,19 +53,7 @@ stdenv.mkDerivation (finalAttrs: {
       --replace-fail '"catch.hpp"' '<catch2/catch_all.hpp>'
   '';
 
-  env.TILEDB_DISABLE_AUTO_VCPKG = "1";
-
-  # (bundled) blosc headers have a warning on some archs that it will be using
-  # unaccelerated routines.
-  cmakeFlags = [
-    "-DTILEDB_WEBP=OFF"
-    "-DTILEDB_WERROR=OFF"
-    "-DTILEDB_SERIALIZATION=ON"
-    # https://github.com/NixOS/nixpkgs/issues/144170
-    "-DCMAKE_INSTALL_INCLUDEDIR=include"
-    "-DCMAKE_INSTALL_LIBDIR=lib"
-  ]
-  ++ lib.optional (!useAVX2) "-DCOMPILER_SUPPORTS_AVX2=FALSE";
+  strictDeps = true;
 
   nativeBuildInputs = [
     capnproto
@@ -95,6 +83,20 @@ stdenv.mkDerivation (finalAttrs: {
     zstd
   ];
 
+  # (bundled) blosc headers have a warning on some archs that it will be using
+  # unaccelerated routines.
+  cmakeFlags = [
+    "-DTILEDB_WEBP=OFF"
+    "-DTILEDB_WERROR=OFF"
+    "-DTILEDB_SERIALIZATION=ON"
+    # https://github.com/NixOS/nixpkgs/issues/144170
+    "-DCMAKE_INSTALL_INCLUDEDIR=include"
+    "-DCMAKE_INSTALL_LIBDIR=lib"
+  ]
+  ++ lib.optional (!useAVX2) "-DCOMPILER_SUPPORTS_AVX2=FALSE";
+
+  env.TILEDB_DISABLE_AUTO_VCPKG = "1";
+
   preBuild = ''
     cmake --build . --target update-serialization
   '';
@@ -102,8 +104,6 @@ stdenv.mkDerivation (finalAttrs: {
   nativeCheckInputs = [
     gtest
   ];
-
-  strictDeps = true;
 
   # test commands taken from
   # https://github.com/TileDB-Inc/TileDB/blob/dev/.github/workflows/unit-test-runs.yml
@@ -128,7 +128,7 @@ stdenv.mkDerivation (finalAttrs: {
     description = "Allows you to manage massive dense and sparse multi-dimensional array data";
     homepage = "https://github.com/TileDB-Inc/TileDB";
     license = lib.licenses.mit;
-    platforms = lib.platforms.unix;
     maintainers = with lib.maintainers; [ rakesh4g ];
+    platforms = lib.platforms.unix;
   };
 })

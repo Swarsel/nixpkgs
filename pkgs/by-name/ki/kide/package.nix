@@ -1,17 +1,17 @@
 {
   lib,
   stdenv,
-  rustPlatform,
   fetchFromGitHub,
-  fetchNpmDeps,
   cargo-tauri,
+  fetchNpmDeps,
+  nix-update-script,
   nodejs,
   npmHooks,
-  pkg-config,
-  wrapGAppsHook4,
   openssl,
+  pkg-config,
+  rustPlatform,
   webkitgtk_4_1,
-  nix-update-script,
+  wrapGAppsHook4,
 }:
 rustPlatform.buildRustPackage (finalAttrs: {
   pname = "kide";
@@ -22,13 +22,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
     repo = "kide";
     tag = "v${finalAttrs.version}";
     hash = "sha256-lRkFPS+hkACj3CxWde4B7phHUMh+2643Jgd0Wt3nUSo=";
-  };
-
-  cargoHash = "sha256-/PdUaSW7YMFDgMFqA+7ePNPraPhMSNqFaONIEFubtNc=";
-
-  npmDeps = fetchNpmDeps {
-    inherit (finalAttrs) pname version src;
-    hash = "sha256-1BY2oEnpldl+m8hUg9bszAyR67M8ErbcNaNE676c9hU=";
   };
 
   nativeBuildInputs = [
@@ -46,17 +39,23 @@ rustPlatform.buildRustPackage (finalAttrs: {
     webkitgtk_4_1
   ];
 
-  cargoRoot = "src-tauri";
+  cargoHash = "sha256-/PdUaSW7YMFDgMFqA+7ePNPraPhMSNqFaONIEFubtNc=";
   buildAndTestSubdir = finalAttrs.cargoRoot;
+  cargoRoot = "src-tauri";
+
+  npmDeps = fetchNpmDeps {
+    inherit (finalAttrs) pname version src;
+    hash = "sha256-1BY2oEnpldl+m8hUg9bszAyR67M8ErbcNaNE676c9hU=";
+  };
 
   passthru.updateScript = nix-update-script { };
 
   meta = {
+    inherit (cargo-tauri.hook.meta) platforms;
     description = "Fast and lightweight Kubernetes IDE";
     homepage = "https://github.com/openobserve/kide";
     changelog = "https://github.com/openobserve/kide/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.asl20;
-    inherit (cargo-tauri.hook.meta) platforms;
     maintainers = with lib.maintainers; [ nartsiss ];
     mainProgram = "kide";
   };

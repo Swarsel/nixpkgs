@@ -7,7 +7,6 @@
 python3.pkgs.buildPythonApplication (finalAttrs: {
   pname = "ghunt";
   version = "2.3.4";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "mxrch";
@@ -17,8 +16,6 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     rev = "e8b0669cabb410dc40fb76b8d5d386a3a83fe08c";
     hash = "sha256-Zd0kpyr+Hkbh5MH3q3lrkH3liXw95sKRX+SZhsUVUhI=";
   };
-
-  pythonRelaxDeps = true;
 
   nativeBuildInputs = with python3.pkgs; [
     poetry-core
@@ -49,17 +46,20 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
 
   # Project has no tests
   doCheck = false;
+  pyproject = true;
 
   pythonImportsCheck = [
     "ghunt"
   ];
 
+  pythonRelaxDeps = true;
+
   meta = {
     description = "Offensive Google framework";
-    mainProgram = "ghunt";
     homepage = "https://github.com/mxrch/ghunt";
     changelog = "https://github.com/mxrch/GHunt/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.agpl3Only;
     maintainers = with lib.maintainers; [ fab ];
+    mainProgram = "ghunt";
   };
 })

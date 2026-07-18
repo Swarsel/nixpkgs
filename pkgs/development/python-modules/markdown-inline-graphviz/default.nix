@@ -1,16 +1,15 @@
 {
-  buildPythonPackage,
-  fetchFromGitHub,
-  pkgs, # Only for pkgs.graphviz
   lib,
-  setuptools,
+  fetchFromGitHub,
+  buildPythonPackage,
   markdown,
+  pkgs, # Only for pkgs.graphviz
+  setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "markdown-inline-graphviz";
   version = "1.1.3";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "cesaremorel";
@@ -25,13 +24,11 @@ buildPythonPackage rec {
       --replace-fail "args = [command, '-T'+filetype]" "args = [\"${pkgs.graphviz}/bin/\" + command, '-T'+filetype]"
   '';
 
-  build-system = [ setuptools ];
-
-  dependencies = [ markdown ];
-
   # No tests available
   doCheck = false;
-
+  build-system = [ setuptools ];
+  dependencies = [ markdown ];
+  pyproject = true;
   pythonImportsCheck = [ "markdown_inline_graphviz" ];
 
   meta = {

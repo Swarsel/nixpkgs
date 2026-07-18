@@ -1,24 +1,20 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  pytestCheckHook,
-  rustPlatform,
-
   anyio,
+  buildPythonPackage,
   dirty-equals,
   inline-snapshot,
   pytest-examples,
   pytest-pretty,
+  pytestCheckHook,
+  rustPlatform,
   typing-extensions,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "pydantic-monty";
   version = "0.0.17";
-  pyproject = true;
-
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "pydantic";
@@ -27,33 +23,9 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-f+WcznnOMSc0ahgfvgVec4U0nH9j022NLnWQLdISv3M=";
   };
 
-  cargoDeps = rustPlatform.fetchCargoVendor {
-    inherit (finalAttrs) pname src version;
-    hash = "sha256-y+vi7kZPavBNnIeLpAoKO2YcBTq2d9yeDl+eoRJV1Tk=";
-  };
-
-  dependencies = [ typing-extensions ];
-
   nativeBuildInputs = [
     rustPlatform.cargoSetupHook
     rustPlatform.maturinBuildHook
-  ];
-
-  maturinBuildFlags = [
-    "-m"
-    "crates/monty-python/Cargo.toml"
-  ];
-
-  pytestFlags = [
-    "--config-file"
-    "crates/monty-python/pyproject.toml"
-  ];
-
-  disabledTests = [
-    # These tests fails because they expect to have multiple cores
-    # to produce a predicted speedup measurement, which we cannot
-    # achieve in the sandbox.
-    "test_parallel_exec"
   ];
 
   nativeCheckInputs = [
@@ -63,6 +35,34 @@ buildPythonPackage (finalAttrs: {
     pytest-examples
     pytest-pretty
     pytestCheckHook
+  ];
+
+  __structuredAttrs = true;
+
+  cargoDeps = rustPlatform.fetchCargoVendor {
+    inherit (finalAttrs) pname src version;
+    hash = "sha256-y+vi7kZPavBNnIeLpAoKO2YcBTq2d9yeDl+eoRJV1Tk=";
+  };
+
+  dependencies = [ typing-extensions ];
+
+  disabledTests = [
+    # These tests fails because they expect to have multiple cores
+    # to produce a predicted speedup measurement, which we cannot
+    # achieve in the sandbox.
+    "test_parallel_exec"
+  ];
+
+  maturinBuildFlags = [
+    "-m"
+    "crates/monty-python/Cargo.toml"
+  ];
+
+  pyproject = true;
+
+  pytestFlags = [
+    "--config-file"
+    "crates/monty-python/pyproject.toml"
   ];
 
   pythonImportsCheck = [ "pydantic_monty" ];

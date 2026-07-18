@@ -2,31 +2,31 @@
   lib,
   stdenv,
   fetchurl,
-  perl,
-  libx11,
-  libxinerama,
-  libjpeg,
-  libpng,
-  libtiff,
-  libwebp,
-  pkg-config,
-  librsvg,
-  glib,
-  gtk3,
-  libxext,
-  libxxf86vm,
-  poppler,
-  vlc,
-  ghostscript,
-  makeWrapper,
-  tzdata,
-  makeDesktopItem,
+  binutils,
   copyDesktopItems,
   directoryListingUpdater,
-  htmldoc,
-  binutils,
+  ghostscript,
+  glib,
+  gtk3,
   gzip,
+  htmldoc,
+  libjpeg,
+  libpng,
+  librsvg,
+  libtiff,
+  libwebp,
+  libx11,
+  libxext,
+  libxinerama,
+  libxxf86vm,
+  makeDesktopItem,
+  makeWrapper,
   p7zip,
+  perl,
+  pkg-config,
+  poppler,
+  tzdata,
+  vlc,
   xz,
   zip,
   extraRuntimeDeps ? [ ],
@@ -55,6 +55,7 @@ stdenv.mkDerivation (finalAttrs: {
     makeWrapper
     copyDesktopItems
   ];
+
   buildInputs = [
     perl
     libx11
@@ -81,13 +82,6 @@ stdenv.mkDerivation (finalAttrs: {
     perl make.pl build
     runHook postBuild
   '';
-
-  dontPatchELF = true;
-  # eaglemode expects doc to be in the root directory
-  forceShare = [
-    "man"
-    "info"
-  ];
 
   installPhase =
     let
@@ -120,33 +114,44 @@ stdenv.mkDerivation (finalAttrs: {
 
   desktopItems = [
     (makeDesktopItem {
-      name = "eaglemode";
-      exec = "eaglemode";
-      icon = "eaglemode";
-      desktopName = "Eagle Mode";
-      genericName = "Zoomable User Interface";
       categories = [
         "Game"
         "Graphics"
         "System"
         "Utility"
       ];
+
+      desktopName = "Eagle Mode";
+      exec = "eaglemode";
+      genericName = "Zoomable User Interface";
+      icon = "eaglemode";
+      name = "eaglemode";
     })
   ];
 
+  dontPatchELF = true;
+
+  # eaglemode expects doc to be in the root directory
+  forceShare = [
+    "man"
+    "info"
+  ];
+
   passthru.updateScript = directoryListingUpdater {
-    url = "https://eaglemode.sourceforge.net/download.html";
     extraRegex = "(?!.*(x86_64|setup64|livecd|amd64)).*";
+    url = "https://eaglemode.sourceforge.net/download.html";
   };
 
   meta = {
-    homepage = "https://eaglemode.sourceforge.net";
     description = "Zoomable User Interface";
+    homepage = "https://eaglemode.sourceforge.net";
     changelog = "https://eaglemode.sourceforge.net/ChangeLog.html";
     license = lib.licenses.gpl3;
+
     maintainers = with lib.maintainers; [
       chuangzhu
     ];
+
     platforms = lib.platforms.linux;
   };
 })

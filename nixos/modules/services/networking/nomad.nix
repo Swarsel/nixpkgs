@@ -14,76 +14,90 @@ in
   options = {
     services.nomad = {
       enable = mkEnableOption "Nomad, a distributed, highly available, datacenter-aware scheduler";
-
       package = mkPackageOption pkgs "nomad" { };
 
-      extraPackages = mkOption {
-        type = types.listOf types.package;
-        default = [ ];
+      credentials = mkOption {
+        default = { };
+
         description = ''
-          Extra packages to add to {env}`PATH` for the Nomad agent process.
+          Credentials envs used to configure nomad secrets.
         '';
-        example = literalExpression ''
-          with pkgs; [ cni-plugins ]
-        '';
+
+        example = {
+          logs_remote_write_password = "/run/keys/nomad_write_password";
+        };
+
+        type = types.attrsOf types.str;
       };
 
       dropPrivileges = mkOption {
-        type = types.bool;
         default = true;
+
         description = ''
           Whether the nomad agent should be run as a non-root nomad user.
         '';
+
+        type = types.bool;
       };
 
       enableDocker = mkOption {
-        type = types.bool;
         default = true;
+
         description = ''
           Enable Docker support. Needed for Nomad's docker driver.
 
           Note that the docker group membership is effectively equivalent
           to being root, see <https://github.com/moby/moby/issues/9976>.
         '';
+
+        type = types.bool;
+      };
+
+      extraPackages = mkOption {
+        default = [ ];
+
+        description = ''
+          Extra packages to add to {env}`PATH` for the Nomad agent process.
+        '';
+
+        example = literalExpression ''
+          with pkgs; [ cni-plugins ]
+        '';
+
+        type = types.listOf types.package;
       };
 
       extraSettingsPaths = mkOption {
-        type = types.listOf types.path;
         default = [ ];
+
         description = ''
           Additional settings paths used to configure nomad. These can be files or directories.
         '';
+
         example = literalExpression ''
           [ "/etc/nomad-mutable.json" "/run/keys/nomad-with-secrets.json" "/etc/nomad/config.d" ]
         '';
+
+        type = types.listOf types.path;
       };
 
       extraSettingsPlugins = mkOption {
-        type = types.listOf (types.either types.package types.path);
         default = [ ];
+
         description = ''
           Additional plugins dir used to configure nomad.
         '';
+
         example = literalExpression ''
           [ "<pluginDir>" pkgs.nomad-driver-nix pkgs.nomad-driver-podman  ]
         '';
-      };
 
-      credentials = mkOption {
-        description = ''
-          Credentials envs used to configure nomad secrets.
-        '';
-        type = types.attrsOf types.str;
-        default = { };
-
-        example = {
-          logs_remote_write_password = "/run/keys/nomad_write_password";
-        };
+        type = types.listOf (types.either types.package types.path);
       };
 
       settings = mkOption {
-        type = format.type;
         default = { };
+
         description = ''
           Configuration for Nomad. See the [documentation](https://www.nomadproject.io/docs/configuration)
           for supported values.
@@ -102,6 +116,7 @@ in
           the `DynamicUser` feature of systemd which directly
           manages and operates on `StateDirectory`.
         '';
+
         example = literalExpression ''
           {
             # A minimal config example:
@@ -114,28 +129,34 @@ in
             };
           }
         '';
+
+        type = format.type;
       };
     };
   };
 
   ##### implementation
   config = mkIf cfg.enable {
-    services.nomad.settings = {
-      # Agrees with `StateDirectory = "nomad"` set below.
-      data_dir = mkDefault "/var/lib/nomad";
-    };
+    assertions = [
+      {
+        assertion = cfg.dropPrivileges -> cfg.settings.data_dir == "/var/lib/nomad";
+        message = "settings.data_dir must be equal to \"/var/lib/nomad\" if dropPrivileges is true";
+      }
+    ];
 
     environment = {
       etc."nomad.json".source = format.generate "nomad.json" cfg.settings;
       systemPackages = [ cfg.package ];
     };
 
+    services.nomad.settings = {
+      # Agrees with `StateDirectory = "nomad"` set below.
+      data_dir = mkDefault "/var/lib/nomad";
+    };
+
     systemd.services.nomad = {
-      description = "Nomad";
-      wantedBy = [ "multi-user.target" ];
-      wants = [ "network-online.target" ];
       after = [ "network-online.target" ];
-      restartTriggers = [ config.environment.etc."nomad.json".source ];
+      description = "Nomad";
 
       path =
         cfg.extraPackages
@@ -146,10 +167,13 @@ in
           iptables
         ]);
 
+      restartTriggers = [ config.environment.etc."nomad.json".source ];
+
       serviceConfig = mkMerge [
         {
           DynamicUser = cfg.dropPrivileges;
           ExecReload = "${pkgs.coreutils}/bin/kill -HUP $MAINPID";
+
           ExecStart =
             let
               pluginsDir = pkgs.symlinkJoin {
@@ -162,15 +186,16 @@ in
             + concatMapStrings (key: " -config=\${CREDENTIALS_DIRECTORY}/${key}") (
               lib.attrNames cfg.credentials
             );
+
           KillMode = "process";
           KillSignal = "SIGINT";
           LimitNOFILE = 65536;
           LimitNPROC = "infinity";
+          LoadCredential = lib.mapAttrsToList (key: value: "${key}:${value}") cfg.credentials;
           OOMScoreAdjust = -1000;
           Restart = "on-failure";
           RestartSec = 2;
           TasksMax = "infinity";
-          LoadCredential = lib.mapAttrsToList (key: value: "${key}:${value}") cfg.credentials;
         }
         (mkIf cfg.enableDocker {
           SupplementaryGroups = "docker"; # space-separated string
@@ -181,17 +206,13 @@ in
       ];
 
       unitConfig = {
-        StartLimitIntervalSec = 10;
         StartLimitBurst = 3;
+        StartLimitIntervalSec = 10;
       };
-    };
 
-    assertions = [
-      {
-        assertion = cfg.dropPrivileges -> cfg.settings.data_dir == "/var/lib/nomad";
-        message = "settings.data_dir must be equal to \"/var/lib/nomad\" if dropPrivileges is true";
-      }
-    ];
+      wantedBy = [ "multi-user.target" ];
+      wants = [ "network-online.target" ];
+    };
 
     # Docker support requires the Docker daemon to be running.
     virtualisation.docker.enable = mkIf cfg.enableDocker true;

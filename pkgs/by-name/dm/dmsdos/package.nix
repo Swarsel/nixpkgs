@@ -2,8 +2,8 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  fetchpatch,
   cmake,
+  fetchpatch,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -21,9 +21,9 @@ stdenv.mkDerivation (finalAttrs: {
     # cmake-4 support:
     #   https://github.com/sandsmark/dmsdos/pull/1
     (fetchpatch {
+      hash = "sha256-olpnzPg/kbveUl0muwHKwI+DMGqXzxLrruFomf/SXjE=";
       name = "cmake-4.patch";
       url = "https://github.com/sandsmark/dmsdos/commit/94076ab27800e9cba41ab05e6bb2edbb421154d9.patch";
-      hash = "sha256-olpnzPg/kbveUl0muwHKwI+DMGqXzxLrruFomf/SXjE=";
     })
   ];
 
@@ -35,13 +35,15 @@ stdenv.mkDerivation (finalAttrs: {
     description = "Linux utilities to handle dos/win95 doublespace/drivespace/stacker";
     homepage = "https://github.com/sandsmark/dmsdos.git";
     changelog = "https://github.com/sandsmark/dmsdos/blob/${finalAttrs.src.rev}/NEWS";
+
     license = with lib.licenses; [
       lgpl2
       gpl2Plus
     ];
+
     maintainers = with lib.maintainers; [ matthewcroughan ];
-    mainProgram = "dmsdos";
     platforms = lib.platforms.all;
     badPlatforms = lib.platforms.darwin;
+    mainProgram = "dmsdos";
   };
 })

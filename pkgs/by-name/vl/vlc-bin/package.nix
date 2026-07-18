@@ -1,8 +1,8 @@
 {
   lib,
+  stdenv,
   fetchurl,
   makeWrapper,
-  stdenv,
   undmg,
   variant ?
     if (stdenv.hostPlatform.isDarwin && stdenv.hostPlatform.isAarch64) then
@@ -24,6 +24,7 @@ stdenv.mkDerivation (finalAttrs: {
 
   src = fetchurl {
     url = "http://get.videolan.org/vlc/${finalAttrs.version}/macosx/vlc-${finalAttrs.version}-${variant}.dmg";
+
     hash =
       {
         "arm64" = "sha256-/G+sCNh/U4UX1ErKDF56JEtnyMTLWJv0eDY6cxX9Xg0=";
@@ -32,8 +33,6 @@ stdenv.mkDerivation (finalAttrs: {
       }
       .${variant};
   };
-
-  sourceRoot = ".";
 
   nativeBuildInputs = [
     makeWrapper
@@ -50,13 +49,15 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  sourceRoot = ".";
+
   meta = {
     description = "Cross-platform media player and streaming server; precompiled binary for MacOS, repacked from official website";
     homepage = "https://www.videolan.org/vlc/";
-    downloadPage = "https://www.videolan.org/vlc/download-macosx.html";
     license = lib.licenses.lgpl21Plus;
-    mainProgram = "vlc";
+    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
     maintainers = with lib.maintainers; [ pcasaretto ];
+
     platforms = lib.systems.inspect.patternLogicalAnd (lib.systems.inspect.patterns.isDarwin) (
       {
         "arm64" = lib.systems.inspect.patterns.isAarch64;
@@ -65,6 +66,8 @@ stdenv.mkDerivation (finalAttrs: {
       }
       .${variant}
     );
-    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
+
+    mainProgram = "vlc";
+    downloadPage = "https://www.videolan.org/vlc/download-macosx.html";
   };
 })

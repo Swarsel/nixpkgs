@@ -2,21 +2,21 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  fetchpatch,
-  cmake,
-  perl,
-  wrapGAppsHook3,
-  qt6,
-  qt6Packages,
   calcmysky,
+  cmake,
+  exiv2,
+  fetchpatch,
+  gitUpdater,
   indilib,
   libnova,
-  exiv2,
-  nlopt,
-  testers,
-  xvfb-run,
-  gitUpdater,
   md4c,
+  nlopt,
+  perl,
+  qt6,
+  qt6Packages,
+  testers,
+  wrapGAppsHook3,
+  xvfb-run,
   withQtWebEngine ? lib.meta.availableOn stdenv.hostPlatform qt6.qtwebengine,
 }:
 
@@ -33,8 +33,8 @@ stdenv.mkDerivation (finalAttrs: {
 
   patches = [
     (fetchpatch {
-      url = "https://gitlab.archlinux.org/archlinux/packaging/packages/stellarium/-/raw/ab559b6e9349569278f83c2dfc83990e971a8cb2/qt-6.10.patch";
       hash = "sha256-a7zC9IQOj93VnPy8Bj/fLe4oJux7I4Edgj5OaKI4TZU=";
+      url = "https://gitlab.archlinux.org/archlinux/packaging/packages/stellarium/-/raw/ab559b6e9349569278f83c2dfc83990e971a8cb2/qt-6.10.patch";
     })
   ];
 
@@ -75,17 +75,15 @@ stdenv.mkDerivation (finalAttrs: {
     qt6.qtwebengine
   ];
 
+  # fatal error: 'QtSerialPort/QSerialPortInfo' file not found
+  env.NIX_CFLAGS_COMPILE = lib.optionalString stdenv.hostPlatform.isDarwin "-F${qt6.qtserialport}/lib";
+
   preConfigure = ''
     export SOURCE_DATE_EPOCH=$(date -d 20${lib.versions.major finalAttrs.version}0101 +%s)
   ''
   + lib.optionalString stdenv.hostPlatform.isDarwin ''
     export LC_ALL=en_US.UTF-8
   '';
-
-  # fatal error: 'QtSerialPort/QSerialPortInfo' file not found
-  env.NIX_CFLAGS_COMPILE = lib.optionalString stdenv.hostPlatform.isDarwin "-F${qt6.qtserialport}/lib";
-
-  dontWrapGApps = true;
 
   postInstall = lib.optionalString stdenv.hostPlatform.isDarwin ''
     makeWrapper $out/Applications/Stellarium.app/Contents/MacOS/Stellarium $out/bin/stellarium
@@ -95,9 +93,10 @@ stdenv.mkDerivation (finalAttrs: {
     qtWrapperArgs+=("''${gappsWrapperArgs[@]}")
   '';
 
+  dontWrapGApps = true;
+
   passthru = {
     tests.version = testers.testVersion {
-      package = finalAttrs.finalPackage;
       command = ''
         # Create a temporary home directory because stellarium aborts with an
         # error if it can't write some configuration files.
@@ -106,17 +105,20 @@ stdenv.mkDerivation (finalAttrs: {
         # stellarium can't be run in headless mode, therefore we need xvfb-run.
         HOME="$tmpdir" ${lib.getExe xvfb-run} stellarium --version
       '';
+
+      package = finalAttrs.finalPackage;
     };
+
     updateScript = gitUpdater { rev-prefix = "v"; };
   };
 
   meta = {
     description = "Free open-source planetarium";
-    mainProgram = "stellarium";
     homepage = "https://stellarium.org/";
     license = lib.licenses.gpl2Plus;
-    platforms = lib.platforms.unix;
     maintainers = with lib.maintainers; [ kilianar ];
+    platforms = lib.platforms.unix;
+    mainProgram = "stellarium";
     broken = stdenv.hostPlatform.isDarwin;
   };
 })

@@ -1,9 +1,9 @@
 {
-  extra-cmake-modules,
+  lib,
   fetchFromGitHub,
+  extra-cmake-modules,
   kpackage,
   libplasma,
-  lib,
   lz4,
   mkKdeDerivation,
   mpv-unwrapped,
@@ -32,11 +32,14 @@ mkKdeDerivation {
     ./qt-6.10-fix.patch
   ];
 
-  extraNativeBuildInputs = [
-    kpackage
-    pkg-config
-    (python3.withPackages (ps: with ps; [ websockets ]))
-  ];
+  postInstall = ''
+    cd $out/share/plasma/wallpapers/com.github.catsout.wallpaperEngineKde
+    chmod +x ./contents/pyext.py
+    patchShebangs --build ./contents/pyext.py
+    substituteInPlace ./contents/ui/Pyext.qml \
+       --replace-fail NIX_STORE_PACKAGE_PATH ${placeholder "out"}
+    cd -
+  '';
 
   extraBuildInputs = [
     extra-cmake-modules
@@ -58,14 +61,11 @@ mkKdeDerivation {
     "-DCMAKE_CXX_FLAGS=-Wno-error=stringop-overflow"
   ];
 
-  postInstall = ''
-    cd $out/share/plasma/wallpapers/com.github.catsout.wallpaperEngineKde
-    chmod +x ./contents/pyext.py
-    patchShebangs --build ./contents/pyext.py
-    substituteInPlace ./contents/ui/Pyext.qml \
-       --replace-fail NIX_STORE_PACKAGE_PATH ${placeholder "out"}
-    cd -
-  '';
+  extraNativeBuildInputs = [
+    kpackage
+    pkg-config
+    (python3.withPackages (ps: with ps; [ websockets ]))
+  ];
 
   meta = {
     description = "KDE wallpaper plugin integrating Wallpaper Engine";

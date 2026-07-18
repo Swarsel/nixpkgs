@@ -1,20 +1,19 @@
 {
   lib,
-  python3Packages,
   fetchFromGitHub,
-  wrapGAppsHook3,
   gobject-introspection,
   gtk3,
   gtksourceview4,
   gtkspell3,
   librsvg,
+  python3Packages,
   webkitgtk_4_1,
+  wrapGAppsHook3,
 }:
 
 python3Packages.buildPythonApplication (finalAttrs: {
   pname = "formiko";
   version = "1.5.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "ondratu";
@@ -22,10 +21,6 @@ python3Packages.buildPythonApplication (finalAttrs: {
     tag = finalAttrs.version;
     hash = "sha256-slfpkckCvxHJ/jlBP7QAhzaf9TAcS6biDQBZcBTyTKI=";
   };
-
-  build-system = [
-    python3Packages.setuptools
-  ];
 
   nativeBuildInputs = [
     wrapGAppsHook3
@@ -42,13 +37,19 @@ python3Packages.buildPythonApplication (finalAttrs: {
     webkitgtk_4_1
   ];
 
+  # Needs a display
+  doCheck = false;
+
+  build-system = [
+    python3Packages.setuptools
+  ];
+
   dependencies = [
     python3Packages.pygobject3
     python3Packages.docutils
   ];
 
-  # Needs a display
-  doCheck = false;
+  pyproject = true;
 
   meta = {
     description = "reStructuredText editor and live previewer";

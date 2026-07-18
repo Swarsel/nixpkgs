@@ -1,14 +1,13 @@
 {
   lib,
-  rel,
+  addonUpdateScript,
   buildKodiAddon,
   fetchzip,
-  addonUpdateScript,
+  rel,
 }:
 
 buildKodiAddon rec {
   pname = "six";
-  namespace = "script.module.six";
   version = "1.16.0+matrix.1";
 
   src = fetchzip {
@@ -16,16 +15,19 @@ buildKodiAddon rec {
     sha256 = "sha256-d6BNpnTg6K7NPX3uWp5X0rog33C+B7YoAtLH/CrUYno=";
   };
 
+  namespace = "script.module.six";
+
   passthru = {
     pythonPath = "lib";
+
     updateScript = addonUpdateScript {
       attrPath = "kodi.packages.six";
     };
   };
 
   meta = {
-    homepage = "https://pypi.org/project/six/";
     description = "Python 2 and 3 compatibility utilities";
+    homepage = "https://pypi.org/project/six/";
     license = lib.licenses.mit;
     teams = [ lib.teams.kodi ];
   };

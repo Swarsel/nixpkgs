@@ -9,25 +9,17 @@
   pkg-config,
   pytest-asyncio,
   pytestCheckHook,
-  rustc,
   rustPlatform,
+  rustc,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "blasthttp";
   version = "0.9.0";
-  pyproject = true;
-
-  __structuredAttrs = true;
 
   src = fetchPypi {
     inherit (finalAttrs) pname version;
     hash = "sha256-JuoGy+QdBsVPMtD0T4Y/NSoeJcO7dwg3HmpqHxTxCIc=";
-  };
-
-  cargoDeps = rustPlatform.fetchCargoVendor {
-    inherit (finalAttrs) pname version src;
-    hash = "sha256-1+OFAD9n8JntZSV+PZbYLPRM/XDlFwgrEMFGv/LzTN8=";
   };
 
   postPatch = ''
@@ -35,11 +27,20 @@ buildPythonPackage (finalAttrs: {
     rm .cargo/config.toml
   '';
 
-  __darwinAllowLocalNetworking = true;
+  buildInputs = [ openssl ];
 
   env = {
     OPENSSL_NO_VENDOR = "1";
   };
+
+  nativeCheckInputs = [
+    openssl
+    pytest-asyncio
+    pytestCheckHook
+  ];
+
+  __darwinAllowLocalNetworking = true;
+  __structuredAttrs = true;
 
   build-system = [
     cargo
@@ -49,15 +50,10 @@ buildPythonPackage (finalAttrs: {
     rustc
   ];
 
-  buildInputs = [ openssl ];
-
-  nativeCheckInputs = [
-    openssl
-    pytest-asyncio
-    pytestCheckHook
-  ];
-
-  pythonImportsCheck = [ "blasthttp" ];
+  cargoDeps = rustPlatform.fetchCargoVendor {
+    inherit (finalAttrs) pname version src;
+    hash = "sha256-1+OFAD9n8JntZSV+PZbYLPRM/XDlFwgrEMFGv/LzTN8=";
+  };
 
   disabledTestPaths = lib.optionals stdenv.hostPlatform.isDarwin [
     "tests/python/test_ssl_verify.py"
@@ -69,6 +65,8 @@ buildPythonPackage (finalAttrs: {
     "test_redirect_onto_no_proxy_host_reevaluates_to_direct"
   ];
 
+  pyproject = true;
+  pythonImportsCheck = [ "blasthttp" ];
   passthru.updateScript = nix-update-script { };
 
   meta = {

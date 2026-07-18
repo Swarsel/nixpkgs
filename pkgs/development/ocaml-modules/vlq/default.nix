@@ -1,9 +1,9 @@
 {
   lib,
-  buildDunePackage,
   fetchurl,
-  ocaml,
+  buildDunePackage,
   dune-configurator,
+  ocaml,
 }:
 
 buildDunePackage rec {
@@ -19,8 +19,8 @@ buildDunePackage rec {
 
   meta = {
     description = "Encoding variable-length quantities, in particular base64";
-    license = lib.licenses.mit;
     homepage = "https://github.com/flowtype/ocaml-vlq";
+    license = lib.licenses.mit;
     maintainers = [ lib.maintainers.nomeata ];
     broken = lib.versionAtLeast ocaml.version "5.0";
   };

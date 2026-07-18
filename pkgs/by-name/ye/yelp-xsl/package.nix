@@ -1,14 +1,14 @@
 {
   lib,
   stdenv,
-  meson,
-  ninja,
-  gettext,
   fetchurl,
-  pkg-config,
+  gettext,
+  gnome,
   itstool,
   libxslt,
-  gnome,
+  meson,
+  ninja,
+  pkg-config,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -19,6 +19,11 @@ stdenv.mkDerivation (finalAttrs: {
     url = "mirror://gnome/sources/yelp-xsl/${lib.versions.major finalAttrs.version}/yelp-xsl-${finalAttrs.version}.tar.xz";
     hash = "sha256-WdQ6j4/me3hPFPmgTdSnoJKn9KZKZecbkP4CpHpQ++w=";
   };
+
+  postPatch = ''
+    patchShebangs \
+      xslt/common/domains/gen_yelp_xml.sh
+  '';
 
   nativeBuildInputs = [
     pkg-config
@@ -31,11 +36,6 @@ stdenv.mkDerivation (finalAttrs: {
 
   doCheck = true;
 
-  postPatch = ''
-    patchShebangs \
-      xslt/common/domains/gen_yelp_xml.sh
-  '';
-
   passthru = {
     updateScript = gnome.updateScript {
       packageName = "yelp-xsl";
@@ -43,9 +43,9 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   meta = {
-    homepage = "https://gitlab.gnome.org/GNOME/yelp-xsl";
     description = "Yelp's universal stylesheets for Mallard and DocBook";
-    teams = [ lib.teams.gnome ];
+    homepage = "https://gitlab.gnome.org/GNOME/yelp-xsl";
+
     license = with lib.licenses; [
       # See https://gitlab.gnome.org/GNOME/yelp-xsl/blob/master/COPYING
       # Stylesheets
@@ -55,6 +55,8 @@ stdenv.mkDerivation (finalAttrs: {
       # highlight.js
       bsd3
     ];
+
     platforms = lib.platforms.unix;
+    teams = [ lib.teams.gnome ];
   };
 })

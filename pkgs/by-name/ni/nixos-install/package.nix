@@ -1,16 +1,24 @@
 {
   lib,
-  replaceVarsWith,
-  runtimeShell,
   installShellFiles,
   jq,
   nixos-enter,
-  util-linuxMinimal,
   nixosTests,
+  replaceVarsWith,
+  runtimeShell,
+  util-linuxMinimal,
 }:
 replaceVarsWith {
-  name = "nixos-install";
   src = ./nixos-install.sh;
+  nativeBuildInputs = [ installShellFiles ];
+
+  postInstall = ''
+    installManPage ${./nixos-install.8}
+  '';
+
+  dir = "bin";
+  isExecutable = true;
+  name = "nixos-install";
 
   replacements = {
     inherit runtimeShell;
@@ -21,15 +29,6 @@ replaceVarsWith {
       util-linuxMinimal
     ];
   };
-
-  dir = "bin";
-  isExecutable = true;
-
-  nativeBuildInputs = [ installShellFiles ];
-
-  postInstall = ''
-    installManPage ${./nixos-install.8}
-  '';
 
   passthru.tests.installer-simpleUefiSystemdBoot = nixosTests.installer.simpleUefiSystemdBoot;
 

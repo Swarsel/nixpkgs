@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule (finalAttrs: {
@@ -16,15 +16,14 @@ buildGoModule (finalAttrs: {
   };
 
   vendorHash = "sha256-D87b/LhHnu8xE0wRdB/wLIuf5NlqrVnKt2WAF29bdZo=";
-
   subPackages = [ "." ];
 
   meta = {
     description = "Pluggable code security analysis tool";
-    mainProgram = "checkmate";
     homepage = "https://github.com/adedayo/checkmate";
     changelog = "https://github.com/adedayo/checkmate/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.bsd3;
     maintainers = with lib.maintainers; [ fab ];
+    mainProgram = "checkmate";
   };
 })

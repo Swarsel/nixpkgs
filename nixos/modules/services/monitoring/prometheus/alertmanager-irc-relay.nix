@@ -13,17 +13,27 @@ in
 {
   options.services.prometheus.alertmanagerIrcRelay = {
     enable = lib.mkEnableOption "Alertmanager IRC Relay";
-
     package = lib.mkPackageOption pkgs "alertmanager-irc-relay" { };
 
     extraFlags = lib.mkOption {
-      type = lib.types.listOf lib.types.str;
       default = [ ];
       description = "Extra command line options to pass to alertmanager-irc-relay.";
+      type = lib.types.listOf lib.types.str;
     };
 
     settings = lib.mkOption {
-      type = configFormat.type;
+      description = ''
+        Configuration for Alertmanager IRC Relay as a Nix attribute set.
+        For a reference, check out the
+        [example configuration](https://github.com/google/alertmanager-irc-relay#configuring-and-running-the-bot)
+        and the
+        [source code](https://github.com/google/alertmanager-irc-relay/blob/master/config.go).
+
+        Note: The webhook's URL MUST point to the IRC channel where the message
+        should be posted. For `#mychannel` from the example, this would be
+        `http://localhost:8080/mychannel`.
+      '';
+
       example = lib.literalExpression ''
         {
           http_host = "localhost";
@@ -38,57 +48,44 @@ in
           ];
         }
       '';
-      description = ''
-        Configuration for Alertmanager IRC Relay as a Nix attribute set.
-        For a reference, check out the
-        [example configuration](https://github.com/google/alertmanager-irc-relay#configuring-and-running-the-bot)
-        and the
-        [source code](https://github.com/google/alertmanager-irc-relay/blob/master/config.go).
 
-        Note: The webhook's URL MUST point to the IRC channel where the message
-        should be posted. For `#mychannel` from the example, this would be
-        `http://localhost:8080/mychannel`.
-      '';
+      type = configFormat.type;
     };
   };
 
   config = lib.mkIf cfg.enable {
     systemd.services.alertmanager-irc-relay = {
+      after = [ "network-online.target" ];
       description = "Alertmanager IRC Relay";
 
-      wantedBy = [ "multi-user.target" ];
-      after = [ "network-online.target" ];
-      wants = [ "network-online.target" ];
-
       serviceConfig = {
+        DynamicUser = true;
+
         ExecStart = ''
           ${cfg.package}/bin/alertmanager-irc-relay \
           -config ${configFile} \
           ${lib.escapeShellArgs cfg.extraFlags}
         '';
 
-        DynamicUser = true;
         NoNewPrivileges = true;
-
-        ProtectProc = "invisible";
-        ProtectSystem = "strict";
-        ProtectHome = "tmpfs";
-
-        PrivateTmp = true;
         PrivateDevices = true;
         PrivateIPC = true;
-
-        ProtectHostname = true;
+        PrivateTmp = true;
         ProtectClock = true;
-        ProtectKernelTunables = true;
-        ProtectKernelModules = true;
-        ProtectKernelLogs = true;
         ProtectControlGroups = true;
+        ProtectHome = "tmpfs";
+        ProtectHostname = true;
+        ProtectKernelLogs = true;
+        ProtectKernelModules = true;
+        ProtectKernelTunables = true;
+        ProtectProc = "invisible";
+        ProtectSystem = "strict";
 
         RestrictAddressFamilies = [
           "AF_INET"
           "AF_INET6"
         ];
+
         RestrictRealtime = true;
         RestrictSUIDSGID = true;
 
@@ -101,6 +98,9 @@ in
           "~@swap"
         ];
       };
+
+      wantedBy = [ "multi-user.target" ];
+      wants = [ "network-online.target" ];
     };
   };
 

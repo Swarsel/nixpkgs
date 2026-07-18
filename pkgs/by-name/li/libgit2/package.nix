@@ -3,34 +3,27 @@
   stdenv,
   fetchFromGitHub,
   cmake,
-  pkg-config,
-  python3,
-  zlib,
-  libssh2,
-  openssl,
-  pcre2,
-  libiconv,
-  staticBuild ? stdenv.hostPlatform.isStatic,
+  gitstatus,
+  krb5,
   # for passthru.tests
   libgit2-glib,
-  python3Packages,
-  gitstatus,
+  libiconv,
+  libssh2,
   llhttp,
-  withGssapi ? false,
+  openssl,
+  pcre2,
+  pkg-config,
+  python3,
+  python3Packages,
+  zlib,
+  staticBuild ? stdenv.hostPlatform.isStatic,
   withExperimentalSha256 ? false,
-  krb5,
+  withGssapi ? false,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
   pname = "libgit2";
   version = "1.9.4";
-  # also check the following packages for updates: python3Packages.pygit2 and libgit2-glib
-
-  outputs = [
-    "lib"
-    "dev"
-    "out"
-  ];
 
   src = fetchFromGitHub {
     owner = "libgit2";
@@ -39,22 +32,11 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-ZKUiz3pdFE2SKxh53X2oyr7hs32Njj5YVA0OXDXz7h0=";
   };
 
-  cmakeFlags = [
-    "-DREGEX_BACKEND=pcre2"
-    "-DUSE_HTTP_PARSER=llhttp"
-    "-DUSE_SSH=ON"
-    (lib.cmakeBool "USE_GSSAPI" withGssapi)
-    (lib.cmakeBool "EXPERIMENTAL_SHA256" withExperimentalSha256)
-    "-DBUILD_SHARED_LIBS=${if staticBuild then "OFF" else "ON"}"
-  ]
-  ++ lib.optionals stdenv.hostPlatform.isWindows [
-    "-DDLLTOOL=${stdenv.cc.bintools.targetPrefix}dlltool"
-    # For ws2_32, referred to by a `*.pc` file
-    "-DCMAKE_LIBRARY_PATH=${stdenv.cc.libc}/lib"
-  ]
-  ++ lib.optionals stdenv.hostPlatform.isOpenBSD [
-    # openbsd headers fail with default c90
-    "-DCMAKE_C_STANDARD=99"
+  # also check the following packages for updates: python3Packages.pygit2 and libgit2-glib
+  outputs = [
+    "lib"
+    "dev"
+    "out"
   ];
 
   nativeBuildInputs = [
@@ -74,7 +56,26 @@ stdenv.mkDerivation (finalAttrs: {
 
   propagatedBuildInputs = lib.optional (!stdenv.hostPlatform.isLinux) libiconv;
 
+  cmakeFlags = [
+    "-DREGEX_BACKEND=pcre2"
+    "-DUSE_HTTP_PARSER=llhttp"
+    "-DUSE_SSH=ON"
+    (lib.cmakeBool "USE_GSSAPI" withGssapi)
+    (lib.cmakeBool "EXPERIMENTAL_SHA256" withExperimentalSha256)
+    "-DBUILD_SHARED_LIBS=${if staticBuild then "OFF" else "ON"}"
+  ]
+  ++ lib.optionals stdenv.hostPlatform.isWindows [
+    "-DDLLTOOL=${stdenv.cc.bintools.targetPrefix}dlltool"
+    # For ws2_32, referred to by a `*.pc` file
+    "-DCMAKE_LIBRARY_PATH=${stdenv.cc.libc}/lib"
+  ]
+  ++ lib.optionals stdenv.hostPlatform.isOpenBSD [
+    # openbsd headers fail with default c90
+    "-DCMAKE_C_STANDARD=99"
+  ];
+
   doCheck = true;
+
   checkPhase = ''
     testArgs=(-v -xonline)
 
@@ -105,12 +106,12 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   meta = {
-    changelog = "https://github.com/libgit2/libgit2/releases/tag/${finalAttrs.src.tag}";
     description = "Linkable library implementation of Git that you can use in your application";
-    mainProgram = "git2";
     homepage = "https://libgit2.org/";
+    changelog = "https://github.com/libgit2/libgit2/releases/tag/${finalAttrs.src.tag}";
     license = lib.licenses.gpl2Only;
-    platforms = lib.platforms.all;
     maintainers = with lib.maintainers; [ SuperSandro2000 ];
+    platforms = lib.platforms.all;
+    mainProgram = "git2";
   };
 })

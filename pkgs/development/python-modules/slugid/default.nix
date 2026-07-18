@@ -1,13 +1,12 @@
 {
-  buildPythonPackage,
   lib,
   fetchFromGitHub,
+  buildPythonPackage,
 }:
 
 buildPythonPackage rec {
   pname = "slugid";
   version = "2.0.0";
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "taskcluster";
@@ -17,7 +16,7 @@ buildPythonPackage rec {
   };
 
   doCheck = false; # has no tests
-
+  format = "setuptools";
   pythonImportsCheck = [ "slugid" ];
 
   meta = {

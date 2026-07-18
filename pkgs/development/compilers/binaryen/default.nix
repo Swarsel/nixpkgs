@@ -1,21 +1,21 @@
 {
   lib,
   stdenv,
-  cmake,
-  python3,
   fetchFromGitHub,
+  cmake,
   emscripten,
+  filecheck,
   gtest,
   lit,
   nodejs,
-  filecheck,
+  python3,
 }:
 let
   testsuite = fetchFromGitHub {
+    hash = "sha256-8VirKLRro0iST58Rfg17u4tTO57KNC/7F/NB43dZ7w4=";
     owner = "WebAssembly";
     repo = "testsuite";
     rev = "4b24564c844e3d34bf46dfcb3c774ee5163e31cc";
-    hash = "sha256-8VirKLRro0iST58Rfg17u4tTO57KNC/7F/NB43dZ7w4=";
   };
 in
 stdenv.mkDerivation rec {
@@ -29,12 +29,12 @@ stdenv.mkDerivation rec {
     hash = "sha256-rmCNBrKHVozjzyWPAD4pZw0uViMMRRQsZALm4jbYIJk=";
   };
 
+  strictDeps = true;
+
   nativeBuildInputs = [
     cmake
     python3
   ];
-
-  strictDeps = true;
 
   preConfigure = ''
     if [ $doCheck -eq 1 ]; then
@@ -52,12 +52,16 @@ stdenv.mkDerivation rec {
     fi
   '';
 
+  doCheck = (stdenv.hostPlatform.isLinux || stdenv.hostPlatform.isDarwin);
+
   nativeCheckInputs = [
     lit
     nodejs
     filecheck
   ];
+
   checkInputs = [ gtest ];
+
   checkPhase = ''
     LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$PWD/lib python3 ../check.py $tests
   '';
@@ -84,16 +88,17 @@ stdenv.mkDerivation rec {
     "validator"
   ];
 
-  doCheck = (stdenv.hostPlatform.isLinux || stdenv.hostPlatform.isDarwin);
+  passthru.tests = { inherit emscripten; };
 
   meta = {
-    homepage = "https://github.com/WebAssembly/binaryen";
     description = "Compiler infrastructure and toolchain library for WebAssembly, in C++";
-    platforms = lib.platforms.all;
+    homepage = "https://github.com/WebAssembly/binaryen";
+    license = lib.licenses.asl20;
+
     maintainers = with lib.maintainers; [
       willcohen
     ];
-    license = lib.licenses.asl20;
+
+    platforms = lib.platforms.all;
   };
-  passthru.tests = { inherit emscripten; };
 }

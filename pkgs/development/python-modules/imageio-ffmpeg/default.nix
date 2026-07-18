@@ -1,23 +1,20 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  replaceVars,
+  buildPythonPackage,
   ffmpeg,
-
-  # build-system
-  setuptools,
-
   # checks
   psutil,
   pytestCheckHook,
   python,
+  replaceVars,
+  # build-system
+  setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "imageio-ffmpeg";
   version = "0.6.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "imageio";
@@ -32,18 +29,9 @@ buildPythonPackage rec {
     })
   ];
 
-  build-system = [ setuptools ];
-
   nativeCheckInputs = [
     psutil
     pytestCheckHook
-  ];
-
-  disabledTestPaths = [
-    # network access
-    "tests/test_io.py"
-    "tests/test_special.py"
-    "tests/test_terminate.py"
   ];
 
   postCheck = ''
@@ -53,12 +41,22 @@ buildPythonPackage rec {
     EOF
   '';
 
+  build-system = [ setuptools ];
+
+  disabledTestPaths = [
+    # network access
+    "tests/test_io.py"
+    "tests/test_special.py"
+    "tests/test_terminate.py"
+  ];
+
+  pyproject = true;
   pythonImportsCheck = [ "imageio_ffmpeg" ];
 
   meta = {
-    changelog = "https://github.com/imageio/imageio-ffmpeg/releases/tag/${src.tag}";
     description = "FFMPEG wrapper for Python";
     homepage = "https://github.com/imageio/imageio-ffmpeg";
+    changelog = "https://github.com/imageio/imageio-ffmpeg/releases/tag/${src.tag}";
     license = lib.licenses.bsd2;
     maintainers = [ lib.maintainers.pmiddend ];
   };

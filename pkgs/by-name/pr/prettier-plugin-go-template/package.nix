@@ -1,7 +1,7 @@
 {
   lib,
-  buildNpmPackage,
   fetchFromGitHub,
+  buildNpmPackage,
 }:
 
 buildNpmPackage {
@@ -17,8 +17,6 @@ buildNpmPackage {
 
   npmDepsHash = "sha256-PpJnVZFRxpUHux2jIBDtyBS4qNo6IJY4kwTAq6stEVQ=";
 
-  dontNpmPrune = true;
-
   # Fixes error: Cannot find module 'prettier'
   postInstall = ''
     pushd "$nodeModulesPath"
@@ -26,11 +24,13 @@ buildNpmPackage {
     popd
   '';
 
+  dontNpmPrune = true;
+
   meta = {
     description = "Fixes prettier formatting for go templates";
-    mainProgram = "prettier-plugin-go-template";
     homepage = "https://github.com/NiklasPor/prettier-plugin-go-template";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ jukremer ];
+    mainProgram = "prettier-plugin-go-template";
   };
 }

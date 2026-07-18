@@ -15,19 +15,20 @@
 buildPythonPackage rec {
   pname = "google-cloud-tasks";
   version = "2.23.0";
-  pyproject = true;
 
   src = fetchPypi {
-    pname = "google_cloud_tasks";
     inherit version;
     hash = "sha256-ptosEUpNtaWVk+umSYekv2lzoPSLGjGj1Kz/tvTHvrk=";
+    pname = "google_cloud_tasks";
   };
 
-  build-system = [ setuptools ];
-
-  pythonRelaxDeps = [
-    "protobuf"
+  nativeCheckInputs = [
+    mock
+    pytest-asyncio
+    pytestCheckHook
   ];
+
+  build-system = [ setuptools ];
 
   dependencies = [
     google-api-core
@@ -37,22 +38,22 @@ buildPythonPackage rec {
   ]
   ++ google-api-core.optional-dependencies.grpc;
 
-  nativeCheckInputs = [
-    mock
-    pytest-asyncio
-    pytestCheckHook
-  ];
-
   disabledTests = [
     # Test requires credentials
     "test_list_queues"
   ];
+
+  pyproject = true;
 
   pythonImportsCheck = [
     "google.cloud.tasks"
     "google.cloud.tasks_v2"
     "google.cloud.tasks_v2beta2"
     "google.cloud.tasks_v2beta3"
+  ];
+
+  pythonRelaxDeps = [
+    "protobuf"
   ];
 
   meta = {

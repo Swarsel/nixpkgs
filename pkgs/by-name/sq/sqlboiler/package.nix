@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule (finalAttrs: {
@@ -16,6 +16,7 @@ buildGoModule (finalAttrs: {
   };
 
   vendorHash = "sha256-ULoyMN54RIFST6P91V3MnRrfiC7+o3LmUFdc0pIqj90=";
+  doCheck = false;
 
   tags = [
     "mysql"
@@ -29,8 +30,6 @@ buildGoModule (finalAttrs: {
     "sqlite3"
     "sqlboiler"
   ];
-
-  doCheck = false;
 
   meta = {
     description = "Generate a Go ORM tailored to your database schema";

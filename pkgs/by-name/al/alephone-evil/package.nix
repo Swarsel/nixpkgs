@@ -1,4 +1,4 @@
-{ alephone, fetchurl }:
+{ fetchurl, alephone }:
 
 alephone.makeWrapper {
   pname = "marathon-evil";
@@ -6,8 +6,8 @@ alephone.makeWrapper {
   desktopName = "Marathon-Evil";
 
   zip = fetchurl {
-    url = "http://files3.bungie.org/trilogy/MarathonEvil.zip";
     hash = "sha256-Ja3kvg6fCkRWURgw4av1X0iglTkLrozvAqFnceX60SI=";
+    url = "http://files3.bungie.org/trilogy/MarathonEvil.zip";
   };
 
   meta = {

@@ -3,21 +3,21 @@
   stdenv,
   fetchFromGitHub,
   cmake,
-  pkg-config,
-  which,
-  zip,
-  wxwidgets_3_2,
-  gtk3,
-  sfml_2,
-  fluidsynth,
   curl,
+  fluidsynth,
   ftgl,
   glew,
+  gtk3,
+  libwebp,
   lua,
   mpg123,
-  wrapGAppsHook3,
+  pkg-config,
+  sfml_2,
   unstableGitUpdater,
-  libwebp,
+  which,
+  wrapGAppsHook3,
+  wxwidgets_3_2,
+  zip,
 }:
 
 stdenv.mkDerivation {
@@ -72,9 +72,9 @@ stdenv.mkDerivation {
   meta = {
     description = "Doom editor";
     homepage = "http://slade.mancubus.net/";
-    mainProgram = "slade";
     license = lib.licenses.gpl2Only; # https://github.com/sirjuddington/SLADE/issues/1754
-    platforms = lib.platforms.linux;
     maintainers = with lib.maintainers; [ Gliczy ];
+    platforms = lib.platforms.linux;
+    mainProgram = "slade";
   };
 }

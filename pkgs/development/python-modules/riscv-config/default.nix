@@ -1,8 +1,8 @@
 {
   lib,
+  fetchFromGitHub,
   buildPythonPackage,
   cerberus,
-  fetchFromGitHub,
   pyyaml,
   ruamel-yaml,
   setuptools,
@@ -11,7 +11,6 @@
 buildPythonPackage rec {
   pname = "riscv-config";
   version = "3.18.3";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "riscv-software-src";
@@ -20,8 +19,8 @@ buildPythonPackage rec {
     hash = "sha256-eaHi6ezgU8gQYH97gCS2TzEzIP3F4zfn7uiA/To2Gmc=";
   };
 
-  pythonRelaxDeps = [ "pyyaml" ];
-
+  # Module has no tests
+  doCheck = false;
   build-system = [ setuptools ];
 
   dependencies = [
@@ -30,10 +29,9 @@ buildPythonPackage rec {
     ruamel-yaml
   ];
 
-  # Module has no tests
-  doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "riscv_config" ];
+  pythonRelaxDeps = [ "pyyaml" ];
 
   meta = {
     description = "RISC-V configuration validator";

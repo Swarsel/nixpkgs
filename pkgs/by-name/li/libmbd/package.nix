@@ -1,13 +1,13 @@
 {
+  lib,
   stdenv,
   fetchFromGitHub,
-  lib,
-  cmake,
-  mpi,
   blas,
-  lapack,
-  scalapack,
+  cmake,
   gfortran,
+  lapack,
+  mpi,
+  scalapack,
 }:
 
 assert !blas.isILP64;
@@ -24,12 +24,6 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-ra5nPH7wTlATHWM1QiMZ43P9q9wDfV9CUhm7T0nj3kk=";
   };
 
-  preConfigure = ''
-    cat > cmake/libMBDVersionTag.cmake << EOF
-      set(VERSION_TAG "${finalAttrs.version}")
-    EOF
-  '';
-
   nativeBuildInputs = [
     cmake
     gfortran
@@ -43,11 +37,17 @@ stdenv.mkDerivation (finalAttrs: {
 
   propagatedBuildInputs = [ mpi ];
 
+  preConfigure = ''
+    cat > cmake/libMBDVersionTag.cmake << EOF
+      set(VERSION_TAG "${finalAttrs.version}")
+    EOF
+  '';
+
   meta = {
     description = "Many-body dispersion library";
     homepage = "https://github.com/libmbd/libmbd";
     license = lib.licenses.mpl20;
-    platforms = lib.platforms.linux;
     maintainers = [ lib.maintainers.sheepforce ];
+    platforms = lib.platforms.linux;
   };
 })

@@ -2,9 +2,6 @@
   lib,
   stdenv,
   fetchFromGitLab,
-  meson,
-  ninja,
-  pkg-config,
   dri-pkgconfig-stub,
   libdrm,
   libpciaccess,
@@ -24,22 +21,25 @@
   libxv,
   libxvmc,
   libxxf86vm,
+  meson,
+  ninja,
   pixman,
+  pkg-config,
   valgrind,
-  xorgproto,
   xorg-server,
+  xorgproto,
 }:
 stdenv.mkDerivation (finalAttrs: {
   pname = "xf86-video-intel";
   version = "unstable-2025-03-21";
 
   src = fetchFromGitLab {
-    domain = "gitlab.freedesktop.org";
-    group = "xorg";
     owner = "driver";
     repo = "xf86-video-intel";
     rev = "4a64400ec6a7d8c0aba0e6a39b16a5e86d0af843";
     hash = "sha256-bwyNVHSTnbyxU6059nITk4TNBEly39xPB67gGOPkmYU=";
+    domain = "gitlab.freedesktop.org";
+    group = "xorg";
   };
 
   patches = [
@@ -98,11 +98,14 @@ stdenv.mkDerivation (finalAttrs: {
   meta = {
     description = "Open-source Xorg graphics driver for Intel graphics";
     homepage = "https://gitlab.freedesktop.org/xorg/driver/xf86-video-intel";
+
     license = with lib.licenses; [
       mit
       hpndSellVariant
     ];
+
     maintainers = [ ];
+
     platforms = [
       "i686-linux"
       "x86_64-linux"

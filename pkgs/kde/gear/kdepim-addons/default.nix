@@ -1,20 +1,17 @@
 {
+  alpaka,
+  cargo,
+  corrosion,
+  discount,
   mkKdeDerivation,
-  sources,
   pkg-config,
   rustPlatform,
-  cargo,
   rustc,
-  discount,
-  corrosion,
-  alpaka,
+  sources,
 }:
 mkKdeDerivation rec {
-  pname = "kdepim-addons";
-
   inherit (sources.${pname}) version;
-
-  cargoRoot = "plugins/webengineurlinterceptor/adblock";
+  pname = "kdepim-addons";
 
   cargoDeps = rustPlatform.fetchCargoVendor {
     inherit pname version cargoRoot;
@@ -22,16 +19,18 @@ mkKdeDerivation rec {
     hash = "sha256-t62ThhOFWIqk+tgq+0ERSni2at+c1/9VHG88if6xG7A=";
   };
 
-  extraNativeBuildInputs = [
-    pkg-config
-    rustPlatform.cargoSetupHook
-    cargo
-    rustc
-  ];
+  cargoRoot = "plugins/webengineurlinterceptor/adblock";
 
   extraBuildInputs = [
     discount
     corrosion
     alpaka
+  ];
+
+  extraNativeBuildInputs = [
+    pkg-config
+    rustPlatform.cargoSetupHook
+    cargo
+    rustc
   ];
 }

@@ -19,8 +19,8 @@ stdenv.mkDerivation (finalAttrs: {
     ./connect.patch
     ./service-name.patch
     (fetchpatch {
-      url = "https://src.fedoraproject.org/rpms/jwhois/raw/422e2326397c7a48df61acb8ef649864a874272b/f/jwhois-4.0-gcc15-fix.patch";
       hash = "sha256-bBZk2GUu8Y66u4u+zJxY/fxzzc2y17ECEJO6uNz9ngw=";
+      url = "https://src.fedoraproject.org/rpms/jwhois/raw/422e2326397c7a48df61acb8ef649864a874272b/f/jwhois-4.0-gcc15-fix.patch";
     })
   ];
 
@@ -33,12 +33,11 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   makeFlags = [ "AR=${stdenv.cc.bintools.targetPrefix}ar" ];
+  env.NIX_LDFLAGS = lib.optionalString stdenv.hostPlatform.isDarwin "-liconv";
 
   postInstall = ''
     ln -s $out/bin/jwhois $out/bin/whois
   '';
-
-  env.NIX_LDFLAGS = lib.optionalString stdenv.hostPlatform.isDarwin "-liconv";
 
   meta = {
     description = "Client for the WHOIS protocol allowing you to query the owner of a domain name";

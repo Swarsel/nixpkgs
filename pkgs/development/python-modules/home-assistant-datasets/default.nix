@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   google-generativeai,
   hass-client,
   jinja2,
@@ -11,8 +11,8 @@
   pytestCheckHook,
   python-slugify,
   pyyaml,
-  setuptools-scm,
   setuptools,
+  setuptools-scm,
   synthetic-home,
   syrupy,
 }:
@@ -20,7 +20,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "home-assistant-datasets";
   version = "0.3.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "allenporter";
@@ -28,6 +27,16 @@ buildPythonPackage (finalAttrs: {
     tag = finalAttrs.version;
     hash = "sha256-csvjbPtsl7/olJAFmiLES9GH7wAZHxOADTpqbcQbM3s=";
   };
+
+  # Tests want to import Home Assistant as a module
+  doCheck = false;
+
+  nativeCheckInputs = [
+    jinja2
+    pytestCheckHook
+    python-slugify
+    syrupy
+  ];
 
   build-system = [
     setuptools
@@ -44,17 +53,8 @@ buildPythonPackage (finalAttrs: {
     synthetic-home
   ];
 
-  nativeCheckInputs = [
-    jinja2
-    pytestCheckHook
-    python-slugify
-    syrupy
-  ];
-
+  pyproject = true;
   pythonImportsCheck = [ "home_assistant_datasets" ];
-
-  # Tests want to import Home Assistant as a module
-  doCheck = false;
 
   meta = {
     description = "Collection of datasets for evaluating AI Models in the context of Home Assistant";

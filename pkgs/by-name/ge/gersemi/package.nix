@@ -1,13 +1,12 @@
 {
   lib,
-  python3Packages,
   fetchFromGitHub,
+  python3Packages,
 }:
 
 python3Packages.buildPythonApplication (finalAttrs: {
   pname = "gersemi";
   version = "0.23.2";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "BlankSpruce";
@@ -26,6 +25,8 @@ python3Packages.buildPythonApplication (finalAttrs: {
     lark
     pyyaml
   ];
+
+  pyproject = true;
 
   meta = {
     description = "Formatter to make your CMake code the real treasure";

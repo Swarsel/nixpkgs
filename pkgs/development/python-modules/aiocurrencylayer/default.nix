@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   httpx,
   poetry-core,
   pytest-asyncio,
@@ -12,7 +12,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "aiocurrencylayer";
   version = "1.1.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "home-assistant-ecosystem";
@@ -22,7 +21,6 @@ buildPythonPackage (finalAttrs: {
   };
 
   nativeBuildInputs = [ poetry-core ];
-
   propagatedBuildInputs = [ httpx ];
 
   nativeCheckInputs = [
@@ -31,6 +29,7 @@ buildPythonPackage (finalAttrs: {
     pytestCheckHook
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "aiocurrencylayer" ];
 
   meta = {

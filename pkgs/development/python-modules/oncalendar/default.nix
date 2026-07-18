@@ -1,14 +1,13 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   pytestCheckHook,
 }:
 
 buildPythonPackage rec {
   pname = "oncalendar";
   version = "1.1";
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "cuu508";
@@ -18,7 +17,7 @@ buildPythonPackage rec {
   };
 
   nativeBuildInputs = [ pytestCheckHook ];
-
+  format = "setuptools";
   pythonImportsCheck = [ "oncalendar" ];
 
   meta = {

@@ -1,40 +1,40 @@
 {
   lib,
   stdenv,
-  blueprint-compiler,
-  meson,
-  ninja,
-  gettext,
   fetchurl,
-  pkg-config,
-  gtk4,
-  glib,
-  icu,
-  wrapGAppsHook4,
-  gnome,
-  libportal-gtk4,
-  libxml2,
-  itstool,
-  webkitgtk_6_0,
-  libsoup_3,
-  glib-networking,
-  libsecret,
-  gnome-desktop,
-  libarchive,
-  p11-kit,
-  sqlite,
-  gcr_4,
-  isocodes,
+  blueprint-compiler,
+  buildPackages,
   desktop-file-utils,
   docutils,
-  nettle,
+  gcr_4,
   gdk-pixbuf,
+  gettext,
+  glib,
+  glib-networking,
+  gnome,
+  gnome-desktop,
   gst_all_1,
+  gtk4,
+  icu,
+  isocodes,
+  itstool,
   json-glib,
   libadwaita,
-  buildPackages,
-  withPantheon ? false,
+  libarchive,
+  libportal-gtk4,
+  libsecret,
+  libsoup_3,
+  libxml2,
+  meson,
+  nettle,
+  ninja,
+  p11-kit,
   pantheon,
+  pkg-config,
+  sqlite,
+  webkitgtk_6_0,
+  wrapGAppsHook4,
+  withPantheon ? false,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -106,14 +106,15 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   meta = {
-    homepage = "https://apps.gnome.org/Epiphany/";
     description = "WebKit based web browser for GNOME";
+    homepage = "https://apps.gnome.org/Epiphany/";
+    license = lib.licenses.gpl3Plus;
+    platforms = lib.platforms.linux;
     mainProgram = "epiphany";
+
     teams = [
       lib.teams.gnome
       lib.teams.pantheon
     ];
-    license = lib.licenses.gpl3Plus;
-    platforms = lib.platforms.linux;
   };
 })

@@ -1,8 +1,8 @@
 {
   lib,
+  fetchFromGitHub,
   astroid,
   buildPythonPackage,
-  fetchFromGitHub,
   flit-core,
   hypothesis,
   pytest-cov-stub,
@@ -14,7 +14,6 @@
 buildPythonPackage rec {
   pname = "deal-solver";
   version = "0.1.2";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "life4";
@@ -23,17 +22,6 @@ buildPythonPackage rec {
     hash = "sha256-DAOeQLFR/JED32uJSW7W9+Xx5f1Et05W8Fp+Vm7sfZo=";
   };
 
-  build-system = [ flit-core ];
-
-  # z3 does not provide a dist-info, so python-runtime-deps-check will fail
-  pythonRemoveDeps = [ "z3-solver" ];
-
-  dependencies = [
-    z3-solver
-    astroid
-  ]
-  ++ z3-solver.requiredPythonModules;
-
   nativeCheckInputs = [
     hypothesis
     pytest-cov-stub
@@ -41,7 +29,13 @@ buildPythonPackage rec {
     pytestCheckHook
   ];
 
-  pythonImportsCheck = [ "deal_solver" ];
+  build-system = [ flit-core ];
+
+  dependencies = [
+    z3-solver
+    astroid
+  ]
+  ++ z3-solver.requiredPythonModules;
 
   disabledTests = [
     # Flaky tests, sometimes it works sometimes it doesn't
@@ -51,6 +45,11 @@ buildPythonPackage rec {
     # test does not pass on python314 because an error message has changed
     "test_type_error__table"
   ];
+
+  pyproject = true;
+  pythonImportsCheck = [ "deal_solver" ];
+  # z3 does not provide a dist-info, so python-runtime-deps-check will fail
+  pythonRemoveDeps = [ "z3-solver" ];
 
   meta = {
     description = "Z3-powered solver (theorem prover) for deal";

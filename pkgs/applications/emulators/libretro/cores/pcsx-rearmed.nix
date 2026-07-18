@@ -4,7 +4,6 @@
   mkLibretroCore,
 }:
 mkLibretroCore {
-  core = "pcsx-rearmed";
   version = "0-unstable-2026-06-28";
 
   src = fetchFromGitHub {
@@ -14,6 +13,7 @@ mkLibretroCore {
     hash = "sha256-MFNA3YPhLKa5q9hYM11O5/BIrj5xOsiNXkFLnCzugzo=";
   };
 
+  core = "pcsx-rearmed";
   dontConfigure = true;
 
   meta = {

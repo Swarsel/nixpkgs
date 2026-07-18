@@ -1,53 +1,48 @@
 {
   lib,
   stdenv,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # build-system
-  poetry-core,
-
+  ale-py,
+  buildPythonPackage,
+  cython,
   # dependencies
   deepdiff,
+  # optional-dependencies
+  docstring-parser,
   gymnasium,
   h5py,
+  imageio,
+  joblib,
+  jsonargparse,
   matplotlib,
+  mujoco,
   numba,
   numpy,
+  opencv,
   overrides,
   packaging,
   pandas,
   pettingzoo,
-  sensai-utils,
-  tensorboard,
-  torch,
-  tqdm,
-
-  # optional-dependencies
-  docstring-parser,
-  jsonargparse,
-  ale-py,
-  opencv,
-  shimmy,
+  # build-system
+  poetry-core,
   pybox2d,
-  pygame,
-  swig,
-  mujoco,
-  imageio,
-  cython,
   pybullet,
-  joblib,
-  scipy,
-
+  pygame,
   # tests
   pymunk,
   pytestCheckHook,
+  scipy,
+  sensai-utils,
+  shimmy,
+  swig,
+  tensorboard,
+  torch,
+  tqdm,
 }:
 
 buildPythonPackage rec {
   pname = "tianshou";
   version = "2.0.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "thu-ml";
@@ -56,18 +51,16 @@ buildPythonPackage rec {
     hash = "sha256-loE2klM989yZbPZ3Uun3xnGsDHrEZhzk1R0/PcH/1nM=";
   };
 
-  pythonRelaxDeps = [
-    "deepdiff"
-    "gymnasium"
-    "numpy"
-  ];
-
-  pythonRemoveDeps = [ "virtualenv" ];
-
   postPatch = ''
     # silence matplotlib warning
     export MPLCONFIGDIR=$(mktemp -d)
   '';
+
+  nativeCheckInputs = [
+    pygame
+    pymunk
+    pytestCheckHook
+  ];
 
   build-system = [ poetry-core ];
 
@@ -86,6 +79,29 @@ buildPythonPackage rec {
     tensorboard
     torch
     tqdm
+  ];
+
+  disabledTestPaths = [
+    # remove tests that require lot of compute (ai model training tests)
+    "test/continuous"
+    "test/discrete"
+    "test/highlevel"
+    "test/modelbased"
+    "test/offline"
+  ];
+
+  disabledTests = [
+    # AttributeError: 'TimeLimit' object has no attribute 'test_attribute'
+    "test_attr_unwrapped"
+    # Failed: DID NOT RAISE <class 'TypeError'>
+    "test_batch"
+    # Failed: Raised AssertionError
+    "test_vecenv"
+  ]
+  ++ lib.optionals stdenv.hostPlatform.isDarwin [
+    # Fatal Python error: Aborted
+    # pettingzoo/classic/tictactoe/tictactoe.py", line 254 in reset
+    "test_tic_tac_toe"
   ];
 
   optional-dependencies = {
@@ -114,6 +130,23 @@ buildPythonPackage rec {
       pygame
     ];
 
+    # envpool = [
+    #   envpool
+    # ];
+    # robotics = [
+    #   gymnasium-robotics
+    # ];
+    # vizdoom = [
+    #   vizdoom
+    # ];
+    eval = [
+      docstring-parser
+      joblib
+      jsonargparse
+      # rliable
+      scipy
+    ];
+
     mujoco = [
       mujoco
       imageio
@@ -123,58 +156,18 @@ buildPythonPackage rec {
     pybullet = [
       pybullet
     ];
-
-    # envpool = [
-    #   envpool
-    # ];
-
-    # robotics = [
-    #   gymnasium-robotics
-    # ];
-
-    # vizdoom = [
-    #   vizdoom
-    # ];
-
-    eval = [
-      docstring-parser
-      joblib
-      jsonargparse
-      # rliable
-      scipy
-    ];
   };
 
+  pyproject = true;
   pythonImportsCheck = [ "tianshou" ];
 
-  nativeCheckInputs = [
-    pygame
-    pymunk
-    pytestCheckHook
+  pythonRelaxDeps = [
+    "deepdiff"
+    "gymnasium"
+    "numpy"
   ];
 
-  disabledTestPaths = [
-    # remove tests that require lot of compute (ai model training tests)
-    "test/continuous"
-    "test/discrete"
-    "test/highlevel"
-    "test/modelbased"
-    "test/offline"
-  ];
-
-  disabledTests = [
-    # AttributeError: 'TimeLimit' object has no attribute 'test_attribute'
-    "test_attr_unwrapped"
-    # Failed: DID NOT RAISE <class 'TypeError'>
-    "test_batch"
-    # Failed: Raised AssertionError
-    "test_vecenv"
-  ]
-  ++ lib.optionals stdenv.hostPlatform.isDarwin [
-    # Fatal Python error: Aborted
-    # pettingzoo/classic/tictactoe/tictactoe.py", line 254 in reset
-    "test_tic_tac_toe"
-  ];
+  pythonRemoveDeps = [ "virtualenv" ];
 
   meta = {
     description = "Elegant PyTorch deep reinforcement learning library";

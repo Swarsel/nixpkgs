@@ -2,10 +2,10 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  flex,
-  autoreconfHook,
-  automake,
   autoconf-archive,
+  automake,
+  autoreconfHook,
+  flex,
   libtool,
   pkg-config,
 }:
@@ -33,18 +33,20 @@ stdenv.mkDerivation (finalAttrs: {
   hardeningDisable = [ "format" ];
 
   meta = {
-    homepage = "https://github.com/dharple/detox";
     description = "Utility designed to clean up filenames";
-    changelog = "https://github.com/dharple/detox/blob/v${finalAttrs.version}/CHANGELOG.md";
+
     longDescription = ''
       Detox is a utility designed to clean up filenames. It replaces
       difficult to work with characters, such as spaces, with standard
       equivalents. It will also clean up filenames with UTF-8 or Latin-1
       (or CP-1252) characters in them.
     '';
+
+    homepage = "https://github.com/dharple/detox";
+    changelog = "https://github.com/dharple/detox/blob/v${finalAttrs.version}/CHANGELOG.md";
     license = lib.licenses.bsd3;
-    platforms = lib.platforms.linux;
     maintainers = [ ];
+    platforms = lib.platforms.linux;
     mainProgram = "detox";
   };
 })

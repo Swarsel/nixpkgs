@@ -1,11 +1,11 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
-  pkg-config,
-  wrapGAppsHook3,
+  buildGoModule,
   gobject-introspection,
   gtk-layer-shell,
+  pkg-config,
+  wrapGAppsHook3,
 }:
 
 buildGoModule (finalAttrs: {
@@ -19,13 +19,6 @@ buildGoModule (finalAttrs: {
     hash = "sha256-c2rLNHlC03Lt9y1mCL52zZWD2WFiMQBuWOujErp2k44=";
   };
 
-  vendorHash = "sha256-uHxH3g0pcfA5emF4LpvjYsSocjoFtk2p57JRSsY/PKY=";
-
-  ldflags = [
-    "-s"
-    "-w"
-  ];
-
   nativeBuildInputs = [
     gobject-introspection
     pkg-config
@@ -33,6 +26,7 @@ buildGoModule (finalAttrs: {
   ];
 
   buildInputs = [ gtk-layer-shell ];
+  vendorHash = "sha256-uHxH3g0pcfA5emF4LpvjYsSocjoFtk2p57JRSsY/PKY=";
 
   postInstall = ''
     install -d $out/share/nwg-dock-hyprland
@@ -40,12 +34,17 @@ buildGoModule (finalAttrs: {
     install -Dm644 config/style.css $out/share/nwg-dock-hyprland/style.css
   '';
 
+  ldflags = [
+    "-s"
+    "-w"
+  ];
+
   meta = {
     description = "GTK3-based dock for Hyprland";
-    mainProgram = "nwg-dock-hyprland";
     homepage = "https://github.com/nwg-piotr/nwg-dock-hyprland";
     license = lib.licenses.mit;
-    platforms = lib.platforms.linux;
     maintainers = with lib.maintainers; [ aleksana ];
+    platforms = lib.platforms.linux;
+    mainProgram = "nwg-dock-hyprland";
   };
 })

@@ -1,9 +1,9 @@
 {
-  minor_version,
   major_version,
+  minor_version,
   patch_version,
-  patches ? [ ],
   doCheck ? true,
+  patches ? [ ],
   ...
 }@args:
 let
@@ -18,20 +18,20 @@ in
   lib,
   stdenv,
   fetchurl,
-  ncurses,
   binutils,
   buildEnv,
-  libunwind,
   fetchpatch,
+  libunwind,
   libx11,
+  ncurses,
   xorgproto,
-  useX11 ? safeX11 stdenv && lib.versionOlder version "4.09",
   aflSupport ? false,
   flambdaSupport ? false,
-  spaceTimeSupport ? false,
-  unsafeStringSupport ? false,
   framePointerSupport ? false,
   noNakedPointers ? false,
+  spaceTimeSupport ? false,
+  unsafeStringSupport ? false,
+  useX11 ? safeX11 stdenv && lib.versionOlder version "4.09",
 }:
 
 assert useX11 -> safeX11 stdenv;
@@ -45,9 +45,10 @@ assert noNakedPointers -> lib.versionAtLeast version "4.02" && lib.versionOlder 
 let
   src =
     args.src or (fetchurl {
+      inherit (args) sha256;
+
       url =
         args.url or "http://caml.inria.fr/pub/distrib/ocaml-${versionNoPatch}/ocaml-${version}.tar.xz";
-      inherit (args) sha256;
     });
 in
 
@@ -72,6 +73,7 @@ in
 let
   x11env = buildEnv {
     name = "x11env";
+
     paths = [
       libx11
       xorgproto
@@ -89,7 +91,7 @@ stdenv.mkDerivation (
   // {
 
     inherit pname version src;
-
+    inherit doCheck;
     patches = map fetchpatch' patches;
 
     # https://github.com/ocaml/ocaml/issues/14543
@@ -103,7 +105,15 @@ stdenv.mkDerivation (
 
     strictDeps = true;
 
-    prefixKey = "-prefix ";
+    buildInputs =
+      optional (lib.versionOlder version "4.07") ncurses
+      ++ optionals useX11 [
+        libx11
+        xorgproto
+      ];
+
+    propagatedBuildInputs = optional spaceTimeSupport libunwind;
+
     configureFlags =
       let
         flags = new: old: if lib.versionAtLeast version "4.08" then new else old;
@@ -129,13 +139,40 @@ stdenv.mkDerivation (
       ++ optional noNakedPointers (flags "--disable-naked-pointers" "-no-naked-pointers")
       ++ optional finalArgs.doCheck "--enable-ocamltest";
 
-    dontAddStaticConfigureFlags = lib.versionOlder version "4.08";
+    buildFlags =
+      if useNativeCompilers then
+        [
+          (if lib.versionOlder version "5.2" then "nixpkgs_world_bootstrap_world_opt" else "defaultentry")
+        ]
+      else
+        [ "nixpkgs_world" ];
 
     env =
       lib.optionalAttrs (lib.versionOlder version "4.14" || lib.versions.majorMinor version == "5.0")
         {
           NIX_CFLAGS_COMPILE = "-std=gnu11";
         };
+
+    preConfigure =
+      optionalString (lib.versionOlder version "4.04") ''
+        CAT=$(type -tp cat)
+        sed -e "s@/bin/cat@$CAT@" -i config/auto-aux/sharpbang
+      ''
+      + optionalString (stdenv.hostPlatform.isDarwin) ''
+        # Do what upstream does by default now: https://github.com/ocaml/ocaml/pull/10176
+        # This is required for aarch64-darwin, everything else works as is.
+        AS="${stdenv.cc}/bin/cc -c" ASPP="${stdenv.cc}/bin/cc -c"
+      ''
+      + optionalString (lib.versionOlder version "4.08" && stdenv.hostPlatform.isStatic) ''
+        configureFlagsArray+=("-cc" "$CC" "-as" "$AS" "-partialld" "$LD -r")
+      '';
+
+    postBuild = ''
+      mkdir -p $out/include
+      ln -sv $out/lib/ocaml/caml $out/include/caml
+    '';
+
+    checkTarget = "tests";
 
     # on aarch64-darwin using --host and --target causes the build to invoke
     # `aarch64-apple-darwin-clang` while using assembler. However, such binary
@@ -151,76 +188,36 @@ stdenv.mkDerivation (
           "host"
           "target"
         ];
-    # x86_64-unknown-linux-musl-ld: -r and -pie may not be used together
-    hardeningDisable =
-      lib.optional (lib.versionAtLeast version "5.0" && stdenv.cc.isClang) "strictoverflow"
-      ++ lib.optionals (args ? hardeningDisable) args.hardeningDisable;
 
+    depsBuildBuild = lib.optionals (!stdenv.hostPlatform.isDarwin) [ binutils ];
+    dontAddStaticConfigureFlags = lib.versionOlder version "4.08";
     # Older versions have some race:
     #  cp: cannot stat 'boot/ocamlrun': No such file or directory
     #  make[2]: *** [Makefile:199: backup] Error 1
     enableParallelBuilding = lib.versionAtLeast version "4.08";
-
     # Workaround missing dependencies for install parallelism:
     #  install: target '...-ocaml-4.14.0/lib/ocaml/threads': No such file or directory
     #  make[1]: *** [Makefile:140: installopt] Error 1
     enableParallelInstalling = false;
 
+    # x86_64-unknown-linux-musl-ld: -r and -pie may not be used together
+    hardeningDisable =
+      lib.optional (lib.versionAtLeast version "5.0" && stdenv.cc.isClang) "strictoverflow"
+      ++ lib.optionals (args ? hardeningDisable) args.hardeningDisable;
+
+    installTargets = [ "install" ] ++ optional useNativeCompilers "installopt";
     # Workaround lack of parallelism support among top-level targets:
     # we place nixpkgs-specific targets to a separate file and set
     # sequential order among them as a single rule.
     makefile = ./Makefile.nixpkgs;
-    buildFlags =
-      if useNativeCompilers then
-        [
-          (if lib.versionOlder version "5.2" then "nixpkgs_world_bootstrap_world_opt" else "defaultentry")
-        ]
-      else
-        [ "nixpkgs_world" ];
-    buildInputs =
-      optional (lib.versionOlder version "4.07") ncurses
-      ++ optionals useX11 [
-        libx11
-        xorgproto
-      ];
-    depsBuildBuild = lib.optionals (!stdenv.hostPlatform.isDarwin) [ binutils ];
-    propagatedBuildInputs = optional spaceTimeSupport libunwind;
-    installTargets = [ "install" ] ++ optional useNativeCompilers "installopt";
-    preConfigure =
-      optionalString (lib.versionOlder version "4.04") ''
-        CAT=$(type -tp cat)
-        sed -e "s@/bin/cat@$CAT@" -i config/auto-aux/sharpbang
-      ''
-      + optionalString (stdenv.hostPlatform.isDarwin) ''
-        # Do what upstream does by default now: https://github.com/ocaml/ocaml/pull/10176
-        # This is required for aarch64-darwin, everything else works as is.
-        AS="${stdenv.cc}/bin/cc -c" ASPP="${stdenv.cc}/bin/cc -c"
-      ''
-      + optionalString (lib.versionOlder version "4.08" && stdenv.hostPlatform.isStatic) ''
-        configureFlagsArray+=("-cc" "$CC" "-as" "$AS" "-partialld" "$LD -r")
-      '';
-    postBuild = ''
-      mkdir -p $out/include
-      ln -sv $out/lib/ocaml/caml $out/include/caml
-    '';
+    prefixKey = "-prefix ";
 
     passthru = {
       nativeCompilers = useNativeCompilers;
     };
 
-    checkTarget = "tests";
-    inherit doCheck;
-
     meta = {
-      homepage = "https://ocaml.org/";
-      branch = versionNoPatch;
-      license = with lib.licenses; [
-        qpl # compiler
-        lgpl2 # library
-      ];
       description = "OCaml is an industrial-strength programming language supporting functional, imperative and object-oriented styles";
-
-      maintainers = [ lib.maintainers.georgyo ];
 
       longDescription = ''
         OCaml is a general purpose programming language with an emphasis on expressiveness and safety. Developed for more than 20 years at Inria by a group of leading researchers, it has an advanced type system that helps catch your mistakes without getting in your way. It's used in environments where a single mistake can cost millions and speed matters, is supported by an active community, and has a rich set of libraries and development tools. It's widely used in teaching for its power and simplicity.
@@ -239,7 +236,17 @@ stdenv.mkDerivation (
         Learn more at: https://ocaml.org/learn/description.html
       '';
 
+      homepage = "https://ocaml.org/";
+
+      license = with lib.licenses; [
+        qpl # compiler
+        lgpl2 # library
+      ];
+
+      maintainers = [ lib.maintainers.georgyo ];
       platforms = with lib.platforms; linux ++ darwin;
+      branch = versionNoPatch;
+
       broken =
         stdenv.hostPlatform.isAarch64
         && lib.versionOlder version (if stdenv.hostPlatform.isDarwin then "4.10" else "4.02");

@@ -1,15 +1,14 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
+  buildPythonPackage,
   requests,
+  setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "whois-api";
   version = "1.2.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "whois-api-llc";
@@ -19,12 +18,10 @@ buildPythonPackage rec {
   };
 
   nativeBuildInputs = [ setuptools ];
-
   propagatedBuildInputs = [ requests ];
-
   # all tests touch internet
   doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "whoisapi" ];
 
   meta = {

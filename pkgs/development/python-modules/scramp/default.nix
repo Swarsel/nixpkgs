@@ -12,7 +12,6 @@
 buildPythonPackage rec {
   pname = "scramp";
   version = "1.4.5";
-  pyproject = true;
 
   src = fetchFromCodeberg {
     owner = "tlocke";
@@ -21,18 +20,6 @@ buildPythonPackage rec {
     hash = "sha256-KpododRJ+CYRGBR7Sr5cVBhJvUwh9YmPERd/DAJqEcY=";
   };
 
-  build-system = [
-    hatchling
-    versioningit
-  ];
-
-  dependencies = [ asn1crypto ];
-
-  nativeCheckInputs = [
-    pytest-mock
-    pytestCheckHook
-  ];
-
   postPatch = ''
     # Upstream uses versioningit to set the version
     sed -i "/versioningit >=/d" pyproject.toml
@@ -40,9 +27,20 @@ buildPythonPackage rec {
     sed -i "/dynamic =/d" pyproject.toml
   '';
 
-  pythonImportsCheck = [ "scramp" ];
+  nativeCheckInputs = [
+    pytest-mock
+    pytestCheckHook
+  ];
 
+  build-system = [
+    hatchling
+    versioningit
+  ];
+
+  dependencies = [ asn1crypto ];
   disabledTests = [ "test_readme" ];
+  pyproject = true;
+  pythonImportsCheck = [ "scramp" ];
 
   meta = {
     description = "Implementation of the SCRAM authentication protocol";

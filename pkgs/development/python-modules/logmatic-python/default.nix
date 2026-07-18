@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   python-json-logger,
   setuptools,
 }:
@@ -9,7 +9,6 @@
 buildPythonPackage rec {
   pname = "logmatic-python";
   version = "0.1.7";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "logmatic";
@@ -19,12 +18,10 @@ buildPythonPackage rec {
   };
 
   nativeBuildInputs = [ setuptools ];
-
   propagatedBuildInputs = [ python-json-logger ];
-
   # Only functional tests, no unit tests
   doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "logmatic" ];
 
   meta = {

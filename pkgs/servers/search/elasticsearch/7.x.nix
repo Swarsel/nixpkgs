@@ -1,14 +1,14 @@
 {
-  elk7Version,
   lib,
   stdenv,
   fetchurl,
-  makeWrapper,
-  jre_headless,
-  util-linux,
-  gnugrep,
-  coreutils,
   autoPatchelfHook,
+  coreutils,
+  elk7Version,
+  gnugrep,
+  jre_headless,
+  makeWrapper,
+  util-linux,
   zlib,
 }:
 
@@ -17,9 +17,9 @@ let
   arch = lib.elemAt info 0;
   plat = lib.elemAt info 1;
   hashes = {
-    x86_64-linux = "sha512-xlbdx/fFQxilECdDiN80U+s+huBowo9Qf5tDIYwZ1z9gUCriNL0rMNDkvzUDL73BEI3WMFMqHdbi3cn7b5l9gA==";
-    aarch64-linux = "sha512-MPrDfBMcwNCgWW8dpOeAtlz9Odfk/0z8i+Rn08hTp35kU849KdPQLTmexlvnf/jVwqfwzN2xWJtNF0sQO26pUA==";
     aarch64-darwin = "sha512-uq5VVwvbOX4Rv32iLFw+RalFPBxQqA+1hBjFw3svzOaD1caOOrGHD4lJVHFxsFw0xl//AZuSG7S3r7Eh9AmWvQ==";
+    aarch64-linux = "sha512-MPrDfBMcwNCgWW8dpOeAtlz9Odfk/0z8i+Rn08hTp35kU849KdPQLTmexlvnf/jVwqfwzN2xWJtNF0sQO26pUA==";
+    x86_64-linux = "sha512-xlbdx/fFQxilECdDiN80U+s+huBowo9Qf5tDIYwZ1z9gUCriNL0rMNDkvzUDL73BEI3WMFMqHdbi3cn7b5l9gA==";
   };
 in
 stdenv.mkDerivation rec {
@@ -54,8 +54,6 @@ stdenv.mkDerivation rec {
     zlib
   ];
 
-  runtimeDependencies = [ zlib ];
-
   installPhase = ''
     mkdir -p $out
     cp -R bin config lib modules plugins $out
@@ -78,20 +76,25 @@ stdenv.mkDerivation rec {
     wrapProgram $out/bin/elasticsearch-plugin --set JAVA_HOME "${jre_headless}"
   '';
 
+  runtimeDependencies = [ zlib ];
+
   passthru = {
     enableUnfree = true;
   };
 
   meta = {
     description = "Open Source, Distributed, RESTful Search Engine";
+    license = lib.licenses.elastic20;
+
     sourceProvenance = with lib.sourceTypes; [
       binaryBytecode
       binaryNativeCode
     ];
-    license = lib.licenses.elastic20;
-    platforms = lib.platforms.unix;
+
     maintainers = with lib.maintainers; [
       basvandijk
     ];
+
+    platforms = lib.platforms.unix;
   };
 }

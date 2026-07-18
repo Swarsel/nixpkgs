@@ -1,9 +1,9 @@
 {
   lib,
-  stdenvNoCC,
   fetchFromGitHub,
-  fetchzip,
   clickgen,
+  fetchzip,
+  stdenvNoCC,
 }:
 
 stdenvNoCC.mkDerivation rec {
@@ -15,11 +15,6 @@ stdenvNoCC.mkDerivation rec {
     repo = "Bibata_Cursor";
     rev = "v${version}";
     hash = "sha256-kIKidw1vditpuxO1gVuZeUPdWBzkiksO/q2R/+DUdEc=";
-  };
-
-  bitmaps = fetchzip {
-    url = "https://github.com/ful1e5/Bibata_Cursor/releases/download/v${version}/bitmaps.zip";
-    hash = "sha256-4VjyNWry0NPnt5+s0od/p18gry2O0ZrknYZh+PAPM8Q=";
   };
 
   nativeBuildInputs = [
@@ -57,13 +52,20 @@ stdenvNoCC.mkDerivation rec {
     runHook postInstall
   '';
 
+  bitmaps = fetchzip {
+    hash = "sha256-4VjyNWry0NPnt5+s0od/p18gry2O0ZrknYZh+PAPM8Q=";
+    url = "https://github.com/ful1e5/Bibata_Cursor/releases/download/v${version}/bitmaps.zip";
+  };
+
   meta = {
     description = "Material Based Cursor Theme";
     homepage = "https://github.com/ful1e5/Bibata_Cursor";
     license = lib.licenses.gpl3Only;
-    platforms = lib.platforms.linux;
+
     maintainers = with lib.maintainers; [
       rawkode
     ];
+
+    platforms = lib.platforms.linux;
   };
 }

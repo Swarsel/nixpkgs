@@ -10,16 +10,31 @@ in
 {
   options = {
     openstack = {
+      efi = lib.mkOption {
+        default = pkgs.stdenv.hostPlatform.isAarch64;
+        defaultText = literalExpression "pkgs.stdenv.hostPlatform.isAarch64";
+
+        description = ''
+          Whether the instance is using EFI.
+        '';
+
+        internal = true;
+      };
+
       zfs = {
         enable = lib.mkOption {
           default = false;
-          internal = true;
+
           description = ''
             Whether the OpenStack instance uses a ZFS root.
           '';
+
+          internal = true;
         };
 
         datasets = lib.mkOption {
+          default = { };
+
           description = ''
             Datasets to create under the `tank` and `boot` zpools.
 
@@ -28,42 +43,29 @@ in
             on an existing system.
           '';
 
-          default = { };
-
           type = types.attrsOf (
             types.submodule {
               options = {
                 mount = lib.mkOption {
+                  default = null;
                   description = "Where to mount this dataset.";
                   type = types.nullOr types.str;
-                  default = null;
                 };
 
                 properties = lib.mkOption {
+                  default = { };
                   description = "Properties to set on this dataset.";
                   type = types.attrsOf types.str;
-                  default = { };
                 };
               };
             }
           );
         };
       };
-
-      efi = lib.mkOption {
-        default = pkgs.stdenv.hostPlatform.isAarch64;
-        defaultText = literalExpression "pkgs.stdenv.hostPlatform.isAarch64";
-        internal = true;
-        description = ''
-          Whether the instance is using EFI.
-        '';
-      };
     };
   };
 
   config = lib.mkIf config.openstack.zfs.enable {
-    networking.hostId = lib.mkDefault "00000000";
-
     fileSystems =
       let
         mountable = lib.filterAttrs (
@@ -77,5 +79,7 @@ in
           fsType = "zfs";
         }
       ) mountable;
+
+    networking.hostId = lib.mkDefault "00000000";
   };
 }

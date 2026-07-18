@@ -2,13 +2,13 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  pkg-config,
   deadbeef,
-  vgmstream,
-  mpg123,
-  libvorbis,
   ffmpeg,
+  libvorbis,
+  mpg123,
   nix-update-script,
+  pkg-config,
+  vgmstream,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -31,9 +31,8 @@ stdenv.mkDerivation (finalAttrs: {
     ffmpeg.dev
   ];
 
-  enableParallelBuilding = true;
-
   makeFlags = [ "DEADBEEF_ROOT=${deadbeef}" ];
+  enableParallelBuilding = true;
   installFlags = [ "DEADBEEF_ROOT=$(out)" ];
 
   postUnpack = ''

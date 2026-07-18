@@ -34,14 +34,6 @@ stdenv.mkDerivation rec {
   ]
   ++ lib.optional withPython python;
 
-  # error: invalid version number in 'MACOSX_DEPLOYMENT_TARGET=11.0'
-  preConfigure =
-    lib.optionalString
-      (stdenv.hostPlatform.isDarwin && lib.versionAtLeast stdenv.hostPlatform.darwinMinVersion "11")
-      ''
-        MACOSX_DEPLOYMENT_TARGET=10.16
-      '';
-
   cmakeFlags = [
     "-DHEPMC3_CXX_STANDARD=17"
     "-DHEPMC3_ENABLE_PYTHON=${if withPython then "ON" else "OFF"}"
@@ -50,6 +42,14 @@ stdenv.mkDerivation rec {
     "-DHEPMC3_PYTHON_VERSIONS=${if python.isPy3k then "3.X" else "2.X"}"
     "-DHEPMC3_Python_SITEARCH${pythonVersion}=${placeholder "out"}/${python.sitePackages}"
   ];
+
+  # error: invalid version number in 'MACOSX_DEPLOYMENT_TARGET=11.0'
+  preConfigure =
+    lib.optionalString
+      (stdenv.hostPlatform.isDarwin && lib.versionAtLeast stdenv.hostPlatform.darwinMinVersion "11")
+      ''
+        MACOSX_DEPLOYMENT_TARGET=10.16
+      '';
 
   postInstall = ''
     substituteInPlace "$out"/bin/HepMC3-config \
@@ -61,10 +61,10 @@ stdenv.mkDerivation rec {
 
   meta = {
     description = "HepMC package is an object oriented, C++ event record for High Energy Physics Monte Carlo generators and simulation";
-    mainProgram = "HepMC3-config";
-    license = lib.licenses.gpl3;
     homepage = "http://hepmc.web.cern.ch/hepmc/";
-    platforms = lib.platforms.unix;
+    license = lib.licenses.gpl3;
     maintainers = with lib.maintainers; [ veprbl ];
+    platforms = lib.platforms.unix;
+    mainProgram = "HepMC3-config";
   };
 }

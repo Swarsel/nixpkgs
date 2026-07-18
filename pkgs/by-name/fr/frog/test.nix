@@ -1,6 +1,6 @@
 {
-  runCommand,
   frog,
+  runCommand,
 }:
 
 runCommand "frog-test" { } ''

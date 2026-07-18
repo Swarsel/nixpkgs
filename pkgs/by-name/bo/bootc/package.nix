@@ -1,23 +1,20 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
   fetchpatch2,
-  libz,
-  zstd,
-  pkg-config,
-  openssl,
   glib,
+  libz,
+  openssl,
   ostree-full,
+  pkg-config,
+  rustPlatform,
   versionCheckHook,
+  zstd,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
   pname = "bootc";
   version = "1.6.0";
-
-  cargoHash = "sha256-KGwXQ6+/w3uHuPqSADsqJSip+SMdC104dfW7tNxGwnc=";
-  doInstallCheck = true;
 
   src = fetchFromGitHub {
     owner = "bootc-dev";
@@ -28,8 +25,8 @@ rustPlatform.buildRustPackage (finalAttrs: {
 
   patches = [
     (fetchpatch2 {
-      url = "https://github.com/bootc-dev/bootc/commit/ff8b1b411270275c49ee512d54b27ed7a2fca112.patch";
       hash = "sha256-7UKquq6ZargQUDGZk22X9Co92v8e995bL+tuAjvh/7c=";
+      url = "https://github.com/bootc-dev/bootc/commit/ff8b1b411270275c49ee512d54b27ed7a2fca112.patch";
     })
   ];
 
@@ -42,6 +39,8 @@ rustPlatform.buildRustPackage (finalAttrs: {
     glib
     ostree-full
   ];
+
+  cargoHash = "sha256-KGwXQ6+/w3uHuPqSADsqJSip+SMdC104dfW7tNxGwnc=";
 
   checkFlags = [
     # These all require a writable /var/tmp
@@ -56,18 +55,20 @@ rustPlatform.buildRustPackage (finalAttrs: {
     "--skip=test_tar_write_tar_layer"
   ];
 
-  cargoBuildFlags = [ "-p bootc" ];
+  doInstallCheck = true;
 
   nativeInstallCheckInputs = [
     versionCheckHook
   ];
 
+  cargoBuildFlags = [ "-p bootc" ];
+
   meta = {
     description = "Boot and upgrade via container images";
     homepage = "https://bootc-dev.github.io/bootc";
     license = lib.licenses.mit;
-    mainProgram = "bootc";
     maintainers = with lib.maintainers; [ thesola10 ];
     platforms = lib.platforms.linux;
+    mainProgram = "bootc";
   };
 })

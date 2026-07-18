@@ -97,62 +97,42 @@ in
 
 stubs
 // mapAliases {
+  ### C ###
+  Csu = throw "darwin.Csu has been removed, as it was only used on `x86_64-darwin`, which is no longer supported"; # added 2026-06-26
   ### A ###
-
   apple_sdk_10_12 = throw "darwin.apple_sdk_10_12 was removed as Nixpkgs no longer supports macOS 10.12; see the 25.05 release notes"; # Added 2024-10-27
-
   ### B ###
-
   binutilsDualAs = throw "binutilsDualAs has been removed because it was only useful on `x86_64-darwin` and also only useful for the GNAT bootstrap and also not even used for that any more and actually what on earth were you using this thing for anyway?"; # Added 2026-06-27
   binutilsDualAs-unwrapped = throw "binutilsDualAs has been removed because it was only useful on `x86_64-darwin` and also only useful for the GNAT bootstrap and also not even used for that any more and actually what on earth were you using this thing for anyway?"; # Added 2026-06-27
-  builder = throw "'darwin.builder' has been changed and renamed to 'darwin.linux-builder'. The default ssh port is now 31022. Please update your configuration or override the port back to 22. See https://nixos.org/manual/nixpkgs/unstable/#sec-darwin-builder"; # added 2023-07-06
   bsdmake = pkgs.bmake; # added 2024-10-03
-
-  ### C ###
-
-  Csu = throw "darwin.Csu has been removed, as it was only used on `x86_64-darwin`, which is no longer supported"; # added 2026-06-26
+  builder = throw "'darwin.builder' has been changed and renamed to 'darwin.linux-builder'. The default ssh port is now 31022. Please update your configuration or override the port back to 22. See https://nixos.org/manual/nixpkgs/unstable/#sec-darwin-builder"; # added 2023-07-06
   cctools = pkgs.cctools; # added 2024-07-17
   cctools-apple = pkgs.cctools; # added 2024-07-01
   cctools-llvm = pkgs.cctools; # added 2024-07-01
   cctools-port = pkgs.cctools; # added 2024-07-17
-
   ### D ###
-
   discrete-scroll = pkgs.discrete-scroll; # added 2024-11-27
   ditto = throw "'darwin.ditto' has been removed, because it was impure and unused"; # added 2025-10-18
-
   ### I ###
-
   insert_dylib = throw "'darwin.insert_dylib' has been renamed to 'insert-dylib'"; # added 2024-04-04
   ios-deploy = throw "'darwin.ios-deploy' has been renamed to 'ios-deploy'"; # added 2024-11-28
   iproute2mac = lib.warnOnInstantiate "darwin.iproute2mac has been renamed to iproute2mac" pkgs.iproute2mac; # added 2024-12-08
-
   ### L ###
-
   libauto = throw "'darwin.libauto' has been removed, as it was broken and unmaintained"; # added 2024-05-10
   libresolvHeaders = throw "darwin.libresolvHeaders has been removed; use `lib.getInclude darwin.libresolv`"; # converted to throw 2025-07-29
   libtapi = pkgs.libtapi; # 2024-08-16
   libutilHeaders = throw "darwin.libutilHeaders has been removed; use `lib.getInclude darwin.libutil`"; # converted to throw 2025-07-29
-
   ### M ###
-
   moltenvk = pkgs.moltenvk; # 2024-10-06
-
   ### O ###
-
   opencflite = pkgs.opencflite; # added 2024-05-02
   openwith = pkgs.openwith; # added 2025-11-28
-
   ### P ###
   postLinkSignHook = throw "'darwin.postLinkSignHook' has been removed because it is obsolete"; # added 2025-02-23
   print-reexports = throw "'darwin.print-reexports' has been removed as it was unused"; # added 2025-04-20
-
   ### R ###
-
   rewrite-tbd = throw "'darwin.rewrite-tbd' has been removed, as it was unused and replaced by `llvm-readtapi(1)`"; # added 2025-04-20
-
   ### S ###
-
   stdenvNoCF = throw "darwin.stdenvNoCF has been removed; use `stdenv` or `stdenvNoCC`"; # converted to throw 2025-07-29
   stubs = throw "'darwin.stubs.*' have been removed as they were unused"; # added 2025-04-20
   sudo = throw "'darwin.sudo' has been removed, because it was impure and unused"; # added 2025-10-18

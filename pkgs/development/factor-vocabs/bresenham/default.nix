@@ -1,8 +1,8 @@
 {
   lib,
-  factorPackages,
   fetchFromGitHub,
   curl,
+  factorPackages,
   gnutls,
 }:
 

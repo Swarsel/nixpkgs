@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   requests,
   setuptools,
 }:
@@ -9,7 +9,6 @@
 buildPythonPackage rec {
   pname = "neurio";
   version = "0.3.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "jordanh";
@@ -18,13 +17,11 @@ buildPythonPackage rec {
     hash = "sha256-Kyjx+76OR3fpA9p/Zg7S4/vuGuNU2kb022BijoNMSUI=";
   };
 
-  build-system = [ setuptools ];
-
-  dependencies = [ requests ];
-
   # Project has tests but they require actual API credentials
   doCheck = false;
-
+  build-system = [ setuptools ];
+  dependencies = [ requests ];
+  pyproject = true;
   pythonImportsCheck = [ "neurio" ];
 
   meta = {

@@ -3,6 +3,7 @@
   stdenv,
   fetchFromGitHub,
   cmake,
+  gitUpdater,
   libpulseaudio,
   lxqt-build-tools,
   pkg-config,
@@ -11,7 +12,6 @@
   qttools,
   qtwayland,
   wrapQtAppsHook,
-  gitUpdater,
 }:
 
 stdenv.mkDerivation rec {
@@ -43,11 +43,11 @@ stdenv.mkDerivation rec {
   passthru.updateScript = gitUpdater { };
 
   meta = {
-    homepage = "https://github.com/lxqt/pavucontrol-qt";
     description = "Pulseaudio mixer in Qt (port of pavucontrol)";
-    mainProgram = "pavucontrol-qt";
+    homepage = "https://github.com/lxqt/pavucontrol-qt";
     license = lib.licenses.gpl2Plus;
     platforms = with lib.platforms; linux;
+    mainProgram = "pavucontrol-qt";
     teams = [ lib.teams.lxqt ];
   };
 }

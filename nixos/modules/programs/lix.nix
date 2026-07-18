@@ -11,17 +11,17 @@ let
   nixPackage = cfg.package.out;
 
   commonNixDaemonConfig = {
-    path = [
-      nixPackage
-      config.programs.ssh.package
-    ];
-
     environment =
       cfg.envVars
       // {
         CURL_CA_BUNDLE = config.security.pki.caBundle;
       }
       // config.networking.proxy.envVars;
+
+    path = [
+      nixPackage
+      config.programs.ssh.package
+    ];
 
     serviceConfig = {
       CPUSchedulingPolicy = cfg.daemonCPUSchedPolicy;
@@ -32,12 +32,13 @@ let
 
   makeNixBuildUser = nr: {
     name = "nixbld${toString nr}";
+
     value = {
       description = "Lix build user ${toString nr}";
-      uid = builtins.add config.ids.uids.nixbld nr;
-      isSystemUser = true;
-      group = "nixbld";
       extraGroups = [ "nixbld" ];
+      group = "nixbld";
+      isSystemUser = true;
+      uid = builtins.add config.ids.uids.nixbld nr;
     };
   };
 
@@ -49,6 +50,8 @@ in
   config = lib.mkIf (cfg.enable && nixPackage.pname == "lix") {
     # Require the tun kernel module for pasta, can be disabled if pasta is not used.
     boot.kernelModules.tun = lib.mkDefault true;
+    # Set up the environment variables for running Nix.
+    environment.sessionVariables = cfg.envVars;
 
     environment.systemPackages = [
       nixPackage
@@ -56,25 +59,22 @@ in
     ]
     ++ lib.optional (config.programs.bash.completion.enable) pkgs.nix-bash-completions;
 
+    nix.nrBuildUsers = lib.mkDefault (
+      if cfg.settings.auto-allocate-uids or false then
+        0
+      else
+        lib.max 32 (if cfg.settings.max-jobs == "auto" then 0 else cfg.settings.max-jobs)
+    );
+
+    # Legacy configuration conversion.
+    nix.settings.sandbox-fallback = false;
+    services.displayManager.hiddenUsers = lib.attrNames nixbldUsers;
     systemd.packages = [ nixPackage ];
-
-    systemd.tmpfiles.packages = [ nixPackage ];
-
-    systemd.sockets.nix-daemon.wantedBy = [ "sockets.target" ];
-
-    systemd.services."nix-daemon@" = lib.mkMerge [
-      commonNixDaemonConfig
-      {
-        # Do not kill connections serving established connections on upgrade.
-        restartIfChanged = false;
-      }
-    ];
 
     systemd.services.nix-daemon = lib.mkMerge [
       commonNixDaemonConfig
       {
         restartTriggers = [ config.environment.etc."nix/nix.conf".source ];
-
         # `stopIfChanged = false` changes to switch behavior
         # from   stop -> update units -> start
         #   to   update units -> restart
@@ -111,21 +111,16 @@ in
       }
     ];
 
-    # Set up the environment variables for running Nix.
-    environment.sessionVariables = cfg.envVars;
+    systemd.services."nix-daemon@" = lib.mkMerge [
+      commonNixDaemonConfig
+      {
+        # Do not kill connections serving established connections on upgrade.
+        restartIfChanged = false;
+      }
+    ];
 
-    nix.nrBuildUsers = lib.mkDefault (
-      if cfg.settings.auto-allocate-uids or false then
-        0
-      else
-        lib.max 32 (if cfg.settings.max-jobs == "auto" then 0 else cfg.settings.max-jobs)
-    );
-
+    systemd.sockets.nix-daemon.wantedBy = [ "sockets.target" ];
+    systemd.tmpfiles.packages = [ nixPackage ];
     users.users = nixbldUsers;
-
-    services.displayManager.hiddenUsers = lib.attrNames nixbldUsers;
-
-    # Legacy configuration conversion.
-    nix.settings.sandbox-fallback = false;
   };
 }

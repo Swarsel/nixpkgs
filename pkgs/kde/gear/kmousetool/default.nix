@@ -1,7 +1,7 @@
 {
+  libxt,
   mkKdeDerivation,
   qtmultimedia,
-  libxt,
 }:
 mkKdeDerivation {
   pname = "kmousetool";
@@ -10,5 +10,6 @@ mkKdeDerivation {
     qtmultimedia
     libxt
   ];
+
   meta.mainProgram = "kmousetool";
 }

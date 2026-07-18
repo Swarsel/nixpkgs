@@ -2,10 +2,10 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  localBios ? true,
-  nasm,
-  sdlSupport ? true,
   SDL,
+  nasm,
+  localBios ? true,
+  sdlSupport ? true,
 }:
 
 stdenv.mkDerivation {
@@ -20,7 +20,6 @@ stdenv.mkDerivation {
   };
 
   buildInputs = lib.optional localBios nasm ++ lib.optional sdlSupport SDL;
-
   makeFlags = [ "8086tiny" ];
 
   postBuild = lib.optionalString localBios ''
@@ -50,8 +49,8 @@ stdenv.mkDerivation {
   '';
 
   meta = {
-    homepage = "https://github.com/adriancable/8086tiny";
     description = "Open-source small 8086 emulator";
+
     longDescription = ''
       8086tiny is a tiny, open-source (MIT), portable (little-endian hosts)
       Intel PC emulator, powerful enough to run DOS, Windows 3.0, Excel, MS
@@ -61,6 +60,8 @@ stdenv.mkDerivation {
       8086tiny is based on an IOCCC 2013 winning entry. In fact that is the
       "unobfuscated" version :)
     '';
+
+    homepage = "https://github.com/adriancable/8086tiny";
     license = lib.licenses.mit;
     maintainers = [ ];
     platforms = lib.platforms.linux;

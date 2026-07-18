@@ -1,11 +1,10 @@
 {
   lib,
   stdenv,
-  callPackage,
   fetchFromGitHub,
-  testers,
-
+  callPackage,
   cmake,
+  testers,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -29,17 +28,17 @@ stdenv.mkDerivation (finalAttrs: {
   doCheck = true;
 
   passthru.tests = {
-    pkg-config = testers.testMetaPkgConfig finalAttrs.finalPackage;
     geos = callPackage ./tests.nix { geos = finalAttrs.finalPackage; };
+    pkg-config = testers.testMetaPkgConfig finalAttrs.finalPackage;
   };
 
   meta = {
     description = "C/C++ library for computational geometry with a focus on algorithms used in geographic information systems (GIS) software";
     homepage = "https://libgeos.org";
+    changelog = "https://github.com/libgeos/geos/releases/tag/${finalAttrs.finalPackage.version}";
     license = lib.licenses.lgpl21Only;
     mainProgram = "geosop";
-    teams = [ lib.teams.geospatial ];
     pkgConfigModules = [ "geos" ];
-    changelog = "https://github.com/libgeos/geos/releases/tag/${finalAttrs.finalPackage.version}";
+    teams = [ lib.teams.geospatial ];
   };
 })

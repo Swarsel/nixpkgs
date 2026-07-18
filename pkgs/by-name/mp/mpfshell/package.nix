@@ -1,13 +1,12 @@
 {
   lib,
-  python3Packages,
   fetchFromGitHub,
+  python3Packages,
 }:
 
 python3Packages.buildPythonPackage {
   pname = "mpfshell";
   version = "0.9.3-unstable-2025-01-09";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "wendlers";
@@ -16,6 +15,7 @@ python3Packages.buildPythonPackage {
     hash = "sha256-+AUlBHCzxDKatXrDmmBsf0g4cKZaa9Ui92M0d+49rKo=";
   };
 
+  doCheck = false;
   build-system = with python3Packages; [ setuptools ];
 
   dependencies = with python3Packages; [
@@ -25,13 +25,13 @@ python3Packages.buildPythonPackage {
     standard-telnetlib # Python no longer provides telnetlib since python313
   ];
 
-  doCheck = false;
+  pyproject = true;
   pythonImportsCheck = [ "mp.mpfshell" ];
 
   meta = {
-    homepage = "https://github.com/wendlers/mpfshell";
     description = "Simple shell based file explorer for ESP8266 Micropython based devices";
-    mainProgram = "mpfshell";
+    homepage = "https://github.com/wendlers/mpfshell";
     license = lib.licenses.mit;
+    mainProgram = "mpfshell";
   };
 }

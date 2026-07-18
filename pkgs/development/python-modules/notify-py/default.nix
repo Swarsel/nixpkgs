@@ -1,24 +1,23 @@
 {
   lib,
   stdenv,
-  buildPythonPackage,
   fetchFromGitHub,
-  replaceVars,
   alsa-utils,
-  libnotify,
-  which,
-  poetry-core,
-  jeepney,
-  loguru,
-  pytest,
-  dbus,
+  buildPythonPackage,
   coreutils,
+  dbus,
+  jeepney,
+  libnotify,
+  loguru,
+  poetry-core,
+  pytest,
+  replaceVars,
+  which,
 }:
 
 buildPythonPackage rec {
   pname = "notify-py";
   version = "0.3.43";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "ms7m";
@@ -46,10 +45,10 @@ buildPythonPackage rec {
     poetry-core
   ];
 
-  pythonRelaxDeps = [ "loguru" ];
-
   propagatedBuildInputs = [ loguru ] ++ lib.optionals stdenv.hostPlatform.isLinux [ jeepney ];
-
+  # GDBus.Error:org.freedesktop.DBus.Error.ServiceUnknown: The name
+  # org.freedesktop.Notifications was not provided by any .service files
+  doCheck = false;
   nativeCheckInputs = [ pytest ] ++ lib.optionals stdenv.hostPlatform.isLinux [ dbus ];
 
   checkPhase =
@@ -71,21 +70,21 @@ buildPythonPackage rec {
         pytest
       '';
 
-  # GDBus.Error:org.freedesktop.DBus.Error.ServiceUnknown: The name
-  # org.freedesktop.Notifications was not provided by any .service files
-  doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "notifypy" ];
+  pythonRelaxDeps = [ "loguru" ];
 
   meta = {
     description = "Cross-platform desktop notification library for Python";
-    mainProgram = "notifypy";
     homepage = "https://github.com/ms7m/notify-py";
     changelog = "https://github.com/ms7m/notify-py/releases/tag/v${version}";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       austinbutler
       dotlambda
     ];
+
+    mainProgram = "notifypy";
   };
 }

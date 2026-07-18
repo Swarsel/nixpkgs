@@ -2,16 +2,16 @@
   lib,
   stdenv,
   fetchurl,
-  pkg-config,
+  gdk-pixbuf,
   gettext,
-  mate-icon-theme,
+  gitUpdater,
+  gtk-engine-murrine,
   gtk2,
   gtk3,
   gtk_engines,
-  gtk-engine-murrine,
-  gdk-pixbuf,
   librsvg,
-  gitUpdater,
+  mate-icon-theme,
+  pkg-config,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -37,32 +37,33 @@ stdenv.mkDerivation (finalAttrs: {
     librsvg
   ];
 
-  propagatedUserEnvPkgs = [
-    gtk-engine-murrine
-  ];
-
-  dontDropIconThemeCache = true;
-
   postInstall = ''
     gtk-update-icon-cache "$out"/share/icons/ContrastHigh
   '';
 
+  dontDropIconThemeCache = true;
   enableParallelBuilding = true;
 
+  propagatedUserEnvPkgs = [
+    gtk-engine-murrine
+  ];
+
   passthru.updateScript = gitUpdater {
-    url = "https://git.mate-desktop.org/mate-themes";
     odd-unstable = true;
     rev-prefix = "v";
+    url = "https://git.mate-desktop.org/mate-themes";
   };
 
   meta = {
     description = "Set of themes from MATE";
     homepage = "https://mate-desktop.org";
+
     license = with lib.licenses; [
       lgpl21Plus
       lgpl3Only
       gpl3Plus
     ];
+
     platforms = lib.platforms.unix;
     teams = [ lib.teams.mate ];
   };

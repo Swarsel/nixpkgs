@@ -1,8 +1,8 @@
 {
-  coreutils,
-  fetchFromGitHub,
-  gh,
   lib,
+  fetchFromGitHub,
+  coreutils,
+  gh,
   makeWrapper,
   nix-update-script,
   stdenvNoCC,
@@ -39,11 +39,11 @@ stdenvNoCC.mkDerivation rec {
   passthru.updateScript = nix-update-script { };
 
   meta = {
-    homepage = "https://github.com/MintArchit/gh-contribs";
     description = "GitHub Contribution Graph CLI";
-    maintainers = [ lib.maintainers.vinnymeller ];
+    homepage = "https://github.com/MintArchit/gh-contribs";
     license = lib.licenses.unlicense;
-    mainProgram = "gh-contribs";
+    maintainers = [ lib.maintainers.vinnymeller ];
     platforms = lib.platforms.all;
+    mainProgram = "gh-contribs";
   };
 }

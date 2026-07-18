@@ -2,10 +2,10 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  pkg-config,
   clp,
   coin-utils,
   osi,
+  pkg-config,
 }:
 
 stdenv.mkDerivation (finalAttrs: {

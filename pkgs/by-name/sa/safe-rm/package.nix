@@ -1,9 +1,9 @@
 {
   lib,
-  rustPlatform,
-  fetchgit,
   coreutils,
+  fetchgit,
   installShellFiles,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -16,15 +16,13 @@ rustPlatform.buildRustPackage (finalAttrs: {
     sha256 = "sha256-7+4XwsjzLBCQmHDYNwhlN4Yg3eL43GUEbq8ROtuP2Kw=";
   };
 
-  cargoHash = "sha256-6mPx7qgrsUtjDiFMIL4NTmG9jeC3mBlsQIf/TUB4SQM=";
-
   postPatch = ''
     substituteInPlace src/main.rs \
       --replace-fail "/bin/rm" "${coreutils}/bin/rm"
   '';
 
   nativeBuildInputs = [ installShellFiles ];
-
+  cargoHash = "sha256-6mPx7qgrsUtjDiFMIL4NTmG9jeC3mBlsQIf/TUB4SQM=";
   # uses lots of absolute paths outside of the sandbox
   doCheck = false;
 
@@ -36,8 +34,8 @@ rustPlatform.buildRustPackage (finalAttrs: {
     description = "Tool intended to prevent the accidental deletion of important files";
     homepage = "https://launchpad.net/safe-rm";
     license = lib.licenses.gpl3Plus;
-    platforms = lib.platforms.all;
     maintainers = with lib.maintainers; [ SuperSandro2000 ];
+    platforms = lib.platforms.all;
     mainProgram = "safe-rm";
   };
 })

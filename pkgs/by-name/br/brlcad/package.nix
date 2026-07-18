@@ -2,52 +2,47 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  fetchpatch,
-
-  # nativeBuildInputs
-  cmake,
-  doxygen,
-  lemon,
-  libxslt,
-  re2c,
-
   # buildInputs
   adaptagrams,
   assimp,
   clipper2,
+  # nativeBuildInputs
+  cmake,
+  doxygen,
   eigen,
+  fetchpatch,
   gdal,
   geogram,
   gtmathematics,
+  # nativeCheckInputs
+  gzip,
+  lemon,
   libGL,
   libjpeg_turbo,
   libpng,
+  libxslt,
   lmdb,
   netpbm,
   opencv,
   openmesh,
   pugixml,
   qt6,
+  re2c,
   stepcode,
   tcl,
   tinygltf,
   tk,
-  zlib,
-
-  # nativeCheckInputs
-  gzip,
   which,
-
+  zlib,
   # build options
   enableQt ? false,
 }:
 let
   bext = fetchFromGitHub {
-    owner = "BRL-CAD";
-    repo = "bext";
-    rev = "f9074f84c87605f89d912069cee1b1e710ead635"; # must match brlcad_bext_init() in CMakeLists.txt
-    hash = "sha256-wOzrHiEA+IVUnchSRRUAzIwKkGWtyvnrInnADi3KgiI=";
     fetchSubmodules = true;
+    hash = "sha256-wOzrHiEA+IVUnchSRRUAzIwKkGWtyvnrInnADi3KgiI=";
+    owner = "BRL-CAD";
+
     # remove unneeded subprojects to reduce NAR size
     postFetch =
       let
@@ -108,15 +103,15 @@ let
           rm -r $out/$name
         done
       '';
+
+    repo = "bext";
+    rev = "f9074f84c87605f89d912069cee1b1e710ead635"; # must match brlcad_bext_init() in CMakeLists.txt
   };
 in
 
 stdenv.mkDerivation (finalAttrs: {
   pname = "brlcad";
   version = "7.42.2";
-
-  strictDeps = true;
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "BRL-CAD";
@@ -125,18 +120,12 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-smsCbUWlAfO9xyT8Bz/vLRkTJuehF9xANrP8bT//t18=";
   };
 
-  prePatch = ''
-    # clone bext src so we can patch it
-    mkdir -p build/bext
-    cp -r --no-preserve=mode ${bext}/* build/bext/
-  '';
-
   patches = [
     # make libgcv work with modern lemon
     (fetchpatch {
-      url = "https://github.com/BRL-CAD/brlcad/commit/0dbd82a10040edc45754242ab36ed130a0259fb8.patch";
-      hash = "sha256-N54FnF69PgeRUDZk/i9hoLHoBzb1neYN20KhDyMqvi4=";
       excludes = [ "CMakeLists.txt" ];
+      hash = "sha256-N54FnF69PgeRUDZk/i9hoLHoBzb1neYN20KhDyMqvi4=";
+      url = "https://github.com/BRL-CAD/brlcad/commit/0dbd82a10040edc45754242ab36ed130a0259fb8.patch";
     })
     # disable internal RPATH manipulation which gets in our way
     ./disable-rpath-manipulation.patch
@@ -186,6 +175,8 @@ stdenv.mkDerivation (finalAttrs: {
     substituteInPlace src/libbu/tests/CMakeLists.txt \
       --replace-fail "brlcad_add_test(NAME bu_color_to_rgb_floats_1 COMMAND bu_test color 4 192,78,214)" ""
   '';
+
+  strictDeps = true;
 
   nativeBuildInputs = [
     cmake
@@ -237,33 +228,32 @@ stdenv.mkDerivation (finalAttrs: {
     (lib.cmakeFeature "TCL_ROOT" "${tcl};${tk}")
   ];
 
-  preConfigure = ''
-    cmakeFlagsArray+=("-DBRLCAD_EXT_SOURCE_DIR=$(pwd)/build/bext")
-  '';
-
   env = {
+    CFLAGS = toString [
+      # itk, tkhtml, tktable, utahrle
+      "-Wno-incompatible-pointer-types"
+      "-std=gnu17"
+    ];
+
     CXXFLAGS = toString [
       # src/libbg/spsr/Octree.inl
       "-Wno-template-body"
       # manifold: clipper.core.h:181:22: error: template-id not allowed for constructor in C++20
       "-Wno-error=template-id-cdtor"
     ];
-    CFLAGS = toString [
-      # itk, tkhtml, tktable, utahrle
-      "-Wno-incompatible-pointer-types"
-      "-std=gnu17"
-    ];
   };
+
+  preConfigure = ''
+    cmakeFlagsArray+=("-DBRLCAD_EXT_SOURCE_DIR=$(pwd)/build/bext")
+  '';
+
+  doCheck = true;
 
   nativeCheckInputs = [
     gzip
     which
   ];
 
-  doCheck = true;
-
-  # Only wrap Qt apps as other executables stop working when wrapped
-  dontWrapQtApps = true;
   preFixup = lib.optionalString enableQt ''
     wrapQtApp $out/bin/brlman
     wrapQtApp $out/bin/qged
@@ -272,18 +262,31 @@ stdenv.mkDerivation (finalAttrs: {
     wrapQtApp $out/bin/qisst
   '';
 
+  __structuredAttrs = true;
+  # Only wrap Qt apps as other executables stop working when wrapped
+  dontWrapQtApps = true;
+
+  prePatch = ''
+    # clone bext src so we can patch it
+    mkdir -p build/bext
+    cp -r --no-preserve=mode ${bext}/* build/bext/
+  '';
+
   meta = {
-    homepage = "https://brlcad.org";
     description = "BRL-CAD is a powerful cross-platform open source combinatorial solid modeling system";
+    homepage = "https://brlcad.org";
     changelog = "https://github.com/BRL-CAD/brlcad/releases/tag/${finalAttrs.src.tag}";
+
     license = with lib.licenses; [
       lgpl21
       bsd2
     ];
+
     maintainers = with lib.maintainers; [
       GaetanLepage
       wishstudio
     ];
+
     platforms = lib.platforms.all;
   };
 })

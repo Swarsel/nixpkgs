@@ -1,8 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
+  buildPythonPackage,
   pytestCheckHook,
   regex,
 }:
@@ -10,7 +9,6 @@
 buildPythonPackage rec {
   pname = "sentence-splitter";
   version = "1.4";
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "mediacloud";
@@ -20,9 +18,8 @@ buildPythonPackage rec {
   };
 
   propagatedBuildInputs = [ regex ];
-
   nativeCheckInputs = [ pytestCheckHook ];
-
+  format = "setuptools";
   pythonImportsCheck = [ "sentence_splitter" ];
 
   meta = {

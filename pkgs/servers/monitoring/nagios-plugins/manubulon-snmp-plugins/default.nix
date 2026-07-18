@@ -1,10 +1,10 @@
 {
-  fetchFromGitHub,
   lib,
+  stdenv,
+  fetchFromGitHub,
   makeWrapper,
   nix-update-script,
   perlPackages,
-  stdenv,
   versionCheckHook,
 }:
 stdenv.mkDerivation rec {
@@ -18,6 +18,10 @@ stdenv.mkDerivation rec {
     hash = "sha256-B5CCGMkNv1wGnLQIl0yiGTH2j5MOlj5+MrRqbLNIwhE=";
   };
 
+  nativeBuildInputs = [
+    makeWrapper
+  ];
+
   buildInputs = with perlPackages; [
     CryptDES
     CryptRijndael
@@ -28,10 +32,6 @@ stdenv.mkDerivation rec {
     perl
   ];
 
-  nativeBuildInputs = [
-    makeWrapper
-  ];
-
   installPhase = ''
     runHook preInstall
     mkdir --parents $out/bin
@@ -39,29 +39,31 @@ stdenv.mkDerivation rec {
     runHook postInstall
   '';
 
+  doInstallCheck = true;
+  nativeInstallCheckInputs = [ versionCheckHook ];
+
   postFixup = ''
     for f in $out/bin/* ; do
       wrapProgram $f --set PERL5LIB $PERL5LIB --set LC_ALL C
     done
   '';
 
-  doInstallCheck = true;
-  nativeInstallCheckInputs = [ versionCheckHook ];
-  versionCheckProgram = "${placeholder "out"}/bin/check_snmp_int.pl";
   preVersionCheck = ''
     version=${builtins.head (lib.splitString "-" version)}
   '';
+
+  versionCheckProgram = "${placeholder "out"}/bin/check_snmp_int.pl";
 
   passthru = {
     updateScript = nix-update-script { extraArgs = [ "--version=branch" ]; };
   };
 
   meta = {
-    changelog = "https://github.com/SteScho/manubulon-snmp/releases/tag/v${version}";
     description = "Set of Icinga/Nagios plugins to check hosts and hardware with the SNMP protocol";
     homepage = "https://github.com/SteScho/manubulon-snmp";
+    changelog = "https://github.com/SteScho/manubulon-snmp/releases/tag/v${version}";
     license = with lib.licenses; [ gpl2Only ];
-    platforms = lib.platforms.unix;
     maintainers = with lib.maintainers; [ jwillikers ];
+    platforms = lib.platforms.unix;
   };
 }

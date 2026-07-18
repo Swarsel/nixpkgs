@@ -1,32 +1,29 @@
 {
   lib,
   stdenv,
-  buildPythonPackage,
   fetchFromGitHub,
-  versionCheckHook,
   appdirs,
   babel,
+  buildPythonPackage,
   evdev,
   mock,
+  plover-stroke,
   pyqt5,
   pyserial,
-  pytestCheckHook,
   pytest-qt,
-  plover-stroke,
+  pytestCheckHook,
+  python-xlib,
   rtf-tokenize,
   setuptools,
+  versionCheckHook,
   wcwidth,
   wheel,
-  python-xlib,
   wrapQtAppsHook,
 }:
 
 buildPythonPackage (finalAttrs: {
-  __structuredAttrs = true;
-
   pname = "plover";
   version = "4.0.2";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "openstenoproject";
@@ -39,28 +36,6 @@ buildPythonPackage (finalAttrs: {
     sed -i 's/,<77//g' pyproject.toml # pythonRelaxDepsHook doesn't work for this for some reason
   '';
 
-  build-system = [
-    babel
-    setuptools
-    pyqt5
-    wheel
-  ];
-  dependencies = [
-    appdirs
-    evdev
-    pyqt5
-    pyserial
-    plover-stroke
-    rtf-tokenize
-    setuptools
-    wcwidth
-    python-xlib
-  ];
-  optional-dependencies = {
-    gui-qt = [
-      pyqt5
-    ];
-  };
   nativeBuildInputs = [
     wrapQtAppsHook
   ];
@@ -72,9 +47,6 @@ buildPythonPackage (finalAttrs: {
     mock
   ];
 
-  # Segfaults?!
-  disabledTestPaths = [ "test/gui_qt/test_dictionaries_widget.py" ];
-
   postInstall = ''
     install -Dm 444 linux/plover.desktop $out/share/applications/plover.desktop
   '';
@@ -83,22 +55,54 @@ buildPythonPackage (finalAttrs: {
     makeWrapperArgs+=("''${qtWrapperArgs[@]}")
   '';
 
+  __structuredAttrs = true;
+
+  build-system = [
+    babel
+    setuptools
+    pyqt5
+    wheel
+  ];
+
+  dependencies = [
+    appdirs
+    evdev
+    pyqt5
+    pyserial
+    plover-stroke
+    rtf-tokenize
+    setuptools
+    wcwidth
+    python-xlib
+  ];
+
+  # Segfaults?!
+  disabledTestPaths = [ "test/gui_qt/test_dictionaries_widget.py" ];
   dontWrapQtApps = true;
 
+  optional-dependencies = {
+    gui-qt = [
+      pyqt5
+    ];
+  };
+
+  pyproject = true;
   pythonImportsCheck = [ "plover" ];
 
   meta = {
     description = "OpenSteno Plover stenography software";
     homepage = "https://www.openstenoproject.org/plover/";
-    mainProgram = "plover";
+    license = lib.licenses.gpl2Plus;
+
     maintainers = with lib.maintainers; [
       twey
       kovirobi
       pandapip1
       ShamrockLee
     ];
-    license = lib.licenses.gpl2Plus;
+
     platforms = lib.platforms.unix;
+    mainProgram = "plover";
     broken = stdenv.hostPlatform.isDarwin;
   };
 })

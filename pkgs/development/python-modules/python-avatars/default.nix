@@ -1,16 +1,14 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
+  buildPythonPackage,
   pytestCheckHook,
+  setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "python-avatars";
   version = "1.4.1";
-
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "ibonn";
@@ -19,10 +17,9 @@ buildPythonPackage rec {
     hash = "sha256-8/uhzOr0AukH0VgUhnsPNSEGJ2D5z1tqdIKzNHyHCgY=";
   };
 
-  build-system = [ setuptools ];
-
   nativeCheckInputs = [ pytestCheckHook ];
-
+  build-system = [ setuptools ];
+  pyproject = true;
   pythonImportsCheck = [ "python_avatars" ];
 
   meta = {

@@ -1,13 +1,13 @@
 {
   lib,
   fetchFromGitHub,
-  rustPlatform,
-  pkg-config,
-  libxcb,
-  dbus,
   bash,
-  procps,
+  dbus,
+  libxcb,
   nano,
+  pkg-config,
+  procps,
+  rustPlatform,
   watch,
 }:
 
@@ -22,8 +22,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-44rXygZVbwwC/jOB69iHydsjYr/WeVU4Eky3BPqJzyc=";
   };
 
-  cargoHash = "sha256-DJyml8J9XXKD2t1dQz+OrVDFcq6PLMoDlhiLo86D3CM=";
-
   nativeBuildInputs = [
     pkg-config
   ];
@@ -33,14 +31,14 @@ rustPlatform.buildRustPackage (finalAttrs: {
     libxcb
   ];
 
+  cargoHash = "sha256-DJyml8J9XXKD2t1dQz+OrVDFcq6PLMoDlhiLo86D3CM=";
+
   nativeCheckInputs = [
     bash
     nano
     procps
     watch
   ];
-
-  useNextest = true;
 
   checkFlags =
     lib.concatMap
@@ -56,14 +54,18 @@ rustPlatform.buildRustPackage (finalAttrs: {
         "gpu"
       ];
 
+  useNextest = true;
+
   meta = {
     description = "Text-based compositor for modern terminals";
     homepage = "https://github.com/tattoy-org/tattoy";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       DieracDelta
     ];
-    mainProgram = "tattoy";
+
     platforms = lib.platforms.unix;
+    mainProgram = "tattoy";
   };
 })

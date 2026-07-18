@@ -1,8 +1,7 @@
 {
+  lib,
   buildPythonPackage,
   fetchPypi,
-  lib,
-
   # pythonPackages
   pyasn1-modules,
   pycryptodomex,
@@ -12,7 +11,6 @@
 buildPythonPackage rec {
   pname = "pyjks";
   version = "20.0.0";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
@@ -27,6 +25,7 @@ buildPythonPackage rec {
 
   # Tests assume network connectivity
   doCheck = false;
+  format = "setuptools";
 
   meta = {
     description = "Pure-Python Java Keystore (JKS) library";

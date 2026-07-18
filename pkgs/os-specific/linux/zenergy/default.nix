@@ -22,19 +22,18 @@ stdenv.mkDerivation {
   };
 
   nativeBuildInputs = [ kmod ] ++ kernel.moduleBuildDependencies;
+  makeFlags = kernelModuleMakeFlags ++ [ "KDIR=${kernelDirectory}" ];
+
+  preBuild = ''
+    substituteInPlace Makefile --replace-fail "PWD modules_install" "PWD INSTALL_MOD_PATH=$out modules_install"
+  '';
 
   hardeningDisable = [
     "format"
     "pic"
   ];
 
-  makeFlags = kernelModuleMakeFlags ++ [ "KDIR=${kernelDirectory}" ];
-
   installTargets = [ "modules_install" ];
-
-  preBuild = ''
-    substituteInPlace Makefile --replace-fail "PWD modules_install" "PWD INSTALL_MOD_PATH=$out modules_install"
-  '';
 
   meta = {
     description = "Based on AMD_ENERGY driver, but with some jiffies added so non-root users can read it safely";

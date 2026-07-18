@@ -1,18 +1,17 @@
 {
   lib,
   fetchFromGitHub,
-  buildPythonPackage,
-  unittestCheckHook,
-  pkg-config,
   augeas,
+  buildPythonPackage,
   cffi,
+  pkg-config,
   pkgs, # for libxml2
   setuptools,
+  unittestCheckHook,
 }:
 buildPythonPackage (finalAttrs: {
   pname = "augeas";
   version = "1.2.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "hercules-team";
@@ -21,8 +20,6 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-Lq8ckra3sqN38zo1d5JsEq6U5TtLKRmqysoWNwR9J9A=";
   };
 
-  build-system = [ setuptools ];
-
   nativeBuildInputs = [ pkg-config ];
 
   buildInputs = [
@@ -30,16 +27,16 @@ buildPythonPackage (finalAttrs: {
     pkgs.libxml2
   ];
 
-  dependencies = [ cffi ];
-
   nativeCheckInputs = [ unittestCheckHook ];
-
+  build-system = [ setuptools ];
+  dependencies = [ cffi ];
+  pyproject = true;
   pythonImportsCheck = [ "augeas" ];
 
   meta = {
-    changelog = "https://github.com/hercules-team/python-augeas/releases/tag/v${finalAttrs.version}";
     description = "Pure python bindings for augeas";
     homepage = "https://github.com/hercules-team/python-augeas";
+    changelog = "https://github.com/hercules-team/python-augeas/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.lgpl2Plus;
     platforms = lib.platforms.unix;
   };

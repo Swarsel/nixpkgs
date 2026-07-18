@@ -1,24 +1,24 @@
 {
   lib,
   stdenv,
-  meson,
   fetchurl,
-  python3,
-  pkg-config,
-  gtk4,
+  desktop-file-utils,
+  editorconfig-core-c,
   glib,
-  gtksourceview5,
-  gsettings-desktop-schemas,
-  wrapGAppsHook4,
-  ninja,
   gnome,
+  gsettings-desktop-schemas,
+  gtk4,
+  gtksourceview5,
   icu,
   itstool,
   libadwaita,
   libspelling,
-  editorconfig-core-c,
   libxml2,
-  desktop-file-utils,
+  meson,
+  ninja,
+  pkg-config,
+  python3,
+  wrapGAppsHook4,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -59,12 +59,12 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   meta = {
+    description = "Text Editor for GNOME";
     homepage = "https://gitlab.gnome.org/GNOME/gnome-text-editor";
     changelog = "https://gitlab.gnome.org/GNOME/gnome-text-editor/-/blob/${finalAttrs.version}/NEWS?ref_type=tags";
-    description = "Text Editor for GNOME";
-    mainProgram = "gnome-text-editor";
-    teams = [ lib.teams.gnome ];
     license = lib.licenses.gpl3Plus;
     platforms = lib.platforms.unix;
+    mainProgram = "gnome-text-editor";
+    teams = [ lib.teams.gnome ];
   };
 })

@@ -1,25 +1,21 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
+  buildPythonPackage,
   # build-system
   poetry-core,
   poetry-dynamic-versioning,
-
   # dependencies
   pytest,
-  ruff,
-
+  pytest-mock,
   # tests
   pytestCheckHook,
-  pytest-mock,
+  ruff,
 }:
 
 buildPythonPackage rec {
   pname = "pytest-ruff";
   version = "0.5";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "businho";
@@ -27,6 +23,11 @@ buildPythonPackage rec {
     tag = "v${version}";
     hash = "sha256-fwtubbTRvPMSGhylP3H5zhIwHdeWeTbvxZY5doM+tvw=";
   };
+
+  nativeCheckInputs = [
+    pytestCheckHook
+    pytest-mock
+  ];
 
   build-system = [
     poetry-core
@@ -38,11 +39,7 @@ buildPythonPackage rec {
     ruff
   ];
 
-  nativeCheckInputs = [
-    pytestCheckHook
-    pytest-mock
-  ];
-
+  pyproject = true;
   pythonImportsCheck = [ "pytest_ruff" ];
 
   meta = {

@@ -1,20 +1,17 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   importlib-metadata,
   importlib-resources,
+  nix-update-script,
   poetry-core,
   pytestCheckHook,
-  nix-update-script,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "cmudict";
   version = "1.1.3";
-  pyproject = true;
-
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "prosegrinder";
@@ -24,6 +21,8 @@ buildPythonPackage (finalAttrs: {
     fetchSubmodules = true;
   };
 
+  nativeCheckInputs = [ pytestCheckHook ];
+  __structuredAttrs = true;
   build-system = [ poetry-core ];
 
   dependencies = [
@@ -31,8 +30,7 @@ buildPythonPackage (finalAttrs: {
     importlib-resources
   ];
 
-  nativeCheckInputs = [ pytestCheckHook ];
-
+  pyproject = true;
   pythonImportsCheck = [ "cmudict" ];
 
   passthru = {

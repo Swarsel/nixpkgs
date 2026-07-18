@@ -1,16 +1,15 @@
 {
   lib,
-  pkgs,
   fetchFromGitHub,
   buildPythonPackage,
-  rustPlatform,
   callPackage,
+  pkgs,
+  rustPlatform,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "uv-build";
   version = "0.11.16";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "astral-sh";
@@ -24,20 +23,19 @@ buildPythonPackage (finalAttrs: {
     rustPlatform.maturinBuildHook
   ];
 
+  # The package has no tests
+  doCheck = false;
+  buildAndTestSubdir = "crates/uv-build";
+
   cargoDeps = rustPlatform.fetchCargoVendor {
     inherit (finalAttrs) pname version src;
     hash = "sha256-2lg86WxPGVbJ91zi61lKrSqnzFgmmSrBrl+SfV5SJWU=";
   };
 
-  buildAndTestSubdir = "crates/uv-build";
-
   # $src/.github/workflows/build-binaries.yml#L139
   maturinBuildProfile = "minimal-size";
-
+  pyproject = true;
   pythonImportsCheck = [ "uv_build" ];
-
-  # The package has no tests
-  doCheck = false;
 
   # Run the tests of a package built by `uv_build`.
   passthru = {
@@ -47,10 +45,10 @@ buildPythonPackage (finalAttrs: {
   };
 
   meta = {
-    changelog = "https://github.com/astral-sh/uv/blob/${finalAttrs.src.tag}/CHANGELOG.md";
+    inherit (pkgs.uv.meta) license;
     description = "Minimal build backend for uv";
     homepage = "https://docs.astral.sh/uv/reference/settings/#build-backend";
-    inherit (pkgs.uv.meta) license;
+    changelog = "https://github.com/astral-sh/uv/blob/${finalAttrs.src.tag}/CHANGELOG.md";
     maintainers = with lib.maintainers; [ bengsparks ];
   };
 })

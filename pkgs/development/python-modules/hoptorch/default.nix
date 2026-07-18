@@ -1,26 +1,21 @@
 {
   lib,
   stdenv,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # tests
-  setuptools,
-
-  # dependencies
-  pyvers,
-  torch,
-
+  buildPythonPackage,
   # tests
   llvmPackages,
   pytestCheckHook,
+  # dependencies
+  pyvers,
+  # tests
+  setuptools,
+  torch,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "hoptorch";
   version = "0.1.4";
-  pyproject = true;
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "vmoens";
@@ -28,6 +23,12 @@ buildPythonPackage (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-rhX81MidgltQ2YQtUdYoK1Qtz7N7x9MpZIKDlZzN+vg=";
   };
+
+  nativeCheckInputs = [
+    pytestCheckHook
+  ];
+
+  __structuredAttrs = true;
 
   build-system = [
     setuptools
@@ -38,11 +39,8 @@ buildPythonPackage (finalAttrs: {
     torch
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "hoptorch" ];
-
-  nativeCheckInputs = [
-    pytestCheckHook
-  ];
 
   meta = {
     description = "Small compatibility package for PyTorch higher-order operators";

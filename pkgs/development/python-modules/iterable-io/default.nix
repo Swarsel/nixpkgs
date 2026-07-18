@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   hatchling,
   pytestCheckHook,
 }:
@@ -9,7 +9,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "iterable-io";
   version = "1.0.4";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "pR0Ps";
@@ -19,10 +18,9 @@ buildPythonPackage (finalAttrs: {
   };
 
   nativeBuildInputs = [ hatchling ];
-
-  pythonImportsCheck = [ "iterableio" ];
-
   nativeCheckInputs = [ pytestCheckHook ];
+  pyproject = true;
+  pythonImportsCheck = [ "iterableio" ];
 
   meta = {
     description = "Library to adapt iterables to a file-like interface";

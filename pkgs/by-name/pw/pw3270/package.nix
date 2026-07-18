@@ -2,17 +2,17 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  pkg-config,
-  gtk3,
-  libv3270,
-  lib3270,
-  openssl,
-  gettext,
   desktop-file-utils,
-  wrapGAppsHook3,
+  gettext,
+  gtk3,
+  lib3270,
+  libv3270,
   meson,
-  scour,
   ninja,
+  openssl,
+  pkg-config,
+  scour,
+  wrapGAppsHook3,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -25,6 +25,13 @@ stdenv.mkDerivation (finalAttrs: {
     tag = finalAttrs.version;
     hash = "sha256-thvurPyAsbcCRcanV6PwObO26LCmphdNrYYKhHDKnzE=";
   };
+
+  postPatch = ''
+    # lib3270_build_data_filename is relative to lib3270's share - not ours.
+    for f in $(find . -type f -iname "*.c"); do
+      sed -i -e "s@lib3270_build_data_filename(@g_build_filename(\"$out/share/pw3270\", @" "$f"
+    done
+  '';
 
   nativeBuildInputs = [
     pkg-config
@@ -42,13 +49,6 @@ stdenv.mkDerivation (finalAttrs: {
     lib3270
     openssl
   ];
-
-  postPatch = ''
-    # lib3270_build_data_filename is relative to lib3270's share - not ours.
-    for f in $(find . -type f -iname "*.c"); do
-      sed -i -e "s@lib3270_build_data_filename(@g_build_filename(\"$out/share/pw3270\", @" "$f"
-    done
-  '';
 
   postFixup = ''
     # Schemas get installed to wrong directory.

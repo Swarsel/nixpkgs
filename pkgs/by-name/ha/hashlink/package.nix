@@ -1,18 +1,18 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
+  SDL2,
   cmake,
-  ninja,
   libGL,
   libGLU,
-  libpng,
   libjpeg_turbo,
+  libpng,
   libuv,
   libvorbis,
   mbedtls,
+  ninja,
   openal,
-  SDL2,
   sqlite,
 }:
 
@@ -35,6 +35,11 @@ stdenv.mkDerivation rec {
        "cmake_minimum_required(VERSION 3.13)"
   '';
 
+  nativeBuildInputs = [
+    cmake
+    ninja
+  ];
+
   buildInputs = [
     libGL
     libGLU
@@ -46,11 +51,6 @@ stdenv.mkDerivation rec {
     openal
     SDL2
     sqlite
-  ];
-
-  nativeBuildInputs = [
-    cmake
-    ninja
   ];
 
   # append default installPhase with library install for haxe
@@ -66,16 +66,19 @@ stdenv.mkDerivation rec {
 
   meta = {
     description = "Virtual machine for Haxe";
-    mainProgram = "hl";
     homepage = "https://hashlink.haxe.org/";
     license = lib.licenses.mit;
-    platforms = [
-      "x86_64-linux"
-    ];
+
     maintainers = with lib.maintainers; [
       iblech
       locallycompact
       logo
     ];
+
+    platforms = [
+      "x86_64-linux"
+    ];
+
+    mainProgram = "hl";
   };
 }

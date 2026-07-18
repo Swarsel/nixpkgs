@@ -1,12 +1,10 @@
 {
   lib,
-  rustPlatform,
   fetchFromCodeberg,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
-  __structuredAttrs = true;
-
   pname = "pgtui";
   version = "0.14.0";
 
@@ -62,14 +60,18 @@ rustPlatform.buildRustPackage (finalAttrs: {
     "--skip=relations::tests::single_col_text_primary_key_correct"
   ];
 
+  __structuredAttrs = true;
+
   meta = {
     description = "A Postgres TUI client that utilizes your terminal text editor for inserts & updates";
-    mainProgram = "pgtui";
     homepage = "https://kdwarn.net/pgtui";
     changelog = "https://codeberg.org/kdwarn/pgtui/src/tag//v${finalAttrs.version}/CHANGELOG.md";
     license = lib.licenses.agpl3Only;
+
     maintainers = with lib.maintainers; [
       matthiasbeyer
     ];
+
+    mainProgram = "pgtui";
   };
 })

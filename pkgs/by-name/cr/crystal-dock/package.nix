@@ -33,10 +33,10 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Dock (desktop panel) for Linux desktop";
-    mainProgram = "crystal-dock";
-    license = lib.licenses.gpl3Only;
     homepage = "https://github.com/dangvd/crystal-dock";
+    license = lib.licenses.gpl3Only;
     maintainers = with lib.maintainers; [ rafameou ];
     platforms = lib.platforms.linux;
+    mainProgram = "crystal-dock";
   };
 })

@@ -1,8 +1,8 @@
 {
   lib,
   stdenv,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   installShellFiles,
   nix-update-script,
   versionCheckHook,
@@ -19,18 +19,8 @@ buildGoModule (finalAttrs: {
     hash = "sha256-t6u2SSPDh+zj8M5aJfP3mYgSgBMNDEMNhMWEkr86M0U=";
   };
 
-  vendorHash = "sha256-v8OY4JkDaY8Xl20JvU8JbAXD43BaGrM5UmiJHnHaxek=";
-
   nativeBuildInputs = [ installShellFiles ];
-
-  subPackages = [ "cmd/task" ];
-
-  ldflags = [
-    "-s"
-    "-w"
-    "-X=github.com/go-task/task/v3/internal/version.version=${finalAttrs.version}"
-  ];
-
+  vendorHash = "sha256-v8OY4JkDaY8Xl20JvU8JbAXD43BaGrM5UmiJHnHaxek=";
   env.CGO_ENABLED = 0;
 
   postInstall = ''
@@ -43,17 +33,25 @@ buildGoModule (finalAttrs: {
       --zsh <($out/bin/task --completion zsh)
   '';
 
+  doInstallCheck = true;
+
   nativeInstallCheckInputs = [
     versionCheckHook
   ];
-  doInstallCheck = true;
-  versionCheckProgram = "${placeholder "out"}/bin/task";
 
+  ldflags = [
+    "-s"
+    "-w"
+    "-X=github.com/go-task/task/v3/internal/version.version=${finalAttrs.version}"
+  ];
+
+  subPackages = [ "cmd/task" ];
+  versionCheckProgram = "${placeholder "out"}/bin/task";
   passthru.updateScript = nix-update-script { };
 
   meta = {
-    homepage = "https://taskfile.dev/";
     description = "Task runner / simpler Make alternative written in Go";
+    homepage = "https://taskfile.dev/";
     changelog = "https://github.com/go-task/task/blob/v${finalAttrs.version}/CHANGELOG.md";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ parasrah ];

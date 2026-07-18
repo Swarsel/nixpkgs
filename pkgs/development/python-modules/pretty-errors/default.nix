@@ -1,22 +1,24 @@
 {
   lib,
   buildPythonPackage,
+  colorama,
   fetchPypi,
   setuptools,
   wheel,
-  colorama,
 }:
 
 buildPythonPackage rec {
   pname = "pretty-errors";
   version = "1.2.25";
-  pyproject = true;
 
   src = fetchPypi {
-    pname = "pretty_errors";
     inherit version;
     hash = "sha256-oWulx1LIfCY7+S+LS1hiTjseKScak5H1ZPErhuk8Z1U=";
+    pname = "pretty_errors";
   };
+
+  # No test
+  doCheck = false;
 
   build-system = [
     setuptools
@@ -24,11 +26,8 @@ buildPythonPackage rec {
   ];
 
   dependencies = [ colorama ];
-
+  pyproject = true;
   pythonImportsCheck = [ "pretty_errors" ];
-
-  # No test
-  doCheck = false;
 
   meta = {
     description = "Prettifies Python exception output to make it legible";

@@ -1,7 +1,7 @@
 {
   lib,
-  gccStdenv,
   fetchurl,
+  gccStdenv,
 }:
 
 gccStdenv.mkDerivation (finalAttrs: {
@@ -14,14 +14,13 @@ gccStdenv.mkDerivation (finalAttrs: {
   };
 
   makeFlags = [ "CC:=$(CC)" ];
-
   installFlags = [ "PREFIX=$(out)" ];
 
   meta = {
+    description = "Irc it, simple FIFO based irc client";
     homepage = "https://tools.suckless.org/ii/";
     license = lib.licenses.mit;
-    description = "Irc it, simple FIFO based irc client";
-    mainProgram = "ii";
     platforms = lib.platforms.unix;
+    mainProgram = "ii";
   };
 })

@@ -1,8 +1,8 @@
 {
   lib,
+  fetchFromGitHub,
   buildGoModule,
   coreutils,
-  fetchFromGitHub,
 }:
 
 buildGoModule (finalAttrs: {
@@ -17,15 +17,6 @@ buildGoModule (finalAttrs: {
   };
 
   vendorHash = "sha256-PsGeh7PzZFFhzQClW56GfvsGp8T7dccyErdnOv3urhs=";
-
-  subPackages = [ "cmd/greenmask/" ];
-
-  ldflags = [
-    "-s"
-    "-w"
-    "-X=github.com/greenmaskio/greenmask/cmd/greenmask/cmd.Version=${finalAttrs.version}"
-  ];
-
   nativeCheckInputs = [ coreutils ];
 
   preCheck = ''
@@ -38,6 +29,14 @@ buildGoModule (finalAttrs: {
     substituteInPlace tests/integration/storages/main_test.go \
       --replace-fail "TestS3Storage" "SkipTestS3Storage"
   '';
+
+  ldflags = [
+    "-s"
+    "-w"
+    "-X=github.com/greenmaskio/greenmask/cmd/greenmask/cmd.Version=${finalAttrs.version}"
+  ];
+
+  subPackages = [ "cmd/greenmask/" ];
 
   meta = {
     description = "PostgreSQL database anonymization tool";

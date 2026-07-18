@@ -1,14 +1,14 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
-  autoreconfHook,
-  pkg-config,
   SDL2,
-  libpulseaudio,
+  autoreconfHook,
   glm,
-  which,
+  libpulseaudio,
   libsForQt5,
+  pkg-config,
+  which,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -55,14 +55,16 @@ stdenv.mkDerivation (finalAttrs: {
     '';
 
   meta = {
-    homepage = "https://github.com/projectM-visualizer/projectm";
     description = "Cross-platform Milkdrop-compatible music visualizer";
-    license = lib.licenses.lgpl21;
-    platforms = lib.platforms.unix;
-    maintainers = [ ];
+
     longDescription = ''
       The open-source project that reimplements the esteemed Winamp Milkdrop by Geiss in a more modern, cross-platform reusable library.
       Read an audio input and produces mesmerizing visuals, detecting tempo, and rendering advanced equations into a limitless array of user-contributed visualizations.
     '';
+
+    homepage = "https://github.com/projectM-visualizer/projectm";
+    license = lib.licenses.lgpl21;
+    maintainers = [ ];
+    platforms = lib.platforms.unix;
   };
 })

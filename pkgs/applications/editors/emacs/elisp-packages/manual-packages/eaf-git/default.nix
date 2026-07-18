@@ -1,17 +1,17 @@
 {
   # Basic
   lib,
-  melpaBuild,
   fetchFromGitHub,
   # Dependencies
   delta,
-  ripgrep,
-  # JavaScript dependency
-  nodejs,
   fetchNpmDeps,
-  npmHooks,
+  melpaBuild,
   # Updater
   nix-update-script,
+  # JavaScript dependency
+  nodejs,
+  npmHooks,
+  ripgrep,
 }:
 
 melpaBuild (finalAttrs: {
@@ -26,17 +26,6 @@ melpaBuild (finalAttrs: {
     hash = "sha256-ggxgwMTk46WDLKxrNkzX3pSO/yLoLTJVH08T4o70fEM=";
   };
 
-  env.npmDeps = fetchNpmDeps {
-    name = "${finalAttrs.pname}-npm-deps";
-    inherit (finalAttrs) src;
-    hash = "sha256-kbFnPZlFqoE1Q/KKVW5ZI4HPPWsIjXA/jne2jw7BeEc=";
-  };
-
-  nativeBuildInputs = [
-    nodejs
-    npmHooks.npmConfigHook
-  ];
-
   postPatch = ''
     substituteInPlace eaf-git.el \
       --replace-fail "(defcustom eaf-git-delta-executable \"delta\"" \
@@ -47,15 +36,19 @@ melpaBuild (finalAttrs: {
                      "command = \"${lib.getExe ripgrep} '{}' {}"
   '';
 
+  nativeBuildInputs = [
+    nodejs
+    npmHooks.npmConfigHook
+  ];
+
+  env.npmDeps = fetchNpmDeps {
+    inherit (finalAttrs) src;
+    hash = "sha256-kbFnPZlFqoE1Q/KKVW5ZI4HPPWsIjXA/jne2jw7BeEc=";
+    name = "${finalAttrs.pname}-npm-deps";
+  };
+
   postBuild = ''
     npm run build
-  '';
-
-  files = ''
-    ("*.el"
-     "*.py"
-     "*.js"
-     "src")
   '';
 
   postInstall = ''
@@ -65,8 +58,14 @@ melpaBuild (finalAttrs: {
     cp -r dist $LISPDIR/
   '';
 
+  files = ''
+    ("*.el"
+     "*.py"
+     "*.js"
+     "src")
+  '';
+
   passthru = {
-    updateScript = nix-update-script { extraArgs = [ "--version=branch" ]; };
     eafPythonDeps =
       ps: with ps; [
         charset-normalizer
@@ -75,12 +74,15 @@ melpaBuild (finalAttrs: {
         pygments
         unidiff
       ];
+
+    updateScript = nix-update-script { extraArgs = [ "--version=branch" ]; };
   };
 
   meta = {
     description = "Git client for the EAF";
     homepage = "https://github.com/emacs-eaf/eaf-git";
     license = lib.licenses.gpl3Only;
+
     maintainers = with lib.maintainers; [
       thattemperature
     ];

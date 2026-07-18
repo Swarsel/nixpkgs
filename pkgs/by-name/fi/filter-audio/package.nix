@@ -15,9 +15,8 @@ stdenv.mkDerivation (finalAttrs: {
     sha256 = "1dv4pram317c1w97cjsv9f6r8cdxhgri7ib0v364z08pk7r2avfn";
   };
 
-  doCheck = false;
-
   makeFlags = [ "PREFIX=$(out)" ];
+  doCheck = false;
 
   meta = {
     description = "Lightweight audio filtering library made from webrtc code";

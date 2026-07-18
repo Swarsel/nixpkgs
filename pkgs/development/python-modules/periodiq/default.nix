@@ -1,20 +1,19 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitLab,
-  poetry-core,
+  buildPythonPackage,
   dramatiq,
   pendulum,
-  setuptools,
+  poetry-core,
   pytest-mock,
   pytestCheckHook,
+  setuptools,
   versionCheckHook,
 }:
 
 buildPythonPackage rec {
   pname = "periodiq";
   version = "0.13.0";
-  pyproject = true;
 
   src = fetchFromGitLab {
     owner = "bersace";
@@ -28,8 +27,6 @@ buildPythonPackage rec {
       --replace-fail 'poetry>=0.12' 'poetry-core' \
       --replace-fail 'poetry.masonry.api' 'poetry.core.masonry.api'
   '';
-
-  pythonRelaxDeps = [ "dramatiq" ];
 
   nativeBuildInputs = [ poetry-core ];
 
@@ -46,14 +43,15 @@ buildPythonPackage rec {
   ];
 
   enabledTestPaths = [ "tests/unit" ];
-
+  pyproject = true;
   pythonImportsCheck = [ "periodiq" ];
+  pythonRelaxDeps = [ "dramatiq" ];
 
   meta = {
     description = "Simple Scheduler for Dramatiq Task Queue";
-    mainProgram = "periodiq";
     homepage = "https://pypi.org/project/periodiq/";
     license = lib.licenses.lgpl3Only;
     maintainers = with lib.maintainers; [ traxys ];
+    mainProgram = "periodiq";
   };
 }

@@ -17,12 +17,6 @@ stdenv.mkDerivation rec {
     ./sw_vers-CFPriv.patch
   ];
 
-  configurePhase = ''
-    export SRCROOT=.
-    export SYMROOT=.
-    export DSTROOT=$out
-  '';
-
   makeFlags = [
     "CC=${stdenv.cc.targetPrefix}cc"
     "STRIP=${stdenv.cc.targetPrefix}strip"
@@ -31,6 +25,12 @@ stdenv.mkDerivation rec {
   postInstall = ''
     mv $out/usr/* $out
     rmdir $out/usr
+  '';
+
+  configurePhase = ''
+    export SRCROOT=.
+    export SYMROOT=.
+    export DSTROOT=$out
   '';
 
   meta = {

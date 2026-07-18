@@ -19,21 +19,18 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-bS70knj5xUMj0zCoKUJLJDXMPOErH+yoyISlhbyhFIU=";
   };
 
-  cargoHash = "sha256-ydHr+4yKCzWbznwF6oWjn8S0dTkJqbV01j4p3ksT+60=";
-
   nativeBuildInputs = [ pkg-config ];
-
-  nativeInstallCheckInputs = [ versionCheckHook ];
 
   buildInputs = [
     openssl
     sqlite
   ];
 
+  cargoHash = "sha256-ydHr+4yKCzWbznwF6oWjn8S0dTkJqbV01j4p3ksT+60=";
   # Tests require network features
   doCheck = false;
-
   doInstallCheck = true;
+  nativeInstallCheckInputs = [ versionCheckHook ];
 
   meta = {
     description = "Bandwidth Test server and client";

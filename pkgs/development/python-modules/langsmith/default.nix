@@ -1,40 +1,36 @@
 {
   lib,
   stdenv,
-  buildPythonPackage,
   fetchFromGitHub,
-
+  # tests
+  anthropic,
+  attrs,
+  buildPythonPackage,
+  dataclasses-json,
   # build-system
   hatchling,
-
   # dependencies
   httpx,
+  multipart,
+  opentelemetry-sdk,
   orjson,
   pydantic,
+  pytest-asyncio,
+  pytest-httpx,
+  pytest-socket,
+  pytest-vcr,
+  pytestCheckHook,
   requests,
   requests-toolbelt,
   uuid-utils,
   websockets,
   xxhash,
   zstandard,
-
-  # tests
-  anthropic,
-  attrs,
-  dataclasses-json,
-  multipart,
-  opentelemetry-sdk,
-  pytest-asyncio,
-  pytest-httpx,
-  pytest-socket,
-  pytest-vcr,
-  pytestCheckHook,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "langsmith";
   version = "0.8.18";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "langchain-ai";
@@ -42,24 +38,6 @@ buildPythonPackage (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-YQ49pg0+RepwlEHtu8GDUpfnXQF3yFiz6ZeRcnHXSWU=";
   };
-
-  sourceRoot = "${finalAttrs.src.name}/python";
-
-  pythonRelaxDeps = [ "orjson" ];
-
-  build-system = [ hatchling ];
-
-  dependencies = [
-    httpx
-    orjson
-    pydantic
-    requests
-    requests-toolbelt
-    uuid-utils
-    websockets
-    xxhash
-    zstandard
-  ];
 
   nativeCheckInputs = [
     anthropic
@@ -74,26 +52,23 @@ buildPythonPackage (finalAttrs: {
     pytestCheckHook
   ];
 
-  # evaluation and external tests require OpenAPI key
-  # integration tests are all marked flaky
-  enabledTestPaths = [
-    "tests/unit_tests"
+  __darwinAllowLocalNetworking = true;
+  build-system = [ hatchling ];
+
+  dependencies = [
+    httpx
+    orjson
+    pydantic
+    requests
+    requests-toolbelt
+    uuid-utils
+    websockets
+    xxhash
+    zstandard
   ];
 
   disabledTestMarks = [
     "flaky"
-  ];
-
-  disabledTests = [
-    # due to circular import
-    "test_as_runnable"
-    "test_as_runnable_batch"
-    "test_as_runnable_async"
-    "test_as_runnable_async_batch"
-  ]
-  ++ lib.optionals stdenv.hostPlatform.isDarwin [
-    # flaky (timing sensitive)
-    "test_refresh_loop_continues_after_500_errors"
   ];
 
   disabledTestPaths = [
@@ -108,19 +83,40 @@ buildPythonPackage (finalAttrs: {
     "tests/unit_tests/wrappers/test_strands_agents.py"
   ];
 
-  pythonImportsCheck = [ "langsmith" ];
+  disabledTests = [
+    # due to circular import
+    "test_as_runnable"
+    "test_as_runnable_batch"
+    "test_as_runnable_async"
+    "test_as_runnable_async_batch"
+  ]
+  ++ lib.optionals stdenv.hostPlatform.isDarwin [
+    # flaky (timing sensitive)
+    "test_refresh_loop_continues_after_500_errors"
+  ];
 
-  __darwinAllowLocalNetworking = true;
+  # evaluation and external tests require OpenAPI key
+  # integration tests are all marked flaky
+  enabledTestPaths = [
+    "tests/unit_tests"
+  ];
+
+  pyproject = true;
+  pythonImportsCheck = [ "langsmith" ];
+  pythonRelaxDeps = [ "orjson" ];
+  sourceRoot = "${finalAttrs.src.name}/python";
 
   meta = {
     description = "Client library to connect to the LangSmith LLM Tracing and Evaluation Platform";
     homepage = "https://github.com/langchain-ai/langsmith-sdk";
     changelog = "https://github.com/langchain-ai/langsmith-sdk/releases/tag/${finalAttrs.src.tag}";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       natsukium
       sarahec
     ];
+
     mainProgram = "langsmith";
   };
 })

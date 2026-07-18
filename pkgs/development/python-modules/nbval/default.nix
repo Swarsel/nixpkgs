@@ -1,23 +1,22 @@
 {
   lib,
   buildPythonPackage,
-  fetchPypi,
-  setuptools,
   coverage,
+  fetchPypi,
+  glibcLocales,
   ipykernel,
   jupyter-client,
-  nbformat,
-  pytestCheckHook,
-  pytest,
-  glibcLocales,
   matplotlib,
+  nbformat,
+  pytest,
+  pytestCheckHook,
+  setuptools,
   sympy,
 }:
 
 buildPythonPackage rec {
   pname = "nbval";
   version = "0.11.0";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
@@ -26,6 +25,14 @@ buildPythonPackage rec {
 
   buildInputs = [ glibcLocales ];
 
+  nativeCheckInputs = [
+    pytestCheckHook
+    matplotlib
+    sympy
+  ];
+
+  # Some of the tests use localhost networking.
+  __darwinAllowLocalNetworking = true;
   build-system = [ setuptools ];
 
   dependencies = [
@@ -34,12 +41,6 @@ buildPythonPackage rec {
     jupyter-client
     nbformat
     pytest
-  ];
-
-  nativeCheckInputs = [
-    pytestCheckHook
-    matplotlib
-    sympy
   ];
 
   disabledTestPaths = [
@@ -56,9 +57,7 @@ buildPythonPackage rec {
     "tests/test_nbdime_reporter.py"
   ];
 
-  # Some of the tests use localhost networking.
-  __darwinAllowLocalNetworking = true;
-
+  pyproject = true;
   pythonImportsCheck = [ "nbval" ];
 
   meta = {

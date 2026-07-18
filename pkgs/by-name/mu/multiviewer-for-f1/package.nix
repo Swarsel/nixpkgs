@@ -1,33 +1,33 @@
 {
-  stdenvNoCC,
-  fetchurl,
   lib,
-  makeWrapper,
-  autoPatchelfHook,
-  dpkg,
+  fetchurl,
   alsa-lib,
   at-spi2-atk,
+  autoPatchelfHook,
   cairo,
   cups,
   dbus,
+  dpkg,
   expat,
   ffmpeg,
   glib,
   gtk3,
   libdrm,
-  libudev0-shim,
-  libxkbcommon,
   libgbm,
+  libudev0-shim,
+  libx11,
+  libxcb,
+  libxcomposite,
+  libxdamage,
+  libxext,
+  libxfixes,
+  libxkbcommon,
+  libxrandr,
+  makeWrapper,
   nspr,
   nss,
   pango,
-  libxrandr,
-  libxfixes,
-  libxext,
-  libxdamage,
-  libxcomposite,
-  libx11,
-  libxcb,
+  stdenvNoCC,
   writeScript,
 }:
 let
@@ -73,18 +73,6 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     libxrandr
   ];
 
-  dontBuild = true;
-  dontConfigure = true;
-
-  unpackPhase = ''
-    runHook preUnpack
-
-    # The deb file contains a setuid binary, so 'dpkg -x' doesn't work here
-    dpkg --fsys-tarfile $src | tar --extract
-
-    runHook postUnpack
-  '';
-
   installPhase = ''
     runHook preInstall
 
@@ -96,6 +84,18 @@ stdenvNoCC.mkDerivation (finalAttrs: {
       --prefix LD_LIBRARY_PATH : "${lib.makeLibraryPath [ libudev0-shim ]}:\"$out/share/multiviewer\""
 
     runHook postInstall
+  '';
+
+  dontBuild = true;
+  dontConfigure = true;
+
+  unpackPhase = ''
+    runHook preUnpack
+
+    # The deb file contains a setuid binary, so 'dpkg -x' doesn't work here
+    dpkg --fsys-tarfile $src | tar --extract
+
+    runHook postUnpack
   '';
 
   passthru.updateScript = writeScript "update-multiviewer-for-f1" ''
@@ -125,10 +125,10 @@ stdenvNoCC.mkDerivation (finalAttrs: {
   meta = {
     description = "Unofficial desktop client for F1 TV";
     homepage = "https://multiviewer.app";
-    downloadPage = "https://multiviewer.app/download";
     license = lib.licenses.unfree;
     maintainers = with lib.maintainers; [ babeuh ];
     platforms = [ "x86_64-linux" ];
     mainProgram = "multiviewer";
+    downloadPage = "https://multiviewer.app/download";
   };
 })

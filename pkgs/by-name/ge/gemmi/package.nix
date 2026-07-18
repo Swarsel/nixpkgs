@@ -2,12 +2,12 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  cmake,
-  zlib,
-  enablePython ? true,
   addBinToPathHook,
+  cmake,
   python3Packages,
   versionCheckHook,
+  zlib,
+  enablePython ? true,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -41,9 +41,6 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   doCheck = true;
-
-  pythonImportsCheck = [ "gemmi" ];
-
   doInstallCheck = enablePython;
 
   nativeInstallCheckInputs =
@@ -66,6 +63,7 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   enabledTestPaths = [ "../tests" ];
+  pythonImportsCheck = [ "gemmi" ];
 
   meta = {
     description = "Macromolecular crystallography library and utilities";
@@ -73,7 +71,7 @@ stdenv.mkDerivation (finalAttrs: {
     changelog = "https://github.com/project-gemmi/gemmi/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.mpl20;
     maintainers = with lib.maintainers; [ natsukium ];
-    mainProgram = "gemmi";
     platforms = lib.platforms.unix;
+    mainProgram = "gemmi";
   };
 })

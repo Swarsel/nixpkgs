@@ -1,18 +1,18 @@
 {
   lib,
   stdenv,
-  jre,
-  makeWrapper,
-  jdk,
-  makeDesktopItem,
+  fetchurl,
   copyDesktopItems,
   fetchzip,
-  fetchurl,
+  jdk,
+  jre,
+  makeDesktopItem,
+  makeWrapper,
 }:
 let
   icon = fetchurl {
-    url = "https://raw.githubusercontent.com/hrehfeld/QuakeInjector/b741bae9904acbf2e18cdb1ca8e71a12e7d416cf/src/main/resources/Inject2_256.png";
     hash = "sha256-769YoSJ52+BTk7s+wh4oOyHwPPrR7AeOxCS58CdQ93s=";
+    url = "https://raw.githubusercontent.com/hrehfeld/QuakeInjector/b741bae9904acbf2e18cdb1ca8e71a12e7d416cf/src/main/resources/Inject2_256.png";
   };
 in
 stdenv.mkDerivation (finalAttrs: {
@@ -28,6 +28,9 @@ stdenv.mkDerivation (finalAttrs: {
     makeWrapper
     copyDesktopItems
   ];
+
+  # There are no tests.
+  doCheck = false;
 
   installPhase =
     let
@@ -74,17 +77,14 @@ stdenv.mkDerivation (finalAttrs: {
       runHook postInstall
     '';
 
-  # There are no tests.
-  doCheck = false;
-
   desktopItems = [
     (makeDesktopItem {
-      name = "quake-injector";
-      exec = finalAttrs.meta.mainProgram;
-      icon = "quake-injector";
+      categories = [ "Game" ];
       comment = finalAttrs.meta.description;
       desktopName = "Quake Injector";
-      categories = [ "Game" ];
+      exec = finalAttrs.meta.mainProgram;
+      icon = "quake-injector";
+      name = "quake-injector";
     })
   ];
 
@@ -93,9 +93,9 @@ stdenv.mkDerivation (finalAttrs: {
     homepage = "https://github.com/hrehfeld/QuakeInjector";
     changelog = "https://github.com/hrehfeld/QuakeInjector/releases";
     license = lib.licenses.gpl3Plus;
-    maintainers = with lib.maintainers; [ theobori ];
-    mainProgram = "quake-injector";
-    platforms = jdk.meta.platforms;
     sourceProvenance = [ lib.sourceTypes.binaryBytecode ];
+    maintainers = with lib.maintainers; [ theobori ];
+    platforms = jdk.meta.platforms;
+    mainProgram = "quake-injector";
   };
 })

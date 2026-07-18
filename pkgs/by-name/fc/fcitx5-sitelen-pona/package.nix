@@ -1,11 +1,11 @@
 {
   lib,
-  stdenvNoCC,
   fetchFromGitHub,
-  libime,
   fcitx5,
-  qt6Packages,
+  libime,
   nix-update-script,
+  qt6Packages,
+  stdenvNoCC,
 }:
 
 stdenvNoCC.mkDerivation (finalAttrs: {
@@ -20,7 +20,6 @@ stdenvNoCC.mkDerivation (finalAttrs: {
   };
 
   strictDeps = true;
-
   nativeBuildInputs = [ libime ];
 
   buildInputs = [
@@ -54,17 +53,18 @@ stdenvNoCC.mkDerivation (finalAttrs: {
   '';
 
   __structuredAttrs = true;
-
   passthru.updateScript = nix-update-script { };
 
   meta = {
     inherit (fcitx5.meta) platforms;
     description = "IME using Fcitx5 for writing toki pona's sitelen pona glyphs";
+
     longDescription = ''
       This tool is an IME using Fcitx5
       With it, you can easily write toki pona's sitelen pona glyphs
       Simply type your words in latin characters, and they'll be changed into sitelen pona
     '';
+
     homepage = "https://github.com/Toastberries/fcitx5-sitelen-pona";
     changelog = "https://github.com/Toastberries/fcitx5-sitelen-pona/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.mit;

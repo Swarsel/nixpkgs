@@ -1,9 +1,9 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  google-auth-oauthlib,
+  buildPythonPackage,
   google-auth,
+  google-auth-oauthlib,
   setuptools,
   versioneer,
 }:
@@ -11,11 +11,10 @@
 buildPythonPackage rec {
   pname = "pydata-google-auth";
   version = "1.9.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
-    repo = "pydata-google-auth";
     owner = "pydata";
+    repo = "pydata-google-auth";
     tag = version;
     hash = "sha256-NxEpwCkjNWao2bnKOsDgw93N+cVqwM12VfoEu8CyWUU=";
   };
@@ -24,6 +23,9 @@ buildPythonPackage rec {
     # Remove vendorized versioneer.py
     rm versioneer.py
   '';
+
+  # tests require network access
+  doCheck = false;
 
   build-system = [
     setuptools
@@ -35,9 +37,7 @@ buildPythonPackage rec {
     google-auth-oauthlib
   ];
 
-  # tests require network access
-  doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "pydata_google_auth" ];
 
   meta = {

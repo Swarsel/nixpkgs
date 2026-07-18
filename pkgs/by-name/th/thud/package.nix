@@ -1,9 +1,9 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
   installShellFiles,
   nix-update-script,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -17,11 +17,11 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-BmrJaZ1IKXjx4/QkBDZyXvTTaalfEOKsBp9ZCW8px7I=";
   };
 
-  cargoHash = "sha256-J7YioL8AIhoaPsYPzOXbwz76sMmBbDI/eql1HgDFgCU=";
-
   nativeBuildInputs = [
     installShellFiles
   ];
+
+  cargoHash = "sha256-J7YioL8AIhoaPsYPzOXbwz76sMmBbDI/eql1HgDFgCU=";
 
   postInstall = ''
     install -Dm644 assets/thud.thumbnailer $out/share/thumbnailers/thud.thumbnailer

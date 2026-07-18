@@ -1,8 +1,8 @@
 {
   lib,
   stdenv,
-  boost,
   fetchFromGitHub,
+  boost,
   git,
   makeWrapper,
   meson,
@@ -23,9 +23,9 @@ stdenv.mkDerivation (finalAttrs: {
   src = fetchFromGitHub {
     owner = "Lurkki14";
     repo = "tuxclocker";
-    fetchSubmodules = true;
     rev = finalAttrs.version;
     hash = "sha256-QLKLqTCpVMWxlDINa8Bo1vgCDcjwovoaXUs/PdMnxv0=";
+    fetchSubmodules = true;
   };
 
   nativeBuildInputs = [
@@ -43,16 +43,16 @@ stdenv.mkDerivation (finalAttrs: {
     qtcharts
   ];
 
+  mesonFlags = [
+    "-Dplugins=false"
+  ];
+
   postInstall = ''
     wrapProgram "$out/bin/tuxclockerd" \
       --prefix "TEXTDOMAINDIR" : "${tuxclocker-plugins}/share/locale" \
       --prefix "TUXCLOCKER_PLUGIN_PATH" : "${tuxclocker-plugins}/lib/tuxclocker/plugins" \
       --prefix "PYTHONPATH" : "${python3.pkgs.hwdata}/${python3.sitePackages}"
   '';
-
-  mesonFlags = [
-    "-Dplugins=false"
-  ];
 
   passthru.tests = {
     inherit tuxclocker-without-unfree;

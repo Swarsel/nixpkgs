@@ -2,22 +2,22 @@
   lib,
   stdenv,
   fetchurl,
+  acl,
+  alsa-lib,
+  bluez,
+  buildPackages,
+  coreutils,
+  kmod,
+  ncurses,
   pkg-config,
   python3,
-  bluez,
-  tcl,
-  acl,
-  kmod,
-  coreutils,
   shadow,
+  systemdMinimal,
+  tcl,
+  udevCheckHook,
   util-linux,
   alsaSupport ? stdenv.hostPlatform.isLinux,
-  alsa-lib,
   systemdSupport ? lib.meta.availableOn stdenv.hostPlatform systemdMinimal,
-  systemdMinimal,
-  ncurses,
-  udevCheckHook,
-  buildPackages,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -29,13 +29,13 @@ stdenv.mkDerivation (finalAttrs: {
     sha256 = "sha256-gi3iyHtECf3wLWFU0bRoVsNTnT6onGWu80MPJ3Nnf3Y=";
   };
 
-  depsBuildBuild = [ pkg-config ];
   nativeBuildInputs = [
     python3.pkgs.cython
     python3.pkgs.setuptools
     tcl # One of build scripts require tclsh
     udevCheckHook
   ];
+
   buildInputs = [
     bluez
     ncurses.dev
@@ -44,21 +44,11 @@ stdenv.mkDerivation (finalAttrs: {
   ++ lib.optional alsaSupport alsa-lib
   ++ lib.optional systemdSupport systemdMinimal;
 
-  doInstallCheck = true;
-
-  meta = {
-    description = "Access software for a blind person using a braille display";
-    longDescription = ''
-      BRLTTY is a background process (daemon) which provides access to the Linux/Unix
-      console (when in text mode) for a blind person using a refreshable braille display.
-      It drives the braille display, and provides complete screen review functionality.
-      Some speech capability has also been incorporated.
-    '';
-    homepage = "https://brltty.app";
-    license = lib.licenses.gpl2Plus;
-    maintainers = [ lib.maintainers.bramd ];
-    platforms = lib.platforms.all;
-  };
+  configureFlags = [
+    "--with-writable-directory=/run/brltty"
+    "--with-updatable-directory=/var/lib/brltty"
+    "--with-api-socket-path=/var/lib/BrlAPI"
+  ];
 
   makeFlags = [
     "PYTHON_PREFIX=$(out)"
@@ -71,16 +61,6 @@ stdenv.mkDerivation (finalAttrs: {
     "POLKIT_POLICY_DIR=$(out)/share/polkit-1/actions"
     "POLKIT_RULE_DIR=$(out)/share/polkit-1/rules.d"
     "TCL_DIR=$(out)/lib"
-  ];
-  configureFlags = [
-    "--with-writable-directory=/run/brltty"
-    "--with-updatable-directory=/var/lib/brltty"
-    "--with-api-socket-path=/var/lib/BrlAPI"
-  ];
-  installFlags = [
-    "install-systemd"
-    "install-udev"
-    "install-polkit"
   ];
 
   env = lib.optionalAttrs (stdenv.hostPlatform != stdenv.buildPlatform) {
@@ -143,4 +123,29 @@ stdenv.mkDerivation (finalAttrs: {
        --replace 'logger' "${util-linux}/bin/logger" \
        --replace 'udevadm' "${systemdMinimal}/bin/udevadm"
   '';
+
+  doInstallCheck = true;
+  depsBuildBuild = [ pkg-config ];
+
+  installFlags = [
+    "install-systemd"
+    "install-udev"
+    "install-polkit"
+  ];
+
+  meta = {
+    description = "Access software for a blind person using a braille display";
+
+    longDescription = ''
+      BRLTTY is a background process (daemon) which provides access to the Linux/Unix
+      console (when in text mode) for a blind person using a refreshable braille display.
+      It drives the braille display, and provides complete screen review functionality.
+      Some speech capability has also been incorporated.
+    '';
+
+    homepage = "https://brltty.app";
+    license = lib.licenses.gpl2Plus;
+    maintainers = [ lib.maintainers.bramd ];
+    platforms = lib.platforms.all;
+  };
 })

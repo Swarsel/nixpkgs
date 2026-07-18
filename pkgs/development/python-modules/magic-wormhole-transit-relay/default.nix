@@ -1,18 +1,17 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
   autobahn,
-  twisted,
-  python,
+  buildPythonPackage,
   pytestCheckHook,
+  python,
+  setuptools,
+  twisted,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "magic-wormhole-transit-relay";
   version = "0.5.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "magic-wormhole";
@@ -28,6 +27,17 @@ buildPythonPackage (finalAttrs: {
       'reactor.spawnProcess(proto, exe, args, None)'
   '';
 
+  nativeCheckInputs = [
+    pytestCheckHook
+    twisted
+  ];
+
+  postCheck = ''
+    # Avoid collision with twisted's plugin cache (#164775).
+    rm "$out/${python.sitePackages}/twisted/plugins/dropin.cache"
+  '';
+
+  __darwinAllowLocalNetworking = true;
   build-system = [ setuptools ];
 
   dependencies = [
@@ -35,19 +45,8 @@ buildPythonPackage (finalAttrs: {
     twisted
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "wormhole_transit_relay" ];
-
-  nativeCheckInputs = [
-    pytestCheckHook
-    twisted
-  ];
-
-  __darwinAllowLocalNetworking = true;
-
-  postCheck = ''
-    # Avoid collision with twisted's plugin cache (#164775).
-    rm "$out/${python.sitePackages}/twisted/plugins/dropin.cache"
-  '';
 
   meta = {
     description = "Transit Relay server for Magic-Wormhole";

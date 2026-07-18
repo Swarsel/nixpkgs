@@ -5,10 +5,10 @@
   autoreconfHook,
   gobject-introspection,
   intltool,
-  wrapGAppsHook3,
   procps,
   python3,
   readline,
+  wrapGAppsHook3,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -32,12 +32,13 @@ stdenv.mkDerivation (finalAttrs: {
     intltool
     wrapGAppsHook3
   ];
+
   buildInputs = [
     readline
     python3
   ];
-  configureFlags = [ "--enable-gui" ];
 
+  configureFlags = [ "--enable-gui" ];
   # we don't need to wrap the main executable, just the GUI
   dontWrapGApps = true;
 
@@ -56,10 +57,10 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   meta = {
-    homepage = "https://github.com/scanmem/scanmem";
     description = "Memory scanner for finding and poking addresses in executing processes";
+    homepage = "https://github.com/scanmem/scanmem";
+    license = lib.licenses.gpl3Plus;
     maintainers = with lib.maintainers; [ iedame ];
     platforms = lib.platforms.linux;
-    license = lib.licenses.gpl3Plus;
   };
 })

@@ -1,10 +1,10 @@
 {
   lib,
   stdenv,
-  fetchFromGitea,
   cmake,
-  pkg-config,
+  fetchFromGitea,
   lz4,
+  pkg-config,
   pugixml,
   zlib,
   zstd,
@@ -15,11 +15,11 @@ stdenv.mkDerivation (finalAttrs: {
   version = "0.2.13";
 
   src = fetchFromGitea {
-    domain = "gitea.nouspiro.space";
     owner = "nou";
     repo = "libXISF";
     rev = "v${finalAttrs.version}";
     hash = "sha256-vc42Jw7kBbQYu+/6jakxFnSuVkS8t6ZyYuSMLGMnEn4=";
+    domain = "gitea.nouspiro.space";
   };
 
   patches = [
@@ -31,17 +31,17 @@ stdenv.mkDerivation (finalAttrs: {
     pkg-config
   ];
 
-  cmakeFlags = [
-    "-DUSE_BUNDLED_LIBS=OFF"
-  ]
-  ++ lib.optional stdenv.hostPlatform.isStatic "-DBUILD_SHARED_LIBS=OFF";
-
   buildInputs = [
     lz4
     pugixml
     zlib
     zstd
   ];
+
+  cmakeFlags = [
+    "-DUSE_BUNDLED_LIBS=OFF"
+  ]
+  ++ lib.optional stdenv.hostPlatform.isStatic "-DBUILD_SHARED_LIBS=OFF";
 
   doCheck = true;
 

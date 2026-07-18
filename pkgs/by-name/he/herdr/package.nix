@@ -1,34 +1,23 @@
 {
   lib,
   stdenv,
-  rustPlatform,
   fetchFromGitHub,
-  zig_0_15,
   cctools,
-  xcbuild,
-  versionCheckHook,
   nix-update-script,
+  rustPlatform,
+  versionCheckHook,
+  xcbuild,
+  zig_0_15,
 }:
 rustPlatform.buildRustPackage (finalAttrs: {
   pname = "herdr";
   version = "0.7.3";
-
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "ogulcancelik";
     repo = "herdr";
     tag = "v${finalAttrs.version}";
     hash = "sha256-Q2yvMs/N6oAF8xnRIrMxEOOV6Aj8aAXQzuvcaux2enA=";
-  };
-
-  cargoHash = "sha256-DRjcIJXWGxiA9c7xIiQoWU9az2EFjXsnFKu5sC933eE=";
-
-  zigDeps = zig_0_15.fetchDeps {
-    inherit (finalAttrs) pname version;
-    src = "${finalAttrs.src}/vendor/libghostty-vt";
-    fetchAll = true;
-    hash = "sha256-pgGu8+NwvFcj6SrN4VaTHLeHdA7QY731ctyrHZwgFAc=";
   };
 
   nativeBuildInputs = [
@@ -39,13 +28,7 @@ rustPlatform.buildRustPackage (finalAttrs: {
     xcbuild
   ];
 
-  # Upstream binary tests are renamed, added, or changed between releases and
-  # depend on host process details, so Nix-only patches for them are brittle.
-  doCheck = false;
-
-  dontUseZigBuild = true;
-  dontUseZigCheck = true;
-  dontUseZigInstall = true;
+  cargoHash = "sha256-DRjcIJXWGxiA9c7xIiQoWU9az2EFjXsnFKu5sC933eE=";
 
   postConfigure = ''
     export ZIG_GLOBAL_CACHE_DIR=$(mktemp -d)
@@ -53,8 +36,22 @@ rustPlatform.buildRustPackage (finalAttrs: {
     chmod -R u+w "$ZIG_GLOBAL_CACHE_DIR/p"
   '';
 
-  nativeInstallCheckInputs = [ versionCheckHook ];
+  # Upstream binary tests are renamed, added, or changed between releases and
+  # depend on host process details, so Nix-only patches for them are brittle.
+  doCheck = false;
   doInstallCheck = true;
+  nativeInstallCheckInputs = [ versionCheckHook ];
+  __structuredAttrs = true;
+  dontUseZigBuild = true;
+  dontUseZigCheck = true;
+  dontUseZigInstall = true;
+
+  zigDeps = zig_0_15.fetchDeps {
+    inherit (finalAttrs) pname version;
+    src = "${finalAttrs.src}/vendor/libghostty-vt";
+    fetchAll = true;
+    hash = "sha256-pgGu8+NwvFcj6SrN4VaTHLeHdA7QY731ctyrHZwgFAc=";
+  };
 
   passthru.updateScript = nix-update-script {
     extraArgs = [
@@ -69,7 +66,7 @@ rustPlatform.buildRustPackage (finalAttrs: {
     changelog = "https://github.com/ogulcancelik/herdr/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.agpl3Plus;
     maintainers = with lib.maintainers; [ kevinpita ];
-    mainProgram = "herdr";
     platforms = lib.platforms.unix;
+    mainProgram = "herdr";
   };
 })

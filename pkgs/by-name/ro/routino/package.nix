@@ -2,10 +2,10 @@
   lib,
   stdenv,
   fetchurl,
+  bzip2,
   fetchpatch,
   perl,
   zlib,
-  bzip2,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -17,15 +17,19 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-TroGfTLJfKk4itbpfA9aPBDUiCk2ckDXjFE3XYzBHlQ=";
   };
 
-  patchFlags = [ "-p0" ];
+  outputs = [
+    "out"
+    "doc"
+  ];
+
   patches = lib.optionals stdenv.hostPlatform.isDarwin [
     (fetchpatch {
-      url = "https://raw.githubusercontent.com/macports/macports-ports/18fd229516a46e7272003acbe555735b2a902db7/gis/routino/files/patch-Makefile_conf.diff";
       sha256 = "1b7hpa4sizansnwwxq1c031nxwdwh71pg08jl9z9apiab8pjsn53";
+      url = "https://raw.githubusercontent.com/macports/macports-ports/18fd229516a46e7272003acbe555735b2a902db7/gis/routino/files/patch-Makefile_conf.diff";
     })
     (fetchpatch {
-      url = "https://raw.githubusercontent.com/macports/macports-ports/18fd229516a46e7272003acbe555735b2a902db7/gis/routino/files/patch-src_Makefile_dylib_extension.diff";
       sha256 = "1kigxcfr7977baxdsfvrw6q453cpqlzqakhj7av2agxkcvwyilpv";
+      url = "https://raw.githubusercontent.com/macports/macports-ports/18fd229516a46e7272003acbe555735b2a902db7/gis/routino/files/patch-src_Makefile_dylib_extension.diff";
     })
   ];
 
@@ -41,21 +45,18 @@ stdenv.mkDerivation (finalAttrs: {
     bzip2
   ];
 
-  outputs = [
-    "out"
-    "doc"
-  ];
+  makeFlags = [ "prefix=$(out)" ];
 
   env = lib.optionalAttrs stdenv.cc.isClang {
     CLANG = "1";
   };
 
-  makeFlags = [ "prefix=$(out)" ];
+  patchFlags = [ "-p0" ];
 
   meta = {
+    description = "OpenStreetMap Routing Software";
     homepage = "http://www.routino.org/";
     changelog = "http://routino.org/software/NEWS.txt";
-    description = "OpenStreetMap Routing Software";
     license = lib.licenses.agpl3Plus;
     maintainers = with lib.maintainers; [ dotlambda ];
     platforms = with lib.platforms; linux ++ darwin;

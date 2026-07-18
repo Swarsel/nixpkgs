@@ -2,12 +2,12 @@
   lib,
   stdenv,
   fetchurl,
-  glib,
   dbus,
+  glib,
+  gobject-introspection,
+  intltool,
   libgcrypt,
   pkg-config,
-  intltool,
-  gobject-introspection,
   testers,
 }:
 
@@ -25,16 +25,25 @@ stdenv.mkDerivation (finalAttrs: {
     "dev"
   ];
 
+  postPatch = ''
+    # uses pkg-config in some places and uses the correct $PKG_CONFIG in some
+    # it's an ancient library so it has very old configure scripts and m4
+    substituteInPlace ./configure \
+      --replace "pkg-config" "$PKG_CONFIG"
+  '';
+
   strictDeps = true;
+
+  nativeBuildInputs = [
+    pkg-config
+    intltool
+  ];
+
   propagatedBuildInputs = [
     glib
     gobject-introspection
     dbus
     libgcrypt
-  ];
-  nativeBuildInputs = [
-    pkg-config
-    intltool
   ];
 
   configureFlags = [
@@ -43,31 +52,27 @@ stdenv.mkDerivation (finalAttrs: {
     "LIBGCRYPT_CONFIG=${lib.getExe' (lib.getDev libgcrypt) "libgcrypt-config"}"
   ];
 
-  postPatch = ''
-    # uses pkg-config in some places and uses the correct $PKG_CONFIG in some
-    # it's an ancient library so it has very old configure scripts and m4
-    substituteInPlace ./configure \
-      --replace "pkg-config" "$PKG_CONFIG"
-  '';
-
   passthru.tests.pkg-config = testers.testMetaPkgConfig finalAttrs.finalPackage;
 
   meta = {
     description = "Framework for managing passwords and other secrets";
-    homepage = "https://gitlab.gnome.org/Archive/libgnome-keyring";
-    changelog = "https://gitlab.gnome.org/Archive/libgnome-keyring/-/blob/${finalAttrs.version}/NEWS?ref_type=tags";
-    license = with lib.licenses; [
-      gpl2Plus
-      lgpl2Plus
-    ];
-    pkgConfigModules = [ "gnome-keyring-1" ];
-    platforms = lib.platforms.unix;
-    maintainers = [ ];
 
     longDescription = ''
       gnome-keyring is a program that keeps password and other secrets for
       users. The library libgnome-keyring is used by applications to integrate
       with the gnome-keyring system.
     '';
+
+    homepage = "https://gitlab.gnome.org/Archive/libgnome-keyring";
+    changelog = "https://gitlab.gnome.org/Archive/libgnome-keyring/-/blob/${finalAttrs.version}/NEWS?ref_type=tags";
+
+    license = with lib.licenses; [
+      gpl2Plus
+      lgpl2Plus
+    ];
+
+    maintainers = [ ];
+    platforms = lib.platforms.unix;
+    pkgConfigModules = [ "gnome-keyring-1" ];
   };
 })

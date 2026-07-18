@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
 }:
 
 # To use upower-notify, the maintainer suggests adding something like this to your configuration.nix:
@@ -26,8 +26,8 @@ buildGoModule {
 
   meta = {
     description = "Simple tool to give you Desktop Notifications about your battery";
-    mainProgram = "upower-notify";
     homepage = "https://github.com/omeid/upower-notify";
     maintainers = with lib.maintainers; [ kamilchm ];
+    mainProgram = "upower-notify";
   };
 }

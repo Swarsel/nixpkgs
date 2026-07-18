@@ -1,14 +1,13 @@
 {
   lib,
-  fetchPypi,
   buildPythonPackage,
+  fetchPypi,
   pytest,
 }:
 
 buildPythonPackage rec {
   pname = "inflection";
   version = "0.5.1";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
@@ -18,11 +17,12 @@ buildPythonPackage rec {
   nativeCheckInputs = [ pytest ];
   # Suppress overly verbose output if tests run successfully
   checkPhase = "pytest >/dev/null || pytest";
+  format = "setuptools";
 
   meta = {
-    homepage = "https://github.com/jpvanhal/inflection";
     description = "Port of Ruby on Rails inflector to Python";
-    maintainers = with lib.maintainers; [ ilya-kolpakov ];
+    homepage = "https://github.com/jpvanhal/inflection";
     license = lib.licenses.mit;
+    maintainers = with lib.maintainers; [ ilya-kolpakov ];
   };
 }

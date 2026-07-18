@@ -4,8 +4,8 @@
   fetchFromGitHub,
   meson,
   ninja,
-  pkg-config,
   openssl,
+  pkg-config,
   protobuf_25,
   protobufc,
 }:
@@ -28,10 +28,12 @@ stdenv.mkDerivation (finalAttrs: {
     protobuf_25
     protobufc
   ];
+
   buildInputs = [
     openssl
     protobufc
   ];
+
   mesonFlags = [
     "-Dtests=false"
   ];

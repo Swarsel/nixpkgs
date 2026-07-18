@@ -1,9 +1,8 @@
 {
-  buildPythonPackage,
-  fetchFromGitHub,
-  isPy3k,
   lib,
-
+  fetchFromGitHub,
+  buildPythonPackage,
+  isPy3k,
   # pythonPackages
   pylint-plugin-utils,
 }:
@@ -11,8 +10,6 @@
 buildPythonPackage rec {
   pname = "pylint-celery";
   version = "0.3";
-  format = "setuptools";
-  disabled = !isPy3k;
 
   src = fetchFromGitHub {
     owner = "PyCQA";
@@ -22,9 +19,10 @@ buildPythonPackage rec {
   };
 
   propagatedBuildInputs = [ pylint-plugin-utils ];
-
   # Testing requires a very old version of pylint, incompatible with other dependencies
   doCheck = false;
+  disabled = !isPy3k;
+  format = "setuptools";
 
   meta = {
     description = "Pylint plugin to analyze Celery applications";

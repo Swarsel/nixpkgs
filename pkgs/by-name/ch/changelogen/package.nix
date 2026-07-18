@@ -2,12 +2,12 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  nodejs,
   fetchPnpmDeps,
+  nix-update-script,
+  nodejs,
+  npmHooks,
   pnpmConfigHook,
   pnpm_10,
-  npmHooks,
-  nix-update-script,
 }:
 let
   pnpm = pnpm_10;
@@ -21,13 +21,6 @@ stdenv.mkDerivation (finalAttrs: {
     repo = "changelogen";
     tag = "v${finalAttrs.version}";
     hash = "sha256-N6X9Wffl9WumCXvAt4y+vs3ZJY7NheK+O8BObmuIa/g=";
-  };
-
-  pnpmDeps = fetchPnpmDeps {
-    inherit (finalAttrs) pname version src;
-    inherit pnpm;
-    fetcherVersion = 3;
-    hash = "sha256-S+GxeljcPj/MzBkleVNgaRa8D4kmHrKwwVqakmB5sAw=";
   };
 
   nativeBuildInputs = [
@@ -47,6 +40,13 @@ stdenv.mkDerivation (finalAttrs: {
 
   dontNpmPrune = true;
 
+  pnpmDeps = fetchPnpmDeps {
+    inherit (finalAttrs) pname version src;
+    inherit pnpm;
+    fetcherVersion = 3;
+    hash = "sha256-S+GxeljcPj/MzBkleVNgaRa8D4kmHrKwwVqakmB5sAw=";
+  };
+
   passthru.updateScript = nix-update-script { };
 
   meta = {
@@ -55,7 +55,7 @@ stdenv.mkDerivation (finalAttrs: {
     changelog = "https://github.com/unjs/changelogen/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ higherorderlogic ];
-    mainProgram = "changelogen";
     platforms = nodejs.meta.platforms;
+    mainProgram = "changelogen";
   };
 })

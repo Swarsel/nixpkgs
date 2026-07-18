@@ -1,14 +1,13 @@
 {
   lib,
-  installShellFiles,
   fetchFromGitHub,
+  installShellFiles,
   python3Packages,
 }:
 
 python3Packages.buildPythonApplication (finalAttrs: {
   pname = "awsume";
   version = "4.5.5";
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "trek10inc";
@@ -17,24 +16,15 @@ python3Packages.buildPythonApplication (finalAttrs: {
     hash = "sha256-lm9YANYckyHDoNbB1wytBm55iyBmUuxFPmZupfpReqc=";
   };
 
-  env.AWSUME_SKIP_ALIAS_SETUP = 1;
-
-  nativeBuildInputs = [ installShellFiles ];
-
-  dependencies = with python3Packages; [
-    colorama
-    boto3
-    psutil
-    pluggy
-    pyyaml
-    setuptools
-  ];
-
   postPatch = ''
     patchShebangs shell_scripts
     substituteInPlace shell_scripts/{awsume,awsume.fish} --replace-fail "awsumepy" "$out/bin/awsumepy"
     substituteInPlace awsume/configure/autocomplete.py --replace-fail "awsume-autocomplete" "$out/bin/awsume-autocomplete"
   '';
+
+  nativeBuildInputs = [ installShellFiles ];
+  env.AWSUME_SKIP_ALIAS_SETUP = 1;
+  doCheck = false;
 
   postInstall = ''
     installShellCompletion --cmd awsume \
@@ -45,13 +35,22 @@ python3Packages.buildPythonApplication (finalAttrs: {
     rm -f $out/bin/awsume.bat
   '';
 
-  doCheck = false;
+  dependencies = with python3Packages; [
+    colorama
+    boto3
+    psutil
+    pluggy
+    pyyaml
+    setuptools
+  ];
+
+  format = "setuptools";
 
   meta = {
     description = "Utility for easily assuming AWS IAM roles from the command line";
     homepage = "https://github.com/trek10inc/awsume";
     license = lib.licenses.mit;
-    mainProgram = "awsume";
     maintainers = with lib.maintainers; [ nilp0inter ];
+    mainProgram = "awsume";
   };
 })

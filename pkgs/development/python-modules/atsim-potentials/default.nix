@@ -1,25 +1,24 @@
 {
   lib,
-  buildPythonPackage,
-  pythonAtLeast,
   fetchFromGitHub,
-  setuptools,
+  buildPythonPackage,
+  cexprtk,
   configparser,
-  pyparsing,
-  pytestCheckHook,
+  deepdiff,
   future,
   openpyxl,
-  wrapt,
+  pyparsing,
+  pytestCheckHook,
+  pythonAtLeast,
   scipy,
-  cexprtk,
-  deepdiff,
+  setuptools,
   sympy,
+  wrapt,
 }:
 
 buildPythonPackage rec {
   pname = "atsim-potentials";
   version = "0.4.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "mjdrushton";
@@ -27,6 +26,11 @@ buildPythonPackage rec {
     tag = version;
     hash = "sha256-G7lNqwEUwAT0f7M2nUTCxpXOAl6FWKlh7tcsvbur1eM=";
   };
+
+  nativeCheckInputs = [
+    deepdiff
+    pytestCheckHook
+  ];
 
   build-system = [ setuptools ];
 
@@ -39,11 +43,6 @@ buildPythonPackage rec {
     scipy
     sympy
     wrapt
-  ];
-
-  nativeCheckInputs = [
-    deepdiff
-    pytestCheckHook
   ];
 
   # these files try to import `distutils` removed in Python 3.12
@@ -63,13 +62,14 @@ buildPythonPackage rec {
     "eam_tabulate_example2TestCase"
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "atsim.potentials" ];
 
   meta = {
-    homepage = "https://github.com/mjdrushton/atsim-potentials";
     description = "Provides tools for working with pair and embedded atom method potential models including tabulation routines for DL_POLY and LAMMPS";
-    mainProgram = "potable";
+    homepage = "https://github.com/mjdrushton/atsim-potentials";
     license = lib.licenses.mit;
     maintainers = [ ];
+    mainProgram = "potable";
   };
 }

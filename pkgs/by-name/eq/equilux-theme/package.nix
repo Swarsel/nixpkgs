@@ -2,13 +2,13 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  gnome-shell,
-  glib,
-  libxml2,
-  gtk-engine-murrine,
-  gdk-pixbuf,
-  librsvg,
   bc,
+  gdk-pixbuf,
+  glib,
+  gnome-shell,
+  gtk-engine-murrine,
+  librsvg,
+  libxml2,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -33,10 +33,6 @@ stdenv.mkDerivation (finalAttrs: {
     librsvg
   ];
 
-  propagatedUserEnvPkgs = [ gtk-engine-murrine ];
-
-  dontBuild = true;
-
   installPhase = ''
     patchShebangs install.sh
     sed -i install.sh \
@@ -47,11 +43,14 @@ stdenv.mkDerivation (finalAttrs: {
     rm $out/share/themes/*/COPYING
   '';
 
+  dontBuild = true;
+  propagatedUserEnvPkgs = [ gtk-engine-murrine ];
+
   meta = {
     inherit (finalAttrs.src.meta) homepage;
     description = "Material Design theme for GNOME/GTK based desktop environments";
     license = lib.licenses.gpl2;
-    platforms = lib.platforms.all;
     maintainers = [ lib.maintainers.fpletz ];
+    platforms = lib.platforms.all;
   };
 })

@@ -1,9 +1,9 @@
 {
-  runCommand,
+  lib,
   buildEnv,
   makeWrapper,
-  lib,
   python,
+  runCommand,
   writeShellScript,
 }:
 let
@@ -47,12 +47,12 @@ let
     // {
       customize =
         {
-          name ? freecad.name,
-          modules ? [ ],
-          pythons ? [ ],
           makeWrapperFlags ? [ ],
-          userCfg ? null,
+          modules ? [ ],
+          name ? freecad.name,
+          pythons ? [ ],
           systemCfg ? null,
+          userCfg ? null,
         }:
         let
           modulesStr = wrapPathsStr "--module-path" modules;
@@ -84,11 +84,13 @@ let
         in
         makeCustomizable (buildEnv {
           inherit name;
+
           paths = [
             (lib.lowPrio freecad)
             bin
           ];
         });
+
       override = f: makeCustomizable (freecad.override f);
       overrideAttrs = f: makeCustomizable (freecad.overrideAttrs f);
     };

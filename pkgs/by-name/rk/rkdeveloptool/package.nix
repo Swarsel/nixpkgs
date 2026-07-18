@@ -3,8 +3,8 @@
   stdenv,
   fetchFromGitHub,
   autoreconfHook,
-  pkg-config,
   libusb1,
+  pkg-config,
 }:
 
 stdenv.mkDerivation {
@@ -32,8 +32,8 @@ stdenv.mkDerivation {
   );
 
   meta = {
-    homepage = "https://github.com/rockchip-linux/rkdeveloptool";
     description = "Tool from Rockchip to communicate with Rockusb devices";
+    homepage = "https://github.com/rockchip-linux/rkdeveloptool";
     license = lib.licenses.gpl2Only;
     maintainers = [ lib.maintainers.lopsided98 ];
     mainProgram = "rkdeveloptool";

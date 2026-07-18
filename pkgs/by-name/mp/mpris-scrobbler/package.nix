@@ -2,16 +2,16 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  nix-update-script,
   curl,
   dbus,
+  json_c,
   libevent,
   m4,
   meson,
   ninja,
+  nix-update-script,
   pkg-config,
   scdoc,
-  json_c,
   xdg-utils,
 }:
 

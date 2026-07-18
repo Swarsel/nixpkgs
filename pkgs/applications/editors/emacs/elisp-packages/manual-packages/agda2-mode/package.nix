@@ -1,11 +1,10 @@
-{ melpaBuild, haskellPackages }:
+{ haskellPackages, melpaBuild }:
 let
   Agda = haskellPackages.Agda;
 in
 melpaBuild {
-  pname = "agda2-mode";
   inherit (Agda) src version;
-
+  pname = "agda2-mode";
   files = ''("src/data/emacs-mode/*.el")'';
 
   meta = {

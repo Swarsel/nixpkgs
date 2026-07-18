@@ -20,8 +20,8 @@ stdenv.mkDerivation (finalAttrs: {
       pname = "numdiff";
       version = "5.9.0";
       debianRevision = "2";
-      patch = "0005-gcc-15.patch";
       hash = "sha256-+8pNiEfGuh/03LRCY6kuoIcPZ4fQOhNrD93ZW/mXxJw=";
+      patch = "0005-gcc-15.patch";
     })
   ];
 
@@ -33,6 +33,7 @@ stdenv.mkDerivation (finalAttrs: {
       line by line and field by field, ignoring small numeric differences
       or/and different numeric formats
     '';
+
     homepage = "https://www.nongnu.org/numdiff/";
     license = lib.licenses.gpl3Plus;
     maintainers = [ ];

@@ -2,9 +2,9 @@
   lib,
   stdenv,
   fetchurl,
-  makeWrapper,
-  jre_headless,
   gawk,
+  jre_headless,
+  makeWrapper,
   nixosTests,
 }:
 
@@ -17,12 +17,6 @@ stdenv.mkDerivation rec {
     hash = "sha256-oBappm8WRcgyD5HWqJKPbMHjlwCUo9y5+FtB2Kq1PCE=";
   };
 
-  preferLocalBuild = true;
-
-  sourceRoot = "${pname}-${version}";
-
-  nativeBuildInputs = [ makeWrapper ];
-
   patches = [
     ./nexus-bin.patch
     ./nexus-vm-opts.patch
@@ -34,6 +28,8 @@ stdenv.mkDerivation rec {
       --replace-fail etc/karaf $out/etc/karaf \
       --replace-fail =. =$out
   '';
+
+  nativeBuildInputs = [ makeWrapper ];
 
   installPhase = ''
     runHook preInstall
@@ -50,6 +46,9 @@ stdenv.mkDerivation rec {
     runHook postInstall
   '';
 
+  preferLocalBuild = true;
+  sourceRoot = "${pname}-${version}";
+
   passthru.tests = {
     inherit (nixosTests) nexus;
   };
@@ -57,9 +56,11 @@ stdenv.mkDerivation rec {
   meta = {
     description = "Repository manager for binary software components";
     homepage = "https://www.sonatype.com/products/sonatype-nexus-oss";
-    sourceProvenance = with lib.sourceTypes; [ binaryBytecode ];
     license = lib.licenses.epl10;
+    sourceProvenance = with lib.sourceTypes; [ binaryBytecode ];
+    maintainers = [ ];
     platforms = lib.platforms.all;
+
     knownVulnerabilities = [
       "Nexus 3.77 + 3.78 fixed a bunch of security issues: https://help.sonatype.com/en/sonatype-nexus-repository-3-78-0-release-notes.html"
       "CVE-2024-47554"
@@ -69,6 +70,5 @@ stdenv.mkDerivation rec {
       "CVE-2023-6378"
       "CVE-2023-4218"
     ];
-    maintainers = [ ];
   };
 }

@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule (finalAttrs: {
@@ -19,9 +19,9 @@ buildGoModule (finalAttrs: {
 
   meta = {
     description = "Go tool to modify struct field tags";
-    mainProgram = "gomodifytags";
     homepage = "https://github.com/fatih/gomodifytags";
-    maintainers = with lib.maintainers; [ vdemeester ];
     license = lib.licenses.bsd3;
+    maintainers = with lib.maintainers; [ vdemeester ];
+    mainProgram = "gomodifytags";
   };
 })

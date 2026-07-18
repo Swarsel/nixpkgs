@@ -23,20 +23,20 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   nativeBuildInputs = [ autoreconfHook ];
-
   buildInputs = [ libusb1 ];
-
   doInstallCheck = true;
 
   meta = {
     description = "Library to talk to uldaq devices";
+
     longDescription = ''
       Library used to communicate with USB data acquisition (DAQ)
       devices from Measurement Computing
     '';
+
     homepage = "https://github.com/mccdaq/uldaq";
     license = lib.licenses.mit;
-    platforms = lib.platforms.linux;
     maintainers = [ lib.maintainers.simonkampe ];
+    platforms = lib.platforms.linux;
   };
 })

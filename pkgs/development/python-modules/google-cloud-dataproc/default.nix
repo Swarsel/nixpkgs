@@ -4,31 +4,32 @@
   fetchPypi,
   google-api-core,
   grpc-google-iam-v1,
-  mock,
   libcst,
+  mock,
   proto-plus,
   protobuf,
-  pytestCheckHook,
   pytest-asyncio,
+  pytestCheckHook,
   setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "google-cloud-dataproc";
   version = "5.24.0";
-  pyproject = true;
 
   src = fetchPypi {
-    pname = "google_cloud_dataproc";
     inherit version;
     hash = "sha256-yKIv5tswCOc1uPzce2ARf2JD2Q4O2RDWMNFQTOXAvbQ=";
+    pname = "google_cloud_dataproc";
   };
 
-  build-system = [ setuptools ];
-
-  pythonRelaxDeps = [
-    "protobuf"
+  nativeCheckInputs = [
+    mock
+    pytestCheckHook
+    pytest-asyncio
   ];
+
+  build-system = [ setuptools ];
 
   dependencies = [
     google-api-core
@@ -39,20 +40,20 @@ buildPythonPackage rec {
   ]
   ++ google-api-core.optional-dependencies.grpc;
 
-  nativeCheckInputs = [
-    mock
-    pytestCheckHook
-    pytest-asyncio
-  ];
-
   disabledTests = [
     # Test requires credentials
     "test_list_clusters"
   ];
 
+  pyproject = true;
+
   pythonImportsCheck = [
     "google.cloud.dataproc"
     "google.cloud.dataproc_v1"
+  ];
+
+  pythonRelaxDeps = [
+    "protobuf"
   ];
 
   meta = {

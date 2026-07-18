@@ -2,25 +2,20 @@
   lib,
   fetchFromGitHub,
   buildPythonPackage,
-
-  setuptools,
-
-  typing-extensions,
-  xeddsa,
-
-  pytestCheckHook,
   oldmemo,
-  twomemo,
-  pytest-asyncio,
-  pytest-cov-stub,
-
   # passthru
   omemo,
+  pytest-asyncio,
+  pytest-cov-stub,
+  pytestCheckHook,
+  setuptools,
+  twomemo,
+  typing-extensions,
+  xeddsa,
 }:
 buildPythonPackage (finalAttrs: {
   pname = "omemo";
   version = "2.1.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "Syndace";
@@ -28,15 +23,6 @@ buildPythonPackage (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-h1L/DdzssCwQzQDY32ACNcn/zmDsCz16x74+Qdyv6x4=";
   };
-
-  build-system = [
-    setuptools
-  ];
-
-  dependencies = [
-    typing-extensions
-    xeddsa
-  ];
 
   doCheck = false;
 
@@ -48,6 +34,17 @@ buildPythonPackage (finalAttrs: {
     pytest-cov-stub
   ]
   ++ oldmemo.optional-dependencies.xml;
+
+  build-system = [
+    setuptools
+  ];
+
+  dependencies = [
+    typing-extensions
+    xeddsa
+  ];
+
+  pyproject = true;
 
   pythonImportsCheck = [
     "omemo"
@@ -61,6 +58,7 @@ buildPythonPackage (finalAttrs: {
 
   meta = {
     description = "Open python implementation of the OMEMO Multi-End Message and Object Encryption protocol";
+
     longDescription = ''
       A complete implementation of XEP-0384 on protocol-level, i.e. more than just the cryptography.
       python-omemo supports different versions of the specification through so-called backends.
@@ -71,10 +69,11 @@ buildPythonPackage (finalAttrs: {
       package.
       Multiple backends can be loaded and used at the same time, the library manages their coexistence transparently.
     '';
+
     homepage = "https://github.com/Syndace/python-omemo";
     changelog = "https://github.com/Syndace/python-omemo/blob/${finalAttrs.src.tag}/CHANGELOG.md";
     license = lib.licenses.mit;
-    teams = with lib.teams; [ ngi ];
     maintainers = with lib.maintainers; [ themadbit ];
+    teams = with lib.teams; [ ngi ];
   };
 })

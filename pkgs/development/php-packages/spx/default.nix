@@ -1,7 +1,7 @@
 {
-  buildPecl,
   lib,
   fetchFromGitHub,
+  buildPecl,
   zlib,
 }:
 
@@ -25,9 +25,9 @@ buildPecl {
   ];
 
   meta = {
-    changelog = "https://github.com/NoiseByNorthwest/php-spx/releases/tag/v${version}";
     description = "Simple & straight-to-the-point PHP profiling extension with its built-in web UI";
     homepage = "https://github.com/NoiseByNorthwest/php-spx";
+    changelog = "https://github.com/NoiseByNorthwest/php-spx/releases/tag/v${version}";
     license = lib.licenses.php301;
     maintainers = with lib.maintainers; [ piotrkwiecinski ];
   };

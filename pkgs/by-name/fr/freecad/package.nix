@@ -1,13 +1,15 @@
 {
   lib,
+  stdenv,
+  fetchFromGitHub,
   callPackage,
   cmake,
   coin3d,
   doxygen,
   eigen,
-  fetchFromGitHub,
   fetchpatch,
   fmt,
+  gmsh,
   gts,
   hdf5,
   libGLU,
@@ -15,22 +17,20 @@
   libspnav,
   libxmu,
   medfile,
+  microsoft-gsl,
   mpi,
   ninja,
+  nix-update-script,
   ode,
   opencascade-occt,
-  microsoft-gsl,
   pkg-config,
   python3Packages,
-  stdenv,
+  qt6,
   swig,
+  which,
   xercesc,
   yaml-cpp,
   zlib,
-  qt6,
-  nix-update-script,
-  gmsh,
-  which,
 }:
 let
   pythonDeps = with python3Packages; [
@@ -66,6 +66,21 @@ freecad-utils.makeCustomizable (
       fetchSubmodules = true;
     };
 
+    patches = [
+      ./0001-NIXOS-don-t-ignore-PYTHONPATH.patch
+      (fetchpatch {
+        hash = "sha256-qe0wn7DwvQT/pmrSCa44+orMetztpw8DZ+NhDJEYAMw=";
+        # https://github.com/FreeCAD/FreeCAD/pull/30899
+        # fix COIN3D_MICRO_VERSION regex for coin 4.0.10
+        url = "https://github.com/FreeCAD/FreeCAD/commit/e3e56059865849c6b1c85161f69183ad872414e3.patch";
+      })
+    ];
+
+    postPatch = ''
+      substituteInPlace src/Mod/Fem/femmesh/gmshtools.py \
+        --replace-fail 'self.gmsh_bin = ""' 'self.gmsh_bin = "${lib.getExe gmsh}"'
+    '';
+
     nativeBuildInputs = [
       cmake
       ninja
@@ -100,21 +115,6 @@ freecad-utils.makeCustomizable (
     ]
     ++ pythonDeps;
 
-    patches = [
-      ./0001-NIXOS-don-t-ignore-PYTHONPATH.patch
-      (fetchpatch {
-        # https://github.com/FreeCAD/FreeCAD/pull/30899
-        # fix COIN3D_MICRO_VERSION regex for coin 4.0.10
-        url = "https://github.com/FreeCAD/FreeCAD/commit/e3e56059865849c6b1c85161f69183ad872414e3.patch";
-        hash = "sha256-qe0wn7DwvQT/pmrSCa44+orMetztpw8DZ+NhDJEYAMw=";
-      })
-    ];
-
-    postPatch = ''
-      substituteInPlace src/Mod/Fem/femmesh/gmshtools.py \
-        --replace-fail 'self.gmsh_bin = ""' 'self.gmsh_bin = "${lib.getExe gmsh}"'
-    '';
-
     cmakeFlags = [
       "-Wno-dev" # turns off warnings which otherwise makes it hard to see what is going on
       (lib.cmakeBool "BUILD_DRAWING" true)
@@ -124,19 +124,6 @@ freecad-utils.makeCustomizable (
       (lib.cmakeBool "BUILD_QT5" false)
       (lib.cmakeBool "BUILD_QT6" true)
     ];
-
-    qtWrapperArgs =
-      let
-        binPath = lib.makeBinPath [
-          libredwg
-          which # for locating tools
-        ];
-      in
-      [
-        "--set COIN_GL_NO_CURRENT_CONTEXT_CHECK 1"
-        "--prefix PATH : ${binPath}"
-        "--prefix PYTHONPATH : ${python3Packages.makePythonPath pythonDeps}"
-      ];
 
     postInstall = ''
       substituteInPlace $out/share/thumbnailers/FreeCAD.thumbnailer \
@@ -151,8 +138,25 @@ freecad-utils.makeCustomizable (
       ln -s $out/bin/FreeCADCmd $out/bin/freecadcmd
     '';
 
+    qtWrapperArgs =
+      let
+        binPath = lib.makeBinPath [
+          libredwg
+          which # for locating tools
+        ];
+      in
+      [
+        "--set COIN_GL_NO_CURRENT_CONTEXT_CHECK 1"
+        "--prefix PATH : ${binPath}"
+        "--prefix PYTHONPATH : ${python3Packages.makePythonPath pythonDeps}"
+      ];
+
+    # 6.9k object files, cuts down build time from 2-3 hours to 15 minutes
+    requiredSystemFeatures = [ "big-parallel" ];
+
     passthru = {
       tests = callPackage ./tests { };
+
       updateScript = nix-update-script {
         extraArgs = [
           "--version-regex"
@@ -161,12 +165,9 @@ freecad-utils.makeCustomizable (
       };
     };
 
-    # 6.9k object files, cuts down build time from 2-3 hours to 15 minutes
-    requiredSystemFeatures = [ "big-parallel" ];
-
     meta = {
-      homepage = "https://www.freecad.org";
       description = "General purpose Open Source 3D CAD/MCAD/CAx/CAE/PLM modeler";
+
       longDescription = ''
         FreeCAD is an open-source parametric 3D modeler made primarily to design
         real-life objects of any size. Parametric modeling allows you to easily
@@ -183,11 +184,15 @@ freecad-utils.makeCustomizable (
         programmer, an experienced CAD user, a student or a teacher, you will feel
         right at home with FreeCAD.
       '';
+
+      homepage = "https://www.freecad.org";
       license = lib.licenses.lgpl2Plus;
+
       maintainers = with lib.maintainers; [
         srounce
         grimmauld
       ];
+
       platforms = lib.platforms.linux;
     };
   })

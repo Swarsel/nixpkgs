@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   gitUpdater,
   opentelemetry-api,
   opentelemetry-sdk,
@@ -16,7 +16,6 @@
 buildPythonPackage rec {
   pname = "qcs-sdk-python";
   version = "0.26.2";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "rigetti";
@@ -25,32 +24,28 @@ buildPythonPackage rec {
     hash = "sha256-XqsxtFwQnAJHYMaR+uO8wzlxA+GtqfllJUCIt0l1i9o=";
   };
 
-  cargoDeps = rustPlatform.fetchCargoVendor {
-    inherit pname version src;
-    hash = "sha256-ENWGL8N7shXYI31GDLu7SHqPhZUuIWWnYk/ziRoG9Gg=";
-  };
-
-  buildAndTestSubdir = "crates/lib";
-
   nativeBuildInputs = [
     rustPlatform.cargoSetupHook
     rustPlatform.maturinBuildHook
   ];
-
-  dependencies = [
-    qcs-api-client-common
-    quil
-  ];
-
-  optional-dependencies = {
-    tracing-opentelemetry = [ opentelemetry-api ];
-  };
 
   nativeCheckInputs = [
     opentelemetry-sdk
     pytest-asyncio
     pytestCheckHook
     syrupy
+  ];
+
+  buildAndTestSubdir = "crates/lib";
+
+  cargoDeps = rustPlatform.fetchCargoVendor {
+    inherit pname version src;
+    hash = "sha256-ENWGL8N7shXYI31GDLu7SHqPhZUuIWWnYk/ziRoG9Gg=";
+  };
+
+  dependencies = [
+    qcs-api-client-common
+    quil
   ];
 
   disabledTests = [
@@ -66,14 +61,20 @@ buildPythonPackage rec {
     "test_qvm_tracing"
   ];
 
+  optional-dependencies = {
+    tracing-opentelemetry = [ opentelemetry-api ];
+  };
+
+  pyproject = true;
+
   passthru.updateScript = gitUpdater {
     rev-prefix = "lib/v";
   };
 
   meta = {
-    changelog = "https://github.com/rigetti/qcs-sdk-rust/blob/${src.tag}/${buildAndTestSubdir}/CHANGELOG.md";
     description = "Python interface for the QCS Rust SDK";
     homepage = "https://github.com/rigetti/qcs-sdk-rust/tree/main/crates/python";
+    changelog = "https://github.com/rigetti/qcs-sdk-rust/blob/${src.tag}/${buildAndTestSubdir}/CHANGELOG.md";
     license = lib.licenses.asl20;
     maintainers = with lib.maintainers; [ dotlambda ];
   };

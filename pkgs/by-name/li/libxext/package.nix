@@ -2,16 +2,21 @@
   lib,
   stdenv,
   fetchurl,
-  pkg-config,
   libx11,
-  xorgproto,
   libxau,
-  writeScript,
+  pkg-config,
   testers,
+  writeScript,
+  xorgproto,
 }:
 stdenv.mkDerivation (finalAttrs: {
   pname = "libxext";
   version = "1.3.7";
+
+  src = fetchurl {
+    url = "mirror://xorg/individual/lib/libXext-${finalAttrs.version}.tar.xz";
+    hash = "sha256-bGQ8cDXNrPZ6/WjyXQG5DviJ1UbJ/NfArffCz5Hjoy0=";
+  };
 
   outputs = [
     "out"
@@ -20,19 +25,14 @@ stdenv.mkDerivation (finalAttrs: {
     "doc"
   ];
 
-  src = fetchurl {
-    url = "mirror://xorg/individual/lib/libXext-${finalAttrs.version}.tar.xz";
-    hash = "sha256-bGQ8cDXNrPZ6/WjyXQG5DviJ1UbJ/NfArffCz5Hjoy0=";
-  };
-
   strictDeps = true;
-
   nativeBuildInputs = [ pkg-config ];
 
   buildInputs = [
     libx11
     xorgproto
   ];
+
   propagatedBuildInputs = [
     xorgproto
     libxau
@@ -43,6 +43,8 @@ stdenv.mkDerivation (finalAttrs: {
   ) "--enable-malloc0returnsnull";
 
   passthru = {
+    tests.pkg-config = testers.testMetaPkgConfig finalAttrs.finalPackage;
+
     updateScript = writeScript "update-${finalAttrs.pname}" ''
       #!/usr/bin/env nix-shell
       #!nix-shell -i bash -p common-updater-scripts
@@ -51,12 +53,12 @@ stdenv.mkDerivation (finalAttrs: {
         | sort -V | tail -n1)"
       update-source-version ${finalAttrs.pname} "$version"
     '';
-    tests.pkg-config = testers.testMetaPkgConfig finalAttrs.finalPackage;
   };
 
   meta = {
     description = "Xlib-based library for common extensions to the X11 protocol";
     homepage = "https://gitlab.freedesktop.org/xorg/lib/libxext";
+
     license = with lib.licenses; [
       mitOpenGroup
       x11
@@ -67,8 +69,9 @@ stdenv.mkDerivation (finalAttrs: {
       mit
       isc
     ];
+
     maintainers = [ ];
-    pkgConfigModules = [ "xext" ];
     platforms = lib.platforms.unix;
+    pkgConfigModules = [ "xext" ];
   };
 })

@@ -4,8 +4,8 @@
   fetchFromGitHub,
   buildGoModule,
   installShellFiles,
-  versionCheckHook,
   nix-update-script,
+  versionCheckHook,
 }:
 
 let
@@ -22,15 +22,13 @@ buildGoModule (finalAttrs: {
     hash = "sha256-wZ0Q4OCjTRUUZCbZzF4DxMLi/UBtun6TszJhU9LdGd8=";
   };
 
-  vendorHash = "sha256-j/XXuVUZAADJqogMkERK801rACywy62oZW6iGrz5U0k=";
-
-  env.CGO_ENABLED = 0;
-
-  doCheck = true;
-
   nativeBuildInputs = [
     installShellFiles
   ];
+
+  vendorHash = "sha256-j/XXuVUZAADJqogMkERK801rACywy62oZW6iGrz5U0k=";
+  env.CGO_ENABLED = 0;
+  doCheck = true;
 
   postInstall = lib.optionalString (stdenv.buildPlatform.canExecute stdenv.hostPlatform) ''
     installShellCompletion --cmd '${mainProgram}' \
@@ -39,20 +37,11 @@ buildGoModule (finalAttrs: {
       --fish <("$out/bin/${mainProgram}" completion fish)
   '';
 
+  doInstallCheck = true;
+
   nativeInstallCheckInputs = [
     versionCheckHook
   ];
-  doInstallCheck = true;
-  versionCheckProgram = "${placeholder "out"}/bin/${mainProgram}";
-  versionCheckProgramArg = "version";
-
-  passthru = {
-    updateScript = nix-update-script {
-      extraArgs = [
-        "--version-regex=^v([\\d\\.]+)$"
-      ];
-    };
-  };
 
   ldflags = [
     "-s"
@@ -63,6 +52,17 @@ buildGoModule (finalAttrs: {
   subPackages = [
     "cmd/pinact"
   ];
+
+  versionCheckProgram = "${placeholder "out"}/bin/${mainProgram}";
+  versionCheckProgramArg = "version";
+
+  passthru = {
+    updateScript = nix-update-script {
+      extraArgs = [
+        "--version-regex=^v([\\d\\.]+)$"
+      ];
+    };
+  };
 
   meta = {
     inherit mainProgram;

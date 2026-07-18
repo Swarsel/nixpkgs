@@ -1,12 +1,12 @@
 {
+  lib,
   stdenv,
   fetchFromGitHub,
   cmake,
   extra-cmake-modules,
-  wrapQtAppsHook,
-  kwin,
-  lib,
   fetchpatch2,
+  kwin,
+  wrapQtAppsHook,
 }:
 stdenv.mkDerivation rec {
   pname = "sierra-breeze-enhanced";
@@ -21,8 +21,8 @@ stdenv.mkDerivation rec {
 
   patches = [
     (fetchpatch2 {
-      url = "https://github.com/kupiqu/SierraBreezeEnhanced/pull/155.patch";
       hash = "sha256-taj7AqiewiUU4wOTKPgfvua0rDuQ8ssH+/maxz/A3G8=";
+      url = "https://github.com/kupiqu/SierraBreezeEnhanced/pull/155.patch";
     })
   ];
 
@@ -31,6 +31,7 @@ stdenv.mkDerivation rec {
     extra-cmake-modules
     wrapQtAppsHook
   ];
+
   buildInputs = [ kwin ];
 
   cmakeFlags = [

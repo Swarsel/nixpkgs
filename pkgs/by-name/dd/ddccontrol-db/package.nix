@@ -1,11 +1,11 @@
 {
   lib,
   stdenv,
+  fetchFromGitHub,
   autoconf,
   automake,
-  libtool,
   intltool,
-  fetchFromGitHub,
+  libtool,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -34,10 +34,12 @@ stdenv.mkDerivation (finalAttrs: {
     description = "Monitor database for DDCcontrol";
     homepage = "https://github.com/ddccontrol/ddccontrol-db";
     license = lib.licenses.gpl2;
-    platforms = lib.platforms.linux;
+
     maintainers = with lib.maintainers; [
       pakhfn
       doronbehar
     ];
+
+    platforms = lib.platforms.linux;
   };
 })

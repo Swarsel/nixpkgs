@@ -1,7 +1,7 @@
 {
+  lib,
   deno,
   runCommand,
-  lib,
 }:
 let
   testDenoRun =
@@ -9,9 +9,9 @@ let
     {
       args ? "",
       dir ? ./. + "/${name}",
-      file ? "index.ts",
-      expected ? "",
       expectFailure ? false,
+      expected ? "",
+      file ? "index.ts",
     }:
     let
       command = "deno run ${args} ${dir}/${file}";
@@ -52,21 +52,25 @@ in
 (lib.mapAttrs testDenoRun {
   basic = {
     dir = ./.;
-    file = "basic.ts";
     expected = "2";
+    file = "basic.ts";
   };
+
+  fail-read-file = {
+    dir = ./read-file;
+    expectFailure = true;
+  };
+
   import-json = {
     expected = "hello from JSON";
   };
+
   import-ts = {
     expected = "hello from ts";
   };
+
   read-file = {
     args = "--allow-read";
     expected = "hello from a file";
-  };
-  fail-read-file = {
-    expectFailure = true;
-    dir = ./read-file;
   };
 })

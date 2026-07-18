@@ -19,21 +19,26 @@ let
   cfg = config.services.prometheus.exporters.tailscale;
 in
 {
-  port = 9250;
   extraOpts = with types; {
     package = mkPackageOption pkgs "prometheus-tailscale-exporter" { };
+
     environmentFile = mkOption {
-      type = path;
       description = ''
         Environment file containg at least the TAILSCALE_TAILNET,
         TAILSCALE_OAUTH_CLIENT_ID, and TAILSCALE_OAUTH_CLIENT_SECRET
         environment variables.
       '';
+
+      type = path;
     };
   };
+
+  port = 9250;
+
   serviceOpts = {
     serviceConfig = {
       EnvironmentFile = cfg.environmentFile;
+
       ExecStart = escapeSystemdExecArgs (
         [
           (getExe cfg.package)

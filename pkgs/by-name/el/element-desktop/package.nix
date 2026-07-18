@@ -2,25 +2,25 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  makeWrapper,
-  makeDesktopItem,
-  nodejs,
-  electron_42,
-  element-web,
-  callPackage,
-  typescript,
-  tsx,
-  sqlcipher,
-  # command line arguments which are always set
-  commandLineArgs ? "",
-  fetchPnpmDeps,
-  pnpmConfigHook,
-  pnpm_11,
-  faketty,
+  actool,
   asar,
+  callPackage,
   copyDesktopItems,
   darwin,
-  actool,
+  electron_42,
+  element-web,
+  faketty,
+  fetchPnpmDeps,
+  makeDesktopItem,
+  makeWrapper,
+  nodejs,
+  pnpmConfigHook,
+  pnpm_11,
+  sqlcipher,
+  tsx,
+  typescript,
+  # command line arguments which are always set
+  commandLineArgs ? "",
 }:
 
 let
@@ -29,6 +29,7 @@ let
   seshat = callPackage ./seshat { };
 in
 stdenv.mkDerivation (finalAttrs: {
+  inherit seshat;
   pname = "element-desktop";
   version = "1.12.23";
 
@@ -38,37 +39,6 @@ stdenv.mkDerivation (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-IdQZqwGk05APb38hEoin74/5FeRgjCLrdli+R6iaoUA=";
   };
-
-  pnpmDeps = fetchPnpmDeps {
-    pname = "element";
-    inherit (finalAttrs)
-      version
-      src
-      ;
-    inherit pnpm;
-    fetcherVersion = 4;
-    hash = "sha256-WVQaq7kqlEdKodOkErUCeYLh0xnH1NTHzgNyjn1+1y0=";
-  };
-
-  env.ELECTRON_SKIP_BINARY_DOWNLOAD = "1";
-
-  nativeBuildInputs = [
-    asar
-    copyDesktopItems
-    nodejs
-    makeWrapper
-    typescript
-    pnpm
-    pnpmConfigHook
-    tsx
-    faketty
-  ]
-  ++ lib.optionals stdenv.hostPlatform.isDarwin [
-    darwin.autoSignDarwinBinariesHook
-    actool
-  ];
-
-  inherit seshat;
 
   postPatch = ''
     cd apps/desktop
@@ -86,6 +56,24 @@ stdenv.mkDerivation (finalAttrs: {
 
     cd ../../
   '';
+
+  nativeBuildInputs = [
+    asar
+    copyDesktopItems
+    nodejs
+    makeWrapper
+    typescript
+    pnpm
+    pnpmConfigHook
+    tsx
+    faketty
+  ]
+  ++ lib.optionals stdenv.hostPlatform.isDarwin [
+    darwin.autoSignDarwinBinariesHook
+    actool
+  ];
+
+  env.ELECTRON_SKIP_BINARY_DOWNLOAD = "1";
 
   # faketty is required to work around a bug in nx.
   # See: https://github.com/nrwl/nx/issues/22445
@@ -152,36 +140,51 @@ stdenv.mkDerivation (finalAttrs: {
   # https://github.com/element-hq/element-desktop/blob/develop/package.json
   desktopItems = [
     (makeDesktopItem {
-      name = "element-desktop";
-      exec = "element-desktop %u";
-      icon = "element";
-      desktopName = "Element";
-      genericName = "Matrix Client";
-      comment = finalAttrs.meta.description;
       categories = [
         "Network"
         "InstantMessaging"
         "Chat"
       ];
-      startupWMClass = "Element";
+
+      comment = finalAttrs.meta.description;
+      desktopName = "Element";
+      exec = "element-desktop %u";
+      genericName = "Matrix Client";
+      icon = "element";
+
       mimeTypes = [
         "x-scheme-handler/element"
         "x-scheme-handler/io.element.desktop"
       ];
+
+      name = "element-desktop";
+      startupWMClass = "Element";
     })
   ];
+
+  pnpmDeps = fetchPnpmDeps {
+    inherit (finalAttrs)
+      version
+      src
+      ;
+
+    inherit pnpm;
+    pname = "element";
+    fetcherVersion = 4;
+    hash = "sha256-WVQaq7kqlEdKodOkErUCeYLh0xnH1NTHzgNyjn1+1y0=";
+  };
 
   stripDebugList = lib.optionals stdenv.hostPlatform.isDarwin [
     "Applications/Element.app/Contents/MacOS"
   ];
 
   meta = {
+    inherit (electron.meta) platforms;
     description = "Feature-rich client for Matrix.org";
     homepage = "https://element.io/";
     changelog = "https://github.com/element-hq/element-web/blob/v${finalAttrs.version}/CHANGELOG.md";
     license = lib.licenses.agpl3Plus;
-    teams = [ lib.teams.matrix ];
-    inherit (electron.meta) platforms;
     mainProgram = "element-desktop";
+    teams = [ lib.teams.matrix ];
   };
 })

@@ -2,14 +2,13 @@
   lib,
   buildPythonPackage,
   fetchPypi,
-  sphinx,
   mscgen,
+  sphinx,
 }:
 
 buildPythonPackage rec {
   pname = "sphinxcontrib-mscgen";
   version = "0.6";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
@@ -23,9 +22,8 @@ buildPythonPackage rec {
 
   # There are no unit tests
   doCheck = false;
-
+  format = "setuptools";
   pythonImportsCheck = [ "sphinxcontrib.mscgen" ];
-
   pythonNamespaces = [ "sphinxcontrib" ];
 
   meta = {

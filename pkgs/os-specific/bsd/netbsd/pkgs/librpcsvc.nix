@@ -1,22 +1,18 @@
 {
   lib,
-  mkDerivation,
-  defaultMakeFlags,
   bsdSetupHook,
-  netbsdSetupHook,
-  makeMinimal,
+  defaultMakeFlags,
   install,
-  tsort,
   lorder,
+  makeMinimal,
+  mkDerivation,
+  netbsdSetupHook,
   rpcgen,
   statHook,
+  tsort,
 }:
 
 mkDerivation {
-  path = "lib/librpcsvc";
-
-  libcMinimal = true;
-
   outputs = [
     "out"
     "dev"
@@ -34,6 +30,7 @@ mkDerivation {
   ];
 
   makeFlags = defaultMakeFlags ++ [ "INCSDIR=$(dev)/include/rpcsvc" ];
-
+  libcMinimal = true;
+  path = "lib/librpcsvc";
   meta.platforms = lib.platforms.netbsd;
 }

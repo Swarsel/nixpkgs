@@ -1,21 +1,19 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  uv-build,
+  buildPythonPackage,
+  httpx,
+  pytestCheckHook,
   scim2-filter-parser,
   scim2-models,
-  werkzeug,
-  pytestCheckHook,
-  httpx,
   time-machine,
+  uv-build,
+  werkzeug,
 }:
 
 buildPythonPackage rec {
   pname = "scim2-server";
   version = "0.1.9";
-
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "python-scim";
@@ -29,6 +27,12 @@ buildPythonPackage rec {
       --replace-fail 'uv_build>=0.8.9,<0.9.0' 'uv_build'
   '';
 
+  nativeCheckInputs = [
+    pytestCheckHook
+    httpx
+    time-machine
+  ];
+
   build-system = [ uv-build ];
 
   dependencies = [
@@ -37,12 +41,7 @@ buildPythonPackage rec {
     werkzeug
   ];
 
-  nativeCheckInputs = [
-    pytestCheckHook
-    httpx
-    time-machine
-  ];
-
+  pyproject = true;
   pythonImportsCheck = [ "scim2_server" ];
 
   meta = {

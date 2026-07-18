@@ -1,21 +1,20 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  pythonAtLeast,
-  setuptools,
   aiohttp,
-  python-mimeparse,
+  buildPythonPackage,
   gunicorn,
   mako,
   pytestCheckHook,
+  python-mimeparse,
+  pythonAtLeast,
+  setuptools,
   webtest-aiohttp,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "aiohttp-utils";
   version = "3.2.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "sloria";
@@ -23,6 +22,12 @@ buildPythonPackage (finalAttrs: {
     tag = finalAttrs.version;
     hash = "sha256-CGKka6nGQ9o4wn6o3YJ3hm8jGbg16NKkCdBA1mKz4bo=";
   };
+
+  nativeCheckInputs = [
+    mako
+    pytestCheckHook
+    webtest-aiohttp
+  ];
 
   build-system = [
     setuptools
@@ -34,14 +39,11 @@ buildPythonPackage (finalAttrs: {
     gunicorn
   ];
 
-  pythonImportsCheck = [
-    "aiohttp_utils"
-  ];
-
-  nativeCheckInputs = [
-    mako
-    pytestCheckHook
-    webtest-aiohttp
+  disabledTestPaths = lib.optionals (pythonAtLeast "3.14") [
+    # RuntimeError: There is no current event loop in thread 'MainThread'.
+    "tests/test_examples.py"
+    "tests/test_negotiation.py"
+    "tests/test_routing.py"
   ];
 
   disabledTests = [
@@ -49,11 +51,10 @@ buildPythonPackage (finalAttrs: {
     "test_renders_to_json_by_default"
   ];
 
-  disabledTestPaths = lib.optionals (pythonAtLeast "3.14") [
-    # RuntimeError: There is no current event loop in thread 'MainThread'.
-    "tests/test_examples.py"
-    "tests/test_negotiation.py"
-    "tests/test_routing.py"
+  pyproject = true;
+
+  pythonImportsCheck = [
+    "aiohttp_utils"
   ];
 
   meta = {

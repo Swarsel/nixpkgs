@@ -2,14 +2,14 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  gnum4,
-  python3,
-  getopt,
   checkpolicy,
+  getopt,
+  gnum4,
   policycoreutils,
+  python3,
   semodule-utils,
-  policyVersion ? null,
   moduleVersion ? null,
+  policyVersion ? null,
 }:
 stdenv.mkDerivation (finalAttrs: {
   pname = "selinux-refpolicy";
@@ -28,12 +28,6 @@ stdenv.mkDerivation (finalAttrs: {
     getopt
   ];
 
-  configurePhase = ''
-    runHook preConfigure
-    make conf ''${makeFlags[@]}
-    runHook postConfigure
-  '';
-
   makeFlags = [
     "CHECKPOLICY=${lib.getExe checkpolicy}"
     "CHECKMODULE=${lib.getExe' checkpolicy "checkmodule"}"
@@ -50,13 +44,19 @@ stdenv.mkDerivation (finalAttrs: {
   ++ lib.optional (policyVersion != null) "OUTPUT_POLICY=${toString policyVersion}"
   ++ lib.optional (moduleVersion != null) "OUTPUT_MODULE=${toString moduleVersion}";
 
+  configurePhase = ''
+    runHook preConfigure
+    make conf ''${makeFlags[@]}
+    runHook postConfigure
+  '';
+
   installTargets = "all install install-headers install-docs";
 
   meta = {
+    inherit (semodule-utils.meta) maintainers;
     description = "SELinux Reference Policy v2";
     homepage = "http://userspace.selinuxproject.org";
-    platforms = lib.platforms.linux;
-    inherit (semodule-utils.meta) maintainers;
     license = lib.licenses.gpl2Only;
+    platforms = lib.platforms.linux;
   };
 })

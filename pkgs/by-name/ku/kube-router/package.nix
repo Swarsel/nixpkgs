@@ -1,9 +1,9 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
-  testers,
+  buildGoModule,
   kube-router,
+  testers,
 }:
 
 buildGoModule (finalAttrs: {
@@ -18,7 +18,6 @@ buildGoModule (finalAttrs: {
   };
 
   vendorHash = "sha256-s7In0uv8C+H1xkQxfjnH4+PXO3NPZU/NYdg00EVH4us=";
-
   env.CGO_ENABLED = 0;
 
   ldflags = [
@@ -33,11 +32,11 @@ buildGoModule (finalAttrs: {
   };
 
   meta = {
-    homepage = "https://www.kube-router.io/";
     description = "All-in-one router, firewall and service proxy for Kubernetes";
-    mainProgram = "kube-router";
+    homepage = "https://www.kube-router.io/";
     license = lib.licenses.asl20;
     maintainers = with lib.maintainers; [ johanot ];
     platforms = lib.platforms.linux;
+    mainProgram = "kube-router";
   };
 })

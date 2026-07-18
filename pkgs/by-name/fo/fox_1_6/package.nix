@@ -2,20 +2,20 @@
   lib,
   stdenv,
   fetchurl,
-  libpng,
-  libjpeg,
-  libtiff,
-  zlib,
   bzip2,
-  libxcursor,
-  libxrandr,
-  libGLU,
   libGL,
+  libGLU,
+  libjpeg,
+  libpng,
+  libtiff,
+  libxcursor,
   libxext,
-  libxft,
   libxfixes,
+  libxft,
+  libxrandr,
   mesa,
   xinput,
+  zlib,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -44,24 +44,24 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   doCheck = true;
-
   enableParallelBuilding = true;
-
   hardeningDisable = [ "format" ];
 
   meta = {
-    broken = stdenv.hostPlatform.isDarwin;
-    branch = "1.6";
+    inherit (mesa.meta) platforms;
     description = "C++ based class library for building Graphical User Interfaces";
+
     longDescription = ''
       FOX stands for Free Objects for X.
       It is a C++ based class library for building Graphical User Interfaces.
       Initially, it was developed for LINUX, but the scope of this project has in the course of time become somewhat more ambitious.
       Current aims are to make FOX completely platform independent, and thus programs written against the FOX library will be only a compile away from running on a variety of platforms.
     '';
+
     homepage = "http://fox-toolkit.org";
     license = lib.licenses.lgpl3;
     maintainers = [ ];
-    inherit (mesa.meta) platforms;
+    branch = "1.6";
+    broken = stdenv.hostPlatform.isDarwin;
   };
 })

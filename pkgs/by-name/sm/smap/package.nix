@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   gitUpdater,
 }:
 
@@ -18,13 +18,12 @@ buildGoModule (finalAttrs: {
 
   vendorHash = "sha256-19plbD+ibjoqAA6gGhCvpO52z/VejJkRRh8ljBHN+qY=";
 
-  subPackages = [ "cmd/smap" ];
-
   ldflags = [
     "-s"
     "-w"
   ];
 
+  subPackages = [ "cmd/smap" ];
   passthru.updateScript = gitUpdater { };
 
   meta = {

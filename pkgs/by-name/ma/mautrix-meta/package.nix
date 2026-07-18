@@ -1,8 +1,8 @@
 {
-  buildGoModule,
-  fetchFromGitHub,
-  nix-update-script,
   lib,
+  fetchFromGitHub,
+  buildGoModule,
+  nix-update-script,
   nixosTests,
   olm,
   # This option enables the use of an experimental pure-Go implementation of the
@@ -16,20 +16,15 @@
 buildGoModule rec {
   pname = "mautrix-meta";
   version = "26.06";
-  tag = "v0.2606.0";
-
-  subPackages = [ "cmd/mautrix-meta" ];
 
   src = fetchFromGitHub {
+    inherit tag;
     owner = "mautrix";
     repo = "meta";
-    inherit tag;
     hash = "sha256-fpuJc2OAAvOPd/mbkboyx1cwXgMhBYZgILbbBS2R2ko=";
   };
 
   buildInputs = lib.optional (!withGoolm) olm;
-  tags = lib.optional withGoolm "goolm";
-
   vendorHash = "sha256-IW+xQbw+YQ5thqyIV5amfUSbOe543meXCNytzHf4p6A=";
 
   ldflags = [
@@ -38,6 +33,10 @@ buildGoModule rec {
     "-X"
     "main.Tag=${tag}"
   ];
+
+  subPackages = [ "cmd/mautrix-meta" ];
+  tag = "v0.2606.0";
+  tags = lib.optional withGoolm "goolm";
 
   passthru = {
     tests = {
@@ -51,13 +50,15 @@ buildGoModule rec {
   };
 
   meta = {
-    homepage = "https://github.com/mautrix/meta";
     description = "Matrix-Meta puppeting bridge";
+    homepage = "https://github.com/mautrix/meta";
     license = lib.licenses.agpl3Plus;
+
     maintainers = with lib.maintainers; [
       eyjhb
       sumnerevans
     ];
+
     mainProgram = "mautrix-meta";
   };
 }

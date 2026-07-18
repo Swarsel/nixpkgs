@@ -2,15 +2,15 @@
   lib,
   stdenv,
   fetchFromGitHub,
+  SDL2,
   cmake,
-  pkg-config,
   curl,
   dbus,
   ffmpeg,
   fmt_11,
   libwebp,
   mpv,
-  SDL2,
+  pkg-config,
   tinyxml-2,
   tweeny,
 }:
@@ -64,7 +64,7 @@ stdenv.mkDerivation (finalAttrs: {
     changelog = "https://github.com/dragonflylee/switchfin/blob/${finalAttrs.src.rev}/CHANGELOG.md";
     license = lib.licenses.asl20;
     maintainers = [ lib.maintainers.k900 ];
-    mainProgram = "Switchfin";
     platforms = lib.platforms.all;
+    mainProgram = "Switchfin";
   };
 })

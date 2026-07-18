@@ -1,37 +1,33 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # build-system
-  hatchling,
-
-  # optional-dependencies
-  # PySPX
-  pyspx,
-  # awskms
-  boto3,
-  botocore,
-  cryptography,
+  # hsm
+  asn1crypto,
   # azurekms
   azure-identity,
   azure-keyvault-keys,
-  # hsm
-  asn1crypto,
-  # gcpkms
-  google-cloud-kms,
-  # pynacl
-  pynacl,
-
+  # awskms
+  boto3,
+  botocore,
+  buildPythonPackage,
+  cryptography,
   # tests
   ed25519,
+  # gcpkms
+  google-cloud-kms,
+  # build-system
+  hatchling,
+  # pynacl
+  pynacl,
+  # optional-dependencies
+  # PySPX
+  pyspx,
   pytestCheckHook,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "securesystemslib";
   version = "1.4.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "secure-systems-lab";
@@ -45,44 +41,13 @@ buildPythonPackage (finalAttrs: {
       --replace-fail '"hatchling==1.29.0"' '"hatchling"'
   '';
 
-  build-system = [ hatchling ];
-
-  optional-dependencies = {
-    PySPX = [ pyspx ];
-    awskms = [
-      boto3
-      botocore
-      cryptography
-    ];
-    azurekms = [
-      azure-identity
-      azure-keyvault-keys
-      cryptography
-    ];
-    crypto = [ cryptography ];
-    gcpkms = [
-      cryptography
-      google-cloud-kms
-    ];
-    hsm = [
-      asn1crypto
-      cryptography
-      #   pykcs11
-    ];
-    pynacl = [ pynacl ];
-    # Circular dependency
-    # sigstore = [
-    #   sigstore
-    # ];
-  };
-
   nativeCheckInputs = [
     ed25519
     pytestCheckHook
   ]
   ++ lib.concatAttrValues finalAttrs.passthru.optional-dependencies;
 
-  pythonImportsCheck = [ "securesystemslib" ];
+  build-system = [ hatchling ];
 
   disabledTestPaths = [
     # pykcs11 is not available
@@ -90,6 +55,44 @@ buildPythonPackage (finalAttrs: {
     # Ignore vendorized tests
     "securesystemslib/_vendor/"
   ];
+
+  optional-dependencies = {
+    PySPX = [ pyspx ];
+
+    awskms = [
+      boto3
+      botocore
+      cryptography
+    ];
+
+    azurekms = [
+      azure-identity
+      azure-keyvault-keys
+      cryptography
+    ];
+
+    crypto = [ cryptography ];
+
+    gcpkms = [
+      cryptography
+      google-cloud-kms
+    ];
+
+    hsm = [
+      asn1crypto
+      cryptography
+      #   pykcs11
+    ];
+
+    pynacl = [ pynacl ];
+    # Circular dependency
+    # sigstore = [
+    #   sigstore
+    # ];
+  };
+
+  pyproject = true;
+  pythonImportsCheck = [ "securesystemslib" ];
 
   meta = {
     description = "Cryptographic and general-purpose routines";

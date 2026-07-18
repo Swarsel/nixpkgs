@@ -1,18 +1,13 @@
 {
   lib,
   fetchFromGitHub,
-  stdenvNoCC,
   installFonts,
+  stdenvNoCC,
 }:
 
 stdenvNoCC.mkDerivation {
   pname = "linden-hill";
   version = "2011-05-25";
-
-  outputs = [
-    "out"
-    "webfont"
-  ];
 
   src = fetchFromGitHub {
     owner = "theleagueof";
@@ -21,14 +16,21 @@ stdenvNoCC.mkDerivation {
     hash = "sha256-EjXcLjzVQeOJgLxGua8t0oMc+APOsONGGpG6VJVCgFw=";
   };
 
+  outputs = [
+    "out"
+    "webfont"
+  ];
+
   nativeBuildInputs = [ installFonts ];
 
   meta = {
     description = "Digital version of Frederic Goudy’s Deepdene";
+
     longDescription = ''
       Linden Hill is a digital version of Frederic Goudy’s Deepdene. The
       package includes roman and italic.
     '';
+
     homepage = "https://www.theleagueofmoveabletype.com/linden-hill";
     license = lib.licenses.ofl;
     maintainers = with lib.maintainers; [ minijackson ];

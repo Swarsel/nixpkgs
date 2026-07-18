@@ -1,20 +1,17 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
+  buildPythonPackage,
+  # tests
+  pytestCheckHook,
   # build-system
   setuptools,
   setuptools-scm,
-
-  # tests
-  pytestCheckHook,
 }:
 
 buildPythonPackage rec {
   pname = "sciform";
   version = "0.39.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "jagerber48";
@@ -23,14 +20,16 @@ buildPythonPackage rec {
     hash = "sha256-t43v3xnZap6NayzqBVvw2PzPzHZ5QPSEO5aRzS8AKKE=";
   };
 
+  nativeCheckInputs = [
+    pytestCheckHook
+  ];
+
   build-system = [
     setuptools
     setuptools-scm
   ];
 
-  nativeCheckInputs = [
-    pytestCheckHook
-  ];
+  pyproject = true;
 
   pythonImportsCheck = [
     "sciform"
@@ -39,9 +38,9 @@ buildPythonPackage rec {
   meta = {
     description = "Package for formatting numbers into scientific formatted strings";
     homepage = "https://sciform.readthedocs.io/en/stable/";
-    downloadPage = "https://github.com/jagerber48/sciform";
     changelog = "https://github.com/jagerber48/sciform/blob/${src.tag}/CHANGELOG.rst";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ doronbehar ];
+    downloadPage = "https://github.com/jagerber48/sciform";
   };
 }

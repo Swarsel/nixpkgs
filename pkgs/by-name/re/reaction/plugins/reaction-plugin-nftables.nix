@@ -1,14 +1,15 @@
 {
   nftables,
   pkg-config,
-  rustPlatform,
   reaction,
+  rustPlatform,
   ...
 }:
 reaction.mkReactionPlugin "reaction-plugin-nftables" {
-  buildInputs = [ nftables ];
   nativeBuildInputs = [
     rustPlatform.bindgenHook
     pkg-config
   ];
+
+  buildInputs = [ nftables ];
 }

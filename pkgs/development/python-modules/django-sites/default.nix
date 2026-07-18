@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   django,
   django-jinja,
   python,
@@ -10,7 +10,6 @@
 buildPythonPackage rec {
   pname = "django-sites";
   version = "0.11";
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "niwinz";
@@ -20,7 +19,6 @@ buildPythonPackage rec {
   };
 
   propagatedBuildInputs = [ django ];
-
   nativeCheckInputs = [ django-jinja ];
 
   checkPhase = ''
@@ -30,6 +28,8 @@ buildPythonPackage rec {
 
     runHook postCheck
   '';
+
+  format = "setuptools";
 
   meta = {
     description = "Alternative implementation of django sites framework";

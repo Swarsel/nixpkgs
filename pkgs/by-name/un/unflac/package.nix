@@ -17,9 +17,9 @@ buildGoModule (finalAttrs: {
     sha256 = "sha256-1Mpo1eBjfAudl7Lc6DUstEnWlY6G4ZFT9jm9JoWxPlk=";
   };
 
+  nativeBuildInputs = [ makeWrapper ];
   vendorHash = "sha256-rq+qfUiR8WJRyoLH/UQVKAorDmrbhHfNYRz6bL4uub4=";
 
-  nativeBuildInputs = [ makeWrapper ];
   postFixup = ''
     wrapProgram $out/bin/unflac --prefix PATH : "${lib.makeBinPath [ ffmpeg ]}"
   '';
@@ -28,8 +28,8 @@ buildGoModule (finalAttrs: {
     description = "Command line tool for fast frame accurate audio image + cue sheet splitting";
     homepage = "https://sr.ht/~ft/unflac/";
     license = lib.licenses.mit;
-    platforms = lib.platforms.all;
     maintainers = with lib.maintainers; [ felipeqq2 ];
+    platforms = lib.platforms.all;
     mainProgram = "unflac";
   };
 })

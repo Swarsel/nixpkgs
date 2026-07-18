@@ -1,16 +1,16 @@
 {
   lib,
-  stdenvNoCC,
   fetchurl,
-  dpkg,
   autoPatchelfHook,
+  coreutils,
+  dpkg,
+  file,
+  ghostscript,
+  gnugrep,
+  gnused,
   makeWrapper,
   perl,
-  gnused,
-  ghostscript,
-  file,
-  coreutils,
-  gnugrep,
+  stdenvNoCC,
   which,
 }:
 
@@ -34,27 +34,10 @@ stdenvNoCC.mkDerivation (finalAttrs: {
   pname = "mfcl5750dw";
   version = "3.5.1-1";
 
-  nativeBuildInputs = [
-    dpkg
-    makeWrapper
-    autoPatchelfHook
-  ];
-  buildInputs = [ perl ];
-
   src = fetchurl {
     url = "https://download.brother.com/welcome/dlf102614/mfcl5750dwcupswrapper-${finalAttrs.version}.i386.deb";
     sha256 = "afe6d18e17d26348f3b8a4f9a003107984940c429a7dd193054303a21f5e65b5";
   };
-
-  lpr_src = fetchurl {
-    url = "https://download.brother.com/welcome/dlf102613/mfcl5750dwlpr-${finalAttrs.version}.i386.deb";
-    sha256 = "b1b9c1f9ae8522a65fdd2db1e760aed835807ba593d001ac5471635a157cd1f1";
-  };
-
-  unpackPhase = ''
-    dpkg-deb -x $src .
-    dpkg-deb -x $lpr_src .
-  '';
 
   patches = [
     # The brother lpdwrapper uses a temporary file to convey the printer settings.
@@ -64,6 +47,14 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     # it shouldn't be a security concern.
     ./fix-perm.patch
   ];
+
+  nativeBuildInputs = [
+    dpkg
+    makeWrapper
+    autoPatchelfHook
+  ];
+
+  buildInputs = [ perl ];
 
   installPhase = ''
     runHook preInstall
@@ -109,11 +100,22 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     $out/share/cups/model/
     runHook postInstall
   '';
+
+  lpr_src = fetchurl {
+    sha256 = "b1b9c1f9ae8522a65fdd2db1e760aed835807ba593d001ac5471635a157cd1f1";
+    url = "https://download.brother.com/welcome/dlf102613/mfcl5750dwlpr-${finalAttrs.version}.i386.deb";
+  };
+
+  unpackPhase = ''
+    dpkg-deb -x $src .
+    dpkg-deb -x $lpr_src .
+  '';
+
   meta = {
-    homepage = "https://www.brother.com/";
     description = "Brother MFCL5750DW CUPS driver";
+    homepage = "https://www.brother.com/";
     license = lib.licenses.unfree;
-    platforms = map (arch: "${arch}-linux") arches;
     maintainers = with lib.maintainers; [ qdlmcfresh ];
+    platforms = map (arch: "${arch}-linux") arches;
   };
 })

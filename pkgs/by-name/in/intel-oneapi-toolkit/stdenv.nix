@@ -1,15 +1,12 @@
 {
-  kit,
-  stdenvNoCC,
   stdenv,
+  kit,
   overrideCC,
+  stdenvNoCC,
   wrapCCWith,
 }:
 let
   unwrappedCC = stdenvNoCC.mkDerivation {
-    name = "intel-oneapi-cc-unwrapped";
-    dontUnpack = true;
-
     # Note: use a wrapper script, not symlinks. The compiler inspects argv[0]
     #       to decide how to behave, so it must see itself invoked as
     #       icx/icpx. Through a symlink it would see clang/clang++ and
@@ -30,7 +27,7 @@ let
       chmod +x $out/bin/clang
     '';
 
-    passthru.isClang = true;
+    dontUnpack = true;
 
     # icpx rejects these flags for the SPIR-V device target (spir64-unknown-unknown).
     hardeningUnsupportedFlags = [
@@ -38,11 +35,14 @@ let
       "pacret"
       "shadowstack"
     ];
+
+    name = "intel-oneapi-cc-unwrapped";
+    passthru.isClang = true;
   };
 
   wrappedCC = wrapCCWith {
     cc = unwrappedCC;
-    extraPackages = [ kit ];
+
     extraBuildCommands = ''
       # Consumers expect the icpx/icx names and might reject clang++/clang.
       ln -s $out/bin/clang++ $out/bin/icpx
@@ -53,6 +53,8 @@ let
 
       echo "export ONEAPI_ROOT=\"${kit}\"" >> $out/nix-support/setup-hook
     '';
+
+    extraPackages = [ kit ];
   };
 in
 overrideCC stdenv wrappedCC

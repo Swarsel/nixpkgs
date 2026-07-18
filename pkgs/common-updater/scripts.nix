@@ -1,31 +1,22 @@
 {
   lib,
   stdenv,
-  makeWrapper,
   coreutils,
   diffutils,
   git,
   gnugrep,
   gnused,
   jq,
+  makeWrapper,
   nix,
   python3Packages,
 }:
 
 stdenv.mkDerivation {
-  name = "common-updater-scripts";
-
   nativeBuildInputs = [
     makeWrapper
     python3Packages.wrapPython
   ];
-
-  pythonPath = [
-    python3Packages.beautifulsoup4
-    python3Packages.requests
-  ];
-
-  dontUnpack = true;
 
   installPhase = ''
     mkdir -p $out/bin
@@ -52,4 +43,12 @@ stdenv.mkDerivation {
     makeWrapperArgs+=( --prefix PATH : "${lib.makeBinPath [ nix ]}" )
     wrapPythonPrograms
   '';
+
+  dontUnpack = true;
+  name = "common-updater-scripts";
+
+  pythonPath = [
+    python3Packages.beautifulsoup4
+    python3Packages.requests
+  ];
 }

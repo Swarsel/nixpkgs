@@ -55,19 +55,6 @@ stdenv.mkDerivation (finalAttrs: {
     "vxloader"
   ];
 
-  configurePhase = ''
-    runHook preConfigure
-
-    for tool in $TOOLSET; do
-      echo "Configuring $tool:"
-      pushd "$tool"
-      ./configure --prefix="$out"
-      popd
-    done
-
-    runHook postConfigure
-  '';
-
   buildPhase = ''
     runHook preBuild
 
@@ -94,6 +81,19 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  configurePhase = ''
+    runHook preConfigure
+
+    for tool in $TOOLSET; do
+      echo "Configuring $tool:"
+      pushd "$tool"
+      ./configure --prefix="$out"
+      popd
+    done
+
+    runHook postConfigure
+  '';
+
   fixupPhase = ''
     runHook preFixup
 
@@ -104,8 +104,8 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   meta = {
-    homepage = "http://www.alsa-project.org/";
     description = "ALSA Tools";
+    homepage = "http://www.alsa-project.org/";
     license = lib.licenses.gpl2Plus;
     maintainers = [ ];
     platforms = lib.platforms.linux;

@@ -1,16 +1,16 @@
 {
   lib,
-  fetchFromGitHub,
   stdenv,
-  yarn-berry_4,
-  nodejs_24,
-  electron_42,
-  makeWrapper,
-  ffmpeg-headless,
+  fetchFromGitHub,
   copyDesktopItems,
-  makeDesktopItem,
+  electron_42,
+  ffmpeg-headless,
   imagemagick,
+  makeDesktopItem,
+  makeWrapper,
   nix-update-script,
+  nodejs_24,
+  yarn-berry_4,
 }:
 let
   yarn-berry = yarn-berry_4;
@@ -48,12 +48,6 @@ stdenv.mkDerivation (finalAttrs: {
     done
   '';
 
-  env = {
-    ELECTRON_SKIP_BINARY_DOWNLOAD = "1";
-    ELECTRON_OVERRIDE_DIST_PATH = electron.dist;
-    NODE_ENV = "production";
-  };
-
   strictDeps = true;
 
   nativeBuildInputs = [
@@ -65,64 +59,10 @@ stdenv.mkDerivation (finalAttrs: {
     imagemagick
   ];
 
-  desktopItems = [
-    (makeDesktopItem {
-      name = "losslesscut";
-      desktopName = "LosslessCut";
-      comment = "simple video editor to trim or cut videos";
-      exec = "losslesscut";
-      icon = "losslesscut";
-      mimeTypes = [
-        "video/mpeg"
-        "video/x-mpeg"
-        "video/msvideo"
-        "video/quicktime"
-        "video/x-anim"
-        "video/x-avi"
-        "video/x-ms-asf"
-        "video/x-ms-wmv"
-        "video/x-msvideo"
-        "video/x-nsv"
-        "video/x-flc"
-        "video/x-fli"
-        "video/x-flv"
-        "video/vnd.rn-realvideo"
-        "video/mp4"
-        "video/mp4v-es"
-        "video/mp2t"
-        "application/ogg"
-        "application/x-ogg"
-        "video/x-ogm+ogg"
-        "audio/x-vorbis+ogg"
-        "application/x-matroska"
-        "audio/x-matroska"
-        "video/x-matroska"
-        "video/webm"
-      ];
-      terminal = false;
-      categories = [
-        "AudioVideo"
-        "AudioVideoEditing"
-      ];
-      keywords = [
-        "trim"
-        "codec"
-        "cut"
-        "movie"
-        "mpeg"
-        "avi"
-        "h264"
-        "mkv"
-        "mp4"
-      ];
-      startupWMClass = "losslesscut";
-    })
-  ];
-
-  missingHashes = ./missing-hashes.json;
-  offlineCache = yarn-berry.fetchYarnBerryDeps {
-    inherit (finalAttrs) src missingHashes patches;
-    hash = "sha256-o0u9dAoo0sTEV+kjQg8TjRNAIcx8fqfk79HsDwAXriA=";
+  env = {
+    ELECTRON_OVERRIDE_DIST_PATH = electron.dist;
+    ELECTRON_SKIP_BINARY_DOWNLOAD = "1";
+    NODE_ENV = "production";
   };
 
   postConfigure = ''
@@ -167,20 +107,88 @@ stdenv.mkDerivation (finalAttrs: {
 
   __structuredAttrs = true;
 
+  desktopItems = [
+    (makeDesktopItem {
+      categories = [
+        "AudioVideo"
+        "AudioVideoEditing"
+      ];
+
+      comment = "simple video editor to trim or cut videos";
+      desktopName = "LosslessCut";
+      exec = "losslesscut";
+      icon = "losslesscut";
+
+      keywords = [
+        "trim"
+        "codec"
+        "cut"
+        "movie"
+        "mpeg"
+        "avi"
+        "h264"
+        "mkv"
+        "mp4"
+      ];
+
+      mimeTypes = [
+        "video/mpeg"
+        "video/x-mpeg"
+        "video/msvideo"
+        "video/quicktime"
+        "video/x-anim"
+        "video/x-avi"
+        "video/x-ms-asf"
+        "video/x-ms-wmv"
+        "video/x-msvideo"
+        "video/x-nsv"
+        "video/x-flc"
+        "video/x-fli"
+        "video/x-flv"
+        "video/vnd.rn-realvideo"
+        "video/mp4"
+        "video/mp4v-es"
+        "video/mp2t"
+        "application/ogg"
+        "application/x-ogg"
+        "video/x-ogm+ogg"
+        "audio/x-vorbis+ogg"
+        "application/x-matroska"
+        "audio/x-matroska"
+        "video/x-matroska"
+        "video/webm"
+      ];
+
+      name = "losslesscut";
+      startupWMClass = "losslesscut";
+      terminal = false;
+    })
+  ];
+
+  missingHashes = ./missing-hashes.json;
+
+  offlineCache = yarn-berry.fetchYarnBerryDeps {
+    inherit (finalAttrs) src missingHashes patches;
+    hash = "sha256-o0u9dAoo0sTEV+kjQg8TjRNAIcx8fqfk79HsDwAXriA=";
+  };
+
   passthru.updateScript = nix-update-script { };
 
   meta = {
     description = "Swiss army knife of lossless video/audio editing";
     homepage = "https://losslesscut.app/";
     license = lib.licenses.gpl2Only;
-    maintainers = with lib.maintainers; [
-      shelvacu
-      ShamrockLee
-    ];
-    mainProgram = "losslesscut";
+
     sourceProvenance = with lib.sourceTypes; [
       fromSource
       binaryNativeCode # due to npm/yarn deps
     ];
+
+    maintainers = with lib.maintainers; [
+      shelvacu
+      ShamrockLee
+    ];
+
+    mainProgram = "losslesscut";
   };
 })

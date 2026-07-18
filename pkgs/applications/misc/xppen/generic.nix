@@ -1,23 +1,23 @@
 {
   lib,
   stdenv,
-  fetchzip,
   autoPatchelfHook,
-  qt5,
+  fetchzip,
+  hash,
   libusb1,
   pname,
-  version,
+  qt5,
   url,
-  hash,
+  version,
 }:
 
 stdenv.mkDerivation {
   inherit pname version;
 
   src = fetchzip {
-    name = "XPPenLinux${version}.tar.gz";
-    extension = "tar.gz";
     inherit url hash;
+    extension = "tar.gz";
+    name = "XPPenLinux${version}.tar.gz";
   };
 
   nativeBuildInputs = [
@@ -29,10 +29,6 @@ stdenv.mkDerivation {
     qt5.qtbase
     libusb1
   ];
-
-  dontConfigure = true;
-  dontBuild = true;
-  dontCheck = true;
 
   installPhase = ''
     runHook preInstall
@@ -55,16 +51,22 @@ stdenv.mkDerivation {
     runHook postInstall
   '';
 
+  dontBuild = true;
+  dontCheck = true;
+  dontConfigure = true;
+
   meta = {
     description = "XPPen driver";
-    downloadPage = "https://www.xp-pen.com/download/";
     homepage = "https://www.xp-pen.com/";
     license = lib.licenses.unfree;
-    mainProgram = "PenTablet";
+    sourceProvenance = [ lib.sourceTypes.binaryNativeCode ];
+
     maintainers = with lib.maintainers; [
       gepbird
     ];
+
     platforms = [ "x86_64-linux" ];
-    sourceProvenance = [ lib.sourceTypes.binaryNativeCode ];
+    mainProgram = "PenTablet";
+    downloadPage = "https://www.xp-pen.com/download/";
   };
 }

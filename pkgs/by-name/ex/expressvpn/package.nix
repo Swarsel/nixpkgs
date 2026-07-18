@@ -1,10 +1,10 @@
 {
+  lib,
+  fetchurl,
   autoPatchelfHook,
   buildFHSEnv,
   dpkg,
-  fetchurl,
   inotify-tools,
-  lib,
   stdenvNoCC,
   sysctl,
   writeScript,
@@ -32,19 +32,19 @@ let
       autoPatchelfHook
     ];
 
-    dontConfigure = true;
+    installPhase = ''
+      runHook preInstall
+      mv usr/ $out/
+      runHook postInstall
+    '';
+
     dontBuild = true;
+    dontConfigure = true;
 
     unpackPhase = ''
       runHook preUnpack
       dpkg --fsys-tarfile $src | tar --extract
       runHook postUnpack
-    '';
-
-    installPhase = ''
-      runHook preInstall
-      mv usr/ $out/
-      runHook postInstall
     '';
   };
 
@@ -52,10 +52,16 @@ let
     inherit version;
     pname = "expressvpnd";
 
+    # expressvpnd binary has hard-coded the path /sbin/sysctl hence below workaround.
+    extraBuildCommands = ''
+      mkdir -p sbin
+      chmod +w sbin
+      ln -s ${sysctl}/bin/sysctl sbin/sysctl
+    '';
+
     # When connected, it directly creates/deletes resolv.conf to change the DNS entries.
     # Since it's running in an FHS environment, it has no effect on actual resolv.conf.
     # Hence, place a watcher that updates host resolv.conf when FHS resolv.conf changes.
-
     # Mount the host's resolv.conf to the container's /etc/resolv.conf
     runScript = writeScript "${pname}-wrapper" ''
       mkdir -p /host/etc
@@ -71,16 +77,8 @@ let
       expressvpnd --client-version ${clientVersion} --client-build ${clientBuild}
     '';
 
-    # expressvpnd binary has hard-coded the path /sbin/sysctl hence below workaround.
-    extraBuildCommands = ''
-      mkdir -p sbin
-      chmod +w sbin
-      ln -s ${sysctl}/bin/sysctl sbin/sysctl
-    '';
-
     # The expressvpnd binary also uses hard-coded paths to the other binaries and files
     # it ships with, hence the FHS environment.
-
     targetPkgs =
       pkgs: with pkgs; [
         expressvpnBase
@@ -92,10 +90,6 @@ in
 stdenvNoCC.mkDerivation {
   inherit pname version;
 
-  dontUnpack = true;
-  dontConfigure = true;
-  dontBuild = true;
-
   installPhase = ''
     runHook preInstall
     mkdir -p $out/bin $out/share
@@ -105,11 +99,15 @@ stdenvNoCC.mkDerivation {
     runHook postInstall
   '';
 
+  dontBuild = true;
+  dontConfigure = true;
+  dontUnpack = true;
+
   meta = {
     description = "CLI client for ExpressVPN";
     homepage = "https://www.expressvpn.com";
     license = lib.licenses.unfree;
-    platforms = [ "x86_64-linux" ];
     maintainers = with lib.maintainers; [ yureien ];
+    platforms = [ "x86_64-linux" ];
   };
 }

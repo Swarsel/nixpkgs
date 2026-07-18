@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   installShellFiles,
   nix-update-script,
 }:
@@ -17,15 +17,8 @@ buildGoModule (finalAttrs: {
     hash = "sha256-TnoKATODjWk4e1w3VhRYLWGMdXMJzDyvQF8mtD6WRGA=";
   };
 
-  vendorHash = "sha256-Gq3tVwe39m5KGfkI3DEnQEQEGs/cLDCiwx6XFM61f6c=";
-
-  ldflags = [
-    "-w"
-    "-s"
-    "-X main.Version=${finalAttrs.version}"
-  ];
-
   nativeBuildInputs = [ installShellFiles ];
+  vendorHash = "sha256-Gq3tVwe39m5KGfkI3DEnQEQEGs/cLDCiwx6XFM61f6c=";
 
   postInstall = ''
     install -Dm744 ./assets/dsearch.service $out/lib/systemd/user/dsearch.service
@@ -38,6 +31,12 @@ buildGoModule (finalAttrs: {
       --zsh <($out/bin/dsearch completion zsh)
   '';
 
+  ldflags = [
+    "-w"
+    "-s"
+    "-X main.Version=${finalAttrs.version}"
+  ];
+
   passthru = {
     updateScript = nix-update-script { };
   };
@@ -47,8 +46,8 @@ buildGoModule (finalAttrs: {
     homepage = "https://github.com/AvengeMedia/danksearch";
     changelog = "https://github.com/AvengeMedia/danksearch/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.mit;
-    teams = [ lib.teams.danklinux ];
-    mainProgram = "dsearch";
     platforms = lib.platforms.unix;
+    mainProgram = "dsearch";
+    teams = [ lib.teams.danklinux ];
   };
 })

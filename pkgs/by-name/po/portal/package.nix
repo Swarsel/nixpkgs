@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule (finalAttrs: {
@@ -16,9 +16,8 @@ buildGoModule (finalAttrs: {
   };
 
   vendorHash = "sha256-SbNFi5DE3zhTUw0rsX6n+dpYcdDsaDh+zVUrfxgo/4g=";
-  subPackages = [ "cmd/portal/" ];
-
   ldflags = [ "-s -X main.version=${finalAttrs.version}" ]; # from: https://github.com/SpatiumPortae/portal/blob/master/Makefile#L3
+  subPackages = [ "cmd/portal/" ];
 
   meta = {
     description = "Quick and easy command-line file transfer utility from any computer to another";

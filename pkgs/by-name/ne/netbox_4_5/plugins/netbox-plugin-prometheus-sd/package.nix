@@ -1,23 +1,19 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # build-system
-  poetry-core,
-
+  buildPythonPackage,
   # dependencies
   django,
   netaddr,
   netbox,
+  # build-system
+  poetry-core,
   psycopg,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "netbox-plugin-prometheus-sd";
   version = "1.3.0";
-  pyproject = true;
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "FlxPeters";
@@ -31,6 +27,13 @@ buildPythonPackage (finalAttrs: {
       --replace-fail "from extras.plugins import PluginConfig" "from netbox.plugins import PluginConfig"
   '';
 
+  nativeCheckInputs = [ netbox ];
+
+  preFixup = ''
+    export PYTHONPATH=${netbox}/opt/netbox/netbox:$PYTHONPATH
+  '';
+
+  __structuredAttrs = true;
   build-system = [ poetry-core ];
 
   dependencies = [
@@ -39,12 +42,7 @@ buildPythonPackage (finalAttrs: {
     psycopg # not specified in pyproject.toml, but required at import time
   ];
 
-  nativeCheckInputs = [ netbox ];
-
-  preFixup = ''
-    export PYTHONPATH=${netbox}/opt/netbox/netbox:$PYTHONPATH
-  '';
-
+  pyproject = true;
   pythonImportsCheck = [ "netbox_prometheus_sd" ];
 
   meta = {

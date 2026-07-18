@@ -4,8 +4,6 @@
   wall,
 }:
 mkDerivation {
-  path = "sbin/shutdown";
-
   postPatch = ''
     sed -i 's/4550/0550/' $BSDSRCDIR/sbin/shutdown/Makefile
 
@@ -14,4 +12,6 @@ mkDerivation {
       --replace-fail /sbin/reboot ${reboot}/bin/reboot \
       --replace-fail /usr/bin/wall ${wall}/bin/wall
   '';
+
+  path = "sbin/shutdown";
 }

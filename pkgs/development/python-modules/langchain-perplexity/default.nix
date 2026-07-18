@@ -1,32 +1,26 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
+  buildPythonPackage,
+  # passthru
+  gitUpdater,
   # build-system
   hatchling,
-
   # dependencies
   langchain-core,
-  openai,
-  perplexityai,
-
   # tests
   langchain-tests,
+  openai,
+  perplexityai,
   pytest-asyncio,
   pytest-cov-stub,
   pytest-mock,
   pytestCheckHook,
-
-  # passthru
-  gitUpdater,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "langchain-perplexity";
   version = "1.4.0";
-  pyproject = true;
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "langchain-ai";
@@ -34,22 +28,6 @@ buildPythonPackage (finalAttrs: {
     tag = "langchain-perplexity==${finalAttrs.version}";
     hash = "sha256-YWVTghbLE6jXrkwS9shTdDr0pp4ILEVq+dgjg9njRhA=";
   };
-
-  sourceRoot = "${finalAttrs.src.name}/libs/partners/perplexity";
-
-  build-system = [ hatchling ];
-
-  dependencies = [
-    langchain-core
-    openai
-    perplexityai
-  ];
-
-  pythonRelaxDeps = [
-    # Each component release requests the exact latest core.
-    # That prevents us from updating individual components.
-    "langchain-core"
-  ];
 
   nativeCheckInputs = [
     langchain-tests
@@ -59,24 +37,43 @@ buildPythonPackage (finalAttrs: {
     pytestCheckHook
   ];
 
-  enabledTestPaths = [ "tests/unit_tests" ];
+  __structuredAttrs = true;
+  build-system = [ hatchling ];
 
+  dependencies = [
+    langchain-core
+    openai
+    perplexityai
+  ];
+
+  enabledTestPaths = [ "tests/unit_tests" ];
+  pyproject = true;
   pythonImportsCheck = [ "langchain_perplexity" ];
+
+  pythonRelaxDeps = [
+    # Each component release requests the exact latest core.
+    # That prevents us from updating individual components.
+    "langchain-core"
+  ];
+
+  sourceRoot = "${finalAttrs.src.name}/libs/partners/perplexity";
 
   passthru = {
     # python updater script sets the wrong tag
     skipBulkUpdate = true;
+
     updateScript = gitUpdater {
-      rev-prefix = "langchain-perplexity==";
       ignoredVersions = "a|b|dev|rc";
+      rev-prefix = "langchain-perplexity==";
     };
   };
 
   meta = {
-    changelog = "https://github.com/langchain-ai/langchain/releases/tag/${finalAttrs.src.tag}";
     description = "Build LangChain applications with Perplexity";
     homepage = "https://github.com/langchain-ai/langchain/tree/master/libs/partners/perplexity";
+    changelog = "https://github.com/langchain-ai/langchain/releases/tag/${finalAttrs.src.tag}";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       sarahec
     ];

@@ -1,18 +1,17 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
+  buildPythonPackage,
   gitUpdater,
-  pytestCheckHook,
   libcst,
+  pytestCheckHook,
   pyyaml,
+  setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "trubar";
   version = "0.3.4";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "janezd";
@@ -21,6 +20,7 @@ buildPythonPackage rec {
     hash = "sha256-ChKmeACEMnFcMYSdkdVlFiE3td171ihUS2A+qsP5ASk=";
   };
 
+  nativeCheckInputs = [ pytestCheckHook ];
   build-system = [ setuptools ];
 
   dependencies = [
@@ -28,10 +28,8 @@ buildPythonPackage rec {
     pyyaml
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "trubar" ];
-
-  nativeCheckInputs = [ pytestCheckHook ];
-
   passthru.updateScript = gitUpdater { };
 
   meta = {

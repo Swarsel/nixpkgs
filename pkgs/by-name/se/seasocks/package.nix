@@ -2,10 +2,10 @@
   lib,
   stdenv,
   fetchFromGitHub,
+  catch2,
   cmake,
   python3,
   zlib,
-  catch2,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -24,6 +24,7 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   nativeBuildInputs = [ cmake ];
+
   buildInputs = [
     zlib
     python3
@@ -32,10 +33,10 @@ stdenv.mkDerivation (finalAttrs: {
   doCheck = true;
 
   meta = {
-    homepage = "https://github.com/mattgodbolt/seasocks";
     description = "Tiny embeddable C++ HTTP and WebSocket server";
+    homepage = "https://github.com/mattgodbolt/seasocks";
     license = lib.licenses.bsd2;
-    platforms = lib.platforms.linux;
     maintainers = with lib.maintainers; [ fredeb ];
+    platforms = lib.platforms.linux;
   };
 })

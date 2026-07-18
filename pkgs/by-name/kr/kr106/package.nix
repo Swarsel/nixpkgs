@@ -2,11 +2,10 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  cmake,
-  pkg-config,
   alsa-lib,
-  freetype,
+  cmake,
   fontconfig,
+  freetype,
   libGL,
   libx11,
   libxcursor,
@@ -14,6 +13,7 @@
   libxinerama,
   libxrandr,
   nix-update-script,
+  pkg-config,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -24,9 +24,11 @@ stdenv.mkDerivation (finalAttrs: {
     owner = "kayrockscreenprinting";
     repo = "ultramaster_kr106";
     tag = "v${finalAttrs.version}";
-    fetchSubmodules = true;
     hash = "sha256-R0nvtdhhrT+ucpBSsWjJEUCInd4/0jDammlUsaCgL6M=";
+    fetchSubmodules = true;
   };
+
+  strictDeps = true;
 
   nativeBuildInputs = [
     cmake
@@ -70,10 +72,8 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
-  __structuredAttrs = true;
-  strictDeps = true;
-
   doInstallCheck = true;
+  __structuredAttrs = true;
 
   passthru = {
     updateScript = nix-update-script { };
@@ -82,11 +82,11 @@ stdenv.mkDerivation (finalAttrs: {
   meta = {
     description = "Synthesizer plugin emulating the Roland Juno-6, Juno-60 and Juno-106";
     homepage = "https://kayrock.org/kr106";
-    downloadPage = "https://github.com/kayrockscreenprinting/ultramaster_kr106";
     changelog = "https://kayrock.org/kr106/changelog.html";
     license = lib.licenses.gpl3Only;
     maintainers = with lib.maintainers; [ crop ];
     platforms = lib.platforms.linux;
     mainProgram = "kr106";
+    downloadPage = "https://github.com/kayrockscreenprinting/ultramaster_kr106";
   };
 })

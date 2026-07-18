@@ -1,9 +1,9 @@
 {
   lib,
-  buildGoModule,
-  fetchFromGitHub,
-  installShellFiles,
   stdenv,
+  fetchFromGitHub,
+  buildGoModule,
+  installShellFiles,
 }:
 
 buildGoModule (finalAttrs: {
@@ -17,11 +17,8 @@ buildGoModule (finalAttrs: {
     hash = "sha256-9zIksYz1si9YlDUhHvGVLqv7NEIiT0+UdinEk7j/J08=";
   };
 
-  vendorHash = "sha256-9jK3jKbFp+5WSQfMbNzwIB55bC5KScZOaFHItffTF00=";
-
-  subPackages = [ "cmd/sonos" ];
-
   nativeBuildInputs = [ installShellFiles ];
+  vendorHash = "sha256-9jK3jKbFp+5WSQfMbNzwIB55bC5KScZOaFHItffTF00=";
 
   postInstall = lib.optionalString (stdenv.buildPlatform.canExecute stdenv.hostPlatform) ''
     installShellCompletion --cmd sonos \
@@ -31,20 +28,23 @@ buildGoModule (finalAttrs: {
   '';
 
   __structuredAttrs = true;
+  subPackages = [ "cmd/sonos" ];
 
   meta = {
     description = "Control Sonos speakers from your terminal over LAN (UPnP/SOAP)";
+
     longDescription = ''
       sonoscli is a modern Go CLI to control Sonos speakers over your local
       network using UPnP/SOAP. Features include reliable SSDP discovery,
       coordinator-aware playback controls, grouping, queue management,
       favorites, scenes, Spotify integration via SMAPI, and live event watching.
     '';
+
     homepage = "https://github.com/steipete/sonoscli";
     changelog = "https://github.com/steipete/sonoscli/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.mit;
-    mainProgram = "sonos";
     maintainers = with lib.maintainers; [ j10ccc ];
     platforms = lib.platforms.unix;
+    mainProgram = "sonos";
   };
 })

@@ -1,12 +1,12 @@
 {
   lib,
   stdenv,
+  fetchFromGitHub,
   bleak,
   blockbuster,
   bluetooth-adapters,
   buildPythonPackage,
   dbus-fast,
-  fetchFromGitHub,
   poetry-core,
   pytest-asyncio,
   pytest-cov-stub,
@@ -16,7 +16,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "bleak-retry-connector";
   version = "4.6.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "Bluetooth-Devices";
@@ -24,6 +23,16 @@ buildPythonPackage (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-SGQ+9HjD6VhxZwmjh1K/EHbUIFE/bbtLBwmauU/IEJM=";
   };
+
+  # ModuleNotFoundError: No module named 'dbus_fast'
+  doCheck = stdenv.hostPlatform.isLinux;
+
+  nativeCheckInputs = [
+    blockbuster
+    pytest-asyncio
+    pytest-cov-stub
+    pytestCheckHook
+  ];
 
   build-system = [ poetry-core ];
 
@@ -35,16 +44,7 @@ buildPythonPackage (finalAttrs: {
     bluetooth-adapters
   ];
 
-  nativeCheckInputs = [
-    blockbuster
-    pytest-asyncio
-    pytest-cov-stub
-    pytestCheckHook
-  ];
-
-  # ModuleNotFoundError: No module named 'dbus_fast'
-  doCheck = stdenv.hostPlatform.isLinux;
-
+  pyproject = true;
   pythonImportsCheck = [ "bleak_retry_connector" ];
 
   meta = {

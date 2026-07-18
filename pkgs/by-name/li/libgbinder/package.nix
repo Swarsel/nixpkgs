@@ -1,10 +1,10 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
-  pkg-config,
   glib,
   libglibutil,
+  pkg-config,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -23,6 +23,13 @@ stdenv.mkDerivation (finalAttrs: {
     "dev"
   ];
 
+  postPatch = ''
+    # Fix pkg-config and ranlib names for cross-compilation
+    substituteInPlace Makefile \
+      --replace "pkg-config" "$PKG_CONFIG" \
+      --replace "ranlib" "$RANLIB"
+  '';
+
   nativeBuildInputs = [
     pkg-config
   ];
@@ -32,22 +39,10 @@ stdenv.mkDerivation (finalAttrs: {
     libglibutil
   ];
 
-  postPatch = ''
-    # Fix pkg-config and ranlib names for cross-compilation
-    substituteInPlace Makefile \
-      --replace "pkg-config" "$PKG_CONFIG" \
-      --replace "ranlib" "$RANLIB"
-  '';
-
   makeFlags = [
     "LIBDIR=$(out)/lib"
     "INSTALL_INCLUDE_DIR=$(dev)/include/gbinder"
     "INSTALL_PKGCONFIG_DIR=$(dev)/lib/pkgconfig"
-  ];
-
-  installTargets = [
-    "install"
-    "install-dev"
   ];
 
   postInstall = ''
@@ -55,11 +50,16 @@ stdenv.mkDerivation (finalAttrs: {
     sed -i -e "s@Cflags: @Cflags: $($PKG_CONFIG --cflags libglibutil) @g" $dev/lib/pkgconfig/$pname.pc
   '';
 
+  installTargets = [
+    "install"
+    "install-dev"
+  ];
+
   meta = {
     description = "GLib-style interface to binder";
     homepage = "https://github.com/mer-hybris/libgbinder";
     license = lib.licenses.bsd3;
-    platforms = lib.platforms.linux;
     maintainers = [ ];
+    platforms = lib.platforms.linux;
   };
 })

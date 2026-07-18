@@ -1,13 +1,12 @@
 {
   lib,
-  python3,
   fetchFromGitHub,
+  python3,
 }:
 
 python3.pkgs.buildPythonApplication (finalAttrs: {
   pname = "csvs-to-sqlite";
   version = "1.3.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "simonw";
@@ -15,6 +14,11 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     rev = finalAttrs.version;
     hash = "sha256-hjimoIoHJdDyKzoJfWdRONUh7yLsR/d8n8zYbb6BKhk=";
   };
+
+  nativeCheckInputs = with python3.pkgs; [
+    cogapp
+    pytestCheckHook
+  ];
 
   build-system = with python3.pkgs; [
     setuptools
@@ -28,18 +32,15 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     six
   ];
 
-  pythonRelaxDeps = [
-    "click"
-  ];
-
-  nativeCheckInputs = with python3.pkgs; [
-    cogapp
-    pytestCheckHook
-  ];
-
   disabledTests = [
     # Test needs to be adjusted for click >= 8.
     "test_if_cog_needs_to_be_run"
+  ];
+
+  pyproject = true;
+
+  pythonRelaxDeps = [
+    "click"
   ];
 
   meta = {

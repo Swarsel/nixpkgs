@@ -2,19 +2,19 @@
   lib,
   stdenv,
   fetchFromGitLab,
-  meson,
-  ninja,
-  pkg-config,
-  vala,
-  desktop-file-utils,
   appstream,
   appstream-glib,
   blueprint-compiler,
-  wrapGAppsHook4,
+  desktop-file-utils,
+  gst_all_1,
   libadwaita,
   libgee,
-  gst_all_1,
+  meson,
+  ninja,
+  pkg-config,
   sqlite,
+  vala,
+  wrapGAppsHook4,
   xxhash,
 }:
 
@@ -64,7 +64,7 @@ stdenv.mkDerivation (finalAttrs: {
     changelog = "https://gitlab.com/daikhan/daikhan/-/blob/${finalAttrs.version}/NEWS";
     license = lib.licenses.agpl3Only;
     maintainers = [ ];
-    mainProgram = "daikhan";
     platforms = lib.platforms.linux;
+    mainProgram = "daikhan";
   };
 })

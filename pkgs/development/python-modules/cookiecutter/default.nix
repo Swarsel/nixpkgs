@@ -1,33 +1,29 @@
 {
   lib,
-  buildPythonPackage,
-  fetchPypi,
-  isPyPy,
+  arrow,
   bash,
-  setuptools,
-  pytestCheckHook,
-  pytest-cov-stub,
-  pytest-mock,
+  binaryornot,
+  buildPythonPackage,
+  click,
+  fetchPypi,
   freezegun,
   git,
+  isPyPy,
   jinja2,
-  binaryornot,
-  click,
   jinja2-time,
-  requests,
+  pytest-cov-stub,
+  pytest-mock,
+  pytestCheckHook,
   python-slugify,
   pyyaml,
-  arrow,
+  requests,
   rich,
+  setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "cookiecutter";
   version = "2.6.0";
-  pyproject = true;
-
-  # not sure why this is broken
-  disabled = isPyPy;
 
   src = fetchPypi {
     inherit pname version;
@@ -41,8 +37,6 @@ buildPythonPackage rec {
       --replace-fail "/bin/bash" "${lib.getExe bash}"
   '';
 
-  build-system = [ setuptools ];
-
   nativeCheckInputs = [
     pytestCheckHook
     pytest-cov-stub
@@ -50,6 +44,12 @@ buildPythonPackage rec {
     freezegun
     git
   ];
+
+  preCheck = ''
+    export HOME="$(mktemp -d)"
+  '';
+
+  build-system = [ setuptools ];
 
   dependencies = [
     binaryornot
@@ -63,23 +63,23 @@ buildPythonPackage rec {
     rich
   ];
 
-  pythonImportsCheck = [ "cookiecutter.main" ];
-
-  preCheck = ''
-    export HOME="$(mktemp -d)"
-  '';
+  # not sure why this is broken
+  disabled = isPyPy;
 
   disabledTests = [
     # messes with $PYTHONPATH
     "test_should_invoke_main"
   ];
 
+  pyproject = true;
+  pythonImportsCheck = [ "cookiecutter.main" ];
+
   meta = {
+    description = "Command-line utility that creates projects from project templates";
     homepage = "https://github.com/audreyr/cookiecutter";
     changelog = "https://github.com/cookiecutter/cookiecutter/blob/${version}/HISTORY.md";
-    description = "Command-line utility that creates projects from project templates";
-    mainProgram = "cookiecutter";
     license = lib.licenses.bsd3;
     maintainers = with lib.maintainers; [ kragniz ];
+    mainProgram = "cookiecutter";
   };
 }

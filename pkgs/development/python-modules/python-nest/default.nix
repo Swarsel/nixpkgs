@@ -11,7 +11,6 @@
 buildPythonPackage rec {
   pname = "python-nest";
   version = "4.2.0";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
@@ -27,7 +26,7 @@ buildPythonPackage rec {
 
   # Module has no tests
   doCheck = false;
-
+  format = "setuptools";
   pythonImportsCheck = [ "nest" ];
 
   meta = {

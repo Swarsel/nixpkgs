@@ -1,8 +1,8 @@
 {
   lib,
-  stdenvNoCC,
   fetchurl,
   nix-update-script,
+  stdenvNoCC,
   undmg,
 }:
 
@@ -25,6 +25,8 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     else
       throw "Unsupported architecture";
 
+  nativeBuildInputs = [ undmg ];
+
   installPhase = ''
     runHook preInstall
 
@@ -34,21 +36,18 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
-  nativeBuildInputs = [ undmg ];
-  sourceRoot = ".";
-
   dontBuild = true;
   dontFixup = true;
-
+  sourceRoot = ".";
   passthru.updateScript = nix-update-script { };
 
   meta = {
     description = "Burning through your subscriptions too fast? Paying for stuff you never use? Stop guessing. OpenUsage is free and open source.";
     homepage = "https://www.openusage.ai/";
     changelog = "https://github.com/robinebers/openusage/releases/tag/v${finalAttrs.version}";
-    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
-    platforms = lib.platforms.darwin;
     license = lib.licenses.mit;
+    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
     maintainers = with lib.maintainers; [ myzel394 ];
+    platforms = lib.platforms.darwin;
   };
 })

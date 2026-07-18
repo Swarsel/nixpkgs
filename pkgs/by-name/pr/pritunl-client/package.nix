@@ -2,21 +2,21 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  nix-update-script,
-  runtimeShell,
-  runCommand,
-  makeWrapper,
-  installShellFiles,
   buildGoModule,
   coreutils,
-  which,
+  electron,
   gnugrep,
   gnused,
-  openresolv,
-  systemd,
+  installShellFiles,
   iproute2,
+  makeWrapper,
+  nix-update-script,
+  openresolv,
   openvpn,
-  electron,
+  runCommand,
+  runtimeShell,
+  systemd,
+  which,
   wireguard-tools,
   withWireguard ? stdenv.hostPlatform.isLinux,
 }:
@@ -30,26 +30,21 @@ let
   };
 
   cli = buildGoModule {
-    pname = "pritunl-cli";
     inherit version src;
-
-    modRoot = "cli";
+    pname = "pritunl-cli";
     vendorHash = "sha256-xozdrNKBgrrCZ5WYHGWKOuuGrEhx/VzOKLZTGq3scoo=";
 
     postInstall = ''
       mv $out/bin/cli $out/bin/pritunl-client
     '';
+
+    modRoot = "cli";
     passthru.updateScript = nix-update-script { };
   };
 
   service = buildGoModule {
-    pname = "pritunl-client-service";
     inherit version src;
-
-    modRoot = "service";
-    vendorHash = "sha256-3dgBiCqWj+nwWn9mFARBKIpgjn2aJYvVUrqMIzhToQs=";
-
-    nativeBuildInputs = [ makeWrapper ];
+    pname = "pritunl-client-service";
 
     postPatch = ''
       sed -Ei service/connection/scripts.go \
@@ -61,6 +56,9 @@ let
         -e 's|(/usr)?/s?bin/resolvectl\b|resolvectl|g' \
         -e 's|(/usr)?/s?bin/ip\b|ip|g'
     '';
+
+    nativeBuildInputs = [ makeWrapper ];
+    vendorHash = "sha256-3dgBiCqWj+nwWn9mFARBKIpgjn2aJYvVUrqMIzhToQs=";
 
     postInstall = ''
       mv $out/bin/service $out/bin/pritunl-client-service
@@ -109,15 +107,14 @@ let
         wrapProgram $out/bin/pritunl-client-service \
           --prefix PATH : "${lib.makeBinPath pritunlDeps}"
       '';
+
+    modRoot = "service";
     passthru.updateScript = nix-update-script { };
   };
 in
 stdenv.mkDerivation {
-  pname = "pritunl-client";
   inherit version src;
-
-  dontBuild = true;
-  dontConfigure = true;
+  pname = "pritunl-client";
 
   nativeBuildInputs = [
     makeWrapper
@@ -160,11 +157,15 @@ stdenv.mkDerivation {
     runHook postInstall
   '';
 
+  dontBuild = true;
+  dontConfigure = true;
   passthru.updateScript = nix-update-script { };
+
   meta = {
     description = "Pritunl OpenVPN client";
     homepage = "https://client.pritunl.com/";
     license = lib.licenses.unfree;
+
     maintainers = with lib.maintainers; [
       minizilla
       andrevmatos

@@ -1,26 +1,26 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchurl,
   autoPatchelfHook,
-  makeWrapper,
   c-ares,
   ffmpeg,
+  libappindicator,
+  libappindicator-gtk3,
   libevent,
+  libgbm,
+  libnotify,
   libvpx,
+  libxdamage,
+  libxscrnsaver,
   libxslt,
   libxtst,
-  libxscrnsaver,
-  libxdamage,
+  makeWrapper,
   minizip,
   nss,
   re2,
   snappy,
-  libnotify,
-  libappindicator-gtk3,
-  libappindicator,
   udev,
-  libgbm,
 }:
 
 stdenv.mkDerivation rec {
@@ -31,10 +31,6 @@ stdenv.mkDerivation rec {
     url = "https://web.archive.org/web/20211130190525/https://download.tetrd.app/files/tetrd.linux_amd64.pkg.tar.xz";
     sha256 = "1bxp7rg2dm9nnvkgg48xd156d0jgdf35flaw0bwzkkh3zz9ysry2";
   };
-
-  sourceRoot = ".";
-  dontConfigure = true;
-  dontBuild = true;
 
   nativeBuildInputs = [
     autoPatchelfHook
@@ -78,11 +74,15 @@ stdenv.mkDerivation rec {
     substituteInPlace $out/share/applications/tetrd.desktop --replace /opt $out/opt
   '';
 
+  dontBuild = true;
+  dontConfigure = true;
+  sourceRoot = ".";
+
   meta = {
     description = "Share your internet connection from your device to your PC and vice versa through a USB cable";
     homepage = "https://tetrd.app";
-    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
     license = lib.licenses.unfree;
+    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
     platforms = [ "x86_64-linux" ];
   };
 }

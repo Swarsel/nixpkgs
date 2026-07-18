@@ -1,9 +1,9 @@
 {
   lib,
+  fetchFromGitHub,
   aiohttp,
   aresponses,
   buildPythonPackage,
-  fetchFromGitHub,
   fetchpatch,
   poetry-core,
   pytest-aiohttp,
@@ -14,7 +14,6 @@
 buildPythonPackage rec {
   pname = "aioflo";
   version = "2021.11.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "bachya";
@@ -25,18 +24,12 @@ buildPythonPackage rec {
 
   patches = [
     (fetchpatch {
+      hash = "sha256-iLgklhEZ61rrdzQoO6rp1HGZcqLsqGNitwIiPNLNHQ4=";
       # Clean-up, https://github.com/bachya/aioflo/pull/65
       name = "clean-up-build-dependencies.patch";
       url = "https://github.com/bachya/aioflo/commit/f38d3f6427777ab0eeb56177943679e2570f0634.patch";
-      hash = "sha256-iLgklhEZ61rrdzQoO6rp1HGZcqLsqGNitwIiPNLNHQ4=";
     })
   ];
-
-  build-system = [ poetry-core ];
-
-  dependencies = [ aiohttp ];
-
-  __darwinAllowLocalNetworking = true;
 
   nativeCheckInputs = [
     aresponses
@@ -45,12 +38,17 @@ buildPythonPackage rec {
     pytestCheckHook
   ];
 
-  pythonImportsCheck = [ "aioflo" ];
+  __darwinAllowLocalNetworking = true;
+  build-system = [ poetry-core ];
+  dependencies = [ aiohttp ];
 
   disabledTests = [
     # test is out-dated
     "test_system_modes"
   ];
+
+  pyproject = true;
+  pythonImportsCheck = [ "aioflo" ];
 
   meta = {
     description = "Python library for Flo by Moen Smart Water Detectors";

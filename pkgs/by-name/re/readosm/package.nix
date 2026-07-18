@@ -3,8 +3,8 @@
   stdenv,
   fetchurl,
   expat,
-  zlib,
   validatePkgConfig,
+  zlib,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -23,18 +23,19 @@ stdenv.mkDerivation (finalAttrs: {
     zlib
   ];
 
-  enableParallelBuilding = true;
-
   doCheck = true;
+  enableParallelBuilding = true;
 
   meta = {
     description = "Open source library to extract valid data from within an Open Street Map input file";
     homepage = "https://www.gaia-gis.it/fossil/readosm";
+
     license = with lib.licenses; [
       mpl11
       gpl2Plus
       lgpl21Plus
     ];
+
     platforms = lib.platforms.unix;
   };
 })

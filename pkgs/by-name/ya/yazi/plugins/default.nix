@@ -16,8 +16,8 @@ let
       {
         pname,
         src,
-        meta ? { },
         installPhase ? null,
+        meta ? { },
         ...
       }@args:
       let
@@ -49,15 +49,7 @@ let
 
               runHook postInstall
             '';
-        meta = meta // {
-          description = meta.description or "";
-          platforms = meta.platforms or lib.platforms.all;
-          homepage =
-            if (src ? owner && src.owner == "yazi-rs") then
-              "https://github.com/yazi-rs/plugins/tree/main/${pname}"
-            else
-              meta.homepage or null;
-        };
+
         passthru = (args.passthru or { }) // {
           updateScript = {
             command = writeShellScript "update-${pluginName}" ''
@@ -65,8 +57,21 @@ let
               export PLUGIN_PNAME="${pname}"
               exec ${updateScript}
             '';
+
             supportedFeatures = [ "commit" ];
           };
+        };
+
+        meta = meta // {
+          description = meta.description or "";
+
+          homepage =
+            if (src ? owner && src.owner == "yazi-rs") then
+              "https://github.com/yazi-rs/plugins/tree/main/${pname}"
+            else
+              meta.homepage or null;
+
+          platforms = meta.platforms or lib.platforms.all;
         };
       };
   };

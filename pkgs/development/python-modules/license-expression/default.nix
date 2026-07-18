@@ -1,8 +1,8 @@
 {
   lib,
+  fetchFromGitHub,
   boolean-py,
   buildPythonPackage,
-  fetchFromGitHub,
   pytestCheckHook,
   setuptools-scm,
 }:
@@ -10,7 +10,6 @@
 buildPythonPackage rec {
   pname = "license-expression";
   version = "30.4.4";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "aboutcode-org";
@@ -19,14 +18,11 @@ buildPythonPackage rec {
     hash = "sha256-Bgkm0nhu/jeqtg3444R2encCtfzd7xnwyCXlZWaYSQ0=";
   };
 
-  dontConfigure = true;
-
-  build-system = [ setuptools-scm ];
-
-  dependencies = [ boolean-py ];
-
   nativeCheckInputs = [ pytestCheckHook ];
-
+  build-system = [ setuptools-scm ];
+  dependencies = [ boolean-py ];
+  dontConfigure = true;
+  pyproject = true;
   pythonImportsCheck = [ "license_expression" ];
 
   meta = {

@@ -1,7 +1,7 @@
 {
   lib,
-  stdenvNoCC,
   fetchFromGitHub,
+  stdenvNoCC,
 }:
 
 stdenvNoCC.mkDerivation {
@@ -30,7 +30,7 @@ stdenvNoCC.mkDerivation {
     longDescription = "Hanken Grotesk is a sans serif typeface inspired by the classic grotesques.";
     homepage = "https://github.com/marcologous/hanken-grotesk";
     license = lib.licenses.ofl;
-    platforms = lib.platforms.all;
     maintainers = with lib.maintainers; [ bricked ];
+    platforms = lib.platforms.all;
   };
 }

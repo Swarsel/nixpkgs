@@ -2,17 +2,17 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  fetchpatch,
-  cmake,
-  pkg-config,
-  libjack2,
   alsa-lib,
+  cmake,
+  fetchpatch,
   freetype,
+  libjack2,
   libx11,
-  libxrandr,
-  libxinerama,
-  libxext,
   libxcursor,
+  libxext,
+  libxinerama,
+  libxrandr,
+  pkg-config,
 }:
 
 let
@@ -20,6 +20,7 @@ let
   # Derived from subprojects/function2.wrap
   function2 = rec {
     version = "4.1.0";
+
     src = fetchFromGitHub {
       owner = "Naios";
       repo = "function2";
@@ -30,6 +31,7 @@ let
 
   juce = {
     version = "unstable-2021-04-07";
+
     src = fetchFromGitHub {
       owner = "juce-framework";
       repo = "JUCE";
@@ -46,34 +48,18 @@ stdenv.mkDerivation {
   src = fetchFromGitHub {
     owner = "robbert-vdh";
     repo = "diopser";
-    fetchSubmodules = true;
     rev = "d5fdc92f1caf5a828e071dac99e106e58f06d84d";
     sha256 = "06y1h895yxh44gp4vxzrna59lf7nlfw7aacd3kk4l1g56jhy9pdx";
+    fetchSubmodules = true;
   };
 
   patches = [
     (fetchpatch {
+      hash = "sha256-r3yxhnhPUQ47srhfAKeurpe2xyEBdSvqIbgqs9/6gD4=";
       name = "fix-gcc-11-build.patch";
       url = "https://github.com/robbert-vdh/diopser/commit/a7284439bd4e23455132e7806a214f9db12efae9.patch";
-      hash = "sha256-r3yxhnhPUQ47srhfAKeurpe2xyEBdSvqIbgqs9/6gD4=";
     })
   ];
-
-  postUnpack = ''
-    (
-      cd "$sourceRoot"
-      cp -R --no-preserve=mode,ownership ${function2.src} function2
-      cp -R --no-preserve=mode,ownership ${juce.src} JUCE
-      sed -i 's@CPMAddPackage("gh:juce-framework/JUCE.*@add_subdirectory(JUCE)@g' CMakeLists.txt
-      sed -i 's@CPMAddPackage("gh:Naios/function2.*@add_subdirectory(function2)@g' CMakeLists.txt
-      patchShebangs .
-    )
-  '';
-
-  installPhase = ''
-    mkdir -p $out/lib/vst3
-    cp -r Diopser_artefacts/Release/VST3/Diopser.vst3 $out/lib/vst3
-  '';
 
   nativeBuildInputs = [
     cmake
@@ -95,6 +81,22 @@ stdenv.mkDerivation {
     "-DCMAKE_AR=${stdenv.cc.cc}/bin/gcc-ar"
     "-DCMAKE_RANLIB=${stdenv.cc.cc}/bin/gcc-ranlib"
   ];
+
+  installPhase = ''
+    mkdir -p $out/lib/vst3
+    cp -r Diopser_artefacts/Release/VST3/Diopser.vst3 $out/lib/vst3
+  '';
+
+  postUnpack = ''
+    (
+      cd "$sourceRoot"
+      cp -R --no-preserve=mode,ownership ${function2.src} function2
+      cp -R --no-preserve=mode,ownership ${juce.src} JUCE
+      sed -i 's@CPMAddPackage("gh:juce-framework/JUCE.*@add_subdirectory(JUCE)@g' CMakeLists.txt
+      sed -i 's@CPMAddPackage("gh:Naios/function2.*@add_subdirectory(function2)@g' CMakeLists.txt
+      patchShebangs .
+    )
+  '';
 
   meta = {
     description = "Totally original phase rotation plugin";

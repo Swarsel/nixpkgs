@@ -1,11 +1,11 @@
 {
   lib,
+  stdenv,
   bison,
   bluez,
   flex,
   mkAppleDerivation,
   sourceRelease,
-  stdenv,
   stdenvNoCC,
   unifdef,
   # Provided for compatibility with the top-level derivation.
@@ -17,8 +17,6 @@ let
   xnu = sourceRelease "xnu";
 
   privateHeaders = stdenvNoCC.mkDerivation {
-    name = "libpcap-deps-private-headers";
-
     nativeBuildInputs = [ unifdef ];
 
     buildCommand = ''
@@ -65,11 +63,11 @@ let
       #include_next <sys/sockio.h>
       EOF
     '';
+
+    name = "libpcap-deps-private-headers";
   };
 in
 mkAppleDerivation {
-  releaseName = "libpcap";
-
   postPatch = ''
     substituteInPlace libpcap/Makefile.in \
       --replace-fail '@PLATFORM_C_SRC@' '@PLATFORM_C_SRC@ pcap-darwin.c pcap-util.c pcapng.c'
@@ -77,23 +75,25 @@ mkAppleDerivation {
       --replace-fail '#if PRIVATE' '#if 1'
   '';
 
+  nativeBuildInputs = [
+    bison
+    flex
+  ]
+  ++ lib.optionals withBluez [ bluez.dev ];
+
   configureFlags = [
     (lib.withFeatureAs true "pcap" (if stdenv.hostPlatform.isLinux then "linux" else "bpf"))
     (lib.enableFeature withRemote "remote")
   ]
   ++ lib.optionals stdenv.hostPlatform.isDarwin [ (lib.enableFeature false "universal") ];
 
+  env.NIX_CFLAGS_COMPILE = "-DHAVE_PKTAP_API -I${privateHeaders}/include";
+
   preConfigure = ''
     cd libpcap
   '';
 
-  env.NIX_CFLAGS_COMPILE = "-DHAVE_PKTAP_API -I${privateHeaders}/include";
-
-  nativeBuildInputs = [
-    bison
-    flex
-  ]
-  ++ lib.optionals withBluez [ bluez.dev ];
+  releaseName = "libpcap";
 
   meta = {
     description = "Packet Capture Library (with Apple modifications)";

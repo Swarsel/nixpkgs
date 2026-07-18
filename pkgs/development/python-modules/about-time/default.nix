@@ -8,7 +8,6 @@
 buildPythonPackage rec {
   pname = "about-time";
   version = "4.2.2";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "rsalmei";
@@ -23,7 +22,7 @@ buildPythonPackage rec {
   '';
 
   build-system = [ setuptools ];
-
+  pyproject = true;
   pythonImportsCheck = [ "about_time" ];
 
   meta = {

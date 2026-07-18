@@ -1,12 +1,12 @@
 {
+  lib,
+  fetchFromGitHub,
   appstream,
   blueprint-compiler,
   desktop-file-utils,
-  fetchFromGitHub,
   gettext,
   glib,
   gtk4,
-  lib,
   libadwaita,
   meson,
   ninja,
@@ -19,7 +19,6 @@
 python3Packages.buildPythonApplication (finalAttrs: {
   pname = "ticketbooth";
   version = "1.2.0";
-  pyproject = false;
 
   src = fetchFromGitHub {
     owner = "aleiepure";
@@ -41,12 +40,12 @@ python3Packages.buildPythonApplication (finalAttrs: {
     wrapGAppsHook4
   ];
 
-  mesonFlags = [
-    (lib.mesonBool "prerelease" false)
-  ];
-
   buildInputs = [
     libadwaita
+  ];
+
+  mesonFlags = [
+    (lib.mesonBool "prerelease" false)
   ];
 
   dependencies = with python3Packages; [
@@ -55,15 +54,16 @@ python3Packages.buildPythonApplication (finalAttrs: {
     tmdbsimple
   ];
 
+  pyproject = false;
   passthru.updateScript = nix-update-script { };
 
   meta = {
-    changelog = "https://github.com/aleiepure/ticketbooth/releases/tag/${finalAttrs.src.tag}";
     description = "Keep track of your favorite shows";
     homepage = "https://github.com/aleiepure/ticketbooth";
+    changelog = "https://github.com/aleiepure/ticketbooth/releases/tag/${finalAttrs.src.tag}";
     license = lib.licenses.gpl3Plus;
-    mainProgram = "ticketbooth";
     maintainers = [ lib.maintainers.dotlambda ];
     platforms = lib.platforms.linux;
+    mainProgram = "ticketbooth";
   };
 })

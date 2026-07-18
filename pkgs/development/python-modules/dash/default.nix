@@ -1,46 +1,40 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  yarnConfigHook,
-  fetchYarnDeps,
-  nodejs,
-
-  setuptools,
-
-  flask,
-  werkzeug,
-  plotly,
-  dash-html-components,
+  buildPythonPackage,
+  celery,
   dash-core-components,
+  dash-html-components,
   dash-table,
+  diskcache,
+  fetchYarnDeps,
+  flaky,
+  flask,
+  flask-compress,
   importlib-metadata,
-  typing-extensions,
+  kombu,
+  mock,
+  multiprocess,
+  nest-asyncio,
+  nodejs,
+  numpy,
+  plotly,
+  psutil,
+  pytest-mock,
+  pytestCheckHook,
+  pyyaml,
+  redis,
   requests,
   retrying,
-  nest-asyncio,
-
-  celery,
-  kombu,
-  redis,
-  diskcache,
-  multiprocess,
-  psutil,
-  flask-compress,
-
-  flaky,
-  numpy,
-  pytestCheckHook,
-  pytest-mock,
-  mock,
-  pyyaml,
+  setuptools,
+  typing-extensions,
+  werkzeug,
+  yarnConfigHook,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "dash";
   version = "3.4.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "plotly";
@@ -53,11 +47,6 @@ buildPythonPackage (finalAttrs: {
     yarnConfigHook
     nodejs
   ];
-
-  yarnOfflineCache = fetchYarnDeps {
-    yarnLock = "${finalAttrs.src}/@plotly/dash-jupyterlab/yarn.lock";
-    hash = "sha256-Nvm9BS55q/HW9ArpHD01F5Rmx8PLS3yqaz1yDK8Sg68=";
-  };
 
   # as of writing this yarnConfigHook has no parameter that changes in which directory it will be run
   # until then we use preConfigure for entering the directory and preBuild for exiting it
@@ -75,6 +64,17 @@ buildPythonPackage (finalAttrs: {
     popd
   '';
 
+  nativeCheckInputs = [
+    flaky
+    numpy
+    psutil
+    pytestCheckHook
+    pytest-mock
+    mock
+    pyyaml
+    redis
+  ];
+
   build-system = [ setuptools ];
 
   dependencies = [
@@ -91,9 +91,13 @@ buildPythonPackage (finalAttrs: {
     nest-asyncio
   ];
 
-  pythonRelaxDeps = [
-    "werkzeug"
-    "flask"
+  disabledTestPaths = [
+    "tests/unit/test_browser.py"
+    "tests/unit/test_app_runners.py" # Uses selenium
+  ];
+
+  enabledTestPaths = [
+    "tests/unit"
   ];
 
   optional-dependencies = {
@@ -103,40 +107,33 @@ buildPythonPackage (finalAttrs: {
       redis
     ]
     ++ celery.optional-dependencies.redis;
+
+    compress = [ flask-compress ];
+
     diskcache = [
       diskcache
       multiprocess
       psutil
     ];
-    compress = [ flask-compress ];
   };
 
-  nativeCheckInputs = [
-    flaky
-    numpy
-    psutil
-    pytestCheckHook
-    pytest-mock
-    mock
-    pyyaml
-    redis
-  ];
-
-  enabledTestPaths = [
-    "tests/unit"
-  ];
-
-  disabledTestPaths = [
-    "tests/unit/test_browser.py"
-    "tests/unit/test_app_runners.py" # Uses selenium
-  ];
-
+  pyproject = true;
   pythonImportsCheck = [ "dash" ];
 
+  pythonRelaxDeps = [
+    "werkzeug"
+    "flask"
+  ];
+
+  yarnOfflineCache = fetchYarnDeps {
+    hash = "sha256-Nvm9BS55q/HW9ArpHD01F5Rmx8PLS3yqaz1yDK8Sg68=";
+    yarnLock = "${finalAttrs.src}/@plotly/dash-jupyterlab/yarn.lock";
+  };
+
   meta = {
-    changelog = "https://github.com/plotly/dash/blob/${finalAttrs.src.rev}/CHANGELOG.md";
     description = "Python framework for building analytical web applications";
     homepage = "https://dash.plot.ly/";
+    changelog = "https://github.com/plotly/dash/blob/${finalAttrs.src.rev}/CHANGELOG.md";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ tomasajt ];
   };

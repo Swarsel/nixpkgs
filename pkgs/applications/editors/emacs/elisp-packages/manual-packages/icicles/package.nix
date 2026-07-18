@@ -16,8 +16,8 @@ melpaBuild {
   };
 
   meta = {
-    homepage = "https://emacswiki.org/emacs/Icicles";
     description = "Emacs library that enhances minibuffer completion";
+    homepage = "https://emacswiki.org/emacs/Icicles";
     license = lib.licenses.gpl2Plus;
     maintainers = [ ];
   };

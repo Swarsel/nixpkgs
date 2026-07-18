@@ -23,16 +23,6 @@ stdenv.mkDerivation {
     sha256 = "0q4bizlb1ykzdp4ca0kld6xm5ml9q866xrj3ijffcnyiyqr51qr8";
   };
 
-  # The capnproto *source* is required to build ekam.
-  # https://github.com/capnproto/ekam/issues/5
-  #
-  # Specifically, the git version of the source is required, as
-  # capnproto release tarballs do not include ekam rule files.
-  postUnpack = ''
-    mkdir -p $sourceRoot/deps
-    cp -r ${capnproto.src} $sourceRoot/deps/capnproto
-  '';
-
   postPatch = ''
     # A single capnproto test file expects to be able to write to
     # /var/tmp.  We change it to use /tmp because /var is not available
@@ -40,6 +30,10 @@ stdenv.mkDerivation {
     substituteInPlace deps/capnproto/c++/src/kj/filesystem-disk-test.c++ \
       --replace "/var/tmp" "/tmp"
   '';
+
+  makeFlags = [
+    "PARALLEL=$(NIX_BUILD_CORES)"
+  ];
 
   # NIX_ENFORCE_PURITY prevents ld from linking against anything outside
   # of the nix store -- but ekam builds capnp locally and links against it,
@@ -49,10 +43,6 @@ stdenv.mkDerivation {
   preBuild = ''
     unset NIX_ENFORCE_PURITY
   '';
-
-  makeFlags = [
-    "PARALLEL=$(NIX_BUILD_CORES)"
-  ];
 
   installPhase = ''
     mkdir $out
@@ -64,16 +54,28 @@ stdenv.mkDerivation {
     rm $out/bin/ekam-bootstrap
   '';
 
+  # The capnproto *source* is required to build ekam.
+  # https://github.com/capnproto/ekam/issues/5
+  #
+  # Specifically, the git version of the source is required, as
+  # capnproto release tarballs do not include ekam rule files.
+  postUnpack = ''
+    mkdir -p $sourceRoot/deps
+    cp -r ${capnproto.src} $sourceRoot/deps/capnproto
+  '';
+
   meta = {
     description = ''Build system ("make" in reverse)'';
+
     longDescription = ''
       Ekam ("make" spelled backwards) is a build system which automatically
       figures out what to build and how to build it purely based on the
       source code. No separate "makefile" is needed.
     '';
+
     homepage = "https://github.com/capnproto/ekam";
     license = lib.licenses.asl20;
-    platforms = lib.platforms.linux;
     maintainers = [ lib.maintainers.garrison ];
+    platforms = lib.platforms.linux;
   };
 }

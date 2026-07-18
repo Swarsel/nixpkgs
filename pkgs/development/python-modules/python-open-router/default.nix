@@ -1,23 +1,22 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  poetry-core,
   aiohttp,
-  yarl,
+  aioresponses,
+  buildPythonPackage,
   mashumaro,
   orjson,
-  pytestCheckHook,
+  poetry-core,
   pytest-asyncio,
   pytest-cov-stub,
-  aioresponses,
+  pytestCheckHook,
   syrupy,
+  yarl,
 }:
 
 buildPythonPackage rec {
   pname = "python-open-router";
   version = "0.4.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "joostlek";
@@ -25,6 +24,14 @@ buildPythonPackage rec {
     tag = "v${version}";
     hash = "sha256-hf8Ay3/xXH262/1R07mN0iQpOlHFhHb6VUZoYQEq8YI=";
   };
+
+  nativeCheckInputs = [
+    pytestCheckHook
+    pytest-asyncio
+    pytest-cov-stub
+    aioresponses
+    syrupy
+  ];
 
   build-system = [ poetry-core ];
 
@@ -35,14 +42,7 @@ buildPythonPackage rec {
     orjson
   ];
 
-  nativeCheckInputs = [
-    pytestCheckHook
-    pytest-asyncio
-    pytest-cov-stub
-    aioresponses
-    syrupy
-  ];
-
+  pyproject = true;
   pythonImportsCheck = [ "python_open_router" ];
 
   meta = {

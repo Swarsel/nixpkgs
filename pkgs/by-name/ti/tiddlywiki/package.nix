@@ -3,8 +3,8 @@
   stdenv,
   fetchFromGitHub,
   makeBinaryWrapper,
-  nodejs,
   nix-update-script,
+  nodejs,
 }:
 
 stdenv.mkDerivation (finalAttrs: {

@@ -2,16 +2,16 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  cmake,
-  pkg-config,
   R,
-  readline,
-  gmp,
-  zlib,
-  librdf_raptor2,
-  writeShellScript,
-  nix-update,
+  cmake,
   common-updater-scripts,
+  gmp,
+  librdf_raptor2,
+  nix-update,
+  pkg-config,
+  readline,
+  writeShellScript,
+  zlib,
 }:
 
 stdenv.mkDerivation {
@@ -61,12 +61,13 @@ stdenv.mkDerivation {
   '';
 
   meta = {
+    description = "ISO-compatible high-performance Prolog compiler";
+    homepage = "https://github.com/vscosta/yap";
+    license = lib.licenses.artistic2;
+    platforms = lib.platforms.linux;
+
     # linux 32 bit build fails.
     broken =
       (stdenv.hostPlatform.isLinux && stdenv.hostPlatform.isAarch64) || !stdenv.hostPlatform.is64bit;
-    homepage = "https://github.com/vscosta/yap";
-    description = "ISO-compatible high-performance Prolog compiler";
-    license = lib.licenses.artistic2;
-    platforms = lib.platforms.linux;
   };
 }

@@ -1,87 +1,81 @@
 {
   lib,
   stdenv,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # build-system
-  flit-core,
-
+  accelerate,
   # dependencies
   aiohttp,
+  # full
+  ase,
+  buildPythonPackage,
+  datasets,
+  # rag
+  faiss,
+  # build-system
+  flit-core,
   fsspec,
+  graphviz,
+  h5py,
+  # modelhub
+  huggingface-hub,
+  # dev
+  ipython,
   jinja2,
-  numpy,
-  psutil,
-  pyparsing,
-  requests,
-  torch,
-  tqdm,
-  xxhash,
-
+  json-repair,
+  langgraph,
   # optional-dependencies
   # benchmark
   matplotlib,
-  networkx,
-  pandas,
-  protobuf,
-  wandb,
-  # dev
-  ipython,
   matplotlib-inline,
-  pre-commit,
-  torch-geometric,
-  # full
-  ase,
-  graphviz,
-  h5py,
+  networkx,
   numba,
-  opt-einsum,
-  pynndescent,
-  rdflib,
-  rdkit,
-  scikit-image,
-  scikit-learn,
-  scipy,
-  statsmodels,
-  sympy,
-  tabulate,
-  torchmetrics,
-  trimesh,
-  # graphgym
-  pytorch-lightning,
-  yacs,
-  # modelhub
-  huggingface-hub,
-  # rag
-  faiss,
-  json-repair,
-  langgraph,
-  openai,
-  # pcst-fast,
-  pyyaml,
-  datasets,
-  transformers,
-  sentencepiece,
-  accelerate,
-  peft,
+  numpy,
   # test
   onnx,
   onnxruntime,
+  openai,
+  opt-einsum,
+  pandas,
+  peft,
+  pre-commit,
+  protobuf,
+  psutil,
+  pynndescent,
+  pyparsing,
   pytest,
   pytest-cov-stub,
-
   # tests
   pytestCheckHook,
-  writableTmpDirAsHomeHook,
   pythonAtLeast,
+  # graphgym
+  pytorch-lightning,
+  # pcst-fast,
+  pyyaml,
+  rdflib,
+  rdkit,
+  requests,
+  scikit-image,
+  scikit-learn,
+  scipy,
+  sentencepiece,
+  statsmodels,
+  sympy,
+  tabulate,
+  torch,
+  torch-geometric,
+  torchmetrics,
+  tqdm,
+  transformers,
+  trimesh,
+  wandb,
+  writableTmpDirAsHomeHook,
+  xxhash,
+  yacs,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "torch-geometric";
   version = "2.8.0";
-  pyproject = true;
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "pyg-team";
@@ -89,6 +83,13 @@ buildPythonPackage (finalAttrs: {
     tag = finalAttrs.version;
     hash = "sha256-O2W/68DtVimDR4wQb5UVJcqzuZv7GG+CxCj7rqNu9iE=";
   };
+
+  nativeCheckInputs = [
+    pytestCheckHook
+    writableTmpDirAsHomeHook
+  ];
+
+  __structuredAttrs = true;
 
   build-system = [
     flit-core
@@ -107,91 +108,23 @@ buildPythonPackage (finalAttrs: {
     xxhash
   ];
 
-  optional-dependencies = {
-    benchmark = [
-      matplotlib
-      networkx
-      pandas
-      protobuf
-      wandb
+  disabledTestPaths =
+    lib.optionals stdenv.hostPlatform.isDarwin [
+      # MPS (Metal) tests are failing when using `libtorch_cpu`.
+      # Crashes in `structured_cat_out_mps`
+      "test/nn/models/test_deep_graph_infomax.py::test_infomax_predefined_model[mps]"
+      "test/nn/norm/test_instance_norm.py::test_instance_norm[True-mps]"
+      "test/nn/norm/test_instance_norm.py::test_instance_norm[False-mps]"
+      "test/nn/norm/test_layer_norm.py::test_layer_norm[graph-True-mps]"
+      "test/nn/norm/test_layer_norm.py::test_layer_norm[graph-False-mps]"
+      "test/nn/norm/test_layer_norm.py::test_layer_norm[node-True-mps]"
+      "test/nn/norm/test_layer_norm.py::test_layer_norm[node-False-mps]"
+      "test/utils/test_scatter.py::test_group_cat[mps]"
+    ]
+    ++ lib.optionals (pythonAtLeast "3.14") [
+      # AttributeError: '...' object has no attribute '__annotations__'
+      "test/nn/aggr/test_aggr_utils.py"
     ];
-    dev = [
-      ipython
-      matplotlib-inline
-      pre-commit
-      torch-geometric
-    ];
-    full = [
-      ase
-      # captum
-      graphviz
-      h5py
-      matplotlib
-      networkx
-      numba
-      opt-einsum
-      pandas
-      # pgmpy
-      pynndescent
-      # pytorch-memlab
-      rdflib
-      rdkit
-      scikit-image
-      scikit-learn
-      scipy
-      statsmodels
-      sympy
-      tabulate
-      torch-geometric
-      torchmetrics
-      trimesh
-    ];
-    graphgym = [
-      protobuf
-      pytorch-lightning
-      yacs
-    ];
-    modelhub = [
-      huggingface-hub
-    ];
-    rag = [
-      faiss
-      json-repair
-      langgraph
-      openai
-      # pcst-fast (unpackaged)
-      pyyaml
-      datasets
-      transformers
-      pandas
-      sentencepiece
-      accelerate
-      torchmetrics
-      peft
-    ];
-    test = [
-      onnx
-      onnxruntime
-      # onnxscript (unpackaged)
-      pytest
-      pytest-cov-stub
-    ];
-  };
-
-  pythonImportsCheck = [ "torch_geometric" ];
-
-  nativeCheckInputs = [
-    pytestCheckHook
-    writableTmpDirAsHomeHook
-  ];
-
-  pytestFlags = [
-    # DeprecationWarning: Failing to pass a value to the 'type_params' parameter of
-    # 'typing._eval_type' is deprecated, as it leads to incorrect behaviour when calling
-    # typing._eval_type on a stringified annotation that references a PEP 695 type parameter.
-    # It will be disallowed in Python 3.15.
-    "-Wignore::DeprecationWarning"
-  ];
 
   disabledTests = [
     # RuntimeError: addmm: computation on CPU is not implemented for SparseCsr + SparseCsr @ SparseCsr without MKL.
@@ -298,23 +231,94 @@ buildPythonPackage (finalAttrs: {
     "test_tuple_output_jit"
   ];
 
-  disabledTestPaths =
-    lib.optionals stdenv.hostPlatform.isDarwin [
-      # MPS (Metal) tests are failing when using `libtorch_cpu`.
-      # Crashes in `structured_cat_out_mps`
-      "test/nn/models/test_deep_graph_infomax.py::test_infomax_predefined_model[mps]"
-      "test/nn/norm/test_instance_norm.py::test_instance_norm[True-mps]"
-      "test/nn/norm/test_instance_norm.py::test_instance_norm[False-mps]"
-      "test/nn/norm/test_layer_norm.py::test_layer_norm[graph-True-mps]"
-      "test/nn/norm/test_layer_norm.py::test_layer_norm[graph-False-mps]"
-      "test/nn/norm/test_layer_norm.py::test_layer_norm[node-True-mps]"
-      "test/nn/norm/test_layer_norm.py::test_layer_norm[node-False-mps]"
-      "test/utils/test_scatter.py::test_group_cat[mps]"
-    ]
-    ++ lib.optionals (pythonAtLeast "3.14") [
-      # AttributeError: '...' object has no attribute '__annotations__'
-      "test/nn/aggr/test_aggr_utils.py"
+  optional-dependencies = {
+    benchmark = [
+      matplotlib
+      networkx
+      pandas
+      protobuf
+      wandb
     ];
+
+    dev = [
+      ipython
+      matplotlib-inline
+      pre-commit
+      torch-geometric
+    ];
+
+    full = [
+      ase
+      # captum
+      graphviz
+      h5py
+      matplotlib
+      networkx
+      numba
+      opt-einsum
+      pandas
+      # pgmpy
+      pynndescent
+      # pytorch-memlab
+      rdflib
+      rdkit
+      scikit-image
+      scikit-learn
+      scipy
+      statsmodels
+      sympy
+      tabulate
+      torch-geometric
+      torchmetrics
+      trimesh
+    ];
+
+    graphgym = [
+      protobuf
+      pytorch-lightning
+      yacs
+    ];
+
+    modelhub = [
+      huggingface-hub
+    ];
+
+    rag = [
+      faiss
+      json-repair
+      langgraph
+      openai
+      # pcst-fast (unpackaged)
+      pyyaml
+      datasets
+      transformers
+      pandas
+      sentencepiece
+      accelerate
+      torchmetrics
+      peft
+    ];
+
+    test = [
+      onnx
+      onnxruntime
+      # onnxscript (unpackaged)
+      pytest
+      pytest-cov-stub
+    ];
+  };
+
+  pyproject = true;
+
+  pytestFlags = [
+    # DeprecationWarning: Failing to pass a value to the 'type_params' parameter of
+    # 'typing._eval_type' is deprecated, as it leads to incorrect behaviour when calling
+    # typing._eval_type on a stringified annotation that references a PEP 695 type parameter.
+    # It will be disallowed in Python 3.15.
+    "-Wignore::DeprecationWarning"
+  ];
+
+  pythonImportsCheck = [ "torch_geometric" ];
 
   meta = {
     description = "Graph Neural Network Library for PyTorch";

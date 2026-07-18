@@ -10,13 +10,13 @@
 
 {
   name,
-  url ? null,
+  fixedExtid ? null,
+  hash ? "",
   sha1 ? "",
   sha256 ? "",
   sha512 ? "",
-  fixedExtid ? null,
-  hash ? "",
   src ? "",
+  url ? null,
 }:
 
 let
@@ -26,21 +26,25 @@ let
       src
     else
       fetchurl {
-        url = url;
         inherit
           sha1
           sha256
           sha512
           hash
           ;
+
+        url = url;
       };
 in
 stdenv.mkDerivation {
   inherit name;
 
-  passthru = {
-    inherit extid;
-  };
+  nativeBuildInputs = [
+    jq
+    strip-nondeterminism
+    unzip
+    zip
+  ];
 
   builder = writeScript "xpibuilder" ''
     echo "firefox addon $name into $out"
@@ -56,10 +60,7 @@ stdenv.mkDerivation {
     rm -r "$out/$UUID"
   '';
 
-  nativeBuildInputs = [
-    jq
-    strip-nondeterminism
-    unzip
-    zip
-  ];
+  passthru = {
+    inherit extid;
+  };
 }

@@ -17,9 +17,7 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   buildInputs = [ libmrss ];
-
   makeFlags = [ "prefix=$(out)" ];
-  enableParallelBuilding = true;
 
   env = lib.optionalAttrs stdenv.hostPlatform.isDarwin {
     NIX_LDFLAGS = "-liconv";
@@ -27,17 +25,20 @@ stdenv.mkDerivation (finalAttrs: {
 
   # just runs cppcheck linter
   doCheck = false;
+  enableParallelBuilding = true;
 
   meta = {
     description = "Monitor RSS feeds for new entries";
-    mainProgram = "rsstail";
+
     longDescription = ''
       RSSTail is more or less an RSS reader: it monitors an RSS feed and if it
       detects a new entry it'll emit only that new entry.
     '';
+
     homepage = "https://www.vanheusden.com/rsstail/";
     license = lib.licenses.gpl2Only;
     maintainers = [ lib.maintainers.Necior ];
     platforms = lib.platforms.unix;
+    mainProgram = "rsstail";
   };
 })

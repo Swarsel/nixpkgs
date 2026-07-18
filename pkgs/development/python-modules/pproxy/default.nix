@@ -1,19 +1,18 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  pycryptodome,
-  uvloop,
-  asyncssh,
   aioquic,
+  asyncssh,
+  buildPythonPackage,
+  pycryptodome,
   python-daemon,
   setuptools,
+  uvloop,
 }:
 
 buildPythonPackage rec {
   pname = "pproxy";
   version = "2.7.9";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "qwj";
@@ -23,26 +22,7 @@ buildPythonPackage rec {
   };
 
   nativeBuildInputs = [ setuptools ];
-
-  optional-dependencies = {
-    accelerated = [
-      pycryptodome
-      uvloop
-    ];
-    sshtunnel = [ asyncssh ];
-    quic = [ aioquic ];
-    daemon = [ python-daemon ];
-  };
-
   nativeCheckInputs = lib.concatAttrValues optional-dependencies;
-
-  pythonImportsCheck = [ "pproxy" ];
-
-  disabledTests = [
-    # Tests try to connect to outside Internet, so disabled
-    "api_server"
-    "api_client"
-  ];
 
   # test suite doesn't use test runner. so need to run ``python ./tests/*``
   checkPhase = ''
@@ -53,11 +33,31 @@ buildPythonPackage rec {
     done
   '';
 
+  disabledTests = [
+    # Tests try to connect to outside Internet, so disabled
+    "api_server"
+    "api_client"
+  ];
+
+  optional-dependencies = {
+    accelerated = [
+      pycryptodome
+      uvloop
+    ];
+
+    daemon = [ python-daemon ];
+    quic = [ aioquic ];
+    sshtunnel = [ asyncssh ];
+  };
+
+  pyproject = true;
+  pythonImportsCheck = [ "pproxy" ];
+
   meta = {
     description = "Proxy server that can tunnel among remote servers by regex rules";
-    mainProgram = "pproxy";
     homepage = "https://github.com/qwj/python-proxy";
     license = lib.licenses.mit;
     maintainers = [ lib.maintainers.ryand56 ];
+    mainProgram = "pproxy";
   };
 }

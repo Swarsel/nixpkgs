@@ -1,8 +1,8 @@
 {
-  stdenvNoCC,
   lib,
   fetchFromGitHub,
   gitUpdater,
+  stdenvNoCC,
 }:
 
 stdenvNoCC.mkDerivation (finalAttrs: {
@@ -17,12 +17,13 @@ stdenvNoCC.mkDerivation (finalAttrs: {
   };
 
   strictDeps = true;
-  dontConfigure = true;
-  dontBuild = true;
 
   installPhase = ''
     install -D zsh-completion-sync.plugin.zsh  $out/share/zsh-completion-sync/zsh-completion-sync.plugin.zsh
   '';
+
+  dontBuild = true;
+  dontConfigure = true;
 
   passthru.updateScript = gitUpdater {
     rev-prefix = "v";
@@ -32,10 +33,12 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     description = "Automatically loads completions added dynamically to FPATH or XDG_DATA_DIRS";
     homepage = "https://github.com/BronzeDeer/zsh-completion-sync";
     license = lib.licenses.asl20;
-    platforms = lib.platforms.unix;
+
     maintainers = with lib.maintainers; [
       ambroisie
       BronzeDeer
     ];
+
+    platforms = lib.platforms.unix;
   };
 })

@@ -2,9 +2,9 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  nawk,
   groff,
   icon-lang,
+  nawk,
   useIcon ? true,
 }:
 
@@ -19,7 +19,10 @@ stdenv.mkDerivation (finalAttrs: {
     sha256 = "sha256-COcWyrYkheRaSr2gqreRRsz9SYRTX2PSl7km+g98ljs=";
   };
 
-  sourceRoot = "${finalAttrs.src.name}/src";
+  outputs = [
+    "out"
+    "tex"
+  ];
 
   patches = [
     # Remove FAQ
@@ -34,16 +37,16 @@ stdenv.mkDerivation (finalAttrs: {
   nativeBuildInputs = [ groff ] ++ lib.optionals useIcon [ icon-lang ];
   buildInputs = [ nawk ];
 
-  preBuild = ''
-    mkdir -p "$out/lib/noweb"
-  '';
-
   makeFlags =
     lib.optionals useIcon [
       "LIBSRC=icon"
       "ICONC=icont"
     ]
     ++ [ "CC=${stdenv.cc.targetPrefix}cc" ];
+
+  preBuild = ''
+    mkdir -p "$out/lib/noweb"
+  '';
 
   preInstall = ''
     mkdir -p "$tex/tex/latex/noweb"
@@ -55,12 +58,6 @@ stdenv.mkDerivation (finalAttrs: {
         "TEXINPUTS=${placeholder "tex"}/tex/latex/noweb"   \
     )
   '';
-
-  installTargets = [
-    "install-code"
-    "install-tex"
-    "install-elisp"
-  ];
 
   postInstall = ''
     substituteInPlace "$out/bin/cpif" --replace "PATH=/bin:/usr/bin" ""
@@ -83,10 +80,13 @@ stdenv.mkDerivation (finalAttrs: {
     ln -s "$tex" "$out/share/texmf"
   '';
 
-  outputs = [
-    "out"
-    "tex"
+  installTargets = [
+    "install-code"
+    "install-tex"
+    "install-elisp"
   ];
+
+  sourceRoot = "${finalAttrs.src.name}/src";
 
   meta = {
     description = "Simple, extensible literate-programming tool";

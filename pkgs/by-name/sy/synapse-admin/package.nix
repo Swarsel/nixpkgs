@@ -2,11 +2,11 @@
   lib,
   stdenv,
   fetchFromGitHub,
+  cacert,
+  formats,
+  nix-update-script,
   nodejs,
   yarn-berry,
-  cacert,
-  nix-update-script,
-  formats,
   baseUrl ? null,
 }:
 
@@ -33,60 +33,10 @@ stdenv.mkDerivation (finalAttrs: {
     ./yarn-4.14-support.patch
   ];
 
-  # we cannot use fetchYarnDeps because that doesn't support yarn 2/berry lockfiles
-  yarnOfflineCache = stdenv.mkDerivation {
-    pname = "yarn-deps";
-    inherit (finalAttrs) version src patches;
-
-    nativeBuildInputs = [ yarn-berry ];
-
-    dontInstall = true;
-
-    env = {
-      YARN_ENABLE_TELEMETRY = 0;
-      NODE_EXTRA_CA_CERTS = "${cacert}/etc/ssl/certs/ca-bundle.crt";
-    };
-
-    supportedArchitectures = builtins.toJSON {
-      os = [
-        "darwin"
-        "linux"
-      ];
-      cpu = [
-        "arm"
-        "arm64"
-        "ia32"
-        "x64"
-      ];
-      libc = [
-        "glibc"
-        "musl"
-      ];
-    };
-
-    configurePhase = ''
-      runHook preConfigure
-
-      export HOME="$NIX_BUILD_TOP"
-      yarn config set enableGlobalCache false
-      yarn config set cacheFolder $out
-      yarn config set --json supportedArchitectures "$supportedArchitectures"
-
-      runHook postConfigure
-    '';
-
-    buildPhase = ''
-      runHook preBuild
-
-      mkdir -p $out
-      yarn install --immutable --mode skip-build
-
-      runHook postBuild
-    '';
-
-    outputHash = "sha256-IiViodAB1KAYsRRr8+zw3vrCbUYp7Mdtazi0Y6SEFNU=";
-    outputHashMode = "recursive";
-  };
+  postPatch = ''
+    substituteInPlace vite.config.ts \
+      --replace-fail "git describe --tags" "echo ${finalAttrs.version}"
+  '';
 
   nativeBuildInputs = [
     nodejs
@@ -96,21 +46,6 @@ stdenv.mkDerivation (finalAttrs: {
   env = {
     NODE_ENV = "production";
   };
-
-  postPatch = ''
-    substituteInPlace vite.config.ts \
-      --replace-fail "git describe --tags" "echo ${finalAttrs.version}"
-  '';
-
-  configurePhase = ''
-    runHook preConfigure
-
-    export HOME="$NIX_BUILD_TOP"
-    yarn config set enableGlobalCache false
-    yarn config set cacheFolder $yarnOfflineCache
-
-    runHook postConfigure
-  '';
 
   buildPhase = ''
     runHook preBuild
@@ -130,6 +65,71 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  configurePhase = ''
+    runHook preConfigure
+
+    export HOME="$NIX_BUILD_TOP"
+    yarn config set enableGlobalCache false
+    yarn config set cacheFolder $yarnOfflineCache
+
+    runHook postConfigure
+  '';
+
+  # we cannot use fetchYarnDeps because that doesn't support yarn 2/berry lockfiles
+  yarnOfflineCache = stdenv.mkDerivation {
+    inherit (finalAttrs) version src patches;
+    pname = "yarn-deps";
+    nativeBuildInputs = [ yarn-berry ];
+
+    env = {
+      NODE_EXTRA_CA_CERTS = "${cacert}/etc/ssl/certs/ca-bundle.crt";
+      YARN_ENABLE_TELEMETRY = 0;
+    };
+
+    buildPhase = ''
+      runHook preBuild
+
+      mkdir -p $out
+      yarn install --immutable --mode skip-build
+
+      runHook postBuild
+    '';
+
+    configurePhase = ''
+      runHook preConfigure
+
+      export HOME="$NIX_BUILD_TOP"
+      yarn config set enableGlobalCache false
+      yarn config set cacheFolder $out
+      yarn config set --json supportedArchitectures "$supportedArchitectures"
+
+      runHook postConfigure
+    '';
+
+    dontInstall = true;
+    outputHash = "sha256-IiViodAB1KAYsRRr8+zw3vrCbUYp7Mdtazi0Y6SEFNU=";
+    outputHashMode = "recursive";
+
+    supportedArchitectures = builtins.toJSON {
+      cpu = [
+        "arm"
+        "arm64"
+        "ia32"
+        "x64"
+      ];
+
+      libc = [
+        "glibc"
+        "musl"
+      ];
+
+      os = [
+        "darwin"
+        "linux"
+      ];
+    };
+  };
+
   passthru.updateScript = nix-update-script { };
 
   meta = {
@@ -137,14 +137,16 @@ stdenv.mkDerivation (finalAttrs: {
     homepage = "https://github.com/Awesome-Technologies/synapse-admin";
     changelog = "https://github.com/Awesome-Technologies/synapse-admin/releases/tag/${finalAttrs.version}";
     license = lib.licenses.asl20;
+
+    maintainers = with lib.maintainers; [
+      mkg20001
+      ma27
+    ];
+
     platforms = [
       "x86_64-linux"
       "aarch64-linux"
       "aarch64-darwin"
-    ];
-    maintainers = with lib.maintainers; [
-      mkg20001
-      ma27
     ];
   };
 })

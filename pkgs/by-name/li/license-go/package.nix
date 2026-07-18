@@ -1,14 +1,14 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
 }:
 let
   version = "5.0.4";
 in
 buildGoModule {
-  pname = "license-go";
   inherit version;
+  pname = "license-go";
 
   src = fetchFromGitHub {
     owner = "nishanths";

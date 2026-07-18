@@ -15,19 +15,20 @@
 buildPythonPackage (finalAttrs: {
   pname = "google-cloud-network-connectivity";
   version = "2.16.0";
-  pyproject = true;
 
   src = fetchPypi {
     inherit (finalAttrs) version;
-    pname = "google_cloud_network_connectivity";
     hash = "sha256-7MHGRbCsZ86gESY5igxklf3Cr3D51fuGVxnaO9xz+TE=";
+    pname = "google_cloud_network_connectivity";
   };
 
-  build-system = [ setuptools ];
-
-  pythonRelaxDeps = [
-    "protobuf"
+  nativeCheckInputs = [
+    mock
+    pytest-asyncio
+    pytestCheckHook
   ];
+
+  build-system = [ setuptools ];
 
   dependencies = [
     google-api-core
@@ -37,15 +38,15 @@ buildPythonPackage (finalAttrs: {
   ]
   ++ google-api-core.optional-dependencies.grpc;
 
-  nativeCheckInputs = [
-    mock
-    pytest-asyncio
-    pytestCheckHook
-  ];
+  pyproject = true;
 
   pythonImportsCheck = [
     "google.cloud.networkconnectivity"
     "google.cloud.networkconnectivity_v1"
+  ];
+
+  pythonRelaxDeps = [
+    "protobuf"
   ];
 
   meta = {

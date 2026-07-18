@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   configobj,
   pytestCheckHook,
   pyyaml,
@@ -13,7 +13,6 @@
 buildPythonPackage rec {
   pname = "everett";
   version = "3.5.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "willkg";
@@ -21,6 +20,11 @@ buildPythonPackage rec {
     tag = "v${version}";
     hash = "sha256-5cjPV2pt2x8RmaGWTRWeX3Nb1QeDd7245FZ0tEmYCSk=";
   };
+
+  nativeCheckInputs = [
+    pytestCheckHook
+    sphinx
+  ];
 
   build-system = [
     setuptools
@@ -32,11 +36,7 @@ buildPythonPackage rec {
     pyyaml
   ];
 
-  nativeCheckInputs = [
-    pytestCheckHook
-    sphinx
-  ];
-
+  pyproject = true;
   pythonImportsCheck = [ "everett" ];
 
   meta = {

@@ -1,6 +1,6 @@
 {
-  fetchCrate,
   lib,
+  fetchCrate,
   rustPlatform,
 }:
 
@@ -17,7 +17,7 @@ rustPlatform.buildRustPackage (finalAttrs: {
 
   meta = {
     description = "CLI utility that helps calculating page table indices from a virtual address";
-    mainProgram = "paging-calculator";
+
     longDescription = ''
       paging-calculator is a CLI utility written in Rust that helps you finding the indices that a
       virtual address will have into the page tables on different architectures.
@@ -25,9 +25,11 @@ rustPlatform.buildRustPackage (finalAttrs: {
       It takes a (virtual) address in hexadecimal format and shows you which index is used for
       which level of the page table.
     '';
+
     homepage = "https://github.com/phip1611/paging-calculator";
     changelog = "https://github.com/phip1611/paging-calculator/blob/v${finalAttrs.version}/CHANGELOG.md";
     license = with lib.licenses; [ mit ];
     maintainers = with lib.maintainers; [ phip1611 ];
+    mainProgram = "paging-calculator";
   };
 })

@@ -2,8 +2,8 @@
   lib,
   stdenv,
   fetchurl,
-  unzip,
   tnt,
+  unzip,
 }:
 
 stdenv.mkDerivation rec {
@@ -18,19 +18,20 @@ stdenv.mkDerivation rec {
   nativeBuildInputs = [ unzip ];
   propagatedBuildInputs = [ tnt ];
 
-  unpackPhase = ''
-    mkdir "${pname}-${version}"
-    unzip "$src"
-  '';
   installPhase = ''
     mkdir -p $out/include
     cp *.h $out/include
   '';
 
+  unpackPhase = ''
+    mkdir "${pname}-${version}"
+    unzip "$src"
+  '';
+
   meta = {
-    homepage = "https://math.nist.gov/tnt/";
     description = "JAMA/C++ Linear Algebra Package: Java-like matrix C++ templates";
-    platforms = lib.platforms.unix;
+    homepage = "https://math.nist.gov/tnt/";
     license = lib.licenses.publicDomain;
+    platforms = lib.platforms.unix;
   };
 }

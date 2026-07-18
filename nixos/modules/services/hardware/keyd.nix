@@ -16,21 +16,48 @@ let
 
   keyboardOptions = {
     options = {
+      extraConfig = mkOption {
+        default = "";
+
+        description = ''
+          Extra configuration that is appended to the end of the file.
+          **Do not** write `ids` section here, use a separate option for it.
+          You can use this option to define compound layers that must always be defined after the layer they are comprised.
+        '';
+
+        example = ''
+          [control+shift]
+          h = left
+        '';
+
+        type = types.lines;
+      };
+
       ids = mkOption {
-        type = with types; listOf str;
         default = [ "*" ];
+
+        description = ''
+          Device identifiers, as shown by {manpage}`keyd(1)`.
+        '';
+
         example = [
           "*"
           "-0123:0456"
         ];
-        description = ''
-          Device identifiers, as shown by {manpage}`keyd(1)`.
-        '';
+
+        type = with types; listOf str;
       };
 
       settings = mkOption {
         inherit (pkgs.formats.ini { }) type;
         default = { };
+
+        description = ''
+          Configuration, except `ids` section, that is written to {file}`/etc/keyd/<keyboard>.conf`.
+          Appropriate names can be used to write non-alpha keys, for example "equal" instead of "=" sign (see <https://github.com/NixOS/nixpkgs/issues/236622>).
+          See <https://github.com/rvaiya/keyd> how to configure.
+        '';
+
         example = {
           main = {
             capslock = "overload(control, esc)";
@@ -38,31 +65,12 @@ let
           };
 
           rightalt = {
+            h = "left";
             j = "down";
             k = "up";
-            h = "left";
             l = "right";
           };
         };
-        description = ''
-          Configuration, except `ids` section, that is written to {file}`/etc/keyd/<keyboard>.conf`.
-          Appropriate names can be used to write non-alpha keys, for example "equal" instead of "=" sign (see <https://github.com/NixOS/nixpkgs/issues/236622>).
-          See <https://github.com/rvaiya/keyd> how to configure.
-        '';
-      };
-
-      extraConfig = mkOption {
-        type = types.lines;
-        default = "";
-        example = ''
-          [control+shift]
-          h = left
-        '';
-        description = ''
-          Extra configuration that is appended to the end of the file.
-          **Do not** write `ids` section here, use a separate option for it.
-          You can use this option to define compound layers that must always be defined after the layer they are comprised.
-        '';
       };
     };
   };
@@ -79,12 +87,15 @@ in
 
   options.services.keyd = {
     enable = mkEnableOption "keyd, a key remapping daemon";
-
     package = lib.mkPackageOption pkgs "keyd" { };
 
     keyboards = mkOption {
-      type = with types; attrsOf (submodule keyboardOptions);
       default = { };
+
+      description = ''
+        Configuration for one or more device IDs. Corresponding files in the /etc/keyd/ directory are created according to the name of the keys (like `default` or `externalKeyboard`).
+      '';
+
       example = literalExpression ''
         {
           default = {
@@ -105,9 +116,8 @@ in
           };
         }
       '';
-      description = ''
-        Configuration for one or more device IDs. Corresponding files in the /etc/keyd/ directory are created according to the name of the keys (like `default` or `externalKeyboard`).
-      '';
+
+      type = with types; attrsOf (submodule keyboardOptions);
     };
   };
 
@@ -132,15 +142,46 @@ in
       description = "Keyd remapping daemon";
       documentation = [ "man:keyd(1)" ];
 
-      wantedBy = [ "multi-user.target" ];
-
       restartTriggers = mapAttrsToList (
         name: _options: config.environment.etc."keyd/${name}.conf".source
       ) cfg.keyboards;
 
       serviceConfig = {
+        # Hardening
+        CapabilityBoundingSet = [
+          "CAP_SYS_NICE"
+          "CAP_IPC_LOCK"
+        ];
+
+        DeviceAllow = [
+          "char-input rw"
+          "/dev/uinput rw"
+        ];
+
         ExecStart = lib.getExe cfg.package;
+        IPAddressDeny = [ "any" ];
+        LockPersonality = true;
+        MemoryDenyWriteExecute = true;
+        NoNewPrivileges = true;
+        PrivateMounts = true;
+        PrivateNetwork = true;
+        PrivateTmp = true;
+        PrivateUsers = false;
+        ProcSubset = "pid";
+        ProtectClock = true;
+        ProtectControlGroups = true;
+        ProtectHome = true;
+        ProtectHostname = true;
+        ProtectKernelLogs = true;
+        ProtectKernelModules = true;
+        ProtectKernelTunables = true;
+        ProtectProc = "invisible";
+        ProtectSystem = "strict";
         Restart = "always";
+        RestrictAddressFamilies = [ "AF_UNIX" ];
+        RestrictNamespaces = true;
+        RestrictSUIDSGID = true;
+        RuntimeDirectory = "keyd";
 
         # TODO investigate why it doesn't work propeprly with DynamicUser
         # See issue: https://github.com/NixOS/nixpkgs/issues/226346
@@ -150,45 +191,16 @@ in
           config.users.groups.uinput.name
         ];
 
-        RuntimeDirectory = "keyd";
-
-        # Hardening
-        CapabilityBoundingSet = [
-          "CAP_SYS_NICE"
-          "CAP_IPC_LOCK"
-        ];
-        DeviceAllow = [
-          "char-input rw"
-          "/dev/uinput rw"
-        ];
-        ProtectClock = true;
-        PrivateNetwork = true;
-        ProtectHome = true;
-        ProtectHostname = true;
-        PrivateUsers = false;
-        PrivateMounts = true;
-        PrivateTmp = true;
-        RestrictNamespaces = true;
-        ProtectKernelLogs = true;
-        ProtectKernelModules = true;
-        ProtectKernelTunables = true;
-        ProtectControlGroups = true;
-        MemoryDenyWriteExecute = true;
-        LockPersonality = true;
-        ProtectProc = "invisible";
         SystemCallFilter = [
           "nice"
           "@system-service"
           "~@privileged"
         ];
-        RestrictAddressFamilies = [ "AF_UNIX" ];
-        RestrictSUIDSGID = true;
-        IPAddressDeny = [ "any" ];
-        NoNewPrivileges = true;
-        ProtectSystem = "strict";
-        ProcSubset = "pid";
+
         UMask = "0077";
       };
+
+      wantedBy = [ "multi-user.target" ];
     };
   };
 }

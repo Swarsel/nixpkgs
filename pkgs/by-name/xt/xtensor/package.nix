@@ -4,11 +4,11 @@
   fetchFromGitHub,
   cmake,
   doctest,
+  nlohmann_json,
+  xsimd,
+  xtl,
   enableAssertions ? false,
   enableBoundChecks ? false, # Broadcasts don't pass bound checks
-  nlohmann_json,
-  xtl,
-  xsimd,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -25,6 +25,7 @@ stdenv.mkDerivation (finalAttrs: {
   nativeBuildInputs = [
     cmake
   ];
+
   propagatedBuildInputs = [
     nlohmann_json
     xtl
@@ -40,9 +41,11 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   doCheck = stdenv.buildPlatform.canExecute stdenv.hostPlatform;
+
   nativeCheckInputs = [
     doctest
   ];
+
   checkTarget = "xtest";
 
   meta = {

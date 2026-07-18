@@ -2,20 +2,20 @@
   lib,
   stdenv,
   fetchFromGitLab,
-  makeWrapper,
-  pkg-config,
-  nasm,
-  makeDesktopItem,
-  copyDesktopItems,
-  alsa-lib,
-  flac,
-  libvorbis,
-  libvpx,
-  libGL,
   SDL2,
   SDL2_mixer,
-  libx11,
+  alsa-lib,
+  copyDesktopItems,
+  flac,
   graphicsmagick,
+  libGL,
+  libvorbis,
+  libvpx,
+  libx11,
+  makeDesktopItem,
+  makeWrapper,
+  nasm,
+  pkg-config,
   unstableGitUpdater,
 }:
 
@@ -30,13 +30,14 @@ stdenv.mkDerivation (finalAttrs: {
   version = "0-unstable-2026-02-03";
 
   src = fetchFromGitLab {
-    domain = "voidpoint.io";
     owner = "terminx";
     repo = "eduke32";
     rev = "ba6b7bb1d50d7db820ec03d9bbd66404fab5c543";
     hash = "sha256-hD8j2YahEWLNgeATL7ZPwU0ovjwMSmzYdDYgMHKQLTw=";
     deepClone = true;
+    domain = "voidpoint.io";
     leaveDotGit = true;
+
     postFetch = ''
       cd $out
       git rev-list --count HEAD > VC_REV
@@ -48,29 +49,6 @@ stdenv.mkDerivation (finalAttrs: {
     # gdk-pixbuf-csource no longer supports bmp so convert to png
     # patch GNUMakefile to use graphicsmagick to convert bmp -> png
     ./convert-bmp-to-png.diff
-  ];
-
-  buildInputs = [
-    flac
-    libvorbis
-    libvpx
-    SDL2
-    SDL2_mixer
-  ]
-  ++ lib.optionals stdenv.hostPlatform.isLinux [
-    alsa-lib
-    libGL
-    libx11
-  ];
-
-  nativeBuildInputs = [
-    makeWrapper
-    pkg-config
-    copyDesktopItems
-    graphicsmagick
-  ]
-  ++ lib.optionals (stdenv.hostPlatform.system == "i686-linux") [
-    nasm
   ];
 
   postPatch = ''
@@ -85,6 +63,29 @@ stdenv.mkDerivation (finalAttrs: {
         --replace-fail libGL.so ${libGL}/lib/libGL.so
     done
   '';
+
+  nativeBuildInputs = [
+    makeWrapper
+    pkg-config
+    copyDesktopItems
+    graphicsmagick
+  ]
+  ++ lib.optionals (stdenv.hostPlatform.system == "i686-linux") [
+    nasm
+  ];
+
+  buildInputs = [
+    flac
+    libvorbis
+    libvpx
+    SDL2
+    SDL2_mixer
+  ]
+  ++ lib.optionals stdenv.hostPlatform.isLinux [
+    alsa-lib
+    libGL
+    libx11
+  ];
 
   makeFlags = [
     "SDLCONFIG=${SDL2}/bin/sdl2-config"
@@ -101,38 +102,6 @@ stdenv.mkDerivation (finalAttrs: {
   preConfigure = ''
     appendToVar makeFlags "VC_REV=$(cat VC_REV)"
   '';
-
-  desktopItems = [
-    (makeDesktopItem {
-      name = "eduke32";
-      icon = "eduke32";
-      exec = "${wrapper}";
-      comment = "Duke Nukem 3D port";
-      desktopName = "Enhanced Duke Nukem 3D";
-      genericName = "Duke Nukem 3D port";
-      categories = [ "Game" ];
-    })
-    (makeDesktopItem {
-      name = "voidsw";
-      icon = "voidsw";
-      exec = "${swWrapper}";
-      comment = "Shadow Warrior eduke32 source port";
-      desktopName = "VoidSW";
-      genericName = "Shadow Warrior source port";
-      categories = [ "Game" ];
-    })
-    (makeDesktopItem {
-      name = "fury";
-      icon = "fury";
-      exec = "${furyWrapper}";
-      comment = "Ion Fury eduke32 source port";
-      desktopName = "Ion Fury";
-      genericName = "Ion Fury source port";
-      categories = [ "Game" ];
-    })
-  ];
-
-  enableParallelBuilding = true;
 
   installPhase = ''
     runHook preInstall
@@ -176,15 +145,48 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  desktopItems = [
+    (makeDesktopItem {
+      categories = [ "Game" ];
+      comment = "Duke Nukem 3D port";
+      desktopName = "Enhanced Duke Nukem 3D";
+      exec = "${wrapper}";
+      genericName = "Duke Nukem 3D port";
+      icon = "eduke32";
+      name = "eduke32";
+    })
+    (makeDesktopItem {
+      categories = [ "Game" ];
+      comment = "Shadow Warrior eduke32 source port";
+      desktopName = "VoidSW";
+      exec = "${swWrapper}";
+      genericName = "Shadow Warrior source port";
+      icon = "voidsw";
+      name = "voidsw";
+    })
+    (makeDesktopItem {
+      categories = [ "Game" ];
+      comment = "Ion Fury eduke32 source port";
+      desktopName = "Ion Fury";
+      exec = "${furyWrapper}";
+      genericName = "Ion Fury source port";
+      icon = "fury";
+      name = "fury";
+    })
+  ];
+
+  enableParallelBuilding = true;
   passthru.updateScript = unstableGitUpdater { hardcodeZeroVersion = true; };
 
   meta = {
     description = "Enhanced port of Duke Nukem 3D for various platforms";
     homepage = "https://eduke32.com";
     license = with lib.licenses; [ gpl2Plus ];
+
     maintainers = with lib.maintainers; [
       qubitnano
     ];
+
     platforms = lib.platforms.all;
   };
 })

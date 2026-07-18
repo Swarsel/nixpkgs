@@ -1,9 +1,9 @@
 {
   lib,
+  fetchFromGitHub,
   beautifulsoup4,
   buildPythonPackage,
   django,
-  fetchFromGitHub,
   jinja2,
   pillow,
   pytest-django,
@@ -14,7 +14,6 @@
 buildPythonPackage rec {
   pname = "django-bootstrap5";
   version = "26.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "zostera";
@@ -27,14 +26,6 @@ buildPythonPackage rec {
     substituteInPlace pyproject.toml \
       --replace-fail "uv_build>=0.9.6,<0.10.0" uv_build
   '';
-
-  build-system = [ uv-build ];
-
-  dependencies = [ django ];
-
-  optional-dependencies = {
-    jinja = [ jinja2 ];
-  };
 
   nativeCheckInputs = [
     beautifulsoup4
@@ -49,11 +40,19 @@ buildPythonPackage rec {
     export DJANGO_SETTINGS_MODULE=tests.app.settings
   '';
 
+  build-system = [ uv-build ];
+  dependencies = [ django ];
+
   disabledTests = [
     # urllib.error.URLError: <urlopen error [Errno -3] Temporary failure in name resolution>
     "test_get_bootstrap_setting"
   ];
 
+  optional-dependencies = {
+    jinja = [ jinja2 ];
+  };
+
+  pyproject = true;
   pythonImportsCheck = [ "django_bootstrap5" ];
 
   meta = {

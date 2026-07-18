@@ -3,10 +3,10 @@
   stdenv,
   fetchurl,
   fetchFromGitLab,
-  yodl,
-  icmake,
-  flexcpp,
   bobcat,
+  flexcpp,
+  icmake,
+  yodl,
 }:
 stdenv.mkDerivation rec {
   pname = "bisonc++";
@@ -19,23 +19,6 @@ stdenv.mkDerivation rec {
     hash = "sha256:0aa9bij4g08ilsk6cgrbgi03vyhqr9fn6j2164sjin93m63212wl";
   };
 
-  buildInputs = [ bobcat ];
-
-  nativeBuildInputs = [
-    yodl
-    icmake
-    flexcpp
-  ];
-
-  setSourceRoot = ''
-    sourceRoot="$(echo */bisonc++)"
-  '';
-
-  gpl = fetchurl {
-    url = "https://www.gnu.org/licenses/old-licenses/gpl-2.0.txt";
-    sha256 = "sha256:0hq6i0dm4420825fdm0lnnppbil6z67ls67n5kgjcd912dszjxw1";
-  };
-
   postPatch = ''
     substituteInPlace INSTALL.im --replace /usr $out
     patchShebangs .
@@ -44,6 +27,14 @@ stdenv.mkDerivation rec {
       substituteInPlace "$file" --replace /usr $out
     done
   '';
+
+  nativeBuildInputs = [
+    yodl
+    icmake
+    flexcpp
+  ];
+
+  buildInputs = [ bobcat ];
 
   buildPhase = ''
     ./build program
@@ -55,12 +46,21 @@ stdenv.mkDerivation rec {
     ./build install x
   '';
 
+  gpl = fetchurl {
+    sha256 = "sha256:0hq6i0dm4420825fdm0lnnppbil6z67ls67n5kgjcd912dszjxw1";
+    url = "https://www.gnu.org/licenses/old-licenses/gpl-2.0.txt";
+  };
+
+  setSourceRoot = ''
+    sourceRoot="$(echo */bisonc++)"
+  '';
+
   meta = {
     description = "Parser generator like bison, but it generates C++ code";
-    mainProgram = "bisonc++";
+    homepage = "https://fbb-git.gitlab.io/bisoncpp/";
     license = lib.licenses.gpl2Plus;
     maintainers = with lib.maintainers; [ raskin ];
     platforms = lib.platforms.linux;
-    homepage = "https://fbb-git.gitlab.io/bisoncpp/";
+    mainProgram = "bisonc++";
   };
 }

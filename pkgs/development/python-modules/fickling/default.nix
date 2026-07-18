@@ -1,12 +1,12 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  pythonOlder,
+  buildPythonPackage,
   hatchling,
   numpy,
   py7zr,
   pytestCheckHook,
+  pythonOlder,
   stdlib-list,
   torch,
   torchvision,
@@ -15,7 +15,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "fickling";
   version = "0.1.12";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "trailofbits";
@@ -23,6 +22,15 @@ buildPythonPackage (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-7wbQdInnKFnI76UNmF1/qwFO+2pFt9BXGPnrzHK8rYI=";
   };
+
+  # Tests fail upstream in pytorch under python 3.14
+  doCheck = pythonOlder "3.14";
+
+  nativeCheckInputs = [
+    py7zr
+    pytestCheckHook
+  ]
+  ++ lib.concatAttrValues finalAttrs.passthru.optional-dependencies;
 
   build-system = [
     hatchling
@@ -32,8 +40,6 @@ buildPythonPackage (finalAttrs: {
     stdlib-list
   ];
 
-  pythonRelaxDeps = [ "stdlib-list" ];
-
   optional-dependencies = {
     torch = [
       numpy
@@ -42,16 +48,9 @@ buildPythonPackage (finalAttrs: {
     ];
   };
 
-  nativeCheckInputs = [
-    py7zr
-    pytestCheckHook
-  ]
-  ++ lib.concatAttrValues finalAttrs.passthru.optional-dependencies;
-
-  # Tests fail upstream in pytorch under python 3.14
-  doCheck = pythonOlder "3.14";
-
+  pyproject = true;
   pythonImportsCheck = [ "fickling" ];
+  pythonRelaxDeps = [ "stdlib-list" ];
 
   meta = {
     description = "Python pickling decompiler and static analyzer";

@@ -2,18 +2,18 @@
   lib,
   stdenv,
   fetchurl,
-  fox_1_6,
-  fontconfig,
-  freetype,
-  pkg-config,
-  gettext,
-  libxcb-util,
-  gcc,
-  intltool,
   file,
+  fontconfig,
+  fox_1_6,
+  freetype,
+  gcc,
+  gettext,
+  intltool,
   libpng,
-  libxft,
   libx11,
+  libxcb-util,
+  libxft,
+  pkg-config,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -29,6 +29,7 @@ stdenv.mkDerivation (finalAttrs: {
     pkg-config
     intltool
   ];
+
   buildInputs = [
     fox_1_6
     gettext
@@ -50,11 +51,13 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "MS-Explorer like file manager for X";
+
     longDescription = ''
       X File Explorer (Xfe) is an MS-Explorer like file manager for X.
       It is based on the popular, but discontinued, X Win Commander, which was developed by Maxim Baranov.
       Xfe aims to be the filemanager of choice for all the Unix addicts!
     '';
+
     homepage = "https://sourceforge.net/projects/xfe/";
     license = lib.licenses.gpl2;
     maintainers = [ ];

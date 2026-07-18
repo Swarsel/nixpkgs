@@ -1,35 +1,37 @@
 {
   lib,
   stdenv,
-  buildGoModule,
   fetchFromGitHub,
-  nodejs,
-  yarn,
-  yarnConfigHook,
-  yarnBuildHook,
-  fetchYarnDeps,
-  go,
-  versionCheckHook,
-  runCommandWith,
-  curl,
-  lightning-terminal,
   _experimental-update-script-combinators,
-  gitUpdater,
-  nurl,
-  nix,
+  buildGoModule,
+  curl,
+  fetchYarnDeps,
   gitMinimal,
+  gitUpdater,
+  go,
+  lightning-terminal,
+  nix,
+  nodejs,
+  nurl,
+  runCommandWith,
+  versionCheckHook,
   writeShellScript,
+  yarn,
+  yarnBuildHook,
+  yarnConfigHook,
 }:
 
 buildGoModule rec {
   pname = "lightning-terminal";
   version = "0.17.0-alpha";
+
   src = fetchFromGitHub {
     owner = "lightninglabs";
     repo = "lightning-terminal";
     tag = "v${version}";
     hash = "sha256-TjvQaKT2+n08efm+hRImmyFkvoyl0hfyw3dgtm6S/gk=";
     leaveDotGit = true;
+
     # Populate values that require us to use git.
     postFetch = ''
       cd "$out"
@@ -41,28 +43,8 @@ buildGoModule rec {
     '';
   };
 
-  vendorHash = "sha256-VaXYBl6upod1fI86C7SzWD0Er2T81dZzaaBoFWTEoJc=";
-
   buildInputs = [ lightning-app ];
-  postUnpack = ''
-    echo "Copying app build output into app/build dir to embed into litd."
-    cp -r ${lightning-app}/* source/app/build/
-
-    echo "Asserting that app/build/index.html exists."
-    if [ ! -f source/app/build/index.html ]; then
-      echo "ERROR: app/build/index.html not found!"
-      exit 1
-    fi
-  '';
-
-  ldflags = [
-    "-s"
-    "-w"
-    "-X github.com/lightningnetwork/lnd/build.GoVersion=${go.version}"
-    "-X github.com/lightningnetwork/lnd/build.RawTags=${lib.concatStringsSep "," tags}"
-    "-X github.com/lightninglabs/lightning-terminal.appFilesPrefix="
-    "-X github.com/lightninglabs/lightning-terminal.Commit=${src.tag}"
-  ];
+  vendorHash = "sha256-VaXYBl6upod1fI86C7SzWD0Er2T81dZzaaBoFWTEoJc=";
 
   # ldflags based on metadata from git and source
   preBuild = ''
@@ -74,6 +56,68 @@ buildGoModule rec {
     # so let's do the same.
     ldflags+=" -X github.com/lightningnetwork/lnd/build.Commit=${src.tag}"
     ldflags+=" -X github.com/lightningnetwork/lnd/build.CommitHash=$(cat COMMIT)"
+  '';
+
+  doInstallCheck = true;
+
+  nativeInstallCheckInputs = [
+    versionCheckHook
+  ];
+
+  ldflags = [
+    "-s"
+    "-w"
+    "-X github.com/lightningnetwork/lnd/build.GoVersion=${go.version}"
+    "-X github.com/lightningnetwork/lnd/build.RawTags=${lib.concatStringsSep "," tags}"
+    "-X github.com/lightninglabs/lightning-terminal.appFilesPrefix="
+    "-X github.com/lightninglabs/lightning-terminal.Commit=${src.tag}"
+  ];
+
+  lightning-app = stdenv.mkDerivation {
+    pname = "lightning-app";
+    version = "0.0.1";
+    src = "${src}/app";
+
+    # Remove this command from package.json. It requires Git and it is not
+    # really needed.
+    postPatch = ''
+      substituteInPlace package.json \
+        --replace '"postbuild": "git restore build/.gitkeep",' ' '
+    '';
+
+    nativeBuildInputs = [
+      nodejs
+      yarn
+      yarnConfigHook
+      yarnBuildHook
+    ];
+
+    preBuild = ''
+      # Disable linter. It finds a lot of proposed substitutions and fails.
+      export DISABLE_ESLINT_PLUGIN=true
+      export CI=false
+    '';
+
+    installPhase = ''
+      mkdir -p $out
+      cp -r build/* $out/
+    '';
+
+    yarnOfflineCache = fetchYarnDeps {
+      hash = "sha256-EJwrnsIBwLKDI3mF54EjLvaKu1PYKKLXed9SKKwUZNA=";
+      yarnLock = "${src}/app/yarn.lock";
+    };
+  };
+
+  postUnpack = ''
+    echo "Copying app build output into app/build dir to embed into litd."
+    cp -r ${lightning-app}/* source/app/build/
+
+    echo "Asserting that app/build/index.html exists."
+    if [ ! -f source/app/build/index.html ]; then
+      echo "ERROR: app/build/index.html not found!"
+      exit 1
+    fi
   '';
 
   subPackages = [
@@ -93,22 +137,19 @@ buildGoModule rec {
     "peersrpc"
   ];
 
-  doInstallCheck = true;
   versionCheckProgram = "${placeholder "out"}/bin/litcli";
-  nativeInstallCheckInputs = [
-    versionCheckHook
-  ];
 
   passthru.tests.litd-app =
     runCommandWith
       {
-        name = "test-litd-app";
         derivationArgs = {
           nativeBuildInputs = [
             curl
             lightning-terminal
           ];
         };
+
+        name = "test-litd-app";
       }
       ''
         litd \
@@ -125,8 +166,8 @@ buildGoModule rec {
   # Usage: nix-shell maintainers/scripts/update.nix --argstr package lightning-terminal --arg commit true
   passthru.updateScript = _experimental-update-script-combinators.sequence [
     (gitUpdater {
-      rev-prefix = "v";
       ignoredVersions = ".*rc.*";
+      rev-prefix = "v";
     })
     {
       command = [
@@ -161,50 +202,16 @@ buildGoModule rec {
           fi
         '')
       ];
+
       supportedFeatures = [ "silent" ];
     }
   ];
 
-  lightning-app = stdenv.mkDerivation {
-    pname = "lightning-app";
-    src = "${src}/app";
-    version = "0.0.1";
-    yarnOfflineCache = fetchYarnDeps {
-      yarnLock = "${src}/app/yarn.lock";
-      hash = "sha256-EJwrnsIBwLKDI3mF54EjLvaKu1PYKKLXed9SKKwUZNA=";
-    };
-
-    # Remove this command from package.json. It requires Git and it is not
-    # really needed.
-    postPatch = ''
-      substituteInPlace package.json \
-        --replace '"postbuild": "git restore build/.gitkeep",' ' '
-    '';
-
-    nativeBuildInputs = [
-      nodejs
-      yarn
-      yarnConfigHook
-      yarnBuildHook
-    ];
-
-    preBuild = ''
-      # Disable linter. It finds a lot of proposed substitutions and fails.
-      export DISABLE_ESLINT_PLUGIN=true
-      export CI=false
-    '';
-
-    installPhase = ''
-      mkdir -p $out
-      cp -r build/* $out/
-    '';
-  };
-
   meta = {
     description = "All-in-one Lightning node management tool that includes LND, Loop, Pool, Faraday, and Tapd";
     homepage = "https://github.com/lightninglabs/lightning-terminal";
-    license = lib.licenses.mit;
     changelog = "https://github.com/lightninglabs/lightning-terminal/releases/tag/v${version}";
+    license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ HannahMR ];
     mainProgram = "litcli";
   };

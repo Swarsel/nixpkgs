@@ -12,17 +12,17 @@
 
 {
   lib,
-  ncurses,
-  graphviz,
-  lua,
   fetchzip,
-  mkRocqDerivation,
-  withDoc ? false,
-  single ? false,
-  rocq-core,
+  graphviz,
   hierarchy-builder,
+  lua,
   micromega-plugin,
+  mkRocqDerivation,
+  ncurses,
+  rocq-core,
+  single ? false,
   version ? null,
+  withDoc ? false,
 }@args:
 
 let
@@ -44,17 +44,18 @@ let
 
   # list of core mathcomp packages sorted by dependency order
   packages = {
-    "boot" = [ ];
-    "order" = [ "boot" ];
-    "finite-group" = [ "boot" ];
     "algebra" = [
       "order"
       "finite-group"
     ];
-    "solvable" = [ "algebra" ];
-    "field" = [ "solvable" ];
-    "group-representation" = [ "field" ];
+
     "all" = [ "group-representation" ];
+    "boot" = [ ];
+    "field" = [ "solvable" ];
+    "finite-group" = [ "boot" ];
+    "group-representation" = [ "field" ];
+    "order" = [ "boot" ];
+    "solvable" = [ "algebra" ];
   };
 
   mathcomp_ =
@@ -92,9 +93,9 @@ let
             graphviz
             lua
           ];
+
           buildInputs = [ ncurses ];
           propagatedBuildInputs = mathcomp-deps ++ [ hierarchy-builder ];
-
           buildFlags = lib.optional withDoc "doc";
 
           preBuild = ''
@@ -110,6 +111,7 @@ let
           meta = {
             homepage = "https://math-comp.github.io/";
             license = lib.licenses.cecill-b;
+
             maintainers = with lib.maintainers; [
               vbgl
               jwiegley
@@ -119,14 +121,11 @@ let
         }
         // lib.optionalAttrs (package != "single") { passthru = lib.mapAttrs (p: _: mathcomp_ p) packages; }
         // lib.optionalAttrs withDoc {
-          htmldoc_template = fetchzip {
-            url = "https://github.com/math-comp/math-comp.github.io/archive/doc-1.12.0.zip";
-            sha256 = "0y1352ha2yy6k2dl375sb1r68r1qi9dyyy7dyzj5lp9hxhhq69x8";
-          };
           postBuild = ''
             cp -rf _build_doc/* .
             rm -r _build_doc
           '';
+
           postInstall =
             let
               tgt = "$out/share/coq/${rocq-core.rocq-version}/";
@@ -136,8 +135,14 @@ let
               cp -r htmldoc ${tgt}
               cp -r $htmldoc_template/htmldoc_template/* ${tgt}/htmldoc/
             '';
+
           buildTargets = "doc";
           extraInstallFlags = [ "-f Makefile.coq" ];
+
+          htmldoc_template = fetchzip {
+            sha256 = "0y1352ha2yy6k2dl375sb1r68r1qi9dyyy7dyzj5lp9hxhhq69x8";
+            url = "https://github.com/math-comp/math-comp.github.io/archive/doc-1.12.0.zip";
+          };
         }
       );
       patched-derivation1 = derivation.overrideAttrs (

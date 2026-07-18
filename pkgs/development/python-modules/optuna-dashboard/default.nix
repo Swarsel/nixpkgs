@@ -1,6 +1,7 @@
 {
   lib,
   stdenv,
+  fetchFromGitHub,
   alembic,
   boto3,
   botorch,
@@ -8,7 +9,6 @@
   buildPythonPackage,
   cmaes,
   colorlog,
-  fetchFromGitHub,
   httpx,
   moto,
   numpy,
@@ -28,7 +28,6 @@
 buildPythonPackage rec {
   pname = "optuna-dashboard";
   version = "0.20.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "optuna";
@@ -36,6 +35,24 @@ buildPythonPackage rec {
     tag = "v${version}";
     hash = "sha256-pg1R8tZjfLDDzDWiLRmaU1a1mKDzeZliPC2X0UV+xEw=";
   };
+
+  # Temporarily disable tests as they hang due to a torch bug on darwin
+  # Will revert in https://github.com/NixOS/nixpkgs/pull/424873
+  doCheck = !stdenv.hostPlatform.isDarwin;
+
+  nativeCheckInputs = [
+    pytestCheckHook
+    boto3
+    botorch
+    httpx
+    moto
+    openai
+    plotly
+    respx
+    streamlit
+  ];
+
+  build-system = [ setuptools ];
 
   dependencies = [
     alembic
@@ -50,26 +67,6 @@ buildPythonPackage rec {
     tqdm
   ];
 
-  build-system = [ setuptools ];
-
-  nativeCheckInputs = [
-    pytestCheckHook
-    boto3
-    botorch
-    httpx
-    moto
-    openai
-    plotly
-    respx
-    streamlit
-  ];
-
-  disabledTests = lib.optionals stdenv.hostPlatform.isDarwin [
-    # AttributeError: module 'numpy' has no attribute 'float128' ==> not available on 64-bit Darwin
-    "test_infer_sortable"
-    "test_serialize_numpy_floating"
-  ];
-
   # Disable tests that use playwright (needs network)
   disabledTestPaths = [
     "e2e_tests/test_dashboard/test_usecases/test_preferential_optimization.py"
@@ -78,11 +75,14 @@ buildPythonPackage rec {
     "e2e_tests/test_standalone/test_study_list.py"
   ];
 
-  pythonImportsCheck = [ "optuna_dashboard" ];
+  disabledTests = lib.optionals stdenv.hostPlatform.isDarwin [
+    # AttributeError: module 'numpy' has no attribute 'float128' ==> not available on 64-bit Darwin
+    "test_infer_sortable"
+    "test_serialize_numpy_floating"
+  ];
 
-  # Temporarily disable tests as they hang due to a torch bug on darwin
-  # Will revert in https://github.com/NixOS/nixpkgs/pull/424873
-  doCheck = !stdenv.hostPlatform.isDarwin;
+  pyproject = true;
+  pythonImportsCheck = [ "optuna_dashboard" ];
 
   meta = {
     description = "Real-time Web Dashboard for Optuna";

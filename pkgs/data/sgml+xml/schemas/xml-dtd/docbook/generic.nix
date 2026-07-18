@@ -1,23 +1,28 @@
 {
   lib,
   stdenv,
-  unzip,
   fetchurl,
   findXMLCatalogs,
+  unzip,
+  version,
+  hash ? "",
+  postInstall ? "true",
   src ? fetchurl {
     inherit hash url;
   },
-  version,
-  hash ? "",
   url ? "https://www.oasis-open.org/docbook/xml/${version}/docbook-xml-${version}.zip",
-  postInstall ? "true",
 }:
 
 stdenv.mkDerivation {
   inherit version src postInstall;
   pname = "docbook-xml";
-
   nativeBuildInputs = [ unzip ];
+
+  installPhase = ''
+    find . -type f -exec chmod -x {} \;
+    runHook postInstall
+  '';
+
   propagatedNativeBuildInputs = [ findXMLCatalogs ];
 
   unpackPhase = ''
@@ -26,13 +31,8 @@ stdenv.mkDerivation {
     unpackFile $src
   '';
 
-  installPhase = ''
-    find . -type f -exec chmod -x {} \;
-    runHook postInstall
-  '';
-
   meta = {
-    branch = version;
     platforms = lib.platforms.unix;
+    branch = version;
   };
 }

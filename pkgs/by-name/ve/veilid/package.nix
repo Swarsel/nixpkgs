@@ -1,13 +1,13 @@
 {
   lib,
   fetchFromGitLab,
-  rustPlatform,
-  protobuf,
   capnproto,
   cmake,
+  gitUpdater,
+  protobuf,
+  rustPlatform,
   testers,
   veilid,
-  gitUpdater,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -21,7 +21,11 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-14jRIs2iE5JH1ZmC/1DGcg6cejsnmhUTkquXNmOEuQA=";
   };
 
-  cargoHash = "sha256-xuIw/RRKydanStS7dw1jK96bgEH0U5TDbayaBZq/OCg=";
+  outputs = [
+    "out"
+    "lib"
+    "dev"
+  ];
 
   nativeBuildInputs = [
     capnproto
@@ -29,41 +33,38 @@ rustPlatform.buildRustPackage (finalAttrs: {
     protobuf
   ];
 
-  cargoBuildFlags = [
-    "--workspace"
-  ];
-
+  cargoHash = "sha256-xuIw/RRKydanStS7dw1jK96bgEH0U5TDbayaBZq/OCg=";
   env.RUSTFLAGS = "--cfg tokio_unstable";
-
   doCheck = false;
-
-  outputs = [
-    "out"
-    "lib"
-    "dev"
-  ];
 
   postInstall = ''
     moveToOutput "lib" "$lib"
   '';
 
+  cargoBuildFlags = [
+    "--workspace"
+  ];
+
   passthru = {
-    updateScript = gitUpdater { rev-prefix = "v"; };
     tests = {
       veilid-version = testers.testVersion {
         package = veilid;
       };
     };
+
+    updateScript = gitUpdater { rev-prefix = "v"; };
   };
 
   meta = {
     description = "Open-source, peer-to-peer, mobile-first, networked application framework";
-    mainProgram = "veilid-server";
     homepage = "https://veilid.com";
     license = lib.licenses.mpl20;
+
     maintainers = with lib.maintainers; [
       bbigras
       qbit
     ];
+
+    mainProgram = "veilid-server";
   };
 })

@@ -1,16 +1,15 @@
 {
   lib,
+  attrs,
   buildPythonPackage,
   fetchPypi,
-  setuptools,
-  attrs,
   pytest,
+  setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "outcome";
   version = "1.3.0.post0";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
@@ -18,15 +17,16 @@ buildPythonPackage rec {
   };
 
   nativeBuildInputs = [ setuptools ];
-
-  nativeCheckInputs = [ pytest ];
   propagatedBuildInputs = [ attrs ];
   # Has a test dependency on trio, which depends on outcome.
   doCheck = false;
+  nativeCheckInputs = [ pytest ];
+  format = "setuptools";
 
   meta = {
     description = "Capture the outcome of Python function calls";
     homepage = "https://github.com/python-trio/outcome";
+
     license = with lib.licenses; [
       mit
       asl20

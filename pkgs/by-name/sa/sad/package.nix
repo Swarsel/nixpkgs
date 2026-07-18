@@ -1,8 +1,8 @@
 {
   lib,
   fetchFromGitHub,
-  rustPlatform,
   python3,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -16,9 +16,8 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-c5TYIVUrfKrVuyolVe7+EhiM/SOFNahz8X6F8WrKEa0=";
   };
 
-  cargoHash = "sha256-hS66/bPRUpwmW/wSpZCq4kVKFkIhttsozIr3SCyZqQI=";
-
   nativeBuildInputs = [ python3 ];
+  cargoHash = "sha256-hS66/bPRUpwmW/wSpZCq4kVKFkIhttsozIr3SCyZqQI=";
 
   # fix for compilation on aarch64
   # see https://github.com/NixOS/nixpkgs/issues/145726
@@ -31,10 +30,12 @@ rustPlatform.buildRustPackage (finalAttrs: {
     homepage = "https://github.com/ms-jpq/sad";
     changelog = "https://github.com/ms-jpq/sad/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       fab
       ryan4yin
     ];
+
     mainProgram = "sad";
   };
 })

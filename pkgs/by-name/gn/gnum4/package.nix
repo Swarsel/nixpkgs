@@ -33,22 +33,21 @@ stdenv.mkDerivation (finalAttrs: {
 
   strictDeps = true;
 
-  enableParallelBuilding = true;
-
-  # Issue exists whenever NLS is disabled, and there's an upstream fix
-  # for GCC, but there's no good way to check whether NLS or GCC is in
-  # use.  (Checking stdenv.cc.isGNU causes infinite recursion.)
-  hardeningDisable = [ "format" ];
-
-  doCheck = false;
-
   configureFlags = [
     "--with-syscmd-shell=${stdenv.shell}"
   ]
   ++ lib.optional stdenv.hostPlatform.isMinGW "CFLAGS=-fno-stack-protector";
 
+  doCheck = false;
+  enableParallelBuilding = true;
+  # Issue exists whenever NLS is disabled, and there's an upstream fix
+  # for GCC, but there's no good way to check whether NLS or GCC is in
+  # use.  (Checking stdenv.cc.isGNU causes infinite recursion.)
+  hardeningDisable = [ "format" ];
+
   meta = {
     description = "GNU M4, a macro processor";
+
     longDescription = ''
       GNU M4 is an implementation of the traditional Unix macro
       processor.  It is mostly SVR4 compatible although it has some
@@ -65,11 +64,11 @@ stdenv.mkDerivation (finalAttrs: {
       recursion etc...  m4 can be used either as a front-end to a
       compiler or as a macro processor in its own right.
     '';
-    homepage = "https://www.gnu.org/software/m4/";
 
+    homepage = "https://www.gnu.org/software/m4/";
     license = lib.licenses.gpl3Plus;
-    mainProgram = "m4";
     platforms = lib.platforms.unix ++ lib.platforms.windows;
+    mainProgram = "m4";
   };
 
 })

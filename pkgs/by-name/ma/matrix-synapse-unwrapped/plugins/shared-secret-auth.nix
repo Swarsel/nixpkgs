@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   matrix-synapse-unwrapped,
   twisted,
 }:
@@ -9,7 +9,6 @@
 buildPythonPackage rec {
   pname = "matrix-synapse-shared-secret-auth";
   version = "2.0.3";
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "devture";
@@ -18,11 +17,11 @@ buildPythonPackage rec {
     sha256 = "sha256-ZMEUBC2Y4J1+4tHfsMxqzTO/P1ef3aB81OAhEs+Tdc4=";
   };
 
-  doCheck = false;
-  pythonImportsCheck = [ "shared_secret_authenticator" ];
-
   buildInputs = [ matrix-synapse-unwrapped ];
   propagatedBuildInputs = [ twisted ];
+  doCheck = false;
+  format = "setuptools";
+  pythonImportsCheck = [ "shared_secret_authenticator" ];
 
   meta = {
     description = "Shared Secret Authenticator password provider module for Matrix Synapse";

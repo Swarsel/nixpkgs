@@ -1,10 +1,10 @@
 {
   lib,
+  fetchFromGitHub,
   aiohttp,
   aresponses,
   backoff,
   buildPythonPackage,
-  fetchFromGitHub,
   pytest-asyncio,
   pytestCheckHook,
   uv-build,
@@ -13,7 +13,6 @@
 buildPythonPackage rec {
   pname = "tesla-wall-connector";
   version = "1.2.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "einarhauks";
@@ -27,6 +26,12 @@ buildPythonPackage rec {
       --replace-fail "uv_build>=0.11.6,<0.12" "uv_build"
   '';
 
+  nativeCheckInputs = [
+    aresponses
+    pytest-asyncio
+    pytestCheckHook
+  ];
+
   build-system = [ uv-build ];
 
   dependencies = [
@@ -34,12 +39,7 @@ buildPythonPackage rec {
     backoff
   ];
 
-  nativeCheckInputs = [
-    aresponses
-    pytest-asyncio
-    pytestCheckHook
-  ];
-
+  pyproject = true;
   pythonImportsCheck = [ "tesla_wall_connector" ];
 
   meta = {

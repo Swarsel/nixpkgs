@@ -2,41 +2,41 @@
   lib,
   stdenv,
   fetchurl,
-  unzip,
-  cairo,
-  libxtst,
-  libxscrnsaver,
-  libxrender,
-  libxrandr,
-  libxi,
-  libxfixes,
-  libxext,
-  libxdamage,
-  libxcursor,
-  libxcomposite,
-  libx11,
-  libxcb,
-  gdk-pixbuf,
-  fontconfig,
-  pango,
-  atk,
+  alsa-lib,
   at-spi2-atk,
   at-spi2-core,
-  gtk3,
-  glib,
-  freetype,
-  dbus,
-  nss,
-  nspr,
-  alsa-lib,
+  atk,
+  cairo,
   cups,
+  dbus,
   expat,
-  udev,
-  makeDesktopItem,
+  fontconfig,
+  freetype,
+  gdk-pixbuf,
+  glib,
+  gtk3,
   libdrm,
-  libxkbcommon,
   libgbm,
+  libx11,
+  libxcb,
+  libxcomposite,
+  libxcursor,
+  libxdamage,
+  libxext,
+  libxfixes,
+  libxi,
+  libxkbcommon,
+  libxrandr,
+  libxrender,
+  libxscrnsaver,
+  libxtst,
+  makeDesktopItem,
   makeWrapper,
+  nspr,
+  nss,
+  pango,
+  udev,
+  unzip,
 }:
 
 let
@@ -80,6 +80,7 @@ in
 stdenv.mkDerivation (finalAttrs: {
   pname = "react-native-debugger";
   version = "0.14.0";
+
   src = fetchurl {
     url = "https://github.com/jhen0409/react-native-debugger/releases/download/v${finalAttrs.version}/rn-debugger-linux-x64.zip";
     sha256 = "sha256-RioBe0MAR47M84aavFaTJikGsJtcZDak8Tkg3WtX2l0=";
@@ -89,6 +90,7 @@ stdenv.mkDerivation (finalAttrs: {
     makeWrapper
     unzip
   ];
+
   buildCommand = ''
     shopt -s extglob
     mkdir -p $out
@@ -113,22 +115,23 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   desktopItem = makeDesktopItem {
-    name = "rndebugger";
-    exec = "react-native-debugger";
-    desktopName = "React Native Debugger";
-    genericName = "React Native Debugger";
     categories = [
       "Development"
       "Debugger"
     ];
+
+    desktopName = "React Native Debugger";
+    exec = "react-native-debugger";
+    genericName = "React Native Debugger";
+    name = "rndebugger";
   };
 
   meta = {
-    homepage = "https://github.com/jhen0409/react-native-debugger";
-    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
-    license = lib.licenses.mit;
     description = "Standalone app based on official debugger of React Native, and includes React Inspector / Redux DevTools";
-    mainProgram = "react-native-debugger";
+    homepage = "https://github.com/jhen0409/react-native-debugger";
+    license = lib.licenses.mit;
+    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
     maintainers = [ ];
+    mainProgram = "react-native-debugger";
   };
 })

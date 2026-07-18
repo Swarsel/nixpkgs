@@ -1,8 +1,8 @@
 {
-  stdenvNoCC,
   lib,
   fetchFromGitHub,
   installFonts,
+  stdenvNoCC,
 }:
 
 stdenvNoCC.mkDerivation (finalAttrs: {
@@ -16,21 +16,20 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     sha256 = "sha256-mpVJpxI98VxHpZMFFyTHjxTPcUTB1kK8XCGa32znMcQ=";
   };
 
-  # TODO: it would be nice to build this from scratch, but lots of
-  # Python dependencies to package (fontmake, gftools)
-
-  nativeBuildInputs = [ installFonts ];
-
   outputs = [
     "out"
     "webfont"
   ];
 
+  # TODO: it would be nice to build this from scratch, but lots of
+  # Python dependencies to package (fontmake, gftools)
+  nativeBuildInputs = [ installFonts ];
+
   meta = {
-    homepage = "https://github.com/SorkinType/Merriweather";
     description = "Text face designed to be pleasant to read on screens";
+    homepage = "https://github.com/SorkinType/Merriweather";
     license = lib.licenses.ofl;
-    platforms = lib.platforms.all;
     maintainers = with lib.maintainers; [ emily ];
+    platforms = lib.platforms.all;
   };
 })

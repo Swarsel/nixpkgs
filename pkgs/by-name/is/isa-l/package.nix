@@ -2,18 +2,15 @@
   lib,
   stdenv,
   fetchFromGitHub,
-
+  autoreconfHook,
+  gitUpdater,
   # nativeBuildInputs
   nasm,
-  autoreconfHook,
-
-  versionCheckHook,
-
-  # passthru
-  runCommand,
   nix,
   pkgs,
-  gitUpdater,
+  # passthru
+  runCommand,
+  versionCheckHook,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -40,10 +37,11 @@ stdenv.mkDerivation (finalAttrs: {
     unset AS
   '';
 
+  doInstallCheck = true;
+
   nativeInstallCheckInputs = [
     versionCheckHook
   ];
-  doInstallCheck = true;
 
   passthru = {
     tests = {
@@ -53,6 +51,7 @@ stdenv.mkDerivation (finalAttrs: {
             nativeBuildInputs = [
               finalAttrs.finalPackage
             ];
+
             sample =
               runCommand "nixpkgs-lib.nar"
                 {
@@ -61,6 +60,7 @@ stdenv.mkDerivation (finalAttrs: {
                 ''
                   nix nar --extra-experimental-features nix-command pack ${pkgs.path + "/lib"} > "$out"
                 '';
+
             meta = {
               description = "Cross validation of igzip provided by isa-l with gzip";
             };
@@ -85,17 +85,18 @@ stdenv.mkDerivation (finalAttrs: {
             touch "$out"
           '';
     };
+
     updateScript = gitUpdater { rev-prefix = "v"; };
   };
 
   meta = {
     description = "Collection of optimised low-level functions targeting storage applications";
-    mainProgram = "igzip";
-    license = lib.licenses.bsd3;
     homepage = "https://github.com/intel/isa-l";
     changelog = "https://github.com/intel/isa-l/releases/tag/v${finalAttrs.version}";
+    license = lib.licenses.bsd3;
     maintainers = with lib.maintainers; [ jbedo ];
     platforms = lib.platforms.all;
+
     badPlatforms = [
       # <instantiation>:4:26: error: unexpected token in argument list
       #  movk x7, p4_low_b1, lsl 16
@@ -103,5 +104,7 @@ stdenv.mkDerivation (finalAttrs: {
       # https://github.com/intel/isa-l/issues/188
       "i686-linux"
     ];
+
+    mainProgram = "igzip";
   };
 })

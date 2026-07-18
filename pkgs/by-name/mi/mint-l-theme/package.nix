@@ -1,9 +1,9 @@
 {
-  stdenvNoCC,
   lib,
   fetchFromGitHub,
   python3,
   python3Packages,
+  stdenvNoCC,
 }:
 
 stdenvNoCC.mkDerivation (finalAttrs: {
@@ -17,14 +17,14 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     hash = "sha256-Wk480v9AHUfcaZP9sm/boIFWcbuhmJ5cH14qV4BRtuw=";
   };
 
+  postPatch = ''
+    patchShebangs .
+  '';
+
   nativeBuildInputs = [
     python3
     python3Packages.libsass
   ];
-
-  postPatch = ''
-    patchShebangs .
-  '';
 
   installPhase = ''
     runHook preInstall
@@ -36,8 +36,8 @@ stdenvNoCC.mkDerivation (finalAttrs: {
   '';
 
   meta = {
-    homepage = "https://github.com/linuxmint/mint-l-theme";
     description = "Mint-L theme for the Cinnamon desktop";
+    homepage = "https://github.com/linuxmint/mint-l-theme";
     license = lib.licenses.gpl3Plus; # from debian/copyright
     platforms = lib.platforms.linux;
     teams = [ lib.teams.cinnamon ];

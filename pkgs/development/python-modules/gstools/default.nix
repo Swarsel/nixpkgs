@@ -1,35 +1,30 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
+  buildPythonPackage,
   # build-system
   cython,
-  hatch-vcs,
-  hatchling,
-
   # dependencies
   emcee,
   gstools-cython,
   hankel,
+  hatch-vcs,
+  hatchling,
+  # optional dependencies
+  matplotlib,
   meshio,
   numpy,
   pyevtk,
-  scipy,
-
-  # optional dependencies
-  matplotlib,
-  pyvista,
-
+  pytest-cov-stub,
   # tests
   pytestCheckHook,
-  pytest-cov-stub,
+  pyvista,
+  scipy,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "gstools";
   version = "1.7.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "GeoStat-Framework";
@@ -37,6 +32,12 @@ buildPythonPackage (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-rQ7mSa1BWAaRiiE6aQD6jl8BktihY9bjFJV+5eT9n/M=";
   };
+
+  nativeCheckInputs = [
+    pytestCheckHook
+    pytest-cov-stub
+  ]
+  ++ lib.concatAttrValues finalAttrs.passthru.optional-dependencies;
 
   build-system = [
     hatch-vcs
@@ -60,12 +61,8 @@ buildPythonPackage (finalAttrs: {
     ];
   };
 
+  pyproject = true;
   pythonImportsCheck = [ "gstools" ];
-  nativeCheckInputs = [
-    pytestCheckHook
-    pytest-cov-stub
-  ]
-  ++ lib.concatAttrValues finalAttrs.passthru.optional-dependencies;
 
   meta = {
     description = "Geostatistical toolbox";

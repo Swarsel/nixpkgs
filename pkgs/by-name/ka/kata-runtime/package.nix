@@ -1,11 +1,11 @@
 # Derived from https://github.com/colemickens/nixpkgs-kubernetes
 {
+  lib,
+  stdenv,
+  fetchFromGitHub,
   buildGoModule,
   callPackage,
-  fetchFromGitHub,
-  lib,
   qemu_kvm,
-  stdenv,
   virtiofsd,
   yq-go,
 }:
@@ -17,18 +17,15 @@ let
 
   qemuSystemBinary =
     {
-      "x86_64-linux" = "qemu-system-x86_64";
       "aarch64-linux" = "qemu-system-aarch64";
+      "x86_64-linux" = "qemu-system-x86_64";
     }
     ."${stdenv.hostPlatform.system}" or (throw "Unsupported system: ${stdenv.hostPlatform.system}");
 
 in
 buildGoModule rec {
-  pname = "kata-runtime";
   inherit version;
-
-  # https://github.com/NixOS/nixpkgs/issues/25959
-  hardeningDisable = [ "fortify" ];
+  pname = "kata-runtime";
 
   src = fetchFromGitHub {
     owner = "kata-containers";
@@ -36,8 +33,6 @@ buildGoModule rec {
     rev = version;
     hash = "sha256-dnbzjYDKeAp0wFQcO5VK71vkf7ubVK5Lh9R9jjuro28=";
   };
-
-  sourceRoot = "${src.name}/src/runtime";
 
   vendorHash = "sha256-HAWobIcqwHL7jgawpOk1ZNx6vG8NApF5Nn60eZ9Fc1c=";
 
@@ -72,6 +67,10 @@ buildGoModule rec {
     runHook postInstall
   '';
 
+  # https://github.com/NixOS/nixpkgs/issues/25959
+  hardeningDisable = [ "fortify" ];
+  sourceRoot = "${src.name}/src/runtime";
+
   passthru = {
     inherit kata-images;
   };
@@ -82,6 +81,7 @@ buildGoModule rec {
     changelog = "https://github.com/kata-containers/kata-containers/releases/tag/${version}";
     license = lib.licenses.asl20;
     maintainers = with lib.maintainers; [ thomasjm ];
+
     platforms = [
       "x86_64-linux"
       "aarch64-linux"

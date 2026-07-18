@@ -1,24 +1,20 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # build-system
-  setuptools,
+  buildPythonPackage,
   cython,
   numpy,
-
-  # dependencies
-  torch,
-
   # tests
   pytestCheckHook,
+  # build-system
+  setuptools,
+  # dependencies
+  torch,
 }:
 
 buildPythonPackage rec {
   pname = "monotonic-alignment-search";
   version = "0.2.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "eginhard";
@@ -26,6 +22,10 @@ buildPythonPackage rec {
     tag = "v${version}";
     hash = "sha256-XsQDRsgwwlZAmxpsISgNYbrgnMOQIVNvzJV4ZWxswCY=";
   };
+
+  nativeCheckInputs = [
+    pytestCheckHook
+  ];
 
   build-system = [
     setuptools
@@ -38,15 +38,12 @@ buildPythonPackage rec {
     torch
   ];
 
-  nativeCheckInputs = [
-    pytestCheckHook
-  ];
-
+  pyproject = true;
   pythonImportsCheck = [ "monotonic_alignment_search" ];
 
   meta = {
-    homepage = "https://github.com/eginhard/monotonic_alignment_search";
     description = "Monotonically align text and speech";
+    homepage = "https://github.com/eginhard/monotonic_alignment_search";
     changelog = "https://github.com/eginhard/monotonic_alignment_search/releases/tag/${src.tag}";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ jbgi ];

@@ -21,9 +21,9 @@ in
     environment.systemPackages = [ cfg.package ];
 
     security.wrappers.nexttrace = {
-      owner = "root";
-      group = "root";
       capabilities = "cap_net_raw,cap_net_admin+eip";
+      group = "root";
+      owner = "root";
       source = "${cfg.package}/bin/nexttrace";
     };
   };

@@ -1,17 +1,17 @@
 {
   lib,
-  stdenvNoCC,
   fetchFromGitHub,
   gnome-shell,
-  sassc,
   gnome-themes-extra,
   gtk-engine-murrine,
+  sassc,
+  stdenvNoCC,
   unstableGitUpdater,
   colorVariants ? [ ],
+  iconVariants ? [ ],
   sizeVariants ? [ ],
   themeVariants ? [ ],
   tweakVariants ? [ ],
-  iconVariants ? [ ],
 }:
 
 let
@@ -80,21 +80,16 @@ lib.checkListOfEnum "${pname}: colorVariants" colorVariantList colorVariants lib
       hash = "sha256-7H2n9wTaW8Db1RejWK071ITV1j5KIuzfql0Tx9WT6zM=";
     };
 
-    propagatedUserEnvPkgs = [ gtk-engine-murrine ];
+    postPatch = ''
+      patchShebangs themes/install.sh
+    '';
 
     nativeBuildInputs = [
       gnome-shell
       sassc
     ];
+
     buildInputs = [ gnome-themes-extra ];
-
-    dontBuild = true;
-
-    passthru.updateScript = unstableGitUpdater { };
-
-    postPatch = ''
-      patchShebangs themes/install.sh
-    '';
 
     installPhase = ''
       runHook preInstall
@@ -114,13 +109,19 @@ lib.checkListOfEnum "${pname}: colorVariants" colorVariantList colorVariants lib
       runHook postInstall
     '';
 
+    dontBuild = true;
+    propagatedUserEnvPkgs = [ gtk-engine-murrine ];
+    passthru.updateScript = unstableGitUpdater { };
+
     meta = {
       description = "GTK theme based on the Tokyo Night colour palette";
       homepage = "https://github.com/Fausto-Korpsvart/Tokyonight-GTK-Theme";
       license = lib.licenses.gpl3Plus;
+
       maintainers = with lib.maintainers; [
         garaiza-93
       ];
+
       platforms = lib.platforms.unix;
     };
   }

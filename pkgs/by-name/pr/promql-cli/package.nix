@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule (finalAttrs: {
@@ -17,14 +17,14 @@ buildGoModule (finalAttrs: {
 
   vendorHash = "sha256-jhNll04xGaxS6NJTh4spSW9zPrff8jk5OEQiRevPQwU=";
 
+  postInstall = ''
+    mv -v $out/bin/promql-cli $out/bin/promql
+  '';
+
   ldflags = [
     "-s"
     "-w"
   ];
-
-  postInstall = ''
-    mv -v $out/bin/promql-cli $out/bin/promql
-  '';
 
   meta = {
     description = "Command-line tool to query a Prometheus server with PromQL and visualize the output";

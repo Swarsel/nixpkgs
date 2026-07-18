@@ -1,9 +1,9 @@
 {
   lib,
+  fetchFromGitHub,
   buildPythonPackage,
   click,
   faker,
-  fetchFromGitHub,
   flask,
   gunicorn,
   pyopenssl,
@@ -17,7 +17,6 @@
 buildPythonPackage rec {
   pname = "threat9-test-bed";
   version = "0.6.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "threat9";
@@ -27,7 +26,7 @@ buildPythonPackage rec {
   };
 
   patches = [ ./asyncio-loop.patch ];
-
+  nativeCheckInputs = [ pytestCheckHook ];
   build-system = [ setuptools-scm ];
 
   dependencies = [
@@ -40,16 +39,15 @@ buildPythonPackage rec {
   ]
   ++ lib.optionals (pythonAtLeast "3.13") [ standard-telnetlib ];
 
-  nativeCheckInputs = [ pytestCheckHook ];
-
-  pythonImportsCheck = [ "threat9_test_bed" ];
-
   disabledTests = [
     # Assertion issue with the response codes
     "test_http_service_mock"
     "tests_http_service_mock"
     "test_http_service_mock_random_port"
   ];
+
+  pyproject = true;
+  pythonImportsCheck = [ "threat9_test_bed" ];
 
   meta = {
     description = "Module for adding unittests.mock as view functions";

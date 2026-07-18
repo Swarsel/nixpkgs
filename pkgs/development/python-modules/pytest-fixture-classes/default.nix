@@ -1,17 +1,16 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   hatchling,
-  typing-extensions,
   pytest-asyncio,
   pytestCheckHook,
+  typing-extensions,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "pytest-fixture-classes";
   version = "1.0.4";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "zmievsa";
@@ -19,6 +18,11 @@ buildPythonPackage (finalAttrs: {
     tag = finalAttrs.version;
     hash = "sha256-we4Eax6wHlsbDoCzSUcbfwX+o2h3xCTaQZ3f5wStvZM=";
   };
+
+  nativeCheckInputs = [
+    pytest-asyncio
+    pytestCheckHook
+  ];
 
   build-system = [
     hatchling
@@ -28,10 +32,7 @@ buildPythonPackage (finalAttrs: {
     typing-extensions
   ];
 
-  nativeCheckInputs = [
-    pytest-asyncio
-    pytestCheckHook
-  ];
+  pyproject = true;
 
   pythonImportsCheck = [
     "pytest_fixture_classes"

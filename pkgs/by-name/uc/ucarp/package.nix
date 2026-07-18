@@ -1,6 +1,6 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchurl,
   libpcap,
   nixosTests,
@@ -16,17 +16,16 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   buildInputs = [ libpcap ];
-
   # Workaround build failure on -fno-common toolchains like upstream
   # gcc-10. Otherwise build fails as:
   #   ld: daemonize.o:/build/ucarp-1.5.2/src/ip_carp.h:73: multiple definition of
   #     `__packed'; ucarp.o:/build/ucarp-1.5.2/src/ip_carp.h:73: first defined here
   env.NIX_CFLAGS_COMPILE = "-fcommon";
-
   passthru.tests = { inherit (nixosTests) ucarp; };
 
   meta = {
     description = "Userspace implementation of CARP";
+
     longDescription = ''
       UCARP allows a couple of hosts to share common virtual IP addresses in
       order to provide automatic failover. It is a portable userland
@@ -36,12 +35,14 @@ stdenv.mkDerivation (finalAttrs: {
       Warning: This package has not received any upstream updates for a long
       time and can be considered as unmaintained.
     '';
+
     license = with lib.licenses; [
       isc
       bsdOriginal
       bsd2
       gpl2Plus
     ];
+
     maintainers = [ ];
     mainProgram = "ucarp";
   };

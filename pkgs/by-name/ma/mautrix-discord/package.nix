@@ -1,11 +1,11 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
-  olm,
-  nix-update-script,
-  testers,
+  buildGoModule,
   mautrix-discord,
+  nix-update-script,
+  olm,
+  testers,
 }:
 
 buildGoModule rec {
@@ -19,22 +19,21 @@ buildGoModule rec {
     hash = "sha256-qpyySoYX+JMEKDf7Iv5WSZFOxkrmd3ihAaAXAKcZs9Q=";
   };
 
+  buildInputs = [ olm ];
   vendorHash = "sha256-ZjY2+1M1LP/zBVG5+zfX4T8Lyjx/tpDwSxLlpsBG3iA=";
+  doCheck = false;
 
   ldflags = [
     "-s"
     "-w"
   ];
 
-  buildInputs = [ olm ];
-
-  doCheck = false;
-
   passthru = {
-    updateScript = nix-update-script { };
     tests.version = testers.testVersion {
       package = mautrix-discord;
     };
+
+    updateScript = nix-update-script { };
   };
 
   meta = {
@@ -42,9 +41,11 @@ buildGoModule rec {
     homepage = "https://github.com/mautrix/discord";
     changelog = "https://github.com/mautrix/discord/blob/${src.rev}/CHANGELOG.md";
     license = lib.licenses.agpl3Only;
+
     maintainers = with lib.maintainers; [
       sumnerevans
     ];
+
     mainProgram = "mautrix-discord";
   };
 }

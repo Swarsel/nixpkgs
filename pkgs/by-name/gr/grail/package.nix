@@ -1,16 +1,16 @@
 {
-  enableX11 ? true,
   lib,
   stdenv,
   fetchurl,
-  pkg-config,
-  libxtst,
-  libxi,
-  libxfixes,
-  libxext,
-  libx11,
-  python3,
   frame,
+  libx11,
+  libxext,
+  libxfixes,
+  libxi,
+  libxtst,
+  pkg-config,
+  python3,
+  enableX11 ? true,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -23,6 +23,7 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   nativeBuildInputs = [ pkg-config ];
+
   buildInputs = [
     python3
     frame
@@ -38,8 +39,8 @@ stdenv.mkDerivation (finalAttrs: {
   configureFlags = lib.optional enableX11 "--with-x11";
 
   meta = {
-    homepage = "https://launchpad.net/canonical-multitouch/grail";
     description = "Gesture Recognition And Instantiation Library";
+    homepage = "https://launchpad.net/canonical-multitouch/grail";
     license = lib.licenses.gpl2;
     platforms = lib.platforms.linux;
   };

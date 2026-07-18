@@ -1,7 +1,7 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -22,9 +22,11 @@ rustPlatform.buildRustPackage (finalAttrs: {
     homepage = "https://github.com/solidiquis/erdtree";
     changelog = "https://github.com/solidiquis/erdtree/releases/tag/${finalAttrs.src.rev}";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       zendo
     ];
+
     mainProgram = "erd";
   };
 })

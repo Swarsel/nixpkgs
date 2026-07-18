@@ -3,9 +3,9 @@
   stdenv,
   fetchFromGitHub,
   cmake,
+  libvncserver,
   obs-studio,
   pkg-config,
-  libvncserver,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -23,6 +23,7 @@ stdenv.mkDerivation (finalAttrs: {
     cmake
     pkg-config
   ];
+
   buildInputs = [
     libvncserver
     obs-studio
@@ -38,8 +39,8 @@ stdenv.mkDerivation (finalAttrs: {
   meta = {
     description = "VNC viewer integrated into OBS Studio as a source plugin";
     homepage = "https://github.com/norihiro/obs-vnc";
-    maintainers = with lib.maintainers; [ flexiondotorg ];
     license = lib.licenses.gpl2Only;
+    maintainers = with lib.maintainers; [ flexiondotorg ];
     platforms = lib.platforms.linux;
   };
 })

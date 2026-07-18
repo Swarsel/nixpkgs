@@ -1,24 +1,23 @@
 {
   lib,
-  buildPythonPackage,
-  fetchPypi,
-  setuptools,
   brotli,
+  buildPythonPackage,
   colorama,
+  fetchPypi,
   filetype,
-  requests,
-  requests-toolbelt,
-  ua-parser,
-  websocket-client,
   pycryptodome,
   pypng,
   pyqrcode,
+  requests,
+  requests-toolbelt,
+  setuptools,
+  ua-parser,
+  websocket-client,
 }:
 
 buildPythonPackage rec {
   pname = "discum";
   version = "1.4.1";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
@@ -45,8 +44,8 @@ buildPythonPackage rec {
     ];
   };
 
+  pyproject = true;
   pythonImportsCheck = [ "discum" ];
-
   pythonRelaxDeps = [ "websocket-client" ];
 
   meta = {

@@ -1,7 +1,7 @@
 {
-  buildPythonPackage,
-  fetchFromGitHub,
   lib,
+  fetchFromGitHub,
+  buildPythonPackage,
   pytest,
   pytestCheckHook,
   setuptools,
@@ -11,7 +11,6 @@
 buildPythonPackage rec {
   pname = "pytest-archon";
   version = "0.0.7";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "jwbargsten";
@@ -20,20 +19,21 @@ buildPythonPackage rec {
     hash = "sha256-0YBujBUBpW/FSIlJDRjL5mvYZfirHW07bRyygyoapw8=";
   };
 
+  buildInputs = [
+    pytest
+  ];
+
+  nativeCheckInputs = [
+    pytestCheckHook
+  ];
+
   build-system = [
     setuptools
     setuptools-scm
   ];
 
-  buildInputs = [
-    pytest
-  ];
-
+  pyproject = true;
   pythonImportsCheck = [ "pytest_archon" ];
-
-  nativeCheckInputs = [
-    pytestCheckHook
-  ];
 
   meta = {
     description = "Tool that helps you structure (large) Python projects";

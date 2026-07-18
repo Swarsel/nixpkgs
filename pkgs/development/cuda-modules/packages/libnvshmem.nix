@@ -1,21 +1,23 @@
 {
+  lib,
+  fetchFromGitHub,
   _cuda,
   backendStdenv,
   buildPackages,
-  cmake,
   cccl,
+  cmake,
+  cudaAtLeast,
+  cudaMajorMinorVersion,
+  cudaNamePrefix,
   cuda_cudart,
   cuda_nvcc,
   cuda_nvml_dev,
   cuda_nvrtc,
   cuda_nvtx,
-  cudaAtLeast,
-  cudaMajorMinorVersion,
-  cudaNamePrefix,
-  fetchFromGitHub,
   flags,
   gdrcopy,
-  lib,
+  # passthru.updateScript
+  gitUpdater,
   libfabric,
   libnvjitlink,
   mpi,
@@ -25,9 +27,6 @@
   python3Packages,
   rdma-core,
   ucx,
-  # passthru.updateScript
-  gitUpdater,
-
   withGdrcopy ? true,
   withIbgda ? true,
   withLibfabric ? true,
@@ -52,11 +51,6 @@ let
     ;
 in
 backendStdenv.mkDerivation (finalAttrs: {
-  __structuredAttrs = true;
-  strictDeps = true;
-
-  # NOTE: Depends on the CUDA package set, so use cudaNamePrefix.
-  name = "${cudaNamePrefix}-${finalAttrs.pname}-${finalAttrs.version}";
   pname = "libnvshmem";
   version = "3.6.5-0";
 
@@ -68,21 +62,6 @@ backendStdenv.mkDerivation (finalAttrs: {
   };
 
   outputs = [ "out" ];
-
-  nativeBuildInputs = [
-    cuda_nvcc
-    cmake
-    ninja
-
-    # NOTE: Python is required even if not building nvshmem4py:
-    # https://github.com/NVIDIA/nvshmem/blob/131da55f643ac87c810ba0bc51d359258bf433a1/CMakeLists.txt#L173
-    python3Packages.python
-  ]
-  ++ optionals withMpi [
-    # NOTE: mpi is in nativeBuildInputs because it contains compilers and is only discoverable by CMake
-    # when a nativeBuildInput.
-    mpi
-  ];
 
   # NOTE: Hardcoded standard versions mean CMake doesn't respect values we provide, so we need to patch the files.
   postPatch = ''
@@ -101,7 +80,22 @@ backendStdenv.mkDerivation (finalAttrs: {
     unset -v standardName
   '';
 
-  enableParallelBuilding = true;
+  strictDeps = true;
+
+  nativeBuildInputs = [
+    cuda_nvcc
+    cmake
+    ninja
+
+    # NOTE: Python is required even if not building nvshmem4py:
+    # https://github.com/NVIDIA/nvshmem/blob/131da55f643ac87c810ba0bc51d359258bf433a1/CMakeLists.txt#L173
+    python3Packages.python
+  ]
+  ++ optionals withMpi [
+    # NOTE: mpi is in nativeBuildInputs because it contains compilers and is only discoverable by CMake
+    # when a nativeBuildInput.
+    mpi
+  ];
 
   buildInputs = [
     cccl
@@ -127,11 +121,6 @@ backendStdenv.mkDerivation (finalAttrs: {
   ++ optionals withUcx [
     ucx
   ];
-
-  # NOTE: This *must* be an environment variable NVIDIA saw fit to *configure and build CMake projects* while *inside*
-  # a CMake build and didn't correctly thread arguments through, so the environment is the only way to get
-  # configurations to the nested build.
-  env.CUDA_HOME = (getBin cuda_nvcc).outPath;
 
   # https://docs.nvidia.com/nvshmem/release-notes-install-guide/install-guide/nvshmem-install-proc.html#other-distributions
   cmakeFlags = lib.concatLists [
@@ -181,44 +170,56 @@ backendStdenv.mkDerivation (finalAttrs: {
     (optional withPmix (cmakeFeature "PMIX_HOME" (getDev pmix).outPath))
   ];
 
+  # NOTE: This *must* be an environment variable NVIDIA saw fit to *configure and build CMake projects* while *inside*
+  # a CMake build and didn't correctly thread arguments through, so the environment is the only way to get
+  # configurations to the nested build.
+  env.CUDA_HOME = (getBin cuda_nvcc).outPath;
+  doCheck = false;
+
   postInstall = ''
     nixLog "moving top-level files in $out to $out/share"
     mv -v "$out"/{changelog,git_commit.txt,License.txt,version.txt} "$out/share/"
   '';
 
-  doCheck = false;
+  __structuredAttrs = true;
+  enableParallelBuilding = true;
+  # NOTE: Depends on the CUDA package set, so use cudaNamePrefix.
+  name = "${cudaNamePrefix}-${finalAttrs.pname}-${finalAttrs.version}";
 
   passthru = {
+    brokenAssertions = [
+      # CUDA pre-11.7 yeilds macro/type errors in src/include/internal/host_transport/cudawrap.h.
+      {
+        assertion = cudaAtLeast "11.7";
+        message = "NVSHMEM does not support CUDA releases earlier than 11.7 (found ${cudaMajorMinorVersion})";
+      }
+    ];
+
     updateScript = gitUpdater {
       inherit (finalAttrs) pname version;
       rev-prefix = "v";
     };
-
-    brokenAssertions = [
-      # CUDA pre-11.7 yeilds macro/type errors in src/include/internal/host_transport/cudawrap.h.
-      {
-        message = "NVSHMEM does not support CUDA releases earlier than 11.7 (found ${cudaMajorMinorVersion})";
-        assertion = cudaAtLeast "11.7";
-      }
-    ];
   };
 
   meta = {
     description = "Parallel programming interface for NVIDIA GPUs based on OpenSHMEM";
     homepage = "https://github.com/NVIDIA/nvshmem";
     changelog = "https://github.com/NVIDIA/nvshmem/releases/tag/${finalAttrs.src.tag}";
-    broken = _cuda.lib._mkMetaBroken finalAttrs;
     # NOTE: There are many licenses:
     # https://github.com/NVIDIA/nvshmem/blob/7dd48c9fd7aa2134264400802881269b7822bd2f/License.txt
     license = licenses.nvidiaCudaRedist;
-    platforms = [
-      "aarch64-linux"
-      "x86_64-linux"
-    ];
+
     maintainers = with maintainers; [
       connorbaker
       GaetanLepage
     ];
+
+    platforms = [
+      "aarch64-linux"
+      "x86_64-linux"
+    ];
+
+    broken = _cuda.lib._mkMetaBroken finalAttrs;
     teams = [ teams.cuda ];
   };
 })

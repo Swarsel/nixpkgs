@@ -1,8 +1,8 @@
 {
   lib,
+  fetchFromGitHub,
   buildPythonPackage,
   django,
-  fetchFromGitHub,
   flit-core,
   psycopg2,
   pydantic,
@@ -14,7 +14,6 @@
 buildPythonPackage rec {
   pname = "django-ninja";
   version = "1.6.2";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "vitalik";
@@ -23,13 +22,6 @@ buildPythonPackage rec {
     hash = "sha256-nnGIhNGnK7q0nbw7EYJP+xCeS1uiuTrhQxf49dA+Sc8=";
   };
 
-  build-system = [ flit-core ];
-
-  dependencies = [
-    django
-    pydantic
-  ];
-
   nativeCheckInputs = [
     psycopg2
     pytest-asyncio
@@ -37,10 +29,19 @@ buildPythonPackage rec {
     pytestCheckHook
   ];
 
+  build-system = [ flit-core ];
+
+  dependencies = [
+    django
+    pydantic
+  ];
+
+  pyproject = true;
+
   meta = {
-    changelog = "https://github.com/vitalik/django-ninja/releases/tag/${src.tag}";
     description = "Web framework for building APIs with Django and Python type hints";
     homepage = "https://django-ninja.dev";
+    changelog = "https://github.com/vitalik/django-ninja/releases/tag/${src.tag}";
     license = lib.licenses.mit;
     maintainers = [ ];
   };

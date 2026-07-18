@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   testers,
   toxiproxy,
 }:
@@ -19,17 +19,6 @@ buildGoModule (finalAttrs: {
 
   vendorHash = "sha256-4nKWTjB9aV5ILgHVceV76Ip0byBxlEY5TTAQwNLvL2s=";
 
-  excludedPackages = [ "test/e2e" ];
-
-  ldflags = [
-    "-s"
-    "-w"
-    "-X github.com/Shopify/toxiproxy/v2.Version=${finalAttrs.version}"
-  ];
-
-  # Fixes tests on Darwin
-  __darwinAllowLocalNetworking = true;
-
   checkFlags = [
     "-short"
     "-skip=TestVersionEndpointReturnsVersion|TestFullstreamLatencyBiasDown"
@@ -40,24 +29,35 @@ buildGoModule (finalAttrs: {
     mv $out/bin/server $out/bin/toxiproxy-server
   '';
 
+  # Fixes tests on Darwin
+  __darwinAllowLocalNetworking = true;
+  excludedPackages = [ "test/e2e" ];
+
+  ldflags = [
+    "-s"
+    "-w"
+    "-X github.com/Shopify/toxiproxy/v2.Version=${finalAttrs.version}"
+  ];
+
   passthru.tests = {
     cliVersion = testers.testVersion {
       inherit (finalAttrs) version;
-      package = toxiproxy;
       command = "${toxiproxy}/bin/toxiproxy-cli -version";
+      package = toxiproxy;
     };
+
     serverVersion = testers.testVersion {
       inherit (finalAttrs) version;
-      package = toxiproxy;
       command = "${toxiproxy}/bin/toxiproxy-server -version";
+      package = toxiproxy;
     };
   };
 
   meta = {
-    changelog = "https://github.com/Shopify/toxiproxy/releases/tag/v${finalAttrs.version}";
     description = "Proxy for for simulating network conditions";
     homepage = "https://github.com/Shopify/toxiproxy";
-    maintainers = with lib.maintainers; [ avnik ];
+    changelog = "https://github.com/Shopify/toxiproxy/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.mit;
+    maintainers = with lib.maintainers; [ avnik ];
   };
 })

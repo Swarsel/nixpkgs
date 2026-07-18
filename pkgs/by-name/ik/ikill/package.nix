@@ -20,8 +20,8 @@ rustPlatform.buildRustPackage (finalAttrs: {
   meta = {
     description = "Interactively kill running processes";
     homepage = "https://github.com/pombadev/ikill";
-    maintainers = with lib.maintainers; [ zendo ];
     license = [ lib.licenses.mit ];
+    maintainers = with lib.maintainers; [ zendo ];
     platforms = lib.platforms.linux;
     mainProgram = "ikill";
   };

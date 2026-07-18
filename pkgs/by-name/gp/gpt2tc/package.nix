@@ -48,9 +48,9 @@ stdenv.mkDerivation {
   meta = {
     description = "Text completion and compression using GPT-2";
     homepage = "https://bellard.org/libnc/gpt2tc.html";
-    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
     license = lib.licenses.unfree;
-    platforms = [ "x86_64-linux" ];
+    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
     maintainers = with lib.maintainers; [ anna328p ];
+    platforms = [ "x86_64-linux" ];
   };
 }

@@ -9,7 +9,6 @@
 buildPythonPackage rec {
   pname = "murmurhash";
   version = "1.0.15";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
@@ -21,13 +20,11 @@ buildPythonPackage rec {
       --replace "'wheel>=0.32.0,<0.33.0'" ""
   '';
 
-  build-system = [ setuptools ];
-
   buildInputs = [ cython ];
-
   # No test
   doCheck = false;
-
+  build-system = [ setuptools ];
+  pyproject = true;
   pythonImportsCheck = [ "murmurhash" ];
 
   meta = {

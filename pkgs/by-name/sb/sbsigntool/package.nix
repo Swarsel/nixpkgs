@@ -1,18 +1,18 @@
 {
   lib,
   stdenv,
-  fetchgit,
   autoconf,
   automake,
-  pkg-config,
-  help2man,
-  openssl,
-  libuuid,
-  gnu-efi,
-  libbfd,
-  util-linux,
   buildPackages,
   deterministic-host-uname,
+  fetchgit,
+  gnu-efi,
+  help2man,
+  libbfd,
+  libuuid,
+  openssl,
+  pkg-config,
+  util-linux,
   # help2man runs host executables
   withMan ? stdenv.buildPlatform.canExecute stdenv.hostPlatform,
 }:
@@ -29,8 +29,6 @@ stdenv.mkDerivation (finalAttrs: {
 
   patches = [ ./autoconf.patch ];
 
-  prePatch = "patchShebangs .";
-
   nativeBuildInputs = [
     autoconf
     automake
@@ -39,11 +37,16 @@ stdenv.mkDerivation (finalAttrs: {
     util-linux # for getopt used by create-ccan-tree
     deterministic-host-uname # build system incorrectly uses uname to determine host CPU
   ];
+
   buildInputs = [
     openssl
     libuuid
     libbfd
     gnu-efi
+  ];
+
+  makeFlags = [
+    "AR=${stdenv.cc.targetPrefix}ar"
   ];
 
   preConfigure = ''
@@ -61,21 +64,21 @@ stdenv.mkDerivation (finalAttrs: {
     automake --add-missing -Wno-portability
   '';
 
-  makeFlags = [
-    "AR=${stdenv.cc.targetPrefix}ar"
-  ];
+  prePatch = "patchShebangs .";
 
   meta = {
     description = "Tools for maintaining UEFI signature databases";
     homepage = "http://jk.ozlabs.org/docs/sbkeysync-maintaing-uefi-key-databases";
+    license = lib.licenses.gpl3;
+
     maintainers = with lib.maintainers; [
       hmenke
       raitobezarius
     ];
+
     platforms = [
       "x86_64-linux"
       "aarch64-linux"
     ]; # Broken on i686
-    license = lib.licenses.gpl3;
   };
 })

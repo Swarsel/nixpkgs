@@ -2,16 +2,15 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  rustPlatform,
-  versionCheckHook,
-  nix-update-script,
-
   # tests
   lua,
+  nix-update-script,
   nodejs,
   php,
   python3,
   ruby,
+  rustPlatform,
+  versionCheckHook,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -27,10 +26,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
 
   cargoHash = "sha256-HnRNg1/ZVWr6JRIsBf2kH9Xys7Hth4fMI12dClsPKv0=";
 
-  preCheck = ''
-    export PATH=$PATH:$PWD/target/${stdenv.hostPlatform.rust.rustcTarget}/$cargoBuildType
-  '';
-
   nativeCheckInputs = [
     lua
     nodejs
@@ -44,17 +39,20 @@ rustPlatform.buildRustPackage (finalAttrs: {
     "--skip=swift"
   ];
 
-  nativeInstallCheckInputs = [ versionCheckHook ];
-  doInstallCheck = true;
+  preCheck = ''
+    export PATH=$PATH:$PWD/target/${stdenv.hostPlatform.rust.rustcTarget}/$cargoBuildType
+  '';
 
+  doInstallCheck = true;
+  nativeInstallCheckInputs = [ versionCheckHook ];
   passthru.updateScript = nix-update-script { extraArgs = [ "--version-regex=^mask/(.*)$" ]; };
 
   meta = {
     description = "CLI task runner defined by a simple markdown file";
-    mainProgram = "mask";
     homepage = "https://github.com/jacobdeichert/mask";
     changelog = "https://github.com/jacobdeichert/mask/blob/mask/${finalAttrs.version}/CHANGELOG.md";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ defelo ];
+    mainProgram = "mask";
   };
 })

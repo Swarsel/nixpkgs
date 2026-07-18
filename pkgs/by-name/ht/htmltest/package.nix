@@ -1,7 +1,7 @@
 {
-  buildGoModule,
-  fetchFromGitHub,
   lib,
+  fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule (finalAttrs: {
@@ -16,6 +16,8 @@ buildGoModule (finalAttrs: {
   };
 
   vendorHash = "sha256-dTn5aYb5IHFbksmhkXSTJtI0Gnn8Uz0PMZPFzFKMo38=";
+  # tests require network access
+  doCheck = false;
 
   ldflags = [
     "-w"
@@ -23,18 +25,17 @@ buildGoModule (finalAttrs: {
     "-X main.version=${finalAttrs.version}"
   ];
 
-  # tests require network access
-  doCheck = false;
-
   meta = {
     description = "Tool to test generated HTML output";
-    mainProgram = "htmltest";
+
     longDescription = ''
       htmltest runs your HTML output through a series of checks to ensure all your
       links, images, scripts references work, your alt tags are filled in, etc.
     '';
+
     homepage = "https://github.com/wjdp/htmltest";
     license = with lib.licenses; [ mit ];
     maintainers = with lib.maintainers; [ fab ];
+    mainProgram = "htmltest";
   };
 })

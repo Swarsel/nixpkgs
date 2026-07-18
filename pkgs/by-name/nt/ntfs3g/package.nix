@@ -3,20 +3,27 @@
   stdenv,
   fetchFromGitHub,
   autoreconfHook,
-  pkg-config,
   gettext,
-  mount,
-  libuuid,
-  kmod,
-  crypto ? false,
-  libgcrypt,
-  macfuse-stubs,
   gnutls,
+  kmod,
+  libgcrypt,
+  libuuid,
+  macfuse-stubs,
+  mount,
+  pkg-config,
+  crypto ? false,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
   pname = "ntfs3g";
   version = "2026.2.25";
+
+  src = fetchFromGitHub {
+    owner = "tuxera";
+    repo = "ntfs-3g";
+    tag = finalAttrs.version;
+    hash = "sha256-uiVh87ExLXq94NVqR8MEg7Lrvamm6MrH+qP3Nosii5c=";
+  };
 
   outputs = [
     "out"
@@ -25,12 +32,19 @@ stdenv.mkDerivation (finalAttrs: {
     "doc"
   ];
 
-  src = fetchFromGitHub {
-    owner = "tuxera";
-    repo = "ntfs-3g";
-    tag = finalAttrs.version;
-    hash = "sha256-uiVh87ExLXq94NVqR8MEg7Lrvamm6MrH+qP3Nosii5c=";
-  };
+  patches = [
+    # https://github.com/tuxera/ntfs-3g/pull/39
+    ./autoconf-sbin-helpers.patch
+    ./consistent-sbindir-usage.patch
+  ];
+
+  # Note: libgcrypt is listed here non-optionally because its m4 macros are
+  # being used in ntfs-3g's configure.ac.
+  nativeBuildInputs = [
+    autoreconfHook
+    libgcrypt
+    pkg-config
+  ];
 
   buildInputs = [
     gettext
@@ -41,20 +55,6 @@ stdenv.mkDerivation (finalAttrs: {
     libgcrypt
   ]
   ++ lib.optionals stdenv.hostPlatform.isDarwin [ macfuse-stubs ];
-
-  # Note: libgcrypt is listed here non-optionally because its m4 macros are
-  # being used in ntfs-3g's configure.ac.
-  nativeBuildInputs = [
-    autoreconfHook
-    libgcrypt
-    pkg-config
-  ];
-
-  patches = [
-    # https://github.com/tuxera/ntfs-3g/pull/39
-    ./autoconf-sbin-helpers.patch
-    ./consistent-sbindir-usage.patch
-  ];
 
   configureFlags = [
     "--disable-ldconfig"
@@ -85,14 +85,16 @@ stdenv.mkDerivation (finalAttrs: {
   enableParallelBuilding = true;
 
   meta = {
-    homepage = "https://github.com/tuxera/ntfs-3g";
     description = "FUSE-based NTFS driver with full write support";
-    maintainers = [ lib.maintainers.ryand56 ];
-    mainProgram = "ntfs-3g";
-    platforms = with lib.platforms; darwin ++ linux;
+    homepage = "https://github.com/tuxera/ntfs-3g";
+
     license = with lib.licenses; [
       gpl2Plus # ntfs-3g itself
       lgpl2Plus # fuse-lite
     ];
+
+    maintainers = [ lib.maintainers.ryand56 ];
+    platforms = with lib.platforms; darwin ++ linux;
+    mainProgram = "ntfs-3g";
   };
 })

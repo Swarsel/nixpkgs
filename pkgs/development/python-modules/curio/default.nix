@@ -1,18 +1,17 @@
 {
   lib,
-  buildPythonPackage,
-  fetchFromGitHub,
-  setuptools,
-  pytestCheckHook,
-  sphinx,
   stdenv,
+  fetchFromGitHub,
+  buildPythonPackage,
+  pytestCheckHook,
+  setuptools,
+  sphinx,
   unstableGitUpdater,
 }:
 
 buildPythonPackage rec {
   pname = "curio";
   version = "1.6-unstable-2024-04-11";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "dabeaz";
@@ -21,14 +20,13 @@ buildPythonPackage rec {
     hash = "sha256-WLu7XF5wiVzBRQH1KRdAbhluTvGE7VvnRQUS0c3SUDk=";
   };
 
-  build-system = [ setuptools ];
-
   nativeCheckInputs = [
     pytestCheckHook
     sphinx
   ];
 
   __darwinAllowLocalNetworking = true;
+  build-system = [ setuptools ];
 
   disabledTests = [
     "test_cpu" # timing sensitive
@@ -45,8 +43,8 @@ buildPythonPackage rec {
     "test_create_bad_connection"
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "curio" ];
-
   # curio does not package new releaseas any more
   passthru.updateScript = unstableGitUpdater { };
 

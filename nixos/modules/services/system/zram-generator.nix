@@ -9,33 +9,34 @@ let
   settingsFormat = pkgs.formats.ini { };
 in
 {
-  meta = {
-    maintainers = with lib.maintainers; [ nickcao ];
-  };
-
   options.services.zram-generator = {
     enable = lib.mkEnableOption "Systemd unit generator for zram devices";
-
     package = lib.mkPackageOption pkgs "zram-generator" { };
 
     settings = lib.mkOption {
-      type = lib.types.submodule {
-        freeformType = settingsFormat.type;
-      };
       default = { };
+
       description = ''
         Configuration for zram-generator,
         see <https://github.com/systemd/zram-generator> for documentation.
       '';
+
+      type = lib.types.submodule {
+        freeformType = settingsFormat.type;
+      };
     };
   };
 
   config = lib.mkIf cfg.enable {
+    environment.etc."systemd/zram-generator.conf".source =
+      settingsFormat.generate "zram-generator.conf" cfg.settings;
+
     system.requiredKernelConfig = with config.lib.kernelConfig; [
       (isEnabled "ZRAM")
     ];
 
     systemd.packages = [ cfg.package ];
+
     systemd.services."systemd-zram-setup@" = {
       path = [ pkgs.util-linux ]; # for mkswap
       # Restart on switch does swapoff -> reset -> reconfigure -> swapon.
@@ -48,8 +49,9 @@ in
       # need a reboot or manual restart.
       restartIfChanged = false;
     };
+  };
 
-    environment.etc."systemd/zram-generator.conf".source =
-      settingsFormat.generate "zram-generator.conf" cfg.settings;
+  meta = {
+    maintainers = with lib.maintainers; [ nickcao ];
   };
 }

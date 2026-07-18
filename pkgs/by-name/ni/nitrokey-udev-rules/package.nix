@@ -1,8 +1,8 @@
 {
   lib,
-  stdenvNoCC,
   fetchFromGitHub,
   python3,
+  stdenvNoCC,
   udevCheckHook,
 }:
 
@@ -22,8 +22,6 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     udevCheckHook
   ];
 
-  doInstallCheck = true;
-
   buildPhase = ''
     runHook preBuild
 
@@ -36,10 +34,13 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     install -D 41-nitrokey.rules -t $out/etc/udev/rules.d
   '';
 
+  doInstallCheck = true;
+
   meta = {
     description = "udev rules for Nitrokey devices";
     homepage = "https://github.com/Nitrokey/nitrokey-udev-rules";
     license = [ lib.licenses.cc0 ];
+
     maintainers = with lib.maintainers; [
       robinkrahl
     ];

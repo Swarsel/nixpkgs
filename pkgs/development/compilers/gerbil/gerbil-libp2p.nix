@@ -3,11 +3,9 @@
 {
   pname = "gerbil-libp2p";
   version = "unstable-2022-02-03";
-  git-version = "15b3246";
-  softwareName = "Gerbil-libp2p";
-  gerbil-package = "vyzo";
-
   buildInputs = [ ]; # Note: at *runtime*, this depends on go-libp2p-daemon running
+  gerbil-package = "vyzo";
+  git-version = "15b3246";
 
   pre-src = {
     fun = fetchFromGitHub;
@@ -17,11 +15,13 @@
     sha256 = "059lydp7d6pjgrd4pdnqq2zffzlba62ch102f01rgzf9aps3c8lz";
   };
 
+  softwareName = "Gerbil-libp2p";
+
   meta = {
     description = "Gerbil libp2p: use libp2p from Gerbil";
     homepage = "https://github.com/vyzo/gerbil-libp2p";
     license = lib.licenses.mit;
-    platforms = lib.platforms.unix;
     maintainers = with lib.maintainers; [ fare ];
+    platforms = lib.platforms.unix;
   };
 }

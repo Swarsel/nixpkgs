@@ -1,20 +1,20 @@
 {
   lib,
   stdenv,
-  rustPlatform,
-  fetchCrate,
-  pkg-config,
   cmake,
+  fetchCrate,
   fontconfig,
   libGL,
-  libxi,
-  libxcursor,
   libx11,
   libxcb,
+  libxcursor,
+  libxi,
   libxkbcommon,
-  wayland,
-  versionCheckHook,
   nix-update-script,
+  pkg-config,
+  rustPlatform,
+  versionCheckHook,
+  wayland,
 }:
 rustPlatform.buildRustPackage (finalAttrs: {
   pname = "slint-lsp";
@@ -25,7 +25,24 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-6TwEB3t0vwDnvGmZU1LSIkYbA02NEyVI4wbEeqYbatM=";
   };
 
+  nativeBuildInputs = [
+    cmake
+    pkg-config
+    fontconfig
+  ];
+
+  buildInputs = finalAttrs.rpathLibs ++ [ libxcb.dev ];
   cargoHash = "sha256-RTWfR/RmijSj5DlS+9tJ6uG534NmG5jy+p1hliEsdiE=";
+  # Tests requires `i_slint_backend_testing` which is only a dev dependency
+  doCheck = false;
+
+  postInstall = lib.optionalString stdenv.hostPlatform.isLinux ''
+    patchelf --set-rpath ${lib.makeLibraryPath finalAttrs.rpathLibs} $out/bin/slint-lsp
+  '';
+
+  doInstallCheck = true;
+  nativeInstallCheckInputs = [ versionCheckHook ];
+  dontPatchELF = true;
 
   rpathLibs = [
     fontconfig
@@ -40,34 +57,15 @@ rustPlatform.buildRustPackage (finalAttrs: {
     wayland
   ];
 
-  nativeBuildInputs = [
-    cmake
-    pkg-config
-    fontconfig
-  ];
-  buildInputs = finalAttrs.rpathLibs ++ [ libxcb.dev ];
-
-  # Tests requires `i_slint_backend_testing` which is only a dev dependency
-  doCheck = false;
-
-  postInstall = lib.optionalString stdenv.hostPlatform.isLinux ''
-    patchelf --set-rpath ${lib.makeLibraryPath finalAttrs.rpathLibs} $out/bin/slint-lsp
-  '';
-
-  dontPatchELF = true;
-
-  doInstallCheck = true;
-  nativeInstallCheckInputs = [ versionCheckHook ];
-
   passthru.updateScript = nix-update-script { };
 
   meta = {
     description = "Language Server Protocol (LSP) for Slint UI language";
-    mainProgram = "slint-lsp";
     homepage = "https://slint-ui.com/";
-    downloadPage = "https://github.com/slint-ui/slint/";
     changelog = "https://github.com/slint-ui/slint/blob/v${finalAttrs.version}/CHANGELOG.md";
     license = with lib.licenses; [ gpl3Plus ];
     maintainers = with lib.maintainers; [ xgroleau ];
+    mainProgram = "slint-lsp";
+    downloadPage = "https://github.com/slint-ui/slint/";
   };
 })

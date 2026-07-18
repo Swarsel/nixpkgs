@@ -11,13 +11,13 @@
 buildPythonPackage rec {
   pname = "pybtex-docutils";
   version = "1.0.3";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
     hash = "sha256-On69+StZPgDowcU4qpogvKXZLYQjESRxWsyWTVHZPGs=";
   };
 
+  nativeCheckInputs = [ pytestCheckHook ];
   build-system = [ setuptools_80 ];
 
   dependencies = [
@@ -25,8 +25,7 @@ buildPythonPackage rec {
     pybtex
   ];
 
-  nativeCheckInputs = [ pytestCheckHook ];
-
+  pyproject = true;
   pythonImportsCheck = [ "pybtex_docutils" ];
 
   meta = {

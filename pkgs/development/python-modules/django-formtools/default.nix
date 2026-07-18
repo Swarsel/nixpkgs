@@ -1,18 +1,17 @@
 {
   lib,
+  fetchFromGitHub,
   buildPythonPackage,
   django,
-  fetchFromGitHub,
+  pytest-django,
+  pytestCheckHook,
   setuptools,
   setuptools-scm,
-  pytestCheckHook,
-  pytest-django,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "django-formtools";
   version = "2.6.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "jazzband";
@@ -20,13 +19,6 @@ buildPythonPackage (finalAttrs: {
     tag = finalAttrs.version;
     hash = "sha256-cg6bl2KJL2aOES7vWqrR25Bd6t9vWGTZLWtbMUhkCkg=";
   };
-
-  build-system = [
-    setuptools
-    setuptools-scm
-  ];
-
-  dependencies = [ django ];
 
   nativeCheckInputs = [
     pytestCheckHook
@@ -37,6 +29,13 @@ buildPythonPackage (finalAttrs: {
     export DJANGO_SETTINGS_MODULE=tests.settings
   '';
 
+  build-system = [
+    setuptools
+    setuptools-scm
+  ];
+
+  dependencies = [ django ];
+
   disabledTests = [
     # mismatch between test collection of django and pytest-django
     "TestStorage"
@@ -45,6 +44,7 @@ buildPythonPackage (finalAttrs: {
     "test_reset_cookie"
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "formtools" ];
 
   meta = {

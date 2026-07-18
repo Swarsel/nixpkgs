@@ -40,35 +40,34 @@ let
   argsToOverride =
     args:
     {
-      name = "${args.name or "${args.pname}-${args.version}"}-source";
-
       outputs = [ "out" ];
+      installPhase = "cp -pr --reflink=auto -- . $out";
+      dontInstall = false;
+
+      dontUnpack = lib.warnIf (args.dontUnpack or false
+      ) "srcOnly: derivation has dontUnpack set, overriding" false;
+
+      name = "${args.name or "${args.pname}-${args.version}"}-source";
+      outputBin = "out";
+      # the original derivation might've set something like outputDev = "lib", but "lib" isn't an output anymore
+      # some things get confused and error if one of these is set to an output that doesn't exist
+      # ex: pkgs/build-support/setup-hooks/multiple-outputs.sh
+      outputDev = "out";
+      outputDevdoc = "out";
+      outputDevman = "out";
+      outputDoc = "out";
+      outputInclude = "out";
+      outputInfo = "out";
+      outputLib = "out";
+      outputMan = "out";
 
       phases = [
         "unpackPhase"
         "patchPhase"
         "installPhase"
       ];
+
       separateDebugInfo = false;
-
-      dontUnpack = lib.warnIf (args.dontUnpack or false
-      ) "srcOnly: derivation has dontUnpack set, overriding" false;
-
-      dontInstall = false;
-      installPhase = "cp -pr --reflink=auto -- . $out";
-
-      # the original derivation might've set something like outputDev = "lib", but "lib" isn't an output anymore
-      # some things get confused and error if one of these is set to an output that doesn't exist
-      # ex: pkgs/build-support/setup-hooks/multiple-outputs.sh
-      outputDev = "out";
-      outputBin = "out";
-      outputInclude = "out";
-      outputLib = "out";
-      outputDoc = "out";
-      outputDevdoc = "out";
-      outputMan = "out";
-      outputDevman = "out";
-      outputInfo = "out";
 
     }
     // lib.optionalAttrs (lib.isAttrs args.outputChecks or null) {

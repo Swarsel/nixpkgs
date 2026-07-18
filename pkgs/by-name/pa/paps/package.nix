@@ -3,12 +3,12 @@
   stdenv,
   fetchFromGitHub,
   fetchpatch,
-  meson,
-  ninja,
-  pkg-config,
   fmt_11,
   glib,
+  meson,
+  ninja,
   pango,
+  pkg-config,
   versionCheckHook,
 }:
 
@@ -26,9 +26,9 @@ stdenv.mkDerivation (finalAttrs: {
   patches = [
     # remove when 0.8.1 is released
     (fetchpatch {
-      url = "https://github.com/dov/paps/commit/e9270aaac5e0b8018a6fad9a562ee48e7b2c3113.patch";
-      name = "fix-g_utf8_next_char-cast";
       hash = "sha256-fedkyjd8cGFUuUQCbGii7wfMCmK6vye/1/vHWuJiJI4=";
+      name = "fix-g_utf8_next_char-cast";
+      url = "https://github.com/dov/paps/commit/e9270aaac5e0b8018a6fad9a562ee48e7b2c3113.patch";
     })
   ];
 
@@ -37,14 +37,15 @@ stdenv.mkDerivation (finalAttrs: {
     ninja
     pkg-config
   ];
+
   buildInputs = [
     fmt_11
     glib
     pango
   ];
 
-  nativeInstallCheckInputs = [ versionCheckHook ];
   doInstallCheck = true;
+  nativeInstallCheckInputs = [ versionCheckHook ];
 
   meta = {
     description = "Pango to PostScript converter";

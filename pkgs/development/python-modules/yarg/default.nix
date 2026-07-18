@@ -1,17 +1,16 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   fetchpatch2,
+  pytestCheckHook,
   requests,
   setuptools,
-  pytestCheckHook,
 }:
 
 buildPythonPackage {
   pname = "yarg";
   version = "0.1.9-unstable-2022-02-06";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "kura";
@@ -24,16 +23,15 @@ buildPythonPackage {
   patches = [
     # Python 3.12 compatibility patch
     (fetchpatch2 {
-      url = "https://github.com/kura/yarg/commit/8d5532e4da11ab0e9a4453658cf0591dcf80a616.patch?full_index=1";
       hash = "sha256-2lbOzEfWTtoZYuRjCQJAFeYUsJoQhhEohflvYOwLXnI=";
+      url = "https://github.com/kura/yarg/commit/8d5532e4da11ab0e9a4453658cf0591dcf80a616.patch?full_index=1";
     })
   ];
 
-  dependencies = [ requests ];
-
-  build-system = [ setuptools ];
-
   nativeCheckInputs = [ pytestCheckHook ];
+  build-system = [ setuptools ];
+  dependencies = [ requests ];
+  pyproject = true;
 
   meta = {
     description = "Easy to use PyPI client";

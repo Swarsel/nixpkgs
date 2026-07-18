@@ -1,11 +1,11 @@
 {
   lib,
-  makeSetupHook,
   dieHook,
+  makeSetupHook,
 }:
 
 makeSetupHook {
-  name = "shorten-perl-shebang-hook";
   propagatedBuildInputs = [ dieHook ];
+  name = "shorten-perl-shebang-hook";
   meta.license = lib.licenses.mit;
 } ./shorten-perl-shebang.sh

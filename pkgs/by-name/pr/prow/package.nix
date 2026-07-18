@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   gitMinimal,
   nix-update-script,
 }:
@@ -9,20 +9,22 @@
 buildGoModule rec {
   pname = "prow";
   version = "0-unstable-2026-07-09";
-  rev = "bcf4297e528a75b2aa580c5dce3e7b97e38f4553";
 
   src = fetchFromGitHub {
     inherit rev;
-
     owner = "kubernetes-sigs";
     repo = "prow";
     hash = "sha256-pPmkWcnEPWyWWCIlujvDvoAlZ67SrM1X8lP/WJFomyI=";
   };
 
   vendorHash = "sha256-iLJ2atYyHNMvflyuETpPnuhKD293k25vfZQU68Y7oN8=";
+  nativeCheckInputs = [ gitMinimal ];
+  # Workaround for: panic: httptest: failed to listen on a port: listen tcp6 [::1]:0: bind: operation not permitted
+  # ref: https://github.com/NixOS/nix/pull/1646
+  __darwinAllowLocalNetworking = true;
+  rev = "bcf4297e528a75b2aa580c5dce3e7b97e38f4553";
 
   # doCheck = false;
-
   subPackages = [
     "cmd/admission"
     "cmd/branchprotector"
@@ -63,12 +65,6 @@ buildGoModule rec {
     "cmd/webhook-server"
   ];
 
-  nativeCheckInputs = [ gitMinimal ];
-
-  # Workaround for: panic: httptest: failed to listen on a port: listen tcp6 [::1]:0: bind: operation not permitted
-  # ref: https://github.com/NixOS/nix/pull/1646
-  __darwinAllowLocalNetworking = true;
-
   passthru = {
     updateScript = nix-update-script {
       extraArgs = [ "--version=branch" ];
@@ -77,6 +73,7 @@ buildGoModule rec {
 
   meta = {
     description = "Kubernetes based CI/CD system developed to serve the Kubernetes community";
+
     longDescription = ''
       Prow is a Kubernetes based CI/CD system. Jobs can be triggered by various
       types of events and report their status to many different services. In
@@ -84,6 +81,7 @@ buildGoModule rec {
       policy enforcement, chat-ops via /foo style commands, and automatic PR
       merging.
     '';
+
     homepage = "https://github.com/kubernetes-sigs/prow";
     license = lib.licenses.asl20;
     maintainers = with lib.maintainers; [ kalbasit ];

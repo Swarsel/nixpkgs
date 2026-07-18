@@ -1,15 +1,13 @@
 {
   lib,
   stdenv,
-  python3Packages,
   fetchFromGitHub,
+  python3Packages,
 }:
 
 python3Packages.buildPythonApplication (finalAttrs: {
   pname = "daktari";
   version = "0.0.341";
-  pyproject = true;
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "genio-learn";
@@ -20,12 +18,12 @@ python3Packages.buildPythonApplication (finalAttrs: {
 
   patches = [ ./optional-pyclip.patch ];
 
-  pythonRelaxDeps = true;
-
   postPatch = lib.optionalString stdenv.hostPlatform.isDarwin ''
     # pyclip is broken on macOS in nixpkgs
     substituteInPlace requirements.txt --replace-fail "pyclip==0.7.0" ""
   '';
+
+  __structuredAttrs = true;
 
   build-system = with python3Packages; [
     setuptools
@@ -59,7 +57,9 @@ python3Packages.buildPythonApplication (finalAttrs: {
       pyobjc-framework-Cocoa
     ];
 
+  pyproject = true;
   pythonImportsCheck = [ "daktari" ];
+  pythonRelaxDeps = true;
 
   meta = {
     description = "Tool to assist in setting up and maintaining developer environments";

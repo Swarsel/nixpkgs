@@ -1,14 +1,14 @@
 {
   lib,
-  mkKdeDerivation,
-  replaceVars,
-  pkg-config,
-  qtkeychain,
-  qtwebengine,
   kirigami-addons,
+  mkKdeDerivation,
   mobile-broadband-provider-info,
   openconnect,
   openvpn,
+  pkg-config,
+  qtkeychain,
+  qtwebengine,
+  replaceVars,
   strongswan,
 }:
 mkKdeDerivation {
@@ -16,12 +16,11 @@ mkKdeDerivation {
 
   patches = [
     (replaceVars ./hardcode-paths.patch {
-      openvpn = lib.getExe openvpn;
       ipsec = lib.getExe' strongswan "ipsec";
+      openvpn = lib.getExe openvpn;
     })
   ];
 
-  extraNativeBuildInputs = [ pkg-config ];
   extraBuildInputs = [
     qtkeychain
     qtwebengine
@@ -29,5 +28,6 @@ mkKdeDerivation {
     openconnect
   ];
 
+  extraNativeBuildInputs = [ pkg-config ];
   extraPropagatedBuildInputs = [ kirigami-addons ];
 }

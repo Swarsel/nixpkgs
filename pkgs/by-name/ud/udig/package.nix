@@ -1,12 +1,12 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchurl,
-  unzip,
-  makeWrapper,
+  gdal,
   jre8,
   libxtst,
-  gdal,
+  makeWrapper,
+  unzip,
 }:
 let
   pname = "udig";
@@ -14,8 +14,8 @@ let
 
   srcs = {
     x86_64-linux = fetchurl {
-      url = "http://udig.refractions.net/files/downloads/udig-${version}.linux.gtk.x86_64.zip";
       hash = "sha256-ijuSWq1jSsB8K653bjcUdNwVGZscDaTuegBr01oNEg4=";
+      url = "http://udig.refractions.net/files/downloads/udig-${version}.linux.gtk.x86_64.zip";
     };
   };
   src =
@@ -24,11 +24,13 @@ let
   meta = {
     description = "User-friendly Desktop Internet GIS";
     homepage = "http://udig.refractions.net/";
-    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
+
     license = with lib.licenses; [
       epl10
       bsd3
     ];
+
+    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
     maintainers = with lib.maintainers; [ sikmir ];
     platforms = builtins.attrNames srcs;
     mainProgram = "udig";
@@ -75,15 +77,15 @@ let
       meta
       ;
 
-    nativeBuildInputs = [
-      unzip
-      makeWrapper
-    ];
-
     postPatch = ''
       substituteInPlace configuration/config.ini \
         --replace "\$LOCALAPPDATA\$" "@user.home"
     '';
+
+    nativeBuildInputs = [
+      unzip
+      makeWrapper
+    ];
 
     installPhase = ''
       mkdir -p $out/Applications/udig

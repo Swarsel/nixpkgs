@@ -1,7 +1,7 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -21,7 +21,7 @@ rustPlatform.buildRustPackage (finalAttrs: {
     description = "Sleek Manifest File Handler";
     homepage = "https://github.com/feel-co/smfh";
     license = lib.licenses.agpl3Only;
-    teams = [ lib.teams.feel-co ];
     mainProgram = "smfh";
+    teams = [ lib.teams.feel-co ];
   };
 })

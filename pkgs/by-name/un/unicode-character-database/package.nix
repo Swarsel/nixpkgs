@@ -1,7 +1,7 @@
 {
   lib,
-  stdenvNoCC,
   fetchurl,
+  stdenvNoCC,
   unzip,
 }:
 
@@ -18,8 +18,6 @@ stdenvNoCC.mkDerivation rec {
     unzip
   ];
 
-  sourceRoot = ".";
-
   installPhase = ''
     runHook preInstall
 
@@ -29,6 +27,8 @@ stdenvNoCC.mkDerivation rec {
 
     runHook postInstall
   '';
+
+  sourceRoot = ".";
 
   meta = {
     description = "Unicode Character Database";

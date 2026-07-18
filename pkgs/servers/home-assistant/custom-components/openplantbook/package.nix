@@ -1,7 +1,7 @@
 {
   lib,
-  buildHomeAssistantComponent,
   fetchFromGitHub,
+  buildHomeAssistantComponent,
   json-timeseries,
   openplantbook-sdk,
   pytest-homeassistant-custom-component,
@@ -9,8 +9,6 @@
 }:
 
 buildHomeAssistantComponent rec {
-  owner = "olen";
-  domain = "openplantbook";
   version = "1.6.0";
 
   src = fetchFromGitHub {
@@ -20,9 +18,9 @@ buildHomeAssistantComponent rec {
     hash = "sha256-Lk+dyrBwTqRil64fVm28bhN+q57bA5U9FpX2wFf/g8I=";
   };
 
-  ignoreVersionRequirement = [
-    "json-timeseries"
-    "openplantbook-sdk"
+  nativeCheckInputs = [
+    pytest-homeassistant-custom-component
+    pytestCheckHook
   ];
 
   dependencies = [
@@ -30,16 +28,20 @@ buildHomeAssistantComponent rec {
     openplantbook-sdk
   ];
 
-  nativeCheckInputs = [
-    pytest-homeassistant-custom-component
-    pytestCheckHook
+  domain = "openplantbook";
+
+  ignoreVersionRequirement = [
+    "json-timeseries"
+    "openplantbook-sdk"
   ];
+
+  owner = "olen";
 
   meta = {
     description = "Integration to search and fetch data from Openplantbook.io";
     homepage = "https://github.com/Olen/home-assistant-openplantbook";
     changelog = "https://github.com/Olen/home-assistant-openplantbook/releases/tag/${src.tag}";
-    maintainers = with lib.maintainers; [ SuperSandro2000 ];
     license = lib.licenses.gpl3Only;
+    maintainers = with lib.maintainers; [ SuperSandro2000 ];
   };
 }

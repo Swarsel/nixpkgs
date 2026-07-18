@@ -2,19 +2,18 @@
   buildPythonPackage,
   certbot,
   cryptography,
+  josepy,
   pyopenssl,
   pyrfc3339,
-  josepy,
   requests,
   setuptools,
 }:
 
 buildPythonPackage rec {
-  pname = "acme";
   inherit (certbot) version src;
-  pyproject = true;
-
-  sourceRoot = "${src.name}/acme";
+  pname = "acme";
+  # does not contain any tests
+  doCheck = false;
 
   build-system = [
     setuptools
@@ -28,10 +27,9 @@ buildPythonPackage rec {
     josepy
   ];
 
-  # does not contain any tests
-  doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "acme" ];
+  sourceRoot = "${src.name}/acme";
 
   meta = certbot.meta // {
     description = "ACME protocol implementation in Python";

@@ -1,10 +1,10 @@
 {
   lib,
+  fetchFromGitHub,
   buildGoModule,
   buildNpmPackage,
-  fetchFromGitHub,
-  makeWrapper,
   iptables,
+  makeWrapper,
   nixosTests,
   nodejs_22,
 }:
@@ -20,49 +20,46 @@ buildGoModule (finalAttrs: {
     hash = "sha256-x4QNEn5SR6D1YIiv+mKnQlZ94jZ7BrdIxiLxBqhtBjg=";
   };
 
-  proxyVendor = true; # darwin/linux hash mismatch
-  vendorHash = "sha256-pjQeF1+1gr/0pF76KNdK7GDX3pYBTqqY3xbJeMLsJIM=";
-
-  env.CGO_ENABLED = 1;
-
-  ldflags = [
-    "-s"
-    "-w"
-  ];
-
-  nativeBuildInputs = [ makeWrapper ];
-
-  checkFlags = [ "-skip=TestDNSProxy_ServeDNS" ];
-
-  ui = buildNpmPackage {
-    inherit (finalAttrs) version src;
-    pname = "wg-access-server-ui";
-
-    nodejs = nodejs_22;
-
-    npmDepsHash = "sha256-UntV5+9E2lyp8IQGKbbnBNdd0JLvM5NsfkLvCSOgyGo=";
-
-    sourceRoot = "${finalAttrs.src.name}/website";
-
-    installPhase = ''
-      mv build $out
-    '';
-  };
-
   postPatch = ''
     substituteInPlace internal/services/website_router.go \
         --replace-fail 'website/build' "${finalAttrs.ui}"
   '';
 
+  nativeBuildInputs = [ makeWrapper ];
+  vendorHash = "sha256-pjQeF1+1gr/0pF76KNdK7GDX3pYBTqqY3xbJeMLsJIM=";
+  env.CGO_ENABLED = 1;
+
   preBuild = ''
     VERSION=v${finalAttrs.version} go generate buildinfo/buildinfo.go
   '';
+
+  checkFlags = [ "-skip=TestDNSProxy_ServeDNS" ];
 
   postInstall = ''
     mkdir -p $out/
     wrapProgram  $out/bin/wg-access-server \
       --prefix PATH : ${lib.makeBinPath [ iptables ]}
   '';
+
+  ldflags = [
+    "-s"
+    "-w"
+  ];
+
+  proxyVendor = true; # darwin/linux hash mismatch
+
+  ui = buildNpmPackage {
+    inherit (finalAttrs) version src;
+    pname = "wg-access-server-ui";
+    npmDepsHash = "sha256-UntV5+9E2lyp8IQGKbbnBNdd0JLvM5NsfkLvCSOgyGo=";
+
+    installPhase = ''
+      mv build $out
+    '';
+
+    nodejs = nodejs_22;
+    sourceRoot = "${finalAttrs.src.name}/website";
+  };
 
   passthru = {
     tests = { inherit (nixosTests) wg-access-server; };

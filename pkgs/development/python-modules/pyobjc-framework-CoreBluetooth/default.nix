@@ -1,8 +1,8 @@
 {
+  lib,
+  fetchFromGitHub,
   buildPythonPackage,
   darwin,
-  fetchFromGitHub,
-  lib,
   pyobjc-core,
   pyobjc-framework-Cocoa,
   setuptools,
@@ -10,28 +10,9 @@
 }:
 
 buildPythonPackage rec {
-  pname = "pyobjc-framework-CoreBluetooth";
-  pyproject = true;
-
   inherit (pyobjc-core) version src;
-
+  pname = "pyobjc-framework-CoreBluetooth";
   patches = pyobjc-core.patches or [ ];
-
-  sourceRoot = "${src.name}/pyobjc-framework-CoreBluetooth";
-
-  build-system = [ setuptools ];
-
-  buildInputs = [
-    darwin.libffi
-  ];
-
-  nativeBuildInputs = [
-    darwin.DarwinTools # sw_vers
-  ];
-
-  nativeCheckInputs = [
-    unittestCheckHook
-  ];
 
   # See https://github.com/ronaldoussoren/pyobjc/pull/641. Unfortunately, we
   # cannot just pull that diff with fetchpatch due to https://discourse.nixos.org/t/how-to-apply-patches-with-sourceroot/59727.
@@ -42,9 +23,12 @@ buildPythonPackage rec {
       --replace-fail "/usr/bin/" ""
   '';
 
-  dependencies = [
-    pyobjc-core
-    pyobjc-framework-Cocoa
+  nativeBuildInputs = [
+    darwin.DarwinTools # sw_vers
+  ];
+
+  buildInputs = [
+    darwin.libffi
   ];
 
   env.NIX_CFLAGS_COMPILE = toString [
@@ -52,15 +36,30 @@ buildPythonPackage rec {
     "-Wno-error=unused-command-line-argument"
   ];
 
+  nativeCheckInputs = [
+    unittestCheckHook
+  ];
+
+  build-system = [ setuptools ];
+
+  dependencies = [
+    pyobjc-core
+    pyobjc-framework-Cocoa
+  ];
+
+  pyproject = true;
+
   pythonImportsCheck = [
     "CoreBluetooth"
   ];
+
+  sourceRoot = "${src.name}/pyobjc-framework-CoreBluetooth";
 
   meta = {
     description = "PyObjC wrappers for the CoreBluetooth framework on macOS";
     homepage = "https://github.com/ronaldoussoren/pyobjc/tree/main/pyobjc-framework-CoreBluetooth";
     license = lib.licenses.mit;
-    platforms = lib.platforms.darwin;
     maintainers = with lib.maintainers; [ prusnak ];
+    platforms = lib.platforms.darwin;
   };
 }

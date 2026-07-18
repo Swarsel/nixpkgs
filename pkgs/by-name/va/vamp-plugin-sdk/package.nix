@@ -5,8 +5,8 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  pkg-config,
   libsndfile,
+  pkg-config,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -23,13 +23,14 @@ stdenv.mkDerivation (finalAttrs: {
   nativeBuildInputs = [ pkg-config ];
   buildInputs = [ libsndfile ];
 
-  # build is susceptible to race conditions: https://github.com/vamp-plugins/vamp-plugin-sdk/issues/12
-  enableParallelBuilding = false;
   makeFlags = [
     "AR:=$(AR)"
     "RANLIB:=$(RANLIB)"
   ]
   ++ lib.optional (stdenv.buildPlatform != stdenv.hostPlatform) "-o test";
+
+  # build is susceptible to race conditions: https://github.com/vamp-plugins/vamp-plugin-sdk/issues/12
+  enableParallelBuilding = false;
 
   meta = {
     description = "Audio processing plugin system for plugins that extract descriptive information from audio data";

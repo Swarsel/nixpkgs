@@ -17,13 +17,13 @@ buildGoModule (finalAttrs: {
 
   vendorHash = "sha256-+4vegNCaDWaGwhEyk5msCuydC5IvQuGEatc1U1CZRjc=";
 
-  subPackages = [ "src/server/cmd/pachctl" ];
-
   ldflags = [
     "-s"
     "-w"
     "-X github.com/pachyderm/pachyderm/v${lib.versions.major finalAttrs.version}/src/version.AppVersion=${finalAttrs.version}"
   ];
+
+  subPackages = [ "src/server/cmd/pachctl" ];
 
   meta = {
     description = "Containerized Data Analytics";

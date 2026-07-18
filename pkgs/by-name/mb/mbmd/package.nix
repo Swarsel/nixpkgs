@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
 }:
 let
   version = "0.13-unstable-2025-08-08";
@@ -9,8 +9,8 @@ let
   modulePath = "github.com/volkszaehler/mbmd";
 in
 buildGoModule {
-  pname = "mbmd";
   inherit version;
+  pname = "mbmd";
 
   src = fetchFromGitHub {
     inherit rev;
@@ -19,7 +19,8 @@ buildGoModule {
     hash = "sha256-HdldLF9+QgaIvGG8lAENvUiPonMwrdHUphGRSmaeRj8=";
   };
 
-  tags = [ "release" ];
+  vendorHash = "sha256-L816AQmyL6ZctKgImbU/cAYSQkQhxuhvtr4SyjPKMFs=";
+  env.CGO_ENABLED = 0; # NOTE: Pure Go
 
   ldflags = [
     "-s"
@@ -28,9 +29,7 @@ buildGoModule {
     "-X ${modulePath}/server.Commit=${rev}"
   ];
 
-  vendorHash = "sha256-L816AQmyL6ZctKgImbU/cAYSQkQhxuhvtr4SyjPKMFs=";
-
-  env.CGO_ENABLED = 0; # NOTE: Pure Go
+  tags = [ "release" ];
 
   meta = {
     description = "ModBus Measurement Daemon - simple reading of data from ModBus meters and grid inverters";

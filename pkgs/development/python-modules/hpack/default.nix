@@ -1,16 +1,15 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
+  buildPythonPackage,
   hypothesis,
   pytestCheckHook,
+  setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "hpack";
   version = "4.1.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "python-hyper";
@@ -19,19 +18,19 @@ buildPythonPackage rec {
     hash = "sha256-vbxfDlRDwMXuzkPO0oceCpSz1ekLNxLSj4iocdHo680=";
   };
 
-  build-system = [ setuptools ];
-
   nativeCheckInputs = [
     hypothesis
     pytestCheckHook
   ];
 
+  build-system = [ setuptools ];
+  pyproject = true;
   pythonImportsCheck = [ "hpack" ];
 
   meta = {
-    changelog = "https://github.com/python-hyper/hpack/blob/${src.rev}/CHANGELOG.rst";
     description = "Pure-Python HPACK header compression";
     homepage = "https://github.com/python-hyper/hpack";
+    changelog = "https://github.com/python-hyper/hpack/blob/${src.rev}/CHANGELOG.rst";
     license = lib.licenses.mit;
     maintainers = [ ];
   };

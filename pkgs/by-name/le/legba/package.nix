@@ -1,10 +1,10 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
   cmake,
-  pkg-config,
   openssl,
+  pkg-config,
+  rustPlatform,
   samba,
 }:
 
@@ -19,17 +19,17 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-iynUReIWebfBkmWxbajsKbdfWSy+fzqF3NNssjtshYY=";
   };
 
-  cargoHash = "sha256-clqOTFUOxZ1yt2YVgVDvsq2MhwMH7/s+jHSwt3buXgU=";
-
   nativeBuildInputs = [
     cmake
     pkg-config
   ];
+
   buildInputs = [
     openssl.dev
     samba
   ];
 
+  cargoHash = "sha256-clqOTFUOxZ1yt2YVgVDvsq2MhwMH7/s+jHSwt3buXgU=";
   # Paho C test fails due to permission issue
   doCheck = false;
 

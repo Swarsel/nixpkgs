@@ -1,11 +1,11 @@
 {
   lib,
-  stdenvNoCC,
   fetchFromGitHub,
   coreutils,
   gnused,
-  postgresql,
   makeWrapper,
+  postgresql,
+  stdenvNoCC,
 }:
 
 stdenvNoCC.mkDerivation rec {
@@ -20,9 +20,6 @@ stdenvNoCC.mkDerivation rec {
   };
 
   nativeBuildInputs = [ makeWrapper ];
-
-  dontConfigure = true;
-  dontBuild = true;
 
   installPhase = ''
     runHook preInstall
@@ -40,12 +37,15 @@ stdenvNoCC.mkDerivation rec {
     runHook postInstall
   '';
 
+  dontBuild = true;
+  dontConfigure = true;
+
   meta = {
+    inherit (postgresql.meta) platforms;
     description = "Tool to run a PostreSQL query and output the result as CSV";
     homepage = "https://github.com/fphilipe/psql2csv";
     license = lib.licenses.mit;
     maintainers = [ ];
-    inherit (postgresql.meta) platforms;
     mainProgram = "psql2csv";
   };
 }

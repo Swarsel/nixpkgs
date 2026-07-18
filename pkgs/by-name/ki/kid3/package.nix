@@ -1,10 +1,11 @@
 {
   lib,
+  stdenv,
+  fetchurl,
   chromaprint,
   cmake,
   docbook_xml_dtd_45,
   docbook_xsl,
-  fetchurl,
   ffmpeg,
   flac,
   id3lib,
@@ -17,7 +18,6 @@
   python3,
   qt6,
   readline,
-  stdenv,
   taglib,
   zlib,
   # Boolean flags
@@ -99,8 +99,8 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   meta = {
-    homepage = "https://kid3.kde.org/";
     description = "Simple and powerful audio tag editor";
+
     longDescription = ''
       If you want to easily tag multiple MP3, Ogg/Vorbis, FLAC, MPC, MP4/AAC,
       MP2, Opus, Speex, TrueAudio, WavPack, WMA, WAV and AIFF files (e.g. full
@@ -130,7 +130,12 @@ stdenv.mkDerivation (finalAttrs: {
       - Edit synchronized lyrics and event timing codes, import and export
         LRC files.
     '';
+
+    homepage = "https://kid3.kde.org/";
     license = lib.licenses.lgpl2Plus;
+    maintainers = [ ];
+    platforms = lib.platforms.linux;
+
     mainProgram =
       if withQt then
         "kid3-qt"
@@ -138,7 +143,5 @@ stdenv.mkDerivation (finalAttrs: {
         "kid3"
       else
         "kid3-cli";
-    maintainers = [ ];
-    platforms = lib.platforms.linux;
   };
 })

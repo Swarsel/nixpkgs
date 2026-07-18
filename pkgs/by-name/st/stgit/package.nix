@@ -1,20 +1,20 @@
 {
-  stdenv,
   lib,
-  rustPlatform,
+  stdenv,
   fetchFromGitHub,
-  pkg-config,
-  installShellFiles,
-  makeWrapper,
   asciidoc,
-  docbook_xsl,
-  docbook_xml_dtd_45,
-  xmlto,
   curl,
-  git,
-  perl,
   darwin,
+  docbook_xml_dtd_45,
+  docbook_xsl,
+  git,
+  installShellFiles,
   libiconv,
+  makeWrapper,
+  perl,
+  pkg-config,
+  rustPlatform,
+  xmlto,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -27,29 +27,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
     rev = "v${finalAttrs.version}";
     hash = "sha256-zl3xy4t15QwdHeo0cjtorOcmD6oerprUswoMubpVLGU=";
   };
-
-  cargoHash = "sha256-HPwKKh2QAG690u5pVIIp6Mu6ejaXmIuSuzMLt2tvwhw=";
-
-  nativeBuildInputs = [
-    pkg-config
-    installShellFiles
-    makeWrapper
-    asciidoc
-    xmlto
-    docbook_xsl
-    docbook_xml_dtd_45
-    perl
-  ];
-  buildInputs = [ curl ];
-
-  nativeCheckInputs = [
-    git
-    perl
-  ]
-  ++ lib.optionals stdenv.hostPlatform.isDarwin [
-    darwin.system_cmds
-    libiconv
-  ];
 
   postPatch = ''
     for f in Documentation/*.xsl; do
@@ -65,23 +42,35 @@ rustPlatform.buildRustPackage (finalAttrs: {
                 ${docbook_xml_dtd_45}/xml/dtd/docbook/docbookx.dtd
   '';
 
+  nativeBuildInputs = [
+    pkg-config
+    installShellFiles
+    makeWrapper
+    asciidoc
+    xmlto
+    docbook_xsl
+    docbook_xml_dtd_45
+    perl
+  ];
+
+  buildInputs = [ curl ];
+  cargoHash = "sha256-HPwKKh2QAG690u5pVIIp6Mu6ejaXmIuSuzMLt2tvwhw=";
+
   makeFlags = [
     "prefix=${placeholder "out"}"
     "XMLTO_EXTRA=--skip-validation"
     "PERL_PATH=${perl}/bin/perl"
   ];
 
-  dontCargoBuild = true;
   buildFlags = [ "all" ];
 
-  dontCargoCheck = true;
-  checkTarget = "test";
-
-  dontCargoInstall = true;
-  installTargets = [
-    "install"
-    "install-man"
-    "install-html"
+  nativeCheckInputs = [
+    git
+    perl
+  ]
+  ++ lib.optionals stdenv.hostPlatform.isDarwin [
+    darwin.system_cmds
+    libiconv
   ];
 
   postInstall = ''
@@ -93,12 +82,23 @@ rustPlatform.buildRustPackage (finalAttrs: {
       --zsh completion/stgit.zsh
   '';
 
+  checkTarget = "test";
+  dontCargoBuild = true;
+  dontCargoCheck = true;
+  dontCargoInstall = true;
+
+  installTargets = [
+    "install"
+    "install-man"
+    "install-html"
+  ];
+
   meta = {
     description = "Patch manager implemented on top of Git";
     homepage = "https://stacked-git.github.io/";
     license = lib.licenses.gpl2Only;
-    platforms = lib.platforms.unix;
     maintainers = with lib.maintainers; [ jshholland ];
+    platforms = lib.platforms.unix;
     mainProgram = "stg";
   };
 })

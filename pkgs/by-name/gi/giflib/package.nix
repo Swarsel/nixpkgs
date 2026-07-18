@@ -1,12 +1,11 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchurl,
-  fixDarwinDylibNames,
-
   # for passthru.tests
   SDL2_image,
   SDL_image,
+  fixDarwinDylibNames,
   gdal,
   imlib2,
   leptonica,
@@ -34,20 +33,12 @@ stdenv.mkDerivation (finalAttrs: {
   ++ lib.optionals stdenv.hostPlatform.isMinGW [
     # Build dll libraries.
     (fetchurl {
-      url = "https://aur.archlinux.org/cgit/aur.git/plain/001-mingw-build.patch?h=mingw-w64-giflib&id=b7311edf54824ac797c7916cd3ddc3a4b2368a19";
       hash = "sha256-bBx7lw7FWtxZJ+E9AAbKIpCGcJnS5lrGpjYcv/zBtKk=";
+      url = "https://aur.archlinux.org/cgit/aur.git/plain/001-mingw-build.patch?h=mingw-w64-giflib&id=b7311edf54824ac797c7916cd3ddc3a4b2368a19";
     })
 
     # Install executables.
     ./mingw-install-exes.patch
-  ];
-
-  nativeBuildInputs = lib.optionals stdenv.hostPlatform.isDarwin [
-    fixDarwinDylibNames
-  ];
-
-  makeFlags = [
-    "PREFIX=${placeholder "out"}"
   ];
 
   postPatch = ''
@@ -64,8 +55,15 @@ stdenv.mkDerivation (finalAttrs: {
     sed -i '/ln -sf $(LIBGIFSOMAJOR)/ d' Makefile
   '';
 
+  nativeBuildInputs = lib.optionals stdenv.hostPlatform.isDarwin [
+    fixDarwinDylibNames
+  ];
+
+  makeFlags = [
+    "PREFIX=${placeholder "out"}"
+  ];
+
   passthru.tests = {
-    static = pkgsStatic.giflib;
     inherit
       SDL2_image
       SDL_image
@@ -76,14 +74,16 @@ stdenv.mkDerivation (finalAttrs: {
       openimageio
       openjdk
       ;
+
+    static = pkgsStatic.giflib;
   };
 
   meta = {
     description = "Library for reading and writing gif images";
     homepage = "https://giflib.sourceforge.net/";
-    platforms = lib.platforms.unix ++ lib.platforms.windows;
     license = lib.licenses.mit;
     maintainers = [ ];
+    platforms = lib.platforms.unix ++ lib.platforms.windows;
     branch = "5.2";
   };
 })

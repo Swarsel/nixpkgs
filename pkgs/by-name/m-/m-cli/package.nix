@@ -16,8 +16,6 @@ stdenv.mkDerivation rec {
     sha256 = "sha256-Esq7ECkl34L+hk5jGS3pTmUu9vnI9hfn0Q+w0/AbvgY=";
   };
 
-  dontBuild = true;
-
   installPhase = ''
     local MPATH="$out/share/m"
 
@@ -38,16 +36,15 @@ stdenv.mkDerivation rec {
     install -Dt "$out/share/zsh/site-functions/" -m444 completions/zsh/_m
   '';
 
+  dontBuild = true;
   passthru.updateScript = nix-update-script { };
 
   meta = {
-    description = "Swiss Army Knife for macOS";
     inherit (src.meta) homepage;
-
+    description = "Swiss Army Knife for macOS";
     license = lib.licenses.mit;
-
-    platforms = lib.platforms.darwin;
     maintainers = with lib.maintainers; [ anish ];
+    platforms = lib.platforms.darwin;
     mainProgram = "m";
   };
 }

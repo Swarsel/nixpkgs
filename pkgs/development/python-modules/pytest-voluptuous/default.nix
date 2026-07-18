@@ -1,11 +1,11 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   pytest,
   pytestCheckHook,
-  setuptools-scm,
   setuptools,
+  setuptools-scm,
   six,
   voluptuous,
 }:
@@ -13,7 +13,6 @@
 buildPythonPackage rec {
   pname = "pytest-voluptuous";
   version = "1.2.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "F-Secure";
@@ -22,23 +21,22 @@ buildPythonPackage rec {
     hash = "sha256-xdj4qCSSJQI9Rb1WyUYrAg1I5wQ5o6IJyIjJAafP/LY=";
   };
 
-  build-system = [
-    setuptools
-    setuptools-scm
-  ];
-
   buildInputs = [ pytest ];
-
-  dependencies = [ voluptuous ];
 
   nativeCheckInputs = [
     pytestCheckHook
     six
   ];
 
-  pythonImportsCheck = [ "pytest_voluptuous" ];
+  build-system = [
+    setuptools
+    setuptools-scm
+  ];
 
+  dependencies = [ voluptuous ];
   enabledTestPaths = [ "tests/test_plugin.py" ];
+  pyproject = true;
+  pythonImportsCheck = [ "pytest_voluptuous" ];
 
   meta = {
     description = "Pytest plugin for asserting data against voluptuous schema";

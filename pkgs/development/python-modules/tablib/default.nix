@@ -6,8 +6,8 @@
   odfpy,
   openpyxl,
   pandas,
-  pytestCheckHook,
   pytest-cov-stub,
+  pytestCheckHook,
   pyyaml,
   setuptools-scm,
   tabulate,
@@ -19,7 +19,6 @@
 buildPythonPackage rec {
   pname = "tablib";
   version = "3.9.0";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
@@ -27,29 +26,6 @@ buildPythonPackage rec {
   };
 
   nativeBuildInputs = [ setuptools-scm ];
-
-  optional-dependencies = {
-    all = [
-      markuppy
-      odfpy
-      openpyxl
-      pandas
-      pyyaml
-      tabulate
-      xlrd
-      xlwt
-    ];
-    cli = [ tabulate ];
-    html = [ markuppy ];
-    ods = [ odfpy ];
-    pandas = [ pandas ];
-    xls = [
-      xlrd
-      xlwt
-    ];
-    xlsx = [ openpyxl ];
-    yaml = [ pyyaml ];
-  };
 
   nativeCheckInputs = [
     pandas
@@ -63,6 +39,33 @@ buildPythonPackage rec {
     "tests/test_tablib.py"
   ];
 
+  optional-dependencies = {
+    all = [
+      markuppy
+      odfpy
+      openpyxl
+      pandas
+      pyyaml
+      tabulate
+      xlrd
+      xlwt
+    ];
+
+    cli = [ tabulate ];
+    html = [ markuppy ];
+    ods = [ odfpy ];
+    pandas = [ pandas ];
+
+    xls = [
+      xlrd
+      xlwt
+    ];
+
+    xlsx = [ openpyxl ];
+    yaml = [ pyyaml ];
+  };
+
+  pyproject = true;
   pythonImportsCheck = [ "tablib" ];
 
   meta = {

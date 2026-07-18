@@ -1,14 +1,15 @@
 {
   ipset,
   pkg-config,
-  rustPlatform,
   reaction,
+  rustPlatform,
   ...
 }:
 reaction.mkReactionPlugin "reaction-plugin-ipset" {
-  buildInputs = [ ipset ];
   nativeBuildInputs = [
     rustPlatform.bindgenHook
     pkg-config
   ];
+
+  buildInputs = [ ipset ];
 }

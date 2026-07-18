@@ -15,15 +15,14 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   buildInputs = [ ncurses ];
-
   env.NIX_CFLAGS_COMPILE = "-std=gnu17";
 
   meta = {
-    homepage = "http://ytalk.ourproject.org";
     description = "Terminal based talk client";
-    mainProgram = "ytalk";
-    platforms = lib.platforms.unix;
-    maintainers = with lib.maintainers; [ taeer ];
+    homepage = "http://ytalk.ourproject.org";
     license = lib.licenses.gpl2Plus;
+    maintainers = with lib.maintainers; [ taeer ];
+    platforms = lib.platforms.unix;
+    mainProgram = "ytalk";
   };
 })

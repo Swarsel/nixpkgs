@@ -1,18 +1,16 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   fetchpatch,
   pytestCheckHook,
   runCommand,
-
   setuptools,
   unicodeit,
 }:
 buildPythonPackage rec {
   pname = "unicodeit";
   version = "0.7.5";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "svenkreiss";
@@ -23,14 +21,15 @@ buildPythonPackage rec {
 
   patches = [
     (fetchpatch {
+      hash = "sha256-mAhmU17K0adEFFAIf7ZeJ/cNohrzrL+sol7gYfWbPGo=";
       # Defines a CLI entry point, so `setuptools` generates an `unicodeit` executable
       url = "https://github.com/svenkreiss/unicodeit/pull/79/commits/9f4a4fee5cb62a101075adf3054832cdb1e6a5ad.patch";
-      hash = "sha256-mAhmU17K0adEFFAIf7ZeJ/cNohrzrL+sol7gYfWbPGo=";
     })
   ];
 
-  build-system = [ setuptools ];
   nativeCheckInputs = [ pytestCheckHook ];
+  build-system = [ setuptools ];
+  pyproject = true;
 
   pythonImportsCheck = [
     "unicodeit"
@@ -50,12 +49,14 @@ buildPythonPackage rec {
 
   meta = {
     description = "Converts LaTeX tags to unicode";
-    mainProgram = "unicodeit";
     homepage = "https://github.com/svenkreiss/unicodeit";
+
     license = with lib.licenses; [
       lppl13c
       mit
     ];
+
     maintainers = with lib.maintainers; [ nicoo ];
+    mainProgram = "unicodeit";
   };
 }

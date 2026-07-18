@@ -2,29 +2,29 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  nixosTests,
-  cmake,
-  meson,
-  ninja,
-  pkg-config,
-  wf-config,
   cairo,
+  cmake,
   doctest,
   libGL,
   libdrm,
-  libexecinfo,
   libevdev,
+  libexecinfo,
   libinput,
   libjpeg,
+  libxcb-wm,
   libxkbcommon,
   libxml2,
+  meson,
+  ninja,
+  nixosTests,
+  pango,
+  pkg-config,
   vulkan-headers,
   wayland,
   wayland-protocols,
   wayland-scanner,
+  wf-config,
   wlroots_0_19,
-  pango,
-  libxcb-wm,
   yyjson,
 }:
 let
@@ -35,18 +35,18 @@ stdenv.mkDerivation (finalAttrs: {
   pname = "wayfire";
   version = "0.10.1";
 
-  outputs = [
-    "out"
-    "man"
-  ];
-
   src = fetchFromGitHub {
     owner = "WayfireWM";
     repo = "wayfire";
     rev = "v${finalAttrs.version}";
-    fetchSubmodules = true;
     hash = "sha256-yiqtnsXxvC7vk22ZQ5OFt5uX40FCRGWpfZrax9GItAg=";
+    fetchSubmodules = true;
   };
+
+  outputs = [
+    "out"
+    "man"
+  ];
 
   postPatch = ''
     substituteInPlace plugins/common/wayfire/plugins/common/cairo-util.hpp \
@@ -83,16 +83,6 @@ stdenv.mkDerivation (finalAttrs: {
     pango
   ];
 
-  nativeCheckInputs = [
-    cmake
-    doctest
-  ];
-
-  # CMake is just used for finding doctest.
-  dontUseCmakeConfigure = true;
-
-  doCheck = true;
-
   mesonFlags = [
     "--sysconfdir /etc"
     "-Duse_system_wlroots=enabled"
@@ -100,19 +90,29 @@ stdenv.mkDerivation (finalAttrs: {
     (lib.mesonEnable "wf-touch:tests" (stdenv.buildPlatform.canExecute stdenv.hostPlatform))
   ];
 
-  passthru.providedSessions = [ "wayfire" ];
+  doCheck = true;
 
+  nativeCheckInputs = [
+    cmake
+    doctest
+  ];
+
+  # CMake is just used for finding doctest.
+  dontUseCmakeConfigure = true;
+  passthru.providedSessions = [ "wayfire" ];
   passthru.tests.mate = nixosTests.mate-wayland;
 
   meta = {
-    homepage = "https://wayfire.org/";
     description = "3D Wayland compositor";
+    homepage = "https://wayfire.org/";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       teatwig
       wucke13
       wineee
     ];
+
     platforms = lib.platforms.unix;
     mainProgram = "wayfire";
   };

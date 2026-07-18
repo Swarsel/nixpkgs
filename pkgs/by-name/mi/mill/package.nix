@@ -1,16 +1,16 @@
 {
-  autoPatchelfHook,
-  fetchurl,
-  jre,
   lib,
+  stdenv,
+  fetchurl,
+  autoPatchelfHook,
+  common-updater-scripts,
+  curl,
+  jre,
+  libxml2,
   makeWrapper,
   stdenvNoCC,
-  zlib,
   writeScript,
-  stdenv,
-  curl,
-  libxml2,
-  common-updater-scripts,
+  zlib,
 }:
 
 let
@@ -29,6 +29,7 @@ stdenvNoCC.mkDerivation rec {
 
   src = fetchurl {
     url = "https://repo1.maven.org/maven2/com/lihaoyi/mill-dist-${suffix}/${version}/mill-dist-${suffix}-${version}.exe";
+
     sha256 =
       {
         aarch64-darwin = "sha256-UiooqMbxceUepk4uJV8ZSL1o4VLeTZgWs3URQFXFmQs=";
@@ -38,18 +39,12 @@ stdenvNoCC.mkDerivation rec {
       .${stdenv.hostPlatform.system} or (throw "Unsupported system: ${stdenv.hostPlatform.system}");
   };
 
-  buildInputs = [ zlib ];
   nativeBuildInputs = [
     makeWrapper
   ]
   ++ lib.optional stdenvNoCC.hostPlatform.isLinux autoPatchelfHook;
 
-  dontUnpack = true;
-  dontConfigure = true;
-  dontBuild = true;
-
-  # this is mostly downloading a pre-built artifact
-  preferLocal = true;
+  buildInputs = [ zlib ];
 
   installPhase = ''
     runHook preInstall
@@ -62,6 +57,12 @@ stdenvNoCC.mkDerivation rec {
 
     runHook postInstall
   '';
+
+  dontBuild = true;
+  dontConfigure = true;
+  dontUnpack = true;
+  # this is mostly downloading a pre-built artifact
+  preferLocal = true;
 
   passthru.updateScript = writeScript "${pname}-updater" ''
     #!${stdenv.shell}
@@ -98,10 +99,8 @@ stdenvNoCC.mkDerivation rec {
   '';
 
   meta = {
-    homepage = "https://com-lihaoyi.github.io/mill/";
-    license = lib.licenses.mit;
     description = "Build tool for Scala, Java and more";
-    mainProgram = "mill";
+
     longDescription = ''
       Mill is a build tool borrowing ideas from modern tools like Bazel, to let you build
       your projects in a way that's simple, fast, and predictable. Mill has built in
@@ -109,14 +108,21 @@ stdenvNoCC.mkDerivation rec {
       SBT, but can also be extended to support any other language or platform via
       modules (written in Java or Scala) or through an external subprocesses.
     '';
+
+    homepage = "https://com-lihaoyi.github.io/mill/";
+    license = lib.licenses.mit;
+    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
+
     maintainers = with lib.maintainers; [
       zenithal
     ];
+
     platforms = [
       "x86_64-linux"
       "aarch64-linux"
       "aarch64-darwin"
     ];
-    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
+
+    mainProgram = "mill";
   };
 }

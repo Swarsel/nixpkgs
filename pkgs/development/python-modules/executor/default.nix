@@ -1,23 +1,22 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  fetchpatch2,
-  setuptools,
+  buildPythonPackage,
   coloredlogs,
-  humanfriendly,
-  property-manager,
   fasteners,
-  six,
-  pytestCheckHook,
+  fetchpatch2,
+  humanfriendly,
   mock,
+  property-manager,
+  pytestCheckHook,
+  setuptools,
+  six,
   virtualenv,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "executor";
   version = "23.2";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "xolox";
@@ -29,10 +28,16 @@ buildPythonPackage (finalAttrs: {
   patches = [
     # https://github.com/xolox/python-executor/pull/26
     (fetchpatch2 {
+      hash = "sha256-pfWdLaREikzBaey75Tb+GiE+pUCl1h2OmsjlpzKOlno=";
       name = "python313-compat.patch";
       url = "https://github.com/xolox/python-executor/commit/4c5f4b44543bfb48ad790c440d1d7d0933e12499.patch?full_index=1";
-      hash = "sha256-pfWdLaREikzBaey75Tb+GiE+pUCl1h2OmsjlpzKOlno=";
     })
+  ];
+
+  nativeCheckInputs = [
+    pytestCheckHook
+    mock
+    virtualenv
   ];
 
   build-system = [
@@ -47,12 +52,6 @@ buildPythonPackage (finalAttrs: {
     six
   ];
 
-  nativeCheckInputs = [
-    pytestCheckHook
-    mock
-    virtualenv
-  ];
-
   # ignore impure tests
   disabledTests = [
     "option"
@@ -64,12 +63,14 @@ buildPythonPackage (finalAttrs: {
     "release" # meant to be ran on ubuntu to succeed
   ];
 
+  pyproject = true;
+
   meta = {
-    changelog = "https://github.com/xolox/python-executor/blob/${finalAttrs.version}/CHANGELOG.rst";
     description = "Programmer friendly subprocess wrapper";
-    mainProgram = "executor";
     homepage = "https://github.com/xolox/python-executor";
+    changelog = "https://github.com/xolox/python-executor/blob/${finalAttrs.version}/CHANGELOG.rst";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ eyjhb ];
+    mainProgram = "executor";
   };
 })

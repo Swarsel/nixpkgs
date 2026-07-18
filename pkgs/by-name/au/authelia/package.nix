@@ -1,15 +1,15 @@
 {
   lib,
   stdenv,
-  nodejs,
-  fetchPnpmDeps,
-  pnpmConfigHook,
-  pnpm_11,
   fetchFromGitHub,
   buildGo126Module,
-  installShellFiles,
   callPackage,
+  fetchPnpmDeps,
+  installShellFiles,
   nixosTests,
+  nodejs,
+  pnpmConfigHook,
+  pnpm_11,
   authelia-web ? callPackage ./web.nix {
     inherit
       nodejs
@@ -43,29 +43,13 @@ buildGoModule (finalAttrs: {
     vendorHash
     ;
 
-  nativeBuildInputs = [ installShellFiles ];
-
   ## FIXME: add swagger-ui https://github.com/authelia/authelia/blob/master/cmd/authelia-scripts/cmd/build.go#L148
   postPatch = ''
     cp -r api internal/server/public_html
     cp -r ${web}/share/authelia-web/* internal/server/public_html
   '';
 
-  subPackages = [ "cmd/authelia" ];
-
-  ldflags =
-    let
-      p = "github.com/authelia/authelia/v${lib.versions.major finalAttrs.version}/internal/utils";
-    in
-    [
-      "-s"
-      "-w"
-      "-X ${p}.BuildTag=v${finalAttrs.version}"
-      "-X '${p}.BuildState=tagged clean'"
-      "-X ${p}.BuildBranch=v${finalAttrs.version}"
-      "-X ${p}.BuildExtra=nixpkgs"
-    ];
-
+  nativeBuildInputs = [ installShellFiles ];
   # several tests with networking and several that want chromium
   doCheck = false;
 
@@ -81,6 +65,7 @@ buildGoModule (finalAttrs: {
   '';
 
   doInstallCheck = true;
+
   installCheckPhase = ''
     runHook preInstallCheck
 
@@ -91,17 +76,31 @@ buildGoModule (finalAttrs: {
     runHook postInstallCheck
   '';
 
+  ldflags =
+    let
+      p = "github.com/authelia/authelia/v${lib.versions.major finalAttrs.version}/internal/utils";
+    in
+    [
+      "-s"
+      "-w"
+      "-X ${p}.BuildTag=v${finalAttrs.version}"
+      "-X '${p}.BuildState=tagged clean'"
+      "-X ${p}.BuildBranch=v${finalAttrs.version}"
+      "-X ${p}.BuildExtra=nixpkgs"
+    ];
+
+  subPackages = [ "cmd/authelia" ];
+
   passthru = {
     # if overriding replace the postPatch to put your web UI output in internal/server/public_html
     inherit web;
-    updateScript = ./update.sh;
     tests = { inherit (nixosTests) authelia; };
+    updateScript = ./update.sh;
   };
 
   meta = {
-    homepage = "https://www.authelia.com/";
-    changelog = "https://github.com/authelia/authelia/releases/tag/v${finalAttrs.version}";
     description = "Single Sign-On Multi-Factor portal for web apps";
+
     longDescription = ''
       Authelia is an open-source authentication and authorization server
       providing two-factor authentication and single sign-on (SSO) for your
@@ -110,11 +109,16 @@ buildGoModule (finalAttrs: {
       should either be allowed or redirected to Authelia's portal for
       authentication.
     '';
+
+    homepage = "https://www.authelia.com/";
+    changelog = "https://github.com/authelia/authelia/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.asl20;
+
     maintainers = with lib.maintainers; [
       jk
       nicomem
     ];
+
     mainProgram = "authelia";
   };
 })

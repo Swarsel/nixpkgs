@@ -3,12 +3,12 @@
   stdenv,
   fetchFromGitHub,
   autoreconfHook,
-  pkg-config,
-  ibus,
-  gtk3,
-  m17n_lib,
-  m17n_db,
   gettext,
+  gtk3,
+  ibus,
+  m17n_db,
+  m17n_lib,
+  pkg-config,
   python3,
   wrapGAppsHook3,
 }:
@@ -47,11 +47,11 @@ stdenv.mkDerivation rec {
   ];
 
   meta = {
-    isIbusEngine = true;
     description = "m17n engine for ibus";
     homepage = "https://github.com/ibus/ibus-m17n";
     license = lib.licenses.gpl2Plus;
-    platforms = lib.platforms.linux;
     maintainers = [ ];
+    platforms = lib.platforms.linux;
+    isIbusEngine = true;
   };
 }

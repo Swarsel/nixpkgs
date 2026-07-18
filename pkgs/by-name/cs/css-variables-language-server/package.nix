@@ -1,17 +1,16 @@
 {
   lib,
-  buildNpmPackage,
   fetchFromGitHub,
-  pkg-config,
-  makeWrapper,
+  buildNpmPackage,
   libsecret,
+  makeWrapper,
   nodejs,
+  pkg-config,
 }:
 
 buildNpmPackage (finalAttrs: {
   pname = "css-variables-language-server";
   version = "2.8.4";
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "vunguyentuan";
@@ -20,22 +19,11 @@ buildNpmPackage (finalAttrs: {
     hash = "sha256-NdacBF8sUOij6k4AkMim93LrBJi8JL43q/N8GryTXHA=";
   };
 
-  npmDepsHash = "sha256-9iPS7/fiJFBFlqt71q5i9rY0lc3tqYeAddb+oB1uxZc=";
-  npmDepsFetcherVersion = 2;
-  npmWorkspace = "packages/css-variables-language-server";
-
-  npmPruneFlags = [
-    "--include-workspace-root=false"
-  ];
-
-  npmInstallFlags = [
-    "--workspace=packages/css-variables-language-server"
-    "--include-workspace-root=false"
-  ];
-
   nativeBuildInputs = [
     makeWrapper
   ];
+
+  npmDepsHash = "sha256-9iPS7/fiJFBFlqt71q5i9rY0lc3tqYeAddb+oB1uxZc=";
 
   preBuild = ''
     patchShebangs .
@@ -54,10 +42,24 @@ buildNpmPackage (finalAttrs: {
     runHook postInstall
   '';
 
+  __structuredAttrs = true;
+  npmDepsFetcherVersion = 2;
+
+  npmInstallFlags = [
+    "--workspace=packages/css-variables-language-server"
+    "--include-workspace-root=false"
+  ];
+
+  npmPruneFlags = [
+    "--include-workspace-root=false"
+  ];
+
+  npmWorkspace = "packages/css-variables-language-server";
+
   meta = {
     description = "CSS Variables Language Server in node";
-    changelog = "https://github.com/vunguyentuan/vscode-css-variables/releases/tag/css-variables-language-server@${finalAttrs.version}";
     homepage = "https://github.com/vunguyentuan/vscode-css-variables";
+    changelog = "https://github.com/vunguyentuan/vscode-css-variables/releases/tag/css-variables-language-server@${finalAttrs.version}";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ aiwao ];
     mainProgram = "css-variables-language-server";

@@ -2,13 +2,8 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  desktop-file-utils,
-  meson,
-  ninja,
-  pkg-config,
-  vala,
-  wrapGAppsHook4,
   cairo,
+  desktop-file-utils,
   discount,
   glib,
   gtk4,
@@ -18,7 +13,12 @@
   libgee,
   libwebp,
   libxml2,
+  meson,
+  ninja,
   pantheon,
+  pkg-config,
+  vala,
+  wrapGAppsHook4,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -66,7 +66,7 @@ stdenv.mkDerivation (finalAttrs: {
     homepage = "https://github.com/phase1geo/Minder";
     license = lib.licenses.gpl3Plus;
     platforms = lib.platforms.linux;
-    teams = [ lib.teams.pantheon ];
     mainProgram = "com.github.phase1geo.minder";
+    teams = [ lib.teams.pantheon ];
   };
 })

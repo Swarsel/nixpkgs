@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   pandoc,
 }:
 
@@ -16,9 +16,8 @@ buildGoModule (finalAttrs: {
     hash = "sha256-pn3EsYPhggViL067nk6UhmIULGsf8IYm/dXSDudiZRA=";
   };
 
-  vendorHash = "sha256-CUxUxumji0j9cwrYksJqHq891VlotMrGIrF0vr6wSMs=";
-
   buildInputs = [ pandoc ];
+  vendorHash = "sha256-CUxUxumji0j9cwrYksJqHq891VlotMrGIrF0vr6wSMs=";
 
   meta = {
     description = "Tool to create a wiki page from a HedgeDoc";

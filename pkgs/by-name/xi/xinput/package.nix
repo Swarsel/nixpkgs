@@ -3,27 +3,27 @@
   stdenv,
   fetchFromGitLab,
   autoreconfHook,
-  pkg-config,
-  util-macros,
-  xorgproto,
   libx11,
   libxext,
   libxi,
   libxinerama,
   libxrandr,
   nix-update-script,
+  pkg-config,
+  util-macros,
+  xorgproto,
 }:
 stdenv.mkDerivation (finalAttrs: {
   pname = "xinput";
   version = "1.6.4";
 
   src = fetchFromGitLab {
-    domain = "gitlab.freedesktop.org";
-    group = "xorg";
     owner = "app";
     repo = "xinput";
     tag = "xinput-${finalAttrs.version}";
     hash = "sha256-EsSytLzwAHMwseW4pD/c+/J1MaCWPsE7RPoMIwT96yk=";
+    domain = "gitlab.freedesktop.org";
+    group = "xorg";
   };
 
   strictDeps = true;
@@ -50,14 +50,17 @@ stdenv.mkDerivation (finalAttrs: {
   meta = {
     description = "Utility to configure and test XInput devices";
     homepage = "https://gitlab.freedesktop.org/xorg/app/xinput";
+
     license = with lib.licenses; [
       hpndSellVariant
       mit
     ];
-    mainProgram = "xinput";
+
     maintainers = with lib.maintainers; [
       nick-linux
     ];
+
     platforms = lib.platforms.unix;
+    mainProgram = "xinput";
   };
 })

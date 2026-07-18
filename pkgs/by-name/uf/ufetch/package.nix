@@ -1,8 +1,8 @@
 {
-  stdenvNoCC,
+  lib,
   fetchFromGitLab,
   nix-update-script,
-  lib,
+  stdenvNoCC,
   full ? true,
   # see https://gitlab.com/jschx/ufetch for a list
   osName ? "nixos",
@@ -41,8 +41,8 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     description = "Tiny system info for Unix-like operating systems";
     homepage = "https://gitlab.com/jschx/ufetch";
     license = lib.licenses.mit;
+    maintainers = with lib.maintainers; [ mrtnvgr ];
     platforms = lib.platforms.linux;
     mainProgram = "ufetch";
-    maintainers = with lib.maintainers; [ mrtnvgr ];
   };
 })

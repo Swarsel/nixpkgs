@@ -1,6 +1,6 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
   libsForQt5,
 }:
@@ -20,6 +20,7 @@ stdenv.mkDerivation {
     libsForQt5.qmake
     libsForQt5.wrapQtAppsHook
   ];
+
   buildInputs = [ libsForQt5.qtbase ];
 
   installPhase = ''
@@ -36,10 +37,10 @@ stdenv.mkDerivation {
 
   meta = {
     description = "Very simple application that lets you define default applications on Linux in a sane way";
-    mainProgram = "selectdefaultapplication";
     homepage = "https://github.com/sandsmark/selectdefaultapplication";
-    maintainers = with lib.maintainers; [ nsnelson ];
     license = lib.licenses.gpl2;
+    maintainers = with lib.maintainers; [ nsnelson ];
     platforms = lib.platforms.linux;
+    mainProgram = "selectdefaultapplication";
   };
 }

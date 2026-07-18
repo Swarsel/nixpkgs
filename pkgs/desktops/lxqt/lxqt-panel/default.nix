@@ -2,35 +2,35 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  cmake,
-  pkg-config,
   alsa-lib,
-  libdbusmenu-lxqt,
+  cmake,
+  gitUpdater,
   kguiaddons,
   kwindowsystem,
   layer-shell-qt,
-  libxdamage,
-  libxdmcp,
-  libxtst,
   libdbusmenu,
+  libdbusmenu-lxqt,
   liblxqt,
   libpthread-stubs,
   libpulseaudio,
   libqtxdg,
   libstatgrab,
   libsysstat,
+  libxdamage,
+  libxdmcp,
+  libxtst,
   lm_sensors,
   lxqt-build-tools,
   lxqt-globalkeys,
   lxqt-menu-data,
   pcre2,
+  pkg-config,
   qtbase,
   qtsvg,
   qttools,
   qtwayland,
   solid,
   wrapQtAppsHook,
-  gitUpdater,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -81,11 +81,11 @@ stdenv.mkDerivation (finalAttrs: {
   passthru.updateScript = gitUpdater { };
 
   meta = {
-    homepage = "https://github.com/lxqt/lxqt-panel";
     description = "LXQt desktop panel";
-    mainProgram = "lxqt-panel";
+    homepage = "https://github.com/lxqt/lxqt-panel";
     license = lib.licenses.lgpl21Plus;
     platforms = lib.platforms.linux;
+    mainProgram = "lxqt-panel";
     teams = [ lib.teams.lxqt ];
   };
 })

@@ -8,18 +8,17 @@
 buildPythonPackage rec {
   pname = "docopt-ng";
   version = "0.9.0";
-  pyproject = true;
 
   src = fetchPypi {
-    pname = "docopt_ng";
     inherit version;
     hash = "sha256-kcbaELW7by6eJTRYKfuCeMeK8Bn2/ECIetSbBgSDsdc=";
+    pname = "docopt_ng";
   };
 
   nativeBuildInputs = [ pdm-backend ];
-
-  pythonImportsCheck = [ "docopt" ];
   doCheck = false; # no tests in the package
+  pyproject = true;
+  pythonImportsCheck = [ "docopt" ];
 
   meta = {
     description = "More-magic command line arguments parser. Now with more maintenance";

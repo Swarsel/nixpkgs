@@ -5,14 +5,13 @@
 }:
 
 buildDunePackage {
-  pname = "xdg";
   inherit (dune) src version;
-
+  pname = "xdg";
   dontAddPrefix = true;
 
   meta = {
-    description = "XDG Base Directory Specification";
     inherit (dune.meta) homepage maintainers;
+    description = "XDG Base Directory Specification";
     license = lib.licenses.mit;
   };
 }

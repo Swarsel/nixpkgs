@@ -24,7 +24,7 @@ stdenv.mkDerivation rec {
     description = "Icingaweb2 theme for april fools";
     homepage = "https://github.com/Mikesch-mp/icingaweb2-theme-april";
     license = lib.licenses.publicDomain;
-    platforms = lib.platforms.all;
     maintainers = with lib.maintainers; [ das_j ];
+    platforms = lib.platforms.all;
   };
 }

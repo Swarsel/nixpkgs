@@ -1,37 +1,31 @@
 {
-  fetchFromGitHub,
   lib,
   stdenv,
-
+  fetchFromGitHub,
   # nativeBuildInputs
   autoconf,
   automake,
+  # Erlang
+  beamPackages,
   cmake,
   dune_3,
   git,
-  makeWrapper,
-  ninja,
-  opam,
-  pkg-config,
-  perl,
-  which,
-
   # buildInputs
   gmp,
-  mpfr,
-  ocaml-ng,
-  sqlite,
-  zlib,
-
-  # Erlang
-  beamPackages,
-
   # Java
   jdk,
-
+  makeWrapper,
+  mpfr,
+  ninja,
+  ocaml-ng,
+  opam,
+  perl,
+  pkg-config,
   # LLVM
   python3,
-
+  sqlite,
+  which,
+  zlib,
   # Options
   withErlang ? true,
   withJava ? true,
@@ -52,24 +46,23 @@ let
   # They specify the version in `facebook-clang-plugins/clang/src/prepare_clang_src.sh`
   # Please check that file and update the version as appropriate when updating
   llvmSrc = fetchFromGitHub {
+    hash = "sha256-mqZLJYDEs6FXAjbSOruR2ATZZxemNMagNG9SMjSWBFE=";
     owner = "llvm";
     repo = "llvm-project";
     tag = "llvmorg-21.1.6";
-    hash = "sha256-mqZLJYDEs6FXAjbSOruR2ATZZxemNMagNG9SMjSWBFE=";
   };
 
   # We need to use 5.3 because stdcompat (a transitive ocaml dependency) is
   # broken on 5.4
   ocamlPackages = ocaml-ng.ocamlPackages_5_3.overrideScope (
     self: super: {
-      # Newer ppxlib removed a function needed by 0.36
-      ppxlib = super.ppxlib.override { version = "0.34.0"; };
       # Infer bundles charon 0.1.177; nixpkgs unstable has a newer incompatible
       # version
       charon = super.buildDunePackage {
         pname = "charon";
         version = "0.1";
         src = "${src}/dependencies/charon";
+
         propagatedBuildInputs = with self; [
           easy_logging
           name_matcher_parser
@@ -79,6 +72,9 @@ let
           yojson
         ];
       };
+
+      # Newer ppxlib removed a function needed by 0.36
+      ppxlib = super.ppxlib.override { version = "0.34.0"; };
     }
   );
 
@@ -90,9 +86,7 @@ let
 in
 stdenv.mkDerivation {
   inherit pname src version;
-
   strictDeps = true;
-  __structuredAttrs = true;
 
   nativeBuildInputs = [
     autoconf
@@ -169,6 +163,27 @@ stdenv.mkDerivation {
   ++ lib.optionals withErlang erlangDeps
   ++ lib.optionals withJava javaDeps;
 
+  configureFlags = [
+    "--prefix=${placeholder "out"}"
+  ]
+  ++ [
+    "--disable-hack-analyzers" # No support on nixpkgs as of writing
+    "--disable-python-analyzers" # Needs python 3.10, which is not in nixpkgs
+    "--disable-swift-analyzers" # Does not want to build with the current package
+  ]
+  ++ lib.optional (!withErlang) "--disable-erlang-analyzers"
+  ++ lib.optional (!withJava) "--disable-java-analyzers"
+  ++ lib.optional (!withLLVM) "--disable-c-analyzers"
+  ++ lib.optional withRust "--enable-rust-analyzers";
+
+  buildFlags = [
+    # This cuts the build time in half
+    "CFLAGS=-O2"
+    "CXXFLAGS=-O2"
+    # Prevent ocaml warnings 11 and 55 from crashing the build
+    "OCAMLPARAM=_,w=-11-55"
+  ];
+
   preConfigure = ''
     patchShebangs .
 
@@ -203,32 +218,6 @@ stdenv.mkDerivation {
     ./autogen.sh
   '';
 
-  dontUseCmakeConfigure = true;
-
-  configureFlags = [
-    "--prefix=${placeholder "out"}"
-  ]
-  ++ [
-    "--disable-hack-analyzers" # No support on nixpkgs as of writing
-    "--disable-python-analyzers" # Needs python 3.10, which is not in nixpkgs
-    "--disable-swift-analyzers" # Does not want to build with the current package
-  ]
-  ++ lib.optional (!withErlang) "--disable-erlang-analyzers"
-  ++ lib.optional (!withJava) "--disable-java-analyzers"
-  ++ lib.optional (!withLLVM) "--disable-c-analyzers"
-  ++ lib.optional withRust "--enable-rust-analyzers";
-
-  buildFlags = [
-    # This cuts the build time in half
-    "CFLAGS=-O2"
-    "CXXFLAGS=-O2"
-    # Prevent ocaml warnings 11 and 55 from crashing the build
-    "OCAMLPARAM=_,w=-11-55"
-  ];
-
-  dontUseNinjaBuild = true;
-  dontUseNinjaInstall = true;
-
   postInstall =
     let
       runtimeDeps = lib.optionals withErlang erlangDeps ++ lib.optionals withJava javaDeps;
@@ -237,6 +226,11 @@ stdenv.mkDerivation {
       wrapProgram "$out/bin/infer" \
         --prefix PATH : "${lib.makeBinPath runtimeDeps}"
     '';
+
+  __structuredAttrs = true;
+  dontUseCmakeConfigure = true;
+  dontUseNinjaBuild = true;
+  dontUseNinjaInstall = true;
 
   meta = {
     description = "Facebook's static analysis tool for Java, C++, Objective-C, and C.";

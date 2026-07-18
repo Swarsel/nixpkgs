@@ -1,16 +1,15 @@
 {
   lib,
-  python3Packages,
   fetchFromGitHub,
   fetchpatch2,
-  writableTmpDirAsHomeHook,
+  python3Packages,
   versionCheckHook,
+  writableTmpDirAsHomeHook,
 }:
 
 python3Packages.buildPythonApplication (finalAttrs: {
   pname = "babeldoc";
   version = "0.5.22";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "funstory-ai";
@@ -21,10 +20,16 @@ python3Packages.buildPythonApplication (finalAttrs: {
 
   patches = [
     (fetchpatch2 {
+      hash = "sha256-rjXhKVFivkJo54WdYiihqB3lrlu4YEwVZZkE4WBatWs=";
       name = "rename-python-levenshtein-to-levenshtein";
       url = "https://github.com/funstory-ai/BabelDOC/pull/542.patch?full_index=1";
-      hash = "sha256-rjXhKVFivkJo54WdYiihqB3lrlu4YEwVZZkE4WBatWs=";
     })
+  ];
+
+  nativeCheckInputs = [
+    writableTmpDirAsHomeHook
+    python3Packages.pytestCheckHook
+    versionCheckHook
   ];
 
   build-system = with python3Packages; [ hatchling ];
@@ -70,13 +75,8 @@ python3Packages.buildPythonApplication (finalAttrs: {
     ++ httpx.optional-dependencies.socks
     ++ (with xsdata.optional-dependencies; cli ++ lxml ++ soap);
 
+  pyproject = true;
   pythonImportsCheck = [ "babeldoc" ];
-
-  nativeCheckInputs = [
-    writableTmpDirAsHomeHook
-    python3Packages.pytestCheckHook
-    versionCheckHook
-  ];
   versionCheckKeepEnvironment = "HOME";
 
   meta = {

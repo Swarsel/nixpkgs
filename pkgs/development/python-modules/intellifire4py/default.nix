@@ -1,10 +1,10 @@
 {
   lib,
-  aenum,
-  buildPythonPackage,
   fetchFromGitHub,
+  aenum,
   aiohttp,
   aioresponses,
+  buildPythonPackage,
   hatchling,
   pydantic,
   pytest-asyncio,
@@ -16,7 +16,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "intellifire4py";
   version = "4.5.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "jeeftor";
@@ -24,6 +23,13 @@ buildPythonPackage (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-MBuKYBKV0376j048tfbqMD9p2Gh1wlC188SGOMSMSm8=";
   };
+
+  nativeCheckInputs = [
+    aioresponses
+    pytest-asyncio
+    pytest-httpx
+    pytestCheckHook
+  ];
 
   build-system = [ hatchling ];
 
@@ -34,13 +40,7 @@ buildPythonPackage (finalAttrs: {
     rich
   ];
 
-  nativeCheckInputs = [
-    aioresponses
-    pytest-asyncio
-    pytest-httpx
-    pytestCheckHook
-  ];
-
+  pyproject = true;
   pythonImportsCheck = [ "intellifire4py" ];
 
   meta = {

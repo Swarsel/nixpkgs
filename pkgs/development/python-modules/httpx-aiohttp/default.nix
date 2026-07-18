@@ -1,16 +1,15 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  hatchling,
   aiohttp,
+  buildPythonPackage,
+  hatchling,
   httpx,
 }:
 
 buildPythonPackage rec {
   pname = "httpx-aiohttp";
   version = "0.1.12";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "karpetrosyan";
@@ -34,6 +33,8 @@ buildPythonPackage rec {
     aiohttp
     httpx
   ];
+
+  pyproject = true;
 
   pythonImportsCheck = [
     "httpx_aiohttp"

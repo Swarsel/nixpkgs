@@ -1,6 +1,6 @@
 {
-  haskell,
   lib,
+  haskell,
 }:
 
 let
@@ -21,7 +21,6 @@ let
 
     # Test suite does nothing.
     doCheck = false;
-
     maintainers = with lib.maintainers; [ joaomoreira ];
   };
 

@@ -1,19 +1,19 @@
 {
   lib,
-  python3,
   fetchFromGitHub,
   appstream-glib,
   desktop-file-utils,
   gettext,
   glib,
   gobject-introspection,
-  gtk3,
   gst_all_1,
+  gtk3,
   libnotify,
   librsvg,
   meson,
   ninja,
   pkg-config,
+  python3,
   slop,
   wrapGAppsHook3,
 }:
@@ -21,8 +21,6 @@
 python3.pkgs.buildPythonApplication (finalAttrs: {
   pname = "recapp";
   version = "1.1.1";
-
-  pyproject = false;
 
   src = fetchFromGitHub {
     owner = "amikha1lov";
@@ -64,8 +62,6 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     pygobject3
   ];
 
-  dontWrapGApps = true;
-
   preFixup = ''
     makeWrapperArgs+=(
       "''${gappsWrapperArgs[@]}"
@@ -77,6 +73,9 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
       }"
     )
   '';
+
+  dontWrapGApps = true;
+  pyproject = false;
 
   meta = {
     description = "User friendly Open Source screencaster for Linux written in GTK";

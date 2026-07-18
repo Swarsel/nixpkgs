@@ -34,6 +34,7 @@ let
       url = "jdbc:h2:${stateDirectory}/traccar";
       user = "sa";
     };
+
     logger.console = "true";
     web.override = "${stateDirectory}/override";
   };
@@ -42,16 +43,27 @@ in
 {
   options.services.traccar = {
     enable = lib.mkEnableOption "Traccar, an open source GPS tracking system";
-    settingsFile = lib.mkOption {
-      type = with lib.types; nullOr path;
+
+    environmentFile = lib.mkOption {
       default = null;
+
       description = ''
-        File used as configuration for traccar. When specified, {option}`settings` is ignored.
+        File containing environment variables to substitute in the configuration before starting Traccar.
+
+        Can be used for storing the secrets without making them available in the world-readable Nix store.
+
+        For example, you can set {option}`services.traccar.settings.database.password = "$TRACCAR_DB_PASSWORD"`
+        and then specify `TRACCAR_DB_PASSWORD="<secret>"` in the environment file.
+        This value will get substituted in the configuration file.
       '';
+
+      type = lib.types.nullOr lib.types.path;
     };
+
     settings = lib.mkOption {
       apply = lib.recursiveUpdate defaultConfig;
       default = defaultConfig;
+
       description = ''
         {file}`config.xml` configuration as a Nix attribute set.
         This option is ignored if `settingsFile` is set.
@@ -65,18 +77,15 @@ in
         [Traccar - Configuration File](https://www.traccar.org/configuration-file/).
       '';
     };
-    environmentFile = lib.mkOption {
-      type = lib.types.nullOr lib.types.path;
+
+    settingsFile = lib.mkOption {
       default = null;
+
       description = ''
-        File containing environment variables to substitute in the configuration before starting Traccar.
-
-        Can be used for storing the secrets without making them available in the world-readable Nix store.
-
-        For example, you can set {option}`services.traccar.settings.database.password = "$TRACCAR_DB_PASSWORD"`
-        and then specify `TRACCAR_DB_PASSWORD="<secret>"` in the environment file.
-        This value will get substituted in the configuration file.
+        File used as configuration for traccar. When specified, {option}`settings` is ignored.
       '';
+
+      type = with lib.types; nullOr path;
     };
   };
 
@@ -87,11 +96,8 @@ in
     lib.mkIf cfg.enable {
       systemd.services.traccar = {
         enable = true;
-        description = "Traccar";
-
         after = [ "network-online.target" ];
-        wantedBy = [ "multi-user.target" ];
-        wants = [ "network-online.target" ];
+        description = "Traccar";
 
         preStart = ''
           test -f '${configFilePath}' && rm -f '${configFilePath}'
@@ -107,7 +113,6 @@ in
 
         serviceConfig = {
           DynamicUser = true;
-          WorkingDirectory = "${pkgs.traccar}";
           EnvironmentFile = lib.mkIf (cfg.environmentFile != null) cfg.environmentFile;
           ExecStart = "${lib.getExe pkgs.traccar} ${configFilePath}";
           LockPersonality = true;
@@ -130,7 +135,11 @@ in
           StateDirectory = "traccar";
           SuccessExitStatus = 143;
           Type = "simple";
+          WorkingDirectory = "${pkgs.traccar}";
         };
+
+        wantedBy = [ "multi-user.target" ];
+        wants = [ "network-online.target" ];
       };
     };
 }

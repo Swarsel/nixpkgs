@@ -1,16 +1,16 @@
 {
+  lib,
+  stdenv,
   bundlerApp,
   bundlerUpdateScript,
   coreutils,
   facter,
   gnugrep,
   iproute2,
-  lib,
   makeWrapper,
   net-tools,
   pciutils,
   procps,
-  stdenv,
   testers,
   util-linux,
   virt-what,
@@ -19,9 +19,6 @@
 
 bundlerApp {
   pname = "facter";
-  gemdir = ./.;
-  exes = [ "facter" ];
-
   nativeBuildInputs = [ makeWrapper ];
 
   postBuild =
@@ -44,25 +41,31 @@ bundlerApp {
       wrapProgram $out/bin/facter --prefix PATH : ${lib.makeBinPath runtimeDependencies}
     '';
 
+  exes = [ "facter" ];
+  gemdir = ./.;
+
   passthru = {
     tests.version = testers.testVersion {
+      version = (import ./gemset.nix).facter.version;
       command = "${lib.getExe facter} --version";
       package = facter;
-      version = (import ./gemset.nix).facter.version;
     };
+
     updateScript = bundlerUpdateScript "facter";
   };
 
   meta = {
-    changelog = "https://www.puppet.com/docs/puppet/latest/release_notes_facter.html";
     description = "System inventory tool";
     homepage = "https://github.com/puppetlabs/facter";
+    changelog = "https://www.puppet.com/docs/puppet/latest/release_notes_facter.html";
     license = lib.licenses.asl20;
-    mainProgram = "facter";
+
     maintainers = with lib.maintainers; [
       womfoo
       anthonyroussel
     ];
+
     platforms = lib.platforms.unix;
+    mainProgram = "facter";
   };
 }

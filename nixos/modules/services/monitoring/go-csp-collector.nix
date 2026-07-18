@@ -35,49 +35,17 @@ let
     );
 in
 {
-  meta.maintainers = with maintainers; [ stepbrobd ];
-
   options.services.go-csp-collector = {
     enable = mkEnableOption "go-csp-collector, a content security policy violation collector";
-
     package = mkPackageOption pkgs "go-csp-collector" { };
 
     settings = mkOption {
-      type = types.submodule {
-        freeformType =
-          with types;
-          attrsOf (oneOf [
-            bool
-            path
-            str
-          ]);
-
-        options = {
-          port = mkOption {
-            type = types.port;
-            description = "The port to listen on.";
-            default = 8080;
-            example = 8080;
-          };
-
-          output-format = mkOption {
-            type = types.enum [
-              "text"
-              "json"
-            ];
-            description = "Define how the violation reports are formatted for output.";
-            default = "text";
-            example = "text";
-          };
-        };
-      };
+      default = { };
 
       description = ''
         Settings for go-csp-collector. See
         <https://github.com/jacobbednarz/go-csp-collector> for supported options.
       '';
-
-      default = { };
 
       example = literalExpression ''
         {
@@ -85,22 +53,58 @@ in
           health-check-path = "/health";
         }
       '';
+
+      type = types.submodule {
+        options = {
+          output-format = mkOption {
+            default = "text";
+            description = "Define how the violation reports are formatted for output.";
+            example = "text";
+
+            type = types.enum [
+              "text"
+              "json"
+            ];
+          };
+
+          port = mkOption {
+            default = 8080;
+            description = "The port to listen on.";
+            example = 8080;
+            type = types.port;
+          };
+        };
+
+        freeformType =
+          with types;
+          attrsOf (oneOf [
+            bool
+            path
+            str
+          ]);
+      };
     };
   };
 
   config = mkIf cfg.enable {
     systemd.packages = [ cfg.package ];
+
     systemd.services.go-csp-collector = {
-      description = "CSP violation collector";
-      wantedBy = [ "multi-user.target" ];
       after = [ "network.target" ];
+      description = "CSP violation collector";
+
       serviceConfig = {
-        ReadOnlyPaths = cfg.settings.filter-file or "";
         ExecStart = [
           ""
           "${getExe cfg.package} ${settingsToArgs cfg.settings}"
         ];
+
+        ReadOnlyPaths = cfg.settings.filter-file or "";
       };
+
+      wantedBy = [ "multi-user.target" ];
     };
   };
+
+  meta.maintainers = with maintainers; [ stepbrobd ];
 }

@@ -2,22 +2,21 @@
   lib,
   buildPythonPackage,
   fetchPypi,
+  packaging,
+  paramiko,
+  platformdirs,
+  pytestCheckHook,
+  requests,
   setuptools,
   setuptools-scm,
-  wheel,
-  pytestCheckHook,
-  packaging,
-  platformdirs,
-  requests,
   tqdm,
-  paramiko,
+  wheel,
   xxhash,
 }:
 
 buildPythonPackage rec {
   pname = "pooch";
   version = "1.8.2";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
@@ -36,18 +35,11 @@ buildPythonPackage rec {
     requests
   ];
 
-  passthru = {
-    optional-dependencies = {
-      progress = [ tqdm ];
-      sftp = [ paramiko ];
-      xxhash = [ xxhash ];
-    };
-  };
+  nativeCheckInputs = [ pytestCheckHook ];
+
   preCheck = ''
     export HOME=$TMPDIR
   '';
-
-  nativeCheckInputs = [ pytestCheckHook ];
 
   # tries to touch network
   disabledTests = [
@@ -67,6 +59,16 @@ buildPythonPackage rec {
     "test_retrieve"
     "test_stream_download"
   ];
+
+  pyproject = true;
+
+  passthru = {
+    optional-dependencies = {
+      progress = [ tqdm ];
+      sftp = [ paramiko ];
+      xxhash = [ xxhash ];
+    };
+  };
 
   meta = {
     description = "Friend to fetch your data files";

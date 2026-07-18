@@ -1,15 +1,15 @@
 {
-  appimageTools,
-  fetchurl,
-  version,
-  url,
-  hash,
-  pname,
-  meta,
-  stdenv,
   lib,
-  passthru,
+  stdenv,
+  fetchurl,
+  appimageTools,
   graphicsmagick,
+  hash,
+  meta,
+  passthru,
+  pname,
+  url,
+  version,
 }:
 let
   src = fetchurl { inherit url hash; };
@@ -26,8 +26,6 @@ appimageTools.wrapType2 {
     ;
 
   nativeBuildInputs = [ graphicsmagick ];
-
-  extraPkgs = pkgs: [ pkgs.ocl-icd ];
 
   extraInstallCommands = ''
     mkdir -p $out/share/applications
@@ -53,4 +51,6 @@ appimageTools.wrapType2 {
 
     patchelf --set-interpreter "${stdenv.cc.bintools.dynamicLinker}" $out/bin/lms
   '';
+
+  extraPkgs = pkgs: [ pkgs.ocl-icd ];
 }

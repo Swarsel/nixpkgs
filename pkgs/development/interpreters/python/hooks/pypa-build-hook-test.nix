@@ -22,15 +22,18 @@
       pname = "dont-propagate-conflicting-deps";
       version = "0.0.0";
       src = projectSource;
-      pyproject = true;
+
+      build-system = [
+        # setuptools is also needed to build the example project
+        pythonOnBuildForHost.pkgs.setuptools
+      ];
+
       dependencies = [
         # At least one dependency of `build` should be included here to
         # keep the test meaningful
         (mkConflict pythonOnBuildForHost.pkgs.tomli)
       ];
-      build-system = [
-        # setuptools is also needed to build the example project
-        pythonOnBuildForHost.pkgs.setuptools
-      ];
+
+      pyproject = true;
     };
 }

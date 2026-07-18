@@ -2,8 +2,8 @@
   lib,
   stdenv,
   fetchurl,
-  patchelf,
   libusb-compat-0_1,
+  patchelf,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -47,10 +47,10 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   meta = {
-    homepage = "http://support.identiv.com/products";
     description = "PCSC drivers for linux, for the SCM SCR3310 v2.0 card and others";
-    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
+    homepage = "http://support.identiv.com/products";
     license = lib.licenses.unfree;
+    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
     maintainers = [ ];
     platforms = lib.platforms.linux;
   };

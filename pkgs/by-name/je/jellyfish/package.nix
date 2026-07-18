@@ -1,14 +1,13 @@
 {
   lib,
-  python3Packages,
   fetchFromGitHub,
   nix-update-script,
+  python3Packages,
 }:
 
 python3Packages.buildPythonApplication {
   pname = "jellyfish";
   version = "0-unstable-2024-05-27";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "codereport";
@@ -17,13 +16,11 @@ python3Packages.buildPythonApplication {
     hash = "sha256-IwqXR7oeQjFV4MGadqg1Y6a5tUYb3MdT2L6kDs5JvTo=";
   };
 
-  build-system = [ python3Packages.setuptools ];
-
-  dependencies = [ python3Packages.sympy ];
-
   # there are no tests
   doCheck = false;
-
+  build-system = [ python3Packages.setuptools ];
+  dependencies = [ python3Packages.sympy ];
+  pyproject = true;
   passthru.updateScript = nix-update-script { extraArgs = [ "--version=branch" ]; };
 
   meta = {

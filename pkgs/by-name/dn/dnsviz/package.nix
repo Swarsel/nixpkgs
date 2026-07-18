@@ -1,13 +1,12 @@
 {
   lib,
-  python3Packages,
   fetchFromGitHub,
+  python3Packages,
 }:
 
 python3Packages.buildPythonApplication (finalAttrs: {
   pname = "dnsviz";
   version = "0.11.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "dnsviz";
@@ -26,6 +25,9 @@ python3Packages.buildPythonApplication (finalAttrs: {
       --replace-fail '@out@' $out
   '';
 
+  # Tests require network connection and /etc/resolv.conf
+  doCheck = false;
+
   build-system = with python3Packages; [
     setuptools
   ];
@@ -36,22 +38,22 @@ python3Packages.buildPythonApplication (finalAttrs: {
     pygraphviz
   ];
 
-  # Tests require network connection and /etc/resolv.conf
-  doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "dnsviz" ];
 
   meta = {
     description = "Tool suite for analyzing and visualizing DNS and DNSSEC behavior";
-    mainProgram = "dnsviz";
+
     longDescription = ''
       DNSViz is a tool suite for analysis and visualization of Domain Name System (DNS) behavior,
       including its security extensions (DNSSEC).
 
       This tool suite powers the Web-based analysis available at https://dnsviz.net/
     '';
+
     homepage = "https://github.com/dnsviz/dnsviz";
     license = lib.licenses.gpl2Plus;
     maintainers = with lib.maintainers; [ jojosch ];
+    mainProgram = "dnsviz";
   };
 })

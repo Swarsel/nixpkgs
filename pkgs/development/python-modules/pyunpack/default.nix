@@ -1,19 +1,18 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
-  pytestCheckHook,
+  buildPythonPackage,
+  cabextract,
   easyprocess,
   entrypoint2,
   patool,
-  cabextract,
+  pytestCheckHook,
+  setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "pyunpack";
   version = "0.3";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "ponty";
@@ -31,23 +30,14 @@ buildPythonPackage rec {
 
   nativeBuildInputs = [ setuptools ];
 
-  dependencies = [
-    easyprocess
-    entrypoint2
-  ];
-
   nativeCheckInputs = [
     pytestCheckHook
     cabextract
   ];
 
-  pytestFlags = [ "-x" ];
-
-  pythonImportsCheck = [ "pyunpack" ];
-
-  disabledTests = [
-    # pinning test of `--help` sensitive to python version
-    "test_help"
+  dependencies = [
+    easyprocess
+    entrypoint2
   ];
 
   disabledTestPaths = [
@@ -61,6 +51,15 @@ buildPythonPackage rec {
     "tests/test_rarpw.py"
     "tests/test_zippw.py"
   ];
+
+  disabledTests = [
+    # pinning test of `--help` sensitive to python version
+    "test_help"
+  ];
+
+  pyproject = true;
+  pytestFlags = [ "-x" ];
+  pythonImportsCheck = [ "pyunpack" ];
 
   meta = {
     description = "Unpack archive files in python";

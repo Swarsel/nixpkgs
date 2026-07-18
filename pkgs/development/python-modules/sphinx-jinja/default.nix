@@ -8,7 +8,6 @@
 buildPythonPackage rec {
   pname = "sphinx-jinja";
   version = "2.0.2";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
@@ -16,16 +15,15 @@ buildPythonPackage rec {
   };
 
   propagatedBuildInputs = [ sphinx ];
-
   # upstream source is not updated to 2.0.X and pypi does not contain tests
   doCheck = false;
-
+  format = "setuptools";
   pythonImportsCheck = [ "sphinx_jinja" ];
 
   meta = {
     description = "Sphinx extension to include jinja templates in documentation";
     homepage = "https://github.com/tardyp/sphinx-jinja";
-    maintainers = [ ];
     license = lib.licenses.mit;
+    maintainers = [ ];
   };
 }

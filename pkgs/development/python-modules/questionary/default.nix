@@ -1,8 +1,8 @@
 {
-  stdenv,
   lib,
-  buildPythonPackage,
+  stdenv,
   fetchFromGitHub,
+  buildPythonPackage,
   poetry-core,
   prompt-toolkit,
   pytestCheckHook,
@@ -11,7 +11,6 @@
 buildPythonPackage rec {
   pname = "questionary";
   version = "2.1.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "tmbo";
@@ -20,17 +19,14 @@ buildPythonPackage rec {
     hash = "sha256-r7F5y6KD6zonQGtO/9OuCTMTWdkCdd9aqTgKg6eWp08=";
   };
 
-  pythonRelaxDeps = [ "prompt_toolkit" ];
-
-  build-system = [ poetry-core ];
-
-  dependencies = [ prompt-toolkit ];
-
   nativeCheckInputs = [ pytestCheckHook ];
 
   preCheck = lib.optionalString stdenv.hostPlatform.isDarwin ''
     ulimit -n 1024
   '';
+
+  build-system = [ poetry-core ];
+  dependencies = [ prompt-toolkit ];
 
   disabledTests = [
     # RuntimeError: no running event loop
@@ -41,7 +37,9 @@ buildPythonPackage rec {
     "test_print_with_style"
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "questionary" ];
+  pythonRelaxDeps = [ "prompt_toolkit" ];
 
   meta = {
     description = "Python library to build command line user prompts";

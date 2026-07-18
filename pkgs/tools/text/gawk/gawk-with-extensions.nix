@@ -1,8 +1,8 @@
 {
-  runCommand,
-  gawk,
   extensions,
+  gawk,
   makeWrapper,
+  runCommand,
 }:
 
 runCommand "gawk-with-extensions"

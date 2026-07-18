@@ -1,19 +1,18 @@
 {
-  buildPythonPackage,
-  fetchFromGitHub,
   lib,
+  fetchFromGitHub,
+  buildPythonPackage,
   commandlines,
-  unittestCheckHook,
-  pexpect,
   naked,
+  pexpect,
   setuptools,
+  unittestCheckHook,
   wheel,
 }:
 
 buildPythonPackage rec {
   pname = "hsh";
   version = "1.1.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "chrissimpkins";
@@ -22,12 +21,12 @@ buildPythonPackage rec {
     hash = "sha256-bAAytoidFHH2dSXqN9aqBd2H4p/rwTWXIZa1t5Djdz0=";
   };
 
-  propagatedBuildInputs = [ commandlines ];
-
   nativeBuildInputs = [
     setuptools
     wheel
   ];
+
+  propagatedBuildInputs = [ commandlines ];
 
   nativeCheckInputs = [
     unittestCheckHook
@@ -36,14 +35,14 @@ buildPythonPackage rec {
   ];
 
   preCheck = "cd tests";
-
+  pyproject = true;
   pythonImportsCheck = [ "hsh" ];
 
   meta = {
     description = "Cross-platform command line application that generates file hash digests and performs file integrity checks via file hash digest comparisons";
     homepage = "https://github.com/chrissimpkins/hsh";
-    downloadPage = "https://github.com/chrissimpkins/hsh/releases";
     license = lib.licenses.mit;
     maintainers = [ ];
+    downloadPage = "https://github.com/chrissimpkins/hsh/releases";
   };
 }

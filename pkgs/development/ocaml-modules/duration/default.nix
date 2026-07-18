@@ -1,8 +1,8 @@
 {
   lib,
-  buildDunePackage,
   fetchurl,
   alcotest,
+  buildDunePackage,
 }:
 
 buildDunePackage (finalAttrs: {
@@ -18,8 +18,8 @@ buildDunePackage (finalAttrs: {
   checkInputs = [ alcotest ];
 
   meta = {
-    homepage = "https://github.com/hannesm/duration";
     description = "Conversions to various time units";
+    homepage = "https://github.com/hannesm/duration";
     license = lib.licenses.isc;
     maintainers = [ lib.maintainers.vbgl ];
   };

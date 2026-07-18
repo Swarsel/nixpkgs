@@ -1,10 +1,10 @@
 {
+  lib,
+  fetchFromGitHub,
   buildGoModule,
   curl,
   dbmate,
-  fetchFromGitHub,
   jq,
-  lib,
   makeWrapper,
   nix-update-script,
   nixosTests,
@@ -24,23 +24,15 @@ buildGoModule (finalAttrs: {
     hash = "sha256-VPcX9gLXnTrap6HHU+08QdTBbT2oaNA2C9WY0e/FVoc=";
   };
 
-  vendorHash = "sha256-PpHSkD7+csPfUXoYRuKhBm1iBtTSwJhOxuW/4ayv9hY=";
-
-  ldflags = [
-    "-X github.com/kalbasit/ncps/pkg/ncps.Version=v${finalAttrs.version}"
-  ];
-
-  excludedPackages = [
-    "nix/dbmate-wrapper/src"
-    "nix/gen-db-wrappers/src"
-  ];
-
-  buildInputs = [ xz ];
-
   nativeBuildInputs = [
     makeWrapper # used for wrapping the binary so it can always find the xz binary
     dbmate # used for testing
   ];
+
+  buildInputs = [ xz ];
+  vendorHash = "sha256-PpHSkD7+csPfUXoYRuKhBm1iBtTSwJhOxuW/4ayv9hY=";
+  doCheck = true;
+  checkFlags = [ "-race" ];
 
   postInstall = ''
     mkdir -p $out/share/ncps
@@ -60,21 +52,23 @@ buildGoModule (finalAttrs: {
       --set NCPS_DB_MIGRATIONS_DIR $out/share/ncps/db/migrations
   '';
 
-  doCheck = true;
+  excludedPackages = [
+    "nix/dbmate-wrapper/src"
+    "nix/gen-db-wrappers/src"
+  ];
 
-  checkFlags = [ "-race" ];
+  ldflags = [
+    "-X github.com/kalbasit/ncps/pkg/ncps.Version=v${finalAttrs.version}"
+  ];
 
   passthru = {
     dbmate-wrapper = buildGoModule {
-      pname = "ncps-dbmate-wrapper";
       inherit (finalAttrs) version;
-
+      pname = "ncps-dbmate-wrapper";
       src = "${finalAttrs.src}/nix/dbmate-wrapper/src";
-
-      vendorHash = null;
-
-      buildInputs = lib.singleton dbmate;
       nativeBuildInputs = lib.singleton makeWrapper;
+      buildInputs = lib.singleton dbmate;
+      vendorHash = null;
 
       postInstall = ''
         # the dbmate-wrapper needs access to the original dbmate executable, wrap it so it can find it correctly.
@@ -101,10 +95,12 @@ buildGoModule (finalAttrs: {
     description = "Nix binary cache proxy service";
     homepage = "https://github.com/kalbasit/ncps";
     license = lib.licenses.mit;
-    mainProgram = "ncps";
+
     maintainers = with lib.maintainers; [
       kalbasit
       aciceri
     ];
+
+    mainProgram = "ncps";
   };
 })

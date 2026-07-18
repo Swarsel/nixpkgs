@@ -2,11 +2,11 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  fetchpatch,
   asciidoc,
+  fetchpatch,
   libxcb,
-  libxcb-util,
   libxcb-keysyms,
+  libxcb-util,
   libxcb-wm,
   nixosTests,
 }:
@@ -28,6 +28,8 @@ stdenv.mkDerivation (finalAttrs: {
     "man"
   ];
 
+  strictDeps = true;
+
   nativeBuildInputs = [
     asciidoc
   ];
@@ -39,8 +41,6 @@ stdenv.mkDerivation (finalAttrs: {
     libxcb-wm
   ];
 
-  strictDeps = true;
-
   makeFlags = [ "PREFIX=$(out)" ];
 
   passthru.tests = {
@@ -48,13 +48,15 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   meta = {
+    inherit (libxcb.meta) platforms;
     description = "Simple X hotkey daemon";
     homepage = "https://github.com/baskerville/sxhkd";
     license = lib.licenses.bsd2;
-    mainProgram = "sxhkd";
+
     maintainers = with lib.maintainers; [
       ncfavier
     ];
-    inherit (libxcb.meta) platforms;
+
+    mainProgram = "sxhkd";
   };
 })

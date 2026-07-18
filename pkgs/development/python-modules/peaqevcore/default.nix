@@ -8,7 +8,6 @@
 buildPythonPackage rec {
   pname = "peaqevcore";
   version = "19.11.4";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
@@ -19,12 +18,11 @@ buildPythonPackage rec {
     sed -i "/extras_require/d" setup.py
   '';
 
-  build-system = [ setuptools ];
-
   # Tests are not shipped and source is not tagged
   # https://github.com/elden1337/peaqev-core/issues/4
   doCheck = false;
-
+  build-system = [ setuptools ];
+  pyproject = true;
   pythonImportsCheck = [ "peaqevcore" ];
 
   meta = {

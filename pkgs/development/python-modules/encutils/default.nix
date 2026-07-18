@@ -1,16 +1,15 @@
 {
+  lib,
   buildPythonPackage,
   chardet,
   fetchPypi,
   flit-core,
-  lib,
   pytestCheckHook,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "encutils";
   version = "1.0.0";
-  pyproject = true;
 
   # pyproject.toml on GitHub uses coherent.build as build-system
   src = fetchPypi {
@@ -21,17 +20,18 @@ buildPythonPackage (finalAttrs: {
   # expect chardet.detect to return None
   patches = [ ./chardet6-compat.patch ];
 
+  nativeCheckInputs = [
+    pytestCheckHook
+  ];
+
   build-system = [ flit-core ];
 
   dependencies = [
     chardet
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "encutils" ];
-
-  nativeCheckInputs = [
-    pytestCheckHook
-  ];
 
   meta = {
     description = "Collection of helper functions to detect encodings of text files";

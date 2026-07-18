@@ -1,26 +1,24 @@
 {
   lib,
-  makeGaugePlugin,
-  gauge-unwrapped,
   stdenv,
+  gauge-unwrapped,
+  makeGaugePlugin,
 }:
 
 makeGaugePlugin {
   pname = "dotnet";
-  data = lib.importJSON ./data.json;
-
-  repo = "getgauge/gauge-dotnet";
-  releasePrefix = "gauge-dotnet-";
-  isCrossArch = true;
-
   buildInputs = [ (lib.getLib stdenv.cc.cc) ];
+  data = lib.importJSON ./data.json;
+  isCrossArch = true;
+  releasePrefix = "gauge-dotnet-";
+  repo = "getgauge/gauge-dotnet";
 
   meta = {
+    inherit (gauge-unwrapped.meta) platforms;
     description = "Gauge plugin that lets you write tests in C#";
     homepage = "https://github.com/getgauge/gauge-dotnet/";
     license = lib.licenses.asl20;
-    maintainers = [ ];
     sourceProvenance = with lib.sourceTypes; [ binaryBytecode ];
-    inherit (gauge-unwrapped.meta) platforms;
+    maintainers = [ ];
   };
 }

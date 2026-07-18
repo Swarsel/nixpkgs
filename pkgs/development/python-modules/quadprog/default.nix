@@ -1,18 +1,17 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   cython,
-  setuptools,
   numpy,
   pytestCheckHook,
   scipy,
+  setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "quadprog";
   version = "0.1.13";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "quadprog";
@@ -33,10 +32,12 @@ buildPythonPackage rec {
     scipy
   ];
 
+  pyproject = true;
+
   meta = {
+    description = "Quadratic Programming Solver";
     homepage = "https://github.com/quadprog/quadprog";
     changelog = "https://github.com/quadprog/quadprog/releases/tag/v${version}";
-    description = "Quadratic Programming Solver";
     license = lib.licenses.gpl2Plus;
     maintainers = with lib.maintainers; [ wegank ];
   };

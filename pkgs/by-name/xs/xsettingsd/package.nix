@@ -3,8 +3,8 @@
   stdenv,
   fetchFromGitHub,
   cmake,
-  pkg-config,
   libx11,
+  pkg-config,
 }:
 
 stdenv.mkDerivation (finalAttrs: {

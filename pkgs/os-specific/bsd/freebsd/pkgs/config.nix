@@ -1,21 +1,20 @@
 {
-  mkDerivation,
   bsdSetupHook,
-  freebsdSetupHook,
-  makeMinimal,
-  install,
-  mandoc,
-  groff,
-  flex,
   byacc,
-  file2c,
   compatIfNeeded,
+  file2c,
+  flex,
+  freebsdSetupHook,
+  groff,
+  install,
   libnv,
   libsbuf,
+  makeMinimal,
+  mandoc,
+  mkDerivation,
 }:
 
 mkDerivation {
-  path = "usr.sbin/config";
   nativeBuildInputs = [
     bsdSetupHook
     freebsdSetupHook
@@ -28,8 +27,11 @@ mkDerivation {
     byacc
     file2c
   ];
+
   buildInputs = compatIfNeeded ++ [
     libnv
     libsbuf
   ];
+
+  path = "usr.sbin/config";
 }

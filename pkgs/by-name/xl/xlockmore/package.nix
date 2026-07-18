@@ -1,14 +1,14 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchurl,
-  pam ? null,
+  autoreconfHook,
   libx11,
+  libxdmcp,
   libxext,
   libxinerama,
-  libxdmcp,
   libxt,
-  autoreconfHook,
+  pam ? null,
 }:
 
 stdenv.mkDerivation rec {
@@ -21,25 +21,6 @@ stdenv.mkDerivation rec {
     curlOpts = "--user-agent 'Mozilla/5.0'";
   };
 
-  # Optionally, it can use GTK.
-  buildInputs = [
-    pam
-    libx11
-    libxext.dev
-    libxinerama
-    libxdmcp
-    libxt
-  ];
-  nativeBuildInputs = [ autoreconfHook ];
-
-  # Don't try to install `xlock' setuid. Password authentication works
-  # fine via PAM without super user privileges.
-  configureFlags = [
-    "--disable-setuid"
-    "--enable-appdefaultdir=${placeholder "out"}/share/X11/app-defaults"
-  ]
-  ++ (lib.optional (pam != null) "--enable-pam");
-
   postPatch =
     let
       makePath = p: lib.concatMapStringsSep " " (x: x + "/" + p) buildInputs;
@@ -49,6 +30,26 @@ stdenv.mkDerivation rec {
       sed -i 's,\(for ac_dir in\),\1 ${inputs},' configure.ac
       sed -i 's,/usr/,/no-such-dir/,g' configure.ac
     '';
+
+  nativeBuildInputs = [ autoreconfHook ];
+
+  # Optionally, it can use GTK.
+  buildInputs = [
+    pam
+    libx11
+    libxext.dev
+    libxinerama
+    libxdmcp
+    libxt
+  ];
+
+  # Don't try to install `xlock' setuid. Password authentication works
+  # fine via PAM without super user privileges.
+  configureFlags = [
+    "--disable-setuid"
+    "--enable-appdefaultdir=${placeholder "out"}/share/X11/app-defaults"
+  ]
+  ++ (lib.optional (pam != null) "--enable-pam");
 
   hardeningDisable = [ "format" ]; # no build output otherwise
 

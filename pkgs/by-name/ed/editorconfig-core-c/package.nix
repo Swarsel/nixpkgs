@@ -3,18 +3,13 @@
   stdenv,
   fetchFromGitHub,
   cmake,
-  pcre2,
   doxygen,
+  pcre2,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
   pname = "editorconfig-core-c";
   version = "0.12.11";
-
-  outputs = [
-    "out"
-    "dev"
-  ];
 
   src = fetchFromGitHub {
     owner = "editorconfig";
@@ -23,6 +18,11 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-BLx04SGcfkSFR3GfcZGDle1RVvC9M0juTmpnxxMlDGk=";
     fetchSubmodules = true;
   };
+
+  outputs = [
+    "out"
+    "dev"
+  ];
 
   nativeBuildInputs = [
     cmake
@@ -38,8 +38,8 @@ stdenv.mkDerivation (finalAttrs: {
   enableParallelBuilding = false;
 
   meta = {
-    homepage = "https://editorconfig.org/";
     description = "EditorConfig core library written in C";
+
     longDescription = ''
       EditorConfig makes it easy to maintain the correct coding style when
       switching between different text editors and between different
@@ -48,13 +48,17 @@ stdenv.mkDerivation (finalAttrs: {
       by those editors. For information on the file format and supported text
       editors, see the EditorConfig website.
     '';
-    downloadPage = "https://github.com/editorconfig/editorconfig-core-c";
+
+    homepage = "https://editorconfig.org/";
+
     license = with lib.licenses; [
       bsd2
       bsd3
     ];
+
     maintainers = with lib.maintainers; [ dochang ];
     platforms = lib.platforms.unix;
     mainProgram = "editorconfig";
+    downloadPage = "https://github.com/editorconfig/editorconfig-core-c";
   };
 })

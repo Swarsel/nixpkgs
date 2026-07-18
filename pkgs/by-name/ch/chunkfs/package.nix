@@ -2,8 +2,8 @@
   lib,
   stdenv,
   fetchurl,
-  perl,
   fuse,
+  perl,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -34,7 +34,7 @@ stdenv.mkDerivation (finalAttrs: {
     description = "FUSE filesystems for viewing chunksync-style directory trees as a block device and vice versa";
     homepage = "http://chunkfs.florz.de";
     license = lib.licenses.gpl2Plus;
-    platforms = lib.platforms.linux;
     maintainers = with lib.maintainers; [ yayayayaka ];
+    platforms = lib.platforms.linux;
   };
 })

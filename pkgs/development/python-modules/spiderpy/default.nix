@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   poetry-core,
   requests,
 }:
@@ -9,7 +9,6 @@
 buildPythonPackage rec {
   pname = "spiderpy";
   version = "1.7.2";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "peternijssen";
@@ -19,12 +18,10 @@ buildPythonPackage rec {
   };
 
   nativeBuildInputs = [ poetry-core ];
-
   propagatedBuildInputs = [ requests ];
-
   # tests don't mock remote resources
   doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "spiderpy.spiderapi" ];
 
   meta = {

@@ -1,23 +1,23 @@
 {
-  stdenv,
   lib,
-  fetchzip,
-  fetchpatch,
+  stdenv,
   autoconf,
   automake,
   docbook_xml_dtd_42,
   docbook_xml_dtd_43,
   docbook_xsl,
+  elf-header,
+  fetchpatch,
+  fetchzip,
+  gitUpdater,
   gtk-doc,
   libtool,
-  pkg-config,
   libxslt,
+  pkg-config,
   xz,
   zstd,
-  elf-header,
   withDevdoc ? stdenv.hostPlatform == stdenv.buildPlatform,
   withStatic ? stdenv.hostPlatform.isStatic,
-  gitUpdater,
 }:
 
 let
@@ -51,41 +51,6 @@ stdenv.mkDerivation rec {
   ]
   ++ lib.optional withDevdoc "devdoc";
 
-  strictDeps = true;
-  nativeBuildInputs = [
-    autoconf
-    automake
-    docbook_xsl
-    libtool
-    libxslt
-    pkg-config
-
-    docbook_xml_dtd_42 # for the man pages
-  ]
-  ++ lib.optionals withDevdoc [
-    docbook_xml_dtd_43
-    gtk-doc
-  ];
-  buildInputs = [
-    xz
-    zstd
-  ]
-  # gtk-doc is looked for with pkg-config
-  ++ lib.optionals withDevdoc [ gtk-doc ];
-
-  preConfigure = ''
-    ./autogen.sh
-  '';
-
-  configureFlags = [
-    "--sysconfdir=/etc"
-    "--with-xz"
-    "--with-zstd"
-    "--with-modulesdirs=${modulesDirs}"
-    (lib.enableFeature withDevdoc "gtk-doc")
-  ]
-  ++ lib.optional withStatic "--enable-static";
-
   patches = [
     # Accept multiple default kernel module dirs at build-time, instead
     # of hardcoding a single /lib/modules, and adjust module search logic
@@ -101,13 +66,50 @@ stdenv.mkDerivation rec {
     #
     # Fixes "call to undeclared function 'basename'" error on clang+musl
     (fetchpatch {
+      hash = "sha256-CYG615elMWces6QGQRg2H/NL7W4XsG9Zvz5H+xsdFFo=";
       name = "musl.patch";
       url = "https://git.kernel.org/pub/scm/utils/kernel/kmod/kmod.git/patch/?id=11eb9bc67c319900ab00523997323a97d2d08ad2";
-      hash = "sha256-CYG615elMWces6QGQRg2H/NL7W4XsG9Zvz5H+xsdFFo=";
     })
   ]
   # Force configure.ac to accept --enable-static (no other changes necessary)
   ++ lib.optional withStatic ./enable-static.patch;
+
+  strictDeps = true;
+
+  nativeBuildInputs = [
+    autoconf
+    automake
+    docbook_xsl
+    libtool
+    libxslt
+    pkg-config
+
+    docbook_xml_dtd_42 # for the man pages
+  ]
+  ++ lib.optionals withDevdoc [
+    docbook_xml_dtd_43
+    gtk-doc
+  ];
+
+  buildInputs = [
+    xz
+    zstd
+  ]
+  # gtk-doc is looked for with pkg-config
+  ++ lib.optionals withDevdoc [ gtk-doc ];
+
+  configureFlags = [
+    "--sysconfdir=/etc"
+    "--with-xz"
+    "--with-zstd"
+    "--with-modulesdirs=${modulesDirs}"
+    (lib.enableFeature withDevdoc "gtk-doc")
+  ]
+  ++ lib.optional withStatic "--enable-static";
+
+  preConfigure = ''
+    ./autogen.sh
+  '';
 
   postInstall = ''
     for prog in rmmod insmod lsmod modinfo modprobe depmod; do
@@ -119,29 +121,33 @@ stdenv.mkDerivation rec {
   '';
 
   passthru.updateScript = gitUpdater {
+    rev-prefix = "v";
     # No nicer place to find latest release.
     url = "https://git.kernel.org/pub/scm/utils/kernel/kmod/kmod.git";
-    rev-prefix = "v";
   };
 
   meta = {
     description = "Tools for loading and managing Linux kernel modules";
+
     longDescription = ''
       kmod is a set of tools to handle common tasks with Linux kernel modules
       like insert, remove, list, check properties, resolve dependencies and
       aliases. These tools are designed on top of libkmod, a library that is
       shipped with kmod.
     '';
+
     homepage = "https://git.kernel.org/pub/scm/utils/kernel/kmod/kmod.git/";
-    downloadPage = "https://www.kernel.org/pub/linux/utils/kernel/kmod/";
     changelog = "https://git.kernel.org/pub/scm/utils/kernel/kmod/kmod.git/plain/NEWS?h=v${version}";
+
     license = with lib.licenses; [
       lgpl21Plus
       gpl2Plus
     ]; # GPLv2+ for tools
-    platforms = lib.platforms.linux;
+
     maintainers = with lib.maintainers; [ artturin ];
-    teams = [ lib.teams.security-review ];
+    platforms = lib.platforms.linux;
+    downloadPage = "https://www.kernel.org/pub/linux/utils/kernel/kmod/";
     identifiers.cpeParts = lib.meta.cpeFullVersionWithVendor "kernel" version;
+    teams = [ lib.teams.security-review ];
   };
 }

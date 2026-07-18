@@ -1,12 +1,12 @@
 {
   lib,
-  stdenvNoCC,
   cctools,
   clang-unwrapped,
   ld64,
   llvm,
   llvm-manpages,
   makeWrapper,
+  stdenvNoCC,
   enableManpages ? stdenvNoCC.targetPlatform == stdenvNoCC.hostPlatform,
 }:
 
@@ -52,14 +52,12 @@ let
     '';
 in
 stdenvNoCC.mkDerivation {
-  pname = "${targetPrefix}cctools-binutils-darwin";
   inherit (cctools) version;
-
+  pname = "${targetPrefix}cctools-binutils-darwin";
   outputs = [ "out" ] ++ lib.optional enableManpages "man";
-
   strictDeps = true;
-
   nativeBuildInputs = [ makeWrapper ];
+  __structuredAttrs = true;
 
   buildCommand = ''
     mkdir -p $out/bin $out/include
@@ -111,8 +109,6 @@ stdenvNoCC.mkDerivation {
     ${linkManPages (lib.getMan ld64) "ld-classic" "ld-classic"}
     ${linkManPages (lib.getMan ld64) "ld64" "ld64"}
   '';
-
-  __structuredAttrs = true;
 
   passthru = {
     inherit cctools_cmds llvm_cmds targetPrefix;

@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   requests,
   setuptools,
   setuptools-scm,
@@ -11,7 +11,6 @@
 buildPythonPackage rec {
   pname = "enterpriseattack";
   version = "1.0.4";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "xakepnz";
@@ -19,6 +18,9 @@ buildPythonPackage rec {
     tag = "v${version}";
     hash = "sha256-OZ/nao2oiXzzWl/zQA5A3GpsRNobnHb4ubAsZvVITj0=";
   };
+
+  # Tests require network access
+  doCheck = false;
 
   build-system = [
     setuptools
@@ -30,9 +32,7 @@ buildPythonPackage rec {
     ujson
   ];
 
-  # Tests require network access
-  doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "enterpriseattack" ];
 
   meta = {

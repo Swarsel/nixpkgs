@@ -1,19 +1,18 @@
 {
   lib,
   buildPythonPackage,
-  fetchPypi,
-  setuptools-scm,
-  six,
   dnspython,
+  fetchPypi,
   legacy-cgi,
   pycountry,
   pytestCheckHook,
+  setuptools-scm,
+  six,
 }:
 
 buildPythonPackage rec {
   pname = "formencode";
   version = "2.1.1";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
@@ -24,6 +23,12 @@ buildPythonPackage rec {
     sed -i '/setuptools_scm_git_archive/d' setup.py
   '';
 
+  nativeCheckInputs = [
+    dnspython
+    pycountry
+    pytestCheckHook
+  ];
+
   build-system = [ setuptools-scm ];
 
   dependencies = [
@@ -31,17 +36,13 @@ buildPythonPackage rec {
     legacy-cgi
   ];
 
-  nativeCheckInputs = [
-    dnspython
-    pycountry
-    pytestCheckHook
-  ];
-
   disabledTests = [
     # requires network for DNS resolution
     "test_doctests"
     "test_unicode_ascii_subgroup"
   ];
+
+  pyproject = true;
 
   meta = {
     description = "FormEncode validates and converts nested structures";

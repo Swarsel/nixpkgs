@@ -1,19 +1,16 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
   build,
-  setuptools,
-
+  buildPythonPackage,
   nose2,
   pytestCheckHook,
+  setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "inotify";
   version = "0.2.12";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "dsoprea";
@@ -22,19 +19,21 @@ buildPythonPackage rec {
     hash = "sha256-x6wvrwLDH/9UMTsAIHwCKR5Avv1givlJFFeBM//FOdg=";
   };
 
-  build-system = [
-    build
-    setuptools
-  ];
-
   nativeCheckInputs = [
     nose2
     pytestCheckHook
   ];
 
+  build-system = [
+    build
+    setuptools
+  ];
+
+  pyproject = true;
+
   meta = {
-    homepage = "https://github.com/dsoprea/PyInotify";
     description = "Monitor filesystems events on Linux platforms with inotify";
+    homepage = "https://github.com/dsoprea/PyInotify";
     license = lib.licenses.gpl2;
     platforms = lib.platforms.linux;
   };

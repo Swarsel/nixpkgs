@@ -1,71 +1,12 @@
 {
-  stdenv,
   lib,
-  nixosTests,
-  pkgsCross,
-  testers,
+  stdenv,
   fetchFromGitHub,
-  buildPackages,
-  makeBinaryWrapper,
-  ninja,
-  meson,
-  m4,
-  pkg-config,
-  coreutils,
-  gperf,
-  glibcLocales,
-  autoPatchelfHook,
-
-  # glib is only used during tests (test-bus-gvariant, test-bus-marshal)
-  glib,
-  gettext,
-  python3Packages,
-
-  # Mandatory dependencies
-  util-linux,
-  kbd,
-  kmod,
-  libxcrypt,
-
-  # Optional dependencies
-  pam,
-  cryptsetup,
-  audit,
   acl,
-  lz4,
-  openssl,
-  libucontext,
-  libgcrypt,
-  libidn2,
-  curl,
-  zlib,
-  xz,
-  zstd,
-  tpm2-tss,
-  libuuid,
-  libapparmor,
-  intltool,
-  bzip2,
-  pcre2,
-  elfutils,
-  linuxHeaders ? stdenv.cc.libc.linuxHeaders,
-  gnutls,
-  withSelinux ? false,
-  libselinux,
-  withLibseccomp ? lib.meta.availableOn stdenv.hostPlatform libseccomp,
-  libseccomp,
-  withKexectools ? lib.meta.availableOn stdenv.hostPlatform kexec-tools,
-  kexec-tools,
+  audit,
+  autoPatchelfHook,
   bash,
   bashNonInteractive,
-  libmicrohttpd,
-  libfido2,
-  p11-kit,
-  libpwquality,
-  qrencode,
-  libarchive,
-  llvmPackages,
-
   # the (optional) BPF feature requires bpftool, libbpf, clang and llvm-strip to
   # be available during build time.
   # Only libbpf should be a runtime dependency.
@@ -78,11 +19,69 @@
   # us. Working around this is important, because systemd is in the dependency
   # closure of GHC via emscripten and jdk.
   bpftools,
+  buildPackages,
+  bzip2,
+  coreutils,
+  cryptsetup,
+  curl,
+  docbook_xml_dtd_42,
+  docbook_xml_dtd_45,
+  docbook_xsl,
+  elfutils,
+  gettext,
+  # glib is only used during tests (test-bus-gvariant, test-bus-marshal)
+  glib,
+  glibcLocales,
+  gnutls,
+  gperf,
+  intltool,
+  kbd,
+  kexec-tools,
+  kmod,
+  libapparmor,
+  libarchive,
   libbpf,
-
+  libfido2,
+  libgcrypt,
+  libidn2,
+  libmicrohttpd,
+  libpwquality,
+  libseccomp,
+  libselinux,
+  libucontext,
+  libuuid,
+  libxcrypt,
+  libxslt,
+  llvmPackages,
+  lz4,
+  m4,
+  makeBinaryWrapper,
+  meson,
+  ninja,
+  nixosTests,
+  openssl,
+  p11-kit,
+  # Optional dependencies
+  pam,
+  pcre2,
+  pkg-config,
+  pkgsCross,
+  python3Packages,
+  qrencode,
   # Needed to produce a ukify that works for cross compiling UKIs.
   targetPackages,
-
+  testers,
+  tpm2-tss,
+  # Mandatory dependencies
+  util-linux,
+  xz,
+  zlib,
+  zstd,
+  # build only libudev and libsystemd
+  buildLibsOnly ? false,
+  linuxHeaders ? stdenv.cc.libc.linuxHeaders,
+  # yes, pname is an argument here
+  pname ? "systemd",
   withAcl ? true,
   withAnalyze ? true,
   withApparmor ? true,
@@ -96,7 +95,6 @@
   withCompression ? true,
   withCoredump ? true,
   withCryptsetup ? true,
-  withRepart ? true,
   withDocumentation ? true,
   withEfi ? stdenv.hostPlatform.isEfi,
   withFido2 ? true,
@@ -105,8 +103,13 @@
   withHomed ? true,
   withHostnamed ? true,
   withHwdb ? true,
-  withImportd ? true,
   withImds ? true,
+  withImportd ? true,
+  # kernel-install shouldn't usually be used on NixOS, but can be useful, e.g. for
+  # building disk images for non-NixOS systems. To save users from trying to use it
+  # on their live NixOS system, we disable it by default.
+  withKernelInstall ? false,
+  withKexectools ? lib.meta.availableOn stdenv.hostPlatform kexec-tools,
   withKmod ? true,
   withLibBPF ?
     lib.versionAtLeast buildPackages.llvmPackages.clang.version "10.0"
@@ -125,8 +128,11 @@
     # but we do it this way to avoid taking llvmPackages as an input, and
     # risking making it too easy to ignore the above comment about llvmPackages.
     && lib.meta.availableOn stdenv.hostPlatform buildPackages.targetPackages.llvmPackages.compiler-rt,
+  withLibarchive ? true,
   withLibidn2 ? true,
+  withLibseccomp ? lib.meta.availableOn stdenv.hostPlatform libseccomp,
   withLocaled ? true,
+  withLogTrace ? false,
   withLogind ? true,
   withMachined ? true,
   withNetworkd ? true,
@@ -134,18 +140,22 @@
   withNss ? !stdenv.hostPlatform.isMusl,
   withOomd ? true,
   withOpenSSL ? true,
+  withPCRE2 ? true,
   withPam ? true,
   withPasswordQuality ? true,
-  withPCRE2 ? true,
   withPolkit ? true,
   withPortabled ? true,
   withQrencode ? true,
   withRemote ? true,
+  withRepart ? true,
   withResolved ? true,
+  withSelinux ? false,
   withShellCompletions ? true,
   withSysinstall ? true,
-  withSysusers ? true,
   withSysupdate ? true,
+  withSysusers ? true,
+  # tests assume too much system access for them to be feasible for us right now
+  withTests ? false,
   withTimedated ? true,
   withTimesyncd ? true,
   withTpm2Tss ? true,
@@ -157,26 +167,8 @@
   # otherwise the condition for systemd-update-utmp.service will
   # attempt to load a service which does not exist, resulting in errors.
   withUtmp ? !stdenv.hostPlatform.isMusl,
-  withVmspawn ? true,
-  # kernel-install shouldn't usually be used on NixOS, but can be useful, e.g. for
-  # building disk images for non-NixOS systems. To save users from trying to use it
-  # on their live NixOS system, we disable it by default.
-  withKernelInstall ? false,
-  withLibarchive ? true,
   withVConsole ? true,
-  # tests assume too much system access for them to be feasible for us right now
-  withTests ? false,
-  # build only libudev and libsystemd
-  buildLibsOnly ? false,
-
-  # yes, pname is an argument here
-  pname ? "systemd",
-
-  libxslt,
-  docbook_xsl,
-  docbook_xml_dtd_42,
-  docbook_xml_dtd_45,
-  withLogTrace ? false,
+  withVmspawn ? true,
 }:
 
 assert withImportd -> withCompression;
@@ -212,6 +204,12 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-6IB1ZEQqQ0impwBhCaLZAEgMVkVFU61JDVlGotxNzGQ=";
   };
 
+  outputs = [
+    "out"
+    "dev"
+  ]
+  ++ (lib.optional (!buildLibsOnly) "man");
+
   # PATCH POLICY
   #
   # There are only two reasons we accept patches on systemd:
@@ -224,7 +222,6 @@ stdenv.mkDerivation (finalAttrs: {
   #
   # Importantly, patches to improve usability, enable new features on NixOS or
   # add entirely new features to systemd are not allowed.
-
   # On major changes, or when otherwise required, you *must* :
   # 1. reformat the patches,
   # 2. `git am path/to/00*.patch` them into a systemd worktree,
@@ -268,22 +265,6 @@ stdenv.mkDerivation (finalAttrs: {
     patchShebangs tools test src/!(rpm|kernel-install|ukify) src/kernel-install/test-kernel-install.sh
   '';
 
-  outputs = [
-    "out"
-    "dev"
-  ]
-  ++ (lib.optional (!buildLibsOnly) "man");
-  separateDebugInfo = true;
-  __structuredAttrs = true;
-
-  hardeningDisable = lib.optionals withLibBPF [
-    # breaks clang -target bpf; should be fixed to not use
-    # a wrapped clang?
-    "zerocallusedregs"
-    "shadowstack"
-    "pacret"
-  ];
-
   nativeBuildInputs = [
     pkg-config
     makeBinaryWrapper
@@ -317,15 +298,6 @@ stdenv.mkDerivation (finalAttrs: {
     bpftools
     buildPackages.llvmPackages.clang
     buildPackages.llvmPackages.libllvm
-  ];
-
-  autoPatchelfFlags = [
-    "--keep-libc"
-  ]
-  ++ lib.optionals stdenv.hostPlatform.isMusl [
-    # TODO: can be unconditionalized on staging.
-    # Nixpkgs does not rely on gettext for libintl for musl.
-    "--ignore-missing=libintl.so.8"
   ];
 
   buildInputs = [
@@ -385,8 +357,6 @@ stdenv.mkDerivation (finalAttrs: {
       doFakeLibgcc = true;
     }
   );
-
-  mesonBuildType = "release";
 
   mesonFlags = [
     # Options
@@ -578,19 +548,6 @@ stdenv.mkDerivation (finalAttrs: {
     (lib.mesonBool "gshadow" false)
     (lib.mesonBool "idn" false)
   ];
-  preConfigure = ''
-    substituteInPlace src/libsystemd/sd-journal/catalog.c \
-      --replace /usr/lib/systemd/catalog/ $out/lib/systemd/catalog/
-  '';
-
-  # These defines are overridden by CFLAGS and would trigger annoying
-  # warning messages
-  postConfigure = ''
-    substituteInPlace config.h \
-      --replace-fail "SYSTEMD_BINARY_PATH" "_SYSTEMD_BINARY_PATH" \
-      --replace-fail "SYSTEM_SHUTDOWN_PATH" "_SYSTEM_SHUTDOWN_PATH" \
-      --replace-fail "SYSTEM_SLEEP_PATH" "_SYSTEM_SLEEP_PATH"
-  '';
 
   env.NIX_CFLAGS_COMPILE = toString [
     "-USYSTEMD_BINARY_PATH"
@@ -605,18 +562,26 @@ stdenv.mkDerivation (finalAttrs: {
     "-DSYSTEM_SLEEP_PATH=\"/etc/systemd/system-sleep\""
   ];
 
+  preConfigure = ''
+    substituteInPlace src/libsystemd/sd-journal/catalog.c \
+      --replace /usr/lib/systemd/catalog/ $out/lib/systemd/catalog/
+  '';
+
+  # These defines are overridden by CFLAGS and would trigger annoying
+  # warning messages
+  postConfigure = ''
+    substituteInPlace config.h \
+      --replace-fail "SYSTEMD_BINARY_PATH" "_SYSTEMD_BINARY_PATH" \
+      --replace-fail "SYSTEM_SHUTDOWN_PATH" "_SYSTEM_SHUTDOWN_PATH" \
+      --replace-fail "SYSTEM_SLEEP_PATH" "_SYSTEM_SLEEP_PATH"
+  '';
+
   doCheck = false;
 
   # trigger the test -n "$DESTDIR" || mutate in upstreams build system
   preInstall = ''
     export DESTDIR=/
   '';
-
-  mesonInstallTags = lib.optionals buildLibsOnly [
-    "devel"
-    "libudev"
-    "libsystemd"
-  ];
 
   postInstall =
     lib.optionalString (!buildLibsOnly) ''
@@ -658,11 +623,6 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstallCheck
   '';
 
-  # Avoid *.EFI binary stripping.
-  # At least on aarch64-linux strip removes too much from PE32+ files:
-  #   https://github.com/NixOS/nixpkgs/issues/169693
-  stripExclude = [ "lib/systemd/boot/efi/*" ];
-
   # Wrap in the correct path for LUKS2 tokens.
   postFixup =
     lib.optionalString withCryptsetup ''
@@ -680,6 +640,17 @@ stdenv.mkDerivation (finalAttrs: {
       }:${placeholder "out"}/lib/systemd
     '';
 
+  __structuredAttrs = true;
+
+  autoPatchelfFlags = [
+    "--keep-libc"
+  ]
+  ++ lib.optionals stdenv.hostPlatform.isMusl [
+    # TODO: can be unconditionalized on staging.
+    # Nixpkgs does not rely on gettext for libintl for musl.
+    "--ignore-missing=libintl.so.8"
+  ];
+
   disallowedReferences =
     lib.optionals (stdenv.buildPlatform != stdenv.hostPlatform)
       # 'or p' is for manually specified buildPackages as they dont have __spliced
@@ -690,14 +661,29 @@ stdenv.mkDerivation (finalAttrs: {
     bashNonInteractive
   ];
 
-  passthru = {
-    # The `interfaceVersion` attribute below points out the incompatibilities
-    # between systemd versions. When the new systemd build is
-    # backwards-compatible with the previous one, then they can be switched at
-    # runtime (the reboot being optional in this case); otherwise, a reboot is
-    # needed - and therefore `interfaceVersion` should be incremented.
-    interfaceVersion = 2;
+  hardeningDisable = lib.optionals withLibBPF [
+    # breaks clang -target bpf; should be fixed to not use
+    # a wrapped clang?
+    "zerocallusedregs"
+    "shadowstack"
+    "pacret"
+  ];
 
+  mesonBuildType = "release";
+
+  mesonInstallTags = lib.optionals buildLibsOnly [
+    "devel"
+    "libudev"
+    "libsystemd"
+  ];
+
+  separateDebugInfo = true;
+  # Avoid *.EFI binary stripping.
+  # At least on aarch64-linux strip removes too much from PE32+ files:
+  #   https://github.com/NixOS/nixpkgs/issues/169693
+  stripExclude = [ "lib/systemd/boot/efi/*" ];
+
+  passthru = {
     inherit
       withBootloader
       withCryptsetup
@@ -722,9 +708,12 @@ stdenv.mkDerivation (finalAttrs: {
       kbd
       ;
 
-    # Many TPM2-related units are only installed if this trio of features are
-    # enabled. See https://github.com/systemd/systemd/blob/876ee10e0eb4bbb0920bdab7817a9f06cc34910f/units/meson.build#L521
-    withTpm2Units = withTpm2Tss && withBootloader && withOpenSSL;
+    # The `interfaceVersion` attribute below points out the incompatibilities
+    # between systemd versions. When the new systemd build is
+    # backwards-compatible with the previous one, then they can be switched at
+    # runtime (the reboot being optional in this case); otherwise, a reboot is
+    # needed - and therefore `interfaceVersion` should be incremented.
+    interfaceVersion = 2;
 
     # These are all the tests that need to pass in order to merge a PR that
     # updates systemd.
@@ -739,8 +728,8 @@ stdenv.mkDerivation (finalAttrs: {
         prefixTests =
           prefix:
           lib.mapAttrs' (name: value: {
-            name = "${prefix}-${name}";
             inherit value;
+            name = "${prefix}-${name}";
           }) nixosTests."${prefix}";
       in
       {
@@ -860,11 +849,15 @@ stdenv.mkDerivation (finalAttrs: {
 
       pkg-config = testers.testMetaPkgConfig finalAttrs.finalPackage;
     };
+
+    # Many TPM2-related units are only installed if this trio of features are
+    # enabled. See https://github.com/systemd/systemd/blob/876ee10e0eb4bbb0920bdab7817a9f06cc34910f/units/meson.build#L521
+    withTpm2Units = withTpm2Tss && withBootloader && withOpenSSL;
   };
 
   meta = {
-    homepage = "https://systemd.io";
     description = "System and service manager for Linux";
+
     longDescription = ''
       systemd is a suite of basic building blocks for a Linux system. It
       provides a system and service manager that runs as PID 1 and starts the
@@ -881,6 +874,9 @@ stdenv.mkDerivation (finalAttrs: {
       network configuration, network time synchronization, log forwarding, and
       name resolution.
     '';
+
+    homepage = "https://systemd.io";
+
     license = with lib.licenses; [
       # Taken from https://raw.githubusercontent.com/systemd/systemd-stable/${finalAttrs.src.rev}/LICENSES/README.md
       bsd2
@@ -893,25 +889,31 @@ stdenv.mkDerivation (finalAttrs: {
       ofl
       publicDomain
     ];
-    teams = [
-      lib.teams.systemd
-      lib.teams.security-review
+
+    # See src/basic/missing_syscall_def.h
+    platforms =
+      with lib.platforms;
+      lib.intersectLists linux (aarch ++ x86 ++ loongarch64 ++ m68k ++ mips ++ power ++ riscv ++ s390);
+
+    badPlatforms = [
+      # https://github.com/systemd/systemd/issues/20600#issuecomment-912338965
+      lib.systems.inspect.platformPatterns.isStatic
     ];
+
+    identifiers.cpeParts = lib.meta.cpeFullVersionWithVendor "systemd_project" finalAttrs.version;
+
     pkgConfigModules = [
       "libsystemd"
       "libudev"
       "systemd"
       "udev"
     ];
-    # See src/basic/missing_syscall_def.h
-    platforms =
-      with lib.platforms;
-      lib.intersectLists linux (aarch ++ x86 ++ loongarch64 ++ m68k ++ mips ++ power ++ riscv ++ s390);
+
     priority = 10;
-    badPlatforms = [
-      # https://github.com/systemd/systemd/issues/20600#issuecomment-912338965
-      lib.systems.inspect.platformPatterns.isStatic
+
+    teams = [
+      lib.teams.systemd
+      lib.teams.security-review
     ];
-    identifiers.cpeParts = lib.meta.cpeFullVersionWithVendor "systemd_project" finalAttrs.version;
   };
 })

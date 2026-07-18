@@ -2,9 +2,9 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  makeWrapper,
   btrfs-progs,
   coreutils,
+  makeWrapper,
   ncurses,
   perl,
 }:
@@ -19,9 +19,8 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-K6/xFR4Qmr6ynH5rZfOTN8nkl99iqcJPmKPwtp9FYyc=";
   };
 
-  buildInputs = [ perl ];
-
   nativeBuildInputs = [ makeWrapper ];
+  buildInputs = [ perl ];
 
   installPhase = ''
     install -D -t $out/bin btrfs-list
@@ -41,7 +40,7 @@ stdenv.mkDerivation (finalAttrs: {
     homepage = "https://github.com/speed47/btrfs-list";
     license = lib.licenses.gpl2Only;
     maintainers = with lib.maintainers; [ asymmetric ];
-    mainProgram = "btrfs-list";
     platforms = lib.platforms.linux;
+    mainProgram = "btrfs-list";
   };
 })

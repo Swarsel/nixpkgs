@@ -1,6 +1,6 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
 }:
 stdenv.mkDerivation (finalAttrs: {
@@ -27,10 +27,10 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   meta = {
-    homepage = "https://github.com/NVIDIA/nvidia-docker";
     description = "NVIDIA container runtime for Docker";
+    homepage = "https://github.com/NVIDIA/nvidia-docker";
     license = lib.licenses.bsd3;
-    platforms = lib.platforms.linux;
     maintainers = with lib.maintainers; [ cpcloud ];
+    platforms = lib.platforms.linux;
   };
 })

@@ -1,8 +1,8 @@
 {
   lib,
   buildPythonPackage,
-  fetchPypi,
   cython,
+  fetchPypi,
   numpy,
   oldest-supported-numpy,
   pytestCheckHook,
@@ -10,9 +10,8 @@
 }:
 
 buildPythonPackage rec {
-  version = "0.14.2";
   pname = "hdmedians";
-  pyproject = true;
+  version = "0.14.2";
 
   src = fetchPypi {
     inherit pname version;
@@ -29,16 +28,6 @@ buildPythonPackage rec {
       --replace-fail "'nose>=1.0'," ""
   '';
 
-  build-system = [
-    cython
-    oldest-supported-numpy
-    setuptools
-  ];
-
-  dependencies = [ numpy ];
-
-  pythonImportsCheck = [ "hdmedians" ];
-
   nativeCheckInputs = [
     pytestCheckHook
   ];
@@ -47,9 +36,19 @@ buildPythonPackage rec {
     cd $out
   '';
 
+  build-system = [
+    cython
+    oldest-supported-numpy
+    setuptools
+  ];
+
+  dependencies = [ numpy ];
+  pyproject = true;
+  pythonImportsCheck = [ "hdmedians" ];
+
   meta = {
-    homepage = "https://github.com/daleroberts/hdmedians";
     description = "High-dimensional medians";
+    homepage = "https://github.com/daleroberts/hdmedians";
     license = lib.licenses.asl20;
     maintainers = [ ];
   };

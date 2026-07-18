@@ -3,15 +3,14 @@
   stdenv,
   fetchFromGitHub,
   fetchpatch,
-  python3,
   installShellFiles,
   nixosTests,
+  python3,
 }:
 
 python3.pkgs.buildPythonApplication (finalAttrs: {
   pname = "fail2ban";
   version = "1.1.0";
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "fail2ban";
@@ -35,17 +34,20 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     (builtins.any lib.id)
   ]) [ "doc" ];
 
+  patches = [
+    # Adjust sshd filter for OpenSSH 9.8 new daemon name - remove next release
+    (fetchpatch {
+      hash = "sha256-uyrCdcBm0QyA97IpHzuGfiQbSSvhGH6YaQluG5jVIiI=";
+      url = "https://github.com/fail2ban/fail2ban/commit/2fed408c05ac5206b490368d94599869bd6a056d.patch";
+    })
+    # filter.d/sshd.conf: ungroup (unneeded for _daemon) - remove next release
+    (fetchpatch {
+      hash = "sha256-YGsUPfQRRDVqhBl7LogEfY0JqpLNkwPjihWIjfGdtnQ=";
+      url = "https://github.com/fail2ban/fail2ban/commit/50ff131a0fd8f54fdeb14b48353f842ee8ae8c1a.patch";
+    })
+  ];
+
   nativeBuildInputs = [ installShellFiles ];
-
-  pythonPath =
-    with python3.pkgs;
-    lib.optionals stdenv.hostPlatform.isLinux [
-      systemd-python
-      pyinotify
-
-      # https://github.com/fail2ban/fail2ban/issues/3787, remove it in the next release
-      setuptools
-    ];
 
   preConfigure = ''
     for i in config/action.d/sendmail*.conf; do
@@ -55,19 +57,6 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
   '';
 
   doCheck = false;
-
-  patches = [
-    # Adjust sshd filter for OpenSSH 9.8 new daemon name - remove next release
-    (fetchpatch {
-      url = "https://github.com/fail2ban/fail2ban/commit/2fed408c05ac5206b490368d94599869bd6a056d.patch";
-      hash = "sha256-uyrCdcBm0QyA97IpHzuGfiQbSSvhGH6YaQluG5jVIiI=";
-    })
-    # filter.d/sshd.conf: ungroup (unneeded for _daemon) - remove next release
-    (fetchpatch {
-      url = "https://github.com/fail2ban/fail2ban/commit/50ff131a0fd8f54fdeb14b48353f842ee8ae8c1a.patch";
-      hash = "sha256-YGsUPfQRRDVqhBl7LogEfY0JqpLNkwPjihWIjfGdtnQ=";
-    })
-  ];
 
   preInstall = ''
     substituteInPlace setup.py --replace /usr/share/doc/ share/doc/
@@ -104,12 +93,25 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
       rm -r "${sitePackages}/usr"
     '';
 
+  format = "setuptools";
+
+  pythonPath =
+    with python3.pkgs;
+    lib.optionals stdenv.hostPlatform.isLinux [
+      systemd-python
+      pyinotify
+
+      # https://github.com/fail2ban/fail2ban/issues/3787, remove it in the next release
+      setuptools
+    ];
+
   passthru.tests = { inherit (nixosTests) fail2ban; };
 
   meta = {
-    homepage = "https://www.fail2ban.org/";
     description = "Program that scans log files for repeated failing login attempts and bans IP addresses";
+    homepage = "https://www.fail2ban.org/";
     license = lib.licenses.gpl2Plus;
+
     maintainers = with lib.maintainers; [
       Deric-W
     ];

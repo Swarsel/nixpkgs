@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   versionCheckHook,
 }:
 
@@ -15,6 +15,7 @@ buildGoModule (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-tiPTTAPqXp8ptEKsAII3sTiMCneiWEXg4pl2F1Nb+8A=";
     leaveDotGit = true;
+
     postFetch = ''
       git -C "$out" rev-parse --short HEAD > "$out/.git_head"
       rm -rf "$out/.git"
@@ -23,12 +24,6 @@ buildGoModule (finalAttrs: {
 
   vendorHash = "sha256-UTfbfAjmWKrHr/YxaWuaFswF3EnqcE8Otnz/sPoYT5w=";
 
-  ldflags = [
-    "-s"
-    "-w"
-    "-X=main.version=${finalAttrs.version}"
-  ];
-
   preBuild = ''
     ldflags+=" -X=main.commit=$(<.git_head)"
   '';
@@ -36,20 +31,28 @@ buildGoModule (finalAttrs: {
   # Test failure in vendored yaml package, see:
   # https://github.com/google/yamlfmt/issues/256
   checkFlags = [ "-run=!S/TestNodeRoundtrip" ];
+  doInstallCheck = true;
 
   nativeInstallCheckInputs = [
     versionCheckHook
   ];
-  doInstallCheck = true;
+
+  ldflags = [
+    "-s"
+    "-w"
+    "-X=main.version=${finalAttrs.version}"
+  ];
 
   meta = {
     description = "Extensible command line tool or library to format yaml files";
     homepage = "https://github.com/google/yamlfmt";
     changelog = "https://github.com/google/yamlfmt/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.asl20;
+
     maintainers = with lib.maintainers; [
       nick-linux
     ];
+
     mainProgram = "yamlfmt";
   };
 })

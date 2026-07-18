@@ -2,26 +2,26 @@
   lib,
   stdenv,
   fetchurl,
-  cmake,
-  wxwidgets_3_2,
-  openal,
-  pkg-config,
-  curl,
-  libtorrent-rasterbar,
-  libpng,
-  libx11,
-  gettext,
-  boost,
-  libnotify,
-  gtk3,
-  doxygen,
-  spring,
-  makeWrapper,
-  glib,
-  minizip,
   alure,
-  pcre,
+  boost,
+  cmake,
+  curl,
+  doxygen,
+  gettext,
+  glib,
+  gtk3,
   jsoncpp,
+  libnotify,
+  libpng,
+  libtorrent-rasterbar,
+  libx11,
+  makeWrapper,
+  minizip,
+  openal,
+  pcre,
+  pkg-config,
+  spring,
+  wxwidgets_3_2,
 }:
 
 stdenv.mkDerivation rec {
@@ -33,6 +33,11 @@ stdenv.mkDerivation rec {
     sha256 = "sha256-XkU6i6ABCgw3H9vJu0xjHRO1BglueYM1LyJxcZdOrDk=";
   };
 
+  patches = [
+    ./revert_58b423e.patch # Allows springLobby to continue using system installed spring until #707 is fixed
+    ./fix-certs.patch
+  ];
+
   nativeBuildInputs = [
     cmake
     pkg-config
@@ -40,6 +45,7 @@ stdenv.mkDerivation rec {
     doxygen
     makeWrapper
   ];
+
   buildInputs = [
     wxwidgets_3_2
     openal
@@ -57,11 +63,6 @@ stdenv.mkDerivation rec {
     alure
   ];
 
-  patches = [
-    ./revert_58b423e.patch # Allows springLobby to continue using system installed spring until #707 is fixed
-    ./fix-certs.patch
-  ];
-
   postInstall = ''
     wrapProgram $out/bin/springlobby \
       --prefix PATH : "${spring}/bin" \
@@ -69,12 +70,14 @@ stdenv.mkDerivation rec {
   '';
 
   meta = {
-    homepage = "https://springlobby.springrts.com";
     description = "Cross-platform lobby client for the Spring RTS project";
+    homepage = "https://springlobby.springrts.com";
     license = lib.licenses.gpl2Plus;
+
     maintainers = with lib.maintainers; [
       qknight
     ];
+
     platforms = [
       "i686-linux"
       "x86_64-linux"

@@ -25,14 +25,15 @@ in
   ###### implementation
 
   config = mkIf cfg.enable {
+    environment.systemPackages = [ fvwm3 ];
+
     services.xserver.windowManager.session = singleton {
       name = "fvwm3";
+
       start = ''
         ${fvwm3}/bin/fvwm3 &
         waitPID=$!
       '';
     };
-
-    environment.systemPackages = [ fvwm3 ];
   };
 }

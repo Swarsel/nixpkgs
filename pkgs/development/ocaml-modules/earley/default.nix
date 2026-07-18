@@ -6,8 +6,9 @@
 }:
 
 buildDunePackage (finalAttrs: {
-  version = "3.0.0";
   pname = "earley";
+  version = "3.0.0";
+
   src = fetchFromGitHub {
     owner = "rlepigre";
     repo = "ocaml-earley";
@@ -16,7 +17,6 @@ buildDunePackage (finalAttrs: {
   };
 
   buildInputs = [ stdlib-shims ];
-
   doCheck = true;
 
   meta = {

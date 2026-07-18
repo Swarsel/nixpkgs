@@ -1,27 +1,23 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  replaceVars,
-
-  # build-system
-  flit-scm,
-  wheel,
-
-  # dependencies
-  flit-core,
-  gettext,
-
   # tests
   build,
-  pytestCheckHook,
+  buildPythonPackage,
+  # dependencies
+  flit-core,
+  # build-system
+  flit-scm,
+  gettext,
   pytest-cov-stub,
+  pytestCheckHook,
+  replaceVars,
+  wheel,
 }:
 
 buildPythonPackage rec {
   pname = "flit-gettext";
   version = "1.0.2";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "codingjoe";
@@ -43,10 +39,6 @@ buildPythonPackage rec {
 
   propagatedBuildInputs = [ flit-core ];
 
-  optional-dependencies = {
-    scm = [ flit-scm ];
-  };
-
   nativeCheckInputs = [
     build
     pytestCheckHook
@@ -55,17 +47,22 @@ buildPythonPackage rec {
   ]
   ++ optional-dependencies.scm;
 
-  disabledTests = [
-    # tests for missing msgfmt, but we always provide it
-    "test_compile_gettext_translations__no_gettext"
-  ];
-
   disabledTestPaths = [
     # calls python -m build, but can't find build
     "tests/test_core.py"
     "tests/test_scm.py"
   ];
 
+  disabledTests = [
+    # tests for missing msgfmt, but we always provide it
+    "test_compile_gettext_translations__no_gettext"
+  ];
+
+  optional-dependencies = {
+    scm = [ flit-scm ];
+  };
+
+  pyproject = true;
   pythonImportsCheck = [ "flit_gettext" ];
 
   meta = {

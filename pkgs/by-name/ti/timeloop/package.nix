@@ -2,16 +2,16 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  scons,
-  libconfig,
+  accelergy,
   boost,
-  libyaml,
-  yaml-cpp,
-  ncurses,
   gpm,
+  libconfig,
+  libyaml,
+  ncurses,
+  scons,
+  yaml-cpp,
   enableAccelergy ? true,
   enableISL ? false,
-  accelergy,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -24,24 +24,6 @@ stdenv.mkDerivation (finalAttrs: {
     rev = "v${finalAttrs.version}";
     hash = "sha256-CGPhrBNzFdERAA/Eym2v0+FvFUe+VkBLnwYEqEMHE9k=";
   };
-
-  nativeBuildInputs = [ scons ];
-
-  buildInputs = [
-    libconfig
-    boost
-    libyaml
-    yaml-cpp
-    ncurses
-    accelergy
-  ]
-  ++ lib.optionals stdenv.hostPlatform.isLinux [ gpm ];
-
-  preConfigure = ''
-    cp -r ./pat-public/src/pat ./src/pat
-  '';
-
-  enableParallelBuilding = true;
 
   postPatch = ''
     # Fix gcc-13 build failure due to missing includes:
@@ -76,12 +58,21 @@ stdenv.mkDerivation (finalAttrs: {
     substituteInPlace ./src/SConscript --replace ", 'gpm'" ""
   '';
 
-  sconsFlags =
-    # will fail on clang/darwin on link without --static due to undefined extern
-    # however, will fail with static on linux as nixpkgs deps aren't static
-    lib.optional stdenv.hostPlatform.isDarwin "--static"
-    ++ lib.optional enableAccelergy "--accelergy"
-    ++ lib.optional enableISL "--with-isl";
+  nativeBuildInputs = [ scons ];
+
+  buildInputs = [
+    libconfig
+    boost
+    libyaml
+    yaml-cpp
+    ncurses
+    accelergy
+  ]
+  ++ lib.optionals stdenv.hostPlatform.isLinux [ gpm ];
+
+  preConfigure = ''
+    cp -r ./pat-public/src/pat ./src/pat
+  '';
 
   installPhase = ''
     cp -r ./bin ./lib $out
@@ -91,11 +82,20 @@ stdenv.mkDerivation (finalAttrs: {
     cp -r ./problem-shapes ./configs $out/data
   '';
 
+  enableParallelBuilding = true;
+
+  sconsFlags =
+    # will fail on clang/darwin on link without --static due to undefined extern
+    # however, will fail with static on linux as nixpkgs deps aren't static
+    lib.optional stdenv.hostPlatform.isDarwin "--static"
+    ++ lib.optional enableAccelergy "--accelergy"
+    ++ lib.optional enableISL "--with-isl";
+
   meta = {
     description = "Chip modeling/mapping benchmarking framework";
     homepage = "https://timeloop.csail.mit.edu";
     license = lib.licenses.bsd3;
-    platforms = lib.platforms.unix;
     maintainers = with lib.maintainers; [ gdinh ];
+    platforms = lib.platforms.unix;
   };
 })

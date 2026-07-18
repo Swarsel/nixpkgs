@@ -1,7 +1,7 @@
 {
   config,
-  pkgs,
   lib,
+  pkgs,
   ...
 }:
 
@@ -26,59 +26,22 @@ in
   options = {
     services.pinchflat = {
       enable = mkEnableOption "pinchflat";
-
-      mediaDir = mkOption {
-        type = types.path;
-        default = "${stateDir}/media";
-        description = "The directory into which Pinchflat downloads videos.";
-      };
-
-      port = mkOption {
-        type = types.port;
-        default = 8945;
-        description = "Port on which the Pinchflat web interface is available.";
-      };
-
-      openFirewall = mkOption {
-        type = types.bool;
-        default = false;
-        description = "Open ports in the firewall for the Pinchflat web interface";
-      };
-
-      selfhosted = mkOption {
-        type = types.bool;
-        default = false;
-        description = "Use a weak secret. If true, you are not required to provide a {env}`SECRET_KEY_BASE` through the `secretsFile` option. Do not use this option in production!";
-      };
-
-      logLevel = mkOption {
-        type = types.enum [
-          "debug"
-          "info"
-          "warning"
-          "error"
-        ];
-        default = "info";
-        description = "Log level for Pinchflat.";
-      };
-
-      user = lib.mkOption {
-        type = lib.types.str;
-        default = "pinchflat";
-        description = ''
-          User account under which Pinchflat runs.
-        '';
-      };
-
-      group = lib.mkOption {
-        type = lib.types.str;
-        default = "pinchflat";
-        description = ''
-          Group under which Pinchflat runs.
-        '';
-      };
+      package = mkPackageOption pkgs "pinchflat" { };
 
       extraConfig = mkOption {
+        default = { };
+
+        description = ''
+          The configuration of Pinchflat is handled through environment variables.
+          The available configuration options can be found in [the Pinchflat README](https://github.com/kieraneglin/pinchflat/README.md#environment-variables).
+        '';
+
+        example = literalExpression ''
+          {
+            YT_DLP_WORKER_CONCURRENCY = 1;
+          }
+        '';
+
         type =
           with types;
           attrsOf (
@@ -88,22 +51,51 @@ in
               str
             ])
           );
-        default = { };
-        example = literalExpression ''
-          {
-            YT_DLP_WORKER_CONCURRENCY = 1;
-          }
-        '';
+      };
+
+      group = lib.mkOption {
+        default = "pinchflat";
+
         description = ''
-          The configuration of Pinchflat is handled through environment variables.
-          The available configuration options can be found in [the Pinchflat README](https://github.com/kieraneglin/pinchflat/README.md#environment-variables).
+          Group under which Pinchflat runs.
         '';
+
+        type = lib.types.str;
+      };
+
+      logLevel = mkOption {
+        default = "info";
+        description = "Log level for Pinchflat.";
+
+        type = types.enum [
+          "debug"
+          "info"
+          "warning"
+          "error"
+        ];
+      };
+
+      mediaDir = mkOption {
+        default = "${stateDir}/media";
+        description = "The directory into which Pinchflat downloads videos.";
+        type = types.path;
+      };
+
+      openFirewall = mkOption {
+        default = false;
+        description = "Open ports in the firewall for the Pinchflat web interface";
+        type = types.bool;
+      };
+
+      port = mkOption {
+        default = 8945;
+        description = "Port on which the Pinchflat web interface is available.";
+        type = types.port;
       };
 
       secretsFile = mkOption {
-        type = with types; nullOr path;
         default = null;
-        example = "/run/secrets/pinchflat";
+
         description = ''
           Secrets like {env}`SECRET_KEY_BASE` and {env}`BASIC_AUTH_PASSWORD`
           should be passed to the service without adding them to the world-readable Nix store.
@@ -120,9 +112,26 @@ in
           BASIC_AUTH_PASSWORD=...basic auth password...
           ```
         '';
+
+        example = "/run/secrets/pinchflat";
+        type = with types; nullOr path;
       };
 
-      package = mkPackageOption pkgs "pinchflat" { };
+      selfhosted = mkOption {
+        default = false;
+        description = "Use a weak secret. If true, you are not required to provide a {env}`SECRET_KEY_BASE` through the `secretsFile` option. Do not use this option in production!";
+        type = types.bool;
+      };
+
+      user = lib.mkOption {
+        default = "pinchflat";
+
+        description = ''
+          User account under which Pinchflat runs.
+        '';
+
+        type = lib.types.str;
+      };
     };
   };
 
@@ -134,17 +143,15 @@ in
       }
     ];
 
+    networking.firewall = mkIf cfg.openFirewall {
+      allowedTCPPorts = [ cfg.port ];
+    };
+
     systemd.services.pinchflat = {
-      description = "pinchflat";
       after = [ "network.target" ];
-      wantedBy = [ "multi-user.target" ];
+      description = "pinchflat";
 
       serviceConfig = {
-        Type = "simple";
-        User = cfg.user;
-        Group = cfg.group;
-
-        StateDirectory = baseNameOf stateDir;
         Environment = [
           "PORT=${toString cfg.port}"
           "MEDIA_PATH=${cfg.mediaDir}"
@@ -161,11 +168,22 @@ in
         ++ optional cfg.selfhosted [ "RUN_CONTEXT=selfhosted" ]
         ++ optional (!isNull config.time.timeZone) "TZ=${config.time.timeZone}"
         ++ attrValues (mapAttrs (name: value: name + "=" + toString value) cfg.extraConfig);
+
         EnvironmentFile = optional (cfg.secretsFile != null) cfg.secretsFile;
-        ExecStartPre = "${lib.getExe' cfg.package "migrate"}";
         ExecStart = "${getExe cfg.package} start";
+        ExecStartPre = "${lib.getExe' cfg.package "migrate"}";
+        Group = cfg.group;
         Restart = "on-failure";
+        StateDirectory = baseNameOf stateDir;
+        Type = "simple";
+        User = cfg.user;
       };
+
+      wantedBy = [ "multi-user.target" ];
+    };
+
+    users.groups = lib.mkIf (cfg.group == "pinchflat") {
+      pinchflat = { };
     };
 
     users.users = lib.mkIf (cfg.user == "pinchflat") {
@@ -173,14 +191,6 @@ in
         group = cfg.group;
         isSystemUser = true;
       };
-    };
-
-    users.groups = lib.mkIf (cfg.group == "pinchflat") {
-      pinchflat = { };
-    };
-
-    networking.firewall = mkIf cfg.openFirewall {
-      allowedTCPPorts = [ cfg.port ];
     };
   };
 }

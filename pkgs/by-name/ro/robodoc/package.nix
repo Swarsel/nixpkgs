@@ -2,8 +2,8 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  fetchpatch,
   autoreconfHook,
+  fetchpatch,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -19,24 +19,24 @@ stdenv.mkDerivation (finalAttrs: {
 
   patches = [
     (fetchpatch {
+      hash = "sha256-Pbuc1gHrOeHbR4QT/dZ8wP+vqYQlilayjCGKOJP5wvk=";
       name = "troff_generator-fix";
       url = "https://github.com/gumpu/ROBODoc/commit/0f8b35c42523810415bec70bb2200d2ecb41c82f.patch?index=full";
-      hash = "sha256-Pbuc1gHrOeHbR4QT/dZ8wP+vqYQlilayjCGKOJP5wvk=";
     })
   ];
+
+  nativeBuildInputs = [ autoreconfHook ];
 
   postConfigure = lib.optionalString stdenv.hostPlatform.isDarwin ''
     substituteInPlace Docs/makefile.am \
       --replace-fail 'man1_MANS = robodoc.1 robohdrs.1' 'man1_MANS ='
   '';
 
-  nativeBuildInputs = [ autoreconfHook ];
-
   hardeningDisable = [ "format" ];
 
   meta = {
-    homepage = "https://github.com/gumpu/ROBODoc";
     description = "Documentation Extraction Tool";
+
     longDescription = ''
       ROBODoc is program documentation tool. The idea is to include for every
       function or procedure a standard header containing all sorts of
@@ -56,6 +56,8 @@ stdenv.mkDerivation (finalAttrs: {
       Shell Scripts, Assembler, COBOL, Occam, Postscript, Forth, Tcl/Tk, C++,
       Java -- basically any program in which you can use remarks/comments.
     '';
+
+    homepage = "https://github.com/gumpu/ROBODoc";
     license = lib.licenses.gpl3Plus;
     maintainers = [ ];
     platforms = lib.platforms.all;

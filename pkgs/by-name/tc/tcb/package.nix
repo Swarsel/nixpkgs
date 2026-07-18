@@ -2,9 +2,9 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  pkg-config,
-  linux-pam,
   libxcrypt,
+  linux-pam,
+  pkg-config,
 }:
 
 stdenv.mkDerivation {
@@ -25,13 +25,6 @@ stdenv.mkDerivation {
     "man"
   ];
 
-  nativeBuildInputs = [ pkg-config ];
-
-  buildInputs = [
-    linux-pam
-    libxcrypt
-  ];
-
   patches = [ ./fix-makefiles.patch ];
 
   postPatch = ''
@@ -44,8 +37,16 @@ stdenv.mkDerivation {
     makeFlagsArray+=("CC=$CC")
   '';
 
+  nativeBuildInputs = [ pkg-config ];
+
+  buildInputs = [
+    linux-pam
+    libxcrypt
+  ];
+
   meta = {
     description = "Alternative password shadowing scheme";
+
     longDescription = ''
       The tcb package contains core components of our tcb suite implementing the alternative
       password shadowing scheme on Openwall GNU Linux (Owl). It is being made available
@@ -59,9 +60,10 @@ stdenv.mkDerivation {
       NSS module. libtcb contains code shared by the PAM and NSS modules and is also used
       by user management tools on Owl due to our shadow suite patches.
     '';
+
     homepage = "https://www.openwall.com/tcb/";
     license = lib.licenses.bsd3;
-    platforms = lib.systems.inspect.patterns.isGnu;
     maintainers = with lib.maintainers; [ izorkin ];
+    platforms = lib.systems.inspect.patterns.isGnu;
   };
 }

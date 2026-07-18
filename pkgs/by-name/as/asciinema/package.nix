@@ -18,14 +18,11 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-MZMc1YypMP2JEbpDmsGj+Sm+y3mfr50DnoCN04rY9xY=";
   };
 
-  cargoHash = "sha256-Qzxlp/c5VowlZplu7iMVh0a3+raQXsYmO8OEC45dSl4=";
-
-  env.ASCIINEMA_GEN_DIR = "gendir";
-
   strictDeps = true;
-
-  nativeCheckInputs = [ python3 ];
   nativeBuildInputs = [ installShellFiles ];
+  cargoHash = "sha256-Qzxlp/c5VowlZplu7iMVh0a3+raQXsYmO8OEC45dSl4=";
+  env.ASCIINEMA_GEN_DIR = "gendir";
+  nativeCheckInputs = [ python3 ];
 
   postInstall = ''
     installManPage gendir/man/*
@@ -39,8 +36,8 @@ rustPlatform.buildRustPackage (finalAttrs: {
   nativeInstallCheckInputs = [ versionCheckHook ];
 
   meta = {
-    homepage = "https://asciinema.org/";
     description = "Terminal session recorder and the best companion of asciinema.org";
+
     longDescription = ''
       asciinema is a suite of tools for recording, replaying, and sharing
       terminal sessions. It is free and open-source software (FOSS), created
@@ -52,11 +49,15 @@ rustPlatform.buildRustPackage (finalAttrs: {
       computer users working with the command-line, such as developers or
       system administrators.
     '';
+
+    homepage = "https://asciinema.org/";
     license = with lib.licenses; [ gpl3Plus ];
-    mainProgram = "asciinema";
+
     maintainers = with lib.maintainers; [
       jiriks74
       llakala
     ];
+
+    mainProgram = "asciinema";
   };
 })

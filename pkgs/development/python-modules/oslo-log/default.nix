@@ -1,32 +1,28 @@
 {
   lib,
   stdenv,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # build-system
-  setuptools,
-
+  buildPythonPackage,
   # dependencies
   debtcollector,
+  # tests
+  eventlet,
   oslo-config,
   oslo-context,
   oslo-serialization,
   oslo-utils,
-  pbr,
-  python-dateutil,
-  pyinotify,
-
-  # tests
-  eventlet,
   oslotest,
+  pbr,
+  pyinotify,
   pytestCheckHook,
+  python-dateutil,
+  # build-system
+  setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "oslo-log";
   version = "8.1.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "openstack";
@@ -39,6 +35,13 @@ buildPythonPackage rec {
   # installing from tarball instead)
   env.PBR_VERSION = version;
 
+  nativeCheckInputs = [
+    eventlet
+    oslotest
+    pytestCheckHook
+  ];
+
+  __darwinAllowLocalNetworking = true;
   build-system = [ setuptools ];
 
   dependencies = [
@@ -52,12 +55,6 @@ buildPythonPackage rec {
   ]
   ++ lib.optionals stdenv.hostPlatform.isLinux [ pyinotify ];
 
-  nativeCheckInputs = [
-    eventlet
-    oslotest
-    pytestCheckHook
-  ];
-
   disabledTests = [
     # not compatible with sandbox
     "test_logging_handle_error"
@@ -66,15 +63,14 @@ buildPythonPackage rec {
     "test_rate_limit_except_level"
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "oslo_log" ];
-
-  __darwinAllowLocalNetworking = true;
 
   meta = {
     description = "oslo.log library";
-    mainProgram = "convert-json";
     homepage = "https://github.com/openstack/oslo.log";
     license = lib.licenses.asl20;
+    mainProgram = "convert-json";
     teams = [ lib.teams.openstack ];
   };
 }

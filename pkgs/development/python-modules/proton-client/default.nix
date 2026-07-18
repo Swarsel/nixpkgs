@@ -1,21 +1,20 @@
 {
   lib,
   stdenv,
-  buildPythonPackage,
   fetchFromGitHub,
-  replaceVars,
   bcrypt,
-  pyopenssl,
-  python-gnupg,
-  pytestCheckHook,
-  requests,
+  buildPythonPackage,
   openssl,
+  pyopenssl,
+  pytestCheckHook,
+  python-gnupg,
+  replaceVars,
+  requests,
 }:
 
 buildPythonPackage rec {
   pname = "proton-client";
   version = "0.7.1";
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "ProtonMail";
@@ -24,21 +23,21 @@ buildPythonPackage rec {
     hash = "sha256-mhPq9O/LCu3+E1jKlaJmrI8dxbA9BIwlc34qGwoxi5g=";
   };
 
+  patches = [
+    # Patches library by fixing the openssl path
+    (replaceVars ./0001-OpenSSL-path-fix.patch {
+      ext = stdenv.hostPlatform.extensions.sharedLibrary;
+      openssl = openssl.out;
+    })
+  ];
+
+  buildInputs = [ openssl ];
+
   propagatedBuildInputs = [
     bcrypt
     pyopenssl
     python-gnupg
     requests
-  ];
-
-  buildInputs = [ openssl ];
-
-  patches = [
-    # Patches library by fixing the openssl path
-    (replaceVars ./0001-OpenSSL-path-fix.patch {
-      openssl = openssl.out;
-      ext = stdenv.hostPlatform.extensions.sharedLibrary;
-    })
   ];
 
   nativeCheckInputs = [ pytestCheckHook ];
@@ -52,6 +51,7 @@ buildPythonPackage rec {
     "test_srp"
   ];
 
+  format = "setuptools";
   pythonImportsCheck = [ "proton" ];
 
   meta = {

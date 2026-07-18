@@ -1,21 +1,20 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
+  buildPythonPackage,
   isPyPy,
+  # optional dependencies
+  pycryptodome,
   # nativeCheckInputs
   pytest,
   pytest-xdist,
-  # optional dependencies
-  pycryptodome,
   safe-pysha3,
+  setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "eth-hash";
   version = "0.7.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "ethereum";
@@ -23,8 +22,6 @@ buildPythonPackage rec {
     tag = "v${version}";
     hash = "sha256-91jWZDqrd7ZZlM0D/3sDokJ26NiAQ3gdeBebTV1Lq8s=";
   };
-
-  build-system = [ setuptools ];
 
   nativeCheckInputs = [
     pytest
@@ -46,12 +43,15 @@ buildPythonPackage rec {
     runHook postCheck
   '';
 
+  __structuredAttrs = true;
+  build-system = [ setuptools ];
+
   optional-dependencies = {
     pycryptodome = [ pycryptodome ];
     pysha3 = [ safe-pysha3 ];
   };
 
-  __structuredAttrs = true;
+  pyproject = true;
 
   meta = {
     description = "Ethereum hashing function keccak256";

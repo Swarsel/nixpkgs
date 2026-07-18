@@ -1,10 +1,10 @@
 {
   lib,
+  fetchFromGitHub,
   buildPythonPackage,
   catkin-pkg,
   distro,
   distutils,
-  fetchFromGitHub,
   pytestCheckHook,
   pyyaml,
   setuptools,
@@ -13,7 +13,6 @@
 buildPythonPackage rec {
   pname = "rospkg";
   version = "1.6.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "ros-infrastructure";
@@ -22,9 +21,11 @@ buildPythonPackage rec {
     hash = "sha256-YRBmL+aXQ/0rxivERja9ng+GqL8NQGmNYhKjMY7+6nc=";
   };
 
-  build-system = [ setuptools ];
+  nativeCheckInputs = [
+    pytestCheckHook
+  ];
 
-  setupHook = ./setup-hook.sh;
+  build-system = [ setuptools ];
 
   dependencies = [
     catkin-pkg
@@ -33,11 +34,9 @@ buildPythonPackage rec {
     pyyaml
   ];
 
-  nativeCheckInputs = [
-    pytestCheckHook
-  ];
-
+  pyproject = true;
   pythonImportsCheck = [ "rospkg" ];
+  setupHook = ./setup-hook.sh;
 
   meta = {
     description = "ROS package library for Python";

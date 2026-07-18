@@ -3,12 +3,12 @@
   stdenv,
   fetchFromGitHub,
   autoreconfHook,
-  zlib,
-  lzo,
   bzip2,
   lz4,
+  lzo,
   nasm,
   perl,
+  zlib,
 }:
 
 let
@@ -43,10 +43,10 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   meta = {
-    homepage = "http://ck.kolivas.org/apps/lrzip/";
     description = "CK LRZIP compression program (LZMA + RZIP)";
-    maintainers = [ ];
+    homepage = "http://ck.kolivas.org/apps/lrzip/";
     license = lib.licenses.gpl2Plus;
+    maintainers = [ ];
     platforms = lib.platforms.unix;
   };
 })

@@ -1,7 +1,7 @@
 {
   lib,
-  fetchgit,
   buildGoModule,
+  fetchgit,
   nix-update-script,
 }:
 
@@ -28,7 +28,7 @@ buildGoModule {
     description = "Waybar component/utility for displaying and controlling MPRIS2 compliant media players individually";
     homepage = "https://git.hrfee.pw/hrfee/waybar-mpris";
     license = lib.licenses.mit;
-    mainProgram = "waybar-mpris";
     maintainers = with lib.maintainers; [ khaneliman ];
+    mainProgram = "waybar-mpris";
   };
 }

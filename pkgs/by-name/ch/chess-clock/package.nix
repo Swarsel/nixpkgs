@@ -1,7 +1,8 @@
 {
   lib,
-  desktop-file-utils,
+  stdenv,
   fetchFromGitLab,
+  desktop-file-utils,
   gobject-introspection,
   gsound,
   gtk4,
@@ -11,7 +12,6 @@
   nix-update-script,
   pkg-config,
   python3,
-  stdenv,
   wrapGAppsHook4,
 }:
 
@@ -20,11 +20,11 @@ stdenv.mkDerivation (finalAttrs: {
   version = "0.6.2";
 
   src = fetchFromGitLab {
-    domain = "gitlab.gnome.org";
     owner = "World";
     repo = "chess-clock";
     rev = "v${finalAttrs.version}";
     hash = "sha256-jqWZI37ewkPmY+37dwJUJnBZcsBO1sn04r2qp8PIWTs=";
+    domain = "gitlab.gnome.org";
   };
 
   nativeBuildInputs = [

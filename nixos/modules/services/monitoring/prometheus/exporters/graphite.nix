@@ -11,28 +11,35 @@ let
   format = pkgs.formats.yaml { };
 in
 {
-  port = 9108;
   extraOpts = {
     graphitePort = lib.mkOption {
-      type = lib.types.port;
       default = 9109;
+
       description = ''
         Port to use for the graphite server.
       '';
+
+      type = lib.types.port;
     };
+
     mappingSettings = lib.mkOption {
-      type = lib.types.submodule {
-        freeformType = format.type;
-        options = { };
-      };
       default = { };
+
       description = ''
         Mapping configuration for the exporter, see
         <https://github.com/prometheus/graphite_exporter#yaml-config> for
         available options.
       '';
+
+      type = lib.types.submodule {
+        options = { };
+        freeformType = format.type;
+      };
     };
   };
+
+  port = 9108;
+
   serviceOpts = {
     serviceConfig = {
       ExecStart = ''

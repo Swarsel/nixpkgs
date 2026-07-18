@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   setuptools,
   setuptools-scm,
 }:
@@ -9,7 +9,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "napari-plugin-engine";
   version = "0.2.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "napari";
@@ -18,14 +17,15 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-GdOip1ekw4MUzGugiaYQQvBKkZaKVoWI/rASelrNmAU=";
   };
 
+  # Circular dependency: napari
+  doCheck = false;
+
   build-system = [
     setuptools
     setuptools-scm
   ];
 
-  # Circular dependency: napari
-  doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "napari_plugin_engine" ];
 
   meta = {

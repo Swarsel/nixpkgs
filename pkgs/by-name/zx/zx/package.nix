@@ -1,12 +1,12 @@
 {
   lib,
-  buildNpmPackage,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
+  buildNpmPackage,
   esbuild,
+  nix-update-script,
   nodejs_22,
   versionCheckHook,
-  nix-update-script,
 }:
 
 let
@@ -21,12 +21,14 @@ let
           in
           {
             inherit version;
+
             src = fetchFromGitHub {
               owner = "evanw";
               repo = "esbuild";
               tag = "v${version}";
               hash = "sha256-EkQOIHqVrULig7s3w4nI8/yVIz2NZA5DCrMof0HHvHM=";
             };
+
             vendorHash = "sha256-+BfxCyg0KkDQpHt/wycy/8CTG6YBA/VJvJFhhzUnSiQ=";
           }
         )
@@ -45,19 +47,12 @@ buildNpmPackage (finalAttrs: {
   };
 
   npmDepsHash = "sha256-yr4oPr4tTFfl+uUc2RJnVkmzSVHrw2adzWuZ+R2bQaU=";
-
-  nodejs = nodejs_22;
-
-  makeCacheWritable = true;
-
-  npmFlags = [ "--legacy-peer-deps" ];
-
   env.ESBUILD_BINARY_PATH = lib.getExe esbuild';
-
   doInstallCheck = true;
-
   nativeInstallCheckInputs = [ versionCheckHook ];
-
+  makeCacheWritable = true;
+  nodejs = nodejs_22;
+  npmFlags = [ "--legacy-peer-deps" ];
   passthru.updateScript = nix-update-script { };
 
   meta = {

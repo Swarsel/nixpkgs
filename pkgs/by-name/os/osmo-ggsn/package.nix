@@ -3,8 +3,8 @@
   stdenv,
   fetchFromGitHub,
   autoreconfHook,
-  pkg-config,
   libosmocore,
+  pkg-config,
 }:
 
 stdenv.mkDerivation (finalAttrs: {

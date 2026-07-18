@@ -11,12 +11,12 @@ let
   cfg = config.services.shadowsocks;
 
   opts = {
-    server = cfg.localAddress;
-    server_port = cfg.port;
+    fast_open = cfg.fastOpen;
     method = cfg.encryptionMethod;
     mode = cfg.mode;
+    server = cfg.localAddress;
+    server_port = cfg.port;
     user = "nobody";
-    fast_open = cfg.fastOpen;
   }
   // optionalAttrs (cfg.plugin != null) {
     plugin = cfg.plugin;
@@ -33,6 +33,7 @@ let
     "${getName pkgs.shadowsocks-libev}" = {
       server = "ss-server";
     };
+
     "${getName pkgs.shadowsocks-rust}" = {
       server = "ssserver";
     };
@@ -47,111 +48,32 @@ in
     services.shadowsocks = {
 
       enable = mkOption {
-        type = types.bool;
         default = false;
+
         description = ''
           Whether to run shadowsocks-libev shadowsocks server.
         '';
+
+        type = types.bool;
       };
 
       package = mkPackageOption pkgs "Shadowsocks" {
         default = "shadowsocks-libev";
       };
 
-      localAddress = mkOption {
-        type =
-          with types;
-          oneOf [
-            str
-            (listOf str)
-          ];
-        # Keeped for compatibility
-        default = [
-          "[::0]"
-          "0.0.0.0"
-        ];
-        description = ''
-          Local addresses to which the server binds.
-          Note: shadowsocks-rust accepts only string parameter.
-        '';
-      };
-
-      port = mkOption {
-        type = types.port;
-        default = 8388;
-        description = ''
-          Port which the server uses.
-        '';
-      };
-
-      password = mkOption {
-        type = types.nullOr types.str;
-        default = null;
-        description = ''
-          Password for connecting clients.
-        '';
-      };
-
-      passwordFile = mkOption {
-        type = types.nullOr types.path;
-        default = null;
-        description = ''
-          Password file with a password for connecting clients.
-        '';
-      };
-
-      mode = mkOption {
-        type = types.enum [
-          "tcp_only"
-          "tcp_and_udp"
-          "udp_only"
-        ];
-        default = "tcp_and_udp";
-        description = ''
-          Relay protocols.
-        '';
-      };
-
-      fastOpen = mkOption {
-        type = types.bool;
-        default = true;
-        description = ''
-          use TCP fast-open
-        '';
-      };
-
       encryptionMethod = mkOption {
-        type = types.str;
         default = "chacha20-ietf-poly1305";
+
         description = ''
           Encryption method. See <https://github.com/shadowsocks/shadowsocks-org/wiki/AEAD-Ciphers>.
         '';
-      };
 
-      plugin = mkOption {
-        type = types.nullOr types.str;
-        default = null;
-        example = literalExpression ''"''${pkgs.shadowsocks-v2ray-plugin}/bin/v2ray-plugin"'';
-        description = ''
-          SIP003 plugin for shadowsocks
-        '';
-      };
-
-      pluginOpts = mkOption {
         type = types.str;
-        default = "";
-        example = "server;host=example.com";
-        description = ''
-          Options to pass to the plugin if one was specified
-        '';
       };
 
       extraConfig = mkOption {
-        type = types.attrs;
         default = { };
-        example = {
-          nameserver = "8.8.8.8";
-        };
+
         description = ''
           Additional configuration for shadowsocks that is not covered by the
           provided options. The provided attrset will be serialized to JSON and
@@ -160,6 +82,108 @@ in
           available by looking into the source code of
           <https://github.com/shadowsocks/shadowsocks-libev/blob/master/src/jconf.c>
         '';
+
+        example = {
+          nameserver = "8.8.8.8";
+        };
+
+        type = types.attrs;
+      };
+
+      fastOpen = mkOption {
+        default = true;
+
+        description = ''
+          use TCP fast-open
+        '';
+
+        type = types.bool;
+      };
+
+      localAddress = mkOption {
+        # Keeped for compatibility
+        default = [
+          "[::0]"
+          "0.0.0.0"
+        ];
+
+        description = ''
+          Local addresses to which the server binds.
+          Note: shadowsocks-rust accepts only string parameter.
+        '';
+
+        type =
+          with types;
+          oneOf [
+            str
+            (listOf str)
+          ];
+      };
+
+      mode = mkOption {
+        default = "tcp_and_udp";
+
+        description = ''
+          Relay protocols.
+        '';
+
+        type = types.enum [
+          "tcp_only"
+          "tcp_and_udp"
+          "udp_only"
+        ];
+      };
+
+      password = mkOption {
+        default = null;
+
+        description = ''
+          Password for connecting clients.
+        '';
+
+        type = types.nullOr types.str;
+      };
+
+      passwordFile = mkOption {
+        default = null;
+
+        description = ''
+          Password file with a password for connecting clients.
+        '';
+
+        type = types.nullOr types.path;
+      };
+
+      plugin = mkOption {
+        default = null;
+
+        description = ''
+          SIP003 plugin for shadowsocks
+        '';
+
+        example = literalExpression ''"''${pkgs.shadowsocks-v2ray-plugin}/bin/v2ray-plugin"'';
+        type = types.nullOr types.str;
+      };
+
+      pluginOpts = mkOption {
+        default = "";
+
+        description = ''
+          Options to pass to the plugin if one was specified
+        '';
+
+        example = "server;host=example.com";
+        type = types.str;
+      };
+
+      port = mkOption {
+        default = 8388;
+
+        description = ''
+          Port which the server uses.
+        '';
+
+        type = types.port;
       };
     };
 
@@ -179,6 +203,7 @@ in
             noPasswdFile = cfg.passwordFile == null;
           in
           (noPasswd && !noPasswdFile) || (!noPasswd && noPasswdFile);
+
         message = "Option `password` or `passwordFile` must be set and cannot be set simultaneously";
       }
       {
@@ -189,15 +214,15 @@ in
     ];
 
     systemd.services.${getName cfg.package} = {
-      description = "${getName cfg.package} Daemon";
       after = [ "network.target" ];
-      wantedBy = [ "multi-user.target" ];
+      description = "${getName cfg.package} Daemon";
+
       path = [
         cfg.package
       ]
       ++ optional (cfg.plugin != null) cfg.plugin
       ++ optional (cfg.passwordFile != null) pkgs.jq;
-      serviceConfig.PrivateTmp = true;
+
       script = ''
         ${optionalString (cfg.passwordFile != null) ''
           cat ${configFile} | jq --arg password "$(cat "${cfg.passwordFile}")" '. + { password: $password }' > /tmp/shadowsocks.json
@@ -206,6 +231,9 @@ in
           if cfg.passwordFile != null then "/tmp/shadowsocks.json" else configFile
         }
       '';
+
+      serviceConfig.PrivateTmp = true;
+      wantedBy = [ "multi-user.target" ];
     };
   };
 }

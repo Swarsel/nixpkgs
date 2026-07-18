@@ -11,12 +11,11 @@
 buildPythonPackage rec {
   pname = "robomachine";
   version = "0.10.0";
-  pyproject = true;
 
   src = fetchPypi {
-    pname = "RoboMachine";
     inherit version;
     hash = "sha256-XrxHaV9U7mZ2TvySHGm6qw1AsoukppzwPq4wufIjL+k=";
+    pname = "RoboMachine";
   };
 
   nativeBuildInputs = [
@@ -29,11 +28,10 @@ buildPythonPackage rec {
     allpairspy
   ];
 
-  pythonRemoveDeps = [ "argparse" ];
-
-  pythonRelaxDeps = [ "pyparsing" ];
-
+  pyproject = true;
   pythonImportsCheck = [ "robomachine" ];
+  pythonRelaxDeps = [ "pyparsing" ];
+  pythonRemoveDeps = [ "argparse" ];
 
   meta = {
     description = "Test data generator for Robot Framework";

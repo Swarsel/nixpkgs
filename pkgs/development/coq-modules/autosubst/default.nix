@@ -1,22 +1,21 @@
 {
   lib,
-  mkCoqDerivation,
   coq,
   mathcomp-boot,
+  mkCoqDerivation,
   stdlib,
   version ? null,
 }:
 
 mkCoqDerivation {
+  inherit version;
   pname = "autosubst";
 
-  releaseRev = v: "v${v}";
+  propagatedBuildInputs = [
+    mathcomp-boot
+    stdlib
+  ];
 
-  release."1.7".hash = "sha256-qoyteQ5W2Noxf12uACOVeHhPLvgmTzrvEo6Ts+FKTGI=";
-  release."1.8".hash = "sha256-n0lD8D+tjqkDDjFiE4CggxczOPS5TkEnxpB3zEwWZ2I=";
-  release."1.9".hash = "sha256-XiLZjMc+1iwRGOstfLm/WQRF6FTdX6oJr5urn3wmLlA=";
-
-  inherit version;
   defaultVersion =
     let
       case = case: out: { inherit case out; };
@@ -28,18 +27,19 @@ mkCoqDerivation {
       (case (range "8.10" "8.13") "1.7")
     ] null;
 
-  propagatedBuildInputs = [
-    mathcomp-boot
-    stdlib
-  ];
+  release."1.7".hash = "sha256-qoyteQ5W2Noxf12uACOVeHhPLvgmTzrvEo6Ts+FKTGI=";
+  release."1.8".hash = "sha256-n0lD8D+tjqkDDjFiE4CggxczOPS5TkEnxpB3zEwWZ2I=";
+  release."1.9".hash = "sha256-XiLZjMc+1iwRGOstfLm/WQRF6FTdX6oJr5urn3wmLlA=";
+  releaseRev = v: "v${v}";
 
   meta = {
-    homepage = "https://www.ps.uni-saarland.de/autosubst/";
     description = "Automation for de Bruijn syntax and substitution in Coq";
+    homepage = "https://www.ps.uni-saarland.de/autosubst/";
+    license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       siraben
       jwiegley
     ];
-    license = lib.licenses.mit;
   };
 }

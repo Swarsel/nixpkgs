@@ -1,10 +1,10 @@
 {
-  buildGoModule,
-  fetchFromGitHub,
-  installShellFiles,
   lib,
-  makeWrapper,
   stdenv,
+  fetchFromGitHub,
+  buildGoModule,
+  installShellFiles,
+  makeWrapper,
   writableTmpDirAsHomeHook,
   xdg-utils,
 }:
@@ -19,14 +19,14 @@ buildGoModule (finalAttrs: {
     hash = "sha256-0jPtqViGD0Xfn0yn2Buh4LwVAiSn7YvDMpNZYirHUmk=";
   };
 
-  proxyVendor = true;
-  vendorHash = "sha256-pqD3j1I0zENctgM2lBaYiU3DRCqeq9XIX3jWB2p139I=";
-
   nativeBuildInputs = [
     installShellFiles
     makeWrapper
     writableTmpDirAsHomeHook
   ];
+
+  vendorHash = "sha256-pqD3j1I0zENctgM2lBaYiU3DRCqeq9XIX3jWB2p139I=";
+  doCheck = false;
 
   postInstall = ''
     # make xdg-open overrideable at runtime
@@ -40,29 +40,30 @@ buildGoModule (finalAttrs: {
       --zsh $src/contrib/completions/zsh/aws-vault.zsh
   '';
 
-  doCheck = false;
-
-  subPackages = [ "." ];
-
-  # set the version. see: aws-vault's Makefile
-  ldflags = [
-    "-X main.Version=v${finalAttrs.version}"
-  ];
-
   doInstallCheck = true;
 
   installCheckPhase = ''
     $out/bin/aws-vault --version 2>&1 | grep ${finalAttrs.version} > /dev/null
   '';
 
+  # set the version. see: aws-vault's Makefile
+  ldflags = [
+    "-X main.Version=v${finalAttrs.version}"
+  ];
+
+  proxyVendor = true;
+  subPackages = [ "." ];
+
   meta = {
     description = "Vault for securely storing and accessing AWS credentials in development environments";
-    mainProgram = "aws-vault";
     homepage = "https://github.com/ByteNess/aws-vault";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       zimbatm
       er0k
     ];
+
+    mainProgram = "aws-vault";
   };
 })

@@ -19,8 +19,8 @@ let
           outPath:
           # filter out unavailable, broken packages, and drvs with broken deps
           lib.optional (!((obj ? meta) && (!obj.meta.available or false || obj.meta.broken))) {
-            p = path;
             o = outPath;
+            p = path;
           }
         )
       else if (obj.recurseForDerivations or false) || (obj.recurseForRelease or false) then

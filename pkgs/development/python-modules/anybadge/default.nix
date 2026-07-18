@@ -1,18 +1,17 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
+  buildPythonPackage,
   packaging,
   pytestCheckHook,
   requests,
+  setuptools,
   sh,
 }:
 
 buildPythonPackage rec {
   pname = "anybadge";
   version = "1.16.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "jongracecox";
@@ -26,6 +25,12 @@ buildPythonPackage rec {
       --replace-fail '=get_version(),' "='$version',"
   '';
 
+  nativeCheckInputs = [
+    pytestCheckHook
+    requests
+    sh
+  ];
+
   build-system = [
     setuptools
   ];
@@ -34,10 +39,9 @@ buildPythonPackage rec {
     packaging
   ];
 
-  nativeCheckInputs = [
-    pytestCheckHook
-    requests
-    sh
+  disabledTestPaths = [
+    # No anybadge-server
+    "tests/test_server.py"
   ];
 
   disabledTests = [
@@ -45,11 +49,7 @@ buildPythonPackage rec {
     "test_module_same_output_as_main_cli"
   ];
 
-  disabledTestPaths = [
-    # No anybadge-server
-    "tests/test_server.py"
-  ];
-
+  pyproject = true;
   pythonImportsCheck = [ "anybadge" ];
 
   meta = {

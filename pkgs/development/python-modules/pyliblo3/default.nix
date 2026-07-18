@@ -1,18 +1,17 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  fetchpatch2,
-  setuptools,
-  python,
-  liblo,
+  buildPythonPackage,
   cython,
+  fetchpatch2,
+  liblo,
+  python,
+  setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "pyliblo3";
   version = "0.16.3";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "gesellkammer";
@@ -24,20 +23,13 @@ buildPythonPackage rec {
   patches = [
     # https://github.com/NixOS/nixpkgs/issues/437077
     (fetchpatch2 {
+      hash = "sha256-fMKBVIZLBq62khhX40tpaM47nuHB0eqiURIul/4LMig=";
       name = "fix-compilation-for-cython-3.1.2";
       url = "https://github.com/gesellkammer/pyliblo3/commit/baa249acf91bcb851aa4e30e53e88728fe0fb0c9.patch?full_index=1";
-      hash = "sha256-fMKBVIZLBq62khhX40tpaM47nuHB0eqiURIul/4LMig=";
     })
   ];
 
-  build-system = [
-    setuptools
-    cython
-  ];
-
   buildInputs = [ liblo ];
-
-  pythonImportsCheck = [ "pyliblo3" ];
 
   checkPhase = ''
     runHook preCheck
@@ -45,9 +37,17 @@ buildPythonPackage rec {
     runHook postCheck
   '';
 
+  build-system = [
+    setuptools
+    cython
+  ];
+
+  pyproject = true;
+  pythonImportsCheck = [ "pyliblo3" ];
+
   meta = {
-    homepage = "https://github.com/gesellkammer/pyliblo3/";
     description = "Python wrapper for the liblo OSC library";
+    homepage = "https://github.com/gesellkammer/pyliblo3/";
     changelog = "https://github.com/gesellkammer/pyliblo3/blob/${src.tag}/NEWS";
     license = lib.licenses.lgpl21Plus;
     maintainers = [ lib.maintainers.archercatneo ];

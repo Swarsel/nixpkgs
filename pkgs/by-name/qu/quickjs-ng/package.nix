@@ -1,8 +1,8 @@
 {
   lib,
-  cmake,
-  fetchFromGitHub,
   stdenv,
+  fetchFromGitHub,
+  cmake,
   testers,
   texinfo,
 }:
@@ -26,6 +26,8 @@ stdenv.mkDerivation (finalAttrs: {
     "info"
   ];
 
+  strictDeps = true;
+
   nativeBuildInputs = [
     cmake
     texinfo
@@ -35,8 +37,6 @@ stdenv.mkDerivation (finalAttrs: {
     (lib.cmakeBool "BUILD_SHARED_LIBS" true)
     (lib.cmakeBool "BUILD_STATIC_QJS_EXE" stdenv.hostPlatform.isStatic)
   ];
-
-  strictDeps = true;
 
   postBuild = ''
     pushd ../docs
@@ -52,17 +52,17 @@ stdenv.mkDerivation (finalAttrs: {
 
   passthru.tests = {
     version = testers.testVersion {
-      package = finalAttrs.finalPackage;
       command = "qjs --help || true";
+      package = finalAttrs.finalPackage;
     };
   };
 
   meta = {
-    homepage = "https://github.com/quickjs-ng/quickjs";
     description = "Mighty JavaScript engine";
+    homepage = "https://github.com/quickjs-ng/quickjs";
     license = lib.licenses.mit;
-    mainProgram = "qjs";
     maintainers = [ ];
     platforms = lib.platforms.all;
+    mainProgram = "qjs";
   };
 })

@@ -1,17 +1,17 @@
 {
   lib,
   stdenv,
+  fetchFromGitHub,
   buildPythonPackage,
   cryptography,
-  fetchFromGitHub,
   fonttools,
   lxml,
   matplotlib,
   pandas,
   pillow,
+  pytestCheckHook,
   python-barcode,
   qrcode,
-  pytestCheckHook,
   requests,
   setuptools,
 }:
@@ -19,7 +19,6 @@
 buildPythonPackage rec {
   pname = "borb";
   version = "3.0.4";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "jorisschellekens";
@@ -36,6 +35,12 @@ buildPythonPackage rec {
     done
   '';
 
+  nativeCheckInputs = [
+    matplotlib
+    pandas
+    pytestCheckHook
+  ];
+
   build-system = [ setuptools ];
 
   dependencies = [
@@ -49,25 +54,20 @@ buildPythonPackage rec {
     setuptools
   ];
 
-  nativeCheckInputs = [
-    matplotlib
-    pandas
-    pytestCheckHook
-  ];
-
-  pythonImportsCheck = [ "borb.pdf" ];
-
-  disabledTests = [
-    "test_code_files_are_small"
-    "test_image_has_pdfobject_methods"
-  ];
-
   disabledTestPaths = [
     # Tests require network access
     "tests/pdf/"
     "tests/toolkit/"
     "tests/license/"
   ];
+
+  disabledTests = [
+    "test_code_files_are_small"
+    "test_image_has_pdfobject_methods"
+  ];
+
+  pyproject = true;
+  pythonImportsCheck = [ "borb.pdf" ];
 
   meta = {
     description = "Library for reading, creating and manipulating PDF files in Python";

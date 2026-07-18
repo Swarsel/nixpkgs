@@ -1,10 +1,10 @@
 {
   lib,
-  stdenvNoCC,
   fetchFromGitHub,
-  makeWrapper,
   fzf,
   gawk,
+  makeWrapper,
+  stdenvNoCC,
 }:
 
 stdenvNoCC.mkDerivation rec {
@@ -19,7 +19,6 @@ stdenvNoCC.mkDerivation rec {
   };
 
   nativeBuildInputs = [ makeWrapper ];
-  dontBuild = true;
 
   installPhase = ''
     runHook preInstall
@@ -34,13 +33,15 @@ stdenvNoCC.mkDerivation rec {
     runHook postInstall
   '';
 
+  dontBuild = true;
+
   meta = {
-    homepage = "https://github.com/joehillen/sysz";
     description = "Fzf terminal UI for systemctl";
+    homepage = "https://github.com/joehillen/sysz";
+    changelog = "https://github.com/joehillen/sysz/blob/${version}/CHANGELOG.md";
     license = lib.licenses.unlicense;
     maintainers = with lib.maintainers; [ hleboulanger ];
     platforms = lib.platforms.unix;
-    changelog = "https://github.com/joehillen/sysz/blob/${version}/CHANGELOG.md";
     mainProgram = "sysz";
   };
 }

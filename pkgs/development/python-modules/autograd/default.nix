@@ -1,14 +1,11 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
+  buildPythonPackage,
   # build-system
   hatchling,
-
   # dependencies
   numpy,
-
   # tests
   pytest-cov-stub,
   pytest-xdist,
@@ -18,7 +15,6 @@
 buildPythonPackage rec {
   pname = "autograd";
   version = "1.9.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "HIPS";
@@ -32,16 +28,15 @@ buildPythonPackage rec {
     sed -i "/required_plugins/d" pyproject.toml
   '';
 
-  build-system = [ hatchling ];
-
-  dependencies = [ numpy ];
-
   nativeCheckInputs = [
     pytest-cov-stub
     pytest-xdist
     pytestCheckHook
   ];
 
+  build-system = [ hatchling ];
+  dependencies = [ numpy ];
+  pyproject = true;
   pythonImportsCheck = [ "autograd" ];
 
   meta = {

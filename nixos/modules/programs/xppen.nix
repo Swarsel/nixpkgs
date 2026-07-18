@@ -12,8 +12,10 @@ in
 {
   options.programs.xppen = {
     enable = lib.mkEnableOption "XPPen PenTablet application";
+
     package = lib.mkPackageOption pkgs "xppen_4" {
       example = "pkgs.xppen_3";
+
       extraDescription = ''
         Use xppen_4 for newer and xppen_3 for older tablets.
         To check which version of the driver you need, go to
@@ -24,22 +26,14 @@ in
   };
 
   config = lib.mkIf cfg.enable {
-    hardware.uinput.enable = true;
-
     environment.systemPackages = [ cfg.package ];
-
+    hardware.uinput.enable = true;
     services.udev.packages = [ cfg.package ];
-
-    systemd.tmpfiles.rules = [
-      "d /var/lib/pentablet/conf/xppen 0777 - - -"
-    ];
 
     systemd.services.xppen-create-config-dir = {
       restartTriggers = [ cfg.package ];
-      wantedBy = [ "multi-user.target" ];
+
       serviceConfig = {
-        Type = "oneshot";
-        TimeoutSec = 60;
         ExecStart = pkgs.writeShellScript "xppen-create-config-dir" ''
           readarray -d "" files < <(find ${cfg.package}/usr/lib/pentablet/conf -type f -print0)
           for file in "''${files[@]}"; do
@@ -49,7 +43,16 @@ in
             fi
           done
         '';
+
+        TimeoutSec = 60;
+        Type = "oneshot";
       };
+
+      wantedBy = [ "multi-user.target" ];
     };
+
+    systemd.tmpfiles.rules = [
+      "d /var/lib/pentablet/conf/xppen 0777 - - -"
+    ];
   };
 }

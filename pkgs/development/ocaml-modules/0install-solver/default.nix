@@ -1,7 +1,7 @@
 {
   lib,
-  buildDunePackage,
   fetchFromGitHub,
+  buildDunePackage,
   ounit2,
 }:
 
@@ -17,14 +17,15 @@ buildDunePackage (finalAttrs: {
   };
 
   doCheck = true;
+
   checkInputs = [
     ounit2
   ];
 
   meta = {
     description = "Package dependency solver";
+    homepage = "https://0install.net";
     license = lib.licenses.lgpl21;
     maintainers = [ lib.maintainers.stepbrobd ];
-    homepage = "https://0install.net";
   };
 })

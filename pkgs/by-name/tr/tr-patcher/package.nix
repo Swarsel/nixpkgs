@@ -1,6 +1,6 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchurl,
   fetchzip,
   jre,
@@ -9,8 +9,8 @@
 
 let
   translation-file = fetchurl {
-    url = "https://gitlab.com/bmwinger/tr-patcher/-/raw/master/lib/Translation.txt?inline=false";
     sha256 = "136zd2s73b4n1w2n34wxi656bm448748nn3y7a64fd89ysg9n7n8";
+    url = "https://gitlab.com/bmwinger/tr-patcher/-/raw/master/lib/Translation.txt?inline=false";
   };
 in
 stdenv.mkDerivation {
@@ -35,11 +35,11 @@ stdenv.mkDerivation {
 
   meta = {
     description = "Allow to update dependancies of the Tamriel-Data mod for morrowind";
-    mainProgram = "tr-patcher";
     homepage = "https://gitlab.com/bmwinger/tr-patcher";
-    sourceProvenance = with lib.sourceTypes; [ binaryBytecode ];
     license = lib.licenses.gpl3;
+    sourceProvenance = with lib.sourceTypes; [ binaryBytecode ];
     maintainers = [ lib.maintainers.marius851000 ];
     platforms = lib.platforms.linux;
+    mainProgram = "tr-patcher";
   };
 }

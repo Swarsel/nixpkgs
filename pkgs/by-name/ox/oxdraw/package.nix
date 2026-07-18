@@ -1,22 +1,20 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
-  pkg-config,
-  openssl,
   buildNpmPackage,
   geist-font,
   nix-update-script,
+  openssl,
+  pkg-config,
+  rustPlatform,
 }:
 rustPlatform.buildRustPackage (
   finalAttrs:
   let
     # We manually build the frontend because otherwise it'll try to download stuff from within the sandbox and fail
     frontend = buildNpmPackage {
-      pname = "oxdraw-frontend";
       inherit (finalAttrs) version src;
-
-      sourceRoot = "source/frontend";
+      pname = "oxdraw-frontend";
 
       patches = [
         # By default, NextJS tries to fetch fonts from google
@@ -24,6 +22,8 @@ rustPlatform.buildRustPackage (
         # font from nixpkgs
         ./font-lookup.patch
       ];
+
+      npmDepsHash = "sha256-Yyox/x78spQqCJDJkPVuzfeAbtd/fdyihDHudIqruo4=";
 
       buildPhase = ''
         runHook preBuild
@@ -38,7 +38,7 @@ rustPlatform.buildRustPackage (
         runHook postInstall
       '';
 
-      npmDepsHash = "sha256-Yyox/x78spQqCJDJkPVuzfeAbtd/fdyihDHudIqruo4=";
+      sourceRoot = "source/frontend";
     };
   in
   {
@@ -53,20 +53,17 @@ rustPlatform.buildRustPackage (
     };
 
     strictDeps = true;
-    __structuredAttrs = true;
-
-    cargoHash = "sha256-YedNESkXKbfl7FWea7VpDR+59b9WLtZ7GNcyJ7D9yPg=";
-
     nativeBuildInputs = [ pkg-config ];
     buildInputs = [ openssl ];
+    cargoHash = "sha256-YedNESkXKbfl7FWea7VpDR+59b9WLtZ7GNcyJ7D9yPg=";
+    env.OXDRAW_BUNDLED_WEB_DIST = frontend;
 
     preBuild = ''
       # The build.rs builds the frontend, which we manually build via Nix already
       rm build.rs
     '';
 
-    env.OXDRAW_BUNDLED_WEB_DIST = frontend;
-
+    __structuredAttrs = true;
     passthru.updateScript = nix-update-script { };
 
     meta = {
@@ -75,8 +72,8 @@ rustPlatform.buildRustPackage (
       changelog = "https://github.com/RohanAdwankar/oxdraw/releases/tag/v${finalAttrs.version}";
       license = lib.licenses.mit;
       maintainers = [ lib.maintainers.kilyanni ];
-      mainProgram = "oxdraw";
       platforms = lib.platforms.linux;
+      mainProgram = "oxdraw";
     };
   }
 )

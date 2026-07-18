@@ -8,7 +8,6 @@
 buildPythonPackage rec {
   pname = "mkdocs-macros-test";
   version = "0.1.0";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
@@ -18,6 +17,8 @@ buildPythonPackage rec {
   build-system = [
     setuptools
   ];
+
+  pyproject = true;
 
   pythonImportsCheck = [
     "mkdocs_macros_test"

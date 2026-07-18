@@ -18,12 +18,14 @@ in
     services.power-profiles-daemon = {
 
       enable = lib.mkOption {
-        type = lib.types.bool;
         default = false;
+
         description = ''
           Whether to enable power-profiles-daemon, a DBus daemon that allows
           changing system behavior based upon user-selected power profiles.
         '';
+
+        type = lib.types.bool;
       };
 
       package = lib.mkPackageOption pkgs "power-profiles-daemon" { };
@@ -39,6 +41,7 @@ in
     assertions = [
       {
         assertion = !config.services.tlp.enable;
+
         message = ''
           You have set services.power-profiles-daemon.enable = true;
           which conflicts with services.tlp.enable = true;
@@ -46,6 +49,7 @@ in
       }
       {
         assertion = !config.services.auto-cpufreq.enable;
+
         message = ''
           You have set services.power-profiles-daemon.enable = true;
           which conflicts with services.auto-cpufreq.enable = true;
@@ -54,11 +58,8 @@ in
     ];
 
     environment.systemPackages = [ cfg.package ];
-
     services.dbus.packages = [ cfg.package ];
-
     services.udev.packages = [ cfg.package ];
-
     systemd.packages = [ cfg.package ];
 
   };

@@ -1,50 +1,45 @@
 {
   lib,
   stdenv,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # build-system
-  setuptools,
-  cython,
-  versioneer,
-
+  buildPythonPackage,
   # dependencies
   cons,
+  cython,
   etuples,
   filelock,
-  logical-unification,
-  minikanren,
-  numba,
-  numpy,
-  scipy,
-
   # tests
   jax,
   jaxlib,
+  logical-unification,
+  minikanren,
+  nix-update-script,
+  numba,
+  numpy,
   pytest-benchmark,
   pytest-mock,
   pytestCheckHook,
+  scipy,
+  # build-system
+  setuptools,
   tensorflow-probability,
+  versioneer,
   writableTmpDirAsHomeHook,
-
-  nix-update-script,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "pytensor";
   version = "3.1.3";
-  pyproject = true;
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "pymc-devs";
     repo = "pytensor";
     tag = "rel-${finalAttrs.version}";
+    hash = "sha256-9Apjyg+wmAWrK7hMSF54b1u/3TT0GGitDlyF6rQA4OY=";
+
     postFetch = ''
       sed -i 's/git_refnames = "[^"]*"/git_refnames = " (tag: ${finalAttrs.src.tag})"/' $out/pytensor/_version.py
     '';
-    hash = "sha256-9Apjyg+wmAWrK7hMSF54b1u/3TT0GGitDlyF6rQA4OY=";
   };
 
   # DeprecationWarning: scipy.linalg: the `lwork` keyword is deprecated and no longer in use as of
@@ -53,6 +48,24 @@ buildPythonPackage (finalAttrs: {
     substituteInPlace pytensor/link/numba/dispatch/linalg/decomposition/qr.py \
       --replace-fail "lwork=lwork," ""
   '';
+
+  nativeCheckInputs = [
+    jax
+    jaxlib
+    numba
+    pytest-benchmark
+    pytest-mock
+    pytestCheckHook
+    tensorflow-probability
+    writableTmpDirAsHomeHook
+  ];
+
+  # Ensure that the installed package is used instead of the source files from the current workdir
+  preCheck = ''
+    rm -rf pytensor
+  '';
+
+  __structuredAttrs = true;
 
   build-system = [
     setuptools
@@ -72,25 +85,18 @@ buildPythonPackage (finalAttrs: {
     setuptools
   ];
 
-  nativeCheckInputs = [
-    jax
-    jaxlib
-    numba
-    pytest-benchmark
-    pytest-mock
-    pytestCheckHook
-    tensorflow-probability
-    writableTmpDirAsHomeHook
+  disabledTestPaths = [
+    # Don't run the most compute-intense tests
+    "tests/scan/"
+    "tests/tensor/"
+
+    # The IndexedElemwise fusion is intentionally disabled on the 3.0.x line
+    # (it can trigger a RecursionError, see the comment in
+    # pytensor/tensor/rewriting/indexed_elemwise.py), but these tests still
+    # assert that the fusion produces an IndexedElemwise node. Upstream test bug.
+    "tests/link/numba/test_indexed_elemwise.py"
+    "tests/benchmarks/test_gather_fusion.py"
   ];
-
-  pytestFlags = [ "--benchmark-disable" ];
-
-  pythonImportsCheck = [ "pytensor" ];
-
-  # Ensure that the installed package is used instead of the source files from the current workdir
-  preCheck = ''
-    rm -rf pytensor
-  '';
 
   disabledTests = [
     # AssertionError: Not equal to tolerance rtol=0.0001, atol=0
@@ -172,18 +178,9 @@ buildPythonPackage (finalAttrs: {
     "test_update_same"
   ];
 
-  disabledTestPaths = [
-    # Don't run the most compute-intense tests
-    "tests/scan/"
-    "tests/tensor/"
-
-    # The IndexedElemwise fusion is intentionally disabled on the 3.0.x line
-    # (it can trigger a RecursionError, see the comment in
-    # pytensor/tensor/rewriting/indexed_elemwise.py), but these tests still
-    # assert that the fusion produces an IndexedElemwise node. Upstream test bug.
-    "tests/link/numba/test_indexed_elemwise.py"
-    "tests/benchmarks/test_gather_fusion.py"
-  ];
+  pyproject = true;
+  pytestFlags = [ "--benchmark-disable" ];
+  pythonImportsCheck = [ "pytensor" ];
 
   passthru.updateScript = nix-update-script {
     extraArgs = [
@@ -194,12 +191,14 @@ buildPythonPackage (finalAttrs: {
 
   meta = {
     description = "Python library to define, optimize, and efficiently evaluate mathematical expressions involving multi-dimensional arrays";
-    mainProgram = "pytensor-cache";
     homepage = "https://github.com/pymc-devs/pytensor";
     changelog = "https://github.com/pymc-devs/pytensor/releases/tag/${finalAttrs.src.tag}";
     license = lib.licenses.bsd3;
+
     maintainers = with lib.maintainers; [
       bcdarwin
     ];
+
+    mainProgram = "pytensor-cache";
   };
 })

@@ -1,14 +1,14 @@
 {
-  mkTmuxPlugin,
-  replaceVars,
   fetchFromGitHub,
   crystal,
+  mkTmuxPlugin,
+  replaceVars,
 }:
 let
   fingers = crystal.buildCrystalPackage rec {
-    format = "shards";
-    version = "2.7.1";
     pname = "fingers";
+    version = "2.7.1";
+
     src = fetchFromGitHub {
       owner = "Morantron";
       repo = "tmux-fingers";
@@ -16,8 +16,9 @@ let
       sha256 = "sha256-4aA60127Pv1jk7jzEhlU3NmPDmUbp9nE/8yYKkcMUb4=";
     };
 
-    shardsFile = ./shards.nix;
-    crystalBinaries.tmux-fingers.src = "src/fingers.cr";
+    # TODO: Needs starting a TMUX session to run tests
+    # Unhandled exception: Missing ENV key: "TMUX" (KeyError)
+    doCheck = false;
 
     postInstall = ''
       shopt -s dotglob extglob
@@ -25,10 +26,10 @@ let
       shopt -u dotglob extglob
     '';
 
-    # TODO: Needs starting a TMUX session to run tests
-    # Unhandled exception: Missing ENV key: "TMUX" (KeyError)
-    doCheck = false;
     doInstallCheck = false;
+    crystalBinaries.tmux-fingers.src = "src/fingers.cr";
+    format = "shards";
+    shardsFile = ./shards.nix;
 
     meta = {
       homepage = "https://github.com/Morantron/tmux-fingers";
@@ -38,12 +39,12 @@ in
 mkTmuxPlugin {
   inherit (fingers) version src meta;
 
-  pluginName = fingers.src.repo;
-  rtpFilePath = "tmux-fingers.tmux";
-
   patches = [
     (replaceVars ./fix.patch {
       tmuxFingersDir = "${fingers}/bin";
     })
   ];
+
+  pluginName = fingers.src.repo;
+  rtpFilePath = "tmux-fingers.tmux";
 }

@@ -1,9 +1,9 @@
 {
-  stdenv,
   lib,
+  stdenv,
+  fetchFromGitHub,
   buildGoModule,
   buildPackages,
-  fetchFromGitHub,
   installShellFiles,
   nix-update-script,
   versionCheckHook,
@@ -20,21 +20,12 @@ buildGoModule (finalAttrs: {
     hash = "sha256-bc2YNCkTbO6qO2PyBI4UH7O48GNMgDfKKXWXjYaznBI=";
   };
 
-  vendorHash = "sha256-IXmkO7WIvy4ETMMHHJF6hS8ACRat/vnoiqaXyhw8u+M=";
-
-  env.CGO_ENABLED = 0;
-  tags = [ "netgo" ];
-  ldflags = [
-    "-s"
-    "-w"
-    "-X main.Version=${finalAttrs.version}"
-  ];
-
   nativeBuildInputs = [
     installShellFiles
   ];
 
-  modRoot = "foxglove";
+  vendorHash = "sha256-IXmkO7WIvy4ETMMHHJF6hS8ACRat/vnoiqaXyhw8u+M=";
+  env.CGO_ENABLED = 0;
 
   checkFlags =
     let
@@ -62,24 +53,33 @@ buildGoModule (finalAttrs: {
     ''
   );
 
-  passthru.updateScript = nix-update-script { };
-
   doInstallCheck = true;
+
   nativeInstallCheckInputs = [
     versionCheckHook
     writableTmpDirAsHomeHook
   ];
+
+  ldflags = [
+    "-s"
+    "-w"
+    "-X main.Version=${finalAttrs.version}"
+  ];
+
+  modRoot = "foxglove";
+  tags = [ "netgo" ];
+  versionCheckKeepEnvironment = [ "HOME" ];
   versionCheckProgram = "${placeholder "out"}/bin/${finalAttrs.meta.mainProgram}";
   versionCheckProgramArg = "version";
-  versionCheckKeepEnvironment = [ "HOME" ];
+  passthru.updateScript = nix-update-script { };
 
   meta = {
-    changelog = "https://github.com/foxglove/foxglove-cli/releases/tag/v${finalAttrs.version}";
     description = "Interact with the Foxglove platform";
-    downloadPage = "https://github.com/foxglove/foxglove-cli";
     homepage = "https://docs.foxglove.dev/docs/cli";
+    changelog = "https://github.com/foxglove/foxglove-cli/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ sascha8a ];
     mainProgram = "foxglove";
+    downloadPage = "https://github.com/foxglove/foxglove-cli";
   };
 })

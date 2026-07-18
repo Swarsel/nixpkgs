@@ -23,23 +23,23 @@ buildGoModule (finalAttrs: {
     mv $out/bin/server $out/bin/temporal-ui-server
   '';
 
-  nativeInstallCheckInputs = [ versionCheckHook ];
-
   doInstallCheck = true;
-
+  nativeInstallCheckInputs = [ versionCheckHook ];
   passthru.updateScript = nix-update-script { };
 
   meta = {
-    changelog = "https://github.com/temporalio/ui-server/releases/tag/${finalAttrs.src.tag}";
-    homepage = "https://github.com/temporalio/ui-server";
     description = "Golang Server for Temporal Web UI";
+
     longDescription = ''
       The Temporal Web UI provides users with Workflow Execution state and metadata
       for debugging purposes. This golang server provides a binary that you can run
       to serve the compiled temporal ui (https://github.com/temporalio/ui).
     '';
-    mainProgram = "temporal-ui-server";
+
+    homepage = "https://github.com/temporalio/ui-server";
+    changelog = "https://github.com/temporalio/ui-server/releases/tag/${finalAttrs.src.tag}";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ breakds ];
+    mainProgram = "temporal-ui-server";
   };
 })

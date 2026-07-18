@@ -1,6 +1,6 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchurl,
   perl,
 }:
@@ -15,9 +15,9 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   nativeBuildInputs = [ perl ]; # for pod2man
+  # There are no tests
+  doCheck = false;
 
-  dontUnpack = true;
-  dontBuild = true;
   installPhase = ''
     runHook preInstall
 
@@ -30,8 +30,8 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
-  # There are no tests
-  doCheck = false;
+  dontBuild = true;
+  dontUnpack = true;
 
   meta = {
     description = "Parser for VCalendar and ICalendar files, usable from the command line";

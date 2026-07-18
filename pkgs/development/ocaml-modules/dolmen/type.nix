@@ -6,8 +6,8 @@
 }:
 
 buildDunePackage {
-  pname = "dolmen_type";
   inherit (dolmen) src version;
+  pname = "dolmen_type";
 
   propagatedBuildInputs = [
     dolmen

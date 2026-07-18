@@ -4,34 +4,34 @@
   fetchFromGitHub,
   autoreconfHook,
   bsd-finger,
+  collectd,
+  curl,
+  hiredis,
+  json_c,
+  libcap,
+  libmemcached,
+  libmysqlclient,
+  libpcap,
+  libpq,
+  libyubikey,
+  openldap,
+  openssl,
   perl,
+  sqlite,
   talloc,
   linkOpenssl ? true,
-  openssl,
   withCap ? true,
-  libcap,
   withCollectd ? false,
-  collectd,
   withJson ? false,
-  json_c,
   withLdap ? true,
-  openldap,
   withMemcached ? false,
-  libmemcached,
   withMysql ? false,
-  libmysqlclient,
-  withPostgresql ? false,
-  libpq,
   withPcap ? true,
-  libpcap,
+  withPostgresql ? false,
   withRedis ? false,
-  hiredis,
   withRest ? false,
-  curl,
   withSqlite ? true,
-  sqlite,
   withYubikey ? false,
-  libyubikey,
 }:
 
 assert withRest -> withJson;
@@ -46,6 +46,18 @@ stdenv.mkDerivation rec {
     tag = "release_${lib.replaceStrings [ "." ] [ "_" ] version}";
     hash = "sha256-+pFV6dDnL7T5G309cLACa+/0vGppCEdk3ghOQhgSjTs=";
   };
+
+  outputs = [
+    "out"
+    "dev"
+    "man"
+    "doc"
+  ];
+
+  postPatch = ''
+    substituteInPlace src/main/checkrad.in \
+      --replace "/usr/bin/finger" "${bsd-finger}/bin/finger"
+  '';
 
   nativeBuildInputs = [ autoreconfHook ];
 
@@ -74,11 +86,6 @@ stdenv.mkDerivation rec {
   ]
   ++ lib.optional (!linkOpenssl) "--with-openssl=no";
 
-  postPatch = ''
-    substituteInPlace src/main/checkrad.in \
-      --replace "/usr/bin/finger" "${bsd-finger}/bin/finger"
-  '';
-
   # By default, freeradius will generate Diffie-Hellman parameters and
   # self-signed TLS certificates during installation. We don't want
   # this, for several reasons:
@@ -94,16 +101,9 @@ stdenv.mkDerivation rec {
     "INSTALL_CERT_FILES=" # see comment at makeFlags
   ];
 
-  outputs = [
-    "out"
-    "dev"
-    "man"
-    "doc"
-  ];
-
   meta = {
-    homepage = "https://freeradius.org/";
     description = "Modular, high performance free RADIUS suite";
+    homepage = "https://freeradius.org/";
     license = lib.licenses.gpl2Plus;
     maintainers = [ ];
     platforms = with lib.platforms; linux;

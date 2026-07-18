@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   prek,
   pytest-asyncio,
   pytestCheckHook,
@@ -11,7 +11,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "rf-protocols";
   version = "4.3.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "home-assistant-libs";
@@ -20,14 +19,14 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-g2e+iQXBaoGO1Yv5v+xpiM+beecErI58Ua5/FODg8Bo=";
   };
 
-  build-system = [ setuptools ];
-
   nativeCheckInputs = [
     prek
     pytest-asyncio
     pytestCheckHook
   ];
 
+  build-system = [ setuptools ];
+  pyproject = true;
   pythonImportsCheck = [ "rf_protocols" ];
 
   meta = {

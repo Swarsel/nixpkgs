@@ -17,14 +17,14 @@ stdenv.mkDerivation (finalAttrs: {
     ./include-string.h.patch
   ];
 
-  makeFlags = [
-    "-C src"
-  ];
-
   postPatch = ''
     substituteInPlace src/Makefile \
       --replace gcc cc
   '';
+
+  makeFlags = [
+    "-C src"
+  ];
 
   installPhase = ''
     runHook preInstall
@@ -35,10 +35,10 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Examine the contents of Internet Explorer's cache files for forensic purposes";
-    mainProgram = "pasco";
     homepage = "https://sourceforge.net/projects/fast/files/Pasco/";
+    license = with lib.licenses; [ bsd3 ];
     maintainers = [ ];
     platforms = lib.platforms.unix;
-    license = with lib.licenses; [ bsd3 ];
+    mainProgram = "pasco";
   };
 })

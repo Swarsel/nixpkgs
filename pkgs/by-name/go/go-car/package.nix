@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   libpcap,
 }:
 
@@ -16,14 +16,11 @@ buildGoModule (finalAttrs: {
     hash = "sha256-votPngF8qpX/6vZcsmDM/I5Vb3wASvuKduBjJi0eQ2w=";
   };
 
+  buildInputs = [ libpcap ];
+  vendorHash = "sha256-uzzSw51FoAdHPqqoMY2C/zx1nHbbii6izzTjguYYghs=";
+  ldflags = [ "-s" ];
   modRoot = "cmd";
   subPackages = [ "car" ];
-
-  vendorHash = "sha256-uzzSw51FoAdHPqqoMY2C/zx1nHbbii6izzTjguYYghs=";
-
-  buildInputs = [ libpcap ];
-
-  ldflags = [ "-s" ];
 
   meta = {
     description = "Content addressable archive utility";

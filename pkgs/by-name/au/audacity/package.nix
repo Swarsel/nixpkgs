@@ -1,58 +1,58 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
-  cmake,
-  makeWrapper,
-  wrapGAppsHook3,
-  pkg-config,
-  python3,
-  gettext,
-  file,
-  libvorbis,
-  libmad,
-  libjack2,
-  lv2,
-  lilv,
-  mpg123,
-  opusfile,
-  rapidjson,
-  serd,
-  sord,
-  sqlite,
-  sratom,
-  suil,
-  libsndfile,
-  soxr,
-  flac,
-  lame,
-  twolame,
-  expat,
-  libid3tag,
-  libopus,
-  libuuid,
-  ffmpeg_8,
-  soundtouch,
-  portaudio, # given up fighting their portaudio.patch?
-  portmidi,
-  linuxHeaders,
   alsa-lib,
   at-spi2-core,
+  cmake,
   dbus,
+  expat,
+  ffmpeg_8,
+  file,
+  flac,
+  gettext,
+  gtk3,
+  lame,
   libepoxy,
-  libxdmcp,
-  libxtst,
+  libid3tag,
+  libjack2,
+  libjpeg,
+  libmad,
+  libopus,
+  libpng,
   libpthread-stubs,
   libsbsms_2_3_0,
   libselinux,
   libsepol,
+  libsndfile,
+  libuuid,
+  libvorbis,
+  libxdmcp,
   libxkbcommon,
+  libxtst,
+  lilv,
+  linuxHeaders,
+  lv2,
+  makeWrapper,
+  mpg123,
+  opusfile,
+  pkg-config,
+  portaudio, # given up fighting their portaudio.patch?
+  portmidi,
+  python3,
+  rapidjson,
+  serd,
+  sord,
+  soundtouch,
+  soxr,
+  sqlite,
+  sratom,
+  suil,
+  twolame,
   util-linux,
   wavpack,
+  wrapGAppsHook3,
   wxwidgets_3_2,
-  gtk3,
-  libpng,
-  libjpeg,
 }:
 
 # TODO
@@ -176,8 +176,6 @@ stdenv.mkDerivation (finalAttrs: {
 
   doCheck = false; # Test fails
 
-  dontWrapGApps = true;
-
   # Replace audacity's wrapper, to:
   # - Put it in the right place; it shouldn't be in "$out/audacity"
   # - Add the ffmpeg dynamic dependency
@@ -197,11 +195,13 @@ stdenv.mkDerivation (finalAttrs: {
       makeWrapper $out/Applications/Audacity.app/Contents/MacOS/Audacity $out/bin/audacity
     '';
 
+  dontWrapGApps = true;
+
   meta = {
     description = "Sound editor with graphical UI";
-    mainProgram = "audacity";
     homepage = "https://www.audacityteam.org";
     changelog = "https://github.com/audacity/audacity/releases";
+
     license = with lib.licenses; [
       gpl2Plus
       # Must be GPL3 when building with "technologies that require it,
@@ -211,10 +211,13 @@ stdenv.mkDerivation (finalAttrs: {
       # Documentation.
       cc-by-30
     ];
+
     maintainers = with lib.maintainers; [
       veprbl
       wegank
     ];
+
     platforms = lib.platforms.unix;
+    mainProgram = "audacity";
   };
 })

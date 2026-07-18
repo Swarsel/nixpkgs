@@ -1,18 +1,18 @@
 {
   lib,
-  fetchFromGitHub,
   stdenv,
-  rustPlatform,
-  pop-gtk-theme,
+  fetchFromGitHub,
   adw-gtk3,
-  pkg-config,
-  libpulseaudio,
-  pipewire,
   libinput,
-  udev,
-  openssl,
-  nixosTests,
+  libpulseaudio,
   nix-update-script,
+  nixosTests,
+  openssl,
+  pipewire,
+  pkg-config,
+  pop-gtk-theme,
+  rustPlatform,
+  udev,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -34,11 +34,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
       --replace-fail '/usr/share/themes/adw-gtk3' '${adw-gtk3}/share/themes/adw-gtk3'
   '';
 
-  cargoHash = "sha256-rpyMdwmcddsrXuIOI5T6Kh9+cB28DdUxotiqpeGqvCc=";
-
-  separateDebugInfo = true;
-  __structuredAttrs = true;
-
   nativeBuildInputs = [
     pkg-config
     rustPlatform.bindgenHook
@@ -52,12 +47,16 @@ rustPlatform.buildRustPackage (finalAttrs: {
     pipewire
   ];
 
+  cargoHash = "sha256-rpyMdwmcddsrXuIOI5T6Kh9+cB28DdUxotiqpeGqvCc=";
+
   makeFlags = [
     "prefix=$(out)"
     "CARGO_TARGET_DIR=target/${stdenv.hostPlatform.rust.cargoShortTarget}"
   ];
 
+  __structuredAttrs = true;
   dontCargoInstall = true;
+  separateDebugInfo = true;
 
   passthru = {
     tests = {
@@ -78,11 +77,11 @@ rustPlatform.buildRustPackage (finalAttrs: {
   };
 
   meta = {
-    homepage = "https://github.com/pop-os/cosmic-settings-daemon";
     description = "Settings Daemon for the COSMIC Desktop Environment";
-    mainProgram = "cosmic-settings-daemon";
+    homepage = "https://github.com/pop-os/cosmic-settings-daemon";
     license = lib.licenses.gpl3Only;
-    teams = [ lib.teams.cosmic ];
     platforms = lib.platforms.linux;
+    mainProgram = "cosmic-settings-daemon";
+    teams = [ lib.teams.cosmic ];
   };
 })

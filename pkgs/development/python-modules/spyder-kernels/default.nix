@@ -1,26 +1,17 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  pythonAtLeast,
-
-  # build-system
-  setuptools,
-
-  # dependencies
-  cloudpickle,
-  ipykernel,
-  ipython,
-  jupyter-client,
-  pyxdg,
-  pyzmq,
-  wurlitzer,
-
   # tests
   anyio,
+  buildPythonPackage,
+  # dependencies
+  cloudpickle,
   django,
   flaky,
   h5py,
+  ipykernel,
+  ipython,
+  jupyter-client,
   numpy,
   pandas,
   pillow,
@@ -28,15 +19,20 @@
   pyarrow,
   pydicom,
   pytestCheckHook,
+  pythonAtLeast,
+  pyxdg,
+  pyzmq,
   scipy,
+  # build-system
+  setuptools,
   writableTmpDirAsHomeHook,
+  wurlitzer,
   xarray,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "spyder-kernels";
   version = "3.1.5";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "spyder-ide";
@@ -44,21 +40,6 @@ buildPythonPackage (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-FdZKWtMRTLq16rULc4lQx4GywtyZ+ori2z85PgK1geM=";
   };
-
-  build-system = [ setuptools ];
-
-  pythonRelaxDeps = [
-    "ipykernel"
-  ];
-  dependencies = [
-    cloudpickle
-    ipykernel
-    ipython
-    jupyter-client
-    pyxdg
-    pyzmq
-    wurlitzer
-  ];
 
   nativeCheckInputs = [
     anyio
@@ -75,6 +56,19 @@ buildPythonPackage (finalAttrs: {
     scipy
     writableTmpDirAsHomeHook
     xarray
+  ];
+
+  __darwinAllowLocalNetworking = true;
+  build-system = [ setuptools ];
+
+  dependencies = [
+    cloudpickle
+    ipykernel
+    ipython
+    jupyter-client
+    pyxdg
+    pyzmq
+    wurlitzer
   ];
 
   disabledTests = [
@@ -95,16 +89,19 @@ buildPythonPackage (finalAttrs: {
     "test_functions_with_locals_in_pdb"
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "spyder_kernels" ];
 
-  __darwinAllowLocalNetworking = true;
+  pythonRelaxDeps = [
+    "ipykernel"
+  ];
 
   meta = {
     description = "Jupyter kernels for Spyder's console";
     homepage = "https://docs.spyder-ide.org/current/ipythonconsole.html";
-    downloadPage = "https://github.com/spyder-ide/spyder-kernels/releases";
     changelog = "https://github.com/spyder-ide/spyder-kernels/blob/${finalAttrs.src.tag}/CHANGELOG.md";
     license = lib.licenses.mit;
     maintainers = [ ];
+    downloadPage = "https://github.com/spyder-ide/spyder-kernels/releases";
   };
 })

@@ -5,8 +5,8 @@
 }:
 
 stdenv.mkDerivation (finalAttrs: {
-  version = "3.0.1.3";
   pname = "discount";
+  version = "3.0.1.3";
 
   src = fetchFromGitHub {
     owner = "Orc";
@@ -16,16 +16,13 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   patches = [ ./fix-configure-path.patch ];
-  configureScript = "./configure.sh";
+
   configureFlags = [
     "--shared"
     "--debian-glitch" # use deterministic mangling
     "--pkg-config"
     "--h1-title"
   ];
-
-  enableParallelBuilding = true;
-  installTargets = [ "install.everything" ];
 
   doCheck = true;
 
@@ -36,12 +33,16 @@ stdenv.mkDerivation (finalAttrs: {
     done
   '';
 
+  configureScript = "./configure.sh";
+  enableParallelBuilding = true;
+  installTargets = [ "install.everything" ];
+
   meta = {
     description = "Implementation of Markdown markup language in C";
     homepage = "http://www.pell.portland.or.us/~orc/Code/discount/";
     license = lib.licenses.bsd3;
     maintainers = with lib.maintainers; [ shell ];
-    mainProgram = "markdown";
     platforms = lib.platforms.unix;
+    mainProgram = "markdown";
   };
 })

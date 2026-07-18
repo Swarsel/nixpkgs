@@ -1,28 +1,28 @@
 {
   lib,
   stdenv,
-  rustPlatform,
-  pkg-config,
-  cmake,
-  git,
-  openssl,
-  tailwindcss_4,
-  dioxus-cli,
-  yt-dlp,
-  fetchFromGitHub,
   fetchurl,
+  fetchFromGitHub,
+  alsa-lib,
+  cmake,
+  dbus,
+  dioxus-cli,
+  git,
+  glib-networking,
+  gtk3,
+  libayatana-appindicator,
   libopus,
+  libsoup_3,
+  openssl,
+  pkg-config,
+  rustPlatform,
+  tailwindcss_4,
+  wayland,
+  webkitgtk_4_1,
   # Linux only
   wrapGAppsHook3,
-  webkitgtk_4_1,
-  gtk3,
-  libsoup_3,
-  glib-networking,
-  alsa-lib,
   xdotool,
-  wayland,
-  dbus,
-  libayatana-appindicator,
+  yt-dlp,
 }:
 
 let
@@ -34,15 +34,14 @@ let
     "x86_64-unknown-linux-gnu" = "sha256-pkdsuU6bAkcIHEZUJOt5PXdzK424CEgTLXjLtQ80t10=";
   };
   librustyV8 = fetchurl {
-    url = "https://github.com/denoland/rusty_v8/releases/download/v${rustyV8Version}/librusty_v8_release_${rustyV8Target}.a.gz";
     hash =
       rustyV8Hashes.${rustyV8Target}
         or (throw "no prebuilt librusty_v8 hash for target ${rustyV8Target}");
+
+    url = "https://github.com/denoland/rusty_v8/releases/download/v${rustyV8Version}/librusty_v8_release_${rustyV8Target}.a.gz";
   };
 in
 rustPlatform.buildRustPackage (finalAttrs: {
-  __structuredAttrs = true;
-
   pname = "kopuz";
   version = "0.9.0";
 
@@ -52,10 +51,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-e3cPRxaUIbxXRQqGXRf9rVLP97eVGnz/D24O8WGDJcA=";
   };
-
-  cargoHash = "sha256-69FjH+cXaqsviDUlAGnkPrvxKVq0w3LXDwgEraoaEGA=";
-
-  env.RUSTY_V8_ARCHIVE = librustyV8;
 
   nativeBuildInputs = [
     pkg-config
@@ -83,6 +78,9 @@ rustPlatform.buildRustPackage (finalAttrs: {
     dbus
     libayatana-appindicator
   ];
+
+  cargoHash = "sha256-69FjH+cXaqsviDUlAGnkPrvxKVq0w3LXDwgEraoaEGA=";
+  env.RUSTY_V8_ARCHIVE = librustyV8;
 
   buildPhase = ''
     runHook preBuild
@@ -146,14 +144,18 @@ rustPlatform.buildRustPackage (finalAttrs: {
     )
   '';
 
+  __structuredAttrs = true;
+
   meta = {
     description = "Fast, modern music player with Jellyfin and local library support";
     homepage = "https://github.com/Kopuz-org/kopuz";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       temidaradev
       NotAShelf
     ];
+
     platforms = lib.platforms.linux ++ lib.platforms.darwin;
     mainProgram = "kopuz";
   };

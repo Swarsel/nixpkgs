@@ -8,7 +8,6 @@
 buildPythonPackage rec {
   pname = "pdftotext";
   version = "3.0.0";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
@@ -16,6 +15,7 @@ buildPythonPackage rec {
   };
 
   buildInputs = [ poppler ];
+  format = "setuptools";
 
   meta = {
     description = "Simple PDF text extraction";

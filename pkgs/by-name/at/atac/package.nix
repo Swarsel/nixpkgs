@@ -1,10 +1,10 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
-  pkg-config,
-  oniguruma,
   installShellFiles,
+  oniguruma,
+  pkg-config,
+  rustPlatform,
   writableTmpDirAsHomeHook,
 }:
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -18,8 +18,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-2z0+6CyVJR6sTFHotegCU8+isDy4Pw+gkJ1eUBs+AYM=";
   };
 
-  cargoHash = "sha256-lJO9riP/3FRrQ/gkKQCghfkNn1ePS+p6FtMcJTIJxZY=";
-
   nativeBuildInputs = [
     installShellFiles
     writableTmpDirAsHomeHook
@@ -27,6 +25,7 @@ rustPlatform.buildRustPackage (finalAttrs: {
   ];
 
   buildInputs = [ oniguruma ];
+  cargoHash = "sha256-lJO9riP/3FRrQ/gkKQCghfkNn1ePS+p6FtMcJTIJxZY=";
 
   env = {
     RUSTONIG_SYSTEM_LIBONIG = true;

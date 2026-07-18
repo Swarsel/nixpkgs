@@ -1,32 +1,24 @@
 {
   lib,
   buildPythonPackage,
-  fetchPypi,
-
-  # build-system
-  setuptools,
-
-  # nativeBuildInputs
-  pkg-config,
-
   # buildInputs
   eigen,
+  fetchPypi,
+  # nativeBuildInputs
+  pkg-config,
+  # build-system
+  setuptools,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "mathutils";
   version = "5.1.0";
-  pyproject = true;
 
   # No tags on GitLab
   src = fetchPypi {
     inherit (finalAttrs) pname version;
     hash = "sha256-sXGvnWtUoSE4yd6tT1kwo/qvkjh8xf+qgvGPvuFVQWg=";
   };
-
-  build-system = [
-    setuptools
-  ];
 
   nativeBuildInputs = [
     pkg-config
@@ -36,10 +28,15 @@ buildPythonPackage (finalAttrs: {
     eigen
   ];
 
-  pythonImportsCheck = [ "mathutils" ];
-
   # no tests
   doCheck = false;
+
+  build-system = [
+    setuptools
+  ];
+
+  pyproject = true;
+  pythonImportsCheck = [ "mathutils" ];
 
   meta = {
     description = "General math utilities library providing Matrix, Vector, Quaternion, Euler and Color classes, written in C for speed";

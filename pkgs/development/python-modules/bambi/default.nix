@@ -1,35 +1,31 @@
 {
   lib,
   stdenv,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # build-system
-  setuptools,
-  setuptools-scm,
-
   # dependencies
   arviz-plots,
+  # tests
+  blackjax,
+  buildPythonPackage,
   formulae,
   graphviz,
   matplotlib,
+  numpyro,
   pandas,
   pymc,
   pytensor,
-  seaborn,
-  sparse,
-
-  # tests
-  blackjax,
-  numpyro,
   pytestCheckHook,
+  seaborn,
+  # build-system
+  setuptools,
+  setuptools-scm,
+  sparse,
   writableTmpDirAsHomeHook,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "bambi";
   version = "0.18.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "bambinos";
@@ -38,14 +34,19 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-vxsjPYQkqvmB5oKKl29+xq1BPEzBTozz9/W5mICWI4A=";
   };
 
+  nativeCheckInputs = [
+    # bayeux-ml
+    blackjax
+    numpyro
+    pytestCheckHook
+    writableTmpDirAsHomeHook
+  ];
+
   build-system = [
     setuptools
     setuptools-scm
   ];
 
-  pythonRelaxDeps = [
-    "sparse"
-  ];
   dependencies = [
     arviz-plots
     formulae
@@ -58,19 +59,9 @@ buildPythonPackage (finalAttrs: {
     sparse
   ];
 
-  optional-dependencies = {
-    jax = [
-      # not (yet) available in nixpkgs (https://github.com/NixOS/nixpkgs/pull/345438)
-      # bayeux-ml
-    ];
-  };
-
-  nativeCheckInputs = [
-    # bayeux-ml
-    blackjax
-    numpyro
-    pytestCheckHook
-    writableTmpDirAsHomeHook
+  disabledTestPaths = [
+    # Tests require network access
+    "tests/test_interpret_plots.py"
   ];
 
   disabledTests = [
@@ -130,12 +121,19 @@ buildPythonPackage (finalAttrs: {
     "test_term_transformations"
   ];
 
-  disabledTestPaths = [
-    # Tests require network access
-    "tests/test_interpret_plots.py"
-  ];
+  optional-dependencies = {
+    jax = [
+      # not (yet) available in nixpkgs (https://github.com/NixOS/nixpkgs/pull/345438)
+      # bayeux-ml
+    ];
+  };
 
+  pyproject = true;
   pythonImportsCheck = [ "bambi" ];
+
+  pythonRelaxDeps = [
+    "sparse"
+  ];
 
   meta = {
     description = "High-level Bayesian model-building interface";

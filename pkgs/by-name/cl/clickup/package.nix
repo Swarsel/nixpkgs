@@ -1,12 +1,12 @@
 {
   lib,
-  stdenvNoCC,
-  appimageTools,
   fetchurl,
-  makeWrapper,
-  writeShellApplication,
-  curl,
+  appimageTools,
   common-updater-scripts,
+  curl,
+  makeWrapper,
+  stdenvNoCC,
+  writeShellApplication,
 }:
 let
   pname = "clickup";
@@ -27,9 +27,7 @@ let
 in
 stdenvNoCC.mkDerivation {
   inherit pname version;
-
   src = appimage;
-
   nativeBuildInputs = [ makeWrapper ];
 
   installPhase = ''
@@ -58,10 +56,12 @@ stdenvNoCC.mkDerivation {
 
   passthru.updateScript = lib.getExe (writeShellApplication {
     name = "update-clickup";
+
     runtimeInputs = [
       curl
       common-updater-scripts
     ];
+
     text = ''
       upstream_version="$(curl --silent --location --range 0-0 --dump-header - --output /dev/null https://desktop.clickup.com/linux | grep --only-matching --extended-regexp '[0-9]+\.[0-9]+\.[0-9]+')"
 
@@ -90,8 +90,8 @@ stdenvNoCC.mkDerivation {
     description = "All in one project management solution";
     homepage = "https://clickup.com";
     license = lib.licenses.unfree;
-    mainProgram = "clickup";
     maintainers = with lib.maintainers; [ heisfer ];
     platforms = [ "x86_64-linux" ];
+    mainProgram = "clickup";
   };
 }

@@ -1,14 +1,13 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   setuptools,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "awsiotpythonsdk";
   version = "1.6.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "aws";
@@ -18,10 +17,9 @@ buildPythonPackage (finalAttrs: {
   };
 
   nativeBuildInputs = [ setuptools ];
-
   # Module has no tests
   doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "AWSIoTPythonSDK" ];
 
   meta = {

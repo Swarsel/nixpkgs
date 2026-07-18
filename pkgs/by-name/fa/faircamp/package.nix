@@ -1,16 +1,16 @@
 {
   lib,
-  rustPlatform,
+  callPackage,
+  faircamp,
   fetchFromCodeberg,
-  makeWrapper,
-  pkg-config,
+  ffmpeg,
   glib,
   libopus,
-  vips,
-  ffmpeg,
-  callPackage,
+  makeWrapper,
+  pkg-config,
+  rustPlatform,
   testers,
-  faircamp,
+  vips,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -24,10 +24,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-r5r7vfTbMPjAqMg5f7L/YfSzlxZgrSFjO6WHO64wfIo=";
   };
 
-  cargoHash = "sha256-11EcYZw6Dq0Ls1fhBYLlvvHeZtiaweg6JAGBmkX+acw=";
-
-  buildFeatures = [ "libvips" ];
-
   nativeBuildInputs = [
     makeWrapper
     pkg-config
@@ -39,19 +35,23 @@ rustPlatform.buildRustPackage (finalAttrs: {
     vips
   ];
 
+  cargoHash = "sha256-11EcYZw6Dq0Ls1fhBYLlvvHeZtiaweg6JAGBmkX+acw=";
+
   postInstall = ''
     wrapProgram $out/bin/faircamp \
       --prefix PATH : ${lib.makeBinPath [ ffmpeg ]}
   '';
 
+  buildFeatures = [ "libvips" ];
+
   passthru.tests = {
-    wav = callPackage ./test-wav.nix { };
     version = testers.testVersion { package = faircamp; };
+    wav = callPackage ./test-wav.nix { };
   };
 
   meta = {
     description = "Self-hostable, statically generated bandcamp alternative";
-    mainProgram = "faircamp";
+
     longDescription = ''
       Faircamp takes a directory on your disk - your Catalog - and from it
       produces a fancy-looking (and technically simple and completely static)
@@ -64,9 +64,11 @@ rustPlatform.buildRustPackage (finalAttrs: {
       website for you automatically, otherwise you can use FTP or whichever
       means you prefer to do that manually.
     '';
+
     homepage = "https://simonrepp.com/faircamp/";
     license = lib.licenses.gpl3Plus;
     maintainers = with lib.maintainers; [ fgaz ];
     platforms = lib.platforms.all;
+    mainProgram = "faircamp";
   };
 })

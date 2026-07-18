@@ -24,9 +24,9 @@ buildGoModule (finalAttrs: {
 
   meta = {
     description = "Small tool to watch a directory and rerun a command when certain files change";
-    mainProgram = "reflex";
     homepage = "https://github.com/cespare/reflex";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ nicknovitski ];
+    mainProgram = "reflex";
   };
 })

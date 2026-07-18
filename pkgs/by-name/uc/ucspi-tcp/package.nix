@@ -10,9 +10,6 @@ stdenv.mkDerivation (finalAttrs: {
   pname = "ucspi-tcp";
   version = "0.88";
 
-  # Uses K&R C style function declarations which GCC 14+ rejects
-  env.NIX_CFLAGS_COMPILE = "-std=gnu89";
-
   src = fetchurl {
     url = "https://cr.yp.to/ucspi-tcp/ucspi-tcp-${finalAttrs.version}.tar.gz";
     sha256 = "171yl9kfm8w7l17dfxild99mbf877a9k5zg8yysgb1j8nz51a1ja";
@@ -22,19 +19,17 @@ stdenv.mkDerivation (finalAttrs: {
     ./remove-setuid.patch
   ];
 
-  debian = fetchzip {
-    url = "http://ftp.de.debian.org/debian/pool/main/u/ucspi-tcp/ucspi-tcp_0.88-11.debian.tar.xz";
-    sha256 = "0x8h46wkm62dvyj1acsffcl4s06k5zh6139qxib3zzhk716hv5xg";
-  };
+  # Plain upstream tarball doesn't build, apply patches from Debian
+  postPatch = ''
+    QUILT_PATCHES=$debian/patches quilt push -a
+  '';
 
   nativeBuildInputs = [
     quilt
   ];
 
-  # Plain upstream tarball doesn't build, apply patches from Debian
-  postPatch = ''
-    QUILT_PATCHES=$debian/patches quilt push -a
-  '';
+  # Uses K&R C style function declarations which GCC 14+ rejects
+  env.NIX_CFLAGS_COMPILE = "-std=gnu89";
 
   # The build system is weird; 'make install' doesn't install anything, instead
   # it builds an executable called ./install (from C code) which installs
@@ -60,8 +55,14 @@ stdenv.mkDerivation (finalAttrs: {
     cp $debian/ucspi-tcp-man/*.1 "$out/share/man/man1"
   '';
 
+  debian = fetchzip {
+    sha256 = "0x8h46wkm62dvyj1acsffcl4s06k5zh6139qxib3zzhk716hv5xg";
+    url = "http://ftp.de.debian.org/debian/pool/main/u/ucspi-tcp/ucspi-tcp_0.88-11.debian.tar.xz";
+  };
+
   meta = {
     description = "Command-line tools for building TCP client-server applications";
+
     longDescription = ''
       tcpserver waits for incoming connections and, for each connection, runs a
       program of your choice. Your program receives environment variables
@@ -89,9 +90,10 @@ stdenv.mkDerivation (finalAttrs: {
       Interface, using the TCP protocol. UCSPI tools are available for several
       different networks.
     '';
+
     homepage = "http://cr.yp.to/ucspi-tcp.html";
     license = lib.licenses.publicDomain;
-    platforms = lib.platforms.linux;
     maintainers = [ lib.maintainers.bjornfor ];
+    platforms = lib.platforms.linux;
   };
 })

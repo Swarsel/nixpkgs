@@ -1,6 +1,6 @@
 {
-  lib,
   config,
+  lib,
   options,
   ...
 }:
@@ -9,7 +9,8 @@
 
   options.services.libeufin.bank = {
     initialAccounts = lib.mkOption {
-      type = lib.types.listOf lib.types.attrs;
+      default = [ ];
+
       description = ''
         Accounts to enable before the bank service starts.
 
@@ -19,7 +20,8 @@
 
         Don't forget to change the account passwords afterwards.
       '';
-      default = [ ];
+
+      type = lib.types.listOf lib.types.attrs;
     };
 
     settings = lib.mkOption {
@@ -28,12 +30,13 @@
 
         For a list of all possible options, please see the man page [`libeufin-bank.conf(5)`](https://docs.taler.net/manpages/libeufin-bank.conf.5.html)
       '';
+
       type = lib.types.submodule {
         inherit (options.services.libeufin.settings.type.nestedTypes) freeformType;
+
         options = {
           libeufin-bank = {
             CURRENCY = lib.mkOption {
-              type = lib.types.str;
               description = ''
                 The currency under which the libeufin-bank should operate.
 
@@ -41,17 +44,23 @@
                 but if you run libeufin-bank separately from taler, you must set
                 this yourself.
               '';
+
+              type = lib.types.str;
             };
+
             PORT = lib.mkOption {
-              type = lib.types.port;
               default = 8082;
+
               description = ''
                 The port on which libeufin-bank should listen.
               '';
+
+              type = lib.types.port;
             };
+
             SUGGESTED_WITHDRAWAL_EXCHANGE = lib.mkOption {
-              type = lib.types.str;
               default = "https://exchange.demo.taler.net/";
+
               description = ''
                 Exchange that is suggested to wallets when withdrawing.
 
@@ -67,14 +76,18 @@
                 not crash during the withdrawal process but the exchange to be
                 used can always be changed in the app.
               '';
+
+              type = lib.types.str;
             };
           };
+
           libeufin-bankdb-postgres = {
             CONFIG = lib.mkOption {
-              type = lib.types.str;
               description = ''
                 The database connection string for the libeufin-bank database.
               '';
+
+              type = lib.types.str;
             };
           };
         };

@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   nix-update-script,
   pytestCheckHook,
   setuptools,
@@ -10,7 +10,6 @@
 buildPythonPackage rec {
   pname = "pluginlib";
   version = "0.11.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "Rockhopper-Technologies";
@@ -19,13 +18,15 @@ buildPythonPackage rec {
     hash = "sha256-KaexWmRSipwX+tg4Fh03XqhWm2XtZnmy4IEscJDRY/E=";
   };
 
+  nativeCheckInputs = [
+    pytestCheckHook
+  ];
+
   build-system = [
     setuptools
   ];
 
-  nativeCheckInputs = [
-    pytestCheckHook
-  ];
+  pyproject = true;
 
   pythonImportsCheck = [
     "pluginlib"
@@ -38,6 +39,7 @@ buildPythonPackage rec {
     homepage = "https://github.com/Rockhopper-Technologies/pluginlib";
     changelog = "https://github.com/Rockhopper-Technologies/pluginlib/releases/tag/${version}";
     license = lib.licenses.mpl20;
+
     maintainers = with lib.maintainers; [
       jpds
     ];

@@ -1,7 +1,7 @@
 {
   config,
-  pkgs,
   lib,
+  pkgs,
   ...
 }:
 let
@@ -33,22 +33,52 @@ in
 {
   options.services.collectd = with lib.types; {
     enable = lib.mkEnableOption "collectd agent";
-
-    validateConfig = lib.mkOption {
-      default = true;
-      description = ''
-        Validate the syntax of collectd configuration file at build time.
-        Disable this if you use the Include directive on files unavailable in
-        the build sandbox, or when cross-compiling.
-      '';
-      type = types.bool;
-    };
-
     package = lib.mkPackageOption pkgs "collectd" { };
 
+    autoLoadPlugin = lib.mkOption {
+      default = false;
+
+      description = ''
+        Enable plugin autoloading.
+      '';
+
+      type = bool;
+    };
+
+    buildMinimalPackage = lib.mkOption {
+      default = false;
+
+      description = ''
+        Build a minimal collectd package with only the configured `services.collectd.plugins`
+      '';
+
+      type = bool;
+    };
+
+    dataDir = lib.mkOption {
+      default = "/var/lib/collectd";
+
+      description = ''
+        Data directory for collectd agent.
+      '';
+
+      type = path;
+    };
+
+    extraConfig = lib.mkOption {
+      default = "";
+
+      description = ''
+        Extra configuration for collectd. Use mkBefore to add lines before the
+        default config, and mkAfter to add them below.
+      '';
+
+      type = lines;
+    };
+
     finalPackage = lib.mkOption {
-      readOnly = true;
       default = minimalPackage;
+
       defaultText = lib.literalExpression ''
         if config.services.collectd.buildMinimalPackage then
           cfg.package.override {
@@ -57,69 +87,57 @@ in
         else
           cfg.package
       '';
+
       description = "The final package being used after applying plugins and minimalPackage.";
-    };
-
-    buildMinimalPackage = lib.mkOption {
-      default = false;
-      description = ''
-        Build a minimal collectd package with only the configured `services.collectd.plugins`
-      '';
-      type = bool;
-    };
-
-    user = lib.mkOption {
-      default = "collectd";
-      description = ''
-        User under which to run collectd.
-      '';
-      type = nullOr str;
-    };
-
-    dataDir = lib.mkOption {
-      default = "/var/lib/collectd";
-      description = ''
-        Data directory for collectd agent.
-      '';
-      type = path;
-    };
-
-    autoLoadPlugin = lib.mkOption {
-      default = false;
-      description = ''
-        Enable plugin autoloading.
-      '';
-      type = bool;
+      readOnly = true;
     };
 
     include = lib.mkOption {
       default = [ ];
+
       description = ''
         Additional paths to load config from.
       '';
+
       type = listOf str;
     };
 
     plugins = lib.mkOption {
       default = { };
+
+      description = ''
+        Attribute set of plugin names to plugin config segments
+      '';
+
       example = {
         cpu = "";
         memory = "";
         network = "Server 192.168.1.1 25826";
       };
-      description = ''
-        Attribute set of plugin names to plugin config segments
-      '';
+
       type = attrsOf lines;
     };
 
-    extraConfig = lib.mkOption {
-      default = "";
+    user = lib.mkOption {
+      default = "collectd";
+
       description = ''
-        Extra configuration for collectd. Use mkBefore to add lines before the
-        default config, and mkAfter to add them below.
+        User under which to run collectd.
       '';
-      type = lines;
+
+      type = nullOr str;
+    };
+
+    validateConfig = lib.mkOption {
+      default = true;
+
+      description = ''
+        Validate the syntax of collectd configuration file at build time.
+        Disable this if you use the Include directive on files unavailable in
+        the build sandbox, or when cross-compiling.
+      '';
+
+      type = types.bool;
     };
 
   };
@@ -151,32 +169,33 @@ in
       '') cfg.include}
     '';
 
+    systemd.services.collectd = {
+      after = [ "network.target" ];
+      description = "Collectd Monitoring Agent";
+
+      serviceConfig = {
+        ExecStart = "${package}/sbin/collectd -C ${conf} -f";
+        Restart = "on-failure";
+        RestartSec = 3;
+        User = cfg.user;
+      };
+
+      wantedBy = [ "multi-user.target" ];
+    };
+
     systemd.tmpfiles.rules = [
       "d '${cfg.dataDir}' - ${cfg.user} - - -"
     ];
 
-    systemd.services.collectd = {
-      description = "Collectd Monitoring Agent";
-      after = [ "network.target" ];
-      wantedBy = [ "multi-user.target" ];
-
-      serviceConfig = {
-        ExecStart = "${package}/sbin/collectd -C ${conf} -f";
-        User = cfg.user;
-        Restart = "on-failure";
-        RestartSec = 3;
-      };
+    users.groups = lib.optionalAttrs (cfg.user == "collectd") {
+      collectd = { };
     };
 
     users.users = lib.optionalAttrs (cfg.user == "collectd") {
       collectd = {
-        isSystemUser = true;
         group = "collectd";
+        isSystemUser = true;
       };
-    };
-
-    users.groups = lib.optionalAttrs (cfg.user == "collectd") {
-      collectd = { };
     };
   };
 }

@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   fsspec,
   numpy,
   poetry-core,
@@ -16,7 +16,6 @@
 buildPythonPackage rec {
   pname = "pytorch-tabnet";
   version = "4.1.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "dreamquark-ai";
@@ -32,6 +31,11 @@ buildPythonPackage rec {
       --replace-fail 'build-backend = "poetry.masonry.api"' 'build-backend = "poetry.core.masonry.api"'
   '';
 
+  nativeCheckInputs = [
+    pytestCheckHook
+    fsspec
+  ];
+
   build-system = [ poetry-core ];
 
   dependencies = [
@@ -43,11 +47,7 @@ buildPythonPackage rec {
     typing-extensions
   ];
 
-  nativeCheckInputs = [
-    pytestCheckHook
-    fsspec
-  ];
-
+  pyproject = true;
   pythonImportsCheck = [ "pytorch_tabnet" ];
 
   meta = {

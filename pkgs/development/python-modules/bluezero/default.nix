@@ -1,17 +1,15 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
-  pygobject3,
+  buildPythonPackage,
   nix-update-script,
+  pygobject3,
+  setuptools,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "bluezero";
   version = "0.9.1";
-  pyproject = true;
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "ukBaz";
@@ -19,6 +17,10 @@ buildPythonPackage (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-H5760bPdA7NECiOWI7fLCxW3K7+c2L0Y3sa/E/krJJw=";
   };
+
+  # Most of the tests are failing due to a missing working dbus instance and bluetooth devices
+  doCheck = false;
+  __structuredAttrs = true;
 
   build-system = [
     setuptools
@@ -28,15 +30,13 @@ buildPythonPackage (finalAttrs: {
     pygobject3
   ];
 
-  pythonRelaxDeps = [ "pygobject" ];
+  pyproject = true;
 
   pythonImportsCheck = [
     "bluezero"
   ];
 
-  # Most of the tests are failing due to a missing working dbus instance and bluetooth devices
-  doCheck = false;
-
+  pythonRelaxDeps = [ "pygobject" ];
   passthru.updateScript = nix-update-script { };
 
   meta = {

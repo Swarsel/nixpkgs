@@ -2,19 +2,19 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  fetchzip,
-  cmake,
   SDL2,
   SDL2_mixer,
+  cmake,
+  fetchzip,
   unrar,
 }:
 
 let
   assets = fetchzip {
-    url = "https://archive.org/download/SpaceCadet_Plus95/Space_Cadet.rar";
+    nativeBuildInputs = [ unrar ];
     hash = "sha256-fC+zsR8BY6vXpUkVd6i1jF0IZZxVKVvNi6VWCKT+pA4=";
     stripRoot = false;
-    nativeBuildInputs = [ unrar ];
+    url = "https://archive.org/download/SpaceCadet_Plus95/Space_Cadet.rar";
   };
   darwinApp = "$out/Applications/SpaceCadetPinball.app/Contents";
   assetsDest =
@@ -31,12 +31,6 @@ stdenv.mkDerivation rec {
     hash = "sha256-W2P7Txv3RtmKhQ5c0+b4ghf+OMsN+ydUZt+6tB+LClM=";
   };
 
-  nativeBuildInputs = [ cmake ];
-  buildInputs = [
-    SDL2
-    SDL2_mixer
-  ];
-
   postPatch = ''
     # Change the hardcoded FHS assets path
     substituteInPlace SpaceCadetPinball/pch.h \
@@ -45,6 +39,13 @@ stdenv.mkDerivation rec {
     substituteInPlace CMakeLists.txt \
       --replace-fail "arm64;x86_64" ""
   '';
+
+  nativeBuildInputs = [ cmake ];
+
+  buildInputs = [
+    SDL2
+    SDL2_mixer
+  ];
 
   # Darwin needs a custom installPhase since it is excluded from the cmake install
   # https://github.com/k4zmu2a/SpaceCadetPinball/blob/0f88e43ba261bc21fa5c3ef9d44969a2a079d0de/CMakeLists.txt#L221
@@ -71,11 +72,13 @@ stdenv.mkDerivation rec {
   meta = {
     description = "Reverse engineering of 3D Pinball for Windows – Space Cadet, a game bundled with Windows";
     homepage = "https://github.com/k4zmu2a/SpaceCadetPinball";
+
     # The assets are unfree while the code is labeled as MIT
     license = with lib.licenses; [
       unfree
       mit
     ];
+
     maintainers = with lib.maintainers; [ nadiaholmquist ];
     platforms = lib.platforms.all;
     mainProgram = "SpaceCadetPinball";

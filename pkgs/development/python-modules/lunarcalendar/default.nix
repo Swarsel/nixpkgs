@@ -1,19 +1,16 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  python-dateutil,
+  buildPythonPackage,
   ephem,
-  pytz,
-
   pytestCheckHook,
+  python-dateutil,
+  pytz,
 }:
 
 buildPythonPackage {
   pname = "lunarcalendar";
   version = "0.0.9";
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "wolfhong";
@@ -29,14 +26,14 @@ buildPythonPackage {
   ];
 
   nativeCheckInputs = [ pytestCheckHook ];
-
+  format = "setuptools";
   pythonImportsCheck = [ "lunarcalendar" ];
 
   meta = {
-    homepage = "https://github.com/wolfhong/LunarCalendar";
     description = "Lunar-Solar Converter, containing a number of lunar and solar festivals in China";
-    mainProgram = "lunar-find";
+    homepage = "https://github.com/wolfhong/LunarCalendar";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ tomasajt ];
+    mainProgram = "lunar-find";
   };
 }

@@ -11,7 +11,6 @@
 buildPythonPackage rec {
   pname = "qudida";
   version = "0.0.4";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
@@ -27,7 +26,7 @@ buildPythonPackage rec {
 
   # upstream has no tests
   doCheck = false;
-
+  format = "setuptools";
   pythonImportsCheck = [ "qudida" ];
 
   meta = {

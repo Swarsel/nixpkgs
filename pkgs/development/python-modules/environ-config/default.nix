@@ -1,26 +1,30 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  hatchling,
-  hatch-vcs,
-  hatch-fancy-pypi-readme,
   attrs,
+  buildPythonPackage,
+  hatch-fancy-pypi-readme,
+  hatch-vcs,
+  hatchling,
   importlib-metadata,
-  pytestCheckHook,
   moto,
+  pytestCheckHook,
 }:
 buildPythonPackage rec {
   pname = "environ-config";
   version = "24.1.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
-    repo = "environ-config";
     owner = "hynek";
+    repo = "environ-config";
     tag = version;
     hash = "sha256-XiJNLQgKhf9hXQfIMsfiEaHx7IHaExhphpYfOBgIT+s=";
   };
+
+  nativeCheckInputs = [
+    pytestCheckHook
+    moto
+  ];
 
   build-system = [
     hatchling
@@ -33,11 +37,7 @@ buildPythonPackage rec {
     importlib-metadata
   ];
 
-  nativeCheckInputs = [
-    pytestCheckHook
-    moto
-  ];
-
+  pyproject = true;
   pythonImportsCheck = [ "environ" ];
 
   meta = {

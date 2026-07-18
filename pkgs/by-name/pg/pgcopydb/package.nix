@@ -1,18 +1,18 @@
 {
   lib,
-  clangStdenv,
   fetchFromGitHub,
   boehmgc,
+  clangStdenv,
   libkrb5,
   openssl,
   pam,
   pkg-config,
   postgresql,
+  python3Packages,
   readline,
   sqlite,
   testers,
   zlib,
-  python3Packages,
 }:
 
 clangStdenv.mkDerivation (finalAttrs: {
@@ -38,12 +38,6 @@ clangStdenv.mkDerivation (finalAttrs: {
     python3Packages.sphinxHook
   ];
 
-  hardeningDisable = [ "format" ];
-
-  sphinxBuilders = [
-    "man"
-  ];
-
   installPhase = ''
     runHook preInstall
 
@@ -51,6 +45,12 @@ clangStdenv.mkDerivation (finalAttrs: {
 
     runHook postInstall
   '';
+
+  hardeningDisable = [ "format" ];
+
+  sphinxBuilders = [
+    "man"
+  ];
 
   passthru.tests = {
     version = testers.testVersion {
@@ -64,7 +64,7 @@ clangStdenv.mkDerivation (finalAttrs: {
     changelog = "https://github.com/dimitri/pgcopydb/blob/${finalAttrs.src.rev}/CHANGELOG.md";
     license = lib.licenses.postgresql;
     maintainers = [ ];
-    mainProgram = "pgcopydb";
     platforms = lib.platforms.all;
+    mainProgram = "pgcopydb";
   };
 })

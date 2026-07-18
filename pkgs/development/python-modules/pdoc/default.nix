@@ -1,24 +1,22 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
-  jinja2,
-  pdoc-pyo3-sample-library,
-  pygments,
-  markupsafe,
-  pytestCheckHook,
+  buildPythonPackage,
   hypothesis,
-  nix-update-script,
+  jinja2,
   markdown2,
+  markupsafe,
+  nix-update-script,
+  pdoc-pyo3-sample-library,
   pydantic,
+  pygments,
+  pytestCheckHook,
+  setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "pdoc";
   version = "16.0.0";
-
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "mitmproxy";
@@ -27,6 +25,13 @@ buildPythonPackage rec {
     hash = "sha256-9amp6CWYIcniVfdlmPKYuRFR7B5JJtuMlOoDxpfvvJA=";
   };
 
+  nativeCheckInputs = [
+    pytestCheckHook
+    hypothesis
+    pdoc-pyo3-sample-library
+  ];
+
+  __darwinAllowLocalNetworking = true;
   build-system = [ setuptools ];
 
   dependencies = [
@@ -37,33 +42,26 @@ buildPythonPackage rec {
     pydantic
   ];
 
-  nativeCheckInputs = [
-    pytestCheckHook
-    hypothesis
-    pdoc-pyo3-sample-library
+  disabledTestMarks = [
+    "slow" # skip slow tests
   ];
+
   disabledTestPaths = [
     # "test_snapshots" tries to match generated output against stored snapshots,
     # which are highly sensitive to dep versions.
     "test/test_snapshot.py"
   ];
 
-  disabledTestMarks = [
-    "slow" # skip slow tests
-  ];
-
-  __darwinAllowLocalNetworking = true;
-
+  pyproject = true;
   pythonImportsCheck = [ "pdoc" ];
-
   passthru.updateScript = nix-update-script { };
 
   meta = {
-    changelog = "https://github.com/mitmproxy/pdoc/blob/${src.rev}/CHANGELOG.md";
-    homepage = "https://pdoc.dev/";
     description = "API Documentation for Python Projects";
-    mainProgram = "pdoc";
+    homepage = "https://pdoc.dev/";
+    changelog = "https://github.com/mitmproxy/pdoc/blob/${src.rev}/CHANGELOG.md";
     license = lib.licenses.unlicense;
     maintainers = with lib.maintainers; [ pbsds ];
+    mainProgram = "pdoc";
   };
 }

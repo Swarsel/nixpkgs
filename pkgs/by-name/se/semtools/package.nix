@@ -1,11 +1,11 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
   nix-update-script,
   openssl,
   pkg-config,
   protobuf,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -19,14 +19,13 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-8vQJd1/EnskcMNN2cfXOQxHeLPh61dypL51KwCLps8Q=";
   };
 
-  cargoHash = "sha256-spllUpCze3ajNZtWVRr9GZLDj7HMi6UIraeEp9XgfK0=";
-
   nativeBuildInputs = [
     pkg-config
     protobuf
   ];
 
   buildInputs = [ openssl ];
+  cargoHash = "sha256-spllUpCze3ajNZtWVRr9GZLDj7HMi6UIraeEp9XgfK0=";
 
   checkFlags = [
     # Require network

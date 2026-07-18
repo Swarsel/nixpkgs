@@ -3,8 +3,8 @@
   stdenv,
   fetchFromGitHub,
   autoreconfHook,
-  zlib,
   pciutils,
+  zlib,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -18,14 +18,14 @@ stdenv.mkDerivation (finalAttrs: {
     sha256 = "19wbb79x9h79k55sgd4dylvdbhhrvfaiaknbw9s1wvfmirkxa1dz";
   };
 
+  # Don't install /lib/udev/rules.d/*-biosdevname.rules
+  patches = [ ./makefile.patch ];
   nativeBuildInputs = [ autoreconfHook ];
+
   buildInputs = [
     zlib
     pciutils
   ];
-
-  # Don't install /lib/udev/rules.d/*-biosdevname.rules
-  patches = [ ./makefile.patch ];
 
   configureFlags = [ "--sbindir=\${out}/bin" ];
 
@@ -33,11 +33,13 @@ stdenv.mkDerivation (finalAttrs: {
     description = "Udev helper for naming devices per BIOS names";
     homepage = "https://github.com/dell/biosdevname";
     license = lib.licenses.gpl2Only;
+    maintainers = [ ];
+
     platforms = [
       "x86_64-linux"
       "i686-linux"
     ];
-    maintainers = [ ];
+
     mainProgram = "biosdevname";
   };
 })

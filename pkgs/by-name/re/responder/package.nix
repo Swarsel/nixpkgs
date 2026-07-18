@@ -8,7 +8,6 @@
 python3.pkgs.buildPythonApplication (finalAttrs: {
   pname = "responder";
   version = "3.2.2.0";
-  pyproject = false;
 
   src = fetchFromGitHub {
     owner = "lgandx";
@@ -19,11 +18,6 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
 
   nativeBuildInputs = [
     makeWrapper
-  ];
-
-  dependencies = with python3.pkgs; [
-    aioquic
-    netifaces
   ];
 
   installPhase = ''
@@ -46,6 +40,13 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
 
     runHook postInstall
   '';
+
+  dependencies = with python3.pkgs; [
+    aioquic
+    netifaces
+  ];
+
+  pyproject = false;
 
   meta = {
     description = "LLMNR, NBT-NS and MDNS poisoner, with built-in HTTP/SMB/MSSQL/FTP/LDAP rogue authentication server";

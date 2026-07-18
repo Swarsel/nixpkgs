@@ -2,8 +2,8 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  pkg-config,
   ncurses,
+  pkg-config,
   rtl-sdr,
   zlib,
   zstd,
@@ -20,8 +20,12 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-jaC+OFhYvPFp3dZ2jfAL+1KT3pVQf5wcvcvX3c+BNsg=";
   };
 
-  strictDeps = true;
+  # remove version string magic that utilizes git and current time
+  postPatch = ''
+    sed --in-place '/^READSB_VERSION :=/d' Makefile
+  '';
 
+  strictDeps = true;
   nativeBuildInputs = [ pkg-config ];
 
   buildInputs = [
@@ -31,12 +35,6 @@ stdenv.mkDerivation (finalAttrs: {
     zstd
   ];
 
-  # remove version string magic that utilizes git and current time
-  postPatch = ''
-    sed --in-place '/^READSB_VERSION :=/d' Makefile
-  '';
-
-  enableParallelBuilding = true;
   makeFlags = [
     # set something for version, we removed the original value in postPatch
     "READSB_VERSION=${finalAttrs.version}"
@@ -44,7 +42,7 @@ stdenv.mkDerivation (finalAttrs: {
   ++ (lib.lists.optional (rtl-sdr != null) "RTLSDR=yes");
 
   doCheck = true;
-  checkTarget = "cprtest";
+
   # TODO there is a crctests target in Make, it describes how to compile ./crctests, but doesn't run
   # it. Compilation also fails with:
   #
@@ -55,7 +53,6 @@ stdenv.mkDerivation (finalAttrs: {
   # postCheck = ''
   #   make crctests && ./crctests
   # '';
-
   installPhase = ''
     runHook preInstall
 
@@ -64,6 +61,9 @@ stdenv.mkDerivation (finalAttrs: {
 
     runHook postInstall
   '';
+
+  checkTarget = "cprtest";
+  enableParallelBuilding = true;
 
   meta = {
     description = "ADS-B decoder swiss knife";

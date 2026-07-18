@@ -1,40 +1,35 @@
 {
   lib,
   stdenv,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
+  distutils,
   fetchpatch,
-  pythonAtLeast,
-
-  # build-system
-  setuptools,
-
+  lightning,
+  matplotlib,
   # dependencies
   numpy,
   pandas,
+  pyarrow,
   pydantic,
-  tqdm,
-  toolz,
-
-  # optional dependencies (torch)
-  torch,
-  lightning,
-  scipy,
-
   # tests
   pytestCheckHook,
-  distutils,
-  matplotlib,
-  pyarrow,
+  pythonAtLeast,
+  scipy,
+  # build-system
+  setuptools,
   statsmodels,
-  writableTmpDirAsHomeHook,
+  toolz,
+  # optional dependencies (torch)
+  torch,
+  tqdm,
   which,
+  writableTmpDirAsHomeHook,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "gluonts";
   version = "0.16.3";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "awslabs";
@@ -43,18 +38,26 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-WQu9QahzbCofC+deso8T93ABJROVLdAegiKtOTxfhT4=";
   };
 
-  # pydantic.v1.errors.ConfigError: unable to infer type for attribute "target"
-  disabled = pythonAtLeast "3.14";
-
   patches = [
     # Fixes _pickle.UnpicklingError: Weights only load failed.
     # https://github.com/awslabs/gluonts/pull/3269
     (fetchpatch {
+      hash = "sha256-UeLjgKra+Y3uPoTBle+YCxD0a1ahu6d5anrMHn4HH2I=";
       name = "fix-torch-load_from_checkpoint";
       url = "https://github.com/awslabs/gluonts/pull/3269/commits/6420e75cfbeabcd94e2ff09dfed3b2eeb4881710.patch";
-      hash = "sha256-UeLjgKra+Y3uPoTBle+YCxD0a1ahu6d5anrMHn4HH2I=";
     })
   ];
+
+  nativeCheckInputs = [
+    pytestCheckHook
+    distutils
+    matplotlib
+    pyarrow
+    statsmodels
+    writableTmpDirAsHomeHook
+    which
+  ]
+  ++ finalAttrs.passthru.optional-dependencies.torch;
 
   build-system = [
     setuptools
@@ -68,43 +71,8 @@ buildPythonPackage (finalAttrs: {
     toolz
   ];
 
-  optional-dependencies = {
-    torch = [
-      torch
-      lightning
-      scipy
-    ];
-  };
-
-  pythonRelaxDeps = [
-    "numpy"
-    "toolz"
-  ];
-
-  pythonImportsCheck = [
-    "gluonts"
-    "gluonts.core"
-    "gluonts.dataset"
-    "gluonts.ev"
-    "gluonts.evaluation"
-    "gluonts.ext"
-    "gluonts.model"
-    "gluonts.shell"
-    "gluonts.time_feature"
-    "gluonts.torch"
-    "gluonts.transform"
-  ];
-
-  nativeCheckInputs = [
-    pytestCheckHook
-    distutils
-    matplotlib
-    pyarrow
-    statsmodels
-    writableTmpDirAsHomeHook
-    which
-  ]
-  ++ finalAttrs.passthru.optional-dependencies.torch;
+  # pydantic.v1.errors.ConfigError: unable to infer type for attribute "target"
+  disabled = pythonAtLeast "3.14";
 
   disabledTestPaths = [
     # requires `cpflows`, not in Nixpkgs
@@ -122,6 +90,35 @@ buildPythonPackage (finalAttrs: {
   ++ lib.optionals stdenv.hostPlatform.isDarwin [
     # RuntimeError: *** -[__NSPlaceholderArray initWithObjects:count:]: attempt to insert nil object from objects[1]
     "test_forecast"
+  ];
+
+  optional-dependencies = {
+    torch = [
+      torch
+      lightning
+      scipy
+    ];
+  };
+
+  pyproject = true;
+
+  pythonImportsCheck = [
+    "gluonts"
+    "gluonts.core"
+    "gluonts.dataset"
+    "gluonts.ev"
+    "gluonts.evaluation"
+    "gluonts.ext"
+    "gluonts.model"
+    "gluonts.shell"
+    "gluonts.time_feature"
+    "gluonts.torch"
+    "gluonts.transform"
+  ];
+
+  pythonRelaxDeps = [
+    "numpy"
+    "toolz"
   ];
 
   meta = {

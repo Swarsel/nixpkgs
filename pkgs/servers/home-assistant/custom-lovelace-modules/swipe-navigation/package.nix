@@ -1,7 +1,7 @@
 {
   lib,
-  buildNpmPackage,
   fetchFromGitHub,
+  buildNpmPackage,
 }:
 
 buildNpmPackage rec {
@@ -35,9 +35,9 @@ buildNpmPackage rec {
   '';
 
   meta = {
-    changelog = "https://github.com/zanna-37/hass-swipe-navigation/releases/tag/v${version}";
     description = "Swipe through Home Assistant Dashboard views on mobile";
     homepage = "https://github.com/zanna-37/hass-swipe-navigation";
+    changelog = "https://github.com/zanna-37/hass-swipe-navigation/releases/tag/v${version}";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ jpinz ];
   };

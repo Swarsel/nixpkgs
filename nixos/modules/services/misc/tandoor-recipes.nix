@@ -1,7 +1,7 @@
 {
   config,
-  pkgs,
   lib,
+  pkgs,
   ...
 }:
 let
@@ -12,11 +12,11 @@ let
 
   # SECRET_KEY through an env file
   env = {
-    GUNICORN_CMD_ARGS = "--bind=${cfg.address}:${toString cfg.port}";
+    ALLOWED_HOSTS = cfg.address;
     DEBUG = "0";
     DEBUG_TOOLBAR = "0";
+    GUNICORN_CMD_ARGS = "--bind=${cfg.address}:${toString cfg.port}";
     MEDIA_ROOT = "${stateDir}${lib.optionalString useNewMediaRoot "/media"}";
-    ALLOWED_HOSTS = cfg.address;
   }
   // lib.optionalAttrs (config.time.timeZone != null) {
     TZ = config.time.timeZone;
@@ -34,15 +34,10 @@ let
   '';
 in
 {
-  meta = {
-    maintainers = with lib.maintainers; [ jvanbruegge ];
-    doc = ./tandoor-recipes.md;
-  };
-
   options.services.tandoor-recipes = {
     enable = lib.mkOption {
-      type = lib.types.bool;
       default = false;
+
       description = ''
         Enable Tandoor Recipes.
 
@@ -53,96 +48,104 @@ in
         A script to manage the instance (by wrapping Django's manage.py) is linked to
         `/var/lib/tandoor-recipes/tandoor-recipes-manage`.
       '';
+
+      type = lib.types.bool;
     };
+
+    package = lib.mkPackageOption pkgs "tandoor-recipes" { };
 
     address = lib.mkOption {
-      type = lib.types.str;
       default = "localhost";
       description = "Web interface address.";
+      type = lib.types.str;
     };
 
-    port = lib.mkOption {
-      type = lib.types.port;
-      default = 8080;
-      description = "Web interface port.";
+    database = {
+      createLocally = lib.mkOption {
+        default = false;
+
+        description = ''
+          Configure local PostgreSQL database server for Tandoor Recipes.
+        '';
+
+        type = lib.types.bool;
+      };
     };
 
     extraConfig = lib.mkOption {
-      type = lib.types.attrs;
       default = { };
+
       description = ''
         Extra tandoor recipes config options.
 
         See [the example dot-env file](https://raw.githubusercontent.com/vabene1111/recipes/master/.env.template)
         for available options.
       '';
+
       example = {
         ENABLE_SIGNUP = "1";
       };
-    };
 
-    user = lib.mkOption {
-      type = lib.types.str;
-      default = "tandoor_recipes";
-      description = "User account under which Tandoor runs.";
+      type = lib.types.attrs;
     };
 
     group = lib.mkOption {
-      type = lib.types.str;
       default = "tandoor_recipes";
       description = "Group under which Tandoor runs.";
+      type = lib.types.str;
     };
 
-    package = lib.mkPackageOption pkgs "tandoor-recipes" { };
+    port = lib.mkOption {
+      default = 8080;
+      description = "Web interface port.";
+      type = lib.types.port;
+    };
 
-    database = {
-      createLocally = lib.mkOption {
-        type = lib.types.bool;
-        default = false;
-        description = ''
-          Configure local PostgreSQL database server for Tandoor Recipes.
-        '';
-      };
+    user = lib.mkOption {
+      default = "tandoor_recipes";
+      description = "User account under which Tandoor runs.";
+      type = lib.types.str;
     };
   };
 
   config = lib.mkIf cfg.enable {
-    warnings = lib.mkIf (!useNewMediaRoot && !(cfg.extraConfig ? MEDIA_ROOT)) [
-      "`services.tandoor-recipes.extraConfig.MEDIA_ROOT` is unset. This is considered insecure for `system.stateVersion` < 26.05. See https://nixos.org/manual/nixos/unstable/#module-services-tandoor-recipes-migrating-media for migration instructions."
-    ];
+    services.postgresql = lib.mkIf cfg.database.createLocally {
+      enable = true;
+      ensureDatabases = [ "tandoor_recipes" ];
 
-    users.users = lib.mkIf (cfg.user == "tandoor_recipes") {
-      tandoor_recipes = {
-        inherit (cfg) group;
-        isSystemUser = true;
-      };
+      ensureUsers = [
+        {
+          ensureDBOwnership = true;
+          name = "tandoor_recipes";
+        }
+      ];
     };
 
-    users.groups = lib.mkIf (cfg.group == "tandoor_recipes") {
-      tandoor_recipes = { };
+    services.tandoor-recipes.extraConfig = lib.mkIf cfg.database.createLocally {
+      DB_ENGINE = "django.db.backends.postgresql";
+      POSTGRES_DB = "tandoor_recipes";
+      POSTGRES_HOST = "/run/postgresql";
+      POSTGRES_USER = "tandoor_recipes";
     };
 
     systemd.services.tandoor-recipes = {
+      after = lib.optional cfg.database.createLocally "postgresql.target";
       description = "Tandoor Recipes server";
 
+      environment = env // {
+        PYTHONPATH = "${pkg.python.pkgs.makePythonPath pkg.propagatedBuildInputs}:${pkg}/lib/tandoor-recipes";
+      };
+
+      preStart = ''
+        ln -sf ${manage} tandoor-recipes-manage
+
+        # Let django migrate the DB as needed
+        ${pkg}/bin/tandoor-recipes migrate
+      '';
+
       requires = lib.optional cfg.database.createLocally "postgresql.target";
-      after = lib.optional cfg.database.createLocally "postgresql.target";
 
       serviceConfig = {
-        ExecStart = ''
-          ${pkg.python.pkgs.gunicorn}/bin/gunicorn recipes.wsgi
-        '';
-        Restart = "on-failure";
-
-        User = cfg.user;
-        Group = cfg.group;
-        StateDirectory = [
-          "tandoor-recipes"
-        ]
-        ++ lib.optional (env.MEDIA_ROOT == "/var/lib/tandoor-recipes/media") "tandoor-recipes/media";
-        WorkingDirectory = stateDir;
-        RuntimeDirectory = "tandoor-recipes";
-
         BindReadOnlyPaths = [
           "${config.security.pki.caBundle}:/etc/ssl/certs/ca-certificates.crt"
           builtins.storeDir
@@ -152,7 +155,14 @@ in
           "-/etc/localtime"
           "-/run/postgresql"
         ];
+
         CapabilityBoundingSet = "";
+
+        ExecStart = ''
+          ${pkg.python.pkgs.gunicorn}/bin/gunicorn recipes.wsgi
+        '';
+
+        Group = cfg.group;
         LockPersonality = true;
         MemoryDenyWriteExecute = true;
         PrivateDevices = true;
@@ -164,14 +174,25 @@ in
         ProtectKernelLogs = true;
         ProtectKernelModules = true;
         ProtectKernelTunables = true;
+        Restart = "on-failure";
+
         RestrictAddressFamilies = [
           "AF_UNIX"
           "AF_INET"
           "AF_INET6"
         ];
+
         RestrictNamespaces = true;
         RestrictRealtime = true;
+        RuntimeDirectory = "tandoor-recipes";
+
+        StateDirectory = [
+          "tandoor-recipes"
+        ]
+        ++ lib.optional (env.MEDIA_ROOT == "/var/lib/tandoor-recipes/media") "tandoor-recipes/media";
+
         SystemCallArchitectures = "native";
+
         # gunicorn needs setuid
         SystemCallFilter = [
           "@system-service"
@@ -180,39 +201,33 @@ in
           "@setuid"
           "@keyring"
         ];
+
         UMask = "0066";
+        User = cfg.user;
+        WorkingDirectory = stateDir;
       };
 
       wantedBy = [ "multi-user.target" ];
+    };
 
-      preStart = ''
-        ln -sf ${manage} tandoor-recipes-manage
+    users.groups = lib.mkIf (cfg.group == "tandoor_recipes") {
+      tandoor_recipes = { };
+    };
 
-        # Let django migrate the DB as needed
-        ${pkg}/bin/tandoor-recipes migrate
-      '';
-
-      environment = env // {
-        PYTHONPATH = "${pkg.python.pkgs.makePythonPath pkg.propagatedBuildInputs}:${pkg}/lib/tandoor-recipes";
+    users.users = lib.mkIf (cfg.user == "tandoor_recipes") {
+      tandoor_recipes = {
+        inherit (cfg) group;
+        isSystemUser = true;
       };
     };
 
-    services.tandoor-recipes.extraConfig = lib.mkIf cfg.database.createLocally {
-      DB_ENGINE = "django.db.backends.postgresql";
-      POSTGRES_HOST = "/run/postgresql";
-      POSTGRES_USER = "tandoor_recipes";
-      POSTGRES_DB = "tandoor_recipes";
-    };
+    warnings = lib.mkIf (!useNewMediaRoot && !(cfg.extraConfig ? MEDIA_ROOT)) [
+      "`services.tandoor-recipes.extraConfig.MEDIA_ROOT` is unset. This is considered insecure for `system.stateVersion` < 26.05. See https://nixos.org/manual/nixos/unstable/#module-services-tandoor-recipes-migrating-media for migration instructions."
+    ];
+  };
 
-    services.postgresql = lib.mkIf cfg.database.createLocally {
-      enable = true;
-      ensureDatabases = [ "tandoor_recipes" ];
-      ensureUsers = [
-        {
-          name = "tandoor_recipes";
-          ensureDBOwnership = true;
-        }
-      ];
-    };
+  meta = {
+    doc = ./tandoor-recipes.md;
+    maintainers = with lib.maintainers; [ jvanbruegge ];
   };
 }

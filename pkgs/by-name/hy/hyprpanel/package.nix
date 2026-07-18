@@ -1,6 +1,7 @@
 {
   lib,
-  config,
+  stdenv,
+  fetchFromGitHub,
   ags,
   astal,
   awww,
@@ -8,8 +9,8 @@
   bluez-tools,
   brightnessctl,
   btop,
+  config,
   dart-sass,
-  fetchFromGitHub,
   glib,
   glib-networking,
   gnome-bluetooth,
@@ -27,13 +28,11 @@
   nix-update-script,
   python3,
   pywal16,
-  stdenv,
   upower,
   wireplumber,
   wl-clipboard,
   writeShellScript,
   writeShellScriptBin,
-
   enableCuda ? config.cudaSupport,
 }:
 
@@ -51,15 +50,35 @@ ags.bundle {
   pname = "hyprpanel";
   version = "0-unstable-2026-04-23";
 
-  __structuredAttrs = true;
-  strictDeps = true;
-
   src = fetchFromGitHub {
     owner = "Jas-SinghFSU";
     repo = "HyprPanel";
     rev = "1961ba86ad5ab880beb639e5454054b2b5037e0d";
     hash = "sha256-QowlCOrE4jGOTDCUCEx/E8gHjqSx3r25y7v4dEBpBhk=";
   };
+
+  strictDeps = true;
+
+  postFixup =
+    let
+      script = writeShellScript "hyprpanel" ''
+        export GIO_EXTRA_MODULES='${glib-networking}/lib/gio/modules'
+        if [ "$#" -eq 0 ]; then
+          exec @out@/bin/.hyprpanel
+        else
+          exec ${astal.io}/bin/astal -i hyprpanel "$*"
+        fi
+      '';
+    in
+    # bash
+    ''
+      mv "$out/bin/hyprpanel" "$out/bin/.hyprpanel"
+      cp '${script}' "$out/bin/hyprpanel"
+      substituteInPlace "$out/bin/hyprpanel" \
+        --replace-fail '@out@' "$out"
+    '';
+
+  __structuredAttrs = true;
 
   # keep in sync with https://github.com/Jas-SinghFSU/HyprPanel/blob/master/flake.nix#L42
   dependencies = [
@@ -112,31 +131,12 @@ ags.bundle {
 
   passthru.updateScript = nix-update-script { extraArgs = [ "--version=branch" ]; };
 
-  postFixup =
-    let
-      script = writeShellScript "hyprpanel" ''
-        export GIO_EXTRA_MODULES='${glib-networking}/lib/gio/modules'
-        if [ "$#" -eq 0 ]; then
-          exec @out@/bin/.hyprpanel
-        else
-          exec ${astal.io}/bin/astal -i hyprpanel "$*"
-        fi
-      '';
-    in
-    # bash
-    ''
-      mv "$out/bin/hyprpanel" "$out/bin/.hyprpanel"
-      cp '${script}' "$out/bin/hyprpanel"
-      substituteInPlace "$out/bin/hyprpanel" \
-        --replace-fail '@out@' "$out"
-    '';
-
   meta = {
     description = "Bar/Panel for Hyprland with extensive customizability";
     homepage = "https://github.com/Jas-SinghFSU/HyprPanel";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ PerchunPak ];
-    mainProgram = "hyprpanel";
     platforms = lib.platforms.linux;
+    mainProgram = "hyprpanel";
   };
 }

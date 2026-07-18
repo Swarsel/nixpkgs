@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   git,
 }:
 
@@ -16,16 +16,9 @@ buildGoModule (finalAttrs: {
     hash = "sha256-jdhOuaSFcq3bw9cX+IJN233x4o76shMfZQDmyUiTWO4=";
   };
 
-  vendorHash = "sha256-tjAsA8rxFE4zINc0Dpm2/5PpJ6BGYJiz059dBKCKsck=";
-
   # required for version info
   nativeBuildInputs = [ git ];
-
-  ldflags = [
-    "-extldflags"
-    "-static"
-  ];
-
+  vendorHash = "sha256-tjAsA8rxFE4zINc0Dpm2/5PpJ6BGYJiz059dBKCKsck=";
   # Needed for the tests to pass on macOS
   __darwinAllowLocalNetworking = true;
 
@@ -35,11 +28,17 @@ buildGoModule (finalAttrs: {
     "./e2etests/core"
   ];
 
+  ldflags = [
+    "-extldflags"
+    "-static"
+  ];
+
   meta = {
     description = "Adds code generation, stacks, orchestration, change detection, data sharing and more to Terraform";
     homepage = "https://github.com/terramate-io/terramate";
     changelog = "https://github.com/terramate-io/terramate/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.mpl20;
+
     maintainers = with lib.maintainers; [
       asininemonkey
     ];

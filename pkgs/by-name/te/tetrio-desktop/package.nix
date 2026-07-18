@@ -1,15 +1,15 @@
 {
-  stdenv,
   lib,
-  fetchzip,
+  stdenv,
   fetchurl,
-  dpkg,
-  makeWrapper,
-  addDriverRunpath,
-  electron,
   _7zz,
-  withTetrioPlus ? false,
+  addDriverRunpath,
+  dpkg,
+  electron,
+  fetchzip,
+  makeWrapper,
   tetrio-plus,
+  withTetrioPlus ? false,
 }:
 
 let
@@ -18,30 +18,23 @@ let
   version = "10";
 
   srcs = {
-    x86_64-linux = fetchzip {
-      url = "https://tetr.io/about/desktop/builds/${version}/TETR.IO%20Setup.deb";
-      hash = "sha256-2FtFCajNEj7O8DGangDecs2yeKbufYLx1aZb3ShnYvw=";
-      nativeBuildInputs = [ dpkg ];
-    };
     aarch64-darwin = fetchurl {
-      url = "https://tetr.io/about/desktop/builds/${version}/TETR.IO%20Setup%20arm64.dmg";
       hash = "sha256-PbK9XEynpii35p6DQYiPbaRM4guPazWd5N4Dr2O4H24=";
+      url = "https://tetr.io/about/desktop/builds/${version}/TETR.IO%20Setup%20arm64.dmg";
+    };
+
+    x86_64-linux = fetchzip {
+      nativeBuildInputs = [ dpkg ];
+      hash = "sha256-2FtFCajNEj7O8DGangDecs2yeKbufYLx1aZb3ShnYvw=";
+      url = "https://tetr.io/about/desktop/builds/${version}/TETR.IO%20Setup.deb";
     };
   };
 in
 stdenv.mkDerivation {
-  pname = "tetrio-desktop";
   inherit version;
-
+  pname = "tetrio-desktop";
   src = srcs.${system} or (throw "Unsupported system: ${system}");
-
   nativeBuildInputs = lib.optionals (!isDarwin) [ makeWrapper ] ++ lib.optionals isDarwin [ _7zz ];
-
-  sourceRoot = lib.optionalString isDarwin "TETR.IO.app";
-
-  unpackPhase = lib.optionalString isDarwin ''
-    7zz x $src
-  '';
 
   installPhase =
     if isDarwin then
@@ -84,22 +77,32 @@ stdenv.mkDerivation {
       --add-flags $out/share/TETR.IO/app.asar
   '';
 
+  sourceRoot = lib.optionalString isDarwin "TETR.IO.app";
+
+  unpackPhase = lib.optionalString isDarwin ''
+    7zz x $src
+  '';
+
   meta = {
-    changelog = "https://tetr.io/about/desktop/history/";
     description = "Desktop client for TETR.IO, an online stacker game";
-    downloadPage = "https://tetr.io/about/desktop/";
-    homepage = "https://tetr.io";
-    license = lib.licenses.unfree;
+
     longDescription = ''
       TETR.IO is a free-to-win modern yet familiar online stacker.
       Play multiplayer games against friends and foes all over the world, or claim a spot on the leaderboards - the stacker future is yours!
     '';
-    mainProgram = "tetrio";
+
+    homepage = "https://tetr.io";
+    changelog = "https://tetr.io/about/desktop/history/";
+    license = lib.licenses.unfree;
+    sourceProvenance = [ lib.sourceTypes.binaryBytecode ];
+
     maintainers = with lib.maintainers; [
       huantian
       anish
     ];
+
     platforms = [ "x86_64-linux" ] ++ lib.platforms.darwin;
-    sourceProvenance = [ lib.sourceTypes.binaryBytecode ];
+    mainProgram = "tetrio";
+    downloadPage = "https://tetr.io/about/desktop/";
   };
 }

@@ -1,15 +1,15 @@
 {
   lib,
+  stdenv,
+  fetchFromGitHub,
   biome,
   buildNpmPackage,
-  fetchFromGitHub,
   jdk25,
-  maven,
   makeWrapper,
-  unzip,
+  maven,
   nixosTests,
+  unzip,
   writeText,
-  stdenv,
 }:
 let
   version = "7.1.0";
@@ -23,14 +23,9 @@ let
 
   frontend = buildNpmPackage {
     inherit version src;
-
     pname = "commafeed-frontend";
-
-    sourceRoot = "${src.name}/commafeed-client";
-
-    npmDepsHash = "sha256-bP0f2+n01YdZf/NCAWE41x/dezpHzYy4qvAscs/b+Lc=";
-
     nativeBuildInputs = [ biome ];
+    npmDepsHash = "sha256-bP0f2+n01YdZf/NCAWE41x/dezpHzYy4qvAscs/b+Lc=";
 
     installPhase = ''
       runHook preInstall
@@ -39,6 +34,8 @@ let
 
       runHook postInstall
     '';
+
+    sourceRoot = "${src.name}/commafeed-client";
   };
 
   gitProperties = writeText "git.properties" ''
@@ -51,33 +48,12 @@ let
 in
 maven.buildMavenPackage {
   inherit version src;
-
   pname = "commafeed";
-
-  mvnHash = "sha256-P3pmU/ou/gErk91ANjD4QuBTldBPKHYtGJREJQVgde8=";
-  mvnJdk = jdk25;
-
-  mvnParameters = lib.escapeShellArgs [
-    "-Dskip.installnodenpm"
-    "-Dskip.npm"
-    "-Dspotless.check.skip"
-    "-Dmaven.gitcommitid.skip"
-  ];
 
   nativeBuildInputs = [
     makeWrapper
     unzip
   ];
-
-  configurePhase = ''
-    runHook preConfigure
-
-    ln -sf "${frontend}" commafeed-client/dist
-
-    cp ${gitProperties} commafeed-server/src/main/resources/git.properties
-
-    runHook postConfigure
-  '';
 
   doCheck = false;
 
@@ -93,14 +69,34 @@ maven.buildMavenPackage {
     runHook postInstall
   '';
 
+  configurePhase = ''
+    runHook preConfigure
+
+    ln -sf "${frontend}" commafeed-client/dist
+
+    cp ${gitProperties} commafeed-server/src/main/resources/git.properties
+
+    runHook postConfigure
+  '';
+
+  mvnHash = "sha256-P3pmU/ou/gErk91ANjD4QuBTldBPKHYtGJREJQVgde8=";
+  mvnJdk = jdk25;
+
+  mvnParameters = lib.escapeShellArgs [
+    "-Dskip.installnodenpm"
+    "-Dskip.npm"
+    "-Dspotless.check.skip"
+    "-Dmaven.gitcommitid.skip"
+  ];
+
   passthru.tests = nixosTests.commafeed;
 
   meta = {
     description = "Google Reader inspired self-hosted RSS reader";
     homepage = "https://github.com/Athou/commafeed";
     license = lib.licenses.asl20;
-    mainProgram = "commafeed";
     maintainers = with lib.maintainers; [ svrana ];
+    mainProgram = "commafeed";
     broken = stdenv.hostPlatform.isDarwin || stdenv.hostPlatform.isAarch64;
   };
 }

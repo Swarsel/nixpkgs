@@ -2,12 +2,12 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  pkg-config,
   glib,
   glibc,
   libseccomp,
-  systemdMinimal,
   nixosTests,
+  pkg-config,
+  systemdMinimal,
   versionCheckHook,
 }:
 
@@ -21,6 +21,7 @@ stdenv.mkDerivation (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-YkPgpT+0cE7FCP/dcqnTy6oonPbXKiutFCGX5Lj1JB8=";
     leaveDotGit = true;
+
     postFetch = ''
       cd $out
       git rev-parse HEAD > COMMIT
@@ -28,12 +29,9 @@ stdenv.mkDerivation (finalAttrs: {
     '';
   };
 
-  preConfigure = ''
-    substituteInPlace Makefile \
-      --replace-fail "(GIT_COMMIT)" "(shell cat COMMIT)"
-  '';
-
+  strictDeps = true;
   nativeBuildInputs = [ pkg-config ];
+
   buildInputs = [
     glib
     libseccomp
@@ -49,28 +47,30 @@ stdenv.mkDerivation (finalAttrs: {
     "bin/conmon"
   ];
 
+  preConfigure = ''
+    substituteInPlace Makefile \
+      --replace-fail "(GIT_COMMIT)" "(shell cat COMMIT)"
+  '';
+
   installPhase = ''
     runHook preInstall
     install -D bin/conmon -t $out/bin
     runHook postInstall
   '';
 
-  enableParallelBuilding = true;
-  strictDeps = true;
-
-  passthru.tests = { inherit (nixosTests) cri-o podman; };
-
   doInstallCheck = true;
   nativeInstallCheckInputs = [ versionCheckHook ];
+  enableParallelBuilding = true;
   versionCheckProgramArg = "--version";
+  passthru.tests = { inherit (nixosTests) cri-o podman; };
 
   meta = {
-    changelog = "https://github.com/containers/conmon/releases/tag/${finalAttrs.src.tag}";
-    homepage = "https://github.com/containers/conmon";
     description = "OCI container runtime monitor";
+    homepage = "https://github.com/containers/conmon";
+    changelog = "https://github.com/containers/conmon/releases/tag/${finalAttrs.src.tag}";
     license = lib.licenses.asl20;
-    teams = [ lib.teams.podman ];
     platforms = lib.platforms.linux;
     mainProgram = "conmon";
+    teams = [ lib.teams.podman ];
   };
 })

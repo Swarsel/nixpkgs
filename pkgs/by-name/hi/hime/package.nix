@@ -1,16 +1,16 @@
 {
+  lib,
   stdenv,
   fetchFromGitHub,
-  pkg-config,
-  which,
+  anthy,
   gtk2,
   gtk3,
-  qt5,
-  libxtst,
-  lib,
   libchewing,
+  libxtst,
+  pkg-config,
+  qt5,
   unixtools,
-  anthy,
+  which,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -18,8 +18,8 @@ stdenv.mkDerivation (finalAttrs: {
   version = "0.9.11";
 
   src = fetchFromGitHub {
-    repo = "hime";
     owner = "hime-ime";
+    repo = "hime";
     rev = "v${finalAttrs.version}";
     sha256 = "sha256-fCqet+foQjI+LpTQ/6Egup1GzXELlL2hgbh0dCKLwPI=";
   };
@@ -29,6 +29,7 @@ stdenv.mkDerivation (finalAttrs: {
     pkg-config
     unixtools.whereis
   ];
+
   buildInputs = [
     libxtst
     gtk2
@@ -38,23 +39,26 @@ stdenv.mkDerivation (finalAttrs: {
     anthy
   ];
 
-  preConfigure = "patchShebangs configure";
   configureFlags = [
     "--disable-lib64"
     "--disable-qt5-immodule"
   ];
-  dontWrapQtApps = true;
+
+  preConfigure = "patchShebangs configure";
+
   postFixup = ''
     hime_rpath=$(patchelf --print-rpath $out/bin/hime)
     patchelf --set-rpath $out/lib/hime:$hime_rpath $out/bin/hime
   '';
 
+  dontWrapQtApps = true;
+
   meta = {
-    homepage = "http://hime-ime.github.io/";
-    downloadPage = "https://github.com/hime-ime/hime/downloads";
     description = "Useful input method engine for Asia region";
+    homepage = "http://hime-ime.github.io/";
     license = lib.licenses.gpl2Plus;
-    platforms = lib.platforms.linux;
     maintainers = with lib.maintainers; [ yanganto ];
+    platforms = lib.platforms.linux;
+    downloadPage = "https://github.com/hime-ime/hime/downloads";
   };
 })

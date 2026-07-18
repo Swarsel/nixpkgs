@@ -1,34 +1,29 @@
 {
   lib,
   stdenv,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # build-system
-  setuptools,
-  setuptools-scm,
-
   # dependencies
   ase,
+  buildPythonPackage,
   h5py,
   lightning,
   numpy,
+  # tests
+  pytest-xdist,
+  pytestCheckHook,
+  # build-system
+  setuptools,
+  setuptools-scm,
   torch,
   torch-geometric,
   tqdm,
   warp-lang,
-
-  # tests
-  pytest-xdist,
-  pytestCheckHook,
   writableTmpDirAsHomeHook,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "torchmd-net";
   version = "3.0.3";
-  pyproject = true;
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "torchmd";
@@ -37,11 +32,6 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-FBeeNkc7mJQYmMwlsW3Un+3RHvErJM7rWKUqSCYYUCM=";
   };
 
-  build-system = [
-    setuptools
-    setuptools-scm
-  ];
-
   env = lib.optionalAttrs stdenv.hostPlatform.isDarwin {
     # NotImplementedError: The operator 'torchmdnet::warp_neighbor_brute_fwd' is not currently implemented for the MPS device.
     # As a temporary fix, you can set the environment variable `PYTORCH_ENABLE_MPS_FALLBACK=1` to use the CPU as a fallback for this op.
@@ -49,10 +39,19 @@ buildPythonPackage (finalAttrs: {
     PYTORCH_ENABLE_MPS_FALLBACK = true;
   };
 
-  pythonRemoveDeps = [
-    # Not a runtime dependency
-    "setuptools"
+  nativeCheckInputs = [
+    pytest-xdist
+    pytestCheckHook
+    writableTmpDirAsHomeHook
   ];
+
+  __structuredAttrs = true;
+
+  build-system = [
+    setuptools
+    setuptools-scm
+  ];
+
   dependencies = [
     ase
     h5py
@@ -62,14 +61,6 @@ buildPythonPackage (finalAttrs: {
     torch-geometric
     tqdm
     warp-lang
-  ];
-
-  pythonImportsCheck = [ "torchmdnet" ];
-
-  nativeCheckInputs = [
-    pytest-xdist
-    pytestCheckHook
-    writableTmpDirAsHomeHook
   ];
 
   disabledTests = [
@@ -85,6 +76,14 @@ buildPythonPackage (finalAttrs: {
     # symbol not found in flat namespace '___kmpc_barrier'
     "test_ase_calculator"
     "test_torch_export_then_compile"
+  ];
+
+  pyproject = true;
+  pythonImportsCheck = [ "torchmdnet" ];
+
+  pythonRemoveDeps = [
+    # Not a runtime dependency
+    "setuptools"
   ];
 
   meta = {

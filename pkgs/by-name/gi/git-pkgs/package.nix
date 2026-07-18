@@ -16,15 +16,8 @@ buildGoModule rec {
     hash = "sha256-4Q95ONe6tcrUk7TsxR347PAFQ/HuMjcqNfCLo6oZtws=";
   };
 
-  vendorHash = "sha256-YjKktBQT62htk/nqZp9quKEg4eI3vTz6AY64o9IT3/4=";
-
-  subPackages = [ "." ];
-
-  ldflags = [
-    "-X github.com/git-pkgs/git-pkgs/cmd.version=${version}"
-  ];
-
   nativeBuildInputs = [ installShellFiles ];
+  vendorHash = "sha256-YjKktBQT62htk/nqZp9quKEg4eI3vTz6AY64o9IT3/4=";
 
   postBuild = ''
     go run scripts/generate-man/main.go
@@ -38,9 +31,15 @@ buildGoModule rec {
       --zsh <($out/bin/git-pkgs completion zsh)
   '';
 
+  ldflags = [
+    "-X github.com/git-pkgs/git-pkgs/cmd.version=${version}"
+  ];
+
+  subPackages = [ "." ];
+
   meta = {
-    homepage = "https://github.com/git-pkgs/git-pkgs";
     description = "Git subcommand for analyzing package/dependency usage in git repositories over time";
+    homepage = "https://github.com/git-pkgs/git-pkgs";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ bnjmnt4n ];
     platforms = lib.platforms.unix;

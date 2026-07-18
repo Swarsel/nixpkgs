@@ -1,32 +1,27 @@
 {
   lib,
-  python3Packages,
   fetchFromGitHub,
-
-  installShellFiles,
   bubblewrap,
-  nix-output-monitor,
-  delta,
-  glow,
   cacert,
+  delta,
   git,
+  glow,
+  installShellFiles,
   nix,
   nix-eval-jobs,
+  nix-output-monitor,
+  python3Packages,
   versionCheckHook,
-
   withAutocomplete ? true,
-  withSandboxSupport ? false,
-  withNom ? false,
   withDelta ? false,
   withGlow ? false,
+  withNom ? false,
+  withSandboxSupport ? false,
 }:
 
 python3Packages.buildPythonApplication (finalAttrs: {
   pname = "nixpkgs-review";
   version = "3.9.0";
-  pyproject = true;
-
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "Mic92";
@@ -34,14 +29,6 @@ python3Packages.buildPythonApplication (finalAttrs: {
     tag = finalAttrs.version;
     hash = "sha256-u0DbEwe28csVWKbu8x9v9/Ah0ZUUgqXtZU2Rr5IJpWI=";
   };
-
-  build-system = [
-    python3Packages.setuptools
-  ];
-
-  dependencies = lib.optionals withAutocomplete [
-    python3Packages.argcomplete
-  ];
 
   nativeBuildInputs = [
     installShellFiles
@@ -52,6 +39,25 @@ python3Packages.buildPythonApplication (finalAttrs: {
 
   nativeCheckInputs = [
     versionCheckHook
+  ];
+
+  postInstall = lib.optionalString withAutocomplete ''
+    for cmd in nix-review nixpkgs-review; do
+      installShellCompletion --cmd $cmd \
+        --bash <(register-python-argcomplete $cmd) \
+        --fish <(register-python-argcomplete $cmd -s fish) \
+        --zsh <(register-python-argcomplete $cmd -s zsh)
+    done
+  '';
+
+  __structuredAttrs = true;
+
+  build-system = [
+    python3Packages.setuptools
+  ];
+
+  dependencies = lib.optionals withAutocomplete [
+    python3Packages.argcomplete
   ];
 
   makeWrapperArgs =
@@ -79,25 +85,20 @@ python3Packages.buildPythonApplication (finalAttrs: {
       "PYTHONPATH"
     ];
 
-  postInstall = lib.optionalString withAutocomplete ''
-    for cmd in nix-review nixpkgs-review; do
-      installShellCompletion --cmd $cmd \
-        --bash <(register-python-argcomplete $cmd) \
-        --fish <(register-python-argcomplete $cmd -s fish) \
-        --zsh <(register-python-argcomplete $cmd -s zsh)
-    done
-  '';
+  pyproject = true;
 
   meta = {
-    changelog = "https://github.com/Mic92/nixpkgs-review/releases/tag/${finalAttrs.version}";
     description = "Review pull-requests on https://github.com/NixOS/nixpkgs";
     homepage = "https://github.com/Mic92/nixpkgs-review";
+    changelog = "https://github.com/Mic92/nixpkgs-review/releases/tag/${finalAttrs.version}";
     license = lib.licenses.mit;
-    mainProgram = "nixpkgs-review";
+
     maintainers = with lib.maintainers; [
       figsoda
       mdaniels5757
       mic92
     ];
+
+    mainProgram = "nixpkgs-review";
   };
 })

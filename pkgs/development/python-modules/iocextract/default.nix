@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   pytestCheckHook,
   regex,
   requests,
@@ -10,7 +10,6 @@
 buildPythonPackage rec {
   pname = "iocextract";
   version = "1.16.1";
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "InQuest";
@@ -26,21 +25,21 @@ buildPythonPackage rec {
 
   nativeCheckInputs = [ pytestCheckHook ];
 
-  pythonImportsCheck = [ "iocextract" ];
-
-  enabledTestPaths = [ "tests.py" ];
-
   disabledTests = [
     # AssertionError: 'http://exampledotcom/test' != 'http://example.com/test'
     "test_refang_data"
   ];
 
+  enabledTestPaths = [ "tests.py" ];
+  format = "setuptools";
+  pythonImportsCheck = [ "iocextract" ];
+
   meta = {
     description = "Module to extract Indicator of Compromises (IOC)";
-    mainProgram = "iocextract";
     homepage = "https://github.com/InQuest/iocextract";
     changelog = "https://github.com/InQuest/iocextract/releases/tag/v${version}";
     license = lib.licenses.gpl2Only;
     maintainers = with lib.maintainers; [ fab ];
+    mainProgram = "iocextract";
   };
 }

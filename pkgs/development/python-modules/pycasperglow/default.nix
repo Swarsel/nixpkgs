@@ -1,9 +1,9 @@
 {
   lib,
+  fetchFromGitHub,
   bleak,
   bleak-retry-connector,
   buildPythonPackage,
-  fetchFromGitHub,
   pytest-asyncio,
   pytestCheckHook,
   setuptools,
@@ -12,7 +12,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "pycasperglow";
   version = "1.2.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "mikeodr";
@@ -21,6 +20,11 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-sLjEo8GSGBtx0GDAHQZad5ePQAwzChdmBE5TU+ebuFI=";
   };
 
+  nativeCheckInputs = [
+    pytest-asyncio
+    pytestCheckHook
+  ];
+
   build-system = [ setuptools ];
 
   dependencies = [
@@ -28,11 +32,7 @@ buildPythonPackage (finalAttrs: {
     bleak-retry-connector
   ];
 
-  nativeCheckInputs = [
-    pytest-asyncio
-    pytestCheckHook
-  ];
-
+  pyproject = true;
   pythonImportsCheck = [ "pycasperglow" ];
 
   meta = {

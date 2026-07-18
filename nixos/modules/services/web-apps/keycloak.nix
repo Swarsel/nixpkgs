@@ -1,8 +1,8 @@
 {
   config,
-  options,
-  pkgs,
   lib,
+  pkgs,
+  options,
   ...
 }:
 
@@ -107,105 +107,23 @@ in
     in
     {
       enable = mkOption {
-        type = bool;
         default = false;
-        example = true;
+
         description = ''
           Whether to enable the Keycloak identity and access management
           server.
         '';
+
+        example = true;
+        type = bool;
       };
 
-      sslCertificate = mkOption {
-        type = nullOr path;
-        default = null;
-        example = "/run/keys/ssl_cert";
-        apply = assertStringPath "sslCertificate";
-        description = ''
-          The path to a PEM formatted certificate to use for TLS/SSL
-          connections.
-        '';
-      };
-
-      sslCertificateKey = mkOption {
-        type = nullOr path;
-        default = null;
-        example = "/run/keys/ssl_key";
-        apply = assertStringPath "sslCertificateKey";
-        description = ''
-          The path to a PEM formatted private key to use for TLS/SSL
-          connections.
-        '';
-      };
-
-      plugins = lib.mkOption {
-        type = lib.types.listOf lib.types.path;
-        default = [ ];
-        description = ''
-          Keycloak plugin jar, ear files or derivations containing
-          them. Packaged plugins are available through
-          `pkgs.keycloak.plugins`.
-        '';
-      };
+      package = mkPackageOption pkgs "keycloak" { };
 
       database = {
-        type = mkOption {
-          type = enum [
-            "mysql"
-            "mariadb"
-            "postgresql"
-          ];
-          default = "postgresql";
-          example = "mariadb";
-          description = ''
-            The type of database Keycloak should connect to.
-          '';
-        };
-
-        host = mkOption {
-          type = str;
-          default = "localhost";
-          description = ''
-            Hostname of the database to connect to.
-
-            For PostgreSQL, this can also be a path to a Unix socket
-            directory (e.g., `/run/postgresql`) to use peer authentication.
-            This requires adding `junixsocket-common` and `junixsocket-native-common`
-            to [](#opt-services.keycloak.plugins).
-          '';
-        };
-
-        port =
-          let
-            dbPorts = {
-              postgresql = 5432;
-              mariadb = 3306;
-              mysql = 3306;
-            };
-          in
-          mkOption {
-            type = port;
-            default = dbPorts.${cfg.database.type};
-            defaultText = literalMD "default port of selected database";
-            description = ''
-              Port of the database to connect to.
-            '';
-          };
-
-        useSSL = mkOption {
-          type = bool;
-          default = cfg.database.host != "localhost" && !hasPrefix "/" cfg.database.host;
-          defaultText = literalExpression ''config.${opt.database.host} != "localhost" && !lib.hasPrefix "/" config.${opt.database.host}'';
-          description = ''
-            Whether the database connection should be secured by SSL / TLS.
-
-            Defaults to `false` for localhost and Unix socket connections.
-          '';
-        };
-
         caCert = mkOption {
-          type = nullOr path;
           default = null;
+
           description = ''
             The SSL / TLS CA certificate that verifies the identity of the
             database server.
@@ -216,22 +134,41 @@ in
             Java keystore is used, which should suffice if the server
             certificate is issued by an official CA.
           '';
+
+          type = nullOr path;
         };
 
         createLocally = mkOption {
-          type = bool;
           default = true;
+
           description = ''
             Whether a database should be automatically created on the
             local host. Set this to false if you plan on provisioning a
             local database yourself. This has no effect if
             services.keycloak.database.host is customized.
           '';
+
+          type = bool;
+        };
+
+        host = mkOption {
+          default = "localhost";
+
+          description = ''
+            Hostname of the database to connect to.
+
+            For PostgreSQL, this can also be a path to a Unix socket
+            directory (e.g., `/run/postgresql`) to use peer authentication.
+            This requires adding `junixsocket-common` and `junixsocket-native-common`
+            to [](#opt-services.keycloak.plugins).
+          '';
+
+          type = str;
         };
 
         name = mkOption {
-          type = str;
           default = "keycloak";
+
           description = ''
             Database name to use when connecting to an external or
             manually provisioned database; has no effect when a local
@@ -241,11 +178,76 @@ in
             `false` and create the database and user
             manually.
           '';
+
+          type = str;
+        };
+
+        passwordFile = mkOption {
+          apply = assertStringPath "passwordFile";
+          default = null;
+
+          description = ''
+            The path to a file containing the database password.
+
+            Not required when using Unix socket authentication (peer auth)
+            by setting `host` to a socket path like `/run/postgresql`.
+          '';
+
+          example = "/run/keys/db_password";
+          type = nullOr path;
+        };
+
+        port =
+          let
+            dbPorts = {
+              mariadb = 3306;
+              mysql = 3306;
+              postgresql = 5432;
+            };
+          in
+          mkOption {
+            default = dbPorts.${cfg.database.type};
+            defaultText = literalMD "default port of selected database";
+
+            description = ''
+              Port of the database to connect to.
+            '';
+
+            type = port;
+          };
+
+        type = mkOption {
+          default = "postgresql";
+
+          description = ''
+            The type of database Keycloak should connect to.
+          '';
+
+          example = "mariadb";
+
+          type = enum [
+            "mysql"
+            "mariadb"
+            "postgresql"
+          ];
+        };
+
+        useSSL = mkOption {
+          default = cfg.database.host != "localhost" && !hasPrefix "/" cfg.database.host;
+          defaultText = literalExpression ''config.${opt.database.host} != "localhost" && !lib.hasPrefix "/" config.${opt.database.host}'';
+
+          description = ''
+            Whether the database connection should be secured by SSL / TLS.
+
+            Defaults to `false` for localhost and Unix socket connections.
+          '';
+
+          type = bool;
         };
 
         username = mkOption {
-          type = str;
           default = "keycloak";
+
           description = ''
             Username to use when connecting to an external or manually
             provisioned database; has no effect when a local database is
@@ -255,27 +257,14 @@ in
             `false` and create the database and user
             manually.
           '';
-        };
 
-        passwordFile = mkOption {
-          type = nullOr path;
-          default = null;
-          example = "/run/keys/db_password";
-          apply = assertStringPath "passwordFile";
-          description = ''
-            The path to a file containing the database password.
-
-            Not required when using Unix socket authentication (peer auth)
-            by setting `host` to a socket path like `/run/postgresql`.
-          '';
+          type = str;
         };
       };
 
-      package = mkPackageOption pkgs "keycloak" { };
-
       initialAdminPassword = mkOption {
-        type = nullOr str;
         default = null;
+
         description = ''
           Initial password set for the temporary `admin` user.
           The password is not stored safely and should be changed
@@ -283,31 +272,25 @@ in
 
           See [Admin bootstrap and recovery](https://www.keycloak.org/server/bootstrap-admin-recovery) for details.
         '';
+
+        type = nullOr str;
       };
 
-      themes = mkOption {
-        type = attrsOf package;
-        default = { };
-        description = ''
-          Additional theme packages for Keycloak. Each theme is linked into
-          subdirectory with a corresponding attribute name.
+      plugins = lib.mkOption {
+        default = [ ];
 
-          Theme packages consist of several subdirectories which provide
-          different theme types: for example, `account`,
-          `login` etc. After adding a theme to this option you
-          can select it by its name in Keycloak administration console.
+        description = ''
+          Keycloak plugin jar, ear files or derivations containing
+          them. Packaged plugins are available through
+          `pkgs.keycloak.plugins`.
         '';
+
+        type = lib.types.listOf lib.types.path;
       };
 
       realmFiles = mkOption {
-        type = listOf path;
-        example = lib.literalExpression ''
-          [
-            ./some/realm.json
-            ./another/realm.json
-          ]
-        '';
         default = [ ];
+
         description = ''
           Realm files that the server is going to import during startup.
           If a realm already exists in the server, the import operation is
@@ -316,105 +299,18 @@ in
           [documentation](https://www.keycloak.org/server/importExport) for
           further information.
         '';
+
+        example = lib.literalExpression ''
+          [
+            ./some/realm.json
+            ./another/realm.json
+          ]
+        '';
+
+        type = listOf path;
       };
 
       settings = mkOption {
-        type = lib.types.submodule {
-          freeformType = attrsOf (
-            nullOr (oneOf [
-              str
-              int
-              bool
-              (attrsOf path)
-            ])
-          );
-
-          options = {
-            http-host = mkOption {
-              type = str;
-              default = "::";
-              example = "::1";
-              description = ''
-                On which address Keycloak should accept new connections.
-              '';
-            };
-
-            http-port = mkOption {
-              type = port;
-              default = 80;
-              example = 8080;
-              description = ''
-                On which port Keycloak should listen for new HTTP connections.
-              '';
-            };
-
-            https-port = mkOption {
-              type = port;
-              default = 443;
-              example = 8443;
-              description = ''
-                On which port Keycloak should listen for new HTTPS connections.
-              '';
-            };
-
-            http-relative-path = mkOption {
-              type = str;
-              default = "/";
-              example = "/auth";
-              apply = x: if !(hasPrefix "/") x then "/" + x else x;
-              description = ''
-                The path relative to `/` for serving
-                resources.
-
-                ::: {.note}
-                In versions of Keycloak using Wildfly (&lt;17),
-                this defaulted to `/auth`. If
-                upgrading from the Wildfly version of Keycloak,
-                i.e. a NixOS version before 22.05, you'll likely
-                want to set this to `/auth` to
-                keep compatibility with your clients.
-
-                See <https://www.keycloak.org/migration/migrating-to-quarkus>
-                for more information on migrating from Wildfly to Quarkus.
-                :::
-              '';
-            };
-
-            hostname = mkOption {
-              type = nullOr str;
-              example = "keycloak.example.com";
-              description = ''
-                The hostname part of the public URL used as base for
-                all frontend requests.
-
-                See <https://www.keycloak.org/server/hostname>
-                for more information about hostname configuration.
-              '';
-            };
-
-            hostname-backchannel-dynamic = mkOption {
-              type = bool;
-              default = false;
-              example = true;
-              description = ''
-                Enables dynamic resolving of backchannel URLs,
-                including hostname, scheme, port and context path.
-
-                See <https://www.keycloak.org/server/hostname>
-                for more information about hostname configuration.
-              '';
-            };
-          };
-        };
-
-        example = literalExpression ''
-          {
-            hostname = "keycloak.example.com";
-            https-key-store-file = "/path/to/file";
-            https-key-store-password = { _secret = "/run/keys/store_password"; };
-          }
-        '';
-
         description = ''
           Configuration options corresponding to parameters set in
           {file}`conf/keycloak.conf`.
@@ -431,6 +327,155 @@ in
           to the contents of the
           {file}`/run/keys/store_password` file.
         '';
+
+        example = literalExpression ''
+          {
+            hostname = "keycloak.example.com";
+            https-key-store-file = "/path/to/file";
+            https-key-store-password = { _secret = "/run/keys/store_password"; };
+          }
+        '';
+
+        type = lib.types.submodule {
+          options = {
+            hostname = mkOption {
+              description = ''
+                The hostname part of the public URL used as base for
+                all frontend requests.
+
+                See <https://www.keycloak.org/server/hostname>
+                for more information about hostname configuration.
+              '';
+
+              example = "keycloak.example.com";
+              type = nullOr str;
+            };
+
+            hostname-backchannel-dynamic = mkOption {
+              default = false;
+
+              description = ''
+                Enables dynamic resolving of backchannel URLs,
+                including hostname, scheme, port and context path.
+
+                See <https://www.keycloak.org/server/hostname>
+                for more information about hostname configuration.
+              '';
+
+              example = true;
+              type = bool;
+            };
+
+            http-host = mkOption {
+              default = "::";
+
+              description = ''
+                On which address Keycloak should accept new connections.
+              '';
+
+              example = "::1";
+              type = str;
+            };
+
+            http-port = mkOption {
+              default = 80;
+
+              description = ''
+                On which port Keycloak should listen for new HTTP connections.
+              '';
+
+              example = 8080;
+              type = port;
+            };
+
+            http-relative-path = mkOption {
+              apply = x: if !(hasPrefix "/") x then "/" + x else x;
+              default = "/";
+
+              description = ''
+                The path relative to `/` for serving
+                resources.
+
+                ::: {.note}
+                In versions of Keycloak using Wildfly (&lt;17),
+                this defaulted to `/auth`. If
+                upgrading from the Wildfly version of Keycloak,
+                i.e. a NixOS version before 22.05, you'll likely
+                want to set this to `/auth` to
+                keep compatibility with your clients.
+
+                See <https://www.keycloak.org/migration/migrating-to-quarkus>
+                for more information on migrating from Wildfly to Quarkus.
+                :::
+              '';
+
+              example = "/auth";
+              type = str;
+            };
+
+            https-port = mkOption {
+              default = 443;
+
+              description = ''
+                On which port Keycloak should listen for new HTTPS connections.
+              '';
+
+              example = 8443;
+              type = port;
+            };
+          };
+
+          freeformType = attrsOf (
+            nullOr (oneOf [
+              str
+              int
+              bool
+              (attrsOf path)
+            ])
+          );
+        };
+      };
+
+      sslCertificate = mkOption {
+        apply = assertStringPath "sslCertificate";
+        default = null;
+
+        description = ''
+          The path to a PEM formatted certificate to use for TLS/SSL
+          connections.
+        '';
+
+        example = "/run/keys/ssl_cert";
+        type = nullOr path;
+      };
+
+      sslCertificateKey = mkOption {
+        apply = assertStringPath "sslCertificateKey";
+        default = null;
+
+        description = ''
+          The path to a PEM formatted private key to use for TLS/SSL
+          connections.
+        '';
+
+        example = "/run/keys/ssl_key";
+        type = nullOr path;
+      };
+
+      themes = mkOption {
+        default = { };
+
+        description = ''
+          Additional theme packages for Keycloak. Each theme is linked into
+          subdirectory with a corresponding attribute name.
+
+          Theme packages consist of several subdirectories which provide
+          different theme types: for example, `account`,
+          `login` etc. After adding a theme to this option you
+          can select it by its name in Keycloak administration console.
+        '';
+
+        type = attrsOf package;
       };
     };
 
@@ -512,6 +557,7 @@ in
       confFile = pkgs.writeText "keycloak.conf" (keycloakConfig filteredConfig);
       keycloakBuild = cfg.package.override {
         inherit confFile;
+
         plugins =
           cfg.package.enabledPlugins
           ++ cfg.plugins
@@ -526,11 +572,13 @@ in
         {
           assertion =
             (cfg.database.useSSL && cfg.database.type == "postgresql") -> (cfg.database.caCert != null);
+
           message = "A CA certificate must be specified (in 'services.keycloak.database.caCert') when PostgreSQL is used with SSL";
         }
         {
           assertion =
             createLocalPostgreSQL -> config.services.postgresql.settings.standard_conforming_strings or true;
+
           message = "Setting up a local PostgreSQL db for Keycloak requires `standard_conforming_strings` turned on to work reliably";
         }
         {
@@ -539,6 +587,7 @@ in
         }
         {
           assertion = cfg.settings.hostname-url or null == null;
+
           message = ''
             The option `services.keycloak.settings.hostname-url' has been removed.
             Set `services.keycloak.settings.hostname' instead.
@@ -547,6 +596,7 @@ in
         }
         {
           assertion = cfg.settings.hostname-strict-backchannel or null == null;
+
           message = ''
             The option `services.keycloak.settings.hostname-strict-backchannel' has been removed.
             Set `services.keycloak.settings.hostname-backchannel-dynamic' instead.
@@ -555,6 +605,7 @@ in
         }
         {
           assertion = cfg.settings.proxy or null == null;
+
           message = ''
             The option `services.keycloak.settings.proxy' has been removed.
             Set `services.keycloak.settings.proxy-headers` in combination
@@ -565,6 +616,7 @@ in
         }
         {
           assertion = cfg.database.passwordFile != null || hasPrefix "/" cfg.database.host;
+
           message = ''
             services.keycloak.database.passwordFile must be set unless using
             Unix socket authentication (host starting with /).
@@ -610,20 +662,22 @@ in
         mkMerge [
           {
             db = if cfg.database.type == "postgresql" then "postgres" else cfg.database.type;
-            db-username = if databaseActuallyCreateLocally then "keycloak" else cfg.database.username;
+
             db-password = mkIf (cfg.database.passwordFile != null) {
               _secret = cfg.database.passwordFile;
             };
+
+            db-username = if databaseActuallyCreateLocally then "keycloak" else cfg.database.username;
           }
           (mkIf isUnixSocket {
             db-url = unixSocketUrl;
           })
           (mkIf (!isUnixSocket) {
+            db-url = null;
+            db-url-database = dbName;
             db-url-host = cfg.database.host;
             db-url-port = toString cfg.database.port;
-            db-url-database = dbName;
             db-url-properties = prefixUnlessEmpty "?" dbProps;
-            db-url = null;
           })
           (mkIf (cfg.sslCertificate != null && cfg.sslCertificateKey != null) {
             https-certificate-file = "/run/keycloak/ssl/ssl_cert";
@@ -631,88 +685,15 @@ in
           })
         ];
 
-      systemd.services.keycloakPostgreSQLInit = mkIf createLocalPostgreSQL {
-        after = [ "postgresql.target" ];
-        before = [ "keycloak.service" ];
-        bindsTo = [ "postgresql.target" ];
-        path = [ config.services.postgresql.package ];
-        serviceConfig = {
-          Type = "oneshot";
-          RemainAfterExit = true;
-          User = "postgres";
-          Group = "postgres";
-          LoadCredential = [ "db_password:${cfg.database.passwordFile}" ];
-        };
-        script = ''
-          set -o errexit -o pipefail -o nounset -o errtrace
-          shopt -s inherit_errexit
+      services.mysql.enable = mkDefault createLocalMySQL;
 
-          create_role="$(mktemp)"
-          trap 'rm -f "$create_role"' EXIT
-
-          # Read the password from the credentials directory and
-          # escape any single quotes by adding additional single
-          # quotes after them, following the rules laid out here:
-          # https://www.postgresql.org/docs/current/sql-syntax-lexical.html#SQL-SYNTAX-CONSTANTS
-          db_password="$(<"$CREDENTIALS_DIRECTORY/db_password")"
-          db_password="''${db_password//\'/\'\'}"
-
-          echo "CREATE ROLE keycloak WITH LOGIN PASSWORD '$db_password' CREATEDB" > "$create_role"
-          psql -tAc "SELECT 1 FROM pg_roles WHERE rolname='keycloak'" | grep -q 1 || psql -tA --file="$create_role"
-          psql -tAc "SELECT 1 FROM pg_database WHERE datname = 'keycloak'" | grep -q 1 || psql -tAc 'CREATE DATABASE "keycloak" OWNER "keycloak"'
-        '';
-        enableStrictShellChecks = true;
-      };
-
-      systemd.services.keycloakMySQLInit = mkIf createLocalMySQL {
-        after = [ "mysql.service" ];
-        before = [ "keycloak.service" ];
-        bindsTo = [ "mysql.service" ];
-        path = [ config.services.mysql.package ];
-        serviceConfig = {
-          Type = "oneshot";
-          RemainAfterExit = true;
-          User = config.services.mysql.user;
-          Group = config.services.mysql.group;
-          LoadCredential = [ "db_password:${cfg.database.passwordFile}" ];
-        };
-        script = ''
-          set -o errexit -o pipefail -o nounset -o errtrace
-          shopt -s inherit_errexit
-
-          # Read the password from the credentials directory and
-          # escape any single quotes by adding additional single
-          # quotes after them, following the rules laid out here:
-          # https://dev.mysql.com/doc/refman/8.0/en/string-literals.html
-          db_password="$(<"$CREDENTIALS_DIRECTORY/db_password")"
-          db_password="''${db_password//\'/\'\'}"
-
-          ( echo "SET sql_mode = 'NO_BACKSLASH_ESCAPES';"
-            echo "CREATE USER IF NOT EXISTS 'keycloak'@'localhost' IDENTIFIED BY '$db_password';"
-            echo "CREATE DATABASE IF NOT EXISTS keycloak CHARACTER SET utf8 COLLATE utf8_unicode_ci;"
-            echo "GRANT ALL PRIVILEGES ON keycloak.* TO 'keycloak'@'localhost';"
-          ) | mysql -N
-        '';
-        enableStrictShellChecks = true;
-      };
-
-      systemd.tmpfiles.settings."10-keycloak" =
+      services.mysql.package =
         let
-          mkTarget =
-            file:
-            let
-              baseName = baseNameOf file;
-              name = if lib.hasSuffix ".json" baseName then baseName else "${baseName}.json";
-            in
-            "/run/keycloak/data/import/${name}";
-          settingsList = map (f: {
-            name = mkTarget f;
-            value = {
-              "L+".argument = "${f}";
-            };
-          }) cfg.realmFiles;
+          dbPkg = if cfg.database.type == "mariadb" then pkgs.mariadb else pkgs.mysql84;
         in
-        builtins.listToAttrs settingsList;
+        mkIf createLocalMySQL (mkDefault dbPkg);
+
+      services.postgresql.enable = mkDefault createLocalPostgreSQL;
 
       systemd.services.keycloak =
         let
@@ -738,36 +719,23 @@ in
         {
           after = databaseServices;
           bindsTo = databaseServices;
-          wantedBy = [ "multi-user.target" ];
+          enableStrictShellChecks = true;
+
+          environment = {
+            KC_CONF_DIR = "/run/keycloak/conf";
+            KC_HOME_DIR = "/run/keycloak";
+          }
+          // lib.optionalAttrs (cfg.initialAdminPassword != null) {
+            KC_BOOTSTRAP_ADMIN_PASSWORD = cfg.initialAdminPassword;
+            KC_BOOTSTRAP_ADMIN_USERNAME = "admin";
+          };
+
           path = with pkgs; [
             keycloakBuild
             openssl
             replace-secret
           ];
-          environment = {
-            KC_HOME_DIR = "/run/keycloak";
-            KC_CONF_DIR = "/run/keycloak/conf";
-          }
-          // lib.optionalAttrs (cfg.initialAdminPassword != null) {
-            KC_BOOTSTRAP_ADMIN_USERNAME = "admin";
-            KC_BOOTSTRAP_ADMIN_PASSWORD = cfg.initialAdminPassword;
-          };
-          serviceConfig = {
-            LoadCredential =
-              map (p: "${baseNameOf p}:${p}") secretPaths
-              ++ optionals (cfg.sslCertificate != null && cfg.sslCertificateKey != null) [
-                "ssl_cert:${cfg.sslCertificate}"
-                "ssl_key:${cfg.sslCertificateKey}"
-              ];
-            User = "keycloak";
-            Group = "keycloak";
-            DynamicUser = true;
-            RuntimeDirectory = "keycloak";
-            RuntimeDirectoryMode = "0700";
-            AmbientCapabilities = "CAP_NET_BIND_SERVICE";
-            Type = "notify"; # Requires quarkus-systemd-notify plugin
-            NotifyAccess = "all";
-          };
+
           script = ''
             set -o errexit -o pipefail -o nounset -o errtrace
             shopt -s inherit_errexit
@@ -795,19 +763,120 @@ in
           + ''
             kc.sh --verbose start --optimized ${lib.optionalString (cfg.realmFiles != [ ]) "--import-realm"}
           '';
-          enableStrictShellChecks = true;
+
+          serviceConfig = {
+            AmbientCapabilities = "CAP_NET_BIND_SERVICE";
+            DynamicUser = true;
+            Group = "keycloak";
+
+            LoadCredential =
+              map (p: "${baseNameOf p}:${p}") secretPaths
+              ++ optionals (cfg.sslCertificate != null && cfg.sslCertificateKey != null) [
+                "ssl_cert:${cfg.sslCertificate}"
+                "ssl_key:${cfg.sslCertificateKey}"
+              ];
+
+            NotifyAccess = "all";
+            RuntimeDirectory = "keycloak";
+            RuntimeDirectoryMode = "0700";
+            Type = "notify"; # Requires quarkus-systemd-notify plugin
+            User = "keycloak";
+          };
+
+          wantedBy = [ "multi-user.target" ];
         };
 
-      services.postgresql.enable = mkDefault createLocalPostgreSQL;
-      services.mysql.enable = mkDefault createLocalMySQL;
-      services.mysql.package =
+      systemd.services.keycloakMySQLInit = mkIf createLocalMySQL {
+        after = [ "mysql.service" ];
+        before = [ "keycloak.service" ];
+        bindsTo = [ "mysql.service" ];
+        enableStrictShellChecks = true;
+        path = [ config.services.mysql.package ];
+
+        script = ''
+          set -o errexit -o pipefail -o nounset -o errtrace
+          shopt -s inherit_errexit
+
+          # Read the password from the credentials directory and
+          # escape any single quotes by adding additional single
+          # quotes after them, following the rules laid out here:
+          # https://dev.mysql.com/doc/refman/8.0/en/string-literals.html
+          db_password="$(<"$CREDENTIALS_DIRECTORY/db_password")"
+          db_password="''${db_password//\'/\'\'}"
+
+          ( echo "SET sql_mode = 'NO_BACKSLASH_ESCAPES';"
+            echo "CREATE USER IF NOT EXISTS 'keycloak'@'localhost' IDENTIFIED BY '$db_password';"
+            echo "CREATE DATABASE IF NOT EXISTS keycloak CHARACTER SET utf8 COLLATE utf8_unicode_ci;"
+            echo "GRANT ALL PRIVILEGES ON keycloak.* TO 'keycloak'@'localhost';"
+          ) | mysql -N
+        '';
+
+        serviceConfig = {
+          Group = config.services.mysql.group;
+          LoadCredential = [ "db_password:${cfg.database.passwordFile}" ];
+          RemainAfterExit = true;
+          Type = "oneshot";
+          User = config.services.mysql.user;
+        };
+      };
+
+      systemd.services.keycloakPostgreSQLInit = mkIf createLocalPostgreSQL {
+        after = [ "postgresql.target" ];
+        before = [ "keycloak.service" ];
+        bindsTo = [ "postgresql.target" ];
+        enableStrictShellChecks = true;
+        path = [ config.services.postgresql.package ];
+
+        script = ''
+          set -o errexit -o pipefail -o nounset -o errtrace
+          shopt -s inherit_errexit
+
+          create_role="$(mktemp)"
+          trap 'rm -f "$create_role"' EXIT
+
+          # Read the password from the credentials directory and
+          # escape any single quotes by adding additional single
+          # quotes after them, following the rules laid out here:
+          # https://www.postgresql.org/docs/current/sql-syntax-lexical.html#SQL-SYNTAX-CONSTANTS
+          db_password="$(<"$CREDENTIALS_DIRECTORY/db_password")"
+          db_password="''${db_password//\'/\'\'}"
+
+          echo "CREATE ROLE keycloak WITH LOGIN PASSWORD '$db_password' CREATEDB" > "$create_role"
+          psql -tAc "SELECT 1 FROM pg_roles WHERE rolname='keycloak'" | grep -q 1 || psql -tA --file="$create_role"
+          psql -tAc "SELECT 1 FROM pg_database WHERE datname = 'keycloak'" | grep -q 1 || psql -tAc 'CREATE DATABASE "keycloak" OWNER "keycloak"'
+        '';
+
+        serviceConfig = {
+          Group = "postgres";
+          LoadCredential = [ "db_password:${cfg.database.passwordFile}" ];
+          RemainAfterExit = true;
+          Type = "oneshot";
+          User = "postgres";
+        };
+      };
+
+      systemd.tmpfiles.settings."10-keycloak" =
         let
-          dbPkg = if cfg.database.type == "mariadb" then pkgs.mariadb else pkgs.mysql84;
+          mkTarget =
+            file:
+            let
+              baseName = baseNameOf file;
+              name = if lib.hasSuffix ".json" baseName then baseName else "${baseName}.json";
+            in
+            "/run/keycloak/data/import/${name}";
+          settingsList = map (f: {
+            name = mkTarget f;
+
+            value = {
+              "L+".argument = "${f}";
+            };
+          }) cfg.realmFiles;
         in
-        mkIf createLocalMySQL (mkDefault dbPkg);
+        builtins.listToAttrs settingsList;
     };
 
   meta.doc = ./keycloak.md;
+
   meta.maintainers = with maintainers; [
     talyz
     anish

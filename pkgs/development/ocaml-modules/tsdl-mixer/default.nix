@@ -1,18 +1,16 @@
 {
-  buildDunePackage,
-  dune-configurator,
-  fetchFromGitHub,
   lib,
+  fetchFromGitHub,
   SDL2,
   SDL2_mixer,
+  buildDunePackage,
+  dune-configurator,
   tsdl,
 }:
 
 buildDunePackage rec {
   pname = "tsdl-mixer";
   version = "0.6";
-
-  duneVersion = "3";
 
   src = fetchFromGitHub {
     owner = "sanette";
@@ -30,6 +28,8 @@ buildDunePackage rec {
     SDL2_mixer
     tsdl
   ];
+
+  duneVersion = "3";
 
   meta = {
     description = "SDL2_mixer bindings to go with Tsdl";

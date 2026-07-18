@@ -35,8 +35,8 @@ stdenv.mkDerivation (finalAttrs: {
     optional glibSupport glib ++ optional libevSupport libev ++ optional libeventSupport libevent;
 
   meta = {
-    homepage = "https://github.com/latchset/libverto";
     description = "Asynchronous event loop abstraction library";
+
     longDescription = ''
       Libverto exists to solve an important problem: many applications and
       libraries are unable to write asynchronous code because they are unable to
@@ -46,6 +46,8 @@ stdenv.mkDerivation (finalAttrs: {
       async api which allows the library to expose asynchronous interfaces and
       offload the choice of the main loop to the application.
     '';
+
+    homepage = "https://github.com/latchset/libverto";
     license = lib.licenses.mit;
     maintainers = [ ];
     platforms = lib.platforms.unix;

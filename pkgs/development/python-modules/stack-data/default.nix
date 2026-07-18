@@ -1,24 +1,23 @@
 {
+  lib,
+  fetchFromGitHub,
   asttokens,
   buildPythonPackage,
   cython,
   executing,
-  fetchFromGitHub,
-  lib,
   littleutils,
   pure-eval,
   pygments,
   pytestCheckHook,
+  setuptools,
   setuptools-scm,
   typeguard,
-  setuptools,
   wheel,
 }:
 
 buildPythonPackage rec {
   pname = "stack-data";
   version = "0.6.3";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "alexmojaki";
@@ -27,18 +26,18 @@ buildPythonPackage rec {
     hash = "sha256-dmBhfCg60KX3gWp3k1CGRxW14z3BLlair0PjLW9HFYo=";
   };
 
-  build-system = [
-    setuptools
-    setuptools-scm
-    wheel
-  ];
-
   nativeCheckInputs = [
     cython
     littleutils
     pygments
     pytestCheckHook
     typeguard
+  ];
+
+  build-system = [
+    setuptools
+    setuptools-scm
+    wheel
   ];
 
   dependencies = [
@@ -55,6 +54,7 @@ buildPythonPackage rec {
     "test_variables"
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "stack_data" ];
 
   meta = {

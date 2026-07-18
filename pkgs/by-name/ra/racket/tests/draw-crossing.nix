@@ -1,4 +1,4 @@
-{ runCommandLocal, racket }:
+{ racket, runCommandLocal }:
 
 runCommandLocal "racket-test-draw-crossing"
   {

@@ -23,15 +23,14 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   nativeBuildInputs = [ cmake ];
-
   passthru.tests.pkg-config = testers.hasPkgConfigModules { package = finalAttrs.finalPackage; };
 
   meta = {
     description = "Clever Audio Plugin API interface headers";
     homepage = "https://cleveraudio.org/";
-    pkgConfigModules = [ "clap" ];
     license = lib.licenses.mit;
-    platforms = lib.platforms.all;
     maintainers = with lib.maintainers; [ ris ];
+    platforms = lib.platforms.all;
+    pkgConfigModules = [ "clap" ];
   };
 })

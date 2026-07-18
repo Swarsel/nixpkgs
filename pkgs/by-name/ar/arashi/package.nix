@@ -1,7 +1,7 @@
 {
   lib,
-  stdenvNoCC,
   fetchFromGitHub,
+  stdenvNoCC,
 }:
 stdenvNoCC.mkDerivation (finalAttrs: {
   pname = "arashi";
@@ -27,7 +27,7 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     description = "Arashi icon theme";
     homepage = "https://github.com/0hStormy/Arashi";
     license = lib.licenses.cc-by-sa-40;
-    platforms = lib.platforms.all;
     maintainers = with lib.maintainers; [ ritascarlet ];
+    platforms = lib.platforms.all;
   };
 })

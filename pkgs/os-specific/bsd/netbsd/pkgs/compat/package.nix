@@ -1,16 +1,16 @@
 {
   lib,
-  mkDerivation,
   stdenv,
-  zlib,
-  defaultMakeFlags,
-  coreutils,
-  cctools,
-  install,
   bsdSetupHook,
-  netbsdSetupHook,
+  cctools,
+  coreutils,
+  defaultMakeFlags,
+  install,
   makeMinimal,
+  mkDerivation,
+  netbsdSetupHook,
   version,
+  zlib,
 }:
 
 mkDerivation (
@@ -18,30 +18,25 @@ mkDerivation (
     commonDeps = [ zlib ];
   in
   {
-    path = "tools/compat";
-
     outputs = [
       "out"
       "dev"
     ];
 
-    setupHooks = [
-      ../../../../../build-support/setup-hooks/role.bash
-      ./compat-setup-hook.sh
+    patches = [
+      ./compat-cxx-safe-header.patch
+      ./compat-dont-configure-twice.patch
+      ./compat-no-force-native.patch
     ];
 
-    preConfigure = ''
-      make include/.stamp configure nbtool_config.h.in defs.mk.in
-    ''
-    + lib.optionalString stdenv.buildPlatform.isDarwin ''
-      # Fix cross-compilation from darwin, remove after update to netbsd 10.0
-      substituteInPlace Makefile --replace-warn "-no-cpp-precomp" ""
-    '';
-
-    configurePlatforms = [
-      "build"
-      "host"
+    nativeBuildInputs = commonDeps ++ [
+      bsdSetupHook
+      netbsdSetupHook
+      makeMinimal
     ];
+
+    buildInputs = commonDeps;
+
     configureFlags = [
       "--cache-file=config.cache"
     ]
@@ -52,14 +47,6 @@ mkDerivation (
       # statically).
       "ac_cv_header_sys_cdefs_h=no"
     ];
-
-    nativeBuildInputs = commonDeps ++ [
-      bsdSetupHook
-      netbsdSetupHook
-      makeMinimal
-    ];
-
-    buildInputs = commonDeps;
 
     # temporarily use gnuinstall for bootstrapping
     # bsdinstall will be built later
@@ -79,17 +66,16 @@ mkDerivation (
         # Makefiles only invoke `$OBJCOPY -x/-X`, so cctools strip works here.
         "OBJCOPY=${cctools}/bin/strip"
       ];
+
     env.RENAME = "-D";
 
-    passthru.tests = {
-      netbsd-install = install;
-    };
-
-    patches = [
-      ./compat-cxx-safe-header.patch
-      ./compat-dont-configure-twice.patch
-      ./compat-no-force-native.patch
-    ];
+    preConfigure = ''
+      make include/.stamp configure nbtool_config.h.in defs.mk.in
+    ''
+    + lib.optionalString stdenv.buildPlatform.isDarwin ''
+      # Fix cross-compilation from darwin, remove after update to netbsd 10.0
+      substituteInPlace Makefile --replace-warn "-no-cpp-precomp" ""
+    '';
 
     preInstall = ''
       makeFlagsArray+=('INSTALL_FILE=''${INSTALL} ''${COPY} ''${PRESERVE} ''${RENAME}')
@@ -133,6 +119,12 @@ mkDerivation (
         --subst-var-by includedir "$dev/include" \
         --subst-var-by version ${version}
     '';
+
+    configurePlatforms = [
+      "build"
+      "host"
+    ];
+
     extraPaths = [
       "common"
       "include"
@@ -141,5 +133,16 @@ mkDerivation (
       "external/bsd/flex"
       "sys/sys"
     ];
+
+    path = "tools/compat";
+
+    setupHooks = [
+      ../../../../../build-support/setup-hooks/role.bash
+      ./compat-setup-hook.sh
+    ];
+
+    passthru.tests = {
+      netbsd-install = install;
+    };
   }
 )

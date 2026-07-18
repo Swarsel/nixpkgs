@@ -1,10 +1,10 @@
 {
   lib,
-  gccStdenv,
   fetchurl,
   fetchpatch,
-  zlib,
+  gccStdenv,
   ncurses,
+  zlib,
 }:
 
 let
@@ -23,22 +23,22 @@ stdenv.mkDerivation (finalAttrs: {
     # Pull patch pending upstream inclusion:
     #  https://sourceforge.net/p/aewan/bugs/13/
     (fetchpatch {
-      url = "https://sourceforge.net/p/aewan/bugs/13/attachment/aewan-cvs-ncurses-6.3.patch";
-      sha256 = "0pgpk1l3d6d5y37lvvavipwnmv9gmpfdy21jkz6baxhlkgf43r4p";
       # patch is in CVS diff format, add 'a/' prefix
       extraPrefix = "";
+      sha256 = "0pgpk1l3d6d5y37lvvavipwnmv9gmpfdy21jkz6baxhlkgf43r4p";
+      url = "https://sourceforge.net/p/aewan/bugs/13/attachment/aewan-cvs-ncurses-6.3.patch";
     })
     # https://sourceforge.net/p/aewan/bugs/14/
     (fetchpatch {
-      url = "https://sourceforge.net/p/aewan/bugs/14/attachment/aewan-1.0.01-fix-incompatible-function-pointer-types.patch";
       sha256 = "sha256-NlnsOe/OCMXCrehBq20e0KOMcWt5rUv9fIvu9eoOMqw=";
+      url = "https://sourceforge.net/p/aewan/bugs/14/attachment/aewan-1.0.01-fix-incompatible-function-pointer-types.patch";
     })
     # https://sourceforge.net/p/aewan/bugs/16/
     (fetchpatch {
-      url = "https://sourceforge.net/p/aewan/bugs/16/attachment/implicit-function-declaration.patch";
-      sha256 = "sha256-RWFJRDaYoiQySkB2L09JHSX90zgIJ9q16IrPhg03Ruc=";
       # patch is in CVS diff format, add 'a/' prefix
       extraPrefix = "";
+      sha256 = "sha256-RWFJRDaYoiQySkB2L09JHSX90zgIJ9q16IrPhg03Ruc=";
+      url = "https://sourceforge.net/p/aewan/bugs/16/attachment/implicit-function-declaration.patch";
     })
   ];
 

@@ -1,8 +1,8 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitLab,
   protobuf,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -16,17 +16,12 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-PbGTbVMO2L+gQpZQewkR0uo6fxqrVUjT/eAsnz2o/u4=";
   };
 
-  sourceRoot = "${finalAttrs.src.name}/golang/rust";
-
-  cargoHash = "sha256-OED+NqNt71771UDZ1M8Ks/Yfx8YNjfL246FKMeLFfLg=";
-
-  cargoBuildFlags = [ "--lib" ];
-
-  doCheck = false;
-
   nativeBuildInputs = [
     protobuf
   ];
+
+  cargoHash = "sha256-OED+NqNt71771UDZ1M8Ks/Yfx8YNjfL246FKMeLFfLg=";
+  doCheck = false;
 
   installPhase = ''
     runHook preInstall
@@ -37,11 +32,14 @@ rustPlatform.buildRustPackage (finalAttrs: {
     runHook postInstall
   '';
 
+  cargoBuildFlags = [ "--lib" ];
+  sourceRoot = "${finalAttrs.src.name}/golang/rust";
+
   meta = {
     description = "Go bindings static library for Bark";
     homepage = "https://gitlab.com/ark-bitcoin/bark-ffi-bindings";
     license = lib.licenses.mit;
-    platforms = lib.platforms.linux;
     maintainers = with lib.maintainers; [ bleetube ];
+    platforms = lib.platforms.linux;
   };
 })

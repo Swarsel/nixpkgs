@@ -120,91 +120,21 @@ in
 {
   options = {
     services.cgit = lib.mkOption {
-      description = "Configure cgit instances.";
       default = { };
+      description = "Configure cgit instances.";
+
       type = lib.types.attrsOf (
         lib.types.submodule (
           { config, ... }:
           {
             options = {
               enable = lib.mkEnableOption "cgit";
-
               package = lib.mkPackageOption pkgs "cgit" { };
 
-              nginx.virtualHost = lib.mkOption {
-                description = "VirtualHost to serve cgit on, defaults to the attribute name.";
-                type = lib.types.str;
-                default = config._module.args.name;
-                example = "git.example.com";
-              };
-
-              nginx.location = lib.mkOption {
-                description = "Location to serve cgit under.";
-                type = lib.types.str;
-                default = "/";
-                example = "/git/";
-              };
-
-              repos = lib.mkOption {
-                description = "cgit repository settings, see {manpage}`cgitrc(5)`";
-                type = with lib.types; attrsOf (attrsOf settingType);
-                default = { };
-                example = {
-                  blah = {
-                    path = "/var/lib/git/example";
-                    desc = "An example repository";
-                  };
-                };
-              };
-
-              scanPath = lib.mkOption {
-                description = "A path which will be scanned for repositories.";
-                type = lib.types.nullOr lib.types.path;
-                default = null;
-                example = "/var/lib/git";
-              };
-
-              settings = lib.mkOption {
-                description = "cgit configuration, see {manpage}`cgitrc(5)`";
-                type = lib.types.attrsOf repeatedSettingType;
-                default = { };
-                example = lib.literalExpression ''
-                  {
-                    enable-follow-links = true;
-                    source-filter = "''${pkgs.cgit}/lib/cgit/filters/syntax-highlighting.py";
-                  }
-                '';
-              };
-
               extraConfig = lib.mkOption {
+                default = "";
                 description = "These lines go to the end of cgitrc verbatim.";
                 type = lib.types.lines;
-                default = "";
-              };
-
-              user = lib.mkOption {
-                description = "User to run the cgit service as.";
-                type = lib.types.str;
-                default = "cgit";
-              };
-
-              group = lib.mkOption {
-                description = "Group to run the cgit service as.";
-                type = lib.types.str;
-                default = "cgit";
-              };
-
-              gitHttpBackend.enable = lib.mkOption {
-                description = ''
-                  Whether to bypass cgit and use git-http-backend for HTTP clones.
-                  While this enables HTTP clones to use the more efficient smart protocol,
-                  it does not support access control via cgit's settings (e.g. the `ignore` repository setting).
-
-                  If you want to disallow access to some repositories with this backend,
-                  enable `checkExportOkFiles` and set `strict-export = "git-daemon-export-ok"` in `settings`.
-                '';
-                type = lib.types.bool;
-                default = true;
               };
 
               gitHttpBackend.checkExportOkFiles = lib.mkOption {
@@ -217,7 +147,84 @@ in
                   When enabled you must also configure `strict-export = "git-daemon-export-ok"`
                   in `settings` to make cgit check for the same files.
                 '';
+
                 type = lib.types.bool;
+              };
+
+              gitHttpBackend.enable = lib.mkOption {
+                default = true;
+
+                description = ''
+                  Whether to bypass cgit and use git-http-backend for HTTP clones.
+                  While this enables HTTP clones to use the more efficient smart protocol,
+                  it does not support access control via cgit's settings (e.g. the `ignore` repository setting).
+
+                  If you want to disallow access to some repositories with this backend,
+                  enable `checkExportOkFiles` and set `strict-export = "git-daemon-export-ok"` in `settings`.
+                '';
+
+                type = lib.types.bool;
+              };
+
+              group = lib.mkOption {
+                default = "cgit";
+                description = "Group to run the cgit service as.";
+                type = lib.types.str;
+              };
+
+              nginx.location = lib.mkOption {
+                default = "/";
+                description = "Location to serve cgit under.";
+                example = "/git/";
+                type = lib.types.str;
+              };
+
+              nginx.virtualHost = lib.mkOption {
+                default = config._module.args.name;
+                description = "VirtualHost to serve cgit on, defaults to the attribute name.";
+                example = "git.example.com";
+                type = lib.types.str;
+              };
+
+              repos = lib.mkOption {
+                default = { };
+                description = "cgit repository settings, see {manpage}`cgitrc(5)`";
+
+                example = {
+                  blah = {
+                    desc = "An example repository";
+                    path = "/var/lib/git/example";
+                  };
+                };
+
+                type = with lib.types; attrsOf (attrsOf settingType);
+              };
+
+              scanPath = lib.mkOption {
+                default = null;
+                description = "A path which will be scanned for repositories.";
+                example = "/var/lib/git";
+                type = lib.types.nullOr lib.types.path;
+              };
+
+              settings = lib.mkOption {
+                default = { };
+                description = "cgit configuration, see {manpage}`cgitrc(5)`";
+
+                example = lib.literalExpression ''
+                  {
+                    enable-follow-links = true;
+                    source-filter = "''${pkgs.cgit}/lib/cgit/filters/syntax-highlighting.py";
+                  }
+                '';
+
+                type = lib.types.attrsOf repeatedSettingType;
+              };
+
+              user = lib.mkOption {
+                default = "cgit";
+                description = "User to run the cgit service as.";
+                type = lib.types.str;
               };
             };
           }
@@ -239,6 +246,7 @@ in
             -> cfg.gitHttpBackend.enable
             -> cfg.gitHttpBackend.checkExportOkFiles
             -> (cfg.settings ? strict-export && cfg.settings.strict-export == "git-daemon-export-ok");
+
           message = "Misconfigured services.cgit.${vhost}: When gitHttpBackend.checkExportOkFiles is true then settings.strict-export must be \"git-daemon-export-ok\".";
         }
         {
@@ -248,21 +256,10 @@ in
             -> !cfg.gitHttpBackend.checkExportOkFiles
             -> cfg.settings ? strict-export
             -> cfg.settings.strict-export == null;
+
           message = "Misconfigured services.cgit.${vhost}: settings.strict-export is set but the gitHttpBackend is enabled and checkExportOkFiles is false.";
         }
       ]) cfgs
-    );
-
-    users = lib.mkMerge (
-      lib.flip lib.mapAttrsToList cfgs (
-        _: cfg: {
-          users.${cfg.user} = {
-            isSystemUser = true;
-            inherit (cfg) group;
-          };
-          groups.${cfg.group} = { };
-        }
-      )
     );
 
     services.fcgiwrap.instances = lib.flip lib.mapAttrs' cfgs (
@@ -271,27 +268,6 @@ in
         process = { inherit (cfg) user group; };
         socket = { inherit (config.services.nginx) user group; };
       }
-    );
-
-    systemd.services = lib.flip lib.mapAttrs' cfgs (
-      name: cfg:
-      lib.nameValuePair (fcgiwrapUnitName name) (
-        lib.mkIf (cfg.repos != { }) {
-          serviceConfig.RuntimeDirectory = fcgiwrapUnitName name;
-          preStart = ''
-            GIT_PROJECT_ROOT=${lib.escapeShellArg (gitProjectRoot name cfg)}
-            mkdir -p "$GIT_PROJECT_ROOT"
-            cd "$GIT_PROJECT_ROOT"
-            ${lib.concatLines (
-              lib.flip lib.mapAttrsToList cfg.repos (
-                name: repo: ''
-                  ln -s ${lib.escapeShellArg repo.path} ${lib.escapeShellArg name}
-                ''
-              )
-            )}
-          '';
-        }
-      )
     );
 
     services.nginx.enable = true;
@@ -308,30 +284,67 @@ in
             ))
             // lib.optionalAttrs cfg.gitHttpBackend.enable {
               "~ ${regexLocation cfg}/.+/(info/refs|git-upload-pack)" = {
+                extraConfig = mkFastcgiPass name cfg;
+
                 fastcgiParams = rec {
-                  SCRIPT_FILENAME = "${pkgs.git}/libexec/git-core/git-http-backend";
                   GIT_PROJECT_ROOT = gitProjectRoot name cfg;
                   HOME = GIT_PROJECT_ROOT;
+                  SCRIPT_FILENAME = "${pkgs.git}/libexec/git-core/git-http-backend";
                 }
                 // lib.optionalAttrs (!cfg.gitHttpBackend.checkExportOkFiles) {
                   GIT_HTTP_EXPORT_ALL = "1";
                 };
-                extraConfig = mkFastcgiPass name cfg;
               };
             }
             // {
               "${stripLocation cfg}/" = {
-                fastcgiParams = {
-                  SCRIPT_FILENAME = "${cfg.package}/cgit/cgit.cgi";
-                  QUERY_STRING = "$args";
-                  HTTP_HOST = "$server_name";
-                  CGIT_CONFIG = mkCgitrc cfg;
-                };
                 extraConfig = mkFastcgiPass name cfg;
+
+                fastcgiParams = {
+                  CGIT_CONFIG = mkCgitrc cfg;
+                  HTTP_HOST = "$server_name";
+                  QUERY_STRING = "$args";
+                  SCRIPT_FILENAME = "${cfg.package}/cgit/cgit.cgi";
+                };
               };
             };
         };
       }) cfgs
+    );
+
+    systemd.services = lib.flip lib.mapAttrs' cfgs (
+      name: cfg:
+      lib.nameValuePair (fcgiwrapUnitName name) (
+        lib.mkIf (cfg.repos != { }) {
+          preStart = ''
+            GIT_PROJECT_ROOT=${lib.escapeShellArg (gitProjectRoot name cfg)}
+            mkdir -p "$GIT_PROJECT_ROOT"
+            cd "$GIT_PROJECT_ROOT"
+            ${lib.concatLines (
+              lib.flip lib.mapAttrsToList cfg.repos (
+                name: repo: ''
+                  ln -s ${lib.escapeShellArg repo.path} ${lib.escapeShellArg name}
+                ''
+              )
+            )}
+          '';
+
+          serviceConfig.RuntimeDirectory = fcgiwrapUnitName name;
+        }
+      )
+    );
+
+    users = lib.mkMerge (
+      lib.flip lib.mapAttrsToList cfgs (
+        _: cfg: {
+          groups.${cfg.group} = { };
+
+          users.${cfg.user} = {
+            inherit (cfg) group;
+            isSystemUser = true;
+          };
+        }
+      )
     );
   };
 }

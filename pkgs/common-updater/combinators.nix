@@ -45,8 +45,8 @@ let
   */
   processArg =
     {
-      maxArgIndex,
       args,
+      maxArgIndex,
       paths,
     }:
     arg:
@@ -58,8 +58,8 @@ let
       }
     else
       {
-        args = args ++ [ arg ];
         inherit maxArgIndex paths;
+        args = args ++ [ arg ];
       };
   /*
     extractPaths : Int → [ (String|FilePath) ] → { maxArgIndex : Int, args : [ShellArg], paths : [FilePath] }
@@ -78,8 +78,8 @@ let
   */
   processCommand =
     {
-      maxArgIndex,
       commands,
+      maxArgIndex,
       paths,
     }:
     command:
@@ -88,8 +88,8 @@ let
     in
     {
       commands = commands ++ [ new.args ];
-      paths = paths ++ new.paths;
       maxArgIndex = new.maxArgIndex;
+      paths = paths ++ new.paths;
     };
   /*
     extractCommands : Int → [[ (String|FilePath) ]] → { maxArgIndex : Int, commands : [[ShellArg]], paths : [FilePath] }
@@ -122,6 +122,24 @@ let
     ++ extracted.paths;
 in
 rec {
+  /*
+    copyAttrOutputToFile : String → FilePath → UpdateScript
+    EXPERIMENTAL! Simple update script that copies the output of Nix derivation built by `attr` to `path`.
+  */
+  copyAttrOutputToFile =
+    attr: path:
+
+    {
+      command = [
+        "sh"
+        "-c"
+        "cp --no-preserve=all \"$(nix-build -A ${attr})\" \"$0\" > /dev/null"
+        path
+      ];
+
+      supportedFeatures = [ "silent" ];
+    };
+
   /*
     normalize : UpdateScript → UpdateScript
     EXPERIMENTAL! Converts a basic update script to the experimental attribute set form.
@@ -188,6 +206,7 @@ rec {
 
     {
       command = commandsToShellInvocation (map ({ command, ... }: command) scripts);
+
       supportedFeatures =
         if hasCommitSupport then
           [ "commit" ]
@@ -195,23 +214,6 @@ rec {
           [ "silent" ]
         else
           [ ];
-    };
-
-  /*
-    copyAttrOutputToFile : String → FilePath → UpdateScript
-    EXPERIMENTAL! Simple update script that copies the output of Nix derivation built by `attr` to `path`.
-  */
-  copyAttrOutputToFile =
-    attr: path:
-
-    {
-      command = [
-        "sh"
-        "-c"
-        "cp --no-preserve=all \"$(nix-build -A ${attr})\" \"$0\" > /dev/null"
-        path
-      ];
-      supportedFeatures = [ "silent" ];
     };
 
 }

@@ -2,16 +2,15 @@
   lib,
   fetchFromGitHub,
   buildPythonPackage,
-  setuptools,
-  setuptools-scm,
   cython,
   pytestCheckHook,
+  setuptools,
+  setuptools-scm,
 }:
 
 buildPythonPackage rec {
   pname = "pyclipper";
   version = "1.4.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "fonttools";
@@ -20,14 +19,15 @@ buildPythonPackage rec {
     hash = "sha256-mh+F3iFCItmLbV6bF7Mi5IaWwjcKrE9Nk6lxglyFUg4=";
   };
 
+  nativeCheckInputs = [ pytestCheckHook ];
+
   build-system = [
     setuptools
     setuptools-scm
     cython
   ];
 
-  nativeCheckInputs = [ pytestCheckHook ];
-
+  pyproject = true;
   pythonImportsCheck = [ "pyclipper" ];
 
   meta = {

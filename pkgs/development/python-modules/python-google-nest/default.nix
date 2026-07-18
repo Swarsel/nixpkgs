@@ -8,7 +8,6 @@
 buildPythonPackage rec {
   pname = "python-google-nest";
   version = "5.2.1";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
@@ -16,10 +15,9 @@ buildPythonPackage rec {
   };
 
   propagatedBuildInputs = [ requests-oauthlib ];
-
   # Project has no tests
   doCheck = false;
-
+  format = "setuptools";
   pythonImportsCheck = [ "nest" ];
 
   meta = {

@@ -1,17 +1,17 @@
 {
   lib,
   stdenv,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   installShellFiles,
 }:
 
 let
   generic =
     {
-      pname,
-      packageToBuild,
       description,
+      packageToBuild,
+      pname,
     }:
     buildGoModule rec {
       inherit pname;
@@ -25,6 +25,7 @@ let
         # populate values that require us to use git. By doing this in postFetch we
         # can delete .git afterwards and maintain better reproducibility of the src.
         leaveDotGit = true;
+
         postFetch = ''
           cd "$out"
           git rev-parse HEAD > $out/COMMIT
@@ -34,18 +35,8 @@ let
         '';
       };
 
-      vendorHash = "sha256-kWVuSOVigDEIOteIERIDDlOJmN7NGRMWdRIhtr4qCdY=";
-
       nativeBuildInputs = [ installShellFiles ];
-
-      subPackages = [ packageToBuild ];
-
-      ldflags = [
-        "-s"
-        "-w"
-        "-X sigs.k8s.io/release-utils/version.gitVersion=v${version}"
-        "-X sigs.k8s.io/release-utils/version.gitTreeState=clean"
-      ];
+      vendorHash = "sha256-kWVuSOVigDEIOteIERIDDlOJmN7NGRMWdRIhtr4qCdY=";
 
       # ldflags based on metadata from git and source
       preBuild = ''
@@ -60,11 +51,21 @@ let
           --zsh <($out/bin/${pname} completion zsh)
       '';
 
+      ldflags = [
+        "-s"
+        "-w"
+        "-X sigs.k8s.io/release-utils/version.gitVersion=v${version}"
+        "-X sigs.k8s.io/release-utils/version.gitTreeState=clean"
+      ];
+
+      subPackages = [ packageToBuild ];
+
       meta = {
         inherit description;
         homepage = "https://github.com/sigstore/rekor";
         changelog = "https://github.com/sigstore/rekor/releases/tag/v${version}";
         license = lib.licenses.asl20;
+
         maintainers = with lib.maintainers; [
           lesuisse
           jk
@@ -76,12 +77,13 @@ in
 {
   rekor-cli = generic {
     pname = "rekor-cli";
-    packageToBuild = "cmd/rekor-cli";
     description = "CLI client for Sigstore, the Signature Transparency Log";
+    packageToBuild = "cmd/rekor-cli";
   };
+
   rekor-server = generic {
     pname = "rekor-server";
-    packageToBuild = "cmd/rekor-server";
     description = "Sigstore server, the Signature Transparency Log";
+    packageToBuild = "cmd/rekor-server";
   };
 }

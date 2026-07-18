@@ -14,7 +14,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "pycares";
   version = "5.0.1";
-  pyproject = true;
 
   src = fetchPypi {
     inherit (finalAttrs) pname version;
@@ -22,27 +21,24 @@ buildPythonPackage (finalAttrs: {
   };
 
   nativeBuildInputs = [ cmake ];
-  dontUseCmakeConfigure = true;
-
-  build-system = [ setuptools ];
-
   buildInputs = [ c-ares ];
+  # Requires network access
+  doCheck = false;
+  build-system = [ setuptools ];
 
   dependencies = [
     cffi
     idna
   ];
 
+  dontUseCmakeConfigure = true;
   propagatedNativeBuildInputs = [ cffi ];
-
-  # Requires network access
-  doCheck = false;
+  pyproject = true;
+  pythonImportsCheck = [ "pycares" ];
 
   passthru.tests = {
     inherit aiodns tornado;
   };
-
-  pythonImportsCheck = [ "pycares" ];
 
   meta = {
     description = "Python interface for c-ares";

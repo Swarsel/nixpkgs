@@ -14,10 +14,11 @@ let
   json = pkgs.formats.json { };
   connectionDir = if globalCfg.stateless then "/run" else "/var/lib";
   defaultConfig = {
-    tunnel = { };
     gateway = {
       traffic_policy_file = "${trafficConfigFile}";
     };
+
+    tunnel = { };
   };
   defaultTrafficConfig = {
     ASes = { };
@@ -30,10 +31,13 @@ let
 in
 {
   options.services.scion.scion-ip-gateway = {
-    enable = mkEnableOption "the scion-ip-gateway service";
     config = mkOption {
       default = { };
-      type = toml.type;
+
+      description = ''
+        scion-ip-gateway daemon configuration
+      '';
+
       example = literalExpression ''
         {
           tunnel = {
@@ -41,13 +45,19 @@ in
           };
         }
       '';
-      description = ''
-        scion-ip-gateway daemon configuration
-      '';
+
+      type = toml.type;
     };
+
+    enable = mkEnableOption "the scion-ip-gateway service";
+
     trafficConfig = mkOption {
       default = { };
-      type = json.type;
+
+      description = ''
+        scion-ip-gateway traffic configuration
+      '';
+
       example = literalExpression ''
         {
           ASes = {
@@ -60,33 +70,37 @@ in
           ConfigVersion = 9001;
         }
       '';
-      description = ''
-        scion-ip-gateway traffic configuration
-      '';
+
+      type = json.type;
     };
   };
+
   config = mkIf cfg.enable {
     systemd.services.scion-ip-gateway = {
-      description = "SCION IP Gateway Service";
       after = [
         "network-online.target"
         "scion-dispatcher.service"
       ];
+
+      description = "SCION IP Gateway Service";
+
+      serviceConfig = {
+        AmbientCapabilities = [ "CAP_NET_ADMIN" ];
+        DynamicUser = true;
+        ExecStart = "${globalCfg.package}/bin/scion-ip-gateway --config ${configFile}";
+        Group = if (config.services.scion.scion-dispatcher.enable == true) then "scion" else null;
+        KillMode = "control-group";
+        RemainAfterExit = false;
+        Restart = "on-failure";
+        Type = "simple";
+      };
+
+      wantedBy = [ "multi-user.target" ];
+
       wants = [
         "network-online.target"
         "scion-dispatcher.service"
       ];
-      wantedBy = [ "multi-user.target" ];
-      serviceConfig = {
-        Type = "simple";
-        Group = if (config.services.scion.scion-dispatcher.enable == true) then "scion" else null;
-        ExecStart = "${globalCfg.package}/bin/scion-ip-gateway --config ${configFile}";
-        DynamicUser = true;
-        AmbientCapabilities = [ "CAP_NET_ADMIN" ];
-        Restart = "on-failure";
-        KillMode = "control-group";
-        RemainAfterExit = false;
-      };
     };
   };
 }

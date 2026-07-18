@@ -1,7 +1,7 @@
 {
   lib,
-  buildNpmPackage,
   fetchFromGitHub,
+  buildNpmPackage,
 }:
 
 buildNpmPackage (finalAttrs: {
@@ -16,10 +16,8 @@ buildNpmPackage (finalAttrs: {
   };
 
   npmDepsHash = "sha256-Oqyx6pytDrYg1JbHawKxnnWEJxaFUaM9LcREizh3LFQ=";
-
-  dontNpmBuild = true;
-
   env.NODE_OPTIONS = "--openssl-legacy-provider";
+  dontNpmBuild = true;
 
   meta = {
     description = "Terminal client for Cabal, the p2p chat platform";

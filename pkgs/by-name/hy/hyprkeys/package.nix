@@ -1,8 +1,8 @@
 {
   lib,
   stdenv,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   installShellFiles,
 }:
 
@@ -17,12 +17,6 @@ buildGoModule (finalAttrs: {
     hash = "sha256-u2NTSth9gminIEcbxgGm/2HHyzuwf/YPNQV4VzR14Kk=";
   };
 
-  ldflags = [
-    "-s"
-    "-w"
-    "-X main.version=v${finalAttrs.version}"
-  ];
-
   nativeBuildInputs = [
     installShellFiles
   ];
@@ -36,14 +30,22 @@ buildGoModule (finalAttrs: {
       --zsh <($out/bin/hyprkeys completion zsh)
   '';
 
+  ldflags = [
+    "-s"
+    "-w"
+    "-X main.version=v${finalAttrs.version}"
+  ];
+
   meta = {
     description = "Simple, scriptable keybind retrieval utility for Hyprland";
     homepage = "https://github.com/hyprland-community/Hyprkeys";
     license = lib.licenses.gpl3Only;
+
     maintainers = with lib.maintainers; [
       NotAShelf
       donovanglover
     ];
+
     mainProgram = "hyprkeys";
   };
 })

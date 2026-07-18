@@ -1,17 +1,19 @@
 {
   lib,
-  qtModule,
   stdenv,
-  speechd-minimal,
   pkg-config,
+  qtModule,
+  speechd-minimal,
 }:
 
 qtModule {
   pname = "qtspeech";
-  buildInputs = lib.optionals stdenv.hostPlatform.isLinux [ speechd-minimal ];
-  nativeBuildInputs = [ pkg-config ];
+
   outputs = [
     "out"
     "dev"
   ];
+
+  nativeBuildInputs = [ pkg-config ];
+  buildInputs = lib.optionals stdenv.hostPlatform.isLinux [ speechd-minimal ];
 }

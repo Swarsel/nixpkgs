@@ -1,11 +1,11 @@
 {
-  callPackage,
-  newScope,
-  wrapCCWith,
-  symlinkJoin,
-  overrideCC,
   lib,
   fetchFromGitHub,
+  callPackage,
+  newScope,
+  overrideCC,
+  symlinkJoin,
+  wrapCCWith,
 }:
 let
   # This derivation uses makeScope to help with overriding.
@@ -38,10 +38,6 @@ let
   #  would need to be compiled for the host and not target platform,
   #  which is non-trivial to configure.
   scope = lib.makeScope newScope (self: {
-    # == Parameters for overriding ==
-
-    llvmMajorVersion = "22";
-
     version = "unstable-2025-11-14";
 
     src = fetchFromGitHub {
@@ -54,30 +50,26 @@ let
       hash = "sha256-oHk8kQVNsyC9vrOsDqVoFLYl2yMMaTgpQnAW9iHZLfE=";
     };
 
+    clang-tools-wrapper = callPackage ./clang-tools.nix {
+      inherit (self) unwrapped wrapper;
+    };
+
     # If you override src, you'll probably also want to override this,
     # as some packages check for this date to decide what features the compiler supports
     commitDate = "20251114";
-
-    vc-intrinsics-src = fetchFromGitHub {
-      owner = "intel";
-      repo = "vc-intrinsics";
-      # See llvm/lib/SYCLLowerIR/CMakeLists.txt:17
-      rev = "60cea7590bd022d95f5cf336ee765033bd114d69";
-      sha256 = "sha256-1K16UEa6DHoP2ukSx58OXJdtDWyUyHkq5Gd2DUj1644=";
-    };
+    # == Parameters for overriding ==
+    llvmMajorVersion = "22";
 
     # ===============================
-
     make-unified-runtime =
       {
-        levelZeroSupport,
         cudaSupport,
-        rocmSupport,
-        rocmGpuTargets,
+        levelZeroSupport,
         nativeCpuSupport,
+        rocmGpuTargets,
+        rocmSupport,
       }:
       callPackage ./unified-runtime.nix {
-        intel-llvm-src = self.src;
         inherit
           levelZeroSupport
           cudaSupport
@@ -85,11 +77,42 @@ let
           rocmGpuTargets
           nativeCpuSupport
           ;
+
+        intel-llvm-src = self.src;
         # This could theoretically be disabled if you for some reason
         # didn't want to build the backend, however OpenCL will get
         # pulled in as a dependency either way so there is little point.
         openclSupport = true;
       };
+
+    # We merge everything into one by default to avoid issues with path-lookup.
+    # intel-llvm provides the SYCL library, so unlike regular LLVM libraries,
+    # its libraries are equally important as the compiler itself.
+    # Splitting is nonetheless important, as otherwise the binaries go over the Hydra limit.
+    merged = symlinkJoin {
+      inherit (self.unwrapped) pname version meta;
+      strictDeps = true;
+      __structuredAttrs = true;
+
+      paths = with self; [
+        # Order is important, we want files from the wrappers to take precedence
+        wrapper
+        clang-tools-wrapper
+
+        unwrapped.out
+        unwrapped.dev
+        unwrapped.lib
+      ];
+
+      passthru = self.unwrapped.passthru // {
+        inherit (self) stdenv;
+        overrideScope = newF: (self.overrideScope newF).merged;
+        tests = callPackage ./tests.nix { inherit (self) stdenv; };
+        unwrapped = self.unwrapped;
+      };
+    };
+
+    stdenv = overrideCC self.unwrapped.baseLlvm.stdenv self.merged;
 
     unwrapped = callPackage ./unwrapped.nix {
       inherit (self)
@@ -102,8 +125,17 @@ let
         ;
     };
 
+    vc-intrinsics-src = fetchFromGitHub {
+      owner = "intel";
+      repo = "vc-intrinsics";
+      # See llvm/lib/SYCLLowerIR/CMakeLists.txt:17
+      rev = "60cea7590bd022d95f5cf336ee765033bd114d69";
+      sha256 = "sha256-1K16UEa6DHoP2ukSx58OXJdtDWyUyHkq5Gd2DUj1644=";
+    };
+
     wrapper = wrapCCWith {
       cc = self.unwrapped;
+
       # This is needed for tools like clang-scan-deps to find headers.
       # The build commands here are the same as the vanilla LLVM derivation.
       extraBuildCommands = ''
@@ -132,40 +164,6 @@ let
         # OpenCL and such need to be passed through
         ++ self.unwrapped.propagatedBuildInputs;
     };
-
-    clang-tools-wrapper = callPackage ./clang-tools.nix {
-      inherit (self) unwrapped wrapper;
-    };
-
-    # We merge everything into one by default to avoid issues with path-lookup.
-    # intel-llvm provides the SYCL library, so unlike regular LLVM libraries,
-    # its libraries are equally important as the compiler itself.
-    # Splitting is nonetheless important, as otherwise the binaries go over the Hydra limit.
-    merged = symlinkJoin {
-      inherit (self.unwrapped) pname version meta;
-
-      strictDeps = true;
-      __structuredAttrs = true;
-
-      paths = with self; [
-        # Order is important, we want files from the wrappers to take precedence
-        wrapper
-        clang-tools-wrapper
-
-        unwrapped.out
-        unwrapped.dev
-        unwrapped.lib
-      ];
-
-      passthru = self.unwrapped.passthru // {
-        inherit (self) stdenv;
-        unwrapped = self.unwrapped;
-        tests = callPackage ./tests.nix { inherit (self) stdenv; };
-
-        overrideScope = newF: (self.overrideScope newF).merged;
-      };
-    };
-    stdenv = overrideCC self.unwrapped.baseLlvm.stdenv self.merged;
   });
 in
 scope.merged

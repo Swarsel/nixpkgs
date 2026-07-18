@@ -1,17 +1,14 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
+  buildPythonPackage,
   pytestCheckHook,
+  setuptools,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "classify-imports";
   version = "4.2.0";
-  pyproject = true;
-
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "asottile";
@@ -20,11 +17,11 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-f5wZfisKz9WGdq6u0rd/zg2CfMwWvQeR8xZQNbD7KfU=";
   };
 
-  build-system = [ setuptools ];
-
-  pythonImportsCheck = [ "classify_imports" ];
-
   nativeCheckInputs = [ pytestCheckHook ];
+  __structuredAttrs = true;
+  build-system = [ setuptools ];
+  pyproject = true;
+  pythonImportsCheck = [ "classify_imports" ];
 
   meta = {
     description = "Utilities for refactoring imports in python-like syntax";

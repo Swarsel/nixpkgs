@@ -28,10 +28,10 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Experimental GNU make clone";
-    mainProgram = "ckati";
     homepage = "https://github.com/google/kati";
-    platforms = lib.platforms.all;
     license = lib.licenses.asl20;
     maintainers = with lib.maintainers; [ danielfullmer ];
+    platforms = lib.platforms.all;
+    mainProgram = "ckati";
   };
 })

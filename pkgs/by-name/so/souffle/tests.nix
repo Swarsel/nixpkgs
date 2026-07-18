@@ -1,43 +1,47 @@
 {
-  stdenv,
   lib,
-  souffle,
+  stdenv,
   runCommand,
+  souffle,
 }:
 let
   simpleTest =
-    { name, commands }:
+    { commands, name }:
     stdenv.mkDerivation {
       inherit name;
-      meta.timeout = 60;
+
       buildCommand = ''
         echo -e '.decl A(X: number)\n.output A\nA(1).' > A.dl
         ${commands}
         [ "$(cat A.csv)" = "1" ]
         touch $out
       '';
+
+      meta.timeout = 60;
     };
 in
 {
-  interpret = simpleTest {
-    name = "souffle-test-interpret";
-    commands = "${souffle}/bin/souffle A.dl";
-  };
-
   compile-in-one-step = simpleTest {
-    name = "souffle-test-compile-in-one-step";
     commands = ''
       ${souffle}/bin/souffle -o A A.dl
       ./A
     '';
+
+    name = "souffle-test-compile-in-one-step";
   };
 
   compile-in-two-steps = simpleTest {
-    name = "souffle-test-compile-in-two-steps";
     commands = ''
       ${souffle}/bin/souffle -g A.cpp A.dl
       ${souffle}/bin/souffle-compile.py A.cpp -o A
       ./A
     '';
+
+    name = "souffle-test-compile-in-two-steps";
+  };
+
+  interpret = simpleTest {
+    commands = "${souffle}/bin/souffle A.dl";
+    name = "souffle-test-interpret";
   };
 }

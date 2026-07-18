@@ -3,27 +3,21 @@
   stdenv,
   fetchgit,
   fetchzip,
-  runCommand,
   lndir,
   nim,
   nimOverrides,
+  runCommand,
 }:
 
 let
   fetchers = {
-    fetchzip =
-      { url, sha256, ... }:
-      fetchzip {
-        name = "source";
-        inherit url sha256;
-      };
     fetchgit =
       {
-        fetchSubmodules ? false,
-        leaveDotGit ? false,
         rev,
         sha256,
         url,
+        fetchSubmodules ? false,
+        leaveDotGit ? false,
         ...
       }:
       fetchgit {
@@ -35,6 +29,13 @@ let
           url
           ;
       };
+
+    fetchzip =
+      { sha256, url, ... }:
+      fetchzip {
+        inherit url sha256;
+        name = "source";
+      };
   };
 
   filterPropertiesToAttrs =
@@ -44,8 +45,8 @@ let
       (map (
         { name, value }:
         {
-          name = lib.strings.removePrefix prefix name;
           inherit value;
+          name = lib.strings.removePrefix prefix name;
         }
       ))
       builtins.listToAttrs
@@ -70,6 +71,7 @@ let
           "out"
           "src"
         ];
+
         nativeBuildInputs = [ lndir ];
       }
       ''
@@ -120,32 +122,10 @@ let
         ]) passthru.nimBin or { };
     in
     {
-      strictDeps = true;
-
       pname = prevAttrs.pname or sbom.metadata.component.name;
       version = prevAttrs.version or sbom.metadata.component.version or null;
-
-      nimFlags =
-        nimFlags
-        ++ (lib.optional nimRelease "-d:release")
-        ++ (
-          let
-            srcDir = properties."nim:srcDir" or "";
-          in
-          lib.optional (srcDir != "") "--path:${srcDir}"
-        );
-
-      configurePhase =
-        prevAttrs.configurePhase or ''
-          runHook preConfigure
-          echo "nim.cfg << $nimCfg"
-          cat $nimCfg >> nim.cfg
-          cat << EOF >> nim.cfg
-          nimcache:"$NIX_BUILD_TOP/nimcache"
-          parallelBuild:$NIX_BUILD_CORES
-          EOF
-          runHook postConfigure
-        '';
+      strictDeps = true;
+      nativeBuildInputs = (prevAttrs.nativeBuildInputs or [ ]) ++ [ nim ];
 
       buildPhase =
         prevAttrs.buildPhase or ''
@@ -161,13 +141,33 @@ let
           runHook postInstall
         '';
 
-      nativeBuildInputs = (prevAttrs.nativeBuildInputs or [ ]) ++ [ nim ];
+      configurePhase =
+        prevAttrs.configurePhase or ''
+          runHook preConfigure
+          echo "nim.cfg << $nimCfg"
+          cat $nimCfg >> nim.cfg
+          cat << EOF >> nim.cfg
+          nimcache:"$NIX_BUILD_TOP/nimcache"
+          parallelBuild:$NIX_BUILD_CORES
+          EOF
+          runHook postConfigure
+        '';
 
       nimCfg =
         prevAttrs.nimCfg or (buildNimCfg {
-          backend = prevAttrs.nimBackend or properties."nim:backend" or "c";
           inherit (sbom) components;
+          backend = prevAttrs.nimBackend or properties."nim:backend" or "c";
         });
+
+      nimFlags =
+        nimFlags
+        ++ (lib.optional nimRelease "-d:release")
+        ++ (
+          let
+            srcDir = properties."nim:srcDir" or "";
+          in
+          lib.optional (srcDir != "") "--path:${srcDir}"
+        );
 
       passthru = passthru // {
         inherit sbom properties nimBin;

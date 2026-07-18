@@ -2,8 +2,8 @@
   lib,
   fetchFromGitHub,
   buildGo126Module,
-  makeWrapper,
   ffmpeg,
+  makeWrapper,
 }:
 buildGo126Module rec {
   pname = "torrserver";
@@ -15,16 +15,9 @@ buildGo126Module rec {
     tag = "MatriX.${version}";
     sha256 = "sha256-bAnnDbrKYfU3WdjwIW4GGDST4S13KIhGNoQQtI27UaQ=";
   };
-  vendorHash = "sha256-B5BAmdFuLWDkbp/lehFziyHXcMPIAgNySgTPv9Nv680=";
-
-  modRoot = "server";
-  subPackages = [ "cmd" ];
-  ldflags = [
-    "-s"
-    "-w"
-  ];
 
   nativeBuildInputs = [ makeWrapper ];
+  vendorHash = "sha256-B5BAmdFuLWDkbp/lehFziyHXcMPIAgNySgTPv9Nv680=";
 
   postInstall = ''
     mv $out/bin/cmd $out/bin/torrserver
@@ -32,6 +25,14 @@ buildGo126Module rec {
     wrapProgram $out/bin/torrserver \
       --set PATH ${lib.makeBinPath [ ffmpeg ]}
   '';
+
+  ldflags = [
+    "-s"
+    "-w"
+  ];
+
+  modRoot = "server";
+  subPackages = [ "cmd" ];
 
   meta = {
     description = "Simple and powerful tool for streaming torrents";

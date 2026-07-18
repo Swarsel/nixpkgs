@@ -9,7 +9,6 @@
 buildPythonPackage rec {
   pname = "ordered-set";
   version = "4.1.0";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
@@ -17,9 +16,8 @@ buildPythonPackage rec {
   };
 
   nativeBuildInputs = [ flit-core ];
-
   nativeCheckInputs = [ pytestCheckHook ];
-
+  pyproject = true;
   pythonImportsCheck = [ "ordered_set" ];
 
   meta = {

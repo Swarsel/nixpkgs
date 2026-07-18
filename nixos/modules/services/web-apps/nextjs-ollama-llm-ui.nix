@@ -1,7 +1,7 @@
 {
   config,
-  pkgs,
   lib,
+  pkgs,
   ...
 }:
 let
@@ -24,12 +24,12 @@ in
         "services.nextjs-ollama-llm-ui.ollamaUrl" point to the correct url.
         You can host such a backend service with NixOS through "services.ollama".
       '';
+
       package = lib.mkPackageOption pkgs "nextjs-ollama-llm-ui" { };
 
       hostname = lib.mkOption {
-        type = lib.types.str;
         default = "127.0.0.1";
-        example = "ui.example.org";
+
         description = ''
           The hostname under which the Ollama UI interface should be accessible.
           By default it uses localhost/127.0.0.1 to be accessible only from the local machine.
@@ -39,27 +39,34 @@ in
           network or internet from a (home) server behind a reverse-proxy and secured encryption.
           See <https://wiki.nixos.org/wiki/Nginx> for instructions on how to set up a reverse-proxy.
         '';
-      };
 
-      port = lib.mkOption {
-        type = lib.types.port;
-        default = 3000;
-        example = 3000;
-        description = ''
-          The port under which the Ollama UI interface should be accessible.
-        '';
+        example = "ui.example.org";
+        type = lib.types.str;
       };
 
       ollamaUrl = lib.mkOption {
-        type = lib.types.str;
         default = "http://127.0.0.1:11434";
-        example = "https://ollama.example.org";
+
         description = ''
           The address (including host and port) under which we can access the Ollama backend server.
           !Note that if the the UI service is running under a domain "https://ui.example.org",
           the Ollama backend service must allow "CORS" requests from this domain, e.g. by adding
           "services.ollama.environment.OLLAMA_ORIGINS = [ ... "https://ui.example.org" ];"!
         '';
+
+        example = "https://ollama.example.org";
+        type = lib.types.str;
+      };
+
+      port = lib.mkOption {
+        default = 3000;
+
+        description = ''
+          The port under which the Ollama UI interface should be accessible.
+        '';
+
+        example = 3000;
+        type = lib.types.port;
       };
     };
   };
@@ -68,21 +75,25 @@ in
     systemd.services = {
 
       nextjs-ollama-llm-ui = {
-        wantedBy = [ "multi-user.target" ];
-        description = "Nextjs Ollama LLM Ui.";
         after = [ "network.target" ];
+        description = "Nextjs Ollama LLM Ui.";
+
         environment = {
           HOSTNAME = cfg.hostname;
-          PORT = toString cfg.port;
           NEXT_PUBLIC_OLLAMA_URL = cfg.ollamaUrl;
+          PORT = toString cfg.port;
         };
+
         serviceConfig = {
-          ExecStart = "${lib.getExe nextjs-ollama-llm-ui}";
-          DynamicUser = true;
           CacheDirectory = "nextjs-ollama-llm-ui";
+          DynamicUser = true;
+          ExecStart = "${lib.getExe nextjs-ollama-llm-ui}";
         };
+
+        wantedBy = [ "multi-user.target" ];
       };
     };
   };
+
   meta.maintainers = with lib.maintainers; [ malteneuss ];
 }

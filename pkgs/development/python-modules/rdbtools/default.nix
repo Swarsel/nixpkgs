@@ -2,16 +2,15 @@
   lib,
   fetchFromGitHub,
   buildPythonPackage,
-  setuptools,
   distutils,
   redis,
+  setuptools,
   unittestCheckHook,
 }:
 
 buildPythonPackage rec {
   pname = "rdbtools";
   version = "0.1.15";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "sripathikrishnan";
@@ -29,6 +28,10 @@ buildPythonPackage rec {
     ./0001-callback_tests-skip-test_all_dumps.patch
   ];
 
+  nativeCheckInputs = [
+    unittestCheckHook
+  ];
+
   build-system = [
     setuptools
   ];
@@ -38,10 +41,7 @@ buildPythonPackage rec {
     redis
   ];
 
-  nativeCheckInputs = [
-    unittestCheckHook
-  ];
-
+  pyproject = true;
   pythonImportsCheck = [ "rdbtools" ];
 
   meta = {

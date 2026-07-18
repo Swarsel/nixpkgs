@@ -1,7 +1,7 @@
 {
   lib,
-  stdenvNoCC,
   fetchFromGitHub,
+  stdenvNoCC,
 }:
 
 stdenvNoCC.mkDerivation rec {
@@ -25,8 +25,8 @@ stdenvNoCC.mkDerivation rec {
   meta = {
     description = "Posy's Improved Cursors for Linux";
     homepage = "https://github.com/simtrami/posy-improved-cursor-linux";
-    platforms = lib.platforms.unix;
     license = lib.licenses.cc-by-nc-40;
     maintainers = with lib.maintainers; [ mkez ];
+    platforms = lib.platforms.unix;
   };
 }

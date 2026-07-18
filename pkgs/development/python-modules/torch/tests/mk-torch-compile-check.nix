@@ -1,11 +1,11 @@
 {
-  cudaPackages,
-  feature ? null,
   lib,
-  libraries,
-  name ? if feature == null then "torch-compile-cpu" else "torch-compile-${feature}",
   stdenv,
+  cudaPackages,
+  libraries,
   writableTmpDirAsHomeHook,
+  feature ? null,
+  name ? if feature == null then "torch-compile-cpu" else "torch-compile-${feature}",
 }:
 let
   deviceStr = if feature == null then "" else '', device="cuda"'';
@@ -19,6 +19,7 @@ cudaPackages.writeGpuTestPython
       # torch._inductor.exc.InductorError: PermissionError: [Errno 13] Permission denied: '/homeless-shelter'
       writableTmpDirAsHomeHook
     ];
+
     makeWrapperArgs = [
       "--suffix"
       "PATH"

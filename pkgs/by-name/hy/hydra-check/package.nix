@@ -1,15 +1,15 @@
 {
   lib,
-  rustPlatform,
-  fetchFromGitHub,
-  pkg-config,
-  openssl,
   stdenv,
-  installShellFiles,
-  versionCheckHook,
-  testers,
-  curl,
+  fetchFromGitHub,
   cacert,
+  curl,
+  installShellFiles,
+  openssl,
+  pkg-config,
+  rustPlatform,
+  testers,
+  versionCheckHook,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -23,8 +23,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-5nZnY/EA5SF3KNZbsvNGn77cOgEZsBpxBJwiREyF/fE=";
   };
 
-  cargoHash = "sha256-DN2LSYCR9QL1090C6dt21EOq9aUtZkAvxh4B6KYXPAU=";
-
   nativeBuildInputs = [
     pkg-config
     installShellFiles
@@ -34,6 +32,8 @@ rustPlatform.buildRustPackage (finalAttrs: {
     openssl
   ];
 
+  cargoHash = "sha256-DN2LSYCR9QL1090C6dt21EOq9aUtZkAvxh4B6KYXPAU=";
+
   postInstall = lib.optionalString (stdenv.buildPlatform.canExecute stdenv.hostPlatform) ''
     installShellCompletion --cmd hydra-check \
       --bash <($out/bin/hydra-check --shell-completion bash) \
@@ -41,15 +41,21 @@ rustPlatform.buildRustPackage (finalAttrs: {
       --zsh <($out/bin/hydra-check --shell-completion zsh)
   '';
 
+  doInstallCheck = true;
+
   nativeInstallCheckInputs = [
     versionCheckHook
   ];
 
-  doInstallCheck = true;
-
   passthru.tests.mainCommand =
     testers.runCommand # allows internet access
       {
+        nativeBuildInputs = [
+          finalAttrs.finalPackage
+          curl
+          cacert # for https connectivity
+        ];
+
         name = "hydra-check-test";
 
         # only runs the test when internet access is confirmed:
@@ -62,24 +68,20 @@ rustPlatform.buildRustPackage (finalAttrs: {
           fi
           touch $out
         '';
-
-        nativeBuildInputs = [
-          finalAttrs.finalPackage
-          curl
-          cacert # for https connectivity
-        ];
       };
 
   meta = {
     description = "Check hydra for the build status of a package";
     homepage = "https://github.com/nix-community/hydra-check";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       makefu
       artturin
       bryango
       doronbehar
     ];
+
     mainProgram = "hydra-check";
   };
 })

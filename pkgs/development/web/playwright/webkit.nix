@@ -1,17 +1,14 @@
 {
   lib,
   stdenv,
-  fetchzip,
   fetchFromGitHub,
-  makeWrapper,
-  autoPatchelfHook,
-  patchelfUnstable,
-  fetchpatch,
-  libjxl,
-  brotli,
   at-spi2-atk,
+  autoPatchelfHook,
+  brotli,
   cairo,
   enchant_2,
+  fetchpatch,
+  fetchzip,
   flite,
   fontconfig,
   freetype,
@@ -28,10 +25,12 @@
   libdrm,
   libepoxy,
   libevent,
+  libgbm,
   libgcc,
   libgcrypt,
   libgpg-error,
   libjpeg8,
+  libjxl,
   libopus,
   libpng,
   libsoup_3,
@@ -43,25 +42,27 @@
   libxkbcommon,
   libxml2_13,
   libxslt,
-  libgbm,
+  makeWrapper,
+  patchelfUnstable,
+  revision,
   sqlite,
+  system,
   systemdLibs,
+  throwSystem,
   wayland-scanner,
   woff2,
   zlib,
-  revision,
-  system,
-  throwSystem,
 }:
 let
   download =
     (import ./browser-downloads.nix {
-      name = "webkit";
       inherit revision;
+      name = "webkit";
     }).${system} or throwSystem;
   libvpx' = libvpx.overrideAttrs (
     finalAttrs: previousAttrs: {
       version = "1.12.0";
+
       src = fetchFromGitHub {
         owner = "webmproject";
         repo = finalAttrs.pname;
@@ -73,6 +74,7 @@ let
   libjxl' = libjxl.overrideAttrs (
     finalAttrs: previousAttrs: {
       version = "0.8.2";
+
       src = fetchFromGitHub {
         owner = "libjxl";
         repo = "libjxl";
@@ -91,10 +93,11 @@ let
         # Add missing <atomic> content to fix gcc compilation for RISCV architecture
         # https://github.com/libjxl/libjxl/pull/2211
         (fetchpatch {
-          url = "https://github.com/libjxl/libjxl/commit/22d12d74e7bc56b09cfb1973aa89ec8d714fa3fc.patch";
           hash = "sha256-X4fbYTMS+kHfZRbeGzSdBW5jQKw8UN44FEyFRUtw0qo=";
+          url = "https://github.com/libjxl/libjxl/commit/22d12d74e7bc56b09cfb1973aa89ec8d714fa3fc.patch";
         })
       ];
+
       postPatch = ''
         # Fix multiple definition errors by using C++17 instead of C++11
         substituteInPlace CMakeLists.txt \
@@ -108,7 +111,6 @@ let
             'cmake_minimum_required(VERSION 2.8.7)' \
             'cmake_minimum_required(VERSION 3.5...3.10)'
       '';
-      postInstall = "";
 
       cmakeFlags = [
         "-DJPEGXL_FORCE_SYSTEM_BROTLI=ON"
@@ -121,16 +123,18 @@ let
       ++ lib.optionals stdenv.hostPlatform.isAarch32 [
         "-DJPEGXL_FORCE_NEON=ON"
       ];
+
+      postInstall = "";
     }
   );
   webkit-linux = stdenv.mkDerivation {
-    name = "playwright-webkit";
     src = fetchzip {
       inherit (download) url stripRoot;
+
       hash =
         {
-          x86_64-linux = "sha256-GASDnneoxfZLUctJLnaUTPW4HDbKdSamJBxFDVpPUC0=";
           aarch64-linux = "sha256-qtqMCyEZVQu44HGI73t50D1WcnuzxuxLY7MDzf4NDeA=";
+          x86_64-linux = "sha256-GASDnneoxfZLUctJLnaUTPW4HDbKdSamJBxFDVpPUC0=";
         }
         .${system} or throwSystem;
     };
@@ -140,6 +144,7 @@ let
       patchelfUnstable
       makeWrapper
     ];
+
     buildInputs = [
       at-spi2-atk
       cairo
@@ -186,7 +191,6 @@ let
       zlib
     ];
 
-    patchelfFlags = [ "--no-clobber-old-sections" ];
     buildPhase = ''
       cp -R . $out
 
@@ -199,9 +203,13 @@ let
         --prefix GIO_EXTRA_MODULES ":" "${glib-networking}/lib/gio/modules/" \
         --prefix LD_LIBRARY_PATH ":" $out/minibrowser-wpe/lib
     '';
+
+    name = "playwright-webkit";
+    patchelfFlags = [ "--no-clobber-old-sections" ];
   };
   webkit-darwin = fetchzip {
     inherit (download) url stripRoot;
+
     hash =
       {
         aarch64-darwin = "sha256-glVkYnthOFBPp1gZXTue9WwjP+oCgQpq6j9Mlm/bjmg=";
@@ -210,8 +218,8 @@ let
   };
 in
 {
-  x86_64-linux = webkit-linux;
-  aarch64-linux = webkit-linux;
   aarch64-darwin = webkit-darwin;
+  aarch64-linux = webkit-linux;
+  x86_64-linux = webkit-linux;
 }
 .${system} or throwSystem

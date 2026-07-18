@@ -1,10 +1,10 @@
 {
   lib,
-  writeScript,
   stdenv,
-  qt5,
   fetchurl,
   autoPatchelfHook,
+  qt5,
+  writeScript,
 }:
 
 stdenv.mkDerivation rec {
@@ -45,8 +45,8 @@ stdenv.mkDerivation rec {
   meta = {
     description = "Desktop tool to decrypt data encrypted by Cloud Sync";
     homepage = "https://kb.synology.com/en-global/DSM/help/SynologyCloudSyncDecryptionTool/synologycloudsyncdecryptiontool";
-    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
     license = lib.licenses.unfree;
+    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
     maintainers = with lib.maintainers; [ kalbasit ];
     platforms = [ "x86_64-linux" ];
     mainProgram = "SynologyCloudSyncDecryptionTool";

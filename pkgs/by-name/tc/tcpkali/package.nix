@@ -1,8 +1,8 @@
 {
   lib,
   stdenv,
-  autoreconfHook,
   fetchFromGitHub,
+  autoreconfHook,
   bison,
 }:
 
@@ -11,25 +11,29 @@ let
 in
 
 stdenv.mkDerivation rec {
-  pname = "tcpkali";
   inherit version;
+  pname = "tcpkali";
+
   src = fetchFromGitHub {
     owner = "machinezone";
     repo = "tcpkali";
     rev = "v${version}";
     sha256 = "09ky3cccaphcqc6nhfs00pps99lasmzc2pf5vk0gi8hlqbbhilxf";
   };
+
   postPatch = ''
     sed -i -e '/sys\/sysctl\.h/d' src/tcpkali_syslimits.c
   '';
+
   nativeBuildInputs = [ autoreconfHook ];
   buildInputs = [ bison ];
+
   meta = {
+    inherit (src.meta) homepage;
     description = "High performance TCP and WebSocket load generator and sink";
     license = lib.licenses.bsd2;
-    inherit (src.meta) homepage;
-    platforms = lib.platforms.linux;
     maintainers = [ ];
+    platforms = lib.platforms.linux;
     mainProgram = "tcpkali";
   };
 }

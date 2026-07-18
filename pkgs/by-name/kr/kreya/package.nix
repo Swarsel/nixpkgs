@@ -2,14 +2,14 @@
   lib,
   stdenv,
   fetchurl,
-  makeWrapper,
-  wrapGAppsHook4,
   autoPatchelfHook,
   btar,
-  icu,
   gtk4,
-  webkitgtk_6_0,
+  icu,
+  makeWrapper,
   openssl,
+  webkitgtk_6_0,
+  wrapGAppsHook4,
 }:
 
 let
@@ -61,8 +61,8 @@ stdenv.mkDerivation (finalAttrs: {
     description = "Kreya is a GUI client for gRPC and REST APIs";
     homepage = "https://kreya.app/";
     license = lib.licenses.unfree;
-    platforms = [ "x86_64-linux" ];
     sourceProvenance = [ lib.sourceTypes.binaryNativeCode ];
     maintainers = with lib.maintainers; [ maxmosk ];
+    platforms = [ "x86_64-linux" ];
   };
 })

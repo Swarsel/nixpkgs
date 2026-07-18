@@ -7,7 +7,6 @@
 python3.pkgs.buildPythonApplication (finalAttrs: {
   pname = "pyprojectize";
   version = "1a7";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "hroncok";
@@ -15,6 +14,8 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     tag = finalAttrs.version;
     hash = "sha256-MVA8Mx+jpPrNB099BfAxGBfZWyvFTYR8q0vyspj7jSY=";
   };
+
+  nativeCheckInputs = with python3.pkgs; [ pytestCheckHook ];
 
   build-system = with python3.pkgs; [
     hatch-vcs
@@ -26,8 +27,7 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     specfile
   ];
 
-  nativeCheckInputs = with python3.pkgs; [ pytestCheckHook ];
-
+  pyproject = true;
   pythonImportsCheck = [ "pyprojectize" ];
 
   meta = {

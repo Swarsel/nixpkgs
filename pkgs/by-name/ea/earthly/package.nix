@@ -1,10 +1,10 @@
 {
   lib,
-  buildGoModule,
-  fetchFromGitHub,
   stdenv,
-  testers,
+  fetchFromGitHub,
+  buildGoModule,
   earthly,
+  testers,
 }:
 
 buildGoModule (finalAttrs: {
@@ -19,12 +19,11 @@ buildGoModule (finalAttrs: {
   };
 
   vendorHash = "sha256-kEgg7zrT69X4yrsGtLyvnrGQ7+sXaEzdqd4Fz7rpFyg=";
-  subPackages = [
-    "cmd/earthly"
-    "cmd/debugger"
-  ];
-
   env.CGO_ENABLED = 0;
+
+  postInstall = ''
+    mv $out/bin/debugger $out/bin/earthly-debugger
+  '';
 
   ldflags = [
     "-s"
@@ -38,6 +37,11 @@ buildGoModule (finalAttrs: {
     "-extldflags '-static'"
   ];
 
+  subPackages = [
+    "cmd/earthly"
+    "cmd/debugger"
+  ];
+
   tags = [
     "dfrunmount"
     "dfrunnetwork"
@@ -46,14 +50,10 @@ buildGoModule (finalAttrs: {
     "dfssh"
   ];
 
-  postInstall = ''
-    mv $out/bin/debugger $out/bin/earthly-debugger
-  '';
-
   passthru = {
     tests.version = testers.testVersion {
-      package = earthly;
       version = "v${finalAttrs.version}";
+      package = earthly;
     };
   };
 
@@ -62,6 +62,7 @@ buildGoModule (finalAttrs: {
     homepage = "https://earthly.dev/";
     changelog = "https://github.com/earthly/earthly/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.mpl20;
+
     maintainers = with lib.maintainers; [
       zoedsoupe
       konradmalik

@@ -2,15 +2,15 @@
   lib,
   stdenv,
   fetchurl,
-  libsForQt5,
-  pkg-config,
   bash,
   cups,
-  libxpm,
+  libsForQt5,
   libssh,
+  libxpm,
   nx-libs,
   openldap,
   openssh,
+  pkg-config,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -21,6 +21,21 @@ stdenv.mkDerivation (finalAttrs: {
     url = "https://code.x2go.org/releases/source/x2goclient/x2goclient-${finalAttrs.version}.tar.gz";
     hash = "sha256-q4uzx40xYlx0nkLxX4EP49JCknoVKYMIwT3qO5Fayjw=";
   };
+
+  postPatch = ''
+    substituteInPlace src/onmainwindow.cpp \
+      --replace-fail "/usr/sbin/sshd" "${lib.getExe' openssh "sshd"}"
+    substituteInPlace Makefile \
+      --replace-fail "SHELL=/bin/bash" "SHELL ?= ${lib.getExe bash}" \
+      --replace-fail "lrelease-qt4" "${lib.getExe' libsForQt5.qttools.dev "lrelease"}" \
+      --replace-fail "qmake-qt4" "${lib.getExe' libsForQt5.qtbase.dev "qmake"}" \
+      --replace-fail "-o root -g root" ""
+  '';
+
+  nativeBuildInputs = [
+    pkg-config
+    libsForQt5.wrapQtAppsHook
+  ];
 
   buildInputs = [
     cups
@@ -34,21 +49,6 @@ stdenv.mkDerivation (finalAttrs: {
     openldap
     openssh
   ];
-
-  nativeBuildInputs = [
-    pkg-config
-    libsForQt5.wrapQtAppsHook
-  ];
-
-  postPatch = ''
-    substituteInPlace src/onmainwindow.cpp \
-      --replace-fail "/usr/sbin/sshd" "${lib.getExe' openssh "sshd"}"
-    substituteInPlace Makefile \
-      --replace-fail "SHELL=/bin/bash" "SHELL ?= ${lib.getExe bash}" \
-      --replace-fail "lrelease-qt4" "${lib.getExe' libsForQt5.qttools.dev "lrelease"}" \
-      --replace-fail "qmake-qt4" "${lib.getExe' libsForQt5.qtbase.dev "qmake"}" \
-      --replace-fail "-o root -g root" ""
-  '';
 
   makeFlags = [
     "PREFIX=$(out)"
@@ -73,14 +73,16 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Graphical NoMachine NX3 remote desktop client";
-    mainProgram = "x2goclient";
     homepage = "http://x2go.org/";
-    maintainers = [ ];
+
     license = with lib.licenses; [
       agpl3Plus
       mit
       free
     ]; # Some X2Go components are licensed under some license (MIT X11, BSD, etc.)
+
+    maintainers = [ ];
     platforms = lib.platforms.linux;
+    mainProgram = "x2goclient";
   };
 })

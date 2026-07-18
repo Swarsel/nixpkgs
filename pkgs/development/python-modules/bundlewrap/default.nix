@@ -1,25 +1,24 @@
 {
   lib,
   fetchFromGitHub,
-  buildPythonPackage,
   bcrypt,
+  buildPythonPackage,
   cryptography,
   jinja2,
   librouteros,
   mako,
   packaging,
+  pytestCheckHook,
   pyyaml,
   requests,
   setuptools,
   tomlkit,
-  pytestCheckHook,
   versionCheckHook,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "bundlewrap";
   version = "5.0.3";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "bundlewrap";
@@ -27,6 +26,11 @@ buildPythonPackage (finalAttrs: {
     tag = finalAttrs.version;
     hash = "sha256-gncxzeAlfob0dXZ1iqMwqG5h+OyGxvPhrS0MZ+x0mbo=";
   };
+
+  nativeCheckInputs = [
+    pytestCheckHook
+    versionCheckHook
+  ];
 
   build-system = [ setuptools ];
 
@@ -42,25 +46,21 @@ buildPythonPackage (finalAttrs: {
     librouteros
   ];
 
-  pythonImportsCheck = [ "bundlewrap" ];
-
-  nativeCheckInputs = [
-    pytestCheckHook
-    versionCheckHook
-  ];
-  versionCheckProgram = "${placeholder "out"}/bin/bw";
-
   enabledTestPaths = [
     # only unit tests as integration tests need a OpenSSH client/server setup
     "tests/unit"
   ];
 
+  pyproject = true;
+  pythonImportsCheck = [ "bundlewrap" ];
+  versionCheckProgram = "${placeholder "out"}/bin/bw";
+
   meta = {
-    homepage = "https://bundlewrap.org/";
     description = "Easy, Concise and Decentralized Config management with Python";
+    homepage = "https://bundlewrap.org/";
     changelog = "https://github.com/bundlewrap/bundlewrap/blob/${finalAttrs.src.tag}/CHANGELOG.md";
-    mainProgram = "bw";
     license = [ lib.licenses.gpl3 ];
     maintainers = with lib.maintainers; [ wamserma ];
+    mainProgram = "bw";
   };
 })

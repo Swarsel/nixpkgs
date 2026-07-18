@@ -2,21 +2,21 @@
   lib,
   stdenv,
   fetchFromGitHub,
+  at-spi2-core,
   cmake,
-  pkg-config,
-  gtk3,
+  dbus,
   glib,
+  gtk3,
   libappindicator-gtk3,
+  libdbusmenu,
+  libepoxy,
   libpthread-stubs,
   libxdmcp,
   libxkbcommon,
-  libepoxy,
-  at-spi2-core,
-  dbus,
-  libdbusmenu,
   lz4,
-  wrapGAppsHook3,
   nix-update-script,
+  pkg-config,
+  wrapGAppsHook3,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -54,18 +54,22 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Desktop annotation tool";
+
     longDescription = ''
       Gromit-MPX (GRaphics Over MIscellaneous Things) is a small tool
       to make annotations on the screen.
     '';
+
     homepage = "https://github.com/bk138/gromit-mpx";
     changelog = "https://github.com/bk138/gromit-mpx/blob/${finalAttrs.version}/NEWS.md";
+    license = lib.licenses.gpl2Plus;
+
     maintainers = with lib.maintainers; [
       pjones
       gepbird
     ];
+
     platforms = lib.platforms.linux;
-    license = lib.licenses.gpl2Plus;
     mainProgram = "gromit-mpx";
   };
 })

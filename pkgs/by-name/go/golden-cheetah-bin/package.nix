@@ -10,15 +10,18 @@ let
 
   commonMeta = {
     description = "Performance software for cyclists, runners and triathletes. This version includes the API Tokens for e.g. Strava";
-    platforms = [
-      "x86_64-linux"
-      "aarch64-darwin"
-    ];
+    license = lib.licenses.gpl2Plus;
+
     maintainers = with lib.maintainers; [
       gador
       adamcstephens
     ];
-    license = lib.licenses.gpl2Plus;
+
+    platforms = [
+      "x86_64-linux"
+      "aarch64-darwin"
+    ];
+
     sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
   };
 in

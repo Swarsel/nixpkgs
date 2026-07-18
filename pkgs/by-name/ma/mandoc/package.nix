@@ -2,9 +2,9 @@
   lib,
   stdenv,
   fetchurl,
-  zlib,
-  perl,
   nixosTests,
+  perl,
+  zlib,
 }:
 
 let
@@ -24,6 +24,15 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   buildInputs = [ zlib ];
+
+  preConfigure = ''
+    printf '%s' "$configureLocal" > configure.local
+  '';
+
+  doCheck = true;
+  nativeCheckInputs = [ perl ];
+  preCheck = "patchShebangs --build regress/regress.pl";
+  checkTarget = "regress";
 
   configureLocal = ''
     MANPATH_DEFAULT="/run/current-system/sw/share/man"
@@ -48,20 +57,22 @@ stdenv.mkDerivation (finalAttrs: {
     UTF8_LOCALE=${utf8Locale}
   '';
 
-  preConfigure = ''
-    printf '%s' "$configureLocal" > configure.local
-  '';
-
-  doCheck = true;
-  checkTarget = "regress";
-  nativeCheckInputs = [ perl ];
-  preCheck = "patchShebangs --build regress/regress.pl";
-
   passthru.tests = {
     nixos = nixosTests.man;
   };
 
   meta = {
+    description = "Suite of tools compiling mdoc and man";
+    homepage = "https://mandoc.bsd.lv/";
+    license = lib.licenses.bsd3;
+
+    maintainers = with lib.maintainers; [
+      ramkromberg
+      sternenseemann
+    ];
+
+    platforms = lib.platforms.all;
+    mainProgram = "man";
     # check if we can execute binaries for the host platform on the build platform
     # even though the platforms aren't the same. mandoc can't be cross compiled
     # (easily) because of its configurePhase which executes compiled programs
@@ -74,16 +85,6 @@ stdenv.mkDerivation (finalAttrs: {
     # We need to use broken instead of, say a top level assert, to keep splicing
     # working.
     broken = stdenv.buildPlatform.system != stdenv.hostPlatform.system;
-
-    homepage = "https://mandoc.bsd.lv/";
-    description = "Suite of tools compiling mdoc and man";
     downloadPage = "http://mandoc.bsd.lv/snapshots/";
-    license = lib.licenses.bsd3;
-    platforms = lib.platforms.all;
-    maintainers = with lib.maintainers; [
-      ramkromberg
-      sternenseemann
-    ];
-    mainProgram = "man";
   };
 })

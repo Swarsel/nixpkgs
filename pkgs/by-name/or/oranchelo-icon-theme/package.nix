@@ -1,10 +1,10 @@
 {
   lib,
-  stdenvNoCC,
   fetchFromGitHub,
   gtk3,
-  kdePackages,
   hicolor-icon-theme,
+  kdePackages,
+  stdenvNoCC,
 }:
 
 stdenvNoCC.mkDerivation rec {
@@ -27,9 +27,6 @@ stdenvNoCC.mkDerivation rec {
     hicolor-icon-theme
   ];
 
-  dontDropIconThemeCache = true;
-  dontWrapQtApps = true;
-
   makeFlags = [
     "DESTDIR=$(out)"
     "PREFIX="
@@ -43,13 +40,16 @@ stdenvNoCC.mkDerivation rec {
       gtk-update-icon-cache "$theme"
     done
   '';
+
   dontCheckForBrokenSymlinks = true;
+  dontDropIconThemeCache = true;
+  dontWrapQtApps = true;
 
   meta = {
     description = "Oranchelo icon theme";
     homepage = "https://github.com/OrancheloTeam/oranchelo-icon-theme";
     license = lib.licenses.gpl3Only;
-    platforms = lib.platforms.linux;
     maintainers = with lib.maintainers; [ _414owen ];
+    platforms = lib.platforms.linux;
   };
 }

@@ -27,11 +27,11 @@ let
   sources = lib.mapAttrs (
     repo: hash:
     fetchFromGitHub {
-      owner = "apple";
       inherit repo;
-      rev = "swift-${version}-RELEASE";
-      name = "${repo}-${version}-src";
       hash = hashes.${repo};
+      name = "${repo}-${version}-src";
+      owner = "apple";
+      rev = "swift-${version}-RELEASE";
     }
   ) hashes;
 

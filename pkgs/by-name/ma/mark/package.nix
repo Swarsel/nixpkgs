@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
 }:
 
 # Tests with go 1.24 do not work. For now
@@ -19,12 +19,6 @@ buildGoModule (finalAttrs: {
 
   vendorHash = "sha256-dCELGpByfx4sEV6/bZ7O+xU5b15Ptbq+wPcbjMXzGZc=";
 
-  ldflags = [
-    "-s"
-    "-w"
-    "-X main.version=${finalAttrs.version}"
-  ];
-
   checkFlags =
     let
       skippedTests = [
@@ -37,14 +31,22 @@ buildGoModule (finalAttrs: {
       "-skip=^${builtins.concatStringsSep "$|^" skippedTests}$"
     ];
 
+  ldflags = [
+    "-s"
+    "-w"
+    "-X main.version=${finalAttrs.version}"
+  ];
+
   meta = {
     description = "Tool for syncing your markdown documentation with Atlassian Confluence pages";
-    mainProgram = "mark";
     homepage = "https://github.com/kovetskiy/mark";
     license = lib.licenses.asl20;
+
     maintainers = with lib.maintainers; [
       rguevara84
       wrbbz
     ];
+
+    mainProgram = "mark";
   };
 })

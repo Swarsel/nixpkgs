@@ -1,33 +1,29 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
+  buildPythonPackage,
+  # undeclared cli dependencies
+  docopt,
   # build-system
   hatch-vcs,
   hatchling,
-
   # dependencies
   numpy,
   pandas,
   pyannote-core,
   pyannote-database,
-  scikit-learn,
-  scipy,
-  # undeclared cli dependencies
-  docopt,
-  tabulate,
-  typing-extensions,
-
   # tests
   pytestCheckHook,
+  scikit-learn,
+  scipy,
+  tabulate,
+  typing-extensions,
   versionCheckHook,
 }:
 
 buildPythonPackage rec {
   pname = "pyannote-metrics";
   version = "4.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "pyannote";
@@ -42,6 +38,11 @@ buildPythonPackage rec {
         'version="Evaluation"' \
         'version="${version}"'
   '';
+
+  nativeCheckInputs = [
+    pytestCheckHook
+    versionCheckHook
+  ];
 
   build-system = [
     hatch-vcs
@@ -62,12 +63,8 @@ buildPythonPackage rec {
     typing-extensions
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "pyannote.metrics" ];
-
-  nativeCheckInputs = [
-    pytestCheckHook
-    versionCheckHook
-  ];
 
   meta = {
     description = "Toolkit for reproducible evaluation, diagnostic, and error analysis of speaker diarization systems";

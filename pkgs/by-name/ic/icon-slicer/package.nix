@@ -2,8 +2,8 @@
   lib,
   stdenv,
   fetchurl,
-  pkg-config,
   gdk-pixbuf,
+  pkg-config,
   popt,
 }:
 stdenv.mkDerivation (finalAttrs: {
@@ -18,8 +18,8 @@ stdenv.mkDerivation (finalAttrs: {
   patches = [
     # Fixes hotspot `y` coordinate. The `x` coordinate is used on the y-axis.
     (fetchurl {
-      url = "https://aur.archlinux.org/cgit/aur.git/plain/hotspotfix.patch?h=icon-slicer";
       sha256 = "1l1dc1x5p4hys02arkmq3x6b1xdi510969d25g928zr4gf4an03h";
+      url = "https://aur.archlinux.org/cgit/aur.git/plain/hotspotfix.patch?h=icon-slicer";
     })
   ];
 
@@ -27,6 +27,7 @@ stdenv.mkDerivation (finalAttrs: {
     popt
     pkg-config
   ];
+
   buildInputs = [ gdk-pixbuf ];
 
   meta = {

@@ -2,32 +2,32 @@
   lib,
   stdenv,
   fetchurl,
-  unzip,
-  makeWrapper,
-  libx11,
-  zlib,
-  libsm,
-  libice,
-  libxext,
-  freetype,
-  libxrender,
-  fontconfig,
-  libxft,
-  libxinerama,
-  libxcursor,
   cairo,
-  libxfixes,
-  libxscrnsaver,
-  libnotify,
+  common-updater-scripts,
+  copyDesktopItems,
+  curl,
+  fontconfig,
+  freetype,
   glib,
   gtk3,
   libappindicator-gtk3,
-  curl,
-  writeShellScript,
-  common-updater-scripts,
-  xmlstarlet,
+  libice,
+  libnotify,
+  libsm,
+  libx11,
+  libxcursor,
+  libxext,
+  libxfixes,
+  libxft,
+  libxinerama,
+  libxrender,
+  libxscrnsaver,
   makeDesktopItem,
-  copyDesktopItems,
+  makeWrapper,
+  unzip,
+  writeShellScript,
+  xmlstarlet,
+  zlib,
 }:
 
 let
@@ -61,42 +61,14 @@ let
 in
 
 stdenv.mkDerivation {
-  pname = "hubstaff";
   inherit version;
-
+  pname = "hubstaff";
   src = fetchurl { inherit sha256 url; };
 
   nativeBuildInputs = [
     unzip
     makeWrapper
     copyDesktopItems
-  ];
-
-  unpackCmd = ''
-    # MojoSetups have a ZIP file at the end. ZIP’s magic string is
-    # most often PK\x03\x04. This has worked for all past updates,
-    # but feel free to come up with something more reasonable.
-    dataZipOffset=$(grep --max-count=1 --byte-offset --only-matching --text ''$'PK\x03\x04' $curSrc | cut -d: -f1)
-    dd bs=$dataZipOffset skip=1 if=$curSrc of=data.zip 2>/dev/null
-    unzip -q data.zip "data/*"
-    rm data.zip
-  '';
-
-  dontBuild = true;
-
-  # Upstream doesn't seem to have a desktop item out of the box
-  desktopItems = [
-    (makeDesktopItem {
-      name = "netsoft-com.netsoft.hubstaff";
-      desktopName = "Hubstaff";
-      exec = "HubstaffClient";
-      icon = "hubstaff-color";
-      comment = "Time tracking software";
-      categories = [
-        "Office"
-        "ProjectManagement"
-      ];
-    })
   ];
 
   installPhase = ''
@@ -129,6 +101,34 @@ stdenv.mkDerivation {
     runHook postInstall
   '';
 
+  # Upstream doesn't seem to have a desktop item out of the box
+  desktopItems = [
+    (makeDesktopItem {
+      categories = [
+        "Office"
+        "ProjectManagement"
+      ];
+
+      comment = "Time tracking software";
+      desktopName = "Hubstaff";
+      exec = "HubstaffClient";
+      icon = "hubstaff-color";
+      name = "netsoft-com.netsoft.hubstaff";
+    })
+  ];
+
+  dontBuild = true;
+
+  unpackCmd = ''
+    # MojoSetups have a ZIP file at the end. ZIP’s magic string is
+    # most often PK\x03\x04. This has worked for all past updates,
+    # but feel free to come up with something more reasonable.
+    dataZipOffset=$(grep --max-count=1 --byte-offset --only-matching --text ''$'PK\x03\x04' $curSrc | cut -d: -f1)
+    dd bs=$dataZipOffset skip=1 if=$curSrc of=data.zip 2>/dev/null
+    unzip -q data.zip "data/*"
+    rm data.zip
+  '';
+
   # to test run:
   # nix-shell maintainers/scripts/update.nix --argstr package hubstaff
   # nix-build -A pkgs.hubstaff
@@ -153,11 +153,13 @@ stdenv.mkDerivation {
   meta = {
     description = "Time tracking software";
     homepage = "https://hubstaff.com/";
-    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
     license = lib.licenses.unfree;
-    platforms = [ "x86_64-linux" ];
+    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
+
     maintainers = with lib.maintainers; [
       michalrus
     ];
+
+    platforms = [ "x86_64-linux" ];
   };
 }

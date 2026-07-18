@@ -1,7 +1,7 @@
 {
-  dmenu,
-  fetchFromGitHub,
   lib,
+  fetchFromGitHub,
+  dmenu,
   python3Packages,
   xdotool,
   xsel,
@@ -11,7 +11,6 @@
 python3Packages.buildPythonApplication (finalAttrs: {
   pname = "keepmenu";
   version = "1.4.2";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "firecat53";
@@ -19,6 +18,11 @@ python3Packages.buildPythonApplication (finalAttrs: {
     rev = finalAttrs.version;
     hash = "sha256-Kzt2RqyYvOWnbkflwTHzlnpUaruVQvdGys57DDpH9o8=";
   };
+
+  postPatch = ''
+    substituteInPlace tests/keepmenu-config.ini tests/tests.py \
+      --replace "/usr/bin/dmenu" "dmenu"
+  '';
 
   nativeBuildInputs = with python3Packages; [
     hatchling
@@ -37,11 +41,6 @@ python3Packages.buildPythonApplication (finalAttrs: {
     xvfb-run
   ];
 
-  postPatch = ''
-    substituteInPlace tests/keepmenu-config.ini tests/tests.py \
-      --replace "/usr/bin/dmenu" "dmenu"
-  '';
-
   checkPhase = ''
     runHook preCheck
 
@@ -50,14 +49,15 @@ python3Packages.buildPythonApplication (finalAttrs: {
     runHook postCheck
   '';
 
+  pyproject = true;
   pythonImportsCheck = [ "keepmenu" ];
 
   meta = {
-    homepage = "https://github.com/firecat53/keepmenu";
     description = "Dmenu/Rofi frontend for Keepass databases";
-    mainProgram = "keepmenu";
+    homepage = "https://github.com/firecat53/keepmenu";
     license = lib.licenses.gpl3Only;
     maintainers = with lib.maintainers; [ elliot ];
     platforms = lib.platforms.linux;
+    mainProgram = "keepmenu";
   };
 })

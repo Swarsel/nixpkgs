@@ -1,11 +1,11 @@
 {
   lib,
-  rustPlatform,
-  pkg-config,
-  udev,
-  lvm2,
   fetchFromGitHub,
+  lvm2,
   nixosTests,
+  pkg-config,
+  rustPlatform,
+  udev,
 }:
 rustPlatform.buildRustPackage (finalAttrs: {
   pname = "thin-provisioning-tools";
@@ -19,25 +19,17 @@ rustPlatform.buildRustPackage (finalAttrs: {
   };
 
   strictDeps = true;
-  depsBuildBuild = [
-    pkg-config
-    lvm2
-    udev
-  ];
+
   nativeBuildInputs = [
     rustPlatform.bindgenHook
   ];
+
   buildInputs = [
     lvm2
     udev
   ];
 
   cargoHash = "sha256-y3uvPwLps8edzO9GtJ1CpB55kieclk06PjOYsYs64go=";
-
-  passthru.tests = {
-    inherit (nixosTests.lvm2) lvm-thinpool-linux-latest;
-  };
-
   # Uses O_DIRECT, which is not supported on all filesystems.
   # https://github.com/jthornber/thin-provisioning-tools/issues/38
   doCheck = false;
@@ -66,11 +58,21 @@ rustPlatform.buildRustPackage (finalAttrs: {
     ln -s $out/bin/pdata_tools $out/bin/thin_trim
   '';
 
+  depsBuildBuild = [
+    pkg-config
+    lvm2
+    udev
+  ];
+
+  passthru.tests = {
+    inherit (nixosTests.lvm2) lvm-thinpool-linux-latest;
+  };
+
   meta = {
-    homepage = "https://github.com/jthornber/thin-provisioning-tools/";
     description = "Suite of tools for manipulating the metadata of the dm-thin device-mapper target";
+    homepage = "https://github.com/jthornber/thin-provisioning-tools/";
     license = lib.licenses.gpl3;
-    platforms = lib.platforms.unix;
     maintainers = [ ];
+    platforms = lib.platforms.unix;
   };
 })

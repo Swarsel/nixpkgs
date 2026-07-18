@@ -2,18 +2,19 @@
   lib,
   stdenv,
   fetchurl,
-  pkg-config,
-  libtool,
   gtk3,
-  libpcap,
-  popt,
   itstool,
+  libpcap,
+  libtool,
   libxml2,
+  pkg-config,
+  popt,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
   pname = "etherape";
   version = "0.9.22";
+
   src = fetchurl {
     url = "mirror://sourceforge/etherape/etherape-${finalAttrs.version}.tar.gz";
     sha256 = "sha256-6UxVArQKeyKMCsptMa/eyQELx/0QG6ZIpiacEBXnIGs=";
@@ -26,6 +27,7 @@ stdenv.mkDerivation (finalAttrs: {
     pkg-config
     (lib.getBin libxml2)
   ];
+
   buildInputs = [
     libtool
     gtk3
@@ -36,7 +38,7 @@ stdenv.mkDerivation (finalAttrs: {
   meta = {
     homepage = "https://etherape.sourceforge.net/";
     license = lib.licenses.gpl2Plus;
-    platforms = with lib.platforms; linux;
     maintainers = with lib.maintainers; [ symphorien ];
+    platforms = with lib.platforms; linux;
   };
 })

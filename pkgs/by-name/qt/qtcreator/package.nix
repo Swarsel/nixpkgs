@@ -1,23 +1,23 @@
 {
   lib,
   fetchurl,
+  buildGoModule,
+  callPackage,
   cmake,
-  pkg-config,
-  ninja,
+  elfutils,
   go,
+  gumbo,
+  libsecret,
+  litehtml,
+  llvmPackages_21,
+  ninja,
+  perf,
+  pkg-config,
   python3,
   qt6,
-  yaml-cpp,
-  litehtml,
-  libsecret,
-  gumbo,
-  llvmPackages_21,
-  stdenv' ? llvmPackages_21.stdenv,
   rustc-demangle,
-  elfutils,
-  perf,
-  callPackage,
-  buildGoModule,
+  yaml-cpp,
+  stdenv' ? llvmPackages_21.stdenv,
 }:
 let
   pname = "qtcreator";
@@ -28,10 +28,11 @@ let
   };
   goModules =
     (buildGoModule {
+      inherit src;
       pname = "gocmdbridge";
       version = "1.0.0";
-      inherit src;
       vendorHash = "sha256-PUMQdVlf6evLjzs263SAecIA3aMuMbjIr1xEztiwmro=";
+
       setSourceRoot = ''
         sourceRoot=$(echo */src/libs/gocmdbridge/server)
       '';
@@ -39,6 +40,11 @@ let
 in
 stdenv'.mkDerivation {
   inherit pname version src;
+
+  outputs = [
+    "out"
+    "dev"
+  ];
 
   nativeBuildInputs = [
     cmake
@@ -72,11 +78,6 @@ stdenv'.mkDerivation {
     elfutils
   ];
 
-  outputs = [
-    "out"
-    "dev"
-  ];
-
   cmakeFlags = [
     # workaround for missing CMAKE_INSTALL_DATAROOTDIR
     # in pkgs/development/tools/build-managers/cmake/setup-hook.sh
@@ -98,10 +99,6 @@ stdenv'.mkDerivation {
     cp -r --reflink=auto ${goModules} src/libs/gocmdbridge/server/vendor
   '';
 
-  qtWrapperArgs = [
-    "--set-default PERFPROFILER_PARSER_FILEPATH ${lib.getBin perf}/bin"
-  ];
-
   postInstall = ''
     # Small hack to set-up right prefix in cmake modules for header files
     cmake . $cmakeFlags -DCMAKE_INSTALL_PREFIX="''${!outputDev}"
@@ -114,23 +111,31 @@ stdenv'.mkDerivation {
     substituteInPlace ''${!outputDev}/lib/cmake/QtCreator/QtCreatorConfig.cmake --replace "$out/" ""
   '';
 
+  qtWrapperArgs = [
+    "--set-default PERFPROFILER_PARSER_FILEPATH ${lib.getBin perf}/bin"
+  ];
+
   passthru = {
     withPackages = callPackage ./with-plugins.nix { };
   };
 
   meta = {
     description = "Cross-platform IDE tailored to the needs of Qt developers";
+
     longDescription = ''
       Qt Creator is a cross-platform IDE (integrated development environment)
       tailored to the needs of Qt developers. It includes features such as an
       advanced code editor, a visual debugger and a GUI designer.
     '';
+
     homepage = "https://wiki.qt.io/Qt_Creator";
     license = lib.licenses.gpl3Only; # annotated with The Qt Company GPL Exception 1.0
+
     maintainers = with lib.maintainers; [
       wineee
       zatm8
     ];
+
     platforms = lib.platforms.linux;
     mainProgram = "qtcreator";
   };

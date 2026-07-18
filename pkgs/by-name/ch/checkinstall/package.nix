@@ -41,8 +41,8 @@ stdenv.mkDerivation rec {
     ./set-buildroot.patch
 
     (fetchurl {
-      url = "https://salsa.debian.org/debian/checkinstall/-/raw/7175ae9de0e45f42fdd7f185ab9a12043d5efeeb/debian/patches/0016-Define-_STAT_VER-_MKNOD_VER-locally-dropped-in-glibc.patch";
       hash = "sha256-InodEfvVMuN708yjXPrVXb+q8aUcyFhCLx35PHls0Eo=";
+      url = "https://salsa.debian.org/debian/checkinstall/-/raw/7175ae9de0e45f42fdd7f185ab9a12043d5efeeb/debian/patches/0016-Define-_STAT_VER-_MKNOD_VER-locally-dropped-in-glibc.patch";
     })
   ]
 
@@ -53,8 +53,6 @@ stdenv.mkDerivation rec {
       ./use-old-memcpy.patch;
 
   buildInputs = [ gettext ];
-
-  hardeningDisable = [ "fortify" ];
 
   preBuild = ''
     makeFlagsArray=(PREFIX=$out)
@@ -74,12 +72,15 @@ stdenv.mkDerivation rec {
       patchelf --set-rpath "" $out/lib/installwatch.so
     '';
 
+  hardeningDisable = [ "fortify" ];
+
   meta = {
-    homepage = "https://checkinstall.izto.org/";
     description = "Tool for automatically generating Slackware, RPM or Debian packages when doing `make install`";
+    homepage = "https://checkinstall.izto.org/";
+    license = lib.licenses.gpl2Plus;
     maintainers = [ ];
     platforms = lib.platforms.linux;
-    license = lib.licenses.gpl2Plus;
+
     knownVulnerabilities = [
       "CVE-2020-25031"
     ];

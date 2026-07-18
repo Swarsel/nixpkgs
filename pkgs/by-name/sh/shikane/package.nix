@@ -1,9 +1,9 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitLab,
   installShellFiles,
   pandoc,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -17,33 +17,35 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-gh85a070R4SooghtvumfSED1H12JtOksj7Yk/WHnWck=";
   };
 
-  cargoHash = "sha256-XKx6jTSAoCC4BM6kmeeEymzRzga15uyIuTxqtdQnru8=";
-
   nativeBuildInputs = [
     installShellFiles
     pandoc
   ];
 
+  cargoHash = "sha256-XKx6jTSAoCC4BM6kmeeEymzRzga15uyIuTxqtdQnru8=";
+
   postBuild = ''
     bash ./scripts/build-docs.sh man
   '';
 
+  # upstream has no tests
+  doCheck = false;
+
   postInstall = ''
     installManPage ./build/man/*
   '';
-
-  # upstream has no tests
-  doCheck = false;
 
   meta = {
     description = "Dynamic output configuration tool that automatically detects and configures connected outputs based on a set of profiles";
     homepage = "https://gitlab.com/w0lff/shikane";
     changelog = "https://gitlab.com/w0lff/shikane/-/tags/v${finalAttrs.version}";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       michaelpachec0
       natsukium
     ];
+
     platforms = lib.platforms.linux;
     mainProgram = "shikane";
   };

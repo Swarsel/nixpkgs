@@ -2,14 +2,14 @@
   lib,
   stdenv,
   fetchurl,
-  removeReferencesTo,
   autoreconfHook,
   bison,
-  onigurumaSupport ? true,
-  oniguruma,
-  tzdata,
   nix-update-script,
+  oniguruma,
+  removeReferencesTo,
   testers,
+  tzdata,
+  onigurumaSupport ? true,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -43,6 +43,26 @@ stdenv.mkDerivation (finalAttrs: {
     substituteInPlace Makefile.am --replace-fail "tests/mantest" "" --replace-fail "tests/optionaltest" ""
   '';
 
+  strictDeps = true;
+
+  nativeBuildInputs = [
+    removeReferencesTo
+    autoreconfHook
+    bison
+  ];
+
+  buildInputs = lib.optionals onigurumaSupport [ oniguruma ];
+
+  configureFlags = [
+    "--bindir=\${bin}/bin"
+    "--sbindir=\${bin}/bin"
+    "--datadir=\${doc}/share"
+    "--mandir=\${man}/share/man"
+  ]
+  ++ lib.optional (!onigurumaSupport) "--with-oniguruma=no"
+  # jq is linked to libjq:
+  ++ lib.optional (!stdenv.hostPlatform.isDarwin) "LDFLAGS=-Wl,-rpath,\\\${libdir}";
+
   # Upstream script that writes the version that's eventually compiled
   # and printed in `jq --help` relies on a .git directory which our src
   # doesn't keep.
@@ -58,25 +78,7 @@ stdenv.mkDerivation (finalAttrs: {
     rm -r ./vendor/oniguruma
   '';
 
-  strictDeps = true;
-  enableParallelBuilding = true;
-
-  buildInputs = lib.optionals onigurumaSupport [ oniguruma ];
-  nativeBuildInputs = [
-    removeReferencesTo
-    autoreconfHook
-    bison
-  ];
-
-  configureFlags = [
-    "--bindir=\${bin}/bin"
-    "--sbindir=\${bin}/bin"
-    "--datadir=\${doc}/share"
-    "--mandir=\${man}/share/man"
-  ]
-  ++ lib.optional (!onigurumaSupport) "--with-oniguruma=no"
-  # jq is linked to libjq:
-  ++ lib.optional (!stdenv.hostPlatform.isDarwin) "LDFLAGS=-Wl,-rpath,\\\${libdir}";
+  doInstallCheck = true;
 
   # jq binary includes the whole `configureFlags` in:
   # https://github.com/jqlang/jq/commit/583e4a27188a2db097dd043dd203b9c106bba100
@@ -90,23 +92,24 @@ stdenv.mkDerivation (finalAttrs: {
       "$bin/bin/jq"
   '';
 
-  doInstallCheck = true;
+  enableParallelBuilding = true;
   installCheckTarget = "check";
+
+  postInstallCheck = ''
+    $bin/bin/jq -r '.values[1]' <<< '{"values":["hello","world"]}' | grep '^world$' > /dev/null
+  '';
 
   preInstallCheck = ''
     substituteInPlace tests/shtest \
       --replace-fail "TZ=" "TZ=${tzdata}/share/zoneinfo/"
   '';
 
-  postInstallCheck = ''
-    $bin/bin/jq -r '.values[1]' <<< '{"values":["hello","world"]}' | grep '^world$' > /dev/null
-  '';
-
   passthru = {
     inherit onigurumaSupport;
+
     tests.version = testers.testVersion {
-      package = lib.getBin finalAttrs.finalPackage;
       command = "jq --version";
+      package = lib.getBin finalAttrs.finalPackage;
     };
 
     updateScript = nix-update-script {
@@ -118,22 +121,25 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   meta = {
-    changelog = "https://github.com/jqlang/jq/releases/tag/jq-${finalAttrs.version}";
     description = "Lightweight and flexible command-line JSON processor";
     homepage = "https://jqlang.github.io/jq/";
-    downloadPage = "https://jqlang.github.io/jq/download/";
+    changelog = "https://github.com/jqlang/jq/releases/tag/jq-${finalAttrs.version}";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       raskin
       artturin
       ncfavier
       jk
     ];
+
     platforms = lib.platforms.unix;
     mainProgram = "jq";
+    downloadPage = "https://jqlang.github.io/jq/download/";
+
     identifiers.purlParts = {
-      type = "github";
       spec = "jqlang/jq@jq-${finalAttrs.version}";
+      type = "github";
     };
   };
 })

@@ -2,11 +2,11 @@
   lib,
   stdenv,
   fetchurl,
-  pkg-config,
   libfido2,
-  pam,
-  openssl,
   nixosTests,
+  openssl,
+  pam,
+  pkg-config,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -19,6 +19,7 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   nativeBuildInputs = [ pkg-config ];
+
   buildInputs = [
     libfido2
     pam
@@ -42,12 +43,12 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   meta = {
-    homepage = "https://developers.yubico.com/pam-u2f/";
     description = "PAM module for allowing authentication with a U2F device";
+    homepage = "https://developers.yubico.com/pam-u2f/";
     changelog = "https://github.com/Yubico/pam-u2f/raw/pam_u2f-${finalAttrs.version}/NEWS";
     license = lib.licenses.bsd2;
-    platforms = lib.platforms.unix;
     maintainers = with lib.maintainers; [ philandstuff ];
+    platforms = lib.platforms.unix;
     mainProgram = "pamu2fcfg";
   };
 })

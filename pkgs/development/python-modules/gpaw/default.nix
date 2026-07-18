@@ -1,22 +1,22 @@
 {
-  buildPythonPackage,
   lib,
-  fetchFromGitLab,
-  writeTextFile,
   fetchurl,
-  blas,
-  lapack,
-  mpi,
-  fftw,
-  scalapack,
-  libxc,
-  libvdwxc,
-  which,
+  fetchFromGitLab,
   ase,
-  numpy,
-  scipy,
-  pyyaml,
+  blas,
+  buildPythonPackage,
+  fftw,
   inetutils,
+  lapack,
+  libvdwxc,
+  libxc,
+  mpi,
+  numpy,
+  pyyaml,
+  scalapack,
+  scipy,
+  which,
+  writeTextFile,
 }:
 
 assert lib.asserts.assertMsg (!blas.isILP64) "A 32 bit integer implementation of BLAS is required.";
@@ -28,6 +28,7 @@ assert lib.asserts.assertMsg (
 let
   gpawConfig = writeTextFile {
     name = "siteconfig.py";
+
     text = ''
       # Compiler
       compiler = 'gcc'
@@ -68,14 +69,13 @@ let
 
   setupVersion = "24.11.0";
   pawDataSets = fetchurl {
-    url = "https://wiki.fysik.dtu.dk/gpaw-files/gpaw-setups-${setupVersion}.tar.gz";
     hash = "sha256-lkyBzCj3+RpGhtPTGCxOvaMO+wnT+Wt/lerjFGSZwRA=";
+    url = "https://wiki.fysik.dtu.dk/gpaw-files/gpaw-setups-${setupVersion}.tar.gz";
   };
 in
 buildPythonPackage rec {
   pname = "gpaw";
   version = "25.1.0";
-  format = "setuptools";
 
   src = fetchFromGitLab {
     owner = "gpaw";
@@ -83,6 +83,13 @@ buildPythonPackage rec {
     rev = version;
     hash = "sha256-tdS383qT6hBr5hOqjoFS36nRSS2vdVkUR7sExwjWhng=";
   };
+
+  patches = [ ./SetupPath.patch ];
+
+  postPatch = ''
+    substituteInPlace gpaw/__init__.py \
+      --subst-var-by gpawSetupPath "$out/share/gpaw/gpaw-setups-${setupVersion}"
+  '';
 
   # `inetutils` is required because importing `gpaw`, as part of
   # pythonImportsCheck, tries to execute its binary, which in turn tries to
@@ -108,17 +115,12 @@ buildPythonPackage rec {
     pyyaml
   ];
 
-  patches = [ ./SetupPath.patch ];
-
-  postPatch = ''
-    substituteInPlace gpaw/__init__.py \
-      --subst-var-by gpawSetupPath "$out/share/gpaw/gpaw-setups-${setupVersion}"
-  '';
-
   preConfigure = ''
     unset CC
     cp ${gpawConfig} siteconfig.py
   '';
+
+  doCheck = false; # Requires MPI runtime to work in the sandbox
 
   postInstall = ''
     currDir=$(pwd)
@@ -129,7 +131,7 @@ buildPythonPackage rec {
     cd $currDir
   '';
 
-  doCheck = false; # Requires MPI runtime to work in the sandbox
+  format = "setuptools";
   pythonImportsCheck = [ "gpaw" ];
 
   passthru = {
@@ -140,7 +142,7 @@ buildPythonPackage rec {
     description = "Density functional theory and beyond within the projector-augmented wave method";
     homepage = "https://wiki.fysik.dtu.dk/gpaw/index.html";
     license = lib.licenses.gpl3Only;
-    platforms = lib.platforms.unix;
     maintainers = [ lib.maintainers.sheepforce ];
+    platforms = lib.platforms.unix;
   };
 }

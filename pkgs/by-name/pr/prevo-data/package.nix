@@ -18,8 +18,6 @@ stdenv.mkDerivation {
 
   nativeBuildInputs = [ prevo-tools ];
 
-  dontUnpack = true;
-
   buildPhase = ''
     prevodb -s -i $src -o prevo.db
   '';
@@ -29,16 +27,21 @@ stdenv.mkDerivation {
     cp prevo.db $out/share/prevo/
   '';
 
+  dontUnpack = true;
+
   meta = {
     description = "Data for offline version of the Esperanto dictionary Reta Vortaro";
+
     longDescription = ''
       PReVo is the "portable" ReVo, i.e., the offline version
       of the Esperanto dictionary Reta Vortaro.
 
       This package provides the ReVo database for the prevo command line application.
     '';
+
     homepage = "https://github.com/bpeel/revo";
     license = lib.licenses.gpl2Only;
+
     maintainers = with lib.maintainers; [
       das-g
     ];

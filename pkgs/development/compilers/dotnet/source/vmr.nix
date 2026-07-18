@@ -1,40 +1,39 @@
 {
-  llvmPackages_20,
   lib,
   fetchurl,
-  fetchpatch2,
-  dotnetCorePackages,
-  jq,
-  curl,
-  git,
-  cmake,
-  pkg-config,
-  zlib,
-  icu,
-  lttng-ust_2_12,
-  krb5,
-  glibcLocales,
-  ensureNewerSourcesForZipFilesHook,
-  darwin,
-  xcbuild,
-  swiftPackages,
-  openssl,
-  getconf,
-  python3,
-  xmlstarlet,
-  nodejs,
-  cpio,
-  ninja,
-  callPackage,
-  unzip,
-  yq,
-  installShellFiles,
-
-  baseName ? "dotnet",
   bootstrapSdk,
-  releaseManifestFile,
-  tarballHash,
+  callPackage,
+  cmake,
+  cpio,
+  curl,
+  darwin,
+  dotnetCorePackages,
+  ensureNewerSourcesForZipFilesHook,
+  fetchpatch2,
+  getconf,
+  git,
+  glibcLocales,
   hasRuntime,
+  icu,
+  installShellFiles,
+  jq,
+  krb5,
+  llvmPackages_20,
+  lttng-ust_2_12,
+  ninja,
+  nodejs,
+  openssl,
+  pkg-config,
+  python3,
+  releaseManifestFile,
+  swiftPackages,
+  tarballHash,
+  unzip,
+  xcbuild,
+  xmlstarlet,
+  yq,
+  zlib,
+  baseName ? "dotnet",
 }:
 
 let
@@ -65,80 +64,18 @@ let
   version = release;
 in
 stdenv.mkDerivation {
-  pname = "${baseName}-vmr";
   inherit version;
-
-  # TODO: fix this in the binary sdk packages
-  preHook = lib.optionalString stdenv.hostPlatform.isDarwin ''
-    addToSearchPath DYLD_LIBRARY_PATH "${_icu}/lib"
-    export DYLD_LIBRARY_PATH
-  '';
+  pname = "${baseName}-vmr";
 
   src = fetchurl {
     url = "${sourceRepository}/archive/refs/tags/${tag}.tar.gz";
     hash = tarballHash;
   };
 
-  nativeBuildInputs = [
-    ensureNewerSourcesForZipFilesHook
-    jq
-    curl.bin
-    git
-    cmake
-    pkg-config
-    python3
-    xmlstarlet
-    unzip
-    yq
-    installShellFiles
-  ]
-  ++ lib.optionals (lib.versionAtLeast version "9") [
-    nodejs
-  ]
-  ++ lib.optionals (lib.versionAtLeast version "10") [
-    cpio
-  ]
-  ++ lib.optionals (lib.versionAtLeast version "11") [
-    ninja
-  ]
-  ++ lib.optionals isDarwin [
-    getconf
+  outputs = [
+    "out"
+    "man"
   ];
-
-  buildInputs = [
-    # this gets copied into the tree, but we still need the sandbox profile
-    bootstrapSdk
-    # the propagated build inputs in llvm.dev break swift compilation
-    llvmPackages.llvm.out
-    zlib
-    _icu
-    openssl
-  ]
-  ++ lib.optionals isLinux [
-    krb5
-    lttng-ust_2_12
-  ]
-  ++ lib.optionals isDarwin [
-    xcbuild
-    swift
-    krb5
-    sigtool
-  ];
-
-  # This is required to fix the error:
-  # > CSSM_ModuleLoad(): One or more parameters passed to a function were not valid.
-  # The error occurs during
-  # AppleCryptoNative_X509ImportCollection -> ReadX509 -> SecItemImport
-  # while importing trustedroots/codesignctl.pem. This happens during any dotnet
-  # restore operation.
-  # Enabling com.apple.system.opendirectoryd.membership causes swiftc to use
-  # /var/folders for its default cache path, so the swiftc -module-cache-path
-  # patch below is required.
-  sandboxProfile = ''
-    (allow file-read* (subpath "/private/var/db/mds/system"))
-    (allow mach-lookup (global-name "com.apple.SecurityServer")
-                       (global-name "com.apple.system.opendirectoryd.membership"))
-  '';
 
   patches =
     lib.optionals (lib.versionAtLeast version "9" && lib.versionOlder version "10") [
@@ -156,10 +93,10 @@ stdenv.mkDerivation {
     ++ lib.optionals (lib.versionAtLeast version "11") [
       ./Prefer-DOTNET_ROOT-over-directory-traversal-when-fin.2.patch
       (fetchpatch2 {
-        url = "https://github.com/dotnet/roslyn/commit/0efb81ea44ddf262eb50d71c9d0f1728e2ad7ac6.patch";
+        extraPrefix = "src/roslyn/";
         hash = "sha256-ZZZGMtO1cuvywhPpmwF8PFAGnuidD3yht2TVGCMjVZ0=";
         stripLen = 1;
-        extraPrefix = "src/roslyn/";
+        url = "https://github.com/dotnet/roslyn/commit/0efb81ea44ddf262eb50d71c9d0f1728e2ad7ac6.patch";
       })
     ]
     ++ lib.optional (lib.versionAtLeast version "11" && isDarwin) ./fix-cmake-darwin.patch;
@@ -355,66 +292,51 @@ stdenv.mkDerivation {
     ''
   );
 
-  prepFlags = [
-    "--no-artifacts"
-    "--no-prebuilts"
-    "--with-packages"
-    bootstrapSdk.artifacts
+  nativeBuildInputs = [
+    ensureNewerSourcesForZipFilesHook
+    jq
+    curl.bin
+    git
+    cmake
+    pkg-config
+    python3
+    xmlstarlet
+    unzip
+    yq
+    installShellFiles
   ]
-  # https://github.com/dotnet/source-build/issues/5286#issuecomment-3097872768
-  ++ lib.optional (lib.versionAtLeast version "10") "-p:SkipArcadeSdkImport=true";
+  ++ lib.optionals (lib.versionAtLeast version "9") [
+    nodejs
+  ]
+  ++ lib.optionals (lib.versionAtLeast version "10") [
+    cpio
+  ]
+  ++ lib.optionals (lib.versionAtLeast version "11") [
+    ninja
+  ]
+  ++ lib.optionals isDarwin [
+    getconf
+  ];
 
-  configurePhase =
-    let
-      prepScript = if (lib.versionAtLeast version "9") then "./prep-source-build.sh" else "./prep.sh";
-    in
-    ''
-      runHook preConfigure
-      # The build process tries to overwrite some things in the sdk (e.g.
-      # SourceBuild.MSBuildSdkResolver.dll), so it needs to be mutable.
-      mkdir .dotnet
-      cp -r ${bootstrapSdk}/share/dotnet/* .dotnet/
-      chmod -R +w .dotnet
-    ''
-    + lib.optionalString (lib.versionAtLeast version "10") ''
-      dotnet nuget add source "${bootstrapSdk.artifacts}"
-    ''
-    + ''
-      ${prepScript} $prepFlags
-    ''
-    + lib.optionalString (!hasRuntime) ''
-      mkdir .shared-components
-      cp -r "${bootstrapSdk.artifacts}"/* .shared-components/
-      chmod +w -R .shared-components/
-      # zip dependencies unzipped in bootstrap installPhase, so they can be found
-      find .shared-components/assets . -name \*.tar -exec gzip -f --fast {} \;
-      buildFlags+=\ --with-shared-components\ "$PWD"/.shared-components
-    ''
-    + ''
-
-      runHook postConfigure
-    '';
-
-  postConfigure = lib.optionalString (lib.versionAtLeast version "9" && hasRuntime) ''
-    # see patch-npm-packages.proj
-    typeset -f isScript patchShebangs > src/aspnetcore/patch-shebangs.sh
-  '';
-
-  dontConfigureNuget = true; # NUGET_PACKAGES breaks the build
-  dontUseCmakeConfigure = true;
-
-  env = {
-    # https://github.com/NixOS/nixpkgs/issues/38991
-    # bash: warning: setlocale: LC_ALL: cannot change locale (en_US.UTF-8)
-    LOCALE_ARCHIVE = lib.optionalString (
-      isLinux && glibcLocales != null
-    ) "${glibcLocales}/lib/locale/locale-archive";
-
-    # clang: error: argument unused during compilation:
-    # '-Wa,--compress-debug-sections' [-Werror,-Wunused-command-line-argument]
-    # caused by separateDebugInfo
-    NIX_CFLAGS_COMPILE = "-Wno-unused-command-line-argument";
-  };
+  buildInputs = [
+    # this gets copied into the tree, but we still need the sandbox profile
+    bootstrapSdk
+    # the propagated build inputs in llvm.dev break swift compilation
+    llvmPackages.llvm.out
+    zlib
+    _icu
+    openssl
+  ]
+  ++ lib.optionals isLinux [
+    krb5
+    lttng-ust_2_12
+  ]
+  ++ lib.optionals isDarwin [
+    xcbuild
+    swift
+    krb5
+    sigtool
+  ];
 
   buildFlags = [
     "--with-packages"
@@ -437,6 +359,24 @@ stdenv.mkDerivation {
     "repodefault "
   ];
 
+  env = {
+    # https://github.com/NixOS/nixpkgs/issues/38991
+    # bash: warning: setlocale: LC_ALL: cannot change locale (en_US.UTF-8)
+    LOCALE_ARCHIVE = lib.optionalString (
+      isLinux && glibcLocales != null
+    ) "${glibcLocales}/lib/locale/locale-archive";
+
+    # clang: error: argument unused during compilation:
+    # '-Wa,--compress-debug-sections' [-Werror,-Wunused-command-line-argument]
+    # caused by separateDebugInfo
+    NIX_CFLAGS_COMPILE = "-Wno-unused-command-line-argument";
+  };
+
+  postConfigure = lib.optionalString (lib.versionAtLeast version "9" && hasRuntime) ''
+    # see patch-npm-packages.proj
+    typeset -f isScript patchShebangs > src/aspnetcore/patch-shebangs.sh
+  '';
+
   buildPhase = ''
     runHook preBuild
 
@@ -453,11 +393,6 @@ stdenv.mkDerivation {
 
     runHook postBuild
   '';
-
-  outputs = [
-    "out"
-    "man"
-  ];
 
   installPhase =
     let
@@ -505,12 +440,6 @@ stdenv.mkDerivation {
       runHook postInstall
     '';
 
-  ${if stdenv.hostPlatform.isDarwin && lib.versionAtLeast version "10" then "postInstall" else null} =
-    ''
-      mkdir -p "$out"/nix-support
-      echo ${sigtool} > "$out"/nix-support/manual-sdk-deps
-    '';
-
   # stripping dlls results in:
   # Failed to load System.Private.CoreLib.dll (error code 0x8007000B)
   # stripped crossgen2 results in:
@@ -520,14 +449,84 @@ stdenv.mkDerivation {
     stripExclude=(\*.dll crossgen2)
   '';
 
+  ${if stdenv.hostPlatform.isDarwin && lib.versionAtLeast version "10" then "postInstall" else null} =
+    ''
+      mkdir -p "$out"/nix-support
+      echo ${sigtool} > "$out"/nix-support/manual-sdk-deps
+    '';
+
+  configurePhase =
+    let
+      prepScript = if (lib.versionAtLeast version "9") then "./prep-source-build.sh" else "./prep.sh";
+    in
+    ''
+      runHook preConfigure
+      # The build process tries to overwrite some things in the sdk (e.g.
+      # SourceBuild.MSBuildSdkResolver.dll), so it needs to be mutable.
+      mkdir .dotnet
+      cp -r ${bootstrapSdk}/share/dotnet/* .dotnet/
+      chmod -R +w .dotnet
+    ''
+    + lib.optionalString (lib.versionAtLeast version "10") ''
+      dotnet nuget add source "${bootstrapSdk.artifacts}"
+    ''
+    + ''
+      ${prepScript} $prepFlags
+    ''
+    + lib.optionalString (!hasRuntime) ''
+      mkdir .shared-components
+      cp -r "${bootstrapSdk.artifacts}"/* .shared-components/
+      chmod +w -R .shared-components/
+      # zip dependencies unzipped in bootstrap installPhase, so they can be found
+      find .shared-components/assets . -name \*.tar -exec gzip -f --fast {} \;
+      buildFlags+=\ --with-shared-components\ "$PWD"/.shared-components
+    ''
+    + ''
+
+      runHook postConfigure
+    '';
+
+  dontConfigureNuget = true; # NUGET_PACKAGES breaks the build
+  dontUseCmakeConfigure = true;
+
+  # TODO: fix this in the binary sdk packages
+  preHook = lib.optionalString stdenv.hostPlatform.isDarwin ''
+    addToSearchPath DYLD_LIBRARY_PATH "${_icu}/lib"
+    export DYLD_LIBRARY_PATH
+  '';
+
+  prepFlags = [
+    "--no-artifacts"
+    "--no-prebuilts"
+    "--with-packages"
+    bootstrapSdk.artifacts
+  ]
+  # https://github.com/dotnet/source-build/issues/5286#issuecomment-3097872768
+  ++ lib.optional (lib.versionAtLeast version "10") "-p:SkipArcadeSdkImport=true";
+
+  # This is required to fix the error:
+  # > CSSM_ModuleLoad(): One or more parameters passed to a function were not valid.
+  # The error occurs during
+  # AppleCryptoNative_X509ImportCollection -> ReadX509 -> SecItemImport
+  # while importing trustedroots/codesignctl.pem. This happens during any dotnet
+  # restore operation.
+  # Enabling com.apple.system.opendirectoryd.membership causes swiftc to use
+  # /var/folders for its default cache path, so the swiftc -module-cache-path
+  # patch below is required.
+  sandboxProfile = ''
+    (allow file-read* (subpath "/private/var/db/mds/system"))
+    (allow mach-lookup (global-name "com.apple.SecurityServer")
+                       (global-name "com.apple.system.opendirectoryd.membership"))
+  '';
+
   separateDebugInfo = true;
 
   passthru = {
     inherit releaseManifest buildRid targetRid;
-    icu = _icu;
+    hasCrossTargetBug = false;
     # ilcompiler is currently broken: https://github.com/dotnet/source-build/issues/1215
     hasILCompiler = lib.versionAtLeast version "9";
-    hasCrossTargetBug = false;
+    icu = _icu;
   };
 
   meta = {
@@ -535,12 +534,14 @@ stdenv.mkDerivation {
     homepage = "https://dotnet.github.io/";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ corngood ];
-    mainProgram = "dotnet";
+
     platforms = [
       "x86_64-linux"
       "aarch64-linux"
       "aarch64-darwin"
     ];
+
+    mainProgram = "dotnet";
     # build deadlocks intermittently on rosetta
     # https://github.com/dotnet/runtime/issues/111628
     broken = stdenv.hostPlatform.system == "x86_64-darwin";

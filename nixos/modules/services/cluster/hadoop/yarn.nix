@@ -8,100 +8,117 @@ let
   cfg = config.services.hadoop;
   hadoopConf = "${import ./conf.nix { inherit cfg pkgs lib; }}/";
   restartIfChanged = lib.mkOption {
-    type = lib.types.bool;
+    default = false;
+
     description = ''
       Automatically restart the service on config change.
       This can be set to false to defer restarts on clusters running critical applications.
       Please consider the security implications of inadvertently running an older version,
       and the possibility of unexpected behavior caused by inconsistent versions across a cluster when disabling this option.
     '';
-    default = false;
+
+    type = lib.types.bool;
   };
   extraFlags = lib.mkOption {
-    type = with lib.types; listOf str;
     default = [ ];
     description = "Extra command line flags to pass to the service";
+
     example = [
       "-Dcom.sun.management.jmxremote"
       "-Dcom.sun.management.jmxremote.port=8010"
     ];
+
+    type = with lib.types; listOf str;
   };
   extraEnv = lib.mkOption {
-    type = with lib.types; attrsOf str;
     default = { };
     description = "Extra environment variables";
+    type = with lib.types; attrsOf str;
   };
 in
 {
   options.services.hadoop.yarn = {
-    resourcemanager = {
-      enable = lib.mkEnableOption "Hadoop YARN ResourceManager";
-      inherit restartIfChanged extraFlags extraEnv;
-
-      openFirewall = lib.mkOption {
-        type = lib.types.bool;
-        default = false;
-        description = ''
-          Open firewall ports for resourcemanager
-        '';
-      };
-    };
     nodemanager = {
-      enable = lib.mkEnableOption "Hadoop YARN NodeManager";
       inherit restartIfChanged extraFlags extraEnv;
-
-      resource = {
-        cpuVCores = lib.mkOption {
-          description = "Number of vcores that can be allocated for containers.";
-          type = with lib.types; nullOr ints.positive;
-          default = null;
-        };
-        maximumAllocationVCores = lib.mkOption {
-          description = "The maximum virtual CPU cores any container can be allocated.";
-          type = with lib.types; nullOr ints.positive;
-          default = null;
-        };
-        memoryMB = lib.mkOption {
-          description = "Amount of physical memory, in MB, that can be allocated for containers.";
-          type = with lib.types; nullOr ints.positive;
-          default = null;
-        };
-        maximumAllocationMB = lib.mkOption {
-          description = "The maximum physical memory any container can be allocated.";
-          type = with lib.types; nullOr ints.positive;
-          default = null;
-        };
-      };
-
-      useCGroups = lib.mkOption {
-        type = lib.types.bool;
-        default = true;
-        description = ''
-          Use cgroups to enforce resource limits on containers
-        '';
-      };
-
-      localDir = lib.mkOption {
-        description = "List of directories to store localized files in.";
-        type = with lib.types; nullOr (listOf path);
-        example = [ "/var/lib/hadoop/yarn/nm" ];
-        default = null;
-      };
+      enable = lib.mkEnableOption "Hadoop YARN NodeManager";
 
       addBinBash = lib.mkOption {
-        type = lib.types.bool;
         default = true;
+
         description = ''
           Add /bin/bash. This is needed by the linux container executor's launch script.
         '';
-      };
-      openFirewall = lib.mkOption {
+
         type = lib.types.bool;
+      };
+
+      localDir = lib.mkOption {
+        default = null;
+        description = "List of directories to store localized files in.";
+        example = [ "/var/lib/hadoop/yarn/nm" ];
+        type = with lib.types; nullOr (listOf path);
+      };
+
+      openFirewall = lib.mkOption {
         default = false;
+
         description = ''
           Open firewall ports for nodemanager.
           Because containers can listen on any ephemeral port, TCP ports 1024–65535 will be opened.
         '';
+
+        type = lib.types.bool;
+      };
+
+      resource = {
+        cpuVCores = lib.mkOption {
+          default = null;
+          description = "Number of vcores that can be allocated for containers.";
+          type = with lib.types; nullOr ints.positive;
+        };
+
+        maximumAllocationMB = lib.mkOption {
+          default = null;
+          description = "The maximum physical memory any container can be allocated.";
+          type = with lib.types; nullOr ints.positive;
+        };
+
+        maximumAllocationVCores = lib.mkOption {
+          default = null;
+          description = "The maximum virtual CPU cores any container can be allocated.";
+          type = with lib.types; nullOr ints.positive;
+        };
+
+        memoryMB = lib.mkOption {
+          default = null;
+          description = "Amount of physical memory, in MB, that can be allocated for containers.";
+          type = with lib.types; nullOr ints.positive;
+        };
+      };
+
+      useCGroups = lib.mkOption {
+        default = true;
+
+        description = ''
+          Use cgroups to enforce resource limits on containers
+        '';
+
+        type = lib.types.bool;
+      };
+    };
+
+    resourcemanager = {
+      inherit restartIfChanged extraFlags extraEnv;
+      enable = lib.mkEnableOption "Hadoop YARN ResourceManager";
+
+      openFirewall = lib.mkOption {
+        default = false;
+
+        description = ''
+          Open firewall ports for resourcemanager
+        '';
+
+        type = lib.types.bool;
       };
     };
   };
@@ -116,24 +133,6 @@ in
     })
 
     (lib.mkIf cfg.yarn.resourcemanager.enable {
-      systemd.services.yarn-resourcemanager = {
-        description = "Hadoop YARN ResourceManager";
-        wantedBy = [ "multi-user.target" ];
-        inherit (cfg.yarn.resourcemanager) restartIfChanged;
-        environment = cfg.yarn.resourcemanager.extraEnv;
-
-        serviceConfig = {
-          User = "yarn";
-          SyslogIdentifier = "yarn-resourcemanager";
-          ExecStart =
-            "${cfg.package}/bin/yarn --config ${hadoopConf} "
-            + " resourcemanager ${lib.escapeShellArgs cfg.yarn.resourcemanager.extraFlags}";
-          Restart = "always";
-        };
-      };
-
-      services.hadoop.gatewayRole.enable = true;
-
       networking.firewall.allowedTCPPorts = (
         lib.mkIf cfg.yarn.resourcemanager.openFirewall [
           8088 # resourcemanager.webapp.address
@@ -143,19 +142,71 @@ in
           8033 # resourcemanager.admin.address
         ]
       );
+
+      services.hadoop.gatewayRole.enable = true;
+
+      systemd.services.yarn-resourcemanager = {
+        inherit (cfg.yarn.resourcemanager) restartIfChanged;
+        description = "Hadoop YARN ResourceManager";
+        environment = cfg.yarn.resourcemanager.extraEnv;
+
+        serviceConfig = {
+          ExecStart =
+            "${cfg.package}/bin/yarn --config ${hadoopConf} "
+            + " resourcemanager ${lib.escapeShellArgs cfg.yarn.resourcemanager.extraFlags}";
+
+          Restart = "always";
+          SyslogIdentifier = "yarn-resourcemanager";
+          User = "yarn";
+        };
+
+        wantedBy = [ "multi-user.target" ];
+      };
     })
 
     (lib.mkIf cfg.yarn.nodemanager.enable {
-      # Needed because yarn hardcodes /bin/bash in container start scripts
-      # These scripts can't be patched, they are generated at runtime
-      systemd.tmpfiles.rules = [
-        (lib.mkIf cfg.yarn.nodemanager.addBinBash "L /bin/bash - - - - /run/current-system/sw/bin/bash")
+      networking.firewall.allowedTCPPortRanges = [
+        (lib.mkIf (cfg.yarn.nodemanager.openFirewall) {
+          from = 1024;
+          to = 65535;
+        })
       ];
 
+      services.hadoop.gatewayRole.enable = true;
+
+      services.hadoop.yarnSiteInternal =
+        with cfg.yarn.nodemanager;
+        lib.mkMerge [
+          {
+            "yarn.nodemanager.local-dirs" = lib.mkIf (localDir != null) (concatStringsSep "," localDir);
+            "yarn.nodemanager.resource.cpu-vcores" = resource.cpuVCores;
+            "yarn.nodemanager.resource.memory-mb" = resource.memoryMB;
+            "yarn.scheduler.maximum-allocation-mb" = resource.maximumAllocationMB;
+            "yarn.scheduler.maximum-allocation-vcores" = resource.maximumAllocationVCores;
+          }
+          (lib.mkIf useCGroups (
+            lib.warnIf (lib.versionOlder cfg.package.version "3.5.0")
+              ''
+                hadoop < 3.5.0 does not support cgroup v2
+                setting `services.hadoop.yarn.nodemanager.useCGroups = false` is recommended
+                see: https://issues.apache.org/jira/browse/YARN-11669
+              ''
+              {
+                "yarn.nodemanager.linux-container-executor.cgroups.hierarchy" = "/hadoop-yarn";
+                "yarn.nodemanager.linux-container-executor.cgroups.mount" = "true";
+
+                "yarn.nodemanager.linux-container-executor.cgroups.mount-path" =
+                  "/run/wrappers/yarn-nodemanager/cgroup";
+
+                "yarn.nodemanager.linux-container-executor.resources-handler.class" =
+                  "org.apache.hadoop.yarn.server.nodemanager.util.CgroupsLCEResourcesHandler";
+              }
+          ))
+        ];
+
       systemd.services.yarn-nodemanager = {
-        description = "Hadoop YARN NodeManager";
-        wantedBy = [ "multi-user.target" ];
         inherit (cfg.yarn.nodemanager) restartIfChanged;
+        description = "Hadoop YARN NodeManager";
         environment = cfg.yarn.nodemanager.extraEnv;
 
         preStart = ''
@@ -174,51 +225,23 @@ in
         '';
 
         serviceConfig = {
-          User = "yarn";
-          SyslogIdentifier = "yarn-nodemanager";
-          PermissionsStartOnly = true;
           ExecStart =
             "${cfg.package}/bin/yarn --config ${hadoopConf} "
             + " nodemanager ${lib.escapeShellArgs cfg.yarn.nodemanager.extraFlags}";
+
+          PermissionsStartOnly = true;
           Restart = "always";
+          SyslogIdentifier = "yarn-nodemanager";
+          User = "yarn";
         };
+
+        wantedBy = [ "multi-user.target" ];
       };
 
-      services.hadoop.gatewayRole.enable = true;
-
-      services.hadoop.yarnSiteInternal =
-        with cfg.yarn.nodemanager;
-        lib.mkMerge [
-          {
-            "yarn.nodemanager.local-dirs" = lib.mkIf (localDir != null) (concatStringsSep "," localDir);
-            "yarn.scheduler.maximum-allocation-vcores" = resource.maximumAllocationVCores;
-            "yarn.scheduler.maximum-allocation-mb" = resource.maximumAllocationMB;
-            "yarn.nodemanager.resource.cpu-vcores" = resource.cpuVCores;
-            "yarn.nodemanager.resource.memory-mb" = resource.memoryMB;
-          }
-          (lib.mkIf useCGroups (
-            lib.warnIf (lib.versionOlder cfg.package.version "3.5.0")
-              ''
-                hadoop < 3.5.0 does not support cgroup v2
-                setting `services.hadoop.yarn.nodemanager.useCGroups = false` is recommended
-                see: https://issues.apache.org/jira/browse/YARN-11669
-              ''
-              {
-                "yarn.nodemanager.linux-container-executor.cgroups.hierarchy" = "/hadoop-yarn";
-                "yarn.nodemanager.linux-container-executor.resources-handler.class" =
-                  "org.apache.hadoop.yarn.server.nodemanager.util.CgroupsLCEResourcesHandler";
-                "yarn.nodemanager.linux-container-executor.cgroups.mount" = "true";
-                "yarn.nodemanager.linux-container-executor.cgroups.mount-path" =
-                  "/run/wrappers/yarn-nodemanager/cgroup";
-              }
-          ))
-        ];
-
-      networking.firewall.allowedTCPPortRanges = [
-        (lib.mkIf (cfg.yarn.nodemanager.openFirewall) {
-          from = 1024;
-          to = 65535;
-        })
+      # Needed because yarn hardcodes /bin/bash in container start scripts
+      # These scripts can't be patched, they are generated at runtime
+      systemd.tmpfiles.rules = [
+        (lib.mkIf cfg.yarn.nodemanager.addBinBash "L /bin/bash - - - - /run/current-system/sw/bin/bash")
       ];
     })
 

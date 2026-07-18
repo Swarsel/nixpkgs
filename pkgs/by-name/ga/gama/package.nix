@@ -1,10 +1,10 @@
 {
+  lib,
   stdenv,
   fetchurl,
-  lib,
   expat,
-  octave,
   libxml2,
+  octave,
   texinfo,
   zip,
 }:
@@ -17,20 +17,19 @@ stdenv.mkDerivation (finalAttrs: {
     sha256 = "sha256-Xcc/4JB7hyM+KHeO32+JlQWUBfH8RXuOL3Z2P0imaxo=";
   };
 
-  buildInputs = [ expat ];
-
   nativeBuildInputs = [
     texinfo
     zip
   ];
 
+  buildInputs = [ expat ];
   env.CXXFLAGS = lib.optionalString stdenv.cc.isClang "-include sstream";
+  doCheck = true;
 
   nativeCheckInputs = [
     octave
     libxml2
   ];
-  doCheck = true;
 
   meta = {
     description = "Tools for adjustment of geodetic networks";

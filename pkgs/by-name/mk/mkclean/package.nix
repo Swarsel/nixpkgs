@@ -14,18 +14,18 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-L1zcqw4Jtl+f74lJpV7wDuPdcA5LQFDiRdRCNH18w9s=";
   };
 
-  nativeBuildInputs = [ cmake ];
-
-  hardeningDisable = [ "format" ];
-
   postPatch = ''
     substituteInPlace CMakeLists.txt \
       --replace-fail "cmake_minimum_required(VERSION 3.1.2)" "cmake_minimum_required(VERSION 3.10)"
   '';
 
+  nativeBuildInputs = [ cmake ];
+
   postInstall = ''
     install -Dm0755 mkclean/mkclean $out/bin/mkclean
   '';
+
+  hardeningDisable = [ "format" ];
 
   meta = {
     description = "Command line tool to clean and optimize Matroska (.mkv / .mka / .mks / .mk3d) and WebM (.webm / .weba) files that have already been muxed";

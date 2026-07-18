@@ -2,45 +2,44 @@
   lib,
   stdenv,
   fetchurl,
+  buildPackages,
+  dbus,
+  dconf,
+  glib,
+  gnome,
+  gobject-introspection,
+  gsettings-desktop-schemas,
+  libx11,
+  libxext,
+  libxi,
+  libxml2,
+  libxtst,
+  makeWrapper,
   meson,
   ninja,
   pkg-config,
-  gobject-introspection,
-  buildPackages,
+  python3,
+  systemdLibs,
+  systemdSupport ? lib.meta.availableOn stdenv.hostPlatform systemdLibs,
   withDconf ? !stdenv.hostPlatform.isDarwin && lib.meta.availableOn stdenv.hostPlatform dconf,
   withIntrospection ?
     lib.meta.availableOn stdenv.hostPlatform gobject-introspection
     && stdenv.hostPlatform.emulatorAvailable buildPackages,
-  gsettings-desktop-schemas,
-  makeWrapper,
-  python3,
-  dbus,
-  glib,
-  dconf,
-  libx11,
-  libxml2,
-  libxtst,
-  libxi,
-  libxext,
-  gnome,
-  systemdLibs,
-  systemdSupport ? lib.meta.availableOn stdenv.hostPlatform systemdLibs,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
   pname = "at-spi2-core";
   version = "2.60.4";
 
-  outputs = [
-    "out"
-    "dev"
-  ];
-  separateDebugInfo = true;
-
   src = fetchurl {
     url = "mirror://gnome/sources/at-spi2-core/${lib.versions.majorMinor finalAttrs.version}/at-spi2-core-${finalAttrs.version}.tar.xz";
     hash = "sha256-Gh9bqYBZF/QfxqpoI9z4h6KR1gekJ+LVr7a136ZQcMc=";
   };
+
+  outputs = [
+    "out"
+    "dev"
+  ];
 
   nativeBuildInputs = [
     glib
@@ -75,9 +74,6 @@ stdenv.mkDerivation (finalAttrs: {
     glib
   ];
 
-  # fails with "AT-SPI: Couldn't connect to accessibility bus. Is at-spi-bus-launcher running?"
-  doCheck = false;
-
   mesonFlags = [
     # Provide dbus-daemon fallback when it is not already running when
     # at-spi2-bus-launcher is executed. This allows us to avoid
@@ -100,12 +96,8 @@ stdenv.mkDerivation (finalAttrs: {
     (lib.mesonBool "gtk2_atk_adaptor" false)
   ];
 
-  passthru = {
-    updateScript = gnome.updateScript {
-      packageName = "at-spi2-core";
-      versionPolicy = "odd-unstable";
-    };
-  };
+  # fails with "AT-SPI: Couldn't connect to accessibility bus. Is at-spi-bus-launcher running?"
+  doCheck = false;
 
   postFixup = ''
     # Cannot use wrapGAppsHook'due to a dependency cycle
@@ -114,12 +106,21 @@ stdenv.mkDerivation (finalAttrs: {
       --prefix XDG_DATA_DIRS : ${gsettings-desktop-schemas}/share/gsettings-schemas/${gsettings-desktop-schemas.name}
   '';
 
+  separateDebugInfo = true;
+
+  passthru = {
+    updateScript = gnome.updateScript {
+      packageName = "at-spi2-core";
+      versionPolicy = "odd-unstable";
+    };
+  };
+
   meta = {
     description = "Assistive Technology Service Provider Interface protocol definitions and daemon for D-Bus";
     homepage = "https://gitlab.gnome.org/GNOME/at-spi2-core";
     license = lib.licenses.lgpl21Plus;
     maintainers = with lib.maintainers; [ raskin ];
-    teams = [ lib.teams.gnome ];
     platforms = lib.platforms.unix;
+    teams = [ lib.teams.gnome ];
   };
 })

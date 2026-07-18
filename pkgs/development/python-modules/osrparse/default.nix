@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   hypothesis,
   pytestCheckHook,
   setuptools,
@@ -10,7 +10,6 @@
 buildPythonPackage rec {
   pname = "osrparse";
   version = "7.0.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "kszlim";
@@ -19,13 +18,13 @@ buildPythonPackage rec {
     hash = "sha256-MBE4z1SDkr0YA5ommF+WZyR2N67Y1/xmDhxrTrUhQJk=";
   };
 
-  build-system = [ setuptools ];
-
   nativeCheckInputs = [
     hypothesis
     pytestCheckHook
   ];
 
+  build-system = [ setuptools ];
+  pyproject = true;
   pythonImportsCheck = [ "osrparse" ];
 
   meta = {

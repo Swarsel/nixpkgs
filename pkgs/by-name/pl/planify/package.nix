@@ -1,13 +1,8 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
   desktop-file-utils,
-  meson,
-  ninja,
-  pkg-config,
-  vala,
-  wrapGAppsHook4,
   evolution-data-server-gtk4,
   glib,
   glib-networking,
@@ -15,6 +10,7 @@
   gtk4,
   gtksourceview5,
   gxml,
+  icu,
   json-glib,
   libadwaita,
   libgee,
@@ -23,8 +19,12 @@
   libsecret,
   libsoup_3,
   libspelling,
+  meson,
+  ninja,
+  pkg-config,
   sqlite,
-  icu,
+  vala,
+  wrapGAppsHook4,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -73,8 +73,8 @@ stdenv.mkDerivation (finalAttrs: {
     description = "Task manager with Todoist support designed for GNU/Linux";
     homepage = "https://github.com/alainm23/planify";
     license = lib.licenses.gpl3Plus;
-    teams = [ lib.teams.pantheon ];
     platforms = lib.platforms.linux;
     mainProgram = "io.github.alainm23.planify";
+    teams = [ lib.teams.pantheon ];
   };
 })

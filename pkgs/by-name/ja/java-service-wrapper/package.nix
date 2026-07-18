@@ -3,10 +3,10 @@
   stdenv,
   fetchurl,
   ant,
-  jdk,
-  stripJavaArchivesHook,
   cunit,
+  jdk,
   ncurses,
+  stripJavaArchivesHook,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -20,15 +20,15 @@ stdenv.mkDerivation (finalAttrs: {
 
   strictDeps = true;
 
-  buildInputs = [
-    cunit
-    ncurses
-  ];
-
   nativeBuildInputs = [
     ant
     jdk
     stripJavaArchivesHook
+  ];
+
+  buildInputs = [
+    cunit
+    ncurses
   ];
 
   postConfigure = ''
@@ -64,12 +64,14 @@ stdenv.mkDerivation (finalAttrs: {
     homepage = "https://wrapper.tanukisoftware.com/";
     changelog = "https://wrapper.tanukisoftware.com/doc/english/release-notes.html#${finalAttrs.version}";
     license = lib.licenses.gpl2Only;
+    maintainers = [ lib.maintainers.suhr ];
+
     platforms = [
       "x86_64-linux"
       "i686-linux"
       "aarch64-linux"
     ];
-    maintainers = [ lib.maintainers.suhr ];
+
     mainProgram = "wrapper";
     # Broken for Musl at 2024-01-17. Errors as:
     # logger.c:81:12: fatal error: gnu/libc-version.h: No such file or directory

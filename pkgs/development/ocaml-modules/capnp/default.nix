@@ -1,8 +1,7 @@
 {
   lib,
-  buildDunePackage,
   fetchFromGitHub,
-  base_quickcheck ? null,
+  buildDunePackage,
   capnproto,
   ocplib-endian,
   ounit2,
@@ -10,13 +9,12 @@
   result,
   stdint,
   stdio,
+  base_quickcheck ? null,
 }:
 
 buildDunePackage (finalAttrs: {
   pname = "capnp";
   version = "3.6.0";
-
-  minimalOCamlVersion = "4.08";
 
   src = fetchFromGitHub {
     owner = "capnproto";
@@ -40,12 +38,14 @@ buildDunePackage (finalAttrs: {
     stdint
   ];
 
+  doCheck = true;
+
   checkInputs = [
     base_quickcheck
     ounit2
   ];
 
-  doCheck = true;
+  minimalOCamlVersion = "4.08";
 
   meta = {
     description = "OCaml code generation plugin for the Cap'n Proto serialization framework";

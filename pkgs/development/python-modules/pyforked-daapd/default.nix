@@ -1,21 +1,27 @@
 {
   lib,
+  aiohttp,
   buildPythonPackage,
   fetchPypi,
-  setuptools,
-  aiohttp,
   pytestCheckHook,
+  setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "pyforked-daapd";
   version = "0.1.14";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
     hash = "sha256-v1NOlwP8KtBsQiqwbx1y8p8lABEuEJdNhvR2kGzLxKs=";
   };
+
+  # Tests require a running forked-daapd server
+  doCheck = false;
+
+  nativeCheckInputs = [
+    pytestCheckHook
+  ];
 
   build-system = [
     setuptools
@@ -25,16 +31,11 @@ buildPythonPackage rec {
     aiohttp
   ];
 
-  nativeCheckInputs = [
-    pytestCheckHook
-  ];
+  pyproject = true;
 
   pythonImportsCheck = [
     "pyforked_daapd"
   ];
-
-  # Tests require a running forked-daapd server
-  doCheck = false;
 
   meta = {
     description = "Python interface for forked-daapd";

@@ -1,10 +1,10 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
-  pkg-config,
+  buildGoModule,
   libde265,
   libheif,
+  pkg-config,
 }:
 let
   pname = "matrix-media-repo";
@@ -20,8 +20,8 @@ let
   vendorHash = "sha256-+sHy4Lgufs5jdN/V9W06U4dOZrsPiX87zmR1UwGHhQg=";
 
   asset-compiler = buildGoModule {
-    pname = "${pname}-compile_assets";
     inherit version src vendorHash;
+    pname = "${pname}-compile_assets";
 
     subPackages = [
       "cmd/utilities/compile_assets"
@@ -51,14 +51,14 @@ buildGoModule {
     compile_assets
   '';
 
+  doCheck = false; # requires docker
+
   ldflags = [
     "-s"
     "-w"
     "-X"
     "github.com/t2bot/matrix-media-repo/common/version.Version=${version}"
   ];
-
-  doCheck = false; # requires docker
 
   meta = {
     description = "Highly configurable multi-domain media repository for Matrix";

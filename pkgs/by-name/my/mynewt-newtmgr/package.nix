@@ -1,10 +1,10 @@
 {
   lib,
-  buildGoModule,
-  fetchFromGitHub,
   stdenv,
-  testers,
+  fetchFromGitHub,
+  buildGoModule,
   mynewt-newtmgr,
+  testers,
 }:
 
 buildGoModule (finalAttrs: {
@@ -21,17 +21,19 @@ buildGoModule (finalAttrs: {
   vendorHash = "sha256-+vOZoueoMqlGnopLKc6pCgTmcgI34pxaMNbr6Y+JCfQ=";
 
   passthru.tests.version = testers.testVersion {
-    package = mynewt-newtmgr;
     command = "newtmgr version";
+    package = mynewt-newtmgr;
   };
 
   meta = {
-    homepage = "https://mynewt.apache.org/";
     description = "Tool to communicate with devices running Mynewt OS";
+
     longDescription = ''
       Newt Manager (newtmgr) an application that enables a user to communicate
       with and manage remote devices running the Mynewt OS
     '';
+
+    homepage = "https://mynewt.apache.org/";
     license = lib.licenses.asl20;
     maintainers = with lib.maintainers; [ bezmuth ];
     # never built on aarch64-darwin, x86_64-darwin since first introduction in nixpkgs

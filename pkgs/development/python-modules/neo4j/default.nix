@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   numpy,
   pandas,
   pyarrow,
@@ -12,7 +12,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "neo4j";
   version = "6.2.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "neo4j";
@@ -27,22 +26,23 @@ buildPythonPackage (finalAttrs: {
       --replace-fail 'dynamic = ["version"]' 'version = "${finalAttrs.version}"'
   '';
 
+  # Missing dependencies
+  doCheck = false;
   build-system = [ setuptools ];
-
   dependencies = [ pytz ];
 
   optional-dependencies = {
     numpy = [ numpy ];
+
     pandas = [
       numpy
       pandas
     ];
+
     pyarrow = [ pyarrow ];
   };
 
-  # Missing dependencies
-  doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "neo4j" ];
 
   meta = {

@@ -7,8 +7,8 @@ let
   version = "4.4.2";
 in
 stdenv.mkDerivation {
-  pname = "yeswiki";
   inherit version;
+  pname = "yeswiki";
 
   src = fetchurl {
     url = "https://repository.yeswiki.net/doryphore/yeswiki-doryphore-${version}.zip";

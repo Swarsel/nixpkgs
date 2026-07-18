@@ -8,18 +8,17 @@
 buildPythonPackage rec {
   pname = "update-checker";
   version = "0.18.0";
-  format = "setuptools";
 
   src = fetchPypi {
-    pname = "update_checker";
     inherit version;
     sha256 = "6a2d45bb4ac585884a6b03f9eade9161cedd9e8111545141e9aa9058932acb13";
+    pname = "update_checker";
   };
 
   propagatedBuildInputs = [ requests ];
-
   # requires network
   doCheck = false;
+  format = "setuptools";
 
   meta = {
     description = "Python module that will check for package updates";

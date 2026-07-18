@@ -43,12 +43,14 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "API for GeoIP/Geolocation databases";
+    homepage = "https://www.maxmind.com";
+    license = lib.licenses.lgpl21;
+
     maintainers = with lib.maintainers; [
       thoughtpolice
       raskin
     ];
-    license = lib.licenses.lgpl21;
+
     platforms = lib.platforms.unix;
-    homepage = "https://www.maxmind.com";
   };
 })

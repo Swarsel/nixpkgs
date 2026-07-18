@@ -2,11 +2,11 @@
   lib,
   fetchFromGitHub,
   buildDunePackage,
-  zed,
+  logs,
   lwt_react,
   mew_vi,
   uucp,
-  logs,
+  zed,
 }:
 
 buildDunePackage (finalAttrs: {
@@ -30,6 +30,7 @@ buildDunePackage (finalAttrs: {
 
   meta = {
     description = "Terminal manipulation library for OCaml";
+
     longDescription = ''
       Lambda-term is a cross-platform library for
       manipulating the terminal. It provides an abstraction for keys,

@@ -1,7 +1,7 @@
 {
-  python3,
-  jupyter-kernel,
   lib,
+  jupyter-kernel,
+  python3,
 }:
 
 let
@@ -12,6 +12,7 @@ let
     }:
     (python3.buildEnv.override {
       extraLibs = [ python3.pkgs.jupyter-console ];
+
       makeWrapperArgs = [
         "--set JUPYTER_PATH ${jupyter-kernel.create { inherit definitions; }}"
       ]

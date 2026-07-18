@@ -1,43 +1,23 @@
 {
   lib,
-  stdenvNoCC,
   python3Packages,
   qt6,
+  stdenvNoCC,
 }:
 
 stdenvNoCC.mkDerivation (finalAttrs: {
-  pname = "optiland-python-env";
   # Inheriting src too, to hint nix-update
   inherit (python3Packages.optiland) version src;
+  pname = "optiland-python-env";
   strictDeps = true;
-  __structuredAttrs = true;
 
   nativeBuildInputs = [
     qt6.wrapQtAppsHook
   ];
+
   buildInputs = [
     qt6.qtbase
   ];
-
-  dontUnpack = true;
-  dontConfigure = true;
-
-  passthru = {
-    pythonPaths = python3Packages.requiredPythonModules (
-      [
-        python3Packages.optiland
-        python3Packages.python
-      ]
-      ++ python3Packages.optiland.passthru.optional-dependencies.gui
-      ++ python3Packages.optiland.passthru.optional-dependencies.torch
-    );
-    pythonPath =
-      lib.makeSearchPathOutput "out" python3Packages.python.sitePackages
-        finalAttrs.finalPackage.passthru.pythonPaths;
-    makeWrapperArgs = [
-      # leaving here room for potential additional arguments
-    ];
-  };
 
   # Modelded after `python.buildEnv`'s postBuild, but we don't link paths at
   # all, only create $out/bin/optiland (and potentially more) executable(s).
@@ -56,7 +36,29 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     done
   '';
 
+  __structuredAttrs = true;
+  dontConfigure = true;
   dontInstall = true;
+  dontUnpack = true;
+
+  passthru = {
+    makeWrapperArgs = [
+      # leaving here room for potential additional arguments
+    ];
+
+    pythonPath =
+      lib.makeSearchPathOutput "out" python3Packages.python.sitePackages
+        finalAttrs.finalPackage.passthru.pythonPaths;
+
+    pythonPaths = python3Packages.requiredPythonModules (
+      [
+        python3Packages.optiland
+        python3Packages.python
+      ]
+      ++ python3Packages.optiland.passthru.optional-dependencies.gui
+      ++ python3Packages.optiland.passthru.optional-dependencies.torch
+    );
+  };
 
   meta = python3Packages.optiland.meta // {
     description = python3Packages.optiland.meta.description + "; The GUI";

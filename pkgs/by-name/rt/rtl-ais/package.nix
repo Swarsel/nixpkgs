@@ -2,19 +2,14 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  pkg-config,
   libusb1,
+  pkg-config,
   rtl-sdr,
 }:
 
 stdenv.mkDerivation {
   pname = "rtl-ais";
   version = "0.8.1";
-  nativeBuildInputs = [ pkg-config ];
-  buildInputs = [
-    rtl-sdr
-    libusb1
-  ];
 
   src = fetchFromGitHub {
     owner = "dgiardini";
@@ -23,6 +18,13 @@ stdenv.mkDerivation {
     sha256 = "0wm4zai1vs89mf0zgz52q5w5rj8f3i3v6zg42hfb7aqabi25r3jf";
   };
 
+  nativeBuildInputs = [ pkg-config ];
+
+  buildInputs = [
+    rtl-sdr
+    libusb1
+  ];
+
   makeFlags = [ "PREFIX=$(out)" ];
 
   meta = {
@@ -30,7 +32,7 @@ stdenv.mkDerivation {
     homepage = "https://github.com/dgiardini/rtl-ais";
     license = lib.licenses.gpl2Plus;
     maintainers = with lib.maintainers; [ mgdm ];
-    mainProgram = "rtl_ais";
     platforms = lib.platforms.unix;
+    mainProgram = "rtl_ais";
   };
 }

@@ -3,18 +3,18 @@
   stdenv,
   fetchFromGitHub,
   autoreconfHook,
+  file,
+  jansson,
+  openssl,
   pkg-config,
   protobufc,
-  withCrypto ? true,
-  openssl,
   enableCuckoo ? true,
-  jansson,
   enableDex ? true,
   enableDotNet ? true,
   enableMacho ? true,
   enableMagic ? true,
-  file,
   enableStatic ? false,
+  withCrypto ? true,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -40,8 +40,6 @@ stdenv.mkDerivation (finalAttrs: {
   ++ lib.optionals enableMagic [ file ]
   ++ lib.optionals enableCuckoo [ jansson ];
 
-  preConfigure = "./bootstrap.sh";
-
   configureFlags = [
     (lib.withFeature withCrypto "crypto")
     (lib.enableFeature enableCuckoo "cuckoo")
@@ -52,6 +50,7 @@ stdenv.mkDerivation (finalAttrs: {
     (lib.enableFeature enableStatic "static")
   ];
 
+  preConfigure = "./bootstrap.sh";
   doCheck = enableStatic;
 
   # bin/yara contain forbidden references to /build/.
@@ -65,7 +64,7 @@ stdenv.mkDerivation (finalAttrs: {
     changelog = "https://github.com/VirusTotal/yara/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.bsd3;
     maintainers = with lib.maintainers; [ fab ];
-    mainProgram = "yara";
     platforms = lib.platforms.all;
+    mainProgram = "yara";
   };
 })

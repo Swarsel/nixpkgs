@@ -2,14 +2,14 @@
   lib,
   stdenv,
   fetchFromGitHub,
+  boost,
   cmake,
   eigen,
-  boost,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
-  version = "1.1.2";
   pname = "libnabo";
+  version = "1.1.2";
 
   src = fetchFromGitHub {
     owner = "norlab-ulaval";
@@ -19,6 +19,7 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   nativeBuildInputs = [ cmake ];
+
   buildInputs = [
     eigen
     boost
@@ -35,7 +36,7 @@ stdenv.mkDerivation (finalAttrs: {
     inherit (finalAttrs.src.meta) homepage;
     description = "Fast K Nearest Neighbor library for low-dimensional spaces";
     license = lib.licenses.bsd3;
-    platforms = lib.platforms.linux;
     maintainers = with lib.maintainers; [ cryptix ];
+    platforms = lib.platforms.linux;
   };
 })

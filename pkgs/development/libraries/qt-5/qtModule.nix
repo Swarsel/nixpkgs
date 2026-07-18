@@ -3,11 +3,11 @@
   stdenv,
   buildPackages,
   mkDerivation,
-  perl,
-  qmake,
   patches,
-  srcs,
+  perl,
   pkgsHostTarget,
+  qmake,
+  srcs,
 }:
 
 let
@@ -28,8 +28,6 @@ mkDerivation (
     inherit pname version src;
     patches = (args.patches or [ ]) ++ (patches.${pname} or [ ]);
 
-    buildInputs = args.buildInputs or [ ];
-
     nativeBuildInputs =
       (args.nativeBuildInputs or [ ])
       ++ [
@@ -39,6 +37,9 @@ mkDerivation (
       ++ lib.optionals (stdenv.buildPlatform != stdenv.hostPlatform) [
         pkgsHostTarget.qt5.qtbase.dev
       ];
+
+    buildInputs = args.buildInputs or [ ];
+
     propagatedBuildInputs =
       (lib.warnIf (args ? qtInputs) "qt5.qtModule's qtInputs argument is deprecated" args.qtInputs or [ ])
       ++ (args.propagatedBuildInputs or [ ]);
@@ -53,12 +54,6 @@ mkDerivation (
         "out"
         "dev"
       ];
-    setOutputFlags = args.setOutputFlags or false;
-
-    preHook = ''
-      . ${./hooks/move-qt-dev-tools.sh}
-      . ${./hooks/fix-qt-builtin-paths.sh}
-    '';
 
     preConfigure = ''
       ${args.preConfigure or ""}
@@ -85,8 +80,6 @@ mkDerivation (
           fi
         '';
 
-    dontWrapQtApps = args.dontWrapQtApps or true;
-
     postFixup = ''
       if [ -d "''${!outputDev}/lib/pkgconfig" ]; then
           find "''${!outputDev}/lib/pkgconfig" -name '*.pc' | while read pc; do
@@ -104,20 +97,31 @@ mkDerivation (
     '';
 
     __structuredAttrs = true;
+    dontWrapQtApps = args.dontWrapQtApps or true;
+
+    preHook = ''
+      . ${./hooks/move-qt-dev-tools.sh}
+      . ${./hooks/fix-qt-builtin-paths.sh}
+    '';
+
+    setOutputFlags = args.setOutputFlags or false;
 
     meta = {
-      homepage = "https://www.qt.io";
       description = "Cross-platform application framework for C++";
+      homepage = "https://www.qt.io";
+
       license = with licenses; [
         fdl13Plus
         gpl2Plus
         lgpl21Plus
         lgpl3Plus
       ];
+
       maintainers = with maintainers; [
         qknight
         bkchr
       ];
+
       platforms = platforms.unix;
     }
     // (args.meta or { });

@@ -2,54 +2,60 @@
   lib,
   stdenv,
   fetchurl,
-  pkg-config,
-  vala,
-  gi-docgen,
-  gobject-introspection,
-  glib,
   babl,
-  libpng,
-  llvmPackages,
-  cairo,
-  libjpeg,
-  librsvg,
-  lensfun,
-  libspiro,
-  maxflow,
-  libnsgif,
-  pango,
-  poly2tri-c,
-  poppler,
   bzip2,
-  json-glib,
+  cairo,
   gettext,
+  gexiv2,
+  gi-docgen,
+  gimp,
+  glib,
+  gobject-introspection,
+  json-glib,
+  lensfun,
+  libjpeg,
+  libnsgif,
+  libpng,
+  libraw,
+  librsvg,
+  libspiro,
+  libwebp,
+  llvmPackages,
+  luajit,
+  maxflow,
   meson,
   ninja,
-  libraw,
-  gexiv2,
-  libwebp,
-  luajit,
   openexr,
+  pango,
+  pkg-config,
+  poly2tri-c,
+  poppler,
   suitesparse,
+  vala,
   withLuaJIT ? lib.meta.availableOn stdenv.hostPlatform luajit,
-  gimp,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
   pname = "gegl";
   version = "0.4.70";
 
+  src = fetchurl {
+    url = "https://download.gimp.org/pub/gegl/${lib.versions.majorMinor finalAttrs.version}/gegl-${finalAttrs.version}.tar.xz";
+    hash = "sha256-R/UNnDrs03XetIwR6/6tUtFi5PwWKks9RGGCd/H67AI=";
+  };
+
   outputs = [
     "out"
     "dev"
     "devdoc"
   ];
-  outputBin = "dev";
 
-  src = fetchurl {
-    url = "https://download.gimp.org/pub/gegl/${lib.versions.majorMinor finalAttrs.version}/gegl-${finalAttrs.version}.tar.xz";
-    hash = "sha256-R/UNnDrs03XetIwR6/6tUtFi5PwWKks9RGGCd/H67AI=";
-  };
+  postPatch = ''
+    chmod +x tests/opencl/opencl_test.sh
+    patchShebangs tests/ff-load-save/tests_ff_load_save.sh tests/opencl/opencl_test.sh tools/xml_insert.sh
+  '';
+
+  strictDeps = true;
 
   nativeBuildInputs = [
     pkg-config
@@ -95,8 +101,6 @@ stdenv.mkDerivation (finalAttrs: {
     babl
   ];
 
-  strictDeps = true;
-
   mesonFlags = [
     "-Dmrg=disabled" # not sure what that is
     "-Dsdl2=disabled"
@@ -112,18 +116,15 @@ stdenv.mkDerivation (finalAttrs: {
     "-Dlua=disabled"
   ];
 
-  postPatch = ''
-    chmod +x tests/opencl/opencl_test.sh
-    patchShebangs tests/ff-load-save/tests_ff_load_save.sh tests/opencl/opencl_test.sh tools/xml_insert.sh
-  '';
+  # tests fail to connect to the com.apple.fonts daemon in sandboxed mode
+  doCheck = !stdenv.hostPlatform.isDarwin;
 
   postFixup = ''
     # Cannot be in postInstall, otherwise _multioutDocs hook in preFixup will move right back.
     moveToOutput "share/doc" "$devdoc"
   '';
 
-  # tests fail to connect to the com.apple.fonts daemon in sandboxed mode
-  doCheck = !stdenv.hostPlatform.isDarwin;
+  outputBin = "dev";
 
   passthru = {
     tests = {

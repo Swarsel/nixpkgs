@@ -1,7 +1,7 @@
 {
-  fetchurl,
   lib,
   stdenv,
+  fetchurl,
 }:
 
 let
@@ -10,6 +10,7 @@ in
 stdenv.mkDerivation {
   inherit version;
   pname = "iomelt";
+
   src = fetchurl {
     url = "https://web.archive.org/web/20180816072405if_/http://iomelt.com/s/iomelt-${version}.tar.gz";
     sha256 = "1jhrdm5b7f1bcbrdwcc4yzg26790jxl4d2ndqiwd9brl2g5537im";
@@ -25,8 +26,8 @@ stdenv.mkDerivation {
   meta = {
     description = "Simple yet effective way to benchmark disk IO in Linux systems";
     homepage = "https://github.com/camposr/iomelt";
-    maintainers = with lib.maintainers; [ raspher ];
     license = lib.licenses.artistic2;
+    maintainers = with lib.maintainers; [ raspher ];
     platforms = lib.platforms.linux;
   };
 }

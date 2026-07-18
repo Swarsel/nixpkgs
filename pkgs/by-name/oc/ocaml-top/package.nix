@@ -25,10 +25,10 @@ buildDunePackage rec {
   ];
 
   meta = {
+    description = "Simple cross-platform OCaml code editor built for top-level evaluation";
     homepage = "https://www.typerex.org/ocaml-top.html";
     license = lib.licenses.gpl3;
-    description = "Simple cross-platform OCaml code editor built for top-level evaluation";
-    mainProgram = "ocaml-top";
     maintainers = with lib.maintainers; [ vbgl ];
+    mainProgram = "ocaml-top";
   };
 }

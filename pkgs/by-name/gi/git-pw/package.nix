@@ -1,18 +1,15 @@
 {
   lib,
-  git,
-  python3,
   fetchFromGitHub,
-  testers,
+  git,
   git-pw,
+  python3,
+  testers,
 }:
 
 python3.pkgs.buildPythonApplication (finalAttrs: {
   pname = "git-pw";
   version = "2.7.1";
-  pyproject = true;
-
-  env.PBR_VERSION = finalAttrs.version;
 
   src = fetchFromGitHub {
     owner = "getpatchwork";
@@ -34,11 +31,15 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     tabulate
   ];
 
+  env.PBR_VERSION = finalAttrs.version;
+
   nativeCheckInputs = with python3.pkgs; [
     pytest-cov-stub
     pytestCheckHook
     git
   ];
+
+  pyproject = true;
 
   # This is needed because `git-pw` always rely on an ambient git.
   # Furthermore, this doesn't really make sense to resholve git inside this derivation.

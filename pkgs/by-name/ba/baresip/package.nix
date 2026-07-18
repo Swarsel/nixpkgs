@@ -1,16 +1,17 @@
 {
+  lib,
+  stdenv,
+  fetchFromGitHub,
   SDL2,
   alsa-lib,
   cairo,
   celt,
   cmake,
-  fetchFromGitHub,
   ffmpeg,
   glib,
   gsm,
   gst_all_1,
   gtk3,
-  lib,
   libre,
   librem,
   libsndfile,
@@ -25,14 +26,13 @@
   spandsp3,
   speex,
   srtp,
-  stdenv,
   zlib,
   dbusSupport ? true,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
-  version = "4.9.0";
   pname = "baresip";
+  version = "4.9.0";
 
   src = fetchFromGitHub {
     owner = "baresip";
@@ -45,17 +45,11 @@ stdenv.mkDerivation (finalAttrs: {
     ./fix-modules-path.patch
   ];
 
-  prePatch = ''
-    substituteInPlace cmake/FindGTK3.cmake --replace-fail GTK3_CFLAGS_OTHER ""
-  ''
-  + lib.optionalString (!dbusSupport) ''
-    substituteInPlace cmake/modules.cmake --replace-fail 'list(APPEND MODULES ctrl_dbus)' ""
-  '';
-
   nativeBuildInputs = [
     cmake
     pkg-config
   ];
+
   buildInputs = [
     SDL2
     alsa-lib
@@ -101,8 +95,6 @@ stdenv.mkDerivation (finalAttrs: {
   ]
   ++ lib.optional (stdenv.cc.cc != null) "SYSROOT_ALT=${stdenv.cc.cc}"
   ++ lib.optional (stdenv.cc.libc != null) "SYSROOT=${stdenv.cc.libc}";
-
-  enableParallelBuilding = true;
 
   env.NIX_CFLAGS_COMPILE = ''
     -I${librem}/include/rem -I${gsm}/include/gsm
@@ -180,15 +172,26 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstallCheck
   '';
 
+  enableParallelBuilding = true;
+
+  prePatch = ''
+    substituteInPlace cmake/FindGTK3.cmake --replace-fail GTK3_CFLAGS_OTHER ""
+  ''
+  + lib.optionalString (!dbusSupport) ''
+    substituteInPlace cmake/modules.cmake --replace-fail 'list(APPEND MODULES ctrl_dbus)' ""
+  '';
+
   meta = {
     description = "Modular SIP User-Agent with audio and video support";
     homepage = "https://github.com/baresip/baresip";
+    license = lib.licenses.bsd3;
+
     maintainers = with lib.maintainers; [
       raskin
       rnhmjoj
     ];
-    mainProgram = "baresip";
-    license = lib.licenses.bsd3;
+
     platforms = lib.platforms.unix;
+    mainProgram = "baresip";
   };
 })

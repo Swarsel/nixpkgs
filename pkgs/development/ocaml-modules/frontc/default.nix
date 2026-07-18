@@ -1,9 +1,9 @@
 {
   lib,
-  buildDunePackage,
   fetchFromGitHub,
-  ocaml,
+  buildDunePackage,
   menhir,
+  ocaml,
 }:
 
 buildDunePackage (finalAttrs: {
@@ -17,9 +17,8 @@ buildDunePackage (finalAttrs: {
     sha256 = "1mi1vh4qgscnb470qwidccaqd068j1bqlz6pf6wddk21paliwnqb";
   };
 
-  minimalOCamlVersion = "4.08";
-
   nativeBuildInputs = [ menhir ];
+  minimalOCamlVersion = "4.08";
 
   meta = {
     inherit (finalAttrs.src.meta) homepage;

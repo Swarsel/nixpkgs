@@ -1,11 +1,11 @@
 {
-  pname,
-  version,
-  src,
-  passthru,
-  meta,
   appimageTools,
   makeWrapper,
+  meta,
+  passthru,
+  pname,
+  src,
+  version,
 }:
 let
   appimageContents = appimageTools.extractType2 { inherit pname version src; };

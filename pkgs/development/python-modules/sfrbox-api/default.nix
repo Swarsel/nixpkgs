@@ -1,11 +1,11 @@
 {
   lib,
+  fetchFromGitHub,
   aiohttp,
   aioresponses,
   buildPythonPackage,
   click,
   defusedxml,
-  fetchFromGitHub,
   mashumaro,
   poetry-core,
   pytest-asyncio,
@@ -15,7 +15,6 @@
 buildPythonPackage rec {
   pname = "sfrbox-api";
   version = "0.1.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "hacf-fr";
@@ -23,6 +22,13 @@ buildPythonPackage rec {
     tag = "v${version}";
     hash = "sha256-hK4d9wy2+wUp8elEHW0suu9frYPNnwFUlIRvjTXfRkc=";
   };
+
+  nativeCheckInputs = [
+    aioresponses
+    pytest-asyncio
+    pytestCheckHook
+  ]
+  ++ lib.concatAttrValues optional-dependencies;
 
   build-system = [ poetry-core ];
 
@@ -36,13 +42,7 @@ buildPythonPackage rec {
     cli = [ click ];
   };
 
-  nativeCheckInputs = [
-    aioresponses
-    pytest-asyncio
-    pytestCheckHook
-  ]
-  ++ lib.concatAttrValues optional-dependencies;
-
+  pyproject = true;
   pythonImportsCheck = [ "sfrbox_api" ];
 
   meta = {

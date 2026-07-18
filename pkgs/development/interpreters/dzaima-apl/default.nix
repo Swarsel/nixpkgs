@@ -18,16 +18,14 @@ stdenv.mkDerivation rec {
     hash = "sha256-UdumMytqT909JRpNqzhYPuKPw644m/vRUsEbIVF2a7U=";
   };
 
+  postPatch = ''
+    patchShebangs --build ./build
+  '';
+
   nativeBuildInputs = [
     jdk
     makeWrapper
   ];
-
-  dontConfigure = true;
-
-  postPatch = ''
-    patchShebangs --build ./build
-  '';
 
   buildPhase = ''
     runHook preBuild
@@ -68,13 +66,17 @@ stdenv.mkDerivation rec {
     runHook postInstall
   '';
 
+  dontConfigure = true;
+
   meta = {
-    homepage = "https://github.com/dzaima/APL";
+    inherit (jdk.meta) platforms;
+
     description =
       "APL implementation in Java" + lib.optionalString buildNativeImage ", compiled as a native image";
+
+    homepage = "https://github.com/dzaima/APL";
     license = lib.licenses.mit;
     maintainers = [ ];
-    inherit (jdk.meta) platforms;
     broken = stdenv.hostPlatform.isDarwin; # never built on Hydra https://hydra.nixos.org/job/nixpkgs/staging-next/dapl-native.x86_64-darwin
   };
 }

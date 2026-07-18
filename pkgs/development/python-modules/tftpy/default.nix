@@ -8,7 +8,6 @@
 buildPythonPackage rec {
   pname = "tftpy";
   version = "0.8.7";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
@@ -16,7 +15,7 @@ buildPythonPackage rec {
   };
 
   nativeBuildInputs = [ setuptools ];
-
+  pyproject = true;
   pythonImportsCheck = [ "tftpy" ];
 
   meta = {

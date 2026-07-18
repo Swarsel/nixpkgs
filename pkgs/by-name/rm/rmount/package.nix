@@ -1,12 +1,12 @@
 {
   lib,
   stdenv,
-  nmap,
-  jq,
-  cifs-utils,
-  sshfs,
   fetchFromGitHub,
+  cifs-utils,
+  jq,
   makeWrapper,
+  nmap,
+  sshfs,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -15,9 +15,9 @@ stdenv.mkDerivation (finalAttrs: {
   version = "1.1.0";
 
   src = fetchFromGitHub {
-    rev = "v${finalAttrs.version}";
     owner = "Luis-Hebendanz";
     repo = "rmount";
+    rev = "v${finalAttrs.version}";
     sha256 = "0j1ayncw1nnmgna7vyx44vwinh4ah1b0l5y8agc7i4s8clbvy3h0";
   };
 
@@ -39,8 +39,8 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   meta = {
-    homepage = "https://github.com/Luis-Hebendanz/rmount";
     description = "Remote mount utility which parses a json file";
+    homepage = "https://github.com/Luis-Hebendanz/rmount";
     license = lib.licenses.mit;
     maintainers = [ lib.maintainers.qubasa ];
     platforms = lib.platforms.linux;

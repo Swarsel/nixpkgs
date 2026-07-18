@@ -1,7 +1,7 @@
 {
-  pkgs,
   config,
   lib,
+  pkgs,
   ...
 }:
 let
@@ -39,11 +39,15 @@ in
 {
   options.programs.bat = {
     enable = mkEnableOption "`bat`, a {manpage}`cat(1)` clone with wings";
-
     package = mkPackageOption pkgs "bat" { };
 
     extraPackages = mkOption {
       default = [ ];
+
+      description = ''
+        Extra `bat` scripts to be added to the system configuration.
+      '';
+
       example = literalExpression ''
         with pkgs.bat-extras; [
           batdiff
@@ -51,37 +55,40 @@ in
           prettybat
         ];
       '';
-      description = ''
-        Extra `bat` scripts to be added to the system configuration.
-      '';
+
       type = listOf package;
     };
 
     settings = mkOption {
+      inherit type;
       default = { };
+
+      description = ''
+        Parameters to be written to the system-wide `bat` configuration file.
+      '';
+
       example = {
-        theme = "TwoDark";
         italic-text = "always";
-        paging = "never";
-        pager = "less --RAW-CONTROL-CHARS --quit-if-one-screen --mouse";
+
         map-syntax = [
           "*.ino:C++"
           ".ignore:Git Ignore"
         ];
+
+        pager = "less --RAW-CONTROL-CHARS --quit-if-one-screen --mouse";
+        paging = "never";
+        theme = "TwoDark";
       };
-      description = ''
-        Parameters to be written to the system-wide `bat` configuration file.
-      '';
-      inherit type;
     };
   };
 
   config = mkIf cfg.enable {
     environment = {
-      systemPackages = [ cfg.package ] ++ cfg.extraPackages;
       etc."bat/config".source = generate "bat-config" (
         mapAttrs' (name: value: nameValuePair ("--" + name) (recursiveToString value)) cfg.settings
       );
+
+      systemPackages = [ cfg.package ] ++ cfg.extraPackages;
     };
 
     programs =
@@ -92,13 +99,16 @@ in
         bash = mkIf (!config.programs.fish.enable) {
           interactiveShellInit = shellInit "bash";
         };
+
         fish = mkIf config.programs.fish.enable {
           interactiveShellInit = shellInit "fish";
         };
+
         zsh = mkIf (!config.programs.fish.enable && config.programs.zsh.enable) {
           interactiveShellInit = shellInit "zsh";
         };
       };
   };
+
   meta.maintainers = with maintainers; [ sigmasquadron ];
 }

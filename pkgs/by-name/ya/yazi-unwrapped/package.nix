@@ -1,27 +1,19 @@
 {
-  rustPlatform,
-  fetchFromGitHub,
   lib,
-
+  fetchFromGitHub,
   installShellFiles,
   rust-jemalloc-sys,
+  rustPlatform,
 }:
 rustPlatform.buildRustPackage (finalAttrs: {
   pname = "yazi";
   version = "26.5.6";
-
-  srcs = builtins.attrValues finalAttrs.passthru.srcs;
-
-  sourceRoot = finalAttrs.passthru.srcs.code_src.name;
-
-  cargoHash = "sha256-gc0uEMNJ+eCIymXK10+Swi11xuyP5cj6MbLLB/ZDgXw=";
-
-  env.YAZI_GEN_COMPLETIONS = true;
-  env.VERGEN_GIT_SHA = "Nixpkgs";
-  env.VERGEN_BUILD_DATE = "2026-05-05";
-
   nativeBuildInputs = [ installShellFiles ];
   buildInputs = [ rust-jemalloc-sys ];
+  cargoHash = "sha256-gc0uEMNJ+eCIymXK10+Swi11xuyP5cj6MbLLB/ZDgXw=";
+  env.VERGEN_BUILD_DATE = "2026-05-05";
+  env.VERGEN_GIT_SHA = "Nixpkgs";
+  env.YAZI_GEN_COMPLETIONS = true;
 
   postInstall = ''
     installShellCompletion --cmd yazi \
@@ -42,29 +34,34 @@ rustPlatform.buildRustPackage (finalAttrs: {
     install -Dm444 assets/logo.png $out/share/pixmaps/yazi.png
   '';
 
-  passthru.updateScript.command = [ ./update.sh ];
+  sourceRoot = finalAttrs.passthru.srcs.code_src.name;
+  srcs = builtins.attrValues finalAttrs.passthru.srcs;
+
   passthru.srcs = {
     code_src = fetchFromGitHub {
+      hash = "sha256-sdaqZwLb+fBTg5Pd6WWfOWKCavsXWSSZrBEXuYuc8iM=";
       owner = "sxyazi";
       repo = "yazi";
       tag = "v${finalAttrs.version}";
-      hash = "sha256-sdaqZwLb+fBTg5Pd6WWfOWKCavsXWSSZrBEXuYuc8iM=";
     };
 
     man_src = fetchFromGitHub {
+      hash = "sha256-kEVXejDg4ChFoMNBvKlwdFEyUuTcY2VuK9j0PdafKus=";
       name = "manpages"; # needed to ensure name is unique
       owner = "yazi-rs";
       repo = "manpages";
       rev = "8950e968f4a1ad0b83d5836ec54a070855068dbf";
-      hash = "sha256-kEVXejDg4ChFoMNBvKlwdFEyUuTcY2VuK9j0PdafKus=";
     };
   };
+
+  passthru.updateScript.command = [ ./update.sh ];
 
   meta = {
     description = "Blazing fast terminal file manager written in Rust, based on async I/O";
     homepage = "https://github.com/sxyazi/yazi";
     changelog = "https://github.com/sxyazi/yazi/blob/${finalAttrs.passthru.srcs.code_src.rev}/CHANGELOG.md";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       eljamm
       khaneliman
@@ -73,6 +70,7 @@ rustPlatform.buildRustPackage (finalAttrs: {
       uncenter
       xyenon
     ];
+
     mainProgram = "yazi";
   };
 })

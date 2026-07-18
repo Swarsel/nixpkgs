@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   pytz,
   setuptools,
 }:
@@ -9,7 +9,6 @@
 buildPythonPackage rec {
   pname = "nsapi";
   version = "3.1.3";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "aquatix";
@@ -18,13 +17,11 @@ buildPythonPackage rec {
     hash = "sha256-Buhc0643WeX/4ZU/RkzNWiFjfEAJUtNL6uJ98unTnCg=";
   };
 
-  build-system = [ setuptools ];
-
-  dependencies = [ pytz ];
-
   # Project has no tests
   doCheck = false;
-
+  build-system = [ setuptools ];
+  dependencies = [ pytz ];
+  pyproject = true;
   pythonImportsCheck = [ "ns_api" ];
 
   meta = {

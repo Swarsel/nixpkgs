@@ -15,10 +15,6 @@ stdenv.mkDerivation (finalAttrs: {
     sha256 = "0jjvydn4i4n9xv8vsal2jxpa95mk2lw6myv0gx9wih242k9vy0l7";
   };
 
-  prePatch = ''
-    sed -i 's|gfind|find|' crumbs-completion.fish
-  '';
-
   postInstall = ''
     mkdir -p $out/share/bash-completion/completions
     mkdir -p $out/share/fish/vendor_completions.d
@@ -27,12 +23,16 @@ stdenv.mkDerivation (finalAttrs: {
     cp crumbs-completion.fish $out/share/fish/vendor_completions.d/crumbs.fish
   '';
 
+  prePatch = ''
+    sed -i 's|gfind|find|' crumbs-completion.fish
+  '';
+
   meta = {
     description = "Bookmarks for the command line";
     homepage = "https://github.com/fasseg/crumbs";
     license = lib.licenses.wtfpl;
-    platforms = lib.platforms.all;
     maintainers = with lib.maintainers; [ thesola10 ];
+    platforms = lib.platforms.all;
     mainProgram = "crumbs";
   };
 })

@@ -1,6 +1,6 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
   bison,
   cmake,
@@ -26,8 +26,6 @@ stdenv.mkDerivation (finalAttrs: {
       --replace-fail "cmake_minimum_required(VERSION 3.0)" "cmake_minimum_required(VERSION 3.10)"
   '';
 
-  sourceRoot = "${finalAttrs.src.name}/src";
-
   nativeBuildInputs = [
     bison
     cmake
@@ -49,6 +47,8 @@ stdenv.mkDerivation (finalAttrs: {
 
     runHook postInstall
   '';
+
+  sourceRoot = "${finalAttrs.src.name}/src";
 
   meta = {
     description = "Parser generator which emits GLR parsers, either in OCaml or C++";

@@ -1,9 +1,9 @@
 {
   lib,
+  fetchFromGitHub,
   asgineer,
   bcrypt,
   buildPythonPackage,
-  fetchFromGitHub,
   iptools,
   itemdb,
   jinja2,
@@ -22,7 +22,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "timetagger";
   version = "26.1.3";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "almarklein";
@@ -30,6 +29,13 @@ buildPythonPackage (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-X82Ai6E844deRGs6KcJATEid3X6IlDq4+LCEU4lc4hM=";
   };
+
+  nativeCheckInputs = [
+    nodejs
+    pytestCheckHook
+    requests
+    writableTmpDirAsHomeHook
+  ];
 
   build-system = [ setuptools ];
 
@@ -45,19 +51,13 @@ buildPythonPackage (finalAttrs: {
     uvicorn
   ];
 
-  nativeCheckInputs = [
-    nodejs
-    pytestCheckHook
-    requests
-    writableTmpDirAsHomeHook
-  ];
-
-  pythonImportsCheck = [ "timetagger" ];
-
   disabledTestPaths = lib.optionals (pythonAtLeast "3.14") [
     #  RuntimeError: There is no current event loop in thread 'MainThread'
     "tests/test_server_apiserver.py"
   ];
+
+  pyproject = true;
+  pythonImportsCheck = [ "timetagger" ];
 
   meta = {
     description = "Library to interact with TimeTagger";

@@ -10,40 +10,47 @@ in
 {
   options.services.vector = {
     enable = lib.mkEnableOption "Vector, a high-performance observability data pipeline";
-
     package = lib.mkPackageOption pkgs "vector" { };
 
-    journaldAccess = lib.mkOption {
-      type = lib.types.bool;
-      default = false;
-      description = ''
-        Enable Vector to access journald.
-      '';
-    };
-
     gracefulShutdownLimitSecs = lib.mkOption {
-      type = lib.types.ints.positive;
       default = 60;
+
       description = ''
         Set the duration in seconds to wait for graceful shutdown after SIGINT or SIGTERM are received.
         After the duration has passed, Vector will force shutdown.
       '';
+
+      type = lib.types.ints.positive;
     };
 
-    validateConfig = lib.mkOption {
-      type = lib.types.bool;
-      default = true;
+    journaldAccess = lib.mkOption {
+      default = false;
+
       description = ''
-        Enable the checking of the vector config during build time. This should be disabled when interpolating environment variables.
+        Enable Vector to access journald.
       '';
+
+      type = lib.types.bool;
     };
 
     settings = lib.mkOption {
-      type = (pkgs.formats.json { }).type;
       default = { };
+
       description = ''
         Specify the configuration for Vector in Nix.
       '';
+
+      type = (pkgs.formats.json { }).type;
+    };
+
+    validateConfig = lib.mkOption {
+      default = true;
+
+      description = ''
+        Enable the checking of the vector config during build time. This should be disabled when interpolating environment variables.
+      '';
+
+      type = lib.types.bool;
     };
   };
 
@@ -52,10 +59,10 @@ in
     environment.systemPackages = [ cfg.package ];
 
     systemd.services.vector = {
-      description = "Vector event and log aggregator";
-      wantedBy = [ "multi-user.target" ];
       after = [ "network-online.target" ];
+      description = "Vector event and log aggregator";
       requires = [ "network-online.target" ];
+
       serviceConfig =
         let
           format = pkgs.formats.toml { };
@@ -72,21 +79,26 @@ in
               '';
         in
         {
+          AmbientCapabilities = "CAP_NET_BIND_SERVICE";
+          DynamicUser = true;
+          ExecReload = "${pkgs.coreutils}/bin/kill -HUP $MAINPID";
+
           ExecStart = "${lib.getExe cfg.package} --config ${
             if cfg.validateConfig then (validatedConfig conf) else conf
           }  --graceful-shutdown-limit-secs ${toString cfg.gracefulShutdownLimitSecs}";
-          DynamicUser = true;
+
           Restart = "always";
           StateDirectory = "vector";
-          ExecReload = "${pkgs.coreutils}/bin/kill -HUP $MAINPID";
-          AmbientCapabilities = "CAP_NET_BIND_SERVICE";
           # This group is required for accessing journald.
           SupplementaryGroups = lib.mkIf cfg.journaldAccess "systemd-journal";
         };
+
       unitConfig = {
-        StartLimitIntervalSec = 10;
         StartLimitBurst = 5;
+        StartLimitIntervalSec = 10;
       };
+
+      wantedBy = [ "multi-user.target" ];
     };
   };
 }

@@ -1,10 +1,10 @@
 {
   lib,
-  stdenvNoCC,
   fetchFromGitHub,
   ant,
   jdk17,
   makeWrapper,
+  stdenvNoCC,
   stripJavaArchivesHook,
 }:
 
@@ -59,16 +59,18 @@ stdenvNoCC.mkDerivation (finalAttrs: {
   '';
 
   meta = {
-    changelog = "https://github.com/openrocket/openrocket/releases/tag/${finalAttrs.src.rev}";
     description = "Model-rocketry aerodynamics and trajectory simulation software";
     homepage = "https://openrocket.info";
+    changelog = "https://github.com/openrocket/openrocket/releases/tag/${finalAttrs.src.rev}";
     license = lib.licenses.gpl3Plus;
-    mainProgram = "openrocket";
-    maintainers = with lib.maintainers; [ tomasajt ];
-    platforms = jdk.meta.platforms;
+
     sourceProvenance = with lib.sourceTypes; [
       fromSource
       binaryBytecode # source bundles dependencies as jars
     ];
+
+    maintainers = with lib.maintainers; [ tomasajt ];
+    platforms = jdk.meta.platforms;
+    mainProgram = "openrocket";
   };
 })

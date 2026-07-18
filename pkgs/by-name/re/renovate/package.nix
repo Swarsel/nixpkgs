@@ -2,18 +2,18 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  makeWrapper,
-  nodejs_24,
-  pnpm_10,
+  cctools,
   fetchPnpmDeps,
+  makeWrapper,
+  nix-update-script,
+  nixosTests,
+  nodejs_24,
   pnpmConfigHook,
+  pnpm_10,
   python3,
   testers,
   xcbuild,
-  nixosTests,
-  nix-update-script,
   yq-go,
-  cctools,
 }:
 let
   nodejs = nodejs_24;
@@ -46,13 +46,6 @@ stdenv.mkDerivation (finalAttrs: {
     xcbuild
     cctools # contains libtool, required by better-sqlite3
   ];
-
-  pnpmDeps = fetchPnpmDeps {
-    inherit (finalAttrs) pname version src;
-    pnpm = pnpm_10;
-    fetcherVersion = 3;
-    hash = "sha256-A8aL5ZF0tFKi0uCXxOQMzxByAIVyt76wnLvolFVYKuI=";
-  };
 
   env.COREPACK_ENABLE_STRICT = 0;
 
@@ -101,11 +94,19 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  pnpmDeps = fetchPnpmDeps {
+    inherit (finalAttrs) pname version src;
+    fetcherVersion = 3;
+    hash = "sha256-A8aL5ZF0tFKi0uCXxOQMzxByAIVyt76wnLvolFVYKuI=";
+    pnpm = pnpm_10;
+  };
+
   passthru = {
     tests = {
       version = testers.testVersion { package = finalAttrs.finalPackage; };
       vm-test = nixosTests.renovate;
     };
+
     updateScript = nix-update-script {
       extraArgs = [
         "--version-regex"
@@ -119,11 +120,13 @@ stdenv.mkDerivation (finalAttrs: {
     homepage = "https://github.com/renovatebot/renovate";
     changelog = "https://github.com/renovatebot/renovate/releases/tag/${finalAttrs.version}";
     license = lib.licenses.agpl3Only;
+
     maintainers = with lib.maintainers; [
       marie
       natsukium
     ];
-    mainProgram = "renovate";
+
     platforms = nodejs.meta.platforms;
+    mainProgram = "renovate";
   };
 })

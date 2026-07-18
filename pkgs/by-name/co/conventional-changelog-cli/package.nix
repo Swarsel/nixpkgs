@@ -2,13 +2,13 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  nodejs,
   fetchPnpmDeps,
+  makeBinaryWrapper,
+  nix-update-script,
+  nodejs,
   pnpmConfigHook,
   pnpm_10,
-  makeBinaryWrapper,
   versionCheckHook,
-  nix-update-script,
 }:
 let
   pnpm = pnpm_10;
@@ -22,13 +22,6 @@ stdenv.mkDerivation (finalAttrs: {
     repo = "conventional-changelog";
     tag = "conventional-changelog-v${finalAttrs.version}";
     hash = "sha256-1unB4/naGc/V1Fjc7Arn4DjnGvyCdicNFOofdgpvRUI=";
-  };
-
-  pnpmDeps = fetchPnpmDeps {
-    inherit (finalAttrs) pname version src;
-    inherit pnpm;
-    fetcherVersion = 3;
-    hash = "sha256-khAAFQeWUkALdkEdjW3tvCi5KiF9lN202yhLcj8ey1o=";
   };
 
   nativeBuildInputs = [
@@ -65,10 +58,18 @@ stdenv.mkDerivation (finalAttrs: {
       --replace-warn '"exports": "./src/index.ts"' '"exports": "./dist/index.js"'
   '';
 
+  doInstallCheck = true;
+
   nativeInstallCheckInputs = [
     versionCheckHook
   ];
-  doInstallCheck = true;
+
+  pnpmDeps = fetchPnpmDeps {
+    inherit (finalAttrs) pname version src;
+    inherit pnpm;
+    fetcherVersion = 3;
+    hash = "sha256-khAAFQeWUkALdkEdjW3tvCi5KiF9lN202yhLcj8ey1o=";
+  };
 
   passthru.updateScript = nix-update-script {
     extraArgs = [
@@ -79,9 +80,9 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   meta = {
-    changelog = "https://github.com/conventional-changelog/conventional-changelog/releases/tag/${finalAttrs.src.tag}";
     description = "Generate a CHANGELOG from git metadata";
     homepage = "https://github.com/conventional-changelog/conventional-changelog";
+    changelog = "https://github.com/conventional-changelog/conventional-changelog/releases/tag/${finalAttrs.src.tag}";
     license = lib.licenses.isc;
     maintainers = [ ];
     mainProgram = "conventional-changelog";

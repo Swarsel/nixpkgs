@@ -4,12 +4,12 @@
   pdfium-binaries,
 }:
 
-{ version, src, ... }:
+{ src, version, ... }:
 
 stdenv.mkDerivation {
-  pname = "pdfium_flutter";
   inherit version src;
   inherit (src) passthru;
+  pname = "pdfium_flutter";
 
   postPatch = lib.optionalString (lib.versionOlder version "0.2.0") ''
     substituteInPlace linux/CMakeLists.txt \

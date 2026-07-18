@@ -1,22 +1,24 @@
 {
   lib,
   stdenv,
-  fetchzip,
-  libx11,
-  libxinerama,
-  libxft,
-  writeText,
-  pkg-config,
   # customization
   config,
-  conf ? config.dwm.conf or null,
-  patches ? config.dwm.patches or [ ],
-  extraLibs ? config.dwm.extraLibs or [ ],
+  fetchzip,
   # update script dependencies
   gitUpdater,
+  libx11,
+  libxft,
+  libxinerama,
+  pkg-config,
+  writeText,
+  conf ? config.dwm.conf or null,
+  extraLibs ? config.dwm.extraLibs or [ ],
+  patches ? config.dwm.patches or [ ],
 }:
 
 stdenv.mkDerivation (finalAttrs: {
+  # Allow users set their own list of patches
+  inherit patches;
   pname = "dwm";
   version = "6.6";
 
@@ -24,6 +26,14 @@ stdenv.mkDerivation (finalAttrs: {
     url = "https://dl.suckless.org/dwm/dwm-${finalAttrs.version}.tar.gz";
     hash = "sha256-fD97OpObSOBTAMc3teejS0u2h4hCkMVYJrNZ6F4IaFs=";
   };
+
+  # Allow users to set the config.def.h file containing the configuration
+  postPatch =
+    let
+      configFile =
+        if lib.isDerivation conf || builtins.isPath conf then conf else writeText "config.def.h" conf;
+    in
+    lib.optionalString (conf != null) "cp ${configFile} config.def.h";
 
   nativeBuildInputs = lib.optional stdenv.hostPlatform.isStatic pkg-config;
 
@@ -44,24 +54,13 @@ stdenv.mkDerivation (finalAttrs: {
     )
   '';
 
-  # Allow users set their own list of patches
-  inherit patches;
-
-  # Allow users to set the config.def.h file containing the configuration
-  postPatch =
-    let
-      configFile =
-        if lib.isDerivation conf || builtins.isPath conf then conf else writeText "config.def.h" conf;
-    in
-    lib.optionalString (conf != null) "cp ${configFile} config.def.h";
-
   passthru.updateScript = gitUpdater {
     url = "git://git.suckless.org/dwm";
   };
 
   meta = {
-    homepage = "https://dwm.suckless.org/";
     description = "Extremely fast, small, and dynamic window manager for X";
+
     longDescription = ''
       dwm is a dynamic window manager for X. It manages windows in tiled,
       monocle and floating layouts. All of the layouts can be applied
@@ -71,6 +70,8 @@ stdenv.mkDerivation (finalAttrs: {
       multiple tags. Selecting certain tags displays all windows with these
       tags.
     '';
+
+    homepage = "https://dwm.suckless.org/";
     license = lib.licenses.mit;
     platforms = lib.platforms.all;
     mainProgram = "dwm";

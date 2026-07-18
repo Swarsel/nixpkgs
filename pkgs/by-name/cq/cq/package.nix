@@ -1,7 +1,7 @@
 {
   lib,
-  fetchFromGitHub,
   fetchurl,
+  fetchFromGitHub,
   buildGraalvmNativeImage,
   graalvmPackages,
 }:
@@ -16,14 +16,6 @@ buildGraalvmNativeImage (finalAttrs: {
     hash = "sha256-CUErNKworfgKIrOQ7V5vcnudTdZzdVdyA/gsOZUOQBI=";
   };
 
-  # and build-src (for the native-image build process)
-  passthru.build-src = fetchFromGitHub {
-    owner = "markus-wa";
-    repo = "cq";
-    tag = finalAttrs.version;
-    hash = "sha256-jDhN6eYBOouqBeJ/t5DGA1WELkH1udcuvAGaQKQufiw=";
-  };
-
   # copied verbatim from the upstream build script https://github.com/markus-wa/cq/blob/main/package/build-native.sh#L5
   extraNativeImageBuildArgs = [
     "--report-unsupported-elements-at-runtime"
@@ -31,6 +23,14 @@ buildGraalvmNativeImage (finalAttrs: {
     "--no-server"
     "-H:ReflectionConfigurationFiles=${finalAttrs.finalPackage.build-src}/package/reflection-config.json"
   ];
+
+  # and build-src (for the native-image build process)
+  passthru.build-src = fetchFromGitHub {
+    hash = "sha256-jDhN6eYBOouqBeJ/t5DGA1WELkH1udcuvAGaQKQufiw=";
+    owner = "markus-wa";
+    repo = "cq";
+    tag = finalAttrs.version;
+  };
 
   meta = {
     description = "Clojure Query: A Command-line Data Processor for JSON, YAML, EDN, XML and more";

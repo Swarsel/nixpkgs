@@ -2,15 +2,15 @@
   lib,
   stdenv,
   fetchurl,
+  bash,
   coreutils,
-  python3,
   duplicity,
   gawk,
-  gnupg,
-  bash,
   gnugrep,
-  txt2man,
+  gnupg,
   makeWrapper,
+  python3,
+  txt2man,
   which,
 }:
 
@@ -23,11 +23,9 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-DSSnjfbcgWIuWaA+4h7d/0HqpDoXqkJOyGapYX4rtP0=";
   };
 
-  nativeBuildInputs = [ makeWrapper ];
-
-  buildInputs = [ txt2man ];
-
   postPatch = "patchShebangs .";
+  nativeBuildInputs = [ makeWrapper ];
+  buildInputs = [ txt2man ];
 
   installPhase = ''
     runHook preInstall
@@ -54,16 +52,18 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Shell front end for the duplicity backup tool";
-    mainProgram = "duply";
+
     longDescription = ''
       Duply is a shell front end for the duplicity backup tool
       https://www.nongnu.org/duplicity. It greatly simplifies its usage by
       implementing backup job profiles, batch commands and more. Who says
       secure backups on non-trusted spaces are no child's play?
     '';
+
     homepage = "https://duply.net/";
     license = lib.licenses.gpl2Only;
     maintainers = [ lib.maintainers.bjornfor ];
     platforms = lib.platforms.unix;
+    mainProgram = "duply";
   };
 })

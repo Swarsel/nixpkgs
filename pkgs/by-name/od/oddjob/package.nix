@@ -1,14 +1,14 @@
 {
+  lib,
+  stdenv,
+  fetchurl,
   autoreconfHook,
   dbus,
   fetchpatch,
-  fetchurl,
-  lib,
   libxml2,
   nixosTests,
   pam,
   pkg-config,
-  stdenv,
   systemd,
 }:
 
@@ -24,8 +24,8 @@ stdenv.mkDerivation (finalAttrs: {
   patches = [
     # Define SystemD service location using `with-systemdsystemunitdir` configure flag
     (fetchpatch {
-      url = "https://pagure.io/oddjob/c/f63287a35107385dcb6e04a4c742077c9d1eab86.patch";
       hash = "sha256-2mmw4pJhrIk4/47FM8zKH0dTQJWnntHPNmq8VAUWqJI=";
+      url = "https://pagure.io/oddjob/c/f63287a35107385dcb6e04a4c742077c9d1eab86.patch";
     })
   ];
 
@@ -62,9 +62,9 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   meta = {
-    changelog = "https://pagure.io/oddjob/blob/oddjob-${finalAttrs.version}/f/ChangeLog";
     description = "Odd Job Daemon";
     homepage = "https://pagure.io/oddjob";
+    changelog = "https://pagure.io/oddjob/blob/oddjob-${finalAttrs.version}/f/ChangeLog";
     license = lib.licenses.bsd3;
     maintainers = with lib.maintainers; [ SohamG ];
     platforms = lib.platforms.linux;

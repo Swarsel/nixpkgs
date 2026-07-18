@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule (finalAttrs: {
@@ -21,8 +21,8 @@ buildGoModule (finalAttrs: {
     description = "Fetch top for gen Z with X written by bubbletea enjoyer";
     homepage = "https://github.com/ssleert/zfxtop";
     license = lib.licenses.bsd2;
-    platforms = lib.platforms.linux;
     maintainers = with lib.maintainers; [ wozeparrot ];
+    platforms = lib.platforms.linux;
     mainProgram = "zfxtop";
   };
 })

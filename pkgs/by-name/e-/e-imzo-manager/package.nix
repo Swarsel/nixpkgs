@@ -1,40 +1,35 @@
 {
-  stdenv,
   lib,
-  fetchFromForgejo,
+  stdenv,
+  adwaita-icon-theme,
   cargo,
   desktop-file-utils,
-  gnome-desktop,
-  meson,
-  ninja,
-  pkg-config,
-  polkit,
-  rustc,
-  rustPlatform,
-  wrapGAppsHook4,
+  fetchFromForgejo,
   gdk-pixbuf,
   glib,
-  adwaita-icon-theme,
+  gnome-desktop,
   gtk4,
   libadwaita,
-  openssl,
+  meson,
+  ninja,
   nix-update-script,
+  openssl,
+  pkg-config,
+  polkit,
+  rustPlatform,
+  rustc,
+  wrapGAppsHook4,
 }:
 stdenv.mkDerivation (finalAttrs: {
   pname = "e-imzo-manager";
   version = "1.3.0";
 
   src = fetchFromForgejo {
-    domain = "git.oss.uzinfocom.uz";
     owner = "xinux";
     repo = "e-imzo-manager";
     tag = finalAttrs.version;
     hash = "sha256-QXAfrNPaq76HALhUlMdSygbfA5wJI4rGHDpnwPI/74w";
-  };
-
-  cargoDeps = rustPlatform.fetchCargoVendor {
-    inherit (finalAttrs) pname version src;
-    hash = "sha256-9yyTtMf1oCJWfFxWsaYWGT2/iTqU+3Ls0LIdHrNGZJI=";
+    domain = "git.oss.uzinfocom.uz";
   };
 
   strictDeps = true;
@@ -62,27 +57,33 @@ stdenv.mkDerivation (finalAttrs: {
     polkit
   ];
 
-  propagatedUserEnvPkgs = [ polkit ];
-
   postInstall = ''
     gappsWrapperArgs+=(
       --suffix PATH : ${lib.makeBinPath finalAttrs.propagatedUserEnvPkgs}
     )
   '';
 
+  cargoDeps = rustPlatform.fetchCargoVendor {
+    inherit (finalAttrs) pname version src;
+    hash = "sha256-9yyTtMf1oCJWfFxWsaYWGT2/iTqU+3Ls0LIdHrNGZJI=";
+  };
+
+  propagatedUserEnvPkgs = [ polkit ];
   passthru.updateScript = nix-update-script { };
 
   meta = {
-    homepage = "https://git.oss.uzinfocom.uz/xinux/e-imzo-manager";
-    mainProgram = "E-IMZO-Manager";
     description = "GTK application for managing E-IMZO keys";
+    homepage = "https://git.oss.uzinfocom.uz/xinux/e-imzo-manager";
     license = with lib.licenses; [ agpl3Plus ];
-    platforms = lib.platforms.linux;
+
     maintainers = with lib.maintainers; [
       orzklv
       shakhzodkudratov
       bahrom04
       bemeritus
     ];
+
+    platforms = lib.platforms.linux;
+    mainProgram = "E-IMZO-Manager";
   };
 })

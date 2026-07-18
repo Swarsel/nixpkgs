@@ -1,13 +1,13 @@
 {
   lib,
-  fetchPypi,
   boost-histogram,
   buildPythonPackage,
-  h5py,
-  hatchling,
-  hatch-vcs,
-  hist,
   fastjsonschema,
+  fetchPypi,
+  h5py,
+  hatch-vcs,
+  hatchling,
+  hist,
   numpy,
   packaging,
   pytestCheckHook,
@@ -20,12 +20,22 @@
 buildPythonPackage rec {
   pname = "uhi";
   version = "1.0.0";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
     hash = "sha256-MxGIlJsaScjbnvnVC3xNTfRgYRXRR97ZfE8FDagnDnQ=";
   };
+
+  doCheck = false; # Prevents infinite recursion; use passthru.tests instead
+
+  nativeCheckInputs = [
+    boost-histogram
+    hist
+    fastjsonschema
+    packaging
+    pytestCheckHook
+  ]
+  ++ lib.optionals (pythonOlder "3.11") [ tomli ];
 
   build-system = [
     hatchling
@@ -40,21 +50,11 @@ buildPythonPackage rec {
   ];
 
   optional-dependencies = {
-    schema = [ fastjsonschema ];
     hdf5 = [ h5py ];
+    schema = [ fastjsonschema ];
   };
 
-  doCheck = false; # Prevents infinite recursion; use passthru.tests instead
-
-  nativeCheckInputs = [
-    boost-histogram
-    hist
-    fastjsonschema
-    packaging
-    pytestCheckHook
-  ]
-  ++ lib.optionals (pythonOlder "3.11") [ tomli ];
-
+  pyproject = true;
   passthru.tests.uhi = uhi.overridePythonAttrs { doCheck = true; };
 
   meta = {

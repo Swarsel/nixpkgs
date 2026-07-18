@@ -8,7 +8,6 @@
 buildPythonPackage rec {
   pname = "pyhomeworks";
   version = "1.1.2";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
@@ -21,11 +20,10 @@ buildPythonPackage rec {
       --replace-fail ', "wheel~=0.43.0"' ""
   '';
 
-  build-system = [ setuptools ];
-
   # Project has no real tests
   doCheck = false;
-
+  build-system = [ setuptools ];
+  pyproject = true;
   pythonImportsCheck = [ "pyhomeworks" ];
 
   meta = {

@@ -21,40 +21,46 @@ in
 {
   options = {
     networking.firewall = {
-      extraInputRules = lib.mkOption {
-        type = lib.types.lines;
-        default = "";
-        example = "ip6 saddr { fc00::/7, fe80::/10 } tcp dport 24800 accept";
-        description = ''
-          Additional nftables rules to be appended to the input-allow
-          chain.
-
-          This option only works with the nftables based firewall.
-        '';
-      };
-
       extraForwardRules = lib.mkOption {
-        type = lib.types.lines;
         default = "";
-        example = "iifname wg0 accept";
+
         description = ''
           Additional nftables rules to be appended to the forward-allow
           chain.
 
           This option only works with the nftables based firewall.
         '';
+
+        example = "iifname wg0 accept";
+        type = lib.types.lines;
+      };
+
+      extraInputRules = lib.mkOption {
+        default = "";
+
+        description = ''
+          Additional nftables rules to be appended to the input-allow
+          chain.
+
+          This option only works with the nftables based firewall.
+        '';
+
+        example = "ip6 saddr { fc00::/7, fe80::/10 } tcp dport 24800 accept";
+        type = lib.types.lines;
       };
 
       extraReversePathFilterRules = lib.mkOption {
-        type = lib.types.lines;
         default = "";
-        example = "fib daddr . mark . iif type local accept";
+
         description = ''
           Additional nftables rules to be appended to the rpfilter-allow
           chain.
 
           This option only works with the nftables based firewall.
         '';
+
+        example = "fib daddr . mark . iif type local accept";
+        type = lib.types.lines;
       };
     };
   };
@@ -81,7 +87,6 @@ in
 
     environment.systemPackages = [ pkgs.nixos-firewall-tool ];
 
-    networking.nftables.tables."nixos-fw".family = "inet";
     networking.nftables.tables."nixos-fw".content = ''
       set temp-ports {
         comment "Temporarily opened ports"
@@ -205,5 +210,7 @@ in
         }
       ''}
     '';
+
+    networking.nftables.tables."nixos-fw".family = "inet";
   };
 }

@@ -1,18 +1,18 @@
 {
+  lib,
+  stdenv,
   fetchFromGitLab,
+  cmake,
   glib,
   json-glib,
-  lib,
   libgcrypt,
   libsecret,
   libsoup_3,
-  cmake,
   meson,
   ninja,
   olm,
   pkg-config,
   sqlite,
-  stdenv,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -20,11 +20,11 @@ stdenv.mkDerivation (finalAttrs: {
   version = "0.0.4";
 
   src = fetchFromGitLab {
-    domain = "source.puri.sm";
     owner = "Librem5";
     repo = "libcmatrix";
     tag = "v${finalAttrs.version}";
     hash = "sha256-MyjgxOJmaDylPA2AENZPR+dfh2UN1H93ZOLMlycEmTw=";
+    domain = "source.puri.sm";
   };
 
   nativeBuildInputs = [
@@ -51,9 +51,9 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   meta = {
-    changelog = "https://source.puri.sm/Librem5/libcmatrix/-/blob/${finalAttrs.src.tag}/NEWS";
     description = "Matrix protocol library written in C using GObject";
     homepage = "https://source.puri.sm/Librem5/libcmatrix";
+    changelog = "https://source.puri.sm/Librem5/libcmatrix/-/blob/${finalAttrs.src.tag}/NEWS";
     license = lib.licenses.lgpl21Only;
     maintainers = with lib.maintainers; [ dotlambda ];
   };

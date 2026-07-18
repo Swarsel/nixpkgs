@@ -1,39 +1,28 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  pbr,
-  setuptools,
+  buildPythonPackage,
+  hacking,
   installShellFiles,
-
+  keystoneauth1,
+  openstackdocstheme,
+  openstacksdk,
+  pbr,
   # direct
   python-keystoneclient,
-
+  setuptools,
+  # docs
+  sphinxHook,
+  sphinxcontrib-apidoc,
+  stestr,
   # tests
   stestrCheckHook,
   versionCheckHook,
-  hacking,
-  keystoneauth1,
-  stestr,
-  openstacksdk,
-
-  # docs
-  sphinxHook,
-  openstackdocstheme,
-  sphinxcontrib-apidoc,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "python-swiftclient";
   version = "4.10.0";
-  pyproject = true;
-
-  build-system = [
-    pbr
-    setuptools
-  ];
-
-  env.PBR_VERSION = finalAttrs.version;
 
   src = fetchFromGitHub {
     owner = "openstack";
@@ -49,11 +38,7 @@ buildPythonPackage (finalAttrs: {
     installShellFiles
   ];
 
-  sphinxBuilders = [ "man" ];
-
-  dependencies = [
-    python-keystoneclient
-  ];
+  env.PBR_VERSION = finalAttrs.version;
 
   nativeCheckInputs = [
     stestrCheckHook
@@ -64,24 +49,37 @@ buildPythonPackage (finalAttrs: {
     openstacksdk
   ];
 
-  nativeInstallCheckInputs = [ versionCheckHook ];
-  doInstallCheck = true;
-
   postInstall = ''
     installShellCompletion --cmd swift --bash tools/swift.bash_completion
     installManPage doc/manpages/*
   '';
 
+  doInstallCheck = true;
+  nativeInstallCheckInputs = [ versionCheckHook ];
+
+  build-system = [
+    pbr
+    setuptools
+  ];
+
+  dependencies = [
+    python-keystoneclient
+  ];
+
+  pyproject = true;
+
   pythonImportsCheck = [
     "swiftclient"
   ];
 
+  sphinxBuilders = [ "man" ];
+
   meta = {
     description = "Client library for OpenStack Swift API";
-    mainProgram = "swift";
     homepage = "https://docs.openstack.org/python-swiftclient/latest/";
-    downloadPage = "https://github.com/openstack/python-swiftclient/releases/tag/${finalAttrs.src.tag}";
     license = lib.licenses.asl20;
+    mainProgram = "swift";
+    downloadPage = "https://github.com/openstack/python-swiftclient/releases/tag/${finalAttrs.src.tag}";
     teams = [ lib.teams.openstack ];
   };
 })

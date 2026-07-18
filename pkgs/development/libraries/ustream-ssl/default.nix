@@ -1,10 +1,10 @@
 {
-  stdenv,
   lib,
-  fetchgit,
+  stdenv,
   cmake,
-  pkg-config,
+  fetchgit,
   libubox-nossl,
+  pkg-config,
   ssl_implementation,
 }:
 
@@ -18,6 +18,14 @@ stdenv.mkDerivation {
     hash = "sha256-IC5740+1YT3TDayath3Md3hdjuml1S1A/OWYd0GxbDc=";
   };
 
+  nativeBuildInputs = [
+    cmake
+    pkg-config
+  ];
+
+  buildInputs = [ ssl_implementation ];
+  cmakeFlags = [ "-D${lib.toUpper ssl_implementation.pname}=ON" ];
+
   preConfigure = ''
     sed -r \
         -e "s|ubox_include_dir libubox/ustream.h|ubox_include_dir libubox/ustream.h HINTS ${libubox-nossl}/include|g" \
@@ -28,14 +36,6 @@ stdenv.mkDerivation {
         -i CMakeLists.txt
   '';
 
-  cmakeFlags = [ "-D${lib.toUpper ssl_implementation.pname}=ON" ];
-
-  nativeBuildInputs = [
-    cmake
-    pkg-config
-  ];
-  buildInputs = [ ssl_implementation ];
-
   passthru = {
     inherit ssl_implementation;
   };
@@ -44,10 +44,12 @@ stdenv.mkDerivation {
     description = "ustream SSL wrapper";
     homepage = "https://git.openwrt.org/?p=project/ustream-ssl.git;a=summary";
     license = lib.licenses.isc;
+
     maintainers = with lib.maintainers; [
       fpletz
       mkg20001
     ];
+
     platforms = lib.platforms.all;
   };
 }

@@ -8,18 +8,16 @@
 buildPythonPackage rec {
   pname = "types-greenlet";
   version = "3.3.0.20251206";
-  pyproject = true;
 
   src = fetchPypi {
-    pname = "types_greenlet";
     inherit version;
     hash = "sha256-PhqzEqtxVMCO3C6BEPvwDZkgMj7cEUStRZt7AFIGMFU=";
+    pname = "types_greenlet";
   };
 
-  build-system = [ setuptools ];
-
   doCheck = false;
-
+  build-system = [ setuptools ];
+  pyproject = true;
   pythonImportsCheck = [ "greenlet-stubs" ];
 
   meta = {

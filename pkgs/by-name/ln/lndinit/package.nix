@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
 }:
 buildGoModule (finalAttrs: {
   pname = "lndinit";
@@ -15,14 +15,13 @@ buildGoModule (finalAttrs: {
   };
 
   vendorHash = "sha256-peyLhDEH9DKHAQfxVCvv92DErHjidA3DSjpN357Px6M=";
-
   subPackages = [ "." ];
 
   meta = {
     description = "Wallet initializer utility for lnd";
     homepage = "https://github.com/lightninglabs/lndinit";
-    mainProgram = "lndinit";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ aldoborrero ];
+    mainProgram = "lndinit";
   };
 })

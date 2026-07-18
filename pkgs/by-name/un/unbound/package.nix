@@ -1,23 +1,49 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
-  openssl,
-  nettle,
+  bison,
+  dns-root-data,
   expat,
   flex,
-  libevent,
-  libsodium,
-  protobufc,
+  # for passthru.tests
+  gnutls,
   hiredis,
-  python ? null,
-  swig,
-  dns-root-data,
-  pkg-config,
+  libevent,
+  libnghttp2,
+  libsodium,
   makeWrapper,
-  symlinkJoin,
-  bison,
+  nettle,
+  ngtcp2,
+  # for passthru.updateScript
+  nix-update-script,
   nixosTests,
+  openssl,
+  pkg-config,
+  protobufc,
+  swig,
+  symlinkJoin,
+  versionCheckHook,
+  python ? null,
+  systemd ? null,
+  withDNSCrypt ? false,
+  withDNSTAP ? false,
+  # optionally support DNS-over-HTTPS as a server
+  withDoH ? false,
+  # optionally support DNS-over-QUIC as a server
+  withDoQ ? false,
+  # enable support for .so plugins
+  withDynlibModule ? false,
+  withECS ? false,
+  withLto ? !stdenv.hostPlatform.isStatic && !stdenv.hostPlatform.isMinGW,
+  withMakeWrapper ? !stdenv.hostPlatform.isMinGW,
+  # enable support for python plugins in unbound: note this is distinct from pyunbound
+  # see https://unbound.docs.nlnetlabs.nl/en/latest/developer/python-modules.html
+  withPythonModule ? false,
+  withRedis ? false,
+  # Avoid .lib depending on lib.getLib openssl
+  # The build gets a little hacky, so in some cases we disable this approach.
+  withSlimLib ? stdenv.hostPlatform.isLinux && !stdenv.hostPlatform.isMusl && !withDNSTAP && !withDoQ,
   #
   # By default unbound will not be built with systemd support. Unbound is a very
   # common dependency. The transitive dependency closure of systemd also
@@ -28,34 +54,7 @@
   # For the daemon use-case, that needs to notify systemd, use `unbound-with-systemd`.
   #
   withSystemd ? false,
-  systemd ? null,
-  # optionally support DNS-over-HTTPS as a server
-  withDoH ? false,
-  # optionally support DNS-over-QUIC as a server
-  withDoQ ? false,
-  withECS ? false,
-  withDNSCrypt ? false,
-  withDNSTAP ? false,
   withTFO ? false,
-  withRedis ? false,
-  # Avoid .lib depending on lib.getLib openssl
-  # The build gets a little hacky, so in some cases we disable this approach.
-  withSlimLib ? stdenv.hostPlatform.isLinux && !stdenv.hostPlatform.isMusl && !withDNSTAP && !withDoQ,
-  # enable support for python plugins in unbound: note this is distinct from pyunbound
-  # see https://unbound.docs.nlnetlabs.nl/en/latest/developer/python-modules.html
-  withPythonModule ? false,
-  # enable support for .so plugins
-  withDynlibModule ? false,
-  withLto ? !stdenv.hostPlatform.isStatic && !stdenv.hostPlatform.isMinGW,
-  withMakeWrapper ? !stdenv.hostPlatform.isMinGW,
-  libnghttp2,
-  ngtcp2,
-
-  # for passthru.updateScript
-  nix-update-script,
-  # for passthru.tests
-  gnutls,
-  versionCheckHook,
 }:
 
 assert lib.assertMsg (
@@ -78,6 +77,11 @@ stdenv.mkDerivation (finalAttrs: {
     "man"
   ]; # "dev" would only split ~20 kB
 
+  postPatch = lib.optionalString withPythonModule ''
+    substituteInPlace Makefile.in \
+      --replace "\$(DESTDIR)\$(PYTHON_SITE_PKG)" "$out/${python.sitePackages}"
+  '';
+
   nativeBuildInputs =
     lib.optionals withMakeWrapper [ makeWrapper ]
     ++ lib.optionals withDNSTAP [ protobufc ]
@@ -98,8 +102,6 @@ stdenv.mkDerivation (finalAttrs: {
   ++ lib.optionals withDoH [ libnghttp2 ]
   ++ lib.optionals withDoQ [ ngtcp2 ]
   ++ lib.optionals withPythonModule [ python ];
-
-  enableParallelBuilding = true;
 
   configureFlags = [
     "--with-ssl=${openssl.dev}"
@@ -138,6 +140,7 @@ stdenv.mkDerivation (finalAttrs: {
     "--with-libsodium=${
       symlinkJoin {
         name = "libsodium-full";
+
         paths = [
           libsodium.dev
           libsodium.out
@@ -170,13 +173,6 @@ stdenv.mkDerivation (finalAttrs: {
 
   doCheck = true;
 
-  postPatch = lib.optionalString withPythonModule ''
-    substituteInPlace Makefile.in \
-      --replace "\$(DESTDIR)\$(PYTHON_SITE_PKG)" "$out/${python.sitePackages}"
-  '';
-
-  installFlags = [ "configfile=\${out}/etc/unbound/unbound.conf" ];
-
   postInstall = ''
     make unbound-event-install
   ''
@@ -189,6 +185,12 @@ stdenv.mkDerivation (finalAttrs: {
       --prefix PYTHONPATH : "$out/${python.sitePackages}" \
       --argv0 $out/bin/unbound
   '';
+
+  doInstallCheck = true;
+
+  nativeInstallCheckInputs = [
+    versionCheckHook
+  ];
 
   preFixup =
     lib.optionalString withSlimLib
@@ -213,32 +215,31 @@ stdenv.mkDerivation (finalAttrs: {
       ) " --replace '-L${pkg.dev}/lib' '-L${pkg.out}/lib' --replace '-R${pkg.dev}/lib' '-R${pkg.out}/lib'"
     ) (builtins.filter (p: p != null) finalAttrs.buildInputs);
 
-  nativeInstallCheckInputs = [
-    versionCheckHook
-  ];
+  enableParallelBuilding = true;
+  installFlags = [ "configfile=\${out}/etc/unbound/unbound.conf" ];
   versionCheckProgramArg = "-V";
-  doInstallCheck = true;
 
   passthru = {
-    updateScript = nix-update-script {
-      extraArgs = [
-        "--version-regex=release-(.+)"
-      ];
-    };
     tests = {
       inherit gnutls;
       nixos-test = nixosTests.unbound;
       nixos-test-exporter = nixosTests.prometheus-exporters.unbound;
     };
+
+    updateScript = nix-update-script {
+      extraArgs = [
+        "--version-regex=release-(.+)"
+      ];
+    };
   };
 
   meta = {
     description = "Validating, recursive, and caching DNS resolver";
-    license = lib.licenses.bsd3;
     homepage = "https://www.unbound.net";
     changelog = "https://github.com/NLnetLabs/unbound/releases/tag/release-${finalAttrs.version}";
+    license = lib.licenses.bsd3;
     maintainers = with lib.maintainers; [ Scrumplex ];
-    mainProgram = "unbound";
     platforms = with lib.platforms; unix ++ windows;
+    mainProgram = "unbound";
   };
 })

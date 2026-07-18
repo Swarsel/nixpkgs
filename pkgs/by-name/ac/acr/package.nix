@@ -20,13 +20,15 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   meta = {
-    homepage = "https://github.com/radareorg/acr/";
     description = "Pure shell autoconf replacement";
+
     longDescription = ''
       ACR tries to replace autoconf functionality generating a full-compatible
       'configure' script (runtime flags). But using shell-script instead of
       m4. This means that ACR is faster, smaller and easy to use.
     '';
+
+    homepage = "https://github.com/radareorg/acr/";
     license = lib.licenses.gpl2Plus;
     maintainers = [ ];
     platforms = lib.platforms.all;

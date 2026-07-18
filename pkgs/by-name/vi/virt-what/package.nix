@@ -1,6 +1,6 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchurl,
 }:
 
@@ -16,8 +16,8 @@ stdenv.mkDerivation (finalAttrs: {
   meta = {
     description = "Detect if running in a virtual machine and prints its type";
     homepage = "https://people.redhat.com/~rjones/virt-what/";
-    maintainers = with lib.maintainers; [ fpletz ];
     license = lib.licenses.gpl2Plus;
+    maintainers = with lib.maintainers; [ fpletz ];
     platforms = lib.platforms.linux;
     mainProgram = "virt-what";
   };

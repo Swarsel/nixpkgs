@@ -1,34 +1,34 @@
 {
   lib,
   stdenv,
-  pkg-config,
-  cmake,
   fetchurl,
-  git,
-  cctools,
-  darwin,
-  makeWrapper,
+  antlr,
   bison,
-  openssl,
-  protobuf,
+  cctools,
+  cmake,
   curl,
-  zlib,
-  libssh,
-  zstd,
-  lz4,
-  readline,
-  libtirpc,
-  rpcsvc-proto,
+  cyrus_sasl,
+  darwin,
+  git,
+  icu,
   libedit,
   libevent,
-  icu,
-  re2,
-  ncurses,
   libfido2,
-  python3,
-  cyrus_sasl,
+  libssh,
+  libtirpc,
+  lz4,
+  makeWrapper,
+  ncurses,
   openldap,
-  antlr,
+  openssl,
+  pkg-config,
+  protobuf,
+  python3,
+  re2,
+  readline,
+  rpcsvc-proto,
+  zlib,
+  zstd,
 }:
 
 let
@@ -44,23 +44,6 @@ in
 stdenv.mkDerivation (finalAttrs: {
   pname = "mysql-shell-innovation";
   version = mysqlShellVersion;
-
-  srcs = [
-    (fetchurl {
-      url = "https://dev.mysql.com/get/Downloads/MySQL-${lib.versions.majorMinor mysqlServerVersion}/mysql-${mysqlServerVersion}.tar.gz";
-      hash = "sha256-dLV0urxWsOy2MqvTWdITxnlOz0Qq5Ekov8WB+z1iMG0=";
-    })
-    (fetchurl {
-      url = "https://dev.mysql.com/get/Downloads/MySQL-Shell/mysql-shell-${finalAttrs.version}-src.tar.gz";
-      hash = "sha256-s/omxSFTC/n3B8OtYddDqXzCd4GE4b5O8NUKbLdvwRI=";
-    })
-  ];
-
-  sourceRoot = "mysql-shell-${finalAttrs.version}-src";
-
-  postUnpack = ''
-    mv mysql-${mysqlServerVersion} mysql
-  '';
 
   patches = [
     # No openssl bundling on macOS. It's not working.
@@ -146,9 +129,26 @@ stdenv.mkDerivation (finalAttrs: {
     wrapProgram $out/bin/mysqlsh --set PYTHONPATH "${lib.makeSearchPath python3.sitePackages pythonDeps}"
   '';
 
+  postUnpack = ''
+    mv mysql-${mysqlServerVersion} mysql
+  '';
+
+  sourceRoot = "mysql-shell-${finalAttrs.version}-src";
+
+  srcs = [
+    (fetchurl {
+      hash = "sha256-dLV0urxWsOy2MqvTWdITxnlOz0Qq5Ekov8WB+z1iMG0=";
+      url = "https://dev.mysql.com/get/Downloads/MySQL-${lib.versions.majorMinor mysqlServerVersion}/mysql-${mysqlServerVersion}.tar.gz";
+    })
+    (fetchurl {
+      hash = "sha256-s/omxSFTC/n3B8OtYddDqXzCd4GE4b5O8NUKbLdvwRI=";
+      url = "https://dev.mysql.com/get/Downloads/MySQL-Shell/mysql-shell-${finalAttrs.version}-src.tar.gz";
+    })
+  ];
+
   meta = {
-    homepage = "https://dev.mysql.com/doc/mysql-shell/${lib.versions.majorMinor finalAttrs.version}/en/";
     description = "New command line scriptable shell for MySQL";
+    homepage = "https://dev.mysql.com/doc/mysql-shell/${lib.versions.majorMinor finalAttrs.version}/en/";
     license = lib.licenses.gpl2;
     maintainers = with lib.maintainers; [ aaronjheng ];
     platforms = lib.platforms.linux ++ lib.platforms.darwin;

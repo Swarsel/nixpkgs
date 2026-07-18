@@ -1,22 +1,22 @@
 {
   lib,
   stdenv,
-  fetchgit,
   autoreconfHook,
-  libgcrypt,
-  pkg-config,
-  texinfo,
   curl,
+  fetchgit,
   gnunet,
   jansson,
+  libgcrypt,
   libgnurl,
   libmicrohttpd,
+  libpq,
   libsodium,
   libtool,
-  libpq,
+  pkg-config,
+  runtimeShell,
   taler-exchange,
   taler-merchant,
-  runtimeShell,
+  texinfo,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -28,20 +28,6 @@ stdenv.mkDerivation (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-oomrqpA/V2sNTRzFbHS7rnZdTIs8w+SRYsa9AYDFn5o=";
   };
-
-  # https://git-www.taler.net/challenger.git/tree/bootstrap
-  preAutoreconf = ''
-    # Generate Makefile.am in contrib/
-    pushd contrib
-    rm -f Makefile.am
-    find wallet-core/challenger/ -type f -printf '  %p \\\n' | sort > Makefile.am.ext
-    # Remove extra '\' at the end of the file
-    truncate -s -2 Makefile.am.ext
-    cat Makefile.am.in Makefile.am.ext >> Makefile.am
-    # Prevent accidental editing of the generated Makefile.am
-    chmod -w Makefile.am
-    popd
-  '';
 
   strictDeps = true;
 
@@ -71,12 +57,26 @@ stdenv.mkDerivation (finalAttrs: {
       --replace-fail "/bin/bash" "${runtimeShell}"
   '';
 
+  # https://git-www.taler.net/challenger.git/tree/bootstrap
+  preAutoreconf = ''
+    # Generate Makefile.am in contrib/
+    pushd contrib
+    rm -f Makefile.am
+    find wallet-core/challenger/ -type f -printf '  %p \\\n' | sort > Makefile.am.ext
+    # Remove extra '\' at the end of the file
+    truncate -s -2 Makefile.am.ext
+    cat Makefile.am.in Makefile.am.ext >> Makefile.am
+    # Prevent accidental editing of the generated Makefile.am
+    chmod -w Makefile.am
+    popd
+  '';
+
   meta = {
     description = "OAuth 2.0-based authentication service that validates user can receive messages at a certain address";
     homepage = "https://git-www.taler.net/challenger.git";
     license = lib.licenses.agpl3Plus;
     maintainers = with lib.maintainers; [ wegank ];
-    teams = with lib.teams; [ ngi ];
     platforms = lib.platforms.linux;
+    teams = with lib.teams; [ ngi ];
   };
 })

@@ -2,10 +2,10 @@
   lib,
   stdenv,
   fetchFromGitHub,
+  autoreconfHook,
   fetchpatch,
   guile,
   libssh,
-  autoreconfHook,
   pkg-config,
   texinfo,
   which,
@@ -24,8 +24,8 @@ stdenv.mkDerivation (finalAttrs: {
 
   patches = [
     (fetchpatch {
-      url = "https://github.com/artyom-poptsov/guile-ssh/pull/31/commits/38636c978f257d5228cd065837becabf5da16854.patch";
       hash = "sha256-J+TDgdjihKoEjhbeH+BzqrHhjpVlGdscRj3L/GAFgKg=";
+      url = "https://github.com/artyom-poptsov/guile-ssh/pull/31/commits/38636c978f257d5228cd065837becabf5da16854.patch";
     })
   ];
 
@@ -47,8 +47,6 @@ stdenv.mkDerivation (finalAttrs: {
     libssh
   ];
 
-  enableParallelBuilding = true;
-
   # FAIL: server-client.scm
   doCheck = !stdenv.hostPlatform.isDarwin;
 
@@ -57,13 +55,17 @@ stdenv.mkDerivation (finalAttrs: {
     rmdir $out/bin
   '';
 
+  enableParallelBuilding = true;
+
   meta = {
     description = "Bindings to Libssh for GNU Guile";
     homepage = "https://github.com/artyom-poptsov/guile-ssh";
     license = lib.licenses.gpl3Plus;
+
     maintainers = with lib.maintainers; [
       ethancedwards8
     ];
+
     platforms = guile.meta.platforms;
   };
 })

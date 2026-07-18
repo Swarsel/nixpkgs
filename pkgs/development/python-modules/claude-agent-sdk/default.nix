@@ -1,8 +1,8 @@
 {
   lib,
+  fetchFromGitHub,
   anyio,
   buildPythonPackage,
-  fetchFromGitHub,
   hatchling,
   mcp,
   pytest-asyncio,
@@ -15,7 +15,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "claude-agent-sdk";
   version = "0.2.110";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "anthropics";
@@ -23,6 +22,14 @@ buildPythonPackage (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-tz26ueGAMFM7sD95FoAzhKHvNo7NV9fYZoKfJy/t8Lw=";
   };
+
+  nativeCheckInputs = [
+    anyio
+    pytestCheckHook
+    pytest-asyncio
+    pytest-cov-stub
+  ]
+  ++ anyio.passthru.optional-dependencies.trio;
 
   build-system = [ hatchling ];
 
@@ -33,20 +40,13 @@ buildPythonPackage (finalAttrs: {
     typing-extensions
   ];
 
-  nativeCheckInputs = [
-    anyio
-    pytestCheckHook
-    pytest-asyncio
-    pytest-cov-stub
-  ]
-  ++ anyio.passthru.optional-dependencies.trio;
-
-  pythonImportsCheck = [ "claude_agent_sdk" ];
-
   disabledTests = [
     # Code not available
     "test_query_with_async_iterable"
   ];
+
+  pyproject = true;
+  pythonImportsCheck = [ "claude_agent_sdk" ];
 
   meta = {
     description = "Python SDK for Claude Agent";

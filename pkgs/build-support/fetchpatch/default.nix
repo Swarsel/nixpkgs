@@ -11,24 +11,24 @@
 }:
 
 {
-  relative ? null,
-  stripLen ? 0,
   decode ? "cat", # custom command to decode patch e.g. base64 -d
-  extraPrefix ? null,
   excludes ? [ ],
-  includes ? [ ],
+  extraPrefix ? null,
   hunks ? [ ],
-  revert ? false,
-  postFetch ? "",
+  includes ? [ ],
   nativeBuildInputs ? [ ],
+  postFetch ? "",
+  relative ? null,
+  revert ? false,
+  stripLen ? 0,
   ...
 }@args:
 let
   args' =
     if relative != null then
       {
-        stripLen = 1 + lib.length (lib.splitString "/" relative) + stripLen;
         extraPrefix = lib.optionalString (extraPrefix != null) extraPrefix;
+        stripLen = 1 + lib.length (lib.splitString "/" relative) + stripLen;
       }
     else
       {
@@ -44,6 +44,7 @@ else
   fetchurl (
     {
       nativeBuildInputs = [ patchutils ] ++ nativeBuildInputs;
+
       postFetch = ''
         tmpfile="$TMPDIR/patch"
 

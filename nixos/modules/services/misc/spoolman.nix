@@ -1,7 +1,7 @@
 {
+  config,
   lib,
   pkgs,
-  config,
   ...
 }:
 let
@@ -14,56 +14,68 @@ in
     enable = lib.mkEnableOption "Spoolman, a filament spool inventory management system.";
 
     environment = lib.mkOption {
-      type = lib.types.attrs;
       default = { };
-      example = {
-        SPOOLMAN_DB_TYPE = "sqlite";
-        SPOOLMAN_LOGGING_LEVEL = "DEBUG";
-        SPOOLMAN_AUTOMATIC_BACKUP = "TRUE";
-        SPOOLMAN_BASE_PATH = "/spoolman";
-        SPOOLMAN_METRICS_ENABLED = "TRUE";
-        SPOOLMAN_CORS_ORIGIN = "source1.domain.com:p1, source2.domain.com:p2";
-      };
+
       description = ''
         Environment variables to be passed to the spoolman service.
         Refer to https://github.com/Donkie/Spoolman/blob/master/.env.example for details on supported variables.
       '';
-    };
 
-    openFirewall = lib.mkOption {
-      type = lib.types.bool;
-      default = false;
-      description = ''
-        Open the appropriate ports in the firewall for spoolman.
-      '';
+      example = {
+        SPOOLMAN_AUTOMATIC_BACKUP = "TRUE";
+        SPOOLMAN_BASE_PATH = "/spoolman";
+        SPOOLMAN_CORS_ORIGIN = "source1.domain.com:p1, source2.domain.com:p2";
+        SPOOLMAN_DB_TYPE = "sqlite";
+        SPOOLMAN_LOGGING_LEVEL = "DEBUG";
+        SPOOLMAN_METRICS_ENABLED = "TRUE";
+      };
+
+      type = lib.types.attrs;
     };
 
     listen = lib.mkOption {
-      type = lib.types.str;
       default = "127.0.0.1";
-      example = "0.0.0.0";
       description = "The IP address to bind the spoolman server to.";
+      example = "0.0.0.0";
+      type = lib.types.str;
+    };
+
+    openFirewall = lib.mkOption {
+      default = false;
+
+      description = ''
+        Open the appropriate ports in the firewall for spoolman.
+      '';
+
+      type = lib.types.bool;
     };
 
     port = lib.mkOption {
-      type = lib.types.port;
       default = 7912;
+
       description = ''
         TCP port where spoolman web-gui listens.
       '';
+
+      type = lib.types.port;
     };
 
   };
 
   config = lib.mkIf cfg.enable {
 
+    networking.firewall = lib.mkIf cfg.openFirewall {
+      allowedTCPPorts = lib.optional (cfg.listen != "127.0.0.1") cfg.port;
+    };
+
     systemd.services.spoolman = {
       description = "A self-hosted filament spool inventory management system";
-      wantedBy = [ "multi-user.target" ];
+
       environment = {
         SPOOLMAN_DIR_DATA = "/var/lib/spoolman";
       }
       // cfg.environment;
+
       serviceConfig = lib.mkMerge [
         {
           DynamicUser = true;
@@ -71,13 +83,12 @@ in
           StateDirectory = "spoolman";
         }
       ];
-    };
 
-    networking.firewall = lib.mkIf cfg.openFirewall {
-      allowedTCPPorts = lib.optional (cfg.listen != "127.0.0.1") cfg.port;
+      wantedBy = [ "multi-user.target" ];
     };
 
   };
+
   meta = {
     maintainers = with lib.maintainers; [ MayNiklas ];
   };

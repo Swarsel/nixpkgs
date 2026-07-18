@@ -1,48 +1,47 @@
 {
   lib,
   stdenv,
-  callPackage,
-  fetchFromGitHub,
   fetchurl,
-  rustPlatform,
+  fetchFromGitHub,
+  bash,
+  cacert,
+  callPackage,
   cmake,
   dbus,
   libxcb,
-  pkg-config,
-  protobuf,
-  openssl,
-  cacert,
-  writableTmpDirAsHomeHook,
-  versionCheckHook,
-  nix-update-script,
   llvmPackages,
   makeWrapper,
+  nix-update-script,
+  openssl,
+  pkg-config,
+  protobuf,
+  # Extension(s) Dependencies
+  python3,
+  rustPlatform,
+  versionCheckHook,
+  wl-clipboard,
+  wmctrl,
+  writableTmpDirAsHomeHook,
+  # Wayland
+  wtype,
+  xclip,
+  # X11
+  xdotool,
+  xwininfo,
   librusty_v8 ? callPackage ./librusty_v8.nix {
     inherit (callPackage ./fetchers.nix { }) fetchLibrustyV8;
   },
-
-  # Extension(s) Dependencies
-  python3,
-  bash,
-  # X11
-  xdotool,
-  wmctrl,
-  xclip,
-  xwininfo,
-  # Wayland
-  wtype,
-  wl-clipboard,
 }:
 
 let
   gpt-4o-tokenizer = fetchurl {
-    url = "https://huggingface.co/Xenova/gpt-4o/resolve/31376962e96831b948abe05d420160d0793a65a4/tokenizer.json";
     hash = "sha256-Q6OtRhimqTj4wmFBVOoQwxrVOmLVaDrgsOYTNXXO8H4=";
+    url = "https://huggingface.co/Xenova/gpt-4o/resolve/31376962e96831b948abe05d420160d0793a65a4/tokenizer.json";
     meta.license = lib.licenses.mit;
   };
   claude-tokenizer = fetchurl {
-    url = "https://huggingface.co/Xenova/claude-tokenizer/resolve/cae688821ea05490de49a6d3faa36468a4672fad/tokenizer.json";
     hash = "sha256-wkFzffJLTn98mvT9zuKaDKkD3LKIqLdTvDRqMJKRF2c=";
+    url = "https://huggingface.co/Xenova/claude-tokenizer/resolve/cae688821ea05490de49a6d3faa36468a4672fad/tokenizer.json";
     meta.license = lib.licenses.mit;
   };
 in
@@ -56,15 +55,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-/1TtsnNiLoTkvyeFR282qSpo+Jt3pvFxduJ7lyzsTXI=";
   };
-
-  cargoHash = "sha256-bhnbSjGqyWbQd5PjZ116JH91vjVy6R/+iBlNKL6debg=";
-
-  cargoBuildFlags = [
-    "--bin"
-    "goose"
-    "--bin"
-    "goosed"
-  ];
 
   nativeBuildInputs = [
     cmake
@@ -80,6 +70,8 @@ rustPlatform.buildRustPackage (finalAttrs: {
   ]
   ++ lib.optionals stdenv.hostPlatform.isLinux [ libxcb ];
 
+  cargoHash = "sha256-bhnbSjGqyWbQd5PjZ116JH91vjVy6R/+iBlNKL6debg=";
+
   env = {
     LIBCLANG_PATH = "${lib.getLib llvmPackages.libclang}/lib";
     RUSTY_V8_ARCHIVE = librusty_v8;
@@ -91,34 +83,10 @@ rustPlatform.buildRustPackage (finalAttrs: {
     ln -s ${claude-tokenizer} tokenizer_files/Xenova--claude-tokenizer/tokenizer.json
   '';
 
-  postFixup = ''
-    wrapProgram $out/bin/goose \
-      --prefix PATH : ${
-        lib.makeBinPath (
-          [
-            bash
-            python3
-          ]
-          ++ lib.optionals stdenv.hostPlatform.isLinux [
-            # X11
-            xdotool
-            wmctrl
-            xclip
-            xwininfo
-            # Wayland
-            wtype
-            wl-clipboard
-          ]
-        )
-      }
-  '';
-
   nativeCheckInputs = [
     writableTmpDirAsHomeHook
     cacert
   ];
-
-  __darwinAllowLocalNetworking = true;
 
   checkFlags = [
     # need dbus-daemon for keychain access
@@ -173,17 +141,48 @@ rustPlatform.buildRustPackage (finalAttrs: {
     "--skip=test_session_id_propagation_to_llm"
   ];
 
-  nativeInstallCheckInputs = [ versionCheckHook ];
-  versionCheckProgramArg = "--version";
   doInstallCheck = true;
+  nativeInstallCheckInputs = [ versionCheckHook ];
 
+  postFixup = ''
+    wrapProgram $out/bin/goose \
+      --prefix PATH : ${
+        lib.makeBinPath (
+          [
+            bash
+            python3
+          ]
+          ++ lib.optionals stdenv.hostPlatform.isLinux [
+            # X11
+            xdotool
+            wmctrl
+            xclip
+            xwininfo
+            # Wayland
+            wtype
+            wl-clipboard
+          ]
+        )
+      }
+  '';
+
+  __darwinAllowLocalNetworking = true;
+
+  cargoBuildFlags = [
+    "--bin"
+    "goose"
+    "--bin"
+    "goosed"
+  ];
+
+  versionCheckProgramArg = "--version";
   passthru.updateScript = nix-update-script { };
 
   meta = {
     description = "Open-source, extensible AI agent that goes beyond code suggestions - install, execute, edit, and test with any LLM";
     homepage = "https://github.com/aaif-goose/goose";
-    mainProgram = "goose";
     license = lib.licenses.asl20;
+
     maintainers = with lib.maintainers; [
       cloudripper
       thardin
@@ -191,6 +190,8 @@ rustPlatform.buildRustPackage (finalAttrs: {
       miniharinn
       caniko
     ];
+
     platforms = lib.platforms.linux ++ lib.platforms.darwin;
+    mainProgram = "goose";
   };
 })

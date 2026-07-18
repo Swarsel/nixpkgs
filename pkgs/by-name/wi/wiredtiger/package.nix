@@ -3,14 +3,14 @@
   stdenv,
   fetchFromGitHub,
   cmake,
-  python3,
-  swig,
   libsodium,
   lz4,
+  nix-update-script,
+  python3,
   snappy,
+  swig,
   zlib,
   zstd,
-  nix-update-script,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -18,8 +18,8 @@ stdenv.mkDerivation (finalAttrs: {
   version = "11.3.1";
 
   src = fetchFromGitHub {
-    repo = "wiredtiger";
     owner = "wiredtiger";
+    repo = "wiredtiger";
     tag = finalAttrs.version;
     hash = "sha256-K5cZZTvZaWR6gVXF+mHNh7nHxMqi9XaEpB2qsd/pay8=";
   };
@@ -45,17 +45,18 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   env.NIX_CFLAGS_COMPILE = "-Wno-array-bounds";
-
   passthru.updateScript = nix-update-script { };
 
   meta = {
-    homepage = "https://source.wiredtiger.com";
     description = "High performance, scalable, NoSQL, extensible platform for data management";
-    mainProgram = "wt";
+    homepage = "https://source.wiredtiger.com";
+
     license = with lib.licenses; [
       gpl2Only
       gpl3Only
     ];
+
     platforms = lib.intersectLists lib.platforms.unix lib.platforms.x86_64;
+    mainProgram = "wt";
   };
 })

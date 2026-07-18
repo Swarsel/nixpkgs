@@ -2,9 +2,9 @@
   lib,
   stdenv,
   fetchFromGitHub,
+  autoreconfHook,
   ncurses,
   unstableGitUpdater,
-  autoreconfHook,
 }:
 
 stdenv.mkDerivation {
@@ -18,17 +18,16 @@ stdenv.mkDerivation {
     hash = "sha256-mUFiWzTTM6nAKQgXA0sYIUm1MwN7HBHD8LWBgzu3ZUk=";
   };
 
-  makeFlags = [ "prefix=${placeholder "out"}" ];
-
   nativeBuildInputs = [ autoreconfHook ];
   buildInputs = [ ncurses ];
-
+  makeFlags = [ "prefix=${placeholder "out"}" ];
   # Upstream needs quite a bit of porting to c23:
   #   https://github.com/ttdoda/lv/issues/3
   env.NIX_CFLAGS_COMPILE = "-std=gnu17";
 
-  preAutoreconf = "cd src";
-  postAutoreconf = "cd ..";
+  preInstall = ''
+    mkdir -p $out/bin
+  '';
 
   configurePhase = ''
     mkdir -p build
@@ -36,9 +35,8 @@ stdenv.mkDerivation {
     ../src/configure
   '';
 
-  preInstall = ''
-    mkdir -p $out/bin
-  '';
+  postAutoreconf = "cd ..";
+  preAutoreconf = "cd src";
 
   passthru.updateScript = unstableGitUpdater {
     tagPrefix = "v";
@@ -48,7 +46,7 @@ stdenv.mkDerivation {
     description = "Powerful multi-lingual file viewer / grep";
     homepage = "https://github.com/ttdoda/lv";
     license = lib.licenses.gpl2Plus;
-    platforms = with lib.platforms; linux ++ darwin;
     maintainers = with lib.maintainers; [ kayhide ];
+    platforms = with lib.platforms; linux ++ darwin;
   };
 }

@@ -1,7 +1,6 @@
 {
   lib,
   stdenv,
-  boost ? ndn-cxx.boost,
   fetchFromGitHub,
   libpcap,
   ndn-cxx,
@@ -9,6 +8,7 @@
   pkg-config,
   sphinx,
   wafHook,
+  boost ? ndn-cxx.boost,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -27,11 +27,20 @@ stdenv.mkDerivation (finalAttrs: {
     sphinx
     wafHook
   ];
+
   buildInputs = [
     libpcap
     ndn-cxx
     openssl
   ];
+
+  doCheck = false; # some tests fail because of the sandbox environment
+
+  checkPhase = ''
+    runHook preCheck
+    build/unit-tests
+    runHook postCheck
+  '';
 
   wafConfigureFlags = [
     "--boost-includes=${boost.dev}/include"
@@ -39,18 +48,11 @@ stdenv.mkDerivation (finalAttrs: {
     "--with-tests"
   ];
 
-  doCheck = false; # some tests fail because of the sandbox environment
-  checkPhase = ''
-    runHook preCheck
-    build/unit-tests
-    runHook postCheck
-  '';
-
   meta = {
-    homepage = "https://named-data.net/";
     description = "Named Data Networking (NDN) Essential Tools";
+    homepage = "https://named-data.net/";
     license = lib.licenses.gpl3Plus;
-    platforms = lib.platforms.unix;
     maintainers = with lib.maintainers; [ bertof ];
+    platforms = lib.platforms.unix;
   };
 })

@@ -13,7 +13,6 @@
 buildPythonPackage rec {
   pname = "py-air-control-exporter";
   version = "0.3.1";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
@@ -28,7 +27,7 @@ buildPythonPackage rec {
   ];
 
   nativeCheckInputs = [ pytestCheckHook ];
-
+  format = "setuptools";
   pythonImportsCheck = [ "py_air_control_exporter" ];
 
   passthru.tests = {
@@ -37,9 +36,9 @@ buildPythonPackage rec {
 
   meta = {
     description = "Exports Air Quality Metrics to Prometheus";
-    mainProgram = "py-air-control-exporter";
     homepage = "https://github.com/urbas/py-air-control-exporter";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ urbas ];
+    mainProgram = "py-air-control-exporter";
   };
 }

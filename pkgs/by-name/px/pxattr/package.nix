@@ -22,10 +22,10 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   meta = {
-    homepage = "https://www.lesbonscomptes.com/pxattr/index.html";
     description = "Provides a single interface to extended file attributes";
-    maintainers = [ ];
+    homepage = "https://www.lesbonscomptes.com/pxattr/index.html";
     license = [ lib.licenses.mit ];
+    maintainers = [ ];
     platforms = lib.platforms.unix;
     mainProgram = "pxattr";
   };

@@ -1,24 +1,23 @@
 {
-  stdenvNoCC,
   lib,
   fetchurl,
-  makeWrapper,
-  writeText,
-  makeDesktopItem,
   copyDesktopItems,
   jre,
+  makeDesktopItem,
+  makeWrapper,
+  stdenvNoCC,
+  writeText,
 }:
 let
   icon = fetchurl {
+    hash = "sha256-tw3uDWLtcMHYmN6JGsEvVKLgI09v5DF27V2+OF9Z5tA=";
     # In case tigerjython/tjinstall becomes unavailable, use this url - see comment for src in MkDerivation
     #url = "https://web.archive.org/web/20240623120114/https://raw.githubusercontent.com/tigerjython/tjinstall/master/tjlogo64.png";
     url = "https://raw.githubusercontent.com/tigerjython/tjinstall/611c56d4e765731883656a5c4b71209d72b5ab74/tjlogo64.png";
-    hash = "sha256-tw3uDWLtcMHYmN6JGsEvVKLgI09v5DF27V2+OF9Z5tA=";
   };
 in
 stdenvNoCC.mkDerivation (finalAttrs: {
   pname = "tigerjython";
-
   # UPDATE instructions
   #
   # We cache potentially unstable upstream input (.tar.gz file) via https://web.archive.org - this is a common procedure in Nixpkgs.
@@ -39,34 +38,6 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     makeWrapper
     copyDesktopItems
   ];
-
-  desktopItems = [
-    (makeDesktopItem {
-      name = "TigerJython";
-      desktopName = "TigerJython";
-      comment = "The Python IDE for beginners";
-      type = "Application";
-      categories = [ "Education" ];
-      terminal = false;
-      startupNotify = false;
-      exec = "tigerjython";
-      icon = "tigerjython";
-      mimeTypes = [ "text/x-python" ];
-    })
-  ];
-
-  dontConfigure = true;
-  dontBuild = true;
-
-  # https://tobiaskohn.ch/jython/faq.html
-  # Q: Can I install TigerJython for multiple users?
-  # A: Yes, create a config file.
-  # This file must be named tigerjython2.cfg and located
-  # in the same folder as tigerjython2.jar
-  tjconfig = writeText "tjconfig" ''
-    configfile = sys.userpath + ".tjython.cfg"
-    jython.cachedir = sys.userpath + ".jython.cache"
-  '';
 
   installPhase = ''
     runHook preInstall
@@ -96,19 +67,49 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     install -Dm444 ${icon} $out/share/icons/hicolor/64x64/apps/tigerjython.png
   '';
 
+  desktopItems = [
+    (makeDesktopItem {
+      categories = [ "Education" ];
+      comment = "The Python IDE for beginners";
+      desktopName = "TigerJython";
+      exec = "tigerjython";
+      icon = "tigerjython";
+      mimeTypes = [ "text/x-python" ];
+      name = "TigerJython";
+      startupNotify = false;
+      terminal = false;
+      type = "Application";
+    })
+  ];
+
+  dontBuild = true;
+  dontConfigure = true;
+
+  # https://tobiaskohn.ch/jython/faq.html
+  # Q: Can I install TigerJython for multiple users?
+  # A: Yes, create a config file.
+  # This file must be named tigerjython2.cfg and located
+  # in the same folder as tigerjython2.jar
+  tjconfig = writeText "tjconfig" ''
+    configfile = sys.userpath + ".tjython.cfg"
+    jython.cachedir = sys.userpath + ".jython.cache"
+  '';
+
   meta = {
-    homepage = "https://www.tigerjython.ch";
-    downloadPage = "https://tigerjython.ch/en/products/download";
     description = "Simple development environment for programming in Python";
+
     longDescription = ''
       Designing, coding, and amazing. TigerJython offers everything you need
       to go from Python programming beginner to professional.
       You will find a wide variety of tutorials and can get started right away
       in programming environments specially developed for you.
     '';
+
+    homepage = "https://www.tigerjython.ch";
     license = lib.licenses.unfreeRedistributable;
     maintainers = with lib.maintainers; [ rcmlz ];
     platforms = lib.platforms.all;
     mainProgram = "tigerjython";
+    downloadPage = "https://tigerjython.ch/en/products/download";
   };
 })

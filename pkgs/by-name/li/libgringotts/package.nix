@@ -2,11 +2,11 @@
   lib,
   stdenv,
   fetchurl,
-  pkg-config,
-  zlib,
   bzip2,
   libmcrypt,
   libmhash,
+  pkg-config,
+  zlib,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -19,6 +19,7 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   nativeBuildInputs = [ pkg-config ];
+
   buildInputs = [
     zlib
     bzip2
@@ -30,7 +31,7 @@ stdenv.mkDerivation (finalAttrs: {
     description = "Small library to encapsulate data in an encrypted structure";
     homepage = "https://libgringotts.sourceforge.net/";
     license = lib.licenses.gpl2Plus;
-    platforms = lib.platforms.linux;
     maintainers = with lib.maintainers; [ pSub ];
+    platforms = lib.platforms.linux;
   };
 })

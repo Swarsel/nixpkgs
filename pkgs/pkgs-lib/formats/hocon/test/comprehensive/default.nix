@@ -14,17 +14,13 @@ let
     '').overrideAttrs
       (
         _: _: {
+          outputHash = "sha256-UhkJLhT3bD6znq+IdDjs/ahP19mLzrLCy/R14pVrfew=";
           outputHashAlgo = "sha256";
           outputHashMode = "flat";
-          outputHash = "sha256-UhkJLhT3bD6znq+IdDjs/ahP19mLzrLCy/R14pVrfew=";
         }
       );
 
   expression = {
-    simple_top_level_attr = "1.0";
-    nested.attrset.has.a.integer.value = 100;
-    some_floaty = 29.95;
-
     array2d = [
       [
         1
@@ -37,21 +33,26 @@ let
         "b"
       ]
     ];
-    nasty_string = "\"@\n\\\t^*bf\n0\";'''$";
+
+    "cursed \" .attrs \" " = {
+      "a" = 1;
+      "a b" = hocon.lib.mkSubstitution "a";
+
+      "a b c" = hocon.lib.mkSubstitution {
+        required = false;
+        value = "a b";
+      };
+    };
 
     "misc attrs" = {
       x = 1;
       y = hocon.lib.mkAppend { a = 1; };
     };
 
-    "cursed \" .attrs \" " = {
-      "a" = 1;
-      "a b" = hocon.lib.mkSubstitution "a";
-      "a b c" = hocon.lib.mkSubstitution {
-        value = "a b";
-        required = false;
-      };
-    };
+    nasty_string = "\"@\n\\\t^*bf\n0\";'''$";
+    nested.attrset.has.a.integer.value = 100;
+    simple_top_level_attr = "1.0";
+    some_floaty = 29.95;
 
     to_include = {
       _includes = [
@@ -64,8 +65,8 @@ let
         })
         (hocon.lib.mkInclude { value = include_file; })
         (hocon.lib.mkInclude {
-          value = "https://example.com";
           type = "url";
+          value = "https://example.com";
         })
       ];
     };
@@ -74,12 +75,8 @@ let
   hocon-test-conf = hocon.generate "hocon-test.conf" expression;
 in
 stdenvNoCC.mkDerivation {
-  name = "pkgs.formats.hocon-test-comprehensive";
-
-  dontUnpack = true;
-  dontBuild = true;
-
   doCheck = true;
+
   checkPhase = ''
     runHook preCheck
 
@@ -98,4 +95,8 @@ stdenvNoCC.mkDerivation {
 
     runHook postInstall
   '';
+
+  dontBuild = true;
+  dontUnpack = true;
+  name = "pkgs.formats.hocon-test-comprehensive";
 }

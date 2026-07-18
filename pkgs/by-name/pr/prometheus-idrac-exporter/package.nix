@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   nixosTests,
 }:
 
@@ -16,24 +16,22 @@ buildGoModule rec {
     sha256 = "sha256-N8wSjQE25TCXg/+JTsvQk3fjTBgfXTiSGHwZWFDmFKc=";
   };
 
-  vendorHash = "sha256-iNV4VrdQONq7LXwAc6AaUROHy8TmmloUAL8EmuPtF/o=";
-
   patches = [ ./config-from-environment.patch ];
+  vendorHash = "sha256-iNV4VrdQONq7LXwAc6AaUROHy8TmmloUAL8EmuPtF/o=";
+  doCheck = true;
 
   ldflags = [
     "-s"
     "-w"
   ];
 
-  doCheck = true;
-
   passthru.tests = { inherit (nixosTests.prometheus-exporters) idrac; };
 
   meta = {
     inherit (src.meta) homepage;
     description = "Simple iDRAC exporter for Prometheus";
-    mainProgram = "idrac_exporter";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ codec ];
+    mainProgram = "idrac_exporter";
   };
 }

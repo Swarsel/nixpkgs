@@ -1,17 +1,13 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # build-system
-  pdm-backend,
-
-  # dependencies
-  pydantic,
-
+  buildPythonPackage,
   # optional-dependencies
   opentelemetry-sdk,
-
+  # build-system
+  pdm-backend,
+  # dependencies
+  pydantic,
   # tests
   pytest-asyncio,
   pytestCheckHook,
@@ -20,8 +16,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "agent-client-protocol";
   version = "0.10.1";
-  pyproject = true;
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "agentclientprotocol";
@@ -29,6 +23,14 @@ buildPythonPackage (finalAttrs: {
     tag = finalAttrs.version;
     hash = "sha256-iVmNzAx/YlvFXXVPjS1SmjDqGAr9aRDdSW93Nw2ayAY=";
   };
+
+  nativeCheckInputs = [
+    pytest-asyncio
+    pytestCheckHook
+  ];
+
+  __darwinAllowLocalNetworking = true;
+  __structuredAttrs = true;
 
   build-system = [
     pdm-backend
@@ -38,6 +40,11 @@ buildPythonPackage (finalAttrs: {
     pydantic
   ];
 
+  disabledTests = [
+    # Hangs forever
+    "test_spawn_agent_process_roundtrip"
+  ];
+
   optional-dependencies = {
     logfire = [
       # logfire (unpackaged)
@@ -45,19 +52,8 @@ buildPythonPackage (finalAttrs: {
     ];
   };
 
+  pyproject = true;
   pythonImportsCheck = [ "acp" ];
-
-  nativeCheckInputs = [
-    pytest-asyncio
-    pytestCheckHook
-  ];
-
-  disabledTests = [
-    # Hangs forever
-    "test_spawn_agent_process_roundtrip"
-  ];
-
-  __darwinAllowLocalNetworking = true;
 
   meta = {
     description = "Python SDK for ACP clients and agents";

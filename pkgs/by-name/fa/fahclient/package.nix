@@ -1,17 +1,17 @@
 {
   lib,
-  buildFHSEnv,
+  stdenv,
   fetchFromGitHub,
+  buildFHSEnv,
+  expat,
+  gitMinimal,
+  libevent,
   ocl-icd,
   openssl,
   re2,
-  libevent,
-  gitMinimal,
+  scons,
   versionCheckHook,
   zlib,
-  expat,
-  scons,
-  stdenv,
   extraPkgs ? [ ],
 }:
 let
@@ -19,16 +19,14 @@ let
   version = "8.5.6";
 
   cbangSrc = fetchFromGitHub {
+    hash = "sha256-oh3q/gmAKx8BHoaw6Dxkd0GoxYyJ6is8uCKcivQVv2g=";
     owner = "cauldrondevelopmentllc";
     repo = "cbang";
     tag = "bastet-v${version}";
-    hash = "sha256-oh3q/gmAKx8BHoaw6Dxkd0GoxYyJ6is8uCKcivQVv2g=";
   };
 
   fah-client = stdenv.mkDerivation {
     inherit pname version;
-    __structuredAttrs = true;
-    strictDeps = true;
 
     src = fetchFromGitHub {
       owner = "FoldingAtHome";
@@ -36,6 +34,8 @@ let
       tag = "v${version}";
       hash = "sha256-B5h2eXSCvYG5juNkBRBh+KUsm26O9JTI1S7yKkHgZ7c=";
     };
+
+    strictDeps = true;
 
     nativeBuildInputs = [
       gitMinimal
@@ -45,12 +45,6 @@ let
     ];
 
     buildInputs = [ openssl ];
-
-    postUnpack = ''
-      export CBANG_HOME=$NIX_BUILD_TOP/cbang
-
-      cp -r --no-preserve=mode ${cbangSrc} $CBANG_HOME
-    '';
 
     preBuild = ''
       scons -C $CBANG_HOME
@@ -72,15 +66,25 @@ let
       runHook postInstall
     '';
 
+    doInstallCheck = true;
+
     nativeInstallCheckInputs = [
       versionCheckHook
     ];
-    doInstallCheck = true;
+
+    __structuredAttrs = true;
+
+    postUnpack = ''
+      export CBANG_HOME=$NIX_BUILD_TOP/cbang
+
+      cp -r --no-preserve=mode ${cbangSrc} $CBANG_HOME
+    '';
 
   };
 in
 buildFHSEnv {
   inherit pname version;
+  runScript = "/bin/fah-client";
 
   targetPkgs =
     _:
@@ -92,14 +96,12 @@ buildFHSEnv {
     ]
     ++ extraPkgs;
 
-  runScript = "/bin/fah-client";
-
   meta = {
     description = "Folding@home client";
     homepage = "https://foldingathome.org/";
     license = lib.licenses.gpl3;
-    mainProgram = "fah-client";
     maintainers = [ lib.maintainers.GaetanLepage ];
     platforms = [ "x86_64-linux" ];
+    mainProgram = "fah-client";
   };
 }

@@ -1,11 +1,11 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
   makeWrapper,
   nix-update-script,
-  nodejs,
   nixosTests,
+  nodejs,
   yarn-berry_4,
 }:
 
@@ -26,18 +26,11 @@ stdenv.mkDerivation (finalAttrs: {
     ./yarn-4.14-support.patch
   ];
 
-  missingHashes = ./missing-hashes.json;
-
   nativeBuildInputs = [
     makeWrapper
     yarn-berry_4.yarnBerryConfigHook
     yarn-berry_4
   ];
-
-  offlineCache = yarn-berry_4.fetchYarnBerryDeps {
-    inherit (finalAttrs) src missingHashes patches;
-    hash = "sha256-uSXw/x+4d22ow7QE3nduTUDNlZebCrnW6OIzhSugcXw=";
-  };
 
   buildPhase = ''
     runHook preBuild
@@ -66,13 +59,22 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  missingHashes = ./missing-hashes.json;
+
+  offlineCache = yarn-berry_4.fetchYarnBerryDeps {
+    inherit (finalAttrs) src missingHashes patches;
+    hash = "sha256-uSXw/x+4d22ow7QE3nduTUDNlZebCrnW6OIzhSugcXw=";
+  };
+
   passthru = {
+    # alias for nix-update to be able to find and update this attribute
+    inherit (finalAttrs) offlineCache;
+
     tests = {
       basic-functionality = nixosTests.outline;
     };
+
     updateScript = nix-update-script { };
-    # alias for nix-update to be able to find and update this attribute
-    inherit (finalAttrs) offlineCache;
   };
 
   meta = {
@@ -80,12 +82,14 @@ stdenv.mkDerivation (finalAttrs: {
     homepage = "https://www.getoutline.com/";
     changelog = "https://github.com/outline/outline/releases";
     license = lib.licenses.bsl11;
+
     maintainers = with lib.maintainers; [
       cab404
       e1mo
       xanderio
       yrd
     ];
+
     platforms = lib.platforms.linux;
   };
 })

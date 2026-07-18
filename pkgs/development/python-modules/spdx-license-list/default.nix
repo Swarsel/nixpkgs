@@ -1,15 +1,13 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   poetry-core,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "spdx-license-list";
   version = "3.28.0";
-  pyproject = true;
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "JJMC89";
@@ -18,12 +16,15 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-qzEWa2SY4XfW+DgAl6UNUItYWGJ/dJM6jZ/ZekoVgNc=";
   };
 
+  # upstream has no tests
+  doCheck = false;
+  __structuredAttrs = true;
+
   build-system = [
     poetry-core
   ];
 
-  # upstream has no tests
-  doCheck = false;
+  pyproject = true;
 
   pythonImportsCheck = [
     "spdx_license_list"

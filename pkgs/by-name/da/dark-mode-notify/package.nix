@@ -1,10 +1,10 @@
 {
   lib,
-  fetchFromGitHub,
   stdenv,
+  fetchFromGitHub,
   swift,
-  swiftpm,
   swiftPackages,
+  swiftpm,
 }:
 
 # Use the same stdenv, including clang, as Swift itself
@@ -30,9 +30,9 @@ swiftPackages.stdenv.mkDerivation (finalAttrs: {
   meta = {
     description = "Run a script whenever dark mode changes in macOS";
     homepage = "https://github.com/bouk/dark-mode-notify";
-    platforms = lib.platforms.darwin;
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ YorikSar ];
+    platforms = lib.platforms.darwin;
     mainProgram = "dark-mode-notify";
   };
 })

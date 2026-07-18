@@ -1,5 +1,6 @@
 {
   lib,
+  fetchFromGitHub,
   aiohttp,
   aresponses,
   backoff,
@@ -7,7 +8,6 @@
   buildPythonPackage,
   certifi,
   docutils,
-  fetchFromGitHub,
   poetry-core,
   pytest-aiohttp,
   pytest-asyncio,
@@ -21,7 +21,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "simplisafe-python";
   version = "2026.06.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "bachya";
@@ -30,6 +29,15 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-e59h4zX0AuzNlR1sovw4QJ6zXxksElY5emEM9eTfjwI=";
   };
 
+  nativeCheckInputs = [
+    aresponses
+    pytest-aiohttp
+    pytest-asyncio
+    pytestCheckHook
+    types-pytz
+  ];
+
+  __darwinAllowLocalNetworking = true;
   build-system = [ poetry-core ];
 
   dependencies = [
@@ -43,12 +51,9 @@ buildPythonPackage (finalAttrs: {
     websockets
   ];
 
-  nativeCheckInputs = [
-    aresponses
-    pytest-aiohttp
-    pytest-asyncio
-    pytestCheckHook
-    types-pytz
+  disabledTestPaths = [
+    # Ignore the examples as they are prefixed with test_
+    "examples/"
   ];
 
   disabledTests = [
@@ -59,14 +64,8 @@ buildPythonPackage (finalAttrs: {
     "test_client_async_from_refresh_token_unknown_error"
   ];
 
-  disabledTestPaths = [
-    # Ignore the examples as they are prefixed with test_
-    "examples/"
-  ];
-
+  pyproject = true;
   pythonImportsCheck = [ "simplipy" ];
-
-  __darwinAllowLocalNetworking = true;
 
   meta = {
     description = "Python library the SimpliSafe API";

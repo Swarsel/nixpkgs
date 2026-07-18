@@ -17,7 +17,6 @@ php.buildComposerProject2 (finalAttrs: {
   };
 
   vendorHash = "sha256-O28yytP2W93GjLeqCkxZWt3h/fjJTcC9aVaJ9dT57C0=";
-
   doInstallCheck = true;
   nativeInstallCheckInputs = [ versionCheckHook ];
 
@@ -26,7 +25,7 @@ php.buildComposerProject2 (finalAttrs: {
     homepage = "https://github.com/maglnet/ComposerRequireChecker/";
     changelog = "https://github.com/maglnet/ComposerRequireChecker/releases/tag/${finalAttrs.version}";
     license = with lib.licenses; [ mit ];
-    mainProgram = "composer-require-checker";
     maintainers = [ lib.maintainers.patka ];
+    mainProgram = "composer-require-checker";
   };
 })

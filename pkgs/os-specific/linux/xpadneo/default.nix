@@ -4,8 +4,8 @@
   fetchFromGitHub,
   kernel,
   kernelModuleMakeFlags,
-  nixosTests,
   nix-update-script,
+  nixosTests,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -18,10 +18,6 @@ stdenv.mkDerivation (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-GeQls+DeJrzduBRQw0rc9hf58Ncd5fRmn6Xwn0kMaXs=";
   };
-
-  setSourceRoot = ''
-    export sourceRoot=$(pwd)/${finalAttrs.src.name}/hid-xpadneo/src
-  '';
 
   nativeBuildInputs = kernel.moduleBuildDependencies;
 
@@ -36,8 +32,13 @@ stdenv.mkDerivation (finalAttrs: {
   installFlags = [ "INSTALL_MOD_PATH=${placeholder "out"}" ];
   installTargets = [ "modules_install" ];
 
+  setSourceRoot = ''
+    export sourceRoot=$(pwd)/${finalAttrs.src.name}/hid-xpadneo/src
+  '';
+
   passthru = {
     tests.xpadneo = nixosTests.xpadneo;
+
     updateScript = nix-update-script {
       extraArgs = [
         # Skips pre-releases
@@ -51,10 +52,12 @@ stdenv.mkDerivation (finalAttrs: {
     description = "Advanced Linux driver for Xbox One wireless controllers";
     homepage = "https://atar-axis.github.io/xpadneo";
     changelog = "https://github.com/atar-axis/xpadneo/releases/tag/${finalAttrs.src.tag}";
+
     license = with lib.licenses; [
       gpl2Only
       gpl3Plus
     ];
+
     maintainers = with lib.maintainers; [ kira-bruneau ];
     platforms = lib.platforms.linux;
   };

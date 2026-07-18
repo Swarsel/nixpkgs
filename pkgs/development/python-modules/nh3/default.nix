@@ -1,10 +1,10 @@
 {
   lib,
   stdenv,
-  buildPythonPackage,
-  rustPlatform,
-  libiconv,
   fetchFromGitHub,
+  buildPythonPackage,
+  libiconv,
+  rustPlatform,
 }:
 let
   pname = "nh3";
@@ -18,12 +18,6 @@ let
 in
 buildPythonPackage {
   inherit pname version src;
-  pyproject = true;
-
-  cargoDeps = rustPlatform.fetchCargoVendor {
-    inherit pname version src;
-    hash = "sha256-dN6zdwMGh8stgDuGiO+T/ZZ3/3P9Wu/gUw5gHJ1pPGA=";
-  };
 
   nativeBuildInputs = with rustPlatform; [
     cargoSetupHook
@@ -34,6 +28,12 @@ buildPythonPackage {
     libiconv
   ];
 
+  cargoDeps = rustPlatform.fetchCargoVendor {
+    inherit pname version src;
+    hash = "sha256-dN6zdwMGh8stgDuGiO+T/ZZ3/3P9Wu/gUw5gHJ1pPGA=";
+  };
+
+  pyproject = true;
   pythonImportsCheck = [ "nh3" ];
 
   meta = {

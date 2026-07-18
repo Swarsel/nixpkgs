@@ -1,24 +1,23 @@
 {
   lib,
-  fetchPypi,
-  buildPythonPackage,
-  attrs,
-  pluggy,
-  six,
   allure-python-commons-test,
-  setuptools-scm,
+  attrs,
+  buildPythonPackage,
+  fetchPypi,
+  pluggy,
   python,
+  setuptools-scm,
+  six,
 }:
 
 buildPythonPackage rec {
   pname = "allure-python-commons";
   version = "2.15.3";
-  pyproject = true;
 
   src = fetchPypi {
-    pname = "allure_python_commons";
     inherit version;
     hash = "sha256-tCqW1gdvsyPJ5DZF37hMBXT2utCg4AXZJWQBXNFy1WQ=";
+    pname = "allure_python_commons";
   };
 
   build-system = [ setuptools-scm ];
@@ -27,6 +26,8 @@ buildPythonPackage rec {
     attrs
     pluggy
   ];
+
+  pyproject = true;
 
   pythonImportsCheck = [
     "allure"

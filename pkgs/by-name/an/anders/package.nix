@@ -8,8 +8,6 @@ ocamlPackages.buildDunePackage rec {
   pname = "anders";
   version = "5.0.0";
 
-  duneVersion = "3";
-
   src = fetchFromGitHub {
     owner = "groupoid";
     repo = "anders";
@@ -18,15 +16,15 @@ ocamlPackages.buildDunePackage rec {
   };
 
   strictDeps = true;
-
   nativeBuildInputs = [ ocamlPackages.menhir ];
   buildInputs = [ ocamlPackages.zarith ];
+  duneVersion = "3";
 
   meta = {
     description = "Modal Homotopy Type System";
-    mainProgram = "anders";
     homepage = "https://homotopy.dev/";
     license = lib.licenses.isc;
     maintainers = [ ];
+    mainProgram = "anders";
   };
 }

@@ -16,6 +16,7 @@ let
     orig:
     self.lib.extendMkDerivation {
       constructDrv = orig;
+
       extendDrvArgs =
         finalAttrs:
         {
@@ -31,11 +32,13 @@ in
 {
   binary-cache = preferLocal super.binary-cache;
   buildenv = preferLocal super.buildenv;
-  fetchfossil = preferLocal super.fetchfossil;
   fetchdocker = preferLocal super.fetchdocker;
+  fetchfossil = preferLocal super.fetchfossil;
+
   fetchgit = (preferLocal super.fetchgit) // {
     inherit (super.fetchgit) getRevWithTag;
   };
+
   fetchgx = preferLocal super.fetchgx;
   fetchhg = preferLocal super.fetchhg;
   fetchipfs = preferLocal super.fetchipfs;

@@ -1,13 +1,12 @@
 {
   lib,
-  python3,
   fetchFromGitHub,
+  python3,
 }:
 
 python3.pkgs.buildPythonApplication (finalAttrs: {
   pname = "cp210x-program";
   version = "0.4.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "VCTLabs";
@@ -15,6 +14,10 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     tag = finalAttrs.version;
     sha256 = "sha256-IjKshP12WfFly9cPm6svD4qZW6cT8C7lOVrGenSqbfY=";
   };
+
+  postInstall = ''
+    ln -s $out/bin/cp210x-program{.py,}
+  '';
 
   build-system = with python3.pkgs; [
     setuptools
@@ -25,9 +28,7 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     pyusb
   ];
 
-  postInstall = ''
-    ln -s $out/bin/cp210x-program{.py,}
-  '';
+  pyproject = true;
 
   meta = {
     description = "EEPROM tool for Silabs CP210x USB-Serial adapter";

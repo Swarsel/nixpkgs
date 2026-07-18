@@ -8,7 +8,6 @@
 buildPythonPackage rec {
   pname = "trueskill";
   version = "0.4.5";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
@@ -16,9 +15,9 @@ buildPythonPackage rec {
   };
 
   propagatedBuildInputs = [ six ];
-
   # Can't build distribute, see https://github.com/NixOS/nixpkgs/pull/49340
   doCheck = false;
+  format = "setuptools";
 
   meta = {
     description = "Video game rating system";

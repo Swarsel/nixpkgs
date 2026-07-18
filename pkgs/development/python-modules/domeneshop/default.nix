@@ -1,16 +1,15 @@
 {
   lib,
   buildPythonPackage,
+  certifi,
   fetchPypi,
   setuptools,
   urllib3,
-  certifi,
 }:
 
 buildPythonPackage rec {
   pname = "domeneshop";
   version = "0.4.4";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
@@ -18,21 +17,21 @@ buildPythonPackage rec {
   };
 
   nativeBuildInputs = [ setuptools ];
+  # There are none
+  doCheck = false;
 
   dependencies = [
     certifi
     urllib3
   ];
 
-  # There are none
-  doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "domeneshop" ];
 
   meta = {
-    changelog = "https://github.com/domeneshop/python-domeneshop/releases/tag/v${version}";
     description = "Python library for working with the Domeneshop API";
     homepage = "https://api.domeneshop.no/docs/";
+    changelog = "https://github.com/domeneshop/python-domeneshop/releases/tag/v${version}";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ pbsds ];
   };

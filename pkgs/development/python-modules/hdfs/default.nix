@@ -1,9 +1,9 @@
 {
+  lib,
+  fetchFromGitHub,
   buildPythonPackage,
   docopt,
   fastavro,
-  fetchFromGitHub,
-  lib,
   pytestCheckHook,
   requests,
   setuptools,
@@ -13,7 +13,6 @@
 buildPythonPackage rec {
   pname = "hdfs";
   version = "2.7.3";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "mtth";
@@ -21,6 +20,11 @@ buildPythonPackage rec {
     tag = "v${version}";
     hash = "sha256-Pm2E8hB0wbu7npi/sLt9D8jQsH69qNOHLji9CYqST/8=";
   };
+
+  nativeCheckInputs = [
+    fastavro
+    pytestCheckHook
+  ];
 
   build-system = [ setuptools ];
 
@@ -30,11 +34,7 @@ buildPythonPackage rec {
     six
   ];
 
-  nativeCheckInputs = [
-    fastavro
-    pytestCheckHook
-  ];
-
+  pyproject = true;
   pythonImportsCheck = [ "hdfs" ];
 
   meta = {

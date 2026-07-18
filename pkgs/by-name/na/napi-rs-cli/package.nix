@@ -30,11 +30,11 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   meta = {
+    inherit (nodejs.meta) platforms;
     description = "CLI tools for napi-rs";
-    mainProgram = "napi";
     homepage = "https://napi.rs";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ winter ];
-    inherit (nodejs.meta) platforms;
+    mainProgram = "napi";
   };
 })

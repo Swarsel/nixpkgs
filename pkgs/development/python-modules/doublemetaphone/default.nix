@@ -1,20 +1,17 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
+  buildPythonPackage,
   # build-system
   cython,
-  setuptools,
-
   # tests
   pytestCheckHook,
+  setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "doublemetaphone";
   version = "1.2i";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "dedupeio";
@@ -22,11 +19,6 @@ buildPythonPackage rec {
     tag = "v${version}";
     hash = "sha256-VPJqHxQHLiLSko+aJYTIgISluHPARgQN5pYWYxP9QKQ=";
   };
-
-  build-system = [
-    cython
-    setuptools
-  ];
 
   nativeCheckInputs = [
     pytestCheckHook
@@ -36,6 +28,13 @@ buildPythonPackage rec {
   preCheck = ''
     rm -rf doublemetaphone
   '';
+
+  build-system = [
+    cython
+    setuptools
+  ];
+
+  pyproject = true;
 
   pythonImportsCheck = [
     "doublemetaphone"

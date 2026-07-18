@@ -1,8 +1,8 @@
 {
   lib,
-  stdenvNoCC,
   fetchurl,
   p7zip,
+  stdenvNoCC,
 }:
 let
   version = "1.028";
@@ -13,8 +13,8 @@ let
       (
         name: hash:
         nameValuePair (lib.strings.toLower name) (fetchurl {
-          url = "https://github.com/GuiWonder/Shanggu/releases/download/${version}/Shanggu${name}TTCs.7z";
           inherit hash;
+          url = "https://github.com/GuiWonder/Shanggu/releases/download/${version}/Shanggu${name}TTCs.7z";
         })
       )
       {
@@ -27,24 +27,10 @@ let
   extraOutputs = builtins.attrNames source;
 in
 stdenvNoCC.mkDerivation {
-  pname = "shanggu-fonts";
   inherit version;
-
+  pname = "shanggu-fonts";
   outputs = [ "out" ] ++ extraOutputs;
-
   nativeBuildInputs = [ p7zip ];
-
-  unpackPhase = ''
-    runHook preUnpack
-  ''
-  + lib.strings.concatLines (
-    lib.attrsets.mapAttrsToList (name: value: ''
-      7z x ${value} -o${name}
-    '') source
-  )
-  + ''
-    runHook postUnpack
-  '';
 
   installPhase = ''
     runHook preInstall
@@ -61,11 +47,23 @@ stdenvNoCC.mkDerivation {
     runHook postInstall
   '';
 
+  unpackPhase = ''
+    runHook preUnpack
+  ''
+  + lib.strings.concatLines (
+    lib.attrsets.mapAttrsToList (name: value: ''
+      7z x ${value} -o${name}
+    '') source
+  )
+  + ''
+    runHook postUnpack
+  '';
+
   meta = {
-    homepage = "https://github.com/GuiWonder/Shanggu";
     description = "Heritage glyph (old glyph) font based on Siyuan";
+    homepage = "https://github.com/GuiWonder/Shanggu";
     license = lib.licenses.ofl;
-    platforms = lib.platforms.all;
     maintainers = with lib.maintainers; [ Cryolitia ];
+    platforms = lib.platforms.all;
   };
 }

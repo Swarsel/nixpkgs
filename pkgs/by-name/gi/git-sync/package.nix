@@ -7,8 +7,8 @@
   gitMinimal,
   gnugrep,
   gnused,
-  makeBinaryWrapper,
   inotify-tools,
+  makeBinaryWrapper,
   nix-update-script,
 }:
 
@@ -24,8 +24,6 @@ stdenv.mkDerivation {
   };
 
   nativeBuildInputs = [ makeBinaryWrapper ];
-
-  dontBuild = true;
 
   installPhase =
     let
@@ -62,6 +60,8 @@ stdenv.mkDerivation {
       runHook postInstall
     '';
 
+  dontBuild = true;
+
   passthru = {
     updateScript = nix-update-script { };
   };
@@ -69,8 +69,8 @@ stdenv.mkDerivation {
   meta = {
     description = "Script to automatically synchronize a git repository";
     homepage = "https://github.com/simonthum/git-sync";
-    maintainers = with lib.maintainers; [ imalison ];
     license = lib.licenses.cc0;
+    maintainers = with lib.maintainers; [ imalison ];
     platforms = with lib.platforms; unix;
   };
 }

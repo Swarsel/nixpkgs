@@ -2,10 +2,10 @@
   stdenv,
   fetchFromGitHub,
   fetchYarnDeps,
-  nodejs,
-  yarnConfigHook,
-  yarnBuildHook,
   meta,
+  nodejs,
+  yarnBuildHook,
+  yarnConfigHook,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -19,18 +19,13 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-LzTdFYuIIFmAVuHtGjljqSBZGEPibwXcK5WuYB6ELNg=";
   };
 
-  yarnOfflineCache = fetchYarnDeps {
-    yarnLock = finalAttrs.src + "/yarn.lock";
-    hash = "sha256-leMwcsyhbxPoHJdA3kZDz97Ti77d1TCe8SrzTQMGrWo=";
-  };
-
-  env.NODE_OPTIONS = "--openssl-legacy-provider";
-
   nativeBuildInputs = [
     nodejs
     yarnConfigHook
     yarnBuildHook
   ];
+
+  env.NODE_OPTIONS = "--openssl-legacy-provider";
 
   installPhase = ''
     mkdir $out
@@ -38,6 +33,11 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   __structuredAttrs = true;
+
+  yarnOfflineCache = fetchYarnDeps {
+    hash = "sha256-leMwcsyhbxPoHJdA3kZDz97Ti77d1TCe8SrzTQMGrWo=";
+    yarnLock = finalAttrs.src + "/yarn.lock";
+  };
 
   meta = meta // {
     changelog = "https://github.com/strichliste/strichliste-web-frontend/releases/tag/${finalAttrs.src.tag}";

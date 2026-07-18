@@ -1,10 +1,10 @@
 {
-  fetchurl,
-  stdenv,
   lib,
+  stdenv,
+  fetchurl,
+  nixosTests,
   php83,
   writeShellScript,
-  nixosTests,
 }:
 let
   version = "4.1.1";
@@ -24,10 +24,8 @@ let
   '';
 in
 stdenv.mkDerivation {
-  pname = "ifm";
   inherit version src;
-
-  dontUnpack = true;
+  pname = "ifm";
 
   installPhase = ''
     runHook preInstall
@@ -37,15 +35,19 @@ stdenv.mkDerivation {
     runHook postInstall
   '';
 
+  dontUnpack = true;
+
   passthru.tests = {
     inherit (nixosTests) ifm;
   };
 
   meta = {
     description = "Improved File Manager, a single-file web-based filemanager";
+
     longDescription = ''
       The IFM is a web-based filemanager, which comes as a single file solution using HTML5, CSS3, JavaScript and PHP.
     '';
+
     homepage = "https://github.com/misterunknown/ifm";
     changelog = "https://github.com/misterunknown/ifm/releases/tag/v${version}";
     license = lib.licenses.mit;

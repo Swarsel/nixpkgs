@@ -1,11 +1,11 @@
 {
   lib,
   stdenv,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   fetchNpmDeps,
-  npmHooks,
   nodejs,
+  npmHooks,
   withUI ? true,
 }:
 
@@ -25,34 +25,21 @@ buildGoModule (finalAttrs: {
     nodejs
   ];
 
-  npmRoot = "internal/web";
+  buildInputs = lib.optionals stdenv.hostPlatform.isGnu [
+    stdenv.cc.libc.static
+  ];
 
-  npmDeps =
-    if withUI then
-      fetchNpmDeps {
-        name = "${finalAttrs.pname}-${finalAttrs.version}-npm-deps";
-        inherit (finalAttrs) src;
-        sourceRoot = "${finalAttrs.src.name}/${finalAttrs.npmRoot}";
-        hash = "sha256-eNrBKTW4KlLNf/Y9NTvGt5r28MG7SLGzUi+p9mOyrmI=";
-      }
-    else
-      null;
+  vendorHash = "sha256-fE+GVQ2HAfElO1UDmDMeu2ca7t5yNs83CXhqgT0t1Js=";
+  # Fix build with GCC 15
+  # from vendor/github.com/anacrolix/go-libutp/callbacks.go:4:
+  # ./utp_types.h:120:15: error: two or more data types in declaration specifiers
+  env.NIX_CFLAGS_COMPILE = "-std=gnu17";
 
   preBuild = lib.optionalString withUI ''
     pushd "$npmRoot"
     npm run build
     popd
   '';
-
-  # I dislike the fact that buildGoModule's fetcher FOD automatically inherits some attrs from the non-FOD part
-  overrideModAttrs = prev: {
-    nativeBuildInputs = lib.filter (e: e != npmHooks.npmConfigHook) prev.nativeBuildInputs;
-    preBuild = "";
-  };
-
-  vendorHash = "sha256-fE+GVQ2HAfElO1UDmDMeu2ca7t5yNs83CXhqgT0t1Js=";
-
-  tags = lib.optionals (!withUI) [ "noui" ];
 
   ldflags = [
     "-s"
@@ -63,21 +50,33 @@ buildGoModule (finalAttrs: {
     "-extldflags '-static'"
   ];
 
-  # Fix build with GCC 15
-  # from vendor/github.com/anacrolix/go-libutp/callbacks.go:4:
-  # ./utp_types.h:120:15: error: two or more data types in declaration specifiers
-  env.NIX_CFLAGS_COMPILE = "-std=gnu17";
+  npmDeps =
+    if withUI then
+      fetchNpmDeps {
+        inherit (finalAttrs) src;
+        hash = "sha256-eNrBKTW4KlLNf/Y9NTvGt5r28MG7SLGzUi+p9mOyrmI=";
+        name = "${finalAttrs.pname}-${finalAttrs.version}-npm-deps";
+        sourceRoot = "${finalAttrs.src.name}/${finalAttrs.npmRoot}";
+      }
+    else
+      null;
 
-  buildInputs = lib.optionals stdenv.hostPlatform.isGnu [
-    stdenv.cc.libc.static
-  ];
+  npmRoot = "internal/web";
+
+  # I dislike the fact that buildGoModule's fetcher FOD automatically inherits some attrs from the non-FOD part
+  overrideModAttrs = prev: {
+    nativeBuildInputs = lib.filter (e: e != npmHooks.npmConfigHook) prev.nativeBuildInputs;
+    preBuild = "";
+  };
+
+  tags = lib.optionals (!withUI) [ "noui" ];
 
   meta = {
-    changelog = "https://github.com/varbhat/exatorrent/releases/tag/${finalAttrs.src.tag}";
     description = "Self-hostable, easy-to-use, lightweight, and feature-rich torrent client written in Go";
     homepage = "https://github.com/varbhat/exatorrent/";
+    changelog = "https://github.com/varbhat/exatorrent/releases/tag/${finalAttrs.src.tag}";
     license = lib.licenses.gpl3Only;
-    mainProgram = "exatorrent";
     maintainers = with lib.maintainers; [ tomasajt ];
+    mainProgram = "exatorrent";
   };
 })

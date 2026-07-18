@@ -1,8 +1,8 @@
 {
   lib,
   stdenv,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   installShellFiles,
 }:
 
@@ -17,17 +17,16 @@ buildGoModule (finalAttrs: {
     hash = "sha256-Ae0CL/BZdIBzZr+Tttg6sNhn1eS2E1odR6fGpbFRVjI=";
   };
 
-  vendorHash = null;
-
-  doCheck = false;
-
   nativeBuildInputs = [ installShellFiles ];
+  vendorHash = null;
 
   buildPhase = ''
     runHook preBuild
     make binaries VERSION=${finalAttrs.version}
     runHook postBuild
   '';
+
+  doCheck = false;
 
   installPhase = ''
     runHook preInstall

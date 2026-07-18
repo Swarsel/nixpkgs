@@ -2,12 +2,12 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  nix-update-script,
   autoreconfHook,
-  pkg-config,
   check,
   cppunit,
+  nix-update-script,
   perl,
+  pkg-config,
   python3Packages,
 }:
 
@@ -24,6 +24,8 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-vV/mmVruUH2siyOZOYiEQhjFgQ+xyS1EEbx5SS3Y5tA=";
   };
 
+  strictDeps = true;
+
   nativeBuildInputs = [
     autoreconfHook
     pkg-config
@@ -31,6 +33,7 @@ stdenv.mkDerivation (finalAttrs: {
     python3Packages.wrapPython
     python3Packages.testscenarios
   ];
+
   buildInputs = [
     check
     cppunit
@@ -41,18 +44,18 @@ stdenv.mkDerivation (finalAttrs: {
     testscenarios
   ];
 
-  strictDeps = true;
-
   passthru.updateScript = nix-update-script { };
 
   meta = {
     description = "Streaming protocol for test results";
     homepage = "https://github.com/testing-cabal/subunit";
+
     license = with lib.licenses; [
       asl20
       bsd3
     ];
-    platforms = lib.platforms.all;
+
     maintainers = with lib.maintainers; [ maevii ];
+    platforms = lib.platforms.all;
   };
 })

@@ -1,35 +1,61 @@
 {
   lib,
   stdenv,
-  fetchFromCodeberg,
-  cmake,
-  llvmPackages,
-  xcbuild,
-  libxml2,
-  ninja,
-  zlib,
-  coreutils,
   callPackage,
-  version,
+  cmake,
+  coreutils,
+  fetchFromCodeberg,
   hash,
+  libxml2,
+  llvmPackages,
+  ninja,
   overrideCC,
-  wrapCCWith,
+  version,
   wrapBintoolsWith,
+  wrapCCWith,
+  xcbuild,
+  zlib,
   ...
 }@args:
 
 stdenv.mkDerivation (finalAttrs: {
-  pname = "zig";
   inherit version;
+  pname = "zig";
 
   src = fetchFromCodeberg {
+    inherit hash;
     owner = "ziglang";
     repo = "zig";
     rev = finalAttrs.version;
-    inherit hash;
   };
 
+  outputs = [
+    "out"
+    "doc"
+  ];
+
   patches = args.patches or [ ];
+
+  postPatch =
+    # Zig's build looks at /usr/bin/env to find dynamic linking info. This doesn't
+    # work in Nix's sandbox. Use env from our coreutils instead.
+    ''
+      substituteInPlace lib/std/zig/system.zig \
+        --replace-fail "/usr/bin/env" "${lib.getExe' coreutils "env"}"
+    ''
+    # Zig tries to access xcrun and xcode-select at the absolute system path to query the macOS SDK
+    # location, which does not work in the darwin sandbox.
+    # Upstream issue: https://github.com/ziglang/zig/issues/22600
+    # Note that while this fix is already merged upstream and will be included in 0.14+,
+    # we can't fetchpatch the upstream commit as it won't cleanly apply on older versions,
+    # so we substitute the paths instead.
+    + lib.optionalString (stdenv.hostPlatform.isDarwin && lib.versionOlder finalAttrs.version "0.14") ''
+      substituteInPlace lib/std/zig/system/darwin.zig \
+        --replace-fail /usr/bin/xcrun xcrun \
+        --replace-fail /usr/bin/xcode-select xcode-select
+    '';
+
+  strictDeps = true;
 
   nativeBuildInputs = [
     cmake
@@ -59,81 +85,6 @@ stdenv.mkDerivation (finalAttrs: {
     # always link against static build of LLVM
     (lib.cmakeBool "ZIG_STATIC_LLVM" true)
   ];
-
-  outputs = [
-    "out"
-    "doc"
-  ];
-
-  strictDeps = true;
-
-  __structuredAttrs = true;
-
-  # On Darwin, Zig calls std.zig.system.darwin.macos.detect during the build,
-  # which parses /System/Library/CoreServices/SystemVersion.plist and
-  # /System/Library/CoreServices/.SystemVersionPlatform.plist to determine the
-  # OS version. This causes the build to fail during stage 3 with
-  # OSVersionDetectionFail when the sandbox is enabled.
-  __impureHostDeps = lib.optionals stdenv.hostPlatform.isDarwin [
-    "/System/Library/CoreServices/.SystemVersionPlatform.plist"
-  ];
-
-  preBuild = ''
-    export ZIG_GLOBAL_CACHE_DIR="$TMPDIR/zig-cache";
-  '';
-
-  postPatch =
-    # Zig's build looks at /usr/bin/env to find dynamic linking info. This doesn't
-    # work in Nix's sandbox. Use env from our coreutils instead.
-    ''
-      substituteInPlace lib/std/zig/system.zig \
-        --replace-fail "/usr/bin/env" "${lib.getExe' coreutils "env"}"
-    ''
-    # Zig tries to access xcrun and xcode-select at the absolute system path to query the macOS SDK
-    # location, which does not work in the darwin sandbox.
-    # Upstream issue: https://github.com/ziglang/zig/issues/22600
-    # Note that while this fix is already merged upstream and will be included in 0.14+,
-    # we can't fetchpatch the upstream commit as it won't cleanly apply on older versions,
-    # so we substitute the paths instead.
-    + lib.optionalString (stdenv.hostPlatform.isDarwin && lib.versionOlder finalAttrs.version "0.14") ''
-      substituteInPlace lib/std/zig/system/darwin.zig \
-        --replace-fail /usr/bin/xcrun xcrun \
-        --replace-fail /usr/bin/xcode-select xcode-select
-    '';
-
-  postBuild =
-    if lib.versionAtLeast finalAttrs.version "0.14" then
-      ''
-        stage3/bin/zig build langref --zig-lib-dir $(pwd)/stage3/lib/zig
-      ''
-    else
-      ''
-        stage3/bin/zig build langref
-      '';
-
-  postInstall = ''
-    install -Dm444 ../zig-out/doc/langref.html -t $doc/share/doc/zig-${finalAttrs.version}/html
-  '';
-
-  doInstallCheck = true;
-  installCheckPhase = ''
-    runHook preInstallCheck
-
-    $out/bin/zig test --cache-dir "$TMPDIR/zig-test-cache" -I $src/test $src/test/behavior.zig
-
-    runHook postInstallCheck
-  '';
-
-  passthru = import ./passthru.nix {
-    inherit
-      stdenv
-      callPackage
-      wrapCCWith
-      wrapBintoolsWith
-      overrideCC
-      ;
-    zig = finalAttrs.finalPackage;
-  };
 
   env = {
     # This zig_default_optimize_flag below is meant to avoid CPU feature impurity in
@@ -166,21 +117,70 @@ stdenv.mkDerivation (finalAttrs: {
         "-Drelease-safe=true";
   };
 
-  setupHook = ./setup-hook.sh;
+  preBuild = ''
+    export ZIG_GLOBAL_CACHE_DIR="$TMPDIR/zig-cache";
+  '';
 
+  postBuild =
+    if lib.versionAtLeast finalAttrs.version "0.14" then
+      ''
+        stage3/bin/zig build langref --zig-lib-dir $(pwd)/stage3/lib/zig
+      ''
+    else
+      ''
+        stage3/bin/zig build langref
+      '';
+
+  postInstall = ''
+    install -Dm444 ../zig-out/doc/langref.html -t $doc/share/doc/zig-${finalAttrs.version}/html
+  '';
+
+  doInstallCheck = true;
+
+  installCheckPhase = ''
+    runHook preInstallCheck
+
+    $out/bin/zig test --cache-dir "$TMPDIR/zig-test-cache" -I $src/test $src/test/behavior.zig
+
+    runHook postInstallCheck
+  '';
+
+  # On Darwin, Zig calls std.zig.system.darwin.macos.detect during the build,
+  # which parses /System/Library/CoreServices/SystemVersion.plist and
+  # /System/Library/CoreServices/.SystemVersionPlatform.plist to determine the
+  # OS version. This causes the build to fail during stage 3 with
+  # OSVersionDetectionFail when the sandbox is enabled.
+  __impureHostDeps = lib.optionals stdenv.hostPlatform.isDarwin [
+    "/System/Library/CoreServices/.SystemVersionPlatform.plist"
+  ];
+
+  __structuredAttrs = true;
   # while xcrun is already included in the darwin stdenv, Zig also needs
   # xcode-select (provided by xcbuild) for SDK detection
   propagatedNativeBuildInputs = lib.optionals stdenv.hostPlatform.isDarwin [ xcbuild ];
+  setupHook = ./setup-hook.sh;
+
+  passthru = import ./passthru.nix {
+    inherit
+      stdenv
+      callPackage
+      wrapCCWith
+      wrapBintoolsWith
+      overrideCC
+      ;
+
+    zig = finalAttrs.finalPackage;
+  };
 
   meta = {
     description = "General-purpose programming language and toolchain for maintaining robust, optimal, and reusable software";
     homepage = "https://ziglang.org/";
     changelog = "https://ziglang.org/download/${finalAttrs.version}/release-notes.html";
-    donationPage = "https://ziglang.org/zsf/";
     license = lib.licenses.mit;
     maintainers = [ ];
-    teams = [ lib.teams.zig ];
-    mainProgram = "zig";
     platforms = lib.platforms.unix;
+    mainProgram = "zig";
+    donationPage = "https://ziglang.org/zsf/";
+    teams = [ lib.teams.zig ];
   };
 })

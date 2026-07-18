@@ -7,7 +7,6 @@
 python3.pkgs.buildPythonApplication (finalAttrs: {
   pname = "twtxt";
   version = "1.3.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "buckket";
@@ -16,6 +15,7 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     sha256 = "sha256-CbFh1o2Ijinfb8X+h1GP3Tp+8D0D3/Czt/Uatd1B4cw=";
   };
 
+  nativeCheckInputs = with python3.pkgs; [ pytestCheckHook ];
   build-system = with python3.pkgs; [ setuptools ];
 
   dependencies = with python3.pkgs; [
@@ -26,14 +26,13 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     setuptools
   ];
 
-  nativeCheckInputs = with python3.pkgs; [ pytestCheckHook ];
-
-  pythonImportsCheck = [ "twtxt" ];
-
   disabledTests = [
     # Disable test using relative date and time
     "test_tweet_relative_datetime"
   ];
+
+  pyproject = true;
+  pythonImportsCheck = [ "twtxt" ];
 
   meta = {
     description = "Decentralised, minimalist microblogging service for hackers";

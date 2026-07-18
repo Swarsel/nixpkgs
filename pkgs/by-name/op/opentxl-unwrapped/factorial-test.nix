@@ -1,14 +1,15 @@
 {
   lib,
-  runCommand,
   opentxl,
+  runCommand,
 }:
 runCommand "opentxl-test"
   {
-    nativeBuildInputs = [ opentxl ];
     src = lib.sources.sourceByRegex ./. [
       ".*.txl"
     ];
+
+    nativeBuildInputs = [ opentxl ];
   }
   ''
     printf '10' > factorial.in

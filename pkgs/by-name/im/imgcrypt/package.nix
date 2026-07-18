@@ -1,7 +1,7 @@
 {
-  buildGoModule,
-  fetchFromGitHub,
   lib,
+  fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule (finalAttrs: {
@@ -17,6 +17,10 @@ buildGoModule (finalAttrs: {
 
   vendorHash = null;
 
+  postFixup = ''
+    mv $out/bin/ctr $out/bin/ctr-enc
+  '';
+
   ldflags = [
     "-X github.com/containerd/containerd/version.Version=${finalAttrs.version}"
   ];
@@ -26,15 +30,11 @@ buildGoModule (finalAttrs: {
     "cmd/ctr"
   ];
 
-  postFixup = ''
-    mv $out/bin/ctr $out/bin/ctr-enc
-  '';
-
   meta = {
     description = "Image encryption library and command line tool";
     homepage = "https://github.com/containerd/imgcrypt";
     license = lib.licenses.asl20;
-    platforms = lib.platforms.linux;
     maintainers = with lib.maintainers; [ mikroskeem ];
+    platforms = lib.platforms.linux;
   };
 })

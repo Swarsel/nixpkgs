@@ -2,15 +2,15 @@
   lib,
   stdenv,
   fetchFromGitHub,
+  boost,
   buildPackages,
   cmake,
-  enableTests ? true,
   gtest,
+  icu,
   jre,
   pkg-config,
-  boost,
-  icu,
   protobuf,
+  enableTests ? true,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -23,6 +23,11 @@ stdenv.mkDerivation (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-KWn58r2Dnh9DMwiESmrF/pN5LPuYe0G7z3TeM+Zp6ZA=";
   };
+
+  outputs = [
+    "out"
+    "dev"
+  ];
 
   patches = [
     # An earlier version of this patch was submitted upstream but did not get
@@ -37,10 +42,7 @@ stdenv.mkDerivation (finalAttrs: {
     ./boost-1.89.patch
   ];
 
-  outputs = [
-    "out"
-    "dev"
-  ];
+  strictDeps = true;
 
   nativeBuildInputs = [
     cmake
@@ -63,12 +65,6 @@ stdenv.mkDerivation (finalAttrs: {
     boost
   ];
 
-  cmakeDir = "../cpp";
-
-  doCheck = enableTests;
-
-  checkTarget = "tests";
-
   cmakeFlags = [
     (lib.cmakeFeature "CMAKE_CXX_FLAGS" "-Wno-error=deprecated-declarations")
   ]
@@ -81,13 +77,16 @@ stdenv.mkDerivation (finalAttrs: {
     (lib.cmakeFeature "PROTOC_BIN" (lib.getExe buildPackages.protobuf))
   ];
 
-  strictDeps = true;
+  doCheck = enableTests;
+  checkTarget = "tests";
+  cmakeDir = "../cpp";
 
   meta = {
-    changelog = "https://github.com/google/libphonenumber/blob/${finalAttrs.src.rev}/release_notes.txt";
     description = "Google's i18n library for parsing and using phone numbers";
     homepage = "https://github.com/google/libphonenumber";
+    changelog = "https://github.com/google/libphonenumber/blob/${finalAttrs.src.rev}/release_notes.txt";
     license = lib.licenses.asl20;
+
     maintainers = with lib.maintainers; [
       illegalprime
       wegank

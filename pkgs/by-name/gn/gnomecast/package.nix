@@ -1,11 +1,11 @@
 {
-  stdenv,
   lib,
-  python3Packages,
+  stdenv,
   fetchFromGitHub,
-  gtk3,
-  gobject-introspection,
   ffmpeg,
+  gobject-introspection,
+  gtk3,
+  python3Packages,
   wrapGAppsHook3,
 }:
 
@@ -13,7 +13,6 @@ with python3Packages;
 buildPythonApplication {
   pname = "gnomecast";
   version = "unstable-2022-04-23";
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "keredson";
@@ -22,7 +21,11 @@ buildPythonApplication {
     sha256 = "sha256-CJpbBuRzEjWb8hsh3HMW4bZA7nyDAwjrERCS5uGdwn8=";
   };
 
+  # NOTE: gdk-pixbuf setup hook does not run with strictDeps
+  # https://nixos.org/manual/nixpkgs/stable/#ssec-gnome-hooks-gobject-introspection
+  strictDeps = false;
   nativeBuildInputs = [ wrapGAppsHook3 ];
+
   propagatedBuildInputs = [
     pychromecast
     bottle
@@ -35,22 +38,20 @@ buildPythonApplication {
     gobject-introspection
   ];
 
-  # NOTE: gdk-pixbuf setup hook does not run with strictDeps
-  # https://nixos.org/manual/nixpkgs/stable/#ssec-gnome-hooks-gobject-introspection
-  strictDeps = false;
+  # no tests
+  doCheck = false;
 
   preFixup = ''
     gappsWrapperArgs+=(--prefix PATH : ${lib.makeBinPath [ ffmpeg ]})
   '';
 
-  # no tests
-  doCheck = false;
+  format = "setuptools";
 
   meta = {
     description = "Native Linux GUI for Chromecasting local files";
     homepage = "https://github.com/keredson/gnomecast";
     license = with lib.licenses; [ gpl3 ];
-    broken = stdenv.hostPlatform.isDarwin;
     mainProgram = "gnomecast";
+    broken = stdenv.hostPlatform.isDarwin;
   };
 }

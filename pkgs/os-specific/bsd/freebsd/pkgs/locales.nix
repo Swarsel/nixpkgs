@@ -1,16 +1,16 @@
 {
-  mkDerivation,
   lib,
-  symlinkJoin,
   bsdSetupHook,
   freebsdSetupHook,
-  makeMinimal,
-  install,
-  tsort,
-  lorder,
-  mandoc,
   groff,
+  install,
   localedef,
+  lorder,
+  makeMinimal,
+  mandoc,
+  mkDerivation,
+  symlinkJoin,
+  tsort,
   allLocales ? true,
   locales ? [ "en_US.UTF-8" ],
 }:
@@ -18,9 +18,6 @@ let
   build =
     name: needsLocaledef:
     mkDerivation {
-      path = "share/${name}";
-
-      extraPaths = lib.optional needsLocaledef "tools/tools/locale/etc/final-maps";
       nativeBuildInputs = [
         bsdSetupHook
         freebsdSetupHook
@@ -32,6 +29,9 @@ let
         groff
       ]
       ++ lib.optional needsLocaledef localedef;
+
+      extraPaths = lib.optional needsLocaledef "tools/tools/locale/etc/final-maps";
+      path = "share/${name}";
     };
   directories = {
     colldef = true;

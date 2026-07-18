@@ -1,8 +1,8 @@
 {
   lib,
-  buildGoModule,
-  fetchFromGitHub,
   stdenv,
+  fetchFromGitHub,
+  buildGoModule,
 }:
 buildGoModule {
   pname = "honeytrap";
@@ -16,17 +16,16 @@ buildGoModule {
   };
 
   vendorHash = "sha256-W8w66weYzCpZ+hmFyK2F6wdFz6aAZ9UxMhccNy1X1R8=";
-
   # Otherwise, will try to install a "scripts" binary; it's only used in
   # dockerize.sh, which we don't care about.
   subPackages = [ "." ];
 
   meta = {
     description = "Advanced Honeypot framework";
-    mainProgram = "honeytrap";
     homepage = "https://github.com/honeytrap/honeytrap";
     license = lib.licenses.asl20;
     maintainers = [ ];
+    mainProgram = "honeytrap";
     # Broken on darwin for Go toolchain > 1.22, with error:
     # 'link: golang.org/x/net/internal/socket: invalid reference to syscall.recvmsg'
     broken = stdenv.hostPlatform.isDarwin;

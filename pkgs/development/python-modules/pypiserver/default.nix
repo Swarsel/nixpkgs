@@ -1,8 +1,10 @@
 {
   lib,
+  fetchFromGitHub,
+  build,
   buildPythonPackage,
   distutils,
-  fetchFromGitHub,
+  importlib-resources,
   passlib,
   pip,
   pytestCheckHook,
@@ -11,14 +13,11 @@
   twine,
   watchdog,
   webtest,
-  build,
-  importlib-resources,
 }:
 
 buildPythonPackage rec {
   pname = "pypiserver";
   version = "2.4.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "pypiserver";
@@ -32,21 +31,6 @@ buildPythonPackage rec {
       --replace-fail '"setuptools-git>=0.3",' ""
   '';
 
-  build-system = [
-    setuptools
-  ];
-
-  dependencies = [
-    distutils
-    pip
-  ]
-  ++ lib.optionals (pythonOlder "3.12") [ importlib-resources ];
-
-  optional-dependencies = {
-    passlib = [ passlib ];
-    cache = [ watchdog ];
-  };
-
   nativeCheckInputs = [
     pip
     pytestCheckHook
@@ -57,16 +41,26 @@ buildPythonPackage rec {
   ]
   ++ lib.concatAttrValues optional-dependencies;
 
-  __darwinAllowLocalNetworking = true;
-
-  # Tests need these permissions in order to use the FSEvents API on macOS.
-  sandboxProfile = ''
-    (allow mach-lookup (global-name "com.apple.FSEvents"))
-  '';
-
   preCheck = ''
     export HOME=$TMPDIR
   '';
+
+  __darwinAllowLocalNetworking = true;
+
+  build-system = [
+    setuptools
+  ];
+
+  dependencies = [
+    distutils
+    pip
+  ]
+  ++ lib.optionals (pythonOlder "3.12") [ importlib-resources ];
+
+  disabledTestPaths = [
+    # Test requires docker service running
+    "docker/test_docker.py"
+  ];
 
   disabledTests = [
     # Fails to install the package
@@ -75,21 +69,29 @@ buildPythonPackage rec {
     "test_pip_install_open_succeeds"
   ];
 
-  disabledTestPaths = [
-    # Test requires docker service running
-    "docker/test_docker.py"
-  ];
+  optional-dependencies = {
+    cache = [ watchdog ];
+    passlib = [ passlib ];
+  };
 
+  pyproject = true;
   pythonImportsCheck = [ "pypiserver" ];
+
+  # Tests need these permissions in order to use the FSEvents API on macOS.
+  sandboxProfile = ''
+    (allow mach-lookup (global-name "com.apple.FSEvents"))
+  '';
 
   meta = {
     description = "Minimal PyPI server for use with pip/easy_install";
     homepage = "https://github.com/pypiserver/pypiserver";
     changelog = "https://github.com/pypiserver/pypiserver/releases/tag/v${version}";
+
     license = with lib.licenses; [
       mit
       zlib
     ];
+
     maintainers = with lib.maintainers; [ austinbutler ];
     mainProgram = "pypi-server";
   };

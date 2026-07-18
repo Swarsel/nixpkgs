@@ -18,9 +18,10 @@ buildGoModule (finalAttrs: {
   };
 
   vendorHash = "sha256-+JTGgiCLvJsju3gbqbid6TZCfSgjPySfeaEtiyuTlWM=";
+  doInstallCheck = true;
 
-  subPackages = [
-    "cmd/tkey-ssh-agent"
+  nativeInstallCheckInputs = [
+    versionCheckHook
   ];
 
   ldflags = [
@@ -28,14 +29,13 @@ buildGoModule (finalAttrs: {
     "-X main.version=${finalAttrs.version}"
   ];
 
+  subPackages = [
+    "cmd/tkey-ssh-agent"
+  ];
+
   passthru = {
     updateScript = gitUpdater { rev-prefix = "v"; };
   };
-
-  nativeInstallCheckInputs = [
-    versionCheckHook
-  ];
-  doInstallCheck = true;
 
   meta = {
     description = "SSH Agent for TKey, the flexible open hardware/software USB security key";
@@ -43,7 +43,7 @@ buildGoModule (finalAttrs: {
     changelog = "https://github.com/tillitis/tkey-ssh-agent/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.gpl2;
     maintainers = with lib.maintainers; [ bbigras ];
-    mainProgram = "tkey-ssh-agent";
     platforms = lib.platforms.all;
+    mainProgram = "tkey-ssh-agent";
   };
 })

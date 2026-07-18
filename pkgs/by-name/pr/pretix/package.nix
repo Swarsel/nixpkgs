@@ -1,32 +1,33 @@
 {
   lib,
   fetchFromGitHub,
-  fetchPypi,
   fetchNpmDeps,
+  fetchPypi,
+  gettext,
   libredirect,
+  nixosTests,
   nodejs,
   npmHooks,
-  python3,
-  gettext,
-  nixosTests,
   pretix,
+  python3,
   plugins ? [ ],
 }:
 
 let
   python = python3.override {
-    self = python;
     packageOverrides = self: super: {
       chardet = super.chardet_5;
       django = super.django_5;
 
       django-oauth-toolkit = super.django-oauth-toolkit.overridePythonAttrs (oldAttrs: rec {
         version = "2.3.0";
+
         src = fetchFromGitHub {
           inherit (oldAttrs.src) owner repo;
           tag = "v${version}";
           hash = "sha256-oGg5MD9p4PSUVkt5pGLwjAF4SHHf4Aqr+/3FsuFaybY=";
         };
+
         disabledTests = [
           # error message mismatch
           "test_validation_failed_message"
@@ -35,28 +36,29 @@ let
         ];
       });
 
+      pretix = self.toPythonModule pretix;
+      pretix-plugin-build = self.callPackage ./plugin-build.nix { };
+
       stripe = super.stripe.overridePythonAttrs rec {
         version = "7.9.0";
 
         src = fetchPypi {
-          pname = "stripe";
           inherit version;
           hash = "sha256-hOXkMINaSwzU/SpXzjhTJp0ds0OREc2mtu11LjSc9KE=";
+          pname = "stripe";
         };
 
         build-system = with self; [ setuptools ];
       };
-
-      pretix = self.toPythonModule pretix;
-      pretix-plugin-build = self.callPackage ./plugin-build.nix { };
     };
+
+    self = python;
   };
   pythonPackages = python.pkgs;
 in
 pythonPackages.buildPythonApplication (finalAttrs: {
   pname = "pretix";
   version = "2026.6.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "pretix";
@@ -86,11 +88,6 @@ pythonPackages.buildPythonApplication (finalAttrs: {
       --replace-fail "npm run build" "true"
   '';
 
-  npmDeps = fetchNpmDeps {
-    inherit (finalAttrs) src;
-    hash = "sha256-DJCvNcgDIY71Q9qg4Ng7SAM9i9wHhHOdJonpt5t/Xx8=";
-  };
-
   nativeBuildInputs = [
     nodejs
     npmHooks.npmConfigHook
@@ -99,6 +96,46 @@ pythonPackages.buildPythonApplication (finalAttrs: {
   preBuild = ''
     npm run build
   '';
+
+  nativeCheckInputs =
+    with pythonPackages;
+    [
+      libredirect.hook
+      pytestCheckHook
+      pytest-xdist
+      pytest-mock
+      pytest-django
+      pytest-asyncio
+      pytest-rerunfailures
+      freezegun
+      fakeredis
+      responses
+    ]
+    ++ lib.concatAttrValues finalAttrs.passthru.optional-dependencies;
+
+  preCheck = ''
+    export PYTHONPATH=$(pwd)/src:$PYTHONPATH
+    export DJANGO_SETTINGS_MODULE=tests.settings
+
+    echo "nameserver 127.0.0.1" > resolv.conf
+    export NIX_REDIRECTS=/etc/resolv.conf=$(realpath resolv.conf)
+  '';
+
+  postCheck = ''
+    unset NIX_REDIRECTS
+  '';
+
+  postInstall = ''
+    mkdir -p $out/bin
+    cp ./src/manage.py $out/${python.sitePackages}/pretix/manage.py
+    makeWrapper $out/${python.sitePackages}/pretix/manage.py $out/bin/pretix-manage \
+      --prefix PYTHONPATH : "$PYTHONPATH"
+
+    # Trim packages size
+    rm -rfv $out/${python.sitePackages}/pretix/static.dist/node_prefix
+  '';
+
+  __structuredAttrs = true;
 
   build-system = with pythonPackages; [
     gettext
@@ -189,11 +226,34 @@ pythonPackages.buildPythonApplication (finalAttrs: {
     ++ django.optional-dependencies.argon2
     ++ plugins;
 
+  disabledTestPaths = [
+    # too expensive
+    "src/tests/e2e"
+  ];
+
+  disabledTests = [
+    # unreliable around day changes
+    "test_order_create_invoice"
+  ];
+
+  dontStrip = true; # no binaries
+
+  npmDeps = fetchNpmDeps {
+    inherit (finalAttrs) src;
+    hash = "sha256-DJCvNcgDIY71Q9qg4Ng7SAM9i9wHhHOdJonpt5t/Xx8=";
+  };
+
   optional-dependencies = with pythonPackages; {
     memcached = [
       pylibmc
     ];
   };
+
+  pyproject = true;
+
+  pytestFlags = [
+    "--reruns=3"
+  ];
 
   pythonRelaxDeps = [
     "beautifulsoup4"
@@ -236,80 +296,27 @@ pythonPackages.buildPythonApplication (finalAttrs: {
     "vat_moss_forked" # we provide a patched vat-moss package
   ];
 
-  postInstall = ''
-    mkdir -p $out/bin
-    cp ./src/manage.py $out/${python.sitePackages}/pretix/manage.py
-    makeWrapper $out/${python.sitePackages}/pretix/manage.py $out/bin/pretix-manage \
-      --prefix PYTHONPATH : "$PYTHONPATH"
-
-    # Trim packages size
-    rm -rfv $out/${python.sitePackages}/pretix/static.dist/node_prefix
-  '';
-
-  dontStrip = true; # no binaries
-
-  nativeCheckInputs =
-    with pythonPackages;
-    [
-      libredirect.hook
-      pytestCheckHook
-      pytest-xdist
-      pytest-mock
-      pytest-django
-      pytest-asyncio
-      pytest-rerunfailures
-      freezegun
-      fakeredis
-      responses
-    ]
-    ++ lib.concatAttrValues finalAttrs.passthru.optional-dependencies;
-
-  pytestFlags = [
-    "--reruns=3"
-  ];
-
-  disabledTests = [
-    # unreliable around day changes
-    "test_order_create_invoice"
-  ];
-
-  disabledTestPaths = [
-    # too expensive
-    "src/tests/e2e"
-  ];
-
-  preCheck = ''
-    export PYTHONPATH=$(pwd)/src:$PYTHONPATH
-    export DJANGO_SETTINGS_MODULE=tests.settings
-
-    echo "nameserver 127.0.0.1" > resolv.conf
-    export NIX_REDIRECTS=/etc/resolv.conf=$(realpath resolv.conf)
-  '';
-
-  postCheck = ''
-    unset NIX_REDIRECTS
-  '';
-
   passthru = {
     inherit
       python
       ;
+
     plugins = lib.recurseIntoAttrs (
       lib.packagesFromDirectoryRecursive {
         inherit (pythonPackages) callPackage;
         directory = ./plugins;
       }
     );
+
     tests = {
       inherit (nixosTests) pretix;
     };
   };
 
-  __structuredAttrs = true;
-
   meta = {
     description = "Ticketing software that cares about your event—all the way";
     homepage = "https://github.com/pretix/pretix";
+
     license = with lib.licenses; [
       agpl3Only
       # 3rd party components below src/pretix/static
@@ -321,8 +328,9 @@ pythonPackages.buildPythonApplication (finalAttrs: {
       # all other files below src/pretix/static and src/pretix/locale and aux scripts
       asl20
     ];
+
     maintainers = with lib.maintainers; [ hexa ];
-    mainProgram = "pretix-manage";
     platforms = lib.platforms.linux;
+    mainProgram = "pretix-manage";
   };
 })

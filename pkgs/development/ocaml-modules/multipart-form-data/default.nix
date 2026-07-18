@@ -1,11 +1,11 @@
 {
   lib,
   fetchFromGitHub,
+  alcotest,
   buildDunePackage,
   lwt,
   lwt_ppx,
   stringext,
-  alcotest,
 }:
 
 buildDunePackage (finalAttrs: {
@@ -20,15 +20,15 @@ buildDunePackage (finalAttrs: {
   };
 
   buildInputs = [ lwt_ppx ];
+
   propagatedBuildInputs = [
     lwt
     stringext
   ];
 
-  duneVersion = "3";
-
   doCheck = true;
   checkInputs = [ alcotest ];
+  duneVersion = "3";
 
   meta = {
     description = "Parser for multipart/form-data (RFC2388)";

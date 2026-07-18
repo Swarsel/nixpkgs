@@ -1,8 +1,8 @@
 {
+  lib,
   cudaNamePrefix,
   cudnn-frontend,
   jq,
-  lib,
   writeShellApplication,
 }:
 let
@@ -10,14 +10,17 @@ let
 in
 writeShellApplication {
   derivationArgs = {
-    __structuredAttrs = true;
     strictDeps = true;
+    __structuredAttrs = true;
   };
+
   name = "${cudaNamePrefix}-tests-cudnn-frontend-tests";
+
   runtimeInputs = [
     cudnn-frontend.tests
     jq
   ];
+
   text = ''
     args=( "${getExe' cudnn-frontend.tests "tests"}" )
 

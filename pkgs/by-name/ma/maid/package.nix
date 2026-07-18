@@ -1,18 +1,16 @@
 {
+  lib,
   bundlerApp,
   bundlerUpdateScript,
   callPackage,
-  lib,
 }:
 
 bundlerApp rec {
   pname = "maid";
-  gemdir = ./.;
   exes = [ "maid" ];
-
-  passthru.updateScript = bundlerUpdateScript pname;
-
+  gemdir = ./.;
   passthru.tests.run = callPackage ./test.nix { };
+  passthru.updateScript = bundlerUpdateScript pname;
 
   meta = {
     description = "Rule-based file mover and cleaner in Ruby";

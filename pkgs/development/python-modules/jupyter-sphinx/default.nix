@@ -1,21 +1,20 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   hatchling,
   ipykernel,
   ipython,
   ipywidgets,
   nbconvert,
   nbformat,
-  sphinx,
   pytestCheckHook,
+  sphinx,
 }:
 
 buildPythonPackage rec {
   pname = "jupyter-sphinx";
   version = "0.5.3";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "jupyter";
@@ -35,27 +34,28 @@ buildPythonPackage rec {
     sphinx
   ];
 
-  pythonImportsCheck = [ "jupyter_sphinx" ];
-
   env.JUPYTER_PLATFORM_DIRS = 1;
-
   nativeCheckInputs = [ pytestCheckHook ];
-
-  disabledTests = [
-    # https://github.com/jupyter/jupyter-sphinx/issues/280
-    "test_builder_priority"
-  ];
-
-  pytestFlags = [
-    # https://github.com/jupyter/jupyter-sphinx/issues/287
-    "-Wignore::sphinx.deprecation.RemovedInSphinx11Warning"
-  ];
 
   preCheck = ''
     export HOME=$TMPDIR
   '';
 
   __darwinAllowLocalNetworking = true;
+
+  disabledTests = [
+    # https://github.com/jupyter/jupyter-sphinx/issues/280
+    "test_builder_priority"
+  ];
+
+  pyproject = true;
+
+  pytestFlags = [
+    # https://github.com/jupyter/jupyter-sphinx/issues/287
+    "-Wignore::sphinx.deprecation.RemovedInSphinx11Warning"
+  ];
+
+  pythonImportsCheck = [ "jupyter_sphinx" ];
 
   meta = {
     description = "Jupyter Sphinx Extensions";

@@ -1,10 +1,10 @@
 {
   lib,
+  fetchFromGitHub,
   buildDotnetModule,
   copyDesktopItems,
   coreutils,
   dotnetCorePackages,
-  fetchFromGitHub,
   gtk3,
   jq,
   libappindicator,
@@ -13,12 +13,12 @@
   libx11,
   libxrandr,
   makeDesktopItem,
+  nix-update-script,
   nixosTests,
   udev,
-  wrapGAppsHook3,
-  versionCheckHook,
-  nix-update-script,
   udevCheckHook,
+  versionCheckHook,
+  wrapGAppsHook3,
 }:
 
 buildDotnetModule (finalAttrs: {
@@ -32,21 +32,6 @@ buildDotnetModule (finalAttrs: {
     hash = "sha256-jL3d1DjY9n85BrO6ajZVvJMHmPYfxng4YE25s/9hfGA=";
   };
 
-  dotnet-sdk = dotnetCorePackages.sdk_8_0;
-
-  projectFile = [
-    "OpenTabletDriver.Console"
-    "OpenTabletDriver.Daemon"
-    "OpenTabletDriver.UX.Gtk"
-  ];
-  nugetDeps = ./deps.json;
-
-  executables = [
-    "OpenTabletDriver.Console"
-    "OpenTabletDriver.Daemon"
-    "OpenTabletDriver.UX.Gtk"
-  ];
-
   nativeBuildInputs = [
     copyDesktopItems
     wrapGAppsHook3
@@ -55,35 +40,8 @@ buildDotnetModule (finalAttrs: {
     jq
   ];
 
-  runtimeDeps = [
-    gtk3
-    libappindicator
-    libevdev
-    libnotify
-    libx11
-    libxrandr
-    udev
-  ];
-
   buildInputs = finalAttrs.runtimeDeps;
-
   env.OTD_CONFIGURATIONS = "${finalAttrs.src}/OpenTabletDriver.Configurations/Configurations";
-
-  doCheck = true;
-  testProjectFile = "OpenTabletDriver.Tests/OpenTabletDriver.Tests.csproj";
-
-  disabledTests = [
-    # Require networking & unused in Linux build
-    "OpenTabletDriver.Tests.UpdaterTests.CheckForUpdates_Returns_Update_When_Available"
-    "OpenTabletDriver.Tests.UpdaterTests.Install_Throws_UpdateAlreadyInstalledException_When_AlreadyInstalled"
-    "OpenTabletDriver.Tests.UpdaterTests.Install_DoesNotThrow_UpdateAlreadyInstalledException_When_PreviousInstallFailed"
-    "OpenTabletDriver.Tests.UpdaterTests.Install_Throws_UpdateInProgressException_When_AnotherUpdate_Is_InProgress"
-    "OpenTabletDriver.Tests.UpdaterTests.Install_Moves_UpdatedBinaries_To_BinDirectory"
-    "OpenTabletDriver.Tests.UpdaterTests.Install_Moves_Only_ToBeUpdated_Binaries"
-    "OpenTabletDriver.Tests.UpdaterTests.Install_Copies_AppDataFiles"
-    # Depends on processor load
-    "OpenTabletDriver.Tests.TimerTests.TimerAccuracy"
-  ];
 
   preBuild = ''
     patchShebangs generate-rules.sh
@@ -91,7 +49,12 @@ buildDotnetModule (finalAttrs: {
       --replace-fail '/usr/bin/env rm' '${lib.getExe' coreutils "rm"}'
   '';
 
-  dontWrapGApps = true;
+  doCheck = true;
+  doInstallCheck = true;
+
+  nativeInstallCheckInputs = [
+    versionCheckHook
+  ];
 
   postFixup = ''
     # Give a more "*nix" name to the binaries
@@ -112,41 +75,82 @@ buildDotnetModule (finalAttrs: {
 
   desktopItems = [
     (makeDesktopItem {
+      categories = [ "Utility" ];
+      comment = "Open source, cross-platform, user-mode tablet driver";
       desktopName = "OpenTabletDriver";
-      name = "OpenTabletDriver";
       exec = "otd-gui";
       icon = "otd";
-      comment = "Open source, cross-platform, user-mode tablet driver";
-      categories = [ "Utility" ];
+      name = "OpenTabletDriver";
     })
   ];
 
-  doInstallCheck = true;
-  nativeInstallCheckInputs = [
-    versionCheckHook
+  disabledTests = [
+    # Require networking & unused in Linux build
+    "OpenTabletDriver.Tests.UpdaterTests.CheckForUpdates_Returns_Update_When_Available"
+    "OpenTabletDriver.Tests.UpdaterTests.Install_Throws_UpdateAlreadyInstalledException_When_AlreadyInstalled"
+    "OpenTabletDriver.Tests.UpdaterTests.Install_DoesNotThrow_UpdateAlreadyInstalledException_When_PreviousInstallFailed"
+    "OpenTabletDriver.Tests.UpdaterTests.Install_Throws_UpdateInProgressException_When_AnotherUpdate_Is_InProgress"
+    "OpenTabletDriver.Tests.UpdaterTests.Install_Moves_UpdatedBinaries_To_BinDirectory"
+    "OpenTabletDriver.Tests.UpdaterTests.Install_Moves_Only_ToBeUpdated_Binaries"
+    "OpenTabletDriver.Tests.UpdaterTests.Install_Copies_AppDataFiles"
+    # Depends on processor load
+    "OpenTabletDriver.Tests.TimerTests.TimerAccuracy"
   ];
+
+  dontWrapGApps = true;
+  dotnet-sdk = dotnetCorePackages.sdk_8_0;
+
+  executables = [
+    "OpenTabletDriver.Console"
+    "OpenTabletDriver.Daemon"
+    "OpenTabletDriver.UX.Gtk"
+  ];
+
+  nugetDeps = ./deps.json;
+
+  projectFile = [
+    "OpenTabletDriver.Console"
+    "OpenTabletDriver.Daemon"
+    "OpenTabletDriver.UX.Gtk"
+  ];
+
+  runtimeDeps = [
+    gtk3
+    libappindicator
+    libevdev
+    libnotify
+    libx11
+    libxrandr
+    udev
+  ];
+
+  testProjectFile = "OpenTabletDriver.Tests/OpenTabletDriver.Tests.csproj";
   versionCheckProgram = "${placeholder "out"}/bin/otd-daemon";
 
   passthru = {
-    updateScript = nix-update-script { };
     tests = {
       otd-runs = nixosTests.opentabletdriver;
     };
+
+    updateScript = nix-update-script { };
   };
 
   meta = {
-    changelog = "https://github.com/OpenTabletDriver/OpenTabletDriver/releases/tag/v${finalAttrs.version}";
     description = "Open source, cross-platform, user-mode tablet driver";
     homepage = "https://github.com/OpenTabletDriver/OpenTabletDriver";
+    changelog = "https://github.com/OpenTabletDriver/OpenTabletDriver/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.lgpl3Plus;
-    mainProgram = "otd";
+
     maintainers = with lib.maintainers; [
       gepbird
       thiagokokada
     ];
+
     platforms = [
       "x86_64-linux"
       "aarch64-linux"
     ];
+
+    mainProgram = "otd";
   };
 })

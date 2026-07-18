@@ -4,9 +4,8 @@
 }:
 
 buildDunePackage {
-  pname = "ocsipersist";
   inherit (ocsipersist-lib) src version;
-
+  pname = "ocsipersist";
   propagatedBuildInputs = [ ocsipersist-lib ];
 
   meta = ocsipersist-lib.meta // {

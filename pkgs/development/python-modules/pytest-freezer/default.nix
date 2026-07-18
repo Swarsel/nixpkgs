@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   flit-core,
   freezegun,
   pytest,
@@ -11,7 +11,6 @@
 buildPythonPackage rec {
   pname = "pytest-freezer";
   version = "0.4.9";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "pytest-dev";
@@ -20,14 +19,11 @@ buildPythonPackage rec {
     hash = "sha256-WJGwkON/RAiUiGzNkeqjzch4CEr6mPXij5dqz1ncRXs=";
   };
 
-  build-system = [ flit-core ];
-
   buildInputs = [ pytest ];
-
-  dependencies = [ freezegun ];
-
   nativeCheckInputs = [ pytestCheckHook ];
-
+  build-system = [ flit-core ];
+  dependencies = [ freezegun ];
+  pyproject = true;
   pythonImportsCheck = [ "pytest_freezer" ];
 
   meta = {

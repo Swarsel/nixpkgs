@@ -2,30 +2,25 @@
   lib,
   stdenv,
   fetchFromGitHub,
+  check,
+  dbus,
+  gettext,
+  gitUpdater,
+  glib,
+  gtk3,
+  json-glib,
+  libiconv,
+  libintl,
   meson,
   ninja,
   pkg-config,
-  check,
-  dbus,
   xvfb-run,
-  glib,
-  gtk3,
-  gettext,
-  libiconv,
-  json-glib,
-  libintl,
   zathura,
-  gitUpdater,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
   pname = "girara";
   version = "2026.02.04";
-
-  outputs = [
-    "out"
-    "dev"
-  ];
 
   src = fetchFromGitHub {
     owner = "pwmt";
@@ -33,6 +28,11 @@ stdenv.mkDerivation (finalAttrs: {
     tag = finalAttrs.version;
     hash = "sha256-wTVgldfo8pWdY244nNldiogioijv/k32w1A8pEqOTRE=";
   };
+
+  outputs = [
+    "out"
+    "dev"
+  ];
 
   nativeBuildInputs = [
     meson
@@ -55,17 +55,17 @@ stdenv.mkDerivation (finalAttrs: {
     gtk3
   ];
 
-  nativeCheckInputs = [
-    xvfb-run
-  ];
-
-  doCheck = !stdenv.hostPlatform.isDarwin;
-
   mesonFlags = [
     "-Ddocs=disabled" # docs do not seem to be installed
     (lib.mesonEnable "tests" (
       (stdenv.buildPlatform.canExecute stdenv.hostPlatform) && (!stdenv.hostPlatform.isDarwin)
     ))
+  ];
+
+  doCheck = !stdenv.hostPlatform.isDarwin;
+
+  nativeCheckInputs = [
+    xvfb-run
   ];
 
   checkPhase = ''
@@ -76,21 +76,24 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   passthru = {
-    updateScript = gitUpdater { };
     tests = {
       inherit zathura;
     };
+
+    updateScript = gitUpdater { };
   };
 
   meta = {
-    homepage = "https://pwmt.org/projects/girara";
     description = "User interface library";
+
     longDescription = ''
       girara is a library that implements a GTK based VIM-like user interface
       that focuses on simplicity and minimalism.
     '';
+
+    homepage = "https://pwmt.org/projects/girara";
     license = lib.licenses.zlib;
-    platforms = lib.platforms.linux ++ lib.platforms.darwin;
     maintainers = [ ];
+    platforms = lib.platforms.linux ++ lib.platforms.darwin;
   };
 })

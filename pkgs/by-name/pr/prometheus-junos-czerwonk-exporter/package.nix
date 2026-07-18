@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule rec {
@@ -19,9 +19,9 @@ buildGoModule rec {
 
   meta = {
     description = "Exporter for metrics from devices running JunOS";
-    mainProgram = "junos_exporter";
     homepage = "https://github.com/czerwonk/junos_exporter";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ johannwagner ];
+    mainProgram = "junos_exporter";
   };
 }

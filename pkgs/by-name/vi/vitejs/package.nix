@@ -2,11 +2,11 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  pnpm_10,
-  nodejs_24,
-  makeWrapper,
-  pnpmConfigHook,
   fetchPnpmDeps,
+  makeWrapper,
+  nodejs_24,
+  pnpmConfigHook,
+  pnpm_10,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -26,18 +26,6 @@ stdenv.mkDerivation (finalAttrs: {
     pnpmConfigHook
     pnpm_10
   ];
-
-  pnpmWorkspaces = [ "vite" ];
-  pnpmDeps = fetchPnpmDeps {
-    inherit (finalAttrs)
-      pname
-      version
-      src
-      pnpmWorkspaces
-      ;
-    fetcherVersion = 3;
-    hash = "sha256-02s37dcEvxFlaGO+RNxTMPuTV0/sx7hiX1Nzc3A/qro=";
-  };
 
   buildPhase = ''
     runHook preBuild
@@ -59,6 +47,20 @@ stdenv.mkDerivation (finalAttrs: {
 
     runHook postInstall
   '';
+
+  pnpmDeps = fetchPnpmDeps {
+    inherit (finalAttrs)
+      pname
+      version
+      src
+      pnpmWorkspaces
+      ;
+
+    fetcherVersion = 3;
+    hash = "sha256-02s37dcEvxFlaGO+RNxTMPuTV0/sx7hiX1Nzc3A/qro=";
+  };
+
+  pnpmWorkspaces = [ "vite" ];
 
   meta = {
     description = "Frontend tooling for NodeJS";

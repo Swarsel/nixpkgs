@@ -10,15 +10,13 @@ stdenv.mkDerivation (finalAttrs: {
   version = "1.1.1";
 
   src = fetchFromGitLab {
-    domain = "gitlab.linphone.org";
     owner = "public";
-    group = "BC";
     repo = "bcg729";
     tag = finalAttrs.version;
     sha256 = "1hal6b3w6f8y5r1wa0xzj8sj2jjndypaxyw62q50p63garp2h739";
+    domain = "gitlab.linphone.org";
+    group = "BC";
   };
-
-  nativeBuildInputs = [ cmake ];
 
   postPatch = ''
     substituteInPlace CMakeLists.txt \
@@ -28,6 +26,8 @@ stdenv.mkDerivation (finalAttrs: {
     substituteInPlace CMakeLists.txt \
       --replace-fail "cmake_minimum_required(VERSION 3.1)" "cmake_minimum_required(VERSION 3.10)"
   '';
+
+  nativeBuildInputs = [ cmake ];
 
   meta = {
     description = "Opensource implementation of both encoder and decoder of the ITU G729 Annex A/B speech codec";

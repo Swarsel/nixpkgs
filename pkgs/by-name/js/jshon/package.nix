@@ -1,6 +1,6 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
   fetchpatch,
   jansson,
@@ -17,15 +17,11 @@ stdenv.mkDerivation {
     sha256 = "1x4zfmsjq0l2y994bxkhx3mn5vzjxxr39iib213zjchi9h6yxvnc";
   };
 
-  buildInputs = [ jansson ];
-
-  env.NIX_CFLAGS_COMPILE = "-Wno-error=strict-prototypes";
-
   patches = [
     (fetchpatch {
+      sha256 = "0kwbn3xb37iqb5y1n8vhzjiwlbg5jmki3f38pzakc24kzc5ksmaa";
       # https://github.com/keenerd/jshon/pull/62
       url = "https://github.com/keenerd/jshon/commit/96b4e9dbf578be7b31f29740b608aa7b34df3318.patch";
-      sha256 = "0kwbn3xb37iqb5y1n8vhzjiwlbg5jmki3f38pzakc24kzc5ksmaa";
     })
   ];
 
@@ -33,16 +29,19 @@ stdenv.mkDerivation {
     substituteInPlace Makefile --replace "/usr/" "/"
   '';
 
+  buildInputs = [ jansson ];
+  env.NIX_CFLAGS_COMPILE = "-Wno-error=strict-prototypes";
+
   preInstall = ''
     export DESTDIR=$out
   '';
 
   meta = {
-    homepage = "http://kmkeen.com/jshon";
     description = "JSON parser designed for maximum convenience within the shell";
-    mainProgram = "jshon";
+    homepage = "http://kmkeen.com/jshon";
     license = lib.licenses.free;
-    platforms = lib.platforms.all;
     maintainers = with lib.maintainers; [ rushmorem ];
+    platforms = lib.platforms.all;
+    mainProgram = "jshon";
   };
 }

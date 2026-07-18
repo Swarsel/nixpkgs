@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule rec {
@@ -19,9 +19,9 @@ buildGoModule rec {
 
   meta = {
     description = "Prometheus exporter for V2Ray daemon";
-    mainProgram = "v2ray-exporter";
     homepage = "https://github.com/wi1dcard/v2ray-exporter";
     license = lib.licenses.mit;
     maintainers = [ ];
+    mainProgram = "v2ray-exporter";
   };
 }

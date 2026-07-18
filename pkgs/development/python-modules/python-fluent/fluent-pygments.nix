@@ -1,13 +1,12 @@
 {
-  buildPythonPackage,
-  fetchFromGitHub,
   lib,
-  pytestCheckHook,
-  setuptools,
-
+  fetchFromGitHub,
+  buildPythonPackage,
   # dependencies
   fluent-syntax,
   pygments,
+  pytestCheckHook,
+  setuptools,
   six,
 }:
 
@@ -22,13 +21,10 @@ let
   };
 in
 buildPythonPackage {
-  pname = "fluent-pygments";
   inherit version;
-  pyproject = true;
-
   inherit src;
-  sourceRoot = "${src.name}/fluent.pygments";
-
+  pname = "fluent-pygments";
+  nativeCheckInputs = [ pytestCheckHook ];
   build-system = [ setuptools ];
 
   dependencies = [
@@ -37,14 +33,14 @@ buildPythonPackage {
     six
   ];
 
-  nativeCheckInputs = [ pytestCheckHook ];
-
+  pyproject = true;
   pythonImportsCheck = [ "fluent.pygments" ];
+  sourceRoot = "${src.name}/fluent.pygments";
 
   meta = {
-    changelog = "https://github.com/projectfluent/python-fluent/blob/main/fluent.pygments/CHANGELOG.rst";
     description = "Plugin for pygments to add syntax highlighting of Fluent files in Sphinx";
     homepage = "https://projectfluent.org/python-fluent/fluent.pygments/${version}";
+    changelog = "https://github.com/projectfluent/python-fluent/blob/main/fluent.pygments/CHANGELOG.rst";
     license = lib.licenses.asl20;
     maintainers = with lib.maintainers; [ getpsyched ];
   };

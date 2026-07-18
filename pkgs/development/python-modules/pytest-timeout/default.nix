@@ -1,17 +1,16 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
+  buildPythonPackage,
+  pexpect,
   pytest,
   pytestCheckHook,
-  pexpect,
+  setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "pytest-timeout";
   version = "2.4.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "pytest-dev";
@@ -20,8 +19,6 @@ buildPythonPackage rec {
     hash = "sha256-NGTy3Hua6yEMWXQDJQO2Z5DD3clXTZXEH6DNQBMSGtQ=";
   };
 
-  build-system = [ setuptools ];
-
   buildInputs = [ pytest ];
 
   nativeCheckInputs = [
@@ -29,6 +26,8 @@ buildPythonPackage rec {
     pexpect
   ];
 
+  build-system = [ setuptools ];
+  pyproject = true;
   pythonImportsCheck = [ "pytest_timeout" ];
 
   meta = {

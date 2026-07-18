@@ -1,15 +1,15 @@
 {
+  lib,
   stdenv,
   fetchFromGitHub,
-  lib,
-  xdg-desktop-portal,
-  ninja,
-  meson,
-  pkg-config,
   inih,
-  systemdLibs,
-  scdoc,
+  meson,
+  ninja,
   nix-update-script,
+  pkg-config,
+  scdoc,
+  systemdLibs,
+  xdg-desktop-portal,
 }:
 stdenv.mkDerivation (finalAttrs: {
   pname = "xdg-desktop-portal-termfilechooser";
@@ -36,18 +36,19 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   mesonFlags = [ "-Dsd-bus-provider=libsystemd" ];
-
   passthru.updateScript = nix-update-script { };
 
   meta = {
     description = "xdg-desktop-portal backend for choosing files with your favorite file chooser";
     homepage = "https://github.com/hunkyburrito/xdg-desktop-portal-termfilechooser";
     license = lib.licenses.mit;
-    platforms = lib.platforms.linux;
+
     maintainers = with lib.maintainers; [
       body20002
       ltrump
     ];
+
+    platforms = lib.platforms.linux;
     mainProgram = "xdg-desktop-portal-termfilechooser";
   };
 })

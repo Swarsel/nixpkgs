@@ -2,22 +2,22 @@
   lib,
   stdenv,
   fetchurl,
-  meson,
-  ninja,
-  pkg-config,
-  vala,
-  glib,
-  gtk4,
-  libadwaita,
-  libgee,
-  pango,
-  gnome,
   desktop-file-utils,
   gettext,
+  glib,
+  gnome,
+  gtk4,
   itstool,
+  libadwaita,
+  libgee,
   libxml2,
-  wrapGAppsHook4,
+  meson,
+  ninja,
+  pango,
+  pkg-config,
   python3,
+  vala,
+  wrapGAppsHook4,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -57,12 +57,12 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   meta = {
+    description = "Puzzle game, previously known as Same GNOME";
     homepage = "https://gitlab.gnome.org/GNOME/swell-foop";
     changelog = "https://gitlab.gnome.org/GNOME/swell-foop/-/tree/${finalAttrs.version}?ref_type=tags";
-    description = "Puzzle game, previously known as Same GNOME";
-    mainProgram = "swell-foop";
-    teams = [ lib.teams.gnome ];
     license = lib.licenses.gpl2Plus;
     platforms = lib.platforms.linux;
+    mainProgram = "swell-foop";
+    teams = [ lib.teams.gnome ];
   };
 })

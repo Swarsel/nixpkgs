@@ -1,9 +1,9 @@
 {
   lib,
+  fetchFromGitHub,
   aiohttp,
   aioresponses,
   buildPythonPackage,
-  fetchFromGitHub,
   mashumaro,
   pytest-aiohttp,
   pytest-cov-stub,
@@ -14,7 +14,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "aioopenexchangerates";
   version = "0.7.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "MartinHjelmare";
@@ -23,7 +22,12 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-pNjpeoXBlz2bdUeEsOlW7RJmbKTZGuBVTLHymGHwAiY=";
   };
 
-  pythonRelaxDeps = [ "pydantic" ];
+  nativeCheckInputs = [
+    aioresponses
+    pytest-aiohttp
+    pytest-cov-stub
+    pytestCheckHook
+  ];
 
   build-system = [ setuptools ];
 
@@ -32,14 +36,9 @@ buildPythonPackage (finalAttrs: {
     mashumaro
   ];
 
-  nativeCheckInputs = [
-    aioresponses
-    pytest-aiohttp
-    pytest-cov-stub
-    pytestCheckHook
-  ];
-
+  pyproject = true;
   pythonImportsCheck = [ "aioopenexchangerates" ];
+  pythonRelaxDeps = [ "pydantic" ];
 
   meta = {
     description = "Library for the Openexchangerates API";

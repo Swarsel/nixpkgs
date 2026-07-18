@@ -1,20 +1,22 @@
 {
   lib,
   fetchFromGitHub,
-  buildPythonPackage,
-  versionCheckHook,
-
-  # build-system
-  setuptools,
-
   # dependencies
   aiohttp,
   appdirs,
+  # tests
+  beautifulsoup4,
+  buildPythonPackage,
   defusedxml,
   devpi-common,
+  # passthru
+  devpi-server,
   execnet,
+  gitUpdater,
   httpx,
   itsdangerous,
+  nginx,
+  nixosTests,
   packaging,
   packaging-legacy,
   passlib,
@@ -22,28 +24,21 @@
   pluggy,
   py,
   pyramid,
-  repoze-lru,
-  strictyaml,
-  waitress,
-
-  # tests
-  beautifulsoup4,
-  nginx,
   pytest-asyncio,
   pytestCheckHook,
-  webtest,
-
-  # passthru
-  devpi-server,
-  gitUpdater,
-  nixosTests,
+  repoze-lru,
+  # build-system
+  setuptools,
+  strictyaml,
   testers,
+  versionCheckHook,
+  waitress,
+  webtest,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "devpi-server";
   version = "6.19.2";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "devpi";
@@ -57,7 +52,24 @@ buildPythonPackage (finalAttrs: {
       --replace-fail '"setuptools_changelog_shortener",' ""
   '';
 
-  sourceRoot = "${finalAttrs.src.name}/server";
+  nativeCheckInputs = [
+    beautifulsoup4
+    nginx
+    pytest-asyncio
+    pytestCheckHook
+    webtest
+  ];
+
+  # root_passwd_hash tries to write to store
+  # TestMirrorIndexThings tries to write to /var through ngnix
+  # nginx tests try to write to /var
+  preCheck = ''
+    export PATH=$PATH:$out/bin
+    export HOME=$TMPDIR
+  '';
+
+  nativeInstallCheckInputs = [ versionCheckHook ];
+  __darwinAllowLocalNetworking = true;
 
   build-system = [
     setuptools
@@ -85,49 +97,38 @@ buildPythonPackage (finalAttrs: {
   ]
   ++ passlib.optional-dependencies.argon2;
 
-  nativeInstallCheckInputs = [ versionCheckHook ];
-
-  nativeCheckInputs = [
-    beautifulsoup4
-    nginx
-    pytest-asyncio
-    pytestCheckHook
-    webtest
-  ];
-
-  # root_passwd_hash tries to write to store
-  # TestMirrorIndexThings tries to write to /var through ngnix
-  # nginx tests try to write to /var
-  preCheck = ''
-    export PATH=$PATH:$out/bin
-    export HOME=$TMPDIR
-  '';
-  pytestFlags = [
-    "-rfsxX"
-  ];
-  enabledTestPaths = [
-    "./test_devpi_server"
-  ];
   disabledTestPaths = [
     "test_devpi_server/test_nginx_replica.py"
     "test_devpi_server/test_streaming_nginx.py"
     "test_devpi_server/test_streaming_replica_nginx.py"
   ];
+
   disabledTests = [
     "test_fetch_later_deleted" # incompatible with newer pytest
   ];
 
-  __darwinAllowLocalNetworking = true;
+  enabledTestPaths = [
+    "./test_devpi_server"
+  ];
+
+  pyproject = true;
+
+  pytestFlags = [
+    "-rfsxX"
+  ];
 
   pythonImportsCheck = [
     "devpi_server"
   ];
 
+  sourceRoot = "${finalAttrs.src.name}/server";
+
   passthru.tests = {
-    devpi-server = nixosTests.devpi-server;
     version = testers.testVersion {
       package = devpi-server;
     };
+
+    devpi-server = nixosTests.devpi-server;
   };
 
   # devpi uses a monorepo for server, common, client and web
@@ -136,14 +137,16 @@ buildPythonPackage (finalAttrs: {
   };
 
   meta = {
-    homepage = "http://doc.devpi.net";
     description = "Github-style pypi index server and packaging meta tool";
+    homepage = "http://doc.devpi.net";
     changelog = "https://github.com/devpi/devpi/blob/${finalAttrs.src.tag}/server/CHANGELOG";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       confus
       makefu
     ];
+
     mainProgram = "devpi-server";
   };
 })

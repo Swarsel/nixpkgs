@@ -18,6 +18,7 @@
 let
   testNltkData = symlinkJoin {
     name = "nltk-test-data";
+
     paths = [
       nltk-data.punkt
       nltk-data.stopwords
@@ -27,19 +28,13 @@ in
 buildPythonPackage rec {
   pname = "dataprep-ml";
   version = "25.2.3.0";
-  pyproject = true;
 
   # using PyPI as github repo does not contain tags or release branches
   src = fetchPypi {
-    pname = "dataprep_ml";
     inherit version;
     hash = "sha256-pULqrPTxGtBLRsKCpSsP3a/QA0O5eXOP6BSI5TbCQWY=";
+    pname = "dataprep_ml";
   };
-
-  pythonRelaxDeps = [
-    "pydantic"
-    "numpy"
-  ];
 
   nativeBuildInputs = [
     poetry-core
@@ -57,13 +52,14 @@ buildPythonPackage rec {
     type-infer
   ];
 
-  # PyPI tarball has no tests
-  doCheck = false;
-
   # Package import requires NLTK data to be downloaded
   # It is the only way to set NLTK_DATA environment variable,
   # so that it is available in pythonImportsCheck
   env.NLTK_DATA = testNltkData;
+  # PyPI tarball has no tests
+  doCheck = false;
+  pyproject = true;
+
   pythonImportsCheck = [
     "dataprep_ml"
     "dataprep_ml.cleaners"
@@ -72,6 +68,11 @@ buildPythonPackage rec {
     "dataprep_ml.insights"
     "dataprep_ml.recommenders"
     "dataprep_ml.splitters"
+  ];
+
+  pythonRelaxDeps = [
+    "pydantic"
+    "numpy"
   ];
 
   meta = {

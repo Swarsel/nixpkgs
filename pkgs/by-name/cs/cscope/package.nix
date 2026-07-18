@@ -1,10 +1,10 @@
 {
-  fetchurl,
   lib,
   stdenv,
+  fetchurl,
+  emacs,
   ncurses,
   emacsSupport ? true,
-  emacs,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -16,10 +16,9 @@ stdenv.mkDerivation (finalAttrs: {
     sha256 = "0ngiv4aj3rr35k3q3wjx0y19gh7i1ydqa0cqip6sjwd8fph5ll65";
   };
 
-  configureFlags = [ "--with-ncurses=${ncurses.dev}" ];
-
-  buildInputs = [ ncurses ];
   nativeBuildInputs = lib.optional emacsSupport emacs;
+  buildInputs = [ ncurses ];
+  configureFlags = [ "--with-ncurses=${ncurses.dev}" ];
 
   postInstall = lib.optionalString emacsSupport ''
     cd "contrib/xcscope"
@@ -48,12 +47,9 @@ stdenv.mkDerivation (finalAttrs: {
       used to manage projects involving 20 million lines of code!
     '';
 
-    license = lib.licenses.bsd3;
-
     homepage = "https://cscope.sourceforge.net/";
-
+    license = lib.licenses.bsd3;
     maintainers = [ ];
-
     platforms = lib.platforms.unix;
   };
 })

@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule (finalAttrs: {
@@ -16,11 +16,6 @@ buildGoModule (finalAttrs: {
   };
 
   vendorHash = "sha256-QowoS+qQy/AhhyW8F6OWYaMQ4BubszIPom1wt3Tzdxc=";
-
-  subPackages = [
-    "."
-  ];
-
   env.CGO_ENABLED = 0;
 
   # We do not supply the build time as the build wouldn't be reproducible otherwise.
@@ -30,12 +25,16 @@ buildGoModule (finalAttrs: {
     "-X=main.appVersion=v${finalAttrs.version}"
   ];
 
+  subPackages = [
+    "."
+  ];
+
   meta = {
-    homepage = "https://github.com/decke/smtprelay";
     description = "Simple Golang SMTP relay/proxy server";
-    mainProgram = "smtprelay";
+    homepage = "https://github.com/decke/smtprelay";
     changelog = "https://github.com/decke/smtprelay/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ juliusrickert ];
+    mainProgram = "smtprelay";
   };
 })

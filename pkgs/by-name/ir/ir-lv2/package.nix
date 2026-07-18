@@ -4,9 +4,9 @@
   fetchurl,
   fftw,
   gtk2,
-  lv2,
   libsamplerate,
   libsndfile,
+  lv2,
   pkg-config,
   zita-convolver,
 }:
@@ -21,6 +21,8 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-lTzj4tf7jNOKnvcZzEbzPqg4aPgXcbCVwIHoV+5G+hU=";
   };
 
+  nativeBuildInputs = [ pkg-config ];
+
   buildInputs = [
     fftw
     gtk2
@@ -30,10 +32,7 @@ stdenv.mkDerivation (finalAttrs: {
     zita-convolver
   ];
 
-  nativeBuildInputs = [ pkg-config ];
-
   env.NIX_CFLAGS_COMPILE = "-fpermissive";
-
   postBuild = "make convert4chan";
 
   installPhase = ''
@@ -44,8 +43,8 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   meta = {
-    homepage = "http://factorial.hu/plugins/lv2/ir";
     description = "Low-latency, realtime, high performance signal convolver especially for creating reverb effects.";
+    homepage = "http://factorial.hu/plugins/lv2/ir";
     license = lib.licenses.gpl2;
     maintainers = [ lib.maintainers.magnetophon ];
     platforms = lib.platforms.linux;

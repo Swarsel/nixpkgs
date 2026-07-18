@@ -1,49 +1,51 @@
 {
-  buildPythonPackage,
   lib,
+  buildPythonPackage,
   callPackage,
-  pyenchant,
-  scikit-learn,
-  pypillowfight,
-  pycountry,
-  whoosh,
-  termcolor,
-  pygobject3,
-  pyocr,
-  natsort,
-  libinsane,
   distro,
+  gettext,
+  gtk3,
+  libinsane,
+  libreoffice,
+  natsort,
   openpaperwork-core,
   openpaperwork-gtk,
-  psutil,
-  gtk3,
   poppler_gi,
-  gettext,
-  which,
-  shared-mime-info,
-  libreoffice,
-  unittestCheckHook,
+  psutil,
+  pycountry,
+  pyenchant,
+  pygobject3,
+  pyocr,
+  pypillowfight,
+  scikit-learn,
   setuptools-scm,
+  shared-mime-info,
+  termcolor,
+  unittestCheckHook,
+  which,
+  whoosh,
 }:
 
 buildPythonPackage (finalAttrs: {
-  pname = "paperwork-backend";
   inherit (callPackage ./src.nix { }) version src;
-  pyproject = true;
-
-  sourceRoot = "${finalAttrs.src.name}/paperwork-backend";
+  pname = "paperwork-backend";
 
   patches = [
     # disables a flaky test https://gitlab.gnome.org/World/OpenPaperwork/paperwork/-/issues/1035#note_1493700
     ./flaky_test.patch
   ];
 
-  patchFlags = [ "-p2" ];
-
   postPatch = ''
     chmod a+w -R ..
     patchShebangs ../tools
   '';
+
+  nativeBuildInputs = [
+    gettext
+    shared-mime-info
+    which
+    setuptools-scm
+  ];
 
   propagatedBuildInputs = [
     distro
@@ -62,13 +64,6 @@ buildPythonPackage (finalAttrs: {
     whoosh
   ];
 
-  nativeBuildInputs = [
-    gettext
-    shared-mime-info
-    which
-    setuptools-scm
-  ];
-
   preBuild = ''
     make l10n_compile
   '';
@@ -84,10 +79,15 @@ buildPythonPackage (finalAttrs: {
     export HOME=$TMPDIR
   '';
 
+  patchFlags = [ "-p2" ];
+  pyproject = true;
+  sourceRoot = "${finalAttrs.src.name}/paperwork-backend";
+
   meta = {
     description = "Backend part of Paperwork (Python API, no UI)";
     homepage = "https://openpaper.work";
     license = lib.licenses.gpl3Plus;
+
     maintainers = with lib.maintainers; [
       aszlig
       symphorien

@@ -1,9 +1,9 @@
 {
   lib,
-  stdenvNoCC,
-  appimageTools,
   fetchurl,
   _7zz,
+  appimageTools,
+  stdenvNoCC,
 }:
 
 let
@@ -13,18 +13,19 @@ let
   throwSystem = throw "Unsupported system: ${stdenvNoCC.hostPlatform.system}";
 
   srcs = {
-    x86_64-linux = fetchurl {
-      url = "https://hamrs-dist.s3.amazonaws.com/hamrs-pro-${version}-linux-x86_64.AppImage";
-      hash = "sha256-JcckonAYM4HE8yTvzJHJ3pX+H4jOPaUQXaYmWUAg8AY=";
+    aarch64-darwin = fetchurl {
+      hash = "sha256-/9UamFxEJ9NkswgsI8mcfher9nFpVt5Vk0QYFpRXRB4=";
+      url = "https://hamrs-dist.s3.amazonaws.com/hamrs-pro-${version}-mac-arm64.dmg";
     };
 
     aarch64-linux = fetchurl {
-      url = "https://hamrs-dist.s3.amazonaws.com/hamrs-pro-${version}-linux-arm64.AppImage";
       hash = "sha256-5WUQBFyvMHZyyIH2aImCRUYdzou8BadaH/M4+5DeQdo=";
+      url = "https://hamrs-dist.s3.amazonaws.com/hamrs-pro-${version}-linux-arm64.AppImage";
     };
-    aarch64-darwin = fetchurl {
-      url = "https://hamrs-dist.s3.amazonaws.com/hamrs-pro-${version}-mac-arm64.dmg";
-      hash = "sha256-/9UamFxEJ9NkswgsI8mcfher9nFpVt5Vk0QYFpRXRB4=";
+
+    x86_64-linux = fetchurl {
+      hash = "sha256-JcckonAYM4HE8yTvzJHJ3pX+H4jOPaUQXaYmWUAg8AY=";
+      url = "https://hamrs-dist.s3.amazonaws.com/hamrs-pro-${version}-linux-x86_64.AppImage";
     };
   };
 
@@ -33,14 +34,16 @@ let
   passthru.updateScript = ./update.sh;
 
   meta = {
-    homepage = "https://hamrs.app/";
     description = "Simple, portable logger tailored for activities like Parks on the Air, Field Day, and more";
-    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
+    homepage = "https://hamrs.app/";
     license = lib.licenses.unfree;
+    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
+
     maintainers = with lib.maintainers; [
       ethancedwards8
       jhollowe
     ];
+
     platforms = [
       "x86_64-linux"
       "aarch64-linux"
@@ -80,8 +83,6 @@ let
 
     nativeBuildInputs = [ _7zz ];
 
-    sourceRoot = ".";
-
     installPhase = ''
       runHook preInstall
 
@@ -90,6 +91,8 @@ let
 
       runHook postInstall
     '';
+
+    sourceRoot = ".";
   };
 in
 if stdenvNoCC.hostPlatform.isDarwin then darwin else linux

@@ -1,16 +1,16 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
-  wayland-scanner,
-  wayland,
-  pango,
+  cairo,
   glib,
   harfbuzz,
-  cairo,
-  pkg-config,
   libxkbcommon,
+  pango,
+  pkg-config,
   scdoc,
+  wayland,
+  wayland-scanner,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -24,11 +24,14 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-aQA5xY3jDSLsANxNX3mGu+LElyOn6lPjxEaqS1v2JaI=";
   };
 
+  strictDeps = true;
+
   nativeBuildInputs = [
     pkg-config
     scdoc
     wayland-scanner
   ];
+
   buildInputs = [
     cairo
     glib
@@ -37,16 +40,15 @@ stdenv.mkDerivation (finalAttrs: {
     pango
     wayland
   ];
+
   installFlags = [ "PREFIX=$(out)" ];
 
-  strictDeps = true;
-
   meta = {
-    homepage = "https://github.com/jjsullivan5196/wvkbd";
     description = "On-screen keyboard for wlroots";
-    platforms = lib.platforms.linux;
+    homepage = "https://github.com/jjsullivan5196/wvkbd";
     license = lib.licenses.gpl3Plus;
-    mainProgram = "wvkbd-mobintl";
     maintainers = with lib.maintainers; [ colinsane ];
+    platforms = lib.platforms.linux;
+    mainProgram = "wvkbd-mobintl";
   };
 })

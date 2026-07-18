@@ -2,16 +2,16 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  makeWrapper,
-  pkg-config,
-  which,
   bison,
   gnuplot,
   libxls,
   libxlsxwriter,
   libxml2,
   libzip,
+  makeWrapper,
   ncurses,
+  pkg-config,
+  which,
   xlsSupport ? false,
 }:
 
@@ -25,8 +25,6 @@ stdenv.mkDerivation (finalAttrs: {
     rev = "v${finalAttrs.version}";
     sha256 = "sha256-V2XwzZwn+plMxQuTCYxbeTaqdud69z77oMDDDi+7Jw0=";
   };
-
-  sourceRoot = "${finalAttrs.src.name}/src";
 
   nativeBuildInputs = [
     makeWrapper
@@ -47,20 +45,20 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   makeFlags = [ "prefix=${placeholder "out"}" ];
-
-  # https://github.com/andmarti1424/sc-im/issues/884
-  hardeningDisable = [ "fortify" ];
-
   env.NIX_CFLAGS_COMPILE = lib.optionalString stdenv.cc.isClang "-Wno-error=implicit-function-declaration";
 
   postInstall = ''
     wrapProgram "$out/bin/sc-im" --prefix PATH : "${lib.makeBinPath [ gnuplot ]}"
   '';
 
+  # https://github.com/andmarti1424/sc-im/issues/884
+  hardeningDisable = [ "fortify" ];
+  sourceRoot = "${finalAttrs.src.name}/src";
+
   meta = {
-    changelog = "https://github.com/andmarti1424/sc-im/blob/${finalAttrs.src.rev}/CHANGES";
-    homepage = "https://github.com/andmarti1424/sc-im";
     description = "Ncurses spreadsheet program for terminal";
+    homepage = "https://github.com/andmarti1424/sc-im";
+    changelog = "https://github.com/andmarti1424/sc-im/blob/${finalAttrs.src.rev}/CHANGES";
     license = lib.licenses.bsdOriginal;
     maintainers = with lib.maintainers; [ dotlambda ];
     platforms = lib.platforms.unix;

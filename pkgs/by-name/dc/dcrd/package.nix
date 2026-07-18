@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   fetchpatch,
 }:
 
@@ -18,20 +18,20 @@ buildGoModule (finalAttrs: {
 
   vendorHash = "sha256-iUfTHzwjG+TyaHyhs4MGBCvfxah+Wv1+syFkiiaMLeU=";
 
+  preCheck = ''
+    export DCRD_APPDATA="$TMPDIR"
+  '';
+
+  __darwinAllowLocalNetworking = true;
+
   subPackages = [
     "."
     "cmd/promptsecret"
   ];
 
-  __darwinAllowLocalNetworking = true;
-
-  preCheck = ''
-    export DCRD_APPDATA="$TMPDIR"
-  '';
-
   meta = {
-    homepage = "https://decred.org";
     description = "Decred daemon in Go (golang)";
+    homepage = "https://decred.org";
     license = with lib.licenses; [ isc ];
     maintainers = with lib.maintainers; [ juaningan ];
   };

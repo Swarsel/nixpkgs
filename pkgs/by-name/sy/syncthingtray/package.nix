@@ -2,19 +2,15 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  kdePackages,
-  cpp-utilities,
   boost,
   cmake,
-  iconv,
+  cpp-utilities,
   cppunit,
+  iconv,
+  kdePackages,
   syncthing,
+  versionCheckHook,
   xdg-utils,
-  webviewSupport ? true,
-  jsSupport ? true,
-  kioPluginSupport ? stdenv.hostPlatform.isLinux,
-  plasmoidSupport ? stdenv.hostPlatform.isLinux,
-  systemdSupport ? stdenv.hostPlatform.isLinux,
   /*
     It is possible to set via this option an absolute exec path that will be
     written to the `~/.config/autostart/syncthingtray.desktop` file generated
@@ -23,12 +19,16 @@
     https://github.com/NixOS/nixpkgs/issues/199596#issuecomment-1310136382
   */
   autostartExecPath ? "syncthingtray",
-  versionCheckHook,
+  jsSupport ? true,
+  kioPluginSupport ? stdenv.hostPlatform.isLinux,
+  plasmoidSupport ? stdenv.hostPlatform.isLinux,
+  systemdSupport ? stdenv.hostPlatform.isLinux,
+  webviewSupport ? true,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
-  version = "2.1.2";
   pname = "syncthingtray";
+  version = "2.1.2";
 
   src = fetchFromGitHub {
     owner = "Martchus";
@@ -36,6 +36,18 @@ stdenv.mkDerivation (finalAttrs: {
     rev = "v${finalAttrs.version}";
     hash = "sha256-VU47ncrgY00LJTrM4GKMDbhtFtBrcTwakhNCbcucoFo=";
   };
+
+  nativeBuildInputs = [
+    kdePackages.wrapQtAppsHook
+    cmake
+    kdePackages.qttools
+    # Although these are test dependencies, we add them anyway so that we test
+    # whether the test units compile. On Darwin we don't run the tests but we
+    # still build them.
+    cppunit
+    syncthing
+  ]
+  ++ lib.optionals plasmoidSupport [ kdePackages.extra-cmake-modules ];
 
   buildInputs = [
     kdePackages.qtbase
@@ -51,36 +63,6 @@ stdenv.mkDerivation (finalAttrs: {
   ++ lib.optionals jsSupport [ kdePackages.qtdeclarative ]
   ++ lib.optionals kioPluginSupport [ kdePackages.kio ]
   ++ lib.optionals plasmoidSupport [ kdePackages.libplasma ];
-
-  nativeBuildInputs = [
-    kdePackages.wrapQtAppsHook
-    cmake
-    kdePackages.qttools
-    # Although these are test dependencies, we add them anyway so that we test
-    # whether the test units compile. On Darwin we don't run the tests but we
-    # still build them.
-    cppunit
-    syncthing
-  ]
-  ++ lib.optionals plasmoidSupport [ kdePackages.extra-cmake-modules ];
-
-  # syncthing server seems to hang on darwin, causing tests to fail.
-  doCheck = !stdenv.hostPlatform.isDarwin;
-  preCheck = ''
-    export QT_QPA_PLATFORM=offscreen
-    export QT_PLUGIN_PATH="${lib.getBin kdePackages.qtbase}/${kdePackages.qtbase.qtPluginPrefix}"
-  '';
-  postInstall = lib.optionalString stdenv.hostPlatform.isDarwin ''
-    # put the app bundle into the proper place /Applications instead of /bin
-    mkdir -p $out/Applications
-    mv $out/bin/syncthingtray.app $out/Applications
-    # Make binary available in PATH like on other platforms
-    ln -s $out/Applications/syncthingtray.app/Contents/MacOS/syncthingtray $out/bin/syncthingtray
-  '';
-  nativeInstallCheckInputs = [
-    versionCheckHook
-  ];
-  doInstallCheck = true;
 
   cmakeFlags = [
     (lib.cmakeFeature "QT_PACKAGE_PREFIX" "Qt${lib.versions.major kdePackages.qtbase.version}")
@@ -98,13 +80,35 @@ stdenv.mkDerivation (finalAttrs: {
     (lib.cmakeFeature "WEBVIEW_PROVIDER" (if webviewSupport then "webengine" else "none"))
   ];
 
+  # syncthing server seems to hang on darwin, causing tests to fail.
+  doCheck = !stdenv.hostPlatform.isDarwin;
+
+  preCheck = ''
+    export QT_QPA_PLATFORM=offscreen
+    export QT_PLUGIN_PATH="${lib.getBin kdePackages.qtbase}/${kdePackages.qtbase.qtPluginPrefix}"
+  '';
+
+  postInstall = lib.optionalString stdenv.hostPlatform.isDarwin ''
+    # put the app bundle into the proper place /Applications instead of /bin
+    mkdir -p $out/Applications
+    mv $out/bin/syncthingtray.app $out/Applications
+    # Make binary available in PATH like on other platforms
+    ln -s $out/Applications/syncthingtray.app/Contents/MacOS/syncthingtray $out/bin/syncthingtray
+  '';
+
+  doInstallCheck = true;
+
+  nativeInstallCheckInputs = [
+    versionCheckHook
+  ];
+
   qtWrapperArgs = [
     "--prefix PATH : ${lib.makeBinPath [ xdg-utils ]}"
   ];
 
   meta = {
-    homepage = "https://github.com/Martchus/syncthingtray";
     description = "Tray application and Dolphin/Plasma integration for Syncthing";
+    homepage = "https://github.com/Martchus/syncthingtray";
     license = lib.licenses.gpl2Plus;
     maintainers = with lib.maintainers; [ doronbehar ];
     platforms = lib.platforms.linux ++ lib.platforms.darwin;

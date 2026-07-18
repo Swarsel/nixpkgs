@@ -1,9 +1,9 @@
 {
   lib,
+  fetchFromGitHub,
   aiohttp,
   awsiotsdk,
   buildPythonPackage,
-  fetchFromGitHub,
   pyopenssl,
   setuptools,
 }:
@@ -11,7 +11,6 @@
 buildPythonPackage rec {
   pname = "thinqconnect";
   version = "1.0.13";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "thinq-connect";
@@ -20,6 +19,8 @@ buildPythonPackage rec {
     hash = "sha256-0efPQ0fvBLi+Bp+JbBMRJPYFqRKBVpPQFyQ9rvHpEnY=";
   };
 
+  # Module has no tests
+  doCheck = false;
   build-system = [ setuptools ];
 
   dependencies = [
@@ -28,15 +29,13 @@ buildPythonPackage rec {
     pyopenssl
   ];
 
-  # Module has no tests
-  doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "thinqconnect" ];
 
   meta = {
-    changelog = "https://github.com/thinq-connect/pythinqconnect/blob/${src.tag}/RELEASE_NOTES.md";
     description = "Module to interacting with the LG ThinQ Connect Open API";
     homepage = "https://github.com/thinq-connect/pythinqconnect";
+    changelog = "https://github.com/thinq-connect/pythinqconnect/blob/${src.tag}/RELEASE_NOTES.md";
     license = lib.licenses.asl20;
     maintainers = with lib.maintainers; [ fab ];
   };

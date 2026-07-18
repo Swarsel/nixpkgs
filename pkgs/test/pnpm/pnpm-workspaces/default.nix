@@ -9,24 +9,7 @@ let
   mkTest =
     { structuredAttrs }:
     stdenv.mkDerivation (finalAttrs: {
-      name = "pnpm-workspaces-${if structuredAttrs then "structured" else "legacy"}";
-
       src = ./src;
-
-      pnpmDeps = testers.invalidateFetcherByDrvHash fetchPnpmDeps {
-        pname = "pnpm-workspaces";
-        inherit (finalAttrs) src pnpmWorkspaces;
-        inherit pnpm;
-        fetcherVersion = 4;
-        hash = "sha256-dIp6CNh1Kn4aqJWku1G/FUdn/u+epzhqlqwnAkB2uW0=";
-      };
-
-      pnpmWorkspaces = [
-        "@pnpm-workspaces-test/a"
-        "@pnpm-workspaces-test/b"
-      ];
-
-      __structuredAttrs = structuredAttrs;
 
       nativeBuildInputs = [
         pnpm
@@ -49,6 +32,22 @@ let
 
         runHook postBuild
       '';
+
+      __structuredAttrs = structuredAttrs;
+      name = "pnpm-workspaces-${if structuredAttrs then "structured" else "legacy"}";
+
+      pnpmDeps = testers.invalidateFetcherByDrvHash fetchPnpmDeps {
+        inherit (finalAttrs) src pnpmWorkspaces;
+        inherit pnpm;
+        pname = "pnpm-workspaces";
+        fetcherVersion = 4;
+        hash = "sha256-dIp6CNh1Kn4aqJWku1G/FUdn/u+epzhqlqwnAkB2uW0=";
+      };
+
+      pnpmWorkspaces = [
+        "@pnpm-workspaces-test/a"
+        "@pnpm-workspaces-test/b"
+      ];
     });
 in
 {

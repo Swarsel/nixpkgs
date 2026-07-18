@@ -1,8 +1,8 @@
 {
+  lib,
   fetchFromGitHub,
   installShellFiles,
   jq,
-  lib,
   python3,
   sphinxHook,
   writableTmpDirAsHomeHook,
@@ -11,7 +11,6 @@
 python3.pkgs.buildPythonApplication (finalAttrs: {
   pname = "todoman";
   version = "4.7.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "pimutils";
@@ -20,12 +19,34 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     hash = "sha256-dlTV9x8ofxffM55fIJxxavagaTWx+UseK8ECBExxf78=";
   };
 
+  outputs = [
+    "out"
+    "doc"
+    "man"
+  ];
+
   nativeBuildInputs = [
     installShellFiles
     sphinxHook
     python3.pkgs.sphinx-click
     python3.pkgs.sphinx-rtd-theme
   ];
+
+  nativeCheckInputs = with python3.pkgs; [
+    freezegun
+    hypothesis
+    pytest-cov-stub
+    pytestCheckHook
+    pytz
+    writableTmpDirAsHomeHook
+  ];
+
+  postInstall = ''
+    substituteInPlace contrib/completion/zsh/_todo --replace-fail "jq " "${lib.getExe jq} "
+    installShellCompletion --bash contrib/completion/bash/_todo \
+                           --zsh contrib/completion/zsh/_todo \
+                           --fish contrib/completion/fish/todo.fish
+  '';
 
   build-system = with python3.pkgs; [
     setuptools-scm
@@ -42,44 +63,6 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     urwid
   ];
 
-  optional-dependencies = with python3.pkgs; {
-    repl = [ click-repl ];
-  };
-
-  nativeCheckInputs = with python3.pkgs; [
-    freezegun
-    hypothesis
-    pytest-cov-stub
-    pytestCheckHook
-    pytz
-    writableTmpDirAsHomeHook
-  ];
-
-  outputs = [
-    "out"
-    "doc"
-    "man"
-  ];
-
-  sphinxBuilders = [
-    "singlehtml"
-    "man"
-  ];
-
-  preInstallSphinx = ''
-    # remove invalid outputs for manpages
-    rm .sphinx/man/man/_static/jquery.js
-    rm .sphinx/man/man/_static/_sphinx_javascript_frameworks_compat.js
-    rmdir .sphinx/man/man/_static/
-  '';
-
-  postInstall = ''
-    substituteInPlace contrib/completion/zsh/_todo --replace-fail "jq " "${lib.getExe jq} "
-    installShellCompletion --bash contrib/completion/bash/_todo \
-                           --zsh contrib/completion/zsh/_todo \
-                           --fish contrib/completion/fish/todo.fish
-  '';
-
   disabledTests = [
     # Testing of the CLI part and output
     "test_color_due_dates"
@@ -93,13 +76,31 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     "test_sorting_fields"
   ];
 
+  optional-dependencies = with python3.pkgs; {
+    repl = [ click-repl ];
+  };
+
+  preInstallSphinx = ''
+    # remove invalid outputs for manpages
+    rm .sphinx/man/man/_static/jquery.js
+    rm .sphinx/man/man/_static/_sphinx_javascript_frameworks_compat.js
+    rmdir .sphinx/man/man/_static/
+  '';
+
+  pyproject = true;
+
   pythonImportsCheck = [
     "todoman"
   ];
 
+  sphinxBuilders = [
+    "singlehtml"
+    "man"
+  ];
+
   meta = {
-    homepage = "https://github.com/pimutils/todoman";
     description = "Standards-based task manager based on iCalendar";
+
     longDescription = ''
       Todoman is a simple, standards-based, cli todo (aka task) manager. Todos
       are stored into iCalendar files, which means you can sync them via CalDAV
@@ -111,13 +112,19 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
       now.
       Unsupported fields may not be shown but are never deleted or altered.
     '';
+
+    homepage = "https://github.com/pimutils/todoman";
+
     changelog = "https://todoman.readthedocs.io/en/stable/changelog.html#v${
       builtins.replaceStrings [ "." ] [ "-" ] finalAttrs.version
     }";
+
     license = lib.licenses.isc;
+
     maintainers = with lib.maintainers; [
       antonmosich
     ];
+
     mainProgram = "todo";
   };
 })

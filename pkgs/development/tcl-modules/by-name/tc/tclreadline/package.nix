@@ -2,11 +2,11 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  automake,
   autoconf,
+  automake,
   libtool,
-  readline,
   mkTclDerivation,
+  readline,
   tk,
 }:
 
@@ -26,12 +26,11 @@ mkTclDerivation rec {
     autoconf
     libtool
   ];
+
   buildInputs = [
     readline
     tk
   ];
-
-  preConfigure = "NOCONFIGURE=1 ./autogen.sh";
 
   configureFlags = [
     "--enable-tclshrl"
@@ -40,6 +39,8 @@ mkTclDerivation rec {
     "--with-readline-includes=${readline.dev}/include/readline"
     "--with-libtool=${libtool}"
   ];
+
+  preConfigure = "NOCONFIGURE=1 ./autogen.sh";
 
   # The provided makefile leaves a wrong reference to /build/ in RPATH,
   # so we fix it after checking that everything is also present in $out

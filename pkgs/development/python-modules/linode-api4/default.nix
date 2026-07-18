@@ -1,8 +1,8 @@
 {
   lib,
+  fetchFromGitHub,
   buildPythonPackage,
   deprecated,
-  fetchFromGitHub,
   httpretty,
   mock,
   nix-update-script,
@@ -15,8 +15,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "linode-api4";
   version = "5.45.0";
-  pyproject = true;
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "linode";
@@ -25,6 +23,13 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-0FLF/LkU8SaR3itgMISbqOxmd4UZkGlTT3VDpmuv+QQ=";
   };
 
+  nativeCheckInputs = [
+    httpretty
+    mock
+    pytestCheckHook
+  ];
+
+  __structuredAttrs = true;
   build-system = [ setuptools ];
 
   dependencies = [
@@ -33,19 +38,13 @@ buildPythonPackage (finalAttrs: {
     requests
   ];
 
-  nativeCheckInputs = [
-    httpretty
-    mock
-    pytestCheckHook
-  ];
-
-  pythonImportsCheck = [ "linode_api4" ];
-
   disabledTestPaths = [
     # Tests require an API token
     "test/integration/"
   ];
 
+  pyproject = true;
+  pythonImportsCheck = [ "linode_api4" ];
   passthru.updateScript = nix-update-script { };
 
   meta = {

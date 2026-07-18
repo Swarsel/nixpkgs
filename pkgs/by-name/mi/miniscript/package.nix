@@ -1,6 +1,6 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
 }:
 
@@ -34,10 +34,12 @@ stdenv.mkDerivation {
     longDescription = "Miniscript is a language for writing (a subset of) Bitcoin Scripts in a structured way, enabling analysis, composition, generic signing and more.";
     homepage = "https://bitcoin.sipa.be/miniscript/";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       RaghavSood
       jb55
     ];
+
     mainProgram = "miniscript";
   };
 }

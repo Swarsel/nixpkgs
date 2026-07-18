@@ -1,27 +1,27 @@
 {
   lib,
-  libiconv,
-  python3,
   fetchFromGitHub,
-  makeWrapper,
-  rustPlatform,
-  stdenvNoCC,
   e2fsprogs,
   erofs-utils,
   jefferson,
+  libiconv,
   lz4,
   lziprecover,
   lzop,
+  makeWrapper,
   p7zip,
   partclone,
+  python3,
+  rustPlatform,
   sasquatch,
   sasquatch-v4be,
   simg2img,
+  stdenvNoCC,
   ubi_reader,
   unar,
   upx,
-  zstd,
   versionCheckHook,
+  zstd,
 }:
 
 let
@@ -47,25 +47,41 @@ in
 python3.pkgs.buildPythonApplication rec {
   pname = "unblob";
   version = "26.6.4";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "onekey-sec";
     repo = "unblob";
     tag = version;
     hash = "sha256-NV4xnTejDW8mTxv0BGB4n+M/bxTMd4GWQQPXhqw5f2Y=";
-    forceFetchGit = true;
     fetchLFS = true;
+    forceFetchGit = true;
   };
+
+  strictDeps = true;
+
+  nativeBuildInputs = with rustPlatform; [
+    makeWrapper
+    maturinBuildHook
+    cargoSetupHook
+  ];
+
+  buildInputs = lib.optionals stdenvNoCC.hostPlatform.isDarwin [ libiconv ];
+
+  nativeCheckInputs =
+    with python3.pkgs;
+    [
+      pexpect
+      psutil
+      pytest-cov-stub
+      pytestCheckHook
+      versionCheckHook
+    ]
+    ++ runtimeDeps;
 
   cargoDeps = rustPlatform.fetchCargoVendor {
     inherit pname version src;
     hash = "sha256-lEpnpvPwred1KRXxuM1KPxKbIIJUGvR0tmj16QyL5UQ=";
   };
-
-  strictDeps = true;
-
-  buildInputs = lib.optionals stdenvNoCC.hostPlatform.isDarwin [ libiconv ];
 
   dependencies = with python3.pkgs; [
     arpy
@@ -91,40 +107,6 @@ python3.pkgs.buildPythonApplication rec {
     treelib
   ];
 
-  nativeBuildInputs = with rustPlatform; [
-    makeWrapper
-    maturinBuildHook
-    cargoSetupHook
-  ];
-
-  # These are runtime-only CLI dependencies, which are used through
-  # their CLI interface
-  pythonRemoveDeps = [
-    "jefferson"
-    "ubi-reader"
-  ];
-
-  pythonImportsCheck = [ "unblob" ];
-
-  makeWrapperArgs = [
-    "--prefix PATH : ${lib.makeBinPath runtimeDeps}"
-  ];
-
-  nativeCheckInputs =
-    with python3.pkgs;
-    [
-      pexpect
-      psutil
-      pytest-cov-stub
-      pytestCheckHook
-      versionCheckHook
-    ]
-    ++ runtimeDeps;
-
-  pytestFlags = [
-    "--with-e2e" # Not that slow: increases test time by ~5s
-  ];
-
   disabledTests = [
     # https://github.com/tytso/e2fsprogs/issues/152
     "test_all_handlers[filesystem.extfs]"
@@ -133,6 +115,25 @@ python3.pkgs.buildPythonApplication rec {
     # unblob's landlock sandbox denies hardlinks within the extract dir (EXDEV). https://github.com/onekey-sec/unblob/issues/1210
     "test_all_handlers[filesystem.romfs]"
     "test_all_handlers[filesystem.yaffs]"
+  ];
+
+  makeWrapperArgs = [
+    "--prefix PATH : ${lib.makeBinPath runtimeDeps}"
+  ];
+
+  pyproject = true;
+
+  pytestFlags = [
+    "--with-e2e" # Not that slow: increases test time by ~5s
+  ];
+
+  pythonImportsCheck = [ "unblob" ];
+
+  # These are runtime-only CLI dependencies, which are used through
+  # their CLI interface
+  pythonRemoveDeps = [
+    "jefferson"
+    "ubi-reader"
   ];
 
   passthru = {
@@ -144,8 +145,8 @@ python3.pkgs.buildPythonApplication rec {
     description = "Extract files from any kind of container formats";
     homepage = "https://unblob.org";
     license = lib.licenses.mit;
+    maintainers = with lib.maintainers; [ vlaci ];
     platforms = lib.platforms.unix;
     mainProgram = "unblob";
-    maintainers = with lib.maintainers; [ vlaci ];
   };
 }

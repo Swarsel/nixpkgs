@@ -1,12 +1,12 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchgit,
-  pkg-config,
+  liburing,
   meson,
   ninja,
+  pkg-config,
   systemd,
-  liburing,
   zstd,
 }:
 stdenv.mkDerivation (finalAttrs: {
@@ -46,10 +46,12 @@ stdenv.mkDerivation (finalAttrs: {
     description = "Much faster locate";
     homepage = "https://plocate.sesse.net/";
     license = lib.licenses.gpl2Plus;
+
     maintainers = with lib.maintainers; [
       peterhoeg
       SuperSandro2000
     ];
+
     platforms = lib.platforms.linux;
   };
 })

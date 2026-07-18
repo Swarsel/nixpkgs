@@ -1,31 +1,31 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchurl,
   blueprint-compiler,
+  desktop-file-utils,
+  gdk-pixbuf,
+  geoclue2,
+  geocode-glib_2,
+  gettext,
+  gjs,
+  glib,
+  gnome,
+  gobject-introspection,
+  gsettings-desktop-schemas,
+  gtk4,
+  libadwaita,
+  libgweather,
+  libportal,
+  librest,
+  libsecret,
+  libshumate,
+  libsoup_3,
   meson,
   ninja,
-  gettext,
   pkg-config,
-  gnome,
-  glib,
-  gtk4,
-  gobject-introspection,
-  gdk-pixbuf,
-  librest,
-  libgweather,
-  geoclue2,
-  wrapGAppsHook4,
-  desktop-file-utils,
-  libportal,
-  libshumate,
-  libsecret,
-  libsoup_3,
-  gsettings-desktop-schemas,
-  gjs,
-  libadwaita,
-  geocode-glib_2,
   tzdata,
+  wrapGAppsHook4,
   writeText,
 }:
 
@@ -38,7 +38,15 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-KKRGfR7J/jjrf4YmdMGZ6IQIbiXkwLDYDrUEVoICzr8=";
   };
 
-  doCheck = !stdenv.hostPlatform.isDarwin;
+  postPatch = ''
+    # The .service file isn't wrapped with the correct environment
+    # so misses GIR files when started. By re-pointing from the gjs
+    # entry point to the wrapped binary we get back to a wrapped
+    # binary.
+    substituteInPlace "data/org.gnome.Maps.service.in" \
+      --replace-fail "Exec=@pkgdatadir@/@app-id@" \
+                     "Exec=$out/bin/gnome-maps"
+  '';
 
   nativeBuildInputs = [
     blueprint-compiler
@@ -78,15 +86,7 @@ stdenv.mkDerivation (finalAttrs: {
     ''}"
   ];
 
-  postPatch = ''
-    # The .service file isn't wrapped with the correct environment
-    # so misses GIR files when started. By re-pointing from the gjs
-    # entry point to the wrapped binary we get back to a wrapped
-    # binary.
-    substituteInPlace "data/org.gnome.Maps.service.in" \
-      --replace-fail "Exec=@pkgdatadir@/@app-id@" \
-                     "Exec=$out/bin/gnome-maps"
-  '';
+  doCheck = !stdenv.hostPlatform.isDarwin;
 
   preCheck = ''
     # “time.js” included by “timeTest” and “translationsTest” depends on “org.gnome.desktop.interface” schema.
@@ -117,11 +117,11 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   meta = {
-    homepage = "https://apps.gnome.org/Maps/";
     description = "Map application for GNOME 3";
-    mainProgram = "gnome-maps";
-    teams = [ lib.teams.gnome ];
+    homepage = "https://apps.gnome.org/Maps/";
     license = lib.licenses.gpl2Plus;
     platforms = lib.platforms.unix;
+    mainProgram = "gnome-maps";
+    teams = [ lib.teams.gnome ];
   };
 })

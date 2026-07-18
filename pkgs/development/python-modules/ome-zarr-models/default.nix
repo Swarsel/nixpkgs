@@ -1,31 +1,26 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  pythonAtLeast,
-
+  # tests
+  aiohttp,
+  buildPythonPackage,
+  fsspec,
   # build-system
   hatch-vcs,
   hatchling,
-
   # dependencies
   pydantic,
   pydantic-zarr,
-  zarr,
-
-  # tests
-  aiohttp,
-  fsspec,
   pytest-cov-stub,
   pytest-vcr,
   pytestCheckHook,
+  pythonAtLeast,
+  zarr,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "ome-zarr-models";
   version = "1.7";
-  pyproject = true;
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "ome-zarr-models";
@@ -33,6 +28,16 @@ buildPythonPackage (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-UT/LvbTGo6UueEUwELqnfhERvxtg04Ukrcpo1yTa80c=";
   };
+
+  nativeCheckInputs = [
+    aiohttp
+    fsspec
+    pytest-cov-stub
+    pytest-vcr
+    pytestCheckHook
+  ];
+
+  __structuredAttrs = true;
 
   build-system = [
     hatch-vcs
@@ -43,16 +48,6 @@ buildPythonPackage (finalAttrs: {
     pydantic
     pydantic-zarr
     zarr
-  ];
-
-  pythonImportsCheck = [ "ome_zarr_models" ];
-
-  nativeCheckInputs = [
-    aiohttp
-    fsspec
-    pytest-cov-stub
-    pytest-vcr
-    pytestCheckHook
   ];
 
   disabledTests = [
@@ -84,12 +79,15 @@ buildPythonPackage (finalAttrs: {
     "test_load_ome_zarr_group"
   ];
 
+  pyproject = true;
+  pythonImportsCheck = [ "ome_zarr_models" ];
+
   meta = {
     description = "Minimal Python package for reading, writing and validating OME-Zarr (meta)data";
     homepage = "https://ome-zarr-models-py.readthedocs.io/en/stable";
-    downloadPage = "https://github.com/ome-zarr-models/ome-zarr-models-py";
     changelog = "https://github.com/ome-zarr-models/ome-zarr-models-py/releases/tag/${finalAttrs.src.tag}";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ GaetanLepage ];
+    downloadPage = "https://github.com/ome-zarr-models/ome-zarr-models-py";
   };
 })

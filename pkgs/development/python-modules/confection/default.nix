@@ -1,26 +1,22 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # build-system
-  setuptools,
-
+  buildPythonPackage,
   # tests
   catalogue,
   hypothesis,
+  # passthru
+  nix-update-script,
   numpy,
   pydantic,
   pytestCheckHook,
-
-  # passthru
-  nix-update-script,
+  # build-system
+  setuptools,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "confection";
   version = "1.3.3";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "explosion";
@@ -29,12 +25,6 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-64QwxK0Rl67n5vb/CuRJw/42A/SE9/Q5gtqITggYqhg=";
   };
 
-  build-system = [
-    setuptools
-  ];
-
-  pythonImportsCheck = [ "confection" ];
-
   nativeCheckInputs = [
     catalogue
     hypothesis
@@ -42,6 +32,13 @@ buildPythonPackage (finalAttrs: {
     pydantic
     pytestCheckHook
   ];
+
+  build-system = [
+    setuptools
+  ];
+
+  pyproject = true;
+  pythonImportsCheck = [ "confection" ];
 
   passthru = {
     updateScript = nix-update-script {

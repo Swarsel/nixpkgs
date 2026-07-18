@@ -1,8 +1,8 @@
 {
-  stdenv,
-  rustPlatform,
-  fetchFromGitHub,
   lib,
+  stdenv,
+  fetchFromGitHub,
+  rustPlatform,
 }:
 rustPlatform.buildRustPackage (finalAttrs: {
   pname = "omekasy";
@@ -16,14 +16,13 @@ rustPlatform.buildRustPackage (finalAttrs: {
   };
 
   cargoHash = "sha256-sJ8HFANK1fGj9zygq1RgMKcHncVik3St9GSghXP4tp0=";
-
   buildNoDefaultFeatures = stdenv.targetPlatform.isWasi;
 
   meta = {
     description = "Command line application that converts alphanumeric characters to various styles defined in Unicode";
+    homepage = "https://github.com/ikanago/omekasy";
     license = lib.licenses.mit;
     maintainers = [ lib.maintainers.jcaesar ];
-    homepage = "https://github.com/ikanago/omekasy";
     mainProgram = "omekasy";
   };
 })

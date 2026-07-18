@@ -1,27 +1,25 @@
 {
   lib,
   fetchFromGitHub,
-  meson,
-  ninja,
-  pkg-config,
-  python3,
-  gtk3,
   appstream-glib,
   desktop-file-utils,
-  gobject-introspection,
-  wrapGAppsHook3,
-  glib,
   gdk-pixbuf,
-  pango,
   gettext,
+  glib,
+  gobject-introspection,
+  gtk3,
   itstool,
+  meson,
+  ninja,
+  pango,
+  pkg-config,
+  python3,
+  wrapGAppsHook3,
 }:
 
 python3.pkgs.buildPythonApplication (finalAttrs: {
   pname = "drawing";
   version = "1.0.2";
-
-  pyproject = false;
 
   src = fetchFromGitHub {
     owner = "maoschanz";
@@ -29,6 +27,13 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     tag = finalAttrs.version;
     hash = "sha256-kNF9db8NoHWW1A0WEFQzxHqAQ4A7kxInMRZFJOXQX/k=";
   };
+
+  postPatch = ''
+    chmod +x build-aux/meson/postinstall.py # patchShebangs requires executable file
+    patchShebangs build-aux/meson/postinstall.py
+  '';
+
+  strictDeps = false;
 
   nativeBuildInputs = [
     appstream-glib
@@ -55,27 +60,21 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     pygobject3
   ];
 
-  postPatch = ''
-    chmod +x build-aux/meson/postinstall.py # patchShebangs requires executable file
-    patchShebangs build-aux/meson/postinstall.py
-  '';
-
-  # Prevent double wrapping because of wrapGAppsHook3
-  dontWrapGApps = true;
-
   preFixup = ''
     makeWrapperArgs+=("''${gappsWrapperArgs[@]}")
   '';
 
-  strictDeps = false;
+  # Prevent double wrapping because of wrapGAppsHook3
+  dontWrapGApps = true;
+  pyproject = false;
 
   meta = {
     description = "Free basic image editor, similar to Microsoft Paint, but aiming at the GNOME desktop";
-    mainProgram = "drawing";
     homepage = "https://maoschanz.github.io/drawing/";
     changelog = "https://github.com/maoschanz/drawing/releases/tag/${finalAttrs.version}";
-    maintainers = with lib.maintainers; [ mothsart ];
     license = lib.licenses.gpl3Plus;
+    maintainers = with lib.maintainers; [ mothsart ];
     platforms = lib.platforms.linux;
+    mainProgram = "drawing";
   };
 })

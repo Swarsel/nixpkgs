@@ -9,7 +9,6 @@
 buildPythonPackage rec {
   pname = "sleepyq";
   version = "0.8.1";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
@@ -23,6 +22,7 @@ buildPythonPackage rec {
 
   # Project has no tests
   doCheck = false;
+  format = "setuptools";
   pythonImportsCheck = [ "sleepyq" ];
 
   meta = {

@@ -16,19 +16,18 @@ buildDunePackage (finalAttrs: {
     hash = "sha256-tBu7TGtDOe5FbxLZuz6nl+65aN9FHIngq/O4dJWzr3Q=";
   };
 
-  minimalOCamlVersion = "4.03";
-
   buildInputs = [
     dune-configurator
   ];
 
   doCheck = false; # prevent running slow benchmarks
+  minimalOCamlVersion = "4.03";
 
   meta = {
     description = "Library for multicore parallel programming";
-    downloadPage = "https://github.com/rdicosmo/parmap";
     homepage = "https://rdicosmo.github.io/parmap";
     license = lib.licenses.lgpl2;
     maintainers = with lib.maintainers; [ bcdarwin ];
+    downloadPage = "https://github.com/rdicosmo/parmap";
   };
 })

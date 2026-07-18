@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   git,
 }:
 
@@ -17,6 +17,7 @@ buildGoModule (finalAttrs: {
   };
 
   vendorHash = "sha256-hDdNYXy5NIrlqT6yyOglFg2v7HOM9nE+oh7mx2kLdnQ=";
+  nativeCheckInputs = [ git ];
 
   ldflags = [
     "-s"
@@ -24,16 +25,16 @@ buildGoModule (finalAttrs: {
     "-X github.com/siderolabs/conform/internal/version.Tag=v${finalAttrs.version}"
   ];
 
-  nativeCheckInputs = [ git ];
-
   meta = {
     description = "Policy enforcement for your pipelines";
     homepage = "https://github.com/siderolabs/conform";
     license = lib.licenses.mpl20;
+
     maintainers = with lib.maintainers; [
       jmgilman
       jk
     ];
+
     mainProgram = "conform";
   };
 })

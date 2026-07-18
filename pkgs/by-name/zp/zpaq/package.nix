@@ -20,6 +20,8 @@ stdenv.mkDerivation (finalAttrs: {
     perl # for pod2man
   ];
 
+  makeFlags = [ "CXX=${stdenv.cc.targetPrefix}c++" ];
+
   env = {
     CPPFLAGS = toString (
       [
@@ -29,6 +31,7 @@ stdenv.mkDerivation (finalAttrs: {
         "-DNOJIT"
       ]
     );
+
     CXXFLAGS = toString [
       "-O3"
       "-DNDEBUG"
@@ -36,8 +39,6 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   enableParallelBuilding = true;
-
-  makeFlags = [ "CXX=${stdenv.cc.targetPrefix}c++" ];
   installFlags = [ "PREFIX=$(out)" ];
 
   meta = {

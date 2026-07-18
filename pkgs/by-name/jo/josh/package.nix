@@ -1,12 +1,12 @@
 {
   lib,
   fetchFromGitHub,
-  rustPlatform,
+  git,
   libgit2,
+  makeWrapper,
   openssl,
   pkg-config,
-  makeWrapper,
-  git,
+  rustPlatform,
 }:
 
 let
@@ -14,8 +14,8 @@ let
 in
 
 rustPlatform.buildRustPackage {
-  pname = "josh";
   inherit version;
+  pname = "josh";
 
   src = fetchFromGitHub {
     owner = "josh-project";
@@ -23,8 +23,6 @@ rustPlatform.buildRustPackage {
     rev = "r${version}";
     hash = "sha256-rG5ZkEH8ZL8t0sDnBnNPtVtaR1I8BoulXlFh0HCpMsw=";
   };
-
-  cargoHash = "sha256-/hMn80jHDF9gh+K8IOV5zXllzJkCdcmvI/NmbKFd/uM=";
 
   nativeBuildInputs = [
     pkg-config
@@ -36,14 +34,7 @@ rustPlatform.buildRustPackage {
     openssl
   ];
 
-  cargoBuildFlags = [ "--workspace" ];
-  # josh-proxy's inline tests need to interact with a specific test environment
-  cargoTestFlags = [
-    "--workspace"
-    "--exclude"
-    "josh-proxy"
-  ];
-
+  cargoHash = "sha256-/hMn80jHDF9gh+K8IOV5zXllzJkCdcmvI/NmbKFd/uM=";
   # used to teach josh itself about its version number
   env.JOSH_VERSION = "r${version}";
 
@@ -52,16 +43,27 @@ rustPlatform.buildRustPackage {
     wrapProgram "$out/bin/josh-proxy" --prefix PATH : "${git}/bin"
   '';
 
+  cargoBuildFlags = [ "--workspace" ];
+
+  # josh-proxy's inline tests need to interact with a specific test environment
+  cargoTestFlags = [
+    "--workspace"
+    "--exclude"
+    "josh-proxy"
+  ];
+
   meta = {
     description = "Just One Single History";
     homepage = "https://josh-project.github.io/josh/";
-    downloadPage = "https://github.com/josh-project/josh";
     changelog = "https://github.com/josh-project/josh/releases/tag/r${version}";
     license = lib.licenses.mit;
+
     maintainers = [
       lib.maintainers.sternenseemann
       lib.maintainers.tazjin
     ];
+
     platforms = lib.platforms.all;
+    downloadPage = "https://github.com/josh-project/josh";
   };
 }

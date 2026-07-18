@@ -1,54 +1,48 @@
 {
   lib,
   stdenv,
-  buildPythonPackage,
   fetchFromGitHub,
-
+  buildPythonPackage,
+  callPackage,
+  # dependencies
+  catalogue,
   # build-system
   cymem,
   cython,
-  murmurhash,
-  numpy,
-  preshed,
-  thinc,
-
-  # dependencies
-  catalogue,
+  git,
+  hypothesis,
   jinja2,
   langcodes,
+  mock,
+  murmurhash,
+  nix,
+  nix-update,
+  numpy,
   packaging,
+  preshed,
   pydantic,
+  # tests
+  pytestCheckHook,
   requests,
   setuptools,
   spacy-legacy,
   spacy-loggers,
+  spacy-lookups-data,
+  # optional-dependencies
+  spacy-transformers,
   srsly,
+  thinc,
   tqdm,
   typer,
   wasabi,
   weasel,
-
-  # optional-dependencies
-  spacy-transformers,
-  spacy-lookups-data,
-
-  # tests
-  pytestCheckHook,
-  hypothesis,
-  mock,
-
   # passthru
   writeScript,
-  git,
-  nix,
-  nix-update,
-  callPackage,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "spacy";
   version = "3.8.14";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "explosion";
@@ -56,6 +50,19 @@ buildPythonPackage (finalAttrs: {
     tag = "release-v${finalAttrs.version}";
     hash = "sha256-w9cNP304H/EntpoMkXGwkxIVoThkl5HZPDK4+k4Py0Y=";
   };
+
+  nativeCheckInputs = [
+    pytestCheckHook
+    hypothesis
+    mock
+  ];
+
+  # Fixes ModuleNotFoundError when running tests on Cythonized code. See #255262
+  preCheck = ''
+    cd $out
+  '';
+
+  __darwinAllowLocalNetworking = true; # needed for test_find_available_port
 
   build-system = [
     cymem
@@ -65,8 +72,6 @@ buildPythonPackage (finalAttrs: {
     preshed
     thinc
   ];
-
-  pythonRelaxDeps = [ "thinc" ];
 
   dependencies = [
     catalogue
@@ -90,22 +95,6 @@ buildPythonPackage (finalAttrs: {
     weasel
   ];
 
-  optional-dependencies = {
-    transformers = [ spacy-transformers ];
-    lookups = [ spacy-lookups-data ];
-  };
-
-  nativeCheckInputs = [
-    pytestCheckHook
-    hypothesis
-    mock
-  ];
-
-  # Fixes ModuleNotFoundError when running tests on Cythonized code. See #255262
-  preCheck = ''
-    cd $out
-  '';
-
   disabledTestMarks = [ "slow" ];
 
   disabledTests = [
@@ -124,9 +113,18 @@ buildPythonPackage (finalAttrs: {
     "test_build_dependencies"
   ];
 
+  optional-dependencies = {
+    lookups = [ spacy-lookups-data ];
+    transformers = [ spacy-transformers ];
+  };
+
+  pyproject = true;
   pythonImportsCheck = [ "spacy" ];
+  pythonRelaxDeps = [ "thinc" ];
 
   passthru = {
+    tests.annotation = callPackage ./annotation-test { };
+
     updateScript = writeScript "update-spacy" ''
       #!${stdenv.shell}
       set -eou pipefail
@@ -143,10 +141,7 @@ buildPythonPackage (finalAttrs: {
       # update spacy models as well
       echo | nix-shell maintainers/scripts/update.nix --argstr package python3Packages.spacy-models.en_core_web_sm
     '';
-    tests.annotation = callPackage ./annotation-test { };
   };
-
-  __darwinAllowLocalNetworking = true; # needed for test_find_available_port
 
   meta = {
     description = "Industrial-strength Natural Language Processing (NLP)";

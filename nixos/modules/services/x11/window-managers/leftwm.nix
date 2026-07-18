@@ -18,13 +18,15 @@ in
 
   ###### implementation
   config = mkIf cfg.enable {
+    environment.systemPackages = [ pkgs.leftwm ];
+
     services.xserver.windowManager.session = singleton {
       name = "leftwm";
+
       start = ''
         ${pkgs.leftwm}/bin/leftwm &
         waitPID=$!
       '';
     };
-    environment.systemPackages = [ pkgs.leftwm ];
   };
 }

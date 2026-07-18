@@ -1,36 +1,38 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
-  gnat,
-  gprbuild,
-  gnatcoll-core,
   component,
   # component dependencies
   gmp,
+  gnat,
+  gnatcoll-core,
+  gprbuild,
   libiconv,
-  xz,
-  readline,
-  zlib,
-  python3,
   ncurses,
+  python3,
+  readline,
+  xz,
+  zlib,
 }:
 
 let
   # omit python (2.7), no need to introduce a
   # dependency on an EOL package for no reason
   libsFor = {
-    iconv = [ libiconv ];
+    cpp = [ ];
     gmp = [ gmp ];
+    iconv = [ libiconv ];
     lzma = [ xz ];
-    readline = [ readline ];
+
     python3 = [
       python3
       ncurses
     ];
+
+    readline = [ readline ];
     syslog = [ ];
     zlib = [ zlib ];
-    cpp = [ ];
   };
 in
 
@@ -82,7 +84,7 @@ stdenv.mkDerivation rec {
     description = "GNAT Components Collection - Bindings to C libraries";
     homepage = "https://github.com/AdaCore/gnatcoll-bindings";
     license = lib.licenses.gpl3Plus;
-    platforms = lib.platforms.all;
     maintainers = [ lib.maintainers.sternenseemann ];
+    platforms = lib.platforms.all;
   };
 }

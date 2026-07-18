@@ -1,14 +1,13 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   setuptools,
 }:
 
 buildPythonPackage {
   pname = "yt-dlp-dearrow";
   version = "2023.01.01-unstable-2024-01-13"; # setup.cfg
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "QuantumWarpCode";
@@ -17,10 +16,9 @@ buildPythonPackage {
     hash = "sha256-Ubi1kn/1FqkuwnxToBuSsAfCYWiNCTl/EUD8eeG3MSY=";
   };
 
-  build-system = [ setuptools ];
-
   doCheck = false; # no tests
-
+  build-system = [ setuptools ];
+  pyproject = true;
   pythonImportsCheck = [ "yt_dlp_plugins" ];
 
   meta = {

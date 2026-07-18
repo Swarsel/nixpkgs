@@ -1,23 +1,22 @@
 {
   lib,
-  python3Packages,
-  fetchFromSourcehut,
   desktop-file-utils,
+  fetchFromSourcehut,
   gobject-introspection,
   gtk3,
   libhandy,
   meson,
   ninja,
   pkg-config,
+  python3Packages,
   scdoc,
-  wrapGAppsHook3,
   udevCheckHook,
+  wrapGAppsHook3,
 }:
 
 python3Packages.buildPythonApplication (finalAttrs: {
   pname = "openswitcher";
   version = "0.13.0";
-  pyproject = false;
 
   src = fetchFromSourcehut {
     owner = "~martijnbraam";
@@ -31,10 +30,6 @@ python3Packages.buildPythonApplication (finalAttrs: {
     "man"
   ];
 
-  depsBuildBuild = [
-    pkg-config
-  ];
-
   nativeBuildInputs = [
     desktop-file-utils
     gobject-introspection
@@ -46,8 +41,6 @@ python3Packages.buildPythonApplication (finalAttrs: {
     wrapGAppsHook3
     udevCheckHook
   ];
-
-  dontWrapGApps = true;
 
   buildInputs = [
     gtk3
@@ -73,12 +66,19 @@ python3Packages.buildPythonApplication (finalAttrs: {
     makeWrapperArgs+=("''${gappsWrapperArgs[@]}")
   '';
 
+  depsBuildBuild = [
+    pkg-config
+  ];
+
+  dontWrapGApps = true;
+  pyproject = false;
+
   meta = {
     description = "Blackmagic Design mixer control application";
-    downloadPage = "https://git.sr.ht/~martijnbraam/pyatem";
     homepage = "https://openswitcher.org/";
     license = lib.licenses.gpl3Only;
     maintainers = with lib.maintainers; [ hexa ];
     mainProgram = "switcher-control";
+    downloadPage = "https://git.sr.ht/~martijnbraam/pyatem";
   };
 })

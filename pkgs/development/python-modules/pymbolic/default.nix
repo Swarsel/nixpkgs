@@ -1,28 +1,23 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # build-system
-  hatchling,
-
+  buildPythonPackage,
   # dependencies
   constantdict,
-  pytools,
-  typing-extensions,
-
+  # build-system
+  hatchling,
   # optional-dependencies
   matchpy,
   numpy,
-
   # tests
   pytestCheckHook,
+  pytools,
+  typing-extensions,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "pymbolic";
   version = "2025.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "inducer";
@@ -30,6 +25,11 @@ buildPythonPackage (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-cn2EdhMn5qjK854AF5AY4Hv4M5Ib6gPRJk+kQvsFWRk=";
   };
+
+  nativeCheckInputs = [
+    pytestCheckHook
+  ]
+  ++ lib.concatAttrValues finalAttrs.passthru.optional-dependencies;
 
   build-system = [ hatchling ];
 
@@ -44,11 +44,7 @@ buildPythonPackage (finalAttrs: {
     numpy = [ numpy ];
   };
 
-  nativeCheckInputs = [
-    pytestCheckHook
-  ]
-  ++ lib.concatAttrValues finalAttrs.passthru.optional-dependencies;
-
+  pyproject = true;
   pythonImportsCheck = [ "pymbolic" ];
 
   meta = {

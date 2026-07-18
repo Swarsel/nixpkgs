@@ -1,15 +1,15 @@
 {
   lib,
-  stdenvNoCC,
   fetchFromGitHub,
-  gtk3,
-  kdePackages,
+  gitUpdater,
   gnome-icon-theme,
-  numix-icon-theme,
-  numix-icon-theme-circle,
+  gtk3,
   hicolor-icon-theme,
   jdupes,
-  gitUpdater,
+  kdePackages,
+  numix-icon-theme,
+  numix-icon-theme-circle,
+  stdenvNoCC,
 }:
 
 stdenvNoCC.mkDerivation (finalAttrs: {
@@ -37,12 +37,6 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     # still missing parent icon themes: Surfn
   ];
 
-  dontDropIconThemeCache = true;
-  dontWrapQtApps = true;
-
-  dontPatchELF = true;
-  dontRewriteSymlinks = true;
-
   installPhase = ''
     runHook preInstall
 
@@ -66,13 +60,17 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  dontDropIconThemeCache = true;
+  dontPatchELF = true;
+  dontRewriteSymlinks = true;
+  dontWrapQtApps = true;
   passthru.updateScript = gitUpdater { };
 
   meta = {
     description = "Icon pack flat with light colors";
     homepage = "https://github.com/zayronxio/Zafiro-icons";
     license = lib.licenses.gpl3;
-    platforms = lib.platforms.linux;
     maintainers = with lib.maintainers; [ romildo ];
+    platforms = lib.platforms.linux;
   };
 })

@@ -1,47 +1,43 @@
 {
   lib,
   stdenv,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # build-system
-  cython,
-  setuptools,
-
   # dependencies
   alive-progress,
   autograd,
+  buildPythonPackage,
   cma,
+  # build-system
+  cython,
   deprecated,
-  matplotlib,
-  moocore,
-  numpy,
-  scipy,
-
   # tests
   jupytext,
+  matplotlib,
+  moocore,
   nbformat,
   notebook,
   numba,
+  numpy,
   optuna,
   pytestCheckHook,
   pythonAtLeast,
   scikit-learn,
+  scipy,
+  setuptools,
   writeText,
 }:
 
 let
   pymoo_data = fetchFromGitHub {
+    hash = "sha256-dpuRIMqDQ+oKrvK1VAQxPG6vijZMxT6MB8xOswPwv5o=";
     owner = "anyoptimization";
     repo = "pymoo-data";
     rev = "8dae7d02078def161ee109184399adc3db25265b";
-    hash = "sha256-dpuRIMqDQ+oKrvK1VAQxPG6vijZMxT6MB8xOswPwv5o=";
   };
 in
 buildPythonPackage rec {
   pname = "pymoo";
   version = "0.6.1.6";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "anyoptimization";
@@ -63,7 +59,20 @@ buildPythonPackage rec {
         "file://${pymoo_data}/"
   '';
 
-  pythonRemoveDeps = [ "alive-progress" ];
+  # Avoid crashing sandboxed build on macOS
+  env.MATPLOTLIBRC = writeText "" ''
+    backend: Agg
+  '';
+
+  nativeCheckInputs = [
+    jupytext
+    nbformat
+    notebook
+    numba
+    optuna
+    pytestCheckHook
+    scikit-learn
+  ];
 
   build-system = [
     setuptools
@@ -81,17 +90,18 @@ buildPythonPackage rec {
     scipy
   ];
 
-  nativeCheckInputs = [
-    jupytext
-    nbformat
-    notebook
-    numba
-    optuna
-    pytestCheckHook
-    scikit-learn
-  ];
   # Select some lightweight tests
   disabledTestMarks = [ "long" ];
+
+  disabledTestPaths = [
+    # sensitive to float precision
+    "tests/algorithms/test_no_modfication.py"
+  ]
+  ++ lib.optionals stdenv.hostPlatform.isDarwin [
+    # sensitive to float precision
+    "tests/misc/test_kktpm.py::test_kktpm_correctness[zdt3-params3]"
+  ];
+
   disabledTests = [
     # ModuleNotFoundError: No module named 'pymoo.cython.non_dominated_sorting'
     "test_fast_non_dominated_sorting"
@@ -115,28 +125,16 @@ buildPythonPackage rec {
     "test_kktpm_correctness"
   ];
 
-  disabledTestPaths = [
-    # sensitive to float precision
-    "tests/algorithms/test_no_modfication.py"
-  ]
-  ++ lib.optionals stdenv.hostPlatform.isDarwin [
-    # sensitive to float precision
-    "tests/misc/test_kktpm.py::test_kktpm_correctness[zdt3-params3]"
-  ];
-
-  # Avoid crashing sandboxed build on macOS
-  env.MATPLOTLIBRC = writeText "" ''
-    backend: Agg
-  '';
-
+  pyproject = true;
   pythonImportsCheck = [ "pymoo" ];
+  pythonRemoveDeps = [ "alive-progress" ];
 
   meta = {
     description = "Multi-objective Optimization in Python";
     homepage = "https://pymoo.org/";
-    downloadPage = "https://github.com/anyoptimization/pymoo";
     changelog = "https://github.com/anyoptimization/pymoo/releases/tag/${src.tag}";
     license = lib.licenses.asl20;
     maintainers = with lib.maintainers; [ veprbl ];
+    downloadPage = "https://github.com/anyoptimization/pymoo";
   };
 }

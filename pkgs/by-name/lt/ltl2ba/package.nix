@@ -1,7 +1,7 @@
 {
-  fetchurl,
   lib,
   stdenv,
+  fetchurl,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -13,8 +13,6 @@ stdenv.mkDerivation (finalAttrs: {
     sha256 = "1bz9gjpvby4mnvny0nmxgd81rim26mqlcnjlznnxxk99575pfa4i";
   };
 
-  hardeningDisable = [ "format" ];
-
   preConfigure = ''
     substituteInPlace Makefile \
     --replace "CC=gcc" ""
@@ -25,12 +23,14 @@ stdenv.mkDerivation (finalAttrs: {
     mv ltl2ba $out/bin
   '';
 
+  hardeningDisable = [ "format" ];
+
   meta = {
     description = "Fast translation from LTL formulae to Buchi automata";
-    mainProgram = "ltl2ba";
     homepage = "http://www.lsv.ens-cachan.fr/~gastin/ltl2ba";
     license = lib.licenses.gpl2Plus;
-    platforms = lib.platforms.darwin ++ lib.platforms.linux;
     maintainers = [ lib.maintainers.thoughtpolice ];
+    platforms = lib.platforms.darwin ++ lib.platforms.linux;
+    mainProgram = "ltl2ba";
   };
 })

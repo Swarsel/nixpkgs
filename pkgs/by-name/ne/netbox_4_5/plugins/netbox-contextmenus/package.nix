@@ -1,17 +1,15 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
+  buildPythonPackage,
   netbox,
   python,
+  setuptools,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "netbox-contextmenus";
   version = "1.4.14";
-  pyproject = true;
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "PieterL75";
@@ -20,10 +18,11 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-YqyxZaHKXhMLDdBTAAKQsCBBSXikxBgcOvXEfa6f+0Y=";
   };
 
+  __structuredAttrs = true;
   build-system = [ setuptools ];
+  pyproject = true;
 
   # pythonImportsCheck fails due to improperly configured django app
-
   meta = {
     description = "Netbox plugin to add context buttons to the links, making navigating less clicky";
     homepage = "https://github.com/PieterL75/netbox_contextmenus/";

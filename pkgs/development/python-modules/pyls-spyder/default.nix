@@ -1,15 +1,14 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  python-lsp-server,
+  buildPythonPackage,
   pytestCheckHook,
+  python-lsp-server,
 }:
 
 buildPythonPackage rec {
   pname = "pyls-spyder";
   version = "0.4.0";
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "spyder-ide";
@@ -19,9 +18,8 @@ buildPythonPackage rec {
   };
 
   propagatedBuildInputs = [ python-lsp-server ];
-
   nativeCheckInputs = [ pytestCheckHook ];
-
+  format = "setuptools";
   pythonImportsCheck = [ "pyls_spyder" ];
 
   meta = {

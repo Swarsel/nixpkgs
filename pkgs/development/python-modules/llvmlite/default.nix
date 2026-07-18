@@ -2,19 +2,14 @@
   lib,
   fetchFromGitHub,
   buildPythonPackage,
-  isPyPy,
-
-  setuptools,
-
   cmake,
-  ninja,
-
-  llvm_20,
+  isPyPy,
   libxml2,
-
+  llvm_20,
+  ninja,
   # tests
   pytestCheckHook,
-
+  setuptools,
   withStaticLLVM ? true,
 }:
 
@@ -25,9 +20,6 @@ in
 buildPythonPackage rec {
   pname = "llvmlite";
   version = "0.47.0";
-  pyproject = true;
-
-  disabled = isPyPy;
 
   src = fetchFromGitHub {
     owner = "numba";
@@ -36,33 +28,31 @@ buildPythonPackage rec {
     hash = "sha256-YEIdIdbk19JHYtgL2gWjnAUYu13CH+7ikoyBUkOPpws=";
   };
 
-  build-system = [ setuptools ];
-
   nativeBuildInputs = [
     cmake
     ninja
   ];
 
   buildInputs = [ llvm ] ++ lib.optionals withStaticLLVM [ libxml2.dev ];
-
+  env.LLVMLITE_SHARED = !withStaticLLVM;
   nativeCheckInputs = [ pytestCheckHook ];
-
-  dontUseCmakeConfigure = true;
 
   # https://github.com/NixOS/nixpkgs/issues/255262
   preCheck = ''
     cd $out
   '';
 
-  env.LLVMLITE_SHARED = !withStaticLLVM;
-
+  build-system = [ setuptools ];
+  disabled = isPyPy;
+  dontUseCmakeConfigure = true;
+  pyproject = true;
   passthru = lib.optionalAttrs (!withStaticLLVM) { inherit llvm; };
 
   meta = {
-    changelog = "https://github.com/numba/llvmlite/blob/v${version}/CHANGE_LOG";
     description = "Lightweight LLVM python binding for writing JIT compilers";
-    downloadPage = "https://github.com/numba/llvmlite";
     homepage = "http://llvmlite.pydata.org/";
+    changelog = "https://github.com/numba/llvmlite/blob/v${version}/CHANGE_LOG";
     license = lib.licenses.bsd2;
+    downloadPage = "https://github.com/numba/llvmlite";
   };
 }

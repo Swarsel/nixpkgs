@@ -1,15 +1,14 @@
 {
   lib,
+  fetchFromGitHub,
   attrs,
   buildPythonPackage,
-  fetchFromGitHub,
   pytestCheckHook,
 }:
 
 buildPythonPackage rec {
   pname = "sumtypes";
   version = "0.1a6";
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "radix";
@@ -19,8 +18,8 @@ buildPythonPackage rec {
   };
 
   propagatedBuildInputs = [ attrs ];
-
   nativeCheckInputs = [ pytestCheckHook ];
+  format = "setuptools";
 
   meta = {
     description = "Algebraic data types for Python";

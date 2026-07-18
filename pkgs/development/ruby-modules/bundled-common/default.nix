@@ -1,37 +1,37 @@
 {
-  stdenv,
   lib,
-  buildPackages,
-  runCommand,
-  ruby,
-  defaultGemConfig,
-  buildRubyGem,
+  stdenv,
   buildEnv,
-  makeBinaryWrapper,
+  buildPackages,
+  buildRubyGem,
   bundler,
+  defaultGemConfig,
+  makeBinaryWrapper,
+  ruby,
+  runCommand,
 }@defs:
 
 {
-  name ? null,
-  pname ? null,
-  version ? null,
-  mainGemName ? null,
+  buildInputs ? [ ],
+  copyGemFiles ? false, # Copy gem files instead of symlinking
+  document ? [ ],
+  extraConfigPaths ? [ ],
+  gemConfig ? defaultGemConfig,
   gemdir ? null,
   gemfile ? null,
-  lockfile ? null,
   gemset ? null,
-  ruby ? defs.ruby,
-  copyGemFiles ? false, # Copy gem files instead of symlinking
-  gemConfig ? defaultGemConfig,
-  postBuild ? null,
-  document ? [ ],
-  meta ? { },
   groups ? null,
   ignoreCollisions ? false,
+  lockfile ? null,
+  mainGemName ? null,
+  meta ? { },
+  name ? null,
   nativeBuildInputs ? [ ],
-  buildInputs ? [ ],
-  extraConfigPaths ? [ ],
   passthru ? { },
+  pname ? null,
+  postBuild ? null,
+  ruby ? defs.ruby,
+  version ? null,
   ...
 }@args:
 
@@ -145,11 +145,7 @@ let
       pname
       ;
 
-    name = name';
     version = version';
-
-    paths = envPaths;
-    pathsToLink = [ "/lib" ];
 
     postBuild =
       genStubsScript (
@@ -162,10 +158,9 @@ let
       )
       + lib.optionalString (postBuild != null) postBuild;
 
-    meta = {
-      platforms = ruby.meta.platforms;
-    }
-    // meta;
+    name = name';
+    paths = envPaths;
+    pathsToLink = [ "/lib" ];
 
     passthru = (
       lib.optionalAttrs (pname != null) {
@@ -180,12 +175,40 @@ let
           envPaths
           ;
 
+        env =
+          let
+            irbrc = builtins.toFile "irbrc" ''
+              if !(ENV["OLD_IRBRC"].nil? || ENV["OLD_IRBRC"].empty?)
+                require ENV["OLD_IRBRC"]
+              end
+              require 'rubygems'
+              require 'bundler/setup'
+            '';
+          in
+          stdenv.mkDerivation {
+            nativeBuildInputs = [
+              wrappedRuby
+              basicEnv
+            ];
+
+            buildCommand = ''
+              echo >&2 ""
+              echo >&2 "*** Ruby 'env' attributes are intended for interactive nix-shell sessions, not for building! ***"
+              echo >&2 ""
+              exit 1
+            '';
+
+            name = "${pname'}-interactive-environment";
+
+            shellHook = ''
+              export OLD_IRBRC=$IRBRC
+              export IRBRC=${irbrc}
+            '';
+          };
+
         wrappedRuby = stdenv.mkDerivation {
-          name = "wrapped-ruby-${pname'}";
-
+          inherit (ruby) meta;
           nativeBuildInputs = [ makeBinaryWrapper ];
-
-          dontUnpack = true;
 
           buildPhase = ''
             mkdir -p $out/bin
@@ -199,46 +222,24 @@ let
             done
           '';
 
-          dontInstall = true;
-
           doCheck = true;
+
           checkPhase = ''
             $out/bin/ruby --help > /dev/null
           '';
 
-          inherit (ruby) meta;
+          dontInstall = true;
+          dontUnpack = true;
+          name = "wrapped-ruby-${pname'}";
         };
-
-        env =
-          let
-            irbrc = builtins.toFile "irbrc" ''
-              if !(ENV["OLD_IRBRC"].nil? || ENV["OLD_IRBRC"].empty?)
-                require ENV["OLD_IRBRC"]
-              end
-              require 'rubygems'
-              require 'bundler/setup'
-            '';
-          in
-          stdenv.mkDerivation {
-            name = "${pname'}-interactive-environment";
-            nativeBuildInputs = [
-              wrappedRuby
-              basicEnv
-            ];
-            shellHook = ''
-              export OLD_IRBRC=$IRBRC
-              export IRBRC=${irbrc}
-            '';
-            buildCommand = ''
-              echo >&2 ""
-              echo >&2 "*** Ruby 'env' attributes are intended for interactive nix-shell sessions, not for building! ***"
-              echo >&2 ""
-              exit 1
-            '';
-          };
       }
       // passthru
     );
+
+    meta = {
+      platforms = ruby.meta.platforms;
+    }
+    // meta;
   };
 
   basicEnv =

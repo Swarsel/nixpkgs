@@ -2,11 +2,11 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  writeShellScript,
-  nix-update,
   gradle,
   jdk21,
   jre_minimal,
+  nix-update,
+  writeShellScript,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -25,18 +25,10 @@ stdenv.mkDerivation (finalAttrs: {
     jdk21
   ];
 
-  mitmCache = gradle.fetchDeps {
-    inherit (finalAttrs) pname;
-    data = ./deps.json;
-  };
-
   # JSpecify's build.gradle reads JAVA_VERSION (defaults to 11). Pin it so Gradle's
   # toolchain machinery resolves to the JDK we provide instead of trying
   # to auto-download one.
   env.JAVA_VERSION = lib.versions.major jdk21.version;
-
-  gradleBuildTask = "assemble";
-
   doCheck = true;
 
   installPhase = ''
@@ -48,17 +40,24 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  gradleBuildTask = "assemble";
+
+  mitmCache = gradle.fetchDeps {
+    inherit (finalAttrs) pname;
+    data = ./deps.json;
+  };
+
   passthru.updateScript = writeShellScript "update-jspecify" ''
     ${lib.getExe nix-update} jspecify
     $(nix-build -A jspecify.mitmCache.updateScript)
   '';
 
   meta = {
-    homepage = "https://jspecify.dev";
+    inherit (jre_minimal.meta) platforms;
     description = "Standard Annotations for Java Static Analysis";
+    homepage = "https://jspecify.dev";
     license = lib.licenses.asl20;
     sourceProvenance = with lib.sourceTypes; [ fromSource ];
-    inherit (jre_minimal.meta) platforms;
     maintainers = with lib.maintainers; [ msgilligan ];
   };
 })

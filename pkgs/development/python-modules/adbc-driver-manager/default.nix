@@ -1,12 +1,10 @@
 {
   lib,
   buildPythonPackage,
-  fetchPypi,
-
   # build-system
   cython,
+  fetchPypi,
   setuptools,
-
   # dependencies
   typing-extensions,
 }:
@@ -14,14 +12,16 @@
 buildPythonPackage (finalAttrs: {
   pname = "adbc-driver-manager";
   version = "1.11.0";
-  pyproject = true;
-  __structuredAttrs = true;
 
   src = fetchPypi {
-    pname = "adbc_driver_manager";
     inherit (finalAttrs) version;
     hash = "sha256-xkqqvrWBAQmrPSlhAI8bAU6fLYez30QWwqCApAI3r1A=";
+    pname = "adbc_driver_manager";
   };
+
+  # Tests create a circular dependency on adbc-driver-sqlite
+  doCheck = false;
+  __structuredAttrs = true;
 
   build-system = [
     cython
@@ -32,8 +32,7 @@ buildPythonPackage (finalAttrs: {
     typing-extensions
   ];
 
-  # Tests create a circular dependency on adbc-driver-sqlite
-  doCheck = false;
+  pyproject = true;
 
   pythonImportsCheck = [
     "adbc_driver_manager"

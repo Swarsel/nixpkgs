@@ -1,15 +1,16 @@
 {
+  lib,
+  stdenv,
+  fetchurl,
   apr,
   aprutil,
   directoryListingUpdater,
-  fetchurl,
-  lib,
   mod_ca,
   pkg-config,
-  stdenv,
 }:
 
 stdenv.mkDerivation rec {
+  inherit (mod_ca) configureFlags installFlags;
   pname = "mod_pkcs12";
   version = "0.2.3";
 
@@ -26,8 +27,6 @@ stdenv.mkDerivation rec {
     mod_ca
   ];
 
-  inherit (mod_ca) configureFlags installFlags;
-
   passthru.updateScript = directoryListingUpdater {
     url = "https://redwax.eu/dist/rs/";
   };
@@ -37,7 +36,7 @@ stdenv.mkDerivation rec {
     homepage = "https://redwax.eu";
     changelog = "https://source.redwax.eu/projects/RS/repos/mod_pkcs12/browse/ChangeLog";
     license = lib.licenses.asl20;
-    platforms = lib.platforms.unix;
     maintainers = with lib.maintainers; [ dirkx ];
+    platforms = lib.platforms.unix;
   };
 }

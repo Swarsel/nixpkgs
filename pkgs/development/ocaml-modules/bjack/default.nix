@@ -1,10 +1,10 @@
 {
   lib,
-  buildDunePackage,
   fetchFromGitHub,
+  buildDunePackage,
   dune-configurator,
-  libsamplerate,
   libjack2,
+  libsamplerate,
 }:
 
 buildDunePackage (finalAttrs: {
@@ -19,14 +19,15 @@ buildDunePackage (finalAttrs: {
   };
 
   buildInputs = [ dune-configurator ];
+
   propagatedBuildInputs = [
     libsamplerate
     libjack2
   ];
 
   meta = {
-    homepage = "https://github.com/savonet/ocaml-bjack";
     description = "Blocking API for the jack audio connection kit";
+    homepage = "https://github.com/savonet/ocaml-bjack";
     license = lib.licenses.lgpl21Only;
     maintainers = with lib.maintainers; [ dandellion ];
   };

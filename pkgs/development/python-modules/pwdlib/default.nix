@@ -1,19 +1,18 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  hatchling,
-  hatch-regex-commit,
-  pytestCheckHook,
-  pytest-cov-stub,
   argon2-cffi,
   bcrypt,
+  buildPythonPackage,
+  hatch-regex-commit,
+  hatchling,
+  pytest-cov-stub,
+  pytestCheckHook,
 }:
 
 buildPythonPackage rec {
   pname = "pwdlib";
   version = "0.3.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "frankie567";
@@ -21,6 +20,11 @@ buildPythonPackage rec {
     tag = "v${version}";
     hash = "sha256-0ye/CYlDW73Y2HGKjSdk7LniVkQ6OznoO/qnypRCmBQ=";
   };
+
+  nativeCheckInputs = [
+    pytestCheckHook
+    pytest-cov-stub
+  ];
 
   build-system = [
     hatchling
@@ -32,17 +36,13 @@ buildPythonPackage rec {
     bcrypt
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "pwdlib" ];
-
-  nativeCheckInputs = [
-    pytestCheckHook
-    pytest-cov-stub
-  ];
 
   meta = {
     description = "Modern password hashing for Python";
-    changelog = "https://github.com/frankie567/pwdlib/releases/tag/v${version}";
     homepage = "https://github.com/frankie567/pwdlib";
+    changelog = "https://github.com/frankie567/pwdlib/releases/tag/v${version}";
     license = lib.licenses.mit;
     maintainers = [ ];
   };

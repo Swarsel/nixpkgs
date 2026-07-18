@@ -1,13 +1,13 @@
 {
   lib,
-  stdenvNoCC,
   fetchFromGitHub,
-  nix-update-script,
   gettext,
   meson,
   ninja,
+  nix-update-script,
   python3,
   sassc,
+  stdenvNoCC,
 }:
 
 stdenvNoCC.mkDerivation rec {
@@ -21,6 +21,11 @@ stdenvNoCC.mkDerivation rec {
     sha256 = "sha256-ZjeufUC3Eg1do3GKN1kW/EceuWfAsFnOkSCmscL+vxg=";
   };
 
+  postPatch = ''
+    chmod +x meson/install-to-dir.py
+    patchShebangs meson/install-to-dir.py
+  '';
+
   nativeBuildInputs = [
     gettext
     meson
@@ -28,11 +33,6 @@ stdenvNoCC.mkDerivation rec {
     python3
     sassc
   ];
-
-  postPatch = ''
-    chmod +x meson/install-to-dir.py
-    patchShebangs meson/install-to-dir.py
-  '';
 
   passthru = {
     updateScript = nix-update-script { };

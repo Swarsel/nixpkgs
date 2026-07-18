@@ -1,8 +1,8 @@
 {
   lib,
+  fetchFromGitHub,
   buildPythonPackage,
   commonmark,
-  fetchFromGitHub,
   markdown,
   pydash,
   pytestCheckHook,
@@ -17,7 +17,6 @@
 buildPythonPackage {
   pname = "sphinx-markdown-parser";
   version = "0.2.4";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "clayrisser";
@@ -29,6 +28,7 @@ buildPythonPackage {
   };
 
   nativeBuildInputs = [ setuptools ];
+  buildInputs = [ sphinx ];
 
   propagatedBuildInputs = [
     commonmark
@@ -40,11 +40,7 @@ buildPythonPackage {
     yapf
   ];
 
-  buildInputs = [ sphinx ];
-
   nativeCheckInputs = [ pytestCheckHook ];
-
-  pythonImportsCheck = [ "sphinx_markdown_parser" ];
 
   disabledTests = [
     # AssertionError
@@ -52,6 +48,9 @@ buildPythonPackage {
     "test_headings"
     "test_integration"
   ];
+
+  pyproject = true;
+  pythonImportsCheck = [ "sphinx_markdown_parser" ];
 
   meta = {
     description = "Write markdown inside of docutils & sphinx projects";

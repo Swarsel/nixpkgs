@@ -3,25 +3,25 @@
   stdenv,
   fetchFromGitLab,
   autoreconfHook,
+  libdrm,
+  libpciaccess,
+  nix-update-script,
   pkg-config,
   util-macros,
   xorg-server,
   xorgproto,
-  libdrm,
-  libpciaccess,
-  nix-update-script,
 }:
 stdenv.mkDerivation (finalAttrs: {
   pname = "xf86-video-tdfx";
   version = "1.5.0";
 
   src = fetchFromGitLab {
-    domain = "gitlab.freedesktop.org";
-    group = "xorg";
     owner = "driver";
     repo = "xf86-video-tdfx";
     tag = "xf86-video-tdfx-${finalAttrs.version}";
     hash = "sha256-95LFAPBT4nTuTLx83wsdOCwLOLed39WtP5FXPqiO/LI=";
+    domain = "gitlab.freedesktop.org";
+    group = "xorg";
   };
 
   strictDeps = true;
@@ -50,6 +50,7 @@ stdenv.mkDerivation (finalAttrs: {
     license = lib.licenses.mit;
     maintainers = [ ];
     platforms = lib.platforms.unix;
+
     broken =
       # configure: error: cannot check for file existence when cross compiling
       (stdenv.hostPlatform != stdenv.buildPlatform)

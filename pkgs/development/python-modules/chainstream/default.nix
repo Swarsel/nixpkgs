@@ -1,7 +1,7 @@
 {
   lib,
-  fetchPypi,
   buildPythonPackage,
+  fetchPypi,
   setuptools,
 }:
 
@@ -9,15 +9,13 @@ buildPythonPackage rec {
   pname = "chainstream";
   version = "1.0.2";
 
-  pyproject = true;
-
-  nativeBuildInputs = [ setuptools ];
-
   src = fetchPypi {
     inherit pname version;
     hash = "sha256-syl107PRwDClB6wpgETCj6PKMNUnq9+uKB7dUydmF7M=";
   };
 
+  nativeBuildInputs = [ setuptools ];
+  pyproject = true;
   pythonImportsCheck = [ "chainstream" ];
 
   meta = {

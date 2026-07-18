@@ -3,18 +3,17 @@
   stdenv,
   fetchFromGitHub,
   python3Packages,
-  x11Support ? !stdenv.hostPlatform.isDarwin,
-  xclip ? null,
   pbcopy ? null,
   useGeoIP ? false, # Require /var/lib/geoip-databases/GeoIP.dat
+  x11Support ? !stdenv.hostPlatform.isDarwin,
+  xclip ? null,
 }:
 let
   version = "0.9.6";
 in
 python3Packages.buildPythonApplication {
-  pname = "tremc";
   inherit version;
-  pyproject = false;
+  pname = "tremc";
 
   src = fetchFromGitHub {
     owner = "tremc";
@@ -22,6 +21,18 @@ python3Packages.buildPythonApplication {
     tag = version;
     hash = "sha256-GbQ1x973M9sP9360gEzCypU7JlxwH/Uo/tUUQRlNfC8=";
   };
+
+  makeFlags = [ "DESTDIR=${placeholder "out"}" ];
+  doCheck = false;
+  dontBuild = true;
+
+  makeWrapperArgs = [
+    "--prefix PATH : ${
+      lib.makeBinPath (lib.optional x11Support xclip ++ lib.optional stdenv.hostPlatform.isDarwin pbcopy)
+    }"
+  ];
+
+  pyproject = false;
 
   pythonPath =
     with python3Packages;
@@ -31,22 +42,11 @@ python3Packages.buildPythonApplication {
     ]
     ++ lib.optional useGeoIP geoip;
 
-  dontBuild = true;
-  doCheck = false;
-
-  makeFlags = [ "DESTDIR=${placeholder "out"}" ];
-
-  makeWrapperArgs = [
-    "--prefix PATH : ${
-      lib.makeBinPath (lib.optional x11Support xclip ++ lib.optional stdenv.hostPlatform.isDarwin pbcopy)
-    }"
-  ];
-
   meta = {
     description = "Curses interface for transmission";
-    mainProgram = "tremc";
     homepage = "https://github.com/tremc/tremc";
     license = lib.licenses.gpl3Plus;
     maintainers = with lib.maintainers; [ kashw2 ];
+    mainProgram = "tremc";
   };
 }

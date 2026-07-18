@@ -1,9 +1,9 @@
 {
   lib,
-  stdenvNoCC,
   fetchurl,
-  makeWrapper,
   jre,
+  makeWrapper,
+  stdenvNoCC,
 }:
 
 stdenvNoCC.mkDerivation rec {
@@ -15,8 +15,6 @@ stdenvNoCC.mkDerivation rec {
     hash = "sha256-eUDVYYkDc4l/j2vpGlLnZUYfQOW+ThxEAQBAc+4NJYA=";
   };
 
-  dontUnpack = true;
-
   nativeBuildInputs = [ makeWrapper ];
 
   installPhase = ''
@@ -25,15 +23,19 @@ stdenvNoCC.mkDerivation rec {
     runHook postInstall
   '';
 
+  dontUnpack = true;
+
   meta = {
     description = "3D minecraft map renderer";
     homepage = "https://bluemap.bluecolored.de/";
-    sourceProvenance = with lib.sourceTypes; [ binaryBytecode ];
     license = lib.licenses.mit;
+    sourceProvenance = with lib.sourceTypes; [ binaryBytecode ];
+
     maintainers = with lib.maintainers; [
       dandellion
       h7x4
     ];
+
     mainProgram = "bluemap";
   };
 }

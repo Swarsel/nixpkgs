@@ -14,7 +14,6 @@
 buildPythonPackage rec {
   pname = "django-configurations";
   version = "2.5.1";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
@@ -22,8 +21,9 @@ buildPythonPackage rec {
   };
 
   buildInputs = [ setuptools-scm ];
-
   propagatedBuildInputs = [ django ];
+  # django.core.exceptions.ImproperlyConfigured: django-configurations settings importer wasn't correctly installed
+  doCheck = false;
 
   nativeCheckInputs = [
     mock
@@ -40,16 +40,14 @@ buildPythonPackage rec {
     ${django}/bin/django-admin.py test
   '';
 
-  # django.core.exceptions.ImproperlyConfigured: django-configurations settings importer wasn't correctly installed
-  doCheck = false;
-
+  format = "setuptools";
   pythonImportsCheck = [ "configurations" ];
 
   meta = {
     description = "Helper for organizing Django settings";
-    mainProgram = "django-cadmin";
     homepage = "https://django-configurations.readthedocs.io/";
     license = lib.licenses.bsd0;
     maintainers = [ ];
+    mainProgram = "django-cadmin";
   };
 }

@@ -4,12 +4,12 @@
   fetchurl,
   autoconf,
   bison,
-  file,
-  perl,
-  pkg-config,
   boehmgc,
+  file,
   gperf,
   libpaper,
+  perl,
+  pkg-config,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -26,6 +26,8 @@ stdenv.mkDerivation (finalAttrs: {
     substituteInPlace tests/defs.in --replace-fail "/bin/rm" "rm"
   '';
 
+  strictDeps = true;
+
   nativeBuildInputs = [
     autoconf
     bison
@@ -33,6 +35,7 @@ stdenv.mkDerivation (finalAttrs: {
     perl
     pkg-config
   ];
+
   buildInputs = [
     boehmgc
     gperf
@@ -41,16 +44,16 @@ stdenv.mkDerivation (finalAttrs: {
 
   env.NIX_CFLAGS_COMPILE = lib.optionalString stdenv.hostPlatform.isDarwin "-Wno-error=format-security";
 
-  strictDeps = true;
-
   meta = {
     description = "Anything to PostScript converter and pretty-printer";
+
     longDescription = ''
       GNU a2ps converts files into PostScript for printing or viewing. It uses a nice default format,
       usually two pages on each physical page, borders surrounding pages, headers with useful information
       (page number, printing date, file name or supplied header), line numbering, symbol substitution as
       well as pretty printing for a wide range of programming languages.
     '';
+
     homepage = "https://www.gnu.org/software/a2ps/";
     license = lib.licenses.gpl3Plus;
     maintainers = with lib.maintainers; [ bennofs ];

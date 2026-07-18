@@ -7,10 +7,10 @@
 # This follows the same pattern as buildGoModule's `goModules` FOD.
 {
   lib,
-  stdenvNoCC,
-  gitMinimal,
   cacert,
+  gitMinimal,
   jq,
+  stdenvNoCC,
 }:
 
 lib.extendMkDerivation {
@@ -23,35 +23,26 @@ lib.extendMkDerivation {
   extendDrvArgs =
     finalAttrs:
     {
-      pname,
-      version,
-      src,
       hash,
-      sourceRoot ? "",
-      patches ? [ ],
-      prePatch ? "",
-      postPatch ? "",
+      pname,
+      src,
+      version,
       # Package names to skip (e.g. already packaged in nix).
       excludePackages ? [ ],
+      patches ? [ ],
+      postPatch ? "",
+      prePatch ? "",
+      sourceRoot ? "",
     }:
     {
-      strictDeps = true;
-      __structuredAttrs = true;
-
       pname = "${pname}-lake-deps";
+      strictDeps = true;
 
       nativeBuildInputs = [
         gitMinimal
         cacert
         jq
       ];
-
-      impureEnvVars = lib.fetchers.proxyImpureEnvVars ++ [
-        "GIT_PROXY_COMMAND"
-        "SOCKS_SERVER"
-      ];
-
-      dontConfigure = true;
 
       buildPhase = ''
         runHook preBuild
@@ -91,10 +82,17 @@ lib.extendMkDerivation {
         runHook postInstall
       '';
 
+      __structuredAttrs = true;
+      dontConfigure = true;
       dontFixup = true;
 
-      outputHashMode = "recursive";
+      impureEnvVars = lib.fetchers.proxyImpureEnvVars ++ [
+        "GIT_PROXY_COMMAND"
+        "SOCKS_SERVER"
+      ];
+
       outputHash = hash;
       outputHashAlgo = if hash == "" then "sha256" else null;
+      outputHashMode = "recursive";
     };
 }

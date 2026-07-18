@@ -1,15 +1,14 @@
 {
   lib,
-  python3Packages,
   fetchFromGitHub,
-  wrapGAppsHook3,
   gobject-introspection,
   gtk3,
+  python3Packages,
+  wrapGAppsHook3,
 }:
 python3Packages.buildPythonApplication (finalAttrs: {
   pname = "nwg-icon-picker";
   version = "0.1.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "nwg-piotr";
@@ -17,6 +16,15 @@ python3Packages.buildPythonApplication (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-Gm3JhS6eq2mSex4VFe71tRf13qWDCSqXoiMvNIhu9Sw=";
   };
+
+  postInstall = ''
+    install -Dm444 -t $out/share/icons/hicolor/scalable/apps/ nwg-icon-picker.svg
+    install -Dm444 -t $out/share/applications/ nwg-icon-picker.desktop
+  '';
+
+  preFixup = ''
+    makeWrapperArgs+=("''${gappsWrapperArgs[@]}")
+  '';
 
   build-system = with python3Packages; [
     setuptools
@@ -29,16 +37,9 @@ python3Packages.buildPythonApplication (finalAttrs: {
     gtk3
   ];
 
-  postInstall = ''
-    install -Dm444 -t $out/share/icons/hicolor/scalable/apps/ nwg-icon-picker.svg
-    install -Dm444 -t $out/share/applications/ nwg-icon-picker.desktop
-  '';
-
   # prevent double wrapped binary
   dontWrapGApps = true;
-  preFixup = ''
-    makeWrapperArgs+=("''${gappsWrapperArgs[@]}")
-  '';
+  pyproject = true;
 
   pythonImportsCheck = [
     "gi"
@@ -48,7 +49,7 @@ python3Packages.buildPythonApplication (finalAttrs: {
     description = "GTK icon chooser with a text search option";
     homepage = "https://github.com/nwg-piotr/nwg-icon-picker";
     license = lib.licenses.mit;
-    mainProgram = "nwg-icon-picker";
     maintainers = with lib.maintainers; [ quantenzitrone ];
+    mainProgram = "nwg-icon-picker";
   };
 })

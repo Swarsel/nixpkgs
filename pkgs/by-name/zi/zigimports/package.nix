@@ -2,8 +2,8 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  zig_0_13,
   nix-update-script,
+  zig_0_13,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -29,11 +29,11 @@ stdenv.mkDerivation (finalAttrs: {
   passthru.updateScript = nix-update-script { };
 
   meta = {
+    inherit (zig_0_13.meta) platforms;
     description = "Automatically remove unused imports and globals from Zig files";
     homepage = "https://github.com/tusharsadhwani/zigimports";
     license = lib.licenses.mit;
     maintainers = [ lib.maintainers.jmbaur ];
     mainProgram = "zigimports";
-    inherit (zig_0_13.meta) platforms;
   };
 })

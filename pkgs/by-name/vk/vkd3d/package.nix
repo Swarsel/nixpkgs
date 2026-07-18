@@ -1,13 +1,13 @@
 {
   lib,
+  stdenv,
+  fetchFromGitLab,
   autoreconfHook,
   bison,
-  fetchFromGitLab,
   flex,
   perlPackages,
   pkg-config,
   spirv-headers,
-  stdenv,
   vulkan-headers,
   vulkan-loader,
   wine,
@@ -18,11 +18,11 @@ stdenv.mkDerivation (finalAttrs: {
   version = "2.0";
 
   src = fetchFromGitLab {
-    domain = "gitlab.winehq.org";
     owner = "wine";
     repo = "vkd3d";
     tag = "vkd3d-${finalAttrs.version}";
     hash = "sha256-S0sQaDt0aYYi2Rs/MNRIQ9oOuHm9/LsxaSL93M5jBRw=";
+    domain = "gitlab.winehq.org";
   };
 
   outputs = [
@@ -30,6 +30,8 @@ stdenv.mkDerivation (finalAttrs: {
     "dev"
     "lib"
   ];
+
+  strictDeps = true;
 
   nativeBuildInputs = [
     autoreconfHook
@@ -47,11 +49,10 @@ stdenv.mkDerivation (finalAttrs: {
     vulkan-loader
   ];
 
-  strictDeps = true;
-
   meta = {
-    homepage = "https://gitlab.winehq.org/wine/vkd3d";
+    inherit (wine.meta) platforms;
     description = "Direct3D to Vulkan translation library";
+
     longDescription = ''
       Vkd3d is a 3D graphics library built on top of Vulkan. It has an API very
       similar, but not identical, to Direct3D 12.
@@ -62,9 +63,10 @@ stdenv.mkDerivation (finalAttrs: {
       If vkd3d is available when building Wine, then Wine will use it to support
       Direct3D 12 applications.
     '';
+
+    homepage = "https://gitlab.winehq.org/wine/vkd3d";
     license = with lib.licenses; [ lgpl21Plus ];
-    mainProgram = "vkd3d-compiler";
     maintainers = with lib.maintainers; [ liberodark ];
-    inherit (wine.meta) platforms;
+    mainProgram = "vkd3d-compiler";
   };
 })

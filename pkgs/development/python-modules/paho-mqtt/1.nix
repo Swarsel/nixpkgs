@@ -1,24 +1,23 @@
 {
+  lib,
+  fetchFromGitHub,
   buildPythonPackage,
   esphome,
-  fetchFromGitHub,
-  lib,
   pytestCheckHook,
   setuptools,
 }:
 
 let
   testing = fetchFromGitHub {
+    hash = "sha256-SQoNdkWMjnasPjpXQF2yV97MUra8gb27pc3rNoA8Rjw=";
     owner = "eclipse";
     repo = "paho.mqtt.testing";
     rev = "a4dc694010217b291ee78ee13a6d1db812f9babd";
-    hash = "sha256-SQoNdkWMjnasPjpXQF2yV97MUra8gb27pc3rNoA8Rjw=";
   };
 in
 buildPythonPackage (finalAttrs: {
   pname = "paho-mqtt";
   version = "1.6.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "eclipse";
@@ -26,10 +25,6 @@ buildPythonPackage (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-9nH6xROVpmI+iTKXfwv2Ar1PAmWbEunI3HO0pZyK6Rg=";
   };
-
-  build-system = [ setuptools ];
-
-  pythonImportsCheck = [ "paho.mqtt" ];
 
   doCheck = false;
 
@@ -44,19 +39,23 @@ buildPythonPackage (finalAttrs: {
     export PYTHONPATH=".:$PYTHONPATH"
   '';
 
+  __darwinAllowLocalNetworking = true;
+  build-system = [ setuptools ];
+
   disabledTests = [
     # Fails during teardown
     # RuntimeError: Client 01-zero-length-clientid.py exited with code None, expected 0
     "test_01_zero_length_clientid"
   ];
 
-  __darwinAllowLocalNetworking = true;
+  pyproject = true;
+  pythonImportsCheck = [ "paho.mqtt" ];
 
   meta = {
-    changelog = "https://github.com/eclipse/paho.mqtt.python/blob/${finalAttrs.src.tag}/ChangeLog.txt";
+    inherit (esphome.meta) maintainers;
     description = "MQTT version 5.0/3.1.1 client class";
     homepage = "https://eclipse.org/paho";
+    changelog = "https://github.com/eclipse/paho.mqtt.python/blob/${finalAttrs.src.tag}/ChangeLog.txt";
     license = lib.licenses.epl20;
-    inherit (esphome.meta) maintainers;
   };
 })

@@ -1,14 +1,12 @@
 {
-  build-idris-package,
-  fetchFromGitHub,
-  contrib,
   lib,
+  fetchFromGitHub,
+  build-idris-package,
+  contrib,
 }:
 build-idris-package {
   pname = "smproc";
   version = "2018-02-08";
-
-  idrisDeps = [ contrib ];
 
   src = fetchFromGitHub {
     owner = "jameshaydon";
@@ -16,6 +14,8 @@ build-idris-package {
     rev = "b292d6c94fe005bcd984b8e5134b6f99933aa0af";
     sha256 = "02gqa2a32dwrvgz6pwsg8bniszbzwxlkzm53fq81sz3l9ja8ax1n";
   };
+
+  idrisDeps = [ contrib ];
 
   meta = {
     description = "Well-typed symmetric-monoidal category of concurrent processes";

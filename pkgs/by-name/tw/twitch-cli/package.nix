@@ -1,9 +1,9 @@
 {
-  stdenv,
-  buildGoModule,
-  fetchFromGitHub,
-  installShellFiles,
   lib,
+  stdenv,
+  fetchFromGitHub,
+  buildGoModule,
+  installShellFiles,
   testers,
   twitch-cli,
 }:
@@ -23,19 +23,12 @@ buildGoModule (finalAttrs: {
     ./application-name.patch
   ];
 
+  nativeBuildInputs = [ installShellFiles ];
   vendorHash = "sha256-LPpUnielSeGE0k68z+M565IqXQUIkAh5xloOqcbfh20=";
-
-  ldflags = [
-    "-s"
-    "-w"
-    "-X=main.buildVersion=${finalAttrs.version}"
-  ];
 
   preCheck = ''
     export HOME=$(mktemp -d)
   '';
-
-  nativeBuildInputs = [ installShellFiles ];
 
   postInstall = lib.optionalString (stdenv.buildPlatform.canExecute stdenv.hostPlatform) ''
     $out/bin/twitch-cli completion bash > twitch-cli.bash
@@ -49,17 +42,23 @@ buildGoModule (finalAttrs: {
 
   __darwinAllowLocalNetworking = true;
 
+  ldflags = [
+    "-s"
+    "-w"
+    "-X=main.buildVersion=${finalAttrs.version}"
+  ];
+
   passthru.tests.version = testers.testVersion {
-    package = twitch-cli;
-    command = "HOME=$(mktemp -d) twitch-cli version";
     version = "twitch-cli/${finalAttrs.version}";
+    command = "HOME=$(mktemp -d) twitch-cli version";
+    package = twitch-cli;
   };
 
   meta = {
     description = "Official Twitch CLI to make developing on Twitch easier";
-    mainProgram = "twitch-cli";
     homepage = "https://github.com/twitchdev/twitch-cli";
     license = lib.licenses.asl20;
     maintainers = with lib.maintainers; [ benediktbroich ];
+    mainProgram = "twitch-cli";
   };
 })

@@ -20,8 +20,8 @@ stdenv.mkDerivation {
 
   # don't fetch glaze from CMakeLists.txt
   patches = [ ./dont-fetchcontent.diff ];
-
   nativeBuildInputs = [ cmake ];
+
   buildInputs = [
     fmt
     (glaze.override { enableSSL = false; })
@@ -41,9 +41,9 @@ stdenv.mkDerivation {
   meta = {
     description = "Terminal Benchmarking as CLI and library";
     homepage = "https://github.com/contour-terminal/termbench-pro";
-    mainProgram = "tb";
     license = lib.licenses.asl20;
-    platforms = lib.platforms.unix;
     maintainers = with lib.maintainers; [ moni ];
+    platforms = lib.platforms.unix;
+    mainProgram = "tb";
   };
 }

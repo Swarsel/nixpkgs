@@ -1,14 +1,13 @@
 {
   lib,
-  python3Packages,
   fetchPypi,
   fetchpatch2,
+  python3Packages,
 }:
 
 python3Packages.buildPythonApplication (finalAttrs: {
   pname = "mpy-utils";
   version = "0.1.13";
-  pyproject = true;
 
   src = fetchPypi {
     inherit (finalAttrs) pname version;
@@ -18,9 +17,9 @@ python3Packages.buildPythonApplication (finalAttrs: {
   patches = [
     # https://github.com/nickzoic/mpy-utils/pull/20
     (fetchpatch2 {
+      hash = "sha256-ZgSEP+4yJf/0itApSmVh/hSqW10Ty+/kOjxg+XJsnn4=";
       name = "use-mfusepy.patch";
       url = "https://github.com/nickzoic/mpy-utils/commit/1513b4dc1096bd8861792cd13abafd2342fb5510.patch?full_index=1";
-      hash = "sha256-ZgSEP+4yJf/0itApSmVh/hSqW10Ty+/kOjxg+XJsnn4=";
     })
   ];
 
@@ -30,6 +29,8 @@ python3Packages.buildPythonApplication (finalAttrs: {
     mfusepy
     pyserial
   ];
+
+  pyproject = true;
 
   # Skip mpy_utils.replfuseops: importing it loads libfuse via ctypes, which
   # requires macFUSE on Darwin and is not available in the build sandbox.

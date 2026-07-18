@@ -1,31 +1,31 @@
 {
   lib,
-  rustPlatform,
-  cargo-tauri,
-  npmHooks,
+  stdenv,
   fetchFromGitHub,
+  adwaita-icon-theme,
+  cairo,
+  cargo-tauri,
   fetchNpmDeps,
-  pkg-config,
-  python3,
-  nodejs,
-  webkitgtk_4_1,
+  gdk-pixbuf,
   glib,
   gtk3,
-  openssl,
-  pango,
-  cairo,
-  pixman,
   librsvg,
-  gdk-pixbuf,
-  adwaita-icon-theme,
-  protobuf,
-  perl,
+  lld,
   makeWrapper,
   nix-update-script,
-  stdenv,
-  lld,
-  wasm-pack,
+  nodejs,
+  npmHooks,
+  openssl,
+  pango,
+  perl,
+  pixman,
+  pkg-config,
+  protobuf,
+  python3,
+  rustPlatform,
   wasm-bindgen-cli_0_2_100,
+  wasm-pack,
+  webkitgtk_4_1,
   wrapGAppsHook3,
 }:
 
@@ -40,14 +40,21 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-3sEq7VpzaIMbkvHQTQLf3NRbAJjtpOJpirdcA7y2FIE=";
   };
 
-  npmDeps = fetchNpmDeps {
-    inherit (finalAttrs) src;
-    hash = "sha256-zz9wlJ3yQ3oTyCFrAV7vD1xENLW+vmf2Pzly4yYas/g=";
-  };
+  postPatch = ''
+    substituteInPlace package.json \
+      --replace-fail '"version": "0.0.0"' '"version": "${finalAttrs.version}"'
 
-  cargoHash = "sha256-CMx7vTSGeQMXpXeH4LIOKEb29CfKXQV+r8tSYdmW5U4=";
+    substituteInPlace src-tauri/tauri.conf.json \
+      --replace-fail '"0.0.0"' '"${finalAttrs.version}"'
 
-  cargoRoot = "src-tauri";
+    substituteInPlace src-tauri/tauri.commercial.conf.json \
+      --replace-fail '"createUpdaterArtifacts": "v1Compatible"' '"createUpdaterArtifacts": false' \
+      --replace-fail '"https://update.yaak.app/check/{{target}}/{{arch}}/{{current_version}}"' '"https://non.existent.domain"'
+
+    substituteInPlace package.json \
+      --replace-fail '"bootstrap:vendor-node": "node scripts/vendor-node.cjs",' "" \
+      --replace-fail '"bootstrap:vendor-protoc": "node scripts/vendor-protoc.cjs",' ""
+  '';
 
   nativeBuildInputs = [
     cargo-tauri.hook
@@ -79,25 +86,10 @@ rustPlatform.buildRustPackage (finalAttrs: {
     webkitgtk_4_1
   ];
 
+  cargoHash = "sha256-CMx7vTSGeQMXpXeH4LIOKEb29CfKXQV+r8tSYdmW5U4=";
   env.ELECTRON_SKIP_BINARY_DOWNLOAD = "1";
   # This must be set so that `npm rebuild` doesn't download wasm-pack
   env.NPM_CONFIG_IGNORE_SCRIPTS = "true";
-
-  postPatch = ''
-    substituteInPlace package.json \
-      --replace-fail '"version": "0.0.0"' '"version": "${finalAttrs.version}"'
-
-    substituteInPlace src-tauri/tauri.conf.json \
-      --replace-fail '"0.0.0"' '"${finalAttrs.version}"'
-
-    substituteInPlace src-tauri/tauri.commercial.conf.json \
-      --replace-fail '"createUpdaterArtifacts": "v1Compatible"' '"createUpdaterArtifacts": false' \
-      --replace-fail '"https://update.yaak.app/check/{{target}}/{{arch}}/{{current_version}}"' '"https://non.existent.domain"'
-
-    substituteInPlace package.json \
-      --replace-fail '"bootstrap:vendor-node": "node scripts/vendor-node.cjs",' "" \
-      --replace-fail '"bootstrap:vendor-protoc": "node scripts/vendor-protoc.cjs",' ""
-  '';
 
   preBuild =
     let
@@ -117,15 +109,9 @@ rustPlatform.buildRustPackage (finalAttrs: {
       ln -s ${protobuf}/include src-tauri/vendored/protoc/include
     '';
 
-  tauriBuildFlags = [
-    "--config"
-    "./src-tauri/tauri.commercial.conf.json"
-  ];
-
   # Permission denied (os error 13)
   # write to src-tauri/vendored/protoc/include
   doCheck = false;
-
   preInstall = "pushd src-tauri";
 
   postInstall =
@@ -137,6 +123,18 @@ rustPlatform.buildRustPackage (finalAttrs: {
       popd
     '';
 
+  cargoRoot = "src-tauri";
+
+  npmDeps = fetchNpmDeps {
+    inherit (finalAttrs) src;
+    hash = "sha256-zz9wlJ3yQ3oTyCFrAV7vD1xENLW+vmf2Pzly4yYas/g=";
+  };
+
+  tauriBuildFlags = [
+    "--config"
+    "./src-tauri/tauri.commercial.conf.json"
+  ];
+
   passthru.updateScript = nix-update-script { };
 
   meta = {
@@ -145,11 +143,13 @@ rustPlatform.buildRustPackage (finalAttrs: {
     changelog = "https://github.com/mountain-loop/yaak/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ redyf ];
-    mainProgram = "yaak-app";
+
     platforms = [
       "x86_64-linux"
       "aarch64-linux"
       "aarch64-darwin"
     ];
+
+    mainProgram = "yaak-app";
   };
 })

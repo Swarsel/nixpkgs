@@ -1,37 +1,32 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  setuptools,
-  setuptools-scm,
-
-  pillow,
-  qrcode,
-  python-barcode,
-  six,
   appdirs,
-  pyyaml,
   argcomplete,
+  buildPythonPackage,
+  hypothesis,
   importlib-resources,
-
-  pyusb,
-  pyserial,
-  pycups,
-
   jaconv,
-  pytestCheckHook,
+  mock,
+  pillow,
+  pycups,
+  pyserial,
   pytest-cov-stub,
   pytest-mock,
+  pytestCheckHook,
+  python-barcode,
+  pyusb,
+  pyyaml,
+  qrcode,
   scripttest,
-  mock,
-  hypothesis,
+  setuptools,
+  setuptools-scm,
+  six,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "python-escpos";
   version = "3.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "python-escpos";
@@ -40,6 +35,25 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-f7qA1+8PwnXS526jjULEoyn0ejnvsneuWDt863p4J2g=";
     fetchSubmodules = true;
   };
+
+  nativeCheckInputs = [
+    jaconv
+    pytestCheckHook
+    pytest-cov-stub
+    pytest-mock
+    scripttest
+    mock
+    hypothesis
+  ]
+  ++ finalAttrs.passthru.optional-dependencies.all;
+
+  preCheck = ''
+    # force the tests to use the module in $out
+    rm -r src
+
+    # allow tests to find the cli executable
+    export PATH="$out/bin:$PATH"
+  '';
 
   build-system = [
     setuptools
@@ -58,43 +72,26 @@ buildPythonPackage (finalAttrs: {
   ];
 
   optional-dependencies = {
-    usb = [ pyusb ];
-    serial = [ pyserial ];
-    cups = [ pycups ];
     all = [
       pyusb
       pyserial
       pycups
     ];
+
+    cups = [ pycups ];
+    serial = [ pyserial ];
+    usb = [ pyusb ];
   };
 
-  preCheck = ''
-    # force the tests to use the module in $out
-    rm -r src
-
-    # allow tests to find the cli executable
-    export PATH="$out/bin:$PATH"
-  '';
-
-  nativeCheckInputs = [
-    jaconv
-    pytestCheckHook
-    pytest-cov-stub
-    pytest-mock
-    scripttest
-    mock
-    hypothesis
-  ]
-  ++ finalAttrs.passthru.optional-dependencies.all;
-
+  pyproject = true;
   pythonImportsCheck = [ "escpos" ];
 
   meta = {
-    changelog = "https://github.com/python-escpos/python-escpos/blob/${finalAttrs.src.rev}/CHANGELOG.rst";
     description = "Python library to manipulate ESC/POS printers";
     homepage = "https://python-escpos.readthedocs.io/";
+    changelog = "https://github.com/python-escpos/python-escpos/blob/${finalAttrs.src.rev}/CHANGELOG.rst";
     license = lib.licenses.mit;
-    mainProgram = "python-escpos";
     maintainers = with lib.maintainers; [ tomasajt ];
+    mainProgram = "python-escpos";
   };
 })

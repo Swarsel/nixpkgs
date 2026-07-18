@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   requests,
   setuptools,
   tqdm,
@@ -11,7 +11,6 @@
 buildPythonPackage rec {
   pname = "plexapi";
   version = "4.18.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "pkkid";
@@ -20,6 +19,8 @@ buildPythonPackage rec {
     hash = "sha256-iRUrIb3pknT92Pk6jdkQzE1pWx85i+T31Yy+Wt8Q7bQ=";
   };
 
+  # Tests require a running Plex instance
+  doCheck = false;
   build-system = [ setuptools ];
 
   dependencies = [
@@ -28,9 +29,7 @@ buildPythonPackage rec {
     websocket-client
   ];
 
-  # Tests require a running Plex instance
-  doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "plexapi" ];
 
   meta = {

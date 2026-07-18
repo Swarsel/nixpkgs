@@ -1,8 +1,8 @@
 {
   lib,
   stdenv,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   versionCheckHook,
 }:
 
@@ -18,7 +18,9 @@ buildGoModule (finalAttrs: {
   };
 
   vendorHash = "sha256-WF46wXaNU/Em0KpF6hkuuJ+7K1IKLGqpNS/HxpxX5WY=";
-
+  # flaky: races a 5ms sleep against a 5ms batch timeout
+  checkFlags = [ "-skip=^TestBatch$" ];
+  doInstallCheck = true;
   nativeInstallCheckInputs = [ versionCheckHook ];
 
   ldflags = [
@@ -26,11 +28,6 @@ buildGoModule (finalAttrs: {
     "-w"
     "-X=github.com/bloodhoundad/azurehound/v2/constants.Version=${finalAttrs.version}"
   ];
-
-  # flaky: races a 5ms sleep against a 5ms batch timeout
-  checkFlags = [ "-skip=^TestBatch$" ];
-
-  doInstallCheck = true;
 
   meta = {
     description = "Azure Data Exporter for BloodHound";

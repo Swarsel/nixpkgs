@@ -1,6 +1,6 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
 }:
 
@@ -21,8 +21,8 @@ stdenv.mkDerivation (finalAttrs: {
     description = "Simple xargs and apply replacement";
     homepage = "https://github.com/leahneukirchen/xe";
     license = lib.licenses.cc0;
-    platforms = lib.platforms.all;
     maintainers = [ lib.maintainers.pbsds ];
+    platforms = lib.platforms.all;
     mainProgram = "xe";
   };
 })

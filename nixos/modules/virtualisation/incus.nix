@@ -100,8 +100,8 @@ let
 
   # https://github.com/lxc/incus/blob/cff35a29ee3d7a2af1f937cbb6cf23776941854b/internal/server/instance/drivers/driver_qemu.go#L123
   OVMF2MB = pkgs.OVMF.override {
-    secureBoot = true;
     fdSize2MB = true;
+    secureBoot = true;
   };
   ovmf-prefix = if pkgs.stdenv.hostPlatform.isAarch64 then "AAVMF" else "OVMF";
   ovmf = pkgs.linkFarm "incus-ovmf" (
@@ -143,12 +143,12 @@ let
 
   environment = lib.mkMerge [
     {
+      INCUS_AGENT_PATH = "${cfg.package}/share/agent";
       INCUS_DOCUMENTATION = "${cfg.package.doc}/html";
       INCUS_EDK2_PATH = ovmf;
       INCUS_LXC_HOOK = "${cfg.lxcPackage}/share/lxc/hooks";
       INCUS_LXC_TEMPLATE_CONFIG = "${pkgs.lxcfs}/share/lxc/config";
       INCUS_USBIDS_PATH = "${pkgs.hwdata}/share/hwdata/usb.ids";
-      INCUS_AGENT_PATH = "${cfg.package}/share/agent";
     }
     (lib.mkIf (cfg.ui.enable) { "INCUS_UI" = cfg.ui.package; })
   ];
@@ -175,9 +175,11 @@ let
   '';
 in
 {
-  meta = {
-    teams = [ lib.teams.lxc ];
-  };
+  imports = [
+    (lib.mkRemovedOptionModule [ "virtualisation" "incus" "bucketSupport" ] ''
+      The option was only a temporary workaround to gate the insecure minio dependency until it could be dropped.
+    '')
+  ];
 
   options = {
     virtualisation.incus = {
@@ -194,31 +196,21 @@ in
 
       package = lib.mkPackageOption pkgs "incus-lts" { };
 
-      lxcPackage = lib.mkOption {
-        type = lib.types.package;
-        default = config.virtualisation.lxc.package;
-        defaultText = lib.literalExpression "config.virtualisation.lxc.package";
-        description = "The lxc package to use.";
-      };
-
       clientPackage = lib.mkOption {
-        type = lib.types.package;
         default = cfg.package.client;
         defaultText = lib.literalExpression "config.virtualisation.incus.package.client";
         description = "The incus client package to use. This package is added to PATH.";
+        type = lib.types.package;
       };
 
-      softDaemonRestart = lib.mkOption {
-        type = lib.types.bool;
-        default = true;
-        description = ''
-          Allow for incus.service to be stopped without affecting running instances.
-        '';
+      lxcPackage = lib.mkOption {
+        default = config.virtualisation.lxc.package;
+        defaultText = lib.literalExpression "config.virtualisation.lxc.package";
+        description = "The lxc package to use.";
+        type = lib.types.package;
       };
 
       preseed = lib.mkOption {
-        type = lib.types.nullOr (lib.types.submodule { freeformType = preseedFormat.type; });
-
         default = null;
 
         description = ''
@@ -233,23 +225,25 @@ in
         example = {
           networks = [
             {
-              name = "incusbr0";
-              type = "bridge";
               config = {
                 "ipv4.address" = "10.0.100.1/24";
                 "ipv4.nat" = "true";
               };
+
+              name = "incusbr0";
+              type = "bridge";
             }
           ];
+
           profiles = [
             {
-              name = "default";
               devices = {
                 eth0 = {
                   name = "eth0";
                   network = "incusbr0";
                   type = "nic";
                 };
+
                 root = {
                   path = "/";
                   pool = "default";
@@ -257,18 +251,24 @@ in
                   type = "disk";
                 };
               };
+
+              name = "default";
             }
           ];
+
           storage_pools = [
             {
-              name = "default";
-              driver = "dir";
               config = {
                 source = "/var/lib/incus/storage-pools/default";
               };
+
+              driver = "dir";
+              name = "default";
             }
           ];
         };
+
+        type = lib.types.nullOr (lib.types.submodule { freeformType = preseedFormat.type; });
       };
 
       socketActivation = lib.mkEnableOption ''
@@ -276,34 +276,48 @@ in
         will stop incus.service from starting automatically on boot.
       '';
 
+      softDaemonRestart = lib.mkOption {
+        default = true;
+
+        description = ''
+          Allow for incus.service to be stopped without affecting running instances.
+        '';
+
+        type = lib.types.bool;
+      };
+
       startTimeout = lib.mkOption {
-        type = lib.types.ints.unsigned;
-        default = 600;
         apply = toString;
+        default = 600;
+
         description = ''
           Time to wait (in seconds) for incusd to become ready to process requests.
           If incusd does not reply within the configured time, `incus.service` will be
           considered failed and systemd will attempt to restart it.
         '';
+
+        type = lib.types.ints.unsigned;
       };
 
       storage.truenas.enable = lib.mkEnableOption "TrueNAS storage driver support";
 
       ui = {
         enable = lib.mkEnableOption "Incus Web UI";
-
         package = lib.mkPackageOption pkgs [ "incus-ui-canonical" ] { };
       };
+
       useACMEHost = lib.mkOption {
-        type = lib.types.nullOr lib.types.str;
         default = null;
-        example = "incus.example.com";
+
         description = ''
           Host of an existing Let's Encrypt certificate to use for TLS.
           *Note that this option does not create any certificates and it
           doesn't add subdomains to existing ones – you will need to create
           them manually using {option}`security.acme.certs`.*
         '';
+
+        example = "incus.example.com";
+        type = lib.types.nullOr lib.types.str;
       };
     };
   };
@@ -317,6 +331,7 @@ in
             && !(config.networking.nftables.enable || config.networking.firewall.backend == "nftables")
             && config.virtualisation.incus.enable
           );
+
         message = "Incus on NixOS is unsupported using iptables. Set `networking.nftables.enable = true;`";
       }
       {
@@ -360,20 +375,35 @@ in
       pkgs.truenas-incus-ctl
     ];
 
-    # Note: the following options are also declared in virtualisation.lxc, but
-    # the latter can't be simply enabled to reuse the formers, because it
-    # does a bunch of unrelated things.
-    systemd.tmpfiles.rules = [ "d /var/lib/lxc/rootfs 0755 root root -" ];
+    security.acme.certs = lib.mkIf (cfg.useACMEHost != null) {
+      "${cfg.useACMEHost}".reloadServices = [ "incus.service" ];
+    };
 
     security.apparmor = {
+      includes."abstractions/base" = ''
+        # Allow incusd's various AA profiles to load dynamic libraries from Nix store
+        # https://discuss.linuxcontainers.org/t/creating-new-containers-vms-blocked-by-apparmor-on-nixos/21908/6
+        mr /nix/store/*/lib/*.so*,
+        r ${pkgs.stdenv.cc.libc}/lib/gconv/gconv-modules,
+        r ${pkgs.stdenv.cc.libc}/lib/gconv/gconv-modules.d/,
+        r ${pkgs.stdenv.cc.libc}/lib/gconv/gconv-modules.d/gconv-modules-extra.conf,
+
+        # Support use of VM instance
+        mrix ${pkgs.qemu_kvm}/bin/*,
+        k ${OVMF2MB.fd}/FV/*.fd,
+        k ${pkgs.OVMFFull.fd}/FV/*.fd,
+      ''
+      + lib.optionalString pkgs.stdenv.hostPlatform.isx86_64 ''
+        k ${pkgs.seabios-qemu}/share/seabios/bios.bin,
+      '';
+
       packages = [ cfg.lxcPackage ];
+
       policies = {
         "bin.lxc-start".profile = ''
           include ${cfg.lxcPackage}/etc/apparmor.d/usr.bin.lxc-start
         '';
-        "lxc-containers".profile = ''
-          include ${cfg.lxcPackage}/etc/apparmor.d/lxc-containers
-        '';
+
         "incusd".profile = ''
           # incusd is deliberatly left unconfined, with NO named profile attached to the binary.
           # Incus checks its own confinement at startup by reading /proc/self/attr/current
@@ -398,35 +428,16 @@ in
 
           include if exists "/var/lib/incus/security/apparmor/profiles"
         '';
+
+        "lxc-containers".profile = ''
+          include ${cfg.lxcPackage}/etc/apparmor.d/lxc-containers
+        '';
       };
-      includes."abstractions/base" = ''
-        # Allow incusd's various AA profiles to load dynamic libraries from Nix store
-        # https://discuss.linuxcontainers.org/t/creating-new-containers-vms-blocked-by-apparmor-on-nixos/21908/6
-        mr /nix/store/*/lib/*.so*,
-        r ${pkgs.stdenv.cc.libc}/lib/gconv/gconv-modules,
-        r ${pkgs.stdenv.cc.libc}/lib/gconv/gconv-modules.d/,
-        r ${pkgs.stdenv.cc.libc}/lib/gconv/gconv-modules.d/gconv-modules-extra.conf,
-
-        # Support use of VM instance
-        mrix ${pkgs.qemu_kvm}/bin/*,
-        k ${OVMF2MB.fd}/FV/*.fd,
-        k ${pkgs.OVMFFull.fd}/FV/*.fd,
-      ''
-      + lib.optionalString pkgs.stdenv.hostPlatform.isx86_64 ''
-        k ${pkgs.seabios-qemu}/share/seabios/bios.bin,
-      '';
-    };
-
-    security.acme.certs = lib.mkIf (cfg.useACMEHost != null) {
-      "${cfg.useACMEHost}".reloadServices = [ "incus.service" ];
     };
 
     systemd.services.incus = {
-      description = "Incus Container and Virtual Machine Management Daemon";
-
       inherit environment path;
 
-      wantedBy = lib.mkIf (!cfg.socketActivation) [ "multi-user.target" ];
       after = [
         "network-online.target"
         "lxcfs.service"
@@ -435,78 +446,73 @@ in
       ++ lib.optionals config.virtualisation.vswitch.enable [ "ovs-vswitchd.service" ]
       ++ lib.optionals (cfg.useACMEHost != null) [ "acme-${cfg.useACMEHost}.service" ];
 
+      description = "Incus Container and Virtual Machine Management Daemon";
+
       requires = [
         "lxcfs.service"
         "incus.socket"
       ]
       ++ lib.optionals config.virtualisation.vswitch.enable [ "ovs-vswitchd.service" ];
 
-      wants = [
-        "network-online.target"
-      ]
-      ++ lib.optionals (cfg.useACMEHost != null) [ "acme-${cfg.useACMEHost}.service" ];
-
-      stopIfChanged = lib.mkIf cfg.softDaemonRestart false;
-
       serviceConfig = {
-        ExecStart = "${cfg.package}/bin/incusd --group incus-admin";
-        ExecStartPost = "${cfg.package}/bin/incusd waitready --timeout=${cfg.startTimeout}";
-        ExecStop = lib.optionalString (!cfg.softDaemonRestart) "${cfg.package}/bin/incus admin shutdown";
-
-        KillMode = "process"; # when stopping, leave the containers alone
-        Delegate = "yes";
-        LimitMEMLOCK = "infinity";
-        LimitNOFILE = "1048576";
-        LimitNPROC = "infinity";
-        TasksMax = "infinity";
-
-        Restart = "on-failure";
-        TimeoutStartSec = "${cfg.startTimeout}s";
-        TimeoutStopSec = "30s";
-
         BindReadOnlyPaths = lib.mkIf (cfg.useACMEHost != null) [
           "${acmeHostDir}/fullchain.pem:/var/lib/incus/server.crt"
           "${acmeHostDir}/key.pem:/var/lib/incus/server.key"
         ];
+
+        Delegate = "yes";
+        ExecStart = "${cfg.package}/bin/incusd --group incus-admin";
+        ExecStartPost = "${cfg.package}/bin/incusd waitready --timeout=${cfg.startTimeout}";
+        ExecStop = lib.optionalString (!cfg.softDaemonRestart) "${cfg.package}/bin/incus admin shutdown";
+        KillMode = "process"; # when stopping, leave the containers alone
+        LimitMEMLOCK = "infinity";
+        LimitNOFILE = "1048576";
+        LimitNPROC = "infinity";
+        Restart = "on-failure";
+        TasksMax = "infinity";
+        TimeoutStartSec = "${cfg.startTimeout}s";
+        TimeoutStopSec = "30s";
       };
+
+      stopIfChanged = lib.mkIf cfg.softDaemonRestart false;
+      wantedBy = lib.mkIf (!cfg.socketActivation) [ "multi-user.target" ];
+
+      wants = [
+        "network-online.target"
+      ]
+      ++ lib.optionals (cfg.useACMEHost != null) [ "acme-${cfg.useACMEHost}.service" ];
     };
 
-    systemd.services.incus-user = {
-      description = "Incus Container and Virtual Machine Management User Daemon";
+    systemd.services.incus-preseed = lib.mkIf (cfg.preseed != null) {
+      after = [ "incus.service" ];
+      bindsTo = [ "incus.service" ];
+      description = "Incus initialization with preseed file";
+      partOf = [ "incus.service" ];
 
-      inherit environment path;
-
-      after = [
-        "incus.service"
-        "incus-user.socket"
-      ];
-
-      requires = [
-        "incus-user.socket"
-      ];
+      script = ''
+        ${cfg.package}/bin/incus admin init --preseed <${preseedFormat.generate "incus-preseed.yaml" cfg.preseed}
+      '';
 
       serviceConfig = {
-        ExecStart = "${cfg.package}/bin/incus-user --group incus";
-
-        Restart = "on-failure";
+        RemainAfterExit = true;
+        Type = "oneshot";
       };
+
+      wantedBy = [ "incus.service" ];
     };
 
     systemd.services.incus-startup = lib.mkIf cfg.softDaemonRestart {
-      description = "Incus Instances Startup/Shutdown";
-
       inherit environment path;
 
       after = [
         "incus.service"
         "incus.socket"
       ];
-      requires = [ "incus.socket" ];
-      wantedBy = config.systemd.services.incus.wantedBy;
 
+      description = "Incus Instances Startup/Shutdown";
+      requires = [ "incus.socket" ];
       # restarting this service will affect instances
       restartIfChanged = false;
-      stopIfChanged = false;
 
       serviceConfig = {
         ExecStart = "${incus-startup} start";
@@ -516,63 +522,75 @@ in
         TimeoutStopSec = "600s";
         Type = "oneshot";
       };
+
+      stopIfChanged = false;
+      wantedBy = config.systemd.services.incus.wantedBy;
+    };
+
+    systemd.services.incus-user = {
+      inherit environment path;
+
+      after = [
+        "incus.service"
+        "incus-user.socket"
+      ];
+
+      description = "Incus Container and Virtual Machine Management User Daemon";
+
+      requires = [
+        "incus-user.socket"
+      ];
+
+      serviceConfig = {
+        ExecStart = "${cfg.package}/bin/incus-user --group incus";
+        Restart = "on-failure";
+      };
     };
 
     systemd.sockets.incus = {
       description = "Incus UNIX socket";
-      wantedBy = [ "sockets.target" ];
 
       socketConfig = {
         ListenStream = "/var/lib/incus/unix.socket";
-        SocketMode = "0660";
         SocketGroup = "incus-admin";
+        SocketMode = "0660";
       };
+
+      wantedBy = [ "sockets.target" ];
     };
 
     systemd.sockets.incus-user = {
       description = "Incus user UNIX socket";
-      wantedBy = [ "sockets.target" ];
 
       socketConfig = {
         ListenStream = "/var/lib/incus/unix.socket.user";
-        SocketMode = "0660";
         SocketGroup = "incus";
+        SocketMode = "0660";
       };
+
+      wantedBy = [ "sockets.target" ];
     };
 
-    systemd.services.incus-preseed = lib.mkIf (cfg.preseed != null) {
-      description = "Incus initialization with preseed file";
-
-      wantedBy = [ "incus.service" ];
-      after = [ "incus.service" ];
-      bindsTo = [ "incus.service" ];
-      partOf = [ "incus.service" ];
-
-      script = ''
-        ${cfg.package}/bin/incus admin init --preseed <${preseedFormat.generate "incus-preseed.yaml" cfg.preseed}
-      '';
-
-      serviceConfig = {
-        Type = "oneshot";
-        RemainAfterExit = true;
-      };
-    };
-
+    # Note: the following options are also declared in virtualisation.lxc, but
+    # the latter can't be simply enabled to reuse the formers, because it
+    # does a bunch of unrelated things.
+    systemd.tmpfiles.rules = [ "d /var/lib/lxc/rootfs 0755 root root -" ];
     users.groups.incus = { };
     users.groups.incus-admin = { };
 
     users.users.root = {
+      subGidRanges = [
+        {
+          count = 1000000000;
+          startGid = 1000000;
+        }
+      ];
+
       # match documented default ranges https://linuxcontainers.org/incus/docs/main/userns-idmap/#allowed-ranges
       subUidRanges = [
         {
+          count = 1000000000;
           startUid = 1000000;
-          count = 1000000000;
-        }
-      ];
-      subGidRanges = [
-        {
-          startGid = 1000000;
-          count = 1000000000;
         }
       ];
     };
@@ -580,9 +598,7 @@ in
     virtualisation.lxc.lxcfs.enable = true;
   };
 
-  imports = [
-    (lib.mkRemovedOptionModule [ "virtualisation" "incus" "bucketSupport" ] ''
-      The option was only a temporary workaround to gate the insecure minio dependency until it could be dropped.
-    '')
-  ];
+  meta = {
+    teams = [ lib.teams.lxc ];
+  };
 }

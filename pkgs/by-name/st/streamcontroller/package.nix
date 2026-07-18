@@ -1,20 +1,20 @@
 {
-  stdenv,
   lib,
-  isKde ? false,
-  python3Packages,
+  stdenv,
   fetchFromGitHub,
   copyDesktopItems,
-  makeDesktopItem,
-  wrapGAppsHook4,
   gobject-introspection,
+  kdotool,
   libadwaita,
   libportal,
   libportal-gtk4,
+  makeDesktopItem,
+  python3Packages,
+  udevCheckHook,
+  wrapGAppsHook4,
   xdg-desktop-portal,
   xdg-desktop-portal-gtk,
-  kdotool,
-  udevCheckHook,
+  isKde ? false,
 }:
 let
   # We have to hardcode revision because upstream often create multiple releases for the same version number.
@@ -23,67 +23,14 @@ let
 in
 stdenv.mkDerivation {
   pname = "streamcontroller";
-
   version = "1.5.0-beta.14";
 
   src = fetchFromGitHub {
-    repo = "StreamController";
-    owner = "StreamController";
     inherit rev;
+    owner = "StreamController";
+    repo = "StreamController";
     hash = "sha256-JGJc7bj58oZwvtExSv+tv7Ug84RYdEkcMBI3ZmqpaKY=";
   };
-
-  # The installation method documented upstream
-  # (https://streamcontroller.github.io/docs/latest/installation/) is to clone the repo,
-  # run `pip install`, then run `python3 main.py` to launch the program.
-  # Due to how the code is structured upstream, it's infeasible to use `buildPythonApplication`.
-
-  dontBuild = true;
-  installPhase =
-    # Some plugins needs to load things dynamically and in that case we won't find python3 without this
-    let
-      binPath = [
-        python3Packages.python.interpreter
-      ]
-      # Allows automatic detection of windows to switch pages on KDE
-      ++ lib.optional isKde kdotool;
-    in
-    ''
-      runHook preInstall
-
-      mkdir -p $out/usr/lib/streamcontroller
-      cp -r ./* $out/usr/lib/streamcontroller/
-
-      mkdir -p $out/bin/
-
-      # Note that the implementation of main.py assumes
-      # working directory to be at the root of the project's source code
-      makeWrapper \
-        ${python3Packages.python.interpreter} \
-        $out/bin/streamcontroller \
-        --add-flags main.py \
-        --chdir $out/usr/lib/streamcontroller \
-        --prefix PYTHONPATH : "$PYTHONPATH" \
-        --prefix PATH : "$PATH:${lib.makeBinPath binPath}"
-
-      mkdir -p "$out/etc/udev/rules.d"
-      cp ./udev.rules $out/etc/udev/rules.d/70-streamcontroller.rules
-
-      install -D ./flatpak/icon_256.png $out/share/icons/hicolor/256x256/apps/com.core447.StreamController.png
-
-      runHook postInstall
-    '';
-
-  desktopItems = [
-    (makeDesktopItem {
-      name = "StreamController";
-      desktopName = "StreamController";
-      exec = "streamcontroller";
-      icon = "com.core447.StreamController";
-      comment = "Control your Elgato Stream Decks";
-      categories = [ "Utility" ];
-    })
-  ];
 
   nativeBuildInputs = [
     copyDesktopItems
@@ -196,14 +143,66 @@ stdenv.mkDerivation {
     websocket-client
   ]);
 
+  installPhase =
+    # Some plugins needs to load things dynamically and in that case we won't find python3 without this
+    let
+      binPath = [
+        python3Packages.python.interpreter
+      ]
+      # Allows automatic detection of windows to switch pages on KDE
+      ++ lib.optional isKde kdotool;
+    in
+    ''
+      runHook preInstall
+
+      mkdir -p $out/usr/lib/streamcontroller
+      cp -r ./* $out/usr/lib/streamcontroller/
+
+      mkdir -p $out/bin/
+
+      # Note that the implementation of main.py assumes
+      # working directory to be at the root of the project's source code
+      makeWrapper \
+        ${python3Packages.python.interpreter} \
+        $out/bin/streamcontroller \
+        --add-flags main.py \
+        --chdir $out/usr/lib/streamcontroller \
+        --prefix PYTHONPATH : "$PYTHONPATH" \
+        --prefix PATH : "$PATH:${lib.makeBinPath binPath}"
+
+      mkdir -p "$out/etc/udev/rules.d"
+      cp ./udev.rules $out/etc/udev/rules.d/70-streamcontroller.rules
+
+      install -D ./flatpak/icon_256.png $out/share/icons/hicolor/256x256/apps/com.core447.StreamController.png
+
+      runHook postInstall
+    '';
+
   doInstallCheck = true;
+
+  desktopItems = [
+    (makeDesktopItem {
+      categories = [ "Utility" ];
+      comment = "Control your Elgato Stream Decks";
+      desktopName = "StreamController";
+      exec = "streamcontroller";
+      icon = "com.core447.StreamController";
+      name = "StreamController";
+    })
+  ];
+
+  # The installation method documented upstream
+  # (https://streamcontroller.github.io/docs/latest/installation/) is to clone the repo,
+  # run `pip install`, then run `python3 main.py` to launch the program.
+  # Due to how the code is structured upstream, it's infeasible to use `buildPythonApplication`.
+  dontBuild = true;
 
   meta = {
     description = "Elegant Linux app for the Elgato Stream Deck with support for plugins";
     homepage = "https://streamcontroller.core447.com/";
     license = lib.licenses.gpl3;
-    mainProgram = "streamcontroller";
     maintainers = with lib.maintainers; [ sifmelcara ];
     platforms = lib.platforms.linux;
+    mainProgram = "streamcontroller";
   };
 }

@@ -1,59 +1,37 @@
 {
   lib,
+  fetchFromGitHub,
   argcomplete,
   buildPythonPackage,
-  fetchFromGitHub,
-  hatchling,
-  hatch-vcs,
-  installShellFiles,
   colorama,
+  git,
+  hatch-vcs,
+  hatchling,
+  installShellFiles,
   packaging,
   platformdirs,
-  tomli,
-  userpath,
-  uv,
-  git,
-  writableTmpDirAsHomeHook,
-  pytestCheckHook,
   pypiserver,
   pytest-cov-stub,
   pytest-mock,
   pytest-subprocess,
   pytest-xdist,
+  pytestCheckHook,
+  tomli,
+  userpath,
+  uv,
   watchdog,
+  writableTmpDirAsHomeHook,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "pipx";
   version = "1.14.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "pypa";
     repo = "pipx";
     tag = finalAttrs.version;
     hash = "sha256-4qSCyaYHam9y04qTgEUvbo/XiY9WNqX2fKZJOAVE2EM=";
-  };
-
-  build-system = [
-    hatchling
-    hatch-vcs
-  ];
-
-  dependencies = [
-    argcomplete
-    colorama
-    packaging
-    platformdirs
-    tomli
-    userpath
-  ]
-  ++ finalAttrs.passthru.optional-dependencies.uv;
-
-  optional-dependencies = {
-    uv = [
-      uv
-    ];
   };
 
   nativeBuildInputs = [
@@ -73,10 +51,29 @@ buildPythonPackage (finalAttrs: {
     watchdog
   ];
 
-  pytestFlags = [
-    # start local pypi server and use in tests
-    "--net-pypiserver"
+  postInstall = ''
+    installShellCompletion --cmd pipx \
+      --bash <(register-python-argcomplete pipx --shell bash) \
+      --zsh <(register-python-argcomplete pipx --shell zsh) \
+      --fish <(register-python-argcomplete pipx --shell fish)
+  '';
+
+  __structuredAttrs = true;
+
+  build-system = [
+    hatchling
+    hatch-vcs
   ];
+
+  dependencies = [
+    argcomplete
+    colorama
+    packaging
+    platformdirs
+    tomli
+    userpath
+  ]
+  ++ finalAttrs.passthru.optional-dependencies.uv;
 
   disabledTests = [
     # disable tests, which require internet connection
@@ -110,23 +107,27 @@ buildPythonPackage (finalAttrs: {
     "test_shared_libs_excludes_setuptools"
   ];
 
-  postInstall = ''
-    installShellCompletion --cmd pipx \
-      --bash <(register-python-argcomplete pipx --shell bash) \
-      --zsh <(register-python-argcomplete pipx --shell zsh) \
-      --fish <(register-python-argcomplete pipx --shell fish)
-  '';
+  optional-dependencies = {
+    uv = [
+      uv
+    ];
+  };
+
+  pyproject = true;
+
+  pytestFlags = [
+    # start local pypi server and use in tests
+    "--net-pypiserver"
+  ];
 
   pythonImportsCheck = [ "pipx" ];
 
-  __structuredAttrs = true;
-
   meta = {
     description = "Install and run Python applications in isolated environments";
-    mainProgram = "pipx";
     homepage = "https://github.com/pypa/pipx";
     changelog = "https://github.com/pypa/pipx/blob/main/docs/changelog.md";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ yshym ];
+    mainProgram = "pipx";
   };
 })

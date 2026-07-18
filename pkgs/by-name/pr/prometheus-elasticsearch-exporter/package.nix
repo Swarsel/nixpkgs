@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   nixosTests,
 }:
 buildGoModule (finalAttrs: {
@@ -16,17 +16,18 @@ buildGoModule (finalAttrs: {
   };
 
   vendorHash = "sha256-8y0M1b34eJpuHOuXPemhB5kKwBSgU7cMFxOaIZFS/bo=";
-
   passthru.tests = { inherit (nixosTests.prometheus-exporters) elasticsearch; };
 
   meta = {
     description = "Elasticsearch stats exporter for Prometheus";
-    mainProgram = "elasticsearch_exporter";
     homepage = "https://github.com/prometheus-community/elasticsearch_exporter";
     license = lib.licenses.asl20;
+
     maintainers = with lib.maintainers; [
       de11n
       despsyched
     ];
+
+    mainProgram = "elasticsearch_exporter";
   };
 })

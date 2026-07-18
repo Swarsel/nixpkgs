@@ -1,23 +1,22 @@
 {
   lib,
-  buildPythonPackage,
-  fetchPypi,
   acme,
+  buildPythonPackage,
   certbot,
-  setuptools,
-  requests,
+  fetchPypi,
   pytz,
+  requests,
+  setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "certbot-dns-wedos";
   version = "2.4";
-  pyproject = true;
 
   src = fetchPypi {
     inherit version;
-    pname = "certbot_dns_wedos";
     hash = "sha256-Sle3hoBLwVPF30caCyYtt3raY5Gs9ekg0DthvHxvB4E=";
+    pname = "certbot_dns_wedos";
   };
 
   build-system = [ setuptools ];
@@ -29,6 +28,7 @@ buildPythonPackage rec {
     pytz
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "certbot_dns_wedos" ];
 
   meta = {

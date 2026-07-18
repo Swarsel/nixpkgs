@@ -9,31 +9,52 @@ let
   settingsFormat = (pkgs.formats.json { });
 in
 {
-  meta.maintainers = [ ];
-
   options = {
     services.step-ca = {
       enable = lib.mkEnableOption "the smallstep certificate authority server";
-      openFirewall = lib.mkEnableOption "opening the certificate authority server port";
       package = lib.mkPackageOption pkgs "step-ca" { };
+
       address = lib.mkOption {
-        type = lib.types.str;
-        example = "127.0.0.1";
         description = ''
           The address (without port) the certificate authority should listen at.
           This combined with {option}`services.step-ca.port` overrides {option}`services.step-ca.settings.address`.
         '';
+
+        example = "127.0.0.1";
+        type = lib.types.str;
       };
+
+      intermediatePasswordFile = lib.mkOption {
+        default = null;
+
+        description = ''
+          Path to the file containing the password for the intermediate
+          certificate private key.
+
+          ::: {.warning}
+          Make sure to use a quoted absolute path instead of a path literal
+          to prevent it from being copied to the globally readable Nix
+          store.
+          :::
+        '';
+
+        example = "/run/keys/smallstep-password";
+        type = lib.types.nullOr lib.types.externalPath;
+      };
+
+      openFirewall = lib.mkEnableOption "opening the certificate authority server port";
+
       port = lib.mkOption {
-        type = lib.types.port;
-        example = 8443;
         description = ''
           The port the certificate authority should listen on.
           This combined with {option}`services.step-ca.address` overrides {option}`services.step-ca.settings.address`.
         '';
+
+        example = 8443;
+        type = lib.types.port;
       };
+
       settings = lib.mkOption {
-        type = with lib.types; attrsOf anything;
         description = ''
           Settings that go into {file}`ca.json`. See
           [the step-ca manual](https://smallstep.com/docs/step-ca/configuration)
@@ -53,21 +74,8 @@ in
           {option}`services.step-ca.port`.
           :::
         '';
-      };
-      intermediatePasswordFile = lib.mkOption {
-        type = lib.types.nullOr lib.types.externalPath;
-        default = null;
-        example = "/run/keys/smallstep-password";
-        description = ''
-          Path to the file containing the password for the intermediate
-          certificate private key.
 
-          ::: {.warning}
-          Make sure to use a quoted absolute path instead of a path literal
-          to prevent it from being copied to the globally readable Nix
-          store.
-          :::
-        '';
+        type = with lib.types; attrsOf anything;
       };
     };
   };
@@ -82,30 +90,24 @@ in
       );
     in
     {
-      systemd.packages = [ cfg.package ];
-
       # configuration file indirection is needed to support reloading
       environment.etc."smallstep/ca.json".source = configFile;
 
-      systemd.services."step-ca" = {
-        wantedBy = [ "multi-user.target" ];
-        restartTriggers = [ configFile ];
-        unitConfig = {
-          ConditionFileNotEmpty = ""; # override upstream
-        };
-        serviceConfig = {
-          Type = "notify";
-          User = "step-ca";
-          Group = "step-ca";
-          UMask = "0077";
-          Environment = "HOME=%S/step-ca";
-          WorkingDirectory = ""; # override upstream
-          ReadWritePaths = ""; # override upstream
+      networking.firewall = lib.mkIf cfg.openFirewall {
+        allowedTCPPorts = [ cfg.port ];
+      };
 
-          # LocalCredential handles file permission problems arising from the use of DynamicUser.
-          LoadCredential = lib.mkIf (
-            cfg.intermediatePasswordFile != null
-          ) "intermediate_password:${cfg.intermediatePasswordFile}";
+      systemd.packages = [ cfg.package ];
+
+      systemd.services."step-ca" = {
+        restartTriggers = [ configFile ];
+
+        serviceConfig = {
+          # ProtectProc = "invisible"; # not supported by upstream yet
+          # ProcSubset = "pid"; # not supported by upstream yet
+          # PrivateUsers = true; # doesn't work with privileged ports therefore not supported by upstream
+          DynamicUser = true;
+          Environment = "HOME=%S/step-ca";
 
           ExecStart = [
             "" # override upstream
@@ -117,26 +119,37 @@ in
             )
           ];
 
-          # ProtectProc = "invisible"; # not supported by upstream yet
-          # ProcSubset = "pid"; # not supported by upstream yet
-          # PrivateUsers = true; # doesn't work with privileged ports therefore not supported by upstream
+          Group = "step-ca";
 
-          DynamicUser = true;
+          # LocalCredential handles file permission problems arising from the use of DynamicUser.
+          LoadCredential = lib.mkIf (
+            cfg.intermediatePasswordFile != null
+          ) "intermediate_password:${cfg.intermediatePasswordFile}";
+
+          ReadWritePaths = ""; # override upstream
           StateDirectory = "step-ca";
+          Type = "notify";
+          UMask = "0077";
+          User = "step-ca";
+          WorkingDirectory = ""; # override upstream
         };
-      };
 
-      users.users.step-ca = {
-        home = "/var/lib/step-ca";
-        group = "step-ca";
-        isSystemUser = true;
+        unitConfig = {
+          ConditionFileNotEmpty = ""; # override upstream
+        };
+
+        wantedBy = [ "multi-user.target" ];
       };
 
       users.groups.step-ca = { };
 
-      networking.firewall = lib.mkIf cfg.openFirewall {
-        allowedTCPPorts = [ cfg.port ];
+      users.users.step-ca = {
+        group = "step-ca";
+        home = "/var/lib/step-ca";
+        isSystemUser = true;
       };
     }
   );
+
+  meta.maintainers = [ ];
 }

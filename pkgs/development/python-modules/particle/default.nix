@@ -15,7 +15,6 @@
 buildPythonPackage rec {
   pname = "particle";
   version = "1.0.0";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
@@ -29,6 +28,12 @@ buildPythonPackage rec {
       --replace '"--benchmark-disable",' ""
   '';
 
+  nativeCheckInputs = [
+    pytestCheckHook
+    tabulate
+    pandas
+  ];
+
   build-system = [
     hatch-vcs
     hatchling
@@ -40,19 +45,14 @@ buildPythonPackage rec {
     hepunits
   ];
 
-  nativeCheckInputs = [
-    pytestCheckHook
-    tabulate
-    pandas
-  ];
-
-  pythonImportsCheck = [ "particle" ];
-
   disabledTestPaths = [
     # Requires pytest-benchmark and pytest-cov which we want to avoid using, as
     # it doesn't really test functionality.
     "tests/particle/test_performance.py"
   ];
+
+  pyproject = true;
+  pythonImportsCheck = [ "particle" ];
 
   meta = {
     description = "Package to deal with particles, the PDG particle data table and others";

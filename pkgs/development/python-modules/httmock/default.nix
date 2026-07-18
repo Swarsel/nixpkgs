@@ -1,15 +1,14 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  requests,
+  buildPythonPackage,
   pytestCheckHook,
+  requests,
 }:
 
 buildPythonPackage rec {
   pname = "httmock";
   version = "1.4.0";
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "patrys";
@@ -24,7 +23,7 @@ buildPythonPackage rec {
   ];
 
   enabledTestPaths = [ "tests.py" ];
-
+  format = "setuptools";
   pythonImportsCheck = [ "httmock" ];
 
   meta = {

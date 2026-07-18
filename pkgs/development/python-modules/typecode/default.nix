@@ -1,23 +1,22 @@
 {
   lib,
   fetchFromGitHub,
+  attrs,
+  binaryornot,
   buildPythonPackage,
+  commoncode,
+  pdfminer-six,
+  plugincode,
+  pytest-xdist,
+  pytestCheckHook,
   setuptools,
   setuptools-scm,
-  attrs,
-  pdfminer-six,
-  commoncode,
-  plugincode,
-  binaryornot,
   typecode-libmagic,
-  pytestCheckHook,
-  pytest-xdist,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "typecode";
   version = "30.2.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "aboutcode-org";
@@ -26,7 +25,10 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-+7Yu2t++4PaF8yT+kKgo5MP6lbr8CXkjo5/4KMrApZY=";
   };
 
-  dontConfigure = true;
+  nativeCheckInputs = [
+    pytestCheckHook
+    pytest-xdist
+  ];
 
   build-system = [
     setuptools
@@ -42,11 +44,6 @@ buildPythonPackage (finalAttrs: {
     typecode-libmagic
   ];
 
-  nativeCheckInputs = [
-    pytestCheckHook
-    pytest-xdist
-  ];
-
   disabledTests = [
     "TestFileTypesDataDriven"
 
@@ -57,6 +54,8 @@ buildPythonPackage (finalAttrs: {
     "test_media_image_img"
   ];
 
+  dontConfigure = true;
+  pyproject = true;
   pythonImportsCheck = [ "typecode" ];
 
   meta = {

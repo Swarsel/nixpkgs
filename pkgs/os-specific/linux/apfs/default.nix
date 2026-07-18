@@ -21,7 +21,6 @@ stdenv.mkDerivation {
     hash = "sha256-sT84qK5rpPwxKVrtaIPpAUBvzFqNgTHaDHgKXWYCkV4=";
   };
 
-  hardeningDisable = [ "pic" ];
   nativeBuildInputs = kernel.moduleBuildDependencies;
 
   makeFlags = kernelModuleMakeFlags ++ [
@@ -30,15 +29,17 @@ stdenv.mkDerivation {
     "INSTALL_MOD_PATH=$(out)"
   ];
 
-  passthru = {
-    tests.apfs = nixosTests.apfs;
+  hardeningDisable = [ "pic" ];
 
+  passthru = {
     inherit tag;
+    tests.apfs = nixosTests.apfs;
     updateScript = ./update.sh;
   };
 
   meta = {
     description = "APFS module for linux";
+
     longDescription = ''
       The Apple File System (APFS) is the copy-on-write filesystem currently
       used on all Apple devices. This module provides a degree of experimental
@@ -48,9 +49,10 @@ stdenv.mkDerivation {
       snapshots, and all the missing compression algorithms recently added.
       Encryption is still not in the works though.
     '';
+
     homepage = "https://github.com/linux-apfs/linux-apfs-rw";
     license = lib.licenses.gpl2Only;
-    platforms = lib.platforms.linux;
     maintainers = with lib.maintainers; [ Luflosi ];
+    platforms = lib.platforms.linux;
   };
 }

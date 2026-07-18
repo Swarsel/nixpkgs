@@ -13,17 +13,17 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-0lgpTOxf8y32GgYtcVbLDUDzyKvbsSZx3LKaDcdID6A=";
   };
 
-  sourceRoot = "${finalAttrs.src.name}/source";
+  postPatch = lib.optionalString (!stdenv.hostPlatform.isx86_64) ''
+    substituteInPlace Makefile \
+      --replace-fail '-DENABLE_SSE2' ""
+  '';
 
   makeFlags = [
     "PREFIX=$(out)"
     "SUFFIX="
   ];
 
-  postPatch = lib.optionalString (!stdenv.hostPlatform.isx86_64) ''
-    substituteInPlace Makefile \
-      --replace-fail '-DENABLE_SSE2' ""
-  '';
+  sourceRoot = "${finalAttrs.src.name}/source";
 
   meta = {
     description = "Resample library by Fons Adriaensen";

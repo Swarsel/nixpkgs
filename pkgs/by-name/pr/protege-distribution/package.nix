@@ -2,12 +2,12 @@
   lib,
   stdenv,
   fetchurl,
-  unzip,
-  jdk11,
   copyDesktopItems,
   iconConvTools,
+  jdk11,
   makeDesktopItem,
   makeWrapper,
+  unzip,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -18,14 +18,6 @@ stdenv.mkDerivation (finalAttrs: {
     url = "https://github.com/protegeproject/protege-distribution/releases/download/protege-${finalAttrs.version}/Protege-${finalAttrs.version}-platform-independent.zip";
     sha256 = "08pr0rn76wcc9bczdf93nlshxbid4z4nyvmaz198hhlq96aqpc3i";
   };
-
-  nativeBuildInputs = [
-    copyDesktopItems
-    iconConvTools
-    jdk11
-    makeWrapper
-    unzip
-  ];
 
   patches = [
     # Replace logic for searching the install directory with a static cd into $out
@@ -39,8 +31,13 @@ stdenv.mkDerivation (finalAttrs: {
     substituteInPlace run.sh --subst-var-by out $out
   '';
 
-  dontConfigure = true;
-  dontBuild = true;
+  nativeBuildInputs = [
+    copyDesktopItems
+    iconConvTools
+    jdk11
+    makeWrapper
+    unzip
+  ];
 
   installPhase = ''
     runHook preInstall
@@ -63,27 +60,32 @@ stdenv.mkDerivation (finalAttrs: {
 
   desktopItems = [
     (makeDesktopItem {
-      name = "Protege";
-      desktopName = "Protege Desktop";
-      icon = "protege";
-      comment = "OWL2 ontology editor";
       categories = [ "Development" ];
+      comment = "OWL2 ontology editor";
+      desktopName = "Protege Desktop";
       exec = "run-protege";
+      icon = "protege";
+      name = "Protege";
     })
   ];
+
+  dontBuild = true;
+  dontConfigure = true;
 
   meta = {
     description = "OWL2 ontology editor from Stanford, with third-party plugins included";
     homepage = "https://protege.stanford.edu/";
-    downloadPage = "https://protege.stanford.edu/products.php#desktop-protege";
-    maintainers = with lib.maintainers; [ nessdoor ];
+
     license = with lib.licenses; [
       asl20
       bsd2
       epl10
       lgpl3
     ];
+
+    maintainers = with lib.maintainers; [ nessdoor ];
     platforms = lib.platforms.linux;
     mainProgram = "run-protege";
+    downloadPage = "https://protege.stanford.edu/products.php#desktop-protege";
   };
 })

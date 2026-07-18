@@ -11,24 +11,30 @@ let
   inherit (lib) mkOption types concatStringsSep;
 in
 {
-  port = 9133;
   extraOpts = {
     gatewayAddress = mkOption {
-      type = types.str;
       default = "fritz.box";
+
       description = ''
         The hostname or IP of the FRITZ!Box.
       '';
+
+      type = types.str;
     };
 
     gatewayPort = mkOption {
-      type = types.port;
       default = 49000;
+
       description = ''
         The port of the FRITZ!Box UPnP service.
       '';
+
+      type = types.port;
     };
   };
+
+  port = 9133;
+
   serviceOpts = {
     serviceConfig = {
       ExecStart = ''

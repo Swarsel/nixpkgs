@@ -1,11 +1,12 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
+  rustPlatform,
 }:
 rustPlatform.buildRustPackage (finalAttrs: {
   pname = "tenere";
   version = "0.11.3";
+
   src = fetchFromGitHub {
     owner = "pythops";
     repo = "tenere";
@@ -14,7 +15,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
   };
 
   cargoHash = "sha256-okIn32IA6ZizfS2XjHxq8cPRIZzvZ4kIz1NI0X72Tfs=";
-
   requiredSystemFeatures = [ "big-parallel" ]; # for fat LTO from upstream
 
   meta = {

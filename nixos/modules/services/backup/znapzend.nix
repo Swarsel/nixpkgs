@@ -68,55 +68,61 @@ let
       {
         options = {
 
-          label = lib.mkOption {
-            type = lib.types.str;
-            description = "Label for this destination. Defaults to the attribute name.";
-          };
-
-          plan = lib.mkOption {
-            type = lib.types.str;
-            description = planDescription;
-            example = planExample;
-          };
-
           dataset = lib.mkOption {
-            type = lib.types.str;
             description = "Dataset name to send snapshots to.";
             example = "tank/main";
+            type = lib.types.str;
           };
 
           host = lib.mkOption {
-            type = lib.types.nullOr lib.types.str;
+            default = null;
+
             description = ''
               Host to use for the destination dataset. Can be prefixed with
               `user@` to specify the ssh user.
             '';
-            default = null;
+
             example = "john@example.com";
+            type = lib.types.nullOr lib.types.str;
           };
 
-          presend = lib.mkOption {
-            type = lib.types.nullOr lib.types.str;
-            description = ''
-              Command to run before sending the snapshot to the destination.
-              Intended to run a remote script via {command}`ssh` on the
-              destination, e.g. to bring up a backup disk or server or to put a
-              zpool online/offline. See also {option}`postsend`.
-            '';
-            default = null;
-            example = "ssh root@bserv zpool import -Nf tank";
+          label = lib.mkOption {
+            description = "Label for this destination. Defaults to the attribute name.";
+            type = lib.types.str;
+          };
+
+          plan = lib.mkOption {
+            description = planDescription;
+            example = planExample;
+            type = lib.types.str;
           };
 
           postsend = lib.mkOption {
-            type = lib.types.nullOr lib.types.str;
+            default = null;
+
             description = ''
               Command to run after sending the snapshot to the destination.
               Intended to run a remote script via {command}`ssh` on the
               destination, e.g. to bring up a backup disk or server or to put a
               zpool online/offline. See also {option}`presend`.
             '';
-            default = null;
+
             example = "ssh root@bserv zpool export tank";
+            type = lib.types.nullOr lib.types.str;
+          };
+
+          presend = lib.mkOption {
+            default = null;
+
+            description = ''
+              Command to run before sending the snapshot to the destination.
+              Intended to run a remote script via {command}`ssh` on the
+              destination, e.g. to bring up a backup disk or server or to put a
+              zpool online/offline. See also {option}`postsend`.
+            '';
+
+            example = "ssh root@bserv zpool import -Nf tank";
+            type = lib.types.nullOr lib.types.str;
           };
         };
 
@@ -128,120 +134,26 @@ let
     );
 
   srcType = lib.types.submodule (
-    { name, config, ... }:
+    { config, name, ... }:
     {
       options = {
 
         enable = lib.mkOption {
-          type = lib.types.bool;
-          description = "Whether to enable this source.";
           default = true;
-        };
-
-        recursive = lib.mkOption {
+          description = "Whether to enable this source.";
           type = lib.types.bool;
-          description = "Whether to do recursive snapshots.";
-          default = false;
-        };
-
-        mbuffer = {
-          enable = lib.mkOption {
-            type = lib.types.bool;
-            description = "Whether to use {command}`mbuffer`.";
-            default = false;
-          };
-
-          port = lib.mkOption {
-            type = lib.types.nullOr lib.types.ints.u16;
-            description = ''
-              Port to use for {command}`mbuffer`.
-
-              If this is null, it will run {command}`mbuffer` through
-              ssh.
-
-              If this is not null, it will run {command}`mbuffer`
-              directly through TCP, which is not encrypted but faster. In that
-              case the given port needs to be open on the destination host.
-            '';
-            default = null;
-          };
-
-          size = lib.mkOption {
-            type = mbufferSizeType;
-            description = ''
-              The size for {command}`mbuffer`.
-              Supports the units b, k, M, G.
-            '';
-            default = "1G";
-            example = "128M";
-          };
-        };
-
-        presnap = lib.mkOption {
-          type = lib.types.nullOr lib.types.str;
-          description = ''
-            Command to run before snapshots are taken on the source dataset,
-            e.g. for database locking/flushing. See also
-            {option}`postsnap`.
-          '';
-          default = null;
-          example = lib.literalExpression ''
-            '''''${pkgs.mariadb}/bin/mysql -e "set autocommit=0;flush tables with read lock;\\! ''${pkgs.coreutils}/bin/sleep 600" &  ''${pkgs.coreutils}/bin/echo $! > /tmp/mariadblock.pid ; sleep 10'''
-          '';
-        };
-
-        postsnap = lib.mkOption {
-          type = lib.types.nullOr lib.types.str;
-          description = ''
-            Command to run after snapshots are taken on the source dataset,
-            e.g. for database unlocking. See also {option}`presnap`.
-          '';
-          default = null;
-          example = lib.literalExpression ''
-            "''${pkgs.coreutils}/bin/kill `''${pkgs.coreutils}/bin/cat /tmp/mariadblock.pid`;''${pkgs.coreutils}/bin/rm /tmp/mariadblock.pid"
-          '';
-        };
-
-        timestampFormat = lib.mkOption {
-          type = timestampType;
-          description = ''
-            The timestamp format to use for constructing snapshot names.
-            The syntax is `strftime`-like. The string must
-            consist of the mandatory `%Y %m %d %H %M %S`.
-            Optionally  `- _ . :`  characters as well as any
-            alphanumeric character are allowed. If suffixed by a
-            `Z`, times will be in UTC.
-          '';
-          default = "%Y-%m-%d-%H%M%S";
-          example = "znapzend-%m.%d.%Y-%H%M%SZ";
-        };
-
-        sendDelay = lib.mkOption {
-          type = lib.types.int;
-          description = ''
-            Specify delay (in seconds) before sending snaps to the destination.
-            May be useful if you want to control sending time.
-          '';
-          default = 0;
-          example = 60;
-        };
-
-        plan = lib.mkOption {
-          type = lib.types.str;
-          description = planDescription;
-          example = planExample;
         };
 
         dataset = lib.mkOption {
-          type = lib.types.str;
           description = "The dataset to use for this source.";
           example = "tank/home";
+          type = lib.types.str;
         };
 
         destinations = lib.mkOption {
-          type = lib.types.attrsOf (destType config);
-          description = "Additional destinations.";
           default = { };
+          description = "Additional destinations.";
+
           example = lib.literalExpression ''
             {
               local = {
@@ -255,6 +167,116 @@ let
               };
             };
           '';
+
+          type = lib.types.attrsOf (destType config);
+        };
+
+        mbuffer = {
+          enable = lib.mkOption {
+            default = false;
+            description = "Whether to use {command}`mbuffer`.";
+            type = lib.types.bool;
+          };
+
+          port = lib.mkOption {
+            default = null;
+
+            description = ''
+              Port to use for {command}`mbuffer`.
+
+              If this is null, it will run {command}`mbuffer` through
+              ssh.
+
+              If this is not null, it will run {command}`mbuffer`
+              directly through TCP, which is not encrypted but faster. In that
+              case the given port needs to be open on the destination host.
+            '';
+
+            type = lib.types.nullOr lib.types.ints.u16;
+          };
+
+          size = lib.mkOption {
+            default = "1G";
+
+            description = ''
+              The size for {command}`mbuffer`.
+              Supports the units b, k, M, G.
+            '';
+
+            example = "128M";
+            type = mbufferSizeType;
+          };
+        };
+
+        plan = lib.mkOption {
+          description = planDescription;
+          example = planExample;
+          type = lib.types.str;
+        };
+
+        postsnap = lib.mkOption {
+          default = null;
+
+          description = ''
+            Command to run after snapshots are taken on the source dataset,
+            e.g. for database unlocking. See also {option}`presnap`.
+          '';
+
+          example = lib.literalExpression ''
+            "''${pkgs.coreutils}/bin/kill `''${pkgs.coreutils}/bin/cat /tmp/mariadblock.pid`;''${pkgs.coreutils}/bin/rm /tmp/mariadblock.pid"
+          '';
+
+          type = lib.types.nullOr lib.types.str;
+        };
+
+        presnap = lib.mkOption {
+          default = null;
+
+          description = ''
+            Command to run before snapshots are taken on the source dataset,
+            e.g. for database locking/flushing. See also
+            {option}`postsnap`.
+          '';
+
+          example = lib.literalExpression ''
+            '''''${pkgs.mariadb}/bin/mysql -e "set autocommit=0;flush tables with read lock;\\! ''${pkgs.coreutils}/bin/sleep 600" &  ''${pkgs.coreutils}/bin/echo $! > /tmp/mariadblock.pid ; sleep 10'''
+          '';
+
+          type = lib.types.nullOr lib.types.str;
+        };
+
+        recursive = lib.mkOption {
+          default = false;
+          description = "Whether to do recursive snapshots.";
+          type = lib.types.bool;
+        };
+
+        sendDelay = lib.mkOption {
+          default = 0;
+
+          description = ''
+            Specify delay (in seconds) before sending snaps to the destination.
+            May be useful if you want to control sending time.
+          '';
+
+          example = 60;
+          type = lib.types.int;
+        };
+
+        timestampFormat = lib.mkOption {
+          default = "%Y-%m-%d-%H%M%S";
+
+          description = ''
+            The timestamp format to use for constructing snapshot names.
+            The syntax is `strftime`-like. The string must
+            consist of the mandatory `%Y %m %d %H %M %S`.
+            Optionally  `- _ . :`  characters as well as any
+            alphanumeric character are allowed. If suffixed by a
+            `Z`, times will be in UTC.
+          '';
+
+          example = "znapzend-%m.%d.%Y-%H%M%SZ";
+          type = timestampType;
         };
       };
 
@@ -297,10 +319,12 @@ let
     with srcCfg;
     {
       enabled = onOff enable;
+
       # mbuffer is not referenced by its full path to accommodate non-NixOS systems or differing mbuffer versions between source and target
       mbuffer =
         with mbuffer;
         if enable then "mbuffer" + lib.optionalString (port != null) ":${toString port}" else "off";
+
       mbuffer_size = mbuffer.size;
       post_znap_cmd = nullOff postsnap;
       pre_znap_cmd = nullOff presnap;
@@ -329,9 +353,85 @@ in
     services.znapzend = {
       enable = lib.mkEnableOption "ZnapZend ZFS backup daemon";
 
+      autoCreation = lib.mkOption {
+        default = false;
+        description = "Automatically create the destination dataset if it does not exist.";
+        type = lib.types.bool;
+      };
+
+      features.compressed = lib.mkEnableOption ''
+        compressed feature which adds the options `-Lce` to
+        the {command}`zfs send` command. When this is enabled, make
+        sure that both the sending and receiving pool have the same relevant
+        features enabled. Using `-c` will skip unnecessary
+        decompress-compress stages, `-L` is for large block
+        support and -e is for embedded data support. see
+        {manpage}`znapzend(1)`
+        and {manpage}`zfs(8)`
+        for more info
+      '';
+
+      features.lowmemRecurse = lib.mkEnableOption ''
+        use lowmemRecurse on systems where you have too many datasets, so a
+        recursive listing of attributes to find backup plans exhausts the
+        memory available to {command}`znapzend`: instead, go the slower
+        way to first list all impacted dataset names, and then query their
+        configs one by one
+      '';
+
+      features.oracleMode = lib.mkEnableOption ''
+        destroying snapshots one by one instead of using one long argument list.
+        If source and destination are out of sync for a long time, you may have
+        so many snapshots to destroy that the argument gets is too long and the
+        command fails
+      '';
+
+      features.recvu = lib.mkEnableOption ''
+        recvu feature which uses `-u` on the receiving end to keep the destination
+        filesystem unmounted
+      '';
+
+      features.sendRaw = lib.mkEnableOption ''
+        sendRaw feature which adds the options `-w` to the
+        {command}`zfs send` command. For encrypted source datasets this
+        instructs zfs not to decrypt before sending which results in a remote
+        backup that can't be read without the encryption key/passphrase, useful
+        when the remote isn't fully trusted or not physically secure. This
+        option must be used consistently, raw incrementals cannot be based on
+        non-raw snapshots and vice versa
+      '';
+
+      features.skipIntermediates = lib.mkEnableOption ''
+        the skipIntermediates feature to send a single increment
+        between latest common snapshot and the newly made one. It may skip
+        several source snaps if the destination was offline for some time, and
+        it should skip snapshots not managed by znapzend. Normally for online
+        destinations, the new snapshot is sent as soon as it is created on the
+        source, so there are no automatic increments to skip
+      '';
+
+      features.zfsGetType = lib.mkEnableOption ''
+        using zfsGetType if your {command}`zfs get` supports a
+        `-t` argument for filtering by dataset type at all AND
+        lists properties for snapshots by default when recursing, so that there
+        is too much data to process while searching for backup plans.
+        If these two conditions apply to your system, the time needed for a
+        `--recursive` search for backup plans can literally
+        differ by hundreds of times (depending on the amount of snapshots in
+        that dataset tree... and a decent backup plan will ensure you have a lot
+        of those), so you would benefit from requesting this feature
+      '';
+
       logLevel = lib.mkOption {
         default = "debug";
+
+        description = ''
+          The log level when logging to file. Any of debug, info, warning, err,
+          alert. Default in daemonized form is debug.
+        '';
+
         example = "warning";
+
         type = lib.types.enum [
           "debug"
           "info"
@@ -339,45 +439,51 @@ in
           "err"
           "alert"
         ];
-        description = ''
-          The log level when logging to file. Any of debug, info, warning, err,
-          alert. Default in daemonized form is debug.
-        '';
       };
 
       logTo = lib.mkOption {
-        type = lib.types.str;
         default = "syslog::daemon";
-        example = "/var/log/znapzend.log";
+
         description = ''
           Where to log to (syslog::\<facility\> or \<filepath\>).
         '';
+
+        example = "/var/log/znapzend.log";
+        type = lib.types.str;
       };
 
       mailErrorSummaryTo = lib.mkOption {
-        type = lib.types.singleLineStr;
         default = "";
+
         description = ''
           Email address to send a summary to if "send task(s) failed".
         '';
+
+        type = lib.types.singleLineStr;
       };
 
       noDestroy = lib.mkOption {
-        type = lib.types.bool;
         default = false;
         description = "Does all changes to the filesystem except destroy.";
+        type = lib.types.bool;
       };
 
-      autoCreation = lib.mkOption {
-        type = lib.types.bool;
+      pure = lib.mkOption {
         default = false;
-        description = "Automatically create the destination dataset if it does not exist.";
+
+        description = ''
+          Do not persist any stateful znapzend setups. If this option is
+          enabled, your previously set znapzend setups will be cleared and only
+          the ones defined with this module will be applied.
+        '';
+
+        type = lib.types.bool;
       };
 
       zetup = lib.mkOption {
-        type = lib.types.attrsOf srcType;
-        description = "Znapzend configuration.";
         default = { };
+        description = "Znapzend configuration.";
+
         example = lib.literalExpression ''
           {
             "tank/home" = {
@@ -393,74 +499,9 @@ in
             };
           };
         '';
-      };
 
-      pure = lib.mkOption {
-        type = lib.types.bool;
-        description = ''
-          Do not persist any stateful znapzend setups. If this option is
-          enabled, your previously set znapzend setups will be cleared and only
-          the ones defined with this module will be applied.
-        '';
-        default = false;
+        type = lib.types.attrsOf srcType;
       };
-
-      features.oracleMode = lib.mkEnableOption ''
-        destroying snapshots one by one instead of using one long argument list.
-        If source and destination are out of sync for a long time, you may have
-        so many snapshots to destroy that the argument gets is too long and the
-        command fails
-      '';
-      features.recvu = lib.mkEnableOption ''
-        recvu feature which uses `-u` on the receiving end to keep the destination
-        filesystem unmounted
-      '';
-      features.compressed = lib.mkEnableOption ''
-        compressed feature which adds the options `-Lce` to
-        the {command}`zfs send` command. When this is enabled, make
-        sure that both the sending and receiving pool have the same relevant
-        features enabled. Using `-c` will skip unnecessary
-        decompress-compress stages, `-L` is for large block
-        support and -e is for embedded data support. see
-        {manpage}`znapzend(1)`
-        and {manpage}`zfs(8)`
-        for more info
-      '';
-      features.sendRaw = lib.mkEnableOption ''
-        sendRaw feature which adds the options `-w` to the
-        {command}`zfs send` command. For encrypted source datasets this
-        instructs zfs not to decrypt before sending which results in a remote
-        backup that can't be read without the encryption key/passphrase, useful
-        when the remote isn't fully trusted or not physically secure. This
-        option must be used consistently, raw incrementals cannot be based on
-        non-raw snapshots and vice versa
-      '';
-      features.skipIntermediates = lib.mkEnableOption ''
-        the skipIntermediates feature to send a single increment
-        between latest common snapshot and the newly made one. It may skip
-        several source snaps if the destination was offline for some time, and
-        it should skip snapshots not managed by znapzend. Normally for online
-        destinations, the new snapshot is sent as soon as it is created on the
-        source, so there are no automatic increments to skip
-      '';
-      features.lowmemRecurse = lib.mkEnableOption ''
-        use lowmemRecurse on systems where you have too many datasets, so a
-        recursive listing of attributes to find backup plans exhausts the
-        memory available to {command}`znapzend`: instead, go the slower
-        way to first list all impacted dataset names, and then query their
-        configs one by one
-      '';
-      features.zfsGetType = lib.mkEnableOption ''
-        using zfsGetType if your {command}`zfs get` supports a
-        `-t` argument for filtering by dataset type at all AND
-        lists properties for snapshots by default when recursing, so that there
-        is too much data to process while searching for backup plans.
-        If these two conditions apply to your system, the time needed for a
-        `--recursive` search for backup plans can literally
-        differ by hundreds of times (depending on the amount of snapshots in
-        that dataset tree... and a decent backup plan will ensure you have a lot
-        of those), so you would benefit from requesting this feature
-      '';
     };
   };
 
@@ -469,9 +510,8 @@ in
 
     systemd.services = {
       znapzend = {
-        description = "ZnapZend - ZFS Backup System";
-        wantedBy = [ "zfs.target" ];
         after = [ "zfs.target" ];
+        description = "ZnapZend - ZFS Backup System";
 
         path = with pkgs; [
           config.boot.zfs.package
@@ -497,14 +537,8 @@ in
           '';
 
         serviceConfig = {
-          # znapzendzetup --import apparently tries to connect to the backup
-          # host 3 times with a timeout of 30 seconds, leading to a startup
-          # delay of >90s when the host is down, which is just above the default
-          # service timeout of 90 seconds. Increase the timeout so it doesn't
-          # make the service fail in that case.
-          TimeoutStartSec = 180;
-          # Needs to have write access to ZFS
-          User = "root";
+          ExecReload = "${pkgs.coreutils}/bin/kill -HUP $MAINPID";
+
           ExecStart =
             let
               args = lib.concatStringsSep " " [
@@ -519,9 +553,19 @@ in
               ];
             in
             "${pkgs.znapzend}/bin/znapzend ${args}";
-          ExecReload = "${pkgs.coreutils}/bin/kill -HUP $MAINPID";
+
           Restart = "on-failure";
+          # znapzendzetup --import apparently tries to connect to the backup
+          # host 3 times with a timeout of 30 seconds, leading to a startup
+          # delay of >90s when the host is down, which is just above the default
+          # service timeout of 90 seconds. Increase the timeout so it doesn't
+          # make the service fail in that case.
+          TimeoutStartSec = 180;
+          # Needs to have write access to ZFS
+          User = "root";
         };
+
+        wantedBy = [ "zfs.target" ];
       };
     };
   };

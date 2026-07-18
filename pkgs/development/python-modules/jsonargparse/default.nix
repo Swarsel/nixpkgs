@@ -1,9 +1,9 @@
 {
   lib,
+  fetchFromGitHub,
   argcomplete,
   buildPythonPackage,
   docstring-parser,
-  fetchFromGitHub,
   fsspec,
   jsonnet,
   jsonschema,
@@ -24,7 +24,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "jsonargparse";
   version = "4.49.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "omni-us";
@@ -33,9 +32,20 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-1uaFarYJcx7J2/acuw/+6BuBUrZkCyBSrreNKV9bR5c=";
   };
 
-  build-system = [ setuptools ];
+  nativeCheckInputs = [
+    pytestCheckHook
+    types-pyyaml
+    types-requests
+  ];
 
+  build-system = [ setuptools ];
   dependencies = [ pyyaml ];
+
+  disabledTests = lib.optionals (pythonAtLeast "3.14") [
+    # _pickle.PicklingError: Can't pickle local object ...
+    "test_get_argument_group_class_underscores_to_dashes"
+    "test_pickle_parser"
+  ];
 
   optional-dependencies = lib.fix (self: {
     all =
@@ -49,36 +59,30 @@ buildPythonPackage (finalAttrs: {
       ++ self.signatures
       ++ self.toml
       ++ self.urls;
+
     argcomplete = [ argcomplete ];
     fsspec = [ fsspec ];
+
     jsonnet = [
       jsonnet
       # jsonnet-binary
     ];
+
     jsonschema = [ jsonschema ];
     omegaconf = [ omegaconf ];
     reconplogger = [ reconplogger ];
     ruyaml = [ ruyaml ];
+
     signatures = [
       docstring-parser
       typeshed-client
     ];
+
     toml = [ toml ];
     urls = [ requests ];
   });
 
-  nativeCheckInputs = [
-    pytestCheckHook
-    types-pyyaml
-    types-requests
-  ];
-
-  disabledTests = lib.optionals (pythonAtLeast "3.14") [
-    # _pickle.PicklingError: Can't pickle local object ...
-    "test_get_argument_group_class_underscores_to_dashes"
-    "test_pickle_parser"
-  ];
-
+  pyproject = true;
   pythonImportsCheck = [ "jsonargparse" ];
 
   meta = {

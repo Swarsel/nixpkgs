@@ -3,13 +3,13 @@
   stdenv,
   fetchurl,
   gnutls,
-  openssl,
   gsasl,
   libidn2,
+  openssl,
   pkg-config,
-  nlsSupport ? true,
-  idnSupport ? true,
   gsaslSupport ? true,
+  idnSupport ? true,
+  nlsSupport ? true,
   sslLibrary ? "gnutls",
 }:
 assert lib.assertOneOf "sslLibrary" sslLibrary [

@@ -3,12 +3,12 @@
   stdenv,
   fetchFromGitHub,
   autoreconfHook,
-  pkg-config,
-  munge,
-  lua5_1,
   libcap,
-  perl,
+  lua5_1,
+  munge,
   ncurses,
+  perl,
+  pkg-config,
 }:
 let
   lua = lua5_1;
@@ -49,8 +49,8 @@ stdenv.mkDerivation (finalAttrs: {
   meta = {
     description = "I/O forwarding server that implements a variant of the 9P protocol";
     homepage = "https://github.com/chaos/diod";
+    license = lib.licenses.gpl2Plus;
     maintainers = with lib.maintainers; [ rnhmjoj ];
     platforms = lib.platforms.linux;
-    license = lib.licenses.gpl2Plus;
   };
 })

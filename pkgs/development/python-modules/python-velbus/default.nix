@@ -8,7 +8,6 @@
 buildPythonPackage rec {
   pname = "python-velbus";
   version = "2.1.14";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
@@ -16,10 +15,9 @@ buildPythonPackage rec {
   };
 
   propagatedBuildInputs = [ pyserial ];
-
   # Project has not tests
   doCheck = false;
-
+  format = "setuptools";
   pythonImportsCheck = [ "velbus" ];
 
   meta = {

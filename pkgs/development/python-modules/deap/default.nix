@@ -2,24 +2,24 @@
   lib,
   buildPythonPackage,
   fetchPypi,
-  setuptools,
   moocore,
   numpy,
   pytestCheckHook,
+  setuptools,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "deap";
   version = "1.4.4";
-  pyproject = true;
-
-  __structuredAttrs = true;
 
   src = fetchPypi {
     inherit (finalAttrs) version;
-    pname = "deap";
     hash = "sha256-UNS9kk/KWhaj26i/2xFApV6cJM5QgWq09Wg9LzHC1zQ=";
+    pname = "deap";
   };
+
+  nativeCheckInputs = [ pytestCheckHook ];
+  __structuredAttrs = true;
 
   build-system = [
     setuptools
@@ -30,12 +30,13 @@ buildPythonPackage (finalAttrs: {
     numpy
   ];
 
-  nativeCheckInputs = [ pytestCheckHook ];
+  pyproject = true;
 
   meta = {
     description = "Novel evolutionary computation framework for rapid prototyping and testing of ideas";
     homepage = "https://github.com/DEAP/deap";
     license = lib.licenses.lgpl3Plus;
+
     maintainers = with lib.maintainers; [
       getpsyched
       psyanticy

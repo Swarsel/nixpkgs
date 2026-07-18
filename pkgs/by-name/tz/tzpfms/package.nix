@@ -1,5 +1,6 @@
 {
   lib,
+  stdenv,
   fetchFromSourcehut,
   libtirpc,
   libuuid,
@@ -8,7 +9,6 @@
   openssl,
   pkgconf,
   shellcheck,
-  stdenv,
   tpm2-tss,
   trousers,
   zfs,
@@ -26,10 +26,15 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-DHmJpfURyFPeOWxIkfwn4f0n2WeDYErevC1gY2oM3Vg=";
   };
 
-  env = {
-    TZPFMS_VERSION = ''"${finalAttrs.version}"'';
-    TZPFMS_DATE = "January 1, 1980";
-  };
+  postPatch = ''
+    substituteInPlace Makefile \
+      --replace-fail "-flto=full" "" \
+      --replace-fail "-flto" "" \
+      --replace-fail "out/" "$out/" \
+      --replace-fail "ln -f" "ln -sf"
+    substituteInPlace src/bin/zfs-tpm-list.cpp \
+      --replace-fail "none     = -1," "none     = (char)-1,"
+  '';
 
   nativeBuildInputs = [
     mandoc
@@ -47,17 +52,10 @@ stdenv.mkDerivation (finalAttrs: {
     zlib
   ];
 
-  postPatch = ''
-    substituteInPlace Makefile \
-      --replace-fail "-flto=full" "" \
-      --replace-fail "-flto" "" \
-      --replace-fail "out/" "$out/" \
-      --replace-fail "ln -f" "ln -sf"
-    substituteInPlace src/bin/zfs-tpm-list.cpp \
-      --replace-fail "none     = -1," "none     = (char)-1,"
-  '';
-
-  dontInstall = true;
+  env = {
+    TZPFMS_DATE = "January 1, 1980";
+    TZPFMS_VERSION = ''"${finalAttrs.version}"'';
+  };
 
   preFixup = ''
     rm -rf $out/{build,systemd,initramfs-tools,dracut}
@@ -65,22 +63,27 @@ stdenv.mkDerivation (finalAttrs: {
     mv -v $out/zfs-* $out/bin
   '';
 
+  dontInstall = true;
   passthru.updateScript = nix-update-script { };
 
   meta = {
-    homepage = "https://git.sr.ht/~nabijaczleweli/tzpfms";
     description = "TPM-based encryption keys for ZFS datasets.";
+
     longDescription = ''
       Essentially BitLocker, but for ZFS – a random raw key is generated
       and sealed to the TPM (both 2 and 1.x supported) with an additional
       optional password in front of it, tying the dataset to the platform
       and an additional optional secret (or to the possession of the back-up).
     '';
-    maintainers = with lib.maintainers; [ numinit ];
+
+    homepage = "https://git.sr.ht/~nabijaczleweli/tzpfms";
+
     license = with lib.licenses; [
       mit
       bsd0
     ];
+
+    maintainers = with lib.maintainers; [ numinit ];
     platforms = lib.platforms.linux;
   };
 })

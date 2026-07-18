@@ -17,17 +17,15 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-Mr7jdUK/5XMhcu6DgJHUKkdGbqNptf83I3663y/MhMo=";
   };
 
-  cargoHash = "sha256-8iCB6Vs3W6HcAjyL29WfciXT/OU56moPX13RYzGSLl0=";
-
-  __structuredAttrs = true;
-
   nativeBuildInputs = [ pkg-config ];
-
   buildInputs = [ openssl ];
+  cargoHash = "sha256-8iCB6Vs3W6HcAjyL29WfciXT/OU56moPX13RYzGSLl0=";
 
   env = {
     OPENSSL_NO_VENDOR = true;
   };
+
+  __structuredAttrs = true;
 
   meta = {
     description = "Programmable MITM proxy that intercepts HTTP/HTTPS traffic";

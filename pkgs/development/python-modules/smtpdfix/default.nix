@@ -1,21 +1,20 @@
 {
   lib,
+  aiosmtpd,
   buildPythonPackage,
+  cryptography,
   fetchPypi,
+  portpicker,
+  pytest,
+  pytest-asyncio,
+  pytestCheckHook,
   pythonAtLeast,
   setuptools,
-  pytest,
-  portpicker,
-  cryptography,
-  aiosmtpd,
-  pytestCheckHook,
-  pytest-asyncio,
 }:
 
 buildPythonPackage rec {
   pname = "smtpdfix";
   version = "0.5.3";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
@@ -40,6 +39,8 @@ buildPythonPackage rec {
     # https://github.com/bebleo/smtpdfix/issues/335
     "test_missing_certs"
   ];
+
+  pyproject = true;
 
   meta = {
     description = "SMTP server for use as a pytest fixture for testing";

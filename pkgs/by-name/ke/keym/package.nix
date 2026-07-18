@@ -3,8 +3,8 @@
   stdenv,
   fetchFromGitHub,
   libx11,
-  libxtst,
   libxi,
+  libxtst,
 }:
 
 stdenv.mkDerivation {
@@ -29,11 +29,11 @@ stdenv.mkDerivation {
   ];
 
   meta = {
-    homepage = "https://github.com/cwkx/keym";
     description = "C tool to control mouse with keyboard for X11";
+    homepage = "https://github.com/cwkx/keym";
     license = lib.licenses.mit;
+    maintainers = with lib.maintainers; [ CompileTime ];
     platforms = lib.platforms.linux;
     mainProgram = "keym";
-    maintainers = with lib.maintainers; [ CompileTime ];
   };
 }

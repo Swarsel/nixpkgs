@@ -1,38 +1,33 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # build-system
-  setuptools,
-
   # dependencies
   beautifulsoup4,
+  buildPythonPackage,
   fastcore,
   fastlite,
   httpx,
-  itsdangerous,
-  oauthlib,
-  python-dateutil,
-  python-multipart,
-  starlette,
-  uvicorn,
-
   # optional-dependencies
   ipython,
+  itsdangerous,
   lxml,
-  monsterui ? null, # TODO: package
+  oauthlib,
   pyjwt,
-  pysymbol-llm ? null, # TODO: package
-
   # tests
   pytestCheckHook,
+  python-dateutil,
+  python-multipart,
+  # build-system
+  setuptools,
+  starlette,
+  uvicorn,
+  monsterui ? null, # TODO: package
+  pysymbol-llm ? null, # TODO: package
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "fasthtml";
   version = "0.13.3";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "AnswerDotAI";
@@ -40,6 +35,10 @@ buildPythonPackage (finalAttrs: {
     tag = finalAttrs.version;
     hash = "sha256-PS5HGegC6pG/bJAGrKDsRYguBnNS9EDrZIjWvjErO4M=";
   };
+
+  nativeCheckInputs = [
+    pytestCheckHook
+  ];
 
   build-system = [
     setuptools
@@ -58,6 +57,11 @@ buildPythonPackage (finalAttrs: {
     uvicorn
   ];
 
+  disabledTests = [
+    # https://github.com/AnswerDotAI/fasthtml/issues/835
+    "test_get_toaster_with_typehint"
+  ];
+
   optional-dependencies = {
     dev = [
       ipython
@@ -68,14 +72,7 @@ buildPythonPackage (finalAttrs: {
     ];
   };
 
-  nativeCheckInputs = [
-    pytestCheckHook
-  ];
-
-  disabledTests = [
-    # https://github.com/AnswerDotAI/fasthtml/issues/835
-    "test_get_toaster_with_typehint"
-  ];
+  pyproject = true;
 
   pythonImportsCheck = [
     "fasthtml"

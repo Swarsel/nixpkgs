@@ -2,9 +2,9 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  zlib,
   net-tools,
   nixosTests,
+  zlib,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -19,9 +19,7 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   buildInputs = [ zlib ];
-
   env.NIX_CFLAGS_COMPILE = ''-DIFCONFIGPATH="${net-tools}/bin/" -DROUTEPATH="${net-tools}/bin/"'';
-
   installFlags = [ "prefix=\${out}" ];
 
   passthru.tests = {
@@ -29,10 +27,10 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   meta = {
-    homepage = "https://code.kryo.se/iodine/";
     description = "Tool to tunnel IPv4 data through a DNS server";
+    homepage = "https://code.kryo.se/iodine/";
     license = lib.licenses.isc;
-    platforms = lib.platforms.unix;
     maintainers = [ ];
+    platforms = lib.platforms.unix;
   };
 })

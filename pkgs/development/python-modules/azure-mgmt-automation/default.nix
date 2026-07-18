@@ -1,24 +1,25 @@
 {
   lib,
-  buildPythonPackage,
-  fetchPypi,
-  setuptools,
-  msrest,
   azure-common,
   azure-mgmt-core,
+  buildPythonPackage,
+  fetchPypi,
+  msrest,
+  setuptools,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "azure-mgmt-automation";
   version = "1.0.1";
-  pyproject = true;
 
   src = fetchPypi {
-    pname = "azure_mgmt_automation";
     inherit (finalAttrs) version;
     hash = "sha256-A/NYbg/gllws7cp5plM4CHKuYnwm6lNlpVuqTq1aeO8=";
+    pname = "azure_mgmt_automation";
   };
 
+  # has no tests
+  doCheck = false;
   build-system = [ setuptools ];
 
   dependencies = [
@@ -27,9 +28,7 @@ buildPythonPackage (finalAttrs: {
     azure-mgmt-core
   ];
 
-  # has no tests
-  doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "azure.mgmt.automation" ];
 
   meta = {

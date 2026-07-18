@@ -2,30 +2,25 @@
   lib,
   fetchFromGitHub,
   buildPythonPackage,
-
   # build-system
   cysignals,
   cython,
-  pkgconfig,
-  setuptools,
-
-  gmp,
-  pari,
-  mpfr,
   fplll,
+  gmp,
+  mpfr,
   numpy,
-
-  # Reverse dependency
-  sage,
-
+  pari,
+  pkgconfig,
   # tests
   pytestCheckHook,
+  # Reverse dependency
+  sage,
+  setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "fpylll";
   version = "0.6.4";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "fplll";
@@ -63,15 +58,17 @@ buildPythonPackage rec {
     export PY_IGNORE_IMPORTMISMATCH=1
   '';
 
+  pyproject = true;
+
   passthru.tests = {
     inherit sage;
   };
 
   meta = {
     description = "Python interface for fplll";
-    changelog = "https://github.com/fplll/fpylll/releases/tag/${src.tag}";
     homepage = "https://github.com/fplll/fpylll";
-    teams = [ lib.teams.sage ];
+    changelog = "https://github.com/fplll/fpylll/releases/tag/${src.tag}";
     license = lib.licenses.gpl2Plus;
+    teams = [ lib.teams.sage ];
   };
 }

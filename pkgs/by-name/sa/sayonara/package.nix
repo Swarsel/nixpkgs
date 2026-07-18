@@ -1,18 +1,18 @@
 {
-  stdenv,
-  cmake,
-  fetchFromGitLab,
-  nix-update-script,
-  gst_all_1,
   lib,
+  stdenv,
+  fetchFromGitLab,
+  cmake,
+  gst_all_1,
   libpulseaudio,
+  libsForQt5,
   ninja,
+  nix-update-script,
   pcre,
   pkg-config,
+  python3,
   taglib,
   zlib,
-  python3,
-  libsForQt5,
 }:
 
 let

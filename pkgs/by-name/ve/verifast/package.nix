@@ -2,17 +2,17 @@
   lib,
   stdenv,
   fetchurl,
-  gtk2,
-  gdk-pixbuf,
   atk,
-  pango,
-  glib,
   cairo,
-  freetype,
-  fontconfig,
-  libxml2,
-  gnome2,
   darwin,
+  fontconfig,
+  freetype,
+  gdk-pixbuf,
+  glib,
+  gnome2,
+  gtk2,
+  libxml2,
+  pango,
 }:
 
 let
@@ -52,13 +52,14 @@ stdenv.mkDerivation (
   finalAttrs:
   let
     srcs = {
-      x86_64-linux = fetchurl {
-        url = "https://github.com/verifast/verifast/releases/download/${finalAttrs.version}/${pname}-${finalAttrs.version}-linux.tar.gz";
-        hash = "sha256-HkABnWrdkb9yFByG9AB/L+Hu9n9FPLf7jx9at9MdUJ8=";
-      };
       aarch64-darwin = fetchurl {
-        url = "https://github.com/verifast/verifast/releases/download/${finalAttrs.version}/${pname}-${finalAttrs.version}-macos-aarch.tar.gz";
         hash = "sha256-/UicTlA4lFRk3OBgcsiS8YtDGmb7R7d6zeVLZo49HV8=";
+        url = "https://github.com/verifast/verifast/releases/download/${finalAttrs.version}/${pname}-${finalAttrs.version}-macos-aarch.tar.gz";
+      };
+
+      x86_64-linux = fetchurl {
+        hash = "sha256-HkABnWrdkb9yFByG9AB/L+Hu9n9FPLf7jx9at9MdUJ8=";
+        url = "https://github.com/verifast/verifast/releases/download/${finalAttrs.version}/${pname}-${finalAttrs.version}-linux.tar.gz";
       };
     };
   in
@@ -67,9 +68,6 @@ stdenv.mkDerivation (
 
     src =
       srcs.${stdenv.hostPlatform.system} or (throw "Unsupported system: ${stdenv.hostPlatform.system}");
-
-    dontConfigure = true;
-    dontStrip = true;
 
     nativeBuildInputs = lib.optional stdenv.hostPlatform.isDarwin darwin.sigtool;
 
@@ -104,13 +102,16 @@ stdenv.mkDerivation (
       ln -s $out/libexec/vfide    $out/bin/vfide
     '';
 
+    dontConfigure = true;
+    dontStrip = true;
+
     meta = {
       description = "Verification for C and Java programs via separation logic";
       homepage = "https://people.cs.kuleuven.be/~bart.jacobs/verifast/";
-      sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
       license = lib.licenses.mit;
-      platforms = builtins.attrNames srcs;
+      sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
       maintainers = [ lib.maintainers.thoughtpolice ];
+      platforms = builtins.attrNames srcs;
     };
   }
 )

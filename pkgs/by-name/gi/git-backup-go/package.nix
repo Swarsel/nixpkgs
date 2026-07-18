@@ -1,9 +1,9 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
-  testers,
+  buildGoModule,
   git-backup-go,
+  testers,
 }:
 
 buildGoModule (finalAttrs: {
@@ -18,19 +18,18 @@ buildGoModule (finalAttrs: {
   };
 
   vendorHash = "sha256-xP2bV3vD4CbMGVT+MK4wJgMbIBZLvyqiMOfgj8Rc38Y=";
-
   ldflags = [ "-X main.Version=${finalAttrs.version}" ];
 
   passthru.tests.version = testers.testVersion {
-    package = git-backup-go;
     command = "git-backup -version";
+    package = git-backup-go;
   };
 
   meta = {
     description = "Backup all your GitHub & GitLab repositories";
     homepage = "https://github.com/ChappIO/git-backup";
     license = lib.licenses.asl20;
-    mainProgram = "git-backup";
     maintainers = with lib.maintainers; [ aleksana ];
+    mainProgram = "git-backup";
   };
 })

@@ -2,17 +2,17 @@
   lib,
   stdenv,
   fetchFromGitHub,
+  beets,
+  cmake,
+  glib,
+  gtk3,
+  libgee,
+  libxml2,
   meson,
   ninja,
-  vala,
-  gtk3,
-  beets,
-  libgee,
-  glib,
-  libxml2,
-  unstableGitUpdater,
   pkg-config,
-  cmake,
+  unstableGitUpdater,
+  vala,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -25,6 +25,11 @@ stdenv.mkDerivation (finalAttrs: {
     rev = "c1232f6a8a9d4161644d728df793ffd3cb5cc4af";
     hash = "sha256-lv7C4ku3MdiHxg1LfmnzT5Sx3DTtvP9g3XPOQlNBDkg=";
   };
+
+  postPatch = ''
+    substituteInPlace BeetService.vala \
+      --replace-fail '"beet"' '"${lib.getExe beets}"'
+  '';
 
   nativeBuildInputs = [
     meson
@@ -41,11 +46,6 @@ stdenv.mkDerivation (finalAttrs: {
     libgee
     glib
   ];
-
-  postPatch = ''
-    substituteInPlace BeetService.vala \
-      --replace-fail '"beet"' '"${lib.getExe beets}"'
-  '';
 
   preConfigure = ''
     pushd ..
@@ -65,9 +65,8 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
-  sourceRoot = "${finalAttrs.src.name}/src";
-
   dontUseCmakeConfigure = true;
+  sourceRoot = "${finalAttrs.src.name}/src";
 
   passthru = {
     updateScript = unstableGitUpdater { hardcodeZeroVersion = true; };
@@ -77,8 +76,8 @@ stdenv.mkDerivation (finalAttrs: {
     description = "Vala based UI for beets";
     homepage = "https://github.com/DannyGB/SuperGee";
     license = lib.licenses.gpl3Only;
+    maintainers = with lib.maintainers; [ bot-wxt1221 ];
     platforms = lib.platforms.linux;
     mainProgram = "SuperG";
-    maintainers = with lib.maintainers; [ bot-wxt1221 ];
   };
 })

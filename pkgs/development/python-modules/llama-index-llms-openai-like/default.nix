@@ -10,14 +10,15 @@
 buildPythonPackage (finalAttrs: {
   pname = "llama-index-llms-openai-like";
   version = "0.7.2";
-  pyproject = true;
 
   src = fetchPypi {
-    pname = "llama_index_llms_openai_like";
     inherit (finalAttrs) version;
     hash = "sha256-7Z/3P5ddzkcPmKxhyYIVG6eO7fo/ubA4lLwdExKyE/8=";
+    pname = "llama_index_llms_openai_like";
   };
 
+  # Tests are only available in the mono repo
+  doCheck = false;
   build-system = [ hatchling ];
 
   dependencies = [
@@ -25,9 +26,7 @@ buildPythonPackage (finalAttrs: {
     llama-index-llms-openai
   ];
 
-  # Tests are only available in the mono repo
-  doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "llama_index.llms.openai_like" ];
 
   meta = {

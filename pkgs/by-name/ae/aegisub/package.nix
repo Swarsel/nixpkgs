@@ -1,11 +1,11 @@
 {
   lib,
+  stdenv,
+  fetchFromGitHub,
   alsa-lib,
   boost,
-  meson,
   config,
   expat,
-  fetchFromGitHub,
   ffmpeg,
   ffms,
   fftw,
@@ -21,12 +21,12 @@
   libpulseaudio,
   libuchardet,
   luajit,
+  meson,
   ninja,
   openal,
   pkg-config,
   portaudio,
   python3,
-  stdenv,
   wrapGAppsHook3,
   wxwidgets_3_2,
   zlib,
@@ -53,6 +53,17 @@ stdenv.mkDerivation (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-ho+JG570FWbiYZ86CbCKa52j6UNyPIUh8fxpM3vVU/M=";
   };
+
+  postPatch = ''
+    patchShebangs tools/respack.py
+
+    # TODO: Tests require wrapped GoogleTest; upstream support for
+    # system version?
+    substituteInPlace meson.build \
+      --replace-fail "subdir('tests')" "# subdir('tests')"
+  '';
+
+  strictDeps = true;
 
   nativeBuildInputs = [
     meson
@@ -103,22 +114,6 @@ stdenv.mkDerivation (finalAttrs: {
     (lib.mesonBool "system_luajit" (!useBundledLuaJIT))
   ];
 
-  hardeningDisable = [
-    "bindnow"
-    "relro"
-  ];
-
-  strictDeps = true;
-
-  postPatch = ''
-    patchShebangs tools/respack.py
-
-    # TODO: Tests require wrapped GoogleTest; upstream support for
-    # system version?
-    substituteInPlace meson.build \
-      --replace-fail "subdir('tests')" "# subdir('tests')"
-  '';
-
   # Inject the version, per the AUR package:
   # <https://aur.archlinux.org/cgit/aur.git/tree/PKGBUILD?h=aegisub-arch1t3cht&id=bbbea73953858fc7bf2775a0fb92cec49afb586c>
   preBuild = ''
@@ -134,22 +129,31 @@ stdenv.mkDerivation (finalAttrs: {
     makeWrapper $out/Applications/Aegisub.app/Contents/MacOS/aegisub $out/bin/aegisub
   '';
 
+  hardeningDisable = [
+    "bindnow"
+    "relro"
+  ];
+
   meta = {
-    homepage = "https://github.com/TypesettingTools/Aegisub";
     description = "Advanced subtitle editor";
+
     longDescription = ''
       Aegisub is a free, cross-platform open source tool for creating and
       modifying subtitles. Aegisub makes it quick and easy to time subtitles to
       audio, and features many powerful tools for styling them, including a
       built-in real-time video preview.
     '';
+
+    homepage = "https://github.com/TypesettingTools/Aegisub";
+
     # The Aegisub sources are itself BSD/ISC, but they are linked against GPL'd
     # software - so the resulting program will be GPL
     license = with lib.licenses; [
       bsd3
     ];
-    mainProgram = "aegisub";
+
     maintainers = with lib.maintainers; [ wegank ];
     platforms = lib.platforms.unix;
+    mainProgram = "aegisub";
   };
 })

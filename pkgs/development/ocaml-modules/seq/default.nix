@@ -1,28 +1,27 @@
 {
-  stdenv,
   lib,
+  stdenv,
   ocaml,
 }:
 
 stdenv.mkDerivation {
-  version = "0.1";
   pname = "ocaml${ocaml.version}-seq";
-
-  meta = {
-    license = lib.licenses.lgpl21;
-    maintainers = [ lib.maintainers.vbgl ];
-    homepage = "https://github.com/c-cube/seq";
-    description = "Dummy backward-compatibility package for iterators";
-    inherit (ocaml.meta) platforms;
-  };
-
+  version = "0.1";
   src = ./src-base;
-
-  dontBuild = true;
 
   installPhase = ''
     mkdir -p $out/lib/ocaml/${ocaml.version}/site-lib/seq
     cp META $out/lib/ocaml/${ocaml.version}/site-lib/seq
   '';
+
+  dontBuild = true;
+
+  meta = {
+    inherit (ocaml.meta) platforms;
+    description = "Dummy backward-compatibility package for iterators";
+    homepage = "https://github.com/c-cube/seq";
+    license = lib.licenses.lgpl21;
+    maintainers = [ lib.maintainers.vbgl ];
+  };
 
 }

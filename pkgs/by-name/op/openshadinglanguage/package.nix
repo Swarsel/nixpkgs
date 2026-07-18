@@ -1,10 +1,11 @@
 {
+  lib,
+  stdenv,
+  fetchFromGitHub,
   bison,
   cmake,
-  fetchFromGitHub,
   flex,
   hexdump,
-  lib,
   libxml2,
   llvmPackages,
   openexr,
@@ -13,7 +14,6 @@
   pugixml,
   python3Packages,
   robin-map,
-  stdenv,
   zlib,
 }:
 
@@ -31,23 +31,9 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-edtYKN2obQexQtclrIUflm3upc14MhHQ7eLvit5Hqq0=";
   };
 
-  cmakeFlags = [
-    (lib.cmakeBool "USE_QT" false)
-
-    # Build system implies llvm-config and llvm-as are in the same directory.
-    # Override defaults.
-    (lib.cmakeFeature "LLVM_BC_GENERATOR" "${clang}/bin/clang++")
-    (lib.cmakeFeature "LLVM_CONFIG" "${llvm.dev}/bin/llvm-config")
-    (lib.cmakeFeature "LLVM_DIRECTORY" "${llvm}")
-  ];
-
   postPatch = ''
     substituteInPlace src/cmake/modules/FindLLVM.cmake \
       --replace-fail "NO_DEFAULT_PATH" ""
-  '';
-
-  preConfigure = ''
-    patchShebangs src/liboslexec/serialize-bc.bash
   '';
 
   nativeBuildInputs = [
@@ -77,6 +63,20 @@ stdenv.mkDerivation (finalAttrs: {
     python3Packages.openimageio
   ];
 
+  cmakeFlags = [
+    (lib.cmakeBool "USE_QT" false)
+
+    # Build system implies llvm-config and llvm-as are in the same directory.
+    # Override defaults.
+    (lib.cmakeFeature "LLVM_BC_GENERATOR" "${clang}/bin/clang++")
+    (lib.cmakeFeature "LLVM_CONFIG" "${llvm.dev}/bin/llvm-config")
+    (lib.cmakeFeature "LLVM_DIRECTORY" "${llvm}")
+  ];
+
+  preConfigure = ''
+    patchShebangs src/liboslexec/serialize-bc.bash
+  '';
+
   postFixup = ''
     substituteInPlace "$out"/lib/pkgconfig/*.pc \
       --replace '=''${exec_prefix}//' '=/'
@@ -85,8 +85,8 @@ stdenv.mkDerivation (finalAttrs: {
   meta = {
     description = "Advanced shading language for production GI renderers";
     homepage = "http://openshadinglanguage.org";
-    maintainers = [ lib.maintainers.amarshall ];
     license = lib.licenses.bsd3;
+    maintainers = [ lib.maintainers.amarshall ];
     platforms = lib.platforms.unix;
   };
 })

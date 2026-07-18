@@ -1,9 +1,9 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchurl,
-  ocaml,
   findlib,
+  ocaml,
   ocamlbuild,
   topkg,
 }:
@@ -24,13 +24,16 @@ let
 in
 
 stdenv.mkDerivation {
-  pname = "ocaml${ocaml.version}-astring";
   inherit (param) version;
+  inherit (topkg) buildPhase installPhase;
+  pname = "ocaml${ocaml.version}-astring";
 
   src = fetchurl {
-    url = "https://erratique.ch/software/astring/releases/astring-${param.version}.tbz";
     inherit (param) sha256;
+    url = "https://erratique.ch/software/astring/releases/astring-${param.version}.tbz";
   };
+
+  strictDeps = true;
 
   nativeBuildInputs = [
     ocaml
@@ -38,15 +41,12 @@ stdenv.mkDerivation {
     ocamlbuild
     topkg
   ];
+
   buildInputs = [ topkg ];
 
-  strictDeps = true;
-
-  inherit (topkg) buildPhase installPhase;
-
   meta = {
-    homepage = "https://erratique.ch/software/astring";
     description = "Alternative String module for OCaml";
+
     longDescription = ''
       Astring exposes an alternative String module for OCaml. This module tries
       to balance minimality and expressiveness for basic, index-free, string
@@ -59,6 +59,8 @@ stdenv.mkDerivation {
       adds a few missing functions and fully exploits OCaml's newfound string
       immutability.
     '';
+
+    homepage = "https://erratique.ch/software/astring";
     license = lib.licenses.isc;
     maintainers = with lib.maintainers; [ sternenseemann ];
   };

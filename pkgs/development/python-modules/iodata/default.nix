@@ -1,20 +1,19 @@
 {
-  buildPythonPackage,
   lib,
   fetchFromGitHub,
-  setuptools,
-  setuptools-scm,
-  numpy,
-  scipy,
   attrs,
+  buildPythonPackage,
+  numpy,
   pytest-xdist,
   pytestCheckHook,
+  scipy,
+  setuptools,
+  setuptools-scm,
 }:
 
 buildPythonPackage rec {
   pname = "iodata";
   version = "1.0.0a4";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "theochem";
@@ -22,6 +21,11 @@ buildPythonPackage rec {
     tag = "v${version}";
     hash = "sha256-ld6V+/8lg4Du6+mHU5XuXXyMpWwyepXurerScg/bf2Q=";
   };
+
+  nativeCheckInputs = [
+    pytest-xdist
+    pytestCheckHook
+  ];
 
   build-system = [
     setuptools
@@ -34,18 +38,14 @@ buildPythonPackage rec {
     attrs
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "iodata" ];
-
-  nativeCheckInputs = [
-    pytest-xdist
-    pytestCheckHook
-  ];
 
   meta = {
     description = "Python library for reading, writing, and converting computational chemistry file formats and generating input files";
-    mainProgram = "iodata-convert";
     homepage = "https://github.com/theochem/iodata";
     license = lib.licenses.lgpl3Only;
     maintainers = [ lib.maintainers.sheepforce ];
+    mainProgram = "iodata-convert";
   };
 }

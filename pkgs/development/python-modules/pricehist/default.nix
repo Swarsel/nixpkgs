@@ -14,7 +14,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "pricehist";
   version = "1.4.16";
-  pyproject = true;
 
   src = fetchFromGitLab {
     owner = "chrisberkhout";
@@ -23,7 +22,15 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-klNelb25yfToGUHyFGxNCvCwLhgIeISW46WBWjBZPVA=";
   };
 
-  pythonRelaxDeps = [ "lxml" ];
+  nativeCheckInputs = [
+    responses
+    pytest-mock
+    pytestCheckHook
+  ];
+
+  build-system = [
+    poetry-core
+  ];
 
   dependencies = [
     requests
@@ -32,15 +39,8 @@ buildPythonPackage (finalAttrs: {
     curlify
   ];
 
-  build-system = [
-    poetry-core
-  ];
-
-  nativeCheckInputs = [
-    responses
-    pytest-mock
-    pytestCheckHook
-  ];
+  pyproject = true;
+  pythonRelaxDeps = [ "lxml" ];
 
   meta = {
     description = "Command-line tool for fetching and formatting historical price data, with support for multiple data sources and output formats";

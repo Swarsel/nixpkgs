@@ -1,31 +1,31 @@
 {
   lib,
-  callPackage,
-  symlinkJoin,
-  makeBinaryWrapper,
-  enableAzureDevOps ? false,
   azure-cli,
   azure-cli-extensions,
-  enableBitbucket ? false,
   bitbucket-cli,
-  enableClaude ? false,
+  callPackage,
   claude-code,
-  enableCodex ? true,
-  codex,
-  enableCursor ? false,
   code-cursor,
-  enableCursorCli ? false,
+  codex,
   cursor-cli,
-  enableGitHub ? true,
   gh,
-  enableGit ? true,
   git,
-  enableGitLab ? false,
   glab,
-  enableJujutsu ? false,
   jujutsu,
-  enableOpencode ? false,
+  makeBinaryWrapper,
   opencode,
+  symlinkJoin,
+  enableAzureDevOps ? false,
+  enableBitbucket ? false,
+  enableClaude ? false,
+  enableCodex ? true,
+  enableCursor ? false,
+  enableCursorCli ? false,
+  enableGit ? true,
+  enableGitHub ? true,
+  enableGitLab ? false,
+  enableJujutsu ? false,
+  enableOpencode ? false,
   t3code-unwrapped ? callPackage ./unwrapped.nix { },
 }:
 
@@ -47,13 +47,9 @@ let
 
 in
 symlinkJoin {
-  pname = "t3code";
   inherit (t3code-unwrapped) version;
-  __structuredAttrs = true;
+  pname = "t3code";
   strictDeps = true;
-
-  paths = [ t3code-unwrapped ];
-
   nativeBuildInputs = [ makeBinaryWrapper ];
 
   postBuild = lib.optionalString (runtimePackages != [ ]) ''
@@ -62,6 +58,9 @@ symlinkJoin {
         --prefix PATH : "${lib.makeBinPath runtimePackages}"
     done
   '';
+
+  __structuredAttrs = true;
+  paths = [ t3code-unwrapped ];
 
   passthru = {
     unwrapped = t3code-unwrapped;

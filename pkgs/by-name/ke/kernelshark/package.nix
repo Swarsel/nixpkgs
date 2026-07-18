@@ -1,18 +1,18 @@
 {
   lib,
   stdenv,
-  fetchzip,
-  qt6,
   cmake,
+  fetchpatch,
+  fetchzip,
+  freefont_ttf,
   json_c,
-  mesa_glu,
   libglut,
-  trace-cmd,
-  pkg-config,
   libtraceevent,
   libtracefs,
-  freefont_ttf,
-  fetchpatch,
+  mesa_glu,
+  pkg-config,
+  qt6,
+  trace-cmd,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -24,15 +24,15 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-OT6ClyZRE+pxWwm+sfzvN3CnoCIyxcAiVsi1fdzaT4M=";
   };
 
+  outputs = [ "out" ];
+
   patches = [
     # kernelshark: Allow building with CMake 4+
     (fetchpatch {
-      url = "https://lore.kernel.org/linux-trace-devel/20251010131715.1123934-1-michal.sojka@cvut.cz/raw";
       hash = "sha256-hT+EhauFlQGjhXyq7Z9FwjS3C+0Jlz6n5BDKCXwzBCc=";
+      url = "https://lore.kernel.org/linux-trace-devel/20251010131715.1123934-1-michal.sojka@cvut.cz/raw";
     })
   ];
-
-  outputs = [ "out" ];
 
   nativeBuildInputs = [
     pkg-config
@@ -63,7 +63,7 @@ stdenv.mkDerivation (finalAttrs: {
     description = "GUI for trace-cmd which is an interface for the Linux kernel ftrace subsystem";
     homepage = "https://kernelshark.org/";
     license = lib.licenses.gpl2Only;
-    platforms = lib.platforms.linux;
     maintainers = with lib.maintainers; [ basvandijk ];
+    platforms = lib.platforms.linux;
   };
 })

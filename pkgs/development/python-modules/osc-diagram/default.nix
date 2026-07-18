@@ -1,8 +1,8 @@
 {
   lib,
+  fetchFromGitHub,
   buildPythonPackage,
   diagrams,
-  fetchFromGitHub,
   osc-sdk-python,
   setuptools,
 }:
@@ -10,7 +10,6 @@
 buildPythonPackage {
   pname = "osc-diagram";
   version = "unstable-2023-08-07";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "outscale-mgo";
@@ -26,13 +25,14 @@ buildPythonPackage {
     osc-sdk-python
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "osc_diagram" ];
 
   meta = {
     description = "Build Outscale cloud diagrams";
-    mainProgram = "osc-diagram";
     homepage = "https://github.com/outscale-mgo/osc-diagram";
     license = lib.licenses.free;
     maintainers = with lib.maintainers; [ nicolas-goudry ];
+    mainProgram = "osc-diagram";
   };
 }

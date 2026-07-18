@@ -1,14 +1,14 @@
 {
+  lib,
+  stdenv,
+  fetchFromGitHub,
   binutils-unwrapped, # strings
   coreutils,
-  getent, # /etc/passwd
-  fetchFromGitHub,
   findutils,
-  lib,
+  getent, # /etc/passwd
   makeWrapper,
   ncurses, # tput
   ruby,
-  stdenv,
 }:
 
 # No gems used, so mkDerivation is fine.
@@ -33,7 +33,6 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   nativeBuildInputs = [ makeWrapper ];
-
   buildInputs = [ ruby ];
 
   installPhase = ''

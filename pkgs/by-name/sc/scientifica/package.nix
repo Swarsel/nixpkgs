@@ -1,8 +1,8 @@
 {
   lib,
-  stdenvNoCC,
   fetchurl,
   installFonts,
+  stdenvNoCC,
 }:
 
 stdenvNoCC.mkDerivation rec {
@@ -20,7 +20,7 @@ stdenvNoCC.mkDerivation rec {
     description = "Tall and condensed bitmap font for geeks";
     homepage = "https://github.com/oppiliappan/scientifica";
     license = lib.licenses.ofl;
-    platforms = lib.platforms.all;
     maintainers = with lib.maintainers; [ moni ];
+    platforms = lib.platforms.all;
   };
 }

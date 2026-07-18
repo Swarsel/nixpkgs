@@ -24,8 +24,8 @@ stdenv.mkDerivation (finalAttrs: {
     description = "View and edit files in hexadecimal or in ASCII";
     homepage = "http://rigaux.org/hexedit.html";
     license = lib.licenses.gpl2Plus;
-    platforms = lib.platforms.unix;
     maintainers = with lib.maintainers; [ sigmanificient ];
+    platforms = lib.platforms.unix;
     mainProgram = "hexedit";
   };
 })

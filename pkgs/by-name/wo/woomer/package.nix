@@ -1,13 +1,13 @@
 {
   lib,
-  cmake,
   fetchFromGitHub,
+  cmake,
   glfw3,
+  libgbm,
   nix-update-script,
   pkg-config,
   rustPlatform,
   wayland,
-  libgbm,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -20,14 +20,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
     tag = finalAttrs.version;
     hash = "sha256-LcL43Wq+5d7HPsm2bEK0vZsjP/dixtNhMKywXMi4ODw=";
   };
-
-  cargoPatches = [
-    # fix compilation on aarch64
-    # remove when https://github.com/coffeeispower/woomer/pull/30 is merged
-    ./unbreak-aarch64-linux.patch
-  ];
-
-  cargoHash = "sha256-mSyTQU/PtibkepFrYh6nrRtnsd1jONaPXt9Y5SiE3/U=";
 
   strictDeps = true;
 
@@ -43,8 +35,7 @@ rustPlatform.buildRustPackage (finalAttrs: {
     libgbm
   ];
 
-  # `raylib-sys` wants to compile examples that don't exist in its crate
-  doCheck = false;
+  cargoHash = "sha256-mSyTQU/PtibkepFrYh6nrRtnsd1jONaPXt9Y5SiE3/U=";
 
   env = {
     # Force linking so libwayland-client.so can be `dlopen`'d
@@ -57,6 +48,15 @@ rustPlatform.buildRustPackage (finalAttrs: {
     );
   };
 
+  # `raylib-sys` wants to compile examples that don't exist in its crate
+  doCheck = false;
+
+  cargoPatches = [
+    # fix compilation on aarch64
+    # remove when https://github.com/coffeeispower/woomer/pull/30 is merged
+    ./unbreak-aarch64-linux.patch
+  ];
+
   passthru = {
     updateScript = nix-update-script { };
   };
@@ -67,7 +67,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
     changelog = "https://github.com/coffeeispower/woomer/releases/tag/${finalAttrs.version}";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ getchoo ];
-    mainProgram = "woomer";
     # Not all platforms supported by Wayland are supported by the libraries
     # used here
     #
@@ -75,5 +74,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
     # https://github.com/waycrate/wayshot/blob/cb6bd68dbbe6ab70a5d8fe3bd04cc154f0631cd8/libwayshot/src/screencopy.rs#L11
     # https://github.com/nix-rust/nix/blob/0e4353a368abfcedea4ebe4345cf7604bb61d238/src/sys/mod.rs#L40-L44
     platforms = lib.platforms.linux ++ lib.platforms.freebsd;
+    mainProgram = "woomer";
   };
 })

@@ -1,13 +1,12 @@
 {
   lib,
-  python3,
   fetchFromGitHub,
+  python3,
 }:
 
 python3.pkgs.buildPythonApplication (finalAttrs: {
   pname = "localstack";
   version = "4.13.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "localstack";
@@ -15,11 +14,6 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-vagQ2+eG93ns+E9HT/aDWlDn9jhhIyE7PxBXedsgyH0=";
   };
-
-  build-system = with python3.pkgs; [
-    setuptools
-    setuptools-scm
-  ];
 
   propagatedBuildInputs = with python3.pkgs; [
     apispec
@@ -42,12 +36,6 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     tailer
   ];
 
-  pythonRelaxDeps = [
-    "dill"
-  ];
-
-  pythonImportsCheck = [ "localstack" ];
-
   # Test suite requires boto, which has been removed from nixpkgs
   # Just do minimal test, buildPythonPackage maps checkPhase
   # to installCheckPhase, so we can test that entrypoint point works.
@@ -65,6 +53,18 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
   postFixup = ''
     rm $out/nix-support/propagated-build-inputs
   '';
+
+  build-system = with python3.pkgs; [
+    setuptools
+    setuptools-scm
+  ];
+
+  pyproject = true;
+  pythonImportsCheck = [ "localstack" ];
+
+  pythonRelaxDeps = [
+    "dill"
+  ];
 
   meta = {
     description = "Fully functional local Cloud stack";

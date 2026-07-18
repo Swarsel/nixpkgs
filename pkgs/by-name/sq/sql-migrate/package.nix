@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
 }:
 buildGoModule (finalAttrs: {
   pname = "sql-migrate";
@@ -19,8 +19,8 @@ buildGoModule (finalAttrs: {
   meta = {
     description = "SQL Schema migration tool for Go. Based on gorp and goose";
     homepage = "https://github.com/rubenv/sql-migrate";
-    mainProgram = "sql-migrate";
     license = lib.licenses.mit;
     maintainers = [ lib.maintainers.tebro ];
+    mainProgram = "sql-migrate";
   };
 })

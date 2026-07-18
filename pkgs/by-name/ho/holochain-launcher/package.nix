@@ -1,21 +1,20 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchurl,
   autoPatchelfHook,
   dpkg,
-  openssl,
+  glib-networking,
   # webkitgtk_4_0,
   libappindicator,
-  wrapGAppsHook3,
+  openssl,
   shared-mime-info,
-  glib-networking,
+  wrapGAppsHook3,
 }:
 
 stdenv.mkDerivation rec {
   pname = "holochain-launcher";
   version = "0.11.5";
-  prerelease = "beta-2";
 
   src = fetchurl {
     url = "https://github.com/holochain/launcher/releases/download/v${version}/holochain-launcher-${prerelease}_${version}_amd64.deb";
@@ -51,14 +50,16 @@ stdenv.mkDerivation rec {
     )
   '';
 
+  prerelease = "beta-2";
+
   meta = {
-    # webkitgtk_4_0 was removed
-    broken = true;
     description = "Cross-platform executable that launches a local Holochain conductor, and installs and opens apps";
     homepage = "https://github.com/holochain/launcher";
-    maintainers = [ lib.maintainers.steveej ];
     license = lib.licenses.cal10;
     sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
+    maintainers = [ lib.maintainers.steveej ];
     platforms = lib.platforms.linux;
+    # webkitgtk_4_0 was removed
+    broken = true;
   };
 }

@@ -1,44 +1,40 @@
 {
   lib,
   stdenv,
-  buildPythonPackage,
   fetchurl,
-
-  # buildInputs
-  llvmPackages,
-
+  absl-py,
+  addDriverRunpath,
+  astunparse,
+  buildPythonPackage,
+  clang,
+  config,
+  cudaPackages,
   # build-system
   distutils,
-
-  # dependencies
-  ml-dtypes,
-  absl-py,
-  astunparse,
   flatbuffers,
   gast,
   google-pasta,
   grpcio,
   h5py,
-  clang,
+  isPy3k,
+  # buildInputs
+  llvmPackages,
+  # dependencies
+  ml-dtypes,
+  mock,
   numpy,
   opt-einsum,
   packaging,
   protobuf,
+  python,
   requests,
   six,
   tensorboard,
   termcolor,
   typing-extensions,
   wrapt,
-  isPy3k,
-  mock,
-
-  config,
-  cudaSupport ? config.cudaSupport,
-  cudaPackages,
   zlib,
-  python,
-  addDriverRunpath,
+  cudaSupport ? config.cudaSupport,
 }:
 
 # We keep this binary build for three reasons:
@@ -55,7 +51,6 @@ in
 buildPythonPackage (finalAttrs: {
   pname = "tensorflow" + lib.optionalString cudaSupport "-gpu";
   version = packages."${"version" + lib.optionalString isCudaJetson "_jetson"}";
-  format = "wheel";
 
   src =
     let
@@ -66,12 +61,6 @@ buildPythonPackage (finalAttrs: {
     in
     fetchurl (packages.${key} or (throw "tensorflow-bin: unsupported configuration: ${key}"));
 
-  buildInputs = [ llvmPackages.openmp ];
-
-  build-system = [
-    distutils
-  ];
-
   nativeBuildInputs =
     lib.optionals cudaSupport [
       addDriverRunpath
@@ -80,35 +69,7 @@ buildPythonPackage (finalAttrs: {
       cudaPackages.autoAddCudaCompatRunpath
     ];
 
-  pythonRemoveDeps = [
-    "libclang"
-    "keras"
-  ];
-  pythonRelaxDeps = [
-    "h5py"
-  ];
-  dependencies = [
-    absl-py
-    astunparse
-    flatbuffers
-    gast
-    google-pasta
-    grpcio
-    h5py
-    clang
-    ml-dtypes
-    numpy
-    opt-einsum
-    packaging
-    protobuf
-    requests
-    six
-    tensorboard
-    termcolor
-    typing-extensions
-    wrapt
-  ]
-  ++ lib.optional (!isPy3k) mock;
+  buildInputs = [ llvmPackages.openmp ];
 
   preConfigure = ''
     unset SOURCE_DATE_EPOCH
@@ -228,17 +189,55 @@ buildPythonPackage (finalAttrs: {
       ln -s ${cudaPackages.cuda_nvcc} "$out/${python.sitePackages}/tensorflow/cuda"
     '';
 
+  build-system = [
+    distutils
+  ];
+
+  dependencies = [
+    absl-py
+    astunparse
+    flatbuffers
+    gast
+    google-pasta
+    grpcio
+    h5py
+    clang
+    ml-dtypes
+    numpy
+    opt-einsum
+    packaging
+    protobuf
+    requests
+    six
+    tensorboard
+    termcolor
+    typing-extensions
+    wrapt
+  ]
+  ++ lib.optional (!isPy3k) mock;
+
+  format = "wheel";
+
   pythonImportsCheck = [
     "tensorflow"
     "tensorflow.python"
     "tensorflow.python.framework"
   ];
 
+  pythonRelaxDeps = [
+    "h5py"
+  ];
+
+  pythonRemoveDeps = [
+    "libclang"
+    "keras"
+  ];
+
   meta = {
     description = "Computation using data flow graphs for scalable machine learning";
     homepage = "http://tensorflow.org";
-    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
     license = lib.licenses.asl20;
+    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
     maintainers = [ ];
     # unsupported combination
     broken = stdenv.hostPlatform.isDarwin && cudaSupport;

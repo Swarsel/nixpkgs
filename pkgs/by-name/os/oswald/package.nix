@@ -1,18 +1,13 @@
 {
   lib,
-  stdenvNoCC,
   fetchFromGitHub,
   installFonts,
+  stdenvNoCC,
 }:
 
 stdenvNoCC.mkDerivation {
   pname = "oswald";
   version = "4.103";
-
-  outputs = [
-    "out"
-    "webfont"
-  ];
 
   src = fetchFromGitHub {
     owner = "googlefonts";
@@ -21,8 +16,12 @@ stdenvNoCC.mkDerivation {
     hash = "sha256-yoUduWHuuKDQaJnQ+CgeMw1vp2lgn/OVPokSDzEU7yk=";
   };
 
-  nativeBuildInputs = [ installFonts ];
+  outputs = [
+    "out"
+    "webfont"
+  ];
 
+  nativeBuildInputs = [ installFonts ];
   preInstall = "rm -r legacy/";
 
   installPhase = ''
@@ -32,15 +31,17 @@ stdenvNoCC.mkDerivation {
 
   meta = {
     description = "Reworking of the classic gothic typeface style";
+
     longDescription = ''
       Oswald is a reworking of the classic gothic typeface style
       historically represented by designs such as 'Alternate Gothic'.
       The characters of Oswald have been re-drawn and reformed to
       better fit the pixel grid of standard digital screens.
     '';
+
     homepage = "https://github.com/googlefonts/OswaldFont";
     license = lib.licenses.ofl;
-    platforms = lib.platforms.all;
     maintainers = with lib.maintainers; [ mimvoid ];
+    platforms = lib.platforms.all;
   };
 }

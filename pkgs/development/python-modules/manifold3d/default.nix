@@ -1,39 +1,24 @@
 {
   lib,
-  buildPythonPackage,
-  python,
   fetchFromGitHub,
-  scikit-build-core,
-  manifold,
-  cmake,
-  ninja,
-  nanobind,
-  pkg-config,
-  numpy,
+  buildPythonPackage,
   clipper2,
+  cmake,
+  manifold,
+  nanobind,
+  ninja,
+  numpy,
   onetbb,
+  pkg-config,
   pytestCheckHook,
+  python,
+  scikit-build-core,
   trimesh,
 }:
 
 buildPythonPackage {
-  pname = "manifold3d";
   inherit (manifold) version src;
-  pyproject = true;
-
-  dontUseCmakeConfigure = true;
-
-  build-system = [
-    scikit-build-core
-    cmake
-    ninja
-    nanobind
-    pkg-config
-  ];
-
-  dependencies = [
-    numpy
-  ];
+  pname = "manifold3d";
 
   buildInputs = [
     onetbb
@@ -49,6 +34,21 @@ buildPythonPackage {
     ${python.interpreter} bindings/python/examples/run_all.py
   '';
 
+  build-system = [
+    scikit-build-core
+    cmake
+    ninja
+    nanobind
+    pkg-config
+  ];
+
+  dependencies = [
+    numpy
+  ];
+
+  dontUseCmakeConfigure = true;
+  pyproject = true;
+
   pythonImportsCheck = [
     "manifold3d"
   ];
@@ -60,6 +60,7 @@ buildPythonPackage {
       description
       license
       ;
+
     maintainers = with lib.maintainers; [
       pbsds
       pca006132

@@ -1,7 +1,7 @@
 {
   config,
-  pkgs,
   lib,
+  pkgs,
   ...
 }:
 let
@@ -21,22 +21,26 @@ in
   imports = [
     ../image/file-options.nix
     (lib.mkRenamedOptionModuleWith {
-      sinceRelease = 2505;
       from = [
         "vmware"
         "vmFileName"
       ];
+
+      sinceRelease = 2505;
+
       to = [
         "image"
         "fileName"
       ];
     })
     (lib.modules.mkRenamedOptionModuleWith {
-      sinceRelease = 2605;
       from = [
         "vmware"
         "baseImageSize"
       ];
+
+      sinceRelease = 2605;
+
       to = [
         "virtualisation"
         "diskSize"
@@ -46,47 +50,43 @@ in
 
   options = {
     vmware = {
+      vmCompat6 = lib.mkOption {
+        default = false;
+        description = "Create a VMDK version 6 image (instead of version 4).";
+        example = true;
+        type = lib.types.bool;
+      };
+
       vmDerivationName = lib.mkOption {
-        type = lib.types.str;
         default = "nixos-vmware-${config.system.nixos.label}-${pkgs.stdenv.hostPlatform.system}";
+
         description = ''
           The name of the derivation for the VMWare appliance.
         '';
+
+        type = lib.types.str;
       };
+
       vmSubformat = lib.mkOption {
-        type = lib.types.enum subformats;
         default = "monolithicSparse";
         description = "Specifies which VMDK subformat to use.";
-      };
-      vmCompat6 = lib.mkOption {
-        type = lib.types.bool;
-        default = false;
-        example = true;
-        description = "Create a VMDK version 6 image (instead of version 4).";
+        type = lib.types.enum subformats;
       };
     };
   };
 
   config = {
-    system.nixos.tags = [ "vmware" ];
-    image.extension = "vmdk";
-    system.build.image = config.system.build.vmwareImage;
-    system.build.vmwareImage = import ../../lib/make-disk-image.nix {
-      name = cfg.vmDerivationName;
-      baseName = config.image.baseName;
-      postVM = ''
-        ${pkgs.vmTools.qemu}/bin/qemu-img convert -f raw -o compat6=${boolToStr cfg.vmCompat6},subformat=${cfg.vmSubformat} -O vmdk $diskImage $out/${config.image.fileName}
-        rm $diskImage
-      '';
-      format = "raw";
-      diskSize = config.virtualisation.diskSize;
-      partitionTableType = "efi";
-      inherit config lib pkgs;
+    boot.growPartition = true;
+
+    boot.loader.grub = {
+      device = "nodev";
+      efiInstallAsRemovable = true;
+      efiSupport = true;
     };
 
     fileSystems."/" = {
-      device = "/dev/disk/by-label/nixos";
       autoResize = true;
+      device = "/dev/disk/by-label/nixos";
       fsType = "ext4";
     };
 
@@ -95,14 +95,24 @@ in
       fsType = "vfat";
     };
 
-    boot.growPartition = true;
+    image.extension = "vmdk";
+    system.build.image = config.system.build.vmwareImage;
 
-    boot.loader.grub = {
-      device = "nodev";
-      efiSupport = true;
-      efiInstallAsRemovable = true;
+    system.build.vmwareImage = import ../../lib/make-disk-image.nix {
+      inherit config lib pkgs;
+      baseName = config.image.baseName;
+      diskSize = config.virtualisation.diskSize;
+      format = "raw";
+      name = cfg.vmDerivationName;
+      partitionTableType = "efi";
+
+      postVM = ''
+        ${pkgs.vmTools.qemu}/bin/qemu-img convert -f raw -o compat6=${boolToStr cfg.vmCompat6},subformat=${cfg.vmSubformat} -O vmdk $diskImage $out/${config.image.fileName}
+        rm $diskImage
+      '';
     };
 
+    system.nixos.tags = [ "vmware" ];
     virtualisation.vmware.guest.enable = true;
   };
 }

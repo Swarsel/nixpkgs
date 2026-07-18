@@ -8,18 +8,15 @@
 
 buildPythonPackage {
   inherit (pkgs.fasttext) pname version src;
-
-  format = "setuptools";
-
   buildInputs = [ pybind11 ];
-
-  pythonImportsCheck = [ "fasttext" ];
-
   propagatedBuildInputs = [ numpy ];
 
   preBuild = ''
     HOME=$TMPDIR
   '';
+
+  format = "setuptools";
+  pythonImportsCheck = [ "fasttext" ];
 
   meta = {
     description = "Python module for text classification and representation learning";

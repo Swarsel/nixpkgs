@@ -1,13 +1,13 @@
 {
   lib,
   stdenv,
+  fetchFromGitHub,
   asn1crypto,
   badldap,
   buildPythonPackage,
   certipy,
   cryptography,
   dnspython,
-  fetchFromGitHub,
   hatchling,
   kerbad,
   pytestCheckHook,
@@ -17,7 +17,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "bloodyad";
   version = "2.5.4";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "CravateRouge";
@@ -25,15 +24,6 @@ buildPythonPackage (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-6ZSJTupjVhvyU9G/eePJiXk16w9HwpsOFwdwTSLb7tU=";
   };
-
-  pythonRelaxDeps = [ "cryptography" ];
-
-  pythonRemoveDeps = [
-    "kerbad"
-    "badldap"
-  ];
-
-  build-system = [ hatchling ];
 
   # Upstream provides two package scripts: bloodyad and bloodyAD,
   # but this causes a FileAlreadyExists error during installation
@@ -44,6 +34,13 @@ buildPythonPackage (finalAttrs: {
       --replace-fail "bloodyAD = \"bloodyAD.main:main\"" ""
   '';
 
+  nativeCheckInputs = [
+    certipy
+    pytestCheckHook
+  ];
+
+  build-system = [ hatchling ];
+
   dependencies = [
     asn1crypto
     badldap
@@ -53,12 +50,11 @@ buildPythonPackage (finalAttrs: {
     winacl
   ];
 
-  nativeCheckInputs = [
-    certipy
-    pytestCheckHook
+  disabledTestPaths = [
+    # TypeError: applyFormatters() takes 1 positional argument but 2 were given
+    # https://github.com/CravateRouge/bloodyAD/issues/98
+    "tests/test_formatters.py"
   ];
-
-  pythonImportsCheck = [ "bloodyAD" ];
 
   disabledTests = [
     # Tests require network access
@@ -72,10 +68,13 @@ buildPythonPackage (finalAttrs: {
     "test_04ComputerRbcdRestoreGetSetAttribute"
   ];
 
-  disabledTestPaths = [
-    # TypeError: applyFormatters() takes 1 positional argument but 2 were given
-    # https://github.com/CravateRouge/bloodyAD/issues/98
-    "tests/test_formatters.py"
+  pyproject = true;
+  pythonImportsCheck = [ "bloodyAD" ];
+  pythonRelaxDeps = [ "cryptography" ];
+
+  pythonRemoveDeps = [
+    "kerbad"
+    "badldap"
   ];
 
   meta = {

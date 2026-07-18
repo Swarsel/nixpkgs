@@ -1,16 +1,16 @@
 {
-  pname,
-  version,
-  src,
+  stdenv,
+  alsa-lib,
+  autoPatchelfHook,
+  config,
+  meta,
   nativeBuildInputs,
   passthru,
-  meta,
-  stdenv,
-  config,
-  writeText,
-  autoPatchelfHook,
   patchelfUnstable,
-  alsa-lib,
+  pname,
+  src,
+  version,
+  writeText,
 }:
 
 let
@@ -28,6 +28,13 @@ stdenv.mkDerivation {
     src
     ;
 
+  inherit passthru meta;
+
+  postPatch = ''
+    # Don't download updates from Mozilla directly
+    echo 'pref("app.update.auto", "false");' >> defaults/pref/channel-prefs.js
+  '';
+
   nativeBuildInputs = nativeBuildInputs ++ [
     autoPatchelfHook
     patchelfUnstable
@@ -36,14 +43,6 @@ stdenv.mkDerivation {
   buildInputs = [
     alsa-lib
   ];
-
-  # Thunderbird uses "relrhack" to manually process relocations from a fixed offset
-  patchelfFlags = [ "--no-clobber-old-sections" ];
-
-  postPatch = ''
-    # Don't download updates from Mozilla directly
-    echo 'pref("app.update.auto", "false");' >> defaults/pref/channel-prefs.js
-  '';
 
   installPhase = ''
     runHook preInstall
@@ -66,5 +65,6 @@ stdenv.mkDerivation {
     runHook postInstall
   '';
 
-  inherit passthru meta;
+  # Thunderbird uses "relrhack" to manually process relocations from a fixed offset
+  patchelfFlags = [ "--no-clobber-old-sections" ];
 }

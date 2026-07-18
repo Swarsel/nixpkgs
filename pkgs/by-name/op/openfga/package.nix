@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   installShellFiles,
 }:
 
@@ -16,9 +16,19 @@ buildGoModule (finalAttrs: {
     hash = "sha256-ERS1cg1VbaxcU8t7p22PnoApZUKzCaZI1L6nNpaoi20=";
   };
 
-  vendorHash = "sha256-CeYNV1jRqUERS6qpZQtlJu68gr1qDFwl4u2n9im2EgU=";
-
   nativeBuildInputs = [ installShellFiles ];
+  vendorHash = "sha256-CeYNV1jRqUERS6qpZQtlJu68gr1qDFwl4u2n9im2EgU=";
+  # Tests depend on docker
+  doCheck = false;
+
+  postInstall = ''
+    completions_dir=$TMPDIR/openfga_completions
+    mkdir $completions_dir
+    $out/bin/openfga completion bash > $completions_dir/openfga.bash
+    $out/bin/openfga completion zsh > $completions_dir/_openfga.zsh
+    $out/bin/openfga completion fish > $completions_dir/openfga.fish
+    installShellCompletion $completions_dir/*
+  '';
 
   ldflags =
     let
@@ -32,23 +42,11 @@ buildGoModule (finalAttrs: {
       "-X ${buildInfoPkg}.Date=19700101"
     ];
 
-  # Tests depend on docker
-  doCheck = false;
-
-  postInstall = ''
-    completions_dir=$TMPDIR/openfga_completions
-    mkdir $completions_dir
-    $out/bin/openfga completion bash > $completions_dir/openfga.bash
-    $out/bin/openfga completion zsh > $completions_dir/_openfga.zsh
-    $out/bin/openfga completion fish > $completions_dir/openfga.fish
-    installShellCompletion $completions_dir/*
-  '';
-
   meta = {
     description = "High performance and flexible authorization/permission engine built for developers and inspired by Google Zanzibar";
     homepage = "https://openfga.dev/";
     license = lib.licenses.asl20;
-    mainProgram = "openfga";
     maintainers = with lib.maintainers; [ jlesquembre ];
+    mainProgram = "openfga";
   };
 })

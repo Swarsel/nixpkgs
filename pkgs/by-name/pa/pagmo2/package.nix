@@ -2,11 +2,11 @@
   lib,
   stdenv,
   fetchFromGitHub,
+  boost,
   cmake,
   eigen,
-  nlopt,
   ipopt,
-  boost,
+  nlopt,
   onetbb,
   testers,
 }:
@@ -59,10 +59,10 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   meta = {
-    homepage = "https://esa.github.io/pagmo2/";
     description = "Scientific library for massively parallel optimization";
+    homepage = "https://esa.github.io/pagmo2/";
     license = lib.licenses.gpl3Plus;
-    platforms = lib.platforms.unix;
     maintainers = [ lib.maintainers.costrouc ];
+    platforms = lib.platforms.unix;
   };
 })

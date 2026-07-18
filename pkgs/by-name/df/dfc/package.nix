@@ -31,9 +31,9 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   meta = {
+    description = "Displays file system space usage using graphs and colors";
     homepage = "https://github.com/rolinh/dfc";
     changelog = "https://github.com/rolinh/dfc/releases/tag/${finalAttrs.src.tag}";
-    description = "Displays file system space usage using graphs and colors";
     license = lib.licenses.bsd3;
     maintainers = with lib.maintainers; [ qknight ];
     platforms = lib.platforms.all;

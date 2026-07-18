@@ -1,7 +1,7 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -19,15 +19,18 @@ rustPlatform.buildRustPackage (finalAttrs: {
 
   meta = {
     description = "Generate a THIRDPARTY file with all licenses in a cargo project";
-    mainProgram = "cargo-bundle-licenses";
     homepage = "https://github.com/sstadick/cargo-bundle-licenses";
     changelog = "https://github.com/sstadick/cargo-bundle-licenses/blob/${finalAttrs.src.rev}/CHANGELOG.md";
+
     license = with lib.licenses; [
       mit
       asl20
     ];
+
     maintainers = with lib.maintainers; [
       matthiasbeyer
     ];
+
+    mainProgram = "cargo-bundle-licenses";
   };
 })

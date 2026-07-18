@@ -1,10 +1,10 @@
 {
   lib,
   stdenv,
-  cmake,
-  ninja,
-  kdePackages,
   fetchFromGitHub,
+  cmake,
+  kdePackages,
+  ninja,
 }:
 stdenv.mkDerivation (finalAttrs: {
   pname = "qtengine";
@@ -40,7 +40,7 @@ stdenv.mkDerivation (finalAttrs: {
     description = "Minimal Qt platform theme";
     homepage = "https://github.com/kossLAN/qtengine";
     license = lib.licenses.bsd2;
-    platforms = lib.platforms.linux;
     maintainers = with lib.maintainers; [ kosslan ];
+    platforms = lib.platforms.linux;
   };
 })

@@ -1,9 +1,9 @@
 {
   lib,
-  buildNpmPackage,
   fetchFromGitHub,
-  esbuild,
   buildGoModule,
+  buildNpmPackage,
+  esbuild,
   nodejs_22,
 }:
 let
@@ -14,12 +14,14 @@ let
         args
         // rec {
           version = "0.24.0";
+
           src = fetchFromGitHub {
             owner = "evanw";
             repo = "esbuild";
             rev = "v${version}";
             hash = "sha256-czQJqLz6rRgyh9usuhDTmgwMC6oL5UzpwNFQ3PKpKck=";
           };
+
           vendorHash = "sha256-+BfxCyg0KkDQpHt/wycy/8CTG6YBA/VJvJFhhzUnSiQ=";
         }
       );
@@ -43,11 +45,6 @@ buildNpmPackage (finalAttrs: {
   '';
 
   npmDepsHash = "sha256-OH/ippCHRy7glq+wXBwnHIVCO6yL5CItng/vCKv+0fQ=";
-
-  nodejs = nodejs_22;
-
-  npmFlags = [ "--ignore-scripts" ];
-
   env.ESBUILD_BINARY_PATH = lib.getExe esbuild';
 
   # ssh2's optional cpu-features native module needs node-gyp building to satisfy esbuild's bundler
@@ -55,8 +52,9 @@ buildNpmPackage (finalAttrs: {
     npm rebuild cpu-features
   '';
 
+  nodejs = nodejs_22;
   npmBuildScript = "build:app";
-
+  npmFlags = [ "--ignore-scripts" ];
   passthru.updateScript = ./update.sh;
 
   meta = {

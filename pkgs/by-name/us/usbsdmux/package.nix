@@ -1,14 +1,13 @@
 {
   lib,
-  python3Packages,
   fetchPypi,
+  python3Packages,
   udevCheckHook,
 }:
 
 python3Packages.buildPythonApplication (finalAttrs: {
   pname = "usbsdmux";
   version = "25.8";
-  pyproject = true;
 
   src = fetchPypi {
     inherit (finalAttrs) pname version;
@@ -22,21 +21,22 @@ python3Packages.buildPythonApplication (finalAttrs: {
       --replace-fail 'TAG+="uaccess", GROUP="plugdev"' 'TAG+="uaccess"'
   '';
 
-  build-system = with python3Packages; [
-    setuptools
-    setuptools-scm
-  ];
-
   nativeBuildInputs = [
     udevCheckHook
   ];
-
-  doInstallCheck = true;
 
   postInstall = ''
     install -Dm0444 -t $out/lib/udev/rules.d/ contrib/udev/99-usbsdmux.rules
   '';
 
+  doInstallCheck = true;
+
+  build-system = with python3Packages; [
+    setuptools
+    setuptools-scm
+  ];
+
+  pyproject = true;
   pythonImportsCheck = [ "usbsdmux" ];
 
   meta = {

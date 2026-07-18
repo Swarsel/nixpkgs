@@ -1,40 +1,42 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
-  pkg-config,
-  nixosTests,
-  freetype,
   fontconfig,
+  freetype,
   libGL,
+  libnotify,
   libx11,
-  libxrandr,
   libxcb,
   libxkbcommon,
+  libxrandr,
+  makeDesktopItem,
+  nixosTests,
+  pkg-config,
   utf8proc,
   wayland,
-
-  libnotify,
   xdg-utils,
-  makeDesktopItem,
 }:
 
 let
   desktopItem = makeDesktopItem {
-    desktopName = "Wayst";
-    name = "wayst";
-    genericName = "Terminal";
-    exec = "wayst";
-    icon = "wayst";
     categories = [
       "System"
       "TerminalEmulator"
     ];
+
+    comment = "A simple terminal emulator";
+    desktopName = "Wayst";
+    exec = "wayst";
+    genericName = "Terminal";
+    icon = "wayst";
+
     keywords = [
       "wayst"
       "terminal"
     ];
-    comment = "A simple terminal emulator";
+
+    name = "wayst";
   };
 in
 stdenv.mkDerivation {
@@ -48,7 +50,12 @@ stdenv.mkDerivation {
     hash = "sha256-tA2R6Snk5nqWkPXSbs7wmovWkT97xafdK0e/pKBUIUg=";
   };
 
-  makeFlags = [ "INSTALL_DIR=\${out}/bin" ];
+  postPatch = ''
+    substituteInPlace src/settings.c \
+      --replace xdg-open ${xdg-utils}/bin/xdg-open
+    substituteInPlace src/main.c \
+      --replace notify-send ${libnotify}/bin/notify-send
+  '';
 
   nativeBuildInputs = [ pkg-config ];
 
@@ -63,14 +70,8 @@ stdenv.mkDerivation {
     utf8proc
     wayland
   ];
-  enableParallelBuilding = true;
 
-  postPatch = ''
-    substituteInPlace src/settings.c \
-      --replace xdg-open ${xdg-utils}/bin/xdg-open
-    substituteInPlace src/main.c \
-      --replace notify-send ${libnotify}/bin/notify-send
-  '';
+  makeFlags = [ "INSTALL_DIR=\${out}/bin" ];
 
   preInstall = ''
     mkdir -p $out/bin
@@ -82,14 +83,15 @@ stdenv.mkDerivation {
     install -D icons/wayst.svg $out/share/icons/hicolor/scalable/apps/wayst.svg
   '';
 
+  enableParallelBuilding = true;
   passthru.tests.test = nixosTests.terminal-emulators.wayst;
 
   meta = {
     description = "Simple terminal emulator";
-    mainProgram = "wayst";
     homepage = "https://github.com/91861/wayst";
     license = lib.licenses.mit;
-    platforms = lib.platforms.linux;
     maintainers = with lib.maintainers; [ berbiche ];
+    platforms = lib.platforms.linux;
+    mainProgram = "wayst";
   };
 }

@@ -26,9 +26,6 @@ stdenv.mkDerivation (finalAttrs: {
       --replace-fail "project(msnake)" "project(msnake C)"
   '';
 
-  # fixes: error: conflicting types for 'display_highscore'
-  env.NIX_CFLAGS_COMPILE = "-std=gnu17";
-
   nativeBuildInputs = [
     cmake
   ];
@@ -37,12 +34,15 @@ stdenv.mkDerivation (finalAttrs: {
     ncurses
   ];
 
+  # fixes: error: conflicting types for 'display_highscore'
+  env.NIX_CFLAGS_COMPILE = "-std=gnu17";
+
   meta = {
     description = "Multiplatform command line snake game";
     homepage = "https://github.com/mogria/msnake";
     license = lib.licenses.mit;
+    maintainers = with lib.maintainers; [ ethancedwards8 ];
     platforms = lib.platforms.unix;
     mainProgram = "msnake";
-    maintainers = with lib.maintainers; [ ethancedwards8 ];
   };
 })

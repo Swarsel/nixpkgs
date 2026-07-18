@@ -1,8 +1,8 @@
 {
   lib,
+  baize,
   buildPythonPackage,
   fetchPypi,
-  baize,
   httpx,
   pdm-backend,
   pytest-asyncio,
@@ -13,19 +13,11 @@
 buildPythonPackage rec {
   pname = "a2wsgi";
   version = "1.10.10";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
     hash = "sha256-pbz/tSCBujnfDV6aiE/G+BnZLjpCOJNDunfL+An+H0U=";
   };
-
-  build-system = [ pdm-backend ];
-
-  dependencies = [
-    starlette
-    baize
-  ];
 
   nativeCheckInputs = [
     baize
@@ -34,6 +26,15 @@ buildPythonPackage rec {
     pytestCheckHook
     starlette
   ];
+
+  build-system = [ pdm-backend ];
+
+  dependencies = [
+    starlette
+    baize
+  ];
+
+  pyproject = true;
 
   meta = {
     description = "Convert WSGI app to ASGI app or ASGI app to WSGI app";

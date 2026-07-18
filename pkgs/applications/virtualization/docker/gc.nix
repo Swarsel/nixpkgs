@@ -1,14 +1,14 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
-  makeWrapper,
-  docker,
   coreutils,
-  procps,
-  gnused,
+  docker,
   findutils,
   gnugrep,
+  gnused,
+  makeWrapper,
+  procps,
 }:
 stdenv.mkDerivation {
   pname = "docker-gc";
@@ -42,10 +42,10 @@ stdenv.mkDerivation {
 
   meta = {
     description = "Docker garbage collection of containers and images";
-    mainProgram = "docker-gc";
-    license = lib.licenses.asl20;
     homepage = "https://github.com/spotify/docker-gc";
+    license = lib.licenses.asl20;
     maintainers = [ ];
     platforms = docker.meta.platforms;
+    mainProgram = "docker-gc";
   };
 }

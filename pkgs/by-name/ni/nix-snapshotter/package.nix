@@ -1,8 +1,8 @@
 {
   lib,
+  fetchFromGitHub,
   buildGoModule,
   callPackage,
-  fetchFromGitHub,
 }:
 
 let
@@ -19,8 +19,8 @@ let
 
 in
 buildGoModule {
-  pname = "nix-snapshotter";
   inherit version src;
+  pname = "nix-snapshotter";
   vendorHash = "sha256-mWMkDALQ3QvDxgw1Nf0bgWYqeOFDUYKg3UNurNJdD9I=";
   passthru = { inherit (nix-snapshotter-lib) buildImage; };
 
@@ -28,7 +28,7 @@ buildGoModule {
     description = "Brings native understanding of Nix packages to containerd";
     homepage = "https://github.com/pdtpartners/nix-snapshotter";
     license = lib.licenses.mit;
-    platforms = lib.platforms.linux;
     maintainers = with lib.maintainers; [ elpdt852 ];
+    platforms = lib.platforms.linux;
   };
 }

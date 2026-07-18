@@ -2,15 +2,15 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  rebar3,
   beamPackages,
-  opencl-headers,
   ocl-icd,
+  opencl-headers,
+  rebar3,
 }:
 
 stdenv.mkDerivation rec {
-  version = "1.2.4";
   pname = "cl";
+  version = "1.2.4";
 
   src = fetchFromGitHub {
     owner = "tonyrog";
@@ -45,8 +45,8 @@ stdenv.mkDerivation rec {
   '';
 
   meta = {
-    homepage = "https://github.com/tonyrog/cl";
     description = "OpenCL binding for Erlang";
+    homepage = "https://github.com/tonyrog/cl";
     license = lib.licenses.mit;
     platforms = lib.platforms.linux;
   };

@@ -1,19 +1,18 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   libredirect,
-  systemdLibs,
   pkg-config,
   pytest,
   python,
   setuptools,
+  systemdLibs,
 }:
 
 buildPythonPackage rec {
   pname = "systemd-python";
   version = "235";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "systemd";
@@ -22,10 +21,7 @@ buildPythonPackage rec {
     hash = "sha256-8p4m4iM/z4o6PHRQIpuSXb64tPTWGlujEYCDVLiIt2o=";
   };
 
-  build-system = [ setuptools ];
-
   nativeBuildInputs = [ pkg-config ];
-
   buildInputs = [ systemdLibs ];
 
   nativeCheckInputs = [
@@ -41,6 +37,9 @@ buildPythonPackage rec {
     # But our redirection technique does not work apparently
     pytest $out/${python.sitePackages}/systemd -k 'not test_get_machine and not test_get_machine_app_specific and not test_reader_this_machine'
   '';
+
+  build-system = [ setuptools ];
+  pyproject = true;
 
   pythonImportsCheck = [
     "systemd.journal"

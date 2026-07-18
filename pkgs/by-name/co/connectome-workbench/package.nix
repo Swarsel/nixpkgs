@@ -2,8 +2,8 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  fetchpatch,
   cmake,
+  fetchpatch,
   libGL,
   libGLU,
   qt6,
@@ -19,8 +19,6 @@ stdenv.mkDerivation (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-f1T0i4x7rr3u/3ZvJ4cEAb377e7YcaGMKa2uUslVqR0=";
   };
-
-  sourceRoot = "${finalAttrs.src.name}/src";
 
   patches = [
     # GCC 15 compatibility: add missing #include <cstdint>
@@ -40,8 +38,6 @@ stdenv.mkDerivation (finalAttrs: {
         --replace-fail "ENABLE_TESTING()" ""
     '';
 
-  env.NIX_CFLAGS_COMPILE = "-fpermissive";
-
   nativeBuildInputs = [
     cmake
     qt6.wrapQtAppsHook
@@ -55,24 +51,29 @@ stdenv.mkDerivation (finalAttrs: {
     qtbase
     qt5compat
   ]);
-  # note: we should be able to unvendor a few libs (ftgl, quazip, qwt) but they aren't detected properly
 
+  # note: we should be able to unvendor a few libs (ftgl, quazip, qwt) but they aren't detected properly
   cmakeFlags = [
     "-DWORKBENCH_USE_QT6=TRUE"
     "-DWORKBENCH_USE_QT5=FALSE"
   ];
 
+  env.NIX_CFLAGS_COMPILE = "-fpermissive";
+  sourceRoot = "${finalAttrs.src.name}/src";
+
   meta = {
     description = "Visualization and discovery tool used to map neuroimaging data";
     homepage = "https://www.humanconnectome.org/software/connectome-workbench";
+    changelog = "https://github.com/Washington-University/workbench/releases/tag/v${finalAttrs.version}";
+
     license = with lib.licenses; [
       gpl2Plus
       gpl3Plus
       mit
     ];
-    changelog = "https://github.com/Washington-University/workbench/releases/tag/v${finalAttrs.version}";
+
     maintainers = with lib.maintainers; [ bcdarwin ];
-    mainProgram = "wb_command";
     platforms = lib.platforms.linux;
+    mainProgram = "wb_command";
   };
 })

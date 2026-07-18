@@ -1,13 +1,13 @@
 {
   lib,
   stdenv,
-  makeSetupHook,
   callPackage,
   config,
-  vimUtils,
-  vimPlugins,
-  neovim-unwrapped,
   lua,
+  makeSetupHook,
+  neovim-unwrapped,
+  vimPlugins,
+  vimUtils,
   wrapNeovimUnstable,
 }:
 let
@@ -21,9 +21,9 @@ let
     plugins:
     let
       defaultPlugin = {
-        plugin = null;
         config = null;
         optional = false;
+        plugin = null;
       };
     in
     map (x: defaultPlugin // (if (x ? plugin) then x else { plugin = x; })) plugins;
@@ -51,8 +51,8 @@ let
       pluginsPartitioned = lib.partition (x: x.optional == true) normalizedPlugins;
     in
     {
-      start = map (x: x.plugin) pluginsPartitioned.wrong;
       opt = map (x: x.plugin) pluginsPartitioned.right;
+      start = map (x: x.plugin) pluginsPartitioned.wrong;
     };
 
   /**
@@ -134,8 +134,8 @@ let
   */
   makeNeovimConfig =
     {
-      customRC ? "",
       customLuaRC ? "",
+      customRC ? "",
       # the function you would have passed to lua.withPackages
       extraLuaPackages ? (_: [ ]),
       ...
@@ -148,12 +148,14 @@ let
       (
         attrs
         // {
-          neovimRcContent = customRC;
           luaRcContent =
             if attrs ? luaRcContent then
               lib.warn "makeNeovimConfig: luaRcContent parameter is deprecated. Please use customLuaRC instead." attrs.luaRcContent
             else
               customLuaRC;
+
+          neovimRcContent = customRC;
+
           wrapperArgs = lib.optionals (luaEnv != null) [
             "--prefix"
             "LUA_PATH"
@@ -171,8 +173,8 @@ let
   legacyWrapper =
     neovim:
     {
-      extraMakeWrapperArgs ? "",
       configure ? { },
+      extraMakeWrapperArgs ? "",
       ...
     }@attrs:
     let
@@ -186,27 +188,25 @@ let
       genPlugin =
         packageName:
         {
-          start ? [ ],
           opt ? [ ],
+          start ? [ ],
         }:
         start
         ++ (map (p: {
-          plugin = p;
           optional = true;
+          plugin = p;
         }) opt);
 
     in
     wrapNeovimUnstable neovim (
       attrs
       // {
-        neovimRcContent = configure.customRC or "";
-        luaRcContent = configure.customLuaRC or "";
         inherit plugins;
-
-        wrapperArgs = lib.escapeShellArgs (attrs.wrapperArgs or [ ]) + " " + extraMakeWrapperArgs;
-
-        wrapRc = configure != { };
         legacyWrapper = true;
+        luaRcContent = configure.customLuaRC or "";
+        neovimRcContent = configure.customRC or "";
+        wrapRc = configure != { };
+        wrapperArgs = lib.escapeShellArgs (attrs.wrapperArgs or [ ]) + " " + extraMakeWrapperArgs;
       }
     );
 
@@ -221,22 +221,21 @@ let
   */
   generateProviderRc =
     {
-      withPython3 ? false,
       withNodeJs ? false,
-      withRuby ? false,
       # Perl is problematic https://github.com/NixOS/nixpkgs/issues/132368
       withPerl ? false,
-
+      withPython3 ? false,
+      withRuby ? false,
       # so that we can pass the full neovim config while ignoring it
       ...
     }:
     let
       hostprog_check_table = {
         node = withNodeJs;
+        perl = withPerl;
         python = false;
         python3 = withPython3;
         ruby = withRuby;
-        perl = withPerl;
       };
 
       genProviderCommand =
@@ -294,12 +293,12 @@ let
 
       (toVimPlugin (
         stdenv.mkDerivation (finalAttrs: {
-          pname = "nvim-treesitter-grammar-${name}";
           inherit (grammar) version;
-
-          origGrammar = grammar;
+          pname = "nvim-treesitter-grammar-${name}";
+          nativeBuildInputs = [ toNvimTreesitterGrammar ];
+          __structuredAttrs = true;
+          dontUnpack = true;
           grammarName = name;
-
           # Queries for nvim-treesitter's (not just tree-sitter's) officially
           # supported languages are bundled with nvim-treesitter
           # Queries from repositories for such languages are incompatible
@@ -317,11 +316,7 @@ let
           #
           # See also https://github.com/NixOS/nixpkgs/pull/344849#issuecomment-2381447839
           installQueries = !isNvimGrammar grammar;
-
-          dontUnpack = true;
-          __structuredAttrs = true;
-
-          nativeBuildInputs = [ toNvimTreesitterGrammar ];
+          origGrammar = grammar;
 
           passthru = grammar.passthru or { } // {
             isTreesitterGrammar = true;
@@ -366,7 +361,6 @@ in
   inherit grammarToPlugin;
   inherit packDir;
   inherit normalizePlugins normalizedPluginsToVimPackage;
-
   inherit buildNeovimPlugin;
 }
 // lib.optionalAttrs config.allowAliases {

@@ -1,14 +1,14 @@
 {
   lib,
   stdenv,
-  buildNpmPackage,
   fetchFromGitHub,
+  buildNpmPackage,
+  cacert,
   fetchNpmDeps,
+  nodejs_22,
   npmHooks,
   python3,
-  cacert,
   versionCheckHook,
-  nodejs_22,
 }:
 
 buildNpmPackage.override { nodejs = nodejs_22; } (finalAttrs: {
@@ -22,15 +22,13 @@ buildNpmPackage.override { nodejs = nodejs_22; } (finalAttrs: {
     hash = "sha256-vvn/TkTegppe7FGaTHDXFk1BWgT6uWr4zBXgo6mU13M=";
   };
 
+  nativeBuildInputs = [
+    python3
+  ]
+  ++ lib.optionals stdenv.hostPlatform.isDarwin [ cacert ];
+
   # Deps hash for the root package
   npmDepsHash = "sha256-DFe639Ws9/HiiLMaxsGKs7iRlyT+X7YjhubS0SwH/Zk=";
-
-  # Deps src and hash for ui subdirectory
-  npmDeps_ui = fetchNpmDeps {
-    name = "npm-deps-ui";
-    src = "${finalAttrs.src}/ui";
-    hash = "sha256-cwfF+J+zLLyj0iTdP+rh/Tz0OaJPMUtyo/SuCubZx5Y=";
-  };
 
   # Need to also run npm ci in the ui subdirectory
   preBuild = ''
@@ -44,21 +42,24 @@ buildNpmPackage.override { nodejs = nodejs_22; } (finalAttrs: {
     export CI=true
   '';
 
+  doInstallCheck = true;
+
+  nativeInstallCheckInputs = [
+    versionCheckHook
+  ];
+
   # On darwin, the build failed because openpty() is not declared
   # Uses the prebuild version of @homebridge/node-pty-prebuilt-multiarch instead
   # Remove this (and the makeCacheWritable in preBuild), once we fix
   # compiling node-pty on darwin
   makeCacheWritable = stdenv.hostPlatform.isDarwin;
 
-  nativeBuildInputs = [
-    python3
-  ]
-  ++ lib.optionals stdenv.hostPlatform.isDarwin [ cacert ];
-
-  nativeInstallCheckInputs = [
-    versionCheckHook
-  ];
-  doInstallCheck = true;
+  # Deps src and hash for ui subdirectory
+  npmDeps_ui = fetchNpmDeps {
+    src = "${finalAttrs.src}/ui";
+    hash = "sha256-cwfF+J+zLLyj0iTdP+rh/Tz0OaJPMUtyo/SuCubZx5Y=";
+    name = "npm-deps-ui";
+  };
 
   passthru.updateScript = ./update.sh;
 
@@ -66,9 +67,9 @@ buildNpmPackage.override { nodejs = nodejs_22; } (finalAttrs: {
     description = "Configure Homebridge, monitor and backup from a browser";
     homepage = "https://github.com/homebridge/homebridge-config-ui-x";
     license = lib.licenses.mit;
-    mainProgram = "hb-service";
-    platforms = lib.platforms.linux ++ lib.platforms.darwin;
     maintainers = with lib.maintainers; [ fmoda3 ];
+    platforms = lib.platforms.linux ++ lib.platforms.darwin;
+    mainProgram = "hb-service";
     # Works on darwin when not in sandbox because it downloads a prebuilt binary
     # for node-pty at build time, which does not work in sandbox.
     # Need to figure out why this error occurs:

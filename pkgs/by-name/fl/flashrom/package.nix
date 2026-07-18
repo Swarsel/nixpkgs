@@ -1,20 +1,20 @@
 {
-  fetchurl,
+  lib,
   stdenv,
+  fetchurl,
   bash-completion,
   cmocka,
-  lib,
+  git,
   libftdi1,
   libjaylink,
   libusb1,
-  openssl,
   meson,
   ninja,
+  openssl,
   pciutils,
   pkg-config,
   sphinx,
   jlinkSupport ? false,
-  git,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -26,6 +26,11 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-Qyis6YM/fv58M0vdc0gs3oKGgZgmzAAUnoP7qWvzq08=";
   };
 
+  postPatch = ''
+    substituteInPlace util/flashrom_udev.rules \
+      --replace 'GROUP="plugdev"' 'TAG+="uaccess", TAG+="udev-acl"'
+  '';
+
   nativeBuildInputs = [
     git
     meson
@@ -34,6 +39,7 @@ stdenv.mkDerivation (finalAttrs: {
     sphinx
     bash-completion
   ];
+
   buildInputs = [
     openssl
     cmocka
@@ -43,11 +49,6 @@ stdenv.mkDerivation (finalAttrs: {
   ++ lib.optionals (!stdenv.hostPlatform.isDarwin) [ pciutils ]
   ++ lib.optional jlinkSupport libjaylink;
 
-  postPatch = ''
-    substituteInPlace util/flashrom_udev.rules \
-      --replace 'GROUP="plugdev"' 'TAG+="uaccess", TAG+="udev-acl"'
-  '';
-
   mesonFlags = [
     (lib.mesonBool "werror" false)
     (lib.mesonOption "programmer" "auto")
@@ -56,20 +57,21 @@ stdenv.mkDerivation (finalAttrs: {
     (lib.mesonEnable "generate_authors_list" false)
   ];
 
+  env = lib.optionalAttrs (stdenv.cc.isClang && !stdenv.hostPlatform.isDarwin) {
+    NIX_CFLAGS_COMPILE = "-Wno-gnu-folding-constant";
+  };
+
   doCheck = !stdenv.hostPlatform.isDarwin;
-  doInstallCheck = true;
 
   postInstall = ''
     install -Dm644 $NIX_BUILD_TOP/$sourceRoot/util/flashrom_udev.rules $out/lib/udev/rules.d/flashrom.rules
   '';
 
-  env = lib.optionalAttrs (stdenv.cc.isClang && !stdenv.hostPlatform.isDarwin) {
-    NIX_CFLAGS_COMPILE = "-Wno-gnu-folding-constant";
-  };
+  doInstallCheck = true;
 
   meta = {
-    homepage = "https://www.flashrom.org";
     description = "Utility for reading, writing, erasing and verifying flash ROM chips";
+    homepage = "https://www.flashrom.org";
     license = lib.licenses.gpl2Plus;
     maintainers = with lib.maintainers; [ fpletz ];
     platforms = lib.platforms.all;

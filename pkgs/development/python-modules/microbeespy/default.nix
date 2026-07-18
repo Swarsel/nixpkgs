@@ -1,8 +1,8 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
   aiohttp,
+  buildPythonPackage,
   paho-mqtt,
   setuptools,
 }:
@@ -10,7 +10,6 @@
 buildPythonPackage rec {
   pname = "microbeespy";
   version = "0.3.5";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "microBeesTech";
@@ -19,6 +18,8 @@ buildPythonPackage rec {
     hash = "sha256-h3IbWdZ/iHsNlAr/DfASj4dKNkQ4t1mUUeUIs00L8iU=";
   };
 
+  # Package doesn't include tests
+  doCheck = false;
   build-system = [ setuptools ];
 
   dependencies = [
@@ -26,9 +27,7 @@ buildPythonPackage rec {
     paho-mqtt
   ];
 
-  # Package doesn't include tests
-  doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "microBeesPy" ];
 
   meta = {

@@ -1,18 +1,17 @@
 {
   lib,
-  buildPythonPackage,
+  stdenv,
   fetchFromGitHub,
+  buildPythonPackage,
   mesa,
   pkgs,
   replaceVars,
   setuptools,
-  stdenv,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "pyopengl";
   version = "3.1.10";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "mcfletch";
@@ -28,11 +27,11 @@ buildPythonPackage (finalAttrs: {
     })
   ];
 
-  build-system = [ setuptools ];
-
   # mosts tests fail in the nix sandbox with:
   #  GLX is not supported
   doCheck = false;
+  build-system = [ setuptools ];
+  pyproject = true;
 
   # PyOpenGL looks for libraries during import, making this a somewhat decent test of our patching
   # (these are impure deps on darwin)
@@ -59,12 +58,14 @@ buildPythonPackage (finalAttrs: {
   ];
 
   meta = {
-    homepage = "https://mcfletch.github.io/pyopengl/";
+    inherit (mesa.meta) platforms;
     description = "PyOpenGL, the Python OpenGL bindings";
+
     longDescription = ''
       PyOpenGL is the cross platform Python binding to OpenGL and related APIs.
     '';
+
+    homepage = "https://mcfletch.github.io/pyopengl/";
     license = lib.licenses.bsd3;
-    inherit (mesa.meta) platforms;
   };
 })

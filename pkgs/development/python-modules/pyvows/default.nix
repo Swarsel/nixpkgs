@@ -11,13 +11,16 @@
 buildPythonPackage rec {
   pname = "pyvows";
   version = "3.0.0";
-  pyproject = true;
 
   src = fetchPypi {
-    pname = "pyVows";
     inherit version;
     hash = "sha256-2+4umWLNkbFlCpfFwX0FA2N0zOZhst/YM4ozBfXoaMI=";
+    pname = "pyVows";
   };
+
+  checkPhase = ''
+    ${python.interpreter} pyvows/cli.py tests/
+  '';
 
   build-system = [ setuptools ];
 
@@ -26,11 +29,8 @@ buildPythonPackage rec {
     preggy
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "pyvows" ];
-
-  checkPhase = ''
-    ${python.interpreter} pyvows/cli.py tests/
-  '';
 
   meta = {
     description = "BDD test engine based on Vows.js";

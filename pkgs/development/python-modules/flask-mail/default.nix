@@ -1,17 +1,16 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
   blinker,
-  flit-core,
+  buildPythonPackage,
   flask,
+  flit-core,
   pytestCheckHook,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "flask-mail";
   version = "0.10.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "pallets-eco";
@@ -20,6 +19,7 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-G2Z8dj1/IuLsZoNJVrL6LYu0XjTEHtWB9Z058aqG9Ic=";
   };
 
+  nativeCheckInputs = [ pytestCheckHook ];
   build-system = [ flit-core ];
 
   dependencies = [
@@ -27,16 +27,15 @@ buildPythonPackage (finalAttrs: {
     flask
   ];
 
-  pythonImportsCheck = [ "flask_mail" ];
-
-  nativeCheckInputs = [ pytestCheckHook ];
-
   disabledTests = [
     # Broken by fix for CVE-2023-27043.
     # Reported upstream in https://github.com/pallets-eco/flask-mail/issues/233
     "test_unicode_sender_tuple"
     "test_unicode_sender"
   ];
+
+  pyproject = true;
+  pythonImportsCheck = [ "flask_mail" ];
 
   meta = {
     description = "Flask extension providing simple email sending capabilities";

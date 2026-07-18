@@ -1,31 +1,24 @@
 {
   lib,
-  buildDotnetModule,
   fetchFromGitHub,
-  dotnetCorePackages,
-
-  gcc,
-  makeWrapper,
-  msbuild,
-  pkg-config,
-
+  buildDotnetModule,
   curl,
+  dotnetCorePackages,
+  eddie,
+  gcc,
+  gtk2,
   gtk3,
   libayatana-appindicator,
-
+  libayatana-indicator,
+  makeWrapper,
+  mono,
+  msbuild,
   openssh,
   openvpn,
+  pkg-config,
   stunnel,
-
-  gtk2,
-  libayatana-indicator,
-
-  mono,
-
-  versionCheckHook,
-
-  eddie,
   testers,
+  versionCheckHook,
 }:
 
 buildDotnetModule (finalAttrs: {
@@ -44,11 +37,9 @@ buildDotnetModule (finalAttrs: {
     ./remove-the-postbuild-from-the-project-file.patch
   ];
 
-  projectFile = [ "src/App.CLI.Linux/App.CLI.Linux.net8.csproj" ];
-  nugetDeps = ./deps.json;
-
-  dotnet-sdk = dotnetCorePackages.sdk_8_0;
-  dotnet-runtime = dotnetCorePackages.runtime_8_0;
+  postPatch = ''
+    patchShebangs src
+  '';
 
   nativeBuildInputs = [
     gcc
@@ -62,29 +53,6 @@ buildDotnetModule (finalAttrs: {
     gtk3
     libayatana-appindicator
   ];
-
-  nativeRuntimeInputs = lib.makeBinPath [
-    openssh
-    openvpn
-    stunnel
-  ];
-
-  runtimeInputs = lib.makeLibraryPath [
-    gtk2
-    gtk3
-    libayatana-indicator
-  ];
-
-  makeWrapperArgs = [
-    "--add-flags \"--path.resources=${placeholder "out"}/share/eddie-ui\""
-    "--prefix PATH : ${finalAttrs.nativeRuntimeInputs}"
-  ];
-
-  executables = [ "eddie-cli" ];
-
-  postPatch = ''
-    patchShebangs src
-  '';
 
   postBuild = ''
     src/App.CLI.Linux.Elevated/build.sh Release
@@ -126,16 +94,42 @@ buildDotnetModule (finalAttrs: {
       ''${makeWrapperArgs[@]}
   '';
 
+  doInstallCheck = true;
+
   nativeInstallCheckInputs = [
     versionCheckHook
   ];
+
+  dotnet-runtime = dotnetCorePackages.runtime_8_0;
+  dotnet-sdk = dotnetCorePackages.sdk_8_0;
+  executables = [ "eddie-cli" ];
+
+  makeWrapperArgs = [
+    "--add-flags \"--path.resources=${placeholder "out"}/share/eddie-ui\""
+    "--prefix PATH : ${finalAttrs.nativeRuntimeInputs}"
+  ];
+
+  nativeRuntimeInputs = lib.makeBinPath [
+    openssh
+    openvpn
+    stunnel
+  ];
+
+  nugetDeps = ./deps.json;
+  projectFile = [ "src/App.CLI.Linux/App.CLI.Linux.net8.csproj" ];
+
+  runtimeInputs = lib.makeLibraryPath [
+    gtk2
+    gtk3
+    libayatana-indicator
+  ];
+
   versionCheckProgram = "${placeholder "out"}/bin/eddie-cli";
-  doInstallCheck = true;
 
   passthru = {
     tests.version = testers.testVersion {
-      package = eddie;
       command = "eddie-cli version.short";
+      package = eddie;
     };
   };
 
@@ -143,10 +137,12 @@ buildDotnetModule (finalAttrs: {
     description = "AirVPN's OpenVPN and WireGuard wrapper";
     homepage = "https://eddie.website";
     license = lib.licenses.gpl3Plus;
-    mainProgram = "eddie-ui";
+
     maintainers = with lib.maintainers; [
       ryand56
     ];
+
     platforms = lib.platforms.linux;
+    mainProgram = "eddie-ui";
   };
 })

@@ -2,10 +2,10 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  makeWrapper,
   arduino-cli,
-  ruby,
+  makeWrapper,
   python3,
+  ruby,
 }:
 
 let
@@ -45,10 +45,10 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "CI for Arduino Libraries";
-    mainProgram = "arduino-ci";
     homepage = finalAttrs.src.meta.homepage;
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ ryantm ];
     platforms = lib.platforms.unix;
+    mainProgram = "arduino-ci";
   };
 })

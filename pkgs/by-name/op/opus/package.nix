@@ -1,8 +1,8 @@
 {
   lib,
   stdenv,
-  cmake,
   fetchFromGitHub,
+  cmake,
   meson,
   ninja,
 }:
@@ -18,8 +18,6 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-M1G7ypcfs7nJmXgkyoG96jT/CkgN5BOzy+DGO4LVCvA=";
   };
 
-  __structuredAttrs = true;
-
   strictDeps = true;
 
   nativeBuildInputs = [
@@ -28,13 +26,15 @@ stdenv.mkDerivation (finalAttrs: {
     ninja
   ];
 
+  __structuredAttrs = true;
+
   meta = {
     description = "Modern audio compression for the internet";
     homepage = "https://github.com/xiph/opus";
     changelog = "https://github.com/xiph/opus/blob/${finalAttrs.src.rev}/NEWS";
     license = lib.licenses.bsd3;
     maintainers = with lib.maintainers; [ fab ];
-    mainProgram = "opus";
     platforms = lib.platforms.all;
+    mainProgram = "opus";
   };
 })

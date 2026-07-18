@@ -26,78 +26,21 @@ in
     services.bosun = {
 
       enable = lib.mkEnableOption "bosun";
-
       package = lib.mkPackageOption pkgs "bosun" { };
 
-      user = lib.mkOption {
-        type = lib.types.str;
-        default = "bosun";
-        description = ''
-          User account under which bosun runs.
-        '';
-      };
-
-      group = lib.mkOption {
-        type = lib.types.str;
-        default = "bosun";
-        description = ''
-          Group account under which bosun runs.
-        '';
-      };
-
-      opentsdbHost = lib.mkOption {
-        type = lib.types.nullOr lib.types.str;
-        default = "localhost:4242";
-        description = ''
-          Host and port of the OpenTSDB database that stores bosun data.
-          To disable opentsdb you can pass null as parameter.
-        '';
-      };
-
-      influxHost = lib.mkOption {
-        type = lib.types.nullOr lib.types.str;
-        default = null;
-        example = "localhost:8086";
-        description = ''
-          Host and port of the influxdb database.
-        '';
-      };
-
-      listenAddress = lib.mkOption {
-        type = lib.types.str;
-        default = ":8070";
-        description = ''
-          The host address and port that bosun's web interface will listen on.
-        '';
-      };
-
-      stateFile = lib.mkOption {
-        type = lib.types.path;
-        default = "/var/lib/bosun/bosun.state";
-        description = ''
-          Path to bosun's state file.
-        '';
-      };
-
-      ledisDir = lib.mkOption {
-        type = lib.types.path;
-        default = "/var/lib/bosun/ledis_data";
-        description = ''
-          Path to bosun's ledis data dir
-        '';
-      };
-
       checkFrequency = lib.mkOption {
-        type = lib.types.str;
         default = "5m";
+
         description = ''
           Bosun's check frequency
         '';
+
+        type = lib.types.str;
       };
 
       extraConfig = lib.mkOption {
-        type = lib.types.lines;
         default = "";
+
         description = ''
           Extra configuration options for Bosun. You should describe your
           desired templates, alerts, macros, etc through this configuration
@@ -106,6 +49,80 @@ in
           A detailed description of the supported syntax can be found at-spi2-atk
           <https://bosun.org/configuration.html>
         '';
+
+        type = lib.types.lines;
+      };
+
+      group = lib.mkOption {
+        default = "bosun";
+
+        description = ''
+          Group account under which bosun runs.
+        '';
+
+        type = lib.types.str;
+      };
+
+      influxHost = lib.mkOption {
+        default = null;
+
+        description = ''
+          Host and port of the influxdb database.
+        '';
+
+        example = "localhost:8086";
+        type = lib.types.nullOr lib.types.str;
+      };
+
+      ledisDir = lib.mkOption {
+        default = "/var/lib/bosun/ledis_data";
+
+        description = ''
+          Path to bosun's ledis data dir
+        '';
+
+        type = lib.types.path;
+      };
+
+      listenAddress = lib.mkOption {
+        default = ":8070";
+
+        description = ''
+          The host address and port that bosun's web interface will listen on.
+        '';
+
+        type = lib.types.str;
+      };
+
+      opentsdbHost = lib.mkOption {
+        default = "localhost:4242";
+
+        description = ''
+          Host and port of the OpenTSDB database that stores bosun data.
+          To disable opentsdb you can pass null as parameter.
+        '';
+
+        type = lib.types.nullOr lib.types.str;
+      };
+
+      stateFile = lib.mkOption {
+        default = "/var/lib/bosun/bosun.state";
+
+        description = ''
+          Path to bosun's state file.
+        '';
+
+        type = lib.types.path;
+      };
+
+      user = lib.mkOption {
+        default = "bosun";
+
+        description = ''
+          User account under which bosun runs.
+        '';
+
+        type = lib.types.str;
       };
 
     };
@@ -116,7 +133,6 @@ in
 
     systemd.services.bosun = {
       description = "bosun metrics collector (part of Bosun)";
-      wantedBy = [ "multi-user.target" ];
 
       preStart = ''
         mkdir -p "$(dirname "${cfg.stateFile}")";
@@ -133,22 +149,25 @@ in
       '';
 
       serviceConfig = {
-        PermissionsStartOnly = true;
-        User = cfg.user;
-        Group = cfg.group;
         ExecStart = ''
           ${cfg.package}/bin/bosun -c ${configFile}
         '';
+
+        Group = cfg.group;
+        PermissionsStartOnly = true;
+        User = cfg.user;
       };
+
+      wantedBy = [ "multi-user.target" ];
     };
+
+    users.groups.bosun.gid = config.ids.gids.bosun;
 
     users.users.bosun = {
       description = "bosun user";
       group = "bosun";
       uid = config.ids.uids.bosun;
     };
-
-    users.groups.bosun.gid = config.ids.gids.bosun;
 
   };
 

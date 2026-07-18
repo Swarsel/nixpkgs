@@ -1,24 +1,16 @@
 {
-  stdenv,
   lib,
-  writeScript,
+  stdenv,
   sqlite,
+  writeScript,
 }:
 
-{ version, src, ... }:
+{ src, version, ... }:
 
 stdenv.mkDerivation (finalAttrs: {
-  pname = "sqlite3";
   inherit version src;
   inherit (src) passthru;
-
-  setupHook = writeScript "${finalAttrs.pname}-setup-hook" ''
-    sqliteFixupHook() {
-      runtimeDependencies+=('${lib.getLib sqlite}')
-    }
-
-    preFixupHooks+=(sqliteFixupHook)
-  '';
+  pname = "sqlite3";
 
   postPatch = lib.optionalString (lib.versionAtLeast version "3.2.0") ''
     substituteInPlace lib/src/hook/description.dart \
@@ -31,5 +23,13 @@ stdenv.mkDerivation (finalAttrs: {
     cp --recursive . "$out"
 
     runHook postInstall
+  '';
+
+  setupHook = writeScript "${finalAttrs.pname}-setup-hook" ''
+    sqliteFixupHook() {
+      runtimeDependencies+=('${lib.getLib sqlite}')
+    }
+
+    preFixupHooks+=(sqliteFixupHook)
   '';
 })

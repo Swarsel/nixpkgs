@@ -3,9 +3,9 @@
   stdenv,
   fetchFromGitHub,
   autoreconfHook,
-  pkg-config,
-  imagemagick,
   gtk3,
+  imagemagick,
+  pkg-config,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -31,11 +31,13 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "USB viewer for Linux";
-    license = lib.licenses.gpl2Only;
     homepage = "http://www.kroah.com/linux-usb/";
+    license = lib.licenses.gpl2Only;
+
     maintainers = with lib.maintainers; [
       h7x4
     ];
+
     platforms = lib.platforms.linux;
     mainProgram = "usbview";
   };

@@ -1,10 +1,10 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
+  alsa-lib,
   installShellFiles,
   pkg-config,
-  alsa-lib,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -18,8 +18,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-bHmVwtpDQCO8NS1dsilSsDBlMWotEZ3x1J/KD40vbVs=";
   };
 
-  cargoHash = "sha256-wxVWYOMYVi8R1YpBp+KPirqubAPYA561R+maG1vgrl0=";
-
   nativeBuildInputs = [
     pkg-config
     installShellFiles
@@ -28,6 +26,8 @@ rustPlatform.buildRustPackage (finalAttrs: {
   buildInputs = [
     alsa-lib
   ];
+
+  cargoHash = "sha256-wxVWYOMYVi8R1YpBp+KPirqubAPYA561R+maG1vgrl0=";
 
   checkFlags = [
     # Skip tests that require access to file system locations not available during Nix builds
@@ -51,7 +51,7 @@ rustPlatform.buildRustPackage (finalAttrs: {
     changelog = "https://github.com/jolars/tomat/blob/${finalAttrs.src.rev}/CHANGELOG.md";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ jolars ];
-    mainProgram = "tomat";
     platforms = lib.platforms.linux;
+    mainProgram = "tomat";
   };
 })

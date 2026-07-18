@@ -11,25 +11,22 @@
 buildPythonPackage rec {
   pname = "canopen";
   version = "2.4.1";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
     hash = "sha256-IKhLxJizTa3XnOzkZ9O74ZWRwcAqjzkzG8xgZcTYsus=";
   };
 
+  nativeCheckInputs = [ pytestCheckHook ];
   __darwinAllowLocalNetworking = true;
-
   build-system = [ setuptools-scm ];
-
   dependencies = [ python-can ];
 
   optional-dependencies = {
     db_export = [ canmatrix ];
   };
 
-  nativeCheckInputs = [ pytestCheckHook ];
-
+  pyproject = true;
   pythonImportsCheck = [ "canopen" ];
 
   meta = {

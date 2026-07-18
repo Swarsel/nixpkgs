@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule (finalAttrs: {
@@ -16,22 +16,23 @@ buildGoModule (finalAttrs: {
   };
 
   vendorHash = "sha256-27ykI9HK1jFanxwa6QrN6ZS548JbFNSZHaXr4ciCVOE=";
-  proxyVendor = true;
+
+  postInstall = ''
+    mv $out/bin/snicat $out/bin/sc
+  '';
 
   ldflags = [
     "-s"
     "-X main.version=v${finalAttrs.version}"
   ];
 
-  postInstall = ''
-    mv $out/bin/snicat $out/bin/sc
-  '';
+  proxyVendor = true;
 
   meta = {
     description = "TLS & SNI aware netcat";
     homepage = "https://github.com/CTFd/snicat";
     license = lib.licenses.asl20;
-    mainProgram = "sc";
     maintainers = with lib.maintainers; [ felixalbrigtsen ];
+    mainProgram = "sc";
   };
 })

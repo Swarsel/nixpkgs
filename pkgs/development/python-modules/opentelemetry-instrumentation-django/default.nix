@@ -15,9 +15,12 @@
 buildPythonPackage rec {
   inherit (opentelemetry-instrumentation) version src;
   pname = "opentelemetry-instrumentation-django";
-  pyproject = true;
 
-  sourceRoot = "${opentelemetry-instrumentation.src.name}/instrumentation/opentelemetry-instrumentation-django";
+  nativeCheckInputs = [
+    opentelemetry-test-utils
+    pytestCheckHook
+  ]
+  ++ optional-dependencies.asgi;
 
   build-system = [ hatchling ];
 
@@ -34,16 +37,12 @@ buildPythonPackage rec {
     asgi = [ opentelemetry-instrumentation-asgi ];
   };
 
-  nativeCheckInputs = [
-    opentelemetry-test-utils
-    pytestCheckHook
-  ]
-  ++ optional-dependencies.asgi;
-
+  pyproject = true;
   pythonImportsCheck = [ "opentelemetry.instrumentation.django" ];
+  sourceRoot = "${opentelemetry-instrumentation.src.name}/instrumentation/opentelemetry-instrumentation-django";
 
   meta = opentelemetry-instrumentation.meta // {
-    homepage = "https://github.com/open-telemetry/opentelemetry-python-contrib/blob/main/instrumentation/opentelemetry-instrumentation-django";
     description = "OpenTelemetry Instrumentation for Django";
+    homepage = "https://github.com/open-telemetry/opentelemetry-python-contrib/blob/main/instrumentation/opentelemetry-instrumentation-django";
   };
 }

@@ -1,9 +1,9 @@
 {
   lib,
   fetchFromGitHub,
-  mono,
   buildDotnetModule,
   dotnetCorePackages,
+  mono,
   unzip,
 }:
 
@@ -18,39 +18,12 @@ buildDotnetModule rec {
     hash = "sha256-mj14bpJks7CcrbcEScPkl3feKUycGLiBYXs908GnGhg=";
   };
 
-  dotnet-sdk =
-    with dotnetCorePackages;
-    sdk_9_0
-    // {
-      inherit
-        (combinePackages [
-          sdk_9_0
-          sdk_8_0
-        ])
-        packages
-        targetPackages
-        ;
-    };
-
-  projectFile = [
-    "src/NuGet/Microsoft.Net.Compilers.Toolset/Framework/Microsoft.Net.Compilers.Toolset.Framework.Package.csproj"
-  ];
-
-  nugetDeps = ./deps.json;
-
-  dontDotnetFixup = true;
-
-  nativeBuildInputs = [ unzip ];
-
   postPatch = ''
     substituteInPlace global.json \
       --replace-fail "patch" "latestFeature"
   '';
 
-  dotnetFlags = [
-    # this removes the Microsoft.WindowsDesktop.App.Ref dependency
-    "-p:EnableWindowsTargeting=false"
-  ];
+  nativeBuildInputs = [ unzip ];
 
   buildPhase = ''
     runHook preBuild
@@ -84,11 +57,38 @@ buildDotnetModule rec {
     runHook postInstall
   '';
 
+  dontDotnetFixup = true;
+
+  dotnet-sdk =
+    with dotnetCorePackages;
+    sdk_9_0
+    // {
+      inherit
+        (combinePackages [
+          sdk_9_0
+          sdk_8_0
+        ])
+        packages
+        targetPackages
+        ;
+    };
+
+  dotnetFlags = [
+    # this removes the Microsoft.WindowsDesktop.App.Ref dependency
+    "-p:EnableWindowsTargeting=false"
+  ];
+
+  nugetDeps = ./deps.json;
+
+  projectFile = [
+    "src/NuGet/Microsoft.Net.Compilers.Toolset/Framework/Microsoft.Net.Compilers.Toolset.Framework.Package.csproj"
+  ];
+
   meta = {
     description = ".NET C# and Visual Basic compiler";
     homepage = "https://github.com/dotnet/roslyn";
-    mainProgram = "csc";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ corngood ];
+    mainProgram = "csc";
   };
 }

@@ -1,37 +1,36 @@
 {
-  comet-gog_kind ? "latest",
-
   lib,
   stdenv,
-  rustPlatform,
   fetchFromGitHub,
   buildPackages,
-
   meson,
   ninja,
   pkgsCross,
+  rustPlatform,
+  comet-gog_kind ? "latest",
 }:
 
 let
   versionInfoTable = {
-    "latest" = {
-      version = "0.3.2";
-      srcHash = "sha256-DUkeOkUf9roZGKqdjoy/DfUL1OrVfSVjMhEvfACLEoo=";
-      cargoHash = "sha256-AiBoM7rywsuokz/fmLmye630N+t1GtwZsxkmtlH5MI8=";
-    };
     # version pin that is compatible with heroic
     "heroic" = {
       version = "0.2.0";
-      srcHash = "sha256-LAEt2i/SRABrz+y2CTMudrugifLgHNxkMSdC8PXYF0E=";
       cargoHash = "sha256-SvDE+QqaSK0+4XgB3bdmqOtwxBDTlf7yckTR8XjmMXc=";
+      srcHash = "sha256-LAEt2i/SRABrz+y2CTMudrugifLgHNxkMSdC8PXYF0E=";
+    };
+
+    "latest" = {
+      version = "0.3.2";
+      cargoHash = "sha256-AiBoM7rywsuokz/fmLmye630N+t1GtwZsxkmtlH5MI8=";
+      srcHash = "sha256-DUkeOkUf9roZGKqdjoy/DfUL1OrVfSVjMhEvfACLEoo=";
     };
   };
 
   versionInfo = versionInfoTable.${comet-gog_kind};
 in
 rustPlatform.buildRustPackage (finalAttrs: {
-  pname = "comet-gog";
   inherit (versionInfo) version cargoHash;
+  pname = "comet-gog";
 
   src = fetchFromGitHub {
     owner = "imLinguin";
@@ -50,10 +49,8 @@ rustPlatform.buildRustPackage (finalAttrs: {
   env.PROTOC = lib.getExe' buildPackages.protobuf "protoc";
 
   passthru.dummy-service = stdenv.mkDerivation {
-    pname = "galaxy-dummy-service";
     inherit (finalAttrs) version src;
-
-    sourceRoot = "${finalAttrs.src.name}/dummy-service";
+    pname = "galaxy-dummy-service";
 
     nativeBuildInputs = [
       meson
@@ -70,16 +67,20 @@ rustPlatform.buildRustPackage (finalAttrs: {
       install -D GalaxyCommunication.exe -t "$out"/
       runHook postInstall
     '';
+
+    sourceRoot = "${finalAttrs.src.name}/dummy-service";
   };
 
   meta = {
-    changelog = "https://github.com/imLinguin/comet/releases/tag/${finalAttrs.src.tag}";
     description = "Open Source implementation of GOG Galaxy's Communication Service";
     homepage = "https://github.com/imLinguin/comet";
+    changelog = "https://github.com/imLinguin/comet/releases/tag/${finalAttrs.src.tag}";
     license = lib.licenses.gpl3Plus;
-    mainProgram = "comet";
+
     maintainers = with lib.maintainers; [
       tomasajt
     ];
+
+    mainProgram = "comet";
   };
 })

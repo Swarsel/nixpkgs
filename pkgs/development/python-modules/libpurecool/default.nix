@@ -2,11 +2,11 @@
   lib,
   buildPythonPackage,
   fetchPypi,
-  setuptools,
   netifaces,
   paho-mqtt,
   pycryptodome,
   requests,
+  setuptools,
   six,
   zeroconf,
 }:
@@ -14,7 +14,6 @@
 buildPythonPackage rec {
   pname = "libpurecool";
   version = "0.6.4";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
@@ -28,6 +27,8 @@ buildPythonPackage rec {
       --replace-fail "from .zeroconf import ServiceBrowser, Zeroconf" "from zeroconf import ServiceBrowser, Zeroconf"
   '';
 
+  # Tests are only present in repo, https://github.com/etheralm/libpurecool/issues/36
+  doCheck = false;
   build-system = [ setuptools ];
 
   dependencies = [
@@ -39,8 +40,7 @@ buildPythonPackage rec {
     zeroconf
   ];
 
-  # Tests are only present in repo, https://github.com/etheralm/libpurecool/issues/36
-  doCheck = false;
+  pyproject = true;
   pythonImportsCheck = [ "libpurecool" ];
 
   meta = {

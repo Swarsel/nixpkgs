@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   packaging,
   pybrowsers,
   pytest-cov-stub,
@@ -15,7 +15,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "webdriver-manager";
   version = "4.1.2";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "SergeyPirogov";
@@ -24,16 +23,6 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-UQeiBtql0+IEG0iY0XoY+iqKqMB9Wmt+NxH7coxrJCw=";
   };
 
-  __darwinAllowLocalNetworking = true;
-
-  build-system = [ setuptools ];
-
-  dependencies = [
-    packaging
-    python-dotenv
-    requests
-  ];
-
   nativeCheckInputs = [
     pybrowsers
     pytest-cov-stub
@@ -41,7 +30,14 @@ buildPythonPackage (finalAttrs: {
     selenium
   ];
 
-  pythonImportsCheck = [ "webdriver_manager" ];
+  __darwinAllowLocalNetworking = true;
+  build-system = [ setuptools ];
+
+  dependencies = [
+    packaging
+    python-dotenv
+    requests
+  ];
 
   disabledTestPaths = [
     # Tests require network access and browsers available
@@ -60,6 +56,9 @@ buildPythonPackage (finalAttrs: {
     "tests/test_opera_manager.py"
     "tests/test_silent_global_logs.py"
   ];
+
+  pyproject = true;
+  pythonImportsCheck = [ "webdriver_manager" ];
 
   meta = {
     description = "Module to manage the binary drivers for different browsers";

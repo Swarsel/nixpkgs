@@ -1,8 +1,8 @@
 {
-  mkDerivation,
-  haskellPackages,
-  fetchFromGitHub,
   lib,
+  fetchFromGitHub,
+  haskellPackages,
+  mkDerivation,
 }:
 
 mkDerivation {
@@ -16,10 +16,6 @@ mkDerivation {
     sha256 = "1qc7p44dqja6qrjbjdc2xn7n9v41j5v59sgjnxjj5k0mxp58y1ch";
   };
 
-  postUnpack = ''
-    sourceRoot="$sourceRoot/haskell_tool"
-  '';
-
   postPatch = ''
     substituteInPlace fffuu.cabal \
       --replace "containers >=0.5 && <0.6" "containers >= 0.6" \
@@ -27,12 +23,13 @@ mkDerivation {
       --replace "split >= 0.2.3 && <= 0.2.4" "split >= 0.2.3"
   '';
 
-  isLibrary = false;
-
-  isExecutable = true;
-
   # fails with sandbox
   doCheck = false;
+  description = "Fancy Formal Firewall Universal Understander";
+  executableHaskellDepends = with haskellPackages; [ base ];
+  homepage = "https://github.com/diekmann/Iptables_Semantics/tree/master/haskell_tool";
+  isExecutable = true;
+  isLibrary = false;
 
   libraryHaskellDepends = with haskellPackages; [
     base
@@ -42,16 +39,16 @@ mkDerivation {
     optparse-generic
   ];
 
-  executableHaskellDepends = with haskellPackages; [ base ];
+  license = lib.licenses.bsd2;
+  maintainers = [ ];
+
+  postUnpack = ''
+    sourceRoot="$sourceRoot/haskell_tool"
+  '';
 
   testHaskellDepends = with haskellPackages; [
     tasty
     tasty-hunit
     tasty-golden
   ];
-
-  description = "Fancy Formal Firewall Universal Understander";
-  homepage = "https://github.com/diekmann/Iptables_Semantics/tree/master/haskell_tool";
-  license = lib.licenses.bsd2;
-  maintainers = [ ];
 }

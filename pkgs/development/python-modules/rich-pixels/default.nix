@@ -1,18 +1,17 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   hatchling,
   pillow,
-  rich,
   pytestCheckHook,
+  rich,
   syrupy,
 }:
 
 buildPythonPackage rec {
   pname = "rich-pixels";
   version = "3.0.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "darrenburns";
@@ -21,7 +20,10 @@ buildPythonPackage rec {
     hash = "sha256-Sqs0DOyxJBfZmm/SVSTMSmaaeRlusiSp6VBnJjKYjgQ=";
   };
 
-  pythonRelaxDeps = [ "pillow" ];
+  nativeCheckInputs = [
+    pytestCheckHook
+    syrupy
+  ];
 
   build-system = [ hatchling ];
 
@@ -30,12 +32,9 @@ buildPythonPackage rec {
     rich
   ];
 
-  nativeCheckInputs = [
-    pytestCheckHook
-    syrupy
-  ];
-
+  pyproject = true;
   pythonImportsCheck = [ "rich_pixels" ];
+  pythonRelaxDeps = [ "pillow" ];
 
   meta = {
     description = "Rich-compatible library for writing pixel images and ASCII art to the terminal";

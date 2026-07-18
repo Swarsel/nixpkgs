@@ -8,19 +8,17 @@
 buildPythonPackage rec {
   pname = "multi-key-dict";
   version = "2.0.3";
-  pyproject = true;
 
   src = fetchPypi {
-    pname = "multi_key_dict";
     inherit version;
     hash = "sha256-3uvewXqjChxDLLP0N+gfhiHhwFQqDAYXp09x4jLpk54=";
+    pname = "multi_key_dict";
   };
 
   nativeBuildInputs = [ setuptools ];
-
   # upstream has no tests
   doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "multi_key_dict" ];
 
   meta = {

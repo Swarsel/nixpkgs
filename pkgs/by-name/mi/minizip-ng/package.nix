@@ -2,14 +2,14 @@
   lib,
   stdenv,
   fetchFromGitHub,
+  bzip2,
   cmake,
   gtest,
-  pkg-config,
-  zlib,
-  bzip2,
-  xz,
-  zstd,
   openssl,
+  pkg-config,
+  xz,
+  zlib,
+  zstd,
   enableCompat ? false,
 }:
 
@@ -23,6 +23,8 @@ stdenv.mkDerivation (finalAttrs: {
     rev = finalAttrs.version;
     hash = "sha256-yPDH9Far8I+tpNeIoXt6w2Aj1/LEYFjwaHyLZMavCCA=";
   };
+
+  strictDeps = true;
 
   nativeBuildInputs = [
     cmake
@@ -52,22 +54,21 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   env.NIX_CFLAGS_COMPILE = lib.optionalString stdenv.hostPlatform.isDarwin "-Wno-register";
-
   doCheck = stdenv.buildPlatform.canExecute stdenv.hostPlatform;
   checkInputs = [ gtest ];
-  enableParallelChecking = false;
-
-  strictDeps = true;
   __structuredAttrs = true;
+  enableParallelChecking = false;
 
   meta = {
     description = "Fork of the popular zip manipulation library found in the zlib distribution";
     homepage = "https://github.com/zlib-ng/minizip-ng";
     license = lib.licenses.zlib;
+
     maintainers = with lib.maintainers; [
       ris
       kuflierl
     ];
+
     platforms = lib.platforms.unix;
   };
 })

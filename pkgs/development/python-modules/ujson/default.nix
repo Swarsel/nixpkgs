@@ -9,7 +9,6 @@
 buildPythonPackage rec {
   pname = "ujson";
   version = "5.11.0";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
@@ -17,9 +16,8 @@ buildPythonPackage rec {
   };
 
   nativeBuildInputs = [ setuptools-scm ];
-
   nativeCheckInputs = [ pytestCheckHook ];
-
+  format = "setuptools";
   pythonImportsCheck = [ "ujson" ];
 
   meta = {

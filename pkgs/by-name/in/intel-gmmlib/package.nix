@@ -26,18 +26,21 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   meta = {
-    homepage = "https://github.com/intel/gmmlib";
-    license = lib.licenses.mit;
     description = "Intel Graphics Memory Management Library";
+
     longDescription = ''
       The Intel(R) Graphics Memory Management Library provides device specific
       and buffer management for the Intel(R) Graphics Compute Runtime for
       OpenCL(TM) and the Intel(R) Media Driver for VAAPI.
     '';
+
+    homepage = "https://github.com/intel/gmmlib";
+    license = lib.licenses.mit;
+    maintainers = with lib.maintainers; [ SuperSandro2000 ];
+
     platforms = [
       "x86_64-linux"
       "i686-linux"
     ];
-    maintainers = with lib.maintainers; [ SuperSandro2000 ];
   };
 })

@@ -1,16 +1,15 @@
 {
   lib,
+  fetchFromGitHub,
   buildPythonPackage,
   camel-converter,
-  fetchFromGitHub,
-  setuptools,
   requests,
+  setuptools,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "meilisearch";
   version = "0.42.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "meilisearch";
@@ -19,6 +18,8 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-MUFUFTYb0/xuTXC5GViWH7LRsmZwhZIjPAbE3+ZajgQ=";
   };
 
+  # Tests spin up a local server and are not mocking the requests
+  doCheck = false;
   build-system = [ setuptools ];
 
   dependencies = [
@@ -27,10 +28,8 @@ buildPythonPackage (finalAttrs: {
   ]
   ++ camel-converter.optional-dependencies.pydantic;
 
+  pyproject = true;
   pythonImportsCheck = [ "meilisearch" ];
-
-  # Tests spin up a local server and are not mocking the requests
-  doCheck = false;
 
   meta = {
     description = "Client for the Meilisearch API";

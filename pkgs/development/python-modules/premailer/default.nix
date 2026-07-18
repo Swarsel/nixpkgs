@@ -1,19 +1,18 @@
 {
-  buildPythonPackage,
+  lib,
   fetchFromGitHub,
-  setuptools,
-  lxml,
+  buildPythonPackage,
+  cachetools,
   cssselect,
   cssutils,
+  lxml,
   requests,
-  cachetools,
-  lib,
+  setuptools,
 }:
 
 buildPythonPackage {
   pname = "premailer";
   version = "3.10.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "peterbe";
@@ -32,12 +31,13 @@ buildPythonPackage {
     cachetools
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "premailer" ];
 
   meta = {
-    changelog = "https://github.com/peterbe/premailer/blob/master/CHANGES.rst";
     description = "Turns CSS blocks into style attributes";
     homepage = "https://github.com/peterbe/premailer";
+    changelog = "https://github.com/peterbe/premailer/blob/master/CHANGES.rst";
     license = lib.licenses.bsd3;
     maintainers = [ lib.maintainers.linsui ];
   };

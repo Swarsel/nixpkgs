@@ -1,21 +1,21 @@
 {
-  stdenv,
-  callPackage,
-  fetchFromGitHub,
-  fetchurl,
   lib,
-  replaceVars,
+  stdenv,
+  fetchurl,
+  fetchFromGitHub,
   # Dependencies
   boehmgc,
+  callPackage,
   coreutils,
   git,
   gmp,
   hostname,
+  installShellFiles,
   libevent,
+  libffi,
   libiconv,
   libxml2,
   libyaml,
-  libffi,
   llvmPackages_19,
   llvmPackages_20,
   llvmPackages_21,
@@ -24,8 +24,8 @@
   openssl,
   pcre2,
   pkg-config,
-  installShellFiles,
   readline,
+  replaceVars,
   tzdata,
   which,
   zlib,
@@ -35,10 +35,10 @@
 # NixOS
 let
   archs = {
-    x86_64-linux = "linux-x86_64";
-    i686-linux = "linux-i686";
     aarch64-darwin = "darwin-universal";
     aarch64-linux = "linux-aarch64";
+    i686-linux = "linux-i686";
+    x86_64-linux = "linux-x86_64";
   };
 
   arch = archs.${stdenv.system} or (throw "system ${stdenv.system} not supported");
@@ -62,13 +62,13 @@ let
 
   genericBinary =
     {
-      version,
       sha256s,
+      version,
       rel ? 1,
     }:
     stdenv.mkDerivation rec {
-      pname = "crystal-binary";
       inherit version;
+      pname = "crystal-binary";
 
       src = fetchurl {
         url = binaryUrl version rel;
@@ -86,39 +86,39 @@ let
 
   generic =
     {
-      version,
-      sha256,
       binary,
       llvmPackages,
-      doCheck ? true,
-      extraBuildInputs ? [ ],
+      sha256,
+      version,
       buildFlags ? [
         "all"
         "docs"
         "release=1"
       ],
+      doCheck ? true,
+      extraBuildInputs ? [ ],
     }:
     stdenv.mkDerivation (finalAttrs: {
-      pname = "crystal";
       inherit buildFlags doCheck version;
+      pname = "crystal";
 
       src = fetchFromGitHub {
+        inherit sha256;
         owner = "crystal-lang";
         repo = "crystal";
         rev = version;
-        inherit sha256;
       };
-
-      patches = [
-        (replaceVars ./tzdata.patch {
-          inherit tzdata;
-        })
-      ];
 
       outputs = [
         "out"
         "lib"
         "bin"
+      ];
+
+      patches = [
+        (replaceVars ./tzdata.patch {
+          inherit tzdata;
+        })
       ];
 
       postPatch = ''
@@ -163,16 +163,8 @@ let
           --replace '@[Link("stdc++")]' '@[Link("c++")]'
       '';
 
-      # Defaults are 4
-      preBuild = ''
-        export CRYSTAL_WORKERS=$NIX_BUILD_CORES
-        export threads=$NIX_BUILD_CORES
-        export CRYSTAL_CACHE_DIR=$TMP
-        export MACOSX_DEPLOYMENT_TARGET=10.11
-        export SOURCE_DATE_EPOCH="$(<src/SOURCE_DATE_EPOCH)"
-      '';
-
       strictDeps = true;
+
       nativeBuildInputs = [
         binary
         makeWrapper
@@ -181,6 +173,7 @@ let
         llvmPackages.llvm
         installShellFiles
       ];
+
       buildInputs = [
         boehmgc
         pcre2
@@ -199,15 +192,27 @@ let
       ];
 
       env = {
-        LLVM_CONFIG = "${llvmPackages.llvm.dev}/bin/llvm-config";
-
-        # needed for deterministic builds
-        FLAGS = "--single-module";
-
         # This makes sure we don't keep depending on the previous version of
         # crystal used to build this one.
         CRYSTAL_LIBRARY_PATH = "${placeholder "lib"}/crystal";
+        # needed for deterministic builds
+        FLAGS = "--single-module";
+        LLVM_CONFIG = "${llvmPackages.llvm.dev}/bin/llvm-config";
       };
+
+      # Defaults are 4
+      preBuild = ''
+        export CRYSTAL_WORKERS=$NIX_BUILD_CORES
+        export threads=$NIX_BUILD_CORES
+        export CRYSTAL_CACHE_DIR=$TMP
+        export MACOSX_DEPLOYMENT_TARGET=10.11
+        export SOURCE_DATE_EPOCH="$(<src/SOURCE_DATE_EPOCH)"
+      '';
+
+      preCheck = ''
+        export LIBRARY_PATH=${lib.makeLibraryPath nativeCheckInputs}:$LIBRARY_PATH
+        export PATH=${lib.makeBinPath nativeCheckInputs}:$PATH
+      '';
 
       # We *have* to add `which` to the PATH or crystal is unable to build
       # stuff later if which is not available.
@@ -251,94 +256,91 @@ let
         runHook postInstall
       '';
 
-      enableParallelBuilding = true;
-
-      dontStrip = true;
-
       checkTarget = "compiler_spec";
-
-      preCheck = ''
-        export LIBRARY_PATH=${lib.makeLibraryPath nativeCheckInputs}:$LIBRARY_PATH
-        export PATH=${lib.makeBinPath nativeCheckInputs}:$PATH
-      '';
-
+      dontStrip = true;
+      enableParallelBuilding = true;
       passthru.buildBinary = binary;
+
       passthru.buildCrystalPackage = callPackage ./build-package.nix {
         crystal = finalAttrs.finalPackage;
       };
+
       passthru.llvmPackages = llvmPackages;
 
       meta = {
         inherit (binary.meta) platforms;
         description = "Compiled language with Ruby like syntax and type inference";
-        mainProgram = "crystal";
         homepage = "https://crystal-lang.org/";
         license = lib.licenses.asl20;
+
         maintainers = with lib.maintainers; [
           david50407
           peterhoeg
           donovanglover
         ];
+
+        mainProgram = "crystal";
       };
     });
 in
 rec {
   binaryCrystal_1_10 = genericBinary {
     version = "1.10.1";
+
     sha256s = {
-      x86_64-linux = "sha256-F0LjdV02U9G6B8ApHxClF/o5KvhxMNukSX7Z2CwSNIs=";
       aarch64-darwin = "sha256-5kkObQl0VIO6zqQ8TYl0JzYyUmwfmPE9targpfwseSQ=";
       aarch64-linux = "sha256-AzFz+nrU/HJmCL1hbCKXf5ej/uypqV1GJPVLQ4J3778=";
+      x86_64-linux = "sha256-F0LjdV02U9G6B8ApHxClF/o5KvhxMNukSX7Z2CwSNIs=";
     };
   };
 
+  crystal = crystal_1_19;
+
   crystal_1_14 = generic {
     version = "1.14.1";
-    sha256 = "sha256-cQWK92BfksOW8GmoXn4BmPGJ7CLyLAeKccOffQMh5UU=";
+    doCheck = false; # Some compiler spec problems on x86-64_linux with the .0 release
     binary = binaryCrystal_1_10;
     llvmPackages = llvmPackages_19;
-    doCheck = false; # Some compiler spec problems on x86-64_linux with the .0 release
+    sha256 = "sha256-cQWK92BfksOW8GmoXn4BmPGJ7CLyLAeKccOffQMh5UU=";
   };
 
   crystal_1_15 = generic {
     version = "1.15.1";
-    sha256 = "sha256-L/Q8yZdDq/wn4kJ+zpLfi4pxznAtgjxTCbLnEiCC2K0=";
+    doCheck = false;
     binary = binaryCrystal_1_10;
     llvmPackages = llvmPackages_19;
-    doCheck = false;
+    sha256 = "sha256-L/Q8yZdDq/wn4kJ+zpLfi4pxznAtgjxTCbLnEiCC2K0=";
   };
 
   crystal_1_16 = generic {
     version = "1.16.3";
-    sha256 = "sha256-U9H1tHUMyDNicZnXzEccDki5bGXdV0B2Wu2PyCksPVI=";
+    doCheck = false;
     binary = binaryCrystal_1_10;
     llvmPackages = llvmPackages_20;
-    doCheck = false;
+    sha256 = "sha256-U9H1tHUMyDNicZnXzEccDki5bGXdV0B2Wu2PyCksPVI=";
   };
 
   crystal_1_17 = generic {
     version = "1.17.1";
-    sha256 = "sha256-+wHhozPhpIsfQy1Lw+V48zvuWCfXzT4IC9KA1AU/DLw=";
+    doCheck = false;
     binary = binaryCrystal_1_10;
     llvmPackages = llvmPackages_21;
-    doCheck = false;
+    sha256 = "sha256-+wHhozPhpIsfQy1Lw+V48zvuWCfXzT4IC9KA1AU/DLw=";
   };
 
   crystal_1_18 = generic {
     version = "1.18.2";
-    sha256 = "sha256-bwKs9bwD1WfS95DSxVY5AjT5Q61jOsfAH897tmiurng=";
+    doCheck = false;
     binary = binaryCrystal_1_10;
     llvmPackages = llvmPackages_21;
-    doCheck = false;
+    sha256 = "sha256-bwKs9bwD1WfS95DSxVY5AjT5Q61jOsfAH897tmiurng=";
   };
 
   crystal_1_19 = generic {
     version = "1.19.1";
-    sha256 = "sha256-vMS2GJb6c6RvflDSS2EWHsERJ0rvzZMVm50gaTXRs4Y=";
+    doCheck = false;
     binary = binaryCrystal_1_10;
     llvmPackages = llvmPackages_22;
-    doCheck = false;
+    sha256 = "sha256-vMS2GJb6c6RvflDSS2EWHsERJ0rvzZMVm50gaTXRs4Y=";
   };
-
-  crystal = crystal_1_19;
 }

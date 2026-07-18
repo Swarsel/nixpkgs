@@ -1,8 +1,8 @@
 {
   config,
   lib,
-  options,
   pkgs,
+  options,
   ...
 }:
 let
@@ -31,14 +31,15 @@ let
   );
 
   seyrenConfig = {
-    SEYREN_URL = cfg.seyren.seyrenUrl;
-    MONGO_URL = cfg.seyren.mongoUrl;
     GRAPHITE_URL = cfg.seyren.graphiteUrl;
+    MONGO_URL = cfg.seyren.mongoUrl;
+    SEYREN_URL = cfg.seyren.seyrenUrl;
   }
   // cfg.seyren.extraConfig;
 
   configDir = pkgs.buildEnv {
     name = "graphite-config";
+
     paths = lib.lists.filter (el: el != null) [
       (writeTextOrNull "carbon.conf" cfg.carbon.config)
       (writeTextOrNull "storage-aggregation.conf" cfg.carbon.storageAggregation)
@@ -56,6 +57,10 @@ let
   '';
 
   carbonEnv = {
+    GRAPHITE_CONF_DIR = configDir;
+    GRAPHITE_ROOT = dataDir;
+    GRAPHITE_STORAGE_DIR = dataDir;
+
     PYTHONPATH =
       let
         cenv = pkgs.python3.buildEnv.override {
@@ -63,9 +68,6 @@ let
         };
       in
       "${cenv}/${pkgs.python3.sitePackages}";
-    GRAPHITE_ROOT = dataDir;
-    GRAPHITE_CONF_DIR = configDir;
-    GRAPHITE_STORAGE_DIR = dataDir;
   };
 
 in
@@ -80,46 +82,8 @@ in
   ###### interface
 
   options.services.graphite = {
-    dataDir = lib.mkOption {
-      type = lib.types.path;
-      default = "/var/db/graphite";
-      description = ''
-        Data directory for graphite.
-      '';
-    };
-
-    web = {
-      enable = lib.mkOption {
-        description = "Whether to enable graphite web frontend.";
-        default = false;
-        type = lib.types.bool;
-      };
-
-      listenAddress = lib.mkOption {
-        description = "Graphite web frontend listen address.";
-        default = "127.0.0.1";
-        type = lib.types.str;
-      };
-
-      port = lib.mkOption {
-        description = "Graphite web frontend port.";
-        default = 8080;
-        type = lib.types.port;
-      };
-
-      extraConfig = lib.mkOption {
-        type = lib.types.str;
-        default = "";
-        description = ''
-          Graphite webapp settings. See:
-          <https://graphite.readthedocs.io/en/latest/config-local-settings.html>
-        '';
-      };
-    };
-
     carbon = {
       config = lib.mkOption {
-        description = "Content of carbon configuration file.";
         default = ''
           [cache]
           # Listen on localhost by default for security reasons
@@ -131,118 +95,146 @@ in
           LOG_UPDATES = False
           LOG_CACHE_HITS = False
         '';
+
+        description = "Content of carbon configuration file.";
         type = lib.types.str;
       };
 
-      enableCache = lib.mkOption {
-        description = "Whether to enable carbon cache, the graphite storage daemon.";
+      aggregationRules = lib.mkOption {
+        default = null;
+        description = "Defines if and how received metrics will be aggregated.";
+
+        example = ''
+          <env>.applications.<app>.all.requests (60) = sum <env>.applications.<app>.*.requests
+          <env>.applications.<app>.all.latency (60) = avg <env>.applications.<app>.*.latency
+        '';
+
+        type = lib.types.nullOr lib.types.str;
+      };
+
+      blacklist = lib.mkOption {
+        default = null;
+        description = "Any metrics received which match one of the expressions will be dropped.";
+        example = "^some\\.noisy\\.metric\\.prefix\\..*";
+        type = lib.types.nullOr lib.types.str;
+      };
+
+      enableAggregator = lib.mkOption {
         default = false;
+        description = "Whether to enable carbon aggregator, the carbon buffering service.";
         type = lib.types.bool;
       };
 
-      storageAggregation = lib.mkOption {
-        description = "Defines how to aggregate data to lower-precision retentions.";
+      enableCache = lib.mkOption {
+        default = false;
+        description = "Whether to enable carbon cache, the graphite storage daemon.";
+        type = lib.types.bool;
+      };
+
+      enableRelay = lib.mkOption {
+        default = false;
+        description = "Whether to enable carbon relay, the carbon replication and sharding service.";
+        type = lib.types.bool;
+      };
+
+      relayRules = lib.mkOption {
         default = null;
+        description = "Relay rules are used to send certain metrics to a certain backend.";
+
+        example = ''
+          [example]
+          pattern = ^mydata\.foo\..+
+          servers = 10.1.2.3, 10.1.2.4:2004, myserver.mydomain.com
+        '';
+
         type = lib.types.nullOr lib.types.str;
+      };
+
+      rewriteRules = lib.mkOption {
+        default = null;
+
+        description = ''
+          Regular expression patterns that can be used to rewrite metric names
+          in a search and replace fashion.
+        '';
+
+        example = ''
+          [post]
+          _sum$ =
+          _avg$ =
+        '';
+
+        type = lib.types.nullOr lib.types.str;
+      };
+
+      storageAggregation = lib.mkOption {
+        default = null;
+        description = "Defines how to aggregate data to lower-precision retentions.";
+
         example = ''
           [all_min]
           pattern = \.min$
           xFilesFactor = 0.1
           aggregationMethod = min
         '';
+
+        type = lib.types.nullOr lib.types.str;
       };
 
       storageSchemas = lib.mkOption {
-        description = "Defines retention rates for storing metrics.";
         default = "";
-        type = lib.types.nullOr lib.types.str;
+        description = "Defines retention rates for storing metrics.";
+
         example = ''
           [apache_busyWorkers]
           pattern = ^servers\.www.*\.workers\.busyWorkers$
           retentions = 15s:7d,1m:21d,15m:5y
         '';
-      };
 
-      blacklist = lib.mkOption {
-        description = "Any metrics received which match one of the expressions will be dropped.";
-        default = null;
         type = lib.types.nullOr lib.types.str;
-        example = "^some\\.noisy\\.metric\\.prefix\\..*";
       };
 
       whitelist = lib.mkOption {
+        default = null;
         description = "Only metrics received which match one of the expressions will be persisted.";
-        default = null;
-        type = lib.types.nullOr lib.types.str;
         example = ".*";
-      };
-
-      rewriteRules = lib.mkOption {
-        description = ''
-          Regular expression patterns that can be used to rewrite metric names
-          in a search and replace fashion.
-        '';
-        default = null;
         type = lib.types.nullOr lib.types.str;
-        example = ''
-          [post]
-          _sum$ =
-          _avg$ =
-        '';
       };
+    };
 
-      enableRelay = lib.mkOption {
-        description = "Whether to enable carbon relay, the carbon replication and sharding service.";
-        default = false;
-        type = lib.types.bool;
-      };
+    dataDir = lib.mkOption {
+      default = "/var/db/graphite";
 
-      relayRules = lib.mkOption {
-        description = "Relay rules are used to send certain metrics to a certain backend.";
-        default = null;
-        type = lib.types.nullOr lib.types.str;
-        example = ''
-          [example]
-          pattern = ^mydata\.foo\..+
-          servers = 10.1.2.3, 10.1.2.4:2004, myserver.mydomain.com
-        '';
-      };
+      description = ''
+        Data directory for graphite.
+      '';
 
-      enableAggregator = lib.mkOption {
-        description = "Whether to enable carbon aggregator, the carbon buffering service.";
-        default = false;
-        type = lib.types.bool;
-      };
-
-      aggregationRules = lib.mkOption {
-        description = "Defines if and how received metrics will be aggregated.";
-        default = null;
-        type = lib.types.nullOr lib.types.str;
-        example = ''
-          <env>.applications.<app>.all.requests (60) = sum <env>.applications.<app>.*.requests
-          <env>.applications.<app>.all.latency (60) = avg <env>.applications.<app>.*.latency
-        '';
-      };
+      type = lib.types.path;
     };
 
     seyren = {
       enable = lib.mkOption {
-        description = "Whether to enable seyren service.";
         default = false;
+        description = "Whether to enable seyren service.";
         type = lib.types.bool;
       };
 
-      port = lib.mkOption {
-        description = "Seyren listening port.";
-        default = 8081;
-        type = lib.types.port;
-      };
+      extraConfig = lib.mkOption {
+        default = { };
 
-      seyrenUrl = lib.mkOption {
-        default = "http://localhost:${toString cfg.seyren.port}/";
-        defaultText = lib.literalExpression ''"http://localhost:''${toString config.${opt.seyren.port}}/"'';
-        description = "Host where seyren is accessible.";
-        type = lib.types.str;
+        description = ''
+          Extra seyren configuration. See
+          <https://github.com/scobal/seyren#config>
+        '';
+
+        example = lib.literalExpression ''
+          {
+            GRAPHITE_USERNAME = "user";
+            GRAPHITE_PASSWORD = "pass";
+          }
+        '';
+
+        type = lib.types.attrsOf lib.types.str;
       };
 
       graphiteUrl = lib.mkOption {
@@ -259,19 +251,48 @@ in
         type = lib.types.str;
       };
 
+      port = lib.mkOption {
+        default = 8081;
+        description = "Seyren listening port.";
+        type = lib.types.port;
+      };
+
+      seyrenUrl = lib.mkOption {
+        default = "http://localhost:${toString cfg.seyren.port}/";
+        defaultText = lib.literalExpression ''"http://localhost:''${toString config.${opt.seyren.port}}/"'';
+        description = "Host where seyren is accessible.";
+        type = lib.types.str;
+      };
+    };
+
+    web = {
+      enable = lib.mkOption {
+        default = false;
+        description = "Whether to enable graphite web frontend.";
+        type = lib.types.bool;
+      };
+
       extraConfig = lib.mkOption {
-        default = { };
+        default = "";
+
         description = ''
-          Extra seyren configuration. See
-          <https://github.com/scobal/seyren#config>
+          Graphite webapp settings. See:
+          <https://graphite.readthedocs.io/en/latest/config-local-settings.html>
         '';
-        type = lib.types.attrsOf lib.types.str;
-        example = lib.literalExpression ''
-          {
-            GRAPHITE_USERNAME = "user";
-            GRAPHITE_PASSWORD = "pass";
-          }
-        '';
+
+        type = lib.types.str;
+      };
+
+      listenAddress = lib.mkOption {
+        default = "127.0.0.1";
+        description = "Graphite web frontend listen address.";
+        type = lib.types.str;
+      };
+
+      port = lib.mkOption {
+        default = 8080;
+        description = "Graphite web frontend port.";
+        type = lib.types.port;
       };
     };
   };
@@ -285,23 +306,26 @@ in
           name = "carbon-cache";
         in
         {
-          description = "Graphite Data Storage Backend";
-          wantedBy = [ "multi-user.target" ];
           after = [ "network.target" ];
+          description = "Graphite Data Storage Backend";
           environment = carbonEnv;
-          serviceConfig = {
-            Slice = "system-graphite.slice";
-            RuntimeDirectory = name;
-            ExecStart = "${lib.getExe' pkgs.python3Packages.twisted "twistd"} ${carbonOpts name}";
-            User = "graphite";
-            Group = "graphite";
-            PermissionsStartOnly = true;
-            PIDFile = "/run/${name}/${name}.pid";
-          };
+
           preStart = ''
             install -dm0700 -o graphite -g graphite ${cfg.dataDir}
             install -dm0700 -o graphite -g graphite ${cfg.dataDir}/whisper
           '';
+
+          serviceConfig = {
+            ExecStart = "${lib.getExe' pkgs.python3Packages.twisted "twistd"} ${carbonOpts name}";
+            Group = "graphite";
+            PIDFile = "/run/${name}/${name}.pid";
+            PermissionsStartOnly = true;
+            RuntimeDirectory = name;
+            Slice = "system-graphite.slice";
+            User = "graphite";
+          };
+
+          wantedBy = [ "multi-user.target" ];
         };
     })
 
@@ -312,18 +336,20 @@ in
         in
         {
           enable = cfg.carbon.enableAggregator;
-          description = "Carbon Data Aggregator";
-          wantedBy = [ "multi-user.target" ];
           after = [ "network.target" ];
+          description = "Carbon Data Aggregator";
           environment = carbonEnv;
+
           serviceConfig = {
-            Slice = "system-graphite.slice";
-            RuntimeDirectory = name;
             ExecStart = "${lib.getExe' pkgs.python3Packages.twisted "twistd"} ${carbonOpts name}";
-            User = "graphite";
             Group = "graphite";
             PIDFile = "/run/${name}/${name}.pid";
+            RuntimeDirectory = name;
+            Slice = "system-graphite.slice";
+            User = "graphite";
           };
+
+          wantedBy = [ "multi-user.target" ];
         };
     })
 
@@ -333,18 +359,20 @@ in
           name = "carbon-relay";
         in
         {
-          description = "Carbon Data Relay";
-          wantedBy = [ "multi-user.target" ];
           after = [ "network.target" ];
+          description = "Carbon Data Relay";
           environment = carbonEnv;
+
           serviceConfig = {
-            Slice = "system-graphite.slice";
-            RuntimeDirectory = name;
             ExecStart = "${lib.getExe' pkgs.python3Packages.twisted "twistd"} ${carbonOpts name}";
-            User = "graphite";
             Group = "graphite";
             PIDFile = "/run/${name}/${name}.pid";
+            RuntimeDirectory = name;
+            Slice = "system-graphite.slice";
+            User = "graphite";
           };
+
+          wantedBy = [ "multi-user.target" ];
         };
     })
 
@@ -355,12 +383,19 @@ in
     })
 
     (lib.mkIf cfg.web.enable {
+      environment.systemPackages = [ pkgs.python3Packages.graphite-web ];
+
       systemd.services.graphiteWeb = {
-        description = "Graphite Web Interface";
-        wantedBy = [ "multi-user.target" ];
         after = [ "network.target" ];
-        path = [ pkgs.perl ];
+        description = "Graphite Web Interface";
+
         environment = {
+          DJANGO_SETTINGS_MODULE = "graphite.settings";
+          GRAPHITE_CONF_DIR = configDir;
+          GRAPHITE_SETTINGS_MODULE = "graphite_local_settings";
+          GRAPHITE_STORAGE_DIR = dataDir;
+          LD_LIBRARY_PATH = "${pkgs.cairo.out}/lib";
+
           PYTHONPATH =
             let
               penv = pkgs.python3.buildEnv.override {
@@ -376,22 +411,10 @@ in
               # explicitly adding pycairo in path because it cannot be imported via buildEnv
               "${pkgs.python3Packages.pycairo}/${pkgs.python3.sitePackages}"
             ];
-          DJANGO_SETTINGS_MODULE = "graphite.settings";
-          GRAPHITE_SETTINGS_MODULE = "graphite_local_settings";
-          GRAPHITE_CONF_DIR = configDir;
-          GRAPHITE_STORAGE_DIR = dataDir;
-          LD_LIBRARY_PATH = "${pkgs.cairo.out}/lib";
         };
-        serviceConfig = {
-          ExecStart = ''
-            ${lib.getExe pkgs.python3Packages.waitress-django} \
-              --host=${cfg.web.listenAddress} --port=${toString cfg.web.port}
-          '';
-          User = "graphite";
-          Group = "graphite";
-          PermissionsStartOnly = true;
-          Slice = "system-graphite.slice";
-        };
+
+        path = [ pkgs.perl ];
+
         preStart = ''
           if ! test -e ${dataDir}/db-created; then
             mkdir -p ${dataDir}/{whisper/,log/webapp/}
@@ -412,36 +435,52 @@ in
             ln -sfT "${pkgs.python3Packages.graphite-web}" "${dataDir}/current_graphite_web"
           fi
         '';
-      };
 
-      environment.systemPackages = [ pkgs.python3Packages.graphite-web ];
+        serviceConfig = {
+          ExecStart = ''
+            ${lib.getExe pkgs.python3Packages.waitress-django} \
+              --host=${cfg.web.listenAddress} --port=${toString cfg.web.port}
+          '';
+
+          Group = "graphite";
+          PermissionsStartOnly = true;
+          Slice = "system-graphite.slice";
+          User = "graphite";
+        };
+
+        wantedBy = [ "multi-user.target" ];
+      };
     })
 
     (lib.mkIf cfg.seyren.enable {
+      services.mongodb.enable = lib.mkDefault true;
+
       systemd.services.seyren = {
-        description = "Graphite Alerting Dashboard";
-        wantedBy = [ "multi-user.target" ];
         after = [
           "network.target"
           "mongodb.service"
         ];
+
+        description = "Graphite Alerting Dashboard";
         environment = seyrenConfig;
-        serviceConfig = {
-          ExecStart = "${lib.getExe pkgs.seyren} -httpPort ${toString cfg.seyren.port}";
-          WorkingDirectory = dataDir;
-          User = "graphite";
-          Group = "graphite";
-          Slice = "system-graphite.slice";
-        };
+
         preStart = ''
           if ! test -e ${dataDir}/db-created; then
             mkdir -p ${dataDir}
             chown graphite:graphite ${dataDir}
           fi
         '';
-      };
 
-      services.mongodb.enable = lib.mkDefault true;
+        serviceConfig = {
+          ExecStart = "${lib.getExe pkgs.seyren} -httpPort ${toString cfg.seyren.port}";
+          Group = "graphite";
+          Slice = "system-graphite.slice";
+          User = "graphite";
+          WorkingDirectory = dataDir;
+        };
+
+        wantedBy = [ "multi-user.target" ];
+      };
     })
 
     (lib.mkIf
@@ -458,13 +497,14 @@ in
           documentation = [ "https://graphite.readthedocs.io/en/latest/overview.html" ];
         };
 
-        users.users.graphite = {
-          uid = config.ids.uids.graphite;
-          group = "graphite";
-          description = "Graphite daemon user";
-          home = dataDir;
-        };
         users.groups.graphite.gid = config.ids.gids.graphite;
+
+        users.users.graphite = {
+          description = "Graphite daemon user";
+          group = "graphite";
+          home = dataDir;
+          uid = config.ids.uids.graphite;
+        };
       }
     )
   ];

@@ -21,9 +21,9 @@ rustPlatform.buildRustPackage (finalAttrs: {
     description = "Experimental p2p gossip network for OpenPGP signature transparency";
     homepage = "https://github.com/kpcyrd/apt-swarm";
     changelog = "https://github.com/kpcyrd/apt-swarm/releases/tag/v${finalAttrs.version}";
-    mainProgram = "apt-swarm";
     license = with lib.licenses; [ gpl3Plus ];
     maintainers = with lib.maintainers; [ kpcyrd ];
     platforms = lib.platforms.all;
+    mainProgram = "apt-swarm";
   };
 })

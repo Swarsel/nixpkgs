@@ -20,11 +20,6 @@ stdenv.mkDerivation {
     hash = "sha256-mAEBnlIfW1R5+3CMH4ZumQ39Ss2K7PfW28I4/O9saWE=";
   };
 
-  buildInputs = [
-    wayland
-    wayland-protocols
-  ];
-
   strictDeps = true;
 
   nativeBuildInputs = [
@@ -34,11 +29,16 @@ stdenv.mkDerivation {
     wayland-scanner
   ];
 
+  buildInputs = [
+    wayland
+    wayland-protocols
+  ];
+
   meta = {
     description = "Simple, stupid idle inhibitor for wayland";
-    license = lib.licenses.mit;
     homepage = "https://github.com/0x5a4/wlinhibit";
-    platforms = lib.platforms.linux;
+    license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ _0x5a4 ];
+    platforms = lib.platforms.linux;
   };
 }

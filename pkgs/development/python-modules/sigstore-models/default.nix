@@ -1,17 +1,16 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   pydantic,
+  pytestCheckHook,
   typing-extensions,
   uv-build,
-  pytestCheckHook,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "sigstore-models";
   version = "0.0.6";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "astral-sh";
@@ -25,6 +24,7 @@ buildPythonPackage (finalAttrs: {
       "uv_build>=0.9.0,<0.10" "uv_build"
   '';
 
+  nativeCheckInputs = [ pytestCheckHook ];
   build-system = [ uv-build ];
 
   dependencies = [
@@ -32,8 +32,7 @@ buildPythonPackage (finalAttrs: {
     typing-extensions
   ];
 
-  nativeCheckInputs = [ pytestCheckHook ];
-
+  pyproject = true;
   pythonImportsCheck = [ "sigstore_models" ];
 
   meta = {

@@ -1,14 +1,13 @@
 {
   lib,
-  python3Packages,
   fetchFromGitHub,
   gettext,
+  python3Packages,
 }:
 
 python3Packages.buildPythonPackage rec {
   pname = "sosreport";
   version = "4.11.2";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "sosreport";
@@ -16,8 +15,6 @@ python3Packages.buildPythonPackage rec {
     tag = version;
     hash = "sha256-abMH0s+ZfLAURBJrZtTmDczuS5Id3ko0lTKfvp3OJqU=";
   };
-
-  build-system = [ python3Packages.setuptools ];
 
   patches = [
     ./os-release.patch
@@ -27,13 +24,6 @@ python3Packages.buildPythonPackage rec {
     gettext
   ];
 
-  dependencies = with python3Packages; [
-    packaging
-    pexpect
-    python-magic
-    pyyaml
-  ];
-
   # requires avocado-framework 94.0, latest version as of writing is 96.0
   doCheck = false;
 
@@ -41,6 +31,16 @@ python3Packages.buildPythonPackage rec {
     export PYTHONPATH=$PWD/tests:$PYTHONPATH
   '';
 
+  build-system = [ python3Packages.setuptools ];
+
+  dependencies = with python3Packages; [
+    packaging
+    pexpect
+    python-magic
+    pyyaml
+  ];
+
+  pyproject = true;
   pythonImportsCheck = [ "sos" ];
 
   meta = {

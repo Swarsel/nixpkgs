@@ -24,13 +24,12 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   nativeBuildInputs = [ python3 ];
-
   makeFlags = [ "PREFIX=${placeholder "out"}" ];
 
   meta = {
+    description = "C++11 ELF/DWARF parser";
     homepage = "https://github.com/aclements/libelfin/";
     license = lib.licenses.mit;
-    description = "C++11 ELF/DWARF parser";
     maintainers = with lib.maintainers; [ aleksana ];
     platforms = lib.platforms.linux;
   };

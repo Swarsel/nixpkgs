@@ -1,6 +1,6 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
   cmake,
 }:
@@ -16,8 +16,6 @@ stdenv.mkDerivation (finalAttrs: {
     sha256 = "1byv8174xam7siakr1p0523x97wkh0fmwmq341sd3g70qr2g767d";
   };
 
-  nativeBuildInputs = [ cmake ];
-
   postPatch = ''
     # https://github.com/NixOS/nixpkgs/issues/445447
     substituteInPlace CMakeLists.txt \
@@ -28,6 +26,8 @@ stdenv.mkDerivation (finalAttrs: {
       --replace '$'{prefix}/@CMAKE_INSTALL_LIBDIR@ @CMAKE_INSTALL_FULL_LIBDIR@ \
       --replace '$'{prefix}/@CMAKE_INSTALL_INCLUDEDIR@ @CMAKE_INSTALL_FULL_INCLUDEDIR@
   '';
+
+  nativeBuildInputs = [ cmake ];
 
   meta = {
     description = "Bluetooth baseband decoding library";

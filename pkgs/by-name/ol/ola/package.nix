@@ -3,19 +3,19 @@
   stdenv,
   fetchFromGitHub,
   autoreconfHook,
-  bison,
-  flex,
-  pkg-config,
-  libftdi1,
-  libuuid,
-  cppunit,
-  protobuf_21,
-  zlib,
   avahi,
-  libmicrohttpd,
-  perl,
-  python3,
+  bison,
+  cppunit,
   fetchpatch,
+  flex,
+  libftdi1,
+  libmicrohttpd,
+  libuuid,
+  perl,
+  pkg-config,
+  protobuf_21,
+  python3,
+  zlib,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -28,13 +28,15 @@ stdenv.mkDerivation (finalAttrs: {
     tag = finalAttrs.version;
     hash = "sha256-8w8ZT3D/+8Pxl9z2KTXeydVxE5xiPjxZevgmMFgrblU=";
   };
+
   patches = [
     # Fix build error with GCC 14 due to stricter C++20 compliance (template-id in constructors)
     (fetchpatch {
-      url = "https://github.com/OpenLightingProject/ola/commit/d9b9c78645c578adb7c07b692842e841c48310be.patch";
       hash = "sha256-BplSqQv8ztWMpiX/M3/3wvf6LsPTBglh48gHlUoM6rw=";
+      url = "https://github.com/OpenLightingProject/ola/commit/d9b9c78645c578adb7c07b692842e841c48310be.patch";
     })
   ];
+
   nativeBuildInputs = [
     autoreconfHook
     bison
@@ -42,6 +44,7 @@ stdenv.mkDerivation (finalAttrs: {
     pkg-config
     perl
   ];
+
   buildInputs = [
     # required for ola-ftdidmx plugin (support for 'dumb' FTDI devices)
     libftdi1
@@ -53,24 +56,26 @@ stdenv.mkDerivation (finalAttrs: {
     libmicrohttpd
     python3
   ];
+
   propagatedBuildInputs = [
     (python3.pkgs.protobuf4.override { protobuf = protobuf_21; })
     python3.pkgs.numpy
   ];
 
   configureFlags = [ "--enable-python-libs" ];
-
   enableParallelBuilding = true;
 
   meta = {
-    broken = stdenv.hostPlatform.isDarwin;
     description = "Framework for controlling entertainment lighting equipment";
     homepage = "https://www.openlighting.org/ola/";
-    maintainers = [ ];
+
     license = with lib.licenses; [
       lgpl21
       gpl2Plus
     ];
+
+    maintainers = [ ];
     platforms = lib.platforms.all;
+    broken = stdenv.hostPlatform.isDarwin;
   };
 })

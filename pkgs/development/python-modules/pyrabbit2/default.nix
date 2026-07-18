@@ -8,7 +8,6 @@
 buildPythonPackage rec {
   pname = "pyrabbit2";
   version = "1.0.7";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
@@ -16,6 +15,7 @@ buildPythonPackage rec {
   };
 
   propagatedBuildInputs = [ requests ];
+  format = "setuptools";
 
   meta = {
     description = "Pythonic interface to the RabbitMQ Management HTTP API";

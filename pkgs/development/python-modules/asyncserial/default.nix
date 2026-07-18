@@ -1,15 +1,14 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
+  buildPythonPackage,
   pyserial,
+  setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "asyncserial";
   version = "1.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "m-labs";
@@ -19,9 +18,8 @@ buildPythonPackage rec {
   };
 
   build-system = [ setuptools ];
-
   dependencies = [ pyserial ];
-
+  pyproject = true;
   pythonImportsCheck = [ "asyncserial" ];
 
   meta = {

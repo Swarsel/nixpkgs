@@ -3,8 +3,8 @@
   stdenv,
   fetchFromGitHub,
   cmake,
-  zlib,
   libpng,
+  zlib,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -19,15 +19,16 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   nativeBuildInputs = [ cmake ];
+
   buildInputs = [
     zlib
     libpng
   ];
 
   meta = {
-    changelog = "https://github.com/libharu/libharu/releases/tag/${finalAttrs.src.tag}";
     description = "Cross platform, open source library for generating PDF files";
     homepage = "http://libharu.org/";
+    changelog = "https://github.com/libharu/libharu/releases/tag/${finalAttrs.src.tag}";
     license = lib.licenses.zlib;
     maintainers = [ ];
     platforms = lib.platforms.unix;

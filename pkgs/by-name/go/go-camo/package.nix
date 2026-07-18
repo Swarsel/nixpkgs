@@ -1,7 +1,7 @@
 {
   lib,
-  buildGo125Module,
   fetchFromGitHub,
+  buildGo125Module,
   installShellFiles,
   nixosTests,
   scdoc,
@@ -18,31 +18,31 @@ buildGo125Module rec {
     hash = "sha256-P0n1rnxR9GQQw53MvHII7EXc4gWRThL4k1kulHTz9FU=";
   };
 
-  vendorHash = "sha256-Fl+amgzolwcuz+eVQzD6mfBdMNzUm6UCwf9BbAt+85U=";
-
   nativeBuildInputs = [
     installShellFiles
     scdoc
   ];
 
-  ldflags = [
-    "-s"
-    "-w"
-    "-X=main.ServerVersion=${version}"
-  ];
+  vendorHash = "sha256-Fl+amgzolwcuz+eVQzD6mfBdMNzUm6UCwf9BbAt+85U=";
 
   postBuild = ''
     make man
-  '';
-
-  postInstall = ''
-    installManPage build/man/*
   '';
 
   preCheck = ''
     # requires network access
     rm pkg/camo/proxy_{,filter_}test.go
   '';
+
+  postInstall = ''
+    installManPage build/man/*
+  '';
+
+  ldflags = [
+    "-s"
+    "-w"
+    "-X=main.ServerVersion=${version}"
+  ];
 
   passthru.tests = {
     inherit (nixosTests) go-camo;
@@ -53,7 +53,7 @@ buildGo125Module rec {
     homepage = "https://github.com/cactus/go-camo";
     changelog = "https://github.com/cactus/go-camo/releases/tag/v${version}";
     license = lib.licenses.mit;
-    mainProgram = "go-camo";
     maintainers = with lib.maintainers; [ viraptor ];
+    mainProgram = "go-camo";
   };
 }

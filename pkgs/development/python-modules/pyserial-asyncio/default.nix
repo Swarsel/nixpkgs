@@ -8,7 +8,6 @@
 buildPythonPackage rec {
   pname = "pyserial-asyncio";
   version = "0.6";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
@@ -16,9 +15,8 @@ buildPythonPackage rec {
   };
 
   propagatedBuildInputs = [ pyserial ];
-
   __darwinAllowLocalNetworking = true;
-
+  format = "setuptools";
   pythonImportsCheck = [ "serial_asyncio" ];
 
   meta = {

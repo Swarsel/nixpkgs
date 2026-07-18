@@ -1,10 +1,10 @@
 {
-  stdenv,
   lib,
-  gfortran,
+  stdenv,
   fetchFromGitHub,
-  cmake,
   blas,
+  cmake,
+  gfortran,
   lapack,
   python3Packages,
 }:
@@ -32,21 +32,23 @@ stdenv.mkDerivation (finalAttrs: {
     lapack
   ];
 
+  doCheck = true;
+
   checkInputs = with python3Packages; [
     python
     numpy
   ];
 
-  doCheck = true;
-
   meta = {
     description = "Semiempirical quantum chemistry";
     homepage = "https://github.com/openmopac/mopac";
     license = lib.licenses.lgpl3Plus;
-    platforms = lib.platforms.linux;
+
     maintainers = with lib.maintainers; [
       sheepforce
       markuskowa
     ];
+
+    platforms = lib.platforms.linux;
   };
 })

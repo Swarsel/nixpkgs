@@ -1,14 +1,13 @@
 {
   lib,
+  fetchFromGitHub,
   aiohttp,
   buildPythonPackage,
-  fetchFromGitHub,
 }:
 
 buildPythonPackage rec {
   pname = "pyvolumio";
   version = "0.1.5";
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "OnFreund";
@@ -18,10 +17,9 @@ buildPythonPackage rec {
   };
 
   propagatedBuildInputs = [ aiohttp ];
-
   # Project has no tests
   doCheck = false;
-
+  format = "setuptools";
   pythonImportsCheck = [ "pyvolumio" ];
 
   meta = {

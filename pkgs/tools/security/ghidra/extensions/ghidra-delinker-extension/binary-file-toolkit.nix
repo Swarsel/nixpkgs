@@ -14,8 +14,6 @@ maven.buildMavenPackage (finalAttrs: {
     hash = "sha256-HMzRh/Q06Ik33mEkmh5U6qLiWk7ZCEstYq3Ll/pFhXM=";
   };
 
-  mvnHash = "sha256-UrvPqh5zxhTQ6MJNJ7CSAA6dg5DX+Jdx6/wKr4/1brs=";
-
   installPhase = ''
     runHook preInstall
 
@@ -24,6 +22,8 @@ maven.buildMavenPackage (finalAttrs: {
 
     runHook postInstall
   '';
+
+  mvnHash = "sha256-UrvPqh5zxhTQ6MJNJ7CSAA6dg5DX+Jdx6/wKr4/1brs=";
 
   meta = {
     description = "Set of Java libraries for manipulating toolchain file formats";

@@ -17,31 +17,36 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-zKF8CVwj7LvkIgXIwQLC2vgBG7nL8RhoMov8YNdm9dc=";
     fetchSubmodules = true;
   };
-  hardeningDisable = [ "format" ];
-  buildInputs = [ openssl ];
+
   patches = [
     (replaceVars ./configure.patch {
-      openssl-lib = "${lib.getLib openssl}/lib";
       openssl-include = "${lib.getDev openssl}/include";
+      openssl-lib = "${lib.getLib openssl}/lib";
     })
     (replaceVars ./remove-git-dep.patch {
+      version = finalAttrs.version;
       rev = finalAttrs.src.rev;
       rev-short = lib.sources.shortRev finalAttrs.src.rev;
-      version = finalAttrs.version;
     })
   ];
+
+  buildInputs = [ openssl ];
+
   configureFlags = [
     "SSL_LIBDIR=${lib.getLib openssl}/lib"
   ];
+
   installPhase = ''
     mkdir -p $out/bin
     cp -a wraith $out/bin/wraith
     ln -s wraith $out/bin/hub
   '';
 
+  hardeningDisable = [ "format" ];
+
   meta = {
-    broken = (stdenv.hostPlatform.isLinux && stdenv.hostPlatform.isAarch64);
     description = "IRC channel management bot written purely in C/C++";
+
     longDescription = ''
       Wraith is an IRC channel management bot written purely in C/C++. It has
       been in development since late 2003. It is based on Eggdrop 1.6.12 but has
@@ -55,9 +60,11 @@ stdenv.mkDerivation (finalAttrs: {
       The binary will not run when moved onto non-NixOS systems; use patchelf
       to fix its runtime dependenices.
     '';
+
     homepage = "https://wraith.botpack.net/";
     license = lib.licenses.gpl2Plus;
     maintainers = [ ];
     platforms = lib.platforms.linux;
+    broken = (stdenv.hostPlatform.isLinux && stdenv.hostPlatform.isAarch64);
   };
 })

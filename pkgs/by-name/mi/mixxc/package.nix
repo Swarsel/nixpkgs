@@ -1,16 +1,16 @@
 {
   lib,
-  rustPlatform,
   fetchCrate,
-  pkg-config,
-  libpulseaudio,
-  gtk4-layer-shell,
   gtk4,
-  wrapGAppsHook4,
-  libxcb,
+  gtk4-layer-shell,
   installShellFiles,
-  enableWayland ? true,
+  libpulseaudio,
+  libxcb,
+  pkg-config,
+  rustPlatform,
+  wrapGAppsHook4,
   enableSass ? true,
+  enableWayland ? true,
   enableX11 ? true,
 }:
 
@@ -19,19 +19,14 @@ rustPlatform.buildRustPackage (finalAttrs: {
   version = "0.2.5";
 
   src = fetchCrate {
-    pname = "mixxc";
     inherit (finalAttrs) version;
     hash = "sha256-YVh6SOXCf4GHqDduXP7QupC48hcIMQtjIdGJYXNXQ1E=";
+    pname = "mixxc";
   };
 
-  cargoHash = "sha256-w+bHaGt6aq21DpmxYNQIf/YNigfrkqnAI25Q3l/WhHc=";
-
-  cargoBuildFlags = [ "--locked" ];
-
-  buildFeatures = [
-    (lib.optionals enableWayland "Wayland")
-    (lib.optionals enableX11 "X11")
-    (lib.optionals enableSass "Sass")
+  outputs = [
+    "out"
+    "man"
   ];
 
   nativeBuildInputs = [
@@ -47,21 +42,26 @@ rustPlatform.buildRustPackage (finalAttrs: {
     (lib.optionals enableX11 libxcb)
   ];
 
-  outputs = [
-    "out"
-    "man"
-  ];
+  cargoHash = "sha256-w+bHaGt6aq21DpmxYNQIf/YNigfrkqnAI25Q3l/WhHc=";
 
   postInstall = ''
     installManPage $src/doc/mixxc.1
   '';
+
+  buildFeatures = [
+    (lib.optionals enableWayland "Wayland")
+    (lib.optionals enableX11 "X11")
+    (lib.optionals enableSass "Sass")
+  ];
+
+  cargoBuildFlags = [ "--locked" ];
 
   meta = {
     description = "Minimalistic and customizable volume mixer";
     homepage = "https://github.com/Elvyria/mixxc";
     license = with lib.licenses; [ mit ];
     maintainers = with lib.maintainers; [ daru-san ];
-    mainProgram = "mixxc";
     platforms = lib.platforms.linux;
+    mainProgram = "mixxc";
   };
 })

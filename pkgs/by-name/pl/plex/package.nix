@@ -2,23 +2,16 @@
 {
   stdenv,
   buildFHSEnv,
-  writeScript,
   plexRaw,
-
+  writeScript,
   # Old argument for overriding the Plex data directory; not used for this
   # version of Plex, but still around for backwards-compatibility.
   dataDir ? "/var/lib/plex",
 }:
 
 buildFHSEnv {
-  pname = "plexmediaserver";
-
   inherit (plexRaw) version meta;
-
-  # Plex does some magic to detect if it is already running.
-  # The separate PID namespace somehow breaks this and Plex is thinking it's already
-  # running and refuses to start.
-  unsharePid = false;
+  pname = "plexmediaserver";
 
   # This script is run when we start our Plex binary
   runScript = writeScript "plex-run-script" ''
@@ -137,4 +130,9 @@ buildFHSEnv {
     # the Plex package.
     LD_LIBRARY_PATH=$LD_LIBRARY_PATH''${LD_LIBRARY_PATH:+:}$root exec "$root/Plex Media Server"
   '';
+
+  # Plex does some magic to detect if it is already running.
+  # The separate PID namespace somehow breaks this and Plex is thinking it's already
+  # running and refuses to start.
+  unsharePid = false;
 }

@@ -1,6 +1,6 @@
 { mkDerivation }:
 
 mkDerivation {
-  path = "usr.bin/sed";
   MK_TESTS = "no";
+  path = "usr.bin/sed";
 }

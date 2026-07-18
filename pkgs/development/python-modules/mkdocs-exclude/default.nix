@@ -1,14 +1,13 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   mkdocs,
 }:
 
 buildPythonPackage {
   pname = "mkdocs-exclude";
   version = "1.0.2";
-  format = "setuptools";
 
   # Repository has only 3 commits and no tags. Each of these commits has
   # version of 1.0.0, 1.0.1 and 1.0.2 in setup.py, though.
@@ -20,7 +19,6 @@ buildPythonPackage {
   };
 
   propagatedBuildInputs = [ mkdocs ];
-
   # Attempt to import "mkdocs_exclude" module in stand-alone mode fails:
   #
   #    module 'mkdocs.config' has no attribute 'config_options'
@@ -28,6 +26,7 @@ buildPythonPackage {
   # It works fine when actually used to build documentation of "pydantic",
   # though. This package has no tests.
   doCheck = false;
+  format = "setuptools";
 
   meta = {
     description = "Mkdocs plugin to exclude files from input using globs or regexes";

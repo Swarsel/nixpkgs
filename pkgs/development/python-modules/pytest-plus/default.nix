@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   pytestCheckHook,
   setuptools,
   setuptools-scm,
@@ -10,7 +10,6 @@
 buildPythonPackage rec {
   pname = "pytest-plus";
   version = "0.8.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "pytest-dev";
@@ -19,15 +18,15 @@ buildPythonPackage rec {
     hash = "sha256-XlEtekOASIjZretTbQAf0eyQN6qZ9c6zI1ESss/hxfI=";
   };
 
+  nativeCheckInputs = [ pytestCheckHook ];
+
   build-system = [
     setuptools
     setuptools-scm
   ];
 
-  nativeCheckInputs = [ pytestCheckHook ];
-
   enabledTestPaths = [ "test/" ];
-
+  pyproject = true;
   pythonImportsCheck = [ "pytest_plus" ];
 
   meta = {

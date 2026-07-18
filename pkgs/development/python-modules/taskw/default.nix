@@ -1,28 +1,23 @@
 {
   lib,
   buildPythonPackage,
-  fetchPypi,
-
-  # build-system
-  setuptools,
-
-  # native dependencies
-  taskwarrior2,
   distutils,
-
+  fetchPypi,
   # dependencies
   kitchen,
-  python-dateutil,
-  pytz,
-
   # tests
   pytest7CheckHook,
+  python-dateutil,
+  pytz,
+  # build-system
+  setuptools,
+  # native dependencies
+  taskwarrior2,
 }:
 
 buildPythonPackage rec {
   pname = "taskw";
   version = "2.0.0";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
@@ -34,16 +29,18 @@ buildPythonPackage rec {
     # Remove when https://github.com/ralphbean/taskw/pull/151 is merged.
     ./support-relative-path-in-taskrc.patch
   ];
+
   postPatch = ''
     substituteInPlace taskw/warrior.py \
       --replace '@@taskwarrior@@' '${taskwarrior2}'
   '';
 
-  build-system = [ setuptools ];
-
   buildInputs = [
     taskwarrior2
   ];
+
+  nativeCheckInputs = [ pytest7CheckHook ];
+  build-system = [ setuptools ];
 
   dependencies = [
     distutils
@@ -52,11 +49,11 @@ buildPythonPackage rec {
     pytz
   ];
 
-  nativeCheckInputs = [ pytest7CheckHook ];
+  pyproject = true;
 
   meta = {
-    homepage = "https://github.com/ralphbean/taskw";
     description = "Python bindings for your taskwarrior database";
+    homepage = "https://github.com/ralphbean/taskw";
     license = lib.licenses.gpl3Plus;
     maintainers = with lib.maintainers; [ pierron ];
   };

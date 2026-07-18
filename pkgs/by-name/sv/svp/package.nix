@@ -1,23 +1,23 @@
 {
-  stdenv,
   lib,
-  buildFHSEnv,
-  writeShellScriptBin,
+  stdenv,
   fetchurl,
+  buildFHSEnv,
   callPackage,
-  makeDesktopItem,
   copyDesktopItems,
-  socat,
+  ffmpeg,
   jq,
   kdePackages,
-  ffmpeg,
   libmediainfo,
   libusb1,
-  vapoursynth,
   libx11,
-  systemdLibs,
+  makeDesktopItem,
   openssl,
   p7zip,
+  socat,
+  systemdLibs,
+  vapoursynth,
+  writeShellScriptBin,
 }:
 let
   mpvForSVP = callPackage ./mpv.nix { };
@@ -61,6 +61,7 @@ let
   svp-dist = stdenv.mkDerivation (finalAttrs: {
     pname = "svp-dist";
     version = "4.7.305";
+
     src = fetchurl {
       url = "https://www.svp-team.com/files/svp4-linux.${finalAttrs.version}.tar.bz2";
       hash = "sha256-PWAcm/hIA4JH2QtJPP+gSJdJLRdfdbZXIVdWELazbxQ=";
@@ -69,11 +70,6 @@ let
     nativeBuildInputs = [
       p7zip
     ];
-    dontFixup = true;
-
-    unpackPhase = ''
-      tar xf ${finalAttrs.src}
-    '';
 
     buildPhase = ''
       mkdir installer
@@ -94,27 +90,30 @@ let
       done
       rm -f $out/opt/{add,remove}-menuitem.sh
     '';
+
+    dontFixup = true;
+
+    unpackPhase = ''
+      tar xf ${finalAttrs.src}
+    '';
   });
 
   fhs = buildFHSEnv {
-    pname = "SVPManager";
     inherit (svp-dist) version;
-    targetPkgs = pkgs: libraries;
+    pname = "SVPManager";
     runScript = "${svp-dist}/opt/SVPManager";
-    unshareUser = false;
-    unshareIpc = false;
-    unsharePid = false;
-    unshareNet = false;
-    unshareUts = false;
+    targetPkgs = pkgs: libraries;
     unshareCgroup = false;
+    unshareIpc = false;
+    unshareNet = false;
+    unsharePid = false;
+    unshareUser = false;
+    unshareUts = false;
   };
 in
 stdenv.mkDerivation {
-  pname = "svp";
   inherit (svp-dist) version;
-
-  dontUnpack = true;
-
+  pname = "svp";
   nativeBuildInputs = [ copyDesktopItems ];
 
   postInstall = ''
@@ -123,20 +122,19 @@ stdenv.mkDerivation {
     ln -s ${svp-dist}/share/icons $out/share/icons
   '';
 
-  passthru.mpv = mpvForSVP;
-
   desktopItems = [
     (makeDesktopItem {
-      name = "svp-manager4";
-      exec = "${fhs}/bin/SVPManager %f";
-      desktopName = "SVP 4 Linux";
-      genericName = "Real time frame interpolation";
-      icon = "svp-manager4";
       categories = [
         "AudioVideo"
         "Player"
         "Video"
       ];
+
+      desktopName = "SVP 4 Linux";
+      exec = "${fhs}/bin/SVPManager %f";
+      genericName = "Real time frame interpolation";
+      icon = "svp-manager4";
+
       mimeTypes = [
         "video/x-msvideo"
         "video/x-matroska"
@@ -144,18 +142,23 @@ stdenv.mkDerivation {
         "video/mpeg"
         "video/mp4"
       ];
-      terminal = false;
+
+      name = "svp-manager4";
       startupNotify = true;
+      terminal = false;
     })
   ];
 
+  dontUnpack = true;
+  passthru.mpv = mpvForSVP;
+
   meta = {
-    mainProgram = "SVPManager";
     description = "SmoothVideo Project 4 (SVP4) converts any video to 60 fps (and even higher) and performs this in real time right in your favorite video player";
     homepage = "https://www.svp-team.com/wiki/SVP:Linux";
-    platforms = [ "x86_64-linux" ];
     license = lib.licenses.unfree;
     sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
     maintainers = with lib.maintainers; [ xddxdd ];
+    platforms = [ "x86_64-linux" ];
+    mainProgram = "SVPManager";
   };
 }

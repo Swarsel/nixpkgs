@@ -1,19 +1,19 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
   fetchpatch2,
-  meson,
-  ninja,
-  pkg-config,
-  gobject-introspection,
-  vala,
   gi-docgen,
   glib,
+  gobject-introspection,
   gtk3,
   gtk4,
   libsForQt5,
+  meson,
+  ninja,
+  pkg-config,
   qt6Packages,
+  vala,
   variant ? null,
 }:
 
@@ -24,12 +24,6 @@ stdenv.mkDerivation (finalAttrs: {
   pname = "libportal" + lib.optionalString (variant != null) "-${variant}";
   version = "0.9.1";
 
-  outputs = [
-    "out"
-    "dev"
-  ]
-  ++ lib.optional (variant != "qt5") "devdoc";
-
   src = fetchFromGitHub {
     owner = "flatpak";
     repo = "libportal";
@@ -37,8 +31,19 @@ stdenv.mkDerivation (finalAttrs: {
     sha256 = "sha256-CXI4rBr9wxLUX537d6SNNf8YFR/J6YdeROlFt3edeOU=";
   };
 
-  depsBuildBuild = [
-    pkg-config
+  outputs = [
+    "out"
+    "dev"
+  ]
+  ++ lib.optional (variant != "qt5") "devdoc";
+
+  patches = [
+    # See https://github.com/flatpak/libportal/pull/200
+    (fetchpatch2 {
+      hash = "sha256-TPIKKnZCcp/bmmsaNlDxAsKLTBe6BKPCTOutLjXPCHQ=";
+      name = "libportal-fix-qt6.9-private-api-usage.patch";
+      url = "https://github.com/flatpak/libportal/commit/796053d2eebe4532aad6bd3fd80cdf3b197806ec.patch?full_index=1";
+    })
   ];
 
   nativeBuildInputs = [
@@ -69,15 +74,6 @@ stdenv.mkDerivation (finalAttrs: {
     qt6Packages.qtbase
   ];
 
-  patches = [
-    # See https://github.com/flatpak/libportal/pull/200
-    (fetchpatch2 {
-      name = "libportal-fix-qt6.9-private-api-usage.patch";
-      url = "https://github.com/flatpak/libportal/commit/796053d2eebe4532aad6bd3fd80cdf3b197806ec.patch?full_index=1";
-      hash = "sha256-TPIKKnZCcp/bmmsaNlDxAsKLTBe6BKPCTOutLjXPCHQ=";
-    })
-  ];
-
   mesonFlags = [
     (lib.mesonEnable "backend-gtk3" (variant == "gtk3"))
     (lib.mesonEnable "backend-gtk4" (variant == "gtk4"))
@@ -92,6 +88,10 @@ stdenv.mkDerivation (finalAttrs: {
     # Cannot be in postInstall, otherwise _multioutDocs hook in preFixup will move right back.
     moveToOutput "share/doc" "$devdoc"
   '';
+
+  depsBuildBuild = [
+    pkg-config
+  ];
 
   # we don't have any binaries
   dontWrapQtApps = true;

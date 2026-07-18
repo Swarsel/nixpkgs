@@ -1,7 +1,7 @@
 {
   lib,
-  rustPlatform,
   fetchgit,
+  rustPlatform,
 }:
 rustPlatform.buildRustPackage {
   pname = "taler-depolymerization";
@@ -13,8 +13,6 @@ rustPlatform.buildRustPackage {
     hash = "sha256-HmQ/DPq/O6aODWms/bSsCVgBF7z246xxfYxiHrAkgYw=";
   };
 
-  cargoHash = "sha256-P0VrXYbO4RD3cNTai2hfTksbiGldkwoYgZm+C5Jh/4Y=";
-
   outputs = [
     "out"
     "doc"
@@ -25,6 +23,8 @@ rustPlatform.buildRustPackage {
     substituteInPlace common/src/status.rs \
       --replace-fail '          -> Requested' '()        -> Requested'
   '';
+
+  cargoHash = "sha256-P0VrXYbO4RD3cNTai2hfTksbiGldkwoYgZm+C5Jh/4Y=";
 
   postInstall = ''
     mkdir -p $doc/share/doc $out/share/examples

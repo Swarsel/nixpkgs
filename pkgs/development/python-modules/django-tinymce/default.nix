@@ -1,27 +1,22 @@
 {
   lib,
   buildPythonPackage,
-  fetchPypi,
   django,
-  setuptools,
-  pytestCheckHook,
+  fetchPypi,
   pytest-django,
+  pytestCheckHook,
+  setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "django-tinymce";
   version = "5.0.0";
-  pyproject = true;
 
   src = fetchPypi {
     inherit version;
-    pname = "django_tinymce";
     hash = "sha256-YldmntWWrM9fqWf/MGEnayxTUrqsG7xlj82CUrEso4o=";
+    pname = "django_tinymce";
   };
-
-  build-system = [ setuptools ];
-
-  dependencies = [ django ];
 
   env.DJANGO_SETTINGS_MODULE = "tests.settings";
 
@@ -30,6 +25,9 @@ buildPythonPackage rec {
     pytestCheckHook
   ];
 
+  build-system = [ setuptools ];
+  dependencies = [ django ];
+  pyproject = true;
   pythonImportsCheck = [ "tinymce" ];
 
   meta = {

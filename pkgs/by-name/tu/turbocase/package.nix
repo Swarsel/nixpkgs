@@ -1,13 +1,12 @@
 {
   lib,
-  python3,
   fetchFromCodeberg,
+  python3,
 }:
 
 python3.pkgs.buildPythonApplication (finalAttrs: {
   pname = "turbocase";
   version = "1.8.0";
-  pyproject = true;
 
   src = fetchFromCodeberg {
     owner = "MartijnBraam";
@@ -17,9 +16,8 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
   };
 
   build-system = [ python3.pkgs.setuptools ];
-
   dependencies = [ python3.pkgs.sexpdata ];
-
+  pyproject = true;
   pythonImportsCheck = [ "turbocase" ];
 
   meta = {

@@ -1,23 +1,20 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  # tests
+  build,
+  buildPythonPackage,
+  cattrs,
+  cmake,
   fetchpatch,
-
   # build-system
   hatch-vcs,
   hatchling,
-  cmake,
   ninja,
-
+  numpy,
   # dependencies
   packaging,
   pathspec,
-
-  # tests
-  build,
-  cattrs,
-  numpy,
   pybind11,
   pytest-subprocess,
   pytestCheckHook,
@@ -29,7 +26,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "scikit-build-core";
   version = "0.12.2";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "scikit-build";
@@ -40,20 +36,10 @@ buildPythonPackage (finalAttrs: {
 
   patches = [
     (fetchpatch {
+      hash = "sha256-JUxBvKiAHpDlIIFkvU+CflTNA6m/auxW5wd5cVYpvcM=";
       name = "setuptools-scm-10-compat.patch";
       url = "https://github.com/scikit-build/scikit-build-core/commit/1b870c538bf7ca679fc4a6e0cbba301c98d9ac35.patch";
-      hash = "sha256-JUxBvKiAHpDlIIFkvU+CflTNA6m/auxW5wd5cVYpvcM=";
     })
-  ];
-
-  build-system = [
-    hatch-vcs
-    hatchling
-  ];
-
-  dependencies = [
-    packaging
-    pathspec
   ];
 
   nativeCheckInputs = [
@@ -70,10 +56,14 @@ buildPythonPackage (finalAttrs: {
     wheel
   ];
 
-  # cmake is only used for tests
-  dontUseCmakeConfigure = true;
-  setupHooks = [
-    ./append-cmakeFlags.sh
+  build-system = [
+    hatch-vcs
+    hatchling
+  ];
+
+  dependencies = [
+    packaging
+    pathspec
   ];
 
   disabledTestMarks = [
@@ -81,17 +71,24 @@ buildPythonPackage (finalAttrs: {
     "network"
   ];
 
-  disabledTests = [
-    # wheel tags generated with wrong system name/version
-    "test_wheel_tag"
-  ];
-
   disabledTestPaths = [
     # store permissions issue in Nix:
     "tests/test_editable.py"
   ];
 
+  disabledTests = [
+    # wheel tags generated with wrong system name/version
+    "test_wheel_tag"
+  ];
+
+  # cmake is only used for tests
+  dontUseCmakeConfigure = true;
+  pyproject = true;
   pythonImportsCheck = [ "scikit_build_core" ];
+
+  setupHooks = [
+    ./append-cmakeFlags.sh
+  ];
 
   meta = {
     description = "Next generation Python CMake adaptor and Python API for plugins";

@@ -1,15 +1,14 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
+  buildPythonPackage,
   nix-update-script,
+  setuptools,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "tlds";
   version = "2026041800";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "kichik";
@@ -19,12 +18,10 @@ buildPythonPackage (finalAttrs: {
   };
 
   nativeBuildInputs = [ setuptools ];
-
-  pythonImportsCheck = [ "tlds" ];
-
   # no tests
   doCheck = false;
-
+  pyproject = true;
+  pythonImportsCheck = [ "tlds" ];
   passthru.updateScript = nix-update-script { };
 
   meta = {

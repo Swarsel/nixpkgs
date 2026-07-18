@@ -11,39 +11,41 @@ in
   # interface
   options.services.corosync = {
     enable = lib.mkEnableOption "corosync";
-
     package = lib.mkPackageOption pkgs "corosync" { };
 
     clusterName = lib.mkOption {
-      type = lib.types.str;
       default = "nixcluster";
       description = "Name of the corosync cluster.";
+      type = lib.types.str;
     };
 
     extraOptions = lib.mkOption {
-      type = with lib.types; listOf str;
       default = [ ];
       description = "Additional options with which to start corosync.";
+      type = with lib.types; listOf str;
     };
 
     nodelist = lib.mkOption {
-      description = "Corosync nodelist: all cluster members.";
       default = [ ];
+      description = "Corosync nodelist: all cluster members.";
+
       type =
         with lib.types;
         listOf (submodule {
           options = {
-            nodeid = lib.mkOption {
-              type = int;
-              description = "Node ID number";
-            };
             name = lib.mkOption {
-              type = str;
               description = "Node name";
+              type = str;
             };
+
+            nodeid = lib.mkOption {
+              description = "Node ID number";
+              type = int;
+            };
+
             ring_addrs = lib.mkOption {
-              type = listOf str;
               description = "List of addresses, one for each ring.";
+              type = listOf str;
             };
           };
         });
@@ -52,8 +54,6 @@ in
 
   # implementation
   config = lib.mkIf cfg.enable {
-    environment.systemPackages = [ cfg.package ];
-
     environment.etc."corosync/corosync.conf".text = ''
       totem {
         version: 2
@@ -65,8 +65,8 @@ in
       nodelist {
         ${lib.concatMapStrings (
           {
-            nodeid,
             name,
+            nodeid,
             ring_addrs,
           }:
           ''
@@ -105,17 +105,20 @@ in
       }
     '';
 
+    environment.etc."sysconfig/corosync".text = lib.optionalString (cfg.extraOptions != [ ]) ''
+      COROSYNC_OPTIONS="${lib.escapeShellArgs cfg.extraOptions}"
+    '';
+
+    environment.systemPackages = [ cfg.package ];
     systemd.packages = [ cfg.package ];
+
     systemd.services.corosync = {
-      wantedBy = [ "multi-user.target" ];
       serviceConfig = {
         StateDirectory = "corosync";
         StateDirectoryMode = "0700";
       };
-    };
 
-    environment.etc."sysconfig/corosync".text = lib.optionalString (cfg.extraOptions != [ ]) ''
-      COROSYNC_OPTIONS="${lib.escapeShellArgs cfg.extraOptions}"
-    '';
+      wantedBy = [ "multi-user.target" ];
+    };
   };
 }

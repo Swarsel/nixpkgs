@@ -16,7 +16,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
   };
 
   cargoHash = "sha256-6NzX8dODW106AjTneDSsZWRoPYvNrv5tUCGUanod+Bo=";
-
   passthru.updateScript = nix-update-script { };
 
   meta = {
@@ -24,7 +23,7 @@ rustPlatform.buildRustPackage (finalAttrs: {
     homepage = "https://github.com/chevdor/tera-cli";
     license = lib.licenses.mit;
     maintainers = [ lib.maintainers._365tuwe ];
-    mainProgram = "tera";
     platforms = lib.platforms.unix;
+    mainProgram = "tera";
   };
 })

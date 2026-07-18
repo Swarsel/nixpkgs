@@ -2,26 +2,24 @@
   lib,
   buildPythonPackage,
   fetchPypi,
-  setuptools,
   pyarrow,
+  setuptools,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "feather-format";
   version = "0.4.1";
-  pyproject = true;
 
   src = fetchPypi {
     inherit (finalAttrs) pname version;
-
     hash = "sha256-RfZ+N0XTlNTxYMptY2u/1Pi2jQEZncFkm25IfT6HiQM=";
   };
 
+  doCheck = false; # no tests
   build-system = [ setuptools ];
   dependencies = [ pyarrow ];
-
+  pyproject = true;
   pythonImportsCheck = [ "feather" ];
-  doCheck = false; # no tests
 
   meta = {
     description = "Simple wrapper library to the Apache Arrow-based Feather File Format";

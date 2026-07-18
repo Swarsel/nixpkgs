@@ -2,21 +2,21 @@
   lib,
   stdenv,
   fetchFromGitLab,
+  desktop-file-utils,
+  gtk4,
+  json-glib,
+  libadwaita,
+  libgee,
+  librsvg,
+  libxml2,
   meson,
   ninja,
-  pkg-config,
-  vala,
-  gtk4,
-  vte-gtk4,
-  json-glib,
-  sassc,
-  libadwaita,
   pcre2,
-  libxml2,
-  librsvg,
-  libgee,
+  pkg-config,
   python3,
-  desktop-file-utils,
+  sassc,
+  vala,
+  vte-gtk4,
   wrapGAppsHook4,
 }:
 
@@ -25,11 +25,11 @@ stdenv.mkDerivation {
   version = "0.14.0-unstable-2025-08-29";
 
   src = fetchFromGitLab {
-    domain = "gitlab.gnome.org";
     owner = "raggesilver";
     repo = "blackbox";
     rev = "9290c2feddc4415752afd1b03c82a1d82a6b3392";
     hash = "sha256-s1e9zS4ijsa3+zxlsdxlqTzR1Rnb4hxjwlqYEhtvy5g=";
+    domain = "gitlab.gnome.org";
   };
 
   postPatch = ''
@@ -48,6 +48,7 @@ stdenv.mkDerivation {
     python3
     desktop-file-utils # For update-desktop-database
   ];
+
   buildInputs = [
     gtk4
     vte-gtk4
@@ -67,10 +68,12 @@ stdenv.mkDerivation {
     description = "Elegant and customizable terminal for GNOME";
     homepage = "https://gitlab.gnome.org/raggesilver/blackbox";
     license = lib.licenses.gpl3Plus;
+
     maintainers = with lib.maintainers; [
       chuangzhu
     ];
-    mainProgram = "blackbox";
+
     platforms = lib.platforms.linux;
+    mainProgram = "blackbox";
   };
 }

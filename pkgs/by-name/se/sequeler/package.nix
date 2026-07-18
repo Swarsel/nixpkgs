@@ -2,23 +2,23 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  gitUpdater,
-  vala,
-  meson,
-  ninja,
-  pkg-config,
-  pantheon,
-  gettext,
-  wrapGAppsHook3,
   desktop-file-utils,
-  gtk3,
+  gettext,
+  gitUpdater,
   glib,
-  libgee,
-  libgda5,
+  gtk3,
   gtksourceview4,
-  libxml2,
+  libgda5,
+  libgee,
   libsecret,
   libssh2,
+  libxml2,
+  meson,
+  ninja,
+  pantheon,
+  pkg-config,
+  vala,
+  wrapGAppsHook3,
 }:
 
 let
@@ -71,16 +71,18 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Friendly SQL Client";
+
     longDescription = ''
       Sequeler is a native Linux SQL client built in Vala and Gtk. It allows you
       to connect to your local and remote databases, write SQL in a handy text
       editor with language recognition, and visualize SELECT results in a
       Gtk.Grid Widget.
     '';
+
     homepage = "https://github.com/ellie-commons/sequeler";
     license = lib.licenses.gpl3Plus;
-    teams = [ lib.teams.pantheon ];
     platforms = lib.platforms.linux;
     mainProgram = "io.github.ellie_commons.sequeler";
+    teams = [ lib.teams.pantheon ];
   };
 })

@@ -1,22 +1,19 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
+  buildPythonPackage,
+  ipympl,
+  # tests
+  matplotlib,
+  pytestCheckHook,
   # build-system
   setuptools,
   setuptools-scm,
-
-  # tests
-  matplotlib,
-  ipympl,
-  pytestCheckHook,
 }:
 
 buildPythonPackage rec {
   pname = "mpltoolbox";
   version = "26.2.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "scipp";
@@ -24,6 +21,11 @@ buildPythonPackage rec {
     tag = version;
     hash = "sha256-vEnuTE+YZ8gK+desT4Bt5kqa2TSD0UkSSHKr7Kt8Xlo=";
   };
+
+  nativeCheckInputs = [
+    ipympl
+    pytestCheckHook
+  ];
 
   build-system = [
     setuptools
@@ -34,10 +36,7 @@ buildPythonPackage rec {
     matplotlib
   ];
 
-  nativeCheckInputs = [
-    ipympl
-    pytestCheckHook
-  ];
+  pyproject = true;
 
   pythonImportsCheck = [
     "mpltoolbox"

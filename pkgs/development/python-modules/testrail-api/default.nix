@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   pytestCheckHook,
   requests,
   responses,
@@ -12,7 +12,6 @@
 buildPythonPackage rec {
   pname = "testrail-api";
   version = "1.13.6";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "tolstislon";
@@ -21,18 +20,18 @@ buildPythonPackage rec {
     hash = "sha256-xCarEmJM+liyh8T8qG8sqSLXMnFN49yZapbktIElSF0=";
   };
 
+  nativeCheckInputs = [
+    pytestCheckHook
+    responses
+  ];
+
   build-system = [
     setuptools
     setuptools-scm
   ];
 
   dependencies = [ requests ];
-
-  nativeCheckInputs = [
-    pytestCheckHook
-    responses
-  ];
-
+  pyproject = true;
   pythonImportsCheck = [ "testrail_api" ];
 
   meta = {

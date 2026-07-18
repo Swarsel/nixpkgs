@@ -1,31 +1,31 @@
 {
+  lib,
   buildPythonPackage,
   fetchPypi,
-  lib,
-  setuptools,
   protobuf,
+  setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "protobuf";
   version = "5.29.6";
-  pyproject = true;
-  __structuredAttrs = true;
-  # nixpkgs-update: no auto update
 
+  # nixpkgs-update: no auto update
   src = fetchPypi {
     inherit pname version;
     hash = "sha256-2p7mpUJLazD9XkXF6mY671QMqV+a2Z0eiH6BnN+bhyM=";
   };
 
+  # the pypi source archive does not ship tests
+  doCheck = false;
+  __structuredAttrs = true;
   build-system = [ setuptools ];
 
   propagatedNativeBuildInputs = [
     protobuf
   ];
 
-  # the pypi source archive does not ship tests
-  doCheck = false;
+  pyproject = true;
 
   pythonImportsCheck = [
     "google.protobuf"

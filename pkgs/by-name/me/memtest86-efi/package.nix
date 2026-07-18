@@ -1,10 +1,10 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchzip,
-  util-linux,
   jq,
   mtools,
+  util-linux,
 }:
 
 stdenv.mkDerivation {
@@ -48,18 +48,20 @@ stdenv.mkDerivation {
   '';
 
   meta = {
-    homepage = "https://www.memtest86.com/";
-    downloadPage = "https://www.memtest86.com/download.htm";
-    changelog = "https://www.memtest86.com/whats-new.html";
     description = "Tool to detect memory errors, to be run from a bootloader";
+
     longDescription = ''
       A UEFI app that is able to detect errors in RAM.  It can be run from a
       bootloader.  Released under a proprietary freeware license.
     '';
+
+    homepage = "https://www.memtest86.com/";
+    changelog = "https://www.memtest86.com/whats-new.html";
     # MemTest86 Free Edition is free to download with no restrictions on usage. However, the source code is not available.
     # https://www.memtest86.com/tech_license-information.html
     license = lib.licenses.unfreeRedistributable;
     maintainers = with lib.maintainers; [ cdepillabout ];
     platforms = lib.platforms.linux;
+    downloadPage = "https://www.memtest86.com/download.htm";
   };
 }

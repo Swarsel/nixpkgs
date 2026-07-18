@@ -3,11 +3,11 @@
   stdenv,
   fetchurl,
   cmake,
-  qtbase,
+  dbus,
+  dbus-glib,
   pkg-config,
   python3Packages,
-  dbus-glib,
-  dbus,
+  qtbase,
   telepathy-farstream,
   telepathy-glib,
 }:
@@ -29,24 +29,26 @@ stdenv.mkDerivation rec {
     pkg-config
     python
   ];
+
+  buildInputs = [ dbus-glib ];
+
   propagatedBuildInputs = [
     qtbase
     telepathy-farstream
     telepathy-glib
   ];
-  buildInputs = [ dbus-glib ];
+
+  # No point in building tests if they are not run
+  # On 0.9.7, they do not even build with QT4
+  cmakeFlags = lib.optional (!doCheck) "-DENABLE_TESTS=OFF";
+  doCheck = false; # giving up for now
+
   nativeCheckInputs = [
     dbus
     dbus-python
   ];
 
-  # No point in building tests if they are not run
-  # On 0.9.7, they do not even build with QT4
-  cmakeFlags = lib.optional (!doCheck) "-DENABLE_TESTS=OFF";
-
   dontWrapQtApps = true;
-
-  doCheck = false; # giving up for now
 
   meta = {
     description = "Telepathy Qt bindings";

@@ -1,13 +1,12 @@
 {
   lib,
-  python3Packages,
   fetchFromGitHub,
+  python3Packages,
 }:
 
 python3Packages.buildPythonApplication (finalAttrs: {
   pname = "journalwatch";
   version = "1.1.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "The-Compiler";
@@ -22,12 +21,10 @@ python3Packages.buildPythonApplication (finalAttrs: {
       --replace-fail "U Thu Jan  1 00:00:00 1970 prio foo [1337]" "U Thu Jan  1 00:00:00 1970 pprio foo [1337]"
   '';
 
-  build-system = with python3Packages; [ setuptools ];
-
-  dependencies = with python3Packages; [ systemd-python ];
-
   nativeCheckInputs = with python3Packages; [ pytestCheckHook ];
-
+  build-system = with python3Packages; [ setuptools ];
+  dependencies = with python3Packages; [ systemd-python ];
+  pyproject = true;
   pythonImportsCheck = [ "journalwatch" ];
 
   meta = {

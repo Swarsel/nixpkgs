@@ -1,7 +1,7 @@
 {
-  buildPythonPackage,
-  fetchFromGitHub,
   lib,
+  fetchFromGitHub,
+  buildPythonPackage,
   pytest-django,
   pytestCheckHook,
   setuptools,
@@ -9,7 +9,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "django-mailbox";
   version = "4.10.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "coddingtonbear";
@@ -18,19 +17,19 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-7CBUnqveTSfdc+8x8sZUqvwYW3vKjZKfOPVWFSo4es0=";
   };
 
-  build-system = [ setuptools ];
+  nativeCheckInputs = [
+    pytest-django
+    pytestCheckHook
+  ];
 
   preCheck = ''
     substituteInPlace setup.cfg --replace-fail "pytest" "tool:pytest"
     export DJANGO_SETTINGS_MODULE=django_mailbox.tests.settings
   '';
 
+  build-system = [ setuptools ];
+  pyproject = true;
   pythonImportsCheck = [ "django_mailbox" ];
-
-  nativeCheckInputs = [
-    pytest-django
-    pytestCheckHook
-  ];
 
   meta = {
     description = "Import mail from POP3, IMAP, local email mailboxes or directly from Postfix or Exim4 into your Django application automatically";

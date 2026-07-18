@@ -1,32 +1,26 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # build-system
-  hatchling,
-
-  # dependencies
-  langchain-core,
-  tokenizers,
-  httpx,
-  httpx-sse,
-  pydantic,
-
-  # tests
-  langchain-tests,
-  pytest-asyncio,
-  pytestCheckHook,
-
+  buildPythonPackage,
   # passthru
   gitUpdater,
+  # build-system
+  hatchling,
+  httpx,
+  httpx-sse,
+  # dependencies
+  langchain-core,
+  # tests
+  langchain-tests,
+  pydantic,
+  pytest-asyncio,
+  pytestCheckHook,
+  tokenizers,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "langchain-mistralai";
   version = "1.1.6";
-  pyproject = true;
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "langchain-ai";
@@ -35,8 +29,13 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-FkldUvLhbOS0FwRQaAZHebUv1jUSWMXMuIx780B6R+8=";
   };
 
-  sourceRoot = "${finalAttrs.src.name}/libs/partners/mistralai";
+  nativeCheckInputs = [
+    langchain-tests
+    pytest-asyncio
+    pytestCheckHook
+  ];
 
+  __structuredAttrs = true;
   build-system = [ hatchling ];
 
   dependencies = [
@@ -46,14 +45,6 @@ buildPythonPackage (finalAttrs: {
     httpx-sse
     pydantic
   ];
-
-  nativeCheckInputs = [
-    langchain-tests
-    pytest-asyncio
-    pytestCheckHook
-  ];
-
-  enabledTestPaths = [ "tests/unit_tests" ];
 
   disabledTests = [
     # Comparison error due to message formatting differences
@@ -65,22 +56,27 @@ buildPythonPackage (finalAttrs: {
     "test_mistral_init"
   ];
 
+  enabledTestPaths = [ "tests/unit_tests" ];
+  pyproject = true;
   pythonImportsCheck = [ "langchain_mistralai" ];
+  sourceRoot = "${finalAttrs.src.name}/libs/partners/mistralai";
 
   passthru = {
     # python updater script sets the wrong tag
     skipBulkUpdate = true;
+
     updateScript = gitUpdater {
-      rev-prefix = "langchain-mistralai==";
       ignoredVersions = "a|b|dev|rc";
+      rev-prefix = "langchain-mistralai==";
     };
   };
 
   meta = {
-    changelog = "https://github.com/langchain-ai/langchain/releases/tag/${finalAttrs.src.tag}";
     description = "Build LangChain applications with mistralai";
     homepage = "https://github.com/langchain-ai/langchain/tree/master/libs/partners/mistralai";
+    changelog = "https://github.com/langchain-ai/langchain/releases/tag/${finalAttrs.src.tag}";
     license = lib.licenses.mit;
+
     maintainers = [
       lib.maintainers.sarahec
     ];

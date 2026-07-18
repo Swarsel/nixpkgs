@@ -1,25 +1,22 @@
 {
   lib,
   buildPythonPackage,
-  fetchPypi,
   cmake,
+  fetchPypi,
   ninja,
+  numpy,
   pybind11,
   scikit-build-core,
-  numpy,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "fpsample";
   version = "1.0.2";
-  pyproject = true;
 
   src = fetchPypi {
     inherit (finalAttrs) pname version;
     hash = "sha256-XiX5fANBLSQ3Z/ueR/e21sc2x84enVGRiJTj/TJ3SfI=";
   };
-
-  dontUseCmakeConfigure = true;
 
   build-system = [
     cmake
@@ -29,7 +26,8 @@ buildPythonPackage (finalAttrs: {
   ];
 
   dependencies = [ numpy ];
-
+  dontUseCmakeConfigure = true;
+  pyproject = true;
   pythonImportsCheck = [ "fpsample" ];
 
   meta = {

@@ -16,8 +16,8 @@ in
   options = {
 
     security.googleOsLogin.enable = lib.mkOption {
-      type = lib.types.bool;
       default = false;
+
       description = ''
         Whether to enable Google OS Login.
 
@@ -30,54 +30,60 @@ in
         Google Cloud IAM permissions to control both, the ability to log into
         an instance, and to perform operations as root (sudo).
       '';
+
+      type = lib.types.bool;
     };
 
   };
 
   config = lib.mkIf cfg.enable {
-    security.pam.services.sshd = {
-      makeHomeDir = true;
-      googleOsLoginAccountVerification = true;
-      googleOsLoginAuthentication = true;
-    };
-
-    security.sudo.extraConfig = ''
-      #includedir /run/google-sudoers.d
-    '';
-    security.sudo-rs.extraConfig = ''
-      #includedir /run/google-sudoers.d
-    '';
-
-    systemd.tmpfiles.rules = [
-      "d /run/google-sudoers.d 750 root root -"
-      "d /var/google-users.d 750 root root -"
-    ];
-
-    systemd.packages = [ package ];
-    systemd.timers.google-oslogin-cache.wantedBy = [ "timers.target" ];
-
-    # enable the nss module, so user lookups etc. work
-    system.nssModules = [ package ];
-    system.nssDatabases.passwd = [
-      "cache_oslogin"
-      "oslogin"
-    ];
-    system.nssDatabases.group = [
-      "cache_oslogin"
-      "oslogin"
-    ];
-
     # Ugly: sshd refuses to start if a store path is given because /nix/store is group-writable.
     # So indirect by a symlink.
     environment.etc."ssh/authorized_keys_command_google_oslogin" = {
       mode = "0755";
+
       text = ''
         #!/bin/sh
         exec ${package}/bin/google_authorized_keys "$@"
       '';
     };
+
+    security.pam.services.sshd = {
+      googleOsLoginAccountVerification = true;
+      googleOsLoginAuthentication = true;
+      makeHomeDir = true;
+    };
+
+    security.sudo.extraConfig = ''
+      #includedir /run/google-sudoers.d
+    '';
+
+    security.sudo-rs.extraConfig = ''
+      #includedir /run/google-sudoers.d
+    '';
+
     services.openssh.authorizedKeysCommand = "/etc/ssh/authorized_keys_command_google_oslogin %u";
     services.openssh.authorizedKeysCommandUser = "root";
+
+    system.nssDatabases.group = [
+      "cache_oslogin"
+      "oslogin"
+    ];
+
+    system.nssDatabases.passwd = [
+      "cache_oslogin"
+      "oslogin"
+    ];
+
+    # enable the nss module, so user lookups etc. work
+    system.nssModules = [ package ];
+    systemd.packages = [ package ];
+    systemd.timers.google-oslogin-cache.wantedBy = [ "timers.target" ];
+
+    systemd.tmpfiles.rules = [
+      "d /run/google-sudoers.d 750 root root -"
+      "d /var/google-users.d 750 root root -"
+    ];
   };
 
 }

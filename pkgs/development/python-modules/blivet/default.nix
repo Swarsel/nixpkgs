@@ -1,33 +1,33 @@
 {
   lib,
-  pkgs,
-  python,
-  buildPythonPackage,
   fetchFromGitHub,
-  pygobject3,
-  libblockdev,
-  bytesize,
-  dasbus,
-  pyudev,
-  dbus-python,
-  util-linux,
-  kmod,
-  libndctl,
-  nvme-cli,
-  dosfstools,
-  e2fsprogs,
-  hfsprogs,
-  xfsprogs,
-  f2fs-tools,
-  ntfs3g,
   btrfs-progs,
-  mdadm,
-  lvm2,
-  gfs2-utils,
+  buildPythonPackage,
+  bytesize,
   cryptsetup,
-  multipath-tools,
+  dasbus,
+  dbus-python,
+  dosfstools,
   dracut,
+  e2fsprogs,
+  f2fs-tools,
+  gfs2-utils,
+  hfsprogs,
+  kmod,
+  libblockdev,
+  libndctl,
+  lvm2,
+  mdadm,
+  multipath-tools,
+  ntfs3g,
+  nvme-cli,
+  pkgs,
+  pygobject3,
+  python,
+  pyudev,
   stratisd,
+  util-linux,
+  xfsprogs,
 }:
 
 let
@@ -36,7 +36,6 @@ in
 buildPythonPackage rec {
   pname = "blivet";
   version = "3.13.2";
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "storaged-project";
@@ -86,22 +85,25 @@ buildPythonPackage rec {
     stratisd
   ];
 
+  # Even unit tests require a system D-Bus.
+  # TODO: Write a NixOS VM test?
+  doCheck = false;
+  format = "setuptools";
+
   pythonImportsCheck = [
     "blivet"
     "blivet.devicelibs.lvm"
   ];
 
-  # Even unit tests require a system D-Bus.
-  # TODO: Write a NixOS VM test?
-  doCheck = false;
-
   meta = {
     description = "Python module for system storage configuration";
     homepage = "https://github.com/storaged-project/blivet";
+
     license = [
       lib.licenses.gpl2Plus
       lib.licenses.lgpl2Plus
     ];
+
     maintainers = with lib.maintainers; [ cybershadow ];
     platforms = lib.platforms.linux;
   };

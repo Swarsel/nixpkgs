@@ -1,6 +1,6 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitLab,
   help2man,
 }:
@@ -9,22 +9,12 @@ stdenv.mkDerivation (finalAttrs: {
   version = "0.9.2";
 
   src = fetchFromGitLab {
-    domain = "salsa.debian.org";
     owner = "debian";
     repo = "debcraft";
     tag = "debian/${finalAttrs.version}";
     hash = "sha256-U8qWT26qno2zpfdsLqlqZg0SipvHCN6dUjUCjGuyrkY=";
+    domain = "salsa.debian.org";
   };
-
-  strictDeps = true;
-  __structuredAttrs = true;
-
-  nativeBuildInputs = [ help2man ];
-  makeFlags = [ "DESTDIR=$(out)" ];
-
-  # debcraft ships with some scripts it'll execute inside a docker/podman container
-  # this'd patch the shebangs of the scripts executed in the container too, breaking them.
-  dontPatchShebangs = true;
 
   postPatch = ''
     substituteInPlace debcraft.sh --replace-fail \
@@ -35,11 +25,20 @@ stdenv.mkDerivation (finalAttrs: {
     substituteInPlace Makefile --replace-fail '$(DESTDIR)/usr' '$(DESTDIR)'
   '';
 
+  strictDeps = true;
+  nativeBuildInputs = [ help2man ];
+  makeFlags = [ "DESTDIR=$(out)" ];
+
   preBuild = ''
     # the makefile runs help2man on the script, which needs it to be executable
     # (and the shebang would need to be patched later anyways)
     patchShebangs debcraft.sh
   '';
+
+  __structuredAttrs = true;
+  # debcraft ships with some scripts it'll execute inside a docker/podman container
+  # this'd patch the shebangs of the scripts executed in the container too, breaking them.
+  dontPatchShebangs = true;
 
   meta = {
     description = "Easy, fast and secure way to build Debian packages";

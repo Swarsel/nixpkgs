@@ -1,14 +1,14 @@
 {
   stdenv,
+  glib,
   mate-control-center,
   mate-settings-daemon,
-  glib,
   wrapGAppsHook3,
 }:
 
 stdenv.mkDerivation {
-  pname = "${mate-settings-daemon.pname}-wrapped";
   inherit (mate-settings-daemon) version outputs;
+  pname = "${mate-settings-daemon.pname}-wrapped";
 
   nativeBuildInputs = [
     wrapGAppsHook3
@@ -18,10 +18,6 @@ stdenv.mkDerivation {
     glib
     mate-control-center
   ];
-
-  dontWrapGApps = true;
-
-  dontUnpack = true;
 
   installPhase = ''
     mkdir -p $out/etc/xdg/autostart
@@ -38,6 +34,9 @@ stdenv.mkDerivation {
     substituteInPlace $out/etc/xdg/autostart/mate-settings-daemon.desktop \
       --replace-fail "${mate-settings-daemon}/libexec/mate-settings-daemon" "$out/libexec/mate-settings-daemon"
   '';
+
+  dontUnpack = true;
+  dontWrapGApps = true;
 
   meta = mate-settings-daemon.meta // {
     priority = -10;

@@ -2,8 +2,8 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  rustPlatform,
   installShellFiles,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -18,9 +18,7 @@ rustPlatform.buildRustPackage (finalAttrs: {
   };
 
   nativeBuildInputs = [ installShellFiles ];
-
   cargoHash = "sha256-AVSphRupcncOmlIh4GXcPab2ePhS1jgaQLBKv2sRwuo=";
-
   doCheck = false;
 
   postInstall = lib.optionalString (stdenv.buildPlatform.canExecute stdenv.hostPlatform) ''
@@ -32,9 +30,9 @@ rustPlatform.buildRustPackage (finalAttrs: {
 
   meta = {
     description = "Fast and simple Node.js version manager";
-    mainProgram = "fnm";
     homepage = "https://github.com/Schniz/fnm";
     license = lib.licenses.gpl3Only;
     maintainers = with lib.maintainers; [ kidonng ];
+    mainProgram = "fnm";
   };
 })

@@ -18,19 +18,20 @@
 buildPythonPackage rec {
   pname = "pytest-astropy";
   version = "0.11.0";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
     hash = "sha256-Tq6qme2RFj7Y+arBMscKgfJbxMEvPNVNujKfwmxnObU=";
   };
 
+  buildInputs = [ pytest ];
+  # pytest-astropy is a meta package that only propagates requirements
+  doCheck = false;
+
   build-system = [
     setuptools
     setuptools-scm
   ];
-
-  buildInputs = [ pytest ];
 
   dependencies = [
     hypothesis
@@ -43,13 +44,12 @@ buildPythonPackage rec {
     pytest-remotedata
   ];
 
-  # pytest-astropy is a meta package that only propagates requirements
-  doCheck = false;
+  pyproject = true;
 
   meta = {
-    changelog = "https://github.com/astropy/pytest-astropy/releases/tag/v${version}";
     description = "Meta-package containing dependencies for testing";
     homepage = "https://github.com/astropy/pytest-astropy";
+    changelog = "https://github.com/astropy/pytest-astropy/releases/tag/v${version}";
     license = lib.licenses.bsd3;
     maintainers = [ ];
   };

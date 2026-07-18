@@ -1,22 +1,21 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
-  pyparsing,
-  matplotlib,
+  buildPythonPackage,
   latex2mathml,
+  matplotlib,
+  nbval,
+  pyparsing,
+  pytestCheckHook,
+  setuptools,
+  writableTmpDirAsHomeHook,
   ziafont,
   ziamath,
-  pytestCheckHook,
-  nbval,
-  writableTmpDirAsHomeHook,
 }:
 
 buildPythonPackage rec {
   pname = "schemdraw";
   version = "0.23";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "cdelker";
@@ -25,18 +24,10 @@ buildPythonPackage rec {
     hash = "sha256-NAvJDrJKf4CYs9W4zdNAU8WnuXlCK6FU44+5flWzyAk=";
   };
 
-  build-system = [ setuptools ];
-
-  dependencies = [ pyparsing ];
-
-  optional-dependencies = {
-    matplotlib = [ matplotlib ];
-    svgmath = [
-      latex2mathml
-      ziafont
-      ziamath
-    ];
-  };
+  # Strip out references to unfree fonts from the test suite
+  postPatch = ''
+    substituteInPlace test/test_backend.ipynb --replace-fail "(font='Times')" "()"
+  '';
 
   nativeCheckInputs = [
     pytestCheckHook
@@ -48,15 +39,22 @@ buildPythonPackage rec {
     writableTmpDirAsHomeHook
   ];
 
-  # Strip out references to unfree fonts from the test suite
-  postPatch = ''
-    substituteInPlace test/test_backend.ipynb --replace-fail "(font='Times')" "()"
-  '';
-
   preCheck = "rm test/test_pictorial.ipynb"; # Tries to download files
+  build-system = [ setuptools ];
+  dependencies = [ pyparsing ];
 
+  optional-dependencies = {
+    matplotlib = [ matplotlib ];
+
+    svgmath = [
+      latex2mathml
+      ziafont
+      ziamath
+    ];
+  };
+
+  pyproject = true;
   pytestFlags = [ "--nbval-lax" ];
-
   pythonImportsCheck = [ "schemdraw" ];
 
   meta = {

@@ -2,16 +2,16 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  meson,
-  ninja,
-  pkg-config,
-  libtasn1,
-  libxslt,
   docbook-xsl-nons,
   docbook_xml_dtd_43,
   gettext,
   libffi,
   libintl,
+  libtasn1,
+  libxslt,
+  meson,
+  ninja,
+  pkg-config,
 }:
 
 stdenv.mkDerivation rec {
@@ -31,6 +31,12 @@ stdenv.mkDerivation rec {
     "bin"
     "dev"
   ];
+
+  postPatch = ''
+    # Install sample config files to $out/etc even though they will be loaded from /etc.
+    substituteInPlace p11-kit/meson.build \
+      --replace 'install_dir: prefix / p11_system_config' "install_dir: '$out/etc/pkcs11'"
+  '';
 
   strictDeps = true;
 
@@ -69,12 +75,6 @@ stdenv.mkDerivation rec {
 
   doCheck = stdenv.buildPlatform.canExecute stdenv.hostPlatform;
 
-  postPatch = ''
-    # Install sample config files to $out/etc even though they will be loaded from /etc.
-    substituteInPlace p11-kit/meson.build \
-      --replace 'install_dir: prefix / p11_system_config' "install_dir: '$out/etc/pkcs11'"
-  '';
-
   preCheck = ''
     # Tests run in fakeroot for non-root users (with Nix single-user install)
     if [ "$(id -u)" != "0" ]; then
@@ -84,22 +84,28 @@ stdenv.mkDerivation rec {
 
   meta = {
     description = "Library for loading and sharing PKCS#11 modules";
+
     longDescription = ''
       Provides a way to load and enumerate PKCS#11 modules.
       Provides a standard configuration setup for installing
       PKCS#11 modules in such a way that they're discoverable.
     '';
+
     homepage = "https://p11-glue.github.io/p11-glue/p11-kit.html";
+
     changelog = [
       "https://github.com/p11-glue/p11-kit/raw/${version}/NEWS"
       "https://github.com/p11-glue/p11-kit/releases/tag/${version}"
     ];
+
+    license = lib.licenses.bsd3;
     platforms = lib.platforms.all;
+
     badPlatforms = [
       # https://github.com/p11-glue/p11-kit/issues/355#issuecomment-778777141
       lib.systems.inspect.platformPatterns.isStatic
     ];
-    license = lib.licenses.bsd3;
+
     mainProgram = "p11-kit";
     identifiers.cpeParts = lib.meta.cpeFullVersionWithVendor "p11-kit_project" version;
   };

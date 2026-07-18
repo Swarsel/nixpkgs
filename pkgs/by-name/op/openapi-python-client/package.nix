@@ -1,18 +1,17 @@
 {
   lib,
   stdenv,
-  darwin,
-  python3Packages,
   fetchFromGitHub,
+  darwin,
   installShellFiles,
-  testers,
   openapi-python-client,
+  python3Packages,
+  testers,
 }:
 
 python3Packages.buildPythonApplication (finalAttrs: {
   pname = "openapi-python-client";
   version = "0.29.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     inherit (finalAttrs) version;
@@ -28,6 +27,16 @@ python3Packages.buildPythonApplication (finalAttrs: {
   ++ lib.optionals stdenv.hostPlatform.isDarwin [
     darwin.ps
   ];
+
+  postInstall = lib.optionalString (stdenv.buildPlatform.canExecute stdenv.hostPlatform) ''
+    # see: https://github.com/fastapi/typer/blob/5889cf82f4ed925f92e6b0750bf1b1ed9ee672f3/typer/completion.py#L54
+    # otherwise shellingham throws exception on darwin
+    export _TYPER_COMPLETE_TEST_DISABLE_SHELL_DETECTION=1
+    installShellCompletion --cmd openapi-python-client \
+      --bash <($out/bin/openapi-python-client --show-completion bash) \
+      --fish <($out/bin/openapi-python-client --show-completion fish) \
+      --zsh <($out/bin/openapi-python-client --show-completion zsh)
+  '';
 
   build-system = with python3Packages; [
     hatchling
@@ -48,19 +57,11 @@ python3Packages.buildPythonApplication (finalAttrs: {
       typing-extensions
     ]
   );
+
+  pyproject = true;
   # openapi-python-client defines upper bounds to the dependencies, ruff python library is
   # just a simple wrapper to locate the binary. We'll remove the upper bound
   pythonRelaxDeps = [ "ruff" ];
-
-  postInstall = lib.optionalString (stdenv.buildPlatform.canExecute stdenv.hostPlatform) ''
-    # see: https://github.com/fastapi/typer/blob/5889cf82f4ed925f92e6b0750bf1b1ed9ee672f3/typer/completion.py#L54
-    # otherwise shellingham throws exception on darwin
-    export _TYPER_COMPLETE_TEST_DISABLE_SHELL_DETECTION=1
-    installShellCompletion --cmd openapi-python-client \
-      --bash <($out/bin/openapi-python-client --show-completion bash) \
-      --fish <($out/bin/openapi-python-client --show-completion fish) \
-      --zsh <($out/bin/openapi-python-client --show-completion zsh)
-  '';
 
   passthru = {
     tests.version = testers.testVersion {
@@ -73,7 +74,7 @@ python3Packages.buildPythonApplication (finalAttrs: {
     homepage = "https://github.com/openapi-generators/openapi-python-client";
     changelog = "https://github.com/openapi-generators/openapi-python-client/releases/tag/${finalAttrs.src.tag}";
     license = lib.licenses.mit;
-    mainProgram = "openapi-python-client";
     maintainers = with lib.maintainers; [ konradmalik ];
+    mainProgram = "openapi-python-client";
   };
 })

@@ -10,7 +10,6 @@
 buildPythonPackage rec {
   pname = "tblib";
   version = "3.2.2";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
@@ -18,6 +17,7 @@ buildPythonPackage rec {
   };
 
   nativeBuildInputs = [ setuptools ];
+  pyproject = true;
 
   meta = {
     description = "Traceback fiddling library. Allows you to pickle tracebacks";

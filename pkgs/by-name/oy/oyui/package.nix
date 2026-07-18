@@ -1,12 +1,10 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
   nix-update-script,
+  rustPlatform,
 }:
 rustPlatform.buildRustPackage (finalAttrs: {
-  __structuredAttrs = true;
-
   pname = "oyui";
   version = "0.2.1";
 
@@ -18,7 +16,7 @@ rustPlatform.buildRustPackage (finalAttrs: {
   };
 
   cargoHash = "sha256-3XzTbrEDFzCf2rsvJu/foiDYEoO4lLMsr+4t9nDYv34=";
-
+  __structuredAttrs = true;
   passthru.updateScript = nix-update-script { };
 
   meta = {
@@ -26,9 +24,11 @@ rustPlatform.buildRustPackage (finalAttrs: {
     homepage = "https://github.com/emilien-jegou/oyui";
     changelog = "https://github.com/emilien-jegou/oyui/blob/${finalAttrs.src.tag}/CHANGELOG.md";
     license = lib.licenses.gpl3Only;
+
     maintainers = with lib.maintainers; [
       adda
     ];
+
     mainProgram = "oyui";
   };
 })

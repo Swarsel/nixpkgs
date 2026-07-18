@@ -1,7 +1,7 @@
 {
   lib,
-  buildNpmPackage,
   fetchFromGitHub,
+  buildNpmPackage,
   nix-update-script,
   nixosTests,
   nodejs,
@@ -9,16 +9,13 @@
 buildNpmPackage rec {
   pname = "immich-public-proxy";
   version = "3.0.1";
+
   src = fetchFromGitHub {
     owner = "alangrainger";
     repo = "immich-public-proxy";
     tag = "v${version}";
     hash = "sha256-y7y21AEMGHtynsguKp8HmTqZni5dIc7qjt2PQnsxN90=";
   };
-
-  sourceRoot = "${src.name}/app";
-
-  npmDepsHash = "sha256-a7qiiIvkDqxj1ZUBONLlZ49LSM8UpGIis/NXt5wEDjw=";
 
   # patch in absolute nix store paths so the process doesn't need to cwd in $out
   postPatch = ''
@@ -32,20 +29,24 @@ buildNpmPackage rec {
       "static('$out/lib/node_modules/immich-public-proxy/public'"
   '';
 
+  npmDepsHash = "sha256-a7qiiIvkDqxj1ZUBONLlZ49LSM8UpGIis/NXt5wEDjw=";
+  sourceRoot = "${src.name}/app";
+
   passthru = {
     tests = {
       inherit (nixosTests) immich-public-proxy;
     };
+
     updateScript = nix-update-script { };
   };
 
   meta = {
-    changelog = "https://github.com/alangrainger/immich-public-proxy/releases/tag/${src.tag}";
+    inherit (nodejs.meta) platforms;
     description = "Share your Immich photos and albums in a safe way without exposing your Immich instance to the public";
     homepage = "https://github.com/alangrainger/immich-public-proxy";
+    changelog = "https://github.com/alangrainger/immich-public-proxy/releases/tag/${src.tag}";
     license = lib.licenses.agpl3Only;
     maintainers = with lib.maintainers; [ jaculabilis ];
-    inherit (nodejs.meta) platforms;
     mainProgram = "immich-public-proxy";
   };
 }

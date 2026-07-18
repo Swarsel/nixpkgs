@@ -2,9 +2,9 @@
   lib,
   stdenv,
   fetchurl,
+  makeWrapper,
   perl,
   perlPackages,
-  makeWrapper,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -36,12 +36,12 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   meta = {
-    homepage = "http://www.jetmore.org/john/code/swaks/";
     description = "Featureful, flexible, scriptable, transaction-oriented SMTP test tool";
-    mainProgram = "swaks";
+    homepage = "http://www.jetmore.org/john/code/swaks/";
     license = lib.licenses.gpl2Plus;
     maintainers = [ ];
     platforms = lib.platforms.all;
+    mainProgram = "swaks";
   };
 
 })

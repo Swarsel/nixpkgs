@@ -1,14 +1,14 @@
 {
+  lib,
   stdenv,
   fetchFromGitHub,
-  lib,
-  libsForQt5,
   git,
   gnupg,
+  libsForQt5,
+  makeWrapper,
   pass,
   pwgen,
   qrencode,
-  makeWrapper,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -27,6 +27,13 @@ stdenv.mkDerivation (finalAttrs: {
       --replace "/usr/bin/qrencode" "${qrencode}/bin/qrencode"
   '';
 
+  nativeBuildInputs = [
+    libsForQt5.qmake
+    libsForQt5.qttools
+    libsForQt5.wrapQtAppsHook
+    makeWrapper
+  ];
+
   buildInputs = [
     git
     gnupg
@@ -35,12 +42,19 @@ stdenv.mkDerivation (finalAttrs: {
     libsForQt5.qtsvg
   ];
 
-  nativeBuildInputs = [
-    libsForQt5.qmake
-    libsForQt5.qttools
-    libsForQt5.wrapQtAppsHook
-    makeWrapper
-  ];
+  installPhase = lib.optionalString stdenv.hostPlatform.isDarwin ''
+    runHook preInstall
+    mkdir -p $out/Applications
+    cp -r main/QtPass.app $out/Applications
+    makeWrapper $out/Applications/QtPass.app/Contents/MacOS/QtPass $out/bin/qtpass
+    runHook postInstall
+  '';
+
+  postInstall = ''
+    install -D qtpass.desktop -t $out/share/applications
+    install -D artwork/icon.svg $out/share/icons/hicolor/scalable/apps/qtpass-icon.svg
+    install -D qtpass.1 -t $out/share/man/man1
+  '';
 
   qmakeFlags = [
     # setup hook only sets QMAKE_LRELEASE, set QMAKE_LUPDATE too:
@@ -58,25 +72,11 @@ stdenv.mkDerivation (finalAttrs: {
     }"
   ];
 
-  installPhase = lib.optionalString stdenv.hostPlatform.isDarwin ''
-    runHook preInstall
-    mkdir -p $out/Applications
-    cp -r main/QtPass.app $out/Applications
-    makeWrapper $out/Applications/QtPass.app/Contents/MacOS/QtPass $out/bin/qtpass
-    runHook postInstall
-  '';
-
-  postInstall = ''
-    install -D qtpass.desktop -t $out/share/applications
-    install -D artwork/icon.svg $out/share/icons/hicolor/scalable/apps/qtpass-icon.svg
-    install -D qtpass.1 -t $out/share/man/man1
-  '';
-
   meta = {
     description = "Multi-platform GUI for pass, the standard unix password manager";
-    mainProgram = "qtpass";
     homepage = "https://qtpass.org";
     license = lib.licenses.gpl3;
     platforms = lib.platforms.all;
+    mainProgram = "qtpass";
   };
 })

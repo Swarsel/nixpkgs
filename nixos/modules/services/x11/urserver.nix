@@ -20,6 +20,7 @@ in
         9510
         9512
       ];
+
       allowedUDPPorts = [
         9511
         9512
@@ -27,23 +28,29 @@ in
     };
 
     systemd.user.services.urserver = {
+      after = [ "network.target" ];
+
       description = ''
         Server for Unified Remote: The one-and-only remote for your computer.
       '';
-      wantedBy = [ "graphical-session.target" ];
+
       partOf = [ "graphical-session.target" ];
-      after = [ "network.target" ];
+
       serviceConfig = {
-        Type = "forking";
         ExecStart = ''
           ${pkgs.urserver}/bin/urserver --daemon
         '';
+
         ExecStop = ''
           ${pkgs.procps}/bin/pkill urserver
         '';
-        RestartSec = 3;
+
         Restart = "on-failure";
+        RestartSec = 3;
+        Type = "forking";
       };
+
+      wantedBy = [ "graphical-session.target" ];
     };
   };
 

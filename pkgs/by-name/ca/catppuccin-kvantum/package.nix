@@ -1,7 +1,7 @@
 {
   lib,
-  stdenvNoCC,
   fetchFromGitHub,
+  stdenvNoCC,
   unstableGitUpdater,
   accent ? "blue",
   variant ? "frappe",
@@ -55,7 +55,7 @@ lib.checkListOfEnum "${pname}: theme accent"
       description = "Soothing pastel theme for Kvantum";
       homepage = "https://github.com/catppuccin/Kvantum";
       license = lib.licenses.mit;
-      platforms = lib.platforms.linux;
       maintainers = [ lib.maintainers.bastaynav ];
+      platforms = lib.platforms.linux;
     };
   }

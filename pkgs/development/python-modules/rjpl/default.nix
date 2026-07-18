@@ -1,14 +1,13 @@
 {
   lib,
   buildPythonPackage,
-  requests,
   fetchPypi,
+  requests,
 }:
 
 buildPythonPackage rec {
   pname = "rjpl";
   version = "0.3.6";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
@@ -16,10 +15,9 @@ buildPythonPackage rec {
   };
 
   propagatedBuildInputs = [ requests ];
-
   # Module has no tests
   doCheck = false;
-
+  format = "setuptools";
   pythonImportsCheck = [ "rjpl" ];
 
   meta = {

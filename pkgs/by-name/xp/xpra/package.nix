@@ -1,15 +1,12 @@
 {
   lib,
+  stdenv,
   fetchFromGitHub,
-  pkg-config,
-  runCommand,
-  writeText,
-  wrapGAppsHook3,
-  withNvenc ? false,
   atk,
   cairo,
-  cudatoolkit,
+  clang,
   cudaPackages,
+  cudatoolkit,
   ffmpeg,
   gdk-pixbuf,
   getopt,
@@ -18,48 +15,51 @@
   gst_all_1,
   gtk3,
   libappindicator,
+  libavif,
   libfakexinerama,
   librsvg,
   libvpx,
   libwebp,
-  systemd,
+  libx11,
+  libxcomposite,
+  libxdamage,
+  libxfixes,
+  libxi,
+  libxkbfile,
+  libxrandr,
+  libxrender,
+  libxres,
+  libxtst,
+  libyuv,
   lz4,
   nv-codec-headers-10,
-  nvidia_x11 ? null,
+  openh264,
   pam,
   pandoc,
   pango,
+  pkg-config,
   pulseaudioFull,
   python3,
-  stdenv,
+  runCommand,
+  systemd,
+  udevCheckHook,
   util-linux,
   which,
+  wrapGAppsHook3,
+  writeText,
   x264,
   x265,
-  libavif,
-  openh264,
-  libyuv,
   xauth,
   xdg-utils,
-  xkeyboard-config,
   xf86-video-dummy,
-  libxtst,
-  libxres,
-  libxrender,
-  libxrandr,
-  libxi,
-  libxfixes,
-  libxdamage,
-  libxcomposite,
-  libx11,
-  xorgproto,
-  libxkbfile,
+  xkeyboard-config,
   xorg-server,
-  xxhash,
-  clang,
-  withHtml ? true,
+  xorgproto,
   xpra-html5,
-  udevCheckHook,
+  xxhash,
+  nvidia_x11 ? null,
+  withHtml ? true,
+  withNvenc ? false,
 }:
 
 let
@@ -105,7 +105,6 @@ in
 effectiveBuildPythonApplication rec {
   pname = "xpra";
   version = "6.4.4";
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "Xpra-org";
@@ -125,13 +124,6 @@ effectiveBuildPythonApplication rec {
 
     patchShebangs --build fs/bin/build_cuda_kernels.py
   '';
-
-  env = {
-    # error: 'import_cairo' defined but not used
-    NIX_CFLAGS_COMPILE = "-Wno-error=unused-function";
-
-    INCLUDE_DIRS = "${pam}/include";
-  };
 
   nativeBuildInputs = [
     clang
@@ -228,21 +220,25 @@ effectiveBuildPythonApplication rec {
       ]
     );
 
-  setupPyBuildFlags = [
-    "--with-Xdummy"
-    "--without-Xdummy_wrapper"
-    "--without-strict"
-    "--with-gtk3"
-    # Override these, setup.py checks for headers in /usr/* paths
-    "--with-pam"
-    "--with-vsock"
-  ]
-  ++ lib.optional withNvenc [
-    "--with-nvenc"
-    "--with-nvjpeg_encoder"
-  ];
+  env = {
+    INCLUDE_DIRS = "${pam}/include";
+    # error: 'import_cairo' defined but not used
+    NIX_CFLAGS_COMPILE = "-Wno-error=unused-function";
+  };
 
-  dontWrapGApps = true;
+  postInstall = ''
+    # append module paths to xorg.conf
+    cat ${xorgModulePaths} >> $out/etc/xpra/xorg.conf
+    cat ${xorgModulePaths} >> $out/etc/xpra/xorg-uinput.conf
+
+    # make application icon visible to desktop environemnts
+    icon_dir="$out/share/icons/hicolor/64x64/apps"
+    mkdir -p "$icon_dir"
+    ln -sr "$out/share/icons/xpra.png" "$icon_dir"
+  ''
+  + lib.optionalString withHtml ''
+    ln -s ${xpra-html5}/share/xpra/www $out/share/xpra/www;
+  '';
 
   preFixup = ''
     makeWrapperArgs+=(
@@ -270,23 +266,24 @@ effectiveBuildPythonApplication rec {
     )
   '';
 
-  postInstall = ''
-    # append module paths to xorg.conf
-    cat ${xorgModulePaths} >> $out/etc/xpra/xorg.conf
-    cat ${xorgModulePaths} >> $out/etc/xpra/xorg-uinput.conf
-
-    # make application icon visible to desktop environemnts
-    icon_dir="$out/share/icons/hicolor/64x64/apps"
-    mkdir -p "$icon_dir"
-    ln -sr "$out/share/icons/xpra.png" "$icon_dir"
-  ''
-  + lib.optionalString withHtml ''
-    ln -s ${xpra-html5}/share/xpra/www $out/share/xpra/www;
-  '';
-
+  dontWrapGApps = true;
   # doCheck = false;
-
   enableParallelBuilding = true;
+  format = "setuptools";
+
+  setupPyBuildFlags = [
+    "--with-Xdummy"
+    "--without-Xdummy_wrapper"
+    "--without-strict"
+    "--with-gtk3"
+    # Override these, setup.py checks for headers in /usr/* paths
+    "--with-pam"
+    "--with-vsock"
+  ]
+  ++ lib.optional withNvenc [
+    "--with-nvenc"
+    "--with-nvjpeg_encoder"
+  ];
 
   passthru = {
     inherit xf86videodummy;
@@ -294,15 +291,17 @@ effectiveBuildPythonApplication rec {
   };
 
   meta = {
-    homepage = "https://xpra.org/";
-    downloadPage = "https://xpra.org/src/";
     description = "Persistent remote applications for X";
+    homepage = "https://xpra.org/";
     changelog = "https://github.com/Xpra-org/xpra/releases/tag/v${version}";
-    platforms = lib.platforms.linux;
     license = lib.licenses.gpl2Only;
+
     maintainers = with lib.maintainers; [
       numinit
       mvnetbiz
     ];
+
+    platforms = lib.platforms.linux;
+    downloadPage = "https://xpra.org/src/";
   };
 }

@@ -1,11 +1,11 @@
 {
   lib,
-  autoreconfHook,
+  stdenv,
   fetchFromGitHub,
+  autoreconfHook,
   gtk3,
   mednafen,
   pkg-config,
-  stdenv,
   wrapGAppsHook3,
 }:
 
@@ -20,6 +20,8 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-ZizW0EeY/Cc68m87cnbLAkx3G/ULyFT5b6Ku2ObzFRU=";
   };
 
+  strictDeps = true;
+
   nativeBuildInputs = [
     autoreconfHook
     pkg-config
@@ -31,22 +33,20 @@ stdenv.mkDerivation (finalAttrs: {
     mednafen
   ];
 
-  enableParallelBuilding = true;
-
-  strictDeps = true;
-
   preFixup = ''
     gappsWrapperArgs+=(
       --prefix PATH ':' "${mednafen}/bin"
     )
   '';
 
+  enableParallelBuilding = true;
+
   meta = {
     description = "GTK-based frontend for mednafen emulator";
-    mainProgram = "mednaffe";
     homepage = "https://github.com/AmatCoder/mednaffe";
     license = lib.licenses.gpl3Plus;
     maintainers = [ ];
     platforms = lib.platforms.unix;
+    mainProgram = "mednaffe";
   };
 })

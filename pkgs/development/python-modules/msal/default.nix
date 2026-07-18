@@ -1,7 +1,7 @@
 {
   lib,
-  cryptography,
   buildPythonPackage,
+  cryptography,
   fetchPypi,
   pyjwt,
   requests,
@@ -11,13 +11,15 @@
 buildPythonPackage (finalAttrs: {
   pname = "msal";
   version = "1.37.0";
-  pyproject = true;
 
   src = fetchPypi {
     inherit (finalAttrs) pname version;
     hash = "sha256-GxZyoz7kZ8HXCzQbsWyv1RuzyBcUepW5MmN5SwOXG+w=";
   };
 
+  # Tests assume Network Connectivity:
+  # https://github.com/AzureAD/microsoft-authentication-library-for-python/blob/e2958961e8ec16d0af4199f60c36c3f913497e48/tests/test_authority.py#L73
+  doCheck = false;
   build-system = [ setuptools ];
 
   dependencies = [
@@ -27,10 +29,7 @@ buildPythonPackage (finalAttrs: {
   ]
   ++ pyjwt.optional-dependencies.crypto;
 
-  # Tests assume Network Connectivity:
-  # https://github.com/AzureAD/microsoft-authentication-library-for-python/blob/e2958961e8ec16d0af4199f60c36c3f913497e48/tests/test_authority.py#L73
-  doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "msal" ];
 
   meta = {

@@ -1,8 +1,8 @@
 {
   lib,
+  fetchFromGitHub,
   buildPythonPackage,
   cython,
-  fetchFromGitHub,
   narwhals,
   pandas,
   python,
@@ -14,7 +14,6 @@
 buildPythonPackage rec {
   pname = "pyreadstat";
   version = "1.3.5";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "Roche";
@@ -23,20 +22,7 @@ buildPythonPackage rec {
     hash = "sha256-9SSY8wX0CMEjoSOHZHH9z5e5/PU4EsXiRxu8f2EXzZk=";
   };
 
-  build-system = [
-    cython
-    setuptools
-  ];
-
   buildInputs = [ zlib ];
-
-  dependencies = [
-    narwhals
-    readstat
-    pandas
-  ];
-
-  pythonImportsCheck = [ "pyreadstat" ];
 
   preCheck = ''
     export HOME=$(mktemp -d);
@@ -49,6 +35,20 @@ buildPythonPackage rec {
 
     runHook postCheck
   '';
+
+  build-system = [
+    cython
+    setuptools
+  ];
+
+  dependencies = [
+    narwhals
+    readstat
+    pandas
+  ];
+
+  pyproject = true;
+  pythonImportsCheck = [ "pyreadstat" ];
 
   meta = {
     description = "Module to read SAS, SPSS and Stata files into pandas data frames";

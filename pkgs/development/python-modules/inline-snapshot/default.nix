@@ -1,11 +1,11 @@
 {
   lib,
+  fetchFromGitHub,
   asttokens,
   black,
   buildPythonPackage,
   dirty-equals,
   executing,
-  fetchFromGitHub,
   hatchling,
   hypothesis,
   isort,
@@ -22,7 +22,6 @@
 buildPythonPackage rec {
   pname = "inline-snapshot";
   version = "0.32.5";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "15r10nk";
@@ -31,17 +30,8 @@ buildPythonPackage rec {
     hash = "sha256-xnooMIm0UiNOWrZ4JZwbpFzliGsTF7b1DAXi1fxMb30=";
   };
 
-  build-system = [ hatchling ];
-
   buildInputs = [
     pytest
-  ];
-
-  dependencies = [
-    asttokens
-    executing
-    rich
-    typing-extensions
   ];
 
   nativeCheckInputs = [
@@ -55,17 +45,27 @@ buildPythonPackage rec {
   ]
   ++ lib.concatAttrValues optional-dependencies;
 
-  optional-dependencies = {
-    black = [ black ];
-    dirty-equals = [ dirty-equals ];
-  };
+  build-system = [ hatchling ];
 
-  pythonImportsCheck = [ "inline_snapshot" ];
+  dependencies = [
+    asttokens
+    executing
+    rich
+    typing-extensions
+  ];
 
   disabledTestPaths = [
     # Tests don't play nice with pytest-xdist
     "tests/test_typing.py"
   ];
+
+  optional-dependencies = {
+    black = [ black ];
+    dirty-equals = [ dirty-equals ];
+  };
+
+  pyproject = true;
+  pythonImportsCheck = [ "inline_snapshot" ];
 
   meta = {
     description = "Create and update inline snapshots in Python tests";

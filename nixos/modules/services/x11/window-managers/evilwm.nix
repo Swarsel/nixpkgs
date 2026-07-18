@@ -18,13 +18,15 @@ in
 
   ###### implementation
   config = mkIf cfg.enable {
+    environment.systemPackages = [ pkgs.evilwm ];
+
     services.xserver.windowManager.session = singleton {
       name = "evilwm";
+
       start = ''
         ${pkgs.evilwm}/bin/evilwm &
         waitPID=$!
       '';
     };
-    environment.systemPackages = [ pkgs.evilwm ];
   };
 }

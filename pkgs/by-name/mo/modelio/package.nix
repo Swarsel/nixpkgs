@@ -1,37 +1,39 @@
 {
   lib,
-  stdenvNoCC,
   fetchurl,
-  dpkg,
-  makeWrapper,
   autoPatchelfHook,
-  wrapGAppsHook3,
-  gtk3,
+  dpkg,
   glib,
+  glib-networking,
+  gtk3,
+  imagemagick,
   libsecret,
   libx11,
   libxtst,
+  makeWrapper,
   openjdk11,
+  stdenvNoCC,
   webkitgtk_4_1,
-  glib-networking,
-  imagemagick,
+  wrapGAppsHook3,
 }:
 
 let
   # SWT 3.120 hardcodes dlopen("libwebkit2gtk-4.0.so.37") but nixpkgs
   # only ships webkitgtk_4_1 (soname libwebkit2gtk-4.1.so.0).
   webkitCompat = stdenvNoCC.mkDerivation {
-    name = "webkitgtk-4.0-compat";
-    dontUnpack = true;
     installPhase = ''
       mkdir -p $out/lib
       ln -s ${webkitgtk_4_1}/lib/libwebkit2gtk-4.1.so.0 $out/lib/libwebkit2gtk-4.0.so.37
     '';
+
+    dontUnpack = true;
+    name = "webkitgtk-4.0-compat";
   };
 in
 stdenvNoCC.mkDerivation (finalAttrs: {
   pname = "modelio";
   version = "5.4.1";
+
   # Using .deb package instead of building from source as the build process uses eclipse gui as a necessary build step.
   # Building from source steps: https://github.com/ModelioOpenSource/Modelio/wiki/Build-Modelio-Index
   # I was unsuccessful in the attempt to build it via cli.
@@ -39,6 +41,8 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     url = "https://github.com/ModelioOpenSource/Modelio/releases/download/v${finalAttrs.version}/modelio-open-source-${finalAttrs.version}_amd64.deb";
     hash = "sha256-cg7ruIYpOgz2nfax37M8sUs89Qvbb5PMudyR0ZNiURo=";
   };
+
+  strictDeps = true;
 
   nativeBuildInputs = [
     dpkg
@@ -55,18 +59,6 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     libx11
     libxtst
   ];
-
-  strictDeps = true;
-  __structuredAttrs = true;
-
-  unpackPhase = ''
-    runHook preUnpack
-    dpkg-deb --extract $src .
-    runHook postUnpack
-  '';
-
-  dontConfigure = true;
-  dontBuild = true;
 
   installPhase = ''
     runHook preInstall
@@ -123,12 +115,22 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  __structuredAttrs = true;
+  dontBuild = true;
+  dontConfigure = true;
+
+  unpackPhase = ''
+    runHook preUnpack
+    dpkg-deb --extract $src .
+    runHook postUnpack
+  '';
+
   meta = {
+    description = "Open-source UML, BPMN, ArchiMate and SysML modeling environment";
     homepage = "https://www.modelio.org/";
     changelog = "https://github.com/ModelioOpenSource/Modelio/releases/tag/v${finalAttrs.version}";
-    description = "Open-source UML, BPMN, ArchiMate and SysML modeling environment";
-    sourceProvenance = [ lib.sourceTypes.binaryNativeCode ];
     license = lib.licenses.agpl3Only;
+    sourceProvenance = [ lib.sourceTypes.binaryNativeCode ];
     maintainers = with lib.maintainers; [ gamebeaker ];
     platforms = [ "x86_64-linux" ];
     mainProgram = "modelio";

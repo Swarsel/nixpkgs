@@ -1,16 +1,13 @@
 {
   lib,
-  buildPythonPackage,
-  fetchPypi,
-
-  # build-system
-  setuptools,
-  setuptools-scm,
-
   # dependencies
   accelerate,
+  buildPythonPackage,
+  # tests
+  cudaPackages,
   cut-cross-entropy,
   datasets,
+  fetchPypi,
   filelock,
   hf-transfer,
   huggingface-hub,
@@ -21,33 +18,37 @@
   pillow,
   protobuf,
   psutil,
+  python,
   regex,
   sentencepiece,
+  # build-system
+  setuptools,
+  setuptools-scm,
   torch,
   torchao,
-  triton,
   tqdm,
   transformers,
+  triton,
   trl,
-  tyro,
   typing-extensions,
-
-  # tests
-  cudaPackages,
-  python,
+  tyro,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "unsloth-zoo";
   version = "2026.4.7";
-  pyproject = true;
 
   # no tags on GitHub
   src = fetchPypi {
-    pname = "unsloth_zoo";
     inherit (finalAttrs) version;
     hash = "sha256-jJ58d2+5lEALEaASELZtQkY2YxNWaLrfLvOCUGnwrh4=";
+    pname = "unsloth_zoo";
   };
+
+  patches = [
+    # Avoid circular dependency in Nix, since `unsloth` depends on `unsloth-zoo`.
+    ./dont-require-unsloth.patch
+  ];
 
   postPatch = ''
     substituteInPlace pyproject.toml \
@@ -59,16 +60,8 @@ buildPythonPackage (finalAttrs: {
         "setuptools-scm"
   '';
 
-  pythonRelaxDeps = [
-    "datasets"
-    "torch"
-    "transformers"
-  ];
-
-  patches = [
-    # Avoid circular dependency in Nix, since `unsloth` depends on `unsloth-zoo`.
-    ./dont-require-unsloth.patch
-  ];
+  # No tests
+  doCheck = false;
 
   build-system = [
     setuptools
@@ -101,11 +94,15 @@ buildPythonPackage (finalAttrs: {
     typing-extensions
   ];
 
-  # No tests
-  doCheck = false;
-
   # Importing touches torch.cuda at module import time and queries GPU memory.
   dontUsePythonImportsCheck = true;
+  pyproject = true;
+
+  pythonRelaxDeps = [
+    "datasets"
+    "torch"
+    "transformers"
+  ];
 
   # Cover the import path on GPU-enabled runners instead of pure builders.
   passthru.gpuCheck =

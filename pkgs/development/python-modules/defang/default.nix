@@ -9,7 +9,6 @@
 buildPythonPackage rec {
   pname = "defang";
   version = "0.5.3";
-  pyproject = true;
 
   src = fetchFromBitbucket {
     owner = "johannestaas";
@@ -19,9 +18,8 @@ buildPythonPackage rec {
   };
 
   nativeBuildInputs = [ setuptools ];
-
   nativeCheckInputs = [ pytestCheckHook ];
-
+  pyproject = true;
   pythonImportsCheck = [ "defang" ];
 
   meta = {

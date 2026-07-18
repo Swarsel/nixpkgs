@@ -1,12 +1,12 @@
 {
   lib,
   stdenv,
-  fetchpatch,
-  buildGoModule,
   fetchFromGitHub,
-  nixosTests,
-  libcap,
+  buildGoModule,
+  fetchpatch,
   go,
+  libcap,
+  nixosTests,
 }:
 
 let
@@ -28,8 +28,8 @@ let
     patches = [
       # https://github.com/namecoin/x509-compressed/pull/4
       (fetchpatch {
-        url = "https://github.com/namecoin/x509-compressed/commit/b4fb598b.patch";
         hash = "sha256-S4Y4B4FH15IyaTJtSb03C8QffnsMXSYc6q1Gka/PVV4=";
+        url = "https://github.com/namecoin/x509-compressed/commit/b4fb598b.patch";
       })
     ];
 
@@ -67,6 +67,17 @@ buildGoModule {
     hash = "sha256-lFpjfpOAgvYoV3ci2oSdy8ZOlQ2rWlApiFWcvOMdkyk=";
   };
 
+  patches = [ ./fix-tpl-path.patch ];
+
+  # Put in our own lockfiles
+  postPatch = ''
+    cp ${./ncdns-go.mod} go.mod
+    cp ${./ncdns-go.sum} go.sum
+  '';
+
+  buildInputs = [ libcap ];
+  vendorHash = "sha256-FoCK2qkhbc+6D4V77pNLiC9d68nkeYJxb7uiNYEP2Xw=";
+
   # Note: to update ncdns add the following lines
   #
   #   chmod -R +w .
@@ -78,18 +89,6 @@ buildGoModule {
   preBuild = ''
     # Sideload the generated x509 module
     ln -s '${x509}' x509
-  '';
-
-  vendorHash = "sha256-FoCK2qkhbc+6D4V77pNLiC9d68nkeYJxb7uiNYEP2Xw=";
-
-  buildInputs = [ libcap ];
-
-  patches = [ ./fix-tpl-path.patch ];
-
-  # Put in our own lockfiles
-  postPatch = ''
-    cp ${./ncdns-go.mod} go.mod
-    cp ${./ncdns-go.sum} go.sum
   '';
 
   preCheck = ''

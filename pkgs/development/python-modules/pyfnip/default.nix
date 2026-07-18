@@ -11,13 +11,14 @@
 buildPythonPackage rec {
   pname = "pyfnip";
   version = "0.2";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
     hash = "sha256-arwIsqsj+d6sMatBJc1eEr95Nvg8Y9lfpOtBPcHKomA=";
   };
 
+  # Project has no tests
+  doCheck = false;
   build-system = [ setuptools ];
 
   dependencies = [
@@ -25,9 +26,7 @@ buildPythonPackage rec {
   ]
   ++ lib.optionals (pythonAtLeast "3.13") [ standard-telnetlib ];
 
-  # Project has no tests
-  doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "pyfnip" ];
 
   meta = {

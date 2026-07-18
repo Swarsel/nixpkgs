@@ -1,14 +1,13 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   requests,
 }:
 
 buildPythonPackage rec {
   pname = "pynetgear";
   version = "0.10.10";
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "MatMaul";
@@ -18,12 +17,11 @@ buildPythonPackage rec {
   };
 
   propagatedBuildInputs = [ requests ];
-
-  pythonImportsCheck = [ "pynetgear" ];
-
   # Tests don't pass
   # https://github.com/MatMaul/pynetgear/issues/109
   doCheck = false;
+  format = "setuptools";
+  pythonImportsCheck = [ "pynetgear" ];
 
   meta = {
     description = "Module for interacting with Netgear wireless routers";

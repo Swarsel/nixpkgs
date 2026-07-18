@@ -1,7 +1,8 @@
 {
   lib,
-  copyDesktopItems,
+  stdenv,
   fetchFromGitHub,
+  copyDesktopItems,
   fftw,
   glib,
   gtk4-layer-shell,
@@ -15,16 +16,12 @@
   pixman,
   pkg-config,
   rustPlatform,
-  stdenv,
   udev,
   wrapGAppsHook4,
 }:
 rustPlatform.buildRustPackage (finalAttrs: {
   pname = "wayle";
   version = "0.6.0";
-
-  __structuredAttrs = true;
-  strictDeps = true;
 
   src = fetchFromGitHub {
     owner = "wayle-rs";
@@ -33,7 +30,7 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-AOHehdowgxEV1b+CwrAhJsUqxQnARIGZPWMRcdH0h+U=";
   };
 
-  cargoHash = "sha256-4PUXJwUP5h/ggZQbY78BdqMh5oZes1XCeWuT2/S94Z4=";
+  strictDeps = true;
 
   nativeBuildInputs = [
     copyDesktopItems
@@ -58,19 +55,16 @@ rustPlatform.buildRustPackage (finalAttrs: {
     pipewire.dev
   ];
 
-  cargoBuildFlags = [
-    "--bin=wayle"
-    "--bin=wayle-settings"
-  ];
-
-  preCheck = ''
-    export HOME=$(mktemp -d)
-  '';
+  cargoHash = "sha256-4PUXJwUP5h/ggZQbY78BdqMh5oZes1XCeWuT2/S94Z4=";
 
   checkFlags = [
     # GTK4 failed to initialize (requires GUI?)
     "--skip=tests::css_loads_into_gtk4"
   ];
+
+  preCheck = ''
+    export HOME=$(mktemp -d)
+  '';
 
   preInstall = ''
     mkdir -p "$out/share/icons/hicolor/scalable/apps"
@@ -93,21 +87,27 @@ rustPlatform.buildRustPackage (finalAttrs: {
     gappsWrapperArgs+=( --suffix PATH : $out/bin )
   '';
 
+  __structuredAttrs = true;
+
+  cargoBuildFlags = [
+    "--bin=wayle"
+    "--bin=wayle-settings"
+  ];
+
   desktopItems = [
     (makeDesktopItem {
-      name = "com.wayle.settings.desktop";
-      type = "Application";
-      desktopName = "Wayle Settings";
-      genericName = "Shell Settings";
-      comment = "Configure the Wayle desktop shell";
-      exec = "wayle-settings";
-      icon = "wayle-settings";
-      terminal = false;
       categories = [
         "Settings"
         "DesktopSettings"
         "GTK"
       ];
+
+      comment = "Configure the Wayle desktop shell";
+      desktopName = "Wayle Settings";
+      exec = "wayle-settings";
+      genericName = "Shell Settings";
+      icon = "wayle-settings";
+
       keywords = [
         "wayle"
         "settings"
@@ -116,8 +116,12 @@ rustPlatform.buildRustPackage (finalAttrs: {
         "wayland"
         "config"
       ];
+
+      name = "com.wayle.settings.desktop";
       startupNotify = true;
       startupWMClass = "com.wayle.settings";
+      terminal = false;
+      type = "Application";
     })
   ];
 
@@ -128,7 +132,7 @@ rustPlatform.buildRustPackage (finalAttrs: {
     homepage = "https://github.com/wayle-rs/wayle/";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ PerchunPak ];
-    mainProgram = "wayle";
     platforms = lib.platforms.linux;
+    mainProgram = "wayle";
   };
 })

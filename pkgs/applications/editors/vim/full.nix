@@ -1,56 +1,54 @@
 {
-  source ? "default",
-  callPackage,
   lib,
   stdenv,
-  ncurses,
-  pkg-config,
-  gettext,
-  writeText,
+  callPackage,
   config,
+  gettext,
   glib,
   gtk2-x11,
   gtk3-x11,
-  lua,
-  python3,
-  perl,
-  tcl,
-  ruby,
-  libx11,
-  libxext,
+  libice,
   libsm,
+  libsodium,
+  libx11,
+  libxau,
+  libxaw,
+  libxext,
+  libxmu,
   libxpm,
   libxt,
-  libxaw,
-  libxau,
-  libxmu,
-  libsodium,
-  libice,
-  wayland-scanner,
-  vimPlugins,
+  # TODO: Clean up on `staging`
+  llvmPackages,
+  lua,
   makeWrapper,
+  ncurses,
+  perl,
+  pkg-config,
+  python3,
+  ruby,
+  tcl,
+  vimPlugins,
+  wayland-scanner,
   wrapGAppsHook3,
-
+  writeText,
+  cscopeSupport ? config.vim.cscope or true, # Enable cscope interface
+  darwinSupport ? config.vim.darwin or false, # Enable Darwin support
   features ? "huge", # One of tiny, small, normal, big or huge
-  wrapPythonDrv ? false,
+  ftNixSupport ? config.vim.ftNix or true, # Add nix indentation support from vim-nix (not needed for basic syntax highlighting)
   guiSupport ? config.vim.gui or (if stdenv.hostPlatform.isDarwin then "gtk2" else "gtk3"),
-  waylandSupport ? !stdenv.hostPlatform.isDarwin,
   luaSupport ? config.vim.lua or true,
+  multibyteSupport ? config.vim.multibyte or false, # Enable multibyte editing support
+  netbeansSupport ? config.netbeans or true, # Enable NetBeans integration support.
+  nlsSupport ? config.vim.nls or false, # Enable NLS (gettext())
   perlSupport ? config.vim.perl or false, # Perl interpreter
   pythonSupport ? config.vim.python or true, # Python interpreter
   rubySupport ? config.vim.ruby or true, # Ruby interpreter
-  nlsSupport ? config.vim.nls or false, # Enable NLS (gettext())
-  tclSupport ? config.vim.tcl or false, # Include Tcl interpreter
-  multibyteSupport ? config.vim.multibyte or false, # Enable multibyte editing support
-  cscopeSupport ? config.vim.cscope or true, # Enable cscope interface
-  netbeansSupport ? config.netbeans or true, # Enable NetBeans integration support.
-  ximSupport ? config.vim.xim or true, # less than 15KB, needed for deadkeys
-  darwinSupport ? config.vim.darwin or false, # Enable Darwin support
-  ftNixSupport ? config.vim.ftNix or true, # Add nix indentation support from vim-nix (not needed for basic syntax highlighting)
   sodiumSupport ? config.vim.sodium or true, # Enable sodium based encryption
-
-  # TODO: Clean up on `staging`
-  llvmPackages,
+  source ? "default",
+  tclSupport ? config.vim.tcl or false, # Include Tcl interpreter
+  waylandSupport ? !stdenv.hostPlatform.isDarwin,
+  wrapPythonDrv ? false,
+  ximSupport ? config.vim.xim or true, # less than 15KB, needed for deadkeys
 }:
 
 let
@@ -89,8 +87,6 @@ let
 in
 stdenv.mkDerivation {
 
-  pname = "vim-full";
-
   inherit (common)
     version
     outputs
@@ -100,11 +96,48 @@ stdenv.mkDerivation {
     meta
     ;
 
+  pname = "vim-full";
+
   src = builtins.getAttr source {
     default = common.src; # latest release
   };
 
   patches = [ ./cflags-prune.diff ];
+
+  nativeBuildInputs = [
+    pkg-config
+  ]
+  ++ lib.optional wrapPythonDrv makeWrapper
+  ++ lib.optional nlsSupport gettext
+  ++ lib.optional perlSupport perl
+  ++ lib.optional (guiSupport == "gtk3") wrapGAppsHook3
+  ++ lib.optional waylandSupport wayland-scanner
+  # TODO: Clean up on `staging`
+  ++ lib.optional stdenv.hostPlatform.isDarwin llvmPackages.lld;
+
+  buildInputs = [
+    ncurses
+    glib
+  ]
+  # All X related dependencies
+  ++ lib.optionals (guiSupport == "gtk2" || guiSupport == "gtk3") [
+    libsm
+    libice
+    libx11
+    libxext
+    libxpm
+    libxt
+    libxaw
+    libxau
+    libxmu
+  ]
+  ++ lib.optional (guiSupport == "gtk2") gtk2-x11
+  ++ lib.optional (guiSupport == "gtk3") gtk3-x11
+  ++ lib.optional luaSupport lua
+  ++ lib.optional pythonSupport python3
+  ++ lib.optional tclSupport tcl
+  ++ lib.optional rubySupport ruby
+  ++ lib.optional sodiumSupport libsodium;
 
   configureFlags = [
     "--with-features=${features}"
@@ -164,41 +197,6 @@ stdenv.mkDerivation {
   ++ lib.optional netbeansSupport "--enable-netbeans"
   ++ lib.optional ximSupport "--enable-xim"
   ++ lib.optional sodiumSupport "--enable-sodium";
-
-  nativeBuildInputs = [
-    pkg-config
-  ]
-  ++ lib.optional wrapPythonDrv makeWrapper
-  ++ lib.optional nlsSupport gettext
-  ++ lib.optional perlSupport perl
-  ++ lib.optional (guiSupport == "gtk3") wrapGAppsHook3
-  ++ lib.optional waylandSupport wayland-scanner
-  # TODO: Clean up on `staging`
-  ++ lib.optional stdenv.hostPlatform.isDarwin llvmPackages.lld;
-
-  buildInputs = [
-    ncurses
-    glib
-  ]
-  # All X related dependencies
-  ++ lib.optionals (guiSupport == "gtk2" || guiSupport == "gtk3") [
-    libsm
-    libice
-    libx11
-    libxext
-    libxpm
-    libxt
-    libxaw
-    libxau
-    libxmu
-  ]
-  ++ lib.optional (guiSupport == "gtk2") gtk2-x11
-  ++ lib.optional (guiSupport == "gtk3") gtk3-x11
-  ++ lib.optional luaSupport lua
-  ++ lib.optional pythonSupport python3
-  ++ lib.optional tclSupport tcl
-  ++ lib.optional rubySupport ruby
-  ++ lib.optional sodiumSupport libsodium;
 
   # error: '__declspec' attributes are not enabled; use '-fdeclspec' or '-fms-extensions' to enable support for __declspec attributes
   # workaround for ld64 hardening issue

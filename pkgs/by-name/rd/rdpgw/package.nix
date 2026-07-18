@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   pam,
   pkg-config,
 }:
@@ -18,12 +18,9 @@ buildGoModule (finalAttrs: {
   };
 
   patches = [ ./go-sum.patch ];
-
-  vendorHash = "sha256-KH3c8IAFkXCDLleRTiTnXx+q6LpLl6oTswwmLZPUUSI=";
-
   nativeBuildInputs = [ pkg-config ];
-
   buildInputs = [ pam ];
+  vendorHash = "sha256-KH3c8IAFkXCDLleRTiTnXx+q6LpLl6oTswwmLZPUUSI=";
 
   ldflags = [
     "-s"

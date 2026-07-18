@@ -3,10 +3,10 @@
   stdenv,
   fetchurl,
   cups,
-  perl,
   ghostscript,
-  which,
   makeWrapper,
+  perl,
+  which,
 }:
 
 /*
@@ -52,12 +52,8 @@ stdenv.mkDerivation rec {
     sha256 = "0zdvjnrjrz9sba0k525linxp55lr4cyivfhqbkq1c11br2nvy09f";
   };
 
-  unpackPhase = ''
-    ar x $src
-    tar xfvz data.tar.gz
-  '';
-
   nativeBuildInputs = [ makeWrapper ];
+
   buildInputs = [
     cups
     perl
@@ -65,22 +61,6 @@ stdenv.mkDerivation rec {
     ghostscript
     which
   ];
-
-  dontBuild = true;
-
-  patchPhase = ''
-    INFDIR=opt/brother/Printers/BrGenML1/inf
-    LPDDIR=opt/brother/Printers/BrGenML1/lpd
-
-    # Setup max debug log by default.
-    substituteInPlace $LPDDIR/filter_BrGenML1 \
-      --replace "BR_PRT_PATH =~" "BR_PRT_PATH = \"$out/opt/brother/Printers/BrGenML1\"; #" \
-      --replace "PRINTER =~" "PRINTER = \"BrGenML1\"; #"
-
-    ${myPatchElf "$INFDIR/braddprinter"}
-    ${myPatchElf "$LPDDIR/brprintconflsr3"}
-    ${myPatchElf "$LPDDIR/rawtobr3"}
-  '';
 
   installPhase = ''
     INFDIR=opt/brother/Printers/BrGenML1/inf
@@ -96,14 +76,34 @@ stdenv.mkDerivation rec {
       --prefix PATH ":" "${which}/bin"
   '';
 
+  dontBuild = true;
   dontPatchELF = true;
+
+  patchPhase = ''
+    INFDIR=opt/brother/Printers/BrGenML1/inf
+    LPDDIR=opt/brother/Printers/BrGenML1/lpd
+
+    # Setup max debug log by default.
+    substituteInPlace $LPDDIR/filter_BrGenML1 \
+      --replace "BR_PRT_PATH =~" "BR_PRT_PATH = \"$out/opt/brother/Printers/BrGenML1\"; #" \
+      --replace "PRINTER =~" "PRINTER = \"BrGenML1\"; #"
+
+    ${myPatchElf "$INFDIR/braddprinter"}
+    ${myPatchElf "$LPDDIR/brprintconflsr3"}
+    ${myPatchElf "$LPDDIR/rawtobr3"}
+  '';
+
+  unpackPhase = ''
+    ar x $src
+    tar xfvz data.tar.gz
+  '';
 
   meta = {
     description = "Brother BrGenML1 LPR driver";
     homepage = "http://www.brother.com";
-    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
-    platforms = lib.platforms.linux;
     license = lib.licenses.unfreeRedistributable;
+    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
     maintainers = with lib.maintainers; [ jraygauthier ];
+    platforms = lib.platforms.linux;
   };
 }

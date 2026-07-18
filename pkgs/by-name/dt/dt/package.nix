@@ -18,12 +18,11 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   nativeBuildInputs = [ zig_0_13 ];
-
   passthru.tests.version = testers.testVersion { package = finalAttrs.finalPackage; };
 
   meta = {
-    homepage = "https://dt.plumbing";
     description = "Duct tape for your unix pipes";
+
     longDescription = ''
       dt is a utility and programming language. The utility is intended for
       ergonomic in-the-shell execution. The language is straightforward (in
@@ -37,6 +36,8 @@ stdenv.mkDerivation (finalAttrs: {
       In short, dt is intended to be generally useful, with zero pretense of
       elegance.
     '';
+
+    homepage = "https://dt.plumbing";
     # TODO: uncomment when dt pushes a new release
     # changelog = "https://github.com/so-dang-cool/dt/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.bsd3;

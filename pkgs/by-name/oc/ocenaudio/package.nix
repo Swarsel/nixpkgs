@@ -2,13 +2,13 @@
   lib,
   stdenv,
   fetchurl,
-  autoPatchelfHook,
-  dpkg,
-  qt6,
-  libjack2,
   alsa-lib,
+  autoPatchelfHook,
   bzip2,
+  dpkg,
+  libjack2,
   libpulseaudio,
+  qt6,
   xz,
 }:
 
@@ -17,15 +17,10 @@ stdenv.mkDerivation (finalAttrs: {
   version = "3.20.0";
 
   src = fetchurl {
-    name = "ocenaudio.deb";
     url = "https://www.ocenaudio.com/downloads/index.php/ocenaudio_debian12.deb?version=v${finalAttrs.version}";
     hash = "sha256-iykGoFPyxJGyF4S1YjNS1XKkGrxxgK+xxA4gyVsgw8E=";
+    name = "ocenaudio.deb";
   };
-
-  autoPatchelfIgnoreMissingDeps = [
-    "libqtocenai.so.3.15"
-    "libqtocencore.so.3.15"
-  ];
 
   nativeBuildInputs = [
     autoPatchelfHook
@@ -42,9 +37,6 @@ stdenv.mkDerivation (finalAttrs: {
     libpulseaudio
   ];
 
-  dontBuild = true;
-  dontStrip = true;
-
   installPhase = ''
     runHook preInstall
 
@@ -60,12 +52,20 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  autoPatchelfIgnoreMissingDeps = [
+    "libqtocenai.so.3.15"
+    "libqtocencore.so.3.15"
+  ];
+
+  dontBuild = true;
+  dontStrip = true;
+
   meta = {
     description = "Cross-platform, easy to use, fast and functional audio editor";
     homepage = "https://www.ocenaudio.com";
-    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
     license = lib.licenses.unfree;
-    platforms = [ "x86_64-linux" ];
+    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
     maintainers = with lib.maintainers; [ onny ];
+    platforms = [ "x86_64-linux" ];
   };
 })

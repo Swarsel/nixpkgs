@@ -9,20 +9,17 @@
 buildPythonPackage rec {
   pname = "pycsspeechtts";
   version = "1.0.8";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
     hash = "sha256-kgof0T22VRU96pKAWuEBo56F6t7o2X/xRS/L5B7UYDY=";
   };
 
-  build-system = [ hatchling ];
-
-  dependencies = [ requests ];
-
   # Tests require API key and network access
   doCheck = false;
-
+  build-system = [ hatchling ];
+  dependencies = [ requests ];
+  pyproject = true;
   pythonImportsCheck = [ "pycsspeechtts" ];
 
   meta = {

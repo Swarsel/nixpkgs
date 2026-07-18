@@ -20,8 +20,8 @@ in
     services.xserver.displayManager.lightdm.greeters.tiny = {
 
       enable = mkOption {
-        type = types.bool;
         default = false;
+
         description = ''
           Whether to enable lightdm-tiny-greeter as the lightdm greeter.
 
@@ -29,32 +29,40 @@ in
           You can configure the default X session using
           [](#opt-services.displayManager.defaultSession).
         '';
-      };
 
-      label = {
-        user = mkOption {
-          type = types.str;
-          default = "Username";
-          description = ''
-            The string to represent the user_text label.
-          '';
-        };
-
-        pass = mkOption {
-          type = types.str;
-          default = "Password";
-          description = ''
-            The string to represent the pass_text label.
-          '';
-        };
+        type = types.bool;
       };
 
       extraConfig = mkOption {
-        type = types.lines;
         default = "";
+
         description = ''
           Section to describe style and ui.
         '';
+
+        type = types.lines;
+      };
+
+      label = {
+        pass = mkOption {
+          default = "Password";
+
+          description = ''
+            The string to represent the pass_text label.
+          '';
+
+          type = types.str;
+        };
+
+        user = mkOption {
+          default = "Username";
+
+          description = ''
+            The string to represent the user_text label.
+          '';
+
+          type = types.str;
+        };
       };
 
     };
@@ -63,7 +71,15 @@ in
 
   config = mkIf (ldmcfg.enable && cfg.enable) {
 
-    services.xserver.displayManager.lightdm.greeters.gtk.enable = false;
+    assertions = [
+      {
+        assertion = dmcfg.defaultSession != null;
+
+        message = ''
+          Please set: services.displayManager.defaultSession
+        '';
+      }
+    ];
 
     services.xserver.displayManager.lightdm.greeter =
       let
@@ -81,14 +97,7 @@ in
         name = "lightdm-tiny-greeter";
       };
 
-    assertions = [
-      {
-        assertion = dmcfg.defaultSession != null;
-        message = ''
-          Please set: services.displayManager.defaultSession
-        '';
-      }
-    ];
+    services.xserver.displayManager.lightdm.greeters.gtk.enable = false;
 
   };
 }

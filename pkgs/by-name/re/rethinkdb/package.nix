@@ -1,19 +1,19 @@
 {
   lib,
-  clangStdenv,
   fetchurl,
-  which,
-  m4,
-  protobuf_21,
   boost,
-  zlib,
+  cctools,
+  clangStdenv,
   curl,
-  openssl,
   icu,
   jemalloc,
-  cctools,
-  python3Packages,
+  m4,
   makeWrapper,
+  openssl,
+  protobuf_21,
+  python3Packages,
+  which,
+  zlib,
 }:
 let
   stdenv = clangStdenv;
@@ -33,17 +33,12 @@ stdenv.mkDerivation (finalAttrs: {
       --replace "gcc" "${stdenv.cc.targetPrefix}cc"
   '';
 
-  preConfigure = ''
-    export ALLOW_WARNINGS=1
-    patchShebangs .
-  '';
-
-  configureFlags = lib.optionals (!stdenv.hostPlatform.isDarwin) [
-    "--with-jemalloc"
-    "--lib-path=${jemalloc}/lib"
+  nativeBuildInputs = [
+    which
+    m4
+    python3Packages.python
+    makeWrapper
   ];
-
-  makeFlags = [ "rethinkdb" ];
 
   buildInputs = [
     protobuf_21
@@ -56,34 +51,43 @@ stdenv.mkDerivation (finalAttrs: {
   ++ lib.optional (!stdenv.hostPlatform.isDarwin) jemalloc
   ++ lib.optional stdenv.hostPlatform.isDarwin cctools;
 
-  nativeBuildInputs = [
-    which
-    m4
-    python3Packages.python
-    makeWrapper
+  configureFlags = lib.optionals (!stdenv.hostPlatform.isDarwin) [
+    "--with-jemalloc"
+    "--lib-path=${jemalloc}/lib"
   ];
 
-  enableParallelBuilding = true;
+  makeFlags = [ "rethinkdb" ];
+
+  preConfigure = ''
+    export ALLOW_WARNINGS=1
+    patchShebangs .
+  '';
 
   postInstall = ''
     wrapProgram $out/bin/rethinkdb \
       --prefix PATH ":" "${python3Packages.rethinkdb}/bin"
   '';
 
+  enableParallelBuilding = true;
+
   meta = {
     description = "Open-source distributed database built with love";
-    mainProgram = "rethinkdb";
+
     longDescription = ''
       RethinkDB is built to store JSON documents, and scale to
       multiple machines with very little effort. It has a pleasant
       query language that supports really useful queries like table
       joins and group by, and is easy to setup and learn.
     '';
+
     homepage = "https://rethinkdb.com";
     license = lib.licenses.asl20;
-    platforms = lib.platforms.unix;
+
     maintainers = with lib.maintainers; [
       thoughtpolice
     ];
+
+    platforms = lib.platforms.unix;
+    mainProgram = "rethinkdb";
   };
 })

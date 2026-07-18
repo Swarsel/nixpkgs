@@ -2,37 +2,20 @@
   lib,
   stdenv,
   fetchurl,
-  mkfontscale,
   fonttosfnt,
   libfaketime,
+  mkfontscale,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
   pname = "unifont";
   version = "17.0.05";
 
-  otf = fetchurl {
-    url = "mirror://gnu/unifont/unifont-${finalAttrs.version}/unifont-${finalAttrs.version}.otf";
-    hash = "sha256-hXAaubHiUe4W9N8AsT8i6sMR1yt9q0J6fZdf5/UGRwI=";
-  };
-
-  pcf = fetchurl {
-    url = "mirror://gnu/unifont/unifont-${finalAttrs.version}/unifont-${finalAttrs.version}.pcf.gz";
-    hash = "sha256-kld9gZ/QPhsu7IcqtFghB4qed4B6+Gp9IbbaOP72HNw=";
-  };
-
-  bdf = fetchurl {
-    url = "mirror://gnu/unifont/unifont-${finalAttrs.version}/unifont-${finalAttrs.version}.bdf.gz";
-    hash = "sha256-2wERwGbt/nWD8Nd62+y7pGPwBkOjfcO5ZRrpNJVDSH8=";
-  };
-
   nativeBuildInputs = [
     libfaketime
     fonttosfnt
     mkfontscale
   ];
-
-  dontUnpack = true;
 
   buildPhase = ''
     runHook preBuild
@@ -62,6 +45,23 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  bdf = fetchurl {
+    hash = "sha256-2wERwGbt/nWD8Nd62+y7pGPwBkOjfcO5ZRrpNJVDSH8=";
+    url = "mirror://gnu/unifont/unifont-${finalAttrs.version}/unifont-${finalAttrs.version}.bdf.gz";
+  };
+
+  dontUnpack = true;
+
+  otf = fetchurl {
+    hash = "sha256-hXAaubHiUe4W9N8AsT8i6sMR1yt9q0J6fZdf5/UGRwI=";
+    url = "mirror://gnu/unifont/unifont-${finalAttrs.version}/unifont-${finalAttrs.version}.otf";
+  };
+
+  pcf = fetchurl {
+    hash = "sha256-kld9gZ/QPhsu7IcqtFghB4qed4B6+Gp9IbbaOP72HNw=";
+    url = "mirror://gnu/unifont/unifont-${finalAttrs.version}/unifont-${finalAttrs.version}.pcf.gz";
+  };
+
   passthru.updateScript = ./update.sh;
 
   meta = {
@@ -73,10 +73,12 @@ stdenv.mkDerivation (finalAttrs: {
       gpl2Plus
       fontException
     ];
+
     maintainers = with lib.maintainers; [
       rycee
       qweered
     ];
+
     platforms = lib.platforms.all;
   };
 })

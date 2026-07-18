@@ -2,16 +2,15 @@
   lib,
   stdenv,
   fetchurl,
-  nixosTests,
-  pkg-config,
-  libjack2,
-  ncurses,
   alsa-lib,
   buildPackages,
-
+  libjack2,
+  libvorbis,
+  ncurses,
+  nixosTests,
+  pkg-config,
   ## Additional optional output modes
   enableVorbis ? false,
-  libvorbis,
 }:
 
 stdenv.mkDerivation rec {
@@ -36,6 +35,7 @@ stdenv.mkDerivation rec {
   '';
 
   nativeBuildInputs = [ pkg-config ];
+
   buildInputs = [
     libjack2
     ncurses
@@ -45,20 +45,6 @@ stdenv.mkDerivation rec {
   ]
   ++ lib.optionals enableVorbis [
     libvorbis
-  ];
-
-  enabledOutputModes = [
-    "jack"
-  ]
-  ++ lib.optionals stdenv.hostPlatform.isLinux [
-    "oss"
-    "alsa"
-  ]
-  ++ lib.optionals stdenv.hostPlatform.isDarwin [
-    "darwin"
-  ]
-  ++ lib.optionals enableVorbis [
-    "vorbis"
   ];
 
   configureFlags = [
@@ -87,10 +73,8 @@ stdenv.mkDerivation rec {
     "AR=${stdenv.cc.targetPrefix}ar"
   ];
 
-  instruments = fetchurl {
-    url = "https://courses.cs.umbc.edu/pub/midia/instruments.tar.gz";
-    sha256 = "0lsh9l8l5h46z0y8ybsjd4pf6c22n33jsjvapfv3rjlfnasnqw67";
-  };
+  # Fix build with gcc15
+  env.NIX_CFLAGS_COMPILE = "-std=gnu17";
 
   preBuild = ''
     # calcnewt has to be built with the host compiler.
@@ -98,9 +82,6 @@ stdenv.mkDerivation rec {
     # Remove dependencies of calcnewt so it doesn't try to remake it.
     sed -i 's/^\(calcnewt\$(EXEEXT):\).*/\1/g' timidity/Makefile
   '';
-
-  # Fix build with gcc15
-  env.NIX_CFLAGS_COMPILE = "-std=gnu17";
 
   # the instruments could be compressed (?)
   postInstall = ''
@@ -113,12 +94,31 @@ stdenv.mkDerivation rec {
     chmod -Rh u+rwX $out/share/timidity/
   '';
 
+  enabledOutputModes = [
+    "jack"
+  ]
+  ++ lib.optionals stdenv.hostPlatform.isLinux [
+    "oss"
+    "alsa"
+  ]
+  ++ lib.optionals stdenv.hostPlatform.isDarwin [
+    "darwin"
+  ]
+  ++ lib.optionals enableVorbis [
+    "vorbis"
+  ];
+
+  instruments = fetchurl {
+    sha256 = "0lsh9l8l5h46z0y8ybsjd4pf6c22n33jsjvapfv3rjlfnasnqw67";
+    url = "https://courses.cs.umbc.edu/pub/midia/instruments.tar.gz";
+  };
+
   passthru.tests = nixosTests.timidity;
 
   meta = {
+    description = "Software MIDI renderer";
     homepage = "https://sourceforge.net/projects/timidity/";
     license = lib.licenses.gpl2Plus;
-    description = "Software MIDI renderer";
     maintainers = [ ];
     platforms = lib.platforms.unix;
     mainProgram = "timidity";

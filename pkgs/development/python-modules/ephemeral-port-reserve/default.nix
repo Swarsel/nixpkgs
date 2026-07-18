@@ -1,8 +1,8 @@
 {
   lib,
   stdenv,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   pytestCheckHook,
 }:
 
@@ -12,7 +12,6 @@ let
 in
 buildPythonPackage {
   inherit pname version;
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "Yelp";
@@ -22,21 +21,21 @@ buildPythonPackage {
   };
 
   nativeCheckInputs = [ pytestCheckHook ];
+  __darwinAllowLocalNetworking = true;
 
   disabledTests = lib.optionals stdenv.hostPlatform.isDarwin [
     # can't find hostname in our darwin build environment
     "test_fqdn"
   ];
 
-  __darwinAllowLocalNetworking = true;
-
+  format = "setuptools";
   pythonImportsCheck = [ "ephemeral_port_reserve" ];
 
   meta = {
     description = "Find an unused port, reliably";
-    mainProgram = "ephemeral-port-reserve";
     homepage = "https://github.com/Yelp/ephemeral-port-reserve/";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ hexa ];
+    mainProgram = "ephemeral-port-reserve";
   };
 }

@@ -1,6 +1,6 @@
 {
-  fetchFromGitHub,
   lib,
+  fetchFromGitHub,
   stdenvNoCC,
   unstableGitUpdater,
 }:
@@ -38,7 +38,7 @@ stdenvNoCC.mkDerivation {
     description = "Light, clean theme for KDE Plasma desktop";
     homepage = "https://github.com/yeyushengfan258/Twilight-kde";
     license = lib.licenses.gpl3Plus;
-    platforms = lib.platforms.linux;
     maintainers = with lib.maintainers; [ dretyuiop ];
+    platforms = lib.platforms.linux;
   };
 }

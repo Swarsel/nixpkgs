@@ -1,16 +1,22 @@
 {
-  stdenvNoCC,
   makeWrapper,
   neovim,
   neovim-qt-unwrapped,
+  stdenvNoCC,
 }:
 
 let
   unwrapped = neovim-qt-unwrapped;
 in
 stdenvNoCC.mkDerivation {
+  inherit (unwrapped) meta;
   pname = "neovim-qt";
   version = unwrapped.version;
+
+  nativeBuildInputs = [
+    makeWrapper
+  ];
+
   buildCommand =
     if stdenvNoCC.hostPlatform.isDarwin then
       ''
@@ -34,13 +40,7 @@ stdenvNoCC.mkDerivation {
 
   preferLocalBuild = true;
 
-  nativeBuildInputs = [
-    makeWrapper
-  ];
-
   passthru = {
     inherit unwrapped;
   };
-
-  inherit (unwrapped) meta;
 }

@@ -3,19 +3,16 @@
   buildPythonPackage,
   fetchPypi,
   fetchpatch,
-
   # build-system
   hatchling,
-
+  pytest-cov-stub,
   # tests
   pytestCheckHook,
-  pytest-cov-stub,
 }:
 
 buildPythonPackage rec {
   pname = "expandvars";
   version = "1.1.2";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
@@ -24,20 +21,21 @@ buildPythonPackage rec {
 
   patches = [
     (fetchpatch {
+      hash = "sha256-raO5dGbcXb0adUCeHmnWp49vpIMllRW9Ow8rG4OH+Hs=";
       name = "pytest9-compat.patch";
       url = "https://github.com/sayanarijit/expandvars/commit/0ab5747185be9135b0711e72fc64dfa6a33f3fd3.patch";
-      hash = "sha256-raO5dGbcXb0adUCeHmnWp49vpIMllRW9Ow8rG4OH+Hs=";
     })
   ];
 
   nativeBuildInputs = [ hatchling ];
 
-  pythonImportsCheck = [ "expandvars" ];
-
   nativeCheckInputs = [
     pytestCheckHook
     pytest-cov-stub
   ];
+
+  pyproject = true;
+  pythonImportsCheck = [ "expandvars" ];
 
   meta = {
     description = "Expand system variables Unix style";

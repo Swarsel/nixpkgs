@@ -9,12 +9,13 @@
 buildPythonPackage rec {
   pname = "safehttpx";
   version = "0.1.7";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
     hash = "sha256-2yAcCXjEHt24u0gPPu5Z3WcwT92RZGA16dmnIASanSM=";
   };
+
+  doCheck = false; # require network access
 
   build-system = [
     hatchling
@@ -24,9 +25,8 @@ buildPythonPackage rec {
     httpx
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "safehttpx" ];
-
-  doCheck = false; # require network access
 
   meta = {
     description = "SSRF-safe wrapper around httpx";

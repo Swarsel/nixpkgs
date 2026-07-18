@@ -1,20 +1,19 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
-  setuptools-scm,
+  buildPythonPackage,
   grpcio,
   grpcio-reflection,
   protobuf,
-  pytestCheckHook,
   pytest-grpc,
+  pytestCheckHook,
+  setuptools,
+  setuptools-scm,
 }:
 
 buildPythonPackage rec {
   pname = "yagrc";
   version = "1.1.3";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "sparky8512";
@@ -22,6 +21,14 @@ buildPythonPackage rec {
     tag = "v${version}";
     hash = "sha256-7Bfelh4U/TyKkFzu/orBZ2BwI3CrXMgfzh9psTgF4vQ=";
   };
+
+  # tests fail due to pytest-grpc compatibility issues with newer grpcio versions
+  doCheck = false;
+
+  nativeCheckInputs = [
+    pytestCheckHook
+    pytest-grpc
+  ];
 
   build-system = [
     setuptools
@@ -34,14 +41,7 @@ buildPythonPackage rec {
     protobuf
   ];
 
-  nativeCheckInputs = [
-    pytestCheckHook
-    pytest-grpc
-  ];
-
-  # tests fail due to pytest-grpc compatibility issues with newer grpcio versions
-  doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "yagrc" ];
 
   meta = {

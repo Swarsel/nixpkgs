@@ -1,10 +1,10 @@
 {
   lib,
-  gcc15Stdenv,
   fetchFromGitHub,
   cmake,
-  pkg-config,
+  gcc15Stdenv,
   hyprutils,
+  pkg-config,
 }:
 
 gcc15Stdenv.mkDerivation (finalAttrs: {
@@ -18,6 +18,11 @@ gcc15Stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-ZGzcH3gKD9nj8oDLV1+o6ice6kMHZRXkNx24cfyPkRs=";
   };
 
+  outputs = [
+    "out"
+    "dev"
+  ];
+
   nativeBuildInputs = [
     cmake
     pkg-config
@@ -27,19 +32,13 @@ gcc15Stdenv.mkDerivation (finalAttrs: {
     hyprutils
   ];
 
-  outputs = [
-    "out"
-    "dev"
-  ];
-
   doCheck = true;
-
   cmakeBuildType = "RelWithDebInfo";
   separateDebugInfo = true;
 
   meta = {
-    homepage = "https://github.com/hyprwm/hyprlang";
     description = "Official implementation library for the hypr config language";
+    homepage = "https://github.com/hyprwm/hyprlang";
     license = lib.licenses.lgpl3Only;
     platforms = lib.platforms.all;
     teams = [ lib.teams.hyprland ];

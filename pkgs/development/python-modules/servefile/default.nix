@@ -1,8 +1,8 @@
 {
-  buildPythonPackage,
-  fetchFromGitHub,
-  legacy-cgi,
   lib,
+  fetchFromGitHub,
+  buildPythonPackage,
+  legacy-cgi,
   pyopenssl,
   pytestCheckHook,
   requests,
@@ -11,7 +11,6 @@
 buildPythonPackage rec {
   pname = "servefile";
   version = "0.5.4";
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "sebageek";
@@ -20,15 +19,16 @@ buildPythonPackage rec {
     hash = "sha256-hIqXwhmvstCslsCO973oK5FF2c8gZJ0wNUI/z8W+OjU=";
   };
 
+  nativeCheckInputs = [
+    pytestCheckHook
+    requests
+  ];
+
   dependencies = [
     legacy-cgi
     pyopenssl
   ];
 
-  nativeCheckInputs = [
-    pytestCheckHook
-    requests
-  ];
   # Test attempts to connect to a port on localhost which fails in nix build
   # environment.
   disabledTests = [
@@ -41,13 +41,15 @@ buildPythonPackage rec {
     "test_upload_size_limit"
     "test_upload"
   ];
+
+  format = "setuptools";
   pythonImportsCheck = [ "servefile" ];
 
   meta = {
     description = "Serve files from shell via a small HTTP server";
-    mainProgram = "servefile";
     homepage = "https://github.com/sebageek/servefile";
     license = lib.licenses.gpl3Plus;
     maintainers = with lib.maintainers; [ samuela ];
+    mainProgram = "servefile";
   };
 }

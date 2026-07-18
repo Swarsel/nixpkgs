@@ -2,29 +2,41 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  rocmUpdateScript,
-  cmake,
-  rocm-cmake,
   clr,
+  cmake,
   gfortran,
-  hipblas-common,
-  rocblas,
-  rocsolver,
-  rocsparse,
-  rocprim,
   gtest,
-  lapack-reference,
-  buildTests ? false,
-  buildBenchmarks ? false,
-  buildSamples ? false,
   # for passthru.tests
   hipblas,
+  hipblas-common,
+  lapack-reference,
+  rocblas,
+  rocm-cmake,
+  rocmUpdateScript,
+  rocprim,
+  rocsolver,
+  rocsparse,
+  buildBenchmarks ? false,
+  buildSamples ? false,
+  buildTests ? false,
 }:
 
 # Can also use cuBLAS
 stdenv.mkDerivation (finalAttrs: {
   pname = "hipblas";
   version = "7.2.3";
+
+  src = fetchFromGitHub {
+    owner = "ROCm";
+    repo = "rocm-libraries";
+    rev = "rocm-${finalAttrs.version}";
+    hash = "sha256-1+aNDotV5liHBnGddmWtaKYCcsWPxQD3AoEubnghV0M=";
+
+    sparseCheckout = [
+      "projects/hipblas"
+      "shared"
+    ];
+  };
 
   outputs = [
     "out"
@@ -39,18 +51,6 @@ stdenv.mkDerivation (finalAttrs: {
     "sample"
   ];
 
-  src = fetchFromGitHub {
-    owner = "ROCm";
-    repo = "rocm-libraries";
-    rev = "rocm-${finalAttrs.version}";
-    sparseCheckout = [
-      "projects/hipblas"
-      "shared"
-    ];
-    hash = "sha256-1+aNDotV5liHBnGddmWtaKYCcsWPxQD3AoEubnghV0M=";
-  };
-  sourceRoot = "${finalAttrs.src.name}/projects/hipblas";
-
   postPatch = ''
     substituteInPlace library/CMakeLists.txt \
       --replace-fail "find_package(Git REQUIRED)" ""
@@ -62,8 +62,6 @@ stdenv.mkDerivation (finalAttrs: {
     clr
     gfortran
   ];
-
-  propagatedBuildInputs = [ hipblas-common ];
 
   buildInputs = [
     rocblas
@@ -77,6 +75,8 @@ stdenv.mkDerivation (finalAttrs: {
   ++ lib.optionals (buildTests || buildBenchmarks) [
     lapack-reference
   ];
+
+  propagatedBuildInputs = [ hipblas-common ];
 
   cmakeFlags = [
     "-DCMAKE_CXX_COMPILER=${lib.getExe' clr "amdclang++"}"
@@ -115,18 +115,21 @@ stdenv.mkDerivation (finalAttrs: {
       rmdir $out/bin
     '';
 
-  passthru.updateScript = rocmUpdateScript { inherit finalAttrs; };
+  sourceRoot = "${finalAttrs.src.name}/projects/hipblas";
+
   passthru.tests.hipblas-tested = hipblas.override {
-    buildTests = true;
     buildBenchmarks = true;
     buildSamples = true;
+    buildTests = true;
   };
+
+  passthru.updateScript = rocmUpdateScript { inherit finalAttrs; };
 
   meta = {
     description = "ROCm BLAS marshalling library";
     homepage = "https://github.com/ROCm/rocm-libraries/tree/develop/projects/hipblas";
     license = with lib.licenses; [ mit ];
-    teams = [ lib.teams.rocm ];
     platforms = lib.platforms.linux;
+    teams = [ lib.teams.rocm ];
   };
 })

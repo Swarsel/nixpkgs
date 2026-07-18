@@ -1,7 +1,7 @@
 {
   lib,
-  stdenvNoCC,
   fetchFromGitHub,
+  stdenvNoCC,
   woff2,
 }:
 
@@ -40,10 +40,10 @@ stdenvNoCC.mkDerivation (finalAttrs: {
   '';
 
   meta = {
-    homepage = "https://github.com/excalidraw/virgil";
     description = "Font that powers Excalidraw";
-    platforms = lib.platforms.all;
-    maintainers = [ ];
+    homepage = "https://github.com/excalidraw/virgil";
     license = lib.licenses.ofl;
+    maintainers = [ ];
+    platforms = lib.platforms.all;
   };
 })

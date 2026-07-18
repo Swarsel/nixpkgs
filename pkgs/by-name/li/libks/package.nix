@@ -2,15 +2,15 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  fetchpatch,
   cmake,
   ctestCheckHook,
-  pkg-config,
-  libuuid,
-  openssl,
-  libossp_uuid,
+  fetchpatch,
   freeswitch,
+  libossp_uuid,
+  libuuid,
   nix-update-script,
+  openssl,
+  pkg-config,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -26,12 +26,10 @@ stdenv.mkDerivation (finalAttrs: {
 
   patches = [
     (fetchpatch {
-      url = "https://raw.githubusercontent.com/openwrt/telephony/5ced7ea4fc9bd746273d564bf3c102f253d2182e/libs/libks/patches/01-find-libm.patch";
       sha256 = "1hyrsdxg69d08qzvf3mbrx2363lw52jcybw8i3ynzqcl228gcg8a";
+      url = "https://raw.githubusercontent.com/openwrt/telephony/5ced7ea4fc9bd746273d564bf3c102f253d2182e/libs/libks/patches/01-find-libm.patch";
     })
   ];
-
-  dontUseCmakeBuildDir = true;
 
   nativeBuildInputs = [
     cmake
@@ -44,11 +42,14 @@ stdenv.mkDerivation (finalAttrs: {
   ++ lib.optional stdenv.hostPlatform.isLinux libuuid
   ++ lib.optional stdenv.hostPlatform.isDarwin libossp_uuid;
 
+  doCheck = stdenv.buildPlatform.canExecute stdenv.hostPlatform;
+
   nativeCheckInputs = [
     ctestCheckHook
   ];
 
-  doCheck = stdenv.buildPlatform.canExecute stdenv.hostPlatform;
+  # Some tests require this on Darwin
+  __darwinAllowLocalNetworking = true;
 
   disabledTests = [
     # Runs into certificate error on aarch64
@@ -60,11 +61,9 @@ stdenv.mkDerivation (finalAttrs: {
     "testthreadmutex"
   ];
 
+  dontUseCmakeBuildDir = true;
   # Something seems to go wrong with testwebsock2 when using parallelism
   enableParallelChecking = false;
-
-  # Some tests require this on Darwin
-  __darwinAllowLocalNetworking = true;
 
   passthru = {
     tests.freeswitch = freeswitch;
@@ -74,9 +73,9 @@ stdenv.mkDerivation (finalAttrs: {
   meta = {
     description = "Foundational support for signalwire C products";
     homepage = "https://github.com/signalwire/libks";
-    maintainers = with lib.maintainers; [ misuzu ];
-    teams = [ lib.teams.ngi ];
-    platforms = lib.platforms.unix;
     license = lib.licenses.mit;
+    maintainers = with lib.maintainers; [ misuzu ];
+    platforms = lib.platforms.unix;
+    teams = [ lib.teams.ngi ];
   };
 })

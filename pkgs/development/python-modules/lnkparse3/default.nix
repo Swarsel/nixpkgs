@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   pytestCheckHook,
   pyyaml,
   setuptools,
@@ -10,7 +10,6 @@
 buildPythonPackage rec {
   pname = "lnkparse3";
   version = "1.6.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "Matmaus";
@@ -19,12 +18,10 @@ buildPythonPackage rec {
     hash = "sha256-nTU6FMHM0hRwHBgszixZLArbhKKJmtwUXZC8ZW1KOvk=";
   };
 
-  build-system = [ setuptools ];
-
-  dependencies = [ pyyaml ];
-
   nativeCheckInputs = [ pytestCheckHook ];
-
+  build-system = [ setuptools ];
+  dependencies = [ pyyaml ];
+  pyproject = true;
   pythonImportsCheck = [ "LnkParse3" ];
 
   meta = {

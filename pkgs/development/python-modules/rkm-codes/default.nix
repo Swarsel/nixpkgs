@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   flit-core,
   setuptools,
 }:
@@ -9,7 +9,6 @@
 buildPythonPackage rec {
   pname = "rkm-codes";
   version = "1.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "KenKundert";
@@ -19,7 +18,6 @@ buildPythonPackage rec {
   };
 
   nativeBuildInputs = [ flit-core ];
-
   propagatedBuildInputs = [ setuptools ];
 
   # this has a circular dependency on quantiphy
@@ -29,9 +27,9 @@ buildPythonPackage rec {
 
   # this import check will fail as quantiphy is imported by this package
   # pythonImportsCheck = [ "rkm_codes" ];
-
   # tests require quantiphy import
   doCheck = false;
+  pyproject = true;
 
   meta = {
     description = "QuantiPhy support for RKM codes";

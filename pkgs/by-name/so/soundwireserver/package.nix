@@ -1,10 +1,10 @@
 {
   lib,
-  stdenvNoCC,
-  qt5,
   autoPatchelfHook,
   fetchzip,
   portaudio,
+  qt5,
+  stdenvNoCC,
 }:
 
 stdenvNoCC.mkDerivation {
@@ -34,9 +34,9 @@ stdenvNoCC.mkDerivation {
   meta = {
     description = "Turn your Android device into wireless headphones / wireless speaker";
     homepage = "https://georgielabs.net/";
+    license = lib.licenses.unfree;
+    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
     maintainers = with lib.maintainers; [ mkg20001 ];
     platforms = [ "x86_64-linux" ];
-    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
-    license = lib.licenses.unfree;
   };
 }

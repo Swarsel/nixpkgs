@@ -1,12 +1,11 @@
 {
   lib,
-  python3Packages,
   fetchFromGitHub,
+  python3Packages,
 }:
 python3Packages.buildPythonApplication (finalAttrs: {
   pname = "imapdedup";
   version = "1.2";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "quentinsf";
@@ -15,17 +14,16 @@ python3Packages.buildPythonApplication (finalAttrs: {
     hash = "sha256-CmWkLz9hdmedUxcojmUVTkPjqpaMmtEeHnF7aglKR+s=";
   };
 
-  build-system = with python3Packages; [ hatchling ];
-
   doCheck = false; # no tests
-
+  build-system = with python3Packages; [ hatchling ];
+  pyproject = true;
   pythonImportsCheck = [ "imapdedup" ];
 
   meta = {
     description = "Duplicate email message remover";
     homepage = "https://github.com/quentinsf/IMAPdedup";
-    maintainers = with lib.maintainers; [ sigmanificient ];
     license = with lib.licenses; [ gpl2Only ];
+    maintainers = with lib.maintainers; [ sigmanificient ];
     mainProgram = "imapdedup";
   };
 })

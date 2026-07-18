@@ -1,18 +1,18 @@
 {
-  stdenv,
   lib,
-  buildPythonPackage,
+  stdenv,
   fetchFromGitHub,
-  cmake,
-  ninja,
-  scikit-build-core,
   boost,
-  eigen,
-  python,
+  buildPythonPackage,
   catch2,
+  cmake,
+  eigen,
+  makeSetupHook,
+  ninja,
   numpy,
   pytest,
-  makeSetupHook,
+  python,
+  scikit-build-core,
   # Build tests to verify cross-compilation works, but only when CPU bit
   # depth matches (otherwise Python headers cause LONG_BIT mismatch errors)
   buildTests ? stdenv.hostPlatform.parsed.cpu.bits == stdenv.buildPlatform.parsed.cpu.bits,
@@ -20,19 +20,20 @@
 let
   setupHook = makeSetupHook {
     name = "pybind11-setup-hook";
+
     substitutions = {
       out = placeholder "out";
-      pythonInterpreter = python.pythonOnBuildForHost.interpreter;
       pythonIncludeDir = "${python}/include/${python.libPrefix}";
+      pythonInterpreter = python.pythonOnBuildForHost.interpreter;
       pythonSitePackages = "${python}/${python.sitePackages}";
     };
+
     meta.license = lib.licenses.mit;
   } ./setup-hook.sh;
 in
 buildPythonPackage (finalAttrs: {
   pname = "pybind11";
   version = "3.0.4";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "pybind";
@@ -41,28 +42,10 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-QZKnIOopEDsiRFkc1qQ+DaDHoTNuEEgQVeiAL0sQqak=";
   };
 
-  build-system = [
-    cmake
-    ninja
-    finalAttrs.passthru.scikit-build-core-no-tests
-  ];
-
   buildInputs = lib.optionals buildTests [
     catch2
     boost
     eigen
-  ];
-
-  propagatedNativeBuildInputs = [ setupHook ];
-
-  nativeCheckInputs = [
-    numpy
-    pytest
-  ];
-
-  pypaBuildFlags = [
-    # Keep the build directory around to run the tests.
-    "-Cbuild-dir=build"
   ];
 
   cmakeFlags = [
@@ -73,14 +56,10 @@ buildPythonPackage (finalAttrs: {
     (lib.cmakeBool "PYBIND11_NOPYTHON" (!buildTests))
   ];
 
-  dontUseCmakeConfigure = true;
-
-  ninjaFlags = [
-    "-C"
-    "build"
+  nativeCheckInputs = [
+    numpy
+    pytest
   ];
-
-  checkTarget = "check";
 
   checkPhase = "ninjaCheckPhase";
 
@@ -90,6 +69,30 @@ buildPythonPackage (finalAttrs: {
   postInstall = ''
     ln -s $out/${python.sitePackages}/pybind11/{include,share} $out/
   '';
+
+  build-system = [
+    cmake
+    ninja
+    finalAttrs.passthru.scikit-build-core-no-tests
+  ];
+
+  checkTarget = "check";
+  dontUseCmakeConfigure = true;
+  hardeningDisable = lib.optional stdenv.hostPlatform.isMusl "fortify";
+
+  ninjaFlags = [
+    "-C"
+    "build"
+  ];
+
+  propagatedNativeBuildInputs = [ setupHook ];
+
+  pypaBuildFlags = [
+    # Keep the build directory around to run the tests.
+    "-Cbuild-dir=build"
+  ];
+
+  pyproject = true;
 
   passthru = {
     # scikit-build-core's tests depend upon pybind11, and hence introduce
@@ -101,22 +104,24 @@ buildPythonPackage (finalAttrs: {
     };
   };
 
-  hardeningDisable = lib.optional stdenv.hostPlatform.isMusl "fortify";
-
   meta = {
-    homepage = "https://github.com/pybind/pybind11";
-    changelog = "https://github.com/pybind/pybind11/blob/${finalAttrs.src.tag}/docs/changelog.md";
     description = "Seamless operability between C++11 and Python";
-    mainProgram = "pybind11-config";
+
     longDescription = ''
       Pybind11 is a lightweight header-only library that exposes
       C++ types in Python and vice versa, mainly to create Python
       bindings of existing C++ code.
     '';
+
+    homepage = "https://github.com/pybind/pybind11";
+    changelog = "https://github.com/pybind/pybind11/blob/${finalAttrs.src.tag}/docs/changelog.md";
     license = lib.licenses.bsd3;
+
     maintainers = with lib.maintainers; [
       yuriaisaka
       dotlambda
     ];
+
+    mainProgram = "pybind11-config";
   };
 })

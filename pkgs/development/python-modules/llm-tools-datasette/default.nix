@@ -1,20 +1,19 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
+  buildPythonPackage,
   llm,
-  llm-tools-datasette,
   llm-echo,
-  pytestCheckHook,
+  llm-tools-datasette,
   pytest-httpx,
+  pytestCheckHook,
+  setuptools,
   writableTmpDirAsHomeHook,
 }:
 
 buildPythonPackage rec {
   pname = "llm-tools-datasette";
   version = "0.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "simonw";
@@ -23,10 +22,6 @@ buildPythonPackage rec {
     hash = "sha256-Us9bPk2qpTlgJqQ0Cl9QdeqW+h8j+pmnkriM0WXEyyA=";
   };
 
-  build-system = [ setuptools ];
-
-  dependencies = [ llm ];
-
   nativeCheckInputs = [
     llm-echo
     pytestCheckHook
@@ -34,8 +29,10 @@ buildPythonPackage rec {
     writableTmpDirAsHomeHook
   ];
 
+  build-system = [ setuptools ];
+  dependencies = [ llm ];
+  pyproject = true;
   pythonImportsCheck = [ "llm_tools_datasette" ];
-
   passthru.tests = llm.mkPluginTest llm-tools-datasette;
 
   meta = {

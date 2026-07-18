@@ -1,9 +1,9 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
-  versionCheckHook,
+  buildGoModule,
   nix-update-script,
+  versionCheckHook,
 }:
 
 buildGoModule (finalAttrs: {
@@ -18,6 +18,9 @@ buildGoModule (finalAttrs: {
   };
 
   vendorHash = "sha256-J1hC4hdEKLENXLJrsyV41TaJ9+2CuPz5KoIMm2mXvTE=";
+  doInstallCheck = true;
+  nativeInstallCheckInputs = [ versionCheckHook ];
+  __darwinAllowLocalNetworking = true;
 
   ldflags = [
     "-s"
@@ -27,19 +30,14 @@ buildGoModule (finalAttrs: {
     "-X=main.date=1970-01-01T00:00:00Z"
   ];
 
-  __darwinAllowLocalNetworking = true;
-
-  doInstallCheck = true;
-  nativeInstallCheckInputs = [ versionCheckHook ];
-
   passthru.updateScript = nix-update-script { };
 
   meta = {
-    changelog = "https://github.com/github/github-mcp-server/releases/tag/v${finalAttrs.version}";
     description = "GitHub's official MCP Server";
     homepage = "https://github.com/github/github-mcp-server";
+    changelog = "https://github.com/github/github-mcp-server/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.mit;
-    mainProgram = "github-mcp-server";
     maintainers = with lib.maintainers; [ logger ];
+    mainProgram = "github-mcp-server";
   };
 })

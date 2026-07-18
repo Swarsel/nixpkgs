@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule (finalAttrs: {
@@ -16,7 +16,6 @@ buildGoModule (finalAttrs: {
   };
 
   vendorHash = "sha256-4mm28T6nWTe3UvwGJ1S7s09ZSRZjm6TGcTD13vazUa4=";
-
   __structuredAttrs = true;
 
   meta = {
@@ -24,8 +23,8 @@ buildGoModule (finalAttrs: {
     homepage = "https://github.com/truenas/truenas_incus_ctl";
     changelog = "https://github.com/truenas/truenas_incus_ctl/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.asl20;
-    platforms = lib.platforms.linux;
     maintainers = with lib.maintainers; [ ysnt-yes ];
+    platforms = lib.platforms.linux;
     mainProgram = "truenas_incus_ctl";
   };
 })

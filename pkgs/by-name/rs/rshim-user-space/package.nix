@@ -1,14 +1,15 @@
 {
+  lib,
+  stdenv,
+  fetchFromGitHub,
   autoconf,
   automake,
   bashNonInteractive,
   coreutils,
-  fetchFromGitHub,
   fuse3,
   gawk,
   gnugrep,
   gnused,
-  lib,
   libusb1,
   makeBinaryWrapper,
   pciutils,
@@ -16,7 +17,6 @@
   pkg-config,
   procps,
   pv,
-  stdenv,
   systemd,
   util-linux,
   which,
@@ -34,6 +34,18 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-2Hu5ysjh38dBaGeZirke+qMb6jw+6sTh8qd4LPei5ms=";
   };
 
+  patches = [
+    # https://github.com/Mellanox/rshim-user-space/pull/391
+    # Avoid nested PKG_CHECK_MODULES which leaks help text into ./configure
+    # as bare shell, producing "fuse_CFLAGS: command not found" noise.
+    ./fix-fuse-3-support.patch
+    # https://github.com/Mellanox/rshim-user-space/pull/363
+    # Fix console handling under glibc >= 2.42 where struct termio was removed.
+    ./fix-console-handling.patch
+  ];
+
+  strictDeps = true;
+
   nativeBuildInputs = [
     autoconf
     automake
@@ -47,25 +59,6 @@ stdenv.mkDerivation (finalAttrs: {
     pciutils
     systemd
   ];
-
-  patches = [
-    # https://github.com/Mellanox/rshim-user-space/pull/391
-    # Avoid nested PKG_CHECK_MODULES which leaks help text into ./configure
-    # as bare shell, producing "fuse_CFLAGS: command not found" noise.
-    ./fix-fuse-3-support.patch
-    # https://github.com/Mellanox/rshim-user-space/pull/363
-    # Fix console handling under glibc >= 2.42 where struct termio was removed.
-    ./fix-console-handling.patch
-  ];
-
-  prePatch = ''
-    patchShebangs scripts/bfb-install
-    patchShebangs scripts/bf-reg
-    substituteInPlace scripts/bfb-install \
-      --replace-fail 'bf-reg' "${placeholder "out"}/bin/bf-reg"
-  '';
-
-  strictDeps = true;
 
   preConfigure = "./bootstrap.sh";
 
@@ -98,8 +91,16 @@ stdenv.mkDerivation (finalAttrs: {
       }
   '';
 
+  prePatch = ''
+    patchShebangs scripts/bfb-install
+    patchShebangs scripts/bf-reg
+    substituteInPlace scripts/bfb-install \
+      --replace-fail 'bf-reg' "${placeholder "out"}/bin/bf-reg"
+  '';
+
   meta = {
     description = "User-space rshim driver for the BlueField SoC";
+
     longDescription = ''
       The rshim driver provides a way to access the rshim resources on the
       BlueField target from external host machine. The current version
@@ -107,11 +108,14 @@ stdenv.mkDerivation (finalAttrs: {
       It also creates virtual network interface to connect to the BlueField
       target and provides a way to access the internal rshim registers.
     '';
+
     homepage = "https://github.com/Mellanox/rshim-user-space";
     license = lib.licenses.gpl2Only;
-    platforms = lib.platforms.linux;
+
     maintainers = with lib.maintainers; [
       thillux
     ];
+
+    platforms = lib.platforms.linux;
   };
 })

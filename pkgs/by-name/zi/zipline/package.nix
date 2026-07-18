@@ -2,33 +2,33 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  pnpm_10,
   fetchPnpmDeps,
-  pnpmConfigHook,
-  nodejs_24,
-  makeWrapper,
-  prisma-engines_6,
   ffmpeg,
-  openssl,
-  vips,
-  versionCheckHook,
+  makeWrapper,
   nix-update-script,
   nixosTests,
   node-gyp,
+  nodejs_24,
+  openssl,
   pkg-config,
+  pnpmConfigHook,
+  pnpm_10,
+  prisma-engines_6,
   python3,
+  versionCheckHook,
+  vips,
 }:
 
 let
   environment = {
-    NEXT_TELEMETRY_DISABLED = "1";
     FFMPEG_PATH = lib.getExe ffmpeg;
     FFPROBE_PATH = lib.getExe' ffmpeg "ffprobe";
-    PRISMA_SCHEMA_ENGINE_BINARY = lib.getExe' prisma-engines_6 "schema-engine";
+    NEXT_TELEMETRY_DISABLED = "1";
+    PRISMA_FMT_BINARY = lib.getExe' prisma-engines_6 "prisma-fmt";
+    PRISMA_INTROSPECTION_ENGINE_BINARY = lib.getExe' prisma-engines_6 "introspection-engine";
     PRISMA_QUERY_ENGINE_BINARY = lib.getExe' prisma-engines_6 "query-engine";
     PRISMA_QUERY_ENGINE_LIBRARY = "${prisma-engines_6}/lib/libquery_engine.node";
-    PRISMA_INTROSPECTION_ENGINE_BINARY = lib.getExe' prisma-engines_6 "introspection-engine";
-    PRISMA_FMT_BINARY = lib.getExe' prisma-engines_6 "prisma-fmt";
+    PRISMA_SCHEMA_ENGINE_BINARY = lib.getExe' prisma-engines_6 "schema-engine";
   };
 
   pnpm' = pnpm_10.override { nodejs-slim = nodejs_24; };
@@ -44,23 +44,12 @@ stdenv.mkDerivation (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-feGsg481S+LShOIE0JMHsCkIShQk+cYvfQUYupQnJp0=";
     leaveDotGit = true;
+
     postFetch = ''
       git -C $out rev-parse --short HEAD > $out/.git_head
       rm -rf $out/.git
     '';
   };
-
-  pnpmDeps = fetchPnpmDeps {
-    inherit (finalAttrs) pname version src;
-    pnpm = pnpm';
-    fetcherVersion = 3;
-    hash = "sha256-iaC3jJ2+oLY3ycTBE01HzrDhBN9MpvgDFOyjzy2LLAo=";
-  };
-
-  buildInputs = [
-    openssl
-    vips
-  ];
 
   nativeBuildInputs = [
     pnpmConfigHook
@@ -71,6 +60,11 @@ stdenv.mkDerivation (finalAttrs: {
     node-gyp
     pkg-config
     python3
+  ];
+
+  buildInputs = [
+    openssl
+    vips
   ];
 
   env = environment // {
@@ -122,10 +116,18 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
-  nativeInstallCheckInputs = [ versionCheckHook ];
-  versionCheckProgram = "${placeholder "out"}/bin/ziplinectl";
-  versionCheckKeepEnvironment = [ "DATABASE_URL" ];
   doInstallCheck = true;
+  nativeInstallCheckInputs = [ versionCheckHook ];
+
+  pnpmDeps = fetchPnpmDeps {
+    inherit (finalAttrs) pname version src;
+    fetcherVersion = 3;
+    hash = "sha256-iaC3jJ2+oLY3ycTBE01HzrDhBN9MpvgDFOyjzy2LLAo=";
+    pnpm = pnpm';
+  };
+
+  versionCheckKeepEnvironment = [ "DATABASE_URL" ];
+  versionCheckProgram = "${placeholder "out"}/bin/ziplinectl";
 
   passthru = {
     prisma-engines = prisma-engines_6;
@@ -136,11 +138,11 @@ stdenv.mkDerivation (finalAttrs: {
   meta = {
     description = "ShareX/file upload server that is easy to use, packed with features, and with an easy setup";
     homepage = "https://zipline.diced.sh/";
-    downloadPage = "https://github.com/diced/zipline";
     changelog = "https://github.com/diced/zipline/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ defelo ];
-    mainProgram = "zipline";
     platforms = lib.platforms.linux;
+    mainProgram = "zipline";
+    downloadPage = "https://github.com/diced/zipline";
   };
 })

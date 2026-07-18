@@ -1,25 +1,21 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
+  buildPythonPackage,
   # build
   hatchling,
-
-  # runtime
-  terminado,
-
   # tests
   pytest-jupyter,
   pytest-timeout,
   pytestCheckHook,
+  # runtime
+  terminado,
 }:
 
 let
   self = buildPythonPackage rec {
     pname = "jupyter-server-terminals";
     version = "0.5.4";
-    pyproject = true;
 
     src = fetchFromGitHub {
       owner = "jupyter-server";
@@ -29,9 +25,7 @@ let
     };
 
     nativeBuildInputs = [ hatchling ];
-
     propagatedBuildInputs = [ terminado ];
-
     doCheck = false; # infinite recursion
 
     nativeCheckInputs = [
@@ -41,6 +35,8 @@ let
     ]
     ++ pytest-jupyter.optional-dependencies.server;
 
+    pyproject = true;
+
     passthru.tests = {
       check = self.overridePythonAttrs (_: {
         doCheck = true;
@@ -48,9 +44,9 @@ let
     };
 
     meta = {
-      changelog = "https://github.com/jupyter-server/jupyter_server_terminals/releases/tag/${src.tag}";
       description = "Jupyter Server Extension Providing Support for Terminals";
       homepage = "https://github.com/jupyter-server/jupyter_server_terminals";
+      changelog = "https://github.com/jupyter-server/jupyter_server_terminals/releases/tag/${src.tag}";
       license = lib.licenses.bsd3;
       maintainers = [ ];
     };

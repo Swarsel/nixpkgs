@@ -6,17 +6,15 @@
 }:
 
 buildDunePackage {
-  pname = "dune-site";
   inherit (dune) src version;
-
+  pname = "dune-site";
+  propagatedBuildInputs = [ dune-private-libs ];
   dontAddPrefix = true;
 
-  propagatedBuildInputs = [ dune-private-libs ];
-
   meta = {
-    description = "Library for embedding location information inside executable and libraries";
     inherit (dune.meta) homepage;
-    maintainers = [ ];
+    description = "Library for embedding location information inside executable and libraries";
     license = lib.licenses.mit;
+    maintainers = [ ];
   };
 }

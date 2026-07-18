@@ -18,8 +18,6 @@ stdenv.mkDerivation (finalAttrs: {
   nativeBuildInputs = [ makeWrapper ];
   buildInputs = [ jre ];
 
-  dontUnpack = true;
-
   installPhase = ''
     mkdir -p $out/libexec/quantomatic
     cp $src $out/libexec/quantomatic/quantomatic.jar
@@ -27,13 +25,15 @@ stdenv.mkDerivation (finalAttrs: {
     makeWrapper ${jre}/bin/java $out/bin/quantomatic --add-flags "-jar $out/libexec/quantomatic/quantomatic.jar"
   '';
 
+  dontUnpack = true;
+
   meta = {
     description = "Piece of software for reasoning about monoidal theories; in particular, quantum information processing";
-    mainProgram = "quantomatic";
-    license = lib.licenses.gpl3;
     homepage = "https://quantomatic.github.io/";
+    license = lib.licenses.gpl3;
     sourceProvenance = with lib.sourceTypes; [ binaryBytecode ];
     maintainers = with lib.maintainers; [ nickhu ];
     platforms = lib.platforms.all;
+    mainProgram = "quantomatic";
   };
 })

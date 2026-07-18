@@ -16,22 +16,13 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-Y08jyMTR1EAEO+D+ko3fkEYmKJ6Xv+fFgm6TqvLMb+k=";
   };
 
-  patches = [
-    ./fix-ar-ranlib.patch
-  ];
-
   outputs = [
     "out"
     "man"
   ];
 
-  sourceRoot = "admin/${finalAttrs.pname}-${finalAttrs.version}";
-
-  doCheck = true;
-
-  buildInputs = lib.optionals static [
-    stdenv.cc.libc
-    stdenv.cc.libc.static
+  patches = [
+    ./fix-ar-ranlib.patch
   ];
 
   postPatch = ''
@@ -44,7 +35,10 @@ stdenv.mkDerivation (finalAttrs: {
     sed -i 's,-static,,g' src/Makefile
   '';
 
-  enableParallelBuilding = true;
+  buildInputs = lib.optionals static [
+    stdenv.cc.libc
+    stdenv.cc.libc.static
+  ];
 
   preBuild = ''
     cd src
@@ -54,6 +48,8 @@ stdenv.mkDerivation (finalAttrs: {
     echo ${stdenv.cc.targetPrefix}cc ${lib.optionalString stdenv.hostPlatform.isDarwin "-Xlinker -x "}> conf-ld
   '';
 
+  doCheck = true;
+
   installPhase = ''
     mkdir -p $out/bin
     cp -t $out/bin $(< ../package/commands)
@@ -62,10 +58,13 @@ stdenv.mkDerivation (finalAttrs: {
     cp -r ../man $man/share/man/man8
   '';
 
+  enableParallelBuilding = true;
+  sourceRoot = "admin/${finalAttrs.pname}-${finalAttrs.version}";
+
   meta = {
     description = "UNIX init scheme with service supervision";
-    license = lib.licenses.bsd3;
     homepage = "http://smarden.org/runit";
+    license = lib.licenses.bsd3;
     maintainers = [ ];
     platforms = lib.platforms.linux ++ lib.platforms.darwin;
     mainProgram = "runit";

@@ -2,37 +2,37 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  gettext,
-  makeWrapper,
-  tcl,
-  which,
-  ncurses,
-  perl,
   cyrus_sasl,
+  docbook_xml_dtd_42,
+  docbook_xsl,
+  gettext,
   gitUpdater,
-  gss,
   gpgme,
-  libkrb5,
+  gss,
   libidn2,
+  libkrb5,
   libxml2,
+  libxslt,
+  lmdb,
+  lndir,
+  lua,
+  mailcap,
+  makeWrapper,
+  ncurses,
   notmuch,
   openssl,
-  lua,
-  lmdb,
-  libxslt,
-  docbook_xsl,
-  docbook_xml_dtd_42,
-  w3m,
-  mailcap,
-  sqlite,
-  zlib,
-  lndir,
+  perl,
   pkg-config,
+  sqlite,
+  tcl,
+  w3m,
+  which,
+  zlib,
   zstd,
-  enableZstd ? true,
-  enableMixmaster ? false,
   enableLua ? false,
+  enableMixmaster ? false,
   enableSmimeKeys ? true,
+  enableZstd ? true,
   withContrib ? true,
   withNotmuch ? true,
 }:
@@ -52,39 +52,6 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-MRFJ6y2XC3I0/IIWW/J09tW/IZpLcNy7hki0rqOB9RQ=";
   };
 
-  buildInputs = [
-    cyrus_sasl
-    gss
-    gpgme
-    libkrb5
-    libidn2
-    ncurses
-    openssl
-    perl
-    lmdb
-    mailcap
-    sqlite
-  ]
-  ++ lib.optional enableZstd zstd
-  ++ lib.optional enableLua lua
-  ++ lib.optional withNotmuch notmuch;
-
-  nativeBuildInputs = [
-    docbook_xsl
-    docbook_xml_dtd_42
-    gettext
-    libxml2
-    libxslt.bin
-    makeWrapper
-    tcl
-    which
-    zlib
-    w3m
-    pkg-config
-  ];
-
-  enableParallelBuilding = true;
-
   postPatch = ''
     substituteInPlace auto.def --replace /usr/sbin/sendmail sendmail
     substituteInPlace smime/smime_keys \
@@ -102,6 +69,37 @@ stdenv.mkDerivation (finalAttrs: {
     substituteInPlace send/sendlib.c \
       --replace /etc/mime.types ${mailcap}/etc/mime.types
   '';
+
+  nativeBuildInputs = [
+    docbook_xsl
+    docbook_xml_dtd_42
+    gettext
+    libxml2
+    libxslt.bin
+    makeWrapper
+    tcl
+    which
+    zlib
+    w3m
+    pkg-config
+  ];
+
+  buildInputs = [
+    cyrus_sasl
+    gss
+    gpgme
+    libkrb5
+    libidn2
+    ncurses
+    openssl
+    perl
+    lmdb
+    mailcap
+    sqlite
+  ]
+  ++ lib.optional enableZstd zstd
+  ++ lib.optional enableLua lua
+  ++ lib.optional withNotmuch notmuch;
 
   configureFlags = [
     "--enable-autocrypt"
@@ -121,18 +119,6 @@ stdenv.mkDerivation (finalAttrs: {
   ++ lib.optional enableLua "--lua"
   ++ lib.optional withNotmuch "--notmuch";
 
-  postInstall = ''
-    wrapProgram "$out/bin/neomutt" --prefix PATH : "$out/libexec/neomutt"
-  ''
-  + lib.optionalString enableSmimeKeys ''
-    install -m 755 $src/smime/smime_keys $out/bin;
-    substituteInPlace $out/bin/smime_keys \
-      --replace-fail '/usr/bin/openssl' '${openssl}/bin/openssl';
-  ''
-  # https://github.com/neomutt/neomutt-contrib
-  # Contains vim-keys, keybindings presets and more.
-  + lib.optionalString withContrib "${lib.getExe lndir} ${finalAttrs.passthru.contrib} $out/share/doc/neomutt";
-
   doCheck = true;
 
   preCheck = ''
@@ -148,37 +134,55 @@ stdenv.mkDerivation (finalAttrs: {
       --replace-fail "NEOMUTT_TEST_ITEM(test_expando_node_padding)" ""
   '';
 
+  postCheck = "unset NEOMUTT_TEST_DIR";
+
+  postInstall = ''
+    wrapProgram "$out/bin/neomutt" --prefix PATH : "$out/libexec/neomutt"
+  ''
+  + lib.optionalString enableSmimeKeys ''
+    install -m 755 $src/smime/smime_keys $out/bin;
+    substituteInPlace $out/bin/smime_keys \
+      --replace-fail '/usr/bin/openssl' '${openssl}/bin/openssl';
+  ''
+  # https://github.com/neomutt/neomutt-contrib
+  # Contains vim-keys, keybindings presets and more.
+  + lib.optionalString withContrib "${lib.getExe lndir} ${finalAttrs.passthru.contrib} $out/share/doc/neomutt";
+
+  checkTarget = "test";
+  enableParallelBuilding = true;
+
   passthru = {
-    test-files = fetchFromGitHub {
-      owner = "neomutt";
-      repo = "neomutt-test-files";
-      rev = "00efc8388110208e77e6ed9d8294dfc333753d54";
-      hash = "sha256-/ELowuMq67v56MAJBtO73g6OqV0DVwW4+x+0u4P5mB0=";
-    };
     contrib = fetchFromGitHub {
+      hash = "sha256-tx5Y819rNDxOpjg3B/Y2lPcqJDArAxVwjbYarVmJ79k=";
       owner = "neomutt";
       repo = "neomutt-contrib";
       rev = "8e97688693ca47ea1055f3d15055a4f4ecc5c832";
-      hash = "sha256-tx5Y819rNDxOpjg3B/Y2lPcqJDArAxVwjbYarVmJ79k=";
     };
+
+    test-files = fetchFromGitHub {
+      hash = "sha256-/ELowuMq67v56MAJBtO73g6OqV0DVwW4+x+0u4P5mB0=";
+      owner = "neomutt";
+      repo = "neomutt-test-files";
+      rev = "00efc8388110208e77e6ed9d8294dfc333753d54";
+    };
+
     updateScript = gitUpdater { };
   };
 
-  checkTarget = "test";
-  postCheck = "unset NEOMUTT_TEST_DIR";
-
   meta = {
     description = "Small but very powerful text-based mail client";
-    changelog = "https://github.com/neomutt/neomutt/releases/tag/${finalAttrs.version}/CHANGELOG.md";
-    mainProgram = "neomutt";
-    downloadPage = "https://github.com/neomutt/neomutt";
     homepage = "https://www.neomutt.org";
+    changelog = "https://github.com/neomutt/neomutt/releases/tag/${finalAttrs.version}/CHANGELOG.md";
     license = lib.licenses.gpl2Plus;
+
     maintainers = with lib.maintainers; [
       erikryb
       raitobezarius
       ethancedwards8
     ];
+
     platforms = lib.platforms.unix;
+    mainProgram = "neomutt";
+    downloadPage = "https://github.com/neomutt/neomutt";
   };
 })

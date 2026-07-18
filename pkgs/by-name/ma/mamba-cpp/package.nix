@@ -1,8 +1,9 @@
 {
+  lib,
+  stdenv,
   bzip2,
   cli11,
   cmake,
-  lib,
   libmamba,
   makeWrapper,
   msgpack-c,
@@ -10,7 +11,6 @@
   python3,
   reproc,
   spdlog,
-  stdenv,
   tl-expected,
   versionCheckHook,
   yaml-cpp,
@@ -21,8 +21,9 @@
   defaultRootPath ? "~/.mamba",
 }:
 stdenv.mkDerivation {
-  pname = "mamba-cpp";
   inherit (libmamba) version src;
+  pname = "mamba-cpp";
+  strictDeps = true;
 
   nativeBuildInputs = [
     cmake
@@ -49,8 +50,6 @@ stdenv.mkDerivation {
     (lib.cmakeBool "BUILD_LIBMAMBA" false)
   ];
 
-  nativeInstallCheckInputs = [ versionCheckHook ];
-
   postInstall = ''
     wrapProgram $out/bin/mamba \
       --set-default CONDA_ENVS_PATH '${defaultEnvPath}' \
@@ -58,15 +57,15 @@ stdenv.mkDerivation {
       --set-default MAMBA_ROOT_PREFIX '${defaultRootPath}'
   '';
 
+  nativeInstallCheckInputs = [ versionCheckHook ];
   __structuredAttrs = true;
-  strictDeps = true;
 
   meta = {
     description = "Reimplementation of the conda package manager";
     homepage = "https://github.com/mamba-org/mamba";
     license = lib.licenses.bsd3;
-    platforms = lib.platforms.linux ++ lib.platforms.darwin;
     maintainers = with lib.maintainers; [ klchen0112 ];
+    platforms = lib.platforms.linux ++ lib.platforms.darwin;
     mainProgram = "mamba";
   };
 }

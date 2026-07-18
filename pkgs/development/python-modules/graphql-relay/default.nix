@@ -2,13 +2,10 @@
   lib,
   buildPythonPackage,
   fetchPypi,
-
-  # build
-  poetry-core,
-
   # runtime
   graphql-core,
-
+  # build
+  poetry-core,
   # tests
   pytest-asyncio,
   pytest-describe,
@@ -18,7 +15,6 @@
 buildPythonPackage rec {
   pname = "graphql-relay";
   version = "3.2.0";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
@@ -37,7 +33,6 @@ buildPythonPackage rec {
   '';
 
   nativeBuildInputs = [ poetry-core ];
-
   propagatedBuildInputs = [ graphql-core ];
 
   nativeCheckInputs = [
@@ -46,6 +41,7 @@ buildPythonPackage rec {
     pytestCheckHook
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "graphql_relay" ];
 
   meta = {

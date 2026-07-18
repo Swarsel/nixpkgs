@@ -2,12 +2,12 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  cmake,
-  kdePackages,
-  gettext,
-  libime,
   boost,
+  cmake,
   fcitx5,
+  gettext,
+  kdePackages,
+  libime,
 }:
 
 stdenv.mkDerivation rec {

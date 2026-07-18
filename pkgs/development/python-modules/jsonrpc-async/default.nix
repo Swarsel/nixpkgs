@@ -1,8 +1,8 @@
 {
   lib,
+  fetchFromGitHub,
   aiohttp,
   buildPythonPackage,
-  fetchFromGitHub,
   jsonrpc-base,
   pytest-aiohttp,
   pytestCheckHook,
@@ -12,7 +12,6 @@
 buildPythonPackage rec {
   pname = "jsonrpc-async";
   version = "2.1.3";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "emlove";
@@ -21,6 +20,11 @@ buildPythonPackage rec {
     hash = "sha256-WcO2mj5QYZTMnFTNo1ABgpJPxM+GREVIf+z9viFDJHM=";
   };
 
+  nativeCheckInputs = [
+    pytest-aiohttp
+    pytestCheckHook
+  ];
+
   build-system = [ setuptools ];
 
   dependencies = [
@@ -28,13 +32,8 @@ buildPythonPackage rec {
     jsonrpc-base
   ];
 
-  nativeCheckInputs = [
-    pytest-aiohttp
-    pytestCheckHook
-  ];
-
   enabledTestPaths = [ "tests.py" ];
-
+  pyproject = true;
   pythonImportsCheck = [ "jsonrpc_async" ];
 
   meta = {

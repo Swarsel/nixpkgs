@@ -1,8 +1,8 @@
 {
+  lib,
+  fetchFromGitHub,
   beartype,
   buildPythonPackage,
-  fetchFromGitHub,
-  lib,
   poetry-core,
   pydantic,
   python,
@@ -12,7 +12,6 @@
 buildPythonPackage rec {
   pname = "corallium";
   version = "2.1.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "KyleKing";
@@ -30,6 +29,8 @@ buildPythonPackage rec {
     pydantic
     rich
   ];
+
+  pyproject = true;
 
   meta = {
     description = "Shared functionality for calcipy-ecosystem";

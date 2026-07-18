@@ -19,12 +19,12 @@ stdenv.mkDerivation {
     sha256 = "0k9qmhqi206gcnv3z4vwya82g5nm225972ylf67zjiikk8pn8m0s";
   };
 
-  buildInputs = [ libusb1 ];
-
   postPatch = ''
     substituteInPlace Makefile \
       --replace /usr/include/libusb-1.0 ${libusb1.dev}/include/libusb-1.0
   '';
+
+  buildInputs = [ libusb1 ];
 
   makeFlags = [
     "DESTDIR=${placeholder "out"}"
@@ -32,7 +32,6 @@ stdenv.mkDerivation {
   ];
 
   meta = {
-    broken = stdenv.hostPlatform.isDarwin;
     description = "Perform a bus reset on a USB device using its vendor and product ID";
     homepage = "https://github.com/ralight/usb-reset";
     changelog = "https://github.com/ralight/usb-reset/blob/master/ChangeLog.txt";
@@ -40,5 +39,6 @@ stdenv.mkDerivation {
     maintainers = [ ];
     platforms = lib.platforms.all;
     mainProgram = "usb-reset";
+    broken = stdenv.hostPlatform.isDarwin;
   };
 }

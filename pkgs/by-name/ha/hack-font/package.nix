@@ -1,27 +1,28 @@
 {
   lib,
-  stdenvNoCC,
   fetchzip,
   installFonts,
+  stdenvNoCC,
 }:
 
 stdenvNoCC.mkDerivation rec {
   pname = "hack-font";
   version = "3.003";
 
-  outputs = [
-    "out"
-  ];
-
   src = fetchzip {
     url = "https://github.com/chrissimpkins/Hack/releases/download/v${version}/Hack-v${version}-ttf.zip";
     hash = "sha256-SxF4kYp9aL/9L9EUniquFadzWt/+PcvhUQOIOvCrFRM=";
   };
 
+  outputs = [
+    "out"
+  ];
+
   nativeBuildInputs = [ installFonts ];
 
   meta = {
     description = "Typeface designed for source code";
+
     longDescription = ''
       Hack is hand groomed and optically balanced to be a workhorse face for
       code. It has deep roots in the libre, open source typeface community and
@@ -29,8 +30,8 @@ stdenvNoCC.mkDerivation rec {
       The face has been re-designed with a larger glyph set, modifications of
       the original glyph shapes, and meticulous attention to metrics.
     '';
-    homepage = "https://sourcefoundry.org/hack/";
 
+    homepage = "https://sourcefoundry.org/hack/";
     /*
       "The font binaries are released under a license that permits unlimited
       print, desktop, and web use for commercial and non-commercial

@@ -1,27 +1,28 @@
 {
   lib,
   fetchFromGitHub,
-  makeWrapper,
-  jdk_headless,
-  jre_minimal,
-  maven,
-  writeShellApplication,
-  curl,
-  pcre,
   common-updater-scripts,
-  jq,
+  curl,
   gnused,
+  jdk_headless,
+  jq,
+  jre_minimal,
+  makeWrapper,
+  maven,
+  pcre,
+  writeShellApplication,
 }:
 
 let
   jre = jre_minimal.override {
+    jdk = jdk_headless;
+
     modules = [
       "java.base"
       "java.logging"
       "java.xml"
       "jdk.crypto.ec"
     ];
-    jdk = jdk_headless;
   };
 in
 maven.buildMavenPackage rec {
@@ -36,6 +37,7 @@ maven.buildMavenPackage rec {
     # Lemminx reads this git information at runtime from a git.properties
     # file on the classpath
     leaveDotGit = true;
+
     postFetch = ''
       cat > $out/org.eclipse.lemminx/src/main/resources/git.properties << EOF
       git.build.version=${version}
@@ -47,8 +49,22 @@ maven.buildMavenPackage rec {
     '';
   };
 
-  mvnJdk = jdk_headless;
+  nativeBuildInputs = [ makeWrapper ];
+
+  installPhase = ''
+    runHook preInstall
+
+    mkdir -p $out/bin $out/share
+    install -Dm644 org.eclipse.lemminx/target/org.eclipse.lemminx-uber.jar $out/share
+
+    makeWrapper ${jre}/bin/java $out/bin/lemminx \
+      --add-flags "-jar $out/share/org.eclipse.lemminx-uber.jar"
+
+    runHook postInstall
+  '';
+
   mvnHash = "sha256-IJBmztfNco5UF0BwfeU5QHwvr50bXsrZFOSIPoGBijA=";
+  mvnJdk = jdk_headless;
 
   # Disable gitcommitid plugin which needs a .git folder which we don't have.
   # Disable failing tests which either need internet access or are flaky.
@@ -70,20 +86,6 @@ maven.buildMavenPackage rec {
     !CacheResourcesManagerTest"
   ];
 
-  installPhase = ''
-    runHook preInstall
-
-    mkdir -p $out/bin $out/share
-    install -Dm644 org.eclipse.lemminx/target/org.eclipse.lemminx-uber.jar $out/share
-
-    makeWrapper ${jre}/bin/java $out/bin/lemminx \
-      --add-flags "-jar $out/share/org.eclipse.lemminx-uber.jar"
-
-    runHook postInstall
-  '';
-
-  nativeBuildInputs = [ makeWrapper ];
-
   passthru = {
     updateScript =
       let
@@ -91,6 +93,7 @@ maven.buildMavenPackage rec {
       in
       lib.getExe (writeShellApplication {
         name = "update-${pname}";
+
         runtimeInputs = [
           curl
           pcre
@@ -98,6 +101,7 @@ maven.buildMavenPackage rec {
           jq
           gnused
         ];
+
         text = ''
           if [ -z "''${GITHUB_TOKEN:-}" ]; then
               echo "no GITHUB_TOKEN provided - you could meet API request limiting" >&2
@@ -125,9 +129,9 @@ maven.buildMavenPackage rec {
 
   meta = {
     description = "XML Language Server";
-    mainProgram = "lemminx";
     homepage = "https://github.com/eclipse-lemminx/lemminx";
     license = lib.licenses.epl20;
     maintainers = with lib.maintainers; [ tricktron ];
+    mainProgram = "lemminx";
   };
 }

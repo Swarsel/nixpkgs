@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule (finalAttrs: {
@@ -24,10 +24,12 @@ buildGoModule (finalAttrs: {
 
   meta = {
     description = "Tool to fetch known URLs";
+
     longDescription = ''
       getallurls (gau) fetches known URLs from various sources for any
       given domain.
     '';
+
     homepage = "https://github.com/lc/gau";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ fab ];

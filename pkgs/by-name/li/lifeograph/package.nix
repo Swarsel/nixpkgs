@@ -1,18 +1,18 @@
 {
   lib,
   stdenv,
-  fetchgit,
-  pkg-config,
-  meson,
-  ninja,
-  wrapGAppsHook4,
   enchant,
+  fetchgit,
+  gitUpdater,
   gtkmm4,
   libchamplain_libsoup3,
   libgcrypt,
-  shared-mime-info,
   libshumate,
-  gitUpdater,
+  meson,
+  ninja,
+  pkg-config,
+  shared-mime-info,
+  wrapGAppsHook4,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -44,11 +44,11 @@ stdenv.mkDerivation (finalAttrs: {
   passthru.updateScript = gitUpdater { rev-prefix = "v"; };
 
   meta = {
-    homepage = "https://lifeograph.sourceforge.net/doku.php?id=start";
     description = "Off-line and private journal and note taking application";
+    homepage = "https://lifeograph.sourceforge.net/doku.php?id=start";
     license = lib.licenses.gpl3Only;
     maintainers = with lib.maintainers; [ kyehn ];
-    mainProgram = "lifeograph";
     platforms = lib.platforms.linux;
+    mainProgram = "lifeograph";
   };
 })

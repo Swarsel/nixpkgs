@@ -1,9 +1,9 @@
 {
   lib,
+  fetchFromGitHub,
   aiohttp,
   aiohttp-retry,
   buildPythonPackage,
-  fetchFromGitHub,
   freezegun,
   ical,
   mashumaro,
@@ -24,7 +24,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "pyrainbird";
   version = "6.5.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "allenporter";
@@ -32,24 +31,6 @@ buildPythonPackage (finalAttrs: {
     tag = finalAttrs.version;
     hash = "sha256-JPnp77NhgT878sQJ7Az58R6JnMuprr69rPiZjkh+E1I=";
   };
-
-  build-system = [ setuptools ];
-
-  pythonRelaxDeps = [
-    "aiohttp"
-  ];
-
-  dependencies = [
-    aiohttp
-    aiohttp-retry
-    ical
-    mashumaro
-    pycryptodome
-    python-dateutil
-    pyyaml
-  ];
-
-  __darwinAllowLocalNetworking = true;
 
   nativeCheckInputs = [
     freezegun
@@ -63,7 +44,25 @@ buildPythonPackage (finalAttrs: {
     syrupy
   ];
 
+  __darwinAllowLocalNetworking = true;
+  build-system = [ setuptools ];
+
+  dependencies = [
+    aiohttp
+    aiohttp-retry
+    ical
+    mashumaro
+    pycryptodome
+    python-dateutil
+    pyyaml
+  ];
+
+  pyproject = true;
   pythonImportsCheck = [ "pyrainbird" ];
+
+  pythonRelaxDeps = [
+    "aiohttp"
+  ];
 
   meta = {
     description = "Module to interact with Rainbird controllers";

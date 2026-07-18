@@ -2,15 +2,14 @@
   lib,
   buildPythonPackage,
   fetchPypi,
-  poppler-utils,
   netpbm,
+  poppler-utils,
 }:
 
 buildPythonPackage rec {
 
   pname = "pnglatex";
   version = "1.1";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
@@ -24,12 +23,13 @@ buildPythonPackage rec {
 
   # There are no tests
   doCheck = false;
+  format = "setuptools";
 
   meta = {
-    homepage = "https://github.com/MaT1g3R/pnglatex";
     description = "Small program that converts LaTeX snippets to png";
-    mainProgram = "pnglatex";
+    homepage = "https://github.com/MaT1g3R/pnglatex";
     license = lib.licenses.gpl3Plus;
     maintainers = with lib.maintainers; [ GaetanLepage ];
+    mainProgram = "pnglatex";
   };
 }

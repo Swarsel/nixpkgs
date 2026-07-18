@@ -3,32 +3,20 @@
   buildPythonPackage,
   fetchPypi,
   isPy3k,
-  numpy,
-  scipy,
   matplotlib,
+  numpy,
   pytestCheckHook,
+  scipy,
 }:
 
 buildPythonPackage rec {
   pname = "nimfa";
   version = "1.4.0";
-  format = "setuptools";
-  setuptools = true;
 
   src = fetchPypi {
     inherit pname version;
     hash = "sha256-Oc/yuGhW0Dyoo9nDhZgDTs8adowyX9OnKLuerbjGuRk=";
   };
-
-  dependencies = [
-    numpy
-    scipy
-  ];
-
-  nativeCheckInputs = [
-    matplotlib
-    pytestCheckHook
-  ];
 
   postPatch = ''
     substituteInPlace setup.py \
@@ -38,6 +26,19 @@ buildPythonPackage rec {
   '';
 
   doCheck = !isPy3k; # https://github.com/marinkaz/nimfa/issues/42
+
+  nativeCheckInputs = [
+    matplotlib
+    pytestCheckHook
+  ];
+
+  dependencies = [
+    numpy
+    scipy
+  ];
+
+  format = "setuptools";
+  setuptools = true;
 
   meta = {
     description = "Nonnegative matrix factorization library";

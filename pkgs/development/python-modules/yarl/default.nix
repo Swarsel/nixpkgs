@@ -1,25 +1,24 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   cython,
   expandvars,
-  setuptools,
+  hypothesis,
   idna,
   multidict,
   propcache,
-  hypothesis,
   pydantic,
   pytest-codspeed,
   pytest-cov-stub,
   pytest-xdist,
   pytestCheckHook,
+  setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "yarl";
   version = "1.24.2";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "aio-libs";
@@ -27,6 +26,24 @@ buildPythonPackage rec {
     tag = "v${version}";
     hash = "sha256-GEe2GDXmqsQgWB0UxPZVMdSco3j2JYHg9BU9M6oqynw=";
   };
+
+  nativeCheckInputs = [
+    hypothesis
+    pydantic
+    pytest-codspeed
+    pytest-cov-stub
+    pytest-xdist
+    pytestCheckHook
+  ];
+
+  preCheck = ''
+    # don't import yarl from ./ so the C extension is available
+    pushd tests
+  '';
+
+  postCheck = ''
+    popd
+  '';
 
   build-system = [
     cython
@@ -40,30 +57,13 @@ buildPythonPackage rec {
     propcache
   ];
 
-  preCheck = ''
-    # don't import yarl from ./ so the C extension is available
-    pushd tests
-  '';
-
-  nativeCheckInputs = [
-    hypothesis
-    pydantic
-    pytest-codspeed
-    pytest-cov-stub
-    pytest-xdist
-    pytestCheckHook
-  ];
-
-  postCheck = ''
-    popd
-  '';
-
+  pyproject = true;
   pythonImportsCheck = [ "yarl" ];
 
   meta = {
-    changelog = "https://github.com/aio-libs/yarl/blob/${src.tag}/CHANGES.rst";
     description = "Yet another URL library";
     homepage = "https://github.com/aio-libs/yarl";
+    changelog = "https://github.com/aio-libs/yarl/blob/${src.tag}/CHANGES.rst";
     license = lib.licenses.asl20;
     maintainers = with lib.maintainers; [ dotlambda ];
   };

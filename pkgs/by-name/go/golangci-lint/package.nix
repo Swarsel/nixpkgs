@@ -1,4 +1,7 @@
 {
+  lib,
+  stdenv,
+  fetchFromGitHub,
   # golangci-lint has historically required code changes to support new versions of
   # go so always use the latest specific go version that golangci-lint supports
   # rather than buildGoLatestModule.
@@ -6,10 +9,7 @@
   # new version of go.
   buildGo126Module,
   buildPackages,
-  fetchFromGitHub,
   installShellFiles,
-  lib,
-  stdenv,
 }:
 
 buildGo126Module (finalAttrs: {
@@ -23,19 +23,8 @@ buildGo126Module (finalAttrs: {
     hash = "sha256-qR7fp1x2S+EwEAcplRHTvA3jWwLr/XSiYKSZtAwkrNU=";
   };
 
-  vendorHash = "sha256-AG5wtLwWLz55bdp1oi3cW+9O3yj1W1P7MV9zxym7Pb4=";
-
-  subPackages = [ "cmd/golangci-lint" ];
-
   nativeBuildInputs = [ installShellFiles ];
-
-  ldflags = [
-    "-s"
-    "-w"
-    "-X main.version=${finalAttrs.version}"
-    "-X main.commit=v${finalAttrs.version}"
-    "-X main.date=1970-01-01T00:00:00Z"
-  ];
+  vendorHash = "sha256-AG5wtLwWLz55bdp1oi3cW+9O3yj1W1P7MV9zxym7Pb4=";
 
   postInstall =
     let
@@ -52,15 +41,27 @@ buildGo126Module (finalAttrs: {
         --zsh <(${golangcilintBin}/bin/golangci-lint completion zsh)
     '';
 
+  ldflags = [
+    "-s"
+    "-w"
+    "-X main.version=${finalAttrs.version}"
+    "-X main.commit=v${finalAttrs.version}"
+    "-X main.date=1970-01-01T00:00:00Z"
+  ];
+
+  subPackages = [ "cmd/golangci-lint" ];
+
   meta = {
     description = "Fast linters Runner for Go";
     homepage = "https://golangci-lint.run/";
     changelog = "https://github.com/golangci/golangci-lint/blob/v${finalAttrs.version}/CHANGELOG.md";
-    mainProgram = "golangci-lint";
     license = lib.licenses.gpl3Plus;
+
     maintainers = with lib.maintainers; [
       SuperSandro2000
       mic92
     ];
+
+    mainProgram = "golangci-lint";
   };
 })

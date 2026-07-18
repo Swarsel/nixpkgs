@@ -11,7 +11,6 @@
 python3Packages.buildPythonApplication (finalAttrs: {
   pname = "khal";
   version = "0.14.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "pimutils";
@@ -20,9 +19,10 @@ python3Packages.buildPythonApplication (finalAttrs: {
     hash = "sha256-ltb2c9p/kD0PtYnLxRIm/SNlg+W+Vca6JSA7BahZ9uQ=";
   };
 
-  build-system = with python3Packages; [
-    setuptools
-    setuptools-scm
+  outputs = [
+    "out"
+    "doc"
+    "man"
   ];
 
   nativeBuildInputs = [
@@ -31,6 +31,33 @@ python3Packages.buildPythonApplication (finalAttrs: {
     sphinxHook
     python3Packages.sphinx-rtd-theme
     python3Packages.sphinxfeed-lsaffre
+  ];
+
+  env.LC_ALL = "en_US.UTF-8";
+  doCheck = !stdenv.hostPlatform.isAarch64;
+
+  nativeCheckInputs = with python3Packages; [
+    freezegun
+    hypothesis
+    packaging
+    pytestCheckHook
+    vdirsyncer
+  ];
+
+  postInstall = ''
+    # shell completions
+    installShellCompletion --cmd khal \
+      --bash <(_KHAL_COMPLETE=bash_source $out/bin/khal) \
+      --zsh <(_KHAL_COMPLETE=zsh_source $out/bin/khal) \
+      --fish <(_KHAL_COMPLETE=fish_source $out/bin/khal)
+
+    # .desktop file
+    install -Dm755 misc/khal.desktop -t $out/share/applications
+  '';
+
+  build-system = with python3Packages; [
+    setuptools
+    setuptools-scm
   ];
 
   dependencies = with python3Packages; [
@@ -50,44 +77,18 @@ python3Packages.buildPythonApplication (finalAttrs: {
     urwid
   ];
 
-  nativeCheckInputs = with python3Packages; [
-    freezegun
-    hypothesis
-    packaging
-    pytestCheckHook
-    vdirsyncer
-  ];
-
-  outputs = [
-    "out"
-    "doc"
-    "man"
-  ];
-  sphinxBuilders = [
-    "html"
-    "man"
-  ];
-
-  postInstall = ''
-    # shell completions
-    installShellCompletion --cmd khal \
-      --bash <(_KHAL_COMPLETE=bash_source $out/bin/khal) \
-      --zsh <(_KHAL_COMPLETE=zsh_source $out/bin/khal) \
-      --fish <(_KHAL_COMPLETE=fish_source $out/bin/khal)
-
-    # .desktop file
-    install -Dm755 misc/khal.desktop -t $out/share/applications
-  '';
-
-  doCheck = !stdenv.hostPlatform.isAarch64;
-
-  env.LC_ALL = "en_US.UTF-8";
-
   disabledTests = [
     # timing based
     "test_etag"
     "test_bogota"
     "test_event_no_dst"
+  ];
+
+  pyproject = true;
+
+  sphinxBuilders = [
+    "html"
+    "man"
   ];
 
   meta = {

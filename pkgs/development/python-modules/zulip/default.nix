@@ -1,20 +1,19 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
-  requests,
-  distro,
+  buildPythonPackage,
   click,
-  typing-extensions,
+  distro,
   matrix-nio,
   pytestCheckHook,
+  requests,
+  setuptools,
+  typing-extensions,
 }:
 
 buildPythonPackage rec {
   pname = "zulip";
   version = "0.9.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "zulip";
@@ -22,7 +21,11 @@ buildPythonPackage rec {
     tag = version;
     hash = "sha256-mcqIfha+4nsqlshayLQ2Sd+XOYVKf1FkoczjiFRNybc=";
   };
-  sourceRoot = "${src.name}/zulip";
+
+  nativeCheckInputs = [
+    matrix-nio
+    pytestCheckHook
+  ];
 
   build-system = [ setuptools ];
 
@@ -34,12 +37,9 @@ buildPythonPackage rec {
   ]
   ++ requests.optional-dependencies.security;
 
-  nativeCheckInputs = [
-    matrix-nio
-    pytestCheckHook
-  ];
-
+  pyproject = true;
   pythonImportsCheck = [ "zulip" ];
+  sourceRoot = "${src.name}/zulip";
 
   meta = {
     description = "Bindings for the Zulip message API";

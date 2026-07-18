@@ -8,26 +8,980 @@
 
 self: super: with self; {
 
-  bootstrap = lib.recurseIntoAttrs {
-    flit-core = toPythonModule (callPackage ../development/python-modules/bootstrap/flit-core { });
-    installer = toPythonModule (
-      callPackage ../development/python-modules/bootstrap/installer { inherit (bootstrap) flit-core; }
-    );
-    build = toPythonModule (
-      callPackage ../development/python-modules/bootstrap/build {
-        inherit (bootstrap) flit-core installer;
-      }
-    );
-    packaging = toPythonModule (
-      callPackage ../development/python-modules/bootstrap/packaging {
-        inherit (bootstrap) flit-core installer;
-      }
-    );
-  };
+  inherit (callPackage ../development/python-modules/aliyun-python-sdk { })
+    aliyun-python-sdk-actiontrail
+    aliyun-python-sdk-adb
+    aliyun-python-sdk-adcp
+    aliyun-python-sdk-address-purification
+    aliyun-python-sdk-aicontent
+    aliyun-python-sdk-aigen
+    aliyun-python-sdk-aimath
+    aliyun-python-sdk-aimiaobi
+    aliyun-python-sdk-aipodcast
+    aliyun-python-sdk-airec
+    aliyun-python-sdk-airticketopen
+    aliyun-python-sdk-alb
+    aliyun-python-sdk-alidns
+    aliyun-python-sdk-alikafka
+    aliyun-python-sdk-alimt
+    aliyun-python-sdk-alinlp
+    aliyun-python-sdk-amqp-open
+    aliyun-python-sdk-antiddos-public
+    aliyun-python-sdk-anytrans
+    aliyun-python-sdk-apds
+    aliyun-python-sdk-appstream-center
+    aliyun-python-sdk-aps
+    aliyun-python-sdk-arms
+    aliyun-python-sdk-avatar
+    aliyun-python-sdk-bailianchatbot
+    aliyun-python-sdk-beian
+    aliyun-python-sdk-bpstudio
+    aliyun-python-sdk-brain-industrial
+    aliyun-python-sdk-brinekingdom
+    aliyun-python-sdk-bssopenapi
+    aliyun-python-sdk-btripopen
+    aliyun-python-sdk-buss
+    aliyun-python-sdk-cams
+    aliyun-python-sdk-captcha
+    aliyun-python-sdk-cassandra
+    aliyun-python-sdk-cbn
+    aliyun-python-sdk-cc5g
+    aliyun-python-sdk-ccc
+    aliyun-python-sdk-cciotgw
+    aliyun-python-sdk-cdn
+    aliyun-python-sdk-cdrs
+    aliyun-python-sdk-ciomarketpop
+    aliyun-python-sdk-clickhouse
+    aliyun-python-sdk-cloudapi
+    aliyun-python-sdk-cloudauth
+    aliyun-python-sdk-cloudauth-console
+    aliyun-python-sdk-cloudesl
+    aliyun-python-sdk-cloudphone
+    aliyun-python-sdk-cloud-siem
+    aliyun-python-sdk-cms
+    aliyun-python-sdk-codeup
+    aliyun-python-sdk-companyreg
+    aliyun-python-sdk-computenest
+    aliyun-python-sdk-computenestsupplier
+    aliyun-python-sdk-config
+    aliyun-python-sdk-csas
+    aliyun-python-sdk-das
+    aliyun-python-sdk-dashdeviceconsole
+    aliyun-python-sdk-dataphin-public
+    aliyun-python-sdk-dataworks-public
+    aliyun-python-sdk-dbfs
+    aliyun-python-sdk-dbs
+    aliyun-python-sdk-dcdn
+    aliyun-python-sdk-ddosbgp
+    aliyun-python-sdk-ddoscoo
+    aliyun-python-sdk-ddosdiversion
+    aliyun-python-sdk-dds
+    aliyun-python-sdk-devops-rdc
+    aliyun-python-sdk-dfs
+    aliyun-python-sdk-dg
+    aliyun-python-sdk-dms
+    aliyun-python-sdk-dms-dg
+    aliyun-python-sdk-dms-enterprise
+    aliyun-python-sdk-documentautoml
+    aliyun-python-sdk-domain
+    aliyun-python-sdk-drds
+    aliyun-python-sdk-dt-oc-info
+    aliyun-python-sdk-dts
+    aliyun-python-sdk-dybaseapi
+    aliyun-python-sdk-dyplsapi
+    aliyun-python-sdk-dypnsapi
+    aliyun-python-sdk-dypnsapi-intl
+    aliyun-python-sdk-dysmsapi
+    aliyun-python-sdk-dytnsapi
+    aliyun-python-sdk-dyvmsapi
+    aliyun-python-sdk-eais
+    aliyun-python-sdk-eas
+    aliyun-python-sdk-ebs
+    aliyun-python-sdk-ecd
+    aliyun-python-sdk-eci
+    aliyun-python-sdk-ecs
+    aliyun-python-sdk-ecs-workbench
+    aliyun-python-sdk-edas
+    aliyun-python-sdk-eds-user
+    aliyun-python-sdk-eduinterpreting
+    aliyun-python-sdk-eflo
+    aliyun-python-sdk-eflo-controller
+    aliyun-python-sdk-ehpc
+    aliyun-python-sdk-ehpcinstant
+    aliyun-python-sdk-eiam
+    aliyun-python-sdk-eipanycast
+    aliyun-python-sdk-elasticsearch
+    aliyun-python-sdk-emas-appmonitor
+    aliyun-python-sdk-emr
+    aliyun-python-sdk-emrstudio
+    aliyun-python-sdk-ens
+    aliyun-python-sdk-esa
+    aliyun-python-sdk-ess
+    aliyun-python-sdk-es-serverless
+    aliyun-python-sdk-et-industry-openapi
+    aliyun-python-sdk-eventbridge
+    aliyun-python-sdk-facebody
+    aliyun-python-sdk-fnf
+    aliyun-python-sdk-foas
+    aliyun-python-sdk-ft
+    aliyun-python-sdk-ga
+    aliyun-python-sdk-gdb
+    aliyun-python-sdk-geoip
+    aliyun-python-sdk-governance
+    aliyun-python-sdk-gpdb
+    aliyun-python-sdk-grace
+    aliyun-python-sdk-green
+    aliyun-python-sdk-gwlb
+    aliyun-python-sdk-hbase
+    aliyun-python-sdk-hbr
+    aliyun-python-sdk-hcs-mgw
+    aliyun-python-sdk-hitsdb
+    aliyun-python-sdk-ice
+    aliyun-python-sdk-idaas-doraemon
+    aliyun-python-sdk-imageaudit
+    aliyun-python-sdk-imageenhan
+    aliyun-python-sdk-imageprocess
+    aliyun-python-sdk-imagerecog
+    aliyun-python-sdk-imageseg
+    aliyun-python-sdk-imarketing
+    aliyun-python-sdk-imgsearch
+    aliyun-python-sdk-imm
+    aliyun-python-sdk-intlmarket
+    aliyun-python-sdk-iot
+    aliyun-python-sdk-iotcc
+    aliyun-python-sdk-iqs
+    aliyun-python-sdk-itag
+    aliyun-python-sdk-ivision
+    aliyun-python-sdk-kms
+    aliyun-python-sdk-lingmou
+    aliyun-python-sdk-linkvisual
+    aliyun-python-sdk-linkwan
+    aliyun-python-sdk-live
+    aliyun-python-sdk-ltl
+    aliyun-python-sdk-lto
+    aliyun-python-sdk-market
+    aliyun-python-sdk-marketplaceintl
+    aliyun-python-sdk-maxcompute
+    aliyun-python-sdk-mns-open
+    aliyun-python-sdk-moguan-sdk
+    aliyun-python-sdk-msccommonquery
+    aliyun-python-sdk-mse
+    aliyun-python-sdk-mseap
+    aliyun-python-sdk-mts
+    aliyun-python-sdk-nas
+    aliyun-python-sdk-nis
+    aliyun-python-sdk-nlb
+    aliyun-python-sdk-nlp-automl
+    aliyun-python-sdk-objectdet
+    aliyun-python-sdk-oceanbasepro
+    aliyun-python-sdk-ocr
+    aliyun-python-sdk-ocs
+    aliyun-python-sdk-oms
+    aliyun-python-sdk-ons
+    aliyun-python-sdk-onsmqtt
+    aliyun-python-sdk-oos
+    aliyun-python-sdk-openanalytics-open
+    aliyun-python-sdk-openitag
+    aliyun-python-sdk-opensearch
+    aliyun-python-sdk-osssddp
+    aliyun-python-sdk-outboundbot
+    aliyun-python-sdk-pai-dsw
+    aliyun-python-sdk-paielasticdatasetaccelerator
+    aliyun-python-sdk-paifeaturestore
+    aliyun-python-sdk-pairecservice
+    aliyun-python-sdk-polardb
+    aliyun-python-sdk-polardbx
+    aliyun-python-sdk-privatelink
+    aliyun-python-sdk-push
+    aliyun-python-sdk-pvtz
+    aliyun-python-sdk-qianzhou
+    aliyun-python-sdk-qualitycheck
+    aliyun-python-sdk-quickbi-public
+    aliyun-python-sdk-quotas
+    aliyun-python-sdk-ram
+    aliyun-python-sdk-rds
+    aliyun-python-sdk-rds-data
+    aliyun-python-sdk-reid-cloud
+    aliyun-python-sdk-resourcecenter
+    aliyun-python-sdk-resourcemanager
+    aliyun-python-sdk-resourcesharing
+    aliyun-python-sdk-retailcloud
+    aliyun-python-sdk-r-kvstore
+    aliyun-python-sdk-ros
+    aliyun-python-sdk-rsimganalys
+    aliyun-python-sdk-rtc
+    aliyun-python-sdk-sae
+    aliyun-python-sdk-safconsole
+    aliyun-python-sdk-sas
+    aliyun-python-sdk-sasti
+    aliyun-python-sdk-scdn
+    aliyun-python-sdk-schedulerx2
+    aliyun-python-sdk-schedulerx3
+    aliyun-python-sdk-scsp
+    aliyun-python-sdk-sddp
+    aliyun-python-sdk-selectdb
+    aliyun-python-sdk-sgw
+    aliyun-python-sdk-slb
+    aliyun-python-sdk-sls
+    aliyun-python-sdk-smartag
+    aliyun-python-sdk-smartsales
+    aliyun-python-sdk-smc
+    aliyun-python-sdk-snsuapi
+    aliyun-python-sdk-sophonsoar
+    aliyun-python-sdk-sts
+    aliyun-python-sdk-swas-open
+    aliyun-python-sdk-tag
+    aliyun-python-sdk-threedvision
+    aliyun-python-sdk-tingwu
+    aliyun-python-sdk-unimkt
+    aliyun-python-sdk-ververica
+    aliyun-python-sdk-viapi
+    aliyun-python-sdk-viapi-oxs-cross
+    aliyun-python-sdk-viapi-regen
+    aliyun-python-sdk-videoenhan
+    aliyun-python-sdk-videorecog
+    aliyun-python-sdk-videoseg
+    aliyun-python-sdk-vod
+    aliyun-python-sdk-voicenavigator
+    aliyun-python-sdk-vpc
+    aliyun-python-sdk-vpcpeer
+    aliyun-python-sdk-vs
+    aliyun-python-sdk-waf-openapi
+    aliyun-python-sdk-websitebuild
+    aliyun-python-sdk-wfts
+    aliyun-python-sdk-workbench-ide
+    aliyun-python-sdk-workorder
+    aliyun-python-sdk-wss
+    aliyun-python-sdk-xtrace
+    ;
 
-  setuptools = callPackage ../development/python-modules/setuptools { };
+  inherit (callPackage ../development/python-modules/geoarrow-rust { })
+    geoarrow-rust-core
+    geoarrow-rust-io
+    ;
 
-  setuptools_80 = callPackage ../development/python-modules/setuptools/80.nix { };
+  inherit (callPackage ../development/python-modules/mypy-boto3 { })
+    mypy-boto3-accessanalyzer
+    mypy-boto3-account
+    mypy-boto3-acm
+    mypy-boto3-acm-pca
+    mypy-boto3-amp
+    mypy-boto3-amplify
+    mypy-boto3-amplifybackend
+    mypy-boto3-amplifyuibuilder
+    mypy-boto3-apigateway
+    mypy-boto3-apigatewaymanagementapi
+    mypy-boto3-apigatewayv2
+    mypy-boto3-appconfig
+    mypy-boto3-appconfigdata
+    mypy-boto3-appfabric
+    mypy-boto3-appflow
+    mypy-boto3-appintegrations
+    mypy-boto3-application-autoscaling
+    mypy-boto3-application-insights
+    mypy-boto3-applicationcostprofiler
+    mypy-boto3-appmesh
+    mypy-boto3-apprunner
+    mypy-boto3-appstream
+    mypy-boto3-appsync
+    mypy-boto3-arc-zonal-shift
+    mypy-boto3-athena
+    mypy-boto3-auditmanager
+    mypy-boto3-autoscaling
+    mypy-boto3-autoscaling-plans
+    mypy-boto3-backup
+    mypy-boto3-backup-gateway
+    mypy-boto3-batch
+    mypy-boto3-billingconductor
+    mypy-boto3-braket
+    mypy-boto3-budgets
+    mypy-boto3-ce
+    mypy-boto3-chime
+    mypy-boto3-chime-sdk-identity
+    mypy-boto3-chime-sdk-media-pipelines
+    mypy-boto3-chime-sdk-meetings
+    mypy-boto3-chime-sdk-messaging
+    mypy-boto3-chime-sdk-voice
+    mypy-boto3-cleanrooms
+    mypy-boto3-cloud9
+    mypy-boto3-cloudcontrol
+    mypy-boto3-clouddirectory
+    mypy-boto3-cloudformation
+    mypy-boto3-cloudfront
+    mypy-boto3-cloudhsm
+    mypy-boto3-cloudhsmv2
+    mypy-boto3-cloudsearch
+    mypy-boto3-cloudsearchdomain
+    mypy-boto3-cloudtrail
+    mypy-boto3-cloudtrail-data
+    mypy-boto3-cloudwatch
+    mypy-boto3-codeartifact
+    mypy-boto3-codebuild
+    mypy-boto3-codecatalyst
+    mypy-boto3-codecommit
+    mypy-boto3-codedeploy
+    mypy-boto3-codeguru-reviewer
+    mypy-boto3-codeguru-security
+    mypy-boto3-codeguruprofiler
+    mypy-boto3-codepipeline
+    mypy-boto3-codestar
+    mypy-boto3-codestar-connections
+    mypy-boto3-codestar-notifications
+    mypy-boto3-cognito-identity
+    mypy-boto3-cognito-idp
+    mypy-boto3-cognito-sync
+    mypy-boto3-comprehend
+    mypy-boto3-comprehendmedical
+    mypy-boto3-compute-optimizer
+    mypy-boto3-config
+    mypy-boto3-connect
+    mypy-boto3-connect-contact-lens
+    mypy-boto3-connectcampaigns
+    mypy-boto3-connectcases
+    mypy-boto3-connectparticipant
+    mypy-boto3-controltower
+    mypy-boto3-cur
+    mypy-boto3-customer-profiles
+    mypy-boto3-databrew
+    mypy-boto3-dataexchange
+    mypy-boto3-datapipeline
+    mypy-boto3-datasync
+    mypy-boto3-dax
+    mypy-boto3-detective
+    mypy-boto3-devicefarm
+    mypy-boto3-devops-guru
+    mypy-boto3-directconnect
+    mypy-boto3-discovery
+    mypy-boto3-dlm
+    mypy-boto3-dms
+    mypy-boto3-docdb
+    mypy-boto3-docdb-elastic
+    mypy-boto3-drs
+    mypy-boto3-ds
+    mypy-boto3-dynamodb
+    mypy-boto3-dynamodbstreams
+    mypy-boto3-ebs
+    mypy-boto3-ec2
+    mypy-boto3-ec2-instance-connect
+    mypy-boto3-ecr
+    mypy-boto3-ecr-public
+    mypy-boto3-ecs
+    mypy-boto3-efs
+    mypy-boto3-eks
+    mypy-boto3-elastic-inference
+    mypy-boto3-elasticache
+    mypy-boto3-elasticbeanstalk
+    mypy-boto3-elastictranscoder
+    mypy-boto3-elb
+    mypy-boto3-elbv2
+    mypy-boto3-emr
+    mypy-boto3-emr-containers
+    mypy-boto3-emr-serverless
+    mypy-boto3-entityresolution
+    mypy-boto3-es
+    mypy-boto3-events
+    mypy-boto3-evidently
+    mypy-boto3-finspace
+    mypy-boto3-finspace-data
+    mypy-boto3-firehose
+    mypy-boto3-fis
+    mypy-boto3-fms
+    mypy-boto3-forecast
+    mypy-boto3-forecastquery
+    mypy-boto3-frauddetector
+    mypy-boto3-fsx
+    mypy-boto3-gamelift
+    mypy-boto3-glacier
+    mypy-boto3-globalaccelerator
+    mypy-boto3-glue
+    mypy-boto3-grafana
+    mypy-boto3-greengrass
+    mypy-boto3-greengrassv2
+    mypy-boto3-groundstation
+    mypy-boto3-guardduty
+    mypy-boto3-health
+    mypy-boto3-healthlake
+    mypy-boto3-iam
+    mypy-boto3-identitystore
+    mypy-boto3-imagebuilder
+    mypy-boto3-importexport
+    mypy-boto3-inspector
+    mypy-boto3-inspector2
+    mypy-boto3-internetmonitor
+    mypy-boto3-iot
+    mypy-boto3-iot-data
+    mypy-boto3-iot-jobs-data
+    mypy-boto3-iot1click-devices
+    mypy-boto3-iot1click-projects
+    mypy-boto3-iotanalytics
+    mypy-boto3-iotdeviceadvisor
+    mypy-boto3-iotevents
+    mypy-boto3-iotevents-data
+    mypy-boto3-iotfleethub
+    mypy-boto3-iotfleetwise
+    mypy-boto3-iotsecuretunneling
+    mypy-boto3-iotsitewise
+    mypy-boto3-iotthingsgraph
+    mypy-boto3-iottwinmaker
+    mypy-boto3-iotwireless
+    mypy-boto3-ivs
+    mypy-boto3-ivs-realtime
+    mypy-boto3-ivschat
+    mypy-boto3-kafka
+    mypy-boto3-kafkaconnect
+    mypy-boto3-kendra
+    mypy-boto3-kendra-ranking
+    mypy-boto3-keyspaces
+    mypy-boto3-kinesis
+    mypy-boto3-kinesis-video-archived-media
+    mypy-boto3-kinesis-video-media
+    mypy-boto3-kinesis-video-signaling
+    mypy-boto3-kinesis-video-webrtc-storage
+    mypy-boto3-kinesisanalytics
+    mypy-boto3-kinesisanalyticsv2
+    mypy-boto3-kinesisvideo
+    mypy-boto3-kms
+    mypy-boto3-lakeformation
+    mypy-boto3-lambda
+    mypy-boto3-lex-models
+    mypy-boto3-lex-runtime
+    mypy-boto3-lexv2-models
+    mypy-boto3-lexv2-runtime
+    mypy-boto3-license-manager
+    mypy-boto3-license-manager-linux-subscriptions
+    mypy-boto3-license-manager-user-subscriptions
+    mypy-boto3-lightsail
+    mypy-boto3-location
+    mypy-boto3-logs
+    mypy-boto3-lookoutequipment
+    mypy-boto3-lookoutmetrics
+    mypy-boto3-lookoutvision
+    mypy-boto3-m2
+    mypy-boto3-machinelearning
+    mypy-boto3-macie2
+    mypy-boto3-managedblockchain
+    mypy-boto3-managedblockchain-query
+    mypy-boto3-marketplace-catalog
+    mypy-boto3-marketplace-entitlement
+    mypy-boto3-marketplacecommerceanalytics
+    mypy-boto3-mediaconnect
+    mypy-boto3-mediaconvert
+    mypy-boto3-medialive
+    mypy-boto3-mediapackage
+    mypy-boto3-mediapackage-vod
+    mypy-boto3-mediapackagev2
+    mypy-boto3-mediastore
+    mypy-boto3-mediastore-data
+    mypy-boto3-mediatailor
+    mypy-boto3-medical-imaging
+    mypy-boto3-memorydb
+    mypy-boto3-meteringmarketplace
+    mypy-boto3-mgh
+    mypy-boto3-mgn
+    mypy-boto3-migration-hub-refactor-spaces
+    mypy-boto3-migrationhub-config
+    mypy-boto3-migrationhuborchestrator
+    mypy-boto3-migrationhubstrategy
+    mypy-boto3-mq
+    mypy-boto3-mturk
+    mypy-boto3-mwaa
+    mypy-boto3-neptune
+    mypy-boto3-neptunedata
+    mypy-boto3-network-firewall
+    mypy-boto3-networkmanager
+    mypy-boto3-nimble
+    mypy-boto3-oam
+    mypy-boto3-omics
+    mypy-boto3-opensearch
+    mypy-boto3-opensearchserverless
+    mypy-boto3-opsworks
+    mypy-boto3-opsworkscm
+    mypy-boto3-organizations
+    mypy-boto3-osis
+    mypy-boto3-outposts
+    mypy-boto3-panorama
+    mypy-boto3-payment-cryptography
+    mypy-boto3-payment-cryptography-data
+    mypy-boto3-pca-connector-ad
+    mypy-boto3-personalize
+    mypy-boto3-personalize-events
+    mypy-boto3-personalize-runtime
+    mypy-boto3-pi
+    mypy-boto3-pinpoint
+    mypy-boto3-pinpoint-email
+    mypy-boto3-pinpoint-sms-voice
+    mypy-boto3-pinpoint-sms-voice-v2
+    mypy-boto3-pipes
+    mypy-boto3-polly
+    mypy-boto3-pricing
+    mypy-boto3-privatenetworks
+    mypy-boto3-proton
+    mypy-boto3-qldb
+    mypy-boto3-qldb-session
+    mypy-boto3-quicksight
+    mypy-boto3-ram
+    mypy-boto3-rbin
+    mypy-boto3-rds
+    mypy-boto3-rds-data
+    mypy-boto3-redshift
+    mypy-boto3-redshift-data
+    mypy-boto3-redshift-serverless
+    mypy-boto3-rekognition
+    mypy-boto3-resiliencehub
+    mypy-boto3-resource-explorer-2
+    mypy-boto3-resource-groups
+    mypy-boto3-resourcegroupstaggingapi
+    mypy-boto3-robomaker
+    mypy-boto3-rolesanywhere
+    mypy-boto3-route53
+    mypy-boto3-route53-recovery-cluster
+    mypy-boto3-route53-recovery-control-config
+    mypy-boto3-route53-recovery-readiness
+    mypy-boto3-route53domains
+    mypy-boto3-route53resolver
+    mypy-boto3-rum
+    mypy-boto3-s3
+    mypy-boto3-s3control
+    mypy-boto3-s3outposts
+    mypy-boto3-sagemaker
+    mypy-boto3-sagemaker-a2i-runtime
+    mypy-boto3-sagemaker-edge
+    mypy-boto3-sagemaker-featurestore-runtime
+    mypy-boto3-sagemaker-geospatial
+    mypy-boto3-sagemaker-metrics
+    mypy-boto3-sagemaker-runtime
+    mypy-boto3-savingsplans
+    mypy-boto3-scheduler
+    mypy-boto3-schemas
+    mypy-boto3-sdb
+    mypy-boto3-secretsmanager
+    mypy-boto3-securityhub
+    mypy-boto3-securitylake
+    mypy-boto3-serverlessrepo
+    mypy-boto3-service-quotas
+    mypy-boto3-servicecatalog
+    mypy-boto3-servicecatalog-appregistry
+    mypy-boto3-servicediscovery
+    mypy-boto3-ses
+    mypy-boto3-sesv2
+    mypy-boto3-shield
+    mypy-boto3-signer
+    mypy-boto3-simspaceweaver
+    mypy-boto3-sms
+    mypy-boto3-sms-voice
+    mypy-boto3-snow-device-management
+    mypy-boto3-snowball
+    mypy-boto3-sns
+    mypy-boto3-sqs
+    mypy-boto3-ssm
+    mypy-boto3-ssm-contacts
+    mypy-boto3-ssm-incidents
+    mypy-boto3-ssm-sap
+    mypy-boto3-sso
+    mypy-boto3-sso-admin
+    mypy-boto3-sso-oidc
+    mypy-boto3-stepfunctions
+    mypy-boto3-storagegateway
+    mypy-boto3-sts
+    mypy-boto3-support
+    mypy-boto3-support-app
+    mypy-boto3-swf
+    mypy-boto3-synthetics
+    mypy-boto3-textract
+    mypy-boto3-timestream-query
+    mypy-boto3-timestream-write
+    mypy-boto3-tnb
+    mypy-boto3-transcribe
+    mypy-boto3-transfer
+    mypy-boto3-translate
+    mypy-boto3-verifiedpermissions
+    mypy-boto3-voice-id
+    mypy-boto3-vpc-lattice
+    mypy-boto3-waf
+    mypy-boto3-waf-regional
+    mypy-boto3-wafv2
+    mypy-boto3-wellarchitected
+    mypy-boto3-wisdom
+    mypy-boto3-workdocs
+    mypy-boto3-worklink
+    mypy-boto3-workmail
+    mypy-boto3-workmailmessageflow
+    mypy-boto3-workspaces
+    mypy-boto3-workspaces-web
+    mypy-boto3-xray
+    ;
+
+  inherit (reflex.subPkgs) reflex-hosting-cli;
+
+  inherit (callPackage ../development/python-modules/types-aiobotocore-packages { })
+    types-aiobotocore-accessanalyzer
+    types-aiobotocore-account
+    types-aiobotocore-acm
+    types-aiobotocore-acm-pca
+    types-aiobotocore-aiops
+    types-aiobotocore-alexaforbusiness
+    types-aiobotocore-amp
+    types-aiobotocore-amplify
+    types-aiobotocore-amplifybackend
+    types-aiobotocore-amplifyuibuilder
+    types-aiobotocore-apigateway
+    types-aiobotocore-apigatewaymanagementapi
+    types-aiobotocore-apigatewayv2
+    types-aiobotocore-appconfig
+    types-aiobotocore-appconfigdata
+    types-aiobotocore-appfabric
+    types-aiobotocore-appflow
+    types-aiobotocore-appintegrations
+    types-aiobotocore-application-autoscaling
+    types-aiobotocore-application-insights
+    types-aiobotocore-applicationcostprofiler
+    types-aiobotocore-appmesh
+    types-aiobotocore-apprunner
+    types-aiobotocore-appstream
+    types-aiobotocore-appsync
+    types-aiobotocore-arc-zonal-shift
+    types-aiobotocore-athena
+    types-aiobotocore-auditmanager
+    types-aiobotocore-autoscaling
+    types-aiobotocore-autoscaling-plans
+    types-aiobotocore-backup
+    types-aiobotocore-backup-gateway
+    types-aiobotocore-backupstorage
+    types-aiobotocore-batch
+    types-aiobotocore-billingconductor
+    types-aiobotocore-braket
+    types-aiobotocore-budgets
+    types-aiobotocore-ce
+    types-aiobotocore-chime
+    types-aiobotocore-chime-sdk-identity
+    types-aiobotocore-chime-sdk-media-pipelines
+    types-aiobotocore-chime-sdk-meetings
+    types-aiobotocore-chime-sdk-messaging
+    types-aiobotocore-chime-sdk-voice
+    types-aiobotocore-cleanrooms
+    types-aiobotocore-cloud9
+    types-aiobotocore-cloudcontrol
+    types-aiobotocore-clouddirectory
+    types-aiobotocore-cloudformation
+    types-aiobotocore-cloudfront
+    types-aiobotocore-cloudhsm
+    types-aiobotocore-cloudhsmv2
+    types-aiobotocore-cloudsearch
+    types-aiobotocore-cloudsearchdomain
+    types-aiobotocore-cloudtrail
+    types-aiobotocore-cloudtrail-data
+    types-aiobotocore-cloudwatch
+    types-aiobotocore-codeartifact
+    types-aiobotocore-codebuild
+    types-aiobotocore-codecatalyst
+    types-aiobotocore-codecommit
+    types-aiobotocore-codeconnections
+    types-aiobotocore-codedeploy
+    types-aiobotocore-codeguru-reviewer
+    types-aiobotocore-codeguru-security
+    types-aiobotocore-codeguruprofiler
+    types-aiobotocore-codepipeline
+    types-aiobotocore-codestar
+    types-aiobotocore-codestar-connections
+    types-aiobotocore-codestar-notifications
+    types-aiobotocore-cognito-identity
+    types-aiobotocore-cognito-idp
+    types-aiobotocore-cognito-sync
+    types-aiobotocore-comprehend
+    types-aiobotocore-comprehendmedical
+    types-aiobotocore-compute-optimizer
+    types-aiobotocore-config
+    types-aiobotocore-connect
+    types-aiobotocore-connect-contact-lens
+    types-aiobotocore-connectcampaigns
+    types-aiobotocore-connectcases
+    types-aiobotocore-connectparticipant
+    types-aiobotocore-controltower
+    types-aiobotocore-cur
+    types-aiobotocore-customer-profiles
+    types-aiobotocore-databrew
+    types-aiobotocore-dataexchange
+    types-aiobotocore-datapipeline
+    types-aiobotocore-datasync
+    types-aiobotocore-dax
+    types-aiobotocore-detective
+    types-aiobotocore-devicefarm
+    types-aiobotocore-devops-guru
+    types-aiobotocore-directconnect
+    types-aiobotocore-discovery
+    types-aiobotocore-dlm
+    types-aiobotocore-dms
+    types-aiobotocore-docdb
+    types-aiobotocore-docdb-elastic
+    types-aiobotocore-drs
+    types-aiobotocore-ds
+    types-aiobotocore-dynamodb
+    types-aiobotocore-dynamodbstreams
+    types-aiobotocore-ebs
+    types-aiobotocore-ec2
+    types-aiobotocore-ec2-instance-connect
+    types-aiobotocore-ecr
+    types-aiobotocore-ecr-public
+    types-aiobotocore-ecs
+    types-aiobotocore-efs
+    types-aiobotocore-eks
+    types-aiobotocore-elastic-inference
+    types-aiobotocore-elasticache
+    types-aiobotocore-elasticbeanstalk
+    types-aiobotocore-elastictranscoder
+    types-aiobotocore-elb
+    types-aiobotocore-elbv2
+    types-aiobotocore-emr
+    types-aiobotocore-emr-containers
+    types-aiobotocore-emr-serverless
+    types-aiobotocore-entityresolution
+    types-aiobotocore-es
+    types-aiobotocore-events
+    types-aiobotocore-evidently
+    types-aiobotocore-finspace
+    types-aiobotocore-finspace-data
+    types-aiobotocore-firehose
+    types-aiobotocore-fis
+    types-aiobotocore-fms
+    types-aiobotocore-forecast
+    types-aiobotocore-forecastquery
+    types-aiobotocore-frauddetector
+    types-aiobotocore-freetier
+    types-aiobotocore-fsx
+    types-aiobotocore-gamelift
+    types-aiobotocore-gamesparks
+    types-aiobotocore-glacier
+    types-aiobotocore-globalaccelerator
+    types-aiobotocore-glue
+    types-aiobotocore-grafana
+    types-aiobotocore-greengrass
+    types-aiobotocore-greengrassv2
+    types-aiobotocore-groundstation
+    types-aiobotocore-guardduty
+    types-aiobotocore-health
+    types-aiobotocore-healthlake
+    types-aiobotocore-honeycode
+    types-aiobotocore-iam
+    types-aiobotocore-identitystore
+    types-aiobotocore-imagebuilder
+    types-aiobotocore-importexport
+    types-aiobotocore-inspector
+    types-aiobotocore-inspector2
+    types-aiobotocore-internetmonitor
+    types-aiobotocore-iot
+    types-aiobotocore-iot-data
+    types-aiobotocore-iot-jobs-data
+    types-aiobotocore-iot-roborunner
+    types-aiobotocore-iot1click-devices
+    types-aiobotocore-iot1click-projects
+    types-aiobotocore-iotanalytics
+    types-aiobotocore-iotdeviceadvisor
+    types-aiobotocore-iotevents
+    types-aiobotocore-iotevents-data
+    types-aiobotocore-iotfleethub
+    types-aiobotocore-iotfleetwise
+    types-aiobotocore-iotsecuretunneling
+    types-aiobotocore-iotsitewise
+    types-aiobotocore-iotthingsgraph
+    types-aiobotocore-iottwinmaker
+    types-aiobotocore-iotwireless
+    types-aiobotocore-ivs
+    types-aiobotocore-ivs-realtime
+    types-aiobotocore-ivschat
+    types-aiobotocore-kafka
+    types-aiobotocore-kafkaconnect
+    types-aiobotocore-kendra
+    types-aiobotocore-kendra-ranking
+    types-aiobotocore-keyspaces
+    types-aiobotocore-kinesis
+    types-aiobotocore-kinesis-video-archived-media
+    types-aiobotocore-kinesis-video-media
+    types-aiobotocore-kinesis-video-signaling
+    types-aiobotocore-kinesis-video-webrtc-storage
+    types-aiobotocore-kinesisanalytics
+    types-aiobotocore-kinesisanalyticsv2
+    types-aiobotocore-kinesisvideo
+    types-aiobotocore-kms
+    types-aiobotocore-lakeformation
+    types-aiobotocore-lambda
+    types-aiobotocore-lex-models
+    types-aiobotocore-lex-runtime
+    types-aiobotocore-lexv2-models
+    types-aiobotocore-lexv2-runtime
+    types-aiobotocore-license-manager
+    types-aiobotocore-license-manager-linux-subscriptions
+    types-aiobotocore-license-manager-user-subscriptions
+    types-aiobotocore-lightsail
+    types-aiobotocore-location
+    types-aiobotocore-logs
+    types-aiobotocore-lookoutequipment
+    types-aiobotocore-lookoutmetrics
+    types-aiobotocore-lookoutvision
+    types-aiobotocore-m2
+    types-aiobotocore-machinelearning
+    types-aiobotocore-macie
+    types-aiobotocore-macie2
+    types-aiobotocore-managedblockchain
+    types-aiobotocore-managedblockchain-query
+    types-aiobotocore-marketplace-catalog
+    types-aiobotocore-marketplace-entitlement
+    types-aiobotocore-marketplacecommerceanalytics
+    types-aiobotocore-mediaconnect
+    types-aiobotocore-mediaconvert
+    types-aiobotocore-medialive
+    types-aiobotocore-mediapackage
+    types-aiobotocore-mediapackage-vod
+    types-aiobotocore-mediapackagev2
+    types-aiobotocore-mediastore
+    types-aiobotocore-mediastore-data
+    types-aiobotocore-mediatailor
+    types-aiobotocore-medical-imaging
+    types-aiobotocore-memorydb
+    types-aiobotocore-meteringmarketplace
+    types-aiobotocore-mgh
+    types-aiobotocore-mgn
+    types-aiobotocore-migration-hub-refactor-spaces
+    types-aiobotocore-migrationhub-config
+    types-aiobotocore-migrationhuborchestrator
+    types-aiobotocore-migrationhubstrategy
+    types-aiobotocore-mobile
+    types-aiobotocore-mq
+    types-aiobotocore-mturk
+    types-aiobotocore-mwaa
+    types-aiobotocore-neptune
+    types-aiobotocore-network-firewall
+    types-aiobotocore-networkmanager
+    types-aiobotocore-networkmonitor
+    types-aiobotocore-nimble
+    types-aiobotocore-oam
+    types-aiobotocore-omics
+    types-aiobotocore-opensearch
+    types-aiobotocore-opensearchserverless
+    types-aiobotocore-opsworks
+    types-aiobotocore-opsworkscm
+    types-aiobotocore-organizations
+    types-aiobotocore-osis
+    types-aiobotocore-outposts
+    types-aiobotocore-panorama
+    types-aiobotocore-payment-cryptography
+    types-aiobotocore-payment-cryptography-data
+    types-aiobotocore-personalize
+    types-aiobotocore-personalize-events
+    types-aiobotocore-personalize-runtime
+    types-aiobotocore-pi
+    types-aiobotocore-pinpoint
+    types-aiobotocore-pinpoint-email
+    types-aiobotocore-pinpoint-sms-voice
+    types-aiobotocore-pinpoint-sms-voice-v2
+    types-aiobotocore-pipes
+    types-aiobotocore-polly
+    types-aiobotocore-pricing
+    types-aiobotocore-privatenetworks
+    types-aiobotocore-proton
+    types-aiobotocore-qapps
+    types-aiobotocore-qbusiness
+    types-aiobotocore-qconnect
+    types-aiobotocore-qldb
+    types-aiobotocore-qldb-session
+    types-aiobotocore-quicksight
+    types-aiobotocore-ram
+    types-aiobotocore-rbin
+    types-aiobotocore-rds
+    types-aiobotocore-rds-data
+    types-aiobotocore-redshift
+    types-aiobotocore-redshift-data
+    types-aiobotocore-redshift-serverless
+    types-aiobotocore-rekognition
+    types-aiobotocore-resiliencehub
+    types-aiobotocore-resource-explorer-2
+    types-aiobotocore-resource-groups
+    types-aiobotocore-resourcegroupstaggingapi
+    types-aiobotocore-robomaker
+    types-aiobotocore-rolesanywhere
+    types-aiobotocore-route53
+    types-aiobotocore-route53-recovery-cluster
+    types-aiobotocore-route53-recovery-control-config
+    types-aiobotocore-route53-recovery-readiness
+    types-aiobotocore-route53domains
+    types-aiobotocore-route53resolver
+    types-aiobotocore-rum
+    types-aiobotocore-s3
+    types-aiobotocore-s3control
+    types-aiobotocore-s3outposts
+    types-aiobotocore-sagemaker
+    types-aiobotocore-sagemaker-a2i-runtime
+    types-aiobotocore-sagemaker-edge
+    types-aiobotocore-sagemaker-featurestore-runtime
+    types-aiobotocore-sagemaker-geospatial
+    types-aiobotocore-sagemaker-metrics
+    types-aiobotocore-sagemaker-runtime
+    types-aiobotocore-savingsplans
+    types-aiobotocore-scheduler
+    types-aiobotocore-schemas
+    types-aiobotocore-sdb
+    types-aiobotocore-secretsmanager
+    types-aiobotocore-securityhub
+    types-aiobotocore-securitylake
+    types-aiobotocore-serverlessrepo
+    types-aiobotocore-service-quotas
+    types-aiobotocore-servicecatalog
+    types-aiobotocore-servicecatalog-appregistry
+    types-aiobotocore-servicediscovery
+    types-aiobotocore-ses
+    types-aiobotocore-sesv2
+    types-aiobotocore-shield
+    types-aiobotocore-signer
+    types-aiobotocore-simspaceweaver
+    types-aiobotocore-sms
+    types-aiobotocore-sms-voice
+    types-aiobotocore-snow-device-management
+    types-aiobotocore-snowball
+    types-aiobotocore-sns
+    types-aiobotocore-sqs
+    types-aiobotocore-ssm
+    types-aiobotocore-ssm-contacts
+    types-aiobotocore-ssm-incidents
+    types-aiobotocore-ssm-sap
+    types-aiobotocore-sso
+    types-aiobotocore-sso-admin
+    types-aiobotocore-sso-oidc
+    types-aiobotocore-stepfunctions
+    types-aiobotocore-storagegateway
+    types-aiobotocore-sts
+    types-aiobotocore-support
+    types-aiobotocore-support-app
+    types-aiobotocore-swf
+    types-aiobotocore-synthetics
+    types-aiobotocore-textract
+    types-aiobotocore-timestream-query
+    types-aiobotocore-timestream-write
+    types-aiobotocore-tnb
+    types-aiobotocore-transcribe
+    types-aiobotocore-transfer
+    types-aiobotocore-translate
+    types-aiobotocore-verifiedpermissions
+    types-aiobotocore-voice-id
+    types-aiobotocore-vpc-lattice
+    types-aiobotocore-waf
+    types-aiobotocore-waf-regional
+    types-aiobotocore-wafv2
+    types-aiobotocore-wellarchitected
+    types-aiobotocore-wisdom
+    types-aiobotocore-workdocs
+    types-aiobotocore-worklink
+    types-aiobotocore-workmail
+    types-aiobotocore-workmailmessageflow
+    types-aiobotocore-workspaces
+    types-aiobotocore-workspaces-web
+    types-aiobotocore-xray
+    ;
+
+  inherit (self.wasmerPackages)
+    wasmer
+    wasmer-compiler-cranelift
+    wasmer-compiler-llvm
+    wasmer-compiler-singlepass
+    ;
 
   # by_regex ensures inherit statements are sorted after the (first) attribute name that is inherited.
   # keep-sorted start block=yes newline_separated=yes by_regex=["(?:inherit\\s+\\([^)]+\\)\\n?\\s*)?(.+)"]
@@ -492,9 +1446,9 @@ self: super: with self; {
     version = "1.2.0";
 
     src = pkgs.fetchPypi {
-      pname = "aioquic";
       inherit version;
       hash = "sha256-+RJjuz9xlIxciRW01Q7jcABPIKQW9n+rPcyQVWx+cZk=";
+      pname = "aioquic";
     };
   };
 
@@ -753,253 +1707,6 @@ self: super: with self; {
   alive-progress = callPackage ../development/python-modules/alive-progress { };
 
   aliyun-log-fastpb = callPackage ../development/python-modules/aliyun-log-fastpb { };
-
-  inherit (callPackage ../development/python-modules/aliyun-python-sdk { })
-    aliyun-python-sdk-actiontrail
-    aliyun-python-sdk-adb
-    aliyun-python-sdk-adcp
-    aliyun-python-sdk-address-purification
-    aliyun-python-sdk-aicontent
-    aliyun-python-sdk-aigen
-    aliyun-python-sdk-aimath
-    aliyun-python-sdk-aimiaobi
-    aliyun-python-sdk-aipodcast
-    aliyun-python-sdk-airec
-    aliyun-python-sdk-airticketopen
-    aliyun-python-sdk-alb
-    aliyun-python-sdk-alidns
-    aliyun-python-sdk-alikafka
-    aliyun-python-sdk-alimt
-    aliyun-python-sdk-alinlp
-    aliyun-python-sdk-amqp-open
-    aliyun-python-sdk-antiddos-public
-    aliyun-python-sdk-anytrans
-    aliyun-python-sdk-apds
-    aliyun-python-sdk-appstream-center
-    aliyun-python-sdk-aps
-    aliyun-python-sdk-arms
-    aliyun-python-sdk-avatar
-    aliyun-python-sdk-bailianchatbot
-    aliyun-python-sdk-beian
-    aliyun-python-sdk-bpstudio
-    aliyun-python-sdk-brain-industrial
-    aliyun-python-sdk-brinekingdom
-    aliyun-python-sdk-bssopenapi
-    aliyun-python-sdk-btripopen
-    aliyun-python-sdk-buss
-    aliyun-python-sdk-cams
-    aliyun-python-sdk-captcha
-    aliyun-python-sdk-cassandra
-    aliyun-python-sdk-cbn
-    aliyun-python-sdk-cc5g
-    aliyun-python-sdk-ccc
-    aliyun-python-sdk-cciotgw
-    aliyun-python-sdk-cdn
-    aliyun-python-sdk-cdrs
-    aliyun-python-sdk-ciomarketpop
-    aliyun-python-sdk-clickhouse
-    aliyun-python-sdk-cloudapi
-    aliyun-python-sdk-cloudauth
-    aliyun-python-sdk-cloudauth-console
-    aliyun-python-sdk-cloudesl
-    aliyun-python-sdk-cloudphone
-    aliyun-python-sdk-cloud-siem
-    aliyun-python-sdk-cms
-    aliyun-python-sdk-codeup
-    aliyun-python-sdk-companyreg
-    aliyun-python-sdk-computenest
-    aliyun-python-sdk-computenestsupplier
-    aliyun-python-sdk-config
-    aliyun-python-sdk-csas
-    aliyun-python-sdk-das
-    aliyun-python-sdk-dashdeviceconsole
-    aliyun-python-sdk-dataphin-public
-    aliyun-python-sdk-dataworks-public
-    aliyun-python-sdk-dbfs
-    aliyun-python-sdk-dbs
-    aliyun-python-sdk-dcdn
-    aliyun-python-sdk-ddosbgp
-    aliyun-python-sdk-ddoscoo
-    aliyun-python-sdk-ddosdiversion
-    aliyun-python-sdk-dds
-    aliyun-python-sdk-devops-rdc
-    aliyun-python-sdk-dfs
-    aliyun-python-sdk-dg
-    aliyun-python-sdk-dms
-    aliyun-python-sdk-dms-dg
-    aliyun-python-sdk-dms-enterprise
-    aliyun-python-sdk-documentautoml
-    aliyun-python-sdk-domain
-    aliyun-python-sdk-drds
-    aliyun-python-sdk-dt-oc-info
-    aliyun-python-sdk-dts
-    aliyun-python-sdk-dybaseapi
-    aliyun-python-sdk-dyplsapi
-    aliyun-python-sdk-dypnsapi
-    aliyun-python-sdk-dypnsapi-intl
-    aliyun-python-sdk-dysmsapi
-    aliyun-python-sdk-dytnsapi
-    aliyun-python-sdk-dyvmsapi
-    aliyun-python-sdk-eais
-    aliyun-python-sdk-eas
-    aliyun-python-sdk-ebs
-    aliyun-python-sdk-ecd
-    aliyun-python-sdk-eci
-    aliyun-python-sdk-ecs
-    aliyun-python-sdk-ecs-workbench
-    aliyun-python-sdk-edas
-    aliyun-python-sdk-eds-user
-    aliyun-python-sdk-eduinterpreting
-    aliyun-python-sdk-eflo
-    aliyun-python-sdk-eflo-controller
-    aliyun-python-sdk-ehpc
-    aliyun-python-sdk-ehpcinstant
-    aliyun-python-sdk-eiam
-    aliyun-python-sdk-eipanycast
-    aliyun-python-sdk-elasticsearch
-    aliyun-python-sdk-emas-appmonitor
-    aliyun-python-sdk-emr
-    aliyun-python-sdk-emrstudio
-    aliyun-python-sdk-ens
-    aliyun-python-sdk-esa
-    aliyun-python-sdk-ess
-    aliyun-python-sdk-es-serverless
-    aliyun-python-sdk-et-industry-openapi
-    aliyun-python-sdk-eventbridge
-    aliyun-python-sdk-facebody
-    aliyun-python-sdk-fnf
-    aliyun-python-sdk-foas
-    aliyun-python-sdk-ft
-    aliyun-python-sdk-ga
-    aliyun-python-sdk-gdb
-    aliyun-python-sdk-geoip
-    aliyun-python-sdk-governance
-    aliyun-python-sdk-gpdb
-    aliyun-python-sdk-grace
-    aliyun-python-sdk-green
-    aliyun-python-sdk-gwlb
-    aliyun-python-sdk-hbase
-    aliyun-python-sdk-hbr
-    aliyun-python-sdk-hcs-mgw
-    aliyun-python-sdk-hitsdb
-    aliyun-python-sdk-ice
-    aliyun-python-sdk-idaas-doraemon
-    aliyun-python-sdk-imageaudit
-    aliyun-python-sdk-imageenhan
-    aliyun-python-sdk-imageprocess
-    aliyun-python-sdk-imagerecog
-    aliyun-python-sdk-imageseg
-    aliyun-python-sdk-imarketing
-    aliyun-python-sdk-imgsearch
-    aliyun-python-sdk-imm
-    aliyun-python-sdk-intlmarket
-    aliyun-python-sdk-iot
-    aliyun-python-sdk-iotcc
-    aliyun-python-sdk-iqs
-    aliyun-python-sdk-itag
-    aliyun-python-sdk-ivision
-    aliyun-python-sdk-kms
-    aliyun-python-sdk-lingmou
-    aliyun-python-sdk-linkvisual
-    aliyun-python-sdk-linkwan
-    aliyun-python-sdk-live
-    aliyun-python-sdk-ltl
-    aliyun-python-sdk-lto
-    aliyun-python-sdk-market
-    aliyun-python-sdk-marketplaceintl
-    aliyun-python-sdk-maxcompute
-    aliyun-python-sdk-mns-open
-    aliyun-python-sdk-moguan-sdk
-    aliyun-python-sdk-msccommonquery
-    aliyun-python-sdk-mse
-    aliyun-python-sdk-mseap
-    aliyun-python-sdk-mts
-    aliyun-python-sdk-nas
-    aliyun-python-sdk-nis
-    aliyun-python-sdk-nlb
-    aliyun-python-sdk-nlp-automl
-    aliyun-python-sdk-objectdet
-    aliyun-python-sdk-oceanbasepro
-    aliyun-python-sdk-ocr
-    aliyun-python-sdk-ocs
-    aliyun-python-sdk-oms
-    aliyun-python-sdk-ons
-    aliyun-python-sdk-onsmqtt
-    aliyun-python-sdk-oos
-    aliyun-python-sdk-openanalytics-open
-    aliyun-python-sdk-openitag
-    aliyun-python-sdk-opensearch
-    aliyun-python-sdk-osssddp
-    aliyun-python-sdk-outboundbot
-    aliyun-python-sdk-pai-dsw
-    aliyun-python-sdk-paielasticdatasetaccelerator
-    aliyun-python-sdk-paifeaturestore
-    aliyun-python-sdk-pairecservice
-    aliyun-python-sdk-polardb
-    aliyun-python-sdk-polardbx
-    aliyun-python-sdk-privatelink
-    aliyun-python-sdk-push
-    aliyun-python-sdk-pvtz
-    aliyun-python-sdk-qianzhou
-    aliyun-python-sdk-qualitycheck
-    aliyun-python-sdk-quickbi-public
-    aliyun-python-sdk-quotas
-    aliyun-python-sdk-ram
-    aliyun-python-sdk-rds
-    aliyun-python-sdk-rds-data
-    aliyun-python-sdk-reid-cloud
-    aliyun-python-sdk-resourcecenter
-    aliyun-python-sdk-resourcemanager
-    aliyun-python-sdk-resourcesharing
-    aliyun-python-sdk-retailcloud
-    aliyun-python-sdk-r-kvstore
-    aliyun-python-sdk-ros
-    aliyun-python-sdk-rsimganalys
-    aliyun-python-sdk-rtc
-    aliyun-python-sdk-sae
-    aliyun-python-sdk-safconsole
-    aliyun-python-sdk-sas
-    aliyun-python-sdk-sasti
-    aliyun-python-sdk-scdn
-    aliyun-python-sdk-schedulerx2
-    aliyun-python-sdk-schedulerx3
-    aliyun-python-sdk-scsp
-    aliyun-python-sdk-sddp
-    aliyun-python-sdk-selectdb
-    aliyun-python-sdk-sgw
-    aliyun-python-sdk-slb
-    aliyun-python-sdk-sls
-    aliyun-python-sdk-smartag
-    aliyun-python-sdk-smartsales
-    aliyun-python-sdk-smc
-    aliyun-python-sdk-snsuapi
-    aliyun-python-sdk-sophonsoar
-    aliyun-python-sdk-sts
-    aliyun-python-sdk-swas-open
-    aliyun-python-sdk-tag
-    aliyun-python-sdk-threedvision
-    aliyun-python-sdk-tingwu
-    aliyun-python-sdk-unimkt
-    aliyun-python-sdk-ververica
-    aliyun-python-sdk-viapi
-    aliyun-python-sdk-viapi-oxs-cross
-    aliyun-python-sdk-viapi-regen
-    aliyun-python-sdk-videoenhan
-    aliyun-python-sdk-videorecog
-    aliyun-python-sdk-videoseg
-    aliyun-python-sdk-vod
-    aliyun-python-sdk-voicenavigator
-    aliyun-python-sdk-vpc
-    aliyun-python-sdk-vpcpeer
-    aliyun-python-sdk-vs
-    aliyun-python-sdk-waf-openapi
-    aliyun-python-sdk-websitebuild
-    aliyun-python-sdk-wfts
-    aliyun-python-sdk-workbench-ide
-    aliyun-python-sdk-workorder
-    aliyun-python-sdk-wss
-    aliyun-python-sdk-xtrace
-    ;
 
   aliyun-python-sdk-core = callPackage ../development/python-modules/aliyun-python-sdk-core { };
 
@@ -2086,16 +2793,16 @@ self: super: with self; {
 
   babeltrace = toPythonModule (
     pkgs.babeltrace.override {
-      pythonPackages = self;
       enablePython = true;
+      pythonPackages = self;
     }
   );
 
   babeltrace2 = toPythonModule (
     pkgs.babeltrace2.override {
       inherit (self) python;
-      pythonPackages = self;
       enablePython = true;
+      pythonPackages = self;
     }
   );
 
@@ -2586,6 +3293,26 @@ self: super: with self; {
     inherit (pkgs) boost;
   };
 
+  bootstrap = lib.recurseIntoAttrs {
+    build = toPythonModule (
+      callPackage ../development/python-modules/bootstrap/build {
+        inherit (bootstrap) flit-core installer;
+      }
+    );
+
+    flit-core = toPythonModule (callPackage ../development/python-modules/bootstrap/flit-core { });
+
+    installer = toPythonModule (
+      callPackage ../development/python-modules/bootstrap/installer { inherit (bootstrap) flit-core; }
+    );
+
+    packaging = toPythonModule (
+      callPackage ../development/python-modules/bootstrap/packaging {
+        inherit (bootstrap) flit-core installer;
+      }
+    );
+  };
+
   borb = callPackage ../development/python-modules/borb { };
 
   bork = callPackage ../development/python-modules/bork { };
@@ -2788,8 +3515,8 @@ self: super: with self; {
 
   caffe = toPythonModule (
     pkgs.caffe.override {
-      pythonSupport = true;
       inherit (self) python numpy boost;
+      pythonSupport = true;
     }
   );
 
@@ -2873,8 +3600,8 @@ self: super: with self; {
 
   casadi = toPythonModule (
     pkgs.casadi.override {
-      pythonSupport = true;
       python3Packages = self;
+      pythonSupport = true;
     }
   );
 
@@ -2905,8 +3632,8 @@ self: super: with self; {
 
   catboost = callPackage ../development/python-modules/catboost {
     catboost = pkgs.catboost.override {
-      pythonSupport = true;
       python3Packages = self;
+      pythonSupport = true;
     };
   };
 
@@ -3930,8 +4657,8 @@ self: super: with self; {
 
   dartsim = toPythonModule (
     pkgs.dartsim.override {
-      pythonSupport = true;
       python3Packages = self;
+      pythonSupport = true;
     }
   );
 
@@ -5715,8 +6442,8 @@ self: super: with self; {
 
   f3d = toPythonModule (
     pkgs.f3d.override {
-      withPythonBinding = true;
       python3Packages = self;
+      withPythonBinding = true;
     }
   );
 
@@ -5756,17 +6483,17 @@ self: super: with self; {
 
   faiss = callPackage ../development/python-modules/faiss {
     faiss-build = pkgs.faiss.override {
-      pythonSupport = true;
       python3Packages = self;
+      pythonSupport = true;
     };
   };
 
   faiss-cpu = callPackage ../development/python-modules/faiss-cpu {
     faiss = self.faiss.override {
       faiss-build = pkgs.faiss.override {
-        pythonSupport = true;
-        python3Packages = self;
         cudaSupport = false;
+        python3Packages = self;
+        pythonSupport = true;
       };
     };
   };
@@ -5873,8 +6600,8 @@ self: super: with self; {
 
   fastnlo-toolkit = toPythonModule (
     pkgs.fastnlo-toolkit.override {
-      withPython = true;
       inherit (self) python;
+      withPython = true;
     }
   );
 
@@ -6306,8 +7033,8 @@ self: super: with self; {
 
   fontforge = toPythonModule (
     pkgs.fontforge.override {
-      withPython = true;
       python3 = python;
+      withPython = true;
     }
   );
 
@@ -6607,11 +7334,6 @@ self: super: with self; {
 
   geoarrow-pyarrow = callPackage ../development/python-modules/geoarrow-pyarrow { };
 
-  inherit (callPackage ../development/python-modules/geoarrow-rust { })
-    geoarrow-rust-core
-    geoarrow-rust-io
-    ;
-
   geoarrow-types = callPackage ../development/python-modules/geoarrow-types { };
 
   geocachingapi = callPackage ../development/python-modules/geocachingapi { };
@@ -6822,8 +7544,8 @@ self: super: with self; {
 
   gmsh = toPythonModule (
     pkgs.gmsh.override {
-      python3Packages = self;
       enablePython = true;
+      python3Packages = self;
     }
   );
 
@@ -7352,8 +8074,8 @@ self: super: with self; {
   halide =
     toPythonModule
       (pkgs.halide.override {
-        pythonSupport = true;
         python3Packages = self;
+        pythonSupport = true;
       }).lib;
 
   halo = callPackage ../development/python-modules/halo { };
@@ -8288,6 +9010,7 @@ self: super: with self; {
       inherit python numpy;
       enablePython = true;
       enableRtk = false;
+
       stdenv =
         if stdenv.cc.isGNU then pkgs.stdenvAdapters.useLibsFrom stdenv pkgs.gcc13Stdenv else stdenv;
     }
@@ -8724,8 +9447,8 @@ self: super: with self; {
 
   kahip = toPythonModule (
     pkgs.kahip.override {
-      pythonSupport = true;
       python3Packages = self;
+      pythonSupport = true;
     }
   );
 
@@ -8867,8 +9590,8 @@ self: super: with self; {
 
   kmsxx = toPythonModule (
     pkgs.kmsxx.override {
-      withPython = true;
       python3Packages = self;
+      withPython = true;
     }
   );
 
@@ -9132,8 +9855,8 @@ self: super: with self; {
   ledger =
     (toPythonModule (
       pkgs.ledger.override {
-        usePython = true;
         python3 = python;
+        usePython = true;
       }
     )).py;
 
@@ -9171,8 +9894,8 @@ self: super: with self; {
   lgpio = toPythonModule (
     pkgs.lgpio.override {
       inherit buildPythonPackage;
-      pyProject = "PY_LGPIO";
       lgpioWithoutPython = pkgs.lgpio;
+      pyProject = "PY_LGPIO";
     }
   );
 
@@ -9265,8 +9988,8 @@ self: super: with self; {
   libiio =
     (toPythonModule (
       pkgs.libiio.override {
-        pythonSupport = true;
         python3 = python;
+        pythonSupport = true;
       }
     )).python;
 
@@ -9294,8 +10017,8 @@ self: super: with self; {
       p:
       p.overrideAttrs (super: {
         meta = super.meta // {
-          outputsToInstall = [ "py" ]; # The package always builds python3 bindings
           broken = (super.meta.broken or false) || !isPy3k;
+          outputsToInstall = [ "py" ]; # The package always builds python3 bindings
         };
       })
     )
@@ -9354,8 +10077,8 @@ self: super: with self; {
 
   libredwg = toPythonModule (
     pkgs.libredwg.override {
-      enablePython = true;
       inherit (self) python libxml2;
+      enablePython = true;
     }
   );
 
@@ -9391,8 +10114,8 @@ self: super: with self; {
 
   libsbml = toPythonModule (
     pkgs.libsbml.override {
-      withPython = true;
       inherit (self) python;
+      withPython = true;
     }
   );
 
@@ -9457,17 +10180,17 @@ self: super: with self; {
   libxml2 =
     (toPythonModule (
       pkgs.libxml2.override {
-        pythonSupport = true;
         python3 = python;
+        pythonSupport = true;
       }
     )).py;
 
   libxslt =
     (toPythonModule (
       pkgs.libxslt.override {
-        pythonSupport = true;
-        python3 = python;
         inherit (self) libxml2;
+        python3 = python;
+        pythonSupport = true;
       }
     )).py;
 
@@ -10183,6 +10906,7 @@ self: super: with self; {
 
   mayavi = pkgs.libsForQt5.callPackage ../development/python-modules/mayavi {
     inherit buildPythonPackage;
+
     inherit (self)
       pyface
       pygments
@@ -10657,8 +11381,8 @@ self: super: with self; {
 
   mlt = toPythonModule (
     pkgs.mlt.override {
-      python3 = python;
       enablePython = true;
+      python3 = python;
     }
   );
 
@@ -11026,357 +11750,6 @@ self: super: with self; {
 
   mypy = callPackage ../development/python-modules/mypy { };
 
-  inherit (callPackage ../development/python-modules/mypy-boto3 { })
-    mypy-boto3-accessanalyzer
-    mypy-boto3-account
-    mypy-boto3-acm
-    mypy-boto3-acm-pca
-    mypy-boto3-amp
-    mypy-boto3-amplify
-    mypy-boto3-amplifybackend
-    mypy-boto3-amplifyuibuilder
-    mypy-boto3-apigateway
-    mypy-boto3-apigatewaymanagementapi
-    mypy-boto3-apigatewayv2
-    mypy-boto3-appconfig
-    mypy-boto3-appconfigdata
-    mypy-boto3-appfabric
-    mypy-boto3-appflow
-    mypy-boto3-appintegrations
-    mypy-boto3-application-autoscaling
-    mypy-boto3-application-insights
-    mypy-boto3-applicationcostprofiler
-    mypy-boto3-appmesh
-    mypy-boto3-apprunner
-    mypy-boto3-appstream
-    mypy-boto3-appsync
-    mypy-boto3-arc-zonal-shift
-    mypy-boto3-athena
-    mypy-boto3-auditmanager
-    mypy-boto3-autoscaling
-    mypy-boto3-autoscaling-plans
-    mypy-boto3-backup
-    mypy-boto3-backup-gateway
-    mypy-boto3-batch
-    mypy-boto3-billingconductor
-    mypy-boto3-braket
-    mypy-boto3-budgets
-    mypy-boto3-ce
-    mypy-boto3-chime
-    mypy-boto3-chime-sdk-identity
-    mypy-boto3-chime-sdk-media-pipelines
-    mypy-boto3-chime-sdk-meetings
-    mypy-boto3-chime-sdk-messaging
-    mypy-boto3-chime-sdk-voice
-    mypy-boto3-cleanrooms
-    mypy-boto3-cloud9
-    mypy-boto3-cloudcontrol
-    mypy-boto3-clouddirectory
-    mypy-boto3-cloudformation
-    mypy-boto3-cloudfront
-    mypy-boto3-cloudhsm
-    mypy-boto3-cloudhsmv2
-    mypy-boto3-cloudsearch
-    mypy-boto3-cloudsearchdomain
-    mypy-boto3-cloudtrail
-    mypy-boto3-cloudtrail-data
-    mypy-boto3-cloudwatch
-    mypy-boto3-codeartifact
-    mypy-boto3-codebuild
-    mypy-boto3-codecatalyst
-    mypy-boto3-codecommit
-    mypy-boto3-codedeploy
-    mypy-boto3-codeguru-reviewer
-    mypy-boto3-codeguru-security
-    mypy-boto3-codeguruprofiler
-    mypy-boto3-codepipeline
-    mypy-boto3-codestar
-    mypy-boto3-codestar-connections
-    mypy-boto3-codestar-notifications
-    mypy-boto3-cognito-identity
-    mypy-boto3-cognito-idp
-    mypy-boto3-cognito-sync
-    mypy-boto3-comprehend
-    mypy-boto3-comprehendmedical
-    mypy-boto3-compute-optimizer
-    mypy-boto3-config
-    mypy-boto3-connect
-    mypy-boto3-connect-contact-lens
-    mypy-boto3-connectcampaigns
-    mypy-boto3-connectcases
-    mypy-boto3-connectparticipant
-    mypy-boto3-controltower
-    mypy-boto3-cur
-    mypy-boto3-customer-profiles
-    mypy-boto3-databrew
-    mypy-boto3-dataexchange
-    mypy-boto3-datapipeline
-    mypy-boto3-datasync
-    mypy-boto3-dax
-    mypy-boto3-detective
-    mypy-boto3-devicefarm
-    mypy-boto3-devops-guru
-    mypy-boto3-directconnect
-    mypy-boto3-discovery
-    mypy-boto3-dlm
-    mypy-boto3-dms
-    mypy-boto3-docdb
-    mypy-boto3-docdb-elastic
-    mypy-boto3-drs
-    mypy-boto3-ds
-    mypy-boto3-dynamodb
-    mypy-boto3-dynamodbstreams
-    mypy-boto3-ebs
-    mypy-boto3-ec2
-    mypy-boto3-ec2-instance-connect
-    mypy-boto3-ecr
-    mypy-boto3-ecr-public
-    mypy-boto3-ecs
-    mypy-boto3-efs
-    mypy-boto3-eks
-    mypy-boto3-elastic-inference
-    mypy-boto3-elasticache
-    mypy-boto3-elasticbeanstalk
-    mypy-boto3-elastictranscoder
-    mypy-boto3-elb
-    mypy-boto3-elbv2
-    mypy-boto3-emr
-    mypy-boto3-emr-containers
-    mypy-boto3-emr-serverless
-    mypy-boto3-entityresolution
-    mypy-boto3-es
-    mypy-boto3-events
-    mypy-boto3-evidently
-    mypy-boto3-finspace
-    mypy-boto3-finspace-data
-    mypy-boto3-firehose
-    mypy-boto3-fis
-    mypy-boto3-fms
-    mypy-boto3-forecast
-    mypy-boto3-forecastquery
-    mypy-boto3-frauddetector
-    mypy-boto3-fsx
-    mypy-boto3-gamelift
-    mypy-boto3-glacier
-    mypy-boto3-globalaccelerator
-    mypy-boto3-glue
-    mypy-boto3-grafana
-    mypy-boto3-greengrass
-    mypy-boto3-greengrassv2
-    mypy-boto3-groundstation
-    mypy-boto3-guardduty
-    mypy-boto3-health
-    mypy-boto3-healthlake
-    mypy-boto3-iam
-    mypy-boto3-identitystore
-    mypy-boto3-imagebuilder
-    mypy-boto3-importexport
-    mypy-boto3-inspector
-    mypy-boto3-inspector2
-    mypy-boto3-internetmonitor
-    mypy-boto3-iot
-    mypy-boto3-iot-data
-    mypy-boto3-iot-jobs-data
-    mypy-boto3-iot1click-devices
-    mypy-boto3-iot1click-projects
-    mypy-boto3-iotanalytics
-    mypy-boto3-iotdeviceadvisor
-    mypy-boto3-iotevents
-    mypy-boto3-iotevents-data
-    mypy-boto3-iotfleethub
-    mypy-boto3-iotfleetwise
-    mypy-boto3-iotsecuretunneling
-    mypy-boto3-iotsitewise
-    mypy-boto3-iotthingsgraph
-    mypy-boto3-iottwinmaker
-    mypy-boto3-iotwireless
-    mypy-boto3-ivs
-    mypy-boto3-ivs-realtime
-    mypy-boto3-ivschat
-    mypy-boto3-kafka
-    mypy-boto3-kafkaconnect
-    mypy-boto3-kendra
-    mypy-boto3-kendra-ranking
-    mypy-boto3-keyspaces
-    mypy-boto3-kinesis
-    mypy-boto3-kinesis-video-archived-media
-    mypy-boto3-kinesis-video-media
-    mypy-boto3-kinesis-video-signaling
-    mypy-boto3-kinesis-video-webrtc-storage
-    mypy-boto3-kinesisanalytics
-    mypy-boto3-kinesisanalyticsv2
-    mypy-boto3-kinesisvideo
-    mypy-boto3-kms
-    mypy-boto3-lakeformation
-    mypy-boto3-lambda
-    mypy-boto3-lex-models
-    mypy-boto3-lex-runtime
-    mypy-boto3-lexv2-models
-    mypy-boto3-lexv2-runtime
-    mypy-boto3-license-manager
-    mypy-boto3-license-manager-linux-subscriptions
-    mypy-boto3-license-manager-user-subscriptions
-    mypy-boto3-lightsail
-    mypy-boto3-location
-    mypy-boto3-logs
-    mypy-boto3-lookoutequipment
-    mypy-boto3-lookoutmetrics
-    mypy-boto3-lookoutvision
-    mypy-boto3-m2
-    mypy-boto3-machinelearning
-    mypy-boto3-macie2
-    mypy-boto3-managedblockchain
-    mypy-boto3-managedblockchain-query
-    mypy-boto3-marketplace-catalog
-    mypy-boto3-marketplace-entitlement
-    mypy-boto3-marketplacecommerceanalytics
-    mypy-boto3-mediaconnect
-    mypy-boto3-mediaconvert
-    mypy-boto3-medialive
-    mypy-boto3-mediapackage
-    mypy-boto3-mediapackage-vod
-    mypy-boto3-mediapackagev2
-    mypy-boto3-mediastore
-    mypy-boto3-mediastore-data
-    mypy-boto3-mediatailor
-    mypy-boto3-medical-imaging
-    mypy-boto3-memorydb
-    mypy-boto3-meteringmarketplace
-    mypy-boto3-mgh
-    mypy-boto3-mgn
-    mypy-boto3-migration-hub-refactor-spaces
-    mypy-boto3-migrationhub-config
-    mypy-boto3-migrationhuborchestrator
-    mypy-boto3-migrationhubstrategy
-    mypy-boto3-mq
-    mypy-boto3-mturk
-    mypy-boto3-mwaa
-    mypy-boto3-neptune
-    mypy-boto3-neptunedata
-    mypy-boto3-network-firewall
-    mypy-boto3-networkmanager
-    mypy-boto3-nimble
-    mypy-boto3-oam
-    mypy-boto3-omics
-    mypy-boto3-opensearch
-    mypy-boto3-opensearchserverless
-    mypy-boto3-opsworks
-    mypy-boto3-opsworkscm
-    mypy-boto3-organizations
-    mypy-boto3-osis
-    mypy-boto3-outposts
-    mypy-boto3-panorama
-    mypy-boto3-payment-cryptography
-    mypy-boto3-payment-cryptography-data
-    mypy-boto3-pca-connector-ad
-    mypy-boto3-personalize
-    mypy-boto3-personalize-events
-    mypy-boto3-personalize-runtime
-    mypy-boto3-pi
-    mypy-boto3-pinpoint
-    mypy-boto3-pinpoint-email
-    mypy-boto3-pinpoint-sms-voice
-    mypy-boto3-pinpoint-sms-voice-v2
-    mypy-boto3-pipes
-    mypy-boto3-polly
-    mypy-boto3-pricing
-    mypy-boto3-privatenetworks
-    mypy-boto3-proton
-    mypy-boto3-qldb
-    mypy-boto3-qldb-session
-    mypy-boto3-quicksight
-    mypy-boto3-ram
-    mypy-boto3-rbin
-    mypy-boto3-rds
-    mypy-boto3-rds-data
-    mypy-boto3-redshift
-    mypy-boto3-redshift-data
-    mypy-boto3-redshift-serverless
-    mypy-boto3-rekognition
-    mypy-boto3-resiliencehub
-    mypy-boto3-resource-explorer-2
-    mypy-boto3-resource-groups
-    mypy-boto3-resourcegroupstaggingapi
-    mypy-boto3-robomaker
-    mypy-boto3-rolesanywhere
-    mypy-boto3-route53
-    mypy-boto3-route53-recovery-cluster
-    mypy-boto3-route53-recovery-control-config
-    mypy-boto3-route53-recovery-readiness
-    mypy-boto3-route53domains
-    mypy-boto3-route53resolver
-    mypy-boto3-rum
-    mypy-boto3-s3
-    mypy-boto3-s3control
-    mypy-boto3-s3outposts
-    mypy-boto3-sagemaker
-    mypy-boto3-sagemaker-a2i-runtime
-    mypy-boto3-sagemaker-edge
-    mypy-boto3-sagemaker-featurestore-runtime
-    mypy-boto3-sagemaker-geospatial
-    mypy-boto3-sagemaker-metrics
-    mypy-boto3-sagemaker-runtime
-    mypy-boto3-savingsplans
-    mypy-boto3-scheduler
-    mypy-boto3-schemas
-    mypy-boto3-sdb
-    mypy-boto3-secretsmanager
-    mypy-boto3-securityhub
-    mypy-boto3-securitylake
-    mypy-boto3-serverlessrepo
-    mypy-boto3-service-quotas
-    mypy-boto3-servicecatalog
-    mypy-boto3-servicecatalog-appregistry
-    mypy-boto3-servicediscovery
-    mypy-boto3-ses
-    mypy-boto3-sesv2
-    mypy-boto3-shield
-    mypy-boto3-signer
-    mypy-boto3-simspaceweaver
-    mypy-boto3-sms
-    mypy-boto3-sms-voice
-    mypy-boto3-snow-device-management
-    mypy-boto3-snowball
-    mypy-boto3-sns
-    mypy-boto3-sqs
-    mypy-boto3-ssm
-    mypy-boto3-ssm-contacts
-    mypy-boto3-ssm-incidents
-    mypy-boto3-ssm-sap
-    mypy-boto3-sso
-    mypy-boto3-sso-admin
-    mypy-boto3-sso-oidc
-    mypy-boto3-stepfunctions
-    mypy-boto3-storagegateway
-    mypy-boto3-sts
-    mypy-boto3-support
-    mypy-boto3-support-app
-    mypy-boto3-swf
-    mypy-boto3-synthetics
-    mypy-boto3-textract
-    mypy-boto3-timestream-query
-    mypy-boto3-timestream-write
-    mypy-boto3-tnb
-    mypy-boto3-transcribe
-    mypy-boto3-transfer
-    mypy-boto3-translate
-    mypy-boto3-verifiedpermissions
-    mypy-boto3-voice-id
-    mypy-boto3-vpc-lattice
-    mypy-boto3-waf
-    mypy-boto3-waf-regional
-    mypy-boto3-wafv2
-    mypy-boto3-wellarchitected
-    mypy-boto3-wisdom
-    mypy-boto3-workdocs
-    mypy-boto3-worklink
-    mypy-boto3-workmail
-    mypy-boto3-workmailmessageflow
-    mypy-boto3-workspaces
-    mypy-boto3-workspaces-web
-    mypy-boto3-xray
-    ;
-
   mypy-boto3-builder = callPackage ../development/python-modules/mypy-boto3-builder { };
 
   mypy-extensions = callPackage ../development/python-modules/mypy/extensions.nix { };
@@ -11420,8 +11793,8 @@ self: super: with self; {
   nampa = callPackage ../development/python-modules/nampa { };
 
   nanoarrow = callPackage ../development/python-modules/nanoarrow {
-    zstd-c = pkgs.zstd;
     nanoarrow-c = pkgs.nanoarrow;
+    zstd-c = pkgs.zstd;
   };
 
   nanobind = callPackage ../development/python-modules/nanobind { };
@@ -11542,8 +11915,8 @@ self: super: with self; {
 
   nest = toPythonModule (
     pkgs.nest-mpi.override {
-      withPython = true;
       python3 = python;
+      withPython = true;
     }
   );
 
@@ -12127,11 +12500,12 @@ self: super: with self; {
   onnxmltools = callPackage ../development/python-modules/onnxmltools { };
 
   onnxruntime = callPackage ../development/python-modules/onnxruntime {
+    inherit (pkgs) openvino;
+
     onnxruntime = pkgs.onnxruntime.override {
       python3Packages = self;
       pythonSupport = true;
     };
-    inherit (pkgs) openvino;
   };
 
   onnxruntime-tools = callPackage ../development/python-modules/onnxruntime-tools { };
@@ -12221,26 +12595,26 @@ self: super: with self; {
 
   opencv4Full = toPythonModule (
     pkgs.opencv4.override rec {
-      enablePython = true;
-      pythonPackages = self;
-      enableCuda = pkgs.config.cudaSupport;
       enableCublas = enableCuda;
+      enableCuda = pkgs.config.cudaSupport;
       enableCudnn = enableCuda;
       enableCufft = enableCuda;
-      enableLto = !stdenv.hostPlatform.isLinux; # https://github.com/NixOS/nixpkgs/issues/343123
-      enableUnfree = false; # prevents cache
-      enableIpp = true;
-      enableGtk2 = true;
-      enableGtk3 = true;
-      enableVtk = true;
-      enableFfmpeg = true;
-      enableGStreamer = true;
-      enableTesseract = true;
-      enableTbb = true;
-      enableOvis = true;
-      enableGPhoto2 = true;
       enableDC1394 = true;
       enableDocs = true;
+      enableFfmpeg = true;
+      enableGPhoto2 = true;
+      enableGStreamer = true;
+      enableGtk2 = true;
+      enableGtk3 = true;
+      enableIpp = true;
+      enableLto = !stdenv.hostPlatform.isLinux; # https://github.com/NixOS/nixpkgs/issues/343123
+      enableOvis = true;
+      enablePython = true;
+      enableTbb = true;
+      enableTesseract = true;
+      enableUnfree = false; # prevents cache
+      enableVtk = true;
+      pythonPackages = self;
     }
   );
 
@@ -12281,8 +12655,8 @@ self: super: with self; {
 
   openmm = toPythonModule (
     pkgs.openmm.override {
-      python3Packages = self;
       enablePython = true;
+      python3Packages = self;
     }
   );
 
@@ -12470,8 +12844,8 @@ self: super: with self; {
 
   openturns = toPythonModule (
     pkgs.openturns.override {
-      python3Packages = self;
       enablePython = true;
+      python3Packages = self;
     }
   );
 
@@ -13262,8 +13636,8 @@ self: super: with self; {
   pjsua2 =
     (toPythonModule (
       pkgs.pjsip.override {
-        pythonSupport = true;
         python3 = self.python;
+        pythonSupport = true;
       }
     )).py;
 
@@ -13319,8 +13693,8 @@ self: super: with self; {
 
   plfit = toPythonModule (
     pkgs.plfit.override {
-      withPython = true;
       inherit (self) python;
+      withPython = true;
     }
   );
 
@@ -13711,8 +14085,8 @@ self: super: with self; {
 
   proxsuite = toPythonModule (
     pkgs.proxsuite.override {
-      pythonSupport = true;
       python3Packages = self;
+      pythonSupport = true;
     }
   );
 
@@ -15339,8 +15713,8 @@ self: super: with self; {
 
   pypamtest = toPythonModule (
     pkgs.libpam-wrapper.override {
-      enablePython = true;
       inherit python;
+      enablePython = true;
     }
   );
 
@@ -16598,10 +16972,12 @@ self: super: with self; {
       proj
       zlib
       ;
+
     boost = pkgs.boost.override {
-      enablePython = true;
       inherit python;
+      enablePython = true;
     };
+
     harfbuzz = pkgs.harfbuzz.override { withIcu = true; };
     mapnik = pkgs.mapnik.override { inherit boost harfbuzz; };
   };
@@ -16830,6 +17206,7 @@ self: super: with self; {
 
   python-xapp = callPackage ../development/python-modules/python-xapp {
     inherit (pkgs.buildPackages) meson;
+
     inherit (pkgs)
       gtk3
       gobject-introspection
@@ -17407,8 +17784,8 @@ self: super: with self; {
 
   rdkit = callPackage ../development/python-modules/rdkit {
     boost = pkgs.boost.override {
-      enablePython = true;
       inherit python;
+      enablePython = true;
     };
   };
 
@@ -17489,8 +17866,6 @@ self: super: with self; {
   reflex = callPackage ../development/python-modules/reflex { };
 
   reflex-chakra = callPackage ../development/python-modules/reflex-chakra { };
-
-  inherit (reflex.subPkgs) reflex-hosting-cli;
 
   reflink = callPackage ../development/python-modules/reflink { };
 
@@ -18401,6 +18776,8 @@ self: super: with self; {
 
   setupmeta = callPackage ../development/python-modules/setupmeta { };
 
+  setuptools = callPackage ../development/python-modules/setuptools { };
+
   setuptools-changelog-shortener =
     callPackage ../development/python-modules/setuptools-changelog-shortener
       { };
@@ -18432,6 +18809,8 @@ self: super: with self; {
       { };
 
   setuptools-trial = callPackage ../development/python-modules/setuptools-trial { };
+
+  setuptools_80 = callPackage ../development/python-modules/setuptools/80.nix { };
 
   sev-snp-measure = callPackage ../development/python-modules/sev-snp-measure { };
 
@@ -18711,16 +19090,16 @@ self: super: with self; {
 
   slepc4py = toPythonModule (
     pkgs.slepc.override {
-      pythonSupport = true;
-      python3Packages = self;
       petsc = petsc4py;
+      python3Packages = self;
+      pythonSupport = true;
     }
   );
 
   sleqp = toPythonModule (
     pkgs.sleqp.override {
-      pythonSupport = true;
       python3Packages = self;
+      pythonSupport = true;
     }
   );
 
@@ -19996,17 +20375,17 @@ self: super: with self; {
   tensorflow-build =
     let
       compat = rec {
-        #protobufTF = pkgs.protobuf_21.override { abseil-cpp = pkgs.abseil-cpp_202301; };
-        protobufTF = pkgs.protobuf;
         # https://www.tensorflow.org/install/source#gpu
         #cudaPackagesTF = pkgs.cudaPackages_11;
         cudaPackagesTF = pkgs.cudaPackages;
+
         grpcTF =
           (pkgs.grpc.overrideAttrs (oldAttrs: rec {
             # nvcc fails on recent grpc versions, so we use the latest patch level
             #  of the grpc version bundled by upstream tensorflow to allow CUDA
             #  support
             version = "1.27.3";
+
             src = pkgs.fetchFromGitHub {
               owner = "grpc";
               repo = "grpc";
@@ -20014,15 +20393,21 @@ self: super: with self; {
               hash = "sha256-PpiOT4ZJe1uMp5j+ReQulC9jpT0xoR2sAl6vRYKA0AA=";
               fetchSubmodules = true;
             };
+
             patches = [ ];
+
             postPatch = ''
               sed -i "s/-std=c++11/-std=c++17/" CMakeLists.txt
               echo "set(CMAKE_CXX_STANDARD 17)" >> CMakeLists.txt
             '';
           })).override
             { protobuf = protobufTF; };
-        protobuf-pythonTF = self.protobuf4.override { protobuf = protobufTF; };
+
         grpcioTF = self.grpcio.override { protobuf = protobufTF; };
+        protobuf-pythonTF = self.protobuf4.override { protobuf = protobufTF; };
+        #protobufTF = pkgs.protobuf_21.override { abseil-cpp = pkgs.abseil-cpp_202301; };
+        protobufTF = pkgs.protobuf;
+
         tensorboardTF = self.tensorboard.override {
           grpcio = grpcioTF;
           protobuf = protobuf-pythonTF;
@@ -20031,17 +20416,16 @@ self: super: with self; {
     in
     callPackage ../development/python-modules/tensorflow {
       inherit (pkgs.config) cudaSupport;
+      cudaPackages = compat.cudaPackagesTF;
       flatbuffers-core = pkgs.flatbuffers;
       flatbuffers-python = self.flatbuffers;
-      cudaPackages = compat.cudaPackagesTF;
-      protobuf-core = compat.protobufTF;
-      protobuf-python = compat.protobuf-pythonTF;
       grpc = compat.grpcTF;
       grpcio = compat.grpcioTF;
-      tensorboard = compat.tensorboardTF;
+      protobuf-core = compat.protobufTF;
+      protobuf-python = compat.protobuf-pythonTF;
       #abseil-cpp = pkgs.abseil-cpp_202301;
       snappy-cpp = pkgs.snappy;
-
+      tensorboard = compat.tensorboardTF;
       # Tensorflow 2.13 doesn't support gcc13:
       # https://github.com/tensorflow/tensorflow/issues/61289
       #
@@ -20440,15 +20824,15 @@ self: super: with self; {
   torch-tb-profiler = callPackage ../development/python-modules/torch-tb-profiler/default.nix { };
 
   torchWithCuda = self.torch.override {
-    triton = self.triton-cuda;
     cudaSupport = true;
     rocmSupport = false;
+    triton = self.triton-cuda;
   };
 
   torchWithRocm = self.torch.override {
-    triton = self.triton-no-cuda;
-    rocmSupport = true;
     cudaSupport = false;
+    rocmSupport = true;
+    triton = self.triton-no-cuda;
   };
 
   torchWithVulkan = self.torch.override { vulkanSupport = true; };
@@ -20698,8 +21082,8 @@ self: super: with self; {
 
   trlib = toPythonModule (
     pkgs.trlib.override {
-      pythonSupport = true;
       python3Packages = self;
+      pythonSupport = true;
     }
   );
 
@@ -20868,369 +21252,6 @@ self: super: with self; {
   typer-shell = callPackage ../development/python-modules/typer-shell { };
 
   types-aiobotocore = callPackage ../development/python-modules/types-aiobotocore { };
-
-  inherit (callPackage ../development/python-modules/types-aiobotocore-packages { })
-    types-aiobotocore-accessanalyzer
-    types-aiobotocore-account
-    types-aiobotocore-acm
-    types-aiobotocore-acm-pca
-    types-aiobotocore-aiops
-    types-aiobotocore-alexaforbusiness
-    types-aiobotocore-amp
-    types-aiobotocore-amplify
-    types-aiobotocore-amplifybackend
-    types-aiobotocore-amplifyuibuilder
-    types-aiobotocore-apigateway
-    types-aiobotocore-apigatewaymanagementapi
-    types-aiobotocore-apigatewayv2
-    types-aiobotocore-appconfig
-    types-aiobotocore-appconfigdata
-    types-aiobotocore-appfabric
-    types-aiobotocore-appflow
-    types-aiobotocore-appintegrations
-    types-aiobotocore-application-autoscaling
-    types-aiobotocore-application-insights
-    types-aiobotocore-applicationcostprofiler
-    types-aiobotocore-appmesh
-    types-aiobotocore-apprunner
-    types-aiobotocore-appstream
-    types-aiobotocore-appsync
-    types-aiobotocore-arc-zonal-shift
-    types-aiobotocore-athena
-    types-aiobotocore-auditmanager
-    types-aiobotocore-autoscaling
-    types-aiobotocore-autoscaling-plans
-    types-aiobotocore-backup
-    types-aiobotocore-backup-gateway
-    types-aiobotocore-backupstorage
-    types-aiobotocore-batch
-    types-aiobotocore-billingconductor
-    types-aiobotocore-braket
-    types-aiobotocore-budgets
-    types-aiobotocore-ce
-    types-aiobotocore-chime
-    types-aiobotocore-chime-sdk-identity
-    types-aiobotocore-chime-sdk-media-pipelines
-    types-aiobotocore-chime-sdk-meetings
-    types-aiobotocore-chime-sdk-messaging
-    types-aiobotocore-chime-sdk-voice
-    types-aiobotocore-cleanrooms
-    types-aiobotocore-cloud9
-    types-aiobotocore-cloudcontrol
-    types-aiobotocore-clouddirectory
-    types-aiobotocore-cloudformation
-    types-aiobotocore-cloudfront
-    types-aiobotocore-cloudhsm
-    types-aiobotocore-cloudhsmv2
-    types-aiobotocore-cloudsearch
-    types-aiobotocore-cloudsearchdomain
-    types-aiobotocore-cloudtrail
-    types-aiobotocore-cloudtrail-data
-    types-aiobotocore-cloudwatch
-    types-aiobotocore-codeartifact
-    types-aiobotocore-codebuild
-    types-aiobotocore-codecatalyst
-    types-aiobotocore-codecommit
-    types-aiobotocore-codeconnections
-    types-aiobotocore-codedeploy
-    types-aiobotocore-codeguru-reviewer
-    types-aiobotocore-codeguru-security
-    types-aiobotocore-codeguruprofiler
-    types-aiobotocore-codepipeline
-    types-aiobotocore-codestar
-    types-aiobotocore-codestar-connections
-    types-aiobotocore-codestar-notifications
-    types-aiobotocore-cognito-identity
-    types-aiobotocore-cognito-idp
-    types-aiobotocore-cognito-sync
-    types-aiobotocore-comprehend
-    types-aiobotocore-comprehendmedical
-    types-aiobotocore-compute-optimizer
-    types-aiobotocore-config
-    types-aiobotocore-connect
-    types-aiobotocore-connect-contact-lens
-    types-aiobotocore-connectcampaigns
-    types-aiobotocore-connectcases
-    types-aiobotocore-connectparticipant
-    types-aiobotocore-controltower
-    types-aiobotocore-cur
-    types-aiobotocore-customer-profiles
-    types-aiobotocore-databrew
-    types-aiobotocore-dataexchange
-    types-aiobotocore-datapipeline
-    types-aiobotocore-datasync
-    types-aiobotocore-dax
-    types-aiobotocore-detective
-    types-aiobotocore-devicefarm
-    types-aiobotocore-devops-guru
-    types-aiobotocore-directconnect
-    types-aiobotocore-discovery
-    types-aiobotocore-dlm
-    types-aiobotocore-dms
-    types-aiobotocore-docdb
-    types-aiobotocore-docdb-elastic
-    types-aiobotocore-drs
-    types-aiobotocore-ds
-    types-aiobotocore-dynamodb
-    types-aiobotocore-dynamodbstreams
-    types-aiobotocore-ebs
-    types-aiobotocore-ec2
-    types-aiobotocore-ec2-instance-connect
-    types-aiobotocore-ecr
-    types-aiobotocore-ecr-public
-    types-aiobotocore-ecs
-    types-aiobotocore-efs
-    types-aiobotocore-eks
-    types-aiobotocore-elastic-inference
-    types-aiobotocore-elasticache
-    types-aiobotocore-elasticbeanstalk
-    types-aiobotocore-elastictranscoder
-    types-aiobotocore-elb
-    types-aiobotocore-elbv2
-    types-aiobotocore-emr
-    types-aiobotocore-emr-containers
-    types-aiobotocore-emr-serverless
-    types-aiobotocore-entityresolution
-    types-aiobotocore-es
-    types-aiobotocore-events
-    types-aiobotocore-evidently
-    types-aiobotocore-finspace
-    types-aiobotocore-finspace-data
-    types-aiobotocore-firehose
-    types-aiobotocore-fis
-    types-aiobotocore-fms
-    types-aiobotocore-forecast
-    types-aiobotocore-forecastquery
-    types-aiobotocore-frauddetector
-    types-aiobotocore-freetier
-    types-aiobotocore-fsx
-    types-aiobotocore-gamelift
-    types-aiobotocore-gamesparks
-    types-aiobotocore-glacier
-    types-aiobotocore-globalaccelerator
-    types-aiobotocore-glue
-    types-aiobotocore-grafana
-    types-aiobotocore-greengrass
-    types-aiobotocore-greengrassv2
-    types-aiobotocore-groundstation
-    types-aiobotocore-guardduty
-    types-aiobotocore-health
-    types-aiobotocore-healthlake
-    types-aiobotocore-honeycode
-    types-aiobotocore-iam
-    types-aiobotocore-identitystore
-    types-aiobotocore-imagebuilder
-    types-aiobotocore-importexport
-    types-aiobotocore-inspector
-    types-aiobotocore-inspector2
-    types-aiobotocore-internetmonitor
-    types-aiobotocore-iot
-    types-aiobotocore-iot-data
-    types-aiobotocore-iot-jobs-data
-    types-aiobotocore-iot-roborunner
-    types-aiobotocore-iot1click-devices
-    types-aiobotocore-iot1click-projects
-    types-aiobotocore-iotanalytics
-    types-aiobotocore-iotdeviceadvisor
-    types-aiobotocore-iotevents
-    types-aiobotocore-iotevents-data
-    types-aiobotocore-iotfleethub
-    types-aiobotocore-iotfleetwise
-    types-aiobotocore-iotsecuretunneling
-    types-aiobotocore-iotsitewise
-    types-aiobotocore-iotthingsgraph
-    types-aiobotocore-iottwinmaker
-    types-aiobotocore-iotwireless
-    types-aiobotocore-ivs
-    types-aiobotocore-ivs-realtime
-    types-aiobotocore-ivschat
-    types-aiobotocore-kafka
-    types-aiobotocore-kafkaconnect
-    types-aiobotocore-kendra
-    types-aiobotocore-kendra-ranking
-    types-aiobotocore-keyspaces
-    types-aiobotocore-kinesis
-    types-aiobotocore-kinesis-video-archived-media
-    types-aiobotocore-kinesis-video-media
-    types-aiobotocore-kinesis-video-signaling
-    types-aiobotocore-kinesis-video-webrtc-storage
-    types-aiobotocore-kinesisanalytics
-    types-aiobotocore-kinesisanalyticsv2
-    types-aiobotocore-kinesisvideo
-    types-aiobotocore-kms
-    types-aiobotocore-lakeformation
-    types-aiobotocore-lambda
-    types-aiobotocore-lex-models
-    types-aiobotocore-lex-runtime
-    types-aiobotocore-lexv2-models
-    types-aiobotocore-lexv2-runtime
-    types-aiobotocore-license-manager
-    types-aiobotocore-license-manager-linux-subscriptions
-    types-aiobotocore-license-manager-user-subscriptions
-    types-aiobotocore-lightsail
-    types-aiobotocore-location
-    types-aiobotocore-logs
-    types-aiobotocore-lookoutequipment
-    types-aiobotocore-lookoutmetrics
-    types-aiobotocore-lookoutvision
-    types-aiobotocore-m2
-    types-aiobotocore-machinelearning
-    types-aiobotocore-macie
-    types-aiobotocore-macie2
-    types-aiobotocore-managedblockchain
-    types-aiobotocore-managedblockchain-query
-    types-aiobotocore-marketplace-catalog
-    types-aiobotocore-marketplace-entitlement
-    types-aiobotocore-marketplacecommerceanalytics
-    types-aiobotocore-mediaconnect
-    types-aiobotocore-mediaconvert
-    types-aiobotocore-medialive
-    types-aiobotocore-mediapackage
-    types-aiobotocore-mediapackage-vod
-    types-aiobotocore-mediapackagev2
-    types-aiobotocore-mediastore
-    types-aiobotocore-mediastore-data
-    types-aiobotocore-mediatailor
-    types-aiobotocore-medical-imaging
-    types-aiobotocore-memorydb
-    types-aiobotocore-meteringmarketplace
-    types-aiobotocore-mgh
-    types-aiobotocore-mgn
-    types-aiobotocore-migration-hub-refactor-spaces
-    types-aiobotocore-migrationhub-config
-    types-aiobotocore-migrationhuborchestrator
-    types-aiobotocore-migrationhubstrategy
-    types-aiobotocore-mobile
-    types-aiobotocore-mq
-    types-aiobotocore-mturk
-    types-aiobotocore-mwaa
-    types-aiobotocore-neptune
-    types-aiobotocore-network-firewall
-    types-aiobotocore-networkmanager
-    types-aiobotocore-networkmonitor
-    types-aiobotocore-nimble
-    types-aiobotocore-oam
-    types-aiobotocore-omics
-    types-aiobotocore-opensearch
-    types-aiobotocore-opensearchserverless
-    types-aiobotocore-opsworks
-    types-aiobotocore-opsworkscm
-    types-aiobotocore-organizations
-    types-aiobotocore-osis
-    types-aiobotocore-outposts
-    types-aiobotocore-panorama
-    types-aiobotocore-payment-cryptography
-    types-aiobotocore-payment-cryptography-data
-    types-aiobotocore-personalize
-    types-aiobotocore-personalize-events
-    types-aiobotocore-personalize-runtime
-    types-aiobotocore-pi
-    types-aiobotocore-pinpoint
-    types-aiobotocore-pinpoint-email
-    types-aiobotocore-pinpoint-sms-voice
-    types-aiobotocore-pinpoint-sms-voice-v2
-    types-aiobotocore-pipes
-    types-aiobotocore-polly
-    types-aiobotocore-pricing
-    types-aiobotocore-privatenetworks
-    types-aiobotocore-proton
-    types-aiobotocore-qapps
-    types-aiobotocore-qbusiness
-    types-aiobotocore-qconnect
-    types-aiobotocore-qldb
-    types-aiobotocore-qldb-session
-    types-aiobotocore-quicksight
-    types-aiobotocore-ram
-    types-aiobotocore-rbin
-    types-aiobotocore-rds
-    types-aiobotocore-rds-data
-    types-aiobotocore-redshift
-    types-aiobotocore-redshift-data
-    types-aiobotocore-redshift-serverless
-    types-aiobotocore-rekognition
-    types-aiobotocore-resiliencehub
-    types-aiobotocore-resource-explorer-2
-    types-aiobotocore-resource-groups
-    types-aiobotocore-resourcegroupstaggingapi
-    types-aiobotocore-robomaker
-    types-aiobotocore-rolesanywhere
-    types-aiobotocore-route53
-    types-aiobotocore-route53-recovery-cluster
-    types-aiobotocore-route53-recovery-control-config
-    types-aiobotocore-route53-recovery-readiness
-    types-aiobotocore-route53domains
-    types-aiobotocore-route53resolver
-    types-aiobotocore-rum
-    types-aiobotocore-s3
-    types-aiobotocore-s3control
-    types-aiobotocore-s3outposts
-    types-aiobotocore-sagemaker
-    types-aiobotocore-sagemaker-a2i-runtime
-    types-aiobotocore-sagemaker-edge
-    types-aiobotocore-sagemaker-featurestore-runtime
-    types-aiobotocore-sagemaker-geospatial
-    types-aiobotocore-sagemaker-metrics
-    types-aiobotocore-sagemaker-runtime
-    types-aiobotocore-savingsplans
-    types-aiobotocore-scheduler
-    types-aiobotocore-schemas
-    types-aiobotocore-sdb
-    types-aiobotocore-secretsmanager
-    types-aiobotocore-securityhub
-    types-aiobotocore-securitylake
-    types-aiobotocore-serverlessrepo
-    types-aiobotocore-service-quotas
-    types-aiobotocore-servicecatalog
-    types-aiobotocore-servicecatalog-appregistry
-    types-aiobotocore-servicediscovery
-    types-aiobotocore-ses
-    types-aiobotocore-sesv2
-    types-aiobotocore-shield
-    types-aiobotocore-signer
-    types-aiobotocore-simspaceweaver
-    types-aiobotocore-sms
-    types-aiobotocore-sms-voice
-    types-aiobotocore-snow-device-management
-    types-aiobotocore-snowball
-    types-aiobotocore-sns
-    types-aiobotocore-sqs
-    types-aiobotocore-ssm
-    types-aiobotocore-ssm-contacts
-    types-aiobotocore-ssm-incidents
-    types-aiobotocore-ssm-sap
-    types-aiobotocore-sso
-    types-aiobotocore-sso-admin
-    types-aiobotocore-sso-oidc
-    types-aiobotocore-stepfunctions
-    types-aiobotocore-storagegateway
-    types-aiobotocore-sts
-    types-aiobotocore-support
-    types-aiobotocore-support-app
-    types-aiobotocore-swf
-    types-aiobotocore-synthetics
-    types-aiobotocore-textract
-    types-aiobotocore-timestream-query
-    types-aiobotocore-timestream-write
-    types-aiobotocore-tnb
-    types-aiobotocore-transcribe
-    types-aiobotocore-transfer
-    types-aiobotocore-translate
-    types-aiobotocore-verifiedpermissions
-    types-aiobotocore-voice-id
-    types-aiobotocore-vpc-lattice
-    types-aiobotocore-waf
-    types-aiobotocore-waf-regional
-    types-aiobotocore-wafv2
-    types-aiobotocore-wellarchitected
-    types-aiobotocore-wisdom
-    types-aiobotocore-workdocs
-    types-aiobotocore-worklink
-    types-aiobotocore-workmail
-    types-aiobotocore-workmailmessageflow
-    types-aiobotocore-workspaces
-    types-aiobotocore-workspaces-web
-    types-aiobotocore-xray
-    ;
 
   types-appdirs = callPackage ../development/python-modules/types-appdirs { };
 
@@ -21858,8 +21879,8 @@ self: super: with self; {
 
   vtk = toPythonModule (
     pkgs.vtk.override {
-      pythonSupport = true;
       python3Packages = self;
+      pythonSupport = true;
     }
   );
 
@@ -21922,8 +21943,8 @@ self: super: with self; {
   warlock = callPackage ../development/python-modules/warlock { };
 
   warp-lang = callPackage ../development/python-modules/warp-lang {
-    stdenv = if stdenv.hostPlatform.isDarwin then pkgs.llvmPackages_19.stdenv else pkgs.stdenv;
     llvmPackages = pkgs.llvmPackages_19;
+    stdenv = if stdenv.hostPlatform.isDarwin then pkgs.llvmPackages_19.stdenv else pkgs.stdenv;
   };
 
   warrant = callPackage ../development/python-modules/warrant { };
@@ -21931,13 +21952,6 @@ self: super: with self; {
   warrant-lite = callPackage ../development/python-modules/warrant-lite { };
 
   wasabi = callPackage ../development/python-modules/wasabi { };
-
-  inherit (self.wasmerPackages)
-    wasmer
-    wasmer-compiler-cranelift
-    wasmer-compiler-llvm
-    wasmer-compiler-singlepass
-    ;
 
   wasmerPackages = lib.recurseIntoAttrs (callPackage ../development/python-modules/wasmer { });
 
@@ -22096,8 +22110,8 @@ self: super: with self; {
   whispers = callPackage ../development/python-modules/whispers { };
 
   whisperx = callPackage ../development/python-modules/whisperx {
-    ffmpeg = pkgs.ffmpeg-headless;
     ctranslate2-cpp = pkgs.ctranslate2;
+    ffmpeg = pkgs.ffmpeg-headless;
   };
 
   whitenoise = callPackage ../development/python-modules/whitenoise { };
@@ -22669,6 +22683,5 @@ self: super: with self; {
   zxcvbn-rs-py = callPackage ../development/python-modules/zxcvbn-rs-py { };
 
   zxing-cpp = callPackage ../development/python-modules/zxing-cpp { libzxing-cpp = pkgs.zxing-cpp; };
-
   # keep-sorted end
 }

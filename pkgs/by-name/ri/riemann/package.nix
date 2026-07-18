@@ -2,8 +2,8 @@
   lib,
   stdenv,
   fetchurl,
-  makeWrapper,
   jre,
+  makeWrapper,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -29,12 +29,12 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   meta = {
-    homepage = "http://riemann.io/";
     description = "Network monitoring system";
-    mainProgram = "riemann";
-    sourceProvenance = with lib.sourceTypes; [ binaryBytecode ];
+    homepage = "http://riemann.io/";
     license = lib.licenses.epl10;
-    platforms = lib.platforms.all;
+    sourceProvenance = with lib.sourceTypes; [ binaryBytecode ];
     maintainers = with lib.maintainers; [ crimeminister ];
+    platforms = lib.platforms.all;
+    mainProgram = "riemann";
   };
 })

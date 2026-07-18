@@ -9,13 +9,19 @@ buildGoModule (finalAttrs: {
   version = "1.4.0";
 
   src = fetchFromGitHub {
-    repo = "goat";
     owner = "studio-b12";
+    repo = "goat";
     rev = "v${finalAttrs.version}";
     hash = "sha256-7inoRBVR7zmt0jUFAGYjoYT2cdda0qgzyXLL+GiBFMg=";
   };
 
+  patches = [
+    ./mock-fix.patch
+  ];
+
   vendorHash = "sha256-b/v27pHA9LcFe4TC/EpelJVSkAg4sq7b8p2gk0bWsQc=";
+  # Checks currently fail because of an issue with github.com/studio-b12/goat/mocks
+  doCheck = false;
 
   ldflags = [
     "-s"
@@ -23,13 +29,6 @@ buildGoModule (finalAttrs: {
     "-X github.com/studio-b12/goat/internal/version.Version=${finalAttrs.version}"
     "-X github.com/studio-b12/goat/internal/version.CommitHash=${finalAttrs.src.rev}"
   ];
-
-  patches = [
-    ./mock-fix.patch
-  ];
-
-  # Checks currently fail because of an issue with github.com/studio-b12/goat/mocks
-  doCheck = false;
 
   meta = {
     description = "Integration testing tool for HTTP APIs using a simple script language";

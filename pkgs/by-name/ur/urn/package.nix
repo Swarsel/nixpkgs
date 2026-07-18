@@ -3,12 +3,12 @@
   stdenv,
   fetchFromGitLab,
   buildEnv,
-  makeWrapper,
   lua,
   luajit,
+  makeWrapper,
   readline,
-  useLuaJit ? false,
   extraLibraries ? [ ],
+  useLuaJit ? false,
 }:
 
 let
@@ -17,8 +17,9 @@ let
   # have: Lua (or LuaJIT), readline, etc. Then, we can depend on this
   # and refer to ${urn-rt} instead of ${lua}, ${readline}, etc.
   urn-rt = buildEnv {
-    name = "urn-rt-${version}";
     ignoreCollisions = true;
+    name = "urn-rt-${version}";
+
     paths =
       if useLuaJit then
         [
@@ -33,8 +34,8 @@ let
 in
 
 stdenv.mkDerivation {
-  pname = "urn${optionalString (extraLibraries != [ ]) "-with-libraries"}";
   inherit version;
+  pname = "urn${optionalString (extraLibraries != [ ]) "-with-libraries"}";
 
   src = fetchFromGitLab {
     owner = "urn";
@@ -47,7 +48,6 @@ stdenv.mkDerivation {
   # Any packages that depend on the compiler have a transitive
   # dependency on the Urn runtime support.
   propagatedBuildInputs = [ urn-rt ];
-
   makeFlags = [ "-B" ];
 
   installPhase = ''
@@ -61,16 +61,16 @@ stdenv.mkDerivation {
       --prefix LD_LIBRARY_PATH : ${urn-rt}/lib/
   '';
 
+  passthru = {
+    inherit urn-rt;
+  };
+
   meta = {
-    homepage = "https://urn-lang.com";
     description = "Yet another Lisp variant which compiles to Lua";
-    mainProgram = "urn";
+    homepage = "https://urn-lang.com";
     license = lib.licenses.bsd3;
     maintainers = [ ];
     platforms = lib.platforms.all;
-  };
-
-  passthru = {
-    inherit urn-rt;
+    mainProgram = "urn";
   };
 }

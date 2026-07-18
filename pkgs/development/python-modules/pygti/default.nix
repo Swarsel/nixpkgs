@@ -1,10 +1,10 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  hatchling,
-  hatch-vcs,
   aiohttp,
+  buildPythonPackage,
+  hatch-vcs,
+  hatchling,
   pydantic,
   pytz,
   voluptuous,
@@ -13,7 +13,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "pygti";
   version = "1.1.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "vigonotion";
@@ -21,6 +20,9 @@ buildPythonPackage (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-B+jz91xoN7GiU4PnJTG5Kt1eA4ST63d+ZEgRrr9Xio8=";
   };
+
+  # no tests implemented
+  doCheck = false;
 
   build-system = [
     hatchling
@@ -34,8 +36,7 @@ buildPythonPackage (finalAttrs: {
     voluptuous
   ];
 
-  # no tests implemented
-  doCheck = false;
+  pyproject = true;
 
   pythonImportsCheck = [
     "pygti.auth"
@@ -44,9 +45,9 @@ buildPythonPackage (finalAttrs: {
   ];
 
   meta = {
-    changelog = "https://github.com/vigonotion/pygti/releases/tag/${finalAttrs.src.tag}";
     description = "Access public transport information in Hamburg, Germany";
     homepage = "https://github.com/vigonotion/pygti";
+    changelog = "https://github.com/vigonotion/pygti/releases/tag/${finalAttrs.src.tag}";
     license = lib.licenses.asl20;
     maintainers = with lib.maintainers; [ dotlambda ];
   };

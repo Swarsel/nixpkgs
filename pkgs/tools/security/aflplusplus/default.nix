@@ -1,22 +1,22 @@
 {
   lib,
   stdenv,
-  stdenvNoCC,
   fetchFromGitHub,
   callPackage,
-  makeWrapper,
   clang,
-  llvm,
-  gcc,
-  which,
-  libcgroup,
-  python3,
-  perl,
-  gmp,
-  file,
-  wine ? null,
   cmocka,
+  file,
+  gcc,
+  gmp,
+  libcgroup,
+  llvm,
   llvmPackages,
+  makeWrapper,
+  perl,
+  python3,
+  stdenvNoCC,
+  which,
+  wine ? null,
   withNyx ? false,
 }:
 
@@ -59,35 +59,15 @@ let
       owner = "AFLplusplus";
       repo = "AFLplusplus";
       tag = "v${version}";
+
       hash =
         if withNyx then
           "sha256-a11ff9cxaQd7I06xHDahrysuce92M5zSGsamTaFNLYU="
         else
           "sha256-lox5UYCSjp4Vu6oBc5+wZDBAufGaCiVxJqp74LDrw8k=";
+
       fetchSubmodules = withNyx;
     };
-
-    enableParallelBuilding = true;
-
-    # Note: libcgroup isn't needed for building, just for the afl-cgroup
-    # script.
-    nativeBuildInputs = [
-      makeWrapper
-      which
-      clang
-      gcc
-    ];
-    buildInputs = [
-      llvm
-      python3
-      gmp
-      llvmPackages.bintools
-    ]
-    ++ lib.optional (wine != null) python3.pkgs.wrapPython;
-
-    # Flag is already set by package and causes some compiler warnings.
-    # warning: "_FORTIFY_SOURCE" redefined
-    hardeningDisable = [ "fortify" ];
 
     patches = [
       # skip performance test: it's skipped anyway, but exits with code 1
@@ -99,6 +79,7 @@ let
       # test-nyx-mode.sh because we can't test nyx mode in the sandbox.
       ./nyx_mode/nyx_mode.patch
     ];
+
     postPatch = ''
       # Don't care about this.
       rm Android.bp
@@ -130,14 +111,31 @@ let
       patchShebangs nyx_mode/build_nyx_support.sh
     '';
 
-    env.NIX_CFLAGS_COMPILE = toString [
-      # Needed with GCC 12
-      "-Wno-error=use-after-free"
+    # Note: libcgroup isn't needed for building, just for the afl-cgroup
+    # script.
+    nativeBuildInputs = [
+      makeWrapper
+      which
+      clang
+      gcc
     ];
+
+    buildInputs = [
+      llvm
+      python3
+      gmp
+      llvmPackages.bintools
+    ]
+    ++ lib.optional (wine != null) python3.pkgs.wrapPython;
 
     makeFlags = [
       "PREFIX=${placeholder "out"}"
       "USE_BINDIR=0"
+    ];
+
+    env.NIX_CFLAGS_COMPILE = toString [
+      # Needed with GCC 12
+      "-Wno-error=use-after-free"
     ];
 
     buildPhase = ''
@@ -203,13 +201,14 @@ let
         wrapPythonProgramsIn $out/bin ${python3.pkgs.pefile}
     '';
 
+    doInstallCheck = true;
+
     nativeInstallCheckInputs = [
       perl
       file
       cmocka
     ];
 
-    doInstallCheck = true;
     installCheckPhase = ''
       runHook preInstallCheck
 
@@ -233,6 +232,11 @@ let
       runHook postInstallCheck
     '';
 
+    enableParallelBuilding = true;
+    # Flag is already set by package and causes some compiler warnings.
+    # warning: "_FORTIFY_SOURCE" redefined
+    hardeningDisable = [ "fortify" ];
+
     passthru = {
       inherit
         libdislocator
@@ -241,6 +245,7 @@ let
         nyx-packer
         qemu-nyx
         ;
+
       qemu = aflplusplus-qemu;
     };
 
@@ -249,20 +254,24 @@ let
         Heavily enhanced version of AFL, incorporating many features
         and improvements from the community
       '';
+
       homepage = "https://aflplus.plus";
       changelog = "https://aflplus.plus/docs/changelog";
+
       license = [
         lib.licenses.asl20
         lib.licenses.agpl3Plus
       ];
-      platforms = [
-        "x86_64-linux"
-        "i686-linux"
-      ];
+
       maintainers = with lib.maintainers; [
         ris
         mindavi
         msanft
+      ];
+
+      platforms = [
+        "x86_64-linux"
+        "i686-linux"
       ];
     };
   };

@@ -1,9 +1,9 @@
 {
   lib,
   stdenv,
-  python3Packages,
   fetchFromGitHub,
   gitUpdater,
+  python3Packages,
   resvg,
 }:
 
@@ -21,36 +21,39 @@ let
     inherit version src;
     pname = "svg-flatten";
 
-    sourceRoot = "${src.name}/svg-flatten";
-
     preInstall = ''
       mkdir -p $out/bin
     '';
 
     installFlags = [ "PREFIX=$(out)" ];
+    sourceRoot = "${src.name}/svg-flatten";
 
     meta = {
       description = "SVG-flatten SVG downconverter";
       homepage = "https://github.com/jaseg/gerbolyze";
       license = with lib.licenses; [ agpl3Plus ];
       maintainers = with lib.maintainers; [ wulfsta ];
-      mainProgram = "svg-flatten";
       platforms = lib.platforms.linux;
+      mainProgram = "svg-flatten";
     };
   };
 in
 python3Packages.buildPythonApplication {
   inherit version src;
   pname = "gerbolyze";
-  pyproject = true;
+
+  nativeCheckInputs = [
+    python3Packages.pytestCheckHook
+    resvg
+    svg-flatten
+  ];
+
+  preCheck = ''
+    substituteInPlace tests/test_integration.py \
+      --replace-fail "'gerbolyze'" "'${placeholder "out"}/bin/gerbolyze'"
+  '';
 
   build-system = with python3Packages; [ uv-build ];
-
-  pythonRemoveDeps = [
-    # we already provide svg-flatten through a binary on the PATH
-    "resvg-wasi"
-    "svg-flatten-wasi"
-  ];
 
   dependencies = with python3Packages; [
     beautifulsoup4
@@ -62,14 +65,6 @@ python3Packages.buildPythonApplication {
     resvg
   ];
 
-  pythonImportsCheck = [ "gerbolyze" ];
-
-  nativeCheckInputs = [
-    python3Packages.pytestCheckHook
-    resvg
-    svg-flatten
-  ];
-
   makeWrapperArgs = [
     "--prefix PATH : ${
       lib.makeBinPath [
@@ -79,10 +74,14 @@ python3Packages.buildPythonApplication {
     }"
   ];
 
-  preCheck = ''
-    substituteInPlace tests/test_integration.py \
-      --replace-fail "'gerbolyze'" "'${placeholder "out"}/bin/gerbolyze'"
-  '';
+  pyproject = true;
+  pythonImportsCheck = [ "gerbolyze" ];
+
+  pythonRemoveDeps = [
+    # we already provide svg-flatten through a binary on the PATH
+    "resvg-wasi"
+    "svg-flatten-wasi"
+  ];
 
   passthru.updateScript = gitUpdater {
     rev-prefix = "v";
@@ -93,7 +92,7 @@ python3Packages.buildPythonApplication {
     homepage = "https://github.com/jaseg/gerbolyze";
     license = with lib.licenses; [ agpl3Plus ];
     maintainers = with lib.maintainers; [ wulfsta ];
-    mainProgram = "gerbolyze";
     platforms = lib.platforms.linux;
+    mainProgram = "gerbolyze";
   };
 }

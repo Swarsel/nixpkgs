@@ -1,16 +1,15 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   setuptools,
   setuptools-scm,
   wheel,
 }:
 
 buildPythonPackage rec {
-  version = "1.1.0";
   pname = "python-vagrant";
-  pyproject = true;
+  version = "1.1.0";
 
   src = fetchFromGitHub {
     owner = "pycontribs";
@@ -27,7 +26,7 @@ buildPythonPackage rec {
 
   # The tests try to connect to qemu
   doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "vagrant" ];
 
   meta = {

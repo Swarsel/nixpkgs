@@ -13,14 +13,16 @@
 buildPythonPackage rec {
   pname = "pathy";
   version = "0.11.0";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
     hash = "sha256-uz0OawuL92709jxxkeluCvLtZcj9tfoXSI+ch55jcG0=";
   };
 
-  pythonRelaxDeps = [ "smart-open" ];
+  nativeCheckInputs = [
+    mock
+    pytestCheckHook
+  ];
 
   build-system = [ setuptools ];
 
@@ -30,11 +32,6 @@ buildPythonPackage rec {
     typer
   ];
 
-  nativeCheckInputs = [
-    mock
-    pytestCheckHook
-  ];
-
   disabledTestPaths = [
     # Exclude tests that require provider credentials
     "pathy/_tests/test_clients.py"
@@ -42,15 +39,17 @@ buildPythonPackage rec {
     "pathy/_tests/test_s3.py"
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "pathy" ];
+  pythonRelaxDeps = [ "smart-open" ];
 
   meta = {
-    # Marked broken 2025-11-28 because it has failed on Hydra for at least one year.
-    broken = true;
     # https://github.com/justindujardin/pathy/issues/113
     description = "Path interface for local and cloud bucket storage";
-    mainProgram = "pathy";
     homepage = "https://github.com/justindujardin/pathy";
     license = lib.licenses.asl20;
+    mainProgram = "pathy";
+    # Marked broken 2025-11-28 because it has failed on Hydra for at least one year.
+    broken = true;
   };
 }

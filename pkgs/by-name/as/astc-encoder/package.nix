@@ -56,28 +56,28 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-2/3m5G7rMoc/qZ9wPN3kn7O/CdQbWnKyU5OvAIxx97A=";
   };
 
-  nativeBuildInputs = [ cmake ];
-
-  cmakeBuildType = "RelWithDebInfo";
-
-  cmakeFlags = isaFlags ++ [
-    "-DASTCENC_UNIVERSAL_BUILD=OFF"
-  ];
-
   # Set a fixed build year to display within help output (otherwise, it would be 1980)
   postPatch = ''
     substituteInPlace Source/cmake_core.cmake \
       --replace 'string(TIMESTAMP astcencoder_YEAR "%Y")' 'set(astcencoder_YEAR "2023")'
   '';
 
+  nativeBuildInputs = [ cmake ];
+
+  cmakeFlags = isaFlags ++ [
+    "-DASTCENC_UNIVERSAL_BUILD=OFF"
+  ];
+
   # Provide 'astcenc' link to main executable
   postInstall = ''
     ln -s $out/bin/astcenc-${mainBinary} $out/bin/astcenc
   '';
 
+  cmakeBuildType = "RelWithDebInfo";
+
   meta = {
-    homepage = "https://github.com/ARM-software/astc-encoder";
     description = "Encoder for the ASTC texture compression format";
+
     longDescription = ''
       The Adaptive Scalable Texture Compression (ASTC) format is
       widely supported by mobile and desktop graphics hardware and
@@ -87,9 +87,11 @@ stdenv.mkDerivation (finalAttrs: {
       and HDR mode and can read various image formats. Run `astcenc
       -help` to see all the options.
     '';
-    platforms = lib.platforms.unix;
+
+    homepage = "https://github.com/ARM-software/astc-encoder";
     license = lib.licenses.asl20;
     maintainers = with lib.maintainers; [ dasisdormax ];
+    platforms = lib.platforms.unix;
     broken = !stdenv.hostPlatform.is64bit;
   };
 })

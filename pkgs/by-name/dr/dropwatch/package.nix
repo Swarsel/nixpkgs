@@ -3,11 +3,11 @@
   stdenv,
   fetchFromGitHub,
   autoreconfHook,
-  pkg-config,
   libbfd,
   libnl,
   libpcap,
   ncurses,
+  pkg-config,
   readline,
   zlib,
 }:
@@ -27,6 +27,7 @@ stdenv.mkDerivation (finalAttrs: {
     autoreconfHook
     pkg-config
   ];
+
   buildInputs = [
     libbfd
     libnl
@@ -42,7 +43,7 @@ stdenv.mkDerivation (finalAttrs: {
     description = "Linux kernel dropped packet monitor";
     homepage = "https://github.com/nhorman/dropwatch";
     license = lib.licenses.gpl2Plus;
-    platforms = lib.platforms.linux;
     maintainers = [ ];
+    platforms = lib.platforms.linux;
   };
 })

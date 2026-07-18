@@ -1,7 +1,7 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
+  rustPlatform,
   versionCheckHook,
 }:
 
@@ -16,11 +16,7 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-+gNuwJ0ohpAqpKygwIjBLpOIrW9QFFdyRo3mAFDbGJs=";
   };
 
-  __structuredAttrs = true;
-
   cargoHash = "sha256-txgOQvoQ6ADD5VqxUrJ1yr4ycje6b6FCOxIMg3he8Gw=";
-
-  nativeInstallCheckInputs = [ versionCheckHook ];
 
   checkFlags = [
     # CLI tests
@@ -34,15 +30,19 @@ rustPlatform.buildRustPackage (finalAttrs: {
   ];
 
   doInstallCheck = true;
+  nativeInstallCheckInputs = [ versionCheckHook ];
+  __structuredAttrs = true;
 
   meta = {
     description = "Tool to check domain availability";
     homepage = "https://github.com/saidutt46/domain-check";
     changelog = "https://github.com/saidutt46/domain-check/blob/${finalAttrs.src.tag}/CHANGELOG.md";
+
     license = with lib.licenses; [
       asl20
       mit
     ];
+
     maintainers = with lib.maintainers; [ fab ];
     mainProgram = "domain-check";
   };

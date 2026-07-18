@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule (finalAttrs: {
@@ -17,18 +17,18 @@ buildGoModule (finalAttrs: {
 
   vendorHash = "sha256-pUzYfFrKV0M1j1P6DVIGCe6FaY+OPbn5VNLHP0Xu2R0=";
 
-  subPackages = [ "cmd/wire" ];
-
   ldflags = [
     "-s"
     "-w"
   ];
 
+  subPackages = [ "cmd/wire" ];
+
   meta = {
-    homepage = "https://github.com/google/wire";
     description = "Code generation tool that automates connecting components using dependency injection";
-    mainProgram = "wire";
+    homepage = "https://github.com/google/wire";
     license = lib.licenses.asl20;
     maintainers = with lib.maintainers; [ svrana ];
+    mainProgram = "wire";
   };
 })

@@ -1,20 +1,19 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  poetry-core,
+  buildPythonPackage,
   dataprep-ml,
   numpy,
   pandas,
+  poetry-core,
+  pytestCheckHook,
   scikit-learn,
   type-infer,
-  pytestCheckHook,
 }:
 
 buildPythonPackage rec {
   pname = "mindsdb-evaluator";
   version = "0.0.21";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "mindsdb";
@@ -23,13 +22,11 @@ buildPythonPackage rec {
     hash = "sha256-eUdGtHLbI6T7HsUqkVkTp040pbq7qVzgaldQxPAzjTc=";
   };
 
-  build-system = [ poetry-core ];
-
-  pythonRelaxDeps = [
-    "dataprep-ml"
-    "numpy"
-    "scikit-learn"
+  nativeCheckInputs = [
+    pytestCheckHook
   ];
+
+  build-system = [ poetry-core ];
 
   dependencies = [
     dataprep-ml
@@ -39,16 +36,19 @@ buildPythonPackage rec {
     type-infer
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "mindsdb_evaluator" ];
 
-  nativeCheckInputs = [
-    pytestCheckHook
+  pythonRelaxDeps = [
+    "dataprep-ml"
+    "numpy"
+    "scikit-learn"
   ];
 
   meta = {
-    changelog = "https://github.com/mindsdb/mindsdb_evaluator/releases/tag/${src.tag}";
     description = "Model evaluation for Machine Learning pipelines";
     homepage = "https://github.com/mindsdb/mindsdb_evaluator";
+    changelog = "https://github.com/mindsdb/mindsdb_evaluator/releases/tag/${src.tag}";
     license = lib.licenses.gpl3Only;
     maintainers = [ ];
   };

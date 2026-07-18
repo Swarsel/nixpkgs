@@ -1,26 +1,64 @@
 {
-  defaultGemConfig,
   lib,
-  stdenvNoCC,
   fetchurl,
+  buildRubyGem,
   bundlerEnv,
-  ruby_4_0,
+  cargo,
+  defaultGemConfig,
   makeWrapper,
   nixosTests,
   openssl,
-  rustc,
-  cargo,
+  ruby_4_0,
   rustPlatform,
-  buildRubyGem,
+  rustc,
+  stdenvNoCC,
 }:
 
 let
   version = "7.0.0";
   rubyEnv = bundlerEnv {
-    name = "redmine-env-${version}";
+    gemConfig = defaultGemConfig // {
+      commonmarker = attrs: {
+        nativeBuildInputs = [
+          cargo
+          rustc
+          rustPlatform.cargoSetupHook
+          rustPlatform.bindgenHook
+        ];
 
-    ruby = ruby_4_0;
+        preInstall = ''
+          export CARGO_HOME="$PWD/../.cargo/"
+        '';
+
+        postInstall = ''
+          find $out -type f -name .rustc_info.json -delete
+        '';
+
+        cargoDeps = rustPlatform.fetchCargoVendor {
+          inherit (buildRubyGem { inherit (attrs) gemName version source; })
+            name
+            src
+            unpackPhase
+            nativeBuildInputs
+            ;
+
+          hash = "sha256-Xw0VWl3qZLvNNmRFHuWkltC1XfoIaHJKWM8Po4FSmoQ=";
+        };
+
+        disallowedReferences = [
+          rustc.unwrapped
+        ];
+
+        dontBuild = false;
+      };
+
+      trilogy = attrs: {
+        buildInputs = [ openssl ];
+      };
+    };
+
     gemdir = ./.;
+
     groups = [
       "development"
       "ldap"
@@ -29,43 +67,14 @@ let
       "minimagick"
       "test"
     ];
-    gemConfig = defaultGemConfig // {
-      trilogy = attrs: {
-        buildInputs = [ openssl ];
-      };
-      commonmarker = attrs: {
-        cargoDeps = rustPlatform.fetchCargoVendor {
-          inherit (buildRubyGem { inherit (attrs) gemName version source; })
-            name
-            src
-            unpackPhase
-            nativeBuildInputs
-            ;
-          hash = "sha256-Xw0VWl3qZLvNNmRFHuWkltC1XfoIaHJKWM8Po4FSmoQ=";
-        };
-        dontBuild = false;
-        nativeBuildInputs = [
-          cargo
-          rustc
-          rustPlatform.cargoSetupHook
-          rustPlatform.bindgenHook
-        ];
-        disallowedReferences = [
-          rustc.unwrapped
-        ];
-        preInstall = ''
-          export CARGO_HOME="$PWD/../.cargo/"
-        '';
-        postInstall = ''
-          find $out -type f -name .rustc_info.json -delete
-        '';
-      };
-    };
+
+    name = "redmine-env-${version}";
+    ruby = ruby_4_0;
   };
 in
 stdenvNoCC.mkDerivation (finalAttrs: {
-  pname = "redmine";
   inherit version;
+  pname = "redmine";
 
   src = fetchurl {
     url = "https://www.redmine.org/releases/redmine-${finalAttrs.version}.tar.gz";
@@ -73,6 +82,7 @@ stdenvNoCC.mkDerivation (finalAttrs: {
   };
 
   nativeBuildInputs = [ makeWrapper ];
+
   buildInputs = [
     rubyEnv
     rubyEnv.wrappedRuby
@@ -101,12 +111,14 @@ stdenvNoCC.mkDerivation (finalAttrs: {
   meta = {
     homepage = "https://www.redmine.org/";
     changelog = "https://www.redmine.org/projects/redmine/wiki/changelog";
-    platforms = lib.platforms.linux;
+    license = lib.licenses.gpl2;
+
     maintainers = with lib.maintainers; [
       aanderse
       felixsinger
       megheaiulian
     ];
-    license = lib.licenses.gpl2;
+
+    platforms = lib.platforms.linux;
   };
 })

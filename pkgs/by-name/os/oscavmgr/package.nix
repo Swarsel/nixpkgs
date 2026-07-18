@@ -1,6 +1,6 @@
 {
-  fetchFromGitHub,
   lib,
+  fetchFromGitHub,
   nix-update-script,
   openssl,
   openvr,
@@ -21,7 +21,14 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-592qj0dHn0fbIFt4Y+1TESIOUpwXcJ2tnlKNcYuxriQ=";
   };
 
-  cargoHash = "sha256-1/jjZ1jkLvE/L1lHFL3RCx3ox2w15WWDp6aQJOtFkcU=";
+  postPatch = ''
+    alvr_session=$(echo $cargoDepsCopy/*/alvr_session-*/)
+    substituteInPlace "$alvr_session/build.rs" \
+      --replace-fail \
+        'alvr_filesystem::workspace_dir().join("openvr/headers/openvr_driver.h")' \
+        '"${openvr}/include/openvr/openvr_driver.h"'
+
+  '';
 
   nativeBuildInputs = [
     pkg-config
@@ -32,18 +39,9 @@ rustPlatform.buildRustPackage (finalAttrs: {
     openxr-loader
   ];
 
-  nativeInstallCheckInputs = [ versionCheckHook ];
+  cargoHash = "sha256-1/jjZ1jkLvE/L1lHFL3RCx3ox2w15WWDp6aQJOtFkcU=";
   doInstallCheck = true;
-
-  postPatch = ''
-    alvr_session=$(echo $cargoDepsCopy/*/alvr_session-*/)
-    substituteInPlace "$alvr_session/build.rs" \
-      --replace-fail \
-        'alvr_filesystem::workspace_dir().join("openvr/headers/openvr_driver.h")' \
-        '"${openvr}/include/openvr/openvr_driver.h"'
-
-  '';
-
+  nativeInstallCheckInputs = [ versionCheckHook ];
   passthru.updateScript = nix-update-script { };
 
   meta = {
@@ -51,10 +49,12 @@ rustPlatform.buildRustPackage (finalAttrs: {
     homepage = "https://github.com/galister/oscavmgr";
     changelog = "https://github.com/galister/oscavmgr/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       pandapip1
       Scrumplex
     ];
+
     mainProgram = "oscavmgr";
   };
 })

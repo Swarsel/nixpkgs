@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   funcy,
   ipython,
   jinja2,
@@ -15,7 +15,6 @@
 buildPythonPackage rec {
   pname = "pyLDAvis";
   version = "3.4.1";
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "bmabey";
@@ -35,14 +34,16 @@ buildPythonPackage rec {
     scipy
   ];
 
+  format = "setuptools";
+
   pythonImportsCheck = [
     "pyLDAvis"
     "pyLDAvis.gensim_models"
   ];
 
   meta = {
-    homepage = "https://github.com/bmabey/pyLDAvis";
     description = "Python library for interactive topic model visualization";
+    homepage = "https://github.com/bmabey/pyLDAvis";
     license = lib.licenses.bsd3;
     sourceProvenance = with lib.sourceTypes; [ fromSource ];
     platforms = lib.platforms.all;

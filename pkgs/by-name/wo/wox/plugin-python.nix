@@ -3,18 +3,19 @@
   wox,
 }:
 python3Packages.buildPythonApplication (finalAttrs: {
-  pname = "wox-plugin";
   inherit (wox)
     version
     src
     ;
-  pyproject = true;
 
-  sourceRoot = "${finalAttrs.src.name}/wox.plugin.python";
+  pname = "wox-plugin";
 
   build-system = with python3Packages; [
     hatchling
   ];
+
+  pyproject = true;
+  sourceRoot = "${finalAttrs.src.name}/wox.plugin.python";
 
   meta = {
     inherit (wox.meta)

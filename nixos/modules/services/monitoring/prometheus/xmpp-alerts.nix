@@ -21,7 +21,6 @@ in
     enable = lib.mkEnableOption "XMPP Web hook service for Alertmanager";
 
     settings = lib.mkOption {
-      type = settingsFormat.type;
       default = { };
 
       description = ''
@@ -29,33 +28,39 @@ in
         <https://github.com/jelmer/prometheus-xmpp-alerts/blob/master/xmpp-alerts.yml.example>
         for supported values.
       '';
+
+      type = settingsFormat.type;
     };
   };
 
   config = lib.mkIf cfg.enable {
     systemd.services.prometheus-xmpp-alerts = {
-      wantedBy = [ "multi-user.target" ];
       after = [ "network-online.target" ];
-      wants = [ "network-online.target" ];
+
       serviceConfig = {
-        ExecStart = "${pkgs.prometheus-xmpp-alerts}/bin/prometheus-xmpp-alerts --config ${configFile}";
-        Restart = "on-failure";
         DynamicUser = true;
-        PrivateTmp = true;
-        PrivateDevices = true;
-        ProtectHome = true;
-        ProtectSystem = "strict";
-        ProtectKernelTunables = true;
-        ProtectKernelModules = true;
-        ProtectControlGroups = true;
+        ExecStart = "${pkgs.prometheus-xmpp-alerts}/bin/prometheus-xmpp-alerts --config ${configFile}";
         NoNewPrivileges = true;
-        SystemCallArchitectures = "native";
+        PrivateDevices = true;
+        PrivateTmp = true;
+        ProtectControlGroups = true;
+        ProtectHome = true;
+        ProtectKernelModules = true;
+        ProtectKernelTunables = true;
+        ProtectSystem = "strict";
+        Restart = "on-failure";
+
         RestrictAddressFamilies = [
           "AF_INET"
           "AF_INET6"
         ];
+
+        SystemCallArchitectures = "native";
         SystemCallFilter = [ "@system-service" ];
       };
+
+      wantedBy = [ "multi-user.target" ];
+      wants = [ "network-online.target" ];
     };
   };
 }

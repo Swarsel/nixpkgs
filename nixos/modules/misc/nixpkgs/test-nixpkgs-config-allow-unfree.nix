@@ -2,8 +2,8 @@
 # Run with: nix-build -A nixosTests.nixpkgs-config-allow-unfree --show-trace
 
 {
-  evalMinimalConfig,
   lib,
+  evalMinimalConfig,
 }:
 let
   eval =
@@ -37,26 +37,26 @@ let
 in
 lib.recurseIntoAttrs {
 
-  singleModuleTest =
+  emptyListMerging =
     assertUnfreePackages
       [
         {
-          nixpkgs.config.allowUnfreePackages = [
-            "package1"
-            "package2"
-          ];
+          _file = "empty.nix";
+          nixpkgs.config.allowUnfreePackages = [ ];
+        }
+        {
+          _file = "non-empty.nix";
+          nixpkgs.config.allowUnfreePackages = [ "some-package" ];
         }
       ]
-      [
-        "package1"
-        "package2"
-      ];
+      [ "some-package" ];
 
   multipleModulesMerging =
     assertUnfreePackages
       [
         {
           _file = "module1.nix";
+
           nixpkgs.config.allowUnfreePackages = [
             "package1"
             "package2"
@@ -64,6 +64,7 @@ lib.recurseIntoAttrs {
         }
         {
           _file = "module2.nix";
+
           nixpkgs.config.allowUnfreePackages = [
             "package3"
             "package4"
@@ -87,6 +88,7 @@ lib.recurseIntoAttrs {
       [
         {
           _file = "moduleA.nix";
+
           nixpkgs.config.allowUnfreePackages = [
             "shared-package"
             "unique-a"
@@ -94,6 +96,7 @@ lib.recurseIntoAttrs {
         }
         {
           _file = "moduleB.nix";
+
           nixpkgs.config.allowUnfreePackages = [
             "shared-package"
             "unique-b"
@@ -107,18 +110,19 @@ lib.recurseIntoAttrs {
         "unique-b"
       ];
 
-  emptyListMerging =
+  singleModuleTest =
     assertUnfreePackages
       [
         {
-          _file = "empty.nix";
-          nixpkgs.config.allowUnfreePackages = [ ];
-        }
-        {
-          _file = "non-empty.nix";
-          nixpkgs.config.allowUnfreePackages = [ "some-package" ];
+          nixpkgs.config.allowUnfreePackages = [
+            "package1"
+            "package2"
+          ];
         }
       ]
-      [ "some-package" ];
+      [
+        "package1"
+        "package2"
+      ];
 
 }

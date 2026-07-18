@@ -1,7 +1,7 @@
 {
-  buildGoModule,
   lib,
   fetchFromGitHub,
+  buildGoModule,
 }:
 buildGoModule (finalAttrs: {
   pname = "tgswitch";
@@ -15,22 +15,21 @@ buildGoModule (finalAttrs: {
   };
 
   vendorHash = "sha256-PlTdbA8Z2I2SWoG7oYG87VQfczx9zP1SCJx70UWOEog=";
+  # There are many modifications need to be done to make tests run. For example:
+  # 1. Network access
+  # 2. Operation on `/var/empty` not permitted on macOS
+  doCheck = false;
 
   ldflags = [
     "-s"
     "-w"
   ];
 
-  # There are many modifications need to be done to make tests run. For example:
-  # 1. Network access
-  # 2. Operation on `/var/empty` not permitted on macOS
-  doCheck = false;
-
   meta = {
     description = "Command line tool to switch between different versions of terragrunt";
-    mainProgram = "tgswitch";
     homepage = "https://github.com/warrensbox/tgswitch";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ psibi ];
+    mainProgram = "tgswitch";
   };
 })

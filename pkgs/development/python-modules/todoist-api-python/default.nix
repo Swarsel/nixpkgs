@@ -1,9 +1,9 @@
 {
   lib,
+  fetchFromGitHub,
   annotated-types,
   buildPythonPackage,
   dataclass-wizard,
-  fetchFromGitHub,
   hatchling,
   pytest-asyncio,
   pytestCheckHook,
@@ -14,7 +14,6 @@
 buildPythonPackage rec {
   pname = "todoist-api-python";
   version = "3.2.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "Doist";
@@ -22,6 +21,12 @@ buildPythonPackage rec {
     tag = "v${version}";
     hash = "sha256-udYFWTrWW2G6JBKQUkiqKpyBz1D4dwq7Pix6bzuWnDY=";
   };
+
+  nativeCheckInputs = [
+    pytest-asyncio
+    pytestCheckHook
+    responses
+  ];
 
   build-system = [ hatchling ];
 
@@ -31,12 +36,7 @@ buildPythonPackage rec {
     requests
   ];
 
-  nativeCheckInputs = [
-    pytest-asyncio
-    pytestCheckHook
-    responses
-  ];
-
+  pyproject = true;
   pythonImportsCheck = [ "todoist_api_python" ];
 
   meta = {

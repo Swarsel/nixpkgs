@@ -1,6 +1,6 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchurl,
 }:
 
@@ -11,12 +11,12 @@ let
 
 in
 stdenv.mkDerivation {
-  pname = "ocaml-make";
   inherit version;
+  pname = "ocaml-make";
 
   src = fetchurl {
-    url = "https://bitbucket.org/mmottl/ocaml-makefile/downloads/ocaml-makefile-${version}.tar.gz";
     inherit sha256;
+    url = "https://bitbucket.org/mmottl/ocaml-makefile/downloads/ocaml-makefile-${version}.tar.gz";
   };
 
   installPhase = ''
@@ -27,13 +27,15 @@ stdenv.mkDerivation {
   setupHook = ./setup-hook.sh;
 
   meta = {
-    homepage = "http://www.ocaml.info/home/ocaml_sources.html";
     description = "Generic OCaml Makefile for GNU Make";
+    homepage = "http://www.ocaml.info/home/ocaml_sources.html";
+
     license = with lib.licenses; [
       lgpl21Only
       ocamlLgplLinkingException
       gpl3Only
     ];
+
     platforms = lib.platforms.unix;
   };
 }

@@ -30,7 +30,7 @@ rustPlatform.buildRustPackage (finalAttrs: {
     description = "Modern protobuf package management";
     homepage = "https://github.com/helsing-ai/buffrs";
     license = lib.licenses.asl20;
-    mainProgram = "buffrs";
     maintainers = with lib.maintainers; [ danilobuerger ];
+    mainProgram = "buffrs";
   };
 })

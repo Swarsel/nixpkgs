@@ -1,18 +1,14 @@
 {
-  stdenv,
   lib,
+  stdenv,
+  fetchFromGitHub,
   help2man,
   python3,
-  fetchFromGitHub,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
   pname = "terminal-colors";
   version = "3.0.2";
-  outputs = [
-    "out"
-    "man"
-  ];
 
   src = fetchFromGitHub {
     owner = "eikenb";
@@ -21,8 +17,10 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-KRoP/Reo5nDKJYG9zVTVpoYL7soAGMNk46vDoaLfnv4=";
   };
 
-  buildInputs = [ python3 ];
-  nativeBuildInputs = [ help2man ];
+  outputs = [
+    "out"
+    "man"
+  ];
 
   postPatch =
     # This sed command modifies output of --version command in way that
@@ -37,6 +35,9 @@ stdenv.mkDerivation (finalAttrs: {
     + ''
       patchShebangs ./$pname
     '';
+
+  nativeBuildInputs = [ help2man ];
+  buildInputs = [ python3 ];
 
   buildPhase = ''
     runHook preBuild

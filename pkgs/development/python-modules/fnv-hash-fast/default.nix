@@ -1,20 +1,19 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   cython,
-  poetry-core,
-  setuptools,
   fnvhash,
+  poetry-core,
   pytest-codspeed,
   pytest-cov-stub,
   pytestCheckHook,
+  setuptools,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "fnv-hash-fast";
   version = "2.0.3";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "bdraco";
@@ -23,6 +22,12 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-yDEgVNaSqZ1AJivpkpinZznKlPEXH6mjXBe5aVp/3hQ=";
   };
 
+  nativeCheckInputs = [
+    pytest-codspeed
+    pytest-cov-stub
+    pytestCheckHook
+  ];
+
   build-system = [
     cython
     poetry-core
@@ -30,14 +35,8 @@ buildPythonPackage (finalAttrs: {
   ];
 
   dependencies = [ fnvhash ];
-
+  pyproject = true;
   pythonImportsCheck = [ "fnv_hash_fast" ];
-
-  nativeCheckInputs = [
-    pytest-codspeed
-    pytest-cov-stub
-    pytestCheckHook
-  ];
 
   meta = {
     description = "Fast version of fnv1a";

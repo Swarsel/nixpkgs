@@ -6,15 +6,13 @@
 }:
 
 stdenv.mkDerivation (finalAttrs: {
-  version = "0.7.10";
   pname = "mwic";
+  version = "0.7.10";
 
   src = fetchurl {
     url = "https://github.com/jwilk/mwic/releases/download/${finalAttrs.version}/mwic-${finalAttrs.version}.tar.gz";
     sha256 = "sha256-dmIHPehkxpSb78ymVpcPCu4L41coskrHQOg067dprOo=";
   };
-
-  makeFlags = [ "PREFIX=\${out}" ];
 
   nativeBuildInputs = [
     python3Packages.wrapPython
@@ -25,15 +23,17 @@ stdenv.mkDerivation (finalAttrs: {
     regex
   ];
 
+  makeFlags = [ "PREFIX=\${out}" ];
+
   postFixup = ''
     wrapPythonPrograms
   '';
 
   meta = {
-    homepage = "http://jwilk.net/software/mwic";
     description = "Spell-checker that groups possible misspellings and shows them in their contexts";
-    mainProgram = "mwic";
+    homepage = "http://jwilk.net/software/mwic";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ matthiasbeyer ];
+    mainProgram = "mwic";
   };
 })

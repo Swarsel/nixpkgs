@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   setuptools,
   textual,
 }:
@@ -17,11 +17,9 @@ buildPythonPackage {
     hash = "sha256-lwN7igiEB8uC9e7qBSVLuKCpF41+Ni7ZJ3cVK19cEY8=";
   };
 
-  pyproject = true;
-
   build-system = [ setuptools ];
-
   dependencies = [ textual ];
+  pyproject = true;
 
   meta = {
     description = "Textual widget for a simple slider";

@@ -1,6 +1,6 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchurl,
 }:
 
@@ -13,12 +13,12 @@ stdenv.mkDerivation (finalAttrs: {
     sha256 = "0153py77ll759jacq41dp2z2ksr08pdcfic0rwjd6pr84dk89y9v";
   };
 
-  outputDevdoc = "out";
-
   installPhase = ''
     mkdir -p $out/share/man
     cp -R * $out/share/man
   '';
+
+  outputDevdoc = "out";
 
   meta = {
     description = "GCC C++ STD manual pages";

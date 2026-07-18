@@ -1,9 +1,9 @@
 {
-  fetchurl,
   lib,
   stdenv,
-  libpng,
+  fetchurl,
   autoreconfHook,
+  libpng,
 }:
 
 # debian splits this package into plotutils and libplot2c2
@@ -20,26 +20,24 @@ stdenv.mkDerivation (finalAttrs: {
     sha256 = "1arkyizn5wbgvbh53aziv3s6lmd3wm9lqzkhxb3hijlp1y124hjg";
   };
 
-  nativeBuildInputs = [ autoreconfHook ];
-  buildInputs = [ libpng ];
   patches =
     map fetchurl (import ./debian-patches.nix)
     # `pic2plot/gram.cc` uses the register storage class specifier, which is not supported in C++17.
     # This prevents clang 16 from building plotutils because it defaults to C++17.
     ++ [ ./c++17-register-usage-fix.patch ];
 
+  nativeBuildInputs = [ autoreconfHook ];
+  buildInputs = [ libpng ];
+  configureFlags = [ "--enable-libplotter" ]; # required for pstoedit
+
   preBuild = ''
     # Fix parallel building.
     make -C libplot xmi.h
   '';
 
-  configureFlags = [ "--enable-libplotter" ]; # required for pstoedit
-
-  hardeningDisable = [ "format" ];
-
   doCheck = true;
-
   enableParallelBuilding = true;
+  hardeningDisable = [ "format" ];
 
   meta = {
     description = "Powerful C/C++ library for exporting 2D vector graphics";
@@ -61,7 +59,6 @@ stdenv.mkDerivation (finalAttrs: {
     '';
 
     homepage = "https://www.gnu.org/software/plotutils/";
-
     license = lib.licenses.gpl2Plus;
     maintainers = [ ];
     platforms = lib.platforms.unix;

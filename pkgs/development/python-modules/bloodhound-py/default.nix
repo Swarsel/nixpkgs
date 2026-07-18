@@ -12,12 +12,11 @@
 buildPythonPackage (finalAttrs: {
   pname = "bloodhound-py";
   version = "1.9.0";
-  pyproject = true;
 
   src = fetchPypi {
     inherit (finalAttrs) version;
-    pname = "bloodhound";
     hash = "sha256-n1+0jv73lrn2FMNhDVUPDJxgUATa2oRO4S5P7/xQyFw=";
+    pname = "bloodhound";
   };
 
   nativeBuildInputs = [ setuptools ];
@@ -31,14 +30,14 @@ buildPythonPackage (finalAttrs: {
 
   # Module has no tests
   doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "bloodhound" ];
 
   meta = {
     description = "Python based ingestor for BloodHound, based on Impacket";
-    mainProgram = "bloodhound-python";
     homepage = "https://github.com/dirkjanm/BloodHound.py";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ exploitoverload ];
+    mainProgram = "bloodhound-python";
   };
 })

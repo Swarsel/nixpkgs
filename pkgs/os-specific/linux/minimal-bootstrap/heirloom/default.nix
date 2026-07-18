@@ -2,11 +2,11 @@
   lib,
   fetchurl,
   bash,
-  tinycc,
   gnumake,
   gnupatch,
-  heirloom-devtools,
   heirloom,
+  heirloom-devtools,
+  tinycc,
 }:
 let
   pname = "heirloom";
@@ -96,6 +96,7 @@ bash.runCommand "${pname}-${version}"
     meta = {
       description = "Heirloom Toolchest is a collection of standard Unix utilities";
       homepage = "https://heirloom.sourceforge.net/tools.html";
+
       license = with lib.licenses; [
         # All licenses according to LICENSE/
         zlib
@@ -108,8 +109,9 @@ bash.runCommand "${pname}-${version}"
         lpl-102
         info-zip
       ];
-      teams = [ lib.teams.minimal-bootstrap ];
+
       platforms = lib.platforms.unix;
+      teams = [ lib.teams.minimal-bootstrap ];
     };
   }
   ''

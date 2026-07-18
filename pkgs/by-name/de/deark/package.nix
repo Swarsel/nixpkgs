@@ -1,7 +1,7 @@
 {
-  fetchFromGitHub,
-  stdenv,
   lib,
+  stdenv,
+  fetchFromGitHub,
   help2man,
   installShellFiles,
 }:
@@ -20,6 +20,7 @@ stdenv.mkDerivation rec {
     help2man
     installShellFiles
   ];
+
   postBuild = ''
     make man
   '';
@@ -35,13 +36,15 @@ stdenv.mkDerivation rec {
 
   meta = {
     description = "Utility for file format and metadata analysis, data extraction, decompression, and image format decoding";
+
     longDescription = ''
       Deark is a portable command-line utility that can decode certain
       types of files, and either convert them to a more-modern or
       more-readable format, or extract embedded files from them.
     '';
+
     homepage = "https://entropymine.com/deark/";
-    downloadPage = "https://github.com/jsummers/deark/";
+
     # cf. READMEs under "foreign" folder for details
     license = with lib.licenses; [
       mit
@@ -65,8 +68,10 @@ stdenv.mkDerivation rec {
       # Deark contains VGA and CGA bitmapped fonts, which have no known
       # copyright claims."
     ];
+
     maintainers = with lib.maintainers; [ zacharyweiss ];
-    mainProgram = "deark";
     platforms = lib.platforms.unix;
+    mainProgram = "deark";
+    downloadPage = "https://github.com/jsummers/deark/";
   };
 }

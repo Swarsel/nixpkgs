@@ -2,19 +2,17 @@
   lib,
   buildPythonPackage,
   fetchPypi,
-  setuptools,
-
   # tests
   freezegun,
   mock,
   pytestCheckHook,
+  setuptools,
   sure,
 }:
 
 buildPythonPackage rec {
   pname = "httpretty";
   version = "1.1.4";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
@@ -27,8 +25,6 @@ buildPythonPackage rec {
     ./urllib-2.3.0-compat.patch
   ];
 
-  build-system = [ setuptools ];
-
   nativeCheckInputs = [
     freezegun
     mock
@@ -36,17 +32,20 @@ buildPythonPackage rec {
     sure
   ];
 
+  __darwinAllowLocalNetworking = true;
+  build-system = [ setuptools ];
+
   disabledTestPaths = [
     "tests/bugfixes"
     "tests/functional"
     "tests/pyopenssl"
   ];
 
-  __darwinAllowLocalNetworking = true;
+  pyproject = true;
 
   meta = {
-    homepage = "https://httpretty.readthedocs.org/";
     description = "HTTP client request mocking tool";
+    homepage = "https://httpretty.readthedocs.org/";
     license = lib.licenses.mit;
   };
 }

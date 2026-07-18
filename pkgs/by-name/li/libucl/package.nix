@@ -2,27 +2,27 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  pkg-config,
   autoreconfHook,
   curl,
   lua,
   openssl,
+  pkg-config,
   features ? {
-    urls = false;
+    lua = false;
     # Upstream enables regex by default
     regex = true;
     # Signature support is broken with openssl 1.1.1: https://github.com/vstakhov/libucl/issues/203
     signatures = false;
-    lua = false;
+    urls = false;
     utils = false;
   },
 }:
 
 let
   featureDeps = {
-    urls = [ curl ];
-    signatures = [ openssl ];
     lua = [ lua ];
+    signatures = [ openssl ];
+    urls = [ curl ];
   };
 in
 stdenv.mkDerivation (finalAttrs: {
@@ -45,17 +45,17 @@ stdenv.mkDerivation (finalAttrs: {
     lib.mapAttrsToList (feat: enabled: lib.optionals enabled (featureDeps."${feat}" or [ ])) features
   );
 
-  enableParallelBuilding = true;
-
   configureFlags = lib.mapAttrsToList (
     feat: enabled: lib.strings.enableFeature enabled feat
   ) features;
+
+  enableParallelBuilding = true;
 
   meta = {
     description = "Universal configuration library parser";
     homepage = "https://github.com/vstakhov/libucl";
     license = lib.licenses.bsd2;
-    platforms = lib.platforms.unix;
     maintainers = with lib.maintainers; [ jpotier ];
+    platforms = lib.platforms.unix;
   };
 })

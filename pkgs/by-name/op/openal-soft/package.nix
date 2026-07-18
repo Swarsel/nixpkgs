@@ -2,19 +2,19 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  cmake,
-  pkg-config,
-  removeReferencesTo,
-  alsaSupport ? stdenv.hostPlatform.isLinux,
   alsa-lib,
-  dbusSupport ? !stdenv.hostPlatform.isDarwin,
+  cmake,
   dbus,
-  pipewireSupport ? !stdenv.hostPlatform.isDarwin,
-  pipewire,
-  pulseSupport ? !stdenv.hostPlatform.isDarwin,
   libpulseaudio,
   nix-update-script,
+  pipewire,
+  pkg-config,
+  removeReferencesTo,
   testers,
+  alsaSupport ? stdenv.hostPlatform.isLinux,
+  dbusSupport ? !stdenv.hostPlatform.isDarwin,
+  pipewireSupport ? !stdenv.hostPlatform.isDarwin,
+  pulseSupport ? !stdenv.hostPlatform.isDarwin,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -66,8 +66,8 @@ stdenv.mkDerivation (finalAttrs: {
     homepage = "https://openal-soft.org/";
     changelog = "https://github.com/kcat/openal-soft/blob/master/ChangeLog";
     license = lib.licenses.lgpl2;
-    pkgConfigModules = [ "openal" ];
     maintainers = [ ];
     platforms = lib.platforms.unix;
+    pkgConfigModules = [ "openal" ];
   };
 })

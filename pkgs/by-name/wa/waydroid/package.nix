@@ -1,29 +1,28 @@
 {
   lib,
   fetchFromGitHub,
-  python3Packages,
   dnsmasq,
   gawk,
   getent,
   gobject-introspection,
   gtk3,
-  kmod,
-  lxc,
   iproute2,
   iptables,
+  kmod,
+  lxc,
   nftables,
-  util-linux,
-  wrapGAppsHook3,
-  wl-clipboard,
-  runtimeShell,
   nix-update-script,
+  python3Packages,
+  runtimeShell,
+  util-linux,
+  wl-clipboard,
+  wrapGAppsHook3,
   withNftables ? false,
 }:
 
 python3Packages.buildPythonApplication rec {
   pname = "waydroid";
   version = "1.6.3";
-  pyproject = false;
 
   src = fetchFromGitHub {
     owner = "waydroid";
@@ -47,18 +46,6 @@ python3Packages.buildPythonApplication rec {
     pyclip
     pygobject3
   ];
-
-  dontUseSetuptoolsBuild = true;
-  dontUsePipInstall = true;
-  dontWrapPythonPrograms = true;
-  dontWrapGApps = true;
-
-  installFlags = [
-    "PREFIX=${placeholder "out"}"
-    "USE_SYSTEMD=0"
-    "SYSCONFDIR=${placeholder "out"}/etc"
-  ]
-  ++ lib.optional withNftables "USE_NFTABLES=1";
 
   preFixup = ''
     makeWrapperArgs+=("''${gappsWrapperArgs[@]}")
@@ -94,14 +81,27 @@ python3Packages.buildPythonApplication rec {
       --replace-fail '"sh"' '"${runtimeShell}"'
   '';
 
+  dontUsePipInstall = true;
+  dontUseSetuptoolsBuild = true;
+  dontWrapGApps = true;
+  dontWrapPythonPrograms = true;
+
+  installFlags = [
+    "PREFIX=${placeholder "out"}"
+    "USE_SYSTEMD=0"
+    "SYSCONFDIR=${placeholder "out"}/etc"
+  ]
+  ++ lib.optional withNftables "USE_NFTABLES=1";
+
+  pyproject = false;
   passthru.updateScript = nix-update-script { };
 
   meta = {
     description = "Container-based approach to boot a full Android system on a regular GNU/Linux system";
-    mainProgram = "waydroid";
     homepage = "https://github.com/waydroid/waydroid";
     license = lib.licenses.gpl3Only;
-    platforms = lib.platforms.linux;
     maintainers = with lib.maintainers; [ bot-wxt1221 ];
+    platforms = lib.platforms.linux;
+    mainProgram = "waydroid";
   };
 }

@@ -2,18 +2,18 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  cmake,
-  cln,
-  gmp,
-  git,
-  swig,
-  pkg-config,
-  readline,
-  libantlr3c,
-  boost,
-  jdk,
-  python3,
   antlr3_4,
+  boost,
+  cln,
+  cmake,
+  git,
+  gmp,
+  jdk,
+  libantlr3c,
+  pkg-config,
+  python3,
+  readline,
+  swig,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -26,36 +26,6 @@ stdenv.mkDerivation (finalAttrs: {
     rev = finalAttrs.version;
     sha256 = "1rhs4pvzaa1wk00czrczp58b2cxfghpsnq534m0l3snnya2958jp";
   };
-
-  nativeBuildInputs = [
-    pkg-config
-    cmake
-  ];
-  buildInputs = [
-    gmp
-    git
-    python3.pkgs.toml
-    readline
-    swig
-    libantlr3c
-    antlr3_4
-    boost
-    jdk
-    python3
-  ]
-  ++ lib.optionals (!stdenv.hostPlatform.isDarwin) [ cln ];
-  configureFlags = [
-    "--enable-language-bindings=c,c++,java"
-    "--enable-gpl"
-    "--with-readline"
-    "--with-boost=${boost.dev}"
-  ]
-  ++ lib.optionals (!stdenv.hostPlatform.isDarwin) [ "--with-cln" ];
-
-  prePatch = ''
-    patch -p1 -i ${./minisat-fenv.patch} -d src/prop/minisat
-    patch -p1 -i ${./minisat-fenv.patch} -d src/prop/bvminisat
-  '';
 
   patches = [
     ./cvc4-bash-patsub-replacement.patch
@@ -78,21 +48,55 @@ stdenv.mkDerivation (finalAttrs: {
       "cmake_minimum_required(VERSION 3.2)" "cmake_minimum_required(VERSION 3.10)"
   '';
 
+  nativeBuildInputs = [
+    pkg-config
+    cmake
+  ];
+
+  buildInputs = [
+    gmp
+    git
+    python3.pkgs.toml
+    readline
+    swig
+    libantlr3c
+    antlr3_4
+    boost
+    jdk
+    python3
+  ]
+  ++ lib.optionals (!stdenv.hostPlatform.isDarwin) [ cln ];
+
+  configureFlags = [
+    "--enable-language-bindings=c,c++,java"
+    "--enable-gpl"
+    "--with-readline"
+    "--with-boost=${boost.dev}"
+  ]
+  ++ lib.optionals (!stdenv.hostPlatform.isDarwin) [ "--with-cln" ];
+
   preConfigure = ''
     patchShebangs ./src/
   '';
 
   cmakeBuildType = "Production";
 
+  prePatch = ''
+    patch -p1 -i ${./minisat-fenv.patch} -d src/prop/minisat
+    patch -p1 -i ${./minisat-fenv.patch} -d src/prop/bvminisat
+  '';
+
   meta = {
     description = "High-performance theorem prover and SMT solver";
-    mainProgram = "cvc4";
     homepage = "http://cvc4.cs.stanford.edu/web/";
     license = lib.licenses.gpl3;
-    platforms = lib.platforms.unix;
+
     maintainers = with lib.maintainers; [
       vbgl
       thoughtpolice
     ];
+
+    platforms = lib.platforms.unix;
+    mainProgram = "cvc4";
   };
 })

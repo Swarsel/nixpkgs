@@ -1,24 +1,23 @@
 {
-  fetchFromGitHub,
   lib,
-  makeWrapper,
   stdenv,
-
+  fetchFromGitHub,
   # Dependencies (@see https://github.com/pavanjadhaw/betterlockscreen/blob/master/shell.nix)
   bc,
   coreutils,
   dbus,
-  withDunst ? true,
   dunst,
-  i3lock-color,
   gawk,
   gnugrep,
   gnused,
+  i3lock-color,
   imagemagick,
+  makeWrapper,
   procps,
-  xset,
-  xrandr,
   xdpyinfo,
+  xrandr,
+  xset,
+  withDunst ? true,
 }:
 
 let
@@ -66,11 +65,13 @@ stdenv.mkDerivation (finalAttrs: {
   meta = {
     description = "Fast and sweet looking lockscreen for linux systems with effects";
     homepage = "https://github.com/betterlockscreen/betterlockscreen";
-    mainProgram = "betterlockscreen";
     license = lib.licenses.mit;
-    platforms = lib.platforms.linux;
+
     maintainers = with lib.maintainers; [
       eyjhb
     ];
+
+    platforms = lib.platforms.linux;
+    mainProgram = "betterlockscreen";
   };
 })

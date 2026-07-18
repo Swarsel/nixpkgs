@@ -2,15 +2,15 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  runCommand,
   asciidoctor,
+  bash,
   coreutils,
+  doas-sudo-shim,
   gawk,
   glibc,
-  util-linux,
-  bash,
   makeBinaryWrapper,
-  doas-sudo-shim,
+  runCommand,
+  util-linux,
 }:
 
 stdenv.mkDerivation rec {
@@ -28,20 +28,13 @@ stdenv.mkDerivation rec {
     asciidoctor
     makeBinaryWrapper
   ];
+
   buildInputs = [
     bash
     coreutils
     gawk
     glibc
     util-linux
-  ];
-
-  dontConfigure = true;
-  dontBuild = true;
-
-  installFlags = [
-    "DESTDIR=$(out)"
-    "PREFIX=\"\""
   ];
 
   postInstall = ''
@@ -57,6 +50,14 @@ stdenv.mkDerivation rec {
       }
   '';
 
+  dontBuild = true;
+  dontConfigure = true;
+
+  installFlags = [
+    "DESTDIR=$(out)"
+    "PREFIX=\"\""
+  ];
+
   passthru.tests = {
     helpTest = runCommand "${pname}-helpTest" { } ''
       ${doas-sudo-shim}/bin/sudo -h > $out
@@ -68,8 +69,8 @@ stdenv.mkDerivation rec {
     description = "Shim for the sudo command that utilizes doas";
     homepage = "https://github.com/jirutka/doas-sudo-shim";
     license = lib.licenses.isc;
-    mainProgram = "sudo";
     maintainers = with lib.maintainers; [ dsuetin ];
     platforms = lib.platforms.linux;
+    mainProgram = "sudo";
   };
 }

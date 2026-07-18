@@ -1,18 +1,17 @@
 {
   lib,
   stdenv,
-  python3Packages,
   fetchFromGitHub,
   installShellFiles,
   nixosTests,
-  enableDbusUi ? true,
+  python3Packages,
   wrapGAppsHook3,
+  enableDbusUi ? true,
 }:
 
 python3Packages.buildPythonApplication rec {
   pname = "pantalaimon";
   version = "0.10.6";
-  pyproject = true;
 
   # pypi tarball miss tests
   src = fetchFromGitHub {
@@ -22,16 +21,34 @@ python3Packages.buildPythonApplication rec {
     hash = "sha256-g+ZWarZnjlSOpD75yf53Upqj1qDlil7pdbfEsMAsjh0=";
   };
 
+  nativeBuildInputs = lib.optionals enableDbusUi [
+    wrapGAppsHook3
+  ];
+
+  # darwin has difficulty communicating with server, fails some integration tests
+  # Tests are incompatible with pytest>=8 and Python 3.13
+  doCheck = !stdenv.hostPlatform.isDarwin && python3Packages.pythonOlder "3.13";
+
+  nativeCheckInputs =
+    with python3Packages;
+    [
+      aioresponses
+      faker
+      pytest-aiohttp
+      pytestCheckHook
+    ]
+    ++ lib.concatAttrValues optional-dependencies;
+
+  postInstall = ''
+    installManPage docs/man/*.[1-9]
+  '';
+
   build-system = [
     installShellFiles
   ]
   ++ (with python3Packages; [
     setuptools
   ]);
-
-  pythonRelaxDeps = [
-    "matrix-nio"
-  ];
 
   dependencies =
     with python3Packages;
@@ -50,6 +67,12 @@ python3Packages.buildPythonApplication rec {
     ]
     ++ lib.optionals enableDbusUi optional-dependencies.ui;
 
+  dontWrapGApps = enableDbusUi;
+
+  makeWrapperArgs = lib.optionals enableDbusUi [
+    "\${gappsWrapperArgs[@]}"
+  ];
+
   optional-dependencies.ui = with python3Packages; [
     dbus-python
     notify2
@@ -57,32 +80,11 @@ python3Packages.buildPythonApplication rec {
     pydbus
   ];
 
-  nativeCheckInputs =
-    with python3Packages;
-    [
-      aioresponses
-      faker
-      pytest-aiohttp
-      pytestCheckHook
-    ]
-    ++ lib.concatAttrValues optional-dependencies;
+  pyproject = true;
 
-  nativeBuildInputs = lib.optionals enableDbusUi [
-    wrapGAppsHook3
+  pythonRelaxDeps = [
+    "matrix-nio"
   ];
-
-  dontWrapGApps = enableDbusUi;
-  makeWrapperArgs = lib.optionals enableDbusUi [
-    "\${gappsWrapperArgs[@]}"
-  ];
-
-  # darwin has difficulty communicating with server, fails some integration tests
-  # Tests are incompatible with pytest>=8 and Python 3.13
-  doCheck = !stdenv.hostPlatform.isDarwin && python3Packages.pythonOlder "3.13";
-
-  postInstall = ''
-    installManPage docs/man/*.[1-9]
-  '';
 
   passthru.tests = {
     inherit (nixosTests) pantalaimon;

@@ -1,7 +1,7 @@
 {
   lib,
-  coreutils,
   fetchFromGitHub,
+  coreutils,
   jre,
   libarchive,
   makeWrapper,
@@ -19,10 +19,6 @@ maven.buildMavenPackage rec {
     tag = version;
     hash = "sha256-CzoRuTi5GHp+Lfyh/h3PlFiVznZjPmuvZFUCmScpToY=";
   };
-
-  mvnHash = "sha256-Arznu7llonwfIOMtHbqzv55D8uy1IEoF4JfIX8W1bVk=";
-
-  mvnParameters = "-Dproject.build.outputTimestamp=1980-01-01T00:00:02Z";
 
   nativeBuildInputs = [
     # For bsdtar (name is a misnomer since it handles multiple archive formats) to extract nested directories from .zip files.
@@ -66,6 +62,9 @@ maven.buildMavenPackage rec {
       --prefix PATH : ${lib.makeBinPath [ coreutils ]}
   '';
 
+  mvnHash = "sha256-Arznu7llonwfIOMtHbqzv55D8uy1IEoF4JfIX8W1bVk=";
+  mvnParameters = "-Dproject.build.outputTimestamp=1980-01-01T00:00:02Z";
+
   passthru = {
     updateScript = nix-update-script { };
   };
@@ -75,7 +74,7 @@ maven.buildMavenPackage rec {
     homepage = "https://github.com/SonarSource/sonar-scanner-cli";
     license = lib.licenses.lgpl3Only;
     maintainers = with lib.maintainers; [ kmjayadeep ];
-    mainProgram = "sonar-scanner";
     platforms = lib.platforms.unix;
+    mainProgram = "sonar-scanner";
   };
 }

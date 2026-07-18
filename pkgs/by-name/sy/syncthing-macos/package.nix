@@ -1,9 +1,9 @@
 {
   lib,
-  fetchurl,
   stdenv,
-  undmg,
+  fetchurl,
   nix-update-script,
+  undmg,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -17,8 +17,6 @@ stdenv.mkDerivation (finalAttrs: {
 
   nativeBuildInputs = [ undmg ];
 
-  sourceRoot = "Syncthing.app";
-
   installPhase = ''
     runHook preInstall
 
@@ -28,15 +26,16 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  sourceRoot = "Syncthing.app";
   passthru.updateScript = nix-update-script { extraArgs = [ "--use-github-releases" ]; };
 
   meta = {
     description = "Official frugal and native macOS Syncthing application bundle";
     homepage = "https://github.com/syncthing/syncthing-macos";
     license = lib.licenses.mit;
-    maintainers = with lib.maintainers; [ Enzime ];
-    hydraPlatforms = [ ]; # no building required
-    platforms = lib.platforms.darwin;
     sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
+    maintainers = with lib.maintainers; [ Enzime ];
+    platforms = lib.platforms.darwin;
+    hydraPlatforms = [ ]; # no building required
   };
 })

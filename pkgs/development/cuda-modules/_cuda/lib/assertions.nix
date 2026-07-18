@@ -1,4 +1,4 @@
-{ _cuda, lib }:
+{ lib, _cuda }:
 {
   /**
     Evaluate assertions and add error context to return value.
@@ -132,8 +132,8 @@
     lib.attrNames
     # Map them to assertions.
     (lib.map (name: {
-      message = "${name} is available";
       assertion = false;
+      message = "${name} is available";
     }))
   ];
 }

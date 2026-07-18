@@ -2,19 +2,19 @@
   lib,
   stdenv,
   fetchurl,
-  wrapGAppsHook3,
-  autoPatchelfHook,
+  adwaita-icon-theme,
   alsa-lib,
+  autoPatchelfHook,
   curl,
   dbus-glib,
   gtk3,
-  libxtst,
   libva,
+  libxtst,
+  patchelfUnstable, # have to use patchelfUnstable to support --no-clobber-old-sections
   pciutils,
   pipewire,
-  adwaita-icon-theme,
-  patchelfUnstable, # have to use patchelfUnstable to support --no-clobber-old-sections
   undmg,
+  wrapGAppsHook3,
   writeText,
 }:
 
@@ -30,14 +30,12 @@ let
 
 in
 stdenv.mkDerivation (finalAttrs: {
-  pname = "floorp-bin-unwrapped";
   inherit version;
+  pname = "floorp-bin-unwrapped";
 
   src = fetchurl {
     inherit (sources.${stdenv.hostPlatform.system}) url sha256;
   };
-
-  sourceRoot = lib.optional stdenv.hostPlatform.isDarwin ".";
 
   nativeBuildInputs = [
     wrapGAppsHook3
@@ -57,24 +55,6 @@ stdenv.mkDerivation (finalAttrs: {
     dbus-glib
     libxtst
   ];
-
-  runtimeDependencies = [
-    curl
-    pciutils
-  ]
-  ++ lib.optionals (!stdenv.hostPlatform.isDarwin) [
-    libva.out
-  ];
-
-  appendRunpaths = lib.optionals (!stdenv.hostPlatform.isDarwin) [
-    "${pipewire}/lib"
-  ];
-
-  # Firefox uses "relrhack" to manually process relocations from a fixed offset
-  patchelfFlags = [ "--no-clobber-old-sections" ];
-
-  # don't break code signing
-  dontFixup = stdenv.hostPlatform.isDarwin;
 
   installPhase = ''
     runHook preInstall
@@ -109,31 +89,54 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  appendRunpaths = lib.optionals (!stdenv.hostPlatform.isDarwin) [
+    "${pipewire}/lib"
+  ];
+
+  # don't break code signing
+  dontFixup = stdenv.hostPlatform.isDarwin;
+  # Firefox uses "relrhack" to manually process relocations from a fixed offset
+  patchelfFlags = [ "--no-clobber-old-sections" ];
+
+  runtimeDependencies = [
+    curl
+    pciutils
+  ]
+  ++ lib.optionals (!stdenv.hostPlatform.isDarwin) [
+    libva.out
+  ];
+
+  sourceRoot = lib.optional stdenv.hostPlatform.isDarwin ".";
+
   passthru = {
     inherit binaryName;
     applicationName = "Floorp";
-    libName = "floorp-bin-${finalAttrs.version}";
     ffmpegSupport = true;
     gssSupport = true;
     gtk3 = gtk3;
+    libName = "floorp-bin-${finalAttrs.version}";
     updateScript = ./update.sh;
   };
 
   meta = {
-    changelog = "https://blog.floorp.app/en/release/${finalAttrs.version}/";
     description = "Fork of Firefox that seeks balance between versatility, privacy and web openness";
     homepage = "https://floorp.app/";
+    changelog = "https://blog.floorp.app/en/release/${finalAttrs.version}/";
+
     # https://github.com/Floorp-Projects/Floorp#-floorp-license-notices-
     license = with lib.licenses; [
       mpl20
       mit
     ];
-    platforms = builtins.attrNames sources;
-    hydraPlatforms = [ ];
+
+    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
+
     maintainers = with lib.maintainers; [
       christoph-heiss
     ];
+
+    platforms = builtins.attrNames sources;
     mainProgram = "floorp";
-    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
+    hydraPlatforms = [ ];
   };
 })

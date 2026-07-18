@@ -1,12 +1,12 @@
 {
   lib,
   stdenv,
-  cmake,
   fetchurl,
+  cmake,
   gettext,
   gst_all_1,
-  ninja,
   kdePackages,
+  ninja,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -24,11 +24,6 @@ stdenv.mkDerivation (finalAttrs: {
     substituteInPlace src/core/config.h.in  --replace-fail \
       "../@_data_dest_dir@" "../share/gcompris-qt"
   '';
-
-  cmakeFlags = [
-    (lib.cmakeFeature "QML_BOX2D_LIBRARY" "${kdePackages.qmlbox2d}/${kdePackages.qtbase.qtQmlPrefix}/Box2D.2.1")
-    (lib.cmakeBool "BUILD_TESTING" finalAttrs.finalPackage.doCheck)
-  ];
 
   nativeBuildInputs = [
     cmake
@@ -58,21 +53,26 @@ stdenv.mkDerivation (finalAttrs: {
       gst-plugins-bad
     ]);
 
+  cmakeFlags = [
+    (lib.cmakeFeature "QML_BOX2D_LIBRARY" "${kdePackages.qmlbox2d}/${kdePackages.qtbase.qtQmlPrefix}/Box2D.2.1")
+    (lib.cmakeBool "BUILD_TESTING" finalAttrs.finalPackage.doCheck)
+  ];
+
+  # we need a graphical environment for the tests
+  doCheck = false;
+
   postInstall = ''
     install -Dm444 ../org.kde.gcompris.appdata.xml -t $out/share/metainfo
 
     qtWrapperArgs+=(--prefix GST_PLUGIN_SYSTEM_PATH_1_0 : "$GST_PLUGIN_SYSTEM_PATH_1_0")
   '';
 
-  # we need a graphical environment for the tests
-  doCheck = false;
-
   meta = {
     description = "High quality educational software suite, including a large number of activities for children aged 2 to 10";
     homepage = "https://gcompris.net/";
     license = lib.licenses.gpl3Plus;
-    mainProgram = "gcompris-qt";
     maintainers = with lib.maintainers; [ guibou ];
     platforms = lib.platforms.linux;
+    mainProgram = "gcompris-qt";
   };
 })

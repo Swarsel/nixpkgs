@@ -1,16 +1,15 @@
 {
   lib,
   buildPythonPackage,
+  fastapi,
   fetchPypi,
   poetry-core,
   starlette,
-  fastapi,
 }:
 
 buildPythonPackage rec {
   pname = "imia";
   version = "0.5.3";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
@@ -26,12 +25,13 @@ buildPythonPackage rec {
 
   # running the real tests would require sqlalchemy 1.4 and starsessions 1.x
   doCheck = false;
+  pyproject = true;
   pythonImportsCheck = [ "imia" ];
 
   meta = {
     description = "Authentication library for Starlette and FastAPI";
-    changelog = "https://github.com/alex-oleshkevich/imia/releases/tag/v${version}";
     homepage = "https://github.com/alex-oleshkevich/imia";
+    changelog = "https://github.com/alex-oleshkevich/imia/releases/tag/v${version}";
     license = lib.licenses.mit;
   };
 }

@@ -1,9 +1,9 @@
 {
   lib,
   coreutils,
+  evalMinimalConfig,
   fakechroot,
   fakeroot,
-  evalMinimalConfig,
   pkgsModule,
   runCommand,
   util-linux,
@@ -18,12 +18,14 @@ let
         pkgsModule
         ../etc/etc.nix
       ];
+
+      environment.etc."hosts" = {
+        mode = "0751";
+        text = hostsText;
+      };
+
       environment.etc."passwd" = {
         text = passwdText;
-      };
-      environment.etc."hosts" = {
-        text = hostsText;
-        mode = "0751";
       };
     }
   );
@@ -37,24 +39,17 @@ let
   '';
 in
 lib.recurseIntoAttrs {
-  test-etc-vm = vmTools.runInLinuxVM (
-    runCommand "test-etc-vm" { } ''
-      mkdir -p /etc
-      ${node.config.system.build.etcActivationCommands}
-      set -x
-      [[ -L /etc/passwd ]]
-      diff /etc/passwd ${writeText "expected-passwd" passwdText}
-      [[ 751 = $(stat --format %a /etc/hosts) ]]
-      diff /etc/hosts ${writeText "expected-hosts" hostsText}
-      set +x
-      touch $out
-    ''
-  );
-
   # fakeroot is behaving weird
   test-etc-fakeroot =
     runCommand "test-etc"
       {
+        fakeRootCommands = ''
+          mkdir -p /etc
+          ${node.config.system.build.etcActivationCommands}
+          diff /etc/hosts ${writeText "expected-hosts" hostsText}
+          touch $out
+        '';
+
         nativeBuildInputs = [
           fakeroot
           fakechroot
@@ -63,12 +58,6 @@ lib.recurseIntoAttrs {
           # fakechroot needs getopt, which is provided by util-linux
           util-linux
         ];
-        fakeRootCommands = ''
-          mkdir -p /etc
-          ${node.config.system.build.etcActivationCommands}
-          diff /etc/hosts ${writeText "expected-hosts" hostsText}
-          touch $out
-        '';
       }
       ''
         mkdir fake-root
@@ -82,5 +71,19 @@ lib.recurseIntoAttrs {
           eval "$fakeRootCommands"
         '
       '';
+
+  test-etc-vm = vmTools.runInLinuxVM (
+    runCommand "test-etc-vm" { } ''
+      mkdir -p /etc
+      ${node.config.system.build.etcActivationCommands}
+      set -x
+      [[ -L /etc/passwd ]]
+      diff /etc/passwd ${writeText "expected-passwd" passwdText}
+      [[ 751 = $(stat --format %a /etc/hosts) ]]
+      diff /etc/hosts ${writeText "expected-hosts" hostsText}
+      set +x
+      touch $out
+    ''
+  );
 
 }

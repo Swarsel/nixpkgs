@@ -1,14 +1,13 @@
 {
   lib,
-  python3,
   fetchFromGitLab,
   fetchPypi,
+  python3,
 }:
 
 python3.pkgs.buildPythonApplication rec {
   pname = "annextimelog";
   version = "0.15.0";
-  pyproject = true;
 
   src = fetchFromGitLab {
     owner = "nobodyinperson";
@@ -16,8 +15,6 @@ python3.pkgs.buildPythonApplication rec {
     tag = "v${version}";
     hash = "sha256-RfqBtbfArFva3TVJGF4STx0QTio62qxXaM23lsLYLUg=";
   };
-
-  pythonRelaxDeps = [ "rich" ];
 
   nativeBuildInputs = with python3.pkgs; [
     unittestCheckHook
@@ -27,11 +24,13 @@ python3.pkgs.buildPythonApplication rec {
     tzdata
   ];
 
-  unittestFlags = [ "-vb" ];
-
   propagatedBuildInputs = with python3.pkgs; [
     rich
   ];
+
+  pyproject = true;
+  pythonRelaxDeps = [ "rich" ];
+  unittestFlags = [ "-vb" ];
 
   meta = {
     description = "git-annex based cli time tracker";

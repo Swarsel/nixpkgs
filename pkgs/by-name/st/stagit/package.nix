@@ -1,8 +1,8 @@
 {
   lib,
   stdenv,
-  libgit2,
   fetchgit,
+  libgit2,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -15,18 +15,19 @@ stdenv.mkDerivation (finalAttrs: {
     sha256 = "sha256-mVYR8THGGfaTsx3aaSbQBxExRo87K47SD+PU5cZ8z58=";
   };
 
-  makeFlags = [ "PREFIX=$(out)" ];
-
   buildInputs = [ libgit2 ];
+  makeFlags = [ "PREFIX=$(out)" ];
 
   meta = {
     description = "Git static site generator";
     homepage = "https://git.codemadness.org/stagit/file/README.html";
     license = lib.licenses.mit;
-    platforms = lib.platforms.all;
+
     maintainers = with lib.maintainers; [
       jb55
       sikmir
     ];
+
+    platforms = lib.platforms.all;
   };
 })

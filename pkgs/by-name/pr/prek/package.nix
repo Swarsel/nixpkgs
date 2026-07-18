@@ -2,13 +2,13 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  rustPlatform,
-  installShellFiles,
   git,
-  uv,
-  python312,
-  versionCheckHook,
+  installShellFiles,
   nix-update-script,
+  python312,
+  rustPlatform,
+  uv,
+  versionCheckHook,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -22,21 +22,20 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-PAEmRQ5Vro83fkegOWsdY59U7WAQxBPSEalzxZV6K4o=";
   };
 
-  cargoHash = "sha256-EmlR6Lmt5XR0uS/y3FqY5yGNeVBSdtLtEGH9jZLcP2o=";
-
   nativeBuildInputs = [
     installShellFiles
   ];
+
+  cargoHash = "sha256-EmlR6Lmt5XR0uS/y3FqY5yGNeVBSdtLtEGH9jZLcP2o=";
+  # many tests just do not work, as they require network access
+  # best to disable all, as the upstream already tests everything
+  doCheck = false;
 
   nativeCheckInputs = [
     git
     python312
     uv
   ];
-
-  # many tests just do not work, as they require network access
-  # best to disable all, as the upstream already tests everything
-  doCheck = false;
 
   postInstall = lib.optionalString (stdenv.buildPlatform.canExecute stdenv.hostPlatform) ''
     installShellCompletion --cmd prek \
@@ -47,15 +46,14 @@ rustPlatform.buildRustPackage (finalAttrs: {
 
   doInstallCheck = true;
   nativeInstallCheckInputs = [ versionCheckHook ];
-
   passthru.updateScript = nix-update-script { };
 
   meta = {
-    homepage = "https://github.com/j178/prek";
     description = "Better `pre-commit`, re-engineered in Rust ";
-    mainProgram = "prek";
+    homepage = "https://github.com/j178/prek";
     changelog = "https://github.com/j178/prek/blob/${finalAttrs.src.tag}/CHANGELOG.md";
     license = [ lib.licenses.mit ];
     maintainers = [ lib.maintainers.thunze ];
+    mainProgram = "prek";
   };
 })

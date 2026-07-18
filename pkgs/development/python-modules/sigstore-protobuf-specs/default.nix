@@ -1,21 +1,20 @@
 {
   lib,
-  flit-core,
-  fetchPypi,
-  buildPythonPackage,
   betterproto,
+  buildPythonPackage,
+  fetchPypi,
+  flit-core,
   pydantic,
 }:
 
 buildPythonPackage rec {
   pname = "sigstore-protobuf-specs";
   version = "0.5.0";
-  pyproject = true;
 
   src = fetchPypi {
-    pname = "sigstore_protobuf_specs";
     inherit version;
     hash = "sha256-zvnrMrLGwlHeNuIoWkCq8glIJ+rhifXngE10jMw9W4E=";
+    pname = "sigstore_protobuf_specs";
   };
 
   nativeBuildInputs = [ flit-core ];
@@ -27,9 +26,8 @@ buildPythonPackage rec {
 
   # Module has no tests
   doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "sigstore_protobuf_specs" ];
-
   passthru.skipBulkUpdate = true;
 
   meta = {

@@ -8,23 +8,10 @@
 }:
 
 graalvmPackages.buildGraalvmProduct {
-  src = fetchurl (import ./hashes.nix).hashes.${stdenv.system};
   version = (import ./hashes.nix).version;
-
-  product = "truffleruby";
-
-  extraBuildInputs = [
-    libyaml
-    openssl
-  ];
-
-  preFixup = lib.optionalString stdenv.hostPlatform.isLinux ''
-    patchelf $out/lib/mri/openssl.so \
-      --replace-needed libssl.so.10 libssl.so \
-      --replace-needed libcrypto.so.10 libcrypto.so
-  '';
-
+  src = fetchurl (import ./hashes.nix).hashes.${stdenv.system};
   doInstallCheck = true;
+
   installCheckPhase = ''
     echo "Testing TruffleRuby"
     # Fixup/silence warnings about wrong locale
@@ -38,4 +25,17 @@ graalvmPackages.buildGraalvmProduct {
       ''
     }
   '';
+
+  preFixup = lib.optionalString stdenv.hostPlatform.isLinux ''
+    patchelf $out/lib/mri/openssl.so \
+      --replace-needed libssl.so.10 libssl.so \
+      --replace-needed libcrypto.so.10 libcrypto.so
+  '';
+
+  extraBuildInputs = [
+    libyaml
+    openssl
+  ];
+
+  product = "truffleruby";
 }

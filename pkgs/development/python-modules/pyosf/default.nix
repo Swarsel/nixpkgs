@@ -1,15 +1,14 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
+  buildPythonPackage,
   requests,
+  setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "pyosf";
   version = "1.0.5";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "psychopy";
@@ -24,14 +23,11 @@ buildPythonPackage rec {
   '';
 
   preBuild = "export HOME=$TMP";
-
-  build-system = [ setuptools ];
-
-  dependencies = [ requests ];
-
   # Tests require network access
   doCheck = false;
-
+  build-system = [ setuptools ];
+  dependencies = [ requests ];
+  pyproject = true;
   pythonImportsCheck = [ "pyosf" ];
 
   meta = {

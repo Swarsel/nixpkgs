@@ -8,16 +8,16 @@
 buildPythonPackage rec {
   pname = "connection-pool";
   version = "0.0.3";
-  format = "setuptools";
-  disabled = !isPy3k;
 
   src = fetchPypi {
-    pname = "connection_pool";
     inherit version;
     sha256 = "bf429e7aef65921c69b4ed48f3d48d3eac1383b05d2df91884705842d974d0dc";
+    pname = "connection_pool";
   };
 
   doCheck = false; # no tests
+  disabled = !isPy3k;
+  format = "setuptools";
   pythonImportsCheck = [ "connection_pool" ];
 
   meta = {

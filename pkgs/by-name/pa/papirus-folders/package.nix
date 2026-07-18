@@ -28,14 +28,16 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Tool to change papirus icon theme color";
-    mainProgram = "papirus-folders";
+
     longDescription = ''
       papirus-folders is a bash script that allows changing the color of
       folders in Papirus icon theme and its forks (which based on version 20171007 and newer).
     '';
+
     homepage = "https://github.com/PapirusDevelopmentTeam/papirus-folders";
     license = lib.licenses.mit;
-    platforms = lib.platforms.linux;
     maintainers = [ lib.maintainers.aacebedo ];
+    platforms = lib.platforms.linux;
+    mainProgram = "papirus-folders";
   };
 })

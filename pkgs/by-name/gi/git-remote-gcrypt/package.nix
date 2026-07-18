@@ -2,21 +2,20 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  docutils,
-  makeWrapper,
-  gnupg,
-  curl,
-  rsync,
   coreutils,
+  curl,
+  docutils,
   gawk,
-  gnused,
   gnugrep,
+  gnupg,
+  gnused,
+  makeWrapper,
+  rsync,
 }:
 
 stdenv.mkDerivation rec {
   pname = "git-remote-gcrypt";
   version = "1.5";
-  rev = version;
 
   src = fetchFromGitHub {
     inherit rev;
@@ -51,14 +50,18 @@ stdenv.mkDerivation rec {
       }"
   '';
 
+  rev = version;
+
   meta = {
-    homepage = "https://spwhitton.name/tech/code/git-remote-gcrypt";
     description = "Git remote helper for GPG-encrypted remotes";
+    homepage = "https://spwhitton.name/tech/code/git-remote-gcrypt";
     license = lib.licenses.gpl3;
+
     maintainers = with lib.maintainers; [
       ellis
       montag451
     ];
+
     platforms = lib.platforms.unix;
     mainProgram = "git-remote-gcrypt";
   };

@@ -14,6 +14,13 @@ stdenv.mkDerivation (finalAttrs: {
     sha256 = "0drw16wm95dqszpl7j33y4gckz0w0107lnz6wkzb66f0dlbv48cf";
   };
 
+  configureFlags = [
+    "--enable-pic"
+    "--enable-shared"
+    # Bug preventing compilation with assembly enabled
+    "--disable-asm"
+  ];
+
   enableParallelBuilding = true;
 
   patchPhase = ''
@@ -36,19 +43,12 @@ stdenv.mkDerivation (finalAttrs: {
     substituteInPlace Makefile --replace '-Wl,-soname,' ' '
   '';
 
-  configureFlags = [
-    "--enable-pic"
-    "--enable-shared"
-    # Bug preventing compilation with assembly enabled
-    "--disable-asm"
-  ];
-
   meta = {
     description = "AVS encoder and decoder";
-    mainProgram = "xavs";
     homepage = "https://xavs.sourceforge.net/";
     license = lib.licenses.lgpl2;
-    platforms = lib.platforms.unix;
     maintainers = [ ];
+    platforms = lib.platforms.unix;
+    mainProgram = "xavs";
   };
 })

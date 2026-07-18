@@ -1,16 +1,15 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  poetry-core,
   anytree,
+  buildPythonPackage,
+  poetry-core,
   pytestCheckHook,
 }:
 
 buildPythonPackage rec {
   pname = "pickpack";
   version = "2.0.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "anafvana";
@@ -18,6 +17,10 @@ buildPythonPackage rec {
     rev = "v${version}";
     hash = "sha256-IUIs+Cgl2fvjSougyVSzhmY2SeEYL2T2ODrBWBg3zZM=";
   };
+
+  nativeCheckInputs = [
+    pytestCheckHook
+  ];
 
   build-system = [
     poetry-core
@@ -27,12 +30,10 @@ buildPythonPackage rec {
     anytree
   ];
 
+  pyproject = true;
+
   pythonImportsCheck = [
     "pickpack"
-  ];
-
-  nativeCheckInputs = [
-    pytestCheckHook
   ];
 
   meta = {

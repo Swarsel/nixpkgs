@@ -23,9 +23,9 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   meta = {
-    license = lib.licenses.mit;
-    homepage = "https://github.com/posva/catimg";
     description = "Insanely fast image printing in your terminal";
+    homepage = "https://github.com/posva/catimg";
+    license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ ryantm ];
     platforms = lib.platforms.unix;
     mainProgram = "catimg";

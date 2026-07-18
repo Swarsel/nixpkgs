@@ -2,17 +2,17 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  fetchpatch,
   boost,
   catch2,
-  cmake,
   clingo,
+  cmake,
+  fetchpatch,
   re2c,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
-  version = "1.9.6";
   pname = "aspcud";
+  version = "1.9.6";
 
   src = fetchFromGitHub {
     owner = "potassco";
@@ -24,9 +24,9 @@ stdenv.mkDerivation (finalAttrs: {
   patches = [
     # Bump minimal version of cmake to 3.10
     (fetchpatch {
-      url = "https://github.com/potassco/aspcud/commit/d88c1aad6f9c1c0081aa1a0eea94ecc7d4ebf855.patch?full_index=1";
-      hash = "sha256-JDNpXLb3ow4JnsZrQ8HqGrRpf/6H/ozJca52pIRVo2w=";
       excludes = [ "cmake/FindRE2C.cmake" ];
+      hash = "sha256-JDNpXLb3ow4JnsZrQ8HqGrRpf/6H/ozJca52pIRVo2w=";
+      url = "https://github.com/potassco/aspcud/commit/d88c1aad6f9c1c0081aa1a0eea94ecc7d4ebf855.patch?full_index=1";
     })
   ];
 
@@ -35,6 +35,7 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   nativeBuildInputs = [ cmake ];
+
   buildInputs = [
     boost
     clingo
@@ -51,8 +52,8 @@ stdenv.mkDerivation (finalAttrs: {
   meta = {
     description = "Solver for package problems in CUDF format using ASP";
     homepage = "https://potassco.org/aspcud/";
-    platforms = lib.platforms.all;
-    maintainers = [ lib.maintainers.hakuch ];
     license = lib.licenses.gpl3Plus;
+    maintainers = [ lib.maintainers.hakuch ];
+    platforms = lib.platforms.all;
   };
 })

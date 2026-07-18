@@ -1,17 +1,16 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   hatchling,
   jupyter-server,
-  pytestCheckHook,
   pytest-tornasync,
+  pytestCheckHook,
 }:
 
 buildPythonPackage rec {
   pname = "notebook-shim";
   version = "0.2.4";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "jupyter";
@@ -22,12 +21,6 @@ buildPythonPackage rec {
 
   nativeBuildInputs = [ hatchling ];
   propagatedBuildInputs = [ jupyter-server ];
-
-  preCheck = ''
-    mv notebook_shim/conftest.py notebook_shim/tests
-    cd notebook_shim/tests
-  '';
-
   # TODO: understand & possibly fix why tests fail. On github most testfiles
   # have been committed with msgs "wip" though.
   doCheck = false;
@@ -37,14 +30,22 @@ buildPythonPackage rec {
     pytest-tornasync
   ];
 
+  preCheck = ''
+    mv notebook_shim/conftest.py notebook_shim/tests
+    cd notebook_shim/tests
+  '';
+
+  pyproject = true;
   pythonImportsCheck = [ "notebook_shim" ];
 
   meta = {
     description = "Switch frontends to Jupyter Server";
+
     longDescription = ''
       This project provides a way for JupyterLab and other frontends to switch
       to Jupyter Server for their Python Web application backend.
     '';
+
     homepage = "https://github.com/jupyter/notebook_shim";
     license = lib.licenses.bsd3;
     maintainers = [ ];

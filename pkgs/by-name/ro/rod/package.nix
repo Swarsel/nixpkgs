@@ -1,8 +1,8 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
   nix-update-script,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -17,7 +17,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
   };
 
   cargoHash = "sha256-vpZOS8PY9fSOVeMGQf8uYZtpUnc3D6a+ZenLmBCfPFg=";
-
   passthru.updateScript = nix-update-script { };
 
   meta = {
@@ -25,10 +24,12 @@ rustPlatform.buildRustPackage (finalAttrs: {
     homepage = "https://github.com/leiserfg/rod";
     changelog = "https://github.com/leiserfg/rod/releases/tag/${finalAttrs.version}";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       leiserfg
       nekowinston
     ];
+
     platforms = lib.platforms.unix;
   };
 })

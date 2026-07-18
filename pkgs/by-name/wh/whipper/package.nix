@@ -1,20 +1,20 @@
 {
   lib,
-  python3,
   fetchFromGitHub,
-  fetchpatch,
-  installShellFiles,
-  wrapGAppsNoGuiHook,
-  gobject-introspection,
-  libcdio-paranoia,
   cdrdao,
-  libsndfile,
-  glib,
+  fetchpatch,
   flac,
+  glib,
+  gobject-introspection,
+  installShellFiles,
+  libcdio-paranoia,
+  libsndfile,
+  python3,
   sox,
-  util-linux,
   testers,
+  util-linux,
   whipper,
+  wrapGAppsNoGuiHook,
 }:
 
 let
@@ -29,7 +29,6 @@ in
 python3.pkgs.buildPythonApplication (finalAttrs: {
   pname = "whipper";
   version = "0.10.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "whipper-team";
@@ -38,12 +37,17 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     sha256 = "00cq03cy5dyghmibsdsq5sdqv3bzkzhshsng74bpnb5lasxp3ia5";
   };
 
+  outputs = [
+    "out"
+    "man"
+  ];
+
   patches = [
     (fetchpatch {
+      sha256 = "0n9dmib884y8syvypsg88j0h71iy42n1qsrh0am8pwna63sl15ah";
       # Use custom YAML subclass to be compatible with ruamel_yaml>=0.17
       # https://github.com/whipper-team/whipper/pull/543
       url = "https://github.com/whipper-team/whipper/commit/3ce5964dfe8be1e625c3e3b091360dd0bc34a384.patch";
-      sha256 = "0n9dmib884y8syvypsg88j0h71iy42n1qsrh0am8pwna63sl15ah";
     })
   ];
 
@@ -53,9 +57,9 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     gobject-introspection
   ];
 
-  build-system = with python3.pkgs; [
-    docutils
-    setuptools-scm
+  buildInputs = [
+    libsndfile
+    glib
   ];
 
   propagatedBuildInputs = with python3.pkgs; [
@@ -69,10 +73,9 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     setuptools_80
   ];
 
-  buildInputs = [
-    libsndfile
-    glib
-  ];
+  postBuild = ''
+    make -C man
+  '';
 
   nativeCheckInputs =
     with python3.pkgs;
@@ -81,24 +84,6 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
       pytestCheckHook
     ]
     ++ bins;
-
-  makeWrapperArgs = [
-    "--prefix"
-    "PATH"
-    ":"
-    (lib.makeBinPath bins)
-    "\${gappsWrapperArgs[@]}"
-  ];
-
-  dontWrapGApps = true;
-
-  outputs = [
-    "out"
-    "man"
-  ];
-  postBuild = ''
-    make -C man
-  '';
 
   preCheck = ''
     # disable tests that require internet access
@@ -112,16 +97,33 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     installManPage man/*.1
   '';
 
+  build-system = with python3.pkgs; [
+    docutils
+    setuptools-scm
+  ];
+
+  dontWrapGApps = true;
+
+  makeWrapperArgs = [
+    "--prefix"
+    "PATH"
+    ":"
+    (lib.makeBinPath bins)
+    "\${gappsWrapperArgs[@]}"
+  ];
+
+  pyproject = true;
+
   passthru.tests.version = testers.testVersion {
-    package = whipper;
     command = "HOME=$TMPDIR whipper --version";
+    package = whipper;
   };
 
   meta = {
-    homepage = "https://github.com/whipper-team/whipper";
     description = "CD ripper aiming for accuracy over speed";
-    maintainers = with lib.maintainers; [ emily ];
+    homepage = "https://github.com/whipper-team/whipper";
     license = lib.licenses.gpl3Plus;
+    maintainers = with lib.maintainers; [ emily ];
     platforms = lib.platforms.unix;
     mainProgram = "whipper";
   };

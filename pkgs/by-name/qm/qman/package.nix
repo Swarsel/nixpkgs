@@ -2,28 +2,26 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  man-db,
-  groff,
-  xdg-utils,
-  meson,
-  ninja,
-  pkg-config,
-  cmake,
-  python3Packages,
-  ncurses,
-  zlib,
   bzip2,
-  xz,
+  cmake,
   cunit,
+  groff,
+  man-db,
+  meson,
+  ncurses,
+  ninja,
   nix-update-script,
+  pkg-config,
+  python3Packages,
   versionCheckHook,
+  xdg-utils,
+  xz,
+  zlib,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
   pname = "qman";
   version = "1.5.1";
-  __structuredAttrs = true;
-  strictDeps = true;
 
   src = fetchFromGitHub {
     owner = "plp13";
@@ -42,6 +40,8 @@ stdenv.mkDerivation (finalAttrs: {
       --replace-fail "/usr/bin/xdg-open" ${xdg-utils}/bin/xdg-open \
       --replace-fail "/usr/bin/xdg-email" ${xdg-utils}/bin/xdg-email
   '';
+
+  strictDeps = true;
 
   nativeBuildInputs = [
     meson
@@ -64,12 +64,15 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   doInstallCheck = true;
-  versionCheckKeepEnvironment = [
-    "TERM"
-  ];
 
   nativeInstallCheckInputs = [
     versionCheckHook
+  ];
+
+  __structuredAttrs = true;
+
+  versionCheckKeepEnvironment = [
+    "TERM"
   ];
 
   passthru.updateScript = nix-update-script { };
@@ -80,7 +83,7 @@ stdenv.mkDerivation (finalAttrs: {
     changelog = "https://github.com/plp13/qman/releases/tag/${finalAttrs.src.tag}";
     license = lib.licenses.bsd2;
     maintainers = with lib.maintainers; [ pborzenkov ];
-    mainProgram = "qman";
     platforms = lib.platforms.all;
+    mainProgram = "qman";
   };
 })

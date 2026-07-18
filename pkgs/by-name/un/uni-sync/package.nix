@@ -1,9 +1,9 @@
 {
   lib,
   fetchFromGitHub,
-  rustPlatform,
-  pkg-config,
   libusb1,
+  pkg-config,
+  rustPlatform,
 }:
 rustPlatform.buildRustPackage (finalAttrs: {
   pname = "uni-sync";
@@ -16,13 +16,12 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-Qf4tDj55dBHcnCiSEoWt+uwq/gTm0DSTzlOvdw3QThU=";
   };
 
-  nativeBuildInputs = [ pkg-config ];
-  buildInputs = [ libusb1 ];
-
   patches = [
     ./ignore_read-only_filesystem.patch
   ];
 
+  nativeBuildInputs = [ pkg-config ];
+  buildInputs = [ libusb1 ];
   cargoHash = "sha256-ot2pbCddvw3njsz36WbFFJ9AAtmojUnRxlUbym1RcgU=";
 
   meta = {

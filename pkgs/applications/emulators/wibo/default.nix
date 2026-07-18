@@ -2,9 +2,9 @@
   lib,
   stdenv,
   fetchFromGitHub,
+  cmake,
   fetchzip,
   srcOnly,
-  cmake,
   unzip,
 }:
 
@@ -25,16 +25,18 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   doCheck = false;
+
   # Test step from https://github.com/decompals/wibo/blob/main/.github/workflows/ci.yml
   checkPhase =
     let
       gc = srcOnly {
-        name = "GC_WII_COMPILERS";
         src = fetchzip {
           url = "https://files.decomp.dev/compilers_20230715.zip";
           hash = "sha256-IX3byvEUVJB6Rmc+NqO9ZNt1jl95nQpEIqxbHI+uUio=";
           stripRoot = false;
         };
+
+        name = "GC_WII_COMPILERS";
         meta.license = lib.licenses.unfree;
       };
     in
@@ -45,11 +47,13 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Quick-and-dirty wrapper to run 32-bit windows EXEs on linux";
+
     longDescription = ''
       A minimal, low-fuss wrapper that can run really simple command-line
       32-bit Windows binaries on Linux - with less faff and less dependencies
       than WINE.
     '';
+
     homepage = "https://github.com/decompals/WiBo";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ r-burns ];

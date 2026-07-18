@@ -2,23 +2,23 @@
   lib,
   buildPythonPackage,
   fetchPypi,
-  setuptools_80,
-  plaster,
   pastedeploy,
+  plaster,
   pytestCheckHook,
+  setuptools_80,
 }:
 
 buildPythonPackage rec {
   pname = "plaster-pastedeploy";
   version = "1.0.1";
-  pyproject = true;
 
   src = fetchPypi {
-    pname = "plaster_pastedeploy";
     inherit version;
     hash = "sha256-viYubS5BpyZIddqi/ihQy7BhVyi83JKCj9xyc244FBI=";
+    pname = "plaster_pastedeploy";
   };
 
+  nativeCheckInputs = [ pytestCheckHook ];
   build-system = [ setuptools_80 ];
 
   dependencies = [
@@ -26,7 +26,7 @@ buildPythonPackage rec {
     pastedeploy
   ];
 
-  nativeCheckInputs = [ pytestCheckHook ];
+  pyproject = true;
 
   meta = {
     description = "PasteDeploy binding to the plaster configuration loader";

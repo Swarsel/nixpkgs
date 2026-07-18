@@ -1,9 +1,9 @@
 # Determines whether the Native Code Generation (NCG) backend of the given
 # GHC `version` is supported for compiling to `stdenv.targetPlatform`.
 {
-  version,
-  stdenv,
   lib,
+  stdenv,
+  version,
 }:
 
 stdenv.targetPlatform.isx86

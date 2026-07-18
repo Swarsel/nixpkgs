@@ -2,19 +2,19 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  vala,
-  meson,
-  ninja,
-  pkg-config,
-  desktop-file-utils,
   appstream,
-  python3,
-  shared-mime-info,
-  wrapGAppsHook3,
+  desktop-file-utils,
   gtk3,
-  pantheon,
   libgee,
   libhandy,
+  meson,
+  ninja,
+  pantheon,
+  pkg-config,
+  python3,
+  shared-mime-info,
+  vala,
+  wrapGAppsHook3,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -53,16 +53,18 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Nonograms puzzle game";
-    mainProgram = "com.github.jeremypw.gnonograms";
+
     longDescription = ''
       An implementation of the Japanese logic puzzle "Nonograms" written in
       Vala, allowing the user to:
       * Draw puzzles
       * Generate random puzzles of chosen difficulty
     '';
+
+    homepage = "https://github.com/jeremypw/gnonograms";
     license = lib.licenses.gpl3Plus;
     maintainers = with lib.maintainers; [ fgaz ];
-    homepage = "https://github.com/jeremypw/gnonograms";
     platforms = lib.platforms.all;
+    mainProgram = "com.github.jeremypw.gnonograms";
   };
 })

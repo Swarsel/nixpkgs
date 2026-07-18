@@ -1,9 +1,9 @@
 {
   lib,
-  buildPythonPackage,
-  fetchPypi,
   blessed,
+  buildPythonPackage,
   docopt,
+  fetchPypi,
   pillow,
   requests,
 }:
@@ -11,7 +11,6 @@
 buildPythonPackage rec {
   pname = "pixcat";
   version = "0.1.4";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
@@ -25,13 +24,14 @@ buildPythonPackage rec {
     requests
   ];
 
+  format = "setuptools";
   pythonImportsCheck = [ "pixcat" ];
 
   meta = {
     description = "Display images on a kitty terminal with optional resizing";
-    mainProgram = "pixcat";
     homepage = "https://github.com/mirukan/pixcat";
     license = lib.licenses.lgpl3;
     maintainers = [ lib.maintainers.tilcreator ];
+    mainProgram = "pixcat";
   };
 }

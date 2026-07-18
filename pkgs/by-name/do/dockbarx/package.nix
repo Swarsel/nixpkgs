@@ -13,7 +13,6 @@
 python3Packages.buildPythonApplication (finalAttrs: {
   pname = "dockbarx";
   version = "1.0-beta4";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "xuzhen";
@@ -35,6 +34,18 @@ python3Packages.buildPythonApplication (finalAttrs: {
     keybinder3
   ];
 
+  # no tests
+  doCheck = false;
+
+  postInstall = ''
+    glib-compile-schemas $out/share/glib-2.0/schemas
+  '';
+
+  # Arguments to be passed to `makeWrapper`, only used by buildPython*
+  preFixup = ''
+    makeWrapperArgs+=("''${gappsWrapperArgs[@]}")
+  '';
+
   build-system = with python3Packages; [
     setuptools
   ];
@@ -47,25 +58,14 @@ python3Packages.buildPythonApplication (finalAttrs: {
     python-xlib
   ];
 
-  # no tests
-  doCheck = false;
-
   dontWrapGApps = true;
-
-  postInstall = ''
-    glib-compile-schemas $out/share/glib-2.0/schemas
-  '';
-
-  # Arguments to be passed to `makeWrapper`, only used by buildPython*
-  preFixup = ''
-    makeWrapperArgs+=("''${gappsWrapperArgs[@]}")
-  '';
+  pyproject = true;
 
   meta = {
-    homepage = "https://github.com/xuzhen/dockbarx";
     description = "Lightweight taskbar/panel replacement which works as a stand-alone dock";
+    homepage = "https://github.com/xuzhen/dockbarx";
     license = lib.licenses.gpl3Only;
-    platforms = lib.platforms.linux;
     maintainers = [ lib.maintainers.romildo ];
+    platforms = lib.platforms.linux;
   };
 })

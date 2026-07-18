@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   nix-update-script,
   setuptools,
   six,
@@ -10,9 +10,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "ida-netnode";
   version = "3.0.0";
-  pyproject = true;
-
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "williballenthin";
@@ -21,15 +18,13 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-hXApNeeDYHX41zuYDpSNqSXdM/c8DoVXuB6NMqYf7iU=";
   };
 
-  build-system = [ setuptools ];
-
-  dependencies = [ six ];
-
   # Module has no test and requires IDA to be installed
   doCheck = false;
-
+  __structuredAttrs = true;
+  build-system = [ setuptools ];
+  dependencies = [ six ];
+  pyproject = true;
   # pythonImportsCheck = [ "netnode"];
-
   passthru.updateScript = nix-update-script { };
 
   meta = {

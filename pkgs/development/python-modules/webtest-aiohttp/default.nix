@@ -1,8 +1,8 @@
 {
   lib,
+  fetchFromGitHub,
   aiohttp,
   buildPythonPackage,
-  fetchFromGitHub,
   fetchpatch,
   pytest-aiohttp,
   pytest-asyncio_0,
@@ -14,7 +14,6 @@
 buildPythonPackage rec {
   pname = "webtest-aiohttp";
   version = "2.0.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "sloria";
@@ -25,9 +24,9 @@ buildPythonPackage rec {
 
   patches = [
     (fetchpatch {
+      hash = "sha256-OKJGajqJLFMkcbGmGfU9G5hCpJaj24Gs363sI0z7YZw=";
       name = "python311-compat.patch";
       url = "https://github.com/sloria/webtest-aiohttp/commit/64e5ab1867ea9ef87901bb2a1a6142566bffc90b.patch";
-      hash = "sha256-OKJGajqJLFMkcbGmGfU9G5hCpJaj24Gs363sI0z7YZw=";
     })
   ];
 
@@ -37,6 +36,12 @@ buildPythonPackage rec {
       --replace-fail 'WebTestApp(app, loop=loop)' 'WebTestApp(app, loop=event_loop)'
   '';
 
+  nativeCheckInputs = [
+    pytest-asyncio_0
+    pytest-aiohttp
+    pytestCheckHook
+  ];
+
   build-system = [ setuptools ];
 
   dependencies = [
@@ -44,18 +49,13 @@ buildPythonPackage rec {
     webtest
   ];
 
-  nativeCheckInputs = [
-    pytest-asyncio_0
-    pytest-aiohttp
-    pytestCheckHook
-  ];
-
+  pyproject = true;
   pythonImportsCheck = [ "webtest_aiohttp" ];
 
   meta = {
-    changelog = "https://github.com/sloria/webtest-aiohttp/blob/${src.rev}/CHANGELOG.rst";
     description = "Provides integration of WebTest with aiohttp.web applications";
     homepage = "https://github.com/sloria/webtest-aiohttp";
+    changelog = "https://github.com/sloria/webtest-aiohttp/blob/${src.rev}/CHANGELOG.rst";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ cript0nauta ];
   };

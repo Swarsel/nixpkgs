@@ -17,15 +17,14 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   nativeBuildInputs = [ autoreconfHook ];
-
   postInstall = "ln -s . $out/include/fastcgi";
 
   meta = {
     description = "Language independent, scalable, open extension to CGI";
     homepage = "https://fastcgi-archives.github.io/"; # Formerly http://www.fastcgi.com/
     license = lib.licenses.oml;
-    mainProgram = "cgi-fcgi";
-    platforms = lib.platforms.all;
     maintainers = with lib.maintainers; [ jtbx ];
+    platforms = lib.platforms.all;
+    mainProgram = "cgi-fcgi";
   };
 })

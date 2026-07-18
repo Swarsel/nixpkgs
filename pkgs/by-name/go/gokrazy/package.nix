@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   installShellFiles,
 }:
 
@@ -16,7 +16,15 @@ buildGoModule (finalAttrs: {
     hash = "sha256-VxRX94vmzVGt4KwC+0T/I8XCKdmftoDTLeYMISLsHoA=";
   };
 
+  nativeBuildInputs = [ installShellFiles ];
   vendorHash = "sha256-Khvk7Q0HVyhCg4jMvjVQdSXHRq2uuv2wHszcDTTV3qk=";
+
+  postInstall = ''
+    installShellCompletion --cmd gok \
+      --bash <($out/bin/gok completion bash) \
+      --fish <($out/bin/gok completion fish) \
+      --zsh <($out/bin/gok completion zsh)
+  '';
 
   ldflags = [
     "-s"
@@ -25,15 +33,6 @@ buildGoModule (finalAttrs: {
   ];
 
   subPackages = [ "cmd/gok" ];
-
-  nativeBuildInputs = [ installShellFiles ];
-
-  postInstall = ''
-    installShellCompletion --cmd gok \
-      --bash <($out/bin/gok completion bash) \
-      --fish <($out/bin/gok completion fish) \
-      --zsh <($out/bin/gok completion zsh)
-  '';
 
   meta = {
     description = "Turn your Go program(s) into an appliance running on the Raspberry Pi 3, Pi 4, Pi Zero 2 W, or amd64 PCs";

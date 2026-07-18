@@ -1,17 +1,16 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
+  distutils,
+  pythonAtLeast,
   setuptools,
   six,
-  pythonAtLeast,
-  distutils,
 }:
 
 buildPythonPackage rec {
   pname = "docker-pycreds";
   version = "0.4.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "shin-";
@@ -19,6 +18,9 @@ buildPythonPackage rec {
     tag = version;
     hash = "sha256-yYsMsRW6Bb8vmwT0mPjs0pRqBbznGtHnGb3JNHjLjys=";
   };
+
+  # require docker-credential-helpers binaries
+  doCheck = false;
 
   build-system = [
     setuptools
@@ -31,10 +33,8 @@ buildPythonPackage rec {
     distutils
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "dockerpycreds" ];
-
-  # require docker-credential-helpers binaries
-  doCheck = false;
 
   meta = {
     description = "Python bindings for the docker credentials store API";

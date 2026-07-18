@@ -1,15 +1,14 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
+  buildPythonPackage,
   pytestCheckHook,
+  setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "cache";
   version = "1.0.3";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "jneen";
@@ -18,17 +17,17 @@ buildPythonPackage rec {
     hash = "sha256-vfVNo2B9fnjyjgR7cGrcsi9srWcTs3s8fhmvNF8okN0=";
   };
 
-  build-system = [ setuptools ];
-
   nativeCheckInputs = [ pytestCheckHook ];
-
-  pythonImportsCheck = [ "cache" ];
+  build-system = [ setuptools ];
 
   disabledTests = [
     # Tests are out-dated
     "test_arguments"
     "test_hash_arguments"
   ];
+
+  pyproject = true;
+  pythonImportsCheck = [ "cache" ];
 
   meta = {
     description = "Module for caching";

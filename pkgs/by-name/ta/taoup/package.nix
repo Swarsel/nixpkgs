@@ -2,9 +2,9 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  ruby,
   bash,
   ncurses,
+  ruby,
 }:
 let
   rubyEnv = ruby.withPackages (ps: with ps; [ ansi ]);
@@ -20,12 +20,6 @@ stdenv.mkDerivation (finalAttrs: {
     rev = "v${finalAttrs.version}";
     hash = "sha256-9J46fKyeSZW71r67R8y9KVPeCH8fn27hOk/XpusqGmk=";
   };
-
-  buildInputs = [
-    rubyEnv
-    bash
-    ncurses
-  ];
 
   patches = [
     # Pre-create a cache within this derivation
@@ -45,8 +39,11 @@ stdenv.mkDerivation (finalAttrs: {
       --replace-fail "/bin/bash" "${bash}/bin/bash"
   '';
 
-  dontConfigure = true;
-  dontBuild = true;
+  buildInputs = [
+    rubyEnv
+    bash
+    ncurses
+  ];
 
   installPhase = ''
     runHook preInstall
@@ -68,6 +65,9 @@ stdenv.mkDerivation (finalAttrs: {
 
     runHook postInstall
   '';
+
+  dontBuild = true;
+  dontConfigure = true;
 
   meta = {
     description = "Tao of Unix Programming (Ruby-powered ANSI colored fortunes)";

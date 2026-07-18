@@ -1,29 +1,39 @@
 {
-  coq,
-  mkCoqDerivation,
-  mathcomp,
-  coqeal,
-  mathcomp-real-closed,
-  mathcomp-bigenough,
-  mathcomp-zify,
-  mathcomp-algebra-tactics,
   lib,
+  coq,
+  coqeal,
+  mathcomp,
+  mathcomp-algebra-tactics,
+  mathcomp-bigenough,
+  mathcomp-real-closed,
+  mathcomp-zify,
+  mkCoqDerivation,
   version ? null,
 }:
 
 mkCoqDerivation {
 
+  inherit version;
   pname = "apery";
 
-  inherit version;
+  propagatedBuildInputs = [
+    mathcomp.field
+    coqeal
+    mathcomp-real-closed
+    mathcomp-bigenough
+    mathcomp-zify
+    mathcomp-algebra-tactics
+  ];
+
   defaultVersion =
     let
       case = coq: mc: out: {
+        inherit out;
+
         cases = [
           coq
           mc
         ];
-        inherit out;
       };
     in
     with lib.versions;
@@ -35,15 +45,6 @@ mkCoqDerivation {
       null;
 
   release."1.0.2".hash = "sha256-llxyMKYvWUA7fyroG1S/jtpioAoArmarR1edi3cikcY=";
-
-  propagatedBuildInputs = [
-    mathcomp.field
-    coqeal
-    mathcomp-real-closed
-    mathcomp-bigenough
-    mathcomp-zify
-    mathcomp-algebra-tactics
-  ];
 
   meta = {
     description = "Formally verified proof in Coq, by computer algebra, that ζ(3) is irrational";

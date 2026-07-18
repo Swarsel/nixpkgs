@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   flit-core,
   pytestCheckHook,
   pyyaml,
@@ -10,7 +10,6 @@
 buildPythonPackage rec {
   pname = "svg-py";
   version = "1.10.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "orsinium-labs";
@@ -19,19 +18,20 @@ buildPythonPackage rec {
     hash = "sha256-ZbMDjo2p0DnLB5iwQ4J3NIP/zjPsBLq7vKStF9SzF9Y=";
   };
 
-  build-system = [ flit-core ];
-
   nativeCheckInputs = [
     pytestCheckHook
     pyyaml
   ];
 
-  pythonImportsCheck = [ "svg" ];
+  build-system = [ flit-core ];
 
   disabledTestPaths = [
     # Tests need additional files
     "tests/test_attributes.py"
   ];
+
+  pyproject = true;
+  pythonImportsCheck = [ "svg" ];
 
   meta = {
     description = "Type-safe Python library to generate SVG files";

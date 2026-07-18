@@ -1,36 +1,31 @@
 {
   lib,
   stdenv,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # build-system
-  rustPlatform,
+  buildPythonPackage,
   cffi,
-
+  # for passthru.tests
+  falcon,
+  fastapi,
+  gradio,
   # native dependencies
   libiconv,
-
+  mashumaro,
   # tests
   numpy,
   psutil,
   pytestCheckHook,
   python-dateutil,
   pytz,
-  xxhash,
-
-  # for passthru.tests
-  falcon,
-  fastapi,
-  gradio,
-  mashumaro,
+  # build-system
+  rustPlatform,
   ufolib2,
+  xxhash,
 }:
 
 buildPythonPackage rec {
   pname = "orjson";
   version = "3.11.9";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "ijl";
@@ -43,11 +38,6 @@ buildPythonPackage rec {
     # fix architecture checks in build.rs to fix build for riscv
     ./cross-arch-compat.patch
   ];
-
-  cargoDeps = rustPlatform.fetchCargoVendor {
-    inherit pname version src;
-    hash = "sha256-F1TFEj26trVV0TjK6tkS8kiorWRF0uijb1jQko7RDSM=";
-  };
 
   nativeBuildInputs = [
     cffi
@@ -68,6 +58,12 @@ buildPythonPackage rec {
     xxhash
   ];
 
+  cargoDeps = rustPlatform.fetchCargoVendor {
+    inherit pname version src;
+    hash = "sha256-F1TFEj26trVV0TjK6tkS8kiorWRF0uijb1jQko7RDSM=";
+  };
+
+  pyproject = true;
   pythonImportsCheck = [ "orjson" ];
 
   passthru.tests = {
@@ -84,11 +80,13 @@ buildPythonPackage rec {
     description = "Fast, correct Python JSON library supporting dataclasses, datetimes, and numpy";
     homepage = "https://github.com/ijl/orjson";
     changelog = "https://github.com/ijl/orjson/blob/${version}/CHANGELOG.md";
+
     license = with lib.licenses; [
       asl20
       mit
     ];
-    platforms = lib.platforms.unix;
+
     maintainers = with lib.maintainers; [ misuzu ];
+    platforms = lib.platforms.unix;
   };
 }

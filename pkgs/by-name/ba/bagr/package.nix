@@ -17,20 +17,22 @@ rustPlatform.buildRustPackage (finalAttrs: {
   };
 
   cargoHash = "sha256-r4tgDPyLxTjq/sxNLvlX/2MePUfOwNgranQSSbgDtu0=";
+  doInstallCheck = true;
 
   nativeInstallCheckInputs = [
     versionCheckHook
   ];
-  doInstallCheck = true;
 
   meta = {
     description = "Command line utility for interacting with BagIt bags (RFC 8493)";
     homepage = "https://github.com/pwinckles/bagr";
     license = lib.licenses.asl20;
-    mainProgram = "bagr";
+
     maintainers = with lib.maintainers; [
       jezcope
     ];
+
     platforms = with lib.platforms; unix ++ windows;
+    mainProgram = "bagr";
   };
 })

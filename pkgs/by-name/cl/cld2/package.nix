@@ -3,8 +3,8 @@
   stdenv,
   fetchFromGitHub,
   cmake,
-  fetchpatch,
   fetchDebianPatch,
+  fetchpatch,
 }:
 
 stdenv.mkDerivation {
@@ -23,21 +23,21 @@ stdenv.mkDerivation {
       pname = "cld2";
       version = "0.0.0-git20150806";
       debianRevision = "10";
-      patch = "add-cmake-file.patch";
       hash = "sha256-iLacWD4jQxid76pzGpDW3ZJ8Dyaksfj1pNTrU7qSBQM=";
+      patch = "add-cmake-file.patch";
     })
     (fetchpatch {
+      hash = "sha256-i4WWYBx16kYXZ5IQPACWbS/HGsQysXre1SngYlAfNaM=";
       name = "fix-narrowing-errors.txt";
       url = "https://github.com/ripjar/cld2/pull/1/commits/79be1adea78f0d376cb793f4dae8e70b100dadcc.patch";
-      hash = "sha256-i4WWYBx16kYXZ5IQPACWbS/HGsQysXre1SngYlAfNaM=";
     })
   ];
 
   nativeBuildInputs = [ cmake ];
 
   meta = {
-    homepage = "https://github.com/CLD2Owners/cld2";
     description = "Compact Language Detector 2";
+
     longDescription = ''
       CLD2 probabilistically detects over 80 languages in Unicode UTF-8 text,
       either plain text or HTML/XML. Legacy encodings must be converted to valid
@@ -52,6 +52,8 @@ stdenv.mkDerivation {
       designed to do well on very short text, lists of proper names, part
       numbers, etc.
     '';
+
+    homepage = "https://github.com/CLD2Owners/cld2";
     license = lib.licenses.asl20;
     maintainers = with lib.maintainers; [ chvp ];
     platforms = lib.platforms.all;

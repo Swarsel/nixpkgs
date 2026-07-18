@@ -1,7 +1,7 @@
 {
   lib,
-  fetchFromGitHub,
   stdenv,
+  fetchFromGitHub,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -30,8 +30,8 @@ stdenv.mkDerivation (finalAttrs: {
   meta = {
     description = "Simple image format optimised for pixel art";
     homepage = "https://github.com/Falconerd/pie";
-    maintainers = with lib.maintainers; [ sigmanificient ];
     license = lib.licenses.mit;
+    maintainers = with lib.maintainers; [ sigmanificient ];
     platforms = lib.platforms.linux;
   };
 })

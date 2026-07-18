@@ -2,38 +2,42 @@
   lib,
   stdenv,
   buildPythonPackage,
-  fetchPypi,
-  pkg-config,
+  cups,
   dbus,
-  lndir,
   dbus-python,
-  sip,
-  pyqt6-sip,
-  pyqt-builder,
-  qt6Packages,
+  fetchPypi,
+  lndir,
   mesa,
-  withMultimedia ? true,
-  withWebSockets ? true,
+  pkg-config,
+  pyqt-builder,
+  pyqt6-sip,
+  qt6Packages,
+  sip,
   withLocation ? true,
+  withMultimedia ? true,
+  withPdf ? true,
   # Not currently part of PyQt6
   #, withConnectivity ? true
   withPrintSupport ? true,
   withSerialPort ? false,
-  cups,
   withSpeech ? true,
-  withPdf ? true,
+  withWebSockets ? true,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "pyqt6";
   version = "6.11.0";
-  pyproject = true;
 
   src = fetchPypi {
-    pname = "pyqt6";
     inherit (finalAttrs) version;
     hash = "sha256-Rd1gqmmXbeGRi1zta057aiWr0qkZ7O9f1YJuzHZxiIk=";
+    pname = "pyqt6";
   };
+
+  outputs = [
+    "out"
+    "dev"
+  ];
 
   patches = [
     # Fix some wrong assumptions by ./project.py
@@ -41,16 +45,6 @@ buildPythonPackage (finalAttrs: {
     ./pyqt6-fix-dbus-mainloop-support.patch
     # confirm license when installing via pyqt6_sip
     ./pyqt5-confirm-license.patch
-  ];
-
-  build-system = [
-    sip
-    pyqt-builder
-  ];
-
-  dependencies = [
-    pyqt6-sip
-    dbus-python
   ];
 
   # be more verbose
@@ -64,24 +58,6 @@ buildPythonPackage (finalAttrs: {
     substituteInPlace pyproject.toml \
       --replace-fail 'version = "${finalAttrs.version}"' 'version = "${lib.versions.pad 3 finalAttrs.version}"'
   '';
-
-  enableParallelBuilding = true;
-  # HACK: paralellize compilation of make calls within pyqt's setup.py
-  # pkgs/stdenv/generic/setup.sh doesn't set this for us because
-  # make gets called by python code and not its build phase
-  # format=pyproject means the pip-build-hook hook gets used to build this project
-  # pkgs/development/interpreters/python/hooks/pip-build-hook.sh
-  # does not use the enableParallelBuilding flag
-  postUnpack = ''
-    export MAKEFLAGS+="''${enableParallelBuilding:+-j$NIX_BUILD_CORES}"
-  '';
-
-  outputs = [
-    "out"
-    "dev"
-  ];
-
-  dontWrapQtApps = true;
 
   nativeBuildInputs =
     with qt6Packages;
@@ -126,17 +102,35 @@ buildPythonPackage (finalAttrs: {
     # ld: library not found for -lcups
     lib.optionals (withPrintSupport && stdenv.hostPlatform.isDarwin) [ cups ];
 
-  passthru = {
-    inherit sip pyqt6-sip;
-    multimediaEnabled = withMultimedia;
-    WebSocketsEnabled = withWebSockets;
-    serialPortEnabled = withSerialPort;
-  };
+  env.NIX_CFLAGS_COMPILE = lib.optionalString stdenv.hostPlatform.isDarwin "-Wno-address-of-temporary";
+
+  build-system = [
+    sip
+    pyqt-builder
+  ];
+
+  dependencies = [
+    pyqt6-sip
+    dbus-python
+  ];
 
   dontConfigure = true;
+  dontWrapQtApps = true;
+  enableParallelBuilding = true;
+
+  # HACK: paralellize compilation of make calls within pyqt's setup.py
+  # pkgs/stdenv/generic/setup.sh doesn't set this for us because
+  # make gets called by python code and not its build phase
+  # format=pyproject means the pip-build-hook hook gets used to build this project
+  # pkgs/development/interpreters/python/hooks/pip-build-hook.sh
+  # does not use the enableParallelBuilding flag
+  postUnpack = ''
+    export MAKEFLAGS+="''${enableParallelBuilding:+-j$NIX_BUILD_CORES}"
+  '';
+
+  pyproject = true;
 
   # Checked using pythonImportsCheck, has no tests
-
   pythonImportsCheck = [
     "PyQt6"
     "PyQt6.QtCore"
@@ -153,13 +147,18 @@ buildPythonPackage (finalAttrs: {
   ++ lib.optional withSpeech "PyQt6.QtTextToSpeech"
   ++ lib.optional withPdf "PyQt6.QtPdf";
 
-  env.NIX_CFLAGS_COMPILE = lib.optionalString stdenv.hostPlatform.isDarwin "-Wno-address-of-temporary";
+  passthru = {
+    inherit sip pyqt6-sip;
+    WebSocketsEnabled = withWebSockets;
+    multimediaEnabled = withMultimedia;
+    serialPortEnabled = withSerialPort;
+  };
 
   meta = {
+    inherit (mesa.meta) platforms;
     description = "Python bindings for Qt6";
     homepage = "https://riverbankcomputing.com/";
     license = lib.licenses.gpl3Only;
-    inherit (mesa.meta) platforms;
     maintainers = with lib.maintainers; [ LunNova ];
   };
 })

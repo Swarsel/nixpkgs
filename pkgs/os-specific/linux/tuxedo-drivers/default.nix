@@ -2,13 +2,13 @@
   lib,
   stdenv,
   fetchFromGitLab,
+  bash,
+  gitUpdater,
   kernel,
   kernelModuleMakeFlags,
   kmod,
   pahole,
-  gitUpdater,
   udevCheckHook,
-  bash,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -16,14 +16,28 @@ stdenv.mkDerivation (finalAttrs: {
   version = "4.20.1";
 
   src = fetchFromGitLab {
-    group = "tuxedocomputers";
     owner = "development/packages";
     repo = "tuxedo-drivers";
     rev = "v${finalAttrs.version}";
     hash = "sha256-t+Y1qYFJ9EeYtMFtBIsHzG1J4IVunpZHevYsEZNHGH0=";
+    group = "tuxedocomputers";
   };
 
   patches = [ ./no-cp-usr.patch ];
+
+  nativeBuildInputs = [
+    kmod
+    udevCheckHook
+  ]
+  ++ kernel.moduleBuildDependencies;
+
+  buildInputs = [ pahole ];
+
+  makeFlags = kernelModuleMakeFlags ++ [
+    "KERNELRELEASE=${kernel.modDirVersion}"
+    "KDIR=${kernel.dev}/lib/modules/${kernel.modDirVersion}/build"
+    "INSTALL_MOD_PATH=${placeholder "out"}"
+  ];
 
   postInstall = ''
     echo "Running postInstallhook"
@@ -33,19 +47,6 @@ stdenv.mkDerivation (finalAttrs: {
     install -Dm 0644 -t $out/etc/udev/rules.d usr/lib/udev/rules.d/*
   '';
 
-  buildInputs = [ pahole ];
-  nativeBuildInputs = [
-    kmod
-    udevCheckHook
-  ]
-  ++ kernel.moduleBuildDependencies;
-
-  makeFlags = kernelModuleMakeFlags ++ [
-    "KERNELRELEASE=${kernel.modDirVersion}"
-    "KDIR=${kernel.dev}/lib/modules/${kernel.modDirVersion}/build"
-    "INSTALL_MOD_PATH=${placeholder "out"}"
-  ];
-
   doInstallCheck = true;
 
   passthru.updateScript = gitUpdater {
@@ -53,10 +54,8 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   meta = {
-    broken = stdenv.hostPlatform.isAarch64 || (lib.versionOlder kernel.version "5.5");
     description = "Keyboard and hardware I/O driver for TUXEDO Computers laptops";
-    homepage = "https://gitlab.com/tuxedocomputers/development/packages/tuxedo-drivers";
-    license = lib.licenses.gpl2Plus;
+
     longDescription = ''
       Drivers for several platform devices for TUXEDO notebooks:
       - Driver for Fn-keys
@@ -65,6 +64,10 @@ stdenv.mkDerivation (finalAttrs: {
 
       Can be used with the "hardware.tuxedo-drivers" NixOS module.
     '';
+
+    homepage = "https://gitlab.com/tuxedocomputers/development/packages/tuxedo-drivers";
+    license = lib.licenses.gpl2Plus;
+
     maintainers = with lib.maintainers; [
       aprl
       blanky0230
@@ -73,6 +76,8 @@ stdenv.mkDerivation (finalAttrs: {
       XBagon
       wetisobe
     ];
+
     platforms = lib.platforms.linux;
+    broken = stdenv.hostPlatform.isAarch64 || (lib.versionOlder kernel.version "5.5");
   };
 })

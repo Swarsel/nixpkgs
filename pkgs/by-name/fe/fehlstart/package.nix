@@ -1,11 +1,11 @@
 {
   lib,
   stdenv,
-  pkg-config,
-  gtk3,
-  glib,
-  keybinder3,
   fetchFromCodeberg,
+  glib,
+  gtk3,
+  keybinder3,
+  pkg-config,
 }:
 
 stdenv.mkDerivation {
@@ -20,9 +20,7 @@ stdenv.mkDerivation {
   };
 
   patches = [ ./use-nix-profiles.patch ];
-
   strictDeps = true;
-
   nativeBuildInputs = [ pkg-config ];
 
   buildInputs = [
@@ -30,9 +28,8 @@ stdenv.mkDerivation {
     keybinder3
   ];
 
-  env.NIX_CFLAGS_COMPILE = "-I${lib.getDev glib}/include/gio-unix-2.0";
-
   makeFlags = [ "PREFIX=$(out)" ];
+  env.NIX_CFLAGS_COMPILE = "-I${lib.getDev glib}/include/gio-unix-2.0";
 
   meta = {
     description = "Small desktop application launcher with reasonable memory footprint";

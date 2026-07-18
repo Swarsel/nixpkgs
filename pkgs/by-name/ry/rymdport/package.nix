@@ -1,16 +1,16 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
-  pkg-config,
+  buildGoModule,
   libGL,
-  libxxf86vm,
-  libxrandr,
+  libx11,
+  libxcursor,
+  libxext,
   libxi,
   libxinerama,
-  libxext,
-  libxcursor,
-  libx11,
+  libxrandr,
+  libxxf86vm,
+  pkg-config,
 }:
 
 buildGoModule (finalAttrs: {
@@ -23,8 +23,6 @@ buildGoModule (finalAttrs: {
     rev = "v${finalAttrs.version}";
     hash = "sha256-5INmb8zMFUB8ibA+ACNWoL54tOhWYHF85MZzRNRmJow=";
   };
-
-  vendorHash = "sha256-WPJj3zlEJeghRw0lHHUXm7n0a6d8Yf78s7jnBwmAZ4U=";
 
   nativeBuildInputs = [
     pkg-config
@@ -40,6 +38,8 @@ buildGoModule (finalAttrs: {
     libxrandr
     libxxf86vm
   ];
+
+  vendorHash = "sha256-WPJj3zlEJeghRw0lHHUXm7n0a6d8Yf78s7jnBwmAZ4U=";
 
   postInstall = ''
     for res in $(ls internal/assets/icons | sed -e 's/icon-//g' -e 's/.png//g'); do

@@ -1,11 +1,11 @@
 {
   lib,
+  fetchFromGitHub,
   aiohttp,
   bleak,
   bleak-retry-connector,
   buildPythonPackage,
   certifi,
-  fetchFromGitHub,
   hatchling,
   pytest-asyncio,
   pytestCheckHook,
@@ -14,7 +14,6 @@
 buildPythonPackage {
   pname = "govee-led-wez";
   version = "0.0.15";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "wez";
@@ -38,6 +37,7 @@ buildPythonPackage {
     pytestCheckHook
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "govee_led_wez" ];
 
   meta = {

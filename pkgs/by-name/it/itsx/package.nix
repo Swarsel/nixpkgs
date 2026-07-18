@@ -7,8 +7,8 @@
 }:
 
 stdenv.mkDerivation (finalAttrs: {
-  version = "1.1.1";
   pname = "itsx";
+  version = "1.1.1";
 
   src = fetchurl {
     url = "https://microbiology.se/sw/ITSx_${finalAttrs.version}.tar.gz";
@@ -35,10 +35,10 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Improved software detection and extraction of ITS1 and ITS2 from ribosomal ITS sequences of fungi and other eukaryotes for use in environmental sequencing";
-    mainProgram = "ITSx";
     homepage = "https://microbiology.se/software/itsx/";
     license = lib.licenses.gpl3;
     maintainers = [ lib.maintainers.bzizou ];
     platforms = lib.platforms.unix;
+    mainProgram = "ITSx";
   };
 })

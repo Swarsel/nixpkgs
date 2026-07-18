@@ -1,12 +1,12 @@
 {
   lib,
   fetchFromGitHub,
-  rustPlatform,
-  pkg-config,
-  openssl,
-  testers,
   avml,
   nix-update-script,
+  openssl,
+  pkg-config,
+  rustPlatform,
+  testers,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -20,17 +20,15 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-ziK2s4Wwy+WB45O7OU3TKyTujrLsQV6hRUSm5Jr4NO4=";
   };
 
-  cargoHash = "sha256-72c2914higGji0vDUwjtQoil/LdEaECv+HqANTcSRdE=";
-
   nativeBuildInputs = [ pkg-config ];
   buildInputs = [ openssl ];
+  cargoHash = "sha256-72c2914higGji0vDUwjtQoil/LdEaECv+HqANTcSRdE=";
 
   env = {
     OPENSSL_NO_VENDOR = true;
   };
 
   passthru.tests.version = testers.testVersion { package = avml; };
-
   passthru.updateScript = nix-update-script { };
 
   meta = {

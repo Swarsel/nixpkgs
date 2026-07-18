@@ -1,24 +1,19 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
-  fetchpatch,
-  gitUpdater,
   bison,
+  fetchpatch,
   flex,
-  qmake,
-  pkg-config,
+  gitUpdater,
   libxcrypt,
+  pkg-config,
+  qmake,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
   pname = "libiodata";
   version = "0.19.14";
-
-  outputs = [
-    "out"
-    "dev"
-  ];
 
   src = fetchFromGitHub {
     owner = "sailfishos";
@@ -27,12 +22,17 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-hhcPKZtg9PEE6rrEfRJ/e4E5xMyButH0Rm0eM3iHPh8=";
   };
 
+  outputs = [
+    "out"
+    "dev"
+  ];
+
   patches = [
     # Remove when version > 0.19.14
     (fetchpatch {
+      hash = "sha256-qrRZ1Af5uBJvEoRHifgUSeVHFC5RATDsL3374CmoUDc=";
       name = "0001-libiodata-Fix-dependencies-between-sub-projects.patch";
       url = "https://github.com/sailfishos/libiodata/commit/85517a9f2103e461cbb69dc195335df73b7a8b7e.patch";
-      hash = "sha256-qrRZ1Af5uBJvEoRHifgUSeVHFC5RATDsL3374CmoUDc=";
     })
   ];
 
@@ -66,14 +66,13 @@ stdenv.mkDerivation (finalAttrs: {
     libxcrypt
   ];
 
-  dontWrapQtApps = true;
+  env.IODATA_VERSION = "${finalAttrs.version}";
 
   postConfigure = ''
     make qmake_all
   '';
 
-  env.IODATA_VERSION = "${finalAttrs.version}";
-
+  dontWrapQtApps = true;
   passthru.updateScript = gitUpdater { };
 
   meta = {
@@ -81,7 +80,7 @@ stdenv.mkDerivation (finalAttrs: {
     homepage = "https://github.com/sailfishos/libiodata";
     changelog = "https://github.com/sailfishos/libiodata/releases/tag/${finalAttrs.version}";
     license = lib.licenses.lgpl21Only;
-    teams = [ lib.teams.lomiri ];
     platforms = lib.platforms.linux;
+    teams = [ lib.teams.lomiri ];
   };
 })

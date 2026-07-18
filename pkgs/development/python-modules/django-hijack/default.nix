@@ -2,15 +2,12 @@
   lib,
   fetchFromGitHub,
   buildPythonPackage,
-  nix-update-script,
-
+  # dependencies
+  django,
   # build-system
   flit-gettext,
   flit-scm,
-
-  # dependencies
-  django,
-
+  nix-update-script,
   # tests
   pytest-cov-stub,
   pytest-django,
@@ -20,7 +17,6 @@
 buildPythonPackage rec {
   pname = "django-hijack";
   version = "3.7.8";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "django-hijack";
@@ -28,13 +24,6 @@ buildPythonPackage rec {
     tag = version;
     hash = "sha256-91ziHv39GmXrbswqOyVHmSv11LqKNT318/8mx5iIdHg=";
   };
-
-  build-system = [
-    flit-gettext
-    flit-scm
-  ];
-
-  dependencies = [ django ];
 
   nativeCheckInputs = [
     pytestCheckHook
@@ -46,6 +35,13 @@ buildPythonPackage rec {
     export DJANGO_SETTINGS_MODULE=tests.test_app.settings
   '';
 
+  build-system = [
+    flit-gettext
+    flit-scm
+  ];
+
+  dependencies = [ django ];
+  pyproject = true;
   # needed for npmDeps update
   passthru.updateScript = nix-update-script { };
 

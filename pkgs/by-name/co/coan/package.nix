@@ -7,8 +7,8 @@
 }:
 
 stdenv.mkDerivation (finalAttrs: {
-  version = "6.0.1";
   pname = "coan";
+  version = "6.0.1";
 
   src = fetchurl {
     url = "mirror://sourceforge/project/coan2/v${finalAttrs.version}/coan-${finalAttrs.version}.tar.gz";
@@ -29,15 +29,15 @@ stdenv.mkDerivation (finalAttrs: {
 
   configureFlags = [ "CXXFLAGS=-std=c++11" ];
 
-  enableParallelBuilding = true;
-
   postInstall = ''
     mv -v $out/share/man/man1/coan.1.{1,gz}
   '';
 
+  enableParallelBuilding = true;
+
   meta = {
     description = "C preprocessor chainsaw";
-    mainProgram = "coan";
+
     longDescription = ''
       A software engineering tool for analysing preprocessor-based
       configurations of C or C++ source code. Its principal use is to simplify
@@ -45,9 +45,11 @@ stdenv.mkDerivation (finalAttrs: {
       respect to a specified configuration. Dead code removal is an
       application of this sort.
     '';
+
     homepage = "https://coan2.sourceforge.net/";
     license = lib.licenses.bsd3;
     platforms = lib.platforms.all;
+    mainProgram = "coan";
     # The last successful Darwin Hydra build was in 2024
     broken = stdenv.hostPlatform.isDarwin;
   };

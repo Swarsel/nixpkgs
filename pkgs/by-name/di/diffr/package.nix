@@ -23,9 +23,9 @@ rustPlatform.buildRustPackage (finalAttrs: {
 
   meta = {
     description = "Yet another diff highlighting tool";
-    mainProgram = "diffr";
     homepage = "https://github.com/mookid/diffr";
     license = with lib.licenses; [ mit ];
     maintainers = [ ];
+    mainProgram = "diffr";
   };
 })

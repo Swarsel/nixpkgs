@@ -1,16 +1,15 @@
 {
   lib,
   stdenv,
-  buildPackages,
-  pkg-config,
   fetchurl,
-  libedit,
-  runCommand,
+  buildPackages,
   dash,
-
+  libedit,
+  patchRcPathPosix,
+  pkg-config,
+  runCommand,
   # Reverse dependency smoke tests
   tests,
-  patchRcPathPosix,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -23,23 +22,21 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   strictDeps = true;
-
   nativeBuildInputs = lib.optionals stdenv.hostPlatform.isStatic [ pkg-config ];
-
-  depsBuildBuild = [ buildPackages.stdenv.cc ];
   buildInputs = [ libedit ];
-
-  hardeningDisable = [ "strictflexarrays3" ];
-
   configureFlags = [ "--with-libedit" ];
+
   preConfigure = lib.optional stdenv.hostPlatform.isStatic ''
     export LIBS="$(''${PKG_CONFIG:-pkg-config} --libs --static libedit)"
   '';
 
+  depsBuildBuild = [ buildPackages.stdenv.cc ];
   enableParallelBuilding = true;
+  hardeningDisable = [ "strictflexarrays3" ];
 
   passthru = {
     shellPath = "/bin/dash";
+
     tests = {
       "execute-simple-command" = runCommand "dash-execute-simple-command" { } ''
         mkdir $out
@@ -53,24 +50,27 @@ stdenv.mkDerivation (finalAttrs: {
         whether an update makes it into staging.
       */
       reverseDependencies = lib.recurseIntoAttrs {
-        writers = lib.recurseIntoAttrs {
-          simple = tests.writers.simple.dash;
-          bin = tests.writers.bin.dash;
-        };
         # Not sure if effective smoke test, but cheap
         patch-rc-path-posix = patchRcPathPosix.tests.test-posix;
+
+        writers = lib.recurseIntoAttrs {
+          bin = tests.writers.bin.dash;
+          simple = tests.writers.simple.dash;
+        };
       };
     };
   };
 
   meta = {
-    homepage = "http://gondor.apana.org.au/~herbert/dash/";
     description = "POSIX-compliant implementation of /bin/sh that aims to be as small as possible";
-    platforms = lib.platforms.unix;
+    homepage = "http://gondor.apana.org.au/~herbert/dash/";
+
     license = with lib.licenses; [
       bsd3
       gpl2Plus
     ];
+
+    platforms = lib.platforms.unix;
     mainProgram = "dash";
   };
 })

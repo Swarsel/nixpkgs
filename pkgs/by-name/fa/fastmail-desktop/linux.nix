@@ -1,16 +1,16 @@
 {
-  pname,
-  version,
-  src,
-  passthru,
-  meta,
-  stdenvNoCC,
   appimageTools,
   asar,
   autoPatchelfHook,
-  makeWrapper,
   electron,
   libgcc,
+  makeWrapper,
+  meta,
+  passthru,
+  pname,
+  src,
+  stdenvNoCC,
+  version,
   vips,
 }:
 let
@@ -18,10 +18,6 @@ let
 in
 stdenvNoCC.mkDerivation (finalAttrs: {
   inherit pname version passthru;
-
-  dontUnpack = true;
-  dontBuild = true;
-
   strictDeps = true;
 
   nativeBuildInputs = [
@@ -78,6 +74,9 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     ''
       rm -r "$out/opt/fastmail/app.asar.unpacked/node_modules/@img/"{sharp-linuxmusl-${suffix},sharp-libvips-linuxmusl-${suffix}}
     '';
+
+  dontBuild = true;
+  dontUnpack = true;
 
   meta = meta // {
     mainProgram = "fastmail";

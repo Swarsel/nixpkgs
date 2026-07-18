@@ -11,8 +11,8 @@ in
 {
   options = {
     services.xserver.desktopManager.runXdgAutostartIfNone = mkOption {
-      type = types.bool;
       default = false;
+
       description = ''
         Whether to run XDG autostart files for sessions without a desktop manager
         (with only a window manager), these sessions usually don't handle XDG
@@ -24,6 +24,8 @@ in
         a window manager without a desktop manager, you need to manually start
         them or running `dex` somewhere.
       '';
+
+      type = types.bool;
     };
   };
 
@@ -32,6 +34,7 @@ in
       services.xserver.desktopManager.session = [
         {
           name = "none";
+
           start = optionalString runXdgAutostart ''
             /run/current-system/systemd/bin/systemctl --user start xdg-autostart-if-no-desktop-manager.target
           '';
@@ -40,17 +43,19 @@ in
     }
     (mkIf runXdgAutostart {
       systemd.user.targets.xdg-autostart-if-no-desktop-manager = {
+        before = [
+          "xdg-desktop-autostart.target"
+          "graphical-session.target"
+        ];
+
+        bindsTo = [ "graphical-session.target" ];
         description = "Run XDG autostart files";
+
         # From `plasma-workspace`, `share/systemd/user/plasma-workspace@.target`.
         requires = [
           "xdg-desktop-autostart.target"
           "graphical-session.target"
         ];
-        before = [
-          "xdg-desktop-autostart.target"
-          "graphical-session.target"
-        ];
-        bindsTo = [ "graphical-session.target" ];
       };
     })
   ];

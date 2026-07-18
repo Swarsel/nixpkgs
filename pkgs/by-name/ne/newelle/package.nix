@@ -1,31 +1,30 @@
 {
   lib,
-  python3Packages,
   fetchFromGitHub,
-  meson,
-  ninja,
-  pkg-config,
-  wrapGAppsHook4,
-  gobject-introspection,
+  bash,
   desktop-file-utils,
-  libadwaita,
-  vte-gtk4,
+  ffmpeg,
+  gobject-introspection,
   gsettings-desktop-schemas,
   gtksourceview5,
-  webkitgtk_6_0,
+  libadwaita,
   lsb-release,
-  bash,
-  ffmpeg,
+  meson,
+  ninja,
   nix-update-script,
+  pkg-config,
+  python3Packages,
+  vte-gtk4,
+  webkitgtk_6_0,
+  wrapGAppsHook4,
 }:
 
 let
   version = "1.4.5";
 in
 python3Packages.buildPythonApplication {
-  pname = "newelle";
   inherit version;
-  pyproject = false; # uses meson
+  pname = "newelle";
 
   src = fetchFromGitHub {
     owner = "qwersyk";
@@ -38,6 +37,8 @@ python3Packages.buildPythonApplication {
     substituteInPlace src/utility/pip.py \
       --replace-fail "# Manage pip path locking" "return None"
   '';
+
+  strictDeps = true;
 
   nativeBuildInputs = [
     meson
@@ -77,12 +78,6 @@ python3Packages.buildPythonApplication {
     anthropic
   ];
 
-  strictDeps = true;
-
-  postInstallCheck = ''
-    mesonCheckPhase
-  '';
-
   dontWrapGApps = true;
 
   makeWrapperArgs = [
@@ -96,16 +91,23 @@ python3Packages.buildPythonApplication {
     }"
   ];
 
+  postInstallCheck = ''
+    mesonCheckPhase
+  '';
+
+  pyproject = false; # uses meson
   passthru.updateScript = nix-update-script { };
 
   meta = {
-    homepage = "https://github.com/qwersyk/Newelle";
     description = "Ultimate Virtual Assistant";
-    mainProgram = "newelle";
+    homepage = "https://github.com/qwersyk/Newelle";
     license = lib.licenses.gpl3Plus;
-    platforms = lib.platforms.linux;
+
     maintainers = with lib.maintainers; [
       michaelAllen
     ];
+
+    platforms = lib.platforms.linux;
+    mainProgram = "newelle";
   };
 }

@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   httpx,
   poetry-core,
   pytest-asyncio,
@@ -12,7 +12,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "glances-api";
   version = "0.10.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "home-assistant-ecosystem";
@@ -21,16 +20,15 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-xYKjKbISNa1gIZMgmP+2HJFNoelZEzdP0oBoIzdI/Ro=";
   };
 
-  build-system = [ poetry-core ];
-
-  dependencies = [ httpx ];
-
   nativeCheckInputs = [
     pytest-asyncio
     pytest-httpx
     pytestCheckHook
   ];
 
+  build-system = [ poetry-core ];
+  dependencies = [ httpx ];
+  pyproject = true;
   pythonImportsCheck = [ "glances_api" ];
 
   meta = {

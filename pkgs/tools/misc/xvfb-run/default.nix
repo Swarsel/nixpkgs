@@ -1,19 +1,19 @@
 {
   lib,
-  stdenvNoCC,
   fetchFromGitHub,
-  makeWrapper,
-  xvfb,
-  getopt,
-  xauth,
-  util-linux,
-  which,
+  bashNonInteractive,
+  coreutils,
   fontsConf,
   gawk,
-  coreutils,
+  getopt,
   installShellFiles,
+  makeWrapper,
+  stdenvNoCC,
+  util-linux,
+  which,
+  xauth,
   xterm,
-  bashNonInteractive,
+  xvfb,
 }:
 stdenvNoCC.mkDerivation {
   pname = "xvfb-run";
@@ -26,6 +26,8 @@ stdenvNoCC.mkDerivation {
     sha256 = "sha256-KEg92RYgJd7naHFDKbdXEy075bt6NLcmX8VhQROHVPs=";
   };
 
+  strictDeps = true;
+
   nativeBuildInputs = [
     makeWrapper
     installShellFiles
@@ -34,12 +36,6 @@ stdenvNoCC.mkDerivation {
   buildInputs = [
     bashNonInteractive
   ];
-
-  strictDeps = true;
-
-  dontUnpack = true;
-  dontBuild = true;
-  dontConfigure = true;
 
   installPhase = ''
     mkdir -p $out/bin
@@ -64,6 +60,7 @@ stdenvNoCC.mkDerivation {
   '';
 
   doInstallCheck = true;
+
   installCheckPhase = ''
     (
       unset PATH
@@ -72,6 +69,10 @@ stdenvNoCC.mkDerivation {
     )
   '';
 
+  dontBuild = true;
+  dontConfigure = true;
+  dontUnpack = true;
+
   passthru = {
     updateScript = ./update.sh;
   };
@@ -79,9 +80,9 @@ stdenvNoCC.mkDerivation {
   meta = {
     description = "Convenience script to run a virtualized X-Server";
     homepage = "https://github.com/archlinux/svntogit-packages";
-    platforms = lib.platforms.linux ++ lib.platforms.darwin;
     license = lib.licenses.gpl2Only;
     maintainers = [ lib.maintainers.artturin ];
+    platforms = lib.platforms.linux ++ lib.platforms.darwin;
     mainProgram = "xvfb-run";
   };
 }

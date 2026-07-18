@@ -1,10 +1,10 @@
 {
-  mkKdeDerivation,
-  qt5compat,
-  qtdeclarative,
-  qgpgme,
   kirigami,
   kirigami-addons,
+  mkKdeDerivation,
+  qgpgme,
+  qt5compat,
+  qtdeclarative,
   qtwebengine,
 }:
 mkKdeDerivation {

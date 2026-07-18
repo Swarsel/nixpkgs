@@ -2,19 +2,19 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  meson,
-  ninja,
   blueprint-compiler,
-  wrapGAppsHook4,
-  desktop-file-utils,
-  rustPlatform,
   cargo,
-  rustc,
-  pkg-config,
+  desktop-file-utils,
   glib,
   libadwaita,
   libxml2,
+  meson,
+  ninja,
   nix-update-script,
+  pkg-config,
+  rustPlatform,
+  rustc,
+  wrapGAppsHook4,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -37,11 +37,6 @@ stdenv.mkDerivation (finalAttrs: {
       --replace-fail "create_dir" "create_dir_all"
   '';
 
-  cargoDeps = rustPlatform.fetchCargoVendor {
-    inherit (finalAttrs) pname version src;
-    hash = "sha256-Ma+ryvDaFfP3BYrtuPPKMVjF2l83xP+T7GlIiOenRAo=";
-  };
-
   nativeBuildInputs = [
     meson
     ninja
@@ -60,14 +55,19 @@ stdenv.mkDerivation (finalAttrs: {
     libxml2
   ];
 
+  cargoDeps = rustPlatform.fetchCargoVendor {
+    inherit (finalAttrs) pname version src;
+    hash = "sha256-Ma+ryvDaFfP3BYrtuPPKMVjF2l83xP+T7GlIiOenRAo=";
+  };
+
   passthru.updateScript = nix-update-script { };
 
   meta = {
-    homepage = "https://github.com/youpie/Iconic";
     description = "Easilly add images on top of folders";
-    mainProgram = "folder_icon";
+    homepage = "https://github.com/youpie/Iconic";
     license = lib.licenses.gpl3Plus;
-    platforms = lib.platforms.linux;
     maintainers = [ ];
+    platforms = lib.platforms.linux;
+    mainProgram = "folder_icon";
   };
 })

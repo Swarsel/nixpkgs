@@ -1,33 +1,31 @@
 {
-  python3Packages,
   lib,
   fetchFromGitHub,
-  makeDesktopItem,
-  wrapGAppsHook3,
-  gtk3,
   gobject-introspection,
-  sox,
+  gtk3,
+  makeDesktopItem,
   pulseaudio,
+  python3Packages,
+  sox,
+  wrapGAppsHook3,
 }:
 let
   desktopItem = makeDesktopItem {
-    name = "lyrebird";
-    exec = "lyrebird";
-    icon = "${placeholder "out"}/share/lyrebird/icon.png";
-    desktopName = "Lyrebird";
-    genericName = "Voice Changer";
     categories = [
       "AudioVideo"
       "Audio"
     ];
+
+    desktopName = "Lyrebird";
+    exec = "lyrebird";
+    genericName = "Voice Changer";
+    icon = "${placeholder "out"}/share/lyrebird/icon.png";
+    name = "lyrebird";
   };
 in
 python3Packages.buildPythonApplication rec {
   pname = "lyrebird";
   version = "1.2.0";
-
-  pyproject = false;
-  doCheck = false;
 
   src = fetchFromGitHub {
     owner = "lyrebird-voice-changer";
@@ -35,11 +33,6 @@ python3Packages.buildPythonApplication rec {
     tag = "v${version}";
     sha256 = "sha256-VIYcOxvSpzRvJMzEv2i5b7t0WMF7aQxB4Y1jfvuZN/Y=";
   };
-
-  propagatedBuildInputs = with python3Packages; [
-    toml
-    pygobject3
-  ];
 
   nativeBuildInputs = [
     wrapGAppsHook3
@@ -51,7 +44,22 @@ python3Packages.buildPythonApplication rec {
     sox
   ];
 
+  propagatedBuildInputs = with python3Packages; [
+    toml
+    pygobject3
+  ];
+
+  doCheck = false;
+
+  installPhase = ''
+    mkdir -p $out/{bin,share/{applications,lyrebird}}
+    cp -at $out/share/lyrebird/ app icon.png
+    cp -at $out/share/applications/ ${desktopItem}
+    install -Dm755 app.py $out/bin/lyrebird
+  '';
+
   dontWrapGApps = true;
+
   makeWrapperArgs = [
     "--prefix 'PATH' ':' '${
       lib.makeBinPath [
@@ -64,19 +72,14 @@ python3Packages.buildPythonApplication rec {
     ''"''${gappsWrapperArgs[@]}"''
   ];
 
-  installPhase = ''
-    mkdir -p $out/{bin,share/{applications,lyrebird}}
-    cp -at $out/share/lyrebird/ app icon.png
-    cp -at $out/share/applications/ ${desktopItem}
-    install -Dm755 app.py $out/bin/lyrebird
-  '';
+  pyproject = false;
 
   meta = {
     description = "Simple and powerful voice changer for Linux, written in GTK 3";
-    mainProgram = "lyrebird";
     homepage = "https://github.com/lyrebird-voice-changer/lyrebird";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ OPNA2608 ];
     platforms = lib.platforms.linux;
+    mainProgram = "lyrebird";
   };
 }

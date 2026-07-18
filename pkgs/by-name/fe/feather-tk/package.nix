@@ -1,10 +1,8 @@
 {
   lib,
   stdenv,
-  cmake,
   fetchFromGitHub,
-  pkg-config,
-  python3,
+  cmake,
   freetype,
   glfw,
   gtk3,
@@ -13,15 +11,17 @@
   lunasvg,
   nativefiledialog-extended,
   nlohmann_json,
+  pkg-config,
   plutovg,
+  python3,
   xvfb-run,
   zlib,
-  python3Packages ? null,
+  enableExamples ? false,
   enableNFD ? true,
   enablePython ? false,
-  enableTests ? false,
-  enableExamples ? false,
   enableShared ? !stdenv.hostPlatform.isStatic,
+  enableTests ? false,
+  python3Packages ? null,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -94,6 +94,7 @@ stdenv.mkDerivation (finalAttrs: {
     license = lib.licenses.bsd3;
     maintainers = with lib.maintainers; [ liberodark ];
     platforms = lib.platforms.linux ++ lib.platforms.darwin;
+
     badPlatforms = [
       # Broken on darwin with latest SDK, see https://github.com/grizzlypeak3d/feather-tk/issues/1
       lib.systems.inspect.patterns.isDarwin

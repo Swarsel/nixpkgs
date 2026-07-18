@@ -1,22 +1,20 @@
 {
   lib,
   stdenv,
-  rustPlatform,
   fetchFromGitHub,
   installShellFiles,
-  versionCheckHook,
-  nix-update-script,
-  pkg-config,
   libgit2,
+  nix-update-script,
   openssl,
+  pkg-config,
+  rustPlatform,
   usage,
+  versionCheckHook,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
   pname = "hk";
   version = "1.50.0";
-
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "jdx";
@@ -24,8 +22,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-1sty3JUxiT4UDPmoqR6vql9bQcoSR+xfq3dQzT6u6rY=";
   };
-
-  cargoHash = "sha256-oUgAzO7kWVlbw1ZvcjqIdV78tvXQYlV5bwvOSucQvWE=";
 
   nativeBuildInputs = [
     installShellFiles
@@ -37,6 +33,8 @@ rustPlatform.buildRustPackage (finalAttrs: {
     libgit2
     openssl
   ];
+
+  cargoHash = "sha256-oUgAzO7kWVlbw1ZvcjqIdV78tvXQYlV5bwvOSucQvWE=";
 
   # These tests require external dependencies and are fragile -- skipping.
   checkFlags = [
@@ -50,16 +48,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
     "--skip=settings::tests::test_settings_snapshot_caching"
   ];
 
-  cargoBuildFlags = [
-    "--bin"
-    "hk"
-  ];
-
-  cargoTestFlags = [ "--all-features" ];
-
-  doInstallCheck = true;
-  nativeInstallCheckInputs = [ versionCheckHook ];
-
   postInstall = lib.optionalString (stdenv.buildPlatform.canExecute stdenv.hostPlatform) ''
     installShellCompletion --cmd hk \
       --bash <($out/bin/hk completion bash) \
@@ -67,6 +55,16 @@ rustPlatform.buildRustPackage (finalAttrs: {
       --zsh <($out/bin/hk completion zsh)
   '';
 
+  doInstallCheck = true;
+  nativeInstallCheckInputs = [ versionCheckHook ];
+  __structuredAttrs = true;
+
+  cargoBuildFlags = [
+    "--bin"
+    "hk"
+  ];
+
+  cargoTestFlags = [ "--all-features" ];
   passthru.updateScript = nix-update-script { };
 
   meta = {
@@ -74,10 +72,12 @@ rustPlatform.buildRustPackage (finalAttrs: {
     homepage = "https://hk.jdx.dev";
     changelog = "https://github.com/jdx/hk/blob/${finalAttrs.src.tag}/CHANGELOG.md";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       typedrat
       Br1ght0ne
     ];
+
     mainProgram = "hk";
   };
 })

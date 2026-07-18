@@ -2,16 +2,13 @@
   lib,
   stdenv,
   fetchFromGitHub,
-
+  callPackage,
   cmake,
-  pkg-config,
-
   libGL,
   libx11,
+  pkg-config,
   vulkan-headers,
   vulkan-loader,
-
-  callPackage,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -39,6 +36,11 @@ stdenv.mkDerivation (finalAttrs: {
     vulkan-loader
   ];
 
+  cmakeFlags = [
+    (lib.cmakeBool "ZYDIS_BUILD_DOXYGEN" false)
+    (lib.cmakeBool "BUILD_TESTS" true)
+  ];
+
   installPhase = ''
     runHook preInstall
 
@@ -47,11 +49,6 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
-  cmakeFlags = [
-    (lib.cmakeBool "ZYDIS_BUILD_DOXYGEN" false)
-    (lib.cmakeBool "BUILD_TESTS" true)
-  ];
-
   passthru.tests = callPackage ./test.nix { };
 
   meta = {
@@ -59,8 +56,8 @@ stdenv.mkDerivation (finalAttrs: {
     homepage = "https://github.com/OFFTKP/felix86";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ eljamm ];
-    teams = with lib.teams; [ ngi ];
-    mainProgram = "felix86";
     platforms = [ "riscv64-linux" ];
+    mainProgram = "felix86";
+    teams = with lib.teams; [ ngi ];
   };
 })

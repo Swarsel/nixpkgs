@@ -5,8 +5,8 @@
   bash,
   gnome,
   meson,
-  python3,
   ninja,
+  python3,
 }:
 
 stdenv.mkDerivation rec {
@@ -41,6 +41,7 @@ stdenv.mkDerivation rec {
 
   meta = {
     description = "Common build files of GLib/GTK C++ bindings";
+
     longDescription = ''
       The mm-common module provides the build infrastructure and utilities
       shared among the GNOME C++ binding libraries. It is only a required
@@ -48,9 +49,10 @@ stdenv.mkDerivation rec {
       control repository. An installation of mm-common is not required for
       building tarball releases, unless configured to use maintainer-mode.
     '';
+
     homepage = "https://www.gtkmm.org";
     license = lib.licenses.gpl2Plus;
-    teams = [ lib.teams.gnome ];
     platforms = lib.platforms.linux;
+    teams = [ lib.teams.gnome ];
   };
 }

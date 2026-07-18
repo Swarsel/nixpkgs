@@ -1,13 +1,13 @@
 {
+  lib,
+  stdenv,
   fetchgit,
   gitUpdater,
   glib,
   gobject-introspection,
   gtk3,
-  lib,
   python3Packages,
   sound-theme-freedesktop,
-  stdenv,
   wrapGAppsHook4,
   writeText,
 }:
@@ -20,28 +20,6 @@ python3Packages.buildPythonApplication rec {
     tag = "v${version}";
     hash = "sha256-Y0jAKl553HjoP59wJnKBKq4Ogko1cs8uazW2dy7AlBo=";
   };
-
-  buildInputs = [
-    glib
-    gtk3
-  ];
-
-  nativeBuildInputs = [
-    gobject-introspection
-    wrapGAppsHook4
-  ];
-
-  pyproject = true;
-
-  build-system = with python3Packages; [
-    setuptools
-  ];
-
-  dependencies = with python3Packages; [
-    dbus-python
-    pygobject3
-    psutil
-  ];
 
   postPatch =
     let
@@ -89,13 +67,15 @@ python3Packages.buildPythonApplication rec {
       ln -s ${setup-py} setup.py
     '';
 
-  # We need to manually inject $PYTHONPATH here, because `buildPythonApplication` does not recognize timekpr's executables as Python scripts, and therefore it does not automatically inject $PYTHONPATH into them.
-  postFixup = ''
-    for executable in $out/bin/*
-    do
-      wrapProgram "$executable" --prefix PYTHONPATH : "$PYTHONPATH"
-    done
-  '';
+  nativeBuildInputs = [
+    gobject-introspection
+    wrapGAppsHook4
+  ];
+
+  buildInputs = [
+    glib
+    gtk3
+  ];
 
   preInstall = ''
     while IFS= read -r line
@@ -141,6 +121,25 @@ python3Packages.buildPythonApplication rec {
     done < debian/install
   '';
 
+  # We need to manually inject $PYTHONPATH here, because `buildPythonApplication` does not recognize timekpr's executables as Python scripts, and therefore it does not automatically inject $PYTHONPATH into them.
+  postFixup = ''
+    for executable in $out/bin/*
+    do
+      wrapProgram "$executable" --prefix PYTHONPATH : "$PYTHONPATH"
+    done
+  '';
+
+  build-system = with python3Packages; [
+    setuptools
+  ];
+
+  dependencies = with python3Packages; [
+    dbus-python
+    pygobject3
+    psutil
+  ];
+
+  pyproject = true;
   passthru.updateScript = gitUpdater { rev-prefix = "v"; };
 
   meta = {

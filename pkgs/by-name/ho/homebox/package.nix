@@ -1,15 +1,15 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
-  pnpm_10,
-  fetchPnpmDeps,
-  pnpmConfigHook,
-  nodejs,
-  go,
-  git,
+  buildGoModule,
   cacert,
+  fetchPnpmDeps,
+  git,
+  go,
   nixosTests,
+  nodejs,
+  pnpmConfigHook,
+  pnpm_10,
 }:
 let
   pname = "homebox";
@@ -24,28 +24,14 @@ in
 buildGoModule {
   inherit pname version src;
 
+  nativeBuildInputs = [
+    pnpmConfigHook
+    pnpm_10
+    nodejs
+  ];
+
   vendorHash = "sha256-FuZEGUduKZyTuW63z3rk8g1KE8wyx55xoNSvqbvF0PA=";
-  modRoot = "backend";
-  # the goModules derivation inherits our buildInputs and buildPhases
-  # Since we do pnpm thing in those it fails if we don't explicitly remove them
-  overrideModAttrs = _: {
-    nativeBuildInputs = [
-      go
-      git
-      cacert
-    ];
-    preBuild = "";
-  };
-
-  pnpmDeps = fetchPnpmDeps {
-    inherit pname version;
-    src = "${src}/frontend";
-    pnpm = pnpm_10;
-    fetcherVersion = 3;
-    hash = "sha256-LrK0ijH8ahmDU4t9ckmIf1TJmybLLDRRHA67djUwRBk=";
-  };
-  pnpmRoot = "../frontend";
-
+  env.CGO_ENABLED = 0;
   env.NUXT_TELEMETRY_DISABLED = 1;
 
   preBuild = ''
@@ -59,26 +45,8 @@ buildGoModule {
     cp -r ../frontend/.output/public/* ./app/api/static/public
   '';
 
-  nativeBuildInputs = [
-    pnpmConfigHook
-    pnpm_10
-    nodejs
-  ];
-
-  env.CGO_ENABLED = 0;
   doCheck = false;
 
-  tags = [
-    "nodynamic"
-  ];
-
-  ldflags = [
-    "-s"
-    "-w"
-    "-extldflags=-static"
-    "-X main.version=${src.tag}"
-    "-X main.commit=${src.tag}"
-  ];
   installPhase = ''
     runHook preInstall
 
@@ -88,6 +56,42 @@ buildGoModule {
     runHook postInstall
   '';
 
+  ldflags = [
+    "-s"
+    "-w"
+    "-extldflags=-static"
+    "-X main.version=${src.tag}"
+    "-X main.commit=${src.tag}"
+  ];
+
+  modRoot = "backend";
+
+  # the goModules derivation inherits our buildInputs and buildPhases
+  # Since we do pnpm thing in those it fails if we don't explicitly remove them
+  overrideModAttrs = _: {
+    nativeBuildInputs = [
+      go
+      git
+      cacert
+    ];
+
+    preBuild = "";
+  };
+
+  pnpmDeps = fetchPnpmDeps {
+    inherit pname version;
+    src = "${src}/frontend";
+    fetcherVersion = 3;
+    hash = "sha256-LrK0ijH8ahmDU4t9ckmIf1TJmybLLDRRHA67djUwRBk=";
+    pnpm = pnpm_10;
+  };
+
+  pnpmRoot = "../frontend";
+
+  tags = [
+    "nodynamic"
+  ];
+
   passthru = {
     tests = {
       inherit (nixosTests) homebox;
@@ -95,17 +99,20 @@ buildGoModule {
   };
 
   meta = {
-    mainProgram = "api";
-    homepage = "https://homebox.software/";
     description = "Inventory and organization system built for the Home User";
-    maintainers = with lib.maintainers; [
-      patrickdag
-      tebriel
-    ];
+    homepage = "https://homebox.software/";
+
     license = [
       lib.licenses.agpl3Only
       lib.licenses.mit
     ];
+
+    maintainers = with lib.maintainers; [
+      patrickdag
+      tebriel
+    ];
+
     platforms = lib.platforms.linux;
+    mainProgram = "api";
   };
 }

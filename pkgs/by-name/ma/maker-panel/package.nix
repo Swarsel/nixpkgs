@@ -1,9 +1,9 @@
 {
   lib,
   fetchFromGitHub,
-  rustPlatform,
   go-md2man,
   installShellFiles,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -17,14 +17,12 @@ rustPlatform.buildRustPackage (finalAttrs: {
     sha256 = "0dlsy0c46781sb652kp80pvga7pzx6xla64axir92fcgg8k803bi";
   };
 
-  cargoHash = "sha256-H4eKZlay0IZ8vAclGruDAyh7Vd6kCvGLxJ5y/cuF+F4=";
-
-  cargoPatches = [ ./update-gerber-types-to-0.3.patch ];
-
   nativeBuildInputs = [
     go-md2man
     installShellFiles
   ];
+
+  cargoHash = "sha256-H4eKZlay0IZ8vAclGruDAyh7Vd6kCvGLxJ5y/cuF+F4=";
 
   postBuild = ''
     go-md2man --in docs/spec-reference.md --out maker-panel.5
@@ -33,6 +31,8 @@ rustPlatform.buildRustPackage (finalAttrs: {
   postInstall = ''
     installManPage maker-panel.5
   '';
+
+  cargoPatches = [ ./update-gerber-types-to-0.3.patch ];
 
   meta = {
     description = "Make mechanical PCBs by combining shapes together";

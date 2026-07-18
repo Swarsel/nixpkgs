@@ -3,16 +3,16 @@
   stdenv,
   fetchFromGitHub,
   autoreconfHook,
-  cmake,
-  zlib,
-  openssl,
   c-ares,
-  readline,
-  icu,
-  git,
+  cmake,
   gbenchmark,
+  git,
+  icu,
   nghttp2,
   nix-update-script,
+  openssl,
+  readline,
+  zlib,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -35,6 +35,11 @@ stdenv.mkDerivation (finalAttrs: {
     EOF
   '';
 
+  nativeBuildInputs = [
+    autoreconfHook
+    cmake
+  ];
+
   buildInputs = [
     nghttp2
     git
@@ -45,27 +50,21 @@ stdenv.mkDerivation (finalAttrs: {
     c-ares
   ];
 
-  nativeCheckInputs = [ gbenchmark ];
-
-  nativeBuildInputs = [
-    autoreconfHook
-    cmake
+  cmakeFlags = [
+    "-DENABLE_DIST=ON"
+    "-DTARANTOOL_VERSION=${finalAttrs.version}.builtByNix" # expects the commit hash as well
   ];
 
-  preAutoreconf = ''
-    pushd third_party/libunwind
-  '';
+  nativeCheckInputs = [ gbenchmark ];
+  cmakeBuildType = "RelWithDebInfo";
 
   postAutoreconf = ''
     popd
   '';
 
-  cmakeBuildType = "RelWithDebInfo";
-
-  cmakeFlags = [
-    "-DENABLE_DIST=ON"
-    "-DTARANTOOL_VERSION=${finalAttrs.version}.builtByNix" # expects the commit hash as well
-  ];
+  preAutoreconf = ''
+    pushd third_party/libunwind
+  '';
 
   passthru.updateScript = nix-update-script { extraArgs = [ "--use-github-releases" ]; };
 
@@ -73,7 +72,7 @@ stdenv.mkDerivation (finalAttrs: {
     description = "In-memory computing platform consisting of a database and an application server";
     homepage = "https://www.tarantool.io/";
     license = lib.licenses.bsd2;
-    mainProgram = "tarantool";
     maintainers = [ ];
+    mainProgram = "tarantool";
   };
 })

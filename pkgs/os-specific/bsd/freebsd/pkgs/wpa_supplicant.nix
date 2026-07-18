@@ -1,15 +1,17 @@
 {
-  mkDerivation,
   libpcap,
+  mkDerivation,
   openssl,
 }:
 mkDerivation {
-  path = "usr.sbin/wpa";
-  extraPaths = [
-    "contrib/wpa"
-  ];
   buildInputs = [
     libpcap
     openssl
   ];
+
+  extraPaths = [
+    "contrib/wpa"
+  ];
+
+  path = "usr.sbin/wpa";
 }

@@ -1,11 +1,11 @@
 {
   lib,
-  rustPlatform,
-  fetchFromGitHub,
   stdenv,
+  fetchFromGitHub,
   installShellFiles,
-  versionCheckHook,
   nix-update-script,
+  rustPlatform,
+  versionCheckHook,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -19,10 +19,8 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-OCRfJh6vfAkL86J1GuLgfs57from3fx0NS1Bh1+/oXE=";
   };
 
-  cargoHash = "sha256-aEjsBhm0iPysA1Wz1Ea7rtX0g/yH/rklUkYV/Elxcq8=";
-
   nativeBuildInputs = [ installShellFiles ];
-
+  cargoHash = "sha256-aEjsBhm0iPysA1Wz1Ea7rtX0g/yH/rklUkYV/Elxcq8=";
   # device::test_physical_device_name test fails on Darwin
   doCheck = !stdenv.hostPlatform.isDarwin;
 
@@ -40,11 +38,13 @@ rustPlatform.buildRustPackage (finalAttrs: {
       --zsh <(fclones complete zsh)
   '';
 
+  doInstallCheck = true;
+
   nativeInstallCheckInputs = [
     versionCheckHook
   ];
+
   versionCheckProgramArg = "--version";
-  doInstallCheck = true;
 
   passthru = {
     updateScript = nix-update-script { };
@@ -55,10 +55,12 @@ rustPlatform.buildRustPackage (finalAttrs: {
     homepage = "https://github.com/pkolaczk/fclones";
     changelog = "https://github.com/pkolaczk/fclones/releases/tag/${finalAttrs.src.tag}";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       cyounkins
       progrm_jarvis
     ];
+
     mainProgram = "fclones";
   };
 })

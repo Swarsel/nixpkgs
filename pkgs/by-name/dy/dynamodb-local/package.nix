@@ -1,20 +1,22 @@
 {
   lib,
-  stdenvNoCC,
   fetchurl,
+  common-updater-scripts,
+  curl,
+  dynamodb-local,
   jdk_headless,
+  jq,
   jre_minimal,
   makeBinaryWrapper,
-  curl,
-  jq,
-  yq,
-  dynamodb-local,
+  stdenvNoCC,
   testers,
-  common-updater-scripts,
   writeShellScript,
+  yq,
 }:
 let
   jre = jre_minimal.override {
+    jdk = jdk_headless;
+
     modules = [
       "java.logging"
       "java.xml"
@@ -22,7 +24,6 @@ let
       "java.management"
       "java.naming"
     ];
-    jdk = jdk_headless;
   };
 in
 stdenvNoCC.mkDerivation (finalAttrs: {
@@ -33,8 +34,6 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     url = "https://d1ni2b6xgvw0s0.cloudfront.net/v2.x/dynamodb_local_2025-03-13.tar.gz";
     hash = "sha256-mAXZX+L17+z9f3/sMq+O+zLcg7YKGKL72BhhTtS2xuw=";
   };
-
-  sourceRoot = ".";
 
   nativeBuildInputs = [ makeBinaryWrapper ];
 
@@ -50,10 +49,13 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  sourceRoot = ".";
+
   passthru = {
     tests.version = testers.testVersion {
       package = dynamodb-local;
     };
+
     updateScript = writeShellScript "update-dynamodb-local" ''
       set -o errexit
       export PATH="${
@@ -84,14 +86,17 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     description = "DynamoDB Local is a small client-side database and server that mimics the DynamoDB service";
     homepage = "https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/DynamoDBLocal.html";
     license = lib.licenses.unfree;
-    mainProgram = "dynamodb-local";
-    maintainers = with lib.maintainers; [
-      martinjlowm
-    ];
-    platforms = lib.platforms.all;
+
     sourceProvenance = with lib.sourceTypes; [
       binaryBytecode
       binaryNativeCode
     ];
+
+    maintainers = with lib.maintainers; [
+      martinjlowm
+    ];
+
+    platforms = lib.platforms.all;
+    mainProgram = "dynamodb-local";
   };
 })

@@ -8,15 +8,18 @@
 
 qtModule {
   pname = "qtdatavis3d";
-  propagatedBuildInputs = [
-    qtbase
-    qtdeclarative
-  ];
+
   outputs = [
     "out"
     "dev"
     "bin"
   ];
+
+  propagatedBuildInputs = [
+    qtbase
+    qtdeclarative
+  ];
+
   # error: use of undeclared identifier 'stat64'
   env.NIX_CFLAGS_COMPILE = lib.optionalString (
     stdenv.hostPlatform.isDarwin && stdenv.hostPlatform.isAarch64

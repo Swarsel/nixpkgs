@@ -1,12 +1,12 @@
 {
   lib,
-  buildNpmPackage,
   fetchFromGitHub,
-  nodejs,
+  buildNpmPackage,
   faketty,
+  nodejs,
   openssl,
-  prisma_7,
   prisma-engines_7,
+  prisma_7,
   runtimeShell,
 }:
 
@@ -22,13 +22,12 @@ buildNpmPackage (finalAttrs: {
     # populate values that require us to use git. By doing this in postFetch we
     # can delete .git afterwards and maintain better reproducibility of the src.
     leaveDotGit = true;
+
     postFetch = ''
       date -u -d "@$(git -C $out log -1 --pretty=%ct)" +%s%3N > $out/SOURCE_DATE_EPOCH
       find "$out" -name .git -print0 | xargs -0 rm -rf
     '';
   };
-
-  npmDepsHash = "sha256-r/LaDTd4TvoPll2w0It0cVOBniMnlZf1jg5mL9wII7I=";
 
   postPatch = ''
     substituteInPlace replace.build.mjs \
@@ -46,6 +45,7 @@ buildNpmPackage (finalAttrs: {
     faketty
   ];
 
+  npmDepsHash = "sha256-r/LaDTd4TvoPll2w0It0cVOBniMnlZf1jg5mL9wII7I=";
   # Disallow cypress from downloading binaries in sandbox
   env.CYPRESS_INSTALL_BINARY = "0";
 
@@ -81,11 +81,11 @@ buildNpmPackage (finalAttrs: {
       --prefix LD_LIBRARY_PATH : ${lib.makeLibraryPath [ openssl ]} \
       ${lib.concatStringsSep " " (
         lib.mapAttrsToList (name: value: "--set ${name} ${lib.escapeShellArg value}") {
-          PRISMA_SCHEMA_ENGINE_BINARY = lib.getExe' prisma-engines_7 "schema-engine";
+          PRISMA_FMT_BINARY = lib.getExe' prisma-engines_7 "prisma-fmt";
+          PRISMA_INTROSPECTION_ENGINE_BINARY = lib.getExe' prisma-engines_7 "introspection-engine";
           PRISMA_QUERY_ENGINE_BINARY = lib.getExe' prisma-engines_7 "query-engine";
           PRISMA_QUERY_ENGINE_LIBRARY = "${prisma-engines_7}/lib/libquery_engine.node";
-          PRISMA_INTROSPECTION_ENGINE_BINARY = lib.getExe' prisma-engines_7 "introspection-engine";
-          PRISMA_FMT_BINARY = lib.getExe' prisma-engines_7 "prisma-fmt";
+          PRISMA_SCHEMA_ENGINE_BINARY = lib.getExe' prisma-engines_7 "schema-engine";
         }
       )}
 

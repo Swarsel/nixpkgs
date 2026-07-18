@@ -1,16 +1,16 @@
 {
   lib,
-  stdenvNoCC,
   fetchFromGitHub,
-  makeBinaryWrapper,
   coreutils,
   curl,
   findutils,
   gawk,
   gnugrep,
   gnused,
+  makeBinaryWrapper,
   mktemp,
   netcat,
+  stdenvNoCC,
   unixtools,
 }:
 
@@ -65,10 +65,10 @@ stdenvNoCC.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Static HTML status page generator written in pure shell";
-    mainProgram = "tinystatus";
     homepage = "https://github.com/bderenzo/tinystatus";
     license = lib.licenses.mit;
-    platforms = lib.platforms.unix;
     maintainers = with lib.maintainers; [ matthewcroughan ];
+    platforms = lib.platforms.unix;
+    mainProgram = "tinystatus";
   };
 })

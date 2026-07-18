@@ -9,7 +9,6 @@
 }:
 
 stdenv.mkDerivation (finalAttrs: {
-  name = "${finalAttrs.pname}-${finalAttrs.version}-${kernel.version}";
   pname = "bbswitch";
   version = "unstable-2021-11-29";
 
@@ -23,21 +22,18 @@ stdenv.mkDerivation (finalAttrs: {
 
   patches = [
     (fetchpatch {
-      url = "https://raw.githubusercontent.com/archlinux/svntogit-community/0bd986055ba52887b81048de5c61e618eec06eb0/trunk/0003-kernel-5.18.patch";
       sha256 = "sha256-va62/bR1qyBBMPg0lUwCH7slGG0XijxVCsFa4FCoHEQ=";
+      url = "https://raw.githubusercontent.com/archlinux/svntogit-community/0bd986055ba52887b81048de5c61e618eec06eb0/trunk/0003-kernel-5.18.patch";
     })
   ];
 
   nativeBuildInputs = kernel.moduleBuildDependencies;
-
-  hardeningDisable = [ "pic" ];
+  makeFlags = kernelModuleMakeFlags;
 
   preBuild = ''
     substituteInPlace Makefile \
       --replace "/lib/modules" "${kernel.dev}/lib/modules"
   '';
-
-  makeFlags = kernelModuleMakeFlags;
 
   installPhase = ''
     mkdir -p $out/lib/modules/${kernel.modDirVersion}/misc
@@ -57,14 +53,18 @@ stdenv.mkDerivation (finalAttrs: {
     chmod +x $out/bin/discrete_vga_poweroff $out/bin/discrete_vga_poweron
   '';
 
+  hardeningDisable = [ "pic" ];
+  name = "${finalAttrs.pname}-${finalAttrs.version}-${kernel.version}";
+
   meta = {
     description = "Module for powering off hybrid GPUs";
+    homepage = "https://github.com/Bumblebee-Project/bbswitch";
+    license = lib.licenses.gpl2Plus;
+    maintainers = [ ];
+
     platforms = [
       "x86_64-linux"
       "i686-linux"
     ];
-    homepage = "https://github.com/Bumblebee-Project/bbswitch";
-    maintainers = [ ];
-    license = lib.licenses.gpl2Plus;
   };
 })

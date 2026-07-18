@@ -2,10 +2,10 @@
   lib,
   stdenv,
   fetchFromGitLab,
-  pkg-config,
   autoreconfHook,
-  util-macros,
   libxt,
+  pkg-config,
+  util-macros,
   xtrans,
 }:
 
@@ -14,11 +14,11 @@ stdenv.mkDerivation (finalAttrs: {
   version = "1.4.5";
 
   src = fetchFromGitLab {
-    domain = "gitlab.freedesktop.org";
     owner = "xorg";
     repo = "app/xscope";
     tag = "xscope-${finalAttrs.version}";
     hash = "sha256-9ZmmV41PKv+WFL9I4D9NTfNVTsazCijZMMmDFSvXMlg=";
+    domain = "gitlab.freedesktop.org";
   };
 
   nativeBuildInputs = [

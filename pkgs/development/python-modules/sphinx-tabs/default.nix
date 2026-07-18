@@ -1,31 +1,23 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # build-system
-  setuptools,
-
-  # documentation build dependencies
-  sphinxHook,
-  # runtime dependencies
-  sphinx,
-  pygments,
+  beautifulsoup4,
+  buildPythonPackage,
   docutils,
+  pygments,
   # test dependencies
   pytest,
-  beautifulsoup4,
+  # build-system
+  setuptools,
+  # runtime dependencies
+  sphinx,
+  # documentation build dependencies
+  sphinxHook,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "sphinx-tabs";
   version = "3.5.0";
-  pyproject = true;
-
-  outputs = [
-    "out"
-    "doc"
-  ];
 
   src = fetchFromGitHub {
     owner = "executablebooks";
@@ -33,6 +25,11 @@ buildPythonPackage (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-OuGrrlCEkTxu3WueCPHHuEeMGXPf/lrETbTP/9uVWbU=";
   };
+
+  outputs = [
+    "out"
+    "doc"
+  ];
 
   nativeBuildInputs = [
     setuptools
@@ -50,6 +47,7 @@ buildPythonPackage (finalAttrs: {
     beautifulsoup4
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "sphinx_tabs" ];
 
   meta = {

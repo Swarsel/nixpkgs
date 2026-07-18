@@ -1,30 +1,22 @@
 {
   lib,
+  beautifulsoup4,
   buildPythonPackage,
   fetchPypi,
+  keyring,
+  lxml,
   ofxhome,
   ofxparse,
-  beautifulsoup4,
-  lxml,
-  keyring,
 }:
 
 buildPythonPackage rec {
-  version = "2.0.3";
-  format = "setuptools";
   pname = "ofxclient";
+  version = "2.0.3";
 
   src = fetchPypi {
     inherit pname version;
     sha256 = "0jdhqsbl34yn3n0x6mwsnl58c25v5lp6vr910c2hk7l74l5y7538";
   };
-
-  patchPhase = ''
-    substituteInPlace setup.py --replace '"argparse",' ""
-  '';
-
-  # ImportError: No module named tests
-  doCheck = false;
 
   propagatedBuildInputs = [
     ofxhome
@@ -34,10 +26,18 @@ buildPythonPackage rec {
     keyring
   ];
 
+  # ImportError: No module named tests
+  doCheck = false;
+  format = "setuptools";
+
+  patchPhase = ''
+    substituteInPlace setup.py --replace '"argparse",' ""
+  '';
+
   meta = {
-    homepage = "https://github.com/captin411/ofxclient";
     description = "OFX client for dowloading transactions from banks";
-    mainProgram = "ofxclient";
+    homepage = "https://github.com/captin411/ofxclient";
     license = lib.licenses.mit;
+    mainProgram = "ofxclient";
   };
 }

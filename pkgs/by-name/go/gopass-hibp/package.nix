@@ -1,9 +1,9 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
-  makeWrapper,
+  buildGoModule,
   gopass,
+  makeWrapper,
   versionCheckHook,
   writableTmpDirAsHomeHook,
 }:
@@ -19,11 +19,22 @@ buildGoModule (finalAttrs: {
     hash = "sha256-BlZxXN14bOO7LMdjS/ooqVKmRZQTpNYlYp4A4rTew4Q=";
   };
 
-  vendorHash = "sha256-LUmxstDE0paYaNS2Em1Xc6pJmHHWk/IJEjTZXq5qWW8=";
-
-  subPackages = [ "." ];
-
   nativeBuildInputs = [ makeWrapper ];
+  vendorHash = "sha256-LUmxstDE0paYaNS2Em1Xc6pJmHHWk/IJEjTZXq5qWW8=";
+  doInstallCheck = true;
+
+  nativeInstallCheckInputs = [
+    versionCheckHook
+    writableTmpDirAsHomeHook
+    gopass
+  ];
+
+  postFixup = ''
+    wrapProgram $out/bin/gopass-hibp \
+      --prefix PATH : "${gopass.wrapperPath}"
+  '';
+
+  __darwinAllowLocalNetworking = true;
 
   ldflags = [
     "-s"
@@ -32,23 +43,12 @@ buildGoModule (finalAttrs: {
     "-X main.commit=${finalAttrs.src.rev}"
   ];
 
-  postFixup = ''
-    wrapProgram $out/bin/gopass-hibp \
-      --prefix PATH : "${gopass.wrapperPath}"
-  '';
-
-  doInstallCheck = true;
-  nativeInstallCheckInputs = [
-    versionCheckHook
-    writableTmpDirAsHomeHook
-    gopass
-  ];
-  versionCheckKeepEnvironment = [ "HOME" ];
   preVersionCheck = ''
     gopass setup --name "user" --email "user@localhost"
   '';
 
-  __darwinAllowLocalNetworking = true;
+  subPackages = [ "." ];
+  versionCheckKeepEnvironment = [ "HOME" ];
 
   meta = {
     description = "Gopass haveibeenpwnd.com integration";

@@ -15,6 +15,8 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-nfOmiF+t5QtAl1I7CSz26C9SGo7ZkdSziO2eiHbk6pA=";
   };
 
+  makeFlags = [ "CC=${stdenv.cc.targetPrefix}cc" ];
+
   preBuild = ''
     substituteInPlace Makefile --replace '/usr/local' $out
     mkdir -p $out/bin
@@ -23,22 +25,23 @@ stdenv.mkDerivation (finalAttrs: {
     sed -i s/-m64//g Makefile
   '';
 
-  makeFlags = [ "CC=${stdenv.cc.targetPrefix}cc" ];
-
   enableParallelBuilding = true;
 
   meta = {
-    homepage = "https://github.com/dj-on-github/hexbinhex";
-    changelog = "https://github.com/dj-on-github/hexbinhex/releases/tag/${finalAttrs.src.rev}";
     description = ''
       Six utility programs to convert between hex, binary, ascii-binary
       and the oddball NIST format for 90B testing.
     '';
+
+    homepage = "https://github.com/dj-on-github/hexbinhex";
+    changelog = "https://github.com/dj-on-github/hexbinhex/releases/tag/${finalAttrs.src.rev}";
     license = lib.licenses.gpl2Only;
-    platforms = lib.platforms.all;
+
     maintainers = with lib.maintainers; [
       orichter
       thillux
     ];
+
+    platforms = lib.platforms.all;
   };
 })

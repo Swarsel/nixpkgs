@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   pyserial,
   pyserial-asyncio,
 }:
@@ -9,7 +9,6 @@
 buildPythonPackage rec {
   pname = "pyblackbird";
   version = "0.6";
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "koolsb";
@@ -25,7 +24,7 @@ buildPythonPackage rec {
 
   # Test setup try to create a serial port
   doCheck = false;
-
+  format = "setuptools";
   pythonImportsCheck = [ "pyblackbird" ];
 
   meta = {

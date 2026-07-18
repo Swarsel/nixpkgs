@@ -1,14 +1,13 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "pylru";
   version = "1.3.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "jlhutch";
@@ -16,8 +15,6 @@ buildPythonPackage rec {
     rev = "v${version}";
     hash = "sha256-3qycUYmnLGiuNsrBOCL/QiRkrPVikaRqVBmQFURDGKs=";
   };
-
-  build-system = [ setuptools ];
 
   checkPhase = ''
     runHook preCheck
@@ -27,6 +24,8 @@ buildPythonPackage rec {
     runHook postCheck
   '';
 
+  build-system = [ setuptools ];
+  pyproject = true;
   pythonImportsCheck = [ "pylru" ];
 
   meta = {

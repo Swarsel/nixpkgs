@@ -1,28 +1,28 @@
 {
   lib,
   stdenv,
-  fetchpatch,
   fetchurl,
-  cmake,
-  runtimeShell,
-  pkg-config,
   alsa-lib,
+  cmake,
+  curl,
+  emacs,
+  fetchpatch,
+  fftw,
+  gcc,
+  gitUpdater,
   libjack2,
   libsndfile,
-  fftw,
-  curl,
-  gcc,
-  qt6,
   libxt,
+  pkg-config,
+  qt6,
   readline,
-  useSCEL ? false,
-  useQtWebEngine ? true,
-  emacs,
-  gitUpdater,
+  runCommand,
+  runtimeShell,
   supercollider-with-plugins,
   supercolliderPlugins,
   writeText,
-  runCommand,
+  useQtWebEngine ? true,
+  useSCEL ? false,
 }:
 
 stdenv.mkDerivation rec {
@@ -37,8 +37,8 @@ stdenv.mkDerivation rec {
   patches = [
     # add support for Qt 6.11 in SuperCollider 3.14.1
     (fetchpatch {
-      url = "https://github.com/supercollider/supercollider/commit/e997e47890a9cee137756dede664811a58dbf85a.patch";
       hash = "sha256-Koh5CwkedDEXwvSFyZSrdKyVIKpX7nPrIcsr2FXaejo=";
+      url = "https://github.com/supercollider/supercollider/commit/e997e47890a9cee137756dede664811a58dbf85a.patch";
     })
   ];
 
@@ -71,21 +71,15 @@ stdenv.mkDerivation rec {
   ]
   ++ lib.optional (!stdenv.hostPlatform.isDarwin) alsa-lib;
 
-  hardeningDisable = [ "stackprotector" ];
-
   cmakeFlags = [
     "-DSC_WII=OFF"
     "-DSC_EL=${if useSCEL then "ON" else "OFF"}"
     (lib.cmakeBool "SC_USE_QTWEBENGINE" useQtWebEngine)
   ];
 
-  passthru = {
-    updateScript = gitUpdater {
-      url = "https://github.com/supercollider/supercollider.git";
-      rev-prefix = "Version-";
-      ignoredVersions = "rc|beta";
-    };
+  hardeningDisable = [ "stackprotector" ];
 
+  passthru = {
     tests = {
       # test to make sure sclang runs and included plugins are successfully found
       sclang-sc3-plugins =
@@ -107,16 +101,24 @@ stdenv.mkDerivation rec {
           timeout 60s env XDG_CONFIG_HOME="$(mktemp -d)" QT_QPA_PLATFORM=minimal ${supercollider-with-test-plugins}/bin/sclang ${testsc} >$out
         '';
     };
+
+    updateScript = gitUpdater {
+      ignoredVersions = "rc|beta";
+      rev-prefix = "Version-";
+      url = "https://github.com/supercollider/supercollider.git";
+    };
   };
 
   meta = {
     description = "Programming language for real time audio synthesis";
     homepage = "https://supercollider.github.io";
     changelog = "https://github.com/supercollider/supercollider/blob/Version-${version}/CHANGELOG.md";
+    license = lib.licenses.gpl3Plus;
+
     maintainers = with lib.maintainers; [
       pretentiousUsername
     ];
-    license = lib.licenses.gpl3Plus;
+
     platforms = lib.platforms.linux;
   };
 }

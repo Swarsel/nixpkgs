@@ -2,9 +2,9 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  rustPlatform,
-  pkg-config,
   openssl,
+  pkg-config,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -20,16 +20,14 @@ rustPlatform.buildRustPackage (finalAttrs: {
   };
 
   nativeBuildInputs = [ pkg-config ];
-
-  cargoHash = "sha256-fkGB9qgOxroOjfQMwXfJqSVWB1S7T+ndYVYEmGrqtIs=";
-
   buildInputs = [ openssl ];
+  cargoHash = "sha256-fkGB9qgOxroOjfQMwXfJqSVWB1S7T+ndYVYEmGrqtIs=";
 
   meta = {
     description = "Multiplayer server for the rhythm game Phira";
     homepage = "https://github.com/TeamFlos/phira-mp";
-    maintainers = with lib.maintainers; [ ulysseszhan ];
     license = lib.licenses.unfree; # https://github.com/TeamFlos/phira-mp/issues/7
+    maintainers = with lib.maintainers; [ ulysseszhan ];
     platforms = lib.platforms.unix;
     mainProgram = "phira-mp-server";
   };

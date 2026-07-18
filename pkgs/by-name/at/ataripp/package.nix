@@ -1,9 +1,9 @@
 {
   lib,
   stdenv,
+  fetchurl,
   SDL,
   alsa-lib,
-  fetchurl,
   gcc-unwrapped,
   libice,
   libsm,
@@ -37,17 +37,19 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   meta = {
-    homepage = "http://www.xl-project.com/";
     description = "Enhanced, cycle-accurated Atari emulator";
-    mainProgram = "atari++";
+
     longDescription = ''
       The Atari++ Emulator is a Unix based emulator of the Atari eight bit
       computers, namely the Atari 400 and 800, the Atari 400XL, 800XL and 130XE,
       and the Atari 5200 game console. The emulator is auto-configurable and
       will compile on a variety of systems (Linux, Solaris, Irix).
     '';
-    maintainers = [ ];
+
+    homepage = "http://www.xl-project.com/";
     license = with lib.licenses; [ gpl2Plus ];
+    maintainers = [ ];
     platforms = lib.platforms.unix;
+    mainProgram = "atari++";
   };
 })

@@ -1,24 +1,22 @@
 {
   buildPythonPackage,
-  setuptools,
   nftables,
+  setuptools,
 }:
 
 buildPythonPackage {
-  pname = "nftables";
   inherit (nftables) version src;
-  pyproject = true;
+  pname = "nftables";
 
   postPatch = ''
     substituteInPlace "src/nftables.py" \
       --replace-fail "libnftables.so.1" "${nftables}/lib/libnftables.so.1"
   '';
 
-  setSourceRoot = "sourceRoot=$(echo */py)";
-
   build-system = [ setuptools ];
-
+  pyproject = true;
   pythonImportsCheck = [ "nftables" ];
+  setSourceRoot = "sourceRoot=$(echo */py)";
 
   meta = {
     inherit (nftables.meta)

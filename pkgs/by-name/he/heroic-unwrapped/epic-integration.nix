@@ -1,9 +1,9 @@
 {
   lib,
   stdenv,
-  gitUpdater,
   fetchFromGitHub,
   cmake,
+  gitUpdater,
   pkgsCross,
 }:
 stdenv.mkDerivation (finalAttrs: {
@@ -37,10 +37,12 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Wrapper process for games launched through Heroic Games Launcher";
+
     longDescription = ''
       This is a Windows executable that pretends to be EpicGamesLauncher.exe for
       games that expect it to be their parent process.
     '';
+
     homepage = "https://github.com/Etaash-mathamsetty/heroic-epic-integration";
     changelog = "https://github.com/Etaash-mathamsetty/heroic-epic-integration/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.mit;

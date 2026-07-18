@@ -1,12 +1,12 @@
 {
+  srcs,
   type,
   version,
-  srcs,
+  aspnetcore ? null,
   commonPackages ? null,
   hostPackages ? null,
-  targetPackages ? null,
   runtime ? null,
-  aspnetcore ? null,
+  targetPackages ? null,
 }:
 
 assert builtins.elem type [
@@ -28,24 +28,24 @@ assert
   lib,
   stdenv,
   fetchurl,
-  writeText,
   autoPatchelfHook,
-  makeWrapper,
-  libunwind,
-  icu,
-  libuuid,
-  zlib,
-  libkrb5,
-  openssl,
-  curl,
-  lttng-ust_2_12,
-  testers,
-  runCommand,
-  writeShellScript,
-  mkNugetDeps,
   callPackage,
+  curl,
+  icu,
+  libkrb5,
+  libunwind,
+  libuuid,
+  lttng-ust_2_12,
+  makeWrapper,
+  mkNugetDeps,
+  openssl,
+  runCommand,
   systemToDotnetRid,
+  testers,
+  writeShellScript,
+  writeText,
   xmlstarlet,
+  zlib,
 }:
 
 let
@@ -101,6 +101,27 @@ mkWrapper type (
   stdenv.mkDerivation (finalAttrs: {
     inherit pname version;
 
+    src = fetchurl (
+      srcs.${hostRid} or (throw "Missing source (url and hash) for host RID: ${hostRid}")
+    );
+
+    postPatch =
+      if type == "sdk" then
+        (
+          ''
+            xmlstarlet ed \
+              --inplace \
+              -s //_:Project -t elem -n Import \
+              -i \$prev -t attr -n Project -v "${extraTargets}" \
+              sdk/*/Sdks/Microsoft.NET.Sdk/targets/Microsoft.NET.Sdk.targets
+          ''
+          + lib.optionalString (stdenv.hostPlatform.isDarwin && lib.versionOlder version "10") ''
+            codesign --remove-signature packs/Microsoft.NETCore.App.Host.osx-*/*/runtimes/osx-*/native/{apphost,singlefilehost}
+          ''
+        )
+      else
+        null;
+
     # Some of these dependencies are `dlopen()`ed.
     nativeBuildInputs = [
       makeWrapper
@@ -120,32 +141,6 @@ mkWrapper type (
       xmlstarlet
     ]
     ++ lib.optional stdenv.hostPlatform.isLinux lttng-ust_2_12;
-
-    src = fetchurl (
-      srcs.${hostRid} or (throw "Missing source (url and hash) for host RID: ${hostRid}")
-    );
-
-    sourceRoot = ".";
-
-    postPatch =
-      if type == "sdk" then
-        (
-          ''
-            xmlstarlet ed \
-              --inplace \
-              -s //_:Project -t elem -n Import \
-              -i \$prev -t attr -n Project -v "${extraTargets}" \
-              sdk/*/Sdks/Microsoft.NET.Sdk/targets/Microsoft.NET.Sdk.targets
-          ''
-          + lib.optionalString (stdenv.hostPlatform.isDarwin && lib.versionOlder version "10") ''
-            codesign --remove-signature packs/Microsoft.NETCore.App.Host.osx-*/*/runtimes/osx-*/native/{apphost,singlefilehost}
-          ''
-        )
-      else
-        null;
-
-    dontPatchELF = true;
-    noDumpEnvVars = true;
 
     installPhase = ''
       runHook preInstall
@@ -187,6 +182,9 @@ mkWrapper type (
         $out/share/dotnet/packs/Microsoft.NETCore.App.Host.${hostRid}/*/runtimes/${hostRid}/native/*host
     '';
 
+    dontPatchELF = true;
+    noDumpEnvVars = true;
+
     # fixes: Could not load ICU data. UErrorCode: 2
     propagatedSandboxProfile = lib.optionalString stdenv.hostPlatform.isDarwin ''
       (allow file-read* (subpath "/usr/share/icu"))
@@ -194,6 +192,8 @@ mkWrapper type (
       (allow mach-lookup (global-name "com.apple.SecurityServer")
                          (global-name "com.apple.system.opendirectoryd.membership"))
     '';
+
+    sourceRoot = ".";
 
     passthru = {
       inherit icu hasILCompiler;
@@ -207,11 +207,13 @@ mkWrapper type (
         forceSDKEval = builtins.seq finalAttrs.finalPackage.drvPath;
       in
       {
+        inherit runtime aspnetcore;
+
         packages = map forceSDKEval (
           commonPackages ++ hostPackages.${hostRid} ++ targetPackages.${targetRid}
         );
+
         targetPackages = lib.mapAttrs (_: map forceSDKEval) targetPackages;
-        inherit runtime aspnetcore;
       }
     );
 
@@ -219,12 +221,18 @@ mkWrapper type (
       description = builtins.getAttr type descriptions;
       homepage = "https://dotnet.github.io/";
       license = lib.licenses.mit;
+
+      sourceProvenance = with lib.sourceTypes; [
+        binaryBytecode
+        binaryNativeCode
+      ];
+
       maintainers = with lib.maintainers; [
         kuznero
         mdarocha
         corngood
       ];
-      mainProgram = "dotnet";
+
       platforms = lib.filter (
         platform:
         let
@@ -232,10 +240,9 @@ mkWrapper type (
         in
         e.success && srcs ? "${e.value}"
       ) lib.platforms.all;
-      sourceProvenance = with lib.sourceTypes; [
-        binaryBytecode
-        binaryNativeCode
-      ];
+
+      mainProgram = "dotnet";
+
       knownVulnerabilities =
         lib.optionals
           (lib.elem (lib.head (lib.splitVersion version)) [

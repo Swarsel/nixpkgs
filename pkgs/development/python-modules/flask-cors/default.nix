@@ -1,22 +1,20 @@
 {
   lib,
   fetchFromGitHub,
+  # for passthru.tests
+  aiobotocore,
   buildPythonPackage,
   flask,
-  werkzeug,
+  moto,
   pytestCheckHook,
   setuptools,
   setuptools-scm,
-
-  # for passthru.tests
-  aiobotocore,
-  moto,
+  werkzeug,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "flask-cors";
   version = "6.0.5";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "corydolphin";
@@ -24,6 +22,10 @@ buildPythonPackage (finalAttrs: {
     tag = finalAttrs.version;
     hash = "sha256-fngKJm7/7BMcWPPFncTCWw2sL1UJ0t4ICpXr95yNpbg=";
   };
+
+  nativeCheckInputs = [
+    pytestCheckHook
+  ];
 
   build-system = [
     setuptools
@@ -35,11 +37,8 @@ buildPythonPackage (finalAttrs: {
     werkzeug
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "flask_cors" ];
-
-  nativeCheckInputs = [
-    pytestCheckHook
-  ];
 
   passthru.tests = {
     inherit aiobotocore moto;

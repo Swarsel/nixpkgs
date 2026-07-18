@@ -40,39 +40,27 @@ in
     services.xserver.displayManager.lightdm.greeters.gtk = {
 
       enable = mkOption {
-        type = types.bool;
         default = true;
+
         description = ''
           Whether to enable lightdm-gtk-greeter as the lightdm greeter.
         '';
+
+        type = types.bool;
       };
 
-      theme = {
+      clock-format = mkOption {
+        default = null;
 
-        package = mkPackageOption pkgs "gnome-themes-extra" { };
+        description = ''
+          Clock format string (as expected by strftime, e.g. "%H:%M")
+          to use with the lightdm gtk greeter panel.
 
-        name = mkOption {
-          type = types.str;
-          default = "Adwaita";
-          description = ''
-            Name of the theme to use for the lightdm-gtk-greeter.
-          '';
-        };
+          If set to null the default clock format is used.
+        '';
 
-      };
-
-      iconTheme = {
-
-        package = mkPackageOption pkgs "adwaita-icon-theme" { };
-
-        name = mkOption {
-          type = types.str;
-          default = "Adwaita";
-          description = ''
-            Name of the icon theme to use for the lightdm-gtk-greeter.
-          '';
-        };
-
+        example = "%F";
+        type = types.nullOr types.str;
       };
 
       cursorTheme = {
@@ -80,47 +68,56 @@ in
         package = mkPackageOption pkgs "adwaita-icon-theme" { };
 
         name = mkOption {
-          type = types.str;
           default = "Adwaita";
+
           description = ''
             Name of the cursor theme to use for the lightdm-gtk-greeter.
           '';
+
+          type = types.str;
         };
 
         size = mkOption {
-          type = types.int;
           default = 16;
+
           description = ''
             Size of the cursor theme to use for the lightdm-gtk-greeter.
           '';
+
+          type = types.int;
         };
       };
 
-      clock-format = mkOption {
-        type = types.nullOr types.str;
-        default = null;
-        example = "%F";
-        description = ''
-          Clock format string (as expected by strftime, e.g. "%H:%M")
-          to use with the lightdm gtk greeter panel.
+      extraConfig = mkOption {
+        default = "";
 
-          If set to null the default clock format is used.
+        description = ''
+          Extra configuration that should be put in the lightdm-gtk-greeter.conf
+          configuration file.
         '';
+
+        type = types.lines;
+      };
+
+      iconTheme = {
+
+        package = mkPackageOption pkgs "adwaita-icon-theme" { };
+
+        name = mkOption {
+          default = "Adwaita";
+
+          description = ''
+            Name of the icon theme to use for the lightdm-gtk-greeter.
+          '';
+
+          type = types.str;
+        };
+
       };
 
       indicators = mkOption {
-        type = types.nullOr (types.listOf types.str);
         default = null;
-        example = [
-          "~host"
-          "~spacer"
-          "~clock"
-          "~spacer"
-          "~session"
-          "~language"
-          "~a11y"
-          "~power"
-        ];
+
         description = ''
           List of allowed indicator modules to use for the lightdm gtk
           greeter panel.
@@ -132,15 +129,35 @@ in
 
           If set to null the default indicators are used.
         '';
+
+        example = [
+          "~host"
+          "~spacer"
+          "~clock"
+          "~spacer"
+          "~session"
+          "~language"
+          "~a11y"
+          "~power"
+        ];
+
+        type = types.nullOr (types.listOf types.str);
       };
 
-      extraConfig = mkOption {
-        type = types.lines;
-        default = "";
-        description = ''
-          Extra configuration that should be put in the lightdm-gtk-greeter.conf
-          configuration file.
-        '';
+      theme = {
+
+        package = mkPackageOption pkgs "gnome-themes-extra" { };
+
+        name = mkOption {
+          default = "Adwaita";
+
+          description = ''
+            Name of the theme to use for the lightdm-gtk-greeter.
+          '';
+
+          type = types.str;
+        };
+
       };
 
     };
@@ -149,10 +166,7 @@ in
 
   config = mkIf (ldmcfg.enable && cfg.enable) {
 
-    services.xserver.displayManager.lightdm.greeter = mkDefault {
-      package = pkgs.lightdm-gtk-greeter.xgreeters;
-      name = "lightdm-gtk-greeter";
-    };
+    environment.etc."lightdm/lightdm-gtk-greeter.conf".source = gtkGreeterConf;
 
     environment.systemPackages = [
       cursors
@@ -160,7 +174,10 @@ in
       theme
     ];
 
-    environment.etc."lightdm/lightdm-gtk-greeter.conf".source = gtkGreeterConf;
+    services.xserver.displayManager.lightdm.greeter = mkDefault {
+      package = pkgs.lightdm-gtk-greeter.xgreeters;
+      name = "lightdm-gtk-greeter";
+    };
 
   };
 }

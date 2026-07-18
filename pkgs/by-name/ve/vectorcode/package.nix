@@ -1,15 +1,14 @@
 {
   lib,
-  cargo,
   fetchFromGitHub,
+  cargo,
   installShellFiles,
   pkg-config,
   protobuf,
   python3,
-  rustc,
   rustPlatform,
+  rustc,
   versionCheckHook,
-
   lspSupport ? true,
 }:
 
@@ -19,22 +18,16 @@ let
       # https://github.com/Davidyz/VectorCode/pull/36
       chromadb = super.chromadb.overridePythonAttrs (old: rec {
         version = "0.6.3";
+
         src = fetchFromGitHub {
           owner = "chroma-core";
           repo = "chroma";
           tag = version;
           hash = "sha256-yvAX8buETsdPvMQmRK5+WFz4fVaGIdNlfhSadtHwU5U=";
         };
-        cargoDeps = rustPlatform.fetchCargoVendor {
-          pname = "chromadb";
-          inherit version src;
-          hash = "sha256-lHRBXJa/OFNf4x7afEJw9XcuDveTBIy3XpQ3+19JXn4=";
-        };
+
         postPatch = null;
-        build-system = with self; [
-          setuptools
-          setuptools-scm
-        ];
+
         nativeBuildInputs = [
           cargo
           pkg-config
@@ -42,21 +35,20 @@ let
           rustc
           rustPlatform.cargoSetupHook
         ];
-        dependencies = old.dependencies ++ [
-          self.chroma-hnswlib
+
+        build-system = with self; [
+          setuptools
+          setuptools-scm
         ];
 
-        # The base package disables additional tests, so explicitly override
-        disabledTests = [
-          # Tests are flaky / timing sensitive
-          "test_fastapi_server_token_authn_allows_when_it_should_allow"
-          "test_fastapi_server_token_authn_rejects_when_it_should_reject"
+        cargoDeps = rustPlatform.fetchCargoVendor {
+          inherit version src;
+          pname = "chromadb";
+          hash = "sha256-lHRBXJa/OFNf4x7afEJw9XcuDveTBIy3XpQ3+19JXn4=";
+        };
 
-          # Issue with event loop
-          "test_http_client_bw_compatibility"
-
-          # httpx ReadError
-          "test_not_existing_collection_delete"
+        dependencies = old.dependencies ++ [
+          self.chroma-hnswlib
         ];
 
         disabledTestPaths = [
@@ -90,7 +82,21 @@ let
           # sqlite3.OperationalError: no such table: migrations
           "chromadb/test/db/test_migrations.py::test_migrations[sqlite]"
         ];
+
+        # The base package disables additional tests, so explicitly override
+        disabledTests = [
+          # Tests are flaky / timing sensitive
+          "test_fastapi_server_token_authn_allows_when_it_should_allow"
+          "test_fastapi_server_token_authn_rejects_when_it_should_reject"
+
+          # Issue with event loop
+          "test_http_client_bw_compatibility"
+
+          # httpx ReadError
+          "test_not_existing_collection_delete"
+        ];
       });
+
       lsprotocol = self.lsprotocol_2023;
       pygls = self.pygls_1;
     };
@@ -99,7 +105,6 @@ in
 python.pkgs.buildPythonApplication rec {
   pname = "vectorcode";
   version = "0.7.20";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "Davidyz";
@@ -108,14 +113,30 @@ python.pkgs.buildPythonApplication rec {
     hash = "sha256-RU9WnKuPaxDnPW5MQyrxPEw7ufMcVNxSRyJ5QvrzoVs=";
   };
 
+  nativeBuildInputs = [
+    installShellFiles
+  ];
+
+  nativeCheckInputs = [
+    versionCheckHook
+  ]
+  ++ (with python.pkgs; [
+    mcp
+    pygls
+    pytest-asyncio
+    pytestCheckHook
+  ]);
+
+  postInstall = ''
+    $out/bin/vectorcode --print-completion=bash >vectorcode.bash
+    $out/bin/vectorcode --print-completion=zsh >vectorcode.zsh
+    installShellCompletion vectorcode.{bash,zsh}
+  '';
+
   build-system = with python.pkgs; [
     pdm-backend
   ];
 
-  pythonRelaxDeps = [
-    "posthog"
-    "wheel"
-  ];
   dependencies =
     with python.pkgs;
     [
@@ -136,56 +157,6 @@ python.pkgs.buildPythonApplication rec {
       tree-sitter-language-pack
     ]
     ++ lib.optionals lspSupport optional-dependencies.lsp;
-
-  optional-dependencies = with python.pkgs; {
-    intel = [
-      openvino
-      optimum
-    ];
-    legacy = [
-      numpy
-      torch
-      transformers
-    ];
-    lsp = [
-      lsprotocol
-      pygls
-    ];
-    mcp = [
-      mcp
-      pydantic
-    ];
-  };
-
-  nativeBuildInputs = [
-    installShellFiles
-  ];
-
-  postInstall = ''
-    $out/bin/vectorcode --print-completion=bash >vectorcode.bash
-    $out/bin/vectorcode --print-completion=zsh >vectorcode.zsh
-    installShellCompletion vectorcode.{bash,zsh}
-  '';
-
-  makeWrapperArgs = [
-    "--prefix"
-    "PYTHONPATH"
-    ":"
-    "$PYTHONPATH"
-  ];
-
-  pythonImportsCheck = [ "vectorcode" ];
-
-  nativeCheckInputs = [
-    versionCheckHook
-  ]
-  ++ (with python.pkgs; [
-    mcp
-    pygls
-    pytest-asyncio
-    pytestCheckHook
-  ]);
-  versionCheckProgramArg = "version";
 
   disabledTests = [
     # Require internet access
@@ -211,6 +182,46 @@ python.pkgs.buildPythonApplication rec {
     "test_treesitter_chunker_parser_from_config_no_parser_found_error"
   ];
 
+  makeWrapperArgs = [
+    "--prefix"
+    "PYTHONPATH"
+    ":"
+    "$PYTHONPATH"
+  ];
+
+  optional-dependencies = with python.pkgs; {
+    intel = [
+      openvino
+      optimum
+    ];
+
+    legacy = [
+      numpy
+      torch
+      transformers
+    ];
+
+    lsp = [
+      lsprotocol
+      pygls
+    ];
+
+    mcp = [
+      mcp
+      pydantic
+    ];
+  };
+
+  pyproject = true;
+  pythonImportsCheck = [ "vectorcode" ];
+
+  pythonRelaxDeps = [
+    "posthog"
+    "wheel"
+  ];
+
+  versionCheckProgramArg = "version";
+
   passthru = {
     # Expose these overridden inputs for debugging
     inherit python;
@@ -223,7 +234,7 @@ python.pkgs.buildPythonApplication rec {
     changelog = "https://github.com/Davidyz/VectorCode/releases/tag/${src.tag}";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ GaetanLepage ];
-    mainProgram = "vectorcode";
+
     badPlatforms = [
       # Error in cpuinfo: failed to parse the list of possible processors in /sys/devices/system/cpu/possible
       # Error in cpuinfo: failed to parse the list of present processors in /sys/devices/system/cpu/present
@@ -235,5 +246,7 @@ python.pkgs.buildPythonApplication rec {
       # The error above happens at the end of `pypaInstallPhase`.
       "aarch64-linux"
     ];
+
+    mainProgram = "vectorcode";
   };
 }

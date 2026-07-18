@@ -1,15 +1,15 @@
 {
   lib,
   stdenv,
-  fetchgit,
   cmake,
-  withGurobi ? false,
-  gurobi,
-  withCplex ? false,
   cplex,
-  withLpsolve ? true,
+  fetchgit,
+  gurobi,
   lp_solve,
   unstableGitUpdater,
+  withCplex ? false,
+  withGurobi ? false,
+  withLpsolve ? true,
 }:
 
 stdenv.mkDerivation rec {
@@ -65,15 +65,14 @@ stdenv.mkDerivation rec {
   ];
 
   doCheck = true;
-
   passthru.updateScript = unstableGitUpdater { };
 
   meta = {
     description = "Scalable Linear Programming Library";
-    mainProgram = "scalp";
     homepage = "https://digidev.digi.e-technik.uni-kassel.de/scalp/";
     license = lib.licenses.lgpl3Only;
-    platforms = lib.platforms.unix;
     maintainers = with lib.maintainers; [ wegank ];
+    platforms = lib.platforms.unix;
+    mainProgram = "scalp";
   };
 }

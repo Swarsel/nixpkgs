@@ -20,15 +20,15 @@ in
     services.svnserve = {
 
       enable = lib.mkOption {
-        type = lib.types.bool;
         default = false;
         description = "Whether to enable svnserve to serve Subversion repositories through the SVN protocol.";
+        type = lib.types.bool;
       };
 
       svnBaseDir = lib.mkOption {
-        type = lib.types.str;
         default = "/repos";
         description = "Base directory from which Subversion repositories are accessed.";
+        type = lib.types.str;
       };
     };
 
@@ -39,9 +39,9 @@ in
   config = lib.mkIf cfg.enable {
     systemd.services.svnserve = {
       after = [ "network.target" ];
-      wantedBy = [ "multi-user.target" ];
       preStart = "mkdir -p ${cfg.svnBaseDir}";
       script = "${pkgs.subversion.out}/bin/svnserve -r ${cfg.svnBaseDir} -d --foreground --pid-file=/run/svnserve.pid";
+      wantedBy = [ "multi-user.target" ];
     };
   };
 }

@@ -7,7 +7,6 @@
 python3Packages.buildPythonApplication (finalAttrs: {
   pname = "undervolt";
   version = "0.4.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "georgewhewell";
@@ -17,13 +16,11 @@ python3Packages.buildPythonApplication (finalAttrs: {
   };
 
   build-system = with python3Packages; [ setuptools ];
-
+  pyproject = true;
   pythonImportsCheck = [ "undervolt" ];
 
   meta = {
-    homepage = "https://github.com/georgewhewell/undervolt/";
     description = "Program for undervolting Intel CPUs on Linux";
-    mainProgram = "undervolt";
 
     longDescription = ''
       Undervolt is a program for undervolting Intel CPUs under Linux. It works in a similar
@@ -31,7 +28,10 @@ python3Packages.buildPythonApplication (finalAttrs: {
       voltage offset to one of 5 voltage planes, and override your systems temperature
       target (CPU will throttle when this temperature is reached).
     '';
+
+    homepage = "https://github.com/georgewhewell/undervolt/";
     license = lib.licenses.gpl2Only;
     platforms = [ "x86_64-linux" ];
+    mainProgram = "undervolt";
   };
 })

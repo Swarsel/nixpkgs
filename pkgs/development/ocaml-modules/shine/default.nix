@@ -1,7 +1,7 @@
 {
   lib,
-  buildDunePackage,
   fetchFromGitHub,
+  buildDunePackage,
   dune-configurator,
   shine,
 }:
@@ -21,8 +21,8 @@ buildDunePackage rec {
   propagatedBuildInputs = [ shine ];
 
   meta = {
-    homepage = "https://github.com/savonet/ocaml-shine";
     description = "Bindings to the fixed-point mp3 encoding library shine";
+    homepage = "https://github.com/savonet/ocaml-shine";
     license = lib.licenses.gpl2Only;
     maintainers = with lib.maintainers; [ dandellion ];
   };

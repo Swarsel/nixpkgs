@@ -1,18 +1,17 @@
 {
-  python3Packages,
+  lib,
   fetchFromGitHub,
   copyDesktopItems,
-  makeDesktopItem,
   gobject-introspection,
+  makeDesktopItem,
+  python3Packages,
   v4l-utils,
   wrapGAppsHook3,
-  lib,
 }:
 
 python3Packages.buildPythonApplication {
   pname = "camset";
   version = "0-unstable-2023-05-20";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "azeam";
@@ -21,20 +20,11 @@ python3Packages.buildPythonApplication {
     hash = "sha256-vTF3MJQi9fZZDlbEj5800H22GGWOte3+KZCpSnsSTaQ=";
   };
 
-  build-system = with python3Packages; [ setuptools ];
-
   nativeBuildInputs = [
     gobject-introspection
     wrapGAppsHook3
     copyDesktopItems
   ];
-
-  dependencies = with python3Packages; [
-    pygobject3
-    opencv-python
-  ];
-
-  dontWrapGApps = true;
 
   preFixup = ''
     makeWrapperArgs+=(
@@ -43,20 +33,31 @@ python3Packages.buildPythonApplication {
     )
   '';
 
+  build-system = with python3Packages; [ setuptools ];
+
+  dependencies = with python3Packages; [
+    pygobject3
+    opencv-python
+  ];
+
   desktopItems = [
     (makeDesktopItem {
-      name = "camset";
-      exec = "camset";
-      icon = "camera";
-      comment = "Adjust webcam settings";
-      desktopName = "Camset";
       categories = [
         "Utility"
         "Video"
       ];
+
+      comment = "Adjust webcam settings";
+      desktopName = "Camset";
+      exec = "camset";
+      icon = "camera";
+      name = "camset";
       type = "Application";
     })
   ];
+
+  dontWrapGApps = true;
+  pyproject = true;
 
   meta = {
     description = "GUI for Video4Linux adjustments of webcams";

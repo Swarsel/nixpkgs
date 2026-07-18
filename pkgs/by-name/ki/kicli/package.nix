@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   nix-update-script,
 }:
 buildGoModule (finalAttrs: {
@@ -16,12 +16,11 @@ buildGoModule (finalAttrs: {
   };
 
   vendorHash = "sha256-+8L/9NJ3dzP4k+LXkPD208uFGeARv7aT39bhH+R08e0=";
-
   passthru.updateScript = nix-update-script { };
 
   meta = {
-    homepage = "https://github.com/anned20/kicli";
     description = "CLI interface to the Kimai time tracking project";
+    homepage = "https://github.com/anned20/kicli";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ poelzi ];
     platforms = lib.platforms.all;

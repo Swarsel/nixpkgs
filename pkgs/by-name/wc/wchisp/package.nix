@@ -1,11 +1,11 @@
 {
-  stdenv,
   lib,
-  rustPlatform,
+  stdenv,
   fetchCrate,
-  pkg-config,
   libusb1,
   nix-update-script,
+  pkg-config,
+  rustPlatform,
   versionCheckHook,
 }:
 
@@ -18,14 +18,13 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-6WNXsRvbldEjAykMn1DCiuKctBrsTHGv1fJuRXBblu0=";
   };
 
-  cargoHash = "sha256-VC8wiMdg7BnE92m57pKSrtv7vmbRNwV1yyy3f+1e+cY=";
-
   nativeBuildInputs = [ pkg-config ];
 
   buildInputs = [
     libusb1
   ];
 
+  cargoHash = "sha256-VC8wiMdg7BnE92m57pKSrtv7vmbRNwV1yyy3f+1e+cY=";
   doInstallCheck = true;
   nativeInstallCheckInputs = [ versionCheckHook ];
 
@@ -38,9 +37,9 @@ rustPlatform.buildRustPackage (finalAttrs: {
     homepage = "https://ch32-rs.github.io/wchisp/";
     changelog = "https://github.com/ch32-rs/wchisp/releases/tag/v${finalAttrs.version}";
     license = with lib.licenses; [ gpl2Only ];
-    platforms = with lib.platforms; linux ++ darwin ++ windows;
-    broken = !stdenv.hostPlatform.isLinux;
     maintainers = with lib.maintainers; [ jwillikers ];
+    platforms = with lib.platforms; linux ++ darwin ++ windows;
     mainProgram = "wchisp";
+    broken = !stdenv.hostPlatform.isLinux;
   };
 })

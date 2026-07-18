@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   click,
   httpretty,
   pytestCheckHook,
@@ -14,7 +14,6 @@
 buildPythonPackage rec {
   pname = "presto-python-client";
   version = "0.8.4";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "prestodb";
@@ -22,6 +21,11 @@ buildPythonPackage rec {
     tag = version;
     hash = "sha256-ZpVcmX6jRu4PJ1RxtIR8i0EpfhhhP8HZVVkB7CWLrsM=";
   };
+
+  nativeCheckInputs = [
+    pytestCheckHook
+    httpretty
+  ];
 
   build-system = [ setuptools ];
 
@@ -32,14 +36,9 @@ buildPythonPackage rec {
     six
   ];
 
-  nativeCheckInputs = [
-    pytestCheckHook
-    httpretty
-  ];
-
   # Integration tests require network access
   disabledTestPaths = [ "integration_tests" ];
-
+  pyproject = true;
   pythonImportsCheck = [ "prestodb" ];
 
   meta = {

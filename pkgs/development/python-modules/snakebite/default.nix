@@ -2,23 +2,18 @@
   lib,
   buildPythonPackage,
   fetchPypi,
-  setuptools,
   protobuf,
+  setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "snakebite";
   version = "2.11.0";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
     hash = "sha256-CFI4tJRMucZY7mLVeU3pNqw9DDN8UEssyGQkogWul4o=";
   };
-
-  build-system = [ setuptools ];
-
-  dependencies = [ protobuf ];
 
   postPatch = ''
     substituteInPlace setup.py \
@@ -27,14 +22,16 @@ buildPythonPackage rec {
 
   # Tests require hadoop hdfs
   doCheck = false;
-
+  build-system = [ setuptools ];
+  dependencies = [ protobuf ];
+  pyproject = true;
   pythonImportsCheck = [ "snakebite" ];
 
   meta = {
     description = "Pure Python HDFS client";
-    mainProgram = "snakebite";
     homepage = "https://github.com/spotify/snakebite";
     license = lib.licenses.asl20;
     maintainers = [ ];
+    mainProgram = "snakebite";
   };
 }

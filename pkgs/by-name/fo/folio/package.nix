@@ -2,16 +2,16 @@
   lib,
   stdenv,
   fetchFromGitHub,
+  blueprint-compiler,
+  desktop-file-utils,
+  gtksourceview5,
+  libadwaita,
+  libgee,
   meson,
   ninja,
   pkg-config,
   vala,
-  blueprint-compiler,
   wrapGAppsHook4,
-  desktop-file-utils,
-  libadwaita,
-  libgee,
-  gtksourceview5,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -45,8 +45,8 @@ stdenv.mkDerivation (finalAttrs: {
     description = "Beautiful markdown note-taking app for GNOME (forked from Paper)";
     homepage = "https://github.com/toolstack/Folio";
     license = lib.licenses.gpl3Only;
-    mainProgram = "com.toolstack.Folio";
     maintainers = with lib.maintainers; [ aleksana ];
     platforms = lib.platforms.unix;
+    mainProgram = "com.toolstack.Folio";
   };
 })

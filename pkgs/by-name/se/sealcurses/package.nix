@@ -1,10 +1,10 @@
 {
   lib,
   stdenv,
-  fetchFromGitea,
   cmake,
-  pkg-config,
+  fetchFromGitea,
   ncurses,
+  pkg-config,
   the-foundation,
 }:
 
@@ -13,11 +13,11 @@ stdenv.mkDerivation {
   version = "0-unstable-2026-03-22"; # No release yet
 
   src = fetchFromGitea {
-    domain = "git.skyjake.fi";
     owner = "skyjake";
     repo = "sealcurses";
     rev = "35c2e0332301f7aa14d3a849b30a844d65fa81bd";
     hash = "sha256-ILskZo5BNw4JK6n0ig2ULkUI7k9mdPjuk4VVEB7jx8c=";
+    domain = "git.skyjake.fi";
   };
 
   nativeBuildInputs = [

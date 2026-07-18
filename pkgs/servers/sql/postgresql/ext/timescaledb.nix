@@ -1,13 +1,12 @@
 {
-  cmake,
-  fetchFromGitHub,
   lib,
+  fetchFromGitHub,
+  cmake,
   libkrb5,
   openssl,
   postgresql,
   postgresqlBuildExtension,
   postgresqlTestExtension,
-
   enableUnfree ? true,
 }:
 
@@ -21,19 +20,6 @@ postgresqlBuildExtension (finalAttrs: {
     tag = finalAttrs.version;
     hash = "sha256-oEH6h3OGwdDYIKAtwWpVgIQJdB+IJhN2U/WJu9aHlbQ=";
   };
-
-  nativeBuildInputs = [ cmake ];
-  buildInputs = [
-    openssl
-    libkrb5
-  ];
-
-  cmakeFlags = [
-    (lib.cmakeBool "SEND_TELEMETRY_DEFAULT" false)
-    (lib.cmakeBool "REGRESS_CHECKS" false)
-    (lib.cmakeBool "TAP_CHECKS" false)
-    (lib.cmakeBool "APACHE_ONLY" (!enableUnfree))
-  ];
 
   # Fix the install phase which tries to install into the pgsql extension dir,
   # and cannot be manually overridden. This is rather fragile but works OK.
@@ -49,12 +35,35 @@ postgresqlBuildExtension (finalAttrs: {
     done
   '';
 
+  nativeBuildInputs = [ cmake ];
+
+  buildInputs = [
+    openssl
+    libkrb5
+  ];
+
+  cmakeFlags = [
+    (lib.cmakeBool "SEND_TELEMETRY_DEFAULT" false)
+    (lib.cmakeBool "REGRESS_CHECKS" false)
+    (lib.cmakeBool "TAP_CHECKS" false)
+    (lib.cmakeBool "APACHE_ONLY" (!enableUnfree))
+  ];
+
   passthru.tests.extension = postgresqlTestExtension {
     inherit (finalAttrs) finalPackage;
-    withPackages = [ "timescaledb_toolkit" ];
+
+    asserts = [
+      {
+        description = "hypertable can be queried successfully.";
+        expected = "5";
+        query = "SELECT count(*) FROM sth";
+      }
+    ];
+
     postgresqlExtraSettings = ''
       shared_preload_libraries='timescaledb'
     '';
+
     sql = ''
       CREATE EXTENSION timescaledb;
       CREATE EXTENSION timescaledb_toolkit;
@@ -85,22 +94,18 @@ postgresqlBuildExtension (finalAttrs: {
         average(stats)
       FROM t;
     '';
-    asserts = [
-      {
-        query = "SELECT count(*) FROM sth";
-        expected = "5";
-        description = "hypertable can be queried successfully.";
-      }
-    ];
+
+    withPackages = [ "timescaledb_toolkit" ];
   };
 
   meta = {
     description = "Scales PostgreSQL for time-series data via automatic partitioning across time and space";
     homepage = "https://www.timescale.com/";
     changelog = "https://github.com/timescale/timescaledb/blob/${finalAttrs.version}/CHANGELOG.md";
+    license = with lib.licenses; if enableUnfree then tsl else asl20;
     maintainers = with lib.maintainers; [ kirillrdy ];
     platforms = postgresql.meta.platforms;
-    license = with lib.licenses; if enableUnfree then tsl else asl20;
+
     broken =
       lib.versionOlder postgresql.version "15"
       ||

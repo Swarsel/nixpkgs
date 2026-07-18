@@ -1,23 +1,22 @@
 {
   lib,
-  python3Packages,
   fetchPypi,
+  python3Packages,
 }:
 
 python3Packages.buildPythonApplication (finalAttrs: {
   pname = "pwncat";
   version = "0.1.2";
-  pyproject = true;
 
   src = fetchPypi {
     inherit (finalAttrs) pname version;
     hash = "sha256-x/h53zpYuuFTtzCEioiw4yTIt/jG2qFG5nz0WmxzYIg=";
   };
 
-  build-system = with python3Packages; [ setuptools ];
-
   # Tests requires to start containers
   doCheck = false;
+  build-system = with python3Packages; [ setuptools ];
+  pyproject = true;
 
   meta = {
     description = "TCP/UDP communication suite";

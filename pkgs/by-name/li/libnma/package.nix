@@ -1,35 +1,40 @@
 {
+  lib,
   stdenv,
   fetchurl,
-  meson,
-  mesonEmulatorHook,
-  ninja,
+  _experimental-update-script-combinators,
+  docbook_xml_dtd_43,
+  docbook_xsl,
+  gcr_4,
   gettext,
-  gtk-doc,
-  pkg-config,
-  vala,
-  networkmanager,
+  glib,
   gnome,
+  gobject-introspection,
+  gtk-doc,
+  gtk3,
+  gtk4,
   isocodes,
   libxml2,
-  docbook_xsl,
-  docbook_xml_dtd_43,
-  mobile-broadband-provider-info,
-  gobject-introspection,
-  gtk3,
-  withGtk4 ? false,
-  gtk4,
-  withGnome ? true,
-  gcr_4,
-  glib,
-  lib,
-  _experimental-update-script-combinators,
   makeHardcodeGsettingsPatch,
+  meson,
+  mesonEmulatorHook,
+  mobile-broadband-provider-info,
+  networkmanager,
+  ninja,
+  pkg-config,
+  vala,
+  withGnome ? true,
+  withGtk4 ? false,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
   pname = "libnma";
   version = "1.10.6";
+
+  src = fetchurl {
+    url = "mirror://gnome/sources/libnma/${lib.versions.majorMinor finalAttrs.version}/libnma-${finalAttrs.version}.tar.xz";
+    sha256 = "U6b7KxkK03xZhsrtPpi+3nw8YCOZ7k+TyPwFQwPXbas=";
+  };
 
   outputs = [
     "out"
@@ -37,15 +42,15 @@ stdenv.mkDerivation (finalAttrs: {
     "devdoc"
   ];
 
-  src = fetchurl {
-    url = "mirror://gnome/sources/libnma/${lib.versions.majorMinor finalAttrs.version}/libnma-${finalAttrs.version}.tar.xz";
-    sha256 = "U6b7KxkK03xZhsrtPpi+3nw8YCOZ7k+TyPwFQwPXbas=";
-  };
-
   patches = [
     # Needed for wingpanel-indicator-network and switchboard-plug-network
     ./hardcode-gsettings.patch
   ];
+
+  postPatch = ''
+    substituteInPlace src/nma-ws/nma-eap.c --subst-var-by \
+      NM_APPLET_GSETTINGS ${glib.makeSchemaPath "$out" "$name"}
+  '';
 
   nativeBuildInputs = [
     meson
@@ -82,22 +87,19 @@ stdenv.mkDerivation (finalAttrs: {
     "-Dlibnma_gtk4=${lib.boolToString withGtk4}"
   ];
 
-  postPatch = ''
-    substituteInPlace src/nma-ws/nma-eap.c --subst-var-by \
-      NM_APPLET_GSETTINGS ${glib.makeSchemaPath "$out" "$name"}
-  '';
-
   postInstall = ''
     glib-compile-schemas $out/share/glib-2.0/schemas
   '';
 
   passthru = {
     hardcodeGsettingsPatch = makeHardcodeGsettingsPatch {
+      inherit (finalAttrs) src;
+
       schemaIdToVariableMapping = {
         "org.gnome.nm-applet.eap" = "NM_APPLET_GSETTINGS";
       };
-      inherit (finalAttrs) src;
     };
+
     updateScript =
       let
         updateSource = gnome.updateScript {
@@ -113,10 +115,10 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   meta = {
-    homepage = "https://gitlab.gnome.org/GNOME/libnma";
     description = "NetworkManager UI utilities (libnm version)";
+    homepage = "https://gitlab.gnome.org/GNOME/libnma";
     license = lib.licenses.gpl2Plus; # Mix of GPL and LPGL 2+
-    teams = [ lib.teams.gnome ];
     platforms = lib.platforms.linux;
+    teams = [ lib.teams.gnome ];
   };
 })

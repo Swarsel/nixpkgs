@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule (finalAttrs: {
@@ -19,8 +19,8 @@ buildGoModule (finalAttrs: {
 
   meta = {
     description = "Prometheus Service Discovery for Tailscale";
-    changelog = "https://github.com/cfunkhouser/tailscalesd/releases/tag/v${finalAttrs.version}";
     homepage = "https://github.com/cfunkhouser/tailscalesd";
+    changelog = "https://github.com/cfunkhouser/tailscalesd/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ SuperSandro2000 ];
     mainProgram = "tailscalesd";

@@ -1,7 +1,7 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -15,22 +15,23 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-0KSQd/DvIo813HSLL+Qvn+5GMFRK7CGxOSq4+Fyl8Zk=";
   };
 
-  cargoHash = "sha256-ICvQ7XtA7705gJ0GijuZJROGAp/BMpyqsIygR+6kJ2I=";
-
   nativeBuildInputs = [
     rustPlatform.bindgenHook
   ];
 
+  cargoHash = "sha256-ICvQ7XtA7705gJ0GijuZJROGAp/BMpyqsIygR+6kJ2I=";
   env.RUSTFLAGS = "--cfg tracing_unstable";
 
   meta = {
     description = "User-friendly, lightweight TUI for disk imaging";
     homepage = "https://github.com/ifd3f/caligula/";
     license = lib.licenses.gpl3Only;
+
     maintainers = with lib.maintainers; [
       ifd3f
       sodiboo
     ];
+
     platforms = lib.platforms.linux ++ lib.platforms.darwin;
     mainProgram = "caligula";
   };

@@ -1,10 +1,10 @@
 {
   lib,
   stdenv,
-  symlinkJoin,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   kubo-migrator-unwrapped,
+  symlinkJoin,
   writeShellApplication,
   minRepoVersion ? 0, # The minimum supported Kubo repo version from which the migrations can start. Increasing this reduces the closure size
   stubBrokenMigrations ? true, # This prevents the fs-repo-migrations program from downloading binaries off the internet without even checking any signatures
@@ -16,17 +16,15 @@ let
     let
       pname = "fs-repo-${toString from}-to-${toString to}";
       src = fetchFromGitHub {
+        inherit hash;
         owner = "ipfs";
         repo = "fs-repo-migrations";
         rev = "${pname}/v${version}";
-        inherit hash;
         sparseCheckout = [ pname ];
       };
     in
     buildGoModule {
       inherit pname version src;
-      sourceRoot = "${src.name}/${pname}";
-      vendorHash = null;
 
       # Fix build on Go 1.17 and later: panic: qtls.ClientHelloInfo doesn't match
       # See https://github.com/ipfs/fs-repo-migrations/pull/163
@@ -47,6 +45,8 @@ let
                 'config *Config
                 ctx context.Context'
           '';
+
+      vendorHash = null;
 
       checkPhase = ''
         runHook preCheck
@@ -74,11 +74,14 @@ let
 
       # Check that it does not crash
       doInstallCheck = true;
+
       installCheckPhase = ''
         runHook preInstallCheck
         "$out/bin/${pname}" -help
         runHook postInstallCheck
       '';
+
+      sourceRoot = "${src.name}/${pname}";
 
       meta = {
         inherit (kubo-migrator-unwrapped.meta)
@@ -87,8 +90,9 @@ let
           platforms
           maintainers
           ;
-        mainProgram = pname;
+
         description = "Migrate the filesystem repository of Kubo from repo version ${toString from} to ${toString to}";
+        mainProgram = pname;
 
         broken =
           to == 7 && stdenv.hostPlatform.isDarwin # fs-repo-6-to-7 is broken on macOS: gx/ipfs/QmSGRM5Udmy1jsFBr1Cawez7Lt7LZ3ZKA23GGVEsiEW6F3/eventfd/eventfd.go:27:32: undefined: syscall.SYS_EVENTFD2
@@ -106,6 +110,7 @@ let
     in
     writeShellApplication {
       name = pname;
+
       text = ''
         echo 'The kubo-fs-repo-migrations package was not buit with support for ${pname}.'
         echo 'To enable support, set the minRepoVersion argument of this package to a lower value.'
@@ -117,6 +122,7 @@ let
     pname:
     writeShellApplication {
       name = pname;
+
       text = ''
         echo '${pname} is broken with the latest Go version.'
         echo 'The purpose of this stub is to prevent the fs-repo-migrations program from downloading unsigned binaries from the internet.'
@@ -126,99 +132,99 @@ let
   releases = [
     {
       from = 0;
-      to = 1;
-      release = "1.0.1";
       hash = "sha256-2mKtr6ZXZdOOY+9GNaC85HKjOMsfeM91oxVuxHIWDO4=";
+      release = "1.0.1";
+      to = 1;
     }
     {
       from = 1;
-      to = 2;
-      release = "1.0.1";
       hash = "sha256-6/BewNcZc/fIBa8G1luNO2wqTdeHi8vL7ojJDjBfWYI=";
+      release = "1.0.1";
+      to = 2;
     }
     {
       from = 2;
-      to = 3;
-      release = "1.0.1";
       hash = "sha256-kESX/R25nb7G/uggwa7GB7I2IrdgeKe0chRzjr70Kuw=";
+      release = "1.0.1";
+      to = 3;
     }
     {
       from = 3;
-      to = 4;
-      release = "1.0.1";
       hash = "sha256-Mv3/7eUS8j7ZzbNR52baekDcXPwcaNpUfqkt0eRpP20=";
+      release = "1.0.1";
+      to = 4;
     }
     {
       from = 4;
-      to = 5;
-      release = "1.0.1";
       hash = "sha256-aEqXFhZGOBU5ql2RRqzwD5IXGySVGroaHxjrkpIGAeU=";
+      release = "1.0.1";
+      to = 5;
     }
     {
       from = 5;
-      to = 6;
-      release = "1.0.1";
       hash = "sha256-EhMe/3gIl3VjSh6KzBPGH4s6B3AWRnbJ+eHSc8GOHMw=";
+      release = "1.0.1";
+      to = 6;
     }
     {
       from = 6;
-      to = 7;
-      release = "1.0.1";
       hash = "sha256-+5kIPQZckloPujLS0QQT+ojIIndfCQaH6grftZdYQ88=";
+      release = "1.0.1";
+      to = 7;
     }
     {
       from = 7;
-      to = 8;
-      release = "1.0.1";
       hash = "sha256-82oSU7qhldPVTdbbol3xSnl8Ko7NUPvGpAnmFxvAceQ=";
+      release = "1.0.1";
+      to = 8;
     }
     {
       from = 8;
-      to = 9;
-      release = "1.0.1";
       hash = "sha256-9knC2CfiTUNJRlrOLRpKy70Hl9p9DQf6rfXnU2a0fig=";
+      release = "1.0.1";
+      to = 9;
     }
     {
       from = 9;
-      to = 10;
-      release = "1.0.1";
       hash = "sha256-732k76Kijs5izu404ES/YSnYfC9V88d9Qq5oHv5Qon0=";
+      release = "1.0.1";
+      to = 10;
     }
     {
       from = 10;
-      to = 11;
-      release = "1.0.1";
       hash = "sha256-WieBZpD8dpFDif7QxTGjRoZtNBbkI3KU4w4av7b+d4Q=";
+      release = "1.0.1";
+      to = 11;
     }
     {
       from = 11;
-      to = 12;
-      release = "1.0.2";
       hash = "sha256-x/4ps705Hnf+/875/tn3AsEHgaHHCc+cGXymXpRt0xA=";
+      release = "1.0.2";
+      to = 12;
     }
     {
       from = 12;
-      to = 13;
-      release = "1.0.0";
       hash = "sha256-HjtZ2izoZ+0BrhzXG/QJHcnwsxi0oY4Q3CHjTi29W9o=";
+      release = "1.0.0";
+      to = 13;
     }
     {
       from = 13;
-      to = 14;
-      release = "1.0.0";
       hash = "sha256-zvNq+AFp7HDHHZCJOh9OW/lalk3bXOl1Pi+rvJtjuSA=";
+      release = "1.0.0";
+      to = 14;
     }
     {
       from = 14;
-      to = 15;
-      release = "1.0.1";
       hash = "sha256-u7PM6kFCQUn07NGpeRYpBDEwc2pP+r5mf44LZU4DV5Y=";
+      release = "1.0.1";
+      to = 15;
     }
     {
       from = 15;
-      to = 16;
-      release = "1.0.1";
       hash = "sha256-/TG5GNSyV8gsngRT/0jazkL2n2RzA9h1gCTLqGOrI0A=";
+      release = "1.0.1";
+      to = 16;
     }
   ];
 
@@ -251,11 +257,13 @@ let
 in
 
 symlinkJoin {
-  pname = "kubo-fs-repo-migrations";
   inherit version;
+  pname = "kubo-fs-repo-migrations";
   paths = if stubBrokenMigrations then migrationsBrokenStubbed else migrationsBrokenRemoved;
+
   meta = (removeAttrs kubo-migrator-unwrapped.meta [ "mainProgram" ]) // {
     description = "Several individual migrations for migrating the filesystem repository of Kubo one version at a time";
+
     longDescription = ''
       This package contains all the individual migrations in the bin directory.
       This is used by fs-repo-migrations and could also be used by Kubo itself

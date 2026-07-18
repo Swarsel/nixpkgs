@@ -1,18 +1,17 @@
 {
   lib,
   stdenv,
+  fetchFromGitHub,
   autoPatchelfHook,
   buildPythonPackage,
-  fetchFromGitHub,
-  setuptools,
   numpy,
   pytestCheckHook,
+  setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "pyopen-wakeword";
   version = "1.1.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "rhasspy";
@@ -30,6 +29,10 @@ buildPythonPackage rec {
     autoPatchelfHook
   ];
 
+  nativeCheckInputs = [
+    pytestCheckHook
+  ];
+
   build-system = [
     setuptools
   ];
@@ -38,27 +41,26 @@ buildPythonPackage rec {
     numpy
   ];
 
-  nativeCheckInputs = [
-    pytestCheckHook
-  ];
+  pyproject = true;
 
   pythonImportsCheck = [
     "pyopen_wakeword"
   ];
 
   meta = {
+    description = "Alternative Python library for openWakeWord";
+    homepage = "https://github.com/rhasspy/pyopen-wakeword";
+    changelog = "https://github.com/rhasspy/pyopen-wakeword/blob/${src.tag}/CHANGELOG.md";
+    license = lib.licenses.asl20;
+    # vendors prebuilt libtensorflowlite_c.{so,dll,dylib}
+    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
+    maintainers = with lib.maintainers; [ hexa ];
+
     broken =
       # elftools.common.exceptions.ELFError: Magic number does not match
       stdenv.hostPlatform.isDarwin
       ||
         # segfaults when calling into libtensorflowlite
         stdenv.hostPlatform.isLinux && stdenv.hostPlatform.isAarch64;
-    description = "Alternative Python library for openWakeWord";
-    homepage = "https://github.com/rhasspy/pyopen-wakeword";
-    changelog = "https://github.com/rhasspy/pyopen-wakeword/blob/${src.tag}/CHANGELOG.md";
-    license = lib.licenses.asl20;
-    maintainers = with lib.maintainers; [ hexa ];
-    # vendors prebuilt libtensorflowlite_c.{so,dll,dylib}
-    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
   };
 }

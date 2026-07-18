@@ -41,6 +41,8 @@ in
     package = lib.mkPackageOption pkgs "alps" { };
 
     settings = lib.mkOption {
+      default = { };
+
       description = ''
         The ALPS configuration, see <https://github.com/migadu/alps/blob/main/docs/CONFIGURATION.md> for documentation.
 
@@ -48,10 +50,10 @@ in
         containing the attribute `_secret` - a string pointing to a file
         containing the value the option should be set to.
       '';
-      default = { };
+
       type = lib.types.submodule {
-        freeformType = lib.types.toml;
         options = { };
+        freeformType = lib.types.toml;
       };
     };
   };
@@ -60,11 +62,14 @@ in
     systemd.packages = [ cfg.package ];
 
     systemd.services.alps = {
-      wantedBy = [ "multi-user.target" ];
-
       serviceConfig = {
         DynamicUser = true;
-        RuntimeDirectory = "alps";
+
+        ExecStart = [
+          ""
+          "${lib.getExe cfg.package} -config \${RUNTIME_DIRECTORY}/config.toml"
+        ];
+
         ExecStartPre =
           let
             script = pkgs.writeShellScript "alps-pre-start" ''
@@ -74,10 +79,6 @@ in
             '';
           in
           "+${script}";
-        ExecStart = [
-          ""
-          "${lib.getExe cfg.package} -config \${RUNTIME_DIRECTORY}/config.toml"
-        ];
 
         LockPersonality = true;
         MemoryDenyWriteExecute = true;
@@ -92,19 +93,25 @@ in
         ProtectKernelModules = true;
         ProtectKernelTunables = true;
         ProtectProc = "invisible";
+
         RestrictAddressFamilies = [
           "AF_INET"
           "AF_INET6"
         ];
+
         RestrictNamespaces = true;
         RestrictRealtime = true;
+        RuntimeDirectory = "alps";
         SystemCallArchitectures = [ "native" ];
+
         SystemCallFilter = [
           "@system-service"
           "~@privileged"
           "~@resources"
         ];
       };
+
+      wantedBy = [ "multi-user.target" ];
     };
   };
 }

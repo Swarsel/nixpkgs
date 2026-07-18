@@ -1,18 +1,15 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  fetchpatch,
-
-  # build-system
-  hatchling,
-
   # dependencies
   bleak,
+  buildPythonPackage,
+  fetchpatch,
+  # build-system
+  hatchling,
   pycayennelpp,
-  pyserial-asyncio-fast,
   pycryptodome,
-
+  pyserial-asyncio-fast,
   # tests
   pytest-asyncio,
   pytestCheckHook,
@@ -21,7 +18,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "meshcore";
   version = "2.3.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "meshcore-dev";
@@ -32,10 +28,15 @@ buildPythonPackage (finalAttrs: {
 
   patches = [
     (fetchpatch {
+      hash = "sha256-Ufr+5rDDO32W6dtD7wEU34iLJai3H0dBCEtLS5j4u/0=";
       # https://github.com/meshcore-dev/meshcore_py/pull/71
       url = "https://github.com/meshcore-dev/meshcore_py/commit/9294e574739844e0e291b972b40e1a0a40149e47.patch";
-      hash = "sha256-Ufr+5rDDO32W6dtD7wEU34iLJai3H0dBCEtLS5j4u/0=";
     })
+  ];
+
+  nativeCheckInputs = [
+    pytest-asyncio
+    pytestCheckHook
   ];
 
   build-system = [ hatchling ];
@@ -47,11 +48,7 @@ buildPythonPackage (finalAttrs: {
     pycryptodome
   ];
 
-  nativeCheckInputs = [
-    pytest-asyncio
-    pytestCheckHook
-  ];
-
+  pyproject = true;
   pythonImportsCheck = [ "meshcore" ];
 
   meta = {

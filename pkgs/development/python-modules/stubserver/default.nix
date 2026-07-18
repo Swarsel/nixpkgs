@@ -7,7 +7,6 @@
 buildPythonPackage rec {
   pname = "stubserver";
   version = "1.1";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
@@ -16,7 +15,7 @@ buildPythonPackage rec {
 
   # Tests are not shipped and the source not tagged
   doCheck = false;
-
+  format = "setuptools";
   pythonImportsCheck = [ "stubserver" ];
 
   meta = {

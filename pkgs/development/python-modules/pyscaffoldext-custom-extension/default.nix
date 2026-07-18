@@ -1,26 +1,25 @@
 {
   lib,
   buildPythonPackage,
-  fetchPypi,
-  setuptools,
-  setuptools-scm,
-  wheel,
   configupdater,
+  fetchPypi,
   importlib-metadata,
   packaging,
-  pyscaffold,
   pre-commit,
+  pyscaffold,
   pytest,
   pytest-cov,
   pytest-xdist,
+  setuptools,
+  setuptools-scm,
   tox,
   virtualenv,
+  wheel,
 }:
 
 buildPythonPackage rec {
   pname = "pyscaffoldext-custom-extension";
   version = "0.6.3";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
@@ -53,6 +52,7 @@ buildPythonPackage rec {
     ];
   };
 
+  pyproject = true;
   pythonImportsCheck = [ "pyscaffoldext.custom_extension" ];
 
   meta = {

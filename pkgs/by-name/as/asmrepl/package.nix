@@ -6,9 +6,8 @@
 
 bundlerApp {
   pname = "asmrepl";
-  gemdir = ./.;
   exes = [ "asmrepl" ];
-
+  gemdir = ./.;
   passthru.updateScript = bundlerUpdateScript "asmrepl";
 
   meta = {

@@ -1,34 +1,34 @@
 {
   lib,
   stdenv,
-  pkg-config,
-  cmake,
   fetchurl,
-  git,
-  cctools,
-  darwin,
-  makeWrapper,
+  antlr,
   bison,
-  openssl,
-  protobuf,
+  cctools,
+  cmake,
   curl,
-  zlib,
-  libssh,
-  zstd,
-  lz4,
-  readline,
-  libtirpc,
-  rpcsvc-proto,
+  cyrus_sasl,
+  darwin,
+  git,
+  icu,
   libedit,
   libevent,
-  icu,
-  re2,
-  ncurses,
   libfido2,
-  python3,
-  cyrus_sasl,
+  libssh,
+  libtirpc,
+  lz4,
+  makeWrapper,
+  ncurses,
   openldap,
-  antlr,
+  openssl,
+  pkg-config,
+  protobuf,
+  python3,
+  re2,
+  readline,
+  rpcsvc-proto,
+  zlib,
+  zstd,
 }:
 
 let
@@ -45,23 +45,6 @@ stdenv.mkDerivation (finalAttrs: {
   pname = "mysql-shell";
   version = mysqlShellVersion;
 
-  srcs = [
-    (fetchurl {
-      url = "https://dev.mysql.com/get/Downloads/MySQL-${lib.versions.majorMinor mysqlServerVersion}/mysql-${mysqlServerVersion}.tar.gz";
-      hash = "sha256-5KqLOeQtH+B48zu9c2lfrCtU28e7E38L2+Y/e+GgLWs=";
-    })
-    (fetchurl {
-      url = "https://dev.mysql.com/get/Downloads/MySQL-Shell/mysql-shell-${finalAttrs.version}-src.tar.gz";
-      hash = "sha256-btYUh/akFRCSOXDL1C5xuXLysHS1lm4H74kqY+4zyiQ=";
-    })
-  ];
-
-  sourceRoot = "mysql-shell-${finalAttrs.version}-src";
-
-  postUnpack = ''
-    mv mysql-${mysqlServerVersion} mysql
-  '';
-
   patches = [
     # No openssl bundling on macOS. It's not working.
     # See https://github.com/mysql/mysql-shell/blob/5b84e0be59fc0e027ef3f4920df15f7be97624c1/cmake/ssl.cmake#L53
@@ -74,14 +57,6 @@ stdenv.mkDerivation (finalAttrs: {
 
     substituteInPlace cmake/libutils.cmake --replace-fail /usr/bin/libtool libtool
   '';
-
-  env =
-    lib.optionalAttrs stdenv.cc.isClang {
-      NIX_CFLAGS_COMPILE = "-Wno-error=deprecated-literal-operator -Wno-error=nonnull";
-    }
-    // lib.optionalAttrs stdenv.cc.isGNU {
-      NIX_CFLAGS_COMPILE = "-Wno-error=array-bounds";
-    };
 
   nativeBuildInputs = [
     pkg-config
@@ -120,6 +95,14 @@ stdenv.mkDerivation (finalAttrs: {
   ++ lib.optionals stdenv.hostPlatform.isLinux [ libtirpc ]
   ++ lib.optionals stdenv.hostPlatform.isDarwin [ darwin.libutil ];
 
+  env =
+    lib.optionalAttrs stdenv.cc.isClang {
+      NIX_CFLAGS_COMPILE = "-Wno-error=deprecated-literal-operator -Wno-error=nonnull";
+    }
+    // lib.optionalAttrs stdenv.cc.isGNU {
+      NIX_CFLAGS_COMPILE = "-Wno-error=array-bounds";
+    };
+
   preConfigure = ''
     # Build MySQL
     echo "Building mysqlclient mysqlxclient"
@@ -145,9 +128,26 @@ stdenv.mkDerivation (finalAttrs: {
     wrapProgram $out/bin/mysqlsh --set PYTHONPATH "${lib.makeSearchPath python3.sitePackages pythonDeps}"
   '';
 
+  postUnpack = ''
+    mv mysql-${mysqlServerVersion} mysql
+  '';
+
+  sourceRoot = "mysql-shell-${finalAttrs.version}-src";
+
+  srcs = [
+    (fetchurl {
+      hash = "sha256-5KqLOeQtH+B48zu9c2lfrCtU28e7E38L2+Y/e+GgLWs=";
+      url = "https://dev.mysql.com/get/Downloads/MySQL-${lib.versions.majorMinor mysqlServerVersion}/mysql-${mysqlServerVersion}.tar.gz";
+    })
+    (fetchurl {
+      hash = "sha256-btYUh/akFRCSOXDL1C5xuXLysHS1lm4H74kqY+4zyiQ=";
+      url = "https://dev.mysql.com/get/Downloads/MySQL-Shell/mysql-shell-${finalAttrs.version}-src.tar.gz";
+    })
+  ];
+
   meta = {
-    homepage = "https://dev.mysql.com/doc/mysql-shell/${lib.versions.majorMinor finalAttrs.version}/en/";
     description = "New command line scriptable shell for MySQL";
+    homepage = "https://dev.mysql.com/doc/mysql-shell/${lib.versions.majorMinor finalAttrs.version}/en/";
     license = lib.licenses.gpl2;
     maintainers = with lib.maintainers; [ aaronjheng ];
     mainProgram = "mysqlsh";

@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   gitUpdater,
   testers,
   webmesh,
@@ -19,14 +19,7 @@ buildGoModule (finalAttrs: {
   };
 
   vendorHash = "sha256-xoc7NSdg5bn3aXgcrolJwv8jyrv2HEXFmiCtRXBVwVg=";
-
   env.CGO_ENABLED = 0;
-
-  subPackages = [
-    "cmd/webmesh-node"
-    "cmd/webmeshd"
-    "cmd/wmctl"
-  ];
 
   ldflags = [
     "-w"
@@ -35,20 +28,27 @@ buildGoModule (finalAttrs: {
     "-X github.com/webmeshproj/webmesh/pkg/version.GitCommit=v${finalAttrs.version}"
   ];
 
+  subPackages = [
+    "cmd/webmesh-node"
+    "cmd/webmeshd"
+    "cmd/wmctl"
+  ];
+
   passthru = {
-    updateScript = gitUpdater { rev-prefix = "v"; };
     tests = {
       webmesh-version = testers.testVersion {
         package = webmesh;
       };
     };
+
+    updateScript = gitUpdater { rev-prefix = "v"; };
   };
 
   meta = {
     description = "Simple, distributed, zero-configuration WireGuard mesh provider";
-    mainProgram = "webmesh-node";
     homepage = "https://webmeshproj.github.io";
     license = lib.licenses.asl20;
     maintainers = with lib.maintainers; [ bbigras ];
+    mainProgram = "webmesh-node";
   };
 })

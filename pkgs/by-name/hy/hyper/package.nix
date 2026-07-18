@@ -1,43 +1,43 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchurl,
-  dpkg,
-  atk,
-  glib,
-  pango,
-  gdk-pixbuf,
-  gtk3,
-  cairo,
-  freetype,
-  fontconfig,
-  dbus,
-  libxi,
-  libxcursor,
-  libxdamage,
-  libxrandr,
-  libxcomposite,
-  libxext,
-  libxfixes,
-  libxrender,
-  libx11,
-  libxtst,
-  libxscrnsaver,
-  libxcb,
-  nss,
-  nspr,
   alsa-lib,
-  cups,
-  expat,
-  udev,
-  libpulseaudio,
   at-spi2-atk,
   at-spi2-core,
-  libxshmfence,
+  atk,
+  cairo,
+  cups,
+  dbus,
+  dpkg,
+  expat,
+  fontconfig,
+  freetype,
+  gdk-pixbuf,
+  glib,
+  gtk3,
   libdrm,
-  libxkbcommon,
   libgbm,
+  libpulseaudio,
+  libx11,
+  libxcb,
+  libxcomposite,
+  libxcursor,
+  libxdamage,
+  libxext,
+  libxfixes,
+  libxi,
+  libxkbcommon,
+  libxrandr,
+  libxrender,
+  libxscrnsaver,
+  libxshmfence,
+  libxtst,
   nixosTests,
+  nspr,
+  nss,
+  pango,
+  udev,
 }:
 
 let
@@ -104,17 +104,19 @@ stdenv.mkDerivation rec {
       --replace "/opt/Hyper/hyper" "hyper"
   '';
 
+  dontPatchELF = true;
   passthru.tests.test = nixosTests.terminal-emulators.hyper;
 
-  dontPatchELF = true;
   meta = {
     description = "Terminal built on web technologies";
     homepage = "https://hyper.is/";
+    license = lib.licenses.mit;
+    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
+
     maintainers = with lib.maintainers; [
       puffnfresh
     ];
-    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
-    license = lib.licenses.mit;
+
     platforms = [ "x86_64-linux" ];
     mainProgram = "hyper";
     broken = true; # Error: 'node-pty' failed to load

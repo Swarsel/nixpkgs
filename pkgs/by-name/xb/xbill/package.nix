@@ -1,21 +1,34 @@
 {
-  stdenv,
   lib,
+  stdenv,
+  fetchurl,
   autoreconfHook,
-  makeDesktopItem,
   copyDesktopItems,
   fetchpatch,
-  fetchurl,
+  imagemagick,
   libx11,
   libxpm,
   libxt,
+  makeDesktopItem,
   motif,
-  imagemagick,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
   pname = "xbill";
   version = "2.1";
+
+  src = fetchurl {
+    url = "http://www.xbill.org/download/xbill-${finalAttrs.version}.tar.gz";
+    hash = "sha256-Dv3/8c4t9wt6FWActIjNey65GNIdeOh3vXc/ESlFYI0=";
+  };
+
+  # xbill requires strcasecmp and strncasecmp but is missing proper includes
+  patches = [
+    (fetchpatch {
+      hash = "sha256-Eg8qbSOdUoENcYruH6hSVIHcORkJeP8FXvp09cj/IXA=";
+      url = "https://raw.githubusercontent.com/gentoo/gentoo/7c2c329a5a80781a9aaca24221675a0db66fd244/games-arcade/xbill/files/xbill-2.1-clang16.patch";
+    })
+  ];
 
   nativeBuildInputs = [
     autoreconfHook # Fix configure script that fails basic compilation check
@@ -30,41 +43,13 @@ stdenv.mkDerivation (finalAttrs: {
     motif
   ];
 
-  env.NIX_CFLAGS_LINK = "-lXpm";
-
   configureFlags = [
     "--with-x"
     "--enable-motif"
   ];
 
-  src = fetchurl {
-    url = "http://www.xbill.org/download/xbill-${finalAttrs.version}.tar.gz";
-    hash = "sha256-Dv3/8c4t9wt6FWActIjNey65GNIdeOh3vXc/ESlFYI0=";
-  };
-
-  # xbill requires strcasecmp and strncasecmp but is missing proper includes
-  patches = [
-    (fetchpatch {
-      url = "https://raw.githubusercontent.com/gentoo/gentoo/7c2c329a5a80781a9aaca24221675a0db66fd244/games-arcade/xbill/files/xbill-2.1-clang16.patch";
-      hash = "sha256-Eg8qbSOdUoENcYruH6hSVIHcORkJeP8FXvp09cj/IXA=";
-    })
-  ];
-
-  desktopItems = [
-    (makeDesktopItem {
-      name = "xbill";
-      exec = "xbill";
-      icon = "xbill";
-      desktopName = "XBill";
-      comment = "Get rid of those Wingdows viruses!";
-      categories = [
-        "Game"
-        "ArcadeGame"
-      ];
-    })
-  ];
-
   makeFlags = "-B";
+  env.NIX_CFLAGS_LINK = "-lXpm";
 
   postInstall = ''
     mkdir -p $out/share/icons/hicolor/48x48/apps
@@ -72,18 +57,29 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   doInstallCheck = true;
+
+  desktopItems = [
+    (makeDesktopItem {
+      categories = [
+        "Game"
+        "ArcadeGame"
+      ];
+
+      comment = "Get rid of those Wingdows viruses!";
+      desktopName = "XBill";
+      exec = "xbill";
+      icon = "xbill";
+      name = "xbill";
+    })
+  ];
+
   postInstallCheck = ''
     $out/bin/xbill --version
   '';
 
   meta = {
     description = "Protect a computer network from getting infected";
-    homepage = "http://www.xbill.org/";
-    license = lib.licenses.gpl1Only;
-    maintainers = with lib.maintainers; [
-      aw
-      jonhermansen
-    ];
+
     longDescription = ''
       Ever get the feeling that nothing is going right? You're a sysadmin,
       and someone's trying to destroy your computers. The little people
@@ -91,7 +87,16 @@ stdenv.mkDerivation (finalAttrs: {
       Wingdows [TM], a virus cleverly designed to resemble a popular
       operating system.
     '';
-    mainProgram = "xbill";
+
+    homepage = "http://www.xbill.org/";
+    license = lib.licenses.gpl1Only;
+
+    maintainers = with lib.maintainers; [
+      aw
+      jonhermansen
+    ];
+
     platforms = lib.platforms.unix;
+    mainProgram = "xbill";
   };
 })

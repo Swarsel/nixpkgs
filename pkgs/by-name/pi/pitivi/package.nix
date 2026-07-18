@@ -1,30 +1,28 @@
 {
   lib,
   fetchurl,
-  pkg-config,
   gettext,
-  itstool,
-  python3,
-  wrapGAppsHook3,
+  gnome,
+  gobject-introspection,
+  gsettings-desktop-schemas,
+  gsound,
   gst_all_1,
   gtk3,
-  gobject-introspection,
+  hicolor-icon-theme,
+  itstool,
+  libnotify,
   libpeas,
   librsvg,
-  gnome,
-  libnotify,
-  gsound,
   meson,
   ninja,
-  gsettings-desktop-schemas,
-  hicolor-icon-theme,
+  pkg-config,
+  python3,
+  wrapGAppsHook3,
 }:
 
 python3.pkgs.buildPythonApplication (finalAttrs: {
   pname = "pitivi";
   version = "2023.03";
-
-  pyproject = false;
 
   src = fetchurl {
     url = "mirror://gnome/sources/pitivi/${lib.versions.major finalAttrs.version}/pitivi-${finalAttrs.version}.tar.xz";
@@ -37,6 +35,10 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     # dependencies part of the closure so we remove it.
     ./prevent-closure-contamination.patch
   ];
+
+  postPatch = ''
+    patchShebangs ./getenvvar.py
+  '';
 
   nativeBuildInputs = [
     meson
@@ -68,6 +70,15 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     gst-devtools
   ]);
 
+  preFixup = ''
+    gappsWrapperArgs+=(
+      # The icon theme is hardcoded.
+      --prefix XDG_DATA_DIRS : "${hicolor-icon-theme}/share"
+    )
+  '';
+
+  pyproject = false;
+
   pythonPath = with python3.pkgs; [
     pygobject3
     gst-python
@@ -76,17 +87,6 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     matplotlib
     librosa
   ];
-
-  preFixup = ''
-    gappsWrapperArgs+=(
-      # The icon theme is hardcoded.
-      --prefix XDG_DATA_DIRS : "${hicolor-icon-theme}/share"
-    )
-  '';
-
-  postPatch = ''
-    patchShebangs ./getenvvar.py
-  '';
 
   passthru = {
     updateScript = gnome.updateScript {
@@ -97,12 +97,14 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
 
   meta = {
     description = "Non-Linear video editor utilizing the power of GStreamer";
-    homepage = "http://pitivi.org/";
+
     longDescription = ''
       Pitivi is a video editor built upon the GStreamer Editing Services.
       It aims to be an intuitive and flexible application
       that can appeal to newbies and professionals alike.
     '';
+
+    homepage = "http://pitivi.org/";
     license = lib.licenses.lgpl21Plus;
     maintainers = with lib.maintainers; [ aleksana ];
     platforms = lib.platforms.linux;

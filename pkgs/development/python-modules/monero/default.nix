@@ -1,22 +1,21 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   pycryptodomex,
-  pysocks,
   pynacl,
+  pysocks,
+  pytest-cov-stub,
+  pytestCheckHook,
   requests,
+  responses,
   six,
   varint,
-  pytestCheckHook,
-  pytest-cov-stub,
-  responses,
 }:
 
 buildPythonPackage rec {
   pname = "monero";
   version = "1.1.1";
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "monero-ecosystem";
@@ -24,11 +23,6 @@ buildPythonPackage rec {
     rev = "v${version}";
     hash = "sha256-WIF3pFBOLgozYTrQHLzIRgSlT3dTZTe+7sF/dVjVdTo=";
   };
-
-  pythonRelaxDeps = [ "pynacl" ];
-  pythonRemoveDeps = [ "ipaddress" ];
-
-  pythonImportsCheck = [ "monero" ];
 
   propagatedBuildInputs = [
     pycryptodomex
@@ -44,6 +38,11 @@ buildPythonPackage rec {
     pytest-cov-stub
     responses
   ];
+
+  format = "setuptools";
+  pythonImportsCheck = [ "monero" ];
+  pythonRelaxDeps = [ "pynacl" ];
+  pythonRemoveDeps = [ "ipaddress" ];
 
   meta = {
     description = "Comprehensive Python module for handling Monero";

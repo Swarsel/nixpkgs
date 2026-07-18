@@ -1,32 +1,28 @@
 {
   lib,
-  config,
-  buildPythonPackage,
   fetchFromGitHub,
-
+  buildPythonPackage,
+  config,
+  # dependencies
+  filecheck,
   # build-system
   hatch-vcs,
   hatchling,
-
-  # dependencies
-  filecheck,
+  helion,
   numpy,
   psutil,
-  rich,
-  scikit-learn,
-  typing-extensions,
-  torch,
-
   # tests
   pytestCheckHook,
+  rich,
+  scikit-learn,
+  torch,
+  typing-extensions,
   writableTmpDirAsHomeHook,
-  helion,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "helion";
   version = "1.0.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "pytorch";
@@ -34,6 +30,14 @@ buildPythonPackage (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-3Iam+1FUg9I9kKmkQBZp9/FTZpEjf4Ba+cKRo5eLEzw=";
   };
+
+  # Tests require GPU access
+  doCheck = false;
+
+  nativeCheckInputs = [
+    pytestCheckHook
+    writableTmpDirAsHomeHook
+  ];
 
   build-system = [
     hatch-vcs
@@ -53,21 +57,15 @@ buildPythonPackage (finalAttrs: {
     torch
   ];
 
-  pythonImportsCheck = [ "helion" ];
-
-  nativeCheckInputs = [
-    pytestCheckHook
-    writableTmpDirAsHomeHook
-  ];
-
   disabledTests = [
     # Flaky: AssertionError: Tensor-likes are not close!
     # Mismatched elements: 3 / 65536 (0.0%)
     "test_squeeze_and_excitation_net_bwd_dx"
   ];
 
-  # Tests require GPU access
-  doCheck = false;
+  pyproject = true;
+  pythonImportsCheck = [ "helion" ];
+
   passthru.gpuCheck = helion.overridePythonAttrs {
     doCheck = true;
     requiredSystemFeatures = [ "cuda" ];

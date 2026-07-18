@@ -17,17 +17,15 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   buildInputs = [ ncurses ];
-
   # C23 (GCC 15 default) rejects K&R empty-parens declarations as no-arg functions
   env.NIX_CFLAGS_COMPILE = "-std=gnu17";
-
   preConfigure = "export LIBS=-lncurses";
 
   meta = {
-    homepage = "http://gopher.quux.org:70/devel/gopher";
     description = "Ncurses gopher client";
-    platforms = lib.platforms.linux; # clang doesn't like local regex.h
+    homepage = "http://gopher.quux.org:70/devel/gopher";
     license = lib.licenses.gpl2;
     maintainers = with lib.maintainers; [ sternenseemann ];
+    platforms = lib.platforms.linux; # clang doesn't like local regex.h
   };
 })

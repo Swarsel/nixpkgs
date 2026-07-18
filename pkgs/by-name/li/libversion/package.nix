@@ -1,8 +1,8 @@
 {
+  lib,
   stdenv,
   fetchFromGitHub,
   cmake,
-  lib,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -17,9 +17,8 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   nativeBuildInputs = [ cmake ];
-
-  checkTarget = "test";
   doCheck = true;
+  checkTarget = "test";
 
   meta = {
     description = "Advanced version string comparison library";

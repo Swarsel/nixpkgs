@@ -2,23 +2,16 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  zlib,
-  ilmbase,
-  fetchpatch,
   cmake,
   ctestCheckHook,
+  fetchpatch,
+  ilmbase,
+  zlib,
 }:
 
 stdenv.mkDerivation rec {
   pname = "openexr";
   version = "2.5.10";
-
-  outputs = [
-    "bin"
-    "dev"
-    "out"
-    "doc"
-  ];
 
   src = fetchFromGitHub {
     owner = "AcademySoftwareFoundation";
@@ -27,20 +20,27 @@ stdenv.mkDerivation rec {
     hash = "sha256-xdC+T79ZQBx/XhuIXtP93Roj0N9lF+E65ReEKQ4kIsg=";
   };
 
+  outputs = [
+    "bin"
+    "dev"
+    "out"
+    "doc"
+  ];
+
   patches = [
     (fetchpatch {
-      name = "CVE-2021-45942.patch";
-      url = "https://github.com/AcademySoftwareFoundation/openexr/commit/11cad77da87c4fa2aab7d58dd5339e254db7937e.patch";
-      stripLen = 4;
       extraPrefix = "OpenEXR/IlmImf/";
+      name = "CVE-2021-45942.patch";
       sha256 = "1wa2jn6sa0n3phaqvklnlbgk1bz60y756ad4jk4d757pzpnannsy";
+      stripLen = 4;
+      url = "https://github.com/AcademySoftwareFoundation/openexr/commit/11cad77da87c4fa2aab7d58dd5339e254db7937e.patch";
     })
     (fetchpatch {
-      name = "CVE-2021-3933.patch";
-      url = "https://github.com/AcademySoftwareFoundation/openexr/commit/5db6f7aee79e3e75e8c3780b18b28699614dd08e.patch";
-      stripLen = 4;
       extraPrefix = "OpenEXR/IlmImf/";
+      name = "CVE-2021-3933.patch";
       sha256 = "sha256-DrpldpNgN5pWKzIuuPIrynGX3EpP8YhJlu+lLfNFGxQ=";
+      stripLen = 4;
+      url = "https://github.com/AcademySoftwareFoundation/openexr/commit/5db6f7aee79e3e75e8c3780b18b28699614dd08e.patch";
     })
 
     # GCC 13 fixes
@@ -56,23 +56,25 @@ stdenv.mkDerivation rec {
     echo 'set_tests_properties(OpenEXR.IlmImf PROPERTIES TIMEOUT 3000)' >> OpenEXR/IlmImfTest/CMakeLists.txt
   '';
 
-  cmakeFlags = [
-    "-DCMAKE_CTEST_ARGUMENTS=--timeout;3600"
-  ]
-  ++ lib.optional stdenv.hostPlatform.isStatic "-DCMAKE_SKIP_RPATH=ON";
-
   nativeBuildInputs = [ cmake ];
-  nativeCheckInputs = [
-    ctestCheckHook
-  ];
+
   propagatedBuildInputs = [
     ilmbase
     zlib
   ];
 
+  cmakeFlags = [
+    "-DCMAKE_CTEST_ARGUMENTS=--timeout;3600"
+  ]
+  ++ lib.optional stdenv.hostPlatform.isStatic "-DCMAKE_SKIP_RPATH=ON";
+
   # https://github.com/AcademySoftwareFoundation/openexr/issues/1400
   # https://github.com/AcademySoftwareFoundation/openexr/issues/1281
   doCheck = !stdenv.hostPlatform.isAarch32 && !stdenv.hostPlatform.isi686;
+
+  nativeCheckInputs = [
+    ctestCheckHook
+  ];
 
   disabledTests = lib.optionals (stdenv.hostPlatform.isPower64 && stdenv.hostPlatform.isBigEndian) [
     # https://github.com/AcademySoftwareFoundation/openexr/issues/222
@@ -84,6 +86,7 @@ stdenv.mkDerivation rec {
     homepage = "https://www.openexr.com/";
     license = lib.licenses.bsd3;
     platforms = lib.platforms.all;
+
     knownVulnerabilities = [
       "CVE-2021-3598: ImfDeepScanLineInputFile Out-of-Bounds Read"
       "CVE-2021-3605: rleUncompress Out-of-Bounds Read"

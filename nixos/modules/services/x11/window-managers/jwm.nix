@@ -18,13 +18,15 @@ in
 
   ###### implementation
   config = mkIf cfg.enable {
+    environment.systemPackages = [ pkgs.jwm ];
+
     services.xserver.windowManager.session = singleton {
       name = "jwm";
+
       start = ''
         ${pkgs.jwm}/bin/jwm &
         waitPID=$!
       '';
     };
-    environment.systemPackages = [ pkgs.jwm ];
   };
 }

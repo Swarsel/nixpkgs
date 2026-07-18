@@ -1,29 +1,25 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # build-system
-  setuptools,
-
-  # dependencies
-  gymnasium,
-  numpy,
-
   # tests
   ale-py,
   bsuite,
+  buildPythonPackage,
   dm-control,
   gym,
+  # dependencies
+  gymnasium,
   imageio,
+  numpy,
   pettingzoo,
   pytestCheckHook,
+  # build-system
+  setuptools,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "shimmy";
   version = "2.0.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "Farama-Foundation";
@@ -31,17 +27,6 @@ buildPythonPackage (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-vMVvD/UNzGs6igYskQ/L+yt0v5kdjOVal0sfaTkirsU=";
   };
-
-  build-system = [
-    setuptools
-  ];
-
-  dependencies = [
-    gymnasium
-    numpy
-  ];
-
-  pythonImportsCheck = [ "shimmy" ];
 
   nativeCheckInputs = [
     ale-py
@@ -51,6 +36,15 @@ buildPythonPackage (finalAttrs: {
     imageio
     pettingzoo
     pytestCheckHook
+  ];
+
+  build-system = [
+    setuptools
+  ];
+
+  dependencies = [
+    gymnasium
+    numpy
   ];
 
   disabledTestPaths = [
@@ -83,10 +77,13 @@ buildPythonPackage (finalAttrs: {
     "test_render_height_widths"
   ];
 
+  pyproject = true;
+  pythonImportsCheck = [ "shimmy" ];
+
   meta = {
-    changelog = "https://github.com/Farama-Foundation/Shimmy/releases/tag/${finalAttrs.src.tag}";
     description = "API conversion tool for popular external reinforcement learning environments";
     homepage = "https://github.com/Farama-Foundation/Shimmy";
+    changelog = "https://github.com/Farama-Foundation/Shimmy/releases/tag/${finalAttrs.src.tag}";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ GaetanLepage ];
   };

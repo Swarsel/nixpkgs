@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   python-dateutil,
   pytz,
   requests,
@@ -11,7 +11,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "otxv2";
   version = "1.5.12";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "AlienVault-OTX";
@@ -20,6 +19,8 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-JAjBXNsX0Cuni+4L6I1RuaSfors5cBAZ2krPLhIFluY=";
   };
 
+  # Tests require network access
+  doCheck = false;
   build-system = [ setuptools ];
 
   dependencies = [
@@ -28,9 +29,7 @@ buildPythonPackage (finalAttrs: {
     requests
   ];
 
-  # Tests require network access
-  doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "OTXv2" ];
 
   meta = {

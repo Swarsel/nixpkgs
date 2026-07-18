@@ -1,6 +1,6 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
   installShellFiles,
   nix-update-script,
@@ -18,17 +18,15 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-QYjon2EpNexYa2fl09AePkpq0LkRVBOQM++eldcVMvI=";
   };
 
-  nativeBuildInputs = [
-    installShellFiles
-  ];
-
   # Remove with next release
   postPatch = ''
     substituteInPlace source/version.info \
       --replace-fail "0.8.0" "0.8.1"
   '';
 
-  dontConfigure = true;
+  nativeBuildInputs = [
+    installShellFiles
+  ];
 
   buildPhase = ''
     runHook preBuild
@@ -47,20 +45,19 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  doInstallCheck = true;
+
   nativeInstallCheckInputs = [
     versionCheckHook
   ];
+
+  dontConfigure = true;
   versionCheckProgramArg = "-version";
-  doInstallCheck = true;
 
   passthru = {
-    updateScript = nix-update-script { };
-
     tests.hello-world = stdenv.mkDerivation (finalAttrs': {
-      pname = "${finalAttrs.pname}-hello-world-test";
       inherit (finalAttrs) version src;
-
-      sourceRoot = "${finalAttrs'.src.name}/regression-tests";
+      pname = "${finalAttrs.pname}-hello-world-test";
 
       nativeBuildInputs = [
         finalAttrs.finalPackage
@@ -77,29 +74,37 @@ stdenv.mkDerivation (finalAttrs: {
       '';
 
       doInstallCheck = true;
+
       postInstallCheck = ''
         $out/bin/pure2-hello | grep '^Hello \[world\]$' > /dev/null
       '';
+
+      sourceRoot = "${finalAttrs'.src.name}/regression-tests";
 
       meta = {
         inherit (finalAttrs.meta) maintainers platforms;
         mainProgram = "pure2-hello";
       };
     });
+
+    updateScript = nix-update-script { };
   };
 
   meta = {
     description = "Experimental compiler from a potential C++ 'syntax 2' (Cpp2) to today's 'syntax 1' (Cpp1)";
     homepage = "https://hsutter.github.io/cppfront/";
     changelog = "https://github.com/hsutter/cppfront/releases/tag/${finalAttrs.src.tag}";
-    mainProgram = "cppfront";
+
     license = with lib.licenses; [
       asl20
       llvm-exception
     ];
+
     maintainers = with lib.maintainers; [
       marcin-serwin
     ];
+
     platforms = lib.platforms.all;
+    mainProgram = "cppfront";
   };
 })

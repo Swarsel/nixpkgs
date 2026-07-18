@@ -2,11 +2,11 @@
   lib,
   stdenv,
   fetchurl,
+  bash,
+  coreutils,
   jdk11_headless,
   makeWrapper,
   nixosTests,
-  bash,
-  coreutils,
 }:
 let
   # Latest supported LTS JDK for Zookeeper 3.9:
@@ -44,22 +44,25 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   passthru = {
+    inherit jre;
+
     tests = {
       nixos = nixosTests.zookeeper;
     };
-    inherit jre;
   };
 
   meta = {
-    homepage = "https://zookeeper.apache.org";
     description = "Apache Zookeeper";
+    homepage = "https://zookeeper.apache.org";
     changelog = "https://zookeeper.apache.org/doc/r${finalAttrs.version}/releasenotes.html";
     license = lib.licenses.asl20;
+    sourceProvenance = with lib.sourceTypes; [ binaryBytecode ];
+
     maintainers = with lib.maintainers; [
       nathan-gs
       ztzg
     ];
+
     platforms = lib.platforms.unix;
-    sourceProvenance = with lib.sourceTypes; [ binaryBytecode ];
   };
 })

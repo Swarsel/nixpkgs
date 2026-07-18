@@ -1,7 +1,7 @@
 {
   config,
-  pkgs,
   lib,
+  pkgs,
   ...
 }:
 let
@@ -39,6 +39,7 @@ let
   dependenciesForChecks = {
     "Ping" = [ pkgs.iputils ];
     "Smb" = pkgs.samba;
+
     "XIdleTime" = [
       pkgs.xprintidle
       pkgs.sudo
@@ -52,14 +53,14 @@ let
   autosuspend = cfg.package;
 
   checkType = types.submodule {
-    freeformType = settingsFormat.type.nestedTypes.elemType;
-
-    options.enabled = mkEnableOption "this activity check" // {
-      default = true;
-    };
-
     options.class = mkOption {
       default = null;
+
+      description = ''
+        Name of the class implementing the check.  If this option is not specified, the check's
+        name must represent a valid internal check class.
+      '';
+
       type =
         with types;
         nullOr (enum [
@@ -81,22 +82,24 @@ let
           "XIdleTime"
           "XPath"
         ]);
+    };
+
+    options.enabled = mkEnableOption "this activity check" // {
+      default = true;
+    };
+
+    freeformType = settingsFormat.type.nestedTypes.elemType;
+  };
+
+  wakeupType = types.submodule {
+    options.class = mkOption {
+      default = null;
+
       description = ''
         Name of the class implementing the check.  If this option is not specified, the check's
         name must represent a valid internal check class.
       '';
-    };
-  };
 
-  wakeupType = types.submodule {
-    freeformType = settingsFormat.type.nestedTypes.elemType;
-
-    options.enabled = mkEnableOption "this wake-up check" // {
-      default = true;
-    };
-
-    options.class = mkOption {
-      default = null;
       type =
         with types;
         nullOr (enum [
@@ -108,69 +111,30 @@ let
           "XPath"
           "XPathDelta"
         ]);
-      description = ''
-        Name of the class implementing the check.  If this option is not specified, the check's
-        name must represent a valid internal check class.
-      '';
     };
+
+    options.enabled = mkEnableOption "this wake-up check" // {
+      default = true;
+    };
+
+    freeformType = settingsFormat.type.nestedTypes.elemType;
   };
 in
 {
   options = {
     services.autosuspend = {
       enable = mkEnableOption "the autosuspend daemon";
-
       package = mkPackageOption pkgs "autosuspend" { };
-
-      settings = mkOption {
-        type = types.submodule {
-          freeformType = settingsFormat.type.nestedTypes.elemType;
-
-          options = {
-            # Provide reasonable defaults for these two (required) options
-            suspend_cmd = mkOption {
-              default = "systemctl suspend";
-              type = with types; str;
-              description = ''
-                The command to execute in case the host shall be suspended. This line can contain
-                additional command line arguments to the command to execute.
-              '';
-            };
-            wakeup_cmd = mkOption {
-              default = "sh -c 'echo 0 > /sys/class/rtc/rtc0/wakealarm && echo {timestamp:.0f} > /sys/class/rtc/rtc0/wakealarm' ";
-              type = with types; str;
-              description = ''
-                The command to execute for scheduling a wake up of the system. The given string is
-                processed using Python’s `str.format()` and a format argument called `timestamp`
-                encodes the UTC timestamp of the planned wake up time (float). Additionally `iso`
-                can be used to acquire the timestamp in ISO 8601 format.
-              '';
-            };
-          };
-        };
-        default = { };
-        example = literalExpression ''
-          {
-            enable = true;
-            interval = 30;
-            idle_time = 120;
-          }
-        '';
-        description = ''
-          Configuration for autosuspend, see
-          <https://autosuspend.readthedocs.io/en/latest/configuration_file.html#general-configuration>
-          for supported values.
-        '';
-      };
 
       checks = mkOption {
         default = { };
-        type = with types; attrsOf checkType;
+
         description = ''
           Checks for activity.  For more information, see:
            - <https://autosuspend.readthedocs.io/en/latest/configuration_file.html#activity-check-configuration>
            - <https://autosuspend.readthedocs.io/en/latest/available_checks.html>
         '';
+
         example = literalExpression ''
           {
             # Basic activity check configuration.
@@ -203,16 +167,68 @@ in
             };
           }
         '';
+
+        type = with types; attrsOf checkType;
+      };
+
+      settings = mkOption {
+        default = { };
+
+        description = ''
+          Configuration for autosuspend, see
+          <https://autosuspend.readthedocs.io/en/latest/configuration_file.html#general-configuration>
+          for supported values.
+        '';
+
+        example = literalExpression ''
+          {
+            enable = true;
+            interval = 30;
+            idle_time = 120;
+          }
+        '';
+
+        type = types.submodule {
+          options = {
+            # Provide reasonable defaults for these two (required) options
+            suspend_cmd = mkOption {
+              default = "systemctl suspend";
+
+              description = ''
+                The command to execute in case the host shall be suspended. This line can contain
+                additional command line arguments to the command to execute.
+              '';
+
+              type = with types; str;
+            };
+
+            wakeup_cmd = mkOption {
+              default = "sh -c 'echo 0 > /sys/class/rtc/rtc0/wakealarm && echo {timestamp:.0f} > /sys/class/rtc/rtc0/wakealarm' ";
+
+              description = ''
+                The command to execute for scheduling a wake up of the system. The given string is
+                processed using Python’s `str.format()` and a format argument called `timestamp`
+                encodes the UTC timestamp of the planned wake up time (float). Additionally `iso`
+                can be used to acquire the timestamp in ISO 8601 format.
+              '';
+
+              type = with types; str;
+            };
+          };
+
+          freeformType = settingsFormat.type.nestedTypes.elemType;
+        };
       };
 
       wakeups = mkOption {
         default = { };
-        type = with types; attrsOf wakeupType;
+
         description = ''
           Checks for wake up.  For more information, see:
            - <https://autosuspend.readthedocs.io/en/latest/configuration_file.html#wake-up-check-configuration>
            - <https://autosuspend.readthedocs.io/en/latest/available_wakeups.html>
         '';
+
         example = literalExpression ''
           {
             # Wake up checks reuse the same configuration mechanism as activity checks.
@@ -221,6 +237,8 @@ in
             };
           }
         '';
+
+        type = with types; attrsOf wakeupType;
       };
     };
   };
@@ -234,14 +252,16 @@ in
     ];
 
     systemd.services.autosuspend = {
+      after = [ "network.target" ];
       description = "A daemon to suspend your server in case of inactivity";
       documentation = [ "https://autosuspend.readthedocs.io/en/latest/systemd_integration.html" ];
-      wantedBy = [ "multi-user.target" ];
-      after = [ "network.target" ];
       path = flatten (attrValues (filterAttrs (n: _: hasCheck n) dependenciesForChecks));
+
       serviceConfig = {
         ExecStart = "${autosuspend}/bin/autosuspend --logging ${autosuspend}/etc/autosuspend-logging.conf daemon --config ${autosuspend-conf}";
       };
+
+      wantedBy = [ "multi-user.target" ];
     };
   };
 

@@ -2,13 +2,13 @@
   lib,
   buildGoModule,
   fetchFromSourcehut,
+  installShellFiles,
   makeWrapper,
   scdoc,
-  installShellFiles,
-  xclip,
   wl-clipboard,
-  xdotool,
   wtype,
+  xclip,
+  xdotool,
 }:
 
 buildGoModule (finalAttrs: {
@@ -21,12 +21,6 @@ buildGoModule (finalAttrs: {
     rev = "v${finalAttrs.version}";
     hash = "sha256-NIMuACrq8RodtjeBbBY42VJ8xqj7fZvdQ2w/5QsjjJI=";
   };
-
-  vendorHash = "sha256-2nLO/b6XQC88VXE+SewhgKpkRtIHsva+fDudgKpvZiY=";
-
-  proxyVendor = true;
-
-  modRoot = "cmd/snippetexpanderd";
 
   nativeBuildInputs = [
     makeWrapper
@@ -41,11 +35,7 @@ buildGoModule (finalAttrs: {
     wtype
   ];
 
-  ldflags = [
-    "-s"
-    "-w"
-    "-X 'main.version=${finalAttrs.src.rev}'"
-  ];
+  vendorHash = "sha256-2nLO/b6XQC88VXE+SewhgKpkRtIHsva+fDudgKpvZiY=";
 
   postInstall = ''
     make man
@@ -64,6 +54,15 @@ buildGoModule (finalAttrs: {
         ]
       }
   '';
+
+  ldflags = [
+    "-s"
+    "-w"
+    "-X 'main.version=${finalAttrs.src.rev}'"
+  ];
+
+  modRoot = "cmd/snippetexpanderd";
+  proxyVendor = true;
 
   meta = {
     description = "Your little expandable text snippet helper daemon";

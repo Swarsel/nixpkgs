@@ -1,12 +1,12 @@
 {
   lib,
+  stdenv,
+  fetchurl,
   SDL2,
   SDL2_image,
   SDL2_mixer,
   SDL2_ttf,
   directoryListingUpdater,
-  fetchurl,
-  stdenv,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -29,17 +29,17 @@ stdenv.mkDerivation (finalAttrs: {
 
   passthru.updateScript = directoryListingUpdater {
     inherit (finalAttrs) pname version;
-    url = "https://lgames.sourceforge.io/LPairs/";
     extraRegex = "(?!.*-win(32|64)).*";
+    url = "https://lgames.sourceforge.io/LPairs/";
   };
 
   meta = {
-    homepage = "http://lgames.sourceforge.net/LPairs/";
     description = "Matching the pairs - a typical Memory Game";
+    homepage = "http://lgames.sourceforge.net/LPairs/";
     license = with lib.licenses; [ gpl2Plus ];
-    mainProgram = "lpairs2";
     maintainers = [ ];
     platforms = lib.platforms.unix;
+    mainProgram = "lpairs2";
     broken = stdenv.hostPlatform.isDarwin;
   };
 })

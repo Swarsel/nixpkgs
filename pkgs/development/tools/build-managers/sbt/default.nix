@@ -2,10 +2,10 @@
   lib,
   stdenv,
   fetchurl,
-  jre,
   autoPatchelfHook,
-  zlib,
+  jre,
   ncurses,
+  zlib,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -52,16 +52,19 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   meta = {
+    description = "Build tool for Scala, Java and more";
     homepage = "https://www.scala-sbt.org/";
     license = lib.licenses.bsd3;
+
     sourceProvenance = with lib.sourceTypes; [
       binaryBytecode
       binaryNativeCode
     ];
-    description = "Build tool for Scala, Java and more";
+
     maintainers = with lib.maintainers; [
       kashw2
     ];
+
     platforms = lib.platforms.unix;
     mainProgram = "sbt";
   };

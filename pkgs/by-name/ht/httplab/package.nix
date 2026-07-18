@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule (finalAttrs: {
@@ -23,8 +23,8 @@ buildGoModule (finalAttrs: {
   ];
 
   meta = {
-    homepage = "https://github.com/qustavo/httplab";
     description = "Interactive WebServer";
+    homepage = "https://github.com/qustavo/httplab";
     license = lib.licenses.mit;
     mainProgram = "httplab";
   };

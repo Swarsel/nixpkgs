@@ -1,10 +1,10 @@
 {
   lib,
   stdenv,
-  buildGoModule,
   fetchFromGitHub,
-  sqlite,
+  buildGoModule,
   installShellFiles,
+  sqlite,
 }:
 
 buildGoModule (finalAttrs: {
@@ -18,20 +18,11 @@ buildGoModule (finalAttrs: {
     sha256 = "sha256-sqsogF2swMvYZL7Kj+ealrB1AAgIe7ZXXDLRdHL6Q+0=";
   };
 
+  nativeBuildInputs = [ installShellFiles ];
+  buildInputs = [ sqlite ];
   vendorHash = "sha256-rIcwZUOi6bdfiWZEsRF4kl1reNPPQNuBPHDOo7RQgYo=";
-
   # package does not contain any tests as of v0.2.3
   doCheck = false;
-
-  nativeBuildInputs = [ installShellFiles ];
-
-  buildInputs = [ sqlite ];
-
-  ldflags = [
-    "-s"
-    "-w"
-    "-X github.com/manojkarthick/expenses/cmd.Version=${finalAttrs.version}"
-  ];
 
   postInstall = lib.optionalString (stdenv.buildPlatform.canExecute stdenv.hostPlatform) ''
     installShellCompletion --cmd expenses \
@@ -39,6 +30,12 @@ buildGoModule (finalAttrs: {
       --zsh <($out/bin/expenses completion zsh) \
       --fish <($out/bin/expenses completion fish)
   '';
+
+  ldflags = [
+    "-s"
+    "-w"
+    "-X github.com/manojkarthick/expenses/cmd.Version=${finalAttrs.version}"
+  ];
 
   meta = {
     description = "Interactive command line expense logger";

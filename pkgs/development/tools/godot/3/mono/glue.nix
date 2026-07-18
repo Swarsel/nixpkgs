@@ -1,8 +1,8 @@
 {
   godot3,
   mono,
-  scons,
   python311Packages,
+  scons,
 }:
 
 (godot3.override {
@@ -13,16 +13,7 @@
   (
     self: base: {
       pname = "godot3-mono-glue";
-      godotBuildDescription = "mono glue";
-      godotBuildPlatform = "server";
-
-      sconsFlags = base.sconsFlags ++ [
-        "module_mono_enabled=true"
-        "mono_glue=false" # Indicates not to expect already existing glue.
-        "mono_prefix=${mono}"
-      ];
-
-      nativeBuildInputs = base.nativeBuildInputs ++ [ mono ];
+      outputs = [ "out" ];
 
       patches =
         base.patches
@@ -57,7 +48,7 @@
           "/gen_cs_glue_version.py/hardcodeGlueVersion_${self.version}.patch"
         ];
 
-      outputs = [ "out" ];
+      nativeBuildInputs = base.nativeBuildInputs ++ [ mono ];
 
       installPhase = ''
         runHook preInstall
@@ -68,6 +59,15 @@
 
         runHook postInstall
       '';
+
+      godotBuildDescription = "mono glue";
+      godotBuildPlatform = "server";
+
+      sconsFlags = base.sconsFlags ++ [
+        "module_mono_enabled=true"
+        "mono_glue=false" # Indicates not to expect already existing glue.
+        "mono_prefix=${mono}"
+      ];
 
       meta = base.meta // {
         homepage = "https://docs.godotengine.org/en/stable/development/compiling/compiling_with_mono.html#generate-the-glue";

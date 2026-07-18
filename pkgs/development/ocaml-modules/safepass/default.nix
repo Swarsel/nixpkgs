@@ -16,8 +16,8 @@ buildDunePackage (finalAttrs: {
   };
 
   meta = {
-    homepage = "https://github.com/darioteixeira/ocaml-safepass";
     description = "OCaml library offering facilities for the safe storage of user passwords";
+    homepage = "https://github.com/darioteixeira/ocaml-safepass";
     license = lib.licenses.lgpl21;
     maintainers = with lib.maintainers; [ vbgl ];
   };

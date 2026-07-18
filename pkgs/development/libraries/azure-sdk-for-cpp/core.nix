@@ -2,19 +2,15 @@
   stdenv,
   fetchFromGitHub,
   cmake,
-  ninja,
   curl,
   libxml2,
-  nix-update-script,
   meta,
+  ninja,
+  nix-update-script,
 }:
 stdenv.mkDerivation (finalAttrs: {
   pname = "azure-sdk-for-cpp-core";
   version = "1.16.3";
-  outputs = [
-    "out"
-    "dev"
-  ];
 
   src = fetchFromGitHub {
     owner = "Azure";
@@ -22,7 +18,11 @@ stdenv.mkDerivation (finalAttrs: {
     tag = "azure-core_${finalAttrs.version}";
     hash = "sha256-1OLyTwjfSunwvDMbMTNw0w8txhJxXthtAVeFf7abrIs=";
   };
-  sourceRoot = "${finalAttrs.src.name}/sdk/core/azure-core";
+
+  outputs = [
+    "out"
+    "dev"
+  ];
 
   postPatch = ''
     sed -i '/CMAKE_CXX_STANDARD/d' CMakeLists.txt
@@ -40,20 +40,27 @@ stdenv.mkDerivation (finalAttrs: {
     libxml2
   ];
 
-  env = {
-    AZURE_SDK_DISABLE_AUTO_VCPKG = 1;
-  };
-
   cmakeFlags = [
     "-DBUILD_SHARED_LIBS=ON"
     "-DBUILD_TRANSPORT_CURL=ON"
     "-DWARNINGS_AS_ERRORS=OFF"
   ];
 
+  env = {
+    AZURE_SDK_DISABLE_AUTO_VCPKG = 1;
+  };
+
+  # Testing this is moderately involved, see:
+  # https://github.com/Azure/azure-sdk-for-cpp/blob/main/CONTRIBUTING.md#testing-the-project
+  # Unless issues arise, it does not seem worth the effort.
+  doCheck = false;
+
   postInstall = ''
     moveToOutput "share" "$dev"
     moveToOutput "share/$(basename "$sourceRoot")-cpp/copyright" "$out"
   '';
+
+  sourceRoot = "${finalAttrs.src.name}/sdk/core/azure-core";
 
   passthru.updateScript = nix-update-script {
     extraArgs = [
@@ -61,11 +68,6 @@ stdenv.mkDerivation (finalAttrs: {
       "azure-core_(.*)"
     ];
   };
-
-  # Testing this is moderately involved, see:
-  # https://github.com/Azure/azure-sdk-for-cpp/blob/main/CONTRIBUTING.md#testing-the-project
-  # Unless issues arise, it does not seem worth the effort.
-  doCheck = false;
 
   meta = (
     meta

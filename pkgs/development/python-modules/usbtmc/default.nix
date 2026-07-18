@@ -8,7 +8,6 @@
 buildPythonPackage rec {
   pname = "usbtmc";
   version = "0.8";
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "python-ivi";
@@ -18,6 +17,7 @@ buildPythonPackage rec {
   };
 
   propagatedBuildInputs = [ pyusb ];
+  format = "setuptools";
 
   meta = {
     description = "Python implementation of the USBTMC instrument control protocol";

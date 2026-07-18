@@ -35,6 +35,10 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   env = {
+    # We can handle stripping ourselves.
+    # Unless we are on Darwin. Upstream makefiles degrade coreutils install to cp if _APPLE is detected.
+    INSTALLFLAGS = lib.optionalString (!stdenv.hostPlatform.isDarwin) "-m 555";
+
     NIX_CFLAGS_COMPILE = toString [
       "-O3"
     ];
@@ -50,31 +54,28 @@ stdenv.mkDerivation (finalAttrs: {
     # -Werror altogether to make this derivation less fragile to toolchain
     # updates.
     NOWERROR = "TRUE";
-
-    # We can handle stripping ourselves.
-    # Unless we are on Darwin. Upstream makefiles degrade coreutils install to cp if _APPLE is detected.
-    INSTALLFLAGS = lib.optionalString (!stdenv.hostPlatform.isDarwin) "-m 555";
   };
 
   enableParallelBuilding = true;
-
   installFlags = [ "PREFIX=${placeholder "out"}" ];
-
   passthru.updateScript = nix-update-script { };
 
   meta = {
-    homepage = "https://www.acpica.org/";
     description = "ACPICA Tools";
+    homepage = "https://www.acpica.org/";
     changelog = "https://github.com/acpica/acpica/releases/tag/${finalAttrs.version}";
+
     license = with lib.licenses; [
       iasl
       gpl2Only
       bsd3
     ];
+
     maintainers = with lib.maintainers; [
       tadfisher
       felixsinger
     ];
+
     platforms = lib.platforms.linux ++ lib.platforms.darwin;
   };
 })

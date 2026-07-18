@@ -2,10 +2,10 @@
   lib,
   stdenv,
   fetchFromGitLab,
-  meson,
-  pkg-config,
-  ninja,
   cairo,
+  meson,
+  ninja,
+  pkg-config,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -30,11 +30,11 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   meta = {
-    homepage = "https://gitlab.com/mildlyparallel/pscircle";
     description = "Visualize Linux processes in a form of a radial tree";
-    mainProgram = "pscircle";
+    homepage = "https://gitlab.com/mildlyparallel/pscircle";
     license = lib.licenses.gpl2Only;
     maintainers = [ lib.maintainers.ldesgoui ];
     platforms = lib.platforms.linux;
+    mainProgram = "pscircle";
   };
 })

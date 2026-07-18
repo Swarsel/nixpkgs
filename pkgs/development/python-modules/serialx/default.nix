@@ -1,14 +1,14 @@
 {
+  lib,
+  fetchFromGitHub,
   aioesphomeapi,
   buildPythonPackage,
   cargo,
-  fetchFromGitHub,
-  lib,
   psutil,
-  pythonAtLeast,
   pytest-asyncio,
   pytest-xdist,
   pytestCheckHook,
+  pythonAtLeast,
   rustPlatform,
   rustc,
   setuptools,
@@ -21,7 +21,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "serialx";
   version = "1.8.2";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "puddly";
@@ -30,32 +29,11 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-/Bx8TnO3h+Pk/Tg5YSYO96cK5PfJVwqRG0qdLJntNpQ=";
   };
 
-  cargoDeps = rustPlatform.fetchCargoVendor {
-    inherit (finalAttrs) pname version src;
-    hash = "sha256-mI/6Buuk0VMofcD2LmE3+FpZhISAMzSYxe2IDC2iyAE=";
-  };
-
-  build-system = [
-    setuptools
-    setuptools-rust
-    setuptools-scm
-  ];
-
   nativeBuildInputs = [
     cargo
     rustPlatform.cargoSetupHook
     rustc
   ];
-
-  dependencies = [
-    typing-extensions
-  ];
-
-  optional-dependencies.esphome = lib.optionals (pythonAtLeast "3.14") [
-    aioesphomeapi
-  ];
-
-  pythonImportsCheck = [ "serialx" ];
 
   nativeCheckInputs = [
     psutil
@@ -66,6 +44,21 @@ buildPythonPackage (finalAttrs: {
   ];
 
   __darwinAllowLocalNetworking = true;
+
+  build-system = [
+    setuptools
+    setuptools-rust
+    setuptools-scm
+  ];
+
+  cargoDeps = rustPlatform.fetchCargoVendor {
+    inherit (finalAttrs) pname version src;
+    hash = "sha256-mI/6Buuk0VMofcD2LmE3+FpZhISAMzSYxe2IDC2iyAE=";
+  };
+
+  dependencies = [
+    typing-extensions
+  ];
 
   disabledTests = [
     # tries to access /sys/class/tty in sandbox
@@ -78,10 +71,17 @@ buildPythonPackage (finalAttrs: {
     "test_sync_readonly_partial_timeout"
   ];
 
+  optional-dependencies.esphome = lib.optionals (pythonAtLeast "3.14") [
+    aioesphomeapi
+  ];
+
+  pyproject = true;
+  pythonImportsCheck = [ "serialx" ];
+
   meta = {
-    changelog = "https://github.com/puddly/serialx/releases/tag/${finalAttrs.src.tag}";
     description = "Serial library with native async support for Windows and POSIX";
     homepage = "https://github.com/puddly/serialx";
+    changelog = "https://github.com/puddly/serialx/releases/tag/${finalAttrs.src.tag}";
     license = lib.licenses.asl20;
     maintainers = [ lib.maintainers.dotlambda ];
   };

@@ -2,13 +2,13 @@
   lib,
   stdenv,
   fetchFromGitLab,
+  asciidoc,
   fetchpatch,
   installShellFiles,
-  python3Packages,
-  python3,
-  asciidoc,
-  wrapGAppsNoGuiHook,
   iw,
+  python3,
+  python3Packages,
+  wrapGAppsNoGuiHook,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -29,8 +29,8 @@ stdenv.mkDerivation (finalAttrs: {
 
     # Fixes: networkd-dispatcher.service: Got notification message from PID XXXX, but reception only permitted for main PID XXXX
     (fetchpatch {
-      url = "https://gitlab.com/craftyguy/networkd-dispatcher/-/commit/4796368d88da516fafda321d8565ae8ccf465120.patch";
       hash = "sha256-RAoCSmZCjTXxVKesatWjiePY4xECGn5pwvOOV0clL+Q=";
+      url = "https://gitlab.com/craftyguy/networkd-dispatcher/-/commit/4796368d88da516fafda321d8565ae8ccf465120.patch";
     })
   ];
 
@@ -55,6 +55,8 @@ stdenv.mkDerivation (finalAttrs: {
     ]))
   ];
 
+  doCheck = true;
+
   checkInputs = with python3Packages; [
     mock
     pytestCheckHook
@@ -70,18 +72,16 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
-  doCheck = true;
-
   preFixup = ''
     gappsWrapperArgs+=("--prefix" "PATH" ":" "${lib.makeBinPath [ iw ]}")
   '';
 
   meta = {
     description = "Dispatcher service for systemd-networkd connection status changes";
-    mainProgram = "networkd-dispatcher";
     homepage = "https://gitlab.com/craftyguy/networkd-dispatcher";
     license = lib.licenses.gpl3Only;
-    platforms = lib.platforms.linux;
     maintainers = with lib.maintainers; [ onny ];
+    platforms = lib.platforms.linux;
+    mainProgram = "networkd-dispatcher";
   };
 })

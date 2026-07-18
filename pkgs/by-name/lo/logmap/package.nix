@@ -7,7 +7,6 @@
 python3.pkgs.buildPythonApplication {
   pname = "logmap";
   version = "0-unstable-2021-12-15";
-  pyproject = false;
 
   src = fetchFromGitHub {
     owner = "zhzyker";
@@ -25,6 +24,8 @@ python3.pkgs.buildPythonApplication {
     install -vD logmap.py $out/bin/logmap
     runHook postInstall
   '';
+
+  pyproject = false;
 
   meta = {
     description = "Tools for fuzzing Log4j2 jndi injection";

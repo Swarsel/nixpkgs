@@ -43,13 +43,35 @@ in
       # note that environment.nix sets PAGER=less, and
       # therefore also enables this module
       enable = lib.mkEnableOption "less, a file pager";
-
       package = lib.mkPackageOption pkgs "less" { };
 
+      clearDefaultCommands = lib.mkOption {
+        default = false;
+
+        description = ''
+          Clear all default commands.
+          You should remember to set the quit key.
+          Otherwise you will not be able to leave less without killing it.
+        '';
+
+        type = lib.types.bool;
+      };
+
+      commands = lib.mkOption {
+        default = { };
+        description = "Defines new command keys.";
+
+        example = {
+          h = "noaction 5\\e(";
+          l = "noaction 5\\e)";
+        };
+
+        type = lib.types.attrsOf lib.types.str;
+      };
+
       configFile = lib.mkOption {
-        type = lib.types.nullOr lib.types.path;
         default = null;
-        example = lib.literalExpression ''"''${pkgs.my-configs}/lesskey"'';
+
         description = ''
           Path to lesskey configuration file.
 
@@ -57,64 +79,56 @@ in
           {option}`clearDefaultCommands`, {option}`lineEditingKeys`, and
           {option}`envVariables`.
         '';
-      };
 
-      commands = lib.mkOption {
-        type = lib.types.attrsOf lib.types.str;
-        default = { };
-        example = {
-          h = "noaction 5\\e(";
-          l = "noaction 5\\e)";
-        };
-        description = "Defines new command keys.";
-      };
-
-      clearDefaultCommands = lib.mkOption {
-        type = lib.types.bool;
-        default = false;
-        description = ''
-          Clear all default commands.
-          You should remember to set the quit key.
-          Otherwise you will not be able to leave less without killing it.
-        '';
-      };
-
-      lineEditingKeys = lib.mkOption {
-        type = lib.types.attrsOf lib.types.str;
-        default = { };
-        example = {
-          e = "abort";
-        };
-        description = "Defines new line-editing keys.";
+        example = lib.literalExpression ''"''${pkgs.my-configs}/lesskey"'';
+        type = lib.types.nullOr lib.types.path;
       };
 
       envVariables = lib.mkOption {
-        type = lib.types.attrsOf lib.types.str;
         default = {
           LESS = "-R";
         };
+
+        description = "Defines environment variables.";
+
         example = {
           LESS = "--quit-if-one-screen";
         };
-        description = "Defines environment variables.";
-      };
 
-      lessopen = lib.mkOption {
-        type = lib.types.nullOr lib.types.str;
-        default = null;
-        example = lib.literalExpression ''"|''${pkgs.lesspipe}/bin/lesspipe.sh %s"'';
-        description = ''
-          Before less opens a file, it first gives your input preprocessor a chance to modify the way the contents of the file are displayed.
-        '';
+        type = lib.types.attrsOf lib.types.str;
       };
 
       lessclose = lib.mkOption {
-        type = lib.types.nullOr lib.types.str;
         default = null;
+
         description = ''
           When less closes a file opened in such a way, it will call another program, called the input postprocessor,
           which may perform any desired clean-up action (such as deleting the replacement file created by LESSOPEN).
         '';
+
+        type = lib.types.nullOr lib.types.str;
+      };
+
+      lessopen = lib.mkOption {
+        default = null;
+
+        description = ''
+          Before less opens a file, it first gives your input preprocessor a chance to modify the way the contents of the file are displayed.
+        '';
+
+        example = lib.literalExpression ''"|''${pkgs.lesspipe}/bin/lesspipe.sh %s"'';
+        type = lib.types.nullOr lib.types.str;
+      };
+
+      lineEditingKeys = lib.mkOption {
+        default = { };
+        description = "Defines new line-editing keys.";
+
+        example = {
+          e = "abort";
+        };
+
+        type = lib.types.attrsOf lib.types.str;
       };
     };
   };

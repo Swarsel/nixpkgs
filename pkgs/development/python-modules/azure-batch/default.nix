@@ -1,16 +1,15 @@
 {
   lib,
+  azure-common,
   buildPythonPackage,
   fetchPypi,
   msrestazure,
-  azure-common,
   setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "azure-batch";
   version = "14.2.0";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
@@ -26,7 +25,7 @@ buildPythonPackage rec {
 
   # Module has no tests
   doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "azure.batch" ];
 
   meta = {

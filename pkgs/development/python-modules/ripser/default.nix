@@ -1,27 +1,23 @@
 {
   lib,
   stdenv,
-  buildPythonPackage,
   fetchFromGitHub,
-
+  buildPythonPackage,
   # build-system
   cython,
   numpy,
-  setuptools,
-
   persim,
-  scikit-learn,
-  scipy,
-
   # tests
   pytestCheckHook,
+  scikit-learn,
+  scipy,
+  setuptools,
   writableTmpDirAsHomeHook,
 }:
 
 buildPythonPackage rec {
   pname = "ripser";
   version = "0.6.15";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "scikit-tda";
@@ -29,6 +25,17 @@ buildPythonPackage rec {
     tag = "v${version}";
     hash = "sha256-zzqyTVhoL8l/fN0nnkzmyxNG4t1s9z0ZueKkc/NO5FA=";
   };
+
+  nativeCheckInputs = [
+    pytestCheckHook
+    writableTmpDirAsHomeHook
+  ];
+
+  preCheck = ''
+    # specifically needed for darwin
+    mkdir -p $HOME/.matplotlib
+    echo "backend: ps" > $HOME/.matplotlib/matplotlibrc
+  '';
 
   build-system = [
     cython
@@ -42,19 +49,6 @@ buildPythonPackage rec {
     scikit-learn
     persim
   ];
-
-  pythonImportsCheck = [ "ripser" ];
-
-  nativeCheckInputs = [
-    pytestCheckHook
-    writableTmpDirAsHomeHook
-  ];
-
-  preCheck = ''
-    # specifically needed for darwin
-    mkdir -p $HOME/.matplotlib
-    echo "backend: ps" > $HOME/.matplotlib/matplotlibrc
-  '';
 
   disabledTests = lib.optionals stdenv.hostPlatform.isDarwin [
     # AssertionError
@@ -79,6 +73,9 @@ buildPythonPackage rec {
     # assert (0, 2) == (1, 2)
     "test_verbose_false"
   ];
+
+  pyproject = true;
+  pythonImportsCheck = [ "ripser" ];
 
   meta = {
     description = "Lean Persistent Homology Library for Python";

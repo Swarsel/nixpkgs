@@ -1,18 +1,18 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
   cmake,
-  pkg-config,
-  ispc,
-  onetbb,
   glfw,
-  openimageio,
+  glib,
+  ispc,
   libjpeg,
   libpng,
   libpthread-stubs,
   libx11,
-  glib,
+  onetbb,
+  openimageio,
+  pkg-config,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -35,18 +35,12 @@ stdenv.mkDerivation (finalAttrs: {
     substituteInPlace common/math/emath.h --replace 'defined(__WIN32__) || defined(__FreeBSD__)' 'defined(__WIN32__) || defined(__FreeBSD__) || defined(__MACOSX__)'
   '';
 
-  cmakeFlags = [
-    "-DEMBREE_TUTORIALS=OFF"
-    "-DEMBREE_RAY_MASK=ON"
-    "-DTBB_ROOT=${onetbb}"
-    "-DTBB_INCLUDE_DIR=${onetbb.dev}/include"
-  ];
-
   nativeBuildInputs = [
     ispc
     pkg-config
     cmake
   ];
+
   buildInputs = [
     onetbb
     glfw
@@ -58,11 +52,18 @@ stdenv.mkDerivation (finalAttrs: {
   ]
   ++ lib.optionals stdenv.hostPlatform.isDarwin [ glib ];
 
+  cmakeFlags = [
+    "-DEMBREE_TUTORIALS=OFF"
+    "-DEMBREE_RAY_MASK=ON"
+    "-DTBB_ROOT=${onetbb}"
+    "-DTBB_INCLUDE_DIR=${onetbb.dev}/include"
+  ];
+
   meta = {
     description = "High performance ray tracing kernels from Intel";
     homepage = "https://embree.github.io/";
-    maintainers = [ ];
     license = lib.licenses.asl20;
+    maintainers = [ ];
     platforms = lib.platforms.unix;
   };
 })

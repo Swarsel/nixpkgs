@@ -18,8 +18,8 @@
 
   options.system.switch = {
     enable = lib.mkOption {
-      type = lib.types.bool;
       default = true;
+
       description = ''
         Whether to include the capability to switch configurations.
 
@@ -29,20 +29,35 @@
         outside the image. Reducing features makes the image lighter and
         slightly more secure.
       '';
+
+      type = lib.types.bool;
     };
 
     inhibitors = lib.mkOption {
-      type = lib.types.attrsOf lib.types.str;
       default = { };
+
       description = ''
         Attribute set of strings that will prevent switching into a configuration when
         they change.
         The switch can be manually forced on the command line if required.
       '';
+
+      type = lib.types.attrsOf lib.types.str;
     };
   };
 
   config = lib.mkIf config.system.switch.enable {
+    security =
+      let
+        extraConfig = ''
+          Defaults env_keep+=NIXOS_NO_CHECK
+        '';
+      in
+      {
+        sudo = { inherit extraConfig; };
+        sudo-rs = { inherit extraConfig; };
+      };
+
     # Use a subshell so we can source makeWrapper's setup hook without
     # affecting the rest of activatableSystemBuilderCommands.
     system = {
@@ -65,10 +80,6 @@
             } \
             --set SYSTEMD ${config.systemd.package}
         )
-      '';
-
-      systemBuilderCommands = ''
-        ln -s ${config.system.build.inhibitSwitch} $out/switch-inhibitors
       '';
 
       build.inhibitSwitch = pkgs.writers.writeJSON "switch-inhibitors" config.system.switch.inhibitors;
@@ -141,17 +152,10 @@
             echo " done"
           fi
         '';
-    };
 
-    security =
-      let
-        extraConfig = ''
-          Defaults env_keep+=NIXOS_NO_CHECK
-        '';
-      in
-      {
-        sudo = { inherit extraConfig; };
-        sudo-rs = { inherit extraConfig; };
-      };
+      systemBuilderCommands = ''
+        ln -s ${config.system.build.inhibitSwitch} $out/switch-inhibitors
+      '';
+    };
   };
 }

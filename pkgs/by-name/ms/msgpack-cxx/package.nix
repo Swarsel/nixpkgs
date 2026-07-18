@@ -2,8 +2,8 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  cmake,
   boost,
+  cmake,
   zlib,
 }:
 
@@ -34,11 +34,11 @@ stdenv.mkDerivation (finalAttrs: {
   ]
   ++ lib.optional finalAttrs.finalPackage.doCheck "-DMSGPACK_BUILD_TESTS=ON";
 
+  doCheck = stdenv.buildPlatform.canExecute stdenv.hostPlatform;
+
   checkInputs = [
     zlib
   ];
-
-  doCheck = stdenv.buildPlatform.canExecute stdenv.hostPlatform;
 
   meta = {
     description = "MessagePack implementation for C++";

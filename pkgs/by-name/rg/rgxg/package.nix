@@ -15,9 +15,9 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "C library and a command-line tool to generate (extended) regular expressions";
-    mainProgram = "rgxg";
+    homepage = "https://rgxg.github.io/";
     license = lib.licenses.zlib;
     maintainers = with lib.maintainers; [ hloeffler ];
-    homepage = "https://rgxg.github.io/";
+    mainProgram = "rgxg";
   };
 })

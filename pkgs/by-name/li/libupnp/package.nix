@@ -1,18 +1,13 @@
 {
-  fetchFromGitHub,
   lib,
   stdenv,
+  fetchFromGitHub,
   cmake,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
   pname = "libupnp";
   version = "1.14.25";
-
-  outputs = [
-    "out"
-    "dev"
-  ];
 
   src = fetchFromGitHub {
     owner = "pupnp";
@@ -21,8 +16,9 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-emMZKskaFYmLnIZLduHlZ5I3praaBgXY2JHLDAGPO28=";
   };
 
-  nativeBuildInputs = [
-    cmake
+  outputs = [
+    "out"
+    "dev"
   ];
 
   postPatch = ''
@@ -32,6 +28,10 @@ stdenv.mkDerivation (finalAttrs: {
       --replace '\''${exec_prefix}/' "" \
       --replace '\''${prefix}/' ""
   '';
+
+  nativeBuildInputs = [
+    cmake
+  ];
 
   # Fix broken cmake files
   # https://gitlab.archlinux.org/archlinux/packaging/packages/libupnp/-/commit/69a99f8ccd4c6f335db9b5842f0facde585721eb
@@ -49,9 +49,8 @@ stdenv.mkDerivation (finalAttrs: {
       UPnP Device Architecture Specification.
     '';
 
-    license = lib.licenses.bsd3;
-
     homepage = "https://pupnp.github.io/pupnp/";
+    license = lib.licenses.bsd3;
     platforms = lib.platforms.unix;
   };
 })

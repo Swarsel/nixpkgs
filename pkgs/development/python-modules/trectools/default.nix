@@ -1,24 +1,23 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
   beautifulsoup4,
-  pandas,
-  python,
-  numpy,
-  scikit-learn,
-  scipy,
+  buildPythonPackage,
   lxml,
   matplotlib,
+  numpy,
+  pandas,
+  python,
   sarge,
-  unittestCheckHook,
+  scikit-learn,
+  scipy,
   setuptools,
+  unittestCheckHook,
 }:
 
 buildPythonPackage {
   pname = "trectools";
   version = "0.0.50";
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "joaopalotti";
@@ -31,6 +30,15 @@ buildPythonPackage {
   postPatch = ''
     substituteInPlace setup.py \
       --replace-fail "bs4 >= 0.0.0.1" "beautifulsoup4 >= 4.11.1"
+  '';
+
+  nativeCheckInputs = [
+    unittestCheckHook
+  ];
+
+  preCheck = ''
+    # tests pass numpy arrays to float(), which numpy 2 rejects
+    rm unittests/testtreceval.py
   '';
 
   build-system = [ setuptools ];
@@ -46,24 +54,16 @@ buildPythonPackage {
     sarge
   ];
 
-  nativeCheckInputs = [
-    unittestCheckHook
-  ];
-
-  preCheck = ''
-    # tests pass numpy arrays to float(), which numpy 2 rejects
-    rm unittests/testtreceval.py
-  '';
+  format = "setuptools";
+  pythonImportsCheck = [ "trectools" ];
 
   unittestFlagsArray = [
     "unittests/"
   ];
 
-  pythonImportsCheck = [ "trectools" ];
-
   meta = {
-    homepage = "https://github.com/joaopalotti/trectools";
     description = "Library for assisting Information Retrieval (IR) practitioners with TREC-like campaigns";
+    homepage = "https://github.com/joaopalotti/trectools";
     license = lib.licenses.bsdOriginal;
     maintainers = with lib.maintainers; [ MoritzBoehme ];
   };

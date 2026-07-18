@@ -3,8 +3,8 @@
   stdenv,
   fetchFromGitHub,
   autoreconfHook,
-  pkg-config,
   libconfuse,
+  pkg-config,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -22,10 +22,12 @@ stdenv.mkDerivation (finalAttrs: {
     autoreconfHook
     pkg-config
   ];
+
   buildInputs = [ libconfuse ];
 
   meta = {
     description = "Lightweight library of frog DNA";
+
     longDescription = ''
       Libite is a lightweight library of frog DNA. It can be used to fill
       the gaps in any dinosaur project. It holds useful functions and macros
@@ -38,14 +40,17 @@ stdenv.mkDerivation (finalAttrs: {
       _SAFE macros in the BSD sys/queue.h API — highly recommended when
       traversing lists to delete/free nodes.
     '';
+
     homepage = "https://github.com/troglobit/libite";
-    platforms = with lib.platforms; linux ++ netbsd;
-    maintainers = with lib.maintainers; [ fpletz ];
+
     license = with lib.licenses; [
       mit
       isc
       bsd2
       bsd3
     ];
+
+    maintainers = with lib.maintainers; [ fpletz ];
+    platforms = with lib.platforms; linux ++ netbsd;
   };
 })

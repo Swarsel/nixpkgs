@@ -1,23 +1,22 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  orjson,
-  quantile-python,
   aiohttp,
   aiohttp-basicauth,
-  starlette,
-  quart,
-  pytestCheckHook,
-  httpx,
+  buildPythonPackage,
   fastapi,
+  httpx,
+  orjson,
+  pytestCheckHook,
+  quantile-python,
+  quart,
+  starlette,
   uvicorn,
 }:
 
 buildPythonPackage rec {
   pname = "aioprometheus";
   version = "unstable-2023-03-14";
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "claws";
@@ -31,12 +30,6 @@ buildPythonPackage rec {
     quantile-python
   ];
 
-  optional-dependencies = {
-    aiohttp = [ aiohttp ];
-    starlette = [ starlette ];
-    quart = [ quart ];
-  };
-
   nativeCheckInputs = [
     pytestCheckHook
     aiohttp-basicauth
@@ -45,6 +38,14 @@ buildPythonPackage rec {
     uvicorn
   ]
   ++ lib.concatAttrValues optional-dependencies;
+
+  format = "setuptools";
+
+  optional-dependencies = {
+    aiohttp = [ aiohttp ];
+    quart = [ quart ];
+    starlette = [ starlette ];
+  };
 
   pythonImportsCheck = [ "aioprometheus" ];
 

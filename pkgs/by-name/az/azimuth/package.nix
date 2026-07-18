@@ -2,10 +2,10 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  libGL,
   SDL2,
-  which,
+  libGL,
   pkg-config,
+  which,
   installTool ? false,
 }:
 
@@ -21,7 +21,6 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   strictDeps = true;
-  __structuredAttrs = true;
 
   nativeBuildInputs = [
     pkg-config
@@ -33,22 +32,21 @@ stdenv.mkDerivation (finalAttrs: {
     SDL2
   ];
 
-  env.NIX_CFLAGS_COMPILE = toString [ "-Wno-error=maybe-uninitialized" ];
-
   makeFlags = [
     "BUILDTYPE=release"
     "PREFIX=${placeholder "out"}"
     "INSTALLTOOL=${if installTool then "true" else "false"}"
   ];
 
-  enableParallelBuilding = true;
-
+  env.NIX_CFLAGS_COMPILE = toString [ "-Wno-error=maybe-uninitialized" ];
   doCheck = true;
+  __structuredAttrs = true;
   checkTarget = "test";
+  enableParallelBuilding = true;
 
   meta = {
     description = "Metroidvania game using only vectorial graphic";
-    mainProgram = "azimuth";
+
     longDescription = ''
       Azimuth is a metroidvania game, and something of an homage to the previous
       greats of the genre (Super Metroid in particular). You will need to pilot
@@ -59,10 +57,11 @@ stdenv.mkDerivation (finalAttrs: {
       bosses to tangle with.
     '';
 
-    license = lib.licenses.gpl3Plus;
     homepage = "https://mdsteele.games/azimuth/index.html";
+    license = lib.licenses.gpl3Plus;
     maintainers = with lib.maintainers; [ marius851000 ];
     platforms = lib.platforms.linux;
+    mainProgram = "azimuth";
   };
 
 })

@@ -2,8 +2,8 @@
   lib,
   stdenv,
   fetchurl,
-  withSaidar ? true,
   ncurses,
+  withSaidar ? true,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -18,10 +18,10 @@ stdenv.mkDerivation (finalAttrs: {
   buildInputs = lib.optional withSaidar ncurses;
 
   meta = {
-    homepage = "https://www.i-scream.org/libstatgrab/";
     description = "Library that provides cross platforms access to statistics about the running system";
-    maintainers = [ ];
+    homepage = "https://www.i-scream.org/libstatgrab/";
     license = lib.licenses.gpl2;
+    maintainers = [ ];
     platforms = lib.platforms.unix;
   };
 })

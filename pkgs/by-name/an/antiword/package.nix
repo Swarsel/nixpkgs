@@ -1,7 +1,7 @@
 {
   lib,
-  fetchurl,
   stdenv,
+  fetchurl,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -13,11 +13,6 @@ stdenv.mkDerivation (finalAttrs: {
     sha256 = "1b7mi1l20jhj09kyh0bq14qzz8vdhhyf35gzwsq43mn6rc7h0b4f";
   };
 
-  prePatch = ''
-    sed -i -e "s|/usr/local/bin|$out/bin|g" -e "s|/usr/share|$out/share|g" Makefile antiword.h
-    substituteInPlace Makefile --replace "gcc" '$(CC)'
-  '';
-
   patches = [ ./10_fix_buffer_overflow_wordole_c_CVE-2014-8123.patch ];
 
   makeFlags = [
@@ -26,11 +21,15 @@ stdenv.mkDerivation (finalAttrs: {
 
   installTargets = [ "global_install" ];
 
-  meta = {
-    homepage = "http://www.winfield.demon.nl/";
-    description = "Convert MS Word documents to plain text or PostScript";
-    license = lib.licenses.gpl2;
+  prePatch = ''
+    sed -i -e "s|/usr/local/bin|$out/bin|g" -e "s|/usr/share|$out/share|g" Makefile antiword.h
+    substituteInPlace Makefile --replace "gcc" '$(CC)'
+  '';
 
+  meta = {
+    description = "Convert MS Word documents to plain text or PostScript";
+    homepage = "http://www.winfield.demon.nl/";
+    license = lib.licenses.gpl2;
     platforms = with lib.platforms; linux ++ darwin;
   };
 })

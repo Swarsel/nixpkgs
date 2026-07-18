@@ -2,8 +2,8 @@
   lib,
   stdenv,
   fetchurl,
-  unzip,
   puredata,
+  unzip,
 }:
 
 stdenv.mkDerivation {
@@ -12,13 +12,24 @@ stdenv.mkDerivation {
 
   src = fetchurl {
     url = "https://www.katjaas.nl/helmholtz/helmholtz~.zip";
-    name = "helmholtz.zip";
-    curlOpts = "--user-agent ''";
     sha256 = "0h1fj7lmvq9j6rmw33rb8k0byxb898bi2xhcwkqalb84avhywgvs";
+    curlOpts = "--user-agent ''";
+    name = "helmholtz.zip";
   };
 
   nativeBuildInputs = [ unzip ];
   buildInputs = [ puredata ];
+
+  installPhase = ''
+    cp -r helmholtz~/ $out/
+  '';
+
+  patchPhase = ''
+    mkdir -p $out/helmholtz~
+    sed -i "s@current: pd_darwin@current: pd_linux@g" Makefile
+    sed -i "s@-Wl@@g" Makefile
+    sed -i "s@\$(NAME).pd_linux \.\./\$(NAME).pd_linux@helmholtz~.pd_linux $out/helmholtz~/@g" Makefile
+  '';
 
   unpackPhase = ''
     unzip $src
@@ -33,23 +44,12 @@ stdenv.mkDerivation {
     rm -rf __MACOSX
   '';
 
-  patchPhase = ''
-    mkdir -p $out/helmholtz~
-    sed -i "s@current: pd_darwin@current: pd_linux@g" Makefile
-    sed -i "s@-Wl@@g" Makefile
-    sed -i "s@\$(NAME).pd_linux \.\./\$(NAME).pd_linux@helmholtz~.pd_linux $out/helmholtz~/@g" Makefile
-  '';
-
-  installPhase = ''
-    cp -r helmholtz~/ $out/
-  '';
-
   meta = {
-    broken = (stdenv.hostPlatform.isLinux && stdenv.hostPlatform.isAarch64);
     description = "Time domain pitch tracker for Pure Data";
     homepage = "http://www.katjaas.nl/helmholtz/helmholtz.html";
     license = lib.licenses.bsd3;
     maintainers = [ lib.maintainers.magnetophon ];
     platforms = lib.platforms.linux;
+    broken = (stdenv.hostPlatform.isLinux && stdenv.hostPlatform.isAarch64);
   };
 }

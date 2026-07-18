@@ -1,23 +1,22 @@
 {
   lib,
-  setuptools,
+  fetchFromGitHub,
   aiohttp,
   buildPythonPackage,
-  fetchFromGitHub,
-  typing-extensions,
-  libopus,
-  pynacl,
-  pytestCheckHook,
-  pytest-asyncio,
-  looptime,
-  withVoice ? true,
   ffmpeg,
+  libopus,
+  looptime,
+  pynacl,
+  pytest-asyncio,
+  pytestCheckHook,
+  setuptools,
+  typing-extensions,
+  withVoice ? true,
 }:
 
 buildPythonPackage rec {
   pname = "disnake";
   version = "2.11.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "DisnakeDev";
@@ -25,18 +24,6 @@ buildPythonPackage rec {
     tag = "v${version}";
     hash = "sha256-pwhUX5lzqSPik/rPsT42M3AMjzWWeqFN+0mVHA84cCo=";
   };
-
-  build-system = [ setuptools ];
-
-  dependencies = [
-    aiohttp
-    typing-extensions
-  ]
-  ++ lib.optionals withVoice [
-    libopus
-    pynacl
-    ffmpeg
-  ];
 
   postPatch = lib.optionalString withVoice ''
     substituteInPlace "disnake/opus.py" \
@@ -50,6 +37,20 @@ buildPythonPackage rec {
     pytest-asyncio
     looptime
   ];
+
+  build-system = [ setuptools ];
+
+  dependencies = [
+    aiohttp
+    typing-extensions
+  ]
+  ++ lib.optionals withVoice [
+    libopus
+    pynacl
+    ffmpeg
+  ];
+
+  pyproject = true;
 
   pytestFlags = [
     # DeprecationWarning: There is no current event loop

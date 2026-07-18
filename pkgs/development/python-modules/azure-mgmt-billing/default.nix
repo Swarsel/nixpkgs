@@ -12,14 +12,15 @@
 buildPythonPackage rec {
   pname = "azure-mgmt-billing";
   version = "7.0.0";
-  pyproject = true;
 
   src = fetchPypi {
-    pname = "azure_mgmt_billing";
     inherit version;
     hash = "sha256-jgplxlEQtTpCk35b7WrgDvydYgaXLZa/1KdOgMhcLXs=";
+    pname = "azure_mgmt_billing";
   };
 
+  # Module has no tests
+  doCheck = false;
   build-system = [ setuptools ];
 
   dependencies = [
@@ -29,10 +30,8 @@ buildPythonPackage rec {
     typing-extensions
   ];
 
+  pyproject = true;
   pythonNamespaces = [ "azure.mgmt" ];
-
-  # Module has no tests
-  doCheck = false;
 
   meta = {
     description = "This is the Microsoft Azure Billing Client Library";

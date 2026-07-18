@@ -1,8 +1,8 @@
 {
+  lib,
+  fetchFromGitHub,
   buildPythonPackage,
   click,
-  fetchFromGitHub,
-  lib,
   nix-update-script,
   setuptools-scm,
 }:
@@ -10,7 +10,6 @@
 buildPythonPackage rec {
   pname = "click-odoo";
   version = "1.8.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "acsone";
@@ -20,16 +19,15 @@ buildPythonPackage rec {
   };
 
   build-system = [ setuptools-scm ];
-
   dependencies = [ click ];
-
+  pyproject = true;
   passthru.updateScript = nix-update-script { };
 
   meta = {
     description = "Odoo scripting helper library";
-    mainProgram = "click-odoo";
     homepage = "https://github.com/acsone/click-odoo";
     license = lib.licenses.lgpl3Only;
     maintainers = with lib.maintainers; [ yajo ];
+    mainProgram = "click-odoo";
   };
 }

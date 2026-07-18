@@ -7,14 +7,14 @@
   build system is required, the attribute `run` can be used.
 */
 {
-  stdenv,
   lib,
+  stdenv,
   fetchurl,
-  ocaml,
   findlib,
+  ocaml,
   ocamlbuild,
-  result,
   opaline,
+  result,
 }:
 
 let
@@ -32,8 +32,8 @@ let
     else
       {
         version = "1.0.0";
-        hash = "sha256:1df61vw6v5bg2mys045682ggv058yqkqb67w7r2gz85crs04d5fw";
         propagatedBuildInputs = [ result ];
+        hash = "sha256:1df61vw6v5bg2mys045682ggv058yqkqb67w7r2gz85crs04d5fw";
       };
 
   /*
@@ -46,34 +46,33 @@ let
 in
 
 stdenv.mkDerivation rec {
-  pname = "ocaml${ocaml.version}-topkg";
   inherit (param) version;
+  pname = "ocaml${ocaml.version}-topkg";
 
   src = fetchurl {
-    url = "https://erratique.ch/software/topkg/releases/topkg-${version}.tbz";
     inherit (param) hash;
+    url = "https://erratique.ch/software/topkg/releases/topkg-${version}.tbz";
   };
+
+  strictDeps = true;
 
   nativeBuildInputs = [
     ocaml
     findlib
     ocamlbuild
   ];
+
   propagatedBuildInputs = param.propagatedBuildInputs or [ ];
-
-  strictDeps = true;
-
   buildPhase = "${run} build";
-  createFindlibDestdir = true;
   installPhase = "${opaline}/bin/opaline -prefix $out -libdir $OCAMLFIND_DESTDIR";
-
+  createFindlibDestdir = true;
   passthru = { inherit run; };
 
   meta = {
+    inherit (ocaml.meta) platforms;
+    description = "Packager for distributing OCaml software";
     homepage = "https://erratique.ch/software/topkg";
     license = lib.licenses.isc;
     maintainers = [ lib.maintainers.vbgl ];
-    description = "Packager for distributing OCaml software";
-    inherit (ocaml.meta) platforms;
   };
 }

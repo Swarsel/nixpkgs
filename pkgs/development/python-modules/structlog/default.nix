@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   hatch-fancy-pypi-readme,
   hatch-vcs,
   hatchling,
@@ -13,7 +13,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "structlog";
   version = "26.1.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "hynek";
@@ -22,18 +21,19 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-Q31eqeRYAbwn6Cj3hkXfy3udeBHHglEk5/qTjKbBbL8=";
   };
 
-  build-system = [
-    hatch-fancy-pypi-readme
-    hatch-vcs
-    hatchling
-  ];
-
   nativeCheckInputs = [
     pytest-asyncio
     pytestCheckHook
     time-machine
   ];
 
+  build-system = [
+    hatch-fancy-pypi-readme
+    hatch-vcs
+    hatchling
+  ];
+
+  pyproject = true;
   pythonImportsCheck = [ "structlog" ];
 
   meta = {

@@ -1,14 +1,14 @@
 {
   lib,
   stdenv,
-  ruby,
   fetchurl,
-  openssl,
-  ncurses,
   libiconv,
-  tcl,
   libxcrypt,
+  ncurses,
+  openssl,
   perl,
+  ruby,
+  tcl,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -19,6 +19,10 @@ stdenv.mkDerivation (finalAttrs: {
     url = "https://ftp.epicsol.org/pub/epic/EPIC5-PRODUCTION/epic5-${finalAttrs.version}.tar.xz";
     hash = "sha256-Y6QRIVwUBAtltdcor/EPdSPVXhcPYpj7AeHPlY150yY=";
   };
+
+  nativeBuildInputs = [
+    perl
+  ];
 
   buildInputs = [
     openssl
@@ -35,13 +39,9 @@ stdenv.mkDerivation (finalAttrs: {
     "--with-ipv6"
   ];
 
-  nativeBuildInputs = [
-    perl
-  ];
-
   meta = {
-    homepage = "https://epicsol.org";
     description = "IRC client that offers a great ircII interface";
+    homepage = "https://epicsol.org";
     license = lib.licenses.bsd3;
     maintainers = with lib.maintainers; [ bot-wxt1221 ];
     platforms = lib.platforms.unix;

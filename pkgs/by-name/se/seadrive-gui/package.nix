@@ -1,17 +1,17 @@
 {
   lib,
   stdenv,
-  fetchpatch,
-  nix-update-script,
   fetchFromGitHub,
-  pkg-config,
   cmake,
-  qt6,
-  libuuid,
-  seafile-shared,
+  fetchpatch,
   jansson,
   libsearpc,
+  libuuid,
+  nix-update-script,
+  pkg-config,
+  qt6,
   seadrive-fuse,
+  seafile-shared,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -61,14 +61,16 @@ stdenv.mkDerivation (finalAttrs: {
   passthru.updateScript = nix-update-script { };
 
   meta = {
+    description = "GUI part of Seafile drive";
     homepage = "https://github.com/haiwen/seadrive-gui";
     changelog = "https://github.com/haiwen/seadrive-gui/releases/tag/v${finalAttrs.version}";
-    description = "GUI part of Seafile drive";
     license = lib.licenses.asl20;
-    platforms = lib.platforms.linux;
+
     maintainers = with lib.maintainers; [
       wenbin-liu
     ];
+
+    platforms = lib.platforms.linux;
     mainProgram = "seadrive-gui";
   };
 })

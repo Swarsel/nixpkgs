@@ -2,17 +2,17 @@
   lib,
   stdenv,
   fetchurl,
-  pkg-config,
-  meson,
-  ninja,
+  desktop-file-utils,
   gettext,
   gnome,
-  packagekit,
-  polkit,
   gtk3,
+  meson,
+  ninja,
+  packagekit,
+  pkg-config,
+  polkit,
   systemd,
   wrapGAppsHook3,
-  desktop-file-utils,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -23,6 +23,10 @@ stdenv.mkDerivation (finalAttrs: {
     url = "mirror://gnome/sources/gnome-packagekit/${lib.versions.major finalAttrs.version}/gnome-packagekit-${finalAttrs.version}.tar.xz";
     hash = "sha256-zaRVplKpI7LqL3Axa9D92Clve2Lu8/r9nOUMjmbF8ZU=";
   };
+
+  postPatch = ''
+    patchShebangs meson_post_install.sh
+  '';
 
   nativeBuildInputs = [
     pkg-config
@@ -40,10 +44,6 @@ stdenv.mkDerivation (finalAttrs: {
     polkit
   ];
 
-  postPatch = ''
-    patchShebangs meson_post_install.sh
-  '';
-
   passthru = {
     updateScript = gnome.updateScript {
       packageName = "gnome-packagekit";
@@ -51,10 +51,10 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   meta = {
+    description = "Tools for installing software on the GNOME desktop using PackageKit";
     homepage = "https://www.freedesktop.org/software/PackageKit/";
+    license = lib.licenses.gpl2;
     platforms = lib.platforms.linux;
     teams = [ lib.teams.gnome ];
-    license = lib.licenses.gpl2;
-    description = "Tools for installing software on the GNOME desktop using PackageKit";
   };
 })

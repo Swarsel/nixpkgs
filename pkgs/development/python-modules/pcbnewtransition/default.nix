@@ -1,14 +1,13 @@
 {
+  lib,
   buildPythonPackage,
   fetchPypi,
-  lib,
   kicad,
   versioneer,
 }:
 buildPythonPackage rec {
   pname = "pcbnewtransition";
   version = "0.5.2";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit pname;
@@ -16,10 +15,9 @@ buildPythonPackage rec {
     hash = "sha256-zLnvbu0G2mJKCHLCjbIKHBqSfdEyhR+1afkOFU++TfI=";
   };
 
-  propagatedBuildInputs = [ kicad ];
-
   nativeBuildInputs = [ versioneer ];
-
+  propagatedBuildInputs = [ kicad ];
+  format = "setuptools";
   pythonImportsCheck = [ "pcbnewTransition" ];
 
   meta = {
@@ -27,6 +25,7 @@ buildPythonPackage rec {
     homepage = "https://github.com/yaqwsx/pcbnewTransition";
     changelog = "https://github.com/yaqwsx/pcbnewTransition/releases/tag/v${version}";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       jfly
       matusf

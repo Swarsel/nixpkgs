@@ -1,17 +1,15 @@
 {
   lib,
+  kak-tree-sitter-unwrapped,
   makeWrapper,
   symlinkJoin,
   tinycc,
-  kak-tree-sitter-unwrapped,
 }:
 
 symlinkJoin (finalAttrs: {
-  pname = lib.replaceStrings [ "-unwrapped" ] [ "" ] kak-tree-sitter-unwrapped.pname;
   inherit (kak-tree-sitter-unwrapped) version;
-  name = "${finalAttrs.pname}-${finalAttrs.version}";
-
-  paths = [ kak-tree-sitter-unwrapped ];
+  inherit (kak-tree-sitter-unwrapped) meta;
+  pname = lib.replaceStrings [ "-unwrapped" ] [ "" ] kak-tree-sitter-unwrapped.pname;
   nativeBuildInputs = [ makeWrapper ];
 
   # Tree-Sitter grammars are C programs that need to be compiled
@@ -23,5 +21,6 @@ symlinkJoin (finalAttrs: {
       --suffix PATH : $out/libexec/tinycc/bin
   '';
 
-  inherit (kak-tree-sitter-unwrapped) meta;
+  name = "${finalAttrs.pname}-${finalAttrs.version}";
+  paths = [ kak-tree-sitter-unwrapped ];
 })

@@ -16,17 +16,13 @@ stdenv.mkDerivation {
     hash = "sha256-LxVcYj2WKHbhNu5x/DFkxQPOYrVkNvwiE/qcODq52Lc=";
   };
 
-  nativeBuildInputs = [
-    perlPackages.perl
-  ];
-
   postPatch = ''
     patchShebangs triehash.pl
   '';
 
-  dontConfigure = true;
-
-  dontBuild = true;
+  nativeBuildInputs = [
+    perlPackages.perl
+  ];
 
   installPhase = ''
     runHook preInstall
@@ -39,9 +35,12 @@ stdenv.mkDerivation {
     runHook postInstall
   '';
 
+  dontBuild = true;
+  dontConfigure = true;
+
   meta = {
-    homepage = "https://github.com/julian-klode/triehash";
     description = "Order-preserving minimal perfect hash function generator";
+    homepage = "https://github.com/julian-klode/triehash";
     license = with lib.licenses; mit;
     maintainers = [ ];
     platforms = perlPackages.perl.meta.platforms;

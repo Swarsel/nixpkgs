@@ -1,8 +1,8 @@
 {
   lib,
+  fetchFromGitHub,
   buildPythonPackage,
   cffi,
-  fetchFromGitHub,
   pytestCheckHook,
   setuptools,
 }:
@@ -10,7 +10,6 @@
 buildPythonPackage rec {
   pname = "pyspx";
   version = "0.5.2";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "sphincs";
@@ -20,13 +19,14 @@ buildPythonPackage rec {
     fetchSubmodules = true;
   };
 
+  nativeCheckInputs = [ pytestCheckHook ];
+
   build-system = [
     cffi
     setuptools
   ];
 
-  nativeCheckInputs = [ pytestCheckHook ];
-
+  pyproject = true;
   pythonImportsCheck = [ "pyspx" ];
 
   meta = {

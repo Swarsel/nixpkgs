@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
 }:
 buildGoModule rec {
   pname = "protolint";
@@ -15,7 +15,6 @@ buildGoModule rec {
   };
 
   vendorHash = "sha256-RS0t7n6pLYVKHluQtXsMjYL1SvN7IZFdKmkxOI8wFoE=";
-
   # Something about the way we run tests causes issues. It doesn't happen
   # when using "go test" directly:
   # === RUN   TestEnumFieldNamesPrefixRule_Apply_fix/no_fix_for_a_correct_proto
@@ -39,8 +38,8 @@ buildGoModule rec {
     description = "Pluggable linter and fixer to enforce Protocol Buffer style and conventions";
     homepage = "https://github.com/yoheimuta/protolint";
     license = lib.licenses.mit;
-    platforms = lib.platforms.all;
     maintainers = [ ];
+    platforms = lib.platforms.all;
     mainProgram = "protolint";
   };
 }

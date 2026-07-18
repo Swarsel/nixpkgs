@@ -2,8 +2,8 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  which,
   gmp,
+  which,
   avx2Support ? stdenv.hostPlatform.avx2Support,
 }:
 
@@ -40,17 +40,12 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-fW6Tc0UEPYFTgEFMUxZaVm2NU5LNFqszifqOqfdFJZY=";
   };
 
-  nativeBuildInputs = [ which ];
-  buildInputs = [ gmp ];
-
   patches = [
     ./fix-install-path.patch
   ];
 
-  enableParallelBuilding = true;
-
-  dontConfigure = true;
-
+  nativeBuildInputs = [ which ];
+  buildInputs = [ gmp ];
   env.NIX_LDFLAGS = "-lgmp";
 
   buildPhase = ''
@@ -77,22 +72,29 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstallCheck
   '';
 
+  dontConfigure = true;
+  enableParallelBuilding = true;
+
   meta = {
-    homepage = "https://jsoftware.com/";
-    changelog = "https://code.jsoftware.com/wiki/System/ReleaseNotes";
     description = "J programming language, an ASCII-based APL successor";
+
     longDescription = ''
       J is a high-level, general-purpose programming language that is
       particularly suited to the mathematical, statistical, and logical analysis
       of data. It is a powerful tool for developing algorithms and exploring
       problems that are not already well understood.
     '';
+
+    homepage = "https://jsoftware.com/";
+    changelog = "https://code.jsoftware.com/wiki/System/ReleaseNotes";
     license = lib.licenses.gpl3Only;
+
     maintainers = with lib.maintainers; [
       raskin
     ];
-    broken = stdenv.hostPlatform.isDarwin;
+
     platforms = lib.platforms.all;
     mainProgram = "jconsole";
+    broken = stdenv.hostPlatform.isDarwin;
   };
 })

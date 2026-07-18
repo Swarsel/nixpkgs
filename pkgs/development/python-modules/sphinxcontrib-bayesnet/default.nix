@@ -9,7 +9,6 @@
 buildPythonPackage rec {
   pname = "sphinxcontrib-bayesnet";
   version = "0.4";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
@@ -23,13 +22,13 @@ buildPythonPackage rec {
 
   # No tests
   doCheck = false;
+  format = "setuptools";
   pythonImportsCheck = [ "sphinxcontrib.bayesnet" ];
-
   pythonNamespaces = [ "sphinxcontrib" ];
 
   meta = {
-    homepage = "https://github.com/jluttine/sphinx-bayesnet";
     description = "Bayesian networks and factor graphs in Sphinx using TikZ syntax";
+    homepage = "https://github.com/jluttine/sphinx-bayesnet";
     license = lib.licenses.gpl3Only;
     maintainers = with lib.maintainers; [ jluttine ];
   };

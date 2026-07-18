@@ -2,10 +2,10 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  ncurses,
-  readline,
   autoreconfHook,
+  ncurses,
   pkg-config,
+  readline,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -29,8 +29,6 @@ stdenv.mkDerivation (finalAttrs: {
     readline
   ];
 
-  hardeningDisable = [ "fortify" ];
-
   env.NIX_CFLAGS_COMPILE = "-std=gnu99";
 
   preConfigure = ''
@@ -43,11 +41,13 @@ stdenv.mkDerivation (finalAttrs: {
     sed -e "s@\$(DESTDIR)/lib/udev/rules.d@$out/lib/udev/rules.d@" -i pktsetup/Makefile.am
   '';
 
+  hardeningDisable = [ "fortify" ];
+
   meta = {
     description = "UDF tools";
     homepage = "https://github.com/pali/udftools";
+    license = lib.licenses.gpl2Plus;
     maintainers = with lib.maintainers; [ raskin ];
     platforms = lib.platforms.linux;
-    license = lib.licenses.gpl2Plus;
   };
 })

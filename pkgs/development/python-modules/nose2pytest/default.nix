@@ -1,11 +1,11 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   fetchpatch2,
-  setuptools,
   fissix,
   pytest,
+  setuptools,
 }:
 
 let
@@ -13,9 +13,8 @@ let
 in
 
 buildPythonPackage {
-  pname = "nose2pytest";
   inherit version;
-  pyproject = true;
+  pname = "nose2pytest";
 
   src = fetchFromGitHub {
     owner = "pytest-dev";
@@ -29,11 +28,13 @@ buildPythonPackage {
     #
     # Relaxes the runtime check for Python < 3.12.
     (fetchpatch2 {
-      url = "https://github.com/pytest-dev/nose2pytest/commit/75ff506aaf11b5e20672441730657ee7540387e1.patch?full_index=1";
       hash = "sha256-BpazrsB4b1oMBx9OemdVxhj/Jqbc8RKv2GC6gqkdGK8=";
+      url = "https://github.com/pytest-dev/nose2pytest/commit/75ff506aaf11b5e20672441730657ee7540387e1.patch?full_index=1";
     })
   ];
 
+  # Tests depend on nose!
+  doCheck = false;
   build-system = [ setuptools ];
 
   dependencies = [
@@ -41,16 +42,14 @@ buildPythonPackage {
     pytest
   ];
 
-  # Tests depend on nose!
-  doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "nose2pytest.assert_tools" ];
 
   meta = {
     description = "Scripts to convert Python Nose tests to PyTest";
     homepage = "https://github.com/pytest-dev/nose2pytest";
-    sourceProvenance = [ lib.sourceTypes.fromSource ];
     license = lib.licenses.bsd3;
+    sourceProvenance = [ lib.sourceTypes.fromSource ];
     maintainers = [ lib.maintainers.emily ];
     mainProgram = "nose2pytest";
   };

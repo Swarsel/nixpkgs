@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   setuptools,
   wheel,
 }:
@@ -9,7 +9,6 @@
 buildPythonPackage rec {
   pname = "netifaces-plus";
   version = "0.12.4";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "tsukumijima";
@@ -23,6 +22,7 @@ buildPythonPackage rec {
     wheel
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "netifaces" ];
 
   meta = {

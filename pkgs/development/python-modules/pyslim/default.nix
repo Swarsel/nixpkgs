@@ -2,16 +2,15 @@
   lib,
   buildPythonPackage,
   fetchPypi,
-  setuptools-scm,
   msprime,
   numpy,
+  setuptools-scm,
   tskit,
 }:
 
 buildPythonPackage rec {
   pname = "pyslim";
   version = "1.1.0";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
@@ -28,7 +27,7 @@ buildPythonPackage rec {
 
   # Requires non-packaged software SLiM
   doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "pyslim" ];
 
   meta = {

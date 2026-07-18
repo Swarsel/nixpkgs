@@ -3,10 +3,10 @@
   stdenv,
   fetchFromGitHub,
   cmake,
-  qttools,
+  kcolorpicker,
   qtbase,
   qtsvg,
-  kcolorpicker,
+  qttools,
 }:
 
 let
@@ -27,10 +27,12 @@ stdenv.mkDerivation rec {
     cmake
     qttools
   ];
+
   buildInputs = [
     qtbase
     qtsvg
   ];
+
   propagatedBuildInputs = [ kcolorpicker ];
 
   cmakeFlags = [

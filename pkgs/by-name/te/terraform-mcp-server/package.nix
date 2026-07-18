@@ -1,7 +1,7 @@
 {
-  buildGoModule,
-  fetchFromGitHub,
   lib,
+  fetchFromGitHub,
+  buildGoModule,
   versionCheckHook,
 }:
 buildGoModule (finalAttrs: {
@@ -16,6 +16,11 @@ buildGoModule (finalAttrs: {
   };
 
   vendorHash = "sha256-6azUKwzkVg68SvuVlse5ljB2H49tRUWgDasLjEl8KKw=";
+  doInstallCheck = true;
+
+  nativeInstallCheckInputs = [
+    versionCheckHook
+  ];
 
   ldflags = [
     "-X main.version=${finalAttrs.version}"
@@ -24,13 +29,9 @@ buildGoModule (finalAttrs: {
 
   subPackages = [ "cmd/terraform-mcp-server" ];
 
-  nativeInstallCheckInputs = [
-    versionCheckHook
-  ];
-  doInstallCheck = true;
-
   meta = {
     description = "Terraform Model Context Protocol (MCP) Server";
+
     longDescription = ''
       The Terraform MCP Server is a Go implementation of the Model Context
       Protocol (MCP) server that provides seamless integration with Terraform
@@ -40,12 +41,15 @@ buildGoModule (finalAttrs: {
       This server allows LLMs to interact with Terraform modules, providers,
       and other Terraform Registry features through structured API interactions.
     '';
+
     homepage = "https://github.com/hashicorp/terraform-mcp-server";
     license = lib.licenses.mpl20;
+
     maintainers = with lib.maintainers; [
       connerohnesorge
       pilz
     ];
+
     mainProgram = "terraform-mcp-server";
   };
 })

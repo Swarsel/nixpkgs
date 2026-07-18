@@ -1,19 +1,18 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  django-environ,
+  buildPythonPackage,
   django,
-  pytestCheckHook,
+  django-environ,
   pytest-django,
   pytest-xdist,
+  pytestCheckHook,
   setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "django-guardian";
   version = "3.2.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "django-guardian";
@@ -22,10 +21,6 @@ buildPythonPackage rec {
     hash = "sha256-imisHa5DOIQrQCEPWC/0EqPjDq12tR3xr0Dl1VifJoI=";
   };
 
-  build-system = [ setuptools ];
-
-  dependencies = [ django ];
-
   nativeCheckInputs = [
     django-environ
     pytestCheckHook
@@ -33,6 +28,9 @@ buildPythonPackage rec {
     pytest-xdist
   ];
 
+  build-system = [ setuptools ];
+  dependencies = [ django ];
+  pyproject = true;
   pythonImportsCheck = [ "guardian" ];
 
   meta = {

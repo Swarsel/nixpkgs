@@ -10,29 +10,32 @@
 let
   versions = {
     "0.13.0" = {
-      llvmPackages = llvmPackages_18;
       hash = "sha256-5qSiTq+UWGOwjDVZMIrAt2cDKHkyNPBSAEjpRQUByFM=";
+      llvmPackages = llvmPackages_18;
     };
+
     "0.14.1" = {
-      llvmPackages = llvmPackages_19;
       hash = "sha256-DhVJIY/z12PJZdb5j4dnCRb7k1CmeQVOnayYRP8azDI=";
+      llvmPackages = llvmPackages_19;
     };
+
     "0.15.2" = {
-      llvmPackages = llvmPackages_20;
       hash = "sha256-u3pEMcYN71d83MJh14vtzU4DJXnMHu/Jw86d9XvwKE8=";
+      llvmPackages = llvmPackages_20;
     };
+
     "0.16.0" = {
-      llvmPackages = llvmPackages_21;
       hash = "sha256-2sTMhaasyrKoBnyH/hQrNCbi0Vh6HekIrpE4XkyQulQ=";
+      llvmPackages = llvmPackages_21;
     };
   }
   // zigVersions;
 
   mkPackage =
     {
-      version,
       hash,
       llvmPackages,
+      version,
     }@args:
     callPackage ./generic.nix args;
 

@@ -2,8 +2,8 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  fetchpatch,
   cmake,
+  fetchpatch,
   pkg-config,
 }:
 
@@ -20,9 +20,9 @@ stdenv.mkDerivation (finalAttrs: {
 
   patches = [
     (fetchpatch {
+      hash = "sha256-q62EWnJmQzBtra1xL0N7rC4RARJZQ/HAVyorzvB7XFY=";
       name = "libebml-fix-cmake-4.patch";
       url = "https://github.com/Matroska-Org/libebml/commit/6725c5f0169981cb0bd2ee124fbf0d8ca30b762d.patch";
-      hash = "sha256-q62EWnJmQzBtra1xL0N7rC4RARJZQ/HAVyorzvB7XFY=";
     })
   ];
 

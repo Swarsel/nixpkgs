@@ -1,10 +1,10 @@
 {
   lib,
   stdenv,
-  fetchzip,
-  unzip,
-  testers,
   chromedriver,
+  fetchzip,
+  testers,
+  unzip,
 }:
 
 let
@@ -16,8 +16,8 @@ let
   allSpecs = {
 
     aarch64-darwin = {
-      system = "mac-arm64";
       hash = upstream-info.hash_darwin_aarch64;
+      system = "mac-arm64";
     };
   };
 
@@ -28,12 +28,12 @@ let
   inherit (upstream-info) version;
 in
 stdenv.mkDerivation {
-  pname = "chromedriver";
   inherit version;
+  pname = "chromedriver";
 
   src = fetchzip {
-    url = "https://storage.googleapis.com/chrome-for-testing-public/${version}/${spec.system}/chromedriver-${spec.system}.zip";
     inherit (spec) hash;
+    url = "https://storage.googleapis.com/chrome-for-testing-public/${version}/${spec.system}/chromedriver-${spec.system}.zip";
   };
 
   nativeBuildInputs = [ unzip ];
@@ -45,16 +45,18 @@ stdenv.mkDerivation {
   passthru.tests.version = testers.testVersion { package = chromedriver; };
 
   meta = {
-    homepage = "https://chromedriver.chromium.org/";
     description = "WebDriver server for running Selenium tests on Chrome";
+
     longDescription = ''
       WebDriver is an open source tool for automated testing of webapps across
       many browsers. It provides capabilities for navigating to web pages, user
       input, JavaScript execution, and more. ChromeDriver is a standalone
       server that implements the W3C WebDriver standard.
     '';
-    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
+
+    homepage = "https://chromedriver.chromium.org/";
     license = lib.licenses.bsd3;
+    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
     maintainers = [ ];
     # Note from primeos: By updating Chromium I also update Google Chrome and
     # ChromeDriver.

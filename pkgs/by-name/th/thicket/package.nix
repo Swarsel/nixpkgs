@@ -1,7 +1,7 @@
 {
   lib,
-  crystal,
   fetchFromGitHub,
+  crystal,
 }:
 
 crystal.buildCrystalPackage rec {
@@ -15,12 +15,10 @@ crystal.buildCrystalPackage rec {
     sha256 = "sha256-sF+fNKEZEfjpW3buh6kFUpL1P0yO9g4SrTb0rhx1uNc=";
   };
 
-  format = "shards";
-
-  crystalBinaries.thicket.src = "src/thicket.cr";
-
   # there is one test that tries to clone a repo
   doCheck = false;
+  crystalBinaries.thicket.src = "src/thicket.cr";
+  format = "shards";
 
   meta = {
     description = "Better one-line git log";

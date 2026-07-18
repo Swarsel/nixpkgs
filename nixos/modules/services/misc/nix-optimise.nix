@@ -9,37 +9,26 @@ in
     nix.optimise = {
       automatic = lib.mkOption {
         default = false;
-        type = lib.types.bool;
         description = "Automatically run the nix store optimiser at a specific time.";
+        type = lib.types.bool;
       };
 
       dates = lib.mkOption {
-        default = [ "03:45" ];
         apply = lib.toList;
-        type = with lib.types; either singleLineStr (listOf str);
+        default = [ "03:45" ];
+
         description = ''
           Specification (in the format described by
           {manpage}`systemd.time(7)`) of the time at
           which the optimiser will run.
         '';
-      };
 
-      randomizedDelaySec = lib.mkOption {
-        default = "1800";
-        type = lib.types.singleLineStr;
-        example = "45min";
-        description = ''
-          Add a randomized delay before the optimizer will run.
-          The delay will be chosen between zero and this value.
-          This value must be a time span in the format specified by
-          {manpage}`systemd.time(7)`
-        '';
+        type = with lib.types; either singleLineStr (listOf str);
       };
 
       persistent = lib.mkOption {
         default = true;
-        type = lib.types.bool;
-        example = false;
+
         description = ''
           Takes a boolean argument. If true, the time when the service
           unit was last triggered is stored on disk. When the timer is
@@ -50,6 +39,23 @@ in
           useful to catch up on missed runs of the service when the
           system was powered down.
         '';
+
+        example = false;
+        type = lib.types.bool;
+      };
+
+      randomizedDelaySec = lib.mkOption {
+        default = "1800";
+
+        description = ''
+          Add a randomized delay before the optimizer will run.
+          The delay will be chosen between zero and this value.
+          This value must be a time span in the format specified by
+          {manpage}`systemd.time(7)`
+        '';
+
+        example = "45min";
+        type = lib.types.singleLineStr;
       };
     };
   };
@@ -65,26 +71,29 @@ in
     systemd = lib.mkIf config.nix.enable {
       services.nix-optimise = {
         description = "Nix Store Optimiser";
+        # do not start and delay when switching
+        restartIfChanged = false;
+
+        serviceConfig = {
+          CPUSchedulingPolicy = "idle";
+          ExecStart = "${lib.getExe' config.nix.package "nix-store"} --optimise";
+          IOSchedulingClass = "idle";
+          Nice = 19;
+        };
+
+        startAt = lib.optionals cfg.automatic cfg.dates;
+
         unitConfig = {
           ConditionACPower = true;
           # No point this if the nix daemon (and thus the nix store) is outside
           ConditionPathIsReadWrite = "/nix/var/nix/daemon-socket";
         };
-        serviceConfig = {
-          ExecStart = "${lib.getExe' config.nix.package "nix-store"} --optimise";
-          Nice = 19;
-          CPUSchedulingPolicy = "idle";
-          IOSchedulingClass = "idle";
-        };
-        startAt = lib.optionals cfg.automatic cfg.dates;
-        # do not start and delay when switching
-        restartIfChanged = false;
       };
 
       timers.nix-optimise = lib.mkIf cfg.automatic {
         timerConfig = {
-          RandomizedDelaySec = cfg.randomizedDelaySec;
           Persistent = cfg.persistent;
+          RandomizedDelaySec = cfg.randomizedDelaySec;
         };
       };
     };

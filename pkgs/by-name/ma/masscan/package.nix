@@ -4,8 +4,8 @@
   fetchFromGitHub,
   fetchpatch,
   installShellFiles,
-  makeWrapper,
   libpcap,
+  makeWrapper,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -23,8 +23,8 @@ stdenv.mkDerivation (finalAttrs: {
     # Patches the missing "--resume" functionality
     (fetchpatch {
       name = "resume.patch";
-      url = "https://github.com/robertdavidgraham/masscan/commit/90791550bbdfac8905917a109ed74024161f14b3.patch";
       sha256 = "sha256-A7Fk3MBNxaad69MrUYg7fdMG77wba5iESDTIRigYslw=";
+      url = "https://github.com/robertdavidgraham/masscan/commit/90791550bbdfac8905917a109ed74024161f14b3.patch";
     })
   ];
 
@@ -44,8 +44,6 @@ stdenv.mkDerivation (finalAttrs: {
     "CC=${stdenv.cc.targetPrefix}cc"
   ];
 
-  enableParallelBuilding = true;
-
   postInstall = ''
     installManPage doc/masscan.?
 
@@ -63,13 +61,15 @@ stdenv.mkDerivation (finalAttrs: {
     $out/bin/masscan --selftest
   '';
 
+  enableParallelBuilding = true;
+
   meta = {
     description = "Fast scan of the Internet";
-    mainProgram = "masscan";
     homepage = "https://github.com/robertdavidgraham/masscan";
     changelog = "https://github.com/robertdavidgraham/masscan/releases/tag/${finalAttrs.version}";
     license = lib.licenses.agpl3Only;
-    platforms = lib.platforms.unix;
     maintainers = with lib.maintainers; [ rnhmjoj ];
+    platforms = lib.platforms.unix;
+    mainProgram = "masscan";
   };
 })

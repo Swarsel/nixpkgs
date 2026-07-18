@@ -1,20 +1,16 @@
 {
-  buildPythonPackage,
   acme,
   boto3,
+  buildPythonPackage,
   certbot,
   pytestCheckHook,
   setuptools,
 }:
 
 buildPythonPackage rec {
-  pname = "certbot-dns-route53";
-  pyproject = true;
-
   inherit (certbot) src version;
-
-  sourceRoot = "${src.name}/certbot-dns-route53";
-
+  pname = "certbot-dns-route53";
+  nativeCheckInputs = [ pytestCheckHook ];
   build-system = [ setuptools ];
 
   dependencies = [
@@ -23,7 +19,7 @@ buildPythonPackage rec {
     certbot
   ];
 
-  nativeCheckInputs = [ pytestCheckHook ];
+  pyproject = true;
 
   pytestFlags = [
     "-pno:cacheprovider"
@@ -31,6 +27,8 @@ buildPythonPackage rec {
     # Monitor https://github.com/certbot/certbot/issues/9606 for a solution
     "-Wignore::DeprecationWarning"
   ];
+
+  sourceRoot = "${src.name}/certbot-dns-route53";
 
   meta = certbot.meta // {
     description = "Route53 DNS Authenticator plugin for Certbot";

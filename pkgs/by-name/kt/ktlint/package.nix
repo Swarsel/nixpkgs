@@ -2,9 +2,9 @@
   lib,
   stdenv,
   fetchurl,
-  makeWrapper,
-  jre_headless,
   gnused,
+  jre_headless,
+  makeWrapper,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -17,8 +17,6 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   nativeBuildInputs = [ makeWrapper ];
-
-  dontUnpack = true;
 
   installPhase = ''
     install -Dm755 $src $out/bin/ktlint
@@ -33,17 +31,21 @@ stdenv.mkDerivation (finalAttrs: {
     }"
   '';
 
+  dontUnpack = true;
+
   meta = {
     description = "Anti-bikeshedding Kotlin linter with built-in formatter";
     homepage = "https://ktlint.github.io/";
-    license = lib.licenses.mit;
-    platforms = jre_headless.meta.platforms;
     changelog = "https://github.com/pinterest/ktlint/blob/master/CHANGELOG.md";
+    license = lib.licenses.mit;
+    sourceProvenance = with lib.sourceTypes; [ binaryBytecode ];
+
     maintainers = with lib.maintainers; [
       tadfisher
       SubhrajyotiSen
     ];
-    sourceProvenance = with lib.sourceTypes; [ binaryBytecode ];
+
+    platforms = jre_headless.meta.platforms;
     mainProgram = "ktlint";
   };
 })

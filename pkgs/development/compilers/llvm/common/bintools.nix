@@ -1,11 +1,11 @@
 {
   lib,
-  runCommand,
   stdenv,
-  llvm,
   lld,
-  version,
+  llvm,
   release_version,
+  runCommand,
+  version,
 }:
 
 let
@@ -18,11 +18,13 @@ runCommand "${pname}-${version}"
   {
     inherit pname version;
     preferLocalBuild = true;
+
     passthru = {
-      isLLVM = true;
       inherit targetPrefix;
       inherit llvm lld;
+      isLLVM = true;
     };
+
     meta = {
       inherit (llvm.meta) teams;
     };

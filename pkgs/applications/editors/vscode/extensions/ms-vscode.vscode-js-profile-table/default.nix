@@ -1,18 +1,17 @@
 {
   lib,
-  stdenvNoCC,
   fetchFromGitHub,
   fetchNpmDeps,
+  nix-update-script,
   nodejs,
   npmHooks,
+  stdenvNoCC,
   vsce,
   vscode-utils,
-  nix-update-script,
 }:
 
 let
   vsix = stdenvNoCC.mkDerivation (finalAttrs: {
-    name = "vscode-js-profile-table-${finalAttrs.version}.vsix";
     pname = "vscode-js-profile-table-vsix";
     version = "1.0.10";
 
@@ -24,21 +23,13 @@ let
     };
 
     patches = [ ./package-lock-json.patch ];
-
-    npmDeps = fetchNpmDeps {
-      name = "${finalAttrs.pname}-npm-deps";
-      inherit (finalAttrs) src patches;
-      hash = "sha256-4Z5MjEM5WUKtISDjkpaEPR3jl1WWI7cbV4uTmgVoloU=";
-    };
-    makeCacheWritable = true;
+    strictDeps = true;
 
     nativeBuildInputs = [
       nodejs
       npmHooks.npmConfigHook
       vsce
     ];
-
-    strictDeps = true;
 
     buildPhase = ''
       runHook preBuild
@@ -54,30 +45,38 @@ let
       cp ./packages/vscode-js-profile-table/vscode-js-profile-table-${finalAttrs.version}.vsix $out
       runHook postInstall
     '';
+
+    makeCacheWritable = true;
+    name = "vscode-js-profile-table-${finalAttrs.version}.vsix";
+
+    npmDeps = fetchNpmDeps {
+      inherit (finalAttrs) src patches;
+      hash = "sha256-4Z5MjEM5WUKtISDjkpaEPR3jl1WWI7cbV4uTmgVoloU=";
+      name = "${finalAttrs.pname}-npm-deps";
+    };
   });
 in
 vscode-utils.buildVscodeExtension (finalAttrs: {
-  pname = "vscode-js-profile-table";
   inherit (finalAttrs.src) version;
-
-  vscodeExtPublisher = "ms-vscode";
+  pname = "vscode-js-profile-table";
+  src = vsix;
   vscodeExtName = "vscode-js-profile-table";
+  vscodeExtPublisher = "ms-vscode";
   vscodeExtUniqueId = "${finalAttrs.vscodeExtPublisher}.${finalAttrs.vscodeExtName}";
 
-  src = vsix;
-
   passthru = {
-    vsix = finalAttrs.src;
     updateScript = nix-update-script {
       attrPath = "vscode-extensions.ms-vscode.vscode-js-profile-table.vsix";
     };
+
+    vsix = finalAttrs.src;
   };
 
   meta = {
     description = "Text visualizer for profiles taken from the JavaScript debugger";
     homepage = "https://github.com/microsoft/vscode-js-profile-visualizer";
-    downloadPage = "https://marketplace.visualstudio.com/items?itemName=ms-vscode.vscode-js-profile-table";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ xiaoxiangmoe ];
+    downloadPage = "https://marketplace.visualstudio.com/items?itemName=ms-vscode.vscode-js-profile-table";
   };
 })

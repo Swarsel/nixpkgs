@@ -2,18 +2,18 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  pkg-config,
-  cairo,
-  pango,
-  libx11,
-  libxcomposite,
   autoconf,
   automake,
+  cairo,
+  libx11,
+  libxcomposite,
+  pango,
+  pkg-config,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
-  version = "0.2.7-9-g177589f";
   pname = "libaosd";
+  version = "0.2.7-9-g177589f";
 
   src = fetchFromGitHub {
     owner = "atheme-legacy";
@@ -27,17 +27,19 @@ stdenv.mkDerivation (finalAttrs: {
     automake
     pkg-config
   ];
+
   buildInputs = [
     cairo
     pango
     libx11
     libxcomposite
   ];
-  enableParallelBuilding = true;
 
   preConfigure = ''
     ./autogen.sh
   '';
+
+  enableParallelBuilding = true;
 
   meta = {
     longDescription = ''
@@ -47,10 +49,11 @@ stdenv.mkDerivation (finalAttrs: {
       composited rendering via XComposite, as well as support for
       rendering Cairo and Pango layouts.
     '';
-    broken = stdenv.hostPlatform.isDarwin;
+
     homepage = "https://github.com/atheme-legacy/libaosd";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ unode ];
     platforms = with lib.platforms; unix;
+    broken = stdenv.hostPlatform.isDarwin;
   };
 })

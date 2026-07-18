@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   serialio,
   sockio,
 }:
@@ -9,7 +9,6 @@
 buildPythonPackage rec {
   pname = "connio";
   version = "0.2.0";
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "tiagocoutinho";
@@ -25,7 +24,7 @@ buildPythonPackage rec {
 
   # Module has no tests
   doCheck = false;
-
+  format = "setuptools";
   pythonImportsCheck = [ "connio" ];
 
   meta = {

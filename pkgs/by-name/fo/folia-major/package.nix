@@ -1,47 +1,26 @@
 {
   lib,
-  stdenvNoCC,
   fetchFromGitHub,
+  copyDesktopItems,
+  electron,
   fetchNpmDeps,
+  makeDesktopItem,
+  makeWrapper,
+  nix-update-script,
   nodejs,
   npmHooks,
-  makeWrapper,
-  electron,
-  copyDesktopItems,
-  makeDesktopItem,
-  nix-update-script,
+  stdenvNoCC,
 }:
 
 stdenvNoCC.mkDerivation (finalAttrs: {
   pname = "folia-major";
   version = "0.5.27";
 
-  strictDeps = true;
-  __structuredAttrs = true;
-
   src = fetchFromGitHub {
     owner = "chthollyphile";
     repo = "folia-major";
     tag = "v${finalAttrs.version}";
     hash = "sha256-47W6nFDJlF9/voITX2nd9ZrH8gl+GNtESv1T6AXL3F4=";
-  };
-
-  npmDeps = fetchNpmDeps {
-    inherit (finalAttrs) src;
-    hash = "sha256-lLxa6fT35w+qdn08aNCi6Og/eFs72E8FfHTVM+fIvq8=";
-  };
-
-  nativeBuildInputs = [
-    nodejs
-    npmHooks.npmConfigHook
-    makeWrapper
-    copyDesktopItems
-  ];
-
-  env = {
-    ELECTRON_SKIP_BINARY_DOWNLOAD = "1";
-    ELECTRON_DEV = "false";
-    ELECTRON = "true";
   };
 
   # workaround for https://github.com/electron/electron/issues/31121
@@ -53,6 +32,21 @@ stdenvNoCC.mkDerivation (finalAttrs: {
       --replace-fail "git rev-parse --short HEAD" "echo unknown" \
       --replace-fail "git rev-parse --abbrev-ref HEAD" "echo main"
   '';
+
+  strictDeps = true;
+
+  nativeBuildInputs = [
+    nodejs
+    npmHooks.npmConfigHook
+    makeWrapper
+    copyDesktopItems
+  ];
+
+  env = {
+    ELECTRON = "true";
+    ELECTRON_DEV = "false";
+    ELECTRON_SKIP_BINARY_DOWNLOAD = "1";
+  };
 
   buildPhase = ''
     runHook preBuild
@@ -84,32 +78,40 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  __structuredAttrs = true;
+
   desktopItems = [
     (makeDesktopItem {
-      name = "folia-major";
-      desktopName = "Folia";
-      exec = "folia-major";
-      terminal = false;
-      type = "Application";
-      icon = "folia-major";
-      startupWMClass = "folia";
-      comment = "Lyrics Reimagine";
       categories = [
         "AudioVideo"
         "Player"
       ];
+
+      comment = "Lyrics Reimagine";
+      desktopName = "Folia";
+      exec = "folia-major";
+      icon = "folia-major";
+      name = "folia-major";
+      startupWMClass = "folia";
+      terminal = false;
+      type = "Application";
     })
   ];
+
+  npmDeps = fetchNpmDeps {
+    inherit (finalAttrs) src;
+    hash = "sha256-lLxa6fT35w+qdn08aNCi6Og/eFs72E8FfHTVM+fIvq8=";
+  };
 
   passthru.updateScript = nix-update-script { extraArgs = [ "--use-github-releases" ]; };
 
   meta = {
     description = "Lyrics Reimagine desktop app";
     homepage = "https://folia-site.vercel.app/";
-    downloadPage = "https://github.com/chthollyphile/folia-major/releases";
     license = lib.licenses.agpl3Only;
-    mainProgram = "folia-major";
     maintainers = with lib.maintainers; [ chillcicada ];
     platforms = lib.platforms.linux;
+    mainProgram = "folia-major";
+    downloadPage = "https://github.com/chthollyphile/folia-major/releases";
   };
 })

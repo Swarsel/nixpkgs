@@ -1,13 +1,13 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
-  gfortran,
-  buildType ? "meson",
-  meson,
-  ninja,
   cmake,
+  gfortran,
+  meson,
   mesonEmulatorHook,
+  ninja,
+  buildType ? "meson",
 }:
 
 assert (
@@ -48,11 +48,13 @@ stdenv.mkDerivation (finalAttrs: {
   meta = {
     description = "Procedural Fortran testing framework";
     homepage = "https://github.com/fortran-lang/test-drive";
+
     license = with lib.licenses; [
       asl20
       mit
     ];
-    platforms = lib.platforms.linux;
+
     maintainers = [ lib.maintainers.sheepforce ];
+    platforms = lib.platforms.linux;
   };
 })

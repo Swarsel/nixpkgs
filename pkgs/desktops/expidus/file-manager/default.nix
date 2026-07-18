@@ -1,7 +1,7 @@
 {
   lib,
-  flutter,
   fetchFromGitHub,
+  flutter,
 }:
 flutter.buildFlutterApplication rec {
   pname = "expidus-file-manager";
@@ -12,17 +12,6 @@ flutter.buildFlutterApplication rec {
     repo = "file-manager";
     rev = version;
     hash = "sha256-R6eszy4Dz8tAPRTwZzRiZWIgVMiGv5zlhFB/HcD6gqg=";
-  };
-
-  flutterBuildFlags = [
-    "--dart-define=COMMIT_HASH=b4181b9cff18a07e958c81d8f41840d2d36a6705"
-  ];
-
-  pubspecLock = lib.importJSON ./pubspec.lock.json;
-
-  gitHashes = {
-    libtokyo = "sha256-T0+vyfSfijLv7MvM+zt3bkVpb3aVrlDnse2xyNMp9GU=";
-    libtokyo_flutter = "sha256-T0+vyfSfijLv7MvM+zt3bkVpb3aVrlDnse2xyNMp9GU=";
   };
 
   postInstall = ''
@@ -43,16 +32,29 @@ flutter.buildFlutterApplication rec {
       --replace "Icon=com.expidusos.file_manager" "Icon=$out/share/icons/com.expidusos.file_manager.png"
   '';
 
+  flutterBuildFlags = [
+    "--dart-define=COMMIT_HASH=b4181b9cff18a07e958c81d8f41840d2d36a6705"
+  ];
+
+  gitHashes = {
+    libtokyo = "sha256-T0+vyfSfijLv7MvM+zt3bkVpb3aVrlDnse2xyNMp9GU=";
+    libtokyo_flutter = "sha256-T0+vyfSfijLv7MvM+zt3bkVpb3aVrlDnse2xyNMp9GU=";
+  };
+
+  pubspecLock = lib.importJSON ./pubspec.lock.json;
+
   meta = {
-    broken = true;
     description = "ExpidusOS File Manager";
     homepage = "https://expidusos.com";
     license = lib.licenses.gpl3;
     maintainers = with lib.maintainers; [ RossComputerGuy ];
+
     platforms = [
       "x86_64-linux"
       "aarch64-linux"
     ];
+
     mainProgram = "expidus-file-manager";
+    broken = true;
   };
 }

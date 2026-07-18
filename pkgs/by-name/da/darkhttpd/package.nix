@@ -15,8 +15,6 @@ stdenv.mkDerivation (finalAttrs: {
     sha256 = "sha256-d5pDUY1EbVjykb4in4hhbgbjIXJtj133nRAQ84ASicQ=";
   };
 
-  enableParallelBuilding = true;
-
   installPhase = ''
     runHook preInstall
     install -Dm555 -t $out/bin darkhttpd
@@ -25,12 +23,14 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  enableParallelBuilding = true;
+
   meta = {
     description = "Small and secure static webserver";
-    mainProgram = "darkhttpd";
     homepage = "https://unix4lyfe.org/darkhttpd/";
     license = lib.licenses.bsd3;
     maintainers = with lib.maintainers; [ bobvanderlinden ];
     platforms = lib.platforms.all;
+    mainProgram = "darkhttpd";
   };
 })

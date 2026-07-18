@@ -2,17 +2,16 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  ocaml,
   findlib,
+  num,
+  ocaml,
   piqi,
   stdlib-shims,
-  num,
 }:
 
 stdenv.mkDerivation rec {
-  version = "0.7.8";
   pname = "piqi-ocaml";
-  name = "ocaml${ocaml.version}-${pname}-${version}";
+  version = "0.7.8";
 
   src = fetchFromGitHub {
     owner = "alavrik";
@@ -21,10 +20,13 @@ stdenv.mkDerivation rec {
     sha256 = "sha256-6Luq49sbo+AqLSq57mc6fLhrRx0K6G5LCUIzkGPfqYo=";
   };
 
+  strictDeps = true;
+
   nativeBuildInputs = [
     ocaml
     findlib
   ];
+
   buildInputs = [
     piqi
     stdlib-shims
@@ -32,15 +34,14 @@ stdenv.mkDerivation rec {
 
   checkInputs = [ num ];
 
-  strictDeps = true;
-
-  createFindlibDestdir = true;
-
   installPhase = ''
     runHook preInstall
     DESTDIR=$out make install
     runHook postInstall
   '';
+
+  createFindlibDestdir = true;
+  name = "ocaml${ocaml.version}-${pname}-${version}";
 
   meta = {
     description = "Universal schema language and a collection of tools built around it. These are the ocaml bindings";

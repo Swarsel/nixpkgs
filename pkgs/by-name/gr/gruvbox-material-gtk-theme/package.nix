@@ -1,8 +1,8 @@
 {
-  stdenvNoCC,
+  lib,
   fetchFromGitHub,
   gtk-engine-murrine,
-  lib,
+  stdenvNoCC,
 }:
 stdenvNoCC.mkDerivation {
   pname = "gruvbox-material-gtk-theme";
@@ -15,10 +15,6 @@ stdenvNoCC.mkDerivation {
     hash = "sha256-NHjE/HI/BJyjrRfoH9gOKIU8HsUIBPV9vyvuW12D01M=";
   };
 
-  propagatedUserEnvPkgs = [ gtk-engine-murrine ];
-
-  dontBuild = true;
-
   installPhase = ''
     runHook preInstall
     mkdir -p "$out/share/"{themes,icons}
@@ -27,6 +23,9 @@ stdenvNoCC.mkDerivation {
     done
     runHook postInstall
   '';
+
+  dontBuild = true;
+  propagatedUserEnvPkgs = [ gtk-engine-murrine ];
 
   meta = {
     description = "GTK Theme based off of the Gruvbox Material colour palette";

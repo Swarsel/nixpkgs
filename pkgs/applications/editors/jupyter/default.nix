@@ -1,8 +1,8 @@
 # Jupyter notebook with the given kernel definitions
 
 {
-  python3,
   jupyter-kernel,
+  python3,
   definitions ? jupyter-kernel.default,
 }:
 
@@ -16,6 +16,7 @@ let
       (oldAttrs: {
         inherit (python3.pkgs.notebook) version;
         pname = "jupyter";
+
         meta = python3.pkgs.notebook.meta // {
           mainProgram = "jupyter";
         };

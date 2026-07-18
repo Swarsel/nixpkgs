@@ -1,22 +1,21 @@
 {
   lib,
-  python3Packages,
   fetchFromGitHub,
+  blueprint-compiler,
+  desktop-file-utils,
+  gobject-introspection,
+  gtksourceview5,
+  libadwaita,
   meson,
   ninja,
   pkg-config,
-  gobject-introspection,
-  blueprint-compiler,
+  python3Packages,
   wrapGAppsHook4,
-  desktop-file-utils,
-  libadwaita,
-  gtksourceview5,
 }:
 
 python3Packages.buildPythonApplication (finalAttrs: {
   pname = "escambo";
   version = "0.1.2";
-  pyproject = false; # built with meson
 
   src = fetchFromGitHub {
     owner = "CleoMenezesJr";
@@ -40,23 +39,24 @@ python3Packages.buildPythonApplication (finalAttrs: {
     gtksourceview5
   ];
 
+  preFixup = ''
+    makeWrapperArgs+=("''${gappsWrapperArgs[@]}")
+  '';
+
   dependencies = with python3Packages; [
     pygobject3
     requests
   ];
 
   dontWrapGApps = true;
-
-  preFixup = ''
-    makeWrapperArgs+=("''${gappsWrapperArgs[@]}")
-  '';
+  pyproject = false; # built with meson
 
   meta = {
     description = "HTTP-based APIs test application for GNOME";
     homepage = "https://github.com/CleoMenezesJr/escambo";
     license = lib.licenses.gpl3Plus;
-    mainProgram = "escambo";
     maintainers = with lib.maintainers; [ aleksana ];
     platforms = lib.platforms.linux;
+    mainProgram = "escambo";
   };
 })

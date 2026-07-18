@@ -12,11 +12,8 @@
 }:
 
 buildDunePackage {
-  pname = "opam-solver";
-
   inherit (opam) src version;
-
-  configureFlags = [ "--disable-checks" ];
+  pname = "opam-solver";
 
   propagatedBuildInputs = [
     cudf
@@ -27,6 +24,8 @@ buildDunePackage {
     re
     z3
   ];
+
+  configureFlags = [ "--disable-checks" ];
 
   meta = opam.meta // {
     description = "This library is based on the Cudf and Dose libraries, and handles calls to the external solver from opam";

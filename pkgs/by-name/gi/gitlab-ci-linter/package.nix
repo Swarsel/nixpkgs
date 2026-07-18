@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitLab,
+  buildGoModule,
 }:
 
 buildGoModule (finalAttrs: {
@@ -16,6 +16,7 @@ buildGoModule (finalAttrs: {
   };
 
   vendorHash = "sha256-GKv7uWnY9UqDuzj/VcXTAjGJUyUEsZws3ORnPCX8mwU=";
+  env.CGO_ENABLED = 0;
 
   # Build flags based on the project's Makefile
   ldflags = [
@@ -23,7 +24,6 @@ buildGoModule (finalAttrs: {
     "-w"
     "-X main.version=${finalAttrs.version}"
   ];
-  env.CGO_ENABLED = 0;
 
   meta = {
     description = ".gitlab-ci.yml lint helper tool";

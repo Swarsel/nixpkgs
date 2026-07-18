@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   nix-update-script,
 }:
 
@@ -17,7 +17,6 @@ buildGoModule (finalAttrs: {
   };
 
   vendorHash = "sha256-UvvoL7Us201B13M4vwOZEhSB0slAzXCs+9wzJIDictQ=";
-
   passthru.updateScript = nix-update-script { };
 
   meta = {
@@ -25,8 +24,8 @@ buildGoModule (finalAttrs: {
     homepage = "https://github.com/benhsm/minesweeper";
     changelog = "https://github.com/benhsm/minesweeper/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.mit;
-    mainProgram = "minesweeper";
-    platforms = lib.platforms.unix;
     maintainers = with lib.maintainers; [ Zaczero ];
+    platforms = lib.platforms.unix;
+    mainProgram = "minesweeper";
   };
 })

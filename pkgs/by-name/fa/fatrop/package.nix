@@ -1,14 +1,12 @@
 {
   lib,
   stdenv,
-
   fetchFromGitHub,
-
-  cmake,
   blasfeo,
-  llvmPackages,
-  gtest,
+  cmake,
   ctestCheckHook,
+  gtest,
+  llvmPackages,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -23,6 +21,7 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   nativeBuildInputs = [ cmake ];
+
   buildInputs = [
     blasfeo
   ]
@@ -33,7 +32,6 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   doCheck = true;
-
   nativeCheckInputs = [ ctestCheckHook ];
   checkInputs = [ gtest ];
 
@@ -44,10 +42,12 @@ stdenv.mkDerivation (finalAttrs: {
   meta = {
     description = "Nonlinear optimal control problem solver that aims to be fast, support a broad class of optimal control problems and achieve a high numerical robustness";
     homepage = "https://github.com/meco-group/fatrop";
+
     license = with lib.licenses; [
       bsd2
       epl20
     ];
+
     maintainers = with lib.maintainers; [ nim65s ];
   };
 })

@@ -1,8 +1,8 @@
 {
   lib,
-  stdenvNoCC,
   fetchzip,
   installFonts,
+  stdenvNoCC,
 }:
 
 let
@@ -22,12 +22,14 @@ stdenvNoCC.mkDerivation {
   nativeBuildInputs = [ installFonts ];
 
   meta = {
-    homepage = "https://dotcolon.net/font/aileron/";
     description = "Helvetica font in nine weights";
-    platforms = lib.platforms.all;
+    homepage = "https://dotcolon.net/font/aileron/";
+    license = lib.licenses.cc0;
+
     maintainers = with lib.maintainers; [
       minijackson
     ];
-    license = lib.licenses.cc0;
+
+    platforms = lib.platforms.all;
   };
 }

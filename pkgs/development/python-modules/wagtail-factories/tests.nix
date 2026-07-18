@@ -8,12 +8,8 @@
 }:
 
 buildPythonPackage {
-  pname = "wagtail-factories-tests";
-  pyproject = false;
   inherit (wagtail-factories) src version;
-
-  dontBuild = true;
-  dontInstall = true;
+  pname = "wagtail-factories-tests";
 
   checkInputs = [
     django-pattern-library
@@ -22,4 +18,8 @@ buildPythonPackage {
     wagtail
     wagtail-factories
   ];
+
+  dontBuild = true;
+  dontInstall = true;
+  pyproject = false;
 }

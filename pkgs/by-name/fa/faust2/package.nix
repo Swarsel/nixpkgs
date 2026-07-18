@@ -1,25 +1,25 @@
 {
   lib,
   stdenv,
-  coreutils,
   fetchFromGitHub,
-  makeWrapper,
-  pkg-config,
   cmake,
-  llvm,
+  coreutils,
   emscripten,
-  openssl,
-  libsndfile,
-  libmicrohttpd,
+  fetchpatch,
   gnutls,
+  libmicrohttpd,
+  libsndfile,
   libtasn1,
   libtool,
   libxml2,
+  llvm,
+  makeWrapper,
+  ncurses,
+  openssl,
   p11-kit,
+  pkg-config,
   vim,
   which,
-  ncurses,
-  fetchpatch,
 }:
 
 let
@@ -36,13 +36,15 @@ let
 
   meta = {
     homepage = "https://faust.grame.fr/";
-    downloadPage = "https://github.com/grame-cncm/faust/";
     license = lib.licenses.gpl2;
-    platforms = lib.platforms.unix;
+
     maintainers = with lib.maintainers; [
       magnetophon
       pmahoney
     ];
+
+    platforms = lib.platforms.unix;
+    downloadPage = "https://github.com/grame-cncm/faust/";
   };
 
   faust =
@@ -51,10 +53,9 @@ let
     in
     stdenv.mkDerivation {
 
-      pname = "faust";
       inherit version;
-
       inherit src;
+      pname = "faust";
 
       nativeBuildInputs = [
         makeWrapper
@@ -64,6 +65,7 @@ let
         vim
         which
       ];
+
       buildInputs = [
         llvm
         emscripten
@@ -77,7 +79,10 @@ let
         libxml2
       ];
 
-      passthru = { inherit wrap wrapWithBuildEnv faust2ApplBase; };
+      cmakeFlags = [
+        "-C../backends/all.cmake"
+        "-C../targets/all.cmake"
+      ];
 
       preConfigure = ''
         # include llvm-config in path
@@ -117,11 +122,6 @@ let
         cd build
       '';
 
-      cmakeFlags = [
-        "-C../backends/all.cmake"
-        "-C../targets/all.cmake"
-      ];
-
       postInstall = ''
         # syntax error when eval'd directly
         pattern="faust2!(*@(atomsnippets|graph|graphviewer|md|plot|sig|sigviewer|svg))"
@@ -142,8 +142,11 @@ let
         done
       '';
 
+      passthru = { inherit wrap wrapWithBuildEnv faust2ApplBase; };
+
       meta = meta // {
         description = "Functional programming language for realtime audio signal processing";
+
         longDescription = ''
           FAUST (Functional Audio Stream) is a functional programming
           language specifically designed for real-time signal processing
@@ -175,11 +178,8 @@ let
 
     args
     // {
-      pname = baseName;
-
       inherit src version;
-
-      dontBuild = true;
+      pname = baseName;
 
       installPhase = ''
         runHook preInstall
@@ -200,6 +200,8 @@ let
             --replace-quiet " error " "echo"
         done
       '';
+
+      dontBuild = true;
 
       meta = meta // {
         description = "The ${baseName} script, part of faust functional programming language for realtime audio signal processing";
@@ -240,8 +242,6 @@ let
 
         propagatedBuildInputs = [ faust ] ++ propagatedBuildInputs;
 
-        libPath = lib.makeLibraryPath propagatedBuildInputs;
-
         postFixup = ''
 
           # export parts of the build environment
@@ -266,6 +266,8 @@ let
               --prefix LIBRARY_PATH "$libPath"
           done
         '';
+
+        libPath = lib.makeLibraryPath propagatedBuildInputs;
       }
     );
 

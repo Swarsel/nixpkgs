@@ -1,10 +1,11 @@
 {
-  stdenv,
   lib,
-  desktop-file-utils,
+  stdenv,
   fetchurl,
-  glib,
+  desktop-file-utils,
   gettext,
+  glib,
+  gnome,
   gtk4,
   libadwaita,
   libdex,
@@ -12,22 +13,21 @@
   ninja,
   pkg-config,
   wrapGAppsHook4,
-  gnome,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
   pname = "d-spy";
   version = "50.0";
 
-  outputs = [
-    "out"
-    "dev"
-  ];
-
   src = fetchurl {
     url = "mirror://gnome/sources/d-spy/${lib.versions.major finalAttrs.version}/d-spy-${finalAttrs.version}.tar.xz";
     hash = "sha256-G93IbYos9ntPZS3EYczYNTES8Ih1NCADfHX1RU3qrRA=";
   };
+
+  outputs = [
+    "out"
+    "dev"
+  ];
 
   nativeBuildInputs = [
     meson
@@ -54,10 +54,10 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "D-Bus exploration tool";
-    mainProgram = "d-spy";
     homepage = "https://gitlab.gnome.org/GNOME/d-spy";
     license = lib.licenses.gpl3Plus;
-    teams = [ lib.teams.gnome ];
     platforms = lib.platforms.linux;
+    mainProgram = "d-spy";
+    teams = [ lib.teams.gnome ];
   };
 })

@@ -1,13 +1,11 @@
 {
   lib,
-  python3Packages,
   fetchFromGitHub,
+  python3Packages,
 }:
 python3Packages.buildPythonApplication (finalAttrs: {
   pname = "polysh";
   version = "1.0.4";
-  pyproject = true;
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "innogames";
@@ -16,9 +14,13 @@ python3Packages.buildPythonApplication (finalAttrs: {
     hash = "sha256-fmcu3lWSV5aft+gX5QjypdK5pyfdVd0HDNekiFVdlBI=";
   };
 
+  __structuredAttrs = true;
+
   build-system = with python3Packages; [
     hatchling
   ];
+
+  pyproject = true;
 
   meta = {
     description = "Remote shell multiplexer for executing commands on multiple hosts";

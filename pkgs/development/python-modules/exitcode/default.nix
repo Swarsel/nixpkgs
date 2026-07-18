@@ -1,14 +1,13 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   poetry-core,
 }:
 
 buildPythonPackage rec {
   pname = "exitcode";
   version = "0.1.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "rumpelsepp";
@@ -18,10 +17,9 @@ buildPythonPackage rec {
   };
 
   nativeBuildInputs = [ poetry-core ];
-
   # Module has no tests
   doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "exitcode" ];
 
   meta = {

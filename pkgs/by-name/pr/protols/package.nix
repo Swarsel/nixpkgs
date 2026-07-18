@@ -1,8 +1,8 @@
 {
   lib,
+  fetchFromGitHub,
   protobuf,
   rustPlatform,
-  fetchFromGitHub,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -17,7 +17,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
   };
 
   cargoHash = "sha256-R7OgjUEx2Q0rWTIO1CIXS3ogeC9G/RoxvGQBL1Xh/8k=";
-
   env.FALLBACK_INCLUDE_PATH = "${protobuf}/include";
 
   meta = {

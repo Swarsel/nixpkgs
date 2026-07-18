@@ -2,16 +2,16 @@
   lib,
   stdenv,
   fetchurl,
-  pkg-config,
+  acl,
+  attr,
+  autoreconfHook,
+  bzip2,
   curl,
   gpgme,
   libarchive,
-  bzip2,
-  xz,
-  attr,
-  acl,
   libxml2,
-  autoreconfHook,
+  pkg-config,
+  xz,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -49,7 +49,7 @@ stdenv.mkDerivation (finalAttrs: {
     homepage = "https://git.yoctoproject.org/cgit/cgit.cgi/opkg/";
     changelog = "https://git.yoctoproject.org/opkg/tree/CHANGELOG.md";
     license = lib.licenses.gpl2Plus;
-    platforms = lib.platforms.linux;
     maintainers = with lib.maintainers; [ pSub ];
+    platforms = lib.platforms.linux;
   };
 })

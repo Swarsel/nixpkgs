@@ -7,14 +7,10 @@
 }:
 
 mkAppleDerivation {
-  releaseName = "remote_cmds";
-
   outputs = [
     "out"
     "man"
   ];
-
-  xcodeHash = "sha256-SdeF6Jp+KuVTUawJdvpw53qr3gIPEhVzqgQxAau19C0=";
 
   postPatch = ''
     # Avoid a conflict with the definition in SDK’s headers.
@@ -34,5 +30,7 @@ mkAppleDerivation {
     ncurses
   ];
 
+  releaseName = "remote_cmds";
+  xcodeHash = "sha256-SdeF6Jp+KuVTUawJdvpw53qr3gIPEhVzqgQxAau19C0=";
   meta.description = "Remote commands for Darwin";
 }

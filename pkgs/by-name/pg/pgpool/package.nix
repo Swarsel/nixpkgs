@@ -1,9 +1,9 @@
 {
   lib,
   stdenv,
+  fetchFromGitHub,
   autoreconfHook,
   bison,
-  fetchFromGitHub,
   flex,
   libmemcached,
   libpq,
@@ -21,18 +21,18 @@ stdenv.mkDerivation (finalAttrs: {
   pname = "pgpool";
   version = "4.7.2";
 
-  outputs = [
-    "out"
-    "dev"
-    "lib"
-  ];
-
   src = fetchFromGitHub {
     owner = "pgpool";
     repo = "pgpool2";
     tag = "V${lib.replaceString "." "_" finalAttrs.version}";
     hash = "sha256-gURWz9NeiHLL5DbUP7WnByHzCrLaI/8HWTRU9xO22EY=";
   };
+
+  outputs = [
+    "out"
+    "dev"
+    "lib"
+  ];
 
   patches = [
     # Build checks for strlcpy being available in the system, but doesn't
@@ -57,12 +57,6 @@ stdenv.mkDerivation (finalAttrs: {
   ++ lib.optional enableMemcached libmemcached
   ++ lib.optional enablePam pam;
 
-  env.NIX_CFLAGS_COMPILE = toString (
-    lib.optionals (stdenv.cc.isClang) [
-      "-Wno-error=implicit-function-declaration"
-    ]
-  );
-
   configureFlags = [
     "--sysconfdir=/etc"
     "--localstatedir=/var"
@@ -72,24 +66,31 @@ stdenv.mkDerivation (finalAttrs: {
     (lib.withFeatureAs enableMemcached "memcached" (lib.getDev libmemcached))
   ];
 
+  env.NIX_CFLAGS_COMPILE = toString (
+    lib.optionals (stdenv.cc.isClang) [
+      "-Wno-error=implicit-function-declaration"
+    ]
+  );
+
+  doInstallCheck = true;
+  nativeInstallCheckInputs = [ versionCheckHook ];
+  enableParallelBuilding = true;
+
   installFlags = [
     "sysconfdir=\${out}/etc"
   ];
 
-  enableParallelBuilding = true;
-
-  nativeInstallCheckInputs = [ versionCheckHook ];
-  doInstallCheck = true;
-
   meta = {
     description = "Middleware that works between PostgreSQL servers and PostgreSQL clients";
     homepage = "https://pgpool.net/";
+
     changelog = "https://www.pgpool.net/docs/latest/en/html/release-${
       lib.replaceString "." "-" finalAttrs.version
     }.html";
+
     license = lib.licenses.free;
-    platforms = lib.platforms.unix;
     maintainers = with lib.maintainers; [ anthonyroussel ];
+    platforms = lib.platforms.unix;
     mainProgram = "pgpool";
   };
 })

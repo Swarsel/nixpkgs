@@ -2,10 +2,10 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  ocaml,
-  findlib,
-  which,
   file,
+  findlib,
+  ocaml,
+  which,
 }:
 
 stdenv.mkDerivation rec {
@@ -19,18 +19,19 @@ stdenv.mkDerivation rec {
     sha256 = "sha256-rsBMx68UDqmVVsyeZCxIS97A/0JCBM/JOgh60ly1uSs=";
   };
 
-  createFindlibDestdir = true;
-
   nativeBuildInputs = [ which ];
+
   buildInputs = [
     ocaml
     findlib
   ];
+
   propagatedBuildInputs = [ file ];
+  createFindlibDestdir = true;
 
   meta = {
-    homepage = "https://github.com/Chris00/ocaml-magic";
     description = "Bindings for libmagic";
+    homepage = "https://github.com/Chris00/ocaml-magic";
     license = lib.licenses.lgpl21Plus;
     maintainers = [ ];
   };

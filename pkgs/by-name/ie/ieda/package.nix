@@ -1,34 +1,35 @@
 {
   lib,
   stdenv,
-  fetchgit,
-  fetchpatch,
+  bison,
+  boost,
   callPackages,
   cmake,
-  ninja,
-  flex,
-  bison,
-  zlib,
-  tcl,
-  boost,
+  curl,
   eigen,
-  yaml-cpp,
-  libunwind,
-  glog,
-  gtest,
+  fetchgit,
+  fetchpatch,
+  flex,
   gflags,
-  metis,
+  glog,
   gmp,
-  python3,
+  gtest,
+  libunwind,
+  metis,
+  ninja,
+  onetbb,
   onnxruntime,
   pkg-config,
-  curl,
-  onetbb,
+  python3,
+  tcl,
+  yaml-cpp,
+  zlib,
 }:
 let
   rootSrc = stdenv.mkDerivation {
     pname = "iEDA-src";
     version = "0.1.0-unstable-2025-12-23";
+
     src = fetchgit {
       url = "https://gitee.com/oscc-project/iEDA";
       rev = "59662dcd768165f3957003522cb929d42b252023";
@@ -40,8 +41,8 @@ let
       # Due to the way they organized the source code, it's hard to upstream this patch.
       # So we have to maintain this patch locally.
       (fetchpatch {
-        url = "https://github.com/Emin017/iEDA/commit/e5f3ce024965df5e1d400b6a1d7f8b5b307a4bf3.patch";
         hash = "sha256-YJnY+r9A887WT0a/H/Zf++r1PpD7t567NpkesDmIsD0=";
+        url = "https://github.com/Emin017/iEDA/commit/e5f3ce024965df5e1d400b6a1d7f8b5b307a4bf3.patch";
       })
     ];
 
@@ -51,11 +52,12 @@ let
       sed -i 's/boost_system/Boost::headers/g' src/operation/iPA/test/CMakeLists.txt
     '';
 
-    dontBuild = true;
-    dontFixup = true;
     installPhase = ''
       cp -r . $out
     '';
+
+    dontBuild = true;
+    dontFixup = true;
 
   };
 
@@ -64,7 +66,6 @@ in
 stdenv.mkDerivation {
   pname = "iEDA";
   version = rootSrc.version;
-
   src = rootSrc;
 
   nativeBuildInputs = [
@@ -75,14 +76,6 @@ stdenv.mkDerivation {
     python3
     tcl
     pkg-config
-  ];
-
-  cmakeFlags = [
-    (lib.cmakeBool "CMD_BUILD" true)
-    (lib.cmakeBool "SANITIZER" false)
-    (lib.cmakeBool "BUILD_STATIC_LIB" false)
-    (lib.cmakeOptionType "filepath" "CMAKE_RUNTIME_OUTPUT_DIRECTORY" "${placeholder "out"}/bin")
-    (lib.cmakeOptionType "filepath" "CMAKE_LIBRARY_OUTPUT_DIRECTORY" "${placeholder "out"}/lib")
   ];
 
   buildInputs = [
@@ -108,6 +101,14 @@ stdenv.mkDerivation {
     onetbb
   ];
 
+  cmakeFlags = [
+    (lib.cmakeBool "CMD_BUILD" true)
+    (lib.cmakeBool "SANITIZER" false)
+    (lib.cmakeBool "BUILD_STATIC_LIB" false)
+    (lib.cmakeOptionType "filepath" "CMAKE_RUNTIME_OUTPUT_DIRECTORY" "${placeholder "out"}/bin")
+    (lib.cmakeOptionType "filepath" "CMAKE_LIBRARY_OUTPUT_DIRECTORY" "${placeholder "out"}/lib")
+  ];
+
   postInstall = ''
     # Tests rely on hardcoded path, so they should not be included
     rm $out/bin/*test $out/bin/*Test $out/bin/test_* $out/bin/*_app
@@ -116,6 +117,8 @@ stdenv.mkDerivation {
     mkdir -p $out/share/scripts
     cp -r $src/scripts/hello.tcl $out/share/scripts/
   '';
+
+  doInstallCheck = !stdenv.hostPlatform.isAarch64; # Tests will fail on aarch64-linux, wait for upstream fix: https://github.com/microsoft/onnxruntime/issues/10038
 
   installCheckPhase = ''
     runHook preInstallCheck
@@ -126,22 +129,21 @@ stdenv.mkDerivation {
     runHook postInstallCheck
   '';
 
-  doInstallCheck = !stdenv.hostPlatform.isAarch64; # Tests will fail on aarch64-linux, wait for upstream fix: https://github.com/microsoft/onnxruntime/issues/10038
-
-  enableParallelBuilding = true;
   __structuredAttrs = true;
-
+  enableParallelBuilding = true;
   passthru.updateScript = ./update.sh;
 
   meta = {
     description = "Open-source EDA infracstructure and tools from Netlist to GDS for ASIC design";
     homepage = "https://gitee.com/oscc-project/iEDA";
     license = lib.licenses.mulan-psl2;
+
     maintainers = with lib.maintainers; [
       xinyangli
       Emin017
     ];
-    mainProgram = "iEDA";
+
     platforms = lib.platforms.linux;
+    mainProgram = "iEDA";
   };
 }

@@ -1,15 +1,14 @@
 {
   lib,
+  asgiref,
   buildPythonPackage,
   fetchPypi,
   poetry-core,
-  asgiref,
 }:
 
 buildPythonPackage rec {
   pname = "asgi-logger";
   version = "0.1.0";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
@@ -18,9 +17,9 @@ buildPythonPackage rec {
 
   nativeBuildInputs = [ poetry-core ];
   propagatedBuildInputs = [ asgiref ];
-
   # tests are not in the pypi release, and there are no tags/release corresponding to the pypi releases in the github
   doCheck = false;
+  pyproject = true;
   pythonImportsCheck = [ "asgi_logger" ];
 
   meta = {

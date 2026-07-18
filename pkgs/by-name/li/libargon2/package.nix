@@ -17,16 +17,21 @@ stdenv.mkDerivation (finalAttrs: {
     sha256 = "0p4ry9dn0mi9js0byijxdyiwx74p1nr8zj7wjpd1fjgqva4sk23i";
   };
 
-  nativeBuildInputs = lib.optionals stdenv.hostPlatform.isDarwin [
-    fixDarwinDylibNames
+  outputs = [
+    "out"
+    "dev"
   ];
 
   patches = [
     # TODO: remove when https://github.com/P-H-C/phc-winner-argon2/pull/277 is merged + released
     (fetchpatch {
-      url = "https://github.com/P-H-C/phc-winner-argon2/commit/cd1c1d8d204e4ec4557e358013567c097cb70562.patch";
       sha256 = "0whqv8b6q9602n7vxpzbd8bk8wz22r1jz9x5lrm9z7ib3wz81c8a";
+      url = "https://github.com/P-H-C/phc-winner-argon2/commit/cd1c1d8d204e4ec4557e358013567c097cb70562.patch";
     })
+  ];
+
+  nativeBuildInputs = lib.optionals stdenv.hostPlatform.isDarwin [
+    fixDarwinDylibNames
   ];
 
   makeFlags = [
@@ -41,13 +46,9 @@ stdenv.mkDerivation (finalAttrs: {
     "LINKED_LIB_EXT="
   ];
 
-  outputs = [
-    "out"
-    "dev"
-  ];
-
   meta = {
     description = "Key derivation function that was selected as the winner of the Password Hashing Competition in July 2015";
+
     longDescription = ''
       A password-hashing function created by by Alex Biryukov, Daniel Dinu, and
       Dmitry Khovratovich. Argon2 was declared the winner of the Password
@@ -55,16 +56,20 @@ stdenv.mkDerivation (finalAttrs: {
       Catena, Lyra2, Makwa and yescrypt were given special recognition. The PHC
       recommends using Argon2 rather than legacy algorithms.
     '';
+
     homepage = "https://www.argon2.com/";
+
     license = with lib.licenses; [
       asl20
       cc0
     ];
+
     maintainers = with lib.maintainers; [
       taeer
       olynch
     ];
-    mainProgram = "argon2";
+
     platforms = lib.platforms.all;
+    mainProgram = "argon2";
   };
 })

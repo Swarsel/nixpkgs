@@ -3,17 +3,17 @@
   stdenv,
   fetchFromGitLab,
   autoreconfHook,
-  pkg-config,
-  util-macros,
   bison,
   flex,
   libxext,
   libxmu,
-  libxpm,
   libxp,
+  libxpm,
   libxt,
-  xorgproto,
   nix-update-script,
+  pkg-config,
+  util-macros,
+  xorgproto,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -21,12 +21,12 @@ stdenv.mkDerivation (finalAttrs: {
   version = "1.6.6";
 
   src = fetchFromGitLab {
-    domain = "gitlab.freedesktop.org";
-    group = "xorg";
     owner = "lib";
     repo = "libxaw3d";
     tag = "libXaw3d-${finalAttrs.version}";
     hash = "sha256-7w5FnvxbztfdH7QPPqvHyJdAhTyNfe0Je4x+J80dJIY=";
+    domain = "gitlab.freedesktop.org";
+    group = "xorg";
   };
 
   strictDeps = true;

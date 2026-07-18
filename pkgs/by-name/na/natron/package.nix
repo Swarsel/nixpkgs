@@ -2,17 +2,17 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  fetchpatch,
-  cmake,
-  pkg-config,
-  libsForQt5,
   boost,
   cairo,
   ceres-solver,
+  cmake,
   expat,
-  kdePackages,
+  fetchpatch,
   glog,
+  kdePackages,
+  libsForQt5,
   libxdmcp,
+  pkg-config,
   python312,
   wayland,
 }:
@@ -21,10 +21,10 @@ let
   minorVersion = "2.5";
   version = "${minorVersion}.0";
   OpenColorIO-Configs = fetchFromGitHub {
+    hash = "sha256-TD7Uge9kKbFxOmOCn+TSQovnKTmFS3uERTu5lmZFHbc=";
     owner = "NatronGitHub";
     repo = "OpenColorIO-Configs";
     rev = "Natron-v${minorVersion}";
-    hash = "sha256-TD7Uge9kKbFxOmOCn+TSQovnKTmFS3uERTu5lmZFHbc=";
   };
   python3 = python312;
 in
@@ -36,28 +36,26 @@ stdenv.mkDerivation {
     owner = "NatronGitHub";
     repo = "Natron";
     rev = "v${version}";
-    fetchSubmodules = true;
     hash = "sha256-dgScbfyulZPlrngqSw7xwipldoRd8uFO8VP9mlJyhQ8=";
+    fetchSubmodules = true;
   };
 
   patches = [
     # Fix gcc-13 build:
     #   https://github.com/NatronGitHub/Natron/pull/929
     (fetchpatch {
+      hash = "sha256-9E1tJCvO7zA1iQAhrlL3GaBFIGpkjxNOr31behQXdhQ=";
+      includes = [ "Global/GlobalDefines.h" ];
       name = "gcc-13.patch";
       url = "https://github.com/NatronGitHub/Natron/commit/4b44fb18293035873b35c3a2d2aa29da78cb8740.patch";
-      includes = [ "Global/GlobalDefines.h" ];
-      hash = "sha256-9E1tJCvO7zA1iQAhrlL3GaBFIGpkjxNOr31behQXdhQ=";
     })
     (fetchpatch {
+      hash = "sha256-t2mzTsRuXVs8d1BB/5uAY1OPxWRa3JTK1iAWLAMsrgs=";
+      includes = [ "Engine/Noise.cpp" ];
       name = "gcc-13.patch";
       url = "https://github.com/NatronGitHub/Natron/commit/f21f58622e32c1684567c82e2ab361f33030bda7.patch";
-      includes = [ "Engine/Noise.cpp" ];
-      hash = "sha256-t2mzTsRuXVs8d1BB/5uAY1OPxWRa3JTK1iAWLAMsrgs=";
     })
   ];
-
-  cmakeFlags = [ "-DNATRON_SYSTEM_LIBS=ON" ];
 
   nativeBuildInputs = [
     cmake
@@ -79,6 +77,8 @@ stdenv.mkDerivation {
     libxdmcp
   ];
 
+  cmakeFlags = [ "-DNATRON_SYSTEM_LIBS=ON" ];
+
   postInstall = ''
     mkdir -p $out/share
     cp -r ${OpenColorIO-Configs} $out/share/OpenColorIO-Configs
@@ -97,10 +97,12 @@ stdenv.mkDerivation {
 
   meta = {
     description = "Node-graph based, open-source compositing software";
+
     longDescription = ''
       Node-graph based, open-source compositing software. Similar in
       functionalities to Adobe After Effects and Nuke by The Foundry.
     '';
+
     homepage = "https://natron.fr/";
     license = lib.licenses.gpl2;
     maintainers = [ lib.maintainers.puffnfresh ];

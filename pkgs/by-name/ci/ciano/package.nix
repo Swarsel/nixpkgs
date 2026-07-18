@@ -1,7 +1,8 @@
 {
   lib,
-  desktop-file-utils,
+  stdenv,
   fetchFromGitHub,
+  desktop-file-utils,
   ffmpeg,
   gtk3,
   imagemagick,
@@ -10,7 +11,6 @@
   pantheon,
   pkg-config,
   python3,
-  stdenv,
   vala,
   wrapGAppsHook3,
 }:
@@ -29,6 +29,13 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-nubm6vBWwsHrrmvFAL/cIzYPxg9B1EhnpC79IJMNuFY=";
   };
 
+  postPatch = ''
+    chmod +x meson/post_install.py
+    patchShebangs meson/post_install.py
+  '';
+
+  strictDeps = true;
+
   nativeBuildInputs = [
     desktop-file-utils
     meson
@@ -46,15 +53,6 @@ stdenv.mkDerivation (finalAttrs: {
     gtk3
   ];
 
-  dontWrapGApps = true;
-
-  strictDeps = true;
-
-  postPatch = ''
-    chmod +x meson/post_install.py
-    patchShebangs meson/post_install.py
-  '';
-
   postFixup =
     let
       binPath = lib.makeBinPath [
@@ -68,9 +66,11 @@ stdenv.mkDerivation (finalAttrs: {
       ln -s $out/bin/com.github.robertsanseries.ciano $out/bin/ciano
     '';
 
+  dontWrapGApps = true;
+
   meta = {
-    homepage = "https://github.com/robertsanseries/ciano";
     description = "Multimedia file converter focused on simplicity";
+    homepage = "https://github.com/robertsanseries/ciano";
     license = lib.licenses.gpl3Plus;
     maintainers = [ ];
     platforms = lib.platforms.linux;

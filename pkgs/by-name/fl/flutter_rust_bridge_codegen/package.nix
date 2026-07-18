@@ -1,9 +1,9 @@
 {
   lib,
-  fetchFromGitHub,
-  rustPlatform,
-  cargo-expand,
   stdenv,
+  fetchFromGitHub,
+  cargo-expand,
+  rustPlatform,
 }:
 rustPlatform.buildRustPackage (finalAttrs: {
   pname = "flutter_rust_bridge_codegen";
@@ -17,21 +17,10 @@ rustPlatform.buildRustPackage (finalAttrs: {
     fetchSubmodules = true;
   };
 
-  cargoHash = "sha256-R6Brxb8OGkInAH/+GPoxc2f/bSWcsWP3aUMh1VrKBuc=";
-  cargoBuildFlags = [
-    "--package"
-    "flutter_rust_bridge_codegen"
-  ];
-  cargoTestFlags = [
-    "--package"
-    "flutter_rust_bridge_codegen"
-  ];
-
   # needed to get tests running
   nativeBuildInputs = [ cargo-expand ];
+  cargoHash = "sha256-R6Brxb8OGkInAH/+GPoxc2f/bSWcsWP3aUMh1VrKBuc=";
 
-  # needed to run text (see https://github.com/fzyzcjy/flutter_rust_bridge/blob/ae970bfafdf80b9eb283a2167b972fb2e6504511/frb_codegen/src/library/utils/logs.rs#L43)
-  logLevel = "debug";
   checkFlags = [
     # Disabled because these tests need a different version of anyhow than the package itself
     "--skip=tests::test_execute_generate_on_frb_example_dart_minimal"
@@ -43,11 +32,24 @@ rustPlatform.buildRustPackage (finalAttrs: {
     "--skip=library::codegen::generator::api_dart::tests::test_functions"
   ];
 
+  cargoBuildFlags = [
+    "--package"
+    "flutter_rust_bridge_codegen"
+  ];
+
+  cargoTestFlags = [
+    "--package"
+    "flutter_rust_bridge_codegen"
+  ];
+
+  # needed to run text (see https://github.com/fzyzcjy/flutter_rust_bridge/blob/ae970bfafdf80b9eb283a2167b972fb2e6504511/frb_codegen/src/library/utils/logs.rs#L43)
+  logLevel = "debug";
+
   meta = {
-    mainProgram = "flutter_rust_bridge_codegen";
     description = "Flutter/Dart <-> Rust binding generator, feature-rich, but seamless and simple";
     homepage = "https://fzyzcjy.github.io/flutter_rust_bridge";
     license = lib.licenses.mit;
     maintainers = [ lib.maintainers.eymeric ];
+    mainProgram = "flutter_rust_bridge_codegen";
   };
 })

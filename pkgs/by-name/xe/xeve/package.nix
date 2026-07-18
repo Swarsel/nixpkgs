@@ -1,10 +1,10 @@
 {
   lib,
+  stdenv,
   fetchFromGitHub,
+  cmake,
   fetchpatch2,
   gitUpdater,
-  stdenv,
-  cmake,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -18,23 +18,29 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-/DcYv2fInr8MN1wpOgJHcFWEvW//7SIXccheRfeaTHM=";
   };
 
+  outputs = [
+    "out"
+    "lib"
+    "dev"
+  ];
+
   patches =
     map fetchpatch2 [
       {
-        url = "https://github.com/mpeg5/xeve/commit/954ed6e0494cd2438fd15c717c0146e88e582b33.patch?full_index=1";
         hash = "sha256-//NtOUm1fqPFvOM955N6gF+QgmOdmuVunwx/3s/G/J8=";
+        url = "https://github.com/mpeg5/xeve/commit/954ed6e0494cd2438fd15c717c0146e88e582b33.patch?full_index=1";
       }
       {
-        url = "https://github.com/mpeg5/xeve/commit/07a6f2a6d13dfaa0f73c3752f8cd802c251d8252.patch?full_index=1";
         hash = "sha256-P9J7Y9O/lb/MSa5oCfft7z764AbLBLZnMmrmPEZPcws=";
+        url = "https://github.com/mpeg5/xeve/commit/07a6f2a6d13dfaa0f73c3752f8cd802c251d8252.patch?full_index=1";
       }
       {
-        url = "https://github.com/mpeg5/xeve/commit/0a0f3bd397161253b606bdbeaa518fbe019d24e1.patch?full_index=1";
         hash = "sha256-PoZpE64gWkTUS4Q+SK+DH1I1Ac0UEzwwnlvpYN16hsI=";
+        url = "https://github.com/mpeg5/xeve/commit/0a0f3bd397161253b606bdbeaa518fbe019d24e1.patch?full_index=1";
       }
       {
-        url = "https://github.com/mpeg5/xeve/commit/e029f1619ecedbda152b8680641fa10eea9eeace.patch?full_index=1";
         hash = "sha256-ooIBzNtGSjDgYvTzA8T0KB+QzsUiy14mPpoRqrHF3Pg=";
+        url = "https://github.com/mpeg5/xeve/commit/e029f1619ecedbda152b8680641fa10eea9eeace.patch?full_index=1";
       }
     ]
     ++ [
@@ -81,21 +87,15 @@ stdenv.mkDerivation (finalAttrs: {
     ln $dev/include/xeve/* $dev/include/
   '';
 
-  outputs = [
-    "out"
-    "lib"
-    "dev"
-  ];
-
   passthru.updateScript = gitUpdater { rev-prefix = "v"; };
 
   meta = {
-    homepage = "https://github.com/mpeg5/xeve";
     description = "eXtra-fast Essential Video Encoder, MPEG-5 EVC";
+    homepage = "https://github.com/mpeg5/xeve";
     license = lib.licenses.bsd3;
-    mainProgram = "xeve_app";
     maintainers = with lib.maintainers; [ jopejoe1 ];
     platforms = lib.platforms.all;
+    mainProgram = "xeve_app";
     broken = stdenv.hostPlatform.isLinux && stdenv.hostPlatform.isAarch64;
   };
 })

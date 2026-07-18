@@ -1,45 +1,36 @@
 {
   lib,
-  buildGoModule,
+  stdenv,
   fetchFromGitHub,
-  makeWrapper,
-  git,
   bash,
-  coreutils,
+  buildGoModule,
   compressDrvWeb,
+  coreutils,
+  fetchPnpmDeps,
+  git,
   gitea,
   gzip,
+  makeWrapper,
+  nixosTests,
   nodejs,
   openssh,
-  fetchPnpmDeps,
   pnpmConfigHook,
   pnpm_10,
-  stdenv,
   sqliteSupport ? true,
-  nixosTests,
 }:
 
 let
   pnpm = pnpm_10;
 
   frontend = stdenv.mkDerivation (finalAttrs: {
-    pname = "gitea-frontend";
     inherit (gitea) src version;
-
-    pnpmDeps = fetchPnpmDeps {
-      inherit (finalAttrs) pname version src;
-      inherit pnpm;
-      fetcherVersion = 4;
-      hash = "sha256-FroVRhNzCLtbW9Z0s6xr4l0mIX+hY4KOomZAhPILWlY=";
-    };
+    pname = "gitea-frontend";
 
     nativeBuildInputs = [
       nodejs
       pnpmConfigHook
       pnpm
     ];
-
-    __darwinAllowLocalNetworking = true;
 
     buildPhase = ''
       make frontend
@@ -49,6 +40,15 @@ let
       mkdir -p $out
       cp -R public $out/
     '';
+
+    __darwinAllowLocalNetworking = true;
+
+    pnpmDeps = fetchPnpmDeps {
+      inherit (finalAttrs) pname version src;
+      inherit pnpm;
+      fetcherVersion = 4;
+      hash = "sha256-FroVRhNzCLtbW9Z0s6xr4l0mIX+hY4KOomZAhPILWlY=";
+    };
   });
 in
 buildGoModule (finalAttrs: {
@@ -62,10 +62,6 @@ buildGoModule (finalAttrs: {
     hash = "sha256-xfLhiQMygYKgSMrvmH2V/LIMeaA4ovOeUDT4RUwhvgo=";
   };
 
-  proxyVendor = true;
-
-  vendorHash = "sha256-VyzfBZnxnubNIdf+xwLav4W4DgapcLLKN1aKrZ9NbDg=";
-
   outputs = [
     "out"
     "data"
@@ -73,37 +69,14 @@ buildGoModule (finalAttrs: {
 
   patches = [ ./static-root-path.patch ];
 
-  # go-modules derivation doesn't provide $data
-  # so we need to wait until it is built, and then
-  # at that time we can then apply the substituteInPlace
-  overrideModAttrs = _: {
-    postPatch = ''
-      substituteInPlace go.mod \
-        --replace-fail "go 1.26.3" "go 1.26"
-    '';
-  };
-
   postPatch = ''
     substituteInPlace modules/setting/server.go --subst-var data
     substituteInPlace go.mod \
       --replace-fail "go 1.26.3" "go 1.26"
   '';
 
-  subPackages = [ "." ];
-
   nativeBuildInputs = [ makeWrapper ];
-
-  tags = lib.optionals sqliteSupport [
-    "sqlite"
-    "sqlite_unlock_notify"
-  ];
-
-  ldflags = [
-    "-s"
-    "-w"
-    "-X main.Version=${finalAttrs.version}"
-    "-X 'main.Tags=${lib.concatStringsSep " " finalAttrs.tags}'"
-  ];
+  vendorHash = "sha256-VyzfBZnxnubNIdf+xwLav4W4DgapcLLKN1aKrZ9NbDg=";
 
   postInstall = ''
     mkdir $data
@@ -124,6 +97,31 @@ buildGoModule (finalAttrs: {
       }
   '';
 
+  ldflags = [
+    "-s"
+    "-w"
+    "-X main.Version=${finalAttrs.version}"
+    "-X 'main.Tags=${lib.concatStringsSep " " finalAttrs.tags}'"
+  ];
+
+  # go-modules derivation doesn't provide $data
+  # so we need to wait until it is built, and then
+  # at that time we can then apply the substituteInPlace
+  overrideModAttrs = _: {
+    postPatch = ''
+      substituteInPlace go.mod \
+        --replace-fail "go 1.26.3" "go 1.26"
+    '';
+  };
+
+  proxyVendor = true;
+  subPackages = [ "." ];
+
+  tags = lib.optionals sqliteSupport [
+    "sqlite"
+    "sqlite_unlock_notify"
+  ];
+
   passthru = {
     data-compressed =
       lib.warn "gitea.passthru.data-compressed is deprecated. Use \"compressDrvWeb gitea.data\"."
@@ -137,10 +135,12 @@ buildGoModule (finalAttrs: {
     homepage = "https://about.gitea.com";
     changelog = "https://github.com/go-gitea/gitea/releases/tag/${finalAttrs.src.tag}";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       techknowlogick
       SuperSandro2000
     ];
+
     mainProgram = "gitea";
   };
 })

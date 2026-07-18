@@ -2,9 +2,9 @@
   lib,
   buildPythonPackage,
   fetchPypi,
-  hatchling,
   hatch-jupyter-builder,
   hatch-nodejs-version,
+  hatchling,
   jupyterlab,
   ploomber-core,
 }:
@@ -13,14 +13,15 @@ buildPythonPackage (finalAttrs: {
   pname = "jupysql-plugin";
   version = "0.4.5";
 
-  pyproject = true;
-
   # using pypi archive which includes pre-built assets
   src = fetchPypi {
-    pname = "jupysql_plugin";
     inherit (finalAttrs) version;
     hash = "sha256-cIXheImO4BL00zn101ZDIzKl2qkIDsTNswZOCs54lNY=";
+    pname = "jupysql_plugin";
   };
+
+  # testing requires a circular dependency over jupysql
+  doCheck = false;
 
   build-system = [
     hatchling
@@ -30,10 +31,7 @@ buildPythonPackage (finalAttrs: {
   ];
 
   dependencies = [ ploomber-core ];
-
-  # testing requires a circular dependency over jupysql
-  doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "jupysql_plugin" ];
 
   meta = {

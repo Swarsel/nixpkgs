@@ -10,19 +10,16 @@
 buildPythonPackage rec {
   pname = "aniso8601";
   version = "10.0.1";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
     hash = "sha256-JUiPhmPdFSiuH1T5SsHqUa4ltNUxU5uLxwf+0YTRaEU=";
   };
 
-  build-system = [ setuptools ];
-
-  dependencies = [ python-dateutil ];
-
   nativeCheckInputs = [ pytestCheckHook ];
-
+  build-system = [ setuptools ];
+  dependencies = [ python-dateutil ];
+  pyproject = true;
   pythonImportsCheck = [ "aniso8601" ];
 
   meta = {

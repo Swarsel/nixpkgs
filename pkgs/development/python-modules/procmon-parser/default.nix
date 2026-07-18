@@ -1,8 +1,8 @@
 {
   lib,
+  fetchFromGitHub,
   buildPythonPackage,
   construct,
-  fetchFromGitHub,
   pytestCheckHook,
   python-dateutil,
   six,
@@ -11,7 +11,6 @@
 buildPythonPackage rec {
   pname = "procmon-parser";
   version = "0.3.13";
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "eronnen";
@@ -30,6 +29,7 @@ buildPythonPackage rec {
     python-dateutil
   ];
 
+  format = "setuptools";
   pythonImportsCheck = [ "procmon_parser" ];
 
   meta = {

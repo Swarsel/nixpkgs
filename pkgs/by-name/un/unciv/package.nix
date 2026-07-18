@@ -1,31 +1,31 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchurl,
   copyDesktopItems,
-  makeDesktopItem,
-  makeWrapper,
   jre,
   libGL,
   libpulseaudio,
   libxxf86vm,
+  makeDesktopItem,
+  makeWrapper,
   nix-update-script,
 }:
 let
   version = "4.20.11";
 
   desktopItem = makeDesktopItem {
-    name = "unciv";
-    exec = "unciv";
+    categories = [ "Game" ];
     comment = "An open-source Android/Desktop remake of Civ V";
     desktopName = "Unciv";
+    exec = "unciv";
     icon = "unciv";
-    categories = [ "Game" ];
+    name = "unciv";
   };
 
   desktopIcon = fetchurl {
-    url = "https://github.com/yairm210/Unciv/blob/${version}/extraImages/Icons/Unciv%20icon%20v6.png?raw=true";
     hash = "sha256-Zuz+HGfxjGviGBKTiHdIFXF8UMRLEIfM8f+LIB/xonk=";
+    url = "https://github.com/yairm210/Unciv/blob/${version}/extraImages/Icons/Unciv%20icon%20v6.png?raw=true";
   };
 
   envLibPath = lib.makeLibraryPath (
@@ -37,15 +37,13 @@ let
   );
 in
 stdenv.mkDerivation rec {
-  pname = "unciv";
   inherit version;
+  pname = "unciv";
 
   src = fetchurl {
     url = "https://github.com/yairm210/Unciv/releases/download/${version}/Unciv.jar";
     hash = "sha256-O9A11GJyz6yApD7Nni11TEohT+8hRDG02k6lQWtBHgw=";
   };
-
-  dontUnpack = true;
 
   nativeBuildInputs = [
     copyDesktopItems
@@ -66,16 +64,16 @@ stdenv.mkDerivation rec {
   '';
 
   desktopItems = [ desktopItem ];
-
+  dontUnpack = true;
   passthru.updateScript = nix-update-script { };
 
   meta = {
     description = "Open-source Android/Desktop remake of Civ V";
-    mainProgram = "unciv";
     homepage = "https://github.com/yairm210/Unciv";
-    maintainers = with lib.maintainers; [ iedame ];
-    sourceProvenance = with lib.sourceTypes; [ binaryBytecode ];
     license = lib.licenses.mpl20;
+    sourceProvenance = with lib.sourceTypes; [ binaryBytecode ];
+    maintainers = with lib.maintainers; [ iedame ];
     platforms = lib.platforms.all;
+    mainProgram = "unciv";
   };
 }

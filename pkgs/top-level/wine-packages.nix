@@ -2,9 +2,9 @@
   lib,
   stdenv,
   config,
+  newScope,
   # not for anything bound in the package set, do note
   pkgs,
-  newScope,
   wineBuild,
 }:
 
@@ -16,62 +16,62 @@ lib.makeExtensible (
   {
     inherit callPackage wineBuild;
 
-    fonts = callPackage ../applications/emulators/wine/fonts.nix { };
-    minimal = callPackage ../applications/emulators/wine {
-      wineRelease = config.wine.release or "stable";
-      inherit wineBuild;
-    };
-
     base = self.minimal.override {
-      gettextSupport = true;
-      fontconfigSupport = stdenv.hostPlatform.isLinux;
       alsaSupport = stdenv.hostPlatform.isLinux;
-      openglSupport = true;
-      vulkanSupport = true;
-      tlsSupport = true;
-      cupsSupport = true;
-      dbusSupport = stdenv.hostPlatform.isLinux;
       cairoSupport = stdenv.hostPlatform.isLinux;
+      cupsSupport = true;
       cursesSupport = true;
-      saneSupport = stdenv.hostPlatform.isLinux;
-      pulseaudioSupport = config.pulseaudio or stdenv.hostPlatform.isLinux;
-      udevSupport = stdenv.hostPlatform.isLinux;
-      xineramaSupport = stdenv.hostPlatform.isLinux;
-      sdlSupport = true;
+      dbusSupport = stdenv.hostPlatform.isLinux;
+      ffmpegSupport = true;
+      fontconfigSupport = stdenv.hostPlatform.isLinux;
+      gettextSupport = true;
       mingwSupport = true;
+      openglSupport = true;
+      pulseaudioSupport = config.pulseaudio or stdenv.hostPlatform.isLinux;
+      saneSupport = stdenv.hostPlatform.isLinux;
+      sdlSupport = true;
+      tlsSupport = true;
+      udevSupport = stdenv.hostPlatform.isLinux;
       usbSupport = true;
+      vulkanSupport = true;
       waylandSupport = stdenv.hostPlatform.isLinux;
       x11Support = stdenv.hostPlatform.isLinux;
-      ffmpegSupport = true;
+      xineramaSupport = stdenv.hostPlatform.isLinux;
     };
 
+    fonts = callPackage ../applications/emulators/wine/fonts.nix { };
+
     full = self.base.override {
-      gtkSupport = stdenv.hostPlatform.isLinux;
-      gstreamerSupport = true;
-      openclSupport = true;
-      odbcSupport = true;
-      netapiSupport = stdenv.hostPlatform.isLinux;
-      vaSupport = stdenv.hostPlatform.isLinux;
-      pcapSupport = true;
-      v4lSupport = stdenv.hostPlatform.isLinux;
-      gphoto2Support = true;
-      krb5Support = true;
       embedInstallers = true;
+      gphoto2Support = true;
+      gstreamerSupport = true;
+      gtkSupport = stdenv.hostPlatform.isLinux;
+      krb5Support = true;
+      netapiSupport = stdenv.hostPlatform.isLinux;
+      odbcSupport = true;
+      openclSupport = true;
+      pcapSupport = true;
       smartcardSupport = true;
+      v4lSupport = stdenv.hostPlatform.isLinux;
+      vaSupport = stdenv.hostPlatform.isLinux;
+    };
+
+    minimal = callPackage ../applications/emulators/wine {
+      inherit wineBuild;
+      wineRelease = config.wine.release or "stable";
     };
 
     stable = self.base.override { wineRelease = "stable"; };
     stableFull = self.full.override { wineRelease = "stable"; };
-
-    unstable = self.base.override { wineRelease = "unstable"; };
-    unstableFull = self.full.override { wineRelease = "unstable"; };
-
     staging = self.base.override { wineRelease = "staging"; };
     stagingFull = self.full.override { wineRelease = "staging"; };
+    unstable = self.base.override { wineRelease = "unstable"; };
+    unstableFull = self.full.override { wineRelease = "unstable"; };
 
     wayland = self.base.override {
       x11Support = false;
     };
+
     waylandFull = self.full.override {
       x11Support = false;
     };

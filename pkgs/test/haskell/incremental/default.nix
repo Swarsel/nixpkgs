@@ -4,9 +4,9 @@
 # See: https://felixspringer.xyz/homepage/blog/incrementalHaskellBuildsWithNix
 
 {
+  lib,
   haskell,
   haskellPackages,
-  lib,
 }:
 
 let

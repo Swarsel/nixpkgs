@@ -1,11 +1,11 @@
 {
   lib,
   stdenv,
-  rustPlatform,
   fetchFromGitHub,
   installShellFiles,
-  versionCheckHook,
   nix-update-script,
+  rustPlatform,
+  versionCheckHook,
 }:
 rustPlatform.buildRustPackage (finalAttrs: {
   pname = "topiary";
@@ -18,14 +18,9 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-3zHO+a/m4Rv+pUm0Y1dBjFfHPZCfjsyAq56EiHSGJ1Y=";
   };
 
-  cargoHash = "sha256-oJoRuWzaP4F+bS2xdFsOWcuLGyTEcCIHLRdPjG8X2CU=";
-
   nativeBuildInputs = [ installShellFiles ];
-
-  cargoBuildFlags = [
-    "-p"
-    "topiary-cli"
-  ];
+  cargoHash = "sha256-oJoRuWzaP4F+bS2xdFsOWcuLGyTEcCIHLRdPjG8X2CU=";
+  env.TOPIARY_LANGUAGE_DIR = "${placeholder "out"}/share/queries";
 
   # Skip tests that cannot be executed in sandbox (operation not permitted)
   checkFlags = [
@@ -64,9 +59,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
     "--skip=test_vis"
     "--skip=test_vis_invalid"
   ];
-  cargoTestFlags = finalAttrs.cargoBuildFlags;
-
-  env.TOPIARY_LANGUAGE_DIR = "${placeholder "out"}/share/queries";
 
   postInstall = ''
     install -Dm444 topiary-queries/queries/* -t $out/share/queries
@@ -78,10 +70,15 @@ rustPlatform.buildRustPackage (finalAttrs: {
       --zsh <($out/bin/topiary completion zsh)
   '';
 
+  doInstallCheck = true;
   nativeInstallCheckInputs = [ versionCheckHook ];
 
-  doInstallCheck = true;
+  cargoBuildFlags = [
+    "-p"
+    "topiary-cli"
+  ];
 
+  cargoTestFlags = finalAttrs.cargoBuildFlags;
   passthru.updateScript = nix-update-script { };
 
   meta = {
@@ -89,9 +86,11 @@ rustPlatform.buildRustPackage (finalAttrs: {
     homepage = "https://github.com/tweag/topiary";
     changelog = "https://github.com/tweag/topiary/blob/v${finalAttrs.version}/CHANGELOG.md";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       nartsiss
     ];
+
     mainProgram = "topiary";
   };
 })

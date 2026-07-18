@@ -2,10 +2,10 @@
   lib,
   stdenv,
   fetchFromGitHub,
+  autoreconfHook,
+  check,
   pcre,
   pkg-config,
-  check,
-  autoreconfHook,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -19,6 +19,8 @@ stdenv.mkDerivation (finalAttrs: {
     sha256 = "09cixbms817p6nb77wz3rxp0znnac8ybycvsrrzgwlbfn58a3zwl";
   };
 
+  strictDeps = true;
+
   nativeBuildInputs = [
     autoreconfHook
     pkg-config
@@ -26,8 +28,6 @@ stdenv.mkDerivation (finalAttrs: {
 
   buildInputs = [ check ];
   propagatedBuildInputs = [ pcre ];
-
-  strictDeps = true;
 
   meta = {
     description = "High-performance path dispatching library";

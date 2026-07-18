@@ -2,42 +2,42 @@
   lib,
   stdenv,
   fetchurl,
-  cmake,
-  pkg-config,
-  qt6,
-  # transports
-  curl,
-  libmms,
-  # input plugins
-  libmad,
-  taglib,
-  libvorbis,
-  libogg,
-  flac,
-  libmpcdec,
-  libmodplug,
-  libsndfile,
-  libcdio,
-  cdparanoia,
-  libcddb,
-  faad2,
-  ffmpeg,
-  wildmidi,
-  libbs2b,
-  game-music-emu,
-  libarchive,
-  opusfile,
-  soxr,
-  wavpack,
-  libxmp,
-  libsidplayfp,
   # output plugins
   alsa-lib,
-  libpulseaudio,
-  pipewire,
+  cdparanoia,
+  cmake,
+  # transports
+  curl,
+  faad2,
+  ffmpeg,
+  flac,
+  game-music-emu,
+  libarchive,
+  libbs2b,
+  libcddb,
+  libcdio,
   libjack2,
+  # input plugins
+  libmad,
+  libmms,
+  libmodplug,
+  libmpcdec,
+  libogg,
+  libpulseaudio,
   # effect plugins
   libsamplerate,
+  libsidplayfp,
+  libsndfile,
+  libvorbis,
+  libxmp,
+  opusfile,
+  pipewire,
+  pkg-config,
+  qt6,
+  soxr,
+  taglib,
+  wavpack,
+  wildmidi,
 }:
 
 # Additional plugins that can be added:
@@ -109,10 +109,10 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Qt-based audio player that looks like Winamp";
-    mainProgram = "qmmp";
     homepage = "https://qmmp.ylsoftware.com/";
     license = lib.licenses.gpl2Plus;
-    platforms = lib.platforms.linux;
     maintainers = [ lib.maintainers.bjornfor ];
+    platforms = lib.platforms.linux;
+    mainProgram = "qmmp";
   };
 })

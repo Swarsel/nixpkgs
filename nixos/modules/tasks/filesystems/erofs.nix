@@ -15,10 +15,8 @@ in
 {
   config = lib.mkIf (inInitrd || inSystem) {
 
-    system.fsPackages = [ pkgs.erofs-utils ];
-
     boot.initrd.availableKernelModules = lib.mkIf inInitrd [ "erofs" ];
-
+    system.fsPackages = [ pkgs.erofs-utils ];
     # fsck.erofs is currently experimental and should not be run as a
     # privileged user. Thus, it is not included in the initrd.
 

@@ -1,6 +1,6 @@
 {
-  mkKdeDerivation,
   kcoreaddons,
+  mkKdeDerivation,
 }:
 mkKdeDerivation {
   pname = "union";

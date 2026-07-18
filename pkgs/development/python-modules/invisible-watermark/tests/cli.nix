@@ -1,7 +1,7 @@
 {
   image,
-  method,
   invisible-watermark,
+  method,
   runCommand,
   testName,
   withOnnx,

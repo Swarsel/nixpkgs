@@ -1,24 +1,24 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
   cmake,
   expat,
-  yaml-cpp,
-  pystring,
-  imath,
-  minizip-ng,
-  zlib,
   # Only required on Linux
   glew,
+  imath,
+  lcms2,
   libglut,
-  # Python bindings
-  pythonBindings ? true, # Python bindings
+  minizip-ng,
+  openexr,
+  pystring,
   python3Packages,
+  yaml-cpp,
+  zlib,
   # Build apps
   buildApps ? true, # Utility applications
-  lcms2,
-  openexr,
+  # Python bindings
+  pythonBindings ? true, # Python bindings
 }:
 
 stdenv.mkDerivation rec {
@@ -45,6 +45,7 @@ stdenv.mkDerivation rec {
   '';
 
   nativeBuildInputs = [ cmake ] ++ lib.optionals pythonBindings [ python3Packages.python ];
+
   buildInputs = [
     expat
     yaml-cpp
@@ -66,9 +67,6 @@ stdenv.mkDerivation rec {
     openexr
   ];
 
-  # Gcc blindly tries to optimize all float operations instead of just marked ones.
-  # https://gcc.gnu.org/bugzilla/show_bug.cgi?id=122304
-  env.CXXFLAGS = "-ffp-contract=on";
   cmakeFlags = [
     "-DOCIO_INSTALL_EXT_PACKAGES=NONE"
     "-DOCIO_USE_SSE2NEON=OFF"
@@ -79,14 +77,17 @@ stdenv.mkDerivation rec {
   ++ lib.optional (!pythonBindings) "-DOCIO_BUILD_PYTHON=OFF"
   ++ lib.optional (!buildApps) "-DOCIO_BUILD_APPS=OFF";
 
+  # Gcc blindly tries to optimize all float operations instead of just marked ones.
+  # https://gcc.gnu.org/bugzilla/show_bug.cgi?id=122304
+  env.CXXFLAGS = "-ffp-contract=on";
   # precision issues on non-x86
   doCheck = stdenv.hostPlatform.isx86_64;
   # Tends to fail otherwise.
   enableParallelChecking = false;
 
   meta = {
-    homepage = "https://opencolorio.org";
     description = "Color management framework for visual effects and animation";
+    homepage = "https://opencolorio.org";
     license = lib.licenses.bsd3;
     maintainers = [ lib.maintainers.rytone ];
     platforms = lib.platforms.unix;

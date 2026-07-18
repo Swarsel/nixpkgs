@@ -1,30 +1,29 @@
 {
   lib,
+  stdenv,
+  fetchurl,
   alsa-lib,
   factorio-utils,
-  fetchurl,
   libGL,
   libice,
+  libpulseaudio,
   libsm,
   libx11,
   libxcursor,
   libxext,
   libxi,
   libxinerama,
-  libxrandr,
-  libpulseaudio,
   libxkbcommon,
+  libxrandr,
   makeDesktopItem,
   makeWrapper,
-  releaseType ? "alpha",
-  stdenv,
   wayland,
-
-  mods-dat ? null,
-  versionsJson ? ./versions.json,
-  username ? "",
-  token ? "", # get/reset token at https://factorio.com/profile
   experimental ? false, # true means to always use the latest branch
+  mods-dat ? null,
+  releaseType ? "alpha",
+  token ? "", # get/reset token at https://factorio.com/profile
+  username ? "",
+  versionsJson ? ./versions.json,
   ...
 }@args:
 
@@ -82,12 +81,12 @@ let
     '';
 
   desktopItem = makeDesktopItem {
-    name = "factorio";
-    desktopName = "Factorio";
+    categories = [ "Game" ];
     comment = "A game in which you build and maintain factories.";
+    desktopName = "Factorio";
     exec = "factorio";
     icon = "factorio";
-    categories = [ "Game" ];
+    name = "factorio";
   };
 
   branch = if experimental then "experimental" else "stable";
@@ -115,15 +114,16 @@ let
   makeBinDist =
     {
       name,
-      version,
+      needsAuth,
+      sha256,
       tarDirectory,
       url,
-      sha256,
-      needsAuth,
+      version,
       candidateHashFilenames ? [ ],
     }:
     {
       inherit version tarDirectory;
+
       src =
         if !needsAuth then
           fetchurl { inherit name url sha256; }
@@ -131,6 +131,7 @@ let
           (lib.overrideDerivation
             (fetchurl {
               inherit name url sha256;
+
               curlOptsList = [
                 "--get"
                 "--data-urlencode"
@@ -140,6 +141,15 @@ let
               ];
             })
             (_: {
+              failureHook = ''
+                cat <<EOF
+                ${helpMsg {
+                  dlName = if candidateHashFilenames != [ ] then builtins.head candidateHashFilenames else name;
+                  storeName = name;
+                }}
+                EOF
+              '';
+
               # This preHook hides the credentials from /proc
               preHook =
                 if username != "" && token != "" then
@@ -152,14 +162,6 @@ let
                     # Deliberately failing since username/token was not provided, so we can't fetch.
                     exit 1
                   '';
-              failureHook = ''
-                cat <<EOF
-                ${helpMsg {
-                  dlName = if candidateHashFilenames != [ ] then builtins.head candidateHashFilenames else name;
-                  storeName = name;
-                }}
-                EOF
-              '';
             })
           );
     };
@@ -187,12 +189,9 @@ let
   modDir = factorio-utils.mkModDirDrv mods mods-dat;
 
   base = with actual; {
+    inherit version src;
     # remap -expansion to -space-age to better match the attr name in nixpkgs.
     pname = "factorio-${if releaseType == "expansion" then "space-age" else releaseType}";
-    inherit version src;
-
-    preferLocalBuild = true;
-    dontBuild = true;
 
     installPhase = ''
       mkdir -p $out/{bin,share/factorio}
@@ -203,10 +202,13 @@ let
         $out/bin/factorio
     '';
 
+    dontBuild = true;
+    preferLocalBuild = true;
     passthru.updateScript = ./update.py;
 
     meta = {
       description = "Game in which you build and maintain factories";
+
       longDescription = ''
         Factorio is a game in which you build and maintain factories.
 
@@ -219,41 +221,34 @@ let
         Factorio has been in development since spring of 2012, and reached
         version 1.0 in mid 2020.
       '';
+
       homepage = "https://www.factorio.com/";
-      sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
       license = lib.licenses.unfree;
+      sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
+
       maintainers = with lib.maintainers; [
         Baughn
         priegger
         lukegb
       ];
+
       platforms = [ "x86_64-linux" ];
       mainProgram = "factorio";
     };
   };
 
   releases = rec {
-    headless = base;
+    alpha = demo // {
+
+      installPhase = demo.installPhase + ''
+        cp -a doc-html $out/share/factorio
+      '';
+    };
+
     demo = base // {
 
       nativeBuildInputs = [ makeWrapper ];
       buildInputs = [ libpulseaudio ];
-
-      libPath = lib.makeLibraryPath [
-        alsa-lib
-        libGL
-        libice
-        libsm
-        libx11
-        libxcursor
-        libxext
-        libxi
-        libxinerama
-        libxrandr
-        libpulseaudio
-        libxkbcommon
-        wayland
-      ];
 
       installPhase = base.installPhase + ''
         wrapProgram $out/bin/factorio                                \
@@ -294,14 +289,26 @@ let
         cp -a data/core/graphics/factorio-icon@2x.png $out/share/icons/hicolor/128x128/apps/factorio.png
         ln -s ${desktopItem}/share/applications $out/share/
       '';
-    };
-    alpha = demo // {
 
-      installPhase = demo.installPhase + ''
-        cp -a doc-html $out/share/factorio
-      '';
+      libPath = lib.makeLibraryPath [
+        alsa-lib
+        libGL
+        libice
+        libsm
+        libx11
+        libxcursor
+        libxext
+        libxi
+        libxinerama
+        libxrandr
+        libpulseaudio
+        libxkbcommon
+        wayland
+      ];
     };
+
     expansion = alpha;
+    headless = base;
   };
 
 in

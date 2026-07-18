@@ -3,9 +3,9 @@
   stdenv,
   fetchFromGitea,
   gitUpdater,
-  tk,
-  tclPackages,
   tcl,
+  tclPackages,
+  tk,
   tkremind ? null,
   withGui ?
     if tkremind != null then
@@ -19,17 +19,12 @@ tcl.mkTclDerivation rec {
   version = "06.02.07";
 
   src = fetchFromGitea {
-    domain = "git.skoll.ca";
     owner = "Skollsoft-Public";
     repo = "Remind";
     rev = version;
     hash = "sha256-5Cg7UdftyzjQg7pdewc7z8SfA3jtXQdPboXs9V/vDDo=";
+    domain = "git.skoll.ca";
   };
-
-  propagatedBuildInputs = lib.optionals withGui [
-    tclPackages.tcllib
-    tk
-  ];
 
   postPatch = lib.optionalString withGui ''
     # NOTA BENE: The path to rem2pdf is replaced in tkremind for future use
@@ -40,6 +35,11 @@ tcl.mkTclDerivation rec {
       --replace-fail 'set Remind "remind"' "set Remind \"$out/bin/remind\"" \
       --replace-fail 'set Rem2PDF "rem2pdf"' "set Rem2PDF \"$out/bin/rem2pdf\""
   '';
+
+  propagatedBuildInputs = lib.optionals withGui [
+    tclPackages.tcllib
+    tk
+  ];
 
   env.NIX_CFLAGS_COMPILE = lib.optionalString stdenv.hostPlatform.isDarwin (toString [
     # On Darwin setenv and unsetenv are defined in stdlib.h from libSystem
@@ -52,15 +52,17 @@ tcl.mkTclDerivation rec {
   };
 
   meta = {
-    homepage = "https://dianne.skoll.ca/projects/remind/";
     description = "Sophisticated calendar and alarm program for the console";
+    homepage = "https://dianne.skoll.ca/projects/remind/";
     license = lib.licenses.gpl2Only;
+
     maintainers = with lib.maintainers; [
       afh
       raskin
       kovirobi
     ];
-    mainProgram = "remind";
+
     platforms = lib.platforms.unix;
+    mainProgram = "remind";
   };
 }

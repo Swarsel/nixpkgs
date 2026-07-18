@@ -1,63 +1,57 @@
 {
   lib,
   stdenv,
-  buildPythonPackage,
-  pythonAtLeast,
-  pythonOlder,
   fetchFromGitHub,
-  fetchpatch,
-  python,
-
-  # build-system
-  hatchling,
-  hatch-fancy-pypi-readme,
-
+  # optional-dependencies
+  appdirs,
   # dependencies
   attrs,
   automat,
-  constantly,
-  hyperlink,
-  incremental,
-  typing-extensions,
-  zope-interface,
-
-  # optional-dependencies
-  appdirs,
   bcrypt,
-  cryptography,
-  h2,
-  idna,
-  priority,
-  pyopenssl,
-  pyserial,
-  service-identity,
-
-  # tests
-  cython-test-exception-raiser,
-  gitMinimal,
-  glibcLocales,
-  pyhamcrest,
-  hypothesis,
-
+  buildPythonPackage,
   # for passthru.tests
   cassandra-driver,
+  constantly,
+  cryptography,
+  # tests
+  cython-test-exception-raiser,
+  fetchpatch,
+  gitMinimal,
+  glibcLocales,
+  h2,
+  hatch-fancy-pypi-readme,
+  # build-system
+  hatchling,
   httpx,
+  hyperlink,
+  hypothesis,
+  idna,
+  incremental,
   klein,
   magic-wormhole,
+  nixosTests,
+  priority,
+  pyhamcrest,
+  pyopenssl,
+  pyserial,
+  python,
+  pythonAtLeast,
+  pythonOlder,
   scrapy,
+  service-identity,
+  thrift,
   treq,
   txaio,
   txamqp,
   txrequests,
   txtorcon,
-  thrift,
-  nixosTests,
+  typing-extensions,
+  zope-interface,
 }:
 
 buildPythonPackage rec {
   pname = "twisted";
   version = "26.4.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "twisted";
@@ -73,28 +67,10 @@ buildPythonPackage rec {
     # https://github.com/twisted/twisted/issues/12660
     # https://github.com/twisted/twisted/pull/12661
     (fetchpatch {
+      hash = "sha256-mbSZOvzinfUolfOHJl+vEdAEGjy8OF2S/SrTsAbvjIw=";
       name = "twisted-replace-pyopenssl-x509req-with-cryptography-csr.patch";
       url = "https://github.com/twisted/twisted/commit/5b4601c9965ffc92d6aa952b8c05127d5ac37307.patch";
-      hash = "sha256-mbSZOvzinfUolfOHJl+vEdAEGjy8OF2S/SrTsAbvjIw=";
     })
-  ];
-
-  __darwinAllowLocalNetworking = true;
-
-  build-system = [
-    hatchling
-    hatch-fancy-pypi-readme
-    incremental
-  ];
-
-  dependencies = [
-    attrs
-    automat
-    constantly
-    hyperlink
-    incremental
-    typing-extensions
-    zope-interface
   ];
 
   postPatch =
@@ -108,12 +84,19 @@ buildPythonPackage rec {
           "ListingTests.test_oldSingleDigitDayOfMonth"
           "ListingTests.test_newFile"
         ];
+
+        "src/twisted/internet/test/test_unix.py" = [
+          # flaky?
+          "UNIXTestsBuilder.test_sendFileDescriptorTriggersPauseProducing"
+        ];
+
         "src/twisted/test/test_log.py" = [
           # wrong timezone offset calculation
           "FileObserverTests.test_getTimezoneOffsetEastOfUTC"
           "FileObserverTests.test_getTimezoneOffsetWestOfUTC"
           "FileObserverTests.test_getTimezoneOffsetWithoutDaylightSavingTime"
         ];
+
         "src/twisted/test/test_udp.py" = [
           # "No such device" (No multicast support in the build sandbox)
           "MulticastTests.test_joinLeave"
@@ -121,29 +104,22 @@ buildPythonPackage rec {
           "MulticastTests.test_multicast"
           "MulticastTests.test_multiListen"
         ];
+
         "src/twisted/trial/test/test_script.py" = [
           # Fails in LXC containers with less than all cores available (limits.cpu)
           "AutoJobsTests.test_cpuCount"
         ];
-        "src/twisted/internet/test/test_unix.py" = [
-          # flaky?
-          "UNIXTestsBuilder.test_sendFileDescriptorTriggersPauseProducing"
-        ];
       }
       // lib.optionalAttrs (pythonAtLeast "3.12") {
-        "src/twisted/trial/_dist/test/test_workerreporter.py" = [
-          "WorkerReporterTests.test_addSkipPyunit"
-        ];
         "src/twisted/trial/_dist/test/test_worker.py" = [
           "LocalWorkerAMPTests.test_runSkip"
         ];
+
+        "src/twisted/trial/_dist/test/test_workerreporter.py" = [
+          "WorkerReporterTests.test_addSkipPyunit"
+        ];
       }
       // lib.optionalAttrs (pythonOlder "3.13") {
-        # missing ciphers in the crypt module due to libxcrypt
-        "src/twisted/web/test/test_tap.py" = [
-          "ServiceTests.test_HTTPSFailureOnMissingSSL"
-          "ServiceTests.test_HTTPSFailureOnMissingSSL"
-        ];
         "src/twisted/conch/test/test_checkers.py" = [
           "HelperTests.test_refuteCryptedPassword"
           "HelperTests.test_verifyCryptedPassword"
@@ -151,6 +127,15 @@ buildPythonPackage rec {
           "UNIXPasswordDatabaseTests.test_defaultCheckers"
           "UNIXPasswordDatabaseTests.test_passInCheckers"
         ];
+
+        # dependant on UnixCheckerTests.test_isChecker
+        "src/twisted/cred/test/test_cred.py" = [
+          "HashedPasswordOnDiskDatabaseTests.testBadCredentials"
+          "HashedPasswordOnDiskDatabaseTests.testGoodCredentials"
+          "HashedPasswordOnDiskDatabaseTests.testGoodCredentials_login"
+          "HashedPasswordOnDiskDatabaseTests.testHashedCredentials"
+        ];
+
         "src/twisted/cred/test/test_strcred.py" = [
           "UnixCheckerTests.test_isChecker"
           "UnixCheckerTests.test_unixCheckerFailsPassword"
@@ -162,12 +147,11 @@ buildPythonPackage rec {
           "CryptTests.test_verifyCryptedPassword"
           "CryptTests.test_verifyCryptedPasswordOSError"
         ];
-        # dependant on UnixCheckerTests.test_isChecker
-        "src/twisted/cred/test/test_cred.py" = [
-          "HashedPasswordOnDiskDatabaseTests.testBadCredentials"
-          "HashedPasswordOnDiskDatabaseTests.testGoodCredentials"
-          "HashedPasswordOnDiskDatabaseTests.testGoodCredentials_login"
-          "HashedPasswordOnDiskDatabaseTests.testHashedCredentials"
+
+        # missing ciphers in the crypt module due to libxcrypt
+        "src/twisted/web/test/test_tap.py" = [
+          "ServiceTests.test_HTTPSFailureOnMissingSSL"
+          "ServiceTests.test_HTTPSFailureOnMissingSSL"
         ];
       }
       // lib.optionalAttrs (pythonAtLeast "3.13") {
@@ -185,6 +169,7 @@ buildPythonPackage rec {
           "ProcessTestsBuilder_AsyncioSelectorReactorTests.test_processEnded"
           "ProcessTestsBuilder_SelectReactorTests.test_processEnded"
         ];
+
         "src/twisted/internet/test/test_tcp.py" = [
           # flaky on macOS, suspected kernel bug in socket notifications
           # https://github.com/twisted/twisted/issues/12151
@@ -208,13 +193,6 @@ buildPythonPackage rec {
         "ctypes.util.find_library(\"c\")" "'${stdenv.cc.libc}/lib/libc.so.6'"
     '';
 
-  # Generate Twisted's plug-in cache. Twisted users must do it as well. See
-  # http://twistedmatrix.com/documents/current/core/howto/plugin.html#auto3
-  # and http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=477103 for details.
-  postFixup = lib.optionalString (stdenv.buildPlatform.canExecute stdenv.hostPlatform) ''
-    $out/bin/twistd --help > /dev/null
-  '';
-
   nativeCheckInputs = [
     gitMinimal
     glibcLocales
@@ -237,17 +215,45 @@ buildPythonPackage rec {
     runHook postCheck
   '';
 
+  # Generate Twisted's plug-in cache. Twisted users must do it as well. See
+  # http://twistedmatrix.com/documents/current/core/howto/plugin.html#auto3
+  # and http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=477103 for details.
+  postFixup = lib.optionalString (stdenv.buildPlatform.canExecute stdenv.hostPlatform) ''
+    $out/bin/twistd --help > /dev/null
+  '';
+
+  __darwinAllowLocalNetworking = true;
+
+  build-system = [
+    hatchling
+    hatch-fancy-pypi-readme
+    incremental
+  ];
+
+  dependencies = [
+    attrs
+    automat
+    constantly
+    hyperlink
+    incremental
+    typing-extensions
+    zope-interface
+  ];
+
   optional-dependencies = {
     conch = [
       appdirs
       bcrypt
       cryptography
     ];
+
     http2 = [
       h2
       priority
     ];
+
     serial = [ pyserial ];
+
     test = [
       cython-test-exception-raiser
       pyhamcrest
@@ -255,12 +261,15 @@ buildPythonPackage rec {
       httpx
     ]
     ++ httpx.optional-dependencies.http2;
+
     tls = [
       idna
       pyopenssl
       service-identity
     ];
   };
+
+  pyproject = true;
 
   passthru = {
     tests = {
@@ -276,14 +285,15 @@ buildPythonPackage rec {
         txtorcon
         thrift
         ;
+
       inherit (nixosTests) buildbot matrix-synapse;
     };
   };
 
   meta = {
-    changelog = "https://github.com/twisted/twisted/blob/twisted-${version}/NEWS.rst";
-    homepage = "https://github.com/twisted/twisted";
     description = "Asynchronous networking framework written in Python";
+    homepage = "https://github.com/twisted/twisted";
+    changelog = "https://github.com/twisted/twisted/blob/twisted-${version}/NEWS.rst";
     license = lib.licenses.mit;
     maintainers = [ ];
   };

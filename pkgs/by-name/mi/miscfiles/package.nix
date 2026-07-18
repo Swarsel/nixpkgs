@@ -14,9 +14,9 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   meta = {
+    description = "Collection of files not of crucial importance for sysadmins";
     homepage = "https://www.gnu.org/software/miscfiles/";
     license = lib.licenses.gpl2Plus;
-    description = "Collection of files not of crucial importance for sysadmins";
     maintainers = with lib.maintainers; [ pSub ];
     platforms = with lib.platforms; unix;
   };

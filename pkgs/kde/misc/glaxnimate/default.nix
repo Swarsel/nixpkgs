@@ -1,14 +1,14 @@
 {
   lib,
-  mkKdeDerivation,
   fetchFromGitLab,
-  qttools,
-  potrace,
   ffmpeg,
-  libarchive,
-  python3Packages,
-  testers,
   glaxnimate,
+  libarchive,
+  mkKdeDerivation,
+  potrace,
+  python3Packages,
+  qttools,
+  testers,
   xvfb-run,
 }:
 
@@ -17,12 +17,12 @@ mkKdeDerivation rec {
   version = "0.6.0";
 
   src = fetchFromGitLab {
-    domain = "invent.kde.org";
     owner = "graphics";
     repo = "glaxnimate";
     tag = "v${version}";
-    fetchSubmodules = true;
     hash = "sha256-hHAe/xF6QDjiC2JqCUB1FngLsMSelMqEdHjXJwjTVjk=";
+    fetchSubmodules = true;
+    domain = "invent.kde.org";
   };
 
   extraBuildInputs = [
@@ -43,12 +43,13 @@ mkKdeDerivation rec {
   ];
 
   passthru.tests.version = testers.testVersion {
-    package = glaxnimate;
     command = "${lib.getExe xvfb-run} glaxnimate --version";
+    package = glaxnimate;
   };
 
   meta = {
     homepage = "https://glaxnimate.org/";
+
     license = with lib.licenses; [
       bsd2
       cc-by-sa-40
@@ -57,6 +58,7 @@ mkKdeDerivation rec {
       gpl3Plus
       unicodeTOU
     ];
+
     maintainers = [ lib.maintainers.tobiasBora ];
     mainProgram = "glaxnimate";
   };

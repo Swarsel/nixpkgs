@@ -1,4 +1,7 @@
 {
+  lib,
+  stdenv,
+  fetchFromGitHub,
   alembic,
   bison,
   boost,
@@ -7,20 +10,19 @@
   doxygen,
   draco,
   embree,
-  fetchFromGitHub,
   fetchpatch,
   flex,
   git,
   graphviz-nox,
   imath,
   jinja2,
-  lib,
   libGL,
   libx11,
   libxt,
   materialx,
   ninja,
   numpy,
+  onetbb,
   opencolorio,
   openimageio,
   openshadinglanguage,
@@ -32,14 +34,12 @@
   python,
   qt6,
   setuptools,
-  stdenv,
-  onetbb,
+  writeShellScriptBin,
   withDocs ? false,
+  withMaterialX ? true,
   withOsl ? !stdenv.hostPlatform.isDarwin,
   withTools ? false,
   withUsdView ? false,
-  withMaterialX ? true,
-  writeShellScriptBin,
 }:
 
 let
@@ -53,7 +53,6 @@ in
 buildPythonPackage rec {
   pname = "openusd";
   version = "26.05";
-  pyproject = false;
 
   src = fetchFromGitHub {
     owner = "PixarAnimationStudios";
@@ -66,32 +65,11 @@ buildPythonPackage rec {
 
   patches = [
     (fetchpatch {
+      hash = "sha256-aUWGKn365qov0ttGOq5GgNxYGIGZ4DfmeMJfakbOugQ=";
       # https://github.com/PixarAnimationStudios/OpenUSD/pull/3648
       name = "propagate-dependencies-opengl.patch";
       url = "https://gitlab.archlinux.org/archlinux/packaging/packages/usd/-/raw/41469f20113d3550c5b42e67d1139dedc1062b8c/usd-find-dependency-OpenGL.patch?full_index=1";
-      hash = "sha256-aUWGKn365qov0ttGOq5GgNxYGIGZ4DfmeMJfakbOugQ=";
     })
-  ];
-
-  env.OSL_LOCATION = lib.optionalString withOsl "${openshadinglanguage}";
-
-  cmakeFlags = [
-    "-DPXR_BUILD_ALEMBIC_PLUGIN=ON"
-    "-DPXR_BUILD_DRACO_PLUGIN=ON"
-    "-DPXR_BUILD_EMBREE_PLUGIN=ON"
-    "-DPXR_BUILD_EXAMPLES=OFF"
-    "-DPXR_BUILD_IMAGING=ON"
-    "-DPXR_BUILD_MONOLITHIC=ON" # Seems to be commonly linked to monolithically
-    "-DPXR_BUILD_TESTS=OFF"
-    "-DPXR_BUILD_TUTORIALS=OFF"
-    "-DPXR_BUILD_USD_IMAGING=ON"
-    "-DPYSIDE_BIN_DIR=${pyside-tools-uic}/bin"
-    (lib.cmakeBool "PXR_BUILD_DOCUMENTATION" withDocs)
-    (lib.cmakeBool "PXR_BUILD_PYTHON_DOCUMENTATION" withDocs)
-    (lib.cmakeBool "PXR_BUILD_USDVIEW" withUsdView)
-    (lib.cmakeBool "PXR_BUILD_USD_TOOLS" withTools)
-    (lib.cmakeBool "PXR_ENABLE_MATERIALX_SUPPORT" withMaterialX)
-    (lib.cmakeBool "PXR_ENABLE_OSL_SUPPORT" withOsl)
   ];
 
   nativeBuildInputs = [
@@ -145,10 +123,26 @@ buildPythonPackage rec {
   ]
   ++ lib.optionals withUsdView [ pyqt6 ];
 
-  pythonImportsCheck = [
-    "pxr"
-    "pxr.Usd"
+  cmakeFlags = [
+    "-DPXR_BUILD_ALEMBIC_PLUGIN=ON"
+    "-DPXR_BUILD_DRACO_PLUGIN=ON"
+    "-DPXR_BUILD_EMBREE_PLUGIN=ON"
+    "-DPXR_BUILD_EXAMPLES=OFF"
+    "-DPXR_BUILD_IMAGING=ON"
+    "-DPXR_BUILD_MONOLITHIC=ON" # Seems to be commonly linked to monolithically
+    "-DPXR_BUILD_TESTS=OFF"
+    "-DPXR_BUILD_TUTORIALS=OFF"
+    "-DPXR_BUILD_USD_IMAGING=ON"
+    "-DPYSIDE_BIN_DIR=${pyside-tools-uic}/bin"
+    (lib.cmakeBool "PXR_BUILD_DOCUMENTATION" withDocs)
+    (lib.cmakeBool "PXR_BUILD_PYTHON_DOCUMENTATION" withDocs)
+    (lib.cmakeBool "PXR_BUILD_USDVIEW" withUsdView)
+    (lib.cmakeBool "PXR_BUILD_USD_TOOLS" withTools)
+    (lib.cmakeBool "PXR_ENABLE_MATERIALX_SUPPORT" withMaterialX)
+    (lib.cmakeBool "PXR_ENABLE_OSL_SUPPORT" withOsl)
   ];
+
+  env.OSL_LOCATION = lib.optionalString withOsl "${openshadinglanguage}";
 
   postInstall = ''
     # Make python lib properly accessible
@@ -160,16 +154,26 @@ buildPythonPackage rec {
     mv $out/docs $doc
   '';
 
+  pyproject = false;
+
+  pythonImportsCheck = [
+    "pxr"
+    "pxr.Usd"
+  ];
+
   meta = {
     description = "Universal Scene Description";
+
     longDescription = ''
       Universal Scene Description (USD) is an efficient, scalable system
       for authoring, reading, and streaming time-sampled scene description
       for interchange between graphics applications.
     '';
+
     homepage = "https://openusd.org/";
     changelog = "https://github.com/PixarAnimationStudios/OpenUSD/${src.tag}/CHANGELOG.md";
     license = lib.licenses.tost;
+
     maintainers = with lib.maintainers; [
       shaddydc
       gador

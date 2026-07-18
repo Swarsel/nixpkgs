@@ -1,8 +1,8 @@
 {
   lib,
   fetchFromGitHub,
-  rustPlatform,
   libusb-compat-0_1,
+  rustPlatform,
 }:
 
 let
@@ -15,23 +15,19 @@ let
   };
 in
 rustPlatform.buildRustPackage {
-  pname = "wishbone-tool";
   inherit version;
-
   inherit src;
-
-  sourceRoot = "${src.name}/wishbone-tool";
-
-  cargoHash = "sha256-YJEsTGnBUkQ35VOwZQeBbO3RZqglLYm2xecmIS4jiZM=";
-
+  pname = "wishbone-tool";
   buildInputs = [ libusb-compat-0_1 ];
+  cargoHash = "sha256-YJEsTGnBUkQ35VOwZQeBbO3RZqglLYm2xecmIS4jiZM=";
+  sourceRoot = "${src.name}/wishbone-tool";
 
   meta = {
     description = "Manipulate a Wishbone device over some sort of bridge";
-    mainProgram = "wishbone-tool";
     homepage = "https://github.com/litex-hub/wishbone-utils";
     license = lib.licenses.asl20;
     maintainers = with lib.maintainers; [ edef ];
     platforms = lib.platforms.linux;
+    mainProgram = "wishbone-tool";
   };
 }

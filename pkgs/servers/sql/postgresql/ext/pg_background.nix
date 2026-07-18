@@ -1,9 +1,9 @@
 {
-  fetchFromGitHub,
   lib,
+  fetchFromGitHub,
+  openssl,
   postgresql,
   postgresqlBuildExtension,
-  openssl,
 }:
 
 postgresqlBuildExtension (finalAttrs: {
@@ -23,8 +23,8 @@ postgresqlBuildExtension (finalAttrs: {
     description = "Run PostgreSQL Commands in Background Workers";
     homepage = "https://github.com/vibhorkum/pg_background";
     changelog = "https://github.com/vibhorkum/pg_background/releases/tag/v${finalAttrs.version}";
+    license = lib.licenses.gpl3Only;
     maintainers = with lib.maintainers; [ mkleczek ];
     platforms = postgresql.meta.platforms;
-    license = lib.licenses.gpl3Only;
   };
 })

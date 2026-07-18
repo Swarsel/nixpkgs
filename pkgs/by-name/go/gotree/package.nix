@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule (finalAttrs: {
@@ -22,7 +22,7 @@ buildGoModule (finalAttrs: {
     homepage = "https://github.com/elbachir-one/gt";
     changelog = "https://github.com/elbachir-one/gt/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.bsd3;
-    mainProgram = "gt";
     maintainers = with lib.maintainers; [ schnow265 ];
+    mainProgram = "gt";
   };
 })

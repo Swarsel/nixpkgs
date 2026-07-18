@@ -1,8 +1,7 @@
 {
-  buildAstalModule,
   astal3,
+  buildAstalModule,
   io,
-
   meson,
   ninja,
   pkg-config,
@@ -19,9 +18,11 @@
       ninja
       pkg-config
     ];
+
     buildInputs = [
       astal3
       io
     ];
+
     propagatedBuildInputs = [ ];
   }

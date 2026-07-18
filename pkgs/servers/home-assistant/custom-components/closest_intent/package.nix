@@ -1,17 +1,15 @@
 {
   lib,
-  buildHomeAssistantComponent,
   fetchFromGitHub,
-  rapidfuzz,
+  buildHomeAssistantComponent,
+  pytest-asyncio,
   # Test dependencies
   pytestCheckHook,
-  pytest-asyncio,
   pyyaml,
+  rapidfuzz,
 }:
 
 buildHomeAssistantComponent (finalAttrs: {
-  owner = "charludo";
-  domain = "closest_intent";
   version = "0.2.1";
 
   src = fetchFromGitHub {
@@ -21,21 +19,25 @@ buildHomeAssistantComponent (finalAttrs: {
     hash = "sha256-rfmQso2UJsyyCA5F+0B/7gszxy6+RUpTJtil0CxdtyY=";
   };
 
-  dependencies = [
-    rapidfuzz
-  ];
-
   nativeCheckInputs = [
     pytestCheckHook
     pytest-asyncio
     pyyaml
   ];
 
+  dependencies = [
+    rapidfuzz
+  ];
+
+  domain = "closest_intent";
+  owner = "charludo";
+
   meta = {
-    changelog = "https://github.com/charludo/hass-closest-intent/releases/tag/${finalAttrs.src.tag}";
     description = "Fuzzy intent matcher for Home Assistant; garbled STT output in, actual intent out";
     homepage = "https://github.com/charludo/hass-closest-intent";
+    changelog = "https://github.com/charludo/hass-closest-intent/releases/tag/${finalAttrs.src.tag}";
     license = lib.licenses.agpl3Only;
+
     maintainers = with lib.maintainers; [
       charludo
       jpds

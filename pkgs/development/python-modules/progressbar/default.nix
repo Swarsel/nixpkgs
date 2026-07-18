@@ -7,7 +7,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "progressbar";
   version = "2.5";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit (finalAttrs) pname version;
@@ -16,10 +15,11 @@ buildPythonPackage (finalAttrs: {
 
   # invalid command 'test'
   doCheck = false;
+  format = "setuptools";
 
   meta = {
-    homepage = "https://pypi.org/project/progressbar/";
     description = "Text progressbar library for python";
+    homepage = "https://pypi.org/project/progressbar/";
     license = lib.licenses.lgpl3Plus;
     maintainers = [ ];
   };

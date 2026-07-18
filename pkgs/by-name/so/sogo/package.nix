@@ -1,26 +1,26 @@
 {
   lib,
-  clangStdenv,
   fetchFromGitHub,
-  makeWrapper,
-  python3,
-  lndir,
-  libxcrypt,
-  openssl,
-  openldap,
-  sope,
-  libmemcached,
+  clangStdenv,
   curl,
+  gnustep-base,
+  gnustep-make,
+  libmemcached,
   libsodium,
+  libwbxml,
+  libxcrypt,
   libytnef,
   libzip,
-  pkg-config,
+  lndir,
+  makeWrapper,
   nixosTests,
   oath-toolkit,
-  gnustep-make,
-  gnustep-base,
+  openldap,
+  openssl,
+  pkg-config,
+  python3,
+  sope,
   enableActiveSync ? false,
-  libwbxml,
 }:
 
 clangStdenv.mkDerivation rec {
@@ -34,26 +34,6 @@ clangStdenv.mkDerivation rec {
     rev = "SOGo-${version}";
     hash = "sha256-Xh9Xjq+4yDnEKz5vWgUre+K6vXHTiRRFXZL6dkITbJU=";
   };
-
-  nativeBuildInputs = [
-    makeWrapper
-    python3
-    pkg-config
-  ];
-  buildInputs = [
-    gnustep-base
-    sope
-    openssl
-    libmemcached
-    curl
-    libsodium
-    libytnef
-    libzip
-    openldap
-    oath-toolkit
-    libxcrypt
-  ]
-  ++ lib.optional enableActiveSync libwbxml;
 
   patches = lib.optional enableActiveSync ./enable-activesync.patch;
 
@@ -74,6 +54,27 @@ clangStdenv.mkDerivation rec {
     # Modify the search path for GNUStep makefiles
     find . -type f -name GNUmakefile -exec sed -i "s:\\$.GNUSTEP_MAKEFILES.:$PWD/makefiles:g" {} +
   '';
+
+  nativeBuildInputs = [
+    makeWrapper
+    python3
+    pkg-config
+  ];
+
+  buildInputs = [
+    gnustep-base
+    sope
+    openssl
+    libmemcached
+    curl
+    libsodium
+    libytnef
+    libzip
+    openldap
+    oath-toolkit
+    libxcrypt
+  ]
+  ++ lib.optional enableActiveSync libwbxml;
 
   configureFlags = [
     "--disable-debug"
@@ -110,12 +111,14 @@ clangStdenv.mkDerivation rec {
 
   meta = {
     description = "Very fast and scalable modern collaboration suite (groupware)";
+    homepage = "https://sogo.nu/";
+
     license = with lib.licenses; [
       gpl2Only
       lgpl21Only
     ];
-    homepage = "https://sogo.nu/";
-    platforms = lib.platforms.linux;
+
     maintainers = with lib.maintainers; [ jceb ];
+    platforms = lib.platforms.linux;
   };
 }

@@ -1,11 +1,11 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   nix-update-script,
-  testers,
   pkg-config,
   portaudio,
+  testers,
 }:
 
 buildGoModule (finalAttrs: {
@@ -19,28 +19,27 @@ buildGoModule (finalAttrs: {
     hash = "sha256-l8RXYwLRrnekNeIocRQPBLCqMscMwKlWrVmts7Ce2EI=";
   };
 
-  vendorHash = "sha256-gfiWS6hWqe4eqmKGiYYGeSaygCGhhgSzgp0eicTwSa8=";
-
   # Use nixpkgs portaudio package + pkg-config rather than relying on a vendored
   # git submodule, similar to the homebrew solution
   nativeBuildInputs = [ pkg-config ];
   buildInputs = [ portaudio ];
-  tags = [ "portaudio_system" ];
-
+  vendorHash = "sha256-gfiWS6hWqe4eqmKGiYYGeSaygCGhhgSzgp0eicTwSa8=";
   subPackages = [ "cmd/lk" ];
-
-  passthru.updateScript = nix-update-script { };
+  tags = [ "portaudio_system" ];
   passthru.tests.version = testers.testVersion { package = finalAttrs.finalPackage; };
+  passthru.updateScript = nix-update-script { };
 
   meta = {
     description = "Command line interface to LiveKit";
     homepage = "https://livekit.io/";
     license = lib.licenses.asl20;
+
     maintainers = with lib.maintainers; [
       mgdelacroix
       faukah
       carschandler
     ];
+
     mainProgram = "lk";
   };
 })

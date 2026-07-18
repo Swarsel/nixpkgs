@@ -1,16 +1,15 @@
 {
   lib,
   stdenv,
-  buildPythonPackage,
   fetchFromGitHub,
-  rustPlatform,
+  buildPythonPackage,
   libiconv,
+  rustPlatform,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "python-flirt";
   version = "0.9.10";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "williballenthin";
@@ -28,17 +27,18 @@ buildPythonPackage (finalAttrs: {
     maturinBuildHook
   ];
 
+  buildInputs = lib.optionals stdenv.hostPlatform.isDarwin [ libiconv ];
+  buildAndTestSubdir = "pyflirt";
+
   cargoDeps = rustPlatform.importCargoLock {
     lockFile = ./Cargo.lock;
+
     outputHashes = {
       "ar-0.9.0" = "sha256-eyi1MlhJVvsiBOsetDHXFpdk+ABeZo/fVXNyvc5mw9s=";
     };
   };
 
-  buildInputs = lib.optionals stdenv.hostPlatform.isDarwin [ libiconv ];
-
-  buildAndTestSubdir = "pyflirt";
-
+  pyproject = true;
   pythonImportsCheck = [ "flirt" ];
 
   meta = {

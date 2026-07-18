@@ -1,9 +1,9 @@
 {
   lib,
-  mkKdeDerivation,
   fetchurl,
-  qttools,
+  mkKdeDerivation,
   qtsvg,
+  qttools,
 }:
 mkKdeDerivation rec {
   pname = "kdiagram";

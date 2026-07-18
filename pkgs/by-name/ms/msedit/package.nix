@@ -1,11 +1,11 @@
 {
   lib,
   stdenv,
-  rustPlatform,
   fetchFromGitHub,
-  versionCheckHook,
-  nix-update-script,
   icu,
+  nix-update-script,
+  rustPlatform,
+  versionCheckHook,
 }:
 rustPlatform.buildRustPackage (finalAttrs: {
   pname = "msedit";
@@ -18,11 +18,14 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-Sb73awgdajBKKW0QIpmKF6g9mIIS/1f0a6D/jQulnUM=";
   };
 
+  buildInputs = [
+    icu
+  ];
+
   cargoHash = "sha256-U8U70nzTmpY6r8J661EJ4CGjx6vWrGovu5m25dvz5sY=";
 
   # Requires nightly features
   env = {
-    RUSTC_BOOTSTRAP = 1;
     # Without -headerpad, the following error occurs on x86_64-darwin
     # error: install_name_tool: changing install names or rpaths can't be redone for: ... because larger updated load commands do not fit (the program must be relinked, and you may need to use -headerpad or -headerpad_max_install_names)
     NIX_LDFLAGS = toString (
@@ -30,11 +33,13 @@ rustPlatform.buildRustPackage (finalAttrs: {
         "-headerpad_max_install_names"
       ]
     );
+
+    RUSTC_BOOTSTRAP = 1;
   };
 
-  buildInputs = [
-    icu
-  ];
+  # Disabled for now, microsoft/edit#194
+  doInstallCheck = false;
+  nativeInstallCheckInputs = [ versionCheckHook ];
 
   # https://github.com/microsoft/edit/blob/f8bea2be191d00baa2a4551817541ea3f8c5b03e/src/icu.rs#L834
   # Required for Ctrl+F searching to work
@@ -50,26 +55,24 @@ rustPlatform.buildRustPackage (finalAttrs: {
       ${stdenv.cc.targetPrefix}install_name_tool -add_rpath ${rpathAppend} $out/bin/edit
     '';
 
-  # Disabled for now, microsoft/edit#194
-  doInstallCheck = false;
-  nativeInstallCheckInputs = [ versionCheckHook ];
   versionCheckProgram = "${placeholder "out"}/bin/edit";
-
   passthru.updateScript = nix-update-script { };
 
   meta = {
     description = "Simple editor for simple needs";
+
     longDescription = ''
       This editor pays homage to the classic MS-DOS Editor,
       but with a modern interface and input controls similar to VS Code.
       The goal is to provide an accessible editor that even users largely
       unfamiliar with terminals can easily use.
     '';
-    mainProgram = "edit";
+
     homepage = "https://github.com/microsoft/edit";
     changelog = "https://github.com/microsoft/edit/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.mit;
     maintainers = [ ];
     platforms = lib.platforms.all;
+    mainProgram = "edit";
   };
 })

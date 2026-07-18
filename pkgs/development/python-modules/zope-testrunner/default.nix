@@ -1,16 +1,15 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   setuptools,
-  zope-interface,
   zope-exceptions,
+  zope-interface,
 }:
 
 buildPythonPackage rec {
   pname = "zope-testrunner";
   version = "8.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "zopefoundation";
@@ -24,6 +23,7 @@ buildPythonPackage rec {
       --replace-fail "setuptools ==" "setuptools >="
   '';
 
+  doCheck = false; # custom test modifies sys.path
   build-system = [ setuptools ];
 
   dependencies = [
@@ -31,18 +31,16 @@ buildPythonPackage rec {
     zope-exceptions
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "zope.testrunner" ];
-
-  doCheck = false; # custom test modifies sys.path
-
   pythonNamespaces = [ "zope" ];
 
   meta = {
     description = "Flexible test runner with layer support";
-    mainProgram = "zope-testrunner";
     homepage = "https://github.com/zopefoundation/zope.testrunner";
     changelog = "https://github.com/zopefoundation/zope.testrunner/blob/${src.tag}/CHANGES.rst";
     license = lib.licenses.zpl21;
     maintainers = [ ];
+    mainProgram = "zope-testrunner";
   };
 }

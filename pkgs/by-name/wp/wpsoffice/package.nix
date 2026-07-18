@@ -1,29 +1,29 @@
 {
   lib,
   stdenv,
-  dpkg,
-  autoPatchelfHook,
   alsa-lib,
   at-spi2-core,
-  libtool,
-  libxkbcommon,
-  nspr,
-  libgbm,
-  libtiff,
-  udev,
-  gtk3,
-  libxv,
-  libxtst,
-  libxdamage,
-  cups,
-  pango,
-  runCommandLocal,
-  curl,
-  qt5,
-  coreutils,
+  autoPatchelfHook,
   cacert,
+  coreutils,
+  cups,
+  curl,
+  dpkg,
+  gtk3,
+  libgbm,
   libjpeg,
+  libtiff,
+  libtool,
+  libxdamage,
+  libxkbcommon,
   libxml2,
+  libxtst,
+  libxv,
+  nspr,
+  pango,
+  qt5,
+  runCommandLocal,
+  udev,
 }:
 let
   pkgVersion = "11.1.0.11723";
@@ -37,17 +37,17 @@ stdenv.mkDerivation rec {
   src =
     runCommandLocal "wps-office_${version}.XA_amd64.deb"
       {
-        outputHashMode = "recursive";
-        outputHashAlgo = "sha256";
-        outputHash = hash;
+        SSL_CERT_FILE = "${cacert}/etc/ssl/certs/ca-bundle.crt";
+        impureEnvVars = lib.fetchers.proxyImpureEnvVars;
 
         nativeBuildInputs = [
           curl
           coreutils
         ];
 
-        impureEnvVars = lib.fetchers.proxyImpureEnvVars;
-        SSL_CERT_FILE = "${cacert}/etc/ssl/certs/ca-bundle.crt";
+        outputHash = hash;
+        outputHashAlgo = "sha256";
+        outputHashMode = "recursive";
       }
       ''
         curl \
@@ -55,9 +55,6 @@ stdenv.mkDerivation rec {
         "${url}" \
         > $out
       '';
-
-  unpackCmd = "dpkg -x $src .";
-  sourceRoot = ".";
 
   nativeBuildInputs = [
     dpkg
@@ -79,22 +76,6 @@ stdenv.mkDerivation rec {
     libxdamage
     libxtst
     libxv
-  ];
-
-  dontWrapQtApps = true;
-
-  runtimeDependencies = map lib.getLib [
-    cups
-    pango
-  ];
-
-  autoPatchelfIgnoreMissingDeps = [
-    # distribution is missing libkappessframework.so
-    "libkappessframework.so"
-    # qt4 support is deprecated
-    "libQtCore.so.4"
-    "libQtNetwork.so.4"
-    "libQtXml.so.4"
   ];
 
   installPhase = ''
@@ -128,18 +109,39 @@ stdenv.mkDerivation rec {
     ln -s "${lib.getLib libxml2}/lib/libxml2.so" "$out/lib/libxml2.so.2"
   '';
 
+  autoPatchelfIgnoreMissingDeps = [
+    # distribution is missing libkappessframework.so
+    "libkappessframework.so"
+    # qt4 support is deprecated
+    "libQtCore.so.4"
+    "libQtNetwork.so.4"
+    "libQtXml.so.4"
+  ];
+
+  dontWrapQtApps = true;
+
+  runtimeDependencies = map lib.getLib [
+    cups
+    pango
+  ];
+
+  sourceRoot = ".";
+  unpackCmd = "dpkg -x $src .";
+
   meta = {
     description = "Office suite, formerly Kingsoft Office";
     homepage = "https://www.wps.com";
-    platforms = [ "x86_64-linux" ];
-    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
-    hydraPlatforms = [ ];
     license = lib.licenses.unfree;
+    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
+
     maintainers = with lib.maintainers; [
       mlatus
       th0rgal
       wineee
       pokon548
     ];
+
+    platforms = [ "x86_64-linux" ];
+    hydraPlatforms = [ ];
   };
 }

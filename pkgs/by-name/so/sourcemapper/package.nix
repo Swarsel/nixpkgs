@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule {
@@ -21,10 +21,12 @@ buildGoModule {
     description = "Extract JavaScript source trees from Sourcemap files";
     homepage = "https://github.com/denandz/sourcemapper";
     license = lib.licenses.bsd3;
-    mainProgram = "sourcemapper";
+
     maintainers = with lib.maintainers; [
       emilytrau
       crem
     ];
+
+    mainProgram = "sourcemapper";
   };
 }

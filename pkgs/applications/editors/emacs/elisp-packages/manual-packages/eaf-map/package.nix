@@ -1,14 +1,14 @@
 {
   # Basic
   lib,
-  melpaBuild,
   fetchFromGitHub,
-  # JavaScript dependency
-  nodejs,
   fetchNpmDeps,
-  npmHooks,
+  melpaBuild,
   # Updater
   nix-update-script,
+  # JavaScript dependency
+  nodejs,
+  npmHooks,
 }:
 
 melpaBuild (finalAttrs: {
@@ -23,26 +23,19 @@ melpaBuild (finalAttrs: {
     hash = "sha256-UgHIzYu/K1NzTDvUn2JkEmiyDEBT9JDmlvp6xG7Nv5k=";
   };
 
-  env.npmDeps = fetchNpmDeps {
-    name = "${finalAttrs.pname}-npm-deps";
-    inherit (finalAttrs) src;
-    hash = "sha256-prxCFrKvC2dG9BgO3LIKDCFzjn9vFegpvuMy4Eg6Ghs=";
-  };
-
   nativeBuildInputs = [
     nodejs
     npmHooks.npmConfigHook
   ];
 
+  env.npmDeps = fetchNpmDeps {
+    inherit (finalAttrs) src;
+    hash = "sha256-prxCFrKvC2dG9BgO3LIKDCFzjn9vFegpvuMy4Eg6Ghs=";
+    name = "${finalAttrs.pname}-npm-deps";
+  };
+
   postBuild = ''
     npm run build
-  '';
-
-  files = ''
-    ("*.el"
-     "*.py"
-     "*.js"
-     "src")
   '';
 
   postInstall = ''
@@ -52,20 +45,29 @@ melpaBuild (finalAttrs: {
     cp -r dist $LISPDIR/
   '';
 
+  files = ''
+    ("*.el"
+     "*.py"
+     "*.js"
+     "src")
+  '';
+
   passthru = {
-    updateScript = nix-update-script { extraArgs = [ "--version=branch" ]; };
     eafPythonDeps =
       ps: with ps; [
         numpy
         pycurl
         python-tsp
       ];
+
+    updateScript = nix-update-script { extraArgs = [ "--version=branch" ]; };
   };
 
   meta = {
     description = "OpenStreetMap application for the EAF";
     homepage = "https://github.com/emacs-eaf/eaf-map";
     license = lib.licenses.gpl3Only;
+
     maintainers = with lib.maintainers; [
       thattemperature
     ];

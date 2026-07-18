@@ -1,7 +1,7 @@
 {
   lib,
-  buildFishPlugin,
   fetchFromGitHub,
+  buildFishPlugin,
 }:
 
 buildFishPlugin rec {
@@ -15,10 +15,11 @@ buildFishPlugin rec {
     sha256 = "072a3qbk1lpxw53bxp91drsffylx8fbywhss3x0jbnayn9m8i7aa";
   };
 
-  checkFunctionDirs = [ "./functions" ]; # fishtape is introspective
   checkPhase = ''
     fishtape tests/*.fish
   '';
+
+  checkFunctionDirs = [ "./functions" ]; # fishtape is introspective
 
   meta = {
     description = "100% pure-Fish test runner";

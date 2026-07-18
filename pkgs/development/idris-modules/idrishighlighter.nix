@@ -1,19 +1,13 @@
 {
-  build-idris-package,
+  lib,
   fetchFromGitHub,
+  build-idris-package,
   effects,
   lightyear,
-  lib,
 }:
 build-idris-package {
   pname = "idrishighlighter";
   version = "2018-02-22";
-
-  ipkgName = "idris-code-highlighter";
-  idrisDeps = [
-    effects
-    lightyear
-  ];
 
   src = fetchFromGitHub {
     owner = "david-christiansen";
@@ -21,6 +15,13 @@ build-idris-package {
     rev = "708a29c7d1433adf7b0f69d1aec50e69b2915bba";
     sha256 = "16ahzf2jzh7wzi4jjq94s5z9nzkgnj2962dy13s1crim53csjgw5";
   };
+
+  idrisDeps = [
+    effects
+    lightyear
+  ];
+
+  ipkgName = "idris-code-highlighter";
 
   meta = {
     description = "Semantic highlighter for Idris code";

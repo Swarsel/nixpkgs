@@ -2,17 +2,13 @@
   lib,
   stdenv,
   fetchFromGitHub,
-
-  # nativeBuildInputs
-  cmake,
-  pkg-config,
-  qt6,
-  wrapGAppsHook3,
-  # darwin-only
-  re-plistbuddy,
-
+  # linux-only
+  alsa-lib,
+  bluez,
   # buildInputs
   bzip2,
+  # nativeBuildInputs
+  cmake,
   cubeb,
   curl,
   enet,
@@ -21,36 +17,37 @@
   glslang,
   gtest,
   hidapi,
-  libxdmcp,
+  libGL,
+  libevdev,
   libpulseaudio,
   libspng,
   libusb1,
+  libxdmcp,
+  libxext,
+  libxrandr,
   lz4,
   lzo,
   miniupnpc,
   minizip-ng,
+  # darwin-only
+  moltenvk,
+  nix-update-script,
   openal,
+  pkg-config,
   pugixml,
+  qt6,
+  # darwin-only
+  re-plistbuddy,
   sdl3,
   sfml,
+  # passthru
+  testers,
+  udev,
+  vulkan-loader,
+  wrapGAppsHook3,
   xxhash,
   xz,
   zlib-ng,
-  # linux-only
-  alsa-lib,
-  bluez,
-  libGL,
-  libxext,
-  libxrandr,
-  libevdev,
-  udev,
-  vulkan-loader,
-  # darwin-only
-  moltenvk,
-
-  # passthru
-  testers,
-  nix-update-script,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -64,6 +61,7 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-Rs/b5Vnm1VAYpvC6YWj3bZqHBCw2SCHnzLro1UrvsdY=";
     fetchSubmodules = true;
     leaveDotGit = true;
+
     postFetch = ''
       pushd $out
       git rev-parse HEAD 2>/dev/null >$out/COMMIT
@@ -152,16 +150,11 @@ stdenv.mkDerivation (finalAttrs: {
     # Note: The updater isn't available on linux, so we don't need to disable it there.
     (lib.cmakeBool "ENABLE_AUTOUPDATE" false)
   ];
+
   preConfigure = ''
     appendToVar cmakeFlags "-DDOLPHIN_WC_REVISION=$(cat COMMIT)"
     rm COMMIT
   '';
-
-  qtWrapperArgs = lib.optionals stdenv.hostPlatform.isLinux [
-    "--prefix LD_LIBRARY_PATH : ${lib.makeLibraryPath [ vulkan-loader ]}"
-  ];
-
-  doInstallCheck = true;
 
   postInstall =
     lib.optionalString stdenv.hostPlatform.isLinux ''
@@ -174,20 +167,27 @@ stdenv.mkDerivation (finalAttrs: {
       ln -s $out/Applications/Dolphin.app/Contents/MacOS/Dolphin $out/bin
     '';
 
-  dontWrapGApps = true;
+  doInstallCheck = true;
 
   preFixup = ''
     qtWrapperArgs+=("''${gappsWrapperArgs[@]}")
   '';
 
+  dontWrapGApps = true;
+
+  qtWrapperArgs = lib.optionals stdenv.hostPlatform.isLinux [
+    "--prefix LD_LIBRARY_PATH : ${lib.makeLibraryPath [ vulkan-loader ]}"
+  ];
+
   passthru = {
     tests = {
       version = testers.testVersion {
-        package = finalAttrs.finalPackage;
-        command = "dolphin-emu-nogui --version";
         inherit (finalAttrs) version;
+        command = "dolphin-emu-nogui --version";
+        package = finalAttrs.finalPackage;
       };
     };
+
     updateScript = nix-update-script {
       extraArgs = [
         "--version-regex"
@@ -197,12 +197,12 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   meta = {
-    homepage = "https://dolphin-emu.org";
     description = "Gamecube/Wii/Triforce emulator for x86_64 and ARMv8";
+    homepage = "https://dolphin-emu.org";
+    license = lib.licenses.gpl2Plus;
+    maintainers = with lib.maintainers; [ pbsds ];
+    platforms = lib.platforms.unix;
     mainProgram = if stdenv.hostPlatform.isDarwin then "Dolphin" else "dolphin-emu";
     branch = "master";
-    license = lib.licenses.gpl2Plus;
-    platforms = lib.platforms.unix;
-    maintainers = with lib.maintainers; [ pbsds ];
   };
 })

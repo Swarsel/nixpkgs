@@ -1,8 +1,8 @@
 {
   lib,
-  fetchzip,
   stdenv,
   callPackage,
+  fetchzip,
 }:
 
 let
@@ -20,18 +20,21 @@ let
   ];
 
   meta = {
-    homepage = "https://www.sweethome3d.com/index.jsp";
     description = "Design and visualize your future home";
+    homepage = "https://www.sweethome3d.com/index.jsp";
     license = lib.licenses.gpl2Plus;
+
     maintainers = with lib.maintainers; [
       edwtjo
       DimitarNestorov
     ];
+
     platforms = [
       "i686-linux"
       "x86_64-linux"
       "aarch64-darwin"
     ];
+
     mainProgram = "sweethome3d";
   };
 in

@@ -1,9 +1,9 @@
 {
   lib,
-  cbc,
+  fetchFromGitHub,
   amply,
   buildPythonPackage,
-  fetchFromGitHub,
+  cbc,
   pyparsing,
   pytestCheckHook,
   setuptools,
@@ -12,7 +12,6 @@
 buildPythonPackage rec {
   pname = "pulp";
   version = "3.3.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "coin-or";
@@ -27,6 +26,7 @@ buildPythonPackage rec {
     substituteInPlace pulp/apis/coin_api.py --subst-var-by "cbc" "${lib.getExe' cbc "cbc"}"
   '';
 
+  nativeCheckInputs = [ pytestCheckHook ];
   build-system = [ setuptools ];
 
   dependencies = [
@@ -34,15 +34,14 @@ buildPythonPackage rec {
     pyparsing
   ];
 
-  nativeCheckInputs = [ pytestCheckHook ];
-
+  pyproject = true;
   pythonImportsCheck = [ "pulp" ];
 
   meta = {
     description = "Module to generate MPS or LP files";
-    mainProgram = "pulptest";
     homepage = "https://github.com/coin-or/pulp";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ teto ];
+    mainProgram = "pulptest";
   };
 }

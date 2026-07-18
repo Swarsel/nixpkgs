@@ -2,18 +2,18 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  nix-update-script,
-  pkg-config,
-  meson,
-  ninja,
-  vala,
-  gtk3,
   glib,
   granite,
-  libnotify,
-  wingpanel,
+  gtk3,
   libgee,
+  libnotify,
   libxml2,
+  meson,
+  ninja,
+  nix-update-script,
+  pkg-config,
+  vala,
+  wingpanel,
 }:
 
 stdenv.mkDerivation rec {
@@ -51,10 +51,10 @@ stdenv.mkDerivation rec {
 
   meta = {
     description = "Bluetooth Indicator for Wingpanel";
-    mainProgram = "io.elementary.bluetooth";
     homepage = "https://github.com/elementary/wingpanel-indicator-bluetooth";
     license = lib.licenses.lgpl21Plus;
     platforms = lib.platforms.linux;
+    mainProgram = "io.elementary.bluetooth";
     teams = [ lib.teams.pantheon ];
   };
 }

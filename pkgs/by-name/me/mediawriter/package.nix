@@ -1,10 +1,10 @@
 {
   lib,
   stdenv,
+  fetchFromGitHub,
   adwaita-qt6,
   appstream-glib,
   cmake,
-  fetchFromGitHub,
   qt6,
   udisks,
   xz,

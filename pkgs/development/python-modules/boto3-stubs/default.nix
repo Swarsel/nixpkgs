@@ -359,14 +359,15 @@
 buildPythonPackage (finalAttrs: {
   pname = "boto3-stubs";
   version = "1.43.46";
-  pyproject = true;
 
   src = fetchPypi {
-    pname = "boto3_stubs";
     inherit (finalAttrs) version;
     hash = "sha256-dlHkPTCFXU3WqNqVSapQvlAOqnMBqfG+itIHkc4jbxw=";
+    pname = "boto3_stubs";
   };
 
+  # Module has no tests
+  doCheck = false;
   build-system = [ setuptools ];
 
   dependencies = [
@@ -380,6 +381,7 @@ buildPythonPackage (finalAttrs: {
     account = [ mypy-boto3-account ];
     acm = [ mypy-boto3-acm ];
     acm-pca = [ mypy-boto3-acm-pca ];
+
     all = [
       mypy-boto3-accessanalyzer
       mypy-boto3-account
@@ -728,6 +730,7 @@ buildPythonPackage (finalAttrs: {
       mypy-boto3-workspaces-web
       mypy-boto3-xray
     ];
+
     amp = [ mypy-boto3-amp ];
     amplify = [ mypy-boto3-amplify ];
     amplifybackend = [ mypy-boto3-amplifybackend ];
@@ -756,10 +759,12 @@ buildPythonPackage (finalAttrs: {
     backup-gateway = [ mypy-boto3-backup-gateway ];
     batch = [ mypy-boto3-batch ];
     billingconductor = [ mypy-boto3-billingconductor ];
+
     boto3 = [
       boto3
       botocore
     ];
+
     braket = [ mypy-boto3-braket ];
     budgets = [ mypy-boto3-budgets ];
     ce = [ mypy-boto3-ce ];
@@ -846,6 +851,7 @@ buildPythonPackage (finalAttrs: {
     emr-serverless = [ mypy-boto3-emr-serverless ];
     entityresolution = [ mypy-boto3-entityresolution ];
     es = [ mypy-boto3-es ];
+
     essential = [
       mypy-boto3-cloudformation
       mypy-boto3-dynamodb
@@ -855,6 +861,7 @@ buildPythonPackage (finalAttrs: {
       mypy-boto3-s3
       mypy-boto3-sqs
     ];
+
     events = [ mypy-boto3-events ];
     evidently = [ mypy-boto3-evidently ];
     finspace = [ mypy-boto3-finspace ];
@@ -1085,9 +1092,7 @@ buildPythonPackage (finalAttrs: {
     xray = [ mypy-boto3-xray ];
   };
 
-  # Module has no tests
-  doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "boto3-stubs" ];
 
   meta = {

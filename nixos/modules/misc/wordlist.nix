@@ -17,8 +17,6 @@ in
       enable = lib.mkEnableOption "environment variables for lists of words";
 
       lists = lib.mkOption {
-        type = lib.types.attrsOf (lib.types.nonEmptyListOf lib.types.path);
-
         default = {
           WORDLIST = [ "${pkgs.scowl}/share/dict/words.txt" ];
         };
@@ -52,6 +50,8 @@ in
             ];
           }
         '';
+
+        type = lib.types.attrsOf (lib.types.nonEmptyListOf lib.types.path);
       };
     };
   };

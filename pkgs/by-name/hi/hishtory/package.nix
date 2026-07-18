@@ -1,7 +1,7 @@
 {
-  buildGoModule,
-  fetchFromGitHub,
   lib,
+  fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule (finalAttrs: {
@@ -16,19 +16,16 @@ buildGoModule (finalAttrs: {
   };
 
   vendorHash = "sha256-tJjhHZT91vomGLM4IjMYBD4WfKo7eBcGu/osL6NTMwc=";
-
-  ldflags = [ "-X github.com/ddworken/hishtory/client/lib.Version=${finalAttrs.version}" ];
-
-  subPackages = [ "." ];
-
-  excludedPackages = [ "backend/server" ];
+  doCheck = true;
 
   postInstall = ''
     mkdir -p $out/share/hishtory
     cp client/lib/config.* $out/share/hishtory
   '';
 
-  doCheck = true;
+  excludedPackages = [ "backend/server" ];
+  ldflags = [ "-X github.com/ddworken/hishtory/client/lib.Version=${finalAttrs.version}" ];
+  subPackages = [ "." ];
 
   meta = {
     description = "Your shell history: synced, queryable, and in context";

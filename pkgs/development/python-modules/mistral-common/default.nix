@@ -1,45 +1,40 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # build-system
-  setuptools,
-
-  # dependencies
-  jsonschema,
-  numpy,
-  pillow,
-  pydantic,
-  pydantic-extra-types,
-  requests,
-  tiktoken,
-  typing-extensions,
-
+  buildPythonPackage,
   # optional-dependencies
   click,
   fastapi,
   huggingface-hub,
   jinja2,
+  # dependencies
+  jsonschema,
   llguidance,
-  opencv-python-headless,
-  pydantic-settings,
-  pytestCheckHook,
-  sentencepiece,
-  soundfile,
-  soxr,
-  uvloop,
-
+  numpy,
   # tests
   openai,
+  opencv-python-headless,
+  pillow,
   pycountry,
+  pydantic,
+  pydantic-extra-types,
+  pydantic-settings,
+  pytestCheckHook,
+  requests,
+  sentencepiece,
+  # build-system
+  setuptools,
+  soundfile,
+  soxr,
+  tiktoken,
+  typing-extensions,
   uvicorn,
+  uvloop,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "mistral-common";
   version = "1.11.5";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "mistralai";
@@ -47,6 +42,14 @@ buildPythonPackage (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-vm7u+EWuqjguccezlN+fKdTl8CL081ah3OccpenbpT0=";
   };
+
+  nativeCheckInputs = [
+    openai
+    pycountry
+    pytestCheckHook
+    uvicorn
+  ]
+  ++ finalAttrs.finalPackage.optional-dependencies.all;
 
   build-system = [
     setuptools
@@ -63,39 +66,16 @@ buildPythonPackage (finalAttrs: {
     typing-extensions
   ];
 
+  disabledTests = [
+    # AssertionError, Extra items in the right set
+    "test_openai_chat_fields"
+  ];
+
   optional-dependencies =
     let
       self = finalAttrs.finalPackage.optional-dependencies;
     in
     {
-      opencv = [
-        opencv-python-headless
-      ];
-      sentencepiece = [
-        sentencepiece
-      ];
-      soundfile = [
-        soundfile
-      ];
-      soxr = [
-        soxr
-      ];
-      audio = self.soundfile ++ self.soxr;
-      image = self.opencv;
-      guidance = [
-        jinja2
-        llguidance
-      ];
-      hf-hub = [
-        huggingface-hub
-      ];
-      server = [
-        click
-        fastapi
-        pydantic-settings
-        uvloop
-      ]
-      ++ fastapi.optional-dependencies.standard;
       all =
         self.opencv
         ++ self.sentencepiece
@@ -104,22 +84,47 @@ buildPythonPackage (finalAttrs: {
         ++ self.guidance
         ++ self.hf-hub
         ++ self.server;
+
+      audio = self.soundfile ++ self.soxr;
+
+      guidance = [
+        jinja2
+        llguidance
+      ];
+
+      hf-hub = [
+        huggingface-hub
+      ];
+
+      image = self.opencv;
+
+      opencv = [
+        opencv-python-headless
+      ];
+
+      sentencepiece = [
+        sentencepiece
+      ];
+
+      server = [
+        click
+        fastapi
+        pydantic-settings
+        uvloop
+      ]
+      ++ fastapi.optional-dependencies.standard;
+
+      soundfile = [
+        soundfile
+      ];
+
+      soxr = [
+        soxr
+      ];
     };
 
+  pyproject = true;
   pythonImportsCheck = [ "mistral_common" ];
-
-  nativeCheckInputs = [
-    openai
-    pycountry
-    pytestCheckHook
-    uvicorn
-  ]
-  ++ finalAttrs.finalPackage.optional-dependencies.all;
-
-  disabledTests = [
-    # AssertionError, Extra items in the right set
-    "test_openai_chat_fields"
-  ];
 
   meta = {
     description = "Tools to help you work with Mistral models";

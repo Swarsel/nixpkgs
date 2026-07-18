@@ -4,11 +4,11 @@
   buildGoModule,
   fetchFromCodeberg,
   installShellFiles,
-  versionCheckHook,
+  nix-update-script,
   protobuf,
   protoc-gen-go,
   protoc-gen-go-grpc,
-  nix-update-script,
+  versionCheckHook,
 }:
 buildGoModule (finalAttrs: {
   pname = "cunicu";
@@ -21,8 +21,6 @@ buildGoModule (finalAttrs: {
     hash = "sha256-1y9olRSPu2akvE728oXBr70Pt03xj65R2GaOlZ/7RTg=";
   };
 
-  vendorHash = "sha256-yFpkYI6ue5LXwRCj4EqWDBaO3TYzZ3Ov/39PRQWMWzk=";
-
   nativeBuildInputs = [
     installShellFiles
     protobuf
@@ -30,11 +28,27 @@ buildGoModule (finalAttrs: {
     protoc-gen-go-grpc
   ];
 
+  vendorHash = "sha256-yFpkYI6ue5LXwRCj4EqWDBaO3TYzZ3Ov/39PRQWMWzk=";
+  env.CGO_ENABLED = 0;
+
+  preBuild = ''
+    go generate ./...
+  '';
+
+  postInstall = lib.optionalString (stdenv.buildPlatform.canExecute stdenv.hostPlatform) ''
+    $out/bin/cunicu docs --with-frontmatter
+    installManPage ./docs/usage/man/*.1
+    installShellCompletion --cmd cunicu \
+      --bash <($out/bin/cunicu completion bash) \
+      --zsh <($out/bin/cunicu completion zsh) \
+      --fish <($out/bin/cunicu completion fish)
+  '';
+
+  doInstallCheck = true;
+
   nativeInstallCheckInputs = [
     versionCheckHook
   ];
-
-  env.CGO_ENABLED = 0;
 
   # These packages contain networking dependent tests which fail in the sandbox
   excludedPackages = [
@@ -49,23 +63,8 @@ buildGoModule (finalAttrs: {
     "-X cunicu.li/cunicu/pkg/buildinfo.BuiltBy=Nix"
   ];
 
-  doInstallCheck = true;
   versionCheckProgramArg = "version";
-
   passthru.updateScript = nix-update-script { };
-
-  preBuild = ''
-    go generate ./...
-  '';
-
-  postInstall = lib.optionalString (stdenv.buildPlatform.canExecute stdenv.hostPlatform) ''
-    $out/bin/cunicu docs --with-frontmatter
-    installManPage ./docs/usage/man/*.1
-    installShellCompletion --cmd cunicu \
-      --bash <($out/bin/cunicu completion bash) \
-      --zsh <($out/bin/cunicu completion zsh) \
-      --fish <($out/bin/cunicu completion fish)
-  '';
 
   meta = {
     description = "Zeroconf peer-to-peer mesh VPN using Wireguard® and Interactive Connectivity Establishment (ICE)";

@@ -1,26 +1,26 @@
 {
   lib,
   stdenv,
-  backintime-common,
-  python3,
-  polkit,
-  meld ? null,
-  meldSupport ? true,
-  kdePackages ? null,
-  kompareSupport ? false,
-  which,
-  su,
-  coreutils,
-  util-linux,
-  qt6,
-  man,
   asciidoctor,
+  backintime-common,
+  coreutils,
+  man,
+  polkit,
+  python3,
+  qt6,
+  su,
+  util-linux,
+  which,
+  kdePackages ? null,
   keyringBackends ?
     ps: with ps; [
       secretstorage
       keyrings-alt
       keyring-pass
     ],
+  kompareSupport ? false,
+  meld ? null,
+  meldSupport ? true,
 }:
 
 let
@@ -54,6 +54,10 @@ stdenv.mkDerivation {
 
   pname = "backintime-qt";
 
+  nativeBuildInputs = backintime-common.nativeBuildInputs or [ ] ++ [
+    qt6.wrapQtAppsHook
+  ];
+
   buildInputs = [
     python'
     backintime-common
@@ -61,10 +65,6 @@ stdenv.mkDerivation {
     qt6.qtwayland
     man
     asciidoctor
-  ];
-
-  nativeBuildInputs = backintime-common.nativeBuildInputs or [ ] ++ [
-    qt6.wrapQtAppsHook
   ];
 
   configureFlags = [ "--python=${lib.getExe python'}" ];

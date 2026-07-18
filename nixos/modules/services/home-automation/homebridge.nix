@@ -21,13 +21,15 @@ let
   };
 
   defaultConfig = {
-    description = "Homebridge";
     bridge = {
       inherit (cfg.settings.bridge) name port;
+      pin = "031-45-154";
       # These have to be set at least once, otherwise the homebridge will not work
       username = "CC:22:3D:E3:CE:30";
-      pin = "031-45-154";
     };
+
+    description = "Homebridge";
+
     platforms = [
       defaultConfigUIPlatform
     ];
@@ -92,19 +94,22 @@ in
     #     openFirewall = true;
     #   };
     # }
-
     enable = lib.mkEnableOption "Homebridge: Homekit home automation";
 
-    user = lib.mkOption {
-      type = str;
-      default = "homebridge";
-      description = "User to run homebridge as.";
+    environmentFile = lib.mkOption {
+      default = null;
+
+      description = ''
+        Path to an environment-file which may contain secrets.
+      '';
+
+      type = types.nullOr types.str;
     };
 
     group = lib.mkOption {
-      type = str;
       default = "homebridge";
       description = "Group to run homebridge as.";
+      type = str;
     };
 
     openFirewall = lib.mkEnableOption "" // {
@@ -113,98 +118,93 @@ in
       '';
     };
 
-    userStoragePath = lib.mkOption {
-      type = str;
-      default = "/var/lib/homebridge";
-      description = ''
-        Path to store homebridge user files (needs to be writeable).
-      '';
-    };
-
     pluginPath = lib.mkOption {
-      type = str;
       default = "/var/lib/homebridge/node_modules";
+
       description = ''
         Path to the plugin download directory (needs to be writeable).
         Seems this needs to end with node_modules, as Homebridge will run npm
         on the parent directory.
       '';
-    };
 
-    environmentFile = lib.mkOption {
-      type = types.nullOr types.str;
-      default = null;
-      description = ''
-        Path to an environment-file which may contain secrets.
-      '';
+      type = str;
     };
 
     settings = lib.mkOption {
       default = { };
+
       description = ''
         Configuration options for homebridge.
 
         For more details, see [the homebridge documentation](https://github.com/homebridge/homebridge/wiki/Homebridge-Config-JSON-Explained).
       '';
+
       type = submodule {
-        freeformType = settingsFormat.type;
         options = {
-          description = lib.mkOption {
-            type = str;
-            default = "Homebridge";
-            description = "Description of the homebridge instance.";
-            readOnly = true;
+          accessories = lib.mkOption {
+            default = [ ];
+            description = "Homebridge Accessories";
+
+            type = listOf (submodule {
+              options = {
+                accessory = lib.mkOption {
+                  description = "Accessory type";
+                  type = str;
+                };
+
+                name = lib.mkOption {
+                  description = "Name of the accessory";
+                  type = str;
+                };
+              };
+
+              freeformType = settingsFormat.type;
+            });
           };
 
           bridge.name = lib.mkOption {
-            type = str;
             default = "Homebridge";
             description = "Name of the homebridge";
+            type = str;
           };
 
           bridge.port = lib.mkOption {
-            type = port;
             default = 51826;
             description = "The port homebridge listens on";
+            type = port;
+          };
+
+          description = lib.mkOption {
+            default = "Homebridge";
+            description = "Description of the homebridge instance.";
+            readOnly = true;
+            type = str;
           };
 
           platforms = lib.mkOption {
-            description = "Homebridge Platforms";
-            default = [ ];
             apply = validatePlatforms;
-            type = listOf (submodule {
-              freeformType = settingsFormat.type;
-              options = {
-                name = lib.mkOption {
-                  type = str;
-                  description = "Name of the platform";
-                };
-                platform = lib.mkOption {
-                  type = str;
-                  description = "Platform type";
-                };
-              };
-            });
-          };
-
-          accessories = lib.mkOption {
-            description = "Homebridge Accessories";
             default = [ ];
+            description = "Homebridge Platforms";
+
             type = listOf (submodule {
-              freeformType = settingsFormat.type;
               options = {
                 name = lib.mkOption {
+                  description = "Name of the platform";
                   type = str;
-                  description = "Name of the accessory";
                 };
-                accessory = lib.mkOption {
+
+                platform = lib.mkOption {
+                  description = "Platform type";
                   type = str;
-                  description = "Accessory type";
                 };
               };
+
+              freeformType = settingsFormat.type;
             });
           };
         };
+
+        freeformType = settingsFormat.type;
       };
     };
 
@@ -214,75 +214,154 @@ in
     uiSettings = lib.mkOption {
       # Full list of UI settings can be found here: https://github.com/homebridge/homebridge-config-ui-x/wiki/Config-Options
       default = { };
+
       description = ''
         Configuration options for homebridge config UI plugin.
 
         For more details, see [the homebridge-config-ui-x documentation](https://github.com/homebridge/homebridge-config-ui-x/wiki/Config-Options).
       '';
-      type = submodule {
-        freeformType = settingsFormat.type;
-        options = {
-          ## Following parameters must be set, and can't be changed.
 
-          # Must be "config" for UI service to see its config
-          platform = lib.mkOption {
-            type = str;
-            default = "config";
-            description = "Type of the homebridge UI platform";
+      type = submodule {
+        options = {
+          # We're using systemd, so make sure logs is setup to pull from systemd
+          log.method = lib.mkOption {
+            default = "systemd";
+            description = "Method to use for logging";
             readOnly = true;
+            type = str;
+          };
+
+          log.service = lib.mkOption {
+            default = "homebridge";
+            description = "Name of the systemd service to log to";
+            readOnly = true;
+            type = str;
           };
 
           name = lib.mkOption {
-            type = str;
             default = "Config";
             description = "Name of the homebridge UI platform";
             readOnly = true;
+            type = str;
+          };
+
+          ## Following parameters must be set, and can't be changed.
+          # Must be "config" for UI service to see its config
+          platform = lib.mkOption {
+            default = "config";
+            description = "Type of the homebridge UI platform";
+            readOnly = true;
+            type = str;
+          };
+
+          # The following options are allowed to be changed.
+          port = lib.mkOption {
+            default = 8581;
+            description = "The port the UI web service should listen on";
+            type = port;
           };
 
           # Homebridge can be installed many ways, but we're forcing a double service systemd setup
           # This command will restart both services
           restart = lib.mkOption {
-            type = str;
             default = restartCommand;
             description = "Command to restart the homebridge UI service";
             readOnly = true;
-          };
-
-          # We're using systemd, so make sure logs is setup to pull from systemd
-          log.method = lib.mkOption {
             type = str;
-            default = "systemd";
-            description = "Method to use for logging";
-            readOnly = true;
-          };
-
-          log.service = lib.mkOption {
-            type = str;
-            default = "homebridge";
-            description = "Name of the systemd service to log to";
-            readOnly = true;
-          };
-
-          # The following options are allowed to be changed.
-          port = lib.mkOption {
-            type = port;
-            default = 8581;
-            description = "The port the UI web service should listen on";
           };
         };
+
+        freeformType = settingsFormat.type;
       };
+    };
+
+    user = lib.mkOption {
+      default = "homebridge";
+      description = "User to run homebridge as.";
+      type = str;
+    };
+
+    userStoragePath = lib.mkOption {
+      default = "/var/lib/homebridge";
+
+      description = ''
+        Path to store homebridge user files (needs to be writeable).
+      '';
+
+      type = str;
     };
   };
 
   config = lib.mkIf cfg.enable {
+    networking.firewall = {
+      allowedTCPPorts = lib.mkIf cfg.openFirewall [
+        cfg.settings.bridge.port
+        cfg.uiSettings.port
+      ];
+
+      allowedUDPPorts = lib.mkIf cfg.openFirewall [ 5353 ];
+    };
+
+    # Need passwordless sudo for a few commands
+    # homebridge-config-ui-x needs for some features
+    security.sudo.extraRules = [
+      {
+        commands = [
+          {
+            options = [ "NOPASSWD" ];
+            # Ability to restart homebridge service
+            command = "${pkgs.systemd}/bin/systemctl restart homebridge";
+          }
+          {
+            options = [ "NOPASSWD" ];
+            # Ability to shutdown server
+            command = "${pkgs.systemd}/bin/shutdown -h now";
+          }
+          {
+            options = [ "NOPASSWD" ];
+            # Ability to restart server
+            command = "${pkgs.systemd}/bin/shutdown -r now";
+          }
+        ];
+
+        users = [ cfg.user ];
+      }
+    ];
+
     systemd.services.homebridge = {
-      description = "Homebridge";
-      wants = [ "network-online.target" ];
       after = [
         "syslog.target"
         "network-online.target"
       ];
-      wantedBy = [ "multi-user.target" ];
+
+      description = "Homebridge";
+
+      # hb-service environment variables based on source code analysis
+      environment = {
+        DISABLE_OPENCOLLECTIVE = "true";
+        # Workaround to ensure homebridge does not run in sudo mode
+        HOMEBRIDGE_APT_PACKAGE = "1";
+        HOMEBRIDGE_CONFIG_UI_TERMINAL = "1";
+        # Required to get the service to detect the homebridge install correctly
+        UIX_BASE_PATH_OVERRIDE = "${cfg.userStoragePath}/homebridge-packages/homebridge-config-ui-x";
+        # Required or homebridge will search the global npm namespace
+        UIX_STRICT_PLUGIN_RESOLUTION = "1";
+      };
+
+      path = with pkgs; [
+        # Tools listed in homebridge's installation documentations:
+        # https://github.com/homebridge/homebridge/wiki/Install-Homebridge-on-Arch-Linux
+        nodejs
+        nettools
+        gcc
+        gnumake
+        # Required for access to systemctl and journalctl
+        systemd
+        # Required for access to sudo
+        "/run/wrappers"
+        # Some plugins need bash to download tools
+        bash
+      ];
 
       # On start, if the config file is missing, create a default one
       # Otherwise, ensure that the config file is using the
@@ -322,44 +401,13 @@ in
         ln -s "${pkgs.homebridge-config-ui-x}/lib/node_modules/homebridge-config-ui-x" "${cfg.userStoragePath}/homebridge-packages/homebridge-config-ui-x"
       '';
 
-      # hb-service environment variables based on source code analysis
-      environment = {
-        HOMEBRIDGE_CONFIG_UI_TERMINAL = "1";
-        DISABLE_OPENCOLLECTIVE = "true";
-        # Required or homebridge will search the global npm namespace
-        UIX_STRICT_PLUGIN_RESOLUTION = "1";
-        # Workaround to ensure homebridge does not run in sudo mode
-        HOMEBRIDGE_APT_PACKAGE = "1";
-        # Required to get the service to detect the homebridge install correctly
-        UIX_BASE_PATH_OVERRIDE = "${cfg.userStoragePath}/homebridge-packages/homebridge-config-ui-x";
-      };
-
-      path = with pkgs; [
-        # Tools listed in homebridge's installation documentations:
-        # https://github.com/homebridge/homebridge/wiki/Install-Homebridge-on-Arch-Linux
-        nodejs
-        nettools
-        gcc
-        gnumake
-        # Required for access to systemctl and journalctl
-        systemd
-        # Required for access to sudo
-        "/run/wrappers"
-        # Some plugins need bash to download tools
-        bash
-      ];
-
       # Settings from https://github.com/homebridge/homebridge-config-ui-x/blob/latest/src/bin/platforms/linux.ts
       serviceConfig = {
-        Type = "simple";
-        User = cfg.user;
-        PermissionsStartOnly = true;
-        StateDirectory = "homebridge";
-        EnvironmentFile = lib.mkIf (cfg.environmentFile != null) [ cfg.environmentFile ];
-        ExecStart = "${pkgs.homebridge-config-ui-x}/bin/hb-service run -U ${cfg.userStoragePath} -P ${cfg.pluginPath}";
-        Restart = "always";
-        RestartSec = 3;
-        KillMode = "process";
+        AmbientCapabilities = [
+          "CAP_NET_RAW"
+          "CAP_NET_BIND_SERVICE"
+        ];
+
         CapabilityBoundingSet = [
           "CAP_IPC_LOCK"
           "CAP_NET_ADMIN"
@@ -374,60 +422,36 @@ in
           "CAP_AUDIT_WRITE"
           "CAP_SYS_ADMIN"
         ];
-        AmbientCapabilities = [
-          "CAP_NET_RAW"
-          "CAP_NET_BIND_SERVICE"
-        ];
-      };
-    };
 
-    # Create a user whose home folder is the user storage path
-    users.users = lib.mkIf (cfg.user == "homebridge") {
-      homebridge = {
-        inherit (cfg) group;
-        # Necessary so that this user can run journalctl
-        extraGroups = [ "systemd-journal" ];
-        description = "homebridge user";
-        isSystemUser = true;
-        home = cfg.userStoragePath;
+        EnvironmentFile = lib.mkIf (cfg.environmentFile != null) [ cfg.environmentFile ];
+        ExecStart = "${pkgs.homebridge-config-ui-x}/bin/hb-service run -U ${cfg.userStoragePath} -P ${cfg.pluginPath}";
+        KillMode = "process";
+        PermissionsStartOnly = true;
+        Restart = "always";
+        RestartSec = 3;
+        StateDirectory = "homebridge";
+        Type = "simple";
+        User = cfg.user;
       };
+
+      wantedBy = [ "multi-user.target" ];
+      wants = [ "network-online.target" ];
     };
 
     users.groups = lib.mkIf (cfg.group == "homebridge") {
       homebridge = { };
     };
 
-    # Need passwordless sudo for a few commands
-    # homebridge-config-ui-x needs for some features
-    security.sudo.extraRules = [
-      {
-        users = [ cfg.user ];
-        commands = [
-          {
-            # Ability to restart homebridge service
-            command = "${pkgs.systemd}/bin/systemctl restart homebridge";
-            options = [ "NOPASSWD" ];
-          }
-          {
-            # Ability to shutdown server
-            command = "${pkgs.systemd}/bin/shutdown -h now";
-            options = [ "NOPASSWD" ];
-          }
-          {
-            # Ability to restart server
-            command = "${pkgs.systemd}/bin/shutdown -r now";
-            options = [ "NOPASSWD" ];
-          }
-        ];
-      }
-    ];
-
-    networking.firewall = {
-      allowedTCPPorts = lib.mkIf cfg.openFirewall [
-        cfg.settings.bridge.port
-        cfg.uiSettings.port
-      ];
-      allowedUDPPorts = lib.mkIf cfg.openFirewall [ 5353 ];
+    # Create a user whose home folder is the user storage path
+    users.users = lib.mkIf (cfg.user == "homebridge") {
+      homebridge = {
+        inherit (cfg) group;
+        description = "homebridge user";
+        # Necessary so that this user can run journalctl
+        extraGroups = [ "systemd-journal" ];
+        home = cfg.userStoragePath;
+        isSystemUser = true;
+      };
     };
   };
 }

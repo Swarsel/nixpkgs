@@ -1,14 +1,13 @@
 {
   lib,
   fetchFromGitHub,
-  python3,
   coercer,
+  python3,
 }:
 
 python3.pkgs.buildPythonApplication {
   pname = "adcskiller";
   version = "0-unstable-2024-05-19";
-  pyproject = false;
 
   src = fetchFromGitHub {
     owner = "grimlockx";
@@ -35,6 +34,8 @@ python3.pkgs.buildPythonApplication {
 
     runHook postInstall
   '';
+
+  pyproject = false;
 
   meta = {
     description = "Python-based tool designed to automate the process of discovering and exploiting Active Directory Certificate Services (ADCS) vulnerabilities";

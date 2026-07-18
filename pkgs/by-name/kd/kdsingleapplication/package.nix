@@ -19,16 +19,15 @@ stdenv.mkDerivation (finalAttrs: {
 
   nativeBuildInputs = [ cmake ];
   buildInputs = [ qt6.qtbase ];
-
   cmakeFlags = [ "-DKDSingleApplication_QT6=true" ];
   dontWrapQtApps = true;
 
   meta = {
     description = "KDAB's helper class for single-instance policy applications";
     homepage = "https://www.kdab.com/";
+    changelog = "https://github.com/KDAB/KDSingleApplication/releases/tag/v${finalAttrs.version}";
+    license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ hellwolf ];
     platforms = lib.platforms.unix;
-    license = lib.licenses.mit;
-    changelog = "https://github.com/KDAB/KDSingleApplication/releases/tag/v${finalAttrs.version}";
   };
 })

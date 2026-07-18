@@ -7,7 +7,6 @@
 python3Packages.buildPythonPackage rec {
   pname = "rivalcfg";
   version = "4.15.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "flozz";
@@ -16,19 +15,12 @@ python3Packages.buildPythonPackage rec {
     sha256 = "sha256-UqVogJLv+sNhAxdMjBEvhBQw6LU+QUq1IekvWpeeMqk=";
   };
 
-  build-system = with python3Packages; [ setuptools ];
-
-  dependencies = with python3Packages; [
-    hidapi
-    setuptools # pkg_resources is imported during runtime
-  ];
+  # tests are broken
+  doCheck = false;
 
   nativeCheckInputs = with python3Packages; [
     pytestCheckHook
   ];
-
-  # tests are broken
-  doCheck = false;
 
   postInstall = ''
     mkdir -p $out/lib/udev/rules.d
@@ -41,6 +33,14 @@ python3Packages.buildPythonPackage rec {
     rm "$tmpudev"
   '';
 
+  build-system = with python3Packages; [ setuptools ];
+
+  dependencies = with python3Packages; [
+    hidapi
+    setuptools # pkg_resources is imported during runtime
+  ];
+
+  pyproject = true;
   pythonImportsCheck = [ "rivalcfg" ];
 
   meta = {

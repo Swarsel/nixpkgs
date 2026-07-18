@@ -1,9 +1,9 @@
 {
+  lib,
+  fetchurl,
   buildDunePackage,
   dune-configurator,
-  fetchurl,
   kqueue,
-  lib,
   ppx_expect,
   ppx_optcomp,
 }:
@@ -11,8 +11,6 @@
 buildDunePackage (finalAttrs: {
   pname = "poll";
   version = "0.3.1";
-
-  minimalOCamlVersion = "4.13";
 
   src = fetchurl {
     url = "https://github.com/anuragsoni/poll/releases/download/${finalAttrs.version}/poll-${finalAttrs.version}.tbz";
@@ -28,11 +26,13 @@ buildDunePackage (finalAttrs: {
     kqueue
   ];
 
+  doCheck = true;
+
   checkInputs = [
     ppx_expect
   ];
 
-  doCheck = true;
+  minimalOCamlVersion = "4.13";
 
   meta = {
     description = "Portable OCaml interface to macOS/Linux/Windows native IO event notification mechanisms";

@@ -1,29 +1,29 @@
 {
-  pkgs,
-  stdenv,
   lib,
+  stdenv,
   fetchurl,
-  pkg-config,
+  gettext,
+  gi-docgen,
+  glib,
+  gnome,
+  gnupg,
+  gobject-introspection,
+  gtk4,
+  libgcrypt,
+  libsecret,
+  libtasn1,
   meson,
   ninja,
-  gettext,
-  gnupg,
-  p11-kit,
-  glib,
-  libgcrypt,
-  libtasn1,
-  gtk4,
-  pango,
-  libsecret,
   openssh,
-  systemd,
-  gobject-introspection,
-  wrapGAppsHook4,
-  vala,
-  gi-docgen,
-  gnome,
+  p11-kit,
+  pango,
+  pkg-config,
+  pkgs,
   python3,
   shared-mime-info,
+  systemd,
+  vala,
+  wrapGAppsHook4,
   systemdSupport ? lib.meta.availableOn stdenv.hostPlatform systemd,
 }:
 let
@@ -33,6 +33,11 @@ stdenv.mkDerivation (finalAttrs: {
   pname = "gcr";
   version = "4.4.0.1";
 
+  src = fetchurl {
+    url = "mirror://gnome/sources/gcr/${lib.versions.majorMinor finalAttrs.version}/gcr-${finalAttrs.version}.tar.xz";
+    hash = "sha256-DDw0Hkn59PJTKkiEUJgEGQoMJmPmEgNguymMXRdKgJg=";
+  };
+
   outputs = [
     "out"
     "bin"
@@ -40,10 +45,9 @@ stdenv.mkDerivation (finalAttrs: {
     "devdoc"
   ];
 
-  src = fetchurl {
-    url = "mirror://gnome/sources/gcr/${lib.versions.majorMinor finalAttrs.version}/gcr-${finalAttrs.version}.tar.xz";
-    hash = "sha256-DDw0Hkn59PJTKkiEUJgEGQoMJmPmEgNguymMXRdKgJg=";
-  };
+  postPatch = ''
+    patchShebangs gcr/fixtures/
+  '';
 
   strictDeps = true;
 
@@ -77,10 +81,6 @@ stdenv.mkDerivation (finalAttrs: {
     p11-kit
   ];
 
-  nativeCheckInputs = [
-    python3
-  ];
-
   mesonFlags = [
     "-Dgpg_path=${lib.getBin gnupg}/bin/gpg"
     (lib.mesonEnable "systemd" systemdSupport)
@@ -97,13 +97,12 @@ stdenv.mkDerivation (finalAttrs: {
     }"
   ];
 
+  env.PKG_CONFIG_SYSTEMD_SYSTEMDUSERUNITDIR = "${placeholder "out"}/lib/systemd/user";
   doCheck = false; # fails 21 out of 603 tests, needs dbus daemon
 
-  env.PKG_CONFIG_SYSTEMD_SYSTEMDUSERUNITDIR = "${placeholder "out"}/lib/systemd/user";
-
-  postPatch = ''
-    patchShebangs gcr/fixtures/
-  '';
+  nativeCheckInputs = [
+    python3
+  ];
 
   postFixup = ''
     # Cannot be in postInstall, otherwise _multioutDocs hook in preFixup will move right back.
@@ -119,12 +118,7 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   meta = {
-    platforms = lib.platforms.unix;
-    teams = [ lib.teams.gnome ];
     description = "GNOME crypto services (daemon and tools)";
-    mainProgram = "gcr-viewer-gtk4";
-    homepage = "https://gitlab.gnome.org/GNOME/gcr";
-    license = lib.licenses.lgpl2Plus;
 
     longDescription = ''
       GCR is a library for displaying certificates, and crypto UI, accessing
@@ -134,5 +128,11 @@ stdenv.mkDerivation (finalAttrs: {
       GCK is a library for accessing PKCS#11 modules like smart cards, in a
       (G)object oriented way.
     '';
+
+    homepage = "https://gitlab.gnome.org/GNOME/gcr";
+    license = lib.licenses.lgpl2Plus;
+    platforms = lib.platforms.unix;
+    mainProgram = "gcr-viewer-gtk4";
+    teams = [ lib.teams.gnome ];
   };
 })

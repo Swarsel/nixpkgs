@@ -1,6 +1,6 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
   autoconf,
   automake,
@@ -16,7 +16,6 @@
   traceroute,
   util-linux,
   whois,
-
   # If true, just install FireQOS without FireHOL
   onlyQOS ? false,
 }:
@@ -52,6 +51,7 @@ stdenv.mkDerivation rec {
     autoconf
     automake
   ];
+
   buildInputs = [
     curl
     iprange
@@ -67,7 +67,6 @@ stdenv.mkDerivation rec {
     whois
   ];
 
-  preConfigure = "./autogen.sh";
   configureFlags = [
     "--localstatedir=/var"
     "--disable-doc"
@@ -76,12 +75,16 @@ stdenv.mkDerivation rec {
   ]
   ++ lib.optionals onlyQOS [ "--disable-firehol" ];
 
+  preConfigure = "./autogen.sh";
+
   meta = {
     description = "Firewall for humans";
+
     longDescription = ''
       FireHOL, an iptables stateful packet filtering firewall for humans!
       FireQOS, a TC based bandwidth shaper for humans!
     '';
+
     homepage = "https://firehol.org/";
     license = lib.licenses.gpl2;
     maintainers = [ ];

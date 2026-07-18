@@ -10,19 +10,16 @@
 buildPythonPackage rec {
   pname = "proliphix";
   version = "0.5.0";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
     hash = "sha256-Tf6gTRofZXY6ikrXBARgp6grzZGQMjvN5njT+7SRZNQ=";
   };
 
-  build-system = [ setuptools ];
-
-  dependencies = [ requests ];
-
   nativeCheckInputs = [ pytestCheckHook ];
-
+  build-system = [ setuptools ];
+  dependencies = [ requests ];
+  pyproject = true;
   pythonImportsCheck = [ "proliphix" ];
 
   meta = {

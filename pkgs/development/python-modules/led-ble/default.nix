@@ -1,9 +1,9 @@
 {
   lib,
+  fetchFromGitHub,
   bleak,
   bleak-retry-connector,
   buildPythonPackage,
-  fetchFromGitHub,
   flux-led,
   poetry-core,
   pytest-cov-stub,
@@ -13,7 +13,6 @@
 buildPythonPackage rec {
   pname = "led-ble";
   version = "1.1.11";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "Bluetooth-Devices";
@@ -21,6 +20,11 @@ buildPythonPackage rec {
     tag = "v${version}";
     hash = "sha256-YPOjbmHR6WpmAEpYFl/ajzojgiIYEk+6H5LFjl1yo1c=";
   };
+
+  nativeCheckInputs = [
+    pytest-cov-stub
+    pytestCheckHook
+  ];
 
   build-system = [ poetry-core ];
 
@@ -30,11 +34,7 @@ buildPythonPackage rec {
     flux-led
   ];
 
-  nativeCheckInputs = [
-    pytest-cov-stub
-    pytestCheckHook
-  ];
-
+  pyproject = true;
   pythonImportsCheck = [ "led_ble" ];
 
   meta = {

@@ -1,16 +1,17 @@
 { nixpkgs }:
 let
   pkgs = import nixpkgs {
-    system = "x86_64-linux";
-    overlays = [ ];
     config = {
       problems.matchers = [
         {
-          package = "a";
           handler = "error";
+          package = "a";
         }
       ];
     };
+
+    overlays = [ ];
+    system = "x86_64-linux";
   };
 in
 pkgs.stdenvNoCC.mkDerivation {

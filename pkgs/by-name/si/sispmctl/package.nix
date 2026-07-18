@@ -2,8 +2,8 @@
   lib,
   stdenv,
   fetchurl,
-  pkg-config,
   libusb-compat-0_1,
+  pkg-config,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -24,11 +24,11 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   meta = {
-    homepage = "https://sispmctl.sourceforge.net/";
     description = "USB controlled powerstrips management software";
+    homepage = "https://sispmctl.sourceforge.net/";
     license = lib.licenses.gpl2Plus;
-    mainProgram = "sispmctl";
     maintainers = [ lib.maintainers._9R ];
     platforms = lib.platforms.unix;
+    mainProgram = "sispmctl";
   };
 })

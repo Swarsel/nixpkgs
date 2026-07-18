@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule (finalAttrs: {
@@ -19,9 +19,9 @@ buildGoModule (finalAttrs: {
 
   meta = {
     description = "Convert lines of text into a tree structure";
-    mainProgram = "frangipanni";
     homepage = "https://github.com/birchb1024/frangipanni";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ siraben ];
+    mainProgram = "frangipanni";
   };
 })

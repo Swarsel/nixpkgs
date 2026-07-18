@@ -1,7 +1,7 @@
 {
   lib,
-  rustPlatform,
   fetchCrate,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -17,10 +17,10 @@ rustPlatform.buildRustPackage (finalAttrs: {
 
   meta = {
     description = "CLI tool that helps you avoid undefined user behavior by validating your API specifications";
-    mainProgram = "cherrybomb";
     homepage = "https://github.com/blst-security/cherrybomb";
     changelog = "https://github.com/blst-security/cherrybomb/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.asl20;
     maintainers = [ ];
+    mainProgram = "cherrybomb";
   };
 })

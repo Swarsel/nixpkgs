@@ -1,7 +1,7 @@
 {
   lib,
-  fetchPypi,
   buildPythonPackage,
+  fetchPypi,
   psutil,
   pytest,
 }:
@@ -9,21 +9,21 @@
 buildPythonPackage rec {
   pname = "pyprind";
   version = "2.11.3";
-  format = "setuptools";
 
   src = fetchPypi {
-    pname = "PyPrind";
     inherit version;
     sha256 = "e37dcab6e1a9c8e0a7f0fce65fde7a79e2deda1c75aa015910a49e2137b54cbf";
+    pname = "PyPrind";
   };
 
   buildInputs = [ psutil ];
-
   nativeCheckInputs = [ pytest ];
 
   checkPhase = ''
     py.test tests
   '';
+
+  format = "setuptools";
 
   meta = {
     description = "Python Progress Bar and Percent Indicator Utility";

@@ -4,7 +4,6 @@
   mkLibretroCore,
 }:
 mkLibretroCore {
-  core = "fbneo";
   version = "0-unstable-2026-06-22";
 
   src = fetchFromGitHub {
@@ -14,8 +13,9 @@ mkLibretroCore {
     hash = "sha256-fy6LSeOlIQkrLGnMQhXSR4EwC+4crAirQKnWt+7S1cI=";
   };
 
-  makefile = "Makefile";
   preBuild = "cd src/burner/libretro";
+  core = "fbneo";
+  makefile = "Makefile";
 
   meta = {
     description = "Port of FBNeo to libretro";

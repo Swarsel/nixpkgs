@@ -1,11 +1,11 @@
 {
   lib,
   stdenv,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   installShellFiles,
-  versionCheckHook,
   nix-update-script,
+  versionCheckHook,
 }:
 
 buildGoModule (finalAttrs: {
@@ -19,13 +19,12 @@ buildGoModule (finalAttrs: {
     hash = "sha256-lbOqQNEsRP4RXTDQg4MeO6WrTk54sHEkmQFLSpcTVok=";
   };
 
-  vendorHash = null;
-
-  nativeBuildInputs = [ installShellFiles ];
-
   postPatch = ''
     printf ${finalAttrs.version} > gosmee/templates/version
   '';
+
+  nativeBuildInputs = [ installShellFiles ];
+  vendorHash = null;
 
   postInstall = lib.optionalString (stdenv.buildPlatform.canExecute stdenv.hostPlatform) ''
     installShellCompletion --cmd gosmee \
@@ -36,7 +35,6 @@ buildGoModule (finalAttrs: {
 
   doInstallCheck = true;
   nativeInstallCheckInputs = [ versionCheckHook ];
-
   passthru.updateScript = nix-update-script { };
 
   meta = {
@@ -44,10 +42,12 @@ buildGoModule (finalAttrs: {
     homepage = "https://github.com/chmouel/gosmee";
     changelog = "https://github.com/chmouel/gosmee/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.asl20;
+
     maintainers = with lib.maintainers; [
       vdemeester
       chmouel
     ];
+
     mainProgram = "gosmee";
   };
 })

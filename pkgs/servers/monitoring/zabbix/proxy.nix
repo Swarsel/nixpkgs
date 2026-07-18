@@ -2,26 +2,26 @@
   lib,
   stdenv,
   fetchurl,
-  pkg-config,
+  buildPackages,
   curl,
   libevent,
   libiconv,
+  libmysqlclient,
+  libpq,
+  libssh2,
+  net-snmp,
   openssl,
   pcre2,
-  zlib,
-  buildPackages,
-  odbcSupport ? true,
-  unixodbc,
-  snmpSupport ? stdenv.buildPlatform == stdenv.hostPlatform,
-  net-snmp,
-  sshSupport ? true,
-  libssh2,
-  sqliteSupport ? false,
+  pkg-config,
   sqlite,
+  unixodbc,
+  zlib,
   mysqlSupport ? false,
-  libmysqlclient,
+  odbcSupport ? true,
   postgresqlSupport ? false,
-  libpq,
+  snmpSupport ? stdenv.buildPlatform == stdenv.hostPlatform,
+  sqliteSupport ? false,
+  sshSupport ? true,
 }:
 
 # ensure exactly one database type is selected
@@ -42,22 +42,21 @@ let
 
 in
 import ./versions.nix (
-  { version, hash, ... }:
+  { hash, version, ... }:
   stdenv.mkDerivation {
-    pname = "zabbix-proxy";
     inherit version;
+    pname = "zabbix-proxy";
 
     src = fetchurl {
-      url = "https://cdn.zabbix.com/zabbix/sources/stable/${lib.versions.majorMinor version}/zabbix-${version}.tar.gz";
       inherit hash;
+      url = "https://cdn.zabbix.com/zabbix/sources/stable/${lib.versions.majorMinor version}/zabbix-${version}.tar.gz";
     };
-
-    enableParallelBuilding = true;
 
     nativeBuildInputs = [
       pkg-config
     ]
     ++ optional postgresqlSupport libpq.pg_config;
+
     buildInputs = [
       curl
       libevent
@@ -90,10 +89,6 @@ import ./versions.nix (
     ++ optional mysqlSupport "--with-mysql=${fake_mysql_config}"
     ++ optional postgresqlSupport "--with-postgresql";
 
-    prePatch = ''
-      find database -name data.sql -exec sed -i 's|/usr/bin/||g' {} +
-    '';
-
     makeFlags = [
       "AR:=$(AR)"
       "RANLIB:=$(RANLIB)"
@@ -115,15 +110,24 @@ import ./versions.nix (
       cp -prvd database/postgresql/schema.sql $out/share/zabbix/database/postgresql/
     '';
 
+    enableParallelBuilding = true;
+
+    prePatch = ''
+      find database -name data.sql -exec sed -i 's|/usr/bin/||g' {} +
+    '';
+
     meta = {
       description = "Enterprise-class open source distributed monitoring solution (client-server proxy)";
       homepage = "https://www.zabbix.com/";
+
       license =
         if (lib.versions.major version >= "7") then lib.licenses.agpl3Only else lib.licenses.gpl2Plus;
+
       maintainers = with lib.maintainers; [
         bstanderline
         mmahut
       ];
+
       platforms = lib.platforms.linux;
     };
   }

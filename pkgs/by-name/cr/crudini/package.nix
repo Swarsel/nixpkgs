@@ -1,15 +1,14 @@
 {
   lib,
   fetchFromGitHub,
-  python3Packages,
   help2man,
   installShellFiles,
+  python3Packages,
 }:
 
 python3Packages.buildPythonApplication rec {
   pname = "crudini";
   version = "0.9.6";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "pixelb";
@@ -32,14 +31,6 @@ python3Packages.buildPythonApplication rec {
 
   propagatedBuildInputs = with python3Packages; [ iniparse ];
 
-  postInstall = ''
-    # this just creates the man page
-    make all
-
-    install -Dm444 -t $out/share/doc/${pname} README.md EXAMPLES
-    installManPage *.1
-  '';
-
   checkPhase = ''
     runHook preCheck
 
@@ -49,6 +40,16 @@ python3Packages.buildPythonApplication rec {
 
     runHook postCheck
   '';
+
+  postInstall = ''
+    # this just creates the man page
+    make all
+
+    install -Dm444 -t $out/share/doc/${pname} README.md EXAMPLES
+    installManPage *.1
+  '';
+
+  pyproject = true;
 
   meta = {
     description = "Utility for manipulating ini files";

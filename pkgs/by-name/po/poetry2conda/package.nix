@@ -10,8 +10,6 @@ buildPythonApplication (finalAttrs: {
   pname = "poetry2conda";
   version = "0.3.0";
 
-  pyproject = true;
-
   src = fetchFromGitHub {
     owner = "dojeda";
     repo = "poetry2conda";
@@ -21,9 +19,9 @@ buildPythonApplication (finalAttrs: {
 
   patches = [
     (fetchpatch {
+      hash = "sha256-J26NhVPG1vD/QNXi5irtGW05CYsIYvZNQIi8YvHwCLc=";
       name = "use-poetry-core.patch";
       url = "https://github.com/dojeda/poetry2conda/commit/b127090498c89fbd8bbcbac45d03178a1e1c4219.patch";
-      hash = "sha256-J26NhVPG1vD/QNXi5irtGW05CYsIYvZNQIi8YvHwCLc=";
     })
   ];
 
@@ -39,6 +37,8 @@ buildPythonApplication (finalAttrs: {
     pytestCheckHook
     pyyaml
   ];
+
+  pyproject = true;
 
   meta = {
     description = "Script to convert a Python project declared on a pyproject.toml to a conda environment";

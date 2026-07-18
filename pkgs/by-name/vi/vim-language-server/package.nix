@@ -3,10 +3,10 @@
   stdenv,
   fetchFromGitHub,
   fetchYarnDeps,
-  yarnConfigHook,
-  yarnBuildHook,
   nodejs,
   npmHooks,
+  yarnBuildHook,
+  yarnConfigHook,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -20,11 +20,6 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-NfBKNCTvCMIJrSiTlCG+LtVoMBMdCc3rzpDb9Vp2CGM=";
   };
 
-  offlineCache = fetchYarnDeps {
-    yarnLock = finalAttrs.src + "/yarn.lock";
-    hash = "sha256-mo8urQaWIHu33+r0Y7mL9mJ/aSe/5CihuIetTeDHEUQ=";
-  };
-
   nativeBuildInputs = [
     yarnConfigHook
     yarnBuildHook
@@ -32,14 +27,21 @@ stdenv.mkDerivation (finalAttrs: {
     nodejs
     npmHooks.npmInstallHook
   ];
+
   # https://stackoverflow.com/a/69699772/4935114
   preBuild = ''
     export NODE_OPTIONS=--openssl-legacy-provider
   '';
+
   # Needed ever since noBrokenSymlinks was introduced
   postInstall = ''
     rm $out/lib/node_modules/vim-language-server/node_modules/.bin/node-which
   '';
+
+  offlineCache = fetchYarnDeps {
+    hash = "sha256-mo8urQaWIHu33+r0Y7mL9mJ/aSe/5CihuIetTeDHEUQ=";
+    yarnLock = finalAttrs.src + "/yarn.lock";
+  };
 
   meta = {
     description = "VImScript language server, LSP for vim script";

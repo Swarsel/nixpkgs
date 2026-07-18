@@ -16,12 +16,14 @@ stdenv.mkDerivation (finalAttrs: {
   meta = {
     description = "Free minimal perfect hash C library, providing several algorithms in the literature in a consistent, ease to use, API";
     homepage = "https://sourceforge.net/projects/cmph/";
+
     license = with lib.licenses; [
       gpl2
       mpl11
     ];
-    mainProgram = "cmph";
+
     maintainers = [ ];
     platforms = lib.platforms.linux ++ lib.platforms.darwin;
+    mainProgram = "cmph";
   };
 })

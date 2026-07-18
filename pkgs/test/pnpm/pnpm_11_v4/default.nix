@@ -1,28 +1,20 @@
 {
-  fetchPnpmDeps,
   lib,
+  stdenv,
+  fetchPnpmDeps,
   makeShellWrapper,
   nodejs-slim,
   pnpmConfigHook,
   pnpm_11,
-  stdenv,
   testers,
 }:
 let
   pnpm = pnpm_11;
 in
 stdenv.mkDerivation (finalAttrs: {
-  pname = "pnpm-test";
   inherit (pnpm) version;
-
+  pname = "pnpm-test";
   src = ./src;
-
-  pnpmDeps = testers.invalidateFetcherByDrvHash fetchPnpmDeps {
-    inherit (finalAttrs) pname version src;
-    inherit pnpm;
-    fetcherVersion = 4;
-    hash = "sha256-f5EC0m+y9vvt+6alquFjdgGmH8ha1YprthBU3dnq9SE=";
-  };
 
   nativeBuildInputs = [
     makeShellWrapper
@@ -52,9 +44,16 @@ stdenv.mkDerivation (finalAttrs: {
 
   __structuredAttrs = true;
 
+  pnpmDeps = testers.invalidateFetcherByDrvHash fetchPnpmDeps {
+    inherit (finalAttrs) pname version src;
+    inherit pnpm;
+    fetcherVersion = 4;
+    hash = "sha256-f5EC0m+y9vvt+6alquFjdgGmH8ha1YprthBU3dnq9SE=";
+  };
+
   meta = {
+    inherit (pnpm.meta) maintainers;
     license = lib.licenses.mit;
     mainProgram = "pnpm-11-test";
-    inherit (pnpm.meta) maintainers;
   };
 })

@@ -1,11 +1,11 @@
 {
   lib,
-  qt6Packages,
   stdenv,
-  gitMinimal,
   fetchFromGitHub,
-  cmake,
   alsa-lib,
+  cmake,
+  gitMinimal,
+  qt6Packages,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -19,6 +19,12 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-ru6uyoBWWab/D1YLfJ8qXlFOazSJXQER7jgOgjHYrvc=";
   };
 
+  nativeBuildInputs = [
+    cmake
+    gitMinimal
+    qt6Packages.wrapQtAppsHook
+  ];
+
   buildInputs = [
     qt6Packages.qtbase
     qt6Packages.qtsvg
@@ -26,18 +32,12 @@ stdenv.mkDerivation (finalAttrs: {
     alsa-lib
   ];
 
-  nativeBuildInputs = [
-    cmake
-    gitMinimal
-    qt6Packages.wrapQtAppsHook
-  ];
-
   meta = {
     description = "Linux editor for the Akai LPD8";
     homepage = "https://github.com/charlesfleche/lpd8editor";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ pinpox ];
-    mainProgram = "lpd8editor";
     platforms = lib.platforms.all;
+    mainProgram = "lpd8editor";
   };
 })

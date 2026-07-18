@@ -1,19 +1,19 @@
 # dbeaver doesn't seem feasible to package from source, see https://github.com/NixOS/nixpkgs/pull/311888
 {
   lib,
-  stdenvNoCC,
   fetchurl,
-  undmg,
-  makeWrapper,
-  openjdk21,
-  gnused,
   autoPatchelfHook,
   darwin,
-  wrapGAppsHook3,
-  gtk3,
   glib,
-  webkitgtk_4_1,
   glib-networking,
+  gnused,
+  gtk3,
+  makeWrapper,
+  openjdk21,
+  stdenvNoCC,
+  undmg,
+  webkitgtk_4_1,
+  wrapGAppsHook3,
   override_xmx ? "1024m",
 }:
 
@@ -26,22 +26,20 @@ stdenvNoCC.mkDerivation (finalAttrs: {
       inherit (stdenvNoCC.hostPlatform) system;
       selectSystem = attrs: attrs.${system} or (throw "Unsupported system: ${system}");
       suffix = selectSystem {
-        x86_64-linux = "linux-x86_64.tar.gz";
-        aarch64-linux = "linux-aarch64.tar.gz";
         aarch64-darwin = "macos-aarch64.dmg";
+        aarch64-linux = "linux-aarch64.tar.gz";
+        x86_64-linux = "linux-x86_64.tar.gz";
       };
       hash = selectSystem {
-        x86_64-linux = "sha256-atbQ00lq589FlNem85NgzTKGyhTRpFII8OSfVfYQuD0=";
-        aarch64-linux = "sha256-Sde0q31hXMqX2oxfhgj5EcpeUYYFZJy61usaJVpZkLM=";
         aarch64-darwin = "sha256-PwuFwEE+aBEG/ykwNrEBl20yfrade8BdUUHdLJGBkwc=";
+        aarch64-linux = "sha256-Sde0q31hXMqX2oxfhgj5EcpeUYYFZJy61usaJVpZkLM=";
+        x86_64-linux = "sha256-atbQ00lq589FlNem85NgzTKGyhTRpFII8OSfVfYQuD0=";
       };
     in
     fetchurl {
-      url = "https://github.com/dbeaver/dbeaver/releases/download/${finalAttrs.version}/dbeaver-ce-${finalAttrs.version}-${suffix}";
       inherit hash;
+      url = "https://github.com/dbeaver/dbeaver/releases/download/${finalAttrs.version}/dbeaver-ce-${finalAttrs.version}-${suffix}";
     };
-
-  sourceRoot = lib.optional stdenvNoCC.hostPlatform.isDarwin "DBeaver.app";
 
   nativeBuildInputs = [
     makeWrapper
@@ -55,19 +53,6 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     undmg
     darwin.autoSignDarwinBinariesHook
   ];
-
-  dontConfigure = true;
-  dontBuild = true;
-
-  prePatch = ''
-    substituteInPlace ${lib.optionalString stdenvNoCC.hostPlatform.isDarwin "Contents/Eclipse/"}dbeaver.ini \
-      --replace-fail '-Xmx1024m' '-Xmx${override_xmx}'
-  ''
-  # remove the bundled JRE configuration on Darwin
-  # dont use substituteInPlace here because it would match "-vmargs"
-  + lib.optionalString stdenvNoCC.hostPlatform.isDarwin ''
-    sed -i -e '/^-vm$/ { N; d; }' Contents/Eclipse/dbeaver.ini
-  '';
 
   preInstall = ''
     # most directories are for different architectures, only keep what we need
@@ -128,27 +113,45 @@ stdenvNoCC.mkDerivation (finalAttrs: {
         runHook postInstall
       '';
 
+  dontBuild = true;
+  dontConfigure = true;
+
+  prePatch = ''
+    substituteInPlace ${lib.optionalString stdenvNoCC.hostPlatform.isDarwin "Contents/Eclipse/"}dbeaver.ini \
+      --replace-fail '-Xmx1024m' '-Xmx${override_xmx}'
+  ''
+  # remove the bundled JRE configuration on Darwin
+  # dont use substituteInPlace here because it would match "-vmargs"
+  + lib.optionalString stdenvNoCC.hostPlatform.isDarwin ''
+    sed -i -e '/^-vm$/ { N; d; }' Contents/Eclipse/dbeaver.ini
+  '';
+
+  sourceRoot = lib.optional stdenvNoCC.hostPlatform.isDarwin "DBeaver.app";
   passthru.updateScript = ./update.sh;
 
   meta = {
-    homepage = "https://dbeaver.io/";
-    changelog = "https://github.com/dbeaver/dbeaver/releases/tag/${finalAttrs.version}";
     description = "Universal SQL Client for developers, DBA and analysts. Supports MySQL, PostgreSQL, MariaDB, SQLite, and more";
+
     longDescription = ''
       Free multi-platform database tool for developers, SQL programmers, database
       administrators and analysts. Supports all popular databases: MySQL,
       PostgreSQL, MariaDB, SQLite, Oracle, DB2, SQL Server, Sybase, MS Access,
       Teradata, Firebird, Derby, etc.
     '';
-    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
+
+    homepage = "https://dbeaver.io/";
+    changelog = "https://github.com/dbeaver/dbeaver/releases/tag/${finalAttrs.version}";
     license = lib.licenses.asl20;
-    platforms = lib.platforms.linux ++ lib.platforms.darwin;
+    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
+
     maintainers = with lib.maintainers; [
       gepbird
       mkg20001
       staticdev
       yzx9
     ];
+
+    platforms = lib.platforms.linux ++ lib.platforms.darwin;
     mainProgram = "dbeaver";
   };
 })

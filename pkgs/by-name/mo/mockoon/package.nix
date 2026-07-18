@@ -1,7 +1,7 @@
 {
   lib,
-  appimageTools,
   fetchurl,
+  appimageTools,
 }:
 
 let
@@ -31,16 +31,18 @@ appimageTools.wrapType2 {
 
   meta = {
     description = "Easiest and quickest way to run mock APIs locally";
+
     longDescription = ''
       Mockoon is the easiest and quickest way to run mock APIs locally.
       No remote deployment, no account required, free and open-source.
     '';
-    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
+
     homepage = "https://mockoon.com";
     changelog = "https://github.com/mockoon/mockoon/releases/tag/v${version}";
     license = lib.licenses.mit;
+    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
     maintainers = [ ];
-    mainProgram = "mockoon";
     platforms = [ "x86_64-linux" ];
+    mainProgram = "mockoon";
   };
 }

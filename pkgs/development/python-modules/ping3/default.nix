@@ -1,14 +1,13 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "ping3";
   version = "5.1.6";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "kyan001";
@@ -17,11 +16,10 @@ buildPythonPackage rec {
     hash = "sha256-9HWqJK8cxVKetrhcivI0p63I99XqkBVgZa6aR4Hablc=";
   };
 
-  build-system = [ setuptools ];
-
   # Tests require additional permissions
   doCheck = false;
-
+  build-system = [ setuptools ];
+  pyproject = true;
   pythonImportsCheck = [ "ping3" ];
 
   meta = {

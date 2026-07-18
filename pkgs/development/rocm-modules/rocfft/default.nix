@@ -2,19 +2,19 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  rocmUpdateScript,
-  cmake,
-  clr,
-  python3,
-  rocm-cmake,
-  sqlite,
   boost,
+  clr,
+  cmake,
   fftw,
   fftwFloat,
   gtest,
-  openmp,
-  rocrand,
   hiprand,
+  openmp,
+  python3,
+  rocm-cmake,
+  rocmUpdateScript,
+  rocrand,
+  sqlite,
   gpuTargets ? clr.localGpuTargets or clr.gpuTargets,
 }:
 
@@ -26,13 +26,18 @@ stdenv.mkDerivation (finalAttrs: {
     owner = "ROCm";
     repo = "rocm-libraries";
     rev = "rocm-${finalAttrs.version}";
+    hash = "sha256-RjWMzLX0nBA8ClweJ8YgRTn+Nzt/VUkOoSw3jMQ3IWg=";
+
     sparseCheckout = [
       "projects/rocfft"
       "shared"
     ];
-    hash = "sha256-RjWMzLX0nBA8ClweJ8YgRTn+Nzt/VUkOoSw3jMQ3IWg=";
   };
-  sourceRoot = "${finalAttrs.src.name}/projects/rocfft";
+
+  patches = [
+    # Fixes build timeout due to no log output during rocfft_aot step
+    ./log-every-n-aot-jobs.patch
+  ];
 
   nativeBuildInputs = [
     cmake
@@ -44,11 +49,6 @@ stdenv.mkDerivation (finalAttrs: {
   buildInputs = [
     sqlite
     hiprand
-  ];
-
-  patches = [
-    # Fixes build timeout due to no log output during rocfft_aot step
-    ./log-every-n-aot-jobs.patch
   ];
 
   cmakeFlags = [
@@ -68,41 +68,13 @@ stdenv.mkDerivation (finalAttrs: {
     "-DGPU_TARGETS=${lib.concatStringsSep ";" gpuTargets}"
   ];
 
+  requiredSystemFeatures = [ "big-parallel" ];
+  sourceRoot = "${finalAttrs.src.name}/projects/rocfft";
+
   passthru = {
-    test = stdenv.mkDerivation {
-      pname = "${finalAttrs.pname}-test";
-      inherit (finalAttrs) version src;
-
-      sourceRoot = "${finalAttrs.src.name}/projects/rocfft/clients/tests";
-
-      nativeBuildInputs = [
-        cmake
-        clr
-        rocm-cmake
-      ];
-
-      buildInputs = [
-        boost
-        fftw
-        fftwFloat
-        finalAttrs.finalPackage
-        gtest
-        openmp
-        rocrand
-        hiprand
-      ];
-
-      postInstall = ''
-        rm -r "$out/lib/fftw"
-        rmdir "$out/lib"
-      '';
-    };
-
     benchmark = stdenv.mkDerivation {
-      pname = "${finalAttrs.pname}-benchmark";
       inherit (finalAttrs) version src;
-
-      sourceRoot = "${finalAttrs.src.name}/projects/rocfft/clients/rider";
+      pname = "${finalAttrs.pname}-benchmark";
 
       nativeBuildInputs = [
         cmake
@@ -126,13 +98,13 @@ stdenv.mkDerivation (finalAttrs: {
       postInstall = ''
         cp -a ../../../scripts/perf "$out/bin"
       '';
+
+      sourceRoot = "${finalAttrs.src.name}/projects/rocfft/clients/rider";
     };
 
     samples = stdenv.mkDerivation {
-      pname = "${finalAttrs.pname}-samples";
       inherit (finalAttrs) version src;
-
-      sourceRoot = "${finalAttrs.src.name}/projects/rocfft/clients/samples";
+      pname = "${finalAttrs.pname}-samples";
 
       nativeBuildInputs = [
         cmake
@@ -153,18 +125,47 @@ stdenv.mkDerivation (finalAttrs: {
         cp -a bin "$out"
         runHook postInstall
       '';
+
+      sourceRoot = "${finalAttrs.src.name}/projects/rocfft/clients/samples";
+    };
+
+    test = stdenv.mkDerivation {
+      inherit (finalAttrs) version src;
+      pname = "${finalAttrs.pname}-test";
+
+      nativeBuildInputs = [
+        cmake
+        clr
+        rocm-cmake
+      ];
+
+      buildInputs = [
+        boost
+        fftw
+        fftwFloat
+        finalAttrs.finalPackage
+        gtest
+        openmp
+        rocrand
+        hiprand
+      ];
+
+      postInstall = ''
+        rm -r "$out/lib/fftw"
+        rmdir "$out/lib"
+      '';
+
+      sourceRoot = "${finalAttrs.src.name}/projects/rocfft/clients/tests";
     };
 
     updateScript = rocmUpdateScript { inherit finalAttrs; };
   };
 
-  requiredSystemFeatures = [ "big-parallel" ];
-
   meta = {
     description = "FFT implementation for ROCm";
     homepage = "https://github.com/ROCm/rocm-libraries/tree/develop/projects/rocfft";
     license = with lib.licenses; [ mit ];
-    teams = [ lib.teams.rocm ];
     platforms = lib.platforms.linux;
+    teams = [ lib.teams.rocm ];
   };
 })

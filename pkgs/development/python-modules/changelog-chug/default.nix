@@ -1,8 +1,8 @@
 {
   lib,
   buildPythonPackage,
-  fetchFromSourcehut,
   docutils,
+  fetchFromSourcehut,
   semver,
   setuptools,
   testscenarios,
@@ -13,7 +13,6 @@
 buildPythonPackage rec {
   pname = "changelog-chug";
   version = "0.0.3";
-  pyproject = true;
 
   src = fetchFromSourcehut {
     owner = "~bignose";
@@ -26,6 +25,12 @@ buildPythonPackage rec {
     fetchSubmodules = true;
   };
 
+  nativeCheckInputs = [
+    testscenarios
+    testtools
+    unittestCheckHook
+  ];
+
   build-system = [
     docutils
     semver
@@ -37,11 +42,7 @@ buildPythonPackage rec {
     semver
   ];
 
-  nativeCheckInputs = [
-    testscenarios
-    testtools
-    unittestCheckHook
-  ];
+  pyproject = true;
 
   pythonImportsCheck = [
     "chug"

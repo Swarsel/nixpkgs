@@ -22,7 +22,7 @@ stdenv.mkDerivation (finalAttrs: {
     description = "Unicode Algorithms Implementation for C/C++";
     homepage = "https://github.com/uni-algo/uni-algo";
     license = lib.licenses.mit;
-    platforms = lib.platforms.all;
     maintainers = with lib.maintainers; [ typedrat ];
+    platforms = lib.platforms.all;
   };
 })

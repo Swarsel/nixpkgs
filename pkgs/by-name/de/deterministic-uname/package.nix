@@ -1,27 +1,27 @@
 {
-  stdenv,
   lib,
-  replaceVarsWith,
+  stdenv,
   coreutils,
   getopt,
+  replaceVarsWith,
   runtimeShell,
-  modDirVersion ? "",
   forPlatform ? stdenv.buildPlatform,
+  modDirVersion ? "",
 }:
 
 replaceVarsWith {
-  name = "uname";
-
   src = ./deterministic-uname.sh;
-
   dir = "bin";
   isExecutable = true;
+  name = "uname";
 
   replacements = {
     inherit coreutils getopt runtimeShell;
-
-    uSystem = if forPlatform.uname.system != null then forPlatform.uname.system else "unknown";
     inherit (forPlatform.uname) processor;
+    # in os-specific/linux module packages
+    # --replace '$(shell uname -r)' "${kernel.modDirVersion}" \
+    # is a common thing to do.
+    modDirVersion = if modDirVersion != "" then modDirVersion else "unknown";
 
     # uname -o
     # maybe add to lib/systems/default.nix uname attrset
@@ -40,10 +40,7 @@ replaceVarsWith {
       else
         "unknown";
 
-    # in os-specific/linux module packages
-    # --replace '$(shell uname -r)' "${kernel.modDirVersion}" \
-    # is a common thing to do.
-    modDirVersion = if modDirVersion != "" then modDirVersion else "unknown";
+    uSystem = if forPlatform.uname.system != null then forPlatform.uname.system else "unknown";
   };
 
   # coreutils uname is in initialPath, so ordinarily appears in PATH before packages in nativeBuildInputs.
@@ -51,7 +48,7 @@ replaceVarsWith {
 
   meta = {
     description = "Print certain system information (hardcoded with lib/system values)";
-    mainProgram = "uname";
+
     longDescription = ''
       This package provides a replacement for `uname` whose output depends only
       on `stdenv.buildPlatform`, or a configurable `forPlatform`.  It is meant
@@ -61,8 +58,10 @@ replaceVarsWith {
       not intercept these calls, builds made on different kernels will produce
       different results.
     '';
+
     license = [ lib.licenses.mit ];
     maintainers = with lib.maintainers; [ artturin ];
     platforms = lib.platforms.all;
+    mainProgram = "uname";
   };
 }

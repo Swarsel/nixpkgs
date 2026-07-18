@@ -1,11 +1,7 @@
 {
-  symlinkJoin,
-  wrapGAppsHook4,
-  gtk4,
   feedbackd,
-  librsvg,
   glycin-loaders,
-  highscore-unwrapped,
+  gtk4,
   highscore-blastem,
   highscore-bsnes,
   highscore-desmume,
@@ -17,7 +13,10 @@
   highscore-prosystem,
   highscore-sameboy,
   highscore-stella,
-
+  highscore-unwrapped,
+  librsvg,
+  symlinkJoin,
+  wrapGAppsHook4,
   # Allow users to override
   cores ? builtins.filter (p: p.meta.available) [
     highscore-blastem
@@ -35,10 +34,8 @@
 }:
 
 symlinkJoin {
-  pname = "highscore";
   inherit (highscore-unwrapped) version meta;
-
-  paths = [ highscore-unwrapped ] ++ cores;
+  pname = "highscore";
 
   nativeBuildInputs = [
     wrapGAppsHook4
@@ -52,8 +49,6 @@ symlinkJoin {
     # For GDK_PIXBUF_MODULE_FILE
     librsvg
   ];
-
-  dontWrapGApps = true;
 
   # symlinkJoin doesn't run other build phases
   postBuild = ''
@@ -70,4 +65,7 @@ symlinkJoin {
       --prefix XDG_DATA_DIRS : "${glycin-loaders}/share" \
       --set HIGHSCORE_CORES_DIR $out/lib/highscore/cores
   '';
+
+  dontWrapGApps = true;
+  paths = [ highscore-unwrapped ] ++ cores;
 }

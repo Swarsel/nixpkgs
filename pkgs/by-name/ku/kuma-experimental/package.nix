@@ -6,8 +6,8 @@
 kuma.override (
   {
     pname = "kuma-experimental";
-    isFull = true;
     enableGateway = true;
+    isFull = true;
 
   }
   // removeAttrs args [ "kuma" ]

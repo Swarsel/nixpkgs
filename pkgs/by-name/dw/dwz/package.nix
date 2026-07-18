@@ -2,10 +2,10 @@
   lib,
   stdenv,
   fetchurl,
-  elfutils,
-  xxhash,
   dejagnu,
+  elfutils,
   gdb,
+  xxhash,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -21,6 +21,7 @@ stdenv.mkDerivation (finalAttrs: {
     patchShebangs --build testsuite
   '';
 
+  strictDeps = true;
   nativeBuildInputs = [ elfutils ];
 
   buildInputs = [
@@ -29,7 +30,6 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   makeFlags = [ "prefix=${placeholder "out"}" ];
-
   doCheck = true;
 
   nativeCheckInputs = [
@@ -37,14 +37,12 @@ stdenv.mkDerivation (finalAttrs: {
     gdb
   ];
 
-  strictDeps = true;
-
   meta = {
-    homepage = "https://sourceware.org/dwz/";
     description = "DWARF optimization and duplicate removal tool";
-    mainProgram = "dwz";
+    homepage = "https://sourceware.org/dwz/";
     license = lib.licenses.gpl2Plus;
     maintainers = with lib.maintainers; [ jbcrail ];
     platforms = [ lib.systems.inspect.patterns.isElf ];
+    mainProgram = "dwz";
   };
 })

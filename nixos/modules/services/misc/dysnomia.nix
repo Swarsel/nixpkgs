@@ -1,7 +1,7 @@
 {
-  pkgs,
-  lib,
   config,
+  lib,
+  pkgs,
   ...
 }:
 let
@@ -23,16 +23,16 @@ let
     ) (builtins.attrNames properties);
 
   properties = pkgs.stdenv.mkDerivation {
-    name = "dysnomia-properties";
     buildCommand = ''
       cat > $out << "EOF"
       ${printProperties cfg.properties}
       EOF
     '';
+
+    name = "dysnomia-properties";
   };
 
   containersDir = pkgs.stdenv.mkDerivation {
-    name = "dysnomia-containers";
     buildCommand = ''
       mkdir -p $out
       cd $out
@@ -50,6 +50,8 @@ let
         ''
       ) (builtins.attrNames cfg.containers)}
     '';
+
+    name = "dysnomia-containers";
   };
 
   linkMutableComponents =
@@ -67,7 +69,6 @@ let
     '';
 
   componentsDir = pkgs.stdenv.mkDerivation {
-    name = "dysnomia-components";
     buildCommand = ''
       mkdir -p $out
       cd $out
@@ -76,6 +77,8 @@ let
         builtins.attrNames cfg.components
       )}
     '';
+
+    name = "dysnomia-components";
   };
 
   dysnomiaFlags = {
@@ -83,155 +86,113 @@ let
     enableAxis2WebService = config.services.tomcat.axis2.enable;
     enableDockerContainer = config.virtualisation.docker.enable;
     enableEjabberdDump = config.services.ejabberd.enable;
+    enableInfluxDatabase = config.services.influxdb.enable;
+    enableMongoDatabase = config.services.mongodb.enable;
     enableMySQLDatabase = config.services.mysql.enable;
     enablePostgreSQLDatabase = config.services.postgresql.enable;
-    enableTomcatWebApplication = config.services.tomcat.enable;
-    enableMongoDatabase = config.services.mongodb.enable;
     enableSubversionRepository = config.services.svnserve.enable;
-    enableInfluxDatabase = config.services.influxdb.enable;
+    enableTomcatWebApplication = config.services.tomcat.enable;
   };
 in
 {
-  options = {
-    services.dysnomia = {
-
-      enable = lib.mkOption {
-        type = lib.types.bool;
-        default = false;
-        description = "Whether to enable Dysnomia";
-      };
-
-      enableAuthentication = lib.mkOption {
-        type = lib.types.bool;
-        default = false;
-        description = "Whether to publish privacy-sensitive authentication credentials";
-      };
-
-      package = lib.mkOption {
-        type = lib.types.path;
-        description = "The Dysnomia package";
-      };
-
-      properties = lib.mkOption {
-        description = "An attribute set in which each attribute represents a machine property. Optionally, these values can be shell substitutions.";
-        default = { };
-        type = lib.types.attrs;
-      };
-
-      containers = lib.mkOption {
-        description = "An attribute set in which each key represents a container and each value an attribute set providing its configuration properties";
-        default = { };
-        type = lib.types.attrsOf lib.types.attrs;
-      };
-
-      components = lib.mkOption {
-        description = "An attribute set in which each key represents a container and each value an attribute set in which each key represents a component and each value a derivation constructing its initial state";
-        default = { };
-        type = lib.types.attrsOf lib.types.attrs;
-      };
-
-      extraContainerProperties = lib.mkOption {
-        description = "An attribute set providing additional container settings in addition to the default properties";
-        default = { };
-        type = lib.types.attrs;
-      };
-
-      extraContainerPaths = lib.mkOption {
-        description = "A list of paths containing additional container configurations that are added to the search folders";
-        default = [ ];
-        type = lib.types.listOf lib.types.path;
-      };
-
-      extraModulePaths = lib.mkOption {
-        description = "A list of paths containing additional modules that are added to the search folders";
-        default = [ ];
-        type = lib.types.listOf lib.types.path;
-      };
-
-      enableLegacyModules = lib.mkOption {
-        type = lib.types.bool;
-        default = true;
-        description = "Whether to enable Dysnomia legacy process and wrapper modules";
-      };
-    };
-  };
-
   imports = [
     (lib.mkRenamedOptionModule [ "dysnomia" ] [ "services" "dysnomia" ])
   ];
 
+  options = {
+    services.dysnomia = {
+
+      enable = lib.mkOption {
+        default = false;
+        description = "Whether to enable Dysnomia";
+        type = lib.types.bool;
+      };
+
+      package = lib.mkOption {
+        description = "The Dysnomia package";
+        type = lib.types.path;
+      };
+
+      components = lib.mkOption {
+        default = { };
+        description = "An attribute set in which each key represents a container and each value an attribute set in which each key represents a component and each value a derivation constructing its initial state";
+        type = lib.types.attrsOf lib.types.attrs;
+      };
+
+      containers = lib.mkOption {
+        default = { };
+        description = "An attribute set in which each key represents a container and each value an attribute set providing its configuration properties";
+        type = lib.types.attrsOf lib.types.attrs;
+      };
+
+      enableAuthentication = lib.mkOption {
+        default = false;
+        description = "Whether to publish privacy-sensitive authentication credentials";
+        type = lib.types.bool;
+      };
+
+      enableLegacyModules = lib.mkOption {
+        default = true;
+        description = "Whether to enable Dysnomia legacy process and wrapper modules";
+        type = lib.types.bool;
+      };
+
+      extraContainerPaths = lib.mkOption {
+        default = [ ];
+        description = "A list of paths containing additional container configurations that are added to the search folders";
+        type = lib.types.listOf lib.types.path;
+      };
+
+      extraContainerProperties = lib.mkOption {
+        default = { };
+        description = "An attribute set providing additional container settings in addition to the default properties";
+        type = lib.types.attrs;
+      };
+
+      extraModulePaths = lib.mkOption {
+        default = [ ];
+        description = "A list of paths containing additional modules that are added to the search folders";
+        type = lib.types.listOf lib.types.path;
+      };
+
+      properties = lib.mkOption {
+        default = { };
+        description = "An attribute set in which each attribute represents a machine property. Optionally, these values can be shell substitutions.";
+        type = lib.types.attrs;
+      };
+    };
+  };
+
   config = lib.mkIf cfg.enable {
 
+    boot.extraSystemdUnitPaths = [ "/etc/systemd-mutable/system" ];
+
     environment.etc = {
-      "dysnomia/containers" = {
-        source = containersDir;
-      };
       "dysnomia/components" = {
         source = componentsDir;
       };
+
+      "dysnomia/containers" = {
+        source = containersDir;
+      };
+
       "dysnomia/properties" = {
         source = properties;
       };
     };
 
+    environment.systemPackages = [ cfg.package ];
+
     environment.variables = {
-      DYSNOMIA_STATEDIR = "/var/state/dysnomia-nixos";
       DYSNOMIA_CONTAINERS_PATH = "${
         lib.concatMapStrings (containerPath: "${containerPath}:") cfg.extraContainerPaths
       }/etc/dysnomia/containers";
+
       DYSNOMIA_MODULES_PATH = "${
         lib.concatMapStrings (modulePath: "${modulePath}:") cfg.extraModulePaths
       }/etc/dysnomia/modules";
-    };
 
-    environment.systemPackages = [ cfg.package ];
-
-    services.dysnomia.package = pkgs.dysnomia.override (
-      origArgs:
-      dysnomiaFlags
-      // lib.optionalAttrs (cfg.enableLegacyModules) {
-        enableLegacy = builtins.trace ''
-          WARNING: Dysnomia has been configured to use the legacy 'process' and 'wrapper'
-          modules for compatibility reasons! If you rely on these modules, consider
-          migrating to better alternatives.
-
-          More information: <https://raw.githubusercontent.com/svanderburg/dysnomia/f65a9a84827bcc4024d6b16527098b33b02e4054/README-legacy.md>
-
-          If you have migrated already or don't rely on these Dysnomia modules, you can
-          disable legacy mode with the following NixOS configuration option:
-
-          dysnomia.enableLegacyModules = false;
-
-          In a future version of Dysnomia (and NixOS) the legacy option will go away!
-        '' true;
-      }
-    );
-
-    services.dysnomia.properties = {
-      hostname = config.networking.hostName;
-      inherit (pkgs.stdenv.hostPlatform) system;
-
-      supportedTypes = [
-        "echo"
-        "fileset"
-        "process"
-        "wrapper"
-
-        # These are not base modules, but they are still enabled because they work with technology that are always enabled in NixOS
-        "systemd-unit"
-        "sysvinit-script"
-        "nixos-configuration"
-      ]
-      ++ lib.optional (dysnomiaFlags.enableApacheWebApplication) "apache-webapplication"
-      ++ lib.optional (dysnomiaFlags.enableAxis2WebService) "axis2-webservice"
-      ++ lib.optional (dysnomiaFlags.enableDockerContainer) "docker-container"
-      ++ lib.optional (dysnomiaFlags.enableEjabberdDump) "ejabberd-dump"
-      ++ lib.optional (dysnomiaFlags.enableInfluxDatabase) "influx-database"
-      ++ lib.optional (dysnomiaFlags.enableMySQLDatabase) "mysql-database"
-      ++ lib.optional (dysnomiaFlags.enablePostgreSQLDatabase) "postgresql-database"
-      ++ lib.optional (dysnomiaFlags.enableTomcatWebApplication) "tomcat-webapplication"
-      ++ lib.optional (dysnomiaFlags.enableMongoDatabase) "mongo-database"
-      ++ lib.optional (dysnomiaFlags.enableSubversionRepository) "subversion-repository";
+      DYSNOMIA_STATEDIR = "/var/state/dysnomia-nixos";
     };
 
     services.dysnomia.containers = lib.recursiveUpdate (
@@ -274,9 +235,9 @@ in
       // lib.optionalAttrs (config.services.mongodb.enable) { mongo-database = { }; }
       // lib.optionalAttrs (config.services.influxdb.enable) {
         influx-database = {
-          influxdbUsername = config.services.influxdb.user;
           influxdbDataDir = "${config.services.influxdb.dataDir}/data";
           influxdbMetaDir = "${config.services.influxdb.dataDir}/meta";
+          influxdbUsername = config.services.influxdb.user;
         };
       }
       // lib.optionalAttrs (config.services.svnserve.enable) {
@@ -286,11 +247,57 @@ in
       }
     ) cfg.extraContainerProperties;
 
-    boot.extraSystemdUnitPaths = [ "/etc/systemd-mutable/system" ];
+    services.dysnomia.package = pkgs.dysnomia.override (
+      origArgs:
+      dysnomiaFlags
+      // lib.optionalAttrs (cfg.enableLegacyModules) {
+        enableLegacy = builtins.trace ''
+          WARNING: Dysnomia has been configured to use the legacy 'process' and 'wrapper'
+          modules for compatibility reasons! If you rely on these modules, consider
+          migrating to better alternatives.
+
+          More information: <https://raw.githubusercontent.com/svanderburg/dysnomia/f65a9a84827bcc4024d6b16527098b33b02e4054/README-legacy.md>
+
+          If you have migrated already or don't rely on these Dysnomia modules, you can
+          disable legacy mode with the following NixOS configuration option:
+
+          dysnomia.enableLegacyModules = false;
+
+          In a future version of Dysnomia (and NixOS) the legacy option will go away!
+        '' true;
+      }
+    );
+
+    services.dysnomia.properties = {
+      inherit (pkgs.stdenv.hostPlatform) system;
+      hostname = config.networking.hostName;
+
+      supportedTypes = [
+        "echo"
+        "fileset"
+        "process"
+        "wrapper"
+
+        # These are not base modules, but they are still enabled because they work with technology that are always enabled in NixOS
+        "systemd-unit"
+        "sysvinit-script"
+        "nixos-configuration"
+      ]
+      ++ lib.optional (dysnomiaFlags.enableApacheWebApplication) "apache-webapplication"
+      ++ lib.optional (dysnomiaFlags.enableAxis2WebService) "axis2-webservice"
+      ++ lib.optional (dysnomiaFlags.enableDockerContainer) "docker-container"
+      ++ lib.optional (dysnomiaFlags.enableEjabberdDump) "ejabberd-dump"
+      ++ lib.optional (dysnomiaFlags.enableInfluxDatabase) "influx-database"
+      ++ lib.optional (dysnomiaFlags.enableMySQLDatabase) "mysql-database"
+      ++ lib.optional (dysnomiaFlags.enablePostgreSQLDatabase) "postgresql-database"
+      ++ lib.optional (dysnomiaFlags.enableTomcatWebApplication) "tomcat-webapplication"
+      ++ lib.optional (dysnomiaFlags.enableMongoDatabase) "mongo-database"
+      ++ lib.optional (dysnomiaFlags.enableSubversionRepository) "subversion-repository";
+    };
 
     systemd.targets.dysnomia = {
-      description = "Services that are activated and deactivated by Dysnomia";
       after = "final.target";
+      description = "Services that are activated and deactivated by Dysnomia";
     };
   };
 }

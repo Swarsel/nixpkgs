@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   pytest-asyncio,
   pytest-httpserver,
   pytestCheckHook,
@@ -17,9 +17,6 @@
 buildPythonPackage rec {
   pname = "responses";
   version = "0.25.8";
-  pyproject = true;
-
-  __darwinAllowLocalNetworking = true;
 
   src = fetchFromGitHub {
     owner = "getsentry";
@@ -45,6 +42,8 @@ buildPythonPackage rec {
     tomli-w
   ];
 
+  __darwinAllowLocalNetworking = true;
+  pyproject = true;
   pythonImportsCheck = [ "responses" ];
 
   meta = {

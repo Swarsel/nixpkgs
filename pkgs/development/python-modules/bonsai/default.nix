@@ -1,20 +1,19 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
+  buildPythonPackage,
   cyrus_sasl,
-  openldap,
   gevent,
+  openldap,
+  pytestCheckHook,
+  setuptools,
   tornado,
   trio,
-  pytestCheckHook,
 }:
 
 buildPythonPackage rec {
   pname = "bonsai";
   version = "1.5.5";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "noirello";
@@ -23,20 +22,13 @@ buildPythonPackage rec {
     hash = "sha256-q0BE1TuxiS01Z83dqDH54XzRgdF3ZszRBJsMIfsvTeU=";
   };
 
-  build-system = [ setuptools ];
-
   buildInputs = [
     cyrus_sasl
     openldap
   ];
 
-  optional-dependencies = {
-    gevent = [ gevent ];
-    tornado = [ tornado ];
-    trio = [ trio ];
-  };
-
   nativeCheckInputs = [ pytestCheckHook ];
+  build-system = [ setuptools ];
 
   disabledTestPaths = [
     # requires running LDAP server
@@ -53,12 +45,19 @@ buildPythonPackage rec {
     "test_set_async_connect"
   ];
 
+  optional-dependencies = {
+    gevent = [ gevent ];
+    tornado = [ tornado ];
+    trio = [ trio ];
+  };
+
+  pyproject = true;
   pythonImportsCheck = [ "bonsai" ];
 
   meta = {
-    changelog = "https://github.com/noirello/bonsai/blob/${src.tag}/CHANGELOG.rst";
     description = "Python 3 module for accessing LDAP directory servers";
     homepage = "https://github.com/noirello/bonsai";
+    changelog = "https://github.com/noirello/bonsai/blob/${src.tag}/CHANGELOG.rst";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ dotlambda ];
   };

@@ -1,7 +1,7 @@
 {
   lib,
-  bzip2,
   fetchFromGitHub,
+  bzip2,
   pkg-config,
   rustPlatform,
   zstd,
@@ -18,10 +18,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-xJzglrNB5rqaRQTgRFIl8/AXjeDwFPykIE5LJwJ3cX4=";
   };
 
-  cargoLock = {
-    lockFile = ./Cargo.lock;
-  };
-
   postPatch = ''
     ln -s ${./Cargo.lock} Cargo.lock
   '';
@@ -35,6 +31,10 @@ rustPlatform.buildRustPackage (finalAttrs: {
     zstd
   ];
 
+  cargoLock = {
+    lockFile = ./Cargo.lock;
+  };
+
   env = {
     ZSTD_SYS_USE_PKG_CONFIG = true;
   };
@@ -44,6 +44,7 @@ rustPlatform.buildRustPackage (finalAttrs: {
 
   meta = {
     description = "Host-based file integrity monitoring tool";
+
     longDescription = ''
       FIM is a File Integrity Monitoring tool that tracks any event over your
       files. It is capable of keeping historical data of your files. It checks
@@ -54,6 +55,7 @@ rustPlatform.buildRustPackage (finalAttrs: {
       security tools. The produced data can be ingested and analyzed with
       tools like ElasticSearch/OpenSearch.
     '';
+
     homepage = "https://github.com/Achiefs/fim";
     changelog = "https://github.com/Achiefs/fim/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.gpl3Only;

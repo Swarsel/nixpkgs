@@ -1,11 +1,10 @@
 {
-  buildPythonPackage,
-  fetchFromGitHub,
   lib,
-
+  fetchFromGitHub,
+  buildPythonPackage,
   pathos,
-  pytestCheckHook,
   pytest-mock,
+  pytestCheckHook,
   setuptools,
   tqdm,
 }:
@@ -13,7 +12,6 @@
 buildPythonPackage rec {
   pname = "lox";
   version = "1.0.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "BrianPugh";
@@ -22,11 +20,14 @@ buildPythonPackage rec {
     hash = "sha256-PZKs+D1TmrBr+1M4ni7kKLywQ8Z6YCVjH2HFF6QjHdY=";
   };
 
+  nativeCheckInputs = [
+    pytestCheckHook
+    pytest-mock
+    tqdm
+  ];
+
   build-system = [ setuptools ];
-
   dependencies = [ pathos ];
-
-  pythonImportsCheck = [ "lox" ];
 
   disabledTests = [
     # Benchmark, performance testing
@@ -38,16 +39,13 @@ buildPythonPackage rec {
     "test_RWLock_r"
   ];
 
-  nativeCheckInputs = [
-    pytestCheckHook
-    pytest-mock
-    tqdm
-  ];
+  pyproject = true;
+  pythonImportsCheck = [ "lox" ];
 
   meta = {
     description = "Threading and Multiprocessing made easy";
-    changelog = "https://github.com/BrianPugh/lox/releases/tag/${src.tag}";
     homepage = "https://github.com/BrianPugh/lox";
+    changelog = "https://github.com/BrianPugh/lox/releases/tag/${src.tag}";
     license = lib.licenses.asl20;
     maintainers = [ lib.maintainers.greg ];
   };

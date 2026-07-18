@@ -1,23 +1,22 @@
 {
+  lib,
   stdenv,
   cjdns,
-  nodejs,
   makeWrapper,
-  lib,
+  nodejs,
 }:
 
 stdenv.mkDerivation {
   pname = "cjdns-tools";
   version = cjdns.version;
-
   src = cjdns.src;
-
-  buildInputs = [
-    nodejs
-  ];
 
   nativeBuildInputs = [
     makeWrapper
+  ];
+
+  buildInputs = [
+    nodejs
   ];
 
   buildPhase = ''
@@ -38,8 +37,8 @@ stdenv.mkDerivation {
   '';
 
   meta = {
-    homepage = "https://github.com/cjdelisle/cjdns";
     description = "Tools for cjdns managment";
+    homepage = "https://github.com/cjdelisle/cjdns";
     license = lib.licenses.gpl3Plus;
     maintainers = [ ];
     platforms = lib.platforms.linux ++ lib.platforms.darwin;

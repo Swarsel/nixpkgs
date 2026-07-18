@@ -1,19 +1,18 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
-  unittestCheckHook,
   boost,
+  buildPythonPackage,
   numpy,
   scipy,
+  setuptools,
   simpleitk,
+  unittestCheckHook,
 }:
 
 buildPythonPackage rec {
   pname = "medpy";
   version = "0.5.2";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "loli";
@@ -21,6 +20,13 @@ buildPythonPackage rec {
     tag = version;
     hash = "sha256-M46d8qiR3+ioiuRhzIaU5bV1dnfDm819pjn78RYlcG0=";
   };
+
+  nativeCheckInputs = [ unittestCheckHook ];
+
+  preCheck = ''
+    rm -r medpy/  # prevent importing from build directory at test time
+    rm -r tests/graphcut_  # SIGILL at test time
+  '';
 
   build-system = [ setuptools ];
 
@@ -31,12 +37,7 @@ buildPythonPackage rec {
     simpleitk
   ];
 
-  nativeCheckInputs = [ unittestCheckHook ];
-
-  preCheck = ''
-    rm -r medpy/  # prevent importing from build directory at test time
-    rm -r tests/graphcut_  # SIGILL at test time
-  '';
+  pyproject = true;
 
   pythonImportsCheck = [
     "medpy"

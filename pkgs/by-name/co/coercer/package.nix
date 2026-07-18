@@ -7,7 +7,6 @@
 python3.pkgs.buildPythonApplication (finalAttrs: {
   pname = "coercer";
   version = "2.4.3";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "p0dalirius";
@@ -16,7 +15,11 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     hash = "sha256-WeaKToKYIB+jjTNIQvAUQQNb25TsNWALYZwIZuBjkPE=";
   };
 
-  pythonRelaxDeps = [ "impacket" ];
+  # this file runs into issues on case-insensitive filesystems
+  # ValueError: Both <...>/coercer and <...>/coercer.py exist
+  postPatch = ''
+    rm Coercer.py
+  '';
 
   build-system = with python3.pkgs; [ poetry-core ];
 
@@ -25,13 +28,9 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     xlsxwriter
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "coercer" ];
-
-  # this file runs into issues on case-insensitive filesystems
-  # ValueError: Both <...>/coercer and <...>/coercer.py exist
-  postPatch = ''
-    rm Coercer.py
-  '';
+  pythonRelaxDeps = [ "impacket" ];
 
   meta = {
     description = "Tool to automatically coerce a Windows server";

@@ -1,13 +1,12 @@
 {
   lib,
-  python3Packages,
   fetchFromGitHub,
+  python3Packages,
 }:
 
 python3Packages.buildPythonApplication (finalAttrs: {
   pname = "matrix-dl";
   version = "0-unstable-2020-07-14";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "rubo77";
@@ -24,12 +23,14 @@ python3Packages.buildPythonApplication (finalAttrs: {
     matrix-client
   ];
 
+  pyproject = true;
+
   meta = {
     description = "Download backlogs from Matrix as raw text";
-    mainProgram = "matrix-dl";
     homepage = finalAttrs.src.meta.homepage;
     license = lib.licenses.gpl1Plus;
     maintainers = with lib.maintainers; [ aw ];
     platforms = lib.platforms.unix;
+    mainProgram = "matrix-dl";
   };
 })

@@ -1,16 +1,16 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchhg,
+  genericUpdater,
+  glm,
+  imagemagick,
+  installShellFiles,
+  libGLU,
   libepoxy,
   libx11,
-  libGLU,
-  glm,
-  pkg-config,
-  imagemagick,
   makeWrapper,
-  installShellFiles,
-  genericUpdater,
+  pkg-config,
   writeShellScript,
 }:
 
@@ -55,6 +55,7 @@ stdenv.mkDerivation (finalAttrs: {
 
   passthru.updateScript = genericUpdater {
     inherit (finalAttrs) pname version;
+
     versionLister = writeShellScript "shadershark-tags" ''
       repo_url=${finalAttrs.src.url}
       curl "$repo_url/tags" | grep '/rev/v' | sed 's;.*/rev/v\([^"]*\)[^$]*;\1; #'
@@ -62,11 +63,11 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   meta = {
-    mainProgram = "shader-shark";
     description = "OpenGL/X11 application for GNU/Linux consisting of a single window that shows simple 3D scene of a textured rectangle with applied vertex and fragment shaders (GLSL)";
     homepage = "https://graphics.globalcode.info/v_0/shader-shark.xhtml";
     license = lib.licenses.gpl3;
     maintainers = [ ];
     platforms = lib.platforms.linux;
+    mainProgram = "shader-shark";
   };
 })

@@ -1,23 +1,23 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
-  nix-update-script,
+  SDL2,
   cmake,
-  pkg-config,
   fribidi,
   harfbuzz,
   libogg,
   libwebp,
   libx11,
   mpg123,
+  ncurses,
+  nix-update-script,
   opusfile,
-  SDL2,
+  pkg-config,
+  sealcurses,
   the-foundation,
   zip,
   enableTUI ? false,
-  ncurses,
-  sealcurses,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -77,9 +77,9 @@ stdenv.mkDerivation (finalAttrs: {
   meta = {
     description = "Beautiful Gemini Client";
     homepage = "https://gmi.skyjake.fi/lagrange/";
-    mainProgram = "lagrange";
     license = lib.licenses.bsd2;
     maintainers = with lib.maintainers; [ sikmir ];
     platforms = lib.platforms.unix;
+    mainProgram = "lagrange";
   };
 })

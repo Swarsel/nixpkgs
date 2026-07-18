@@ -2,11 +2,9 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  cmake,
-  nasm,
-  pkg-config,
-  copyDesktopItems,
   alsa-lib,
+  cmake,
+  copyDesktopItems,
   glew,
   glib,
   gtk3,
@@ -16,9 +14,11 @@
   libusb-compat-0_1,
   libvorbis,
   libxtst,
-  udev,
   makeDesktopItem,
+  nasm,
   nix-update-script,
+  pkg-config,
+  udev,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -29,8 +29,8 @@ stdenv.mkDerivation (finalAttrs: {
     owner = "itgmania";
     repo = "itgmania";
     tag = "v${finalAttrs.version}";
-    fetchSubmodules = true;
     hash = "sha256-dwalGEQFNhjuKwUBBskCHDYzmyjuf0r9TYM2ex8wzio=";
+    fetchSubmodules = true;
   };
 
   nativeBuildInputs = [
@@ -67,34 +67,37 @@ stdenv.mkDerivation (finalAttrs: {
 
   desktopItems = [
     (makeDesktopItem {
-      name = "itgmania";
-      desktopName = "ITGmania";
-      genericName = "Rhythm and dance game";
-      tryExec = "itgmania";
-      exec = "itgmania";
-      terminal = false;
-      icon = "itgmania";
-      type = "Application";
-      comment = "A cross-platform rhythm video game.";
       categories = [
         "Game"
         "ArcadeGame"
       ];
+
+      comment = "A cross-platform rhythm video game.";
+      desktopName = "ITGmania";
+      exec = "itgmania";
+      genericName = "Rhythm and dance game";
+      icon = "itgmania";
+      name = "itgmania";
+      terminal = false;
+      tryExec = "itgmania";
+      type = "Application";
     })
   ];
 
   passthru.updateScript = nix-update-script { };
 
   meta = {
-    homepage = "https://www.itgmania.com/";
     description = "Fork of StepMania 5.1, improved for the post-ITG community";
-    platforms = lib.platforms.linux;
+    homepage = "https://www.itgmania.com/";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       ftsimas
       maxwell-lt
       ungeskriptet
     ];
+
+    platforms = lib.platforms.linux;
     mainProgram = "itgmania";
   };
 })

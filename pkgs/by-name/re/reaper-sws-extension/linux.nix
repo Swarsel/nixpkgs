@@ -3,15 +3,14 @@
   stdenv,
   fetchFromGitHub,
   cmake,
-  php,
-  perl,
   git,
-  pkg-config,
   gtk3,
-
+  meta,
+  perl,
+  php,
+  pkg-config,
   pname,
   version,
-  meta,
 }:
 stdenv.mkDerivation (finalAttrs: {
   inherit pname version meta;

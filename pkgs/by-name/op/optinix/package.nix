@@ -17,9 +17,8 @@ buildGoModule (finalAttrs: {
     hash = "sha256-cFzu88EFo27c6r7pqYDzMj9z1jPx4RxcylKYa4yxZXo=";
   };
 
-  vendorHash = "sha256-b834KT/5P49hW6SqG6fPSiOanzQ1oAfpZ8wNkJP6pNs=";
-
   nativeBuildInputs = [ installShellFiles ];
+  vendorHash = "sha256-b834KT/5P49hW6SqG6fPSiOanzQ1oAfpZ8wNkJP6pNs=";
 
   postInstall = lib.optionalString (stdenv.buildPlatform.canExecute stdenv.hostPlatform) ''
     installShellCompletion --cmd optinix \
@@ -33,12 +32,14 @@ buildGoModule (finalAttrs: {
   meta = {
     description = "Tool for searching options in Nix";
     homepage = "https://gitlab.com/hmajid2301/optinix";
+    changelog = "https://gitlab.com/hmajid2301/optinix/-/releases/v${finalAttrs.version}";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       hmajid2301
       brianmcgillion
     ];
-    changelog = "https://gitlab.com/hmajid2301/optinix/-/releases/v${finalAttrs.version}";
+
     mainProgram = "optinix";
   };
 })

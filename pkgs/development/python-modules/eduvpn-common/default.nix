@@ -8,9 +8,6 @@
 buildPythonPackage rec {
   inherit (libeduvpn-common) version src;
   pname = "eduvpn-common";
-
-  sourceRoot = "${pname}-${version}/wrappers/python";
-
   patches = [ ./use-nix-lib.patch ];
 
   postPatch = ''
@@ -18,16 +15,15 @@ buildPythonPackage rec {
                       --subst-var-by libeduvpn-common ${libeduvpn-common.out}/lib/lib${pname}-${version}.so
   '';
 
-  pyproject = true;
-
   propagatedBuildInputs = [
     libeduvpn-common
     setuptools
   ];
 
   nativeCheckInputs = [ selenium ];
-
+  pyproject = true;
   pythonImportsCheck = [ "eduvpn_common" ];
+  sourceRoot = "${pname}-${version}/wrappers/python";
 
   meta = libeduvpn-common.meta // {
     description = "Python wrapper for libeduvpn-common";

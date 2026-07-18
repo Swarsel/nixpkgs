@@ -1,7 +1,7 @@
 {
-  callPackage,
   lib,
   stdenv,
+  callPackage,
   chicken,
   makeWrapper,
 }:
@@ -30,16 +30,17 @@ let
 in
 (stdenv.mkDerivation (
   {
-    pname = "chicken-${pname}";
     inherit version;
-    propagatedBuildInputs = buildInputs;
+    pname = "chicken-${pname}";
+    strictDeps = true;
+
     nativeBuildInputs = [
       chicken
       makeWrapper
     ];
-    buildInputs = [ chicken ];
 
-    strictDeps = true;
+    buildInputs = [ chicken ];
+    propagatedBuildInputs = buildInputs;
 
     env = {
       CSC_OPTIONS = lib.concatStringsSep " " cscOptions;

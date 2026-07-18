@@ -4,8 +4,8 @@
   fetchFromSourcehut,
   meson,
   ninja,
-  pam,
   nix-update-script,
+  pam,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -25,8 +25,8 @@ stdenv.mkDerivation (finalAttrs: {
     meson
     ninja
   ];
-  buildInputs = [ pam ];
 
+  buildInputs = [ pam ];
   passthru.updateScript = nix-update-script { };
 
   meta = {
@@ -34,8 +34,8 @@ stdenv.mkDerivation (finalAttrs: {
     homepage = "https://git.sr.ht/~kennylevinsen/autologin";
     changelog = "https://git.sr.ht/~kennylevinsen/autologin/refs/${finalAttrs.version}";
     license = lib.licenses.gpl3Plus;
-    platforms = lib.platforms.linux;
     maintainers = with lib.maintainers; [ beviu ];
+    platforms = lib.platforms.linux;
     mainProgram = "autologin";
   };
 })

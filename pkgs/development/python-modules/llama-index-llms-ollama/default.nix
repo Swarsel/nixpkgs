@@ -10,14 +10,15 @@
 buildPythonPackage rec {
   pname = "llama-index-llms-ollama";
   version = "0.10.1";
-  pyproject = true;
 
   src = fetchPypi {
-    pname = "llama_index_llms_ollama";
     inherit version;
     hash = "sha256-Rw7YNt7kO8AXHcBcaMLao2GKfDgWa4BE1/g2DNjNj6Y=";
+    pname = "llama_index_llms_ollama";
   };
 
+  # Tests are only available in the mono repo
+  doCheck = false;
   build-system = [ hatchling ];
 
   dependencies = [
@@ -25,9 +26,7 @@ buildPythonPackage rec {
     ollama
   ];
 
-  # Tests are only available in the mono repo
-  doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "llama_index.llms.ollama" ];
 
   meta = {

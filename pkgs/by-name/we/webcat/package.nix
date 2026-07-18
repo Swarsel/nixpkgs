@@ -1,8 +1,8 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
   asciidoctor,
+  buildGoModule,
   installShellFiles,
 }:
 
@@ -17,12 +17,12 @@ buildGoModule (finalAttrs: {
     hash = "sha256-JyZHH8JgS3uoNVicx1wj0SAzlrXyTrpwIBZuok6buRw=";
   };
 
-  vendorHash = "sha256-duVp/obT+5M4Dl3BAdSgRaP3+LKmS0y51loMMdoGysw=";
-
   nativeBuildInputs = [
     asciidoctor
     installShellFiles
   ];
+
+  vendorHash = "sha256-duVp/obT+5M4Dl3BAdSgRaP3+LKmS0y51loMMdoGysw=";
 
   postInstall = ''
     make -C man man
@@ -30,8 +30,8 @@ buildGoModule (finalAttrs: {
   '';
 
   meta = {
-    homepage = "https://rumpelsepp.org/blog/ssh-through-websocket/";
     description = "Lightweight swiss army knife for websockets";
+    homepage = "https://rumpelsepp.org/blog/ssh-through-websocket/";
     license = lib.licenses.gpl3Only;
     maintainers = with lib.maintainers; [ montag451 ];
     mainProgram = "webcat";

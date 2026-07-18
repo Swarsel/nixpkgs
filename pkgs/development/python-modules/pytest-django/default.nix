@@ -1,34 +1,26 @@
 {
   lib,
   buildPythonPackage,
-  fetchPypi,
   django,
-  setuptools,
-  setuptools-scm,
   django-configurations,
+  fetchPypi,
   pytest,
   pytestCheckHook,
+  setuptools,
+  setuptools-scm,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "pytest-django";
   version = "4.12.0";
-  pyproject = true;
 
   src = fetchPypi {
-    pname = "pytest_django";
     inherit (finalAttrs) version;
     hash = "sha256-35TsgZqDyJecj23hPZzfvnbowh05Rzz+K0DJ/Jvjx1g=";
+    pname = "pytest_django";
   };
 
-  build-system = [
-    setuptools
-    setuptools-scm
-  ];
-
   buildInputs = [ pytest ];
-
-  dependencies = [ django ];
 
   nativeCheckInputs = [
     django-configurations
@@ -46,10 +38,18 @@ buildPythonPackage (finalAttrs: {
 
   __darwinAllowLocalNetworking = true;
 
+  build-system = [
+    setuptools
+    setuptools-scm
+  ];
+
+  dependencies = [ django ];
+  pyproject = true;
+
   meta = {
-    changelog = "https://github.com/pytest-dev/pytest-django/blob/v${finalAttrs.version}/docs/changelog.rst";
     description = "Pytest plugin for testing of Django applications";
     homepage = "https://pytest-django.readthedocs.org/en/latest/";
+    changelog = "https://github.com/pytest-dev/pytest-django/blob/v${finalAttrs.version}/docs/changelog.rst";
     license = lib.licenses.bsd3;
     maintainers = [ ];
   };

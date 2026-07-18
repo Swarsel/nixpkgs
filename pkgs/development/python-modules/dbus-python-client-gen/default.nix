@@ -1,16 +1,15 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  into-dbus-python,
+  buildPythonPackage,
   dbus-python,
+  into-dbus-python,
   pytestCheckHook,
 }:
 
 buildPythonPackage rec {
   pname = "dbus-python-client-gen";
   version = "0.8.4";
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "stratis-storage";
@@ -25,7 +24,7 @@ buildPythonPackage rec {
   ];
 
   nativeCheckInputs = [ pytestCheckHook ];
-
+  format = "setuptools";
   pythonImportsCheck = [ "dbus_python_client_gen" ];
 
   meta = {

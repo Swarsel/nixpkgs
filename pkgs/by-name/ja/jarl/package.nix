@@ -1,10 +1,10 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
   git,
-  versionCheckHook,
   nix-update-script,
+  rustPlatform,
+  versionCheckHook,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -25,10 +25,16 @@ rustPlatform.buildRustPackage (finalAttrs: {
                    '(?:/nix)?/(?:build)/(?:nix[\-0-9]+/)?'
   '';
 
-  cargoHash = "sha256-Rhv9Wku/bRl28nrXYof+6VAgl2K4ysILRQa1v19r0pU=";
-
   # integrations test require git at build time (jarl >= 0.5.0)
   nativeBuildInputs = [ git ];
+  cargoHash = "sha256-Rhv9Wku/bRl28nrXYof+6VAgl2K4ysILRQa1v19r0pU=";
+
+  postInstall = ''
+    rm $out/bin/xtask_codegen
+  '';
+
+  doInstallCheck = true;
+  nativeInstallCheckInputs = [ versionCheckHook ];
 
   # Don't run integration_tests for jarl-lsp, because it doesn't see
   # the CARGO_BIN_EXE_jarl env var even if exported in preCheck
@@ -40,22 +46,15 @@ rustPlatform.buildRustPackage (finalAttrs: {
     # "--test integration_tests"
   ];
 
-  nativeInstallCheckInputs = [ versionCheckHook ];
   versionCheckProgramArg = "--version";
-  doInstallCheck = true;
-
-  postInstall = ''
-    rm $out/bin/xtask_codegen
-  '';
-
   passthru.updateScript = nix-update-script { };
 
   meta = {
     description = "Just another R linter";
     homepage = "https://jarl.etiennebacher.com";
     changelog = "https://jarl.etiennebacher.com/changelog";
-    mainProgram = "jarl";
     license = lib.licenses.mit;
     maintainers = [ lib.maintainers.kupac ];
+    mainProgram = "jarl";
   };
 })

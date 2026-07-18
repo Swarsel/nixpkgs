@@ -1,20 +1,19 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
   aiohttp,
+  aresponses,
   async-timeout,
   backoff,
-  aresponses,
+  buildPythonPackage,
   pytest-asyncio,
   pytestCheckHook,
+  setuptools,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "aiocentriconnect";
   version = "0.2.3";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "gresrun";
@@ -22,6 +21,12 @@ buildPythonPackage (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-CBCD5JMUBD0NpkUVIaCXdsbKYgucELs11Pk9z0YufQw=";
   };
+
+  nativeCheckInputs = [
+    aresponses
+    pytest-asyncio
+    pytestCheckHook
+  ];
 
   build-system = [ setuptools ];
 
@@ -31,12 +36,7 @@ buildPythonPackage (finalAttrs: {
     backoff
   ];
 
-  nativeCheckInputs = [
-    aresponses
-    pytest-asyncio
-    pytestCheckHook
-  ];
-
+  pyproject = true;
   pythonImportsCheck = [ "aiocentriconnect" ];
 
   meta = {

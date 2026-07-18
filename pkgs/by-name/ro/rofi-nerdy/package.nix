@@ -1,11 +1,11 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
-  pkg-config,
-  glib,
   cairo,
+  glib,
   pango,
+  pkg-config,
+  rustPlatform,
 }:
 rustPlatform.buildRustPackage (finalAttrs: {
   pname = "rofi-nerdy";
@@ -18,8 +18,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-FxMRUE4OKF0e1gNVFuEIGCbV83tUVj4ZNZFCjFqNb64=";
   };
 
-  cargoHash = "sha256-z7pfVLlOZFKxoqk87cHFd//DOArCvTpPK83UmJwmdtw=";
-
   nativeBuildInputs = [ pkg-config ];
 
   buildInputs = [
@@ -27,6 +25,8 @@ rustPlatform.buildRustPackage (finalAttrs: {
     cairo
     pango
   ];
+
+  cargoHash = "sha256-z7pfVLlOZFKxoqk87cHFd//DOArCvTpPK83UmJwmdtw=";
 
   postInstall = ''
     mkdir -p $out/lib/rofi

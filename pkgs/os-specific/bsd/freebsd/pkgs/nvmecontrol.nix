@@ -1,18 +1,15 @@
 {
-  mkDerivation,
-  libnvmf,
   libnv,
+  libnvmf,
   libsbuf,
+  mkDerivation,
 }:
 mkDerivation {
-  path = "sbin/nvmecontrol";
-  extraPaths = [
-    "sys/dev/nvme"
-  ];
   outputs = [
     "out"
     "debug"
   ];
+
   buildInputs = [
     libnvmf
     libnv
@@ -20,4 +17,10 @@ mkDerivation {
   ];
 
   MK_TESTS = "no";
+
+  extraPaths = [
+    "sys/dev/nvme"
+  ];
+
+  path = "sbin/nvmecontrol";
 }

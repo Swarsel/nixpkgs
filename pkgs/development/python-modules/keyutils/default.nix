@@ -1,8 +1,8 @@
 {
   lib,
+  fetchFromGitHub,
   buildPythonPackage,
   cython,
-  fetchFromGitHub,
   keyutils,
   pytestCheckHook,
 }:
@@ -10,7 +10,6 @@
 buildPythonPackage rec {
   pname = "keyutils";
   version = "0.6";
-  format = "setuptools";
 
   # github version comes bundled with tests
   src = fetchFromGitHub {
@@ -24,17 +23,20 @@ buildPythonPackage rec {
     substituteInPlace setup.py --replace '"pytest-runner"' ""
   '';
 
+  nativeBuildInputs = [ cython ];
+  buildInputs = [ keyutils ];
+
   preBuild = ''
     cython keyutils/_keyutils.pyx
   '';
+
+  nativeCheckInputs = [ pytestCheckHook ];
 
   preCheck = ''
     rm -rf keyutils
   '';
 
-  buildInputs = [ keyutils ];
-  nativeBuildInputs = [ cython ];
-  nativeCheckInputs = [ pytestCheckHook ];
+  format = "setuptools";
 
   meta = {
     description = "Set of python bindings for keyutils";

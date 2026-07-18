@@ -1,26 +1,22 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # build-system
-  setuptools,
-
   # dependencies
   boltons,
+  buildPythonPackage,
   numpy,
-  scipy,
-  torch,
-  trampoline,
-
   # tests
   pytest7CheckHook,
+  scipy,
+  # build-system
+  setuptools,
+  torch,
+  trampoline,
 }:
 
 buildPythonPackage rec {
   pname = "torchsde";
   version = "0.2.6";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "google-research";
@@ -45,8 +41,6 @@ buildPythonPackage rec {
     trampoline
   ];
 
-  pythonImportsCheck = [ "torchsde" ];
-
   nativeCheckInputs = [ pytest7CheckHook ];
 
   disabledTests = [
@@ -54,10 +48,13 @@ buildPythonPackage rec {
     "test_adjoint"
   ];
 
+  pyproject = true;
+  pythonImportsCheck = [ "torchsde" ];
+
   meta = {
-    changelog = "https://github.com/google-research/torchsde/releases/tag/v${version}";
     description = "Differentiable SDE solvers with GPU support and efficient sensitivity analysis";
     homepage = "https://github.com/google-research/torchsde";
+    changelog = "https://github.com/google-research/torchsde/releases/tag/v${version}";
     license = lib.licenses.asl20;
     teams = [ lib.teams.tts ];
   };

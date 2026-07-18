@@ -1,6 +1,6 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
   nix-update-script,
 }:
@@ -16,8 +16,7 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-t1/oTr+sYkpTiDzaM4SxUcWzO3r24EkUJO04TYNLcQQ=";
   };
 
-  # interval-tree is a header only library
-  dontBuild = true;
+  strictDeps = true;
 
   installPhase = ''
     runHook preInstall
@@ -29,15 +28,15 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   __structuredAttrs = true;
-  strictDeps = true;
-
+  # interval-tree is a header only library
+  dontBuild = true;
   passthru.updateScript = nix-update-script { };
 
   meta = {
     description = "C++ header only interval tree implementation";
-    maintainers = with lib.maintainers; [ aiyion ];
     homepage = "https://github.com/5cript/interval-tree";
     license = lib.licenses.cc0;
+    maintainers = with lib.maintainers; [ aiyion ];
     platforms = lib.platforms.all;
   };
 })

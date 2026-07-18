@@ -2,10 +2,10 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  nix-update-script,
   apple-sdk_15,
-  versionCheckHook,
   llvmPackages,
+  nix-update-script,
+  versionCheckHook,
 }:
 
 let
@@ -38,7 +38,6 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   makeFlags = [ target ];
-
   # TODO: Remove once #536365 reaches this branch
   env.NIX_CFLAGS_LINK = "-fuse-ld=lld";
 
@@ -51,21 +50,22 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
-  passthru.updateScript = nix-update-script { };
-
-  nativeInstallCheckInputs = [ versionCheckHook ];
   doInstallCheck = true;
+  nativeInstallCheckInputs = [ versionCheckHook ];
+  passthru.updateScript = nix-update-script { };
 
   meta = {
     description = "Highly customizable macOS status bar replacement";
     homepage = "https://github.com/FelixKratz/SketchyBar";
     changelog = "https://github.com/FelixKratz/SketchyBar/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.gpl3;
-    mainProgram = "sketchybar";
+
     maintainers = with lib.maintainers; [
       azuwis
       khaneliman
     ];
+
     platforms = lib.platforms.darwin;
+    mainProgram = "sketchybar";
   };
 })

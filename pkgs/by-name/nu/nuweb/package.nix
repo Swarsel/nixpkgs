@@ -16,11 +16,6 @@ stdenv.mkDerivation rec {
   };
 
   buildInputs = [ texliveMedium ];
-
-  patchPhase = ''
-    sed -i -e 's|nuweb -r|./nuweb -r|' Makefile
-  '';
-
   # Workaround build failure on -fno-common toolchains like upstream
   # gcc-10. Otherwise build fails as:
   #   ld: global.o:/build/nuweb-1.62/global.h:91: multiple definition of
@@ -34,6 +29,7 @@ stdenv.mkDerivation rec {
     make nuweb
     make nuweb.pdf nuwebdoc.pdf all
   '';
+
   installPhase = ''
     install -d $out/bin $out/share/man/man1 $out/share/doc/${pname}-${version} $out/share/emacs/site-lisp
     cp nuweb $out/bin
@@ -42,13 +38,17 @@ stdenv.mkDerivation rec {
     cp htdocs/index.html nuweb.w nuweb.pdf nuwebdoc.pdf README $out/share/doc/${pname}-${version}
   '';
 
+  patchPhase = ''
+    sed -i -e 's|nuweb -r|./nuweb -r|' Makefile
+  '';
+
   meta = {
     description = "Simple literate programming tool";
-    mainProgram = "nuweb";
     homepage = "https://nuweb.sourceforge.net";
     license = lib.licenses.free;
     maintainers = [ ];
     platforms = lib.platforms.unix;
+    mainProgram = "nuweb";
   };
 }
 # TODO: nuweb.el Emacs integration

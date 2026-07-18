@@ -1,19 +1,19 @@
 {
   lib,
+  fetchFromGitHub,
   blinker,
   brotli,
   buildPythonPackage,
   certifi,
-  fetchFromGitHub,
+  gunicorn,
   h2,
+  httpbin,
   hyperframe,
   kaitaistruct,
   pyasn1,
-  httpbin,
   pyopenssl,
   pyparsing,
   pysocks,
-  gunicorn,
   pytestCheckHook,
   selenium,
   setuptools,
@@ -24,7 +24,6 @@
 buildPythonPackage rec {
   pname = "selenium-wire";
   version = "5.1.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "wkeeling";
@@ -32,6 +31,12 @@ buildPythonPackage rec {
     tag = version;
     hash = "sha256-KgaDxHS0dAK6CT53L1qqx1aORMmkeaiXAUtGC82hiIQ=";
   };
+
+  nativeCheckInputs = [
+    gunicorn
+    httpbin
+    pytestCheckHook
+  ];
 
   build-system = [ setuptools ];
 
@@ -51,18 +56,13 @@ buildPythonPackage rec {
     zstandard
   ];
 
-  nativeCheckInputs = [
-    gunicorn
-    httpbin
-    pytestCheckHook
-  ];
-
-  pythonImportsCheck = [ "seleniumwire" ];
-
   disabledTestPaths = [
     # Don't run End2End tests
     "tests/end2end/test_end2end.py"
   ];
+
+  pyproject = true;
+  pythonImportsCheck = [ "seleniumwire" ];
 
   meta = {
     description = "Extends Selenium's Python bindings to give you the ability to inspect requests made by the browser";

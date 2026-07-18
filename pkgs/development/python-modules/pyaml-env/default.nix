@@ -1,16 +1,15 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
-  pyyaml,
+  buildPythonPackage,
   pytestCheckHook,
+  pyyaml,
+  setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "pyaml-env";
   version = "1.2.2";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "mkaranasou";
@@ -19,13 +18,11 @@ buildPythonPackage rec {
     hash = "sha256-Mp5Zn2JA6j/OTkPCRggNdqdWkrUYyYHMVK6hy/EI0I8=";
   };
 
-  build-system = [ setuptools ];
-
-  dependencies = [ pyyaml ];
-
-  pythonImportsCheck = [ "pyaml_env" ];
-
   nativeCheckInputs = [ pytestCheckHook ];
+  build-system = [ setuptools ];
+  dependencies = [ pyyaml ];
+  pyproject = true;
+  pythonImportsCheck = [ "pyaml_env" ];
 
   meta = {
     description = "Parse YAML configuration with environment variables in Python";

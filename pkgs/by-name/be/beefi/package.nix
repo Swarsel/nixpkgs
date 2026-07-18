@@ -1,9 +1,9 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
-  installShellFiles,
   binutils-unwrapped,
+  installShellFiles,
   systemd,
 }:
 
@@ -25,23 +25,23 @@ stdenv.mkDerivation (finalAttrs: {
     systemd
   ];
 
+  installPhase = ''
+    install -Dm755 beefi $out/bin/beefi
+    installManPage beefi.1
+  '';
+
   patchPhase = ''
     substituteInPlace beefi \
       --replace objcopy ${binutils-unwrapped}/bin/objcopy \
       --replace /usr/lib/systemd ${systemd}/lib/systemd
   '';
 
-  installPhase = ''
-    install -Dm755 beefi $out/bin/beefi
-    installManPage beefi.1
-  '';
-
   meta = {
     description = "Small script to create bootable EFISTUB kernel images";
-    mainProgram = "beefi";
-    license = lib.licenses.gpl3;
-    platforms = lib.platforms.linux;
-    maintainers = with lib.maintainers; [ tu-maurice ];
     homepage = "https://github.com/jfeick/beefi";
+    license = lib.licenses.gpl3;
+    maintainers = with lib.maintainers; [ tu-maurice ];
+    platforms = lib.platforms.linux;
+    mainProgram = "beefi";
   };
 })

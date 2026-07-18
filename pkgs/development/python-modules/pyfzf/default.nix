@@ -1,14 +1,13 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   fzf,
 }:
 
 buildPythonPackage rec {
   pname = "pyfzf";
   version = "0.3.1";
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "nk412";
@@ -18,11 +17,10 @@ buildPythonPackage rec {
   };
 
   propagatedBuildInputs = [ fzf ];
-
-  pythonImportsCheck = [ "pyfzf" ];
-
   # Module has no tests
   doCheck = false;
+  format = "setuptools";
+  pythonImportsCheck = [ "pyfzf" ];
 
   meta = {
     description = "Wrapper for fzf";

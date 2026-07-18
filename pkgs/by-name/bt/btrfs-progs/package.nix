@@ -2,21 +2,21 @@
   lib,
   stdenv,
   fetchurl,
-  buildPackages,
-  pkg-config,
-  zstd,
   acl,
   attr,
+  btrfs-progs,
+  buildPackages,
   e2fsprogs,
+  gitUpdater,
   libuuid,
   lzo,
-  udev,
-  zlib,
+  pkg-config,
   runCommand,
-  btrfs-progs,
-  gitUpdater,
-  udevSupport ? true,
+  udev,
   udevCheckHook,
+  zlib,
+  zstd,
+  udevSupport ? true,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -27,6 +27,17 @@ stdenv.mkDerivation (finalAttrs: {
     url = "mirror://kernel/linux/kernel/people/kdave/btrfs-progs/btrfs-progs-v${finalAttrs.version}.tar.xz";
     hash = "sha256-wobWh2y81yMnoLQX5M/SgDU+wj43tUn9vNeACoMtmpk=";
   };
+
+  outputs = [
+    "out"
+    "dev"
+    "man"
+    "lib"
+  ];
+
+  # gcc bug with -O1 on ARM with gcc 4.8
+  # This should be fine on all platforms so apply universally
+  postPatch = "sed -i s/-O1/-O2/ configure";
 
   nativeBuildInputs = [
     pkg-config
@@ -54,14 +65,6 @@ stdenv.mkDerivation (finalAttrs: {
     zstd
   ];
 
-  # gcc bug with -O1 on ARM with gcc 4.8
-  # This should be fine on all platforms so apply universally
-  postPatch = "sed -i s/-O1/-O2/ configure";
-
-  postInstall = ''
-    install -v -m 444 -D btrfs-completion $out/share/bash-completion/completions/btrfs
-  '';
-
   configureFlags = [
     # Built separately, see python3Packages.btrfsutil
     "--disable-python"
@@ -79,18 +82,13 @@ stdenv.mkDerivation (finalAttrs: {
 
   makeFlags = [ "udevruledir=$(out)/lib/udev/rules.d" ];
 
-  separateDebugInfo = true;
-
-  outputs = [
-    "out"
-    "dev"
-    "man"
-    "lib"
-  ];
-
-  enableParallelBuilding = true;
+  postInstall = ''
+    install -v -m 444 -D btrfs-completion $out/share/bash-completion/completions/btrfs
+  '';
 
   doInstallCheck = true;
+  enableParallelBuilding = true;
+  separateDebugInfo = true;
 
   passthru.tests = {
     simple-filesystem = runCommand "btrfs-progs-create-fs" { } ''
@@ -103,9 +101,9 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   passthru.updateScript = gitUpdater {
+    rev-prefix = "v";
     # No nicer place to find latest release.
     url = "https://github.com/kdave/btrfs-progs.git";
-    rev-prefix = "v";
   };
 
   meta = {
@@ -113,8 +111,8 @@ stdenv.mkDerivation (finalAttrs: {
     homepage = "https://btrfs.readthedocs.io/en/latest/";
     changelog = "https://github.com/kdave/btrfs-progs/raw/v${finalAttrs.version}/CHANGES";
     license = lib.licenses.gpl2Only;
-    mainProgram = "btrfs";
     maintainers = with lib.maintainers; [ raskin ];
     platforms = lib.platforms.linux;
+    mainProgram = "btrfs";
   };
 })

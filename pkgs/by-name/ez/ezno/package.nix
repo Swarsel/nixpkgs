@@ -1,10 +1,10 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
-  pkg-config,
-  openssl,
   nix-update-script,
+  openssl,
+  pkg-config,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -18,6 +18,8 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-YS0DgRtCy+RJsPMDBvAxjF4vjxfCb5gmQWP7YPUWbWU=";
   };
 
+  nativeBuildInputs = [ pkg-config ];
+  buildInputs = [ openssl ];
   cargoHash = "sha256-7qTaI8nXH86yIXat584WI6AbJVRZ4PBXdnYDebUrpPA=";
 
   cargoBuildFlags = [
@@ -25,18 +27,14 @@ rustPlatform.buildRustPackage (finalAttrs: {
     "ezno"
   ];
 
-  nativeBuildInputs = [ pkg-config ];
-
-  buildInputs = [ openssl ];
-
   passthru.updateScript = nix-update-script { };
 
   meta = {
     description = "JavaScript compiler and TypeScript checker with a focus on static analysis and runtime performance";
-    mainProgram = "ezno";
     homepage = "https://github.com/kaleidawave/ezno";
     changelog = "https://github.com/kaleidawave/ezno/releases/tag/release/ezno-${finalAttrs.version}";
     license = lib.licenses.mit;
     maintainers = [ lib.maintainers.progrm_jarvis ];
+    mainProgram = "ezno";
   };
 })

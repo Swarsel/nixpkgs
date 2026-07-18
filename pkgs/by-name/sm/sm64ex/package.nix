@@ -2,16 +2,16 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  fetchpatch,
-  python3,
-  pkg-config,
-  audiofile,
   SDL2,
-  libGL,
+  audiofile,
+  fetchpatch,
   hexdump,
+  libGL,
+  pkg-config,
+  python3,
   sm64baserom,
-  region ? "us",
   _60fps ? true,
+  region ? "us",
 }:
 let
   baseRom = (sm64baserom.override { inherit region; }).romPath;
@@ -30,9 +30,9 @@ stdenv.mkDerivation (finalAttrs: {
 
   patches = lib.optionals _60fps [
     (fetchpatch {
+      hash = "sha256-2V7WcZ8zG8Ef0bHmXVz2iaR48XRRDjTvynC4RPxMkcA=";
       name = "60fps_ex.patch";
       url = "file://${finalAttrs.src}/enhancements/60fps_ex.patch";
-      hash = "sha256-2V7WcZ8zG8Ef0bHmXVz2iaR48XRRDjTvynC4RPxMkcA=";
     })
   ];
 
@@ -47,8 +47,6 @@ stdenv.mkDerivation (finalAttrs: {
     SDL2
     libGL
   ];
-
-  enableParallelBuilding = true;
 
   makeFlags = [
     "VERSION=${region}"
@@ -71,17 +69,21 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  enableParallelBuilding = true;
+
   meta = {
-    homepage = "https://github.com/sm64pc/sm64ex";
     description = "Super Mario 64 port based off of decompilation";
+
     longDescription = ''
       Note that you must supply a baserom yourself to extract assets from.
       If you are not using an US baserom, you must overwrite the "region" attribute with either "eu" or "jp".
       If you would like to use patches sm64ex distributes as makeflags, add them to the "compileFlags" attribute.
     '';
-    mainProgram = "sm64ex";
+
+    homepage = "https://github.com/sm64pc/sm64ex";
     license = lib.licenses.unfree;
     maintainers = with lib.maintainers; [ qubitnano ];
     platforms = lib.platforms.unix;
+    mainProgram = "sm64ex";
   };
 })

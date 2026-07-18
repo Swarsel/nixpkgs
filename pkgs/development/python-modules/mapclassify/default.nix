@@ -1,16 +1,15 @@
 {
   lib,
   stdenv,
-  buildPythonPackage,
   fetchFromGitHub,
-  pytestCheckHook,
-
+  buildPythonPackage,
   geopandas,
   libpysal,
   matplotlib,
   networkx,
   numpy,
   pandas,
+  pytestCheckHook,
   scikit-learn,
   scipy,
   setuptools-scm,
@@ -19,7 +18,6 @@
 buildPythonPackage rec {
   pname = "mapclassify";
   version = "2.10.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "pysal";
@@ -27,8 +25,6 @@ buildPythonPackage rec {
     tag = "v${version}";
     hash = "sha256-OQpDrxa0zRPDAdyS6KP5enb/JZwbYoXTV8kUijV3tNM=";
   };
-
-  build-system = [ setuptools-scm ];
 
   propagatedBuildInputs = [
     networkx
@@ -44,6 +40,8 @@ buildPythonPackage rec {
     libpysal
     matplotlib
   ];
+
+  build-system = [ setuptools-scm ];
 
   # requires network access
   disabledTestPaths = [
@@ -86,6 +84,7 @@ buildPythonPackage rec {
     "test_legend_kwargs"
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "mapclassify" ];
 
   meta = {

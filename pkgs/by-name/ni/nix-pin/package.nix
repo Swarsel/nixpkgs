@@ -1,26 +1,29 @@
 {
   lib,
-  pkgs,
   stdenv,
   fetchFromGitHub,
-  python3,
-  nix,
   git,
   makeWrapper,
+  nix,
+  pkgs,
+  python3,
   runtimeShell,
 }:
 let
   self = stdenv.mkDerivation rec {
     pname = "nix-pin";
     version = "0.4.0";
+
     src = fetchFromGitHub {
       owner = "timbertson";
       repo = "nix-pin";
       rev = "version-${version}";
       sha256 = "1pccvc0iqapms7kidrh09g5fdx44x622r5l9k7bkmssp3v4c68vy";
     };
+
     nativeBuildInputs = [ makeWrapper ];
     buildInputs = [ python3 ];
+
     installPhase = ''
       mkdir "$out"
       cp -r bin share "$out"
@@ -32,6 +35,7 @@ let
           ]
         }"
     '';
+
     passthru =
       let
         defaults = import "${self}/share/nix/defaults.nix";
@@ -47,6 +51,7 @@ let
           {
             inherit (impl) augmentedPkgs pins callPackage;
           };
+
         updateScript = ''
           #!${runtimeShell}
           set -e
@@ -63,9 +68,10 @@ let
             --modify-nix default.nix
         '';
       };
+
     meta = {
-      homepage = "https://github.com/timbertson/nix-pin";
       description = "Nixpkgs development utility";
+      homepage = "https://github.com/timbertson/nix-pin";
       license = lib.licenses.mit;
       maintainers = [ lib.maintainers.timbertson ];
       platforms = lib.platforms.all;

@@ -1,16 +1,15 @@
 {
   lib,
   stdenv,
-  pass,
   fetchFromGitHub,
-  python3,
   gnupg,
+  pass,
+  python3,
 }:
 
 python3.pkgs.buildPythonApplication rec {
   pname = "pass-audit";
   version = "1.2";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "roddhjav";
@@ -18,6 +17,11 @@ python3.pkgs.buildPythonApplication rec {
     rev = "v${version}";
     hash = "sha256-xigP8LxRXITLF3X21zhWx6ooFNSTKGv46yFSt1dd4vs=";
   };
+
+  outputs = [
+    "out"
+    "man"
+  ];
 
   patches = [
     ./0001-Set-base-to-an-empty-value.patch
@@ -31,25 +35,15 @@ python3.pkgs.buildPythonApplication rec {
     patchShebangs audit.bash
   '';
 
-  outputs = [
-    "out"
-    "man"
-  ];
-
-  build-system = with python3.pkgs; [ setuptools ];
-  dependencies = with python3.pkgs; [
-    requests
-    setuptools
-    zxcvbn
-  ];
-
   # Tests freeze on darwin with: pass-audit-1.1 (checkPhase): EOFError
   doCheck = !stdenv.hostPlatform.isDarwin;
+
   nativeCheckInputs = [
     python3.pkgs.green
     pass
     gnupg
   ];
+
   checkPhase = ''
     python3 -m green -q
   '';
@@ -64,13 +58,22 @@ python3.pkgs.buildPythonApplication rec {
       --run "export COMMAND"
   '';
 
+  build-system = with python3.pkgs; [ setuptools ];
+
+  dependencies = with python3.pkgs; [
+    requests
+    setuptools
+    zxcvbn
+  ];
+
+  pyproject = true;
   pythonImportsCheck = [ "pass_audit" ];
 
   meta = {
     description = "Pass extension for auditing your password repository";
     homepage = "https://github.com/roddhjav/pass-audit";
     license = lib.licenses.gpl3Plus;
-    platforms = lib.platforms.unix;
     maintainers = with lib.maintainers; [ ma27 ];
+    platforms = lib.platforms.unix;
   };
 }

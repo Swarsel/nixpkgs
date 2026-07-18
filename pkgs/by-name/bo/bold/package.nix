@@ -3,10 +3,10 @@
   stdenv,
   fetchFromGitHub,
   callPackage,
-  zig_0_14,
-  versionCheckHook,
-  gitUpdater,
   fetchpatch,
+  gitUpdater,
+  versionCheckHook,
+  zig_0_14,
 }:
 
 let
@@ -26,18 +26,18 @@ stdenv.mkDerivation (finalAttrs: {
   patches = [
     # Correct version
     (fetchpatch {
-      url = "https://github.com/kubkon/bold/commit/e8a3245b1f03ea8ba7136d76807400610c068bac.patch";
       hash = "sha256-UdicLUoH7ApnKxoI91hDcuO/NSINLkxb2h9sA9NShfw=";
+      url = "https://github.com/kubkon/bold/commit/e8a3245b1f03ea8ba7136d76807400610c068bac.patch";
     })
+  ];
+
+  nativeBuildInputs = [
+    zig
   ];
 
   postConfigure = ''
     ln -s ${callPackage ./deps.nix { }} $ZIG_GLOBAL_CACHE_DIR/p
   '';
-
-  nativeBuildInputs = [
-    zig
-  ];
 
   doInstallCheck = true;
   nativeInstallCheckInputs = [ versionCheckHook ];

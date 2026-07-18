@@ -7,8 +7,8 @@
 
 makeSetupHook
   {
-    name = "wrapWithXFileSearchPathHook";
     propagatedBuildInputs = [ makeBinaryWrapper ];
+    name = "wrapWithXFileSearchPathHook";
   }
   (
     writeScript "wrapWithXFileSearchPathHook.sh" ''

@@ -1,18 +1,17 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   hatchling,
   mkdocs,
+  pytest-golden,
   pytestCheckHook,
   testfixtures,
-  pytest-golden,
 }:
 
 buildPythonPackage rec {
   pname = "mkdocs-literate-nav";
   version = "0.6.2";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "oprypin";
@@ -20,6 +19,12 @@ buildPythonPackage rec {
     tag = "v${version}";
     hash = "sha256-WP8VqiD/Kqswh1TWhSBsNfxn3gxKlRlg6RvGayAdQto=";
   };
+
+  nativeCheckInputs = [
+    pytestCheckHook
+    testfixtures
+    pytest-golden
+  ];
 
   build-system = [
     hatchling
@@ -29,14 +34,10 @@ buildPythonPackage rec {
     mkdocs
   ];
 
+  pyproject = true;
+
   pythonImportsCheck = [
     "mkdocs_literate_nav"
-  ];
-
-  nativeCheckInputs = [
-    pytestCheckHook
-    testfixtures
-    pytest-golden
   ];
 
   meta = {

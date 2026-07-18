@@ -14,10 +14,6 @@ let
 
 in
 {
-  meta = {
-    teams = [ teams.xfce ];
-  };
-
   imports = [
     # added 2019-08-18
     # needed to preserve some semblance of UI familarity
@@ -57,37 +53,43 @@ in
   ];
 
   options = {
+    environment.xfce.excludePackages = mkOption {
+      default = [ ];
+      description = "Which packages XFCE should exclude from the default environment";
+      example = literalExpression "[ pkgs.xfce4-volumed-pulse ]";
+      type = types.listOf types.package;
+    };
+
     services.xserver.desktopManager.xfce = {
       enable = mkOption {
-        type = types.bool;
         default = false;
         description = "Enable the Xfce desktop environment.";
-      };
-
-      noDesktop = mkOption {
         type = types.bool;
-        default = false;
-        description = "Don't install XFCE desktop components (xfdesktop and panel).";
-      };
-
-      enableXfwm = mkOption {
-        type = types.bool;
-        default = true;
-        description = "Enable the XFWM (default) window manager.";
       };
 
       enableScreensaver = mkOption {
-        type = types.bool;
         default = true;
         description = "Enable the XFCE screensaver.";
+        type = types.bool;
       };
 
       enableWaylandSession = mkEnableOption "the experimental Xfce Wayland session";
 
+      enableXfwm = mkOption {
+        default = true;
+        description = "Enable the XFWM (default) window manager.";
+        type = types.bool;
+      };
+
+      noDesktop = mkOption {
+        default = false;
+        description = "Don't install XFCE desktop components (xfdesktop and panel).";
+        type = types.bool;
+      };
+
       waylandSessionCompositor = mkOption {
-        type = lib.types.str;
         default = "";
-        example = "wayfire";
+
         description = ''
           Command line to run a Wayland compositor, defaults to `labwc --startup`
           if not specified. Note that `xfce4-session` will be passed to it as an
@@ -96,18 +98,21 @@ in
           Some compositors do not have an option equivalent to labwc's `--startup`
           and you might have to add xfce4-session somewhere in their configurations.
         '';
-      };
-    };
 
-    environment.xfce.excludePackages = mkOption {
-      default = [ ];
-      example = literalExpression "[ pkgs.xfce4-volumed-pulse ]";
-      type = types.listOf types.package;
-      description = "Which packages XFCE should exclude from the default environment";
+        example = "wayfire";
+        type = lib.types.str;
+      };
     };
   };
 
   config = mkIf cfg.enable {
+    environment.pathsToLink = [
+      "/share/xfce4"
+      "/lib/xfce4"
+      "/share/gtksourceview-3.0"
+      "/share/gtksourceview-4.0"
+    ];
+
     environment.systemPackages = utils.removePackagesByName (
       with pkgs;
       [
@@ -166,33 +171,30 @@ in
       ++ lib.optional cfg.enableScreensaver xfce4-screensaver
     ) excludePackages;
 
+    # Shell integration for VTE terminals
+    programs.bash.vteIntegration = mkDefault true;
+    # Enable default programs
+    programs.dconf.enable = true;
+    programs.gdk-pixbuf.modulePackages = [ pkgs.librsvg ];
     programs.gnupg.agent.pinentryPackage = mkDefault pkgs.pinentry-gtk2;
-    programs.xfconf.enable = true;
-    programs.thunar.enable = true;
+
     programs.labwc.enable = mkDefault (
       cfg.enableWaylandSession
       && (cfg.waylandSessionCompositor == "" || lib.substring 0 5 cfg.waylandSessionCompositor == "labwc")
     );
 
-    environment.pathsToLink = [
-      "/share/xfce4"
-      "/lib/xfce4"
-      "/share/gtksourceview-3.0"
-      "/share/gtksourceview-4.0"
-    ];
+    programs.thunar.enable = true;
+    programs.xfconf.enable = true;
+    programs.zsh.vteIntegration = mkDefault true;
+    security.pam.services.xfce4-screensaver.unixAuth = cfg.enableScreensaver;
 
-    services.xserver.desktopManager.session = [
-      {
-        name = "xfce";
-        prettyName = "Xfce Session";
-        desktopNames = [ "XFCE" ];
-        bgSupport = !cfg.noDesktop;
-        start = ''
-          ${pkgs.runtimeShell} ${pkgs.xfce4-session.xinitrc} &
-          waitPID=$!
-        '';
-      }
-    ];
+    security.polkit = {
+      enable = true;
+      enablePkexecWrapper = lib.mkDefault true;
+    };
+
+    services.accounts-daemon.enable = true;
+    services.colord.enable = mkDefault true;
 
     # Copied from https://gitlab.xfce.org/xfce/xfce4-session/-/blob/xfce4-session-4.19.2/xfce-wayland.desktop.in
     # to maintain consistent l10n state with X11 session file and to support the waylandSessionCompositor option.
@@ -215,40 +217,40 @@ in
       )
     ];
 
-    services.xserver.updateDbusEnvironment = true;
-    programs.gdk-pixbuf.modulePackages = [ pkgs.librsvg ];
-
-    # Enable helpful DBus services.
-    services.udisks2.enable = true;
-    security.polkit = {
-      enable = true;
-      enablePkexecWrapper = lib.mkDefault true;
-    };
-    services.accounts-daemon.enable = true;
-    services.upower.enable = config.powerManagement.enable;
     services.gnome.glib-networking.enable = true;
     services.gnome.gnome-keyring.enable = mkDefault true;
     services.gvfs.enable = true;
-    services.tumbler.enable = true;
-    services.system-config-printer.enable = (mkIf config.services.printing.enable (mkDefault true));
     services.libinput.enable = mkDefault true; # used in xfce4-settings-manager
-    services.colord.enable = mkDefault true;
+    services.system-config-printer.enable = (mkIf config.services.printing.enable (mkDefault true));
+    services.tumbler.enable = true;
+    # Enable helpful DBus services.
+    services.udisks2.enable = true;
+    services.upower.enable = config.powerManagement.enable;
 
-    # Enable default programs
-    programs.dconf.enable = true;
+    services.xserver.desktopManager.session = [
+      {
+        bgSupport = !cfg.noDesktop;
+        desktopNames = [ "XFCE" ];
+        name = "xfce";
+        prettyName = "Xfce Session";
 
-    # Shell integration for VTE terminals
-    programs.bash.vteIntegration = mkDefault true;
-    programs.zsh.vteIntegration = mkDefault true;
+        start = ''
+          ${pkgs.runtimeShell} ${pkgs.xfce4-session.xinitrc} &
+          waitPID=$!
+        '';
+      }
+    ];
+
+    services.xserver.updateDbusEnvironment = true;
 
     # Systemd services
     systemd.packages = utils.removePackagesByName (with pkgs; [
       xfce4-notifyd
     ]) excludePackages;
 
-    security.pam.services.xfce4-screensaver.unixAuth = cfg.enableScreensaver;
-
+    xdg.portal.configPackages = mkDefault [ pkgs.xfce4-session ];
     xdg.portal.enable = mkDefault true;
+
     xdg.portal.extraPortals = utils.removePackagesByName (
       with pkgs;
       [
@@ -259,6 +261,9 @@ in
         xdg-desktop-portal-wlr
       ]
     ) excludePackages;
-    xdg.portal.configPackages = mkDefault [ pkgs.xfce4-session ];
+  };
+
+  meta = {
+    teams = [ teams.xfce ];
   };
 }

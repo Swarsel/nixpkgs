@@ -1,32 +1,32 @@
 {
   lib,
   stdenv,
-  runCommand,
-  fetchzip,
   fetchurl,
-  fetchpatch,
   fetchFromGitHub,
   cmake,
-  jbig2dec,
-  libjpeg_turbo,
-  libpng,
-  makeWrapper,
-  pkg-config,
-  zlib,
-  enableGSL ? true,
-  gsl,
-  enableGhostScript ? true,
-  ghostscript,
-  enableMuPDF ? true,
-  mupdf,
-  enableDJVU ? true,
   djvulibre,
-  enableLeptonica ? true,
-  leptonica,
   # Tesseract support is broken
   # See: https://github.com/NixOS/nixpkgs/issues/368349
   # Making GOCR work without Tesseract support is non-trivial
   fetchDebianPatch,
+  fetchpatch,
+  fetchzip,
+  ghostscript,
+  gsl,
+  jbig2dec,
+  leptonica,
+  libjpeg_turbo,
+  libpng,
+  makeWrapper,
+  mupdf,
+  pkg-config,
+  runCommand,
+  zlib,
+  enableDJVU ? true,
+  enableGSL ? true,
+  enableGhostScript ? true,
+  enableLeptonica ? true,
+  enableMuPDF ? true,
 }:
 
 # k2pdfopt requires modified versions of mupdf, leptonica, and tesseract.
@@ -40,6 +40,7 @@
 stdenv.mkDerivation (finalAttrs: {
   pname = "k2pdfopt";
   version = "2.55";
+
   src = fetchzip {
     url = "http://www.willus.com/k2pdfopt/src/k2pdfopt_v${finalAttrs.version}_src.zip";
     hash = "sha256-orQNDXQkkcCtlA8wndss6SiJk4+ImiFCG8XRLEg963k=";
@@ -51,15 +52,15 @@ stdenv.mkDerivation (finalAttrs: {
       inherit (finalAttrs) pname;
       version = "${finalAttrs.version}+ds";
       debianRevision = "3.1";
-      patch = "0007-k2pdfoptlib-k2ocr.c-conditionally-enable-tesseract-r.patch";
       hash = "sha256-uJ9Gpyq64n/HKqo0hkQ2dnkSLCKNN4DedItPGzHfqR8=";
+      patch = "0007-k2pdfoptlib-k2ocr.c-conditionally-enable-tesseract-r.patch";
     })
     (fetchDebianPatch {
       inherit (finalAttrs) pname;
       version = "${finalAttrs.version}+ds";
       debianRevision = "3.1";
-      patch = "0009-willuslib-CMakeLists.txt-conditionally-add-source-fi.patch";
       hash = "sha256-cBSlcuhsw4YgAJtBJkKLW6u8tK5gFwWw7pZEJzVMJDE=";
+      patch = "0009-willuslib-CMakeLists.txt-conditionally-add-source-fi.patch";
     })
   ];
 
@@ -113,9 +114,11 @@ stdenv.mkDerivation (finalAttrs: {
     homepage = "http://www.willus.com/k2pdfopt";
     changelog = "https://www.willus.com/k2pdfopt/k2pdfopt_version.txt";
     license = lib.licenses.gpl3;
-    platforms = lib.platforms.linux;
+
     maintainers = with lib.maintainers; [
       raskin
     ];
+
+    platforms = lib.platforms.linux;
   };
 })

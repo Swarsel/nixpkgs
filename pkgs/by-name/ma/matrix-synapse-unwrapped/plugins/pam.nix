@@ -1,15 +1,14 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  twisted,
+  buildPythonPackage,
   python-pam,
+  twisted,
 }:
 
 buildPythonPackage rec {
   pname = "matrix-synapse-pam";
   version = "0.1.3";
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "14mRh4X0r";
@@ -25,7 +24,7 @@ buildPythonPackage rec {
 
   # has no tests
   doCheck = false;
-
+  format = "setuptools";
   pythonImportsCheck = [ "pam_auth_provider" ];
 
   meta = {

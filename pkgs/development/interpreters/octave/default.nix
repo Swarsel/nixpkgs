@@ -1,64 +1,64 @@
 {
-  stdenv,
-  pkgs,
-  config,
   lib,
+  stdenv,
   fetchurl,
-  gfortran,
-  ncurses,
-  perl,
-  flex,
-  testers,
-  texinfo,
-  qhull,
-  libsndfile,
-  portaudio,
-  libx11,
-  graphicsmagick,
-  pcre2,
-  pkg-config,
-  libGL,
-  libGLU,
-  fltk,
+  arpack,
+  blas,
+  callPackage,
+  config,
+  curl,
+  fast-float,
   # Both are needed for discrete Fourier transform
   fftw,
   fftwSinglePrec,
-  fast-float,
-  zlib,
-  curl,
-  rapidjson,
-  blas,
+  flex,
+  fltk,
+  gfortran,
+  ghostscript,
+  gl2ps,
+  glpk,
+  gnuplot,
+  graphicsmagick,
+  hdf5,
+  jdk,
   lapack,
+  libGL,
+  libGLU,
+  libiconv,
+  libsForQt5,
+  libsndfile,
+  libwebp,
+  libx11,
+  makeSetupHook,
+  makeWrapper,
+  ncurses,
+  # - Packages required for building extra packages.
+  newScope,
+  pcre2,
+  perl,
+  pkg-config,
+  pkgs,
+  portaudio,
+  python3,
+  qhull,
   # These 3 should use the same lapack and blas as the above, see code prepending
   qrupdate,
-  arpack,
+  rapidjson,
+  readline,
   suitesparse,
+  sundials,
+  testers,
+  texinfo,
+  zlib,
+  # - Build Java interface:
+  enableJava ? true,
+  # - Build Octave Qt GUI:
+  enableQt ? false,
+  # - Include support for GNU readline:
+  enableReadline ? true,
   # If set to true, the above 5 deps are overridden to use the blas and lapack
   # with 64 bit indexes support. If all are not compatible, the build will fail.
   use64BitIdx ? false,
-  libwebp,
-  gl2ps,
-  ghostscript,
-  hdf5,
-  glpk,
-  gnuplot,
-  # - Include support for GNU readline:
-  enableReadline ? true,
-  readline,
-  # - Build Java interface:
-  enableJava ? true,
-  jdk,
-  python3,
-  sundials,
-  # - Packages required for building extra packages.
-  newScope,
-  callPackage,
-  makeSetupHook,
-  makeWrapper,
-  # - Build Octave Qt GUI:
-  enableQt ? false,
-  libsForQt5,
-  libiconv,
 }:
 
 let
@@ -100,8 +100,8 @@ let
   allPkgs = pkgs;
 in
 stdenv.mkDerivation (finalAttrs: {
-  version = "11.3.0";
   pname = "octave";
+  version = "11.3.0";
 
   src = fetchurl {
     url = "mirror://gnu/octave/octave-${finalAttrs.version}.tar.gz";
@@ -111,6 +111,18 @@ stdenv.mkDerivation (finalAttrs: {
   postPatch = ''
     patchShebangs --build build-aux/*.pl
   '';
+
+  nativeBuildInputs = [
+    perl
+    pkg-config
+    gfortran
+    texinfo
+  ]
+  ++ lib.optionals enableQt [
+    libsForQt5.wrapQtAppsHook
+    libsForQt5.qtscript
+    libsForQt5.qttools
+  ];
 
   buildInputs = [
     readline
@@ -160,33 +172,6 @@ stdenv.mkDerivation (finalAttrs: {
   ++ lib.optionals stdenv.hostPlatform.isDarwin [
     fast-float
   ];
-  nativeBuildInputs = [
-    perl
-    pkg-config
-    gfortran
-    texinfo
-  ]
-  ++ lib.optionals enableQt [
-    libsForQt5.wrapQtAppsHook
-    libsForQt5.qtscript
-    libsForQt5.qttools
-  ];
-
-  doCheck = !stdenv.hostPlatform.isDarwin;
-
-  enableParallelBuilding = true;
-
-  env =
-    lib.optionalAttrs stdenv.hostPlatform.isDarwin {
-      # Fix linker error on Darwin (see https://trac.macports.org/ticket/61865)
-      NIX_LDFLAGS = "-lobjc";
-      # https://savannah.gnu.org/bugs/index.php?68042
-      NIX_CFLAGS_COMPILE = "-Wno-format-security";
-    }
-    // lib.optionalAttrs use64BitIdx {
-      # See https://savannah.gnu.org/bugs/?50339
-      F77_INTEGER_8_FLAG = "-fdefault-integer-8";
-    };
 
   configureFlags = [
     "--with-blas=blas"
@@ -197,22 +182,47 @@ stdenv.mkDerivation (finalAttrs: {
   ++ lib.optionals stdenv.hostPlatform.isDarwin [ "--with-x=no" ]
   ++ lib.optionals enableQt [ "--with-qt=5" ];
 
+  env =
+    lib.optionalAttrs stdenv.hostPlatform.isDarwin {
+      # https://savannah.gnu.org/bugs/index.php?68042
+      NIX_CFLAGS_COMPILE = "-Wno-format-security";
+      # Fix linker error on Darwin (see https://trac.macports.org/ticket/61865)
+      NIX_LDFLAGS = "-lobjc";
+    }
+    // lib.optionalAttrs use64BitIdx {
+      # See https://savannah.gnu.org/bugs/?50339
+      F77_INTEGER_8_FLAG = "-fdefault-integer-8";
+    };
+
+  doCheck = !stdenv.hostPlatform.isDarwin;
+
   # Keep a copy of the octave tests detailed results in the output
   # derivation, because someone may care
   postInstall = ''
     cp test/fntests.log $out/share/octave/octave-${finalAttrs.version}-fntests.log || true
   '';
 
+  enableParallelBuilding = true;
+
   passthru = rec {
-    sitePath = "share/octave/${finalAttrs.version}/site";
-    octPkgsPath = "share/octave/octave_packages";
-    blas = blas';
-    lapack = lapack';
-    qrupdate = qrupdate';
+    inherit fftw fftwSinglePrec;
+    inherit portaudio;
+    inherit jdk;
+    inherit enableQt enableReadline enableJava;
     arpack = arpack';
-    suitesparse = suitesparse';
+    blas = blas';
+
+    buildEnv = callPackage ./build-env.nix {
+      inherit wrapOctave;
+      inherit (octavePackages) computeRequiredOctavePackages;
+      octave = finalAttrs.finalPackage;
+    };
+
+    interpreter = "${finalAttrs.finalPackage}/bin/octave";
+    lapack = lapack';
+    octPkgsPath = "share/octave/octave_packages";
+
     octavePackages = import ../../../top-level/octave-packages.nix {
-      pkgs = allPkgs;
       inherit
         config
         lib
@@ -220,40 +230,40 @@ stdenv.mkDerivation (finalAttrs: {
         fetchurl
         newScope
         ;
+
       octave = finalAttrs.finalPackage;
+      pkgs = allPkgs;
     };
-    wrapOctave = callPackage ./wrap-octave.nix {
-      octave = finalAttrs.finalPackage;
-      inherit (allPkgs) makeSetupHook makeWrapper;
-    };
-    inherit fftw fftwSinglePrec;
-    inherit portaudio;
-    inherit jdk;
-    python = python3;
-    inherit enableQt enableReadline enableJava;
-    buildEnv = callPackage ./build-env.nix {
-      octave = finalAttrs.finalPackage;
-      inherit wrapOctave;
-      inherit (octavePackages) computeRequiredOctavePackages;
-    };
-    withPackages = import ./with-packages.nix { inherit buildEnv octavePackages; };
+
     pkgs = octavePackages;
-    interpreter = "${finalAttrs.finalPackage}/bin/octave";
+    python = python3;
+    qrupdate = qrupdate';
+    sitePath = "share/octave/${finalAttrs.version}/site";
+    suitesparse = suitesparse';
+
     tests = {
       wrapper = testers.testVersion {
-        package = finalAttrs.finalPackage.withPackages (ps: [ ps.doctest ]);
         command = "octave --version";
+        package = finalAttrs.finalPackage.withPackages (ps: [ ps.doctest ]);
       };
+    };
+
+    withPackages = import ./with-packages.nix { inherit buildEnv octavePackages; };
+
+    wrapOctave = callPackage ./wrap-octave.nix {
+      inherit (allPkgs) makeSetupHook makeWrapper;
+      octave = finalAttrs.finalPackage;
     };
   };
 
   meta = {
+    description = "Scientific Programming Language";
     homepage = "https://www.gnu.org/software/octave/";
     license = lib.licenses.gpl3Plus;
+
     maintainers = with lib.maintainers; [
       raskin
       doronbehar
     ];
-    description = "Scientific Programming Language";
   };
 })

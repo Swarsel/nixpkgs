@@ -10,26 +10,26 @@
 buildPythonPackage rec {
   pname = "stevedore";
   version = "5.6.0";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
     hash = "sha256-8i0VxurUDFu/qcpUqn57SgfVmzauA+0SztGlTPC1GUU=";
   };
 
+  # Checks moved to 'passthru.tests' to workaround infinite recursion
+  doCheck = false;
+
   build-system = [
     pbr
     setuptools
   ];
 
-  # Checks moved to 'passthru.tests' to workaround infinite recursion
-  doCheck = false;
+  pyproject = true;
+  pythonImportsCheck = [ "stevedore" ];
 
   passthru.tests = {
     tests = callPackage ./tests.nix { };
   };
-
-  pythonImportsCheck = [ "stevedore" ];
 
   meta = {
     description = "Manage dynamic plugins for Python applications";

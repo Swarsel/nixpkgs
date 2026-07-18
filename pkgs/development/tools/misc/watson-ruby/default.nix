@@ -2,23 +2,21 @@
   lib,
   stdenv,
   bundlerEnv,
-  ruby,
   bundlerUpdateScript,
+  ruby,
 }:
 
 stdenv.mkDerivation rec {
   pname = "watson-ruby";
   version = (import ./gemset.nix).watson-ruby.version;
 
-  dontUnpack = true;
-
   installPhase =
     let
       env = bundlerEnv {
-        name = "watson-ruby-gems-${version}";
         inherit ruby;
         # expects Gemfile, Gemfile.lock and gemset.nix in the same directory
         gemdir = ./.;
+        name = "watson-ruby-gems-${version}";
       };
     in
     ''
@@ -26,17 +24,20 @@ stdenv.mkDerivation rec {
       ln -s ${env}/bin/watson $out/bin/watson
     '';
 
+  dontUnpack = true;
   passthru.updateScript = bundlerUpdateScript "watson-ruby";
 
   meta = {
     description = "Inline issue manager";
     homepage = "https://goosecode.com/watson/";
     license = with lib.licenses; mit;
+
     maintainers = with lib.maintainers; [
       robertodr
       nicknovitski
     ];
-    mainProgram = "watson";
+
     platforms = lib.platforms.unix;
+    mainProgram = "watson";
   };
 }

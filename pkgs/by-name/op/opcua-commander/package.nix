@@ -1,12 +1,12 @@
 {
   lib,
   stdenv,
-  buildNpmPackage,
   fetchFromGitHub,
-  typescript,
+  buildNpmPackage,
   esbuild,
   makeWrapper,
   nodejs,
+  typescript,
 }:
 buildNpmPackage rec {
   pname = "opcua-commander";
@@ -18,13 +18,6 @@ buildNpmPackage rec {
     rev = version;
     hash = "sha256-qoBpYN0EiXiuhH+hXjVPK2ET8Psjz52rocohU8ccVIg=";
   };
-
-  npmDepsHash = "sha256-HB4boWgZWoG+ib+cCoQbUmrrV5rECR3dMwj2lCyJjT0=";
-  nativeBuildInputs = [
-    esbuild
-    typescript
-    makeWrapper
-  ];
 
   postPatch =
     let
@@ -38,6 +31,14 @@ buildNpmPackage rec {
       substituteInPlace package.json \
         --replace-fail 'npx -y esbuild' '${esbuildPrefix}'
     '';
+
+  nativeBuildInputs = [
+    esbuild
+    typescript
+    makeWrapper
+  ];
+
+  npmDepsHash = "sha256-HB4boWgZWoG+ib+cCoQbUmrrV5rECR3dMwj2lCyJjT0=";
 
   # We need to add `nodejs` to PATH for `opcua-commander` to properly work
   # when connected to an OPC-UA server.

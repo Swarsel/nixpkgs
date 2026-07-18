@@ -15,19 +15,6 @@ let
 in
 rec {
 
-  # Derive a pin file from workspace state.
-  mkPinFile =
-    workspaceState:
-    assert workspaceState.version >= 5 && workspaceState.version <= 6;
-    json.generate "Package.resolved" {
-      version = 1;
-      object.pins = map (dep: {
-        package = dep.packageRef.name;
-        repositoryURL = dep.packageRef.location;
-        state = dep.state.checkoutState;
-      }) workspaceState.object.dependencies;
-    };
-
   # Make packaging helpers from swiftpm2nix generated output.
   helpers =
     generated:
@@ -37,19 +24,6 @@ rec {
       pinFile = mkPinFile workspaceState;
     in
     rec {
-
-      # Create fetch expressions for dependencies.
-      sources = listToAttrs (
-        map (
-          dep:
-          nameValuePair dep.subpath (fetchgit {
-            url = dep.packageRef.location;
-            rev = dep.state.checkoutState.revision;
-            sha256 = hashes.${dep.subpath};
-            fetchSubmodules = true;
-          })
-        ) workspaceState.object.dependencies
-      );
 
       # Configure phase snippet for use in packaging.
       configure = ''
@@ -72,6 +46,33 @@ rec {
         }
       '';
 
+      # Create fetch expressions for dependencies.
+      sources = listToAttrs (
+        map (
+          dep:
+          nameValuePair dep.subpath (fetchgit {
+            fetchSubmodules = true;
+            rev = dep.state.checkoutState.revision;
+            sha256 = hashes.${dep.subpath};
+            url = dep.packageRef.location;
+          })
+        ) workspaceState.object.dependencies
+      );
+
+    };
+
+  # Derive a pin file from workspace state.
+  mkPinFile =
+    workspaceState:
+    assert workspaceState.version >= 5 && workspaceState.version <= 6;
+    json.generate "Package.resolved" {
+      version = 1;
+
+      object.pins = map (dep: {
+        package = dep.packageRef.name;
+        repositoryURL = dep.packageRef.location;
+        state = dep.state.checkoutState;
+      }) workspaceState.object.dependencies;
     };
 
 }

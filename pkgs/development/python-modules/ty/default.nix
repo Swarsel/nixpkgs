@@ -1,7 +1,7 @@
 {
+  lib,
   buildPythonPackage,
   hatchling,
-  lib,
   ty,
 }:
 
@@ -12,9 +12,6 @@ buildPythonPackage {
     src
     meta
     ;
-  pyproject = true;
-
-  build-system = [ hatchling ];
 
   postPatch =
     # Add the path to the ty binary as a fallback after other path search methods have been exhausted
@@ -42,5 +39,7 @@ buildPythonPackage {
     mkdir -p $out/bin && ln -s ${lib.getExe ty} $out/bin/ty
   '';
 
+  build-system = [ hatchling ];
+  pyproject = true;
   pythonImportsCheck = [ "ty" ];
 }

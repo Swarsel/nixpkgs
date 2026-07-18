@@ -2,12 +2,12 @@
   lib,
   stdenv,
   fetchurl,
-  makeWrapper,
-  makeDesktopItem,
-  copyDesktopItems,
-  unzip,
   appimage-run,
+  copyDesktopItems,
+  makeDesktopItem,
+  makeWrapper,
   nix-update-script,
+  unzip,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -28,15 +28,6 @@ stdenv.mkDerivation (finalAttrs: {
 
   buildInputs = [ appimage-run ];
 
-  unpackPhase = ''
-    runHook preUnpack
-
-    unzip $src
-    appimage-run -x src 'LDtk ${finalAttrs.version} installer.AppImage'
-
-    runHook postUnpack
-  '';
-
   installPhase = ''
     runHook preInstall
 
@@ -50,16 +41,25 @@ stdenv.mkDerivation (finalAttrs: {
 
   desktopItems = [
     (makeDesktopItem {
-      name = "ldtk";
+      categories = [ "Utility" ];
+      comment = "2D level editor";
+      desktopName = "LDtk";
       exec = "ldtk";
       icon = "ldtk";
-      terminal = false;
-      desktopName = "LDtk";
-      comment = "2D level editor";
-      categories = [ "Utility" ];
       mimeTypes = [ "application/json" ];
+      name = "ldtk";
+      terminal = false;
     })
   ];
+
+  unpackPhase = ''
+    runHook preUnpack
+
+    unzip $src
+    appimage-run -x src 'LDtk ${finalAttrs.version} installer.AppImage'
+
+    runHook postUnpack
+  '';
 
   passthru.updateScript = nix-update-script { };
 
@@ -68,9 +68,9 @@ stdenv.mkDerivation (finalAttrs: {
     homepage = "https://ldtk.io/";
     changelog = "https://github.com/deepnight/ldtk/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.mit;
-    platforms = [ "x86_64-linux" ];
-    maintainers = with lib.maintainers; [ felschr ];
     sourceProvenance = with lib.sourceTypes; [ binaryBytecode ];
+    maintainers = with lib.maintainers; [ felschr ];
+    platforms = [ "x86_64-linux" ];
     mainProgram = "ldtk";
   };
 })

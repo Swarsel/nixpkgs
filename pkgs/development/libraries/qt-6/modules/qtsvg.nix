@@ -1,18 +1,19 @@
 {
-  qtModule,
-  qtbase,
-  libwebp,
-  jasper,
-  libmng,
-  zlib,
-  pkg-config,
   lib,
   stdenv,
+  jasper,
+  libmng,
+  libwebp,
+  pkg-config,
+  qtModule,
+  qtbase,
+  zlib,
 }:
 
 qtModule {
   pname = "qtsvg";
-  propagatedBuildInputs = [ qtbase ];
+  nativeBuildInputs = [ pkg-config ];
+
   buildInputs = [
     libwebp
   ]
@@ -23,5 +24,6 @@ qtModule {
     libmng
     zlib
   ];
-  nativeBuildInputs = [ pkg-config ];
+
+  propagatedBuildInputs = [ qtbase ];
 }

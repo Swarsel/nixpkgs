@@ -1,20 +1,19 @@
 {
   lib,
   stdenv,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
   asgiref,
-  twisted,
+  buildPythonPackage,
+  nix-update-script,
   pytest-benchmark,
   pytestCheckHook,
-  nix-update-script,
+  setuptools,
+  twisted,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "prometheus-client";
   version = "0.25.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "prometheus";
@@ -23,29 +22,25 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-vue/5ulOnKkYjiHYWgT6HZ5mhV2vqAstm44+zwm+po0=";
   };
 
-  build-system = [ setuptools ];
-
-  dependencies = [ asgiref ];
-
-  optional-dependencies.twisted = [ twisted ];
-
-  __darwinAllowLocalNetworking = true;
-
   nativeCheckInputs = [
     pytest-benchmark
     pytestCheckHook
   ]
   ++ lib.concatAttrValues finalAttrs.passthru.optional-dependencies;
 
-  pytestFlags = [ "--benchmark-disable" ];
-
-  pythonImportsCheck = [ "prometheus_client" ];
+  __darwinAllowLocalNetworking = true;
+  build-system = [ setuptools ];
+  dependencies = [ asgiref ];
 
   disabledTests = lib.optionals stdenv.hostPlatform.isDarwin [
     # fails in darwin sandbox: Operation not permitted
     "test_instance_ip_grouping_key"
   ];
 
+  optional-dependencies.twisted = [ twisted ];
+  pyproject = true;
+  pytestFlags = [ "--benchmark-disable" ];
+  pythonImportsCheck = [ "prometheus_client" ];
   passthru.updateScript = nix-update-script { };
 
   meta = {

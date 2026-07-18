@@ -21,16 +21,16 @@
 buildPythonPackage (finalAttrs: {
   pname = "alibabacloud-gateway-oss";
   version = "0.0.27";
-  pyproject = true;
-
-  __structuredAttrs = true;
 
   src = fetchPypi {
-    pname = "alibabacloud_gateway_oss";
     inherit (finalAttrs) version;
     hash = "sha256-sUBDgkDLzieRDe08J2iVdcAwHwrhGghKqii3ST3rYFI=";
+    pname = "alibabacloud_gateway_oss";
   };
 
+  # Module has only tests in the untagged upstream repo
+  doCheck = false;
+  __structuredAttrs = true;
   build-system = [ setuptools ];
 
   dependencies = [
@@ -49,10 +49,8 @@ buildPythonPackage (finalAttrs: {
     darabonba-core
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "alibabacloud_gateway_oss" ];
-
-  # Module has only tests in the untagged upstream repo
-  doCheck = false;
 
   meta = {
     description = "Aliyun Gateway OSS Library for Python";

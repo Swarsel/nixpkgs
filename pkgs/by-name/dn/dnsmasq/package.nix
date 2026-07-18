@@ -2,15 +2,15 @@
   lib,
   stdenv,
   fetchurl,
-  pkg-config,
-  nettle,
+  buildPackages,
+  dbus,
   libidn2,
   libnetfilter_conntrack,
+  nettle,
   nftables,
-  buildPackages,
-  dbusSupport ? stdenv.hostPlatform.isLinux,
-  dbus,
   nixosTests,
+  pkg-config,
+  dbusSupport ? stdenv.hostPlatform.isLinux,
 }:
 
 let
@@ -41,9 +41,17 @@ stdenv.mkDerivation (finalAttrs: {
     sed '1i#include <linux/sockios.h>' -i src/dhcp.c
   '';
 
-  preBuild = ''
-    makeFlagsArray=("COPTS=${copts}")
-  '';
+  nativeBuildInputs = [ pkg-config ];
+
+  buildInputs = [
+    nettle
+    libidn2
+  ]
+  ++ lib.optionals dbusSupport [ dbus ]
+  ++ lib.optionals stdenv.hostPlatform.isLinux [
+    libnetfilter_conntrack
+    nftables
+  ];
 
   makeFlags = [
     "DESTDIR="
@@ -53,7 +61,9 @@ stdenv.mkDerivation (finalAttrs: {
     "PKG_CONFIG=${buildPackages.pkg-config}/bin/${buildPackages.pkg-config.targetPrefix}pkg-config"
   ];
 
-  enableParallelBuilding = true;
+  preBuild = ''
+    makeFlagsArray=("COPTS=${copts}")
+  '';
 
   postBuild = lib.optionalString stdenv.hostPlatform.isLinux ''
     make -C contrib/lease-tools
@@ -88,35 +98,27 @@ stdenv.mkDerivation (finalAttrs: {
     END
   '';
 
-  nativeBuildInputs = [ pkg-config ];
-  buildInputs = [
-    nettle
-    libidn2
-  ]
-  ++ lib.optionals dbusSupport [ dbus ]
-  ++ lib.optionals stdenv.hostPlatform.isLinux [
-    libnetfilter_conntrack
-    nftables
-  ];
+  enableParallelBuilding = true;
 
   passthru.tests = {
-    prometheus-exporter = nixosTests.prometheus-exporters.dnsmasq;
-
     # these tests use dnsmasq incidentally
     inherit (nixosTests) dnscrypt-proxy;
-    kubernetes-dns-single = nixosTests.kubernetes.dns-single-node;
     kubernetes-dns-multi = nixosTests.kubernetes.dns-multi-node;
+    kubernetes-dns-single = nixosTests.kubernetes.dns-single-node;
     pihole-ftl-dnsmasq = nixosTests.pihole-ftl.dnsmasq;
+    prometheus-exporter = nixosTests.prometheus-exporters.dnsmasq;
   };
 
   meta = {
     description = "Integrated DNS, DHCP and TFTP server for small networks";
     homepage = "https://www.thekelleys.org.uk/dnsmasq/doc.html";
     license = lib.licenses.gpl2Only;
-    mainProgram = "dnsmasq";
-    platforms = with lib.platforms; linux ++ darwin;
+
     maintainers = with lib.maintainers; [
       fpletz
     ];
+
+    platforms = with lib.platforms; linux ++ darwin;
+    mainProgram = "dnsmasq";
   };
 })

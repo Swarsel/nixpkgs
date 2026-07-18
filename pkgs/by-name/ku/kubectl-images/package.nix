@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule (finalAttrs: {
@@ -23,10 +23,10 @@ buildGoModule (finalAttrs: {
 
   meta = {
     description = "Show container images used in the cluster";
-    mainProgram = "kubectl-images";
     homepage = "https://github.com/chenjiandongx/kubectl-images";
     changelog = "https://github.com/chenjiandongx/kubectl-images/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.mit;
     maintainers = [ lib.maintainers.ivankovnatsky ];
+    mainProgram = "kubectl-images";
   };
 })

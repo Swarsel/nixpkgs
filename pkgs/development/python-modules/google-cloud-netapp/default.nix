@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   gitUpdater,
   google-api-core,
   google-auth,
@@ -16,7 +16,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "google-cloud-netapp";
   version = "0.10.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "googleapis";
@@ -25,13 +24,13 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-ywRS1BfK6s+gcU8QRem0cSnfZq4BUQ2ABNcgnOa01LI=";
   };
 
-  sourceRoot = "${finalAttrs.src.name}/packages/google-cloud-netapp";
+  nativeCheckInputs = [
+    mock
+    pytest-asyncio
+    pytestCheckHook
+  ];
 
   build-system = [ setuptools ];
-
-  pythonRelaxDeps = [
-    "protobuf"
-  ];
 
   dependencies = [
     google-api-core
@@ -41,20 +40,23 @@ buildPythonPackage (finalAttrs: {
   ]
   ++ google-api-core.optional-dependencies.grpc;
 
-  nativeCheckInputs = [
-    mock
-    pytest-asyncio
-    pytestCheckHook
-  ];
+  pyproject = true;
 
   pythonImportsCheck = [
     "google.cloud.netapp"
     "google.cloud.netapp_v1"
   ];
 
+  pythonRelaxDeps = [
+    "protobuf"
+  ];
+
+  sourceRoot = "${finalAttrs.src.name}/packages/google-cloud-netapp";
+
   passthru = {
     # builkupdater selects wrong tag
     skipBulkUpdate = true;
+
     updateScript = gitUpdater {
       rev-prefix = "google-cloud-netapp-v";
     };

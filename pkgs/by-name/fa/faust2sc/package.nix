@@ -1,10 +1,10 @@
 {
+  stdenv,
   faust,
-  baseName ? "faust2sc",
-  supercollider,
   makeWrapper,
   python3,
-  stdenv,
+  supercollider,
+  baseName ? "faust2sc",
 }@args:
 let
   faustDefaults = faust.faust2ApplBase (

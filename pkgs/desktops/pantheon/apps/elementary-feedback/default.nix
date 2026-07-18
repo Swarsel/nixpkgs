@@ -2,18 +2,18 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  nix-update-script,
-  pkg-config,
-  meson,
-  ninja,
-  vala,
-  gtk4,
+  appstream,
   glib,
   granite7,
+  gtk4,
   libadwaita,
   libgee,
+  meson,
+  ninja,
+  nix-update-script,
+  pkg-config,
+  vala,
   wrapGAppsHook4,
-  appstream,
 }:
 
 stdenv.mkDerivation rec {
@@ -61,7 +61,7 @@ stdenv.mkDerivation rec {
     homepage = "https://github.com/elementary/feedback";
     license = lib.licenses.gpl3Plus;
     platforms = lib.platforms.linux;
-    teams = [ lib.teams.pantheon ];
     mainProgram = "io.elementary.feedback";
+    teams = [ lib.teams.pantheon ];
   };
 }

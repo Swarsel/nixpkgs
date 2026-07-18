@@ -1,20 +1,19 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
+  buildPythonPackage,
   cryptography,
   pytest-asyncio,
   pytest-cov-stub,
   pytest-timeout,
   pytestCheckHook,
+  setuptools,
   sybil,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "homekit-audio-proxy";
   version = "1.2.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "bdraco";
@@ -22,10 +21,6 @@ buildPythonPackage (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-9vC6atYdHvJ/Pkq8n4Amh557GRWLvPofhgnfQJPSBx0=";
   };
-
-  build-system = [ setuptools ];
-
-  dependencies = [ cryptography ];
 
   nativeCheckInputs = [
     pytest-asyncio
@@ -35,6 +30,9 @@ buildPythonPackage (finalAttrs: {
     sybil
   ];
 
+  build-system = [ setuptools ];
+  dependencies = [ cryptography ];
+  pyproject = true;
   pythonImportsCheck = [ "homekit_audio_proxy" ];
 
   meta = {

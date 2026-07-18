@@ -1,11 +1,11 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
-  setuptools-scm,
+  buildPythonPackage,
   pytestCheckHook,
   rstcheck-core,
+  setuptools,
+  setuptools-scm,
   sphinx,
   typer,
 }:
@@ -13,7 +13,6 @@
 buildPythonPackage rec {
   pname = "rstcheck";
   version = "6.2.5";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "rstcheck";
@@ -21,6 +20,13 @@ buildPythonPackage rec {
     tag = "v${version}";
     hash = "sha256-ajevEHCsPvr5e4K8I5AfxFZ+Vo1quaGUKFIEB9Wlobc=";
   };
+
+  nativeCheckInputs = [ pytestCheckHook ];
+
+  preCheck = ''
+    # The tests need to find and call the rstcheck executable
+    export PATH="$PATH:$out/bin";
+  '';
 
   build-system = [
     setuptools
@@ -36,14 +42,8 @@ buildPythonPackage rec {
     sphinx = [ sphinx ];
   };
 
-  nativeCheckInputs = [ pytestCheckHook ];
-
+  pyproject = true;
   pythonImportsCheck = [ "rstcheck" ];
-
-  preCheck = ''
-    # The tests need to find and call the rstcheck executable
-    export PATH="$PATH:$out/bin";
-  '';
 
   meta = {
     description = "Checks syntax of reStructuredText and code blocks nested within it";

@@ -1,20 +1,19 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   flit-core,
+  gitUpdater,
   microsoft-kiota-abstractions,
   pendulum,
   pytest-asyncio,
   pytest-mock,
   pytestCheckHook,
-  gitUpdater,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "microsoft-kiota-serialization-json";
   version = "1.11.7";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "microsoft";
@@ -23,7 +22,11 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-Fd9XSO3H1Au8y+Acft5to7hi7QNwWcmP0/NeWZlufjg=";
   };
 
-  sourceRoot = "${finalAttrs.src.name}/packages/serialization/json/";
+  nativeCheckInputs = [
+    pytest-asyncio
+    pytest-mock
+    pytestCheckHook
+  ];
 
   build-system = [ flit-core ];
 
@@ -32,13 +35,9 @@ buildPythonPackage (finalAttrs: {
     pendulum
   ];
 
-  nativeCheckInputs = [
-    pytest-asyncio
-    pytest-mock
-    pytestCheckHook
-  ];
-
+  pyproject = true;
   pythonImportsCheck = [ "kiota_serialization_json" ];
+  sourceRoot = "${finalAttrs.src.name}/packages/serialization/json/";
 
   passthru.updateScript = gitUpdater {
     rev-prefix = "microsoft-kiota-serialization-json-v";

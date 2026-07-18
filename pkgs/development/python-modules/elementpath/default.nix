@@ -1,14 +1,13 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "elementpath";
   version = "5.1.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "sissaschool";
@@ -17,11 +16,10 @@ buildPythonPackage rec {
     hash = "sha256-Ngvoq8BugTH8r187S+nUhNX/NRVhhBDX+eVc/zvq08g=";
   };
 
-  build-system = [ setuptools ];
-
   # avoid circular dependency with xmlschema which directly depends on this
   doCheck = false;
-
+  build-system = [ setuptools ];
+  pyproject = true;
   pythonImportsCheck = [ "elementpath" ];
 
   meta = {

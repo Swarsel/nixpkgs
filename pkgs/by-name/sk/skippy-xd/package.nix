@@ -2,16 +2,16 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  xorgproto,
+  giflib,
+  libjpeg,
   libx11,
-  libxft,
   libxcomposite,
   libxdamage,
   libxext,
+  libxft,
   libxinerama,
-  libjpeg,
-  giflib,
   pkg-config,
+  xorgproto,
 }:
 
 stdenv.mkDerivation (finalAttrs: {

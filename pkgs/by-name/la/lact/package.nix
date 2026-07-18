@@ -1,27 +1,27 @@
 {
   lib,
-  rustPlatform,
   stdenv,
   fetchFromGitHub,
-  pkg-config,
-  wrapGAppsHook4,
+  autoAddDriverRunpath,
   bashNonInteractive,
   clinfo,
+  coreutils,
+  fuse3,
   gdk-pixbuf,
   gtk4,
+  hwdata,
   libadwaita,
   libdisplay-info,
   libdrm,
-  ocl-icd,
-  vulkan-loader,
-  vulkan-tools,
-  coreutils,
-  systemdMinimal,
   nix-update-script,
   nixosTests,
-  hwdata,
-  fuse3,
-  autoAddDriverRunpath,
+  ocl-icd,
+  pkg-config,
+  rustPlatform,
+  systemdMinimal,
+  vulkan-loader,
+  vulkan-tools,
+  wrapGAppsHook4,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -34,49 +34,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-/b5Cfexi/RtE3DkON5J3dc4aEX6aLZvIcAhsg6Kdv7M=";
   };
-
-  cargoHash = "sha256-XV37VRbCaxySMgEqXmIA0TUpI9uR+6jGOzdMlEfWxDw=";
-
-  nativeBuildInputs = [
-    pkg-config
-    wrapGAppsHook4
-    rustPlatform.bindgenHook
-    autoAddDriverRunpath
-  ];
-
-  buildInputs = [
-    gdk-pixbuf
-    gtk4
-    libadwaita
-    libdisplay-info
-    libdrm
-    ocl-icd
-    vulkan-loader
-    vulkan-tools
-    hwdata
-    fuse3
-  ];
-
-  checkFlags = [
-    # Requires /dev/fuse, which is unavailable in the Nix build sandbox.
-    "--skip=tests::apply_settings"
-  ];
-
-  # we do this here so that the binary is usable during integration tests
-  env.RUSTFLAGS = lib.optionalString stdenv.targetPlatform.isElf (
-    lib.concatStringsSep " " [
-      "-C link-arg=-Wl,-rpath,${
-        lib.makeLibraryPath [
-          vulkan-loader
-          libdrm
-          ocl-icd
-        ]
-      }"
-      "-C link-arg=-Wl,--add-needed,${vulkan-loader}/lib/libvulkan.so"
-      "-C link-arg=-Wl,--add-needed,${libdrm}/lib/libdrm.so"
-      "-C link-arg=-Wl,--add-needed,${ocl-icd}/lib/libOpenCL.so"
-    ]
-  );
 
   postPatch = ''
     substituteInPlace lact-daemon/src/server/handler.rs \
@@ -106,6 +63,49 @@ rustPlatform.buildRustPackage (finalAttrs: {
       --replace-fail 'Database::read()' 'Database::read_from_file("${hwdata}/share/hwdata/pci.ids")'
   '';
 
+  nativeBuildInputs = [
+    pkg-config
+    wrapGAppsHook4
+    rustPlatform.bindgenHook
+    autoAddDriverRunpath
+  ];
+
+  buildInputs = [
+    gdk-pixbuf
+    gtk4
+    libadwaita
+    libdisplay-info
+    libdrm
+    ocl-icd
+    vulkan-loader
+    vulkan-tools
+    hwdata
+    fuse3
+  ];
+
+  cargoHash = "sha256-XV37VRbCaxySMgEqXmIA0TUpI9uR+6jGOzdMlEfWxDw=";
+
+  # we do this here so that the binary is usable during integration tests
+  env.RUSTFLAGS = lib.optionalString stdenv.targetPlatform.isElf (
+    lib.concatStringsSep " " [
+      "-C link-arg=-Wl,-rpath,${
+        lib.makeLibraryPath [
+          vulkan-loader
+          libdrm
+          ocl-icd
+        ]
+      }"
+      "-C link-arg=-Wl,--add-needed,${vulkan-loader}/lib/libvulkan.so"
+      "-C link-arg=-Wl,--add-needed,${libdrm}/lib/libdrm.so"
+      "-C link-arg=-Wl,--add-needed,${ocl-icd}/lib/libOpenCL.so"
+    ]
+  );
+
+  checkFlags = [
+    # Requires /dev/fuse, which is unavailable in the Nix build sandbox.
+    "--skip=tests::apply_settings"
+  ];
+
   postInstall = ''
     install -Dm444 res/lactd.service -t $out/lib/systemd/system
     install -Dm444 res/io.github.ilya_zlobintsev.LACT.desktop -t $out/share/applications
@@ -132,20 +132,23 @@ rustPlatform.buildRustPackage (finalAttrs: {
     }
   '';
 
-  passthru.updateScript = nix-update-script { };
   passthru.tests = {
     inherit (nixosTests) lact;
   };
+
+  passthru.updateScript = nix-update-script { };
 
   meta = {
     description = "Linux GPU Configuration Tool for AMD and NVIDIA";
     homepage = "https://github.com/ilya-zlobintsev/LACT";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       atemu
       cything
       johnrtitor
     ];
+
     platforms = lib.platforms.linux;
     mainProgram = "lact";
   };

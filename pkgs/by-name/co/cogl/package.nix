@@ -2,28 +2,28 @@
   lib,
   stdenv,
   fetchurl,
-  pkg-config,
-  libGL,
-  glib,
-  gdk-pixbuf,
-  libxrandr,
-  libxfixes,
-  libxdamage,
-  libxcomposite,
-  libintl,
-  pangoSupport ? true,
-  pango,
-  cairo,
-  gobject-introspection,
-  wayland,
-  gnome,
-  libgbm,
-  mesa-gl-headers,
-  automake,
   autoconf,
-  gstreamerSupport ? false,
+  automake,
+  cairo,
+  gdk-pixbuf,
+  glib,
+  gnome,
+  gobject-introspection,
   gst_all_1,
   harfbuzz,
+  libGL,
+  libgbm,
+  libintl,
+  libxcomposite,
+  libxdamage,
+  libxfixes,
+  libxrandr,
+  mesa-gl-headers,
+  pango,
+  pkg-config,
+  wayland,
+  gstreamerSupport ? false,
+  pangoSupport ? true,
 }:
 
 stdenv.mkDerivation rec {
@@ -35,6 +35,11 @@ stdenv.mkDerivation rec {
     sha256 = "0nfph4ai60ncdx7hy6hl1i1cmp761jgnyjfhagzi0iqq36qb41d8";
   };
 
+  outputs = [
+    "out"
+    "dev"
+  ];
+
   patches = [
     # Some deepin packages need the following patches. They have been
     # submitted by Fedora on the GNOME Bugzilla
@@ -42,11 +47,6 @@ stdenv.mkDerivation rec {
     # could be merged, but dev can not make a new release.
     ./patches/gnome_bugzilla_787443_359589_deepin.patch
     ./patches/gnome_bugzilla_787443_361056_deepin.patch
-  ];
-
-  outputs = [
-    "out"
-    "dev"
   ];
 
   nativeBuildInputs = [
@@ -57,25 +57,10 @@ stdenv.mkDerivation rec {
     gobject-introspection
   ];
 
-  configureFlags = [
-    "--enable-introspection"
-  ]
-  ++ lib.optionals (!stdenv.hostPlatform.isDarwin) [
-    "--enable-kms-egl-platform"
-    "--enable-wayland-egl-platform"
-    "--enable-wayland-egl-server"
-    "--enable-gles1"
-    "--enable-gles2"
-    # Force linking against libGL.
-    # Otherwise, it tries to load it from the runtime library path.
-    "LIBS=-lGL"
-  ]
-  ++ lib.optionals stdenv.hostPlatform.isDarwin [
-    "--disable-glx"
-    "--without-x"
-  ]
-  ++ lib.optionals gstreamerSupport [
-    "--enable-cogl-gst"
+  buildInputs = lib.optionals pangoSupport [
+    pango
+    cairo
+    harfbuzz
   ];
 
   # TODO: this shouldn't propagate so many things
@@ -100,10 +85,25 @@ stdenv.mkDerivation rec {
     gst_all_1.gst-plugins-base
   ];
 
-  buildInputs = lib.optionals pangoSupport [
-    pango
-    cairo
-    harfbuzz
+  configureFlags = [
+    "--enable-introspection"
+  ]
+  ++ lib.optionals (!stdenv.hostPlatform.isDarwin) [
+    "--enable-kms-egl-platform"
+    "--enable-wayland-egl-platform"
+    "--enable-wayland-egl-server"
+    "--enable-gles1"
+    "--enable-gles2"
+    # Force linking against libGL.
+    # Otherwise, it tries to load it from the runtime library path.
+    "LIBS=-lGL"
+  ]
+  ++ lib.optionals stdenv.hostPlatform.isDarwin [
+    "--disable-glx"
+    "--without-x"
+  ]
+  ++ lib.optionals gstreamerSupport [
+    "--enable-cogl-gst"
   ];
 
   env = {
@@ -114,6 +114,7 @@ stdenv.mkDerivation rec {
         "-I${harfbuzz.dev}/include/harfbuzz"
       ]
     );
+
     NIX_CFLAGS_COMPILE = toString (
       [ ]
       ++ lib.optional stdenv.cc.isGNU [
@@ -127,7 +128,6 @@ stdenv.mkDerivation rec {
   };
 
   #doCheck = true; # all tests fail (no idea why)
-
   passthru = {
     updateScript = gnome.updateScript {
       packageName = pname;
@@ -137,7 +137,6 @@ stdenv.mkDerivation rec {
 
   meta = {
     description = "Small open source library for using 3D graphics hardware for rendering";
-    maintainers = [ ];
 
     longDescription = ''
       Cogl is a small open source library for using 3D graphics hardware for
@@ -146,12 +145,14 @@ stdenv.mkDerivation rec {
       render without stepping on each other's toes.
     '';
 
-    platforms = lib.platforms.unix;
     license = with lib.licenses; [
       mit
       bsd3
       publicDomain
       sgi-b-20
     ];
+
+    maintainers = [ ];
+    platforms = lib.platforms.unix;
   };
 }

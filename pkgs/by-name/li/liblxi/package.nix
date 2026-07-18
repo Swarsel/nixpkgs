@@ -2,14 +2,14 @@
   lib,
   stdenv,
   fetchFromGitHub,
+  avahi,
+  cmake,
+  libtirpc,
+  libxml2,
   meson,
   ninja,
   pkg-config,
-  cmake,
-  libtirpc,
   rpcsvc-proto,
-  avahi,
-  libxml2,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -49,15 +49,17 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Library for communicating with LXI compatible instruments";
+
     longDescription = ''
       liblxi is an open source software library which offers a simple
       API for communicating with LXI compatible instruments.
       The API allows applications to easily discover instruments
       on networks and communicate SCPI commands.
     '';
+
     homepage = "https://lxi-tools.github.io/";
     license = lib.licenses.bsd3;
-    platforms = lib.platforms.unix;
     maintainers = [ lib.maintainers.vq ];
+    platforms = lib.platforms.unix;
   };
 })

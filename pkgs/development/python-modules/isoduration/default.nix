@@ -1,8 +1,8 @@
 {
   lib,
+  fetchFromGitHub,
   arrow,
   buildPythonPackage,
-  fetchFromGitHub,
   hypothesis,
   isodate,
   pytestCheckHook,
@@ -11,7 +11,6 @@
 buildPythonPackage rec {
   pname = "isoduration";
   version = "20.11.0";
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "bolsote";
@@ -33,6 +32,7 @@ buildPythonPackage rec {
     "tests/test_benchmark.py"
   ];
 
+  format = "setuptools";
   pythonImportsCheck = [ "isoduration" ];
 
   meta = {

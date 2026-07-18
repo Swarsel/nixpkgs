@@ -1,9 +1,9 @@
 {
   lib,
   stdenv,
-  fetchFromCodeberg,
   blueprint-compiler,
   desktop-file-utils,
+  fetchFromCodeberg,
   gst_all_1,
   gtk4,
   libpulseaudio,
@@ -59,7 +59,7 @@ stdenv.mkDerivation (finalAttrs: {
     homepage = "https://codeberg.org/stronnag/wayfarer";
     license = lib.licenses.gpl3Plus;
     maintainers = with lib.maintainers; [ fgaz ];
-    mainProgram = "wayfarer";
     platforms = lib.subtractLists lib.platforms.darwin lib.platforms.unix;
+    mainProgram = "wayfarer";
   };
 })

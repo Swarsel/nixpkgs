@@ -1,22 +1,21 @@
 {
+  lib,
+  stdenv,
+  fetchFromGitHub,
   buildNpmPackage,
   cargo-tauri,
   copyDesktopItems,
-  fetchFromGitHub,
   fetchNpmDeps,
   glib-networking,
-  lib,
   makeDesktopItem,
   nodejs,
   openssl,
   pkg-config,
   rustPlatform,
-  stdenv,
   webkitgtk_4_1,
   wrapGAppsHook4,
 }:
 rustPlatform.buildRustPackage (finalAttrs: {
-  __structuredAttrs = true;
   pname = "flightcore";
   version = "3.2.2";
 
@@ -26,57 +25,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-eTRtd616hWHgj3wg+jtrt/tFkaxUeKSN0d+XO1CghsE=";
   };
-
-  npmDeps = fetchNpmDeps {
-    inherit (finalAttrs) pname version src;
-
-    # Hash of dependencies fetched from upstream's `package-lock.json` file.
-    hash = "sha256-+xrNKFcCatqbl79j/tSLFNTYjxXANFb3/vgWXYY2PGo=";
-  };
-
-  frontend = buildNpmPackage {
-    pname = "${finalAttrs.pname}-frontend";
-    inherit (finalAttrs) version src;
-    sourceRoot = "source/src-vue";
-
-    # Hash of dependencies fetched from upstream's `src-vue/package-lock.json`
-    # file.
-    npmDepsHash = "sha256-2PiMB9X/tp1QtTfUgVnH6caE+m2QSKTMYxPUHAUPWhQ=";
-
-    installPhase = ''
-      runHook preInstall
-
-      mkdir -p "$out"
-      cp -a dist "$out"
-
-      runHook postInstall
-    '';
-  };
-
-  cargoHash = "sha256-weidVeEIo3IIV+Xwe1htV46fRymOo5aRzHAEKQwKbvU=";
-
-  cargoRoot = "src-tauri";
-  buildAndTestSubdir = finalAttrs.cargoRoot;
-
-  # This override does the following:
-  #
-  # * Disables creating updater artifacts - the default behavior causes issues
-  #   with building the package, but since it is going to be distributed via a
-  #   software repository, it won't need to auto-update itself anyways.
-  #
-  # * Empties `beforeBuildCommand` - the upstream Tauri configuration includes
-  #   commands that automatically build the software's front-end, before
-  #   building its back-end. However, since Nixpkgs requires NPM dependencies
-  #   to be hashed, we need to build the front-end in a separate step.
-  #
-  #   This way, we end up fetching the NPM dependencies from both
-  #   `source/package.json`, and `source/src-vue/package.json`.
-  tauriBuildFlags = "-c ${./override-tauri.conf.json}";
-
-  # Copy [frontend] to where it can be picked up by Tauri.
-  preBuild = ''
-    ln -s "${finalAttrs.frontend}"/dist src-vue
-  '';
 
   nativeBuildInputs = [
     cargo-tauri.hook
@@ -94,27 +42,79 @@ rustPlatform.buildRustPackage (finalAttrs: {
     webkitgtk_4_1
   ];
 
+  cargoHash = "sha256-weidVeEIo3IIV+Xwe1htV46fRymOo5aRzHAEKQwKbvU=";
+
+  # Copy [frontend] to where it can be picked up by Tauri.
+  preBuild = ''
+    ln -s "${finalAttrs.frontend}"/dist src-vue
+  '';
+
+  __structuredAttrs = true;
+  buildAndTestSubdir = finalAttrs.cargoRoot;
+  cargoRoot = "src-tauri";
+
   desktopItems = [
     (makeDesktopItem {
-      name = "FlightCore";
-      desktopName = "FlightCore";
-      exec = "flightcore";
-      icon = "flightcore";
-      comment = finalAttrs.meta.description;
       categories = [
         "Game"
         "PackageManager"
       ];
+
+      comment = finalAttrs.meta.description;
+      desktopName = "FlightCore";
+      exec = "flightcore";
+      icon = "flightcore";
+      name = "FlightCore";
       terminal = false;
     })
   ];
+
+  frontend = buildNpmPackage {
+    inherit (finalAttrs) version src;
+    pname = "${finalAttrs.pname}-frontend";
+    # Hash of dependencies fetched from upstream's `src-vue/package-lock.json`
+    # file.
+    npmDepsHash = "sha256-2PiMB9X/tp1QtTfUgVnH6caE+m2QSKTMYxPUHAUPWhQ=";
+
+    installPhase = ''
+      runHook preInstall
+
+      mkdir -p "$out"
+      cp -a dist "$out"
+
+      runHook postInstall
+    '';
+
+    sourceRoot = "source/src-vue";
+  };
+
+  npmDeps = fetchNpmDeps {
+    inherit (finalAttrs) pname version src;
+    # Hash of dependencies fetched from upstream's `package-lock.json` file.
+    hash = "sha256-+xrNKFcCatqbl79j/tSLFNTYjxXANFb3/vgWXYY2PGo=";
+  };
+
+  # This override does the following:
+  #
+  # * Disables creating updater artifacts - the default behavior causes issues
+  #   with building the package, but since it is going to be distributed via a
+  #   software repository, it won't need to auto-update itself anyways.
+  #
+  # * Empties `beforeBuildCommand` - the upstream Tauri configuration includes
+  #   commands that automatically build the software's front-end, before
+  #   building its back-end. However, since Nixpkgs requires NPM dependencies
+  #   to be hashed, we need to build the front-end in a separate step.
+  #
+  #   This way, we end up fetching the NPM dependencies from both
+  #   `source/package.json`, and `source/src-vue/package.json`.
+  tauriBuildFlags = "-c ${./override-tauri.conf.json}";
 
   meta = {
     description = "Updater and mod manager for Northstar";
     homepage = "https://github.com/R2NorthstarTools/FlightCore";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ username-generic ];
-    mainProgram = "flightcore";
     platforms = lib.platforms.all;
+    mainProgram = "flightcore";
   };
 })

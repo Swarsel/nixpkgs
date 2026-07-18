@@ -1,32 +1,27 @@
 {
   lib,
-  buildPythonPackage,
-  fetchPypi,
-
-  # build-system
-  setuptools,
-
   # dependencies
   brotlicffi,
+  buildPythonPackage,
   decorator,
+  fetchPypi,
   flasgger,
   flask,
+  gevent,
   greenlet,
-  six,
-  werkzeug,
-
   # optional-dependencies
   gunicorn,
-  gevent,
-
   # tests
   pytestCheckHook,
+  # build-system
+  setuptools,
+  six,
+  werkzeug,
 }:
 
 buildPythonPackage rec {
   pname = "httpbin";
   version = "0.10.2";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
@@ -37,8 +32,6 @@ buildPythonPackage rec {
     setuptools
   ];
 
-  pythonRelaxDeps = [ "greenlet" ];
-
   propagatedBuildInputs = [
     brotlicffi
     decorator
@@ -48,13 +41,6 @@ buildPythonPackage rec {
     six
     werkzeug
   ];
-
-  optional-dependencies = {
-    mainapp = [
-      gunicorn
-      gevent
-    ];
-  };
 
   nativeCheckInputs = [ pytestCheckHook ];
 
@@ -69,7 +55,16 @@ buildPythonPackage rec {
     "test_relative_redirect_n_higher_than_1"
   ];
 
+  optional-dependencies = {
+    mainapp = [
+      gunicorn
+      gevent
+    ];
+  };
+
+  pyproject = true;
   pythonImportsCheck = [ "httpbin" ];
+  pythonRelaxDeps = [ "greenlet" ];
 
   meta = {
     description = "HTTP Request and Response Service";

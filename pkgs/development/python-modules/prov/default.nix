@@ -4,15 +4,14 @@
   fetchPypi,
   lxml,
   networkx,
+  pydot,
   python-dateutil,
   rdflib,
-  pydot,
 }:
 
 buildPythonPackage rec {
   pname = "prov";
   version = "2.1.1";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
@@ -26,11 +25,10 @@ buildPythonPackage rec {
     rdflib
   ];
 
-  nativeCheckInputs = [ pydot ];
-
   # Multiple tests are out-dated and failing
   doCheck = false;
-
+  nativeCheckInputs = [ pydot ];
+  format = "setuptools";
   pythonImportsCheck = [ "prov" ];
 
   meta = {

@@ -1,14 +1,13 @@
 {
   lib,
-  python3Packages,
   fetchFromGitHub,
   bibtool,
+  python3Packages,
 }:
 
 python3Packages.buildPythonApplication {
   pname = "termpdf.py";
   version = "2022-03-28";
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "dsanson";
@@ -33,15 +32,17 @@ python3Packages.buildPythonApplication {
 
   # upstream doesn't contain tests
   doCheck = false;
+  format = "setuptools";
 
   meta = {
     description = ''
       A graphical pdf (and epub, cbz, ...) reader that works
       inside the kitty terminal.
     '';
-    mainProgram = "termpdf.py";
+
     homepage = "https://github.com/dsanson/termpdf.py";
-    maintainers = with lib.maintainers; [ teto ];
     license = lib.licenses.mit;
+    maintainers = with lib.maintainers; [ teto ];
+    mainProgram = "termpdf.py";
   };
 }

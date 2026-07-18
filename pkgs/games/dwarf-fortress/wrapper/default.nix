@@ -1,38 +1,38 @@
 {
-  stdenv,
   lib,
+  stdenv,
+  SDL2_mixer,
   buildEnv,
-  replaceVars,
-  makeWrapper,
-  runCommand,
   coreutils,
-  gawk,
+  dfhack,
   dwarf-fortress,
   dwarf-therapist,
-  SDL2_mixer,
-  enableDFHack ? false,
-  dfhack,
-  enableSoundSense ? false,
-  soundSense,
-  jre,
   expect,
-  xvfb-run,
-  writeText,
-  enableStoneSense ? enableDFHack,
-  enableTWBT ? false,
+  gawk,
+  jre,
+  makeWrapper,
+  replaceVars,
+  runCommand,
+  soundSense,
   twbt,
-  themes ? { },
-  theme ? null,
-  extraPackages ? [ ],
+  writeText,
+  xvfb-run,
+  enableDFHack ? false,
+  enableFPS ? false,
   # General config options:
   enableIntro ? true,
-  enableTruetype ? null, # defaults to 24, see init.txt
-  enableFPS ? false,
-  enableTextMode ? false,
   enableSound ? true,
+  enableSoundSense ? false,
+  enableStoneSense ? enableDFHack,
+  enableTWBT ? false,
+  enableTextMode ? false,
+  enableTruetype ? null, # defaults to 24, see init.txt
+  extraPackages ? [ ],
   # An attribute set of settings to override in data/init/*.txt.
   # For example, `init.FOO = true;` is translated to `[FOO:YES]` in init.txt
   settings ? { },
+  theme ? null,
+  themes ? { },
   # TODO world-gen.txt, interface.txt require special logic
 }:
 
@@ -49,6 +49,7 @@ let
   ptheme = if builtins.isString theme then builtins.getAttr theme themes else theme;
 
   baseEnv = buildEnv {
+    ignoreCollisions = true;
     name = "dwarf-fortress-base-env-${dwarf-fortress.dfVersion}";
 
     # These are in inverse order for first packages to override the next ones.
@@ -62,12 +63,13 @@ let
         twbt.art
       ]
       ++ [ dwarf-fortress ];
-
-    ignoreCollisions = true;
   };
 
   settings' = lib.recursiveUpdate {
     init = {
+      FPS = enableFPS;
+      INTRO = enableIntro;
+
       PRINT_MODE =
         if enableTextMode then
           "TEXT"
@@ -77,10 +79,9 @@ let
           "STANDARD" # https://www.bay12games.com/dwarves/mantisbt/view.php?id=11680
         else
           null;
-      INTRO = enableIntro;
-      TRUETYPE = enableTruetype;
-      FPS = enableFPS;
+
       SOUND = enableSound;
+      TRUETYPE = enableTruetype;
     };
   } settings;
 
@@ -164,12 +165,13 @@ let
   # This is a separate environment because the config files to modify may come
   # from any of the paths in baseEnv.
   env = buildEnv {
+    ignoreCollisions = true;
     name = "dwarf-fortress-env-${dwarf-fortress.dfVersion}";
+
     paths = [
       config
       baseEnv
     ];
-    ignoreCollisions = true;
   };
 in
 
@@ -183,38 +185,10 @@ lib.throwIf (enableTWBT' && !enableDFHack) "dwarf-fortress: TWBT requires DFHack
 
   stdenv.mkDerivation
   {
+    inherit (dwarf-fortress) meta;
     pname = "dwarf-fortress";
     version = dwarf-fortress.dfVersion;
 
-    dfInit = replaceVars ./dwarf-fortress-init.in {
-      inherit env;
-      stdenv_shell = "${stdenv.shell}";
-      cp = "${coreutils}/bin/cp";
-      rm = "${coreutils}/bin/rm";
-      ln = "${coreutils}/bin/ln";
-      cat = "${coreutils}/bin/cat";
-      mkdir = "${coreutils}/bin/mkdir";
-      printf = "${coreutils}/bin/printf";
-      uname = "${coreutils}/bin/uname";
-      SDL2_mixer = "${SDL2_mixer}/lib/libSDL2_mixer.so";
-    };
-
-    runDF = ./dwarf-fortress.in;
-    runSoundSense = ./soundSense.in;
-
-    passthru = {
-      inherit
-        dwarf-fortress
-        dwarf-therapist
-        twbt
-        env
-        ;
-      dfhack = dfhack';
-    };
-
-    dontUnpack = true;
-    dontBuild = true;
-    preferLocalBuild = true;
     installPhase = ''
       mkdir -p $out/bin
 
@@ -240,6 +214,7 @@ lib.throwIf (enableTWBT' && !enableDFHack) "dwarf-fortress: TWBT requires DFHack
     '';
 
     doInstallCheck = stdenv.hostPlatform.isLinux;
+
     nativeInstallCheckInputs = lib.optionals stdenv.hostPlatform.isLinux [
       expect
       xvfb-run
@@ -301,5 +276,33 @@ lib.throwIf (enableTWBT' && !enableDFHack) "dwarf-fortress: TWBT requires DFHack
         test -d "$df_home/data"
       '';
 
-    inherit (dwarf-fortress) meta;
+    dfInit = replaceVars ./dwarf-fortress-init.in {
+      inherit env;
+      SDL2_mixer = "${SDL2_mixer}/lib/libSDL2_mixer.so";
+      cat = "${coreutils}/bin/cat";
+      cp = "${coreutils}/bin/cp";
+      ln = "${coreutils}/bin/ln";
+      mkdir = "${coreutils}/bin/mkdir";
+      printf = "${coreutils}/bin/printf";
+      rm = "${coreutils}/bin/rm";
+      stdenv_shell = "${stdenv.shell}";
+      uname = "${coreutils}/bin/uname";
+    };
+
+    dontBuild = true;
+    dontUnpack = true;
+    preferLocalBuild = true;
+    runDF = ./dwarf-fortress.in;
+    runSoundSense = ./soundSense.in;
+
+    passthru = {
+      inherit
+        dwarf-fortress
+        dwarf-therapist
+        twbt
+        env
+        ;
+
+      dfhack = dfhack';
+    };
   }

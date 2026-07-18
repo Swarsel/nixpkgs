@@ -17,11 +17,6 @@ in
     package = lib.mkPackageOption pkgs "tpm2-totp" { default = "tpm2-totp-with-plymouth"; };
   };
 
-  meta = {
-    maintainers = with lib.maintainers; [ majiir ];
-    doc = ./plymouth-tpm2-totp.md;
-  };
-
   config = lib.mkIf cfg.enable {
     assertions = [
       {
@@ -30,9 +25,24 @@ in
       }
     ];
 
-    environment.systemPackages = [
-      cfg.package
-    ];
+    # Based on https://github.com/tpm2-software/tpm2-totp/blob/9bcfdcbfdd42e0b2e1d7769852009608f889631c/dist/plymouth-tpm2-totp.service.in
+    boot.initrd.systemd.services.plymouth-tpm2-totp = {
+      after = [
+        "plymouth-start.service"
+        "tpm2.target"
+      ];
+
+      description = "Display a TOTP during boot using Plymouth";
+      requires = [ "plymouth-start.service" ];
+
+      serviceConfig = {
+        ExecStart = "${cfg.package}/libexec/tpm2-totp/plymouth-tpm2-totp";
+        Type = "exec";
+      };
+
+      unitConfig.DefaultDependencies = false;
+      wantedBy = [ "sysinit.target" ];
+    };
 
     boot.initrd.systemd.storePaths = [
       "${cfg.package}/libexec/tpm2-totp/plymouth-tpm2-totp"
@@ -40,20 +50,13 @@ in
       "${cfg.package}/lib/libtpm2-totp.so.0.0.0"
     ];
 
-    # Based on https://github.com/tpm2-software/tpm2-totp/blob/9bcfdcbfdd42e0b2e1d7769852009608f889631c/dist/plymouth-tpm2-totp.service.in
-    boot.initrd.systemd.services.plymouth-tpm2-totp = {
-      description = "Display a TOTP during boot using Plymouth";
-      requires = [ "plymouth-start.service" ];
-      after = [
-        "plymouth-start.service"
-        "tpm2.target"
-      ];
-      wantedBy = [ "sysinit.target" ];
-      unitConfig.DefaultDependencies = false;
-      serviceConfig = {
-        Type = "exec";
-        ExecStart = "${cfg.package}/libexec/tpm2-totp/plymouth-tpm2-totp";
-      };
-    };
+    environment.systemPackages = [
+      cfg.package
+    ];
+  };
+
+  meta = {
+    doc = ./plymouth-tpm2-totp.md;
+    maintainers = with lib.maintainers; [ majiir ];
   };
 }

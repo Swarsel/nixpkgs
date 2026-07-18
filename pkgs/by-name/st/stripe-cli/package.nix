@@ -1,21 +1,16 @@
 {
   lib,
-  buildGoModule,
-  fetchFromGitHub,
-  installShellFiles,
   stdenv,
-
-  writableTmpDirAsHomeHook,
-
+  fetchFromGitHub,
+  buildGoModule,
   buildPackages,
+  installShellFiles,
+  writableTmpDirAsHomeHook,
 }:
 
 buildGoModule (finalAttrs: {
   pname = "stripe-cli";
   version = "1.43.2";
-
-  # required for tests
-  __darwinAllowLocalNetworking = true;
 
   src = fetchFromGitHub {
     owner = "stripe";
@@ -23,20 +18,32 @@ buildGoModule (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-FopjU7m6RbEJTekIFG2XppZ52U/TrFpipVUDWwngPJI=";
   };
-  vendorHash = "sha256-6z6jfRMmEll1703xUJYSc4WU7CN7tMMyidNtay6vo2M=";
 
   nativeBuildInputs = [ installShellFiles ];
-
-  ldflags = [
-    "-s"
-    "-w"
-    "-X github.com/stripe/stripe-cli/pkg/version.Version=${finalAttrs.version}"
-  ];
+  vendorHash = "sha256-6z6jfRMmEll1703xUJYSc4WU7CN7tMMyidNtay6vo2M=";
 
   nativeCheckInputs = [
     # required by pkg/rpcservice/sample_create_test.go
     writableTmpDirAsHomeHook
   ];
+
+  checkFlags =
+    let
+      skippedTests = [
+        # network access
+        "TestConflictWithPluginCommand"
+        "TestLogin"
+        "TestRefreshPluginManifestSucceedsIfNoAPIKey"
+
+        # not providing git or the various editors it wants to call
+        "TestGetOpenEditorCommand"
+        "TestGetDefaultGitEditor"
+
+        # broken for aarch64
+        "TestGetReleaseForVersion"
+      ];
+    in
+    [ "-skip=^${lib.concatStringsSep "$|^" skippedTests}$" ];
 
   preCheck = ''
     # the tests expect the Version ldflag not to be set
@@ -57,24 +64,6 @@ buildGoModule (finalAttrs: {
         rm pkg/plugins/plugin_test.go
       '';
 
-  checkFlags =
-    let
-      skippedTests = [
-        # network access
-        "TestConflictWithPluginCommand"
-        "TestLogin"
-        "TestRefreshPluginManifestSucceedsIfNoAPIKey"
-
-        # not providing git or the various editors it wants to call
-        "TestGetOpenEditorCommand"
-        "TestGetDefaultGitEditor"
-
-        # broken for aarch64
-        "TestGetReleaseForVersion"
-      ];
-    in
-    [ "-skip=^${lib.concatStringsSep "$|^" skippedTests}$" ];
-
   postInstall =
     let
       inherit (finalAttrs.meta) mainProgram;
@@ -91,10 +80,18 @@ buildGoModule (finalAttrs: {
         --zsh <(${exe} completion --write-to-stdout --shell zsh)
     '';
 
+  # required for tests
+  __darwinAllowLocalNetworking = true;
+
+  ldflags = [
+    "-s"
+    "-w"
+    "-X github.com/stripe/stripe-cli/pkg/version.Version=${finalAttrs.version}"
+  ];
+
   meta = {
-    homepage = "https://stripe.com/docs/stripe-cli";
-    changelog = "https://github.com/stripe/stripe-cli/releases/tag/${finalAttrs.src.tag}";
     description = "Command-line tool for Stripe";
+
     longDescription = ''
       The Stripe CLI helps you build, test, and manage your Stripe integration
       right from the terminal.
@@ -105,12 +102,17 @@ buildGoModule (finalAttrs: {
       Tail your API request logs in real-time
       Create, retrieve, update, or delete API objects.
     '';
+
+    homepage = "https://stripe.com/docs/stripe-cli";
+    changelog = "https://github.com/stripe/stripe-cli/releases/tag/${finalAttrs.src.tag}";
     license = with lib.licenses; [ asl20 ];
+
     maintainers = with lib.maintainers; [
       RaghavSood
       jk
       kashw2
     ];
+
     mainProgram = "stripe";
   };
 })

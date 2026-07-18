@@ -1,24 +1,25 @@
 {
   lib,
-  mkCoqDerivation,
   coq,
-  mathcomp-ssreflect,
   mathcomp-algebra,
   mathcomp-fingroup,
+  mathcomp-ssreflect,
+  mkCoqDerivation,
   paramcoq,
   version ? null,
 }:
 
 mkCoqDerivation {
-  pname = "addition-chains";
-  repo = "hydra-battles";
-
-  release."0.4".hash = "sha256:1f7pc4w3kir4c9p0fjx5l77401bx12y72nmqxrqs3qqd3iynvqlp";
-  release."0.5".hash = "sha256:121pcbn6v59l0c165ha9n00whbddpy11npx2y9cn7g879sfk2nqk";
-  release."0.6".hash = "sha256:1dri4sisa7mhclf8w4kw7ixs5zxm8xyjr034r1377p96rdk3jj0j";
-  releaseRev = (v: "v${v}");
-
   inherit version;
+  pname = "addition-chains";
+
+  propagatedBuildInputs = [
+    mathcomp-ssreflect
+    mathcomp-algebra
+    mathcomp-fingroup
+    paramcoq
+  ];
+
   defaultVersion =
     with lib.versions;
     lib.switch coq.coq-version [
@@ -32,25 +33,25 @@ mkCoqDerivation {
       }
     ] null;
 
-  propagatedBuildInputs = [
-    mathcomp-ssreflect
-    mathcomp-algebra
-    mathcomp-fingroup
-    paramcoq
-  ];
-
+  release."0.4".hash = "sha256:1f7pc4w3kir4c9p0fjx5l77401bx12y72nmqxrqs3qqd3iynvqlp";
+  release."0.5".hash = "sha256:121pcbn6v59l0c165ha9n00whbddpy11npx2y9cn7g879sfk2nqk";
+  release."0.6".hash = "sha256:1dri4sisa7mhclf8w4kw7ixs5zxm8xyjr034r1377p96rdk3jj0j";
+  releaseRev = (v: "v${v}");
+  repo = "hydra-battles";
   useDune = true;
 
   meta = {
     description = "Exponentiation algorithms following addition chains";
+
     longDescription = ''
       Addition chains are algorithms for computations of the p-th
       power of some x, with the least number of multiplication as
       possible. We present a few implementations of addition chains,
       with proofs of their correctness.
     '';
-    maintainers = with lib.maintainers; [ Zimmi48 ];
+
     license = lib.licenses.mit;
+    maintainers = with lib.maintainers; [ Zimmi48 ];
     platforms = lib.platforms.unix;
   };
 }

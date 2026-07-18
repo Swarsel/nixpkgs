@@ -9,7 +9,6 @@
 buildPythonPackage rec {
   pname = "dotty-dict";
   version = "1.3.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "pawelzny";
@@ -18,11 +17,10 @@ buildPythonPackage rec {
     hash = "sha256-kY7o9wgfsV7oc5twOeuhG47C0Js6JzCt02S9Sd8dSGc=";
   };
 
-  build-system = [ poetry-core ];
-
-  pythonImportsCheck = [ "dotty_dict" ];
-
   nativeCheckInputs = [ pytestCheckHook ];
+  build-system = [ poetry-core ];
+  pyproject = true;
+  pythonImportsCheck = [ "dotty_dict" ];
 
   meta = {
     description = "Dictionary wrapper for quick access to deeply nested keys";

@@ -1,10 +1,10 @@
 {
   lib,
+  fetchFromGitHub,
   buildPythonPackage,
   callPackage,
-  fetchFromGitHub,
-  pythonOlder,
   pytest,
+  pythonOlder,
   setuptools-scm,
   typing-extensions,
 }:
@@ -12,7 +12,6 @@
 buildPythonPackage rec {
   pname = "pytest-asyncio";
   version = "1.4.0"; # N.B.: when updating, tests bleak and aioesphomeapi tests
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "pytest-dev";
@@ -26,25 +25,24 @@ buildPythonPackage rec {
     "testout"
   ];
 
-  build-system = [ setuptools-scm ];
-
-  pythonRelaxDeps = [ "pytest" ];
-
   buildInputs = [ pytest ];
-
-  dependencies = lib.optionals (pythonOlder "3.13") [
-    typing-extensions
-  ];
+  doCheck = false;
 
   postInstall = ''
     mkdir $testout
     cp -R tests $testout/tests
   '';
 
-  doCheck = false;
-  passthru.tests.pytest = callPackage ./tests.nix { };
+  build-system = [ setuptools-scm ];
 
+  dependencies = lib.optionals (pythonOlder "3.13") [
+    typing-extensions
+  ];
+
+  pyproject = true;
   pythonImportsCheck = [ "pytest_asyncio" ];
+  pythonRelaxDeps = [ "pytest" ];
+  passthru.tests.pytest = callPackage ./tests.nix { };
 
   meta = {
     description = "Library for testing asyncio code with pytest";

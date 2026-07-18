@@ -11,12 +11,12 @@ let
 in
 pkgs.mkShell {
 
+  EMACS2NIX = src;
+
   packages = [
     pkgs.bash
     pkgs.nixfmt
   ];
-
-  EMACS2NIX = src;
 
   shellHook = ''
     export PATH=$PATH:${src}

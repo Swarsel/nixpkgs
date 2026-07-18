@@ -2,15 +2,15 @@
   lib,
   stdenv,
   fetchurl,
-  dpkg,
-  autoPatchelfHook,
-  makeWrapper,
-  electron,
-  asar,
   alsa-lib,
+  asar,
+  autoPatchelfHook,
+  dpkg,
+  electron,
   gtk3,
-  libxshmfence,
   libgbm,
+  libxshmfence,
+  makeWrapper,
   nss,
 }:
 
@@ -19,9 +19,9 @@ stdenv.mkDerivation rec {
   version = "4.0.4";
 
   src = fetchurl {
-    name = "morgen-${version}.deb";
     url = "https://dl.todesktop.com/210203cqcj00tw1/versions/${version}/linux/deb";
     hash = "sha256-BAUZAylPJKKUcR3VXQ2pm5VDuJjxM9AnDzujZvuE3BA=";
+    name = "morgen-${version}.deb";
   };
 
   nativeBuildInputs = [
@@ -67,10 +67,10 @@ stdenv.mkDerivation rec {
   meta = {
     description = "All-in-one Calendars, Tasks and Scheduler";
     homepage = "https://morgen.so/";
-    mainProgram = "morgen";
-    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
     license = lib.licenses.unfree;
+    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
     maintainers = with lib.maintainers; [ justanotherariel ];
     platforms = [ "x86_64-linux" ];
+    mainProgram = "morgen";
   };
 }

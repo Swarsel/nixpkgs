@@ -1,17 +1,17 @@
 {
   lib,
-  gcc15Stdenv,
-  cmake,
   fetchFromGitHub,
-  pkg-config,
+  cmake,
+  gcc15Stdenv,
   hyprland-protocols,
   hyprlang,
   hyprutils,
   hyprwayland-scanner,
+  nix-update-script,
+  pkg-config,
   wayland,
   wayland-protocols,
   wayland-scanner,
-  nix-update-script,
 }:
 gcc15Stdenv.mkDerivation (finalAttrs: {
   pname = "hyprsunset";
@@ -29,6 +29,8 @@ gcc15Stdenv.mkDerivation (finalAttrs: {
     substituteInPlace CMakeLists.txt --replace-fail "hyprwayland-scanner>=0.4.0" ""
   '';
 
+  strictDeps = true;
+
   nativeBuildInputs = [
     cmake
     pkg-config
@@ -44,8 +46,6 @@ gcc15Stdenv.mkDerivation (finalAttrs: {
     wayland-scanner
   ];
 
-  strictDeps = true;
-
   cmakeBuildType = "RelWithDebInfo";
   separateDebugInfo = true;
 
@@ -54,13 +54,13 @@ gcc15Stdenv.mkDerivation (finalAttrs: {
   };
 
   meta = {
+    description = "Application to enable a blue-light filter on Hyprland";
     homepage = "https://github.com/hyprwm/hyprsunset";
     changelog = "https://github.com/hyprwm/hyprsunset/releases/tag/${finalAttrs.src.tag}";
-    description = "Application to enable a blue-light filter on Hyprland";
     license = lib.licenses.bsd3;
-    platforms = lib.platforms.linux;
-    teams = [ lib.teams.hyprland ];
     maintainers = with lib.maintainers; [ logger ];
+    platforms = lib.platforms.linux;
     mainProgram = "hyprsunset";
+    teams = [ lib.teams.hyprland ];
   };
 })

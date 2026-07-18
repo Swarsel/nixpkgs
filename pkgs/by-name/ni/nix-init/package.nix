@@ -1,22 +1,22 @@
 {
   lib,
-  writeText,
-  rustPlatform,
   fetchFromGitHub,
+  bzip2,
   curl,
   installShellFiles,
-  pkg-config,
-  bzip2,
   libgit2,
+  nix,
+  nix-update-script,
+  nurl,
   openssl,
+  pkg-config,
+  rustPlatform,
+  spdx-license-list-data,
   sqlite,
+  versionCheckHook,
+  writeText,
   zlib,
   zstd,
-  spdx-license-list-data,
-  nix,
-  nurl,
-  versionCheckHook,
-  nix-update-script,
 }:
 
 let
@@ -36,7 +36,10 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-9UEGGtNm5XpcBA/80v03XEunWshgM0M35TrJ79PQNG8=";
   };
 
-  cargoHash = "sha256-cRnyTuUIRUFPWUle7/bcqcZ9LjvhRuK2tF++hoMl+xs=";
+  postPatch = ''
+    mkdir -p data
+    ln -s ${get-nix-license} data/get_nix_license.rs
+  '';
 
   nativeBuildInputs = [
     curl
@@ -54,29 +57,7 @@ rustPlatform.buildRustPackage (finalAttrs: {
     zstd
   ];
 
-  buildNoDefaultFeatures = true;
-
-  checkFlags = [
-    # require internet access
-    "--skip=e2e"
-    "--skip=lang::rust::tests"
-  ];
-
-  postPatch = ''
-    mkdir -p data
-    ln -s ${get-nix-license} data/get_nix_license.rs
-  '';
-
-  preBuild = ''
-    cargo run -p license-store-cache \
-      -j $NIX_BUILD_CORES --frozen \
-      data/license-store-cache.zstd ${spdx-license-list-data.json}/json/details
-  '';
-
-  postInstall = ''
-    installManPage artifacts/nix-init.1
-    installShellCompletion artifacts/nix-init.{bash,fish} --zsh artifacts/_nix-init
-  '';
+  cargoHash = "sha256-cRnyTuUIRUFPWUle7/bcqcZ9LjvhRuK2tF++hoMl+xs=";
 
   env = {
     GEN_ARTIFACTS = "artifacts";
@@ -87,20 +68,39 @@ rustPlatform.buildRustPackage (finalAttrs: {
     ZSTD_SYS_USE_PKG_CONFIG = true;
   };
 
-  nativeInstallCheckInputs = [ versionCheckHook ];
-  doInstallCheck = true;
+  preBuild = ''
+    cargo run -p license-store-cache \
+      -j $NIX_BUILD_CORES --frozen \
+      data/license-store-cache.zstd ${spdx-license-list-data.json}/json/details
+  '';
 
+  checkFlags = [
+    # require internet access
+    "--skip=e2e"
+    "--skip=lang::rust::tests"
+  ];
+
+  postInstall = ''
+    installManPage artifacts/nix-init.1
+    installShellCompletion artifacts/nix-init.{bash,fish} --zsh artifacts/_nix-init
+  '';
+
+  doInstallCheck = true;
+  nativeInstallCheckInputs = [ versionCheckHook ];
+  buildNoDefaultFeatures = true;
   passthru.updateScript = nix-update-script { };
 
   meta = {
     description = "Command line tool to generate Nix packages from URLs";
-    mainProgram = "nix-init";
     homepage = "https://github.com/nix-community/nix-init";
     changelog = "https://github.com/nix-community/nix-init/blob/${finalAttrs.src.tag}/CHANGELOG.md";
     license = lib.licenses.mpl20;
+
     maintainers = with lib.maintainers; [
       eclairevoyant
       figsoda
     ];
+
+    mainProgram = "nix-init";
   };
 })

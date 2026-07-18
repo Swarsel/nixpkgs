@@ -2,17 +2,15 @@
   lib,
   stdenv,
   fetchurl,
-  lvm2,
-  json_c,
   asciidoctor,
-  openssl,
+  json_c,
+  libargon2,
   libuuid,
+  lvm2,
+  nixosTests,
+  openssl,
   pkg-config,
   popt,
-  nixosTests,
-  libargon2,
-  withInternalArgon2 ? false,
-
   # Programs enabled by default upstream are implicitly enabled unless
   # manually set to false.
   programs ? { },
@@ -21,11 +19,20 @@
   # the bare NixOS build hash independent of changes to the ruby ecosystem,
   # saving mass-rebuilds.
   rebuildMan ? false,
+  withInternalArgon2 ? false,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
   pname = "cryptsetup";
   version = "2.8.6";
+
+  src = fetchurl {
+    url =
+      "mirror://kernel/linux/utils/cryptsetup/v${lib.versions.majorMinor finalAttrs.version}/"
+      + "cryptsetup-${finalAttrs.version}.tar.xz";
+
+    hash = "sha256-gAQmX9mTiF0I97Yz2+BWhR3hohAwdhOk693HQ/zO/lo=";
+  };
 
   outputs = [
     "bin"
@@ -33,14 +40,6 @@ stdenv.mkDerivation (finalAttrs: {
     "dev"
     "man"
   ];
-  separateDebugInfo = true;
-
-  src = fetchurl {
-    url =
-      "mirror://kernel/linux/utils/cryptsetup/v${lib.versions.majorMinor finalAttrs.version}/"
-      + "cryptsetup-${finalAttrs.version}.tar.xz";
-    hash = "sha256-gAQmX9mTiF0I97Yz2+BWhR3hohAwdhOk693HQ/zO/lo=";
-  };
 
   patches = [
     # Allow reading tokens from a relative path, see #167994
@@ -56,9 +55,16 @@ stdenv.mkDerivation (finalAttrs: {
     substituteInPlace tests/unit-utils-io.c --replace "| O_DIRECT" ""
   '';
 
-  env = lib.optionalAttrs (stdenv.cc.isGNU && !stdenv.hostPlatform.isStatic) {
-    NIX_LDFLAGS = "-lgcc_s";
-  };
+  nativeBuildInputs = [ pkg-config ] ++ lib.optionals rebuildMan [ asciidoctor ];
+
+  propagatedBuildInputs = [
+    lvm2
+    json_c
+    openssl
+    libuuid
+    popt
+  ]
+  ++ lib.optional (!withInternalArgon2) libargon2;
 
   configureFlags = [
     "--with-crypto_backend=openssl"
@@ -80,22 +86,16 @@ stdenv.mkDerivation (finalAttrs: {
   ]
   ++ (lib.mapAttrsToList (lib.flip lib.enableFeature)) programs;
 
-  nativeBuildInputs = [ pkg-config ] ++ lib.optionals rebuildMan [ asciidoctor ];
-  propagatedBuildInputs = [
-    lvm2
-    json_c
-    openssl
-    libuuid
-    popt
-  ]
-  ++ lib.optional (!withInternalArgon2) libargon2;
-
-  enableParallelBuilding = true;
+  env = lib.optionalAttrs (stdenv.cc.isGNU && !stdenv.hostPlatform.isStatic) {
+    NIX_LDFLAGS = "-lgcc_s";
+  };
 
   # The test [7] header backup in compat-test fails with a mysterious
   # "out of memory" error, even though tons of memory is available.
   # Issue filed upstream: https://gitlab.com/cryptsetup/cryptsetup/-/issues/763
   doCheck = !stdenv.hostPlatform.isMusl;
+  enableParallelBuilding = true;
+  separateDebugInfo = true;
 
   passthru = {
     tests = {
@@ -108,15 +108,17 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   meta = {
-    homepage = "https://gitlab.com/cryptsetup/cryptsetup/";
     description = "LUKS for dm-crypt";
+    homepage = "https://gitlab.com/cryptsetup/cryptsetup/";
     changelog = "https://gitlab.com/cryptsetup/cryptsetup/-/raw/v${finalAttrs.version}/docs/v${finalAttrs.version}-ReleaseNotes";
     license = lib.licenses.gpl2Plus;
-    mainProgram = "cryptsetup";
+
     maintainers = with lib.maintainers; [
       numinit
     ];
+
     platforms = with lib.platforms; linux;
+    mainProgram = "cryptsetup";
     identifiers.cpeParts = lib.meta.cpeFullVersionWithVendor "cryptsetup_project" finalAttrs.version;
   };
 })

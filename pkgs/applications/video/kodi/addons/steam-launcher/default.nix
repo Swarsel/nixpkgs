@@ -1,16 +1,15 @@
 {
   lib,
-  buildKodiAddon,
   fetchFromGitHub,
+  buildKodiAddon,
+  dos2unix,
   steam,
   which,
-  xdotool,
-  dos2unix,
   wmctrl,
+  xdotool,
 }:
 buildKodiAddon {
   pname = "steam-launcher";
-  namespace = "script.steam.launcher";
   version = "3.7.11";
 
   src = fetchFromGitHub rec {
@@ -34,9 +33,11 @@ buildKodiAddon {
     ${dos2unix}/bin/dos2unix $out/share/kodi/addons/script.steam.launcher/resources/scripts/steam-launcher.sh
   '';
 
+  namespace = "script.steam.launcher";
+
   meta = {
-    homepage = "https://forum.kodi.tv/showthread.php?tid=157499";
     description = "Launch Steam in Big Picture Mode from Kodi";
+
     longDescription = ''
       This add-on will close/minimise Kodi, launch Steam in Big
       Picture Mode and when Steam BPM is exited (either by quitting
@@ -44,6 +45,8 @@ buildKodiAddon {
       restart/maximise. Running pre/post Steam scripts can be
       configured via the addon.
     '';
+
+    homepage = "https://forum.kodi.tv/showthread.php?tid=157499";
     license = lib.licenses.gpl2Only;
     teams = [ lib.teams.kodi ];
   };

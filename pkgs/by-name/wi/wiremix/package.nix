@@ -1,9 +1,9 @@
 {
   lib,
   fetchCrate,
-  rustPlatform,
-  pkg-config,
   pipewire,
+  pkg-config,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -15,23 +15,25 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-aV/HTDw5lKzcA8Q+IziHEFlIu8OpL9eUvjNuvqoz3SQ=";
   };
 
-  cargoHash = "sha256-QT96vzK0PirBn4nf40SEghcbAt+aRplETUREONZtY3I=";
-
   nativeBuildInputs = [
     pkg-config
     rustPlatform.bindgenHook
   ];
+
   buildInputs = [ pipewire ];
+  cargoHash = "sha256-QT96vzK0PirBn4nf40SEghcbAt+aRplETUREONZtY3I=";
 
   meta = {
     description = "Simple TUI mixer for PipeWire";
-    mainProgram = "wiremix";
     homepage = "https://github.com/tsowell/wiremix";
+
     license = with lib.licenses; [
       asl20
       mit
     ];
+
     maintainers = with lib.maintainers; [ tsowell ];
     platforms = lib.platforms.linux;
+    mainProgram = "wiremix";
   };
 })

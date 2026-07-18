@@ -1,18 +1,18 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
-  libpng,
-  libjpeg,
-  freetype,
-  libxext,
-  python3,
-  imagemagick,
-  gcc-arm-embedded,
-  pkg-config,
-  python3Packages,
-  makeDesktopItem,
   copyDesktopItems,
+  freetype,
+  gcc-arm-embedded,
+  imagemagick,
+  libjpeg,
+  libpng,
+  libxext,
+  makeDesktopItem,
+  pkg-config,
+  python3,
+  python3Packages,
 }:
 
 stdenv.mkDerivation rec {
@@ -72,14 +72,15 @@ stdenv.mkDerivation rec {
 
   desktopItems = [
     (makeDesktopItem {
-      name = "epsilon";
-      exec = "epsilon";
-      icon = "numworks";
-      desktopName = "NumWorks Epsilon Calculator";
       categories = [
         "Utility"
         "Math"
       ];
+
+      desktopName = "NumWorks Epsilon Calculator";
+      exec = "epsilon";
+      icon = "numworks";
+      name = "epsilon";
       type = "Application";
     })
   ];

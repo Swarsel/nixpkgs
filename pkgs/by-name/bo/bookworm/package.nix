@@ -39,6 +39,17 @@ stdenv.mkDerivation {
     hash = "sha256-xml6jOE0tJBz1CwE+0ecSbiGAajh398bw+leFapctiE=";
   };
 
+  postPatch = ''
+    chmod +x meson/post_install.py
+    patchShebangs meson/post_install.py
+    substituteInPlace meson.build \
+      --replace-fail "webkit2gtk-4.0" "webkit2gtk-4.1"
+    substituteInPlace src/window.vala \
+      --replace-fail "Soup.URI.decode" "Uri.unescape_string"
+    substituteInPlace src/utils.vala \
+      --replace-fail "Soup.URI.decode" "Uri.unescape_string"
+  '';
+
   nativeBuildInputs = [
     meson
     ninja
@@ -62,17 +73,6 @@ stdenv.mkDerivation {
     sqlite
     webkitgtk_4_1
   ];
-
-  postPatch = ''
-    chmod +x meson/post_install.py
-    patchShebangs meson/post_install.py
-    substituteInPlace meson.build \
-      --replace-fail "webkit2gtk-4.0" "webkit2gtk-4.1"
-    substituteInPlace src/window.vala \
-      --replace-fail "Soup.URI.decode" "Uri.unescape_string"
-    substituteInPlace src/utils.vala \
-      --replace-fail "Soup.URI.decode" "Uri.unescape_string"
-  '';
 
   # These programs are expected in PATH from the source code and scripts
   preFixup = ''
@@ -99,12 +99,14 @@ stdenv.mkDerivation {
 
   meta = {
     description = "Simple, focused eBook reader";
-    mainProgram = "com.github.babluboy.bookworm";
+
     longDescription = ''
       Read the books you love without having to worry about different format complexities like epub, pdf, mobi, cbr, etc.
     '';
+
     homepage = "https://babluboy.github.io/bookworm/";
     license = lib.licenses.gpl3Plus;
     platforms = lib.platforms.linux;
+    mainProgram = "com.github.babluboy.bookworm";
   };
 }

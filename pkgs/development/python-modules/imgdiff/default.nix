@@ -1,16 +1,15 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  pillow,
+  buildPythonPackage,
   mock,
+  pillow,
   unittestCheckHook,
 }:
 
 buildPythonPackage rec {
   pname = "imgdiff";
   version = "1.8.0";
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "mgedmin";
@@ -21,19 +20,20 @@ buildPythonPackage rec {
 
   propagatedBuildInputs = [ pillow ];
 
-  pythonImportsCheck = [ "imgdiff" ];
-
   nativeCheckInputs = [
     mock
     unittestCheckHook
   ];
 
+  format = "setuptools";
+  pythonImportsCheck = [ "imgdiff" ];
+
   meta = {
     description = "Compare two images side-by-side";
-    mainProgram = "imgdiff";
     homepage = "https://github.com/mgedmin/imgdiff";
     changelog = "https://github.com/mgedmin/imgdiff/blob/${src.rev}/CHANGES.rst";
     license = lib.licenses.mit;
     maintainers = [ ];
+    mainProgram = "imgdiff";
   };
 }

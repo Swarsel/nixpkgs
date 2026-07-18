@@ -5,21 +5,13 @@
   cmake,
   python3,
   validatePkgConfig,
-  secureMemory ? false,
   enableStatic ? stdenv.hostPlatform.isStatic,
+  secureMemory ? false,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
   pname = "jsoncpp";
   version = "1.9.8";
-
-  strictDeps = true;
-  __structuredAttrs = true;
-
-  outputs = [
-    "out"
-    "dev"
-  ];
 
   src = fetchFromGitHub {
     owner = "open-source-parsers";
@@ -28,15 +20,12 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-5cH9G4/TVCM5HX6QSk3P4m5+cwuK4x8hP9FohBcmjik=";
   };
 
-  /*
-    During darwin bootstrap, we have a cp that doesn't understand the
-    --reflink=auto flag, which is used in the default unpackPhase for dirs
-  */
-  unpackPhase = ''
-    cp -a ${finalAttrs.src} ${finalAttrs.src.name}
-    chmod -R +w ${finalAttrs.src.name}
-    export sourceRoot=${finalAttrs.src.name}
-  '';
+  outputs = [
+    "out"
+    "dev"
+  ];
+
+  strictDeps = true;
 
   nativeBuildInputs = [
     cmake
@@ -59,12 +48,24 @@ stdenv.mkDerivation (finalAttrs: {
     (stdenv.buildPlatform != stdenv.hostPlatform) || secureMemory
   ) "-DJSONCPP_WITH_TESTS=OFF";
 
+  __structuredAttrs = true;
+
+  /*
+    During darwin bootstrap, we have a cp that doesn't understand the
+    --reflink=auto flag, which is used in the default unpackPhase for dirs
+  */
+  unpackPhase = ''
+    cp -a ${finalAttrs.src} ${finalAttrs.src.name}
+    chmod -R +w ${finalAttrs.src.name}
+    export sourceRoot=${finalAttrs.src.name}
+  '';
+
   meta = {
-    changelog = "https://github.com/open-source-parsers/jsoncpp/releases/tag/${finalAttrs.src.tag}";
-    homepage = "https://github.com/open-source-parsers/jsoncpp";
     description = "C++ library for interacting with JSON";
-    maintainers = with lib.maintainers; [ hythera ];
+    homepage = "https://github.com/open-source-parsers/jsoncpp";
+    changelog = "https://github.com/open-source-parsers/jsoncpp/releases/tag/${finalAttrs.src.tag}";
     license = lib.licenses.mit;
+    maintainers = with lib.maintainers; [ hythera ];
     platforms = lib.platforms.all;
   };
 })

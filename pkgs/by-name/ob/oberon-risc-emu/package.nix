@@ -24,8 +24,8 @@ stdenv.mkDerivation {
   '';
 
   meta = {
-    homepage = "https://github.com/pdewacht/oberon-risc-emu/";
     description = "Emulator for the Oberon RISC machine";
+    homepage = "https://github.com/pdewacht/oberon-risc-emu/";
     license = lib.licenses.isc;
     maintainers = with lib.maintainers; [ siraben ];
     mainProgram = "risc";

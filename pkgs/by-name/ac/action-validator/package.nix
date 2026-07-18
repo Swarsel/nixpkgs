@@ -1,10 +1,10 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
-  nix-update-script,
   gitMinimal,
   makeWrapper,
+  nix-update-script,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -19,16 +19,12 @@ rustPlatform.buildRustPackage (finalAttrs: {
     fetchSubmodules = true;
   };
 
-  cargoHash = "sha256-F8bJclpDpOdVET/dSIUYyP4DFcnhJDR2CV8poZtykko=";
-
-  passthru.updateScript = nix-update-script { };
-
   postPatch = ''
     substituteInPlace Cargo.toml --replace-fail 'version = "0.0.0-git"' 'version = "${finalAttrs.version}"'
   '';
 
   nativeBuildInputs = [ makeWrapper ];
-
+  cargoHash = "sha256-F8bJclpDpOdVET/dSIUYyP4DFcnhJDR2CV8poZtykko=";
   nativeCheckInputs = [ gitMinimal ];
 
   # The tests require a functional git installation and leaveDotGit appears broken https://github.com/NixOS/nixpkgs/issues/8567
@@ -46,11 +42,13 @@ rustPlatform.buildRustPackage (finalAttrs: {
       --prefix PATH : ${lib.makeBinPath [ gitMinimal ]}
   '';
 
+  passthru.updateScript = nix-update-script { };
+
   meta = {
     description = "Tool to validate GitHub Action and Workflow YAML files";
     homepage = "https://github.com/mpalmer/action-validator";
     license = lib.licenses.gpl3Plus;
-    mainProgram = "action-validator";
     maintainers = with lib.maintainers; [ thiagokokada ];
+    mainProgram = "action-validator";
   };
 })

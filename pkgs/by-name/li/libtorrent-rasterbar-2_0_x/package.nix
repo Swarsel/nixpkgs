@@ -1,8 +1,8 @@
 {
   lib,
   stdenv,
-  boost,
   fetchFromGitHub,
+  boost,
   cmake,
   openssl,
   python3,
@@ -23,21 +23,15 @@ stdenv.mkDerivation (finalAttrs: {
     owner = "arvidn";
     repo = "libtorrent";
     tag = "v${finalAttrs.version}";
-    fetchSubmodules = true;
     hash = "sha256-JbNOKzB830VQkZjC8ZAmzbu/7nkAgyD8cOr22uYbIGQ=";
+    fetchSubmodules = true;
   };
 
-  nativeBuildInputs = [
-    cmake
-    python3
+  outputs = [
+    "out"
+    "dev"
+    "python"
   ];
-
-  buildInputs = [
-    boostPython
-    openssl
-  ];
-
-  strictDeps = true;
 
   patches = [
     ./python-destdir.patch
@@ -59,6 +53,22 @@ stdenv.mkDerivation (finalAttrs: {
       --replace-fail '$'{prefix}/@_INSTALL_LIBDIR@ @_INSTALL_FULL_LIBDIR@
   '';
 
+  strictDeps = true;
+
+  nativeBuildInputs = [
+    cmake
+    python3
+  ];
+
+  buildInputs = [
+    boostPython
+    openssl
+  ];
+
+  cmakeFlags = [
+    (lib.cmakeBool "python-bindings" true)
+  ];
+
   postInstall = ''
     moveToOutput "include" "$dev"
     moveToOutput "lib/${python3.libPrefix}" "$python"
@@ -75,19 +85,9 @@ stdenv.mkDerivation (finalAttrs: {
       --replace-fail "$out/$dev" "$dev"
   '';
 
-  outputs = [
-    "out"
-    "dev"
-    "python"
-  ];
-
-  cmakeFlags = [
-    (lib.cmakeBool "python-bindings" true)
-  ];
-
   meta = {
-    homepage = "https://libtorrent.org/";
     description = "Efficient feature complete C++ bittorrent implementation";
+    homepage = "https://libtorrent.org/";
     changelog = "https://github.com/arvidn/libtorrent/blob/${finalAttrs.src.tag}/ChangeLog";
     license = lib.licenses.bsd3;
     maintainers = [ ];

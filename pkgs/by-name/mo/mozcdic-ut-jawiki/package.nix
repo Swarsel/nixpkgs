@@ -1,8 +1,8 @@
 {
   lib,
   fetchFromGitHub,
-  stdenvNoCC,
   nix-update-script,
+  stdenvNoCC,
 }:
 
 stdenvNoCC.mkDerivation {
@@ -34,10 +34,12 @@ stdenvNoCC.mkDerivation {
   meta = {
     description = "Dictionary generated from the Japanese Wikipedia for Mozc";
     homepage = "https://github.com/utuhiro78/mozcdic-ut-jawiki";
+
     license = with lib.licenses; [
       asl20
       cc-by-sa-40
     ];
+
     maintainers = with lib.maintainers; [ pineapplehunter ];
     platforms = lib.platforms.all;
     # this does not need to be separately built

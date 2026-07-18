@@ -63,82 +63,95 @@ in
   options = {
     services.gerrit = {
       enable = lib.mkEnableOption "Gerrit service";
-
       package = lib.mkPackageOption pkgs "gerrit" { };
 
-      jvmPackage = lib.mkPackageOption pkgs "jdk21_headless" { };
+      builtinPlugins = lib.mkOption {
+        default = [ ];
+
+        description = ''
+          List of builtins plugins to install. Those are shipped in the
+          `gerrit.war` file.
+        '';
+
+        type = lib.types.listOf (lib.types.enum cfg.package.passthru.plugins);
+      };
+
+      jvmHeapLimit = lib.mkOption {
+        default = "1024m";
+
+        description = ''
+          How much memory to allocate to the JVM heap
+        '';
+
+        type = lib.types.str;
+      };
 
       jvmOpts = lib.mkOption {
-        type = lib.types.listOf lib.types.str;
         default = [
           "-Dflogger.backend_factory=com.google.common.flogger.backend.log4j.Log4jBackendFactory#getInstance"
           "-Dflogger.logging_context=com.google.gerrit.server.logging.LoggingContext#getInstance"
         ];
+
         description = "A list of JVM options to start gerrit with.";
+        type = lib.types.listOf lib.types.str;
       };
 
-      jvmHeapLimit = lib.mkOption {
-        type = lib.types.str;
-        default = "1024m";
-        description = ''
-          How much memory to allocate to the JVM heap
-        '';
-      };
+      jvmPackage = lib.mkPackageOption pkgs "jdk21_headless" { };
 
       listenAddress = lib.mkOption {
-        type = lib.types.str;
         default = "[::]:8080";
+
         description = ''
           `hostname:port` to listen for HTTP traffic.
 
           This is bound using the systemd socket activation.
         '';
-      };
 
-      settings = lib.mkOption {
-        type = gitIniType;
-        default = { };
-        description = ''
-          Gerrit configuration. This will be generated to the
-          `etc/gerrit.config` file.
-        '';
-      };
-
-      replicationSettings = lib.mkOption {
-        type = gitIniType;
-        default = { };
-        description = ''
-          Replication configuration. This will be generated to the
-          `etc/replication.config` file.
-        '';
+        type = lib.types.str;
       };
 
       plugins = lib.mkOption {
-        type = lib.types.listOf lib.types.package;
         default = [ ];
+
         description = ''
           List of plugins to add to Gerrit. Each derivation is a jar file
           itself where the name of the derivation is the name of plugin.
         '';
+
+        type = lib.types.listOf lib.types.package;
       };
 
-      builtinPlugins = lib.mkOption {
-        type = lib.types.listOf (lib.types.enum cfg.package.passthru.plugins);
-        default = [ ];
+      replicationSettings = lib.mkOption {
+        default = { };
+
         description = ''
-          List of builtins plugins to install. Those are shipped in the
-          `gerrit.war` file.
+          Replication configuration. This will be generated to the
+          `etc/replication.config` file.
         '';
+
+        type = gitIniType;
       };
 
       serverId = lib.mkOption {
-        type = lib.types.str;
         description = ''
           Set a UUID that uniquely identifies the server.
 
           This can be generated with
           `nix-shell -p util-linux --run uuidgen`.
         '';
+
+        type = lib.types.str;
+      };
+
+      settings = lib.mkOption {
+        default = { };
+
+        description = ''
+          Gerrit configuration. This will be generated to the
+          `etc/gerrit.config` file.
+        '';
+
+        type = gitIniType;
       };
     };
   };
@@ -152,6 +165,9 @@ in
       }
     ];
 
+    # Add the gerrit CLI to the system to run `gerrit init` and friends.
+    environment.systemPackages = [ gerrit-cli ];
+
     services.gerrit.settings = {
       cache.directory = "/var/cache/gerrit";
       container.heapLimit = cfg.jvmHeapLimit;
@@ -162,24 +178,20 @@ in
       index.type = lib.mkDefault "lucene";
     };
 
-    # Add the gerrit CLI to the system to run `gerrit init` and friends.
-    environment.systemPackages = [ gerrit-cli ];
-
-    systemd.sockets.gerrit = {
-      unitConfig.Description = "Gerrit HTTP socket";
-      wantedBy = [ "sockets.target" ];
-      listenStreams = [ cfg.listenAddress ];
-    };
-
     systemd.services.gerrit = {
-      description = "Gerrit";
-
-      wantedBy = [ "multi-user.target" ];
-      requires = [ "gerrit.socket" ];
       after = [
         "gerrit.socket"
         "network.target"
       ];
+
+      description = "Gerrit";
+
+      environment = {
+        GERRIT_HOME = "%S/gerrit";
+        GERRIT_TMP = "%T";
+        HOME = "%S/gerrit";
+        XDG_CONFIG_HOME = "%S/gerrit/.config";
+      };
 
       path = [
         gerrit-cli
@@ -188,13 +200,6 @@ in
         pkgs.git
         pkgs.openssh
       ];
-
-      environment = {
-        GERRIT_HOME = "%S/gerrit";
-        GERRIT_TMP = "%T";
-        HOME = "%S/gerrit";
-        XDG_CONFIG_HOME = "%S/gerrit/.config";
-      };
 
       preStart = ''
         set -euo pipefail
@@ -218,19 +223,16 @@ in
         ln -sv ${gerrit-plugins} plugins
       '';
 
+      requires = [ "gerrit.socket" ];
+
       serviceConfig = {
+        AmbientCapabilities = "";
+        CacheDirectory = "gerrit";
+        CacheDirectoryMode = "750";
+        CapabilityBoundingSet = "";
         DynamicUser = true;
         ExecStart = "${gerrit-cli}/bin/gerrit daemon --console-log";
         LimitNOFILE = 4096;
-        StandardInput = "socket";
-        StandardOutput = "journal";
-        StateDirectory = "gerrit";
-        StateDirectoryMode = "750";
-        CacheDirectory = "gerrit";
-        CacheDirectoryMode = "750";
-        WorkingDirectory = "%S/gerrit";
-        AmbientCapabilities = "";
-        CapabilityBoundingSet = "";
         LockPersonality = true;
         MountAPIVFS = true;
         NoNewPrivileges = true;
@@ -247,25 +249,41 @@ in
         ProtectKernelTunables = true;
         ProtectProc = "invisible";
         ProtectSystem = "full";
+
         RestrictAddressFamilies = [
           "AF_UNIX"
           "AF_INET"
           "AF_INET6"
         ];
+
         RestrictNamespaces = true;
         RestrictRealtime = true;
         RestrictSUIDSGID = true;
+        StandardInput = "socket";
+        StandardOutput = "journal";
+        StateDirectory = "gerrit";
+        StateDirectoryMode = "750";
         SystemCallArchitectures = "native";
         UMask = 27;
+        WorkingDirectory = "%S/gerrit";
       };
+
+      wantedBy = [ "multi-user.target" ];
+    };
+
+    systemd.sockets.gerrit = {
+      listenStreams = [ cfg.listenAddress ];
+      unitConfig.Description = "Gerrit HTTP socket";
+      wantedBy = [ "sockets.target" ];
     };
   };
+
+  # uses attributes of the linked package
+  meta.buildDocsInSandbox = false;
 
   meta.maintainers = with lib.maintainers; [
     edef
     zimbatm
     felixsinger
   ];
-  # uses attributes of the linked package
-  meta.buildDocsInSandbox = false;
 }

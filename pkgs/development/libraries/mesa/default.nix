@@ -1,16 +1,16 @@
 {
   lib,
+  stdenv,
+  fetchFromGitLab,
   bison,
   buildPackages,
   directx-headers,
   elfutils,
   expat,
   fetchCrate,
-  fetchFromGitLab,
   file,
   flex,
   glslang,
-  spirv-tools,
   intltool,
   libdisplay-info,
   libdrm,
@@ -19,8 +19,18 @@
   libpng,
   libunwind,
   libva-minimal,
+  libx11,
+  libxcb,
+  libxcb-keysyms,
+  libxext,
+  libxfixes,
+  libxrandr,
+  libxshmfence,
+  libxxf86vm,
   llvmPackages,
   lm_sensors,
+  makeSetupHook,
+  mesa-gl-headers,
   meson,
   ninja,
   pkg-config,
@@ -30,26 +40,20 @@
   rust-cbindgen,
   rustc,
   spirv-llvm-translator,
-  stdenv,
+  spirv-tools,
   udev,
   valgrind-light,
   vulkan-loader,
   wayland,
   wayland-protocols,
   wayland-scanner,
-  libxcb-keysyms,
-  libxxf86vm,
-  libxrandr,
-  libxfixes,
-  libxext,
-  libx11,
   xorgproto,
-  libxshmfence,
-  libxcb,
   zstd,
+  eglPlatforms ? [
+    "x11"
+    "wayland"
+  ],
   enablePatentEncumberedCodecs ? true,
-  withValgrind ? lib.meta.availableOn stdenv.hostPlatform valgrind-light,
-
   # We enable as many drivers as possible here, to build cross tools
   # and support emulation use cases (emulated x86_64 on aarch64, etc)
   galliumDrivers ? [
@@ -99,10 +103,6 @@
         # Requires ATOMIC_INT_LOCK_FREE == 2.
         "virtio"
       ],
-  eglPlatforms ? [
-    "x11"
-    "wayland"
-  ],
   vulkanLayers ? [
     "anti-lag"
     "device-select"
@@ -111,8 +111,7 @@
     "screenshot"
     "vram-report-limit"
   ],
-  mesa-gl-headers,
-  makeSetupHook,
+  withValgrind ? lib.meta.availableOn stdenv.hostPlatform valgrind-light,
 }:
 
 let
@@ -150,21 +149,6 @@ stdenv.mkDerivation (finalAttrs: {
     meta
     ;
 
-  patches = [
-    ./opencl.patch
-  ];
-
-  postPatch = ''
-    patchShebangs .
-
-    for header in ${toString mesa-gl-headers.headers}; do
-      if ! diff -q $header ${mesa-gl-headers}/$header; then
-        echo "File $header does not match between mesa and mesa-gl-headers, please update mesa-gl-headers first!"
-        exit 42
-      fi
-    done
-  '';
-
   outputs = [
     "out"
     # OpenCL drivers pull in ~1G of extra LLVM stuff, so don't install them
@@ -185,17 +169,87 @@ stdenv.mkDerivation (finalAttrs: {
     "cross_tools"
   ];
 
-  # Keep build-ids so drivers can use them for caching, etc.
-  # Also some drivers segfault without this.
-  separateDebugInfo = true;
-  __structuredAttrs = true;
+  patches = [
+    ./opencl.patch
+  ];
 
-  # Needed to discover llvm-config for cross
-  preConfigure = ''
-    PATH=${lib.getDev llvmPackages.libllvm}/bin:$PATH
+  postPatch = ''
+    patchShebangs .
+
+    for header in ${toString mesa-gl-headers.headers}; do
+      if ! diff -q $header ${mesa-gl-headers}/$header; then
+        echo "File $header does not match between mesa and mesa-gl-headers, please update mesa-gl-headers first!"
+        exit 42
+      fi
+    done
   '';
 
-  env.MESON_PACKAGE_CACHE_DIR = packageCache;
+  strictDeps = true;
+
+  nativeBuildInputs = [
+    meson
+    pkg-config
+    ninja
+    intltool
+    bison
+    flex
+    file
+    python3Packages.python
+    python3Packages.packaging
+    python3Packages.pycparser
+    python3Packages.mako
+    python3Packages.ply
+    python3Packages.pyyaml
+    # Use bin output from glslang to not propagate the dev output at
+    # the build time with the host glslang.
+    (lib.getBin glslang)
+    rustc
+    rust-bindgen
+    rust-cbindgen
+    wayland-scanner
+  ]
+  ++ lib.optionals needNativeCLC [
+    # `or null` to not break eval with `attribute missing` on darwin to linux cross
+    (buildPackages.mesa.cross_tools or null)
+  ];
+
+  buildInputs = [
+    directx-headers
+    elfutils
+    expat
+    spirv-tools
+    libdisplay-info
+    libdrm
+    libgbm
+    libglvnd
+    libpng
+    libunwind
+    libva-minimal
+    libx11
+    libxcb
+    libxext
+    libxfixes
+    libxrandr
+    libxshmfence
+    libxxf86vm
+    llvmPackages.clang
+    llvmPackages.clang-unwrapped
+    llvmPackages.libclc
+    llvmPackages.libllvm
+    lm_sensors
+    python3Packages.python # for shebang
+    spirv-llvm-translator
+    udev
+    vulkan-loader
+    wayland
+    wayland-protocols
+    libxcb-keysyms
+    xorgproto
+    zstd
+  ]
+  ++ lib.optionals withValgrind [
+    valgrind-light
+  ];
 
   mesonFlags = [
     "--sysconfdir=/etc"
@@ -257,81 +311,12 @@ stdenv.mkDerivation (finalAttrs: {
     (lib.mesonOption "precomp-compiler" "system")
   ];
 
-  strictDeps = true;
+  env.MESON_PACKAGE_CACHE_DIR = packageCache;
 
-  buildInputs = [
-    directx-headers
-    elfutils
-    expat
-    spirv-tools
-    libdisplay-info
-    libdrm
-    libgbm
-    libglvnd
-    libpng
-    libunwind
-    libva-minimal
-    libx11
-    libxcb
-    libxext
-    libxfixes
-    libxrandr
-    libxshmfence
-    libxxf86vm
-    llvmPackages.clang
-    llvmPackages.clang-unwrapped
-    llvmPackages.libclc
-    llvmPackages.libllvm
-    lm_sensors
-    python3Packages.python # for shebang
-    spirv-llvm-translator
-    udev
-    vulkan-loader
-    wayland
-    wayland-protocols
-    libxcb-keysyms
-    xorgproto
-    zstd
-  ]
-  ++ lib.optionals withValgrind [
-    valgrind-light
-  ];
-
-  depsBuildBuild = [
-    pkg-config
-    buildPackages.stdenv.cc
-  ];
-
-  nativeBuildInputs = [
-    meson
-    pkg-config
-    ninja
-    intltool
-    bison
-    flex
-    file
-    python3Packages.python
-    python3Packages.packaging
-    python3Packages.pycparser
-    python3Packages.mako
-    python3Packages.ply
-    python3Packages.pyyaml
-    # Use bin output from glslang to not propagate the dev output at
-    # the build time with the host glslang.
-    (lib.getBin glslang)
-    rustc
-    rust-bindgen
-    rust-cbindgen
-    wayland-scanner
-  ]
-  ++ lib.optionals needNativeCLC [
-    # `or null` to not break eval with `attribute missing` on darwin to linux cross
-    (buildPackages.mesa.cross_tools or null)
-  ];
-
-  disallowedRequisites = lib.optional (
-    needNativeCLC && buildPackages.mesa ? cross_tools
-  ) buildPackages.mesa.cross_tools;
+  # Needed to discover llvm-config for cross
+  preConfigure = ''
+    PATH=${lib.getDev llvmPackages.libllvm}/bin:$PATH
+  '';
 
   doCheck = false;
 
@@ -383,9 +368,25 @@ stdenv.mkDerivation (finalAttrs: {
     patchelf --add-rpath ${vulkan-loader}/lib $out/lib/libgallium*.so $opencl/lib/libRusticlOpenCL.so
   '';
 
+  __structuredAttrs = true;
+
+  depsBuildBuild = [
+    pkg-config
+    buildPackages.stdenv.cc
+  ];
+
+  disallowedRequisites = lib.optional (
+    needNativeCLC && buildPackages.mesa ? cross_tools
+  ) buildPackages.mesa.cross_tools;
+
+  # Keep build-ids so drivers can use them for caching, etc.
+  # Also some drivers segfault without this.
+  separateDebugInfo = true;
+
   passthru = {
     inherit (libglvnd) driverLink;
     inherit llvmPackages;
+
     inherit
       eglPlatforms
       galliumDrivers
@@ -396,18 +397,19 @@ stdenv.mkDerivation (finalAttrs: {
     # for compatibility
     drivers = lib.warn "`mesa.drivers` is deprecated, use `mesa` instead" finalAttrs.finalPackage;
 
-    tests.outDoesNotDependOnLLVM = stdenv.mkDerivation {
-      name = "mesa-does-not-depend-on-llvm";
-      buildCommand = ''
-        echo ${finalAttrs.finalPackage} >>$out
-      '';
-      disallowedRequisites = [ llvmPackages.llvm ];
-    };
-
     llvmpipeHook = makeSetupHook {
       name = "llvmpipe-hook";
       substitutions.mesa = finalAttrs.finalPackage;
       meta.license = lib.licenses.mit;
     } ./llvmpipe-hook.sh;
+
+    tests.outDoesNotDependOnLLVM = stdenv.mkDerivation {
+      buildCommand = ''
+        echo ${finalAttrs.finalPackage} >>$out
+      '';
+
+      disallowedRequisites = [ llvmPackages.llvm ];
+      name = "mesa-does-not-depend-on-llvm";
+    };
   };
 })

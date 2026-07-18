@@ -8,7 +8,6 @@
 buildPythonPackage rec {
   pname = "pyfttt";
   version = "0.3.2";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
@@ -16,15 +15,15 @@ buildPythonPackage rec {
   };
 
   propagatedBuildInputs = [ requests ];
-
   # tests need a server to run against
   doCheck = false;
+  format = "setuptools";
 
   meta = {
     description = "Package for sending events to the IFTTT Webhooks Channel";
-    mainProgram = "pyfttt";
     homepage = "https://github.com/briandconnelly/pyfttt";
-    maintainers = with lib.maintainers; [ peterhoeg ];
     license = lib.licenses.bsd2;
+    maintainers = with lib.maintainers; [ peterhoeg ];
+    mainProgram = "pyfttt";
   };
 }

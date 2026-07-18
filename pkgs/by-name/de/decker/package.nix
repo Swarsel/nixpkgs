@@ -4,8 +4,8 @@
   fetchFromGitHub,
   SDL2,
   SDL2_image,
-  unixtools,
   multimarkdown,
+  unixtools,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -19,6 +19,10 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-fCC/VRWhPdNdq9z+2DFE2XT5mbcwWaEkslZS5N2hHrE=";
   };
 
+  postPatch = ''
+    patchShebangs ./scripts
+  '';
+
   buildInputs = [
     SDL2
     SDL2_image
@@ -26,11 +30,11 @@ stdenv.mkDerivation (finalAttrs: {
     unixtools.xxd
   ];
 
-  doCheck = true;
-
-  postPatch = ''
-    patchShebangs ./scripts
-  '';
+  env.NIX_CFLAGS_COMPILE = toString (
+    lib.optionals stdenv.cc.isClang [
+      "-Wno-error=implicit-const-int-float-conversion"
+    ]
+  );
 
   buildPhase = ''
     runHook preBuild
@@ -40,11 +44,13 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postBuild
   '';
 
-  env.NIX_CFLAGS_COMPILE = toString (
-    lib.optionals stdenv.cc.isClang [
-      "-Wno-error=implicit-const-int-float-conversion"
-    ]
-  );
+  doCheck = true;
+
+  checkPhase = ''
+    runHook preCheck
+    make test
+    runHook postCheck
+  '';
 
   installPhase = ''
     runHook preInstall
@@ -69,18 +75,12 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
-  checkPhase = ''
-    runHook preCheck
-    make test
-    runHook postCheck
-  '';
-
   meta = {
-    homepage = "https://beyondloom.com/decker";
     description = "Multimedia platform for creating and sharing interactive documents";
+    homepage = "https://beyondloom.com/decker";
     license = lib.licenses.mit;
-    mainProgram = "decker";
-    platforms = lib.platforms.all;
     maintainers = [ ];
+    platforms = lib.platforms.all;
+    mainProgram = "decker";
   };
 })

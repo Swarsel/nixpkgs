@@ -1,11 +1,11 @@
 {
+  lib,
+  fetchurl,
   alcotest,
   buildDunePackage,
   camlp-streams,
-  fetchurl,
   hex,
   ipaddr,
-  lib,
   ppx_compare,
   ppx_custom_printf,
   ppx_sexp_conv,
@@ -16,7 +16,7 @@
 buildDunePackage (finalAttrs: {
   pname = "pgx";
   version = "2.3";
-  minimalOCamlVersion = "4.08";
+
   src = fetchurl {
     url = "https://github.com/pgx-ocaml/pgx/archive/refs/tags/${finalAttrs.version}.tar.gz";
     hash = "sha256-Rp9PXsWI4cBc1YHD7uqKATrRt5tgNJowbaAFg1aeVKM=";
@@ -33,8 +33,9 @@ buildDunePackage (finalAttrs: {
     uuidm
   ];
 
-  checkInputs = [ alcotest ];
   doCheck = true;
+  checkInputs = [ alcotest ];
+  minimalOCamlVersion = "4.08";
 
   meta = {
     description = "Pure-OCaml PostgreSQL client library";

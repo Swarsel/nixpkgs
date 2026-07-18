@@ -1,9 +1,9 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  iso8601,
   bottle,
+  buildPythonPackage,
+  iso8601,
   pytestCheckHook,
   setuptools,
 }:
@@ -11,7 +11,6 @@
 buildPythonPackage rec {
   pname = "m3u8";
   version = "6.0.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "globocom";
@@ -20,14 +19,13 @@ buildPythonPackage rec {
     hash = "sha256-1SOuKKNBg67Yc0a6Iqb1goTE7sraptzpFIB2lvrbMQg=";
   };
 
-  build-system = [ setuptools ];
-
-  dependencies = [ iso8601 ];
-
   nativeCheckInputs = [
     bottle
     pytestCheckHook
   ];
+
+  build-system = [ setuptools ];
+  dependencies = [ iso8601 ];
 
   disabledTests = [
     # Tests require network access
@@ -37,6 +35,7 @@ buildPythonPackage rec {
     "test_raise_timeout_exception_if_timeout_happens_when_loading_from_uri"
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "m3u8" ];
 
   meta = {

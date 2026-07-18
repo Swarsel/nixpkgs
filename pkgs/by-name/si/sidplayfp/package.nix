@@ -1,21 +1,21 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
-  gitUpdater,
-  runCommand,
-  testers,
-  alsaSupport ? stdenv.hostPlatform.isLinux,
   alsa-lib,
   autoreconfHook,
-  pulseSupport ? stdenv.hostPlatform.isLinux,
+  gitUpdater,
   libpulseaudio,
   libsidplayfp,
   makeWrapper,
-  out123Support ? stdenv.hostPlatform.isDarwin,
   mpg123,
   perl,
   pkg-config,
+  runCommand,
+  testers,
+  alsaSupport ? stdenv.hostPlatform.isLinux,
+  out123Support ? stdenv.hostPlatform.isDarwin,
+  pulseSupport ? stdenv.hostPlatform.isLinux,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -70,9 +70,10 @@ stdenv.mkDerivation (finalAttrs: {
               --append-flags '| head -n1'
           '';
     };
+
     updateScript = gitUpdater {
-      rev-prefix = "v";
       ignoredVersions = "[a-zA-Z]";
+      rev-prefix = "v";
     };
   };
 
@@ -81,10 +82,12 @@ stdenv.mkDerivation (finalAttrs: {
     homepage = "https://github.com/libsidplayfp/sidplayfp";
     changelog = "https://github.com/libsidplayfp/sidplayfp/releases/tag/v${finalAttrs.version}";
     license = with lib.licenses; [ gpl2Plus ];
-    mainProgram = "sidplayfp";
+
     maintainers = with lib.maintainers; [
       OPNA2608
     ];
+
     platforms = lib.platforms.all;
+    mainProgram = "sidplayfp";
   };
 })

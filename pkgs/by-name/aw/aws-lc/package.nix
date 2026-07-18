@@ -1,13 +1,13 @@
 {
   lib,
   stdenv,
-  cmakeMinimal,
   fetchFromGitHub,
+  aws-lc,
+  cmakeMinimal,
   ninja,
+  nix-update-script,
   rust-bindgen,
   testers,
-  aws-lc,
-  nix-update-script,
   useSharedLibraries ? !stdenv.hostPlatform.isStatic,
   withRustBindings ? true,
 }:
@@ -45,6 +45,13 @@ stdenv.mkDerivation (finalAttrs: {
     "-DBUILD_TESTING=ON"
   ];
 
+  env.NIX_CFLAGS_COMPILE = toString (
+    lib.optionals stdenv.cc.isGNU [
+      # Needed with GCC 12 but breaks on darwin (with clang)
+      "-Wno-error=stringop-overflow"
+    ]
+  );
+
   doCheck = true;
 
   checkPhase = ''
@@ -61,40 +68,38 @@ stdenv.mkDerivation (finalAttrs: {
     moveToOutput share/rust "$dev"
   '';
 
-  env.NIX_CFLAGS_COMPILE = toString (
-    lib.optionals stdenv.cc.isGNU [
-      # Needed with GCC 12 but breaks on darwin (with clang)
-      "-Wno-error=stringop-overflow"
-    ]
-  );
-
   __darwinAllowLocalNetworking = true;
 
   passthru = {
     tests = {
       version = testers.testVersion {
-        package = aws-lc;
         command = "bssl version";
-      };
-      pkg-config = testers.hasPkgConfigModules {
         package = aws-lc;
+      };
+
+      pkg-config = testers.hasPkgConfigModules {
         moduleNames = [
           "libcrypto"
           "libssl"
           "openssl"
         ];
+
+        package = aws-lc;
       };
     };
+
     updateScript = nix-update-script { };
   };
 
   meta = {
     description = "General-purpose cryptographic library maintained by the AWS Cryptography team for AWS and their customers";
     homepage = "https://github.com/aws/aws-lc";
+
     license = [
       lib.licenses.asl20 # or
       lib.licenses.isc
     ];
+
     maintainers = [ lib.maintainers.theoparis ];
     platforms = lib.platforms.unix;
     mainProgram = "bssl";

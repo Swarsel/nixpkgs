@@ -1,8 +1,8 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
   bcc,
+  buildPythonPackage,
   dbus-fast,
   packaging,
   proton-core,
@@ -18,7 +18,6 @@
 buildPythonPackage rec {
   pname = "proton-vpn-daemon";
   version = "0.13.6";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "ProtonVPN";
@@ -26,6 +25,19 @@ buildPythonPackage rec {
     tag = "v${version}";
     hash = "sha256-HlRxTBLiuboKvMTL3NgX7i/fMBvJqIB4O12tJX1Lv9U=";
   };
+
+  # Needed for `pythonImportsCheck`, `postBuild` happens between `pythonImportsCheckPhase` and `pytestCheckPhase`.
+  postBuild = ''
+    # Needed for Permission denied: '/homeless-shelter'
+    export HOME=$(mktemp -d)
+    export XDG_RUNTIME_DIR=$(mktemp -d)
+  '';
+
+  nativeCheckInputs = [
+    pytestCheckHook
+    pytest-asyncio
+    pytest-cov-stub
+  ];
 
   build-system = [
     setuptools
@@ -41,18 +53,7 @@ buildPythonPackage rec {
     systemd-python
   ];
 
-  # Needed for `pythonImportsCheck`, `postBuild` happens between `pythonImportsCheckPhase` and `pytestCheckPhase`.
-  postBuild = ''
-    # Needed for Permission denied: '/homeless-shelter'
-    export HOME=$(mktemp -d)
-    export XDG_RUNTIME_DIR=$(mktemp -d)
-  '';
-
-  nativeCheckInputs = [
-    pytestCheckHook
-    pytest-asyncio
-    pytest-cov-stub
-  ];
+  pyproject = true;
 
   pythonImportsCheck = [
     "proton.vpn.daemon"
@@ -63,7 +64,7 @@ buildPythonPackage rec {
     description = "Daemons for Proton VPN Linux client";
     homepage = "https://github.com/ProtonVPN/proton-vpn-daemon";
     license = lib.licenses.gpl3Only;
-    platforms = lib.platforms.linux;
     maintainers = with lib.maintainers; [ anthonyroussel ];
+    platforms = lib.platforms.linux;
   };
 }

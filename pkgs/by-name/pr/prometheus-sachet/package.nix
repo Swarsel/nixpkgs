@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule rec {
@@ -19,9 +19,9 @@ buildGoModule rec {
 
   meta = {
     description = "SMS alerting tool for Prometheus's Alertmanager";
-    mainProgram = "sachet";
     homepage = "https://github.com/messagebird/sachet";
     license = lib.licenses.bsd2;
     maintainers = with lib.maintainers; [ govanify ];
+    mainProgram = "sachet";
   };
 }

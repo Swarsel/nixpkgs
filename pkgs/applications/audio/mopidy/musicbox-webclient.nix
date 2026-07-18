@@ -1,14 +1,13 @@
 {
   lib,
   fetchFromGitHub,
-  pythonPackages,
   mopidy,
+  pythonPackages,
 }:
 
 pythonPackages.buildPythonApplication (finalAttrs: {
   pname = "mopidy-musicbox-webclient";
   version = "3.1.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "pimusicbox";
@@ -16,6 +15,8 @@ pythonPackages.buildPythonApplication (finalAttrs: {
     tag = "v${finalAttrs.version}";
     sha256 = "1lzarazq67gciyn6r8cdms0f7j0ayyfwhpf28z93ydb280mfrrb9";
   };
+
+  doCheck = false;
 
   build-system = [
     pythonPackages.setuptools
@@ -25,7 +26,7 @@ pythonPackages.buildPythonApplication (finalAttrs: {
     mopidy
   ];
 
-  doCheck = false;
+  pyproject = true;
 
   meta = {
     description = "Mopidy frontend extension and web client with additional features for Pi MusicBox";

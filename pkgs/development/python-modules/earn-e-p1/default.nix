@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   hatchling,
   pytest-asyncio,
   pytestCheckHook,
@@ -10,7 +10,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "earn-e-p1";
   version = "0.1.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "Miggets7";
@@ -19,13 +18,13 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-a76+slVhZj6AQIDCcaEym3G6DjIsQQLfi13wIsYGkjA=";
   };
 
-  build-system = [ hatchling ];
-
   nativeCheckInputs = [
     pytest-asyncio
     pytestCheckHook
   ];
 
+  build-system = [ hatchling ];
+  pyproject = true;
   pythonImportsCheck = [ "earn_e_p1" ];
 
   meta = {

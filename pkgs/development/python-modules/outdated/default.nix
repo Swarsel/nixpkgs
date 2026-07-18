@@ -1,7 +1,7 @@
 {
-  buildPythonPackage,
-  fetchFromGitHub,
   lib,
+  fetchFromGitHub,
+  buildPythonPackage,
   littleutils,
   requests,
   setuptools-scm,
@@ -10,7 +10,6 @@
 buildPythonPackage rec {
   pname = "outdated";
   version = "0.2.2";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "alexmojaki";
@@ -19,6 +18,8 @@ buildPythonPackage rec {
     hash = "sha256-5VpPmgIcVtY97F0Hb0m9MuSW0zjaUJ18ATA4GBRw+jc=";
   };
 
+  # checks rely on internet connection
+  doCheck = false;
   build-system = [ setuptools-scm ];
 
   dependencies = [
@@ -26,9 +27,7 @@ buildPythonPackage rec {
     requests
   ];
 
-  # checks rely on internet connection
-  doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "outdated" ];
 
   meta = {

@@ -1,17 +1,16 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   pytest,
   pytestCheckHook,
-  setuptools_80,
   setuptools-scm,
+  setuptools_80,
 }:
 
 buildPythonPackage rec {
   pname = "pytest-logdog";
   version = "0.1.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "ods";
@@ -20,15 +19,15 @@ buildPythonPackage rec {
     hash = "sha256-Tmoq+KAGzn0MMj29rukDfAc4LSIwC8DoMTuBAppV32I=";
   };
 
+  buildInputs = [ pytest ];
+  nativeCheckInputs = [ pytestCheckHook ];
+
   build-system = [
     setuptools_80
     setuptools-scm
   ];
 
-  buildInputs = [ pytest ];
-
-  nativeCheckInputs = [ pytestCheckHook ];
-
+  pyproject = true;
   pythonImportsCheck = [ "pytest_logdog" ];
 
   meta = {

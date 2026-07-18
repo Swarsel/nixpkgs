@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   nix-update-script,
 }:
 buildGoModule (finalAttrs: {
@@ -28,10 +28,12 @@ buildGoModule (finalAttrs: {
     description = "All-in-one converter configuration language to Nix and vice versa";
     homepage = "https://github.com/theobori/nix-converter";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       theobori
       jaredmontoya
     ];
+
     mainProgram = "nix-converter";
   };
 })

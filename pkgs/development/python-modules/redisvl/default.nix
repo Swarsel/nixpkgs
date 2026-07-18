@@ -1,22 +1,21 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   hatchling,
+  jsonpath-ng,
+  ml-dtypes,
   numpy,
+  pydantic,
+  python-ulid,
   pyyaml,
   redis,
-  pydantic,
   tenacity,
-  ml-dtypes,
-  python-ulid,
-  jsonpath-ng,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "redisvl";
   version = "0.23.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "redis";
@@ -25,9 +24,9 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-8BLt/9Wozvf8SIgwVJedG+T7VwWltEL8Lk922BhwmRM=";
   };
 
+  # tests require a live Redis server with the search/vector module
+  doCheck = false;
   build-system = [ hatchling ];
-
-  pythonRelaxDeps = [ "redis" ];
 
   dependencies = [
     numpy
@@ -40,18 +39,17 @@ buildPythonPackage (finalAttrs: {
     jsonpath-ng
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "redisvl" ];
-
-  # tests require a live Redis server with the search/vector module
-  doCheck = false;
+  pythonRelaxDeps = [ "redis" ];
 
   meta = {
     description = "Python client library and CLI for using Redis as a vector database";
     homepage = " https://redisvl.com";
     changelog = "https://github.com/redis/redis-vl-python/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.mit;
-    mainProgram = "rvl";
     maintainers = with lib.maintainers; [ codgician ];
+    mainProgram = "rvl";
     teams = [ lib.teams.redis ];
   };
 })

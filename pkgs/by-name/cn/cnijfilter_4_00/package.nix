@@ -1,18 +1,18 @@
 {
-  gcc13Stdenv,
   lib,
-  fetchzip,
   autoconf,
   automake,
-  libtool,
   cups,
-  popt,
-  libtiff,
-  libpng,
+  fetchzip,
+  gcc13Stdenv,
   ghostscript,
   glib,
+  libpng,
+  libtiff,
+  libtool,
   libusb1,
   libxml2,
+  popt,
 }:
 
 /*
@@ -33,7 +33,6 @@ let
 in
 stdenv.mkDerivation {
   pname = "cnijfilter";
-
   /*
     important note about versions: cnijfilter packages seem to use
     versions in a non-standard way.  the version indicates which
@@ -52,22 +51,6 @@ stdenv.mkDerivation {
     sha256 = "1f6vpx1z3qa88590i5m0s49j9n90vpk81xmw6pvj0nfd3qbvzkya";
   };
 
-  nativeBuildInputs = [
-    autoconf
-    automake
-  ];
-  buildInputs = [
-    libtool
-    cups
-    popt
-    libtiff
-    libpng
-    ghostscript
-    glib
-    libusb1
-    libxml2
-  ];
-
   # patches from https://github.com/tokiclover/bar-overlay/tree/master/net-print/cnijfilter
   patches = [
     ./patches/cnijfilter-3.80-1-cups-1.6.patch
@@ -84,6 +67,59 @@ stdenv.mkDerivation {
     sed -i "s|/usr/lib/cups/backend|$out/lib/cups/backend|" cnijbe/src/Makefile.am;
     sed -i "s|/usr|$out|" backend/src/cnij_backend_common.c;
     sed -i "s|/usr/bin|${ghostscript}/bin|" pstocanonij/filter/pstocanonij.c;
+  '';
+
+  nativeBuildInputs = [
+    autoconf
+    automake
+  ];
+
+  buildInputs = [
+    libtool
+    cups
+    popt
+    libtiff
+    libpng
+    ghostscript
+    glib
+    libusb1
+    libxml2
+  ];
+
+  preInstall = ''
+    mkdir -p $out/bin $out/lib/cups/filter $out/share/cups/model;
+  '';
+
+  postInstall = ''
+    set -o xtrace
+    for pr in mg2400 mg2500 mg3500 mg5500 mg6400 mg6500 mg7100 p200; do
+      cd ppd;
+      ./autogen.sh --prefix=$out --program-suffix=$pr
+      make clean;
+      make;
+      make install;
+
+      cd ../cnijfilter;
+      ./autogen.sh --prefix=$out --program-suffix=$pr --enable-libpath=/var/lib/cups/path/lib/bjlib --enable-binpath=$out/bin;
+      make clean;
+      make;
+      make install;
+
+      cd ..;
+    done;
+
+    mkdir -p $out/lib/bjlib;
+    for pr_id in 423 424 425 426 427 428 429 430; do
+      install -c -m 755 $pr_id/database/* $out/lib/bjlib;
+      install -c -s -m 755 $pr_id/libs_bin${arch}/*.so.* $out/lib;
+    done;
+
+    pushd $out/lib;
+    for so_file in *.so.*; do
+      ln -s $so_file ''${so_file/.so.*/}.so;
+      patchelf --set-rpath $out/lib $so_file;
+    done;
+    popd;
   '';
 
   configurePhase = ''
@@ -133,42 +169,6 @@ stdenv.mkDerivation {
     runHook postConfigure
   '';
 
-  preInstall = ''
-    mkdir -p $out/bin $out/lib/cups/filter $out/share/cups/model;
-  '';
-
-  postInstall = ''
-    set -o xtrace
-    for pr in mg2400 mg2500 mg3500 mg5500 mg6400 mg6500 mg7100 p200; do
-      cd ppd;
-      ./autogen.sh --prefix=$out --program-suffix=$pr
-      make clean;
-      make;
-      make install;
-
-      cd ../cnijfilter;
-      ./autogen.sh --prefix=$out --program-suffix=$pr --enable-libpath=/var/lib/cups/path/lib/bjlib --enable-binpath=$out/bin;
-      make clean;
-      make;
-      make install;
-
-      cd ..;
-    done;
-
-    mkdir -p $out/lib/bjlib;
-    for pr_id in 423 424 425 426 427 428 429 430; do
-      install -c -m 755 $pr_id/database/* $out/lib/bjlib;
-      install -c -s -m 755 $pr_id/libs_bin${arch}/*.so.* $out/lib;
-    done;
-
-    pushd $out/lib;
-    for so_file in *.so.*; do
-      ln -s $so_file ''${so_file/.so.*/}.so;
-      patchelf --set-rpath $out/lib $so_file;
-    done;
-    popd;
-  '';
-
   /*
     the tarball includes some pre-built shared libraries.  we run
     'patchelf --set-rpath' on them just a few lines above, so that
@@ -184,12 +184,14 @@ stdenv.mkDerivation {
   meta = {
     description = "Canon InkJet printer drivers for the MG2400 MG2500 MG3500 MG5500 MG6400 MG6500 MG7100 and P200 series";
     homepage = "https://www.canon-europe.com/support/consumer_products/products/fax__multifunctionals/inkjet/pixma_mg_series/pixma_mg5550.aspx?type=drivers&driverdetailid=tcm:13-1094072";
+    license = lib.licenses.unfree;
+
     sourceProvenance = with lib.sourceTypes; [
       fromSource
       binaryNativeCode
     ];
-    license = lib.licenses.unfree;
-    platforms = lib.platforms.linux;
+
     maintainers = with lib.maintainers; [ chpatrick ];
+    platforms = lib.platforms.linux;
   };
 }

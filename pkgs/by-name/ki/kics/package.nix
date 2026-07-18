@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   kics,
   testers,
 }:
@@ -19,8 +19,6 @@ buildGoModule (finalAttrs: {
 
   vendorHash = "sha256-TlIrCtnJxB9LI+VT9d+cUcGI1tsuDfWwLiNpa8seK+4=";
 
-  subPackages = [ "cmd/console" ];
-
   postInstall = ''
     mv $out/bin/console $out/bin/kics
   '';
@@ -32,18 +30,22 @@ buildGoModule (finalAttrs: {
     "-X=github.com/Checkmarx/kics/v2/internal/constants.Version=${finalAttrs.version}"
   ];
 
+  subPackages = [ "cmd/console" ];
+
   passthru.tests.version = testers.testVersion {
-    package = kics;
     command = "kics version";
+    package = kics;
   };
 
   meta = {
     description = "Tool to check for vulnerabilities and other issues";
+
     longDescription = ''
       Find security vulnerabilities, compliance issues, and
       infrastructure misconfigurations early in the development
       cycle of your infrastructure-as-code.
     '';
+
     homepage = "https://github.com/Checkmarx/kics";
     changelog = "https://github.com/Checkmarx/kics/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.asl20;

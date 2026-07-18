@@ -1,18 +1,17 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  pytestCheckHook,
-  setuptools,
-  scipy,
+  buildPythonPackage,
   pandas,
+  pytestCheckHook,
+  scipy,
+  setuptools,
 }:
 
 buildPythonPackage {
 
   pname = "gower";
   version = "0.1.2";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "wwwjk366";
@@ -25,6 +24,10 @@ buildPythonPackage {
     ./fix-pyproject_toml.patch
   ];
 
+  nativeCheckInputs = [
+    pytestCheckHook
+  ];
+
   build-system = [ setuptools ];
 
   dependencies = [
@@ -32,11 +35,8 @@ buildPythonPackage {
     pandas
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "gower" ];
-
-  nativeCheckInputs = [
-    pytestCheckHook
-  ];
 
   meta = {
     description = "Gower's distance calculation in Python";

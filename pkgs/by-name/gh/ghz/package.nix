@@ -1,9 +1,9 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
-  testers,
+  buildGoModule,
   ghz,
+  testers,
 }:
 
 buildGoModule (finalAttrs: {
@@ -19,24 +19,25 @@ buildGoModule (finalAttrs: {
 
   vendorHash = "sha256-eu0YPKddYfjbOkF0yrUPu2PsjsyIn2pBm9+CDrRlB2k=";
 
-  subPackages = [
-    "cmd/ghz"
-    "cmd/ghz-web"
-  ];
-
   ldflags = [
     "-s"
     "-w"
     "-X=main.version=${finalAttrs.version}"
   ];
 
+  subPackages = [
+    "cmd/ghz"
+    "cmd/ghz-web"
+  ];
+
   passthru.tests = {
     version = testers.testVersion {
       package = ghz;
     };
+
     web-version = testers.testVersion {
-      package = ghz;
       command = "ghz-web -v";
+      package = ghz;
     };
   };
 

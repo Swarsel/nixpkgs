@@ -32,7 +32,7 @@ stdenv.mkDerivation (finalAttrs: {
     description = "Header-only library for conversion to/from half-precision floating point formats";
     homepage = "https://github.com/Maratyszcza/FP16";
     license = lib.licenses.mit;
-    platforms = lib.platforms.all;
     maintainers = with lib.maintainers; [ phodina ];
+    platforms = lib.platforms.all;
   };
 })

@@ -2,29 +2,29 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  fetchpatch2,
-  swi-prolog,
-  libjwt,
-  rustPlatform,
-  cargo,
-  gmp,
-  mpfr,
-  libmpc,
-  protobuf,
-  pkg-config,
-  callPackage,
   applyPatches,
+  callPackage,
+  cargo,
+  fetchpatch2,
+  gmp,
   installShellFiles,
+  libjwt,
+  libmpc,
+  mpfr,
+  pkg-config,
+  protobuf,
+  rustPlatform,
+  swi-prolog,
 }:
 let
   tusVersion = "0.0.16";
   jwt_ioVersion = "1.0.4";
 
   tus = fetchFromGitHub {
+    hash = "sha256-NQGvDFtGEXhSXIZ7dZ2r13q8hRpYXkA9/NlFKED1ANM=";
     owner = "terminusdb";
     repo = "tus";
     tag = "v${tusVersion}";
-    hash = "sha256-NQGvDFtGEXhSXIZ7dZ2r13q8hRpYXkA9/NlFKED1ANM=";
   };
 
   jwt_io = applyPatches {
@@ -34,22 +34,23 @@ let
       tag = "v${jwt_ioVersion}";
       hash = "sha256-YywD0zg4ft075AaxgNDOuxVxQSsQjP0BXTW5YLl2TS0=";
     };
+
     # TODO: remove if/when merged upstream https://github.com/terminusdb-labs/jwt_io/pull/2
     patches = [
       # Remove problematic ECDSA384 and ECDSA512 tests that segfault due to OpenSSL/libjwt version incompatibilities
       (fetchpatch2 {
-        url = "https://github.com/terminusdb-labs/jwt_io/commit/f2c7066fb8a7d4a16c0b5ce8ccb3086270524976.patch?full_index=1";
         hash = "sha256-A/eonL4MhkJ1L0dBoaiITcE0kTWlkFslpPj377WbdnM=";
+        url = "https://github.com/terminusdb-labs/jwt_io/commit/f2c7066fb8a7d4a16c0b5ce8ccb3086270524976.patch?full_index=1";
       })
       # SWI-Prolog 9.2 makes PL_register_foreign type checks strict; cast to pl_function_t
       (fetchpatch2 {
-        url = "https://github.com/terminusdb-labs/jwt_io/commit/6bd0f2674eefcf80bfd3d1ca465b7af28efdc54e.patch?full_index=1";
         hash = "sha256-EacqYO9ulD6PUxT3gg6PEtQNmwenuKfxdv1a/2IA3wI=";
+        url = "https://github.com/terminusdb-labs/jwt_io/commit/6bd0f2674eefcf80bfd3d1ca465b7af28efdc54e.patch?full_index=1";
       })
       # Allow unresolved SWI-Prolog symbols to resolve at load time on Darwin
       (fetchpatch2 {
-        url = "https://github.com/terminusdb-labs/jwt_io/commit/dbb11e74566e25b7b942c1cbd4742bd485cc6bf5.patch?full_index=1";
         hash = "sha256-BPg28msT3zevNsB4yJeFUai5uW5DgilfESXw32h2gSA=";
+        url = "https://github.com/terminusdb-labs/jwt_io/commit/dbb11e74566e25b7b942c1cbd4742bd485cc6bf5.patch?full_index=1";
       })
     ];
   };
@@ -79,18 +80,12 @@ stdenv.mkDerivation (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-TxLTPwESQ9pGrm/piWyyTwKlYtVogXRdQjnppvjX8F8=";
     leaveDotGit = true;
+
     postFetch = ''
       # Will be used for `TERMINUSDB_GIT_HASH`
       git -C $out rev-parse HEAD > $out/COMMIT
       rm -rf $out/.git
     '';
-  };
-
-  cargoRoot = "src/rust";
-
-  cargoDeps = rustPlatform.fetchCargoVendor {
-    inherit (finalAttrs) src cargoRoot;
-    hash = "sha256-WymXMJaUKz/IT2gDgQYagin1Sfg1akqCU+mkYUs40Ic=";
   };
 
   postPatch = ''
@@ -141,18 +136,13 @@ stdenv.mkDerivation (finalAttrs: {
       (lib.getDev mpfr)
       libmpc
     ];
+
     LIBRARY_PATH = lib.makeLibraryPath [
       gmp
       mpfr
       libmpc
     ];
   };
-
-  checkTarget = "test";
-  doCheck = true;
-
-  # Darwin: (ignored on Linux) allow loopback sockets for tus tests
-  __darwinAllowLocalNetworking = true;
 
   preBuild = ''
     export TERMINUSDB_GIT_HASH=$(cat $src/COMMIT)
@@ -164,8 +154,7 @@ stdenv.mkDerivation (finalAttrs: {
     ln --symbolic --force --no-target-directory $PWD/src $out/share/terminusdb/src
   '';
 
-  # Required for Prolog initialisation
-  dontStrip = true;
+  doCheck = true;
 
   installPhase = ''
     runHook preInstall
@@ -178,14 +167,26 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  # Darwin: (ignored on Linux) allow loopback sockets for tus tests
+  __darwinAllowLocalNetworking = true;
+
+  cargoDeps = rustPlatform.fetchCargoVendor {
+    inherit (finalAttrs) src cargoRoot;
+    hash = "sha256-WymXMJaUKz/IT2gDgQYagin1Sfg1akqCU+mkYUs40Ic=";
+  };
+
+  cargoRoot = "src/rust";
+  checkTarget = "test";
+  # Required for Prolog initialisation
+  dontStrip = true;
+
   passthru.tests = {
     upstream-integration = callPackage ./tests.nix { };
   };
 
   meta = {
     description = "In-memory graph database with Git-like versioned data";
-    homepage = "https://github.com/terminusdb/terminusdb";
-    license = lib.licenses.asl20;
+
     longDescription = ''
       TerminusDB is an open source, in-memory graph database and document store
       for knowledge graphs and structured content. It uses a Git-like, immutable
@@ -193,7 +194,10 @@ stdenv.mkDerivation (finalAttrs: {
       as a headless content platform with schema-driven documents and multiple
       interfaces.
     '';
-    mainProgram = "terminusdb";
+
+    homepage = "https://github.com/terminusdb/terminusdb";
+    license = lib.licenses.asl20;
     maintainers = with lib.maintainers; [ daniel-fahey ];
+    mainProgram = "terminusdb";
   };
 })

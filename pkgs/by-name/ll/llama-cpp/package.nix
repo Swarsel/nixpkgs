@@ -1,25 +1,24 @@
 {
   lib,
-  autoAddDriverRunpath,
-  cmake,
-  fetchFromGitHub,
-  installShellFiles,
-  nix-update-script,
   stdenv,
-
-  config,
-  cudaSupport ? config.cudaSupport,
-  cudaPackages ? { },
-
-  rocmSupport ? config.rocmSupport,
-  rocmPackages ? { },
-  rocmGpuTargets ? rocmPackages.clr.localGpuTargets or rocmPackages.clr.gpuTargets,
-
-  cpuArchDynamicDispatch ? true,
-
-  openclSupport ? false,
+  fetchFromGitHub,
+  autoAddDriverRunpath,
+  blas,
   clblast,
-
+  cmake,
+  config,
+  fetchNpmDeps,
+  installShellFiles,
+  ninja,
+  nix-update-script,
+  nodejs_latest,
+  npmHooks,
+  openssl,
+  pkg-config,
+  shaderc,
+  spirv-headers,
+  vulkan-headers,
+  vulkan-loader,
   blasSupport ? builtins.all (x: !x) [
     cudaSupport
     metalSupport
@@ -27,22 +26,16 @@
     rocmSupport
     vulkanSupport
   ],
-  blas,
-
-  fetchNpmDeps,
-  nodejs_latest,
-  npmHooks,
-
-  pkg-config,
+  cpuArchDynamicDispatch ? true,
+  cudaPackages ? { },
+  cudaSupport ? config.cudaSupport,
   metalSupport ? stdenv.hostPlatform.isDarwin && !openclSupport,
-  vulkanSupport ? false,
+  openclSupport ? false,
+  rocmGpuTargets ? rocmPackages.clr.localGpuTargets or rocmPackages.clr.gpuTargets,
+  rocmPackages ? { },
+  rocmSupport ? config.rocmSupport,
   rpcSupport ? false,
-  openssl,
-  shaderc,
-  vulkan-headers,
-  vulkan-loader,
-  spirv-headers,
-  ninja,
+  vulkanSupport ? false,
 }:
 
 let
@@ -82,22 +75,23 @@ effectiveStdenv.mkDerivation (finalAttrs: {
   pname = "llama-cpp";
   version = "9925";
 
-  outputs = [
-    "out"
-    "dev"
-  ];
-
   src = fetchFromGitHub {
     owner = "ggml-org";
     repo = "llama.cpp";
     tag = "b${finalAttrs.version}";
     hash = "sha256-yX8BrHA0fIgIozBGOXnN72KlfqIcR/mnO5ttUBLvxZE=";
     leaveDotGit = true;
+
     postFetch = ''
       git -C "$out" rev-parse --short HEAD > $out/COMMIT
       find "$out" -name .git -print0 | xargs -0 rm -rf
     '';
   };
+
+  outputs = [
+    "out"
+    "dev"
+  ];
 
   patches = [ ];
 
@@ -123,23 +117,7 @@ effectiveStdenv.mkDerivation (finalAttrs: {
     ++ optionals vulkanSupport vulkanBuildInputs
     ++ [ openssl ];
 
-  npmRoot = "tools/ui";
   npmDepsHash = "sha256-6s9skw1wzEfm9QKktTqea3J+oudQAsS6O2VnZEMXAdw=";
-  npmDeps = fetchNpmDeps {
-    name = "${finalAttrs.pname}-${finalAttrs.version}-npm-deps";
-    inherit (finalAttrs) src patches;
-    preBuild = ''
-      pushd ${finalAttrs.npmRoot}
-    '';
-    hash = finalAttrs.npmDepsHash;
-  };
-
-  preConfigure = ''
-    prependToVar cmakeFlags "-DLLAMA_BUILD_COMMIT:STRING=$(cat COMMIT)"
-    pushd ${finalAttrs.npmRoot}
-    LLAMA_BUILD_NUMBER=${finalAttrs.version} npm run build
-    popd
-  '';
 
   cmakeFlags = [
     (cmakeBool "GGML_NATIVE" false) # -march=native would make builds non-deterministic
@@ -186,6 +164,16 @@ effectiveStdenv.mkDerivation (finalAttrs: {
     (cmakeBool "CMAKE_SKIP_BUILD_RPATH" true)
   ];
 
+  preConfigure = ''
+    prependToVar cmakeFlags "-DLLAMA_BUILD_COMMIT:STRING=$(cat COMMIT)"
+    pushd ${finalAttrs.npmRoot}
+    LLAMA_BUILD_NUMBER=${finalAttrs.version} npm run build
+    popd
+  '';
+
+  # the tests are failing as of 2025-08
+  doCheck = false;
+
   # upstream plans on adding targets at the cmakelevel, remove those
   # additional steps after that
   postInstall = ''
@@ -198,12 +186,23 @@ effectiveStdenv.mkDerivation (finalAttrs: {
   ''
   + optionalString rpcSupport "cp bin/rpc-server $out/bin/llama-rpc-server";
 
-  # the tests are failing as of 2025-08
-  doCheck = false;
+  npmDeps = fetchNpmDeps {
+    inherit (finalAttrs) src patches;
+
+    preBuild = ''
+      pushd ${finalAttrs.npmRoot}
+    '';
+
+    hash = finalAttrs.npmDepsHash;
+    name = "${finalAttrs.pname}-${finalAttrs.version}-npm-deps";
+  };
+
+  npmRoot = "tools/ui";
 
   passthru = {
     updateScript = nix-update-script {
       attrPath = "llama-cpp";
+
       extraArgs = [
         "--version-regex"
         "b(.*)"
@@ -215,15 +214,17 @@ effectiveStdenv.mkDerivation (finalAttrs: {
     description = "Inference of Meta's LLaMA model (and others) in pure C/C++";
     homepage = "https://github.com/ggml-org/llama.cpp";
     license = lib.licenses.mit;
-    mainProgram = "llama";
+
     maintainers = with lib.maintainers; [
       booxter
       philiptaron
       xddxdd
       yuannan
     ];
+
     platforms = lib.platforms.unix;
     badPlatforms = optionals (cudaSupport || openclSupport) lib.platforms.darwin;
+    mainProgram = "llama";
     broken = metalSupport && !effectiveStdenv.hostPlatform.isDarwin;
   };
 })

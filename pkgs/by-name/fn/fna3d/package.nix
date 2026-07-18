@@ -2,9 +2,9 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  nix-update-script,
-  cmake,
   SDL2,
+  cmake,
+  nix-update-script,
   sdl3,
   useSDL3 ? false,
 }:
@@ -17,15 +17,16 @@ stdenv.mkDerivation (finalAttrs: {
     owner = "FNA-XNA";
     repo = "FNA3D";
     tag = finalAttrs.version;
-    fetchSubmodules = true;
     hash = "sha256-p85nZzpegjXQTUv64Pxhn6BxBTUN5bOs73cgqLu79GI=";
+    fetchSubmodules = true;
   };
+
+  nativeBuildInputs = [ cmake ];
+  buildInputs = if useSDL3 then [ sdl3 ] else [ SDL2 ];
 
   cmakeFlags = [
     (lib.cmakeBool "BUILD_SDL3" useSDL3)
   ];
-  buildInputs = if useSDL3 then [ sdl3 ] else [ SDL2 ];
-  nativeBuildInputs = [ cmake ];
 
   passthru.updateScript = nix-update-script { };
 
@@ -33,7 +34,7 @@ stdenv.mkDerivation (finalAttrs: {
     description = "Accuracy-focused XNA4 reimplementation for open platforms";
     homepage = "https://fna-xna.github.io/";
     license = lib.licenses.zlib;
-    platforms = lib.platforms.linux;
     maintainers = with lib.maintainers; [ mrtnvgr ];
+    platforms = lib.platforms.linux;
   };
 })

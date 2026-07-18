@@ -7,6 +7,7 @@
 stdenv.mkDerivation (finalAttrs: {
   pname = "enchive";
   version = "3.5";
+
   src = fetchFromGitHub {
     owner = "skeeto";
     repo = "enchive";
@@ -23,10 +24,10 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Encrypted personal archives";
-    mainProgram = "enchive";
     homepage = "https://github.com/skeeto/enchive";
     license = lib.licenses.unlicense;
-    platforms = lib.platforms.unix;
     maintainers = [ lib.maintainers.nico202 ];
+    platforms = lib.platforms.unix;
+    mainProgram = "enchive";
   };
 })

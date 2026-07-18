@@ -7,7 +7,6 @@
 python3.pkgs.buildPythonApplication (finalAttrs: {
   pname = "knockpy";
   version = "9.0.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "guelfoweb";
@@ -16,13 +15,8 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     hash = "sha256-azgciGYf6Km6MuBE7RRHhcx1hhc309FTv3KOfZ25Iqo=";
   };
 
-  pythonRelaxDeps = [
-    "dnspython"
-    "httpx"
-    "pyopenssl"
-    "python-dotenv"
-    "rich"
-  ];
+  # Project has no tests
+  doCheck = false;
 
   build-system = with python3.pkgs; [
     setuptools
@@ -37,10 +31,16 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     rich
   ];
 
-  # Project has no tests
-  doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "knockpy" ];
+
+  pythonRelaxDeps = [
+    "dnspython"
+    "httpx"
+    "pyopenssl"
+    "python-dotenv"
+    "rich"
+  ];
 
   meta = {
     description = "Tool to scan subdomains";

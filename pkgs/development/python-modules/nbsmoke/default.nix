@@ -1,22 +1,21 @@
 {
   lib,
+  beautifulsoup4,
   buildPythonPackage,
   fetchPypi,
-  pytest,
-  jupyter-client,
-  ipykernel,
   holoviews,
-  nbformat,
+  ipykernel,
+  jupyter-client,
   nbconvert,
+  nbformat,
   pyflakes,
+  pytest,
   requests,
-  beautifulsoup4,
 }:
 
 buildPythonPackage rec {
   pname = "nbsmoke";
   version = "0.6.0";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
@@ -37,6 +36,7 @@ buildPythonPackage rec {
 
   # tests not included with pypi release
   doCheck = false;
+  format = "setuptools";
   pythonImportsCheck = [ "nbsmoke" ];
 
   meta = {

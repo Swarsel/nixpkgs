@@ -1,13 +1,13 @@
 {
   lib,
-  stdenvNoCC,
   fetchFromGitHub,
   fetchYarnDeps,
-  yarnConfigHook,
-  yarnBuildHook,
-  yarnInstallHook,
-  nodejs,
   nix-update-script,
+  nodejs,
+  stdenvNoCC,
+  yarnBuildHook,
+  yarnConfigHook,
+  yarnInstallHook,
 }:
 stdenvNoCC.mkDerivation (finalAttrs: {
   pname = "coc-explorer";
@@ -20,11 +20,6 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     hash = "sha256-lIJloatVEKPM36GE/xpVk+cx8Jz89BWU8qsNjc1eoFw=";
   };
 
-  yarnOfflineCache = fetchYarnDeps {
-    yarnLock = "${finalAttrs.src}/yarn.lock";
-    hash = "sha256-w2La2GTJfHjn6qaVQaHsQp8V2KNx2hqDVuBJUYk6WKg=";
-  };
-
   nativeBuildInputs = [
     yarnConfigHook
     yarnBuildHook
@@ -33,6 +28,11 @@ stdenvNoCC.mkDerivation (finalAttrs: {
   ];
 
   yarnBuildScript = "build:pack";
+
+  yarnOfflineCache = fetchYarnDeps {
+    hash = "sha256-w2La2GTJfHjn6qaVQaHsQp8V2KNx2hqDVuBJUYk6WKg=";
+    yarnLock = "${finalAttrs.src}/yarn.lock";
+  };
 
   passthru.updateScript = nix-update-script { };
 

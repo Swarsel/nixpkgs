@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   installShellFiles,
 }:
 
@@ -17,19 +17,18 @@ buildGoModule (finalAttrs: {
   };
 
   nativeBuildInputs = [ installShellFiles ];
-
   vendorHash = "sha256-jqJtWLwLO0UsDa6Al2Jb0fc3nwSWMMNc/ikxtMOPpCE=";
-
-  ldflags = [
-    "-w"
-    "-s"
-  ];
 
   postInstall = ''
     installShellCompletion --cmd crawley \
       --bash <(echo "complete -C $out/bin/crawley crawley") \
       --zsh <(echo "complete -o nospace -C $out/bin/crawley crawley")
   '';
+
+  ldflags = [
+    "-w"
+    "-s"
+  ];
 
   meta = {
     description = "Unix-way web crawler";

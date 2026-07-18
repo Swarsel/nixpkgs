@@ -2,15 +2,15 @@
   lib,
   stdenv,
   fetchurl,
+  autoreconfHook,
+  curl,
+  flac,
+  libao,
+  libiconv,
   libogg,
   libvorbis,
-  libao,
   pkg-config,
-  curl,
-  libiconv,
   speex,
-  flac,
-  autoreconfHook,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -26,6 +26,7 @@ stdenv.mkDerivation (finalAttrs: {
     autoreconfHook
     pkg-config
   ];
+
   buildInputs = [
     libogg
     libvorbis
@@ -40,10 +41,12 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Extra tools for Ogg-Vorbis audio codec";
+
     longDescription = ''
       A set of command-line tools to manipulate Ogg Vorbis audio
       files, notably the `ogg123' player and the `oggenc' encoder.
     '';
+
     homepage = "https://xiph.org/vorbis/";
     license = lib.licenses.gpl2;
     platforms = lib.platforms.all;

@@ -2,16 +2,16 @@
   lib,
   stdenv,
   fetchFromGitHub,
+  boost,
   buildPackages,
   cmake,
-  boost,
   lua,
   protobuf_21,
   rapidjson,
   shapelib,
   sqlite,
-  zlib,
   versionCheckHook,
+  zlib,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -64,8 +64,8 @@ stdenv.mkDerivation (finalAttrs: {
     homepage = "https://tilemaker.org/";
     changelog = "https://github.com/systemed/tilemaker/blob/v${finalAttrs.version}/CHANGELOG.md";
     license = lib.licenses.free; # FTWPL
-    teams = [ lib.teams.geospatial ];
     platforms = lib.platforms.unix;
     mainProgram = "tilemaker";
+    teams = [ lib.teams.geospatial ];
   };
 })

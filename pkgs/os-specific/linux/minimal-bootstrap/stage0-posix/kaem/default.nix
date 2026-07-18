@@ -1,13 +1,13 @@
 {
   lib,
   derivationWithMeta,
-  writeText,
   kaem,
   kaem-unwrapped,
   mescc-tools,
   mescc-tools-extra,
-  version,
   platforms,
+  version,
+  writeText,
 }:
 
 # Once mescc-tools-extra is available we can install kaem at /bin/kaem
@@ -15,7 +15,8 @@
 derivationWithMeta {
   inherit version kaem-unwrapped;
   pname = "kaem";
-  builder = kaem-unwrapped;
+  PATH = lib.makeBinPath [ mescc-tools-extra ];
+
   args = [
     "--verbose"
     "--strict"
@@ -26,21 +27,14 @@ derivationWithMeta {
       chmod 555 ''${out}/bin/kaem
     '')
   ];
-  PATH = lib.makeBinPath [ mescc-tools-extra ];
+
+  builder = kaem-unwrapped;
 
   passthru.runCommand =
     name: env: buildCommand:
     derivationWithMeta (
       {
         inherit name;
-
-        builder = "${kaem}/bin/kaem";
-        args = [
-          "--verbose"
-          "--strict"
-          "--file"
-          (writeText "${name}-builder" buildCommand)
-        ];
 
         PATH = lib.makeBinPath (
           (env.nativeBuildInputs or [ ])
@@ -50,15 +44,24 @@ derivationWithMeta {
             mescc-tools-extra
           ]
         );
+
+        args = [
+          "--verbose"
+          "--strict"
+          "--file"
+          (writeText "${name}-builder" buildCommand)
+        ];
+
+        builder = "${kaem}/bin/kaem";
       }
       // (removeAttrs env [ "nativeBuildInputs" ])
     );
 
   meta = {
+    inherit platforms;
     description = "Minimal build tool for running scripts on systems that lack any shell";
     homepage = "https://github.com/oriansj/mescc-tools";
     license = lib.licenses.gpl3Plus;
     teams = [ lib.teams.minimal-bootstrap ];
-    inherit platforms;
   };
 }

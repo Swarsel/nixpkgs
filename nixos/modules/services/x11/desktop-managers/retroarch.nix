@@ -20,28 +20,31 @@ in
     };
 
     extraArgs = mkOption {
-      type = types.listOf types.str;
       default = [ ];
+      description = "Extra arguments to pass to RetroArch.";
+
       example = [
         "--verbose"
         "--host"
       ];
-      description = "Extra arguments to pass to RetroArch.";
+
+      type = types.listOf types.str;
     };
   };
 
   config = mkIf cfg.enable {
+    environment.systemPackages = [ cfg.package ];
+
     services.xserver.desktopManager.session = [
       {
         name = "RetroArch";
+
         start = ''
           ${cfg.package}/bin/retroarch -f ${escapeShellArgs cfg.extraArgs} &
           waitPID=$!
         '';
       }
     ];
-
-    environment.systemPackages = [ cfg.package ];
   };
 
   meta.maintainers = with maintainers; [ j0hax ];

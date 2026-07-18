@@ -1,12 +1,12 @@
 # Based on https://github.com/justinwoo/easy-purescript-nix/blob/master/psc-package-simple.nix
 {
-  stdenv,
   lib,
+  stdenv,
   fetchurl,
   gmp,
-  zlib,
-  libiconv,
   installShellFiles,
+  libiconv,
+  zlib,
 }:
 
 let
@@ -15,7 +15,6 @@ let
 in
 stdenv.mkDerivation (finalAttrs: {
   pname = "psc-package-simple";
-
   version = "0.6.2";
 
   src =
@@ -30,15 +29,12 @@ stdenv.mkDerivation (finalAttrs: {
         sha256 = "1zvay9q3xj6yd76w6qyb9la4jaj9zvpf4dp78xcznfqbnbhm1a54";
       };
 
+  nativeBuildInputs = [ installShellFiles ];
+
   buildInputs = [
     gmp
     zlib
   ];
-  nativeBuildInputs = [ installShellFiles ];
-
-  libPath = lib.makeLibraryPath finalAttrs.buildInputs;
-
-  dontStrip = true;
 
   installPhase = ''
     mkdir -p $out/bin
@@ -65,13 +61,18 @@ stdenv.mkDerivation (finalAttrs: {
       --zsh <($PSC_PACKAGE --zsh-completion-script $PSC_PACKAGE)
   '';
 
+  dontStrip = true;
+  libPath = lib.makeLibraryPath finalAttrs.buildInputs;
+
   meta = {
     description = "Package manager for PureScript based on package sets";
-    mainProgram = "psc-package";
     license = lib.licenses.bsd3;
     maintainers = [ ];
+
     platforms = [
       "x86_64-linux"
     ];
+
+    mainProgram = "psc-package";
   };
 })

@@ -3,30 +3,35 @@
   stdenv,
   buildPythonPackage,
   fetchPypi,
-
+  matplotlib,
   # Runtime dependencies
   networkx,
-  matplotlib,
   numpy,
-  tqdm,
-  scipy,
-
-  # Build, dev and test dependencies
-  setuptools-scm,
-  pytestCheckHook,
   pytest-check,
   pytest-mock,
+  pytestCheckHook,
+  scipy,
+  # Build, dev and test dependencies
+  setuptools-scm,
+  tqdm,
 }:
 
 buildPythonPackage rec {
   pname = "hebg";
   version = "0.2.4";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
     hash = "sha256-11bz+FbnaEVLiXT1eujMw8lvABlzVOeROOsdVgsyfjQ=";
   };
+
+  env = lib.optionalAttrs stdenv.hostPlatform.isDarwin { MPLBACKEND = "Agg"; };
+
+  nativeCheckInputs = [
+    pytestCheckHook
+    pytest-check
+    pytest-mock
+  ];
 
   build-system = [ setuptools-scm ];
 
@@ -38,18 +43,12 @@ buildPythonPackage rec {
     scipy
   ];
 
-  nativeCheckInputs = [
-    pytestCheckHook
-    pytest-check
-    pytest-mock
-  ];
-  env = lib.optionalAttrs stdenv.hostPlatform.isDarwin { MPLBACKEND = "Agg"; };
-
   disabledTests = [
     # exec()'d class no longer leaks into locals() under PEP 667
     "test_exec_codegen"
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "hebg" ];
 
   meta = {

@@ -1,21 +1,29 @@
 {
   lib,
+  stdenv,
+  fetchFromGitLab,
   bash,
   bash-completion,
   bridge-utils,
+  ceph,
   coreutils,
   curl,
   darwin,
   dbus,
   dnsmasq,
   docutils,
-  fetchFromGitLab,
   gettext,
   glib,
+  glusterfs,
+  # Darwin
+  gmp,
   gnutls,
   iproute2,
   iptables,
+  json_c,
   libgcrypt,
+  libiconv,
+  libiscsi,
   libpcap,
   libtasn1,
   libxml2,
@@ -24,30 +32,37 @@
   meson,
   nftables,
   ninja,
+  nixosTests,
+  openiscsi,
   openssh,
   passt,
   perl,
   perlPackages,
-  polkit,
   pkg-config,
   pmutils,
+  polkit,
   python3,
+  qemu,
   readline,
+  replaceVars,
   rpcsvc-proto,
   runtimeShell,
-  stdenv,
-  replaceVars,
-  xhtml1,
-  json_c,
   writeScript,
   writeShellApplication,
-  nixosTests,
-
+  xen,
+  xhtml1,
+  zfs,
   # Linux
   acl ? null,
   attr ? null,
   audit ? null,
   dmidecode ? null,
+  # Options
+  enableCeph ? false,
+  enableGlusterfs ? false,
+  enableIscsi ? false,
+  enableXen ? stdenv.hostPlatform.isLinux && stdenv.hostPlatform.isx86_64,
+  enableZfs ? stdenv.hostPlatform.isLinux,
   fuse3 ? null,
   kmod ? null,
   libapparmor ? null,
@@ -61,24 +76,6 @@
   parted ? null,
   systemd ? null,
   util-linux ? null,
-
-  # Darwin
-  gmp,
-  libiconv,
-  qemu,
-
-  # Options
-  enableCeph ? false,
-  ceph,
-  enableGlusterfs ? false,
-  glusterfs,
-  enableIscsi ? false,
-  openiscsi,
-  libiscsi,
-  enableXen ? stdenv.hostPlatform.isLinux && stdenv.hostPlatform.isx86_64,
-  xen,
-  enableZfs ? stdenv.hostPlatform.isLinux,
-  zfs,
 }:
 
 let
@@ -127,8 +124,8 @@ stdenv.mkDerivation rec {
     owner = "libvirt";
     repo = "libvirt";
     tag = "v${version}";
-    fetchSubmodules = true;
     hash = "sha256-xgXbgZ8UDdiKPJSGEHB5PasGws5VvCgd+DpoOxwceEA=";
+    fetchSubmodules = true;
   };
 
   patches = [
@@ -189,10 +186,12 @@ stdenv.mkDerivation rec {
     let
       script = writeShellApplication {
         name = "virt-secret-init-encryption-sh";
+
         runtimeInputs = [
           coreutils
           systemd
         ];
+
         text = ''exec ${runtimeShell} "$@"'';
       };
     in
@@ -265,43 +264,6 @@ stdenv.mkDerivation rec {
   ]
   ++ lib.optionals enableXen [ xen ]
   ++ lib.optionals enableZfs [ zfs ];
-
-  preConfigure =
-    let
-      overrides = {
-        QEMU_BRIDGE_HELPER = "/run/wrappers/bin/qemu-bridge-helper";
-        QEMU_PR_HELPER = "/run/libvirt/nix-helpers/qemu-pr-helper";
-      };
-
-      patchBuilder = var: value: ''
-        sed -i meson.build -e "s|conf.set_quoted('${var}',.*|conf.set_quoted('${var}','${value}')|"
-      '';
-    in
-    ''
-      PATH="${binPath}:$PATH"
-      # the path to qemu-kvm will be stored in VM's .xml and .save files
-      # do not use "''${qemu_kvm}/bin/qemu-kvm" to avoid bound VMs to particular qemu derivations
-      substituteInPlace src/lxc/lxc_conf.c \
-        --replace 'lxc_path,' '"/run/libvirt/nix-emulators/libvirt_lxc",'
-
-      substituteInPlace build-aux/meson.build \
-        --replace "gsed" "sed" \
-        --replace "gmake" "make" \
-        --replace "ggrep" "grep"
-
-      substituteInPlace src/util/virpolkit.h \
-        --replace '"/usr/bin/pkttyagent"' '"${if isLinux then polkit.bin else "/usr"}/bin/pkttyagent"'
-
-      substituteInPlace src/util/virpci.c \
-         --replace '/lib/modules' '${
-           if isLinux then "/run/booted-system/kernel-modules" else ""
-         }/lib/modules'
-
-      patchShebangs .
-    ''
-    + (lib.concatStringsSep "\n" (lib.mapAttrsToList patchBuilder overrides));
-
-  mesonAutoFeatures = "disabled";
 
   mesonFlags =
     let
@@ -380,6 +342,41 @@ stdenv.mkDerivation rec {
       (storage "zfs" enableZfs)
     ];
 
+  preConfigure =
+    let
+      overrides = {
+        QEMU_BRIDGE_HELPER = "/run/wrappers/bin/qemu-bridge-helper";
+        QEMU_PR_HELPER = "/run/libvirt/nix-helpers/qemu-pr-helper";
+      };
+
+      patchBuilder = var: value: ''
+        sed -i meson.build -e "s|conf.set_quoted('${var}',.*|conf.set_quoted('${var}','${value}')|"
+      '';
+    in
+    ''
+      PATH="${binPath}:$PATH"
+      # the path to qemu-kvm will be stored in VM's .xml and .save files
+      # do not use "''${qemu_kvm}/bin/qemu-kvm" to avoid bound VMs to particular qemu derivations
+      substituteInPlace src/lxc/lxc_conf.c \
+        --replace 'lxc_path,' '"/run/libvirt/nix-emulators/libvirt_lxc",'
+
+      substituteInPlace build-aux/meson.build \
+        --replace "gsed" "sed" \
+        --replace "gmake" "make" \
+        --replace "ggrep" "grep"
+
+      substituteInPlace src/util/virpolkit.h \
+        --replace '"/usr/bin/pkttyagent"' '"${if isLinux then polkit.bin else "/usr"}/bin/pkttyagent"'
+
+      substituteInPlace src/util/virpci.c \
+         --replace '/lib/modules' '${
+           if isLinux then "/run/booted-system/kernel-modules" else ""
+         }/lib/modules'
+
+      patchShebangs .
+    ''
+    + (lib.concatStringsSep "\n" (lib.mapAttrsToList patchBuilder overrides));
+
   doCheck = true;
 
   postInstall = ''
@@ -410,6 +407,9 @@ stdenv.mkDerivation rec {
       --prefix PATH : /run/libvirt/nix-emulators:${binPath}
   '';
 
+  mesonAutoFeatures = "disabled";
+  passthru.tests.libvirtd = nixosTests.libvirtd;
+
   passthru.updateScript = writeScript "update-libvirt" ''
     #!/usr/bin/env nix-shell
     #!nix-shell -i bash -p curl jq common-updater-scripts
@@ -423,18 +423,18 @@ stdenv.mkDerivation rec {
     update-source-version perlPackages.SysVirt "$sysvirtVersion" --file="pkgs/top-level/perl-packages.nix"
   '';
 
-  passthru.tests.libvirtd = nixosTests.libvirtd;
-
   meta = {
     description = "Toolkit to interact with the virtualization capabilities of recent versions of Linux and other OSes";
     homepage = "https://libvirt.org/";
     changelog = "https://gitlab.com/libvirt/libvirt/-/raw/v${version}/NEWS.rst";
     license = lib.licenses.lgpl2Plus;
-    platforms = lib.platforms.unix;
+
     maintainers = with lib.maintainers; [
       fpletz
       lovesegfault
       phip1611
     ];
+
+    platforms = lib.platforms.unix;
   };
 }

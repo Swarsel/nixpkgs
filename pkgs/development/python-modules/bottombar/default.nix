@@ -1,14 +1,13 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   flit-core,
 }:
 
 buildPythonPackage rec {
   pname = "bottombar";
   version = "2.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "evalf";
@@ -18,10 +17,10 @@ buildPythonPackage rec {
   };
 
   nativeBuildInputs = [ flit-core ];
-
   # The package only has some "interactive" tests where a user must check for
   # the correct output and hit enter after every check
   doCheck = false;
+  pyproject = true;
   pythonImportsCheck = [ "bottombar" ];
 
   meta = {

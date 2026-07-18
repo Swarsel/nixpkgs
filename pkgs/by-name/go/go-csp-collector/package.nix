@@ -1,10 +1,10 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
-  versionCheckHook,
+  buildGoModule,
   nix-update-script,
   nixosTests,
+  versionCheckHook,
 }:
 
 buildGoModule (finalAttrs: {
@@ -20,12 +20,6 @@ buildGoModule (finalAttrs: {
 
   vendorHash = "sha256-gto2lD3atZTy5QMECarLBWQR7Z1bBlFAoJtJYrzg7bY=";
 
-  ldflags = [
-    "-s"
-    "-w"
-    "-X main.Rev=${finalAttrs.version}"
-  ];
-
   postInstall = ''
     install -Dm644 init/go-csp-collector.service $out/lib/systemd/system/go-csp-collector.service
 
@@ -35,11 +29,18 @@ buildGoModule (finalAttrs: {
 
   doInstallCheck = true;
   nativeInstallCheckInputs = [ versionCheckHook ];
+
+  ldflags = [
+    "-s"
+    "-w"
+    "-X main.Rev=${finalAttrs.version}"
+  ];
+
   versionCheckProgramArg = "-version";
 
   passthru = {
-    updateScript = nix-update-script { };
     tests.service = nixosTests.go-csp-collector;
+    updateScript = nix-update-script { };
   };
 
   meta = {
@@ -47,7 +48,7 @@ buildGoModule (finalAttrs: {
     homepage = "https://github.com/jacobbednarz/go-csp-collector";
     changelog = "https://github.com/jacobbednarz/go-csp-collector/blob/${finalAttrs.src.tag}/CHANGELOG.md";
     license = lib.licenses.mit;
-    mainProgram = "go-csp-collector";
     maintainers = with lib.maintainers; [ stepbrobd ];
+    mainProgram = "go-csp-collector";
   };
 })

@@ -1,14 +1,13 @@
 {
   lib,
-  python3Packages,
   fetchFromGitHub,
-  slurp,
   nix-update-script,
+  python3Packages,
+  slurp,
 }:
 python3Packages.buildPythonApplication (finalAttrs: {
   pname = "swaytools";
   version = "0.1.2";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "tmccombs";
@@ -18,14 +17,13 @@ python3Packages.buildPythonApplication (finalAttrs: {
   };
 
   nativeBuildInputs = with python3Packages; [ setuptools ];
-
   propagatedBuildInputs = [ slurp ];
-
+  pyproject = true;
   passthru.updateScript = nix-update-script { };
 
   meta = {
-    homepage = "https://github.com/tmccombs/swaytools";
     description = "Collection of simple tools for sway (and i3)";
+    homepage = "https://github.com/tmccombs/swaytools";
     license = lib.licenses.gpl3Only;
     maintainers = [ ];
     platforms = lib.platforms.linux;

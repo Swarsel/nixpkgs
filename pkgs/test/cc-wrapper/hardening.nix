@@ -1,13 +1,13 @@
 {
   lib,
   stdenv,
-  runCommand,
-  runCommandWith,
-  runCommandCC,
-  writeText,
   bintools,
-  hello,
   debian-devscripts,
+  hello,
+  runCommand,
+  runCommandCC,
+  runCommandWith,
+  writeText,
 }:
 
 let
@@ -17,14 +17,15 @@ let
     codePath: stdenv': env:
     runCommandWith
       {
-        name = "test-bin";
-        stdenv = stdenv';
         derivationArgs = {
           inherit codePath;
-          preferLocalBuild = true;
           allowSubstitutes = false;
+          preferLocalBuild = true;
         }
         // env;
+
+        name = "test-bin";
+        stdenv = stdenv';
       }
       ''
         [ -n "$postConfigure" ] && eval "$postConfigure"
@@ -105,10 +106,12 @@ let
         preBuild = ''
           export CFLAGS="$TEST_EXTRA_FLAGS"
         '';
-        NIX_DEBUG = "1";
+
         postFixup = ''
           cp $out/bin/hello $out/bin/test-bin
         '';
+
+        NIX_DEBUG = "1";
       }
       // env
     );
@@ -116,16 +119,11 @@ let
   stdenvUnsupport =
     additionalUnsupported:
     stdenv.override {
+      allowedRequisites = null;
+
       cc = stdenv.cc.override {
         cc = (
           lib.extendDerivation true rec {
-            # this is ugly - have to cross-reference from
-            # hardeningUnsupportedFlagsByTargetPlatform to hardeningUnsupportedFlags
-            # because the finalAttrs mechanism that hardeningUnsupportedFlagsByTargetPlatform
-            # implementations use to do this won't work with lib.extendDerivation.
-            # but it's simplified by the fact that targetPlatform is already fixed
-            # at this point.
-            hardeningUnsupportedFlagsByTargetPlatform = _: hardeningUnsupportedFlags;
             hardeningUnsupportedFlags =
               (
                 if stdenv.cc.cc ? hardeningUnsupportedFlagsByTargetPlatform then
@@ -134,23 +132,30 @@ let
                   (stdenv.cc.cc.hardeningUnsupportedFlags or [ ])
               )
               ++ additionalUnsupported;
+
+            # this is ugly - have to cross-reference from
+            # hardeningUnsupportedFlagsByTargetPlatform to hardeningUnsupportedFlags
+            # because the finalAttrs mechanism that hardeningUnsupportedFlagsByTargetPlatform
+            # implementations use to do this won't work with lib.extendDerivation.
+            # but it's simplified by the fact that targetPlatform is already fixed
+            # at this point.
+            hardeningUnsupportedFlagsByTargetPlatform = _: hardeningUnsupportedFlags;
           } stdenv.cc.cc
         );
       };
-      allowedRequisites = null;
     };
 
   checkTestBin =
     testBin:
     {
+      expectFailure ? false,
       # can only test flags that are detectable by hardening-check
       ignoreBindNow ? true,
       ignoreFortify ? true,
       ignorePie ? true,
       ignoreRelRO ? true,
-      ignoreStackProtector ? true,
       ignoreStackClashProtection ? true,
-      expectFailure ? false,
+      ignoreStackProtector ? true,
     }:
     let
       stackClashStr = "Stack clash protection: yes";
@@ -160,12 +165,14 @@ let
       {
         nativeBuildInputs = [ debian-devscripts ];
         buildInputs = [ testBin ];
+
         meta = {
           platforms =
             if ignoreStackClashProtection then
               lib.platforms.linux # ELF-reliant
             else
               [ "x86_64-linux" ]; # stackclashprotection test looks for x86-specific instructions
+
           # musl implementation of fortify undetectable by this means even if present,
           # static similarly
           broken = (stdenv.hostPlatform.isMusl || stdenv.hostPlatform.isStatic) && !ignoreFortify;
@@ -220,6 +227,7 @@ let
         buildInputs = [
           testBin
         ];
+
         meta.broken = !(stdenv.buildPlatform.canExecute stdenv.hostPlatform);
       }
       ''
@@ -265,6 +273,7 @@ let
         nativeBuildInputs = [
           bintools
         ];
+
         buildInputs = [
           testBin
         ];
@@ -298,6 +307,7 @@ let
         nativeBuildInputs = [
           bintools
         ];
+
         buildInputs = [
           testBin
         ];
@@ -323,6 +333,16 @@ let
 in
 nameDrvAfterAttrName (
   {
+    bindNowExplicitDisabled =
+      checkTestBin
+        (f2exampleWithStdEnv stdenv {
+          hardeningDisable = [ "bindnow" ];
+        })
+        {
+          expectFailure = true;
+          ignoreBindNow = false;
+        };
+
     bindNowExplicitEnabled = brokenIf stdenv.hostPlatform.isStatic (
       checkTestBin
         (f2exampleWithStdEnv stdenv {
@@ -333,15 +353,54 @@ nameDrvAfterAttrName (
         }
     );
 
-    fortifyExplicitEnabled = (
+    # current implementation doesn't force-disable fortify if
+    # command-line enables it even if we use hardeningDisable.
+    fortify1ExplicitDisabledCmdlineEnabled =
       checkTestBin
-        (f2exampleWithStdEnv stdenv {
-          hardeningEnable = [ "fortify" ];
+        (f1exampleWithStdEnv stdenv {
+          postConfigure = ''
+            export TEST_EXTRA_FLAGS='-D_FORTIFY_SOURCE=1'
+          '';
+
+          hardeningDisable = [ "fortify" ];
         })
         {
           ignoreFortify = false;
-        }
+        };
+
+    fortify1ExplicitDisabledCmdlineEnabledExecTest = fortifyExecTest (
+      f1exampleWithStdEnv stdenv {
+        postConfigure = ''
+          export TEST_EXTRA_FLAGS='-D_FORTIFY_SOURCE=1'
+        '';
+
+        hardeningDisable = [ "fortify" ];
+      }
     );
+
+    # current implementation prevents the command-line from disabling
+    # fortify if cc-wrapper is enabling it.
+    fortify1ExplicitEnabledCmdlineDisabled =
+      checkTestBin
+        (f1exampleWithStdEnv stdenv {
+          postConfigure = ''
+            export TEST_EXTRA_FLAGS='-D_FORTIFY_SOURCE=0'
+          '';
+
+          hardeningEnable = [ "fortify" ];
+        })
+        {
+          expectFailure = false;
+          ignoreFortify = false;
+        };
+
+    fortify1ExplicitEnabledCmdlineDisabledNoWarn = f1exampleWithStdEnv stdenv {
+      postConfigure = ''
+        export TEST_EXTRA_FLAGS='-D_FORTIFY_SOURCE=0 -Werror'
+      '';
+
+      hardeningEnable = [ "fortify" ];
+    };
 
     fortify1ExplicitEnabledExecTest = fortifyExecTest (
       f1exampleWithStdEnv stdenv {
@@ -349,14 +408,54 @@ nameDrvAfterAttrName (
       }
     );
 
-    # musl implementation is effectively FORTIFY_SOURCE=1-only,
-    fortifyExplicitEnabledExecTest = brokenIf stdenv.hostPlatform.isMusl (
-      fortifyExecTest (
-        f2exampleWithStdEnv stdenv {
-          hardeningEnable = [ "fortify" ];
-        }
-      )
+    fortify3EnabledEnvEnablesFortify1 =
+      checkTestBin
+        (f1exampleWithStdEnv stdenv {
+          postConfigure = ''
+            export NIX_HARDENING_ENABLE="fortify3"
+          '';
+
+          hardeningDisable = [
+            "fortify"
+            "fortify3"
+          ];
+        })
+        {
+          ignoreFortify = false;
+        };
+
+    fortify3EnabledEnvEnablesFortify1ExecTest = fortifyExecTest (
+      f1exampleWithStdEnv stdenv {
+        postConfigure = ''
+          export NIX_HARDENING_ENABLE="fortify3"
+        '';
+
+        hardeningDisable = [
+          "fortify"
+          "fortify3"
+        ];
+      }
     );
+
+    fortify3ExplicitDisabled =
+      checkTestBin
+        (f3exampleWithStdEnv stdenv {
+          hardeningDisable = [ "fortify3" ];
+        })
+        {
+          expectFailure = true;
+          ignoreFortify = false;
+        };
+
+    fortify3ExplicitDisabledDoesntDisableFortify =
+      checkTestBin
+        (f2exampleWithStdEnv stdenv {
+          hardeningDisable = [ "fortify3" ];
+          hardeningEnable = [ "fortify" ];
+        })
+        {
+          ignoreFortify = false;
+        };
 
     fortify3ExplicitEnabled = brokenIf (!stdenv.cc.isGNU || lib.versionOlder stdenv.cc.version "12") (
       checkTestBin
@@ -379,444 +478,14 @@ nameDrvAfterAttrName (
           )
         );
 
-    sfa1explicitEnabled =
-      checkTestBin
-        (flexArrF2ExampleWithStdEnv stdenv {
-          hardeningEnable = [
-            "fortify"
-            "strictflexarrays1"
-          ];
-          env = {
-            TEST_EXTRA_FLAGS = "-DBUFFER_DEF_SIZE=7";
-          };
-        })
-        {
-          ignoreFortify = false;
-        };
-
-    # musl implementation is effectively FORTIFY_SOURCE=1-only
-    sfa1explicitEnabledExecTest = brokenIf stdenv.hostPlatform.isMusl (
-      fortifyExecTestFull true "012345" "0123456" (
-        flexArrF2ExampleWithStdEnv stdenv {
-          hardeningEnable = [
-            "fortify"
-            "strictflexarrays1"
-          ];
-          env = {
-            TEST_EXTRA_FLAGS = "-DBUFFER_DEF_SIZE=7";
-          };
-        }
-      )
-    );
-
-    sfa1explicitEnabledDoesntProtectDefLen1 =
-      checkTestBin
-        (flexArrF2ExampleWithStdEnv stdenv {
-          hardeningEnable = [
-            "fortify"
-            "strictflexarrays1"
-          ];
-          env = {
-            TEST_EXTRA_FLAGS = "-DBUFFER_DEF_SIZE=1";
-          };
-        })
-        {
-          ignoreFortify = false;
-          expectFailure = true;
-        };
-
-    # musl implementation is effectively FORTIFY_SOURCE=1-only
-    sfa1explicitEnabledDoesntProtectDefLen1ExecTest = brokenIf stdenv.hostPlatform.isMusl (
-      fortifyExecTestFull false "''" "0" (
-        flexArrF2ExampleWithStdEnv stdenv {
-          hardeningEnable = [
-            "fortify"
-            "strictflexarrays1"
-          ];
-          env = {
-            TEST_EXTRA_FLAGS = "-DBUFFER_DEF_SIZE=1";
-          };
-        }
-      )
-    );
-
-    sfa3explicitEnabledProtectsDefLen1 =
-      checkTestBin
-        (flexArrF2ExampleWithStdEnv stdenv {
-          hardeningEnable = [
-            "fortify"
-            "strictflexarrays3"
-          ];
-          env = {
-            TEST_EXTRA_FLAGS = "-DBUFFER_DEF_SIZE=1";
-          };
-        })
-        {
-          ignoreFortify = false;
-        };
-
-    # musl implementation is effectively FORTIFY_SOURCE=1-only
-    sfa3explicitEnabledProtectsDefLen1ExecTest = brokenIf stdenv.hostPlatform.isMusl (
-      fortifyExecTestFull true "''" "0" (
-        flexArrF2ExampleWithStdEnv stdenv {
-          hardeningEnable = [
-            "fortify"
-            "strictflexarrays3"
-          ];
-          env = {
-            TEST_EXTRA_FLAGS = "-DBUFFER_DEF_SIZE=1";
-          };
-        }
-      )
-    );
-
-    sfa3explicitEnabledDoesntProtectCorrectFlex =
-      checkTestBin
-        (flexArrF2ExampleWithStdEnv stdenv {
-          hardeningEnable = [
-            "fortify"
-            "strictflexarrays3"
-          ];
-          env = {
-            TEST_EXTRA_FLAGS = "-DBUFFER_DEF_SIZE=";
-          };
-        })
-        {
-          ignoreFortify = false;
-          expectFailure = true;
-        };
-
-    # musl implementation is effectively FORTIFY_SOURCE=1-only
-    sfa3explicitEnabledDoesntProtectCorrectFlexExecTest = brokenIf stdenv.hostPlatform.isMusl (
-      fortifyExecTestFull false "" "0" (
-        flexArrF2ExampleWithStdEnv stdenv {
-          hardeningEnable = [
-            "fortify"
-            "strictflexarrays3"
-          ];
-          env = {
-            TEST_EXTRA_FLAGS = "-DBUFFER_DEF_SIZE=";
-          };
-        }
-      )
-    );
-
-    pieAlwaysEnabled = brokenIf stdenv.hostPlatform.isStatic (
-      checkTestBin (f2exampleWithStdEnv stdenv { }) {
-        ignorePie = false;
-      }
-    );
-
-    relROExplicitEnabled =
-      checkTestBin
-        (f2exampleWithStdEnv stdenv {
-          hardeningEnable = [ "relro" ];
-        })
-        {
-          ignoreRelRO = false;
-        };
-
-    stackProtectorExplicitEnabled = brokenIf stdenv.hostPlatform.isStatic (
-      checkTestBin
-        (f2exampleWithStdEnv stdenv {
-          hardeningEnable = [ "stackprotector" ];
-        })
-        {
-          ignoreStackProtector = false;
-        }
-    );
-
-    # protection patterns generated by clang not detectable?
-    stackClashProtectionExplicitEnabled = brokenIf stdenv.cc.isClang (
-      checkTestBin
-        (helloWithStdEnv stdenv {
-          hardeningEnable = [ "stackclashprotection" ];
-        })
-        {
-          ignoreStackClashProtection = false;
-        }
-    );
-
-    pacRetExplicitEnabled = pacRetTest (helloWithStdEnv stdenv {
-      hardeningEnable = [ "pacret" ];
-    }) false;
-
-    shadowStackExplicitEnabled = shadowStackTest (f1exampleWithStdEnv stdenv {
-      hardeningEnable = [ "shadowstack" ];
-    }) false;
-
-    glibcxxassertionsExplicitEnabled = checkGlibcxxassertionsWithStdEnv true stdenv {
-      hardeningEnable = [ "glibcxxassertions" ];
-    };
-
-    bindNowExplicitDisabled =
-      checkTestBin
-        (f2exampleWithStdEnv stdenv {
-          hardeningDisable = [ "bindnow" ];
-        })
-        {
-          ignoreBindNow = false;
-          expectFailure = true;
-        };
-
-    fortifyExplicitDisabled =
-      checkTestBin
-        (f2exampleWithStdEnv stdenv {
-          hardeningDisable = [ "fortify" ];
-        })
-        {
-          ignoreFortify = false;
-          expectFailure = true;
-        };
-
-    fortify3ExplicitDisabled =
-      checkTestBin
-        (f3exampleWithStdEnv stdenv {
-          hardeningDisable = [ "fortify3" ];
-        })
-        {
-          ignoreFortify = false;
-          expectFailure = true;
-        };
-
-    fortifyExplicitDisabledDisablesFortify3 =
-      checkTestBin
-        (f3exampleWithStdEnv stdenv {
-          hardeningEnable = [ "fortify3" ];
-          hardeningDisable = [ "fortify" ];
-        })
-        {
-          ignoreFortify = false;
-          expectFailure = true;
-        };
-
-    fortify3ExplicitDisabledDoesntDisableFortify =
-      checkTestBin
-        (f2exampleWithStdEnv stdenv {
-          hardeningEnable = [ "fortify" ];
-          hardeningDisable = [ "fortify3" ];
-        })
-        {
-          ignoreFortify = false;
-        };
-
-    # musl implementation is effectively FORTIFY_SOURCE=1-only
-    sfa1explicitDisabled = brokenIf stdenv.hostPlatform.isMusl (
-      checkTestBin
-        (flexArrF2ExampleWithStdEnv stdenv {
-          hardeningEnable = [ "fortify" ];
-          hardeningDisable = [ "strictflexarrays1" ];
-          env = {
-            TEST_EXTRA_FLAGS = "-DBUFFER_DEF_SIZE=7";
-          };
-        })
-        {
-          ignoreFortify = false;
-          expectFailure = true;
-        }
-    );
-
-    sfa1explicitDisabledExecTest = fortifyExecTestFull false "012345" "0123456" (
-      flexArrF2ExampleWithStdEnv stdenv {
-        hardeningEnable = [ "fortify" ];
-        hardeningDisable = [ "strictflexarrays1" ];
-        env = {
-          TEST_EXTRA_FLAGS = "-DBUFFER_DEF_SIZE=7";
-        };
-      }
-    );
-
-    # musl implementation is effectively FORTIFY_SOURCE=1-only
-    sfa1explicitDisabledDisablesSfa3 = brokenIf stdenv.hostPlatform.isMusl (
-      checkTestBin
-        (flexArrF2ExampleWithStdEnv stdenv {
-          hardeningEnable = [
-            "fortify"
-            "strictflexarrays3"
-          ];
-          hardeningDisable = [ "strictflexarrays1" ];
-          env = {
-            TEST_EXTRA_FLAGS = "-DBUFFER_DEF_SIZE=1";
-          };
-        })
-        {
-          ignoreFortify = false;
-          expectFailure = true;
-        }
-    );
-
-    # musl implementation is effectively FORTIFY_SOURCE=1-only
-    sfa1explicitDisabledDisablesSfa3ExecTest = brokenIf stdenv.hostPlatform.isMusl (
-      fortifyExecTestFull false "''" "0" (
-        flexArrF2ExampleWithStdEnv stdenv {
-          hardeningEnable = [
-            "fortify"
-            "strictflexarrays3"
-          ];
-          hardeningDisable = [ "strictflexarrays1" ];
-          env = {
-            TEST_EXTRA_FLAGS = "-DBUFFER_DEF_SIZE=1";
-          };
-        }
-      )
-    );
-
-    sfa3explicitDisabledDoesntDisableSfa1 =
-      checkTestBin
-        (flexArrF2ExampleWithStdEnv stdenv {
-          hardeningEnable = [
-            "fortify"
-            "strictflexarrays1"
-          ];
-          hardeningDisable = [ "strictflexarrays3" ];
-          env = {
-            TEST_EXTRA_FLAGS = "-DBUFFER_DEF_SIZE=7";
-          };
-        })
-        {
-          ignoreFortify = false;
-        };
-
-    # musl implementation is effectively FORTIFY_SOURCE=1-only
-    sfa3explicitDisabledDoesntDisableSfa1ExecTest = brokenIf stdenv.hostPlatform.isMusl (
-      fortifyExecTestFull true "012345" "0123456" (
-        flexArrF2ExampleWithStdEnv stdenv {
-          hardeningEnable = [
-            "fortify"
-            "strictflexarrays1"
-          ];
-          hardeningDisable = [ "strictflexarrays3" ];
-          env = {
-            TEST_EXTRA_FLAGS = "-DBUFFER_DEF_SIZE=7";
-          };
-        }
-      )
-    );
-
-    # can't force-disable ("partial"?) relro
-    relROExplicitDisabled = brokenIf true (
-      checkTestBin
-        (f2exampleWithStdEnv stdenv {
-        })
-        {
-          ignoreRelRO = false;
-          expectFailure = true;
-        }
-    );
-
-    stackProtectorExplicitDisabled =
-      checkTestBin
-        (f2exampleWithStdEnv stdenv {
-          hardeningDisable = [ "stackprotector" ];
-        })
-        {
-          ignoreStackProtector = false;
-          expectFailure = true;
-        };
-
-    stackClashProtectionExplicitDisabled =
-      checkTestBin
-        (helloWithStdEnv stdenv {
-          hardeningDisable = [ "stackclashprotection" ];
-        })
-        {
-          ignoreStackClashProtection = false;
-          expectFailure = true;
-        };
-
-    pacRetExplicitDisabled = pacRetTest (helloWithStdEnv stdenv {
-      hardeningDisable = [ "pacret" ];
-    }) true;
-
-    shadowStackExplicitDisabled = shadowStackTest (f1exampleWithStdEnv stdenv {
-      hardeningDisable = [ "shadowstack" ];
-    }) true;
-
-    glibcxxassertionsExplicitDisabled = checkGlibcxxassertionsWithStdEnv false stdenv {
-      hardeningDisable = [ "glibcxxassertions" ];
-    };
-
-    lchFastExplicitDisabled = checkLibcxxHardeningWithStdEnv "_LIBCPP_HARDENING_MODE_NONE" stdenv {
-      hardeningDisable = [ "libcxxhardeningfast" ];
-    };
-
-    lchExtensiveExplicitEnabled =
-      checkLibcxxHardeningWithStdEnv "_LIBCPP_HARDENING_MODE_EXTENSIVE" stdenv
-        {
-          hardeningEnable = [ "libcxxhardeningextensive" ];
-        };
-
-    lchExtensiveExplicitDisabledDoesntDisableLchFast =
-      checkLibcxxHardeningWithStdEnv "_LIBCPP_HARDENING_MODE_FAST" stdenv
-        {
-          hardeningEnable = [ "libcxxhardeningfast" ];
-          hardeningDisable = [ "libcxxhardeningextensive" ];
-        };
-
-    lchFastExplicitDisabledDisablesLchExtensive =
-      checkLibcxxHardeningWithStdEnv "_LIBCPP_HARDENING_MODE_NONE" stdenv
-        {
-          hardeningEnable = [ "libcxxhardeningextensive" ];
-          hardeningDisable = [ "libcxxhardeningfast" ];
-        };
-
-    lchFastExtensiveExplicitEnabledResultsInLchExtensive =
-      checkLibcxxHardeningWithStdEnv "_LIBCPP_HARDENING_MODE_EXTENSIVE" stdenv
-        {
-          hardeningEnable = [
-            "libcxxhardeningfast"
-            "libcxxhardeningextensive"
-          ];
-        };
-
-    lchFastExtensiveExplicitDisabledDisablesBoth =
-      checkLibcxxHardeningWithStdEnv "_LIBCPP_HARDENING_MODE_NONE" stdenv
-        {
-          hardeningDisable = [
-            "libcxxhardeningfast"
-            "libcxxhardeningextensive"
-          ];
-        };
-
-    # most flags can't be "unsupported" by compiler alone and
-    # binutils doesn't have an accessible hardeningUnsupportedFlags
-    # mechanism, so can only test a couple of flags through altered
-    # stdenv trickery
-
-    fortifyStdenvUnsupp =
-      checkTestBin
-        (f2exampleWithStdEnv
-          (stdenvUnsupport [
-            "fortify"
-            "fortify3"
-          ])
-          {
-            hardeningEnable = [ "fortify" ];
-          }
-        )
-        {
-          ignoreFortify = false;
-          expectFailure = true;
-        };
-
     fortify3StdenvUnsupp =
       checkTestBin
         (f3exampleWithStdEnv (stdenvUnsupport [ "fortify3" ]) {
           hardeningEnable = [ "fortify3" ];
         })
         {
-          ignoreFortify = false;
           expectFailure = true;
-        };
-
-    fortifyStdenvUnsuppUnsupportsFortify3 =
-      checkTestBin
-        (f3exampleWithStdEnv (stdenvUnsupport [ "fortify" ]) {
-          hardeningEnable = [ "fortify3" ];
-        })
-        {
           ignoreFortify = false;
-          expectFailure = true;
         };
 
     fortify3StdenvUnsuppDoesntUnsuppFortify1 =
@@ -834,154 +503,192 @@ nameDrvAfterAttrName (
       }
     );
 
-    sfa1StdenvUnsupp =
+    fortifyEnabledEnvDoesntEnableFortify3 =
       checkTestBin
-        (flexArrF2ExampleWithStdEnv
-          (stdenvUnsupport [
-            "strictflexarrays1"
-            "strictflexarrays3"
-          ])
-          {
-            hardeningEnable = [
-              "fortify"
-              "strictflexarrays1"
-            ];
-            env = {
-              TEST_EXTRA_FLAGS = "-DBUFFER_DEF_SIZE=7";
-            };
-          }
-        )
+        (f3exampleWithStdEnv stdenv {
+          postConfigure = ''
+            export NIX_HARDENING_ENABLE="fortify"
+          '';
+
+          hardeningDisable = [
+            "fortify"
+            "fortify3"
+          ];
+        })
         {
-          ignoreFortify = false;
           expectFailure = true;
+          ignoreFortify = false;
         };
 
-    sfa3StdenvUnsupp =
+    fortifyExplicitDisabled =
       checkTestBin
-        (flexArrF2ExampleWithStdEnv (stdenvUnsupport [ "strictflexarrays3" ]) {
-          hardeningEnable = [
-            "fortify"
-            "strictflexarrays3"
-          ];
-          env = {
-            TEST_EXTRA_FLAGS = "-DBUFFER_DEF_SIZE=1";
-          };
+        (f2exampleWithStdEnv stdenv {
+          hardeningDisable = [ "fortify" ];
+        })
+        {
+          expectFailure = true;
+          ignoreFortify = false;
+        };
+
+    fortifyExplicitDisabledDisablesFortify3 =
+      checkTestBin
+        (f3exampleWithStdEnv stdenv {
+          hardeningDisable = [ "fortify" ];
+          hardeningEnable = [ "fortify3" ];
+        })
+        {
+          expectFailure = true;
+          ignoreFortify = false;
+        };
+
+    fortifyExplicitEnabled = (
+      checkTestBin
+        (f2exampleWithStdEnv stdenv {
+          hardeningEnable = [ "fortify" ];
         })
         {
           ignoreFortify = false;
-          expectFailure = true;
-        };
+        }
+    );
 
-    sfa1StdenvUnsuppUnsupportsSfa3 =
-      checkTestBin
-        (flexArrF2ExampleWithStdEnv (stdenvUnsupport [ "strictflexarrays1" ]) {
-          hardeningEnable = [
-            "fortify"
-            "strictflexarrays3"
-          ];
-          env = {
-            TEST_EXTRA_FLAGS = "-DBUFFER_DEF_SIZE=1";
-          };
-        })
-        {
-          ignoreFortify = false;
-          expectFailure = true;
-        };
-
-    sfa3StdenvUnsuppDoesntUnsuppSfa1 =
-      checkTestBin
-        (flexArrF2ExampleWithStdEnv (stdenvUnsupport [ "strictflexarrays3" ]) {
-          hardeningEnable = [
-            "fortify"
-            "strictflexarrays1"
-          ];
-          env = {
-            TEST_EXTRA_FLAGS = "-DBUFFER_DEF_SIZE=7";
-          };
-        })
-        {
-          ignoreFortify = false;
-        };
-
-    # musl implementation is effectively FORTIFY_SOURCE=1-only
-    sfa3StdenvUnsuppDoesntUnsuppSfa1ExecTest = brokenIf stdenv.hostPlatform.isMusl (
-      fortifyExecTestFull true "012345" "0123456" (
-        flexArrF2ExampleWithStdEnv (stdenvUnsupport [ "strictflexarrays3" ]) {
-          hardeningEnable = [
-            "fortify"
-            "strictflexarrays1"
-          ];
-          env = {
-            TEST_EXTRA_FLAGS = "-DBUFFER_DEF_SIZE=7";
-          };
+    # musl implementation is effectively FORTIFY_SOURCE=1-only,
+    fortifyExplicitEnabledExecTest = brokenIf stdenv.hostPlatform.isMusl (
+      fortifyExecTest (
+        f2exampleWithStdEnv stdenv {
+          hardeningEnable = [ "fortify" ];
         }
       )
     );
 
-    stackProtectorStdenvUnsupp =
+    # most flags can't be "unsupported" by compiler alone and
+    # binutils doesn't have an accessible hardeningUnsupportedFlags
+    # mechanism, so can only test a couple of flags through altered
+    # stdenv trickery
+    fortifyStdenvUnsupp =
       checkTestBin
-        (f2exampleWithStdEnv (stdenvUnsupport [ "stackprotector" ]) {
-          hardeningEnable = [ "stackprotector" ];
-        })
+        (f2exampleWithStdEnv
+          (stdenvUnsupport [
+            "fortify"
+            "fortify3"
+          ])
+          {
+            hardeningEnable = [ "fortify" ];
+          }
+        )
         {
-          ignoreStackProtector = false;
           expectFailure = true;
+          ignoreFortify = false;
         };
 
-    stackClashProtectionStdenvUnsupp =
+    fortifyStdenvUnsuppUnsupportsFortify3 =
       checkTestBin
-        (helloWithStdEnv (stdenvUnsupport [ "stackclashprotection" ]) {
-          hardeningEnable = [ "stackclashprotection" ];
+        (f3exampleWithStdEnv (stdenvUnsupport [ "fortify" ]) {
+          hardeningEnable = [ "fortify3" ];
         })
         {
-          ignoreStackClashProtection = false;
           expectFailure = true;
+          ignoreFortify = false;
         };
 
-    # NIX_HARDENING_ENABLE set in the shell overrides hardeningDisable
-    # and hardeningEnable
+    glibcxxassertionsExplicitDisabled = checkGlibcxxassertionsWithStdEnv false stdenv {
+      hardeningDisable = [ "glibcxxassertions" ];
+    };
 
-    stackProtectorReenabledEnv =
-      checkTestBin
-        (f2exampleWithStdEnv stdenv {
-          hardeningDisable = [ "stackprotector" ];
-          postConfigure = ''
-            export NIX_HARDENING_ENABLE="stackprotector"
-          '';
-        })
-        {
-          ignoreStackProtector = false;
-        };
-
-    stackProtectorReenabledFromAllEnv =
-      checkTestBin
-        (f2exampleWithStdEnv stdenv {
-          hardeningDisable = [ "all" ];
-          postConfigure = ''
-            export NIX_HARDENING_ENABLE="stackprotector"
-          '';
-        })
-        {
-          ignoreStackProtector = false;
-        };
-
-    stackProtectorRedisabledEnv =
-      checkTestBin
-        (f2exampleWithStdEnv stdenv {
-          hardeningEnable = [ "stackprotector" ];
-          postConfigure = ''
-            export NIX_HARDENING_ENABLE=""
-          '';
-        })
-        {
-          ignoreStackProtector = false;
-          expectFailure = true;
-        };
+    glibcxxassertionsExplicitEnabled = checkGlibcxxassertionsWithStdEnv true stdenv {
+      hardeningEnable = [ "glibcxxassertions" ];
+    };
 
     glibcxxassertionsStdenvUnsupp =
       checkGlibcxxassertionsWithStdEnv false (stdenvUnsupport [ "glibcxxassertions" ])
         {
           hardeningEnable = [ "glibcxxassertions" ];
+        };
+
+    lchExtensiveEnabledEnv = checkLibcxxHardeningWithStdEnv "_LIBCPP_HARDENING_MODE_EXTENSIVE" stdenv {
+      postConfigure = ''
+        export NIX_HARDENING_ENABLE="libcxxhardeningextensive"
+      '';
+
+      hardeningDisable = [
+        "libcxxhardeningfast"
+        "libcxxhardeningextensive"
+      ];
+    };
+
+    lchExtensiveExplicitDisabledDoesntDisableLchFast =
+      checkLibcxxHardeningWithStdEnv "_LIBCPP_HARDENING_MODE_FAST" stdenv
+        {
+          hardeningDisable = [ "libcxxhardeningextensive" ];
+          hardeningEnable = [ "libcxxhardeningfast" ];
+        };
+
+    lchExtensiveExplicitEnabled =
+      checkLibcxxHardeningWithStdEnv "_LIBCPP_HARDENING_MODE_EXTENSIVE" stdenv
+        {
+          hardeningEnable = [ "libcxxhardeningextensive" ];
+        };
+
+    lchExtensiveStdenvUnsuppDoesntUnsupportLchFast =
+      checkLibcxxHardeningWithStdEnv "_LIBCPP_HARDENING_MODE_FAST"
+        (stdenvUnsupport [ "libcxxhardeningextensive" ])
+        {
+          hardeningEnable = [
+            "libcxxhardeningfast"
+            "libcxxhardeningextensive"
+          ];
+        };
+
+    lchFastEnabledEnv = checkLibcxxHardeningWithStdEnv "_LIBCPP_HARDENING_MODE_FAST" stdenv {
+      postConfigure = ''
+        export NIX_HARDENING_ENABLE="libcxxhardeningfast"
+      '';
+
+      hardeningDisable = [
+        "libcxxhardeningfast"
+        "libcxxhardeningextensive"
+      ];
+    };
+
+    lchFastExplicitDisabled = checkLibcxxHardeningWithStdEnv "_LIBCPP_HARDENING_MODE_NONE" stdenv {
+      hardeningDisable = [ "libcxxhardeningfast" ];
+    };
+
+    lchFastExplicitDisabledDisablesLchExtensive =
+      checkLibcxxHardeningWithStdEnv "_LIBCPP_HARDENING_MODE_NONE" stdenv
+        {
+          hardeningDisable = [ "libcxxhardeningfast" ];
+          hardeningEnable = [ "libcxxhardeningextensive" ];
+        };
+
+    lchFastExtensiveEnabledEnvResultsInLchExtensive =
+      checkLibcxxHardeningWithStdEnv "_LIBCPP_HARDENING_MODE_EXTENSIVE" stdenv
+        {
+          postConfigure = ''
+            export NIX_HARDENING_ENABLE="libcxxhardeningextensive libcxxhardeningfast"
+          '';
+
+          hardeningDisable = [
+            "libcxxhardeningfast"
+            "libcxxhardeningextensive"
+          ];
+        };
+
+    lchFastExtensiveExplicitDisabledDisablesBoth =
+      checkLibcxxHardeningWithStdEnv "_LIBCPP_HARDENING_MODE_NONE" stdenv
+        {
+          hardeningDisable = [
+            "libcxxhardeningfast"
+            "libcxxhardeningextensive"
+          ];
+        };
+
+    lchFastExtensiveExplicitEnabledResultsInLchExtensive =
+      checkLibcxxHardeningWithStdEnv "_LIBCPP_HARDENING_MODE_EXTENSIVE" stdenv
+        {
+          hardeningEnable = [
+            "libcxxhardeningfast"
+            "libcxxhardeningextensive"
+          ];
         };
 
     lchFastStdenvUnsupp =
@@ -998,72 +705,248 @@ nameDrvAfterAttrName (
           hardeningEnable = [ "libcxxhardeningextensive" ];
         };
 
-    lchExtensiveStdenvUnsuppDoesntUnsupportLchFast =
-      checkLibcxxHardeningWithStdEnv "_LIBCPP_HARDENING_MODE_FAST"
-        (stdenvUnsupport [ "libcxxhardeningextensive" ])
-        {
-          hardeningEnable = [
-            "libcxxhardeningfast"
-            "libcxxhardeningextensive"
-          ];
-        };
+    pacRetExplicitDisabled = pacRetTest (helloWithStdEnv stdenv {
+      hardeningDisable = [ "pacret" ];
+    }) true;
 
-    fortify3EnabledEnvEnablesFortify1 =
-      checkTestBin
-        (f1exampleWithStdEnv stdenv {
-          hardeningDisable = [
-            "fortify"
-            "fortify3"
-          ];
-          postConfigure = ''
-            export NIX_HARDENING_ENABLE="fortify3"
-          '';
-        })
-        {
-          ignoreFortify = false;
-        };
+    pacRetExplicitEnabled = pacRetTest (helloWithStdEnv stdenv {
+      hardeningEnable = [ "pacret" ];
+    }) false;
 
-    fortify3EnabledEnvEnablesFortify1ExecTest = fortifyExecTest (
-      f1exampleWithStdEnv stdenv {
-        hardeningDisable = [
-          "fortify"
-          "fortify3"
-        ];
-        postConfigure = ''
-          export NIX_HARDENING_ENABLE="fortify3"
-        '';
+    pieAlwaysEnabled = brokenIf stdenv.hostPlatform.isStatic (
+      checkTestBin (f2exampleWithStdEnv stdenv { }) {
+        ignorePie = false;
       }
     );
 
-    fortifyEnabledEnvDoesntEnableFortify3 =
+    # can't force-disable ("partial"?) relro
+    relROExplicitDisabled = brokenIf true (
       checkTestBin
-        (f3exampleWithStdEnv stdenv {
-          hardeningDisable = [
-            "fortify"
-            "fortify3"
-          ];
-          postConfigure = ''
-            export NIX_HARDENING_ENABLE="fortify"
-          '';
+        (f2exampleWithStdEnv stdenv {
         })
         {
-          ignoreFortify = false;
           expectFailure = true;
+          ignoreRelRO = false;
+        }
+    );
+
+    relROExplicitEnabled =
+      checkTestBin
+        (f2exampleWithStdEnv stdenv {
+          hardeningEnable = [ "relro" ];
+        })
+        {
+          ignoreRelRO = false;
         };
 
-    sfa3EnabledEnvEnablesSfa1 =
+    sfa1EnabledEnvDoesntEnableSfa3 =
       checkTestBin
         (flexArrF2ExampleWithStdEnv stdenv {
+          env = {
+            TEST_EXTRA_FLAGS = "-DBUFFER_DEF_SIZE=1";
+          };
+
+          postConfigure = ''
+            export NIX_HARDENING_ENABLE="fortify strictflexarrays1"
+          '';
+
           hardeningDisable = [
             "strictflexarrays1"
             "strictflexarrays3"
           ];
-          postConfigure = ''
-            export NIX_HARDENING_ENABLE="fortify strictflexarrays3"
-          '';
+        })
+        {
+          expectFailure = true;
+          ignoreFortify = false;
+        };
+
+    sfa1StdenvUnsupp =
+      checkTestBin
+        (flexArrF2ExampleWithStdEnv
+          (stdenvUnsupport [
+            "strictflexarrays1"
+            "strictflexarrays3"
+          ])
+          {
+            env = {
+              TEST_EXTRA_FLAGS = "-DBUFFER_DEF_SIZE=7";
+            };
+
+            hardeningEnable = [
+              "fortify"
+              "strictflexarrays1"
+            ];
+          }
+        )
+        {
+          expectFailure = true;
+          ignoreFortify = false;
+        };
+
+    sfa1StdenvUnsuppUnsupportsSfa3 =
+      checkTestBin
+        (flexArrF2ExampleWithStdEnv (stdenvUnsupport [ "strictflexarrays1" ]) {
+          env = {
+            TEST_EXTRA_FLAGS = "-DBUFFER_DEF_SIZE=1";
+          };
+
+          hardeningEnable = [
+            "fortify"
+            "strictflexarrays3"
+          ];
+        })
+        {
+          expectFailure = true;
+          ignoreFortify = false;
+        };
+
+    # musl implementation is effectively FORTIFY_SOURCE=1-only
+    sfa1explicitDisabled = brokenIf stdenv.hostPlatform.isMusl (
+      checkTestBin
+        (flexArrF2ExampleWithStdEnv stdenv {
           env = {
             TEST_EXTRA_FLAGS = "-DBUFFER_DEF_SIZE=7";
           };
+
+          hardeningDisable = [ "strictflexarrays1" ];
+          hardeningEnable = [ "fortify" ];
+        })
+        {
+          expectFailure = true;
+          ignoreFortify = false;
+        }
+    );
+
+    # musl implementation is effectively FORTIFY_SOURCE=1-only
+    sfa1explicitDisabledDisablesSfa3 = brokenIf stdenv.hostPlatform.isMusl (
+      checkTestBin
+        (flexArrF2ExampleWithStdEnv stdenv {
+          env = {
+            TEST_EXTRA_FLAGS = "-DBUFFER_DEF_SIZE=1";
+          };
+
+          hardeningDisable = [ "strictflexarrays1" ];
+
+          hardeningEnable = [
+            "fortify"
+            "strictflexarrays3"
+          ];
+        })
+        {
+          expectFailure = true;
+          ignoreFortify = false;
+        }
+    );
+
+    # musl implementation is effectively FORTIFY_SOURCE=1-only
+    sfa1explicitDisabledDisablesSfa3ExecTest = brokenIf stdenv.hostPlatform.isMusl (
+      fortifyExecTestFull false "''" "0" (
+        flexArrF2ExampleWithStdEnv stdenv {
+          env = {
+            TEST_EXTRA_FLAGS = "-DBUFFER_DEF_SIZE=1";
+          };
+
+          hardeningDisable = [ "strictflexarrays1" ];
+
+          hardeningEnable = [
+            "fortify"
+            "strictflexarrays3"
+          ];
+        }
+      )
+    );
+
+    sfa1explicitDisabledExecTest = fortifyExecTestFull false "012345" "0123456" (
+      flexArrF2ExampleWithStdEnv stdenv {
+        env = {
+          TEST_EXTRA_FLAGS = "-DBUFFER_DEF_SIZE=7";
+        };
+
+        hardeningDisable = [ "strictflexarrays1" ];
+        hardeningEnable = [ "fortify" ];
+      }
+    );
+
+    sfa1explicitEnabled =
+      checkTestBin
+        (flexArrF2ExampleWithStdEnv stdenv {
+          env = {
+            TEST_EXTRA_FLAGS = "-DBUFFER_DEF_SIZE=7";
+          };
+
+          hardeningEnable = [
+            "fortify"
+            "strictflexarrays1"
+          ];
+        })
+        {
+          ignoreFortify = false;
+        };
+
+    sfa1explicitEnabledDoesntProtectDefLen1 =
+      checkTestBin
+        (flexArrF2ExampleWithStdEnv stdenv {
+          env = {
+            TEST_EXTRA_FLAGS = "-DBUFFER_DEF_SIZE=1";
+          };
+
+          hardeningEnable = [
+            "fortify"
+            "strictflexarrays1"
+          ];
+        })
+        {
+          expectFailure = true;
+          ignoreFortify = false;
+        };
+
+    # musl implementation is effectively FORTIFY_SOURCE=1-only
+    sfa1explicitEnabledDoesntProtectDefLen1ExecTest = brokenIf stdenv.hostPlatform.isMusl (
+      fortifyExecTestFull false "''" "0" (
+        flexArrF2ExampleWithStdEnv stdenv {
+          env = {
+            TEST_EXTRA_FLAGS = "-DBUFFER_DEF_SIZE=1";
+          };
+
+          hardeningEnable = [
+            "fortify"
+            "strictflexarrays1"
+          ];
+        }
+      )
+    );
+
+    # musl implementation is effectively FORTIFY_SOURCE=1-only
+    sfa1explicitEnabledExecTest = brokenIf stdenv.hostPlatform.isMusl (
+      fortifyExecTestFull true "012345" "0123456" (
+        flexArrF2ExampleWithStdEnv stdenv {
+          env = {
+            TEST_EXTRA_FLAGS = "-DBUFFER_DEF_SIZE=7";
+          };
+
+          hardeningEnable = [
+            "fortify"
+            "strictflexarrays1"
+          ];
+        }
+      )
+    );
+
+    sfa3EnabledEnvEnablesSfa1 =
+      checkTestBin
+        (flexArrF2ExampleWithStdEnv stdenv {
+          env = {
+            TEST_EXTRA_FLAGS = "-DBUFFER_DEF_SIZE=7";
+          };
+
+          postConfigure = ''
+            export NIX_HARDENING_ENABLE="fortify strictflexarrays3"
+          '';
+
+          hardeningDisable = [
+            "strictflexarrays1"
+            "strictflexarrays3"
+          ];
         })
         {
           ignoreFortify = false;
@@ -1071,68 +954,280 @@ nameDrvAfterAttrName (
 
     sfa3EnabledEnvEnablesSfa1ExecTest = fortifyExecTestFull true "012345" "0123456" (
       f1exampleWithStdEnv stdenv {
+        env = {
+          TEST_EXTRA_FLAGS = "-DBUFFER_DEF_SIZE=7";
+        };
+
+        postConfigure = ''
+          export NIX_HARDENING_ENABLE="fortify strictflexarrays3"
+        '';
+
         hardeningDisable = [
           "strictflexarrays1"
           "strictflexarrays3"
         ];
-        postConfigure = ''
-          export NIX_HARDENING_ENABLE="fortify strictflexarrays3"
-        '';
-        env = {
-          TEST_EXTRA_FLAGS = "-DBUFFER_DEF_SIZE=7";
-        };
       }
     );
 
-    sfa1EnabledEnvDoesntEnableSfa3 =
+    sfa3StdenvUnsupp =
       checkTestBin
-        (flexArrF2ExampleWithStdEnv stdenv {
-          hardeningDisable = [
-            "strictflexarrays1"
-            "strictflexarrays3"
-          ];
-          postConfigure = ''
-            export NIX_HARDENING_ENABLE="fortify strictflexarrays1"
-          '';
+        (flexArrF2ExampleWithStdEnv (stdenvUnsupport [ "strictflexarrays3" ]) {
           env = {
             TEST_EXTRA_FLAGS = "-DBUFFER_DEF_SIZE=1";
           };
+
+          hardeningEnable = [
+            "fortify"
+            "strictflexarrays3"
+          ];
+        })
+        {
+          expectFailure = true;
+          ignoreFortify = false;
+        };
+
+    sfa3StdenvUnsuppDoesntUnsuppSfa1 =
+      checkTestBin
+        (flexArrF2ExampleWithStdEnv (stdenvUnsupport [ "strictflexarrays3" ]) {
+          env = {
+            TEST_EXTRA_FLAGS = "-DBUFFER_DEF_SIZE=7";
+          };
+
+          hardeningEnable = [
+            "fortify"
+            "strictflexarrays1"
+          ];
         })
         {
           ignoreFortify = false;
-          expectFailure = true;
         };
 
-    lchFastEnabledEnv = checkLibcxxHardeningWithStdEnv "_LIBCPP_HARDENING_MODE_FAST" stdenv {
-      hardeningDisable = [
-        "libcxxhardeningfast"
-        "libcxxhardeningextensive"
-      ];
-      postConfigure = ''
-        export NIX_HARDENING_ENABLE="libcxxhardeningfast"
-      '';
-    };
+    # musl implementation is effectively FORTIFY_SOURCE=1-only
+    sfa3StdenvUnsuppDoesntUnsuppSfa1ExecTest = brokenIf stdenv.hostPlatform.isMusl (
+      fortifyExecTestFull true "012345" "0123456" (
+        flexArrF2ExampleWithStdEnv (stdenvUnsupport [ "strictflexarrays3" ]) {
+          env = {
+            TEST_EXTRA_FLAGS = "-DBUFFER_DEF_SIZE=7";
+          };
 
-    lchExtensiveEnabledEnv = checkLibcxxHardeningWithStdEnv "_LIBCPP_HARDENING_MODE_EXTENSIVE" stdenv {
-      hardeningDisable = [
-        "libcxxhardeningfast"
-        "libcxxhardeningextensive"
-      ];
-      postConfigure = ''
-        export NIX_HARDENING_ENABLE="libcxxhardeningextensive"
-      '';
-    };
-
-    lchFastExtensiveEnabledEnvResultsInLchExtensive =
-      checkLibcxxHardeningWithStdEnv "_LIBCPP_HARDENING_MODE_EXTENSIVE" stdenv
-        {
-          hardeningDisable = [
-            "libcxxhardeningfast"
-            "libcxxhardeningextensive"
+          hardeningEnable = [
+            "fortify"
+            "strictflexarrays1"
           ];
+        }
+      )
+    );
+
+    sfa3explicitDisabledDoesntDisableSfa1 =
+      checkTestBin
+        (flexArrF2ExampleWithStdEnv stdenv {
+          env = {
+            TEST_EXTRA_FLAGS = "-DBUFFER_DEF_SIZE=7";
+          };
+
+          hardeningDisable = [ "strictflexarrays3" ];
+
+          hardeningEnable = [
+            "fortify"
+            "strictflexarrays1"
+          ];
+        })
+        {
+          ignoreFortify = false;
+        };
+
+    # musl implementation is effectively FORTIFY_SOURCE=1-only
+    sfa3explicitDisabledDoesntDisableSfa1ExecTest = brokenIf stdenv.hostPlatform.isMusl (
+      fortifyExecTestFull true "012345" "0123456" (
+        flexArrF2ExampleWithStdEnv stdenv {
+          env = {
+            TEST_EXTRA_FLAGS = "-DBUFFER_DEF_SIZE=7";
+          };
+
+          hardeningDisable = [ "strictflexarrays3" ];
+
+          hardeningEnable = [
+            "fortify"
+            "strictflexarrays1"
+          ];
+        }
+      )
+    );
+
+    sfa3explicitEnabledDoesntProtectCorrectFlex =
+      checkTestBin
+        (flexArrF2ExampleWithStdEnv stdenv {
+          env = {
+            TEST_EXTRA_FLAGS = "-DBUFFER_DEF_SIZE=";
+          };
+
+          hardeningEnable = [
+            "fortify"
+            "strictflexarrays3"
+          ];
+        })
+        {
+          expectFailure = true;
+          ignoreFortify = false;
+        };
+
+    # musl implementation is effectively FORTIFY_SOURCE=1-only
+    sfa3explicitEnabledDoesntProtectCorrectFlexExecTest = brokenIf stdenv.hostPlatform.isMusl (
+      fortifyExecTestFull false "" "0" (
+        flexArrF2ExampleWithStdEnv stdenv {
+          env = {
+            TEST_EXTRA_FLAGS = "-DBUFFER_DEF_SIZE=";
+          };
+
+          hardeningEnable = [
+            "fortify"
+            "strictflexarrays3"
+          ];
+        }
+      )
+    );
+
+    sfa3explicitEnabledProtectsDefLen1 =
+      checkTestBin
+        (flexArrF2ExampleWithStdEnv stdenv {
+          env = {
+            TEST_EXTRA_FLAGS = "-DBUFFER_DEF_SIZE=1";
+          };
+
+          hardeningEnable = [
+            "fortify"
+            "strictflexarrays3"
+          ];
+        })
+        {
+          ignoreFortify = false;
+        };
+
+    # musl implementation is effectively FORTIFY_SOURCE=1-only
+    sfa3explicitEnabledProtectsDefLen1ExecTest = brokenIf stdenv.hostPlatform.isMusl (
+      fortifyExecTestFull true "''" "0" (
+        flexArrF2ExampleWithStdEnv stdenv {
+          env = {
+            TEST_EXTRA_FLAGS = "-DBUFFER_DEF_SIZE=1";
+          };
+
+          hardeningEnable = [
+            "fortify"
+            "strictflexarrays3"
+          ];
+        }
+      )
+    );
+
+    shadowStackExplicitDisabled = shadowStackTest (f1exampleWithStdEnv stdenv {
+      hardeningDisable = [ "shadowstack" ];
+    }) true;
+
+    shadowStackExplicitEnabled = shadowStackTest (f1exampleWithStdEnv stdenv {
+      hardeningEnable = [ "shadowstack" ];
+    }) false;
+
+    stackClashProtectionExplicitDisabled =
+      checkTestBin
+        (helloWithStdEnv stdenv {
+          hardeningDisable = [ "stackclashprotection" ];
+        })
+        {
+          expectFailure = true;
+          ignoreStackClashProtection = false;
+        };
+
+    # protection patterns generated by clang not detectable?
+    stackClashProtectionExplicitEnabled = brokenIf stdenv.cc.isClang (
+      checkTestBin
+        (helloWithStdEnv stdenv {
+          hardeningEnable = [ "stackclashprotection" ];
+        })
+        {
+          ignoreStackClashProtection = false;
+        }
+    );
+
+    stackClashProtectionStdenvUnsupp =
+      checkTestBin
+        (helloWithStdEnv (stdenvUnsupport [ "stackclashprotection" ]) {
+          hardeningEnable = [ "stackclashprotection" ];
+        })
+        {
+          expectFailure = true;
+          ignoreStackClashProtection = false;
+        };
+
+    stackProtectorExplicitDisabled =
+      checkTestBin
+        (f2exampleWithStdEnv stdenv {
+          hardeningDisable = [ "stackprotector" ];
+        })
+        {
+          expectFailure = true;
+          ignoreStackProtector = false;
+        };
+
+    stackProtectorExplicitEnabled = brokenIf stdenv.hostPlatform.isStatic (
+      checkTestBin
+        (f2exampleWithStdEnv stdenv {
+          hardeningEnable = [ "stackprotector" ];
+        })
+        {
+          ignoreStackProtector = false;
+        }
+    );
+
+    stackProtectorRedisabledEnv =
+      checkTestBin
+        (f2exampleWithStdEnv stdenv {
           postConfigure = ''
-            export NIX_HARDENING_ENABLE="libcxxhardeningextensive libcxxhardeningfast"
+            export NIX_HARDENING_ENABLE=""
           '';
+
+          hardeningEnable = [ "stackprotector" ];
+        })
+        {
+          expectFailure = true;
+          ignoreStackProtector = false;
+        };
+
+    # NIX_HARDENING_ENABLE set in the shell overrides hardeningDisable
+    # and hardeningEnable
+    stackProtectorReenabledEnv =
+      checkTestBin
+        (f2exampleWithStdEnv stdenv {
+          postConfigure = ''
+            export NIX_HARDENING_ENABLE="stackprotector"
+          '';
+
+          hardeningDisable = [ "stackprotector" ];
+        })
+        {
+          ignoreStackProtector = false;
+        };
+
+    stackProtectorReenabledFromAllEnv =
+      checkTestBin
+        (f2exampleWithStdEnv stdenv {
+          postConfigure = ''
+            export NIX_HARDENING_ENABLE="stackprotector"
+          '';
+
+          hardeningDisable = [ "all" ];
+        })
+        {
+          ignoreStackProtector = false;
+        };
+
+    stackProtectorStdenvUnsupp =
+      checkTestBin
+        (f2exampleWithStdEnv (stdenvUnsupport [ "stackprotector" ]) {
+          hardeningEnable = [ "stackprotector" ];
+        })
+        {
+          expectFailure = true;
+          ignoreStackProtector = false;
         };
 
     # NIX_HARDENING_ENABLE can't enable an unsupported feature
@@ -1144,62 +1239,16 @@ nameDrvAfterAttrName (
           '';
         })
         {
-          ignoreStackProtector = false;
           expectFailure = true;
+          ignoreStackProtector = false;
         };
-
-    # current implementation prevents the command-line from disabling
-    # fortify if cc-wrapper is enabling it.
-
-    fortify1ExplicitEnabledCmdlineDisabled =
-      checkTestBin
-        (f1exampleWithStdEnv stdenv {
-          hardeningEnable = [ "fortify" ];
-          postConfigure = ''
-            export TEST_EXTRA_FLAGS='-D_FORTIFY_SOURCE=0'
-          '';
-        })
-        {
-          ignoreFortify = false;
-          expectFailure = false;
-        };
-
-    # current implementation doesn't force-disable fortify if
-    # command-line enables it even if we use hardeningDisable.
-
-    fortify1ExplicitDisabledCmdlineEnabled =
-      checkTestBin
-        (f1exampleWithStdEnv stdenv {
-          hardeningDisable = [ "fortify" ];
-          postConfigure = ''
-            export TEST_EXTRA_FLAGS='-D_FORTIFY_SOURCE=1'
-          '';
-        })
-        {
-          ignoreFortify = false;
-        };
-
-    fortify1ExplicitDisabledCmdlineEnabledExecTest = fortifyExecTest (
-      f1exampleWithStdEnv stdenv {
-        hardeningDisable = [ "fortify" ];
-        postConfigure = ''
-          export TEST_EXTRA_FLAGS='-D_FORTIFY_SOURCE=1'
-        '';
-      }
-    );
-
-    fortify1ExplicitEnabledCmdlineDisabledNoWarn = f1exampleWithStdEnv stdenv {
-      hardeningEnable = [ "fortify" ];
-      postConfigure = ''
-        export TEST_EXTRA_FLAGS='-D_FORTIFY_SOURCE=0 -Werror'
-      '';
-    };
 
   }
   // (
     let
       tb = f2exampleWithStdEnv stdenv {
         hardeningDisable = [ "all" ];
+
         hardeningEnable = [
           "fortify"
         ];
@@ -1208,40 +1257,14 @@ nameDrvAfterAttrName (
     {
 
       allExplicitDisabledBindNow = checkTestBin tb {
-        ignoreBindNow = false;
         expectFailure = true;
+        ignoreBindNow = false;
       };
 
       allExplicitDisabledFortify = checkTestBin tb {
+        expectFailure = true;
         ignoreFortify = false;
-        expectFailure = true;
       };
-
-      # can't force-disable ("partial"?) relro
-      allExplicitDisabledRelRO = brokenIf true (
-        checkTestBin tb {
-          ignoreRelRO = false;
-          expectFailure = true;
-        }
-      );
-
-      allExplicitDisabledStackProtector = checkTestBin tb {
-        ignoreStackProtector = false;
-        expectFailure = true;
-      };
-
-      allExplicitDisabledStackClashProtection = checkTestBin tb {
-        ignoreStackClashProtection = false;
-        expectFailure = true;
-      };
-
-      allExplicitDisabledPacRet = pacRetTest (helloWithStdEnv stdenv {
-        hardeningDisable = [ "all" ];
-      }) true;
-
-      allExplicitDisabledShadowStack = shadowStackTest (f1exampleWithStdEnv stdenv {
-        hardeningDisable = [ "all" ];
-      }) true;
 
       allExplicitDisabledGlibcxxAssertions = checkGlibcxxassertionsWithStdEnv false stdenv {
         hardeningDisable = [ "all" ];
@@ -1252,6 +1275,32 @@ nameDrvAfterAttrName (
           {
             hardeningDisable = [ "all" ];
           };
+
+      allExplicitDisabledPacRet = pacRetTest (helloWithStdEnv stdenv {
+        hardeningDisable = [ "all" ];
+      }) true;
+
+      # can't force-disable ("partial"?) relro
+      allExplicitDisabledRelRO = brokenIf true (
+        checkTestBin tb {
+          expectFailure = true;
+          ignoreRelRO = false;
+        }
+      );
+
+      allExplicitDisabledShadowStack = shadowStackTest (f1exampleWithStdEnv stdenv {
+        hardeningDisable = [ "all" ];
+      }) true;
+
+      allExplicitDisabledStackClashProtection = checkTestBin tb {
+        expectFailure = true;
+        ignoreStackClashProtection = false;
+      };
+
+      allExplicitDisabledStackProtector = checkTestBin tb {
+        expectFailure = true;
+        ignoreStackProtector = false;
+      };
     }
   )
 )

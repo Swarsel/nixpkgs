@@ -1,14 +1,13 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   pytestCheckHook,
 }:
 
 buildPythonPackage rec {
   pname = "tlv8";
   version = "0.10.0";
-  format = "setuptools";
 
   # pypi does not contain test files
   src = fetchFromGitHub {
@@ -19,16 +18,18 @@ buildPythonPackage rec {
   };
 
   checkInputs = [ pytestCheckHook ];
-
+  format = "setuptools";
   pythonImportsCheck = [ "tlv8" ];
 
   meta = {
     description = "Type-Length-Value8 (TLV8) for Python";
+
     longDescription = ''
       Python module to handle type-length-value (TLV) encoded data 8-bit type, 8-bit length, and N-byte
       value as described within the Apple HomeKit Accessory Protocol Specification Non-Commercial Version
       Release R2.
     '';
+
     homepage = "https://github.com/jlusiardi/tlv8_python";
     license = lib.licenses.asl20;
     maintainers = with lib.maintainers; [ jojosch ];

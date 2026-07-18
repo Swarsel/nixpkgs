@@ -1,7 +1,7 @@
 {
   lib,
-  stdenvNoCC,
   fetchzip,
+  stdenvNoCC,
 }:
 
 stdenvNoCC.mkDerivation rec {
@@ -10,8 +10,8 @@ stdenvNoCC.mkDerivation rec {
 
   src = fetchzip {
     url = "https://github.com/adobe-fonts/source-code-pro/releases/download/${version}R-u%2F1.062R-i%2F1.026R-vf/OTF-source-code-pro-${version}R-u_1.062R-i.zip";
-    stripRoot = false;
     hash = "sha256-+BnfmD+AjObSoVxPvFAqbnMD2j5qf2YmbXGQtXoaiy0=";
+    stripRoot = false;
   };
 
   installPhase = ''
@@ -24,9 +24,9 @@ stdenvNoCC.mkDerivation rec {
 
   meta = {
     description = "Monospaced font family for user interface and coding environments";
-    maintainers = with lib.maintainers; [ relrod ];
-    platforms = with lib.platforms; all;
     homepage = "https://adobe-fonts.github.io/source-code-pro/";
     license = lib.licenses.ofl;
+    maintainers = with lib.maintainers; [ relrod ];
+    platforms = with lib.platforms; all;
   };
 }

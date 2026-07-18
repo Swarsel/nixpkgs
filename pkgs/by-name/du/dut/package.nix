@@ -1,6 +1,6 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromCodeberg,
 }:
 
@@ -21,12 +21,12 @@ stdenv.mkDerivation {
   ];
 
   meta = {
-    platforms = lib.platforms.all;
-    broken = stdenv.hostPlatform.isDarwin;
     description = "Disk usage calculator for Linux";
     homepage = "https://codeberg.org/201984/dut";
     license = lib.licenses.gpl3;
     maintainers = with lib.maintainers; [ errnoh ];
+    platforms = lib.platforms.all;
     mainProgram = "dut";
+    broken = stdenv.hostPlatform.isDarwin;
   };
 }

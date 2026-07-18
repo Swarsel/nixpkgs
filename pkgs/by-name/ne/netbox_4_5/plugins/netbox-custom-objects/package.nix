@@ -1,17 +1,15 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
+  buildPythonPackage,
   netbox,
   python,
+  setuptools,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "netbox-custom-objects";
   version = "0.6.0";
-  pyproject = true;
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "netboxlabs";
@@ -20,16 +18,16 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-HnA2CJL0EOJctQpsu/G+9fULBIa8rrrYNiT0aaDw/rI=";
   };
 
-  build-system = [ setuptools ];
-
   nativeCheckInputs = [ netbox ];
 
   preFixup = ''
     export PYTHONPATH=${netbox}/opt/netbox/netbox:$PYTHONPATH
   '';
 
+  __structuredAttrs = true;
+  build-system = [ setuptools ];
   dontUsePythonImportsCheck = python.pythonVersion != netbox.python.pythonVersion;
-
+  pyproject = true;
   pythonImportsCheck = [ "netbox_custom_objects" ];
 
   meta = {

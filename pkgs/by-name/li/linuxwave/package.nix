@@ -2,9 +2,9 @@
   lib,
   stdenv,
   fetchFromGitHub,
+  callPackage,
   installShellFiles,
   zig_0_16,
-  callPackage,
 }:
 
 let
@@ -21,11 +21,6 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-5LcAExNFCsQIeRqLHMCLO+MnK7p2q2qOA1SdMCR4nCw=";
   };
 
-  zigBuildFlags = [
-    "--system"
-    (callPackage ./deps.nix { })
-  ];
-
   nativeBuildInputs = [
     installShellFiles
     zig
@@ -35,13 +30,18 @@ stdenv.mkDerivation (finalAttrs: {
     installManPage man/linuxwave.1
   '';
 
+  zigBuildFlags = [
+    "--system"
+    (callPackage ./deps.nix { })
+  ];
+
   meta = {
-    homepage = "https://github.com/orhun/linuxwave";
+    inherit (zig.meta) platforms;
     description = "Generate music from the entropy of Linux";
+    homepage = "https://github.com/orhun/linuxwave";
     changelog = "https://github.com/orhun/linuxwave/blob/v${finalAttrs.version}/CHANGELOG.md";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ puiyq ];
-    inherit (zig.meta) platforms;
     mainProgram = "linuxwave";
   };
 })

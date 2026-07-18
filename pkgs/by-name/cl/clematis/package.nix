@@ -1,7 +1,7 @@
 {
-  buildGoModule,
-  fetchFromGitHub,
   lib,
+  fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule {
@@ -21,8 +21,8 @@ buildGoModule {
     description = "Discord rich presence for MPRIS music players";
     homepage = "https://github.com/sammy-ette/clematis";
     license = lib.licenses.mit;
-    platforms = lib.platforms.linux;
     maintainers = with lib.maintainers; [ misterio77 ];
+    platforms = lib.platforms.linux;
     mainProgram = "clematis";
   };
 }

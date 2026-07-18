@@ -10,16 +10,16 @@
   $ nix-build pkgs/top-level/release.nix -A coreutils.x86_64-linux
 */
 {
-  nixpkgs ? {
-    outPath = (import ../../lib).cleanSource ../..;
-    revCount = 1234;
-    shortRev = "abcdef";
-    revision = "0000000000000000000000000000000000000000";
-  },
-  system ? builtins.currentSystem,
-  officialRelease ? false,
-  # The platform doubles for which we build Nixpkgs.
-  supportedSystems ? builtins.fromJSON (builtins.readFile ./release-supported-systems.json),
+  # This flag, if set to true, will inhibit the use of `mapTestOn`
+  # and `release-lib.packagePlatforms`.  Generally, it causes the
+  # resulting tree of attributes to *not* have a ".${system}"
+  # suffixed upon every job name like Hydra expects.
+  #
+  # This flag exists mainly for use by ci/eval/attrpaths.nix; see
+  # that file for full details.  The exact behavior of this flag
+  # may change; it should be considered an internal implementation
+  # detail of ci/eval.
+  attrNamesOnly ? false,
   # The platform triples for which we build bootstrap tools.
   bootstrapConfigs ? [
     "arm64-apple-darwin"
@@ -31,15 +31,21 @@
     # we can uncomment that once our bootstrap tarballs are fixed
     #"x86_64-unknown-freebsd"
   ],
-  # Strip most of attributes when evaluating to spare memory usage
-  scrubJobs ? true,
+  nixpkgs ? {
+    outPath = (import ../../lib).cleanSource ../..;
+    revCount = 1234;
+    revision = "0000000000000000000000000000000000000000";
+    shortRev = "abcdef";
+  },
   # Attributes passed to nixpkgs. Don't build packages marked as unfree.
   nixpkgsArgs ? {
+    __allowFileset = false;
+
     config = {
       allowAliases = false;
       allowUnfree = false;
       inHydra = true;
-      recursionMode = "hydra";
+
       # Exceptional unsafe packages that we still build and distribute,
       # so users choosing to allow don't have to rebuild them every time.
       permittedInsecurePackages = [
@@ -47,21 +53,16 @@
         "kanidm_1_8-1.8.6"
         "kanidmWithSecretProvisioning_1_8-1.8.6"
       ];
+
+      recursionMode = "hydra";
     };
-
-    __allowFileset = false;
   },
-
-  # This flag, if set to true, will inhibit the use of `mapTestOn`
-  # and `release-lib.packagePlatforms`.  Generally, it causes the
-  # resulting tree of attributes to *not* have a ".${system}"
-  # suffixed upon every job name like Hydra expects.
-  #
-  # This flag exists mainly for use by ci/eval/attrpaths.nix; see
-  # that file for full details.  The exact behavior of this flag
-  # may change; it should be considered an internal implementation
-  # detail of ci/eval.
-  attrNamesOnly ? false,
+  officialRelease ? false,
+  # Strip most of attributes when evaluating to spare memory usage
+  scrubJobs ? true,
+  # The platform doubles for which we build Nixpkgs.
+  supportedSystems ? builtins.fromJSON (builtins.readFile ./release-supported-systems.json),
+  system ? builtins.currentSystem,
 }:
 
 let
@@ -92,26 +93,9 @@ let
   supportDarwin = elem "aarch64-darwin" supportedSystems;
 
   nonPackageJobs = {
-    tarball = import ./make-tarball.nix {
-      inherit
-        pkgs
-        nixpkgs
-        officialRelease
-        ;
-    };
-
-    release-checks = import ./nixpkgs-basic-release-checks.nix {
-      inherit pkgs nixpkgs supportedSystems;
-    };
-
-    manual = pkgs.nixpkgs-manual.override { inherit nixpkgs; };
-    metrics = import ./metrics.nix { inherit pkgs nixpkgs; };
-
     darwin-tested =
       if supportDarwin then
         pkgs.releaseTools.aggregate {
-          name = "nixpkgs-darwin-${jobs.tarball.version}";
-          meta.description = "Release-critical builds for the Nixpkgs darwin channel";
           constituents = [
             jobs.tarball
             jobs.release-checks
@@ -158,13 +142,70 @@ let
               jobs.tests.stdenv.hooks.patch-shebangs.aarch64-darwin
             */
           ];
+
+          name = "nixpkgs-darwin-${jobs.tarball.version}";
+          meta.description = "Release-critical builds for the Nixpkgs darwin channel";
         }
       else
         null;
 
+    manual = pkgs.nixpkgs-manual.override { inherit nixpkgs; };
+    metrics = import ./metrics.nix { inherit pkgs nixpkgs; };
+
+    release-checks = import ./nixpkgs-basic-release-checks.nix {
+      inherit pkgs nixpkgs supportedSystems;
+    };
+
+    stdenvBootstrapTools = genAttrs bootstrapConfigs (
+      config:
+      if hasInfix "-linux-" config then
+        let
+          bootstrap = import ../stdenv/linux/make-bootstrap-tools.nix {
+            pkgs = import ../.. {
+              localSystem = { inherit config; };
+            };
+          };
+        in
+        {
+          inherit (bootstrap) build test;
+        }
+      else if hasSuffix "-darwin" config then
+        let
+          bootstrap = import ../stdenv/darwin/make-bootstrap-tools.nix {
+            localSystem = { inherit config; };
+          };
+        in
+        {
+          # Lightweight distribution and test
+          inherit (bootstrap) build test;
+          # Test a full stdenv bootstrap from the bootstrap tools definition
+          # TODO: Re-enable once the new bootstrap-tools are in place.
+          #inherit (bootstrap.test-pkgs) stdenv;
+        }
+      else if hasSuffix "-freebsd" config then
+        let
+          bootstrap = import ../stdenv/freebsd/make-bootstrap-tools.nix {
+            pkgs = import ../.. {
+              localSystem = { inherit config; };
+            };
+          };
+        in
+        {
+          inherit (bootstrap) build; # test does't exist yet
+        }
+      else
+        abort "No bootstrap implementation for system: ${config}"
+    );
+
+    tarball = import ./make-tarball.nix {
+      inherit
+        pkgs
+        nixpkgs
+        officialRelease
+        ;
+    };
+
     unstable = pkgs.releaseTools.aggregate {
-      name = "nixpkgs-${jobs.tarball.version}";
-      meta.description = "Release-critical builds for the Nixpkgs unstable channel";
       constituents = [
         jobs.tarball
         jobs.release-checks
@@ -230,48 +271,10 @@ let
           jobs.tests.stdenv.hooks.patch-shebangs.aarch64-darwin
         */
       ];
-    };
 
-    stdenvBootstrapTools = genAttrs bootstrapConfigs (
-      config:
-      if hasInfix "-linux-" config then
-        let
-          bootstrap = import ../stdenv/linux/make-bootstrap-tools.nix {
-            pkgs = import ../.. {
-              localSystem = { inherit config; };
-            };
-          };
-        in
-        {
-          inherit (bootstrap) build test;
-        }
-      else if hasSuffix "-darwin" config then
-        let
-          bootstrap = import ../stdenv/darwin/make-bootstrap-tools.nix {
-            localSystem = { inherit config; };
-          };
-        in
-        {
-          # Lightweight distribution and test
-          inherit (bootstrap) build test;
-          # Test a full stdenv bootstrap from the bootstrap tools definition
-          # TODO: Re-enable once the new bootstrap-tools are in place.
-          #inherit (bootstrap.test-pkgs) stdenv;
-        }
-      else if hasSuffix "-freebsd" config then
-        let
-          bootstrap = import ../stdenv/freebsd/make-bootstrap-tools.nix {
-            pkgs = import ../.. {
-              localSystem = { inherit config; };
-            };
-          };
-        in
-        {
-          inherit (bootstrap) build; # test does't exist yet
-        }
-      else
-        abort "No bootstrap implementation for system: ${config}"
-    );
+      name = "nixpkgs-${jobs.tarball.version}";
+      meta.description = "Release-critical builds for the Nixpkgs unstable channel";
+    };
   };
 
   # Do not allow attribute collision between jobs inserted in
@@ -302,28 +305,32 @@ let
               });
         };
 
-        pkgsLLVM.stdenv = [
-          "x86_64-linux"
-          "aarch64-linux"
-        ];
         pkgsArocc.stdenv = [
           "x86_64-linux"
           "aarch64-linux"
         ];
-        pkgsZig.stdenv = [
+
+        pkgsLLVM.stdenv = [
           "x86_64-linux"
           "aarch64-linux"
         ];
+
         pkgsMusl.stdenv = [
-          "x86_64-linux"
-          "aarch64-linux"
-        ];
-        pkgsStatic.stdenv = [
           "x86_64-linux"
           "aarch64-linux"
         ];
 
         pkgsRocm = pkgs.rocmPackages.meta.release-packagePlatforms;
+
+        pkgsStatic.stdenv = [
+          "x86_64-linux"
+          "aarch64-linux"
+        ];
+
+        pkgsZig.stdenv = [
+          "x86_64-linux"
+          "aarch64-linux"
+        ];
       };
       mapTestOn-packages = if attrNamesOnly then packageJobs else mapTestOn packageJobs;
     in

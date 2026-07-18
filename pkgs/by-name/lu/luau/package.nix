@@ -19,19 +19,7 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   nativeBuildInputs = [ cmake ];
-
   buildInputs = lib.optionals stdenv.cc.isClang [ llvmPackages.libunwind ];
-
-  installPhase = ''
-    runHook preInstall
-
-    install -Dm755 -t $out/bin luau
-    install -Dm755 -t $out/bin luau-analyze
-    install -Dm755 -t $out/bin luau-compile
-
-    runHook postInstall
-  '';
-
   doCheck = true;
 
   checkPhase = ''
@@ -43,6 +31,16 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postCheck
   '';
 
+  installPhase = ''
+    runHook preInstall
+
+    install -Dm755 -t $out/bin luau
+    install -Dm755 -t $out/bin luau-analyze
+    install -Dm755 -t $out/bin luau-compile
+
+    runHook postInstall
+  '';
+
   passthru.updateScript = nix-update-script { };
 
   meta = {
@@ -50,11 +48,13 @@ stdenv.mkDerivation (finalAttrs: {
     homepage = "https://luau-lang.org/";
     changelog = "https://github.com/luau-lang/luau/releases/tag/${finalAttrs.version}";
     license = lib.licenses.mit;
-    platforms = lib.platforms.all;
+
     maintainers = with lib.maintainers; [
       prince213
       HeitorAugustoLN
     ];
+
+    platforms = lib.platforms.all;
     mainProgram = "luau";
   };
 })

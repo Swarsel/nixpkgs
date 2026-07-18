@@ -10,96 +10,111 @@ in
 {
   options = {
     services.netfoil = {
-      enable = lib.mkOption {
-        type = lib.types.bool;
-        default = false;
-        description = "Enable Netfoil, a minimal, filtering, DNS proxy";
-      };
-      listen = {
-        port = lib.mkOption {
-          type = lib.types.int;
-          default = 53;
-          description = "Port on which Netfoil listens for incoming connections";
-        };
-        ipAddress = lib.mkOption {
-          type = lib.types.str;
-          default = "127.0.0.1";
-          description = "IP address on which Netfoil listens for incoming connections";
-        };
-      };
-      logAllowed = lib.mkOption {
-        type = lib.types.bool;
-        default = false;
-        description = "Log allowed DNS queries";
-      };
-      doHUrl = lib.mkOption {
-        type = lib.types.str;
-        default = "https://security.cloudflare-dns.com/dns-query";
-        description = "The DoH URL to use for upstream DNS queries";
-      };
-      doHIPs = lib.mkOption {
-        type = lib.types.str;
-        default = "1.1.1.2,1.0.0.2";
-        description = "The DoH IPs to use for upstream DNS queries";
-      };
-      logDenied = lib.mkOption {
-        type = lib.types.bool;
-        default = true;
-        description = "Log denied DNS queries";
-      };
       config = lib.mkOption {
-        type = lib.types.attrsOf lib.types.str;
         default = { };
         description = "Additional configuration options for Netfoil";
+        type = lib.types.attrsOf lib.types.str;
       };
+
+      enable = lib.mkOption {
+        default = false;
+        description = "Enable Netfoil, a minimal, filtering, DNS proxy";
+        type = lib.types.bool;
+      };
+
+      doHIPs = lib.mkOption {
+        default = "1.1.1.2,1.0.0.2";
+        description = "The DoH IPs to use for upstream DNS queries";
+        type = lib.types.str;
+      };
+
+      doHUrl = lib.mkOption {
+        default = "https://security.cloudflare-dns.com/dns-query";
+        description = "The DoH URL to use for upstream DNS queries";
+        type = lib.types.str;
+      };
+
+      listen = {
+        ipAddress = lib.mkOption {
+          default = "127.0.0.1";
+          description = "IP address on which Netfoil listens for incoming connections";
+          type = lib.types.str;
+        };
+
+        port = lib.mkOption {
+          default = 53;
+          description = "Port on which Netfoil listens for incoming connections";
+          type = lib.types.int;
+        };
+      };
+
+      logAllowed = lib.mkOption {
+        default = false;
+        description = "Log allowed DNS queries";
+        type = lib.types.bool;
+      };
+
+      logDenied = lib.mkOption {
+        default = true;
+        description = "Log denied DNS queries";
+        type = lib.types.bool;
+      };
+
       rules = {
         allow = {
           exact = lib.mkOption {
-            type = lib.types.listOf lib.types.str;
             default = [ ];
             description = "List of exact domain names to allow";
-          };
-          ipv4 = lib.mkOption {
             type = lib.types.listOf lib.types.str;
+          };
+
+          ipv4 = lib.mkOption {
             default = [ ];
             description = "List of ipv4 CIDR ranges to allow";
-          };
-          ipv6 = lib.mkOption {
             type = lib.types.listOf lib.types.str;
+          };
+
+          ipv6 = lib.mkOption {
             default = [ ];
             description = "List of ipv6 CIDR ranges to allow";
-          };
-          tld = lib.mkOption {
             type = lib.types.listOf lib.types.str;
+          };
+
+          tld = lib.mkOption {
             default = [ ];
             description = "List of TLDs to allow";
+            type = lib.types.listOf lib.types.str;
           };
         };
+
         deny = {
           exact = lib.mkOption {
-            type = lib.types.listOf lib.types.str;
             default = [ ];
             description = "List of exact domain names to deny";
-          };
-          ipv4 = lib.mkOption {
             type = lib.types.listOf lib.types.str;
+          };
+
+          ipv4 = lib.mkOption {
             default = [ ];
             description = "List of ipv4 CIDR ranges to deny";
-          };
-          ipv6 = lib.mkOption {
             type = lib.types.listOf lib.types.str;
+          };
+
+          ipv6 = lib.mkOption {
             default = [ ];
             description = "List of ipv6 CIDR ranges to deny";
-          };
-          tld = lib.mkOption {
             type = lib.types.listOf lib.types.str;
+          };
+
+          tld = lib.mkOption {
             default = [ ];
             description = "List of TLDs to deny";
+            type = lib.types.listOf lib.types.str;
           };
         };
+
         known = {
           knownTlds = lib.mkOption {
-            type = lib.types.listOf lib.types.str;
             default = [
               ".com"
               ".net"
@@ -109,19 +124,23 @@ in
               ".mil"
               ".int"
             ];
+
             description = "List of known TLDs";
+            type = lib.types.listOf lib.types.str;
           };
         };
+
         pin = {
           a = lib.mkOption {
-            type = lib.types.listOf lib.types.str;
             default = [ ];
             description = "List of A records to pin <domain:ipv4>";
-          };
-          responseDomain = lib.mkOption {
             type = lib.types.listOf lib.types.str;
+          };
+
+          responseDomain = lib.mkOption {
             default = [ ];
             description = "List of domains to pin <domain:domain>";
+            type = lib.types.listOf lib.types.str;
           };
         };
       };
@@ -142,6 +161,7 @@ in
       );
       configDir = pkgs.buildEnv {
         name = "netfoil-config";
+
         paths = [
           (pkgs.writeTextDir "config" configFile)
           (pkgs.writeTextDir "allow.exact" (lib.concatStringsSep "\n" cfg.rules.allow.exact))
@@ -164,26 +184,65 @@ in
       systemd = {
         services.netfoil = {
           enable = true;
-          description = "Netfoil DNS proxy";
           after = [ "network.target" ];
+          description = "Netfoil DNS proxy";
           requires = [ "netfoil.socket" ];
-          wantedBy = [ "multi-user.target" ];
+
           serviceConfig = {
-            Type = "simple";
-            ExecStart = "${pkgs.netfoil}/bin/netfoil --config-directory ${configDir}";
-            Restart = "always";
-            RestartSec = "5";
-            DynamicUser = true;
+            AmbientCapabilities = "";
+
             BindReadOnlyPaths = [
               "${pkgs.netfoil}"
               "${configDir}"
               "/etc/ssl"
               builtins.storeDir
             ];
-            Slice = "netfoil.slice";
-            AmbientCapabilities = "";
+
+            CPUQuota = "50%";
             CapabilityBoundingSet = [ ];
-            SystenCallArchitectures = "native";
+            DevicePolicy = "closed";
+            DynamicUser = true;
+            ExecStart = "${pkgs.netfoil}/bin/netfoil --config-directory ${configDir}";
+            LockPersonality = true;
+            MemoryDenyWriteExecute = true;
+            MemoryMax = "100M";
+            #
+            # seccomp @raw-io (custom filter does not allow it anyway)
+            PrivateDevices = true;
+            # IPC namespace
+            PrivateIPC = true;
+            PrivateTmp = true;
+            ProcSubset = "pid";
+            # This might set AllowDevices=char-rtc r
+            ProtectClock = true;
+            # Changes mounts (custom is more strict)
+            # https://github.com/systemd/systemd/blob/main/src/core/namespace.c
+            #
+            ProtectControlGroups = true;
+            ProtectHome = true;
+            # UTS namespace
+            ProtectHostname = true;
+            ProtectKernelLogs = true;
+            ProtectKernelModules = true;
+            #
+            # seccomp _sysctl (custom filter does not allow it anyway)
+            # /proc and /sys mounts (custom is more strict)
+            ProtectKernelTunables = true;
+            ProtectProc = "invisible";
+            ProtectSystem = "strict";
+            RemoveIPC = true;
+            Restart = "always";
+            RestartSec = "5";
+            RestrictAddressFamilies = "AF_INET AF_INET6";
+            RestrictNamespaces = true;
+            RestrictRealtime = true;
+            RestrictSUIDSGID = true;
+            RootDirectory = "/run/netfoil";
+            RuntimeDirectory = "netfoil";
+            RuntimeDirectoryMode = "0755";
+            Slice = "netfoil.slice";
+            SocketBindDeny = "any";
+
             SystemCallFilter = [
               "@basic-io"
               "@file-system"
@@ -194,68 +253,29 @@ in
               "@system-service"
               "@resources"
             ];
-            RuntimeDirectory = "netfoil";
-            RuntimeDirectoryMode = "0755";
-            RootDirectory = "/run/netfoil";
-            RestrictAddressFamilies = "AF_INET AF_INET6";
-            RestrictNamespaces = true;
-            RestrictRealtime = true;
-            RestrictSUIDSGID = true;
 
-            # This might set AllowDevices=char-rtc r
-            ProtectClock = true;
-
-            ProtectKernelModules = true;
-            ProtectKernelLogs = true;
-
-            LockPersonality = true;
-            MemoryDenyWriteExecute = true;
-
-            RemoveIPC = true;
-            UMask = "0077";
-
-            # IPC namespace
-            PrivateIPC = true;
-
-            # UTS namespace
-            ProtectHostname = true;
-
-            # Changes mounts (custom is more strict)
-            # https://github.com/systemd/systemd/blob/main/src/core/namespace.c
-            #
-            ProtectControlGroups = true;
-            ProtectHome = true;
-            ProtectProc = "invisible";
-            ProcSubset = "pid";
-            ProtectSystem = "strict";
-            PrivateTmp = true;
-
-            #
-            # seccomp _sysctl (custom filter does not allow it anyway)
-            # /proc and /sys mounts (custom is more strict)
-            ProtectKernelTunables = true;
-            #
-            # seccomp @raw-io (custom filter does not allow it anyway)
-            PrivateDevices = true;
-            DevicePolicy = "closed";
-
-            SocketBindDeny = "any";
-
-            CPUQuota = "50%";
-            MemoryMax = "100M";
+            SystenCallArchitectures = "native";
             TasksMax = "100";
+            Type = "simple";
+            UMask = "0077";
           };
+
+          wantedBy = [ "multi-user.target" ];
         };
+
         slices.netfoil = {
           description = "Slice for Netfoil DNS proxy";
         };
+
         sockets.netfoil = {
           description = "Netfoil DNS proxy socket";
-          wantedBy = [ "sockets.target" ];
+
           socketConfig = {
             ListenDatagram = "${cfg.listen.ipAddress}:${toString cfg.listen.port}";
             Service = "netfoil.service";
           };
+
+          wantedBy = [ "sockets.target" ];
         };
       };
     }

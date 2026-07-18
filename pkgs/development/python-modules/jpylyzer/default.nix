@@ -2,13 +2,12 @@
   lib,
   fetchFromGitHub,
   buildPythonPackage,
-  six,
-  lxml,
-  pytestCheckHook,
-  doFullCheck ? false, # weird filenames cause issues on some filesystems
-
   # for passthru.tests
   jpylyzer,
+  lxml,
+  pytestCheckHook,
+  six,
+  doFullCheck ? false, # weird filenames cause issues on some filesystems
 }:
 
 let
@@ -16,16 +15,15 @@ let
   # upstream appears to just always test against the latest version, so
   # probably worth updating this when package is bumped.
   testFiles = fetchFromGitHub {
+    hash = "sha256-dr3hC6dGd3HNSE4nRj1xrfFSW9cepQ1mdVH8S3YQdtw=";
     owner = "openpreserve";
     repo = "jpylyzer-test-files";
     rev = "0290e98bae9c5480c995954d3f14b4cf0a0395ff";
-    hash = "sha256-dr3hC6dGd3HNSE4nRj1xrfFSW9cepQ1mdVH8S3YQdtw=";
   };
 in
 buildPythonPackage rec {
   pname = "jpylyzer";
   version = "2.2.1";
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "openpreserve";
@@ -48,10 +46,9 @@ buildPythonPackage rec {
   '';
 
   disabledTestPaths = lib.optionals (!doFullCheck) [ "tests/unit/test_testfiles.py" ];
-
-  pythonImportsCheck = [ "jpylyzer" ];
-
   disallowedReferences = [ testFiles ];
+  format = "setuptools";
+  pythonImportsCheck = [ "jpylyzer" ];
 
   passthru.tests = {
     withFullCheck = jpylyzer.override { doFullCheck = true; };
@@ -59,9 +56,9 @@ buildPythonPackage rec {
 
   meta = {
     description = "JP2 (JPEG 2000 Part 1) image validator and properties extractor";
-    mainProgram = "jpylyzer";
     homepage = "https://jpylyzer.openpreservation.org/";
     license = lib.licenses.lgpl3;
     maintainers = with lib.maintainers; [ ris ];
+    mainProgram = "jpylyzer";
   };
 }

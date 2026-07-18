@@ -2,14 +2,14 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  fetchPnpmDeps,
-  pnpmConfigHook,
-  pnpm_10,
   faketty,
-  nodejs-slim_22,
-  versionCheckHook,
+  fetchPnpmDeps,
   makeBinaryWrapper,
   nix-update-script,
+  nodejs-slim_22,
+  pnpmConfigHook,
+  pnpm_10,
+  versionCheckHook,
 }:
 let
   pnpm = pnpm_10;
@@ -26,13 +26,6 @@ stdenv.mkDerivation (finalAttrs: {
     repo = "cli";
     tag = finalAttrs.version;
     hash = "sha256-cOq4LpTMr59ev04PIu0GYAAK0N0n2SrYCnz8sHfcXrs=";
-  };
-
-  pnpmDeps = fetchPnpmDeps {
-    inherit (finalAttrs) pname version src;
-    inherit pnpm;
-    fetcherVersion = 3;
-    hash = "sha256-gwEVlvr8hxgyCsGjxjz1UkbDZYYq1iukKTPJ7JHdo2U=";
   };
 
   nativeBuildInputs = [
@@ -79,21 +72,30 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
-  nativeInstallCheckInputs = [ versionCheckHook ];
   doInstallCheck = true;
+  nativeInstallCheckInputs = [ versionCheckHook ];
+
+  pnpmDeps = fetchPnpmDeps {
+    inherit (finalAttrs) pname version src;
+    inherit pnpm;
+    fetcherVersion = 3;
+    hash = "sha256-gwEVlvr8hxgyCsGjxjz1UkbDZYYq1iukKTPJ7JHdo2U=";
+  };
 
   passthru.updateScript = nix-update-script { };
 
   meta = {
-    platforms = lib.platforms.unix;
-    mainProgram = "shopify";
     description = "CLI which helps you build against the Shopify platform faster";
     homepage = "https://github.com/Shopify/cli";
     changelog = "https://github.com/Shopify/cli/releases/tag/${finalAttrs.src.tag}";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       fd
       onny
     ];
+
+    platforms = lib.platforms.unix;
+    mainProgram = "shopify";
   };
 })

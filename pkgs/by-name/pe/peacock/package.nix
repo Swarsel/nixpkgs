@@ -1,10 +1,10 @@
 {
   lib,
-  fetchFromGitHub,
   stdenv,
+  fetchFromGitHub,
+  makeWrapper,
   nodejs,
   yarn-berry_4,
-  makeWrapper,
 }:
 
 let
@@ -80,6 +80,7 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   missingHashes = ./missing-hashes.json;
+
   offlineCache = yarn-berry.fetchYarnBerryDeps {
     inherit (finalAttrs) src missingHashes patches;
     hash = "sha256-9u/w/zy4f51uPFfkzf0fDZlsj8GFXAfw7RGR9owo5n8=";
@@ -91,7 +92,7 @@ stdenv.mkDerivation (finalAttrs: {
     changelog = "https://github.com/thepeacockproject/Peacock/releases/tag/${finalAttrs.src.tag}";
     license = lib.licenses.agpl3Only;
     maintainers = with lib.maintainers; [ marie ];
-    mainProgram = "peacock";
     platforms = lib.platforms.linux;
+    mainProgram = "peacock";
   };
 })

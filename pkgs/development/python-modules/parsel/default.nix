@@ -16,12 +16,17 @@
 buildPythonPackage (finalAttrs: {
   pname = "parsel";
   version = "1.11.0";
-  pyproject = true;
 
   src = fetchPypi {
     inherit (finalAttrs) pname version;
     hash = "sha256-WSX+CH6xb8QEp+2R4x4sHiqbIw2ktk802BNYwNDifog=";
   };
+
+  nativeCheckInputs = [
+    psutil
+    pytestCheckHook
+    sybil
+  ];
 
   build-system = [ hatchling ];
 
@@ -33,18 +38,13 @@ buildPythonPackage (finalAttrs: {
     w3lib
   ];
 
-  nativeCheckInputs = [
-    psutil
-    pytestCheckHook
-    sybil
-  ];
-
-  pythonImportsCheck = [ "parsel" ];
-
   disabledTests = [
     # asserts on the exact output format of an error message
     "test_set_xpathfunc"
   ];
+
+  pyproject = true;
+  pythonImportsCheck = [ "parsel" ];
 
   meta = {
     description = "Python library to extract data from HTML and XML using XPath and CSS selectors";

@@ -1,28 +1,28 @@
 {
   lib,
   stdenv,
-  buildPackages,
   bc,
   bison,
+  buildPackages,
+  cpio,
+  elfutils,
+  fetchpatch,
   flex,
-  perl,
-  rsync,
   gmp,
+  hexdump,
+  kmod,
   libmpc,
   mpfr,
   openssl,
-  cpio,
-  elfutils,
-  hexdump,
-  zstd,
-  python3Minimal,
-  zlib,
   pahole,
-  kmod,
-  fetchpatch,
-  rustc-unwrapped,
+  perl,
+  python3Minimal,
+  rsync,
   rust-bindgen-unwrapped,
   rustPlatform,
+  rustc-unwrapped,
+  zlib,
+  zstd,
 }:
 
 let
@@ -46,23 +46,42 @@ let
 in
 lib.makeOverridable (
   {
+    lib ? lib_,
+    stdenv ? stdenv_,
+    # The kernel .config file
+    configfile,
+    # The kernel source (tarball, git checkout, etc.)
+    src,
     # The kernel version
     version,
+    # Whether to utilize the controversial import-from-derivation feature to parse the config
+    allowImportFromDerivation ? false,
+    buildDTBs ?
+      stdenv.hostPlatform.isAarch || stdenv.hostPlatform.isRiscV || stdenv.hostPlatform.isLoongArch64,
+    # Manually specified nixexpr representing the config
+    # If unspecified, this will be autodetected from the .config
+    config ? lib.optionalAttrs (builtins.isPath configfile || allowImportFromDerivation) (
+      readConfig configfile
+    ),
+    # Additional kernel make flags
+    extraMakeFlags ? [ ],
+    # Extra meta attributes
+    extraMeta ? { },
+    features ? { },
+    # for module compatibility
+    isZen ? false,
+    # a list of { name=..., patch=..., extraConfig=...} patches
+    kernelPatches ? [ ],
+    # The name of the kernel module directory
+    # Needs to be X.Y.Z[-extra], so pad with zeros if needed.
+    modDirVersion ? null, # derive from version
     # The kernel pname (should be set for variants)
     pname ? "linux",
     # Position of the Linux build expression
     pos ? null,
-    # Additional kernel make flags
-    extraMakeFlags ? [ ],
-    # The name of the kernel module directory
-    # Needs to be X.Y.Z[-extra], so pad with zeros if needed.
-    modDirVersion ? null, # derive from version
-    # The kernel source (tarball, git checkout, etc.)
-    src,
-    # a list of { name=..., patch=..., extraConfig=...} patches
-    kernelPatches ? [ ],
-    # The kernel .config file
-    configfile,
+    # Custom seed used for CONFIG_GCC_PLUGIN_RANDSTRUCT if enabled. This is
+    # automatically extended with extra per-version and per-config values.
+    randstructSeed ? "",
     target ?
       if stdenv.hostPlatform.isx86 then
         "bzImage"
@@ -74,27 +93,6 @@ lib.makeOverridable (
         "vmlinuz.efi"
       else
         "vmlinux",
-    buildDTBs ?
-      stdenv.hostPlatform.isAarch || stdenv.hostPlatform.isRiscV || stdenv.hostPlatform.isLoongArch64,
-    # Manually specified nixexpr representing the config
-    # If unspecified, this will be autodetected from the .config
-    config ? lib.optionalAttrs (builtins.isPath configfile || allowImportFromDerivation) (
-      readConfig configfile
-    ),
-    # Custom seed used for CONFIG_GCC_PLUGIN_RANDSTRUCT if enabled. This is
-    # automatically extended with extra per-version and per-config values.
-    randstructSeed ? "",
-    # Extra meta attributes
-    extraMeta ? { },
-
-    # for module compatibility
-    isZen ? false,
-
-    # Whether to utilize the controversial import-from-derivation feature to parse the config
-    allowImportFromDerivation ? false,
-    features ? { },
-    lib ? lib_,
-    stdenv ? stdenv_,
   }:
 
   let
@@ -132,19 +130,13 @@ lib.makeOverridable (
         attrName = attr: "CONFIG_" + attr;
       in
       {
-        isSet = attr: hasAttr (attrName attr) config;
-
         getValue = attr: if config.isSet attr then getAttr (attrName attr) config else null;
-
-        isYes = attr: (config.getValue attr) == "y";
-
-        isNo = attr: (config.getValue attr) == "n";
-
-        isModule = attr: (config.getValue attr) == "m";
-
-        isEnabled = attr: (config.isModule attr) || (config.isYes attr);
-
         isDisabled = attr: (!(config.isSet attr)) || (config.isNo attr);
+        isEnabled = attr: (config.isModule attr) || (config.isYes attr);
+        isModule = attr: (config.getValue attr) == "m";
+        isNo = attr: (config.getValue attr) == "n";
+        isSet = attr: hasAttr (attrName attr) config;
+        isYes = attr: (config.getValue attr) == "y";
       }
       // config_;
 
@@ -169,28 +161,6 @@ lib.makeOverridable (
   stdenv.mkDerivation {
     inherit pname version src;
 
-    __structuredAttrs = true;
-
-    enableParallelBuilding = true;
-
-    hardeningDisable = [
-      "bindnow"
-      "format"
-      "fortify"
-      "stackprotector"
-      "pic"
-    ];
-
-    ${if isModular then "outputs" else null} = [
-      "out"
-      "dev"
-      "modules"
-    ];
-
-    # We remove a bunch of stuff that is symlinked from other places to save space,
-    # which trips the broken symlink check. So, just skip it. We'll know if it explodes.
-    dontCheckForBrokenSymlinks = true;
-
     patches =
       # kernelPatches can contain config changes and no actual patch
       lib.filter (p: p != null) (map (p: p.patch) kernelPatches)
@@ -206,85 +176,9 @@ lib.makeOverridable (
             lib.versionAtLeast version "5.12" && lib.versionOlder version "5.19" && stdenv.hostPlatform.isPower
           )
           (fetchpatch {
-            url = "https://git.kernel.org/pub/scm/linux/kernel/git/powerpc/linux.git/patch/?id=d9e5c3e9e75162f845880535957b7fd0b4637d23";
             hash = "sha256-bBOyJcP6jUvozFJU0SPTOf3cmnTQ6ZZ4PlHjiniHXLU=";
+            url = "https://git.kernel.org/pub/scm/linux/kernel/git/powerpc/linux.git/patch/?id=d9e5c3e9e75162f845880535957b7fd0b4637d23";
           });
-
-    buildFlags = [
-      "KBUILD_BUILD_VERSION=1-NixOS"
-      target
-      "vmlinux" # for "perf" and things like that
-      "scripts_gdb"
-    ]
-    ++ optional isModular "modules"
-    ++ optionals buildDTBs [
-      "dtbs"
-      "DTC_FLAGS=-@"
-    ]
-    ++ extraMakeFlags;
-
-    installFlags = [
-      "INSTALL_PATH=${placeholder "out"}"
-    ]
-    ++ (optional isModular "INSTALL_MOD_PATH=${placeholder "modules"}")
-    ++ optionals buildDTBs [
-      "dtbs_install"
-      "INSTALL_DTBS_PATH=${placeholder "out"}/dtbs"
-    ];
-
-    depsBuildBuild = [ buildPackages.stdenv.cc ];
-    nativeBuildInputs = [
-      bison
-      flex
-      perl
-      bc
-      openssl
-      rsync
-      gmp
-      libmpc
-      mpfr
-      elfutils
-      zstd
-      python3Minimal
-      kmod
-      hexdump
-    ]
-    ++ optionals (lib.versionAtLeast version "5.2") [
-      cpio
-      pahole
-      zlib
-    ]
-    ++ optionals withRust [
-      rustc-unwrapped
-      rust-bindgen-unwrapped
-    ];
-
-    env = {
-      RUST_LIB_SRC = lib.optionalString withRust rustPlatform.rustLibSrc;
-
-      # avoid leaking Rust source file names into the final binary, which adds
-      # a false dependency on rust-lib-src on targets with uncompressed kernels
-      KRUSTFLAGS = lib.optionalString withRust "--remap-path-prefix ${rustPlatform.rustLibSrc}=/";
-    };
-
-    makeFlags = [
-      "O=$(buildRoot)"
-
-      # We have a `modules` variable in the environment for our
-      # split output, but the kernel Makefiles also define their
-      # own `modules` variable. Their definition wins, but Make
-      # remembers that the variable was originally from the
-      # environment and exports it to all the build recipes. This
-      # breaks the build with an “Argument list too long” error due
-      # to passing the huge list of every module object file in the
-      # environment of every process invoked by every build recipe.
-      #
-      # We use `--eval` here to undefine the inherited environment
-      # variable before any Makefiles are read, ensuring that the
-      # kernel’s definition creates a new, unexported variable.
-      "--eval=undefine modules"
-    ]
-    ++ commonMakeFlags;
 
     postPatch = ''
       # Ensure that depmod gets resolved through PATH
@@ -319,36 +213,128 @@ lib.makeOverridable (
       unset src
     '';
 
-    configurePhase = ''
-      runHook preConfigure
+    nativeBuildInputs = [
+      bison
+      flex
+      perl
+      bc
+      openssl
+      rsync
+      gmp
+      libmpc
+      mpfr
+      elfutils
+      zstd
+      python3Minimal
+      kmod
+      hexdump
+    ]
+    ++ optionals (lib.versionAtLeast version "5.2") [
+      cpio
+      pahole
+      zlib
+    ]
+    ++ optionals withRust [
+      rustc-unwrapped
+      rust-bindgen-unwrapped
+    ];
 
-      mkdir build
-      export buildRoot="$(pwd)/build"
+    makeFlags = [
+      "O=$(buildRoot)"
 
-      echo "manual-config configurePhase buildRoot=$buildRoot pwd=$PWD"
+      # We have a `modules` variable in the environment for our
+      # split output, but the kernel Makefiles also define their
+      # own `modules` variable. Their definition wins, but Make
+      # remembers that the variable was originally from the
+      # environment and exports it to all the build recipes. This
+      # breaks the build with an “Argument list too long” error due
+      # to passing the huge list of every module object file in the
+      # environment of every process invoked by every build recipe.
+      #
+      # We use `--eval` here to undefine the inherited environment
+      # variable before any Makefiles are read, ensuring that the
+      # kernel’s definition creates a new, unexported variable.
+      "--eval=undefine modules"
+    ]
+    ++ commonMakeFlags;
 
-      if [ -f "$buildRoot/.config" ]; then
-        echo "Could not link $buildRoot/.config : file exists"
-        exit 1
-      fi
-      ln -sv ${configfile} $buildRoot/.config
+    buildFlags = [
+      "KBUILD_BUILD_VERSION=1-NixOS"
+      target
+      "vmlinux" # for "perf" and things like that
+      "scripts_gdb"
+    ]
+    ++ optional isModular "modules"
+    ++ optionals buildDTBs [
+      "dtbs"
+      "DTC_FLAGS=-@"
+    ]
+    ++ extraMakeFlags;
 
-      # reads the existing .config file and prompts the user for options in
-      # the current kernel source that are not found in the file.
-      make "''${makeFlags[@]}" oldconfig
-      runHook postConfigure
+    env = {
+      # avoid leaking Rust source file names into the final binary, which adds
+      # a false dependency on rust-lib-src on targets with uncompressed kernels
+      KRUSTFLAGS = lib.optionalString withRust "--remap-path-prefix ${rustPlatform.rustLibSrc}=/";
+      RUST_LIB_SRC = lib.optionalString withRust rustPlatform.rustLibSrc;
+    };
 
-      make "''${makeFlags[@]}" prepare
-      actualModDirVersion="$(cat $buildRoot/include/config/kernel.release)"
-      if [ "$actualModDirVersion" != "${modDirVersion}" ]; then
-        echo "Error: modDirVersion ${modDirVersion} specified in the Nix expression is wrong, it should be: $actualModDirVersion"
-        exit 1
-      fi
-
-      buildFlags+=("KBUILD_BUILD_TIMESTAMP=$(date -u -d @$SOURCE_DATE_EPOCH)")
-
-      cd $buildRoot
-    '';
+    preInstall =
+      let
+        # All we really need to do here is copy the final image and System.map to $out,
+        # and use the kernel's modules_install, firmware_install, dtbs_install, etc. targets
+        # for the rest. Easy, right?
+        #
+        # Unfortunately for us, the obvious way of getting the built image path,
+        # make -s image_name, does not work correctly, because some architectures
+        # (*cough* aarch64 *cough*) change KBUILD_IMAGE on the fly in their install targets,
+        # so we end up attempting to install the thing we didn't actually build.
+        #
+        # Thankfully, there's a way out that doesn't involve just hardcoding everything.
+        #
+        # The kernel has an install target, which runs a pretty simple shell script
+        # (located at scripts/install.sh or arch/$arch/boot/install.sh, depending on
+        # which kernel version you're looking at) that tries to do something sensible.
+        #
+        # (it would be great to hijack this script immediately, as it has all the
+        #   information we need passed to it and we don't need it to try and be smart,
+        #   but unfortunately, the exact location of the scripts differs between kernel
+        #   versions, and they're seemingly not considered to be public API at all)
+        #
+        # One of the ways it tries to discover what "something sensible" actually is
+        # is by delegating to what's supposed to be a user-provided install script
+        # located at ~/bin/installkernel.
+        #
+        # (the other options are:
+        #   - a distribution-specific script at /sbin/installkernel,
+        #        which we can't really create in the sandbox easily
+        #   - an architecture-specific script at arch/$arch/boot/install.sh,
+        #        which attempts to guess _something_ and usually guesses very wrong)
+        #
+        # More specifically, the install script exec's into ~/bin/installkernel, if one
+        # exists, with the following arguments:
+        #
+        # $1: $KERNELRELEASE - full kernel version string
+        # $2: $KBUILD_IMAGE - the final image path
+        # $3: System.map - path to System.map file, seemingly hardcoded everywhere
+        # $4: $INSTALL_PATH - path to the destination directory as specified in installFlags
+        #
+        # $2 is exactly what we want, so hijack the script and use the knowledge given to it
+        # by the makefile overlords for our own nefarious ends.
+        #
+        # Note that the makefiles specifically look in ~/bin/installkernel, and
+        # writeShellScriptBin writes the script to <store path>/bin/installkernel,
+        # so HOME needs to be set to just the store path.
+        #
+        # FIXME: figure out a less roundabout way of doing this.
+        installkernel = buildPackages.writeShellScriptBin "installkernel" ''
+          cp -av $2 $4
+          cp -av $3 $4
+        '';
+      in
+      ''
+        installFlags+=("-j$NIX_BUILD_CORES")
+        export HOME=${installkernel}
+      '';
 
     postInstall = optionalString isModular ''
       mkdir -p $dev
@@ -431,96 +417,73 @@ lib.makeOverridable (
       find -empty -type d -delete
     '';
 
-    preInstall =
-      let
-        # All we really need to do here is copy the final image and System.map to $out,
-        # and use the kernel's modules_install, firmware_install, dtbs_install, etc. targets
-        # for the rest. Easy, right?
-        #
-        # Unfortunately for us, the obvious way of getting the built image path,
-        # make -s image_name, does not work correctly, because some architectures
-        # (*cough* aarch64 *cough*) change KBUILD_IMAGE on the fly in their install targets,
-        # so we end up attempting to install the thing we didn't actually build.
-        #
-        # Thankfully, there's a way out that doesn't involve just hardcoding everything.
-        #
-        # The kernel has an install target, which runs a pretty simple shell script
-        # (located at scripts/install.sh or arch/$arch/boot/install.sh, depending on
-        # which kernel version you're looking at) that tries to do something sensible.
-        #
-        # (it would be great to hijack this script immediately, as it has all the
-        #   information we need passed to it and we don't need it to try and be smart,
-        #   but unfortunately, the exact location of the scripts differs between kernel
-        #   versions, and they're seemingly not considered to be public API at all)
-        #
-        # One of the ways it tries to discover what "something sensible" actually is
-        # is by delegating to what's supposed to be a user-provided install script
-        # located at ~/bin/installkernel.
-        #
-        # (the other options are:
-        #   - a distribution-specific script at /sbin/installkernel,
-        #        which we can't really create in the sandbox easily
-        #   - an architecture-specific script at arch/$arch/boot/install.sh,
-        #        which attempts to guess _something_ and usually guesses very wrong)
-        #
-        # More specifically, the install script exec's into ~/bin/installkernel, if one
-        # exists, with the following arguments:
-        #
-        # $1: $KERNELRELEASE - full kernel version string
-        # $2: $KBUILD_IMAGE - the final image path
-        # $3: System.map - path to System.map file, seemingly hardcoded everywhere
-        # $4: $INSTALL_PATH - path to the destination directory as specified in installFlags
-        #
-        # $2 is exactly what we want, so hijack the script and use the knowledge given to it
-        # by the makefile overlords for our own nefarious ends.
-        #
-        # Note that the makefiles specifically look in ~/bin/installkernel, and
-        # writeShellScriptBin writes the script to <store path>/bin/installkernel,
-        # so HOME needs to be set to just the store path.
-        #
-        # FIXME: figure out a less roundabout way of doing this.
-        installkernel = buildPackages.writeShellScriptBin "installkernel" ''
-          cp -av $2 $4
-          cp -av $3 $4
-        '';
-      in
-      ''
-        installFlags+=("-j$NIX_BUILD_CORES")
-        export HOME=${installkernel}
-      '';
-
     preFixup = ''
       if [ -z "''${dontStrip-}" -a -e $out/vmlinux ]; then
         $STRIP -v -S -p $out/vmlinux
       fi
     '';
 
-    requiredSystemFeatures = [ "big-parallel" ];
+    ${if isModular then "outputs" else null} = [
+      "out"
+      "dev"
+      "modules"
+    ];
 
-    passthru = rec {
-      inherit
-        version
-        modDirVersion
-        config
-        kernelPatches
-        configfile
-        target
-        buildDTBs
-        moduleBuildDependencies
-        stdenv
-        commonMakeFlags
-        ;
-      inherit
-        isZen
-        withRust
-        # Forwarded into passthru so features survive kernel.override() call chains
-        # used by the NixOS module system (see boot.kernelPackages apply in kernel.nix).
-        features
-        ;
-      baseVersion = lib.head (lib.splitString "-rc" version);
-      kernelOlder = lib.versionOlder baseVersion;
-      kernelAtLeast = lib.versionAtLeast baseVersion;
-    };
+    __structuredAttrs = true;
+
+    configurePhase = ''
+      runHook preConfigure
+
+      mkdir build
+      export buildRoot="$(pwd)/build"
+
+      echo "manual-config configurePhase buildRoot=$buildRoot pwd=$PWD"
+
+      if [ -f "$buildRoot/.config" ]; then
+        echo "Could not link $buildRoot/.config : file exists"
+        exit 1
+      fi
+      ln -sv ${configfile} $buildRoot/.config
+
+      # reads the existing .config file and prompts the user for options in
+      # the current kernel source that are not found in the file.
+      make "''${makeFlags[@]}" oldconfig
+      runHook postConfigure
+
+      make "''${makeFlags[@]}" prepare
+      actualModDirVersion="$(cat $buildRoot/include/config/kernel.release)"
+      if [ "$actualModDirVersion" != "${modDirVersion}" ]; then
+        echo "Error: modDirVersion ${modDirVersion} specified in the Nix expression is wrong, it should be: $actualModDirVersion"
+        exit 1
+      fi
+
+      buildFlags+=("KBUILD_BUILD_TIMESTAMP=$(date -u -d @$SOURCE_DATE_EPOCH)")
+
+      cd $buildRoot
+    '';
+
+    depsBuildBuild = [ buildPackages.stdenv.cc ];
+    # We remove a bunch of stuff that is symlinked from other places to save space,
+    # which trips the broken symlink check. So, just skip it. We'll know if it explodes.
+    dontCheckForBrokenSymlinks = true;
+    enableParallelBuilding = true;
+
+    hardeningDisable = [
+      "bindnow"
+      "format"
+      "fortify"
+      "stackprotector"
+      "pic"
+    ];
+
+    installFlags = [
+      "INSTALL_PATH=${placeholder "out"}"
+    ]
+    ++ (optional isModular "INSTALL_MOD_PATH=${placeholder "modules"}")
+    ++ optionals buildDTBs [
+      "dtbs_install"
+      "INSTALL_DTBS_PATH=${placeholder "out"}/dtbs"
+    ];
 
     # Some image types need special install targets
     installTargets = [
@@ -541,13 +504,37 @@ lib.makeOverridable (
     ];
 
     karch = stdenv.hostPlatform.linuxArch;
-
     pos = lib.optionalDrvAttr (pos != null) pos;
+    requiredSystemFeatures = [ "big-parallel" ];
+
+    passthru = rec {
+      inherit
+        version
+        modDirVersion
+        config
+        kernelPatches
+        configfile
+        target
+        buildDTBs
+        moduleBuildDependencies
+        stdenv
+        commonMakeFlags
+        ;
+
+      inherit
+        isZen
+        withRust
+        # Forwarded into passthru so features survive kernel.override() call chains
+        # used by the NixOS module system (see boot.kernelPackages apply in kernel.nix).
+        features
+        ;
+
+      baseVersion = lib.head (lib.splitString "-rc" version);
+      kernelAtLeast = lib.versionAtLeast baseVersion;
+      kernelOlder = lib.versionOlder baseVersion;
+    };
 
     meta = {
-      # https://github.com/NixOS/nixpkgs/pull/345534#issuecomment-2391238381
-      broken = withRust && lib.versionOlder version "6.12";
-
       description =
         "The Linux kernel"
         + (
@@ -556,28 +543,36 @@ lib.makeOverridable (
           else
             " (with patches: " + lib.concatStringsSep ", " (map (x: x.name) kernelPatches) + ")"
         );
-      license = lib.licenses.gpl2Only;
+
       homepage = "https://www.kernel.org/";
+      license = lib.licenses.gpl2Only;
       maintainers = [ maintainers.thoughtpolice ];
-      teams = [
-        teams.linux-kernel
-        teams.security-review
-      ];
       platforms = platforms.linux;
+
       badPlatforms =
         lib.optionals (lib.versionOlder version "4.15") [
           "riscv32-linux"
           "riscv64-linux"
         ]
         ++ lib.optional (lib.versionOlder version "5.19") "loongarch64-linux";
-      timeout = 14400; # 4 hours
+
+      # https://github.com/NixOS/nixpkgs/pull/345534#issuecomment-2391238381
+      broken = withRust && lib.versionOlder version "6.12";
+
       identifiers.cpeParts = {
-        part = "o";
-        vendor = "linux";
-        product = "linux_kernel";
         inherit version;
+        part = "o";
+        product = "linux_kernel";
         update = "*";
+        vendor = "linux";
       };
+
+      teams = [
+        teams.linux-kernel
+        teams.security-review
+      ];
+
+      timeout = 14400; # 4 hours
     }
     // extraMeta;
   }

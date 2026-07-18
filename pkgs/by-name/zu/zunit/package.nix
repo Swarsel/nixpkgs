@@ -1,12 +1,12 @@
 {
   lib,
-  stdenvNoCC,
   fetchFromGitHub,
-  zsh,
-  revolver,
   installShellFiles,
-  testers,
   nix-update-script,
+  revolver,
+  stdenvNoCC,
+  testers,
+  zsh,
 }:
 
 stdenvNoCC.mkDerivation (finalAttrs: {
@@ -24,26 +24,24 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     forceFetchGit = true;
   };
 
-  strictDeps = true;
-  doCheck = true;
-  doInstallCheck = true;
-
-  nativeBuildInputs = [
-    zsh
-    installShellFiles
-  ];
-  nativeCheckInputs = [ revolver ];
-  buildInputs = [
-    zsh
-    revolver
-  ];
-
   postPatch = ''
     for i in $(find src/ -type f -print); do
       substituteInPlace $i \
         --replace-warn " revolver " " ${lib.getExe revolver} "
     done
   '';
+
+  strictDeps = true;
+
+  nativeBuildInputs = [
+    zsh
+    installShellFiles
+  ];
+
+  buildInputs = [
+    zsh
+    revolver
+  ];
 
   buildPhase = ''
     runHook preBuild
@@ -52,6 +50,9 @@ stdenvNoCC.mkDerivation (finalAttrs: {
 
     runHook postBuild
   '';
+
+  doCheck = true;
+  nativeCheckInputs = [ revolver ];
 
   checkPhase = ''
     runHook preCheck
@@ -73,6 +74,8 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     installShellCompletion --cmd zunit --zsh zunit.zsh-completion
   '';
 
+  doInstallCheck = true;
+
   installCheckPhase = ''
     runHook preInstallCheck
 
@@ -87,13 +90,13 @@ stdenvNoCC.mkDerivation (finalAttrs: {
   };
 
   meta = {
+    inherit (zsh.meta) platforms;
     description = "Powerful testing framework for ZSH projects";
     homepage = "https://zunit.xyz/";
-    downloadPage = "https://github.com/zunit-zsh/zunit/releases";
     changelog = "https://github.com/zunit-zsh/zunit/releases/tag/${finalAttrs.src.rev}";
     license = lib.licenses.mit;
-    mainProgram = "zunit";
-    inherit (zsh.meta) platforms;
     maintainers = with lib.maintainers; [ d-brasher ];
+    mainProgram = "zunit";
+    downloadPage = "https://github.com/zunit-zsh/zunit/releases";
   };
 })

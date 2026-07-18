@@ -2,11 +2,11 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  pkg-config,
   deadbeef,
   gtk3,
-  perl,
   libdbusmenu,
+  perl,
+  pkg-config,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -20,7 +20,13 @@ stdenv.mkDerivation (finalAttrs: {
     sha256 = "sha256-pDiQn+iHSTNWTO01j/fbEq3P374TMmnUiC5/Jn2hwBI=";
   };
 
+  postPatch = ''
+    substituteInPlace tools/glib-mkenums \
+      --replace /usr/bin/perl "${perl}/bin/perl"
+  '';
+
   nativeBuildInputs = [ pkg-config ];
+
   buildInputs = [
     deadbeef
     gtk3
@@ -28,11 +34,6 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   buildFlags = [ "gtk3" ];
-
-  postPatch = ''
-    substituteInPlace tools/glib-mkenums \
-      --replace /usr/bin/perl "${perl}/bin/perl"
-  '';
 
   installPhase = ''
     runHook preInstall

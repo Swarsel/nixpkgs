@@ -46,9 +46,9 @@ let
   exportSections = lib.mapAttrs (
     _:
     {
-      path,
       allowAddresses,
       extraOptions,
+      path,
     }:
     extraOptions
     // {
@@ -74,64 +74,71 @@ in
       server = {
         enable = lib.mkEnableOption "the Network Block Device (nbd) server";
 
-        listenPort = mkOption {
-          type = types.port;
-          default = 10809;
-          description = "Port to listen on. The port is NOT automatically opened in the firewall.";
-        };
-
-        extraOptions = mkOption {
-          type = iniFields;
-          default = {
-            allowlist = false;
-          };
-          description = ''
-            Extra options for the server. See
-            {manpage}`nbd-server(5)`.
-          '';
-        };
-
         exports = mkOption {
-          description = "Files or block devices to make available over the network.";
           default = { };
+          description = "Files or block devices to make available over the network.";
+
           type = attrsOf (submodule {
             options = {
-              path = mkOption {
-                type = str;
-                description = "File or block device to export.";
-                example = "/dev/sdb1";
-              };
-
               allowAddresses = mkOption {
-                type = nullOr (listOf str);
                 default = null;
+                description = "IPs and subnets that are authorized to connect for this device. If not specified, the server will allow all connections.";
+
                 example = [
                   "10.10.0.0/24"
                   "127.0.0.1"
                 ];
-                description = "IPs and subnets that are authorized to connect for this device. If not specified, the server will allow all connections.";
+
+                type = nullOr (listOf str);
               };
 
               extraOptions = mkOption {
-                type = iniFields;
                 default = {
                   flush = true;
                   fua = true;
                 };
+
                 description = ''
                   Extra options for this export. See
                   {manpage}`nbd-server(5)`.
                 '';
+
+                type = iniFields;
+              };
+
+              path = mkOption {
+                description = "File or block device to export.";
+                example = "/dev/sdb1";
+                type = str;
               };
             };
           });
         };
 
+        extraOptions = mkOption {
+          default = {
+            allowlist = false;
+          };
+
+          description = ''
+            Extra options for the server. See
+            {manpage}`nbd-server(5)`.
+          '';
+
+          type = iniFields;
+        };
+
         listenAddress = mkOption {
-          type = nullOr str;
-          description = "Address to listen on. If not specified, the server will listen on all interfaces.";
           default = null;
+          description = "Address to listen on. If not specified, the server will listen on all interfaces.";
           example = "10.10.0.1";
+          type = nullOr str;
+        };
+
+        listenPort = mkOption {
+          default = 10809;
+          description = "Port to listen on. The port is NOT automatically opened in the firewall.";
+          type = types.port;
         };
       };
     };
@@ -148,19 +155,15 @@ in
     boot.kernelModules = [ "nbd" ];
 
     systemd.services.nbd-server = {
-      wants = [ "network-online.target" ];
       after = [ "network-online.target" ];
       before = [ "multi-user.target" ];
-      wantedBy = [ "multi-user.target" ];
+
       serviceConfig = {
-        ExecStart = "${pkgs.nbd}/bin/nbd-server -n -C ${serverConfig}";
-        Type = "simple";
-
-        DeviceAllow = map (path: "${path} rw") allowedDevices;
         BindPaths = boundPaths;
-
         CapabilityBoundingSet = "";
+        DeviceAllow = map (path: "${path} rw") allowedDevices;
         DevicePolicy = "closed";
+        ExecStart = "${pkgs.nbd}/bin/nbd-server -n -C ${serverConfig}";
         LockPersonality = true;
         MemoryDenyWriteExecute = true;
         NoNewPrivileges = true;
@@ -182,8 +185,12 @@ in
         RestrictNamespaces = true;
         RestrictRealtime = true;
         RestrictSUIDSGID = true;
+        Type = "simple";
         UMask = "0077";
       };
+
+      wantedBy = [ "multi-user.target" ];
+      wants = [ "network-online.target" ];
     };
   };
 }

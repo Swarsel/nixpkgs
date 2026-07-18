@@ -4,18 +4,12 @@
 { pkgs, ... }:
 let
   calamares-nixos-autostart = pkgs.makeAutostartItem {
-    name = "calamares";
     package = pkgs.calamares-nixos;
+    name = "calamares";
   };
 in
 {
   imports = [ ./installation-cd-graphical-base.nix ];
-
-  # required for calamares
-  security.polkit.enablePkexecWrapper = true;
-
-  # required for kpmcore to work correctly
-  programs.partition-manager.enable = true;
 
   environment.systemPackages = with pkgs; [
     # Calamares for graphical installation
@@ -28,4 +22,8 @@ in
 
   # Support choosing from any locale
   i18n.supportedLocales = [ "all" ];
+  # required for kpmcore to work correctly
+  programs.partition-manager.enable = true;
+  # required for calamares
+  security.polkit.enablePkexecWrapper = true;
 }

@@ -1,12 +1,12 @@
 {
   lib,
-  stdenvNoCC,
+  copyDesktopItems,
   fetchFromCodeberg,
   makeDesktopItem,
-  copyDesktopItems,
   makeWrapper,
-  renpyMinimal,
   nix-update-script,
+  renpyMinimal,
+  stdenvNoCC,
 }:
 stdenvNoCC.mkDerivation (finalAttrs: {
   pname = "katawa-shoujo-re-engineered";
@@ -20,26 +20,15 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     hash = "sha256-L8KYGV2sYXqjCppzlO40jzpusN85eOwR+muGK0SiXeA=";
   };
 
-  desktopItems = [
-    (makeDesktopItem {
-      name = "katawa-shoujo-re-engineered";
-      desktopName = "Katawa Shoujo: Re-Engineered";
-      type = "Application";
-      icon = "katawa-shoujo-re-engineered";
-      categories = [ "Game" ];
-      exec = "katawa-shoujo-re-engineered";
-    })
-  ];
+  postPatch = ''
+    substituteInPlace game/config.rpy --replace-fail 0.0.0-localbuild ${finalAttrs.version}
+  '';
 
   nativeBuildInputs = [
     makeWrapper
     copyDesktopItems
     renpyMinimal
   ];
-
-  postPatch = ''
-    substituteInPlace game/config.rpy --replace-fail 0.0.0-localbuild ${finalAttrs.version}
-  '';
 
   buildPhase = ''
     runHook preBuild
@@ -64,23 +53,37 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  desktopItems = [
+    (makeDesktopItem {
+      categories = [ "Game" ];
+      desktopName = "Katawa Shoujo: Re-Engineered";
+      exec = "katawa-shoujo-re-engineered";
+      icon = "katawa-shoujo-re-engineered";
+      name = "katawa-shoujo-re-engineered";
+      type = "Application";
+    })
+  ];
+
   passthru.updateScript = nix-update-script { };
 
   meta = {
     description = "Fan-made modernization of the classic visual novel Katawa Shoujo";
     homepage = "https://www.fhs.sh/projects";
+
     license = with lib.licenses; [
       # code
       mpl20
       # assets from the original game
       cc-by-nc-nd-30
     ];
-    mainProgram = "katawa-shoujo-re-engineered";
+
     maintainers = with lib.maintainers; [
       quantenzitrone
       rapiteanu
       ulysseszhan
     ];
+
     platforms = renpyMinimal.meta.platforms;
+    mainProgram = "katawa-shoujo-re-engineered";
   };
 })

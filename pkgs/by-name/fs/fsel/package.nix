@@ -1,10 +1,10 @@
 {
   lib,
   fetchFromGitHub,
-  rustPlatform,
   installShellFiles,
   nix-update-script,
   pkg-config,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -18,12 +18,12 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-h8CA2ZR/XKQJDq5uopOD1I+ZpWehuVNiJLeuuLaKAQA=";
   };
 
-  cargoHash = "sha256-RHDTdwbsKQtz8Pwq3pNgoUvK8y5NO94zVhsKiBVET+I=";
-
   nativeBuildInputs = [
     installShellFiles
     pkg-config
   ];
+
+  cargoHash = "sha256-RHDTdwbsKQtz8Pwq3pNgoUvK8y5NO94zVhsKiBVET+I=";
 
   postInstall = ''
     installManPage fsel.1
@@ -36,7 +36,7 @@ rustPlatform.buildRustPackage (finalAttrs: {
     homepage = "https://github.com/Mjoyufull/fsel";
     license = lib.licenses.bsd2;
     maintainers = with lib.maintainers; [ nettika ];
-    mainProgram = "fsel";
     platforms = with lib.platforms; linux ++ freebsd ++ openbsd ++ netbsd;
+    mainProgram = "fsel";
   };
 })

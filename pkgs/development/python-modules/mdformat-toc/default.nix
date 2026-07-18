@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   mdformat,
   poetry-core,
   pytestCheckHook,
@@ -10,7 +10,6 @@
 buildPythonPackage rec {
   pname = "mdformat-toc";
   version = "0.5.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "hukkin";
@@ -20,17 +19,16 @@ buildPythonPackage rec {
   };
 
   nativeBuildInputs = [ poetry-core ];
-
   propagatedBuildInputs = [ mdformat ];
-
   nativeCheckInputs = [ pytestCheckHook ];
-
+  pyproject = true;
   pythonImportsCheck = [ "mdformat_toc" ];
 
   meta = {
     description = "Mdformat plugin to generate a table of contents";
     homepage = "https://github.com/hukkin/mdformat-toc";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       aldoborrero
       polarmutex

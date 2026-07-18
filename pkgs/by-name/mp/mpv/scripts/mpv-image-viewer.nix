@@ -1,7 +1,7 @@
 {
-  buildLua,
-  fetchFromGitHub,
   lib,
+  fetchFromGitHub,
+  buildLua,
   unstableGitUpdater,
 }:
 let
@@ -11,6 +11,7 @@ let
       self = {
         inherit pname;
         version = "0-unstable-2024-11-23";
+
         src = fetchFromGitHub {
           owner = "occivink";
           repo = "mpv-image-viewer";
@@ -26,6 +27,7 @@ let
 
         meta = {
           description = "Configuration, scripts and tips for using mpv as an image viewer";
+
           longDescription = ''
             ${pname} is a component of mpv-image-viewer.
 
@@ -37,6 +39,7 @@ let
             any of the others. Refer to the README and script-opts/ directory for
             additional configuration tips or examples.
           '';
+
           homepage = "https://github.com/occivink/mpv-image-viewer";
           license = lib.licenses.unlicense;
           maintainers = with lib.maintainers; [ colinsane ];

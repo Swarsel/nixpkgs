@@ -13,7 +13,6 @@
 buildPythonPackage rec {
   pname = "krb5";
   version = "0.9.0";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
@@ -25,11 +24,6 @@ buildPythonPackage rec {
       --replace-fail "Cython ==" "Cython >="
   '';
 
-  build-system = [
-    cython
-    setuptools
-  ];
-
   nativeBuildInputs = [ krb5-c ];
 
   nativeCheckInputs = [
@@ -37,17 +31,25 @@ buildPythonPackage rec {
     pytestCheckHook
   ];
 
+  build-system = [
+    cython
+    setuptools
+  ];
+
+  pyproject = true;
   pythonImportsCheck = [ "krb5" ];
 
   meta = {
-    changelog = "https://github.com/jborean93/pykrb5/blob/v${version}/CHANGELOG.md";
     description = "Kerberos API bindings for Python";
     homepage = "https://github.com/jborean93/pykrb5";
+    changelog = "https://github.com/jborean93/pykrb5/blob/v${version}/CHANGELOG.md";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       de11n
       despsyched
     ];
+
     broken = stdenv.hostPlatform.isDarwin; # TODO: figure out how to build on Darwin
   };
 }

@@ -1,7 +1,7 @@
 # NOTE: Tests related to isDeclaredMap go here.
 {
-  isDeclaredMap,
   lib,
+  isDeclaredMap,
   runCommand,
   testers,
 }:
@@ -10,10 +10,10 @@ let
   inherit (testers) shellcheck shfmt testBuildFailure';
 
   commonArgs = {
-    __structuredAttrs = true;
     strictDeps = true;
-    preferLocalBuild = true;
     nativeBuildInputs = [ isDeclaredMap ];
+    __structuredAttrs = true;
+    preferLocalBuild = true;
   };
 
   check =
@@ -36,9 +36,9 @@ let
           throw "Invalid scope: ${scope}";
     in
     {
+      intro,
       name,
       scope,
-      intro,
       values,
     }:
     runCommand name commonArgs ''
@@ -56,35 +56,7 @@ let
     '';
 in
 recurseIntoAttrs {
-  shellcheck = shellcheck {
-    name = "isDeclaredMap";
-    src = ./isDeclaredMap.bash;
-  };
-
-  shfmt = shfmt {
-    name = "isDeclaredMap";
-    src = ./isDeclaredMap.bash;
-  };
-
-  undeclaredFails = testBuildFailure' {
-    name = "undeclaredFails";
-    drv = runCommand "undeclared" commonArgs ''
-      set -eu
-      if isDeclaredMap undeclared; then
-        nixLog "test passed"
-        touch "$out"
-      else
-        nixErrorLog "test failed"
-        exit 1
-      fi
-    '';
-    expectedBuilderLogEntries = [
-      "test failed"
-    ];
-  };
-
   arrayFails = testBuildFailure' {
-    name = "arrayFails";
     drv = runCommand "array" commonArgs ''
       set -eu
       local -a array
@@ -96,13 +68,15 @@ recurseIntoAttrs {
         exit 1
       fi
     '';
+
     expectedBuilderLogEntries = [
       "test failed"
     ];
+
+    name = "arrayFails";
   };
 
   emptyStringNamerefFails = testBuildFailure' {
-    name = "emptyStringNamerefFails";
     drv = runCommand "emptyStringNameref" commonArgs ''
       set -eu
       if isDeclaredMap ""; then
@@ -113,265 +87,323 @@ recurseIntoAttrs {
         exit 1
       fi
     '';
+
     expectedBuilderLogEntries = [
       "local: `': not a valid identifier"
       "test failed"
     ];
+
+    name = "emptyStringNamerefFails";
   };
 
   namerefToEmptyStringFails = testBuildFailure' {
-    name = "namerefToEmptyStringFails";
     drv = check {
+      intro = "local -n";
       name = "namerefToEmptyString";
       scope = null;
-      intro = "local -n";
       values = "";
     };
+
     expectedBuilderLogEntries = [
       "local: `': not a valid identifier"
       # The test fails in such a way that it exits immediately, without returning to the else branch.
     ];
-  };
 
-  sameScopeEmptyStringFails = testBuildFailure' {
-    name = "sameScopeEmptyStringFails";
-    drv = check {
-      name = "sameScopeEmptyString";
-      scope = null;
-      intro = null;
-      values = "";
-    };
-    expectedBuilderLogEntries = [
-      "test failed"
-    ];
-  };
-
-  sameScopeEmptyMapFails = testBuildFailure' {
-    name = "sameScopeEmptyMapFails";
-    drv = check {
-      name = "sameScopeEmptyMap";
-      scope = null;
-      intro = null;
-      values = "()";
-    };
-    expectedBuilderLogEntries = [
-      "test failed"
-    ];
-  };
-
-  # Fails because maps must be declared with the -A flag.
-  sameScopeSingletonMapFails = testBuildFailure' {
-    name = "sameScopeSingletonMapFails";
-    drv = check {
-      name = "sameScopeSingletonMap";
-      scope = null;
-      intro = null;
-      values = ''([greeting]="hello!")'';
-    };
-    expectedBuilderLogEntries = [
-      "greeting: unbound variable"
-    ];
-  };
-
-  sameScopeLocalUnsetMap = check {
-    name = "sameScopeLocalUnsetMap";
-    scope = null;
-    intro = "local -A";
-    values = null;
-  };
-
-  sameScopeLocalEmptyMap = check {
-    name = "sameScopeLocalEmptyMap";
-    scope = null;
-    intro = "local -A";
-    values = "()";
-  };
-
-  sameScopeLocalSingletonMap = check {
-    name = "sameScopeLocalSingletonMap";
-    scope = null;
-    intro = "local -A";
-    values = ''([greeting]="hello!")'';
-  };
-
-  sameScopeDeclareUnsetMap = check {
-    name = "sameScopeDeclareUnsetMap";
-    scope = null;
-    intro = "declare -A";
-    values = null;
-  };
-
-  sameScopeDeclareEmptyMap = check {
-    name = "sameScopeDeclareEmptyMap";
-    scope = null;
-    intro = "declare -A";
-    values = "()";
-  };
-
-  sameScopeDeclareSingletonMap = check {
-    name = "sameScopeDeclareSingletonMap";
-    scope = null;
-    intro = "declare -A";
-    values = ''([greeting]="hello!")'';
-  };
-
-  previousScopeEmptyStringFails = testBuildFailure' {
-    name = "previousScopeEmptyStringFails";
-    drv = check {
-      name = "previousScopeEmptyString";
-      scope = "function";
-      intro = null;
-      values = "";
-    };
-    expectedBuilderLogEntries = [
-      "test failed"
-    ];
-  };
-
-  # Fails because () is ambiguous and defaults to array rather than associative array.
-  previousScopeEmptyMapFails = testBuildFailure' {
-    name = "previousScopeEmptyMapFails";
-    drv = check {
-      name = "previousScopeEmptyMap";
-      scope = "function";
-      intro = null;
-      values = "()";
-    };
-    expectedBuilderLogEntries = [
-      "test failed"
-    ];
-  };
-
-  previousScopeSingletonMapFails = testBuildFailure' {
-    name = "previousScopeSingletonMapFails";
-    drv = check {
-      name = "previousScopeSingletonMap";
-      scope = "function";
-      intro = null;
-      values = ''([greeting]="hello!")'';
-    };
-    expectedBuilderLogEntries = [
-      "greeting: unbound variable"
-    ];
-  };
-
-  previousScopeLocalUnsetMapFails = testBuildFailure' {
-    name = "previousScopeLocalUnsetMapFails";
-    drv = check {
-      name = "previousScopeLocalUnsetMap";
-      scope = "function";
-      intro = "local -A";
-      values = null;
-    };
-    expectedBuilderLogEntries = [
-      "test failed"
-    ];
-  };
-
-  previousScopeLocalEmptyMapFails = testBuildFailure' {
-    name = "previousScopeLocalEmptyMapFails";
-    drv = check {
-      name = "previousScopeLocalEmptyMap";
-      scope = "function";
-      intro = "local -A";
-      values = "()";
-    };
-    expectedBuilderLogEntries = [
-      "test failed"
-    ];
-  };
-
-  previousScopeLocalSingletonMapFails = testBuildFailure' {
-    name = "previousScopeLocalSingletonMapFails";
-    drv = check {
-      name = "previousScopeLocalSingletonMap";
-      scope = "function";
-      intro = "local -A";
-      values = ''([greeting]="hello!")'';
-    };
-    expectedBuilderLogEntries = [
-      "test failed"
-    ];
-  };
-
-  previousScopeLocalGlobalUnsetMap = check {
-    name = "previousScopeLocalGlobalUnsetMap";
-    scope = "function";
-    intro = "local -Ag";
-    values = null;
-  };
-
-  previousScopeLocalGlobalEmptyMap = check {
-    name = "previousScopeLocalGlobalEmptyMap";
-    scope = "function";
-    intro = "local -Ag";
-    values = "()";
-  };
-
-  previousScopeLocalGlobalSingletonMap = check {
-    name = "previousScopeLocalGlobalSingletonMap";
-    scope = "function";
-    intro = "local -Ag";
-    values = ''([greeting]="hello!")'';
-  };
-
-  previousScopeDeclareUnsetMapFails = testBuildFailure' {
-    name = "previousScopeDeclareUnsetMapFails";
-    drv = check {
-      name = "previousScopeDeclareUnsetMap";
-      scope = "function";
-      intro = "declare -A";
-      values = null;
-    };
-    expectedBuilderLogEntries = [
-      "test failed"
-    ];
+    name = "namerefToEmptyStringFails";
   };
 
   previousScopeDeclareEmptyMapFails = testBuildFailure' {
-    name = "previousScopeDeclareEmptyMapFails";
     drv = check {
+      intro = "declare -A";
       name = "previousScopeDeclareEmptyMap";
       scope = "function";
-      intro = "declare -A";
       values = "()";
     };
+
     expectedBuilderLogEntries = [
       "test failed"
     ];
-  };
 
-  previousScopeDeclareSingletonMapFails = testBuildFailure' {
-    name = "previousScopeDeclareSingletonMapFails";
-    drv = check {
-      name = "previousScopeDeclareSingletonMap";
-      scope = "function";
-      intro = "declare -A";
-      values = ''([greeting]="hello!")'';
-    };
-    expectedBuilderLogEntries = [
-      "test failed"
-    ];
-  };
-
-  previousScopeDeclareGlobalUnsetMap = check {
-    name = "previousScopeDeclareGlobalUnsetMap";
-    scope = "function";
-    intro = "declare -Ag";
-    values = null;
+    name = "previousScopeDeclareEmptyMapFails";
   };
 
   previousScopeDeclareGlobalEmptyMap = check {
+    intro = "declare -Ag";
     name = "previousScopeDeclareGlobalEmptyMap";
     scope = "function";
-    intro = "declare -Ag";
     values = "()";
   };
 
   previousScopeDeclareGlobalSingletonMap = check {
+    intro = "declare -Ag";
     name = "previousScopeDeclareGlobalSingletonMap";
     scope = "function";
-    intro = "declare -Ag";
     values = ''([greeting]="hello!")'';
+  };
+
+  previousScopeDeclareGlobalUnsetMap = check {
+    intro = "declare -Ag";
+    name = "previousScopeDeclareGlobalUnsetMap";
+    scope = "function";
+    values = null;
+  };
+
+  previousScopeDeclareSingletonMapFails = testBuildFailure' {
+    drv = check {
+      intro = "declare -A";
+      name = "previousScopeDeclareSingletonMap";
+      scope = "function";
+      values = ''([greeting]="hello!")'';
+    };
+
+    expectedBuilderLogEntries = [
+      "test failed"
+    ];
+
+    name = "previousScopeDeclareSingletonMapFails";
+  };
+
+  previousScopeDeclareUnsetMapFails = testBuildFailure' {
+    drv = check {
+      intro = "declare -A";
+      name = "previousScopeDeclareUnsetMap";
+      scope = "function";
+      values = null;
+    };
+
+    expectedBuilderLogEntries = [
+      "test failed"
+    ];
+
+    name = "previousScopeDeclareUnsetMapFails";
+  };
+
+  # Fails because () is ambiguous and defaults to array rather than associative array.
+  previousScopeEmptyMapFails = testBuildFailure' {
+    drv = check {
+      intro = null;
+      name = "previousScopeEmptyMap";
+      scope = "function";
+      values = "()";
+    };
+
+    expectedBuilderLogEntries = [
+      "test failed"
+    ];
+
+    name = "previousScopeEmptyMapFails";
+  };
+
+  previousScopeEmptyStringFails = testBuildFailure' {
+    drv = check {
+      intro = null;
+      name = "previousScopeEmptyString";
+      scope = "function";
+      values = "";
+    };
+
+    expectedBuilderLogEntries = [
+      "test failed"
+    ];
+
+    name = "previousScopeEmptyStringFails";
+  };
+
+  previousScopeLocalEmptyMapFails = testBuildFailure' {
+    drv = check {
+      intro = "local -A";
+      name = "previousScopeLocalEmptyMap";
+      scope = "function";
+      values = "()";
+    };
+
+    expectedBuilderLogEntries = [
+      "test failed"
+    ];
+
+    name = "previousScopeLocalEmptyMapFails";
+  };
+
+  previousScopeLocalGlobalEmptyMap = check {
+    intro = "local -Ag";
+    name = "previousScopeLocalGlobalEmptyMap";
+    scope = "function";
+    values = "()";
+  };
+
+  previousScopeLocalGlobalSingletonMap = check {
+    intro = "local -Ag";
+    name = "previousScopeLocalGlobalSingletonMap";
+    scope = "function";
+    values = ''([greeting]="hello!")'';
+  };
+
+  previousScopeLocalGlobalUnsetMap = check {
+    intro = "local -Ag";
+    name = "previousScopeLocalGlobalUnsetMap";
+    scope = "function";
+    values = null;
+  };
+
+  previousScopeLocalSingletonMapFails = testBuildFailure' {
+    drv = check {
+      intro = "local -A";
+      name = "previousScopeLocalSingletonMap";
+      scope = "function";
+      values = ''([greeting]="hello!")'';
+    };
+
+    expectedBuilderLogEntries = [
+      "test failed"
+    ];
+
+    name = "previousScopeLocalSingletonMapFails";
+  };
+
+  previousScopeLocalUnsetMapFails = testBuildFailure' {
+    drv = check {
+      intro = "local -A";
+      name = "previousScopeLocalUnsetMap";
+      scope = "function";
+      values = null;
+    };
+
+    expectedBuilderLogEntries = [
+      "test failed"
+    ];
+
+    name = "previousScopeLocalUnsetMapFails";
+  };
+
+  previousScopeSingletonMapFails = testBuildFailure' {
+    drv = check {
+      intro = null;
+      name = "previousScopeSingletonMap";
+      scope = "function";
+      values = ''([greeting]="hello!")'';
+    };
+
+    expectedBuilderLogEntries = [
+      "greeting: unbound variable"
+    ];
+
+    name = "previousScopeSingletonMapFails";
+  };
+
+  sameScopeDeclareEmptyMap = check {
+    intro = "declare -A";
+    name = "sameScopeDeclareEmptyMap";
+    scope = null;
+    values = "()";
+  };
+
+  sameScopeDeclareSingletonMap = check {
+    intro = "declare -A";
+    name = "sameScopeDeclareSingletonMap";
+    scope = null;
+    values = ''([greeting]="hello!")'';
+  };
+
+  sameScopeDeclareUnsetMap = check {
+    intro = "declare -A";
+    name = "sameScopeDeclareUnsetMap";
+    scope = null;
+    values = null;
+  };
+
+  sameScopeEmptyMapFails = testBuildFailure' {
+    drv = check {
+      intro = null;
+      name = "sameScopeEmptyMap";
+      scope = null;
+      values = "()";
+    };
+
+    expectedBuilderLogEntries = [
+      "test failed"
+    ];
+
+    name = "sameScopeEmptyMapFails";
+  };
+
+  sameScopeEmptyStringFails = testBuildFailure' {
+    drv = check {
+      intro = null;
+      name = "sameScopeEmptyString";
+      scope = null;
+      values = "";
+    };
+
+    expectedBuilderLogEntries = [
+      "test failed"
+    ];
+
+    name = "sameScopeEmptyStringFails";
+  };
+
+  sameScopeLocalEmptyMap = check {
+    intro = "local -A";
+    name = "sameScopeLocalEmptyMap";
+    scope = null;
+    values = "()";
+  };
+
+  sameScopeLocalSingletonMap = check {
+    intro = "local -A";
+    name = "sameScopeLocalSingletonMap";
+    scope = null;
+    values = ''([greeting]="hello!")'';
+  };
+
+  sameScopeLocalUnsetMap = check {
+    intro = "local -A";
+    name = "sameScopeLocalUnsetMap";
+    scope = null;
+    values = null;
+  };
+
+  # Fails because maps must be declared with the -A flag.
+  sameScopeSingletonMapFails = testBuildFailure' {
+    drv = check {
+      intro = null;
+      name = "sameScopeSingletonMap";
+      scope = null;
+      values = ''([greeting]="hello!")'';
+    };
+
+    expectedBuilderLogEntries = [
+      "greeting: unbound variable"
+    ];
+
+    name = "sameScopeSingletonMapFails";
+  };
+
+  shellcheck = shellcheck {
+    src = ./isDeclaredMap.bash;
+    name = "isDeclaredMap";
+  };
+
+  shfmt = shfmt {
+    src = ./isDeclaredMap.bash;
+    name = "isDeclaredMap";
+  };
+
+  undeclaredFails = testBuildFailure' {
+    drv = runCommand "undeclared" commonArgs ''
+      set -eu
+      if isDeclaredMap undeclared; then
+        nixLog "test passed"
+        touch "$out"
+      else
+        nixErrorLog "test failed"
+        exit 1
+      fi
+    '';
+
+    expectedBuilderLogEntries = [
+      "test failed"
+    ];
+
+    name = "undeclaredFails";
   };
 }

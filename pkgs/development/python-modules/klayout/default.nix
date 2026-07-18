@@ -16,16 +16,8 @@
 }:
 
 buildPythonPackage {
-  pname = "klayout";
-  pyproject = true;
-
   inherit (klayout) version src;
-
-  build-system = [
-    cython
-    setuptools
-    tomli
-  ];
+  pname = "klayout";
 
   nativeBuildInputs = [
     qt6.wrapQtAppsHook
@@ -49,18 +41,24 @@ buildPythonPackage {
   ];
 
   env = {
-    KLAYOUT_QT_VERSION = "6";
-    HAVE_QT6 = "1";
-    HAVE_PNG = "1";
     HAVE_CURL = "1";
     HAVE_EXPAT = "1";
+    HAVE_PNG = "1";
+    HAVE_QT6 = "1";
     HAVE_ZLIB = "1";
-
+    KLAYOUT_QT_VERSION = "6";
     # Ensure that there is enough space for the `fixDarwinDylibNames` hook to
     # update the install names of the output dylibs.
     NIX_LDFLAGS = lib.optionalString stdenv.hostPlatform.isDarwin "-headerpad_max_install_names";
   };
 
+  build-system = [
+    cython
+    setuptools
+    tomli
+  ];
+
+  pyproject = true;
   pythonImportsCheck = [ "klayout" ];
 
   meta = {

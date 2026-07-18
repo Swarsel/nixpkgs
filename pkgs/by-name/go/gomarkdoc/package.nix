@@ -1,9 +1,9 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
-  testers,
+  buildGoModule,
   gomarkdoc,
+  testers,
 }:
 
 buildGoModule (finalAttrs: {
@@ -17,10 +17,7 @@ buildGoModule (finalAttrs: {
     hash = "sha256-eMH+F1ZXAKHqnrvOJvCETm2NiDwY03IFHrDNYr3jaW8=";
   };
 
-  subPackages = [ "cmd/gomarkdoc" ];
-
   vendorHash = "sha256-gCuYqk9agH86wfGd7k6QwLUiG3Mv6TrEd9tdyj8AYPs=";
-
   # Tests call gomarkdoc's main() directly, which reads GOFLAGS from the
   # environment. nixpkgs sets GOFLAGS=-mod=vendor, but gomarkdoc's own flag
   # parser only accepts -tags, so -mod triggers "flag provided but not defined".
@@ -32,6 +29,8 @@ buildGoModule (finalAttrs: {
     "-X main.version=${finalAttrs.version}"
     "-X main.commit=${finalAttrs.src.rev}"
   ];
+
+  subPackages = [ "cmd/gomarkdoc" ];
 
   passthru.tests = {
     version = testers.testVersion {

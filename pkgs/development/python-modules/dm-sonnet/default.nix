@@ -1,55 +1,34 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # build-system
-  setuptools,
-
-  # dependencies
-  dm-tree,
-  etils,
-  numpy,
-  tabulate,
-  wrapt,
-
+  buildPythonPackage,
   # tests
   click,
+  # dependencies
+  dm-tree,
   docutils,
+  etils,
   keras,
+  numpy,
   pytestCheckHook,
+  # build-system
+  setuptools,
+  tabulate,
   tensorflow,
   tensorflow-datasets,
   tf-keras,
+  wrapt,
 }:
 
 buildPythonPackage rec {
   pname = "dm-sonnet";
   version = "2.0.2";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "deepmind";
     repo = "sonnet";
     tag = "v${version}";
     hash = "sha256-WkloUbqSyPG3cbLG8ktsjdluACkCbUZ7t6rYWst8rs8=";
-  };
-
-  build-system = [
-    setuptools
-  ];
-
-  dependencies = [
-    dm-tree
-    etils
-    numpy
-    tabulate
-    wrapt
-  ]
-  ++ etils.optional-dependencies.epath;
-
-  optional-dependencies = {
-    tensorflow = [ tensorflow ];
   };
 
   nativeCheckInputs = [
@@ -67,11 +46,18 @@ buildPythonPackage rec {
     export TF_USE_LEGACY_KERAS=True
   '';
 
-  enabledTestPaths = [
-    # Prevent collecting docs/ext/link_tf_api_test.py which fails with:
-    # ModuleNotFoundError: No module named 'docs.ext'
-    "sonnet"
+  build-system = [
+    setuptools
   ];
+
+  dependencies = [
+    dm-tree
+    etils
+    numpy
+    tabulate
+    wrapt
+  ]
+  ++ etils.optional-dependencies.epath;
 
   disabledTests = [
     # AssertionError: 2 != 0 : 2 doctests failed
@@ -85,6 +71,17 @@ buildPythonPackage rec {
     "testComputationAgainstNumPy1"
   ];
 
+  enabledTestPaths = [
+    # Prevent collecting docs/ext/link_tf_api_test.py which fails with:
+    # ModuleNotFoundError: No module named 'docs.ext'
+    "sonnet"
+  ];
+
+  optional-dependencies = {
+    tensorflow = [ tensorflow ];
+  };
+
+  pyproject = true;
   pythonImportsCheck = [ "sonnet" ];
 
   meta = {

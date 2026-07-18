@@ -1,9 +1,9 @@
 {
-  buildGoModule,
-  fetchFromGitHub,
-  installShellFiles,
   lib,
   stdenv,
+  fetchFromGitHub,
+  buildGoModule,
+  installShellFiles,
   versionCheckHook,
 }:
 
@@ -18,20 +18,12 @@ buildGoModule (finalAttrs: {
     hash = "sha256-24FdXGakfLkbR58Wwz5o9q3GD4rkToCfv4ygM/NBQXg=";
   };
 
-  vendorHash = "sha256-FANXWBI5ZTqBdZ7iLrErYmUb6l1LaLnYo4RA1iz9wM8=";
-
-  excludedPackages = [ "scripts/jsonschema" ];
-
   nativeBuildInputs = [
     installShellFiles
     versionCheckHook
   ];
 
-  ldflags = [
-    "-s"
-    "-w"
-  ];
-
+  vendorHash = "sha256-FANXWBI5ZTqBdZ7iLrErYmUb6l1LaLnYo4RA1iz9wM8=";
   env.CGO_CFLAGS = toString [ "-Wno-format-security" ];
 
   preCheck = ''
@@ -49,6 +41,12 @@ buildGoModule (finalAttrs: {
   '';
 
   doInstallCheck = true;
+  excludedPackages = [ "scripts/jsonschema" ];
+
+  ldflags = [
+    "-s"
+    "-w"
+  ];
 
   versionCheckProgramArg = "version";
 

@@ -1,15 +1,14 @@
 {
   lib,
+  fetchFromGitHub,
   buildPythonPackage,
   fastcore,
-  fetchFromGitHub,
   setuptools,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "fastgit";
   version = "0.0.6";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "AnswerDotAI";
@@ -18,14 +17,12 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-kasTNCeFrqEgska7wQ612c6lyQErnjsulqARo8WN9jA=";
   };
 
-  build-system = [ setuptools ];
-
-  dependencies = [ fastcore ];
-
-  pythonImportsCheck = [ "fastgit" ];
-
   # Module has no tests
   doCheck = false;
+  build-system = [ setuptools ];
+  dependencies = [ fastcore ];
+  pyproject = true;
+  pythonImportsCheck = [ "fastgit" ];
 
   meta = {
     description = "Module to use git";

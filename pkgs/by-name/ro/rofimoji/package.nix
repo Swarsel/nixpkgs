@@ -1,23 +1,20 @@
 {
   lib,
-  python3Packages,
+  stdenv,
   fetchFromGitHub,
   installShellFiles,
-  stdenv,
-
-  waylandSupport ? (!stdenv.hostPlatform.isDarwin),
-  x11Support ? (!stdenv.hostPlatform.isDarwin),
-
+  python3Packages,
   wl-clipboard,
   wtype,
   xdotool,
   xsel,
+  waylandSupport ? (!stdenv.hostPlatform.isDarwin),
+  x11Support ? (!stdenv.hostPlatform.isDarwin),
 }:
 
 python3Packages.buildPythonApplication (finalAttrs: {
   pname = "rofimoji";
   version = "6.8.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "fdw";
@@ -25,6 +22,12 @@ python3Packages.buildPythonApplication (finalAttrs: {
     tag = finalAttrs.version;
     hash = "sha256-KOWj/u5JxgHiUf/hPBu+PfPgSRd/HVivU3F8oWqzIv4=";
   };
+
+  # The 'extractors' sub-module is used for development
+  # and has additional dependencies.
+  postPatch = ''
+    rm -rf extractors
+  '';
 
   nativeBuildInputs = [
     python3Packages.hatchling
@@ -45,23 +48,19 @@ python3Packages.buildPythonApplication (finalAttrs: {
     xsel
   ];
 
-  # The 'extractors' sub-module is used for development
-  # and has additional dependencies.
-  postPatch = ''
-    rm -rf extractors
-  '';
-
   postInstall = ''
     installManPage src/picker/docs/rofimoji.1
   '';
 
+  pyproject = true;
+
   meta = {
     description = "Simple emoji and character picker for rofi";
-    mainProgram = "rofimoji";
     homepage = "https://github.com/fdw/rofimoji";
     changelog = "https://github.com/fdw/rofimoji/blob/${finalAttrs.src.rev}/CHANGELOG.md";
     license = lib.licenses.mit;
-    platforms = lib.platforms.linux ++ lib.platforms.darwin;
     maintainers = with lib.maintainers; [ justinlovinger ];
+    platforms = lib.platforms.linux ++ lib.platforms.darwin;
+    mainProgram = "rofimoji";
   };
 })

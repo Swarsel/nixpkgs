@@ -1,15 +1,12 @@
 {
   lib,
   buildPythonPackage,
-  fetchPypi,
-  fetchpatch,
-
-  # build-system
-  setuptools,
-
   # optional-dependencies
   coverage,
-
+  fetchPypi,
+  fetchpatch,
+  # build-system
+  setuptools,
   # tests
   unittestCheckHook,
 }:
@@ -17,7 +14,6 @@
 buildPythonPackage rec {
   pname = "nose2";
   version = "0.15.1";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
@@ -28,31 +24,31 @@ buildPythonPackage rec {
     # Starting with Python 3.14, both `-X` and `--xxx` are surrounded
     # by ANSI color codes in the argparse help text.
     (fetchpatch {
-      url = "https://github.com/nose-devs/nose2/commit/2043fdfa264dc04e379e11c227e63a5704cb0185.patch";
       hash = "sha256-OWzBInMI0ef9g0H3muka7J7FP01IZEFkuzJfaku78bI=";
+      url = "https://github.com/nose-devs/nose2/commit/2043fdfa264dc04e379e11c227e63a5704cb0185.patch";
     })
   ];
 
+  nativeCheckInputs = [
+    unittestCheckHook
+  ];
+
+  __darwinAllowLocalNetworking = true;
   build-system = [ setuptools ];
 
   optional-dependencies = {
     coverage_plugin = [ coverage ];
   };
 
+  pyproject = true;
   pythonImportsCheck = [ "nose2" ];
 
-  __darwinAllowLocalNetworking = true;
-
-  nativeCheckInputs = [
-    unittestCheckHook
-  ];
-
   meta = {
-    changelog = "https://github.com/nose-devs/nose2/blob/${version}/docs/changelog.rst";
     description = "Test runner for Python";
-    mainProgram = "nose2";
     homepage = "https://github.com/nose-devs/nose2";
+    changelog = "https://github.com/nose-devs/nose2/blob/${version}/docs/changelog.rst";
     license = lib.licenses.bsd0;
     maintainers = [ ];
+    mainProgram = "nose2";
   };
 }

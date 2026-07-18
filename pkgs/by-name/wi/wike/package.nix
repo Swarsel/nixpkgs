@@ -1,27 +1,26 @@
 {
   lib,
   fetchFromGitHub,
-  python3Packages,
-  meson,
-  ninja,
-  pkg-config,
   appstream-glib,
   desktop-file-utils,
-  gobject-introspection,
-  wrapGAppsHook4,
   glib,
-  gtk4,
-  librsvg,
-  libadwaita,
   glib-networking,
-  webkitgtk_6_0,
+  gobject-introspection,
+  gtk4,
+  libadwaita,
+  librsvg,
+  meson,
+  ninja,
   nix-update-script,
+  pkg-config,
+  python3Packages,
+  webkitgtk_6_0,
+  wrapGAppsHook4,
 }:
 
 python3Packages.buildPythonApplication (finalAttrs: {
   pname = "wike";
   version = "3.2.1";
-  pyproject = false; # built with meson
 
   src = fetchFromGitHub {
     owner = "hugolabe";
@@ -49,6 +48,14 @@ python3Packages.buildPythonApplication (finalAttrs: {
     webkitgtk_6_0
   ];
 
+  preFixup = ''
+    makeWrapperArgs+=("''${gappsWrapperArgs[@]}")
+  '';
+
+  postFixup = ''
+    wrapPythonProgramsIn "$out/share/wike" "$out ''${pythonPath[*]}"
+  '';
+
   dependencies = with python3Packages; [
     requests
     pygobject3
@@ -56,12 +63,7 @@ python3Packages.buildPythonApplication (finalAttrs: {
 
   # prevent double wrapping
   dontWrapGApps = true;
-  preFixup = ''
-    makeWrapperArgs+=("''${gappsWrapperArgs[@]}")
-  '';
-  postFixup = ''
-    wrapPythonProgramsIn "$out/share/wike" "$out ''${pythonPath[*]}"
-  '';
+  pyproject = false; # built with meson
 
   passthru = {
     updateScript = nix-update-script { };
@@ -71,9 +73,9 @@ python3Packages.buildPythonApplication (finalAttrs: {
     description = "Wikipedia Reader for the GNOME Desktop";
     homepage = "https://hugolabe.github.io/Wike";
     license = lib.licenses.gpl3Plus;
-    platforms = lib.platforms.linux;
     maintainers = with lib.maintainers; [ samalws ];
-    teams = [ lib.teams.gnome-circle ];
+    platforms = lib.platforms.linux;
     mainProgram = "wike";
+    teams = [ lib.teams.gnome-circle ];
   };
 })

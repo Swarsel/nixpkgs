@@ -20,6 +20,7 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Tool that runs programs and summarizes the system resources they use";
+
     longDescription = ''
       The `time' command runs another program, then displays
       information about the resources used by that program, collected
@@ -33,10 +34,11 @@ stdenv.mkDerivation (finalAttrs: {
       do not provide much information about program resource use;
       `time' reports unavailable information as zero values.
     '';
-    license = lib.licenses.gpl3Plus;
+
     homepage = "https://www.gnu.org/software/time/";
+    license = lib.licenses.gpl3Plus;
+    maintainers = with lib.maintainers; [ mdaniels5757 ];
     platforms = lib.platforms.unix;
     mainProgram = "time";
-    maintainers = with lib.maintainers; [ mdaniels5757 ];
   };
 })

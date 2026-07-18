@@ -1,11 +1,11 @@
 {
   lib,
-  mkKdeDerivation,
   fetchurl,
-  qtsvg,
-  qtwebengine,
   kconfigwidgets,
   kitemmodels,
+  mkKdeDerivation,
+  qtsvg,
+  qtwebengine,
 }:
 mkKdeDerivation rec {
   pname = "klevernotes";

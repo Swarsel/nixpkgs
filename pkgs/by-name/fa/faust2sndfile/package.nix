@@ -11,8 +11,6 @@
 
 faust.wrapWithBuildEnv {
 
-  baseName = "faust2sndfile";
-
   propagatedBuildInputs = [
     flac
     lame
@@ -22,5 +20,7 @@ faust.wrapWithBuildEnv {
     libsndfile
     libvorbis
   ];
+
+  baseName = "faust2sndfile";
 
 }

@@ -13,8 +13,8 @@ let
 
   configOpts = {
     PORT = cfg.port;
-    USERS = cfg.users;
     SECURE_ONLY = cfg.secureOnly;
+    USERS = cfg.users;
   }
   // lib.optionalAttrs (cfg.adTag != null) { AD_TAG = cfg.adTag; }
   // cfg.extraConfig;
@@ -52,52 +52,63 @@ in
 
       enable = mkEnableOption "mtprotoproxy";
 
+      adTag = mkOption {
+        default = null;
+
+        description = ''
+          Tag for advertising that can be obtained from @MTProxybot.
+        '';
+
+        # Taken from mtproxyproto's repo.
+        example = "3c09c680b76ee91a4c25ad51f742267d";
+        type = types.nullOr types.str;
+      };
+
+      extraConfig = mkOption {
+        default = { };
+
+        description = ''
+          Extra configuration options for mtprotoproxy.
+        '';
+
+        example = {
+          STATS_PRINT_PERIOD = 600;
+        };
+
+        type = types.attrs;
+      };
+
       port = mkOption {
-        type = types.port;
         default = 3256;
+
         description = ''
           TCP port to accept mtproto connections on.
         '';
+
+        type = types.port;
+      };
+
+      secureOnly = mkOption {
+        default = true;
+
+        description = ''
+          Don't allow users to connect in non-secure mode (without random padding).
+        '';
+
+        type = types.bool;
       };
 
       users = mkOption {
-        type = types.attrsOf types.str;
+        description = ''
+          Allowed users and their secrets. A secret is a 32 characters long hex string.
+        '';
+
         example = {
           tg = "00000000000000000000000000000000";
           tg2 = "0123456789abcdef0123456789abcdef";
         };
-        description = ''
-          Allowed users and their secrets. A secret is a 32 characters long hex string.
-        '';
-      };
 
-      secureOnly = mkOption {
-        type = types.bool;
-        default = true;
-        description = ''
-          Don't allow users to connect in non-secure mode (without random padding).
-        '';
-      };
-
-      adTag = mkOption {
-        type = types.nullOr types.str;
-        default = null;
-        # Taken from mtproxyproto's repo.
-        example = "3c09c680b76ee91a4c25ad51f742267d";
-        description = ''
-          Tag for advertising that can be obtained from @MTProxybot.
-        '';
-      };
-
-      extraConfig = mkOption {
-        type = types.attrs;
-        default = { };
-        example = {
-          STATS_PRINT_PERIOD = 600;
-        };
-        description = ''
-          Extra configuration options for mtprotoproxy.
-        '';
+        type = types.attrsOf types.str;
       };
 
     };
@@ -110,11 +121,13 @@ in
 
     systemd.services.mtprotoproxy = {
       description = "MTProto Proxy Daemon";
-      wantedBy = [ "multi-user.target" ];
+
       serviceConfig = {
-        ExecStart = "${pkgs.mtprotoproxy}/bin/mtprotoproxy ${configFile}";
         DynamicUser = true;
+        ExecStart = "${pkgs.mtprotoproxy}/bin/mtprotoproxy ${configFile}";
       };
+
+      wantedBy = [ "multi-user.target" ];
     };
 
   };

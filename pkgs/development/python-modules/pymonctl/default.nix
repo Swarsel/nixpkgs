@@ -1,19 +1,17 @@
 {
   lib,
   stdenv,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
-
+  buildPythonPackage,
   ewmhlib,
   python-xlib,
+  setuptools,
   typing-extensions,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "pymonctl";
   version = "0.92";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "Kalmat";
@@ -22,6 +20,7 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-eFB+HqYBud836VNEA8q8o1KQKA+GHwSC0YfU1KCbDXw=";
   };
 
+  doCheck = false;
   build-system = [ setuptools ];
 
   dependencies = [
@@ -30,14 +29,14 @@ buildPythonPackage (finalAttrs: {
     typing-extensions
   ];
 
+  pyproject = true;
   # requires x session (use ewmhlib)
   pythonImportsCheck = [ ];
-  doCheck = false;
 
   meta = {
+    description = "Cross-Platform toolkit to get info on and control monitors connected";
     homepage = "https://github.com/Kalmat/PyMonCtl";
     license = lib.licenses.bsd3;
-    description = "Cross-Platform toolkit to get info on and control monitors connected";
     maintainers = with lib.maintainers; [ sigmanificient ];
     broken = stdenv.hostPlatform.isDarwin;
   };

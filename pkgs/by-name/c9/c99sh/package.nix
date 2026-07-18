@@ -1,15 +1,15 @@
 {
   lib,
-  stdenvNoCC,
   fetchFromGitHub,
-  patsh,
   bashNonInteractive,
-  pkg-config,
   gcc,
   gsl,
+  nix-update-script,
+  patsh,
+  pkg-config,
+  stdenvNoCC,
   targetPackages,
   cc ? targetPackages.stdenv.cc,
-  nix-update-script,
 }:
 
 stdenvNoCC.mkDerivation (finalAttrs: {
@@ -23,16 +23,6 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     hash = "sha256-nLq6J1PRROTOSvScyyXUqwtj10MEfQCHC8YYNd+JxkA=";
   };
 
-  strictDeps = true;
-
-  nativeBuildInputs = [ patsh ];
-
-  # Used by `patsh`
-  buildInputs = [
-    bashNonInteractive
-    pkg-config
-  ];
-
   postPatch = ''
     patsh c99sh \
       --force --store-dir ${builtins.storeDir} --path "$HOST_PATH"
@@ -43,6 +33,15 @@ stdenvNoCC.mkDerivation (finalAttrs: {
       --replace-fail -cc -${lib.getExe' cc "cc"} \
       --replace-fail -c++ -${lib.getExe' cc "c++"}
   '';
+
+  strictDeps = true;
+  nativeBuildInputs = [ patsh ];
+
+  # Used by `patsh`
+  buildInputs = [
+    bashNonInteractive
+    pkg-config
+  ];
 
   # FIXME: `patchShebangs` doesn't function in cross-builds
   doCheck = !stdenvNoCC.hostPlatform.isDarwin;
@@ -75,14 +74,16 @@ stdenvNoCC.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Shebang-friendly script for \"interpreting\" C files";
+
     longDescription = ''
       Shebang-friendly script for \"interpreting\" single C99, C11,
       and C++ files, including rcfile support
     '';
+
     homepage = "https://github.com/RhysU/c99sh";
     license = lib.licenses.bsd2;
     maintainers = with lib.maintainers; [ yiyu ];
-    mainProgram = "c99sh";
     platforms = lib.platforms.all;
+    mainProgram = "c99sh";
   };
 })

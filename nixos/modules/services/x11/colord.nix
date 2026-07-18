@@ -25,22 +25,17 @@ in
   config = mkIf cfg.enable {
 
     environment.systemPackages = [ pkgs.colord ];
-
     services.dbus.packages = [ pkgs.colord ];
-
     services.udev.packages = [ pkgs.colord ];
-
     systemd.packages = [ pkgs.colord ];
-
     systemd.tmpfiles.packages = [ pkgs.colord ];
+    users.groups.colord = { };
 
     users.users.colord = {
-      isSystemUser = true;
-      home = "/var/lib/colord";
       group = "colord";
+      home = "/var/lib/colord";
+      isSystemUser = true;
     };
-
-    users.groups.colord = { };
 
   };
 

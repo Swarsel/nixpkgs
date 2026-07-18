@@ -1,21 +1,19 @@
 {
-  pkgs,
   lib,
   fetchFromGitHub,
   lmdb,
+  pkgs,
   ...
 }:
 
 {
   pname = "gerbil-lmdb";
   version = "unstable-2023-09-23";
-  git-version = "6d64813";
-  gerbil-package = "clan";
-  gerbilInputs = [ ];
   nativeBuildInputs = [ pkgs.pkg-config ];
   buildInputs = [ lmdb ];
-  version-path = "";
-  softwareName = "Gerbil-LMDB";
+  gerbil-package = "clan";
+  gerbilInputs = [ ];
+  git-version = "6d64813";
 
   pre-src = {
     fun = fetchFromGitHub;
@@ -25,13 +23,15 @@
     sha256 = "12kywxx4qjxchmhcd66700r2yfqjnh12ijgqnpqaccvigi07iq9b";
   };
 
+  softwareName = "Gerbil-LMDB";
+  version-path = "";
+
   meta = {
     description = "LMDB bindings for Gerbil";
     homepage = "https://github.com/mighty-gerbils/gerbil-lmdb";
     license = lib.licenses.asl20;
-    platforms = lib.platforms.unix;
     maintainers = with lib.maintainers; [ fare ];
+    platforms = lib.platforms.unix;
   };
-
   # "-L${lmdb.out}/lib"
 }

@@ -1,14 +1,13 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "ha-ffmpeg";
   version = "3.2.2";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "home-assistant-libs";
@@ -17,19 +16,19 @@ buildPythonPackage rec {
     hash = "sha256-TbSoKoOiLx3O7iykiTri5GBHGj7WoB8iSCpFIrV4ZgU=";
   };
 
-  build-system = [ setuptools ];
-
-  pythonRemoveDeps = [
-    "async_timeout"
-  ];
-
   # only manual tests
   doCheck = false;
+  build-system = [ setuptools ];
+  pyproject = true;
 
   pythonImportsCheck = [
     "haffmpeg.camera"
     "haffmpeg.sensor"
     "haffmpeg.tools"
+  ];
+
+  pythonRemoveDeps = [
+    "async_timeout"
   ];
 
   meta = {

@@ -6,8 +6,8 @@
   gperf,
   kmod,
   pkg-config,
-  util-linuxMinimal,
   testers,
+  util-linuxMinimal,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -63,8 +63,9 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   meta = {
-    homepage = "https://github.com/eudev-project/eudev";
+    inherit (kmod.meta) platforms;
     description = "Fork of udev with the aim of isolating it from init";
+
     longDescription = ''
       eudev is a standalone dynamic and persistent device naming support (aka
       userspace devfs) daemon that runs independently from the init
@@ -83,15 +84,18 @@ stdenv.mkDerivation (finalAttrs: {
       abandon eudev and a new project was established on 2021-09-14 by Alpine,
       Devuan and Gentoo contributors.
     '';
+
+    homepage = "https://github.com/eudev-project/eudev";
     changelog = "https://github.com/eudev-project/eudev/releases/tag/${finalAttrs.src.rev}";
     license = lib.licenses.gpl2Plus;
+
     maintainers = with lib.maintainers; [
       raskin
     ];
+
     pkgConfigModules = [
       "libudev"
       "udev"
     ];
-    inherit (kmod.meta) platforms;
   };
 })

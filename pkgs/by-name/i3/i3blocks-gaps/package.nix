@@ -1,13 +1,13 @@
 {
-  fetchFromGitHub,
   lib,
   stdenv,
-  perl,
-  makeWrapper,
-  iproute2,
+  fetchFromGitHub,
   acpi,
-  sysstat,
   alsa-utils,
+  iproute2,
+  makeWrapper,
+  perl,
+  sysstat,
   scripts ? [
     "bandwidth"
     "battery"
@@ -42,14 +42,9 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-8auLOTdX6OmSbwebhYcehVwmmi4nD6+6avx3JOMBI20=";
   };
 
-  makeFlags = [ "all" ];
-  installFlags = [
-    "PREFIX=\${out}"
-    "VERSION=${finalAttrs.version}"
-  ];
-
-  buildInputs = lib.optional (contains_any scripts perlscripts) perl;
   nativeBuildInputs = [ makeWrapper ];
+  buildInputs = lib.optional (contains_any scripts perlscripts) perl;
+  makeFlags = [ "all" ];
 
   postFixup =
     lib.optionalString (lib.elem "bandwidth" scripts) ''
@@ -73,12 +68,17 @@ stdenv.mkDerivation (finalAttrs: {
         --prefix PATH : ${lib.makeBinPath [ alsa-utils ]}
     '';
 
+  installFlags = [
+    "PREFIX=\${out}"
+    "VERSION=${finalAttrs.version}"
+  ];
+
   meta = {
     description = "Flexible scheduler for your i3bar blocks -- this is a fork to use with i3-gaps";
-    mainProgram = "i3blocks";
     homepage = "https://github.com/Airblader/i3blocks-gaps";
     license = lib.licenses.gpl3;
     maintainers = with lib.maintainers; [ carlsverre ];
     platforms = lib.platforms.linux;
+    mainProgram = "i3blocks";
   };
 })

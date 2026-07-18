@@ -2,12 +2,12 @@
   lib,
   stdenv,
   fetchurl,
-  autoreconfHook,
-  libintl,
-  gettext,
-  aclSupport ? lib.meta.availableOn stdenv.hostPlatform acl,
   acl,
+  autoreconfHook,
+  gettext,
+  libintl,
   versionCheckHook,
+  aclSupport ? lib.meta.availableOn stdenv.hostPlatform acl,
 }:
 
 # Note: this package is used for bootstrapping fetchurl, and thus
@@ -24,6 +24,11 @@ stdenv.mkDerivation (finalAttrs: {
     sha256 = "sha256-TWL/NzQux67XSFNTI5MMfPlKz3HDWRiCsmp+pQ8+3BY=";
   };
 
+  outputs = [
+    "out"
+    "info"
+  ];
+
   # GNU tar fails to link libiconv even though the configure script detects it.
   # https://savannah.gnu.org/bugs/index.php?64441
   patches = [ ./link-libiconv.patch ];
@@ -35,17 +40,8 @@ stdenv.mkDerivation (finalAttrs: {
     substituteInPlace src/system.c --replace-fail '_(' 'N_('
   '';
 
-  outputs = [
-    "out"
-    "info"
-  ];
-
-  __structuredAttrs = true;
   strictDeps = true;
-  enableParallelBuilding = true;
-
   nativeBuildInputs = [ autoreconfHook ] ++ lib.optional stdenv.hostPlatform.isCygwin gettext;
-
   # Add libintl on Darwin specifically as it fails to link (or skip)
   # NLS on it's own:
   #  "_libintl_textdomain", referenced from:
@@ -62,9 +58,12 @@ stdenv.mkDerivation (finalAttrs: {
   doCheck = true;
   doInstallCheck = true;
   nativeInstallCheckInputs = [ versionCheckHook ];
+  __structuredAttrs = true;
+  enableParallelBuilding = true;
 
   meta = {
     description = "GNU implementation of the `tar` archiver";
+
     longDescription = ''
       The Tar program provides the ability to create tar archives, as
       well as various other kinds of manipulation.  For example, you
@@ -79,11 +78,12 @@ stdenv.mkDerivation (finalAttrs: {
       pipes), it can even access remote devices or files (as
       archives).
     '';
+
     homepage = "https://www.gnu.org/software/tar/";
     license = lib.licenses.gpl3Plus;
-    mainProgram = "tar";
     maintainers = with lib.maintainers; [ RossComputerGuy ];
     platforms = lib.platforms.all;
+    mainProgram = "tar";
     priority = 10;
   };
 })

@@ -1,14 +1,14 @@
 {
   lib,
-  fetchFromGitHub,
   stdenv,
-  qt6Packages,
-  coreutils,
-  xdg-utils,
+  fetchFromGitHub,
   bash,
+  coreutils,
   makeWrapper,
   perlPackages,
+  qt6Packages,
   util-linux,
+  xdg-utils,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -21,17 +21,6 @@ stdenv.mkDerivation (finalAttrs: {
     rev = finalAttrs.version;
     hash = "sha256-qkXu3W6umAlSVlTXaQT/UmC3gzVt6BVy4EZzLBYI94s=";
   };
-
-  nativeBuildInputs = [
-    makeWrapper
-  ]
-  ++ (with qt6Packages; [
-    qmake
-    qt5compat
-    wrapQtAppsHook
-  ]);
-
-  buildInputs = [ perlPackages.perl ];
 
   postPatch = ''
     substituteInPlace scripts/scripts.pro \
@@ -47,12 +36,23 @@ stdenv.mkDerivation (finalAttrs: {
       --replace-fail /bin/bash ${bash}/bin/bash
   '';
 
-  qmakeFlags = [ "INSTALL_PREFIX=${placeholder "out"}" ];
+  nativeBuildInputs = [
+    makeWrapper
+  ]
+  ++ (with qt6Packages; [
+    qmake
+    qt5compat
+    wrapQtAppsHook
+  ]);
+
+  buildInputs = [ perlPackages.perl ];
 
   postFixup = ''
     wrapProgram $out/bin/qdirstat-cache-writer \
       --set PERL5LIB "${perlPackages.makePerlPath [ perlPackages.URI ]}"
   '';
+
+  qmakeFlags = [ "INSTALL_PREFIX=${placeholder "out"}" ];
 
   meta = {
     description = "Graphical disk usage analyzer";

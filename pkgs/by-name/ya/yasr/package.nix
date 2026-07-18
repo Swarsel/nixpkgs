@@ -7,7 +7,6 @@
 
 stdenv.mkDerivation (finalAttrs: {
   pname = "yasr";
-
   version = "0.6.9";
 
   src = fetchurl {
@@ -24,18 +23,18 @@ stdenv.mkDerivation (finalAttrs: {
       pname = "yasr";
       version = "0.6.9";
       debianRevision = "12";
-      patch = "gcc-15";
       hash = "sha256-KraGxm1RegJpDGQMlo7OaLFBf8l+V8VO65ftjGDOJeg=";
+      patch = "gcc-15";
     })
   ]; # taken from the debian yasr package
 
   meta = {
-    homepage = "https://yasr.sourceforge.net";
     description = "General-purpose console screen reader";
     longDescription = "Yasr is a general-purpose console screen reader for GNU/Linux and other Unix-like operating systems.";
-    platforms = lib.platforms.linux;
+    homepage = "https://yasr.sourceforge.net";
     license = lib.licenses.gpl2;
     maintainers = [ ];
+    platforms = lib.platforms.linux;
     mainProgram = "yasr";
   };
 })

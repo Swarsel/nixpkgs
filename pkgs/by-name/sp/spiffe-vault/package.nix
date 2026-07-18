@@ -1,8 +1,8 @@
 {
   lib,
   stdenv,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   versionCheckHook,
 }:
 
@@ -18,6 +18,7 @@ buildGoModule (finalAttrs: {
     # populate values that require us to use git. By doing this in postFetch we
     # can delete .git afterwards and maintain better reproducibility of the src.
     leaveDotGit = true;
+
     postFetch = ''
       cd "$out"
       git rev-parse HEAD > $out/COMMIT
@@ -28,13 +29,6 @@ buildGoModule (finalAttrs: {
   };
 
   vendorHash = "sha256-lNKcnYh2BaDzimIZuzUWA6Qwn+/Jqi1UpLKupQUpVMQ=";
-
-  ldflags = [
-    "-s"
-    "-w"
-    "-X github.com/philips-labs/spiffe-vault/cmd/spiffe-vault/cli.GitVersion=v${finalAttrs.version}"
-    "-X github.com/philips-labs/spiffe-vault/cmd/spiffe-vault/cli.gitTreeState=clean"
-  ];
 
   preBuild = ''
     ldflags+=" -X github.com/philips-labs/spiffe-vault/cmd/spiffe-vault/cli.gitCommit=$(cat COMMIT)"
@@ -48,6 +42,14 @@ buildGoModule (finalAttrs: {
 
   doInstallCheck = stdenv.buildPlatform.canExecute stdenv.hostPlatform;
   nativeInstallCheckInputs = [ versionCheckHook ];
+
+  ldflags = [
+    "-s"
+    "-w"
+    "-X github.com/philips-labs/spiffe-vault/cmd/spiffe-vault/cli.GitVersion=v${finalAttrs.version}"
+    "-X github.com/philips-labs/spiffe-vault/cmd/spiffe-vault/cli.gitTreeState=clean"
+  ];
+
   versionCheckProgram = "${placeholder "out"}/bin/${finalAttrs.meta.mainProgram}";
   versionCheckProgramArg = "version";
 

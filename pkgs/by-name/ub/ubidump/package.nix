@@ -7,7 +7,6 @@
 python3.pkgs.buildPythonApplication {
   pname = "ubidump";
   version = "0-unstable-2023-09-20";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "nlitsme";
@@ -23,6 +22,8 @@ python3.pkgs.buildPythonApplication {
     python-lzo
     crcmod
   ];
+
+  pyproject = true;
 
   meta = {
     description = "View or extract the contents of UBIFS images";

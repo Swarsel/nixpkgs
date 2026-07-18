@@ -1,13 +1,13 @@
 {
   lib,
+  fetchFromGitHub,
+  _experimental-update-script-combinators,
+  copyDesktopItems,
   flutter344,
   makeDesktopItem,
-  copyDesktopItems,
-  fetchFromGitHub,
+  nix-update-script,
   runCommand,
   yq-go,
-  nix-update-script,
-  _experimental-update-script-combinators,
 }:
 
 flutter344.buildFlutterApplication (finalAttrs: {
@@ -21,19 +21,6 @@ flutter344.buildFlutterApplication (finalAttrs: {
     hash = "sha256-4DRDYRPHDuUrtGoZi+oEqkbv2LYn+qPkJI8Ep6IkUYo=";
   };
 
-  pubspecLock = lib.importJSON ./pubspec.lock.json;
-
-  desktopItems = [
-    (makeDesktopItem {
-      name = "tts_mod_vault";
-      exec = "tts_mod_vault";
-      icon = "tts_mod_vault";
-      comment = "Tabletop Simulator Mod Vault";
-      desktopName = "TTS Mod Vault";
-      categories = [ "Utility" ];
-    })
-  ];
-
   nativeBuildInputs = [ copyDesktopItems ];
 
   preBuild = ''
@@ -45,6 +32,19 @@ flutter344.buildFlutterApplication (finalAttrs: {
     install -m 444 -D assets/icon/tts_mod_vault_icon.png $out/share/icons/tts_mod_vault.png
   '';
 
+  desktopItems = [
+    (makeDesktopItem {
+      categories = [ "Utility" ];
+      comment = "Tabletop Simulator Mod Vault";
+      desktopName = "TTS Mod Vault";
+      exec = "tts_mod_vault";
+      icon = "tts_mod_vault";
+      name = "tts_mod_vault";
+    })
+  ];
+
+  pubspecLock = lib.importJSON ./pubspec.lock.json;
+
   passthru = {
     pubspecSource =
       runCommand "pubspec.lock.json"
@@ -55,6 +55,7 @@ flutter344.buildFlutterApplication (finalAttrs: {
         ''
           yq eval --output-format=json --prettyPrint $src/pubspec.lock > "$out"
         '';
+
     updateScript = _experimental-update-script-combinators.sequence [
       (nix-update-script { })
       (
@@ -71,7 +72,7 @@ flutter344.buildFlutterApplication (finalAttrs: {
     homepage = "https://github.com/markomijic/TTS-Mod-Vault";
     license = lib.licenses.gpl3Only;
     maintainers = with lib.maintainers; [ esch ];
-    mainProgram = "tts_mod_vault";
     platforms = lib.platforms.linux;
+    mainProgram = "tts_mod_vault";
   };
 })

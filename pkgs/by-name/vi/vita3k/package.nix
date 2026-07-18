@@ -1,9 +1,9 @@
 {
   lib,
+  fetchurl,
   appimageTools,
   makeWrapper,
   nix-update-script,
-  fetchurl,
 }:
 
 appimageTools.wrapType2 rec {
@@ -17,7 +17,6 @@ appimageTools.wrapType2 rec {
 
   nativeBuildInputs = [ makeWrapper ];
 
-  extraPkgs = pkgs: [ pkgs.sdl3 ];
   extraInstallCommands =
     let
       appimageContents = appimageTools.extract { inherit pname version src; };
@@ -33,6 +32,7 @@ appimageTools.wrapType2 rec {
         --unset QML2_IMPORT_PATH
     '';
 
+  extraPkgs = pkgs: [ pkgs.sdl3 ];
   passthru.updateScript = nix-update-script { };
 
   meta = {

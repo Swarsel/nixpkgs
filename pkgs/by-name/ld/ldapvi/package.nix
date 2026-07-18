@@ -1,18 +1,18 @@
 {
   lib,
   stdenv,
+  autoconf,
+  automake,
+  cyrus_sasl,
   fetchgit,
-  openldap,
-  openssl,
-  popt,
   glib,
   libxcrypt,
   ncurses,
-  readline,
+  openldap,
+  openssl,
   pkg-config,
-  cyrus_sasl,
-  autoconf,
-  automake,
+  popt,
+  readline,
 }:
 
 stdenv.mkDerivation {
@@ -26,17 +26,12 @@ stdenv.mkDerivation {
     sha256 = "3ef3103030ecb04d7fe80180e3fd490377cf81fb2af96782323fddabc3225030";
   };
 
-  env.NIX_CFLAGS_COMPILE = toString [
-    "-Wno-implicit-function-declaration"
-    "-Wno-error=int-conversion"
-    "-Wno-error=return-mismatch"
-  ];
-
   nativeBuildInputs = [
     pkg-config
     autoconf
     automake
   ];
+
   buildInputs = [
     openldap
     openssl
@@ -48,6 +43,12 @@ stdenv.mkDerivation {
     cyrus_sasl
   ];
 
+  env.NIX_CFLAGS_COMPILE = toString [
+    "-Wno-implicit-function-declaration"
+    "-Wno-error=int-conversion"
+    "-Wno-error=return-mismatch"
+  ];
+
   preConfigure = ''
     cd ldapvi
     ./autogen.sh
@@ -55,10 +56,12 @@ stdenv.mkDerivation {
 
   meta = {
     description = "Interactive LDAP client for Unix terminals";
+
     longDescription = ''
       ldapvi is an interactive LDAP client for Unix terminals. Using it, you
       can update LDAP entries with a text editor.
     '';
+
     homepage = "http://www.lichteblau.com/ldapvi/";
     license = lib.licenses.gpl2Plus;
     maintainers = [ ];

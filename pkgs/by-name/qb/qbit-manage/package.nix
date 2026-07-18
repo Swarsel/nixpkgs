@@ -1,9 +1,9 @@
 {
   lib,
   fetchFromGitHub,
+  nix-update-script,
   python3Packages,
   testers,
-  nix-update-script,
 }:
 python3Packages.buildPythonApplication (finalAttrs: {
   pname = "qbit-manage";
@@ -16,12 +16,11 @@ python3Packages.buildPythonApplication (finalAttrs: {
     hash = "sha256-iS6DiyPqRQo/NVczumZx06VYrWgCv+w9OK4jHDKE8PQ=";
   };
 
-  pyproject = true;
-  build-system = [ python3Packages.setuptools ];
-
   postPatch = ''
     substituteInPlace pyproject.toml --replace "==" ">="
   '';
+
+  build-system = [ python3Packages.setuptools ];
 
   dependencies = with python3Packages; [
     argon2-cffi
@@ -39,6 +38,8 @@ python3Packages.buildPythonApplication (finalAttrs: {
     uvicorn
   ];
 
+  pyproject = true;
+
   pythonRelaxDeps = [
     "croniter"
     "fastapi"
@@ -48,13 +49,14 @@ python3Packages.buildPythonApplication (finalAttrs: {
   ];
 
   passthru = {
-    updateScript = nix-update-script { };
     tests = {
       version = testers.testVersion {
-        package = finalAttrs.finalPackage;
         command = "env HOME=$TMPDIR qbit-manage --version";
+        package = finalAttrs.finalPackage;
       };
     };
+
+    updateScript = nix-update-script { };
   };
 
   meta = {

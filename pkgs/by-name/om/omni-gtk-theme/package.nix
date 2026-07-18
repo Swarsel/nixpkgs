@@ -16,10 +16,6 @@ stdenv.mkDerivation {
     sha256 = "sha256-NSZjkG+rY6h8d7FYq5kipPAjMDAgyaYAgOOOJlfqBCI=";
   };
 
-  propagatedUserEnvPkgs = [
-    gtk-engine-murrine
-  ];
-
   installPhase = ''
     runHook preInstall
 
@@ -29,11 +25,15 @@ stdenv.mkDerivation {
     runHook postInstall
   '';
 
+  propagatedUserEnvPkgs = [
+    gtk-engine-murrine
+  ];
+
   meta = {
     description = "Dark theme created by Rocketseat";
     homepage = "https://github.com/getomni/gtk";
     license = lib.licenses.gpl3;
-    platforms = lib.platforms.all;
     maintainers = with lib.maintainers; [ zoedsoupe ];
+    platforms = lib.platforms.all;
   };
 }

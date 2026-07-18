@@ -36,240 +36,9 @@ let
 in
 {
   options.services.monica = {
-    enable = mkEnableOption "monica";
-
-    phpPackage = mkPackageOption pkgs "php83" { };
-
-    user = mkOption {
-      default = "monica";
-      description = "User monica runs as.";
-      type = types.str;
-    };
-
-    group = mkOption {
-      default = "monica";
-      description = "Group monica runs as.";
-      type = types.str;
-    };
-
-    appKeyFile = mkOption {
-      description = ''
-        A file containing the Laravel APP_KEY - a 32 character long,
-        base64 encoded key used for encryption where needed. Can be
-        generated with <code>head -c 32 /dev/urandom | base64</code>.
-      '';
-      example = "/run/keys/monica-appkey";
-      type = types.path;
-    };
-
-    hostname = lib.mkOption {
-      type = lib.types.str;
-      default =
-        if config.networking.domain != null then config.networking.fqdn else config.networking.hostName;
-      defaultText = lib.literalExpression "config.networking.fqdn";
-      example = "monica.example.com";
-      description = ''
-        The hostname to serve monica on.
-      '';
-    };
-
-    appURL = mkOption {
-      description = ''
-        The root URL that you want to host monica on. All URLs in monica will be generated using this value.
-        If you change this in the future you may need to run a command to update stored URLs in the database.
-        Command example: <code>php artisan monica:update-url https://old.example.com https://new.example.com</code>
-      '';
-      default = "http${lib.optionalString tlsEnabled "s"}://${cfg.hostname}";
-      defaultText = ''http''${lib.optionalString tlsEnabled "s"}://''${cfg.hostname}'';
-      example = "https://example.com";
-      type = types.str;
-    };
-
-    dataDir = mkOption {
-      description = "monica data directory";
-      default = "/var/lib/monica";
-      type = types.path;
-    };
-
-    database = {
-      host = mkOption {
-        type = types.str;
-        default = "localhost";
-        description = "Database host address.";
-      };
-      port = mkOption {
-        type = types.port;
-        default = 3306;
-        description = "Database host port.";
-      };
-      name = mkOption {
-        type = types.str;
-        default = "monica";
-        description = "Database name.";
-      };
-      user = mkOption {
-        type = types.str;
-        default = user;
-        defaultText = lib.literalExpression "user";
-        description = "Database username.";
-      };
-      passwordFile = mkOption {
-        type = with types; nullOr path;
-        default = null;
-        example = "/run/keys/monica-dbpassword";
-        description = ''
-          A file containing the password corresponding to
-          <option>database.user</option>.
-        '';
-      };
-      createLocally = mkOption {
-        type = types.bool;
-        default = true;
-        description = "Create the database and database user locally.";
-      };
-    };
-
-    mail = {
-      driver = mkOption {
-        type = types.enum [
-          "smtp"
-          "sendmail"
-        ];
-        default = "smtp";
-        description = "Mail driver to use.";
-      };
-      host = mkOption {
-        type = types.str;
-        default = "localhost";
-        description = "Mail host address.";
-      };
-      port = mkOption {
-        type = types.port;
-        default = 1025;
-        description = "Mail host port.";
-      };
-      fromName = mkOption {
-        type = types.str;
-        default = "monica";
-        description = "Mail \"from\" name.";
-      };
-      from = mkOption {
-        type = types.str;
-        default = "mail@monica.com";
-        description = "Mail \"from\" email.";
-      };
-      user = mkOption {
-        type = with types; nullOr str;
-        default = null;
-        example = "monica";
-        description = "Mail username.";
-      };
-      passwordFile = mkOption {
-        type = with types; nullOr path;
-        default = null;
-        example = "/run/keys/monica-mailpassword";
-        description = ''
-          A file containing the password corresponding to
-          <option>mail.user</option>.
-        '';
-      };
-      encryption = mkOption {
-        type = with types; nullOr (enum [ "tls" ]);
-        default = null;
-        description = "SMTP encryption mechanism to use.";
-      };
-    };
-
-    maxUploadSize = mkOption {
-      type = types.str;
-      default = "18M";
-      example = "1G";
-      description = "The maximum size for uploads (e.g. images).";
-    };
-
-    poolConfig = mkOption {
-      type =
-        with types;
-        attrsOf (oneOf [
-          str
-          int
-          bool
-        ]);
-      default = {
-        "pm" = "dynamic";
-        "pm.max_children" = 32;
-        "pm.start_servers" = 2;
-        "pm.min_spare_servers" = 2;
-        "pm.max_spare_servers" = 4;
-        "pm.max_requests" = 500;
-      };
-      description = ''
-        Options for the monica PHP pool. See the documentation on <literal>php-fpm.conf</literal>
-        for details on configuration directives.
-      '';
-    };
-
-    nginx = mkOption {
-      type = types.submodule (
-        recursiveUpdate (import ../web-servers/nginx/vhost-options.nix { inherit config lib; }) { }
-      );
-      default = { };
-      example = ''
-        {
-          serverAliases = [
-            "monica.''${config.networking.domain}"
-          ];
-          # To enable encryption and let let's encrypt take care of certificate
-          forceSSL = true;
-          enableACME = true;
-        }
-      '';
-      description = ''
-        With this option, you can customize the nginx virtualHost settings.
-      '';
-    };
-
     config = mkOption {
-      type =
-        with types;
-        attrsOf (
-          nullOr (
-            either
-              (oneOf [
-                bool
-                int
-                port
-                path
-                str
-              ])
-              (submodule {
-                options = {
-                  _secret = mkOption {
-                    type = nullOr str;
-                    description = ''
-                      The path to a file containing the value the
-                      option should be set to in the final
-                      configuration file.
-                    '';
-                  };
-                };
-              })
-          )
-        );
       default = { };
-      example = ''
-        {
-          ALLOWED_IFRAME_HOSTS = "https://example.com";
-          WKHTMLTOPDF = "/home/user/bins/wkhtmltopdf";
-          AUTH_METHOD = "oidc";
-          OIDC_NAME = "MyLogin";
-          OIDC_DISPLAY_NAME_CLAIMS = "name";
-          OIDC_CLIENT_ID = "monica";
-          OIDC_CLIENT_SECRET = {_secret = "/run/keys/oidc_secret"};
-          OIDC_ISSUER = "https://keycloak.example.com/auth/realms/My%20Realm";
-          OIDC_ISSUER_DISCOVER = true;
-        }
-      '';
+
       description = ''
         monica configuration options to set in the
         <filename>.env</filename> file.
@@ -286,6 +55,269 @@ in
         contents of the <filename>/run/keys/oidc_secret</filename>
         file.
       '';
+
+      example = ''
+        {
+          ALLOWED_IFRAME_HOSTS = "https://example.com";
+          WKHTMLTOPDF = "/home/user/bins/wkhtmltopdf";
+          AUTH_METHOD = "oidc";
+          OIDC_NAME = "MyLogin";
+          OIDC_DISPLAY_NAME_CLAIMS = "name";
+          OIDC_CLIENT_ID = "monica";
+          OIDC_CLIENT_SECRET = {_secret = "/run/keys/oidc_secret"};
+          OIDC_ISSUER = "https://keycloak.example.com/auth/realms/My%20Realm";
+          OIDC_ISSUER_DISCOVER = true;
+        }
+      '';
+
+      type =
+        with types;
+        attrsOf (
+          nullOr (
+            either
+              (oneOf [
+                bool
+                int
+                port
+                path
+                str
+              ])
+              (submodule {
+                options = {
+                  _secret = mkOption {
+                    description = ''
+                      The path to a file containing the value the
+                      option should be set to in the final
+                      configuration file.
+                    '';
+
+                    type = nullOr str;
+                  };
+                };
+              })
+          )
+        );
+    };
+
+    enable = mkEnableOption "monica";
+
+    appKeyFile = mkOption {
+      description = ''
+        A file containing the Laravel APP_KEY - a 32 character long,
+        base64 encoded key used for encryption where needed. Can be
+        generated with <code>head -c 32 /dev/urandom | base64</code>.
+      '';
+
+      example = "/run/keys/monica-appkey";
+      type = types.path;
+    };
+
+    appURL = mkOption {
+      default = "http${lib.optionalString tlsEnabled "s"}://${cfg.hostname}";
+      defaultText = ''http''${lib.optionalString tlsEnabled "s"}://''${cfg.hostname}'';
+
+      description = ''
+        The root URL that you want to host monica on. All URLs in monica will be generated using this value.
+        If you change this in the future you may need to run a command to update stored URLs in the database.
+        Command example: <code>php artisan monica:update-url https://old.example.com https://new.example.com</code>
+      '';
+
+      example = "https://example.com";
+      type = types.str;
+    };
+
+    dataDir = mkOption {
+      default = "/var/lib/monica";
+      description = "monica data directory";
+      type = types.path;
+    };
+
+    database = {
+      createLocally = mkOption {
+        default = true;
+        description = "Create the database and database user locally.";
+        type = types.bool;
+      };
+
+      host = mkOption {
+        default = "localhost";
+        description = "Database host address.";
+        type = types.str;
+      };
+
+      name = mkOption {
+        default = "monica";
+        description = "Database name.";
+        type = types.str;
+      };
+
+      passwordFile = mkOption {
+        default = null;
+
+        description = ''
+          A file containing the password corresponding to
+          <option>database.user</option>.
+        '';
+
+        example = "/run/keys/monica-dbpassword";
+        type = with types; nullOr path;
+      };
+
+      port = mkOption {
+        default = 3306;
+        description = "Database host port.";
+        type = types.port;
+      };
+
+      user = mkOption {
+        default = user;
+        defaultText = lib.literalExpression "user";
+        description = "Database username.";
+        type = types.str;
+      };
+    };
+
+    group = mkOption {
+      default = "monica";
+      description = "Group monica runs as.";
+      type = types.str;
+    };
+
+    hostname = lib.mkOption {
+      default =
+        if config.networking.domain != null then config.networking.fqdn else config.networking.hostName;
+
+      defaultText = lib.literalExpression "config.networking.fqdn";
+
+      description = ''
+        The hostname to serve monica on.
+      '';
+
+      example = "monica.example.com";
+      type = lib.types.str;
+    };
+
+    mail = {
+      driver = mkOption {
+        default = "smtp";
+        description = "Mail driver to use.";
+
+        type = types.enum [
+          "smtp"
+          "sendmail"
+        ];
+      };
+
+      encryption = mkOption {
+        default = null;
+        description = "SMTP encryption mechanism to use.";
+        type = with types; nullOr (enum [ "tls" ]);
+      };
+
+      from = mkOption {
+        default = "mail@monica.com";
+        description = "Mail \"from\" email.";
+        type = types.str;
+      };
+
+      fromName = mkOption {
+        default = "monica";
+        description = "Mail \"from\" name.";
+        type = types.str;
+      };
+
+      host = mkOption {
+        default = "localhost";
+        description = "Mail host address.";
+        type = types.str;
+      };
+
+      passwordFile = mkOption {
+        default = null;
+
+        description = ''
+          A file containing the password corresponding to
+          <option>mail.user</option>.
+        '';
+
+        example = "/run/keys/monica-mailpassword";
+        type = with types; nullOr path;
+      };
+
+      port = mkOption {
+        default = 1025;
+        description = "Mail host port.";
+        type = types.port;
+      };
+
+      user = mkOption {
+        default = null;
+        description = "Mail username.";
+        example = "monica";
+        type = with types; nullOr str;
+      };
+    };
+
+    maxUploadSize = mkOption {
+      default = "18M";
+      description = "The maximum size for uploads (e.g. images).";
+      example = "1G";
+      type = types.str;
+    };
+
+    nginx = mkOption {
+      default = { };
+
+      description = ''
+        With this option, you can customize the nginx virtualHost settings.
+      '';
+
+      example = ''
+        {
+          serverAliases = [
+            "monica.''${config.networking.domain}"
+          ];
+          # To enable encryption and let let's encrypt take care of certificate
+          forceSSL = true;
+          enableACME = true;
+        }
+      '';
+
+      type = types.submodule (
+        recursiveUpdate (import ../web-servers/nginx/vhost-options.nix { inherit config lib; }) { }
+      );
+    };
+
+    phpPackage = mkPackageOption pkgs "php83" { };
+
+    poolConfig = mkOption {
+      default = {
+        "pm" = "dynamic";
+        "pm.max_children" = 32;
+        "pm.max_requests" = 500;
+        "pm.max_spare_servers" = 4;
+        "pm.min_spare_servers" = 2;
+        "pm.start_servers" = 2;
+      };
+
+      description = ''
+        Options for the monica PHP pool. See the documentation on <literal>php-fpm.conf</literal>
+        for details on configuration directives.
+      '';
+
+      type =
+        with types;
+        attrsOf (oneOf [
+          str
+          int
+          bool
+        ]);
+    };
+
+    user = mkOption {
+      default = "monica";
+      description = "User monica runs as.";
+      type = types.str;
     };
   };
 
@@ -301,105 +333,119 @@ in
       }
     ];
 
+    environment.systemPackages = [ artisan ];
+
     services.monica.config = {
+      APP_CONFIG_CACHE = "/run/monica/cache/config.php";
       APP_ENV = "production";
+      APP_EVENTS_CACHE = "/run/monica/cache/events.php";
       APP_KEY._secret = cfg.appKeyFile;
+      APP_PACKAGES_CACHE = "/run/monica/cache/packages.php";
+      APP_ROUTES_CACHE = "/run/monica/cache/routes-v7.php";
+      APP_SERVICES_CACHE = "/run/monica/cache/services.php";
       APP_URL = cfg.appURL;
-      DB_HOST = db.host;
-      DB_PORT = db.port;
       DB_DATABASE = db.name;
+      DB_HOST = db.host;
+      DB_PASSWORD._secret = db.passwordFile;
+      DB_PORT = db.port;
       DB_USERNAME = db.user;
       MAIL_DRIVER = mail.driver;
-      MAIL_FROM_NAME = mail.fromName;
+      MAIL_ENCRYPTION = mail.encryption;
       MAIL_FROM_ADDRESS = mail.from;
+      MAIL_FROM_NAME = mail.fromName;
       MAIL_HOST = mail.host;
+      MAIL_PASSWORD._secret = mail.passwordFile;
       MAIL_PORT = mail.port;
       MAIL_USERNAME = mail.user;
-      MAIL_ENCRYPTION = mail.encryption;
-      DB_PASSWORD._secret = db.passwordFile;
-      MAIL_PASSWORD._secret = mail.passwordFile;
-      APP_SERVICES_CACHE = "/run/monica/cache/services.php";
-      APP_PACKAGES_CACHE = "/run/monica/cache/packages.php";
-      APP_CONFIG_CACHE = "/run/monica/cache/config.php";
-      APP_ROUTES_CACHE = "/run/monica/cache/routes-v7.php";
-      APP_EVENTS_CACHE = "/run/monica/cache/events.php";
       SESSION_SECURE_COOKIE = tlsEnabled;
     };
-
-    environment.systemPackages = [ artisan ];
 
     services.mysql = mkIf db.createLocally {
       enable = true;
       package = mkDefault pkgs.mariadb;
       ensureDatabases = [ db.name ];
+
       ensureUsers = [
         {
-          name = db.user;
           ensurePermissions = {
             "${db.name}.*" = "ALL PRIVILEGES";
           };
+
+          name = db.user;
+        }
+      ];
+    };
+
+    services.nginx = {
+      enable = mkDefault true;
+      recommendedBrotliSettings = true;
+      recommendedGzipSettings = true;
+      recommendedOptimisation = true;
+      recommendedProxySettings = true;
+      recommendedTlsSettings = true;
+
+      virtualHosts.${cfg.hostname} = mkMerge [
+        cfg.nginx
+        {
+          locations = {
+            "/" = {
+              index = "index.php";
+              tryFiles = "$uri $uri/ /index.php?$query_string";
+            };
+
+            "~ \\.(js|css|gif|png|ico|jpg|jpeg)$" = {
+              extraConfig = "expires 365d;";
+            };
+
+            "~ \\.php$".extraConfig = ''
+              fastcgi_pass unix:${config.services.phpfpm.pools."monica".socket};
+            '';
+          };
+
+          root = mkForce "${monica}/public";
         }
       ];
     };
 
     services.phpfpm.pools.monica = {
       inherit user group;
-      phpPackage = cfg.phpPackage;
+
       phpOptions = ''
         log_errors = on
         post_max_size = ${cfg.maxUploadSize}
         upload_max_filesize = ${cfg.maxUploadSize}
       '';
+
+      phpPackage = cfg.phpPackage;
+
       settings = {
+        "listen.group" = group;
         "listen.mode" = "0660";
         "listen.owner" = user;
-        "listen.group" = group;
       }
       // cfg.poolConfig;
     };
 
-    services.nginx = {
-      enable = mkDefault true;
-      recommendedTlsSettings = true;
-      recommendedOptimisation = true;
-      recommendedGzipSettings = true;
-      recommendedBrotliSettings = true;
-      recommendedProxySettings = true;
-      virtualHosts.${cfg.hostname} = mkMerge [
-        cfg.nginx
-        {
-          root = mkForce "${monica}/public";
-          locations = {
-            "/" = {
-              index = "index.php";
-              tryFiles = "$uri $uri/ /index.php?$query_string";
-            };
-            "~ \\.php$".extraConfig = ''
-              fastcgi_pass unix:${config.services.phpfpm.pools."monica".socket};
-            '';
-            "~ \\.(js|css|gif|png|ico|jpg|jpeg)$" = {
-              extraConfig = "expires 365d;";
-            };
-          };
-        }
-      ];
+    systemd.services.monica-scheduler = {
+      after = [ "monica-setup.service" ];
+      description = "Background tasks for monica";
+
+      serviceConfig = {
+        ExecStart = "${php} ${monica}/artisan schedule:run -v";
+        Type = "oneshot";
+        User = user;
+        WorkingDirectory = "${monica}";
+      };
+
+      startAt = "minutely";
     };
 
     systemd.services.monica-setup = {
-      description = "Preparation tasks for monica";
-      before = [ "phpfpm-monica.service" ];
       after = optional db.createLocally "mysql.service";
-      wantedBy = [ "multi-user.target" ];
-      serviceConfig = {
-        Type = "oneshot";
-        RemainAfterExit = true;
-        User = user;
-        UMask = 77;
-        WorkingDirectory = "${monica}";
-        RuntimeDirectory = "monica/cache";
-        RuntimeDirectoryMode = 700;
-      };
+      before = [ "phpfpm-monica.service" ];
+      description = "Preparation tasks for monica";
       path = [ pkgs.replace-secret ];
+
       script =
         let
           isSecret = v: isAttrs v && v ? _secret && isString v._secret;
@@ -457,18 +503,18 @@ in
           ${php} artisan key:generate --force
           ${php} artisan setup:production -v --force
         '';
-    };
 
-    systemd.services.monica-scheduler = {
-      description = "Background tasks for monica";
-      startAt = "minutely";
-      after = [ "monica-setup.service" ];
       serviceConfig = {
+        RemainAfterExit = true;
+        RuntimeDirectory = "monica/cache";
+        RuntimeDirectoryMode = 700;
         Type = "oneshot";
+        UMask = 77;
         User = user;
         WorkingDirectory = "${monica}";
-        ExecStart = "${php} ${monica}/artisan schedule:run -v";
       };
+
+      wantedBy = [ "multi-user.target" ];
     };
 
     systemd.tmpfiles.rules = [
@@ -487,15 +533,17 @@ in
     ];
 
     users = {
+      groups = mkIf (group == "monica") {
+        monica = { };
+      };
+
       users = mkIf (user == "monica") {
+        "${config.services.nginx.user}".extraGroups = [ group ];
+
         monica = {
           inherit group;
           isSystemUser = true;
         };
-        "${config.services.nginx.user}".extraGroups = [ group ];
-      };
-      groups = mkIf (group == "monica") {
-        monica = { };
       };
     };
   };

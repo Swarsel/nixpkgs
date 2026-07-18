@@ -12,66 +12,47 @@ in
 {
   options.services.llama-swap = {
     enable = lib.mkEnableOption "the llama-swap service";
-
     package = lib.mkPackageOption pkgs "llama-swap" { };
 
     listenAddress = lib.mkOption {
-      type = lib.types.str;
       default = "localhost";
-      example = "0.0.0.0";
+
       description = ''
         Address that llama-swap listens on.
       '';
-    };
 
-    port = lib.mkOption {
-      default = 8080;
-      example = 11343;
-      type = lib.types.port;
-      description = ''
-        Port that llama-swap listens on.
-      '';
+      example = "0.0.0.0";
+      type = lib.types.str;
     };
 
     openFirewall = lib.mkOption {
-      type = lib.types.bool;
       default = false;
+
       description = ''
         Whether to open the firewall for llama-swap.
         This adds {option}`port` to [](#opt-networking.firewall.allowedTCPPorts).
       '';
+
+      type = lib.types.bool;
     };
 
-    tls = {
-      enable = lib.mkEnableOption "TLS encryption";
+    port = lib.mkOption {
+      default = 8080;
 
-      certFile = lib.mkOption {
-        type = lib.types.nullOr lib.types.path;
-        default = null;
-        example = "/path/to/cert.pem";
-        description = ''
-          Path to the TLS certificate file. This certificate will be offered to,
-          and may be verified by, clients.
-        '';
-      };
+      description = ''
+        Port that llama-swap listens on.
+      '';
 
-      keyFile = lib.mkOption {
-        type = lib.types.nullOr lib.types.path;
-        default = null;
-        example = "/path/to/key.pem";
-        description = ''
-          Path to the TLS private key file. This key will be used to decrypt,
-          data received from clients.
-        '';
-      };
+      example = 11343;
+      type = lib.types.port;
     };
 
     settings = lib.mkOption {
-      type = lib.types.submodule { freeformType = settingsFormat.type; };
       description = ''
         llama-swap configuration. Refer to the [llama-swap example configuration](https://github.com/mostlygeek/llama-swap/blob/main/config.example.yaml)
         for details on supported values.
       '';
+
       example = lib.literalExpression ''
         let
           llama-cpp = pkgs.llama-cpp.override { rocmSupport = true; };
@@ -94,8 +75,39 @@ in
           };
         };
       '';
+
+      type = lib.types.submodule { freeformType = settingsFormat.type; };
+    };
+
+    tls = {
+      enable = lib.mkEnableOption "TLS encryption";
+
+      certFile = lib.mkOption {
+        default = null;
+
+        description = ''
+          Path to the TLS certificate file. This certificate will be offered to,
+          and may be verified by, clients.
+        '';
+
+        example = "/path/to/cert.pem";
+        type = lib.types.nullOr lib.types.path;
+      };
+
+      keyFile = lib.mkOption {
+        default = null;
+
+        description = ''
+          Path to the TLS private key file. This key will be used to decrypt,
+          data received from clients.
+        '';
+
+        example = "/path/to/key.pem";
+        type = lib.types.nullOr lib.types.path;
+      };
     };
   };
+
   config = lib.mkIf cfg.enable {
     assertions = [
       {
@@ -108,13 +120,17 @@ in
       }
     ];
 
+    networking.firewall = lib.mkIf cfg.openFirewall { allowedTCPPorts = [ cfg.port ]; };
+
     systemd.services.llama-swap = {
-      description = "Model swapping for LLaMA C++ Server (or any local OpenAPI compatible server)";
       after = [ "network.target" ];
-      wantedBy = [ "multi-user.target" ];
+      description = "Model swapping for LLaMA C++ Server (or any local OpenAPI compatible server)";
 
       serviceConfig = {
-        Type = "exec";
+        CapabilityBoundingSet = "";
+        # hardening
+        DynamicUser = true;
+
         ExecStart = "${lib.getExe cfg.package} ${
           lib.escapeShellArgs (
             [
@@ -127,49 +143,51 @@ in
             ]
           )
         }";
-        Restart = "on-failure";
-        RestartSec = 3;
 
+        LockPersonality = true;
+        MemoryDenyWriteExecute = true;
+        NoNewPrivileges = true;
         # for GPU acceleration
         PrivateDevices = false;
-
-        # hardening
-        DynamicUser = true;
-        CapabilityBoundingSet = "";
-        RestrictAddressFamilies = [
-          "AF_INET"
-          "AF_INET6"
-          "AF_UNIX"
-        ];
-        NoNewPrivileges = true;
         PrivateMounts = true;
         PrivateTmp = true;
         PrivateUsers = true;
         ProtectClock = true;
         ProtectControlGroups = true;
         ProtectHome = true;
+        ProtectHostname = true;
         ProtectKernelLogs = true;
         ProtectKernelModules = true;
         ProtectKernelTunables = true;
+        ProtectProc = "invisible";
         ProtectSystem = "strict";
-        MemoryDenyWriteExecute = true;
-        LockPersonality = true;
         RemoveIPC = true;
+        Restart = "on-failure";
+        RestartSec = 3;
+
+        RestrictAddressFamilies = [
+          "AF_INET"
+          "AF_INET6"
+          "AF_UNIX"
+        ];
+
         RestrictNamespaces = true;
         RestrictRealtime = true;
         RestrictSUIDSGID = true;
         SystemCallArchitectures = "native";
+        SystemCallErrorNumber = "EPERM";
+
         SystemCallFilter = [
           "@system-service"
           "~@privileged"
         ];
-        SystemCallErrorNumber = "EPERM";
-        ProtectProc = "invisible";
-        ProtectHostname = true;
+
+        Type = "exec";
         WorkingDirectory = "/tmp";
       };
+
+      wantedBy = [ "multi-user.target" ];
     };
-    networking.firewall = lib.mkIf cfg.openFirewall { allowedTCPPorts = [ cfg.port ]; };
   };
 
   meta.maintainers = with lib.maintainers; [

@@ -2,11 +2,11 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  pkg-config,
   dtc,
   libusb1,
-  zlib,
+  pkg-config,
   unstableGitUpdater,
+  zlib,
 }:
 
 stdenv.mkDerivation {
@@ -21,6 +21,7 @@ stdenv.mkDerivation {
   };
 
   nativeBuildInputs = [ pkg-config ];
+
   buildInputs = [
     dtc
     libusb1
@@ -45,7 +46,7 @@ stdenv.mkDerivation {
     description = "Tools for Allwinner SoC devices";
     homepage = "http://linux-sunxi.org/";
     license = lib.licenses.gpl2Plus;
-    platforms = lib.platforms.linux;
     maintainers = [ ];
+    platforms = lib.platforms.linux;
   };
 }

@@ -2,11 +2,11 @@
   lib,
   stdenv,
   fetchFromGitLab,
-  cmake,
-  gperf,
   arpa2cm,
-  quickder,
+  cmake,
   gitUpdater,
+  gperf,
+  quickder,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -39,8 +39,8 @@ stdenv.mkDerivation (finalAttrs: {
     homepage = "https://gitlab.com/arpa2/lillydap";
     changelog = "https://gitlab.com/arpa2/lillydap/-/blob/v${finalAttrs.version}/CHANGES";
     license = lib.licenses.bsd2;
-    teams = with lib.teams; [ ngi ];
     maintainers = with lib.maintainers; [ ethancedwards8 ];
     platforms = lib.platforms.unix;
+    teams = with lib.teams; [ ngi ];
   };
 })

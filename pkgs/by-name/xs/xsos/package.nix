@@ -1,14 +1,14 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
-  makeWrapper,
-  installShellFiles,
   dmidecode,
   ethtool,
-  pciutils,
-  multipath-tools,
+  installShellFiles,
   iproute2,
+  makeWrapper,
+  multipath-tools,
+  pciutils,
   sysvinit,
 }:
 let
@@ -48,13 +48,15 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Summarize system info from sosreports";
-    mainProgram = "xsos";
     homepage = "https://github.com/ryran/xsos";
     license = lib.licenses.gpl3;
+    maintainers = [ ];
+
     platforms = [
       "i686-linux"
       "x86_64-linux"
     ];
-    maintainers = [ ];
+
+    mainProgram = "xsos";
   };
 })

@@ -1,11 +1,11 @@
 {
   lib,
+  stdenv,
   fetchFromGitHub,
   linuxHeaders,
   meson,
   ninja,
   nix-update-script,
-  stdenv,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -26,12 +26,11 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   env.CFLAGS = toString [ "-I${linuxHeaders}/include" ];
-
   passthru.updateScript = nix-update-script { };
 
   meta = {
-    homepage = "https://github.com/linux-msm/qbootctl";
     description = "Qualcomm bootctl HAL for Linux";
+    homepage = "https://github.com/linux-msm/qbootctl";
     license = lib.licenses.gpl3Only;
     maintainers = with lib.maintainers; [ numinit ];
     platforms = lib.platforms.linux;

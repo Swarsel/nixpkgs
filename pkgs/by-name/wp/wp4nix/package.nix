@@ -1,10 +1,10 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitLab,
+  buildGoModule,
+  makeWrapper,
   nix,
   subversion,
-  makeWrapper,
 }:
 
 buildGoModule (finalAttrs: {
@@ -12,18 +12,18 @@ buildGoModule (finalAttrs: {
   version = "1.0.0";
 
   src = fetchFromGitLab {
-    domain = "git.helsinki.tools";
     owner = "helsinki-systems";
     repo = "wp4nix";
     rev = "v${finalAttrs.version}";
     sha256 = "sha256-WJteeFUMr684yZEtUP13MqRjJ1UAeo48AzOPdLEE65w=";
+    domain = "git.helsinki.tools";
   };
-
-  vendorHash = null;
 
   nativeBuildInputs = [
     makeWrapper
   ];
+
+  vendorHash = null;
 
   postInstall = ''
     wrapProgram $out/bin/wp4nix \
@@ -37,10 +37,10 @@ buildGoModule (finalAttrs: {
 
   meta = {
     description = "Packaging helper for Wordpress themes and plugins";
-    mainProgram = "wp4nix";
     homepage = "https://git.helsinki.tools/helsinki-systems/wp4nix";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ onny ];
     platforms = lib.platforms.unix;
+    mainProgram = "wp4nix";
   };
 })

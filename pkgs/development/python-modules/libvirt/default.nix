@@ -1,19 +1,18 @@
 {
-  stdenv,
   lib,
-  buildPythonPackage,
+  stdenv,
   fetchFromGitLab,
-  setuptools,
-  pkg-config,
-  lxml,
+  buildPythonPackage,
   libvirt,
+  lxml,
+  pkg-config,
   pytestCheckHook,
+  setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "libvirt";
   version = "12.4.0";
-  pyproject = true;
 
   src = fetchFromGitLab {
     owner = "libvirt";
@@ -27,21 +26,21 @@ buildPythonPackage rec {
       --replace-fail 'pkg-config' "${stdenv.cc.targetPrefix}pkg-config"
   '';
 
-  build-system = [ setuptools ];
-
   nativeBuildInputs = [ pkg-config ];
+
   buildInputs = [
     libvirt
     lxml
   ];
 
+  nativeCheckInputs = [ pytestCheckHook ];
+  build-system = [ setuptools ];
+  pyproject = true;
   pythonImportsCheck = [ "libvirt" ];
 
-  nativeCheckInputs = [ pytestCheckHook ];
-
   meta = {
-    homepage = "https://libvirt.org/python.html";
     description = "Libvirt Python bindings";
+    homepage = "https://libvirt.org/python.html";
     license = lib.licenses.lgpl2;
     maintainers = [ lib.maintainers.fpletz ];
   };

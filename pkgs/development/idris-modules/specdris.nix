@@ -1,8 +1,8 @@
 {
-  build-idris-package,
-  fetchFromGitHub,
-  effects,
   lib,
+  fetchFromGitHub,
+  build-idris-package,
+  effects,
 }:
 build-idris-package {
   pname = "specdris";
@@ -15,10 +15,9 @@ build-idris-package {
     sha256 = "1gc717xf4i7z75aqazy5wqm7b1dqfyx5pprdypxz1h3980m67fsa";
   };
 
-  idrisDeps = [ effects ];
-
   # tests use a different ipkg and directory structure
   doCheck = false;
+  idrisDeps = [ effects ];
 
   meta = {
     description = "Testing library for Idris";

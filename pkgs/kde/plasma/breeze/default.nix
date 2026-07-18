@@ -1,9 +1,9 @@
 {
+  fetchpatch,
+  libsForQt5,
   mkKdeDerivation,
   qtbase,
   qtsvg,
-  libsForQt5,
-  fetchpatch,
 }:
 mkKdeDerivation {
   pname = "breeze";
@@ -13,6 +13,12 @@ mkKdeDerivation {
     "dev"
     "qt5"
   ];
+
+  # Move Qt5 plugin to Qt5 plugin path
+  postInstall = ''
+    mkdir -p $qt5/${libsForQt5.qtbase.qtPluginPrefix}/styles
+    mv $out/${qtbase.qtPluginPrefix}/styles/breeze5.so $qt5/${libsForQt5.qtbase.qtPluginPrefix}/styles
+  '';
 
   extraBuildInputs = [ qtsvg ];
 
@@ -44,10 +50,5 @@ mkKdeDerivation {
     "-DKF5WindowSystem_DIR=${libsForQt5.__internalKF5.kwindowsystem.dev}/lib/cmake/KF5WindowSystem"
   ];
 
-  # Move Qt5 plugin to Qt5 plugin path
-  postInstall = ''
-    mkdir -p $qt5/${libsForQt5.qtbase.qtPluginPrefix}/styles
-    mv $out/${qtbase.qtPluginPrefix}/styles/breeze5.so $qt5/${libsForQt5.qtbase.qtPluginPrefix}/styles
-  '';
   meta.mainProgram = "breeze-settings6";
 }

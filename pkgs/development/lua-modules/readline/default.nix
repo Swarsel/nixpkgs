@@ -1,7 +1,7 @@
 {
-  buildLuarocksPackage,
-  fetchurl,
   lib,
+  fetchurl,
+  buildLuarocksPackage,
   luaAtLeast,
   luaOlder,
   luaposix,
@@ -11,11 +11,7 @@
 buildLuarocksPackage {
   pname = "readline";
   version = "3.2-0";
-  knownRockspec =
-    (fetchurl {
-      url = "mirror://luarocks/readline-3.2-0.rockspec";
-      sha256 = "1r0sgisxm4xd1r6i053iibxh30j7j3rcj4wwkd8rzkj8nln20z24";
-    }).outPath;
+
   src = fetchurl {
     # the rockspec url doesn't work because 'www.' is not covered by the certificate so
     # I manually removed the 'www' prefix here
@@ -23,23 +19,30 @@ buildLuarocksPackage {
     sha256 = "1mk9algpsvyqwhnq7jlw4cgmfzj30l7n2r6ak4qxgdxgc39f48k4";
   };
 
-  luarocksConfig.variables = rec {
-    READLINE_INCDIR = "${readline.dev}/include";
-    HISTORY_INCDIR = READLINE_INCDIR;
-  };
-  unpackCmd = ''
-    unzip "$curSrc"
-    tar xf *.tar.gz
-  '';
-
   propagatedBuildInputs = [
     luaposix
     readline.out
   ];
 
+  knownRockspec =
+    (fetchurl {
+      sha256 = "1r0sgisxm4xd1r6i053iibxh30j7j3rcj4wwkd8rzkj8nln20z24";
+      url = "mirror://luarocks/readline-3.2-0.rockspec";
+    }).outPath;
+
+  luarocksConfig.variables = rec {
+    HISTORY_INCDIR = READLINE_INCDIR;
+    READLINE_INCDIR = "${readline.dev}/include";
+  };
+
+  unpackCmd = ''
+    unzip "$curSrc"
+    tar xf *.tar.gz
+  '';
+
   meta = {
-    homepage = "https://pjb.com.au/comp/lua/readline.html";
     description = "Interface to the readline library";
+    homepage = "https://pjb.com.au/comp/lua/readline.html";
     license = lib.licenses.mit;
     broken = (luaOlder "5.1") || (luaAtLeast "5.5");
   };

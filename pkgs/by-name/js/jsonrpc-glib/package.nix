@@ -1,32 +1,32 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchurl,
+  gi-docgen,
+  glib,
+  gnome,
+  gobject-introspection,
+  json-glib,
   meson,
   ninja,
-  glib,
-  json-glib,
   pkg-config,
-  gobject-introspection,
   vala,
-  gi-docgen,
-  gnome,
 }:
 
 stdenv.mkDerivation rec {
   pname = "jsonrpc-glib";
   version = "3.44.2";
 
+  src = fetchurl {
+    url = "mirror://gnome/sources/jsonrpc-glib/${lib.versions.majorMinor version}/jsonrpc-glib-${version}.tar.xz";
+    sha256 = "llSWtuExTzRotIKl2ANA3DsDQKVALXeDytJBVK7nc5Y=";
+  };
+
   outputs = [
     "out"
     "dev"
     "devdoc"
   ];
-
-  src = fetchurl {
-    url = "mirror://gnome/sources/jsonrpc-glib/${lib.versions.majorMinor version}/jsonrpc-glib-${version}.tar.xz";
-    sha256 = "llSWtuExTzRotIKl2ANA3DsDQKVALXeDytJBVK7nc5Y=";
-  };
 
   nativeBuildInputs = [
     meson
@@ -66,7 +66,7 @@ stdenv.mkDerivation rec {
     description = "Library to communicate using the JSON-RPC 2.0 specification";
     homepage = "https://gitlab.gnome.org/GNOME/jsonrpc-glib";
     license = lib.licenses.lgpl21Plus;
-    teams = [ lib.teams.gnome ];
     platforms = lib.platforms.unix;
+    teams = [ lib.teams.gnome ];
   };
 }

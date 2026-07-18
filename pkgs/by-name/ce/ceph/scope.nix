@@ -2,12 +2,7 @@
 
 # the README.md in the same directory contains further information on why this requires a scope
 lib.makeScope pkgs.newScope (self: {
-  ceph-rocksdb = self.callPackage ./rocksdb.nix { };
-
-  # to get an idea which Python versions are supported by Ceph, see upstream `do_cmake.sh` (see `PYBUILD=` variable)
-  ceph-python = self.callPackage ({ python312 }: python312) { };
-  ceph-python-common = self.callPackage ./python-common.nix { };
-  ceph-python-env = self.callPackage ./python-env.nix { };
+  ceph = self.callPackage ./ceph.nix { };
 
   # Note when trying to upgrade boost:
   # * When upgrading Ceph, it's recommended to check which boost version Ceph uses on Fedora,
@@ -24,9 +19,11 @@ lib.makeScope pkgs.newScope (self: {
 
   # not actually a derivation, just a DRY helper
   ceph-meta = self.callPackage ./meta.nix { };
-
+  # to get an idea which Python versions are supported by Ceph, see upstream `do_cmake.sh` (see `PYBUILD=` variable)
+  ceph-python = self.callPackage ({ python312 }: python312) { };
+  ceph-python-common = self.callPackage ./python-common.nix { };
+  ceph-python-env = self.callPackage ./python-env.nix { };
+  ceph-rocksdb = self.callPackage ./rocksdb.nix { };
   # patched source to build all derivations from
   ceph-src = self.callPackage ./src.nix { };
-
-  ceph = self.callPackage ./ceph.nix { };
 })

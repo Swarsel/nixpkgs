@@ -1,11 +1,11 @@
 {
   lib,
-  buildNpmPackage,
-  fetchFromGitHub,
-  python3Packages,
-  nixosTests,
   fetchurl,
+  fetchFromGitHub,
+  buildNpmPackage,
   ffmpeg-headless,
+  nixosTests,
+  python3Packages,
 }:
 let
   pname = "open-webui";
@@ -19,20 +19,8 @@ let
   };
 
   frontend = buildNpmPackage rec {
-    pname = "open-webui-frontend";
     inherit version src;
-
-    # the backend for run-on-client-browser python execution
-    # must match the version that is locked in package-lock.json
-    pyodideVersion = "0.28.3";
-    pyodide = fetchurl {
-      hash = "sha256-fcqubT8VmGoJ8PnmxHE6DA8kv/DJDHToWoFyPxvGCUA=";
-      url = "https://github.com/pyodide/pyodide/releases/download/${pyodideVersion}/pyodide-${pyodideVersion}.tar.bz2";
-    };
-
-    npmDepsHash = "sha256-yw/1n1jBCUtt8wUqJmIkB3W53wsXTKuAFG/EMwcTpx8=";
-
-    npmFlags = [ "--force" ];
+    pname = "open-webui-frontend";
 
     # Disabling `pyodide:fetch` as it downloads packages during `buildPhase`
     # Until this is solved, running python packages from the browser will not work.
@@ -45,9 +33,10 @@ let
       ffmpeg-headless
     ];
 
+    npmDepsHash = "sha256-yw/1n1jBCUtt8wUqJmIkB3W53wsXTKuAFG/EMwcTpx8=";
     env.CYPRESS_INSTALL_BINARY = "0"; # disallow cypress from downloading binaries in sandbox
-    env.ONNXRUNTIME_NODE_INSTALL_CUDA = "skip";
     env.NODE_OPTIONS = "--max-old-space-size=8192";
+    env.ONNXRUNTIME_NODE_INSTALL_CUDA = "skip";
 
     preBuild = ''
       tar xf ${pyodide} -C static/
@@ -61,13 +50,21 @@ let
 
       runHook postInstall
     '';
+
+    npmFlags = [ "--force" ];
+
+    pyodide = fetchurl {
+      hash = "sha256-fcqubT8VmGoJ8PnmxHE6DA8kv/DJDHToWoFyPxvGCUA=";
+      url = "https://github.com/pyodide/pyodide/releases/download/${pyodideVersion}/pyodide-${pyodideVersion}.tar.bz2";
+    };
+
+    # the backend for run-on-client-browser python execution
+    # must match the version that is locked in package-lock.json
+    pyodideVersion = "0.28.3";
   };
 in
 python3Packages.buildPythonApplication (finalAttrs: {
   inherit pname version src;
-  pyproject = true;
-
-  build-system = with python3Packages; [ hatchling ];
 
   # Not force-including the frontend build directory as frontend is managed by the `frontend` derivation above.
   postPatch = ''
@@ -76,8 +73,7 @@ python3Packages.buildPythonApplication (finalAttrs: {
   '';
 
   env.HATCH_BUILD_NO_HOOKS = true;
-
-  pythonRelaxDeps = true;
+  build-system = with python3Packages; [ hatchling ];
 
   dependencies =
     with python3Packages;
@@ -193,20 +189,9 @@ python3Packages.buildPythonApplication (finalAttrs: {
     ++ sqlalchemy.optional-dependencies.asyncio
     ++ starsessions.optional-dependencies.redis;
 
+  makeWrapperArgs = [ "--set FRONTEND_BUILD_DIR ${frontend}/share/open-webui" ];
+
   optional-dependencies = with python3Packages; {
-    postgres = [
-      pgvector
-      psycopg2-binary
-    ];
-
-    mariadb = [
-      mariadb
-    ];
-
-    unstructured = [
-      unstructured
-    ];
-
     all = [
       azure-search-documents
       colbert-ai
@@ -225,34 +210,38 @@ python3Packages.buildPythonApplication (finalAttrs: {
     ++ finalAttrs.passthru.optional-dependencies.postgres
     ++ finalAttrs.passthru.optional-dependencies.unstructured
     ++ moto.optional-dependencies.s3;
+
+    mariadb = [
+      mariadb
+    ];
+
+    postgres = [
+      pgvector
+      psycopg2-binary
+    ];
+
+    unstructured = [
+      unstructured
+    ];
   };
 
+  pyproject = true;
   pythonImportsCheck = [ "open_webui" ];
-
-  makeWrapperArgs = [ "--set FRONTEND_BUILD_DIR ${frontend}/share/open-webui" ];
+  pythonRelaxDeps = true;
 
   passthru = {
+    inherit frontend;
+
     tests = {
       inherit (nixosTests) open-webui;
     };
+
     updateScript = ./update.sh;
-    inherit frontend;
   };
 
   meta = {
-    changelog = "https://github.com/open-webui/open-webui/blob/${src.tag}/CHANGELOG.md";
     description = "Comprehensive suite for LLMs with a user-friendly WebUI";
-    homepage = "https://github.com/open-webui/open-webui";
-    # License history is complex: originally MIT, then a potentially problematic
-    # relicensing to a modified BSD-3 clause occurred around v0.5.5/v0.6.6.
-    # Due to these concerns and non-standard terms, it's treated as custom non-free.
-    license = {
-      fullName = "Open WebUI License";
-      url = "https://github.com/open-webui/open-webui/blob/0cef844168e97b70de2abee4c076cc30ffec6193/LICENSE";
-      # Marked non-free due to concerns over the MIT -> modified BSD-3 relicensing process,
-      # potentially unclear/contradictory statements, and non-standard branding requirements.
-      free = false;
-    };
+
     longDescription = ''
       User-friendly WebUI for LLMs. Note on licensing: Code in Open WebUI prior
       to version 0.5.5 was MIT licensed. Since version 0.6.6, the project has
@@ -260,10 +249,26 @@ python3Packages.buildPythonApplication (finalAttrs: {
       and whose relicensing process from MIT has raised concerns within the community.
       Nixpkgs treats this custom license as non-free due to these factors.
     '';
-    mainProgram = "open-webui";
+
+    homepage = "https://github.com/open-webui/open-webui";
+    changelog = "https://github.com/open-webui/open-webui/blob/${src.tag}/CHANGELOG.md";
+
+    # License history is complex: originally MIT, then a potentially problematic
+    # relicensing to a modified BSD-3 clause occurred around v0.5.5/v0.6.6.
+    # Due to these concerns and non-standard terms, it's treated as custom non-free.
+    license = {
+      # Marked non-free due to concerns over the MIT -> modified BSD-3 relicensing process,
+      # potentially unclear/contradictory statements, and non-standard branding requirements.
+      free = false;
+      fullName = "Open WebUI License";
+      url = "https://github.com/open-webui/open-webui/blob/0cef844168e97b70de2abee4c076cc30ffec6193/LICENSE";
+    };
+
     maintainers = with lib.maintainers; [
       shivaraj-bh
       codgician
     ];
+
+    mainProgram = "open-webui";
   };
 })

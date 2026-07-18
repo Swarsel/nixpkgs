@@ -2,8 +2,8 @@
 
 {
   lib,
-  dotnet-sdk,
   buildPackages, # buildDotnetModule
+  dotnet-sdk,
   runCommand,
 }:
 
@@ -22,7 +22,9 @@ mapAttrs
   (
     name: nugetDeps:
     buildDotnetModule {
+      inherit nugetDeps;
       name = "nuget-deps-${name}";
+
       unpackPhase = ''
         runHook preUnpack
 
@@ -33,13 +35,12 @@ mapAttrs
 
         runHook postUnpack
       '';
-      inherit nugetDeps;
     }
   )
   {
-    "null" = null;
-    "nix-file" = ./nuget-deps.nix;
-    "json-file" = ./nuget-deps.json;
     "derivation" = emptyDirectory;
+    "json-file" = ./nuget-deps.json;
     "list" = [ emptyDirectory ];
+    "nix-file" = ./nuget-deps.nix;
+    "null" = null;
   }

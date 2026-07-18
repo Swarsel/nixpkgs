@@ -1,22 +1,21 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
   babelfont,
-  kurbopy,
+  buildPythonPackage,
   fonttools,
+  kurbopy,
+  pytestCheckHook,
+  setuptools,
   skia-pathops,
   tqdm,
   uharfbuzz,
   unittestCheckHook,
-  pytestCheckHook,
 }:
 
 buildPythonPackage rec {
   pname = "collidoscope";
   version = "0.6.5";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "googlefonts";
@@ -24,6 +23,9 @@ buildPythonPackage rec {
     tag = "v${version}";
     hash = "sha256-1tKbv+i2gbUFJa94xSEj5BrEpZ0+ULgglkYvGMP4NXw=";
   };
+
+  nativeCheckInputs = [ unittestCheckHook ];
+  __darwinAllowLocalNetworking = true;
 
   build-system = [
     setuptools
@@ -38,14 +40,13 @@ buildPythonPackage rec {
     uharfbuzz
   ];
 
-  nativeCheckInputs = [ unittestCheckHook ];
+  pyproject = true;
+
   unittestFlagsArray = [
     "-s"
     "test"
     "-v"
   ];
-
-  __darwinAllowLocalNetworking = true;
 
   meta = {
     description = "Python library to detect glyph collisions in fonts";

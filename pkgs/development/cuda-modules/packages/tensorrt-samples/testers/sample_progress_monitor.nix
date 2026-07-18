@@ -1,6 +1,6 @@
 {
-  backendStdenv,
   lib,
+  backendStdenv,
   mkTester,
   sample-data,
   ...
@@ -13,16 +13,16 @@ lib.optionalAttrs false (
       "--datadir=${sample-data.outPath + "/mnist"}"
     ];
 
-    int8 = mkTester "sample_progress_monitor-int8" [
-      "sample_progress_monitor"
-      "--datadir=${sample-data.outPath + "/mnist"}"
-      "--int8"
-    ];
-
     fp16 = mkTester "sample_progress_monitor-fp16" [
       "sample_progress_monitor"
       "--datadir=${sample-data.outPath + "/mnist"}"
       "--fp16"
+    ];
+
+    int8 = mkTester "sample_progress_monitor-int8" [
+      "sample_progress_monitor"
+      "--datadir=${sample-data.outPath + "/mnist"}"
+      "--int8"
     ];
   }
   # Only Xavier and Orin have a DLA

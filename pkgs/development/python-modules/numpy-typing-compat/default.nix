@@ -2,19 +2,18 @@
   lib,
   buildPythonPackage,
   fetchPypi,
-  uv-build,
   numpy,
+  uv-build,
 }:
 
 buildPythonPackage rec {
   pname = "numpy-typing-compat";
   version = "20251206.2.4";
-  pyproject = true;
 
   src = fetchPypi {
-    pname = "numpy_typing_compat";
     inherit version;
     hash = "sha256-WYgtI6r/BUolNtqAVkASzc4zSHZXvk15xZJbuHBfyrw=";
+    pname = "numpy_typing_compat";
   };
 
   postPatch = ''
@@ -28,6 +27,8 @@ buildPythonPackage rec {
   dependencies = [
     numpy
   ];
+
+  pyproject = true;
 
   pythonImportsCheck = [
     "numpy_typing_compat"

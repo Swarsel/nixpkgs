@@ -1,52 +1,53 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchurl,
   fetchFromGitHub,
-  fetchpatch,
-  copyDesktopItems,
-  makeDesktopItem,
-  desktopToDarwinBundle,
   buildPackages,
-  pkg-config,
+  copyDesktopItems,
+  # for passthru.tests
+  cups-filters,
+  curl,
+  desktopToDarwinBundle,
+  fetchpatch,
   fixDarwinDylibNames,
+  freeglut,
   freetype,
-  harfbuzz,
-  openjpeg,
-  jbig2dec,
-  libjpeg,
+  gitUpdater,
   gumbo,
-  enableX11 ? (!stdenv.hostPlatform.isDarwin),
+  harfbuzz,
+  jbig2dec,
+  leptonica,
+  libGLU,
+  libjpeg,
   libx11,
   libxext,
   libxi,
   libxrandr,
-  enableCurl ? true,
-  curl,
-  openssl,
-  enableGL ? true,
-  freeglut,
-  libGLU,
-  enableOcr ? false,
-  leptonica,
-  tesseract,
-  enableCxx ? false,
-  python3,
-  enablePython ? false,
-  which,
-  swig,
-  gitUpdater,
-  enableBarcode ? false,
-  # for passthru.tests
-  cups-filters,
-  zathura,
+  makeDesktopItem,
   mupdf,
+  openjpeg,
+  openssl,
+  pkg-config,
+  python3,
+  swig,
+  tesseract,
+  which,
+  zathura,
+  enableBarcode ? false,
+  enableCurl ? true,
+  enableCxx ? false,
+  enableGL ? true,
+  enableOcr ? false,
+  enablePython ? false,
+  enableX11 ? (!stdenv.hostPlatform.isDarwin),
 }:
 assert enablePython -> enableCxx;
 let
   freeglut-mupdf = freeglut.overrideAttrs (old: rec {
     pname = "freeglut-mupdf";
     version = "3.0.0-r${src.rev}";
+
     src = fetchFromGitHub {
       owner = "ArtifexSoftware";
       repo = "thirdparty-freeglut";
@@ -62,13 +63,21 @@ let
   });
 in
 stdenv.mkDerivation rec {
-  version = "1.27.2";
   pname = "mupdf";
+  version = "1.27.2";
 
   src = fetchurl {
     url = "https://mupdf.com/downloads/archive/${pname}-${version}-source.tar.gz";
     hash = "sha256-VThnsTUwPcTCWrZ8XyNNjpAKDjbmboSE2ZrcBf4ehzc=";
   };
+
+  outputs = [
+    "bin"
+    "dev"
+    "out"
+    "man"
+    "doc"
+  ];
 
   patches = [
     # Upstream makefile does not work with system deps on macOS by default, so
@@ -92,20 +101,6 @@ stdenv.mkDerivation rec {
       substituteInPlace "$wrapper" --replace-fail 'struct (unnamed' '(unnamed struct'
     done
   '';
-
-  makeFlags = [
-    "prefix=$(out)"
-    "shared=yes"
-    "USE_SYSTEM_LIBS=yes"
-    "PKG_CONFIG=${buildPackages.pkg-config}/bin/${buildPackages.pkg-config.targetPrefix}pkg-config"
-  ]
-  ++ lib.optionals (!enableX11) [ "HAVE_X11=no" ]
-  ++ lib.optionals (!enableGL) [ "HAVE_GLUT=no" ]
-  ++ lib.optionals enableOcr [ "USE_TESSERACT=yes" ]
-  ++ lib.optionals enableBarcode [
-    "barcode=yes"
-    "USE_SYSTEM_ZXINGCPP=no"
-  ];
 
   nativeBuildInputs = [
     pkg-config
@@ -153,13 +148,21 @@ stdenv.mkDerivation rec {
     tesseract
   ];
 
-  outputs = [
-    "bin"
-    "dev"
-    "out"
-    "man"
-    "doc"
+  makeFlags = [
+    "prefix=$(out)"
+    "shared=yes"
+    "USE_SYSTEM_LIBS=yes"
+    "PKG_CONFIG=${buildPackages.pkg-config}/bin/${buildPackages.pkg-config.targetPrefix}pkg-config"
+  ]
+  ++ lib.optionals (!enableX11) [ "HAVE_X11=no" ]
+  ++ lib.optionals (!enableGL) [ "HAVE_GLUT=no" ]
+  ++ lib.optionals enableOcr [ "USE_TESSERACT=yes" ]
+  ++ lib.optionals enableBarcode [
+    "barcode=yes"
+    "USE_SYSTEM_ZXINGCPP=no"
   ];
+
+  env.USE_SONAME = lib.boolToYesNo (!stdenv.hostPlatform.isDarwin);
 
   preConfigure = ''
     # Don't remove mujs or zxing-cpp because upstream version is incompatible
@@ -171,41 +174,6 @@ stdenv.mkDerivation rec {
       ./scripts/mupdfwrap.py -d "$dir" -b ${lib.optionalString enableCxx "01"}${lib.optionalString enablePython "23"}
     done
   '';
-
-  desktopItems = lib.optionals (enableGL || enableX11) [
-    (makeDesktopItem {
-      name = pname;
-      desktopName = pname;
-      comment = meta.description;
-      icon = "mupdf";
-      exec = "${pname} %f";
-      terminal = false;
-      mimeTypes = [
-        "application/epub+zip"
-        "application/oxps"
-        "application/pdf"
-        "application/vnd.ms-xpsdocument"
-        "application/x-cbz"
-        "application/x-pdf"
-      ];
-      categories = [
-        "Graphics"
-        "Viewer"
-      ];
-      keywords = [
-        "mupdf"
-        "comic"
-        "document"
-        "ebook"
-        "viewer"
-        "cbz"
-        "epub"
-        "fb2"
-        "pdf"
-        "xps"
-      ];
-    })
-  ];
 
   postInstall = ''
     mkdir -p "$out/lib/pkgconfig"
@@ -257,32 +225,70 @@ stdenv.mkDerivation rec {
     ''
   ));
 
-  enableParallelBuilding = true;
+  desktopItems = lib.optionals (enableGL || enableX11) [
+    (makeDesktopItem {
+      categories = [
+        "Graphics"
+        "Viewer"
+      ];
 
-  env.USE_SONAME = lib.boolToYesNo (!stdenv.hostPlatform.isDarwin);
+      comment = meta.description;
+      desktopName = pname;
+      exec = "${pname} %f";
+      icon = "mupdf";
+
+      keywords = [
+        "mupdf"
+        "comic"
+        "document"
+        "ebook"
+        "viewer"
+        "cbz"
+        "epub"
+        "fb2"
+        "pdf"
+        "xps"
+      ];
+
+      mimeTypes = [
+        "application/epub+zip"
+        "application/oxps"
+        "application/pdf"
+        "application/vnd.ms-xpsdocument"
+        "application/x-cbz"
+        "application/x-pdf"
+      ];
+
+      name = pname;
+      terminal = false;
+    })
+  ];
+
+  enableParallelBuilding = true;
 
   passthru = {
     tests = {
       inherit cups-filters zathura;
       inherit (python3.pkgs) pikepdf pymupdf;
+
       mupdf-all = mupdf.override {
         enableCurl = true;
+        enableCxx = true;
         enableGL = true;
         enableOcr = true;
-        enableCxx = true;
         enablePython = true;
       };
     };
 
     updateScript = gitUpdater {
-      url = "https://cgit.ghostscript.com/cgi-bin/cgit.cgi/mupdf.git";
       ignoredVersions = ".rc.*";
+      url = "https://cgit.ghostscript.com/cgi-bin/cgit.cgi/mupdf.git";
     };
   };
 
   meta = {
-    homepage = "https://mupdf.com";
     description = "Lightweight PDF, XPS, and E-book viewer and toolkit written in portable C";
+    homepage = "https://mupdf.com";
     changelog = "https://cgit.ghostscript.com/cgi-bin/cgit.cgi/mupdf.git/plain/CHANGES?h=refs/tags/${version}";
     license = lib.licenses.agpl3Plus;
     maintainers = with lib.maintainers; [ fpletz ];

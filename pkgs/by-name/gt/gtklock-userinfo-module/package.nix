@@ -2,13 +2,13 @@
   lib,
   stdenv,
   fetchFromGitHub,
+  accountsservice,
+  glib,
+  gtk3,
+  gtklock,
   meson,
   ninja,
   pkg-config,
-  gtk3,
-  glib,
-  accountsservice,
-  gtklock,
 }:
 
 stdenv.mkDerivation (finalAttrs: {

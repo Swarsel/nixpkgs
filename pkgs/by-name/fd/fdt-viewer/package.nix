@@ -1,10 +1,10 @@
 {
-  cmake,
-  fetchFromGitHub,
-  git,
   lib,
-  qt6,
   stdenv,
+  fetchFromGitHub,
+  cmake,
+  git,
+  qt6,
   unstableGitUpdater,
 }:
 
@@ -27,7 +27,6 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   buildInputs = [ qt6.qtbase ];
-
   passthru.updateScript = unstableGitUpdater { hardcodeZeroVersion = true; };
 
   meta = {
@@ -35,7 +34,7 @@ stdenv.mkDerivation (finalAttrs: {
     homepage = "https://github.com/dev-0x7C6/fdt-viewer";
     license = lib.licenses.gpl3Only;
     maintainers = [ lib.maintainers.jmbaur ];
-    mainProgram = "fdt-viewer";
     platforms = lib.platforms.all;
+    mainProgram = "fdt-viewer";
   };
 })

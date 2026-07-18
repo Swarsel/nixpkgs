@@ -1,20 +1,20 @@
 {
   lib,
   stdenv,
-  rustPlatform,
   fetchFromGitHub,
+  darwin,
+  dbus,
+  git,
+  installShellFiles,
+  libmnl,
+  libnftnl,
+  libwg,
+  makeWrapper,
   pkg-config,
   protobuf,
-  makeWrapper,
-  git,
-  dbus,
-  libnftnl,
-  libmnl,
-  libwg,
-  darwin,
-  installShellFiles,
-  writeShellScriptBin,
+  rustPlatform,
   versionCheckHook,
+  writeShellScriptBin,
 }:
 let
   # NOTE(cole-h): This is necessary because wireguard-go-rs executes go in its build.rs (whose goal
@@ -33,25 +33,9 @@ rustPlatform.buildRustPackage rec {
     owner = "mullvad";
     repo = "mullvadvpn-app";
     tag = version;
-    fetchSubmodules = true;
     hash = "sha256-8InCgT7HaM1npn03jEry7jr/JUGS2VNgC2FKpIZZiQw=";
+    fetchSubmodules = true;
   };
-
-  cargoHash = "sha256-6SsEfCDJ/WipOk6m5CezRmjt8RT4cXAbicgKCOR161w=";
-
-  cargoBuildFlags = [
-    "-p mullvad-daemon --bin mullvad-daemon"
-    "-p mullvad-cli --bin mullvad"
-    "-p mullvad-setup --bin mullvad-setup"
-    "-p mullvad-problem-report --bin mullvad-problem-report"
-    "-p mullvad-exclude --bin mullvad-exclude"
-    "-p tunnel-obfuscation --bin tunnel-obfuscation"
-  ];
-
-  checkFlags = [
-    "--skip=version_check"
-    "--skip=config_resolver::test"
-  ];
 
   nativeBuildInputs = [
     pkg-config
@@ -72,6 +56,13 @@ rustPlatform.buildRustPackage rec {
       darwin.libpcap
     ];
 
+  cargoHash = "sha256-6SsEfCDJ/WipOk6m5CezRmjt8RT4cXAbicgKCOR161w=";
+
+  checkFlags = [
+    "--skip=version_check"
+    "--skip=config_resolver::test"
+  ];
+
   postInstall = ''
     compdir=$(mktemp -d)
     for shell in bash zsh fish; do
@@ -83,12 +74,22 @@ rustPlatform.buildRustPackage rec {
       --fish $compdir/mullvad.fish
   '';
 
-  __darwinAllowLocalNetworking = true;
+  doInstallCheck = true;
 
   nativeInstallCheckInputs = [
     versionCheckHook
   ];
-  doInstallCheck = true;
+
+  __darwinAllowLocalNetworking = true;
+
+  cargoBuildFlags = [
+    "-p mullvad-daemon --bin mullvad-daemon"
+    "-p mullvad-cli --bin mullvad"
+    "-p mullvad-setup --bin mullvad-setup"
+    "-p mullvad-problem-report --bin mullvad-problem-report"
+    "-p mullvad-exclude --bin mullvad-exclude"
+    "-p tunnel-obfuscation --bin tunnel-obfuscation"
+  ];
 
   passthru = {
     inherit libwg;

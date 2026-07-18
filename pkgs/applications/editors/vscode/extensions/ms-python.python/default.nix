@@ -1,30 +1,32 @@
 {
-  stdenv,
   lib,
-  vscode-utils,
+  stdenv,
   icu,
   python3,
+  # For updateScript
+  vscode-extension-update-script,
+  vscode-utils,
   # When `true`, the python default setting will be fixed to specified.
   # Use version from `PATH` for default setting otherwise.
   # Defaults to `false` as we expect it to be project specific most of the time.
   pythonUseFixed ? false,
-  # For updateScript
-  vscode-extension-update-script,
 }:
 
 let
   supported = {
-    x86_64-linux = {
-      hash = "sha256-HQfmDV6rJX6l1pGybe8//2QrTSwE+rlEJOi4/iW69lY=";
-      arch = "linux-x64";
-    };
-    aarch64-linux = {
-      hash = "sha256-v7fatW/LMJ8CeSRrE/5b7dLqOrhNhwzUySUxtAMuBUE=";
-      arch = "linux-arm64";
-    };
     aarch64-darwin = {
-      hash = "sha256-XntiQmvagiSWcfVIp13CDq2RTZ4NhKOzf4QmecZjMIs=";
       arch = "darwin-arm64";
+      hash = "sha256-XntiQmvagiSWcfVIp13CDq2RTZ4NhKOzf4QmecZjMIs=";
+    };
+
+    aarch64-linux = {
+      arch = "linux-arm64";
+      hash = "sha256-v7fatW/LMJ8CeSRrE/5b7dLqOrhNhwzUySUxtAMuBUE=";
+    };
+
+    x86_64-linux = {
+      arch = "linux-x64";
+      hash = "sha256-HQfmDV6rJX6l1pGybe8//2QrTSwE+rlEJOi4/iW69lY=";
     };
   };
 
@@ -34,21 +36,6 @@ let
 
 in
 vscode-utils.buildVscodeMarketplaceExtension {
-  mktplcRef = base // {
-    name = "python";
-    publisher = "ms-python";
-    version = "2026.4.0";
-  };
-
-  buildInputs = [ icu ];
-
-  nativeBuildInputs = [ python3.pkgs.wrapPython ];
-
-  propagatedBuildInputs = with python3.pkgs; [
-    debugpy
-    jedi-language-server
-  ];
-
   postPatch = ''
     # remove bundled python deps and use libs from nixpkgs
     rm -r python_files/lib
@@ -65,17 +52,33 @@ vscode-utils.buildVscodeMarketplaceExtension {
       --replace-fail "\"default\":\"python\"" "\"default\":\"${python3.interpreter}\""
   '';
 
+  nativeBuildInputs = [ python3.pkgs.wrapPython ];
+  buildInputs = [ icu ];
+
+  propagatedBuildInputs = with python3.pkgs; [
+    debugpy
+    jedi-language-server
+  ];
+
+  mktplcRef = base // {
+    version = "2026.4.0";
+    name = "python";
+    publisher = "ms-python";
+  };
+
   passthru.updateScript = vscode-extension-update-script { };
 
   meta = {
     description = "Visual Studio Code extension with rich support for the Python language";
-    downloadPage = "https://marketplace.visualstudio.com/items?itemName=ms-python.python";
     homepage = "https://github.com/Microsoft/vscode-python";
     changelog = "https://github.com/microsoft/vscode-python/releases";
     license = lib.licenses.mit;
-    platforms = builtins.attrNames supported;
+
     maintainers = [
       lib.maintainers.jraygauthier
     ];
+
+    platforms = builtins.attrNames supported;
+    downloadPage = "https://marketplace.visualstudio.com/items?itemName=ms-python.python";
   };
 }

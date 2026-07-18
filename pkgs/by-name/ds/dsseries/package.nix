@@ -16,20 +16,6 @@ stdenv.mkDerivation rec {
 
   nativeBuildInputs = [ rpmextract ];
 
-  unpackCmd = ''
-    mkdir ${pname}-${version} && pushd ${pname}-${version}
-    rpmextract $curSrc
-    popd
-  '';
-
-  patchPhase = ''
-    substituteInPlace etc/udev/rules.d/50-Brother_DSScanner.rules \
-      --replace 'GROUP="users"' 'GROUP="scanner", ENV{libsane_matched}="yes"'
-
-    mkdir -p etc/sane.d/dll.d
-    echo "dsseries" > etc/sane.d/dll.d/dsseries.conf
-  '';
-
   installPhase = ''
     mkdir -p $out
     cp -dr etc $out
@@ -48,12 +34,26 @@ stdenv.mkDerivation rec {
     done
   '';
 
+  patchPhase = ''
+    substituteInPlace etc/udev/rules.d/50-Brother_DSScanner.rules \
+      --replace 'GROUP="users"' 'GROUP="scanner", ENV{libsane_matched}="yes"'
+
+    mkdir -p etc/sane.d/dll.d
+    echo "dsseries" > etc/sane.d/dll.d/dsseries.conf
+  '';
+
+  unpackCmd = ''
+    mkdir ${pname}-${version} && pushd ${pname}-${version}
+    rpmextract $curSrc
+    popd
+  '';
+
   meta = {
     description = "Brother DSSeries SANE backend driver";
     homepage = "http://www.brother.com";
-    platforms = lib.platforms.linux;
-    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
     license = lib.licenses.unfree;
+    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
     maintainers = [ ];
+    platforms = lib.platforms.linux;
   };
 }

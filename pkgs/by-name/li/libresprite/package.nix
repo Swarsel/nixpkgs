@@ -2,28 +2,26 @@
   lib,
   stdenv,
   fetchFromGitHub,
-
+  SDL2,
+  SDL2_image,
   cmake,
-  pkg-config,
-  ninja,
-  gtest,
   curl,
   freetype,
   giflib,
+  gtest,
+  libarchive,
   libjpeg,
   libpng,
   libwebp,
-  libarchive,
   libx11,
-  pixman,
-  tinyxml-2,
   libxi,
-  zlib,
-  SDL2,
-  SDL2_image,
   lua,
-
+  ninja,
   nixosTests,
+  pixman,
+  pkg-config,
+  tinyxml-2,
+  zlib,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -34,9 +32,10 @@ stdenv.mkDerivation (finalAttrs: {
     owner = "LibreSprite";
     repo = "LibreSprite";
     tag = "v${finalAttrs.version}";
-    fetchSubmodules = true;
     hash = "sha256-jXjrA859hR46Cp5qi6Z1C+hLWCUR7yGlASOGlTveeW8=";
+    fetchSubmodules = true;
   };
+
   patches = [
     # From https://github.com/LibreSprite/LibreSprite/pull/565
     ./cmake4.diff
@@ -44,6 +43,7 @@ stdenv.mkDerivation (finalAttrs: {
     # Nix provides libarchive directly via buildInputs.
     ./no-brew.patch
   ];
+
   nativeBuildInputs = [
     cmake
     pkg-config
@@ -78,8 +78,6 @@ stdenv.mkDerivation (finalAttrs: {
     "-DCMAKE_POLICY_VERSION_MINIMUM=3.5"
   ];
 
-  hardeningDisable = lib.optional stdenv.hostPlatform.isDarwin "format";
-
   # Install mime icons. Note that the mimetype is still "x-aseprite"
   postInstall = ''
     src="$out/share/libresprite/data/icons"
@@ -93,14 +91,15 @@ stdenv.mkDerivation (finalAttrs: {
       --replace-fail "Exec=libresprite-thumbnailer" "Exec=$out/bin/libresprite-thumbnailer"
   '';
 
+  hardeningDisable = lib.optional stdenv.hostPlatform.isDarwin "format";
+
   passthru.tests = {
     libresprite-can-open-png = nixosTests.libresprite;
   };
 
   meta = {
-    homepage = "https://libresprite.github.io/";
     description = "Animated sprite editor & pixel art tool, fork of Aseprite";
-    license = lib.licenses.gpl2Only;
+
     longDescription = ''
       LibreSprite is a program to create animated sprites. Its main features are:
 
@@ -115,6 +114,9 @@ stdenv.mkDerivation (finalAttrs: {
         - Pixel-art specific tools like filled Contour, Polygon, Shading mode, etc.
         - Onion skinning.
     '';
+
+    homepage = "https://libresprite.github.io/";
+    license = lib.licenses.gpl2Only;
     maintainers = with lib.maintainers; [ fgaz ];
     platforms = lib.platforms.all;
   };

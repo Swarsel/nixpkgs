@@ -5,17 +5,16 @@
 }:
 
 buildPythonPackage {
-  pname = "pluggy-tests";
   inherit (pluggy) version;
-  pyproject = false;
-
   inherit (pluggy) src;
-
-  dontBuild = true;
-  dontInstall = true;
+  pname = "pluggy-tests";
 
   nativeCheckInputs = [
     pluggy
     pytestCheckHook
   ];
+
+  dontBuild = true;
+  dontInstall = true;
+  pyproject = false;
 }

@@ -1,24 +1,25 @@
 {
   lib,
+  aiohttp,
   buildPythonPackage,
   fetchPypi,
   mashumaro,
   orjson,
-  aiohttp,
-  yarl,
   setuptools,
+  yarl,
 }:
 
 buildPythonPackage rec {
   pname = "asyncarve";
   version = "0.1.1";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
     hash = "sha256-5h56Sr0kPLrNPU70W90WsjmWax/N90dRMJ6lI5Mg86E=";
   };
 
+  # No tests in repo
+  doCheck = false;
   build-system = [ setuptools ];
 
   dependencies = [
@@ -28,9 +29,7 @@ buildPythonPackage rec {
     yarl
   ];
 
-  # No tests in repo
-  doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "asyncarve" ];
 
   meta = {

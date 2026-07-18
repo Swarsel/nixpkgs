@@ -2,13 +2,13 @@
   lib,
   stdenv,
   fetchurl,
+  gnat,
+  gnatcoll-core,
+  gnatcoll-gmp,
+  gnatcoll-iconv,
   gprbuild,
   which,
-  gnat,
   xmlada,
-  gnatcoll-core,
-  gnatcoll-iconv,
-  gnatcoll-gmp,
   enableShared ? !stdenv.hostPlatform.isStatic,
   # kb database source, if null assume it is pregenerated
   gpr2kbdir ? null,
@@ -29,6 +29,13 @@ stdenv.mkDerivation rec {
     gprbuild
   ];
 
+  propagatedBuildInputs = [
+    xmlada
+    gnatcoll-gmp
+    gnatcoll-core
+    gnatcoll-iconv
+  ];
+
   makeFlags = [
     "prefix=$(out)"
     "PROCESSORS=$(NIX_BUILD_CORES)"
@@ -39,31 +46,26 @@ stdenv.mkDerivation rec {
     "GPR2KBDIR=${gpr2kbdir}"
   ];
 
+  # fool make into thinking pregenerated targets are up to date
+  preBuild = lib.optionalString (gpr2kbdir == null) ''
+    touch .build/kb/{*.adb,*.ads,collect_kb}
+  '';
+
   configurePhase = ''
     runHook preConfigure
     make setup "''${makeFlagsArray[@]}" $makeFlags
     runHook postConfigure
   '';
 
-  # fool make into thinking pregenerated targets are up to date
-  preBuild = lib.optionalString (gpr2kbdir == null) ''
-    touch .build/kb/{*.adb,*.ads,collect_kb}
-  '';
-
-  propagatedBuildInputs = [
-    xmlada
-    gnatcoll-gmp
-    gnatcoll-core
-    gnatcoll-iconv
-  ];
-
   meta = {
     description = "Framework for analyzing the GNAT Project (GPR) files";
     homepage = "https://github.com/AdaCore/gpr";
+
     license = with lib.licenses; [
       asl20
       gpl3Only
     ];
+
     maintainers = with lib.maintainers; [ heijligen ];
     platforms = lib.platforms.all;
     # TODO(@sternenseemann): investigate failure with gnat 13

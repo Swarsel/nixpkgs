@@ -2,25 +2,33 @@
   lib,
   stdenv,
   fetchFromGitLab,
+  bash,
+  bash-completion,
+  buildPackages,
+  glib,
+  gobject-introspection,
+  help2man,
   meson,
   ninja,
   pkg-config,
-  glib,
   python3,
-  help2man,
-  bash-completion,
-  bash,
-  buildPackages,
+  withDocs ? stdenv.hostPlatform == stdenv.buildPlatform,
   withIntrospection ?
     lib.meta.availableOn stdenv.hostPlatform gobject-introspection
     && stdenv.hostPlatform.emulatorAvailable buildPackages,
-  withDocs ? stdenv.hostPlatform == stdenv.buildPlatform,
-  gobject-introspection,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
   pname = "libmbim";
   version = "1.34.0";
+
+  src = fetchFromGitLab {
+    owner = "mobile-broadband";
+    repo = "libmbim";
+    rev = finalAttrs.version;
+    hash = "sha256-NhSjW1ZK4XFv7L/IaoTjN5ojwjTDQa178k73zoaneuE=";
+    domain = "gitlab.freedesktop.org";
+  };
 
   outputs = [
     "out"
@@ -28,19 +36,10 @@ stdenv.mkDerivation (finalAttrs: {
   ]
   ++ lib.optionals withDocs [ "man" ];
 
-  src = fetchFromGitLab {
-    domain = "gitlab.freedesktop.org";
-    owner = "mobile-broadband";
-    repo = "libmbim";
-    rev = finalAttrs.version;
-    hash = "sha256-NhSjW1ZK4XFv7L/IaoTjN5ojwjTDQa178k73zoaneuE=";
-  };
-
-  mesonFlags = [
-    "-Dudevdir=${placeholder "out"}/lib/udev"
-    (lib.mesonBool "introspection" withIntrospection)
-    (lib.mesonBool "man" withDocs)
-  ];
+  postPatch = ''
+    patchShebangs \
+      build-aux/mbim-codegen/mbim-codegen
+  '';
 
   strictDeps = true;
 
@@ -63,19 +62,20 @@ stdenv.mkDerivation (finalAttrs: {
     bash
   ];
 
+  mesonFlags = [
+    "-Dudevdir=${placeholder "out"}/lib/udev"
+    (lib.mesonBool "introspection" withIntrospection)
+    (lib.mesonBool "man" withDocs)
+  ];
+
   doCheck = true;
 
-  postPatch = ''
-    patchShebangs \
-      build-aux/mbim-codegen/mbim-codegen
-  '';
-
   meta = {
-    homepage = "https://www.freedesktop.org/wiki/Software/libmbim/";
     description = "Library for talking to WWAN modems and devices which speak the Mobile Interface Broadband Model (MBIM) protocol";
+    homepage = "https://www.freedesktop.org/wiki/Software/libmbim/";
     changelog = "https://gitlab.freedesktop.org/mobile-broadband/libmbim/-/raw/${finalAttrs.version}/NEWS";
-    teams = [ lib.teams.freedesktop ];
-    platforms = lib.platforms.linux;
     license = lib.licenses.gpl2Plus;
+    platforms = lib.platforms.linux;
+    teams = [ lib.teams.freedesktop ];
   };
 })

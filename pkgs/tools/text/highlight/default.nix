@@ -2,14 +2,14 @@
   lib,
   stdenv,
   fetchFromGitLab,
-  getopt,
-  lua,
   boost,
+  gcc,
+  getopt,
   libxcrypt,
+  lua,
+  perl,
   pkg-config,
   swig,
-  perl,
-  gcc,
 }:
 
 let
@@ -24,7 +24,16 @@ let
       hash = "sha256-fMIyMR9RA60hdy1eniJkvLHK+WJPuVehWMyS9Lt6iQ4=";
     };
 
-    enableParallelBuilding = true;
+    postPatch = ''
+      substituteInPlace src/makefile \
+        --replace "shell pkg-config" "shell $PKG_CONFIG"
+      substituteInPlace makefile \
+        --replace 'gzip' 'gzip -n'
+    ''
+    + lib.optionalString stdenv.cc.isClang ''
+      substituteInPlace src/makefile \
+          --replace 'CXX=g++' 'CXX=clang++'
+    '';
 
     nativeBuildInputs = [
       pkg-config
@@ -39,17 +48,6 @@ let
       boost
       libxcrypt
     ];
-
-    postPatch = ''
-      substituteInPlace src/makefile \
-        --replace "shell pkg-config" "shell $PKG_CONFIG"
-      substituteInPlace makefile \
-        --replace 'gzip' 'gzip -n'
-    ''
-    + lib.optionalString stdenv.cc.isClang ''
-      substituteInPlace src/makefile \
-          --replace 'CXX=g++' 'CXX=clang++'
-    '';
 
     preConfigure = ''
       makeFlags="PREFIX=$out conf_dir=$out/etc/highlight/ CXX=$CXX AR=$AR"
@@ -71,12 +69,14 @@ let
       make -C extras/swig clean # Clean up intermediate files.
     '';
 
+    enableParallelBuilding = true;
+
     meta = {
       description = "Source code highlighting tool";
-      mainProgram = "highlight";
       homepage = "http://www.andre-simon.de/doku/highlight/en/highlight.php";
-      platforms = lib.platforms.unix;
       maintainers = [ ];
+      platforms = lib.platforms.unix;
+      mainProgram = "highlight";
     };
   };
 

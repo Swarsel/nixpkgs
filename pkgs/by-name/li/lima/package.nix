@@ -1,33 +1,38 @@
 {
   lib,
   stdenv,
+  apple-sdk_15,
   buildGoModule,
   callPackage,
-  installShellFiles,
-  qemu,
   darwin,
-  makeWrapper,
-  nix-update-script,
-  apple-sdk_15,
-  withAdditionalGuestAgents ? false,
+  installShellFiles,
+  jq,
+  lima,
   lima-additional-guestagents,
   llvmPackages,
-  writableTmpDirAsHomeHook,
-  versionCheckHook,
-  testers,
-  writeText,
+  makeWrapper,
+  nix-update-script,
+  qemu,
   runCommand,
-  lima,
-  jq,
+  testers,
+  versionCheckHook,
+  writableTmpDirAsHomeHook,
+  writeText,
+  withAdditionalGuestAgents ? false,
 }:
 
 let
   source = callPackage ./source.nix { };
 in
 buildGoModule (finalAttrs: {
+  inherit (source) version src vendorHash;
   pname = "lima" + lib.optionalString withAdditionalGuestAgents "-full";
 
-  inherit (source) version src vendorHash;
+  postPatch = ''
+    substituteInPlace Makefile \
+      --replace-fail 'codesign -f -v --entitlements vz.entitlements -s -' 'codesign -f --entitlements vz.entitlements -s -' \
+      --replace-fail 'rm -rf _output vendor' 'rm -rf _output'
+  '';
 
   nativeBuildInputs = [
     makeWrapper
@@ -42,22 +47,12 @@ buildGoModule (finalAttrs: {
     llvmPackages.lld
   ];
 
+  buildInputs = lib.optionals stdenv.hostPlatform.isDarwin [ apple-sdk_15 ];
+
   # TODO: Remove when NixOS/nixpkgs#536365 reaches master.
   env = lib.optionalAttrs stdenv.hostPlatform.isDarwin {
     NIX_CFLAGS_LINK = "-fuse-ld=${lib.getExe' llvmPackages.lld "ld64.lld"}";
   };
-
-  buildInputs = lib.optionals stdenv.hostPlatform.isDarwin [ apple-sdk_15 ];
-
-  postPatch = ''
-    substituteInPlace Makefile \
-      --replace-fail 'codesign -f -v --entitlements vz.entitlements -s -' 'codesign -f --entitlements vz.entitlements -s -' \
-      --replace-fail 'rm -rf _output vendor' 'rm -rf _output'
-  '';
-
-  # It attaches entitlements with codesign and strip removes those,
-  # voiding the entitlements and making it non-operational.
-  dontStrip = stdenv.hostPlatform.isDarwin;
 
   buildPhase =
     let
@@ -95,14 +90,13 @@ buildGoModule (finalAttrs: {
     cp -rs '${lima-additional-guestagents}/share/lima/.' "$out/share/lima/"
   '';
 
+  doInstallCheck = true;
+
   nativeInstallCheckInputs = [
     # Workaround for: "panic: $HOME is not defined" at https://github.com/lima-vm/lima/blob/cb99e9f8d01ebb82d000c7912fcadcd87ec13ad5/pkg/limayaml/defaults.go#L53
     writableTmpDirAsHomeHook
     versionCheckHook
   ];
-  doInstallCheck = true;
-  versionCheckProgram = "${placeholder "out"}/bin/limactl";
-  versionCheckKeepEnvironment = [ "HOME" ];
 
   installCheckPhase = ''
     runHook preInstallCheck
@@ -112,39 +106,19 @@ buildGoModule (finalAttrs: {
     runHook postInstallCheck
   '';
 
+  # It attaches entitlements with codesign and strip removes those,
+  # voiding the entitlements and making it non-operational.
+  dontStrip = stdenv.hostPlatform.isDarwin;
+  versionCheckKeepEnvironment = [ "HOME" ];
+  versionCheckProgram = "${placeholder "out"}/bin/limactl";
+
   passthru = {
     tests =
       let
         arch = stdenv.hostPlatform.parsed.cpu.name;
       in
       {
-        minimalAgent = testers.testEqualContents {
-          assertion = "limactl only detects host's architecture guest agent by default";
-          expected = writeText "expected" ''
-            true
-            1
-          '';
-          actual =
-            runCommand "actual"
-              {
-                nativeBuildInputs = [
-                  writableTmpDirAsHomeHook
-                  lima
-                  jq
-                ];
-              }
-              ''
-                limactl info | jq '.guestAgents | has("${arch}")' >>"$out"
-                limactl info | jq '.guestAgents | length' >>"$out"
-              '';
-        };
-
         additionalAgents = testers.testEqualContents {
-          assertion = "limactl also detects additional guest agents if specified";
-          expected = writeText "expected" ''
-            true
-            true
-          '';
           actual =
             runCommand "actual"
               {
@@ -160,6 +134,36 @@ buildGoModule (finalAttrs: {
                 limactl info | jq '.guestAgents | has("${arch}")' >>"$out"
                 limactl info | jq '.guestAgents | length >= 2' >>"$out"
               '';
+
+          assertion = "limactl also detects additional guest agents if specified";
+
+          expected = writeText "expected" ''
+            true
+            true
+          '';
+        };
+
+        minimalAgent = testers.testEqualContents {
+          actual =
+            runCommand "actual"
+              {
+                nativeBuildInputs = [
+                  writableTmpDirAsHomeHook
+                  lima
+                  jq
+                ];
+              }
+              ''
+                limactl info | jq '.guestAgents | has("${arch}")' >>"$out"
+                limactl info | jq '.guestAgents | length' >>"$out"
+              '';
+
+          assertion = "limactl only detects host's architecture guest agent by default";
+
+          expected = writeText "expected" ''
+            true
+            1
+          '';
         };
       };
 

@@ -2,9 +2,9 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  pkg-config,
   cmake,
   hunspell,
+  pkg-config,
   qt6,
 }:
 
@@ -25,6 +25,7 @@ stdenv.mkDerivation (finalAttrs: {
     qt6.qttools
     qt6.wrapQtAppsHook
   ];
+
   buildInputs = [
     hunspell
     qt6.qtbase
@@ -37,13 +38,15 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Simple, distraction-free writing environment";
+    homepage = "https://gottcode.org/focuswriter/";
     license = lib.licenses.gpl3Plus;
+
     maintainers = with lib.maintainers; [
       madjar
       kashw2
     ];
+
     platforms = lib.platforms.linux;
-    homepage = "https://gottcode.org/focuswriter/";
     mainProgram = "focuswriter";
   };
 })

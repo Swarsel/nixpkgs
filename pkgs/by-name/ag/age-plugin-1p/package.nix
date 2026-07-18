@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule (finalAttrs: {
@@ -24,10 +24,10 @@ buildGoModule (finalAttrs: {
 
   meta = {
     description = "Use SSH keys from 1Password with age";
-    mainProgram = "age-plugin-1p";
     homepage = "https://github.com/Enzime/age-plugin-1p";
     license = lib.licenses.mit;
-    platforms = lib.platforms.all;
     maintainers = with lib.maintainers; [ Enzime ];
+    platforms = lib.platforms.all;
+    mainProgram = "age-plugin-1p";
   };
 })

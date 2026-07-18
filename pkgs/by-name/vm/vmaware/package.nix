@@ -10,9 +10,6 @@ stdenv.mkDerivation (finalAttrs: {
   pname = "vmaware";
   version = "2.8.0";
 
-  strictDeps = true;
-  __structuredAttrs = true;
-
   src = fetchFromGitHub {
     owner = "kernelwernel";
     repo = "VMAware";
@@ -20,12 +17,14 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-KPjIk5nm27RcxGg3owfLVt+b1sL0y90IPPgeGv7fTgQ=";
   };
 
+  strictDeps = true;
   nativeBuildInputs = [ cmake ];
 
   cmakeFlags = [
     "-DCMAKE_BUILD_TYPE=Release"
   ];
 
+  __structuredAttrs = true;
   passthru.updateScript = nix-update-script { };
 
   meta = {

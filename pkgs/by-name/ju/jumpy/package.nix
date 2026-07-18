@@ -1,21 +1,21 @@
 {
   lib,
-  rustPlatform,
+  stdenv,
   fetchFromGitHub,
+  alsa-lib,
   fetchpatch2,
+  libx11,
+  libxcursor,
+  libxi,
+  libxkbcommon,
+  libxrandr,
   makeWrapper,
   pkg-config,
-  zstd,
-  stdenv,
-  alsa-lib,
-  libxkbcommon,
+  rustPlatform,
   udev,
   vulkan-loader,
   wayland,
-  libxrandr,
-  libxi,
-  libxcursor,
-  libx11,
+  zstd,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -28,16 +28,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-g/CpSycTCM1i6O7Mir+3huabvr4EXghDApquEUNny8c=";
   };
-
-  # This patch may be removed in the next release
-  cargoPatches = [
-    (fetchpatch2 {
-      url = "https://github.com/fishfolk/jumpy/commit/8234e6d2c0b33c75e2112596ded1734fdba50fb8.patch?full_index=1";
-      hash = "sha256-IWjBw1Wj/6CT/x6xm6vfpUMfk7A5/EsdbPDvWywRFc8=";
-    })
-  ];
-
-  cargoHash = "sha256-2I9s1zH94GRqXGBxZYyXOQwNeYrpV1UhUSKGCs9Ce9Q=";
 
   nativeBuildInputs = [
     makeWrapper
@@ -62,10 +52,7 @@ rustPlatform.buildRustPackage (finalAttrs: {
     rustPlatform.bindgenHook
   ];
 
-  cargoBuildFlags = [
-    "--bin"
-    "jumpy"
-  ];
+  cargoHash = "sha256-2I9s1zH94GRqXGBxZYyXOQwNeYrpV1UhUSKGCs9Ce9Q=";
 
   env = {
     ZSTD_SYS_USE_PKG_CONFIG = true;
@@ -84,17 +71,32 @@ rustPlatform.buildRustPackage (finalAttrs: {
       --add-rpath ${lib.makeLibraryPath [ vulkan-loader ]}
   '';
 
+  cargoBuildFlags = [
+    "--bin"
+    "jumpy"
+  ];
+
+  # This patch may be removed in the next release
+  cargoPatches = [
+    (fetchpatch2 {
+      hash = "sha256-IWjBw1Wj/6CT/x6xm6vfpUMfk7A5/EsdbPDvWywRFc8=";
+      url = "https://github.com/fishfolk/jumpy/commit/8234e6d2c0b33c75e2112596ded1734fdba50fb8.patch?full_index=1";
+    })
+  ];
+
   meta = {
     description = "Tactical 2D shooter played by up to 4 players online or on a shared screen";
-    mainProgram = "jumpy";
     homepage = "https://fishfolk.org/games/jumpy";
     changelog = "https://github.com/fishfolk/jumpy/releases/tag/v${finalAttrs.version}";
+
     license = with lib.licenses; [
       mit # or
       asl20
       # Assets
       cc-by-nc-40
     ];
+
     maintainers = [ ];
+    mainProgram = "jumpy";
   };
 })

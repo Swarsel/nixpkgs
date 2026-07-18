@@ -2,8 +2,8 @@
   lib,
   stdenv,
   fetchurl,
-  makeWrapper,
   jre,
+  makeWrapper,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -17,17 +17,17 @@ stdenv.mkDerivation (finalAttrs: {
 
   nativeBuildInputs = [ makeWrapper ];
 
-  dontUnpack = true;
-
   installPhase = ''
     makeWrapper ${jre}/bin/java $out/bin/tessera --add-flags "-jar $src"
   '';
 
+  dontUnpack = true;
+
   meta = {
     description = "Enterprise Implementation of Quorum's transaction manager";
     homepage = "https://github.com/jpmorganchase/tessera";
-    sourceProvenance = with lib.sourceTypes; [ binaryBytecode ];
     license = lib.licenses.asl20;
+    sourceProvenance = with lib.sourceTypes; [ binaryBytecode ];
     maintainers = with lib.maintainers; [ mmahut ];
     mainProgram = "tessera";
   };

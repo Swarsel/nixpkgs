@@ -2,26 +2,30 @@
   lib,
   buildPythonPackage,
   fetchPypi,
-  pkg-config,
   lndir,
-  sip,
+  mesa,
+  pkg-config,
   pyqt-builder,
-  qt6Packages,
   pyqt6,
   python,
-  mesa,
+  qt6Packages,
+  sip,
 }:
 
 buildPythonPackage rec {
   pname = "pyqt6-webengine";
   version = "6.11.0";
-  pyproject = true;
 
   src = fetchPypi {
-    pname = "pyqt6_webengine";
     inherit version;
     hash = "sha256-Fc9J77u9TGvIdlOyxK6A1gSfgA4xYgszZzSuLjfL7a4=";
+    pname = "pyqt6_webengine";
   };
+
+  outputs = [
+    "out"
+    "dev"
+  ];
 
   patches = [
     ./qvariant.patch
@@ -36,23 +40,14 @@ buildPythonPackage rec {
       pyproject.toml
   '';
 
-  enableParallelBuilding = true;
-  # HACK: paralellize compilation of make calls within pyqt's setup.py
-  # pkgs/stdenv/generic/setup.sh doesn't set this for us because
-  # make gets called by python code and not its build phase
-  # format=pyproject means the pip-build-hook hook gets used to build this project
-  # pkgs/development/interpreters/python/hooks/pip-build-hook.sh
-  # does not use the enableParallelBuilding flag
-  postUnpack = ''
-    export MAKEFLAGS+=" -j$NIX_BUILD_CORES"
-  '';
-
-  outputs = [
-    "out"
-    "dev"
+  nativeBuildInputs = with qt6Packages; [
+    pkg-config
+    lndir
+    qtwebengine
+    qmake
   ];
 
-  dontWrapQtApps = true;
+  buildInputs = with qt6Packages; [ qtwebengine ];
 
   build-system = [
     sip
@@ -63,34 +58,39 @@ buildPythonPackage rec {
     pyqt6
   ];
 
-  nativeBuildInputs = with qt6Packages; [
-    pkg-config
-    lndir
-    qtwebengine
-    qmake
-  ];
-
-  buildInputs = with qt6Packages; [ qtwebengine ];
-
-  passthru = {
-    inherit sip;
-  };
-
   dontConfigure = true;
+  dontWrapQtApps = true;
+  enableParallelBuilding = true;
+
+  # HACK: paralellize compilation of make calls within pyqt's setup.py
+  # pkgs/stdenv/generic/setup.sh doesn't set this for us because
+  # make gets called by python code and not its build phase
+  # format=pyproject means the pip-build-hook hook gets used to build this project
+  # pkgs/development/interpreters/python/hooks/pip-build-hook.sh
+  # does not use the enableParallelBuilding flag
+  postUnpack = ''
+    export MAKEFLAGS+=" -j$NIX_BUILD_CORES"
+  '';
+
+  pyproject = true;
 
   # Checked using pythonImportsCheck, has no tests
-
   pythonImportsCheck = [
     "PyQt6.QtWebEngineCore"
     "PyQt6.QtWebEngineQuick"
     "PyQt6.QtWebEngineWidgets"
   ];
 
+  passthru = {
+    inherit sip;
+  };
+
   meta = {
+    inherit (mesa.meta) platforms;
     description = "Python bindings for Qt6 WebEngine";
     homepage = "https://riverbankcomputing.com/";
     license = lib.licenses.gpl3Only;
-    inherit (mesa.meta) platforms;
+
     maintainers = with lib.maintainers; [
       LunNova
     ];

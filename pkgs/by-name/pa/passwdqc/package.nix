@@ -19,18 +19,20 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-EgPeccqS+DDDMBVMc4bd70EMnXFuyglftxuqoaYHwNY=";
   };
 
-  patches = [
-    (fetchpatch {
-      name = "0001-fix-solaris-macos-builds.patch";
-      url = "https://github.com/openwall/passwdqc/commit/fbf38229857f3d1982aa305c20da5e1ea0195b3e.patch";
-      hash = "sha256-FaEWROHwFzd4ZTeKyPvuAr9vcgnHEv8MhERblIU8JC4=";
-    })
-  ];
-
   outputs = [
     "out"
     "man"
   ];
+
+  patches = [
+    (fetchpatch {
+      hash = "sha256-FaEWROHwFzd4ZTeKyPvuAr9vcgnHEv8MhERblIU8JC4=";
+      name = "0001-fix-solaris-macos-builds.patch";
+      url = "https://github.com/openwall/passwdqc/commit/fbf38229857f3d1982aa305c20da5e1ea0195b3e.patch";
+    })
+  ];
+
+  strictDeps = true;
 
   nativeBuildInputs = [
     pkg-config
@@ -40,8 +42,6 @@ stdenv.mkDerivation (finalAttrs: {
     libxcrypt
     pam
   ];
-
-  strictDeps = true;
 
   makeFlags = [ "CC=${stdenv.cc.targetPrefix}cc" ];
 
@@ -61,11 +61,11 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   meta = {
-    homepage = "https://www.openwall.com/passwdqc/";
     description = "Passphrase strength checking and enforcement";
+    homepage = "https://www.openwall.com/passwdqc/";
     license = with lib.licenses; [ bsd3 ];
     maintainers = [ ];
-    mainProgram = "passwdqc";
     platforms = lib.platforms.unix;
+    mainProgram = "passwdqc";
   };
 })

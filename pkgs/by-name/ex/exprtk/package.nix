@@ -15,13 +15,13 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-A4UzNYZZGgTJOw9G4Jg1wJZhxguFRohNEcwmwUOAX18=";
   };
 
-  dontBuild = true;
-
   installPhase = ''
     runHook preInstall
     install -Dm644 exprtk.hpp "$out/include/exprtk.hpp"
     runHook postInstall
   '';
+
+  dontBuild = true;
 
   meta = {
     description = "C++ Mathematical Expression Toolkit Library";

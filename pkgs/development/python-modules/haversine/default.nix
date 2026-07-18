@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   numpy,
   pytestCheckHook,
   setuptools,
@@ -10,7 +10,6 @@
 buildPythonPackage rec {
   pname = "haversine";
   version = "2.9.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "mapado";
@@ -26,6 +25,7 @@ buildPythonPackage rec {
     pytestCheckHook
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "haversine" ];
 
   meta = {

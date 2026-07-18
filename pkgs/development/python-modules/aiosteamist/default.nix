@@ -1,18 +1,17 @@
 {
   lib,
+  fetchFromGitHub,
   aiohttp,
   buildPythonPackage,
-  fetchFromGitHub,
   poetry-core,
-  pytestCheckHook,
   pytest-cov-stub,
+  pytestCheckHook,
   xmltodict,
 }:
 
 buildPythonPackage rec {
   pname = "aiosteamist";
   version = "1.0.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "bdraco";
@@ -21,6 +20,11 @@ buildPythonPackage rec {
     hash = "sha256-e7Nt/o2A1qn2nSpWv6ZsZHn/WpcXKzol+f+JNJaSb4w=";
   };
 
+  nativeCheckInputs = [
+    pytestCheckHook
+    pytest-cov-stub
+  ];
+
   build-system = [ poetry-core ];
 
   dependencies = [
@@ -28,11 +32,7 @@ buildPythonPackage rec {
     xmltodict
   ];
 
-  nativeCheckInputs = [
-    pytestCheckHook
-    pytest-cov-stub
-  ];
-
+  pyproject = true;
   pythonImportsCheck = [ "aiosteamist" ];
 
   meta = {

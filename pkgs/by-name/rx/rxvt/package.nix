@@ -2,11 +2,11 @@
   lib,
   stdenv,
   fetchurl,
-  pkg-config,
   libtool,
   libx11,
-  libxt,
   libxpm,
+  libxt,
+  pkg-config,
 }:
 
 stdenv.mkDerivation rec {
@@ -19,6 +19,7 @@ stdenv.mkDerivation rec {
   };
 
   nativeBuildInputs = [ pkg-config ];
+
   buildInputs = [
     libtool
     libx11
@@ -31,8 +32,8 @@ stdenv.mkDerivation rec {
   '';
 
   meta = {
-    homepage = "https://rxvt.sourceforge.net/";
     description = "Colour vt102 terminal emulator with less features and lower memory consumption";
+
     longDescription = ''
       rxvt (acronym for our extended virtual terminal) is a terminal
       emulator for the X Window System, originally written by Rob Nation
@@ -44,9 +45,12 @@ stdenv.mkDerivation rec {
       omitting some of its little-used features, like Tektronix 4014
       emulation and toolkit-style configurability.
     '';
-    maintainers = [ ];
+
+    homepage = "https://rxvt.sourceforge.net/";
     license = lib.licenses.gpl2;
+    maintainers = [ ];
     platforms = lib.platforms.linux;
+
     knownVulnerabilities = [
       "Usage of ANSI escape sequences causes unexpected newline-termination, leading to unexpected command execution (https://www.openwall.com/lists/oss-security/2021/05/17/1)"
     ];

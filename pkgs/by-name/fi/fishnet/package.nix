@@ -1,14 +1,14 @@
 {
   lib,
-  rustPlatform,
-  fetchFromGitHub,
   fetchurl,
-  versionCheckHook,
-  writeShellApplication,
+  fetchFromGitHub,
+  common-updater-scripts,
   curl,
   jq,
   nix-update,
-  common-updater-scripts,
+  rustPlatform,
+  versionCheckHook,
+  writeShellApplication,
 }:
 
 let
@@ -16,14 +16,14 @@ let
   nnueBigFile = "nn-9a0cc2a62c52.nnue";
   nnueBigHash = "sha256-mgzCpixSClN6rTrG6QiowJiqkAidyny8h0zCGXYYvyM=";
   nnueBig = fetchurl {
-    url = "https://tests.stockfishchess.org/api/nn/${nnueBigFile}";
     hash = nnueBigHash;
+    url = "https://tests.stockfishchess.org/api/nn/${nnueBigFile}";
   };
   nnueSmallFile = "nn-47fc8b7fff06.nnue";
   nnueSmallHash = "sha256-R/yLf/8GfSQEdJO4TkKrhVwPzrUFjAFsafjuXE7kvWk=";
   nnueSmall = fetchurl {
-    url = "https://tests.stockfishchess.org/api/nn/${nnueSmallFile}";
     hash = nnueSmallHash;
+    url = "https://tests.stockfishchess.org/api/nn/${nnueSmallFile}";
   };
 in
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -46,16 +46,27 @@ rustPlatform.buildRustPackage (finalAttrs: {
   '';
 
   cargoHash = "sha256-mkioBmawYR5GvR0WSlaicGyXV4EVVVQuai5UF5+Thk8=";
+  doInstallCheck = true;
 
   nativeInstallCheckInputs = [
     versionCheckHook
   ];
-  doInstallCheck = true;
+
   versionCheckProgram = "${placeholder "out"}/bin/${finalAttrs.meta.mainProgram}";
 
   passthru = {
     updateScript = lib.getExe (writeShellApplication {
       name = "update-${finalAttrs.pname}";
+
+      runtimeEnv = {
+        GITHUB_REPOSITORY = "${finalAttrs.src.owner}/${finalAttrs.src.repo}";
+        NNUE_BIG_FILE = nnueBigFile;
+        NNUE_BIG_HASH = nnueBigHash;
+        NNUE_SMALL_FILE = nnueSmallFile;
+        NNUE_SMALL_HASH = nnueSmallHash;
+        PKG_FILE = toString ./package.nix;
+        PNAME = finalAttrs.pname;
+      };
 
       runtimeInputs = [
         curl
@@ -63,16 +74,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
         nix-update
         common-updater-scripts
       ];
-
-      runtimeEnv = {
-        PNAME = finalAttrs.pname;
-        PKG_FILE = toString ./package.nix;
-        GITHUB_REPOSITORY = "${finalAttrs.src.owner}/${finalAttrs.src.repo}";
-        NNUE_BIG_FILE = nnueBigFile;
-        NNUE_BIG_HASH = nnueBigHash;
-        NNUE_SMALL_FILE = nnueSmallFile;
-        NNUE_SMALL_HASH = nnueSmallHash;
-      };
 
       text = builtins.readFile ./update.bash;
     });
@@ -82,14 +83,17 @@ rustPlatform.buildRustPackage (finalAttrs: {
     description = "Distributed Stockfish analysis for lichess.org";
     homepage = "https://github.com/lichess-org/fishnet";
     license = lib.licenses.gpl3Plus;
+
     maintainers = with lib.maintainers; [
       tu-maurice
       thibaultd
     ];
+
     platforms = [
       "aarch64-linux"
       "x86_64-linux"
     ];
+
     mainProgram = "fishnet";
   };
 })

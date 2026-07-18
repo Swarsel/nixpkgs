@@ -1,12 +1,11 @@
 {
   lib,
-  buildKodiBinaryAddon,
   fetchFromGitHub,
+  buildKodiBinaryAddon,
   libusb1,
 }:
 buildKodiBinaryAddon rec {
   pname = namespace;
-  namespace = "peripheral.steamcontroller";
   version = "20.0.2";
 
   src = fetchFromGitHub {
@@ -17,12 +16,13 @@ buildKodiBinaryAddon rec {
   };
 
   extraBuildInputs = [ libusb1 ];
+  namespace = "peripheral.steamcontroller";
 
   meta = {
     description = "Binary addon for steam controller";
     homepage = "https://github.com/kodi-game/peripheral.steamcontroller";
+    license = lib.licenses.gpl2Only;
     platforms = lib.platforms.all;
     teams = [ lib.teams.kodi ];
-    license = lib.licenses.gpl2Only;
   };
 }

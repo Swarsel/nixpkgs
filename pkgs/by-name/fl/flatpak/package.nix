@@ -1,7 +1,7 @@
 {
   lib,
   stdenv,
-  pkgsCross,
+  fetchurl,
   appstream,
   bison,
   bubblewrap,
@@ -13,7 +13,6 @@
   desktop-file-utils,
   docbook-xsl-nons,
   docbook_xml_dtd_45,
-  fetchurl,
   fuse3,
   gdk-pixbuf,
   gettext,
@@ -30,6 +29,7 @@
   libcap,
   librsvg,
   libseccomp,
+  libxau,
   libxml2,
   libxslt,
   malcontent,
@@ -40,12 +40,13 @@
   ostree,
   p11-kit,
   pkg-config,
+  pkgsCross,
   polkit,
   python3,
+  replaceVars,
   runCommand,
   shared-mime-info,
   socat,
-  replaceVars,
   systemd,
   testers,
   valgrind,
@@ -56,7 +57,6 @@
   wrapGAppsNoGuiHook,
   xdg-dbus-proxy,
   xmlto,
-  libxau,
   zstd,
   withAutoSideloading ? false,
   withDconf ? lib.meta.availableOn stdenv.hostPlatform dconf,
@@ -82,6 +82,11 @@ stdenv.mkDerivation (finalAttrs: {
   pname = "flatpak";
   version = "1.18.0";
 
+  src = fetchurl {
+    url = "https://github.com/flatpak/flatpak/releases/download/${finalAttrs.version}/flatpak-${finalAttrs.version}.tar.xz";
+    hash = "sha256-pYV6ZsQDndoF2SvcsrAz14jNJYlhAWfw7F8OyNT6xvI=";
+  };
+
   # TODO: split out lib once we figure out what to do with triggerdir
   outputs = [
     "out"
@@ -95,11 +100,6 @@ stdenv.mkDerivation (finalAttrs: {
   ]
   ++ lib.optional finalAttrs.doCheck "installedTests"
   ++ lib.optional withMan "man";
-
-  src = fetchurl {
-    url = "https://github.com/flatpak/flatpak/releases/download/${finalAttrs.version}/flatpak-${finalAttrs.version}.tar.xz";
-    hash = "sha256-pYV6ZsQDndoF2SvcsrAz14jNJYlhAWfw7F8OyNT6xvI=";
-  };
 
   patches = [
     # Use flatpak from PATH to avoid references to `/nix/store` in `/desktop` files.
@@ -129,6 +129,7 @@ stdenv.mkDerivation (finalAttrs: {
         gtk3
         socat
         ;
+
       dfu = desktop-file-utils;
       hicolorIconTheme = hicolor-icon-theme;
       smi = shared-mime-info;
@@ -156,31 +157,7 @@ stdenv.mkDerivation (finalAttrs: {
       --replace-fail '/usr/share/icons/hicolor/index.theme' '/run/current-system/sw/share/icons/hicolor/index.theme'
   '';
 
-  # Fixup PATHs in trigger scripts
-  postInstall = ''
-    wrapProgram $out/share/flatpak/triggers/desktop-database.trigger --prefix PATH : ${
-      lib.makeBinPath [
-        desktop-file-utils
-      ]
-    }
-
-    wrapProgram $out/share/flatpak/triggers/gtk-icon-cache.trigger --prefix PATH : ${
-      lib.makeBinPath [
-        coreutils
-        gtk3
-      ]
-    }
-
-    wrapProgram $out/share/flatpak/triggers/mime-database.trigger --prefix PATH : ${
-      lib.makeBinPath [
-        shared-mime-info
-      ]
-    }
-  '';
-
   strictDeps = true;
-
-  depsBuildBuild = [ pkg-config ];
 
   nativeBuildInputs = [
     (python3.pythonOnBuildForHost.withPackages (p: [ p.pyparsing ]))
@@ -256,15 +233,38 @@ stdenv.mkDerivation (finalAttrs: {
     (lib.mesonOption "sysconfdir" "/etc")
   ];
 
+  # TODO: Many issues with temporary files, FHS environments, timeouts, and our current patches
+  doCheck = false;
+
   nativeCheckInputs = [
     polkit
     socat
     valgrind
   ];
 
-  # TODO: Many issues with temporary files, FHS environments, timeouts, and our current patches
-  doCheck = false;
+  # Fixup PATHs in trigger scripts
+  postInstall = ''
+    wrapProgram $out/share/flatpak/triggers/desktop-database.trigger --prefix PATH : ${
+      lib.makeBinPath [
+        desktop-file-utils
+      ]
+    }
 
+    wrapProgram $out/share/flatpak/triggers/gtk-icon-cache.trigger --prefix PATH : ${
+      lib.makeBinPath [
+        coreutils
+        gtk3
+      ]
+    }
+
+    wrapProgram $out/share/flatpak/triggers/mime-database.trigger --prefix PATH : ${
+      lib.makeBinPath [
+        shared-mime-info
+      ]
+    }
+  '';
+
+  depsBuildBuild = [ pkg-config ];
   separateDebugInfo = true;
 
   passthru = {
@@ -273,8 +273,8 @@ stdenv.mkDerivation (finalAttrs: {
     };
 
     tests = {
+      version = testers.testVersion { package = finalAttrs.finalPackage; };
       cross-aarch64 = pkgsCross.aarch64-multiplatform.flatpak;
-
       pkg-config = testers.hasPkgConfigModules { package = finalAttrs.finalPackage; };
 
       validate-icon = runCommand "test-icon-validation" { } ''
@@ -284,8 +284,6 @@ stdenv.mkDerivation (finalAttrs: {
 
         grep format=png "$out"
       '';
-
-      version = testers.testVersion { package = finalAttrs.finalPackage; };
     };
 
     updateScript = nix-update-script { };
@@ -297,8 +295,8 @@ stdenv.mkDerivation (finalAttrs: {
     changelog = "https://github.com/flatpak/flatpak/releases/tag/${finalAttrs.version}";
     license = lib.licenses.lgpl21Plus;
     maintainers = with lib.maintainers; [ getchoo ];
-    mainProgram = "flatpak";
     platforms = lib.platforms.linux;
+    mainProgram = "flatpak";
     pkgConfigModules = [ "flatpak" ];
   };
 })

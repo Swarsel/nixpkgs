@@ -2,17 +2,15 @@
   lib,
   fetchFromGitHub,
   buildPythonPackage,
+  ordered-set,
   setuptools,
   # Python deps
   uplc,
-  ordered-set,
 }:
 
 buildPythonPackage rec {
   pname = "pluthon";
   version = "1.3.5";
-
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "OpShin";
@@ -27,6 +25,7 @@ buildPythonPackage rec {
     ordered-set
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "pluthon" ];
 
   meta = {

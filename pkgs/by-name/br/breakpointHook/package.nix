@@ -1,9 +1,8 @@
 {
   lib,
   stdenv,
-  buildPackages,
-
   bashInteractive,
+  buildPackages,
   makeSetupHook,
 }:
 
@@ -22,15 +21,17 @@ in
 
 makeSetupHook {
   name = "breakpoint-hook";
-  meta = {
-    broken = !stdenv.buildPlatform.isLinux;
-    license = lib.licenses.mit;
-  };
+
   substitutions = {
     attach = "${attach}/bin/attach";
     # The default interactive shell in case $debugShell is not set in the derivation.
     # Can be overridden to zsh or fish, etc.
     # This shell is also used to load the env variables before the $debugShell is started.
     bashInteractive = lib.getExe bashInteractive;
+  };
+
+  meta = {
+    license = lib.licenses.mit;
+    broken = !stdenv.buildPlatform.isLinux;
   };
 } ./breakpoint-hook.sh

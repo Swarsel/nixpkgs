@@ -1,13 +1,13 @@
 {
+  lib,
+  stdenv,
+  fetchurl,
   fetchFromGitHub,
   fetchPnpmDeps,
-  lib,
-  fetchurl,
   makeBinaryWrapper,
   nodejs,
   pnpmConfigHook,
   pnpm_10,
-  stdenv,
   versionCheckHook,
   yarn-berry,
   plugins ? [ ],
@@ -84,33 +84,22 @@ let
       sha256 = "sha256-7qPLrjsQ6+F565/k4HbVtcbr5HDok5AcaR8W+zTy/SM=";
     };
 
+    patches = [
+      ./pnpm-lock_prettier-oxc-wasm-parser.patch
+    ];
+
     nativeBuildInputs = [
       nodejs
       pnpmConfigHook
       pnpm_10
     ];
 
-    patches = [
-      ./pnpm-lock_prettier-oxc-wasm-parser.patch
-    ];
-
-    pnpmDeps = fetchPnpmDeps {
-      inherit (finalAttrs)
-        pname
-        version
-        src
-        patches
-        ;
-
-      pnpm = pnpm_10;
-      fetcherVersion = 3;
-      hash = "sha256-S9d89o5GNUGLoc9SBe58qKmbPEdGj3PEnQN+eADG4SU=";
-    };
-
     buildPhase = ''
       runHook preBuild
       runHook postBuild
     '';
+
+    doCheck = false;
 
     installPhase = ''
       runHook preInstall
@@ -121,8 +110,20 @@ let
       runHook postInstall
     '';
 
-    doCheck = false;
     doInstallCheck = false;
+
+    pnpmDeps = fetchPnpmDeps {
+      inherit (finalAttrs)
+        pname
+        version
+        src
+        patches
+        ;
+
+      fetcherVersion = 3;
+      hash = "sha256-S9d89o5GNUGLoc9SBe58qKmbPEdGj3PEnQN+eADG4SU=";
+      pnpm = pnpm_10;
+    };
 
     meta = {
       description = "Oxc Parser Node API";
@@ -147,15 +148,6 @@ stdenv.mkDerivation (finalAttrs: {
     # https://github.com/prettier/prettier/blob/main/package.json#L265
     ./yarn-4.14-support.patch
   ];
-
-  missingHashes = ./missing-hashes.json;
-
-  offlineCache = yarn-berry.fetchYarnBerryDeps {
-
-    inherit (finalAttrs) src missingHashes patches;
-    hash = yarnHash;
-
-  };
 
   nativeBuildInputs = [
     makeBinaryWrapper
@@ -198,18 +190,28 @@ stdenv.mkDerivation (finalAttrs: {
 
   doInstallCheck = true;
   nativeInstallCheckInputs = [ versionCheckHook ];
+  missingHashes = ./missing-hashes.json;
+
+  offlineCache = yarn-berry.fetchYarnBerryDeps {
+
+    inherit (finalAttrs) src missingHashes patches;
+    hash = yarnHash;
+
+  };
 
   passthru.updateScript = ./update.sh;
 
   meta = {
-    changelog = "https://github.com/prettier/prettier/blob/${finalAttrs.version}/CHANGELOG.md";
     description = "Code formatter";
     homepage = "https://prettier.io/";
+    changelog = "https://github.com/prettier/prettier/blob/${finalAttrs.version}/CHANGELOG.md";
     license = lib.licenses.mit;
-    mainProgram = "prettier";
+
     maintainers = with lib.maintainers; [
       l0b0
       S0AndS0
     ];
+
+    mainProgram = "prettier";
   };
 })

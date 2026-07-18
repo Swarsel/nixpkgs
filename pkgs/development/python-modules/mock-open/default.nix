@@ -1,13 +1,12 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
 }:
 
 buildPythonPackage rec {
   pname = "mock-open";
   version = "1.4.0";
-  format = "setuptools";
 
   # no tests in PyPI tarball
   src = fetchFromGitHub {
@@ -17,9 +16,11 @@ buildPythonPackage rec {
     sha256 = "0qlz4y8jqxsnmqg03yp9f87rmnjrvmxm5qvm6n1218gm9k5dixbm";
   };
 
+  format = "setuptools";
+
   meta = {
-    homepage = "https://github.com/nivbend/mock-open";
     description = "Better mock for file I/O";
+    homepage = "https://github.com/nivbend/mock-open";
     license = lib.licenses.mit;
   };
 }

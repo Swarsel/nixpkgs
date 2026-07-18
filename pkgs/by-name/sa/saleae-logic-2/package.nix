@@ -1,8 +1,8 @@
 {
   lib,
   fetchurl,
-  makeDesktopItem,
   appimageTools,
+  makeDesktopItem,
 }:
 let
   pname = "saleae-logic-2";
@@ -12,13 +12,13 @@ let
     hash = "sha256-lJp0al4tRqXwb6I8iziCav481XNAuEjASo1ZfUWdYLU=";
   };
   desktopItem = makeDesktopItem {
-    name = "saleae-logic-2";
-    exec = "saleae-logic-2";
-    icon = "Logic";
+    categories = [ "Development" ];
     comment = "Software for Saleae logic analyzers";
     desktopName = "Saleae Logic";
+    exec = "saleae-logic-2";
     genericName = "Logic analyzer";
-    categories = [ "Development" ];
+    icon = "Logic";
+    name = "saleae-logic-2";
   };
 in
 appimageTools.wrapType2 {
@@ -72,14 +72,16 @@ appimageTools.wrapType2 {
     ];
 
   meta = {
+    description = "Software for Saleae logic analyzers";
     homepage = "https://www.saleae.com/";
     changelog = "https://ideas.saleae.com/f/changelog/";
-    description = "Software for Saleae logic analyzers";
     license = lib.licenses.unfree;
-    platforms = [ "x86_64-linux" ];
+
     maintainers = with lib.maintainers; [
       j-hui
       newam
     ];
+
+    platforms = [ "x86_64-linux" ];
   };
 }

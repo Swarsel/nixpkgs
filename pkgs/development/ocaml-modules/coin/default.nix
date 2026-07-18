@@ -1,13 +1,12 @@
 {
-  buildDunePackage,
-  fetchurl,
   lib,
+  fetchurl,
+  buildDunePackage,
 }:
 
 buildDunePackage (finalAttrs: {
   pname = "coin";
   version = "0.1.5";
-  minimalOCamlVersion = "4.06";
 
   src = fetchurl {
     url = "https://github.com/mirage/coin/releases/download/v${finalAttrs.version}/coin-${finalAttrs.version}.tbz";
@@ -15,6 +14,7 @@ buildDunePackage (finalAttrs: {
   };
 
   doCheck = true;
+  minimalOCamlVersion = "4.06";
 
   meta = {
     description = "Library to normalize an KOI8-{U,R} input to Unicode";

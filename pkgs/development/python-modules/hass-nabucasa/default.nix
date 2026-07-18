@@ -1,5 +1,6 @@
 {
   lib,
+  fetchFromGitHub,
   acme,
   aiohttp,
   atomicwrites-homeassistant,
@@ -7,7 +8,6 @@
   buildPythonPackage,
   ciso8601,
   cryptography,
-  fetchFromGitHub,
   freezegun,
   grpcio,
   icmplib,
@@ -32,9 +32,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "hass-nabucasa";
   version = "2.2.0";
-  pyproject = true;
-
-  disabled = pythonOlder "3.14";
 
   src = fetchFromGitHub {
     owner = "nabucasa";
@@ -48,11 +45,17 @@ buildPythonPackage (finalAttrs: {
       --replace-fail "0.0.0" "${finalAttrs.version}"
   '';
 
-  build-system = [ setuptools ];
-
-  pythonRelaxDeps = [
-    "acme"
+  nativeCheckInputs = [
+    freezegun
+    pytest-aiohttp
+    pytest-socket
+    pytest-timeout
+    pytestCheckHook
+    syrupy
+    xmltodict
   ];
+
+  build-system = [ setuptools ];
 
   dependencies = [
     acme
@@ -73,23 +76,20 @@ buildPythonPackage (finalAttrs: {
     yarl
   ];
 
-  nativeCheckInputs = [
-    freezegun
-    pytest-aiohttp
-    pytest-socket
-    pytest-timeout
-    pytestCheckHook
-    syrupy
-    xmltodict
-  ];
-
+  disabled = pythonOlder "3.14";
+  pyproject = true;
   pythonImportsCheck = [ "hass_nabucasa" ];
+
+  pythonRelaxDeps = [
+    "acme"
+  ];
 
   meta = {
     description = "Python module for the Home Assistant cloud integration";
     homepage = "https://github.com/NabuCasa/hass-nabucasa";
     changelog = "https://github.com/NabuCasa/hass-nabucasa/releases/tag/${finalAttrs.src.tag}";
     license = lib.licenses.gpl3Only;
+
     maintainers = with lib.maintainers; [
       fab
       Scriptkiddi

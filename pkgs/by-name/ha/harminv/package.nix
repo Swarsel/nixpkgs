@@ -3,8 +3,8 @@
   stdenv,
   fetchFromGitHub,
   autoreconfHook,
-  gfortran,
   blas,
+  gfortran,
   lapack,
 }:
 
@@ -46,10 +46,12 @@ stdenv.mkDerivation (finalAttrs: {
     description = "Harmonic inversion algorithm of Mandelshtam: decompose signal into sum of decaying sinusoids";
     homepage = "https://github.com/NanoComp/harminv";
     license = with lib.licenses; [ gpl2Only ];
+
     maintainers = with lib.maintainers; [
       sheepforce
       markuskowa
     ];
+
     platforms = lib.platforms.linux;
   };
 })

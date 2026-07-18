@@ -1,22 +1,15 @@
 {
-  buildPythonPackage,
-  fetchFromGitHub,
   lib,
+  fetchFromGitHub,
+  buildPythonPackage,
+  lxml,
   pyyaml,
   six,
-  lxml,
 }:
 
 buildPythonPackage rec {
   pname = "ipyxact";
   version = "0.3.2";
-  format = "setuptools";
-
-  propagatedBuildInputs = [ pyyaml ];
-  checkInputs = [
-    six
-    lxml
-  ];
 
   src = fetchFromGitHub {
     owner = "olofk";
@@ -25,13 +18,21 @@ buildPythonPackage rec {
     hash = "sha256-myD+NnqcxxaSAV7qZa8xqeciaiFqFePqIzd7sb/2GXA=";
   };
 
+  propagatedBuildInputs = [ pyyaml ];
+
+  checkInputs = [
+    six
+    lxml
+  ];
+
+  format = "setuptools";
   pythonImportsCheck = [ "ipyxact" ];
 
   meta = {
-    homepage = "https://github.com/olofk/ipyxact";
     description = "IP-XACT parser";
-    mainProgram = "ipxact2v";
-    maintainers = [ ];
+    homepage = "https://github.com/olofk/ipyxact";
     license = lib.licenses.mit;
+    maintainers = [ ];
+    mainProgram = "ipxact2v";
   };
 }

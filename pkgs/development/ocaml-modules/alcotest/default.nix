@@ -1,14 +1,14 @@
 {
   lib,
-  buildDunePackage,
   fetchurl,
   astring,
+  buildDunePackage,
   cmdliner,
   fmt,
+  ocaml-syntax-shims,
   re,
   stdlib-shims,
   uutf,
-  ocaml-syntax-shims,
 }:
 
 buildDunePackage (finalAttrs: {
@@ -34,8 +34,8 @@ buildDunePackage (finalAttrs: {
   doCheck = true;
 
   meta = {
-    homepage = "https://github.com/mirage/alcotest";
     description = "Lightweight and colourful test framework";
+    homepage = "https://github.com/mirage/alcotest";
     license = lib.licenses.isc;
     maintainers = [ lib.maintainers.ericbmerritt ];
   };

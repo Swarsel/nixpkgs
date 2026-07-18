@@ -2,19 +2,19 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  cmake,
   SDL2,
   SDL2_net,
-  openal,
-  libsndfile,
-  fluidsynth,
   alsa-lib,
-  libxmp,
+  cmake,
+  discord-rpc,
+  fluidsynth,
   libebur128,
+  libsndfile,
+  libxmp,
+  nix-update-script,
+  openal,
   python3,
   yyjson,
-  discord-rpc,
-  nix-update-script,
   withDiscordRpc ? true,
 }:
 
@@ -28,6 +28,8 @@ stdenv.mkDerivation (finalAttrs: {
     tag = "woof_${finalAttrs.version}";
     hash = "sha256-G9exAJivfZnT2eWQhFYT8ZVRUU1QT0VAZF1CDCXmJ04=";
   };
+
+  strictDeps = true;
 
   nativeBuildInputs = [
     cmake
@@ -49,8 +51,6 @@ stdenv.mkDerivation (finalAttrs: {
   ]
   ++ lib.optional withDiscordRpc discord-rpc;
 
-  strictDeps = true;
-
   cmakeFlags = [
     (lib.cmakeBool "WITH_DISCORD_RPC" withDiscordRpc)
   ];
@@ -68,7 +68,7 @@ stdenv.mkDerivation (finalAttrs: {
     changelog = "https://github.com/fabiangreffrath/woof/blob/${finalAttrs.src.rev}/CHANGELOG.md";
     license = lib.licenses.gpl2Plus;
     maintainers = with lib.maintainers; [ keenanweaver ];
-    mainProgram = "woof";
     platforms = lib.platforms.unix;
+    mainProgram = "woof";
   };
 })

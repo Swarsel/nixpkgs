@@ -1,39 +1,34 @@
 {
   lib,
   stdenv,
-  buildPythonPackage,
   fetchFromGitHub,
-
+  # tests
+  anthropic,
+  buildPythonPackage,
+  google-genai,
   # build-system
   hatch-vcs,
   hatchling,
-
+  htmltools,
   # dependencies
   jinja2,
+  matplotlib,
   openai,
   orjson,
-  pydantic,
-  requests,
-  rich,
-
-  # tests
-  anthropic,
-  google-genai,
-  htmltools,
-  matplotlib,
   pillow,
+  pydantic,
   pytest-asyncio,
   pytest-snapshot,
   pytest-vcr,
   pytestCheckHook,
+  requests,
+  rich,
   tenacity,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "chatlas";
   version = "0.17.0";
-  pyproject = true;
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "posit-dev";
@@ -41,6 +36,21 @@ buildPythonPackage (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-wf+YYC7coJ9euOXIP9Oq7k2z8zhLZdfjVM+yxmM9MAY=";
   };
+
+  nativeCheckInputs = [
+    anthropic
+    google-genai
+    htmltools
+    matplotlib
+    pillow
+    pytest-asyncio
+    pytest-snapshot
+    pytest-vcr
+    pytestCheckHook
+    tenacity
+  ];
+
+  __structuredAttrs = true;
 
   build-system = [
     hatch-vcs
@@ -54,21 +64,6 @@ buildPythonPackage (finalAttrs: {
     pydantic
     requests
     rich
-  ];
-
-  pythonImportsCheck = [ "chatlas" ];
-
-  nativeCheckInputs = [
-    anthropic
-    google-genai
-    htmltools
-    matplotlib
-    pillow
-    pytest-asyncio
-    pytest-snapshot
-    pytest-vcr
-    pytestCheckHook
-    tenacity
   ];
 
   disabledTestPaths = [
@@ -166,12 +161,15 @@ buildPythonPackage (finalAttrs: {
     "test_can_create_image_from_plot"
   ];
 
+  pyproject = true;
+  pythonImportsCheck = [ "chatlas" ];
+
   meta = {
     description = "Friendly guide to building LLM chat apps in Python with less effort and more clarity";
     homepage = "https://posit-dev.github.io/chatlas";
-    downloadPage = "https://github.com/posit-dev/chatlas";
     changelog = "https://github.com/posit-dev/chatlas/blob/${finalAttrs.src.tag}/CHANGELOG.md";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ GaetanLepage ];
+    downloadPage = "https://github.com/posit-dev/chatlas";
   };
 })

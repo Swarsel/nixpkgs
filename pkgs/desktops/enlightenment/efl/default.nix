@@ -2,15 +2,13 @@
   lib,
   stdenv,
   fetchurl,
-  meson,
-  ninja,
-  pkg-config,
   SDL2,
   alsa-lib,
   bullet,
   check,
   curl,
   dbus,
+  directoryListingUpdater,
   doxygen,
   expat,
   fontconfig,
@@ -38,13 +36,29 @@
   libspectre,
   libtiff,
   libwebp,
+  libx11,
+  libxcb,
+  libxcomposite,
+  libxcursor,
+  libxdamage,
+  libxext,
+  libxfixes,
+  libxi,
+  libxinerama,
   libxkbcommon,
+  libxrandr,
+  libxrender,
+  libxscrnsaver,
+  libxtst,
   lua,
   lz4,
   mesa-gl-headers,
+  meson,
   mint-x-icons,
+  ninja,
   openjpeg,
   openssl,
+  pkg-config,
   poppler,
   systemd,
   udev,
@@ -53,22 +67,8 @@
   wayland-protocols,
   wayland-scanner,
   writeText,
-  libxtst,
-  libxscrnsaver,
-  libxrender,
-  libxrandr,
-  libxi,
-  libxinerama,
-  libxfixes,
-  libxext,
-  libxdamage,
-  libxcursor,
-  libxcomposite,
-  libx11,
   xorgproto,
-  libxcb,
   zlib,
-  directoryListingUpdater,
 }:
 let
   inherit (lib)
@@ -84,6 +84,20 @@ stdenv.mkDerivation (finalAttrs: {
     url = "https://download.enlightenment.org/rel/libs/efl/efl-${finalAttrs.version}.tar.xz";
     hash = "sha256-hM9hRfnMgr//aQAFviQ5LI88UvjgD/BNjuo3FCnAlCQ=";
   };
+
+  patches = [
+    ./efl-elua.patch
+  ];
+
+  postPatch = ''
+    patchShebangs src/lib/elementary/config_embed
+
+    # fix destination of systemd unit and dbus service
+    substituteInPlace systemd-services/meson.build --replace-fail "sys_dep.get_pkgconfig_variable('systemduserunitdir')" "'$out/systemd/user'"
+    substituteInPlace dbus-services/meson.build --replace-fail "dep.get_pkgconfig_variable('session_bus_services_dir')" "'$out/share/dbus-1/services'"
+  '';
+
+  strictDeps = true;
 
   nativeBuildInputs = [
     meson
@@ -164,13 +178,6 @@ stdenv.mkDerivation (finalAttrs: {
     libxcb
   ];
 
-  strictDeps = true;
-
-  dontDropIconThemeCache = true;
-
-  # Fix build with gcc15 (-std=gnu23)
-  env.NIX_CFLAGS_COMPILE = lib.optionalString stdenv.cc.isGNU "-std=gnu17";
-
   mesonFlags = [
     "--buildtype=release"
     (mesonBool "build-tests" false) # disable build tests, which are not working
@@ -186,22 +193,8 @@ stdenv.mkDerivation (finalAttrs: {
     (mesonBool "drm" true)
   ];
 
-  patches = [
-    ./efl-elua.patch
-  ];
-
-  postPatch = ''
-    patchShebangs src/lib/elementary/config_embed
-
-    # fix destination of systemd unit and dbus service
-    substituteInPlace systemd-services/meson.build --replace-fail "sys_dep.get_pkgconfig_variable('systemduserunitdir')" "'$out/systemd/user'"
-    substituteInPlace dbus-services/meson.build --replace-fail "dep.get_pkgconfig_variable('session_bus_services_dir')" "'$out/share/dbus-1/services'"
-  '';
-
-  # bin/edje_cc creates $HOME/.run, which would break build of reverse dependencies.
-  setupHook = writeText "setupHook.sh" ''
-    export HOME="$TEMPDIR"
-  '';
+  # Fix build with gcc15 (-std=gnu23)
+  env.NIX_CFLAGS_COMPILE = lib.optionalString stdenv.cc.isGNU "-std=gnu17";
 
   preConfigure = ''
     # allow ecore_con to find libcurl.so, which is a runtime dependency (it is dlopened)
@@ -232,22 +225,31 @@ stdenv.mkDerivation (finalAttrs: {
     patchelf --add-needed ${libsndfile.out}/lib/libsndfile.so $out/lib/libecore_audio.so
   '';
 
-  passthru.updateScript = directoryListingUpdater { };
-
   __structuredAttrs = true;
+  dontDropIconThemeCache = true;
+
+  # bin/edje_cc creates $HOME/.run, which would break build of reverse dependencies.
+  setupHook = writeText "setupHook.sh" ''
+    export HOME="$TEMPDIR"
+  '';
+
+  passthru.updateScript = directoryListingUpdater { };
 
   meta = {
     description = "Enlightenment foundation libraries";
     homepage = "https://enlightenment.org/";
+
     license = with lib.licenses; [
       bsd2
       lgpl2Only
       lib.licenses.zlib
     ];
-    platforms = lib.platforms.linux;
+
     maintainers = with lib.maintainers; [
       matejc
     ];
+
+    platforms = lib.platforms.linux;
     teams = [ lib.teams.enlightenment ];
   };
 })

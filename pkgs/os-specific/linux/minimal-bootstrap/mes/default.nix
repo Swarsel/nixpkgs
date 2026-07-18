@@ -6,10 +6,10 @@ in
 {
   lib,
   fetchurl,
+  buildPlatform,
   callPackage,
   kaem,
   mescc-tools,
-  buildPlatform,
 }:
 
 # Maintenance note:
@@ -79,21 +79,24 @@ let
     description = "Scheme interpreter and C compiler for bootstrapping";
     homepage = "https://www.gnu.org/software/mes";
     license = lib.licenses.gpl3Plus;
-    teams = [ lib.teams.minimal-bootstrap ];
+
     platforms = [
       "i686-linux"
       "x86_64-linux"
     ];
+
+    teams = [ lib.teams.minimal-bootstrap ];
   };
 
   srcPost =
     kaem.runCommand "${pname}-src-${version}"
       {
+        inherit meta;
+
         outputs = [
           "out"
           "bin"
         ];
-        inherit meta;
       }
       ''
         # Unpack source
@@ -296,6 +299,7 @@ let
     kaem.runCommand "${pname}-m2-libs-${version}"
       {
         inherit pname version;
+        inherit meta;
 
         passthru.tests.get-version =
           result:
@@ -303,8 +307,6 @@ let
             ${result}/bin/mes --version
             mkdir ''${out}
           '';
-
-        inherit meta;
       }
       ''
         LIBDIR=''${out}/lib
@@ -341,6 +343,7 @@ let
     kaem.runCommand "${pname}-${version}"
       {
         inherit pname version;
+        inherit meta;
 
         passthru.tests.get-version =
           result:
@@ -348,8 +351,6 @@ let
             ${result}/bin/mes --version
             mkdir ''${out}
           '';
-
-        inherit meta;
       }
       ''
         mkdir -p ''${out}/bin
@@ -383,5 +384,6 @@ in
     srcPrefix
     nyacc
     ;
+
   inherit compiler libs;
 }

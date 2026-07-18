@@ -1,8 +1,8 @@
 {
   lib,
-  stdenvNoCC,
   fetchzip,
   installFonts,
+  stdenvNoCC,
 }:
 
 let
@@ -13,26 +13,28 @@ stdenvNoCC.mkDerivation {
   pname = "route159";
   version = "${majorVersion}.${minorVersion}";
 
-  outputs = [
-    "out"
-    "webfont"
-  ];
-
   src = fetchzip {
     url = "https://dotcolon.net/files/fonts/route159_${majorVersion}${minorVersion}.zip";
     hash = "sha256-1InyBW1LGbp/IU/ql9mvT14W3MTxJdWThFwRH6VHpTU=";
     stripRoot = false;
   };
 
+  outputs = [
+    "out"
+    "webfont"
+  ];
+
   nativeBuildInputs = [ installFonts ];
 
   meta = {
-    homepage = "https://dotcolon.net/font/route159/";
     description = "Weighted sans serif font";
-    platforms = lib.platforms.all;
+    homepage = "https://dotcolon.net/font/route159/";
+    license = lib.licenses.ofl;
+
     maintainers = with lib.maintainers; [
       minijackson
     ];
-    license = lib.licenses.ofl;
+
+    platforms = lib.platforms.all;
   };
 }

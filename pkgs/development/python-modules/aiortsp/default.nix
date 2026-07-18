@@ -1,24 +1,20 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # build-system
-  setuptools,
-
+  buildPythonPackage,
   # dependencies
   dpkt,
-
   # tests
   mock,
-  pytestCheckHook,
   pytest-asyncio,
+  pytestCheckHook,
+  # build-system
+  setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "aiortsp";
   version = "1.4.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "marss";
@@ -28,7 +24,6 @@ buildPythonPackage rec {
   };
 
   nativeBuildInputs = [ setuptools ];
-
   propagatedBuildInputs = [ dpkt ];
 
   nativeCheckInputs = [
@@ -42,6 +37,7 @@ buildPythonPackage rec {
     "tests/test_connection.py"
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "aiortsp" ];
 
   meta = {

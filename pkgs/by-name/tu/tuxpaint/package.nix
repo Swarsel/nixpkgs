@@ -2,39 +2,39 @@
   lib,
   stdenv,
   fetchurl,
-  gettext,
-  gperf,
-  imagemagick,
-  makeWrapper,
-  pkg-config,
   SDL2,
+  SDL2_Pango,
+  SDL2_gfx,
+  SDL2_image,
+  SDL2_mixer,
+  SDL2_ttf,
   cairo,
   freetype,
   fribidi,
+  gettext,
+  gperf,
+  imagemagick,
   libimagequant,
   libpaper,
   libpng,
   librsvg,
   libxml2,
-  pango,
-  SDL2_gfx,
-  SDL2_image,
-  SDL2_mixer,
-  SDL2_Pango,
-  SDL2_ttf,
+  makeWrapper,
   netpbm,
+  pango,
+  pkg-config,
 }:
 
 let
   stamps = fetchurl {
-    url = "mirror://sourceforge/project/tuxpaint/tuxpaint-stamps/2025-05-26/tuxpaint-stamps-2025.05.26.tar.gz";
     hash = "sha256-CfSin4A2yTpkwoE046+u+0udlaCaceaPt1N/PF+ClJ8=";
+    url = "mirror://sourceforge/project/tuxpaint/tuxpaint-stamps/2025-05-26/tuxpaint-stamps-2025.05.26.tar.gz";
   };
 
 in
 stdenv.mkDerivation (finalAttrs: {
-  version = "0.9.35";
   pname = "tuxpaint";
+  version = "0.9.35";
 
   src = fetchurl {
     url = "mirror://sourceforge/tuxpaint/${finalAttrs.version}/tuxpaint-${finalAttrs.version}.tar.gz";
@@ -77,16 +77,12 @@ stdenv.mkDerivation (finalAttrs: {
     SDL2_ttf
   ];
 
-  hardeningDisable = [ "format" ];
-
   makeFlags = [
     "CC=${stdenv.cc.targetPrefix}cc"
     "COMPLETIONDIR=$(out)/share/bash-completion/completions"
     "GPERF=${lib.getExe gperf}"
     "PREFIX=$(out)"
   ];
-
-  enableParallelBuilding = true;
 
   postInstall = ''
     # Install desktop file
@@ -106,6 +102,9 @@ stdenv.mkDerivation (finalAttrs: {
     wrapProgram $out/bin/tuxpaint-import \
       --prefix PATH : ${lib.makeBinPath [ netpbm ]}
   '';
+
+  enableParallelBuilding = true;
+  hardeningDisable = [ "format" ];
 
   meta = {
     description = "Open Source Drawing Software for Children";

@@ -2,9 +2,8 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  fetchDebianPatch,
   cmake,
-  pkg-config,
+  fetchDebianPatch,
   fluidsynth,
   fmt,
   freetype,
@@ -14,6 +13,7 @@
   libsndfile,
   libvorbis,
   mpg123,
+  pkg-config,
   qt6,
 }:
 
@@ -33,8 +33,8 @@ stdenv.mkDerivation (finalAttrs: {
       pname = "gargoyle-free";
       version = "2023.1+dfsg";
       debianRevision = "4";
-      patch = "ftbfs_gcc14.patch";
       hash = "sha256-eMx/RlUpq5Ez+1L8VZo40Y3h2ZKkqiQEmKTlkZRMXnI=";
+      patch = "ftbfs_gcc14.patch";
     })
   ];
 
@@ -78,11 +78,11 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   meta = {
+    description = "Interactive fiction interpreter GUI";
     homepage = "http://ccxvii.net/gargoyle/";
     license = lib.licenses.gpl2Plus;
-    description = "Interactive fiction interpreter GUI";
-    mainProgram = "gargoyle";
-    platforms = lib.platforms.unix;
     maintainers = [ ];
+    platforms = lib.platforms.unix;
+    mainProgram = "gargoyle";
   };
 })

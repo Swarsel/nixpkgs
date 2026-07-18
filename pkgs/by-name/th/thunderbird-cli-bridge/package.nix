@@ -1,15 +1,13 @@
 {
   lib,
-  buildNpmPackage,
   fetchFromGitHub,
+  buildNpmPackage,
   nix-update-script,
 }:
 
 buildNpmPackage (finalAttrs: {
   pname = "thunderbird-cli-bridge";
   version = "1.0.2";
-
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "vitalio-sh";
@@ -18,10 +16,6 @@ buildNpmPackage (finalAttrs: {
     hash = "sha256-jtIXOHjijFkwdh5FWrqdSfEwbEmWQud8Qr2jsTEwJts=";
   };
 
-  forceEmptyCache = true;
-  dontNpmBuild = true;
-
-  npmWorkspace = "bridge";
   npmDepsHash = "sha256-ixzfebmKITD1lnPNQq765S1f+i7xBTTWWdZoJOqY7qg=";
 
   # TODO: revisit this when https://github.com/NixOS/nixpkgs/pull/333759 has landed
@@ -34,6 +28,10 @@ buildNpmPackage (finalAttrs: {
     rm -rf $out/lib/node_modules/thunderbird-cli/node_modules/thunderbird-cli-mcp
   '';
 
+  __structuredAttrs = true;
+  dontNpmBuild = true;
+  forceEmptyCache = true;
+  npmWorkspace = "bridge";
   passthru.updateScript = nix-update-script { };
 
   meta = {
@@ -42,7 +40,7 @@ buildNpmPackage (finalAttrs: {
     changelog = "https://github.com/vitalio-sh/thunderbird-cli/blob/${finalAttrs.src.rev}/CHANGELOG.md";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ drupol ];
-    mainProgram = "tb-bridge";
     platforms = lib.platforms.all;
+    mainProgram = "tb-bridge";
   };
 })

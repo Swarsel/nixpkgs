@@ -26,29 +26,32 @@
 buildPythonPackage rec {
   pname = "python-miio";
   version = "0.5.12";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
     hash = "sha256-BJw1Gg3FO2R6WWKjkrpxDN4fTMTug5AIj0SNq1gEbBY=";
   };
 
-  pythonRelaxDeps = [ "defusedxml" ];
-
-  build-system = [ poetry-core ];
-
   patches = [
     (fetchpatch {
+      hash = "sha256-Os9vCSKyieCqHs63oX6gcLrtv1N7hbX5WvEurelEp8w=";
       # Fix pytest 7.2 compat
       url = "https://github.com/rytilahti/python-miio/commit/67d9d771d04d51f5bd97f361ca1c15ae4a18c274.patch";
-      hash = "sha256-Os9vCSKyieCqHs63oX6gcLrtv1N7hbX5WvEurelEp8w=";
     })
     (fetchpatch {
+      hash = "sha256-Zydv3xqCliA/oAnjNmqh0vDrlZFPcTAIyW6vIZzijZY=";
       # Python 3.13 compat
       url = "https://github.com/rytilahti/python-miio/commit/0aa4df3ab1e47d564c8312016fbcfb3a9fc06c6c.patch";
-      hash = "sha256-Zydv3xqCliA/oAnjNmqh0vDrlZFPcTAIyW6vIZzijZY=";
     })
   ];
+
+  nativeCheckInputs = [
+    pytest-asyncio
+    pytest-mock
+    pytestCheckHook
+  ];
+
+  build-system = [ poetry-core ];
 
   dependencies = [
     android-backup
@@ -67,13 +70,9 @@ buildPythonPackage rec {
     zeroconf
   ];
 
-  nativeCheckInputs = [
-    pytest-asyncio
-    pytest-mock
-    pytestCheckHook
-  ];
-
+  pyproject = true;
   pythonImportsCheck = [ "miio" ];
+  pythonRelaxDeps = [ "defusedxml" ];
 
   meta = {
     description = "Python library for interfacing with Xiaomi smart appliances";

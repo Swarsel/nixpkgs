@@ -1,8 +1,8 @@
 {
+  lib,
+  fetchFromGitHub,
   buildPythonPackage,
   cacert,
-  fetchFromGitHub,
-  lib,
   loguru,
   pyreqwest,
   pytest-asyncio,
@@ -17,7 +17,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "prowlpy";
   version = "2.0.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "OMEGARAZER";
@@ -25,6 +24,15 @@ buildPythonPackage (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-92r1E/dsXLRzaLXQdahXAPCmSG4T1Ihh/eDFDG3GlmY=";
   };
+
+  nativeCheckInputs = [
+    cacert
+    pytest-asyncio
+    pytest-cov-stub
+    pytestCheckHook
+    respx
+  ]
+  ++ lib.concatAttrValues finalAttrs.passthru.optional-dependencies;
 
   build-system = [ setuptools ];
 
@@ -40,26 +48,17 @@ buildPythonPackage (finalAttrs: {
     ];
   };
 
-  pythonImportsCheck = [ "prowlpy" ];
-
-  nativeCheckInputs = [
-    cacert
-    pytest-asyncio
-    pytest-cov-stub
-    pytestCheckHook
-    respx
-  ]
-  ++ lib.concatAttrValues finalAttrs.passthru.optional-dependencies;
-
+  pyproject = true;
   # tests fail without this
   pytestFlags = [ "-v" ];
+  pythonImportsCheck = [ "prowlpy" ];
 
   meta = {
-    changelog = "https://github.com/OMEGARAZER/prowlpy/blob/${finalAttrs.src.tag}/CHANGELOG.md";
     description = "Send push notifications to iPhones using the Prowl API";
     homepage = "https://github.com/OMEGARAZER/prowlpy";
+    changelog = "https://github.com/OMEGARAZER/prowlpy/blob/${finalAttrs.src.tag}/CHANGELOG.md";
     license = lib.licenses.gpl3Only;
-    mainProgram = "prowlpy";
     maintainers = [ lib.maintainers.dotlambda ];
+    mainProgram = "prowlpy";
   };
 })

@@ -6,13 +6,11 @@ let
   inherit (pkgs) buildPackages callPackage;
 
   libconfig-generator = buildPackages.rustPlatform.buildRustPackage {
-    name = "libconfig-generator";
     version = "0.1.0";
     src = ./src;
-
-    passthru.updateScript = ./update.sh;
-
     cargoLock.lockFile = ./src/Cargo.lock;
+    name = "libconfig-generator";
+    passthru.updateScript = ./update.sh;
   };
 
   libconfig-validator =
@@ -34,6 +32,81 @@ in
     {
       inherit generator;
 
+      generate =
+        name: value:
+        callPackage
+          (
+            {
+              libconfig-generator,
+              libconfig-validator,
+              stdenvNoCC,
+              writeText,
+            }:
+            stdenvNoCC.mkDerivation rec {
+              inherit name;
+              strictDeps = true;
+              nativeBuildInputs = [ libconfig-generator ];
+
+              buildPhase = ''
+                runHook preBuild
+                libconfig-generator < $jsonPath > output.cfg
+                runHook postBuild
+              '';
+
+              doCheck = true;
+              nativeCheckInputs = [ libconfig-validator ];
+
+              checkPhase = ''
+                runHook preCheck
+                libconfig-validator output.cfg
+                runHook postCheck
+              '';
+
+              installPhase = ''
+                runHook preInstall
+                mv output.cfg $out
+                runHook postInstall
+              '';
+
+              dontUnpack = true;
+              json = builtins.toJSON value;
+              passAsFile = [ "json" ];
+              preferLocalBuild = true;
+              passthru.json = writeText "${name}.json" json;
+            }
+          )
+          {
+            libconfig-generator = generator;
+            libconfig-validator = validator;
+          };
+
+      lib = {
+        mkArray = value: {
+          inherit value;
+          _type = "array";
+        };
+
+        mkFloat = value: {
+          inherit value;
+          _type = "float";
+        };
+
+        mkHex = value: {
+          inherit value;
+          _type = "hex";
+        };
+
+        mkList = value: {
+          inherit value;
+          _type = "list";
+        };
+
+        mkOctal = value: {
+          inherit value;
+          _type = "octal";
+        };
+      };
+
       type =
         with lib.types;
         let
@@ -52,77 +125,5 @@ in
             };
         in
         attrsOf valueType;
-
-      lib = {
-        mkHex = value: {
-          _type = "hex";
-          inherit value;
-        };
-        mkOctal = value: {
-          _type = "octal";
-          inherit value;
-        };
-        mkFloat = value: {
-          _type = "float";
-          inherit value;
-        };
-        mkArray = value: {
-          _type = "array";
-          inherit value;
-        };
-        mkList = value: {
-          _type = "list";
-          inherit value;
-        };
-      };
-
-      generate =
-        name: value:
-        callPackage
-          (
-            {
-              stdenvNoCC,
-              libconfig-generator,
-              libconfig-validator,
-              writeText,
-            }:
-            stdenvNoCC.mkDerivation rec {
-              inherit name;
-
-              dontUnpack = true;
-              preferLocalBuild = true;
-
-              json = builtins.toJSON value;
-              passAsFile = [ "json" ];
-
-              strictDeps = true;
-              nativeBuildInputs = [ libconfig-generator ];
-              buildPhase = ''
-                runHook preBuild
-                libconfig-generator < $jsonPath > output.cfg
-                runHook postBuild
-              '';
-
-              doCheck = true;
-              nativeCheckInputs = [ libconfig-validator ];
-              checkPhase = ''
-                runHook preCheck
-                libconfig-validator output.cfg
-                runHook postCheck
-              '';
-
-              installPhase = ''
-                runHook preInstall
-                mv output.cfg $out
-                runHook postInstall
-              '';
-
-              passthru.json = writeText "${name}.json" json;
-            }
-          )
-          {
-            libconfig-generator = generator;
-            libconfig-validator = validator;
-          };
     };
 }

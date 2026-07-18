@@ -1,13 +1,9 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # build-system
-  setuptools,
-
   # dependencies
   astropy,
+  buildPythonPackage,
   click,
   frictionless,
   matplotlib,
@@ -16,21 +12,20 @@
   pillow,
   pybtex,
   pymupdf,
+  # tests
+  pytestCheckHook,
   pyyaml,
   scipy,
+  # build-system
+  setuptools,
   svg-path,
   svgpathtools,
   svgwrite,
-
-  # tests
-  pytestCheckHook,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "svgdigitizer";
   version = "0.14.4";
-  pyproject = true;
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "echemdb";
@@ -39,13 +34,17 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-sDMSzoXa8RnygFjveh1SrF+bFit7OMQh2kbiZ478cM4=";
   };
 
-  build-system = [
-    setuptools
+  # https://github.com/echemdb/svgdigitizer/issues/252
+  env.MPLBACKEND = "Agg";
+
+  nativeCheckInputs = [
+    pytestCheckHook
   ];
 
-  # https://github.com/echemdb/svgdigitizer/issues/298
-  pythonRelaxDeps = [
-    "astropy"
+  __structuredAttrs = true;
+
+  build-system = [
+    setuptools
   ];
 
   dependencies = [
@@ -64,24 +63,26 @@ buildPythonPackage (finalAttrs: {
     svgpathtools
     svgwrite
   ];
-  # https://github.com/echemdb/svgdigitizer/issues/252
-  env.MPLBACKEND = "Agg";
-
-  nativeCheckInputs = [
-    pytestCheckHook
-  ];
-  pytestFlags = [
-    "--doctest-modules"
-    "svgdigitizer"
-  ];
 
   disabledTests = [
     # test tries to connect to doi.org
     "svgdigitizer.pdf.Pdf.bibliographic_entry"
   ];
 
+  pyproject = true;
+
+  pytestFlags = [
+    "--doctest-modules"
+    "svgdigitizer"
+  ];
+
   pythonImportsCheck = [
     "svgdigitizer"
+  ];
+
+  # https://github.com/echemdb/svgdigitizer/issues/298
+  pythonRelaxDeps = [
+    "astropy"
   ];
 
   meta = {

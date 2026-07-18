@@ -17,8 +17,8 @@ in
   };
 
   config = lib.mkIf cfg.enable {
-    systemd.packages = [ cfg.package ];
     services.dbus.packages = [ cfg.package ];
+    systemd.packages = [ cfg.package ];
   };
 
   meta.maintainers = with lib.maintainers; [ jluttine ];

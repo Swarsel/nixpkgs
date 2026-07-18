@@ -27,11 +27,6 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     yarn-berry.yarnBerryConfigHook
   ];
 
-  offlineCache = yarn-berry.fetchYarnBerryDeps {
-    inherit (finalAttrs) src patches;
-    hash = "sha256-Ztb69kAGYteVevzzFOx+62LI2i4iQakI4Fwqb6G2vuM=";
-  };
-
   buildPhase = ''
     runHook preBuild
 
@@ -47,6 +42,11 @@ stdenvNoCC.mkDerivation (finalAttrs: {
 
     runHook postInstall
   '';
+
+  offlineCache = yarn-berry.fetchYarnBerryDeps {
+    inherit (finalAttrs) src patches;
+    hash = "sha256-Ztb69kAGYteVevzzFOx+62LI2i4iQakI4Fwqb6G2vuM=";
+  };
 
   passthru.entrypoint = "lovelace-horizon-card.js";
 

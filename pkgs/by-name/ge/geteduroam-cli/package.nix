@@ -1,9 +1,9 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
-  versionCheckHook,
+  buildGoModule,
   nix-update-script,
+  versionCheckHook,
 }:
 buildGoModule (finalAttrs: {
   pname = "geteduroam-cli";
@@ -17,16 +17,17 @@ buildGoModule (finalAttrs: {
   };
 
   vendorHash = "sha256-HYJ71pk1a8EaPycmbHmMnQeb42dt7M9NvK/1GYhZE0c=";
+  doInstallCheck = true;
+
+  nativeInstallCheckInputs = [
+    versionCheckHook
+  ];
 
   subPackages = [
     "cmd/geteduroam-cli"
   ];
 
-  nativeInstallCheckInputs = [
-    versionCheckHook
-  ];
   versionCheckProgram = "${placeholder "out"}/bin/geteduroam-cli";
-  doInstallCheck = true;
 
   passthru = {
     updateScript = nix-update-script { };
@@ -34,11 +35,11 @@ buildGoModule (finalAttrs: {
 
   meta = {
     description = "CLI client to configure eduroam";
-    mainProgram = "geteduroam-cli";
     homepage = "https://github.com/geteduroam/linux-app";
+    changelog = "https://github.com/geteduroam/linux-app/releases/tag/${finalAttrs.version}";
     license = lib.licenses.bsd3;
     maintainers = with lib.maintainers; [ viperML ];
     platforms = lib.platforms.linux;
-    changelog = "https://github.com/geteduroam/linux-app/releases/tag/${finalAttrs.version}";
+    mainProgram = "geteduroam-cli";
   };
 })

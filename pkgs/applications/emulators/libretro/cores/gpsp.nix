@@ -4,7 +4,6 @@
   mkLibretroCore,
 }:
 mkLibretroCore {
-  core = "gpsp";
   version = "0-unstable-2026-06-29";
 
   src = fetchFromGitHub {
@@ -14,6 +13,7 @@ mkLibretroCore {
     hash = "sha256-ppdwcE66igBarGAiupKB8pkRY8y5x/EPobiqJz93plA=";
   };
 
+  core = "gpsp";
   makefile = "Makefile";
 
   meta = {

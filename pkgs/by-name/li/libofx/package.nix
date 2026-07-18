@@ -2,15 +2,15 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  opensp,
-  pkg-config,
-  libxml2,
-  curl,
   autoconf,
   automake,
-  libtool,
+  curl,
   gengetopt,
   libiconv,
+  libtool,
+  libxml2,
+  opensp,
+  pkg-config,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -24,8 +24,6 @@ stdenv.mkDerivation (finalAttrs: {
     sha256 = "sha256-KOQrEAt1jHrOpPQ7QbGUADe0i7sQXNH2fblPRzT0EIg=";
   };
 
-  preConfigure = "./autogen.sh";
-  configureFlags = [ "--with-opensp-includes=${opensp}/include/OpenSP" ];
   nativeBuildInputs = [
     pkg-config
     libtool
@@ -33,6 +31,7 @@ stdenv.mkDerivation (finalAttrs: {
     automake
     gengetopt
   ];
+
   buildInputs = [
     opensp
     libxml2
@@ -40,11 +39,14 @@ stdenv.mkDerivation (finalAttrs: {
   ]
   ++ lib.optional stdenv.hostPlatform.isDarwin libiconv;
 
+  configureFlags = [ "--with-opensp-includes=${opensp}/include/OpenSP" ];
+  preConfigure = "./autogen.sh";
+
   meta = {
     description = "Opensource implementation of the Open Financial eXchange specification";
     homepage = "https://libofx.sourceforge.net/";
     license = lib.licenses.gpl2Only;
-    platforms = lib.platforms.unix;
     maintainers = [ ];
+    platforms = lib.platforms.unix;
   };
 })

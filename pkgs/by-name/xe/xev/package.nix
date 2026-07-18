@@ -2,11 +2,11 @@
   lib,
   stdenv,
   fetchurl,
-  pkg-config,
-  xorgproto,
   libx11,
   libxrandr,
+  pkg-config,
   writeScript,
+  xorgproto,
 }:
 stdenv.mkDerivation (finalAttrs: {
   pname = "xev";
@@ -19,6 +19,7 @@ stdenv.mkDerivation (finalAttrs: {
 
   strictDeps = true;
   nativeBuildInputs = [ pkg-config ];
+
   buildInputs = [
     xorgproto
     libx11
@@ -38,6 +39,7 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "X event monitor";
+
     longDescription = ''
       xev creates a window and then asks the X server to send it X11 events whenever anything
       happens to the window (such as it being moved, resized, typed in, clicked in, etc.).
@@ -45,10 +47,11 @@ stdenv.mkDerivation (finalAttrs: {
       occur and to display the information that they contain; it is essentially a debugging and
       development tool, and should not be needed in normal usage.
     '';
+
     homepage = "https://gitlab.freedesktop.org/xorg/app/xev";
     license = lib.licenses.x11;
-    mainProgram = "xev";
     maintainers = with lib.maintainers; [ aiyion ];
     platforms = lib.platforms.unix;
+    mainProgram = "xev";
   };
 })

@@ -2,14 +2,14 @@
   lib,
   buildFHSEnv,
   callPackage,
-  makeDesktopItem,
-  runtimeShell,
-  runCommand,
-  unstick,
-  quartus-prime-lite,
   libfaketime,
+  makeDesktopItem,
   pkgsi686Linux,
-  withQuesta ? true,
+  quartus-prime-lite,
+  runCommand,
+  runtimeShell,
+  unstick,
+  extraProfile ? "",
   supportedDevices ? [
     "Arria II"
     "Cyclone V"
@@ -19,81 +19,24 @@
     "MAX 10 FPGA"
   ],
   unwrapped ? callPackage ./quartus.nix { inherit unstick supportedDevices withQuesta; },
-  extraProfile ? "",
+  withQuesta ? true,
 }:
 
 let
   desktopItem = makeDesktopItem {
-    name = "quartus-prime-lite";
-    exec = "quartus";
-    icon = "quartus";
-    desktopName = "Quartus";
-    genericName = "Quartus Prime";
     categories = [ "Development" ];
+    desktopName = "Quartus";
+    exec = "quartus";
+    genericName = "Quartus Prime";
+    icon = "quartus";
+    name = "quartus-prime-lite";
   };
 in
 # I think questa_fse/linux/vlm checksums itself, so use FHSUserEnv instead of `patchelf`
 buildFHSEnv rec {
-  pname = "quartus-prime-lite"; # wrapped
   inherit (unwrapped) version;
-
-  targetPkgs =
-    pkgs: with pkgs; [
-      (runCommand "ld-lsb-compat" { } (
-        ''
-          mkdir -p "$out/lib"
-          ln -sr "${glibc}/lib/ld-linux-x86-64.so.2" "$out/lib/ld-lsb-x86-64.so.3"
-        ''
-        + lib.optionalString withQuesta ''
-          ln -sr "${pkgsi686Linux.glibc}/lib/ld-linux.so.2" "$out/lib/ld-lsb.so.3"
-        ''
-      ))
-      # quartus requirements
-      glib
-      libice
-      libsm
-      libxau
-      libxdmcp
-      libxscrnsaver
-      libudev0-shim
-      bzip2
-      brotli
-      expat
-      dbus
-      # qsys requirements
-      libxtst
-      libxi
-      dejavu_fonts
-      gnumake
-    ];
-
-  # Also support 32-bit executables used by simulator.
-  multiArch = withQuesta;
-
-  # these libs are installed as 64 bit, plus as 32 bit when multiArch is true
-  multiPkgs =
-    pkgs:
-    with pkgs;
-    let
-      # This seems ugly - can we override `libpng = libpng12` for all `pkgs`?
-      freetype = pkgs.freetype.override { libpng = libpng12; };
-      fontconfig = pkgs.fontconfig.override { inherit freetype; };
-      libxft = pkgs.libxft.override { inherit freetype fontconfig; };
-    in
-    [
-      # questa requirements
-      libxml2
-      ncurses5
-      unixodbc
-      libxft
-      # common requirements
-      freetype
-      fontconfig
-      libx11
-      libxext
-      libxrender
-      libxcrypt-legacy
-    ];
+  inherit (unwrapped) meta;
+  pname = "quartus-prime-lite"; # wrapped
 
   extraInstallCommands = ''
     mkdir -p $out/share/applications $out/share/icons/hicolor/64x64/apps
@@ -142,6 +85,34 @@ buildFHSEnv rec {
     ln --symbolic --relative --target-directory ./bin ''${progs_wrapped[@]}
   '';
 
+  # Also support 32-bit executables used by simulator.
+  multiArch = withQuesta;
+
+  # these libs are installed as 64 bit, plus as 32 bit when multiArch is true
+  multiPkgs =
+    pkgs:
+    with pkgs;
+    let
+      # This seems ugly - can we override `libpng = libpng12` for all `pkgs`?
+      freetype = pkgs.freetype.override { libpng = libpng12; };
+      fontconfig = pkgs.fontconfig.override { inherit freetype; };
+      libxft = pkgs.libxft.override { inherit freetype fontconfig; };
+    in
+    [
+      # questa requirements
+      libxml2
+      ncurses5
+      unixodbc
+      libxft
+      # common requirements
+      freetype
+      fontconfig
+      libx11
+      libxext
+      libxrender
+      libxcrypt-legacy
+    ];
+
   profile = ''
     # LD_PRELOAD fixes issues in the licensing system that cause memory corruption and crashes when
     # starting most operations in many containerized environments, including WSL2, Docker, and LXC
@@ -177,8 +148,39 @@ buildFHSEnv rec {
   # Run the wrappers directly, instead of going via bash.
   runScript = "";
 
+  targetPkgs =
+    pkgs: with pkgs; [
+      (runCommand "ld-lsb-compat" { } (
+        ''
+          mkdir -p "$out/lib"
+          ln -sr "${glibc}/lib/ld-linux-x86-64.so.2" "$out/lib/ld-lsb-x86-64.so.3"
+        ''
+        + lib.optionalString withQuesta ''
+          ln -sr "${pkgsi686Linux.glibc}/lib/ld-linux.so.2" "$out/lib/ld-lsb.so.3"
+        ''
+      ))
+      # quartus requirements
+      glib
+      libice
+      libsm
+      libxau
+      libxdmcp
+      libxscrnsaver
+      libudev0-shim
+      bzip2
+      brotli
+      expat
+      dbus
+      # qsys requirements
+      libxtst
+      libxi
+      dejavu_fonts
+      gnumake
+    ];
+
   passthru = {
     inherit unwrapped;
+
     tests = {
       buildSof =
         runCommand "quartus-prime-lite-test-build-sof"
@@ -214,6 +216,7 @@ buildFHSEnv rec {
 
             sha1sum mydesign.sof > "$out"
           '';
+
       questaEncryptedModel =
         runCommand "quartus-prime-lite-test-questa-encrypted-model"
           {
@@ -225,6 +228,4 @@ buildFHSEnv rec {
           '';
     };
   };
-
-  inherit (unwrapped) meta;
 }

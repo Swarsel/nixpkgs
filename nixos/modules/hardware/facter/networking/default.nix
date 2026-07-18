@@ -31,6 +31,7 @@ let
   perInterfaceConfig = lib.listToAttrs (
     lib.map (name: {
       inherit name;
+
       value = {
         useDHCP = lib.mkDefault true;
       };
@@ -50,20 +51,22 @@ in
     };
 
     interfaces = lib.mkOption {
-      type = lib.types.listOf lib.types.str;
       default = detectedInterfaceNames;
       defaultText = lib.literalExpression "automatically detected from facter report";
       description = "List of network interface names to configure with DHCP. Defaults to auto-detected physical interfaces.";
+
       example = [
         "eth0"
         "wlan0"
       ];
+
+      type = lib.types.listOf lib.types.str;
     };
   };
-  config = lib.mkIf (config.hardware.facter.enable && config.hardware.facter.detected.dhcp.enable) {
-    networking.useDHCP = lib.mkDefault true;
 
+  config = lib.mkIf (config.hardware.facter.enable && config.hardware.facter.detected.dhcp.enable) {
     # Per-interface DHCP configuration
     networking.interfaces = perInterfaceConfig;
+    networking.useDHCP = lib.mkDefault true;
   };
 }

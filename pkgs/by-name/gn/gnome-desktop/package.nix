@@ -2,29 +2,29 @@
   lib,
   stdenv,
   fetchurl,
-  replaceVars,
-  pkg-config,
-  libxslt,
-  ninja,
+  bubblewrap,
+  docbook-xsl-nons,
+  gettext,
+  glib,
   gnome,
+  gobject-introspection,
+  gsettings-desktop-schemas,
+  gtk-doc,
   gtk3,
   gtk4,
-  glib,
-  gettext,
-  libxml2,
-  xkeyboard_config,
-  libxkbcommon,
   isocodes,
-  meson,
-  wayland,
   libseccomp,
+  libxkbcommon,
+  libxml2,
+  libxslt,
+  meson,
+  ninja,
+  pkg-config,
+  replaceVars,
   systemd,
   udev,
-  bubblewrap,
-  gobject-introspection,
-  gtk-doc,
-  docbook-xsl-nons,
-  gsettings-desktop-schemas,
+  wayland,
+  xkeyboard_config,
   withSystemd ? lib.meta.availableOn stdenv.hostPlatform systemd,
 }:
 
@@ -32,21 +32,21 @@ stdenv.mkDerivation (finalAttrs: {
   pname = "gnome-desktop";
   version = "44.5";
 
+  src = fetchurl {
+    url = "mirror://gnome/sources/gnome-desktop/${lib.versions.major finalAttrs.version}/gnome-desktop-${finalAttrs.version}.tar.xz";
+    sha256 = "sha256-IOCZWm46A+jBAmxaJ7w/Reaf/MOSrXQ9yrYQelQdIy8=";
+  };
+
   outputs = [
     "out"
     "dev"
     "devdoc"
   ];
 
-  src = fetchurl {
-    url = "mirror://gnome/sources/gnome-desktop/${lib.versions.major finalAttrs.version}/gnome-desktop-${finalAttrs.version}.tar.xz";
-    sha256 = "sha256-IOCZWm46A+jBAmxaJ7w/Reaf/MOSrXQ9yrYQelQdIy8=";
-  };
-
   patches = lib.optionals stdenv.hostPlatform.isLinux [
     (replaceVars ./bubblewrap-paths.patch {
-      bubblewrap_bin = "${bubblewrap}/bin/bwrap";
       inherit (builtins) storeDir;
+      bubblewrap_bin = "${bubblewrap}/bin/bwrap";
     })
   ];
 
@@ -105,10 +105,12 @@ stdenv.mkDerivation (finalAttrs: {
   meta = {
     description = "Library with common API for various GNOME modules";
     homepage = "https://gitlab.gnome.org/GNOME/gnome-desktop";
+
     license = with lib.licenses; [
       gpl2Plus
       lgpl2Plus
     ];
+
     platforms = lib.platforms.unix;
     badPlatforms = lib.platforms.darwin;
     teams = [ lib.teams.gnome ];

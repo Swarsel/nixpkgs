@@ -1,10 +1,10 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
   bash,
-  wget,
   makeWrapper,
+  wget,
 }:
 
 stdenv.mkDerivation {
@@ -18,17 +18,20 @@ stdenv.mkDerivation {
     sha256 = "sha256-RlbNIDRuf4sFS2zw4fIkTu0mB7xgJfPMDIk1I3UYXLk=";
   };
 
-  strictDeps = true;
-  buildInputs = [
-    bash
-    wget
-  ];
-  nativeBuildInputs = [ makeWrapper ];
   postPatch = ''
     patchShebangs --host ipfetch
     # Not only does `/usr` have to be replaced but also `/flags` needs to be added because with Nix the script is broken without this. The `/flags` is somehow not needed if you install via the install script in the source repository.
     substituteInPlace ./ipfetch --replace-fail /usr/share/ipfetch $out/usr/share/ipfetch/flags
   '';
+
+  strictDeps = true;
+  nativeBuildInputs = [ makeWrapper ];
+
+  buildInputs = [
+    bash
+    wget
+  ];
+
   installPhase = ''
     mkdir -p $out/bin
     mkdir -p $out/usr/share/ipfetch/
@@ -44,10 +47,10 @@ stdenv.mkDerivation {
 
   meta = {
     description = "Neofetch but for ip addresses";
-    mainProgram = "ipfetch";
     homepage = "https://github.com/trakBan/ipfetch";
     license = lib.licenses.gpl3Only;
-    platforms = lib.platforms.all;
     maintainers = with lib.maintainers; [ annaaurora ];
+    platforms = lib.platforms.all;
+    mainProgram = "ipfetch";
   };
 }

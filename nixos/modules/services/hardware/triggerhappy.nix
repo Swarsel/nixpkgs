@@ -13,16 +13,16 @@ let
   configFile = pkgs.writeText "triggerhappy.conf" ''
     ${lib.concatMapStringsSep "\n" (
       {
-        keys,
-        event,
         cmd,
+        event,
+        keys,
         ...
       }:
       "${lib.concatMapStringsSep "+" (x: "KEY_" + x) keys} ${
         toString
           {
-            press = 1;
             hold = 2;
+            press = 1;
             release = 0;
           }
           .${event}
@@ -36,24 +36,25 @@ let
     {
       options = {
 
-        keys = lib.mkOption {
-          type = lib.types.listOf lib.types.str;
-          description = "List of keys to match.  Key names as defined in linux/input-event-codes.h";
+        cmd = lib.mkOption {
+          description = "What to run.";
+          type = lib.types.str;
         };
 
         event = lib.mkOption {
+          default = "press";
+          description = "Event to match.";
+
           type = lib.types.enum [
             "press"
             "hold"
             "release"
           ];
-          default = "press";
-          description = "Event to match.";
         };
 
-        cmd = lib.mkOption {
-          type = lib.types.str;
-          description = "What to run.";
+        keys = lib.mkOption {
+          description = "List of keys to match.  Key names as defined in linux/input-event-codes.h";
+          type = lib.types.listOf lib.types.str;
         };
 
       };
@@ -70,39 +71,48 @@ in
     services.triggerhappy = {
 
       enable = lib.mkOption {
-        type = lib.types.bool;
         default = false;
+
         description = ''
           Whether to enable the {command}`triggerhappy` hotkey daemon.
         '';
-      };
 
-      user = lib.mkOption {
-        type = lib.types.str;
-        default = "nobody";
-        example = "root";
-        description = ''
-          User account under which {command}`triggerhappy` runs.
-        '';
+        type = lib.types.bool;
       };
 
       bindings = lib.mkOption {
-        type = lib.types.listOf (lib.types.submodule bindingCfg);
         default = [ ];
-        example = lib.literalExpression ''
-          [ { keys = ["PLAYPAUSE"];  cmd = "''${lib.getExe pkgs.mpc} -q toggle"; } ]
-        '';
+
         description = ''
           Key bindings for {command}`triggerhappy`.
         '';
+
+        example = lib.literalExpression ''
+          [ { keys = ["PLAYPAUSE"];  cmd = "''${lib.getExe pkgs.mpc} -q toggle"; } ]
+        '';
+
+        type = lib.types.listOf (lib.types.submodule bindingCfg);
       };
 
       extraConfig = lib.mkOption {
-        type = lib.types.lines;
         default = "";
+
         description = ''
           Literal contents to append to the end of {command}`triggerhappy` configuration file.
         '';
+
+        type = lib.types.lines;
+      };
+
+      user = lib.mkOption {
+        default = "nobody";
+
+        description = ''
+          User account under which {command}`triggerhappy` runs.
+        '';
+
+        example = "root";
+        type = lib.types.str;
       };
 
     };
@@ -113,33 +123,36 @@ in
 
   config = lib.mkIf cfg.enable {
 
-    systemd.sockets.triggerhappy = {
-      description = "Triggerhappy Socket";
-      wantedBy = [ "sockets.target" ];
-      socketConfig.ListenDatagram = socket;
-    };
-
-    systemd.services.triggerhappy = {
-      wantedBy = [ "multi-user.target" ];
-      description = "Global hotkey daemon";
-      documentation = [ "man:thd(1)" ];
-      serviceConfig = {
-        ExecStart = "${pkgs.triggerhappy}/bin/thd ${
-          lib.optionalString (cfg.user != "root") "--user ${cfg.user}"
-        } --socket ${socket} --triggers ${configFile} --deviceglob /dev/input/event*";
-      };
-    };
-
     services.udev.packages = lib.singleton (
       pkgs.writeTextFile {
-        name = "triggerhappy-udev-rules";
         destination = "/etc/udev/rules.d/61-triggerhappy.rules";
+        name = "triggerhappy-udev-rules";
+
         text = ''
           ACTION=="add", SUBSYSTEM=="input", KERNEL=="event[0-9]*", ATTRS{name}!="triggerhappy", \
             RUN+="${pkgs.triggerhappy}/bin/th-cmd --socket ${socket} --passfd --udev"
         '';
       }
     );
+
+    systemd.services.triggerhappy = {
+      description = "Global hotkey daemon";
+      documentation = [ "man:thd(1)" ];
+
+      serviceConfig = {
+        ExecStart = "${pkgs.triggerhappy}/bin/thd ${
+          lib.optionalString (cfg.user != "root") "--user ${cfg.user}"
+        } --socket ${socket} --triggers ${configFile} --deviceglob /dev/input/event*";
+      };
+
+      wantedBy = [ "multi-user.target" ];
+    };
+
+    systemd.sockets.triggerhappy = {
+      description = "Triggerhappy Socket";
+      socketConfig.ListenDatagram = socket;
+      wantedBy = [ "sockets.target" ];
+    };
 
   };
 

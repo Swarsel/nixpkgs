@@ -1,52 +1,58 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
   pkg-config,
+  rustPlatform,
   xremap,
-
   withVariant ? "wlroots",
 }:
 let
   variants = {
-    x11 = {
-      features = [ "x11" ];
-      descriptionSuffix = "X11";
-    };
-    gnome = {
-      suffix = "-gnome";
-      features = [ "gnome" ];
-      descriptionSuffix = "Gnome";
-    };
-    kde = {
-      suffix = "-kde";
-      features = [ "kde" ];
-      descriptionSuffix = "KDE";
-    };
-    wlroots = {
-      suffix = "-wlroots";
-      features = [ "wlroots" ];
-      descriptionSuffix = "wlroots";
-    };
-    hyprland = {
-      suffix = "-hyprland";
-      features = [ "hypr" ];
-      descriptionSuffix = "Hyprland";
-    };
-    niri = {
-      suffix = "-niri";
-      features = [ "niri" ];
-      descriptionSuffix = "Niri";
-    };
     cosmic = {
-      suffix = "-cosmic";
-      features = [ "cosmic" ];
       descriptionSuffix = "Cosmic";
+      features = [ "cosmic" ];
+      suffix = "-cosmic";
     };
+
+    gnome = {
+      descriptionSuffix = "Gnome";
+      features = [ "gnome" ];
+      suffix = "-gnome";
+    };
+
+    hyprland = {
+      descriptionSuffix = "Hyprland";
+      features = [ "hypr" ];
+      suffix = "-hyprland";
+    };
+
+    kde = {
+      descriptionSuffix = "KDE";
+      features = [ "kde" ];
+      suffix = "-kde";
+    };
+
+    niri = {
+      descriptionSuffix = "Niri";
+      features = [ "niri" ];
+      suffix = "-niri";
+    };
+
     socket = {
-      suffix = "";
-      features = [ "socket" ];
       descriptionSuffix = "Socket client";
+      features = [ "socket" ];
+      suffix = "";
+    };
+
+    wlroots = {
+      descriptionSuffix = "wlroots";
+      features = [ "wlroots" ];
+      suffix = "-wlroots";
+    };
+
+    x11 = {
+      descriptionSuffix = "X11";
+      features = [ "x11" ];
     };
   };
 
@@ -68,12 +74,9 @@ rustPlatform.buildRustPackage (finalAttrs: {
   };
 
   nativeBuildInputs = [ pkg-config ];
-
-  buildNoDefaultFeatures = true;
-  buildFeatures = variant.features;
-
   cargoHash = "sha256-sfdUs9WLtwGSZHraDz0YEzGX1o9uQaYi1JiRnUvjyVs=";
-
+  buildFeatures = variant.features;
+  buildNoDefaultFeatures = true;
   passthru = lib.mapAttrs (name: lib.const (xremap.override { withVariant = name; })) variants;
 
   meta = {
@@ -81,8 +84,8 @@ rustPlatform.buildRustPackage (finalAttrs: {
     homepage = "https://github.com/xremap/xremap";
     changelog = "https://github.com/xremap/xremap/blob/v${finalAttrs.version}/CHANGELOG.md";
     license = lib.licenses.mit;
-    mainProgram = "xremap";
     maintainers = [ lib.maintainers.hakan-demirli ];
     platforms = lib.platforms.linux;
+    mainProgram = "xremap";
   };
 })

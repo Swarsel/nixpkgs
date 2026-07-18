@@ -8,7 +8,6 @@
 buildPythonPackage rec {
   pname = "sphfile";
   version = "1.0.3";
-  format = "setuptools";
 
   src = fetchurl {
     url = "mirror://pypi/s/sphfile/${pname}-${version}.tar.gz";
@@ -16,8 +15,8 @@ buildPythonPackage rec {
   };
 
   propagatedBuildInputs = [ numpy ];
-
   doCheck = false;
+  format = "setuptools";
 
   meta = {
     description = "Numpy-based NIST SPH audio-file reader";

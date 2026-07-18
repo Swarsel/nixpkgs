@@ -1,14 +1,14 @@
 {
   lib,
-  stdenvNoCC,
   fetchFromGitHub,
-  meson,
-  ninja,
-  gtk3,
-  python3,
   faba-icon-theme,
+  gtk3,
   hicolor-icon-theme,
   jdupes,
+  meson,
+  ninja,
+  python3,
+  stdenvNoCC,
 }:
 
 stdenvNoCC.mkDerivation {
@@ -21,6 +21,10 @@ stdenvNoCC.mkDerivation {
     rev = "c0355ea31e5cfdb6b44d8108f602d66817546a09";
     sha256 = "0m4kfarkl94wdhsds2q1l9x5hfa9l3117l8j6j7qm7sf7yzr90c8";
   };
+
+  postPatch = ''
+    patchShebangs meson/post_install.py
+  '';
 
   nativeBuildInputs = [
     meson
@@ -35,30 +39,27 @@ stdenvNoCC.mkDerivation {
     hicolor-icon-theme
   ];
 
-  dontDropIconThemeCache = true;
-
-  # These fixup steps are slow and unnecessary for this package
-  dontPatchELF = true;
-  dontRewriteSymlinks = true;
-
-  postPatch = ''
-    patchShebangs meson/post_install.py
-  '';
-
   postInstall = ''
     # replace duplicate files with symlinks
     jdupes -l -r $out/share/icons
   '';
 
+  dontDropIconThemeCache = true;
+  # These fixup steps are slow and unnecessary for this package
+  dontPatchELF = true;
+  dontRewriteSymlinks = true;
+
   meta = {
     description = "Icon theme designed with a minimal flat style using simple geometry and bright colours";
     homepage = "https://snwh.org/moka";
+
     license = with lib.licenses; [
       cc-by-sa-40
       gpl3Only
     ];
+
+    maintainers = with lib.maintainers; [ romildo ];
     # darwin cannot deal with file names differing only in case
     platforms = lib.platforms.linux;
-    maintainers = with lib.maintainers; [ romildo ];
   };
 }

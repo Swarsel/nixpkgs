@@ -15,10 +15,11 @@ let
 in
 
 {
-  meta.teams = [ lib.teams.radicle ];
-
   options.services.radicle.ci.adapters.native = {
     instances = lib.mkOption {
+      default = { };
+      description = "radicle-native-ci adapter instances.";
+
       type = lib.types.attrsOf (
         lib.types.submodule (
           { config, name, ... }:
@@ -29,19 +30,18 @@ in
                 example = false;
               };
 
+              package = lib.mkPackageOption pkgs "radicle-native-ci" { };
+
               name = lib.mkOption {
-                type = lib.types.str;
                 description = ''
                   Adapter name that is used in the radicle-ci-broker configuration.
                   Defaults to the attribute name.
                 '';
+
+                type = lib.types.str;
               };
 
-              package = lib.mkPackageOption pkgs "radicle-native-ci" { };
-
               runtimePackages = lib.mkOption {
-                type = lib.types.listOf lib.types.package;
-                description = "Packages added to the adapter's {env}`PATH`.";
                 defaultText = lib.literalExpression ''
                   with pkgs; [
                     bash
@@ -53,37 +53,42 @@ in
                     wget
                   ]
                 '';
+
+                description = "Packages added to the adapter's {env}`PATH`.";
+                type = lib.types.listOf lib.types.package;
               };
 
               settings = lib.mkOption {
-                type = lib.types.submodule {
-                  freeformType = settingsFormat.type;
+                default = { };
 
-                  options = {
-                    state = lib.mkOption {
-                      type = lib.types.path;
-                      description = "Directory where per-run directories are stored.";
-                      defaultText = lib.literalExpression ''"''${config.services.radicle.ci.broker.stateDir}/adapters/native/${config.name}"'';
-                    };
-
-                    log = lib.mkOption {
-                      type = lib.types.path;
-                      description = "File where radicle-native-ci should write the run log.";
-                      defaultText = lib.literalExpression ''"''${config.services.radicle.ci.broker.logDir}/adapters/native/${config.name}.log"'';
-                    };
-
-                    base_url = lib.mkOption {
-                      type = lib.types.nullOr lib.types.str;
-                      description = "Base URL for build logs (mandatory for access from CI broker page).";
-                      default = null;
-                    };
-                  };
-                };
                 description = ''
                   Configuration of radicle-native-ci.
                   See <https://radicle.network/nodes/seed.radicle.dev/rad:z3qg5TKmN83afz2fj9z3fQjU8vaYE#configuration> for more information.
                 '';
-                default = { };
+
+                type = lib.types.submodule {
+                  options = {
+                    base_url = lib.mkOption {
+                      default = null;
+                      description = "Base URL for build logs (mandatory for access from CI broker page).";
+                      type = lib.types.nullOr lib.types.str;
+                    };
+
+                    log = lib.mkOption {
+                      defaultText = lib.literalExpression ''"''${config.services.radicle.ci.broker.logDir}/adapters/native/${config.name}.log"'';
+                      description = "File where radicle-native-ci should write the run log.";
+                      type = lib.types.path;
+                    };
+
+                    state = lib.mkOption {
+                      defaultText = lib.literalExpression ''"''${config.services.radicle.ci.broker.stateDir}/adapters/native/${config.name}"'';
+                      description = "Directory where per-run directories are stored.";
+                      type = lib.types.path;
+                    };
+                  };
+
+                  freeformType = settingsFormat.type;
+                };
               };
             };
 
@@ -101,15 +106,13 @@ in
               ];
 
               settings = {
-                state = lib.mkDefault "${brokerCfg.stateDir}/adapters/native/${config.name}";
                 log = lib.mkDefault "${brokerCfg.logDir}/adapters/native/${config.name}.log";
+                state = lib.mkDefault "${brokerCfg.stateDir}/adapters/native/${config.name}";
               };
             };
           }
         )
       );
-      description = "radicle-native-ci adapter instances.";
-      default = { };
     };
   };
 
@@ -118,8 +121,8 @@ in
       map (
         instance:
         lib.nameValuePair instance.name {
-          command = lib.getExe instance.package;
           config = instance.settings;
+          command = lib.getExe instance.package;
           config_env = "RADICLE_NATIVE_CI";
           env.PATH = lib.makeBinPath instance.runtimePackages;
         }
@@ -131,11 +134,13 @@ in
         instance:
         lib.nameValuePair (dirOf instance.settings.log) {
           d = {
-            user = config.users.users.radicle.name;
             group = config.users.groups.radicle.name;
+            user = config.users.users.radicle.name;
           };
         }
       ) enabledInstances
     );
   };
+
+  meta.teams = [ lib.teams.radicle ];
 }

@@ -10,14 +10,15 @@
 buildPythonPackage rec {
   pname = "aiohttp-socks";
   version = "0.11.0";
-  pyproject = true;
 
   src = fetchPypi {
     inherit version;
-    pname = "aiohttp_socks";
     hash = "sha256-Cv5RY4Unx5B35L1uVwUsh8SCQjPW4guwYcU3ZkIbEPA=";
+    pname = "aiohttp_socks";
   };
 
+  # Checks needs internet access
+  doCheck = false;
   build-system = [ setuptools ];
 
   dependencies = [
@@ -25,9 +26,7 @@ buildPythonPackage rec {
     python-socks
   ];
 
-  # Checks needs internet access
-  doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "aiohttp_socks" ];
 
   meta = {

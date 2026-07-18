@@ -3,27 +3,26 @@
   buildPythonPackage,
   fetchPypi,
   setuptools,
-  wheel,
   torch,
+  wheel,
 }:
 
 buildPythonPackage rec {
   pname = "julius";
   version = "0.2.7";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
     hash = "sha256-PA9fUwbX1gFvzJUZaydMrm8H4slZbu0xTk52QVVPuwg=";
   };
 
-  propagatedBuildInputs = [ torch ];
-
   nativeBuildInputs = [
     setuptools
     wheel
   ];
 
+  propagatedBuildInputs = [ torch ];
+  pyproject = true;
   pythonImportsCheck = [ "julius" ];
 
   meta = {

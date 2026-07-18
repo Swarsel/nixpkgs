@@ -1,19 +1,16 @@
 {
   lib,
-  stdenvNoCC,
   fetchurl,
+  stdenvNoCC,
   unzip,
 }:
 let
   info = lib.importJSON ./info.json;
 in
 stdenvNoCC.mkDerivation (finalAttrs: {
-  pname = "the-unarchiver";
   inherit (info) version;
-
+  pname = "the-unarchiver";
   src = fetchurl { inherit (info) url hash; };
-
-  sourceRoot = ".";
   nativeBuildInputs = [ unzip ];
 
   installPhase = ''
@@ -25,16 +22,18 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  sourceRoot = ".";
   passthru.updateScript = ./update/update.mjs;
 
   meta = {
     description = "Unpacks archive files";
     homepage = "https://theunarchiver.com/";
     license = lib.licenses.unfree;
+    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
     maintainers = with lib.maintainers; [ xiaoxiangmoe ];
+
     platforms = [
       "aarch64-darwin"
     ];
-    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
   };
 })

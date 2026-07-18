@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   pytz,
   zope-interface,
 }:
@@ -9,7 +9,6 @@
 buildPythonPackage rec {
   pname = "datetime";
   version = "6.0";
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "zopefoundation";
@@ -23,6 +22,7 @@ buildPythonPackage rec {
     zope-interface
   ];
 
+  format = "setuptools";
   pythonImportsCheck = [ "DateTime" ];
 
   meta = {

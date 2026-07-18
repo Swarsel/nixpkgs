@@ -2,8 +2,8 @@
 {
   config,
   lib,
-  options,
   pkgs,
+  options,
   ...
 }:
 let
@@ -51,93 +51,95 @@ in
     services.buildbot-worker = {
 
       enable = lib.mkOption {
-        type = lib.types.bool;
         default = false;
         description = "Whether to enable the Buildbot Worker.";
+        type = lib.types.bool;
       };
 
-      user = lib.mkOption {
-        default = "bbworker";
-        type = lib.types.str;
-        description = "User the buildbot Worker should execute under.";
-      };
+      package = lib.mkPackageOption pkgs "buildbot-worker" { };
 
-      group = lib.mkOption {
-        default = "bbworker";
-        type = lib.types.str;
-        description = "Primary group of buildbot Worker user.";
-      };
-
-      extraGroups = lib.mkOption {
-        type = lib.types.listOf lib.types.str;
-        default = [ ];
-        description = "List of extra groups that the Buildbot Worker user should be a part of.";
-      };
-
-      home = lib.mkOption {
-        default = "/home/bbworker";
-        type = lib.types.path;
-        description = "Buildbot home directory.";
+      adminMessage = lib.mkOption {
+        default = null;
+        description = "Name of the administrator of this worker";
+        type = lib.types.nullOr lib.types.str;
       };
 
       buildbotDir = lib.mkOption {
         default = "${cfg.home}/worker";
         defaultText = lib.literalExpression ''"''${config.${opt.home}}/worker"'';
-        type = lib.types.path;
         description = "Specifies the Buildbot directory.";
-      };
-
-      workerUser = lib.mkOption {
-        default = "example-worker";
-        type = lib.types.str;
-        description = "Specifies the Buildbot Worker user.";
-      };
-
-      workerPass = lib.mkOption {
-        default = "pass";
-        type = lib.types.str;
-        description = "Specifies the Buildbot Worker password.";
-      };
-
-      workerPassFile = lib.mkOption {
         type = lib.types.path;
-        description = "File used to store the Buildbot Worker password";
+      };
+
+      extraGroups = lib.mkOption {
+        default = [ ];
+        description = "List of extra groups that the Buildbot Worker user should be a part of.";
+        type = lib.types.listOf lib.types.str;
+      };
+
+      group = lib.mkOption {
+        default = "bbworker";
+        description = "Primary group of buildbot Worker user.";
+        type = lib.types.str;
+      };
+
+      home = lib.mkOption {
+        default = "/home/bbworker";
+        description = "Buildbot home directory.";
+        type = lib.types.path;
       };
 
       hostMessage = lib.mkOption {
         default = null;
-        type = lib.types.nullOr lib.types.str;
         description = "Description of this worker";
-      };
-
-      adminMessage = lib.mkOption {
-        default = null;
         type = lib.types.nullOr lib.types.str;
-        description = "Name of the administrator of this worker";
-      };
-
-      masterUrl = lib.mkOption {
-        default = "localhost:9989";
-        type = lib.types.str;
-        description = "Specifies the Buildbot Worker connection string.";
       };
 
       keepalive = lib.mkOption {
         default = 600;
-        type = lib.types.int;
+
         description = ''
           This is a number that indicates how frequently keepalive messages should be sent
           from the worker to the buildmaster, expressed in seconds.
         '';
+
+        type = lib.types.int;
       };
 
-      package = lib.mkPackageOption pkgs "buildbot-worker" { };
+      masterUrl = lib.mkOption {
+        default = "localhost:9989";
+        description = "Specifies the Buildbot Worker connection string.";
+        type = lib.types.str;
+      };
 
       packages = lib.mkOption {
         default = with pkgs; [ git ];
         defaultText = lib.literalExpression "[ pkgs.git ]";
-        type = lib.types.listOf lib.types.package;
         description = "Packages to add to PATH for the buildbot process.";
+        type = lib.types.listOf lib.types.package;
+      };
+
+      user = lib.mkOption {
+        default = "bbworker";
+        description = "User the buildbot Worker should execute under.";
+        type = lib.types.str;
+      };
+
+      workerPass = lib.mkOption {
+        default = "pass";
+        description = "Specifies the Buildbot Worker password.";
+        type = lib.types.str;
+      };
+
+      workerPassFile = lib.mkOption {
+        description = "File used to store the Buildbot Worker password";
+        type = lib.types.path;
+      };
+
+      workerUser = lib.mkOption {
+        default = "example-worker";
+        description = "Specifies the Buildbot Worker user.";
+        type = lib.types.str;
       };
     };
   };
@@ -147,31 +149,15 @@ in
       pkgs.writeText "buildbot-worker-password" cfg.workerPass
     );
 
-    users.groups = lib.optionalAttrs (cfg.group == "bbworker") {
-      bbworker = { };
-    };
-
-    users.users = lib.optionalAttrs (cfg.user == "bbworker") {
-      bbworker = {
-        description = "Buildbot Worker User.";
-        isNormalUser = true;
-        createHome = true;
-        home = cfg.home;
-        group = cfg.group;
-        extraGroups = cfg.extraGroups;
-        useDefaultShell = true;
-      };
-    };
-
     systemd.services.buildbot-worker = {
-      description = "Buildbot Worker.";
       after = [
         "network.target"
         "buildbot-master.service"
       ];
-      wantedBy = [ "multi-user.target" ];
-      path = cfg.packages;
+
+      description = "Buildbot Worker.";
       environment.PYTHONPATH = "${python.withPackages (p: [ package ])}/${python.sitePackages}";
+      path = cfg.packages;
 
       preStart = ''
         mkdir -vp "${cfg.buildbotDir}/info"
@@ -184,15 +170,32 @@ in
       '';
 
       serviceConfig = {
-        Type = "simple";
-        User = cfg.user;
-        Group = cfg.group;
-        WorkingDirectory = cfg.home;
-
         # NOTE: call twistd directly with stdout logging for systemd
         ExecStart = "${python.pkgs.twisted}/bin/twistd --nodaemon --pidfile= --logfile - --python ${tacFile}";
+        Group = cfg.group;
+        Type = "simple";
+        User = cfg.user;
+        WorkingDirectory = cfg.home;
       };
 
+      wantedBy = [ "multi-user.target" ];
+
+    };
+
+    users.groups = lib.optionalAttrs (cfg.group == "bbworker") {
+      bbworker = { };
+    };
+
+    users.users = lib.optionalAttrs (cfg.user == "bbworker") {
+      bbworker = {
+        createHome = true;
+        description = "Buildbot Worker User.";
+        extraGroups = cfg.extraGroups;
+        group = cfg.group;
+        home = cfg.home;
+        isNormalUser = true;
+        useDefaultShell = true;
+      };
     };
   };
 

@@ -2,10 +2,6 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  nix-update-script,
-  versionCheckHook,
-
-  pkg-config,
   curlMinimal,
   glib,
   gmime3,
@@ -13,7 +9,10 @@
   libmhash,
   libxcrypt,
   libzdb,
+  nix-update-script,
   openssl,
+  pkg-config,
+  versionCheckHook,
 }:
 stdenv.mkDerivation (finalAttrs: {
   pname = "dbmail";
@@ -26,7 +25,9 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-uoK+sj/CQ2CcliQ+vtE9Q3BWVbzpQ5MP8xHVIxe6w2o=";
   };
 
+  strictDeps = true;
   nativeBuildInputs = [ pkg-config ];
+
   buildInputs = [
     curlMinimal
     glib
@@ -38,24 +39,20 @@ stdenv.mkDerivation (finalAttrs: {
     openssl
   ];
 
-  strictDeps = true;
+  configureFlags = [ "--with-zdb=${libzdb}" ];
+  doInstallCheck = true;
+  nativeInstallCheckInputs = [ versionCheckHook ];
   __structuredAttrs = true;
   enableParallelBuilding = true;
-
-  configureFlags = [ "--with-zdb=${libzdb}" ];
-
-  nativeInstallCheckInputs = [ versionCheckHook ];
-  doInstallCheck = true;
-
   passthru.updateScript = nix-update-script { };
 
   meta = {
     description = "Highly available Message Delivery Agent using SQL storage";
     homepage = "https://dbmail.org";
-    downloadPage = "https://github.com/dbmail/dbmail";
     license = lib.licenses.gpl2Plus;
+    maintainers = with lib.maintainers; [ maevii ];
     platforms = lib.platforms.linux;
     mainProgram = "dbmail-imapd";
-    maintainers = with lib.maintainers; [ maevii ];
+    downloadPage = "https://github.com/dbmail/dbmail";
   };
 })

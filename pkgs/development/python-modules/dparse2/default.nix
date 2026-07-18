@@ -1,17 +1,16 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  toml,
-  pyyaml,
+  buildPythonPackage,
   packvers,
   pytestCheckHook,
+  pyyaml,
+  toml,
 }:
 
 buildPythonPackage rec {
   pname = "dparse2";
   version = "0.7.0";
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "nexB";
@@ -33,6 +32,7 @@ buildPythonPackage rec {
     "tests/test_parse.py"
   ];
 
+  format = "setuptools";
   pythonImportsCheck = [ "dparse2" ];
 
   meta = {

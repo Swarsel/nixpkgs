@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule (finalAttrs: {
@@ -15,14 +15,21 @@ buildGoModule (finalAttrs: {
     hash = "sha256-HLDafeDe7eXuVZ8JqGYIr5Y5YicsR3PaDX/UeSqg8Vw=";
   };
 
-  vendorHash = null;
-
   postPatch = ''
     # Broken
     rm cmd/peer/main_test.go
     # Requires network
     rm cmd/osnadmin/main_test.go
   '';
+
+  vendorHash = null;
+
+  ldflags = [
+    "-s"
+    "-w"
+    "-X github.com/hyperledger/fabric/common/metadata.Version=${finalAttrs.version}"
+    "-X github.com/hyperledger/fabric/common/metadata.CommitSha=${finalAttrs.src.tag}"
+  ];
 
   subPackages = [
     "cmd/configtxgen"
@@ -35,15 +42,9 @@ buildGoModule (finalAttrs: {
     "cmd/peer"
   ];
 
-  ldflags = [
-    "-s"
-    "-w"
-    "-X github.com/hyperledger/fabric/common/metadata.Version=${finalAttrs.version}"
-    "-X github.com/hyperledger/fabric/common/metadata.CommitSha=${finalAttrs.src.tag}"
-  ];
-
   meta = {
     description = "High-performance, secure, permissioned blockchain network";
+
     longDescription = ''
       Hyperledger Fabric is an enterprise-grade permissioned distributed ledger
       framework for developing solutions and applications. Its modular and
@@ -51,6 +52,7 @@ buildGoModule (finalAttrs: {
       a unique approach to consensus that enables performance at scale while
       preserving privacy.
     '';
+
     homepage = "https://wiki.hyperledger.org/display/fabric";
     license = lib.licenses.asl20;
     maintainers = [ ];

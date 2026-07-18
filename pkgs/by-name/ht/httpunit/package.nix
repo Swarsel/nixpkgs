@@ -19,7 +19,7 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     homepage = "https://httpunit.sourceforge.net";
-    platforms = lib.platforms.unix;
     license = lib.licenses.mit;
+    platforms = lib.platforms.unix;
   };
 })

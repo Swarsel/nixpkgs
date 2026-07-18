@@ -1,8 +1,8 @@
 {
   lib,
+  fetchFromGitHub,
   buildPythonPackage,
   colorthief,
-  fetchFromGitHub,
   nix-update-script,
   pillow,
   pytestCheckHook,
@@ -12,7 +12,6 @@
 buildPythonPackage rec {
   pname = "modern-colorthief";
   version = "0.3.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "baseplate-admin";
@@ -21,14 +20,21 @@ buildPythonPackage rec {
     hash = "sha256-oQ0ZAL8GyzKfFoSBJS2LIck2Z1IzZCYrkOc9nXfqyyg=";
   };
 
+  nativeBuildInputs = [
+    rustPlatform.cargoSetupHook
+    rustPlatform.maturinBuildHook
+  ];
+
+  nativeCheckInputs = [ pytestCheckHook ] ++ lib.concatAttrValues optional-dependencies;
+
   cargoDeps = rustPlatform.fetchCargoVendor {
     inherit pname version src;
     hash = "sha256-csGUiJKAZn8OF3lxfw5VPwZxWDXHpFC0rczkD1+P8Sk=";
   };
 
-  nativeBuildInputs = [
-    rustPlatform.cargoSetupHook
-    rustPlatform.maturinBuildHook
+  disabledTestPaths = [
+    # Requires `fast_colorthief`, which isn't packaged
+    "examples/test_time.py"
   ];
 
   optional-dependencies = {
@@ -38,13 +44,7 @@ buildPythonPackage rec {
     ];
   };
 
-  nativeCheckInputs = [ pytestCheckHook ] ++ lib.concatAttrValues optional-dependencies;
-
-  disabledTestPaths = [
-    # Requires `fast_colorthief`, which isn't packaged
-    "examples/test_time.py"
-  ];
-
+  pyproject = true;
   pythonImportsCheck = [ "modern_colorthief" ];
 
   passthru = {

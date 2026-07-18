@@ -1,10 +1,10 @@
 {
-  stdenv,
-  buildGoModule,
-  fetchFromGitHub,
   lib,
-  nix-update-script,
+  stdenv,
+  fetchFromGitHub,
+  buildGoModule,
   go,
+  nix-update-script,
 }:
 
 buildGoModule rec {
@@ -19,10 +19,11 @@ buildGoModule rec {
   };
 
   vendorHash = "sha256-tGvreLuxaRswjCGzroCRRDZR4QadQKLrX9Hz3u22VZ0=";
-
-  subPackages = [ "cmd" ];
-
   env.CGO_ENABLED = 0;
+
+  postInstall = ''
+    mv $out/bin/cmd $out/bin/jx
+  '';
 
   ldflags = [
     "-s"
@@ -33,25 +34,24 @@ buildGoModule rec {
     "-X github.com/jenkins-x/jx/pkg/cmd/version.BuildDate=''"
   ];
 
-  postInstall = ''
-    mv $out/bin/cmd $out/bin/jx
-  '';
-
+  subPackages = [ "cmd" ];
   passthru.updateScript = nix-update-script { };
 
   meta = {
-    broken = stdenv.hostPlatform.isDarwin;
     description = "Command line tool for installing and using Jenkins X";
-    mainProgram = "jx";
-    homepage = "https://jenkins-x.io";
-    changelog = "https://github.com/jenkins-x/jx/releases/tag/v${version}";
+
     longDescription = ''
       Jenkins X provides automated CI+CD for Kubernetes with Preview
       Environments on Pull Requests using using Cloud Native pipelines
       from Tekton.
     '';
+
+    homepage = "https://jenkins-x.io";
+    changelog = "https://github.com/jenkins-x/jx/releases/tag/v${version}";
     license = lib.licenses.asl20;
     maintainers = with lib.maintainers; [ kalbasit ];
     platforms = lib.platforms.linux ++ lib.platforms.darwin;
+    mainProgram = "jx";
+    broken = stdenv.hostPlatform.isDarwin;
   };
 }

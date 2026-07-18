@@ -1,9 +1,9 @@
 {
+  lib,
   stdenv,
   fetchFromGitHub,
   nixosTests,
   rustPlatform,
-  lib,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -18,8 +18,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
   };
 
   cargoHash = "sha256-8mkMq16CfEc/RHH3msXEnoiDHGGRjr2Omp2TVd07ObE=";
-
-  hardeningDisable = [ "stackprotector" ];
 
   env = {
     NIX_SYSTEM = stdenv.system;
@@ -44,6 +42,7 @@ rustPlatform.buildRustPackage (finalAttrs: {
     EOF
   '';
 
+  hardeningDisable = [ "stackprotector" ];
   passthru.tests = nixosTests.nix-ld;
 
   meta = {

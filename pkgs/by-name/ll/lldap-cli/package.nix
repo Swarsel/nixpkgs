@@ -1,16 +1,16 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
   bash,
   coreutils,
+  curl,
   gnugrep,
   gnused,
   jq,
   lldap,
-  unixtools,
-  curl,
   makeWrapper,
+  unixtools,
   unstableGitUpdater,
 }:
 stdenv.mkDerivation {
@@ -25,19 +25,6 @@ stdenv.mkDerivation {
   };
 
   nativeBuildInputs = [ makeWrapper ];
-
-  patchPhase = ''
-    runHook prePatch
-
-    # fix .lldap-cli-wrapped showing up in usage
-    substituteInPlace lldap-cli \
-      --replace-fail '$(basename $0)' lldap-cli
-
-    runHook postPatch
-  '';
-
-  dontConfigure = true;
-  dontBuild = true;
 
   installPhase = ''
     install -Dm555 lldap-cli -t $out/bin
@@ -56,10 +43,24 @@ stdenv.mkDerivation {
       }
   '';
 
+  dontBuild = true;
+  dontConfigure = true;
+
+  patchPhase = ''
+    runHook prePatch
+
+    # fix .lldap-cli-wrapped showing up in usage
+    substituteInPlace lldap-cli \
+      --replace-fail '$(basename $0)' lldap-cli
+
+    runHook postPatch
+  '';
+
   passthru.updateScript = unstableGitUpdater { };
 
   meta = {
     description = "Command line tool for managing LLDAP";
+
     longDescription = ''
       LDAP-CLI is a command line interface for LLDAP.
 
@@ -69,10 +70,11 @@ stdenv.mkDerivation {
       which is a necessity for any serious administrator.
       LLDAP-CLI translates CLI commands to GraphQL API calls.
     '';
+
     homepage = "https://github.com/Zepmann/lldap-cli";
     license = lib.licenses.gpl3Only;
     maintainers = [ lib.maintainers.nw ];
-    mainProgram = "lldap-cli";
     platforms = lib.platforms.unix;
+    mainProgram = "lldap-cli";
   };
 }

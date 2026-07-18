@@ -1,24 +1,23 @@
 {
-  python3Packages,
   lib,
   fetchFromGitHub,
+  gdk-pixbuf,
   gettext,
-  gtk3,
-  gobject-introspection,
-  intltool,
-  wrapGAppsHook3,
   glib,
-  librsvg,
+  gobject-introspection,
+  gtk3,
+  intltool,
+  keybinder3,
   libayatana-appindicator,
   libpulseaudio,
-  keybinder3,
-  gdk-pixbuf,
+  librsvg,
+  python3Packages,
+  wrapGAppsHook3,
 }:
 
 python3Packages.buildPythonApplication (finalAttrs: {
   pname = "indicator-sound-switcher";
   version = "2.3.10.1";
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "yktoo";
@@ -55,12 +54,14 @@ python3Packages.buildPythonApplication (finalAttrs: {
     keybinder3
   ];
 
+  format = "setuptools";
+
   meta = {
     description = "Sound input/output selector indicator for Linux";
-    mainProgram = "indicator-sound-switcher";
     homepage = "https://yktoo.com/en/software/sound-switcher-indicator/";
     license = lib.licenses.gpl3Plus;
     maintainers = with lib.maintainers; [ alexnortung ];
     platforms = [ "x86_64-linux" ];
+    mainProgram = "indicator-sound-switcher";
   };
 })

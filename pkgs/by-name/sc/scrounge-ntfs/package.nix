@@ -13,23 +13,23 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-HYrMIMTRPmgAac/vaZ1jaUFchyAl5B0quxgHH0DHJ84=";
   };
 
-  env.NIX_CFLAGS_COMPILE = "-D_FILE_OFFSET_BITS=64";
+  patches = [
+    ./darwin.diff
+  ];
 
   postPatch = ''
     substituteInPlace src/{list,ntfsx,scrounge}.c \
       --replace-fail "lseek64" "lseek"
   '';
 
-  patches = [
-    ./darwin.diff
-  ];
+  env.NIX_CFLAGS_COMPILE = "-D_FILE_OFFSET_BITS=64";
 
   meta = {
     description = "Data recovery program for NTFS file systems";
-    mainProgram = "scrounge-ntfs";
     homepage = "http://thewalter.net/stef/software/scrounge/";
+    license = lib.licenses.bsd3;
     maintainers = [ ];
     platforms = lib.platforms.unix;
-    license = lib.licenses.bsd3;
+    mainProgram = "scrounge-ntfs";
   };
 })

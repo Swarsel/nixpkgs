@@ -3,9 +3,9 @@
   stdenv,
   fetchurl,
   fetchpatch,
-  pam,
-  openssl,
   libkrb5,
+  openssl,
+  pam,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -17,24 +17,10 @@ stdenv.mkDerivation (finalAttrs: {
     sha256 = "0a2a00hbakh0640r2wdpnwr8789z59wnk7rfsihh3j0vbhmmmqak";
   };
 
-  makeFlags = [
-    "CC=${stdenv.cc.targetPrefix}cc"
-    "RANLIB=${stdenv.cc.targetPrefix}ranlib"
-    (if stdenv.hostPlatform.isDarwin then "osx" else "lnp") # Linux with PAM modules;
-  ]
-  ++ lib.optional stdenv.hostPlatform.isx86_64 "EXTRACFLAGS=-fPIC"; # -fPIC is required to compile php with imap on x86_64 systems
-
-  hardeningDisable = [ "format" ];
-
-  buildInputs = [
-    openssl
-    (if stdenv.hostPlatform.isDarwin then libkrb5 else pam) # Matches the make target.
-  ];
-
   patches = [
     (fetchpatch {
-      url = "https://salsa.debian.org/holmgren/uw-imap/raw/dcb42981201ea14c2d71c01ebb4a61691b6f68b3/debian/patches/1006_openssl1.1_autoverify.patch";
       sha256 = "09xb58awvkhzmmjhrkqgijzgv7ia381ablf0y7i1rvhcqkb5wga7";
+      url = "https://salsa.debian.org/holmgren/uw-imap/raw/dcb42981201ea14c2d71c01ebb4a61691b6f68b3/debian/patches/1006_openssl1.1_autoverify.patch";
     })
     # Required to build with newer versions of clang. Fixes call to undeclared functions errors
     # and incompatible function pointer conversions.
@@ -60,11 +46,23 @@ stdenv.mkDerivation (finalAttrs: {
       src/osdep/unix/{mbx.c,mh.c,mmdf.c,mtx.c,mx.c,tenex.c,unix.c}
   '';
 
+  buildInputs = [
+    openssl
+    (if stdenv.hostPlatform.isDarwin then libkrb5 else pam) # Matches the make target.
+  ];
+
+  makeFlags = [
+    "CC=${stdenv.cc.targetPrefix}cc"
+    "RANLIB=${stdenv.cc.targetPrefix}ranlib"
+    (if stdenv.hostPlatform.isDarwin then "osx" else "lnp") # Linux with PAM modules;
+  ]
+  ++ lib.optional stdenv.hostPlatform.isx86_64 "EXTRACFLAGS=-fPIC"; # -fPIC is required to compile php with imap on x86_64 systems
+
+  env.NIX_CFLAGS_COMPILE = lib.optionalString stdenv.hostPlatform.isDarwin "-I${openssl.dev}/include/openssl";
+
   preConfigure = ''
     makeFlagsArray+=("ARRC=${stdenv.cc.targetPrefix}ar rc")
   '';
-
-  env.NIX_CFLAGS_COMPILE = lib.optionalString stdenv.hostPlatform.isDarwin "-I${openssl.dev}/include/openssl";
 
   installPhase = ''
     mkdir -p $out/bin $out/lib $out/include/c-client
@@ -74,14 +72,16 @@ stdenv.mkDerivation (finalAttrs: {
       tools/{an,ua} $out/bin
   '';
 
-  meta = {
-    homepage = "https://www.washington.edu/imap/";
-    description = "UW IMAP toolkit - IMAP-supporting software developed by the UW";
-    license = lib.licenses.asl20;
-    platforms = lib.platforms.unix;
-  };
+  hardeningDisable = [ "format" ];
 
   passthru = {
     withSSL = true;
+  };
+
+  meta = {
+    description = "UW IMAP toolkit - IMAP-supporting software developed by the UW";
+    homepage = "https://www.washington.edu/imap/";
+    license = lib.licenses.asl20;
+    platforms = lib.platforms.unix;
   };
 })

@@ -3,15 +3,13 @@
   ctypes,
   dune-configurator,
   libffi,
-  ounit2,
   lwt,
+  ounit2,
 }:
 
 buildDunePackage {
-  pname = "ctypes-foreign";
-
   inherit (ctypes) version src doCheck;
-
+  pname = "ctypes-foreign";
   buildInputs = [ dune-configurator ];
 
   propagatedBuildInputs = [
@@ -19,13 +17,13 @@ buildDunePackage {
     libffi
   ];
 
+  # Fix build with gcc 14
+  env.NIX_CFLAGS_COMPILE = "-Wno-error=incompatible-pointer-types";
+
   checkInputs = [
     ounit2
     lwt
   ];
-
-  # Fix build with gcc 14
-  env.NIX_CFLAGS_COMPILE = "-Wno-error=incompatible-pointer-types";
 
   meta = ctypes.meta // {
     description = "Dynamic access to foreign C libraries using Ctypes";

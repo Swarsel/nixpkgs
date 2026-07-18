@@ -1,12 +1,12 @@
 {
-  stdenv,
   lib,
+  stdenv,
   R,
-  xvfb-run,
-  util-linux,
   gettext,
   gfortran,
   libiconv,
+  util-linux,
+  xvfb-run,
 }:
 
 {
@@ -34,29 +34,14 @@ stdenv.mkDerivation (
 
     env.NIX_CFLAGS_COMPILE = lib.optionalString stdenv.hostPlatform.isDarwin "-I${lib.getInclude stdenv.cc.libcxx}/include/c++/v1";
 
-    enableParallelBuilding = true;
-
-    configurePhase = ''
-      runHook preConfigure
-      export MAKEFLAGS+="''${enableParallelBuilding:+-j$NIX_BUILD_CORES}"
-      export R_LIBS_SITE="$R_LIBS_SITE''${R_LIBS_SITE:+:}$out/library"
-      runHook postConfigure
-    '';
-
     buildPhase = ''
       runHook preBuild
       runHook postBuild
     '';
 
-    installFlags = if attrs.doCheck or true then [ ] else [ "--no-test-load" ];
-
-    rCommand =
-      if requireX then
-        # Unfortunately, xvfb-run has a race condition even with -a option, so that
-        # we acquire a lock explicitly.
-        "flock ${xvfb-run} xvfb-run -a -e xvfb-error R"
-      else
-        "R";
+    checkPhase = ''
+      # noop since R CMD INSTALL tests packages
+    '';
 
     installPhase = ''
       runHook preInstall
@@ -71,9 +56,23 @@ stdenv.mkDerivation (
       fi
     '';
 
-    checkPhase = ''
-      # noop since R CMD INSTALL tests packages
+    configurePhase = ''
+      runHook preConfigure
+      export MAKEFLAGS+="''${enableParallelBuilding:+-j$NIX_BUILD_CORES}"
+      export R_LIBS_SITE="$R_LIBS_SITE''${R_LIBS_SITE:+:}$out/library"
+      runHook postConfigure
     '';
+
+    enableParallelBuilding = true;
+    installFlags = if attrs.doCheck or true then [ ] else [ "--no-test-load" ];
+
+    rCommand =
+      if requireX then
+        # Unfortunately, xvfb-run has a race condition even with -a option, so that
+        # we acquire a lock explicitly.
+        "flock ${xvfb-run} xvfb-run -a -e xvfb-error R"
+      else
+        "R";
   }
   // attrs
   // {

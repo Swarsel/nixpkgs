@@ -14,7 +14,6 @@
 buildPythonPackage rec {
   pname = "urlextract";
   version = "1.9.0";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
@@ -44,14 +43,15 @@ buildPythonPackage rec {
     "test_dns_cache_reuse"
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "urlextract" ];
 
   meta = {
     description = "Collects and extracts URLs from given text";
-    mainProgram = "urlextract";
     homepage = "https://github.com/lipoja/URLExtract";
     changelog = "https://github.com/lipoja/URLExtract/releases/tag/v${version}";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ ilkecan ];
+    mainProgram = "urlextract";
   };
 }

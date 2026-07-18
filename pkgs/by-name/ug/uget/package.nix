@@ -2,17 +2,17 @@
   lib,
   stdenv,
   fetchurl,
-  pkg-config,
-  intltool,
-  openssl,
+  aria2,
   curl,
-  libnotify,
-  libappindicator-gtk3,
+  dconf,
   gst_all_1,
   gtk3,
-  dconf,
+  intltool,
+  libappindicator-gtk3,
+  libnotify,
+  openssl,
+  pkg-config,
   wrapGAppsHook3,
-  aria2,
   # Boolean guards
   aria2Support ? true,
 }:
@@ -61,12 +61,12 @@ stdenv.mkDerivation (finalAttrs: {
   ])
   ++ (lib.optional aria2Support aria2);
 
-  enableParallelBuilding = true;
-
   preFixup = lib.optionalString aria2Support ''gappsWrapperArgs+=(--suffix PATH : "${aria2}/bin")'';
+  enableParallelBuilding = true;
 
   meta = {
     description = "Download manager using GTK and libcurl";
+
     longDescription = ''
       uGet is a VERY Powerful download manager application with a large
       inventory of features but is still very light-weight and low on
@@ -74,10 +74,11 @@ stdenv.mkDerivation (finalAttrs: {
       thinking that it "might be too powerful" because remember power is good
       and lightweight power is uGet!
     '';
+
     homepage = "http://www.ugetdm.com";
     license = lib.licenses.lgpl21;
-    platforms = lib.platforms.unix;
     maintainers = with lib.maintainers; [ romildo ];
+    platforms = lib.platforms.unix;
     mainProgram = "uget-gtk";
   };
 })

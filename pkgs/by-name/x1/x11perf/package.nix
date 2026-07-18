@@ -2,16 +2,16 @@
   lib,
   stdenv,
   fetchurl,
-  pkg-config,
-  xorgproto,
+  fontconfig,
+  freetype,
   libx11,
   libxext,
   libxft,
   libxmu,
   libxrender,
-  freetype,
-  fontconfig,
+  pkg-config,
   writeScript,
+  xorgproto,
 }:
 stdenv.mkDerivation (finalAttrs: {
   pname = "x11perf";
@@ -23,7 +23,6 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   strictDeps = true;
-
   nativeBuildInputs = [ pkg-config ];
 
   buildInputs = [
@@ -57,8 +56,8 @@ stdenv.mkDerivation (finalAttrs: {
     description = "X11 server performance test program";
     homepage = "https://gitlab.freedesktop.org/xorg/test/x11perf";
     license = lib.licenses.hpnd;
-    mainProgram = "x11perf";
     maintainers = [ ];
     platforms = lib.platforms.unix;
+    mainProgram = "x11perf";
   };
 })

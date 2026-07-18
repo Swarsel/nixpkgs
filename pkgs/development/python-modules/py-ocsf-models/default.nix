@@ -1,9 +1,9 @@
 {
   lib,
+  fetchFromGitHub,
   buildPythonPackage,
   cryptography,
   email-validator,
-  fetchFromGitHub,
   poetry-core,
   pydantic,
   pytestCheckHook,
@@ -12,7 +12,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "py-ocsf-models";
   version = "0.9.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "prowler-cloud";
@@ -21,8 +20,9 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-MdDpCr6FuPEt67PUjF0MjWXiA+ZyKLiACc/XPp+NoII=";
   };
 
-  pythonRelaxDeps = true;
-
+  # Tests are outdated
+  doCheck = false;
+  nativeCheckInputs = [ pytestCheckHook ];
   build-system = [ poetry-core ];
 
   dependencies = [
@@ -31,12 +31,9 @@ buildPythonPackage (finalAttrs: {
     pydantic
   ];
 
-  nativeCheckInputs = [ pytestCheckHook ];
-
-  # Tests are outdated
-  doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "py_ocsf_models" ];
+  pythonRelaxDeps = true;
 
   meta = {
     description = "OCSF models in Python using Pydantic";

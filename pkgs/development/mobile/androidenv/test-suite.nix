@@ -1,7 +1,7 @@
 {
-  callPackage,
   lib,
   stdenv,
+  callPackage,
   meta,
 }:
 let
@@ -28,8 +28,8 @@ stdenv.mkDerivation {
   passthru.tests = all-tests;
 
   passthru.updateScript = {
-    command = [ ./update.rb ];
     attrPath = "androidenv.test-suite";
+    command = [ ./update.rb ];
     supportedFeatures = [ "commit" ];
   };
 

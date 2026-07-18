@@ -39,195 +39,75 @@ in
 {
   options.services.grav = {
     enable = mkEnableOption "grav";
-
     package = mkPackageOption pkgs "grav" { };
 
-    root = mkOption {
-      type = types.path;
-      default = "/var/lib/grav";
+    maxUploadSize = mkOption {
+      default = "128M";
+
       description = ''
-        Root of the application.
+        The upload limit for files. This changes the relevant options in
+        {file}`php.ini` and nginx if enabled.
       '';
+
+      type = types.str;
     };
 
+    phpPackage = mkPackageOption pkgs "php83" { };
+
     pool = mkOption {
-      type = types.str;
       default = "${poolName}";
+
       description = ''
         Name of existing phpfpm pool that is used to run web-application.
         If not specified a pool will be created automatically with
         default values.
       '';
-    };
 
-    virtualHost = mkOption {
-      type = types.nullOr types.str;
-      default = "grav";
-      description = ''
-        Name of the nginx virtualhost to use and setup. If null, do not setup
-        any virtualhost.
-      '';
-    };
-
-    phpPackage = mkPackageOption pkgs "php83" { };
-
-    maxUploadSize = mkOption {
       type = types.str;
-      default = "128M";
+    };
+
+    root = mkOption {
+      default = "/var/lib/grav";
+
       description = ''
-        The upload limit for files. This changes the relevant options in
-        {file}`php.ini` and nginx if enabled.
+        Root of the application.
       '';
+
+      type = types.path;
     };
 
     systemSettings = mkOption {
-      type = yamlFormat.type;
       default = {
         log = {
           handler = "syslog";
         };
       };
+
       description = ''
         Settings written to {file}`user/config/system.yaml`.
       '';
+
+      type = yamlFormat.type;
+    };
+
+    virtualHost = mkOption {
+      default = "grav";
+
+      description = ''
+        Name of the nginx virtualhost to use and setup. If null, do not setup
+        any virtualhost.
+      '';
+
+      type = types.nullOr types.str;
     };
   };
 
   config = mkIf cfg.enable {
-    services.phpfpm.pools = mkIf (cfg.pool == "${poolName}") {
-      ${poolName} = {
-        user = "grav";
-        group = "grav";
-
-        phpPackage = cfg.phpPackage.buildEnv {
-          extensions =
-            { all, enabled }:
-            enabled
-            ++ (with all; [
-              apcu
-              xml
-              yaml
-            ]);
-
-          extraConfig = generators.toKeyValue { mkKeyValue = generators.mkKeyValueDefault { } " = "; } {
-            output_buffering = "0";
-            short_open_tag = "Off";
-            expose_php = "Off";
-            error_reporting = "E_ALL";
-            display_errors = "stderr";
-            "opcache.interned_strings_buffer" = "8";
-            "opcache.max_accelerated_files" = "10000";
-            "opcache.memory_consumption" = "128";
-            "opcache.revalidate_freq" = "1";
-            "opcache.fast_shutdown" = "1";
-            "openssl.cafile" = config.security.pki.caBundle;
-            catch_workers_output = "yes";
-
-            upload_max_filesize = cfg.maxUploadSize;
-            post_max_size = cfg.maxUploadSize;
-            memory_limit = cfg.maxUploadSize;
-            "apc.enable_cli" = "1";
-          };
-        };
-
-        phpEnv = {
-          GRAV_ROOT = toString servedRoot;
-          GRAV_SYSTEM_PATH = "${servedRoot}/system";
-          GRAV_CACHE_PATH = "/var/cache/grav";
-          GRAV_BACKUP_PATH = "/var/lib/grav/backup";
-          GRAV_LOG_PATH = "/var/log/grav";
-          GRAV_TMP_PATH = "/var/tmp/grav";
-        };
-
-        settings = mapAttrs (name: mkDefault) {
-          "listen.owner" = config.services.nginx.user;
-          "listen.group" = config.services.nginx.group;
-          "listen.mode" = "0600";
-          "pm" = "dynamic";
-          "pm.max_children" = 75;
-          "pm.start_servers" = 10;
-          "pm.min_spare_servers" = 5;
-          "pm.max_spare_servers" = 20;
-          "pm.max_requests" = 500;
-          "catch_workers_output" = 1;
-        };
-      };
-    };
-
     services.nginx = mkIf (cfg.virtualHost != null) {
       enable = true;
+
       virtualHosts = {
         ${cfg.virtualHost} = {
-          root = "${servedRoot}";
-
-          locations = {
-            "= /robots.txt" = {
-              priority = 100;
-              extraConfig = ''
-                allow all;
-                access_log off;
-              '';
-            };
-
-            "~ \\.php$" = {
-              priority = 200;
-              extraConfig = ''
-                fastcgi_split_path_info ^(.+\.php)(/.+)$;
-                fastcgi_pass unix:${config.services.phpfpm.pools.${cfg.pool}.socket};
-                fastcgi_index index.php;
-              '';
-            };
-
-            "~* /(\\.git|cache|bin|logs|backup|tests)/.*$" = {
-              priority = 300;
-              extraConfig = ''
-                return 403;
-              '';
-            };
-
-            # deny running scripts inside core system folders
-            "~* /(system|vendor)/.*\\.(txt|xml|md|html|htm|shtml|shtm|json|yaml|yml|php|php2|php3|php4|php5|phar|phtml|pl|py|cgi|twig|sh|bat)$" =
-              {
-                priority = 300;
-                extraConfig = ''
-                  return 403;
-                '';
-              };
-
-            # deny running scripts inside user folder
-            "~* /user/.*\\.(txt|md|json|yaml|yml|php|php2|php3|php4|php5|phar|phtml|pl|py|cgi|twig|sh|bat)$" = {
-              priority = 300;
-              extraConfig = ''
-                return 403;
-              '';
-            };
-
-            # deny access to specific files in the root folder
-            "~ /(LICENSE\\.txt|composer\\.lock|composer\\.json|nginx\\.conf|web\\.config|htaccess\\.txt|\\.htaccess)" =
-              {
-                priority = 300;
-                extraConfig = ''
-                  return 403;
-                '';
-              };
-
-            # deny all files and folder beginning with a dot (hidden files & folders)
-            "~ (^|/)\\." = {
-              priority = 300;
-              extraConfig = ''
-                return 403;
-              '';
-            };
-
-            "/" = {
-              priority = 400;
-              index = "index.php";
-              extraConfig = ''
-                try_files $uri $uri/ /index.php?$query_string;
-              '';
-            };
-          };
-
           extraConfig = ''
             index index.php index.html /index.php$request_uri;
             add_header X-Content-Type-Options nosniff;
@@ -245,26 +125,147 @@ in
             gzip_proxied expired no-cache no-store private no_last_modified no_etag auth;
             gzip_types application/atom+xml application/javascript application/json application/ld+json application/manifest+json application/rss+xml application/vnd.geo+json application/vnd.ms-fontobject application/x-font-ttf application/x-web-app-manifest+json application/xhtml+xml application/xml font/opentype image/bmp image/svg+xml image/x-icon text/cache-manifest text/css text/plain text/vcard text/vnd.rim.location.xloc text/vtt text/x-component text/x-cross-domain-policy;
           '';
+
+          locations = {
+            "/" = {
+              extraConfig = ''
+                try_files $uri $uri/ /index.php?$query_string;
+              '';
+
+              index = "index.php";
+              priority = 400;
+            };
+
+            "= /robots.txt" = {
+              extraConfig = ''
+                allow all;
+                access_log off;
+              '';
+
+              priority = 100;
+            };
+
+            # deny all files and folder beginning with a dot (hidden files & folders)
+            "~ (^|/)\\." = {
+              extraConfig = ''
+                return 403;
+              '';
+
+              priority = 300;
+            };
+
+            # deny access to specific files in the root folder
+            "~ /(LICENSE\\.txt|composer\\.lock|composer\\.json|nginx\\.conf|web\\.config|htaccess\\.txt|\\.htaccess)" =
+              {
+                extraConfig = ''
+                  return 403;
+                '';
+
+                priority = 300;
+              };
+
+            "~ \\.php$" = {
+              extraConfig = ''
+                fastcgi_split_path_info ^(.+\.php)(/.+)$;
+                fastcgi_pass unix:${config.services.phpfpm.pools.${cfg.pool}.socket};
+                fastcgi_index index.php;
+              '';
+
+              priority = 200;
+            };
+
+            "~* /(\\.git|cache|bin|logs|backup|tests)/.*$" = {
+              extraConfig = ''
+                return 403;
+              '';
+
+              priority = 300;
+            };
+
+            # deny running scripts inside core system folders
+            "~* /(system|vendor)/.*\\.(txt|xml|md|html|htm|shtml|shtm|json|yaml|yml|php|php2|php3|php4|php5|phar|phtml|pl|py|cgi|twig|sh|bat)$" =
+              {
+                extraConfig = ''
+                  return 403;
+                '';
+
+                priority = 300;
+              };
+
+            # deny running scripts inside user folder
+            "~* /user/.*\\.(txt|md|json|yaml|yml|php|php2|php3|php4|php5|phar|phtml|pl|py|cgi|twig|sh|bat)$" = {
+              extraConfig = ''
+                return 403;
+              '';
+
+              priority = 300;
+            };
+          };
+
+          root = "${servedRoot}";
         };
       };
     };
 
-    systemd.tmpfiles.rules =
-      let
-        datadir = "/var/lib/grav";
-      in
-      map (dir: "d '${dir}' 0750 grav grav - -") [
-        "/var/cache/grav"
-        "${datadir}/assets"
-        "${datadir}/backup"
-        "${datadir}/images"
-        "${datadir}/system/config"
-        "${datadir}/user/accounts"
-        "${datadir}/user/config"
-        "${datadir}/user/data"
-        "/var/log/grav"
-      ]
-      ++ [ "L+ ${datadir}/user/config/system.yaml - - - - ${systemSettingsYaml}" ];
+    services.phpfpm.pools = mkIf (cfg.pool == "${poolName}") {
+      ${poolName} = {
+        group = "grav";
+
+        phpEnv = {
+          GRAV_BACKUP_PATH = "/var/lib/grav/backup";
+          GRAV_CACHE_PATH = "/var/cache/grav";
+          GRAV_LOG_PATH = "/var/log/grav";
+          GRAV_ROOT = toString servedRoot;
+          GRAV_SYSTEM_PATH = "${servedRoot}/system";
+          GRAV_TMP_PATH = "/var/tmp/grav";
+        };
+
+        phpPackage = cfg.phpPackage.buildEnv {
+          extensions =
+            { all, enabled }:
+            enabled
+            ++ (with all; [
+              apcu
+              xml
+              yaml
+            ]);
+
+          extraConfig = generators.toKeyValue { mkKeyValue = generators.mkKeyValueDefault { } " = "; } {
+            "apc.enable_cli" = "1";
+            catch_workers_output = "yes";
+            display_errors = "stderr";
+            error_reporting = "E_ALL";
+            expose_php = "Off";
+            memory_limit = cfg.maxUploadSize;
+            "opcache.fast_shutdown" = "1";
+            "opcache.interned_strings_buffer" = "8";
+            "opcache.max_accelerated_files" = "10000";
+            "opcache.memory_consumption" = "128";
+            "opcache.revalidate_freq" = "1";
+            "openssl.cafile" = config.security.pki.caBundle;
+            output_buffering = "0";
+            post_max_size = cfg.maxUploadSize;
+            short_open_tag = "Off";
+            upload_max_filesize = cfg.maxUploadSize;
+          };
+        };
+
+        settings = mapAttrs (name: mkDefault) {
+          "catch_workers_output" = 1;
+          "listen.group" = config.services.nginx.group;
+          "listen.mode" = "0600";
+          "listen.owner" = config.services.nginx.user;
+          "pm" = "dynamic";
+          "pm.max_children" = 75;
+          "pm.max_requests" = 500;
+          "pm.max_spare_servers" = 20;
+          "pm.min_spare_servers" = 5;
+          "pm.start_servers" = 10;
+        };
+
+        user = "grav";
+      };
+    };
 
     systemd.services = {
       "phpfpm-${poolName}" = mkIf (cfg.pool == "${poolName}") {
@@ -306,15 +307,32 @@ in
       };
     };
 
-    users.users.grav = {
-      isSystemUser = true;
-      description = "Grav service user";
-      home = "/var/lib/grav";
-      group = "grav";
-    };
+    systemd.tmpfiles.rules =
+      let
+        datadir = "/var/lib/grav";
+      in
+      map (dir: "d '${dir}' 0750 grav grav - -") [
+        "/var/cache/grav"
+        "${datadir}/assets"
+        "${datadir}/backup"
+        "${datadir}/images"
+        "${datadir}/system/config"
+        "${datadir}/user/accounts"
+        "${datadir}/user/config"
+        "${datadir}/user/data"
+        "/var/log/grav"
+      ]
+      ++ [ "L+ ${datadir}/user/config/system.yaml - - - - ${systemSettingsYaml}" ];
 
     users.groups.grav = {
       members = [ config.services.nginx.user ];
+    };
+
+    users.users.grav = {
+      description = "Grav service user";
+      group = "grav";
+      home = "/var/lib/grav";
+      isSystemUser = true;
     };
   };
 }

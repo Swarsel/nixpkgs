@@ -3,8 +3,8 @@
   stdenv,
   fetchFromGitHub,
   cmake,
-  pkg-config,
   libsForQt5,
+  pkg-config,
   udevCheckHook,
   versionCheckHook,
 }:
@@ -17,20 +17,20 @@ stdenv.mkDerivation (finalAttrs: {
     owner = "jahnf";
     repo = "Projecteur";
     tag = "v${finalAttrs.version}";
-    fetchSubmodules = false;
     hash = "sha256-F7o93rBjrDTmArTIz8RB/uGBOYE6ny/U7ppk+jEhM5A=";
+    fetchSubmodules = false;
   };
-
-  buildInputs = [
-    libsForQt5.qtbase
-    libsForQt5.qtgraphicaleffects
-  ];
 
   nativeBuildInputs = [
     cmake
     pkg-config
     libsForQt5.wrapQtAppsHook
     udevCheckHook
+  ];
+
+  buildInputs = [
+    libsForQt5.qtbase
+    libsForQt5.qtgraphicaleffects
   ];
 
   cmakeFlags = [
@@ -46,10 +46,12 @@ stdenv.mkDerivation (finalAttrs: {
     description = "Linux/X11 application for the Logitech Spotlight device (and similar devices)";
     homepage = "https://github.com/jahnf/Projecteur";
     license = lib.licenses.mit;
-    mainProgram = "projecteur";
+
     maintainers = with lib.maintainers; [
       benneti
     ];
+
     platforms = lib.platforms.linux;
+    mainProgram = "projecteur";
   };
 })

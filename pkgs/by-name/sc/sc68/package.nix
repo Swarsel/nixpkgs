@@ -1,16 +1,16 @@
 {
   lib,
   stdenv,
-  fetchsvn,
-  pkg-config,
-  which,
   autoconf,
   automake,
-  libtool,
+  curl,
+  fetchsvn,
   hexdump,
   libao,
+  libtool,
+  pkg-config,
+  which,
   zlib,
-  curl,
 }:
 
 stdenv.mkDerivation {
@@ -27,12 +27,6 @@ stdenv.mkDerivation {
     substituteInPlace vcversion.sh \
       --replace-fail 'date -u "+%Y%m%d"' 'date -u --date=@$SOURCE_DATE_EPOCH "+%Y%m%d"'
   '';
-
-  preConfigure = ''
-    tools/svn-bootstrap.sh
-  '';
-
-  enableParallelBuilding = true;
 
   nativeBuildInputs = [
     autoconf
@@ -51,6 +45,12 @@ stdenv.mkDerivation {
 
   # Doesn't specify any standard target, but it's >20yo code
   env.CFLAGS = "-std=c99";
+
+  preConfigure = ''
+    tools/svn-bootstrap.sh
+  '';
+
+  enableParallelBuilding = true;
 
   meta = {
     description = "Atari ST and Amiga music player";

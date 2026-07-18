@@ -9,7 +9,6 @@
 buildPythonPackage rec {
   pname = "httpie-ntlm";
   version = "1.0.2";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
@@ -23,7 +22,7 @@ buildPythonPackage rec {
 
   # Package have no tests
   doCheck = false;
-
+  format = "setuptools";
   pythonImportsCheck = [ "httpie_ntlm" ];
 
   meta = {

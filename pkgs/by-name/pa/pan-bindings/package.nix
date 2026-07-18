@@ -2,10 +2,10 @@
   lib,
   stdenv,
   fetchFromGitHub,
+  asio,
   buildGoModule,
   cmake,
   ncurses,
-  asio,
 }:
 
 let
@@ -18,18 +18,27 @@ let
   };
   goDeps = (
     buildGoModule {
-      name = "pan-bindings-goDeps";
       inherit src version;
-      modRoot = "go";
       vendorHash = "sha256-3MybV76pHDnKgN2ENRgsyAvynXQctv0fJcRGzesmlww=";
+      modRoot = "go";
+      name = "pan-bindings-goDeps";
     }
   );
 in
 
 stdenv.mkDerivation {
+  inherit src version;
   pname = "pan-bindings";
 
-  inherit src version;
+  nativeBuildInputs = [
+    cmake
+    goDeps.go
+  ];
+
+  buildInputs = [
+    ncurses
+    asio
+  ];
 
   cmakeFlags = [
     "-DBUILD_SHARED_LIBS=1"
@@ -43,22 +52,12 @@ stdenv.mkDerivation {
     runHook postPatch
   '';
 
-  buildInputs = [
-    ncurses
-    asio
-  ];
-
-  nativeBuildInputs = [
-    cmake
-    goDeps.go
-  ];
-
   meta = {
     description = "SCION PAN Bindings for C, C++, and Python";
     homepage = "https://github.com/lschulz/pan-bindings";
     license = lib.licenses.asl20;
     maintainers = with lib.maintainers; [ matthewcroughan ];
-    mainProgram = "pan-bindings";
     platforms = lib.platforms.all;
+    mainProgram = "pan-bindings";
   };
 }

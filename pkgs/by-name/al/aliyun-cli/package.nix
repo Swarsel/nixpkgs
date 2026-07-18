@@ -1,9 +1,9 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
-  writableTmpDirAsHomeHook,
+  buildGoModule,
   nix-update-script,
+  writableTmpDirAsHomeHook,
 }:
 
 buildGoModule (finalAttrs: {
@@ -19,8 +19,11 @@ buildGoModule (finalAttrs: {
   };
 
   vendorHash = "sha256-smlPjS2kda0ij+3Jch/FKRHm820Zux6vWXooqhm6fCA=";
+  nativeCheckInputs = [ writableTmpDirAsHomeHook ];
 
-  subPackages = [ "main" ];
+  postInstall = ''
+    mv $out/bin/main $out/bin/aliyun
+  '';
 
   ldflags = [
     "-s"
@@ -28,12 +31,7 @@ buildGoModule (finalAttrs: {
     "-X github.com/aliyun/aliyun-cli/v3/cli.Version=${finalAttrs.version}"
   ];
 
-  nativeCheckInputs = [ writableTmpDirAsHomeHook ];
-
-  postInstall = ''
-    mv $out/bin/main $out/bin/aliyun
-  '';
-
+  subPackages = [ "main" ];
   passthru.updateScript = nix-update-script { };
 
   meta = {
@@ -41,10 +39,12 @@ buildGoModule (finalAttrs: {
     homepage = "https://github.com/aliyun/aliyun-cli";
     changelog = "https://github.com/aliyun/aliyun-cli/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.asl20;
+
     maintainers = with lib.maintainers; [
       ornxka
       ryan4yin
     ];
+
     mainProgram = "aliyun";
   };
 })

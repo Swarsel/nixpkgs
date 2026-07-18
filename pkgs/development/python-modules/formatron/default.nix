@@ -1,20 +1,19 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  general-sam,
-  setuptools,
-  kbnf,
+  buildPythonPackage,
   frozendict,
+  general-sam,
   jsonschema,
+  kbnf,
   pydantic,
+  setuptools,
   transformers,
   vllm,
 }:
 buildPythonPackage rec {
   pname = "formatron";
   version = "0.5.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "Dan-wanna-M";
@@ -51,10 +50,13 @@ buildPythonPackage rec {
     transformers = [
       transformers
     ];
+
     vllm = [
       vllm
     ];
   };
+
+  pyproject = true;
 
   pythonImportsCheck = [
     "formatron"

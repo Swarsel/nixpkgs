@@ -1,7 +1,7 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage {
@@ -18,11 +18,11 @@ rustPlatform.buildRustPackage {
   cargoHash = "sha256-Kz/7BFBmTK8h6nO+jrSYh2p0GMlT1E0icmLXC+mJVmg=";
 
   meta = {
-    homepage = "https://github.com/nonamescm/yex-lang";
     description = "Functional scripting language written in rust";
+    homepage = "https://github.com/nonamescm/yex-lang";
     license = lib.licenses.mit;
     maintainers = [ ];
-    mainProgram = "yex";
     platforms = lib.platforms.unix;
+    mainProgram = "yex";
   };
 }

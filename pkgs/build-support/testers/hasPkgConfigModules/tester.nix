@@ -1,8 +1,8 @@
 # Static arguments
 {
   lib,
-  runCommand,
   pkg-config,
+  runCommand,
 }:
 
 # Tester arguments
@@ -16,9 +16,10 @@
 
 runCommand testName
   {
+    inherit moduleNames version versionCheck;
     nativeBuildInputs = [ pkg-config ];
     buildInputs = [ package ];
-    inherit moduleNames version versionCheck;
+
     meta = {
       description = "Test whether ${package.name} exposes pkg-config modules ${lib.concatStringsSep ", " moduleNames}";
     }
@@ -26,13 +27,13 @@ runCommand testName
     # as hydra can't check this meta info in dependencies.
     # The test itself is just Nixpkgs, with MIT license.
     // builtins.intersectAttrs {
+      license = throw "unused";
+      platforms = throw "unused";
       available = throw "unused";
       broken = throw "unused";
       insecure = throw "unused";
-      license = throw "unused";
       nonTeamMaintainers = throw "unused";
       teams = throw "unused";
-      platforms = throw "unused";
       unfree = throw "unused";
       unsupported = throw "unused";
     } package.meta;

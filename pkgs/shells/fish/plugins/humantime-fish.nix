@@ -1,7 +1,7 @@
 {
   lib,
-  buildFishPlugin,
   fetchFromGitHub,
+  buildFishPlugin,
   fishtape,
 }:
 buildFishPlugin {
@@ -15,10 +15,11 @@ buildFishPlugin {
     sha256 = "sha256-792rPsf2WDIYcP8gn6TbHh9RZvskfOAL/oKfpilaLh0=";
   };
 
-  checkPlugins = [ fishtape ];
   checkPhase = ''
     fishtape tests/humantime.fish
   '';
+
+  checkPlugins = [ fishtape ];
 
   meta = {
     description = "Turn milliseconds into a human-readable string in Fish";

@@ -2,19 +2,12 @@
   lib,
   stdenv,
   fetchFromGitHub,
-
-  cmake,
-  copyDesktopItems,
-  python3,
-  makeDesktopItem,
-  makeWrapper,
-  pkg-config,
-  wrapGAppsHook3,
-
   SDL2,
   SDL2_mixer,
   SDL2_net,
   alsa-lib,
+  cmake,
+  copyDesktopItems,
   cpptrace,
   curl,
   expat,
@@ -24,21 +17,24 @@
   libsepol,
   libsysprof-capture,
   libuuid,
+  libx11,
   libxdmcp,
   libxkbcommon,
+  makeDesktopItem,
+  makeWrapper,
+  nix-update-script,
   pcre2,
+  pkg-config,
   portmidi,
+  python3,
   wayland-scanner,
   waylandpp,
+  wrapGAppsHook3,
   wxwidgets_3_2,
-  libx11,
   xorgproto,
   zstd,
-
-  nix-update-script,
-
-  withX11 ? stdenv.hostPlatform.isLinux,
   withWayland ? stdenv.hostPlatform.isLinux,
+  withX11 ? stdenv.hostPlatform.isLinux,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -148,50 +144,53 @@ stdenv.mkDerivation (finalAttrs: {
 
   desktopItems = [
     (makeDesktopItem {
-      name = "odamex";
-      icon = "odamex";
-      exec = "odamex";
-      desktopName = "Odamex Client";
+      categories = [
+        "ActionGame"
+        "Game"
+        "Shooter"
+      ];
+
       comment = "A Doom multiplayer game engine";
+      desktopName = "Odamex Client";
+      exec = "odamex";
+      icon = "odamex";
+      name = "odamex";
+    })
+    (makeDesktopItem {
       categories = [
         "ActionGame"
         "Game"
         "Shooter"
       ];
-    })
-    (makeDesktopItem {
-      name = "odalaunch";
-      icon = "odalaunch";
-      exec = "odalaunch";
-      desktopName = "Odamex Launcher";
+
       comment = "Server Browser for Odamex";
-      categories = [
-        "ActionGame"
-        "Game"
-        "Shooter"
-      ];
+      desktopName = "Odamex Launcher";
+      exec = "odalaunch";
+      icon = "odalaunch";
+      name = "odalaunch";
     })
     (makeDesktopItem {
-      name = "odasrv";
-      icon = "odasrv";
-      exec = "odasrv";
-      desktopName = "Odamex Server";
-      comment = "Run an Odamex game server";
       categories = [
         "Network"
       ];
+
+      comment = "Run an Odamex game server";
+      desktopName = "Odamex Server";
+      exec = "odasrv";
+      icon = "odasrv";
+      name = "odasrv";
     })
   ];
 
   passthru.updateScript = nix-update-script { };
 
   meta = {
-    homepage = "https://odamex.net";
     description = "Client/server port for playing old-school Doom online";
+    homepage = "https://odamex.net";
     changelog = "https://github.com/odamex/odamex/releases/tag/${finalAttrs.src.tag}";
     license = lib.licenses.gpl2Only;
-    platforms = lib.platforms.unix;
     maintainers = with lib.maintainers; [ eljamm ];
+    platforms = lib.platforms.unix;
     mainProgram = "odalaunch";
   };
 })

@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchurl,
+  buildPythonPackage,
   nix-update-script,
   numpy,
   pandas,
@@ -14,7 +14,6 @@
 buildPythonPackage rec {
   pname = "pandas-ta";
   version = "0.3.14b";
-  pyproject = true;
 
   src = fetchurl {
     url = "https://www.pandas-ta.dev/assets/zip/pandas_ta-${version}.tar.gz";
@@ -26,6 +25,8 @@ buildPythonPackage rec {
       --replace-fail "import NaN" "import nan"
   '';
 
+  # PyTestCheckHook failing because of missing test dependency. Packages has been tested manually.
+  doCheck = false;
   build-system = [ setuptools ];
 
   dependencies = [
@@ -37,12 +38,9 @@ buildPythonPackage rec {
     six
   ];
 
-  # PyTestCheckHook failing because of missing test dependency. Packages has been tested manually.
-  doCheck = false;
-
-  passthru.updateScript = nix-update-script { };
-
+  pyproject = true;
   pythonImportsCheck = [ "pandas_ta" ];
+  passthru.updateScript = nix-update-script { };
 
   meta = {
     description = "Technical Analysis Indicators";

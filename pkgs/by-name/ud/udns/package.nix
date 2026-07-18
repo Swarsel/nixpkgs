@@ -11,10 +11,6 @@ stdenv.mkDerivation (finalAttrs: {
   pname = "udns";
   version = "0.6";
 
-  configurePhase = "./configure --enable-ipv6";
-
-  buildPhase = "make staticlib sharedlib rblcheck_s dnsget_s";
-
   src = fetchurl {
     url = "https://www.corpit.ru/mjt/udns/udns-${finalAttrs.version}.tar.gz";
     sha256 = "sha256-aWotDVGNqYXZdaZeEdFm8/V829HUI3aguFMH9JYBxug=";
@@ -27,6 +23,8 @@ stdenv.mkDerivation (finalAttrs: {
     substituteInPlace Makefile.in \
       --replace --soname, -install_name,$out/lib/
   '';
+
+  buildPhase = "make staticlib sharedlib rblcheck_s dnsget_s";
 
   installPhase = ''
     runHook preInstall
@@ -46,12 +44,13 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  configurePhase = "./configure --enable-ipv6";
   # keep man3
   outputDevdoc = "out";
 
   meta = {
-    homepage = "http://www.corpit.ru/mjt/udns.html";
     description = "Async-capable DNS stub resolver library";
+    homepage = "http://www.corpit.ru/mjt/udns.html";
     license = lib.licenses.lgpl21Plus;
     maintainers = [ lib.maintainers.womfoo ];
     platforms = lib.platforms.unix;

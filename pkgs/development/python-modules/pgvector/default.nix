@@ -1,28 +1,25 @@
 {
   lib,
   stdenv,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # build-system
-  setuptools,
-
-  # dependencies
-  numpy,
-
   # tests
   asyncpg,
+  buildPythonPackage,
   django,
+  # dependencies
+  numpy,
   peewee,
   pg8000,
   postgresql,
   postgresqlTestHook,
-  psycopg-pool,
   psycopg,
+  psycopg-pool,
   psycopg2,
   pytest-asyncio,
   pytestCheckHook,
   scipy,
+  # build-system
+  setuptools,
   sqlalchemy,
   sqlmodel,
 }:
@@ -30,7 +27,6 @@
 buildPythonPackage rec {
   pname = "pgvector";
   version = "0.4.2";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "pgvector";
@@ -39,9 +35,14 @@ buildPythonPackage rec {
     hash = "sha256-jzUZK3zQxqajVqGbaQzLPzvK/k3Wck9jX95kkBH2IlY=";
   };
 
-  build-system = [ setuptools ];
+  env = {
+    PGDATABASE = "pgvector_python_test";
+    USER = "test_user";
+    postgresqlEnableTCP = 1;
+    postgresqlTestUserOptions = "LOGIN SUPERUSER";
+  };
 
-  dependencies = [ numpy ];
+  doCheck = lib.meta.availableOn stdenv.buildPlatform postgresqlTestHook;
 
   nativeCheckInputs = [
     asyncpg
@@ -61,14 +62,9 @@ buildPythonPackage rec {
     sqlmodel
   ];
 
-  doCheck = lib.meta.availableOn stdenv.buildPlatform postgresqlTestHook;
-
-  env = {
-    PGDATABASE = "pgvector_python_test";
-    postgresqlEnableTCP = 1;
-    postgresqlTestUserOptions = "LOGIN SUPERUSER";
-    USER = "test_user";
-  };
+  __darwinAllowLocalNetworking = true;
+  build-system = [ setuptools ];
+  dependencies = [ numpy ];
 
   disabledTestPaths = [
     # DB error
@@ -76,9 +72,8 @@ buildPythonPackage rec {
     "tests/test_sqlalchemy.py"
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "pgvector" ];
-
-  __darwinAllowLocalNetworking = true;
 
   meta = {
     description = "Pgvector support for Python";

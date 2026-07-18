@@ -2,48 +2,48 @@
   lib,
   stdenv,
   fetchurl,
-  gitUpdater,
+  DarwinTools,
   bison,
-  cmake,
-  pkg-config,
   boost,
+  cctools,
+  cmake,
+  coreutils,
+  curl,
+  # Percona-specific deps
+  cyrus_sasl,
+  developer_cmds,
+  gitUpdater,
+  gnugrep,
+  gnumake,
+  gnused,
+  gperftools,
+  hostname,
   icu,
+  jemalloc,
   libedit,
   libevent,
+  libfido2,
+  libtirpc,
   lz4,
+  makeWrapper,
   ncurses,
+  nixosTests,
+  numactl,
+  openldap,
   openssl,
   perl,
+  pkg-config,
+  procps,
   protobuf,
   re2,
   readline,
+  rpcsvc-proto,
+  systemd,
   zlib,
   zstd,
-  libfido2,
-  numactl,
-  cctools,
-  developer_cmds,
-  libtirpc,
-  rpcsvc-proto,
-  curl,
-  DarwinTools,
-  nixosTests,
-  coreutils,
-  procps,
-  gnused,
-  gnugrep,
-  hostname,
-  makeWrapper,
-  systemd,
-  # Percona-specific deps
-  cyrus_sasl,
-  gnumake,
-  openldap,
   # optional: different malloc implementations
   withJemalloc ? false,
   withTcmalloc ? false,
-  jemalloc,
-  gperftools,
 }:
 
 assert !(withJemalloc && withTcmalloc);
@@ -57,17 +57,10 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-jsGaovy3FNBrprC27R7cNofAZmTjqSK21U6wn6TEiBA=";
   };
 
-  nativeBuildInputs = [
-    bison
-    cmake
-    pkg-config
-    makeWrapper
-    # required for scripts/CMakeLists.txt
-    coreutils
-    gnugrep
-    procps
-  ]
-  ++ lib.optionals (!stdenv.hostPlatform.isDarwin) [ rpcsvc-proto ];
+  outputs = [
+    "out"
+    "static"
+  ];
 
   patches = [
     ./no-force-outline-atomics.patch # Do not force compilers to turn on -moutline-atomics switch
@@ -84,6 +77,18 @@ stdenv.mkDerivation (finalAttrs: {
     substituteInPlace storage/rocksdb/get_rocksdb_files.sh --replace "rm $MKFILE" "${coreutils}/bin/rm $MKFILE"
     substituteInPlace storage/rocksdb/get_rocksdb_files.sh --replace "make --" "${gnumake}/bin/make --"
   '';
+
+  nativeBuildInputs = [
+    bison
+    cmake
+    pkg-config
+    makeWrapper
+    # required for scripts/CMakeLists.txt
+    coreutils
+    gnugrep
+    procps
+  ]
+  ++ lib.optionals (!stdenv.hostPlatform.isDarwin) [ rpcsvc-proto ];
 
   buildInputs = [
     boost
@@ -116,11 +121,6 @@ stdenv.mkDerivation (finalAttrs: {
   ]
   ++ lib.optional (stdenv.hostPlatform.isLinux && withJemalloc) jemalloc
   ++ lib.optional (stdenv.hostPlatform.isLinux && withTcmalloc) gperftools;
-
-  outputs = [
-    "out"
-    "static"
-  ];
 
   cmakeFlags = [
     # Percona-specific flags.
@@ -200,29 +200,34 @@ stdenv.mkDerivation (finalAttrs: {
   passthru = {
     client = finalAttrs.finalPackage;
     connector-c = finalAttrs.finalPackage;
-    server = finalAttrs.finalPackage;
     mysqlVersion = lib.versions.majorMinor finalAttrs.version;
+    server = finalAttrs.finalPackage;
+
     tests.percona-server =
       nixosTests.mysql."percona-server_${lib.versions.major finalAttrs.version}_${lib.versions.minor finalAttrs.version}";
+
     updateScript = gitUpdater {
-      url = "https://github.com/percona/percona-server";
-      rev-prefix = "Percona-Server-";
       allowedVersions = "${lib.versions.major finalAttrs.version}\\.${lib.versions.minor finalAttrs.version}\\..+";
+      rev-prefix = "Percona-Server-";
+      url = "https://github.com/percona/percona-server";
     };
   };
 
   meta = {
-    homepage = "https://www.percona.com/software/mysql-database/percona-server";
     description = ''
       A free, fully compatible, enhanced, open source drop-in replacement for
       MySQL® that provides superior performance, scalability and instrumentation.
       Long-term support release.
     '';
+
+    homepage = "https://www.percona.com/software/mysql-database/percona-server";
     license = lib.licenses.gpl2Only;
+
     maintainers = [
       lib.maintainers.leona
       lib.maintainers.osnyx
     ];
+
     platforms = lib.platforms.unix;
   };
 })

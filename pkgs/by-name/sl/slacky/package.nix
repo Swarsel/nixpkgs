@@ -1,9 +1,9 @@
 {
   lib,
-  buildNpmPackage,
   fetchFromGitHub,
-  electron,
+  buildNpmPackage,
   copyDesktopItems,
+  electron,
   makeDesktopItem,
   nix-update-script,
 }:
@@ -18,24 +18,13 @@ buildNpmPackage (finalAttrs: {
     hash = "sha256-irZC09Nm/yrd7Z5av5HJo64gb1TEFzeJqe004GtmEpY=";
   };
 
-  npmDepsHash = "sha256-OtspJ1/QaUfXyBHt9hvx+d4JEfKe1X9w+IlMVtdoTiY=";
-
-  npmPackFlags = [
-    "--ignore-scripts"
-  ];
-
-  makeCacheWritable = true;
-
-  npmFlags = [
-    "--legacy-peer-deps"
-  ];
-
   strictDeps = true;
 
   nativeBuildInputs = [
     copyDesktopItems
   ];
 
+  npmDepsHash = "sha256-OtspJ1/QaUfXyBHt9hvx+d4JEfKe1X9w+IlMVtdoTiY=";
   env.ELECTRON_SKIP_BINARY_DOWNLOAD = "1";
 
   postInstall = ''
@@ -47,21 +36,34 @@ buildNpmPackage (finalAttrs: {
   '';
 
   desktopItems = lib.singleton (makeDesktopItem {
-    name = "slacky";
-    exec = "slacky %u";
-    icon = "slacky";
-    desktopName = "Slacky";
-    comment = "An unofficial Slack desktop client for arm64 Linux";
-    startupWMClass = "com.andersonlaverde.slacky";
-    type = "Application";
     categories = [
       "Network"
       "InstantMessaging"
     ];
+
+    comment = "An unofficial Slack desktop client for arm64 Linux";
+    desktopName = "Slacky";
+    exec = "slacky %u";
+    icon = "slacky";
+
     mimeTypes = [
       "x-scheme-handler/slack"
     ];
+
+    name = "slacky";
+    startupWMClass = "com.andersonlaverde.slacky";
+    type = "Application";
   });
+
+  makeCacheWritable = true;
+
+  npmFlags = [
+    "--legacy-peer-deps"
+  ];
+
+  npmPackFlags = [
+    "--ignore-scripts"
+  ];
 
   passthru.updateScript = nix-update-script { };
 

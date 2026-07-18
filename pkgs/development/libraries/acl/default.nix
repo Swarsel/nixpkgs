@@ -2,8 +2,8 @@
   lib,
   stdenv,
   fetchurl,
-  gettext,
   attr,
+  gettext,
 }:
 
 # Note: this package is used for bootstrapping fetchurl, and thus
@@ -28,23 +28,22 @@ stdenv.mkDerivation (finalAttrs: {
     "doc"
   ];
 
-  strictDeps = true;
-  __structuredAttrs = true;
-  enableParallelBuilding = true;
-
-  nativeBuildInputs = [ gettext ];
-  buildInputs = [ attr ];
-
   postPatch = ''
     patchShebangs .
   '';
 
+  strictDeps = true;
+  nativeBuildInputs = [ gettext ];
+  buildInputs = [ attr ];
+  __structuredAttrs = true;
+  enableParallelBuilding = true;
+
   meta = {
     inherit (attr.meta) platforms badPlatforms;
-    homepage = "https://savannah.nongnu.org/projects/acl";
     description = "Library and tools for manipulating access control lists";
+    homepage = "https://savannah.nongnu.org/projects/acl";
     license = lib.licenses.gpl2Plus;
-    teams = [ lib.teams.security-review ];
     identifiers.cpeParts = lib.meta.cpeFullVersionWithVendor "acl_project" finalAttrs.version;
+    teams = [ lib.teams.security-review ];
   };
 })

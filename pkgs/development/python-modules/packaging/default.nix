@@ -15,7 +15,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "packaging";
   version = "26.2";
-  pyproject = true;
 
   src = fetchPypi {
     inherit (finalAttrs) pname version;
@@ -23,11 +22,15 @@ buildPythonPackage (finalAttrs: {
   };
 
   nativeBuildInputs = [ flit-core ];
+  # Prevent circular dependency with pytest
+  doCheck = false;
 
   nativeCheckInputs = [
     pytestCheckHook
     pretend
   ];
+
+  pyproject = true;
 
   pythonImportsCheck = [
     "packaging"
@@ -38,23 +41,22 @@ buildPythonPackage (finalAttrs: {
     "packaging.version"
   ];
 
-  # Prevent circular dependency with pytest
-  doCheck = false;
-
   passthru.tests = packaging.overridePythonAttrs (_: {
     doCheck = true;
   });
 
   meta = {
-    changelog = "https://github.com/pypa/packaging/blob/${finalAttrs.version}/CHANGELOG.rst";
     description = "Core utilities for Python packages";
-    downloadPage = "https://github.com/pypa/packaging";
     homepage = "https://packaging.pypa.io/";
+    changelog = "https://github.com/pypa/packaging/blob/${finalAttrs.version}/CHANGELOG.rst";
+
     license = with lib.licenses; [
       bsd2
       asl20
     ];
+
     maintainers = with lib.maintainers; [ bennofs ];
+    downloadPage = "https://github.com/pypa/packaging";
     teams = [ lib.teams.python ];
   };
 })

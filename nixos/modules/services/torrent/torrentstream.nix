@@ -13,46 +13,60 @@ in
   options.services.torrentstream = {
     enable = lib.mkEnableOption "TorrentStream daemon";
     package = lib.mkPackageOption pkgs "torrentstream" { };
-    port = lib.mkOption {
-      type = lib.types.port;
-      default = 5082;
-      description = ''
-        TorrentStream port.
-      '';
-    };
-    openFirewall = lib.mkOption {
-      type = lib.types.bool;
-      default = false;
-      description = ''
-        Open ports in the firewall for TorrentStream daemon.
-      '';
-    };
+
     address = lib.mkOption {
-      type = lib.types.str;
       default = "0.0.0.0";
+
       description = ''
         Address to listen on.
       '';
+
+      type = lib.types.str;
+    };
+
+    openFirewall = lib.mkOption {
+      default = false;
+
+      description = ''
+        Open ports in the firewall for TorrentStream daemon.
+      '';
+
+      type = lib.types.bool;
+    };
+
+    port = lib.mkOption {
+      default = 5082;
+
+      description = ''
+        TorrentStream port.
+      '';
+
+      type = lib.types.port;
     };
   };
+
   config = lib.mkIf cfg.enable {
+    networking.firewall.allowedTCPPorts = lib.mkIf cfg.openFirewall [ cfg.port ];
+
     systemd.services.torrentstream = {
       after = [ "network.target" ];
       description = "TorrentStream Daemon";
-      wantedBy = [ "multi-user.target" ];
-      serviceConfig = {
-        ExecStart = lib.getExe cfg.package;
-        Restart = "on-failure";
-        UMask = "077";
-        StateDirectory = "torrentstream";
-        DynamicUser = true;
-      };
+
       environment = {
-        WEB_PORT = toString cfg.port;
         DOWNLOAD_PATH = "%S/torrentstream";
         LISTEN_ADDR = cfg.address;
+        WEB_PORT = toString cfg.port;
       };
+
+      serviceConfig = {
+        DynamicUser = true;
+        ExecStart = lib.getExe cfg.package;
+        Restart = "on-failure";
+        StateDirectory = "torrentstream";
+        UMask = "077";
+      };
+
+      wantedBy = [ "multi-user.target" ];
     };
-    networking.firewall.allowedTCPPorts = lib.mkIf cfg.openFirewall [ cfg.port ];
   };
 }

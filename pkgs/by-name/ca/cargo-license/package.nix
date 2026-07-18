@@ -1,7 +1,7 @@
 {
   lib,
-  rustPlatform,
   fetchCrate,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -17,12 +17,14 @@ rustPlatform.buildRustPackage (finalAttrs: {
 
   meta = {
     description = "Cargo subcommand to see license of dependencies";
-    mainProgram = "cargo-license";
     homepage = "https://github.com/onur/cargo-license";
     license = with lib.licenses; [ mit ];
+
     maintainers = with lib.maintainers; [
       basvandijk
       matthiasbeyer
     ];
+
+    mainProgram = "cargo-license";
   };
 })

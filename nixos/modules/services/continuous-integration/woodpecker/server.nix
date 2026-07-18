@@ -9,15 +9,15 @@ let
   cfg = config.services.woodpecker-server;
 in
 {
-  meta.maintainers = with lib.maintainers; [ ambroisie ];
-
   options = {
     services.woodpecker-server = {
       enable = lib.mkEnableOption "the Woodpecker-Server, a CI/CD application for automatic builds, deployments and tests";
       package = lib.mkPackageOption pkgs "woodpecker-server" { };
+
       environment = lib.mkOption {
         default = { };
-        type = lib.types.attrsOf lib.types.str;
+        description = "woodpecker-server config environment variables, for other options read the [documentation](https://woodpecker-ci.org/docs/administration/configuration/server)";
+
         example = lib.literalExpression ''
           {
             WOODPECKER_HOST = "https://woodpecker.example.com";
@@ -27,12 +27,13 @@ in
             WOODPECKER_GITEA_URL = "https://git.example.com";
           }
         '';
-        description = "woodpecker-server config environment variables, for other options read the [documentation](https://woodpecker-ci.org/docs/administration/configuration/server)";
+
+        type = lib.types.attrsOf lib.types.str;
       };
+
       environmentFile = lib.mkOption {
-        type = with lib.types; coercedTo path (f: [ f ]) (listOf path);
         default = [ ];
-        example = [ "/root/woodpecker-server.env" ];
+
         description = ''
           File to load environment variables
           from. This is helpful for specifying secrets.
@@ -42,6 +43,9 @@ in
           WOODPECKER_GITEA_SECRET=gto_**************************************
           ```
         '';
+
+        example = [ "/root/woodpecker-server.env" ];
+        type = with lib.types; coercedTo path (f: [ f ]) (listOf path);
       };
     };
   };
@@ -49,48 +53,52 @@ in
   config = lib.mkIf cfg.enable {
     systemd.services = {
       woodpecker-server = {
-        description = "Woodpecker-Server Service";
-        wantedBy = [ "multi-user.target" ];
+        inherit (cfg) environment;
         after = [ "network-online.target" ];
-        wants = [ "network-online.target" ];
+        description = "Woodpecker-Server Service";
+
         serviceConfig = {
-          DynamicUser = true;
-          WorkingDirectory = "%S/woodpecker-server";
-          StateDirectory = "woodpecker-server";
-          StateDirectoryMode = "0700";
-          UMask = "0007";
+          CapabilityBoundingSet = "";
           ConfigurationDirectory = "woodpecker-server";
+          DynamicUser = true;
           EnvironmentFile = cfg.environmentFile;
           ExecStart = lib.getExe cfg.package;
-          Restart = "on-failure";
-          RestartSec = 15;
-          CapabilityBoundingSet = "";
-          # Security
-          NoNewPrivileges = true;
-          # Sandboxing
-          ProtectSystem = "strict";
-          ProtectHome = true;
-          PrivateTmp = true;
-          PrivateDevices = true;
-          PrivateUsers = true;
-          ProtectHostname = true;
-          ProtectClock = true;
-          ProtectKernelTunables = true;
-          ProtectKernelModules = true;
-          ProtectKernelLogs = true;
-          ProtectControlGroups = true;
-          RestrictAddressFamilies = [ "AF_UNIX AF_INET AF_INET6" ];
           LockPersonality = true;
           MemoryDenyWriteExecute = true;
+          # Security
+          NoNewPrivileges = true;
+          PrivateDevices = true;
+          PrivateMounts = true;
+          PrivateTmp = true;
+          PrivateUsers = true;
+          ProtectClock = true;
+          ProtectControlGroups = true;
+          ProtectHome = true;
+          ProtectHostname = true;
+          ProtectKernelLogs = true;
+          ProtectKernelModules = true;
+          ProtectKernelTunables = true;
+          # Sandboxing
+          ProtectSystem = "strict";
+          Restart = "on-failure";
+          RestartSec = 15;
+          RestrictAddressFamilies = [ "AF_UNIX AF_INET AF_INET6" ];
           RestrictRealtime = true;
           RestrictSUIDSGID = true;
-          PrivateMounts = true;
+          StateDirectory = "woodpecker-server";
+          StateDirectoryMode = "0700";
           # System Call Filtering
           SystemCallArchitectures = "native";
           SystemCallFilter = "~@clock @privileged @cpu-emulation @debug @keyring @module @mount @obsolete @raw-io @reboot @setuid @swap";
+          UMask = "0007";
+          WorkingDirectory = "%S/woodpecker-server";
         };
-        inherit (cfg) environment;
+
+        wantedBy = [ "multi-user.target" ];
+        wants = [ "network-online.target" ];
       };
     };
   };
+
+  meta.maintainers = with lib.maintainers; [ ambroisie ];
 }

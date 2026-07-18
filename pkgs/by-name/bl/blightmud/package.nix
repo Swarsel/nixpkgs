@@ -1,13 +1,13 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
-  rustPlatform,
-  pkg-config,
   alsa-lib,
   openssl,
-  withTTS ? false,
+  pkg-config,
+  rustPlatform,
   speechd-minimal,
+  withTTS ? false,
 }:
 rustPlatform.buildRustPackage (finalAttrs: {
   pname = "blightmud";
@@ -20,13 +20,9 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-M+tbV8zuwnwwv335ljKIq0UIsSkb4SQnJnOtOhL25N8=";
   };
 
-  cargoHash = "sha256-EWI+k+q8JdyZDw+k2pM1mRkfBDQH0IsuzgrTECLrHt0=";
-
   postPatch = ''
     substituteInPlace Cargo.toml --replace-fail 'version = "0.0.0"' 'version = "${finalAttrs.version}"'
   '';
-
-  buildFeatures = lib.optional withTTS "tts";
 
   nativeBuildInputs = [
     pkg-config
@@ -39,11 +35,11 @@ rustPlatform.buildRustPackage (finalAttrs: {
   ++ lib.optionals (withTTS && stdenv.hostPlatform.isLinux) [ speechd-minimal ]
   ++ lib.optionals stdenv.hostPlatform.isLinux [ alsa-lib ];
 
+  cargoHash = "sha256-EWI+k+q8JdyZDw+k2pM1mRkfBDQH0IsuzgrTECLrHt0=";
+
   env = lib.optionalAttrs (!stdenv.cc.isClang) {
     NIX_CFLAGS_COMPILE = "-std=gnu17";
   };
-
-  __darwinAllowLocalNetworking = true;
 
   checkFlags =
     let
@@ -75,9 +71,12 @@ rustPlatform.buildRustPackage (finalAttrs: {
     in
     builtins.map (x: "--skip=" + x) skipList;
 
+  __darwinAllowLocalNetworking = true;
+  buildFeatures = lib.optional withTTS "tts";
+
   meta = {
     description = "Terminal MUD client written in Rust";
-    mainProgram = "blightmud";
+
     longDescription = ''
       Blightmud is a terminal client for connecting to Multi User Dungeon (MUD)
       games. It is written in Rust and supports TLS, GMCP, MSDP, MCCP2, tab
@@ -87,9 +86,11 @@ rustPlatform.buildRustPackage (finalAttrs: {
       including an optional built-in text-to-speech engine and a screen reader
       friendly mode.
     '';
+
     homepage = "https://github.com/Blightmud/Blightmud";
     license = lib.licenses.gpl3Plus;
     maintainers = with lib.maintainers; [ cpu ];
     platforms = with lib.platforms; linux ++ darwin;
+    mainProgram = "blightmud";
   };
 })

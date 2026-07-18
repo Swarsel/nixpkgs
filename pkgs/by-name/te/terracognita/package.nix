@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule (finalAttrs: {
@@ -16,10 +16,7 @@ buildGoModule (finalAttrs: {
   };
 
   vendorHash = "sha256-ApnJH0uIClXbfXK+k4t9Tcayc2mfndoG9iMqZY3iWys=";
-
   doCheck = false;
-
-  subPackages = [ "." ];
 
   ldflags = [
     "-s"
@@ -27,12 +24,14 @@ buildGoModule (finalAttrs: {
     "-X github.com/cycloidio/terracognita/cmd.Version=${finalAttrs.version}"
   ];
 
+  subPackages = [ "." ];
+
   meta = {
     description = "Reads from existing Cloud Providers (reverse Terraform) and generates your infrastructure as code on Terraform configuration";
-    mainProgram = "terracognita";
     homepage = "https://github.com/cycloidio/terracognita";
     changelog = "https://github.com/cycloidio/terracognita/raw/v${finalAttrs.version}/CHANGELOG.md";
     license = lib.licenses.mit;
     maintainers = [ ];
+    mainProgram = "terracognita";
   };
 })

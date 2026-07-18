@@ -1,6 +1,6 @@
 {
-  fetchFromGitHub,
   lib,
+  fetchFromGitHub,
   nix-update-script,
   rustPlatform,
   versionCheckHook,
@@ -18,20 +18,20 @@ rustPlatform.buildRustPackage (finalAttrs: {
   };
 
   cargoHash = "sha256-sw9MPnhbQPifkDJoO33RbMBtTsSyRmuiNVyjlteAAcM=";
-
-  nativeInstallCheckInputs = [ versionCheckHook ];
   doInstallCheck = true;
-
+  nativeInstallCheckInputs = [ versionCheckHook ];
   passthru.updateScript = nix-update-script { };
 
   meta = {
     description = "Multi-backend declarative package manager";
+
     longDescription = ''
       `metapac` allows you to maintain a consistent set of packages
       across multiple machines.  It also makes setting up a new system
       with your preferred packages from your preferred package
       managers much easier.
     '';
+
     homepage = "https://github.com/ripytide/metapac";
     changelog = "https://github.com/ripytide/metapac/blob/${finalAttrs.src.tag}/CHANGELOG.md";
     license = lib.licenses.gpl3Plus;

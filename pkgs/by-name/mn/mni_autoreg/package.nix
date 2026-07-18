@@ -3,9 +3,9 @@
   stdenv,
   fetchFromGitHub,
   cmake,
+  libminc,
   makeWrapper,
   perlPackages,
-  libminc,
 }:
 
 stdenv.mkDerivation {
@@ -19,15 +19,28 @@ stdenv.mkDerivation {
     hash = "sha256-tKCDrIHlkArF5Xv6NlSkvmNMIMDsxEf5O3ATzm6DabQ=";
   };
 
+  postPatch = ''
+    substituteInPlace CMakeLists.txt \
+      --replace-fail "CMAKE_MINIMUM_REQUIRED(VERSION 3.1)" "cmake_minimum_required(VERSION 3.10)" \
+      --replace-fail "CMAKE_POLICY(SET CMP0026 OLD)" "CMAKE_POLICY(SET CMP0026 NEW)"
+  '';
+
   nativeBuildInputs = [
     cmake
     makeWrapper
   ];
+
   buildInputs = [ libminc ];
+
   propagatedBuildInputs = with perlPackages; [
     perl
     GetoptTabular
     MNI-Perllib
+  ];
+
+  cmakeFlags = [
+    "-DLIBMINC_DIR=${libminc}/lib/cmake"
+    (lib.cmakeFeature "PERL_EXECUTABLE" (lib.getExe perlPackages.perl))
   ];
 
   env.NIX_CFLAGS_COMPILE = toString [
@@ -35,12 +48,7 @@ stdenv.mkDerivation {
     "-Wno-error=incompatible-pointer-types"
   ];
 
-  cmakeFlags = [
-    "-DLIBMINC_DIR=${libminc}/lib/cmake"
-    (lib.cmakeFeature "PERL_EXECUTABLE" (lib.getExe perlPackages.perl))
-  ];
   # testing broken: './minc_wrapper: Permission denied' from Testing/ellipse0.mnc
-
   postFixup = ''
     for prog in autocrop mritoself mritotal xfmtool; do
       echo $out/bin/$prog
@@ -48,17 +56,11 @@ stdenv.mkDerivation {
     done
   '';
 
-  postPatch = ''
-    substituteInPlace CMakeLists.txt \
-      --replace-fail "CMAKE_MINIMUM_REQUIRED(VERSION 3.1)" "cmake_minimum_required(VERSION 3.10)" \
-      --replace-fail "CMAKE_POLICY(SET CMP0026 OLD)" "CMAKE_POLICY(SET CMP0026 NEW)"
-  '';
-
   meta = {
-    homepage = "https://github.com/BIC-MNI/mni_autoreg";
     description = "Tools for automated registration using the MINC image format";
+    homepage = "https://github.com/BIC-MNI/mni_autoreg";
+    license = lib.licenses.free;
     maintainers = with lib.maintainers; [ bcdarwin ];
     platforms = lib.platforms.unix;
-    license = lib.licenses.free;
   };
 }

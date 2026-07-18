@@ -1,11 +1,11 @@
 {
   lib,
-  bc,
-  fetchurl,
-  getopt,
-  pkgsMusl ? { },
   stdenv,
+  fetchurl,
+  bc,
+  getopt,
   tzdata,
+  pkgsMusl ? { },
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -17,6 +17,11 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-dsjzzULuBc/7R7zIElbj1edCb00I5zN4i0WYXe30+XU=";
   };
 
+  outputs = [
+    "out"
+    "man"
+  ];
+
   patches = [
     # decouple tests from build phase
     ./002-dont-test-while-installing.diff
@@ -26,18 +31,21 @@ stdenv.mkDerivation (finalAttrs: {
     ./004-unconditional-ksh-test.diff
   ];
 
-  outputs = [
-    "out"
-    "man"
-  ];
+  # Make tests work with musl
+  # * Disable deptgt-delete_on_error test (alpine does this too)
+  # * Disable shell-ksh test (ksh doesn't compile with musl)
+  # * Fix test failing due to different strerror(3) output for musl and glibc
+  postPatch = lib.optionalString (stdenv.hostPlatform.libc == "musl") ''
+    sed -i unit-tests/Makefile \
+      -e '/deptgt-delete_on_error/d' \
+      -e '/shell-ksh/d'
+    substituteInPlace unit-tests/opt-chdir.exp --replace "File name" "Filename"
+  '';
+
+  strictDeps = true;
 
   nativeBuildInputs = [
     getopt
-  ];
-
-  nativeCheckInputs = [
-    bc
-    tzdata
   ];
 
   # The generated makefile is a small wrapper for calling ./boot-strap with a
@@ -67,29 +75,27 @@ stdenv.mkDerivation (finalAttrs: {
     ) "export"
   );
 
-  __structuredAttrs = true;
-
-  strictDeps = true;
-
-  doCheck = true;
-
-  # Make tests work with musl
-  # * Disable deptgt-delete_on_error test (alpine does this too)
-  # * Disable shell-ksh test (ksh doesn't compile with musl)
-  # * Fix test failing due to different strerror(3) output for musl and glibc
-  postPatch = lib.optionalString (stdenv.hostPlatform.libc == "musl") ''
-    sed -i unit-tests/Makefile \
-      -e '/deptgt-delete_on_error/d' \
-      -e '/shell-ksh/d'
-    substituteInPlace unit-tests/opt-chdir.exp --replace "File name" "Filename"
-  '';
-
   buildPhase = ''
     runHook preBuild
 
     ./boot-strap --prefix=$out -o . op=build
 
     runHook postBuild
+  '';
+
+  doCheck = true;
+
+  nativeCheckInputs = [
+    bc
+    tzdata
+  ];
+
+  checkPhase = ''
+    runHook preCheck
+
+    ./boot-strap -o . op=test
+
+    runHook postCheck
   '';
 
   installPhase = ''
@@ -104,14 +110,7 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
-  checkPhase = ''
-    runHook preCheck
-
-    ./boot-strap -o . op=test
-
-    runHook postCheck
-  '';
-
+  __structuredAttrs = true;
   setupHook = ./setup-hook.sh;
 
   passthru = {
@@ -121,14 +120,14 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   meta = {
-    homepage = "https://www.crufty.net/help/sjg/bmake.html";
     description = "Portable version of NetBSD 'make'";
+    homepage = "https://www.crufty.net/help/sjg/bmake.html";
     license = lib.licenses.bsd3;
-    mainProgram = "bmake";
     maintainers = with lib.maintainers; [ thoughtpolice ];
     platforms = lib.platforms.unix;
     # requires strip
     badPlatforms = [ lib.systems.inspect.platformPatterns.isStatic ];
+    mainProgram = "bmake";
   };
 })
 # TODO: report the quirks and patches to bmake devteam (especially the Musl one)

@@ -2,11 +2,11 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  testers,
-  libtree,
-  runCommand,
   coreutils,
   dieHook,
+  libtree,
+  runCommand,
+  testers,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -21,16 +21,16 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   makeFlags = [ "PREFIX=$(out)" ];
-
   # Fails at https://github.com/haampie/libtree/blob/v3.1.1/tests/07_origin_is_relative_to_symlink_location_not_realpath/Makefile#L28
   doCheck = false;
 
   passthru.tests = {
     version = testers.testVersion {
-      package = libtree;
-      command = "libtree --version";
       version = finalAttrs.version;
+      command = "libtree --version";
+      package = libtree;
     };
+
     checkCoreUtils =
       runCommand "${finalAttrs.pname}-ls-test"
         {
@@ -47,12 +47,14 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Tree ldd with an option to bundle dependencies into a single folder";
-    mainProgram = "libtree";
     homepage = "https://github.com/haampie/libtree";
     license = lib.licenses.mit;
-    platforms = lib.platforms.linux;
+
     maintainers = with lib.maintainers; [
       prusnak
     ];
+
+    platforms = lib.platforms.linux;
+    mainProgram = "libtree";
   };
 })

@@ -1,18 +1,17 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   pandas,
+  pytestCheckHook,
   setuptools,
   simplesqlite,
   typing-extensions,
-  pytestCheckHook,
 }:
 
 buildPythonPackage rec {
   pname = "df-diskcache";
   version = "0.0.2";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "thombashi";
@@ -29,12 +28,14 @@ buildPythonPackage rec {
     typing-extensions
   ];
 
+  nativeCheckInputs = [ pytestCheckHook ];
+
   preCheck = ''
     # Needed for Permission denied: '/homeless-shelter'
     export HOME=$(mktemp -d)
   '';
 
-  nativeCheckInputs = [ pytestCheckHook ];
+  pyproject = true;
   pythonImportsCheck = [ "dfdiskcache" ];
 
   meta = {

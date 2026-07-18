@@ -2,8 +2,8 @@
   lib,
   fetchFromGitHub,
   buildGoModule,
-  versionCheckHook,
   makeWrapper,
+  versionCheckHook,
 }:
 
 buildGoModule (finalAttrs: {
@@ -17,20 +17,8 @@ buildGoModule (finalAttrs: {
     hash = "sha256-CeKZA7d11Kdecjv2aInrK4NQ+C7c/ae8qQmircemTb4=";
   };
 
-  vendorHash = "sha256-KVocEbpKYN/PE1Dnx4KO4V8AGEfYoNMKWZsAtXhLXv4=";
-
   nativeBuildInputs = [ makeWrapper ];
-
-  proxyVendor = true;
-
-  nativeInstallCheckInputs = [ versionCheckHook ];
-
-  ldflags = [
-    "-s"
-    "-w"
-    "-X=github.com/trufflesecurity/trufflehog/v3/pkg/version.BuildVersion=${finalAttrs.version}"
-  ];
-
+  vendorHash = "sha256-KVocEbpKYN/PE1Dnx4KO4V8AGEfYoNMKWZsAtXhLXv4=";
   # Test cases run git clone and require network access
   doCheck = false;
 
@@ -41,16 +29,27 @@ buildGoModule (finalAttrs: {
   '';
 
   doInstallCheck = true;
+  nativeInstallCheckInputs = [ versionCheckHook ];
+
+  ldflags = [
+    "-s"
+    "-w"
+    "-X=github.com/trufflesecurity/trufflehog/v3/pkg/version.BuildVersion=${finalAttrs.version}"
+  ];
+
+  proxyVendor = true;
 
   meta = {
     description = "Find credentials all over the place";
     homepage = "https://github.com/trufflesecurity/trufflehog";
     changelog = "https://github.com/trufflesecurity/trufflehog/releases/tag/${finalAttrs.src.tag}";
     license = with lib.licenses; [ agpl3Only ];
+
     maintainers = with lib.maintainers; [
       fab
       sarcasticadmin
     ];
+
     mainProgram = "trufflehog";
   };
 })

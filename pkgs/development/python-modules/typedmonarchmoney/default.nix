@@ -1,17 +1,16 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   hatchling,
   monarchmoneycommunity,
-  rich,
   pytestCheckHook,
+  rich,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "typedmonarchmoney";
   version = "0.7.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "jeeftor";
@@ -20,18 +19,17 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-Tx5JxHAJeNWLzCSAXOvb2+QsS8PU5hK28141BnooZps=";
   };
 
+  nativeCheckInputs = [ pytestCheckHook ];
   build-system = [ hatchling ];
-
-  pythonRelaxDeps = [ "monarchmoneycommunity" ];
 
   dependencies = [
     monarchmoneycommunity
     rich
   ];
 
-  nativeCheckInputs = [ pytestCheckHook ];
-
+  pyproject = true;
   pythonImportsCheck = [ "typedmonarchmoney" ];
+  pythonRelaxDeps = [ "monarchmoneycommunity" ];
 
   meta = {
     description = "Typed wrapper around the Monarch Money API";

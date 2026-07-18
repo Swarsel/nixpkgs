@@ -2,12 +2,12 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  fetchpatch,
-  buildPackages,
   SDL2,
   SDL2_image,
   SDL2_mixer,
   SDL2_ttf,
+  buildPackages,
+  fetchpatch,
   gettext,
   libpng,
   pkg-config,
@@ -29,24 +29,20 @@ stdenv.mkDerivation (finalAttrs: {
     # Fix _FORTIFY_SOURCE startup crash:
     #   https://github.com/riksweeney/edgar/pull/67
     (fetchpatch {
-      url = "https://github.com/riksweeney/edgar/commit/cec80a04d765fd2f6563d1cf060ad5000f9efe0a.patch";
       hash = "sha256-RJpIt7M3c989nXkWRTY+dIUGqqttyTTGx8s5u/iTWX4=";
+      url = "https://github.com/riksweeney/edgar/commit/cec80a04d765fd2f6563d1cf060ad5000f9efe0a.patch";
     })
 
     (fetchpatch {
+      hash = "sha256-+yHzLgqBI8qgD40pSCmwF68SDDnC/4QdCXEz/g7l0a4=";
       # https://github.com/riksweeney/edgar/pull/68
       name = "add-cross-compilation-support.patch";
       url = "https://github.com/riksweeney/edgar/commit/9cc071d06b97e20aee3841c2eaa8078c6ed396d7.patch";
-      hash = "sha256-+yHzLgqBI8qgD40pSCmwF68SDDnC/4QdCXEz/g7l0a4=";
     })
   ];
 
   strictDeps = true;
 
-  depsBuildBuild = [
-    buildPackages.stdenv.cc
-    pkg-config
-  ];
   nativeBuildInputs = [
     pkg-config
     gettext
@@ -62,10 +58,6 @@ stdenv.mkDerivation (finalAttrs: {
     zlib
   ];
 
-  dontConfigure = true;
-
-  makefile = "makefile";
-
   makeFlags = [
     "PREFIX=${placeholder "out"}"
     "BIN_DIR=${placeholder "out"}/bin/"
@@ -73,11 +65,18 @@ stdenv.mkDerivation (finalAttrs: {
     "BUILD_PKG_CONFIG=$(PKG_CONFIG_FOR_BUILD)"
   ];
 
+  depsBuildBuild = [
+    buildPackages.stdenv.cc
+    pkg-config
+  ];
+
+  dontConfigure = true;
   enableParallelBuilding = true;
+  makefile = "makefile";
 
   meta = {
-    homepage = "https://www.parallelrealities.co.uk/games/edgar";
     description = "2D platform game with a persistent world";
+
     longDescription = ''
       When Edgar's father fails to return home after venturing out one dark and
       stormy night, Edgar fears the worst: he has been captured by the evil
@@ -90,10 +89,12 @@ stdenv.mkDerivation (finalAttrs: {
       Amiga and SNES. Edgar must battle his way across the world, solving
       puzzles and defeating powerful enemies to achieve his quest.
     '';
+
+    homepage = "https://www.parallelrealities.co.uk/games/edgar";
     license = lib.licenses.gpl1Plus;
-    mainProgram = "edgar";
     maintainers = [ ];
     platforms = lib.platforms.unix;
+    mainProgram = "edgar";
     broken = stdenv.hostPlatform.isDarwin;
   };
 })

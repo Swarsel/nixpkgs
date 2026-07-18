@@ -1,7 +1,7 @@
 {
   config,
-  pkgs,
   lib,
+  pkgs,
   ...
 }:
 let
@@ -12,27 +12,30 @@ in
 {
   options.services.zwave-js = {
     enable = lib.mkEnableOption "the zwave-js server on boot";
-
     package = lib.mkPackageOption pkgs "zwave-js-server" { };
 
+    extraFlags = lib.mkOption {
+      default = [ ];
+
+      description = ''
+        Extra flags to pass to command
+      '';
+
+      example = [ "--mock-driver" ];
+      type = with lib.types; listOf str;
+    };
+
     port = lib.mkOption {
-      type = lib.types.port;
       default = 3000;
+
       description = ''
         Port for the server to listen on.
       '';
-    };
 
-    serialPort = lib.mkOption {
-      type = lib.types.path;
-      description = ''
-        Serial port device path for Z-Wave controller.
-      '';
-      example = "/dev/ttyUSB0";
+      type = lib.types.port;
     };
 
     secretsConfigFile = lib.mkOption {
-      type = lib.types.path;
       description = ''
         JSON file containing secret keys. A dummy example:
 
@@ -62,25 +65,23 @@ in
         all users.
         :::
       '';
+
       example = "/secrets/zwave-js-keys.json";
+      type = lib.types.path;
+    };
+
+    serialPort = lib.mkOption {
+      description = ''
+        Serial port device path for Z-Wave controller.
+      '';
+
+      example = "/dev/ttyUSB0";
+      type = lib.types.path;
     };
 
     settings = lib.mkOption {
-      type = lib.types.submodule {
-        freeformType = settingsFormat.type;
-
-        options = {
-          storage = {
-            cacheDir = lib.mkOption {
-              type = lib.types.path;
-              default = "/var/cache/zwave-js";
-              readOnly = true;
-              description = "Cache directory";
-            };
-          };
-        };
-      };
       default = { };
+
       description = ''
         Configuration settings for the generated config file.
 
@@ -96,15 +97,21 @@ in
         written to the nix store, which is world-readable.
         :::
       '';
-    };
 
-    extraFlags = lib.mkOption {
-      type = with lib.types; listOf str;
-      default = [ ];
-      example = [ "--mock-driver" ];
-      description = ''
-        Extra flags to pass to command
-      '';
+      type = lib.types.submodule {
+        options = {
+          storage = {
+            cacheDir = lib.mkOption {
+              default = "/var/cache/zwave-js";
+              description = "Cache directory";
+              readOnly = true;
+              type = lib.types.path;
+            };
+          };
+        };
+
+        freeformType = settingsFormat.type;
+      };
     };
   };
 
@@ -114,14 +121,17 @@ in
         configFile = settingsFormat.generate "zwave-js-config.json" cfg.settings;
       in
       {
-        wantedBy = [ "multi-user.target" ];
         after = [ "network.target" ];
         description = "Z-Wave JS Server";
+
         serviceConfig = {
-          ExecStartPre = ''
-            /bin/sh -c "${pkgs.jq}/bin/jq -s '.[0] * .[1]' ${configFile} %d/secrets.json > ${mergedConfigFile}"
-          '';
-          LoadCredential = "secrets.json:${cfg.secretsConfigFile}";
+          CacheDirectory = "zwave-js";
+          # Hardening
+          CapabilityBoundingSet = "";
+          DeviceAllow = [ cfg.serialPort ];
+          DevicePolicy = "closed";
+          DynamicUser = true;
+
           ExecStart = lib.concatStringsSep " " [
             "${cfg.package}/bin/zwave-server"
             "--config ${mergedConfigFile}"
@@ -129,22 +139,17 @@ in
             cfg.serialPort
             (lib.escapeShellArgs cfg.extraFlags)
           ];
-          Restart = "on-failure";
-          User = "zwave-js";
-          SupplementaryGroups = [ "dialout" ];
-          CacheDirectory = "zwave-js";
-          RuntimeDirectory = "zwave-js";
 
-          # Hardening
-          CapabilityBoundingSet = "";
-          DeviceAllow = [ cfg.serialPort ];
-          DevicePolicy = "closed";
-          DynamicUser = true;
+          ExecStartPre = ''
+            /bin/sh -c "${pkgs.jq}/bin/jq -s '.[0] * .[1]' ${configFile} %d/secrets.json > ${mergedConfigFile}"
+          '';
+
+          LoadCredential = "secrets.json:${cfg.secretsConfigFile}";
           LockPersonality = true;
           MemoryDenyWriteExecute = false;
           NoNewPrivileges = true;
-          PrivateUsers = true;
           PrivateTmp = true;
+          PrivateUsers = true;
           ProtectClock = true;
           ProtectControlGroups = true;
           ProtectHome = true;
@@ -152,16 +157,24 @@ in
           ProtectKernelLogs = true;
           ProtectKernelModules = true;
           RemoveIPC = true;
+          Restart = "on-failure";
           RestrictNamespaces = true;
           RestrictRealtime = true;
           RestrictSUIDSGID = true;
+          RuntimeDirectory = "zwave-js";
+          SupplementaryGroups = [ "dialout" ];
           SystemCallArchitectures = "native";
+
           SystemCallFilter = [
             "@system-service @pkey"
             "~@privileged @resources"
           ];
+
           UMask = "0077";
+          User = "zwave-js";
         };
+
+        wantedBy = [ "multi-user.target" ];
       };
   };
 

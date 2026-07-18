@@ -1,9 +1,9 @@
 {
   lib,
+  fetchFromGitHub,
   aiofiles,
   buildPythonPackage,
   cryptography,
-  fetchFromGitHub,
   protobuf,
   setuptools,
 }:
@@ -11,7 +11,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "androidtvremote2";
   version = "0.3.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "tronikos";
@@ -20,6 +19,8 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-W+L1yQ7FAoKIlYtlM7gfPv8Tco/9hCDDUQQ16xg+++s=";
   };
 
+  # Module only has a dummy test
+  doCheck = false;
   build-system = [ setuptools ];
 
   dependencies = [
@@ -28,10 +29,8 @@ buildPythonPackage (finalAttrs: {
     protobuf
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "androidtvremote2" ];
-
-  # Module only has a dummy test
-  doCheck = false;
 
   meta = {
     description = "Library to interact with the Android TV Remote protocol v2";

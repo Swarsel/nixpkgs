@@ -1,9 +1,9 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
-  versionCheckHook,
+  buildGoModule,
   nix-update-script,
+  versionCheckHook,
 }:
 
 buildGoModule (finalAttrs: {
@@ -18,14 +18,14 @@ buildGoModule (finalAttrs: {
   };
 
   vendorHash = "sha256-9eP0rhsgpTttYrBG/BNk/ICtaM+zKNBz2H2cHuTSt30=";
-
-  modRoot = ".";
+  doInstallCheck = true;
 
   nativeInstallCheckInputs = [
     versionCheckHook
   ];
+
+  modRoot = ".";
   versionCheckProgramArg = "version";
-  doInstallCheck = true;
 
   passthru = {
     updateScript = nix-update-script { };

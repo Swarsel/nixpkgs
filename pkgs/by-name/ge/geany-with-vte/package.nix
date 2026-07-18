@@ -1,20 +1,11 @@
 {
-  symlinkJoin,
-  makeWrapper,
   geany,
+  makeWrapper,
+  symlinkJoin,
   vte,
 }:
 
 symlinkJoin {
-  name = "geany-with-vte-${geany.version}";
-
-  # TODO: add geany-plugins
-  paths = with geany; [
-    out
-    doc
-    man
-  ];
-
   nativeBuildInputs = [ makeWrapper ];
 
   postBuild = ''
@@ -23,6 +14,15 @@ symlinkJoin {
     makeWrapper ${geany}/bin/geany $out/bin/geany \
       --prefix LD_LIBRARY_PATH : ${vte}/lib
   '';
+
+  name = "geany-with-vte-${geany.version}";
+
+  # TODO: add geany-plugins
+  paths = with geany; [
+    out
+    doc
+    man
+  ];
 
   meta = {
     # can't just "inherit (geany) meta;" because:

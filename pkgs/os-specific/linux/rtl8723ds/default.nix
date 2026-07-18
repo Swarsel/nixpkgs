@@ -2,8 +2,8 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  kernel,
   bc,
+  kernel,
 }:
 
 stdenv.mkDerivation {
@@ -17,7 +17,12 @@ stdenv.mkDerivation {
     sha256 = "sha256-SszvDuWN9opkXyVQAOLjnNtPp93qrKgnGvzK0y7Y9b0=";
   };
 
-  hardeningDisable = [ "pic" ];
+  postPatch = ''
+    substituteInPlace ./Makefile \
+      --replace /lib/modules/ "${kernel.dev}/lib/modules/" \
+      --replace "/sbin/depmod" "#" \
+      --replace '$(MODDESTDIR)' "$out/lib/modules/${kernel.modDirVersion}/kernel/net/wireless/"
+  '';
 
   nativeBuildInputs = [ bc ] ++ kernel.moduleBuildDependencies;
 
@@ -28,25 +33,19 @@ stdenv.mkDerivation {
     "CROSS_COMPILE=${stdenv.cc.targetPrefix}"
   ];
 
-  postPatch = ''
-    substituteInPlace ./Makefile \
-      --replace /lib/modules/ "${kernel.dev}/lib/modules/" \
-      --replace "/sbin/depmod" "#" \
-      --replace '$(MODDESTDIR)' "$out/lib/modules/${kernel.modDirVersion}/kernel/net/wireless/"
-  '';
-
   preInstall = ''
     mkdir -p "$out/lib/modules/${kernel.modDirVersion}/kernel/net/wireless/"
   '';
 
   enableParallelBuilding = true;
+  hardeningDisable = [ "pic" ];
 
   meta = {
     description = "Linux driver for RTL8723DS";
     homepage = "https://github.com/lwfinger/rtl8723ds";
     license = lib.licenses.gpl2Only;
-    platforms = lib.platforms.linux;
     maintainers = with lib.maintainers; [ chuangzhu ];
+    platforms = lib.platforms.linux;
     broken = kernel.kernelAtLeast "6.17";
   };
 }

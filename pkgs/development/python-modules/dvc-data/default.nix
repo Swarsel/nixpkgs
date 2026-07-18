@@ -1,11 +1,11 @@
 {
   lib,
+  fetchFromGitHub,
   attrs,
   buildPythonPackage,
   dictdiffer,
   diskcache,
   dvc-objects,
-  fetchFromGitHub,
   fsspec,
   orjson,
   pygtrie,
@@ -18,9 +18,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "dvc-data";
   version = "3.18.3";
-  pyproject = true;
-
-  disabled = pythonOlder "3.12";
 
   src = fetchFromGitHub {
     owner = "iterative";
@@ -29,6 +26,8 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-0kEbkauFT2cVEuFUyKYtA37Vh/cn3O5H0PdEPsl9Bkk=";
   };
 
+  # Tests depend on upath which is unmaintained and only available as wheel
+  doCheck = false;
   build-system = [ setuptools-scm ];
 
   dependencies = [
@@ -43,9 +42,8 @@ buildPythonPackage (finalAttrs: {
     tqdm
   ];
 
-  # Tests depend on upath which is unmaintained and only available as wheel
-  doCheck = false;
-
+  disabled = pythonOlder "3.12";
+  pyproject = true;
   pythonImportsCheck = [ "dvc_data" ];
 
   meta = {

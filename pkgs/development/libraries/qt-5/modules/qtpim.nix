@@ -1,6 +1,6 @@
 {
-  qtModule,
   lib,
+  qtModule,
   qtbase,
   qtdeclarative,
 }:

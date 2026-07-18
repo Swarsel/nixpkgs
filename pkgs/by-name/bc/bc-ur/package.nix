@@ -20,8 +20,8 @@ stdenv.mkDerivation (finalAttrs: {
   patches = [
     # Fix missing includes, building on gcc13, add CMakeList.txt
     (fetchpatch {
-      url = "https://raw.githubusercontent.com/feather-wallet/feather/632963a9e22bf4c8bbe6b5b4d895e31bda17bafd/contrib/depends/patches/bc-ur/build-fix.patch";
       hash = "sha256-F53/z0maUGfdzJ7qjcLjTzn6+80oxu4sqfQPsDo4HZ0=";
+      url = "https://raw.githubusercontent.com/feather-wallet/feather/632963a9e22bf4c8bbe6b5b4d895e31bda17bafd/contrib/depends/patches/bc-ur/build-fix.patch";
     })
   ];
 
@@ -30,8 +30,8 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   meta = {
-    homepage = "https://github.com/BlockchainCommons/bc-ur";
     description = "UR reference library in C++";
+    homepage = "https://github.com/BlockchainCommons/bc-ur";
     license = lib.licenses.bsd2Patent;
     maintainers = with lib.maintainers; [ surfaceflinger ];
     platforms = lib.platforms.linux;

@@ -1,14 +1,14 @@
 {
-  stdenvNoCC,
   lib,
   fetchFromGitLab,
-  gitUpdater,
-  testers,
   cmake,
   cmake-extras,
+  gitUpdater,
   glib,
   intltool,
   pkg-config,
+  stdenvNoCC,
+  testers,
   validatePkgConfig,
 }:
 
@@ -53,10 +53,12 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     homepage = "https://gitlab.com/ubports/development/core/lomiri-schemas";
     changelog = "https://gitlab.com/ubports/development/core/lomiri-schemas/-/blob/${finalAttrs.version}/ChangeLog";
     license = lib.licenses.lgpl21Plus;
-    teams = [ lib.teams.lomiri ];
     platforms = lib.platforms.linux;
+
     pkgConfigModules = [
       "lomiri-schemas"
     ];
+
+    teams = [ lib.teams.lomiri ];
   };
 })

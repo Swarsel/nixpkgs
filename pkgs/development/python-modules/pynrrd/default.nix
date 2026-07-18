@@ -1,17 +1,16 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
+  buildPythonPackage,
   numpy,
-  typing-extensions,
   pytestCheckHook,
+  setuptools,
+  typing-extensions,
 }:
 
 buildPythonPackage rec {
   pname = "pynrrd";
   version = "1.1.3";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "mhe";
@@ -20,6 +19,7 @@ buildPythonPackage rec {
     hash = "sha256-qu3s3XswJCUchqYfYMuqIzI4sfeXrttvXSEW9/GSENA=";
   };
 
+  nativeCheckInputs = [ pytestCheckHook ];
   build-system = [ setuptools ];
 
   dependencies = [
@@ -27,13 +27,12 @@ buildPythonPackage rec {
     typing-extensions
   ];
 
-  nativeCheckInputs = [ pytestCheckHook ];
-
+  pyproject = true;
   pythonImportsCheck = [ "nrrd" ];
 
   meta = {
-    homepage = "https://github.com/mhe/pynrrd";
     description = "Simple pure-Python reader for NRRD files";
+    homepage = "https://github.com/mhe/pynrrd";
     changelog = "https://github.com/mhe/pynrrd/releases/tag/v${version}";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ bcdarwin ];

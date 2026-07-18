@@ -1,18 +1,21 @@
 {
   lib,
-  python3,
   fetchPypi,
+  python3,
 }:
 
 python3.pkgs.buildPythonPackage rec {
   pname = "wlc";
   version = "2.1.0";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
     hash = "sha256-aljCKtVrVyHCz6jd6XtBbhi1xm207lc25DU+1bqJYos=";
   };
+
+  nativeCheckInputs = with python3.pkgs; [
+    pytestCheckHook
+  ];
 
   build-system = with python3.pkgs; [ setuptools ];
 
@@ -25,10 +28,7 @@ python3.pkgs.buildPythonPackage rec {
     twine
   ];
 
-  nativeCheckInputs = with python3.pkgs; [
-    pytestCheckHook
-  ];
-
+  pyproject = true;
   pythonImportsCheck = [ "wlc" ];
 
   meta = {

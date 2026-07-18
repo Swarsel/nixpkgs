@@ -8,8 +8,8 @@ let
   version = "1.4.0";
 in
 buildNpmPackage {
-  pname = "fediwall";
   inherit version;
+  pname = "fediwall";
 
   src = fetchFromGitHub {
     owner = "defnull";
@@ -32,7 +32,7 @@ buildNpmPackage {
     description = "Social media wall for the Fediverse";
     homepage = "https://fediwall.social";
     license = lib.licenses.agpl3Plus;
-    platforms = lib.platforms.all;
     maintainers = with lib.maintainers; [ transcaffeine ];
+    platforms = lib.platforms.all;
   };
 }

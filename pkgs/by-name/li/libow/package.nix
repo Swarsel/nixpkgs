@@ -4,13 +4,13 @@
   fetchFromGitHub,
   autoconf,
   automake,
-  pkg-config,
   libtool,
+  pkg-config,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
-  version = "3.2p4";
   pname = "libow";
+  version = "3.2p4";
 
   src = fetchFromGitHub {
     owner = "owfs";
@@ -26,12 +26,6 @@ stdenv.mkDerivation (finalAttrs: {
     pkg-config
   ];
 
-  preConfigure = ''
-    # Tries to use glibtoolize on Darwin, but it shouldn't for Nix.
-    sed -i -e 's/glibtoolize/libtoolize/g' bootstrap
-    ./bootstrap
-  '';
-
   configureFlags = [
     "--disable-owtcl"
     "--disable-owphp"
@@ -46,6 +40,12 @@ stdenv.mkDerivation (finalAttrs: {
     "--disable-owmon"
     "--disable-owexternal"
   ];
+
+  preConfigure = ''
+    # Tries to use glibtoolize on Darwin, but it shouldn't for Nix.
+    sed -i -e 's/glibtoolize/libtoolize/g' bootstrap
+    ./bootstrap
+  '';
 
   meta = {
     description = "1-Wire File System full library";

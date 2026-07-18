@@ -1,15 +1,15 @@
 {
-  coq,
-  mkCoqDerivation,
-  mathcomp,
-  bignums,
-  flocq,
-  coquelicot,
-  interval,
-  mathcomp-reals-stdlib,
-  multinomials,
-  coqeal,
   lib,
+  bignums,
+  coq,
+  coqeal,
+  coquelicot,
+  flocq,
+  interval,
+  mathcomp,
+  mathcomp-reals-stdlib,
+  mkCoqDerivation,
+  multinomials,
   version ? null,
 }:
 
@@ -21,11 +21,12 @@ let
   defaultVersion =
     let
       case = coq: mc: out: {
+        inherit out;
+
         cases = [
           coq
           mc
         ];
-        inherit out;
       };
     in
     with lib.versions;
@@ -94,12 +95,6 @@ let
           owner
           ;
 
-        namePrefix = [
-          "coq"
-        ];
-
-        mlPlugin = package == "validsdp";
-
         propagatedBuildInputs =
           intra-deps
           ++ lib.optionals (package == "libvalidsdp") libvalidsdp-deps
@@ -109,12 +104,18 @@ let
           cd ${pkgpath}
         '';
 
+        mlPlugin = package == "validsdp";
+
+        namePrefix = [
+          "coq"
+        ];
+
+        passthru = lib.mapAttrs (package: deps: validsdp_ package) packages;
+
         meta = {
           description = "ValidSDP";
           license = lib.licenses.lgpl21Plus;
         };
-
-        passthru = lib.mapAttrs (package: deps: validsdp_ package) packages;
       };
     in
     derivation;

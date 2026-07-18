@@ -1,12 +1,12 @@
 {
+  lib,
+  fetchFromGitHub,
   cargo-tauri,
   desktop-file-utils,
-  fetchFromGitHub,
   fetchYarnDeps,
   glib,
   gtk3,
   libayatana-appindicator,
-  lib,
   nix-update-script,
   nodejs,
   openssl,
@@ -27,11 +27,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-X0j5cWAIMdpLSUSDAUx7oSJ42xvRLL1PY8JK9i4wGhA=";
   };
 
-  yarnOfflineCache = fetchYarnDeps {
-    yarnLock = "${finalAttrs.src}/yarn.lock";
-    hash = "sha256-VWl6YqTiBRz85GICFKGwDZRBcITGQdWE7EUzW58wHdY=";
-  };
-
   patches = [
     # The tauri.conf.json is configured to build multiple apps. We don't want that here.
     ./disable-bundling.patch
@@ -44,16 +39,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
     substituteInPlace $cargoDepsCopy/*/libappindicator-sys-*/src/lib.rs \
       --replace-fail "libayatana-appindicator3.so.1" "${libayatana-appindicator}/lib/libayatana-appindicator3.so.1"
   '';
-
-  cargoHash = "sha256-dwGJKLO+3i5FUgv+Huu1ZD/hFg/KdyWofApwkIDFD1I=";
-
-  cargoRoot = "src-tauri";
-  buildAndTestSubdir = finalAttrs.cargoRoot;
-
-  checkFlags = [
-    # test fails to find correct function
-    "--skip=utils::string_utils::safe_truncate"
-  ];
 
   nativeBuildInputs = [
     cargo-tauri.hook
@@ -71,6 +56,13 @@ rustPlatform.buildRustPackage (finalAttrs: {
     webkitgtk_4_1
   ];
 
+  cargoHash = "sha256-dwGJKLO+3i5FUgv+Huu1ZD/hFg/KdyWofApwkIDFD1I=";
+
+  checkFlags = [
+    # test fails to find correct function
+    "--skip=utils::string_utils::safe_truncate"
+  ];
+
   postInstall = ''
     desktop-file-edit \
     --set-name "NoRiskClient Launcher" \
@@ -80,19 +72,29 @@ rustPlatform.buildRustPackage (finalAttrs: {
     $out/share/applications/NoRisk\ Launcher.desktop
   '';
 
+  buildAndTestSubdir = finalAttrs.cargoRoot;
+  cargoRoot = "src-tauri";
+
+  yarnOfflineCache = fetchYarnDeps {
+    hash = "sha256-VWl6YqTiBRz85GICFKGwDZRBcITGQdWE7EUzW58wHdY=";
+    yarnLock = "${finalAttrs.src}/yarn.lock";
+  };
+
   passthru.updateScript = nix-update-script { };
 
   meta = {
-    changelog = "https://github.com/NoRiskClient/noriskclient-launcher/blob/v3/changelogs/${finalAttrs.version}.txt";
     description = "Minecraft Launcher for NoRisk Client";
-    homepage = "https://norisk.gg";
-    license = lib.licenses.gpl3Only;
+
     longDescription = ''
       An easy way to launch the NoRisk Client, create modpacks,
       manage content for Minecraft, and much more - written in tauri.
     '';
+
+    homepage = "https://norisk.gg";
+    changelog = "https://github.com/NoRiskClient/noriskclient-launcher/blob/v3/changelogs/${finalAttrs.version}.txt";
+    license = lib.licenses.gpl3Only;
     maintainers = with lib.maintainers; [ hythera ];
-    mainProgram = "noriskclient-launcher-v3";
     platforms = lib.platforms.linux;
+    mainProgram = "noriskclient-launcher-v3";
   };
 })

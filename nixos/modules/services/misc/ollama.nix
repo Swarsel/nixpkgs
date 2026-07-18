@@ -54,8 +54,10 @@ in
   options = {
     services.ollama = {
       enable = lib.mkEnableOption "ollama server for local large language models";
+
       package = lib.mkPackageOption pkgs "ollama" {
         example = "pkgs.ollama-rocm";
+
         extraDescription = ''
           Different packages use different hardware acceleration.
 
@@ -72,85 +74,9 @@ in
         '';
       };
 
-      user = lib.mkOption {
-        type = with types; nullOr str;
-        default = null;
-        example = "ollama";
-        description = ''
-          User account under which to run ollama. Defaults to [`DynamicUser`](https://www.freedesktop.org/software/systemd/man/latest/systemd.exec.html#DynamicUser=)
-          when set to `null`.
-
-          The user will automatically be created, if this option is set to a non-null value.
-        '';
-      };
-      group = lib.mkOption {
-        type = with types; nullOr str;
-        default = cfg.user;
-        defaultText = literalExpression "config.services.ollama.user";
-        example = "ollama";
-        description = ''
-          Group under which to run ollama. Only used when `services.ollama.user` is set.
-
-          The group will automatically be created, if this option is set to a non-null value.
-        '';
-      };
-
-      home = lib.mkOption {
-        type = types.str;
-        default = "/var/lib/ollama";
-        example = "/home/foo";
-        description = ''
-          The home directory that the ollama service is started in.
-        '';
-      };
-      modelsDir = lib.mkOption {
-        type = types.str;
-        default = "${cfg.home}/models";
-        defaultText = "\${config.services.ollama.home}/models";
-        example = "/path/to/ollama/models";
-        description = ''
-          The directory that the ollama service will read models from and download new models to.
-        '';
-      };
-
-      host = lib.mkOption {
-        type = types.str;
-        default = "127.0.0.1";
-        example = "[::]";
-        description = ''
-          The host address which the ollama server HTTP interface listens to.
-        '';
-      };
-      port = lib.mkOption {
-        type = types.port;
-        default = 11434;
-        example = 11111;
-        description = ''
-          Which port the ollama server listens to.
-        '';
-      };
-
-      rocmOverrideGfx = lib.mkOption {
-        type = types.nullOr types.str;
-        default = null;
-        example = "10.3.0";
-        description = ''
-          Override what rocm will detect your gpu model as.
-          For example, if you have an RX 5700 XT, try setting this to `"10.1.0"` (gfx 1010).
-
-          This sets the value of `HSA_OVERRIDE_GFX_VERSION`. See [ollama's docs](
-          https://github.com/ollama/ollama/blob/main/docs/gpu.md#amd-radeon
-          ) for details.
-        '';
-      };
-
       environmentVariables = lib.mkOption {
-        type = types.attrsOf types.str;
         default = { };
-        example = {
-          OLLAMA_LLM_LIBRARY = "cpu";
-          HIP_VISIBLE_DEVICES = "0,1";
-        };
+
         description = ''
           Set arbitrary environment variables for the ollama service.
 
@@ -158,19 +84,55 @@ in
           not normal invocations like `ollama run`.
           Since `ollama run` is mostly a shell around the ollama server, this is usually sufficient.
         '';
+
+        example = {
+          HIP_VISIBLE_DEVICES = "0,1";
+          OLLAMA_LLM_LIBRARY = "cpu";
+        };
+
+        type = types.attrsOf types.str;
+      };
+
+      group = lib.mkOption {
+        default = cfg.user;
+        defaultText = literalExpression "config.services.ollama.user";
+
+        description = ''
+          Group under which to run ollama. Only used when `services.ollama.user` is set.
+
+          The group will automatically be created, if this option is set to a non-null value.
+        '';
+
+        example = "ollama";
+        type = with types; nullOr str;
+      };
+
+      home = lib.mkOption {
+        default = "/var/lib/ollama";
+
+        description = ''
+          The home directory that the ollama service is started in.
+        '';
+
+        example = "/home/foo";
+        type = types.str;
+      };
+
+      host = lib.mkOption {
+        default = "127.0.0.1";
+
+        description = ''
+          The host address which the ollama server HTTP interface listens to.
+        '';
+
+        example = "[::]";
+        type = types.str;
       };
 
       loadModels = lib.mkOption {
-        type = types.listOf types.str;
         apply = builtins.filter (model: model != "");
         default = [ ];
-        example = [
-          "dolphin3"
-          "gemma3"
-          "gemma3:27b"
-          "deepseek-r1:latest"
-          "deepseek-r1:1.5b"
-        ];
+
         description = ''
           Download these models using `ollama pull` as soon as `ollama.service` has started.
 
@@ -179,69 +141,123 @@ in
 
           Search for models of your choice from: <https://ollama.com/library>
         '';
+
+        example = [
+          "dolphin3"
+          "gemma3"
+          "gemma3:27b"
+          "deepseek-r1:latest"
+          "deepseek-r1:1.5b"
+        ];
+
+        type = types.listOf types.str;
       };
-      syncModels = lib.mkOption {
-        type = types.bool;
-        default = false;
+
+      modelsDir = lib.mkOption {
+        default = "${cfg.home}/models";
+        defaultText = "\${config.services.ollama.home}/models";
+
         description = ''
-          Synchronize all currently installed models with those declared in `services.ollama.loadModels`,
-          removing any models that are installed but not currently declared there.
+          The directory that the ollama service will read models from and download new models to.
         '';
+
+        example = "/path/to/ollama/models";
+        type = types.str;
       };
 
       openFirewall = lib.mkOption {
-        type = types.bool;
         default = false;
+
         description = ''
           Whether to open the firewall for ollama.
 
           This adds `services.ollama.port` to `networking.firewall.allowedTCPPorts`.
         '';
+
+        type = types.bool;
+      };
+
+      port = lib.mkOption {
+        default = 11434;
+
+        description = ''
+          Which port the ollama server listens to.
+        '';
+
+        example = 11111;
+        type = types.port;
+      };
+
+      rocmOverrideGfx = lib.mkOption {
+        default = null;
+
+        description = ''
+          Override what rocm will detect your gpu model as.
+          For example, if you have an RX 5700 XT, try setting this to `"10.1.0"` (gfx 1010).
+
+          This sets the value of `HSA_OVERRIDE_GFX_VERSION`. See [ollama's docs](
+          https://github.com/ollama/ollama/blob/main/docs/gpu.md#amd-radeon
+          ) for details.
+        '';
+
+        example = "10.3.0";
+        type = types.nullOr types.str;
+      };
+
+      syncModels = lib.mkOption {
+        default = false;
+
+        description = ''
+          Synchronize all currently installed models with those declared in `services.ollama.loadModels`,
+          removing any models that are installed but not currently declared there.
+        '';
+
+        type = types.bool;
+      };
+
+      user = lib.mkOption {
+        default = null;
+
+        description = ''
+          User account under which to run ollama. Defaults to [`DynamicUser`](https://www.freedesktop.org/software/systemd/man/latest/systemd.exec.html#DynamicUser=)
+          when set to `null`.
+
+          The user will automatically be created, if this option is set to a non-null value.
+        '';
+
+        example = "ollama";
+        type = with types; nullOr str;
       };
     };
   };
 
   config = lib.mkIf cfg.enable {
-    users = lib.mkIf staticUser {
-      users.${cfg.user} = {
-        inherit (cfg) home;
-        isSystemUser = true;
-        group = cfg.group;
-      };
-      groups.${cfg.group} = { };
-    };
+    environment.systemPackages = [ cfg.package ];
+    networking.firewall = lib.mkIf cfg.openFirewall { allowedTCPPorts = [ cfg.port ]; };
 
     systemd.services.ollama = {
-      description = "Server for local large language models";
-      wantedBy = [ "multi-user.target" ];
       after = [ "network.target" ];
+      description = "Server for local large language models";
+
       environment =
         cfg.environmentVariables
         // {
           HOME = cfg.home;
-          OLLAMA_MODELS = cfg.modelsDir;
           OLLAMA_HOST = "${cfg.host}:${toString cfg.port}";
+          OLLAMA_MODELS = cfg.modelsDir;
         }
         // lib.optionalAttrs (cfg.rocmOverrideGfx != null) {
           HSA_OVERRIDE_GFX_VERSION = cfg.rocmOverrideGfx;
         };
+
       serviceConfig =
         lib.optionalAttrs staticUser {
-          User = cfg.user;
           Group = cfg.group;
+          User = cfg.user;
         }
         // {
-          Type = "exec";
-          DynamicUser = true;
-          ExecStart = "${ollama} serve";
-          WorkingDirectory = cfg.home;
-          StateDirectory = [ "ollama" ];
-          ReadWritePaths = [
-            cfg.home
-            cfg.modelsDir
-          ];
-
           CapabilityBoundingSet = [ "" ];
+
           DeviceAllow = [
             # CUDA
             # https://docs.nvidia.com/dgx/pdf/dgx-os-5-user-guide.pdf
@@ -256,7 +272,10 @@ in
             # WSL (Windows Subsystem for Linux)
             "/dev/dxg"
           ];
+
           DevicePolicy = "closed";
+          DynamicUser = true;
+          ExecStart = "${ollama} serve";
           LockPersonality = true;
           MemoryDenyWriteExecute = true;
           NoNewPrivileges = true;
@@ -273,47 +292,49 @@ in
           ProtectKernelTunables = true;
           ProtectProc = "invisible";
           ProtectSystem = "strict";
+
+          ReadWritePaths = [
+            cfg.home
+            cfg.modelsDir
+          ];
+
           RemoveIPC = true;
-          RestrictNamespaces = true;
-          RestrictRealtime = true;
-          RestrictSUIDSGID = true;
+
           RestrictAddressFamilies = [
             "AF_INET"
             "AF_INET6"
             "AF_UNIX"
           ];
+
+          RestrictNamespaces = true;
+          RestrictRealtime = true;
+          RestrictSUIDSGID = true;
+          StateDirectory = [ "ollama" ];
           SupplementaryGroups = [ "render" ]; # for rocm to access /dev/dri/renderD* devices
           SystemCallArchitectures = "native";
+
           SystemCallFilter = [
             "@system-service @resources"
             "~@privileged"
           ];
+
+          Type = "exec";
           UMask = "0077";
+          WorkingDirectory = cfg.home;
         };
+
+      wantedBy = [ "multi-user.target" ];
     };
 
     systemd.services.ollama-model-loader = lib.mkIf (cfg.loadModels != [ ] || cfg.syncModels) {
-      description = "Download ollama models in the background";
-      wantedBy = [
-        "multi-user.target"
-        "ollama.service"
-      ];
-      wants = [ "network-online.target" ];
       after = [
         "ollama.service"
         "network-online.target"
       ];
+
       bindsTo = [ "ollama.service" ];
+      description = "Download ollama models in the background";
       environment = config.systemd.services.ollama.environment;
-      serviceConfig = {
-        Type = "exec";
-        DynamicUser = true;
-        Restart = "on-failure";
-        # bounded exponential backoff
-        RestartSec = "1s";
-        RestartMaxDelaySec = "2h";
-        RestartSteps = "10";
-      };
 
       script =
         let
@@ -360,11 +381,34 @@ in
 
           printf "%s\0" ${lib.escapeShellArgs cfg.loadModels} | '${xargs}' -0 -r -n 1 -P "$('${nproc}')" '${ollama}' pull
         '';
+
+      serviceConfig = {
+        DynamicUser = true;
+        Restart = "on-failure";
+        RestartMaxDelaySec = "2h";
+        # bounded exponential backoff
+        RestartSec = "1s";
+        RestartSteps = "10";
+        Type = "exec";
+      };
+
+      wantedBy = [
+        "multi-user.target"
+        "ollama.service"
+      ];
+
+      wants = [ "network-online.target" ];
     };
 
-    networking.firewall = lib.mkIf cfg.openFirewall { allowedTCPPorts = [ cfg.port ]; };
+    users = lib.mkIf staticUser {
+      groups.${cfg.group} = { };
 
-    environment.systemPackages = [ cfg.package ];
+      users.${cfg.user} = {
+        inherit (cfg) home;
+        group = cfg.group;
+        isSystemUser = true;
+      };
+    };
   };
 
   meta.maintainers = with lib.maintainers; [

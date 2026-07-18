@@ -1,16 +1,15 @@
 {
   lib,
   stdenv,
-  rustPlatform,
   fetchFromGitHub,
-  installShellFiles,
-  pkg-config,
   alsa-lib,
-  versionCheckHook,
   bacon,
   buildPackages,
+  installShellFiles,
   nix-update-script,
-
+  pkg-config,
+  rustPlatform,
+  versionCheckHook,
   withSound ? false,
 }:
 
@@ -28,7 +27,6 @@ in
 rustPlatform.buildRustPackage (finalAttrs: {
   pname = "bacon";
   version = "3.24.0";
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "Canop";
@@ -36,12 +34,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-rfbK5MrCytBVISXVkazBDnZZxjZQ3ze348mlTyanTWM=";
   };
-
-  cargoHash = "sha256-s49qZMD922l6KKSFRhVIGp6+7E0S+q7McV9PT2F0RQc=";
-
-  buildFeatures = lib.optionals withSound [
-    "sound"
-  ];
 
   nativeBuildInputs = [
     installShellFiles
@@ -51,9 +43,7 @@ rustPlatform.buildRustPackage (finalAttrs: {
   ];
 
   buildInputs = lib.optionals withSound soundDependencies;
-
-  nativeInstallCheckInputs = [ versionCheckHook ];
-  doInstallCheck = true;
+  cargoHash = "sha256-s49qZMD922l6KKSFRhVIGp6+7E0S+q7McV9PT2F0RQc=";
 
   postInstall =
     let
@@ -66,22 +56,33 @@ rustPlatform.buildRustPackage (finalAttrs: {
         --zsh <(COMPLETE=zsh ${bacon})
     '';
 
+  doInstallCheck = true;
+  nativeInstallCheckInputs = [ versionCheckHook ];
+  __structuredAttrs = true;
+
+  buildFeatures = lib.optionals withSound [
+    "sound"
+  ];
+
   passthru = {
     tests = {
       withSound = bacon.override { withSound = true; };
     };
+
     updateScript = nix-update-script { };
   };
 
   meta = {
     description = "Background rust code checker";
-    mainProgram = "bacon";
     homepage = "https://github.com/Canop/bacon";
     changelog = "https://github.com/Canop/bacon/blob/${finalAttrs.src.tag}/CHANGELOG.md";
     license = lib.licenses.agpl3Only;
+
     maintainers = with lib.maintainers; [
       FlorianFranzen
       matthiasbeyer
     ];
+
+    mainProgram = "bacon";
   };
 })

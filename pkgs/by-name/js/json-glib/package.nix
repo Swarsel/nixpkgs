@@ -2,28 +2,33 @@
   lib,
   stdenv,
   fetchurl,
+  buildPackages,
   docutils,
+  fixDarwinDylibNames,
+  gettext,
+  gi-docgen,
   glib,
+  gnome,
+  gobject-introspection,
+  libxslt,
   meson,
   mesonEmulatorHook,
   ninja,
   nixosTests,
   pkg-config,
-  gettext,
   withIntrospection ?
     lib.meta.availableOn stdenv.hostPlatform gobject-introspection
     && stdenv.hostPlatform.emulatorAvailable buildPackages,
-  buildPackages,
-  gobject-introspection,
-  gi-docgen,
-  libxslt,
-  fixDarwinDylibNames,
-  gnome,
 }:
 
 stdenv.mkDerivation rec {
   pname = "json-glib";
   version = "1.10.8";
+
+  src = fetchurl {
+    url = "mirror://gnome/sources/json-glib/${lib.versions.majorMinor version}/json-glib-${version}.tar.xz";
+    hash = "sha256-VcXBQaVkJFuPj752mGY8h6RaczPCosVvBvgRq3OyEt0=";
+  };
 
   outputs = [
     "out"
@@ -32,21 +37,12 @@ stdenv.mkDerivation rec {
   ]
   ++ lib.optional withIntrospection "devdoc";
 
-  src = fetchurl {
-    url = "mirror://gnome/sources/json-glib/${lib.versions.majorMinor version}/json-glib-${version}.tar.xz";
-    hash = "sha256-VcXBQaVkJFuPj752mGY8h6RaczPCosVvBvgRq3OyEt0=";
-  };
-
   patches = [
     # Add option for changing installation path of installed tests.
     ./meson-add-installed-tests-prefix-option.patch
   ];
 
   strictDeps = true;
-
-  depsBuildBuild = [
-    pkg-config
-  ];
 
   nativeBuildInputs = [
     docutils # for rst2man, rst2html5
@@ -91,6 +87,10 @@ stdenv.mkDerivation rec {
     fi
   '';
 
+  depsBuildBuild = [
+    pkg-config
+  ];
+
   passthru = {
     tests = {
       installedTests = nixosTests.installed-tests.json-glib;
@@ -106,7 +106,7 @@ stdenv.mkDerivation rec {
     description = "Library providing (de)serialization support for the JavaScript Object Notation (JSON) format";
     homepage = "https://gitlab.gnome.org/GNOME/json-glib";
     license = lib.licenses.lgpl21Plus;
-    teams = [ lib.teams.gnome ];
     platforms = with lib.platforms; unix;
+    teams = [ lib.teams.gnome ];
   };
 }

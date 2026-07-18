@@ -1,13 +1,12 @@
 {
   lib,
-  python3Packages,
   fetchFromGitHub,
+  python3Packages,
 }:
 
 python3Packages.buildPythonApplication rec {
   pname = "online-judge-template-generator";
   version = "4.8.1";
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "online-judge-tools";
@@ -32,6 +31,7 @@ python3Packages.buildPythonApplication rec {
 
   # Needs internet to run tests
   doCheck = false;
+  format = "setuptools";
 
   meta = {
     description = "Analyze problems of competitive programming and automatically generate boilerplate";

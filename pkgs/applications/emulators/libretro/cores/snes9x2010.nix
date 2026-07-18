@@ -4,7 +4,6 @@
   mkLibretroCore,
 }:
 mkLibretroCore rec {
-  core = "snes9x2010";
   version = "0-unstable-2026-07-07";
 
   src = fetchFromGitHub {
@@ -15,6 +14,7 @@ mkLibretroCore rec {
   };
 
   makeFlags = [ "GIT_VERSION=${builtins.substring 0 7 src.rev}" ];
+  core = "snes9x2010";
 
   meta = {
     description = "Optimized port/rewrite of SNES9x 1.52+ to Libretro";

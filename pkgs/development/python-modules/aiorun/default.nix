@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   flit-core,
   pygments,
   pytestCheckHook,
@@ -11,7 +11,6 @@
 buildPythonPackage rec {
   pname = "aiorun";
   version = "2025.1.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "cjrh";
@@ -20,19 +19,18 @@ buildPythonPackage rec {
     hash = "sha256-YqUlWf79EbC47BETBDjo8hzg5jhL4LiWLKGr1Qy4AbM=";
   };
 
-  build-system = [ flit-core ];
-
-  dependencies = [ pygments ];
+  preBuild = ''
+    export HOME=$TMPDIR
+  '';
 
   nativeCheckInputs = [
     pytestCheckHook
     uvloop
   ];
 
-  preBuild = ''
-    export HOME=$TMPDIR
-  '';
-
+  build-system = [ flit-core ];
+  dependencies = [ pygments ];
+  pyproject = true;
   pythonImportsCheck = [ "aiorun" ];
 
   meta = {

@@ -1,22 +1,21 @@
 {
   lib,
+  fetchFromGitHub,
   beautifulsoup4,
   buildPythonPackage,
-  fetchFromGitHub,
   lxml,
   pytest-cov-stub,
   pytest-httpbin,
   pytest-mock,
   pytestCheckHook,
-  requests-mock,
   requests,
+  requests-mock,
   setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "mechanicalsoup";
   version = "1.4.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "MechanicalSoup";
@@ -33,16 +32,6 @@ buildPythonPackage rec {
       --replace " --flake8" ""
   '';
 
-  build-system = [ setuptools ];
-
-  dependencies = [
-    beautifulsoup4
-    lxml
-    requests
-  ];
-
-  __darwinAllowLocalNetworking = true;
-
   nativeCheckInputs = [
     pytest-cov-stub
     pytest-httpbin
@@ -51,18 +40,29 @@ buildPythonPackage rec {
     requests-mock
   ];
 
-  pythonImportsCheck = [ "mechanicalsoup" ];
+  __darwinAllowLocalNetworking = true;
+  build-system = [ setuptools ];
+
+  dependencies = [
+    beautifulsoup4
+    lxml
+    requests
+  ];
 
   disabledTests = [
     # Missing module
     "test_select_form_associated_elements"
   ];
 
+  pyproject = true;
+  pythonImportsCheck = [ "mechanicalsoup" ];
+
   meta = {
     description = "Python library for automating interaction with websites";
     homepage = "https://github.com/hickford/MechanicalSoup";
     changelog = "https://github.com/MechanicalSoup/MechanicalSoup/releases/tag/v${version}";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       jgillich
       fab

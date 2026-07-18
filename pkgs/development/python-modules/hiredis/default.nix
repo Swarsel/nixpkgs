@@ -1,37 +1,34 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # build-system
-  setuptools,
-
+  buildPythonPackage,
   # tests
   pytestCheckHook,
+  # build-system
+  setuptools,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "hiredis";
   version = "3.4.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "redis";
     repo = "hiredis-py";
     tag = "v${finalAttrs.version}";
-    fetchSubmodules = true;
     hash = "sha256-TXhl9ny6hdd4n/hHfTAL0ewGcnjZ1vvNwovklSgzkKk=";
+    fetchSubmodules = true;
   };
-
-  build-system = [ setuptools ];
-
-  pythonImportsCheck = [ "hiredis" ];
 
   nativeCheckInputs = [ pytestCheckHook ];
 
   preCheck = ''
     rm -rf hiredis
   '';
+
+  build-system = [ setuptools ];
+  pyproject = true;
+  pythonImportsCheck = [ "hiredis" ];
 
   meta = {
     description = "Wraps protocol parsing code in hiredis, speeds up parsing of multi bulk replies";

@@ -1,36 +1,40 @@
 {
   lib,
   stdenv,
+  autoconf,
+  automake,
+  bash,
   bison,
-  pkg-config,
-  glib,
+  cacert,
+  cmake,
   gettext,
-  perl,
+  glib,
+  gnumake42,
   libgdiplus,
+  libtool,
   libx11,
   ncurses,
-  zlib,
-  bash,
-  cacert,
+  perl,
+  pkg-config,
   python3,
-  version,
   src,
-  autoconf,
-  libtool,
-  automake,
-  cmake,
+  version,
   which,
-  gnumake42,
+  zlib,
   enableParallelBuilding ? true,
-  extraPatches ? [ ],
   env ? { },
+  extraPatches ? [ ],
 }:
 
 stdenv.mkDerivation (finalAttrs: {
-  pname = "mono";
   inherit version src env;
-
+  inherit enableParallelBuilding;
+  pname = "mono";
+  # We want pkg-config to take priority over the dlls in the Mono framework and the GAC
+  # because we control pkg-config
+  patches = [ ./pkgconfig-before-gac.patch ] ++ extraPatches;
   strictDeps = true;
+
   nativeBuildInputs = [
     autoconf
     automake
@@ -44,6 +48,7 @@ stdenv.mkDerivation (finalAttrs: {
     gnumake42
     gettext
   ];
+
   buildInputs = [
     glib
     gettext
@@ -59,15 +64,6 @@ stdenv.mkDerivation (finalAttrs: {
     "--x-libraries=${libx11.out}/lib"
     "--with-libgdiplus=${libgdiplus}/lib/libgdiplus.so"
   ];
-
-  configurePhase = ''
-    patchShebangs autogen.sh mcs/build/start-compiler-server.sh
-    ./autogen.sh --prefix $out $configureFlags
-  '';
-
-  # We want pkg-config to take priority over the dlls in the Mono framework and the GAC
-  # because we control pkg-config
-  patches = [ ./pkgconfig-before-gac.patch ] ++ extraPatches;
 
   # Patch all the necessary scripts
   preBuild = ''
@@ -97,35 +93,20 @@ stdenv.mkDerivation (finalAttrs: {
     ln -s $out/bin/mcs $out/bin/gmcs
   '';
 
-  inherit enableParallelBuilding;
+  configurePhase = ''
+    patchShebangs autogen.sh mcs/build/start-compiler-server.sh
+    ./autogen.sh --prefix $out $configureFlags
+  '';
 
   meta = {
-    # Per nixpkgs#151720 the build failures for aarch64-darwin are fixed since 6.12.0.129.
-    # Cross build is broken due to attempt to execute cert-sync built for the host.
-    broken =
-      (
-        stdenv.hostPlatform.isDarwin
-        && stdenv.hostPlatform.isAarch64
-        && lib.versionOlder finalAttrs.version "6.12.0.129"
-      )
-      || !stdenv.buildPlatform.canExecute stdenv.hostPlatform;
+    description = "Cross platform, open source .NET development framework";
+
     homepage =
       if lib.versionOlder finalAttrs.version "6.14.0" then
         "https://mono-project.com/"
       else
         "https://gitlab.winehq.org/mono/mono";
-    description = "Cross platform, open source .NET development framework";
-    platforms = with lib.platforms; darwin ++ linux;
-    knownVulnerabilities = lib.optionals (lib.versionOlder finalAttrs.version "6.14.0") [
-      ''
-        mono was archived upstream, see https://www.mono-project.com/
-        While WineHQ has taken over development, consider using 6.14.0 or newer.
-      ''
-    ];
-    maintainers = with lib.maintainers; [
-      thoughtpolice
-      obadz
-    ];
+
     license = with lib.licenses; [
       # runtime, compilers, tools and most class libraries licensed
       mit
@@ -143,6 +124,30 @@ stdenv.mkDerivation (finalAttrs: {
       # https://www.mono-project.com/docs/faq/licensing/
       # https://github.com/mono/mono/blob/main/LICENSE
     ];
+
+    maintainers = with lib.maintainers; [
+      thoughtpolice
+      obadz
+    ];
+
+    platforms = with lib.platforms; darwin ++ linux;
     mainProgram = "mono";
+
+    # Per nixpkgs#151720 the build failures for aarch64-darwin are fixed since 6.12.0.129.
+    # Cross build is broken due to attempt to execute cert-sync built for the host.
+    broken =
+      (
+        stdenv.hostPlatform.isDarwin
+        && stdenv.hostPlatform.isAarch64
+        && lib.versionOlder finalAttrs.version "6.12.0.129"
+      )
+      || !stdenv.buildPlatform.canExecute stdenv.hostPlatform;
+
+    knownVulnerabilities = lib.optionals (lib.versionOlder finalAttrs.version "6.14.0") [
+      ''
+        mono was archived upstream, see https://www.mono-project.com/
+        While WineHQ has taken over development, consider using 6.14.0 or newer.
+      ''
+    ];
   };
 })

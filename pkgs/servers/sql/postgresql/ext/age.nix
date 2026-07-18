@@ -1,25 +1,26 @@
 {
-  bison,
-  fetchFromGitHub,
-  flex,
   lib,
+  stdenv,
+  fetchFromGitHub,
+  bison,
+  flex,
   perl,
   postgresql,
   postgresqlBuildExtension,
-  stdenv,
 }:
 
 let
   hashes = {
-    "18" = "sha256-Hqjg62YLTLEa6wRA5S4MAIED7Hobtiih4E55cSzVTqE";
-    "17" = "sha256-hAjhNj/benwZbbuxDl9RSjwWRai9CUozbEN6ecPKoFE=";
-    "16" = "sha256-iukdi2c3CukGvjuTojybFFAZBlAw8GEfzFPr2qJuwTA=";
-    "15" = "sha256-webZWgWZGnSoXwTpk816tjbtHV1UIlXkogpBDAEL4gM=";
     "14" = "sha256-jZXhcYBubpjIJ8M5JHXKV5f6VK/2BkypH3P7nLxZz3E=";
+    "15" = "sha256-webZWgWZGnSoXwTpk816tjbtHV1UIlXkogpBDAEL4gM=";
+    "16" = "sha256-iukdi2c3CukGvjuTojybFFAZBlAw8GEfzFPr2qJuwTA=";
+    "17" = "sha256-hAjhNj/benwZbbuxDl9RSjwWRai9CUozbEN6ecPKoFE=";
+    "18" = "sha256-Hqjg62YLTLEa6wRA5S4MAIED7Hobtiih4E55cSzVTqE";
   };
 in
 postgresqlBuildExtension (finalAttrs: {
   pname = "age";
+
   version =
     if lib.versionAtLeast postgresql.version "17" then
       "1.7.0-rc0"
@@ -32,6 +33,7 @@ postgresqlBuildExtension (finalAttrs: {
     owner = "apache";
     repo = "age";
     tag = "PG${lib.versions.major postgresql.version}/v${finalAttrs.version}";
+
     hash =
       hashes.${lib.versions.major postgresql.version}
       or (throw "Source for Age is not available for ${postgresql.version}");
@@ -44,12 +46,10 @@ postgresqlBuildExtension (finalAttrs: {
   ];
 
   enableUpdateScript = false;
+
   passthru.tests = stdenv.mkDerivation {
     inherit (finalAttrs) version src;
-
     pname = "age-regression";
-
-    dontConfigure = true;
 
     buildPhase =
       let
@@ -73,15 +73,17 @@ postgresqlBuildExtension (finalAttrs: {
     installPhase = ''
       touch $out
     '';
+
+    dontConfigure = true;
   };
 
   meta = {
-    broken = !builtins.elem (lib.versions.major postgresql.version) (builtins.attrNames hashes);
     description = "Graph database extension for PostgreSQL";
     homepage = "https://age.apache.org/";
     changelog = "https://github.com/apache/age/raw/PG${lib.versions.major postgresql.version}/v${finalAttrs.version}/RELEASE";
+    license = lib.licenses.asl20;
     maintainers = [ ];
     platforms = postgresql.meta.platforms;
-    license = lib.licenses.asl20;
+    broken = !builtins.elem (lib.versions.major postgresql.version) (builtins.attrNames hashes);
   };
 })

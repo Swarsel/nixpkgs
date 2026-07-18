@@ -1,7 +1,7 @@
 {
+  lib,
   buildFHSEnv,
   callPackage,
-  lib,
 }:
 let
 
@@ -9,8 +9,10 @@ let
 
 in
 buildFHSEnv {
-  pname = "shticker_book_unwritten";
   inherit (shticker-book-unwritten-unwrapped) version;
+  pname = "shticker_book_unwritten";
+  runScript = "shticker_book_unwritten";
+
   targetPkgs =
     pkgs: with pkgs; [
       alsa-lib
@@ -21,14 +23,13 @@ buildFHSEnv {
       libxcursor
       libxext
     ];
-  runScript = "shticker_book_unwritten";
 
   meta = {
     description = "Minimal CLI launcher for the Toontown Rewritten MMORPG";
-    mainProgram = "shticker_book_unwritten";
     homepage = "https://github.com/JonathanHelianthicusDoe/shticker_book_unwritten";
     license = lib.licenses.gpl3Plus;
     maintainers = [ lib.maintainers.reedrw ];
     platforms = lib.platforms.linux;
+    mainProgram = "shticker_book_unwritten";
   };
 }

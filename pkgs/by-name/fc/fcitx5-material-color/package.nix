@@ -1,7 +1,7 @@
 {
-  stdenvNoCC,
-  fetchFromGitHub,
   lib,
+  fetchFromGitHub,
+  stdenvNoCC,
 }:
 
 stdenvNoCC.mkDerivation (finalAttrs: {
@@ -36,10 +36,12 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     description = "Fcitx5 themes based on Material color";
     homepage = "https://github.com/hosxy/Fcitx5-Material-Color";
     license = lib.licenses.asl20;
+
     maintainers = with lib.maintainers; [
       Cryolitia
       h7x4
     ];
+
     platforms = lib.platforms.all;
   };
 })

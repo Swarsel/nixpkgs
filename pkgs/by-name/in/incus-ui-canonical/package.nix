@@ -1,21 +1,21 @@
 {
   lib,
-  stdenvNoCC,
   fetchurl,
   fetchFromGitHub,
   fetchYarnDeps,
-  nodejs,
   fixup-yarn-lock,
-  yarn,
-  nixosTests,
   git,
   nix-update-script,
+  nixosTests,
+  nodejs,
+  stdenvNoCC,
+  yarn,
 }:
 let
   # this rarely changes https://github.com/zabbly/incus/blob/daily/patches/ui-canonical-renames.sed
   renamesSed = fetchurl {
-    url = "https://raw.githubusercontent.com/zabbly/incus/0fa53811ff1043fd9f28c8b78851b60ca58e1b10/patches/ui-canonical-renames.sed";
     hash = "sha256-f0vd/Xp/kBbZkg6CBM4cZPlwg5WUL/zv3mCAEmugzCE=";
+    url = "https://raw.githubusercontent.com/zabbly/incus/0fa53811ff1043fd9f28c8b78851b60ca58e1b10/patches/ui-canonical-renames.sed";
   };
 in
 stdenvNoCC.mkDerivation (finalAttrs: {
@@ -30,18 +30,6 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     hash = "sha256-EMf723WZKyVYDpvdmzjdp61rIZVsoj6gRMiMF323K/A=";
   };
 
-  offlineCache = fetchYarnDeps {
-    yarnLock = "${finalAttrs.src}/yarn.lock";
-    hash = "sha256-61z48VlhImykD/GJ5581Z95dIn7pv2ODZJfFKydGSPs=";
-  };
-
-  nativeBuildInputs = [
-    nodejs
-    fixup-yarn-lock
-    yarn
-    git
-  ];
-
   postPatch = ''
     # run the canonical renames sed script
     find -type f -name "*.ts" -o -name "*.tsx" -o -name "*.scss" | xargs sed -i -f ${renamesSed}
@@ -51,17 +39,12 @@ stdenvNoCC.mkDerivation (finalAttrs: {
       --replace-fail "git rev-parse --short HEAD" "echo ${finalAttrs.version}"
   '';
 
-  configurePhase = ''
-    runHook preConfigure
-
-    export HOME=$(mktemp -d)
-    yarn config --offline set yarn-offline-mirror "$offlineCache"
-    fixup-yarn-lock yarn.lock
-    yarn --offline --frozen-lockfile --ignore-platform --ignore-scripts --no-progress --non-interactive install
-    patchShebangs node_modules
-
-    runHook postConfigure
-  '';
+  nativeBuildInputs = [
+    nodejs
+    fixup-yarn-lock
+    yarn
+    git
+  ];
 
   buildPhase = ''
     runHook preBuild
@@ -79,6 +62,23 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  configurePhase = ''
+    runHook preConfigure
+
+    export HOME=$(mktemp -d)
+    yarn config --offline set yarn-offline-mirror "$offlineCache"
+    fixup-yarn-lock yarn.lock
+    yarn --offline --frozen-lockfile --ignore-platform --ignore-scripts --no-progress --non-interactive install
+    patchShebangs node_modules
+
+    runHook postConfigure
+  '';
+
+  offlineCache = fetchYarnDeps {
+    hash = "sha256-61z48VlhImykD/GJ5581Z95dIn7pv2ODZJfFKydGSPs=";
+    yarnLock = "${finalAttrs.src}/yarn.lock";
+  };
+
   passthru = {
     tests.default = nixosTests.incus.ui;
 
@@ -94,7 +94,7 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     description = "Web user interface for Incus";
     homepage = "https://github.com/zabbly/incus-ui-canonical";
     license = lib.licenses.gpl3;
-    teams = [ lib.teams.lxc ];
     platforms = lib.platforms.linux;
+    teams = [ lib.teams.lxc ];
   };
 })

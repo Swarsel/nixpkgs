@@ -1,11 +1,11 @@
 {
   lib,
   fetchFromGitHub,
-  rustPlatform,
-  pkg-config,
-  openssl,
   alsa-lib,
   ffmpeg_6,
+  openssl,
+  pkg-config,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage {
@@ -24,17 +24,18 @@ rustPlatform.buildRustPackage {
     ./dynamic-lib.patch
   ];
 
-  cargoHash = "sha256-cfr5q44SzJ5iYm8cu/3+RkoPaoUklmOV/UbSdZZbu38=";
-
   nativeBuildInputs = [
     pkg-config
     rustPlatform.bindgenHook
   ];
+
   buildInputs = [
     alsa-lib
     openssl
     ffmpeg_6
   ];
+
+  cargoHash = "sha256-cfr5q44SzJ5iYm8cu/3+RkoPaoUklmOV/UbSdZZbu38=";
 
   checkFlags = [
     # network required
@@ -42,8 +43,8 @@ rustPlatform.buildRustPackage {
   ];
 
   meta = {
-    homepage = "https://github.com/Kingtous/RustPlayer";
     description = "Local audio player and network m3u8 radio player using a terminal interface";
+    homepage = "https://github.com/Kingtous/RustPlayer";
     license = lib.licenses.gpl3Only;
     maintainers = with lib.maintainers; [ oluceps ];
     platforms = lib.platforms.unix;

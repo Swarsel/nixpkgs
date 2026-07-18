@@ -5,10 +5,8 @@ let
 in
 
 buildDunePackage {
-  pname = "csvtool";
   inherit (csv) src version;
-
-  duneVersion = "3";
+  pname = "csvtool";
 
   buildInputs = [
     csv
@@ -16,6 +14,7 @@ buildDunePackage {
   ];
 
   doCheck = true;
+  duneVersion = "3";
 
   meta = csv.meta // {
     description = "Command line tool for handling CSV files";

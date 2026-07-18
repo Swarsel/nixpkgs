@@ -2,24 +2,17 @@
   lib,
   stdenv,
   buildPythonPackage,
-  libxnd,
-  setuptools,
-  ndtypes,
   libndtypes,
-  pythonAtLeast,
+  libxnd,
+  ndtypes,
   python,
+  pythonAtLeast,
+  setuptools,
 }:
 
 buildPythonPackage {
-  pname = "xnd";
   inherit (libxnd) version src meta;
-  pyproject = true;
-
-  build-system = [ setuptools ];
-
-  dependencies = [ ndtypes ];
-
-  buildInputs = [ libndtypes ];
+  pname = "xnd";
 
   postPatch = ''
     substituteInPlace setup.py \
@@ -38,13 +31,7 @@ buildPythonPackage {
       --replace-fail '->ob_digit[i]' '->long_value.ob_digit[i]'
   '';
 
-  postInstall = ''
-    mkdir $out/include
-    cp python/xnd/*.h $out/include
-  ''
-  + lib.optionalString stdenv.hostPlatform.isDarwin ''
-    install_name_tool -add_rpath ${libxnd}/lib $out/${python.sitePackages}/xnd/_xnd.*.so
-  '';
+  buildInputs = [ libndtypes ];
 
   checkPhase = ''
     runHook preCheck
@@ -56,4 +43,16 @@ buildPythonPackage {
 
     runHook postCheck
   '';
+
+  postInstall = ''
+    mkdir $out/include
+    cp python/xnd/*.h $out/include
+  ''
+  + lib.optionalString stdenv.hostPlatform.isDarwin ''
+    install_name_tool -add_rpath ${libxnd}/lib $out/${python.sitePackages}/xnd/_xnd.*.so
+  '';
+
+  build-system = [ setuptools ];
+  dependencies = [ ndtypes ];
+  pyproject = true;
 }

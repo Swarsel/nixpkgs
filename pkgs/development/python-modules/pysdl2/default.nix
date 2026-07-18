@@ -1,29 +1,25 @@
 {
-  stdenv,
   lib,
-  replaceVars,
+  stdenv,
   fetchFromGitHub,
-  buildPythonPackage,
-  setuptools,
-
   # native dependencies
   SDL2,
-  SDL2_ttf,
-  SDL2_image,
   SDL2_gfx,
+  SDL2_image,
   SDL2_mixer,
-
+  SDL2_ttf,
+  buildPythonPackage,
   # tests
   numpy,
   pillow,
   pytestCheckHook,
+  replaceVars,
+  setuptools,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "pysdl2";
   version = "0.9.17-unstable-2025-11-18";
-  pyproject = true;
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "py-sdl";
@@ -54,8 +50,6 @@ buildPythonPackage (finalAttrs: {
     ))
   ];
 
-  build-system = [ setuptools ];
-
   buildInputs = [
     SDL2
     SDL2_ttf
@@ -65,19 +59,20 @@ buildPythonPackage (finalAttrs: {
   ];
 
   env = {
-    SDL_VIDEODRIVER = "dummy";
+    PYTHONFAULTHANDLER = "1";
     SDL_AUDIODRIVER = "dummy";
     SDL_RENDER_DRIVER = "software";
-    PYTHONFAULTHANDLER = "1";
+    SDL_VIDEODRIVER = "dummy";
   };
-
-  pythonImportsCheck = [ "sdl2" ];
 
   nativeCheckInputs = [
     numpy
     pillow
     pytestCheckHook
   ];
+
+  __structuredAttrs = true;
+  build-system = [ setuptools ];
 
   disabledTests = [
     # GetPrefPath for OrgName/AppName is None
@@ -91,10 +86,13 @@ buildPythonPackage (finalAttrs: {
     "test_SDL_GetSetWindowMouseRect"
   ];
 
+  pyproject = true;
+  pythonImportsCheck = [ "sdl2" ];
+
   meta = {
-    changelog = "https://github.com/py-sdl/py-sdl2/compare/0.9.17..${finalAttrs.src.rev}";
     description = "Wrapper around the SDL2 library and as such similar to the discontinued PySDL project";
     homepage = "https://github.com/py-sdl/py-sdl2";
+    changelog = "https://github.com/py-sdl/py-sdl2/compare/0.9.17..${finalAttrs.src.rev}";
     license = lib.licenses.publicDomain;
     maintainers = with lib.maintainers; [ pmiddend ];
   };

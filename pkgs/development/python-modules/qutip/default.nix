@@ -1,35 +1,30 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # build-system
-  cython,
-  oldest-supported-numpy,
-  setuptools,
-
-  # dependencies
-  numpy,
-  packaging,
-  scipy,
-
-  # tests
-  pytestCheckHook,
-  pytest-rerunfailures,
-  writableTmpDirAsHomeHook,
-  python,
-
-  # optional-dependencies
-  matplotlib,
-  ipython,
+  buildPythonPackage,
   cvxopt,
   cvxpy,
+  # build-system
+  cython,
+  ipython,
+  # optional-dependencies
+  matplotlib,
+  # dependencies
+  numpy,
+  oldest-supported-numpy,
+  packaging,
+  pytest-rerunfailures,
+  # tests
+  pytestCheckHook,
+  python,
+  scipy,
+  setuptools,
+  writableTmpDirAsHomeHook,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "qutip";
   version = "5.2.3.post1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "qutip";
@@ -37,18 +32,6 @@ buildPythonPackage (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-9OcRV3BmRdDOCmov2cK3eoFutQI3Bf6w2QRPpFTZKCU=";
   };
-
-  build-system = [
-    cython
-    oldest-supported-numpy
-    setuptools
-  ];
-
-  dependencies = [
-    numpy
-    packaging
-    scipy
-  ];
 
   nativeCheckInputs = [
     pytestCheckHook
@@ -72,16 +55,30 @@ buildPythonPackage (finalAttrs: {
     runHook postCheck
   '';
 
-  pythonImportsCheck = [ "qutip" ];
+  build-system = [
+    cython
+    oldest-supported-numpy
+    setuptools
+  ];
+
+  dependencies = [
+    numpy
+    packaging
+    scipy
+  ];
 
   optional-dependencies = {
     graphics = [ matplotlib ];
     ipython = [ ipython ];
+
     semidefinite = [
       cvxopt
       cvxpy
     ];
   };
+
+  pyproject = true;
+  pythonImportsCheck = [ "qutip" ];
 
   meta = {
     description = "Open-source software for simulating the dynamics of closed and open quantum systems";
@@ -89,6 +86,7 @@ buildPythonPackage (finalAttrs: {
     changelog = "https://github.com/qutip/qutip/releases/tag/${finalAttrs.src.tag}";
     license = lib.licenses.bsd3;
     maintainers = [ ];
+
     badPlatforms = [
       # Tests fail at ~80%
       # ../tests/test_animation.py::test_result_state Fatal Python error: Aborted

@@ -1,11 +1,11 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
-  pkg-config,
   elfutils,
-  zlib,
   nix-update-script,
+  pkg-config,
+  rustPlatform,
+  zlib,
 }:
 rustPlatform.buildRustPackage (finalAttrs: {
   pname = "blazesym-c";
@@ -20,15 +20,19 @@ rustPlatform.buildRustPackage (finalAttrs: {
 
   cargoHash = "sha256-fsvdhahTKxjrrH9z6m1k3cTkXfMUZXZNZlYRi3tgTlA=";
 
-  cargoBuildFlags = [
-    "--package"
-    "blazesym-c"
-  ];
-
   nativeCheckInputs = [
     pkg-config
     elfutils
     zlib
+  ];
+
+  postInstall = ''
+    install -Dm644 capi/include/blazesym.h "$out/include/blazesym.h"
+  '';
+
+  cargoBuildFlags = [
+    "--package"
+    "blazesym-c"
   ];
 
   cargoTestFlags = [
@@ -36,10 +40,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
     "--package"
     "blazesym-c"
   ];
-
-  postInstall = ''
-    install -Dm644 capi/include/blazesym.h "$out/include/blazesym.h"
-  '';
 
   passthru.updateScript = nix-update-script {
     extraArgs = [
@@ -52,7 +52,7 @@ rustPlatform.buildRustPackage (finalAttrs: {
     description = "C language bindings for the blazesym library";
     homepage = "https://github.com/libbpf/blazesym";
     license = lib.licenses.bsd3;
-    platforms = lib.platforms.linux;
     maintainers = with lib.maintainers; [ aaronjheng ];
+    platforms = lib.platforms.linux;
   };
 })

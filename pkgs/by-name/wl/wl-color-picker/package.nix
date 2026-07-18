@@ -2,14 +2,14 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  slurp,
-  grim,
-  zenity,
-  wl-clipboard,
-  imagemagick,
-  makeWrapper,
   bash,
+  grim,
+  imagemagick,
   libnotify,
+  makeWrapper,
+  slurp,
+  wl-clipboard,
+  zenity,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -30,20 +30,6 @@ stdenv.mkDerivation (finalAttrs: {
     bash
   ];
 
-  patchPhase = ''
-    patchShebangs .
-    substituteInPlace Makefile \
-      --replace "which" "ls" \
-      --replace "grim" "${lib.getExe grim}" \
-      --replace "slurp" "${lib.getExe slurp}" \
-      --replace "zenity" "${lib.getExe zenity}" \
-      --replace "convert" "${lib.getExe' imagemagick "convert"}" \
-      --replace "wl-copy" "${lib.getExe' wl-clipboard "wl-copy"}" \
-      --replace "notify-send" "${lib.getExe' libnotify "notify-send"}"
-  '';
-
-  installFlags = [ "DESTDIR=${placeholder "out"}" ];
-
   postInstall = ''
     wrapProgram $out/usr/bin/wl-color-picker \
       --prefix PATH : ${
@@ -58,6 +44,20 @@ stdenv.mkDerivation (finalAttrs: {
       }
     mkdir -p $out/bin
     ln -s $out/usr/bin/wl-color-picker $out/bin/wl-color-picker
+  '';
+
+  installFlags = [ "DESTDIR=${placeholder "out"}" ];
+
+  patchPhase = ''
+    patchShebangs .
+    substituteInPlace Makefile \
+      --replace "which" "ls" \
+      --replace "grim" "${lib.getExe grim}" \
+      --replace "slurp" "${lib.getExe slurp}" \
+      --replace "zenity" "${lib.getExe zenity}" \
+      --replace "convert" "${lib.getExe' imagemagick "convert"}" \
+      --replace "wl-copy" "${lib.getExe' wl-clipboard "wl-copy"}" \
+      --replace "notify-send" "${lib.getExe' libnotify "notify-send"}"
   '';
 
   meta = {

@@ -1,8 +1,8 @@
 {
   lib,
+  stdenv,
   gitMinimal,
   runCommandLocal,
-  stdenv,
   wrapper,
 }:
 /**
@@ -13,17 +13,20 @@
 project:
 runCommandLocal "${lib.getName wrapper}-check"
   {
-    __structuredAttrs = true;
+    inherit project;
     strictDeps = true;
+
     nativeBuildInputs = [
       gitMinimal
       wrapper
     ];
-    inherit project;
+
     env = {
       LANG = if stdenv.buildPlatform.isDarwin then "en_US.UTF-8" else "C.UTF-8";
       LC_ALL = if stdenv.buildPlatform.isDarwin then "en_US.UTF-8" else "C.UTF-8";
     };
+
+    __structuredAttrs = true;
     meta.description = "Check that the project tree is formatted";
   }
   ''

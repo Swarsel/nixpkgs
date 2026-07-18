@@ -9,8 +9,8 @@
   pytestCheckHook,
   pyyaml,
   requests,
-  setuptools-scm,
   setuptools,
+  setuptools-scm,
   tabulate,
   unicodedata2,
   youseedee,
@@ -19,7 +19,6 @@
 buildPythonPackage rec {
   pname = "glyphsets";
   version = "1.1.0";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
@@ -32,6 +31,11 @@ buildPythonPackage rec {
   '';
 
   env.PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION = "python";
+  nativeCheckInputs = [ pytestCheckHook ];
+
+  preCheck = ''
+    export PATH="$out/bin:$PATH"
+  '';
 
   build-system = [
     setuptools
@@ -50,18 +54,14 @@ buildPythonPackage rec {
     youseedee
   ];
 
-  nativeCheckInputs = [ pytestCheckHook ];
-
-  preCheck = ''
-    export PATH="$out/bin:$PATH"
-  '';
-
   disabledTests = [
     # This "test" just tries to connect to PyPI and look for newer releases. Not needed.
     "test_dependencies"
     # 616 instead of 617 glyphs in a glyphset
     "test_definitions"
   ];
+
+  pyproject = true;
 
   meta = {
     description = "Google Fonts glyph set metadata";

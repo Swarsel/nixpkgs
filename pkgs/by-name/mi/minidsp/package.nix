@@ -1,10 +1,10 @@
 {
   lib,
-  fetchFromGitHub,
-  rustPlatform,
   stdenv,
+  fetchFromGitHub,
   libusb1,
   pkg-config,
+  rustPlatform,
 }:
 rustPlatform.buildRustPackage (finalAttrs: {
   pname = "minidsp";
@@ -17,23 +17,22 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-8bKP9/byVRKj1P1MP3ZVg8yw0WaNB0BcqarCti7B8CA=";
   };
 
-  cargoHash = "sha256-JIm0XcgqXGPXlkQ1rhG5D38bQkQT9K44F71ZaCT2g8o=";
-
-  cargoBuildFlags = [ "-p minidsp -p minidsp-daemon" ];
-
-  buildInputs = lib.optionals stdenv.hostPlatform.isLinux [ libusb1 ];
-
   nativeBuildInputs = lib.optionals stdenv.hostPlatform.isLinux [ pkg-config ];
+  buildInputs = lib.optionals stdenv.hostPlatform.isLinux [ libusb1 ];
+  cargoHash = "sha256-JIm0XcgqXGPXlkQ1rhG5D38bQkQT9K44F71ZaCT2g8o=";
+  cargoBuildFlags = [ "-p minidsp -p minidsp-daemon" ];
 
   meta = {
     description = "Control interface for some MiniDSP products";
     homepage = "https://github.com/mrene/minidsp-rs";
     license = lib.licenses.asl20;
-    platforms = lib.platforms.linux ++ lib.platforms.darwin;
-    mainProgram = "minidsp";
+
     maintainers = [
       lib.maintainers.adamcstephens
       lib.maintainers.mrene
     ];
+
+    platforms = lib.platforms.linux ++ lib.platforms.darwin;
+    mainProgram = "minidsp";
   };
 })

@@ -18,29 +18,11 @@
 buildPythonPackage (finalAttrs: {
   pname = "google-cloud-automl";
   version = "2.20.0";
-  pyproject = true;
 
   src = fetchPypi {
-    pname = "google_cloud_automl";
     inherit (finalAttrs) version;
     hash = "sha256-3BaZODxm3KaDecL6iM0JQz9mOwaOvOTnb1HJ8sCOzEA=";
-  };
-
-  build-system = [ setuptools ];
-
-  pythonRelaxDeps = [ "protobuf" ];
-
-  dependencies = [
-    google-api-core
-    proto-plus
-    protobuf
-  ]
-  ++ google-api-core.optional-dependencies.grpc;
-
-  optional-dependencies = {
-    libcst = [ libcst ];
-    pandas = [ pandas ];
-    storage = [ google-cloud-storage ];
+    pname = "google_cloud_automl";
   };
 
   nativeCheckInputs = [
@@ -57,6 +39,15 @@ buildPythonPackage (finalAttrs: {
     rm -r google
   '';
 
+  build-system = [ setuptools ];
+
+  dependencies = [
+    google-api-core
+    proto-plus
+    protobuf
+  ]
+  ++ google-api-core.optional-dependencies.grpc;
+
   disabledTests = [
     # Test requires credentials
     "test_prediction_client_client_info"
@@ -64,11 +55,21 @@ buildPythonPackage (finalAttrs: {
     "test_list_models"
   ];
 
+  optional-dependencies = {
+    libcst = [ libcst ];
+    pandas = [ pandas ];
+    storage = [ google-cloud-storage ];
+  };
+
+  pyproject = true;
+
   pythonImportsCheck = [
     "google.cloud.automl"
     "google.cloud.automl_v1"
     "google.cloud.automl_v1beta1"
   ];
+
+  pythonRelaxDeps = [ "protobuf" ];
 
   meta = {
     description = "Cloud AutoML API client library";

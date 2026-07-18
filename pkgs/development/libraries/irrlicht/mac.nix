@@ -1,9 +1,9 @@
 {
   lib,
   stdenv,
-  fetchzip,
   fetchFromGitHub,
   cmake,
+  fetchzip,
 }:
 
 let
@@ -21,12 +21,8 @@ stdenv.mkDerivation {
     sha256 = "10ahnry2zl64wphs233gxhvs6c0345pyf5nwa29mc6yn49x7bidi";
   };
 
-  postUnpack = ''
-    cp -r ${common.src}/* $sourceRoot/
-    chmod -R 777 $sourceRoot
-  '';
-
   patches = [ ./mac_device.patch ];
+  nativeBuildInputs = [ cmake ];
 
   cmakeFlags = [
     "-DIRRLICHT_STATIC_LIBRARY=ON"
@@ -36,12 +32,15 @@ stdenv.mkDerivation {
     "-DIRRLICHT_BUILD_TOOLS=OFF"
   ];
 
-  nativeBuildInputs = [ cmake ];
+  postUnpack = ''
+    cp -r ${common.src}/* $sourceRoot/
+    chmod -R 777 $sourceRoot
+  '';
 
   meta = {
+    description = "Open source high performance realtime 3D engine written in C++";
     homepage = "https://irrlicht.sourceforge.net/";
     license = lib.licenses.zlib;
-    description = "Open source high performance realtime 3D engine written in C++";
     platforms = lib.platforms.darwin;
     broken = true;
   };

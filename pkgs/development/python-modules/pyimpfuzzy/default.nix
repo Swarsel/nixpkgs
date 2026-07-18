@@ -2,13 +2,12 @@
   lib,
   buildPythonPackage,
   fetchPypi,
-  ssdeep,
   pefile,
+  ssdeep,
 }:
 buildPythonPackage rec {
   pname = "pyimpfuzzy";
   version = "0.5";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
@@ -16,12 +15,10 @@ buildPythonPackage rec {
   };
 
   buildInputs = [ ssdeep ];
-
   propagatedBuildInputs = [ pefile ];
-
   # no tests
   doCheck = false;
-
+  format = "setuptools";
   pythonImportsCheck = [ "pyimpfuzzy" ];
 
   meta = {

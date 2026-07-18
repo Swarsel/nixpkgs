@@ -3,15 +3,15 @@
   stdenv,
   fetchFromGitHub,
   autoreconfHook,
-  pkg-config,
-  libosmocore,
-  sqlite,
-  libosmoabis,
   libosmo-netif,
   libosmo-sigtran,
-  osmo-mgw,
-  osmo-hlr,
+  libosmoabis,
+  libosmocore,
   lksctp-tools,
+  osmo-hlr,
+  osmo-mgw,
+  pkg-config,
+  sqlite,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -49,10 +49,10 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Osmocom implementation of 3GPP Mobile Swtiching Centre (MSC)";
-    mainProgram = "osmo-msc";
     homepage = "https://osmocom.org/projects/osmomsc/wiki";
     license = lib.licenses.agpl3Only;
     maintainers = [ lib.maintainers.markuskowa ];
     platforms = lib.platforms.linux;
+    mainProgram = "osmo-msc";
   };
 })

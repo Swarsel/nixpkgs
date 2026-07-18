@@ -27,6 +27,7 @@ stdenv.mkDerivation (finalAttrs: {
     installShellFiles
     which
   ];
+
   buildInputs = [
     ncurses
   ];
@@ -48,10 +49,7 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Program which reads job descriptions line by line and executes them in parallel";
-    homepage = "https://www.maier-komor.de/xjobs.html";
-    license = lib.licenses.gpl2Plus;
-    platforms = lib.platforms.all;
-    maintainers = [ lib.maintainers.siriobalmelli ];
+
     longDescription = ''
       xjobs reads job descriptions line by line and executes them in parallel.
 
@@ -72,6 +70,11 @@ stdenv.mkDerivation (finalAttrs: {
       It works similar to xargs, but starts several processes simultaneously
       and gives only one line of arguments to each utility call.
     '';
+
+    homepage = "https://www.maier-komor.de/xjobs.html";
+    license = lib.licenses.gpl2Plus;
+    maintainers = [ lib.maintainers.siriobalmelli ];
+    platforms = lib.platforms.all;
     mainProgram = "xjobs";
   };
 })

@@ -1,23 +1,23 @@
 {
-  stdenv,
   lib,
+  stdenv,
+  fetchurl,
+  _experimental-update-script-combinators,
+  apacheHttpdPackages,
   buildPackages,
+  cargo,
+  common-updater-scripts,
   gettext,
+  glib,
+  gnome,
+  itstool,
+  libxml2,
   meson,
   ninja,
-  rustc,
-  rustPlatform,
-  cargo,
-  fetchurl,
-  apacheHttpdPackages,
   pkg-config,
-  glib,
-  libxml2,
+  rustPlatform,
+  rustc,
   wrapGAppsNoGuiHook,
-  itstool,
-  gnome,
-  _experimental-update-script-combinators,
-  common-updater-scripts,
 }:
 
 let
@@ -33,32 +33,12 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-oE1IP0mz92naj/Xi0/y/++rztsa3HYLSoqYju0seDdQ=";
   };
 
-  cargoDeps = rustPlatform.fetchCargoVendor {
-    inherit (finalAttrs) src;
-    name = "gnome-user-share-${finalAttrs.version}";
-    hash = "sha256-tQoP0yBOCesj2kwgBUoqmcVtFttwML2N+wfSULtfC4w=";
-  };
-
-  preConfigure = ''
-    substituteInPlace data/dav_user_2.4.conf \
-      --replace-fail \
-        'LoadModule dnssd_module ''${HTTP_MODULES_PATH}/mod_dnssd.so' \
-        'LoadModule dnssd_module ${mod_dnssd}/modules/mod_dnssd.so' \
-      --replace-fail \
-        '${"$"}{HTTP_MODULES_PATH}' \
-        '${apacheHttpd}/modules'
-  ''
-  + lib.optionalString (!stdenv.buildPlatform.canExecute stdenv.hostPlatform) ''
-    substituteInPlace meson.build --replace-fail \
-      "run_command([httpd, '-v']" \
-      "run_command(['${stdenv.hostPlatform.emulator buildPackages}', httpd, '-v']"
+  postPatch = ''
+    substituteInPlace src/meson.build \
+      --replace-fail "'cp', 'src' / rust_target / meson.project_name(), '@OUTPUT@'," "'cp', 'src' / '${stdenv.hostPlatform.rust.cargoShortTarget}' / rust_target / meson.project_name(), '@OUTPUT@',"
   '';
 
-  mesonFlags = [
-    "-Dhttpd=${apacheHttpd.out}/bin/httpd"
-    "-Dmodules_path=${apacheHttpd}/modules"
-    "-Dsystemduserunitdir=${placeholder "out"}/etc/systemd/user"
-  ];
+  strictDeps = true;
 
   nativeBuildInputs = [
     pkg-config
@@ -78,16 +58,37 @@ stdenv.mkDerivation (finalAttrs: {
     glib
   ];
 
-  postPatch = ''
-    substituteInPlace src/meson.build \
-      --replace-fail "'cp', 'src' / rust_target / meson.project_name(), '@OUTPUT@'," "'cp', 'src' / '${stdenv.hostPlatform.rust.cargoShortTarget}' / rust_target / meson.project_name(), '@OUTPUT@',"
-  '';
+  mesonFlags = [
+    "-Dhttpd=${apacheHttpd.out}/bin/httpd"
+    "-Dmodules_path=${apacheHttpd}/modules"
+    "-Dsystemduserunitdir=${placeholder "out"}/etc/systemd/user"
+  ];
 
   # For https://gitlab.gnome.org/GNOME/gnome-user-share/-/blob/7ffb23dd5af0fda75c66f03756798dc10e253c36/src/meson.build#L47
   env.CARGO_BUILD_TARGET = stdenv.hostPlatform.rust.rustcTargetSpec;
 
+  preConfigure = ''
+    substituteInPlace data/dav_user_2.4.conf \
+      --replace-fail \
+        'LoadModule dnssd_module ''${HTTP_MODULES_PATH}/mod_dnssd.so' \
+        'LoadModule dnssd_module ${mod_dnssd}/modules/mod_dnssd.so' \
+      --replace-fail \
+        '${"$"}{HTTP_MODULES_PATH}' \
+        '${apacheHttpd}/modules'
+  ''
+  + lib.optionalString (!stdenv.buildPlatform.canExecute stdenv.hostPlatform) ''
+    substituteInPlace meson.build --replace-fail \
+      "run_command([httpd, '-v']" \
+      "run_command(['${stdenv.hostPlatform.emulator buildPackages}', httpd, '-v']"
+  '';
+
   doCheck = true;
-  strictDeps = true;
+
+  cargoDeps = rustPlatform.fetchCargoVendor {
+    inherit (finalAttrs) src;
+    hash = "sha256-tQoP0yBOCesj2kwgBUoqmcVtFttwML2N+wfSULtfC4w=";
+    name = "gnome-user-share-${finalAttrs.version}";
+  };
 
   passthru = {
     updateScript =
@@ -109,6 +110,7 @@ stdenv.mkDerivation (finalAttrs: {
               update-source-version gnome-user-share --ignore-same-version --source-key=cargoDeps.vendorStaging > /dev/null
             ''
           ];
+
           # Experimental feature: do not copy!
           supportedFeatures = [ "silent" ];
         };
@@ -120,11 +122,11 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   meta = {
+    description = "Service that exports the contents of the Public folder in your home directory on the local network";
     homepage = "https://gitlab.gnome.org/GNOME/gnome-user-share";
     changelog = "https://gitlab.gnome.org/GNOME/gnome-user-share/-/blob/${finalAttrs.version}/NEWS?ref_type=tags";
-    description = "Service that exports the contents of the Public folder in your home directory on the local network";
-    teams = [ lib.teams.gnome ];
     license = lib.licenses.gpl2Plus;
     platforms = lib.platforms.linux;
+    teams = [ lib.teams.gnome ];
   };
 })

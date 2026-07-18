@@ -15,19 +15,20 @@
 buildPythonPackage (finalAttrs: {
   pname = "google-cloud-iam-logging";
   version = "1.8.0";
-  pyproject = true;
 
   src = fetchPypi {
-    pname = "google_cloud_iam_logging";
     inherit (finalAttrs) version;
     hash = "sha256-SOugq2vFHefdkFsc4haDahmOjioWSZtL4iUfQlgqwCg=";
+    pname = "google_cloud_iam_logging";
   };
 
-  build-system = [ setuptools ];
-
-  pythonRelaxDeps = [
-    "protobuf"
+  nativeCheckInputs = [
+    mock
+    pytestCheckHook
+    pytest-asyncio
   ];
+
+  build-system = [ setuptools ];
 
   dependencies = [
     google-api-core
@@ -37,15 +38,15 @@ buildPythonPackage (finalAttrs: {
   ]
   ++ google-api-core.optional-dependencies.grpc;
 
-  nativeCheckInputs = [
-    mock
-    pytestCheckHook
-    pytest-asyncio
-  ];
+  pyproject = true;
 
   pythonImportsCheck = [
     "google.cloud.iam_logging"
     "google.cloud.iam_logging_v1"
+  ];
+
+  pythonRelaxDeps = [
+    "protobuf"
   ];
 
   meta = {

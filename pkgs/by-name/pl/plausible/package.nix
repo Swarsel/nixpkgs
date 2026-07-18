@@ -1,18 +1,18 @@
 {
   lib,
-  beam27Packages,
-  buildNpmPackage,
-  rustPlatform,
   fetchFromGitHub,
-  nodejs,
-  runCommand,
-  nixosTests,
-  npm-lockfile-fix,
-  cmake,
-  nix-update-script,
+  beam27Packages,
   brotli,
-  esbuild,
+  buildNpmPackage,
   buildPackages,
+  cmake,
+  esbuild,
+  nix-update-script,
+  nixosTests,
+  nodejs,
+  npm-lockfile-fix,
+  runCommand,
+  rustPlatform,
 }:
 
 let
@@ -25,6 +25,7 @@ let
     repo = "analytics";
     rev = "v${version}";
     hash = "sha256-2roIj0s2cybYdGmmJSPJ5Rc1gNunxlYew9JR5xxMv+k=";
+
     postFetch = ''
       ${lib.getExe npm-lockfile-fix} $out/assets/package-lock.json
       sed -ie '
@@ -43,29 +44,33 @@ let
   };
 
   assets = buildNpmPackage {
-    pname = "${pname}-assets";
     inherit version;
+    pname = "${pname}-assets";
     src = "${src}/assets";
     npmDepsHash = "sha256-grYxPRzpu3pcv3lyTQxx0RDhmgFhsOKZoYbzd701xjA=";
-    dontNpmBuild = true;
+
     installPhase = ''
       runHook preInstall
       cp -r . "$out"
       runHook postInstall
     '';
+
+    dontNpmBuild = true;
   };
 
   tracker = buildNpmPackage {
-    pname = "${pname}-tracker";
     inherit version;
+    pname = "${pname}-tracker";
     src = "${src}/tracker";
     npmDepsHash = "sha256-hrsvQXvbcfRDUc1qinyUJ7Oh4yMM1e+UEdYudjYyJxk=";
-    dontNpmBuild = true;
+
     installPhase = ''
       runHook preInstall
       cp -r . "$out"
       runHook postInstall
     '';
+
+    dontNpmBuild = true;
   };
 
   # lazy_html (new dep since 3.1.0) builds a NIF against lexbor
@@ -74,10 +79,10 @@ let
   # and force a build in preBuild below
   lexborCommit = "244b84956a6dc7eec293781d051354f351274c46";
   lexborSrc = fetchFromGitHub {
+    hash = "sha256-Oup/lGU8a9Dqfho4Llg39t9Y9n4xfUmGk0772OkpnLQ=";
     owner = "lexbor";
     repo = "lexbor";
     rev = lexborCommit;
-    hash = "sha256-Oup/lGU8a9Dqfho4Llg39t9Y9n4xfUmGk0772OkpnLQ=";
   };
 
   mixFodDeps = beamPackages.fetchMixDeps {
@@ -87,6 +92,7 @@ let
       src
       mixEnv
       ;
+
     hash = "sha256-fm/elkCNpu5sduBxly06i/z30Y9BMtt+qthXmLuvlUc=";
   };
 
@@ -94,14 +100,14 @@ let
     pname = "mjml-native";
     version = "";
     src = "${mixFodDeps}/mjml/native/mjml_nif";
-
     cargoHash = "sha256-a8xSRdFtMYF0n2rl7A5ZgHoaunUJLVJwHvrkc9uyZKo=";
-    doCheck = false;
 
     env = {
       RUSTLER_PRECOMPILED_FORCE_BUILD_ALL = "true";
       RUSTLER_PRECOMPILED_GLOBAL_CACHE_PATH = "unused-but-required";
     };
+
+    doCheck = false;
   };
 
   patchedMixFodDeps =
@@ -146,9 +152,11 @@ beamPackages.mixRelease rec {
     cmake
   ];
 
-  dontUseCmakeConfigure = true;
-
-  mixFodDeps = patchedMixFodDeps;
+  env = {
+    APP_VERSION = version;
+    RUSTLER_PRECOMPILED_FORCE_BUILD_ALL = "true";
+    RUSTLER_PRECOMPILED_GLOBAL_CACHE_PATH = "unused-but-required";
+  };
 
   # deps are compiled in mixRelease configurePhase
   # so the force_build switch must be in place before then
@@ -158,31 +166,6 @@ beamPackages.mixRelease rec {
     config :elixir_make, :force_build, lazy_html: true
     EOF
   '';
-
-  passthru = {
-    tests = nixosTests.plausible;
-    updateScript = nix-update-script {
-      extraArgs = [
-        "-s"
-        "tracker"
-        "-s"
-        "assets"
-        "-s"
-        "mjmlNif"
-      ];
-    };
-    inherit
-      assets
-      tracker
-      mjmlNif
-      ;
-  };
-
-  env = {
-    APP_VERSION = version;
-    RUSTLER_PRECOMPILED_FORCE_BUILD_ALL = "true";
-    RUSTLER_PRECOMPILED_GLOBAL_CACHE_PATH = "unused-but-required";
-  };
 
   preBuild = ''
     rm -r assets tracker
@@ -209,16 +192,42 @@ beamPackages.mixRelease rec {
     mix do deps.loadpaths --no-deps-check, phx.digest priv/static
   '';
 
+  dontUseCmakeConfigure = true;
+  mixFodDeps = patchedMixFodDeps;
+
+  passthru = {
+    inherit
+      assets
+      tracker
+      mjmlNif
+      ;
+
+    tests = nixosTests.plausible;
+
+    updateScript = nix-update-script {
+      extraArgs = [
+        "-s"
+        "tracker"
+        "-s"
+        "assets"
+        "-s"
+        "mjmlNif"
+      ];
+    };
+  };
+
   meta = {
-    license = lib.licenses.agpl3Plus;
+    description = "Simple, open-source, lightweight (< 1 KB) and privacy-friendly web analytics alternative to Google Analytics";
     homepage = "https://plausible.io/";
     changelog = "https://github.com/plausible/analytics/blob/${src.rev}/CHANGELOG.md";
-    description = "Simple, open-source, lightweight (< 1 KB) and privacy-friendly web analytics alternative to Google Analytics";
-    mainProgram = "plausible";
+    license = lib.licenses.agpl3Plus;
+
     maintainers = with lib.maintainers; [
       stepbrobd
       nh2
     ];
+
     platforms = lib.platforms.unix;
+    mainProgram = "plausible";
   };
 }

@@ -1,16 +1,21 @@
 {
   lib,
-  mkCoqDerivation,
-  coq,
-  version ? null,
-  paco,
   ExtLib,
+  coq,
+  mkCoqDerivation,
+  paco,
+  version ? null,
 }:
 
 mkCoqDerivation {
-  pname = "InteractionTrees";
-  owner = "DeepSpec";
   inherit version;
+  pname = "InteractionTrees";
+
+  propagatedBuildInputs = [
+    ExtLib
+    paco
+  ];
+
   defaultVersion =
     let
       case = case: out: { inherit case out; };
@@ -21,20 +26,19 @@ mkCoqDerivation {
       (case (isEq "8.13") "5.2.0+20241009")
       (case (range "8.10" "8.16") "4.0.0")
     ] null;
-  release."5.2.1".hash = "sha256-3ExKHXIA8EnzAPzSbdB9FTN2OcLCVS5WtmrHOiN9UiQ=";
+
+  owner = "DeepSpec";
+  release."3.2.0".hash = "sha256-10ckCAqSQ0I3CZKlSllI1obOgWVxDagTd7eyhrl1xpE=";
+  release."4.0.0".hash = "sha256:0h5rhndl8syc24hxq1gch86kj7mpmgr89bxp2hmf28fd7028ijsm";
+  release."5.1.0".hash = "sha256-ny7Mi1KgWADiFznkNJiRgD7Djc5SUclNgKOmWRxK+eo=";
+  release."5.1.1".hash = "sha256-VlmPNwaGkdWrH7Z6DGXRosGtjuuQ+FBiGcadN2Hg5pY=";
+  release."5.1.2".hash = "sha256-uKJIjNXGWl0YS0WH52Rnr9Jz98Eo2k0X0qWB9hUYJMk=";
+  release."5.2.0".hash = "sha256-rKLz7ekZf/9xcQefBRsAdULmk81olzQ1W28y61vCDsY=";
   release."5.2.0+20241009".hash = "sha256-eg47YgnIonCq7XOUgh9uzoKsuFCvsOSTZhgFLNNcPD0=";
   release."5.2.0+20241009".rev = "abd1c7d3935cf03f02bf90e028e6cd3d3dce7713";
-  release."5.2.0".hash = "sha256-rKLz7ekZf/9xcQefBRsAdULmk81olzQ1W28y61vCDsY=";
-  release."5.1.2".hash = "sha256-uKJIjNXGWl0YS0WH52Rnr9Jz98Eo2k0X0qWB9hUYJMk=";
-  release."5.1.1".hash = "sha256-VlmPNwaGkdWrH7Z6DGXRosGtjuuQ+FBiGcadN2Hg5pY=";
-  release."5.1.0".hash = "sha256-ny7Mi1KgWADiFznkNJiRgD7Djc5SUclNgKOmWRxK+eo=";
-  release."4.0.0".hash = "sha256:0h5rhndl8syc24hxq1gch86kj7mpmgr89bxp2hmf28fd7028ijsm";
-  release."3.2.0".hash = "sha256-10ckCAqSQ0I3CZKlSllI1obOgWVxDagTd7eyhrl1xpE=";
+  release."5.2.1".hash = "sha256-3ExKHXIA8EnzAPzSbdB9FTN2OcLCVS5WtmrHOiN9UiQ=";
   releaseRev = v: "${v}";
-  propagatedBuildInputs = [
-    ExtLib
-    paco
-  ];
+
   meta = {
     description = "Library for Representing Recursive and Impure Programs in Coq";
     maintainers = with lib.maintainers; [ larsr ];

@@ -1,7 +1,7 @@
 {
   lib,
-  stdenvNoCC,
   fetchurl,
+  stdenvNoCC,
 }:
 
 stdenvNoCC.mkDerivation rec {
@@ -13,8 +13,6 @@ stdenvNoCC.mkDerivation rec {
     hash = "sha256-buDzVzvF4z6TthbvYoL0m8DiJ6Map1Osdu0uPz0CBW0=";
   };
 
-  dontUnpack = true;
-
   installPhase = ''
     runHook preInstall
 
@@ -23,11 +21,13 @@ stdenvNoCC.mkDerivation rec {
     runHook postInstall
   '';
 
+  dontUnpack = true;
+
   meta = {
-    homepage = "http://www.fixedsysexcelsior.com/";
     description = "Pan-unicode version of Fixedsys, a classic DOS font";
-    platforms = lib.platforms.all;
+    homepage = "http://www.fixedsysexcelsior.com/";
     license = lib.licenses.publicDomain;
     maintainers = [ lib.maintainers.picnoir ];
+    platforms = lib.platforms.all;
   };
 }

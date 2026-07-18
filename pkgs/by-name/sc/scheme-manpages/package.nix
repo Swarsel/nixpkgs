@@ -1,7 +1,7 @@
 {
   lib,
-  stdenvNoCC,
   fetchFromGitHub,
+  stdenvNoCC,
   unstableGitUpdater,
 }:
 
@@ -16,13 +16,12 @@ stdenvNoCC.mkDerivation {
     hash = "sha256-ZBovG9i0qKD6dP4qcLP1T1fke0hC8MmRjZRzxuojd60=";
   };
 
-  dontBuild = true;
-
   installPhase = ''
     mkdir -p $out/share/man
     cp -r man3/ man7/ $out/share/man/
   '';
 
+  dontBuild = true;
   passthru.updateScript = unstableGitUpdater { };
 
   meta = {

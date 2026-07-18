@@ -1,29 +1,25 @@
 {
   lib,
   stdenv,
-  buildPythonPackage,
   fetchFromGitHub,
-  fetchpatch2,
-
-  # build-system
-  setuptools,
-  cython,
-  numpy,
-
-  # tests
-  hypothesis,
-  pytestCheckHook,
-
   # passthru
   blis,
-  numpy_1,
+  buildPythonPackage,
+  cython,
+  fetchpatch2,
   gitUpdater,
+  # tests
+  hypothesis,
+  numpy,
+  numpy_1,
+  pytestCheckHook,
+  # build-system
+  setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "blis";
   version = "1.3.3";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "explosion";
@@ -35,15 +31,9 @@ buildPythonPackage rec {
   patches = [
     # TODO: remove after next update
     (fetchpatch2 {
-      url = "https://github.com/explosion/cython-blis/commit/1498af063ea924e2e2334a3f5ab49ae1a66a8648.patch?full_index=1";
       hash = "sha256-zl+xIoYVjf13La53ocrL0ztx48sdJfWN1Y6px6Hgf9Q=";
+      url = "https://github.com/explosion/cython-blis/commit/1498af063ea924e2e2334a3f5ab49ae1a66a8648.patch?full_index=1";
     })
-  ];
-
-  build-system = [
-    setuptools
-    cython
-    numpy
   ];
 
   env =
@@ -67,10 +57,6 @@ buildPythonPackage rec {
         BLIS_ARCH = "generic";
       };
 
-  dependencies = [ numpy ];
-
-  pythonImportsCheck = [ "blis" ];
-
   nativeCheckInputs = [
     hypothesis
     pytestCheckHook
@@ -81,10 +67,21 @@ buildPythonPackage rec {
     rm -rf ./blis
   '';
 
+  build-system = [
+    setuptools
+    cython
+    numpy
+  ];
+
+  dependencies = [ numpy ];
+
   disabledTestPaths = [
     # ImportError: cannot import name 'NO_CONJUGATE' from 'blis.cy'
     "tests/test_dotv.py"
   ];
+
+  pyproject = true;
+  pythonImportsCheck = [ "blis" ];
 
   passthru = {
     tests = {
@@ -92,15 +89,16 @@ buildPythonPackage rec {
         numpy = numpy_1;
       });
     };
+
     updateScript = gitUpdater {
       rev-prefix = "release-v";
     };
   };
 
   meta = {
-    changelog = "https://github.com/explosion/cython-blis/releases/tag/release-v${version}";
     description = "BLAS-like linear algebra library";
     homepage = "https://github.com/explosion/cython-blis";
+    changelog = "https://github.com/explosion/cython-blis/releases/tag/release-v${version}";
     license = lib.licenses.bsd3;
     maintainers = with lib.maintainers; [ nickcao ];
   };

@@ -3,9 +3,9 @@
   stdenv,
   fetchFromGitHub,
   autoreconfHook,
-  pkg-config,
-  libconfuse,
   gettext,
+  libconfuse,
+  pkg-config,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -23,6 +23,7 @@ stdenv.mkDerivation (finalAttrs: {
     autoreconfHook
     pkg-config
   ];
+
   buildInputs = [
     libconfuse
     gettext
@@ -37,12 +38,12 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   meta = {
-    broken = stdenv.hostPlatform.isDarwin;
-    homepage = "https://git.pengutronix.de/cgit/genimage";
     description = "Generate filesystem images from directory trees";
+    homepage = "https://git.pengutronix.de/cgit/genimage";
     license = lib.licenses.gpl2Plus;
-    platforms = lib.platforms.all;
     maintainers = [ lib.maintainers.bjornfor ];
+    platforms = lib.platforms.all;
     mainProgram = "genimage";
+    broken = stdenv.hostPlatform.isDarwin;
   };
 })

@@ -18,14 +18,13 @@ stdenv.mkDerivation rec {
 
   buildInputs = [ libpcap ];
 
-  enableParallelBuilding = true;
-
-  sourceRoot = "${src.name}/src";
-
   installPhase = ''
     install -Dm555 -t $out/bin bully
     install -Dm444 -t $out/share/doc/${pname} ../*.md
   '';
+
+  enableParallelBuilding = true;
+  sourceRoot = "${src.name}/src";
 
   meta = {
     description = "Retrieve WPA/WPA2 passphrase from a WPS enabled access point";

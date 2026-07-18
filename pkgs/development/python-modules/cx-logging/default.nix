@@ -1,16 +1,15 @@
 {
-  stdenv,
   lib,
-  buildPythonPackage,
+  stdenv,
   fetchFromGitHub,
-  setuptools,
+  buildPythonPackage,
   filelock,
+  setuptools,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "cx-logging";
   version = "3.2.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "anthony-tuininga";
@@ -30,9 +29,8 @@ buildPythonPackage (finalAttrs: {
   '';
 
   build-system = [ setuptools ];
-
   dependencies = [ filelock ];
-
+  pyproject = true;
   pythonImportsCheck = [ "cx_Logging" ];
 
   meta = {

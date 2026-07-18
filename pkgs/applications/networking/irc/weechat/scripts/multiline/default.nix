@@ -1,9 +1,9 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchurl,
-  replaceVars,
   PodParser,
+  replaceVars,
 }:
 
 stdenv.mkDerivation {
@@ -15,19 +15,12 @@ stdenv.mkDerivation {
     sha256 = "sha256-TXbU2Q7Tm8iTwOQqrWpqHXuKrjoBFLyUWRsH+TsR9Lo=";
   };
 
-  dontUnpack = true;
-  prePatch = ''
-    cp $src multiline.pl
-  '';
-
   patches = [
     # The script requires a special Perl environment.
     (replaceVars ./libpath.patch {
       env = PodParser;
     })
   ];
-
-  passthru.scripts = [ "multiline.pl" ];
 
   installPhase = ''
     runHook preInstall
@@ -36,6 +29,14 @@ stdenv.mkDerivation {
 
     runHook postInstall
   '';
+
+  dontUnpack = true;
+
+  prePatch = ''
+    cp $src multiline.pl
+  '';
+
+  passthru.scripts = [ "multiline.pl" ];
 
   meta = {
     description = "Multi-line edit box";

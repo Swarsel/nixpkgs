@@ -1,18 +1,18 @@
 {
+  lib,
   stdenv,
   fetchurl,
-  lib,
   brand,
-  type,
-  version,
-  homepage,
-  url,
-  hash,
-  runCommand,
-  dpkg,
-  vmTools,
-  runtimeShell,
   bubblewrap,
+  dpkg,
+  hash,
+  homepage,
+  runCommand,
+  runtimeShell,
+  type,
+  url,
+  version,
+  vmTools,
   ...
 }:
 let
@@ -27,16 +27,12 @@ let
     );
 in
 stdenv.mkDerivation (finalAttrs: {
-  pname = "${lib.toLower type}-edit";
   inherit version;
+  pname = "${lib.toLower type}-edit";
 
   src = fetchurl {
     inherit url hash;
   };
-
-  sourceRoot = ".";
-  dontBuild = true;
-  dontStrip = true;
 
   installPhase = ''
     mkdir -p $out/bin
@@ -55,14 +51,18 @@ stdenv.mkDerivation (finalAttrs: {
     chmod 755 $out/bin/${finalAttrs.pname}
   '';
 
+  dontBuild = true;
+  dontStrip = true;
+  sourceRoot = ".";
+
   passthru.deps =
     let
       distro = vmTools.debDistros.debian12x86_64;
     in
     vmTools.debClosureGenerator {
-      name = "x32edit-dependencies";
       inherit (distro) urlPrefix;
-      packagesLists = [ distro.packagesLists ];
+      name = "x32edit-dependencies";
+
       packages = [
         "libstdc++6"
         "libcurl4"
@@ -71,14 +71,16 @@ stdenv.mkDerivation (finalAttrs: {
         "libx11-6"
         "libxext6"
       ];
+
+      packagesLists = [ distro.packagesLists ];
     };
 
   meta = {
     inherit homepage;
     description = "Editor for the ${brand} ${type} digital mixer";
-    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
     license = lib.licenses.unfree;
-    platforms = lib.platforms.linux;
+    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
     maintainers = with lib.maintainers; [ magnetophon ];
+    platforms = lib.platforms.linux;
   };
 })

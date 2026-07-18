@@ -3,14 +3,14 @@
   stdenv,
   fetchurl,
   alsa-lib,
+  copyDesktopItems,
   libjack2,
-  pkg-config,
+  libpulseaudio,
   libx11,
   libxext,
-  xorgproto,
-  libpulseaudio,
-  copyDesktopItems,
   makeDesktopItem,
+  pkg-config,
+  xorgproto,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -21,6 +21,11 @@ stdenv.mkDerivation (finalAttrs: {
     url = "mirror://sourceforge/bristol/bristol-${finalAttrs.version}.tar.gz";
     hash = "sha256-fR8LvQ19MD/HfGuVSbYXCNeoO03AB4GAEbH1XR+pIro=";
   };
+
+  postPatch = ''
+    sed -i '41,43d' libbristolaudio/audioEngineJack.c  # disable alsa/iatomic
+    sed -i '35i void doPitchWheel(Baudio *baudio);' bristol/bristolmemorymoog.c
+  '';
 
   nativeBuildInputs = [
     pkg-config
@@ -35,11 +40,6 @@ stdenv.mkDerivation (finalAttrs: {
     libxext
     xorgproto
   ];
-
-  postPatch = ''
-    sed -i '41,43d' libbristolaudio/audioEngineJack.c  # disable alsa/iatomic
-    sed -i '35i void doPitchWheel(Baudio *baudio);' bristol/bristolmemorymoog.c
-  '';
 
   configureFlags = [
     "--enable-jack-default-audio"
@@ -70,12 +70,12 @@ stdenv.mkDerivation (finalAttrs: {
 
   desktopItems = [
     (makeDesktopItem {
-      name = "Bristol";
+      categories = [ "AudioVideo" ];
+      comment = "Graphical user interface for the Bristol synthesizer emulator";
+      desktopName = "Bristol";
       exec = "bristol";
       icon = "bicon";
-      desktopName = "Bristol";
-      comment = "Graphical user interface for the Bristol synthesizer emulator";
-      categories = [ "AudioVideo" ];
+      name = "Bristol";
     })
   ];
 
@@ -83,10 +83,11 @@ stdenv.mkDerivation (finalAttrs: {
     description = "Range of synthesiser, electric piano and organ emulations";
     homepage = "https://bristol.sourceforge.net";
     license = lib.licenses.gpl3;
+    maintainers = [ ];
+
     platforms = [
       "x86_64-linux"
       "i686-linux"
     ];
-    maintainers = [ ];
   };
 })

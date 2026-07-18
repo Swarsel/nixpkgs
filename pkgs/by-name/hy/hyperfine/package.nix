@@ -1,9 +1,9 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
   installShellFiles,
   nix-update-script,
+  rustPlatform,
   versionCheckHook,
 }:
 
@@ -18,9 +18,8 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-Ee889Fx2Mi2005SrlcKc7TwG8ZIpTqisfLebXYadvSg=";
   };
 
-  cargoHash = "sha256-0e6QDVv//WQtfvrJj6jW1sEz7jFv3VC6UKLvclyytLs=";
-
   nativeBuildInputs = [ installShellFiles ];
+  cargoHash = "sha256-0e6QDVv//WQtfvrJj6jW1sEz7jFv3VC6UKLvclyytLs=";
 
   postInstall = ''
     installManPage doc/hyperfine.1
@@ -30,25 +29,29 @@ rustPlatform.buildRustPackage (finalAttrs: {
       --zsh $releaseDir/build/hyperfine-*/out/_hyperfine
   '';
 
-  passthru.updateScript = nix-update-script { };
+  doInstallCheck = true;
 
   nativeInstallCheckInputs = [
     versionCheckHook
   ];
-  doInstallCheck = true;
+
+  passthru.updateScript = nix-update-script { };
 
   meta = {
     description = "Command-line benchmarking tool";
     homepage = "https://github.com/sharkdp/hyperfine";
     changelog = "https://github.com/sharkdp/hyperfine/blob/v${finalAttrs.version}/CHANGELOG.md";
+
     license = with lib.licenses; [
       asl20 # or
       mit
     ];
+
     maintainers = with lib.maintainers; [
       mdaniels5757
       thoughtpolice
     ];
+
     mainProgram = "hyperfine";
   };
 })

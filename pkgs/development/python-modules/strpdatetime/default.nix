@@ -1,16 +1,15 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   hatchling,
-  textx,
   pytestCheckHook,
+  textx,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "strpdatetime";
   version = "0.4.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "RhetTbull";
@@ -19,21 +18,19 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-p/iLq+x+dRW2QPva/VEA9emtxb0k3hnL91l1itTsYSc=";
   };
 
-  build-system = [ hatchling ];
-
-  dependencies = [ textx ];
-  pythonRelaxDeps = [ "textx" ];
-
   patches = [ ./fix-locale.patch ];
-
-  pythonImportsCheck = [ "strpdatetime" ];
   nativeCheckInputs = [ pytestCheckHook ];
+  build-system = [ hatchling ];
+  dependencies = [ textx ];
+  pyproject = true;
+  pythonImportsCheck = [ "strpdatetime" ];
+  pythonRelaxDeps = [ "textx" ];
 
   meta = {
     description = "Parse strings into Python datetime objects";
-    license = lib.licenses.psfl;
-    changelog = "https://github.com/RhetTbull/strpdatetime/blob/${finalAttrs.src.tag}/CHANGELOG.md";
     homepage = "https://github.com/RhetTbull/strpdatetime";
+    changelog = "https://github.com/RhetTbull/strpdatetime/blob/${finalAttrs.src.tag}/CHANGELOG.md";
+    license = lib.licenses.psfl;
     maintainers = with lib.maintainers; [ sigmanificient ];
   };
 })

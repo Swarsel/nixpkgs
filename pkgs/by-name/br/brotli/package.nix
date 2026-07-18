@@ -1,13 +1,13 @@
 {
   lib,
   stdenv,
-  fetchFromGitHub,
   fetchurl,
+  fetchFromGitHub,
   cmake,
-  python3Packages,
-  staticOnly ? stdenv.hostPlatform.isStatic,
-  testers,
   nix-update-script,
+  python3Packages,
+  testers,
+  staticOnly ? stdenv.hostPlatform.isStatic,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -21,28 +21,24 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-kl8ZHt71v17QR2bDP+ad/5uixf+GStEPLQ5ooFoC5i8=";
   };
 
-  patches = [
-    # Fixes build on LoongArch64 & IA64
-    # https://github.com/google/brotli/commit/e230f474b87134e8c6c85b630084c612057f253e
-    (fetchurl {
-      url = "https://github.com/google/brotli/commit/e230f474b87134e8c6c85b630084c612057f253e.patch";
-      hash = "sha256-QERl8RHJz7tFr++hZIYwdj1/ogPpjArC+ia8S/bWxKk=";
-    })
-  ];
-
-  nativeBuildInputs = [ cmake ];
-
-  cmakeFlags = lib.optional staticOnly "-DBUILD_SHARED_LIBS=OFF";
-
   outputs = [
     "out"
     "dev"
     "lib"
   ];
 
-  doCheck = true;
+  patches = [
+    # Fixes build on LoongArch64 & IA64
+    # https://github.com/google/brotli/commit/e230f474b87134e8c6c85b630084c612057f253e
+    (fetchurl {
+      hash = "sha256-QERl8RHJz7tFr++hZIYwdj1/ogPpjArC+ia8S/bWxKk=";
+      url = "https://github.com/google/brotli/commit/e230f474b87134e8c6c85b630084c612057f253e.patch";
+    })
+  ];
 
-  checkTarget = "test";
+  nativeBuildInputs = [ cmake ];
+  cmakeFlags = lib.optional staticOnly "-DBUILD_SHARED_LIBS=OFF";
+  doCheck = true;
 
   # Don't bother with "man" output for now,
   # it currently only makes the manpages hard to use.
@@ -52,18 +48,20 @@ stdenv.mkDerivation (finalAttrs: {
     cp ../docs/*.3 $out/share/man/man3/
   '';
 
+  checkTarget = "test";
+
   passthru = {
     tests = {
       pkg-config = testers.testMetaPkgConfig finalAttrs.finalPackage;
       python = python3Packages.brotli;
     };
+
     updateScript = nix-update-script { };
   };
 
   meta = {
-    homepage = "https://github.com/google/brotli";
-    changelog = "https://github.com/google/brotli/blob/${finalAttrs.src.tag}/CHANGELOG.md";
     description = "General-purpose lossless compression library with CLI";
+
     longDescription = ''
       Brotli is a generic-purpose lossless compression algorithm that
       compresses data using a combination of a modern variant of the LZ77
@@ -76,14 +74,18 @@ stdenv.mkDerivation (finalAttrs: {
       in the following Internet-Draft:
       https://datatracker.ietf.org/doc/html/rfc7932
     '';
+
+    homepage = "https://github.com/google/brotli";
+    changelog = "https://github.com/google/brotli/blob/${finalAttrs.src.tag}/CHANGELOG.md";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ mdaniels5757 ];
+    platforms = lib.platforms.all;
+    mainProgram = "brotli";
+    identifiers.cpeParts = lib.meta.cpeFullVersionWithVendor "google" finalAttrs.version;
+
     pkgConfigModules = [
       "libbrotlidec"
       "libbrotlienc"
     ];
-    platforms = lib.platforms.all;
-    mainProgram = "brotli";
-    identifiers.cpeParts = lib.meta.cpeFullVersionWithVendor "google" finalAttrs.version;
   };
 })

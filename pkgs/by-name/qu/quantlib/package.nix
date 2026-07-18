@@ -2,19 +2,14 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  cmake,
   boost,
+  cmake,
   nix-update-script,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
   pname = "quantlib";
   version = "1.42.1";
-
-  outputs = [
-    "out"
-    "dev"
-  ];
 
   src = fetchFromGitHub {
     owner = "lballabio";
@@ -23,9 +18,13 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-sc+CZzDNITOBSUG0ZkJEmrSLv/cr5LvLRdqD0LAfe8I=";
   };
 
+  outputs = [
+    "out"
+    "dev"
+  ];
+
   nativeBuildInputs = [ cmake ];
   buildInputs = [ boost ];
-
   # Required by RQuantLib, may be beneficial for others too
   cmakeFlags = [ "-DQL_HIGH_RESOLUTION_DATE=ON" ];
 
@@ -40,8 +39,8 @@ stdenv.mkDerivation (finalAttrs: {
     description = "Free/open-source library for quantitative finance";
     homepage = "https://quantlib.org";
     changelog = "https://github.com/lballabio/QuantLib/releases/tag/v${finalAttrs.version}";
-    platforms = lib.platforms.unix;
     license = lib.licenses.bsd3;
     maintainers = [ lib.maintainers.kupac ];
+    platforms = lib.platforms.unix;
   };
 })

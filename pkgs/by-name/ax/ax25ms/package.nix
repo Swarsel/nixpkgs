@@ -3,13 +3,13 @@
   stdenv,
   fetchFromGitHub,
   autoconf,
-  protobuf,
-  pkg-config,
-  grpc,
-  libtool,
-  which,
   automake,
+  grpc,
   libax25,
+  libtool,
+  pkg-config,
+  protobuf,
+  which,
 }:
 
 stdenv.mkDerivation {
@@ -23,18 +23,18 @@ stdenv.mkDerivation {
     hash = "sha256-GljGJa44topJ6T0g5wuU8GTHLKzNmQqUl8/AR+pw2+I=";
   };
 
-  buildInputs = [
-    protobuf
-    grpc
-    libax25
-  ];
-
   nativeBuildInputs = [
     which
     pkg-config
     autoconf
     libtool
     automake
+  ];
+
+  buildInputs = [
+    protobuf
+    grpc
+    libax25
   ];
 
   preConfigure = ''
@@ -55,11 +55,13 @@ stdenv.mkDerivation {
     description = "Set of AX.25 microservices, designed to be pluggable for any implementation";
     homepage = "https://github.com/ThomasHabets/ax25ms";
     license = lib.licenses.asl20;
+
     maintainers = with lib.maintainers; [
       matthewcroughan
       sarcasticadmin
       pkharvey
     ];
+
     platforms = lib.platforms.all;
   };
 }

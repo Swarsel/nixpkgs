@@ -20,6 +20,7 @@ in
         Configuration for haste-server.
         For documentation see [project readme](https://github.com/toptal/haste-server#settings)
       '';
+
       type = format.type;
     };
   };
@@ -29,63 +30,66 @@ in
 
     services.haste-server = {
       settings = {
+        documents = {
+          about = lib.mkDefault "${pkg}/share/haste-server/about.md";
+        };
+
         host = lib.mkDefault "::";
-        port = lib.mkDefault 7777;
-
-        keyLength = lib.mkDefault 10;
-        maxLength = lib.mkDefault 400000;
-
-        staticMaxAge = lib.mkDefault 86400;
-        recompressStaticAssets = lib.mkDefault false;
-
-        logging = lib.mkDefault [
-          {
-            level = "verbose";
-            type = "Console";
-            colorize = true;
-          }
-        ];
 
         keyGenerator = lib.mkDefault {
           type = "phonetic";
         };
 
+        keyLength = lib.mkDefault 10;
+
+        logging = lib.mkDefault [
+          {
+            colorize = true;
+            level = "verbose";
+            type = "Console";
+          }
+        ];
+
+        maxLength = lib.mkDefault 400000;
+        port = lib.mkDefault 7777;
+
         rateLimits = {
           categories = {
             normal = {
-              totalRequests = lib.mkDefault 500;
               every = lib.mkDefault 60000;
+              totalRequests = lib.mkDefault 500;
             };
           };
         };
 
+        recompressStaticAssets = lib.mkDefault false;
+        staticMaxAge = lib.mkDefault 86400;
+
         storage = lib.mkDefault {
           type = "file";
-        };
-
-        documents = {
-          about = lib.mkDefault "${pkg}/share/haste-server/about.md";
         };
       };
     };
 
     systemd.services.haste-server = {
-      wantedBy = [ "multi-user.target" ];
-      requires = [ "network.target" ];
       after = [ "network.target" ];
-
-      serviceConfig = {
-        User = "haste-server";
-        DynamicUser = true;
-        StateDirectory = "haste-server";
-        WorkingDirectory = "/var/lib/haste-server";
-        ExecStart = "${pkg}/bin/haste-server ${format.generate "config.json" cfg.settings}";
-      };
 
       path = with pkgs; [
         pkg
         coreutils
       ];
+
+      requires = [ "network.target" ];
+
+      serviceConfig = {
+        DynamicUser = true;
+        ExecStart = "${pkg}/bin/haste-server ${format.generate "config.json" cfg.settings}";
+        StateDirectory = "haste-server";
+        User = "haste-server";
+        WorkingDirectory = "/var/lib/haste-server";
+      };
+
+      wantedBy = [ "multi-user.target" ];
     };
   };
 }

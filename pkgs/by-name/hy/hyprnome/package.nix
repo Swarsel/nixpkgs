@@ -1,9 +1,9 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
   installShellFiles,
   nix-update-script,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -17,13 +17,11 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-GZn7qS1J6QSanWdy17sMBbwJ77iMij2jKRgPdrjt6tM=";
   };
 
+  nativeBuildInputs = [ installShellFiles ];
   cargoHash = "sha256-qCexb8D0iN3BWOz5L45mR5n9x0nqAh8MHHTp9QTHSOg=";
-
   # Upstream has 'missing_docs = "deny"', which trips up test builds for 0.3.1 release.
   # Let's just treat lints as warnings.
   env.RUSTFLAGS = "--cap-lints warn";
-
-  nativeBuildInputs = [ installShellFiles ];
 
   postInstall = ''
     installManPage target/man/hyprnome.1
@@ -40,8 +38,8 @@ rustPlatform.buildRustPackage (finalAttrs: {
     description = "GNOME-like workspace switching in Hyprland";
     homepage = "https://github.com/donovanglover/hyprnome";
     license = lib.licenses.gpl3Plus;
-    platforms = lib.platforms.linux;
     maintainers = with lib.maintainers; [ donovanglover ];
+    platforms = lib.platforms.linux;
     mainProgram = "hyprnome";
   };
 })

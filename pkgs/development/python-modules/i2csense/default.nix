@@ -8,7 +8,6 @@
 buildPythonPackage rec {
   pname = "i2csense";
   version = "0.0.4";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
@@ -16,9 +15,9 @@ buildPythonPackage rec {
   };
 
   propagatedBuildInputs = [ smbus-cffi ];
-
   # no tests implemented
   doCheck = false;
+  format = "setuptools";
 
   pythonImportsCheck = [
     "i2csense.bme280"
@@ -28,9 +27,9 @@ buildPythonPackage rec {
 
   meta = {
     description = "Library to handle i2c sensors with the Raspberry Pi";
-    mainProgram = "i2csense";
     homepage = "https://github.com/azogue/i2csense";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ dotlambda ];
+    mainProgram = "i2csense";
   };
 }

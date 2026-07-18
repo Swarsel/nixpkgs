@@ -1,41 +1,35 @@
 {
   lib,
   stdenv,
-  buildPythonPackage,
-  fetchPypi,
-
-  # build-system
-  hatchling,
-
-  # native dependencies
-  zlib,
-
   # dependencies
   altgraph,
-  macholib,
-  packaging,
-  pyinstaller-hooks-contrib,
-
   # tests
   binutils,
+  buildPythonPackage,
+  fetchPypi,
   glibc,
+  # build-system
+  hatchling,
+  macholib,
+  packaging,
   pyinstaller,
+  pyinstaller-hooks-contrib,
   testers,
+  # native dependencies
+  zlib,
 }:
 
 buildPythonPackage rec {
   pname = "pyinstaller";
   version = "6.18.0";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
     hash = "sha256-zcUHVCeDURytSFb85YL9w36fKWZcpZaInGY8g+yMbsk=";
   };
 
-  build-system = [ hatchling ];
-
   buildInputs = [ zlib.dev ];
+  build-system = [ hatchling ];
 
   dependencies = [
     altgraph
@@ -54,6 +48,7 @@ buildPythonPackage rec {
     ])
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "PyInstaller" ];
 
   passthru.tests.version = testers.testVersion {
@@ -64,13 +59,15 @@ buildPythonPackage rec {
     description = "Tool to bundle a python application with dependencies into a single package";
     homepage = "https://pyinstaller.org/";
     changelog = "https://pyinstaller.org/en/v${version}/CHANGES.html";
-    downloadPage = "https://pypi.org/project/pyinstaller/";
+
     license = with lib.licenses; [
       mit
       asl20
       gpl2Plus
     ];
+
     maintainers = with lib.maintainers; [ h7x4 ];
     mainProgram = "pyinstaller";
+    downloadPage = "https://pypi.org/project/pyinstaller/";
   };
 }

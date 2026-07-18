@@ -1,19 +1,16 @@
 {
   lib,
-  buildDunePackage,
   atd,
+  buildDunePackage,
   cmdliner,
 }:
 
 buildDunePackage {
-  pname = "atdml";
   inherit (atd) version src;
-
-  minimalOCamlVersion = "4.10";
-
+  pname = "atdml";
   buildInputs = [ cmdliner ];
-
   propagatedBuildInputs = [ atd ];
+  minimalOCamlVersion = "4.10";
 
   meta = atd.meta // {
     description = "Simplified OCaml JSON serializers using the Yojson AST";

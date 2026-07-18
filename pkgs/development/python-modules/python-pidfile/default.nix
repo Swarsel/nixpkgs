@@ -8,7 +8,6 @@
 buildPythonPackage rec {
   pname = "python-pidfile";
   version = "3.1.1";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
@@ -16,12 +15,11 @@ buildPythonPackage rec {
   };
 
   propagatedBuildInputs = [ psutil ];
-
-  pythonImportsCheck = [ "pidfile" ];
-
   # no tests on the github mirror of the source code
   # see this: https://github.com/mosquito/python-pidfile/issues/7
   doCheck = false;
+  format = "setuptools";
+  pythonImportsCheck = [ "pidfile" ];
 
   meta = {
     description = "Python context manager for managing pid files";

@@ -1,6 +1,6 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
   cmake,
   gtest,
@@ -18,22 +18,23 @@ stdenv.mkDerivation {
     sha256 = "sha256-unfAFxgvv1BOUEqrYYMFfouGe2xIcKJ3ithCel1P9sc=";
   };
 
-  nativeBuildInputs = [ cmake ];
-  buildInputs = [
-    gtest
-    tinycmmc
-  ];
-
   postPatch = ''
     substituteInPlace CMakeLists.txt \
       --replace-fail "cmake_minimum_required(VERSION 3.0)" "cmake_minimum_required(VERSION 3.10)"
   '';
 
+  nativeBuildInputs = [ cmake ];
+
+  buildInputs = [
+    gtest
+    tinycmmc
+  ];
+
   meta = {
     description = "Argument Parser for C++";
     homepage = "https://github.com/Grumbel/argpp";
+    license = lib.licenses.free;
     maintainers = [ lib.maintainers.SchweGELBin ];
     platforms = lib.platforms.linux;
-    license = lib.licenses.free;
   };
 }

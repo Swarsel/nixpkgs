@@ -18,8 +18,8 @@ in
   };
 
   config = mkIf cfg.enable {
-    boot.kernelModules = [ "ryzen-smu" ];
     boot.extraModulePackages = [ ryzen-smu ];
+    boot.kernelModules = [ "ryzen-smu" ];
     environment.systemPackages = [ ryzen-smu ];
   };
 

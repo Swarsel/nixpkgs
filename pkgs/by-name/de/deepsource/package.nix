@@ -1,9 +1,9 @@
 {
   lib,
   stdenv,
-  installShellFiles,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
+  installShellFiles,
   versionCheckHook,
 }:
 
@@ -19,7 +19,7 @@ buildGoModule (finalAttrs: {
   };
 
   nativeBuildInputs = [ installShellFiles ];
-
+  vendorHash = "sha256-SsMq4ngq3sSOL28ysHTxTF4CT9sIcCIW7yIhBxIPrNs=";
   doCheck = true;
 
   checkFlags =
@@ -33,14 +33,6 @@ buildGoModule (finalAttrs: {
     in
     [ "-skip=^${builtins.concatStringsSep "$|^" skippedTests}$" ];
 
-  vendorHash = "sha256-SsMq4ngq3sSOL28ysHTxTF4CT9sIcCIW7yIhBxIPrNs=";
-
-  ldflags = [
-    "-s"
-    "-w"
-    "-X=main.version=${finalAttrs.version}"
-  ];
-
   postInstall = lib.optionalString (stdenv.buildPlatform.canExecute stdenv.hostPlatform) ''
     installShellCompletion --cmd deepsource \
       --bash <($out/bin/deepsource completion bash) \
@@ -49,16 +41,24 @@ buildGoModule (finalAttrs: {
   '';
 
   doInstallCheck = true;
-  versionCheckProgramArg = "version";
+
   nativeInstallCheckInputs = [
     versionCheckHook
   ];
 
+  ldflags = [
+    "-s"
+    "-w"
+    "-X=main.version=${finalAttrs.version}"
+  ];
+
+  versionCheckProgramArg = "version";
+
   meta = {
     description = "Command line interface to DeepSource, the code health platform";
-    mainProgram = "deepsource";
     homepage = "https://github.com/DeepSourceCorp/cli";
     license = lib.licenses.bsd2;
     maintainers = with lib.maintainers; [ nipeharefa ];
+    mainProgram = "deepsource";
   };
 })

@@ -1,22 +1,21 @@
 {
   lib,
-  runCommand,
-  python3Packages,
   fetchFromGitHub,
-  callPackage,
-  nix-update-script,
   _7zz,
   android-tools,
+  callPackage,
   cpio,
   dumpyara,
   erofs-utils,
+  nix-update-script,
+  python3Packages,
+  runCommand,
   squashfsTools,
   zip,
 }:
 python3Packages.buildPythonApplication (finalAttrs: {
   pname = "dumpyara";
   version = "1.1.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "sebaubuntu-python";
@@ -25,6 +24,7 @@ python3Packages.buildPythonApplication (finalAttrs: {
     hash = "sha256-V7SX1XR+De3py6B3Fmqn1IehN0sGPxUKJ0YlGpBPHG4=";
   };
 
+  __structuredAttrs = true;
   build-system = with python3Packages; [ poetry-core ];
 
   dependencies = with python3Packages; [
@@ -49,6 +49,8 @@ python3Packages.buildPythonApplication (finalAttrs: {
     ])
   ];
 
+  pyproject = true;
+
   passthru = {
     tests.requiredTools =
       runCommand "check-required-tools"
@@ -68,10 +70,9 @@ python3Packages.buildPythonApplication (finalAttrs: {
           dumpyara system.zip
           touch $out
         '';
+
     updateScript = nix-update-script { };
   };
-
-  __structuredAttrs = true;
 
   meta = {
     description = "Android firmware dumper";

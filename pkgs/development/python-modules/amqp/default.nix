@@ -1,17 +1,16 @@
 {
-  stdenv,
   lib,
+  stdenv,
   buildPythonPackage,
   fetchPypi,
-  pytestCheckHook,
   pytest-rerunfailures,
+  pytestCheckHook,
   vine,
 }:
 
 buildPythonPackage rec {
   pname = "amqp";
   version = "5.3.1";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
@@ -20,12 +19,12 @@ buildPythonPackage rec {
 
   propagatedBuildInputs = [ vine ];
 
-  __darwinAllowLocalNetworking = true;
-
   nativeCheckInputs = [
     pytestCheckHook
     pytest-rerunfailures
   ];
+
+  __darwinAllowLocalNetworking = true;
 
   disabledTests = [
     # Requires network access
@@ -36,6 +35,7 @@ buildPythonPackage rec {
     "test_connection.py"
   ];
 
+  format = "setuptools";
   pythonImportsCheck = [ "amqp" ];
 
   meta = {

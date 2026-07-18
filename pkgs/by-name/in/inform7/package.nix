@@ -1,30 +1,34 @@
 {
   lib,
   stdenv,
-  fetchzip,
   coreutils,
-  perl,
+  fetchzip,
   gnutar,
   gzip,
+  perl,
 }:
 let
   version = "6M62";
 in
 stdenv.mkDerivation {
-  pname = "inform7";
   inherit version;
+  pname = "inform7";
+
+  src = fetchzip {
+    url = "http://inform7.com/download/content/6M62/I7_6M62_Linux_all.tar.gz";
+    sha256 = "0bk0pfymvsn1g8ci0pfdw7dgrlzb232a8pc67y2xk6zgpf3m41vj";
+  };
+
   buildInputs = [
     perl
     coreutils
     gnutar
     gzip
   ];
-  src = fetchzip {
-    url = "http://inform7.com/download/content/6M62/I7_6M62_Linux_all.tar.gz";
-    sha256 = "0bk0pfymvsn1g8ci0pfdw7dgrlzb232a8pc67y2xk6zgpf3m41vj";
-  };
+
   preConfigure = "touch Makefile.PL";
   buildPhase = "";
+
   installPhase = ''
     mkdir -p $out
     pushd $src
@@ -37,11 +41,12 @@ stdenv.mkDerivation {
 
   meta = {
     description = "Design system for interactive fiction";
-    mainProgram = "i7";
     homepage = "http://inform7.com/";
     license = lib.licenses.artistic2;
     maintainers = [ ];
     platforms = lib.platforms.unix;
+    mainProgram = "i7";
+
     # never built on aarch64-darwin since first introduction in nixpkgs
     broken =
       (stdenv.hostPlatform.isDarwin && stdenv.hostPlatform.isAarch64)

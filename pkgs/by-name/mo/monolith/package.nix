@@ -1,12 +1,12 @@
 {
   lib,
   stdenv,
-  rustPlatform,
   fetchFromGitHub,
-  pkg-config,
-  openssl,
   libiconv,
   nix-update-script,
+  openssl,
+  pkg-config,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -20,11 +20,8 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-7D/r9/uY1JcShKgfNUGVTn8P5kUAwUIa/xBbhpReeNw=";
   };
 
-  cargoHash = "sha256-rIwlNXe7me3Ehj1EIYiOYo12FQqovmZT0ui58gFRWWw=";
-
-  env.OPENSSL_NO_VENDOR = true;
-
   nativeBuildInputs = [ pkg-config ];
+
   buildInputs = [
     openssl
   ]
@@ -32,15 +29,16 @@ rustPlatform.buildRustPackage (finalAttrs: {
     libiconv
   ];
 
+  cargoHash = "sha256-rIwlNXe7me3Ehj1EIYiOYo12FQqovmZT0ui58gFRWWw=";
+  env.OPENSSL_NO_VENDOR = true;
   checkFlags = [ "--skip=tests::cli" ];
-
   passthru.updateScript = nix-update-script { };
 
   meta = {
     description = "Bundle any web page into a single HTML file";
-    mainProgram = "monolith";
     homepage = "https://github.com/Y2Z/monolith";
     license = lib.licenses.cc0;
     platforms = lib.platforms.unix;
+    mainProgram = "monolith";
   };
 })

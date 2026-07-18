@@ -11,15 +11,15 @@
 buildPythonPackage (finalAttrs: {
   pname = "azure-mgmt-cdn";
   version = "13.1.1";
-  pyproject = true;
-
-  __structuredAttrs = true;
 
   src = fetchPypi {
     inherit (finalAttrs) pname version;
     hash = "sha256-RmMwTzG2Zy3sMgx857qXFcK5nn2LaEs3XwtO/9qQIQw=";
   };
 
+  # has no tests
+  doCheck = false;
+  __structuredAttrs = true;
   build-system = [ setuptools ];
 
   dependencies = [
@@ -28,9 +28,7 @@ buildPythonPackage (finalAttrs: {
     azure-mgmt-core
   ];
 
-  # has no tests
-  doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "azure.mgmt.cdn" ];
 
   meta = {

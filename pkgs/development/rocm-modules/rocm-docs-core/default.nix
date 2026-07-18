@@ -1,31 +1,30 @@
 {
   lib,
   fetchFromGitHub,
-  gitUpdater,
-  buildPythonPackage,
-  setuptools,
   beautifulsoup4,
-  gitpython,
-  pydata-sphinx-theme,
-  pygithub,
-  sphinx,
   breathe,
+  buildPythonPackage,
+  fastjsonschema,
+  gitUpdater,
+  gitpython,
   myst-nb,
   myst-parser,
+  pydata-sphinx-theme,
+  pygithub,
+  pyyaml,
+  setuptools,
+  sphinx,
   sphinx-book-theme,
   sphinx-copybutton,
   sphinx-design,
   sphinx-external-toc,
   sphinx-notfound-page,
-  pyyaml,
-  fastjsonschema,
 }:
 
 # FIXME: Move to rocmPackages_common
 buildPythonPackage (finalAttrs: {
   pname = "rocm-docs-core";
   version = "1.34.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "ROCm";
@@ -54,18 +53,20 @@ buildPythonPackage (finalAttrs: {
     fastjsonschema
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "rocm_docs" ];
-
   passthru.updateScript = gitUpdater { rev-prefix = "v"; };
 
   meta = {
     description = "ROCm Documentation Python package for ReadTheDocs build standardization";
     homepage = "https://github.com/ROCm/rocm-docs-core";
+
     license = with lib.licenses; [
       mit
       cc-by-40
     ];
-    teams = [ lib.teams.rocm ];
+
     platforms = lib.platforms.linux;
+    teams = [ lib.teams.rocm ];
   };
 })

@@ -2,15 +2,15 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  fetchpatch,
   autoreconfHook,
+  cairo,
+  fetchpatch,
   gettext,
-  perl,
-  pkg-config,
+  groff,
   libxml2,
   pango,
-  cairo,
-  groff,
+  perl,
+  pkg-config,
   tcl,
 }:
 
@@ -28,8 +28,8 @@ perl.pkgs.toPerlModule (
 
     # Fix darwin build
     patches = lib.optional stdenv.hostPlatform.isDarwin (fetchpatch {
-      url = "https://github.com/oetiker/rrdtool-1.x/pull/1262.patch";
       hash = "sha256-aP0rmDlILn6VC8Tg7HpRXbxL9+KD/PRTbXnbQ7HgPEg=";
+      url = "https://github.com/oetiker/rrdtool-1.x/pull/1262.patch";
     });
 
     nativeBuildInputs = [
@@ -56,11 +56,11 @@ perl.pkgs.toPerlModule (
     '';
 
     meta = {
-      homepage = "https://oss.oetiker.ch/rrdtool/";
       description = "High performance logging in Round Robin Databases";
+      homepage = "https://oss.oetiker.ch/rrdtool/";
       license = lib.licenses.gpl2Only;
-      platforms = lib.platforms.linux ++ lib.platforms.darwin;
       maintainers = with lib.maintainers; [ pSub ];
+      platforms = lib.platforms.linux ++ lib.platforms.darwin;
     };
   })
 )

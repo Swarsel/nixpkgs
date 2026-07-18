@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   jsonschema,
   poetry-core,
   pytestCheckHook,
@@ -10,33 +10,34 @@
 buildPythonPackage rec {
   pname = "archspec";
   version = "0.2.5";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "archspec";
     repo = "archspec";
     tag = "v${version}";
-    fetchSubmodules = true;
     hash = "sha256-BfjFNwfNyT/da0Z5/bBdbv+RT8lqM0s2q64cz79vuF0=";
+    fetchSubmodules = true;
   };
-
-  build-system = [ poetry-core ];
 
   nativeCheckInputs = [
     pytestCheckHook
     jsonschema
   ];
 
+  build-system = [ poetry-core ];
+  pyproject = true;
   pythonImportsCheck = [ "archspec" ];
 
   meta = {
     description = "Library for detecting, labeling, and reasoning about microarchitectures";
     homepage = "https://archspec.readthedocs.io/";
     changelog = "https://github.com/archspec/archspec/releases/tag/${src.tag}";
+
     license = with lib.licenses; [
       mit
       asl20
     ];
+
     maintainers = [ ];
     mainProgram = "archspec";
   };

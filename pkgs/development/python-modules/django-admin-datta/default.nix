@@ -8,7 +8,6 @@
 buildPythonPackage rec {
   pname = "django-admin-datta";
   version = "1.0.19";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
@@ -16,10 +15,9 @@ buildPythonPackage rec {
   };
 
   propagatedBuildInputs = [ django ];
-
   # no tests
   doCheck = false;
-
+  format = "setuptools";
   pythonImportsCheck = [ "admin_datta" ];
 
   meta = {

@@ -7,11 +7,9 @@
 }:
 
 derivation {
-  name = "test-bootstrap-tools";
-
   inherit (stdenv.hostPlatform) system;
-
-  builder = "${bootstrapTools}/bin/bash";
+  "${stdenv.cc.darwinMinVersionVariable}" = stdenv.cc.darwinMinVersion;
+  PATH = lib.makeBinPath [ bootstrapTools ];
 
   args = [
     "-euo"
@@ -19,12 +17,6 @@ derivation {
     "-c"
     "eval \"$buildCommand\""
   ];
-
-  PATH = lib.makeBinPath [ bootstrapTools ];
-
-  tools = bootstrapTools;
-
-  "${stdenv.cc.darwinMinVersionVariable}" = stdenv.cc.darwinMinVersion;
 
   # Create a pure environment where we use just what's in the bootstrap tools.
   buildCommand = ''
@@ -89,4 +81,8 @@ derivation {
     make install
     $out/bin/hello
   '';
+
+  builder = "${bootstrapTools}/bin/bash";
+  name = "test-bootstrap-tools";
+  tools = bootstrapTools;
 }

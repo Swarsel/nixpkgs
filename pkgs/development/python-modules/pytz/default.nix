@@ -10,7 +10,6 @@
 buildPythonPackage rec {
   pname = "pytz";
   version = "2026.2";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
@@ -23,22 +22,22 @@ buildPythonPackage rec {
     ln -snvf ${tzdata}/share/zoneinfo pytz/zoneinfo
   '';
 
-  build-system = [ setuptools ];
-
   nativeCheckInputs = [ unittestCheckHook ];
+  build-system = [ setuptools ];
+  pyproject = true;
+  pythonImportsCheck = [ "pytz" ];
 
   unittestFlagsArray = [
     "-s"
     "pytz/tests"
   ];
 
-  pythonImportsCheck = [ "pytz" ];
-
   meta = {
-    changelog = "https://launchpad.net/pytz/+announcements";
     description = "World timezone definitions, modern and historical";
     homepage = "https://pythonhosted.org/pytz";
+    changelog = "https://launchpad.net/pytz/+announcements";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       dotlambda
       jherland

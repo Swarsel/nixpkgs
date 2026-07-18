@@ -1,9 +1,9 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
-  versionCheckHook,
+  buildGoModule,
   nix-update-script,
+  versionCheckHook,
 }:
 
 buildGoModule (finalAttrs: {
@@ -18,14 +18,11 @@ buildGoModule (finalAttrs: {
   };
 
   vendorHash = "sha256-AjckKD6NScBa8w9nWMdVExuNadz3vHnK854XXg3nj84=";
+  doInstallCheck = true;
 
-  # modernc.org/libc (via modernc.org/sqlite) tries to read /etc/protocols
-  modPostBuild = ''
-    substituteInPlace vendor/modernc.org/libc/honnef.co/go/netdb/netdb.go \
-      --replace-fail '!os.IsNotExist(err)' '!os.IsNotExist(err) && !os.IsPermission(err)'
-  '';
-
-  subPackages = [ "cmd/resterm" ];
+  nativeInstallCheckInputs = [
+    versionCheckHook
+  ];
 
   ldflags = [
     "-s"
@@ -35,20 +32,22 @@ buildGoModule (finalAttrs: {
     "-X main.date=1970-01-01_00:00:00_UTC"
   ];
 
-  nativeInstallCheckInputs = [
-    versionCheckHook
-  ];
-  doInstallCheck = true;
-  versionCheckProgramArg = "--version";
+  # modernc.org/libc (via modernc.org/sqlite) tries to read /etc/protocols
+  modPostBuild = ''
+    substituteInPlace vendor/modernc.org/libc/honnef.co/go/netdb/netdb.go \
+      --replace-fail '!os.IsNotExist(err)' '!os.IsNotExist(err) && !os.IsPermission(err)'
+  '';
 
+  subPackages = [ "cmd/resterm" ];
+  versionCheckProgramArg = "--version";
   passthru.updateScript = nix-update-script { };
 
   meta = {
     description = "Terminal-based REST client";
     homepage = "https://github.com/unkn0wn-root/resterm";
-    mainProgram = "resterm";
     license = lib.licenses.asl20;
-    platforms = with lib.platforms; linux ++ darwin ++ windows;
     maintainers = with lib.maintainers; [ lonerOrz ];
+    platforms = with lib.platforms; linux ++ darwin ++ windows;
+    mainProgram = "resterm";
   };
 })

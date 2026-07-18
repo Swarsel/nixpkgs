@@ -2,21 +2,20 @@
   lib,
   fetchFromGitHub,
   buildPythonPackage,
-  libarchive,
-  libb2,
   bzip2,
   expat,
+  libarchive,
+  libb2,
   lz4,
+  plugincode,
   xz,
   zlib,
   zstd,
-  plugincode,
 }:
 
 buildPythonPackage rec {
   pname = "extractcode-libarchive";
   version = "21.5.31";
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "aboutcode-org";
@@ -25,7 +24,7 @@ buildPythonPackage rec {
     hash = "sha256-nGgFjp1N1IM/Sm4xLJw5WiZncc369/LqNcwFJBS1EQs=";
   };
 
-  sourceRoot = "${src.name}/builtins/extractcode_libarchive-linux";
+  propagatedBuildInputs = [ plugincode ];
 
   preBuild = ''
     pushd src/extractcode_libarchive/lib
@@ -43,20 +42,21 @@ buildPythonPackage rec {
     popd
   '';
 
-  propagatedBuildInputs = [ plugincode ];
-
   # no tests
   doCheck = false;
-
+  format = "setuptools";
   pythonImportsCheck = [ "extractcode_libarchive" ];
+  sourceRoot = "${src.name}/builtins/extractcode_libarchive-linux";
 
   meta = {
     description = "ScanCode Toolkit plugin to provide pre-built binary libraries and utilities and their locations";
     homepage = "https://github.com/aboutcode-org/scancode-plugins/tree/main/builtins/extractcode_libarchive-linux";
+
     license = with lib.licenses; [
       asl20
       bsd2
     ];
+
     maintainers = [ ];
     platforms = lib.platforms.linux;
   };

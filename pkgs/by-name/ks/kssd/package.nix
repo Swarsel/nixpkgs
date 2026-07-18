@@ -3,9 +3,9 @@
   stdenv,
   fetchFromGitHub,
   fetchpatch,
-  zlib,
   kssd,
   runCommand,
+  zlib,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -22,9 +22,9 @@ stdenv.mkDerivation (finalAttrs: {
   patches = [
     # https://github.com/yhg926/public_kssd/pull/11
     (fetchpatch {
+      hash = "sha256-yFyJetpsGKeu+H6Oxrmn5ea4ESVtblb3YJDja4JEAEM=";
       name = "allocate-enough-memory.patch";
       url = "https://github.com/yhg926/public_kssd/commit/b1e66bbcc04687bc3201301cd742a0b26a87cb5d.patch";
-      hash = "sha256-yFyJetpsGKeu+H6Oxrmn5ea4ESVtblb3YJDja4JEAEM=";
     })
   ];
 
@@ -49,8 +49,8 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "K-mer substring space decomposition";
-    license = lib.licenses.asl20;
     homepage = "https://github.com/yhg926/public_kssd";
+    license = lib.licenses.asl20;
     maintainers = with lib.maintainers; [ unode ];
     platforms = lib.platforms.linux;
     mainProgram = "kssd";

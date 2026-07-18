@@ -1,8 +1,8 @@
 {
   lib,
+  stdenv,
   args,
   microhs-boot,
-  stdenv,
 }:
 
 stdenv.mkDerivation (
@@ -13,6 +13,7 @@ stdenv.mkDerivation (
   args'
   // {
     pname = "microhs-stage1";
+
     patches =
       (args'.patches or [ ])
       ++ lib.optionals microhs-boot.usesHugs [
@@ -20,10 +21,6 @@ stdenv.mkDerivation (
       ];
 
     makeFlags = [ "PREFIX=${placeholder "out"}" ];
-    installTargets = [
-      "targets.conf"
-      "oldinstall"
-    ];
 
     buildPhase = ''
       runHook preBuild
@@ -32,5 +29,10 @@ stdenv.mkDerivation (
       ${microhs-boot}/bin/mhs -l -imhs -isrc -ipaths MicroHs.Main -o bin/mhs
       runHook postBuild
     '';
+
+    installTargets = [
+      "targets.conf"
+      "oldinstall"
+    ];
   }
 )

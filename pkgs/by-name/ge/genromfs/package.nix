@@ -5,8 +5,8 @@
 }:
 
 stdenv.mkDerivation (finalAttrs: {
-  version = "0.5.2";
   pname = "genromfs";
+  version = "0.5.2";
 
   src = fetchurl {
     url = "mirror://sourceforge/romfs/genromfs/${finalAttrs.version}/genromfs-${finalAttrs.version}.tar.gz";
@@ -19,8 +19,8 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   meta = {
-    homepage = "https://romfs.sourceforge.net/";
     description = "Tool for creating romfs file system images";
+    homepage = "https://romfs.sourceforge.net/";
     license = lib.licenses.gpl2Plus;
     maintainers = with lib.maintainers; [ nickcao ];
     platforms = lib.platforms.all;

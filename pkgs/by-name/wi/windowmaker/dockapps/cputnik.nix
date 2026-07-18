@@ -8,11 +8,8 @@
 }:
 
 stdenv.mkDerivation (finalAttrs: {
-  pname = "cputnik";
-
   inherit (dockapps-sources) version src;
-
-  sourceRoot = "${finalAttrs.src.name}/cputnik/src";
+  pname = "cputnik";
 
   buildInputs = [
     libx11
@@ -27,8 +24,6 @@ stdenv.mkDerivation (finalAttrs: {
     )
   '';
 
-  hardeningDisable = [ "format" ];
-
   installPhase = ''
     runHook preInstall
 
@@ -36,6 +31,9 @@ stdenv.mkDerivation (finalAttrs: {
 
     runHook postInstall
   '';
+
+  hardeningDisable = [ "format" ];
+  sourceRoot = "${finalAttrs.src.name}/cputnik/src";
 
   meta = {
     description = "Calendar clock with antialiased text";

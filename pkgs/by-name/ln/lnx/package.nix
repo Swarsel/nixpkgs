@@ -1,8 +1,8 @@
 {
   lib,
   stdenv,
-  rustPlatform,
   fetchFromGitHub,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -17,16 +17,15 @@ rustPlatform.buildRustPackage (finalAttrs: {
   };
 
   cargoHash = "sha256-9fro1Dx7P+P9NTsg0gtMfr0s4TEpkZA31EFAnObiNFo=";
-
   # mimalloc uses ATOMIC_VAR_INIT which was removed in C23 (GCC 15 default)
   env.NIX_CFLAGS_COMPILE = lib.optionalString stdenv.cc.isGNU "-std=c17";
 
   meta = {
     description = "Ultra-fast, adaptable deployment of the tantivy search engine via REST";
-    mainProgram = "lnx";
     homepage = "https://lnx.rs/";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ happysalada ];
     platforms = lib.platforms.unix;
+    mainProgram = "lnx";
   };
 })

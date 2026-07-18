@@ -1,30 +1,29 @@
 {
-  stdenv,
   lib,
-  cmake,
+  stdenv,
   fetchFromGitHub,
-  pkg-config,
-  fftwFloat,
-  mbedtls,
   boost,
-  lksctp-tools,
-  libconfig,
-  pcsclite,
-  uhd,
-  soapysdr-with-plugins,
+  cmake,
+  fftwFloat,
   libbladeRF,
+  libconfig,
+  lksctp-tools,
+  mbedtls,
+  pcsclite,
+  pkg-config,
+  soapysdr-with-plugins,
+  uhd,
   zeromq,
-  enableLteRates ? false,
   enableAvx ? stdenv.hostPlatform.avxSupport,
   enableAvx2 ? stdenv.hostPlatform.avx2Support,
-  enableFma ? stdenv.hostPlatform.fmaSupport,
   enableAvx512 ? stdenv.hostPlatform.avx512Support,
+  enableFma ? stdenv.hostPlatform.fmaSupport,
+  enableLteRates ? false,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
   pname = "srsran";
   version = "25_10";
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "srsran";
@@ -37,6 +36,17 @@ stdenv.mkDerivation (finalAttrs: {
     "out"
     "dev"
   ];
+
+  # boost 1.89 removed the boost_system stub library
+  postPatch = ''
+    substituteInPlace cmake/modules/FindUHD.cmake --replace-fail \
+      'set(CMAKE_REQUIRED_LIBRARIES uhd boost_program_options boost_system)' \
+      'set(CMAKE_REQUIRED_LIBRARIES uhd boost_program_options)'
+    substituteInPlace lib/src/phy/rf/CMakeLists.txt --replace-fail \
+      '/usr/lib/x86_64-linux-gnu/libboost_system.so' ""
+    substituteInPlace CMakeLists.txt --replace-fail \
+      'list(APPEND BOOST_REQUIRED_COMPONENTS "system")' ""
+  '';
 
   nativeBuildInputs = [
     cmake
@@ -56,17 +66,6 @@ stdenv.mkDerivation (finalAttrs: {
     zeromq
   ];
 
-  # boost 1.89 removed the boost_system stub library
-  postPatch = ''
-    substituteInPlace cmake/modules/FindUHD.cmake --replace-fail \
-      'set(CMAKE_REQUIRED_LIBRARIES uhd boost_program_options boost_system)' \
-      'set(CMAKE_REQUIRED_LIBRARIES uhd boost_program_options)'
-    substituteInPlace lib/src/phy/rf/CMakeLists.txt --replace-fail \
-      '/usr/lib/x86_64-linux-gnu/libboost_system.so' ""
-    substituteInPlace CMakeLists.txt --replace-fail \
-      'list(APPEND BOOST_REQUIRED_COMPONENTS "system")' ""
-  '';
-
   cmakeFlags = [
     "-DENABLE_WERROR=OFF"
     (lib.cmakeBool "USE_LTE_RATES" enableLteRates)
@@ -80,15 +79,19 @@ stdenv.mkDerivation (finalAttrs: {
     rm $out/lib/*.a
   '';
 
+  __structuredAttrs = true;
+
   meta = {
+    description = "Open-source 4G software radio suite, including complete LTE UE, eNodeB and EPC applications";
     homepage = "https://www.srslte.com/";
     changelog = "https://github.com/srsran/srsRAN_4G/releases/tag/${finalAttrs.src.tag}";
-    description = "Open-source 4G software radio suite, including complete LTE UE, eNodeB and EPC applications";
     license = lib.licenses.agpl3Plus;
-    platforms = lib.platforms.linux;
+
     maintainers = with lib.maintainers; [
       hexagonal-sun
       felbinger
     ];
+
+    platforms = lib.platforms.linux;
   };
 })

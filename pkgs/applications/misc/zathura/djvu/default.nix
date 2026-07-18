@@ -2,18 +2,18 @@
   lib,
   stdenv,
   fetchFromGitHub,
+  appstream,
+  appstream-glib,
+  desktop-file-utils,
+  djvulibre,
+  gettext,
+  girara,
+  gitUpdater,
+  gtk3,
   meson,
   ninja,
   pkg-config,
-  gtk3,
   zathura_core,
-  girara,
-  djvulibre,
-  gettext,
-  desktop-file-utils,
-  appstream,
-  appstream-glib,
-  gitUpdater,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -45,18 +45,19 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   env.PKG_CONFIG_ZATHURA_PLUGINDIR = "lib/zathura";
-
   passthru.updateScript = gitUpdater { };
 
   meta = {
-    homepage = "https://pwmt.org/projects/zathura-djvu/";
     description = "Zathura DJVU plugin";
+
     longDescription = ''
       The zathura-djvu plugin adds DjVu support to zathura by using the
       djvulibre library.
     '';
+
+    homepage = "https://pwmt.org/projects/zathura-djvu/";
     license = lib.licenses.zlib;
-    platforms = lib.platforms.unix;
     maintainers = with lib.maintainers; [ mithicspirit ];
+    platforms = lib.platforms.unix;
   };
 })

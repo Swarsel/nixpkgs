@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule rec {
@@ -19,9 +19,9 @@ buildGoModule rec {
 
   meta = {
     description = "Prometheus exporter for RIPE Atlas measurement results";
-    mainProgram = "atlas_exporter";
     homepage = "https://github.com/czerwonk/atlas_exporter";
     license = lib.licenses.lgpl3;
     maintainers = with lib.maintainers; [ clerie ];
+    mainProgram = "atlas_exporter";
   };
 }

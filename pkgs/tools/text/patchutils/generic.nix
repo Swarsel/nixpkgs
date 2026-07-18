@@ -2,39 +2,29 @@
   lib,
   stdenv,
   fetchurl,
-  perl,
   makeWrapper,
-  version,
+  perl,
   sha256,
-  patches ? [ ],
+  version,
   extraBuildInputs ? [ ],
+  patches ? [ ],
   ...
 }:
 stdenv.mkDerivation rec {
-  pname = "patchutils";
   inherit version patches;
+  pname = "patchutils";
 
   src = fetchurl {
-    url = "https://cyberelk.net/tim/data/patchutils/stable/${pname}-${version}.tar.xz";
     inherit sha256;
+    url = "https://cyberelk.net/tim/data/patchutils/stable/${pname}-${version}.tar.xz";
   };
 
+  strictDeps = true;
   nativeBuildInputs = [ makeWrapper ];
   buildInputs = [ perl ] ++ extraBuildInputs;
-  hardeningDisable = [ "format" ];
-
-  # tests fail when building in parallel
-  enableParallelBuilding = false;
 
   preConfigure = ''
     export PERL=${perl.interpreter}
-  '';
-
-  postInstall = ''
-    for bin in $out/bin/{splitdiff,rediff,editdiff,dehtmldiff}; do
-      wrapProgram "$bin" \
-        --prefix PATH : "$out/bin"
-    done
   '';
 
   doCheck = lib.versionAtLeast version "0.3.4";
@@ -48,13 +38,22 @@ stdenv.mkDerivation rec {
       -exec sed -i '{}' -e 's|/bin/echo|echo|g' \;
   '';
 
-  strictDeps = true;
+  postInstall = ''
+    for bin in $out/bin/{splitdiff,rediff,editdiff,dehtmldiff}; do
+      wrapProgram "$bin" \
+        --prefix PATH : "$out/bin"
+    done
+  '';
+
+  # tests fail when building in parallel
+  enableParallelBuilding = false;
+  hardeningDisable = [ "format" ];
 
   meta = {
     description = "Tools to manipulate patch files";
     homepage = "http://cyberelk.net/tim/software/patchutils";
     license = lib.licenses.gpl2Plus;
-    platforms = lib.platforms.all;
     maintainers = with lib.maintainers; [ artturin ];
+    platforms = lib.platforms.all;
   };
 }

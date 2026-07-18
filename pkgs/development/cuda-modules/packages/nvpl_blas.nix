@@ -1,6 +1,5 @@
 { buildRedist }:
 buildRedist {
-  redistName = "nvpl";
   pname = "nvpl_blas";
 
   outputs = [
@@ -9,6 +8,8 @@ buildRedist {
     "include"
     "lib"
   ];
+
+  redistName = "nvpl";
 
   meta = {
     description = "Part of NVIDIA Performance Libraries that provides standard Fortran 77 BLAS APIs as well as C (CBLAS)";

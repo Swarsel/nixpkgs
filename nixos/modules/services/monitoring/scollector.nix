@@ -34,66 +34,80 @@ in
     services.scollector = {
 
       enable = lib.mkOption {
-        type = lib.types.bool;
         default = false;
+
         description = ''
           Whether to run scollector.
         '';
+
+        type = lib.types.bool;
       };
 
       package = lib.mkPackageOption pkgs "scollector" { };
 
-      user = lib.mkOption {
-        type = lib.types.str;
-        default = "scollector";
-        description = ''
-          User account under which scollector runs.
-        '';
-      };
-
-      group = lib.mkOption {
-        type = lib.types.str;
-        default = "scollector";
-        description = ''
-          Group account under which scollector runs.
-        '';
-      };
-
       bosunHost = lib.mkOption {
-        type = lib.types.str;
         default = "localhost:8070";
+
         description = ''
           Host and port of the bosun server that will store the collected
           data.
         '';
+
+        type = lib.types.str;
       };
 
       collectors = lib.mkOption {
-        type = with lib.types; attrsOf (listOf path);
         default = { };
-        example = lib.literalExpression ''{ "0" = [ "''${postgresStats}/bin/collect-stats" ]; }'';
+
         description = ''
           An attribute set mapping the frequency of collection to a list of
           binaries that should be executed at that frequency. You can use "0"
           to run a binary forever.
         '';
-      };
 
-      extraOpts = lib.mkOption {
-        type = with lib.types; listOf str;
-        default = [ ];
-        example = [ "-d" ];
-        description = ''
-          Extra scollector command line options
-        '';
+        example = lib.literalExpression ''{ "0" = [ "''${postgresStats}/bin/collect-stats" ]; }'';
+        type = with lib.types; attrsOf (listOf path);
       };
 
       extraConfig = lib.mkOption {
-        type = lib.types.lines;
         default = "";
+
         description = ''
           Extra scollector configuration added to the end of scollector.toml
         '';
+
+        type = lib.types.lines;
+      };
+
+      extraOpts = lib.mkOption {
+        default = [ ];
+
+        description = ''
+          Extra scollector command line options
+        '';
+
+        example = [ "-d" ];
+        type = with lib.types; listOf str;
+      };
+
+      group = lib.mkOption {
+        default = "scollector";
+
+        description = ''
+          Group account under which scollector runs.
+        '';
+
+        type = lib.types.str;
+      };
+
+      user = lib.mkOption {
+        default = "scollector";
+
+        description = ''
+          User account under which scollector runs.
+        '';
+
+        type = lib.types.str;
       };
 
     };
@@ -104,7 +118,6 @@ in
 
     systemd.services.scollector = {
       description = "scollector metrics collector (part of Bosun)";
-      wantedBy = [ "multi-user.target" ];
 
       path = [
         pkgs.coreutils
@@ -112,19 +125,21 @@ in
       ];
 
       serviceConfig = {
-        User = cfg.user;
-        Group = cfg.group;
         ExecStart = "${cfg.package}/bin/scollector -conf=${conf} ${lib.concatStringsSep " " cfg.extraOpts}";
+        Group = cfg.group;
+        User = cfg.user;
       };
+
+      wantedBy = [ "multi-user.target" ];
     };
+
+    users.groups.scollector.gid = config.ids.gids.scollector;
 
     users.users.scollector = {
       description = "scollector user";
       group = "scollector";
       uid = config.ids.uids.scollector;
     };
-
-    users.groups.scollector.gid = config.ids.gids.scollector;
 
   };
 

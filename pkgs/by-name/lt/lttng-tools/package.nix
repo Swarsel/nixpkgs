@@ -2,14 +2,14 @@
   lib,
   stdenv,
   fetchurl,
-  pkg-config,
   babeltrace2,
-  popt,
-  libuuid,
-  liburcu,
-  lttng-ust,
   kmod,
+  liburcu,
+  libuuid,
   libxml2,
+  lttng-ust,
+  pkg-config,
+  popt,
 }:
 
 stdenv.mkDerivation rec {
@@ -22,6 +22,7 @@ stdenv.mkDerivation rec {
   };
 
   nativeBuildInputs = [ pkg-config ];
+
   buildInputs = [
     babeltrace2
     popt
@@ -36,14 +37,16 @@ stdenv.mkDerivation rec {
 
   meta = {
     description = "Tracing tools (kernel + user space) for Linux";
-    mainProgram = "lttng";
     homepage = "https://lttng.org/";
+
     license = with lib.licenses; [
       lgpl21Only
       gpl2Only
     ];
-    platforms = lib.platforms.linux;
+
     maintainers = [ lib.maintainers.bjornfor ];
+    platforms = lib.platforms.linux;
+    mainProgram = "lttng";
   };
 
 }

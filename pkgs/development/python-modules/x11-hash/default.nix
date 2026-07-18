@@ -6,21 +6,19 @@
 }:
 
 buildPythonPackage rec {
-  version = "1.4";
   pname = "x11-hash";
-  pyproject = true;
+  version = "1.4";
 
   src = fetchPypi {
-    pname = "x11_hash";
     inherit version;
     hash = "sha256-QtzqxEzpVGK48/lvOEr8VtPUYexLdXKD3zGv1VOdWpw=";
+    pname = "x11_hash";
   };
 
   nativeBuildInputs = [ setuptools ];
-
   # pypi's source doesn't include tests
   doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "x11_hash" ];
 
   meta = {

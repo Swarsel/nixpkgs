@@ -1,8 +1,8 @@
 {
   lib,
   fetchzip,
-  stdenvNoCC,
   installFonts,
+  stdenvNoCC,
 }:
 
 stdenvNoCC.mkDerivation (finalAttrs: {
@@ -23,6 +23,7 @@ stdenvNoCC.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Raleway is an elegant sans-serif typeface family";
+
     longDescription = ''
       Initially designed by Matt McInerney as a single thin weight, it was
       expanded into a 9 weight family by Pablo Impallari and Rodrigo Fuenzalida
@@ -36,6 +37,7 @@ stdenvNoCC.mkDerivation (finalAttrs: {
 
       It also has a sister display family, Raleway Dots.
     '';
+
     homepage = "https://www.theleagueofmoveabletype.com/raleway";
     license = lib.licenses.ofl;
     maintainers = with lib.maintainers; [ minijackson ];

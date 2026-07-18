@@ -1,18 +1,18 @@
 {
   lib,
-  fetchFromGitHub,
   stdenv,
-  meson,
-  ninja,
+  fetchFromGitHub,
   cmake,
-  pkg-config,
-  wrapGAppsHook3,
-  gtk3,
   glib,
-  openssl,
-  nettle,
+  gtk3,
   libb2,
   libgcrypt,
+  meson,
+  nettle,
+  ninja,
+  openssl,
+  pkg-config,
+  wrapGAppsHook3,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -20,11 +20,13 @@ stdenv.mkDerivation (finalAttrs: {
   version = "1.5";
 
   src = fetchFromGitHub {
-    repo = "gtkhash";
     owner = "gtkhash";
+    repo = "gtkhash";
     rev = "v${finalAttrs.version}";
     hash = "sha256-XpgTolpTSsW3i0xk19tt4cn9qANoeiq7YnBBR6g8ioU=";
   };
+
+  strictDeps = true;
 
   nativeBuildInputs = [
     meson
@@ -43,13 +45,12 @@ stdenv.mkDerivation (finalAttrs: {
     libgcrypt
   ];
 
-  strictDeps = true;
   meta = {
     description = "Cross-platform desktop utility for computing message digests or checksums";
     homepage = "https://gtkhash.org";
     license = lib.licenses.gpl2Plus;
     maintainers = with lib.maintainers; [ ByteSudoer ];
-    mainProgram = "gtkhash";
     platforms = lib.platforms.unix;
+    mainProgram = "gtkhash";
   };
 })

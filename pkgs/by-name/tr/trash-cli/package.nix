@@ -10,7 +10,6 @@
 python3Packages.buildPythonApplication (finalAttrs: {
   pname = "trash-cli";
   version = "0.24.5.26";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "andreafrancia";
@@ -19,18 +18,12 @@ python3Packages.buildPythonApplication (finalAttrs: {
     hash = "sha256-ltuMnxtG4jTTSZd6ZHWl8wI0oQMMFqW0HAPetZMfGtc=";
   };
 
+  postPatch = ''
+    sed -i '/typing/d' setup.cfg
+  '';
+
   nativeBuildInputs = [
     installShellFiles
-  ];
-
-  build-system = with python3Packages; [
-    setuptools
-    shtab # for shell completions
-  ];
-
-  dependencies = with python3Packages; [
-    psutil
-    six
   ];
 
   nativeCheckInputs = with python3Packages; [
@@ -38,11 +31,16 @@ python3Packages.buildPythonApplication (finalAttrs: {
     pytestCheckHook
   ];
 
-  postPatch = ''
-    sed -i '/typing/d' setup.cfg
+  postInstall = lib.optionalString (stdenv.buildPlatform.canExecute stdenv.hostPlatform) ''
+    for bin in trash-empty trash-list trash-restore trash-put trash; do
+      installShellCompletion --cmd "$bin" \
+        --bash <("$out/bin/$bin" --print-completion bash) \
+        --zsh  <("$out/bin/$bin" --print-completion zsh)
+    done
   '';
 
   doInstallCheck = true;
+
   installCheckPhase = ''
     runHook preInstallCheck
 
@@ -64,24 +62,26 @@ python3Packages.buildPythonApplication (finalAttrs: {
     runHook postInstallCheck
   '';
 
+  build-system = with python3Packages; [
+    setuptools
+    shtab # for shell completions
+  ];
+
+  dependencies = with python3Packages; [
+    psutil
+    six
+  ];
+
+  pyproject = true;
   pythonImportsCheck = [ "trashcli" ];
-
-  postInstall = lib.optionalString (stdenv.buildPlatform.canExecute stdenv.hostPlatform) ''
-    for bin in trash-empty trash-list trash-restore trash-put trash; do
-      installShellCompletion --cmd "$bin" \
-        --bash <("$out/bin/$bin" --print-completion bash) \
-        --zsh  <("$out/bin/$bin" --print-completion zsh)
-    done
-  '';
-
   passthru.updateScript = nix-update-script { };
 
   meta = {
-    homepage = "https://github.com/andreafrancia/trash-cli";
     description = "Command line interface to the freedesktop.org trashcan";
+    homepage = "https://github.com/andreafrancia/trash-cli";
+    license = lib.licenses.gpl2Plus;
     maintainers = [ lib.maintainers.rycee ];
     platforms = lib.platforms.unix;
-    license = lib.licenses.gpl2Plus;
     mainProgram = "trash";
   };
 })

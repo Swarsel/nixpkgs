@@ -1,13 +1,12 @@
 {
   lib,
-  python3Packages,
   fetchPypi,
+  python3Packages,
 }:
 
 python3Packages.buildPythonApplication (finalAttrs: {
   pname = "sewer";
   version = "0.8.4";
-  pyproject = true;
 
   src = fetchPypi {
     inherit (finalAttrs) pname version;
@@ -22,11 +21,12 @@ python3Packages.buildPythonApplication (finalAttrs: {
     tldextract
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "sewer" ];
 
   meta = {
-    homepage = "https://github.com/komuw/sewer";
     description = "ACME client";
+    homepage = "https://github.com/komuw/sewer";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ kevincox ];
   };

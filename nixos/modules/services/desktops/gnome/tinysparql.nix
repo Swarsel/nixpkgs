@@ -1,7 +1,7 @@
 {
   config,
-  pkgs,
   lib,
+  pkgs,
   ...
 }:
 
@@ -9,10 +9,6 @@ let
   cfg = config.services.gnome.tinysparql;
 in
 {
-  meta = {
-    teams = [ lib.teams.gnome ];
-  };
-
   imports = [
     (lib.mkRemovedOptionModule
       [
@@ -46,21 +42,25 @@ in
   options = {
     services.gnome.tinysparql = {
       enable = lib.mkOption {
-        type = lib.types.bool;
         default = false;
+
         description = ''
           Whether to enable TinySPARQL services, a search engine,
           search tool and metadata storage system.
         '';
+
+        type = lib.types.bool;
       };
     };
   };
 
   config = lib.mkIf cfg.enable {
     environment.systemPackages = [ pkgs.tinysparql ];
-
     services.dbus.packages = [ pkgs.tinysparql ];
-
     systemd.packages = [ pkgs.tinysparql ];
+  };
+
+  meta = {
+    teams = [ lib.teams.gnome ];
   };
 }

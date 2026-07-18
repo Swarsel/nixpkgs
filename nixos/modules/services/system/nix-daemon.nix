@@ -18,18 +18,18 @@ let
 
   makeNixBuildUser = nr: {
     name = "nixbld${toString nr}";
+
     value = {
       description = "Nix build user ${toString nr}";
-
+      extraGroups = [ "nixbld" ];
+      group = "nixbld";
+      isSystemUser = true;
       /*
         For consistency with the setgid(2), setuid(2), and setgroups(2)
         calls in `libstore/build.cc', don't add any supplementary group
         here except "nixbld".
       */
       uid = builtins.add config.ids.uids.nixbld nr;
-      isSystemUser = true;
-      group = "nixbld";
-      extraGroups = [ "nixbld" ];
     };
   };
 
@@ -40,22 +40,26 @@ in
 {
   imports = [
     (lib.mkRenamedOptionModuleWith {
-      sinceRelease = 2205;
       from = [
         "nix"
         "daemonIONiceLevel"
       ];
+
+      sinceRelease = 2205;
+
       to = [
         "nix"
         "daemonIOSchedPriority"
       ];
     })
     (lib.mkRenamedOptionModuleWith {
-      sinceRelease = 2211;
       from = [
         "nix"
         "readOnlyStore"
       ];
+
+      sinceRelease = 2211;
+
       to = [
         "boot"
         "readOnlyNixStore"
@@ -67,52 +71,27 @@ in
       config = lib.mkIf (cfg.daemonUser != "root") {
         assertions = [
           {
+            assertion = cfg.daemonGroup != "root";
+
             message = ''
               The Nix daemon cannot run as the root group when not running as the root user.
             '';
-            assertion = cfg.daemonGroup != "root";
           }
           {
+            assertion = lib.elem "local-overlay-store" cfg.settings.experimental-features;
+
             message = ''
               Nix must have the `local-overlay-store` experimental feature when not running as the root user.
             '';
-            assertion = lib.elem "local-overlay-store" cfg.settings.experimental-features;
           }
           {
+            assertion = lib.elem "auto-allocate-uids" cfg.settings.experimental-features;
+
             message = ''
               Nix must have the `auto-allocate-uids` experimental feature when not running as the root user.
             '';
-            assertion = lib.elem "auto-allocate-uids" cfg.settings.experimental-features;
           }
         ];
-
-        nix.settings = {
-          sandbox = true;
-
-          auto-allocate-uids = true;
-
-          # No such group would exist within the sandbox, so chowning to it would fail
-          build-users-group = "";
-
-          # Default settings from Nix, we need to specify them here to use them in nix code though
-          start-id = lib.mkDefault (832 * 1024 * 1024);
-          id-count = lib.mkDefault (128 * 65536);
-        };
-
-        systemd.services.nix-daemon = {
-          # Nix assumes it should use `daemon` if it isn't root, so we have to set `NIX_REMOTE` anyway
-          environment.NIX_REMOTE = "local?use-roots-daemon=true";
-          serviceConfig = {
-            User = cfg.daemonUser;
-            Group = cfg.daemonGroup;
-
-            # Empty string needed to disable old Exec
-            ExecStart = [
-              ""
-              "${nixPackage}/libexec/nix-nswrapper ${toString cfg.settings.start-id} ${toString cfg.settings.id-count} ${nixPackage}/bin/nix-daemon --daemon"
-            ];
-          };
-        };
 
         # We can't remount rw while unprivileged
         boot.nixStoreMountOpts = [
@@ -120,18 +99,46 @@ in
           "nosuid"
         ];
 
-        users.users."${cfg.daemonUser}" = {
-          subUidRanges = [
-            {
-              startUid = cfg.settings.start-id;
-              count = cfg.settings.id-count;
-            }
-          ];
-          subGidRanges = [
-            {
-              startGid = cfg.settings.start-id;
-              count = cfg.settings.id-count;
-            }
+        nix.settings = {
+          auto-allocate-uids = true;
+          # No such group would exist within the sandbox, so chowning to it would fail
+          build-users-group = "";
+          id-count = lib.mkDefault (128 * 65536);
+          sandbox = true;
+          # Default settings from Nix, we need to specify them here to use them in nix code though
+          start-id = lib.mkDefault (832 * 1024 * 1024);
+        };
+
+        systemd.services.nix-daemon = {
+          # Nix assumes it should use `daemon` if it isn't root, so we have to set `NIX_REMOTE` anyway
+          environment.NIX_REMOTE = "local?use-roots-daemon=true";
+
+          serviceConfig = {
+            # Empty string needed to disable old Exec
+            ExecStart = [
+              ""
+              "${nixPackage}/libexec/nix-nswrapper ${toString cfg.settings.start-id} ${toString cfg.settings.id-count} ${nixPackage}/bin/nix-daemon --daemon"
+            ];
+
+            Group = cfg.daemonGroup;
+            User = cfg.daemonUser;
+          };
+        };
+
+        systemd.services.nix-roots-daemon = {
+          serviceConfig.ExecStart = "${config.nix.package.out}/bin/nix --extra-experimental-features nix-command store roots-daemon";
+        };
+
+        systemd.sockets.nix-roots-daemon = {
+          listenStreams = [ "/nix/var/nix/gc-roots-socket/socket" ];
+
+          unitConfig = {
+            ConditionPathIsReadWrite = "/nix/var/nix/gc-roots-socket";
+            RequiresMountsFor = "/nix/store";
+          };
+
+          wantedBy = [
+            "nix-daemon.service"
           ];
         };
 
@@ -143,18 +150,20 @@ in
           "d /nix/var/nix/gc-roots-socket 0755 ${config.nix.daemonUser} ${config.nix.daemonGroup} - -"
         ];
 
-        systemd.services.nix-roots-daemon = {
-          serviceConfig.ExecStart = "${config.nix.package.out}/bin/nix --extra-experimental-features nix-command store roots-daemon";
-        };
-        systemd.sockets.nix-roots-daemon = {
-          wantedBy = [
-            "nix-daemon.service"
+        users.users."${cfg.daemonUser}" = {
+          subGidRanges = [
+            {
+              count = cfg.settings.id-count;
+              startGid = cfg.settings.start-id;
+            }
           ];
-          listenStreams = [ "/nix/var/nix/gc-roots-socket/socket" ];
-          unitConfig = {
-            ConditionPathIsReadWrite = "/nix/var/nix/gc-roots-socket";
-            RequiresMountsFor = "/nix/store";
-          };
+
+          subUidRanges = [
+            {
+              count = cfg.settings.id-count;
+              startUid = cfg.settings.start-id;
+            }
+          ];
         };
       };
     }
@@ -167,49 +176,30 @@ in
     nix = {
 
       enable = lib.mkOption {
-        type = lib.types.bool;
         default = true;
+
         description = ''
           Whether to enable Nix.
           Disabling Nix makes the system hard to modify and the Nix programs and configuration will not be made available by NixOS itself.
         '';
+
+        type = lib.types.bool;
       };
 
       package = lib.mkOption {
-        type = lib.types.package;
         default = pkgs.nix;
         defaultText = lib.literalExpression "pkgs.nix";
+
         description = ''
           This option specifies the Nix package instance to use throughout the system.
         '';
-      };
 
-      daemonUser = lib.mkOption {
-        type = lib.types.str;
-        default = "root";
-        description = ''
-          User to use to run the Nix daemon.
-          If this is not "root" then the Nix daemon will set several settings to preserve functionality.
-          When setting this option, you must also set `nix.daemonGroup`.
-        '';
-      };
-
-      daemonGroup = lib.mkOption {
-        type = lib.types.str;
-        default = "root";
-        description = ''
-          Group to use to run the Nix daemon.
-        '';
+        type = lib.types.package;
       };
 
       daemonCPUSchedPolicy = lib.mkOption {
-        type = lib.types.enum [
-          "other"
-          "batch"
-          "idle"
-        ];
         default = "other";
-        example = "batch";
+
         description = ''
           Nix daemon process CPU scheduling policy. This policy propagates to
           build processes. `other` is the default scheduling
@@ -234,15 +224,29 @@ in
           {manpage}`systemd.resource-control(5)` and adjust
           {option}`systemd.services.nix-daemon` directly.
         '';
+
+        example = "batch";
+
+        type = lib.types.enum [
+          "other"
+          "batch"
+          "idle"
+        ];
+      };
+
+      daemonGroup = lib.mkOption {
+        default = "root";
+
+        description = ''
+          Group to use to run the Nix daemon.
+        '';
+
+        type = lib.types.str;
       };
 
       daemonIOSchedClass = lib.mkOption {
-        type = lib.types.enum [
-          "best-effort"
-          "idle"
-        ];
         default = "best-effort";
-        example = "idle";
+
         description = ''
           Nix daemon process I/O scheduling class. This class propagates to
           build processes. `best-effort` is the default
@@ -260,12 +264,18 @@ in
           such as desktop or portable computers used interactively. Other
           systems should use the `best-effort` class.
         '';
+
+        example = "idle";
+
+        type = lib.types.enum [
+          "best-effort"
+          "idle"
+        ];
       };
 
       daemonIOSchedPriority = lib.mkOption {
-        type = lib.types.int;
         default = 4;
-        example = 1;
+
         description = ''
           Nix daemon process I/O scheduling priority. This priority propagates
           to build processes. The supported priorities depend on the
@@ -273,24 +283,40 @@ in
           decisions. best-effort supports values in the range 0 (high) to 7
           (low).
         '';
+
+        example = 1;
+        type = lib.types.int;
+      };
+
+      daemonUser = lib.mkOption {
+        default = "root";
+
+        description = ''
+          User to use to run the Nix daemon.
+          If this is not "root" then the Nix daemon will set several settings to preserve functionality.
+          When setting this option, you must also set `nix.daemonGroup`.
+        '';
+
+        type = lib.types.str;
       };
 
       # Environment variables for running Nix.
       envVars = lib.mkOption {
-        type = lib.types.attrs;
-        internal = true;
         default = { };
         description = "Environment variables used by Nix.";
+        internal = true;
+        type = lib.types.attrs;
       };
 
       nrBuildUsers = lib.mkOption {
-        type = lib.types.int;
         description = ''
           Number of `nixbld` user accounts created to
           perform secure concurrent builds.  If you receive an error
           message saying that “all build users are currently in use”,
           you should increase this value.
         '';
+
+        type = lib.types.int;
       };
     };
   };
@@ -308,27 +334,28 @@ in
       ];
     })
     (lib.mkIf (cfg.enable && nixPackage.pname != "lix") {
+      # Set up the environment variables for running Nix.
+      environment.sessionVariables = cfg.envVars;
+
       environment.systemPackages = [
         nixPackage
         pkgs.nix-info
       ]
       ++ lib.optional (config.programs.bash.completion.enable) pkgs.nix-bash-completions;
 
+      nix.nrBuildUsers = lib.mkDefault (
+        if cfg.settings.auto-allocate-uids or false then
+          0
+        else
+          lib.max 32 (if cfg.settings.max-jobs == "auto" then 0 else cfg.settings.max-jobs)
+      );
+
+      # Legacy configuration conversion.
+      nix.settings.sandbox-fallback = false;
+      services.displayManager.hiddenUsers = lib.attrNames nixbldUsers;
       systemd.packages = [ nixPackage ];
 
-      # The upstream Nix tmpfiles.d file assumes the daemon runs as root
-      systemd.tmpfiles.packages = lib.mkIf (cfg.daemonUser == "root") [ nixPackage ];
-
-      systemd.sockets.nix-daemon.wantedBy = [ "sockets.target" ];
-
       systemd.services.nix-daemon = {
-        path = [
-          nixPackage
-          config.programs.ssh.package
-        ]
-        # For running "newuidmap"
-        ++ lib.optional (cfg.daemonUser != "root") "/run/wrappers";
-
         environment =
           cfg.envVars
           // {
@@ -336,13 +363,20 @@ in
           }
           // config.networking.proxy.envVars;
 
+        path = [
+          nixPackage
+          config.programs.ssh.package
+        ]
+        # For running "newuidmap"
+        ++ lib.optional (cfg.daemonUser != "root") "/run/wrappers";
+
+        restartTriggers = [ config.environment.etc."nix/nix.conf".source ];
+
         serviceConfig = {
           CPUSchedulingPolicy = cfg.daemonCPUSchedPolicy;
           IOSchedulingClass = cfg.daemonIOSchedClass;
           IOSchedulingPriority = cfg.daemonIOSchedPriority;
         };
-
-        restartTriggers = [ config.environment.etc."nix/nix.conf".source ];
 
         # `stopIfChanged = false` changes to switch behavior
         # from   stop -> update units -> start
@@ -379,22 +413,10 @@ in
 
       };
 
-      # Set up the environment variables for running Nix.
-      environment.sessionVariables = cfg.envVars;
-
-      nix.nrBuildUsers = lib.mkDefault (
-        if cfg.settings.auto-allocate-uids or false then
-          0
-        else
-          lib.max 32 (if cfg.settings.max-jobs == "auto" then 0 else cfg.settings.max-jobs)
-      );
-
+      systemd.sockets.nix-daemon.wantedBy = [ "sockets.target" ];
+      # The upstream Nix tmpfiles.d file assumes the daemon runs as root
+      systemd.tmpfiles.packages = lib.mkIf (cfg.daemonUser == "root") [ nixPackage ];
       users.users = nixbldUsers;
-
-      services.displayManager.hiddenUsers = lib.attrNames nixbldUsers;
-
-      # Legacy configuration conversion.
-      nix.settings.sandbox-fallback = false;
     })
   ];
 

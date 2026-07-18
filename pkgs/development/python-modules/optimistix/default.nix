@@ -1,30 +1,26 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # build-system
-  hatchling,
-
-  # dependencies
-  equinox,
-  jax,
-  jaxtyping,
-  lineax,
-  typing-extensions,
-
   # tests
   beartype,
+  buildPythonPackage,
+  # dependencies
+  equinox,
+  # build-system
+  hatchling,
+  jax,
   jaxlib,
+  jaxtyping,
+  lineax,
   optax,
-  pytestCheckHook,
   pytest-xdist,
+  pytestCheckHook,
+  typing-extensions,
 }:
 
 buildPythonPackage rec {
   pname = "optimistix";
   version = "0.0.11";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "patrick-kidger";
@@ -32,18 +28,6 @@ buildPythonPackage rec {
     tag = "v${version}";
     hash = "sha256-tTE/f1dYDpTmrqL1D7h7UyqT2gN9+Y1mNJZcjmdHtno=";
   };
-
-  build-system = [ hatchling ];
-
-  dependencies = [
-    equinox
-    jax
-    jaxtyping
-    lineax
-    typing-extensions
-  ];
-
-  pythonImportsCheck = [ "optimistix" ];
 
   nativeCheckInputs = [
     beartype
@@ -53,10 +37,14 @@ buildPythonPackage rec {
     pytest-xdist
   ];
 
-  disabledTests = [
-    # assert Array(False, dtype=bool)
-    # +  where Array(False, dtype=bool) = tree_allclose(Array(0.12993518, dtype=float64), Array(0., dtype=float64, weak_type=True), atol=0.0001, rtol=0.0001)
-    "test_least_squares"
+  build-system = [ hatchling ];
+
+  dependencies = [
+    equinox
+    jax
+    jaxtyping
+    lineax
+    typing-extensions
   ];
 
   disabledTestPaths = [
@@ -69,6 +57,15 @@ buildPythonPackage rec {
     "tests/test_misc.py"
     "tests/test_root_find.py"
   ];
+
+  disabledTests = [
+    # assert Array(False, dtype=bool)
+    # +  where Array(False, dtype=bool) = tree_allclose(Array(0.12993518, dtype=float64), Array(0., dtype=float64, weak_type=True), atol=0.0001, rtol=0.0001)
+    "test_least_squares"
+  ];
+
+  pyproject = true;
+  pythonImportsCheck = [ "optimistix" ];
 
   meta = {
     description = "Nonlinear optimisation (root-finding, least squares, ...) in JAX+Equinox";

@@ -1,12 +1,11 @@
 {
   lib,
-  python3,
   fetchFromGitHub,
+  python3,
 }:
 
 python3.pkgs.buildPythonApplication rec {
   pname = "mvt";
-  pyproject = true;
   version = "2.5.4";
 
   src = fetchFromGitHub {
@@ -15,6 +14,12 @@ python3.pkgs.buildPythonApplication rec {
     tag = "v${version}";
     hash = "sha256-xDUjyvOsiweRqibTe7V8I/ABeaahCoR/d5w23qixp9A";
   };
+
+  nativeCheckInputs = with python3.pkgs; [
+    pytestCheckHook
+    pytest-mock
+    stix2
+  ];
 
   build-system = with python3.pkgs; [ setuptools ];
 
@@ -34,18 +39,14 @@ python3.pkgs.buildPythonApplication rec {
     tld
   ];
 
-  nativeCheckInputs = with python3.pkgs; [
-    pytestCheckHook
-    pytest-mock
-    stix2
-  ];
+  pyproject = true;
 
   meta = {
     description = "Tool to facilitate the consensual forensic analysis of Android and iOS devices";
     homepage = "https://docs.mvt.re/en/latest/";
+    changelog = "https://github.com/mvt-project/mvt/releases/tag/v${version}";
     # https://github.com/mvt-project/mvt/blob/main/LICENSE
     license = lib.licenses.unfree;
-    changelog = "https://github.com/mvt-project/mvt/releases/tag/v${version}";
     maintainers = with lib.maintainers; [ PapayaJackal ];
   };
 }

@@ -1,48 +1,47 @@
 {
   lib,
   stdenv,
-  llvm_meta,
-  release_version,
   cmake,
-  zlib,
-  ncurses,
-  swig,
-  which,
-  libedit,
-  libxml2,
-  libllvm,
-  libclang,
-  python3,
-  version,
   darwin,
-  lit,
-  makeWrapper,
-  lua5_3,
-  ninja,
-  runCommand,
-  src ? null,
-  monorepoSrc ? null,
-  enableManpages ? false,
-  devExtraCmakeFlags ? [ ],
-  getVersionFile,
   fetchpatch,
   fetchpatch2,
+  getVersionFile,
+  libclang,
+  libedit,
+  libllvm,
+  libxml2,
+  lit,
+  llvm_meta,
+  lua5_3,
+  makeWrapper,
+  ncurses,
+  ninja,
+  python3,
+  release_version,
   replaceVars,
+  runCommand,
+  swig,
+  version,
+  which,
+  zlib,
+  devExtraCmakeFlags ? [ ],
+  enableManpages ? false,
+  monorepoSrc ? null,
+  src ? null,
 }:
 
 let
   vscodeExt = {
-    name = "lldb-dap";
     version = "0.2.0";
+    name = "lldb-dap";
   };
 in
 
 stdenv.mkDerivation (
   finalAttrs:
   {
-    passthru.monorepoSrc = monorepoSrc;
-    pname = "lldb";
     inherit version;
+    pname = "lldb";
 
     src =
       if monorepoSrc != null then
@@ -67,8 +66,6 @@ stdenv.mkDerivation (
       "out"
       "dev"
     ];
-
-    sourceRoot = "${finalAttrs.src.name}/lldb";
 
     patches = [
       ./gnu-install-dirs.patch
@@ -109,8 +106,6 @@ stdenv.mkDerivation (
       darwin.bootstrap_cmds
     ];
 
-    hardeningDisable = [ "format" ];
-
     cmakeFlags = [
       (lib.cmakeBool "LLDB_INCLUDE_TESTS" finalAttrs.finalPackage.doCheck)
       (lib.cmakeBool "LLVM_ENABLE_RTTI" false)
@@ -142,19 +137,6 @@ stdenv.mkDerivation (
     ++ devExtraCmakeFlags;
 
     doCheck = false;
-    doInstallCheck = false;
-
-    # TODO: cleanup with mass-rebuild
-    installCheckPhase = ''
-      if [ ! -e ''${!outputLib}/${python3.sitePackages}/lldb/_lldb*.so ] ; then
-          echo "ERROR: python files not installed where expected!";
-          return 1;
-      fi
-      if [ ! -e "''${!outputLib}/lib/lua/${lua5_3.luaversion}/lldb.so" ] ; then
-          echo "ERROR: lua files not installed where expected!";
-          return 1;
-      fi
-    '';
 
     postInstall =
       let
@@ -175,28 +157,47 @@ stdenv.mkDerivation (
         ln -s $out/bin/*${vscodeExt.name} $out/share/vscode/extensions/llvm-org.${vscodeExt.name}-${vscodeExt.version}/bin
       '';
 
+    doInstallCheck = false;
+
+    # TODO: cleanup with mass-rebuild
+    installCheckPhase = ''
+      if [ ! -e ''${!outputLib}/${python3.sitePackages}/lldb/_lldb*.so ] ; then
+          echo "ERROR: python files not installed where expected!";
+          return 1;
+      fi
+      if [ ! -e "''${!outputLib}/lib/lua/${lua5_3.luaversion}/lldb.so" ] ; then
+          echo "ERROR: lua files not installed where expected!";
+          return 1;
+      fi
+    '';
+
+    hardeningDisable = [ "format" ];
+    sourceRoot = "${finalAttrs.src.name}/lldb";
+    passthru.monorepoSrc = monorepoSrc;
     passthru.vscodeExtName = vscodeExt.name;
     passthru.vscodeExtPublisher = "llvm";
     passthru.vscodeExtUniqueId = "llvm-org.${vscodeExt.name}-${vscodeExt.version}";
 
     meta = llvm_meta // {
-      homepage = "https://lldb.llvm.org/";
       description = "Next-generation high-performance debugger";
+
       longDescription = ''
         LLDB is a next generation, high-performance debugger. It is built as a set
         of reusable components which highly leverage existing libraries in the
         larger LLVM Project, such as the Clang expression parser and LLVM
         disassembler.
       '';
+
+      homepage = "https://lldb.llvm.org/";
       mainProgram = "lldb";
     };
   }
   // lib.optionalAttrs enableManpages {
     pname = "lldb-manpages";
-
-    ninjaFlags = [ "docs-lldb-man" ];
-
+    outputs = [ "out" ];
+    postPatch = null;
     propagatedBuildInputs = [ ];
+    doCheck = false;
 
     # manually install lldb man page
     installPhase = ''
@@ -204,12 +205,8 @@ stdenv.mkDerivation (
       install docs/man/lldb.1 -t $out/share/man/man1/
     '';
 
-    postPatch = null;
     postInstall = null;
-
-    outputs = [ "out" ];
-
-    doCheck = false;
+    ninjaFlags = [ "docs-lldb-man" ];
 
     meta = llvm_meta // {
       description = "man pages for LLDB ${version}";

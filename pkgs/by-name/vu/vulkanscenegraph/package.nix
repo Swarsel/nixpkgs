@@ -3,9 +3,9 @@
   stdenv,
   fetchFromGitHub,
   cmake,
-  pkg-config,
   glslang,
   libxcb,
+  pkg-config,
   vulkan-headers,
   vulkan-loader,
 }:

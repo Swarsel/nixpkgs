@@ -1,18 +1,18 @@
 {
-  gccStdenv,
   lib,
   coreutils,
-  openssl,
-  zlib,
-  sqlite,
-  version,
-  git-version,
-  src,
-  gambit-support,
   gambit-git-version,
-  gambit-stampYmd,
-  gambit-stampHms,
   gambit-params,
+  gambit-stampHms,
+  gambit-stampYmd,
+  gambit-support,
+  gccStdenv,
+  git-version,
+  openssl,
+  sqlite,
+  src,
+  version,
+  zlib,
 }:
 
 # We use Gambit, that works 10x better with GCC than Clang. See ../gambit/build.nix
@@ -21,21 +21,9 @@ let
 in
 
 stdenv.mkDerivation rec {
-  pname = "gerbil";
   inherit version;
   inherit src;
-
-  buildInputs_libraries = [
-    openssl
-    zlib
-    sqlite
-  ];
-
-  # TODO: either fix all of Gerbil's dependencies to provide static libraries,
-  # or give up and delete all tentative support for static libraries.
-  #buildInputs_staticLibraries = map makeStaticLibraries buildInputs_libraries;
-
-  buildInputs = buildInputs_libraries;
+  pname = "gerbil";
 
   postPatch = ''
     patchShebangs . ;
@@ -55,6 +43,11 @@ stdenv.mkDerivation rec {
     done
   '';
 
+  # TODO: either fix all of Gerbil's dependencies to provide static libraries,
+  # or give up and delete all tentative support for static libraries.
+  #buildInputs_staticLibraries = map makeStaticLibraries buildInputs_libraries;
+  buildInputs = buildInputs_libraries;
+
   ## TODO: make static compilation work.
   ## For that, get all the packages below to somehow expose static libraries,
   ## so we can offer users the option to statically link them into Gambit and/or Gerbil.
@@ -65,7 +58,6 @@ stdenv.mkDerivation rec {
   # ZLIB=${makeStaticLibraries zlib}/lib/libz.a
   # SQLITE=${makeStaticLibraries sqlite}/lib/sqlite.a # MISSING!
   # EOF
-
   configureFlags = [
     "--prefix=$out/gerbil"
     "--enable-zlib"
@@ -77,23 +69,6 @@ stdenv.mkDerivation rec {
   env.NIX_CFLAGS_COMPILE =
     # Required for legacy C code in source
     "-Wno-error=implicit-function-declaration";
-
-  configurePhase = ''
-    export CC=${gccStdenv.cc}/bin/${gccStdenv.cc.targetPrefix}gcc \
-           CXX=${gccStdenv.cc}/bin/${gccStdenv.cc.targetPrefix}g++ \
-           CPP=${gccStdenv.cc}/bin/${gccStdenv.cc.targetPrefix}cpp \
-           CXXCPP=${gccStdenv.cc}/bin/${gccStdenv.cc.targetPrefix}cpp \
-           LD=${gccStdenv.cc}/bin/${gccStdenv.cc.targetPrefix}ld \
-           XMKMF=${coreutils}/bin/false
-    unset CFLAGS LDFLAGS LIBS CPPFLAGS CXXFLAGS
-    ./configure ${builtins.concatStringsSep " " configureFlags}
-  '';
-
-  extraLdOptions = [
-    "-L${zlib}/lib"
-    "-L${openssl.out}/lib"
-    "-L${sqlite.out}/lib"
-  ];
 
   buildPhase = ''
     runHook preBuild
@@ -130,17 +105,40 @@ stdenv.mkDerivation rec {
     install_name_tool -id "$libgerbil" "$libgerbil"
   '';
 
+  buildInputs_libraries = [
+    openssl
+    zlib
+    sqlite
+  ];
+
+  configurePhase = ''
+    export CC=${gccStdenv.cc}/bin/${gccStdenv.cc.targetPrefix}gcc \
+           CXX=${gccStdenv.cc}/bin/${gccStdenv.cc.targetPrefix}g++ \
+           CPP=${gccStdenv.cc}/bin/${gccStdenv.cc.targetPrefix}cpp \
+           CXXCPP=${gccStdenv.cc}/bin/${gccStdenv.cc.targetPrefix}cpp \
+           LD=${gccStdenv.cc}/bin/${gccStdenv.cc.targetPrefix}ld \
+           XMKMF=${coreutils}/bin/false
+    unset CFLAGS LDFLAGS LIBS CPPFLAGS CXXFLAGS
+    ./configure ${builtins.concatStringsSep " " configureFlags}
+  '';
+
   dontStrip = true;
+
+  extraLdOptions = [
+    "-L${zlib}/lib"
+    "-L${openssl.out}/lib"
+    "-L${sqlite.out}/lib"
+  ];
+
+  outputsToInstall = [ "out" ];
 
   meta = {
     description = "Gerbil Scheme";
     homepage = "https://github.com/vyzo/gerbil";
     license = lib.licenses.lgpl21Only; # dual, also asl20, like Gambit
+    maintainers = with lib.maintainers; [ fare ];
     # NB regarding platforms: regularly tested on Linux and on macOS.
     # Please report success and/or failure to fare.
     platforms = lib.platforms.unix;
-    maintainers = with lib.maintainers; [ fare ];
   };
-
-  outputsToInstall = [ "out" ];
 }

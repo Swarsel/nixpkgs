@@ -1,25 +1,26 @@
 {
   lib,
-  buildPythonPackage,
-  fetchPypi,
-  setuptools,
-  msrestazure,
   azure-common,
   azure-mgmt-core,
   azure-mgmt-nspkg,
+  buildPythonPackage,
+  fetchPypi,
+  msrestazure,
+  setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "azure-mgmt-commerce";
   version = "6.0.0";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
-    extension = "zip";
     sha256 = "6f5447395503b2318f451d24f8021ee08db1cac44f1c3337ea690700419626b6";
+    extension = "zip";
   };
 
+  # has no tests
+  doCheck = false;
   build-system = [ setuptools ];
 
   dependencies = [
@@ -34,11 +35,9 @@ buildPythonPackage rec {
     sed -i "/azure-namespace-package/c\ " setup.cfg
   '';
 
-  pythonNamespaces = [ "azure.mgmt" ];
-
-  # has no tests
-  doCheck = false;
+  pyproject = true;
   pythonImportsCheck = [ "azure.mgmt.commerce" ];
+  pythonNamespaces = [ "azure.mgmt" ];
 
   meta = {
     description = "This is the Microsoft Azure Commerce Management Client Library";

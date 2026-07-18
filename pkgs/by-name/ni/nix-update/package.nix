@@ -1,18 +1,17 @@
 {
   lib,
-  callPackage,
   fetchFromGitHub,
+  callPackage,
   nix,
   nix-prefetch-git,
+  nix-update,
   nixpkgs-review,
   python3Packages,
-  nix-update,
 }:
 
 python3Packages.buildPythonApplication (finalAttrs: {
   pname = "nix-update";
   version = "1.16.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "Mic92";
@@ -20,6 +19,14 @@ python3Packages.buildPythonApplication (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-LT66e5NtAJRp0E8QXKeePdTCNpH+CMvJNF1ayzBr4rw=";
   };
+
+  checkPhase = ''
+    runHook preCheck
+
+    $out/bin/nix-update --help >/dev/null
+
+    runHook postCheck
+  '';
 
   build-system = [ python3Packages.setuptools ];
 
@@ -34,13 +41,7 @@ python3Packages.buildPythonApplication (finalAttrs: {
     ])
   ];
 
-  checkPhase = ''
-    runHook preCheck
-
-    $out/bin/nix-update --help >/dev/null
-
-    runHook postCheck
-  '';
+  pyproject = true;
 
   passthru = {
     nix-update-script = callPackage ./nix-update-script.nix { inherit nix-update; };
@@ -51,11 +52,13 @@ python3Packages.buildPythonApplication (finalAttrs: {
     homepage = "https://github.com/Mic92/nix-update/";
     changelog = "https://github.com/Mic92/nix-update/releases/tag/${finalAttrs.src.tag}";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       figsoda
       mdaniels5757
       mic92
     ];
+
     mainProgram = "nix-update";
   };
 })

@@ -2,13 +2,13 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  pkg-config,
+  freeglut,
   freetype,
-  libpng,
-  libjpeg,
   libGL,
   libGLU,
-  freeglut,
+  libjpeg,
+  libpng,
+  pkg-config,
 }:
 
 stdenv.mkDerivation rec {
@@ -53,8 +53,8 @@ stdenv.mkDerivation rec {
     homepage = "https://github.com/jtsiomb/fsnav";
     license = lib.licenses.gpl3Plus;
     maintainers = with lib.maintainers; [ aaravrav ];
-    mainProgram = "fsnav";
     platforms = with lib.platforms; linux;
+    mainProgram = "fsnav";
     broken = !stdenv.buildPlatform.canExecute stdenv.hostPlatform;
   };
 

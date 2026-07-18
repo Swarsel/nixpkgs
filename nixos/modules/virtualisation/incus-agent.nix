@@ -9,10 +9,6 @@ let
   cfg = config.virtualisation.incus.agent;
 in
 {
-  meta = {
-    teams = [ lib.teams.lxc ];
-  };
-
   options = {
     virtualisation.incus.agent.enable = lib.mkEnableOption "Incus agent";
   };
@@ -23,7 +19,6 @@ in
 
     systemd.services.incus-agent = {
       enable = true;
-      wantedBy = [ "multi-user.target" ];
 
       path = [
         pkgs.kmod
@@ -36,6 +31,11 @@ in
       # avoid killing nixos-rebuild switch when executed through incus exec
       restartIfChanged = false;
       stopIfChanged = false;
+      wantedBy = [ "multi-user.target" ];
     };
+  };
+
+  meta = {
+    teams = [ lib.teams.lxc ];
   };
 }

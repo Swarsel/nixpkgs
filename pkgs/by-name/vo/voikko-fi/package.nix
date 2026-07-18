@@ -1,10 +1,10 @@
 {
   lib,
   fetchFromGitHub,
-  stdenvNoCC,
-  python3,
   foma,
   libvoikko,
+  python3,
+  stdenvNoCC,
 }:
 stdenvNoCC.mkDerivation (finalAttrs: {
   pname = "voikko-fi";
@@ -17,21 +17,19 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     hash = "sha256-yYV8DHhILpcAG9gbEO67fdrX44Z2hOqkLbp9bBTSNuk=";
   };
 
-  sourceRoot = "${finalAttrs.src.name}/voikko-fi";
-
-  enableParallelBuilding = true;
-
-  installTargets = "vvfst-install DESTDIR=$(out)/share/voikko-fi";
-
   nativeBuildInputs = [
     python3
     foma
     libvoikko
   ];
 
+  enableParallelBuilding = true;
+  installTargets = "vvfst-install DESTDIR=$(out)/share/voikko-fi";
+  sourceRoot = "${finalAttrs.src.name}/voikko-fi";
+
   meta = {
-    homepage = "https://voikko.puimula.org";
     description = "Description of Finnish morphology written for libvoikko";
+    homepage = "https://voikko.puimula.org";
     license = lib.licenses.lgpl21Plus;
     maintainers = with lib.maintainers; [ lajp ];
     platforms = lib.platforms.unix;

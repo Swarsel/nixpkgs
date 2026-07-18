@@ -1,24 +1,13 @@
 {
   lib,
-  skawarePackages,
-  skalibs,
   execline,
+  skalibs,
+  skawarePackages,
 }:
 
 skawarePackages.buildPackage {
   pname = "s6";
   version = "2.15.0.0";
-  sha256 = "sha256-J9/3PWJihVQBM+B151iHCH9RF/1R3llQPvfSnpb2nkw=";
-
-  manpages = skawarePackages.buildManPages {
-    pname = "s6-man-pages";
-    version = "2.14.0.1.4";
-    sha256 = "sha256-c77NwS4x5L1nLmtWVz64izzanTfc0hohvFMOi77uMh4=";
-    description = "Port of the documentation for the s6 supervision suite to mdoc";
-    maintainers = [ lib.maintainers.sternenseemann ];
-  };
-
-  description = "skarnet.org's small & secure supervision software suite";
 
   # NOTE lib: cannot split lib from bin at the moment,
   # since some parts of lib depend on executables in bin.
@@ -55,5 +44,17 @@ skawarePackages.buildPackage {
     mv doc $doc/share/doc/s6/html
     mv examples $doc/share/doc/s6/examples
   '';
+
+  description = "skarnet.org's small & secure supervision software suite";
+
+  manpages = skawarePackages.buildManPages {
+    pname = "s6-man-pages";
+    version = "2.14.0.1.4";
+    description = "Port of the documentation for the s6 supervision suite to mdoc";
+    maintainers = [ lib.maintainers.sternenseemann ];
+    sha256 = "sha256-c77NwS4x5L1nLmtWVz64izzanTfc0hohvFMOi77uMh4=";
+  };
+
+  sha256 = "sha256-J9/3PWJihVQBM+B151iHCH9RF/1R3llQPvfSnpb2nkw=";
 
 }

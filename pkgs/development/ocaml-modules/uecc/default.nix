@@ -1,19 +1,17 @@
 {
   lib,
   fetchFromGitLab,
-  buildDunePackage,
-  ocaml,
-  bigstring,
   alcotest,
+  bigstring,
+  buildDunePackage,
   cstruct,
   hex,
+  ocaml,
 }:
 
 buildDunePackage rec {
   pname = "uecc";
   version = "0.4";
-
-  duneVersion = "3";
 
   src = fetchFromGitLab {
     owner = "nomadic-labs";
@@ -26,13 +24,15 @@ buildDunePackage rec {
     bigstring
   ];
 
+  doCheck = lib.versionAtLeast ocaml.version "4.08";
+
   checkInputs = [
     alcotest
     cstruct
     hex
   ];
 
-  doCheck = lib.versionAtLeast ocaml.version "4.08";
+  duneVersion = "3";
 
   meta = {
     description = "Bindings for ECDH and ECDSA for 8-bit, 32-bit, and 64-bit processors";

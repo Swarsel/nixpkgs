@@ -4,10 +4,10 @@
   charset-normalizer,
   fetchPypi,
   freetype,
-  pillow,
-  setuptools,
-  python,
   isPyPy,
+  pillow,
+  python,
+  setuptools,
 }:
 
 let
@@ -18,10 +18,6 @@ in
 buildPythonPackage rec {
   pname = "reportlab";
   version = "5.0.0";
-  pyproject = true;
-
-  # See https://bitbucket.org/pypy/compatibility/wiki/reportlab%20toolkit
-  disabled = isPyPy;
 
   src = fetchPypi {
     inherit pname version;
@@ -39,14 +35,7 @@ buildPythonPackage rec {
     rm tests/test_graphics_charts.py
   '';
 
-  build-system = [ setuptools ];
-
   buildInputs = [ ft ];
-
-  dependencies = [
-    charset-normalizer
-    pillow
-  ];
 
   checkPhase = ''
     runHook preCheck
@@ -56,10 +45,21 @@ buildPythonPackage rec {
     runHook postCheck
   '';
 
+  build-system = [ setuptools ];
+
+  dependencies = [
+    charset-normalizer
+    pillow
+  ];
+
+  # See https://bitbucket.org/pypy/compatibility/wiki/reportlab%20toolkit
+  disabled = isPyPy;
+  pyproject = true;
+
   meta = {
-    changelog = "https://hg.reportlab.com/hg-public/reportlab/file/tip/CHANGES.md";
     description = "Open Source Python library for generating PDFs and graphics";
     homepage = "https://www.reportlab.com/";
+    changelog = "https://hg.reportlab.com/hg-public/reportlab/file/tip/CHANGES.md";
     license = lib.licenses.bsd3;
     maintainers = [ ];
   };

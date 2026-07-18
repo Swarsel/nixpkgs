@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   poetry-core,
   pytestCheckHook,
 }:
@@ -9,7 +9,6 @@
 buildPythonPackage rec {
   pname = "apkinspector";
   version = "1.3.6";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "erev0s";
@@ -18,10 +17,9 @@ buildPythonPackage rec {
     hash = "sha256-xL4uUHYAn4V3cxqVb+XrIiOwK9az2VlYYTcJJt+9Cus=";
   };
 
-  build-system = [ poetry-core ];
-
   nativeCheckInputs = [ pytestCheckHook ];
-
+  build-system = [ poetry-core ];
+  pyproject = true;
   pythonImportsCheck = [ "apkInspector" ];
 
   meta = {

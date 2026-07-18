@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   poetry-core,
   protobuf,
   pytest-asyncio,
@@ -12,7 +12,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "aiobafi6";
   version = "0.10.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "jfroy";
@@ -21,6 +20,11 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-EXLMrZobSICAmWPREjx5D8boj/S/3AH5+lsWQlTCl1g=";
   };
 
+  nativeCheckInputs = [
+    pytest-asyncio
+    pytestCheckHook
+  ];
+
   build-system = [ poetry-core ];
 
   dependencies = [
@@ -28,11 +32,7 @@ buildPythonPackage (finalAttrs: {
     zeroconf
   ];
 
-  nativeCheckInputs = [
-    pytest-asyncio
-    pytestCheckHook
-  ];
-
+  pyproject = true;
   pythonImportsCheck = [ "aiobafi6" ];
 
   meta = {

@@ -1,56 +1,52 @@
 {
   lib,
   stdenv,
-  python,
-  buildPythonPackage,
   fetchFromGitHub,
-  fetchpatch,
-  symlinkJoin,
-  autoAddDriverRunpath,
-
-  # nativeBuildInputs
-  which,
-
-  # build-system
-  cmake,
-  grpcio-tools,
-  jinja2,
-  ninja,
-  packaging,
-  setuptools,
-  setuptools-scm,
-
-  # buildInputs
-  onednn,
-  numactl,
-  llvmPackages,
-
   # dependencies
   aioprometheus,
   amdsmi,
   anthropic,
+  autoAddDriverRunpath,
   bitsandbytes,
   blake3,
+  buildPythonPackage,
   cachetools,
   cbor2,
+  # build-system
+  cmake,
   compressed-tensors,
+  # cuda-only
+  cupy,
   datasets,
   depyf,
   einops,
   fastapi,
+  fetchpatch,
+  flashinfer,
   gguf,
   grpcio,
   grpcio-reflection,
+  grpcio-tools,
   ijson,
   importlib-metadata,
+  jinja2,
+  # optional-dependencies
+  # audio
+  librosa,
   llguidance,
+  llvmPackages,
   lm-format-enforcer,
   mcp,
   mistral-common,
   model-hosting-container-standards,
   msgspec,
+  ninja,
+  numactl,
   numba,
   numpy,
+  nvidia-ml-py,
+  # buildInputs
+  onednn,
   openai,
   openai-harmony,
   opencv-python-headless,
@@ -58,20 +54,29 @@
   opentelemetry-exporter-otlp,
   opentelemetry-sdk,
   outlines,
+  packaging,
   pandas,
   partial-json-parser,
   peft,
   prometheus-fastapi-instrumentator,
+  # linux-only
+  psutil,
   py-cpuinfo,
+  py-libnuma,
   pyarrow,
   pybase64,
   pydantic,
+  python,
   python-json-logger,
   python-multipart,
   pyzmq,
   ray,
   sentencepiece,
   setproctitle,
+  setuptools,
+  setuptools-scm,
+  soundfile,
+  symlinkJoin,
   tiktoken,
   timm,
   tokenizers,
@@ -80,29 +85,17 @@
   torchvision,
   transformers,
   uvicorn,
+  # nativeBuildInputs
+  which,
   xformers,
   xgrammar,
-  # linux-only
-  psutil,
-  py-libnuma,
-  # cuda-only
-  cupy,
-  flashinfer,
-  nvidia-ml-py,
-
-  # optional-dependencies
-  # audio
-  librosa,
-  soundfile,
-
+  cudaPackages ? { },
+  cudaSupport ? torch.cudaSupport,
+  gpuTargets ? [ ],
+  rocmPackages ? { },
+  rocmSupport ? torch.rocmSupport,
   # internal dependency - for overriding in overlays
   vllm-flash-attn ? null,
-
-  cudaSupport ? torch.cudaSupport,
-  cudaPackages ? { },
-  rocmSupport ? torch.rocmSupport,
-  rocmPackages ? { },
-  gpuTargets ? [ ],
 }:
 
 let
@@ -120,11 +113,11 @@ let
   # see CMakeLists.txt, grepping for CUTLASS_REVISION
   # https://github.com/vllm-project/vllm/blob/v${version}/CMakeLists.txt
   cutlass = fetchFromGitHub {
+    hash = "sha256-iP560D5Vwuj6wX1otJhwbvqe/X4mYVeKTpK533Wr5gY=";
     name = "cutlass-source";
     owner = "NVIDIA";
     repo = "cutlass";
     tag = "v4.2.1";
-    hash = "sha256-iP560D5Vwuj6wX1otJhwbvqe/X4mYVeKTpK533Wr5gY=";
   };
 
   # FlashMLA's Blackwell (SM100) kernels were developed against CUTLASS v3.9.0
@@ -135,10 +128,10 @@ let
   # See git submodule commit at:
   # https://github.com/vllm-project/FlashMLA/tree/${flashmla.src.rev}/csrc
   cutlass-flashmla = fetchFromGitHub {
+    hash = "sha256-dHQto08IwTDOIuFUp9jwm1MWkFi8v2YJ/UESrLuG71g=";
     owner = "NVIDIA";
     repo = "cutlass";
     rev = "147f5673d0c1c3dcf66f78d677fd647e4a020219";
-    hash = "sha256-dHQto08IwTDOIuFUp9jwm1MWkFi8v2YJ/UESrLuG71g=";
   };
 
   flashmla = stdenv.mkDerivation {
@@ -149,14 +142,12 @@ let
     # grep for GIT_TAG in the following file
     # https://github.com/vllm-project/vllm/blob/v${version}/cmake/external_projects/flashmla.cmake
     src = fetchFromGitHub {
-      name = "FlashMLA-source";
       owner = "vllm-project";
       repo = "FlashMLA";
       rev = "c2afa9cb93e674d5a9120a170a6da57b89267208";
       hash = "sha256-pKlwxV6G9iHag/jbu3bAyvYvnu5TbrQwUMFV0AlGC3s=";
+      name = "FlashMLA-source";
     };
-
-    dontConfigure = true;
 
     # flashmla normally relies on `git submodule update` to fetch cutlass
     buildPhase = ''
@@ -167,25 +158,27 @@ let
     installPhase = ''
       cp -rva . $out
     '';
+
+    dontConfigure = true;
   };
 
   # grep for DEFAULT_TRITON_KERNELS_TAG in the following file
   # https://github.com/vllm-project/vllm/blob/v${version}/cmake/external_projects/triton_kernels.cmake
   triton-kernels = fetchFromGitHub {
+    hash = "sha256-F6T0n37Lbs+B7UHNYzoIQHjNNv3TcMtoXjNrT8ZUlxY=";
     owner = "triton-lang";
     repo = "triton";
     tag = "v3.5.0";
-    hash = "sha256-F6T0n37Lbs+B7UHNYzoIQHjNNv3TcMtoXjNrT8ZUlxY=";
   };
 
   # grep for GIT_TAG in the following file
   # https://github.com/vllm-project/vllm/blob/v${version}/cmake/external_projects/qutlass.cmake
   qutlass = fetchFromGitHub {
+    hash = "sha256-aG4qd0vlwP+8gudfvHwhtXCFmBOJKQQTvcwahpEqC84=";
     name = "qutlass-source";
     owner = "IST-DASLab";
     repo = "qutlass";
     rev = "830d2c4537c7396e14a02a46fbddd18b5d107c65";
-    hash = "sha256-aG4qd0vlwP+8gudfvHwhtXCFmBOJKQQTvcwahpEqC84=";
   };
 
   vllm-flash-attn' = lib.defaultTo (stdenv.mkDerivation {
@@ -196,11 +189,11 @@ let
     # grep for GIT_TAG in the following file
     # https://github.com/vllm-project/vllm/blob/v${version}/cmake/external_projects/vllm_flash_attn.cmake
     src = fetchFromGitHub {
-      name = "flash-attention-source";
       owner = "vllm-project";
       repo = "flash-attention";
       rev = "188be16520ceefdc625fdf71365585d2ee348fe2";
       hash = "sha256-Osec+/IF3+UDtbIhDMBXzUeWJ7hDJNb5FpaVaziPSgM=";
+      name = "flash-attention-source";
     };
 
     patches = [
@@ -208,16 +201,14 @@ let
       # https://github.com/Dao-AILab/flash-attention/pull/1719
       # https://github.com/Dao-AILab/flash-attention/pull/1723
       (fetchpatch {
-        url = "https://github.com/Dao-AILab/flash-attention/commit/dad67c88d4b6122c69d0bed1cebded0cded71cea.patch";
         hash = "sha256-JSgXWItOp5KRpFbTQj/cZk+Tqez+4mEz5kmH5EUeQN4=";
+        url = "https://github.com/Dao-AILab/flash-attention/commit/dad67c88d4b6122c69d0bed1cebded0cded71cea.patch";
       })
       (fetchpatch {
-        url = "https://github.com/Dao-AILab/flash-attention/commit/e26dd28e487117ee3e6bc4908682f41f31e6f83a.patch";
         hash = "sha256-NkCEowXSi+tiWu74Qt+VPKKavx0H9JeteovSJKToK9A=";
+        url = "https://github.com/Dao-AILab/flash-attention/commit/e26dd28e487117ee3e6bc4908682f41f31e6f83a.patch";
       })
     ];
-
-    dontConfigure = true;
 
     # vllm-flash-attn normally relies on `git submodule update` to fetch cutlass and composable_kernel
     buildPhase = ''
@@ -232,6 +223,8 @@ let
     installPhase = ''
       cp -rva . $out
     '';
+
+    dontConfigure = true;
   }) vllm-flash-attn;
 
   cpuSupport = !cudaSupport && !rocmSupport;
@@ -336,7 +329,6 @@ in
 buildPythonPackage.override { stdenv = torch.stdenv; } (finalAttrs: {
   pname = "vllm";
   version = "0.16.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "vllm-project";
@@ -392,17 +384,6 @@ buildPythonPackage.override { stdenv = torch.stdenv; } (finalAttrs: {
     cudaPackages.autoAddCudaCompatRunpath
   ];
 
-  build-system = [
-    cmake
-    grpcio-tools
-    jinja2
-    ninja
-    packaging
-    setuptools
-    setuptools-scm
-    torch
-  ];
-
   buildInputs =
     lib.optionals cpuSupport [
       onednn
@@ -441,6 +422,61 @@ buildPythonPackage.override { stdenv = torch.stdenv; } (finalAttrs: {
     ++ lib.optionals stdenv.cc.isClang [
       llvmPackages.openmp
     ];
+
+  cmakeFlags = [
+  ]
+  ++ lib.optionals cudaSupport [
+    (lib.cmakeFeature "FETCHCONTENT_SOURCE_DIR_CUTLASS" "${lib.getDev cutlass}")
+    (lib.cmakeFeature "FLASH_MLA_SRC_DIR" "${lib.getDev flashmla}")
+    (lib.cmakeFeature "VLLM_FLASH_ATTN_SRC_DIR" "${lib.getDev vllm-flash-attn'}")
+    (lib.cmakeFeature "QUTLASS_SRC_DIR" "${lib.getDev qutlass}")
+    (lib.cmakeFeature "TORCH_CUDA_ARCH_LIST" "${gpuTargetString}")
+    (lib.cmakeFeature "CUTLASS_NVCC_ARCHS_ENABLED" "${cudaPackages.flags.cmakeCudaArchitecturesString}")
+    (lib.cmakeFeature "CUDA_TOOLKIT_ROOT_DIR" "${symlinkJoin {
+      name = "cuda-merged-${cudaPackages.cudaMajorMinorVersion}";
+      paths = builtins.concatMap getAllOutputs mergedCudaLibraries;
+    }}")
+    (lib.cmakeFeature "CAFFE2_USE_CUDNN" "ON")
+    (lib.cmakeFeature "CAFFE2_USE_CUFILE" "ON")
+    (lib.cmakeFeature "CUTLASS_ENABLE_CUBLAS" "ON")
+  ];
+
+  env =
+    lib.optionalAttrs cudaSupport {
+      CUDA_HOME = "${lib.getDev cudaPackages.cuda_nvcc}";
+      TRITON_KERNELS_SRC_DIR = "${lib.getDev triton-kernels}/python/triton_kernels/triton_kernels";
+      VLLM_TARGET_DEVICE = "cuda";
+    }
+    // lib.optionalAttrs rocmSupport {
+      CXXFLAGS = rocmExtraIncludeFlags;
+      HIPFLAGS = rocmExtraIncludeFlags;
+      PYTORCH_ROCM_ARCH = gpuTargetString;
+      # vLLM's CMake logic checks `ROCM_PATH` to decide whether HIP/ROCm is available.
+      ROCM_PATH = "${rocmPackages.clr}";
+      TRITON_KERNELS_SRC_DIR = "${lib.getDev triton-kernels}/python/triton_kernels/triton_kernels";
+      VLLM_TARGET_DEVICE = "rocm";
+    }
+    // lib.optionalAttrs cpuSupport {
+      FETCHCONTENT_SOURCE_DIR_ONEDNN = "${onednn.src}";
+      VLLM_TARGET_DEVICE = "cpu";
+    };
+
+  preConfigure = ''
+    # See: https://github.com/vllm-project/vllm/blob/v0.7.1/setup.py#L75-L109
+    # There's also NVCC_THREADS but Nix/Nixpkgs doesn't really have this concept.
+    export MAX_JOBS="$NIX_BUILD_CORES"
+  '';
+
+  build-system = [
+    cmake
+    grpcio-tools
+    jinja2
+    ninja
+    packaging
+    setuptools
+    setuptools-scm
+    torch
+  ];
 
   dependencies = [
     aioprometheus
@@ -517,6 +553,8 @@ buildPythonPackage.override { stdenv = torch.stdenv; } (finalAttrs: {
     timm
   ];
 
+  dontUseCmakeConfigure = true;
+
   optional-dependencies = {
     audio = [
       librosa
@@ -526,79 +564,37 @@ buildPythonPackage.override { stdenv = torch.stdenv; } (finalAttrs: {
     ++ mistral-common.optional-dependencies.audio;
   };
 
-  dontUseCmakeConfigure = true;
-  cmakeFlags = [
-  ]
-  ++ lib.optionals cudaSupport [
-    (lib.cmakeFeature "FETCHCONTENT_SOURCE_DIR_CUTLASS" "${lib.getDev cutlass}")
-    (lib.cmakeFeature "FLASH_MLA_SRC_DIR" "${lib.getDev flashmla}")
-    (lib.cmakeFeature "VLLM_FLASH_ATTN_SRC_DIR" "${lib.getDev vllm-flash-attn'}")
-    (lib.cmakeFeature "QUTLASS_SRC_DIR" "${lib.getDev qutlass}")
-    (lib.cmakeFeature "TORCH_CUDA_ARCH_LIST" "${gpuTargetString}")
-    (lib.cmakeFeature "CUTLASS_NVCC_ARCHS_ENABLED" "${cudaPackages.flags.cmakeCudaArchitecturesString}")
-    (lib.cmakeFeature "CUDA_TOOLKIT_ROOT_DIR" "${symlinkJoin {
-      name = "cuda-merged-${cudaPackages.cudaMajorMinorVersion}";
-      paths = builtins.concatMap getAllOutputs mergedCudaLibraries;
-    }}")
-    (lib.cmakeFeature "CAFFE2_USE_CUDNN" "ON")
-    (lib.cmakeFeature "CAFFE2_USE_CUFILE" "ON")
-    (lib.cmakeFeature "CUTLASS_ENABLE_CUBLAS" "ON")
-  ];
-
-  env =
-    lib.optionalAttrs cudaSupport {
-      VLLM_TARGET_DEVICE = "cuda";
-      CUDA_HOME = "${lib.getDev cudaPackages.cuda_nvcc}";
-      TRITON_KERNELS_SRC_DIR = "${lib.getDev triton-kernels}/python/triton_kernels/triton_kernels";
-    }
-    // lib.optionalAttrs rocmSupport {
-      VLLM_TARGET_DEVICE = "rocm";
-      PYTORCH_ROCM_ARCH = gpuTargetString;
-      # vLLM's CMake logic checks `ROCM_PATH` to decide whether HIP/ROCm is available.
-      ROCM_PATH = "${rocmPackages.clr}";
-      TRITON_KERNELS_SRC_DIR = "${lib.getDev triton-kernels}/python/triton_kernels/triton_kernels";
-      HIPFLAGS = rocmExtraIncludeFlags;
-      CXXFLAGS = rocmExtraIncludeFlags;
-    }
-    // lib.optionalAttrs cpuSupport {
-      VLLM_TARGET_DEVICE = "cpu";
-      FETCHCONTENT_SOURCE_DIR_ONEDNN = "${onednn.src}";
-    };
-
-  preConfigure = ''
-    # See: https://github.com/vllm-project/vllm/blob/v0.7.1/setup.py#L75-L109
-    # There's also NVCC_THREADS but Nix/Nixpkgs doesn't really have this concept.
-    export MAX_JOBS="$NIX_BUILD_CORES"
-  '';
-
+  pyproject = true;
+  pythonImportsCheck = [ "vllm" ];
   pythonRelaxDeps = true;
 
-  pythonImportsCheck = [ "vllm" ];
-
   passthru = {
-    # make internal dependency available to overlays
-    vllm-flash-attn = vllm-flash-attn';
     # updates the cutlass fetcher instead
     skipBulkUpdate = true;
+    # make internal dependency available to overlays
+    vllm-flash-attn = vllm-flash-attn';
   };
 
   meta = {
     description = "High-throughput and memory-efficient inference and serving engine for LLMs";
-    changelog = "https://github.com/vllm-project/vllm/releases/tag/${finalAttrs.src.tag}";
     homepage = "https://github.com/vllm-project/vllm";
+    changelog = "https://github.com/vllm-project/vllm/releases/tag/${finalAttrs.src.tag}";
     license = lib.licenses.asl20;
+
     maintainers = with lib.maintainers; [
       happysalada
       lach
       daniel-fahey
       LunNova # esp. for ROCm
     ];
+
     badPlatforms = [
       # CMake Error at cmake/cpu_extension.cmake:188 (message):
       #   vLLM CPU backend requires AVX512, AVX2, Power9+ ISA, S390X ISA, ARMv8 or
       #   RISC-V support.
       "aarch64-darwin"
     ];
+
     knownVulnerabilities = [
       "CVE-2026-25960"
       "CVE-2026-27893"

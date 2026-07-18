@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   hatchling,
   pytestCheckHook,
 }:
@@ -9,7 +9,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "subprocess4";
   version = "0.1.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "JasonGross";
@@ -18,15 +17,17 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-On0mUc5DLktlaVSK/7VcEKRG1dnmYHNRSe149BnoIAk=";
   };
 
+  nativeCheckInputs = [ pytestCheckHook ];
+
   build-system = [
     hatchling
   ];
 
+  pyproject = true;
+
   pythonImportsCheck = [
     "subprocess4"
   ];
-
-  nativeCheckInputs = [ pytestCheckHook ];
 
   meta = {
     description = "Python subprocess wrapper using os.wait4 to get resource usage";

@@ -1,24 +1,24 @@
 {
   lib,
   stdenv,
-  llvm_meta,
-  release_version,
-  monorepoSrc ? null,
-  src ? null,
-  runCommand,
   cmake,
+  fetchpatch,
+  fixDarwinDylibNames,
+  freebsd,
+  libunwind,
+  llvm_meta,
   lndir,
   ninja,
   python3,
-  fixDarwinDylibNames,
-  version,
-  freebsd,
-  cxxabi ? if stdenv.hostPlatform.isFreeBSD then freebsd.libcxxrt else null,
-  libunwind,
-  enableShared ? stdenv.hostPlatform.hasSharedLibraries,
-  devExtraCmakeFlags ? [ ],
+  release_version,
+  runCommand,
   substitute,
-  fetchpatch,
+  version,
+  cxxabi ? if stdenv.hostPlatform.isFreeBSD then freebsd.libcxxrt else null,
+  devExtraCmakeFlags ? [ ],
+  enableShared ? stdenv.hostPlatform.hasSharedLibraries,
+  monorepoSrc ? null,
+  src ? null,
 }:
 
 # external cxxabi is not supported on Darwin as the build will not link libcxx
@@ -107,8 +107,8 @@ let
 in
 
 stdenv.mkDerivation (finalAttrs: {
-  pname = "libcxx";
   inherit version cmakeFlags;
+  pname = "libcxx";
 
   src =
     if monorepoSrc != null then
@@ -139,8 +139,9 @@ stdenv.mkDerivation (finalAttrs: {
     "dev"
   ];
 
-  preConfigure = lib.optionalString stdenv.hostPlatform.isMusl ''
-    patchShebangs utils/cat_files.py
+  # TODO: Possibly move back to `sourceRoot` on `staging`?
+  postPatch = ''
+    cd runtimes
   '';
 
   nativeBuildInputs = [
@@ -158,9 +159,8 @@ stdenv.mkDerivation (finalAttrs: {
     libunwind
   ];
 
-  # TODO: Possibly move back to `sourceRoot` on `staging`?
-  postPatch = ''
-    cd runtimes
+  preConfigure = lib.optionalString stdenv.hostPlatform.isMusl ''
+    patchShebangs utils/cat_files.py
   '';
 
   # libc++.so is a linker script which expands to multiple libraries,
@@ -202,12 +202,15 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   meta = llvm_meta // {
-    homepage = "https://libcxx.llvm.org/";
     description = "C++ standard library";
+
     longDescription = ''
       libc++ is an implementation of the C++ standard library, targeting C++11,
       C++14 and above.
     '';
+
+    homepage = "https://libcxx.llvm.org/";
+
     # "All of the code in libc++ is dual licensed under the MIT license and the
     # UIUC License (a BSD-like license)":
     license = with lib.licenses; [

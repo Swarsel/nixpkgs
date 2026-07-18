@@ -1,14 +1,17 @@
 {
+  frei0r,
+  gst_all_1,
+  kirigami-addons,
   mkKdeDerivation,
   pkg-config,
-  kirigami-addons,
-  gst_all_1,
-  frei0r,
 }:
 mkKdeDerivation {
   pname = "kamoso";
 
-  extraNativeBuildInputs = [ pkg-config ];
+  preFixup = ''
+    qtWrapperArgs+=(--prefix GST_PLUGIN_SYSTEM_PATH_1_0 : "$GST_PLUGIN_SYSTEM_PATH_1_0")
+  '';
+
   extraBuildInputs = [
     kirigami-addons
     gst_all_1.gst-plugins-base
@@ -16,9 +19,6 @@ mkKdeDerivation {
     gst_all_1.gst-plugins-bad
   ];
 
+  extraNativeBuildInputs = [ pkg-config ];
   qtWrapperArgs = [ "--set FREI0R_PATH ${frei0r}/lib/frei0r-1" ];
-
-  preFixup = ''
-    qtWrapperArgs+=(--prefix GST_PLUGIN_SYSTEM_PATH_1_0 : "$GST_PLUGIN_SYSTEM_PATH_1_0")
-  '';
 }

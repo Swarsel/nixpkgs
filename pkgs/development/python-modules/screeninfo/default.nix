@@ -1,21 +1,20 @@
 {
-  stdenv,
   lib,
-  buildPythonPackage,
+  stdenv,
   fetchFromGitHub,
+  buildPythonPackage,
+  cython,
   libx11,
   libxinerama,
   libxrandr,
   poetry-core,
   pyobjc-framework-Cocoa,
-  cython,
   pytestCheckHook,
 }:
 
 buildPythonPackage rec {
   pname = "screeninfo";
   version = "0.8.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "rr-";
@@ -23,13 +22,6 @@ buildPythonPackage rec {
     tag = version;
     hash = "sha256-TEy4wff0eRRkX98yK9054d33Tm6G6qWrd9Iv+ITcFmA=";
   };
-
-  build-system = [ poetry-core ];
-
-  dependencies = lib.optionals (stdenv.hostPlatform.isDarwin) [
-    pyobjc-framework-Cocoa
-    cython
-  ];
 
   postPatch = lib.optionalString (stdenv.hostPlatform.isLinux) ''
     substituteInPlace screeninfo/enumerators/xinerama.py \
@@ -41,12 +33,19 @@ buildPythonPackage rec {
   '';
 
   nativeCheckInputs = [ pytestCheckHook ];
+  build-system = [ poetry-core ];
+
+  dependencies = lib.optionals (stdenv.hostPlatform.isDarwin) [
+    pyobjc-framework-Cocoa
+    cython
+  ];
 
   disabledTestPaths = [
     # We don't have a screen
     "tests/test_screeninfo.py"
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "screeninfo" ];
 
   meta = {

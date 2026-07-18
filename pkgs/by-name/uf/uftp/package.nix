@@ -14,21 +14,21 @@ stdenv.mkDerivation (finalAttrs: {
     sha256 = "sha256-y4ZowZsfELxjoW/6iT4gXcPshjYQN9R32AAyYOvEAIA=";
   };
 
-  buildInputs = [ openssl ];
-
   outputs = [
     "out"
     "man"
   ];
 
-  patchPhase = ''
-    substituteInPlace makefile --replace gcc cc
-  '';
+  buildInputs = [ openssl ];
 
   installPhase = ''
     mkdir -p $out/bin $man/share/man/man1
     cp {uftp,uftpd,uftp_keymgt,uftpproxyd} $out/bin/
     cp {uftp.1,uftpd.1,uftp_keymgt.1,uftpproxyd.1} $man/share/man/man1
+  '';
+
+  patchPhase = ''
+    substituteInPlace makefile --replace gcc cc
   '';
 
   meta = {

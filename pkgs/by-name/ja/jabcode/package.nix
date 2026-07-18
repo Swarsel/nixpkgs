@@ -1,12 +1,12 @@
 {
+  lib,
   stdenv,
   fetchFromGitHub,
-  lib,
-  subproject ? "library", # one of "library", "reader" or  "writer"
-  zlib,
+  jabcode,
   libpng,
   libtiff,
-  jabcode,
+  zlib,
+  subproject ? "library", # one of "library", "reader" or  "writer"
 }:
 let
   subdir = lib.getAttr subproject {
@@ -18,19 +18,13 @@ in
 stdenv.mkDerivation {
   pname = "jabcode-${subproject}";
   version = "unstable-2022-06-17";
+
   src = fetchFromGitHub {
-    repo = "jabcode";
     owner = "jabcode";
+    repo = "jabcode";
     rev = "ee0e4c88b9f3c1da46d6f679ee8b69c547907c20";
     hash = "sha256-GjRkDWefQFdT4i9hRcQhYsY4beMUIXxy38I5lsQytyA=";
   };
-
-  nativeBuildInputs = [
-    zlib
-    libpng
-    libtiff
-  ]
-  ++ lib.optionals (subproject != "library") [ jabcode ];
 
   postPatch = ''
     substituteInPlace src/jabcode/Makefile src/jabcodeReader/Makefile src/jabcodeWriter/Makefile \
@@ -38,6 +32,13 @@ stdenv.mkDerivation {
     # remove bundled library binaries to force using system libraries
     rm -rf src/jabcode/lib
   '';
+
+  nativeBuildInputs = [
+    zlib
+    libpng
+    libtiff
+  ]
+  ++ lib.optionals (subproject != "library") [ jabcode ];
 
   preConfigure = "cd src/${subdir}";
 

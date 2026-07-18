@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   nix-update-script,
   versionCheckHook,
 }:
@@ -15,18 +15,11 @@ buildGoModule (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-EVIT6au5B3wzb5xTc2o/sY7p3+tT5lWjlzQX5HdQNkA=";
   };
-  vendorHash = null;
 
+  vendorHash = null;
   # upstream disable CGO in release build
   # https://github.com/crazy-max/diun/blob/76c0fe99212adc58d6a3433bbcde1ffa9fb879c4/Dockerfile#L11
   env.CGO_ENABLED = 0;
-
-  ldflags = [
-    "-s"
-    "-w"
-    "-X"
-    "main.version=${finalAttrs.version}"
-  ];
 
   checkFlags =
     let
@@ -44,14 +37,23 @@ buildGoModule (finalAttrs: {
       ];
     in
     [ "-skip=^${builtins.concatStringsSep "$|^" skippedTests}$" ];
-  nativeInstallCheckInputs = [
-    versionCheckHook
-  ];
-  doInstallCheck = true;
 
   postInstall = ''
     mv $out/bin/cmd $out/bin/diun
   '';
+
+  doInstallCheck = true;
+
+  nativeInstallCheckInputs = [
+    versionCheckHook
+  ];
+
+  ldflags = [
+    "-s"
+    "-w"
+    "-X"
+    "main.version=${finalAttrs.version}"
+  ];
 
   passthru.updateScript = nix-update-script { };
 
@@ -60,8 +62,8 @@ buildGoModule (finalAttrs: {
     homepage = "https://crazymax.dev/diun";
     changelog = "https://crazymax.dev/diun/changelog";
     license = lib.licenses.mit;
-    mainProgram = "diun";
     maintainers = with lib.maintainers; [ Sped0n ];
     platforms = lib.platforms.unix;
+    mainProgram = "diun";
   };
 })

@@ -13,16 +13,15 @@
 buildPythonPackage (finalAttrs: {
   pname = "alibabacloud-tea-openapi";
   version = "0.4.4";
-  pyproject = true;
 
   src = fetchPypi {
-    pname = "alibabacloud_tea_openapi";
     inherit (finalAttrs) version;
     hash = "sha256-GwkXvAPNSUF9pklF6ScxcW1T4uuHB7I19U5Ft0cyIc4=";
+    pname = "alibabacloud_tea_openapi";
   };
 
-  pythonRelaxDeps = [ "cryptography" ];
-
+  # Module has only tests in the untagged upstream repo
+  doCheck = false;
   build-system = [ setuptools ];
 
   dependencies = [
@@ -33,10 +32,9 @@ buildPythonPackage (finalAttrs: {
     darabonba-core
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "Tea" ];
-
-  # Module has only tests in the untagged upstream repo
-  doCheck = false;
+  pythonRelaxDeps = [ "cryptography" ];
 
   meta = {
     description = "Aliyun Tea OpenAPI Library for Python";

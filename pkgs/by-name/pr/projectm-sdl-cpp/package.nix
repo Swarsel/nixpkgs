@@ -2,14 +2,14 @@
   lib,
   stdenv,
   fetchFromGitHub,
+  SDL2,
   cmake,
-  libprojectm,
   libGL,
+  libprojectm,
   libx11,
   poco,
-  utf8proc,
-  SDL2,
   unstableGitUpdater,
+  utf8proc,
 }:
 
 stdenv.mkDerivation {
@@ -32,10 +32,7 @@ stdenv.mkDerivation {
       --replace-fail "SDL2::SDL2main" ""
   '';
 
-  cmakeFlags = [
-    # Doesn't seem to be present in the source tree, so the installation fails if enabled
-    (lib.cmakeBool "ENABLE_DESKTOP_ICON" false)
-  ];
+  strictDeps = true;
 
   nativeBuildInputs = [
     cmake
@@ -50,11 +47,13 @@ stdenv.mkDerivation {
     SDL2
   ];
 
+  cmakeFlags = [
+    # Doesn't seem to be present in the source tree, so the installation fails if enabled
+    (lib.cmakeBool "ENABLE_DESKTOP_ICON" false)
+  ];
+
   # poco 1.14 requires c++17
   env.NIX_CFLAGS_COMPILE = toString [ "-std=gnu++17" ];
-
-  strictDeps = true;
-
   passthru.updateScript = unstableGitUpdater { };
 
   meta = {
@@ -62,8 +61,8 @@ stdenv.mkDerivation {
     homepage = "https://github.com/projectM-visualizer/frontend-sdl-cpp";
     license = lib.licenses.gpl3Only;
     maintainers = with lib.maintainers; [ fgaz ];
-    mainProgram = "projectMSDL";
     platforms = lib.platforms.all;
+    mainProgram = "projectMSDL";
     broken = stdenv.hostPlatform.isDarwin; # TODO build probably needs some fixing
   };
 }

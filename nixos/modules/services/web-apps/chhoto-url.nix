@@ -20,23 +20,136 @@ let
 in
 
 {
-  meta.maintainers = with lib.maintainers; [ defelo ];
-
   options.services.chhoto-url = {
     enable = lib.mkEnableOption "Chhoto URL";
-
     package = lib.mkPackageOption pkgs "chhoto-url" { };
+
+    environmentFiles = lib.mkOption {
+      default = [ ];
+
+      description = ''
+        Files to load environment variables from in addition to [](#opt-services.chhoto-url.settings).
+        This is useful to avoid putting secrets into the nix store.
+        See <https://github.com/SinTan1729/chhoto-url/blob/main/docs/INSTALLATION.md#configuration-options> for a list of options.
+      '';
+
+      example = [ "/run/secrets/chhoto-url.env" ];
+      type = lib.types.listOf lib.types.path;
+    };
 
     settings = lib.mkOption {
       description = ''
         Configuration of Chhoto URL.
         See <https://github.com/SinTan1729/chhoto-url/blob/main/docs/INSTALLATION.md#configuration-options> for a list of options.
       '';
+
       example = {
         port = 4567;
       };
 
       type = lib.types.submodule {
+        options = {
+          allow_capital_letters = lib.mkOption {
+            default = false;
+            description = "Whether to allow capital letters in slugs.";
+            type = lib.types.bool;
+          };
+
+          cache_control_header = lib.mkOption {
+            default = null;
+            description = "The Cache-Control header to send.";
+            example = "no-cache, private";
+            type = lib.types.nullOr lib.types.str;
+          };
+
+          custom_landing_directory = lib.mkOption {
+            default = null;
+            description = "The path of a directory which contains a custom landing page.";
+            type = lib.types.nullOr lib.types.path;
+          };
+
+          db_url = lib.mkOption {
+            default = "/var/lib/chhoto-url/urls.sqlite";
+            description = "The path of the sqlite database.";
+            type = lib.types.path;
+          };
+
+          disable_frontend = lib.mkOption {
+            default = false;
+            description = "Whether to disable the frontend.";
+            type = lib.types.bool;
+          };
+
+          hash_algorithm = lib.mkOption {
+            default = null;
+
+            description = ''
+              The hash algorithm to use for passwords and API keys.
+              Set to `null` if you want to provide these secrets as plaintext.
+            '';
+
+            type = lib.types.nullOr (lib.types.enum [ "Argon2" ]);
+          };
+
+          port = lib.mkOption {
+            description = "The port to listen on.";
+            example = 4567;
+            type = lib.types.port;
+          };
+
+          public_mode = lib.mkOption {
+            apply = x: if x then "Enable" else "Disable";
+            default = false;
+            description = "Whether to enable public mode.";
+            type = lib.types.bool;
+          };
+
+          public_mode_expiry_delay = lib.mkOption {
+            default = null;
+            description = "The maximum expiry delay in seconds to force in public mode.";
+            example = 3600;
+            type = lib.types.nullOr lib.types.ints.unsigned;
+          };
+
+          redirect_method = lib.mkOption {
+            default = "PERMANENT";
+            description = "The redirect method to use.";
+
+            type = lib.types.enum [
+              "TEMPORARY"
+              "PERMANENT"
+            ];
+          };
+
+          site_url = lib.mkOption {
+            default = null;
+            description = "The URL under which Chhoto URL is externally reachable.";
+            type = lib.types.nullOr lib.types.str;
+          };
+
+          slug_length = lib.mkOption {
+            default = 8;
+            description = "The length of auto-generated slugs.";
+            type = lib.types.addCheck lib.types.int (x: x >= 4);
+          };
+
+          slug_style = lib.mkOption {
+            default = "Pair";
+            description = "The slug style to use for auto-generated URLs.";
+
+            type = lib.types.enum [
+              "Pair"
+              "UID"
+            ];
+          };
+
+          try_longer_slugs = lib.mkOption {
+            default = false;
+            description = "Whether to try a longer UID upon collision.";
+            type = lib.types.bool;
+          };
+        };
+
         freeformType =
           with lib.types;
           attrsOf (oneOf [
@@ -44,138 +157,23 @@ in
             int
             bool
           ]);
-
-        options = {
-          db_url = lib.mkOption {
-            type = lib.types.path;
-            description = "The path of the sqlite database.";
-            default = "/var/lib/chhoto-url/urls.sqlite";
-          };
-
-          port = lib.mkOption {
-            type = lib.types.port;
-            description = "The port to listen on.";
-            example = 4567;
-          };
-
-          cache_control_header = lib.mkOption {
-            type = lib.types.nullOr lib.types.str;
-            description = "The Cache-Control header to send.";
-            default = null;
-            example = "no-cache, private";
-          };
-
-          disable_frontend = lib.mkOption {
-            type = lib.types.bool;
-            description = "Whether to disable the frontend.";
-            default = false;
-          };
-
-          public_mode = lib.mkOption {
-            type = lib.types.bool;
-            description = "Whether to enable public mode.";
-            default = false;
-            apply = x: if x then "Enable" else "Disable";
-          };
-
-          public_mode_expiry_delay = lib.mkOption {
-            type = lib.types.nullOr lib.types.ints.unsigned;
-            description = "The maximum expiry delay in seconds to force in public mode.";
-            default = null;
-            example = 3600;
-          };
-
-          redirect_method = lib.mkOption {
-            type = lib.types.enum [
-              "TEMPORARY"
-              "PERMANENT"
-            ];
-            description = "The redirect method to use.";
-            default = "PERMANENT";
-          };
-
-          hash_algorithm = lib.mkOption {
-            type = lib.types.nullOr (lib.types.enum [ "Argon2" ]);
-            description = ''
-              The hash algorithm to use for passwords and API keys.
-              Set to `null` if you want to provide these secrets as plaintext.
-            '';
-            default = null;
-          };
-
-          site_url = lib.mkOption {
-            type = lib.types.nullOr lib.types.str;
-            description = "The URL under which Chhoto URL is externally reachable.";
-            default = null;
-          };
-
-          slug_style = lib.mkOption {
-            type = lib.types.enum [
-              "Pair"
-              "UID"
-            ];
-            description = "The slug style to use for auto-generated URLs.";
-            default = "Pair";
-          };
-
-          slug_length = lib.mkOption {
-            type = lib.types.addCheck lib.types.int (x: x >= 4);
-            description = "The length of auto-generated slugs.";
-            default = 8;
-          };
-
-          try_longer_slugs = lib.mkOption {
-            type = lib.types.bool;
-            description = "Whether to try a longer UID upon collision.";
-            default = false;
-          };
-
-          allow_capital_letters = lib.mkOption {
-            type = lib.types.bool;
-            description = "Whether to allow capital letters in slugs.";
-            default = false;
-          };
-
-          custom_landing_directory = lib.mkOption {
-            type = lib.types.nullOr lib.types.path;
-            description = "The path of a directory which contains a custom landing page.";
-            default = null;
-          };
-        };
       };
-    };
-
-    environmentFiles = lib.mkOption {
-      type = lib.types.listOf lib.types.path;
-      default = [ ];
-      example = [ "/run/secrets/chhoto-url.env" ];
-      description = ''
-        Files to load environment variables from in addition to [](#opt-services.chhoto-url.settings).
-        This is useful to avoid putting secrets into the nix store.
-        See <https://github.com/SinTan1729/chhoto-url/blob/main/docs/INSTALLATION.md#configuration-options> for a list of options.
-      '';
     };
   };
 
   config = lib.mkIf cfg.enable {
     systemd.services.chhoto-url = {
-      wantedBy = [ "multi-user.target" ];
-
       inherit environment;
 
       serviceConfig = {
-        User = "chhoto-url";
-        Group = "chhoto-url";
-        DynamicUser = true;
-        StateDirectory = "chhoto-url";
-        EnvironmentFile = cfg.environmentFiles;
-
-        ExecStart = lib.getExe cfg.package;
-
         # hardening
         AmbientCapabilities = "";
         CapabilityBoundingSet = [ "" ];
         DevicePolicy = "closed";
+        DynamicUser = true;
+        EnvironmentFile = cfg.environmentFiles;
+        ExecStart = lib.getExe cfg.package;
+        Group = "chhoto-url";
         LockPersonality = true;
         MemoryDenyWriteExecute = true;
         NoNewPrivileges = true;
@@ -199,14 +197,22 @@ in
         RestrictSUIDSGID = true;
         SocketBindAllow = "tcp:${toString cfg.settings.port}";
         SocketBindDeny = "any";
+        StateDirectory = "chhoto-url";
         SystemCallArchitectures = "native";
+
         SystemCallFilter = [
           "@system-service"
           "~@privileged"
           "~@resources"
         ];
+
         UMask = "0077";
+        User = "chhoto-url";
       };
+
+      wantedBy = [ "multi-user.target" ];
     };
   };
+
+  meta.maintainers = with lib.maintainers; [ defelo ];
 }

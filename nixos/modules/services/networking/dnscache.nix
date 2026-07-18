@@ -42,49 +42,56 @@ in
 
       enable = lib.mkOption {
         default = false;
-        type = lib.types.bool;
         description = "Whether to run the dnscache caching dns server.";
-      };
-
-      ip = lib.mkOption {
-        default = "0.0.0.0";
-        type = lib.types.str;
-        description = "IP address on which to listen for connections.";
+        type = lib.types.bool;
       };
 
       clientIps = lib.mkOption {
         default = [ "127.0.0.1" ];
-        type = lib.types.listOf lib.types.str;
         description = "Client IP addresses (or prefixes) from which to accept connections.";
+
         example = [
           "192.168"
           "172.23.75.82"
         ];
+
+        type = lib.types.listOf lib.types.str;
       };
 
       domainServers = lib.mkOption {
         default = { };
-        type = lib.types.attrsOf (lib.types.listOf lib.types.str);
+
         description = ''
           Table of {hostname: server} pairs to use as authoritative servers for hosts (and subhosts).
           If entry for @ is not specified predefined list of root servers is used.
         '';
+
         example = lib.literalExpression ''
           {
             "@" = ["8.8.8.8" "8.8.4.4"];
             "example.com" = ["192.168.100.100"];
           }
         '';
+
+        type = lib.types.attrsOf (lib.types.listOf lib.types.str);
       };
 
       forwardOnly = lib.mkOption {
         default = false;
-        type = lib.types.bool;
+
         description = ''
           Whether to treat root servers (for @) as caching
           servers, requesting addresses the same way a client does. This is
           needed if you want to use e.g. Google DNS as your upstream DNS.
         '';
+
+        type = lib.types.bool;
+      };
+
+      ip = lib.mkOption {
+        default = "0.0.0.0";
+        description = "IP address on which to listen for connections.";
+        type = lib.types.str;
       };
 
     };
@@ -94,31 +101,37 @@ in
 
   config = lib.mkIf config.services.dnscache.enable {
     environment.systemPackages = [ pkgs.djbdns ];
-    users.users.dnscache = {
-      isSystemUser = true;
-      group = "dnscache";
-    };
-    users.groups.dnscache = { };
 
     systemd.services.dnscache = {
       description = "djbdns dnscache server";
-      wantedBy = [ "multi-user.target" ];
+
       path = with pkgs; [
         bash
         daemontools
         djbdns
       ];
+
       preStart = ''
         rm -rf /var/lib/dnscache
         dnscache-conf dnscache dnscache /var/lib/dnscache ${config.services.dnscache.ip}
         rm -rf /var/lib/dnscache/root
         ln -sf ${dnscache-root} /var/lib/dnscache/root
       '';
+
       script = ''
         cd /var/lib/dnscache/
         ${lib.optionalString cfg.forwardOnly "export FORWARDONLY=1"}
         exec ./run
       '';
+
+      wantedBy = [ "multi-user.target" ];
+    };
+
+    users.groups.dnscache = { };
+
+    users.users.dnscache = {
+      group = "dnscache";
+      isSystemUser = true;
     };
   };
 }

@@ -1,10 +1,10 @@
 {
   lib,
+  fetchFromGitHub,
   authres,
   buildPythonPackage,
   dkimpy,
   dnspython,
-  fetchFromGitHub,
   publicsuffix2,
   pytestCheckHook,
   setuptools,
@@ -13,7 +13,6 @@
 buildPythonPackage rec {
   pname = "authheaders";
   version = "0.16.3";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "ValiMail";
@@ -22,6 +21,7 @@ buildPythonPackage rec {
     hash = "sha256-BFMZpSJ4qCEL42xTiM/D5dkatxohiCrOWAkNZHFUhac=";
   };
 
+  nativeCheckInputs = [ pytestCheckHook ];
   build-system = [ setuptools ];
 
   dependencies = [
@@ -32,14 +32,13 @@ buildPythonPackage rec {
     setuptools
   ];
 
-  nativeCheckInputs = [ pytestCheckHook ];
-
-  pythonImportsCheck = [ "authheaders" ];
-
   disabledTests = [
     # Test fails with timeout even if the resolv.conf hack is present
     "test_authenticate_dmarc_psdsub"
   ];
+
+  pyproject = true;
+  pythonImportsCheck = [ "authheaders" ];
 
   meta = {
     description = "Python library for the generation of email authentication headers";

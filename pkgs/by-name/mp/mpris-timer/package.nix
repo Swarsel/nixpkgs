@@ -1,8 +1,8 @@
 {
   lib,
+  fetchFromGitHub,
   alsa-lib,
   buildGoModule,
-  fetchFromGitHub,
   glib,
   gobject-introspection,
   gtk4,
@@ -23,8 +23,6 @@ buildGoModule (finalAttrs: {
     hash = "sha256-JuOBLm7+/zOSNhH+sBqvUQV0+AhTAmr+UxhPFtt0NU8=";
   };
 
-  vendorHash = "sha256-Htni2cMc1vYewVL8oOXL2gPS4h+S3d5y4i5yAZdqFJo=";
-
   nativeBuildInputs = [
     pkg-config
     glib
@@ -38,12 +36,7 @@ buildGoModule (finalAttrs: {
     libadwaita
   ];
 
-  ldflags = [
-    "-s"
-    "-w"
-  ];
-
-  tags = [ "wayland" ];
+  vendorHash = "sha256-Htni2cMc1vYewVL8oOXL2gPS4h+S3d5y4i5yAZdqFJo=";
 
   postInstall = ''
     mv $out/bin/{cmd,mpris-timer}
@@ -54,17 +47,25 @@ buildGoModule (finalAttrs: {
     glib-compile-schemas $out/share/glib-2.0/schemas
   '';
 
+  ldflags = [
+    "-s"
+    "-w"
+  ];
+
+  tags = [ "wayland" ];
   passthru.updateScript = nix-update-script { };
 
   meta = {
     description = "Timer app with seamless GNOME integration";
     homepage = "https://github.com/efogdev/mpris-timer";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       stunkymonkey
       getchoo
     ];
-    mainProgram = "mpris-timer";
+
     platforms = lib.platforms.linux; # Always uses ALSA
+    mainProgram = "mpris-timer";
   };
 })

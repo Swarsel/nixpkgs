@@ -1,11 +1,11 @@
 {
   lib,
+  fetchFromGitHub,
   aiohttp,
   buildPythonPackage,
   clarifai-grpc,
   clarifai-protocol,
   click,
-  fetchFromGitHub,
   fsspec,
   huggingface-hub,
   inquirerpy,
@@ -32,7 +32,6 @@
 buildPythonPackage rec {
   pname = "clarifai";
   version = "12.1.4";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "Clarifai";
@@ -41,14 +40,12 @@ buildPythonPackage rec {
     hash = "sha256-+iIOAji6xDyGTZTE/DgRguYhgWYM1FS8+SIlPcmNpNo=";
   };
 
-  pythonRelaxDeps = [
-    "clarifai-protocol"
-    "click"
-    "fsspec"
-    "psutil"
-    "ruff"
-    "schema"
-    "uv"
+  nativeCheckInputs = [
+    pkgs.gitMinimal
+    huggingface-hub
+    pytest-asyncio
+    pytestCheckHook
+    writableTmpDirAsHomeHook
   ];
 
   build-system = [ setuptools ];
@@ -74,25 +71,6 @@ buildPythonPackage rec {
     uv
   ];
 
-  optional-dependencies = {
-    all = [ pycocotools ];
-  };
-
-  nativeCheckInputs = [
-    pkgs.gitMinimal
-    huggingface-hub
-    pytest-asyncio
-    pytestCheckHook
-    writableTmpDirAsHomeHook
-  ];
-
-  disabledTests = [
-    # Test requires network access and API key
-    "test_export_workflow_general"
-    "test_validate_invalid_id"
-    "test_validate_invalid_hex_id"
-  ];
-
   disabledTestPaths = [
     # Tests require network access and API key
     "tests/cli/test_compute_orchestration.py"
@@ -116,7 +94,29 @@ buildPythonPackage rec {
     "tests/workflow/test_predict.py"
   ];
 
+  disabledTests = [
+    # Test requires network access and API key
+    "test_export_workflow_general"
+    "test_validate_invalid_id"
+    "test_validate_invalid_hex_id"
+  ];
+
+  optional-dependencies = {
+    all = [ pycocotools ];
+  };
+
+  pyproject = true;
   pythonImportsCheck = [ "clarifai" ];
+
+  pythonRelaxDeps = [
+    "clarifai-protocol"
+    "click"
+    "fsspec"
+    "psutil"
+    "ruff"
+    "schema"
+    "uv"
+  ];
 
   meta = {
     description = "Clarifai Python Utilities";

@@ -1,7 +1,7 @@
 {
+  lib,
   stdenv,
   fetchFromGitHub,
-  lib,
   ncurses,
   pkg-config,
 }:
@@ -18,7 +18,6 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   nativeBuildInputs = [ pkg-config ];
-
   buildInputs = [ ncurses ];
 
   makeFlags = [
@@ -34,9 +33,9 @@ stdenv.mkDerivation (finalAttrs: {
   meta = {
     description = "Iotop identifies processes that use high amount of input/output requests on your machine";
     homepage = "https://github.com/Tomas-M/iotop";
-    maintainers = [ lib.maintainers.arezvov ];
-    mainProgram = "iotop-c";
     license = lib.licenses.gpl2Plus;
+    maintainers = [ lib.maintainers.arezvov ];
     platforms = lib.platforms.linux;
+    mainProgram = "iotop-c";
   };
 })

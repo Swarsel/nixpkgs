@@ -2,28 +2,25 @@
   lib,
   stdenv,
   fetchFromGitHub,
-
-  # nativeBuildInputs
-  gfortran,
-  meson,
-  ninja,
-  pkg-config,
-
   # buildInputs
   blas,
-  lapack,
   cpcm-x,
   dftd4,
+  # nativeBuildInputs
+  gfortran,
+  lapack,
   mctc-lib,
+  meson,
   multicharge,
+  ninja,
+  # passthru
+  nix-update-script,
   numsa,
+  pkg-config,
   simple-dftd3,
   tblite,
   test-drive,
   toml-f,
-
-  # passthru
-  nix-update-script,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -31,8 +28,6 @@ stdenv.mkDerivation (finalAttrs: {
   # No tagged release supports the tblite 0.6 / dftd4 4.2 API; the latest tag (6.7.1) targets
   # tblite 0.3. Track master, which builds against the current grimme-lab stack packaged in nixpkgs
   version = "6.7.1-unstable-2026-05-16";
-  __structuredAttrs = true;
-  strictDeps = true;
 
   src = fetchFromGitHub {
     owner = "grimme-lab";
@@ -54,25 +49,14 @@ stdenv.mkDerivation (finalAttrs: {
       --replace-fail "liwork=iwork(1)"    "liwork=max(iwork(1),3+5*ndim)"
   '';
 
+  strictDeps = true;
+
   nativeBuildInputs = [
     gfortran
     meson
     ninja
     pkg-config
   ];
-
-  mesonFlags = [
-    # Require the optional backends rather than letting the `auto` features
-    # silently disable themselves if a dependency is not found.
-    (lib.mesonEnable "tblite" true)
-    (lib.mesonEnable "cpcmx" true)
-  ];
-
-  # Serialize the build: ninja otherwise compiles xtb's program/library objects before the
-  # library's Fortran modules are generated.
-  # `enableParallel` only controls the explicit -j flag and ninja parallelizes regardless, so the
-  # race has to be killed with an explicit -j1.
-  ninjaFlags = [ "-j1" ];
 
   buildInputs = [
     blas
@@ -88,7 +72,20 @@ stdenv.mkDerivation (finalAttrs: {
     toml-f
   ];
 
+  mesonFlags = [
+    # Require the optional backends rather than letting the `auto` features
+    # silently disable themselves if a dependency is not found.
+    (lib.mesonEnable "tblite" true)
+    (lib.mesonEnable "cpcmx" true)
+  ];
+
   doCheck = true;
+  __structuredAttrs = true;
+  # Serialize the build: ninja otherwise compiles xtb's program/library objects before the
+  # library's Fortran modules are generated.
+  # `enableParallel` only controls the explicit -j flag and ninja parallelizes regardless, so the
+  # race has to be killed with an explicit -j1.
+  ninjaFlags = [ "-j1" ];
 
   passthru.updateScript = nix-update-script {
     extraArgs = [ "--version=branch" ];
@@ -99,11 +96,13 @@ stdenv.mkDerivation (finalAttrs: {
     homepage = "https://github.com/grimme-lab/xtb";
     # changelog = "https://github.com/grimme-lab/xtb/releases/tag/${finalAttrs.src.tag}";
     license = lib.licenses.gpl3Only;
+
     maintainers = with lib.maintainers; [
       GaetanLepage
       sheepforce
     ];
-    mainProgram = "xtb";
+
     platforms = lib.platforms.linux;
+    mainProgram = "xtb";
   };
 })

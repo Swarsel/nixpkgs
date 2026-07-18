@@ -1,23 +1,22 @@
 {
   lib,
+  fetchFromGitHub,
   aiosqlite,
   beautifulsoup4,
   buildPythonPackage,
   fake-useragent,
-  fetchFromGitHub,
   hatchling,
   httpx,
   loguru,
   pyotp,
-  pytestCheckHook,
   pytest-asyncio,
   pytest-httpx,
+  pytestCheckHook,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "twscrape";
   version = "0.18.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "vladkens";
@@ -26,9 +25,13 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-FQYBC/b2L+c6UtqMZcsuVom01n0sRpBvMTnE2zZh86U=";
   };
 
-  build-system = [ hatchling ];
+  nativeCheckInputs = [
+    pytestCheckHook
+    pytest-asyncio
+    pytest-httpx
+  ];
 
-  pythonRelaxDeps = [ "beautifulsoup4" ];
+  build-system = [ hatchling ];
 
   dependencies = [
     aiosqlite
@@ -39,13 +42,9 @@ buildPythonPackage (finalAttrs: {
     pyotp
   ];
 
-  nativeCheckInputs = [
-    pytestCheckHook
-    pytest-asyncio
-    pytest-httpx
-  ];
-
+  pyproject = true;
   pythonImportsCheck = [ "twscrape" ];
+  pythonRelaxDeps = [ "beautifulsoup4" ];
 
   meta = {
     description = "Twitter API scrapper with authorization support";

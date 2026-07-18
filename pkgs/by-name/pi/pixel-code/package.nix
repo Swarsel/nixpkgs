@@ -1,9 +1,9 @@
 {
   lib,
-  stdenvNoCC,
   fetchFromGitHub,
   installFonts,
   python3,
+  stdenvNoCC,
   woff2,
 }:
 
@@ -11,17 +11,25 @@ stdenvNoCC.mkDerivation (finalAttrs: {
   pname = "pixel-code";
   version = "2.2";
 
-  outputs = [
-    "out"
-    "webfont"
-  ];
-
   src = fetchFromGitHub {
     owner = "qwerasd205";
     repo = "PixelCode";
     tag = "v${finalAttrs.version}";
     hash = "sha256-jpOj6MndjCTTPESIjh3VJW1FKK5n99W8GBgPqloaKFM=";
   };
+
+  outputs = [
+    "out"
+    "webfont"
+  ];
+
+  postPatch = ''
+        substituteInPlace src/build.sh \
+          --replace-fail \
+    '# Activate python virtual environment.
+    ../activate.sh
+    source ../.venv/bin/activate' ""
+  '';
 
   strictDeps = true;
 
@@ -38,14 +46,6 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     installFonts
   ];
 
-  postPatch = ''
-        substituteInPlace src/build.sh \
-          --replace-fail \
-    '# Activate python virtual environment.
-    ../activate.sh
-    source ../.venv/bin/activate' ""
-  '';
-
   buildPhase = ''
     runHook preBuild
     src/build.sh
@@ -53,8 +53,8 @@ stdenvNoCC.mkDerivation (finalAttrs: {
   '';
 
   meta = {
-    homepage = "https://github.com/qwerasd205/PixelCode";
     description = "Pixel font designed to actually be good for programming";
+    homepage = "https://github.com/qwerasd205/PixelCode";
     license = lib.licenses.ofl;
     maintainers = with lib.maintainers; [ mattpolzin ];
   };

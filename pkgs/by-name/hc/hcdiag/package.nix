@@ -1,9 +1,9 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
-  versionCheckHook,
+  buildGoModule,
   nix-update-script,
+  versionCheckHook,
 }:
 
 buildGoModule (finalAttrs: {
@@ -18,11 +18,11 @@ buildGoModule (finalAttrs: {
   };
 
   vendorHash = "sha256-otBZVOc0lS9IFk0w8A4gD+0MVEn35h0uk5Ul9eH9lFw=";
+  doInstallCheck = true;
 
   nativeInstallCheckHooks = [
     versionCheckHook
   ];
-  doInstallCheck = true;
 
   passthru = {
     updateScript = nix-update-script { };
@@ -33,8 +33,8 @@ buildGoModule (finalAttrs: {
     homepage = "https://github.com/hashicorp/hcdiag";
     changelog = "https://github.com/hashicorp/hcdiag/raw/v${finalAttrs.version}/CHANGELOG.md";
     license = lib.licenses.mpl20;
-    platforms = lib.platforms.unix;
     maintainers = with lib.maintainers; [ ethancedwards8 ];
+    platforms = lib.platforms.unix;
     mainProgram = "hcdiag";
   };
 })

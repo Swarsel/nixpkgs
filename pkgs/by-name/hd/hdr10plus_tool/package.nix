@@ -1,15 +1,15 @@
 {
   lib,
   fetchFromGitHub,
-  rustPlatform,
-  pkg-config,
   fontconfig,
+  hdr10plus,
+  nix-update,
+  nixVersions,
+  pkg-config,
+  rustPlatform,
+  tomlq,
   writableTmpDirAsHomeHook,
   writeShellApplication,
-  hdr10plus,
-  nixVersions,
-  nix-update,
-  tomlq,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -23,19 +23,18 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-LFfb6B0LPa+kqqluDssuQaGdaBLgD9rs51Cqb09BK7g=";
   };
 
-  cargoHash = "sha256-gAD+rCZ2Z+TutrUpOXFhvzh60W2Usz41QpXgBZ6SjiE=";
-
   nativeBuildInputs = [ pkg-config ];
-
   buildInputs = [ fontconfig ];
-
+  cargoHash = "sha256-gAD+rCZ2Z+TutrUpOXFhvzh60W2Usz41QpXgBZ6SjiE=";
   nativeCheckInputs = [ writableTmpDirAsHomeHook ];
+
   preCheck = ''
     export FONTCONFIG_FILE="${fontconfig.out}/etc/fonts/fonts.conf";
   '';
 
   passthru.updateScript = lib.getExe (writeShellApplication {
     name = "update-${finalAttrs.pname}";
+
     runtimeInputs = [
       nixVersions.latest
       nix-update

@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   installShellFiles,
 }:
 
@@ -16,18 +16,8 @@ buildGoModule (finalAttrs: {
     sha256 = "sha256-8GEho1mlxqggVFwUtvpMGyJKk/E+eFN2FnCQJwK51L0=";
   };
 
-  vendorHash = null;
-
   nativeBuildInputs = [ installShellFiles ];
-
-  excludedPackages = [ "internal/integ" ];
-
-  ldflags = [
-    "-s"
-    "-w"
-    "-X main.version=${finalAttrs.version}"
-    "-X main.commit=${finalAttrs.src.rev}"
-  ];
+  vendorHash = null;
 
   # we need to rename the resulting binary but can't use buildFlags with -o here
   # because these are passed to "go install" which does not recognize -o
@@ -47,6 +37,15 @@ buildGoModule (finalAttrs: {
     installManPage manpage/*
     installShellCompletion --cmd exo --bash bash_completion --zsh zsh_completion
   '';
+
+  excludedPackages = [ "internal/integ" ];
+
+  ldflags = [
+    "-s"
+    "-w"
+    "-X main.version=${finalAttrs.version}"
+    "-X main.commit=${finalAttrs.src.rev}"
+  ];
 
   meta = {
     description = "Command-line tool for everything at Exoscale: compute, storage, dns";

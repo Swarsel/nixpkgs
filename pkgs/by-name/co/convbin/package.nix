@@ -21,6 +21,7 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   makeFlags = [ "CC=${stdenv.cc.targetPrefix}cc" ];
+  doCheck = true;
 
   checkPhase = ''
     pushd test
@@ -29,18 +30,18 @@ stdenv.mkDerivation (finalAttrs: {
     popd
   '';
 
-  doCheck = true;
-
   installPhase = ''
     install -Dm755 bin/convbin $out/bin/convbin
   '';
 
   meta = {
     description = "Converts files to other formats";
+
     longDescription = ''
       This program is used to convert files to other formats,
       specifically for the TI84+CE and related calculators.
     '';
+
     homepage = "https://github.com/mateoconlechuga/convbin";
     license = lib.licenses.bsd3;
     maintainers = [ ];

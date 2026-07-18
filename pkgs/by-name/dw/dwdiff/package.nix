@@ -3,8 +3,8 @@
   stdenv,
   fetchurl,
   gettext,
-  pkg-config,
   icu,
+  pkg-config,
 }:
 
 stdenv.mkDerivation (finalAttrs: {

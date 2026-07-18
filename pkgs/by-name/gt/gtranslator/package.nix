@@ -1,25 +1,25 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchurl,
-  meson,
-  ninja,
-  pkg-config,
-  itstool,
-  gettext,
   desktop-file-utils,
-  wrapGAppsHook4,
-  libxml2,
+  gettext,
+  glib,
+  gnome,
+  gsettings-desktop-schemas,
+  gtk4,
+  gtksourceview5,
+  itstool,
+  json-glib,
   libadwaita,
   libsoup_3,
   libspelling,
-  json-glib,
-  glib,
-  gtk4,
-  gtksourceview5,
-  gnome,
-  gsettings-desktop-schemas,
+  libxml2,
+  meson,
+  ninja,
+  pkg-config,
   sqlite,
+  wrapGAppsHook4,
 }:
 
 stdenv.mkDerivation rec {
@@ -63,10 +63,10 @@ stdenv.mkDerivation rec {
 
   meta = {
     description = "GNOME translation making program";
-    mainProgram = "gtranslator";
     homepage = "https://gitlab.gnome.org/GNOME/gtranslator";
     license = lib.licenses.gpl3Plus;
     maintainers = with lib.maintainers; [ bobby285271 ];
     platforms = lib.platforms.linux;
+    mainProgram = "gtranslator";
   };
 }

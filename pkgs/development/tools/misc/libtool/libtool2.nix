@@ -2,10 +2,10 @@
   lib,
   stdenv,
   fetchurl,
+  file,
   m4,
   runtimeShell,
   updateAutotoolsGnuConfigScriptsHook,
-  file,
 }:
 
 # Note: this package is used for bootstrapping fetchurl, and thus
@@ -27,10 +27,6 @@ stdenv.mkDerivation rec {
     "lib"
   ];
 
-  # FILECMD was added in libtool 2.4.7; previous versions hardwired `/usr/bin/file`
-  #   https://lists.gnu.org/archive/html/autotools-announce/2022-03/msg00000.html
-  env.FILECMD = "${file}/bin/file";
-
   postPatch =
     # libtool commit da2e352735722917bf0786284411262195a6a3f6 changed
     # the shebang from `/bin/sh` (which is a special sandbox exception)
@@ -43,6 +39,7 @@ stdenv.mkDerivation rec {
     '';
 
   strictDeps = true;
+
   # As libtool is an early bootstrap dependency try hard not to
   # add autoconf and automake or help2man dependencies here. That way we can
   # avoid pulling in perl and get away with just an `m4` depend.
@@ -51,25 +48,28 @@ stdenv.mkDerivation rec {
     m4
     file
   ];
+
   propagatedBuildInputs = [
     m4
     file
   ];
 
-  # Don't fixup "#! /bin/sh" in Libtool, otherwise it will use the
-  # "fixed" path in generated files!
-  dontPatchShebangs = true;
-  dontFixLibtool = true;
-
+  # FILECMD was added in libtool 2.4.7; previous versions hardwired `/usr/bin/file`
+  #   https://lists.gnu.org/archive/html/autotools-announce/2022-03/msg00000.html
+  env.FILECMD = "${file}/bin/file";
   # XXX: The GNU ld wrapper does all sorts of nasty things wrt. RPATH, which
   # leads to the failure of a number of tests.
   doCheck = false;
   doInstallCheck = false;
-
+  dontFixLibtool = true;
+  # Don't fixup "#! /bin/sh" in Libtool, otherwise it will use the
+  # "fixed" path in generated files!
+  dontPatchShebangs = true;
   enableParallelBuilding = true;
 
   meta = {
     description = "GNU Libtool, a generic library support script";
+
     longDescription = ''
       GNU libtool is a generic library support script.  Libtool hides
       the complexity of using shared libraries behind a consistent,
@@ -79,6 +79,7 @@ stdenv.mkDerivation rec {
       your Makefile, Makefile.in, or Makefile.am.  See the
       documentation for details.
     '';
+
     homepage = "https://www.gnu.org/software/libtool/";
     license = lib.licenses.gpl2Plus;
     maintainers = [ ];

@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   poetry-core,
   requests,
 }:
@@ -9,7 +9,6 @@
 buildPythonPackage rec {
   pname = "justnimbus";
   version = "0.7.4";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "kvanzuijlen";
@@ -19,12 +18,10 @@ buildPythonPackage rec {
   };
 
   nativeBuildInputs = [ poetry-core ];
-
   propagatedBuildInputs = [ requests ];
-
   # Module has no tests
   doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "justnimbus" ];
 
   meta = {

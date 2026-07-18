@@ -1,16 +1,15 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
-  pyudev,
+  buildPythonPackage,
   pytestCheckHook,
+  pyudev,
+  setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "monitorcontrol";
   version = "4.2.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "newAM";
@@ -19,21 +18,19 @@ buildPythonPackage rec {
     hash = "sha256-KyVLNZLpzmxABQQiHGniCcND7DwZwpT4gJC+sJihoag=";
   };
 
-  build-system = [ setuptools ];
-
-  dependencies = [ pyudev ];
-
   nativeCheckInputs = [ pytestCheckHook ];
-
+  build-system = [ setuptools ];
+  dependencies = [ pyudev ];
+  pyproject = true;
   pythonImportsCheck = [ pname ];
 
   meta = {
     description = "Python monitor controls using DDC-CI";
-    mainProgram = "monitorcontrol";
     homepage = "https://github.com/newAM/monitorcontrol";
     changelog = "https://github.com/newAM/monitorcontrol/blob/${version}/CHANGELOG.md";
     license = lib.licenses.mit;
-    platforms = lib.platforms.linux;
     maintainers = with lib.maintainers; [ newam ];
+    platforms = lib.platforms.linux;
+    mainProgram = "monitorcontrol";
   };
 }

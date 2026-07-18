@@ -7,20 +7,19 @@
 python3.pkgs.buildPythonApplication (finalAttrs: {
   pname = "redfishtool";
   version = "1.1.8";
-  pyproject = true;
 
   src = fetchPypi {
     inherit (finalAttrs) pname version;
     hash = "sha256-X/G6osOHCBidKZG/Y2nmHadifDacJhjBIc7WYrUCPn8=";
   };
 
-  build-system = with python3.pkgs; [ setuptools ];
-
   propagatedBuildInputs = with python3.pkgs; [
     requests
     python-dateutil
   ];
 
+  build-system = with python3.pkgs; [ setuptools ];
+  pyproject = true;
   pythonImportsCheck = [ "redfishtoollib" ];
 
   meta = {

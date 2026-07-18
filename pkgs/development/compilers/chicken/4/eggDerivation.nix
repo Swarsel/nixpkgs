@@ -5,11 +5,11 @@
   makeWrapper,
 }:
 {
-  name ? "${args.pname}-${args.version}",
   src,
   buildInputs ? [ ],
   chickenInstallFlags ? [ ],
   cscOptions ? [ ],
+  name ? "${args.pname}-${args.version}",
   ...
 }@args:
 
@@ -21,16 +21,14 @@ let
 in
 stdenv.mkDerivation (
   {
-    name = "chicken-${name}";
-    propagatedBuildInputs = buildInputs;
     nativeBuildInputs = [ makeWrapper ];
     buildInputs = [ chicken ];
+    propagatedBuildInputs = buildInputs;
 
     env = {
-      CSC_OPTIONS = lib.concatStringsSep " " cscOptions;
-
-      CHICKEN_REPOSITORY = libPath;
       CHICKEN_INSTALL_PREFIX = "$out";
+      CHICKEN_REPOSITORY = libPath;
+      CSC_OPTIONS = lib.concatStringsSep " " cscOptions;
     }
     // (args.env or { });
 
@@ -50,6 +48,8 @@ stdenv.mkDerivation (
 
       runHook postInstall
     '';
+
+    name = "chicken-${name}";
 
     meta = {
       inherit (chicken.meta) platforms;

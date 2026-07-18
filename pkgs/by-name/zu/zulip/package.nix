@@ -1,16 +1,16 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
-  fetchPnpmDeps,
-  nodejs,
-  pnpm_11,
-  pnpmConfigHook,
-  python3,
-  electron_42,
-  makeDesktopItem,
-  makeBinaryWrapper,
   copyDesktopItems,
+  electron_42,
+  fetchPnpmDeps,
+  makeBinaryWrapper,
+  makeDesktopItem,
+  nodejs,
+  pnpmConfigHook,
+  pnpm_11,
+  python3,
 }:
 
 let
@@ -26,13 +26,6 @@ stdenv.mkDerivation (finalAttrs: {
     repo = "zulip-desktop";
     tag = "v${finalAttrs.version}";
     hash = "sha256-0TQKQfjfA1Nn/xvtHF0t6i+whLkyu1kVwuZ62Z0AZgk=";
-  };
-
-  pnpmDeps = fetchPnpmDeps {
-    inherit (finalAttrs) pname version src;
-    inherit pnpm;
-    fetcherVersion = 4;
-    hash = "sha256-D9Ge0Ao1fnVA1hk+K1ScZ3iCnl1+iqUtZSG5ACO2H2M=";
   };
 
   nativeBuildInputs = [
@@ -73,20 +66,28 @@ stdenv.mkDerivation (finalAttrs: {
 
   desktopItems = [
     (makeDesktopItem {
-      name = "zulip";
-      exec = "zulip %U";
-      icon = "zulip";
-      desktopName = "Zulip";
-      comment = "Zulip Desktop Client for Linux";
       categories = [
         "Chat"
         "Network"
         "InstantMessaging"
       ];
+
+      comment = "Zulip Desktop Client for Linux";
+      desktopName = "Zulip";
+      exec = "zulip %U";
+      icon = "zulip";
+      name = "zulip";
       startupWMClass = "Zulip";
       terminal = false;
     })
   ];
+
+  pnpmDeps = fetchPnpmDeps {
+    inherit (finalAttrs) pname version src;
+    inherit pnpm;
+    fetcherVersion = 4;
+    hash = "sha256-D9Ge0Ao1fnVA1hk+K1ScZ3iCnl1+iqUtZSG5ACO2H2M=";
+  };
 
   meta = {
     description = "Desktop client for Zulip Chat";

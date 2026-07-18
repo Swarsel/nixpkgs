@@ -1,7 +1,7 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage {
@@ -23,14 +23,16 @@ rustPlatform.buildRustPackage {
   '';
 
   meta = {
-    homepage = "https://github.com/Qyriad/git-point";
     description = "Set arbitrary refs without shooting yourself in the foot, a procelain `git update-ref`";
+    homepage = "https://github.com/Qyriad/git-point";
+    license = [ lib.licenses.mit ];
+    sourceProvenance = [ lib.sourceTypes.fromSource ];
+
     maintainers = [
       lib.maintainers.qyriad
       lib.maintainers.philiptaron
     ];
-    license = [ lib.licenses.mit ];
-    sourceProvenance = [ lib.sourceTypes.fromSource ];
+
     platforms = lib.platforms.all;
     mainProgram = "git-point";
   };

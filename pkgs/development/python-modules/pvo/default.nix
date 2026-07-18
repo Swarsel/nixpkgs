@@ -1,11 +1,11 @@
 {
   lib,
+  fetchFromGitHub,
   aiohttp,
   aioresponses,
   buildPythonPackage,
-  fetchFromGitHub,
-  poetry-core,
   mashumaro,
+  poetry-core,
   pytest-asyncio,
   pytest-cov-stub,
   pytestCheckHook,
@@ -16,7 +16,6 @@
 buildPythonPackage rec {
   pname = "pvo";
   version = "3.0.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "frenck";
@@ -31,14 +30,6 @@ buildPythonPackage rec {
       --replace "0.0.0" "${version}"
   '';
 
-  build-system = [ poetry-core ];
-
-  dependencies = [
-    aiohttp
-    mashumaro
-    yarl
-  ];
-
   nativeCheckInputs = [
     aioresponses
     pytest-asyncio
@@ -47,6 +38,15 @@ buildPythonPackage rec {
     syrupy
   ];
 
+  build-system = [ poetry-core ];
+
+  dependencies = [
+    aiohttp
+    mashumaro
+    yarl
+  ];
+
+  pyproject = true;
   pythonImportsCheck = [ "pvo" ];
 
   meta = {

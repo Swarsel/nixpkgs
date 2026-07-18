@@ -1,11 +1,11 @@
 {
   lib,
+  autocommand,
   buildPythonPackage,
   fetchPypi,
-  autocommand,
-  jaraco-functools,
-  jaraco-context,
   inflect,
+  jaraco-context,
+  jaraco-functools,
   pytestCheckHook,
   setuptools-scm,
 }:
@@ -13,15 +13,12 @@
 buildPythonPackage rec {
   pname = "jaraco-text";
   version = "4.0.0";
-  pyproject = true;
 
   src = fetchPypi {
-    pname = "jaraco_text";
     inherit version;
     hash = "sha256-W3H+zqaatvk51MkGwE/uHtp2UA0WQRF99uxFuGXxDbA=";
+    pname = "jaraco_text";
   };
-
-  pythonNamespaces = [ "jaraco" ];
 
   nativeBuildInputs = [ setuptools-scm ];
 
@@ -33,8 +30,9 @@ buildPythonPackage rec {
   ];
 
   nativeCheckInputs = [ pytestCheckHook ];
-
+  pyproject = true;
   pythonImportsCheck = [ "jaraco.text" ];
+  pythonNamespaces = [ "jaraco" ];
 
   meta = {
     description = "Module for text manipulation";

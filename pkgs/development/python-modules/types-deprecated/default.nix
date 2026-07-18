@@ -8,12 +8,11 @@
 buildPythonPackage (finalAttrs: {
   pname = "types-deprecated";
   version = "1.3.1.20260520";
-  pyproject = true;
 
   src = fetchPypi {
-    pname = "types_deprecated";
     inherit (finalAttrs) version;
     hash = "sha256-TQ2eVSFDLZzogWn7i3k7RdcNjozBp+zVpEZau/g8mrQ=";
+    pname = "types_deprecated";
   };
 
   postPatch = ''
@@ -22,11 +21,10 @@ buildPythonPackage (finalAttrs: {
       --replace-fail "'deprecated-stubs' =" "'*' ="
   '';
 
-  build-system = [ setuptools ];
-
   # Modules has no tests
   doCheck = false;
-
+  build-system = [ setuptools ];
+  pyproject = true;
   pythonImportsCheck = [ "deprecated-stubs" ];
 
   meta = {

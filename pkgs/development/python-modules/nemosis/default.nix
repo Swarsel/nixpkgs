@@ -1,22 +1,21 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  hatchling,
-  requests,
   beautifulsoup4,
+  buildPythonPackage,
   feather-format,
+  hatchling,
   joblib,
   openpyxl,
   pandas,
   pyarrow,
+  requests,
   xlrd,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "nemosis";
   version = "3.8.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "UNSW-CEEM";
@@ -25,7 +24,9 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-4Bb9yZUfwkFQVNSVGtg3APXPovos23oHAx4v+6aa7MM=";
   };
 
+  doCheck = false; # require network and patching
   build-system = [ hatchling ];
+
   dependencies = [
     beautifulsoup4
     feather-format
@@ -37,8 +38,8 @@ buildPythonPackage (finalAttrs: {
     xlrd
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "nemosis" ];
-  doCheck = false; # require network and patching
 
   meta = {
     description = "Downloader of historical data published by the Australian Energy Market Operator";

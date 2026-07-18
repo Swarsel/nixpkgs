@@ -2,11 +2,11 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  which,
-  ocaml,
-  findlib,
   camlzip,
   extlib,
+  findlib,
+  ocaml,
+  which,
 }:
 
 stdenv.mkDerivation rec {
@@ -20,37 +20,36 @@ stdenv.mkDerivation rec {
     hash = "sha256-XaI7GTU/O5UEWuYX4yqaIRmEoH7FuvCg/+gtKbE/P1s=";
   };
 
+  patches = [
+    ./configure.sh.patch
+    ./Makefile.config.example.patch
+  ];
+
+  strictDeps = true;
+
   nativeBuildInputs = [
     which
     ocaml
     findlib
   ];
 
-  strictDeps = true;
-
-  patches = [
-    ./configure.sh.patch
-    ./Makefile.config.example.patch
-  ];
-
-  createFindlibDestdir = true;
-
-  configureScript = "./configure.sh";
-  dontAddPrefix = "true";
-  dontAddStaticConfigureFlags = true;
-  configurePlatforms = [ ];
-
   propagatedBuildInputs = [
     camlzip
     extlib
   ];
 
+  configurePlatforms = [ ];
+  configureScript = "./configure.sh";
+  createFindlibDestdir = true;
+  dontAddPrefix = "true";
+  dontAddStaticConfigureFlags = true;
+
   meta = {
+    inherit (ocaml.meta) platforms;
     description = "Library that parses Java .class files into OCaml data structures";
     homepage = "https://javalib-team.github.io/javalib/";
     license = lib.licenses.lgpl3;
     maintainers = [ lib.maintainers.vbgl ];
-    inherit (ocaml.meta) platforms;
     broken = !(lib.versionAtLeast ocaml.version "4.08");
   };
 }

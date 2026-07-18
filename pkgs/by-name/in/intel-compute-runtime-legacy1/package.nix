@@ -1,14 +1,14 @@
 {
   lib,
-  callPackage,
   stdenv,
   fetchFromGitHub,
+  callPackage,
   cmake,
-  pkg-config,
+  gitUpdater,
   intel-gmmlib,
   level-zero,
   libva,
-  gitUpdater,
+  pkg-config,
 }:
 
 let
@@ -28,6 +28,16 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-CnMIOAPnVhKVQxAcOZAuV5M4HJ2qftzEm9YdCuvkFbI=";
   };
 
+  outputs = [
+    "out"
+    "drivers"
+  ];
+
+  patches = [
+    # https://github.com/intel/compute-runtime/pull/879
+    ./add-cstdint-include-gcc15.patch
+  ];
+
   nativeBuildInputs = [
     cmake
     pkg-config
@@ -40,11 +50,6 @@ stdenv.mkDerivation (finalAttrs: {
     level-zero
   ];
 
-  patches = [
-    # https://github.com/intel/compute-runtime/pull/879
-    ./add-cstdint-include-gcc15.patch
-  ];
-
   cmakeFlags = [
     "-DSKIP_UNIT_TESTS=1"
     "-DIGC_DIR=${intel-graphics-compiler}"
@@ -53,14 +58,6 @@ stdenv.mkDerivation (finalAttrs: {
     "-DCMAKE_INSTALL_LIBDIR=lib"
     (cmakeBool "NEO_LEGACY_PLATFORMS_SUPPORT" true)
   ];
-
-  outputs = [
-    "out"
-    "drivers"
-  ];
-
-  # causes redefinition of _FORTIFY_SOURCE
-  hardeningDisable = [ "fortify3" ];
 
   postInstall = ''
     # Avoid clash with intel-ocl
@@ -82,17 +79,20 @@ stdenv.mkDerivation (finalAttrs: {
       $out/lib/intel-opencl/libigdrcl.so
   '';
 
+  # causes redefinition of _FORTIFY_SOURCE
+  hardeningDisable = [ "fortify3" ];
+
   passthru.updateScript = gitUpdater {
     rev-prefix = "24.35.30872.";
   };
 
   meta = {
     description = "Intel Graphics Compute Runtime oneAPI Level Zero and OpenCL with support for Gen8, Gen9 and Gen11 GPUs";
-    mainProgram = "ocloc";
     homepage = "https://github.com/intel/compute-runtime";
     changelog = "https://github.com/intel/compute-runtime/releases/tag/${finalAttrs.version}";
     license = lib.licenses.mit;
-    platforms = [ "x86_64-linux" ];
     maintainers = with lib.maintainers; [ fleaz ];
+    platforms = [ "x86_64-linux" ];
+    mainProgram = "ocloc";
   };
 })

@@ -1,22 +1,18 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
+  # dependencies
+  attrs,
+  buildPythonPackage,
+  pytest,
   # build-system
   setuptools,
   setuptools-scm,
-
-  # dependencies
-  attrs,
-  pytest,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "pytest-subtests";
   version = "0.15.0";
-  pyproject = true;
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "pytest-dev";
@@ -24,6 +20,12 @@ buildPythonPackage (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-KJbTxhheEkvH/Xnje45dSb57526bVoi8N6GSKfUfCYA=";
   };
+
+  # The self-tests assert on exact pytest terminal output. pytest 9 ships its
+  # own bundled subtests support and changed how subtest failures are reported,
+  # so these output-matching tests no longer match. The plugin itself works.
+  doCheck = false;
+  __structuredAttrs = true;
 
   build-system = [
     setuptools
@@ -35,12 +37,8 @@ buildPythonPackage (finalAttrs: {
     pytest
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "pytest_subtests" ];
-
-  # The self-tests assert on exact pytest terminal output. pytest 9 ships its
-  # own bundled subtests support and changed how subtest failures are reported,
-  # so these output-matching tests no longer match. The plugin itself works.
-  doCheck = false;
 
   meta = {
     description = "Unittest subTest() support and subtests fixture";

@@ -1,7 +1,7 @@
 {
-  buildPythonPackage,
-  fetchFromGitHub,
   lib,
+  fetchFromGitHub,
+  buildPythonPackage,
   poetry-core,
   pytest-cov-stub,
   pytest-xdist,
@@ -12,7 +12,6 @@
 buildPythonPackage rec {
   pname = "mficlient";
   version = "0.5.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "uilibs";
@@ -29,26 +28,27 @@ buildPythonPackage rec {
     EOF
   '';
 
-  build-system = [ poetry-core ];
-
-  dependencies = [
-    requests
-  ];
-
-  pythonImportsCheck = [ "mficlient" ];
-
   nativeCheckInputs = [
     pytest-cov-stub
     pytest-xdist
     pytestCheckHook
   ];
 
+  build-system = [ poetry-core ];
+
+  dependencies = [
+    requests
+  ];
+
+  pyproject = true;
+  pythonImportsCheck = [ "mficlient" ];
+
   meta = {
-    changelog = "https://github.com/uilibs/mficlient/blob/${src.tag}/CHANGELOG.md";
     description = "Remote control client for Ubiquiti's UVC NVR";
     homepage = "https://github.com/uilibs/mficlient";
+    changelog = "https://github.com/uilibs/mficlient/blob/${src.tag}/CHANGELOG.md";
     license = lib.licenses.mit;
-    mainProgram = "mfi";
     maintainers = with lib.maintainers; [ dotlambda ];
+    mainProgram = "mfi";
   };
 }

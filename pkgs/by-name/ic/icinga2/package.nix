@@ -1,34 +1,34 @@
 {
-  stdenv,
-  runCommand,
   lib,
+  stdenv,
   fetchFromGitHub,
-  cmake,
-  flex,
   bison,
-  systemd,
   boost,
+  cmake,
+  ctestCheckHook,
+  flex,
   libedit,
+  libpq,
+  mariadb-connector-c,
   openssl,
   patchelf,
-  mariadb-connector-c,
-  libpq,
   protobuf,
-  zlib,
-  ctestCheckHook,
+  runCommand,
+  systemd,
   tzdata,
-  # Databases
-  withMysql ? true,
-  withPostgresql ? false,
+  zlib,
+  nameSuffix ? "",
   # Features
   withChecker ? true,
   withCompat ? false,
-  withLivestatus ? false,
-  withNotification ? true,
-  withPerfdata ? true,
   withIcingadb ? true,
+  withLivestatus ? false,
+  # Databases
+  withMysql ? true,
+  withNotification ? true,
   withOtel ? true,
-  nameSuffix ? "",
+  withPerfdata ? true,
+  withPostgresql ? false,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -42,11 +42,32 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-0gKNHtSc6uaabDHujlUKrcZfx6wz0vDp7Z4YMSem4iY=";
   };
 
+  outputs = [
+    "out"
+    "doc"
+  ];
+
   patches = [
     ./etc-icinga2.patch # Makes /etc/icinga2 relative to / instead of the store path
     ./no-systemd-service.patch # Prevent systemd service from being written to /usr
     ./no-var-directories.patch # Prevent /var directories from being created
   ];
+
+  nativeBuildInputs = [
+    cmake
+    flex
+    bison
+    patchelf
+  ];
+
+  buildInputs = [
+    boost
+    libedit
+    openssl
+    systemd
+  ]
+  ++ lib.optional withOtel protobuf
+  ++ lib.optional withPostgresql libpq;
 
   cmakeFlags =
     let
@@ -79,34 +100,7 @@ stdenv.mkDerivation (finalAttrs: {
       "-DUSE_SYSTEMD=ON"
     ];
 
-  outputs = [
-    "out"
-    "doc"
-  ];
-
-  buildInputs = [
-    boost
-    libedit
-    openssl
-    systemd
-  ]
-  ++ lib.optional withOtel protobuf
-  ++ lib.optional withPostgresql libpq;
-
-  nativeBuildInputs = [
-    cmake
-    flex
-    bison
-    patchelf
-  ];
-
   doCheck = true;
-
-  # https://github.com/Icinga/icinga2/issues/10722#issuecomment-4178294982
-  ctestFlags = [
-    "-LE"
-    "network"
-  ];
 
   nativeCheckInputs = [
     ctestCheckHook # ctestFlags needs this
@@ -133,6 +127,12 @@ stdenv.mkDerivation (finalAttrs: {
     ''}
   '';
 
+  # https://github.com/Icinga/icinga2/issues/10722#issuecomment-4178294982
+  ctestFlags = [
+    "-LE"
+    "network"
+  ];
+
   vim = runCommand "vim-icinga2-${finalAttrs.version}" { pname = "vim-icinga2"; } ''
     mkdir -p $out/share/vim-plugins
     cp -r "${finalAttrs.src}/tools/syntax/vim" $out/share/vim-plugins/icinga2
@@ -142,10 +142,12 @@ stdenv.mkDerivation (finalAttrs: {
     description = "Open source monitoring system";
     homepage = "https://www.icinga.com";
     license = lib.licenses.gpl3Plus;
-    platforms = lib.platforms.linux;
+
     maintainers = with lib.maintainers; [
       das_j
       helsinki-Jo
     ];
+
+    platforms = lib.platforms.linux;
   };
 })

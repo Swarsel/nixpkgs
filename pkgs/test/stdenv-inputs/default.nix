@@ -2,10 +2,6 @@
 
 let
   foo = stdenv.mkDerivation {
-    name = "foo-test";
-
-    dontUnpack = true;
-
     installPhase = ''
       mkdir -p $out/bin $out/include $out/lib
       $CC -o $out/bin/foo ${./cc-main.c}
@@ -16,16 +12,16 @@ let
         -o $out/lib/libfoo${stdenv.hostPlatform.extensions.sharedLibrary} \
         ${./foo.c}
     '';
+
+    dontUnpack = true;
+    name = "foo-test";
   };
 
   bar = stdenv.mkDerivation {
-    name = "bar-test";
     outputs = [
       "out"
       "dev"
     ];
-
-    dontUnpack = true;
 
     installPhase = ''
       mkdir -p $out/bin $dev/include $dev/lib
@@ -37,12 +33,13 @@ let
         -o $dev/lib/libbar${stdenv.hostPlatform.extensions.sharedLibrary} \
         ${./bar.c}
     '';
+
+    dontUnpack = true;
+    name = "bar-test";
   };
 in
 
 stdenv.mkDerivation {
-  name = "stdenv-inputs-test";
-
   buildInputs = [
     foo
     bar
@@ -69,8 +66,11 @@ stdenv.mkDerivation {
     touch $out
   '';
 
-  meta.platforms = lib.platforms.all;
+  name = "stdenv-inputs-test";
+
   passthru = {
     inherit foo bar;
   };
+
+  meta.platforms = lib.platforms.all;
 }

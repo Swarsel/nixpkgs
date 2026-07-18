@@ -1,18 +1,18 @@
 {
+  lib,
+  fetchFromGitHub,
   beautifulsoup4,
   buildHomeAssistantComponent,
   buildPythonPackage,
   cryptography,
   defusedxml,
-  fetchFromGitHub,
   hatchling,
-  lib,
   nix-update-script,
   pydantic,
-  pytestCheckHook,
   pytest-cov-stub,
   pytest-homeassistant-custom-component,
   pytest-socket,
+  pytestCheckHook,
   pyyaml,
   requests,
 }:
@@ -29,9 +29,13 @@ let
   core = buildPythonPackage (finalAttrs: {
     inherit src version;
     pname = "solentlabs-cable-modem-monitor-core";
-    pyproject = true;
 
-    sourceRoot = "${finalAttrs.src.name}/packages/cable_modem_monitor_core";
+    nativeCheckInputs = [
+      cryptography
+      pytestCheckHook
+      pytest-cov-stub
+      pytest-socket
+    ];
 
     build-system = [ hatchling ];
 
@@ -43,20 +47,19 @@ let
       requests
     ];
 
-    nativeCheckInputs = [
-      cryptography
-      pytestCheckHook
-      pytest-cov-stub
-      pytest-socket
-    ];
+    pyproject = true;
+    sourceRoot = "${finalAttrs.src.name}/packages/cable_modem_monitor_core";
   });
 
   catalog = buildPythonPackage (finalAttrs: {
     inherit src version;
     pname = "solentlabs-cable-modem-monitor-catalog";
-    pyproject = true;
 
-    sourceRoot = "${finalAttrs.src.name}/packages/cable_modem_monitor_catalog";
+    nativeCheckInputs = [
+      cryptography
+      pytestCheckHook
+      pytest-socket
+    ];
 
     build-system = [ hatchling ];
 
@@ -64,28 +67,25 @@ let
       core
     ];
 
-    nativeCheckInputs = [
-      cryptography
-      pytestCheckHook
-      pytest-socket
-    ];
+    pyproject = true;
+    sourceRoot = "${finalAttrs.src.name}/packages/cable_modem_monitor_catalog";
   });
 in
 buildHomeAssistantComponent rec {
   inherit src version;
-  owner = "solentlabs";
-  domain = "cable_modem_monitor";
-
-  dependencies = [
-    catalog
-    core
-  ];
 
   nativeCheckInputs = [
     pytestCheckHook
     pytest-homeassistant-custom-component
   ];
 
+  dependencies = [
+    catalog
+    core
+  ];
+
+  domain = "cable_modem_monitor";
+  owner = "solentlabs";
   passthru.updateScript = nix-update-script { extraArgs = [ "--version=unstable" ]; };
 
   meta = {

@@ -1,15 +1,15 @@
 {
-  autoreconfHook,
-  fetchFromGitLab,
-  glib,
   lib,
+  stdenv,
+  fetchFromGitLab,
+  autoreconfHook,
+  glib,
   libkrb5,
   nix-update-script,
   openldap,
   pkg-config,
   polkit,
   samba,
-  stdenv,
   systemdLibs,
 }:
 
@@ -18,11 +18,11 @@ stdenv.mkDerivation (finalAttrs: {
   version = "0.17.1";
 
   src = fetchFromGitLab {
-    domain = "gitlab.freedesktop.org";
     owner = "realmd";
     repo = "realmd";
     tag = finalAttrs.version;
     hash = "sha256-lmNlrXOOUSDk/8H/ge0IRA64bnau9nYUIkW6OyVxbBg=";
+    domain = "gitlab.freedesktop.org";
   };
 
   patches = [
@@ -59,22 +59,22 @@ stdenv.mkDerivation (finalAttrs: {
     "--disable-doc"
   ];
 
+  doCheck = true;
+
   hardeningDisable = [
     # causes redefinition of _FORTIFY_SOURCE
     "fortify3"
   ];
 
-  doCheck = true;
-
   passthru.updateScript = nix-update-script { };
 
   meta = {
-    changelog = "https://gitlab.freedesktop.org/realmd/realmd/-/blob/${finalAttrs.version}/NEWS";
     description = "DBus service for configuring Kerberos and other online identities";
     homepage = "https://gitlab.freedesktop.org/realmd/realmd";
+    changelog = "https://gitlab.freedesktop.org/realmd/realmd/-/blob/${finalAttrs.version}/NEWS";
     license = lib.licenses.lgpl21Only;
-    mainProgram = "realm";
     maintainers = [ lib.maintainers.anthonyroussel ];
     platforms = lib.platforms.linux;
+    mainProgram = "realm";
   };
 })

@@ -1,15 +1,14 @@
 {
   lib,
+  fetchFromGitHub,
   buildPythonPackage,
   dicttoxml2,
-  fetchFromGitHub,
   xmltodict,
 }:
 
 buildPythonPackage rec {
   pname = "pyialarm";
   version = "2.2.0";
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "RyuzakiKK";
@@ -25,7 +24,7 @@ buildPythonPackage rec {
 
   # Project has no tests
   doCheck = false;
-
+  format = "setuptools";
   pythonImportsCheck = [ "pyialarm" ];
 
   meta = {

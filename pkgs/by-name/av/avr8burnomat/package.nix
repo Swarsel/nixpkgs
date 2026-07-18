@@ -2,8 +2,8 @@
   lib,
   stdenv,
   fetchurl,
-  unzip,
   runtimeShell,
+  unzip,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -14,6 +14,7 @@ stdenv.mkDerivation (finalAttrs: {
     url = "http://avr8-burn-o-mat.aaabbb.de/AVR8_Burn-O-Mat_${
       lib.replaceStrings [ "." ] [ "_" ] finalAttrs.version
     }.zip";
+
     sha256 = "02k0fd0cd3y1yqip36wr3bkxbywp8913w4y7jdg6qwqxjnii58ln";
   };
 
@@ -33,10 +34,10 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "GUI tool for avrdude";
-    mainProgram = "avr8-burn-omat";
     homepage = "http://avr8-burn-o-mat.aaabbb.de/avr8_burn_o_mat_avrdude_gui_en.html";
-    sourceProvenance = with lib.sourceTypes; [ binaryBytecode ];
     license = lib.licenses.gpl3;
+    sourceProvenance = with lib.sourceTypes; [ binaryBytecode ];
     platforms = lib.platforms.all;
+    mainProgram = "avr8-burn-omat";
   };
 })

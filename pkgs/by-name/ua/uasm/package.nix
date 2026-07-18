@@ -17,15 +17,18 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-HaiK2ogE71zwgfhWL7fesMrNZYnh8TV/kE3ZIS0l85w=";
   };
 
-  enableParallelBuilding = true;
+  outputs = [
+    "out"
+    "doc"
+  ];
 
-  makefile =
-    if stdenv.hostPlatform.isDarwin then
-      "Makefile-OSX-Clang-64.mak"
-    else if stdenv.hostPlatform.isWindows then
-      "Makefile-DOS-GCC.mak"
-    else
-      "Makefile-Linux-GCC-64.mak";
+  postPatch = ''
+    substituteInPlace Makefile-DOS-GCC.mak \
+      --replace-fail "gcc.exe" "${stdenv.cc.targetPrefix}cc"
+
+    substituteInPlace Makefile-Linux-GCC-64.mak \
+      --replace-fail "CC = gcc" "CC=${stdenv.cc.targetPrefix}cc"
+  '';
 
   # Needed for compiling with GCC > 13
   env.NIX_CFLAGS_COMPILE = toString [
@@ -54,35 +57,34 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
-  outputs = [
-    "out"
-    "doc"
-  ];
+  enableParallelBuilding = true;
 
-  postPatch = ''
-    substituteInPlace Makefile-DOS-GCC.mak \
-      --replace-fail "gcc.exe" "${stdenv.cc.targetPrefix}cc"
-
-    substituteInPlace Makefile-Linux-GCC-64.mak \
-      --replace-fail "CC = gcc" "CC=${stdenv.cc.targetPrefix}cc"
-  '';
+  makefile =
+    if stdenv.hostPlatform.isDarwin then
+      "Makefile-OSX-Clang-64.mak"
+    else if stdenv.hostPlatform.isWindows then
+      "Makefile-DOS-GCC.mak"
+    else
+      "Makefile-Linux-GCC-64.mak";
 
   passthru.tests.version = testers.testVersion {
-    package = uasm;
-    command = "uasm -h";
     version = "v${finalAttrs.version}";
+    command = "uasm -h";
+    package = uasm;
   };
 
   meta = {
-    homepage = "https://www.terraspace.co.uk/uasm.html";
     description = "Free MASM-compatible assembler based on JWasm";
-    mainProgram = "uasm";
-    platforms = lib.platforms.unix ++ lib.platforms.windows;
+    homepage = "https://www.terraspace.co.uk/uasm.html";
+    license = lib.licenses.watcom;
+
     maintainers = with lib.maintainers; [
       zane
       ccicnce113424
     ];
-    license = lib.licenses.watcom;
+
+    platforms = lib.platforms.unix ++ lib.platforms.windows;
+    mainProgram = "uasm";
     broken = stdenv.hostPlatform.isDarwin;
   };
 })

@@ -1,8 +1,8 @@
 {
   lib,
+  fetchFromGitHub,
   behave,
   buildPythonPackage,
-  fetchFromGitHub,
   lxml,
   mock,
   pyparsing,
@@ -14,7 +14,6 @@
 buildPythonPackage rec {
   pname = "python-docx";
   version = "1.2.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "python-openxml";
@@ -22,13 +21,6 @@ buildPythonPackage rec {
     tag = "v${version}";
     hash = "sha256-5x2VmMiY5fZiXoswCDcs89olL0vbpGzmJZThrNS/SmI=";
   };
-
-  build-system = [ setuptools ];
-
-  dependencies = [
-    lxml
-    typing-extensions
-  ];
 
   nativeCheckInputs = [
     behave
@@ -41,16 +33,25 @@ buildPythonPackage rec {
     behave --format progress --stop --tags=-wip
   '';
 
-  pythonImportsCheck = [ "docx" ];
+  build-system = [ setuptools ];
+
+  dependencies = [
+    lxml
+    typing-extensions
+  ];
 
   disabledTests = [
     # https://github.com/python-openxml/python-docx/issues/1302
     "it_accepts_unicode_providing_there_is_no_encoding_declaration"
   ];
 
+  pyproject = true;
+
   pytestFlags = [
     "-Wignore::DeprecationWarning"
   ];
+
+  pythonImportsCheck = [ "docx" ];
 
   meta = {
     description = "Create and update Microsoft Word .docx files";

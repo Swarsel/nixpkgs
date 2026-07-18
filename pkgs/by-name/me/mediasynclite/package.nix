@@ -2,13 +2,13 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  gtk3,
+  curl,
   glib,
   gsettings-desktop-schemas,
-  pkg-config,
-  curl,
-  openssl,
+  gtk3,
   jansson,
+  openssl,
+  pkg-config,
   wrapGAppsHook3,
 }:
 
@@ -23,13 +23,9 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-vnajWmQfKJ3ff/O4IROXiRAKEGu/6EMX9/oApwcwoaU=";
   };
 
-  buildInputs = [
-    curl
-    glib
-    gtk3
-    openssl
-    jansson
-  ];
+  postPatch = ''
+    substitute ./src/ibmsl.c ./src/ibmsl.c --subst-var out
+  '';
 
   strictDeps = true;
 
@@ -39,17 +35,21 @@ stdenv.mkDerivation (finalAttrs: {
     wrapGAppsHook3
   ];
 
-  makeFlags = [ "PREFIX=$(out)" ];
+  buildInputs = [
+    curl
+    glib
+    gtk3
+    openssl
+    jansson
+  ];
 
-  postPatch = ''
-    substitute ./src/ibmsl.c ./src/ibmsl.c --subst-var out
-  '';
+  makeFlags = [ "PREFIX=$(out)" ];
 
   meta = {
     description = "Linux-native graphical uploader for iBroadcast";
-    downloadPage = "https://github.com/tobz619/MediaSyncLiteLinuxNix";
     homepage = "https://github.com/iBroadcastMediaServices/MediaSyncLiteLinux";
     license = lib.licenses.gpl3Only;
     maintainers = with lib.maintainers; [ tobz619 ];
+    downloadPage = "https://github.com/tobz619/MediaSyncLiteLinuxNix";
   };
 })

@@ -2,20 +2,20 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  fetchpatch2,
-  cmake,
-  pkg-config,
-  gfortran,
   blas,
+  cmake,
+  fetchpatch2,
+  gfortran,
+  hypre,
   lapack,
-  mpi,
   llvmPackages,
+  mpi,
   mpiCheckPhaseHook,
+  pkg-config,
+  testers,
   isILP64 ? false,
   mpiSupport ? true,
   precision ? "double",
-  testers,
-  hypre,
 }:
 
 assert lib.elem precision [
@@ -42,8 +42,8 @@ stdenv.mkDerivation (finalAttrs: {
 
   patches = [
     (fetchpatch2 {
-      url = "https://raw.githubusercontent.com/spack/spack-packages/eb4b23847f0079d0c9c8de99aaa32557ad4c9194/repos/builtin/packages/hypre/hypre-precision-fix.patch?full_index=1";
       hash = "sha256-Ni5xlfFmok884x5Hctf9VOsAgZp8ICG7QNVGTdVKPzE=";
+      url = "https://raw.githubusercontent.com/spack/spack-packages/eb4b23847f0079d0c9c8de99aaa32557ad4c9194/repos/builtin/packages/hypre/hypre-precision-fix.patch?full_index=1";
     })
   ];
 
@@ -66,8 +66,6 @@ stdenv.mkDerivation (finalAttrs: {
   ++ lib.optional mpiSupport mpi
   ++ lib.optional stdenv.cc.isClang llvmPackages.openmp;
 
-  cmakeDir = "../src";
-
   cmakeFlags = [
     (lib.cmakeBool "BUILD_SHARED_LIBS" (!stdenv.hostPlatform.isStatic))
     (lib.cmakeBool "BLA_PREFER_PKGCONFIG" true)
@@ -82,15 +80,15 @@ stdenv.mkDerivation (finalAttrs: {
     (lib.cmakeBool "HYPRE_BUILD_TESTS" finalAttrs.finalPackage.doCheck)
   ];
 
-  __darwinAllowLocalNetworking = mpiSupport;
-
-  nativeCheckInputs = lib.optional mpiSupport mpiCheckPhaseHook;
-
   doCheck = true;
+  nativeCheckInputs = lib.optional mpiSupport mpiCheckPhaseHook;
 
   postInstall = lib.optionalString finalAttrs.finalPackage.doCheck ''
     rm -rf $out/bin
   '';
+
+  __darwinAllowLocalNetworking = mpiSupport;
+  cmakeDir = "../src";
 
   passthru = {
     tests = {
@@ -98,23 +96,27 @@ stdenv.mkDerivation (finalAttrs: {
         moduleNames = [ "HYPRE" ];
         package = finalAttrs.finalPackage;
       };
+
       ilp64 = hypre.override { isILP64 = true; };
-      single = hypre.override { precision = "single"; };
       serial = hypre.override { mpiSupport = false; };
+      single = hypre.override { precision = "single"; };
     };
   };
 
   meta = {
     description = "Parallel solvers for sparse linear systems featuring multigrid methods";
     homepage = "https://computing.llnl.gov/projects/hypre-scalable-linear-solvers-multigrid-methods";
-    platforms = lib.platforms.unix;
+
     license = with lib.licenses; [
       asl20
       mit
     ];
+
     maintainers = with lib.maintainers; [
       mkez
       qbisi
     ];
+
+    platforms = lib.platforms.unix;
   };
 })

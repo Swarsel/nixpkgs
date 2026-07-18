@@ -2,21 +2,21 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  rocmUpdateScript,
-  cmake,
-  pkg-config,
   amdsmi,
-  rocm-smi,
-  rocm-runtime,
-  libcap,
-  libdrm,
-  grpc,
-  protobuf,
-  openssl,
+  cmake,
   doxygen,
   graphviz,
-  texliveSmall,
+  grpc,
   gtest,
+  libcap,
+  libdrm,
+  openssl,
+  pkg-config,
+  protobuf,
+  rocm-runtime,
+  rocm-smi,
+  rocmUpdateScript,
+  texliveSmall,
   buildDocs ? true,
   buildTests ? false,
 }:
@@ -51,6 +51,18 @@ stdenv.mkDerivation (finalAttrs: {
   pname = "rdc";
   version = "7.2.3";
 
+  src = fetchFromGitHub {
+    owner = "ROCm";
+    repo = "rocm-systems";
+    rev = "rocm-${finalAttrs.version}";
+    hash = "sha256-SmySauRxFnEQJVTjGYf4TpmQclTwZG2RZrk3u6ko5Qo=";
+
+    sparseCheckout = [
+      "projects/rdc"
+      "shared"
+    ];
+  };
+
   outputs = [
     "out"
   ]
@@ -61,24 +73,17 @@ stdenv.mkDerivation (finalAttrs: {
     "test"
   ];
 
-  src = fetchFromGitHub {
-    owner = "ROCm";
-    repo = "rocm-systems";
-    rev = "rocm-${finalAttrs.version}";
-    sparseCheckout = [
-      "projects/rdc"
-      "shared"
-    ];
-    hash = "sha256-SmySauRxFnEQJVTjGYf4TpmQclTwZG2RZrk3u6ko5Qo=";
-  };
-  sourceRoot = "${finalAttrs.src.name}/projects/rdc";
-
   patches = [
     # https://github.com/ROCm/rocm-systems/pull/2423
     ./fix-cmake-cxxflags.patch
     # https://github.com/ROCm/rocm-systems/pull/2424
     ./fix-libcap-pkgconfig.patch
   ];
+
+  postPatch = ''
+    substituteInPlace CMakeLists.txt \
+      --replace-fail "file(STRINGS /etc/os-release LINUX_DISTRO LIMIT_COUNT 1 REGEX \"NAME=\")" "set(LINUX_DISTRO \"NixOS\")"
+  '';
 
   nativeBuildInputs = [
     cmake
@@ -124,11 +129,6 @@ stdenv.mkDerivation (finalAttrs: {
     "-DBUILD_TESTS=ON"
   ];
 
-  postPatch = ''
-    substituteInPlace CMakeLists.txt \
-      --replace-fail "file(STRINGS /etc/os-release LINUX_DISTRO LIMIT_COUNT 1 REGEX \"NAME=\")" "set(LINUX_DISTRO \"NixOS\")"
-  '';
-
   postInstall = ''
     find $out/bin -executable -type f -exec \
       patchelf {} --shrink-rpath --allowed-rpath-prefixes "$NIX_STORE" \;
@@ -138,13 +138,14 @@ stdenv.mkDerivation (finalAttrs: {
     mv $out/bin/rdctst_tests $test/bin
   '';
 
+  sourceRoot = "${finalAttrs.src.name}/projects/rdc";
   passthru.updateScript = rocmUpdateScript { inherit finalAttrs; };
 
   meta = {
     description = "Simplifies administration and addresses infrastructure challenges in cluster and datacenter environments";
     homepage = "https://github.com/ROCm/rocm-systems/tree/develop/projects/rdc";
     license = with lib.licenses; [ mit ];
-    teams = [ lib.teams.rocm ];
     platforms = lib.platforms.linux;
+    teams = [ lib.teams.rocm ];
   };
 })

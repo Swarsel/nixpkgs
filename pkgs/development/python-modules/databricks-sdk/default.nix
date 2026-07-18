@@ -1,30 +1,25 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # build-system
-  setuptools,
-
+  buildPythonPackage,
   # dependencies
   google-auth,
-  protobuf,
-  requests,
-
   # tests
   langchain-openai,
   openai,
+  protobuf,
   pyfakefs,
-  pytestCheckHook,
   pytest-mock,
+  pytestCheckHook,
+  requests,
   requests-mock,
+  # build-system
+  setuptools,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "databricks-sdk";
   version = "0.119.0";
-  pyproject = true;
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "databricks";
@@ -33,25 +28,6 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-tdlFT0Rg0VGjtJ9UZSDu6zt5O+fXdmr484+3n4D0p8M=";
   };
 
-  build-system = [
-    setuptools
-  ];
-
-  pythonRelaxDeps = [
-    # For protobuf 7
-    "protobuf"
-  ];
-
-  dependencies = [
-    google-auth
-    protobuf
-    requests
-  ];
-
-  pythonImportsCheck = [
-    "databricks.sdk"
-  ];
-
   nativeCheckInputs = [
     langchain-openai
     openai
@@ -59,6 +35,19 @@ buildPythonPackage (finalAttrs: {
     pytestCheckHook
     pytest-mock
     requests-mock
+  ];
+
+  __darwinAllowLocalNetworking = true;
+  __structuredAttrs = true;
+
+  build-system = [
+    setuptools
+  ];
+
+  dependencies = [
+    google-auth
+    protobuf
+    requests
   ];
 
   disabledTests = [
@@ -85,7 +74,16 @@ buildPythonPackage (finalAttrs: {
     "test_github_oidc_flow_works_with_azure"
   ];
 
-  __darwinAllowLocalNetworking = true;
+  pyproject = true;
+
+  pythonImportsCheck = [
+    "databricks.sdk"
+  ];
+
+  pythonRelaxDeps = [
+    # For protobuf 7
+    "protobuf"
+  ];
 
   meta = {
     description = "Databricks SDK for Python";

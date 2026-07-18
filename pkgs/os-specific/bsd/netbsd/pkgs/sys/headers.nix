@@ -1,18 +1,18 @@
 {
   lib,
-  mkDerivation,
-  include,
   bsdSetupHook,
-  netbsdSetupHook,
-  makeMinimal,
-  install,
-  tsort,
-  lorder,
-  statHook,
-  uudecode,
   config,
-  genassym,
   defaultMakeFlags,
+  genassym,
+  include,
+  install,
+  lorder,
+  makeMinimal,
+  mkDerivation,
+  netbsdSetupHook,
+  statHook,
+  tsort,
+  uudecode,
 }:
 let
   base = import ./base.nix {

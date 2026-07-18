@@ -5,19 +5,18 @@
 }:
 
 buildDunePackage {
-  pname = "csv-lwt";
   inherit (csv) src version meta;
-
-  preConfigure = ''
-    substituteInPlace lwt/dune --replace '(libraries   bytes' '(libraries '
-  '';
-
-  duneVersion = "3";
+  pname = "csv-lwt";
 
   propagatedBuildInputs = [
     csv
     lwt
   ];
 
+  preConfigure = ''
+    substituteInPlace lwt/dune --replace '(libraries   bytes' '(libraries '
+  '';
+
   doCheck = true;
+  duneVersion = "3";
 }

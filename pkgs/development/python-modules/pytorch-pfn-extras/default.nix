@@ -1,32 +1,27 @@
 {
   lib,
   stdenv,
-  buildPythonPackage,
   fetchFromGitHub,
-  pythonAtLeast,
-
-  # build-system
-  setuptools,
-
+  buildPythonPackage,
   # dependencies
   numpy,
-  packaging,
-  torch,
-  typing-extensions,
-
   # tests
   onnx,
+  packaging,
   pyparsing,
   pytestCheckHook,
+  pythonAtLeast,
   pyyaml,
+  # build-system
+  setuptools,
+  torch,
   torchvision,
+  typing-extensions,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "pytorch-pfn-extras";
   version = "0.9.0";
-  pyproject = true;
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "pfnet";
@@ -34,15 +29,6 @@ buildPythonPackage (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-4XS2Poa8lUQM0p3vks77e/HSlhaxbZOsORUyk4Iqvyw=";
   };
-
-  build-system = [ setuptools ];
-
-  dependencies = [
-    numpy
-    packaging
-    torch
-    typing-extensions
-  ];
 
   nativeCheckInputs = [
     onnx
@@ -52,47 +38,20 @@ buildPythonPackage (finalAttrs: {
     torchvision
   ];
 
-  pytestFlags = lib.optionals (pythonAtLeast "3.14") [
-    # DeprecationWarning: `torch.jit.script` is not supported in Python 3.14+ and may break.
-    # Please switch to `torch.compile` or `torch.export`.
-    "-Wignore::DeprecationWarning"
-  ];
+  __structuredAttrs = true;
+  build-system = [ setuptools ];
 
-  pythonImportsCheck = [ "pytorch_pfn_extras" ];
+  dependencies = [
+    numpy
+    packaging
+    torch
+    typing-extensions
+  ];
 
   disabledTestMarks = [
     # Requires CUDA access which is not possible in the nix environment.
     "gpu"
     "mpi"
-  ];
-
-  disabledTests = [
-    # AssertionError: assert 4 == 0
-    # where 4 = <MagicMock id='140733587469184'>.call_count
-    "test_lr_scheduler_wait_for_first_optimizer_step"
-  ]
-  ++ lib.optionals (pythonAtLeast "3.13") [
-    # RuntimeError: Dynamo is not supported on Python 3.13+
-    "test_register"
-  ]
-  ++ lib.optionals (pythonAtLeast "3.14") [
-    # AttributeError: 'Ensure' object has no attribute '__annotations__'. Did you mean: '__annotate_func__'?
-    "test_torchscript_module"
-
-    # TypeError: cannot pickle '_contextvars.Context' object
-    "test_record_iterable_with_multiprocessing"
-
-    # TypeError: cannot pickle '_thread.lock' object
-    "test_report_from_other_process"
-
-    # AssertionError: assert 'foo' in {}
-    "test_global_summary"
-  ]
-  ++ lib.optionals stdenv.hostPlatform.isDarwin [
-    # torch.distributed was not available on darwin at one point; revisit
-    "test_create_distributed_evaluator"
-    "test_distributed_evaluation"
-    "test_distributed_evaluator_progress_bar"
   ];
 
   disabledTestPaths = [
@@ -133,12 +92,52 @@ buildPythonPackage (finalAttrs: {
     "tests/pytorch_pfn_extras_tests/nn_tests/modules_tests/test_lazy_conv.py"
   ];
 
+  disabledTests = [
+    # AssertionError: assert 4 == 0
+    # where 4 = <MagicMock id='140733587469184'>.call_count
+    "test_lr_scheduler_wait_for_first_optimizer_step"
+  ]
+  ++ lib.optionals (pythonAtLeast "3.13") [
+    # RuntimeError: Dynamo is not supported on Python 3.13+
+    "test_register"
+  ]
+  ++ lib.optionals (pythonAtLeast "3.14") [
+    # AttributeError: 'Ensure' object has no attribute '__annotations__'. Did you mean: '__annotate_func__'?
+    "test_torchscript_module"
+
+    # TypeError: cannot pickle '_contextvars.Context' object
+    "test_record_iterable_with_multiprocessing"
+
+    # TypeError: cannot pickle '_thread.lock' object
+    "test_report_from_other_process"
+
+    # AssertionError: assert 'foo' in {}
+    "test_global_summary"
+  ]
+  ++ lib.optionals stdenv.hostPlatform.isDarwin [
+    # torch.distributed was not available on darwin at one point; revisit
+    "test_create_distributed_evaluator"
+    "test_distributed_evaluation"
+    "test_distributed_evaluator_progress_bar"
+  ];
+
+  pyproject = true;
+
+  pytestFlags = lib.optionals (pythonAtLeast "3.14") [
+    # DeprecationWarning: `torch.jit.script` is not supported in Python 3.14+ and may break.
+    # Please switch to `torch.compile` or `torch.export`.
+    "-Wignore::DeprecationWarning"
+  ];
+
+  pythonImportsCheck = [ "pytorch_pfn_extras" ];
+
   meta = {
     description = "Supplementary components to accelerate research and development in PyTorch";
     homepage = "https://github.com/pfnet/pytorch-pfn-extras";
     changelog = "https://github.com/pfnet/pytorch-pfn-extras/releases/tag/${finalAttrs.src.tag}";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ samuela ];
+
     badPlatforms = [
       # test_profile_report is broken on darwin
       lib.systems.inspect.patterns.isDarwin

@@ -1,21 +1,17 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
+  buildPythonPackage,
+  # tests
+  freezegun,
+  # passthru
+  gitUpdater,
   # build-system
   hatchling,
-
+  httpx,
   # dependencies
   huggingface-hub,
   langchain-core,
-  sentence-transformers,
-  tokenizers,
-  transformers,
-
-  # tests
-  freezegun,
-  httpx,
   lark,
   pandas,
   pytest-asyncio,
@@ -24,18 +20,16 @@
   pytestCheckHook,
   requests-mock,
   responses,
+  sentence-transformers,
   syrupy,
+  tokenizers,
   toml,
-
-  # passthru
-  gitUpdater,
+  transformers,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "langchain-huggingface";
   version = "1.2.2";
-  pyproject = true;
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "langchain-ai";
@@ -43,18 +37,6 @@ buildPythonPackage (finalAttrs: {
     tag = "langchain-huggingface==${finalAttrs.version}";
     hash = "sha256-jMbFqui0XoKZ15B+5kJAamW5Dasv/JCIZS2KtteRBXg=";
   };
-
-  sourceRoot = "${finalAttrs.src.name}/libs/partners/huggingface";
-
-  build-system = [ hatchling ];
-
-  dependencies = [
-    huggingface-hub
-    langchain-core
-    sentence-transformers
-    tokenizers
-    transformers
-  ];
 
   nativeCheckInputs = [
     freezegun
@@ -71,7 +53,16 @@ buildPythonPackage (finalAttrs: {
     toml
   ];
 
-  enabledTestPaths = [ "tests/unit_tests" ];
+  __structuredAttrs = true;
+  build-system = [ hatchling ];
+
+  dependencies = [
+    huggingface-hub
+    langchain-core
+    sentence-transformers
+    tokenizers
+    transformers
+  ];
 
   disabledTests = [
     # Requires a circular dependency on langchain
@@ -80,22 +71,27 @@ buildPythonPackage (finalAttrs: {
     "test_bind_tools"
   ];
 
+  enabledTestPaths = [ "tests/unit_tests" ];
+  pyproject = true;
   pythonImportsCheck = [ "langchain_huggingface" ];
+  sourceRoot = "${finalAttrs.src.name}/libs/partners/huggingface";
 
   passthru = {
     # python updater script sets the wrong tag
     skipBulkUpdate = true;
+
     updateScript = gitUpdater {
-      rev-prefix = "langchain-huggingface==";
       ignoredVersions = "a|b|dev|rc";
+      rev-prefix = "langchain-huggingface==";
     };
   };
 
   meta = {
-    changelog = "https://github.com/langchain-ai/langchain/releases/tag/${finalAttrs.src.tag}";
     description = "Integration package connecting Huggingface related classes and LangChain";
     homepage = "https://github.com/langchain-ai/langchain/tree/master/libs/partners/huggingface";
+    changelog = "https://github.com/langchain-ai/langchain/releases/tag/${finalAttrs.src.tag}";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       natsukium
       sarahec

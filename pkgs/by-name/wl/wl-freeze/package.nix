@@ -2,20 +2,17 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  makeWrapper,
   installShellFiles,
   jq,
+  libnotify,
+  makeWrapper,
   procps,
   psmisc,
-  libnotify,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
   pname = "wl-freeze";
   version = "2.0.2";
-
-  strictDeps = true;
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "Zerodya";
@@ -24,8 +21,7 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-miyDiUN86Zy9RfVm1MefKrYihX4+bFv6Jr4Cl4GzGz8=";
   };
 
-  dontConfigure = true;
-  dontBuild = true;
+  strictDeps = true;
 
   nativeBuildInputs = [
     makeWrapper
@@ -58,6 +54,10 @@ stdenv.mkDerivation (finalAttrs: {
         ]
       }
   '';
+
+  __structuredAttrs = true;
+  dontBuild = true;
+  dontConfigure = true;
 
   meta = {
     description = "Utility to suspend a game process (and other programs) in Wayland compositors";

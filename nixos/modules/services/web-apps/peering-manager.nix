@@ -42,22 +42,60 @@ let
 
 in
 {
+  imports = [
+    (lib.mkRemovedOptionModule [ "services" "peering-manager" "enableOidc" ] ''
+      The enableOidc option has been removed, since peering-manager has OIDC support builtin since version >= 1.9.0.
+
+      Make sure to update your OIDC configuration according to the documentation:
+      https://peering-manager.readthedocs.io/en/v1.9.3/administration/authentication/oidc/
+    '')
+    (lib.mkRemovedOptionModule [ "services" "peering-manager" "oidcConfigPath" ] ''
+      The oidcConfigPath option has been removed, since peering-manager has OIDC support builtin since version >= 1.9.0.
+
+      The new config settings for OIDC are explained in the documentation:
+      https://peering-manager.readthedocs.io/en/v1.9.3/administration/authentication/oidc/
+    '')
+  ];
+
   options.services.peering-manager = with lib; {
     enable = mkOption {
-      type = types.bool;
       default = false;
+
       description = ''
         Enable Peering Manager.
 
         This module requires a reverse proxy that serves `/static` separately.
         See this [example](https://github.com/peering-manager/contrib/blob/main/nginx.conf) on how to configure this.
       '';
+
+      type = types.bool;
+    };
+
+    enableLdap = mkOption {
+      default = false;
+
+      description = ''
+        Enable LDAP-Authentication for Peering Manager.
+
+        This requires a configuration file being pass through `ldapConfigPath`.
+      '';
+
+      type = types.bool;
+    };
+
+    enableScheduledTasks = mkOption {
+      default = true;
+
+      description = ''
+        Set up [scheduled tasks](https://peering-manager.readthedocs.io/en/stable/setup/8-scheduled-tasks/)
+      '';
+
+      type = types.bool;
     };
 
     environmentFile = mkOption {
-      type = with types; nullOr path;
       default = null;
-      example = "/run/secrets/peering-manager.env";
+
       description = ''
         Environment file as defined in {manpage}`systemd.exec(5)`.
 
@@ -78,149 +116,114 @@ in
         Note that this file needs to be available on the host on which
         `peering-manager` is running.
       '';
+
+      example = "/run/secrets/peering-manager.env";
+      type = with types; nullOr path;
     };
 
-    enableScheduledTasks = mkOption {
-      type = types.bool;
-      default = true;
+    extraConfig = mkOption {
+      default = "";
+
       description = ''
-        Set up [scheduled tasks](https://peering-manager.readthedocs.io/en/stable/setup/8-scheduled-tasks/)
+        Additional lines of configuration appended to the `configuration.py`.
+        See the [documentation](https://peering-manager.readthedocs.io/en/stable/configuration/optional-settings/) for more possible options.
       '';
+
+      type = types.lines;
+    };
+
+    ldapConfigPath = mkOption {
+      description = ''
+        Path to the Configuration-File for LDAP-Authentication, will be loaded as `ldap_config.py`.
+        See the [documentation](https://peering-manager.readthedocs.io/en/stable/setup/6-ldap/#configuration) for possible options.
+      '';
+
+      type = types.path;
     };
 
     listenAddress = mkOption {
-      type = types.str;
       default = "[::1]";
+
       description = ''
         Address the server will listen on.
       '';
-    };
 
-    port = mkOption {
-      type = types.port;
-      default = 8001;
-      description = ''
-        Port the server will listen on.
-      '';
-    };
-
-    plugins = mkOption {
-      type = types.functionTo (types.listOf types.package);
-      default = _: [ ];
-      defaultText = literalExpression ''
-        python3Packages: with python3Packages; [];
-      '';
-      description = ''
-        List of plugin packages to install.
-      '';
-    };
-
-    secretKeyFile = mkOption {
-      type = types.path;
-      description = ''
-        Path to a file containing the secret key.
-      '';
+      type = types.str;
     };
 
     peeringdbApiKeyFile = mkOption {
-      type = with types; nullOr path;
       default = null;
+
       description = ''
         Path to a file containing the PeeringDB API key.
       '';
+
+      type = with types; nullOr path;
+    };
+
+    plugins = mkOption {
+      default = _: [ ];
+
+      defaultText = literalExpression ''
+        python3Packages: with python3Packages; [];
+      '';
+
+      description = ''
+        List of plugin packages to install.
+      '';
+
+      type = types.functionTo (types.listOf types.package);
+    };
+
+    port = mkOption {
+      default = 8001;
+
+      description = ''
+        Port the server will listen on.
+      '';
+
+      type = types.port;
+    };
+
+    secretKeyFile = mkOption {
+      description = ''
+        Path to a file containing the secret key.
+      '';
+
+      type = types.path;
     };
 
     settings = lib.mkOption {
+      default = { };
+
       description = ''
         Configuration options to set in `configuration.py`.
         See the [documentation](https://peering-manager.readthedocs.io/en/stable/configuration/optional-settings/) for more possible options.
       '';
 
-      default = { };
-
       type = lib.types.submodule {
-        freeformType = pythonFmt.type;
-
         options = {
           ALLOWED_HOSTS = lib.mkOption {
-            type = with lib.types; listOf str;
             default = [ "*" ];
+
             description = ''
               A list of valid fully-qualified domain names (FQDNs) and/or IP
               addresses that can be used to reach the peering manager service.
             '';
+
+            type = with lib.types; listOf str;
           };
         };
+
+        freeformType = pythonFmt.type;
       };
-    };
-
-    extraConfig = mkOption {
-      type = types.lines;
-      default = "";
-      description = ''
-        Additional lines of configuration appended to the `configuration.py`.
-        See the [documentation](https://peering-manager.readthedocs.io/en/stable/configuration/optional-settings/) for more possible options.
-      '';
-    };
-
-    enableLdap = mkOption {
-      type = types.bool;
-      default = false;
-      description = ''
-        Enable LDAP-Authentication for Peering Manager.
-
-        This requires a configuration file being pass through `ldapConfigPath`.
-      '';
-    };
-
-    ldapConfigPath = mkOption {
-      type = types.path;
-      description = ''
-        Path to the Configuration-File for LDAP-Authentication, will be loaded as `ldap_config.py`.
-        See the [documentation](https://peering-manager.readthedocs.io/en/stable/setup/6-ldap/#configuration) for possible options.
-      '';
     };
   };
 
-  imports = [
-    (lib.mkRemovedOptionModule [ "services" "peering-manager" "enableOidc" ] ''
-      The enableOidc option has been removed, since peering-manager has OIDC support builtin since version >= 1.9.0.
-
-      Make sure to update your OIDC configuration according to the documentation:
-      https://peering-manager.readthedocs.io/en/v1.9.3/administration/authentication/oidc/
-    '')
-    (lib.mkRemovedOptionModule [ "services" "peering-manager" "oidcConfigPath" ] ''
-      The oidcConfigPath option has been removed, since peering-manager has OIDC support builtin since version >= 1.9.0.
-
-      The new config settings for OIDC are explained in the documentation:
-      https://peering-manager.readthedocs.io/en/v1.9.3/administration/authentication/oidc/
-    '')
-  ];
-
   config = lib.mkIf cfg.enable {
+    environment.systemPackages = [ peeringManagerManageScript ];
+
     services.peering-manager = {
-      settings = {
-        DATABASE = {
-          NAME = "peering-manager";
-          USER = "peering-manager";
-          HOST = "/run/postgresql";
-        };
-
-        # Redis database settings. Redis is used for caching and for queuing background tasks such as webhook events. A separate
-        # configuration exists for each. Full connection details are required in both sections, and it is strongly recommended
-        # to use two separate database IDs.
-        REDIS = {
-          tasks = {
-            UNIX_SOCKET_PATH = config.services.redis.servers.peering-manager.unixSocket;
-            DATABASE = 0;
-          };
-          caching = {
-            UNIX_SOCKET_PATH = config.services.redis.servers.peering-manager.unixSocket;
-            DATABASE = 1;
-          };
-        };
-      };
-
       extraConfig = ''
         with open("${cfg.secretKeyFile}", "r") as file:
           SECRET_KEY = file.readline()
@@ -231,34 +234,45 @@ in
       '';
 
       plugins = (ps: (lib.optionals cfg.enableLdap [ ps.django-auth-ldap ]));
+
+      settings = {
+        DATABASE = {
+          HOST = "/run/postgresql";
+          NAME = "peering-manager";
+          USER = "peering-manager";
+        };
+
+        # Redis database settings. Redis is used for caching and for queuing background tasks such as webhook events. A separate
+        # configuration exists for each. Full connection details are required in both sections, and it is strongly recommended
+        # to use two separate database IDs.
+        REDIS = {
+          caching = {
+            DATABASE = 1;
+            UNIX_SOCKET_PATH = config.services.redis.servers.peering-manager.unixSocket;
+          };
+
+          tasks = {
+            DATABASE = 0;
+            UNIX_SOCKET_PATH = config.services.redis.servers.peering-manager.unixSocket;
+          };
+        };
+      };
     };
-
-    system.build.peeringManagerPkg = pkg;
-
-    services.redis.servers.peering-manager.enable = true;
 
     services.postgresql = {
       enable = true;
       ensureDatabases = [ "peering-manager" ];
+
       ensureUsers = [
         {
-          name = "peering-manager";
           ensureDBOwnership = true;
+          name = "peering-manager";
         }
       ];
     };
 
-    environment.systemPackages = [ peeringManagerManageScript ];
-
-    systemd.targets.peering-manager = {
-      description = "Target for all Peering Manager services";
-      wantedBy = [ "multi-user.target" ];
-      wants = [ "network-online.target" ];
-      after = [
-        "network-online.target"
-        "redis-peering-manager.service"
-      ];
-    };
+    services.redis.servers.peering-manager.enable = true;
+    system.build.peeringManagerPkg = pkg;
 
     systemd.services =
       let
@@ -266,46 +280,25 @@ in
           environment = {
             PYTHONPATH = pkg.pythonPath;
           };
+
           serviceConfig = {
-            WorkingDirectory = "/var/lib/peering-manager";
-            User = "peering-manager";
             Group = "peering-manager";
+            Restart = "on-failure";
             StateDirectory = "peering-manager";
             StateDirectoryMode = "0750";
-            Restart = "on-failure";
+            User = "peering-manager";
+            WorkingDirectory = "/var/lib/peering-manager";
           };
         };
       in
       {
-        peering-manager-config = lib.mkIf (cfg.environmentFile != null) (
-          lib.recursiveUpdate defaults {
-            description = "Peering Manager config file setup";
-            wantedBy = [ "peering-manager.target" ];
-            serviceConfig = {
-              Type = "oneshot";
-              EnvironmentFile = [ cfg.environmentFile ];
-              ExecStart = "${lib.getExe pkgs.envsubst} -i ${configFile} -o ${finalConfigFile}";
-            };
-          }
-        );
-
-        peering-manager-migration = lib.recursiveUpdate defaults {
-          description = "Peering Manager migrations";
-          wantedBy = [ "peering-manager.target" ];
-          after = lib.mkIf (cfg.environmentFile != null) [ "peering-manager-config.service" ];
-          serviceConfig = {
-            Type = "oneshot";
-            ExecStart = "${pkg}/bin/peering-manager migrate";
-          };
-        };
-
         peering-manager = lib.recursiveUpdate defaults {
-          description = "Peering Manager WSGI Service";
-          wantedBy = [ "peering-manager.target" ];
           after = [
             "peering-manager-migration.service"
           ]
           ++ lib.optionals (cfg.environmentFile != null) [ "peering-manager-config.service" ];
+
+          description = "Peering Manager WSGI Service";
 
           preStart = ''
             ${pkg}/bin/peering-manager remove_stale_contenttypes --no-input
@@ -318,106 +311,152 @@ in
                 --pythonpath ${pkg}/opt/peering-manager
             '';
           };
-        };
 
-        peering-manager-rq = lib.recursiveUpdate defaults {
-          description = "Peering Manager Request Queue Worker";
           wantedBy = [ "peering-manager.target" ];
-          after = [ "peering-manager.service" ];
-          serviceConfig.ExecStart = "${pkg}/bin/peering-manager rqworker high default low";
         };
 
-        peering-manager-housekeeping = lib.recursiveUpdate defaults {
-          description = "Peering Manager housekeeping job";
+        peering-manager-config = lib.mkIf (cfg.environmentFile != null) (
+          lib.recursiveUpdate defaults {
+            description = "Peering Manager config file setup";
+
+            serviceConfig = {
+              EnvironmentFile = [ cfg.environmentFile ];
+              ExecStart = "${lib.getExe pkgs.envsubst} -i ${configFile} -o ${finalConfigFile}";
+              Type = "oneshot";
+            };
+
+            wantedBy = [ "peering-manager.target" ];
+          }
+        );
+
+        peering-manager-configuration-deployment = lib.recursiveUpdate defaults {
           after = [ "peering-manager.service" ];
+          description = "Push configuration to routers";
+
           serviceConfig = {
+            ExecStart = "${pkg}/bin/peering-manager configure_routers";
             Type = "oneshot";
-            ExecStart = "${pkg}/bin/peering-manager housekeeping";
           };
         };
 
-        peering-manager-peeringdb-sync = lib.recursiveUpdate defaults {
-          description = "PeeringDB sync";
+        peering-manager-housekeeping = lib.recursiveUpdate defaults {
           after = [ "peering-manager.service" ];
+          description = "Peering Manager housekeeping job";
+
           serviceConfig = {
+            ExecStart = "${pkg}/bin/peering-manager housekeeping";
             Type = "oneshot";
+          };
+        };
+
+        peering-manager-migration = lib.recursiveUpdate defaults {
+          after = lib.mkIf (cfg.environmentFile != null) [ "peering-manager-config.service" ];
+          description = "Peering Manager migrations";
+
+          serviceConfig = {
+            ExecStart = "${pkg}/bin/peering-manager migrate";
+            Type = "oneshot";
+          };
+
+          wantedBy = [ "peering-manager.target" ];
+        };
+
+        peering-manager-peeringdb-sync = lib.recursiveUpdate defaults {
+          after = [ "peering-manager.service" ];
+          description = "PeeringDB sync";
+
+          serviceConfig = {
             ExecStart = "${pkg}/bin/peering-manager peeringdb_sync";
+            Type = "oneshot";
           };
         };
 
         peering-manager-prefix-fetch = lib.recursiveUpdate defaults {
-          description = "Fetch IRR AS-SET prefixes";
           after = [ "peering-manager.service" ];
+          description = "Fetch IRR AS-SET prefixes";
+
           serviceConfig = {
-            Type = "oneshot";
             ExecStart = "${pkg}/bin/peering-manager get_irr_data";
+            Type = "oneshot";
           };
         };
 
-        peering-manager-configuration-deployment = lib.recursiveUpdate defaults {
-          description = "Push configuration to routers";
+        peering-manager-rq = lib.recursiveUpdate defaults {
           after = [ "peering-manager.service" ];
-          serviceConfig = {
-            Type = "oneshot";
-            ExecStart = "${pkg}/bin/peering-manager configure_routers";
-          };
+          description = "Peering Manager Request Queue Worker";
+          serviceConfig.ExecStart = "${pkg}/bin/peering-manager rqworker high default low";
+          wantedBy = [ "peering-manager.target" ];
         };
 
         peering-manager-session-poll = lib.recursiveUpdate defaults {
-          description = "Poll peering sessions from routers";
           after = [ "peering-manager.service" ];
+          description = "Poll peering sessions from routers";
+
           serviceConfig = {
-            Type = "oneshot";
             ExecStart = "${pkg}/bin/peering-manager poll_bgp_sessions";
+            Type = "oneshot";
           };
         };
       };
 
+    systemd.targets.peering-manager = {
+      after = [
+        "network-online.target"
+        "redis-peering-manager.service"
+      ];
+
+      description = "Target for all Peering Manager services";
+      wantedBy = [ "multi-user.target" ];
+      wants = [ "network-online.target" ];
+    };
+
     systemd.timers = {
+      peering-manager-configuration-deployment = {
+        enable = lib.mkDefault cfg.enableScheduledTasks;
+        description = "Push router configuration every hour 5 minutes before full hour";
+        timerConfig.OnCalendar = "*:55:00";
+        wantedBy = [ "timers.target" ];
+      };
+
       peering-manager-housekeeping = {
         description = "Run Peering Manager housekeeping job";
-        wantedBy = [ "timers.target" ];
         timerConfig.OnCalendar = "daily";
+        wantedBy = [ "timers.target" ];
       };
 
       peering-manager-peeringdb-sync = {
         enable = lib.mkDefault cfg.enableScheduledTasks;
         description = "Sync PeeringDB at 2:30";
-        wantedBy = [ "timers.target" ];
         timerConfig.OnCalendar = "02:30:00";
+        wantedBy = [ "timers.target" ];
       };
 
       peering-manager-prefix-fetch = {
         enable = lib.mkDefault cfg.enableScheduledTasks;
         description = "Fetch IRR AS-SET prefixes at 4:30";
-        wantedBy = [ "timers.target" ];
         timerConfig.OnCalendar = "04:30:00";
-      };
-
-      peering-manager-configuration-deployment = {
-        enable = lib.mkDefault cfg.enableScheduledTasks;
-        description = "Push router configuration every hour 5 minutes before full hour";
         wantedBy = [ "timers.target" ];
-        timerConfig.OnCalendar = "*:55:00";
       };
 
       peering-manager-session-poll = {
         enable = lib.mkDefault cfg.enableScheduledTasks;
         description = "Poll peering sessions from routers every hour";
-        wantedBy = [ "timers.target" ];
         timerConfig.OnCalendar = "*:00:00";
+        wantedBy = [ "timers.target" ];
       };
     };
 
-    users.users.peering-manager = {
-      home = "/var/lib/peering-manager";
-      isSystemUser = true;
-      group = "peering-manager";
-    };
-    users.groups.peering-manager = { };
     users.groups."${config.services.redis.servers.peering-manager.user}".members = [
       "peering-manager"
     ];
+
+    users.groups.peering-manager = { };
+
+    users.users.peering-manager = {
+      group = "peering-manager";
+      home = "/var/lib/peering-manager";
+      isSystemUser = true;
+    };
   };
 
   meta.maintainers = with lib.maintainers; [ yureka-wdz ];

@@ -1,29 +1,30 @@
 {
   lib,
-  buildPythonPackage,
-  fetchPypi,
-  setuptools,
-  unicrypto,
+  asn1crypto,
   asyauth,
   asysocks,
-  asn1crypto,
-  winacl,
+  buildPythonPackage,
+  fetchPypi,
   prompt-toolkit,
-  tqdm,
-  wcwidth,
+  setuptools,
   tabulate,
+  tqdm,
+  unicrypto,
+  wcwidth,
+  winacl,
 }:
 
 buildPythonPackage rec {
   pname = "msldap";
   version = "0.5.15";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
     hash = "sha256-uAJKLAVZFY7EB8tjFyAezINicki6ruzuXf1EGcp3Pj0=";
   };
 
+  # Project doesn't have tests
+  doCheck = false;
   build-system = [ setuptools ];
 
   dependencies = [
@@ -38,9 +39,7 @@ buildPythonPackage rec {
     tabulate
   ];
 
-  # Project doesn't have tests
-  doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "msldap" ];
 
   meta = {

@@ -1,18 +1,25 @@
 {
   lib,
-  python3Packages,
   fetchPypi,
+  python3Packages,
 }:
 
 python3Packages.buildPythonApplication (finalAttrs: {
   pname = "steamback";
   version = "0.3.6";
-  pyproject = true;
 
   src = fetchPypi {
     inherit (finalAttrs) pname version;
     hash = "sha256-hvMPSxIfwwQqo80JCpYhcbVY4kXs5jWtjjafVSMrw6o=";
   };
+
+  checkPhase = ''
+    runHook preCheck
+
+    $out/bin/steamback --help
+
+    runHook postCheck
+  '';
 
   build-system = with python3Packages; [
     setuptools
@@ -29,20 +36,7 @@ python3Packages.buildPythonApplication (finalAttrs: {
     pillow
   ];
 
-  pythonRelaxDeps = [
-    "async-tkinter-loop"
-    "platformdirs"
-    "pillow"
-    "psutil"
-  ];
-
-  checkPhase = ''
-    runHook preCheck
-
-    $out/bin/steamback --help
-
-    runHook postCheck
-  '';
+  pyproject = true;
 
   pythonImportsCheck = [
     "steamback"
@@ -51,11 +45,18 @@ python3Packages.buildPythonApplication (finalAttrs: {
     "steamback.util"
   ];
 
+  pythonRelaxDeps = [
+    "async-tkinter-loop"
+    "platformdirs"
+    "pillow"
+    "psutil"
+  ];
+
   meta = {
     description = "Decky plugin to add versioned save-game snapshots to Steam-cloud enabled games";
-    mainProgram = "steamback";
     homepage = "https://github.com/geeksville/steamback";
     license = lib.licenses.gpl3;
     maintainers = with lib.maintainers; [ AngryAnt ];
+    mainProgram = "steamback";
   };
 })

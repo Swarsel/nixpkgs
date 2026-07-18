@@ -13,12 +13,12 @@ stdenv.mkDerivation {
     sha256 = "1k32p6naxg40g664ip48zvm61xza7l9az3v3rawmjw97i0mwz7y3";
   };
 
-  dontUnpack = true;
-
   installPhase = ''
     mkdir -p $out/share
     cp $src $out/share/zncplayback.py
   '';
+
+  dontUnpack = true;
 
   passthru = {
     scripts = [ "zncplayback.py" ];

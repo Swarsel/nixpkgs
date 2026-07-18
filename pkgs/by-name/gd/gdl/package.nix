@@ -2,11 +2,11 @@
   lib,
   stdenv,
   fetchurl,
-  pkg-config,
-  libxml2,
-  gtk3,
   gnome,
+  gtk3,
   intltool,
+  libxml2,
+  pkg-config,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -18,19 +18,20 @@ stdenv.mkDerivation (finalAttrs: {
     sha256 = "NkHU/WadHhgYrv88+f+3iH/Fw2eFC3jCjHdeukq2pVU=";
   };
 
-  env = lib.optionalAttrs stdenv.cc.isGNU {
-    # https://gitlab.gnome.org/Archive/gdl/-/issues/9
-    NIX_CFLAGS_COMPILE = "-Wno-error=incompatible-pointer-types";
-  };
-
   nativeBuildInputs = [
     pkg-config
     intltool
   ];
+
   buildInputs = [
     libxml2
     gtk3
   ];
+
+  env = lib.optionalAttrs stdenv.cc.isGNU {
+    # https://gitlab.gnome.org/Archive/gdl/-/issues/9
+    NIX_CFLAGS_COMPILE = "-Wno-error=incompatible-pointer-types";
+  };
 
   passthru = {
     updateScript = gnome.updateScript {
@@ -41,8 +42,8 @@ stdenv.mkDerivation (finalAttrs: {
   meta = {
     description = "Gnome docking library";
     homepage = "https://developer.gnome.org/gdl/";
-    teams = [ lib.teams.gnome ];
     license = lib.licenses.gpl2;
     platforms = lib.platforms.unix;
+    teams = [ lib.teams.gnome ];
   };
 })

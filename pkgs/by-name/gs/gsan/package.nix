@@ -7,7 +7,6 @@
 python3.pkgs.buildPythonApplication (finalAttrs: {
   pname = "gsan";
   version = "5.0.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "franccesco";
@@ -16,6 +15,8 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     hash = "sha256-Os/NappuvdadGqCouF5vhvPhRnu1SLpii+Esq0C1j48=";
   };
 
+  # Project has no tests
+  doCheck = false;
   build-system = with python3.pkgs; [ setuptools ];
 
   dependencies = with python3.pkgs; [
@@ -26,9 +27,7 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     typer
   ];
 
-  # Project has no tests
-  doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "gsan" ];
 
   meta = {

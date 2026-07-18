@@ -1,11 +1,9 @@
 {
   lib,
-  mkDerivation,
   libusb,
+  mkDerivation,
 }:
 mkDerivation {
-  path = "usr.sbin/usbconfig";
-
   outputs = [
     "out"
     "man"
@@ -16,6 +14,7 @@ mkDerivation {
     libusb
   ];
 
+  path = "usr.sbin/usbconfig";
   meta.mainProgram = "usbconfig";
   meta.platforms = lib.platforms.freebsd;
 }

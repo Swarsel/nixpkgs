@@ -1,40 +1,35 @@
 {
   lib,
   stdenv,
+  fetchurl,
   fetchFromGitHub,
   fetchFromGitLab,
-  fetchurl,
   callPackage,
-
-  coreutils,
-  cmake,
-  ninja,
-  pkg-config,
-  wayland-scanner,
-
   capstone,
+  cmake,
+  coreutils,
+  curl,
   dbus,
   freetype,
   glfw,
-  onetbb,
-
-  withGtkFileSelector ? false,
   gtk3,
-
-  withWayland ? stdenv.hostPlatform.isLinux,
+  html-tidy,
+  libffi,
   libglvnd,
   libxkbcommon,
+  md4c,
+  nativefiledialog-extended,
+  ninja,
+  nlohmann_json,
+  onetbb,
+  pkg-config,
+  pugixml,
   wayland,
   wayland-protocols,
-  libffi,
-
-  md4c,
-  pugixml,
-  curl,
+  wayland-scanner,
   zstd,
-  nlohmann_json,
-  nativefiledialog-extended,
-  html-tidy,
+  withGtkFileSelector ? false,
+  withWayland ? stdenv.hostPlatform.isLinux,
 }:
 
 assert withGtkFileSelector -> stdenv.hostPlatform.isLinux;
@@ -42,45 +37,24 @@ assert withGtkFileSelector -> stdenv.hostPlatform.isLinux;
 let
   mkTracyPackage =
     {
-      version,
       srcHash,
+      version,
       cpmSrcs ? [ ],
-      patches ? [ ],
       extraBuildInputs ? [ ],
+      patches ? [ ],
     }:
     stdenv.mkDerivation {
       inherit patches;
-
-      pname = "tracy";
       inherit version;
+      pname = "tracy";
 
       src = fetchFromGitHub {
-        name = "tracy";
         owner = "wolfpld";
         repo = "tracy";
         rev = "v${version}";
         hash = "${srcHash}";
+        name = "tracy";
       };
-
-      postUnpack = (
-        lib.strings.concatLines (
-          lib.lists.forEach cpmSrcs (
-            s:
-            # Make CPM sources writable for patches and set CPM_<package>_SOURCE flags
-            ''
-              cp -R ${s.out} ${s.name}
-              chmod -R u+w ${s.name}
-              appendToVar cmakeFlags -DCPM_${s.name}_SOURCE=$(pwd)/${s.name}
-            ''
-
-            # PPQSort tries to download CPM.cmake
-            # Provide it the newer version from tracy instead
-            + lib.optionalString (s.name == "PPQSort") ''
-              cp ./tracy/cmake/CPM.cmake PPQSort/cmake/CPM.cmake
-            ''
-          )
-        )
-      );
 
       nativeBuildInputs = [
         cmake
@@ -124,8 +98,6 @@ let
       );
 
       env.NIX_CFLAGS_COMPILE = lib.optionalString stdenv.hostPlatform.isLinux "-ltbb";
-
-      dontUseCmakeBuildDir = true;
 
       postConfigure =
         # CPM_<package>_SOURCE flags prevent downloads but cause each of the sub-projects
@@ -171,16 +143,40 @@ let
         install -D -m 0444 icon/icon.svg $out/share/icons/hicolor/scalable/apps/tracy.svg
       '';
 
+      dontUseCmakeBuildDir = true;
+
+      postUnpack = (
+        lib.strings.concatLines (
+          lib.lists.forEach cpmSrcs (
+            s:
+            # Make CPM sources writable for patches and set CPM_<package>_SOURCE flags
+            ''
+              cp -R ${s.out} ${s.name}
+              chmod -R u+w ${s.name}
+              appendToVar cmakeFlags -DCPM_${s.name}_SOURCE=$(pwd)/${s.name}
+            ''
+
+            # PPQSort tries to download CPM.cmake
+            # Provide it the newer version from tracy instead
+            + lib.optionalString (s.name == "PPQSort") ''
+              cp ./tracy/cmake/CPM.cmake PPQSort/cmake/CPM.cmake
+            ''
+          )
+        )
+      );
+
       meta = {
         description = "Real time, nanosecond resolution, remote telemetry frame profiler for games and other applications";
         homepage = "https://github.com/wolfpld/tracy";
         license = lib.licenses.bsd3;
-        mainProgram = "tracy";
+
         maintainers = with lib.maintainers; [
           mpickering
           nagisa
         ];
+
         platforms = lib.platforms.linux ++ lib.optionals (!withWayland) lib.platforms.darwin;
+        mainProgram = "tracy";
       };
     };
 in

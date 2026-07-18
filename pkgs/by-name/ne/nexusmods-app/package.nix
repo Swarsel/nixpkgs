@@ -1,12 +1,12 @@
 {
+  lib,
+  fetchFromGitHub,
   _7zz,
   buildDotnetModule,
   callPackage,
   desktop-file-utils,
   dotnetCorePackages,
-  fetchFromGitHub,
   imagemagick,
-  lib,
   xdg-utils,
   pname ? "nexusmods-app",
 }:
@@ -32,30 +32,6 @@ buildDotnetModule (finalAttrs: {
     fetchSubmodules = true;
   };
 
-  gameHashes = callPackage ./game-hashes { };
-
-  enableParallelBuilding = false;
-
-  # If the whole solution is published, there seems to be a race condition where
-  # it will sometimes publish the wrong version of a dependent assembly, for
-  # example: Microsoft.Extensions.Hosting.dll 6.0.0 instead of 8.0.0.
-  # https://learn.microsoft.com/en-us/dotnet/core/compatibility/sdk/7.0/solution-level-output-no-longer-valid
-  # TODO: do something about this in buildDotnetModule
-  projectFile = "src/NexusMods.App/NexusMods.App.csproj";
-  testProjectFile = "NexusMods.App.sln";
-
-  nativeCheckInputs = [ _7zz ];
-
-  nativeBuildInputs = [
-    imagemagick # For resizing SVG icon in postInstall
-  ];
-
-  nugetDeps = ./deps.json;
-  mapNuGetDependencies = true;
-
-  dotnet-sdk = dotnetCorePackages.sdk_9_0;
-  dotnet-runtime = dotnetCorePackages.runtime_9_0;
-
   postPatch = ''
     # Specify a fixed date to improve build reproducibility
     echo "1970-01-01T00:00:00Z" >buildDate.txt
@@ -76,9 +52,17 @@ buildDotnetModule (finalAttrs: {
     ''}
   '';
 
-  makeWrapperArgs = [
-    "--prefix PATH : ${lib.makeBinPath finalAttrs.runtimeInputs}"
+  nativeBuildInputs = [
+    imagemagick # For resizing SVG icon in postInstall
   ];
+
+  # Avoid running `dotnet test` in the main package:
+  # - The test-suite is slow
+  # - Some tests fail intermittently
+  # - The package is often uncached; especially the unfree variant
+  # - We can enable tests in a `passthru.tests` override
+  doCheck = false;
+  nativeCheckInputs = [ _7zz ];
 
   postInstall = ''
     ${lib.strings.toShellVars {
@@ -110,53 +94,6 @@ buildDotnetModule (finalAttrs: {
     done
   '';
 
-  runtimeInputs = [
-    _7zz
-    desktop-file-utils
-    xdg-utils
-  ];
-
-  executables = [ "NexusMods.App" ];
-
-  dotnetBuildFlags = [
-    # From https://github.com/Nexus-Mods/NexusMods.App/blob/v0.7.0/src/NexusMods.App/app.pupnet.conf#L38
-    "--property:Version=${finalAttrs.version}"
-    "--property:TieredCompilation=true"
-    "--property:PublishReadyToRun=true"
-    "--property:DefineConstants=${lib.strings.concatStringsSep "%3B" constants}"
-  ];
-
-  # Avoid running `dotnet test` in the main package:
-  # - The test-suite is slow
-  # - Some tests fail intermittently
-  # - The package is often uncached; especially the unfree variant
-  # - We can enable tests in a `passthru.tests` override
-  doCheck = false;
-
-  dotnetTestFlags = [
-    "--environment=USER=nobody"
-    "--property:Version=${finalAttrs.version}"
-    "--property:DefineConstants=${lib.strings.concatStringsSep "%3B" constants}"
-
-    # Disable native apphosts for tests; they fail in checkPhase as the wrapper env (DOTNET_ROOT, libs) isn't applied
-    "--property:UseAppHost=false"
-  ];
-
-  testFilters = [
-    "Category!=Disabled"
-    "FlakeyTest!=True"
-    "RequiresNetworking!=True"
-  ];
-
-  disabledTests = [
-    # Fails attempting to fetch SMAPI version data from github:
-    # https://github.com/erri120/smapi-versions/raw/main/data/game-smapi-versions.json
-    "NexusMods.Games.StardewValley.Tests.SMAPIGameVersionDiagnosticEmitterTests.Test_TryGetLastSupportedSMAPIVersion"
-  ]
-  ++ lib.optionals (!_7zz.meta.unfree) [
-    "NexusMods.Games.FOMOD.Tests.FomodXmlInstallerTests.InstallsFilesSimple_UsingRar"
-  ];
-
   doInstallCheck = true;
 
   nativeInstallCheckInputs = [
@@ -183,6 +120,66 @@ buildDotnetModule (finalAttrs: {
     runHook postInstallCheck
   '';
 
+  disabledTests = [
+    # Fails attempting to fetch SMAPI version data from github:
+    # https://github.com/erri120/smapi-versions/raw/main/data/game-smapi-versions.json
+    "NexusMods.Games.StardewValley.Tests.SMAPIGameVersionDiagnosticEmitterTests.Test_TryGetLastSupportedSMAPIVersion"
+  ]
+  ++ lib.optionals (!_7zz.meta.unfree) [
+    "NexusMods.Games.FOMOD.Tests.FomodXmlInstallerTests.InstallsFilesSimple_UsingRar"
+  ];
+
+  dotnet-runtime = dotnetCorePackages.runtime_9_0;
+  dotnet-sdk = dotnetCorePackages.sdk_9_0;
+
+  dotnetBuildFlags = [
+    # From https://github.com/Nexus-Mods/NexusMods.App/blob/v0.7.0/src/NexusMods.App/app.pupnet.conf#L38
+    "--property:Version=${finalAttrs.version}"
+    "--property:TieredCompilation=true"
+    "--property:PublishReadyToRun=true"
+    "--property:DefineConstants=${lib.strings.concatStringsSep "%3B" constants}"
+  ];
+
+  dotnetTestFlags = [
+    "--environment=USER=nobody"
+    "--property:Version=${finalAttrs.version}"
+    "--property:DefineConstants=${lib.strings.concatStringsSep "%3B" constants}"
+
+    # Disable native apphosts for tests; they fail in checkPhase as the wrapper env (DOTNET_ROOT, libs) isn't applied
+    "--property:UseAppHost=false"
+  ];
+
+  enableParallelBuilding = false;
+  executables = [ "NexusMods.App" ];
+  gameHashes = callPackage ./game-hashes { };
+
+  makeWrapperArgs = [
+    "--prefix PATH : ${lib.makeBinPath finalAttrs.runtimeInputs}"
+  ];
+
+  mapNuGetDependencies = true;
+  nugetDeps = ./deps.json;
+  # If the whole solution is published, there seems to be a race condition where
+  # it will sometimes publish the wrong version of a dependent assembly, for
+  # example: Microsoft.Extensions.Hosting.dll 6.0.0 instead of 8.0.0.
+  # https://learn.microsoft.com/en-us/dotnet/core/compatibility/sdk/7.0/solution-level-output-no-longer-valid
+  # TODO: do something about this in buildDotnetModule
+  projectFile = "src/NexusMods.App/NexusMods.App.csproj";
+
+  runtimeInputs = [
+    _7zz
+    desktop-file-utils
+    xdg-utils
+  ];
+
+  testFilters = [
+    "Category!=Disabled"
+    "FlakeyTest!=True"
+    "RequiresNetworking!=True"
+  ];
+
+  testProjectFile = "NexusMods.App.sln";
+
   passthru.tests = {
     # Build the package and run `dotnet test`
     app = finalAttrs.finalPackage.overrideAttrs {
@@ -194,16 +191,8 @@ buildDotnetModule (finalAttrs: {
   passthru.updateScript = ./update.sh;
 
   meta = {
-    mainProgram = "NexusMods.App";
-    homepage = "https://github.com/Nexus-Mods/NexusMods.App";
-    changelog = "https://github.com/Nexus-Mods/NexusMods.App/releases/tag/${finalAttrs.src.tag}";
-    license = [ lib.licenses.gpl3Plus ];
-    maintainers = with lib.maintainers; [
-      l0b0
-      MattSturgeon
-    ];
-    platforms = lib.platforms.linux;
     description = "Game mod installer, creator and manager";
+
     longDescription = ''
       A mod installer, creator and manager for all your popular games.
 
@@ -230,6 +219,19 @@ buildDotnetModule (finalAttrs: {
           ''
       }
     '';
+
+    homepage = "https://github.com/Nexus-Mods/NexusMods.App";
+    changelog = "https://github.com/Nexus-Mods/NexusMods.App/releases/tag/${finalAttrs.src.tag}";
+    license = [ lib.licenses.gpl3Plus ];
+
+    maintainers = with lib.maintainers; [
+      l0b0
+      MattSturgeon
+    ];
+
+    platforms = lib.platforms.linux;
+    mainProgram = "NexusMods.App";
+
     knownVulnerabilities = [
       "NexusMods.App has been discontinued upstream: https://www.nexusmods.com/news/15424"
     ];

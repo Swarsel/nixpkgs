@@ -1,7 +1,7 @@
 {
   lib,
-  buildNpmPackage,
   fetchFromGitHub,
+  buildNpmPackage,
   electron,
   makeWrapper,
 }:
@@ -17,29 +17,27 @@ buildNpmPackage rec {
     hash = "sha256-TcsKjRwiCTRQLxolRuJ7nRTGxFC0V2Q8LQC5p9iXaaY=";
   };
 
+  nativeBuildInputs = [ makeWrapper ];
   npmDepsHash = "sha256-jWLvsN6BCxTWn/Lc0fSz0VJIUiFNN8ptSYMeWlWsHXc=";
 
   env = {
     ELECTRON_SKIP_BINARY_DOWNLOAD = 1;
   };
 
-  npmFlags = [ "--ignore-scripts" ];
-
-  npmBuildScript = "build:prod";
-
-  nativeBuildInputs = [ makeWrapper ];
-
   postInstall = ''
     makeWrapper ${electron}/bin/electron $out/bin/uivonim \
       --add-flags $out/lib/node_modules/uivonim/build/main/main.js
   '';
 
+  npmBuildScript = "build:prod";
+  npmFlags = [ "--ignore-scripts" ];
+
   meta = {
-    homepage = "https://github.com/smolck/uivonim";
     description = "Cross-platform GUI for neovim based on electron";
+    homepage = "https://github.com/smolck/uivonim";
+    license = lib.licenses.agpl3Only;
     maintainers = [ ];
     platforms = lib.platforms.unix;
-    license = lib.licenses.agpl3Only;
     mainProgram = "uivonim";
   };
 }

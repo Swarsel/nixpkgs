@@ -1,24 +1,22 @@
 {
   lib,
   stdenv,
-  python3Packages,
   fetchFromGitHub,
-
   # tests
   cabal-install,
-  cargo,
-  gitMinimal,
-  go,
-  perl,
-  versionCheckHook,
-  writableTmpDirAsHomeHook,
-  coursier,
-  dotnet-sdk,
-  nodejs,
-
   # passthru
   callPackage,
+  cargo,
+  coursier,
+  dotnet-sdk,
+  gitMinimal,
+  go,
+  nodejs,
+  perl,
   pre-commit,
+  python3Packages,
+  versionCheckHook,
+  writableTmpDirAsHomeHook,
 }:
 
 let
@@ -27,7 +25,6 @@ in
 python3Packages.buildPythonApplication (finalAttrs: {
   pname = "pre-commit";
   version = "4.5.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "pre-commit";
@@ -42,18 +39,16 @@ python3Packages.buildPythonApplication (finalAttrs: {
     ./pygrep-pythonpath.patch
   ];
 
-  build-system = with python3Packages; [
-    setuptools
-  ];
+  postPatch = ''
+    substituteInPlace pre_commit/resources/hook-tmpl \
+      --subst-var-by pre-commit $out
+    substituteInPlace pre_commit/languages/python.py \
+      --subst-var-by virtualenv ${python3Packages.virtualenv}
+    substituteInPlace pre_commit/languages/node.py \
+      --subst-var-by nodeenv ${python3Packages.nodeenv}
 
-  dependencies = with python3Packages; [
-    cfgv
-    identify
-    nodeenv
-    pyyaml
-    toml
-    virtualenv
-  ];
+    patchShebangs pre_commit/resources/hook-tmpl
+  '';
 
   nativeCheckInputs = [
     cabal-install
@@ -86,21 +81,6 @@ python3Packages.buildPythonApplication (finalAttrs: {
     nodejs
   ];
 
-  postPatch = ''
-    substituteInPlace pre_commit/resources/hook-tmpl \
-      --subst-var-by pre-commit $out
-    substituteInPlace pre_commit/languages/python.py \
-      --subst-var-by virtualenv ${python3Packages.virtualenv}
-    substituteInPlace pre_commit/languages/node.py \
-      --subst-var-by nodeenv ${python3Packages.nodeenv}
-
-    patchShebangs pre_commit/resources/hook-tmpl
-  '';
-
-  pytestFlags = [
-    "--forked"
-  ];
-
   preCheck =
     lib.optionalString (!(stdenv.hostPlatform.isLinux && stdenv.hostPlatform.isAarch64)) ''
       # Disable outline atomics for rust tests on aarch64-linux.
@@ -125,6 +105,24 @@ python3Packages.buildPythonApplication (finalAttrs: {
   postCheck = ''
     deactivate
   '';
+
+  # add gitMinimal as fallback, if git is not installed
+  preFixup = ''
+    makeWrapperArgs+=(--suffix PATH : ${lib.makeBinPath [ gitMinimal ]})
+  '';
+
+  build-system = with python3Packages; [
+    setuptools
+  ];
+
+  dependencies = with python3Packages; [
+    cfgv
+    identify
+    nodeenv
+    pyyaml
+    toml
+    virtualenv
+  ];
 
   disabledTests = [
     # ERROR: The install method you used for conda--probably either `pip install conda`
@@ -223,14 +221,15 @@ python3Packages.buildPythonApplication (finalAttrs: {
     "test_node_with_user_config_set"
   ];
 
+  pyproject = true;
+
+  pytestFlags = [
+    "--forked"
+  ];
+
   pythonImportsCheck = [
     "pre_commit"
   ];
-
-  # add gitMinimal as fallback, if git is not installed
-  preFixup = ''
-    makeWrapperArgs+=(--suffix PATH : ${lib.makeBinPath [ gitMinimal ]})
-  '';
 
   passthru.tests = callPackage ./tests.nix {
     inherit gitMinimal pre-commit;
@@ -241,10 +240,12 @@ python3Packages.buildPythonApplication (finalAttrs: {
     homepage = "https://pre-commit.com/";
     changelog = "https://github.com/pre-commit/pre-commit/blob/${finalAttrs.src.tag}/CHANGELOG.md";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       borisbabic
       savtrip
     ];
+
     mainProgram = "pre-commit";
   };
 })

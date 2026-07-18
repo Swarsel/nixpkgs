@@ -1,7 +1,7 @@
 {
-  buildGoModule,
-  fetchFromGitHub,
   lib,
+  fetchFromGitHub,
+  buildGoModule,
   versionCheckHook,
 }:
 
@@ -17,10 +17,9 @@ buildGoModule (finalAttrs: {
   };
 
   vendorHash = "sha256-Cf7lKfMuPFT/I1apgChUNNCG2C7SrW7ncF8OusbUs+A=";
-
   env.CGO_ENABLED = 0;
-
-  subPackages = [ "mockgen" ];
+  doInstallCheck = true;
+  nativeInstallCheckInputs = [ versionCheckHook ];
 
   ldflags = [
     "-X=main.version=${finalAttrs.version}"
@@ -28,9 +27,8 @@ buildGoModule (finalAttrs: {
     "-X=main.commit=${finalAttrs.src.rev}"
   ];
 
-  nativeInstallCheckInputs = [ versionCheckHook ];
+  subPackages = [ "mockgen" ];
   versionCheckProgramArg = "-version";
-  doInstallCheck = true;
 
   meta = {
     description = "Mocking framework for the Go programming language";

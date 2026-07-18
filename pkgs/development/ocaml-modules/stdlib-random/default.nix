@@ -1,16 +1,14 @@
 {
   lib,
-  buildDunePackage,
   fetchFromGitHub,
+  buildDunePackage,
   cppo,
   version ? "1.2.0",
 }:
 
 buildDunePackage {
-  pname = "stdlib-random";
   inherit version;
-
-  minimalOCamlVersion = "4.08";
+  pname = "stdlib-random";
 
   src = fetchFromGitHub {
     owner = "ocaml";
@@ -20,11 +18,12 @@ buildDunePackage {
   };
 
   nativeBuildInputs = [ cppo ];
+  minimalOCamlVersion = "4.08";
 
   meta = {
-    license = lib.licenses.lgpl21Only;
     description = "Compatibility library for Random number generation";
     homepage = "https://github.com/ocaml/stdlib-random";
+    license = lib.licenses.lgpl21Only;
     maintainers = [ lib.maintainers.vbgl ];
   };
 

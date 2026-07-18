@@ -1,8 +1,8 @@
 {
-  stdenv,
   lib,
-  buildGoModule,
+  stdenv,
   fetchFromGitHub,
+  buildGoModule,
   versionCheckHook,
   which,
 }:
@@ -45,12 +45,13 @@ buildGoModule (finalAttrs: {
   '';
 
   vendorHash = "sha256-Bs5b5w0mQj1MyT2ctJ7V38Dy60moB36+T8TFH38FA08=";
-
   doInstallCheck = true;
+
   nativeInstallCheckInputs = [
     versionCheckHook
     which
   ];
+
   postInstallCheck = ''
     # only check functionality if the builder supports it (Linux 5.13+)
     set +e
@@ -92,7 +93,7 @@ buildGoModule (finalAttrs: {
 
   meta = {
     description = "Lightweight, secure sandbox for running Linux processes using Landlock LSM";
-    mainProgram = "landrun";
+
     longDescription = ''
       Landrun is designed to make it practical to sandbox any command with fine-grained filesystem
       and network access controls, without root/containers/SELinux/AppArmor.
@@ -101,10 +102,12 @@ buildGoModule (finalAttrs: {
 
       Linux 5.13+ is required for file access restrictions, Linux 6.7+ for TCP restrictions.
     '';
+
     homepage = "https://github.com/Zouuup/landrun";
     changelog = "https://github.com/Zouuup/landrun/releases/tag/${finalAttrs.src.tag}";
     license = lib.licenses.gpl2Only;
     maintainers = [ lib.maintainers.fliegendewurst ];
     platforms = lib.platforms.linux;
+    mainProgram = "landrun";
   };
 })

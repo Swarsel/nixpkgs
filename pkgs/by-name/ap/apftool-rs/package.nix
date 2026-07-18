@@ -19,10 +19,10 @@ rustPlatform.buildRustPackage (finalAttrs: {
 
   meta = {
     description = "About Tools for Rockchip image unpack tool";
-    mainProgram = "apftool-rs";
     homepage = "https://github.com/suyulin/afptool-rs";
     license = lib.licenses.asl20;
     maintainers = with lib.maintainers; [ colemickens ];
     platforms = lib.platforms.linux;
+    mainProgram = "apftool-rs";
   };
 })

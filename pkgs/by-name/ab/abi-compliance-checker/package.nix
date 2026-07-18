@@ -2,10 +2,10 @@
   lib,
   stdenv,
   fetchFromGitHub,
+  abi-dumper,
+  binutils,
   ctags,
   perl,
-  binutils,
-  abi-dumper,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -24,15 +24,15 @@ stdenv.mkDerivation (finalAttrs: {
     ctags
     perl
   ];
-  propagatedBuildInputs = [ abi-dumper ];
 
+  propagatedBuildInputs = [ abi-dumper ];
   makeFlags = [ "prefix=$(out)" ];
 
   meta = {
-    homepage = "https://lvc.github.io/abi-compliance-checker";
     description = "Tool for checking backward API/ABI compatibility of a C/C++ library";
-    mainProgram = "abi-compliance-checker";
+    homepage = "https://lvc.github.io/abi-compliance-checker";
     license = lib.licenses.lgpl21;
     platforms = lib.platforms.all;
+    mainProgram = "abi-compliance-checker";
   };
 })

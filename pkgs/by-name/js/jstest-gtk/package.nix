@@ -1,12 +1,12 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
   cmake,
-  pkg-config,
   gtkmm3,
   libsigcxx,
   libx11,
+  pkg-config,
 }:
 
 stdenv.mkDerivation {
@@ -24,6 +24,7 @@ stdenv.mkDerivation {
     cmake
     pkg-config
   ];
+
   buildInputs = [
     gtkmm3
     libsigcxx
@@ -32,11 +33,13 @@ stdenv.mkDerivation {
 
   meta = {
     description = "Simple joystick tester based on Gtk+";
+
     longDescription = ''
       It provides you with a list of attached joysticks, a way to display which
       buttons and axis are pressed, a way to remap axis and buttons and a way
       to calibrate your joystick.
     '';
+
     homepage = "https://github.com/Grumbel/jstest-gtk";
     license = lib.licenses.gpl3Plus;
     maintainers = with lib.maintainers; [ wucke13 ];

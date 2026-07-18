@@ -1,14 +1,13 @@
 {
   lib,
+  fetchFromGitHub,
   aiohttp,
   buildPythonPackage,
-  fetchFromGitHub,
 }:
 
 buildPythonPackage rec {
   pname = "aionanoleaf";
   version = "0.2.1";
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "milanmeu";
@@ -18,10 +17,9 @@ buildPythonPackage rec {
   };
 
   propagatedBuildInputs = [ aiohttp ];
-
   # Project has no tests
   doCheck = false;
-
+  format = "setuptools";
   pythonImportsCheck = [ "aionanoleaf" ];
 
   meta = {

@@ -7,7 +7,6 @@
 buildPythonPackage rec {
   pname = "csscompressor";
   version = "0.9.5";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
@@ -15,6 +14,7 @@ buildPythonPackage rec {
   };
 
   doCheck = false; # No tests
+  format = "setuptools";
 
   meta = {
     description = "Python port of YUI CSS Compressor";

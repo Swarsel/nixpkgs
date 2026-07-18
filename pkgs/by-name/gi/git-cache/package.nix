@@ -1,7 +1,7 @@
 {
-  fetchFromGitHub,
   lib,
   stdenv,
+  fetchFromGitHub,
 }:
 
 stdenv.mkDerivation {
@@ -15,18 +15,18 @@ stdenv.mkDerivation {
     hash = "sha256-V7rQOy+s9Lzdc+RTA2QGPfyavw4De/qQ+tWrzYtO2qA=";
   };
 
-  dontBuild = true;
-
   installPhase = ''
     install -Dm555 git-cache $out/bin/git-cache
   '';
 
+  dontBuild = true;
+
   meta = {
+    description = "Program to add and manage a system-wide or user-wide cache for remote git repositories";
     homepage = "https://github.com/Seb35/git-cache";
     license = lib.licenses.wtfpl;
-    description = "Program to add and manage a system-wide or user-wide cache for remote git repositories";
-    mainProgram = "git-cache";
-    platforms = lib.platforms.unix;
     maintainers = with lib.maintainers; [ maxhearnden ];
+    platforms = lib.platforms.unix;
+    mainProgram = "git-cache";
   };
 }

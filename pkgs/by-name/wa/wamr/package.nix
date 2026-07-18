@@ -16,15 +16,6 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-pNudBKnhdR/Ye0m2tVZB/wSfJZYK8+gdCpCp0rDp0o4=";
   };
 
-  nativeBuildInputs = [ cmake ];
-
-  cmakeFlags = [
-    "-DWAMR_BUILD_SIMD=0"
-  ]
-  ++ lib.optionals stdenv.hostPlatform.isDarwin [
-    "-DCMAKE_OSX_DEPLOYMENT_TARGET=${stdenv.hostPlatform.darwinSdkVersion}"
-  ];
-
   postPatch =
     let
       # Can't use `sourceRoot` because we need the entire
@@ -46,12 +37,21 @@ stdenv.mkDerivation (finalAttrs: {
       cd ${sourceDir}
     '';
 
+  nativeBuildInputs = [ cmake ];
+
+  cmakeFlags = [
+    "-DWAMR_BUILD_SIMD=0"
+  ]
+  ++ lib.optionals stdenv.hostPlatform.isDarwin [
+    "-DCMAKE_OSX_DEPLOYMENT_TARGET=${stdenv.hostPlatform.darwinSdkVersion}"
+  ];
+
   meta = {
     description = "WebAssembly Micro Runtime";
     homepage = "https://github.com/bytecodealliance/wasm-micro-runtime";
     license = lib.licenses.asl20;
-    mainProgram = "iwasm";
     maintainers = with lib.maintainers; [ ereslibre ];
     platforms = lib.platforms.unix;
+    mainProgram = "iwasm";
   };
 })

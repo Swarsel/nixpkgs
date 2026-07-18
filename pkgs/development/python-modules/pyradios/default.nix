@@ -1,8 +1,8 @@
 {
   lib,
+  appdirs,
   buildPythonPackage,
   fetchPypi,
-  appdirs,
   httpx,
   setuptools,
 }:
@@ -10,7 +10,6 @@
 buildPythonPackage rec {
   pname = "pyradios";
   version = "2.1.1";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
@@ -25,6 +24,7 @@ buildPythonPackage rec {
 
   # Tests and pythonImportsCheck require network access
   doCheck = false;
+  format = "setuptools";
 
   meta = {
     description = "Python client for the https://api.radio-browser.info";

@@ -1,12 +1,12 @@
 {
   lib,
-  stdenvNoCC,
   fetchFromGitHub,
   gdk-pixbuf,
+  gitUpdater,
   gtk-engine-murrine,
   gtk_engines,
   librsvg,
-  gitUpdater,
+  stdenvNoCC,
 }:
 
 stdenvNoCC.mkDerivation rec {
@@ -26,12 +26,6 @@ stdenvNoCC.mkDerivation rec {
     librsvg
   ];
 
-  propagatedUserEnvPkgs = [
-    gtk-engine-murrine
-  ];
-
-  dontBuild = true;
-
   installPhase = ''
     runHook preInstall
     mkdir -p $out/share/themes
@@ -39,13 +33,19 @@ stdenvNoCC.mkDerivation rec {
     runHook postInstall
   '';
 
+  dontBuild = true;
+
+  propagatedUserEnvPkgs = [
+    gtk-engine-murrine
+  ];
+
   passthru.updateScript = gitUpdater { };
 
   meta = {
     description = "GTK theme supporting Budgie, Pantheon, Mate, Xfce4 and GNOME desktops";
     homepage = "https://www.pling.com/p/1239855/";
     license = lib.licenses.gpl3Only;
-    platforms = lib.platforms.unix;
     maintainers = [ lib.maintainers.romildo ];
+    platforms = lib.platforms.unix;
   };
 }

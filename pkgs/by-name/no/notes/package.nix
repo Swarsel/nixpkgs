@@ -22,8 +22,6 @@ stdenv.mkDerivation (finalAttrs: {
     ./qt610-fix.patch
   ];
 
-  cmakeFlags = [ "-DUPDATE_CHECKER=OFF" ];
-
   nativeBuildInputs = [
     cmake
     qt6.wrapQtAppsHook
@@ -34,6 +32,8 @@ stdenv.mkDerivation (finalAttrs: {
     qt6.qtdeclarative
   ];
 
+  cmakeFlags = [ "-DUPDATE_CHECKER=OFF" ];
+
   postInstall = lib.optionalString stdenv.hostPlatform.isDarwin ''
     mkdir $out/Applications
     mv $out/bin/Notes.app $out/Applications
@@ -42,9 +42,9 @@ stdenv.mkDerivation (finalAttrs: {
   meta = {
     description = "Fast and beautiful note-taking app";
     homepage = "https://github.com/nuttyartist/notes";
-    mainProgram = "notes";
     license = lib.licenses.mpl20;
-    platforms = lib.platforms.linux ++ lib.platforms.darwin;
     maintainers = with lib.maintainers; [ zendo ];
+    platforms = lib.platforms.linux ++ lib.platforms.darwin;
+    mainProgram = "notes";
   };
 })

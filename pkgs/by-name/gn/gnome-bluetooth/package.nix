@@ -2,33 +2,38 @@
   lib,
   stdenv,
   fetchurl,
+  docbook-xsl-nons,
+  docbook_xml_dtd_43,
+  gettext,
+  glib,
   gnome,
+  gobject-introspection,
+  gsettings-desktop-schemas,
+  gsound,
+  gtk-doc,
+  gtk4,
+  itstool,
+  libadwaita,
+  libnotify,
+  libxml2,
   meson,
   mesonEmulatorHook,
   ninja,
   pkg-config,
-  gtk4,
-  libadwaita,
-  gettext,
-  glib,
+  python3,
   udev,
   upower,
-  itstool,
-  libxml2,
   wrapGAppsHook4,
-  libnotify,
-  gsound,
-  gobject-introspection,
-  gtk-doc,
-  docbook-xsl-nons,
-  docbook_xml_dtd_43,
-  python3,
-  gsettings-desktop-schemas,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
   pname = "gnome-bluetooth";
   version = "47.2";
+
+  src = fetchurl {
+    url = "mirror://gnome/sources/gnome-bluetooth/${lib.versions.major finalAttrs.version}/gnome-bluetooth-${finalAttrs.version}.tar.xz";
+    hash = "sha256-QfIObWF2tyWQr2NVKyMtg/L//dd+z6perzLFpKhvrWQ=";
+  };
 
   # TODO: split out "lib"
   outputs = [
@@ -37,11 +42,6 @@ stdenv.mkDerivation (finalAttrs: {
     "devdoc"
     "man"
   ];
-
-  src = fetchurl {
-    url = "mirror://gnome/sources/gnome-bluetooth/${lib.versions.major finalAttrs.version}/gnome-bluetooth-${finalAttrs.version}.tar.xz";
-    hash = "sha256-QfIObWF2tyWQr2NVKyMtg/L//dd+z6perzLFpKhvrWQ=";
-  };
 
   nativeBuildInputs = [
     meson
@@ -79,12 +79,12 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   meta = {
+    description = "Application that lets you manage Bluetooth in the GNOME desktop";
     homepage = "https://gitlab.gnome.org/GNOME/gnome-bluetooth";
     changelog = "https://gitlab.gnome.org/GNOME/gnome-bluetooth/-/blob/${finalAttrs.version}/NEWS?ref_type=tags";
-    description = "Application that lets you manage Bluetooth in the GNOME desktop";
-    mainProgram = "bluetooth-sendto";
-    teams = [ lib.teams.gnome ];
     license = lib.licenses.gpl2Plus;
     platforms = lib.platforms.linux;
+    mainProgram = "bluetooth-sendto";
+    teams = [ lib.teams.gnome ];
   };
 })

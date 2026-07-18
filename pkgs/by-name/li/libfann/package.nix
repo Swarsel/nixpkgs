@@ -1,6 +1,6 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
   cmake,
 }:
@@ -16,18 +16,18 @@ stdenv.mkDerivation {
     sha256 = "sha256-UdEpUD7ASrqygwFgW4CdCDGIJtUTKeJbHZDnnQI5jSI=";
   };
 
-  nativeBuildInputs = [ cmake ];
-
   outputs = [
     "out"
     "dev"
   ];
 
+  nativeBuildInputs = [ cmake ];
+
   meta = {
-    homepage = "http://leenissen.dk/fann/wp/";
     description = "Fast Artificial Neural Network Library";
-    maintainers = with lib.maintainers; [ fpletz ];
+    homepage = "http://leenissen.dk/fann/wp/";
     license = lib.licenses.lgpl21;
+    maintainers = with lib.maintainers; [ fpletz ];
     platforms = lib.platforms.all;
   };
 }

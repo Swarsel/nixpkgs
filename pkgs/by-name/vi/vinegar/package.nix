@@ -1,37 +1,37 @@
 {
   lib,
-  buildGoModule,
-  wine64Packages,
   fetchFromGitHub,
-  glib,
-  makeBinaryWrapper,
-  pkg-config,
+  buildGoModule,
   cairo,
   gdk-pixbuf,
+  glib,
   graphene,
   gtk4,
-  libadwaita,
   libGL,
+  libadwaita,
+  libx11,
+  libxcursor,
+  libxfixes,
   libxkbcommon,
+  makeBinaryWrapper,
+  nix-update-script,
   pango,
+  pkg-config,
+  symlinkJoin,
   vulkan-headers,
   vulkan-loader,
   wayland,
+  wine64Packages,
   winetricks,
-  libxfixes,
-  libxcursor,
-  libx11,
-  symlinkJoin,
-  nix-update-script,
 }:
 let
   # Based on wine 11.0
   kombuchaPatches = fetchFromGitHub {
+    hash = "sha256-gyyf/TVKrc6/cGP9fNKr5+qMo7ucg8l/VIklhVP8kLg=";
     name = "kombucha";
     owner = "vinegarhq";
     repo = "kombucha";
     rev = "05927db95b427cc5e57856087325806cb20a0124";
-    hash = "sha256-gyyf/TVKrc6/cGP9fNKr5+qMo7ucg8l/VIklhVP8kLg=";
     meta.license = lib.licenses.lgpl21Only;
   };
 
@@ -40,32 +40,10 @@ let
       dbusSupport = true;
       embedInstallers = true;
       pulseaudioSupport = true;
-      x11Support = true;
       waylandSupport = true;
+      x11Support = true;
     }).overrideAttrs
       (oldAttrs: {
-        # https://github.com/vinegarhq/kombucha/blob/80f87fdbaae2a42bd66e41319054798fdf30fbe6/.github/workflows/wine.yml
-        # --with-wayland is added by waylandSupport = true;
-        configureFlags = oldAttrs.configureFlags or [ ] ++ [
-          "--disable-tests"
-          "--disable-win16"
-          "--with-dbus"
-          "--with-pulse"
-          "--with-x"
-          "--without-oss"
-          "--without-capi"
-          "--without-cups"
-          "--without-gphoto"
-          "--without-gssapi"
-          "--without-gstreamer"
-          "--without-krb5"
-          "--without-netapi"
-          "--without-opencl"
-          "--without-pcap"
-          "--without-sane"
-          "--without-v4l2"
-        ];
-
         patches =
           oldAttrs.patches or [ ]
           ++ map (name: "${kombuchaPatches}/patches/${name}") [
@@ -100,6 +78,28 @@ let
             "0025-winedbg-Disable.patch"
             "0026-wine.inf-Disable-unused-services.patch"
           ];
+
+        # https://github.com/vinegarhq/kombucha/blob/80f87fdbaae2a42bd66e41319054798fdf30fbe6/.github/workflows/wine.yml
+        # --with-wayland is added by waylandSupport = true;
+        configureFlags = oldAttrs.configureFlags or [ ] ++ [
+          "--disable-tests"
+          "--disable-win16"
+          "--with-dbus"
+          "--with-pulse"
+          "--with-x"
+          "--without-oss"
+          "--without-capi"
+          "--without-cups"
+          "--without-gphoto"
+          "--without-gssapi"
+          "--without-gstreamer"
+          "--without-krb5"
+          "--without-netapi"
+          "--without-opencl"
+          "--without-pcap"
+          "--without-sane"
+          "--without-v4l2"
+        ];
       });
 in
 buildGoModule (finalAttrs: {
@@ -113,7 +113,12 @@ buildGoModule (finalAttrs: {
     hash = "sha256-0MNUkfhbsvOJdN89VGTuf3zHUFhimiCNuoY47V03Cgo=";
   };
 
-  vendorHash = "sha256-gzy7Lw7AP1evPSDSzMQb/yzn+8uVtyk8TOBL2fjE3R8=";
+  postPatch = ''
+    substituteInPlace Makefile --replace-fail 'gtk-update-icon-cache' '${lib.getExe' gtk4 "gtk4-update-icon-cache"}'
+    substituteInPlace internal/config/values.go \
+      --replace-fail 'return dirs.WinePath' 'return "${wine}"' \
+      --replace-fail '"github.com/vinegarhq/vinegar/internal/dirs"' ""
+  '';
 
   nativeBuildInputs = [
     glib
@@ -141,12 +146,7 @@ buildGoModule (finalAttrs: {
     libxfixes
   ];
 
-  postPatch = ''
-    substituteInPlace Makefile --replace-fail 'gtk-update-icon-cache' '${lib.getExe' gtk4 "gtk4-update-icon-cache"}'
-    substituteInPlace internal/config/values.go \
-      --replace-fail 'return dirs.WinePath' 'return "${wine}"' \
-      --replace-fail '"github.com/vinegarhq/vinegar/internal/dirs"' ""
-  '';
+  vendorHash = "sha256-gzy7Lw7AP1evPSDSzMQb/yzn+8uVtyk8TOBL2fjE3R8=";
 
   buildPhase = ''
     runHook preBuild
@@ -191,6 +191,7 @@ buildGoModule (finalAttrs: {
   passthru = {
     libraryPath = symlinkJoin {
       name = "vinegar-puregotk-lib-folder";
+
       paths = [
         cairo
         gdk-pixbuf
@@ -207,13 +208,13 @@ buildGoModule (finalAttrs: {
   };
 
   meta = {
-    changelog = "https://github.com/vinegarhq/vinegar/releases/tag/v${finalAttrs.version}";
     description = "Open-source, minimal, configurable, fast bootstrapper for running Roblox Studio on Linux";
     homepage = "https://github.com/vinegarhq/vinegar";
+    changelog = "https://github.com/vinegarhq/vinegar/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.gpl3Only;
-    mainProgram = "vinegar";
+    sourceProvenance = [ lib.sourceTypes.fromSource ];
     maintainers = with lib.maintainers; [ HeitorAugustoLN ];
     platforms = [ "x86_64-linux" ];
-    sourceProvenance = [ lib.sourceTypes.fromSource ];
+    mainProgram = "vinegar";
   };
 })

@@ -1,8 +1,8 @@
 {
-  stdenvNoCC,
-  fetchurl,
   lib,
+  fetchurl,
   _7zz,
+  stdenvNoCC,
 }:
 
 stdenvNoCC.mkDerivation (finalAttrs: {
@@ -16,11 +16,6 @@ stdenvNoCC.mkDerivation (finalAttrs: {
 
   nativeBuildInputs = [ _7zz ];
 
-  dontUnpack = true;
-  dontConfigure = true;
-  dontBuild = true;
-  dontFixup = true;
-
   installPhase = ''
     runHook preInstall
     mkdir -p "$out/Applications"
@@ -33,12 +28,17 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  dontBuild = true;
+  dontConfigure = true;
+  dontFixup = true;
+  dontUnpack = true;
+
   meta = {
-    platforms = lib.platforms.darwin;
     description = "USB Docking Station plugin-and-display support with SM76x driver";
     homepage = "https://www.siliconmotion.com/events/instantview/";
     license = lib.licenses.unfree;
     sourceProvenance = [ lib.sourceTypes.binaryNativeCode ];
     maintainers = with lib.maintainers; [ aspauldingcode ];
+    platforms = lib.platforms.darwin;
   };
 })

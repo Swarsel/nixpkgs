@@ -1,9 +1,9 @@
 {
   lib,
-  buildPythonPackage,
   fetchurl,
   autoAddDriverRunpath,
   autoPatchelfHook,
+  buildPythonPackage,
   django,
   gunicorn,
   setuptools,
@@ -15,25 +15,15 @@
 buildPythonPackage (finalAttrs: {
   pname = "nvidia-dlprofviewer";
   version = "1.8.0";
-  __structuredAttrs = true;
-  format = "wheel";
 
   src = fetchurl {
     url = "https://pypi.nvidia.com/nvidia-dlprofviewer/nvidia_dlprofviewer-${finalAttrs.version}-py3-none-any.whl";
     hash = "sha256-KrfLZ6NdP31qfSfOBl8944ZE2xZ+kgjkyt+QPUblYVA=";
   };
 
-  pythonImportsCheck = [
-    "dlprofviewer"
-  ];
-
   nativeBuildInputs = [
     autoAddDriverRunpath
     autoPatchelfHook
-  ];
-
-  autoPatchelfIgnoreMissingDeps = [
-    "libnvidia-ml.so.1"
   ];
 
   propagatedBuildInputs = [
@@ -43,6 +33,18 @@ buildPythonPackage (finalAttrs: {
     sqlite
     uvicorn
     whitenoise
+  ];
+
+  __structuredAttrs = true;
+
+  autoPatchelfIgnoreMissingDeps = [
+    "libnvidia-ml.so.1"
+  ];
+
+  format = "wheel";
+
+  pythonImportsCheck = [
+    "dlprofviewer"
   ];
 
   pythonRelaxDeps = [

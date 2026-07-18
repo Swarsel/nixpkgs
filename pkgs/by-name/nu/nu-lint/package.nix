@@ -1,10 +1,10 @@
 {
   lib,
   fetchFromCodeberg,
-  rustPlatform,
   nix-update-script,
-  versionCheckHook,
+  rustPlatform,
   stdenvNoCC,
+  versionCheckHook,
 }:
 rustPlatform.buildRustPackage (finalAttrs: {
   pname = "nu-lint";
@@ -17,17 +17,15 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-5YR1Cn9/psNswLVYtDZGmvoP9AwBANa0sPHN4eqcRhQ=";
   };
 
-  cargoHash = "sha256-FA9C7Li4wtXvI8+jDTmdFjqsop6cvGNPByRpOfvQPzw=";
-
   nativeBuildInputs = lib.optionals stdenvNoCC.hostPlatform.isDarwin [
     # Avoids "couldn't find any valid shared libraries matching: ['libclang.dylib']" error on darwin in sandbox mode.
     rustPlatform.bindgenHook
   ];
 
-  nativeInstallCheckInputs = [ versionCheckHook ];
+  cargoHash = "sha256-FA9C7Li4wtXvI8+jDTmdFjqsop6cvGNPByRpOfvQPzw=";
   # NOTE: Disabled for version 0.1.1 outputs "0.1.0" when run `nu-lint --version` is run
   doInstallCheck = false;
-
+  nativeInstallCheckInputs = [ versionCheckHook ];
   passthru.updateScript = nix-update-script { };
 
   meta = {

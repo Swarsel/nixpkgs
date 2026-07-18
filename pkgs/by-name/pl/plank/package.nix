@@ -2,29 +2,29 @@
   lib,
   stdenv,
   fetchurl,
-  vala,
   atk,
+  autoreconfHook,
+  bamf,
   cairo,
   dconf,
+  file,
+  gdk-pixbuf,
+  gettext,
   glib,
   gnome-common,
+  gnome-menus,
   gtk3,
+  libdbusmenu-gtk3,
+  libgee,
   libwnck,
   libx11,
   libxfixes,
   libxi,
-  pango,
-  gettext,
-  pkg-config,
   libxml2,
-  bamf,
-  gdk-pixbuf,
-  libdbusmenu-gtk3,
-  file,
-  gnome-menus,
-  libgee,
+  pango,
+  pkg-config,
+  vala,
   wrapGAppsHook3,
-  autoreconfHook,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -35,6 +35,16 @@ stdenv.mkDerivation (finalAttrs: {
     url = "https://launchpad.net/plank/1.0/${finalAttrs.version}/+download/plank-${finalAttrs.version}.tar.xz";
     sha256 = "17cxlmy7n13jp1v8i4abxyx9hylzb39andhz3mk41ggzmrpa8qm6";
   };
+
+  # Make plank's application launcher hidden in Pantheon
+  patches = [
+    ./hide-in-pantheon.patch
+  ];
+
+  postPatch = ''
+    substituteInPlace ./configure \
+      --replace "/usr/bin/file" "${file}/bin/file"
+  '';
 
   nativeBuildInputs = [
     autoreconfHook
@@ -70,23 +80,13 @@ stdenv.mkDerivation (finalAttrs: {
     "INTROSPECTION_TYPELIBDIR=${placeholder "out"}/lib/girepository-1.0"
   ];
 
-  # Make plank's application launcher hidden in Pantheon
-  patches = [
-    ./hide-in-pantheon.patch
-  ];
-
-  postPatch = ''
-    substituteInPlace ./configure \
-      --replace "/usr/bin/file" "${file}/bin/file"
-  '';
-
   meta = {
     description = "Elegant, simple, clean dock";
-    mainProgram = "plank";
     homepage = "https://launchpad.net/plank";
     license = lib.licenses.gpl3Plus;
-    platforms = lib.platforms.linux;
     maintainers = with lib.maintainers; [ davidak ];
+    platforms = lib.platforms.linux;
+    mainProgram = "plank";
     teams = [ lib.teams.pantheon ];
   };
 })

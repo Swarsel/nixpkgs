@@ -1,23 +1,16 @@
 {
   lib,
   stdenv,
-  buildPackages,
   fetchFromGitHub,
+  buildPackages,
+  mandoc,
   pkg-config,
   popt,
-  mandoc,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
   pname = "efivar";
   version = "39";
-
-  outputs = [
-    "bin"
-    "out"
-    "dev"
-    "man"
-  ];
 
   src = fetchFromGitHub {
     owner = "rhboot";
@@ -26,12 +19,19 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-s/1k5a3n33iLmSpKQT5u08xoj8ypjf2Vzln88OBrqf0=";
   };
 
+  outputs = [
+    "bin"
+    "out"
+    "dev"
+    "man"
+  ];
+
   nativeBuildInputs = [
     pkg-config
     mandoc
   ];
+
   buildInputs = [ popt ];
-  depsBuildBuild = [ buildPackages.stdenv.cc ];
 
   makeFlags = [
     "prefix=$(out)"
@@ -42,11 +42,13 @@ stdenv.mkDerivation (finalAttrs: {
     "PCDIR=$(dev)/lib/pkgconfig"
   ];
 
+  depsBuildBuild = [ buildPackages.stdenv.cc ];
+
   meta = {
     description = "Tools and library to manipulate EFI variables";
     homepage = "https://github.com/rhboot/efivar";
-    platforms = lib.platforms.linux;
     license = lib.licenses.lgpl21Only;
+    platforms = lib.platforms.linux;
     # See https://github.com/NixOS/nixpkgs/issues/388309
     broken = stdenv.hostPlatform.is32bit;
   };

@@ -1,25 +1,20 @@
 {
   lib,
+  fetchFromGitHub,
   buildPythonPackage,
   cargo,
-  fetchFromGitHub,
   nix-update-script,
   orjson,
   pydantic,
   pytest-asyncio,
   pytestCheckHook,
-  rustc,
   rustPlatform,
+  rustc,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "blastdns";
   version = "1.9.1-unstable-2026-04-15";
-  pyproject = true;
-
-  __structuredAttrs = true;
-
-  __darwinAllowLocalNetworking = true;
 
   src = fetchFromGitHub {
     owner = "blacklanternsecurity";
@@ -27,23 +22,6 @@ buildPythonPackage (finalAttrs: {
     rev = "a35704b0ec2f6d800da8f85505bfff1893172869";
     hash = "sha256-N0IbnKz/JdZogJhRHMNaZhhMt2LM9Vhs1ETLqeksE2k=";
   };
-
-  cargoDeps = rustPlatform.fetchCargoVendor {
-    inherit (finalAttrs) pname version src;
-    hash = "sha256-wBC/T/XUSfxurujQy/B8zXxZthpUWczKT9qdnG4BK7w=";
-  };
-
-  build-system = [
-    cargo
-    rustPlatform.cargoSetupHook
-    rustPlatform.maturinBuildHook
-    rustc
-  ];
-
-  dependencies = [
-    orjson
-    pydantic
-  ];
 
   nativeCheckInputs = [
     pytest-asyncio
@@ -57,9 +35,24 @@ buildPythonPackage (finalAttrs: {
     cp -r /build/source/blastdns/tests ./tests
   '';
 
-  pytestFlags = [
-    "--import-mode=importlib"
-    "tests"
+  __darwinAllowLocalNetworking = true;
+  __structuredAttrs = true;
+
+  build-system = [
+    cargo
+    rustPlatform.cargoSetupHook
+    rustPlatform.maturinBuildHook
+    rustc
+  ];
+
+  cargoDeps = rustPlatform.fetchCargoVendor {
+    inherit (finalAttrs) pname version src;
+    hash = "sha256-wBC/T/XUSfxurujQy/B8zXxZthpUWczKT9qdnG4BK7w=";
+  };
+
+  dependencies = [
+    orjson
+    pydantic
   ];
 
   disabledTests = [
@@ -71,8 +64,14 @@ buildPythonPackage (finalAttrs: {
     "test_zone_transfer_nonexistent_zone"
   ];
 
-  pythonImportsCheck = [ "blastdns" ];
+  pyproject = true;
 
+  pytestFlags = [
+    "--import-mode=importlib"
+    "tests"
+  ];
+
+  pythonImportsCheck = [ "blastdns" ];
   passthru.updateScript = nix-update-script { };
 
   meta = {

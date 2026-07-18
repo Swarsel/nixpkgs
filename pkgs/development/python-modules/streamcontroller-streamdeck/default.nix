@@ -3,20 +3,19 @@
   stdenv,
   buildPythonPackage,
   fetchPypi,
-  replaceVars,
   pkgs,
+  replaceVars,
   setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "streamcontroller-streamdeck";
   version = "0.1.7";
-  pyproject = true;
 
   src = fetchPypi {
     inherit version;
-    pname = "streamcontroller_streamdeck";
     hash = "sha256-n8MYXsuWGSfOTnYrFItwkQaZlBQvPOwt1GdNP4MDjnY=";
+    pname = "streamcontroller_streamdeck";
   };
 
   patches = [
@@ -26,16 +25,17 @@ buildPythonPackage rec {
     })
   ];
 
-  build-system = [ setuptools ];
-
-  pythonImportsCheck = [ "StreamDeck" ];
   doCheck = false;
+  build-system = [ setuptools ];
+  pyproject = true;
+  pythonImportsCheck = [ "StreamDeck" ];
 
   meta = {
     # This is a fork of abcminiuser/python-elgato-streamdeck targeted at StreamController.
     description = "Python library to control the Elgato Stream Deck";
     homepage = "https://github.com/StreamController/streamcontroller-python-elgato-streamdeck";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       majiir
       sifmelcara

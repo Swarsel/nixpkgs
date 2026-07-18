@@ -1,25 +1,16 @@
 {
   lib,
-  llvmPackages,
   buildPythonPackage,
   libear,
+  llvmPackages,
 }:
 let
   inherit (llvmPackages) clang-unwrapped;
 in
 buildPythonPackage rec {
-  pname = "libscanbuild";
   inherit (clang-unwrapped) version;
-
-  pyproject = false;
-
+  pname = "libscanbuild";
   src = clang-unwrapped.lib + "/lib/libscanbuild";
-
-  dontUnpack = true;
-
-  dependencies = [
-    libear
-  ];
 
   installPhase = ''
     LIBPATH="$(toPythonPath "$out")/libscanbuild"
@@ -28,15 +19,23 @@ buildPythonPackage rec {
     cp -r "$src/"* "$LIBPATH"
   '';
 
+  dependencies = [
+    libear
+  ];
+
+  dontUnpack = true;
+  pyproject = false;
   pythonImportsCheck = [ "libscanbuild" ];
 
   meta = {
     description = "Captures all child process creation and log information about it";
     homepage = "https://github.com/llvm/llvm-project/tree/llvmorg-${version}/clang/tools/scan-build-py/lib/libscanbuild";
+
     license = with lib.licenses; [
       asl20
       llvm-exception
     ];
+
     maintainers = [ ];
   };
 }

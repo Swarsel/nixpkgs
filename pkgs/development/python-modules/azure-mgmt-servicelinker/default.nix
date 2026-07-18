@@ -1,9 +1,9 @@
 {
   lib,
-  buildPythonPackage,
-  fetchPypi,
   azure-common,
   azure-mgmt-core,
+  buildPythonPackage,
+  fetchPypi,
   msrest,
   setuptools,
 }:
@@ -11,9 +11,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "azure-mgmt-servicelinker";
   version = "1.1.0";
-  pyproject = true;
-
-  __structuredAttrs = true;
 
   src = fetchPypi {
     inherit (finalAttrs) pname version;
@@ -21,6 +18,9 @@ buildPythonPackage (finalAttrs: {
     extension = "zip";
   };
 
+  # no tests with sdist
+  doCheck = false;
+  __structuredAttrs = true;
   build-system = [ setuptools ];
 
   dependencies = [
@@ -29,10 +29,8 @@ buildPythonPackage (finalAttrs: {
     msrest
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "azure.mgmt.servicelinker" ];
-
-  # no tests with sdist
-  doCheck = false;
 
   meta = {
     description = "Microsoft Azure Servicelinker Management Client Library for Python";

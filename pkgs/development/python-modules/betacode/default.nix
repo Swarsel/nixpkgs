@@ -1,31 +1,32 @@
 {
-  fetchPypi,
-  buildPythonPackage,
-  setuptools,
-  pygtrie,
-  isPy3k,
   lib,
+  buildPythonPackage,
+  fetchPypi,
+  isPy3k,
+  pygtrie,
+  setuptools,
 }:
 buildPythonPackage (finalAttrs: {
   pname = "betacode";
   version = "1.0";
-  pyproject = true;
-
-  __structuredAttrs = true;
 
   src = fetchPypi {
     inherit (finalAttrs) pname version;
     hash = "sha256-JZtnjozpAehzUZbSSMnCrUKjiOmQ/YOD+XLRtVObBGk=";
   };
-  build-system = [ setuptools ];
+
   preBuild = "echo > README.rst";
+  __structuredAttrs = true;
+  build-system = [ setuptools ];
+  dependencies = [ pygtrie ];
   # setup.py uses a python3 os.path.join
   disabled = !isPy3k;
-  dependencies = [ pygtrie ];
+  pyproject = true;
   pythonImportsCheck = [ "betacode" ];
+
   meta = {
-    homepage = "https://github.com/matgrioni/betacode";
     description = "Small python package to flexibly convert from betacode to unicode and back";
+    homepage = "https://github.com/matgrioni/betacode";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ kmein ];
   };

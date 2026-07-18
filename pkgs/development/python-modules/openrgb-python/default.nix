@@ -8,18 +8,16 @@
 buildPythonPackage rec {
   pname = "openrgb-python";
   version = "0.3.6";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
     hash = "sha256-86jy8hoOgQocdCeapjaRFO9PKx/TW9kcN16UKSWNVps=";
   };
 
-  build-system = [ setuptools ];
-
   # Module has no tests
   doCheck = false;
-
+  build-system = [ setuptools ];
+  pyproject = true;
   pythonImportsCheck = [ "openrgb" ];
 
   meta = {

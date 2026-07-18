@@ -1,20 +1,20 @@
 {
   lib,
-  buildPlatform,
-  hostPlatform,
   fetchurl,
   bash,
-  gcc,
-  musl,
   binutils,
+  buildPlatform,
+  diffutils,
+  findutils,
+  gawk,
+  gcc,
+  gnugrep,
   gnumake,
   gnupatch,
   gnused,
-  gnugrep,
-  gawk,
-  diffutils,
-  findutils,
   gnutar,
+  hostPlatform,
+  musl,
   xz,
   zlib,
 }:
@@ -66,8 +66,8 @@ bash.runCommand "${pname}-${version}"
       description = "A high-level dynamically-typed programming language";
       homepage = "https://www.python.org";
       license = lib.licenses.psfl;
-      mainProgram = "python3";
       platforms = lib.platforms.linux;
+      mainProgram = "python3";
       teams = [ lib.teams.minimal-bootstrap ];
     };
   }

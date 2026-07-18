@@ -1,24 +1,23 @@
 {
-  stdenv,
-  callPackage,
   lib,
-  writeShellScript,
+  stdenv,
+  bootstrapSdk,
+  cacert,
+  callPackage,
+  depsFile,
+  dotnetCorePackages,
+  jq,
   mkNugetDeps,
   nix,
-  cacert,
   nuget-to-json,
-  jq,
-  dotnetCorePackages,
-  xmlstarlet,
-  patchNupkgs,
-  symlinkJoin,
   openssl,
-
-  baseName ? "dotnet",
+  patchNupkgs,
   releaseManifestFile,
+  symlinkJoin,
   tarballHash,
-  depsFile,
-  bootstrapSdk,
+  writeShellScript,
+  xmlstarlet,
+  baseName ? "dotnet",
 }:
 
 let
@@ -27,6 +26,7 @@ let
 
   sdkPackages = symlinkJoin {
     name = "${bootstrapSdk.name}-packages";
+
     paths = map (
       p:
       p.override {
@@ -43,20 +43,10 @@ let
         tarballHash
         bootstrapSdk
         ;
+
       hasRuntime = true;
     }).overrideAttrs
       (old: rec {
-        prebuiltPackages = mkNugetDeps {
-          name = "dotnet-vmr-deps";
-          sourceFile = depsFile;
-          installable = true;
-        };
-
-        nativeBuildInputs = old.nativeBuildInputs or [ ] ++ [
-          xmlstarlet
-          patchNupkgs
-        ];
-
         postPatch = old.postPatch or "" + ''
           xmlstarlet ed \
             --inplace \
@@ -65,14 +55,10 @@ let
             src/*/Directory.Build.targets
         '';
 
-        postConfigure = old.postConfigure or "" + ''
-          (
-            shopt -s nullglob
-            [[ ! -v prebuiltPackages ]] || \
-              ln -sf "$prebuiltPackages"/share/nuget/source/*/*/*.nupkg prereqs/packages/prebuilt/
-            ln -sf "${sdkPackages}"/share/nuget/source/*/*/*.nupkg prereqs/packages/prebuilt/
-          )
-        '';
+        nativeBuildInputs = old.nativeBuildInputs or [ ] ++ [
+          xmlstarlet
+          patchNupkgs
+        ];
 
         buildFlags =
           old.buildFlags
@@ -95,6 +81,21 @@ let
             "false"
           ];
 
+        postConfigure = old.postConfigure or "" + ''
+          (
+            shopt -s nullglob
+            [[ ! -v prebuiltPackages ]] || \
+              ln -sf "$prebuiltPackages"/share/nuget/source/*/*/*.nupkg prereqs/packages/prebuilt/
+            ln -sf "${sdkPackages}"/share/nuget/source/*/*/*.nupkg prereqs/packages/prebuilt/
+          )
+        '';
+
+        prebuiltPackages = mkNugetDeps {
+          installable = true;
+          name = "dotnet-vmr-deps";
+          sourceFile = depsFile;
+        };
+
         passthru =
           old.passthru or { }
           // (
@@ -105,12 +106,6 @@ let
               );
 
               pkg = vmr.overrideAttrs (old: {
-                nativeBuildInputs = old.nativeBuildInputs ++ [
-                  nix
-                  cacert
-                  nuget-to-json
-                  jq
-                ];
                 postPatch = old.postPatch or "" + ''
                   xmlstarlet ed \
                     --inplace \
@@ -157,6 +152,14 @@ let
                       --replace-quiet 'AfterTargets="Execute"' "" \
                       --replace-quiet 'AfterTargets="DiscoverArtifacts"' ""
                 '';
+
+                nativeBuildInputs = old.nativeBuildInputs ++ [
+                  nix
+                  cacert
+                  nuget-to-json
+                  jq
+                ];
+
                 buildFlags = [
                   "--online"
                 ]
@@ -165,13 +168,13 @@ let
                   "-p:RootRepo=source-build-assets"
                   "-p:SkipPrepareSdkArchive=true"
                 ];
+
                 prebuiltPackages = null;
               });
 
               drv = builtins.unsafeDiscardOutputDependency pkg.drvPath;
             in
             {
-              fetch-drv = drv;
               fetch-deps = writeShellScript "fetch-dotnet-sdk-deps" ''
                 ${nix}/bin/nix-shell --pure --run 'source /dev/stdin' "${drv}" << 'EOF'
                 set -e
@@ -203,6 +206,8 @@ let
                 mv deps.json "${toString prebuiltPackages.sourceFile}"
                 EOF
               '';
+
+              fetch-drv = drv;
             }
           );
       });

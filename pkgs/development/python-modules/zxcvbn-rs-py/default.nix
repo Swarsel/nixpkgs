@@ -9,12 +9,10 @@ buildPythonPackage rec {
   pname = "zxcvbn-rs-py";
   version = "0.3.0";
 
-  pyproject = true;
-
   src = fetchPypi {
-    pname = "zxcvbn_rs_py";
     inherit version;
     hash = "sha256-0nQmgII6F0gj8HCnNAdLvowWBPExPAgXCxWAJuNsc6A=";
+    pname = "zxcvbn_rs_py";
   };
 
   build-system = [
@@ -27,6 +25,7 @@ buildPythonPackage rec {
     hash = "sha256-S6K6ZzW24V2yFV89B+gN+Odc4h3R45lF+emZs69dzYg=";
   };
 
+  pyproject = true;
   pythonImportsCheck = [ "zxcvbn_rs_py" ];
 
   meta = {

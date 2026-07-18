@@ -1,7 +1,7 @@
 {
   lib,
-  buildNpmPackage,
   fetchFromGitHub,
+  buildNpmPackage,
 }:
 
 buildNpmPackage rec {
@@ -34,9 +34,9 @@ buildNpmPackage rec {
   passthru.entrypoint = "custom-sonos-card.js";
 
   meta = {
-    changelog = "https://github.com/punxaphil/custom-sonos-card/releases/tag/${src.tag}";
     description = "Lovelace card for controlling Sonos speakers in Home Assistant";
     homepage = "https://github.com/punxaphil/custom-sonos-card";
+    changelog = "https://github.com/punxaphil/custom-sonos-card/releases/tag/${src.tag}";
     license = lib.licenses.asl20;
     maintainers = with lib.maintainers; [ SuperSandro2000 ];
   };

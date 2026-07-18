@@ -1,7 +1,7 @@
 {
-  python3Packages,
-  fetchFromGitHub,
   lib,
+  fetchFromGitHub,
+  python3Packages,
 }:
 
 python3Packages.buildPythonApplication {
@@ -15,18 +15,18 @@ python3Packages.buildPythonApplication {
     hash = "sha256-OMy89YAtAHplLm/51kzXIlz2BiGJjSsY9h/+wg2Hg1I=";
   };
 
-  pyproject = false;
   installPhase = ''
     install -D ./dnschef.py $out/bin/dnschef
   '';
 
   dependencies = [ python3Packages.dnslib ];
+  pyproject = false;
 
   meta = {
-    homepage = "https://github.com/iphelix/dnschef";
     description = "Highly configurable DNS proxy for penetration testers and malware analysts";
-    mainProgram = "dnschef";
+    homepage = "https://github.com/iphelix/dnschef";
     license = lib.licenses.bsd3;
     maintainers = [ lib.maintainers.gfrascadorio ];
+    mainProgram = "dnschef";
   };
 }

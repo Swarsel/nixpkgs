@@ -3,14 +3,14 @@
   stdenv,
   fetchurl,
   fetchFromGitHub,
-  zlib,
   boost,
+  zlib,
 }:
 
 let
   glucose' = fetchurl {
-    url = "http://www.labri.fr/perso/lsimon/downloads/softwares/glucose-syrup.tgz";
     hash = "sha256-jboqQX/Z8RcPG30UVHaI7hLJKpgOCwCeha7BpaSgBS8=";
+    url = "http://www.labri.fr/perso/lsimon/downloads/softwares/glucose-syrup.tgz";
   };
 in
 
@@ -25,11 +25,6 @@ stdenv.mkDerivation {
     hash = "sha256-R1TpBDGdq+NQQzmzqk0wYaz2Hns3qru0AkAyFPQasPA=";
   };
 
-  buildInputs = [
-    zlib
-    boost
-  ];
-
   postPatch = ''
     substituteInPlace Makefile \
       --replace "GCC = g++" "GCC = c++"
@@ -38,6 +33,11 @@ stdenv.mkDerivation {
     substituteInPlace src/MaxSatSolver.cc \
       --replace "occ[i][sign(softLiterals[j])] > 0" "occ[i][sign(softLiterals[j])] != 0"
   '';
+
+  buildInputs = [
+    zlib
+    boost
+  ];
 
   preBuild = ''
     cp ${glucose'} patches/glucose-syrup.tgz
@@ -53,9 +53,9 @@ stdenv.mkDerivation {
 
   meta = {
     description = "SAT/PseudoBoolean/MaxSat/ASP solver using glucose";
+    homepage = "https://alviano.net/software/maxino/";
+    license = lib.licenses.asl20;
     maintainers = [ ];
     platforms = lib.platforms.unix;
-    license = lib.licenses.asl20;
-    homepage = "https://alviano.net/software/maxino/";
   };
 }

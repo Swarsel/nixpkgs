@@ -1,8 +1,8 @@
 {
-  buildGoModule,
-  fetchFromGitHub,
-  kubernetes-helm,
   lib,
+  fetchFromGitHub,
+  buildGoModule,
+  kubernetes-helm,
   nix-update-script,
   runCommand,
   wrapHelm,
@@ -13,8 +13,8 @@ let
   version = "1.1.1";
 in
 buildGoModule (finalAttrs: {
-  pname = "helm-unittest";
   inherit version;
+  pname = "helm-unittest";
 
   src = fetchFromGitHub {
     owner = "helm-unittest";
@@ -22,8 +22,6 @@ buildGoModule (finalAttrs: {
     tag = "v${version}";
     hash = "sha256-oiTW8F0yo+kN943MI2mR5uEEYbMVxJx4RdEislJ3XSo=";
   };
-
-  vendorHash = "sha256-4ckjM520MGYb64LbjYURe7AIScm4aGbj81rGKSSYaAo=";
 
   postPatch = ''
     # Remove the install and upgrade hooks.
@@ -37,7 +35,7 @@ buildGoModule (finalAttrs: {
     EOF
   '';
 
-  subPackages = [ "cmd/helm-unittest" ];
+  vendorHash = "sha256-4ckjM520MGYb64LbjYURe7AIScm4aGbj81rGKSSYaAo=";
 
   installPhase = ''
     runHook preInstall
@@ -48,6 +46,8 @@ buildGoModule (finalAttrs: {
 
     runHook postInstall
   '';
+
+  subPackages = [ "cmd/helm-unittest" ];
 
   passthru = {
     tests.smoke =
@@ -77,6 +77,7 @@ buildGoModule (finalAttrs: {
     description = "BDD styled unit test framework for Kubernetes Helm charts as a Helm plugin";
     homepage = "https://github.com/helm-unittest/helm-unittest";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       booxter
       yurrriq

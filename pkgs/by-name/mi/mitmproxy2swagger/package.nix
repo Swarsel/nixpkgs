@@ -7,7 +7,6 @@
 python3.pkgs.buildPythonApplication (finalAttrs: {
   pname = "mitmproxy2swagger";
   version = "0.15.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "alufers";
@@ -16,11 +15,8 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     hash = "sha256-J5vuT0p+mc1XXEl7GnXbT/J4mTjzva66o3cUizBWMko=";
   };
 
-  pythonRelaxDeps = [
-    "mitmproxy"
-    "ruamel.yaml"
-  ];
-
+  # No tests available
+  doCheck = false;
   build-system = with python3.pkgs; [ hatchling ];
 
   dependencies = with python3.pkgs; [
@@ -29,10 +25,13 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     ruamel-yaml
   ];
 
-  # No tests available
-  doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "mitmproxy2swagger" ];
+
+  pythonRelaxDeps = [
+    "mitmproxy"
+    "ruamel.yaml"
+  ];
 
   meta = {
     description = "Tool to automagically reverse-engineer REST APIs";

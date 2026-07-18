@@ -1,9 +1,9 @@
 {
-  ceph,
-  fetchFromGitHub,
-  go,
   lib,
   stdenv,
+  fetchFromGitHub,
+  ceph,
+  go,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -17,15 +17,13 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-jdBBRSkmNgwYzNUDY9Aarp0HNHsUcSNkZD+Fvv8drHQ=";
   };
 
+  strictDeps = true;
+  nativeBuildInputs = [ go ];
+  buildInputs = [ ceph ];
+
   preConfigure = ''
     export GOCACHE=$(pwd)/.cache
   '';
-
-  strictDeps = true;
-
-  nativeBuildInputs = [ go ];
-
-  buildInputs = [ ceph ];
 
   installPhase = ''
     runHook preInstall
@@ -36,15 +34,17 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Container Storage Interface (CSI) driver for Ceph RBD and CephFS";
-    downloadPage = "https://github.com/ceph/ceph-csi";
-    changelog = "https://github.com/ceph/ceph-csi/releases/tag/v${finalAttrs.version}";
     homepage = "https://ceph.com/";
+    changelog = "https://github.com/ceph/ceph-csi/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.asl20;
-    mainProgram = "cephcsi";
     maintainers = with lib.maintainers; [ johanot ];
+
     platforms = [
       "x86_64-linux"
       "aarch64-linux"
     ];
+
+    mainProgram = "cephcsi";
+    downloadPage = "https://github.com/ceph/ceph-csi";
   };
 })

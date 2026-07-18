@@ -2,10 +2,10 @@
   lib,
   stdenv,
   fetchurl,
-  autoconf,
-  automake,
   SDL,
   SDL_mixer,
+  autoconf,
+  automake,
   libpng,
 }:
 
@@ -42,10 +42,8 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   meta = {
-    homepage = "https://linux.tlk.fr/games/Powermanga/";
-    downloadPage = "https://linux.tlk.fr/games/Powermanga/download/";
     description = "Arcade 2D shoot-em-up game";
-    mainProgram = "powermanga";
+
     longDescription = ''
       Powermanga is an arcade 2D shoot-em-up game with 41 levels and more than
       200 sprites. It runs in 320x200 or 640x400 pixels, with Window mode or
@@ -53,9 +51,13 @@ stdenv.mkDerivation (finalAttrs: {
       the levels, you will destroy enemy spaceships and bosses, collect gems to
       power up your ship and get special powers, helpers and weapons.
     '';
+
+    homepage = "https://linux.tlk.fr/games/Powermanga/";
     license = lib.licenses.gpl3Plus;
     maintainers = with lib.maintainers; [ fgaz ];
     platforms = lib.platforms.all;
+    mainProgram = "powermanga";
     broken = stdenv.hostPlatform.isDarwin;
+    downloadPage = "https://linux.tlk.fr/games/Powermanga/download/";
   };
 })

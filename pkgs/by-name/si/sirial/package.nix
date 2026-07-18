@@ -2,9 +2,8 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  cmake,
-  pkg-config,
   alsa-lib,
+  cmake,
   fontconfig,
   freetype,
   libx11,
@@ -15,10 +14,10 @@
   libxinerama,
   libxrandr,
   libxtst,
+  pkg-config,
   writableTmpDirAsHomeHook,
-
-  buildVST3 ? true,
   buildLV2 ? stdenv.hostPlatform.isLinux,
+  buildVST3 ? true,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -29,8 +28,8 @@ stdenv.mkDerivation (finalAttrs: {
     owner = "tiagolr";
     repo = "sirial";
     tag = "v${finalAttrs.version}";
-    fetchSubmodules = true;
     hash = "sha256-Mx+DzNaj+oS9piQvBgMVMJl3+ZVg8NjJkh/WU/fMZ74=";
+    fetchSubmodules = true;
   };
 
   nativeBuildInputs = [
@@ -54,8 +53,6 @@ stdenv.mkDerivation (finalAttrs: {
     libxrandr
     libxtst
   ];
-
-  enableParallelBuilding = true;
 
   cmakeFlags = [
     (lib.cmakeBool "COPY_PLUGIN_AFTER_BUILD" false)
@@ -95,14 +92,18 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  enableParallelBuilding = true;
+
   meta = {
     description = "Rhythmic delay with 16 serial delay lines for intricate patterns";
     homepage = "https://github.com/tiagolr/sirial";
     changelog = "https://github.com/tiagolr/sirial/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.gpl3Plus;
+
     maintainers = with lib.maintainers; [
       magnetophon
     ];
+
     platforms = lib.platforms.all;
   };
 })

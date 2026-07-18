@@ -1,21 +1,20 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
+  cython,
   mecab,
-  setuptools-scm,
+  plac,
+  platformdirs,
   requests,
+  setuptools-scm,
   tqdm,
   wasabi,
-  plac,
-  cython,
-  platformdirs,
 }:
 
 buildPythonPackage rec {
   pname = "unidic";
   version = "1.1.0";
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "polm";
@@ -31,8 +30,11 @@ buildPythonPackage rec {
       --replace "wasabi>=0.6.0,<1.0.0" "wasabi"
   '';
 
-  # no tests
-  doCheck = false;
+  nativeBuildInputs = [
+    cython
+    mecab
+    setuptools-scm
+  ];
 
   propagatedBuildInputs = [
     requests
@@ -42,12 +44,9 @@ buildPythonPackage rec {
     platformdirs
   ];
 
-  nativeBuildInputs = [
-    cython
-    mecab
-    setuptools-scm
-  ];
-
+  # no tests
+  doCheck = false;
+  format = "setuptools";
   pythonImportsCheck = [ "unidic" ];
 
   meta = {

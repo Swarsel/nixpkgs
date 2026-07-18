@@ -1,15 +1,14 @@
 {
   lib,
   stdenv,
-  rustPlatform,
   fetchFromGitHub,
-  makeWrapper,
+  git, # for git ls-remote
   installShellFiles,
-
+  makeWrapper,
+  nix-prefetch-docker,
   # runtime dependencies
   nix-prefetch-git,
-  nix-prefetch-docker,
-  git, # for git ls-remote
+  rustPlatform,
 }:
 
 let
@@ -30,20 +29,12 @@ rustPlatform.buildRustPackage (finalAttrs: {
     sha256 = "sha256-OkPEh0axWs3gUoUyplQexYpEXxyCDYWm5BQpwB2PIqA=";
   };
 
-  cargoHash = "sha256-ZbdAvt2FRq5fHS0RRndeCrpY3j8Lvn2oTAECteIss5A=";
-
-  cargoBuildFlags = [
-    "-p"
-    "npins"
-    "-p"
-    "npins-completions"
-  ];
-
   nativeBuildInputs = [
     makeWrapper
     installShellFiles
   ];
 
+  cargoHash = "sha256-ZbdAvt2FRq5fHS0RRndeCrpY3j8Lvn2oTAECteIss5A=";
   # (Almost) all tests require internet
   doCheck = false;
 
@@ -60,14 +51,23 @@ rustPlatform.buildRustPackage (finalAttrs: {
       wrapProgram $out/bin/npins --prefix PATH : "${runtimePath}"
     '';
 
+  cargoBuildFlags = [
+    "-p"
+    "npins"
+    "-p"
+    "npins-completions"
+  ];
+
   meta = {
     description = "Simple and convenient dependency pinning for Nix";
-    mainProgram = "npins";
     homepage = "https://github.com/andir/npins";
     license = lib.licenses.eupl12;
+
     maintainers = with lib.maintainers; [
       piegames
       coca
     ];
+
+    mainProgram = "npins";
   };
 })

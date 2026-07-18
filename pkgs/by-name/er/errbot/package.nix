@@ -8,8 +8,6 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
   pname = "errbot";
   version = "6.2.1";
 
-  pyproject = true;
-
   src = fetchFromGitHub {
     owner = "errbotio";
     repo = "errbot";
@@ -17,11 +15,14 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     hash = "sha256-ufJUcQUn+BbfnYRXqLlThis70sY5VLdsZlag6390wqs=";
   };
 
+  nativeCheckInputs = with python3.pkgs; [
+    mock
+    pytestCheckHook
+  ];
+
   build-system = with python3.pkgs; [
     setuptools
   ];
-
-  pythonRelaxDeps = true;
 
   dependencies = with python3.pkgs; [
     ansi
@@ -45,11 +46,6 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     webtest
   ];
 
-  nativeCheckInputs = with python3.pkgs; [
-    mock
-    pytestCheckHook
-  ];
-
   disabledTests = [
     # require networking
     "test_backup"
@@ -58,14 +54,16 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     "test_entrypoint_paths"
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "errbot" ];
+  pythonRelaxDeps = true;
 
   meta = {
-    changelog = "https://github.com/errbotio/errbot/blob/${finalAttrs.version}/CHANGES.rst";
     description = "Chatbot designed to be simple to extend with plugins written in Python";
     homepage = "http://errbot.io/";
-    maintainers = with lib.maintainers; [ hlad ];
+    changelog = "https://github.com/errbotio/errbot/blob/${finalAttrs.version}/CHANGES.rst";
     license = lib.licenses.gpl3Plus;
+    maintainers = with lib.maintainers; [ hlad ];
     platforms = lib.platforms.linux;
     # flaky on darwin, "RuntimeError: can't start new thread"
     mainProgram = "errbot";

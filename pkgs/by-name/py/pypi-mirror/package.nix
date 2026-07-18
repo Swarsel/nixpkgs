@@ -1,12 +1,11 @@
 {
-  fetchFromGitHub,
   lib,
+  fetchFromGitHub,
   python3,
 }:
 python3.pkgs.buildPythonApplication (finalAttrs: {
   pname = "pypi-mirror";
   version = "5.2.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "montag451";
@@ -16,14 +15,14 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
   };
 
   build-system = [ python3.pkgs.setuptools ];
-
+  pyproject = true;
   pythonImportsCheck = [ "pypi_mirror" ];
 
   meta = {
     description = "Script to create a partial PyPI mirror";
-    mainProgram = "pypi-mirror";
     homepage = "https://github.com/montag451/pypi-mirror";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ kamadorueda ];
+    mainProgram = "pypi-mirror";
   };
 })

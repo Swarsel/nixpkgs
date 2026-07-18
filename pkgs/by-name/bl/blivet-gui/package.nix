@@ -6,23 +6,22 @@
 
 {
   lib,
-  python3,
   fetchFromGitHub,
-  gtk3,
-  util-linux,
-  gobject-introspection,
   adwaita-icon-theme,
+  blivet-gui,
+  gobject-introspection,
+  gtk3,
   hicolor-icon-theme,
+  python3,
+  testers,
+  util-linux,
   wrapGAppsHook3,
   pkexecPath ? "pkexec",
-  testers,
-  blivet-gui,
 }:
 
 python3.pkgs.buildPythonApplication rec {
   pname = "blivet-gui";
   version = "2.6.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "storaged-project";
@@ -47,6 +46,13 @@ python3.pkgs.buildPythonApplication rec {
 
   buildInputs = [ gtk3 ];
 
+  preFixup = ''
+    makeWrapperArgs+=(
+      ''${gappsWrapperArgs[@]}
+      --prefix XDG_DATA_DIRS : ${adwaita-icon-theme}/share
+    )
+  '';
+
   build-system = [
     python3.pkgs.setuptools
   ];
@@ -58,22 +64,15 @@ python3.pkgs.buildPythonApplication rec {
   ];
 
   dontWrapGApps = true;
-
-  preFixup = ''
-    makeWrapperArgs+=(
-      ''${gappsWrapperArgs[@]}
-      --prefix XDG_DATA_DIRS : ${adwaita-icon-theme}/share
-    )
-  '';
-
+  pyproject = true;
   passthru.tests.version = testers.testVersion { package = blivet-gui; };
 
   meta = {
     description = "GUI tool for storage configuration using blivet library";
     homepage = "https://fedoraproject.org/wiki/Blivet";
     license = lib.licenses.gpl2Plus;
-    mainProgram = "blivet-gui";
     maintainers = with lib.maintainers; [ cybershadow ];
     platforms = lib.platforms.linux;
+    mainProgram = "blivet-gui";
   };
 }

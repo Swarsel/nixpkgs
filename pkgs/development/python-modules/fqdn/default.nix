@@ -1,14 +1,13 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   pytestCheckHook,
 }:
 
 buildPythonPackage rec {
   pname = "fqdn";
   version = "1.5.1";
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "ypcrts";
@@ -18,7 +17,7 @@ buildPythonPackage rec {
   };
 
   nativeCheckInputs = [ pytestCheckHook ];
-
+  format = "setuptools";
   pythonImportsCheck = [ "fqdn" ];
 
   meta = {

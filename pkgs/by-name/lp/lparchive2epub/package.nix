@@ -1,6 +1,6 @@
 {
-  fetchFromGitHub,
   lib,
+  fetchFromGitHub,
   pkgs,
   python3Packages,
 }:
@@ -8,7 +8,6 @@
 python3Packages.buildPythonApplication rec {
   pname = "lparchive2epub";
   version = "1.3.2";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "Arwalk";
@@ -17,11 +16,11 @@ python3Packages.buildPythonApplication rec {
     hash = "sha256-h1i/p14Zzzr0SK+OjcCnXpsVjJl7mrbeLJ5JlnA0wPU=";
   };
 
-  build-system = with python3Packages; [ poetry-core ];
-
-  pythonRelaxDeps = [
-    "ebooklib"
+  nativeCheckInputs = [
+    python3Packages.pytestCheckHook
   ];
+
+  build-system = with python3Packages; [ poetry-core ];
 
   dependencies = with python3Packages; [
     ebooklib
@@ -30,8 +29,10 @@ python3Packages.buildPythonApplication rec {
     aiohttp
   ];
 
-  nativeCheckInputs = [
-    python3Packages.pytestCheckHook
+  pyproject = true;
+
+  pythonRelaxDeps = [
+    "ebooklib"
   ];
 
   meta = {

@@ -16,10 +16,12 @@ in
 
     networking.enableB43Firmware = lib.mkOption {
       default = false;
-      type = lib.types.bool;
+
       description = ''
         Turn on this option if you want firmware for the NICs supported by the b43 module.
       '';
+
+      type = lib.types.bool;
     };
 
   };

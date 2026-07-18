@@ -1,8 +1,8 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
   nix-update-script,
+  rustPlatform,
   testers,
 }:
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -20,8 +20,9 @@ rustPlatform.buildRustPackage (finalAttrs: {
 
   passthru = {
     tests.convert = testers.runCommand {
-      name = "${finalAttrs.pname}-convert-test";
       nativeBuildInputs = [ finalAttrs.finalPackage ];
+      name = "${finalAttrs.pname}-convert-test";
+
       script = ''
         cat <<EOF > test.yaml
         foo: "bar"
@@ -38,6 +39,7 @@ rustPlatform.buildRustPackage (finalAttrs: {
         diff test.nix expected.nix && touch $out
       '';
     };
+
     updateScript = nix-update-script { };
   };
 
@@ -45,10 +47,12 @@ rustPlatform.buildRustPackage (finalAttrs: {
     description = "Command line tool to convert YAML into a Nix expression";
     homepage = "https://github.com/euank/yaml2nix";
     changelog = "https://github.com/euank/yaml2nix/releases/tag/${finalAttrs.src.tag}";
+    license = lib.licenses.gpl3Plus;
+
     maintainers = with lib.maintainers; [
       gepbird
     ];
-    license = lib.licenses.gpl3Plus;
+
     platforms = lib.platforms.unix;
     mainProgram = "yaml2nix";
   };

@@ -1,7 +1,7 @@
 {
   lib,
-  stdenvNoCC,
   fetchFromGitHub,
+  stdenvNoCC,
 }:
 
 stdenvNoCC.mkDerivation rec {
@@ -15,8 +15,6 @@ stdenvNoCC.mkDerivation rec {
     sha256 = "sha256-8POQPk/hsJBMJ/ZJe9XzVj7Rd7C2+QnpzgYbUR0s3Fc=";
   };
 
-  dontBuild = true;
-
   installPhase = ''
     runHook preInstall
 
@@ -28,11 +26,13 @@ stdenvNoCC.mkDerivation rec {
     runHook postInstall
   '';
 
+  dontBuild = true;
+
   meta = {
     description = "Modified version of the Grml Zsh configuration specialised for the needs of system administration";
     homepage = "https://github.com/agdsn/agdsn-zsh-config";
     license = lib.licenses.gpl2Plus;
-    platforms = lib.platforms.unix;
     maintainers = with lib.maintainers; [ fugi ];
+    platforms = lib.platforms.unix;
   };
 }

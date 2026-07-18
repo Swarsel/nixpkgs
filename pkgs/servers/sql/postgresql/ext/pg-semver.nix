@@ -1,6 +1,6 @@
 {
-  fetchFromGitHub,
   lib,
+  fetchFromGitHub,
   postgresql,
   postgresqlBuildExtension,
   postgresqlTestExtension,
@@ -25,11 +25,11 @@ postgresqlBuildExtension (finalAttrs: {
   };
 
   meta = {
+    inherit (postgresql.meta) platforms;
     description = "Semantic version data type for PostgreSQL";
     homepage = "https://github.com/theory/pg-semver";
     changelog = "https://github.com/theory/pg-semver/blob/main/Changes";
-    maintainers = with lib.maintainers; [ grgi ];
-    inherit (postgresql.meta) platforms;
     license = lib.licenses.postgresql;
+    maintainers = with lib.maintainers; [ grgi ];
   };
 })

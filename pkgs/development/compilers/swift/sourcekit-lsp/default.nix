@@ -1,17 +1,17 @@
 {
   lib,
   stdenv,
-  callPackage,
-  fetchpatch,
-  pkg-config,
-  swift,
-  swiftpm,
-  swiftpm2nix,
   Dispatch,
   Foundation,
   XCTest,
-  sqlite,
+  callPackage,
+  fetchpatch,
   ncurses,
+  pkg-config,
+  sqlite,
+  swift,
+  swiftpm,
+  swiftpm2nix,
 }:
 let
   sources = callPackage ../sources.nix { };
@@ -24,9 +24,8 @@ let
   ncursesInput = if stdenv.hostPlatform.isDarwin then ncurses.out else ncurses;
 in
 stdenv.mkDerivation {
-  pname = "sourcekit-lsp";
-
   inherit (sources) version;
+  pname = "sourcekit-lsp";
   src = sources.sourcekit-lsp;
 
   nativeBuildInputs = [
@@ -34,6 +33,7 @@ stdenv.mkDerivation {
     swift
     swiftpm
   ];
+
   buildInputs = [
     Foundation
     XCTest
@@ -45,14 +45,22 @@ stdenv.mkDerivation {
     lib.makeLibraryPath [ Dispatch ]
   );
 
+  # TODO: BuildServerBuildSystemTests fails
+  #doCheck = true;
+  installPhase = ''
+    binPath="$(swiftpmBinPath)"
+    mkdir -p $out/bin
+    cp $binPath/sourcekit-lsp $out/bin/
+  '';
+
   configurePhase = generated.configure + ''
     swiftpmMakeMutable indexstore-db
     patch -p1 -d .build/checkouts/indexstore-db -i ${./patches/indexstore-db-macos-target.patch}
     patch -p1 -d .build/checkouts/indexstore-db -i ${
       # Fix the build with modern Clang.
       fetchpatch {
-        url = "https://github.com/swiftlang/indexstore-db/commit/6120b53b1e8774ef4e2ad83438d4d94961331e72.patch";
         hash = "sha256-tMAfTIa3RKiA/jDtP02mHcpPaF2s9a+3q/PLJxqn30M=";
+        url = "https://github.com/swiftlang/indexstore-db/commit/6120b53b1e8774ef4e2ad83438d4d94961331e72.patch";
       }
     }
 
@@ -65,25 +73,16 @@ stdenv.mkDerivation {
     export SWIFTTSC_MACOS_DEPLOYMENT_TARGET=10.12
   '';
 
-  # TODO: BuildServerBuildSystemTests fails
-  #doCheck = true;
-
-  installPhase = ''
-    binPath="$(swiftpmBinPath)"
-    mkdir -p $out/bin
-    cp $binPath/sourcekit-lsp $out/bin/
-  '';
-
   # Canary to verify output of our Swift toolchain does not depend on the Swift
   # compiler itself. (Only its 'lib' output.)
   disallowedRequisites = [ swift.swift ];
 
   meta = {
     description = "Language Server Protocol implementation for Swift and C-based languages";
-    mainProgram = "sourcekit-lsp";
     homepage = "https://github.com/apple/sourcekit-lsp";
-    platforms = with lib.platforms; linux ++ darwin;
     license = lib.licenses.asl20;
+    platforms = with lib.platforms; linux ++ darwin;
+    mainProgram = "sourcekit-lsp";
     teams = [ lib.teams.swift ];
   };
 }

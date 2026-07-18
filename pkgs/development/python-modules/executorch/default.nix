@@ -1,73 +1,64 @@
 {
   lib,
   stdenv,
-  pkgs,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # nativeBuildInputs
-  gitMinimal,
   # cuda-only:
   autoPatchelfHook,
-
+  buildPythonPackage,
   # build-system
   certifi,
   cmake,
-  packaging,
-  pyyaml,
-  setuptools,
-  zstd,
-
+  cudaPackages,
   # dependencies
   # coremltools, (unpackaged)
   expecttest,
   flatbuffers,
+  # nativeBuildInputs
+  gitMinimal,
   hydra-core,
   hypothesis,
   kgb,
   mpmath,
   numpy,
   omegaconf,
+  packaging,
   pandas,
   parameterized,
-  pytorch-tokenizers,
-  ruamel-yaml,
-  scikit-learn,
-  sympy,
-  tabulate,
-  torch,
-  torchao,
-  typing-extensions,
-
+  pkgs,
   # tests
   pytest-json-report,
   pytest-rerunfailures,
   pytestCheckHook,
+  pytorch-tokenizers,
+  pyyaml,
+  ruamel-yaml,
+  scikit-learn,
+  setuptools,
+  sympy,
+  tabulate,
+  torch,
+  torchao,
   torchaudio,
   transformers,
+  typing-extensions,
   writableTmpDirAsHomeHook,
   yaspin,
-
+  zstd,
   cudaSupport ? torch.cudaSupport,
-  cudaPackages,
 }:
 buildPythonPackage.override { inherit (torch) stdenv; } (finalAttrs: {
   pname = "executorch";
   version = "1.3.1";
-  pyproject = true;
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "pytorch";
     repo = "executorch";
     tag = "v${finalAttrs.version}";
-
+    hash = "sha256-UyMPY+qYTHYZDeftj4YVqzO2ibTswzd+HWW5JeXHW0Q=";
+    fetchSubmodules = true;
     # The ExecuTorch repo must be cloned into a directory named exactly `executorch`.
     # See https://github.com/pytorch/executorch/issues/6475 for progress on a fix for this restriction.
     name = "executorch";
-
-    fetchSubmodules = true;
-    hash = "sha256-UyMPY+qYTHYZDeftj4YVqzO2ibTswzd+HWW5JeXHW0Q=";
   };
 
   postPatch =
@@ -103,6 +94,20 @@ buildPythonPackage.override { inherit (torch) stdenv; } (finalAttrs: {
       sed -i "1i #include <cstdint>" extension/llm/tokenizers/third-party/sentencepiece/src/sentencepiece_processor.h
     '';
 
+  nativeBuildInputs = [
+    gitMinimal
+  ]
+  ++ lib.optionals cudaSupport [
+    autoPatchelfHook
+    cudaPackages.cuda_nvcc
+  ];
+
+  buildInputs = lib.optionals cudaSupport [
+    cudaPackages.cuda_cudart
+    cudaPackages.cuda_nvrtc
+    cudaPackages.libcurand
+  ];
+
   env = {
     BUILD_VERSION = finalAttrs.version;
 
@@ -121,6 +126,18 @@ buildPythonPackage.override { inherit (torch) stdenv; } (finalAttrs: {
     TORCH_CUDA_ARCH_LIST = lib.concatStringsSep ";" torch.cudaCapabilities;
   };
 
+  nativeCheckInputs = [
+    pytest-json-report
+    pytest-rerunfailures
+    pytestCheckHook
+    torchaudio
+    transformers
+    writableTmpDirAsHomeHook
+    yaspin
+  ];
+
+  __structuredAttrs = true;
+
   build-system = [
     certifi
     cmake
@@ -129,37 +146,7 @@ buildPythonPackage.override { inherit (torch) stdenv; } (finalAttrs: {
     setuptools
     zstd
   ];
-  dontUseCmakeConfigure = true;
 
-  nativeBuildInputs = [
-    gitMinimal
-  ]
-  ++ lib.optionals cudaSupport [
-    autoPatchelfHook
-    cudaPackages.cuda_nvcc
-  ];
-
-  buildInputs = lib.optionals cudaSupport [
-    cudaPackages.cuda_cudart
-    cudaPackages.cuda_nvrtc
-    cudaPackages.libcurand
-  ];
-
-  pythonRemoveDeps = [
-    # unpackaged
-    "coremltools"
-
-    # Test dependencies that should not be listed in runtime dependencies
-    "pytest"
-    "pytest-json-report"
-    "pytest-rerunfailures"
-    "pytest-xdist"
-  ];
-  pythonRelaxDeps = [
-    "mpmath"
-    "scikit-learn"
-    "torchao"
-  ];
   dependencies = [
     # coremltools (unpackaged)
     expecttest
@@ -182,18 +169,6 @@ buildPythonPackage.override { inherit (torch) stdenv; } (finalAttrs: {
     torch
     torchao
     typing-extensions
-  ];
-
-  pythonImportsCheck = [ "executorch" ];
-
-  nativeCheckInputs = [
-    pytest-json-report
-    pytest-rerunfailures
-    pytestCheckHook
-    torchaudio
-    transformers
-    writableTmpDirAsHomeHook
-    yaspin
   ];
 
   disabledTestPaths = [
@@ -254,12 +229,34 @@ buildPythonPackage.override { inherit (torch) stdenv; } (finalAttrs: {
     "test_tile_positional_embedding_aoti"
   ];
 
+  dontUseCmakeConfigure = true;
+  pyproject = true;
+  pythonImportsCheck = [ "executorch" ];
+
+  pythonRelaxDeps = [
+    "mpmath"
+    "scikit-learn"
+    "torchao"
+  ];
+
+  pythonRemoveDeps = [
+    # unpackaged
+    "coremltools"
+
+    # Test dependencies that should not be listed in runtime dependencies
+    "pytest"
+    "pytest-json-report"
+    "pytest-rerunfailures"
+    "pytest-xdist"
+  ];
+
   meta = {
     description = "On-device AI across mobile, embedded and edge for PyTorch";
     homepage = "https://github.com/pytorch/executorch";
     changelog = "https://github.com/pytorch/executorch/releases/tag/${finalAttrs.src.tag}";
     license = lib.licenses.bsd3;
     maintainers = with lib.maintainers; [ GaetanLepage ];
+
     badPlatforms = [
       # Many tests segfault. Supporting this platform will need additional work
       "aarch64-linux"

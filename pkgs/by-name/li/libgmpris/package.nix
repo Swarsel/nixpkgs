@@ -1,10 +1,10 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchurl,
-  pkg-config,
   glib,
   gobject-introspection,
+  pkg-config,
 }:
 
 stdenv.mkDerivation rec {
@@ -30,8 +30,8 @@ stdenv.mkDerivation rec {
   '';
 
   meta = {
-    homepage = "https://www.sonarnerd.net/src/";
     description = "GMPRIS GDBus bindings GDBus bindings generated from the GMPRIS XML spec files";
+    homepage = "https://www.sonarnerd.net/src/";
     license = lib.licenses.lgpl21;
     maintainers = with lib.maintainers; [ lovesegfault ];
   };

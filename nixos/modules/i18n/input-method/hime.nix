@@ -1,7 +1,7 @@
 {
   config,
-  pkgs,
   lib,
+  pkgs,
   ...
 }:
 let
@@ -9,12 +9,13 @@ let
 in
 {
   config = lib.mkIf (imcfg.enable && imcfg.type == "hime") {
-    i18n.inputMethod.package = pkgs.hime;
     environment.variables = {
       GTK_IM_MODULE = "hime";
       QT_IM_MODULE = "hime";
       XMODIFIERS = "@im=hime";
     };
+
+    i18n.inputMethod.package = pkgs.hime;
     services.xserver.displayManager.sessionCommands = "${pkgs.hime}/bin/hime &";
   };
 }

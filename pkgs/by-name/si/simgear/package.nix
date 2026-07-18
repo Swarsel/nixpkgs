@@ -2,30 +2,30 @@
   lib,
   stdenv,
   fetchFromGitLab,
-  plib,
+  apr,
+  boost,
+  c-ares,
+  cmake,
+  curl,
+  expat,
+  freealut,
+  libGL,
+  libGLU,
   libglut,
-  xorgproto,
+  libice,
+  libjpeg,
+  libsm,
   libx11,
   libxext,
   libxi,
-  libice,
-  libsm,
-  libxt,
   libxmu,
-  libGLU,
-  libGL,
-  boost,
-  zlib,
-  libjpeg,
-  freealut,
-  openscenegraph,
+  libxt,
   openal,
-  expat,
-  cmake,
-  apr,
+  openscenegraph,
+  plib,
+  xorgproto,
   xz,
-  curl,
-  c-ares,
+  zlib,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -40,6 +40,7 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   nativeBuildInputs = [ cmake ];
+
   buildInputs = [
     plib
     boost
@@ -72,8 +73,8 @@ stdenv.mkDerivation (finalAttrs: {
   meta = {
     description = "Simulation construction toolkit";
     homepage = "https://wiki.flightgear.org/SimGear";
+    license = lib.licenses.lgpl2;
     maintainers = with lib.maintainers; [ raskin ];
     platforms = lib.platforms.linux ++ lib.platforms.darwin;
-    license = lib.licenses.lgpl2;
   };
 })

@@ -1,23 +1,19 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
+  buildPythonPackage,
+  # checks
+  pytestCheckHook,
   # build-system
   setuptools,
   setuptools-scm,
-
   # dependencies
   typing-extensions,
-
-  # checks
-  pytestCheckHook,
 }:
 
 buildPythonPackage rec {
   pname = "flexparser";
   version = "0.4";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "hgrecco";
@@ -26,17 +22,17 @@ buildPythonPackage rec {
     hash = "sha256-0Ocp4GsrnzkpSqnP+AK5OxJ3KyUf5Uc6CegDXpRYRqo=";
   };
 
+  nativeCheckInputs = [
+    pytestCheckHook
+  ];
+
   build-system = [
     setuptools
     setuptools-scm
   ];
 
   dependencies = [ typing-extensions ];
-
-  nativeCheckInputs = [
-    pytestCheckHook
-  ];
-
+  pyproject = true;
   pythonImportsCheck = [ "flexparser" ];
 
   meta = {

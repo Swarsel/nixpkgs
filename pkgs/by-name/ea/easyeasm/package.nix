@@ -1,13 +1,13 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
-  makeWrapper,
-  amass,
   alterx,
-  subfinder,
+  amass,
+  buildGoModule,
   dnsx,
   httpx,
+  makeWrapper,
+  subfinder,
 }:
 
 buildGoModule (finalAttrs: {
@@ -21,16 +21,11 @@ buildGoModule (finalAttrs: {
     hash = "sha256-/PhoH+5k63rJL1N3V3IL1TP1oacsBfGfVw/OueN9j8M=";
   };
 
-  vendorHash = "sha256-g+yaVIx4jxpAQ/+WrGKxhVeliYx7nLQe/zsGpxV4Fn4=";
-
   nativeBuildInputs = [
     makeWrapper
   ];
 
-  ldflags = [
-    "-s"
-    "-w"
-  ];
+  vendorHash = "sha256-g+yaVIx4jxpAQ/+WrGKxhVeliYx7nLQe/zsGpxV4Fn4=";
 
   postFixup = ''
     wrapProgram $out/bin/easyeasm \
@@ -44,6 +39,11 @@ buildGoModule (finalAttrs: {
         ]
       }"
   '';
+
+  ldflags = [
+    "-s"
+    "-w"
+  ];
 
   meta = {
     description = "Attack surface management tool";

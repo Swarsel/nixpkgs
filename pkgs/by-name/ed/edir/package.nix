@@ -1,13 +1,12 @@
 {
   lib,
-  python3Packages,
   fetchPypi,
+  python3Packages,
 }:
 
 python3Packages.buildPythonApplication (finalAttrs: {
   pname = "edir";
   version = "2.32";
-  pyproject = true;
 
   src = fetchPypi {
     inherit (finalAttrs) pname version;
@@ -21,6 +20,8 @@ python3Packages.buildPythonApplication (finalAttrs: {
   propagatedBuildInputs = with python3Packages; [
     platformdirs
   ];
+
+  pyproject = true;
 
   meta = {
     description = "Program to rename and remove files and directories using your editor";

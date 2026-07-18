@@ -1,23 +1,22 @@
 {
   lib,
+  fetchFromGitHub,
   attrs,
   buildPythonPackage,
   cryptography,
-  fetchFromGitHub,
   hatch-fancy-pypi-readme,
   hatch-vcs,
   hatchling,
   idna,
   pyasn1,
   pyasn1-modules,
-  pytestCheckHook,
   pyopenssl,
+  pytestCheckHook,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "service-identity";
   version = "24.2.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "pyca";
@@ -40,10 +39,9 @@ buildPythonPackage (finalAttrs: {
     pyasn1-modules
   ];
 
-  checkInputs = [ pyopenssl ];
-
   nativeCheckInputs = [ pytestCheckHook ];
-
+  checkInputs = [ pyopenssl ];
+  pyproject = true;
   pythonImportsCheck = [ "service_identity" ];
 
   meta = {

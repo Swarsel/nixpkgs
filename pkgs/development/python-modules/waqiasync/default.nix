@@ -10,15 +10,15 @@
 buildPythonPackage (finalAttrs: {
   pname = "waqiasync";
   version = "1.1.0";
-  pyproject = true;
-
-  __structuredAttrs = true;
 
   src = fetchPypi {
     inherit (finalAttrs) pname version;
     hash = "sha256-SOs998BQV4UlLnRB3Yf7zze51u43g2Npwgk6y80S+m8=";
   };
 
+  # Project has no tests
+  doCheck = false;
+  __structuredAttrs = true;
   build-system = [ setuptools ];
 
   dependencies = [
@@ -26,8 +26,7 @@ buildPythonPackage (finalAttrs: {
     async-timeout
   ];
 
-  # Project has no tests
-  doCheck = false;
+  pyproject = true;
   pythonImportsCheck = [ "waqiasync" ];
 
   meta = {

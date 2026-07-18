@@ -1,13 +1,13 @@
 {
   lib,
-  python3Packages,
   fetchFromGitHub,
-  linkFarm,
-  secp256k1,
-  particl-core,
   bitcoind,
-  namecoind,
+  linkFarm,
   monero-cli,
+  namecoind,
+  particl-core,
+  python3Packages,
+  secp256k1,
   wownero,
 }:
 
@@ -19,6 +19,7 @@ let
       rev = "fd8b63ccf8bcb48358a42c456f34e2488a55a688";
       hash = "sha256-/bmKZRBBjirI4YqRKfzoxdAt6UVoWHmrNQQHX7l+eH8=";
     };
+
     configureFlags = old.configureFlags ++ [
       "--enable-experimental"
       "--enable-module-ed25519"
@@ -38,7 +39,9 @@ let
           rev = "932366c9d4d8e487162b5c1b2a2d9693e24e0483";
           hash = "sha256-zOekPmP1zR/S+zxq/7OrEz24k8SInlsB+wJ8kPlmqe4=";
         };
+
         patches = [ ];
+
         preCheck = ''
           rm -rf src/coincurve
           # don't run benchmark tests
@@ -47,10 +50,10 @@ let
       });
   bindir = linkFarm "bindir" (
     lib.mapAttrs (_: p: "${lib.getBin p}/bin") {
-      particl = particl-core;
       bitcoin = bitcoind;
-      namecoin = namecoind;
       monero = monero-cli;
+      namecoin = namecoind;
+      particl = particl-core;
       wownero = wownero;
       #TODO: add pivx after it's not broken
     }
@@ -59,7 +62,6 @@ in
 python3Packages.buildPythonApplication (finalAttrs: {
   pname = "basicswap";
   version = "0.14.4";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "basicswap";
@@ -73,6 +75,12 @@ python3Packages.buildPythonApplication (finalAttrs: {
     substituteInPlace basicswap/bin/prepare.py \
       --replace-fail "bin_dir = None" "bin_dir = '${bindir}'" \
       --replace-fail "no_cores = False" "no_cores = True"
+  '';
+
+  doCheck = false;
+
+  postInstall = ''
+    install -Dm755 scripts/createoffers.py $out/bin/basicswap-createoffers
   '';
 
   build-system = with python3Packages; [
@@ -92,12 +100,7 @@ python3Packages.buildPythonApplication (finalAttrs: {
     mnemonic
   ];
 
-  postInstall = ''
-    install -Dm755 scripts/createoffers.py $out/bin/basicswap-createoffers
-  '';
-
-  doCheck = false;
-
+  pyproject = true;
   passthru.bindir = bindir;
 
   meta = {

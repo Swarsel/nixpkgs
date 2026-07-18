@@ -1,14 +1,13 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   pytestCheckHook,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "svgwrite";
   version = "1.4.3";
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "mozman";
@@ -18,13 +17,14 @@ buildPythonPackage (finalAttrs: {
   };
 
   # svgwrite requires Python 3.6 or newer
-
   nativeCheckInputs = [ pytestCheckHook ];
 
   disabledTests = [
     # embed_google_web_font test tried to pull font from internet
     "test_embed_google_web_font"
   ];
+
+  format = "setuptools";
 
   meta = {
     description = "Python library to create SVG drawings";

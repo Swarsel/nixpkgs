@@ -1,11 +1,10 @@
 {
   lib,
-  buildFHSEnv,
   fetchurl,
+  buildFHSEnv,
   jdk,
   makeDesktopItem,
   unzip,
-
   # Either "community" or "pro"
   iconName ? "community",
 }:
@@ -18,32 +17,40 @@ let
   version = "2026.6";
 
   src = fetchurl {
+    hash = "sha256-nafdpcXgWpuIinmgYp+uXkfoFkQfhFRsDaxsh+Rgb3M=";
     name = "burpsuite.jar";
+
     urls = [
       "https://portswigger-cdn.net/burp/releases/download?product=desktop&version=${version}&type=Jar"
       "https://portswigger.net/burp/releases/download?product=desktop&version=${version}&type=Jar"
       "https://web.archive.org/web/https://portswigger.net/burp/releases/download?product=desktop&version=${version}&type=Jar"
     ];
-    hash = "sha256-nafdpcXgWpuIinmgYp+uXkfoFkQfhFRsDaxsh+Rgb3M=";
   };
 
   description = "Integrated platform for performing security testing of web applications";
 
   desktopItem = makeDesktopItem {
-    name = pname;
-    exec = pname;
-    icon = pname;
-    desktopName = "Burp Suite Desktop";
-    comment = description;
     categories = [
       "Development"
       "Security"
       "System"
     ];
+
+    comment = description;
+    desktopName = "Burp Suite Desktop";
+    exec = pname;
+    icon = pname;
+    name = pname;
   };
 in
 buildFHSEnv {
   inherit pname version;
+
+  extraInstallCommands = ''
+    mkdir -p "$out/share/icons/hicolor/64x64/apps"
+    ${lib.getBin unzip}/bin/unzip -p ${src} resources/Media/icon64${iconName}.png > "$out/share/icons/hicolor/64x64/apps/burpsuite.png"
+    cp -r ${desktopItem}/share/applications $out/share
+  '';
 
   runScript = "${lib.getExe jdk} -jar ${src}";
 
@@ -77,36 +84,36 @@ buildFHSEnv {
       libxrandr
     ];
 
-  extraInstallCommands = ''
-    mkdir -p "$out/share/icons/hicolor/64x64/apps"
-    ${lib.getBin unzip}/bin/unzip -p ${src} resources/Media/icon64${iconName}.png > "$out/share/icons/hicolor/64x64/apps/burpsuite.png"
-    cp -r ${desktopItem}/share/applications $out/share
-  '';
-
   passthru.updateScript = ./update.sh;
 
   meta = {
     inherit description;
+
     longDescription = ''
       Burp Suite is an integrated platform for performing security testing of web applications.
       Its various tools work seamlessly together to support the entire testing process, from
       initial mapping and analysis of an application's attack surface, through to finding and
       exploiting security vulnerabilities.
     '';
+
     homepage = "https://portswigger.net/burp/";
+
     changelog = "https://portswigger.net/burp/releases/professional-community-${
       lib.replaceStrings [ "." ] [ "-" ] version
     }";
-    sourceProvenance = with lib.sourceTypes; [ binaryBytecode ];
+
     license = lib.licenses.unfree;
-    platforms = jdk.meta.platforms;
-    hydraPlatforms = [ ];
+    sourceProvenance = with lib.sourceTypes; [ binaryBytecode ];
+
     maintainers = with lib.maintainers; [
       bennofs
       blackzeshi
       fab
       yechielw
     ];
+
+    platforms = jdk.meta.platforms;
     mainProgram = "burpsuite";
+    hydraPlatforms = [ ];
   };
 }

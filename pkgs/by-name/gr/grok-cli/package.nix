@@ -1,10 +1,10 @@
 {
   lib,
-  buildNpmPackage,
   fetchFromGitHub,
+  buildNpmPackage,
+  grok-cli,
   nodejs_latest,
   runCommand,
-  grok-cli,
 }:
 
 buildNpmPackage rec {
@@ -18,9 +18,8 @@ buildNpmPackage rec {
     hash = "sha256-4+be/H/LEMNxNTYHW7L4wDIKPm09yuYo4r08ZeBiJ4w=";
   };
 
-  npmDepsHash = "sha256-Yl51fCnI3soQ4sGBg4dr+kVak8zYEkMTgyUKDaRK6N0=";
-
   nativeBuildInputs = [ nodejs_latest ];
+  npmDepsHash = "sha256-Yl51fCnI3soQ4sGBg4dr+kVak8zYEkMTgyUKDaRK6N0=";
 
   passthru.tests = {
     help-command = runCommand "grok-help-test" { } ''
@@ -36,7 +35,7 @@ buildNpmPackage rec {
     homepage = "https://github.com/superagent-ai/grok-cli";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ madebydamo ];
-    mainProgram = "grok";
     platforms = lib.platforms.all;
+    mainProgram = "grok";
   };
 }

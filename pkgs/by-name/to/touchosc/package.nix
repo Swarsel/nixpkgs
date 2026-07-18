@@ -2,15 +2,15 @@
   lib,
   stdenv,
   fetchurl,
-  makeWrapper,
-  autoPatchelfHook,
-  dpkg,
   alsa-lib,
-  curl,
+  autoPatchelfHook,
   avahi,
+  curl,
+  dpkg,
   jack2,
-  libxcb,
+  libglvnd,
   libx11,
+  libxcb,
   libxcursor,
   libxext,
   libxi,
@@ -18,7 +18,7 @@
   libxrandr,
   libxrender,
   libxxf86vm,
-  libglvnd,
+  makeWrapper,
   zenity,
 }:
 
@@ -48,16 +48,9 @@ stdenv.mkDerivation rec {
   pname = "touchosc";
   version = "1.4.9.248";
 
-  suffix =
-    {
-      aarch64-linux = "linux-arm64";
-      armv7l-linux = "linux-armhf";
-      x86_64-linux = "linux-x64";
-    }
-    .${stdenv.hostPlatform.system} or (throw "Unsupported system: ${stdenv.hostPlatform.system}");
-
   src = fetchurl {
     url = "https://hexler.net/pub/${pname}/${pname}-${version}-${suffix}.deb";
+
     hash =
       {
         aarch64-linux = "sha256-IKk688XFTx1rHEF03uHZ3cN60GwwIlf/FK4mJ0c/PqM=";
@@ -80,9 +73,6 @@ stdenv.mkDerivation rec {
     alsa-lib
   ];
 
-  dontConfigure = true;
-  dontBuild = true;
-
   installPhase = ''
     runHook preInstall
 
@@ -99,19 +89,32 @@ stdenv.mkDerivation rec {
     runHook postInstall
   '';
 
+  dontBuild = true;
+  dontConfigure = true;
+
+  suffix =
+    {
+      aarch64-linux = "linux-arm64";
+      armv7l-linux = "linux-armhf";
+      x86_64-linux = "linux-x64";
+    }
+    .${stdenv.hostPlatform.system} or (throw "Unsupported system: ${stdenv.hostPlatform.system}");
+
   passthru.updateScript = ./update.sh;
 
   meta = {
-    homepage = "https://hexler.net/touchosc";
     description = "Next generation modular control surface";
-    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
+    homepage = "https://hexler.net/touchosc";
     license = lib.licenses.unfree;
+    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
     maintainers = [ ];
+
     platforms = [
       "aarch64-linux"
       "armv7l-linux"
       "x86_64-linux"
     ];
+
     mainProgram = "TouchOSC";
   };
 }

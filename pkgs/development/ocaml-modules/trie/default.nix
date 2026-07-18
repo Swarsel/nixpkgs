@@ -1,7 +1,7 @@
 {
   lib,
-  buildDunePackage,
   fetchFromGitHub,
+  buildDunePackage,
 }:
 
 buildDunePackage (finalAttrs: {
@@ -16,9 +16,9 @@ buildDunePackage (finalAttrs: {
   };
 
   meta = {
+    description = "Strict impure trie tree";
     homepage = "https://github.com/kandu/trie/";
     license = lib.licenses.mit;
-    description = "Strict impure trie tree";
     maintainers = [ lib.maintainers.vbgl ];
   };
 

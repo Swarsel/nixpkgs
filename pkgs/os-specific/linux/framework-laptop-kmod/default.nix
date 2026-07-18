@@ -1,9 +1,9 @@
 {
   lib,
   stdenv,
+  fetchFromGitHub,
   kernel,
   kernelModuleMakeFlags,
-  fetchFromGitHub,
   unstableGitUpdater,
 }:
 

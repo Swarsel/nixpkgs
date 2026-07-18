@@ -9,8 +9,8 @@ let
   version = "1.9";
 in
 rustPlatform.buildRustPackage {
-  pname = "rsbkb";
   inherit version;
+  pname = "rsbkb";
 
   src = fetchFromGitHub {
     owner = "trou";

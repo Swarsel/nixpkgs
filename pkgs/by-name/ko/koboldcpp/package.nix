@@ -1,31 +1,26 @@
 {
   lib,
-  fetchFromGitHub,
   stdenv,
-  makeWrapper,
-  python3Packages,
-  tk,
+  fetchFromGitHub,
   addDriverRunpath,
-
-  koboldLiteSupport ? true,
-
+  clblast,
   config,
-  cudaPackages ? { },
-
+  makeWrapper,
+  nix-update-script,
+  ocl-icd,
+  python3Packages,
+  shaderc,
+  tk,
+  vulkan-loader,
+  clblastSupport ? stdenv.hostPlatform.isLinux,
   cublasSupport ? config.cudaSupport,
   # You can find a full list here: https://arnon.dk/matching-sm-architectures-arch-and-gencode-for-various-nvidia-cards/
   # For example if you're on an RTX 3060 that means you're using "Ampere" and you need to pass "sm_86"
   cudaArches ? cudaPackages.flags.realArches or [ ],
-
-  clblastSupport ? stdenv.hostPlatform.isLinux,
-  clblast,
-  ocl-icd,
-
-  vulkanSupport ? true,
-  vulkan-loader,
-  shaderc,
+  cudaPackages ? { },
+  koboldLiteSupport ? true,
   metalSupport ? stdenv.hostPlatform.isDarwin,
-  nix-update-script,
+  vulkanSupport ? true,
 }:
 
 let
@@ -48,14 +43,6 @@ effectiveStdenv.mkDerivation (finalAttrs: {
     hash = "sha256-wizg/XkNjWUeF0heK1sQQhfKRlIYBKwJmQ8fIaZ2zdE=";
   };
 
-  enableParallelBuilding = true;
-
-  nativeBuildInputs = [
-    makeWrapper
-    python3Packages.wrapPython
-  ]
-  ++ lib.optionals vulkanSupport [ shaderc ];
-
   postPatch = ''
     nixLog "patching $PWD/Makefile to remove explicit linking against CUDA driver"
     substituteInPlace "$PWD/Makefile" \
@@ -64,7 +51,11 @@ effectiveStdenv.mkDerivation (finalAttrs: {
         'CUBLASLD_FLAGS = '
   '';
 
-  pythonInputs = builtins.attrValues { inherit (python3Packages) tkinter customtkinter packaging; };
+  nativeBuildInputs = [
+    makeWrapper
+    python3Packages.wrapPython
+  ]
+  ++ lib.optionals vulkanSupport [ shaderc ];
 
   buildInputs = [
     tk
@@ -83,8 +74,6 @@ effectiveStdenv.mkDerivation (finalAttrs: {
   ++ lib.optionals vulkanSupport [
     vulkan-loader
   ];
-
-  pythonPath = finalAttrs.pythonInputs;
 
   makeFlags = [
     (makeBool "LLAMA_CUBLAS" cublasSupport)
@@ -121,18 +110,23 @@ effectiveStdenv.mkDerivation (finalAttrs: {
       --prefix PATH : ${lib.makeBinPath [ tk ]} ${libraryPathWrapperArgs}
   '';
 
+  enableParallelBuilding = true;
+  pythonInputs = builtins.attrValues { inherit (python3Packages) tkinter customtkinter packaging; };
+  pythonPath = finalAttrs.pythonInputs;
   passthru.updateScript = nix-update-script { };
 
   meta = {
-    changelog = "https://github.com/LostRuins/koboldcpp/releases/tag/v${finalAttrs.version}";
     description = "Way to run various GGML and GGUF models";
     homepage = "https://github.com/LostRuins/koboldcpp";
+    changelog = "https://github.com/LostRuins/koboldcpp/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.agpl3Only;
-    mainProgram = "koboldcpp";
+
     maintainers = with lib.maintainers; [
       maxstrid
       _4evy
     ];
+
     platforms = lib.platforms.unix;
+    mainProgram = "koboldcpp";
   };
 })

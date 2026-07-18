@@ -1,7 +1,7 @@
 {
   lib,
-  buildDunePackage,
   fetchurl,
+  buildDunePackage,
 }:
 
 buildDunePackage (finalAttrs: {
@@ -15,8 +15,8 @@ buildDunePackage (finalAttrs: {
 
   meta = {
     description = "Compatibility Either module";
-    license = lib.licenses.mit;
     homepage = "https://github.com/mirage/either";
+    license = lib.licenses.mit;
     maintainers = [ lib.maintainers.sternenseemann ];
   };
 })

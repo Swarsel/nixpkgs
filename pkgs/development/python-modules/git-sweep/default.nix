@@ -8,7 +8,6 @@
 buildPythonPackage rec {
   pname = "git-sweep";
   version = "0.1.1";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
@@ -16,17 +15,16 @@ buildPythonPackage rec {
   };
 
   propagatedBuildInputs = [ gitpython ];
-
   # Module has no tests
   doCheck = false;
-
+  format = "setuptools";
   pythonImportsCheck = [ "gitsweep" ];
 
   meta = {
     description = "Command-line tool that helps you clean up Git branches";
-    mainProgram = "git-sweep";
     homepage = "https://github.com/arc90/git-sweep";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ pSub ];
+    mainProgram = "git-sweep";
   };
 }

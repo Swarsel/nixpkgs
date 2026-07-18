@@ -3,17 +3,17 @@
   stdenv,
   fetchurl,
   cmake,
-  pkg-config,
-  gettext,
+  coreutils,
   dbus,
   dbus-glib,
+  gettext,
+  harfbuzz,
+  kmod,
   libgaminggear,
   libgudev,
   lua,
-  harfbuzz,
+  pkg-config,
   runtimeShell,
-  coreutils,
-  kmod,
   udevCheckHook,
 }:
 
@@ -50,6 +50,7 @@ stdenv.mkDerivation rec {
     gettext
     udevCheckHook
   ];
+
   buildInputs = [
     dbus
     dbus-glib
@@ -79,7 +80,7 @@ stdenv.mkDerivation rec {
   meta = {
     description = "Tools to configure ROCCAT devices";
     homepage = "https://roccat.sourceforge.net/";
-    platforms = lib.platforms.linux;
     license = lib.licenses.gpl2Plus;
+    platforms = lib.platforms.linux;
   };
 }

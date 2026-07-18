@@ -1,17 +1,16 @@
 {
   lib,
-  mkHyprlandPlugin,
   fetchFromGitHub,
   cmake,
   doctest,
   meson,
+  mkHyprlandPlugin,
   ninja,
-  wf-touch,
   nix-update-script,
+  wf-touch,
 }:
 
 mkHyprlandPlugin {
-  pluginName = "hyprgrass";
   version = "0.8.2-unstable-2025-10-08";
 
   src = fetchFromGitHub {
@@ -29,11 +28,9 @@ mkHyprlandPlugin {
   ];
 
   buildInputs = [ wf-touch ];
-
-  dontUseCmakeConfigure = true;
-
   doCheck = true;
-
+  dontUseCmakeConfigure = true;
+  pluginName = "hyprgrass";
   passthru.updateScript = nix-update-script { };
 
   meta = {

@@ -2,49 +2,49 @@
   lib,
   stdenv,
   fetchurl,
-  makeWrapper,
-  makeDesktopItem,
-  writeShellScript,
-  jq,
   atk,
   cairo,
+  copyDesktopItems,
+  dbus,
+  fontconfig,
+  freetype,
   gdk-pixbuf,
   glib,
   gtk3,
-  dbus,
   harfbuzz,
-  libz,
-  libGLU,
+  jq,
   libGL,
-  pango,
+  libGLU,
+  libepoxy,
+  libice,
+  libsm,
+  libx11,
+  libxcb,
+  libxdamage,
+  libxext,
+  libxfixes,
+  libxi,
+  libxkbcommon,
+  libxkbfile,
+  libxmu,
+  libxrandr,
+  libxrender,
   libxt,
   libxtst,
-  libxrender,
-  libxrandr,
-  libxmu,
-  libxi,
-  libxfixes,
-  libxext,
-  libxdamage,
-  libx11,
-  libsm,
-  libice,
-  libxkbfile,
-  libxcb,
+  libz,
+  lsb-release,
+  makeDesktopItem,
+  makeWrapper,
   minizip,
   net-tools,
-  lsb-release,
-  freetype,
-  fontconfig,
+  pango,
+  pciutils,
   polkit,
   polkit_gnome,
-  pciutils,
-  copyDesktopItems,
   pulseaudio,
   udev,
-  libxkbcommon,
   wayland,
-  libepoxy,
+  writeShellScript,
 }:
 
 let
@@ -62,12 +62,21 @@ let
   hash = pin.${system};
 in
 stdenv.mkDerivation (finalAttrs: {
-  pname = "anydesk";
   inherit version;
+  pname = "anydesk";
 
   src = fetchurl {
     inherit url hash;
   };
+
+  postPatch = ''
+    substituteInPlace systemd/anydesk.service --replace-fail "/usr/bin/anydesk" "$out/bin/anydesk"
+  '';
+
+  nativeBuildInputs = [
+    copyDesktopItems
+    makeWrapper
+  ];
 
   buildInputs = [
     atk
@@ -108,27 +117,6 @@ stdenv.mkDerivation (finalAttrs: {
     libepoxy
   ];
 
-  nativeBuildInputs = [
-    copyDesktopItems
-    makeWrapper
-  ];
-
-  desktopItems = [
-    (makeDesktopItem {
-      name = "AnyDesk";
-      exec = "anydesk %u";
-      icon = "anydesk";
-      desktopName = "AnyDesk";
-      genericName = description;
-      categories = [ "Network" ];
-      startupNotify = false;
-    })
-  ];
-
-  postPatch = ''
-    substituteInPlace systemd/anydesk.service --replace-fail "/usr/bin/anydesk" "$out/bin/anydesk"
-  '';
-
   installPhase = ''
     runHook preInstall
 
@@ -163,6 +151,18 @@ stdenv.mkDerivation (finalAttrs: {
       --set GTK_THEME Adwaita
   '';
 
+  desktopItems = [
+    (makeDesktopItem {
+      categories = [ "Network" ];
+      desktopName = "AnyDesk";
+      exec = "anydesk %u";
+      genericName = description;
+      icon = "anydesk";
+      name = "AnyDesk";
+      startupNotify = false;
+    })
+  ];
+
   passthru = {
     updateScript = ./update.sh;
   };
@@ -170,13 +170,15 @@ stdenv.mkDerivation (finalAttrs: {
   meta = {
     inherit description;
     homepage = "https://www.anydesk.com";
-    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
     license = lib.licenses.unfree;
+    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
+    maintainers = with lib.maintainers; [ fraioveio ];
+
     platforms = [
       "x86_64-linux"
       "aarch64-linux"
     ];
+
     mainProgram = "anydesk";
-    maintainers = with lib.maintainers; [ fraioveio ];
   };
 })

@@ -3,23 +3,17 @@
   stdenv,
   fetchFromGitHub,
   cmake,
-  ninja,
-  sdl3,
-  spirv-cross,
   directx-shader-compiler,
+  ninja,
   nix-update-script,
   runCommand,
+  sdl3,
+  spirv-cross,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
   pname = "sdl3-shadercross";
   version = "0-unstable-2026-06-26";
-
-  outputs = [
-    "out"
-    "lib"
-    "dev"
-  ];
 
   src = fetchFromGitHub {
     owner = "libsdl-org";
@@ -27,6 +21,12 @@ stdenv.mkDerivation (finalAttrs: {
     rev = "e55cf5e31ced6f3d1be5cc6d0c50e99384f9f4ba";
     hash = "sha256-oKetmnMb+SeRlscWmzGln6nR1M7fBkgybFlB1bh1Cos=";
   };
+
+  outputs = [
+    "out"
+    "lib"
+    "dev"
+  ];
 
   strictDeps = true;
 
@@ -50,8 +50,6 @@ stdenv.mkDerivation (finalAttrs: {
 
   doCheck = true;
 
-  passthru.updateScript = nix-update-script { extraArgs = [ "--version=branch" ]; };
-
   passthru.tests.example = runCommand "compile-spv-example" { } ''
     cat > example.vert.hlsl << EOF
     struct Input
@@ -68,13 +66,15 @@ stdenv.mkDerivation (finalAttrs: {
     touch $out
   '';
 
+  passthru.updateScript = nix-update-script { extraArgs = [ "--version=branch" ]; };
+
   meta = {
     description = "Shader translation library";
-    mainProgram = "shadercross";
     homepage = "https://github.com/libsdl-org/SDL_shadercross";
     license = lib.licenses.zlib;
     maintainers = with lib.maintainers; [ nyxonios ];
-    teams = [ lib.teams.sdl ];
     platforms = lib.platforms.linux;
+    mainProgram = "shadercross";
+    teams = [ lib.teams.sdl ];
   };
 })

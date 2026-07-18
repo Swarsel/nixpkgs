@@ -15,19 +15,20 @@ stdenv.mkDerivation (finalAttrs: {
     sha256 = "sha256-05num4v8C3n+uieKQJVLOzu9OOMBsUMPqq08Ou6gmYQ=";
   };
 
+  preInstall = ''
+    mkdir -p $out/{bin,share}
+  '';
+
   dontBuild = true;
+
   installFlags = [
     "PREFIX=$(out)"
     "MANPREFIX=$(out)/share"
   ];
 
-  preInstall = ''
-    mkdir -p $out/{bin,share}
-  '';
-
   meta = {
-    homepage = "https://github.com/LuRsT/hr";
     description = "Horizontal bar for your terminal";
+    homepage = "https://github.com/LuRsT/hr";
     license = lib.licenses.mit;
     maintainers = [ lib.maintainers.matthiasbeyer ];
     platforms = lib.platforms.unix;

@@ -8,7 +8,6 @@
 buildPythonPackage rec {
   pname = "urlpy";
   version = "0.5.0";
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "nexB";
@@ -17,10 +16,7 @@ buildPythonPackage rec {
     sha256 = "962jLyx+/GS8wrDPzG2ONnHvtUG5Pqe6l1Z5ml63Cmg=";
   };
 
-  dontConfigure = true;
-
   propagatedBuildInputs = [ publicsuffix2 ];
-
   nativeCheckInputs = [ pytestCheckHook ];
 
   disabledTests = [
@@ -28,6 +24,8 @@ buildPythonPackage rec {
     "test_unknown_protocol"
   ];
 
+  dontConfigure = true;
+  format = "setuptools";
   pythonImportsCheck = [ "urlpy" ];
 
   meta = {

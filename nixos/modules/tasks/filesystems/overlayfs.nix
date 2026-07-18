@@ -35,15 +35,17 @@ let
     in
     lib.mkIf (fs.overlay.upperdir != null) {
       "rw-${escapedMountpoint}" = {
-        requiredBy = [ mountUnit ];
         before = [ mountUnit ];
+        requiredBy = [ mountUnit ];
+
+        serviceConfig = {
+          ExecStart = "${pkgs.coreutils}/bin/mkdir -p -m 0755 ${upperdir} ${workdir}";
+          Type = "oneshot";
+        };
+
         unitConfig = {
           DefaultDependencies = false;
           RequiresMountsFor = "${upperdir} ${workdir}";
-        };
-        serviceConfig = {
-          Type = "oneshot";
-          ExecStart = "${pkgs.coreutils}/bin/mkdir -p -m 0755 ${upperdir} ${workdir}";
         };
       };
     };
@@ -56,8 +58,8 @@ let
     {
       options.overlay = {
         lowerdir = lib.mkOption {
-          type = with lib.types; nullOr (nonEmptyListOf (either str pathInStore));
           default = null;
+
           description = ''
             The list of path(s) to the lowerdir(s).
 
@@ -67,11 +69,13 @@ let
             You can create a read-only overlay when you provide multiple (at
             least 2!) lowerdirs and neither an `upperdir` nor a `workdir`.
           '';
+
+          type = with lib.types; nullOr (nonEmptyListOf (either str pathInStore));
         };
 
         upperdir = lib.mkOption {
-          type = lib.types.nullOr lib.types.str;
           default = null;
+
           description = ''
             The path to the upperdir.
 
@@ -82,11 +86,27 @@ let
 
             If you set this to some value you MUST also set `workdir`.
           '';
+
+          type = lib.types.nullOr lib.types.str;
+        };
+
+        useStage1BaseDirectories = lib.mkOption {
+          default = true;
+
+          description = ''
+            If enabled, `lowerdir`, `upperdir` and `workdir` will be prefixed with `/sysroot`.
+
+            Disabling this can be useful to create an overlay over directories which aren't on the real root.
+
+            Disabling this does not work with the scripted (i.e. non-systemd) initrd.
+          '';
+
+          type = lib.types.bool;
         };
 
         workdir = lib.mkOption {
-          type = lib.types.nullOr lib.types.str;
           default = null;
+
           description = ''
             The path to the workdir.
 
@@ -95,32 +115,12 @@ let
 
             This MUST be set if you set `upperdir`.
           '';
-        };
 
-        useStage1BaseDirectories = lib.mkOption {
-          type = lib.types.bool;
-          default = true;
-          description = ''
-            If enabled, `lowerdir`, `upperdir` and `workdir` will be prefixed with `/sysroot`.
-
-            Disabling this can be useful to create an overlay over directories which aren't on the real root.
-
-            Disabling this does not work with the scripted (i.e. non-systemd) initrd.
-          '';
+          type = lib.types.nullOr lib.types.str;
         };
       };
 
       config = lib.mkIf (config.overlay.lowerdir != null) {
-        fsType = "overlay";
-        device = lib.mkDefault "overlay";
-        depends = map (x: "${x}") (
-          config.overlay.lowerdir
-          ++ lib.optionals (config.overlay.upperdir != null) [
-            config.overlay.upperdir
-            config.overlay.workdir
-          ]
-        );
-
         options =
           let
             prefix = sysrootPrefix config;
@@ -136,6 +136,17 @@ let
             "upperdir=${upperdir}"
             "workdir=${workdir}"
           ];
+
+        depends = map (x: "${x}") (
+          config.overlay.lowerdir
+          ++ lib.optionals (config.overlay.upperdir != null) [
+            config.overlay.upperdir
+            config.overlay.workdir
+          ]
+        );
+
+        device = lib.mkDefault "overlay";
+        fsType = "overlay";
       };
     };
 in
@@ -159,8 +170,6 @@ in
     in
     {
 
-      boot.initrd.availableKernelModules = lib.mkIf (initrdFileSystems != { }) [ "overlay" ];
-
       assertions =
         lib.concatLists (
           lib.mapAttrsToList (_name: fs: [
@@ -172,10 +181,12 @@ in
               assertion =
                 (fs.overlay.lowerdir != null && fs.overlay.upperdir == null)
                 -> (lib.length fs.overlay.lowerdir) >= 2;
+
               message = "A read-only overlay (without an `upperdir`) requires at least 2 `lowerdir`s: ${fs.mountPoint}";
             }
             {
               assertion = !fs.overlay.useStage1BaseDirectories -> config.boot.initrd.systemd.enable;
+
               message = ''
                 Stage 1 overlay file system ${fs.mountPoint} has 'useStage1BaseDirectories' set to false,
                 which is not supported with scripted initrd. Please enable 'boot.initrd.systemd.enable'.
@@ -185,6 +196,7 @@ in
         )
         ++ lib.mapAttrsToList (_: fs: {
           assertion = fs.overlay.upperdir == null -> config.boot.initrd.systemd.enable;
+
           message = ''
             Stage 1 overlay file system ${fs.mountPoint} has no upperdir,
             which is not supported with scripted initrd. Please enable
@@ -192,6 +204,7 @@ in
           '';
         }) initrdFileSystems;
 
+      boot.initrd.availableKernelModules = lib.mkIf (initrdFileSystems != { }) [ "overlay" ];
       boot.initrd.systemd.services = lib.mkMerge (lib.mapAttrsToList preMountService initrdFileSystems);
       systemd.services = lib.mkMerge (lib.mapAttrsToList preMountService userspaceFileSystems);
 

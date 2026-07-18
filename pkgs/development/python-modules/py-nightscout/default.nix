@@ -1,9 +1,9 @@
 {
   lib,
+  fetchFromGitHub,
   aiohttp,
   aioresponses,
   buildPythonPackage,
-  fetchFromGitHub,
   pytest-asyncio,
   pytestCheckHook,
   python-dateutil,
@@ -13,7 +13,6 @@
 buildPythonPackage rec {
   pname = "py-nightscout";
   version = "1.3.3";
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "marciogranzotto";
@@ -34,6 +33,7 @@ buildPythonPackage rec {
     pytest-asyncio
   ];
 
+  format = "setuptools";
   pythonImportsCheck = [ "py_nightscout" ];
 
   meta = {

@@ -1,13 +1,12 @@
 {
   lib,
-  python3Packages,
   fetchFromGitHub,
+  python3Packages,
 }:
 
 python3Packages.buildPythonPackage rec {
   pname = "thinkpad-scripts";
   version = "4.12.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "martin-ueding";
@@ -23,6 +22,8 @@ python3Packages.buildPythonPackage rec {
   dependencies = with python3Packages; [
     setuptools
   ];
+
+  pyproject = true;
 
   meta = {
     description = "Screen rotation, docking and other scripts for ThinkPad® X220 and X230 Tablet";

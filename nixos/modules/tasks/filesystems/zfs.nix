@@ -1,8 +1,8 @@
 {
   config,
   lib,
-  options,
   pkgs,
+  options,
   utils,
   ...
 }:
@@ -78,9 +78,9 @@ let
   # (eventually) boot even with a degraded pool.
   importLib =
     {
-      zpoolCmd,
       awkCmd,
       pool,
+      zpoolCmd,
     }:
     let
       devNodes =
@@ -137,61 +137,57 @@ let
     pool:
     if lib.isBool cfgZfs.requestEncryptionCredentials then
       {
-        hasKeys = cfgZfs.requestEncryptionCredentials;
         command = "${cfgZfs.package}/sbin/zfs list -rHo name,keylocation,keystatus -t volume,filesystem ${pool}";
+        hasKeys = cfgZfs.requestEncryptionCredentials;
       }
     else
       let
         keys = lib.filter (x: datasetToPool x == pool) cfgZfs.requestEncryptionCredentials;
       in
       {
-        hasKeys = keys != [ ];
         command = "${cfgZfs.package}/sbin/zfs list -Ho name,keylocation,keystatus -t volume,filesystem ${toString keys}";
+        hasKeys = keys != [ ];
       };
 
   createImportService =
     {
+      force,
       pool,
       systemd,
-      force,
       prefix ? "",
     }:
     lib.nameValuePair "zfs-import-${pool}" {
-      description = "Import ZFS pool \"${pool}\"";
-      wants = lib.optional (config.boot.initrd.clevis.useTang) "network-online.target";
       after = [
         "systemd-modules-load.service"
         "systemd-ask-password-console.service"
       ]
       ++ lib.optional (config.boot.initrd.clevis.useTang) "network-online.target";
+
+      before = getPoolMounts prefix pool ++ [
+        "shutdown.target"
+        "zfs-import.target"
+      ];
+
+      conflicts = [ "shutdown.target" ];
+      description = "Import ZFS pool \"${pool}\"";
+      environment.ZFS_FORCE = lib.optionalString force "-f";
+
       requiredBy =
         let
           poolFilesystems = getPoolFilesystems pool;
           noauto = poolFilesystems != [ ] && lib.all (fs: lib.elem "noauto" fs.options) poolFilesystems;
         in
         getPoolMounts prefix pool ++ lib.optional (!noauto) "zfs-import.target";
-      before = getPoolMounts prefix pool ++ [
-        "shutdown.target"
-        "zfs-import.target"
-      ];
-      conflicts = [ "shutdown.target" ];
-      unitConfig = {
-        DefaultDependencies = "no";
-      };
-      serviceConfig = {
-        Type = "oneshot";
-        RemainAfterExit = true;
-      };
-      environment.ZFS_FORCE = lib.optionalString force "-f";
+
       script =
         let
           keyLocations = getKeyLocations pool;
         in
         (importLib {
+          inherit pool;
+          awkCmd = "${pkgs.gawk}/bin/awk";
           # See comments at importLib definition.
           zpoolCmd = "${cfgZfs.package}/sbin/zpool";
-          awkCmd = "${pkgs.gawk}/bin/awk";
-          inherit pool;
         })
         + ''
           if ! poolImported "${pool}"; then
@@ -242,6 +238,17 @@ let
             exit 1
           fi
         '';
+
+      serviceConfig = {
+        RemainAfterExit = true;
+        Type = "oneshot";
+      };
+
+      unitConfig = {
+        DefaultDependencies = "no";
+      };
+
+      wants = lib.optional (config.boot.initrd.clevis.useTang) "network-online.target";
     };
 
   zedConf = lib.generators.toKeyValue {
@@ -288,43 +295,37 @@ in
   options = {
     boot.zfs = {
       package = lib.mkOption {
-        type = lib.types.package;
         default = pkgs.zfs;
         defaultText = lib.literalExpression "pkgs.zfs";
         description = "Configured ZFS userland tools package.";
+        type = lib.types.package;
       };
 
-      modulePackage = lib.mkOption {
-        internal = true; # It is supposed to be selected automatically, but can be overridden by expert users.
-        default = selectModulePackage cfgZfs.package;
-        type = lib.types.package;
-        description = "Configured ZFS kernel module package.";
+      devNodes = lib.mkOption {
+        default = "/dev/disk/by-id";
+
+        description = ''
+          Name of directory from which to import ZFS device, this is passed to `zpool import`
+          as the value of the `-d` option.
+
+          For guidance on choosing this value, see
+          [the ZFS documentation](https://openzfs.github.io/openzfs-docs/Project%20and%20Community/FAQ.html#selecting-dev-names-when-creating-a-pool-linux).
+        '';
+
+        type = lib.types.path;
       };
 
       enabled = lib.mkOption {
-        readOnly = true;
-        type = lib.types.bool;
         default = inInitrd || inSystem;
         defaultText = lib.literalMD "`true` if ZFS filesystem support is enabled";
         description = "True if ZFS filesystem support is enabled";
-      };
-
-      unsafeAllowHibernation = lib.mkOption {
+        readOnly = true;
         type = lib.types.bool;
-        default = false;
-        description = ''
-          Allow hibernation (suspend to disk) support. This is generally considered **UNSAFE**,
-          is not well supported by openzfs, and could lead to corruption and data loss.
-        '';
       };
 
       extraPools = lib.mkOption {
-        type = lib.types.listOf lib.types.str;
         default = [ ];
-        example = [
-          "tank"
-          "data"
-        ];
+
         description = ''
           Name or GUID of extra ZFS pools that you wish to import during boot.
 
@@ -338,24 +339,34 @@ in
           will not be managing those filesystems, you will need to specify the ZFS pool here
           so that NixOS automatically imports it on every boot.
         '';
+
+        example = [
+          "tank"
+          "data"
+        ];
+
+        type = lib.types.listOf lib.types.str;
       };
 
-      devNodes = lib.mkOption {
-        type = lib.types.path;
-        default = "/dev/disk/by-id";
-        description = ''
-          Name of directory from which to import ZFS device, this is passed to `zpool import`
-          as the value of the `-d` option.
+      forceImportAll = lib.mkOption {
+        default = false;
 
-          For guidance on choosing this value, see
-          [the ZFS documentation](https://openzfs.github.io/openzfs-docs/Project%20and%20Community/FAQ.html#selecting-dev-names-when-creating-a-pool-linux).
+        description = ''
+          Forcibly import all ZFS pool(s).
+
+          It is highly recommended to keep this option disabled as it bypasses ZFS
+          safeguard that protect your pools.
+
+          See {option}`boot.zfs.forceImportRoot` for details.
         '';
+
+        type = lib.types.bool;
       };
 
       forceImportRoot = lib.mkOption {
-        type = lib.types.bool;
         default = lib.versionOlder config.system.stateVersion "26.11";
         defaultText = lib.literalExpression ''lib.versionOlder config.system.stateVersion "26.11"'';
+
         description = ''
           Forcibly import the ZFS root pool(s) during early boot.
 
@@ -367,70 +378,53 @@ in
           editing the kernel params via your bootloader).
           You should only need to do this after unclean shutdowns.
         '';
-      };
 
-      forceImportAll = lib.mkOption {
         type = lib.types.bool;
-        default = false;
-        description = ''
-          Forcibly import all ZFS pool(s).
-
-          It is highly recommended to keep this option disabled as it bypasses ZFS
-          safeguard that protect your pools.
-
-          See {option}`boot.zfs.forceImportRoot` for details.
-        '';
       };
 
-      requestEncryptionCredentials = lib.mkOption {
-        type = lib.types.either lib.types.bool (lib.types.listOf lib.types.str);
-        default = true;
-        example = [
-          "tank"
-          "data"
-        ];
-        description = ''
-          If true on import encryption keys or passwords for all encrypted datasets
-          are requested. To only decrypt selected datasets supply a list of dataset
-          names instead. For root pools the encryption key can be supplied via both
-          an interactive prompt (keylocation=prompt) and from a file (keylocation=file://).
-        '';
+      modulePackage = lib.mkOption {
+        default = selectModulePackage cfgZfs.package;
+        description = "Configured ZFS kernel module package.";
+        internal = true; # It is supposed to be selected automatically, but can be overridden by expert users.
+        type = lib.types.package;
       };
-
-      useKeyringForCredentials = lib.mkEnableOption "Uses the kernel keyring for encryption credentials with keyname=zfs-<poolname>";
 
       passwordTimeout = lib.mkOption {
-        type = lib.types.int;
         default = 0;
+
         description = ''
           Timeout in seconds to wait for password entry for decrypt at boot.
 
           Defaults to 0, which waits forever.
         '';
+
+        type = lib.types.int;
       };
 
       pools = lib.mkOption {
+        default = { };
+
+        description = ''
+          Configuration for individual pools to override global defaults.
+        '';
+
         type = lib.types.attrsOf (
           lib.types.submodule {
             options = {
               devNodes = lib.mkOption {
-                type = lib.types.path;
                 default = cfgZfs.devNodes;
                 defaultText = "config.boot.zfs.devNodes";
                 description = options.boot.zfs.devNodes.description;
+                type = lib.types.path;
               };
             };
           }
         );
-        default = { };
-        description = ''
-          Configuration for individual pools to override global defaults.
-        '';
       };
 
       removeLinuxDRM = lib.mkOption {
-        type = lib.types.bool;
         default = false;
+
         description = ''
           Patch the kernel to change symbols needed by ZFS from
           EXPORT_SYMBOL_GPL to EXPORT_SYMBOL.
@@ -438,13 +432,88 @@ in
           Currently has no effect, but may again in future if a kernel
           update breaks ZFS due to symbols being newly changed to GPL.
         '';
+
+        type = lib.types.bool;
+      };
+
+      requestEncryptionCredentials = lib.mkOption {
+        default = true;
+
+        description = ''
+          If true on import encryption keys or passwords for all encrypted datasets
+          are requested. To only decrypt selected datasets supply a list of dataset
+          names instead. For root pools the encryption key can be supplied via both
+          an interactive prompt (keylocation=prompt) and from a file (keylocation=file://).
+        '';
+
+        example = [
+          "tank"
+          "data"
+        ];
+
+        type = lib.types.either lib.types.bool (lib.types.listOf lib.types.str);
+      };
+
+      unsafeAllowHibernation = lib.mkOption {
+        default = false;
+
+        description = ''
+          Allow hibernation (suspend to disk) support. This is generally considered **UNSAFE**,
+          is not well supported by openzfs, and could lead to corruption and data loss.
+        '';
+
+        type = lib.types.bool;
+      };
+
+      useKeyringForCredentials = lib.mkEnableOption "Uses the kernel keyring for encryption credentials with keyname=zfs-<poolname>";
+    };
+
+    services.zfs.autoScrub = {
+      enable = lib.mkEnableOption "periodic scrubbing of ZFS pools";
+
+      interval = lib.mkOption {
+        default = "monthly";
+
+        description = ''
+          Systemd calendar expression when to scrub ZFS pools. See
+          {manpage}`systemd.time(7)`.
+        '';
+
+        example = "quarterly";
+        type = lib.types.str;
+      };
+
+      pools = lib.mkOption {
+        default = [ ];
+
+        description = ''
+          List of ZFS pools to periodically scrub. If empty, all pools
+          will be scrubbed.
+        '';
+
+        example = [ "tank" ];
+        type = lib.types.listOf lib.types.str;
+      };
+
+      randomizedDelaySec = lib.mkOption {
+        default = "6h";
+
+        description = ''
+          Add a randomized delay before each ZFS autoscrub.
+          The delay will be chosen between zero and this value.
+          This value must be a time span in the format specified by
+          {manpage}`systemd.time(7)`
+        '';
+
+        example = "12h";
+        type = lib.types.str;
       };
     };
 
     services.zfs.autoSnapshot = {
       enable = lib.mkOption {
         default = false;
-        type = lib.types.bool;
+
         description = ''
           Enable the (OpenSolaris-compatible) ZFS auto-snapshotting service.
           Note that you must set the `com.sun:auto-snapshot`
@@ -455,12 +524,23 @@ in
           by setting its flag with the given interval:
           `zfs set com.sun:auto-snapshot:weekly=false DATASET`
         '';
+
+        type = lib.types.bool;
+      };
+
+      daily = lib.mkOption {
+        default = 7;
+
+        description = ''
+          Number of daily auto-snapshots that you wish to keep.
+        '';
+
+        type = lib.types.int;
       };
 
       flags = lib.mkOption {
         default = "-k -p";
-        example = "-k -p --utc";
-        type = lib.types.str;
+
         description = ''
           Flags to pass to the zfs-auto-snapshot command.
 
@@ -474,129 +554,55 @@ in
           Otherwise, snapshot names can cause name conflicts or apparent time
           reversals due to daylight savings, timezone or other date/time changes.
         '';
+
+        example = "-k -p --utc";
+        type = lib.types.str;
       };
 
       frequent = lib.mkOption {
         default = 4;
-        type = lib.types.int;
+
         description = ''
           Number of frequent (15-minute) auto-snapshots that you wish to keep.
         '';
+
+        type = lib.types.int;
       };
 
       hourly = lib.mkOption {
         default = 24;
-        type = lib.types.int;
+
         description = ''
           Number of hourly auto-snapshots that you wish to keep.
         '';
-      };
 
-      daily = lib.mkOption {
-        default = 7;
         type = lib.types.int;
-        description = ''
-          Number of daily auto-snapshots that you wish to keep.
-        '';
-      };
-
-      weekly = lib.mkOption {
-        default = 4;
-        type = lib.types.int;
-        description = ''
-          Number of weekly auto-snapshots that you wish to keep.
-        '';
       };
 
       monthly = lib.mkOption {
         default = 12;
-        type = lib.types.int;
+
         description = ''
           Number of monthly auto-snapshots that you wish to keep.
         '';
-      };
-    };
 
-    services.zfs.trim = {
-      enable = lib.mkOption {
-        description = "Whether to enable periodic TRIM on all ZFS pools.";
-        default = true;
-        example = false;
-        type = lib.types.bool;
+        type = lib.types.int;
       };
 
-      interval = lib.mkOption {
-        default = "weekly";
-        type = lib.types.str;
-        example = "daily";
+      weekly = lib.mkOption {
+        default = 4;
+
         description = ''
-          How often we run trim. For most desktop and server systems
-          a sufficient trimming frequency is once a week.
-
-          The format is described in
-          {manpage}`systemd.time(7)`.
+          Number of weekly auto-snapshots that you wish to keep.
         '';
-      };
 
-      randomizedDelaySec = lib.mkOption {
-        default = "6h";
-        type = lib.types.str;
-        example = "12h";
-        description = ''
-          Add a randomized delay before each ZFS trim.
-          The delay will be chosen between zero and this value.
-          This value must be a time span in the format specified by
-          {manpage}`systemd.time(7)`
-        '';
-      };
-    };
-
-    services.zfs.autoScrub = {
-      enable = lib.mkEnableOption "periodic scrubbing of ZFS pools";
-
-      interval = lib.mkOption {
-        default = "monthly";
-        type = lib.types.str;
-        example = "quarterly";
-        description = ''
-          Systemd calendar expression when to scrub ZFS pools. See
-          {manpage}`systemd.time(7)`.
-        '';
-      };
-
-      randomizedDelaySec = lib.mkOption {
-        default = "6h";
-        type = lib.types.str;
-        example = "12h";
-        description = ''
-          Add a randomized delay before each ZFS autoscrub.
-          The delay will be chosen between zero and this value.
-          This value must be a time span in the format specified by
-          {manpage}`systemd.time(7)`
-        '';
-      };
-
-      pools = lib.mkOption {
-        default = [ ];
-        type = lib.types.listOf lib.types.str;
-        example = [ "tank" ];
-        description = ''
-          List of ZFS pools to periodically scrub. If empty, all pools
-          will be scrubbed.
-        '';
+        type = lib.types.int;
       };
     };
 
     services.zfs.expandOnBoot = lib.mkOption {
-      type = lib.types.either (lib.types.enum [
-        "disabled"
-        "all"
-      ]) (lib.types.listOf lib.types.str);
       default = "disabled";
-      example = [
-        "tank"
-        "dozer"
-      ];
+
       description = ''
         After importing, expand each device in the specified pools.
 
@@ -608,33 +614,80 @@ in
 
             services.zfs.expandOnBoot = [ "tank" "dozer" ];
       '';
+
+      example = [
+        "tank"
+        "dozer"
+      ];
+
+      type = lib.types.either (lib.types.enum [
+        "disabled"
+        "all"
+      ]) (lib.types.listOf lib.types.str);
+    };
+
+    services.zfs.trim = {
+      enable = lib.mkOption {
+        default = true;
+        description = "Whether to enable periodic TRIM on all ZFS pools.";
+        example = false;
+        type = lib.types.bool;
+      };
+
+      interval = lib.mkOption {
+        default = "weekly";
+
+        description = ''
+          How often we run trim. For most desktop and server systems
+          a sufficient trimming frequency is once a week.
+
+          The format is described in
+          {manpage}`systemd.time(7)`.
+        '';
+
+        example = "daily";
+        type = lib.types.str;
+      };
+
+      randomizedDelaySec = lib.mkOption {
+        default = "6h";
+
+        description = ''
+          Add a randomized delay before each ZFS trim.
+          The delay will be chosen between zero and this value.
+          This value must be a time span in the format specified by
+          {manpage}`systemd.time(7)`
+        '';
+
+        example = "12h";
+        type = lib.types.str;
+      };
     };
 
     services.zfs.zed = {
       enableMail = lib.mkOption {
-        type = lib.types.bool;
         default = config.services.mail.sendmailSetuidWrapper != null;
+
         defaultText = lib.literalExpression ''
           config.services.mail.sendmailSetuidWrapper != null
         '';
+
         description = ''
           Whether to enable ZED's ability to send emails.
         '';
+
+        type = lib.types.bool;
       };
 
       settings = lib.mkOption {
-        type =
-          let
-            t = lib.types;
-          in
-          t.attrsOf (
-            t.oneOf [
-              t.str
-              t.int
-              t.bool
-              (t.listOf t.str)
-            ]
-          );
+        description = ''
+          ZFS Event Daemon /etc/zfs/zed.d/zed.rc content
+
+          See
+          {manpage}`zed(8)`
+          for details on ZED and the scripts in /etc/zfs/zed.d to find the possible variables
+        '';
+
         example = lib.literalExpression ''
           {
             ZED_DEBUG_LOG = "/tmp/zed.debug.log";
@@ -650,13 +703,19 @@ in
             ZED_SCRUB_AFTER_RESILVER = false;
           }
         '';
-        description = ''
-          ZFS Event Daemon /etc/zfs/zed.d/zed.rc content
 
-          See
-          {manpage}`zed(8)`
-          for details on ZED and the scripts in /etc/zfs/zed.d to find the possible variables
-        '';
+        type =
+          let
+            t = lib.types;
+          in
+          t.attrsOf (
+            t.oneOf [
+              t.str
+              t.int
+              t.bool
+              (t.listOf t.str)
+            ]
+          );
       };
     };
   };
@@ -684,6 +743,7 @@ in
         }
         {
           assertion = !(lib.elem "" allPools);
+
           message = ''
             Automatic pool detection found an empty pool name, which can't be used.
             Hint: for `fileSystems` entries with `fsType = zfs`, the `device` attribute
@@ -697,33 +757,20 @@ in
         }
       ];
 
-      warnings =
-        lib.optional
-          (
-            options.boot.zfs.forceImportRoot.definitionsWithLocations == [
-              {
-                inherit (__curPos) file;
-                value = true;
-              }
-            ]
-          )
-          "`boot.zfs.forceImportRoot` is using the default value of `true`. It is highly recommended to set it to `false`, the new default from 26.11 on, to reduce the risk of data loss. Alternatively, you can silence this warning by explicitly setting it to `true`.";
-
       boot = {
+        extraModulePackages = [
+          cfgZfs.modulePackage
+        ];
+
         kernelModules = [ "zfs" ];
         # https://github.com/openzfs/zfs/issues/260#issuecomment-982142240
         # https://github.com/openzfs/zfs/issues/12842
         # https://github.com/openzfs/zfs/issues/14118#issuecomment-1301576647
         # https://github.com/NixOS/nixpkgs/issues/106093
         kernelParams = lib.optionals (!config.boot.zfs.unsafeAllowHibernation) [ "nohibernate" ];
-
-        extraModulePackages = [
-          cfgZfs.modulePackage
-        ];
       };
 
       boot.initrd = lib.mkIf inInitrd {
-        kernelModules = [ "zfs" ];
         extraUtilsCommands = lib.mkIf (!config.boot.initrd.systemd.enable) ''
           copy_bin_and_libs ${cfgZfs.package}/sbin/zfs
           copy_bin_and_libs ${cfgZfs.package}/sbin/mount.zfs
@@ -732,11 +779,15 @@ in
           copy_bin_and_libs ${cfgZfs.package}/lib/udev/vdev_id
           copy_bin_and_libs ${cfgZfs.package}/lib/udev/zvol_id
         '';
+
         extraUtilsCommandsTest = lib.mkIf (!config.boot.initrd.systemd.enable) ''
           $out/bin/zfs --help >/dev/null 2>&1
           $out/bin/zpool --help >/dev/null 2>&1
           $out/bin/mount.zfs -h 2>&1 | grep -q "Usage: mount.zfs"
         '';
+
+        kernelModules = [ "zfs" ];
+
         postResumeCommands = lib.mkIf (!config.boot.initrd.systemd.enable) (
           lib.concatStringsSep "\n" (
             [
@@ -746,10 +797,10 @@ in
             ]
             ++ [
               (importLib {
-                # See comments at importLib definition.
-                zpoolCmd = "zpool";
                 awkCmd = "awk";
                 pool = null;
+                # See comments at importLib definition.
+                zpoolCmd = "zpool";
               })
             ]
             ++ (map (pool: ''
@@ -788,73 +839,46 @@ in
           )
         );
 
+        services.udev.packages = [ cfgZfs.package ]; # to hook zvol naming, in stage 1
+
         # Systemd in stage 1
         systemd = lib.mkIf config.boot.initrd.systemd.enable {
+          extraBin = {
+            awk = "${pkgs.gawk}/bin/awk";
+            "mount.zfs" = "${cfgZfs.package}/sbin/mount.zfs";
+            zfs = "${cfgZfs.package}/sbin/zfs";
+            zpool = "${cfgZfs.package}/sbin/zpool";
+          };
+
           packages = [ cfgZfs.package ];
+
           services = lib.listToAttrs (
             map (
               pool:
               createImportService {
                 inherit pool;
-                systemd = config.boot.initrd.systemd.package;
                 force = cfgZfs.forceImportRoot;
                 prefix = "/sysroot";
+                systemd = config.boot.initrd.systemd.package;
               }
             ) rootPools
           );
-          targets.zfs-import.wantedBy = [ "zfs.target" ];
-          targets.zfs.wantedBy = [ "initrd.target" ];
-          extraBin = {
-            zpool = "${cfgZfs.package}/sbin/zpool";
-            zfs = "${cfgZfs.package}/sbin/zfs";
-            "mount.zfs" = "${cfgZfs.package}/sbin/mount.zfs";
-            awk = "${pkgs.gawk}/bin/awk";
-          };
+
           storePaths = [
             "${cfgZfs.package}/lib/udev/vdev_id"
             "${cfgZfs.package}/lib/udev/zvol_id"
           ];
-        };
-        services.udev.packages = [ cfgZfs.package ]; # to hook zvol naming, in stage 1
-      };
 
-      systemd.shutdownRamfs.contents."/etc/systemd/system-shutdown/zpool".source =
-        pkgs.writeShellScript "zpool-sync-shutdown" ''
-          exec ${cfgZfs.package}/bin/zpool sync
-        '';
-      systemd.shutdownRamfs.storePaths = [ "${cfgZfs.package}/bin/zpool" ];
+          targets.zfs.wantedBy = [ "initrd.target" ];
+          targets.zfs-import.wantedBy = [ "zfs.target" ];
+        };
+      };
 
       # TODO FIXME See https://github.com/NixOS/nixpkgs/pull/99386#issuecomment-798813567. To not break people's bootloader and as probably not everybody would read release notes that thoroughly add inSystem.
       boot.loader.grub = lib.mkIf (inInitrd || inSystem) {
-        zfsSupport = true;
         zfsPackage = cfgZfs.package;
+        zfsSupport = true;
       };
-
-      services.zfs.zed.settings = {
-        ZED_EMAIL_PROG = lib.mkIf cfgZED.enableMail (
-          lib.mkDefault (
-            config.security.wrapperDir + "/" + config.services.mail.sendmailSetuidWrapper.program
-          )
-        );
-        # subject in header for sendmail
-        ZED_EMAIL_OPTS = lib.mkIf cfgZED.enableMail (lib.mkDefault "@ADDRESS@");
-
-        PATH = lib.makeBinPath [
-          cfgZfs.package
-          pkgs.coreutils
-          pkgs.curl
-          pkgs.gawk
-          pkgs.gnugrep
-          pkgs.gnused
-          pkgs.hostname-debian
-          pkgs.util-linux
-        ];
-      };
-
-      # ZFS already has its own scheduler. Without this my(@Artturin) computer froze for a second when I nix build something.
-      services.udev.extraRules = ''
-        ACTION=="add|change", KERNEL=="sd[a-z]*[0-9]*|mmcblk[0-9]*p[0-9]*|nvme[0-9]*n[0-9]*p[0-9]*", ENV{ID_FS_TYPE}=="zfs_member", ATTR{../queue/scheduler}="none"
-      '';
 
       environment.etc =
         lib.genAttrs
@@ -894,10 +918,38 @@ in
           "zfs/zpool.d".source = "${cfgZfs.package}/etc/zfs/zpool.d/";
         };
 
-      system.fsPackages = [ cfgZfs.package ]; # XXX: needed? zfs doesn't have (need) a fsck
       environment.systemPackages = [ cfgZfs.package ] ++ lib.optional cfgSnapshots.enable autosnapPkg; # so the user can run the command to see flags
 
+      # ZFS already has its own scheduler. Without this my(@Artturin) computer froze for a second when I nix build something.
+      services.udev.extraRules = ''
+        ACTION=="add|change", KERNEL=="sd[a-z]*[0-9]*|mmcblk[0-9]*p[0-9]*|nvme[0-9]*n[0-9]*p[0-9]*", ENV{ID_FS_TYPE}=="zfs_member", ATTR{../queue/scheduler}="none"
+      '';
+
       services.udev.packages = [ cfgZfs.package ]; # to hook zvol naming, etc.
+
+      services.zfs.zed.settings = {
+        PATH = lib.makeBinPath [
+          cfgZfs.package
+          pkgs.coreutils
+          pkgs.curl
+          pkgs.gawk
+          pkgs.gnugrep
+          pkgs.gnused
+          pkgs.hostname-debian
+          pkgs.util-linux
+        ];
+
+        # subject in header for sendmail
+        ZED_EMAIL_OPTS = lib.mkIf cfgZED.enableMail (lib.mkDefault "@ADDRESS@");
+
+        ZED_EMAIL_PROG = lib.mkIf cfgZED.enableMail (
+          lib.mkDefault (
+            config.security.wrapperDir + "/" + config.services.mail.sendmailSetuidWrapper.program
+          )
+        );
+      };
+
+      system.fsPackages = [ cfgZfs.package ]; # XXX: needed? zfs doesn't have (need) a fsck
       systemd.packages = [ cfgZfs.package ];
 
       systemd.services =
@@ -906,8 +958,8 @@ in
             pool:
             createImportService {
               inherit pool;
-              systemd = config.systemd.package;
               force = cfgZfs.forceImportAll;
+              systemd = config.systemd.package;
             };
 
           # This forces a sync of any ZFS pools prior to poweroff, even if they're set
@@ -915,19 +967,23 @@ in
           createSyncService =
             pool:
             lib.nameValuePair "zfs-sync-${pool}" {
-              description = "Sync ZFS pool \"${pool}\"";
-              wantedBy = [ "shutdown.target" ];
               before = [ "final.target" ];
-              unitConfig = {
-                DefaultDependencies = false;
-              };
-              serviceConfig = {
-                Type = "oneshot";
-                RemainAfterExit = true;
-              };
+              description = "Sync ZFS pool \"${pool}\"";
+
               script = ''
                 ${cfgZfs.package}/sbin/zfs set nixos:shutdown-time="$(date)" "${pool}"
               '';
+
+              serviceConfig = {
+                RemainAfterExit = true;
+                Type = "oneshot";
+              };
+
+              unitConfig = {
+                DefaultDependencies = false;
+              };
+
+              wantedBy = [ "shutdown.target" ];
             };
 
           createZfsService =
@@ -948,33 +1004,29 @@ in
           ]
         );
 
+      systemd.shutdownRamfs.contents."/etc/systemd/system-shutdown/zpool".source =
+        pkgs.writeShellScript "zpool-sync-shutdown" ''
+          exec ${cfgZfs.package}/bin/zpool sync
+        '';
+
+      systemd.shutdownRamfs.storePaths = [ "${cfgZfs.package}/bin/zpool" ];
+      systemd.targets.zfs.wantedBy = [ "multi-user.target" ];
       systemd.targets.zfs-import.wantedBy = [ "zfs.target" ];
 
-      systemd.targets.zfs.wantedBy = [ "multi-user.target" ];
+      warnings =
+        lib.optional
+          (
+            options.boot.zfs.forceImportRoot.definitionsWithLocations == [
+              {
+                inherit (__curPos) file;
+                value = true;
+              }
+            ]
+          )
+          "`boot.zfs.forceImportRoot` is using the default value of `true`. It is highly recommended to set it to `false`, the new default from 26.11 on, to reduce the risk of data loss. Alternatively, you can silence this warning by explicitly setting it to `true`.";
     })
 
     (lib.mkIf (cfgZfs.enabled && cfgExpandOnBoot != "disabled") {
-      systemd.services."zpool-expand@" = {
-        description = "Expand ZFS pools";
-        after = [ "zfs.target" ];
-
-        serviceConfig = {
-          Type = "oneshot";
-          RemainAfterExit = true;
-        };
-
-        scriptArgs = "%i";
-        path = [ cfgZfs.package ];
-
-        script = ''
-          pool=$1
-
-          echo "Expanding all devices for $pool."
-
-          ${pkgs.zpool-auto-expand-partitions}/bin/zpool_part_disks --automatically-grow "$pool"
-        '';
-      };
-
       systemd.services."zpool-expand-pools" =
         let
           # Create a string, to be interpolated in a bash script
@@ -989,15 +1041,8 @@ in
               lib.escapeShellArgs cfgExpandOnBoot;
         in
         {
-          description = "Expand specified ZFS pools";
-          wantedBy = [ "default.target" ];
           after = [ "zfs.target" ];
-
-          serviceConfig = {
-            Type = "oneshot";
-            RemainAfterExit = true;
-          };
-
+          description = "Expand specified ZFS pools";
           path = lib.optionals (cfgExpandOnBoot == "all") [ cfgZfs.package ];
 
           script = ''
@@ -1005,7 +1050,35 @@ in
               systemctl start --no-block "zpool-expand@$pool"
             done
           '';
+
+          serviceConfig = {
+            RemainAfterExit = true;
+            Type = "oneshot";
+          };
+
+          wantedBy = [ "default.target" ];
         };
+
+      systemd.services."zpool-expand@" = {
+        after = [ "zfs.target" ];
+        description = "Expand ZFS pools";
+        path = [ cfgZfs.package ];
+
+        script = ''
+          pool=$1
+
+          echo "Expanding all devices for $pool."
+
+          ${pkgs.zpool-auto-expand-partitions}/bin/zpool_part_disks --automatically-grow "$pool"
+        '';
+
+        scriptArgs = "%i";
+
+        serviceConfig = {
+          RemainAfterExit = true;
+          Type = "oneshot";
+        };
+      };
     })
 
     (lib.mkIf (cfgZfs.enabled && cfgSnapshots.enable) {
@@ -1030,14 +1103,16 @@ in
         builtins.listToAttrs (
           map (snapName: {
             name = "zfs-snapshot-${snapName}";
+
             value = {
-              description = "ZFS auto-snapshotting every ${descr snapName}";
               after = [ "zfs-import.target" ];
-              serviceConfig = {
-                Type = "oneshot";
-                ExecStart = "${zfsAutoSnap} ${cfgSnapFlags} ${snapName} ${toString (numSnapshots snapName)}";
-              };
+              description = "ZFS auto-snapshotting every ${descr snapName}";
               restartIfChanged = false;
+
+              serviceConfig = {
+                ExecStart = "${zfsAutoSnap} ${cfgSnapFlags} ${snapName} ${toString (numSnapshots snapName)}";
+                Type = "oneshot";
+              };
             };
           }) snapshotNames
         );
@@ -1049,12 +1124,14 @@ in
         builtins.listToAttrs (
           map (snapName: {
             name = "zfs-snapshot-${snapName}";
+
             value = {
-              wantedBy = [ "timers.target" ];
               timerConfig = {
                 OnCalendar = timer snapName;
                 Persistent = lib.mkDefault "yes";
               };
+
+              wantedBy = [ "timers.target" ];
             };
           }) snapshotNames
         );
@@ -1062,12 +1139,9 @@ in
 
     (lib.mkIf (cfgZfs.enabled && cfgScrub.enable) {
       systemd.services.zfs-scrub = {
-        description = "ZFS pools scrubbing";
         after = [ "zfs-import.target" ];
-        serviceConfig = {
-          Type = "simple";
-          IOSchedulingClass = "idle";
-        };
+        description = "ZFS pools scrubbing";
+
         script = ''
           # shellcheck disable=SC2046
           ${cfgZfs.package}/bin/zpool scrub -w ${
@@ -1077,30 +1151,37 @@ in
               "$(${cfgZfs.package}/bin/zpool list -H -o name)"
           }
         '';
+
+        serviceConfig = {
+          IOSchedulingClass = "idle";
+          Type = "simple";
+        };
       };
 
       systemd.timers.zfs-scrub = {
-        wantedBy = [ "timers.target" ];
         after = [ "multi-user.target" ]; # Apparently scrubbing before boot is complete hangs the system? #53583
+
         timerConfig = {
           OnCalendar = cfgScrub.interval;
           Persistent = lib.mkDefault "yes";
           RandomizedDelaySec = cfgScrub.randomizedDelaySec;
         };
+
+        wantedBy = [ "timers.target" ];
       };
     })
 
     (lib.mkIf (cfgZfs.enabled && cfgTrim.enable) {
       systemd.services.zpool-trim = {
-        description = "ZFS pools trim";
         after = [ "zfs-import.target" ];
+        description = "ZFS pools trim";
         path = [ cfgZfs.package ];
-        startAt = cfgTrim.interval;
         # By default we ignore errors returned by the trim command, in case:
         # - HDDs are mixed with SSDs
         # - There is a SSDs in a pool that is currently trimmed.
         # - There are only HDDs and we would set the system in a degraded state
         serviceConfig.ExecStart = "${pkgs.runtimeShell} -c 'for pool in $(zpool list -H -o name); do zpool trim $pool;  done || true' ";
+        startAt = cfgTrim.interval;
       };
 
       systemd.timers.zpool-trim.timerConfig = {

@@ -1,17 +1,16 @@
 {
-  buildPythonPackage,
   lib,
   fetchFromGitLab,
-  numpy,
-  scipy,
-  periodictable,
+  buildPythonPackage,
   fields,
+  numpy,
+  periodictable,
+  scipy,
 }:
 
 buildPythonPackage {
   pname = "polarizationsolver";
   version = "unstable-2021-11-02";
-  format = "setuptools";
 
   src = fetchFromGitLab {
     owner = "reinholdt";
@@ -33,7 +32,7 @@ buildPythonPackage {
   ];
 
   nativeCheckInputs = [ fields ];
-
+  format = "setuptools";
   pythonImportsCheck = [ "polarizationsolver" ];
 
   meta = {

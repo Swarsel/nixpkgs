@@ -8,7 +8,6 @@
 buildPythonPackage rec {
   pname = "monotonic";
   version = "1.6";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
@@ -16,6 +15,7 @@ buildPythonPackage rec {
   };
 
   __propagatedImpureHostDeps = lib.optional stdenv.hostPlatform.isDarwin "/usr/lib/libc.dylib";
+  format = "setuptools";
 
   patchPhase = lib.optionalString stdenv.hostPlatform.isLinux ''
     substituteInPlace monotonic.py --replace \

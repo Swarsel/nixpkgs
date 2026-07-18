@@ -2,24 +2,25 @@
   lib,
   stdenv,
   fetchurl,
-  pkg-config,
   libusb1,
+  pkg-config,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
   pname = "dfu-util";
   version = "0.11";
 
-  nativeBuildInputs = [ pkg-config ];
-  buildInputs = [ libusb1 ];
-
   src = fetchurl {
     url = "https://dfu-util.sourceforge.net/releases/dfu-util-${finalAttrs.version}.tar.gz";
     sha256 = "sha256-tLU7ohqC7349TEffKVKt9fpJT0mbawtXxYxdBK6P8Z4=";
   };
 
+  nativeBuildInputs = [ pkg-config ];
+  buildInputs = [ libusb1 ];
+
   meta = {
     description = "Device firmware update (DFU) USB programmer";
+
     longDescription = ''
       dfu-util is a program that implements the host (PC) side of the USB
       DFU 1.0 and 1.1 (Universal Serial Bus Device Firmware Upgrade) protocol.
@@ -29,9 +30,10 @@ stdenv.mkDerivation (finalAttrs: {
       phones. With dfu-util you are able to download firmware to your device or
       upload firmware from it.
     '';
+
     homepage = "https://dfu-util.sourceforge.net";
     license = lib.licenses.gpl2Plus;
-    platforms = lib.platforms.unix;
     maintainers = [ lib.maintainers.fpletz ];
+    platforms = lib.platforms.unix;
   };
 })

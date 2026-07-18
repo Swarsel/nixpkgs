@@ -1,12 +1,12 @@
 {
-  buildDunePackage,
-  ocaml,
   lib,
-  ppxlib,
   fetchFromGitHub,
-  ojs,
+  buildDunePackage,
   js_of_ocaml-compiler,
   nodejs,
+  ocaml,
+  ojs,
+  ppxlib,
 }:
 
 buildDunePackage (finalAttrs: {
@@ -20,21 +20,23 @@ buildDunePackage (finalAttrs: {
     sha256 = "sha256-baK+/y0s08hHC8/+P7RKOboFnALQpndxBMuhI1WKf2o=";
   };
 
-  minimalOCamlVersion = "4.11";
-
   propagatedBuildInputs = [
     ojs
     ppxlib
   ];
+
+  doCheck = lib.versionAtLeast ocaml.version "4.13" && !(lib.versionAtLeast ppxlib.version "0.36");
+
   nativeCheckInputs = [
     js_of_ocaml-compiler
     nodejs
   ];
-  doCheck = lib.versionAtLeast ocaml.version "4.13" && !(lib.versionAtLeast ppxlib.version "0.36");
+
+  minimalOCamlVersion = "4.11";
 
   meta = {
-    homepage = "https://github.com/LexiFi/gen_js_api";
     description = "Easy OCaml bindings for JavaScript libraries";
+
     longDescription = ''
       gen_js_api aims at simplifying the creation of OCaml bindings for
       JavaScript libraries. Authors of bindings write OCaml signatures for
@@ -43,6 +45,8 @@ buildDunePackage (finalAttrs: {
 
       gen_js_api is to be used with the js_of_ocaml compiler.
     '';
+
+    homepage = "https://github.com/LexiFi/gen_js_api";
     license = lib.licenses.mit;
     maintainers = [ lib.maintainers.bcc32 ];
   };

@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule (finalAttrs: {
@@ -20,9 +20,9 @@ buildGoModule (finalAttrs: {
 
   meta = {
     description = "General purpose Language Server";
-    mainProgram = "efm-langserver";
-    maintainers = with lib.maintainers; [ Philipp-M ];
     homepage = "https://github.com/mattn/efm-langserver";
     license = lib.licenses.mit;
+    maintainers = with lib.maintainers; [ Philipp-M ];
+    mainProgram = "efm-langserver";
   };
 })

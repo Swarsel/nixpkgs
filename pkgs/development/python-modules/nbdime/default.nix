@@ -2,38 +2,47 @@
   lib,
   stdenv,
   buildPythonPackage,
+  # dependencies
+  colorama,
   fetchPypi,
-
+  # tests
+  gitMinimal,
+  gitpython,
   # build-system
   hatch-jupyter-builder,
   hatchling,
-  jupyterlab,
-
-  # dependencies
-  colorama,
-  gitpython,
   jinja2,
   jupyter-server,
+  jupyterlab,
   nbformat,
   pygments,
+  pytestCheckHook,
   requests,
   tornado,
-
-  # tests
-  gitMinimal,
-  pytestCheckHook,
   writableTmpDirAsHomeHook,
 }:
 
 buildPythonPackage rec {
   pname = "nbdime";
   version = "4.0.4";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
     hash = "sha256-jNJez+61EF1WMjfX9k60dIBY+6m7qas4kqH/YeF3zhY=";
   };
+
+  nativeCheckInputs = [
+    gitMinimal
+    pytestCheckHook
+    writableTmpDirAsHomeHook
+  ];
+
+  preCheck = ''
+    git config --global user.email "janedoe@example.com"
+    git config --global user.name "Jane Doe"
+  '';
+
+  __darwinAllowLocalNetworking = true;
 
   build-system = [
     hatch-jupyter-builder
@@ -50,12 +59,6 @@ buildPythonPackage rec {
     pygments
     requests
     tornado
-  ];
-
-  nativeCheckInputs = [
-    gitMinimal
-    pytestCheckHook
-    writableTmpDirAsHomeHook
   ];
 
   disabledTests = [
@@ -76,19 +79,13 @@ buildPythonPackage rec {
     "test_locate_gitattributes_syste"
   ];
 
-  preCheck = ''
-    git config --global user.email "janedoe@example.com"
-    git config --global user.name "Jane Doe"
-  '';
-
-  __darwinAllowLocalNetworking = true;
-
+  pyproject = true;
   pythonImportsCheck = [ "nbdime" ];
 
   meta = {
+    description = "Tools for diffing and merging of Jupyter notebooks";
     homepage = "https://github.com/jupyter/nbdime";
     changelog = "https://github.com/jupyter/nbdime/blob/v${version}/CHANGELOG.md";
-    description = "Tools for diffing and merging of Jupyter notebooks";
     license = lib.licenses.bsd3;
     maintainers = [ ];
   };

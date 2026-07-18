@@ -1,9 +1,9 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
-  testers,
+  buildGoModule,
   envconsul,
+  testers,
 }:
 
 buildGoModule (finalAttrs: {
@@ -26,13 +26,13 @@ buildGoModule (finalAttrs: {
   ];
 
   passthru.tests.version = testers.testVersion {
-    package = envconsul;
     version = "v${finalAttrs.version}";
+    package = envconsul;
   };
 
   meta = {
-    homepage = "https://github.com/hashicorp/envconsul/";
     description = "Read and set environmental variables for processes from Consul";
+    homepage = "https://github.com/hashicorp/envconsul/";
     license = lib.licenses.mpl20;
     mainProgram = "envconsul";
   };

@@ -1,13 +1,13 @@
 {
   lib,
   fetchFromGitHub,
-  flutter344,
-  makeDesktopItem,
-  copyDesktopItems,
   alsa-lib,
-  mpv-unwrapped,
-  libplacebo,
+  copyDesktopItems,
+  flutter344,
   libappindicator,
+  libplacebo,
+  makeDesktopItem,
+  mpv-unwrapped,
   webkitgtk_4_1,
 }:
 
@@ -17,20 +17,16 @@ let
   version = "2.0.9.2";
 in
 flutter344.buildFlutterApplication {
-  pname = "piliplus";
   inherit version;
+  pname = "piliplus";
 
   src = fetchFromGitHub {
+    inherit (srcInfo) rev hash;
     owner = "bggRGjQaUbCoE";
     repo = "PiliPlus";
-    inherit (srcInfo) rev hash;
   };
 
   patches = [ ./disable-auto-update.patch ];
-
-  pubspecLock = lib.importJSON ./pubspec.lock.json;
-  gitHashes = lib.importJSON ./git-hashes.json;
-
   nativeBuildInputs = [ copyDesktopItems ];
 
   buildInputs = [
@@ -71,18 +67,21 @@ flutter344.buildFlutterApplication {
 
   desktopItems = [
     (makeDesktopItem {
-      name = "piliplus";
-      exec = "piliplus";
-      icon = "piliplus";
-      desktopName = "PiliPlus";
       categories = [
         "Video"
         "AudioVideo"
       ];
+
       comment = description;
+      desktopName = "PiliPlus";
+      exec = "piliplus";
+      icon = "piliplus";
+      name = "piliplus";
     })
   ];
 
+  gitHashes = lib.importJSON ./git-hashes.json;
+  pubspecLock = lib.importJSON ./pubspec.lock.json;
   passthru.updateScript = ./update.rb;
 
   meta = {

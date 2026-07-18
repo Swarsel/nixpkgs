@@ -2,8 +2,8 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  rustPlatform,
   installShellFiles,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -17,12 +17,10 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-OFVJUZ3jSuDlHYIl/8KmJJW5ZbVI12wn+bVx9XeOkvI=";
   };
 
+  nativeBuildInputs = [ installShellFiles ];
   cargoHash = "sha256-wkSLz6WGsfYZobbrOaDV79Xl7f4/nDkP3z8ZFP1Cn54=";
-
   # attempts to run the program on .git in src which is not deterministic
   doCheck = false;
-
-  nativeBuildInputs = [ installShellFiles ];
 
   postInstall = lib.optionalString (stdenv.buildPlatform.canExecute stdenv.hostPlatform) ''
     export OUT_DIR=$(mktemp -d)
@@ -44,10 +42,12 @@ rustPlatform.buildRustPackage (finalAttrs: {
     homepage = "https://github.com/orhun/git-cliff";
     changelog = "https://github.com/orhun/git-cliff/blob/v${finalAttrs.version}/CHANGELOG.md";
     license = lib.licenses.gpl3Only;
+
     maintainers = with lib.maintainers; [
       siraben
       matthiasbeyer
     ];
+
     mainProgram = "git-cliff";
   };
 })

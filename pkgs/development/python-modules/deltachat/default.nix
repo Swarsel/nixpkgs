@@ -1,22 +1,19 @@
 {
   buildPythonPackage,
-  pkg-config,
-  pkgconfig,
-  setuptools-scm,
-  libdeltachat,
   cffi,
   imap-tools,
-  requests,
+  libdeltachat,
+  pkg-config,
+  pkgconfig,
   pluggy,
   pytestCheckHook,
+  requests,
+  setuptools-scm,
 }:
 
 buildPythonPackage rec {
-  pname = "deltachat";
   inherit (libdeltachat) version src;
-  sourceRoot = "${src.name}/python";
-
-  pyproject = true;
+  pname = "deltachat";
 
   nativeBuildInputs = [
     cffi
@@ -35,6 +32,7 @@ buildPythonPackage rec {
   ];
 
   nativeCheckInputs = [ pytestCheckHook ];
+  pyproject = true;
 
   pythonImportsCheck = [
     "deltachat"
@@ -43,6 +41,8 @@ buildPythonPackage rec {
     "deltachat.chat"
     "deltachat.message"
   ];
+
+  sourceRoot = "${src.name}/python";
 
   meta = libdeltachat.meta // {
     description = "Python bindings for the Delta Chat Core library";

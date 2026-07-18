@@ -2,14 +2,13 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  rustPlatform,
   cmake,
-  python3Packages,
-
+  firefox-esr-unwrapped,
   # tests
   firefox-unwrapped,
-  firefox-esr-unwrapped,
   mesa,
+  python3Packages,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -54,11 +53,11 @@ rustPlatform.buildRustPackage (finalAttrs: {
   };
 
   meta = {
-    changelog = "https://github.com/mozilla/cbindgen/blob/v${finalAttrs.version}/CHANGES";
     description = "Project for generating C bindings from Rust code";
-    mainProgram = "cbindgen";
     homepage = "https://github.com/mozilla/cbindgen";
+    changelog = "https://github.com/mozilla/cbindgen/blob/v${finalAttrs.version}/CHANGES";
     license = lib.licenses.mpl20;
     maintainers = with lib.maintainers; [ hexa ];
+    mainProgram = "cbindgen";
   };
 })

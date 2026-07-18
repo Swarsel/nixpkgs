@@ -1,16 +1,16 @@
 {
   lib,
   stdenv,
-  autoPatchelfHook,
-  makeWrapper,
   fetchurl,
-  makeDesktopItem,
-  lttng-ust_2_12,
+  autoPatchelfHook,
   fontconfig,
-  openssl,
-  libx11,
-  libsm,
   libice,
+  libsm,
+  libx11,
+  lttng-ust_2_12,
+  makeDesktopItem,
+  makeWrapper,
+  openssl,
   zlib,
 }:
 
@@ -36,24 +36,11 @@ stdenv.mkDerivation rec {
     sha256 = "sha256-o2e2NDG2aMrEYc/7x5iFex9oRlrQXeKIINuW80ZwWcI=";
   };
 
-  dontBuild = true;
-
-  desktopItem = makeDesktopItem {
-    name = "wasabi";
-    exec = "wasabiwallet-desktop";
-    desktopName = "Wasabi";
-    genericName = "Bitcoin wallet";
-    comment = meta.description;
-    categories = [
-      "Network"
-      "Utility"
-    ];
-  };
-
   nativeBuildInputs = [
     autoPatchelfHook
     makeWrapper
   ];
+
   buildInputs = runtimeLibs ++ [
     lttng-ust_2_12
   ];
@@ -73,12 +60,27 @@ stdenv.mkDerivation rec {
     cp -v $desktopItem/share/applications/* $out/share/applications
   '';
 
+  desktopItem = makeDesktopItem {
+    categories = [
+      "Network"
+      "Utility"
+    ];
+
+    comment = meta.description;
+    desktopName = "Wasabi";
+    exec = "wasabiwallet-desktop";
+    genericName = "Bitcoin wallet";
+    name = "wasabi";
+  };
+
+  dontBuild = true;
+
   meta = {
     description = "Privacy focused Bitcoin wallet";
     homepage = "https://wasabiwallet.io/";
-    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
     license = lib.licenses.mit;
-    platforms = [ "x86_64-linux" ];
+    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
     maintainers = with lib.maintainers; [ mmahut ];
+    platforms = [ "x86_64-linux" ];
   };
 }

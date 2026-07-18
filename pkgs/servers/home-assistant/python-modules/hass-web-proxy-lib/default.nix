@@ -1,41 +1,32 @@
 {
   lib,
-  buildPythonPackage,
-  fetchPypi,
-
-  # build-system
-  poetry-core,
-
   # dependencies
   aiohttp,
-
+  buildPythonPackage,
+  fetchPypi,
   # tests
   home-assistant,
+  # reverse dependencies
+  home-assistant-custom-components,
+  # build-system
+  poetry-core,
   pytest-aiohttp,
   pytest-cov-stub,
   pytest-homeassistant-custom-component,
   pytest-timeout,
   pytestCheckHook,
-
-  # reverse dependencies
-  home-assistant-custom-components,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "hass-web-proxy-lib";
   version = "0.0.8";
-  pyproject = true;
 
   # no tags on git
   src = fetchPypi {
-    pname = "hass_web_proxy_lib";
     inherit (finalAttrs) version;
     hash = "sha256-H9C8jwJeR6skvCVn8jeaWqmIL0fmcab+/BQ5SzUIt00=";
+    pname = "hass_web_proxy_lib";
   };
-
-  build-system = [ poetry-core ];
-
-  dependencies = [ aiohttp ];
 
   nativeCheckInputs = [
     home-assistant
@@ -45,6 +36,10 @@ buildPythonPackage (finalAttrs: {
     pytest-timeout
     pytestCheckHook
   ];
+
+  build-system = [ poetry-core ];
+  dependencies = [ aiohttp ];
+  pyproject = true;
 
   pythonImportsCheck = [
     "hass_web_proxy_lib"

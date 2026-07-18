@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   nixosTests,
 }:
 
@@ -26,14 +26,16 @@ buildGoModule (finalAttrs: {
   passthru.tests = { inherit (nixosTests) certmgr; };
 
   meta = {
-    homepage = "https://cfssl.org/";
     description = "Cloudflare's automated certificate management using a CFSSL CA";
-    mainProgram = "certmgr";
-    platforms = lib.platforms.linux;
+    homepage = "https://cfssl.org/";
     license = lib.licenses.bsd2;
+
     maintainers = with lib.maintainers; [
       johanot
       srhb
     ];
+
+    platforms = lib.platforms.linux;
+    mainProgram = "certmgr";
   };
 })

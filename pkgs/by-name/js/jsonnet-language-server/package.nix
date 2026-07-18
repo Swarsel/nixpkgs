@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule (finalAttrs: {
@@ -25,10 +25,10 @@ buildGoModule (finalAttrs: {
 
   meta = {
     description = "Language Server Protocol server for Jsonnet";
-    mainProgram = "jsonnet-language-server";
     homepage = "https://github.com/grafana/jsonnet-language-server";
     changelog = "https://github.com/grafana/jsonnet-language-server/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.agpl3Only;
     maintainers = with lib.maintainers; [ hardselius ];
+    mainProgram = "jsonnet-language-server";
   };
 })

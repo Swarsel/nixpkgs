@@ -2,24 +2,23 @@
   lib,
   buildPythonPackage,
   fetchPypi,
-  webtest,
-  markupsafe,
   jinja2,
-  pytestCheckHook,
-  pytest-cov-stub,
-  zope-deprecation,
+  markupsafe,
   pyramid,
+  pytest-cov-stub,
+  pytestCheckHook,
+  webtest,
+  zope-deprecation,
 }:
 
 buildPythonPackage rec {
   pname = "pyramid-jinja2";
   version = "2.10.1";
-  format = "setuptools";
 
   src = fetchPypi {
-    pname = "pyramid_jinja2";
     inherit version;
     hash = "sha256-jFCMs1wTX5UUnKI2EQ+ciHU0NXV0DRbFy3OlDvHCFnc=";
+    pname = "pyramid_jinja2";
   };
 
   propagatedBuildInputs = [
@@ -35,14 +34,15 @@ buildPythonPackage rec {
     pytest-cov-stub
   ];
 
-  pythonImportsCheck = [ "pyramid_jinja2" ];
-
   disabledTests = [
     # AssertionError: Lists differ: ['pyramid_jinja2-2.10',...
     "test_it_relative_to_package"
     # AssertionError: False is not true
     "test_options"
   ];
+
+  format = "setuptools";
+  pythonImportsCheck = [ "pyramid_jinja2" ];
 
   meta = {
     description = "Jinja2 template bindings for the Pyramid web framework";

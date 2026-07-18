@@ -125,6 +125,7 @@ let
       "mode"
       "xmit_hash_policy"
     ];
+
     filterDeprecated =
       bond: (filterAttrs (attrName: attr: elem attrName deprecated && attr != null) bond);
   };
@@ -142,12 +143,24 @@ let
     };
 
   normalConfig = {
+    services.udev.extraRules = lib.concatStringsSep "\n" (
+      [ ''KERNEL=="tun", TAG+="systemd"'' ]
+      # This creates a udev rule to start each service with a WantedBy
+      # dependency on a device unit. It's needed because if the service
+      # unit is loaded in stage 2 but its device was already up by
+      # stage 1, systemd will not automatically start it.
+      ++ lib.forEach (lib.attrNames cfg.interfaces) (
+        iface:
+        ''ACTION=="add", SUBSYSTEM=="net", KERNEL=="${iface}", ''
+        + ''ENV{SYSTEMD_WANTS}="network-addresses-${iface}.service"''
+      )
+    );
+
     systemd.network.links =
       let
         createNetworkLink =
           i:
           nameValuePair "40-${i.name}" {
-            matchConfig.OriginalName = i.name;
             linkConfig =
               optionalAttrs (i.macAddress != null) {
                 MACAddress = i.macAddress;
@@ -155,9 +168,12 @@ let
               // optionalAttrs (i.mtu != null) {
                 MTUBytes = toString i.mtu;
               };
+
+            matchConfig.OriginalName = i.name;
           };
       in
       listToAttrs (map createNetworkLink interfaces);
+
     systemd.services =
       let
 
@@ -216,44 +232,56 @@ let
                 ${optionalString (gateway.interface != null) ''
                   ip -${version} route replace ${gateway.address} proto static ${
                     formatIpArgs {
-                      metric = gateway.metric;
                       dev = gateway.interface;
+                      metric = gateway.metric;
                     }
                   }
                 ''}
                 ip -${version} route replace default proto static ${
                   formatIpArgs {
+                    dev = gateway.interface;
                     metric = gateway.metric;
+                    src = gateway.source;
                     via = gateway.address;
                     window = cfg.defaultGatewayWindowSize;
-                    dev = gateway.interface;
-                    src = gateway.source;
                   }
                 }
                 echo "done"
               '';
           in
           nameValuePair "network-addresses-${i.name}" {
-            description = "Address configuration of ${i.name}";
-
-            wantedBy =
-              deviceDependency i.name
-              ++ optional config.boot.isContainer "network.target"
-              ++ optional (isDefaultGateway4 || isDefaultGateway6) "network-online.target";
-            bindsTo = deviceDependency i.name;
-            partOf = [ "networking-scripted.target" ];
             after = [
               "network-pre.target"
             ]
             ++ optional needsSourceIface4 "network-addresses-${source4Iface.name}.service"
             ++ optional needsSourceIface6 "network-addresses-${source6Iface.name}.service"
             ++ deviceDependency i.name;
-            serviceConfig.Type = "oneshot";
-            serviceConfig.RemainAfterExit = true;
-            # Restart rather than stop+start this unit to prevent the
-            # network from dying during switch-to-configuration.
-            stopIfChanged = false;
+
+            bindsTo = deviceDependency i.name;
+            description = "Address configuration of ${i.name}";
+            partOf = [ "networking-scripted.target" ];
             path = [ pkgs.iproute2 ];
+
+            preStop = ''
+              state="/run/nixos/network/routes/${i.name}"
+              if [ -e "$state" ]; then
+                while read -r cidr; do
+                  echo -n "deleting route $cidr... "
+                  ip route del "$cidr" dev "${i.name}" >/dev/null 2>&1 && echo "done" || echo "failed"
+                done < "$state"
+                rm -f "$state"
+              fi
+
+              state="/run/nixos/network/addresses/${i.name}"
+              if [ -e "$state" ]; then
+                while read -r cidr; do
+                  echo -n "deleting address $cidr... "
+                  ip addr del "$cidr" dev "${i.name}" >/dev/null 2>&1 && echo "done" || echo "failed"
+                done < "$state"
+                rm -f "$state"
+              fi
+            '';
+
             script = ''
               state="/run/nixos/network/addresses/${i.name}"
               mkdir -p "$(dirname "$state")"
@@ -304,52 +332,48 @@ let
               ${optionalString isDefaultGateway4 (configureGateway "4" cfg.defaultGateway)}
               ${optionalString isDefaultGateway6 (configureGateway "6" cfg.defaultGateway6)}
             '';
-            preStop = ''
-              state="/run/nixos/network/routes/${i.name}"
-              if [ -e "$state" ]; then
-                while read -r cidr; do
-                  echo -n "deleting route $cidr... "
-                  ip route del "$cidr" dev "${i.name}" >/dev/null 2>&1 && echo "done" || echo "failed"
-                done < "$state"
-                rm -f "$state"
-              fi
 
-              state="/run/nixos/network/addresses/${i.name}"
-              if [ -e "$state" ]; then
-                while read -r cidr; do
-                  echo -n "deleting address $cidr... "
-                  ip addr del "$cidr" dev "${i.name}" >/dev/null 2>&1 && echo "done" || echo "failed"
-                done < "$state"
-                rm -f "$state"
-              fi
-            '';
+            serviceConfig.RemainAfterExit = true;
+            serviceConfig.Type = "oneshot";
+            # Restart rather than stop+start this unit to prevent the
+            # network from dying during switch-to-configuration.
+            stopIfChanged = false;
+
+            wantedBy =
+              deviceDependency i.name
+              ++ optional config.boot.isContainer "network.target"
+              ++ optional (isDefaultGateway4 || isDefaultGateway6) "network-online.target";
           };
 
         createTunDevice =
           i:
           nameValuePair "${i.name}-netdev" {
-            description = "Virtual Network Interface ${i.name}";
-            bindsTo = optional (!config.boot.isContainer) "dev-net-tun.device";
-            partOf = [ "networking-scripted.target" ];
             after = optional (!config.boot.isContainer) "dev-net-tun.device" ++ [ "network-pre.target" ];
-            wantedBy = [
-              "network.target"
-              (subsystemDevice i.name)
-            ];
             before = [ "network.target" ];
+            bindsTo = optional (!config.boot.isContainer) "dev-net-tun.device";
+            description = "Virtual Network Interface ${i.name}";
+            partOf = [ "networking-scripted.target" ];
             path = [ pkgs.iproute2 ];
-            serviceConfig = {
-              Type = "oneshot";
-              RemainAfterExit = true;
-            };
+
+            postStop = ''
+              ip link del dev ${i.name} || true
+            '';
+
             script = ''
               ip tuntap add dev "${i.name}" mode "${i.virtualType}" ${
                 lib.optionalString (i.virtualOwner != null) ''user "${i.virtualOwner}"''
               }
             '';
-            postStop = ''
-              ip link del dev ${i.name} || true
-            '';
+
+            serviceConfig = {
+              RemainAfterExit = true;
+              Type = "oneshot";
+            };
+
+            wantedBy = [
+              "network.target"
+              (subsystemDevice i.name)
+            ];
           };
 
         createBridgeDevice =
@@ -359,27 +383,56 @@ let
               deps = concatLists (map deviceDependency v.interfaces);
             in
             {
-              description = "Bridge Interface ${n}";
-              wantedBy = [
-                "network.target"
-                (subsystemDevice n)
-              ];
-              bindsTo = deps ++ optional v.rstp "mstpd.service";
-              partOf = [
-                "network.target"
-                "networking-scripted.target"
-              ]
-              ++ optional v.rstp "mstpd.service";
               after = [
                 "network-pre.target"
               ]
               ++ deps
               ++ optional v.rstp "mstpd.service"
               ++ map (i: "network-addresses-${i}.service") v.interfaces;
+
               before = [ "network.target" ];
-              serviceConfig.Type = "oneshot";
-              serviceConfig.RemainAfterExit = true;
+              bindsTo = deps ++ optional v.rstp "mstpd.service";
+              description = "Bridge Interface ${n}";
+
+              partOf = [
+                "network.target"
+                "networking-scripted.target"
+              ]
+              ++ optional v.rstp "mstpd.service";
+
               path = [ pkgs.iproute2 ];
+
+              postStop = ''
+                ip link set dev "${n}" down || true
+                ip link del dev "${n}" || true
+                rm -f /run/${n}.interfaces
+              '';
+
+              reload = ''
+                # shellcheck disable=SC2013
+                # Un-enslave child interfaces (old list of interfaces)
+                for interface in $(cat /run/${n}.interfaces); do
+                  ip link set dev "$interface" nomaster up
+                done
+
+                # Enslave child interfaces (new list of interfaces)
+                ${flip concatMapStrings v.interfaces (i: ''
+                  ip link set dev "${i}" master "${n}"
+                  ip link set dev "${i}" up
+                '')}
+                # Save list of enslaved interfaces
+                echo "${
+                  flip concatMapStrings v.interfaces (i: ''
+                    ${i}
+                  '')
+                }" > /run/${n}.interfaces
+
+                # (Un-)set stp on the bridge
+                echo ${if v.rstp then "2" else "0"} > /sys/class/net/${n}/bridge/stp_state
+              '';
+
+              reloadIfChanged = true;
+
               script = ''
                 # Remove Dead Interfaces
                 echo "Removing old bridge ${n}..."
@@ -424,34 +477,14 @@ let
 
                 ip link set dev "${n}" up
               '';
-              postStop = ''
-                ip link set dev "${n}" down || true
-                ip link del dev "${n}" || true
-                rm -f /run/${n}.interfaces
-              '';
-              reload = ''
-                # shellcheck disable=SC2013
-                # Un-enslave child interfaces (old list of interfaces)
-                for interface in $(cat /run/${n}.interfaces); do
-                  ip link set dev "$interface" nomaster up
-                done
 
-                # Enslave child interfaces (new list of interfaces)
-                ${flip concatMapStrings v.interfaces (i: ''
-                  ip link set dev "${i}" master "${n}"
-                  ip link set dev "${i}" up
-                '')}
-                # Save list of enslaved interfaces
-                echo "${
-                  flip concatMapStrings v.interfaces (i: ''
-                    ${i}
-                  '')
-                }" > /run/${n}.interfaces
+              serviceConfig.RemainAfterExit = true;
+              serviceConfig.Type = "oneshot";
 
-                # (Un-)set stp on the bridge
-                echo ${if v.rstp then "2" else "0"} > /sys/class/net/${n}/bridge/stp_state
-              '';
-              reloadIfChanged = true;
+              wantedBy = [
+                "network.target"
+                (subsystemDevice n)
+              ];
             }
           );
 
@@ -468,35 +501,42 @@ let
               ofRules = pkgs.writeText "vswitch-${n}-openFlowRules" v.openFlowRules;
             in
             {
-              description = "Open vSwitch Interface ${n}";
-              wantedBy = [
-                "network.target"
-                (subsystemDevice n)
-              ]
-              ++ internalConfigs;
-              before = [ "network.target" ] ++ internalConfigs;
-              partOf = [
-                "network.target"
-                "networking-scripted.target"
-              ]; # shutdown the bridge when network is shutdown
-              bindsTo = [ "ovs-vswitchd.service" ]; # requires ovs-vswitchd to be alive at all times
               after = [
                 "network-pre.target"
                 "ovs-vswitchd.service"
               ]
               ++ deps; # start switch after physical interfaces and vswitch daemon
-              wants = deps; # if one or more interface fails, the switch should continue to run
-              serviceConfig.Type = "oneshot";
-              serviceConfig.RemainAfterExit = true;
+
+              before = [ "network.target" ] ++ internalConfigs;
+              bindsTo = [ "ovs-vswitchd.service" ]; # requires ovs-vswitchd to be alive at all times
+              description = "Open vSwitch Interface ${n}";
+
+              partOf = [
+                "network.target"
+                "networking-scripted.target"
+              ]; # shutdown the bridge when network is shutdown
+
               path = [
                 pkgs.iproute2
                 config.virtualisation.vswitch.package
               ];
+
+              postStop = ''
+                echo "Cleaning Open vSwitch ${n}"
+                echo "Shutting down internal ${n} interface"
+                ip link set dev ${n} down || true
+                echo "Deleting flows for ${n}"
+                ovs-ofctl --protocols=${v.openFlowVersion} del-flows ${n} || true
+                echo "Deleting Open vSwitch ${n}"
+                ovs-vsctl --if-exists del-br ${n} || true
+              '';
+
               preStart = ''
                 echo "Resetting Open vSwitch ${n}..."
                 ovs-vsctl --if-exists del-br ${n} -- add-br ${n} \
                           -- set bridge ${n} protocols=${concatStringsSep "," v.supportedOpenFlowVersions}
               '';
+
               script = ''
                 echo "Configuring Open vSwitch ${n}..."
                 ovs-vsctl ${
@@ -521,15 +561,17 @@ let
                 echo "Adding OpenFlow rules for Open vSwitch ${n}..."
                 ovs-ofctl --protocols=${v.openFlowVersion} add-flows ${n} ${ofRules}
               '';
-              postStop = ''
-                echo "Cleaning Open vSwitch ${n}"
-                echo "Shutting down internal ${n} interface"
-                ip link set dev ${n} down || true
-                echo "Deleting flows for ${n}"
-                ovs-ofctl --protocols=${v.openFlowVersion} del-flows ${n} || true
-                echo "Deleting Open vSwitch ${n}"
-                ovs-vsctl --if-exists del-br ${n} || true
-              '';
+
+              serviceConfig.RemainAfterExit = true;
+              serviceConfig.Type = "oneshot";
+
+              wantedBy = [
+                "network.target"
+                (subsystemDevice n)
+              ]
+              ++ internalConfigs;
+
+              wants = deps; # if one or more interface fails, the switch should continue to run
             }
           );
 
@@ -540,21 +582,19 @@ let
               deps = concatLists (map deviceDependency v.interfaces);
             in
             {
-              description = "Bond Interface ${n}";
-              wantedBy = [
-                "network.target"
-                (subsystemDevice n)
-              ];
-              bindsTo = deps;
-              partOf = [ "networking-scripted.target" ];
               after = [ "network-pre.target" ] ++ deps ++ map (i: "network-addresses-${i}.service") v.interfaces;
               before = [ "network.target" ];
-              serviceConfig.Type = "oneshot";
-              serviceConfig.RemainAfterExit = true;
+              bindsTo = deps;
+              description = "Bond Interface ${n}";
+              partOf = [ "networking-scripted.target" ];
+
               path = [
                 pkgs.iproute2
                 pkgs.gawk
               ];
+
+              postStop = destroyBond n;
+
               script = ''
                 echo "Destroying old bond ${n}..."
                 ${destroyBond n}
@@ -578,7 +618,14 @@ let
                   ip link set dev "${i}" master "${n}"
                 '')}
               '';
-              postStop = destroyBond n;
+
+              serviceConfig.RemainAfterExit = true;
+              serviceConfig.Type = "oneshot";
+
+              wantedBy = [
+                "network.target"
+                (subsystemDevice n)
+              ];
             }
           );
 
@@ -589,18 +636,17 @@ let
               deps = deviceDependency v.interface;
             in
             {
-              description = "MACVLAN Interface ${n}";
-              wantedBy = [
-                "network.target"
-                (subsystemDevice n)
-              ];
-              bindsTo = deps;
-              partOf = [ "networking-scripted.target" ];
               after = [ "network-pre.target" ] ++ deps;
               before = [ "network.target" ];
-              serviceConfig.Type = "oneshot";
-              serviceConfig.RemainAfterExit = true;
+              bindsTo = deps;
+              description = "MACVLAN Interface ${n}";
+              partOf = [ "networking-scripted.target" ];
               path = [ pkgs.iproute2 ];
+
+              postStop = ''
+                ip link delete dev "${n}" || true
+              '';
+
               script = ''
                 # Remove Dead Interfaces
                 ip link show dev "${n}" >/dev/null 2>&1 && ip link delete dev "${n}"
@@ -608,9 +654,14 @@ let
                   ${optionalString (v.mode != null) "mode ${v.mode}"}
                 ip link set dev "${n}" up
               '';
-              postStop = ''
-                ip link delete dev "${n}" || true
-              '';
+
+              serviceConfig.RemainAfterExit = true;
+              serviceConfig.Type = "oneshot";
+
+              wantedBy = [
+                "network.target"
+                (subsystemDevice n)
+              ];
             }
           );
 
@@ -621,18 +672,17 @@ let
               deps = deviceDependency v.interface;
             in
             {
-              description = "IPVLAN Interface ${n}";
-              wantedBy = [
-                "network.target"
-                (subsystemDevice n)
-              ];
-              bindsTo = deps;
-              partOf = [ "networking-scripted.target" ];
               after = [ "network-pre.target" ] ++ deps;
               before = [ "network.target" ];
-              serviceConfig.Type = "oneshot";
-              serviceConfig.RemainAfterExit = true;
+              bindsTo = deps;
+              description = "IPVLAN Interface ${n}";
+              partOf = [ "networking-scripted.target" ];
               path = [ pkgs.iproute2 ];
+
+              postStop = ''
+                ip link delete dev "${n}" || true
+              '';
+
               script = ''
                 # Remove Dead Interfaces
                 ip link show dev "${n}" >/dev/null 2>&1 && ip link delete dev "${n}"
@@ -641,9 +691,14 @@ let
                   ${optionalString (v.flags != null) "${v.flags}"}
                 ip link set dev "${n}" up
               '';
-              postStop = ''
-                ip link delete dev "${n}" || true
-              '';
+
+              serviceConfig.RemainAfterExit = true;
+              serviceConfig.Type = "oneshot";
+
+              wantedBy = [
+                "network.target"
+                (subsystemDevice n)
+              ];
             }
           );
 
@@ -666,26 +721,30 @@ let
               }";
             in
             {
-              description = "FOU endpoint ${n}";
-              wantedBy = [
-                "network.target"
-                (subsystemDevice n)
-              ];
-              bindsTo = deps;
-              partOf = [ "networking-scripted.target" ];
               after = [ "network-pre.target" ] ++ deps;
               before = [ "network.target" ];
-              serviceConfig.Type = "oneshot";
-              serviceConfig.RemainAfterExit = true;
+              bindsTo = deps;
+              description = "FOU endpoint ${n}";
+              partOf = [ "networking-scripted.target" ];
               path = [ pkgs.iproute2 ];
+
+              postStop = ''
+                ip fou del ${fouSpec} || true
+              '';
+
               script = ''
                 # always remove previous incarnation since show can't filter
                 ip fou del ${fouSpec} >/dev/null 2>&1 || true
                 ip fou add ${fouSpec}
               '';
-              postStop = ''
-                ip fou del ${fouSpec} || true
-              '';
+
+              serviceConfig.RemainAfterExit = true;
+              serviceConfig.Type = "oneshot";
+
+              wantedBy = [
+                "network.target"
+                (subsystemDevice n)
+              ];
             }
           );
 
@@ -696,17 +755,16 @@ let
               deps = deviceDependency v.dev;
             in
             {
-              description = "IPv6 in IPv4 Tunnel Interface ${n}";
-              wantedBy = [
-                "network.target"
-                (subsystemDevice n)
-              ];
-              bindsTo = deps;
               after = [ "network-pre.target" ] ++ deps;
               before = [ "network.target" ];
-              serviceConfig.Type = "oneshot";
-              serviceConfig.RemainAfterExit = true;
+              bindsTo = deps;
+              description = "IPv6 in IPv4 Tunnel Interface ${n}";
               path = [ pkgs.iproute2 ];
+
+              postStop = ''
+                ip link delete dev "${n}" || true
+              '';
+
               script = ''
                 # Remove Dead Interfaces
                 ip link show dev "${n}" >/dev/null 2>&1 && ip link delete dev "${n}"
@@ -718,6 +776,7 @@ let
                       ttl
                       dev
                       ;
+
                     encap = if v.encapsulation.type == "6in4" then null else v.encapsulation.type;
                     encap-dport = v.encapsulation.port;
                     encap-sport = v.encapsulation.sourcePort;
@@ -725,9 +784,14 @@ let
                 }
                 ip link set dev "${n}" up
               '';
-              postStop = ''
-                ip link delete dev "${n}" || true
-              '';
+
+              serviceConfig.RemainAfterExit = true;
+              serviceConfig.Type = "oneshot";
+
+              wantedBy = [
+                "network.target"
+                (subsystemDevice n)
+              ];
             }
           );
 
@@ -738,18 +802,17 @@ let
               deps = deviceDependency v.dev;
             in
             {
-              description = "IP in IP Tunnel Interface ${n}";
-              wantedBy = [
-                "network.target"
-                (subsystemDevice n)
-              ];
-              bindsTo = deps;
-              partOf = [ "networking-scripted.target" ];
               after = [ "network-pre.target" ] ++ deps;
               before = [ "network.target" ];
-              serviceConfig.Type = "oneshot";
-              serviceConfig.RemainAfterExit = true;
+              bindsTo = deps;
+              description = "IP in IP Tunnel Interface ${n}";
+              partOf = [ "networking-scripted.target" ];
               path = [ pkgs.iproute2 ];
+
+              postStop = ''
+                ip link delete dev "${n}" || true
+              '';
+
               script = ''
                 # Remove Dead Interfaces
                 ip link show dev "${n}" >/dev/null 2>&1 && ip link delete dev "${n}"
@@ -761,20 +824,27 @@ let
                       ttl
                       dev
                       ;
+
+                    encaplimit = if v.encapsulation.type == "ipip" then null else v.encapsulation.limit;
+
                     mode =
                       {
                         "4in6" = "ipip6";
                         "ipip" = "ipip";
                       }
                       .${v.encapsulation.type};
-                    encaplimit = if v.encapsulation.type == "ipip" then null else v.encapsulation.limit;
                   }
                 }
                 ip link set dev "${n}" up
               '';
-              postStop = ''
-                ip link delete dev "${n}" || true
-              '';
+
+              serviceConfig.RemainAfterExit = true;
+              serviceConfig.Type = "oneshot";
+
+              wantedBy = [
+                "network.target"
+                (subsystemDevice n)
+              ];
             }
           );
 
@@ -786,18 +856,17 @@ let
               ttlarg = if lib.hasPrefix "ip6" v.type then "hoplimit" else "ttl";
             in
             {
-              description = "GRE Tunnel Interface ${n}";
-              wantedBy = [
-                "network.target"
-                (subsystemDevice n)
-              ];
-              bindsTo = deps;
-              partOf = [ "networking-scripted.target" ];
               after = [ "network-pre.target" ] ++ deps;
               before = [ "network.target" ];
-              serviceConfig.Type = "oneshot";
-              serviceConfig.RemainAfterExit = true;
+              bindsTo = deps;
+              description = "GRE Tunnel Interface ${n}";
+              partOf = [ "networking-scripted.target" ];
               path = [ pkgs.iproute2 ];
+
+              postStop = ''
+                ip link delete dev "${n}" || true
+              '';
+
               script = ''
                 # Remove Dead Interfaces
                 ip link show dev "${n}" >/dev/null 2>&1 && ip link delete dev "${n}"
@@ -808,9 +877,14 @@ let
                   ${optionalString (v.dev != null) "dev \"${v.dev}\""}
                 ip link set dev "${n}" up
               '';
-              postStop = ''
-                ip link delete dev "${n}" || true
-              '';
+
+              serviceConfig.RemainAfterExit = true;
+              serviceConfig.Type = "oneshot";
+
+              wantedBy = [
+                "network.target"
+                (subsystemDevice n)
+              ];
             }
           );
 
@@ -821,21 +895,22 @@ let
               deps = deviceDependency v.interface;
             in
             {
-              description = "VLAN Interface ${n}";
-              wantedBy = [
-                "network.target"
-                (subsystemDevice n)
-              ];
+              after = [ "network-pre.target" ] ++ deps;
+              before = [ "network.target" ];
               bindsTo = deps;
+              description = "VLAN Interface ${n}";
+
               partOf = [
                 "network.target"
                 "networking-scripted.target"
               ];
-              after = [ "network-pre.target" ] ++ deps;
-              before = [ "network.target" ];
-              serviceConfig.Type = "oneshot";
-              serviceConfig.RemainAfterExit = true;
+
               path = [ pkgs.iproute2 ];
+
+              postStop = ''
+                ip link delete dev "${n}" || true
+              '';
+
               script = ''
                 # Remove Dead Interfaces
                 ip link show dev "${n}" >/dev/null 2>&1 && ip link delete dev "${n}"
@@ -847,9 +922,14 @@ let
                 # interface will brought up later when the master interface is up.
                 ip link set dev "${n}" up || true
               '';
-              postStop = ''
-                ip link delete dev "${n}" || true
-              '';
+
+              serviceConfig.RemainAfterExit = true;
+              serviceConfig.Type = "oneshot";
+
+              wantedBy = [
+                "network.target"
+                (subsystemDevice n)
+              ];
             }
           );
 
@@ -889,26 +969,11 @@ let
       description = "NixOS scripted networking setup";
     };
 
-    services.udev.extraRules = lib.concatStringsSep "\n" (
-      [ ''KERNEL=="tun", TAG+="systemd"'' ]
-      # This creates a udev rule to start each service with a WantedBy
-      # dependency on a device unit. It's needed because if the service
-      # unit is loaded in stage 2 but its device was already up by
-      # stage 1, systemd will not automatically start it.
-      ++ lib.forEach (lib.attrNames cfg.interfaces) (
-        iface:
-        ''ACTION=="add", SUBSYSTEM=="net", KERNEL=="${iface}", ''
-        + ''ENV{SYSTEMD_WANTS}="network-addresses-${iface}.service"''
-      )
-    );
-
   };
 
 in
 
 {
-
-  meta.maintainers = with lib.maintainers; [ rnhmjoj ];
 
   config = mkMerge [
     bondWarnings
@@ -918,4 +983,6 @@ in
       networking.interfaces = genAttrs slaves (i: { });
     }
   ];
+
+  meta.maintainers = with lib.maintainers; [ rnhmjoj ];
 }

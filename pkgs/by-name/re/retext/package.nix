@@ -1,11 +1,11 @@
 {
   lib,
-  python3Packages,
-  fetchzip,
   fetchFromGitHub,
-  qt6,
-  buildEnv,
   aspellDicts,
+  buildEnv,
+  fetchzip,
+  python3Packages,
+  qt6,
   # Use `lib.collect lib.isDerivation aspellDicts;` to make all dictionaries
   # available.
   enchantAspellDicts ? with aspellDicts; [
@@ -17,7 +17,6 @@
 python3Packages.buildPythonApplication rec {
   pname = "retext";
   version = "8.1.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "retext-project";
@@ -26,12 +25,11 @@ python3Packages.buildPythonApplication rec {
     hash = "sha256-npQ1eVb2iyswbqxi262shC9u/g9oE0ofkLbisFgqQM4=";
   };
 
-  toolbarIcons = fetchzip {
-    url = "https://github.com/retext-project/retext/archive/icons.zip";
-    hash = "sha256-nqKAUg9nTzGPPxr80KTn6JX9JgCUJwpcwp8aOIlcxPY=";
-  };
-
-  build-system = with python3Packages; [ setuptools ];
+  # disable wheel check
+  postPatch = ''
+    substituteInPlace setup.py \
+      --replace-fail "self.root and self.root.endswith('/wheel')" "False"
+  '';
 
   nativeBuildInputs = [
     qt6.wrapQtAppsHook
@@ -43,29 +41,11 @@ python3Packages.buildPythonApplication rec {
     qt6.qtsvg
   ];
 
-  dependencies = with python3Packages; [
-    chardet
-    docutils
-    markdown
-    markups
-    pyenchant
-    pygments
-    pyqt6
-    pyqt6-webengine
-  ];
-
-  # disable wheel check
-  postPatch = ''
-    substituteInPlace setup.py \
-      --replace-fail "self.root and self.root.endswith('/wheel')" "False"
-  '';
-
   preConfigure = ''
     lrelease ReText/locale/*.ts
   '';
 
-  # prevent double wrapping
-  dontWrapQtApps = true;
+  doCheck = false;
 
   postInstall = ''
     makeWrapperArgs+=("''${qtWrapperArgs[@]}")
@@ -85,11 +65,31 @@ python3Packages.buildPythonApplication rec {
       --replace-fail "Icon=./ReText/icons/retext.svg" "Icon=retext"
   '';
 
-  doCheck = false;
+  build-system = with python3Packages; [ setuptools ];
+
+  dependencies = with python3Packages; [
+    chardet
+    docutils
+    markdown
+    markups
+    pyenchant
+    pygments
+    pyqt6
+    pyqt6-webengine
+  ];
+
+  # prevent double wrapping
+  dontWrapQtApps = true;
+  pyproject = true;
 
   pythonImportsCheck = [
     "ReText"
   ];
+
+  toolbarIcons = fetchzip {
+    hash = "sha256-nqKAUg9nTzGPPxr80KTn6JX9JgCUJwpcwp8aOIlcxPY=";
+    url = "https://github.com/retext-project/retext/archive/icons.zip";
+  };
 
   meta = {
     description = "Editor for Markdown and reStructuredText";

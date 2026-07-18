@@ -1,9 +1,9 @@
 {
-  appimageTools,
-  fetchurl,
-  makeDesktopItem,
   lib,
+  fetchurl,
+  appimageTools,
   libxshmfence,
+  makeDesktopItem,
   wayland,
   wayland-protocols,
 }:
@@ -17,20 +17,22 @@ let
   };
 
   desktopItem = makeDesktopItem {
-    name = "Lychee Slicer";
-    genericName = "Resin Slicer";
+    categories = [ "Graphics" ];
     comment = "All-in-one 3D slicer for Resin and Filament";
     desktopName = "LycheeSlicer";
-    noDisplay = false;
     exec = "lycheeslicer";
-    terminal = false;
-    mimeTypes = [ "model/stl" ];
-    categories = [ "Graphics" ];
+    genericName = "Resin Slicer";
+
     keywords = [
       "STL"
       "Slicer"
       "Printing"
     ];
+
+    mimeTypes = [ "model/stl" ];
+    name = "Lychee Slicer";
+    noDisplay = false;
+    terminal = false;
   };
 
 in
@@ -51,10 +53,12 @@ appimageTools.wrapType2 {
     description = "All-in-one 3D slicer for resin and FDM printers";
     homepage = "https://lychee.mango3d.io/";
     license = lib.licenses.unfree;
+
     maintainers = with lib.maintainers; [
       tarinaky
       ZachDavies
     ];
+
     platforms = [ "x86_64-linux" ];
     mainProgram = "LycheeSlicer";
   };

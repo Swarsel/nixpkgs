@@ -1,22 +1,21 @@
 {
   lib,
+  fetchFromGitHub,
   buildPythonPackage,
   environs,
-  fetchFromGitHub,
   httpx,
-  setuptools,
   pytest-asyncio,
   pytest-cov-stub,
   pytest-mock,
   pytest-vcr,
   pytestCheckHook,
+  setuptools,
   tornado,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "deezer-python";
   version = "7.3.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "browniebroke";
@@ -24,10 +23,6 @@ buildPythonPackage (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-pCrPlEbt5Mx8qGjewR5+Z/W7rFEehqd7QRrtvPGyKJk=";
   };
-
-  build-system = [ setuptools ];
-
-  dependencies = [ httpx ];
 
   nativeCheckInputs = [
     environs
@@ -39,13 +34,17 @@ buildPythonPackage (finalAttrs: {
     tornado
   ];
 
-  pythonImportsCheck = [ "deezer" ];
+  build-system = [ setuptools ];
+  dependencies = [ httpx ];
 
   disabledTests = [
     # JSONDecodeError issue
     "test_get_user_flow"
     "test_with_language_header"
   ];
+
+  pyproject = true;
+  pythonImportsCheck = [ "deezer" ];
 
   meta = {
     description = "Python wrapper around the Deezer API";

@@ -1,69 +1,63 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # build-system
-  extension-helpers,
-  numpy,
-  setuptools,
-  setuptools-scm,
-
-  # dependencies
-  astropy,
-  fsspec,
-  packaging,
-  parfive,
-  pyerfa,
-  requests,
-
   # optional-dependencies
   # asdf
   asdf,
   asdf-astropy,
-  # dask
-  dask,
-  # image
-  scipy,
-  # jpeg
-  glymur,
-  lxml,
-  # jupyter
-  itables,
-  ipywidgets,
-  # map
-  contourpy,
-  matplotlib,
-  reproject,
+  # dependencies
+  astropy,
   # net
   beautifulsoup4,
+  buildPythonPackage,
+  # map
+  contourpy,
+  # dask
+  dask,
   drms,
-  python-dateutil,
-  tqdm,
-  zeep,
-  # opencv
-  opencv-python,
-  # scikit-image
-  scikit-image,
+  # build-system
+  extension-helpers,
+  fsspec,
+  # jpeg
+  glymur,
   # timeseries
   h5netcdf,
   h5py,
-  pandas,
-
   # tests
   hypothesis,
+  ipywidgets,
+  # jupyter
+  itables,
+  lxml,
+  matplotlib,
+  numpy,
+  # opencv
+  opencv-python,
+  packaging,
+  pandas,
+  parfive,
+  pyerfa,
   pytest-astropy,
   pytest-mock,
   pytestCheckHook,
+  python-dateutil,
+  reproject,
+  requests,
   responses,
+  # scikit-image
+  scikit-image,
+  # image
+  scipy,
+  setuptools,
+  setuptools-scm,
+  tqdm,
   writableTmpDirAsHomeHook,
+  zeep,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "sunpy";
   version = "8.0.0";
-  pyproject = true;
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "sunpy";
@@ -71,6 +65,18 @@ buildPythonPackage (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-VR0FvIkskjL1rvc0xOp+DSS+ocTJAAk4NYkO8+kpqmA=";
   };
+
+  nativeCheckInputs = [
+    hypothesis
+    pytest-astropy
+    pytest-mock
+    pytestCheckHook
+    responses
+    writableTmpDirAsHomeHook
+  ]
+  ++ finalAttrs.passthru.optional-dependencies.all;
+
+  __structuredAttrs = true;
 
   build-system = [
     extension-helpers
@@ -89,104 +95,6 @@ buildPythonPackage (finalAttrs: {
     requests
   ]
   ++ parfive.optional-dependencies.ftp;
-
-  optional-dependencies = lib.fix (self: {
-    asdf = [
-      asdf
-      asdf-astropy
-    ];
-    dask = [ dask ] ++ dask.optional-dependencies.array;
-    image = [ scipy ];
-    jpeg2000 = [
-      glymur
-      lxml
-    ];
-    jupyter = [
-      itables
-      ipywidgets
-    ];
-    map = [
-      contourpy
-      matplotlib
-      # mpl-animators
-      reproject
-      scipy
-    ];
-    net = [
-      beautifulsoup4
-      drms
-      python-dateutil
-      tqdm
-      zeep
-    ];
-    opencv = [ opencv-python ];
-    scikit-image = [ scikit-image ];
-    # spice = [ spiceypy ];
-    timeseries = [
-      # cdflib
-      h5netcdf
-      h5py
-      matplotlib
-      pandas
-    ];
-    visualization = [
-      matplotlib
-      # mpl-animators
-    ];
-
-    # We can't use `with` here because "map" would still be the builtin, and
-    # we can't below because scikit-image would still be this package's argument.
-    core = lib.concatLists [
-      self.image
-      self.map
-      self.net
-      self.timeseries
-      self.visualization
-    ];
-    all = lib.concatLists [
-      self.core
-      self.asdf
-      self.jpeg2000
-      self.opencv
-      # optional-dependencies.spice
-      self.scikit-image
-    ];
-  });
-
-  nativeCheckInputs = [
-    hypothesis
-    pytest-astropy
-    pytest-mock
-    pytestCheckHook
-    responses
-    writableTmpDirAsHomeHook
-  ]
-  ++ finalAttrs.passthru.optional-dependencies.all;
-
-  disabledTests = [
-    "rst" # Docs
-    "test_print_params" # Needs to be online
-    "test_find_dependencies" # Needs cdflib
-    # Needs mpl-animators
-    "sunpy.coordinates.utils.GreatArc"
-    "test_cutout_not_on_disk_when_tracking"
-    "test_expand_list_generator_map"
-    "test_great_arc_different_observer"
-    "test_great_arc_points_differentiates"
-    "test_great_arc_wrongly_formatted_points"
-    "test_main_exclude_remote_data"
-    "test_main_include_remote_data"
-    "test_main_nonexisting_module"
-    "test_main_only_remote_data"
-    "test_main_stdlib_module"
-    "test_main_submodule_map"
-    "test_tai_seconds"
-    "test_utime"
-
-    # AssertionError: assert 2 == 1
-    # where 2 = len(WarningsChecker(record=True))
-    "test_sunpy_warnings_logging"
-  ];
 
   disabledTestPaths = [
     # Tests are very slow
@@ -216,14 +124,112 @@ buildPythonPackage (finalAttrs: {
     "sunpy/coordinates/tests/test_spice.py"
   ];
 
+  disabledTests = [
+    "rst" # Docs
+    "test_print_params" # Needs to be online
+    "test_find_dependencies" # Needs cdflib
+    # Needs mpl-animators
+    "sunpy.coordinates.utils.GreatArc"
+    "test_cutout_not_on_disk_when_tracking"
+    "test_expand_list_generator_map"
+    "test_great_arc_different_observer"
+    "test_great_arc_points_differentiates"
+    "test_great_arc_wrongly_formatted_points"
+    "test_main_exclude_remote_data"
+    "test_main_include_remote_data"
+    "test_main_nonexisting_module"
+    "test_main_only_remote_data"
+    "test_main_stdlib_module"
+    "test_main_submodule_map"
+    "test_tai_seconds"
+    "test_utime"
+
+    # AssertionError: assert 2 == 1
+    # where 2 = len(WarningsChecker(record=True))
+    "test_sunpy_warnings_logging"
+  ];
+
+  optional-dependencies = lib.fix (self: {
+    all = lib.concatLists [
+      self.core
+      self.asdf
+      self.jpeg2000
+      self.opencv
+      # optional-dependencies.spice
+      self.scikit-image
+    ];
+
+    asdf = [
+      asdf
+      asdf-astropy
+    ];
+
+    # We can't use `with` here because "map" would still be the builtin, and
+    # we can't below because scikit-image would still be this package's argument.
+    core = lib.concatLists [
+      self.image
+      self.map
+      self.net
+      self.timeseries
+      self.visualization
+    ];
+
+    dask = [ dask ] ++ dask.optional-dependencies.array;
+    image = [ scipy ];
+
+    jpeg2000 = [
+      glymur
+      lxml
+    ];
+
+    jupyter = [
+      itables
+      ipywidgets
+    ];
+
+    map = [
+      contourpy
+      matplotlib
+      # mpl-animators
+      reproject
+      scipy
+    ];
+
+    net = [
+      beautifulsoup4
+      drms
+      python-dateutil
+      tqdm
+      zeep
+    ];
+
+    opencv = [ opencv-python ];
+    scikit-image = [ scikit-image ];
+
+    # spice = [ spiceypy ];
+    timeseries = [
+      # cdflib
+      h5netcdf
+      h5py
+      matplotlib
+      pandas
+    ];
+
+    visualization = [
+      matplotlib
+      # mpl-animators
+    ];
+  });
+
+  pyproject = true;
   pythonImportsCheck = [ "sunpy" ];
 
   meta = {
     description = "Python for Solar Physics";
     homepage = "https://sunpy.org";
-    downloadPage = "https://github.com/sunpy/sunpy";
     changelog = "https://docs.sunpy.org/en/stable/whatsnew/changelog.html";
     license = lib.licenses.bsd2;
     maintainers = [ ];
+    downloadPage = "https://github.com/sunpy/sunpy";
   };
 })

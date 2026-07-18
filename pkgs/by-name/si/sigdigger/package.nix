@@ -2,15 +2,15 @@
   lib,
   stdenv,
   fetchFromGitHub,
+  fftwSinglePrec,
   libsForQt5,
+  libsndfile,
+  libxml2,
   pkg-config,
   sigutils,
-  fftwSinglePrec,
-  suwidgets,
-  suscan,
-  libsndfile,
   soapysdr-with-plugins,
-  libxml2,
+  suscan,
+  suwidgets,
   volk,
 }:
 
@@ -50,13 +50,15 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Qt-based digital signal analyzer, using Suscan core and Sigutils DSP library";
-    mainProgram = "SigDigger";
     homepage = "https://github.com/BatchDrake/SigDigger";
     license = lib.licenses.gpl3;
-    platforms = lib.platforms.all;
+
     maintainers = with lib.maintainers; [
       polygon
       oxapentane
     ];
+
+    platforms = lib.platforms.all;
+    mainProgram = "SigDigger";
   };
 })

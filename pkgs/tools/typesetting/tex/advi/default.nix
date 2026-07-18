@@ -1,12 +1,12 @@
 {
-  fetchurl,
   lib,
-  makeWrapper,
-  writeShellScriptBin,
+  fetchurl,
   ghostscriptX,
+  makeWrapper,
   ocamlPackages,
   texliveMedium,
   which,
+  writeShellScriptBin,
 }:
 
 let
@@ -35,8 +35,6 @@ ocamlPackages.buildDunePackage rec {
   pname = "advi";
   version = "2.0.0";
 
-  minimalOCamlVersion = "4.11";
-
   src = fetchurl {
     url = "http://advi.inria.fr/advi-${version}.tar.gz";
     hash = "sha256-c0DQHlvdekJyXCxmR4+Ut/njtoCzmqX6hNazNv8PpBQ=";
@@ -50,8 +48,6 @@ ocamlPackages.buildDunePackage rec {
       --replace 'gs_path=$(which gs)' 'gs_path=${ghostscriptX}/bin/gs'
   '';
 
-  duneVersion = "3";
-
   nativeBuildInputs = [
     fake-opam
     kpsexpand
@@ -59,6 +55,7 @@ ocamlPackages.buildDunePackage rec {
     texliveMedium
     which
   ];
+
   buildInputs = with ocamlPackages; [
     camlimages
     ghostscriptX
@@ -70,12 +67,14 @@ ocamlPackages.buildDunePackage rec {
     make install
   '';
 
+  duneVersion = "3";
+  minimalOCamlVersion = "4.11";
+
   # TODO: redirect /share/advi/tex/latex to tex output compatible with texlive.combine
   # (requires patching check() in advi-latex-files)
-
   meta = {
-    homepage = "http://advi.inria.fr/";
     description = "Unix-platform DVI previewer and a programmable presenter for slides written in LaTeX";
+    homepage = "http://advi.inria.fr/";
     license = lib.licenses.lgpl21Only;
     maintainers = [ lib.maintainers.xworld21 ];
   };

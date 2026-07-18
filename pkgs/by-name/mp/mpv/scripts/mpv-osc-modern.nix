@@ -1,7 +1,7 @@
 {
   lib,
-  buildLua,
   fetchFromGitHub,
+  buildLua,
   installFonts,
   makeFontsConf,
   nix-update-script,
@@ -10,7 +10,6 @@ buildLua (finalAttrs: {
   pname = "mpv-osc-modern";
   version = "1.1.1";
 
-  scriptPath = "modern.lua";
   src = fetchFromGitHub {
     owner = "maoiscat";
     repo = "mpv-osc-modern";
@@ -19,6 +18,7 @@ buildLua (finalAttrs: {
   };
 
   nativeBuildInputs = [ installFonts ];
+  scriptPath = "modern.lua";
 
   passthru.extraWrapperArgs = [
     "--set"

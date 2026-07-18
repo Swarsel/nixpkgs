@@ -2,9 +2,8 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  cmake,
-  pkg-config,
   alsa-lib,
+  cmake,
   fontconfig,
   freetype,
   libx11,
@@ -15,6 +14,7 @@
   libxinerama,
   libxrandr,
   libxtst,
+  pkg-config,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -25,9 +25,16 @@ stdenv.mkDerivation (finalAttrs: {
     owner = "BillyDM";
     repo = "CTAGDRC";
     tag = "v${finalAttrs.version}";
-    fetchSubmodules = true;
     hash = "sha256-dJAmcoDhGoVG8h1T84qYhzEuvGdBVYQUuQC8mJkD4To=";
+    fetchSubmodules = true;
   };
+
+  postPatch = ''
+    substituteInPlace CMakeLists.txt \
+          --replace-fail 'COPY_PLUGIN_AFTER_BUILD TRUE' 'COPY_PLUGIN_AFTER_BUILD FALSE'
+    substituteInPlace CMakeLists.txt \
+          --replace-fail 'include(cmake-include/CPM.cmake)' '# No CPM needed'
+  '';
 
   nativeBuildInputs = [
     cmake
@@ -59,26 +66,6 @@ stdenv.mkDerivation (finalAttrs: {
     "-ffat-lto-objects"
   ];
 
-  enableParallelBuilding = true;
-
-  postPatch = ''
-    substituteInPlace CMakeLists.txt \
-          --replace-fail 'COPY_PLUGIN_AFTER_BUILD TRUE' 'COPY_PLUGIN_AFTER_BUILD FALSE'
-    substituteInPlace CMakeLists.txt \
-          --replace-fail 'include(cmake-include/CPM.cmake)' '# No CPM needed'
-  '';
-
-  installPhase = ''
-    runHook preInstall
-
-    mkdir -p $out/bin $out/lib/clap $out/lib/vst3
-    install -Dm755 "CTAGDRC_artefacts/Release/Standalone/CTAGDRC" $out/bin/CTAGDRC
-    install -Dm644 "CTAGDRC_artefacts/Release/CLAP/CTAGDRC.clap" -t $out/lib/clap
-    cp -r "CTAGDRC_artefacts/Release/VST3/CTAGDRC.vst3" $out/lib/vst3
-
-    runHook postInstall
-  '';
-
   # JUCE dlopens these, make sure they are in rpath
   # Otherwise, segfault will happen
   env.NIX_LDFLAGS = toString [
@@ -93,13 +80,26 @@ stdenv.mkDerivation (finalAttrs: {
     "-lXdmcp"
   ];
 
+  installPhase = ''
+    runHook preInstall
+
+    mkdir -p $out/bin $out/lib/clap $out/lib/vst3
+    install -Dm755 "CTAGDRC_artefacts/Release/Standalone/CTAGDRC" $out/bin/CTAGDRC
+    install -Dm644 "CTAGDRC_artefacts/Release/CLAP/CTAGDRC.clap" -t $out/lib/clap
+    cp -r "CTAGDRC_artefacts/Release/VST3/CTAGDRC.vst3" $out/lib/vst3
+
+    runHook postInstall
+  '';
+
+  enableParallelBuilding = true;
+
   meta = {
     description = "Audio compressor plugin created with JUCE";
     homepage = "https://github.com/BillyDM/CTAGDRC";
     changelog = "https://github.com/BillyDM/CTAGDRC/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.gpl3Plus;
     maintainers = with lib.maintainers; [ magnetophon ];
-    mainProgram = "CTAGDRC";
     platforms = lib.platforms.all;
+    mainProgram = "CTAGDRC";
   };
 })

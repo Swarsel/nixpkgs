@@ -1,6 +1,6 @@
 {
-  stdenv,
   lib,
+  stdenv,
   ShellCheck,
   haskell,
   pandoc,
@@ -26,12 +26,9 @@ let
   bin = haskell.lib.compose.justStaticExecutables ShellCheck;
 
   shellcheck = stdenv.mkDerivation {
+    inherit (ShellCheck) meta src;
     pname = "shellcheck";
     version = bin.version;
-
-    inherit (ShellCheck) meta src;
-
-    nativeBuildInputs = [ pandoc ];
 
     outputs = [
       "bin"
@@ -39,6 +36,8 @@ let
       "doc"
       "out"
     ];
+
+    nativeBuildInputs = [ pandoc ];
 
     buildPhase = ''
       pandoc -s -f markdown-smart -t man shellcheck.1.md -o shellcheck.1
@@ -59,8 +58,9 @@ let
 
 in
 overrideMeta shellcheck (old: {
-  maintainers = with lib.maintainers; [ zowoq ];
   mainProgram = "shellcheck";
+  maintainers = with lib.maintainers; [ zowoq ];
+
   outputsToInstall = [
     "bin"
     "man"

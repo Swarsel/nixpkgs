@@ -1,29 +1,28 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchurl,
-  replaceVars,
-  openfortivpn,
   autoreconfHook,
-  gettext,
-  pkg-config,
   file,
+  gettext,
   glib,
+  gnome,
   gtk3,
   gtk4,
-  networkmanager,
-  ppp,
-  libsecret,
-  withGnome ? true,
-  gnome,
   libnma,
   libnma-gtk4,
+  libsecret,
+  networkmanager,
+  openfortivpn,
+  pkg-config,
+  ppp,
+  replaceVars,
+  withGnome ? true,
 }:
 
 stdenv.mkDerivation rec {
   pname = "NetworkManager-fortisslvpn";
   version = "1.4.0";
-  name = "${pname}${lib.optionalString withGnome "-gnome"}-${version}";
 
   src = fetchurl {
     url = "mirror://gnome/sources/${pname}/${lib.versions.majorMinor version}/${pname}-${version}.tar.xz";
@@ -75,21 +74,25 @@ stdenv.mkDerivation rec {
     "localstatedir=."
   ];
 
+  name = "${pname}${lib.optionalString withGnome "-gnome"}-${version}";
+
   passthru = {
-    updateScript = gnome.updateScript {
-      packageName = pname;
-      attrPath = "networkmanager-fortisslvpn";
-      versionPolicy = "odd-unstable";
-    };
     networkManagerPlugin = "VPN/nm-fortisslvpn-service.name";
+
     networkManagerTmpfilesRules = [
       "d /var/lib/NetworkManager-fortisslvpn 0700 root root -"
     ];
+
+    updateScript = gnome.updateScript {
+      attrPath = "networkmanager-fortisslvpn";
+      packageName = pname;
+      versionPolicy = "odd-unstable";
+    };
   };
 
   meta = {
-    description = "NetworkManager’s FortiSSL plugin";
     inherit (networkmanager.meta) maintainers teams platforms;
+    description = "NetworkManager’s FortiSSL plugin";
     license = lib.licenses.gpl2Plus;
   };
 }

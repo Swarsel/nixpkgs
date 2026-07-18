@@ -1,16 +1,15 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
+  buildPythonPackage,
   lxml,
+  setuptools,
   unittestCheckHook,
 }:
 
 buildPythonPackage rec {
   pname = "lxml-html-clean";
   version = "0.4.4";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "fedora-python";
@@ -19,12 +18,10 @@ buildPythonPackage rec {
     hash = "sha256-mToWK2Cc2cfBmEqcL5z61WydQUb78TWZDGGLR9kNliA=";
   };
 
-  build-system = [ setuptools ];
-
-  dependencies = [ lxml ];
-
   nativeCheckInputs = [ unittestCheckHook ];
-
+  build-system = [ setuptools ];
+  dependencies = [ lxml ];
+  pyproject = true;
   pythonImportsCheck = [ "lxml_html_clean" ];
 
   meta = {

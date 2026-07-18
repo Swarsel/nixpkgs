@@ -1,14 +1,14 @@
 {
   lib,
   stdenv,
-  pkgsCross,
+  fetchFromGitHub,
   btrfs-progs,
   buildGoModule,
-  fetchFromGitHub,
   go-md2man,
   kubernetes,
   nix-update-script,
   nixosTests,
+  pkgsCross,
   util-linux,
   btrfsSupport ? btrfs-progs != null,
   withMan ? stdenv.buildPlatform.canExecute stdenv.hostPlatform,
@@ -18,18 +18,18 @@ buildGoModule rec {
   pname = "containerd";
   version = "2.3.1";
 
-  outputs = [
-    "out"
-    "doc"
-  ]
-  ++ lib.optional withMan "man";
-
   src = fetchFromGitHub {
     owner = "containerd";
     repo = "containerd";
     tag = "v${version}";
     hash = "sha256-BpKBrMluU5MmojJp/9Og5UrkUBLHav5qx6Re1SFhlhY=";
   };
+
+  outputs = [
+    "out"
+    "doc"
+  ]
+  ++ lib.optional withMan "man";
 
   postPatch = ''
     patchShebangs .
@@ -41,8 +41,6 @@ buildGoModule rec {
       --replace-fail '-extldflags "-static"' ""
   '';
 
-  vendorHash = null;
-
   strictDeps = true;
 
   nativeBuildInputs = [
@@ -51,8 +49,7 @@ buildGoModule rec {
   ++ lib.optional withMan go-md2man;
 
   buildInputs = lib.optional btrfsSupport btrfs-progs;
-
-  tags = lib.optional (!btrfsSupport) "no_btrfs";
+  vendorHash = null;
 
   makeFlags = [
     "PREFIX=${placeholder "out"}"
@@ -61,12 +58,6 @@ buildGoModule rec {
     "REVISION=${src.rev}"
     "VERSION=v${version}"
   ];
-
-  installTargets = [
-    "install"
-    "install-doc"
-  ]
-  ++ lib.optional withMan "install-man";
 
   buildPhase = ''
     runHook preBuild
@@ -80,16 +71,24 @@ buildGoModule rec {
     runHook postInstall
   '';
 
+  installTargets = [
+    "install"
+    "install-doc"
+  ]
+  ++ lib.optional withMan "install-man";
+
+  tags = lib.optional (!btrfsSupport) "no_btrfs";
+
   passthru = {
     tests = lib.optionalAttrs stdenv.hostPlatform.isLinux (
       {
+        inherit (nixosTests) docker;
+
         cross =
           let
             systemString = if stdenv.buildPlatform.isAarch64 then "gnu64" else "aarch64-multiplatform";
           in
           pkgsCross.${systemString}.containerd;
-
-        inherit (nixosTests) docker;
       }
       // kubernetes.tests
     );
@@ -102,11 +101,13 @@ buildGoModule rec {
     homepage = "https://containerd.io/";
     changelog = "https://github.com/containerd/containerd/releases/tag/v${version}";
     license = lib.licenses.asl20;
+
     maintainers = with lib.maintainers; [
       vdemeester
       getchoo
     ];
-    mainProgram = "containerd";
+
     platforms = lib.platforms.linux;
+    mainProgram = "containerd";
   };
 }

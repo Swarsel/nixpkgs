@@ -1,9 +1,9 @@
 {
-  stdenv,
   lib,
+  stdenv,
+  makeWrapper,
   pytest,
   sage-with-env,
-  makeWrapper,
   files ? null, # "null" means run all tests
   longTests ? true, # run tests marked as "long time" (roughly doubles runtime)
   # Run as many tests as possible in approximately n seconds. This will give each
@@ -26,18 +26,22 @@ let
   testFileList = lib.concatStringsSep " " (map relpathToArg files);
 in
 stdenv.mkDerivation {
-  version = src.version;
-  pname = "sage-tests";
   inherit src;
-
+  pname = "sage-tests";
+  version = src.version;
   nativeBuildInputs = [ makeWrapper ];
+
   buildInputs = [
     pytest
     sage-with-env
   ];
 
-  dontUnpack = true;
-  configurePhase = "#do nothing";
+  env = lib.optionalAttrs stdenv.hostPlatform.isDarwin {
+    # prevent warnings about assigning LC_* to "C" resulting in broken tests
+    # when run in darwin sandbox
+    LC_ALL = "en_US.UTF-8";
+  };
+
   buildPhase = "#do nothing";
 
   installPhase = ''
@@ -49,15 +53,8 @@ stdenv.mkDerivation {
     makeWrapper "${sage-with-env}/bin/sage" "$out/bin/sage"
   '';
 
-  env = lib.optionalAttrs stdenv.hostPlatform.isDarwin {
-    # prevent warnings about assigning LC_* to "C" resulting in broken tests
-    # when run in darwin sandbox
-    LC_ALL = "en_US.UTF-8";
-  };
-
-  # allow singular tests to pass in darwin sandbox
-  __darwinAllowLocalNetworking = true;
   doInstallCheck = true;
+
   installCheckPhase = ''
     export HOME="$TMPDIR/sage-home"
     mkdir -p "$HOME"
@@ -69,4 +66,9 @@ stdenv.mkDerivation {
     echo "Running sage tests with arguments ${timeSpecifier} ${patienceSpecifier} ${testArgs}"
     "sage" -t --timeout=0 --nthreads "$NIX_BUILD_CORES" --optional=sage ${timeSpecifier} ${patienceSpecifier} ${testArgs}
   '';
+
+  # allow singular tests to pass in darwin sandbox
+  __darwinAllowLocalNetworking = true;
+  configurePhase = "#do nothing";
+  dontUnpack = true;
 }

@@ -20,8 +20,8 @@ stdenv.mkDerivation (finalAttrs: {
   meta = {
     description = "Colourful, human-friendly hexdump tool";
     homepage = "https://github.com/FireyFly/hexd";
-    maintainers = [ lib.maintainers.FireyFly ];
     license = lib.licenses.mit;
+    maintainers = [ lib.maintainers.FireyFly ];
     platforms = lib.platforms.unix;
     mainProgram = "hexd";
   };

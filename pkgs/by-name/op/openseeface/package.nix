@@ -1,9 +1,9 @@
 {
   lib,
-  stdenvNoCC,
-  python3,
   fetchFromGitHub,
   makeWrapper,
+  python3,
+  stdenvNoCC,
   enableVisualization ? false,
 }:
 
@@ -46,7 +46,7 @@ stdenvNoCC.mkDerivation {
     description = "Robust realtime face and facial landmark tracking on CPU with Unity integration";
     homepage = "https://github.com/emilianavt/OpenSeeFace";
     license = lib.licenses.bsd2;
-    mainProgram = "facetracker";
     maintainers = with lib.maintainers; [ tomasajt ];
+    mainProgram = "facetracker";
   };
 }

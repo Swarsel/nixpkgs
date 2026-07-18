@@ -2,8 +2,8 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  makeWrapper,
   ghostscript,
+  makeWrapper,
   netpbm,
   perl,
 }:
@@ -20,13 +20,19 @@ stdenv.mkDerivation (finalAttrs: {
     sha256 = "sha256-xylIU2GY/1t9mA8zJzEjHwAIlvVxZmUAUdQ/IXEy+Wg=";
   };
 
+  nativeBuildInputs = [ makeWrapper ];
+
   buildInputs = [
     ghostscript
     netpbm
     perl
   ];
 
-  nativeBuildInputs = [ makeWrapper ];
+  postInstall = ''
+    for p in $out/bin/{latex2html,pstoimg}; do \
+      wrapProgram $p --add-flags '--tmp="''${TMPDIR:-/tmp}"'
+    done
+  '';
 
   configurePhase = ''
     runHook preConfigure
@@ -39,14 +45,9 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postConfigure
   '';
 
-  postInstall = ''
-    for p in $out/bin/{latex2html,pstoimg}; do \
-      wrapProgram $p --add-flags '--tmp="''${TMPDIR:-/tmp}"'
-    done
-  '';
-
   meta = {
     description = "LaTeX-to-HTML translator";
+
     longDescription = ''
       A Perl program that translates LaTeX into HTML (HyperText Markup
       Language), optionally creating separate HTML files corresponding to each
@@ -58,9 +59,8 @@ stdenv.mkDerivation (finalAttrs: {
     '';
 
     homepage = "https://www.ctan.org/pkg/latex2html";
-
     license = lib.licenses.gpl2Only;
-    platforms = with lib.platforms; linux ++ darwin;
     maintainers = with lib.maintainers; [ yurrriq ];
+    platforms = with lib.platforms; linux ++ darwin;
   };
 })

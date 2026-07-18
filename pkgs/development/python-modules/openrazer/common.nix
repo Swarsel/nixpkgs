@@ -1,7 +1,6 @@
 { lib, fetchFromGitHub }:
 rec {
   version = "3.12.4";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "openrazer";
@@ -9,6 +8,8 @@ rec {
     tag = "v${version}";
     hash = "sha256-WgDYs0ehnzWlX/wvfur0UhFLbZv7jZ6FMybqDaFDuLg=";
   };
+
+  pyproject = true;
 
   meta = {
     homepage = "https://openrazer.github.io/";

@@ -1,26 +1,24 @@
 {
-  fetchurl,
   lib,
+  stdenv,
+  fetchurl,
+  autoreconfHook,
+  gettext,
+  gnutls,
   libargon2,
   libfilezilla,
+  libiconv,
+  libxcrypt,
   meson,
   nettle,
   ninja,
   pkg-config,
-  stdenv,
   testers,
-
-  autoreconfHook,
-  gettext,
-  gnutls,
-  libiconv,
-  libxcrypt,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
   pname = "fzssh";
   version = "1.2.1";
-  __structuredAttrs = true;
 
   src = fetchurl {
     # Upstream download link was made unstable on purpose
@@ -43,6 +41,8 @@ stdenv.mkDerivation (finalAttrs: {
     nettle
   ];
 
+  __structuredAttrs = true;
+
   passthru.tests = {
     pkg-config = testers.hasPkgConfigModules {
       package = finalAttrs.finalPackage;
@@ -51,8 +51,8 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   meta = {
-    homepage = "https://lib.filezilla-project.org/";
     description = "SSH/SFTP library based on libfilezilla";
+    homepage = "https://lib.filezilla-project.org/";
     license = lib.licenses.gpl3Plus;
     maintainers = [ ];
     pkgConfigModules = [ "libfzssh-client" ];

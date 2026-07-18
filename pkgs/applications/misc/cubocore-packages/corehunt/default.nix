@@ -2,11 +2,11 @@
   lib,
   stdenv,
   fetchFromGitLab,
-  qt6,
   cmake,
-  ninja,
   libcprime,
   libcsys,
+  ninja,
+  qt6,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -34,10 +34,10 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "File finder utility from the C Suite";
-    mainProgram = "corehunt";
     homepage = "https://gitlab.com/cubocore/coreapps/corehunt";
     license = lib.licenses.gpl3Only;
     maintainers = [ ];
     platforms = lib.platforms.linux;
+    mainProgram = "corehunt";
   };
 })

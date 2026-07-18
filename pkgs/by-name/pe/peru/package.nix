@@ -7,7 +7,6 @@
 python3Packages.buildPythonApplication (finalAttrs: {
   pname = "peru";
   version = "1.3.5";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "buildinspace";
@@ -16,6 +15,8 @@ python3Packages.buildPythonApplication (finalAttrs: {
     hash = "sha256-RFf4JWjt5FqM3At0boBNmg4GStLehyxuueA8hCc0sxg=";
   };
 
+  # No tests in archive
+  doCheck = false;
   build-system = with python3Packages; [ hatchling ];
 
   dependencies = with python3Packages; [
@@ -23,9 +24,7 @@ python3Packages.buildPythonApplication (finalAttrs: {
     docopt
   ];
 
-  # No tests in archive
-  doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "peru" ];
 
   meta = {

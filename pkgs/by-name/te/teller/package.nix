@@ -1,11 +1,11 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
   nix-update-script,
-  protobuf,
-  pkg-config,
   openssl,
+  pkg-config,
+  protobuf,
+  rustPlatform,
 }:
 let
   pname = "teller";
@@ -22,8 +22,6 @@ rustPlatform.buildRustPackage {
     hash = "sha256-CI74nMMTIPwjJfy7ASR19V6EbYZ62NoAOxlP3Xt2BuI=";
   };
 
-  cargoHash = "sha256-PSa4EEDEFdFpfYPG5M5wMwfq3WSqMw5d8a+mKgBzCFw=";
-
   nativeBuildInputs = [
     protobuf
     pkg-config
@@ -33,9 +31,10 @@ rustPlatform.buildRustPackage {
     openssl
   ];
 
+  cargoHash = "sha256-PSa4EEDEFdFpfYPG5M5wMwfq3WSqMw5d8a+mKgBzCFw=";
   doCheck = false;
-
   doInstallCheck = true;
+
   installCheckPhase = ''
     $out/bin/teller --version 2>&1 | grep ${version};
   '';
@@ -43,13 +42,15 @@ rustPlatform.buildRustPackage {
   passthru.updateScript = nix-update-script { };
 
   meta = {
-    homepage = "https://github.com/tellerops/teller/";
     description = "Cloud native secrets management for developers";
-    mainProgram = "teller";
+    homepage = "https://github.com/tellerops/teller/";
     license = lib.licenses.asl20;
+
     maintainers = with lib.maintainers; [
       cameronraysmith
       wahtique
     ];
+
+    mainProgram = "teller";
   };
 }

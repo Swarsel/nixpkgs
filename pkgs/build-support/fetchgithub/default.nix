@@ -1,8 +1,8 @@
 {
   lib,
-  repoRevToNameMaybe,
   fetchgit,
   fetchzip,
+  repoRevToNameMaybe,
 }@args:
 let
   # Here defines fetchFromGitHub arguments that determines useFetchGit,
@@ -11,8 +11,8 @@ let
   # `defaultFetchGitArgs` attributes should lead to `useFetchGit = false`.
   useFetchGitArgsDefault = {
     deepClone = false;
-    fetchSubmodules = false; # This differs from fetchgit's default
     fetchLFS = false;
+    fetchSubmodules = false; # This differs from fetchgit's default
     forceFetchGit = false;
     leaveDotGit = null;
     postCheckout = "";
@@ -46,16 +46,16 @@ decorate (
   {
     owner,
     repo,
-    tag ? null,
-    rev ? null,
     functionName ? "fetchFromGitHub",
+    githubBase ? "github.com",
+    meta ? { },
+    passthru ? { },
     # TODO(@ShamrockLee): Add back after reconstruction with lib.extendMkDerivation
     # name ? repoRevToNameMaybe finalAttrs.repo (lib.revOrTag finalAttrs.revCustom finalAttrs.tag) "github",
     private ? false,
-    githubBase ? "github.com",
+    rev ? null,
+    tag ? null,
     varPrefix ? null,
-    passthru ? { },
-    meta ? { },
     ... # For hash agility and additional fetchgit arguments
   }@args:
 
@@ -89,19 +89,20 @@ decorate (
       meta
       // {
         homepage = meta.homepage or baseUrl;
+
         identifiers = {
           purlParts =
             if githubBase == "github.com" then
               {
-                type = "github";
                 # https://github.com/package-url/purl-spec/blob/18fd3e395dda53c00bc8b11fe481666dc7b3807a/types-doc/github-definition.md
                 spec = "${owner}/${repo}@${(lib.revOrTag rev tag)}";
+                type = "github";
               }
             else
               {
-                type = "generic";
                 # https://github.com/package-url/purl-spec/blob/18fd3e395dda53c00bc8b11fe481666dc7b3807a/types-doc/generic-definition.md
                 spec = "${repo}?vcs_url=https://${githubBase}/${owner}/${repo}@${(lib.revOrTag rev tag)}";
+                type = "generic";
               };
         }
         // meta.identifiers or { };
@@ -128,6 +129,11 @@ decorate (
     # is more stable in that case.
     fetcher = if useFetchGit then fetchgit else fetchzip;
     privateAttrs = lib.optionalAttrs private {
+      netrcImpureEnvVars = [
+        "${varBase}USERNAME"
+        "${varBase}PASSWORD"
+      ];
+
       netrcPhase =
         # When using private repos:
         # - Fetching with git works using https://github.com but not with the GitHub API endpoint
@@ -146,10 +152,6 @@ decorate (
                   password ''$${varBase}PASSWORD
           EOF
         '';
-      netrcImpureEnvVars = [
-        "${varBase}USERNAME"
-        "${varBase}PASSWORD"
-      ];
     };
 
     gitRepoUrl = "${baseUrl}.git";
@@ -162,8 +164,8 @@ decorate (
           useFetchGitArgsWDPassing
           // {
             inherit tag rev;
-            url = gitRepoUrl;
             inherit passthru;
+
             derivationArgs = {
               inherit
                 githubBase
@@ -171,12 +173,32 @@ decorate (
                 repo
                 ;
             };
+
+            url = gitRepoUrl;
           }
         else
           let
             revWithTag = finalAttrs.rev;
           in
           {
+            derivationArgs = {
+              inherit
+                githubBase
+                owner
+                repo
+                tag
+                ;
+
+              rev = fetchgit.getRevWithTag {
+                inherit (finalAttrs) tag;
+                rev = finalAttrs.revCustom;
+              };
+
+              revCustom = rev;
+            };
+
+            extension = "tar.gz";
+
             # Use the API endpoint for private repos, as the archive URI doesn't
             # support access with GitHub's fine-grained access tokens.
             #
@@ -193,20 +215,7 @@ decorate (
                   "https://${githubBase}/api/v3${endpoint}"
               else
                 "${baseUrl}/archive/${revWithTag}.tar.gz";
-            extension = "tar.gz";
-            derivationArgs = {
-              inherit
-                githubBase
-                owner
-                repo
-                tag
-                ;
-              rev = fetchgit.getRevWithTag {
-                inherit (finalAttrs) tag;
-                rev = finalAttrs.revCustom;
-              };
-              revCustom = rev;
-            };
+
             passthru = {
               inherit gitRepoUrl;
             }
@@ -219,6 +228,7 @@ decorate (
         name =
           args.name
             or (repoRevToNameMaybe finalAttrs.repo (lib.revOrTag finalAttrs.revCustom finalAttrs.tag) "github");
+
         meta = newMeta;
       };
   in

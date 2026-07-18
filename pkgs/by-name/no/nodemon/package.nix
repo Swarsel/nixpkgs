@@ -1,7 +1,7 @@
 {
   lib,
-  buildNpmPackage,
   fetchFromGitHub,
+  buildNpmPackage,
   nix-update-script,
 }:
 
@@ -17,16 +17,14 @@ buildNpmPackage rec {
   };
 
   npmDepsHash = "sha256-XjbzoF83qhdvtKt22Onrm0hH+Bjh724Zm+qVoZsY/pM=";
-
   dontNpmBuild = true;
-
   passthru.updateScript = nix-update-script { };
 
   meta = {
     description = "Simple monitor script for use during development of a Node.js app";
-    mainProgram = "nodemon";
     homepage = "https://nodemon.io";
     license = lib.licenses.mit;
     maintainers = [ ];
+    mainProgram = "nodemon";
   };
 }

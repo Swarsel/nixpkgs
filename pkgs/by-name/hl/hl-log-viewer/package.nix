@@ -1,10 +1,10 @@
 {
   lib,
   stdenv,
-  rustPlatform,
-  installShellFiles,
   fetchFromGitHub,
+  installShellFiles,
   nix-update-script,
+  rustPlatform,
   versionCheckHook,
 }:
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -18,9 +18,13 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-Azt1jfBZP7N5ZAgdY2Hww6nt5ty2VEKZpaHZDodP/zM=";
   };
 
+  nativeBuildInputs = [ installShellFiles ];
   cargoHash = "sha256-RXIXoF3z2Zleje1OakHXQxPmNkRcqHjINRZYqMXS8U0=";
 
-  nativeBuildInputs = [ installShellFiles ];
+  checkFlags = [
+    # test broken on zero-width TTY, see https://github.com/pamburus/hl/issues/1140
+    "--skip=help::tests::test_formatter_new"
+  ];
 
   postInstall = lib.optionalString (stdenv.buildPlatform.canExecute stdenv.hostPlatform) ''
     installShellCompletion --cmd hl \
@@ -31,17 +35,13 @@ rustPlatform.buildRustPackage (finalAttrs: {
     installManPage hl.1
   '';
 
-  checkFlags = [
-    # test broken on zero-width TTY, see https://github.com/pamburus/hl/issues/1140
-    "--skip=help::tests::test_formatter_new"
-  ];
-
   doInstallCheck = true;
+
   nativeInstallCheckInputs = [
     versionCheckHook
   ];
-  versionCheckProgram = "${placeholder "out"}/bin/hl";
 
+  versionCheckProgram = "${placeholder "out"}/bin/hl";
   passthru.updateScript = nix-update-script { };
 
   meta = {
@@ -49,7 +49,7 @@ rustPlatform.buildRustPackage (finalAttrs: {
     homepage = "https://github.com/pamburus/hl";
     changelog = "https://github.com/pamburus/hl/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.mit;
-    mainProgram = "hl";
     maintainers = with lib.maintainers; [ petrzjunior ];
+    mainProgram = "hl";
   };
 })

@@ -1,11 +1,11 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  poetry-core,
+  buildPythonPackage,
   cbor2,
   crcmod,
   eval-type-backport,
+  poetry-core,
   pydantic,
   pytestCheckHook,
 }:
@@ -13,7 +13,6 @@
 buildPythonPackage rec {
   pname = "smp";
   version = "4.1.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "JPHutchins";
@@ -27,6 +26,10 @@ buildPythonPackage rec {
       --replace-fail 'version = "0"' 'version = "${version}"'
   '';
 
+  nativeCheckInputs = [
+    pytestCheckHook
+  ];
+
   build-system = [
     poetry-core
   ];
@@ -38,9 +41,7 @@ buildPythonPackage rec {
     pydantic
   ];
 
-  nativeCheckInputs = [
-    pytestCheckHook
-  ];
+  pyproject = true;
 
   pythonImportsCheck = [
     "smp"

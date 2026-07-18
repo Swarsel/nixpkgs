@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   testers,
 }:
 
@@ -15,8 +15,6 @@ buildGoModule (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-HgpNa1XCAaSGfzc6rMFE4NukL+WxRYxA7il2P/5DI8Q=";
   };
-
-  modRoot = "v3";
 
   vendorHash = "sha256-NqqW5IHo15Dv1jmYSfbPtkApYIhNoDaJTxwBGwDPDjc=";
 
@@ -32,17 +30,21 @@ buildGoModule (finalAttrs: {
     "-X=main.version=${finalAttrs.version}"
   ];
 
+  modRoot = "v3";
+
   passthru.tests.version = testers.testVersion {
     package = finalAttrs.finalPackage;
   };
 
   meta = {
     description = "X.509 Certificate Linter focused on Web PKI standards and requirements";
+
     longDescription = ''
       ZLint is a X.509 certificate linter written in Go that checks for
       consistency with standards (e.g. RFC 5280) and other relevant PKI
       requirements (e.g. CA/Browser Forum Baseline Requirements).
     '';
+
     homepage = "https://github.com/zmap/zlint";
     changelog = "https://github.com/zmap/zlint/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.asl20;

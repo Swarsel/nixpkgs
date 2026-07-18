@@ -2,9 +2,9 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  rustPlatform,
-  pkg-config,
   openssl,
+  pkg-config,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -18,23 +18,11 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-wqZh+JQDUbH7ZYT4vNzSI3JwRRYDgS5/RjrDaKCxgLc=";
   };
 
-  cargoHash = "sha256-ZLgHDJ4kP+Ohw1OgC/0wHAPnTEc5bN0JQMmgms1Gih4=";
-
   nativeBuildInputs = lib.optionals stdenv.hostPlatform.isLinux [ pkg-config ];
-
   buildInputs = lib.optionals stdenv.hostPlatform.isLinux [ openssl ];
-
-  buildFeatures = [
-    "trust-dns"
-    "local-tunnel"
-    "local-socks4"
-    "local-redir"
-    "local-dns"
-    "local-tun"
-    "aead-cipher-extra"
-    "aead-cipher-2022"
-    "aead-cipher-2022-extra"
-  ];
+  cargoHash = "sha256-ZLgHDJ4kP+Ohw1OgC/0wHAPnTEc5bN0JQMmgms1Gih4=";
+  # timeouts in sandbox
+  doCheck = false;
 
   # all of these rely on connecting to www.example.com:80
   checkFlags = [
@@ -49,8 +37,17 @@ rustPlatform.buildRustPackage (finalAttrs: {
     "--skip=trust_dns_resolver"
   ];
 
-  # timeouts in sandbox
-  doCheck = false;
+  buildFeatures = [
+    "trust-dns"
+    "local-tunnel"
+    "local-socks4"
+    "local-redir"
+    "local-dns"
+    "local-tun"
+    "aead-cipher-extra"
+    "aead-cipher-2022"
+    "aead-cipher-2022-extra"
+  ];
 
   meta = {
     description = "Rust port of Shadowsocks";

@@ -1,13 +1,13 @@
 {
-  runtimeShell,
   lib,
-  writeScript,
   bundix,
   bundler,
   coreutils,
   git,
   nix,
   nixfmt,
+  runtimeShell,
+  writeScript,
 }:
 
 attrPath:

@@ -2,23 +2,23 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  cmake,
-  pkg-config,
   alsa-lib,
+  cmake,
   flatbuffers,
   libjpeg_turbo,
+  linalg,
+  lunasvg,
   mbedtls,
   mdns,
-  pipewire,
-  qt6Packages,
-  qmqtt,
-  xz,
-  sdbus-cpp_2,
-  plutovg,
-  lunasvg,
   nanopb,
-  linalg,
+  pipewire,
+  pkg-config,
+  plutovg,
+  qmqtt,
+  qt6Packages,
+  sdbus-cpp_2,
   stb,
+  xz,
 }:
 
 let
@@ -38,12 +38,6 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-CSggawgUPkpeADc8VXs5FA+ubZAtrtTu0qYgIWA0V/c=";
   };
 
-  nativeBuildInputs = [
-    cmake
-    pkg-config
-    qt6Packages.wrapQtAppsHook
-  ];
-
   patches = [
     # Allow completely unvendoring hyperhdr
     # This can be removed on the next hyperhdr release
@@ -55,15 +49,10 @@ stdenv.mkDerivation (finalAttrs: {
       --replace-fail "libasound.so.2" "${lib.getLib alsa-lib}/lib/libasound.so.2"
   '';
 
-  cmakeFlags = [
-    "-DPLATFORM=linux"
-    (cmakeBool "USE_SYSTEM_FLATBUFFERS_LIBS" true)
-    (cmakeBool "USE_SYSTEM_LUNASVG_LIBS" true)
-    (cmakeBool "USE_SYSTEM_MBEDTLS_LIBS" true)
-    (cmakeBool "USE_SYSTEM_MQTT_LIBS" true)
-    (cmakeBool "USE_SYSTEM_NANOPB_LIBS" true)
-    (cmakeBool "USE_SYSTEM_SDBUS_CPP_LIBS" true)
-    (cmakeBool "USE_SYSTEM_STB_LIBS" true)
+  nativeBuildInputs = [
+    cmake
+    pkg-config
+    qt6Packages.wrapQtAppsHook
   ];
 
   buildInputs = [
@@ -85,16 +74,29 @@ stdenv.mkDerivation (finalAttrs: {
     xz
   ];
 
+  cmakeFlags = [
+    "-DPLATFORM=linux"
+    (cmakeBool "USE_SYSTEM_FLATBUFFERS_LIBS" true)
+    (cmakeBool "USE_SYSTEM_LUNASVG_LIBS" true)
+    (cmakeBool "USE_SYSTEM_MBEDTLS_LIBS" true)
+    (cmakeBool "USE_SYSTEM_MQTT_LIBS" true)
+    (cmakeBool "USE_SYSTEM_NANOPB_LIBS" true)
+    (cmakeBool "USE_SYSTEM_SDBUS_CPP_LIBS" true)
+    (cmakeBool "USE_SYSTEM_STB_LIBS" true)
+  ];
+
   meta = {
     description = "Highly optimized open source ambient lighting implementation based on modern digital video and audio stream analysis for Windows, macOS and Linux (x86 and Raspberry Pi / ARM";
     homepage = "https://github.com/awawa-dev/HyperHDR";
     changelog = "https://github.com/awawa-dev/HyperHDR/blob/${finalAttrs.src.rev}/CHANGELOG.md";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       hexa
       eymeric
     ];
-    mainProgram = "hyperhdr";
+
     platforms = lib.platforms.linux;
+    mainProgram = "hyperhdr";
   };
 })

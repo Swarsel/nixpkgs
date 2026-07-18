@@ -7,7 +7,6 @@
 python3.pkgs.buildPythonApplication (finalAttrs: {
   pname = "pre2k";
   version = "3.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "garrettfoster13";
@@ -15,14 +14,6 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     tag = finalAttrs.version;
     hash = "sha256-z1ttuRos7x/zdWiYYozxWzRarFExd4W5rUYAEiUMugU=";
   };
-
-  pythonRelaxDeps = [
-    "impacket"
-    "ldap3"
-    "pyasn1"
-    "rich"
-    "typer"
-  ];
 
   build-system = with python3.pkgs; [ poetry-core ];
 
@@ -34,7 +25,16 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     typer
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "pre2k" ];
+
+  pythonRelaxDeps = [
+    "impacket"
+    "ldap3"
+    "pyasn1"
+    "rich"
+    "typer"
+  ];
 
   meta = {
     description = "Tool to query for the existence of pre-windows 2000 computer objects";

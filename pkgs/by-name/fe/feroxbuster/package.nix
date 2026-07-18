@@ -2,10 +2,10 @@
   lib,
   stdenv,
   fetchFromGitHub,
+  nix-update-script,
   openssl,
   pkg-config,
   rustPlatform,
-  nix-update-script,
   versionCheckHook,
 }:
 
@@ -20,22 +20,17 @@ rustPlatform.buildRustPackage rec {
     hash = "sha256-x0oNgDEuRIHDUUSAiIgcjmm6NadyBFuvz/hOcqquM3g=";
   };
 
-  cargoHash = "sha256-kWRODW1BsnifEqGZj8jK5tUK/5zK1AIRSq3JSo6YmkI=";
-
-  env.OPENSSL_NO_VENDOR = true;
-
   nativeBuildInputs = [
     pkg-config
     versionCheckHook
   ];
 
   buildInputs = [ openssl ];
-
+  cargoHash = "sha256-kWRODW1BsnifEqGZj8jK5tUK/5zK1AIRSq3JSo6YmkI=";
+  env.OPENSSL_NO_VENDOR = true;
   # Tests require network access
   doCheck = false;
-
   doInstallCheck = true;
-
   passthru.updateScript = nix-update-script { };
 
   meta = {

@@ -13,28 +13,26 @@ let
   buildMypyBoto3Package =
     serviceName: version: hash:
     buildPythonPackage {
-      pname = "mypy-boto3-${serviceName}";
       inherit version;
-      pyproject = true;
+      pname = "mypy-boto3-${serviceName}";
 
       src = fetchPypi {
-        pname = "mypy_boto3_${toUnderscore serviceName}";
         inherit version hash;
+        pname = "mypy_boto3_${toUnderscore serviceName}";
       };
-
-      build-system = [ setuptools ];
-
-      dependencies = [ boto3 ] ++ lib.optionals (pythonOlder "3.12") [ typing-extensions ];
 
       # Project has no tests
       doCheck = false;
-
+      build-system = [ setuptools ];
+      dependencies = [ boto3 ] ++ lib.optionals (pythonOlder "3.12") [ typing-extensions ];
+      pyproject = true;
       pythonImportsCheck = [ "mypy_boto3_${toUnderscore serviceName}" ];
 
       meta = {
         description = "Type annotations for boto3 ${serviceName}";
         homepage = "https://github.com/youtype/mypy_boto3_builder";
         license = with lib.licenses; [ mit ];
+
         maintainers = with lib.maintainers; [
           fab
         ];
@@ -573,6 +571,7 @@ in
   mypy-boto3-glue =
     buildMypyBoto3Package "glue" "1.43.37"
       "sha256-sXLxhWKQbaIyTv2/a3GWyyboYabCGcYfSD7AOtr7n2Y=";
+
   mypy-boto3-grafana =
     buildMypyBoto3Package "grafana" "1.43.11"
       "sha256-XJOSLyL1+uEweZ9zER7IhH3DFLaLtpJKvuRIn8Ri+P4=";

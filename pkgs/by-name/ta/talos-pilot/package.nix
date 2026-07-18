@@ -1,16 +1,15 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
-  protobuf,
   nix-update-script,
+  protobuf,
+  rustPlatform,
   testers,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
   pname = "talos-pilot";
   version = "0.1.9";
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "Handfish";
@@ -19,16 +18,19 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-OZF74efMWQkZgSbOnzyygzt4pRADY1liWVpvnzWns8Y=";
   };
 
-  cargoHash = "sha256-loCYAgZhNtYs8aBbOJMLkS9i0XglOn6BrodLQROPMPQ=";
-
   nativeBuildInputs = [
     protobuf
   ];
+
+  cargoHash = "sha256-loCYAgZhNtYs8aBbOJMLkS9i0XglOn6BrodLQROPMPQ=";
+  __structuredAttrs = true;
+
   passthru = {
-    updateScript = nix-update-script { };
     tests.version = testers.testVersion {
       package = finalAttrs.finalPackage;
     };
+
+    updateScript = nix-update-script { };
   };
 
   meta = {

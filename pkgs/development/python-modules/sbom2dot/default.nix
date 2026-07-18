@@ -1,15 +1,14 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
+  buildPythonPackage,
   lib4sbom,
+  setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "sbom2dot";
   version = "0.3.2";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "anthonyharrison";
@@ -26,16 +25,18 @@ buildPythonPackage rec {
     lib4sbom
   ];
 
+  pyproject = true;
+
   pythonImportsCheck = [
     "sbom2dot"
   ];
 
   meta = {
-    changelog = "https://github.com/anthonyharrison/sbom2dot/releases/tag/${src.tag}";
     description = "Create a dependency graph of the components within a SBOM";
     homepage = "https://github.com/anthonyharrison/sbom2dot";
+    changelog = "https://github.com/anthonyharrison/sbom2dot/releases/tag/${src.tag}";
     license = lib.licenses.asl20;
-    mainProgram = "sbom2dot";
     maintainers = [ ];
+    mainProgram = "sbom2dot";
   };
 }

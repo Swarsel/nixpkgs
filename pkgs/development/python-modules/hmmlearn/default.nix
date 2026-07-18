@@ -1,19 +1,18 @@
 {
   lib,
-  fetchPypi,
   buildPythonPackage,
-  numpy,
-  scikit-learn,
-  pybind11,
-  setuptools-scm,
   cython,
+  fetchPypi,
+  numpy,
+  pybind11,
   pytestCheckHook,
+  scikit-learn,
+  setuptools-scm,
 }:
 
 buildPythonPackage rec {
   pname = "hmmlearn";
   version = "0.3.3";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
@@ -32,13 +31,14 @@ buildPythonPackage rec {
   ];
 
   nativeCheckInputs = [ pytestCheckHook ];
-
-  pythonImportsCheck = [ "hmmlearn" ];
+  format = "setuptools";
 
   pytestFlags = [
     "--pyargs"
     "hmmlearn"
   ];
+
+  pythonImportsCheck = [ "hmmlearn" ];
 
   meta = {
     description = "Hidden Markov Models in Python with scikit-learn like API";

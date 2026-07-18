@@ -18,7 +18,6 @@
 buildPythonPackage rec {
   pname = "ipyparallel";
   version = "9.2.0";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
@@ -33,6 +32,8 @@ buildPythonPackage rec {
       --replace '"jupyterlab==4.*",' ""
   '';
 
+  # Requires access to cluster
+  doCheck = false;
   build-system = [ hatchling ];
 
   dependencies = [
@@ -48,9 +49,7 @@ buildPythonPackage rec {
     traitlets
   ];
 
-  # Requires access to cluster
-  doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "ipyparallel" ];
 
   meta = {

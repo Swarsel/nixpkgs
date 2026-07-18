@@ -1,14 +1,13 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  pytestCheckHook,
-
+  buildPythonPackage,
   pystac,
   pytest-benchmark,
   pytest-console-scripts,
   pytest-mock,
   pytest-recording,
+  pytestCheckHook,
   python-dateutil,
   requests,
   requests-mock,
@@ -18,7 +17,6 @@
 buildPythonPackage rec {
   pname = "pystac-client";
   version = "0.9.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "stac-utils";
@@ -26,14 +24,6 @@ buildPythonPackage rec {
     tag = "v${version}";
     hash = "sha256-+DOWf1ZAwylicdSuOBNivi0Z7DxaymZF756X7fogAjc=";
   };
-
-  build-system = [ setuptools ];
-
-  dependencies = [
-    pystac
-    python-dateutil
-    requests
-  ];
 
   nativeCheckInputs = [
     pytest-benchmark
@@ -44,8 +34,12 @@ buildPythonPackage rec {
     requests-mock
   ];
 
-  pytestFlags = [
-    "--benchmark-disable"
+  build-system = [ setuptools ];
+
+  dependencies = [
+    pystac
+    python-dateutil
+    requests
   ];
 
   disabledTestMarks = [
@@ -57,6 +51,12 @@ buildPythonPackage rec {
   disabledTests = [
     "test_filter_conversion_to_cql2_json"
     "test_filter_conversion_to_cql2_text"
+  ];
+
+  pyproject = true;
+
+  pytestFlags = [
+    "--benchmark-disable"
   ];
 
   pythonImportsCheck = [ "pystac_client" ];

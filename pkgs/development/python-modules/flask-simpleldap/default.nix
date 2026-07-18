@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   flask,
   python-ldap,
   setuptools,
@@ -10,7 +10,6 @@
 buildPythonPackage rec {
   pname = "flask-simpleldap";
   version = "2.0.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "alexferl";
@@ -22,11 +21,13 @@ buildPythonPackage rec {
   build-system = [
     setuptools
   ];
+
   dependencies = [
     flask
     python-ldap
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "flask_simpleldap" ];
 
   meta = {

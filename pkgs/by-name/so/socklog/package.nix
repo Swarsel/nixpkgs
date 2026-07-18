@@ -13,8 +13,6 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-e8ej+ejhWn55EoHAV0GkwM8N6G50hw/SxvTX55QrleY=";
   };
 
-  sourceRoot = "admin/socklog-${finalAttrs.version}";
-
   outputs = [
     "out"
     "man"
@@ -26,12 +24,9 @@ stdenv.mkDerivation (finalAttrs: {
     echo "int main() { return 0; }" >src/chkshsgr.c
   '';
 
-  configurePhase = ''
-    echo "$NIX_CC/bin/cc $NIX_CFLAGS_COMPILE"   >src/conf-cc
-    echo "$NIX_CC/bin/cc -s"                    >src/conf-ld
-  '';
-
   buildPhase = "package/compile";
+  doCheck = true;
+  checkPhase = "package/check";
 
   installPhase = ''
     mkdir -p $out/bin
@@ -46,18 +41,21 @@ stdenv.mkDerivation (finalAttrs: {
     mv doc/*.html $doc/share/doc/socklog/html/
   '';
 
-  checkPhase = "package/check";
-
-  doCheck = true;
-
   # Needed for tests
   __darwinAllowLocalNetworking = true;
+
+  configurePhase = ''
+    echo "$NIX_CC/bin/cc $NIX_CFLAGS_COMPILE"   >src/conf-cc
+    echo "$NIX_CC/bin/cc -s"                    >src/conf-ld
+  '';
+
+  sourceRoot = "admin/socklog-${finalAttrs.version}";
 
   meta = {
     description = "System and kernel logging services";
     homepage = "https://smarden.org/socklog/";
     license = lib.licenses.bsd3;
-    platforms = lib.platforms.unix;
     maintainers = [ ];
+    platforms = lib.platforms.unix;
   };
 })

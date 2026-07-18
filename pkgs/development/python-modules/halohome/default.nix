@@ -1,17 +1,16 @@
 {
   lib,
+  fetchFromGitHub,
   aiohttp,
   bleak,
   buildPythonPackage,
   csrmesh,
-  fetchFromGitHub,
   setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "halohome";
   version = "0.7.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "nayaverdier";
@@ -20,6 +19,8 @@ buildPythonPackage rec {
     hash = "sha256-JOQ2q5lbdVTerXPt6QHBiTG9PzN9LiuLcN+XnOoyYjA=";
   };
 
+  # Project has no tests
+  doCheck = false;
   build-system = [ setuptools ];
 
   dependencies = [
@@ -28,12 +29,9 @@ buildPythonPackage rec {
     csrmesh
   ];
 
-  pythonRelaxDeps = [ "bleak" ];
-
-  # Project has no tests
-  doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "halohome" ];
+  pythonRelaxDeps = [ "bleak" ];
 
   meta = {
     description = "Python library to control Eaton HALO Home Smart Lights";

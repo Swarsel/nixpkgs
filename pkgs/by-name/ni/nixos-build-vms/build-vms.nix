@@ -1,8 +1,8 @@
 {
-  system ? builtins.currentSystem,
-  config ? { },
-  nixpkgs,
   networkExpr,
+  nixpkgs,
+  config ? { },
+  system ? builtins.currentSystem,
 }:
 
 let

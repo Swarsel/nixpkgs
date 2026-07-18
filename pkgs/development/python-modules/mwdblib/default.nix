@@ -1,10 +1,10 @@
 {
   lib,
+  fetchFromGitHub,
   beautifultable,
   buildPythonPackage,
-  click-default-group,
   click,
-  fetchFromGitHub,
+  click-default-group,
   humanize,
   keyring,
   requests,
@@ -15,7 +15,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "mwdblib";
   version = "4.7.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "CERT-Polska";
@@ -24,6 +23,7 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-eP8q5G97vfe7eN3+/+UF7Qda5/xzwC/GRrTorucjEGo=";
   };
 
+  nativeCheckInputs = [ unittestCheckHook ];
   build-system = [ setuptools ];
 
   dependencies = [
@@ -35,8 +35,7 @@ buildPythonPackage (finalAttrs: {
     requests
   ];
 
-  nativeCheckInputs = [ unittestCheckHook ];
-
+  pyproject = true;
   pythonImportsCheck = [ "mwdblib" ];
 
   meta = {

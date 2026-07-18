@@ -1,18 +1,17 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitLab,
-  setuptools,
+  buildPythonPackage,
   django,
+  nix-update-script,
   psycopg,
   python-dateutil,
-  nix-update-script,
+  setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "django-postgres-partition";
   version = "0.1.4";
-  pyproject = true;
 
   src = fetchFromGitLab {
     owner = "burke-software";
@@ -21,9 +20,9 @@ buildPythonPackage rec {
     hash = "sha256-Wk+m75gO9iClN9/vXGBl27VcmqyE6c1xpQX+X1qcKuU=";
   };
 
+  # tests don't work yet, see https://gitlab.com/burke-software/django-postgres-partition/-/issues/4
+  doCheck = false;
   build-system = [ setuptools ];
-
-  pythonRelaxDeps = [ "django" ];
 
   dependencies = [
     django
@@ -31,11 +30,9 @@ buildPythonPackage rec {
     python-dateutil
   ];
 
-  # tests don't work yet, see https://gitlab.com/burke-software/django-postgres-partition/-/issues/4
-  doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "psql_partition" ];
-
+  pythonRelaxDeps = [ "django" ];
   passthru.updateScript = nix-update-script { };
 
   meta = {

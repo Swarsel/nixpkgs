@@ -6,12 +6,13 @@
 
 bundlerApp {
   pname = "asciidoctor";
-  gemdir = ./.;
 
   exes = [
     "asciidoctor"
     "asciidoctor-pdf"
   ];
+
+  gemdir = ./.;
 
   passthru = {
     updateScript = bundlerUpdateScript "asciidoctor";
@@ -21,10 +22,12 @@ bundlerApp {
     description = "Faster Asciidoc processor written in Ruby";
     homepage = "https://asciidoctor.org/";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       gpyh
       nicknovitski
     ];
+
     platforms = lib.platforms.unix;
   };
 }

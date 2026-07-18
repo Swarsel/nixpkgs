@@ -3,27 +3,27 @@
   stdenv,
   fetchFromGitLab,
   autoreconfHook,
+  libdrm,
+  libpciaccess,
+  nix-update-script,
   pkg-config,
+  spice-protocol,
+  udev,
   util-macros,
   xorg-server,
   xorgproto,
-  libdrm,
-  libpciaccess,
-  spice-protocol,
-  udev,
-  nix-update-script,
 }:
 stdenv.mkDerivation (finalAttrs: {
   pname = "xf86-video-qxl";
   version = "0.1.6";
 
   src = fetchFromGitLab {
-    domain = "gitlab.freedesktop.org";
-    group = "xorg";
     owner = "driver";
     repo = "xf86-video-qxl";
     tag = "xf86-video-qxl-${finalAttrs.version}";
     hash = "sha256-g7NvAjmvPjyqUTXnZREDDs18O2e9Zl5hZeAza2a/1Jw=";
+    domain = "gitlab.freedesktop.org";
+    group = "xorg";
   };
 
   strictDeps = true;

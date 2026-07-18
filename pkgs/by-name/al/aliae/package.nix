@@ -1,8 +1,8 @@
 {
   lib,
   stdenv,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   installShellFiles,
 }:
 
@@ -17,22 +17,8 @@ buildGoModule (finalAttrs: {
     hash = "sha256-W/jj2YQc6M0ro4groCynly2stjv2FLAMvIopnQYCngY=";
   };
 
-  vendorHash = "sha256-8YTyhjF0p2l76sowq92ts5TjjcARToOfJN9nlFu19L4=";
-
-  sourceRoot = "${finalAttrs.src.name}/src";
-
   nativeBuildInputs = [ installShellFiles ];
-
-  ldflags = [
-    "-s"
-    "-w"
-    "-X main.Version=${finalAttrs.version}"
-  ];
-
-  tags = [
-    "netgo"
-    "osusergo"
-  ];
+  vendorHash = "sha256-8YTyhjF0p2l76sowq92ts5TjjcARToOfJN9nlFu19L4=";
 
   postInstall = ''
     mv $out/bin/{src,aliae}
@@ -44,12 +30,25 @@ buildGoModule (finalAttrs: {
       --zsh <($out/bin/aliae completion zsh)
   '';
 
+  ldflags = [
+    "-s"
+    "-w"
+    "-X main.Version=${finalAttrs.version}"
+  ];
+
+  sourceRoot = "${finalAttrs.src.name}/src";
+
+  tags = [
+    "netgo"
+    "osusergo"
+  ];
+
   meta = {
     description = "Cross shell and platform alias management";
-    mainProgram = "aliae";
     homepage = "https://aliae.dev";
     changelog = "https://github.com/JanDeDobbeleer/aliae/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ vedantmgoyal9 ];
+    mainProgram = "aliae";
   };
 })

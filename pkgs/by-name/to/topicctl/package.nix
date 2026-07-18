@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule (finalAttrs: {
@@ -16,6 +16,8 @@ buildGoModule (finalAttrs: {
   };
 
   vendorHash = "sha256-aoFMYgyZnXmPg3fjwydGm85WKcT+Jez07a4JX1o3Mmo=";
+  # needs a kafka server
+  doCheck = false;
 
   ldflags = [
     "-X main.BuildVersion=${finalAttrs.version}"
@@ -23,17 +25,16 @@ buildGoModule (finalAttrs: {
     "-X main.BuildDate=unknown"
   ];
 
-  # needs a kafka server
-  doCheck = false;
-
   meta = {
-    description = "Tool for easy, declarative management of Kafka topics";
     inherit (finalAttrs.src.meta) homepage;
+    description = "Tool for easy, declarative management of Kafka topics";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       eskytthe
       srhb
     ];
+
     mainProgram = "topicctl";
   };
 })

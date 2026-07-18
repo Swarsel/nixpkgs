@@ -7,7 +7,6 @@
 buildPythonPackage rec {
   pname = "pq";
   version = "1.9.1";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
@@ -16,6 +15,7 @@ buildPythonPackage rec {
 
   # tests require running postgresql cluster
   doCheck = false;
+  format = "setuptools";
   pythonImportsCheck = [ "pq" ];
 
   meta = {

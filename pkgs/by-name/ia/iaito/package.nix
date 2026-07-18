@@ -1,42 +1,20 @@
 {
-  fetchFromGitHub,
   lib,
+  stdenv,
+  fetchFromGitHub,
+  breakpointHook,
   meson,
   ninja,
   pkg-config,
   python3,
   qt6Packages,
   radare2,
-  xvfb-run,
-  breakpointHook,
   writableTmpDirAsHomeHook,
-  stdenv,
+  xvfb-run,
 }:
 stdenv.mkDerivation (finalAttrs: {
   pname = "iaito";
   version = "6.1.6";
-
-  srcs = [
-    (fetchFromGitHub {
-      owner = "radareorg";
-      repo = "iaito";
-      tag = finalAttrs.version;
-      hash = "sha256-hGJ8f/auUDAM/pWT52X5fiDAt/un//oBniMG1lLbofc=";
-      name = "main";
-    })
-    (fetchFromGitHub {
-      owner = "radareorg";
-      repo = "iaito-translations";
-      rev = "e66b3a962a7fc7dfd730764180011ecffbb206bf";
-      hash = "sha256-6NRTZ/ydypsB5TwbivvwOH9TEMAff/LH69hCXTvMPp8=";
-      name = "translations";
-    })
-  ];
-  sourceRoot = "main/src";
-
-  postUnpack = ''
-    chmod -R u+w translations
-  '';
 
   postPatch = ''
     substituteInPlace common/ResourcePaths.cpp \
@@ -83,6 +61,8 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  doInstallCheck = true;
+
   nativeInstallCheckInputs = [
     xvfb-run
     writableTmpDirAsHomeHook
@@ -95,16 +75,39 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postCheck
   '';
 
-  doInstallCheck = true;
+  postUnpack = ''
+    chmod -R u+w translations
+  '';
+
+  sourceRoot = "main/src";
+
+  srcs = [
+    (fetchFromGitHub {
+      hash = "sha256-hGJ8f/auUDAM/pWT52X5fiDAt/un//oBniMG1lLbofc=";
+      name = "main";
+      owner = "radareorg";
+      repo = "iaito";
+      tag = finalAttrs.version;
+    })
+    (fetchFromGitHub {
+      hash = "sha256-6NRTZ/ydypsB5TwbivvwOH9TEMAff/LH69hCXTvMPp8=";
+      name = "translations";
+      owner = "radareorg";
+      repo = "iaito-translations";
+      rev = "e66b3a962a7fc7dfd730764180011ecffbb206bf";
+    })
+  ];
 
   passthru.updateScript = ./update.sh;
 
   meta = {
     description = "Official radare2 GUI";
+
     longDescription = ''
       iaito is the official graphical interface for radare2, a libre reverse
       engineering framework.
     '';
+
     homepage = "https://radare.org/n/iaito.html";
     changelog = "https://github.com/radareorg/iaito/releases/tag/${finalAttrs.version}";
     license = lib.licenses.gpl3Only;

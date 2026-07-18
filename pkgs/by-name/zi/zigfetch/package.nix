@@ -2,10 +2,10 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  zig_0_16,
-  pciutils,
   apple-sdk,
+  pciutils,
   replaceVars,
+  zig_0_16,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -37,12 +37,12 @@ stdenv.mkDerivation (finalAttrs: {
   doInstallCheck = true;
 
   meta = {
+    inherit (zig_0_16.meta) platforms;
     description = "Minimal neofetch/fastfetch like system information tool";
     homepage = "https://github.com/utox39/zigfetch";
     changelog = "https://github.com/utox39/zigfetch/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ heisfer ];
     mainProgram = "zigfetch";
-    inherit (zig_0_16.meta) platforms;
   };
 })

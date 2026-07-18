@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   nixosTests,
   versionCheckHook,
 }:
@@ -18,9 +18,13 @@ buildGoModule (finalAttrs: {
   };
 
   vendorHash = "sha256-WFRxkwMM9D612tLJjij+kwpcwhcl3KhR8xXxx43SC9o=";
-
   # FIXME: tests fail due to read-only nix store
   doCheck = false;
+  doInstallCheck = true;
+
+  nativeInstallCheckInputs = [
+    versionCheckHook
+  ];
 
   excludedPackages = [ "docs/node-mixin" ];
 
@@ -36,22 +40,19 @@ buildGoModule (finalAttrs: {
 
   passthru.tests = { inherit (nixosTests.prometheus-exporters) node; };
 
-  nativeInstallCheckInputs = [
-    versionCheckHook
-  ];
-  doInstallCheck = true;
-
   meta = {
     description = "Prometheus exporter for machine metrics";
-    mainProgram = "node_exporter";
     homepage = "https://github.com/prometheus/node_exporter";
     changelog = "https://github.com/prometheus/node_exporter/blob/v${finalAttrs.version}/CHANGELOG.md";
     license = lib.licenses.asl20;
+
     maintainers = with lib.maintainers; [
       benley
       fpletz
       globin
       Frostman
     ];
+
+    mainProgram = "node_exporter";
   };
 })

@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule (finalAttrs: {
@@ -19,10 +19,12 @@ buildGoModule (finalAttrs: {
 
   meta = {
     description = "Command line tool to access the system clipboard from anywhere using the ANSI OSC52 sequence";
+
     longDescription = ''
       osc provides the commands osc copy, which copies stdin to the system clipboard, and osc paste, which outputs system clipboard contents to stdout.
       System clipboard access includes writing (i.e. copy) and reading (i.e. paste), even while logged into a remote machine via ssh.
     '';
+
     homepage = "https://github.com/theimpostor/osc";
     changelog = "https://github.com/theimpostor/osc/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.mit;

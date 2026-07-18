@@ -4,23 +4,23 @@ let
 in
 [
   {
-    url = "${prefix}/build-use-pkg-config-to-detect-gpgme.patch";
     sha256 = "1kvp30qrnnhnjma8vgi3acvjn74fzig1mdmkxn6xbdz2vj12wwns";
+    url = "${prefix}/build-use-pkg-config-to-detect-gpgme.patch";
   }
   {
-    url = "${prefix}/daemon-fix-conflicting-return-types.patch";
     sha256 = "1iqr58v1rmykq2z48sniixfvq2v0qaifdfihkq6is2a711fkigxp";
+    url = "${prefix}/daemon-fix-conflicting-return-types.patch";
   }
   {
-    url = "${prefix}/daemon-port-to-gcr-3.patch";
     sha256 = "1j1nbh03m4cqymhqiamndn3gmi7bdzv0srr90nhlgjhszmyg150g";
+    url = "${prefix}/daemon-port-to-gcr-3.patch";
   }
   {
-    url = "${prefix}/git_allow-gpg2-2.1.patch";
     sha256 = "1g93psg0cki4wnyymc59wchzhas3qqja7y46rbzdksp5wmfl51ap";
+    url = "${prefix}/git_allow-gpg2-2.1.patch";
   }
   {
-    url = "${prefix}/libcryptui-fix-logic-flaw-in-the-prompt-recipients-d.patch";
     sha256 = "1qnd6j2zk8gssj2fgrgikc05ccdv7sqabprykzxix7v8827sa56j";
+    url = "${prefix}/libcryptui-fix-logic-flaw-in-the-prompt-recipients-d.patch";
   }
 ]

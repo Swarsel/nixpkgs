@@ -1,27 +1,25 @@
 {
   lib,
   fetchFromGitHub,
+  dconf,
   fetchpatch,
-  python3,
-  python3Packages,
   glibcLocales,
   gobject-introspection,
-  wrapGAppsHook3,
   gtk3,
   keybinder3,
   libnotify,
   libutempter,
-  vte,
   libwnck,
-  dconf,
   nixosTests,
+  python3,
+  python3Packages,
+  vte,
+  wrapGAppsHook3,
 }:
 
 python3Packages.buildPythonApplication (finalAttrs: {
   pname = "guake";
   version = "3.10.1";
-
-  pyproject = false;
 
   src = fetchFromGitHub {
     owner = "Guake";
@@ -29,10 +27,6 @@ python3Packages.buildPythonApplication (finalAttrs: {
     tag = finalAttrs.version;
     hash = "sha256-TTDVJeM37SbpWucJGYoeYX9t4r1k3ldru9Cd02hBrU4=";
   };
-
-  build-system = with python3Packages; [
-    distutils
-  ];
 
   patches = [
     # Avoid trying to recompile schema at runtime,
@@ -45,16 +39,16 @@ python3Packages.buildPythonApplication (finalAttrs: {
     # Avoid using pip since it fails on not being able to find setuptools.
     # Note: This is not a long-term solution, setup.py is deprecated.
     (fetchpatch {
-      url = "https://github.com/Guake/guake/commit/14abaa0c69cfab64fe3467fbbea211d830042de8.patch";
       hash = "sha256-RjGRFJDTQX2meAaw3UZi/3OxAtIHbRZVpXTbcJk/scY=";
       revert = true;
+      url = "https://github.com/Guake/guake/commit/14abaa0c69cfab64fe3467fbbea211d830042de8.patch";
     })
 
     # Revert switch to FHS.
     (fetchpatch {
-      url = "https://github.com/Guake/guake/commit/8c7a23ba62ee262c033dfa5b0b18d3df71361ff4.patch";
       hash = "sha256-0asXI08XITkFc73EUenV9qxY/Eak+TzygRRK7GvhQUc=";
       revert = true;
+      url = "https://github.com/Guake/guake/commit/8c7a23ba62ee262c033dfa5b0b18d3df71361ff4.patch";
     })
   ];
 
@@ -73,8 +67,6 @@ python3Packages.buildPythonApplication (finalAttrs: {
     python3
     vte
   ];
-
-  makeWrapperArgs = [ "--set LOCALE_ARCHIVE ${glibcLocales}/lib/locale/locale-archive" ];
 
   propagatedBuildInputs = with python3Packages; [
     dbus-python
@@ -97,16 +89,24 @@ python3Packages.buildPythonApplication (finalAttrs: {
     )
   '';
 
+  build-system = with python3Packages; [
+    distutils
+  ];
+
+  makeWrapperArgs = [ "--set LOCALE_ARCHIVE ${glibcLocales}/lib/locale/locale-archive" ];
+  pyproject = false;
   passthru.tests.test = nixosTests.terminal-emulators.guake;
 
   meta = {
     description = "Drop-down terminal for GNOME";
     homepage = "http://guake-project.org";
     license = lib.licenses.gpl2Plus;
+
     maintainers = [
       lib.maintainers.msteen
       lib.maintainers.heywoodlh
     ];
+
     platforms = lib.platforms.linux;
   };
 })

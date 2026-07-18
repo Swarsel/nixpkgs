@@ -2,9 +2,9 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  cmake,
   boost,
   catch2,
+  cmake,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -34,9 +34,9 @@ stdenv.mkDerivation (finalAttrs: {
   doCheck = true;
 
   meta = {
-    homepage = "https://github.com/arximboldi/zug";
     description = "Library for functional interactive c++ programs";
-    maintainers = [ ];
+    homepage = "https://github.com/arximboldi/zug";
     license = lib.licenses.boost;
+    maintainers = [ ];
   };
 })

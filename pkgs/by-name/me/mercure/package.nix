@@ -1,10 +1,10 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
+  mercure,
   nix-update-script,
   testers,
-  mercure,
 }:
 
 buildGoModule (finalAttrs: {
@@ -18,11 +18,8 @@ buildGoModule (finalAttrs: {
     hash = "sha256-M/RzcR0FPkjBCRw0faRHF2ML25vzxcmNbAnnSWo+NFU=";
   };
 
-  sourceRoot = "${finalAttrs.src.name}/caddy";
-
   vendorHash = "sha256-KtjKrCqu+MAJpSL/HbLipxKbLOqDvzPOA5QN9ppu2aY=";
-
-  subPackages = [ "mercure" ];
+  doCheck = false;
   excludedPackages = [ "../cmd/mercure" ];
 
   ldflags = [
@@ -31,15 +28,17 @@ buildGoModule (finalAttrs: {
     "-X 'github.com/caddyserver/caddy/v2.CustomVersion=Mercure.rocks v${finalAttrs.version} Caddy'"
   ];
 
-  doCheck = false;
+  sourceRoot = "${finalAttrs.src.name}/caddy";
+  subPackages = [ "mercure" ];
 
   passthru = {
-    updateScript = nix-update-script { };
     tests.version = testers.testVersion {
       version = "v${finalAttrs.version}";
-      package = mercure;
       command = "mercure version";
+      package = mercure;
     };
+
+    updateScript = nix-update-script { };
   };
 
   meta = {

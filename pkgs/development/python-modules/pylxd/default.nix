@@ -1,24 +1,23 @@
 {
   lib,
+  fetchFromGitHub,
   buildPythonPackage,
   cryptography,
   ddt,
-  fetchFromGitHub,
   mock-services,
   pytestCheckHook,
   python-dateutil,
   requests,
-  urllib3,
   requests-toolbelt,
   requests-unixsocket,
   setuptools,
+  urllib3,
   ws4py,
 }:
 
 buildPythonPackage rec {
   pname = "pylxd";
   version = "2.4.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "canonical";
@@ -27,7 +26,11 @@ buildPythonPackage rec {
     hash = "sha256-s3BdHZFNkXRT1MoLQCQ4+XPPFanZNZVgOSmYhJkx7JE=";
   };
 
-  pythonRelaxDeps = [ "urllib3" ];
+  nativeCheckInputs = [
+    ddt
+    mock-services
+    pytestCheckHook
+  ];
 
   build-system = [ setuptools ];
 
@@ -41,18 +44,14 @@ buildPythonPackage rec {
     ws4py
   ];
 
-  nativeCheckInputs = [
-    ddt
-    mock-services
-    pytestCheckHook
-  ];
-
   disabledTestPaths = [
     "integration"
     "migration"
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "pylxd" ];
+  pythonRelaxDeps = [ "urllib3" ];
 
   meta = {
     description = "Library for interacting with the LXD REST API";

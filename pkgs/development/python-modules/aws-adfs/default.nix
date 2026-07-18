@@ -1,11 +1,11 @@
 {
   lib,
+  fetchFromGitHub,
   boto3,
   botocore,
   buildPythonPackage,
   click,
   configparser,
-  fetchFromGitHub,
   fido2,
   lxml,
   poetry-core,
@@ -19,7 +19,6 @@
 buildPythonPackage rec {
   pname = "aws-adfs";
   version = "2.12.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "venth";
@@ -28,15 +27,17 @@ buildPythonPackage rec {
     hash = "sha256-U1ptI/VynHArJ1SwX4LanHB0f4U38YZO9XDCXcLBu+s=";
   };
 
-  build-system = [
-    poetry-core
+  nativeCheckInputs = [
+    pytestCheckHook
+    toml
   ];
 
-  pythonRelaxDeps = [
-    "configparser"
-    "fido2"
-    "lxml"
-    "requests-kerberos"
+  preCheck = ''
+    export HOME=$(mktemp -d);
+  '';
+
+  build-system = [
+    poetry-core
   ];
 
   dependencies = [
@@ -51,16 +52,15 @@ buildPythonPackage rec {
     requests-kerberos
   ];
 
-  nativeCheckInputs = [
-    pytestCheckHook
-    toml
-  ];
-
-  preCheck = ''
-    export HOME=$(mktemp -d);
-  '';
-
+  pyproject = true;
   pythonImportsCheck = [ "aws_adfs" ];
+
+  pythonRelaxDeps = [
+    "configparser"
+    "fido2"
+    "lxml"
+    "requests-kerberos"
+  ];
 
   meta = {
     description = "Command line tool to ease AWS CLI authentication against ADFS";

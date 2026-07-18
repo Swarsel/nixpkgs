@@ -1,11 +1,10 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
-  gitUpdater,
-  nixosTests,
   cmake,
   dbus,
+  gitUpdater,
   glib,
   gnome-settings-daemon,
   gsettings-desktop-schemas,
@@ -15,6 +14,7 @@
   librda,
   lomiri-qt6,
   mate-settings-daemon,
+  nixosTests,
   pkg-config,
   systemd,
   wrapGAppsHook3,
@@ -62,10 +62,6 @@ stdenv.mkDerivation (finalAttrs: {
     mate-settings-daemon
   ];
 
-  nativeCheckInputs = [ dbus ];
-
-  checkInputs = [ gtest ];
-
   cmakeFlags = [
     (lib.cmakeBool "ENABLE_TESTS" finalAttrs.finalPackage.doCheck)
     (lib.cmakeBool "GSETTINGS_LOCALINSTALL" true)
@@ -73,7 +69,8 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   doCheck = stdenv.buildPlatform.canExecute stdenv.hostPlatform;
-
+  nativeCheckInputs = [ dbus ];
+  checkInputs = [ gtest ];
   # DBus communication
   enableParallelChecking = false;
 
@@ -84,15 +81,18 @@ stdenv.mkDerivation (finalAttrs: {
         "lomiri"
       ];
     };
+
     tests = {
-      startup = nixosTests.ayatana-indicators;
       lomiri = nixosTests.lomiri.desktop-ayatana-indicator-session;
+      startup = nixosTests.ayatana-indicators;
     };
+
     updateScript = gitUpdater { };
   };
 
   meta = {
     description = "Ayatana Indicator showing session management, status and user switching";
+
     longDescription = ''
       This Ayatana Indicator is designed to be placed on the right side of a
       panel and give the user easy control for
@@ -101,6 +101,7 @@ stdenv.mkDerivation (finalAttrs: {
       - starting a guest session, or
       - controlling the status of their own session.
     '';
+
     homepage = "https://github.com/AyatanaIndicators/ayatana-indicator-session";
     changelog = "https://github.com/AyatanaIndicators/ayatana-indicator-session/blob/${finalAttrs.version}/ChangeLog";
     license = lib.licenses.gpl3Only;

@@ -1,6 +1,6 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchurl,
   autoPatchelfHook,
   libxcrypt-legacy,
@@ -15,17 +15,19 @@ stdenv.mkDerivation (finalAttrs: {
   src = fetchurl (
     let
       sources = {
-        x86_64-linux = {
-          url = "https://github.com/microsoft/pgsql-tools/releases/download/v${finalAttrs.version}/pgsqltoolsservice-linux-x64.tar.gz";
-          hash = "sha256-dN7+LJCUwb39ypuJV4p3jUHNGAPaObN4aZvsOHIpmkQ=";
-        };
-        aarch64-linux = {
-          url = "https://github.com/microsoft/pgsql-tools/releases/download/v${finalAttrs.version}/pgsqltoolsservice-linux-arm64.tar.gz";
-          hash = "sha256-rD8jymGdM1RDGDbrKu6E7xoWtSMRNuc2ngCmR+sHgQI=";
-        };
         aarch64-darwin = {
-          url = "https://github.com/microsoft/pgsql-tools/releases/download/v${finalAttrs.version}/pgsqltoolsservice-osx-arm64.tar.gz";
           hash = "sha256-tpabEKB1kqse7D58FsP/9jywk+vgAAvptL9MadwxWg8=";
+          url = "https://github.com/microsoft/pgsql-tools/releases/download/v${finalAttrs.version}/pgsqltoolsservice-osx-arm64.tar.gz";
+        };
+
+        aarch64-linux = {
+          hash = "sha256-rD8jymGdM1RDGDbrKu6E7xoWtSMRNuc2ngCmR+sHgQI=";
+          url = "https://github.com/microsoft/pgsql-tools/releases/download/v${finalAttrs.version}/pgsqltoolsservice-linux-arm64.tar.gz";
+        };
+
+        x86_64-linux = {
+          hash = "sha256-dN7+LJCUwb39ypuJV4p3jUHNGAPaObN4aZvsOHIpmkQ=";
+          url = "https://github.com/microsoft/pgsql-tools/releases/download/v${finalAttrs.version}/pgsqltoolsservice-linux-x64.tar.gz";
         };
       };
     in
@@ -43,9 +45,6 @@ stdenv.mkDerivation (finalAttrs: {
     libxcrypt-legacy
     (lib.getLib stdenv.cc.cc)
   ];
-
-  dontBuild = true;
-  dontStrip = true;
 
   installPhase = ''
     runHook preInstall
@@ -67,19 +66,21 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   doInstallCheck = true;
+  dontBuild = true;
+  dontStrip = true;
 
   passthru = {
     updateScript = ./update.sh;
   };
 
   meta = {
-    homepage = "https://github.com/microsoft/pgsql-tools";
     description = "Backend service for PostgreSQL server tools, offering features such as connection management, query execution with result set handling, and language service support via the VS Code protocol";
+    homepage = "https://github.com/microsoft/pgsql-tools";
     changelog = "https://github.com/microsoft/pgsql-tools/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.mit;
-    platforms = lib.platforms.linux ++ lib.platforms.darwin;
-    maintainers = with lib.maintainers; [ liberodark ];
-    mainProgram = "ossdbtoolsservice_main";
     sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
+    maintainers = with lib.maintainers; [ liberodark ];
+    platforms = lib.platforms.linux ++ lib.platforms.darwin;
+    mainProgram = "ossdbtoolsservice_main";
   };
 })

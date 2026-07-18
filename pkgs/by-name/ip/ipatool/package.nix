@@ -1,10 +1,10 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
+  ipatool,
   nix-update-script,
   testers,
-  ipatool,
   writableTmpDirAsHomeHook,
 }:
 
@@ -19,20 +19,9 @@ buildGoModule (finalAttrs: {
     hash = "sha256-ZGy7Oxpjb5ONe//ImAN3bQwl+G9udvaf9V7heLq625c=";
   };
 
-  vendorHash = "sha256-PZDlJIIW+teFu6XuaTLB5eHHSeVJMUVAuq/StvyIVlc=";
-
-  # Fixes "import lookup disabled by -mod=vendor" for onepassword-sdk-go on macOS
-  proxyVendor = true;
-
   # Fixes "unable to open output file '/homeless-shelter/.cache/clang/ModuleCache/" on macOS
   nativeBuildInputs = [ writableTmpDirAsHomeHook ];
-
-  ldflags = [
-    "-s"
-    "-w"
-    "-X github.com/majd/ipatool/v2/cmd.version=${finalAttrs.version}"
-  ];
-
+  vendorHash = "sha256-PZDlJIIW+teFu6XuaTLB5eHHSeVJMUVAuq/StvyIVlc=";
   # go generate ./... fails because of a missing module: github.com/golang/mock/mockgen
   # which is required to run the tests, check if next release fixes it.
   # preCheck = ''
@@ -40,13 +29,23 @@ buildGoModule (finalAttrs: {
   # '';
   doCheck = false;
 
+  ldflags = [
+    "-s"
+    "-w"
+    "-X github.com/majd/ipatool/v2/cmd.version=${finalAttrs.version}"
+  ];
+
+  # Fixes "import lookup disabled by -mod=vendor" for onepassword-sdk-go on macOS
+  proxyVendor = true;
+
   passthru = {
-    updateScript = nix-update-script { };
     tests.version = testers.testVersion {
       inherit (finalAttrs) version;
-      package = ipatool;
       command = "ipatool --version";
+      package = ipatool;
     };
+
+    updateScript = nix-update-script { };
   };
 
   meta = {

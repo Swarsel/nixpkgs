@@ -15,6 +15,7 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   nativeBuildInputs = [ perlPackages.perl ];
+
   buildInputs = with perlPackages; [
     perl
     IOStringy
@@ -36,8 +37,8 @@ stdenv.mkDerivation (finalAttrs: {
       as .../share, .../man, and so on.
     '';
 
-    license = lib.licenses.gpl3Plus;
     homepage = "https://www.gnu.org/software/stow/";
+    license = lib.licenses.gpl3Plus;
     maintainers = with lib.maintainers; [ sarcasticadmin ];
     platforms = lib.platforms.all;
   };

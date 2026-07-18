@@ -18,20 +18,22 @@ stdenv.mkDerivation (finalAttrs: {
 
   nativeBuildInputs = [ autoreconfHook ];
 
-  enableParallelBuilding = true;
-
   preConfigure = ''
     ./bootstrap.sh
   '';
 
+  enableParallelBuilding = true;
+
   meta = {
+    inherit (finalAttrs.src.meta) homepage;
     description = "Tiny mp4 time code editor";
+
     longDescription = ''
       Tiny mp4 time code editor. You can use this for changing fps,
       delaying audio tracks, executing DTS compression, extracting
       time codes of mp4.
     '';
-    inherit (finalAttrs.src.meta) homepage;
+
     license = with lib.licenses; [
       # All files are distributed as Public Domain, except for the followings:
       publicDomain
@@ -39,8 +41,9 @@ stdenv.mkDerivation (finalAttrs: {
       boost # Boost
       bsd2 # FreeBSD CVS
     ];
-    platforms = lib.platforms.unix;
+
     maintainers = with lib.maintainers; [ huggy ];
+    platforms = lib.platforms.unix;
     mainProgram = "mp4fpsmod";
   };
 })

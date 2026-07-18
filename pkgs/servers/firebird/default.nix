@@ -2,37 +2,22 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  fetchDebianPatch,
-  libedit,
   autoreconfHook,
   cmake,
-  zlib,
-  unzip,
-  libtommath,
-  libtomcrypt,
+  fetchDebianPatch,
   icu73,
+  libedit,
+  libtomcrypt,
+  libtommath,
+  unzip,
+  zlib,
   superServer ? false,
 }:
 
 let
   base = {
     pname = "firebird";
-
-    meta = {
-      description = "SQL relational database management system";
-      downloadPage = "https://github.com/FirebirdSQL/firebird/";
-      homepage = "https://firebirdsql.org/";
-      changelog = "https://github.com/FirebirdSQL/firebird/blob/master/CHANGELOG.md";
-      license = with lib.licenses; [
-        mpl11
-        interbase
-      ];
-      platforms = lib.platforms.linux;
-      maintainers = with lib.maintainers; [
-        bbenno
-      ];
-    };
-
+    strictDeps = true;
     nativeBuildInputs = [ autoreconfHook ];
 
     buildInputs = [
@@ -40,17 +25,12 @@ let
       icu73
     ];
 
-    env.LD_LIBRARY_PATH = lib.makeLibraryPath [ icu73 ];
-
     configureFlags = [
       "--with-system-editline"
     ]
     ++ (lib.optional superServer "--enable-superserver");
 
-    enableParallelBuilding = true;
-
-    __structuredAttrs = true;
-    strictDeps = true;
+    env.LD_LIBRARY_PATH = lib.makeLibraryPath [ icu73 ];
 
     installPhase = ''
       runHook preInstall
@@ -60,9 +40,32 @@ let
       runHook postInstall
     '';
 
+    __structuredAttrs = true;
+    enableParallelBuilding = true;
+
+    meta = {
+      description = "SQL relational database management system";
+      homepage = "https://firebirdsql.org/";
+      changelog = "https://github.com/FirebirdSQL/firebird/blob/master/CHANGELOG.md";
+
+      license = with lib.licenses; [
+        mpl11
+        interbase
+      ];
+
+      maintainers = with lib.maintainers; [
+        bbenno
+      ];
+
+      platforms = lib.platforms.linux;
+      downloadPage = "https://github.com/FirebirdSQL/firebird/";
+    };
+
   };
 in
 rec {
+  firebird = firebird_5;
+
   firebird_3 = stdenv.mkDerivation (
     base
     // rec {
@@ -80,8 +83,8 @@ rec {
           pname = "firebird3.0";
           version = "3.0.13.ds7";
           debianRevision = "2";
-          patch = "no-binary-gbaks.patch";
           hash = "sha256-LXUMM38PBYeLPdgaxLPau4HWB4ItJBBnx7oGwalL6Pg=";
+          patch = "no-binary-gbaks.patch";
         })
       ];
 
@@ -109,6 +112,7 @@ rec {
       };
 
       nativeBuildInputs = base.nativeBuildInputs ++ [ unzip ];
+
       buildInputs = base.buildInputs ++ [
         zlib
         libtommath
@@ -126,24 +130,23 @@ rec {
         owner = "FirebirdSQL";
         repo = "firebird";
         rev = "v${version}";
-        fetchSubmodules = true;
         hash = "sha256-IJrfs8q7GtX4Y+Cmg4avT5QJmLpld38tyR3TR1CcgyE=";
+        fetchSubmodules = true;
       };
-
-      # CMake is just used for libcds
-      dontUseCmakeConfigure = true;
 
       nativeBuildInputs = base.nativeBuildInputs ++ [
         cmake
         unzip
       ];
+
       buildInputs = base.buildInputs ++ [
         zlib
         libtommath
         libtomcrypt
       ];
+
+      # CMake is just used for libcds
+      dontUseCmakeConfigure = true;
     }
   );
-
-  firebird = firebird_5;
 }

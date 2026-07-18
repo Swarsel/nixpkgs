@@ -2,19 +2,19 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  python3,
-  boost,
-  libevent,
   autoreconfHook,
+  boost,
+  darwin,
   db4,
-  miniupnpc,
-  sqlite,
-  pkg-config,
-  util-linux,
   hexdump,
+  libevent,
+  miniupnpc,
+  pkg-config,
+  python3,
+  sqlite,
+  util-linux,
   zeromq,
   zlib,
-  darwin,
   withWallet ? true,
 }:
 
@@ -51,8 +51,6 @@ stdenv.mkDerivation (finalAttrs: {
   # building with db48 (for legacy descriptor wallet support) is broken on Darwin
   ++ lib.optionals (withWallet && !stdenv.hostPlatform.isDarwin) [ db4 ];
 
-  enableParallelBuilding = true;
-
   configureFlags = [
     "--with-boost-libdir=${boost.out}/lib"
     "--disable-bench"
@@ -62,11 +60,10 @@ stdenv.mkDerivation (finalAttrs: {
     "--disable-wallet"
   ];
 
-  nativeCheckInputs = [ python3 ];
-
   doCheck = true;
-
+  nativeCheckInputs = [ python3 ];
   checkFlags = [ "LC_ALL=en_US.UTF-8" ];
+  enableParallelBuilding = true;
 
   meta = {
     description = "Decentralized open source information registration and transfer system based on the Bitcoin cryptocurrency";

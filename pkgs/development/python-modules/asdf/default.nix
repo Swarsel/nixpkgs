@@ -1,11 +1,11 @@
 {
   lib,
+  fetchFromGitHub,
   aiohttp,
   asdf-standard,
   asdf-transform-schemas,
   attrs,
   buildPythonPackage,
-  fetchFromGitHub,
   fsspec,
   importlib-metadata,
   jmespath,
@@ -25,7 +25,6 @@
 buildPythonPackage rec {
   pname = "asdf";
   version = "5.2.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "asdf-format";
@@ -33,6 +32,16 @@ buildPythonPackage rec {
     tag = version;
     hash = "sha256-StudmLkXINe/lIJneid763jBdo6jAHlnjj4PHsGFxwM=";
   };
+
+  nativeCheckInputs = [
+    aiohttp
+    fsspec
+    lz4
+    psutil
+    pytest-remotedata
+    pytestCheckHook
+    requests
+  ];
 
   build-system = [
     setuptools
@@ -51,21 +60,12 @@ buildPythonPackage rec {
     attrs
   ];
 
-  nativeCheckInputs = [
-    aiohttp
-    fsspec
-    lz4
-    psutil
-    pytest-remotedata
-    pytestCheckHook
-    requests
-  ];
-
   disabledTests = [
     # AssertionError: assert 527033 >= 1048801
     "test_update_add_array_at_end"
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "asdf" ];
 
   meta = {

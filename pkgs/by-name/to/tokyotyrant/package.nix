@@ -1,9 +1,9 @@
 {
-  fetchurl,
   lib,
   stdenv,
-  tokyocabinet,
+  fetchurl,
   pkg-config,
+  tokyocabinet,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -17,7 +17,6 @@ stdenv.mkDerivation (finalAttrs: {
 
   nativeBuildInputs = [ pkg-config ];
   buildInputs = [ tokyocabinet ];
-
   doCheck = false; # FIXME
 
   meta = {
@@ -39,10 +38,8 @@ stdenv.mkDerivation (finalAttrs: {
     '';
 
     homepage = "https://fallabs.com/tokyotyrant/";
-
     license = lib.licenses.lgpl21Plus;
-
-    platforms = lib.platforms.gnu ++ lib.platforms.linux; # arbitrary choice
     maintainers = [ ];
+    platforms = lib.platforms.gnu ++ lib.platforms.linux; # arbitrary choice
   };
 })

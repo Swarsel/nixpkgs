@@ -1,16 +1,15 @@
 {
   buildDunePackage,
-  dns,
   cstruct,
+  dns,
   ipaddr,
   lwt,
   tcpip,
 }:
 
 buildDunePackage {
-  pname = "dns-mirage";
-
   inherit (dns) version src;
+  pname = "dns-mirage";
 
   propagatedBuildInputs = [
     cstruct

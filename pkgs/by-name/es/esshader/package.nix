@@ -1,11 +1,11 @@
 {
+  lib,
   stdenv,
   fetchFromGitHub,
-  pkg-config,
-  libGL,
   glfw,
+  libGL,
+  pkg-config,
   soil,
-  lib,
 }:
 
 stdenv.mkDerivation {
@@ -27,6 +27,7 @@ stdenv.mkDerivation {
   nativeBuildInputs = [
     pkg-config
   ];
+
   buildInputs = [
     libGL
     glfw
@@ -44,8 +45,8 @@ stdenv.mkDerivation {
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ astro ];
     platforms = lib.platforms.unix;
+    mainProgram = "esshader";
     # never built on aarch64-darwin, x86_64-darwin since first introduction in nixpkgs
     broken = stdenv.hostPlatform.isDarwin;
-    mainProgram = "esshader";
   };
 }

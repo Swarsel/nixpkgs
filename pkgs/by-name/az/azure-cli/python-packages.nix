@@ -1,8 +1,8 @@
 {
   lib,
   stdenv,
-  python3,
   fetchPypi,
+  python3,
   src,
   version,
 }:
@@ -22,17 +22,24 @@ let
     });
 
   py = python3.override {
-    self = py;
     packageOverrides = self: super: {
       inherit buildAzureCliPackage;
 
+      # Error loading command module 'batch': No module named 'azure.batch._model_base'
+      azure-batch = super.azure-batch.overridePythonAttrs (attrs: rec {
+        version = "15.0.0b1";
+
+        src = fetchPypi {
+          inherit version;
+          hash = "sha256-373dFY/63lIZPj5NhsmW6nI2/9JpWkNzT65eBal04u0=";
+          pname = "azure_batch"; # Different from src.pname in the original package.
+        };
+      });
+
       # core and the actual application are highly coupled
       azure-cli-core = buildAzureCliPackage {
-        pname = "azure-cli-core";
-        format = "setuptools";
         inherit version src;
-
-        sourceRoot = "${src.name}/src/azure-cli-core";
+        pname = "azure-cli-core";
 
         patches = [
           # Adding the possibility to configure an immutable configuration dir via `AZURE_IMMUTABLE_DIR`.
@@ -72,9 +79,8 @@ let
           ]
           ++ requests.optional-dependencies.socks;
 
-        nativeCheckInputs = with self; [ pytest ];
-
         doCheck = stdenv.hostPlatform.isLinux;
+        nativeCheckInputs = with self; [ pytest ];
 
         # ignore tests that does network call, or assume powershell
         checkPhase = ''
@@ -94,21 +100,21 @@ let
             -k 'not metadata_url and not test_send_raw_requests and not test_format_styled_text_legacy_powershell'
         '';
 
+        format = "setuptools";
+
         pythonImportsCheck = [
           "azure.cli.telemetry"
           "azure.cli.core"
         ];
 
+        sourceRoot = "${src.name}/src/azure-cli-core";
         meta.downloadPage = "https://github.com/Azure/azure-cli/tree/azure-cli-${version}/src/azure-cli-core/";
       };
 
       azure-cli-telemetry = buildAzureCliPackage {
+        inherit src;
         pname = "azure-cli-telemetry";
         version = "1.1.0";
-        format = "setuptools";
-        inherit src;
-
-        sourceRoot = "${src.name}/src/azure-cli-telemetry";
 
         propagatedBuildInputs = with self; [
           applicationinsights
@@ -116,24 +122,17 @@ let
         ];
 
         nativeCheckInputs = with self; [ pytest ];
+
         # ignore flaky test
         checkPhase = ''
           cd azure
           HOME=$TMPDIR pytest -k 'not test_create_telemetry_note_file_from_scratch'
         '';
 
+        format = "setuptools";
+        sourceRoot = "${src.name}/src/azure-cli-telemetry";
         meta.downloadPage = "https://github.com/Azure/azure-cli/blob/azure-cli-${version}/src/azure-cli-telemetry/";
       };
-
-      # Error loading command module 'batch': No module named 'azure.batch._model_base'
-      azure-batch = super.azure-batch.overridePythonAttrs (attrs: rec {
-        version = "15.0.0b1";
-        src = fetchPypi {
-          pname = "azure_batch"; # Different from src.pname in the original package.
-          inherit version;
-          hash = "sha256-373dFY/63lIZPj5NhsmW6nI2/9JpWkNzT65eBal04u0=";
-        };
-      });
 
       azure-mgmt-billing =
         (overrideAzureMgmtPackage super.azure-mgmt-billing "6.0.0" "zip"
@@ -157,13 +156,25 @@ let
             ];
           });
 
+      # Attribute virtual_machines does not exist - nixpkgs has 37.x but azure-cli 2.82.0 requires ~=34.1.0
+      azure-mgmt-compute = super.azure-mgmt-compute.overridePythonAttrs (attrs: rec {
+        version = "34.1.0";
+
+        src = fetchPypi {
+          inherit version;
+          hash = "sha256-zZ010cwbjLC9JBrVXJG3fRTgSuc8YyraEUATX5whf+E=";
+          pname = "azure_mgmt_compute";
+        };
+      });
+
       # ImportError: cannot import name 'ConfigMap' from 'azure.mgmt.containerinstance.models'
       azure-mgmt-containerinstance = super.azure-mgmt-containerinstance.overridePythonAttrs (attrs: rec {
         version = "10.2.0b1";
+
         src = fetchPypi {
-          pname = "azure_mgmt_containerinstance"; # Different from src.pname in the original package.
           inherit version;
           hash = "sha256-v0u3e9ZoEnDdCnM6o6fD7N+suo5hbTqMO5jM6cSMx8A=";
+          pname = "azure_mgmt_containerinstance"; # Different from src.pname in the original package.
         };
       });
 
@@ -185,26 +196,51 @@ let
       # ModuleNotFoundError: No module named 'azure.mgmt.monitor.operations'
       azure-mgmt-monitor = super.azure-mgmt-monitor.overridePythonAttrs (attrs: rec {
         version = "7.0.0b1";
+
         src = fetchPypi {
-          pname = "azure_mgmt_monitor"; # Different from src.pname in the original package.
           inherit version;
           hash = "sha256-WR4YZMw4njklpARkujsRnd6nwTZ8M5vXFcy9AfL9oj4=";
+          pname = "azure_mgmt_monitor"; # Different from src.pname in the original package.
         };
       });
+
+      # ValueError: The operation 'azure.mgmt.mysqlflexibleservers.operations#LongRunningBackupOperations.begin_delete' is invalid.
+      azure-mgmt-mysqlflexibleservers =
+        super.azure-mgmt-mysqlflexibleservers.overridePythonAttrs
+          (attrs: rec {
+            version = "1.1.0b2";
+
+            src = fetchPypi {
+              inherit version;
+              hash = "sha256-yGpEFn9VOP1uSvpUCV/gYW56/5HulsCVx9wc/kWO+Ro=";
+              pname = "azure_mgmt_mysqlflexibleservers";
+            };
+          });
 
       # AttributeError: module 'azure.mgmt.rdbms.postgresql_flexibleservers.operations' has no attribute 'BackupsOperations'
       azure-mgmt-rdbms =
         overrideAzureMgmtPackage super.azure-mgmt-rdbms "10.2.0b17" "tar.gz"
           "sha256-1nnRkyr4Im79B7DDqGz/FOrPAToFaGhE+a7r5bZMuOQ=";
 
+      # ModuleNotFoundError: No module named 'azure.mgmt.recoveryservicesbackup.activestamp'
+      azure-mgmt-recoveryservicesbackup =
+        super.azure-mgmt-recoveryservicesbackup.overridePythonAttrs
+          (attrs: rec {
+            version = "9.2.0";
+
+            src = fetchPypi {
+              inherit version;
+              hash = "sha256-xAKz4ipsOHnfVrw34AYxQsM1LFECWZ/xAtGYJPGzKyk=";
+              pname = "azure_mgmt_recoveryservicesbackup";
+            };
+          });
+
       # azure.mgmt.resource will shadow the other azure.mgmt.resource.* packages unless we merge them together
       azure-mgmt-resource-all = py.pkgs.buildPythonPackage {
-        pname = "azure-mgmt-resource-all";
         inherit version;
-
-        pyproject = false; # we're not building from sdist/wheel
-
+        pname = "azure-mgmt-resource-all";
         src = py.pkgs.azure-mgmt-resource.src;
+        doCheck = false;
 
         # No real build, just symlink all site-packages into one dir
         installPhase = ''
@@ -229,7 +265,7 @@ let
           runHook postInstall
         '';
 
-        doCheck = false;
+        pyproject = false; # we're not building from sdist/wheel
       };
 
       # ImportError: cannot import name 'IPRule' from 'azure.mgmt.signalr.models'
@@ -240,10 +276,11 @@ let
       # ImportError: cannot import name 'AdvancedThreatProtectionName' from 'azure.mgmt.sql.models'
       azure-mgmt-sql = super.azure-mgmt-sql.overridePythonAttrs (attrs: rec {
         version = "4.0.0b22";
+
         src = fetchPypi {
-          pname = "azure_mgmt_sql"; # Different from src.pname in the original package.
           inherit version;
           hash = "sha256-ku3YN9W9Cyx4zsKxAs4k9/oeDXApzi2uqAURqa72H0k=";
+          pname = "azure_mgmt_sql"; # Different from src.pname in the original package.
         };
       });
 
@@ -256,41 +293,9 @@ let
       azure-mgmt-synapse =
         overrideAzureMgmtPackage super.azure-mgmt-synapse "2.1.0b5" "zip"
           "sha256-5E6Yf1GgNyNVjd+SeFDbhDxnOA6fOAG6oojxtCP4m+k=";
-
-      # Attribute virtual_machines does not exist - nixpkgs has 37.x but azure-cli 2.82.0 requires ~=34.1.0
-      azure-mgmt-compute = super.azure-mgmt-compute.overridePythonAttrs (attrs: rec {
-        version = "34.1.0";
-        src = fetchPypi {
-          pname = "azure_mgmt_compute";
-          inherit version;
-          hash = "sha256-zZ010cwbjLC9JBrVXJG3fRTgSuc8YyraEUATX5whf+E=";
-        };
-      });
-
-      # ValueError: The operation 'azure.mgmt.mysqlflexibleservers.operations#LongRunningBackupOperations.begin_delete' is invalid.
-      azure-mgmt-mysqlflexibleservers =
-        super.azure-mgmt-mysqlflexibleservers.overridePythonAttrs
-          (attrs: rec {
-            version = "1.1.0b2";
-            src = fetchPypi {
-              pname = "azure_mgmt_mysqlflexibleservers";
-              inherit version;
-              hash = "sha256-yGpEFn9VOP1uSvpUCV/gYW56/5HulsCVx9wc/kWO+Ro=";
-            };
-          });
-
-      # ModuleNotFoundError: No module named 'azure.mgmt.recoveryservicesbackup.activestamp'
-      azure-mgmt-recoveryservicesbackup =
-        super.azure-mgmt-recoveryservicesbackup.overridePythonAttrs
-          (attrs: rec {
-            version = "9.2.0";
-            src = fetchPypi {
-              pname = "azure_mgmt_recoveryservicesbackup";
-              inherit version;
-              hash = "sha256-xAKz4ipsOHnfVrw34AYxQsM1LFECWZ/xAtGYJPGzKyk=";
-            };
-          });
     };
+
+    self = py;
   };
 in
 py

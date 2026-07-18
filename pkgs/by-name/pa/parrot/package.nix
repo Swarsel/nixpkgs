@@ -1,14 +1,14 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
   cmake,
   ffmpeg,
   libopus,
   makeBinaryWrapper,
-  unstableGitUpdater,
   openssl,
   pkg-config,
+  rustPlatform,
+  unstableGitUpdater,
   yt-dlp,
 }:
 rustPlatform.buildRustPackage {
@@ -22,8 +22,6 @@ rustPlatform.buildRustPackage {
     hash = "sha256-to1SVLzw2l06cqsVOopk9KH2UyGgJ4CwWagHxaDrf4Y=";
   };
 
-  cargoHash = "sha256-be/gGKCd8/VgcjzhyMKDl5TzAuavm1rPNYBm8RLTP90=";
-
   nativeBuildInputs = [
     cmake
     makeBinaryWrapper
@@ -34,6 +32,8 @@ rustPlatform.buildRustPackage {
     libopus
     openssl
   ];
+
+  cargoHash = "sha256-be/gGKCd8/VgcjzhyMKDl5TzAuavm1rPNYBm8RLTP90=";
 
   postInstall = ''
     wrapProgram $out/bin/parrot \

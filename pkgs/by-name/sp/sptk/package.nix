@@ -1,8 +1,8 @@
 {
   lib,
   stdenv,
-  cmake,
   fetchFromGitHub,
+  cmake,
   fetchpatch,
   python3,
 }:
@@ -21,9 +21,9 @@ stdenv.mkDerivation (finalAttrs: {
   patches = [
     # fix dangling symlinks: https://github.com/sp-nitech/SPTK/pull/90
     (fetchpatch {
+      hash = "sha256-G7yyJ0uiVzcP6wQVwiDpWVZOJmOpKZRfNyoETt3xam4=";
       name = "fix-dangling.patch";
       url = "https://github.com/sp-nitech/SPTK/commit/8798c94d19e930c0947a7d1d0bc9e59a02aab567.patch";
-      hash = "sha256-G7yyJ0uiVzcP6wQVwiDpWVZOJmOpKZRfNyoETt3xam4=";
     })
   ];
 
@@ -42,9 +42,9 @@ stdenv.mkDerivation (finalAttrs: {
   doCheck = true;
 
   meta = {
-    changelog = "https://github.com/sp-nitech/SPTK/releases/tag/v${finalAttrs.version}";
     description = "Suite of speech signal processing tools";
     homepage = "https://github.com/sp-nitech/SPTK";
+    changelog = "https://github.com/sp-nitech/SPTK/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.asl20;
     maintainers = with lib.maintainers; [ fab ];
   };

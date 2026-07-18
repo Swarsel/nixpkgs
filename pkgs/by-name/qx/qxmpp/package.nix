@@ -1,14 +1,14 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitLab,
   cmake,
-  pkg-config,
-  kdePackages,
-  withGstreamer ? true,
   gst_all_1,
-  withOmemo ? true,
+  kdePackages,
   libomemo-c,
+  pkg-config,
+  withGstreamer ? true,
+  withOmemo ? true,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -16,11 +16,11 @@ stdenv.mkDerivation (finalAttrs: {
   version = "1.15.1";
 
   src = fetchFromGitLab {
-    domain = "invent.kde.org";
     owner = "libraries";
     repo = "qxmpp";
     tag = "v${finalAttrs.version}";
     hash = "sha256-PkdzEQKI0NiLvDyI+SEoKainF7UiAU3UVJQjgwYKHuo=";
+    domain = "invent.kde.org";
   };
 
   nativeBuildInputs = [
@@ -30,6 +30,7 @@ stdenv.mkDerivation (finalAttrs: {
   ++ lib.optionals (withGstreamer || withOmemo) [
     pkg-config
   ];
+
   buildInputs =
     lib.optionals withGstreamer (
       with gst_all_1;
@@ -45,6 +46,7 @@ stdenv.mkDerivation (finalAttrs: {
       kdePackages.qca
       libomemo-c
     ];
+
   cmakeFlags = [
     "-DBUILD_EXAMPLES=false"
     "-DBUILD_TESTS=false"

@@ -21,11 +21,13 @@ rustPlatform.buildRustPackage (finalAttrs: {
     description = "Multi-monitor-aware Hyprland workspace widget helper";
     homepage = "https://github.com/FieldofClay/hyprland-activewindow";
     license = lib.licenses.mit;
-    platforms = lib.platforms.linux;
+
     maintainers = with lib.maintainers; [
       kiike
       donovanglover
     ];
+
+    platforms = lib.platforms.linux;
     mainProgram = "hyprland-activewindow";
   };
 })

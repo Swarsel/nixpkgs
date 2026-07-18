@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   libversion,
   pkg-config,
   pytestCheckHook,
@@ -10,7 +10,6 @@
 buildPythonPackage rec {
   pname = "libversion";
   version = "1.2.4";
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "repology";
@@ -25,9 +24,7 @@ buildPythonPackage rec {
   '';
 
   nativeBuildInputs = [ pkg-config ];
-
   buildInputs = [ libversion ];
-
   nativeCheckInputs = [ pytestCheckHook ];
 
   preCheck = ''
@@ -35,6 +32,7 @@ buildPythonPackage rec {
     rm -r libversion
   '';
 
+  format = "setuptools";
   pythonImportsCheck = [ "libversion" ];
 
   meta = {

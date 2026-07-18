@@ -1,8 +1,8 @@
 {
   lib,
+  fetchFromGitHub,
   buildGoModule,
   cairo,
-  fetchFromGitHub,
   gobject-introspection,
   gtk-layer-shell,
   gtk3,
@@ -64,8 +64,8 @@ buildGoModule {
     homepage = "https://github.com/nwg-piotr/nwg-drawer";
     changelog = "https://github.com/nwg-piotr/nwg-drawer/releases/tag/${src.rev}";
     license = with lib.licenses; [ agpl3Plus ];
-    mainProgram = "nwg-drawer";
     maintainers = [ ];
     platforms = with lib.platforms; linux;
+    mainProgram = "nwg-drawer";
   };
 }

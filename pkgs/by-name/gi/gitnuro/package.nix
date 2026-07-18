@@ -2,11 +2,11 @@
   lib,
   stdenv,
   fetchurl,
-  makeWrapper,
   copyDesktopItems,
-  makeDesktopItem,
   jre,
   libGL,
+  makeDesktopItem,
+  makeWrapper,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -28,13 +28,6 @@ stdenv.mkDerivation (finalAttrs: {
       throw "Unsupported architecture: ${stdenv.hostPlatform.system}"
   );
 
-  icon = fetchurl {
-    url = "https://raw.githubusercontent.com/JetpackDuba/Gitnuro/4cfc45069c176f807d9bfb1a7cba410257078d3c/icons/logo.svg";
-    hash = "sha256-QGJcWTSJesIpDArOWiS3Kn1iznzeMFzvqS+CuNXh3as=";
-  };
-
-  dontUnpack = true;
-
   nativeBuildInputs = [
     makeWrapper
     copyDesktopItems
@@ -54,25 +47,34 @@ stdenv.mkDerivation (finalAttrs: {
 
   desktopItems = [
     (makeDesktopItem {
-      name = "Gitnuro";
-      exec = "gitnuro";
-      icon = "com.jetpackduba.Gitnuro";
-      desktopName = "Gitnuro";
       categories = [ "Development" ];
       comment = finalAttrs.meta.description;
+      desktopName = "Gitnuro";
+      exec = "gitnuro";
+      icon = "com.jetpackduba.Gitnuro";
+      name = "Gitnuro";
     })
   ];
+
+  dontUnpack = true;
+
+  icon = fetchurl {
+    hash = "sha256-QGJcWTSJesIpDArOWiS3Kn1iznzeMFzvqS+CuNXh3as=";
+    url = "https://raw.githubusercontent.com/JetpackDuba/Gitnuro/4cfc45069c176f807d9bfb1a7cba410257078d3c/icons/logo.svg";
+  };
 
   meta = {
     description = "FOSS Git multiplatform client based on Compose and JGit";
     homepage = "https://gitnuro.com/";
     license = lib.licenses.gpl3Plus;
+    sourceProvenance = with lib.sourceTypes; [ binaryBytecode ];
+    maintainers = with lib.maintainers; [ zendo ];
+
     platforms = [
       "x86_64-linux"
       "aarch64-linux"
     ];
-    sourceProvenance = with lib.sourceTypes; [ binaryBytecode ];
-    maintainers = with lib.maintainers; [ zendo ];
+
     mainProgram = "gitnuro";
   };
 })

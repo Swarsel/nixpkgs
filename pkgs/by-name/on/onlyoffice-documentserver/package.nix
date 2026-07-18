@@ -1,20 +1,19 @@
 {
+  lib,
+  stdenv,
+  fetchurl,
+  fetchFromGitHub,
   buildFHSEnv,
   buildNpmPackage,
   callPackage,
   dpkg,
-  fetchFromGitHub,
-  fetchurl,
   gcc-unwrapped,
-  lib,
   lndir,
   nixosTests,
   pkg-config,
   runCommand,
-  stdenv,
   vips,
   writeScript,
-
   extra-fonts ? [ ],
 }:
 
@@ -22,52 +21,56 @@ let
   version = "9.3.1";
   x2t = callPackage ./x2t.nix { };
   server-src = fetchFromGitHub {
+    hash = "sha256-uN1L/4I7wrg0BqAAu3zdn8LqtdfJDAHnAMbCvzQnOvI=";
     owner = "ONLYOFFICE";
     repo = "server";
     tag = "v9.3.1.1";
-    hash = "sha256-uN1L/4I7wrg0BqAAu3zdn8LqtdfJDAHnAMbCvzQnOvI=";
   };
   # This is required but not included in the submodules for some reason.
   # https://github.com/ONLYOFFICE/server/blob/34adaeeb4cc1e032a5cf188924880a25546dc67c/Makefile#L81-L83
   document-templates-src = fetchFromGitHub {
+    hash = "sha256-+52+MK/8DARJrQRbIpN5nk3j3J9cy6Wd1FDMnCVZKRE=";
     owner = "ONLYOFFICE";
     repo = "document-templates";
     tag = "v9.3.1.1";
-    hash = "sha256-+52+MK/8DARJrQRbIpN5nk3j3J9cy6Wd1FDMnCVZKRE=";
   };
   document-formats-src = fetchFromGitHub {
+    hash = "sha256-HpGhV+PGbQ5hHH6mPQTAdFpBT3nUni4VtDxTExJypAc=";
     owner = "ONLYOFFICE";
     repo = "document-formats";
     tag = "v9.3.1.1";
-    hash = "sha256-HpGhV+PGbQ5hHH6mPQTAdFpBT3nUni4VtDxTExJypAc=";
   };
   common = buildNpmPackage (finalAttrs: {
-    name = "onlyoffice-server-Common";
     src = server-src;
-    sourceRoot = "${finalAttrs.src.name}/Common";
-    npmDepsHash = "sha256-zFGqDtnNFzXCwp6uvK04GDMRG6BATv6ti3Wi8ikLjBU=";
-    dontNpmBuild = true;
+
     postPatch = ''
       # https://github.com/ONLYOFFICE/build_tools/blob/ef8153c053bed41909ceb0762b124f8fe7faa0a7/scripts/build_server.py#L34
       sed -e "s/^const buildVersion = '[0-9.]*'/const buildVersion = '${version}'/" -i sources/commondefines.js
     '';
+
+    npmDepsHash = "sha256-zFGqDtnNFzXCwp6uvK04GDMRG6BATv6ti3Wi8ikLjBU=";
+
     postInstall = ''
       ln -s $out/lib/node_modules/common $out/lib/node_modules/Common
     '';
+
+    dontNpmBuild = true;
+    name = "onlyoffice-server-Common";
+    sourceRoot = "${finalAttrs.src.name}/Common";
   });
   docservice = buildNpmPackage (finalAttrs: {
-    name = "onlyoffice-server-DocService";
     src = server-src;
-    sourceRoot = "${finalAttrs.src.name}/DocService";
+
     nativeBuildInputs = [
       pkg-config
     ];
+
     buildInputs = [
       vips.dev
     ];
+
     npmDepsHash = "sha256-eD7hyeIcSL0nLcmBE5+gDJcjT+LdUaqIZ+g5sPcn8HQ=";
-    npmFlags = [ "--loglevel=verbose" ];
-    dontNpmBuild = true;
+
     postInstall = ''
       # it would be neater if this were a 'ln -s', but this is not possible
       # because common/sources/notificationService.js has a circular dependency
@@ -75,21 +78,24 @@ let
       cp -r ${common}/lib/node_modules/common $out/lib/node_modules/Common
       ln -s $out/lib/node_modules/coauthoring $out/lib/node_modules/DocService
     '';
-  });
-  fileconverter = buildNpmPackage (finalAttrs: {
-    name = "onlyoffice-server-FileConverter";
-    src = server-src;
-
-    sourceRoot = "${finalAttrs.src.name}/FileConverter";
-
-    npmDepsHash = "sha256-zGLZBbQYV2z0HgQKISKVhclRKbMB8RYEX13H0mB6qJw=";
 
     dontNpmBuild = true;
+    name = "onlyoffice-server-DocService";
+    npmFlags = [ "--loglevel=verbose" ];
+    sourceRoot = "${finalAttrs.src.name}/DocService";
+  });
+  fileconverter = buildNpmPackage (finalAttrs: {
+    src = server-src;
+    npmDepsHash = "sha256-zGLZBbQYV2z0HgQKISKVhclRKbMB8RYEX13H0mB6qJw=";
 
     postInstall = ''
       ln -s ${common}/lib/node_modules/common $out/lib/node_modules/Common
       ln -s ${docservice}/lib/node_modules/coauthoring $out/lib/node_modules/DocService
     '';
+
+    dontNpmBuild = true;
+    name = "onlyoffice-server-FileConverter";
+    sourceRoot = "${finalAttrs.src.name}/FileConverter";
   });
 
   # https://github.com/ONLYOFFICE/document-server-package/blob/master/common/documentserver/bin/documentserver-generate-allfonts.sh.m4
@@ -214,19 +220,8 @@ let
         docservice
         fileconverter
         ;
-      tests = {
-        nixosTest = nixosTests.onlyoffice;
-      }
-      // x2t.tests;
+
       fhs = buildFHSEnv {
-        name = "onlyoffice-wrapper";
-
-        targetPkgs = pkgs: [
-          gcc-unwrapped.lib
-          onlyoffice-documentserver
-          fileconverter
-        ];
-
         extraBuildCommands = ''
           mkdir -p $out/var/{lib/onlyoffice,www}
           cp -ar ${onlyoffice-documentserver}/var/www/* $out/var/www/
@@ -235,22 +230,38 @@ let
         extraBwrapArgs = [
           "--bind var/lib/onlyoffice/ var/lib/onlyoffice/"
         ];
+
+        name = "onlyoffice-wrapper";
+
+        targetPkgs = pkgs: [
+          gcc-unwrapped.lib
+          onlyoffice-documentserver
+          fileconverter
+        ];
       };
+
+      tests = {
+        nixosTest = nixosTests.onlyoffice;
+      }
+      // x2t.tests;
     };
 
     meta = {
       description = "ONLYOFFICE Document Server is an online office suite comprising viewers and editors";
+
       longDescription = ''
         ONLYOFFICE Document Server is an online office suite comprising viewers and editors for texts, spreadsheets and presentations,
         fully compatible with Office Open XML formats: .docx, .xlsx, .pptx and enabling collaborative editing in real time.
       '';
+
       homepage = "https://github.com/ONLYOFFICE/DocumentServer";
       license = lib.licenses.agpl3Plus;
+      maintainers = with lib.maintainers; [ raboof ];
+
       platforms = [
         "x86_64-linux"
         "aarch64-linux"
       ];
-      maintainers = with lib.maintainers; [ raboof ];
     };
   };
 in

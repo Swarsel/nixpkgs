@@ -1,12 +1,12 @@
 {
-  fetchFromGitHub,
   lib,
+  stdenv,
+  fetchFromGitHub,
   libiconv,
   libpg_query,
   openssl,
   pkg-config,
   rustPlatform,
-  stdenv,
 }:
 rustPlatform.buildRustPackage (finalAttrs: {
   pname = "squawk";
@@ -19,8 +19,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-JpRuZDJSGl5mMakmjAvDYA/Q7yxr5wa0oYmGJOCeFZg=";
   };
 
-  cargoHash = "sha256-ADia4CjTqhkccwpi8v2TStl+xlDpIeZfuVFvmSBwrCM=";
-
   nativeBuildInputs = [
     pkg-config
     rustPlatform.bindgenHook
@@ -31,10 +29,11 @@ rustPlatform.buildRustPackage (finalAttrs: {
     openssl
   ];
 
-  env = {
-    OPENSSL_NO_VENDOR = 1;
+  cargoHash = "sha256-ADia4CjTqhkccwpi8v2TStl+xlDpIeZfuVFvmSBwrCM=";
 
+  env = {
     LIBPG_QUERY_PATH = libpg_query;
+    OPENSSL_NO_VENDOR = 1;
   };
 
   checkFlags = [

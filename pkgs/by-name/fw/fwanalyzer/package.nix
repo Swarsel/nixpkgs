@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   e2tools,
   makeWrapper,
   mtools,
@@ -18,11 +18,10 @@ buildGoModule (finalAttrs: {
     sha256 = "sha256-fcqtyfpxdjD+1GsYl05RSJaFDoLSYQDdWcQV6a+vNGA=";
   };
 
-  vendorHash = "sha256-nLr12VQogr4nV9E/DJu2XTcgEi7GsOdOn/ZqVk7HS7I=";
-
-  subPackages = [ "cmd/fwanalyzer" ];
-
   nativeBuildInputs = [ makeWrapper ];
+  vendorHash = "sha256-nLr12VQogr4nV9E/DJu2XTcgEi7GsOdOn/ZqVk7HS7I=";
+  # The tests requires an additional setup (unpacking images, etc.)
+  doCheck = false;
 
   postInstall = ''
     wrapProgram "$out/bin/fwanalyzer" --prefix PATH : "${
@@ -33,8 +32,7 @@ buildGoModule (finalAttrs: {
     }"
   '';
 
-  # The tests requires an additional setup (unpacking images, etc.)
-  doCheck = false;
+  subPackages = [ "cmd/fwanalyzer" ];
 
   meta = {
     description = "Tool to analyze filesystem images";

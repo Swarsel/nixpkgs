@@ -2,9 +2,9 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  zlib,
-  libdeflate,
   isa-l,
+  libdeflate,
+  zlib,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -29,18 +29,18 @@ stdenv.mkDerivation (finalAttrs: {
     "BINDIR=$(out)/bin"
   ];
 
-  hardeningDisable = [ "format" ];
-
   preInstall = ''
     mkdir -p "$out/bin"
   '';
 
+  hardeningDisable = [ "format" ];
+
   meta = {
     description = "Toolkit for processing sequences in FASTA/Q formats";
-    mainProgram = "seqtk";
-    license = lib.licenses.mit;
     homepage = "https://github.com/lh3/seqtk";
-    platforms = lib.platforms.all;
+    license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ bwlang ];
+    platforms = lib.platforms.all;
+    mainProgram = "seqtk";
   };
 })

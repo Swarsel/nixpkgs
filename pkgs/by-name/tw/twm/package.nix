@@ -1,12 +1,12 @@
 {
   lib,
-  fetchFromGitHub,
   stdenv,
-  rustPlatform,
+  fetchFromGitHub,
+  installShellFiles,
+  nix-update-script,
   openssl,
   pkg-config,
-  nix-update-script,
-  installShellFiles,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -20,15 +20,16 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-GJTy0uIYALp3tp/ZO+zEQoQk8fF/5R8jbWBy92ID7aU=";
   };
 
-  cargoHash = "sha256-ctpYZCVGGrnS7eHeia0NnK1uc0rLi8GpmmBhAIz5WzY=";
-
   nativeBuildInputs = [
     pkg-config
     installShellFiles
   ];
+
   buildInputs = [
     openssl
   ];
+
+  cargoHash = "sha256-ctpYZCVGGrnS7eHeia0NnK1uc0rLi8GpmmBhAIz5WzY=";
 
   postInstall = lib.optionalString (stdenv.buildPlatform.canExecute stdenv.hostPlatform) ''
     installShellCompletion --cmd twm \

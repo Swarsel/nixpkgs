@@ -1,10 +1,10 @@
 {
   lib,
+  fetchFromGitHub,
   aiohttp,
   aioresponses,
   buildPythonPackage,
   deprecated,
-  fetchFromGitHub,
   expects,
   pytest-asyncio,
   pytest-cov-stub,
@@ -17,7 +17,6 @@
 buildPythonPackage rec {
   pname = "aiosyncthing";
   version = "0.7.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "zhulik";
@@ -25,14 +24,6 @@ buildPythonPackage rec {
     tag = "v${version}";
     hash = "sha256-0jx61zs6yQqAIwSOO1zCUOkoZES+K/POtIGoWzr29bI=";
   };
-
-  build-system = [ setuptools ];
-
-  dependencies = [
-    aiohttp
-    deprecated
-    yarl
-  ];
 
   nativeCheckInputs = [
     aioresponses
@@ -43,8 +34,16 @@ buildPythonPackage rec {
     pytest-mock
   ];
 
-  pytestFlags = [ "--asyncio-mode=auto" ];
+  build-system = [ setuptools ];
 
+  dependencies = [
+    aiohttp
+    deprecated
+    yarl
+  ];
+
+  pyproject = true;
+  pytestFlags = [ "--asyncio-mode=auto" ];
   pythonImportsCheck = [ "aiosyncthing" ];
 
   meta = {

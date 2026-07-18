@@ -1,24 +1,20 @@
 {
   lib,
-  buildPythonPackage,
-  fetchFromGitHub,
   stdenv,
-
-  # build-system
-  pybind11,
-  setuptools,
-
+  fetchFromGitHub,
   # native dependencies
   abseil-cpp,
-
+  buildPythonPackage,
+  # build-system
+  pybind11,
   # tests
   pytestCheckHook,
+  setuptools,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "webrtc-noise-gain";
   version = "1.3.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "rhasspy";
@@ -41,17 +37,16 @@ buildPythonPackage (finalAttrs: {
       'machine = "${lib.toLower processor}"'
   '';
 
-  build-system = [ setuptools ];
-
   buildInputs = [ abseil-cpp ];
-
-  pythonImportsCheck = [ "webrtc_noise_gain" ];
-
   nativeCheckInputs = [ pytestCheckHook ];
 
   preCheck = ''
     rm -rf webrtc_noise_gain
   '';
+
+  build-system = [ setuptools ];
+  pyproject = true;
+  pythonImportsCheck = [ "webrtc_noise_gain" ];
 
   meta = {
     description = "Tiny wrapper around webrtc-audio-processing for noise suppression/auto gain only";

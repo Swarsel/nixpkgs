@@ -1,18 +1,17 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   django,
+  pytest-django,
+  pytestCheckHook,
   setuptools,
   setuptools-scm,
-  pytestCheckHook,
-  pytest-django,
 }:
 
 buildPythonPackage rec {
   pname = "django-json-widget";
   version = "2.1.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "jmrivas86";
@@ -20,13 +19,6 @@ buildPythonPackage rec {
     tag = "v${version}";
     hash = "sha256-AABJHWoEIcyJyRHv3sp1d1l6ZByF8Q5h+xEHJe/4uC0=";
   };
-
-  build-system = [
-    setuptools
-    setuptools-scm
-  ];
-
-  dependencies = [ django ];
 
   nativeCheckInputs = [
     pytest-django
@@ -37,6 +29,13 @@ buildPythonPackage rec {
     export DJANGO_SETTINGS_MODULE=tests.settings
   '';
 
+  build-system = [
+    setuptools
+    setuptools-scm
+  ];
+
+  dependencies = [ django ];
+  pyproject = true;
   pythonImportsCheck = [ "django_json_widget" ];
 
   meta = {

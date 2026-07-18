@@ -11,7 +11,6 @@
 buildPythonPackage rec {
   pname = "azure-mgmt-botservice";
   version = "2.0.0";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
@@ -19,6 +18,8 @@ buildPythonPackage rec {
     extension = "zip";
   };
 
+  # no tests included
+  doCheck = false;
   build-system = [ setuptools ];
 
   dependencies = [
@@ -27,8 +28,7 @@ buildPythonPackage rec {
     msrest
   ];
 
-  # no tests included
-  doCheck = false;
+  pyproject = true;
 
   pythonImportsCheck = [
     "azure.common"

@@ -10,62 +10,53 @@ in
 {
   options.services.prometheus.alertmanagerWebhookLogger = {
     enable = lib.mkEnableOption "Alertmanager Webhook Logger";
-
     package = lib.mkPackageOption pkgs "alertmanager-webhook-logger" { };
 
     extraFlags = lib.mkOption {
-      type = lib.types.listOf lib.types.str;
       default = [ ];
       description = "Extra command line options to pass to alertmanager-webhook-logger.";
+      type = lib.types.listOf lib.types.str;
     };
   };
 
   config = lib.mkIf cfg.enable {
     systemd.services.alertmanager-webhook-logger = {
+      after = [ "network-online.target" ];
       description = "Alertmanager Webhook Logger";
 
-      wantedBy = [ "multi-user.target" ];
-      after = [ "network-online.target" ];
-      wants = [ "network-online.target" ];
-
       serviceConfig = {
+        CapabilityBoundingSet = [ "" ];
+        DeviceAllow = [ "" ];
+        DynamicUser = true;
+
         ExecStart = ''
           ${cfg.package}/bin/alertmanager-webhook-logger \
           ${lib.escapeShellArgs cfg.extraFlags}
         '';
 
-        CapabilityBoundingSet = [ "" ];
-        DeviceAllow = [ "" ];
-        DynamicUser = true;
-        NoNewPrivileges = true;
-
-        MemoryDenyWriteExecute = true;
-
         LockPersonality = true;
-
-        ProtectProc = "invisible";
-        ProtectSystem = "strict";
-        ProtectHome = "tmpfs";
-
-        PrivateTmp = true;
+        MemoryDenyWriteExecute = true;
+        NoNewPrivileges = true;
         PrivateDevices = true;
         PrivateIPC = true;
-
+        PrivateTmp = true;
         ProcSubset = "pid";
-
-        ProtectHostname = true;
         ProtectClock = true;
-        ProtectKernelTunables = true;
-        ProtectKernelModules = true;
-        ProtectKernelLogs = true;
         ProtectControlGroups = true;
-
+        ProtectHome = "tmpfs";
+        ProtectHostname = true;
+        ProtectKernelLogs = true;
+        ProtectKernelModules = true;
+        ProtectKernelTunables = true;
+        ProtectProc = "invisible";
+        ProtectSystem = "strict";
         Restart = "on-failure";
 
         RestrictAddressFamilies = [
           "AF_INET"
           "AF_INET6"
         ];
+
         RestrictNamespaces = true;
         RestrictRealtime = true;
         RestrictSUIDSGID = true;
@@ -79,6 +70,9 @@ in
           "~@swap"
         ];
       };
+
+      wantedBy = [ "multi-user.target" ];
+      wants = [ "network-online.target" ];
     };
   };
 

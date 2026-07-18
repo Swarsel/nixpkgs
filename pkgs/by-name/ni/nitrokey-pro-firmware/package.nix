@@ -2,10 +2,10 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  writeShellScriptBin,
+  gcc-arm-embedded,
   python3,
   srecord,
-  gcc-arm-embedded,
+  writeShellScriptBin,
 }:
 
 let
@@ -19,8 +19,9 @@ let
 in
 
 stdenv.mkDerivation {
-  pname = "nitrokey-pro-firmware";
   inherit version;
+  pname = "nitrokey-pro-firmware";
+
   src = fetchFromGitHub {
     owner = "Nitrokey";
     repo = "nitrokey-pro-firmware";
@@ -51,11 +52,13 @@ stdenv.mkDerivation {
     description = "Firmware for the Nitrokey Pro device";
     homepage = "https://github.com/Nitrokey/nitrokey-pro-firmware";
     license = lib.licenses.gpl3Plus;
+
     maintainers = with lib.maintainers; [
       imadnyc
       kiike
       amerino
     ];
+
     platforms = lib.platforms.unix;
   };
 }

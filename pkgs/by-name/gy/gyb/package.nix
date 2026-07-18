@@ -7,7 +7,6 @@
 python3.pkgs.buildPythonApplication (finalAttrs: {
   pname = "gyb";
   version = "1.95";
-  pyproject = false;
 
   src = fetchFromGitHub {
     owner = "GAM-team";
@@ -16,13 +15,13 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     hash = "sha256-WCM+8Qvu8EF5gC5BSEbkqcyITIiHELFp1RP+Oko4MRE=";
   };
 
-  dependencies = with python3.pkgs; [
-    google-api-python-client
-    google-auth
-    google-auth-oauthlib
-    google-auth-httplib2
-    httplib2
-  ];
+  checkPhase = ''
+    runHook preCheck
+
+    PYTHONPATH="" $out/bin/gyb --help > /dev/null
+
+    runHook postCheck
+  '';
 
   installPhase = ''
     runHook preInstall
@@ -34,22 +33,25 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     runHook postInstall
   '';
 
-  checkPhase = ''
-    runHook preCheck
+  dependencies = with python3.pkgs; [
+    google-api-python-client
+    google-auth
+    google-auth-oauthlib
+    google-auth-httplib2
+    httplib2
+  ];
 
-    PYTHONPATH="" $out/bin/gyb --help > /dev/null
-
-    runHook postCheck
-  '';
+  pyproject = false;
 
   meta = {
     description = ''
       Got Your Back (GYB) is a command line tool for backing up your Gmail
       messages to your computer using Gmail's API over HTTPS.
     '';
+
     homepage = "https://github.com/GAM-team/got-your-back";
     license = lib.licenses.asl20;
-    mainProgram = "gyb";
     maintainers = with lib.maintainers; [ austinbutler ];
+    mainProgram = "gyb";
   };
 })

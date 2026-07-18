@@ -2,41 +2,39 @@
   lib,
   stdenv,
   fetchurl,
-  # Image file formats
-  libjpeg,
-  libtiff,
+  bzip2,
+  diffoscopeMinimal,
+  enlightenment,
+  feh,
+  fluxbox,
+  freetype,
   giflib,
-  libpng,
-  libwebp,
-  libjxl,
-  libspectre,
+  gitUpdater,
+  icewm,
+  # for passthru.tests
+  libcaca,
+  libheif,
   # imlib2 can load images from ID3 tags.
   libid3tag,
+  # Image file formats
+  libjpeg,
+  libjxl,
+  libpng,
   librsvg,
-  libheif,
-  freetype,
-  bzip2,
+  libspectre,
+  libtiff,
+  libwebp,
+  libxext,
+  libxft,
+  openbox,
   pkg-config,
-  x11Support ? true,
-  webpSupport ? true,
-  svgSupport ? false,
+  testers,
   heifSupport ? false,
   jxlSupport ? false,
   psSupport ? false,
-
-  # for passthru.tests
-  libcaca,
-  diffoscopeMinimal,
-  feh,
-  icewm,
-  openbox,
-  fluxbox,
-  enlightenment,
-  libxft,
-  libxext,
-  testers,
-
-  gitUpdater,
+  svgSupport ? false,
+  webpSupport ? true,
+  x11Support ? true,
 }:
 
 let
@@ -50,6 +48,14 @@ stdenv.mkDerivation (finalAttrs: {
     url = "mirror://sourceforge/enlightenment/imlib2-${finalAttrs.version}.tar.xz";
     hash = "sha256-JQ+XUvadxSLlKagaqpOVcF9/wxL/JFPl3lmsK6HyhY8=";
   };
+
+  outputs = [
+    "bin"
+    "out"
+    "dev"
+  ];
+
+  nativeBuildInputs = [ pkg-config ];
 
   buildInputs = [
     libjpeg
@@ -70,10 +76,6 @@ stdenv.mkDerivation (finalAttrs: {
   ++ optional jxlSupport libjxl
   ++ optional psSupport libspectre;
 
-  nativeBuildInputs = [ pkg-config ];
-
-  enableParallelBuilding = true;
-
   # Do not build amd64 assembly code on Darwin, because it fails to compile
   # with unknown directive errors
   configureFlags =
@@ -82,11 +84,7 @@ stdenv.mkDerivation (finalAttrs: {
     ++ optional (!heifSupport) "--without-heif"
     ++ optional (!x11Support) "--without-x";
 
-  outputs = [
-    "bin"
-    "out"
-    "dev"
-  ];
+  enableParallelBuilding = true;
 
   passthru = {
     tests = {
@@ -99,12 +97,14 @@ stdenv.mkDerivation (finalAttrs: {
         fluxbox
         enlightenment
         ;
+
       pkg-config = testers.testMetaPkgConfig finalAttrs.finalPackage;
     };
+
     updateScript = gitUpdater {
+      rev-prefix = "v";
       # No nicer place to find latest release.
       url = "https://git.enlightenment.org/old/legacy-imlib2.git";
-      rev-prefix = "v";
     };
   };
 
@@ -122,8 +122,8 @@ stdenv.mkDerivation (finalAttrs: {
     homepage = "https://docs.enlightenment.org/api/imlib2/html";
     changelog = "https://git.enlightenment.org/old/legacy-imlib2/raw/tag/v${finalAttrs.version}/ChangeLog";
     license = lib.licenses.imlib2;
-    pkgConfigModules = [ "imlib2" ];
-    platforms = lib.platforms.unix;
     maintainers = [ ];
+    platforms = lib.platforms.unix;
+    pkgConfigModules = [ "imlib2" ];
   };
 })

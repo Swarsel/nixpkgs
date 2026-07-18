@@ -2,31 +2,24 @@
   lib,
   stdenv,
   fetchFromGitHub,
+  docbook-xsl-nons,
+  docbook_xml_dtd_43,
+  gobject-introspection,
+  gtk-doc,
+  gtk4,
   meson,
   mesonEmulatorHook,
   ninja,
   pkg-config,
-  gtk-doc,
-  docbook-xsl-nons,
-  docbook_xml_dtd_43,
+  vala,
+  wayland,
   wayland-protocols,
   wayland-scanner,
-  wayland,
-  gtk4,
-  gobject-introspection,
-  vala,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
   pname = "gtk4-layer-shell";
   version = "1.3.0";
-
-  outputs = [
-    "out"
-    "dev"
-    "devdoc"
-  ];
-  outputBin = "devdoc";
 
   src = fetchFromGitHub {
     owner = "wmww";
@@ -35,11 +28,13 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-2OZsLUUsWVk5oh5Y/UFjTqzcM+u2NSPG/YS7uT3iRfc=";
   };
 
-  strictDeps = true;
-
-  depsBuildBuild = [
-    pkg-config
+  outputs = [
+    "out"
+    "dev"
+    "devdoc"
   ];
+
+  strictDeps = true;
 
   nativeBuildInputs = [
     meson
@@ -65,12 +60,18 @@ stdenv.mkDerivation (finalAttrs: {
     "-Dexamples=true"
   ];
 
+  depsBuildBuild = [
+    pkg-config
+  ];
+
+  outputBin = "devdoc";
+
   meta = {
     description = "Library to create panels and other desktop components for Wayland using the Layer Shell protocol and GTK4";
     homepage = "https://github.com/wmww/gtk4-layer-shell";
-    mainProgram = "gtk4-layer-demo";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ donovanglover ];
     platforms = lib.platforms.linux;
+    mainProgram = "gtk4-layer-demo";
   };
 })

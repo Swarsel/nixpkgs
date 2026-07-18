@@ -3,8 +3,8 @@
   stdenv,
   fetchurl,
   autoreconfHook,
-  gettext,
   freebsd,
+  gettext,
   netbsd,
 }:
 
@@ -26,34 +26,8 @@ stdenv.mkDerivation (finalAttrs: {
     ./fix-configure-main.patch
   ];
 
-  enableParallelBuilding = true;
-  # Lacks dependencies:
-  #   mkdir ...-libelf-0.8.13/lib
-  #   mkdir ...-libelf-0.8.13/lib
-  # mkdir: cannot create directory '...-libelf-0.8.13/lib': File exists
-  enableParallelInstalling = false;
-
-  doCheck = true;
-
-  preConfigure =
-    if !stdenv.hostPlatform.useAndroidPrebuilt then
-      null
-    else
-      ''
-        sed -i 's|DISTSUBDIRS = lib po|DISTSUBDIRS = lib|g' Makefile.in
-        sed -i 's|SUBDIRS = lib @POSUB@|SUBDIRS = lib|g' Makefile.in
-      '';
-
-  configureFlags =
-    [ ]
-    # Configure check for dynamic lib support is broken, see
-    # http://lists.uclibc.org/pipermail/uclibc-cvs/2005-August/019383.html
-    ++ lib.optional (stdenv.hostPlatform != stdenv.buildPlatform) "mr_cv_target_elf=yes"
-    # Libelf's custom NLS macros fail to determine the catalog file extension
-    # on Darwin, so disable NLS for now.
-    ++ lib.optional stdenv.hostPlatform.isDarwin "--disable-nls";
-
   strictDeps = true;
+
   nativeBuildInputs =
     (
       if stdenv.hostPlatform.isFreeBSD then
@@ -68,14 +42,37 @@ stdenv.mkDerivation (finalAttrs: {
     # the test and allows `configure` to detect clang properly.
     ++ [ autoreconfHook ];
 
+  configureFlags =
+    [ ]
+    # Configure check for dynamic lib support is broken, see
+    # http://lists.uclibc.org/pipermail/uclibc-cvs/2005-August/019383.html
+    ++ lib.optional (stdenv.hostPlatform != stdenv.buildPlatform) "mr_cv_target_elf=yes"
+    # Libelf's custom NLS macros fail to determine the catalog file extension
+    # on Darwin, so disable NLS for now.
+    ++ lib.optional stdenv.hostPlatform.isDarwin "--disable-nls";
+
+  preConfigure =
+    if !stdenv.hostPlatform.useAndroidPrebuilt then
+      null
+    else
+      ''
+        sed -i 's|DISTSUBDIRS = lib po|DISTSUBDIRS = lib|g' Makefile.in
+        sed -i 's|SUBDIRS = lib @POSUB@|SUBDIRS = lib|g' Makefile.in
+      '';
+
+  doCheck = true;
+  enableParallelBuilding = true;
+  # Lacks dependencies:
+  #   mkdir ...-libelf-0.8.13/lib
+  #   mkdir ...-libelf-0.8.13/lib
+  # mkdir: cannot create directory '...-libelf-0.8.13/lib': File exists
+  enableParallelInstalling = false;
+
   meta = {
     description = "ELF object file access library";
-
     homepage = "https://github.com/Distrotech/libelf";
-
     license = lib.licenses.lgpl2Plus;
-
-    platforms = lib.platforms.all;
     maintainers = [ ];
+    platforms = lib.platforms.all;
   };
 })

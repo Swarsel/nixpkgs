@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule (finalAttrs: {
@@ -19,14 +19,16 @@ buildGoModule (finalAttrs: {
 
   meta = {
     description = "Automatic Linux privilege escalation";
+
     longDescription = ''
       Automatically exploit low-hanging fruit to pop a root shell. Traitor packages
       up a bunch of methods to exploit local misconfigurations and vulnerabilities
       (including most of GTFOBins) in order to pop a root shell.
     '';
+
     homepage = "https://github.com/liamg/traitor";
-    platforms = lib.platforms.linux;
     license = with lib.licenses; [ mit ];
     maintainers = with lib.maintainers; [ fab ];
+    platforms = lib.platforms.linux;
   };
 })

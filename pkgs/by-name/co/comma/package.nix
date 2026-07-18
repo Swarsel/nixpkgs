@@ -1,21 +1,19 @@
 {
+  lib,
   stdenv,
   fetchFromGitHub,
-  installShellFiles,
+  buildPackages,
   fzy,
-  lib,
-  nix-index-unwrapped,
+  installShellFiles,
   nix,
+  nix-index-unwrapped,
   rustPlatform,
   versionCheckHook,
-  buildPackages,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
   pname = "comma";
   version = "2.4.1";
-
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "nix-community";
@@ -24,10 +22,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-XZB0zx4wyNzy0LggAmh2gT2aEWAqVI9NljRoOkeK0c8=";
   };
 
-  cargoHash = "sha256-lY5HwWZm9X0xusLcC6MciAgSWEskNElrjhe9fexR6g8=";
-
-  nativeBuildInputs = [ installShellFiles ];
-
   postPatch = ''
     substituteInPlace ./src/main.rs \
       --replace-fail '"nix-locate"' '"${lib.getExe' nix-index-unwrapped "nix-locate"}"' \
@@ -35,6 +29,9 @@ rustPlatform.buildRustPackage (finalAttrs: {
       --replace-fail '"nix-env"' '"${lib.getExe' nix "nix-env"}"' \
       --replace-fail '"fzy"' '"${lib.getExe fzy}"'
   '';
+
+  nativeBuildInputs = [ installShellFiles ];
+  cargoHash = "sha256-lY5HwWZm9X0xusLcC6MciAgSWEskNElrjhe9fexR6g8=";
 
   postInstall =
     let
@@ -75,14 +72,15 @@ rustPlatform.buildRustPackage (finalAttrs: {
       EOF
     '';
 
-  nativeInstallCheckInputs = [ versionCheckHook ];
   doInstallCheck = true;
+  nativeInstallCheckInputs = [ versionCheckHook ];
+  __structuredAttrs = true;
 
   meta = {
-    homepage = "https://github.com/nix-community/comma";
     description = "Runs programs without installing them";
+    homepage = "https://github.com/nix-community/comma";
     license = lib.licenses.mit;
-    mainProgram = "comma";
     maintainers = with lib.maintainers; [ artturin ];
+    mainProgram = "comma";
   };
 })

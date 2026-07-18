@@ -1,8 +1,8 @@
 {
   lib,
+  aiohttp,
   buildPythonPackage,
   fetchPypi,
-  aiohttp,
   pytest-aiohttp,
   pytest-asyncio,
   pytestCheckHook,
@@ -11,7 +11,6 @@
 buildPythonPackage rec {
   pname = "pytomorrowio";
   version = "0.3.6";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
@@ -31,6 +30,7 @@ buildPythonPackage rec {
     "test_errors"
   ];
 
+  format = "setuptools";
   pythonImportsCheck = [ "pytomorrowio" ];
 
   meta = {

@@ -1,15 +1,13 @@
 {
-  stdenvNoCC,
+  buildEnv,
   kmod,
   modules,
-  buildEnv,
+  stdenvNoCC,
   name ? "kernel-modules",
 }:
 
 buildEnv {
   inherit name;
-
-  paths = modules;
 
   postBuild = ''
     source ${stdenvNoCC}/setup
@@ -37,4 +35,6 @@ buildEnv {
         ${kmod}/bin/depmod -b $out -C $out/etc/depmod.d -a $kernelVersion
     fi
   '';
+
+  paths = modules;
 }

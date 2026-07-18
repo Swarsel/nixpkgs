@@ -1,22 +1,22 @@
 {
   lib,
   fetchurl,
-  fetchpatch,
+  alcotest,
   buildDunePackage,
-  repr,
-  ppx_repr,
+  cmdliner,
+  crowbar,
+  fetchpatch,
   fmt,
   logs,
-  mtime,
-  stdlib-shims,
-  cmdliner,
-  progress,
-  semaphore-compat,
-  optint,
-  alcotest,
-  crowbar,
-  re,
   lru,
+  mtime,
+  optint,
+  ppx_repr,
+  progress,
+  re,
+  repr,
+  semaphore-compat,
+  stdlib-shims,
 }:
 
 buildDunePackage (finalAttrs: {
@@ -31,9 +31,9 @@ buildDunePackage (finalAttrs: {
   patches = [
     # Compatibility with cmdliner 2.0
     (fetchpatch {
-      url = "https://github.com/mirage/index/commit/aa7aa4734213f74a246f66719a1085b522f431d4.patch";
       hash = "sha256-Vc4r/I3TeIy/D4FcYzj4vRrH87vI2JRagqAXhD9BUxc=";
       includes = [ "*.ml" ];
+      url = "https://github.com/mirage/index/commit/aa7aa4734213f74a246f66719a1085b522f431d4.patch";
     })
   ];
 
@@ -42,11 +42,10 @@ buildDunePackage (finalAttrs: {
     substituteInPlace test/unix/dune --replace-warn logs.fmt 'logs.fmt logs.threaded'
   '';
 
-  minimalOCamlVersion = "4.08";
-
   buildInputs = [
     stdlib-shims
   ];
+
   propagatedBuildInputs = [
     cmdliner
     fmt
@@ -60,12 +59,15 @@ buildDunePackage (finalAttrs: {
     lru
   ];
 
+  doCheck = true;
+
   checkInputs = [
     alcotest
     crowbar
     re
   ];
-  doCheck = true;
+
+  minimalOCamlVersion = "4.08";
 
   meta = {
     description = "Platform-agnostic multi-level index";

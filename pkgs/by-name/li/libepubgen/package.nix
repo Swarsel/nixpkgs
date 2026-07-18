@@ -1,13 +1,13 @@
 {
   lib,
   stdenv,
-  fetchgit,
   autoreconfHook,
-  pkg-config,
   boost,
   cppunit,
+  fetchgit,
   librevenge,
   libxml2,
+  pkg-config,
 }:
 
 stdenv.mkDerivation (finalAttrs: {

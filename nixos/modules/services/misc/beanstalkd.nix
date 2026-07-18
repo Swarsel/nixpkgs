@@ -17,24 +17,24 @@ in
       enable = lib.mkEnableOption "the Beanstalk work queue";
 
       listen = {
-        port = lib.mkOption {
-          type = lib.types.port;
-          description = "TCP port that will be used to accept client connections.";
-          default = 11300;
+        address = lib.mkOption {
+          default = "127.0.0.1";
+          description = "IP address to listen on.";
+          example = "0.0.0.0";
+          type = lib.types.str;
         };
 
-        address = lib.mkOption {
-          type = lib.types.str;
-          description = "IP address to listen on.";
-          default = "127.0.0.1";
-          example = "0.0.0.0";
+        port = lib.mkOption {
+          default = 11300;
+          description = "TCP port that will be used to accept client connections.";
+          type = lib.types.port;
         };
       };
 
       openFirewall = lib.mkOption {
-        type = lib.types.bool;
         default = false;
         description = "Whether to open ports in the firewall for the server.";
+        type = lib.types.bool;
       };
     };
   };
@@ -43,22 +43,24 @@ in
 
   config = lib.mkIf cfg.enable {
 
+    environment.systemPackages = [ pkg ];
+
     networking.firewall = lib.mkIf cfg.openFirewall {
       allowedTCPPorts = [ cfg.listen.port ];
     };
 
-    environment.systemPackages = [ pkg ];
-
     systemd.services.beanstalkd = {
-      description = "Beanstalk Work Queue";
       after = [ "network.target" ];
-      wantedBy = [ "multi-user.target" ];
+      description = "Beanstalk Work Queue";
+
       serviceConfig = {
         DynamicUser = true;
-        Restart = "always";
         ExecStart = "${pkg}/bin/beanstalkd -l ${cfg.listen.address} -p ${toString cfg.listen.port} -b $STATE_DIRECTORY";
+        Restart = "always";
         StateDirectory = "beanstalkd";
       };
+
+      wantedBy = [ "multi-user.target" ];
     };
 
   };

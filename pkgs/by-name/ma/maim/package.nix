@@ -3,21 +3,21 @@
   stdenv,
   fetchFromGitHub,
   cmake,
-  pkg-config,
-  zlib,
-  libpng,
-  libjpeg,
-  libwebp,
-  libGLU,
-  libGL,
   glm,
+  icu,
+  libGL,
+  libGLU,
+  libjpeg,
+  libpng,
+  libwebp,
   libx11,
+  libxcomposite,
   libxext,
   libxfixes,
   libxrandr,
-  libxcomposite,
+  pkg-config,
   slop,
-  icu,
+  zlib,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -31,12 +31,11 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-bbjV3+41cxAlKCEd1/nvnZ19GhctWOr5Lu4X+Vg3EAk=";
   };
 
-  # TODO: drop -DCMAKE_POLICY_VERSION_MINIMUM once maim adds CMake 4 support
-  cmakeFlags = [ "-DCMAKE_POLICY_VERSION_MINIMUM=3.10" ];
   nativeBuildInputs = [
     cmake
     pkg-config
   ];
+
   buildInputs = [
     zlib
     libpng
@@ -54,20 +53,24 @@ stdenv.mkDerivation (finalAttrs: {
     icu
   ];
 
+  # TODO: drop -DCMAKE_POLICY_VERSION_MINIMUM once maim adds CMake 4 support
+  cmakeFlags = [ "-DCMAKE_POLICY_VERSION_MINIMUM=3.10" ];
   doCheck = false;
 
   meta = {
-    mainProgram = "maim";
     inherit (finalAttrs.src.meta) homepage;
     description = "Command-line screenshot utility";
+
     longDescription = ''
       maim (make image) takes screenshots of your desktop. It has options to
       take only a region, and relies on slop to query for regions. maim is
       supposed to be an improved scrot.
     '';
+
     changelog = "https://github.com/naelstrof/maim/releases/tag/v${finalAttrs.version}";
-    platforms = lib.platforms.all;
     license = lib.licenses.gpl3Plus;
     maintainers = [ ];
+    platforms = lib.platforms.all;
+    mainProgram = "maim";
   };
 })

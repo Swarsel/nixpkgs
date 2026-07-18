@@ -1,21 +1,21 @@
 {
   lib,
   atdgen-codec-runtime,
-  cmdliner,
-  menhir,
-  easy-format,
   buildDunePackage,
+  cmdliner,
+  easy-format,
+  menhir,
+  nixosTests,
   re,
   yojson,
-  nixosTests,
 }:
 
 buildDunePackage {
-  pname = "atd";
   inherit (atdgen-codec-runtime) version src;
-
+  pname = "atd";
   nativeBuildInputs = [ menhir ];
   buildInputs = [ cmdliner ];
+
   propagatedBuildInputs = [
     easy-format
     re

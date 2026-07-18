@@ -1,16 +1,16 @@
 {
+  lib,
+  stdenv,
+  fetchFromGitHub,
+  SDL2,
   bison,
   cmake,
-  fetchFromGitHub,
   flex,
   imagemagick,
-  lib,
   libogg,
   libvorbis,
   makeWrapper,
   nasm,
-  SDL2,
-  stdenv,
   zlib,
 }:
 stdenv.mkDerivation (finalAttrs: {
@@ -59,8 +59,8 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   meta = {
-    homepage = "https://github.com/tx00100xt/${finalAttrs.src.repo}";
     description = "Open source game engine version developed by Croteam for Serious Sam Classic";
+
     longDescription = ''
       Note: This package allows to run both Serious Sam: The First Encounter (serioussam)
       and The Second Encounter (serioussamse).
@@ -79,8 +79,10 @@ stdenv.mkDerivation (finalAttrs: {
       - https://raw.githubusercontent.com/tx00100xt/${finalAttrs.src.repo}/${finalAttrs.src.tag}/SamTSE/ModEXT.txt
       - https://raw.githubusercontent.com/tx00100xt/${finalAttrs.src.repo}/${finalAttrs.src.tag}/SamTSE/SE1_10b.gro
     '';
+
+    homepage = "https://github.com/tx00100xt/${finalAttrs.src.repo}";
     license = lib.licenses.gpl2Only;
-    platforms = lib.platforms.linux;
     maintainers = [ lib.maintainers.l0b0 ];
+    platforms = lib.platforms.linux;
   };
 })

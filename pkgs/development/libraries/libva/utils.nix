@@ -2,14 +2,14 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  meson,
-  ninja,
-  pkg-config,
   libdrm,
   libva,
   libx11,
   libxext,
   libxfixes,
+  meson,
+  ninja,
+  pkg-config,
   wayland,
 }:
 
@@ -41,10 +41,12 @@ stdenv.mkDerivation rec {
 
   meta = {
     description = "Collection of utilities and examples for VA-API";
+
     longDescription = ''
       libva-utils is a collection of utilities and examples to exercise VA-API
       in accordance with the libva project.
     '';
+
     homepage = "https://github.com/intel/libva-utils";
     changelog = "https://raw.githubusercontent.com/intel/libva-utils/${version}/NEWS";
     license = lib.licenses.mit;

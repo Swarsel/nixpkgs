@@ -1,12 +1,12 @@
 {
   lib,
+  fetchFromGitHub,
   aiohttp,
   aresponses,
   async-timeout,
   awesomeversion,
   backoff,
   buildPythonPackage,
-  fetchFromGitHub,
   mashumaro,
   multidict,
   orjson,
@@ -20,7 +20,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "python-homewizard-energy";
   version = "10.1.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "DCSBL";
@@ -34,6 +33,15 @@ buildPythonPackage (finalAttrs: {
       --replace-fail 'version = "0.0.0"' 'version = "${finalAttrs.version}"'
   '';
 
+  nativeCheckInputs = [
+    aresponses
+    pytest-asyncio
+    pytest-cov-stub
+    pytestCheckHook
+    syrupy
+  ];
+
+  __darwinAllowLocalNetworking = true;
   build-system = [ poetry-core ];
 
   dependencies = [
@@ -46,16 +54,7 @@ buildPythonPackage (finalAttrs: {
     orjson
   ];
 
-  __darwinAllowLocalNetworking = true;
-
-  nativeCheckInputs = [
-    aresponses
-    pytest-asyncio
-    pytest-cov-stub
-    pytestCheckHook
-    syrupy
-  ];
-
+  pyproject = true;
   pythonImportsCheck = [ "homewizard_energy" ];
 
   meta = {

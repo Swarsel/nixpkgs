@@ -1,10 +1,10 @@
 {
+  lib,
+  fetchFromGitHub,
   aiohttp,
   aioresponses,
   buildPythonPackage,
   dataclasses-json,
-  fetchFromGitHub,
-  lib,
   poetry-core,
   pytest-asyncio,
   pytestCheckHook,
@@ -13,7 +13,6 @@
 buildPythonPackage rec {
   pname = "simplefin4py";
   version = "0.0.18";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "jeeftor";
@@ -22,14 +21,10 @@ buildPythonPackage rec {
     hash = "sha256-S+E2zwvrXN0YDY6IxplG0D15zSoeUPMyQt2oyM3QB2Q=";
   };
 
-  build-system = [ poetry-core ];
-
   propagatedBuildInputs = [
     aiohttp
     dataclasses-json
   ];
-
-  pythonImportsCheck = [ "simplefin4py" ];
 
   nativeCheckInputs = [
     aioresponses
@@ -37,15 +32,20 @@ buildPythonPackage rec {
     pytestCheckHook
   ];
 
+  build-system = [ poetry-core ];
+
   disabledTests = [
     # fails in non-UTC time zones
     "test_dates"
   ];
 
+  pyproject = true;
+  pythonImportsCheck = [ "simplefin4py" ];
+
   meta = {
-    changelog = "https://github.com/jeeftor/simplefin4py/releases/tag/v${version}";
     description = "Python API for Accessing SimpleFIN";
     homepage = "https://github.com/jeeftor/SimpleFin4py";
+    changelog = "https://github.com/jeeftor/simplefin4py/releases/tag/v${version}";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ dotlambda ];
   };

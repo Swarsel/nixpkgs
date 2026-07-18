@@ -21,27 +21,24 @@ stdenv.mkDerivation (finalAttrs: {
     ./gcc14.patch
   ];
 
-  buildInputs = [
-    ncurses
-    readline
-  ];
+  strictDeps = true;
 
   nativeBuildInputs = [
     flex
     texinfo
   ];
 
-  strictDeps = true;
+  buildInputs = [
+    ncurses
+    readline
+  ];
 
   meta = {
     description = "Curses interface to gdb";
-    mainProgram = "cgdb";
-
     homepage = "https://cgdb.github.io/";
-
     license = lib.licenses.gpl2Plus;
-
-    platforms = with lib.platforms; linux ++ cygwin;
     maintainers = [ ];
+    platforms = with lib.platforms; linux ++ cygwin;
+    mainProgram = "cgdb";
   };
 })

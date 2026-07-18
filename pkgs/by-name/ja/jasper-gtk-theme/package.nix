@@ -1,14 +1,14 @@
 {
   lib,
-  stdenvNoCC,
   fetchFromGitHub,
   gnome-themes-extra,
   gtk-engine-murrine,
   jdupes,
   sassc,
-  themeVariants ? [ ], # default: teal
+  stdenvNoCC,
   colorVariants ? [ ], # default: all
   sizeVariants ? [ ], # default: standard
+  themeVariants ? [ ], # default: teal
   tweaks ? [ ],
 }:
 
@@ -60,6 +60,10 @@ lib.checkListOfEnum "${pname}: theme variants"
       hash = "sha256-ZWPUyVszDPUdzttAJuIA9caDpP4SQ7mIbCoczxwvsus=";
     };
 
+    postPatch = ''
+      patchShebangs install.sh
+    '';
+
     nativeBuildInputs = [
       jdupes
       sassc
@@ -68,14 +72,6 @@ lib.checkListOfEnum "${pname}: theme variants"
     buildInputs = [
       gnome-themes-extra
     ];
-
-    propagatedUserEnvPkgs = [
-      gtk-engine-murrine
-    ];
-
-    postPatch = ''
-      patchShebangs install.sh
-    '';
 
     installPhase = ''
       runHook preInstall
@@ -92,11 +88,15 @@ lib.checkListOfEnum "${pname}: theme variants"
       runHook postInstall
     '';
 
+    propagatedUserEnvPkgs = [
+      gtk-engine-murrine
+    ];
+
     meta = {
       description = "Modern and clean Gtk theme";
       homepage = "https://github.com/vinceliuice/Jasper-gtk-theme";
       license = lib.licenses.gpl3Only;
-      platforms = lib.platforms.unix;
       maintainers = [ lib.maintainers.romildo ];
+      platforms = lib.platforms.unix;
     };
   }

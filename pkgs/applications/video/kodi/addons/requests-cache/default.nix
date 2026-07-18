@@ -1,14 +1,13 @@
 {
   lib,
-  rel,
+  addonUpdateScript,
   buildKodiAddon,
   fetchzip,
-  addonUpdateScript,
+  rel,
   requests,
 }:
 buildKodiAddon rec {
   pname = "requests-cache";
-  namespace = "script.module.requests-cache";
   version = "0.5.2+matrix.2";
 
   src = fetchzip {
@@ -20,16 +19,19 @@ buildKodiAddon rec {
     requests
   ];
 
+  namespace = "script.module.requests-cache";
+
   passthru = {
     pythonPath = "lib";
+
     updateScript = addonUpdateScript {
       attrPath = "kodi.packages.requests-cache";
     };
   };
 
   meta = {
-    homepage = "https://github.com/reclosedev/requests-cache";
     description = "Persistent cache for requests library";
+    homepage = "https://github.com/reclosedev/requests-cache";
     license = lib.licenses.bsd2;
     teams = [ lib.teams.kodi ];
   };

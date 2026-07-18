@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   iamdata,
   poetry-core,
   pytestCheckHook,
@@ -10,7 +10,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "py-iam-expand";
   version = "0.3.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "prowler-cloud";
@@ -19,12 +18,10 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-qe3eph3bvVy6Yql76e/OecHAXggp/KNLG1k0iWy4K1w=";
   };
 
-  build-system = [ poetry-core ];
-
-  dependencies = [ iamdata ];
-
   nativeCheckInputs = [ pytestCheckHook ];
-
+  build-system = [ poetry-core ];
+  dependencies = [ iamdata ];
+  pyproject = true;
   pythonImportsCheck = [ "py_iam_expand" ];
 
   meta = {

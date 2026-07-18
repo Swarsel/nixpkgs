@@ -3,11 +3,11 @@
   stdenv,
   fetchFromGitHub,
   cmake,
+  gitUpdater,
   kguiaddons,
   qtbase,
   qttools,
   wrapQtAppsHook,
-  gitUpdater,
 }:
 
 stdenv.mkDerivation {
@@ -36,10 +36,10 @@ stdenv.mkDerivation {
 
   meta = {
     description = "Cross-platform clipboard history applet";
-    mainProgram = "qlipper";
     homepage = "https://github.com/pvanek/qlipper";
     license = lib.licenses.gpl2Plus;
     platforms = with lib.platforms; unix;
+    mainProgram = "qlipper";
     teams = [ lib.teams.lxqt ];
   };
 }

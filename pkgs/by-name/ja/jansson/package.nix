@@ -12,17 +12,17 @@ stdenv.mkDerivation (finalAttrs: {
   pname = "jansson";
   version = "2.15.0";
 
-  outputs = [
-    "dev"
-    "out"
-  ];
-
   src = fetchFromGitHub {
     owner = "akheron";
     repo = "jansson";
     tag = "v${finalAttrs.version}";
     hash = "sha256-s7g1QvJjl9LsWw+VZsTQHCoEgw2Ad9+8V0b2NFml5rw=";
   };
+
+  outputs = [
+    "dev"
+    "out"
+  ];
 
   nativeBuildInputs = [
     cmake

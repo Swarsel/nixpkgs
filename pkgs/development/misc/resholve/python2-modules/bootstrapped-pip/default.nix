@@ -1,30 +1,30 @@
 {
   lib,
   stdenv,
-  python,
   makeWrapper,
-  unzip,
-  pipInstallHook,
-  setuptoolsBuildHook,
-  wheel,
   pip,
+  pipInstallHook,
+  python,
   setuptools,
+  setuptoolsBuildHook,
+  unzip,
+  wheel,
 }:
 
 stdenv.mkDerivation rec {
-  pname = "pip";
   inherit (pip) version;
-  name = "${python.libPrefix}-bootstrapped-${pname}-${version}";
+  pname = "pip";
 
-  srcs = [
-    wheel.src
-    pip.src
-    setuptools.src
+  postPatch = ''
+    mkdir -p $out/bin
+  '';
+
+  nativeBuildInputs = [
+    makeWrapper
+    unzip
   ];
-  sourceRoot = ".";
 
-  dontUseSetuptoolsBuild = true;
-  dontUsePipInstall = true;
+  buildInputs = [ python ];
 
   # Should be propagatedNativeBuildInputs
   propagatedBuildInputs = [
@@ -35,18 +35,6 @@ stdenv.mkDerivation rec {
       wheel = null;
     })
   ];
-
-  postPatch = ''
-    mkdir -p $out/bin
-  '';
-
-  nativeBuildInputs = [
-    makeWrapper
-    unzip
-  ];
-  buildInputs = [ python ];
-
-  dontBuild = true;
 
   installPhase =
     lib.optionalString (!stdenv.hostPlatform.isWindows) ''
@@ -78,9 +66,21 @@ stdenv.mkDerivation rec {
       popd
     '';
 
+  dontBuild = true;
+  dontUsePipInstall = true;
+  dontUseSetuptoolsBuild = true;
+  name = "${python.libPrefix}-bootstrapped-${pname}-${version}";
+  sourceRoot = ".";
+
+  srcs = [
+    wheel.src
+    pip.src
+    setuptools.src
+  ];
+
   meta = {
     description = "Version of pip used for bootstrapping";
-    license = lib.unique (pip.meta.license ++ setuptools.meta.license ++ wheel.meta.license);
     homepage = pip.meta.homepage;
+    license = lib.unique (pip.meta.license ++ setuptools.meta.license ++ wheel.meta.license);
   };
 }

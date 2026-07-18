@@ -1,42 +1,42 @@
 {
-  autoPatchelfHook,
-  fetchurl,
   lib,
-  copyDesktopItems,
-  makeDesktopItem,
-  makeWrapper,
   stdenv,
-  wrapGAppsHook3,
+  fetchurl,
+  alsa-lib,
   at-spi2-core,
   atk,
-  alsa-lib,
+  autoPatchelfHook,
   cairo,
+  copyDesktopItems,
   cups,
   dbus,
   expat,
   gcc-unwrapped,
   gdk-pixbuf,
   glib,
-  pango,
   gtk3-x11,
+  libgbm,
   libudev0-shim,
   libuuid,
-  libgbm,
-  nss,
-  nspr,
-  libxtst,
-  libxscrnsaver,
-  libxrender,
-  libxrandr,
-  libxi,
-  libxfixes,
-  libxext,
-  libxdamage,
-  libxcursor,
-  libxcomposite,
   libx11,
   libxcb,
+  libxcomposite,
+  libxcursor,
+  libxdamage,
+  libxext,
+  libxfixes,
+  libxi,
+  libxrandr,
+  libxrender,
+  libxscrnsaver,
+  libxtst,
+  makeDesktopItem,
+  makeWrapper,
+  nspr,
+  nss,
+  pango,
   streamlink,
+  wrapGAppsHook3,
 }:
 let
   basename = "streamlink-twitch-gui";
@@ -53,13 +53,14 @@ stdenv.mkDerivation rec {
 
   src =
     {
-      x86_64-linux = fetchurl {
-        url = "https://github.com/streamlink/${basename}/releases/download/v${version}/${basename}-v${version}-linux64.tar.gz";
-        hash = "sha256-ue5Ehj/dLOIJNJVq0Pd6EbA1hkVPz5m+3chVvEXaH6U=";
-      };
       i686-linux = fetchurl {
-        url = "https://github.com/streamlink/${basename}/releases/download/v${version}/${basename}-v${version}-linux32.tar.gz";
         hash = "sha256-y252QhVsRakngdApOHgegMMhs61KTxL9gfPjBjaSKOI=";
+        url = "https://github.com/streamlink/${basename}/releases/download/v${version}/${basename}-v${version}-linux32.tar.gz";
+      };
+
+      x86_64-linux = fetchurl {
+        hash = "sha256-ue5Ehj/dLOIJNJVq0Pd6EbA1hkVPz5m+3chVvEXaH6U=";
+        url = "https://github.com/streamlink/${basename}/releases/download/v${version}/${basename}-v${version}-linux64.tar.gz";
       };
     }
     .${stdenv.hostPlatform.system} or (throw "Unsupported system: ${stdenv.hostPlatform.system}");
@@ -101,9 +102,6 @@ stdenv.mkDerivation rec {
 
   buildInputs = [ streamlink ];
 
-  dontBuild = true;
-  dontConfigure = true;
-
   installPhase = ''
     runHook preInstall
     mkdir -p $out/{bin,opt/${basename},share}
@@ -130,30 +128,36 @@ stdenv.mkDerivation rec {
 
   desktopItems = [
     (makeDesktopItem {
-      name = basename;
-      exec = basename;
-      icon = basename;
-      desktopName = "Streamlink Twitch GUI";
-      genericName = meta.description;
       categories = [
         "AudioVideo"
         "Network"
       ];
+
+      desktopName = "Streamlink Twitch GUI";
+      exec = basename;
+      genericName = meta.description;
+      icon = basename;
+      name = basename;
     })
   ];
+
+  dontBuild = true;
+  dontConfigure = true;
 
   meta = {
     description = "Twitch.tv browser for Streamlink";
     longDescription = "Browse Twitch.tv and watch streams in your videoplayer of choice";
     homepage = "https://streamlink.github.io/streamlink-twitch-gui/";
-    downloadPage = "https://github.com/streamlink/streamlink-twitch-gui/releases";
-    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
     license = lib.licenses.mit;
-    mainProgram = "streamlink-twitch-gui";
+    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
     maintainers = [ ];
+
     platforms = [
       "x86_64-linux"
       "i686-linux"
     ];
+
+    mainProgram = "streamlink-twitch-gui";
+    downloadPage = "https://github.com/streamlink/streamlink-twitch-gui/releases";
   };
 }

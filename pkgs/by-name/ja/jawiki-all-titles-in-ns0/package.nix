@@ -1,8 +1,8 @@
 {
   lib,
   fetchFromGitHub,
-  stdenvNoCC,
   nix-update-script,
+  stdenvNoCC,
 }:
 
 stdenvNoCC.mkDerivation {
@@ -35,10 +35,12 @@ stdenvNoCC.mkDerivation {
   meta = {
     description = "Jawiki dump list of page titles in main namespace";
     homepage = "https://dumps.wikimedia.org/backup-index.html";
+
     license = with lib.licenses; [
       fdl13Only
       cc-by-sa-30
     ];
+
     maintainers = with lib.maintainers; [ pineapplehunter ];
     platforms = lib.platforms.all;
     # this does not need to be separately built

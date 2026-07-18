@@ -1,18 +1,17 @@
 {
   lib,
-  setuptools,
-  cython,
-  buildPythonPackage,
   fetchFromGitHub,
-  pytestCheckHook,
+  buildPythonPackage,
+  cython,
   pytest-cov-stub,
   pytest-xdist,
+  pytestCheckHook,
+  setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "runstats";
   version = "2.0.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "grantjenks";
@@ -21,17 +20,18 @@ buildPythonPackage rec {
     hash = "sha256-YF6S5w/ccWM08nl9inWGbaLKJ8/ivW6c7A9Ny20fldU=";
   };
 
-  build-system = [
-    setuptools
-    cython
-  ];
-
   nativeCheckInputs = [
     pytest-cov-stub
     pytest-xdist
     pytestCheckHook
   ];
 
+  build-system = [
+    setuptools
+    cython
+  ];
+
+  pyproject = true;
   pythonImportsCheck = [ "runstats" ];
 
   meta = {

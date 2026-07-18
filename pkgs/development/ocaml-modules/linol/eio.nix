@@ -5,8 +5,8 @@
 }:
 
 buildDunePackage {
-  pname = "linol-eio";
   inherit (linol) version src;
+  pname = "linol-eio";
 
   propagatedBuildInputs = [
     eio

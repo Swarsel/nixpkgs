@@ -2,21 +2,20 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  makeWrapper,
-  perl,
-  procps,
   bash,
-
-  # shell referenced dependencies
-  resholve,
   binutils-unwrapped,
+  coreutils,
   file,
   gnugrep,
-  coreutils,
   gnused,
   gnutar,
   iconv,
+  makeWrapper,
   ncurses,
+  perl,
+  procps,
+  # shell referenced dependencies
+  resholve,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -30,60 +29,41 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-yb3IzdaMiv1PwqHOfSyHvmWXyStvK/XXC49saXVAJFU=";
   };
 
-  nativeBuildInputs = [
-    perl
-    makeWrapper
-  ];
-  buildInputs = [
-    perl
-    bash
-  ];
-  strictDeps = true;
-
   postPatch = ''
     patchShebangs --build configure
     substituteInPlace configure --replace '/etc/bash_completion.d' '/share/bash-completion/completions'
   '';
 
+  strictDeps = true;
+
+  nativeBuildInputs = [
+    perl
+    makeWrapper
+  ];
+
+  buildInputs = [
+    perl
+    bash
+  ];
+
   configureFlags = [
     "--shell=${bash}/bin/bash"
     "--prefix=/"
   ];
-  configurePlatforms = [ ];
-
-  dontBuild = true;
-
-  installFlags = [ "DESTDIR=$(out)" ];
 
   postInstall = ''
     # resholve doesn't see strings in an array definition
     substituteInPlace $out/bin/lesspipe.sh --replace 'nodash strings' "nodash ${binutils-unwrapped}/bin/strings"
 
     ${resholve.phraseSolution "lesspipe.sh" {
-      scripts = [ "bin/lesspipe.sh" ];
-      interpreter = "${bash}/bin/bash";
-      inputs = [
-        coreutils
-        file
-        gnugrep
-        gnused
-        gnutar
-        iconv
-        procps
-        ncurses
+      execer = [
+        "cannot:${iconv}/bin/iconv"
+        "cannot:${file}/bin/file"
       ];
-      keep = [
-        "$prog"
-        "$c1"
-        "$c2"
-        "$c3"
-        "$c4"
-        "$c5"
-        "$cmd"
-        "$colorizer"
-        "$HOME"
-      ];
+
       fake = {
+        builtin = [ "setopt" ];
+
         # script guards usage behind has_cmd test function, it's safe to leave these external and optional
         external = [
           "cpio"
@@ -163,23 +143,21 @@ stdenv.mkDerivation (finalAttrs: {
           "snap"
           "locale" # call site is guarded by || so it's safe to leave dynamic
         ];
-        builtin = [ "setopt" ];
       };
-      execer = [
-        "cannot:${iconv}/bin/iconv"
-        "cannot:${file}/bin/file"
-      ];
-    }}
-    ${resholve.phraseSolution "lesscomplete" {
-      scripts = [ "bin/lesscomplete" ];
-      interpreter = "${bash}/bin/bash";
+
       inputs = [
         coreutils
         file
         gnugrep
         gnused
         gnutar
+        iconv
+        procps
+        ncurses
       ];
+
+      interpreter = "${bash}/bin/bash";
+
       keep = [
         "$prog"
         "$c1"
@@ -188,8 +166,20 @@ stdenv.mkDerivation (finalAttrs: {
         "$c4"
         "$c5"
         "$cmd"
+        "$colorizer"
+        "$HOME"
       ];
+
+      scripts = [ "bin/lesspipe.sh" ];
+    }}
+    ${resholve.phraseSolution "lesscomplete" {
+      execer = [
+        "cannot:${file}/bin/file"
+      ];
+
       fake = {
+        builtin = [ "setopt" ];
+
         # script guards usage behind has_cmd test function, it's safe to leave these external and optional
         external = [
           "cpio"
@@ -215,16 +205,39 @@ stdenv.mkDerivation (finalAttrs: {
           "zstd"
           "lz4"
         ];
-        builtin = [ "setopt" ];
       };
-      execer = [
-        "cannot:${file}/bin/file"
+
+      inputs = [
+        coreutils
+        file
+        gnugrep
+        gnused
+        gnutar
       ];
+
+      interpreter = "${bash}/bin/bash";
+
+      keep = [
+        "$prog"
+        "$c1"
+        "$c2"
+        "$c3"
+        "$c4"
+        "$c5"
+        "$cmd"
+      ];
+
+      scripts = [ "bin/lesscomplete" ];
     }}
   '';
 
+  configurePlatforms = [ ];
+  dontBuild = true;
+  installFlags = [ "DESTDIR=$(out)" ];
+
   meta = {
     description = "Preprocessor for less";
+
     longDescription = ''
       Usually lesspipe.sh is called as an input filter to less. With the help
       of that filter less will display the uncompressed contents of compressed
@@ -236,10 +249,11 @@ stdenv.mkDerivation (finalAttrs: {
       plist and archive formats, perl storable data and gpg encrypted files.
       This does require additional helper programs being installed.
     '';
-    mainProgram = "lesspipe.sh";
+
     homepage = "https://github.com/wofr06/lesspipe";
-    platforms = lib.platforms.all;
     license = lib.licenses.gpl2Only;
     maintainers = [ lib.maintainers.martijnvermaat ];
+    platforms = lib.platforms.all;
+    mainProgram = "lesspipe.sh";
   };
 })

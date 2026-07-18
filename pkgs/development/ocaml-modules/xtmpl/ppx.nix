@@ -1,13 +1,12 @@
 {
   buildDunePackage,
-  xtmpl,
   ppxlib,
+  xtmpl,
 }:
 
 buildDunePackage {
-  pname = "xtmpl_ppx";
-
   inherit (xtmpl) src version;
+  pname = "xtmpl_ppx";
 
   # Fix for ppxlib ≥ 0.37
   postPatch = ''

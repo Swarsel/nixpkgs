@@ -1,15 +1,13 @@
 {
+  exiv2,
+  libcamera,
   mkKdeDerivation,
   pkg-config,
   qtmultimedia,
   qtsensors,
-  exiv2,
-  libcamera,
 }:
 mkKdeDerivation {
   pname = "plasma-camera";
-
-  extraNativeBuildInputs = [ pkg-config ];
 
   extraBuildInputs = [
     qtmultimedia
@@ -18,4 +16,6 @@ mkKdeDerivation {
     exiv2
     libcamera
   ];
+
+  extraNativeBuildInputs = [ pkg-config ];
 }

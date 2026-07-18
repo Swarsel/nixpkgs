@@ -1,7 +1,7 @@
 {
   lib,
-  mkTclDerivation,
   fetchfossil,
+  mkTclDerivation,
   tcl,
 }:
 
@@ -28,7 +28,6 @@ mkTclDerivation rec {
   # However, tcltest always returns exit code 0, so this always succeeds.
   # https://wuhrr.wordpress.com/2013/09/13/tcltest-part-9-provides-exit-code/
   doInstallCheck = true;
-
   installCheckTarget = "test";
 
   meta = {

@@ -1,26 +1,26 @@
 {
   lib,
-  fetchFromGitHub,
-  rustPlatform,
-  pkg-config,
-  mpv-unwrapped,
-  ffmpeg,
-  libadwaita,
-  gst_all_1,
-  openssl,
-  libepoxy,
-  wrapGAppsHook4,
-  nix-update-script,
   stdenv,
-  meson,
-  ninja,
-  rustc,
+  fetchFromGitHub,
+  appstream,
   cargo,
   dbus,
   desktop-file-utils,
-  versionCheckHook,
+  ffmpeg,
+  gst_all_1,
+  libadwaita,
+  libepoxy,
   libxml2,
-  appstream,
+  meson,
+  mpv-unwrapped,
+  ninja,
+  nix-update-script,
+  openssl,
+  pkg-config,
+  rustPlatform,
+  rustc,
+  versionCheckHook,
+  wrapGAppsHook4,
 }:
 stdenv.mkDerivation (finalAttrs: {
   pname = "tsukimi";
@@ -31,11 +31,6 @@ stdenv.mkDerivation (finalAttrs: {
     repo = "tsukimi";
     tag = "v${finalAttrs.version}";
     hash = "sha256-PGd2dWmUfdOyBsfn2Jozb7tAxSy2sv8XOKL1K8FwuLE=";
-  };
-
-  cargoDeps = rustPlatform.fetchCargoVendor {
-    inherit (finalAttrs) src;
-    hash = "sha256-lfDPrmCl+Fuf/AG8xiFv00HD76Wy63cBc9Iji7Cw2sw=";
   };
 
   nativeBuildInputs = [
@@ -72,8 +67,13 @@ stdenv.mkDerivation (finalAttrs: {
     "-Drust-target=release"
   ];
 
-  nativeInstallCheckInputs = [ versionCheckHook ];
   doInstallCheck = true;
+  nativeInstallCheckInputs = [ versionCheckHook ];
+
+  cargoDeps = rustPlatform.fetchCargoVendor {
+    inherit (finalAttrs) src;
+    hash = "sha256-lfDPrmCl+Fuf/AG8xiFv00HD76Wy63cBc9Iji7Cw2sw=";
+  };
 
   passthru.updateScript = nix-update-script { };
 
@@ -81,11 +81,13 @@ stdenv.mkDerivation (finalAttrs: {
     description = "Simple third-party Emby client, featured with GTK4-RS, MPV and GStreamer";
     homepage = "https://github.com/tsukinaha/tsukimi";
     license = lib.licenses.gpl3Plus;
+
     maintainers = with lib.maintainers; [
       merrkry
       aleksana
     ];
-    mainProgram = "tsukimi";
+
     platforms = lib.platforms.linux;
+    mainProgram = "tsukimi";
   };
 })

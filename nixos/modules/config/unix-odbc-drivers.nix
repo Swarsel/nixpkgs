@@ -15,15 +15,17 @@ in
 
   options = {
     environment.unixODBCDrivers = lib.mkOption {
-      type = lib.types.listOf lib.types.package;
       default = [ ];
-      example = lib.literalExpression "with pkgs.unixodbcDrivers; [ sqlite psql ]";
+
       description = ''
         Specifies Unix ODBC drivers to be registered in
         {file}`/etc/odbcinst.ini`.  You may also want to
         add `pkgs.unixodbc` to the system path to get
         a command line client to connect to ODBC databases.
       '';
+
+      example = lib.literalExpression "with pkgs.unixodbcDrivers; [ sqlite psql ]";
+      type = lib.types.listOf lib.types.package;
     };
   };
 

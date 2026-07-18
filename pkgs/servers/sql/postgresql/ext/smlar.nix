@@ -1,6 +1,6 @@
 {
-  fetchgit,
   lib,
+  fetchgit,
   postgresql,
   postgresqlBuildExtension,
 }:
@@ -20,9 +20,9 @@ postgresqlBuildExtension {
   meta = {
     description = "Compute similary of any one-dimensional arrays";
     homepage = "http://sigaev.ru/git/gitweb.cgi?p=smlar.git";
-    platforms = postgresql.meta.platforms;
     license = lib.licenses.bsd2;
     maintainers = [ ];
+    platforms = postgresql.meta.platforms;
     # Broken with no upstream fix available.
     broken = lib.versionAtLeast postgresql.version "16";
   };

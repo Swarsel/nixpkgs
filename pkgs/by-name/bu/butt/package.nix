@@ -2,21 +2,21 @@
   lib,
   stdenv,
   fetchurl,
-  pkg-config,
-  fltk_1_3,
-  portaudio,
-  lame,
-  libvorbis,
-  libogg,
+  autoPatchelfHook,
+  curl,
+  dbus,
+  fdk_aac,
   flac,
+  fltk_1_3,
+  lame,
+  libogg,
   libopus,
   libsamplerate,
-  fdk_aac,
-  dbus,
+  libvorbis,
   openssl,
-  curl,
+  pkg-config,
+  portaudio,
   portmidi,
-  autoPatchelfHook,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -58,20 +58,20 @@ stdenv.mkDerivation (finalAttrs: {
     portmidi
   ];
 
-  runtimeDependencies = [
-    fdk_aac
-  ];
-
   postInstall = ''
     cp -r usr/share $out/
   '';
 
+  runtimeDependencies = [
+    fdk_aac
+  ];
+
   meta = {
-    changelog = "https://danielnoethen.de/butt/Changelog.html";
     description = "Easy to use, multi OS streaming tool";
     homepage = "https://danielnoethen.de/butt/";
+    changelog = "https://danielnoethen.de/butt/Changelog.html";
     license = lib.licenses.gpl2;
-    mainProgram = "butt";
     platforms = lib.platforms.linux;
+    mainProgram = "butt";
   };
 })

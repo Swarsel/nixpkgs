@@ -1,12 +1,12 @@
 {
   lib,
   stdenv,
-  fetchzip,
-  unzip,
-  fetchpatch,
   bison,
+  fetchpatch,
+  fetchzip,
   flex,
   gperf,
+  unzip,
   zlib,
 }:
 
@@ -25,12 +25,10 @@ stdenv.mkDerivation {
     #  https://sourceforge.net/p/flasm/patches/2/
     (fetchpatch {
       name = "fno-common.patch";
-      url = "https://sourceforge.net/p/flasm/patches/2/attachment/0001-flasm-fix-build-on-gcc-10-fno-common.patch";
       sha256 = "0ic7k1mmyvhpnxam89dbg8i9bfzk70zslfdxgpmkszx097bj1hv6";
+      url = "https://sourceforge.net/p/flasm/patches/2/attachment/0001-flasm-fix-build-on-gcc-10-fno-common.patch";
     })
   ];
-
-  makeFlags = [ "CC=${stdenv.cc.targetPrefix}cc" ];
 
   nativeBuildInputs = [
     unzip
@@ -40,6 +38,7 @@ stdenv.mkDerivation {
   ];
 
   buildInputs = [ zlib ];
+  makeFlags = [ "CC=${stdenv.cc.targetPrefix}cc" ];
 
   installPhase = ''
     install -Dm755 flasm -t $out/bin
@@ -47,10 +46,10 @@ stdenv.mkDerivation {
 
   meta = {
     description = "Assembler and disassembler for Flash (SWF) bytecode";
-    mainProgram = "flasm";
     homepage = "https://flasm.sourceforge.net/";
     license = lib.licenses.bsd2;
     maintainers = with lib.maintainers; [ siraben ];
     platforms = lib.platforms.all;
+    mainProgram = "flasm";
   };
 }

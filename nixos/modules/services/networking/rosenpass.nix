@@ -1,8 +1,8 @@
 {
   config,
   lib,
-  options,
   pkgs,
+  options,
   ...
 }:
 let
@@ -40,149 +40,91 @@ in
     in
     {
       enable = lib.mkEnableOption "Rosenpass";
-
       package = lib.mkPackageOption pkgs "rosenpass" { };
 
       defaultDevice = mkOption {
-        type = nullOr str;
         description = "Name of the network interface to use for all peers by default.";
         example = "wg0";
+        type = nullOr str;
       };
 
       settings = mkOption {
+        default = { };
+        description = "Configuration for Rosenpass, see <https://rosenpass.eu/> for further information.";
+
         type = submodule {
-          freeformType = settingsFormat.type;
-
           options = {
-            public_key = mkOption {
-              type = path;
-              description = "Path to a file containing the public key of the local Rosenpass peer. Generate this by running {command}`rosenpass gen-keys`.";
-            };
-
-            secret_key = mkOption {
-              type = path;
-              description = "Path to a file containing the secret key of the local Rosenpass peer. Generate this by running {command}`rosenpass gen-keys`.";
-            };
-
             listen = mkOption {
-              type = listOf str;
-              description = "List of local endpoints to listen for connections.";
               default = [ ];
+              description = "List of local endpoints to listen for connections.";
               example = literalExpression "[ \"0.0.0.0:10000\" ]";
-            };
-
-            verbosity = mkOption {
-              type = enum [
-                "Verbose"
-                "Quiet"
-              ];
-              default = "Quiet";
-              description = "Verbosity of output produced by the service.";
+              type = listOf str;
             };
 
             peers =
               let
                 peer = submodule {
-                  freeformType = settingsFormat.type;
-
                   options = {
-                    public_key = mkOption {
-                      type = path;
-                      description = "Path to a file containing the public key of the remote Rosenpass peer.";
-                    };
-
-                    endpoint = mkOption {
-                      type = nullOr str;
-                      default = null;
-                      description = "Endpoint of the remote Rosenpass peer.";
-                    };
-
                     device = mkOption {
-                      type = str;
                       default = cfg.defaultDevice;
                       defaultText = literalExpression "config.${opt.defaultDevice}";
                       description = "Name of the local WireGuard interface to use for this peer.";
+                      type = str;
+                    };
+
+                    endpoint = mkOption {
+                      default = null;
+                      description = "Endpoint of the remote Rosenpass peer.";
+                      type = nullOr str;
                     };
 
                     peer = mkOption {
-                      type = str;
                       description = "WireGuard public key corresponding to the remote Rosenpass peer.";
+                      type = str;
+                    };
+
+                    public_key = mkOption {
+                      description = "Path to a file containing the public key of the remote Rosenpass peer.";
+                      type = path;
                     };
                   };
+
+                  freeformType = settingsFormat.type;
                 };
               in
               mkOption {
-                type = listOf peer;
-                description = "List of peers to exchange keys with.";
                 default = [ ];
+                description = "List of peers to exchange keys with.";
+                type = listOf peer;
               };
+
+            public_key = mkOption {
+              description = "Path to a file containing the public key of the local Rosenpass peer. Generate this by running {command}`rosenpass gen-keys`.";
+              type = path;
+            };
+
+            secret_key = mkOption {
+              description = "Path to a file containing the secret key of the local Rosenpass peer. Generate this by running {command}`rosenpass gen-keys`.";
+              type = path;
+            };
+
+            verbosity = mkOption {
+              default = "Quiet";
+              description = "Verbosity of output produced by the service.";
+
+              type = enum [
+                "Verbose"
+                "Quiet"
+              ];
+            };
           };
+
+          freeformType = settingsFormat.type;
         };
-        default = { };
-        description = "Configuration for Rosenpass, see <https://rosenpass.eu/> for further information.";
       };
     };
 
   config = mkIf cfg.enable {
-    warnings =
-      let
-        # NOTE: In the descriptions below, we tried to refer to e.g.
-        # options.systemd.network.netdevs."<name>".wireguardPeers.*.PublicKey
-        # directly, but don't know how to traverse "<name>" and * in this path.
-        extractions = [
-          {
-            relevant = config.systemd.network.enable;
-            root = config.systemd.network.netdevs;
-            peer = (x: x.wireguardPeers);
-            key = x: x.PublicKey or null;
-            description = "${options.systemd.network.netdevs}.\"<name>\".wireguardPeers.*.PublicKey";
-          }
-          {
-            relevant = config.networking.wireguard.enable;
-            root = config.networking.wireguard.interfaces;
-            peer = (x: x.peers);
-            key = (x: x.publicKey);
-            description = "${options.networking.wireguard.interfaces}.\"<name>\".peers.*.publicKey";
-          }
-          rec {
-            relevant = root != { };
-            root = config.networking.wg-quick.interfaces;
-            peer = (x: x.peers);
-            key = (x: x.publicKey);
-            description = "${options.networking.wg-quick.interfaces}.\"<name>\".peers.*.publicKey";
-          }
-        ];
-        relevantExtractions = filter (x: x.relevant) extractions;
-        extract =
-          {
-            root,
-            peer,
-            key,
-            ...
-          }:
-          filter (x: x != null) (flatten (concatMap (x: (map key (peer x))) (attrValues root)));
-        configuredKeys = flatten (map extract relevantExtractions);
-        itemize = xs: concatLines (map (x: " - ${x}") xs);
-        descriptions = map (x: "`${x.description}`");
-        missingKeys = filter (key: !builtins.elem key configuredKeys) (map (x: x.peer) cfg.settings.peers);
-        unusual = ''
-          While this may work as expected, e.g. you want to manually configure WireGuard,
-          such a scenario is unusual. Please double-check your configuration.
-        '';
-      in
-      (optional (relevantExtractions != [ ] && missingKeys != [ ]) ''
-        You have configured Rosenpass peers with the WireGuard public keys:
-        ${itemize missingKeys}
-        But there is no corresponding active Wireguard peer configuration in any of:
-        ${itemize (descriptions relevantExtractions)}
-        ${unusual}
-      '')
-      ++ optional (relevantExtractions == [ ]) ''
-        You have configured Rosenpass, but you have not configured Wireguard via any of:
-        ${itemize (descriptions extractions)}
-        ${unusual}
-      '';
-
     environment.systemPackages = [
       cfg.package
       pkgs.wireguard-tools
@@ -208,42 +150,104 @@ in
                 peersWithoutNulls = map filterNonNull cfg.settings.peers;
               in
               {
-                secret_key = credentialPath "pqsk";
-                public_key = credentialPath "pqpk";
                 peers = peersWithoutNulls;
+                public_key = credentialPath "pqpk";
+                secret_key = credentialPath "pqsk";
               }
             )
           )
         );
       in
       rec {
-        wantedBy = [ "multi-user.target" ];
-        wants = [ "network-online.target" ];
         after = [ "network-online.target" ];
+        # See <https://www.freedesktop.org/software/systemd/man/systemd.unit.html#Specifiers>
+        environment.CONFIG = "%t/${serviceConfig.RuntimeDirectory}/config.toml";
+
         path = [
           cfg.package
           pkgs.wireguard-tools
         ];
 
-        serviceConfig = {
-          User = "rosenpass";
-          Group = "rosenpass";
-          RuntimeDirectory = "rosenpass";
-          DynamicUser = true;
-          AmbientCapabilities = [ "CAP_NET_ADMIN" ];
-          LoadCredential = [
-            "pqsk:${cfg.settings.secret_key}"
-            "pqpk:${cfg.settings.public_key}"
-          ];
-        };
-
-        # See <https://www.freedesktop.org/software/systemd/man/systemd.unit.html#Specifiers>
-        environment.CONFIG = "%t/${serviceConfig.RuntimeDirectory}/config.toml";
-
         script = ''
           ${getExe pkgs.envsubst} -i ${config} -o "$CONFIG"
           rosenpass exchange-config "$CONFIG"
         '';
+
+        serviceConfig = {
+          AmbientCapabilities = [ "CAP_NET_ADMIN" ];
+          DynamicUser = true;
+          Group = "rosenpass";
+
+          LoadCredential = [
+            "pqsk:${cfg.settings.secret_key}"
+            "pqpk:${cfg.settings.public_key}"
+          ];
+
+          RuntimeDirectory = "rosenpass";
+          User = "rosenpass";
+        };
+
+        wantedBy = [ "multi-user.target" ];
+        wants = [ "network-online.target" ];
       };
+
+    warnings =
+      let
+        # NOTE: In the descriptions below, we tried to refer to e.g.
+        # options.systemd.network.netdevs."<name>".wireguardPeers.*.PublicKey
+        # directly, but don't know how to traverse "<name>" and * in this path.
+        extractions = [
+          {
+            description = "${options.systemd.network.netdevs}.\"<name>\".wireguardPeers.*.PublicKey";
+            key = x: x.PublicKey or null;
+            peer = (x: x.wireguardPeers);
+            relevant = config.systemd.network.enable;
+            root = config.systemd.network.netdevs;
+          }
+          {
+            description = "${options.networking.wireguard.interfaces}.\"<name>\".peers.*.publicKey";
+            key = (x: x.publicKey);
+            peer = (x: x.peers);
+            relevant = config.networking.wireguard.enable;
+            root = config.networking.wireguard.interfaces;
+          }
+          rec {
+            description = "${options.networking.wg-quick.interfaces}.\"<name>\".peers.*.publicKey";
+            key = (x: x.publicKey);
+            peer = (x: x.peers);
+            relevant = root != { };
+            root = config.networking.wg-quick.interfaces;
+          }
+        ];
+        relevantExtractions = filter (x: x.relevant) extractions;
+        extract =
+          {
+            key,
+            peer,
+            root,
+            ...
+          }:
+          filter (x: x != null) (flatten (concatMap (x: (map key (peer x))) (attrValues root)));
+        configuredKeys = flatten (map extract relevantExtractions);
+        itemize = xs: concatLines (map (x: " - ${x}") xs);
+        descriptions = map (x: "`${x.description}`");
+        missingKeys = filter (key: !builtins.elem key configuredKeys) (map (x: x.peer) cfg.settings.peers);
+        unusual = ''
+          While this may work as expected, e.g. you want to manually configure WireGuard,
+          such a scenario is unusual. Please double-check your configuration.
+        '';
+      in
+      (optional (relevantExtractions != [ ] && missingKeys != [ ]) ''
+        You have configured Rosenpass peers with the WireGuard public keys:
+        ${itemize missingKeys}
+        But there is no corresponding active Wireguard peer configuration in any of:
+        ${itemize (descriptions relevantExtractions)}
+        ${unusual}
+      '')
+      ++ optional (relevantExtractions == [ ]) ''
+        You have configured Rosenpass, but you have not configured Wireguard via any of:
+        ${itemize (descriptions extractions)}
+        ${unusual}
+      '';
   };
 }

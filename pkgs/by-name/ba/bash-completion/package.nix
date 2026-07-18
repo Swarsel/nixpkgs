@@ -3,10 +3,10 @@
   stdenv,
   fetchurl,
   autoreconfHook,
+  bashInteractive,
   perl,
   ps,
   python3Packages,
-  bashInteractive,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -30,10 +30,10 @@ stdenv.mkDerivation (finalAttrs: {
 
   strictDeps = true;
   nativeBuildInputs = [ autoreconfHook ];
-
   # tests are super flaky unfortunately, and regularly break.
   # let's disable them for now.
   doCheck = false;
+
   nativeCheckInputs = [
     # perl is assumed by perldoc completion
     perl
@@ -73,10 +73,10 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   meta = {
-    homepage = "https://github.com/scop/bash-completion";
     description = "Programmable completion for the bash shell";
+    homepage = "https://github.com/scop/bash-completion";
     license = lib.licenses.gpl2Plus;
-    platforms = lib.platforms.unix;
     maintainers = with lib.maintainers; [ philiptaron ];
+    platforms = lib.platforms.unix;
   };
 })

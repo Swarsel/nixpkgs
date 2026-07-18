@@ -1,14 +1,13 @@
 {
   lib,
-  fetchPypi,
   buildPythonPackage,
+  fetchPypi,
   krb5-c, # C krb5 library, not PyPI krb5
 }:
 
 buildPythonPackage rec {
   pname = "pykerberos";
   version = "1.2.4";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
@@ -16,12 +15,10 @@ buildPythonPackage rec {
   };
 
   nativeBuildInputs = [ krb5-c ]; # for krb5-config
-
   buildInputs = [ krb5-c ];
-
   # there are no tests
   doCheck = false;
-
+  format = "setuptools";
   pythonImportsCheck = [ "kerberos" ];
 
   meta = {

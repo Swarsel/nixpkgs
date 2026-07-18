@@ -1,12 +1,12 @@
 {
-  stdenv,
   lib,
-  rustPlatform,
+  stdenv,
   fetchFromGitHub,
-  pkg-config,
   alsa-lib,
-  udevCheckHook,
   nix-update-script,
+  pkg-config,
+  rustPlatform,
+  udevCheckHook,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -20,14 +20,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-duIPpTzZqVSZLxF/CYlxa1PPtnzeABTCYfZZ7lomkls=";
   };
 
-  cargoHash = "sha256-gg1VcCrXKk5QsNvU7wz039md0gpFom6SrLuW6tjNQog=";
-
-  nativeBuildInputs = [
-    pkg-config
-    udevCheckHook
-  ];
-  buildInputs = [ alsa-lib ];
-
   postPatch = ''
     substituteInPlace speakersafetyd.service \
       --replace-fail "/usr" \
@@ -38,6 +30,16 @@ rustPlatform.buildRustPackage (finalAttrs: {
                      "target/${stdenv.hostPlatform.rust.cargoShortTarget}/$cargoBuildType"
   '';
 
+  nativeBuildInputs = [
+    pkg-config
+    udevCheckHook
+  ];
+
+  buildInputs = [ alsa-lib ];
+  cargoHash = "sha256-gg1VcCrXKk5QsNvU7wz039md0gpFom6SrLuW6tjNQog=";
+  doInstallCheck = true;
+  dontCargoInstall = true;
+
   installFlags = [
     "DESTDIR=$(out)"
     "BINDIR=bin"
@@ -46,22 +48,21 @@ rustPlatform.buildRustPackage (finalAttrs: {
     "SHAREDIR=share"
   ];
 
-  dontCargoInstall = true;
-  doInstallCheck = true;
-
   passthru = {
     updateScript = nix-update-script { };
   };
 
   meta = {
     description = "Userspace daemon that implements the Smart Amp protection model";
-    mainProgram = "speakersafetyd";
     homepage = "https://github.com/AsahiLinux/speakersafetyd";
+    license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       flokli
       yuka
     ];
-    license = lib.licenses.mit;
+
     platforms = lib.platforms.linux;
+    mainProgram = "speakersafetyd";
   };
 })

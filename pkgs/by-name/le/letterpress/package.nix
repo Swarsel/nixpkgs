@@ -1,7 +1,6 @@
 {
   lib,
   fetchFromGitLab,
-  wrapGAppsHook4,
   appstream,
   blueprint-compiler,
   desktop-file-utils,
@@ -11,29 +10,22 @@
   libadwaita,
   meson,
   ninja,
+  nix-update-script,
   pkg-config,
   python3Packages,
-  nix-update-script,
+  wrapGAppsHook4,
 }:
 python3Packages.buildPythonApplication (finalAttrs: {
   pname = "letterpress";
   version = "2.2";
 
   src = fetchFromGitLab {
-    domain = "gitlab.gnome.org";
     owner = "World";
     repo = "letterpress";
     rev = finalAttrs.version;
     hash = "sha256-cqLodI6UjdLCKLGGcSIbXu1+LOcq2DE00V+lVS7OBMg=";
+    domain = "gitlab.gnome.org";
   };
-
-  runtimeDeps = [
-    jp2a
-  ];
-
-  buildInputs = [
-    libadwaita
-  ];
 
   nativeBuildInputs = [
     appstream
@@ -47,17 +39,25 @@ python3Packages.buildPythonApplication (finalAttrs: {
     wrapGAppsHook4
   ];
 
+  buildInputs = [
+    libadwaita
+  ];
+
+  preFixup = ''
+    makeWrapperArgs+=(''${gappsWrapperArgs[@]} --prefix PATH : ${lib.makeBinPath finalAttrs.runtimeDeps})
+  '';
+
   dependencies = with python3Packages; [
     pillow
     pygobject3
   ];
 
-  pyproject = false; # built by meson
   dontWrapGApps = true; # prevent double wrapping
+  pyproject = false; # built by meson
 
-  preFixup = ''
-    makeWrapperArgs+=(''${gappsWrapperArgs[@]} --prefix PATH : ${lib.makeBinPath finalAttrs.runtimeDeps})
-  '';
+  runtimeDeps = [
+    jp2a
+  ];
 
   passthru = {
     updateScript = nix-update-script { };
@@ -65,17 +65,19 @@ python3Packages.buildPythonApplication (finalAttrs: {
 
   meta = {
     description = "Create beautiful ASCII art";
+
     longDescription = ''
       Letterpress converts your images into a picture made up of ASCII characters.
       You can save the output to a file, copy it, and even change its resolution!
       High-res output can still be viewed comfortably by lowering the zoom factor.
     '';
+
     homepage = "https://apps.gnome.org/Letterpress/";
     changelog = "https://gitlab.gnome.org/World/Letterpress/-/releases/${finalAttrs.version}";
     license = lib.licenses.gpl3Plus;
     maintainers = [ ];
-    teams = [ lib.teams.gnome-circle ];
     platforms = lib.platforms.linux;
     mainProgram = "letterpress";
+    teams = [ lib.teams.gnome-circle ];
   };
 })

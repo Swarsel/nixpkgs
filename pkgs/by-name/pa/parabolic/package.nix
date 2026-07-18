@@ -2,26 +2,26 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  cmake,
-  gettext,
-  itstool,
-  ninja,
-  yelp-tools,
-  desktop-file-utils,
-  pkg-config,
-  libnick,
-  boost,
-  glib,
-  shared-mime-info,
-  gtk4,
-  libadwaita,
-  wrapGAppsHook4,
-  libxmlxx5,
-  blueprint-compiler,
-  yt-dlp,
-  ffmpeg,
   aria2,
+  blueprint-compiler,
+  boost,
+  cmake,
+  desktop-file-utils,
+  ffmpeg,
+  gettext,
+  glib,
+  gtk4,
+  itstool,
+  libadwaita,
+  libnick,
+  libxmlxx5,
+  ninja,
   nix-update-script,
+  pkg-config,
+  shared-mime-info,
+  wrapGAppsHook4,
+  yelp-tools,
+  yt-dlp,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -90,6 +90,7 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Graphical frontend for yt-dlp to download video and audio";
+
     longDescription = ''
       Parabolic is a user-friendly adwaita application for `yt-dlp`
       that supports many features including but not limited to:
@@ -102,12 +103,15 @@ stdenv.mkDerivation (finalAttrs: {
       - Allowing the use of `aria2` for parallel downloads.
       - Offering a graphical keyring to manage account credentials.
     '';
+
     homepage = "https://github.com/NickvisionApps/Parabolic";
     license = lib.licenses.gpl3Plus;
+
     maintainers = with lib.maintainers; [
       getchoo
     ];
-    mainProgram = "org.nickvision.tubeconverter";
+
     platforms = lib.platforms.linux;
+    mainProgram = "org.nickvision.tubeconverter";
   };
 })

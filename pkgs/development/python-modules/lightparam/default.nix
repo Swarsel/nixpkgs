@@ -1,10 +1,10 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  isPy3k,
+  buildPythonPackage,
   ipython,
   ipywidgets,
+  isPy3k,
   numpy,
   pyqt5,
 }:
@@ -12,8 +12,6 @@
 buildPythonPackage rec {
   pname = "lightparam";
   version = "0.4.6";
-  format = "setuptools";
-  disabled = !isPy3k;
 
   src = fetchFromGitHub {
     owner = "portugueslab";
@@ -29,11 +27,13 @@ buildPythonPackage rec {
     pyqt5
   ];
 
+  disabled = !isPy3k;
+  format = "setuptools";
   pythonImportsCheck = [ "lightparam" ];
 
   meta = {
-    homepage = "https://github.com/portugueslab/lightparam";
     description = "Another attempt at parameters in Python";
+    homepage = "https://github.com/portugueslab/lightparam";
     license = lib.licenses.mit;
     maintainers = [ ];
   };

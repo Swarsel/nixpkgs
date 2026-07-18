@@ -1,24 +1,20 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # build-system
-  setuptools,
-
+  buildPythonPackage,
+  numpy,
   # dependencies
   pandas,
-  pyyaml,
-  numpy,
-
   # tests
   pytestCheckHook,
+  pyyaml,
+  # build-system
+  setuptools,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "mhcgnomes";
   version = "3.32.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "pirl-unc";
@@ -26,6 +22,10 @@ buildPythonPackage (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-6YYmIXuZXCaozkrVhqlxSQ9TG7vthHcMhVl0QpWChZE=";
   };
+
+  nativeCheckInputs = [
+    pytestCheckHook
+  ];
 
   build-system = [
     setuptools
@@ -37,11 +37,8 @@ buildPythonPackage (finalAttrs: {
     numpy
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "mhcgnomes" ];
-
-  nativeCheckInputs = [
-    pytestCheckHook
-  ];
 
   meta = {
     description = "Parsing MHC nomenclature in the wild";

@@ -1,13 +1,12 @@
 {
-  fetchFromGitHub,
   lib,
+  fetchFromGitHub,
   python3Packages,
 }:
 
 python3Packages.buildPythonApplication (finalAttrs: {
   pname = "humblebundle-downloader";
   version = "0.4.3";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "xtream1101";
@@ -25,12 +24,14 @@ python3Packages.buildPythonApplication (finalAttrs: {
     requests
   ];
 
+  pyproject = true;
+
   meta = {
     description = "Download your Humble Bundle Library";
-    mainProgram = "hbd";
     homepage = "https://github.com/xtream1101/humblebundle-downloader";
     changelog = "https://github.com/xtream1101/humblebundle-downloader/blob/${finalAttrs.src.tag}/CHANGELOG.md";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ jopejoe1 ];
+    mainProgram = "hbd";
   };
 })

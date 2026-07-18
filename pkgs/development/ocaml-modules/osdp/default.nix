@@ -1,13 +1,13 @@
 {
   lib,
-  buildDunePackage,
   fetchurl,
-  ocaml,
-  findlib,
-  zarith,
-  ocplib-simplex,
-  csdp,
   autoconf,
+  buildDunePackage,
+  csdp,
+  findlib,
+  ocaml,
+  ocplib-simplex,
+  zarith,
 }:
 
 buildDunePackage {
@@ -19,20 +19,21 @@ buildDunePackage {
     hash = "sha256-X7CS2g+MyQPDjhUCvFS/DoqcCXTEw8SCsSGED64TGKQ=";
   };
 
-  preConfigure = ''
-    autoconf
-  '';
-
   nativeBuildInputs = [
     autoconf
     findlib
     csdp
   ];
+
   propagatedBuildInputs = [
     zarith
     ocplib-simplex
     csdp
   ];
+
+  preConfigure = ''
+    autoconf
+  '';
 
   meta = {
     description = "OCaml Interface to SDP solvers";

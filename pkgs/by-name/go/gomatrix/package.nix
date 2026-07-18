@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule (finalAttrs: {
@@ -16,14 +16,13 @@ buildGoModule (finalAttrs: {
   };
 
   vendorHash = "sha256-yQSsxiWkihpoYBH9L6by/D2alqECoUEG4ei5T+B9gPs=";
-
   doCheck = false;
 
   meta = {
     description = ''Displays "The Matrix" in a terminal'';
+    homepage = "https://github.com/GeertJohan/gomatrix";
     license = lib.licenses.bsd2;
     maintainers = with lib.maintainers; [ skykanin ];
-    homepage = "https://github.com/GeertJohan/gomatrix";
     mainProgram = "gomatrix";
   };
 })

@@ -1,9 +1,9 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
-  nixosTests,
+  buildGoModule,
   gitUpdater,
+  nixosTests,
 }:
 
 buildGoModule (finalAttrs: {
@@ -28,20 +28,23 @@ buildGoModule (finalAttrs: {
   '';
 
   passthru = {
-    updateScript = gitUpdater { rev-prefix = "v"; };
     tests = {
       inherit (nixosTests) corerad;
     };
+
+    updateScript = gitUpdater { rev-prefix = "v"; };
   };
 
   meta = {
-    homepage = "https://github.com/mdlayher/corerad";
     description = "Extensible and observable IPv6 NDP RA daemon";
+    homepage = "https://github.com/mdlayher/corerad";
     license = lib.licenses.asl20;
+
     maintainers = with lib.maintainers; [
       mdlayher
       jmbaur
     ];
+
     platforms = lib.platforms.linux;
     mainProgram = "corerad";
   };

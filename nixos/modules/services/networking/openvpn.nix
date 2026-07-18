@@ -64,10 +64,8 @@ let
 
     in
     {
-      description = "OpenVPN instance ‘${name}’";
-
-      wantedBy = optional cfg.autoStart "multi-user.target";
       after = [ "network.target" ];
+      description = "OpenVPN instance ‘${name}’";
 
       path = [
         pkgs.iptables
@@ -78,17 +76,20 @@ let
       serviceConfig.ExecStart = "@${config.services.openvpn.package}/sbin/openvpn openvpn --suppress-timestamps --config ${configFile}";
       serviceConfig.Restart = "always";
       serviceConfig.Type = "notify";
+      wantedBy = optional cfg.autoStart "multi-user.target";
     };
 
   restartService = optionalAttrs cfg.restartAfterSleep {
     openvpn-restart = {
-      wantedBy = [ "sleep.target" ];
+      description = "Restart system OpenVPN connections when returning from sleep";
+
       script =
         let
           unitNames = map (n: "openvpn-${n}.service") (builtins.attrNames cfg.servers);
         in
         "systemctl try-restart ${lib.escapeShellArgs unitNames}";
-      description = "Restart system OpenVPN connections when returning from sleep";
+
+      wantedBy = [ "sleep.target" ];
     };
   };
 
@@ -104,8 +105,23 @@ in
   options = {
     services.openvpn.package = lib.mkPackageOption pkgs "openvpn" { };
 
+    services.openvpn.restartAfterSleep = mkOption {
+      default = true;
+      description = "Whether OpenVPN client should be restarted after sleep.";
+      type = types.bool;
+    };
+
     services.openvpn.servers = mkOption {
       default = { };
+
+      description = ''
+        Each attribute of this option defines a systemd service that
+        runs an OpenVPN instance.  These can be OpenVPN servers or
+        clients.  The name of each systemd service is
+        `openvpn-«name».service`,
+        where «name» is the corresponding
+        attribute name.
+      '';
 
       example = literalExpression ''
         {
@@ -138,15 +154,6 @@ in
         }
       '';
 
-      description = ''
-        Each attribute of this option defines a systemd service that
-        runs an OpenVPN instance.  These can be OpenVPN servers or
-        clients.  The name of each systemd service is
-        `openvpn-«name».service`,
-        where «name» is the corresponding
-        attribute name.
-      '';
-
       type =
         with types;
         attrsOf (submodule {
@@ -154,7 +161,6 @@ in
           options = {
 
             config = mkOption {
-              type = types.lines;
               description = ''
                 Configuration of this OpenVPN instance.  See
                 {manpage}`openvpn(8)`
@@ -163,42 +169,13 @@ in
                 To import an external config file, use the following definition:
                 `config = "config /path/to/config.ovpn"`
               '';
-            };
 
-            up = mkOption {
-              default = "";
               type = types.lines;
-              description = ''
-                Shell commands executed when the instance is starting.
-              '';
-            };
-
-            down = mkOption {
-              default = "";
-              type = types.lines;
-              description = ''
-                Shell commands executed when the instance is shutting down.
-              '';
-            };
-
-            autoStart = mkOption {
-              default = true;
-              type = types.bool;
-              description = "Whether this OpenVPN instance should be started automatically.";
-            };
-
-            updateResolvConf = mkOption {
-              default = false;
-              type = types.bool;
-              description = ''
-                Use the script from the update-resolv-conf package to automatically
-                update resolv.conf with the DNS information provided by openvpn. The
-                script will be run after the "up" commands and before the "down" commands.
-              '';
             };
 
             authUserPass = mkOption {
               default = null;
+
               description = ''
                 This option can be used to store the username / password credentials
                 with the "auth-user-pass" authentication method.
@@ -208,18 +185,19 @@ in
 
                 WARNING: If you use an attribute set, this option will put the credentials WORLD-READABLE into the Nix store!
               '';
+
               type = types.nullOr (
                 types.oneOf [
                   types.singleLineStr
                   (types.submodule {
                     options = {
-                      username = mkOption {
-                        description = "The username to store inside the credentials file.";
+                      password = mkOption {
+                        description = "The password to store inside the credentials file.";
                         type = types.str;
                       };
 
-                      password = mkOption {
-                        description = "The password to store inside the credentials file.";
+                      username = mkOption {
+                        description = "The username to store inside the credentials file.";
                         type = types.str;
                       };
                     };
@@ -227,16 +205,48 @@ in
                 ]
               );
             };
+
+            autoStart = mkOption {
+              default = true;
+              description = "Whether this OpenVPN instance should be started automatically.";
+              type = types.bool;
+            };
+
+            down = mkOption {
+              default = "";
+
+              description = ''
+                Shell commands executed when the instance is shutting down.
+              '';
+
+              type = types.lines;
+            };
+
+            up = mkOption {
+              default = "";
+
+              description = ''
+                Shell commands executed when the instance is starting.
+              '';
+
+              type = types.lines;
+            };
+
+            updateResolvConf = mkOption {
+              default = false;
+
+              description = ''
+                Use the script from the update-resolv-conf package to automatically
+                update resolv.conf with the DNS information provided by openvpn. The
+                script will be run after the "up" commands and before the "down" commands.
+              '';
+
+              type = types.bool;
+            };
           };
 
         });
 
-    };
-
-    services.openvpn.restartAfterSleep = mkOption {
-      default = true;
-      type = types.bool;
-      description = "Whether OpenVPN client should be restarted after sleep.";
     };
 
   };
@@ -245,6 +255,9 @@ in
 
   config = mkIf (cfg.servers != { }) {
 
+    boot.kernelModules = [ "tun" ];
+    environment.systemPackages = [ cfg.package ];
+
     systemd.services =
       (listToAttrs (
         mapAttrsToList (
@@ -252,10 +265,6 @@ in
         ) cfg.servers
       ))
       // restartService;
-
-    environment.systemPackages = [ cfg.package ];
-
-    boot.kernelModules = [ "tun" ];
 
   };
 

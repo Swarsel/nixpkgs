@@ -1,10 +1,10 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
-  testers,
-  surrealdb-migrations,
   nix-update-script,
+  rustPlatform,
+  surrealdb-migrations,
+  testers,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -19,7 +19,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
   };
 
   cargoHash = "sha256-XA4OXHKSdVKoq3aKpKnYXzWjXHolDqPNLeIDS3iARYI=";
-
   # Error: No such file or directory (os error 2)
   # failures:
   #   cli::apply::apply_initial_migrations
@@ -42,18 +41,19 @@ rustPlatform.buildRustPackage (finalAttrs: {
   doCheck = false;
 
   passthru = {
-    updateScript = nix-update-script { };
     tests.version = testers.testVersion {
-      package = surrealdb-migrations;
       command = "surrealdb-migrations --version";
+      package = surrealdb-migrations;
     };
+
+    updateScript = nix-update-script { };
   };
 
   meta = {
     description = "Awesome SurrealDB migration tool, with a user-friendly CLI and a versatile Rust library that enables seamless integration into any project";
     homepage = "https://crates.io/crates/surrealdb-migrations";
-    mainProgram = "surrealdb-migrations";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ happysalada ];
+    mainProgram = "surrealdb-migrations";
   };
 })

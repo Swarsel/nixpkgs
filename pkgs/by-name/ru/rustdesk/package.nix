@@ -1,72 +1,61 @@
 {
   lib,
-  rustPlatform,
+  stdenv,
   fetchFromGitHub,
-  pkg-config,
-  wrapGAppsHook3,
+  alsa-lib,
   atk,
   bzip2,
   cairo,
+  copyDesktopItems,
   dbus,
   gdk-pixbuf,
   glib,
   gst_all_1,
   gtk3,
+  libaom,
   libayatana-appindicator,
   libgit2,
-  libpulseaudio,
-  libsodium,
-  libxtst,
-  libvpx,
-  libyuv,
   libopus,
-  libaom,
-  libxkbcommon,
+  libpulseaudio,
   libsciter,
-  xdotool,
+  libsodium,
+  libvpx,
+  libxkbcommon,
+  libxtst,
+  libyuv,
+  makeDesktopItem,
   openssl,
   pam,
   pango,
   perl,
+  pkg-config,
+  rustPlatform,
+  wrapGAppsHook3,
+  xdotool,
   zlib,
   zstd,
-  stdenv,
-  alsa-lib,
-  makeDesktopItem,
-  copyDesktopItems,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
   pname = "rustdesk";
   version = "1.4.9";
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "rustdesk";
     repo = "rustdesk";
     tag = finalAttrs.version;
-    fetchSubmodules = true;
     hash = "sha256-AnwdIO4TveC48uMioBCvH60xun24ckK420ONSEB9lQI=";
+    fetchSubmodules = true;
   };
-
-  cargoHash = "sha256-HPvvsTcjSErGfdNwsHgWhs930Fe0hmK1g5J/ngtlkKM=";
 
   patches = [
     ./make-build-reproducible.patch
   ];
 
-  desktopItems = [
-    (makeDesktopItem {
-      name = "rustdesk";
-      exec = finalAttrs.meta.mainProgram;
-      icon = "rustdesk";
-      desktopName = "RustDesk";
-      comment = finalAttrs.meta.description;
-      genericName = "Remote Desktop";
-      categories = [ "Network" ];
-      mimeTypes = [ "x-scheme-handler/rustdesk" ];
-    })
-  ];
+  postPatch = ''
+    sed -e '1i #include <cstdint>' -i $cargoDepsCopy/*/webm-1.1.0/src/sys/libwebm/mkvparser/mkvparser.cc
+    sed -e '1i #include <cstdint>' -i $cargoDepsCopy/*/webm-sys-1.0.4/libwebm/mkvparser/mkvparser.cc
+  '';
 
   nativeBuildInputs = [
     copyDesktopItems
@@ -75,11 +64,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
     rustPlatform.bindgenHook
     wrapGAppsHook3
   ];
-
-  buildFeatures = lib.optionals stdenv.hostPlatform.isLinux [ "linux-pkg-config" ];
-
-  # Checks require an active X server
-  doCheck = false;
 
   buildInputs = [
     atk
@@ -112,10 +96,15 @@ rustPlatform.buildRustPackage (finalAttrs: {
     xdotool
   ];
 
-  postPatch = ''
-    sed -e '1i #include <cstdint>' -i $cargoDepsCopy/*/webm-1.1.0/src/sys/libwebm/mkvparser/mkvparser.cc
-    sed -e '1i #include <cstdint>' -i $cargoDepsCopy/*/webm-sys-1.0.4/libwebm/mkvparser/mkvparser.cc
-  '';
+  cargoHash = "sha256-HPvvsTcjSErGfdNwsHgWhs930Fe0hmK1g5J/ngtlkKM=";
+
+  env = {
+    SODIUM_USE_PKG_CONFIG = true;
+    ZSTD_SYS_USE_PKG_CONFIG = true;
+  };
+
+  # Checks require an active X server
+  doCheck = false;
 
   # Add static ui resources and libsciter to same folder as binary so that it
   # can find them.
@@ -138,21 +127,34 @@ rustPlatform.buildRustPackage (finalAttrs: {
     patchelf --add-rpath "${libayatana-appindicator}/lib" "$out/lib/rustdesk/rustdesk"
   '';
 
-  env = {
-    SODIUM_USE_PKG_CONFIG = true;
-    ZSTD_SYS_USE_PKG_CONFIG = true;
-  };
+  __structuredAttrs = true;
+  buildFeatures = lib.optionals stdenv.hostPlatform.isLinux [ "linux-pkg-config" ];
+
+  desktopItems = [
+    (makeDesktopItem {
+      categories = [ "Network" ];
+      comment = finalAttrs.meta.description;
+      desktopName = "RustDesk";
+      exec = finalAttrs.meta.mainProgram;
+      genericName = "Remote Desktop";
+      icon = "rustdesk";
+      mimeTypes = [ "x-scheme-handler/rustdesk" ];
+      name = "rustdesk";
+    })
+  ];
 
   meta = {
     description = "Virtual / remote desktop infrastructure for everyone! Open source TeamViewer / Citrix alternative";
     homepage = "https://rustdesk.com";
     changelog = "https://github.com/rustdesk/rustdesk/releases/tag/${finalAttrs.version}";
     license = lib.licenses.agpl3Only;
+
     maintainers = with lib.maintainers; [
       ocfox
       leixb
     ];
-    mainProgram = "rustdesk";
+
     badPlatforms = lib.platforms.darwin;
+    mainProgram = "rustdesk";
   };
 })

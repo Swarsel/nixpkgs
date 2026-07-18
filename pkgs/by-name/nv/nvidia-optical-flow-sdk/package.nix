@@ -16,19 +16,19 @@ stdenv.mkDerivation {
     sha256 = "0hv0m0k9wl2wjhhl886j7ymngnf2xz7851nfh57s1gy5bv9lgdgz";
   };
 
-  # # We only need the header files. The library files are
-  # # in the nvidia_x11 driver.
-  installPhase = ''
-    mkdir -p $out/include
-    cp -R * $out/include
-  '';
-
   # Makes setupCudaHook propagate nvidia-optical-flow-sdk together with cuda
   # packages. Currently used by opencv4.cxxdev, hopefully can be removed in the
   # future
   nativeBuildInputs = [
     cudaPackages.markForCudatoolkitRootHook
   ];
+
+  # # We only need the header files. The library files are
+  # # in the nvidia_x11 driver.
+  installPhase = ''
+    mkdir -p $out/include
+    cp -R * $out/include
+  '';
 
   meta = {
     description = "Nvidia optical flow headers for computing the relative motion of pixels between images";

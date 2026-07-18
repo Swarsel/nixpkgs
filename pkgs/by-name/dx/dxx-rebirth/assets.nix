@@ -1,8 +1,8 @@
 {
   lib,
   stdenv,
-  requireFile,
   gogUnpackHook,
+  requireFile,
 }:
 
 let
@@ -13,8 +13,8 @@ let
       version = "2.0.0.7";
 
       src = requireFile rec {
-        name = "setup_descent12_${finalAttrs.version}.exe";
         sha256 = "1r1drbfda6czg21f9qqiiwgnkpszxgmcn5bafp5ljddh34swkn3f";
+
         message = ''
           While the Descent ${toString ver} game engine is free, the game assets are not.
 
@@ -25,12 +25,11 @@ let
 
           nix-prefetch-url file://$PWD/${name}
         '';
+
+        name = "setup_descent12_${finalAttrs.version}.exe";
       };
 
       nativeBuildInputs = [ gogUnpackHook ];
-
-      dontBuild = true;
-      dontFixup = true;
 
       installPhase = ''
         runHook preInstall
@@ -44,6 +43,9 @@ let
 
         runHook postInstall
       '';
+
+      dontBuild = true;
+      dontFixup = true;
 
       meta = {
         description = "Descent ${toString ver} assets from GOG";

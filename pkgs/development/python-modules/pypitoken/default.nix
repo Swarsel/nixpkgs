@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   hatchling,
   jsonschema,
   pymacaroons,
@@ -15,7 +15,6 @@
 buildPythonPackage rec {
   pname = "pypitoken";
   version = "7.1.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "ewjoachim";
@@ -29,6 +28,12 @@ buildPythonPackage rec {
       --replace-fail 'dynamic = ["version"]' 'version = "${version}"'
   '';
 
+  nativeCheckInputs = [
+    pytest-cov-stub
+    pytest-mock
+    pytestCheckHook
+  ];
+
   build-system = [
     hatchling
     uv-dynamic-versioning
@@ -40,12 +45,7 @@ buildPythonPackage rec {
     typing-extensions
   ];
 
-  nativeCheckInputs = [
-    pytest-cov-stub
-    pytest-mock
-    pytestCheckHook
-  ];
-
+  pyproject = true;
   pythonImportsCheck = [ "pypitoken" ];
 
   meta = {

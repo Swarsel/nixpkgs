@@ -1,13 +1,12 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
 }:
 
 buildPythonPackage rec {
   pname = "pyaehw4a1";
   version = "0.3.9";
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "bannhead";
@@ -18,7 +17,7 @@ buildPythonPackage rec {
 
   # no tests implemented
   doCheck = false;
-
+  format = "setuptools";
   pythonImportsCheck = [ "pyaehw4a1" ];
 
   meta = {

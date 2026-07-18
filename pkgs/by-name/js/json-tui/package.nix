@@ -1,16 +1,14 @@
 {
   lib,
   stdenv,
-  fetchpatch2,
   fetchFromGitHub,
-
   cmake,
+  fetchpatch2,
   ftxui,
+  gbenchmark,
+  gtest,
   libargs,
   nlohmann_json,
-  gtest,
-  gbenchmark,
-
   versionCheckHook,
 }:
 
@@ -28,12 +26,13 @@ stdenv.mkDerivation (finalAttrs: {
   patches = [
     # fixes tests - https://github.com/ArthurSonzogni/json-tui/pull/37
     (fetchpatch2 {
-      url = "https://github.com/ArthurSonzogni/json-tui/commit/645060a016c1e1ca84b9e1dc638a926415aaa5fe.patch?full_index=1";
       hash = "sha256-8AZEZgU8HHyaasb/7LegSwRAMo1iyonv3XUY284nYKg=";
+      url = "https://github.com/ArthurSonzogni/json-tui/commit/645060a016c1e1ca84b9e1dc638a926415aaa5fe.patch?full_index=1";
     })
   ];
 
   strictDeps = true;
+  nativeBuildInputs = [ cmake ];
 
   buildInputs = [
     ftxui
@@ -41,29 +40,25 @@ stdenv.mkDerivation (finalAttrs: {
     nlohmann_json
   ];
 
-  nativeBuildInputs = [ cmake ];
-
-  checkInputs = [ gbenchmark ];
-
-  doCheck = stdenv.buildPlatform.canExecute stdenv.hostPlatform;
-
   cmakeFlags = [
     "-Wno-dev" # suppress cmake warning about deprecated usage
     (lib.cmakeBool "JSON_TUI_BUILD_TESTS" finalAttrs.doCheck)
     (lib.cmakeFeature "FETCHCONTENT_SOURCE_DIR_GOOGLETEST" "${gtest.src}")
   ];
 
+  doCheck = stdenv.buildPlatform.canExecute stdenv.hostPlatform;
+  checkInputs = [ gbenchmark ];
   doInstallCheck = true;
-  versionCheckProgramArg = "--version";
   nativeInstallCheckInputs = [ versionCheckHook ];
+  versionCheckProgramArg = "--version";
 
   meta = {
+    description = "JSON terminal UI made in C++";
     homepage = "https://github.com/ArthurSonzogni/json-tui";
     changelog = "https://github.com/ArthurSonzogni/json-tui/blob/v${finalAttrs.version}/CHANGELOG.md";
-    description = "JSON terminal UI made in C++";
     license = lib.licenses.mit;
-    mainProgram = "json-tui";
     maintainers = with lib.maintainers; [ phanirithvij ];
     platforms = lib.platforms.all;
+    mainProgram = "json-tui";
   };
 })

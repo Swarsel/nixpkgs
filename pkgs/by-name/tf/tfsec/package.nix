@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule (finalAttrs: {
@@ -15,6 +15,8 @@ buildGoModule (finalAttrs: {
     hash = "sha256-8nZU7CjeKfpx1Fl3YtuQepW0LAG9/ng+8bMkoT1xmCQ=";
   };
 
+  vendorHash = "sha256-SuXrZNjr+x4uIA8fIae/9kypH/GDDKaiymD12xJvIFw=";
+
   ldflags = [
     "-s"
     "-w"
@@ -22,8 +24,6 @@ buildGoModule (finalAttrs: {
     ## not sure if this is needed (https://github.com/aquasecurity/tfsec/blob/master/.goreleaser.yml#L6)
     # "-extldflags '-fno-PIC -static'"
   ];
-
-  vendorHash = "sha256-SuXrZNjr+x4uIA8fIae/9kypH/GDDKaiymD12xJvIFw=";
 
   subPackages = [
     "cmd/tfsec"
@@ -36,6 +36,7 @@ buildGoModule (finalAttrs: {
     homepage = "https://github.com/aquasecurity/tfsec";
     changelog = "https://github.com/aquasecurity/tfsec/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       fab
     ];

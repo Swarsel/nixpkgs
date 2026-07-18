@@ -1,43 +1,43 @@
 {
   lib,
   stdenv,
-  makeWrapper,
-  runCommandLocal,
+  buildEnv,
   buildFactorApplication,
   buildFactorVocab,
-  buildEnv,
-  copyDesktopItems,
-  makeDesktopItem,
-  factor-unwrapped,
   cairo,
+  copyDesktopItems,
+  factor-unwrapped,
   freealut,
   gdk-pixbuf,
   glib,
   gnome2,
+  graphviz,
   gtk2-x11,
   libGL,
   libGLU,
-  librsvg,
-  graphviz,
   libogg,
+  librsvg,
   libvorbis,
+  makeDesktopItem,
+  makeWrapper,
   openal,
   openssl,
   pango,
   pcre,
+  runCommandLocal,
   udis86,
   zlib,
-  # Enable factor GUI support
-  guiSupport ? true,
-  # Libraries added to ld.so.cache
-  extraLibs ? [ ],
   # Packages added to path (and ld.so.cache)
   binPackages ? [ ],
-  # Extra vocabularies added to out/lib/factor
-  extraVocabs ? [ ],
+  doInstallCheck ? true,
   # Enable default libs and bins to run most of the standard library code.
   enableDefaults ? true,
-  doInstallCheck ? true,
+  # Libraries added to ld.so.cache
+  extraLibs ? [ ],
+  # Extra vocabularies added to out/lib/factor
+  extraVocabs ? [ ],
+  # Enable factor GUI support
+  guiSupport ? true,
 }:
 let
   inherit (lib)
@@ -78,42 +78,29 @@ let
     ];
   bins = binPackages ++ defaultBins ++ (lib.flatten (map (v: v.extraPaths or [ ]) extraVocabs));
   vocabTree = buildEnv {
-    name = "${factor-unwrapped.pname}-vocabs";
     ignoreCollisions = true;
+    name = "${factor-unwrapped.pname}-vocabs";
+    paths = [ factor-unwrapped ] ++ extraVocabs;
+
     pathsToLink = map (r: "/lib/factor/${r}") [
       "basis"
       "core"
       "extra"
     ];
-    paths = [ factor-unwrapped ] ++ extraVocabs;
   };
 
 in
 stdenv.mkDerivation (finalAttrs: {
-  pname = "${factor-unwrapped.pname}-env";
   inherit (factor-unwrapped) version;
+  inherit doInstallCheck;
+  pname = "${factor-unwrapped.pname}-env";
 
   nativeBuildInputs = [
     copyDesktopItems
     makeWrapper
   ];
+
   buildInputs = optional guiSupport gdk-pixbuf;
-
-  dontUnpack = true;
-
-  desktopItems = [
-    (makeDesktopItem {
-      name = "Factor";
-      desktopName = "Factor";
-      comment = "A practical stack language";
-      exec = "factor";
-      icon = "factor";
-      categories = [
-        "Development"
-        "IDE"
-      ];
-    })
-  ];
 
   installPhase = ''
     runHook preInstall
@@ -188,16 +175,6 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
-  inherit doInstallCheck;
-  disabledTests = toFactorArgs [
-    "io.files.info.unix"
-    "io.launcher.unix"
-    "io.ports"
-    "io.sockets"
-    "io.sockets.unix"
-    "io.sockets.secure.openssl"
-    "io.sockets.secure.unix"
-  ];
   installCheckPhase = ''
     runHook preInstallCheck
 
@@ -213,6 +190,33 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstallCheck
   '';
 
+  desktopItems = [
+    (makeDesktopItem {
+      categories = [
+        "Development"
+        "IDE"
+      ];
+
+      comment = "A practical stack language";
+      desktopName = "Factor";
+      exec = "factor";
+      icon = "factor";
+      name = "Factor";
+    })
+  ];
+
+  disabledTests = toFactorArgs [
+    "io.files.info.unix"
+    "io.launcher.unix"
+    "io.ports"
+    "io.sockets"
+    "io.sockets.unix"
+    "io.sockets.secure.openssl"
+    "io.sockets.secure.unix"
+  ];
+
+  dontUnpack = true;
+
   passthru = {
     inherit
       defaultLibs
@@ -223,6 +227,7 @@ stdenv.mkDerivation (finalAttrs: {
       extraVocabs
       vocabTree
       ;
+
     tests = {
       hello-world = import ./test/hello-world {
         inherit

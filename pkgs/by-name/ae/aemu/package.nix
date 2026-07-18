@@ -1,8 +1,8 @@
 {
   lib,
   stdenv,
-  fetchFromGitiles,
   cmake,
+  fetchFromGitiles,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -30,9 +30,9 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   meta = {
-    homepage = "https://android.googlesource.com/platform/hardware/google/aemu";
     description = "Android emulation utilities library";
-    maintainers = with lib.maintainers; [ qyliss ];
+    homepage = "https://android.googlesource.com/platform/hardware/google/aemu";
+
     # The BSD license comes from host-common/VpxFrameParser.cpp, which
     # incorporates some code from libvpx, which uses the 3-clause BSD license.
     license = with lib.licenses; [
@@ -40,6 +40,9 @@ stdenv.mkDerivation (finalAttrs: {
       mit
       bsd3
     ];
+
+    maintainers = with lib.maintainers; [ qyliss ];
+
     # See base/include/aemu/base/synchronization/Lock.h
     platforms = [
       "x86_64-linux"

@@ -1,21 +1,21 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
-  pkg-config,
-  wrapGAppsHook3,
-  makeDesktopItem,
+  buildGoModule,
   copyDesktopItems,
   gtk3,
   libglvnd,
-  libxxf86vm,
-  libxrandr,
+  libx11,
+  libxcursor,
+  libxext,
   libxi,
   libxinerama,
-  libxcursor,
-  libx11,
-  libxext,
+  libxrandr,
+  libxxf86vm,
   lpac,
+  makeDesktopItem,
+  pkg-config,
+  wrapGAppsHook3,
 }:
 
 buildGoModule rec {
@@ -28,8 +28,6 @@ buildGoModule rec {
     tag = version;
     hash = "sha256-q76p0BqrG8opuTClYKLfmM5hdziJIrZCwQmg2NkzW/E=";
   };
-
-  vendorHash = "sha256-52I8hlnoHPhygwr0dxDP50X2A7Gsh0v/0SGQFH3FG/8=";
 
   nativeBuildInputs = [
     copyDesktopItems
@@ -49,6 +47,8 @@ buildGoModule rec {
     libxext
   ];
 
+  vendorHash = "sha256-52I8hlnoHPhygwr0dxDP50X2A7Gsh0v/0SGQFH3FG/8=";
+
   postInstall = ''
     install -Dm644 assets/icon64.png "$out/share/icons/hicolor/64x64/apps/EasyLPAC.png"
     install -Dm644 assets/icon128.png "$out/share/icons/hicolor/128x128/apps/EasyLPAC.png"
@@ -60,25 +60,25 @@ buildGoModule rec {
     )
   '';
 
+  __structuredAttrs = true;
+
   desktopItems = [
     (makeDesktopItem {
-      name = "EasyLPAC";
+      categories = [ "Utility" ];
+      comment = "GUI frontend for lpac, a C-based eUICC LPA";
+      desktopName = "EasyLPAC";
       exec = "EasyLPAC";
       icon = "EasyLPAC";
-      desktopName = "EasyLPAC";
-      comment = "GUI frontend for lpac, a C-based eUICC LPA";
-      categories = [ "Utility" ];
+      name = "EasyLPAC";
     })
   ];
-
-  __structuredAttrs = true;
 
   meta = {
     description = "GUI frontend for lpac, a C-based eUICC LPA";
     homepage = "https://github.com/creamlike1024/EasyLPAC";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ stargate01 ];
-    mainProgram = "EasyLPAC";
     platforms = lib.platforms.unix;
+    mainProgram = "EasyLPAC";
   };
 }

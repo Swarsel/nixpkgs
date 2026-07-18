@@ -5,10 +5,10 @@
   SDL2,
   SDL2_mixer,
   cmake,
-  libpng,
   darwin,
-  libicns,
   imagemagick,
+  libicns,
+  libpng,
 }:
 stdenv.mkDerivation (finalAttrs: {
   pname = "julius";
@@ -52,14 +52,16 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   meta = {
-    homepage = "https://github.com/bvschaik/julius";
     description = "Open source re-implementation of Caesar III";
-    mainProgram = "julius";
+    homepage = "https://github.com/bvschaik/julius";
     license = lib.licenses.agpl3Only;
+
     maintainers = with lib.maintainers; [
       Thra11
       matteopacini
     ];
+
     platforms = lib.platforms.all;
+    mainProgram = "julius";
   };
 })

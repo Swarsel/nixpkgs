@@ -1,8 +1,8 @@
 {
+  lib,
+  fetchFromGitHub,
   buildNpmPackage,
   callPackage,
-  fetchFromGitHub,
-  lib,
   nix-update-script,
   nodejs,
   pkg-config,
@@ -10,6 +10,7 @@
 }:
 
 buildNpmPackage rec {
+  inherit nodejs;
   pname = "netlify-cli";
   version = "23.15.0";
 
@@ -27,12 +28,9 @@ buildNpmPackage rec {
     touch .git
   '';
 
-  npmDepsHash = "sha256-yKDLaNIofYLsoWvxaZUfY+LyVd/s4NGD+LEmd9Y7CAA=";
-
-  inherit nodejs;
-
-  buildInputs = [ vips ];
   nativeBuildInputs = [ pkg-config ];
+  buildInputs = [ vips ];
+  npmDepsHash = "sha256-yKDLaNIofYLsoWvxaZUfY+LyVd/s4NGD+LEmd9Y7CAA=";
 
   passthru = {
     tests.test = callPackage ./test.nix { };

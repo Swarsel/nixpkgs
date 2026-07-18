@@ -1,7 +1,7 @@
 {
   lib,
-  buildNpmPackage,
   fetchFromGitHub,
+  buildNpmPackage,
   typescript,
 }:
 
@@ -16,11 +16,8 @@ buildNpmPackage (finalAttrs: {
     hash = "sha256-wdI6VlJ4WoSNnwgkb6dkVYcq/P/yzflv5mE9PuYBVx4=";
   };
 
-  sourceRoot = "${finalAttrs.src.name}/extensions/json-language-features/server";
-
-  npmDepsHash = "sha256-akQukdYTe6um4xo+7T3wHxx+WrXfKYl5a1qwmqX72HQ=";
-
   nativeBuildInputs = [ typescript ];
+  npmDepsHash = "sha256-akQukdYTe6um4xo+7T3wHxx+WrXfKYl5a1qwmqX72HQ=";
 
   buildPhase = ''
     runHook preBuild
@@ -28,11 +25,12 @@ buildNpmPackage (finalAttrs: {
     runHook postBuild
   '';
 
-  dontNpmBuild = true;
-
   postInstall = ''
     ln -s $out/bin/vscode-json-languageserver $out/bin/vscode-json-language-server
   '';
+
+  dontNpmBuild = true;
+  sourceRoot = "${finalAttrs.src.name}/extensions/json-language-features/server";
 
   meta = {
     description = "JSON language server";

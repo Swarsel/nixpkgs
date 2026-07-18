@@ -1,13 +1,13 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
   cmake,
-  pkg-config,
   expat,
   fontconfig,
   freetype,
   nix-update-script,
+  pkg-config,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -25,6 +25,7 @@ rustPlatform.buildRustPackage (finalAttrs: {
     cmake
     pkg-config
   ];
+
   buildInputs = [
     expat
     fontconfig
@@ -32,7 +33,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
   ];
 
   cargoHash = "sha256-TOoNfGYQTr5UZeyasslJU9GRIAnH3p2a9UIFz8IJv7A=";
-
   passthru.updateScript = nix-update-script { };
 
   meta = {

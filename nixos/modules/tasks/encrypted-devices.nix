@@ -30,28 +30,20 @@ let
     options.encrypted = {
       enable = mkOption {
         default = false;
-        type = types.bool;
         description = "The block device is backed by an encrypted one, adds this device as a initrd luks entry.";
+        type = types.bool;
       };
 
       blkDev = mkOption {
         default = null;
+        description = "Location of the backing encrypted device.";
         example = "/dev/sda1";
         type = types.nullOr types.str;
-        description = "Location of the backing encrypted device.";
-      };
-
-      label = mkOption {
-        default = null;
-        example = "rootfs";
-        type = types.nullOr types.str;
-        description = "Label of the unlocked encrypted device. Set `fileSystems.<name?>.device` to `/dev/mapper/<label>` to mount the unlocked device.";
       };
 
       keyFile = mkOption {
         default = null;
-        example = "/mnt-root/root/.swapkey";
-        type = types.nullOr types.str;
+
         description = ''
           Path to a keyfile used to unlock the backing encrypted
           device. When systemd stage 1 is not enabled, at the time
@@ -63,6 +55,16 @@ let
           under `/sysroot`, and the keyfile will not be accessed until
           its requisite mounts are done.
         '';
+
+        example = "/mnt-root/root/.swapkey";
+        type = types.nullOr types.str;
+      };
+
+      label = mkOption {
+        default = null;
+        description = "Label of the unlocked encrypted device. Set `fileSystems.<name?>.device` to `/dev/mapper/<label>` to mount the unlocked device.";
+        example = "rootfs";
+        type = types.nullOr types.str;
       };
     };
   };
@@ -74,6 +76,7 @@ in
     fileSystems = mkOption {
       type = with lib.types; attrsOf (submodule encryptedFSOptions);
     };
+
     swapDevices = mkOption {
       type = with lib.types; listOf (submodule encryptedFSOptions);
     };
@@ -83,6 +86,7 @@ in
     assertions = concatMap (dev: [
       {
         assertion = dev.encrypted.label != null;
+
         message = ''
           The filesystem for ${dev.mountPoint} has encrypted.enable set to true, but no encrypted.label set
         '';
@@ -97,6 +101,7 @@ in
               "$targetRoot"
             ]
           );
+
         message = ''
           Bad use of '/mnt-root' or '$targetRoot` in 'keyFile'.
 
@@ -111,14 +116,17 @@ in
         devices = builtins.listToAttrs (
           map (dev: {
             name = dev.encrypted.label;
+
             value = {
-              device = dev.encrypted.blkDev;
               inherit (dev.encrypted) keyFile;
+              device = dev.encrypted.blkDev;
             };
           }) earlyEncDevs
         );
+
         forceLuksSupportInInitrd = true;
       };
+
       postMountCommands = lib.mkIf (!config.boot.initrd.systemd.enable) (
         concatMapStrings (
           dev:

@@ -8,7 +8,6 @@
 python3.pkgs.buildPythonApplication (finalAttrs: {
   pname = "killerbee";
   version = "3.0.0-beta.2";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "riverloopsec";
@@ -17,9 +16,8 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     hash = "sha256-WM0Z6sd8S71F8FfhhoUq3MSD/2uvRTY/FsBP7VGGtb0=";
   };
 
-  build-system = with python3.pkgs; [ setuptools ];
-
   buildInputs = [ libgcrypt ];
+  build-system = with python3.pkgs; [ setuptools ];
 
   dependencies = with python3.pkgs; [
     pycrypto
@@ -29,6 +27,7 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     scapy
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "killerbee" ];
 
   meta = {

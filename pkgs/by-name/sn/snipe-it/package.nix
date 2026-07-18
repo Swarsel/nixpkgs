@@ -1,10 +1,10 @@
 {
   lib,
-  dataDir ? "/var/lib/snipe-it",
   fetchFromGitHub,
   mariadb,
   nixosTests,
   php84,
+  dataDir ? "/var/lib/snipe-it",
 }:
 
 let
@@ -44,18 +44,20 @@ php.buildComposerProject2 (finalAttrs: {
   '';
 
   passthru = {
-    tests = nixosTests.snipe-it;
     phpPackage = php;
+    tests = nixosTests.snipe-it;
   };
 
   meta = {
     description = "Free open source IT asset/license management system";
+
     longDescription = ''
       Snipe-IT was made for IT asset management, to enable IT departments to track
       who has which laptop, when it was purchased, which software licenses and accessories
       are available, and so on.
       Details for snipe-it can be found on the official website at https://snipeitapp.com/.
     '';
+
     homepage = "https://snipeitapp.com/";
     changelog = "https://github.com/snipe/snipe-it/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.agpl3Only;

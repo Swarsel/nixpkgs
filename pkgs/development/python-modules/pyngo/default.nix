@@ -1,26 +1,22 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # build-system
-  hatchling,
-
+  buildPythonPackage,
   # dependencies
   django,
-  pydantic,
-  typing-extensions,
-
   # tests
   django-stubs,
-  pytestCheckHook,
+  # build-system
+  hatchling,
+  pydantic,
   pytest-asyncio,
+  pytestCheckHook,
+  typing-extensions,
 }:
 
 buildPythonPackage rec {
   pname = "pyngo";
   version = "2.5.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "yezz123";
@@ -33,18 +29,11 @@ buildPythonPackage rec {
     hatchling
   ];
 
-  pythonRelaxDeps = [
-    "pydantic"
-    "typing-extensions"
-  ];
-
   propagatedBuildInputs = [
     django
     pydantic
     typing-extensions
   ];
-
-  pythonImportsCheck = [ "pyngo" ];
 
   nativeCheckInputs = [
     django-stubs
@@ -52,10 +41,18 @@ buildPythonPackage rec {
     pytest-asyncio
   ];
 
+  pyproject = true;
+  pythonImportsCheck = [ "pyngo" ];
+
+  pythonRelaxDeps = [
+    "pydantic"
+    "typing-extensions"
+  ];
+
   meta = {
-    changelog = "https://github.com/yezz123/pyngo/releases/tag/${src.tag}";
     description = "Pydantic model support for Django & Django-Rest-Framework";
     homepage = "https://github.com/yezz123/pyngo";
+    changelog = "https://github.com/yezz123/pyngo/releases/tag/${src.tag}";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ hexa ];
   };

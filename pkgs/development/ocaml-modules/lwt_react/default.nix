@@ -1,6 +1,6 @@
 {
-  buildDunePackage,
   fetchFromGitHub,
+  buildDunePackage,
   cppo,
   lwt,
   react,
@@ -25,7 +25,7 @@ buildDunePackage {
   ];
 
   meta = {
-    description = "Helpers for using React with Lwt";
     inherit (lwt.meta) homepage license maintainers;
+    description = "Helpers for using React with Lwt";
   };
 }

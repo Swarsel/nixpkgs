@@ -1,7 +1,7 @@
 {
   lib,
-  buildDunePackage,
   fetchFromGitHub,
+  buildDunePackage,
   dune-configurator,
   libsamplerate,
 }:
@@ -21,8 +21,8 @@ buildDunePackage (finalAttrs: {
   propagatedBuildInputs = [ libsamplerate ];
 
   meta = {
-    homepage = "https://github.com/savonet/ocaml-samplerate";
     description = "Interface for libsamplerate";
+    homepage = "https://github.com/savonet/ocaml-samplerate";
     license = lib.licenses.bsd2;
     maintainers = with lib.maintainers; [ dandellion ];
   };

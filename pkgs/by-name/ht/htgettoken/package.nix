@@ -1,20 +1,19 @@
 {
   lib,
   fetchFromGitHub,
-  makeBinaryWrapper,
-  python3,
   bash,
-  curl,
   coreutils,
+  curl,
   gnused,
   jq,
+  makeBinaryWrapper,
+  python3,
   scitokens-cpp,
 }:
 
 python3.pkgs.buildPythonApplication (finalAttrs: {
   pname = "htgettoken";
   version = "2.6";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "fermitools";
@@ -22,10 +21,6 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-jHKKTnFZ+6LHaB61wi5+Ht6ZHrE4dDqADIMfGWI47oM=";
   };
-
-  build-system = with python3.pkgs; [
-    setuptools
-  ];
 
   nativeBuildInputs = [
     makeBinaryWrapper
@@ -37,12 +32,6 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     coreutils
     jq
     scitokens-cpp
-  ];
-
-  dependencies = with python3.pkgs; [
-    gssapi
-    paramiko
-    urllib3
   ];
 
   postInstall = ''
@@ -71,10 +60,22 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
         }
   '';
 
+  build-system = with python3.pkgs; [
+    setuptools
+  ];
+
+  dependencies = with python3.pkgs; [
+    gssapi
+    paramiko
+    urllib3
+  ];
+
+  pyproject = true;
+
   meta = {
     description = "Gets OIDC authentication tokens for High Throughput Computing via a Hashicorp vault server ";
-    license = lib.licenses.bsd3;
     homepage = "https://github.com/fermitools/htgettoken";
+    license = lib.licenses.bsd3;
     maintainers = with lib.maintainers; [ veprbl ];
   };
 })

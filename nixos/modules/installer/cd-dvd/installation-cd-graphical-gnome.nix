@@ -4,16 +4,21 @@
 
 {
   imports = [ ./installation-cd-graphical-base.nix ];
-
   isoImage.edition = lib.mkDefault "gnome";
 
   services.desktopManager.gnome = {
+    enable = true;
+
     # Add Firefox and other tools useful for installation to the launcher
     favoriteAppsOverride = ''
       [org.gnome.shell]
       favorite-apps=[ 'firefox.desktop', 'nixos-manual.desktop', 'org.gnome.Terminal.desktop', 'org.gnome.Nautilus.desktop', 'gparted.desktop' ]
     '';
+  };
+
+  services.displayManager.autoLogin = {
     enable = true;
+    user = "nixos";
   };
 
   services.displayManager.gdm = {
@@ -25,10 +30,5 @@
     # * https://github.com/NixOS/nixpkgs/pull/63790
     # * https://gitlab.gnome.org/GNOME/gnome-control-center/issues/22
     autoSuspend = false;
-  };
-
-  services.displayManager.autoLogin = {
-    enable = true;
-    user = "nixos";
   };
 }

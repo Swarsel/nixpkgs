@@ -20,10 +20,12 @@ in
 
     servers = lib.mkOption {
       default = { };
+
       description = ''
         configure a number of bepasty servers which will be started with
         gunicorn.
       '';
+
       type =
         with lib.types;
         attrsOf (
@@ -34,50 +36,60 @@ in
               options = {
 
                 bind = lib.mkOption {
-                  type = lib.types.str;
+                  default = "127.0.0.1:8000";
+
                   description = ''
                     Bind address to be used for this server.
                   '';
+
                   example = "0.0.0.0:8000";
-                  default = "127.0.0.1:8000";
+                  type = lib.types.str;
                 };
 
                 dataDir = lib.mkOption {
-                  type = lib.types.str;
+                  default = default_home + "/data";
+
                   description = ''
                     Path to the directory where the pastes will be saved to
                   '';
-                  default = default_home + "/data";
+
+                  type = lib.types.str;
                 };
 
                 defaultPermissions = lib.mkOption {
-                  type = lib.types.str;
+                  default = "read";
+
                   description = ''
                     default permissions for all unauthenticated accesses.
                   '';
+
                   example = "read,create,delete";
-                  default = "read";
+                  type = lib.types.str;
                 };
 
                 extraConfig = lib.mkOption {
-                  type = lib.types.lines;
+                  default = "";
+
                   description = ''
                     Extra configuration for bepasty server to be appended on the
                     configuration.
                     see <https://bepasty-server.readthedocs.org/en/latest/quickstart.html#configuring-bepasty>
                     for all options.
                   '';
-                  default = "";
+
                   example = ''
                     PERMISSIONS = {
                       'myadminsecret': 'admin,list,create,read,delete',
                     }
                     MAX_ALLOWED_FILE_SIZE = 5 * 1000 * 1000
                   '';
+
+                  type = lib.types.lines;
                 };
 
                 secretKey = lib.mkOption {
-                  type = lib.types.str;
+                  default = "";
+
                   description = ''
                     server secret for safe session cookies, must be set.
 
@@ -86,12 +98,13 @@ in
                     It's recommended to use {option}`secretKeyFile`
                     which takes precedence over {option}`secretKey`.
                   '';
-                  default = "";
+
+                  type = lib.types.str;
                 };
 
                 secretKeyFile = lib.mkOption {
-                  type = lib.types.nullOr lib.types.str;
                   default = null;
+
                   description = ''
                     A file that contains the server secret for safe session cookies, must be set.
 
@@ -100,18 +113,23 @@ in
                     Warning: when {option}`secretKey` is non-empty {option}`secretKeyFile`
                     defaults to a file in the WORLD-READABLE Nix store containing that secret.
                   '';
+
+                  type = lib.types.nullOr lib.types.str;
                 };
 
                 workDir = lib.mkOption {
-                  type = lib.types.str;
+                  default = default_home;
+
                   description = ''
                     Path to the working directory (used for config and pidfile).
                     Defaults to the users home directory.
                   '';
-                  default = default_home;
+
+                  type = lib.types.str;
                 };
 
               };
+
               config = {
                 secretKeyFile = lib.mkDefault (
                   if config.secretKey != "" then
@@ -139,10 +157,8 @@ in
     systemd.services = lib.mapAttrs' (
       name: server:
       lib.nameValuePair "bepasty-server-${name}-gunicorn" {
-        description = "Bepasty Server ${name}";
-        wantedBy = [ "multi-user.target" ];
         after = [ "network.target" ];
-        restartIfChanged = true;
+        description = "Bepasty Server ${name}";
 
         environment =
           let
@@ -158,9 +174,19 @@ in
             PYTHONPATH = "${penv}/${python.sitePackages}/";
           };
 
+        restartIfChanged = true;
+
         serviceConfig = {
-          Type = "simple";
-          PrivateTmp = true;
+          ExecStart = ''
+            ${gunicorn}/bin/gunicorn bepasty.wsgi --name ${name} \
+                          -u ${user} \
+                          -g ${group} \
+                          --workers 3 --log-level=info \
+                          --bind=${server.bind} \
+                          --pid ${server.workDir}/gunicorn-${name}.pid \
+                          -k gevent
+          '';
+
           ExecStartPre =
             assert server.secretKeyFile != null;
             pkgs.writeScript "bepasty-server.${name}-init" ''
@@ -176,25 +202,21 @@ in
               ${server.extraConfig}
               EOF
             '';
-          ExecStart = ''
-            ${gunicorn}/bin/gunicorn bepasty.wsgi --name ${name} \
-                          -u ${user} \
-                          -g ${group} \
-                          --workers 3 --log-level=info \
-                          --bind=${server.bind} \
-                          --pid ${server.workDir}/gunicorn-${name}.pid \
-                          -k gevent
-          '';
+
+          PrivateTmp = true;
+          Type = "simple";
         };
+
+        wantedBy = [ "multi-user.target" ];
       }
     ) cfg.servers;
 
+    users.groups.${group}.gid = config.ids.gids.bepasty;
+
     users.users.${user} = {
-      uid = config.ids.uids.bepasty;
       group = group;
       home = default_home;
+      uid = config.ids.uids.bepasty;
     };
-
-    users.groups.${group}.gid = config.ids.gids.bepasty;
   };
 }

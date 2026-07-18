@@ -1,13 +1,15 @@
-{ grafanaPlugin, lib }:
+{ lib, grafanaPlugin }:
 
 grafanaPlugin {
   pname = "grafana-googlesheets-datasource";
   version = "2.5.1";
+
   zipHash = {
-    x86_64-linux = "sha256-Y6UvMLw+bAg0HTKsc2FdpY+S4Zf7gpgIVdZDFgr+mog=";
-    aarch64-linux = "sha256-feBfv07DrKdeJbeD0gnYoOhg1LG636cghVu1x8n9rCQ=";
     aarch64-darwin = "sha256-0iv1oUj6bLw7kUOwkW69rs+4NIetp+uEgJ7YULkKYLE=";
+    aarch64-linux = "sha256-feBfv07DrKdeJbeD0gnYoOhg1LG636cghVu1x8n9rCQ=";
+    x86_64-linux = "sha256-Y6UvMLw+bAg0HTKsc2FdpY+S4Zf7gpgIVdZDFgr+mog=";
   };
+
   meta = {
     description = "Integrate JSON data into Grafana";
     license = lib.licenses.asl20;

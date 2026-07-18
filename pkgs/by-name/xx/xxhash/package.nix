@@ -8,8 +8,6 @@
 stdenv.mkDerivation (finalAttrs: {
   pname = "xxhash";
   version = "0.8.3";
-  __structuredAttrs = true;
-  strictDeps = true;
 
   src = fetchFromGitHub {
     owner = "Cyan4973";
@@ -18,15 +16,19 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-h6kohM+NxvQ89R9NEXZcYBG2wPOuB4mcyPfofKrx9wQ=";
   };
 
+  strictDeps = true;
+
   nativeBuildInputs = [
     cmake
   ];
 
+  __structuredAttrs = true;
   # Using unofficial CMake build script to install CMake module files.
   cmakeDir = "../cmake_unofficial";
 
   meta = {
     description = "Extremely fast hash algorithm";
+
     longDescription = ''
       xxHash is an Extremely fast Hash algorithm, running at RAM speed limits.
       It successfully completes the SMHasher test suite which evaluates
@@ -34,14 +36,18 @@ stdenv.mkDerivation (finalAttrs: {
       highly portable, and hashes are identical on all platforms (little / big
       endian).
     '';
+
     homepage = "https://github.com/Cyan4973/xxHash";
+
     license = with lib.licenses; [
       bsd2
       gpl2Plus
     ];
-    mainProgram = "xxhsum";
+
     maintainers = [ ];
     platforms = lib.platforms.all;
+    mainProgram = "xxhsum";
+
     pkgConfigModules = [
       "libxxhash"
     ];

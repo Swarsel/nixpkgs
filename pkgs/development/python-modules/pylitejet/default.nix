@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   pyserial,
   setuptools-scm,
 }:
@@ -9,7 +9,6 @@
 buildPythonPackage rec {
   pname = "pylitejet";
   version = "0.6.3";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "joncar";
@@ -18,13 +17,11 @@ buildPythonPackage rec {
     hash = "sha256-LHNMKU7aMDtSi4K+pZqRF9vAL3EKOFRFFNXKsQJVP2Y=";
   };
 
-  build-system = [ setuptools-scm ];
-
-  dependencies = [ pyserial ];
-
   # Only custom tests which uses the CLi are available
   doCheck = false;
-
+  build-system = [ setuptools-scm ];
+  dependencies = [ pyserial ];
+  pyproject = true;
   pythonImportsCheck = [ "pylitejet" ];
 
   meta = {

@@ -1,13 +1,12 @@
 {
   lib,
-  python3,
   fetchFromGitHub,
+  python3,
 }:
 
 python3.pkgs.buildPythonApplication (finalAttrs: {
   pname = "docstrfmt";
   version = "2.0.2";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "LilSpazJoekp";
@@ -16,13 +15,13 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     hash = "sha256-N2uPFOdDvAUL9eV4kn8MYM6OTMWJm24inlyY+k9Eqm8=";
   };
 
-  build-system = [
-    python3.pkgs.flit-core
+  nativeCheckInputs = with python3.pkgs; [
+    pytestCheckHook
+    pytest-aiohttp
   ];
 
-  pythonRelaxDeps = [
-    # https://github.com/LilSpazJoekp/docstrfmt/issues/186
-    "types-docutils"
+  build-system = [
+    python3.pkgs.flit-core
   ];
 
   dependencies = with python3.pkgs; [
@@ -40,13 +39,15 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     types-docutils
   ];
 
-  nativeCheckInputs = with python3.pkgs; [
-    pytestCheckHook
-    pytest-aiohttp
-  ];
+  pyproject = true;
 
   pythonImportsCheck = [
     "docstrfmt"
+  ];
+
+  pythonRelaxDeps = [
+    # https://github.com/LilSpazJoekp/docstrfmt/issues/186
+    "types-docutils"
   ];
 
   meta = {

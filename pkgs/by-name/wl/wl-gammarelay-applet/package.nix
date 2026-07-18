@@ -1,13 +1,13 @@
 {
   lib,
-  fetchFromGitHub,
-  rustPlatform,
   stdenv,
-  wayland,
-  libxkbcommon,
-  fontconfig,
-  pkg-config,
+  fetchFromGitHub,
   autoPatchelfHook,
+  fontconfig,
+  libxkbcommon,
+  pkg-config,
+  rustPlatform,
+  wayland,
 }:
 
 rustPlatform.buildRustPackage {
@@ -21,8 +21,6 @@ rustPlatform.buildRustPackage {
     sha256 = "sha256-t6bycmaquZ0IMs/WnAzkz5FnIWKIq0BTbeeoUFLeuYg=";
   };
 
-  cargoHash = "sha256-XrU519ibku7OMKxt51gzVOZVOiqgdrBrxAJuBIcAtgc=";
-
   nativeBuildInputs = [
     pkg-config
     autoPatchelfHook
@@ -32,6 +30,8 @@ rustPlatform.buildRustPackage {
     (lib.getLib stdenv.cc.cc)
   ];
 
+  cargoHash = "sha256-XrU519ibku7OMKxt51gzVOZVOiqgdrBrxAJuBIcAtgc=";
+
   runtimeDependencies = [
     wayland
     libxkbcommon
@@ -40,15 +40,17 @@ rustPlatform.buildRustPackage {
 
   meta = {
     description = "Control wl-gammarelay-rs via applet";
+
     longDescription = ''
       wl-gammarelay-applet is a small desktop applet for controlling
       wl-gammarelay-rs via DBus. This applet is written in Rust and
       provides a Slint UI.
     '';
+
     homepage = "https://github.com/lgbishop/wl-gammarelay-applet";
-    mainProgram = "wl-gammarelay-applet";
     license = lib.licenses.mit;
-    platforms = lib.platforms.linux;
     maintainers = with lib.maintainers; [ lgbishop ];
+    platforms = lib.platforms.linux;
+    mainProgram = "wl-gammarelay-applet";
   };
 }

@@ -1,16 +1,15 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
   aiohttp,
+  buildPythonPackage,
   orjson,
+  setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "esphome-dashboard-api";
   version = "1.3.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "esphome";
@@ -19,6 +18,7 @@ buildPythonPackage rec {
     hash = "sha256-b3PnMzlA9N8NH6R5ed6wf5QF45i887iQk2QgH7e755k=";
   };
 
+  doCheck = false; # no tests
   build-system = [ setuptools ];
 
   dependencies = [
@@ -26,8 +26,7 @@ buildPythonPackage rec {
     orjson
   ];
 
-  doCheck = false; # no tests
-
+  pyproject = true;
   pythonImportsCheck = [ "esphome_dashboard_api" ];
 
   meta = {

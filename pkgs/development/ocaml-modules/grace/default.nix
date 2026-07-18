@@ -1,22 +1,20 @@
 {
   lib,
-  buildDunePackage,
   fetchFromGitHub,
+  buildDunePackage,
+  core,
   fmt,
   iter,
-  uutf,
-  sexplib,
-  ppx_sexp_conv,
-  core,
   ppx_jane,
+  ppx_sexp_conv,
+  sexplib,
+  uutf,
   dedent ? null,
 }:
 
 buildDunePackage (finalAttrs: {
   pname = "grace";
   version = "0.3.0";
-
-  minimalOCamlVersion = "4.14";
 
   src = fetchFromGitHub {
     owner = "johnyob";
@@ -33,13 +31,15 @@ buildDunePackage (finalAttrs: {
     ppx_sexp_conv
   ];
 
+  doCheck = true;
+
   checkInputs = [
     core
     ppx_jane
     dedent
   ];
 
-  doCheck = true;
+  minimalOCamlVersion = "4.14";
 
   meta = {
     description = "A fancy diagnostics library that allows your compilers to exit with grace";

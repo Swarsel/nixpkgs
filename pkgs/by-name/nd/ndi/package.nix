@@ -24,20 +24,12 @@ in
 stdenv.mkDerivation rec {
   pname = "ndi";
   version = versionJSON.version;
-  majorVersion = builtins.head (builtins.splitVersion version);
-  installerName = "Install_NDI_SDK_v${majorVersion}_Linux";
 
   src = fetchurl {
-    name = "${pname}-${version}.tar.gz";
     url = "https://downloads.ndi.tv/SDK/NDI_SDK_Linux/${installerName}.tar.gz";
     hash = versionJSON.hash;
+    name = "${pname}-${version}.tar.gz";
   };
-
-  unpackPhase = ''
-    unpackFile $src
-    echo y | ./${installerName}.sh
-    sourceRoot="NDI SDK for Linux";
-  '';
 
   installPhase = ''
     mkdir -p $out $out/share/doc/${pname}-${version}
@@ -49,6 +41,8 @@ stdenv.mkDerivation rec {
   '';
 
   dontPatchELF = true;
+  # Stripping breaks ndi-record.
+  dontStrip = true;
 
   fixupPhase = ''
     for i in $out/bin/*; do
@@ -62,26 +56,35 @@ stdenv.mkDerivation rec {
     done
   '';
 
-  # Stripping breaks ndi-record.
-  dontStrip = true;
+  installerName = "Install_NDI_SDK_v${majorVersion}_Linux";
+  majorVersion = builtins.head (builtins.splitVersion version);
+
+  unpackPhase = ''
+    unpackFile $src
+    echo y | ./${installerName}.sh
+    sourceRoot="NDI SDK for Linux";
+  '';
 
   passthru.tests = {
     inherit (obs-studio-plugins) distroav;
   };
+
   passthru.updateScript = ./update.py;
 
   meta = {
-    homepage = "https://ndi.video/ndi-sdk/";
     description = "NDI Software Developer Kit";
+    homepage = "https://ndi.video/ndi-sdk/";
+    license = lib.licenses.unfree;
+    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
+    maintainers = with lib.maintainers; [ ChaosAttractor ];
+
     platforms = [
       "x86_64-linux"
       "i686-linux"
       "aarch64-linux"
       "armv7l-linux"
     ];
-    maintainers = with lib.maintainers; [ ChaosAttractor ];
+
     hydraPlatforms = [ ];
-    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
-    license = lib.licenses.unfree;
   };
 }

@@ -1,34 +1,30 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # build-system
-  hatchling,
-  tomli,
-
+  buildPythonPackage,
+  # tests
+  coverage,
   # dependencies
   fastapi,
+  # build-system
+  hatchling,
   httpx,
   mcp,
   pydantic,
   pydantic-settings,
-  requests,
-  rich,
-  typer,
-  uvicorn,
-
-  # tests
-  coverage,
   pytest-asyncio_0,
   pytest-cov-stub,
   pytestCheckHook,
+  requests,
+  rich,
+  tomli,
+  typer,
+  uvicorn,
 }:
 
 buildPythonPackage rec {
   pname = "fastapi-mcp";
   version = "0.4.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "tadata-org";
@@ -36,6 +32,15 @@ buildPythonPackage rec {
     tag = "v${version}";
     hash = "sha256-TCmM5n6BF3CWEuGVSZnUL2rTYitKtn4vSCkiQvKFLKw=";
   };
+
+  nativeCheckInputs = [
+    coverage
+    pytest-asyncio_0
+    pytest-cov-stub
+    pytestCheckHook
+  ];
+
+  __darwinAllowLocalNetworking = true;
 
   build-system = [
     hatchling
@@ -55,21 +60,13 @@ buildPythonPackage rec {
     uvicorn
   ];
 
-  pythonImportsCheck = [ "fastapi_mcp" ];
-
-  nativeCheckInputs = [
-    coverage
-    pytest-asyncio_0
-    pytest-cov-stub
-    pytestCheckHook
-  ];
-
   disabledTestPaths = [
     # Flaky, would try to allocate a port on Darwin
     "tests/test_sse_real_transport.py"
   ];
 
-  __darwinAllowLocalNetworking = true;
+  pyproject = true;
+  pythonImportsCheck = [ "fastapi_mcp" ];
 
   meta = {
     description = "Expose your FastAPI endpoints as Model Context Protocol (MCP) tools, with Auth";

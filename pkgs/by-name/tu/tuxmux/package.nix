@@ -1,10 +1,10 @@
 {
   lib,
   fetchFromGitHub,
-  rustPlatform,
+  installShellFiles,
   libiconv,
   pkg-config,
-  installShellFiles,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -18,13 +18,13 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-WcHsFKpYexBEg382837NqGgNMTKzVUG3XIER9aa1zK8=";
   };
 
-  cargoHash = "sha256-ceEF9ySxcU9vVZdNIogSiHbN/xYjudAoohy7jyeKrBU=";
-
-  buildInputs = [ libiconv ];
   nativeBuildInputs = [
     pkg-config
     installShellFiles
   ];
+
+  buildInputs = [ libiconv ];
+  cargoHash = "sha256-ceEF9ySxcU9vVZdNIogSiHbN/xYjudAoohy7jyeKrBU=";
 
   postInstall = ''
     installShellCompletion $releaseDir/../completions/tux.{bash,fish}

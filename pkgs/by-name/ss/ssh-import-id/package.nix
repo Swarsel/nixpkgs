@@ -1,16 +1,15 @@
 {
   lib,
-  extraHandlers ? [ ],
   fetchgit,
   installShellFiles,
   makeWrapper,
   python3Packages,
+  extraHandlers ? [ ],
 }:
 
 python3Packages.buildPythonApplication (finalAttrs: {
   pname = "ssh-import-id";
   version = "5.11";
-  pyproject = true;
 
   src = fetchgit {
     url = "https://git.launchpad.net/ssh-import-id";
@@ -23,12 +22,16 @@ python3Packages.buildPythonApplication (finalAttrs: {
       --replace-fail "long_description_content_type='markdown'" "long_description_content_type='text/markdown'"
   '';
 
-  build-system = with python3Packages; [ setuptools ];
-
   nativeBuildInputs = [
     makeWrapper
     installShellFiles
   ];
+
+  postInstall = ''
+    installManPage $src/usr/share/man/man1/ssh-import-id.1
+  '';
+
+  build-system = with python3Packages; [ setuptools ];
 
   dependencies =
     with python3Packages;
@@ -38,10 +41,6 @@ python3Packages.buildPythonApplication (finalAttrs: {
     ]
     ++ extraHandlers;
 
-  postInstall = ''
-    installManPage $src/usr/share/man/man1/ssh-import-id.1
-  '';
-
   # Handlers require main bin, main bin requires handlers
   makeWrapperArgs = [
     "--prefix"
@@ -49,15 +48,19 @@ python3Packages.buildPythonApplication (finalAttrs: {
     "$out/bin"
   ];
 
+  pyproject = true;
+
   meta = {
     description = "Retrieves an SSH public key and installs it locally";
     homepage = "https://launchpad.net/ssh-import-id";
     license = lib.licenses.gpl3Only;
+
     maintainers = with lib.maintainers; [
       mkg20001
       viraptor
     ];
-    mainProgram = "ssh-import-id";
+
     platforms = lib.platforms.unix;
+    mainProgram = "ssh-import-id";
   };
 })

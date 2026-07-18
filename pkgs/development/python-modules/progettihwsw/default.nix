@@ -1,16 +1,15 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
   aiohttp,
+  buildPythonPackage,
   lxml,
+  setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "progettihwsw";
   version = "0.1.3";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "ardaseremet";
@@ -19,6 +18,8 @@ buildPythonPackage rec {
     hash = "sha256-9dpZyQ7i3WNdDVyEBLz4bJcWF1Ap7SH089PXWYI6UOA=";
   };
 
+  # Package has no tests
+  doCheck = false;
   build-system = [ setuptools ];
 
   dependencies = [
@@ -26,9 +27,7 @@ buildPythonPackage rec {
     lxml
   ];
 
-  # Package has no tests
-  doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "ProgettiHWSW" ];
 
   meta = {

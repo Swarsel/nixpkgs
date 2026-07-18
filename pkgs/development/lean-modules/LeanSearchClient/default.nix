@@ -1,7 +1,7 @@
 {
   lib,
-  buildLakePackage,
   fetchFromGitHub,
+  buildLakePackage,
 }:
 
 buildLakePackage {

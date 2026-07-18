@@ -1,23 +1,22 @@
 {
   # Basic
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  # Build system
-  poetry-core,
+  buildPythonPackage,
+  mock,
   # Dependencies
   numpy,
-  requests,
-  tsplib95,
+  # Build system
+  poetry-core,
   # Test
   pytestCheckHook,
-  mock,
+  requests,
+  tsplib95,
 }:
 
 buildPythonPackage rec {
   pname = "python-tsp";
   version = "0.5.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "fillipe-gsm";
@@ -25,14 +24,6 @@ buildPythonPackage rec {
     tag = "v${version}";
     hash = "sha256-X4L0j6ZL8/Xj2YFcvwOl8voC2xHagMcdcj9F1f/6/5M=";
   };
-
-  build-system = [ poetry-core ];
-
-  dependencies = [
-    numpy
-    requests
-    tsplib95
-  ];
 
   # Rename some dependencies
   postPatch = ''
@@ -46,6 +37,15 @@ buildPythonPackage rec {
     mock
   ];
 
+  build-system = [ poetry-core ];
+
+  dependencies = [
+    numpy
+    requests
+    tsplib95
+  ];
+
+  pyproject = true;
   pythonImportsCheck = [ "python_tsp" ];
 
   meta = {

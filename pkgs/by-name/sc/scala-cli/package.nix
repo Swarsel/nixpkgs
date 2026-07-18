@@ -1,16 +1,16 @@
 {
-  stdenv,
-  coreutils,
   lib,
-  installShellFiles,
-  zlib,
-  autoPatchelfHook,
+  stdenv,
   fetchurl,
-  makeWrapper,
+  autoPatchelfHook,
   callPackage,
+  coreutils,
+  installShellFiles,
   jre,
-  testers,
+  makeWrapper,
   scala-cli,
+  testers,
+  zlib,
 }:
 
 let
@@ -22,20 +22,7 @@ let
 in
 stdenv.mkDerivation {
   inherit pname version;
-  nativeBuildInputs = [
-    installShellFiles
-    makeWrapper
-  ]
-  ++ lib.optional stdenv.hostPlatform.isLinux autoPatchelfHook;
-  buildInputs =
-    assert lib.assertMsg (lib.versionAtLeast jre.version "17.0.0") ''
-      scala-cli requires Java 17 or newer, but ${jre.name} is ${jre.version}
-    '';
-    [
-      coreutils
-      zlib
-      stdenv.cc.cc
-    ];
+
   src =
     let
       asset =
@@ -46,11 +33,22 @@ stdenv.mkDerivation {
       url = "https://github.com/Virtuslab/scala-cli/releases/download/v${version}/${asset.asset}";
       sha256 = asset.sha256;
     };
-  unpackPhase = ''
-    runHook preUnpack
-    gzip -d < $src > scala-cli
-    runHook postUnpack
-  '';
+
+  nativeBuildInputs = [
+    installShellFiles
+    makeWrapper
+  ]
+  ++ lib.optional stdenv.hostPlatform.isLinux autoPatchelfHook;
+
+  buildInputs =
+    assert lib.assertMsg (lib.versionAtLeast jre.version "17.0.0") ''
+      scala-cli requires Java 17 or newer, but ${jre.name} is ${jre.version}
+    '';
+    [
+      coreutils
+      zlib
+      stdenv.cc.cc
+    ];
 
   installPhase = ''
     runHook preInstall
@@ -60,9 +58,6 @@ stdenv.mkDerivation {
       --argv0 "$out/bin/scala-cli"
     runHook postInstall
   '';
-
-  # We need to call autopatchelf before generating completions
-  dontAutoPatchelf = true;
 
   postFixup =
     lib.optionalString stdenv.hostPlatform.isLinux ''
@@ -80,24 +75,35 @@ stdenv.mkDerivation {
         --zsh <(scala-cli completions zsh)
     '';
 
-  meta = {
-    homepage = "https://scala-cli.virtuslab.org";
-    downloadPage = "https://github.com/VirtusLab/scala-cli/releases/v${version}";
-    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
-    license = lib.licenses.asl20;
-    description = "Command-line tool to interact with the Scala language";
-    mainProgram = "scala-cli";
-    maintainers = with lib.maintainers; [
-      kubukoz
-      agilesteel
-    ];
-    inherit platforms;
+  # We need to call autopatchelf before generating completions
+  dontAutoPatchelf = true;
+
+  unpackPhase = ''
+    runHook preUnpack
+    gzip -d < $src > scala-cli
+    runHook postUnpack
+  '';
+
+  passthru.tests.version = testers.testVersion {
+    command = "scala-cli version --offline";
+    package = scala-cli;
   };
 
   passthru.updateScript = callPackage ./update.nix { } { inherit platforms pname version; };
 
-  passthru.tests.version = testers.testVersion {
-    package = scala-cli;
-    command = "scala-cli version --offline";
+  meta = {
+    inherit platforms;
+    description = "Command-line tool to interact with the Scala language";
+    homepage = "https://scala-cli.virtuslab.org";
+    license = lib.licenses.asl20;
+    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
+
+    maintainers = with lib.maintainers; [
+      kubukoz
+      agilesteel
+    ];
+
+    mainProgram = "scala-cli";
+    downloadPage = "https://github.com/VirtusLab/scala-cli/releases/v${version}";
   };
 }

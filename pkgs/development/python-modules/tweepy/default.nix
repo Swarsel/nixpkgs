@@ -1,21 +1,20 @@
 {
   lib,
+  fetchFromGitHub,
   aiohttp,
   async-lru,
   buildPythonPackage,
-  fetchFromGitHub,
   flit-core,
   oauthlib,
   pytestCheckHook,
-  requests-oauthlib,
   requests,
+  requests-oauthlib,
   vcrpy,
 }:
 
 buildPythonPackage rec {
   pname = "tweepy";
   version = "4.17.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "tweepy";
@@ -24,6 +23,12 @@ buildPythonPackage rec {
     hash = "sha256-Jr/62vXxBIiZGQeM5bbqnHDP9GCxrbJmCF2oiYglLbE=";
   };
 
+  nativeCheckInputs = [
+    pytestCheckHook
+    vcrpy
+  ]
+  ++ lib.concatAttrValues optional-dependencies;
+
   build-system = [ flit-core ];
 
   dependencies = [
@@ -31,21 +36,6 @@ buildPythonPackage rec {
     requests
     requests-oauthlib
   ];
-
-  optional-dependencies = {
-    async = [
-      aiohttp
-      async-lru
-    ];
-  };
-
-  nativeCheckInputs = [
-    pytestCheckHook
-    vcrpy
-  ]
-  ++ lib.concatAttrValues optional-dependencies;
-
-  pythonImportsCheck = [ "tweepy" ];
 
   # The checks with streaming fail due to (seemingly) not decoding (or unexpectedly sending response in) GZIP
   # Same issue impacted mastodon-py, see https://github.com/halcy/Mastodon.py/commit/cd86887d88bbc07de462d1e00a8fbc3d956c0151 (who just disabled these)
@@ -67,6 +57,16 @@ buildPythonPackage rec {
     "testcursorcursorpages"
     "testcursornext"
   ];
+
+  optional-dependencies = {
+    async = [
+      aiohttp
+      async-lru
+    ];
+  };
+
+  pyproject = true;
+  pythonImportsCheck = [ "tweepy" ];
 
   meta = {
     description = "Twitter library for Python";

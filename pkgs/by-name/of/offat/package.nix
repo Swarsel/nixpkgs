@@ -7,7 +7,6 @@
 python3.pkgs.buildPythonApplication (finalAttrs: {
   pname = "offat";
   version = "0.19.4";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "OWASP";
@@ -16,15 +15,8 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     hash = "sha256-XFYG8/QJfm9fx88xHBXe3hK6rTj1lVQze/X9joxKZuc=";
   };
 
-  sourceRoot = "${finalAttrs.src.name}/src";
-
-  pythonRelaxDeps = [
-    "openapi-spec-validator"
-    "rich"
-    "setuptools"
-    "tenacity"
-  ];
-
+  # Project has no tests
+  doCheck = false;
   build-system = with python3.pkgs; [ poetry-core ];
 
   dependencies = with python3.pkgs; [
@@ -48,10 +40,17 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     ];
   };
 
-  # Project has no tests
-  doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "offat" ];
+
+  pythonRelaxDeps = [
+    "openapi-spec-validator"
+    "rich"
+    "setuptools"
+    "tenacity"
+  ];
+
+  sourceRoot = "${finalAttrs.src.name}/src";
 
   meta = {
     description = "Tool to test APIs for prevalent vulnerabilities";

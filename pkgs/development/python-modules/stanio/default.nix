@@ -2,14 +2,13 @@
   lib,
   buildPythonPackage,
   fetchPypi,
-  setuptools,
   numpy,
+  setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "stanio";
   version = "0.5.1";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
@@ -17,9 +16,8 @@ buildPythonPackage rec {
   };
 
   nativeBuildInputs = [ setuptools ];
-
   propagatedBuildInputs = [ numpy ];
-
+  pyproject = true;
   pythonImportsCheck = [ "stanio" ];
 
   meta = {

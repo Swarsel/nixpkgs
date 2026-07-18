@@ -1,12 +1,11 @@
 {
-  stdenvNoCC,
   fetchurl,
-  unzip,
-
-  pname,
-  version,
   meta,
   passthru,
+  pname,
+  stdenvNoCC,
+  unzip,
+  version,
 }:
 stdenvNoCC.mkDerivation (finalAttrs: {
   inherit
@@ -21,13 +20,7 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     hash = "sha256-B/QyB6ZdyjIBBOOZG1nnVcXyqbPGyf56AndELzi3IZY=";
   };
 
-  sourceRoot = ".";
   nativeBuildInputs = [ unzip ];
-
-  dontPatch = true;
-  dontConfigure = true;
-  dontBuild = true;
-  dontFixup = true;
 
   installPhase = ''
     runHook preInstall
@@ -35,5 +28,11 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     cp -r "GDevelop 5.app" $out/Applications/
     runHook postInstall
   '';
+
+  dontBuild = true;
+  dontConfigure = true;
+  dontFixup = true;
+  dontPatch = true;
+  sourceRoot = ".";
 
 })

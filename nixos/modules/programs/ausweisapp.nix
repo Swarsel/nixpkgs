@@ -13,10 +13,12 @@ in
     enable = lib.mkEnableOption "AusweisApp";
 
     openFirewall = lib.mkOption {
+      default = false;
+
       description = ''
         Whether to open the required firewall ports for the Smartphone as Card Reader (SaC) functionality of AusweisApp.
       '';
-      default = false;
+
       type = lib.types.bool;
     };
   };

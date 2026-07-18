@@ -1,19 +1,18 @@
 {
   lib,
+  aiohttp,
   buildPythonPackage,
   fetchFromCodeberg,
-  aiohttp,
   pydantic,
-  uv-build,
-  pytestCheckHook,
   pytest-asyncio,
+  pytestCheckHook,
   syrupy,
+  uv-build,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "teltasync";
   version = "0.4.0";
-  pyproject = true;
 
   src = fetchFromCodeberg {
     owner = "dmho";
@@ -27,6 +26,12 @@ buildPythonPackage (finalAttrs: {
       --replace-fail "uv_build>=0.10.2,<0.11.0" "uv_build"
   '';
 
+  nativeCheckInputs = [
+    pytestCheckHook
+    pytest-asyncio
+    syrupy
+  ];
+
   build-system = [ uv-build ];
 
   dependencies = [
@@ -34,12 +39,7 @@ buildPythonPackage (finalAttrs: {
     pydantic
   ];
 
-  nativeCheckInputs = [
-    pytestCheckHook
-    pytest-asyncio
-    syrupy
-  ];
-
+  pyproject = true;
   pythonImportsCheck = [ "teltasync" ];
 
   meta = {

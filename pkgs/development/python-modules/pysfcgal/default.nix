@@ -1,11 +1,10 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitLab,
-  pytestCheckHook,
-
+  buildPythonPackage,
   cffi,
   icontract,
+  pytestCheckHook,
   setuptools,
   sfcgal,
   wheel,
@@ -14,7 +13,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "pysfcgal";
   version = "2.2.0";
-  pyproject = true;
 
   src = fetchFromGitLab {
     owner = "sfcgal";
@@ -25,19 +23,6 @@ buildPythonPackage (finalAttrs: {
 
   buildInputs = [
     sfcgal
-  ];
-
-  build-system = [
-    setuptools
-    wheel
-  ];
-
-  dependencies = [
-    cffi
-  ];
-
-  pythonImportsCheck = [
-    "pysfcgal"
   ];
 
   nativeCheckInputs = [
@@ -53,9 +38,24 @@ buildPythonPackage (finalAttrs: {
     rm -rf pysfcgal
   '';
 
+  build-system = [
+    setuptools
+    wheel
+  ];
+
+  dependencies = [
+    cffi
+  ];
+
   disabledTests = [
     # this test is failing due to mismatched output
     "test_wrap_geom_segfault"
+  ];
+
+  pyproject = true;
+
+  pythonImportsCheck = [
+    "pysfcgal"
   ];
 
   meta = {
@@ -63,6 +63,7 @@ buildPythonPackage (finalAttrs: {
     homepage = "https://gitlab.com/sfcgal/pysfcgal";
     changelog = "https://gitlab.com/sfcgal/pysfcgal/-/blob/v${finalAttrs.version}/CHANGELOG.md";
     license = lib.licenses.gpl3Plus;
+
     teams = with lib.teams; [
       geospatial
       ngi

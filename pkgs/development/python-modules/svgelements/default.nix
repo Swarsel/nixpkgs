@@ -1,23 +1,22 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  fetchpatch,
-  setuptools,
-  wheel,
   anyio,
+  buildPythonPackage,
+  fetchpatch,
   numpy,
   pillow,
   pytest-forked,
   pytest-xdist,
   pytestCheckHook,
   scipy,
+  setuptools,
+  wheel,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "svgelements";
   version = "1.9.6";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "meerk40t";
@@ -28,18 +27,11 @@ buildPythonPackage (finalAttrs: {
 
   patches = [
     (fetchpatch {
+      hash = "sha256-/53w4eWlaSNEQxuoAxPrN2HciZ3Az2A2SKcIAlNgKAs=";
       name = "fix-assert-tests";
       url = "https://github.com/meerk40t/svgelements/commit/23da98941a94cf1afed39c10750222ccfee73c9f.patch";
-      hash = "sha256-/53w4eWlaSNEQxuoAxPrN2HciZ3Az2A2SKcIAlNgKAs=";
     })
   ];
-
-  build-system = [
-    setuptools
-    wheel
-  ];
-
-  pythonImportsCheck = [ "svgelements" ];
 
   nativeCheckInputs = [
     anyio
@@ -50,6 +42,14 @@ buildPythonPackage (finalAttrs: {
     pytestCheckHook
     scipy
   ];
+
+  build-system = [
+    setuptools
+    wheel
+  ];
+
+  pyproject = true;
+  pythonImportsCheck = [ "svgelements" ];
 
   meta = {
     description = "SVG Parsing for Elements, Paths, and other SVG Objects";

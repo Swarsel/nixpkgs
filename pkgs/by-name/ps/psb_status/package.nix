@@ -1,10 +1,10 @@
 {
   lib,
-  stdenvNoCC,
   fetchFromGitHub,
   bash,
   iotools,
   makeWrapper,
+  stdenvNoCC,
 }:
 
 stdenvNoCC.mkDerivation (finalAttrs: {
@@ -18,8 +18,6 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     hash = "sha256-4anPyjO8y3FgnYWa4bGFxI8Glk9srw/XF552tnixc8I=";
   };
 
-  dontBuild = true;
-
   nativeBuildInputs = [ makeWrapper ];
 
   installPhase = ''
@@ -32,6 +30,8 @@ stdenvNoCC.mkDerivation (finalAttrs: {
 
     runHook postInstall
   '';
+
+  dontBuild = true;
 
   meta = {
     description = "Script to check Platform Secure Boot enablement on Zen based AMD CPUs";

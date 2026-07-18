@@ -4,37 +4,34 @@
 {
   lib,
   stdenv,
+  fetchFromGitHub,
   abseil-cpp,
   buildPackages,
   cmake,
-  fetchFromGitHub,
   fetchpatch,
+  grpc,
   gtest,
-  zlib,
-  version,
   hash,
-  versionCheckHook,
-
+  protobuf,
   # downstream dependencies
   python3,
-  grpc,
-  enableShared ? !stdenv.hostPlatform.isStatic,
-
   testers,
-  protobuf,
+  version,
+  versionCheckHook,
+  zlib,
+  enableShared ? !stdenv.hostPlatform.isStatic,
   ...
 }:
 
 stdenv.mkDerivation (finalAttrs: {
-  pname = "protobuf";
   inherit version;
-  __structuredAttrs = true;
+  pname = "protobuf";
 
   src = fetchFromGitHub {
+    inherit hash;
     owner = "protocolbuffers";
     repo = "protobuf";
     tag = "v${version}";
-    inherit hash;
   };
 
   patches =
@@ -42,16 +39,16 @@ stdenv.mkDerivation (finalAttrs: {
       # fix protobuf-targets.cmake installation paths, and allow for CMAKE_INSTALL_LIBDIR to be absolute
       # https://github.com/protocolbuffers/protobuf/pull/10090
       (fetchpatch {
-        url = "https://github.com/protocolbuffers/protobuf/commit/a7324f88e92bc16b57f3683403b6c993bf68070b.patch";
         hash = "sha256-SmwaUjOjjZulg/wgNmR/F5b8rhYA2wkKAjHIOxjcQdQ=";
+        url = "https://github.com/protocolbuffers/protobuf/commit/a7324f88e92bc16b57f3683403b6c993bf68070b.patch";
       })
     ]
     ++ lib.optionals (lib.versions.major version == "29") [
       # fix temporary directory handling to avoid test failures on darwin
       # https://github.com/NixOS/nixpkgs/issues/464439
       (fetchpatch {
-        url = "https://github.com/protocolbuffers/protobuf/commit/0e9d0f6e77280b7a597ebe8361156d6bb1971dca.patch";
         hash = "sha256-rIP+Ft/SWVwh9Oy8y8GSUBgP6CtLCLvGmr6nOqmyHhY=";
+        url = "https://github.com/protocolbuffers/protobuf/commit/0e9d0f6e77280b7a597ebe8361156d6bb1971dca.patch";
       })
     ]
     ++ lib.optionals ((lib.versionAtLeast version "30") && (lib.versionOlder version "35")) [
@@ -62,16 +59,16 @@ stdenv.mkDerivation (finalAttrs: {
       # A specific consequence of this bug is a test failure when building onnxruntime with cudaSupport
       # See https://github.com/NixOS/nixpkgs/pull/450587#discussion_r2698215974
       (fetchpatch {
-        url = "https://github.com/protocolbuffers/protobuf/commit/211f52431b9ec30d4d4a1c76aafd64bd78d93c43.patch";
         hash = "sha256-2/vc4anc+kH7otfLHfBtW8dRowPyObiXZn0+HtQktak=";
+        url = "https://github.com/protocolbuffers/protobuf/commit/211f52431b9ec30d4d4a1c76aafd64bd78d93c43.patch";
       })
     ]
     ++ lib.optionals ((lib.versionAtLeast version "33") && (lib.versionOlder version "35")) [
       # Fix protoc plugins crashing on big-endian platforms
       # https://github.com/protocolbuffers/protobuf/pull/25363
       (fetchpatch {
-        url = "https://github.com/protocolbuffers/protobuf/commit/8282f0f8ecf8b847e5964a308e041ba3b049811c.patch";
         hash = "sha256-4c/yLuAd29Cxrz6I9F2Lj02lW2bazIcGb+86uxZY7qA=";
+        url = "https://github.com/protocolbuffers/protobuf/commit/8282f0f8ecf8b847e5964a308e041ba3b049811c.patch";
       })
       # Fix packed enum decoding on big-endian platforms
       # https://github.com/protocolbuffers/protobuf/pull/25683
@@ -103,17 +100,7 @@ stdenv.mkDerivation (finalAttrs: {
       sed -i '1i #include <cstring>' third_party/utf8_range/utf8_validity.cc
     '';
 
-  preHook = ''
-    export build_protobuf=${
-      if (!stdenv.buildPlatform.canExecute stdenv.hostPlatform) then
-        buildPackages."protobuf_${lib.versions.major version}"
-      else
-        (placeholder "out")
-    };
-  '';
-
-  # hook to provide the path to protoc executable, used at build time
-  setupHook = ./setup-hook.sh;
+  strictDeps = true;
 
   nativeBuildInputs = [
     cmake
@@ -128,11 +115,6 @@ stdenv.mkDerivation (finalAttrs: {
     abseil-cpp
   ];
 
-  strictDeps = true;
-
-  separateDebugInfo = true;
-
-  cmakeDir = if lib.versionOlder version "22" then "../cmake" else null;
   cmakeFlags = [
     (lib.cmakeBool "protobuf_USE_EXTERNAL_GTEST" true)
     (lib.cmakeFeature "protobuf_ABSL_PROVIDER" "package")
@@ -142,6 +124,10 @@ stdenv.mkDerivation (finalAttrs: {
     (lib.cmakeBool "protobuf_BUILD_SHARED_LIBS" true)
   ];
 
+  env = lib.optionalAttrs (lib.versions.major version == "29") {
+    GTEST_DEATH_TEST_STYLE = "threadsafe";
+  };
+
   doCheck =
     # Tests fail to build on 32-bit platforms; fixed in 22.x
     # https://github.com/protocolbuffers/protobuf/issues/10418
@@ -149,38 +135,52 @@ stdenv.mkDerivation (finalAttrs: {
     # https://github.com/protocolbuffers/protobuf/issues/8460
     !stdenv.hostPlatform.is32bit;
 
+  doInstallCheck = true;
+
   nativeInstallCheckInputs = [
     versionCheckHook
   ];
-  doInstallCheck = true;
 
-  env = lib.optionalAttrs (lib.versions.major version == "29") {
-    GTEST_DEATH_TEST_STYLE = "threadsafe";
-  };
+  __structuredAttrs = true;
+  cmakeDir = if lib.versionOlder version "22" then "../cmake" else null;
+
+  preHook = ''
+    export build_protobuf=${
+      if (!stdenv.buildPlatform.canExecute stdenv.hostPlatform) then
+        buildPackages."protobuf_${lib.versions.major version}"
+      else
+        (placeholder "out")
+    };
+  '';
+
+  separateDebugInfo = true;
+  # hook to provide the path to protoc executable, used at build time
+  setupHook = ./setup-hook.sh;
 
   passthru = {
+    inherit abseil-cpp;
+
     tests = {
-      pythonProtobuf = python3.pkgs.protobuf;
       inherit grpc;
       inherit (python3.pkgs) celery;
-
       version = testers.testVersion { package = protobuf; };
+      pythonProtobuf = python3.pkgs.protobuf;
     };
-
-    inherit abseil-cpp;
   };
 
   meta = {
     description = "Google's data interchange format";
+
     longDescription = ''
       Protocol Buffers are a way of encoding structured data in an efficient
       yet extensible format. Google uses Protocol Buffers for almost all of
       its internal RPC protocols and file formats.
     '';
-    license = lib.licenses.bsd3;
-    platforms = lib.platforms.all;
+
     homepage = "https://protobuf.dev/";
+    license = lib.licenses.bsd3;
     maintainers = with lib.maintainers; [ GaetanLepage ];
+    platforms = lib.platforms.all;
     mainProgram = "protoc";
   };
 })

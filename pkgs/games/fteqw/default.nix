@@ -2,32 +2,44 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  gzip,
-  libvorbis,
-  libmad,
   SDL2,
   SDL2_mixer,
-  libpng,
   alsa-lib,
   gnutls,
-  zlib,
-  libjpeg,
-  vulkan-loader,
-  vulkan-headers,
-  speex,
-  libopus,
-  libxscrnsaver,
-  libxcb,
-  libxrandr,
-  libxcursor,
+  gzip,
   libGL,
+  libjpeg,
+  libmad,
+  libopus,
+  libpng,
+  libvorbis,
+  libxcb,
+  libxcursor,
+  libxrandr,
+  libxscrnsaver,
+  speex,
+  vulkan-headers,
+  vulkan-loader,
+  zlib,
 }@attrs:
 {
+  fteqcc = import ./generic.nix (
+    {
+      pname = "fteqcc";
+
+      buildInputs = [
+        zlib
+      ];
+
+      buildFlags = [ "qcc-rel" ];
+      description = "User friendly QuakeC compiler";
+    }
+    // attrs
+  );
+
   fteqw = import ./generic.nix (
     rec {
       pname = "fteqw";
-
-      buildFlags = [ "m-rel" ];
 
       nativeBuildInputs = [
         vulkan-headers
@@ -53,6 +65,8 @@
         libxscrnsaver
       ];
 
+      buildFlags = [ "m-rel" ];
+
       postFixup = ''
         patchelf $out/bin/${pname} \
           --add-needed ${SDL2}/lib/libSDL2.so \
@@ -70,14 +84,13 @@
   fteqw-dedicated = import ./generic.nix (
     rec {
       pname = "fteqw-dedicated";
-      releaseFile = "fteqw-sv";
-
-      buildFlags = [ "sv-rel" ];
 
       buildInputs = [
         gnutls
         zlib
       ];
+
+      buildFlags = [ "sv-rel" ];
 
       postFixup = ''
         patchelf $out/bin/${pname} \
@@ -85,21 +98,7 @@
       '';
 
       description = "Dedicated server for FTEQW";
-    }
-    // attrs
-  );
-
-  fteqcc = import ./generic.nix (
-    {
-      pname = "fteqcc";
-
-      buildFlags = [ "qcc-rel" ];
-
-      buildInputs = [
-        zlib
-      ];
-
-      description = "User friendly QuakeC compiler";
+      releaseFile = "fteqw-sv";
     }
     // attrs
   );

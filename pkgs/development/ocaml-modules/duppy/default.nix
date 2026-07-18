@@ -1,15 +1,13 @@
 {
   lib,
-  buildDunePackage,
   fetchFromGitHub,
+  buildDunePackage,
   re,
 }:
 
 buildDunePackage (finalAttrs: {
   pname = "duppy";
   version = "0.9.5";
-
-  minimalOCamlVersion = "4.07";
 
   src = fetchFromGitHub {
     owner = "savonet";
@@ -19,10 +17,11 @@ buildDunePackage (finalAttrs: {
   };
 
   propagatedBuildInputs = [ re ];
+  minimalOCamlVersion = "4.07";
 
   meta = {
-    homepage = "https://github.com/savonet/ocaml-duppy";
     description = "Library providing monadic threads";
+    homepage = "https://github.com/savonet/ocaml-duppy";
     license = lib.licenses.lgpl21Only;
     maintainers = with lib.maintainers; [ dandellion ];
   };

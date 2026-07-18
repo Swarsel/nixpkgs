@@ -1,7 +1,7 @@
 {
   lib,
-  stdenvNoCC,
   fetchFromGitHub,
+  stdenvNoCC,
 }:
 
 stdenvNoCC.mkDerivation {
@@ -27,10 +27,10 @@ stdenvNoCC.mkDerivation {
   '';
 
   meta = {
-    homepage = "https://colemakmods.github.io/mod-dh";
     description = "Colemak mod for more comfortable typing";
+    homepage = "https://colemakmods.github.io/mod-dh";
     license = lib.licenses.publicDomain;
-    platforms = lib.platforms.linux;
     maintainers = with lib.maintainers; [ monaaraj ];
+    platforms = lib.platforms.linux;
   };
 }

@@ -9,12 +9,11 @@
 buildPythonPackage rec {
   pname = "sqlalchemy-cockroachdb";
   version = "2.0.4";
-  pyproject = true;
 
   src = fetchPypi {
-    pname = "sqlalchemy_cockroachdb";
     inherit version;
     hash = "sha256-9mNU0rk9qJy0UkxbeKRNDPWolD0yi38K7kqh38YXi2U=";
+    pname = "sqlalchemy_cockroachdb";
   };
 
   build-system = [
@@ -25,6 +24,7 @@ buildPythonPackage rec {
     sqlalchemy
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "sqlalchemy_cockroachdb" ];
 
   meta = {

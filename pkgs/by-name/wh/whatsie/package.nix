@@ -1,7 +1,7 @@
 {
-  fetchFromGitHub,
   lib,
   stdenv,
+  fetchFromGitHub,
   cmake,
   libx11,
   libxcb,
@@ -19,27 +19,27 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-GVXwZZFfPqAmBrP95zleHc2PpMMBj/8xZdW4JpFdYVs=";
   };
 
-  buildInputs = [
-    libx11
-    libxcb
-    qt6.qtwebengine
-  ];
+  strictDeps = true;
 
   nativeBuildInputs = [
     cmake
     qt6.wrapQtAppsHook
   ];
 
-  strictDeps = true;
+  buildInputs = [
+    libx11
+    libxcb
+    qt6.qtwebengine
+  ];
 
   enableParallelBuilding = true;
 
   meta = {
-    homepage = "https://github.com/keshavbhatt/whatsie";
     description = "Feature rich WhatsApp Client for Desktop Linux";
+    homepage = "https://github.com/keshavbhatt/whatsie";
     license = lib.licenses.mit;
-    mainProgram = "whatsie";
     maintainers = with lib.maintainers; [ ajgon ];
     platforms = lib.platforms.linux;
+    mainProgram = "whatsie";
   };
 })

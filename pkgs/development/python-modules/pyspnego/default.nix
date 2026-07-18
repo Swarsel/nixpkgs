@@ -1,8 +1,8 @@
 {
   lib,
+  fetchFromGitHub,
   buildPythonPackage,
   cryptography,
-  fetchFromGitHub,
   glibcLocales,
   gssapi,
   krb5,
@@ -15,7 +15,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "pyspnego";
   version = "0.12.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "jborean93";
@@ -24,19 +23,7 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-nO+WNpgPAunBSFbrCRb/W511z0nXUIK7XT/SisTk2+0=";
   };
 
-  build-system = [ setuptools ];
-
-  dependencies = [ cryptography ];
-
-  optional-dependencies = {
-    kerberos = [
-      gssapi
-      krb5
-    ];
-    yaml = [ ruamel-yaml ];
-  };
-
-  pythonImportsCheck = [ "spnego" ];
+  env.LC_ALL = "en_US.UTF-8";
 
   nativeCheckInputs = [
     glibcLocales
@@ -44,7 +31,20 @@ buildPythonPackage (finalAttrs: {
     pytestCheckHook
   ];
 
-  env.LC_ALL = "en_US.UTF-8";
+  build-system = [ setuptools ];
+  dependencies = [ cryptography ];
+
+  optional-dependencies = {
+    kerberos = [
+      gssapi
+      krb5
+    ];
+
+    yaml = [ ruamel-yaml ];
+  };
+
+  pyproject = true;
+  pythonImportsCheck = [ "spnego" ];
 
   meta = {
     description = "Python SPNEGO authentication library";

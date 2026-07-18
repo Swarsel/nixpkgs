@@ -1,16 +1,16 @@
 {
-  autoPatchelfHook,
+  lib,
   fetchFromGitHub,
+  autoPatchelfHook,
+  freetype,
   fuse3,
   glib,
-  zulu25,
-  lib,
   libayatana-appindicator,
   makeShellWrapper,
   maven,
-  wrapGAppsHook3,
   nix-update-script,
-  freetype,
+  wrapGAppsHook3,
+  zulu25,
 }:
 
 let
@@ -32,12 +32,20 @@ maven.buildMavenPackage rec {
     ./downgrade-fuse.patch
   ];
 
-  mvnJdk = jdk;
-  mvnParameters = "-Dmaven.test.skip=true -Plinux";
-  mvnHash = "sha256-IVOcDFW5YKgUHJKX3ZXYVnOevwmOwN5yEU8jfPtCY1I=";
-  mvnFetchExtraArgs.env = {
-    inherit (env) SOURCE_DATE_EPOCH;
-  };
+  nativeBuildInputs = [
+    autoPatchelfHook
+    jdk
+    makeShellWrapper
+    wrapGAppsHook3
+  ];
+
+  buildInputs = [
+    fuse3
+    glib
+    jdk
+    libayatana-appindicator
+    freetype
+  ];
 
   # fix for "date 1980-01-01T00:00:00Z is not within the valid range 1980-01-01T00:00:02Z to 2099-12-31T23:59:59Z"
   env.SOURCE_DATE_EPOCH = 315532802; # 1980-01-01T00:00:02Z
@@ -110,20 +118,13 @@ maven.buildMavenPackage rec {
     runHook postInstall
   '';
 
-  nativeBuildInputs = [
-    autoPatchelfHook
-    jdk
-    makeShellWrapper
-    wrapGAppsHook3
-  ];
-  buildInputs = [
-    fuse3
-    glib
-    jdk
-    libayatana-appindicator
-    freetype
-  ];
+  mvnFetchExtraArgs.env = {
+    inherit (env) SOURCE_DATE_EPOCH;
+  };
 
+  mvnHash = "sha256-IVOcDFW5YKgUHJKX3ZXYVnOevwmOwN5yEU8jfPtCY1I=";
+  mvnJdk = jdk;
+  mvnParameters = "-Dmaven.test.skip=true -Plinux";
   passthru.updateScript = nix-update-script { };
 
   meta = {
@@ -131,15 +132,18 @@ maven.buildMavenPackage rec {
     homepage = "https://cryptomator.org";
     changelog = "https://github.com/cryptomator/cryptomator/releases/tag/${version}";
     license = lib.licenses.gpl3Plus;
-    mainProgram = "cryptomator";
-    maintainers = with lib.maintainers; [
-      bachp
-      gepbird
-    ];
-    platforms = [ "x86_64-linux" ];
+
     sourceProvenance = with lib.sourceTypes; [
       fromSource
       binaryBytecode # deps
     ];
+
+    maintainers = with lib.maintainers; [
+      bachp
+      gepbird
+    ];
+
+    platforms = [ "x86_64-linux" ];
+    mainProgram = "cryptomator";
   };
 }

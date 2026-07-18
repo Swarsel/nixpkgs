@@ -1,8 +1,8 @@
 {
   lib,
   stdenv,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   installShellFiles,
 }:
 
@@ -21,20 +21,9 @@ buildGoModule (finalAttrs: {
     installShellFiles
   ];
 
-  subPackages = [ "." ];
-
+  vendorHash = "sha256-CbiFE/kq0w8lFJKlJt3e/ONv3ucLYHec6dWoqAJ3yuk=";
   env.CGO_ENABLED = 1;
 
-  ldflags = [
-    "-X=github.com/ory/cli/buildinfo.Version=v${finalAttrs.version}"
-    "-X=github.com/ory/cli/buildinfo.GitHash=${finalAttrs.src.rev}"
-  ];
-
-  tags = [
-    "sqlite"
-  ];
-
-  vendorHash = "sha256-CbiFE/kq0w8lFJKlJt3e/ONv3ucLYHec6dWoqAJ3yuk=";
   postInstall = ''
     mv $out/bin/cli $out/bin/ory
   ''
@@ -46,15 +35,28 @@ buildGoModule (finalAttrs: {
       --zsh <($out/bin/ory completion zsh)
   '';
 
+  ldflags = [
+    "-X=github.com/ory/cli/buildinfo.Version=v${finalAttrs.version}"
+    "-X=github.com/ory/cli/buildinfo.GitHash=${finalAttrs.src.rev}"
+  ];
+
+  subPackages = [ "." ];
+
+  tags = [
+    "sqlite"
+  ];
+
   meta = {
     description = "CLI for Ory";
-    mainProgram = "ory";
     homepage = "https://www.ory.sh/cli";
     license = lib.licenses.asl20;
+
     maintainers = with lib.maintainers; [
       luleyleo
       nicolas-goudry
       debtquity
     ];
+
+    mainProgram = "ory";
   };
 })

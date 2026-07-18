@@ -1,17 +1,14 @@
 {
+  lib,
+  stdenv,
   initialBash,
   initialPath,
-  stdenv,
   pkgs,
-  lib,
 }:
 
 # ordering should match defaultNativeBuildInputs
 
 {
-  no-broken-symlinks = lib.recurseIntoAttrs (
-    import ./no-broken-symlinks.nix { inherit stdenv lib pkgs; }
-  );
   # TODO: add audit-tmpdir
   compress-man-pages =
     let
@@ -22,25 +19,26 @@
       '';
     in
     stdenv.mkDerivation {
-      name = "test-compress-man-pages";
       buildCommand = ''
         mkdir -p $out/share/man
         cp ${manFile} $out/share/man/small-man.1
         compressManPages $out
         [[ -e $out/share/man/small-man.1.gz ]]
       '';
+
+      name = "test-compress-man-pages";
     };
+
   # test based on stage0 to minimize rebuilds
   make-symlinks-relative =
     (derivation {
-      name = "test-make-symlinks-relative";
-      system = stdenv.system;
-      builder = "${initialBash}/bin/bash";
       inherit initialPath;
+
       outputs = [
         "out"
         "out2"
       ];
+
       args = [
         "-c"
         ''
@@ -85,12 +83,16 @@
           fi
         ''
       ];
+
+      builder = "${initialBash}/bin/bash";
+      name = "test-make-symlinks-relative";
+      system = stdenv.system;
     })
     // {
       meta = { };
     };
+
   move-docs = stdenv.mkDerivation {
-    name = "test-move-docs";
     buildCommand = ''
       mkdir -p $out/{man,doc,info}
       touch $out/{man,doc,info}/foo
@@ -100,9 +102,11 @@
 
       (cat $out/share/{man,doc,info}/foo 2>/dev/null && echo "man,doc,info were moved") || (echo "man,doc,info were not moved" && exit 1)
     '';
+
+    name = "test-move-docs";
   };
+
   move-lib64 = stdenv.mkDerivation {
-    name = "test-move-lib64";
     buildCommand = ''
       mkdir -p $out/lib64
       touch $out/lib64/foo
@@ -115,9 +119,11 @@
       ([[ -e $out/lib64 ]] && echo "symlink isn't broken") || (echo "symlink is broken" && exit 1)
       [[ -e $out/lib/foo ]]
     '';
+
+    name = "test-move-lib64";
   };
+
   move-sbin = stdenv.mkDerivation {
-    name = "test-move-sbin";
     buildCommand = ''
       mkdir -p $out/sbin
       touch $out/sbin/foo
@@ -130,9 +136,17 @@
       ([[ -e $out/sbin ]] && echo "symlink isn't broken") || (echo "symlink is broken" && exit 1)
       [[ -e $out/bin/foo ]]
     '';
+
+    name = "test-move-sbin";
   };
+
+  no-broken-symlinks = lib.recurseIntoAttrs (
+    import ./no-broken-symlinks.nix { inherit stdenv lib pkgs; }
+  );
+
   # TODO: add multiple-outputs
   patch-shebangs = import ./patch-shebangs.nix { inherit stdenv lib pkgs; };
+
   prune-libtool-files =
     let
       libFoo = pkgs.writeText "libFoo" ''
@@ -142,7 +156,6 @@
       '';
     in
     stdenv.mkDerivation {
-      name = "test-prune-libtool-files";
       buildCommand = ''
         mkdir -p $out/lib
         cp ${libFoo} $out/lib/libFoo.la
@@ -151,17 +164,21 @@
         # confirm file doesn't only contain the above
         grep "^old_library='''" $out/lib/libFoo.la
       '';
+
+      name = "test-prune-libtool-files";
     };
+
   reproducible-builds = stdenv.mkDerivation {
-    name = "test-reproducible-builds";
     buildCommand = ''
       # can't be tested more precisely because the value of random-seed changes depending on the output
       [[ $NIX_CFLAGS_COMPILE =~ "-frandom-seed=" ]]
       touch $out
     '';
+
+    name = "test-reproducible-builds";
   };
+
   set-source-date-epoch-to-latest = stdenv.mkDerivation {
-    name = "test-set-source-date-epoch-to-latest";
     buildCommand = ''
       sourceRoot=$NIX_BUILD_TOP/source
       mkdir -p $sourceRoot
@@ -172,6 +189,8 @@
       [[ $SOURCE_DATE_EPOCH == "1420070400" ]]
       touch $out
     '';
+
+    name = "test-set-source-date-epoch-to-latest";
   };
   # TODO: add strip
 }

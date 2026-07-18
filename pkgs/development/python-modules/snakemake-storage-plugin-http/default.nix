@@ -1,27 +1,22 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
+  buildPythonPackage,
   # build-system
   poetry-core,
-
+  # tests
+  pytestCheckHook,
   # dependencies
   requests,
   requests-oauthlib,
+  snakemake,
   snakemake-interface-common,
   snakemake-interface-storage-plugins,
-
-  # tests
-  pytestCheckHook,
-  snakemake,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "snakemake-storage-plugin-http";
   version = "0.3.1";
-  pyproject = true;
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "snakemake";
@@ -30,13 +25,17 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-ad4IOjU761CaZ+o0//I8/xW+e+4UJG0+VAbQ9KcNjFY=";
   };
 
+  nativeCheckInputs = [
+    pytestCheckHook
+    snakemake
+  ];
+
+  __structuredAttrs = true;
+
   build-system = [
     poetry-core
   ];
 
-  pythonRelaxDeps = [
-    "requests-oauthlib"
-  ];
   dependencies = [
     requests
     requests-oauthlib
@@ -44,18 +43,17 @@ buildPythonPackage (finalAttrs: {
     snakemake-interface-storage-plugins
   ];
 
-  pythonImportsCheck = [ "snakemake_storage_plugin_http" ];
-
-  nativeCheckInputs = [
-    pytestCheckHook
-    snakemake
-  ];
-
-  enabledTestPaths = [ "tests/tests.py" ];
-
   disabledTests = [
     # Requires internet access
     "test_storage"
+  ];
+
+  enabledTestPaths = [ "tests/tests.py" ];
+  pyproject = true;
+  pythonImportsCheck = [ "snakemake_storage_plugin_http" ];
+
+  pythonRelaxDeps = [
+    "requests-oauthlib"
   ];
 
   meta = {

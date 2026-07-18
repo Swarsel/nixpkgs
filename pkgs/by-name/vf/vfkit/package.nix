@@ -1,9 +1,9 @@
 {
   lib,
+  fetchFromGitHub,
   apple-sdk_15,
   buildGoModule,
   darwin,
-  fetchFromGitHub,
   fetchpatch2,
   llvmPackages,
   nix-update-script,
@@ -22,16 +22,6 @@ buildGoModule rec {
     hash = "sha256-AHmCmDrddbPM8agM4jyKGKJ5aJSZ0hijM2suHJmRS3A=";
   };
 
-  vendorHash = "sha256-tXpjEMF4wwuP4w8asZPpeA8C5g+k4MjNRtbCBFFql2A=";
-
-  subPackages = [ "cmd/vfkit" ];
-
-  ldflags = [
-    "-s"
-    "-w"
-    "-X github.com/crc-org/vfkit/pkg/cmdline.gitVersion=${src.rev}"
-  ];
-
   nativeBuildInputs = [
     darwin.sigtool
     # TODO: Remove this when NixOS/nixpkgs#536365 reaches master.
@@ -42,12 +32,21 @@ buildGoModule rec {
     apple-sdk_15
   ];
 
+  vendorHash = "sha256-tXpjEMF4wwuP4w8asZPpeA8C5g+k4MjNRtbCBFFql2A=";
   # TODO: Remove this when NixOS/nixpkgs#536365 reaches master.
   env.NIX_CFLAGS_LINK = "-fuse-ld=${lib.getExe' llvmPackages.lld "ld64.lld"}";
 
   postFixup = ''
     codesign --entitlements vf.entitlements -f -s - $out/bin/vfkit
   '';
+
+  ldflags = [
+    "-s"
+    "-w"
+    "-X github.com/crc-org/vfkit/pkg/cmdline.gitVersion=${src.rev}"
+  ];
+
+  subPackages = [ "cmd/vfkit" ];
 
   passthru.tests = {
     version = testers.testVersion { package = vfkit; };
@@ -60,12 +59,14 @@ buildGoModule rec {
     homepage = "https://github.com/crc-org/vfkit";
     changelog = "https://github.com/crc-org/vfkit/releases/tag/v${version}";
     license = lib.licenses.asl20;
+    sourceProvenance = [ lib.sourceTypes.fromSource ];
+
     maintainers = with lib.maintainers; [
       sarcasticadmin
       phaer
     ];
+
     platforms = lib.platforms.darwin;
-    sourceProvenance = [ lib.sourceTypes.fromSource ];
     mainProgram = "vfkit";
   };
 }

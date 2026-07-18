@@ -24,47 +24,21 @@ in
 
     services.exim = {
 
-      enable = mkOption {
-        type = types.bool;
-        default = false;
-        description = "Whether to enable the Exim mail transfer agent.";
-      };
-
       config = mkOption {
-        type = types.lines;
         default = "";
+
         description = ''
           Verbatim Exim configuration.  This should not contain exim_user,
           exim_group, exim_path, or spool_directory.
         '';
+
+        type = types.lines;
       };
 
-      user = mkOption {
-        type = types.str;
-        default = "exim";
-        description = ''
-          User to use when no root privileges are required.
-          In particular, this applies when receiving messages and when doing
-          remote deliveries.  (Local deliveries run as various non-root users,
-          typically as the owner of a local mailbox.) Specifying this value
-          as root is not supported.
-        '';
-      };
-
-      group = mkOption {
-        type = types.str;
-        default = "exim";
-        description = ''
-          Group to use when no root privileges are required.
-        '';
-      };
-
-      spoolDir = mkOption {
-        type = types.path;
-        default = "/var/spool/exim";
-        description = ''
-          Location of the spool directory of exim.
-        '';
+      enable = mkOption {
+        default = false;
+        description = "Whether to enable the Exim mail transfer agent.";
+        type = types.bool;
       };
 
       package = mkPackageOption pkgs "exim" {
@@ -73,12 +47,48 @@ in
         '';
       };
 
-      queueRunnerInterval = mkOption {
+      group = mkOption {
+        default = "exim";
+
+        description = ''
+          Group to use when no root privileges are required.
+        '';
+
         type = types.str;
+      };
+
+      queueRunnerInterval = mkOption {
         default = "5m";
+
         description = ''
           How often to spawn a new queue runner.
         '';
+
+        type = types.str;
+      };
+
+      spoolDir = mkOption {
+        default = "/var/spool/exim";
+
+        description = ''
+          Location of the spool directory of exim.
+        '';
+
+        type = types.path;
+      };
+
+      user = mkOption {
+        default = "exim";
+
+        description = ''
+          User to use when no root privileges are required.
+          In particular, this applies when receiving messages and when doing
+          remote deliveries.  (Local deliveries run as various non-root users,
+          typically as the owner of a local mailbox.) Specifying this value
+          as root is not supported.
+        '';
+
+        type = types.str;
       };
     };
 
@@ -96,36 +106,39 @@ in
         spool_directory = ${cfg.spoolDir}
         ${cfg.config}
       '';
+
       systemPackages = [ cfg.package ];
     };
 
-    users.users.${cfg.user} = {
-      description = "Exim mail transfer agent user";
-      uid = config.ids.uids.exim;
-      group = cfg.group;
+    security.wrappers.exim = {
+      group = "root";
+      owner = "root";
+      setuid = true;
+      source = "${cfg.package}/bin/exim";
+    };
+
+    systemd.services.exim = {
+      description = "Exim Mail Daemon";
+      restartTriggers = [ config.environment.etc."exim.conf".source ];
+
+      serviceConfig = {
+        ExecReload = "!${coreutils}/bin/kill -HUP $MAINPID";
+        ExecStart = "!${cfg.package}/bin/exim -bdf -q${cfg.queueRunnerInterval}";
+        ExecStartPre = "+${coreutils}/bin/install --group=${cfg.group} --owner=${cfg.user} --mode=0700 --directory ${cfg.spoolDir}";
+        User = cfg.user;
+      };
+
+      wantedBy = [ "multi-user.target" ];
     };
 
     users.groups.${cfg.group} = {
       gid = config.ids.gids.exim;
     };
 
-    security.wrappers.exim = {
-      setuid = true;
-      owner = "root";
-      group = "root";
-      source = "${cfg.package}/bin/exim";
-    };
-
-    systemd.services.exim = {
-      description = "Exim Mail Daemon";
-      wantedBy = [ "multi-user.target" ];
-      restartTriggers = [ config.environment.etc."exim.conf".source ];
-      serviceConfig = {
-        ExecStartPre = "+${coreutils}/bin/install --group=${cfg.group} --owner=${cfg.user} --mode=0700 --directory ${cfg.spoolDir}";
-        ExecStart = "!${cfg.package}/bin/exim -bdf -q${cfg.queueRunnerInterval}";
-        ExecReload = "!${coreutils}/bin/kill -HUP $MAINPID";
-        User = cfg.user;
-      };
+    users.users.${cfg.user} = {
+      description = "Exim mail transfer agent user";
+      group = cfg.group;
+      uid = config.ids.uids.exim;
     };
   };
 }

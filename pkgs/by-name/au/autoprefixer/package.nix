@@ -1,13 +1,13 @@
 {
   lib,
   stdenv,
-  nodejs,
-  pnpm_10,
-  fetchPnpmDeps,
-  pnpmConfigHook,
   fetchFromGitHub,
   callPackage,
+  fetchPnpmDeps,
   nix-update-script,
+  nodejs,
+  pnpmConfigHook,
+  pnpm_10,
 }:
 stdenv.mkDerivation (finalAttrs: {
   pname = "autoprefixer";
@@ -26,13 +26,6 @@ stdenv.mkDerivation (finalAttrs: {
     pnpm_10
   ];
 
-  pnpmDeps = fetchPnpmDeps {
-    inherit (finalAttrs) pname version src;
-    pnpm = pnpm_10;
-    fetcherVersion = 4;
-    hash = "sha256-Sxt4vtdlMdXxXqt22hfZJskj8mkB5t85IZ5BsbCoDF4=";
-  };
-
   installPhase = ''
     runHook preInstall
 
@@ -50,10 +43,18 @@ stdenv.mkDerivation (finalAttrs: {
     patchShebangs $out/bin/autoprefixer
   '';
 
+  pnpmDeps = fetchPnpmDeps {
+    inherit (finalAttrs) pname version src;
+    fetcherVersion = 4;
+    hash = "sha256-Sxt4vtdlMdXxXqt22hfZJskj8mkB5t85IZ5BsbCoDF4=";
+    pnpm = pnpm_10;
+  };
+
   passthru = {
     tests = {
       simple-execution = callPackage ./tests/simple-execution.nix { };
     };
+
     updateScript = nix-update-script { };
   };
 
@@ -62,7 +63,7 @@ stdenv.mkDerivation (finalAttrs: {
     homepage = "https://github.com/postcss/autoprefixer";
     changelog = "https://github.com/postcss/autoprefixer/releases/tag/${finalAttrs.src.tag}";
     license = lib.licenses.mit;
-    mainProgram = "autoprefixer";
     maintainers = [ lib.maintainers.skohtv ];
+    mainProgram = "autoprefixer";
   };
 })

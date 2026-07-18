@@ -17,10 +17,6 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-f8lkJrUN8bBuqdMz+7IGJqr2wN5bvHpImfJVe07h7/Y=";
   };
 
-  propagatedUserEnvPkgs = [
-    gtk-engine-murrine
-  ];
-
   installPhase = ''
     runHook preInstall
     mkdir -p $out/share/themes/${themeName}
@@ -29,11 +25,15 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  propagatedUserEnvPkgs = [
+    gtk-engine-murrine
+  ];
+
   meta = {
     description = "Nebula variant of the Ant theme";
     homepage = "https://github.com/EliverLara/${themeName}";
     license = lib.licenses.gpl3Only;
-    platforms = lib.platforms.all;
     maintainers = with lib.maintainers; [ alexarice ];
+    platforms = lib.platforms.all;
   };
 })

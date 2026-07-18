@@ -1,11 +1,11 @@
 {
   lib,
   stdenv,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   installShellFiles,
-  testers,
   kube-linter,
+  testers,
 }:
 
 buildGoModule (finalAttrs: {
@@ -19,18 +19,8 @@ buildGoModule (finalAttrs: {
     sha256 = "sha256-JpabvLiYnDglf6rLr7HLGPafs9HHV/GZBErXr7CBQbo=";
   };
 
-  vendorHash = "sha256-xG4RsgPOoCWFhMEMFyGKQB05O44Pm1jFo2YC8zal1Q0=";
-
-  excludedPackages = [ "tool-imports" ];
-
-  ldflags = [
-    "-s"
-    "-w"
-    "-X golang.stackrox.io/kube-linter/internal/version.version=${finalAttrs.version}"
-  ];
-
   nativeBuildInputs = [ installShellFiles ];
-
+  vendorHash = "sha256-xG4RsgPOoCWFhMEMFyGKQB05O44Pm1jFo2YC8zal1Q0=";
   checkFlags = [ "-skip=TestCreateContextsWithIgnorePaths" ];
 
   postInstall = lib.optionalString (stdenv.buildPlatform.canExecute stdenv.hostPlatform) ''
@@ -40,9 +30,17 @@ buildGoModule (finalAttrs: {
       --zsh <($out/bin/kube-linter completion zsh)
   '';
 
+  excludedPackages = [ "tool-imports" ];
+
+  ldflags = [
+    "-s"
+    "-w"
+    "-X golang.stackrox.io/kube-linter/internal/version.version=${finalAttrs.version}"
+  ];
+
   passthru.tests.version = testers.testVersion {
-    package = kube-linter;
     command = "kube-linter version";
+    package = kube-linter;
   };
 
   meta = {
@@ -50,11 +48,13 @@ buildGoModule (finalAttrs: {
     homepage = "https://kubelinter.io";
     changelog = "https://github.com/stackrox/kube-linter/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.asl20;
+
     maintainers = with lib.maintainers; [
       mtesseract
       stehessel
       Intuinewin
     ];
+
     platforms = lib.platforms.all;
   };
 })

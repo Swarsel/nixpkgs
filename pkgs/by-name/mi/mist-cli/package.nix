@@ -1,11 +1,11 @@
 {
   lib,
-  stdenvNoCC,
   fetchurl,
-  installShellFiles,
-  xar,
   cpio,
+  installShellFiles,
   nix-update-script,
+  stdenvNoCC,
+  xar,
 }:
 stdenvNoCC.mkDerivation (finalAttrs: {
   pname = "mist-cli";
@@ -16,7 +16,6 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     hash = "sha256-rUIA40JTXndE7W2wQiayhAP9RPTQMeJV8d6NUy/Immk=";
   };
 
-  __structuredAttrs = true;
   strictDeps = true;
 
   nativeBuildInputs = [
@@ -24,17 +23,6 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     xar
     cpio
   ];
-
-  dontBuild = true;
-
-  unpackPhase = ''
-    runHook preUnpack
-
-    xar -xf "$src"
-    gunzip -dc Payload | cpio -idmv
-
-    runHook postUnpack
-  '';
 
   installPhase = ''
     runHook preInstall
@@ -51,15 +39,27 @@ stdenvNoCC.mkDerivation (finalAttrs: {
       --zsh <($out/bin/mist --generate-completion-script zsh)
   '';
 
+  __structuredAttrs = true;
+  dontBuild = true;
+
+  unpackPhase = ''
+    runHook preUnpack
+
+    xar -xf "$src"
+    gunzip -dc Payload | cpio -idmv
+
+    runHook postUnpack
+  '';
+
   passthru.updateScript = nix-update-script { };
 
   meta = {
     description = "Command-line tool that downloads macOS firmwares and installers";
     homepage = "https://github.com/ninxsoft/mist-cli";
     license = lib.licenses.mit;
-    mainProgram = "mist";
+    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
     maintainers = with lib.maintainers; [ ojsef39 ];
     platforms = lib.platforms.darwin;
-    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
+    mainProgram = "mist";
   };
 })

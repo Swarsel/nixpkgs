@@ -2,8 +2,8 @@
   lib,
   stdenv,
   fetchurl,
-  pkg-config,
   netsurf-buildsystem,
+  pkg-config,
   publicsuffix-list,
 }:
 
@@ -22,7 +22,6 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   nativeBuildInputs = [ pkg-config ];
-
   buildInputs = [ netsurf-buildsystem ];
 
   makeFlags = [
@@ -31,9 +30,9 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   meta = {
-    homepage = "https://www.netsurf-browser.org/";
-    description = "NetSurf Public Suffix List - Handling library";
-    license = lib.licenses.mit;
     inherit (netsurf-buildsystem.meta) maintainers platforms;
+    description = "NetSurf Public Suffix List - Handling library";
+    homepage = "https://www.netsurf-browser.org/";
+    license = lib.licenses.mit;
   };
 })

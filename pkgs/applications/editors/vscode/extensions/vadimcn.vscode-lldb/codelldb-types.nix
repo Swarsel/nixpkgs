@@ -1,22 +1,19 @@
 {
+  cargoHash,
   makeWrapper,
-  rustPlatform,
   pname,
+  rustPlatform,
   src,
   version,
-
-  cargoHash,
 }:
 rustPlatform.buildRustPackage {
-  pname = "${pname}-codelldb-types";
   inherit version src cargoHash;
-
+  pname = "${pname}-codelldb-types";
   nativeBuildInputs = [ makeWrapper ];
+  # Tests fail to build (as of version 1.12.0).
+  doCheck = false;
 
   cargoBuildFlags = [
     "--package=codelldb-types"
   ];
-
-  # Tests fail to build (as of version 1.12.0).
-  doCheck = false;
 }

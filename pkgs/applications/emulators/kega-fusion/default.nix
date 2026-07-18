@@ -1,21 +1,21 @@
 {
-  stdenv,
   lib,
-  writeText,
+  stdenv,
   fetchurl,
-  upx,
-  libGL,
-  libGLU,
+  alsa-lib,
+  gdk-pixbuf,
   glib,
   gtk2,
-  alsa-lib,
+  libGL,
+  libGLU,
   libsm,
   libx11,
-  gdk-pixbuf,
-  pango,
   libxinerama,
   mpg123,
+  pango,
   runtimeShell,
+  upx,
+  writeText,
 }:
 
 let
@@ -43,9 +43,28 @@ stdenv.mkDerivation {
     sha256 = "14s6czy20h5khyy7q95hd7k77v17ssafv9l6lafkiysvj2nmw94g";
   };
 
+  nativeBuildInputs = [ upx ];
+
+  installPhase = ''
+    upx -d Fusion
+    install -Dm755 Fusion "$out/lib/kega-fusion/Fusion"
+    patchelf --set-interpreter "$(cat $NIX_CC/nix-support/dynamic-linker)" --set-rpath "${libPath}" "$out/lib/kega-fusion/Fusion"
+
+    tar -xaf $plugins
+    mkdir -p "$out/lib/kega-fusion/plugins"
+    cp -r Plugins/*.rpi "$out/lib/kega-fusion/plugins"
+
+    mkdir -p "$out/bin"
+    substitute "$runner" "$out/bin/kega-fusion" --subst-var out
+    chmod +x "$out/bin/kega-fusion"
+  '';
+
+  dontPatchELF = true;
+  dontStrip = true;
+
   plugins = fetchurl {
-    url = "https://www.carpeludum.com/download/PluginsLinux.tar.gz";
     sha256 = "0d623cvh6n5ijj3wb64g93mxx2xbichsn7hj7brbb0ndw5cs70qj";
+    url = "https://www.carpeludum.com/download/PluginsLinux.tar.gz";
   };
 
   runner = writeText "kega-fusion" ''
@@ -80,31 +99,12 @@ stdenv.mkDerivation {
     exec "$kega_libdir/Fusion" "$@"
   '';
 
-  dontStrip = true;
-  dontPatchELF = true;
-
-  nativeBuildInputs = [ upx ];
-
-  installPhase = ''
-    upx -d Fusion
-    install -Dm755 Fusion "$out/lib/kega-fusion/Fusion"
-    patchelf --set-interpreter "$(cat $NIX_CC/nix-support/dynamic-linker)" --set-rpath "${libPath}" "$out/lib/kega-fusion/Fusion"
-
-    tar -xaf $plugins
-    mkdir -p "$out/lib/kega-fusion/plugins"
-    cp -r Plugins/*.rpi "$out/lib/kega-fusion/plugins"
-
-    mkdir -p "$out/bin"
-    substitute "$runner" "$out/bin/kega-fusion" --subst-var out
-    chmod +x "$out/bin/kega-fusion"
-  '';
-
   meta = {
     description = "Sega SG1000, SC3000, SF7000, Master System, Game Gear, Genesis/Megadrive, SVP, Pico, SegaCD/MegaCD and 32X emulator";
     homepage = "https://www.carpeludum.com/kega-fusion/";
-    maintainers = [ ];
-    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
     license = lib.licenses.unfreeRedistributable;
+    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
+    maintainers = [ ];
     platforms = [ "i686-linux" ];
     mainProgram = "kega-fusion";
   };

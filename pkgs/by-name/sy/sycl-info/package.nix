@@ -3,13 +3,13 @@
   stdenv,
   fetchFromGitHub,
   cmake,
+  doctest,
+  lyra,
   ninja,
+  nlohmann_json,
   ocl-icd,
   opencl-headers,
-  lyra,
-  nlohmann_json,
   ronn,
-  doctest,
 }:
 
 stdenv.mkDerivation {
@@ -28,6 +28,11 @@ stdenv.mkDerivation {
     ./fix-lyra-message.patch
   ];
 
+  nativeBuildInputs = [
+    cmake
+    ninja
+  ];
+
   buildInputs = [
     nlohmann_json
     ronn
@@ -35,11 +40,6 @@ stdenv.mkDerivation {
     ocl-icd
     doctest
     lyra
-  ];
-
-  nativeBuildInputs = [
-    cmake
-    ninja
   ];
 
   cmakeFlags = [
@@ -57,11 +57,11 @@ stdenv.mkDerivation {
   ];
 
   meta = {
-    homepage = "https://github.com/codeplaysoftware/sycl-info";
     description = "Tool to show information about available SYCL implementations";
-    mainProgram = "sycl-info";
-    platforms = lib.platforms.linux;
+    homepage = "https://github.com/codeplaysoftware/sycl-info";
     license = lib.licenses.asl20;
     maintainers = [ ];
+    platforms = lib.platforms.linux;
+    mainProgram = "sycl-info";
   };
 }

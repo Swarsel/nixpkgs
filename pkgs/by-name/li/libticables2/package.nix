@@ -1,17 +1,18 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchurl,
-  fetchpatch,
-  pkg-config,
   autoreconfHook,
+  fetchpatch,
   glib,
   libusb1,
+  pkg-config,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
   pname = "libticables2";
   version = "1.3.5";
+
   src = fetchurl {
     url = "mirror://sourceforge/tilp/libticables2-${finalAttrs.version}.tar.bz2";
     sha256 = "08j5di0cgix9vcpdv7b8xhxdjkk9zz7fqfnv3l4apk3jdr8vcvqc";
@@ -20,9 +21,9 @@ stdenv.mkDerivation (finalAttrs: {
   patches = [
     (fetchpatch {
       name = "add-support-for-aarch64-macos-target-triple.patch";
-      url = "https://github.com/debrouxl/tilibs/commit/ef41c51363b11521460f33e8c332db7b0a9ca085.patch";
-      stripLen = 2;
       sha256 = "sha256-oTR1ACEZI0fjErpnFXTCnfLT1mo10Ypy0q0D8NOPNsM=";
+      stripLen = 2;
+      url = "https://github.com/debrouxl/tilibs/commit/ef41c51363b11521460f33e8c332db7b0a9ca085.patch";
     })
   ];
 
@@ -39,8 +40,6 @@ stdenv.mkDerivation (finalAttrs: {
   configureFlags = [
     "--enable-libusb10"
   ];
-
-  doInstallCheck = true;
 
   postInstall = ''
     mkdir -p $out/etc/udev/rules.d
@@ -66,10 +65,12 @@ stdenv.mkDerivation (finalAttrs: {
     EOF
   '';
 
+  doInstallCheck = true;
+
   meta = {
-    changelog = "http://lpg.ticalc.org/prj_tilp/news.html";
     description = "This library is part of the TiLP framework";
     homepage = "http://lpg.ticalc.org/prj_tilp/";
+    changelog = "http://lpg.ticalc.org/prj_tilp/news.html";
     license = lib.licenses.gpl2Plus;
     maintainers = with lib.maintainers; [ siraben ];
     platforms = with lib.platforms; linux ++ darwin;

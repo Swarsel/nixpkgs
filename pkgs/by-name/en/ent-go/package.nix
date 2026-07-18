@@ -1,8 +1,8 @@
 {
   lib,
   stdenv,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   installShellFiles,
   replaceVars,
 }:
@@ -18,8 +18,6 @@ buildGoModule (finalAttrs: {
     sha256 = "sha256-pkD8MYyinvuKCtSpHGfFE9y8GRP40qdeyjhB32yeiK4=";
   };
 
-  vendorHash = "sha256-CCjZv9ef/F+Cx6qmIkG/isX2Dd8WO/1mtjsJ4d8E3m0=";
-
   patches = [
     # patch in version information so we don't get "version = "(devel)";"
     (replaceVars ./ent_version.patch {
@@ -28,14 +26,8 @@ buildGoModule (finalAttrs: {
     })
   ];
 
-  subPackages = [ "cmd/ent" ];
-
-  ldflags = [
-    "-s"
-    "-w"
-  ];
-
   nativeBuildInputs = [ installShellFiles ];
+  vendorHash = "sha256-CCjZv9ef/F+Cx6qmIkG/isX2Dd8WO/1mtjsJ4d8E3m0=";
 
   postInstall = lib.optionalString (stdenv.buildPlatform.canExecute stdenv.hostPlatform) ''
     installShellCompletion --cmd ent \
@@ -44,13 +36,20 @@ buildGoModule (finalAttrs: {
       --zsh <($out/bin/ent completion zsh)
   '';
 
+  ldflags = [
+    "-s"
+    "-w"
+  ];
+
+  subPackages = [ "cmd/ent" ];
+
   meta = {
     description = "Entity framework for Go";
     homepage = "https://entgo.io/";
     changelog = "https://github.com/ent/ent/releases/tag/v${finalAttrs.version}";
-    downloadPage = "https://github.com/ent/ent";
     license = lib.licenses.asl20;
     maintainers = [ ];
     mainProgram = "ent";
+    downloadPage = "https://github.com/ent/ent";
   };
 })

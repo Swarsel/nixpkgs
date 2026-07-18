@@ -1,7 +1,7 @@
 {
-  buildOctavePackage,
   lib,
   fetchurl,
+  buildOctavePackage,
   gfortran,
 }:
 
@@ -19,14 +19,16 @@ buildOctavePackage rec {
   ];
 
   meta = {
-    homepage = "https://gnu-octave.github.io/packages/optiminterp/";
-    license = lib.licenses.gpl3Plus;
-    maintainers = with lib.maintainers; [ ravenjoad ];
     description = "Optimal interpolation toolbox for octave";
+
     longDescription = ''
       An optimal interpolation toolbox for octave. This package provides
       functions to perform a n-dimensional optimal interpolations of
       arbitrarily distributed data points.
     '';
+
+    homepage = "https://gnu-octave.github.io/packages/optiminterp/";
+    license = lib.licenses.gpl3Plus;
+    maintainers = with lib.maintainers; [ ravenjoad ];
   };
 }

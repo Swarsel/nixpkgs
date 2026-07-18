@@ -1,15 +1,15 @@
 {
-  pkgs,
   lib,
   stdenv,
   fetchzip,
-  ncurses,
   libx11,
   libxaw,
-  libxt,
   libxext,
   libxmu,
+  libxt,
   makeWrapper,
+  ncurses,
+  pkgs,
   writeScript,
 }:
 
@@ -32,7 +32,13 @@ stdenv.mkDerivation (finalAttrs: {
     stripRoot = false;
   };
 
+  postPatch = ''
+    # Allow usage of ANGBAND_PATH
+    substituteInPlace config.h --replace "#define FIXED_PATHS" ""
+  '';
+
   nativeBuildInputs = [ makeWrapper ];
+
   buildInputs = [
     ncurses
     libx11
@@ -42,24 +48,15 @@ stdenv.mkDerivation (finalAttrs: {
     libxmu
   ];
 
-  sourceRoot = "${finalAttrs.src.name}/Sil/src";
-
-  makefile = "Makefile.std";
-
-  postPatch = ''
-    # Allow usage of ANGBAND_PATH
-    substituteInPlace config.h --replace "#define FIXED_PATHS" ""
-  '';
-
-  preConfigure = ''
-    buildFlagsArray+=("LIBS=-lXaw -lXext -lSM -lICE -lXmu -lXt -lX11 -lncurses")
-  '';
-
   # Workaround build failure on -fno-common toolchains like upstream
   # gcc-10. Otherwise build fails as:
   #   ld: main.o:/build/source/Sil/src/externs.h:57: multiple definition of
   #     `mini_screenshot_char'; variable.o:/build/source/Sil/src/externs.h:57: first defined here
   env.NIX_CFLAGS_COMPILE = "-fcommon";
+
+  preConfigure = ''
+    buildFlagsArray+=("LIBS=-lXaw -lXext -lSM -lICE -lXmu -lXt -lX11 -lncurses")
+  '';
 
   installPhase = ''
     runHook preInstall
@@ -78,6 +75,9 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  makefile = "Makefile.std";
+  sourceRoot = "${finalAttrs.src.name}/Sil/src";
+
   passthru.tests = {
     saveDirCreation = pkgs.runCommand "save-dir-creation" { } ''
       HOME=$(pwd) ${lib.getExe pkgs.sil} --help
@@ -87,6 +87,7 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Rogue-like game set in the First Age of Middle-earth";
+
     longDescription = ''
       A game of adventure set in the First Age of Middle-earth, when the world still
       rang with Elven song and gleamed with Dwarven mail.
@@ -94,12 +95,15 @@ stdenv.mkDerivation (finalAttrs: {
       Walk the dark halls of Angband.  Slay creatures black and fell.  Wrest a shining
       Silmaril from Morgoth’s iron crown.
     '';
+
     homepage = "http://www.amirrorclear.net/flowers/game/sil/index.html";
     license = lib.licenses.gpl2Only;
+
     maintainers = with lib.maintainers; [
       michaelpj
       kenran
     ];
+
     platforms = lib.platforms.linux;
     mainProgram = "sil";
   };

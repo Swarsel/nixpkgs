@@ -2,16 +2,14 @@
   lib,
   fetchFromGitHub,
   buildDunePackage,
-  pkg-config,
-  gsl,
   dune-configurator,
+  gsl,
+  pkg-config,
 }:
 
 buildDunePackage (finalAttrs: {
   pname = "gsl";
   version = "1.25.1";
-
-  minimalOCamlVersion = "4.12";
 
   src = fetchFromGitHub {
     owner = "mmottl";
@@ -21,14 +19,17 @@ buildDunePackage (finalAttrs: {
   };
 
   nativeBuildInputs = [ pkg-config ];
+
   buildInputs = [
     dune-configurator
     gsl
   ];
 
+  minimalOCamlVersion = "4.12";
+
   meta = {
-    homepage = "https://mmottl.github.io/gsl-ocaml/";
     description = "OCaml bindings to the GNU Scientific Library";
+    homepage = "https://mmottl.github.io/gsl-ocaml/";
     license = lib.licenses.gpl3Plus;
     maintainers = with lib.maintainers; [ vbgl ];
   };

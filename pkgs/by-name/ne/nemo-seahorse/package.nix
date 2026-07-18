@@ -1,19 +1,19 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
-  meson,
-  pkg-config,
-  ninja,
-  glib,
-  gtk3,
-  nemo,
   dbus-glib,
-  libcryptui,
   gcr,
-  libnotify,
+  glib,
   gnupg,
   gpgme,
+  gtk3,
+  libcryptui,
+  libnotify,
+  meson,
+  nemo,
+  ninja,
+  pkg-config,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -26,8 +26,6 @@ stdenv.mkDerivation (finalAttrs: {
     tag = finalAttrs.version;
     hash = "sha256-tXeMkaCYnWzg+6ng8Tyg4Ms1aUeE3xiEkQ3tKEX6Vv8=";
   };
-
-  sourceRoot = "${finalAttrs.src.name}/nemo-seahorse";
 
   nativeBuildInputs = [
     glib
@@ -48,16 +46,17 @@ stdenv.mkDerivation (finalAttrs: {
     gnupg
   ];
 
+  env.PKG_CONFIG_LIBNEMO_EXTENSION_EXTENSIONDIR = "${placeholder "out"}/${nemo.extensiondir}";
+
   postInstall = ''
     glib-compile-schemas $out/share/glib-2.0/schemas
   '';
 
-  env.PKG_CONFIG_LIBNEMO_EXTENSION_EXTENSIONDIR = "${placeholder "out"}/${nemo.extensiondir}";
+  sourceRoot = "${finalAttrs.src.name}/nemo-seahorse";
 
   meta = {
-    homepage = "https://github.com/linuxmint/nemo-extensions/tree/master/nemo-seahorse";
-    changelog = "https://github.com/linuxmint/nemo-extensions/blob/master/nemo-seahorse/ChangeLog";
     description = "Nemo seahorse extension";
+
     longDescription = ''
       You can add the extension to nemo using the following configuration:
       ```nix
@@ -81,6 +80,9 @@ stdenv.mkDerivation (finalAttrs: {
       }
       ```
     '';
+
+    homepage = "https://github.com/linuxmint/nemo-extensions/tree/master/nemo-seahorse";
+    changelog = "https://github.com/linuxmint/nemo-extensions/blob/master/nemo-seahorse/ChangeLog";
     license = lib.licenses.gpl2Plus;
     platforms = lib.platforms.linux;
     teams = [ lib.teams.cinnamon ];

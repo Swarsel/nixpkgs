@@ -2,34 +2,29 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  pkgsBuildBuild,
+  buildPackages,
   cmake,
+  fixDarwinDylibNames,
   glib,
+  gobject-introspection,
   icu,
+  libical,
   libxml2,
   ninja,
   perl,
   pkg-config,
-  libical,
+  pkgsBuildBuild,
   python3,
   tzdata,
-  fixDarwinDylibNames,
+  vala,
   withIntrospection ?
     lib.meta.availableOn stdenv.hostPlatform gobject-introspection
     && stdenv.hostPlatform.emulatorAvailable buildPackages,
-  buildPackages,
-  gobject-introspection,
-  vala,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
   pname = "libical";
   version = "3.0.20";
-
-  outputs = [
-    "out"
-    "dev"
-  ]; # "devdoc" ];
 
   src = fetchFromGitHub {
     owner = "libical";
@@ -38,12 +33,20 @@ stdenv.mkDerivation (finalAttrs: {
     sha256 = "sha256-KIMqZ6QAh+fTcKEYrcLlxgip91CLAwL9rwjUdKzBsQk=";
   };
 
-  strictDeps = true;
+  outputs = [
+    "out"
+    "dev"
+  ]; # "devdoc" ];
 
-  depsBuildBuild = lib.optionals (stdenv.hostPlatform != stdenv.buildPlatform) [
-    # provides ical-glib-src-generator that runs during build
-    libical
+  patches = [
+    # Will appear in 3.1.0
+    # https://github.com/libical/libical/issues/350
+    ./respect-env-tzdir.patch
+
+    ./static.patch
   ];
+
+  strictDeps = true;
 
   nativeBuildInputs = [
     cmake
@@ -63,14 +66,6 @@ stdenv.mkDerivation (finalAttrs: {
   ++ lib.optionals stdenv.hostPlatform.isDarwin [
     fixDarwinDylibNames
   ];
-  nativeInstallCheckInputs = [
-    # running libical-glib tests
-    (python3.pythonOnBuildForHost.withPackages (
-      pkgs: with pkgs; [
-        pygobject3
-      ]
-    ))
-  ];
 
   buildInputs = [
     glib
@@ -89,18 +84,35 @@ stdenv.mkDerivation (finalAttrs: {
     "-DIMPORT_ICAL_GLIB_SRC_GENERATOR=${lib.getDev pkgsBuildBuild.libical}/lib/cmake/LibIcal/IcalGlibSrcGenerator.cmake"
   ];
 
-  patches = [
-    # Will appear in 3.1.0
-    # https://github.com/libical/libical/issues/350
-    ./respect-env-tzdir.patch
-
-    ./static.patch
-  ];
-
   # Using install check so we do not have to manually set GI_TYPELIB_PATH
   # Musl does not support TZDIR.
   doInstallCheck = !stdenv.hostPlatform.isMusl;
+
+  nativeInstallCheckInputs = [
+    # running libical-glib tests
+    (python3.pythonOnBuildForHost.withPackages (
+      pkgs: with pkgs; [
+        pygobject3
+      ]
+    ))
+  ];
+
+  installCheckPhase = ''
+    runHook preInstallCheck
+
+    export TZDIR=${tzdata}/share/zoneinfo
+    ctest --output-on-failure
+
+    runHook postInstallCheck
+  '';
+
+  depsBuildBuild = lib.optionals (stdenv.hostPlatform != stdenv.buildPlatform) [
+    # provides ical-glib-src-generator that runs during build
+    libical
+  ];
+
   enableParallelChecking = false;
+
   preInstallCheck =
     if stdenv.hostPlatform.isDarwin then
       ''
@@ -112,18 +124,10 @@ stdenv.mkDerivation (finalAttrs: {
       ''
     else
       null;
-  installCheckPhase = ''
-    runHook preInstallCheck
-
-    export TZDIR=${tzdata}/share/zoneinfo
-    ctest --output-on-failure
-
-    runHook postInstallCheck
-  '';
 
   meta = {
-    homepage = "https://github.com/libical/libical";
     description = "Open Source implementation of the iCalendar protocols";
+    homepage = "https://github.com/libical/libical";
     changelog = "https://github.com/libical/libical/raw/v${finalAttrs.version}/ReleaseNotes.txt";
     license = lib.licenses.mpl20;
     platforms = lib.platforms.unix;

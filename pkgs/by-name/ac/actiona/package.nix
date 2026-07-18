@@ -2,15 +2,12 @@
   lib,
   stdenv,
   fetchFromGitHub,
-
-  cmake,
-  pkg-config,
-
   bluez,
+  cmake,
   libnotify,
   opencv,
+  pkg-config,
   qt6,
-
   # Running with TTS support causes the program to freeze for a few seconds every time at startup,
   # so it is disabled by default
   textToSpeechSupport ? false,
@@ -59,8 +56,8 @@ stdenv.mkDerivation (finalAttrs: {
     description = "Cross-platform automation tool";
     homepage = "https://github.com/Jmgr/actiona";
     license = lib.licenses.gpl3Only;
-    mainProgram = "actiona";
     maintainers = with lib.maintainers; [ tomasajt ];
     platforms = lib.platforms.linux;
+    mainProgram = "actiona";
   };
 })

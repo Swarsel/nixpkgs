@@ -1,9 +1,11 @@
 {
   lib,
+  stdenv,
+  fetchFromGitHub,
   _experimental-update-script-combinators,
+  buildPackages,
   curl,
   duktape,
-  fetchFromGitHub,
   gi-docgen,
   gitUpdater,
   glib,
@@ -13,10 +15,8 @@
   meson,
   ninja,
   pkg-config,
-  stdenv,
   replaceVars,
   vala,
-  buildPackages,
   withIntrospection ?
     lib.meta.availableOn stdenv.hostPlatform gobject-introspection
     && stdenv.hostPlatform.emulatorAvailable buildPackages,
@@ -26,6 +26,13 @@ stdenv.mkDerivation (finalAttrs: {
   pname = "libproxy";
   version = "0.5.12";
 
+  src = fetchFromGitHub {
+    owner = "libproxy";
+    repo = "libproxy";
+    tag = finalAttrs.version;
+    hash = "sha256-pkvmeD7O2EUDzw59/e7YcgiHDf2vvIXmd11axGSwCEs=";
+  };
+
   outputs = [
     "out"
     "dev"
@@ -33,13 +40,6 @@ stdenv.mkDerivation (finalAttrs: {
   ++ lib.optionals withIntrospection [
     "devdoc"
   ];
-
-  src = fetchFromGitHub {
-    owner = "libproxy";
-    repo = "libproxy";
-    tag = finalAttrs.version;
-    hash = "sha256-pkvmeD7O2EUDzw59/e7YcgiHDf2vvIXmd11axGSwCEs=";
-  };
 
   patches = [
   ]
@@ -107,14 +107,15 @@ stdenv.mkDerivation (finalAttrs: {
 
   passthru = {
     hardcodeGsettingsPatch = makeHardcodeGsettingsPatch {
+      inherit (finalAttrs) src;
+
       schemaIdToVariableMapping = {
         "org.gnome.system.proxy" = "gds";
+        "org.gnome.system.proxy.ftp" = "gds";
         "org.gnome.system.proxy.http" = "gds";
         "org.gnome.system.proxy.https" = "gds";
-        "org.gnome.system.proxy.ftp" = "gds";
         "org.gnome.system.proxy.socks" = "gds";
       };
-      inherit (finalAttrs) src;
     };
 
     updateScript =
@@ -133,10 +134,12 @@ stdenv.mkDerivation (finalAttrs: {
     homepage = "https://libproxy.github.io/libproxy/";
     license = lib.licenses.lgpl21Plus;
     platforms = lib.platforms.linux ++ lib.platforms.darwin;
+
     badPlatforms = [
       # Mandatory libpxbackend-1.0 shared library.
       lib.systems.inspect.platformPatterns.isStatic
     ];
+
     mainProgram = "proxy";
   };
 })

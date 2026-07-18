@@ -1,13 +1,12 @@
 {
-  fetchFromGitHub,
   lib,
+  fetchFromGitHub,
   python3Packages,
 }:
 
 python3Packages.buildPythonApplication (finalAttrs: {
   pname = "itch-dl";
   version = "0.7.2";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "DragoonAethis";
@@ -32,6 +31,8 @@ python3Packages.buildPythonApplication (finalAttrs: {
     urllib3
   ];
 
+  pyproject = true;
+
   pythonRelaxDeps = [
     "urllib3"
     "beautifulsoup4"
@@ -41,10 +42,10 @@ python3Packages.buildPythonApplication (finalAttrs: {
 
   meta = {
     description = "Itch.io game downloader with website, game jam, collection and library support";
-    mainProgram = "itch-dl";
     homepage = "https://github.com/DragoonAethis/itch-dl";
     changelog = "https://github.com/DragoonAethis/itch-dl/releases/tag/${finalAttrs.src.tag}";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ jopejoe1 ];
+    mainProgram = "itch-dl";
   };
 })

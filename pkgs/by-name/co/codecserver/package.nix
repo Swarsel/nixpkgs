@@ -1,11 +1,11 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
   cmake,
   pkg-config,
-  udev,
   protobuf_21,
+  udev,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -37,8 +37,8 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   meta = {
-    homepage = "https://github.com/jketterl/codecserver";
     description = "Modular audio codec server";
+    homepage = "https://github.com/jketterl/codecserver";
     license = lib.licenses.gpl3Only;
     platforms = lib.platforms.unix;
     mainProgram = "codecserver";

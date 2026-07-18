@@ -1,15 +1,15 @@
 {
   lib,
-  crystal,
-  fetchFromGitHub,
   fetchurl,
-  jq,
+  fetchFromGitHub,
   bash,
+  crystal,
+  jq,
 }:
 let
   icon = fetchurl {
-    url = "https://github.com/mawww/kakoune/raw/master/doc/kakoune_logo.svg";
     hash = "sha256-JxhIEmjiGrisaarA1sX1AfzNjHNIm9xjyPs/nG1uL/U=";
+    url = "https://github.com/mawww/kakoune/raw/master/doc/kakoune_logo.svg";
   };
 in
 crystal.buildCrystalPackage rec {
@@ -24,11 +24,6 @@ crystal.buildCrystalPackage rec {
   };
 
   buildInputs = [ bash ];
-  propagatedUserEnvPkgs = [ jq ];
-
-  format = "shards";
-  shardsFile = ./shards.nix;
-  lockFile = ./shard.lock;
 
   preConfigure = ''
     substituteInPlace src/kakoune/version.cr --replace \
@@ -48,15 +43,21 @@ crystal.buildCrystalPackage rec {
   '';
 
   dontCheckForBrokenSymlinks = true;
+  format = "shards";
+  lockFile = ./shard.lock;
+  propagatedUserEnvPkgs = [ jq ];
+  shardsFile = ./shards.nix;
 
   meta = {
-    homepage = "https://github.com/alexherbo2/kakoune.cr";
     description = "Command-line tool for Kakoune";
+    homepage = "https://github.com/alexherbo2/kakoune.cr";
     license = lib.licenses.unlicense;
+
     maintainers = with lib.maintainers; [
       philiptaron
       malte-v
     ];
+
     platforms = lib.platforms.unix;
   };
 }

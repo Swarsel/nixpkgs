@@ -3,8 +3,8 @@
   stdenv,
   fetchgit,
   rcinit ? "/etc/rc.d/rc.init",
-  rcshutdown ? "/etc/rc.d/rc.shutdown",
   rcreboot ? null,
+  rcshutdown ? "/etc/rc.d/rc.shutdown",
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -13,13 +13,16 @@ stdenv.mkDerivation (finalAttrs: {
 
   src = fetchgit {
     url = "https://git.suckless.org/sinit/";
-    hash = "sha256-VtXkgixgElKKOT26uKN9feXDVjjtSgTWvcgk5o5MLmw=";
     tag = "v${finalAttrs.version}";
+    hash = "sha256-VtXkgixgElKKOT26uKN9feXDVjjtSgTWvcgk5o5MLmw=";
   };
+
   buildInputs = [
     (lib.getOutput "static" stdenv.cc.libc)
   ];
+
   makeFlags = [ "PREFIX=$(out)" ];
+
   preConfigure =
     ""
     + (lib.optionalString (
@@ -34,11 +37,11 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Very minimal Linux init implementation from suckless.org";
-    mainProgram = "sinit";
+    homepage = "https://tools.suckless.org/sinit";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ raskin ];
     platforms = lib.platforms.linux;
-    homepage = "https://tools.suckless.org/sinit";
+    mainProgram = "sinit";
     downloadPage = "https://git.suckless.org/sinit";
   };
 })

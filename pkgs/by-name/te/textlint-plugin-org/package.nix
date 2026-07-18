@@ -22,8 +22,8 @@ buildNpmPackage rec {
 
   passthru.tests = textlint.testPackages {
     inherit (textlint-plugin-org) pname;
-    rule = textlint-rule-max-comma;
     plugin = textlint-plugin-org;
+    rule = textlint-rule-max-comma;
     testFile = ./test.org;
   };
 

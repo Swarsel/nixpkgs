@@ -17,13 +17,10 @@ rustPlatform.buildRustPackage (finalAttrs: {
   };
 
   cargoHash = "sha256-+VvKWY9CqUUkDKzG2nLG9ibkE6xwP3StTzlovBZH8O8=";
-
   # Tests require rustup.
   doCheck = false;
-
-  nativeInstallCheckHook = [ versionCheckHook ];
   doInstallCheck = true;
-
+  nativeInstallCheckHook = [ versionCheckHook ];
   passthru.updateScript = nix-update-script { };
 
   meta = {
@@ -32,7 +29,7 @@ rustPlatform.buildRustPackage (finalAttrs: {
     changelog = "https://github.com/godzie44/BugStalker/blob/v${finalAttrs.version}/CHANGELOG.md";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ jacg ];
-    mainProgram = "bs";
     platforms = [ "x86_64-linux" ];
+    mainProgram = "bs";
   };
 })

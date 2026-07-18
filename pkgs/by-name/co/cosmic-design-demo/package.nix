@@ -2,12 +2,12 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  rustPlatform,
-  just,
-  libcosmicAppHook,
   expat,
   fontconfig,
   freetype,
+  just,
+  libcosmicAppHook,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage {
@@ -21,11 +21,6 @@ rustPlatform.buildRustPackage {
     hash = "sha256-nWkiaegSjxgyGlpjXE9vzGjiDORaRCSoZJMDv0jtvaA=";
   };
 
-  cargoHash = "sha256-czfDtiSEmzmcLfpqv0/8sP8zDAEKh+pkQkGXdd5NskM=";
-
-  separateDebugInfo = true;
-  __structuredAttrs = true;
-
   nativeBuildInputs = [
     just
     libcosmicAppHook
@@ -37,6 +32,8 @@ rustPlatform.buildRustPackage {
     freetype
   ];
 
+  cargoHash = "sha256-czfDtiSEmzmcLfpqv0/8sP8zDAEKh+pkQkGXdd5NskM=";
+  __structuredAttrs = true;
   dontUseJustBuild = true;
   dontUseJustCheck = true;
 
@@ -50,12 +47,14 @@ rustPlatform.buildRustPackage {
     "target/${stdenv.hostPlatform.rust.cargoShortTarget}/release/cosmic-design-demo"
   ];
 
+  separateDebugInfo = true;
+
   meta = {
-    homepage = "https://github.com/pop-os/cosmic-design-demo";
     description = "Design Demo for the COSMIC Desktop Environment";
+    homepage = "https://github.com/pop-os/cosmic-design-demo";
     license = lib.licenses.mpl20;
-    teams = [ lib.teams.cosmic ];
     platforms = lib.platforms.linux;
     mainProgram = "cosmic-design-demo";
+    teams = [ lib.teams.cosmic ];
   };
 }

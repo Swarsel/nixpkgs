@@ -1,10 +1,10 @@
 {
   lib,
   fetchFromGitHub,
-  rustPlatform,
-  testers,
   gitMinimal,
+  rustPlatform,
   serie,
+  testers,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -19,9 +19,7 @@ rustPlatform.buildRustPackage (finalAttrs: {
   };
 
   cargoHash = "sha256-0VkBnKF3DEkaoqn4r6aUMteUSzabpoHyCrqBXQ0UELs=";
-
   nativeCheckInputs = [ gitMinimal ];
-
   passthru.tests.version = testers.testVersion { package = serie; };
 
   meta = {

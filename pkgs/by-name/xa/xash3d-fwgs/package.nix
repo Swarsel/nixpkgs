@@ -1,22 +1,21 @@
 {
   lib,
-  fetchFromGitHub,
   stdenv,
-  ensureNewerSourcesForZipFilesHook,
-  python3,
-  pkg-config,
-  wafHook,
+  fetchFromGitHub,
   SDL2,
-  libx11,
-  freetype,
-  opusfile,
-  libopus,
-  libogg,
-  libvorbis,
   bzip2,
+  ensureNewerSourcesForZipFilesHook,
+  freetype,
   hlsdk-portable,
+  libogg,
+  libopus,
+  libvorbis,
+  libx11,
   makeWrapper,
-
+  opusfile,
+  pkg-config,
+  python3,
+  wafHook,
   # Options
   buildSdk ? false,
   buildServer ? false,
@@ -33,6 +32,7 @@ stdenv.mkDerivation {
     repo = "xash3d-fwgs";
     rev = "255c9bcaed1cf02bc4c22276c8e39d5cdbfc0fb5";
     hash = "sha256-xYlGy/JG0LdQbdJ3zU5Eqbl7kVtabDuS6bfUi8C/Bug=";
+
     postCheckout = ''
       cd $out/3rdparty
       git submodule update --init --recursive \
@@ -64,6 +64,18 @@ stdenv.mkDerivation {
       libx11
     ];
 
+  postInstall = ''
+    mkdir -p $out/bin
+    mv $out/lib/${exe} $out/bin/${exe}-unwrapped
+    makeWrapper $out/bin/${exe}-unwrapped $out/bin/${exe} \
+      --set XASH3D_RODIR $out/lib/valve \
+      --run "export XASH3D_BASEDIR=\$HOME/.xash3d/" \
+      --prefix ${
+        if stdenv.hostPlatform.isDarwin then "DYLD_LIBRARY_PATH" else "LD_LIBRARY_PATH"
+      } : "$out/lib"
+  ''
+  + lib.optionalString buildSdk "cp -TR ${hlsdk-portable}/valve $out/lib/valve";
+
   dontAddPrefix = true;
 
   wafConfigureFlags = [
@@ -79,24 +91,12 @@ stdenv.mkDerivation {
 
   wafInstallFlags = [ "--destdir=${placeholder "out"}/lib" ];
 
-  postInstall = ''
-    mkdir -p $out/bin
-    mv $out/lib/${exe} $out/bin/${exe}-unwrapped
-    makeWrapper $out/bin/${exe}-unwrapped $out/bin/${exe} \
-      --set XASH3D_RODIR $out/lib/valve \
-      --run "export XASH3D_BASEDIR=\$HOME/.xash3d/" \
-      --prefix ${
-        if stdenv.hostPlatform.isDarwin then "DYLD_LIBRARY_PATH" else "LD_LIBRARY_PATH"
-      } : "$out/lib"
-  ''
-  + lib.optionalString buildSdk "cp -TR ${hlsdk-portable}/valve $out/lib/valve";
-
   meta = {
-    homepage = "https://github.com/FWGS/xash3d-fwgs";
     description = "Xash3D FWGS engine";
+    homepage = "https://github.com/FWGS/xash3d-fwgs";
     license = lib.licenses.gpl3Plus;
-    platforms = lib.platforms.all;
     maintainers = with lib.maintainers; [ r4v3n6101 ];
+    platforms = lib.platforms.all;
     mainProgram = exe;
   };
 }

@@ -23,8 +23,26 @@ in
         for usage
       '';
 
+      extraArgs = mkOption {
+        apply = escapeShellArgs;
+        default = [ ];
+
+        description = ''
+          Extra arguments to pass to the networkd-dispatcher command.
+        '';
+
+        type = types.listOf types.str;
+      };
+
       rules = mkOption {
         default = { };
+
+        description = ''
+          Declarative configuration of networkd-dispatcher rules. See
+          [upstream instructions](https://gitlab.com/craftyguy/networkd-dispatcher)
+          for an introduction and example scripts.
+        '';
+
         example = lib.literalExpression ''
           { "restart-tor" = {
               onState = ["routable" "off"];
@@ -39,15 +57,19 @@ in
             };
           };
         '';
-        description = ''
-          Declarative configuration of networkd-dispatcher rules. See
-          [upstream instructions](https://gitlab.com/craftyguy/networkd-dispatcher)
-          for an introduction and example scripts.
-        '';
+
         type = types.attrsOf (
           types.submodule {
             options = {
               onState = mkOption {
+                default = null;
+
+                description = ''
+                  List of names of the systemd-networkd operational states which
+                  should trigger the script. See {manpage}`networkctl(1)`
+                  for a description of the specific state type.
+                '';
+
                 type = types.listOf (
                   types.enum [
                     "routable"
@@ -61,49 +83,24 @@ in
                     "enslaved"
                   ]
                 );
-                default = null;
-                description = ''
-                  List of names of the systemd-networkd operational states which
-                  should trigger the script. See {manpage}`networkctl(1)`
-                  for a description of the specific state type.
-                '';
               };
+
               script = mkOption {
-                type = types.lines;
                 description = ''
                   Shell commands executed on specified operational states.
                 '';
+
+                type = types.lines;
               };
             };
           }
         );
       };
 
-      extraArgs = mkOption {
-        type = types.listOf types.str;
-        default = [ ];
-        description = ''
-          Extra arguments to pass to the networkd-dispatcher command.
-        '';
-        apply = escapeShellArgs;
-      };
-
     };
   };
 
   config = mkIf cfg.enable {
-
-    warnings = mkIf (!config.systemd.network.enable) [
-      "services.networkd-dispatcher will not execute any scripts unless networkd is enabled, either via `systemd.network.enable` or via `networking.useNetworkd`."
-    ];
-
-    systemd = {
-      packages = [ pkgs.networkd-dispatcher ];
-      services.networkd-dispatcher = {
-        wantedBy = [ "multi-user.target" ];
-        environment.networkd_dispatcher_args = cfg.extraArgs;
-      };
-    };
 
     services.networkd-dispatcher.extraArgs =
       let
@@ -136,6 +133,19 @@ in
         "--script-dir"
         "${scriptDir}"
       ];
+
+    systemd = {
+      packages = [ pkgs.networkd-dispatcher ];
+
+      services.networkd-dispatcher = {
+        environment.networkd_dispatcher_args = cfg.extraArgs;
+        wantedBy = [ "multi-user.target" ];
+      };
+    };
+
+    warnings = mkIf (!config.systemd.network.enable) [
+      "services.networkd-dispatcher will not execute any scripts unless networkd is enabled, either via `systemd.network.enable` or via `networking.useNetworkd`."
+    ];
 
   };
 }

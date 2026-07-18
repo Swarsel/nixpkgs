@@ -1,9 +1,9 @@
 {
-  bash,
+  lib,
   fetchFromGitHub,
+  bash,
   gawk,
   git,
-  lib,
   procps,
   stdenvNoCC,
   unixtools,
@@ -14,9 +14,9 @@
   wget,
   writeShellApplication,
   xdotool,
-  xwininfo,
-  xrandr,
   xprop,
+  xrandr,
+  xwininfo,
   yad,
 }:
 
@@ -31,16 +31,10 @@ stdenvNoCC.mkDerivation {
     hash = "sha256-mCcxdm8odHvTt4aP58RHY6NkaUMmMbQesUtY6dvIvOc=";
   };
 
-  passthru.updateScript = unstableGitUpdater {
-    tagPrefix = "v";
-  };
-
   outputs = [
     "out"
     "steamcompattool"
   ];
-
-  installFlags = [ "PREFIX=\${out}" ];
 
   nativeBuildInputs =
     let
@@ -61,6 +55,9 @@ stdenvNoCC.mkDerivation {
       # wrap here as that always corrupts $0 in bash scripts which STL uses to
       # install its compat tool.
       header = writeShellApplication {
+        bashOptions = [ ];
+        name = "stl-head";
+
         runtimeInputs = [
           bash
           gawk
@@ -77,9 +74,8 @@ stdenvNoCC.mkDerivation {
           xwininfo
           yad
         ];
-        name = "stl-head";
+
         text = "";
-        bashOptions = [ ];
       };
       fakeYad = writeShellApplication {
         name = "yad";
@@ -108,14 +104,22 @@ stdenvNoCC.mkDerivation {
       ln -sfn $out/bin/steamtinkerlaunch $steamcompattool/
     '';
 
+  installFlags = [ "PREFIX=\${out}" ];
+
+  passthru.updateScript = unstableGitUpdater {
+    tagPrefix = "v";
+  };
+
   meta = {
     description = "Linux wrapper tool for use with the Steam client for custom launch options and 3rd party programs";
-    mainProgram = "steamtinkerlaunch";
     homepage = "https://github.com/sonic2kk/steamtinkerlaunch";
     license = lib.licenses.gpl3;
+
     maintainers = with lib.maintainers; [
       surfaceflinger
     ];
+
     platforms = lib.platforms.linux;
+    mainProgram = "steamtinkerlaunch";
   };
 }

@@ -1,24 +1,24 @@
 {
   lib,
   stdenv,
-  fetchFromCodeberg,
   appstream,
   cmake,
   desktop-file-utils,
+  fetchFromCodeberg,
+  gdk-pixbuf,
   gettext,
   gjs,
   glib,
-  gtk4,
-  graphene,
   gobject-introspection,
-  pango,
+  graphene,
+  gtk4,
   harfbuzz,
-  gdk-pixbuf,
   libadwaita,
-  libmanette,
   libgudev,
+  libmanette,
   meson,
   ninja,
+  pango,
   pkg-config,
   wrapGAppsHook4,
 }:
@@ -34,9 +34,8 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-ZpBsJRQWRoAwp2G6CzVMtb+j71F0BbJuQ8vUnoZfEgc=";
   };
 
-  __structuredAttrs = true;
-
   strictDeps = true;
+
   nativeBuildInputs = [
     meson
     wrapGAppsHook4
@@ -55,18 +54,16 @@ stdenv.mkDerivation (finalAttrs: {
     gtk4
   ];
 
-  passthru.giTypelibInputs = [
-    glib
-    gtk4
-    graphene
-    gobject-introspection
-    pango
-    harfbuzz
-    gdk-pixbuf
-    libadwaita
-    libmanette
-    libgudev
-  ];
+  doInstallCheck = true;
+
+  installCheckPhase = ''
+    runHook preInstallCheck
+    (
+      set -x
+      env -i $out/bin/${finalAttrs.meta.mainProgram} --help
+    )
+    runHook postInstallCheck
+  '';
 
   preFixup = ''
     gappsWrapperArgs+=(
@@ -83,22 +80,27 @@ stdenv.mkDerivation (finalAttrs: {
     mv -v $out/share/gamepad-mirror/{page.codeberg.vendillah.GamepadMirror,gamepad-mirror}.src.gresource
   '';
 
-  doInstallCheck = true;
-  installCheckPhase = ''
-    runHook preInstallCheck
-    (
-      set -x
-      env -i $out/bin/${finalAttrs.meta.mainProgram} --help
-    )
-    runHook postInstallCheck
-  '';
+  __structuredAttrs = true;
+
+  passthru.giTypelibInputs = [
+    glib
+    gtk4
+    graphene
+    gobject-introspection
+    pango
+    harfbuzz
+    gdk-pixbuf
+    libadwaita
+    libmanette
+    libgudev
+  ];
 
   meta = {
     description = "Small Adwaita application to show game pad inputs using libmanette";
     homepage = "https://codeberg.org/vendillah/GamepadMirror";
     license = lib.licenses.gpl3Only;
     maintainers = with lib.maintainers; [ pbsds ];
-    mainProgram = "page.codeberg.vendillah.GamepadMirror";
     platforms = lib.platforms.linux;
+    mainProgram = "page.codeberg.vendillah.GamepadMirror";
   };
 })

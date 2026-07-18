@@ -1,9 +1,9 @@
 {
+  lib,
+  fetchFromGitHub,
   asciidoc,
   asciidoctor,
   deutex,
-  fetchFromGitHub,
-  lib,
   nix-update-script,
   python3,
   stdenvNoCC,
@@ -29,16 +29,17 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     deutex
   ];
 
+  makeFlags = [ "prefix=$(out)" ];
+
   preBuild = ''
     patchShebangs .
   '';
-
-  makeFlags = [ "prefix=$(out)" ];
 
   passthru.updateScript = nix-update-script { };
 
   meta = {
     description = "Game based on the Doom engine";
+
     longDescription = ''
       Freedoom is a complete, free content first person shooter game,
       based on the Doom engine.
@@ -49,6 +50,7 @@ stdenvNoCC.mkDerivation (finalAttrs: {
       engine](https://github.com/freedoom/freedoom#How-to-play) that
       can play it.
     '';
+
     homepage = "https://freedoom.github.io";
     license = lib.licenses.bsd3;
     maintainers = with lib.maintainers; [ yiyu ];

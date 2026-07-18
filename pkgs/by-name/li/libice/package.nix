@@ -3,14 +3,19 @@
   stdenv,
   fetchurl,
   pkg-config,
+  testers,
+  writeScript,
   xorgproto,
   xtrans,
-  writeScript,
-  testers,
 }:
 stdenv.mkDerivation (finalAttrs: {
   pname = "libice";
   version = "1.1.2";
+
+  src = fetchurl {
+    url = "mirror://xorg/individual/lib/libICE-${finalAttrs.version}.tar.xz";
+    hash = "sha256-l05O1BQiXrPHFphd+XCfTajSKmeiiQBmvG38ia0phiU=";
+  };
 
   outputs = [
     "out"
@@ -18,13 +23,7 @@ stdenv.mkDerivation (finalAttrs: {
     "doc"
   ];
 
-  src = fetchurl {
-    url = "mirror://xorg/individual/lib/libICE-${finalAttrs.version}.tar.xz";
-    hash = "sha256-l05O1BQiXrPHFphd+XCfTajSKmeiiQBmvG38ia0phiU=";
-  };
-
   strictDeps = true;
-
   nativeBuildInputs = [ pkg-config ];
 
   buildInputs = [
@@ -33,6 +32,8 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   passthru = {
+    tests.pkg-config = testers.testMetaPkgConfig finalAttrs.finalPackage;
+
     updateScript = writeScript "update-${finalAttrs.pname}" ''
       #!/usr/bin/env nix-shell
       #!nix-shell -i bash -p common-updater-scripts
@@ -41,7 +42,6 @@ stdenv.mkDerivation (finalAttrs: {
         | sort -V | tail -n1)"
       update-source-version ${finalAttrs.pname} "$version"
     '';
-    tests.pkg-config = testers.testMetaPkgConfig finalAttrs.finalPackage;
   };
 
   meta = {
@@ -49,7 +49,7 @@ stdenv.mkDerivation (finalAttrs: {
     homepage = "https://gitlab.freedesktop.org/xorg/lib/libice";
     license = lib.licenses.mitOpenGroup;
     maintainers = [ ];
-    pkgConfigModules = [ "ice" ];
     platforms = lib.platforms.unix;
+    pkgConfigModules = [ "ice" ];
   };
 })

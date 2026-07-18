@@ -3,15 +3,14 @@
   buildPythonPackage,
   fetchFromCodeberg,
   nix-update-script,
+  pytestCheckHook,
   setuptools,
   setuptools-scm,
-  pytestCheckHook,
 }:
 
 buildPythonPackage rec {
   pname = "inflate64";
   version = "1.0.2";
-  pyproject = true;
 
   src = fetchFromCodeberg {
     owner = "miurahr";
@@ -20,14 +19,16 @@ buildPythonPackage rec {
     hash = "sha256-qYTkL37IzvrhYYwj6i6X8WRSQxprNKgBnQEYRnztzjA=";
   };
 
+  nativeCheckInputs = [
+    pytestCheckHook
+  ];
+
   build-system = [
     setuptools
     setuptools-scm
   ];
 
-  nativeCheckInputs = [
-    pytestCheckHook
-  ];
+  pyproject = true;
 
   pythonImportsCheck = [
     "inflate64"
@@ -40,6 +41,7 @@ buildPythonPackage rec {
     homepage = "https://codeberg.org/miurahr/inflate64";
     changelog = "https://codeberg.org/miurahr/inflate64/src/tag/v${version}/docs/Changelog.rst#v${version}";
     license = lib.licenses.gpl2Plus;
+
     maintainers = with lib.maintainers; [
       pitkling
       PopeRigby

@@ -2,13 +2,13 @@
   lib,
   stdenv,
   fetchurl,
-  libGLU,
-  libGL,
   SDL,
-  libglut,
   SDL_mixer,
   autoconf,
   automake,
+  libGL,
+  libGLU,
+  libglut,
   libtool,
 }:
 
@@ -25,6 +25,7 @@ stdenv.mkDerivation (finalAttrs: {
     automake
     autoconf
   ];
+
   buildInputs = [
     libGLU
     libGL
@@ -36,10 +37,10 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Air combat simulator";
-    mainProgram = "gl-117";
     homepage = "https://sourceforge.net/projects/gl-117";
-    maintainers = with lib.maintainers; [ raskin ];
     license = lib.licenses.gpl2Plus;
+    maintainers = with lib.maintainers; [ raskin ];
     platforms = lib.platforms.linux;
+    mainProgram = "gl-117";
   };
 })

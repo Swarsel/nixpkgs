@@ -1,9 +1,10 @@
 {
   lib,
+  stdenv,
+  fetchFromGitHub,
   bzip2,
   cmake,
   eigen,
-  fetchFromGitHub,
   ffmpeg,
   fox_1_6,
   gdal,
@@ -14,24 +15,23 @@
   jdk,
   libGL,
   libGLU,
-  libx11,
   libjpeg,
   libpng,
   libtiff,
+  libx11,
   libxcrypt,
+  libxcursor,
+  libxext,
+  libxfixes,
+  libxft,
+  libxrandr,
+  libxrender,
   openscenegraph,
   proj,
   python3,
   python3Packages,
-  stdenv,
   swig,
   xercesc,
-  libxrender,
-  libxrandr,
-  libxft,
-  libxfixes,
-  libxext,
-  libxcursor,
   zlib,
 }:
 
@@ -86,6 +86,7 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "SUMO traffic simulator";
+
     longDescription = ''
       Eclipse SUMO is an open source, highly
       portable, microscopic and continuous traffic simulation package
@@ -93,6 +94,7 @@ stdenv.mkDerivation (finalAttrs: {
       simulation including pedestrians and comes with a large set of
       tools for scenario creation.
     '';
+
     homepage = "https://github.com/eclipse/sumo";
     license = lib.licenses.epl20;
     maintainers = [ ];

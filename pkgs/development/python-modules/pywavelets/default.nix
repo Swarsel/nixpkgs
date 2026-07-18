@@ -1,17 +1,16 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  meson-python,
+  buildPythonPackage,
   cython,
-  pytestCheckHook,
+  meson-python,
   numpy,
+  pytestCheckHook,
 }:
 
 buildPythonPackage rec {
   pname = "pywavelets";
   version = "1.9.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "PyWavelets";
@@ -20,6 +19,12 @@ buildPythonPackage rec {
     hash = "sha256-UVQWZPuOyUPcWI3cV2u+jQyAZN/RV3aKAT6BQxqRE4M=";
   };
 
+  nativeCheckInputs = [ pytestCheckHook ];
+
+  preCheck = ''
+    cd $out
+  '';
+
   build-system = [
     meson-python
     cython
@@ -27,12 +32,7 @@ buildPythonPackage rec {
   ];
 
   dependencies = [ numpy ];
-
-  nativeCheckInputs = [ pytestCheckHook ];
-
-  preCheck = ''
-    cd $out
-  '';
+  pyproject = true;
 
   # ensure compiled modules are present
   pythonImportsCheck = [

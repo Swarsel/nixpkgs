@@ -2,9 +2,9 @@
   lib,
   stdenv,
   fetchFromGitHub,
+  libqalculate,
   pkg-config,
   qt6,
-  libqalculate,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -18,12 +18,18 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-5u/YA5/k7JQclIqJUKvzGEenEhndo52m23XlFjkhw78=";
   };
 
+  postPatch = ''
+    substituteInPlace qalculate-qt.pro\
+      --replace "LRELEASE" "${qt6.qttools.dev}/bin/lrelease"
+  '';
+
   nativeBuildInputs = with qt6; [
     qmake
     pkg-config
     qttools
     wrapQtAppsHook
   ];
+
   buildInputs =
     with qt6;
     [
@@ -32,11 +38,6 @@ stdenv.mkDerivation (finalAttrs: {
       qtsvg
     ]
     ++ lib.optionals stdenv.hostPlatform.isLinux [ qtwayland ];
-
-  postPatch = ''
-    substituteInPlace qalculate-qt.pro\
-      --replace "LRELEASE" "${qt6.qttools.dev}/bin/lrelease"
-  '';
 
   postInstall = lib.optionalString stdenv.hostPlatform.isDarwin ''
     mkdir -p $out/Applications
@@ -47,9 +48,9 @@ stdenv.mkDerivation (finalAttrs: {
   meta = {
     description = "Ultimate desktop calculator";
     homepage = "http://qalculate.github.io";
-    maintainers = [ ];
     license = lib.licenses.gpl2Plus;
-    mainProgram = "qalculate-qt";
+    maintainers = [ ];
     platforms = lib.platforms.unix;
+    mainProgram = "qalculate-qt";
   };
 })

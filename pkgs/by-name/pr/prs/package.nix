@@ -1,17 +1,17 @@
 {
   lib,
-  rustPlatform,
+  stdenv,
   fetchFromGitLab,
-  installShellFiles,
-  pkg-config,
-  python3,
   glib,
   gpgme,
   gtk3,
-  stdenv,
-  writableTmpDirAsHomeHook,
-  versionCheckHook,
+  installShellFiles,
   nix-update-script,
+  pkg-config,
+  python3,
+  rustPlatform,
+  versionCheckHook,
+  writableTmpDirAsHomeHook,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -25,8 +25,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-oV5i93+4+ZI1ngZX6A68vXQ3NtjChK8AzgjZC3URmBw=";
   };
 
-  cargoHash = "sha256-430/6Ww+PUBwyDs5vWLsMyHDEfF9wxgYZd455G5sj/w=";
-
   nativeBuildInputs = [
     gpgme
     installShellFiles
@@ -39,16 +37,13 @@ rustPlatform.buildRustPackage (finalAttrs: {
     writableTmpDirAsHomeHook
   ];
 
-  cargoBuildFlags = [
-    "--no-default-features"
-    "--features=alias,backend-gpgme,clipboard,notify,select-fzf-bin,select-skim,tomb,totp"
-  ];
-
   buildInputs = [
     glib
     gpgme
     gtk3
   ];
+
+  cargoHash = "sha256-430/6Ww+PUBwyDs5vWLsMyHDEfF9wxgYZd455G5sj/w=";
 
   postInstall = lib.optionalString (stdenv.buildPlatform.canExecute stdenv.hostPlatform) ''
     for shell in bash fish zsh; do
@@ -56,10 +51,16 @@ rustPlatform.buildRustPackage (finalAttrs: {
     done
   '';
 
+  doInstallCheck = true;
+
   nativeInstallCheckInputs = [
     versionCheckHook
   ];
-  doInstallCheck = true;
+
+  cargoBuildFlags = [
+    "--no-default-features"
+    "--features=alias,backend-gpgme,clipboard,notify,select-fzf-bin,select-skim,tomb,totp"
+  ];
 
   passthru.updateScript = nix-update-script { };
 
@@ -67,10 +68,12 @@ rustPlatform.buildRustPackage (finalAttrs: {
     description = "Secure, fast & convenient password manager CLI using GPG and git to sync";
     homepage = "https://gitlab.com/timvisee/prs";
     changelog = "https://gitlab.com/timvisee/prs/-/blob/v${finalAttrs.version}/CHANGELOG.md";
+
     license = with lib.licenses; [
       lgpl3Only # lib
       gpl3Only # everything else
     ];
+
     maintainers = with lib.maintainers; [ colemickens ];
     mainProgram = "prs";
   };

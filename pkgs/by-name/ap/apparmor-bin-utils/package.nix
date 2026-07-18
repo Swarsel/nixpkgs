@@ -1,24 +1,22 @@
 {
   lib,
   stdenv,
-  pkg-config,
-  which,
   buildPackages,
-
   # apparmor deps
   libapparmor,
-
   # testing
   perl,
+  pkg-config,
+  which,
 }:
 stdenv.mkDerivation {
-  pname = "apparmor-bin-utils";
   inherit (libapparmor)
     version
     src
     ;
 
-  sourceRoot = "${libapparmor.src.name}/binutils";
+  pname = "apparmor-bin-utils";
+  strictDeps = true;
 
   nativeBuildInputs = [
     pkg-config
@@ -48,7 +46,7 @@ stdenv.mkDerivation {
     "SBINDIR=$(out)/bin"
   ];
 
-  strictDeps = true;
+  sourceRoot = "${libapparmor.src.name}/binutils";
 
   meta = libapparmor.meta // {
     description = "Mandatory access control system - binary user-land utilities";

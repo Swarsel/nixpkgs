@@ -3,21 +3,21 @@
   stdenv,
   fetchFromGitHub,
   bash-completion,
-  perl,
-  ncurses,
-  zlib,
-  sqlite,
-  libffi,
-  mcpp,
-  cmake,
   bison,
-  flex,
-  doxygen,
-  graphviz,
-  makeWrapper,
-  python3,
   callPackage,
+  cmake,
+  doxygen,
   fetchpatch,
+  flex,
+  graphviz,
+  libffi,
+  makeWrapper,
+  mcpp,
+  ncurses,
+  perl,
+  python3,
+  sqlite,
+  zlib,
 }:
 
 let
@@ -37,17 +37,17 @@ stdenv.mkDerivation (finalAttrs: {
     sha256 = "sha256-Umfeb1pGAeK5K3QDRD/labC6IJLsPPJ73ycsAV4yPNM=";
   };
 
+  outputs = [ "out" ];
+
   patches = [
     ./threads.patch
     ./includes.patch
     (fetchpatch {
+      hash = "sha256-L9SK3Dh2cRwxKfEckUSiGGTDsWIZ5B8hoYYcslJpZl4=";
       name = "replace-copy-assignment.patch";
       url = "https://github.com/souffle-lang/souffle/commit/73ebe789ec21772a0c5558639606354bfc3bcbd1.patch";
-      hash = "sha256-L9SK3Dh2cRwxKfEckUSiGGTDsWIZ5B8hoYYcslJpZl4=";
     })
   ];
-
-  hardeningDisable = lib.optionals stdenv.hostPlatform.isDarwin [ "strictoverflow" ];
 
   nativeBuildInputs = [
     bison
@@ -59,6 +59,7 @@ stdenv.mkDerivation (finalAttrs: {
     makeWrapper
     perl
   ];
+
   buildInputs = [
     bash-completion
     ncurses
@@ -67,6 +68,7 @@ stdenv.mkDerivation (finalAttrs: {
     libffi
     python3
   ];
+
   # these propagated inputs are needed for the compiled Souffle mode to work,
   # since generated compiler code uses them. TODO: maybe write a g++ wrapper
   # that adds these so we can keep the propagated inputs clean?
@@ -93,19 +95,20 @@ stdenv.mkDerivation (finalAttrs: {
                   "-I${lib.getDev ncurses}/include -I${lib.getDev zlib}/include -I${lib.getDev sqlite}/include -I${lib.getDev libffi}/include -I$out/include"
   '';
 
-  outputs = [ "out" ];
-
+  hardeningDisable = lib.optionals stdenv.hostPlatform.isDarwin [ "strictoverflow" ];
   passthru.tests = callPackage ./tests.nix { };
 
   meta = {
     description = "Translator of declarative Datalog programs into the C++ language";
     homepage = "https://souffle-lang.github.io/";
-    platforms = lib.platforms.unix;
+    license = lib.licenses.upl;
+
     maintainers = with lib.maintainers; [
       thoughtpolice
       wchresta
       markusscherer
     ];
-    license = lib.licenses.upl;
+
+    platforms = lib.platforms.unix;
   };
 })

@@ -1,5 +1,6 @@
 {
   lib,
+  stdenv,
   fetchFromSourcehut,
   libexif,
   libjpeg,
@@ -10,7 +11,6 @@
   opencv4,
   pkg-config,
   scdoc,
-  stdenv,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -24,15 +24,13 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-xqEjjAv27TUrEU/5j8Um7fTFjmIYZovyJCccbtHPuGo=";
   };
 
+  strictDeps = true;
+
   nativeBuildInputs = [
     meson
     ninja
     pkg-config
     scdoc
-  ];
-
-  depsBuildBuild = [
-    pkg-config
   ];
 
   buildInputs = [
@@ -43,7 +41,9 @@ stdenv.mkDerivation (finalAttrs: {
     opencv4
   ];
 
-  strictDeps = true;
+  depsBuildBuild = [
+    pkg-config
+  ];
 
   meta = {
     description = "Queueing megapixels post-processor";

@@ -1,6 +1,6 @@
 {
-  fetchFromGitHub,
   lib,
+  fetchFromGitHub,
   postgresql,
   postgresqlBuildExtension,
 }:
@@ -19,8 +19,8 @@ postgresqlBuildExtension {
   meta = {
     description = "PostgreSQL extension to easily add jsonb numeric";
     homepage = "https://github.com/furstenheim/jsonb_deep_sum";
+    license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ _1000101 ];
     platforms = postgresql.meta.platforms;
-    license = lib.licenses.mit;
   };
 }

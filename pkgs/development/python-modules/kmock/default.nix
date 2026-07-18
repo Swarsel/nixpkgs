@@ -1,30 +1,26 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
+  # dependencies
+  aiohttp,
+  aresponses,
+  attrs,
+  buildPythonPackage,
+  jsonpatch,
+  looptime,
+  pytest-asyncio,
+  # tests
+  pytestCheckHook,
   # build-system
   setuptools,
   setuptools-scm,
-
-  # dependencies
-  aiohttp,
-  attrs,
-  jsonpatch,
-  yarl,
   typing-extensions,
-
-  # tests
-  pytestCheckHook,
-  pytest-asyncio,
-  looptime,
-  aresponses,
+  yarl,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "kmock";
   version = "0.6";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "nolar";
@@ -32,6 +28,15 @@ buildPythonPackage (finalAttrs: {
     tag = finalAttrs.version;
     hash = "sha256-qpRuSWwaPEgfE+wN1ADSyn2AbXPDzZfZ7dOf8Vw0zJA=";
   };
+
+  nativeCheckInputs = [
+    pytestCheckHook
+    pytest-asyncio
+    aresponses
+    looptime
+  ];
+
+  __darwinAllowLocalNetworking = true;
 
   build-system = [
     setuptools
@@ -46,15 +51,6 @@ buildPythonPackage (finalAttrs: {
     typing-extensions
   ];
 
-  pythonImportsCheck = [ "kmock" ];
-
-  nativeCheckInputs = [
-    pytestCheckHook
-    pytest-asyncio
-    aresponses
-    looptime
-  ];
-
   disabledTests = [
     # Could not contact DNS servers
     "test_bare_host_resolution"
@@ -67,7 +63,8 @@ buildPythonPackage (finalAttrs: {
     "test_sync_condition_notifying"
   ];
 
-  __darwinAllowLocalNetworking = true;
+  pyproject = true;
+  pythonImportsCheck = [ "kmock" ];
 
   meta = {
     description = "HTTP/API/Kubernetes Mock Server in Python";

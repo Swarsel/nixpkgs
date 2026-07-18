@@ -19,6 +19,11 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-SxDGt7nPVkSxwRF/lMmcch1h+C2Dyh6GZUXoZjnXWb4=";
   };
 
+  outputs = [
+    "dev"
+    "out"
+  ];
+
   patches = [
     # libwebm does not generate cmake exports by default,
     # which are necessary to find and use it as build-dependency
@@ -28,11 +33,6 @@ stdenv.mkDerivation (finalAttrs: {
 
   nativeBuildInputs = [
     cmake
-  ];
-
-  outputs = [
-    "dev"
-    "out"
   ];
 
   cmakeFlags = [

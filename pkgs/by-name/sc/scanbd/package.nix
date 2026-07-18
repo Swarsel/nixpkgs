@@ -2,10 +2,10 @@
   lib,
   stdenv,
   fetchurl,
-  pkg-config,
   dbus,
   libconfuse,
   libjpeg,
+  pkg-config,
   sane-backends,
   systemd,
 }:
@@ -15,11 +15,12 @@ stdenv.mkDerivation (finalAttrs: {
   version = "1.5.1";
 
   src = fetchurl {
-    sha256 = "0pvy4qirfjdfm8aj6x5rkbgl7hk3jfa2s21qkk8ic5dqfjjab75n";
     url = "mirror://sourceforge/scanbd/scanbd-${finalAttrs.version}.tgz";
+    sha256 = "0pvy4qirfjdfm8aj6x5rkbgl7hk3jfa2s21qkk8ic5dqfjjab75n";
   };
 
   nativeBuildInputs = [ pkg-config ];
+
   buildInputs = [
     dbus
     libconfuse
@@ -40,6 +41,7 @@ stdenv.mkDerivation (finalAttrs: {
     "ac_cv_func_realloc_0_nonnull=yes"
   ];
 
+  doCheck = true;
   enableParallelBuilding = true;
 
   installFlags = [
@@ -47,10 +49,9 @@ stdenv.mkDerivation (finalAttrs: {
     "scannerconfdir=$(scanbdconfdir)/scanner.d"
   ];
 
-  doCheck = true;
-
   meta = {
     description = "Scanner button daemon";
+
     longDescription = ''
       scanbd polls a scanner's buttons, looking for button presses, function
       knob changes, or other scanner events such as paper inserts and removals,
@@ -68,9 +69,10 @@ stdenv.mkDerivation (finalAttrs: {
       scanbd can use all sane-backends or some special backends from the (old)
       scanbuttond project.
     '';
+
     homepage = "http://scanbd.sourceforge.net/";
-    downloadPage = "https://sourceforge.net/projects/scanbd/";
     license = lib.licenses.gpl2Plus;
     platforms = lib.platforms.linux;
+    downloadPage = "https://sourceforge.net/projects/scanbd/";
   };
 })

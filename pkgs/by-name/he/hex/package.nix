@@ -1,9 +1,9 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
-  testers,
   hex,
+  rustPlatform,
+  testers,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -20,16 +20,16 @@ rustPlatform.buildRustPackage (finalAttrs: {
   cargoHash = "sha256-faZTjori9MXzH4jC73G498WI7THFkGdh31fFb/F6fvA=";
 
   passthru.tests.version = testers.testVersion {
-    package = hex;
     version = "hx ${finalAttrs.version}";
+    package = hex;
   };
 
   meta = {
     description = "Futuristic take on hexdump, made in Rust";
     homepage = "https://github.com/sitkevij/hex";
     changelog = "https://github.com/sitkevij/hex/releases/tag/v${finalAttrs.version}";
-    mainProgram = "hx";
     license = lib.licenses.mit;
     maintainers = [ ];
+    mainProgram = "hx";
   };
 })

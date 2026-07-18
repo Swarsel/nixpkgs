@@ -21,10 +21,10 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Netplay server for Mednafen";
-    mainProgram = "mednafen-server";
     homepage = "https://mednafen.github.io/";
     license = lib.licenses.gpl2Plus;
     maintainers = [ ];
     platforms = lib.platforms.unix;
+    mainProgram = "mednafen-server";
   };
 })

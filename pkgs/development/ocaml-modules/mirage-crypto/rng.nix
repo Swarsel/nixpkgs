@@ -2,29 +2,19 @@
   lib,
   stdenv,
   buildDunePackage,
+  digestif,
+  dune-configurator,
+  duration,
+  logs,
   mirage-crypto,
   ohex,
   ounit2,
   randomconv,
-  dune-configurator,
-  digestif,
-  duration,
-  logs,
 }:
 
 buildDunePackage {
-  pname = "mirage-crypto-rng";
-
-  minimalOCamlVersion = "4.14";
-
   inherit (mirage-crypto) version src;
-
-  doCheck = true;
-  checkInputs = [
-    ohex
-    ounit2
-    randomconv
-  ];
+  pname = "mirage-crypto-rng";
 
   # test_entropy relies on timer jitter and is flaky on x86_64-darwin.
   postPatch = lib.optionalString (stdenv.hostPlatform.isDarwin && stdenv.hostPlatform.isx86_64) ''
@@ -35,12 +25,23 @@ buildDunePackage {
   '';
 
   buildInputs = [ dune-configurator ];
+
   propagatedBuildInputs = [
     digestif
     mirage-crypto
     duration
     logs
   ];
+
+  doCheck = true;
+
+  checkInputs = [
+    ohex
+    ounit2
+    randomconv
+  ];
+
+  minimalOCamlVersion = "4.14";
 
   meta = mirage-crypto.meta // {
     description = "Cryptographically secure PRNG";

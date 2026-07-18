@@ -1,68 +1,62 @@
 {
   lib,
   stdenv,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # build-system
-  cython,
-  setuptools,
-
+  # optional-dependencies
+  adlfs,
+  # tests
+  azure-core,
+  azure-identity,
+  azure-storage-blob,
+  boto3,
+  buildPythonPackage,
   # dependencies
   cachetools,
   click,
-  fsspec,
-  mmh3,
-  pydantic,
-  pyparsing,
-  pyroaring,
-  requests,
-  rich,
-  strictyaml,
-  tenacity,
-  zstandard,
-
-  # optional-dependencies
-  adlfs,
-  google-cloud-bigquery,
+  # build-system
+  cython,
   datafusion,
   duckdb,
-  pyarrow,
-  boto3,
-  azure-identity,
-  google-auth,
+  fastavro,
+  fsspec,
   gcsfs,
+  google-auth,
+  google-cloud-bigquery,
   huggingface-hub,
-  thrift,
   kerberos,
+  mmh3,
+  moto,
   pandas,
   polars,
-  pyiceberg-core,
-  ray,
-  s3fs,
-  python-snappy,
   psycopg2-binary,
-  sqlalchemy,
-
-  # tests
-  azure-core,
-  azure-storage-blob,
-  fastavro,
-  moto,
+  pyarrow,
+  pydantic,
+  pyiceberg-core,
+  pyparsing,
+  pyroaring,
   pyspark,
-  pytestCheckHook,
   pytest-lazy-fixture,
   pytest-mock,
   pytest-timeout,
-  requests-mock,
+  pytestCheckHook,
+  python-snappy,
   pythonAtLeast,
+  ray,
+  requests,
+  requests-mock,
+  rich,
+  s3fs,
+  setuptools,
+  sqlalchemy,
+  strictyaml,
+  tenacity,
+  thrift,
+  zstandard,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "pyiceberg";
   version = "0.11.1";
-  pyproject = true;
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "apache";
@@ -71,117 +65,8 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-MjBvLJOnjtpIwBMkI+81S6aipye+PnbrC8T317Qj6rY=";
   };
 
-  build-system = [
-    cython
-    setuptools
-  ];
-
   # Prevents the cython build to fail silently
   env.CIBUILDWHEEL = "1";
-
-  dependencies = [
-    cachetools
-    click
-    fsspec
-    mmh3
-    pydantic
-    pyparsing
-    pyroaring
-    requests
-    rich
-    strictyaml
-    tenacity
-    zstandard
-  ];
-
-  optional-dependencies = {
-    adlfs = [
-      adlfs
-    ];
-    bigquery = [
-      google-cloud-bigquery
-    ];
-    bodo = [
-      # bodo
-    ];
-    daft = [
-      # daft
-    ];
-    datafusion = [
-      datafusion
-    ];
-    duckdb = [
-      duckdb
-      pyarrow
-    ];
-    dynamodb = [
-      boto3
-    ];
-    entra-auth = [
-      azure-identity
-    ];
-    gcp-auth = [
-      google-auth
-    ];
-    gcsfs = [
-      gcsfs
-    ];
-    glue = [
-      boto3
-    ];
-    hf = [
-      huggingface-hub
-    ];
-    hive = [
-      thrift
-    ];
-    hive-kerberos = [
-      kerberos
-      thrift
-      # thrift-sasl
-    ];
-    pandas = [
-      pandas
-      pyarrow
-    ];
-    polars = [
-      polars
-    ];
-    pyarrow = [
-      pyarrow
-      pyiceberg-core
-    ];
-    pyiceberg-core = [
-      pyiceberg-core
-    ];
-    ray = [
-      pandas
-      pyarrow
-      ray
-    ];
-    rest-sigv4 = [
-      boto3
-    ];
-    s3fs = [
-      s3fs
-    ];
-    snappy = [
-      python-snappy
-    ];
-    sql-postgres = [
-      psycopg2-binary
-      sqlalchemy
-    ];
-    sql-sqlite = [
-      sqlalchemy
-    ];
-  };
-
-  pythonImportsCheck = [
-    "pyiceberg"
-    # Compiled avro decoder (cython)
-    "pyiceberg.avro.decoder_fast"
-  ];
 
   nativeCheckInputs = [
     azure-core
@@ -207,16 +92,32 @@ buildPythonPackage (finalAttrs: {
   ++ finalAttrs.passthru.optional-dependencies.sql-sqlite
   ++ moto.optional-dependencies.server;
 
-  pytestFlags = [
-    # ResourceWarning: unclosed database in <sqlite3.Connection object at 0x7ffe7c6f4220>
-    "-Wignore::ResourceWarning"
-    # Using `@model_validator` with mode='after' on a classmethod is deprecated
-    "-Wignore::pydantic.warnings.PydanticDeprecatedSince212"
-  ];
-
   preCheck = ''
     rm -rf pyiceberg
   '';
+
+  __darwinAllowLocalNetworking = true;
+  __structuredAttrs = true;
+
+  build-system = [
+    cython
+    setuptools
+  ];
+
+  dependencies = [
+    cachetools
+    click
+    fsspec
+    mmh3
+    pydantic
+    pyparsing
+    pyroaring
+    requests
+    rich
+    strictyaml
+    tenacity
+    zstandard
+  ];
 
   disabledTestPaths = [
     # Several errors:
@@ -313,7 +214,126 @@ buildPythonPackage (finalAttrs: {
     "test_read_not_struct_type"
   ];
 
-  __darwinAllowLocalNetworking = true;
+  optional-dependencies = {
+    adlfs = [
+      adlfs
+    ];
+
+    bigquery = [
+      google-cloud-bigquery
+    ];
+
+    bodo = [
+      # bodo
+    ];
+
+    daft = [
+      # daft
+    ];
+
+    datafusion = [
+      datafusion
+    ];
+
+    duckdb = [
+      duckdb
+      pyarrow
+    ];
+
+    dynamodb = [
+      boto3
+    ];
+
+    entra-auth = [
+      azure-identity
+    ];
+
+    gcp-auth = [
+      google-auth
+    ];
+
+    gcsfs = [
+      gcsfs
+    ];
+
+    glue = [
+      boto3
+    ];
+
+    hf = [
+      huggingface-hub
+    ];
+
+    hive = [
+      thrift
+    ];
+
+    hive-kerberos = [
+      kerberos
+      thrift
+      # thrift-sasl
+    ];
+
+    pandas = [
+      pandas
+      pyarrow
+    ];
+
+    polars = [
+      polars
+    ];
+
+    pyarrow = [
+      pyarrow
+      pyiceberg-core
+    ];
+
+    pyiceberg-core = [
+      pyiceberg-core
+    ];
+
+    ray = [
+      pandas
+      pyarrow
+      ray
+    ];
+
+    rest-sigv4 = [
+      boto3
+    ];
+
+    s3fs = [
+      s3fs
+    ];
+
+    snappy = [
+      python-snappy
+    ];
+
+    sql-postgres = [
+      psycopg2-binary
+      sqlalchemy
+    ];
+
+    sql-sqlite = [
+      sqlalchemy
+    ];
+  };
+
+  pyproject = true;
+
+  pytestFlags = [
+    # ResourceWarning: unclosed database in <sqlite3.Connection object at 0x7ffe7c6f4220>
+    "-Wignore::ResourceWarning"
+    # Using `@model_validator` with mode='after' on a classmethod is deprecated
+    "-Wignore::pydantic.warnings.PydanticDeprecatedSince212"
+  ];
+
+  pythonImportsCheck = [
+    "pyiceberg"
+    # Compiled avro decoder (cython)
+    "pyiceberg.avro.decoder_fast"
+  ];
 
   meta = {
     description = "Python library for programmatic access to Apache Iceberg";

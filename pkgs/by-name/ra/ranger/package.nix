@@ -1,26 +1,25 @@
 {
   lib,
   fetchFromGitHub,
-  python3Packages,
-  file,
-  coreutils,
   bashNonInteractive,
-  less,
+  coreutils,
+  file,
   highlight,
-  w3m,
   imagemagick,
-  imagePreviewSupport ? true,
-  sixelPreviewSupport ? true,
-  neoVimSupport ? true,
-  improvedEncodingDetection ? true,
-  rightToLeftTextSupport ? false,
+  less,
   nix-update-script,
+  python3Packages,
+  w3m,
+  imagePreviewSupport ? true,
+  improvedEncodingDetection ? true,
+  neoVimSupport ? true,
+  rightToLeftTextSupport ? false,
+  sixelPreviewSupport ? true,
 }:
 
 python3Packages.buildPythonApplication {
   pname = "ranger";
   version = "1.9.4-unstable-2026-04-26";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "ranger";
@@ -28,37 +27,6 @@ python3Packages.buildPythonApplication {
     rev = "51e19b8c7f30c241bb7266deb86e05c5984d6ea9";
     hash = "sha256-qWI/7F2zOUm7QuH4RtfFOXlB1OZ6NrGfWLt5FlW+gqA=";
   };
-
-  build-system = with python3Packages; [
-    setuptools
-  ];
-
-  dependencies =
-    [ ]
-    ++ lib.optionals imagePreviewSupport [ python3Packages.pillow ]
-    ++ lib.optionals neoVimSupport [ python3Packages.pynvim ]
-    ++ lib.optionals improvedEncodingDetection [ python3Packages.chardet ]
-    ++ lib.optionals rightToLeftTextSupport [ python3Packages.python-bidi ];
-
-  nativeCheckInputs = with python3Packages; [
-    pytestCheckHook
-    astroid
-    pylint
-  ];
-
-  makeWrapperArgs = [
-    "--prefix"
-    "PATH"
-    ":"
-    (lib.makeBinPath (
-      [
-        file
-        coreutils
-        bashNonInteractive
-      ]
-      ++ lib.optionals sixelPreviewSupport [ imagemagick ]
-    ))
-  ];
 
   postPatch = ''
     substituteInPlace ranger/__init__.py \
@@ -82,6 +50,39 @@ python3Packages.buildPythonApplication {
       --replace "set preview_images false" "set preview_images true"
   '';
 
+  nativeCheckInputs = with python3Packages; [
+    pytestCheckHook
+    astroid
+    pylint
+  ];
+
+  build-system = with python3Packages; [
+    setuptools
+  ];
+
+  dependencies =
+    [ ]
+    ++ lib.optionals imagePreviewSupport [ python3Packages.pillow ]
+    ++ lib.optionals neoVimSupport [ python3Packages.pynvim ]
+    ++ lib.optionals improvedEncodingDetection [ python3Packages.chardet ]
+    ++ lib.optionals rightToLeftTextSupport [ python3Packages.python-bidi ];
+
+  makeWrapperArgs = [
+    "--prefix"
+    "PATH"
+    ":"
+    (lib.makeBinPath (
+      [
+        file
+        coreutils
+        bashNonInteractive
+      ]
+      ++ lib.optionals sixelPreviewSupport [ imagemagick ]
+    ))
+  ];
+
+  pyproject = true;
+
   passthru.updateScript = nix-update-script {
     extraArgs = [ "--version=branch" ];
   };
@@ -90,10 +91,12 @@ python3Packages.buildPythonApplication {
     description = "File manager with minimalistic curses interface";
     homepage = "https://ranger.fm/";
     license = lib.licenses.gpl3Only;
-    platforms = lib.platforms.unix;
+
     maintainers = with lib.maintainers; [
       toonn
     ];
+
+    platforms = lib.platforms.unix;
     mainProgram = "ranger";
   };
 }

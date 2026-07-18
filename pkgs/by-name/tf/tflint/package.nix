@@ -1,13 +1,13 @@
 {
   lib,
-  buildGo125Module,
   fetchFromGitHub,
-  versionCheckHook,
-  runCommand,
+  buildGo125Module,
   makeWrapper,
+  runCommand,
+  symlinkJoin,
   tflint,
   tflint-plugins,
-  symlinkJoin,
+  versionCheckHook,
 }:
 
 buildGo125Module (finalAttrs: {
@@ -22,19 +22,16 @@ buildGo125Module (finalAttrs: {
   };
 
   vendorHash = "sha256-R4NmHSyay0FGpOSMNPbXWxNJFH3lhyWxGeJsNefkBrc=";
-
   doCheck = false;
-
-  subPackages = [ "." ];
+  doInstallCheck = true;
+  nativeInstallCheckInputs = [ versionCheckHook ];
 
   ldflags = [
     "-s"
     "-w"
   ];
 
-  doInstallCheck = true;
-
-  nativeInstallCheckInputs = [ versionCheckHook ];
+  subPackages = [ "." ];
 
   passthru.withPlugins =
     plugins:
@@ -47,8 +44,8 @@ buildGo125Module (finalAttrs: {
     in
     runCommand "tflint-with-plugins-${finalAttrs.version}"
       {
-        nativeBuildInputs = [ makeWrapper ];
         inherit (finalAttrs) version;
+        nativeBuildInputs = [ makeWrapper ];
       }
       ''
         makeWrapper ${tflint}/bin/tflint $out/bin/tflint \
@@ -57,10 +54,10 @@ buildGo125Module (finalAttrs: {
 
   meta = {
     description = "Terraform linter focused on possible errors, best practices, and so on";
-    mainProgram = "tflint";
     homepage = "https://github.com/terraform-linters/tflint";
     changelog = "https://github.com/terraform-linters/tflint/blob/v${finalAttrs.version}/CHANGELOG.md";
     license = lib.licenses.mpl20;
     maintainers = [ ];
+    mainProgram = "tflint";
   };
 })

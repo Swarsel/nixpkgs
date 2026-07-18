@@ -1,12 +1,11 @@
 {
+  lib,
+  fetchFromGitHub,
   buildPythonPackage,
   explorerscript,
-  fetchFromGitHub,
-  setuptools,
   gobject-introspection,
   gtk3,
   gtksourceview4,
-  lib,
   ndspy,
   nest-asyncio,
   pmdsky-debug-py,
@@ -14,6 +13,7 @@
   pygobject3,
   pygtkspellcheck,
   range-typed-integers,
+  setuptools,
   skytemple-files,
   skytemple-icons,
   skytemple-ssb-emulator,
@@ -23,7 +23,6 @@
 buildPythonPackage rec {
   pname = "skytemple-ssb-debugger";
   version = "1.8.3";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "SkyTemple";
@@ -32,16 +31,19 @@ buildPythonPackage rec {
     hash = "sha256-J4UAxNxB2QSaTW1r1xL9wKGTISv0H4RdDnRiZp4idts=";
   };
 
-  build-system = [ setuptools ];
+  nativeBuildInputs = [
+    gobject-introspection
+    wrapGAppsHook3
+  ];
 
   buildInputs = [
     gtk3
     gtksourceview4
   ];
-  nativeBuildInputs = [
-    gobject-introspection
-    wrapGAppsHook3
-  ];
+
+  doCheck = false; # requires Pokémon Mystery Dungeon ROM
+  build-system = [ setuptools ];
+
   dependencies = [
     explorerscript
     ndspy
@@ -56,14 +58,14 @@ buildPythonPackage rec {
     skytemple-ssb-emulator
   ];
 
-  doCheck = false; # requires Pokémon Mystery Dungeon ROM
+  pyproject = true;
   pythonImportsCheck = [ "skytemple_ssb_debugger" ];
 
   meta = {
-    homepage = "https://github.com/SkyTemple/skytemple-ssb-debugger";
     description = "Script Engine Debugger for Pokémon Mystery Dungeon Explorers of Sky";
-    mainProgram = "skytemple-ssb-debugger";
+    homepage = "https://github.com/SkyTemple/skytemple-ssb-debugger";
     license = lib.licenses.gpl3Plus;
     maintainers = with lib.maintainers; [ marius851000 ];
+    mainProgram = "skytemple-ssb-debugger";
   };
 }

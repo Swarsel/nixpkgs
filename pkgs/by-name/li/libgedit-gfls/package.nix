@@ -1,38 +1,38 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitLab,
   docbook-xsl-nons,
+  gitUpdater,
+  glib,
   gobject-introspection,
   gtk-doc,
+  gtk3,
   meson,
+  mesonEmulatorHook,
   ninja,
   pkg-config,
-  mesonEmulatorHook,
-  gtk3,
-  glib,
-  gitUpdater,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
   pname = "libgedit-gfls";
   version = "0.4.2";
 
+  src = fetchFromGitLab {
+    owner = "gedit";
+    repo = "libgedit-gfls";
+    tag = finalAttrs.version;
+    hash = "sha256-8nr8rBvSBLadhxHipZiWOJj663R9jP6kFurSKp3n0U0=";
+    domain = "gitlab.gnome.org";
+    forceFetchGit = true; # To avoid occasional 501 failures.
+    group = "World";
+  };
+
   outputs = [
     "out"
     "dev"
     "devdoc"
   ];
-
-  src = fetchFromGitLab {
-    domain = "gitlab.gnome.org";
-    group = "World";
-    owner = "gedit";
-    repo = "libgedit-gfls";
-    tag = finalAttrs.version;
-    forceFetchGit = true; # To avoid occasional 501 failures.
-    hash = "sha256-8nr8rBvSBLadhxHipZiWOJj663R9jP6kFurSKp3n0U0=";
-  };
 
   nativeBuildInputs = [
     docbook-xsl-nons
@@ -58,10 +58,10 @@ stdenv.mkDerivation (finalAttrs: {
   passthru.updateScript = gitUpdater { ignoredVersions = "(alpha|beta|rc).*"; };
 
   meta = {
-    homepage = "https://gitlab.gnome.org/World/gedit/libgedit-gfls";
     description = "Module dedicated to file loading and saving";
-    maintainers = with lib.maintainers; [ bobby285271 ];
+    homepage = "https://gitlab.gnome.org/World/gedit/libgedit-gfls";
     license = lib.licenses.lgpl3Plus;
+    maintainers = with lib.maintainers; [ bobby285271 ];
     platforms = lib.platforms.linux;
   };
 })

@@ -1,14 +1,14 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
+  alsa-lib,
+  fetchpatch,
+  libjack2,
+  libsForQt5,
   pkg-config,
   scons,
-  libjack2,
   jack ? libjack2,
-  alsa-lib,
-  libsForQt5,
-  fetchpatch,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -31,6 +31,7 @@ stdenv.mkDerivation (finalAttrs: {
     pkg-config
     libsForQt5.wrapQtAppsHook
   ];
+
   buildInputs = [
     libsForQt5.qtbase
     jack
@@ -43,9 +44,9 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Matrix-Mixer for the Jack-Audio-connection-Kit";
-    mainProgram = "jackmix";
     homepage = "https://github.com/kampfschlaefer/jackmix";
     license = lib.licenses.gpl2Only;
     platforms = lib.platforms.linux;
+    mainProgram = "jackmix";
   };
 })

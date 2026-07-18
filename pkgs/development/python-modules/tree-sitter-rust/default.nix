@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   setuptools,
   tree-sitter,
 }:
@@ -9,7 +9,6 @@
 buildPythonPackage rec {
   pname = "tree-sitter-rust";
   version = "0.24.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "tree-sitter";
@@ -17,6 +16,9 @@ buildPythonPackage rec {
     tag = "v${version}";
     hash = "sha256-y3sJURlSTM7LRRN5WGIAeslsdRZU522Tfcu6dnXH/XQ=";
   };
+
+  # There are no tests
+  doCheck = false;
 
   build-system = [
     setuptools
@@ -28,8 +30,7 @@ buildPythonPackage rec {
     ];
   };
 
-  # There are no tests
-  doCheck = false;
+  pyproject = true;
   pythonImportsCheck = [ "tree_sitter_rust" ];
 
   meta = {

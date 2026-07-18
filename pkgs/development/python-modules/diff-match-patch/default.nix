@@ -9,21 +9,20 @@
 buildPythonPackage rec {
   pname = "diff-match-patch";
   version = "20241021";
-  pyproject = true;
 
   src = fetchPypi {
-    pname = "diff_match_patch";
     inherit version;
     hash = "sha256-vq5XqZ+kgIRTKTXuKWi4Zh24YYYuyCxvIfSs3W2DUHM=";
+    pname = "diff_match_patch";
   };
 
-  dependencies = [ flit-core ];
-
   nativeCheckInputs = [ unittestCheckHook ];
+  dependencies = [ flit-core ];
+  pyproject = true;
 
   meta = {
-    homepage = "https://github.com/diff-match-patch-python/diff-match-patch";
     description = "Diff, Match and Patch libraries for Plain Text";
+    homepage = "https://github.com/diff-match-patch-python/diff-match-patch";
     license = lib.licenses.asl20;
     maintainers = [ ];
   };

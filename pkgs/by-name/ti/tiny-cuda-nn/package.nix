@@ -1,15 +1,15 @@
 {
-  config,
-  cmake,
-  cudaPackages,
-  fetchFromGitHub,
   lib,
-  ninja,
-  python3Packages ? { },
-  pythonSupport ? false,
   stdenv,
+  fetchFromGitHub,
+  cmake,
+  config,
+  cudaPackages,
+  ninja,
   symlinkJoin,
   which,
+  python3Packages ? { },
+  pythonSupport ? false,
 }:
 let
   inherit (lib) lists strings;
@@ -47,17 +47,16 @@ in
 stdenv.mkDerivation (finalAttrs: {
   pname = "tiny-cuda-nn";
   version = "2.0";
-  strictDeps = true;
-
-  format = strings.optionalString pythonSupport "setuptools";
 
   src = fetchFromGitHub {
     owner = "NVlabs";
     repo = "tiny-cuda-nn";
     tag = "v${finalAttrs.version}";
-    fetchSubmodules = true;
     hash = "sha256-m73lnXufFQOoYHko8x/gIT2UAuHADAGRxVqDSbW+KlY=";
+    fetchSubmodules = true;
   };
+
+  strictDeps = true;
 
   nativeBuildInputs = [
     cmake
@@ -91,31 +90,12 @@ stdenv.mkDerivation (finalAttrs: {
     ]
   );
 
-  # NOTE: We cannot use pythonImportsCheck for this module because it uses torch to immediately
-  #   initialize CUDA and GPU access is not allowed in the nix build environment.
-  # NOTE: There are no tests for the C++ library or the python bindings, so we just skip the check
-  #   phase -- we're not missing anything.
-  doCheck = false;
-
   preConfigure = ''
     export TCNN_CUDA_ARCHITECTURES="${cudaArchitecturesString}"
     export CUDA_HOME="${cuda-native-redist}"
     export LIBRARY_PATH="${cuda-native-redist}/lib/stubs:$LIBRARY_PATH"
     export CC="${backendStdenv.cc}/bin/cc"
     export CXX="${backendStdenv.cc}/bin/c++"
-  '';
-
-  # When building the python bindings, we cannot re-use the artifacts from the C++ build so we
-  # skip the CMake configurePhase and the buildPhase.
-  dontUseCmakeConfigure = pythonSupport;
-
-  # The configurePhase usually puts you in the build directory, so for the python bindings we
-  # need to change directories to the source directory.
-  configurePhase = strings.optionalString pythonSupport ''
-    runHook preConfigure
-    mkdir -p "$NIX_BUILD_TOP/build"
-    cd "$NIX_BUILD_TOP/build"
-    runHook postConfigure
   '';
 
   buildPhase = strings.optionalString pythonSupport ''
@@ -130,6 +110,12 @@ stdenv.mkDerivation (finalAttrs: {
       "$NIX_BUILD_TOP/source/bindings/torch"
     runHook postBuild
   '';
+
+  # NOTE: We cannot use pythonImportsCheck for this module because it uses torch to immediately
+  #   initialize CUDA and GPU access is not allowed in the nix build environment.
+  # NOTE: There are no tests for the C++ library or the python bindings, so we just skip the check
+  #   phase -- we're not missing anything.
+  doCheck = false;
 
   installPhase = ''
     runHook preInstall
@@ -155,6 +141,19 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  # The configurePhase usually puts you in the build directory, so for the python bindings we
+  # need to change directories to the source directory.
+  configurePhase = strings.optionalString pythonSupport ''
+    runHook preConfigure
+    mkdir -p "$NIX_BUILD_TOP/build"
+    cd "$NIX_BUILD_TOP/build"
+    runHook postConfigure
+  '';
+
+  # When building the python bindings, we cannot re-use the artifacts from the C++ build so we
+  # skip the CMake configurePhase and the buildPhase.
+  dontUseCmakeConfigure = pythonSupport;
+  format = strings.optionalString pythonSupport "setuptools";
   pythonImportsCheck = lib.optionals pythonSupport [ "tinycudann" ];
 
   passthru = {
@@ -168,10 +167,12 @@ stdenv.mkDerivation (finalAttrs: {
     license = lib.licenses.bsd3;
     maintainers = with lib.maintainers; [ connorbaker ];
     platforms = lib.platforms.linux;
+
     badPlatforms = [
       # g++: error: unrecognized command-line option '-mf16c'
       lib.systems.inspect.patterns.isAarch64
     ];
+
     # Requires torch.cuda._is_compiled() == True to build
     broken = !config.cudaSupport;
   };

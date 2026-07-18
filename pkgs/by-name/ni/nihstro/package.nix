@@ -1,9 +1,9 @@
 {
   lib,
   stdenv,
+  fetchFromGitHub,
   boost,
   cmake,
-  fetchFromGitHub,
   ninja,
   unstableGitUpdater,
 }:
@@ -35,7 +35,6 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   buildInputs = [ boost ];
-
   doCheck = stdenv.buildPlatform.canExecute stdenv.hostPlatform;
 
   passthru = {
@@ -49,7 +48,7 @@ stdenv.mkDerivation (finalAttrs: {
     homepage = "https://github.com/neobrain/nihstro";
     license = lib.licenses.bsd3;
     maintainers = with lib.maintainers; [ getchoo ];
-    mainProgram = "nihstro-assemble";
     platforms = lib.platforms.unix ++ lib.platforms.windows;
+    mainProgram = "nihstro-assemble";
   };
 })

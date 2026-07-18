@@ -2,14 +2,14 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  fuse3,
   boost,
+  fuse3,
+  gitUpdater,
   icu,
   libzip,
   pandoc,
   pkg-config,
   versionCheckHook,
-  gitUpdater,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -38,11 +38,11 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   makeFlags = [ "PREFIX=$(out)" ];
+  doInstallCheck = true;
 
   nativeInstallCheckInputs = [
     versionCheckHook
   ];
-  doInstallCheck = true;
 
   passthru = {
     updateScript = gitUpdater { rev-prefix = "v"; };
@@ -50,18 +50,22 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "FUSE file system for ZIP archives";
-    homepage = "https://github.com/google/mount-zip";
-    changelog = "https://github.com/google/mount-zip/releases/tag/v${finalAttrs.version}";
+
     longDescription = ''
       mount-zip is a tool allowing to open, explore and extract ZIP archives.
 
       This project is a fork of fuse-zip.
     '';
+
+    homepage = "https://github.com/google/mount-zip";
+    changelog = "https://github.com/google/mount-zip/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.gpl3;
+
     maintainers = with lib.maintainers; [
       arti5an
       progrm_jarvis
     ];
+
     platforms = lib.platforms.linux;
     mainProgram = "mount-zip";
   };

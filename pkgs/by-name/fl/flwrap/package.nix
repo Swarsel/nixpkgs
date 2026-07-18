@@ -8,8 +8,8 @@
 }:
 
 stdenv.mkDerivation (finalAttrs: {
-  version = "1.3.6";
   pname = "flwrap";
+  version = "1.3.6";
 
   src = fetchurl {
     url = "mirror://sourceforge/fldigi/flwrap-${finalAttrs.version}.tar.gz";

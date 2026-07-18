@@ -5,8 +5,8 @@
 
 bundlerApp {
   pname = "haste";
-  gemdir = ./.;
   exes = [ "haste" ];
+  gemdir = ./.;
 
   meta = {
     description = "Command line interface to the AnyStyle Parser and Finder";

@@ -2,8 +2,8 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  versionCheckHook,
   nix-update-script,
+  versionCheckHook,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -23,6 +23,10 @@ stdenv.mkDerivation (finalAttrs: {
       --replace-fail "\$(shell git rev-parse HEAD)" ${finalAttrs.version}
   '';
 
+  nativeCheckInputs = [
+    versionCheckHook
+  ];
+
   installPhase = ''
     runHook preInstall
 
@@ -31,9 +35,6 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
-  nativeCheckInputs = [
-    versionCheckHook
-  ];
   doInstallCheck = true;
 
   passthru = {
@@ -41,12 +42,12 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   meta = {
-    homepage = "https://github.com/wangyu-/UDPspeeder";
-    platforms = lib.platforms.linux;
-    maintainers = with lib.maintainers; [ bot-wxt1221 ];
-    license = lib.licenses.mit;
-    changelog = "https://github.com/wangyu-/UDPspeeder/releases/tag/${finalAttrs.version}";
     description = "Tunnel which Improves your Network Quality on a High-latency Lossy Link by using Forward Error Correction, possible for All Traffics(TCP/UDP/ICMP)";
+    homepage = "https://github.com/wangyu-/UDPspeeder";
+    changelog = "https://github.com/wangyu-/UDPspeeder/releases/tag/${finalAttrs.version}";
+    license = lib.licenses.mit;
+    maintainers = with lib.maintainers; [ bot-wxt1221 ];
+    platforms = lib.platforms.linux;
     mainProgram = "speederv2";
   };
 })

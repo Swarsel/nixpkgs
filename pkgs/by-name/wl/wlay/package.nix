@@ -3,14 +3,14 @@
   stdenv,
   fetchFromGitHub,
   cmake,
-  kdePackages,
   glfw3,
-  libx11,
-  libxau,
-  libxdmcp,
+  kdePackages,
   libepoxy,
   libffi,
+  libx11,
+  libxau,
   libxcb,
+  libxdmcp,
   pkg-config,
   wayland,
   wayland-scanner,
@@ -27,6 +27,8 @@ stdenv.mkDerivation {
     hash = "sha256-Lu+EyoDHiXK9QzD4jdwbllCOCl2aEU+uK6/KxC2AUGQ=";
     fetchSubmodules = true;
   };
+
+  strictDeps = true;
 
   nativeBuildInputs = [
     cmake
@@ -47,14 +49,12 @@ stdenv.mkDerivation {
     wayland
   ];
 
-  strictDeps = true;
-
   meta = {
-    homepage = "https://github.com/atx/wlay";
+    inherit (wayland.meta) platforms;
     description = "Graphical output management for Wayland";
+    homepage = "https://github.com/atx/wlay";
     license = lib.licenses.mit;
     maintainers = [ ];
-    inherit (wayland.meta) platforms;
     mainProgram = "wlay";
   };
 }

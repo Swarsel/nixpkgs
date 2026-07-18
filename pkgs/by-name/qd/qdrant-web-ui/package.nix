@@ -1,7 +1,7 @@
 {
-  buildNpmPackage,
-  fetchFromGitHub,
   lib,
+  fetchFromGitHub,
+  buildNpmPackage,
 }:
 buildNpmPackage rec {
   pname = "qdrant-web-ui";
@@ -16,13 +16,13 @@ buildNpmPackage rec {
 
   npmDepsHash = "sha256-tET15Dcu8V7ssHgjC09w2zcFSU8Oyb0V+nlpptxmqjo=";
 
-  npmBuildScript = "build-qdrant";
-
   installPhase = ''
     runHook preInstall
     cp -r dist $out
     runHook postInstall
   '';
+
+  npmBuildScript = "build-qdrant";
 
   meta = {
     description = "Self-hosted web UI for Qdrant";

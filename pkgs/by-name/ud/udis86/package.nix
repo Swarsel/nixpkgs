@@ -2,8 +2,8 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  fetchpatch,
   autoreconfHook,
+  fetchpatch,
   python3,
 }:
 
@@ -18,11 +18,18 @@ stdenv.mkDerivation {
     hash = "sha256-bmm1rgzZeStQJXEmcT8vnplsnmgN3LJlYs7COmqsDU8=";
   };
 
+  outputs = [
+    "bin"
+    "out"
+    "dev"
+    "lib"
+  ];
+
   patches = [
     (fetchpatch {
+      hash = "sha256-uF4Cwt7UMkyd0RX6cCMQt9xvkkUNQvTDH/Z/6nHtVT8=";
       name = "support-python3-for-building";
       url = "https://github.com/vmt/udis86/commit/3c05ce60372cb2eba39d6eb87ac05af8a664e1b1.patch";
-      hash = "sha256-uF4Cwt7UMkyd0RX6cCMQt9xvkkUNQvTDH/Z/6nHtVT8=";
     })
   ];
 
@@ -35,21 +42,15 @@ stdenv.mkDerivation {
     "--enable-shared"
   ];
 
-  outputs = [
-    "bin"
-    "out"
-    "dev"
-    "lib"
-  ];
-
   meta = {
-    homepage = "https://udis86.sourceforge.net";
-    license = lib.licenses.bsd2;
-    maintainers = with lib.maintainers; [ timor ];
-    mainProgram = "udcli";
     description = ''
       Easy-to-use, minimalistic x86 disassembler library (libudis86)
     '';
+
+    homepage = "https://udis86.sourceforge.net";
+    license = lib.licenses.bsd2;
+    maintainers = with lib.maintainers; [ timor ];
     platforms = lib.platforms.all;
+    mainProgram = "udcli";
   };
 }

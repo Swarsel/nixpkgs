@@ -12,14 +12,15 @@
 buildPythonPackage rec {
   pname = "azure-mgmt-cosmosdb";
   version = "9.9.0";
-  pyproject = true;
 
   src = fetchPypi {
-    pname = "azure_mgmt_cosmosdb";
     inherit version;
     hash = "sha256-Rni/BCvcIIqiT8pxdnrCm28qJyKseHJgg3Glki87bDc=";
+    pname = "azure_mgmt_cosmosdb";
   };
 
+  # Module has no tests
+  doCheck = false;
   build-system = [ setuptools ];
 
   dependencies = [
@@ -29,9 +30,7 @@ buildPythonPackage rec {
     msrest
   ];
 
-  # Module has no tests
-  doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "azure.mgmt.cosmosdb" ];
 
   meta = {

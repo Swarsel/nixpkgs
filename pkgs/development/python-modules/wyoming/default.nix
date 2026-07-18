@@ -1,28 +1,24 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # build-system
-  setuptools,
-
+  buildPythonPackage,
   # optional-dependencies
   flask,
-  swagger-ui-py,
-  zeroconf,
-
   # tests
   pytest-asyncio,
   pytestCheckHook,
+  # build-system
+  setuptools,
+  swagger-ui-py,
   wyoming-faster-whisper,
   wyoming-openwakeword,
   wyoming-piper,
+  zeroconf,
 }:
 
 buildPythonPackage rec {
   pname = "wyoming";
   version = "1.10.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "OHF-Voice";
@@ -30,6 +26,12 @@ buildPythonPackage rec {
     tag = "v${version}";
     hash = "sha256-bjte8CNqNYyEW0WeB8QTAsJJoXmZj/VQlt6ZbY2r5pI=";
   };
+
+  nativeCheckInputs = [
+    pytest-asyncio
+    pytestCheckHook
+  ]
+  ++ lib.concatAttrValues optional-dependencies;
 
   build-system = [ setuptools ];
 
@@ -39,25 +41,21 @@ buildPythonPackage rec {
       swagger-ui-py
     ]
     ++ flask.optional-dependencies.async;
+
     zeroconf = [ zeroconf ];
   };
 
+  pyproject = true;
   pythonImportsCheck = [ "wyoming" ];
-
-  nativeCheckInputs = [
-    pytest-asyncio
-    pytestCheckHook
-  ]
-  ++ lib.concatAttrValues optional-dependencies;
 
   passthru.tests = {
     inherit wyoming-faster-whisper wyoming-openwakeword wyoming-piper;
   };
 
   meta = {
-    changelog = "https://github.com/OHF-Voice/wyoming/releases/tag/${src.tag}";
     description = "Protocol for Rhasspy Voice Assistant";
     homepage = "https://github.com/OHF-Voice/wyoming";
+    changelog = "https://github.com/OHF-Voice/wyoming/releases/tag/${src.tag}";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ hexa ];
   };

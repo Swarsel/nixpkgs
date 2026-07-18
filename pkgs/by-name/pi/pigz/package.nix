@@ -2,10 +2,10 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  zlib,
   ncompress,
-  which,
   nix-update-script,
+  which,
+  zlib,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -19,23 +19,21 @@ stdenv.mkDerivation (finalAttrs: {
     sha256 = "sha256-PzdxyO4mCg2jE/oBk1MH+NUdWM95wIIIbncBg71BkmQ=";
   };
 
-  strictDeps = true;
-  __structuredAttrs = true;
-  enableParallelBuilding = true;
-
   outputs = [
     "out"
     "doc"
     "man"
   ];
 
-  makeFlags = [ "CC=${lib.getExe stdenv.cc}" ];
+  strictDeps = true;
+
   buildInputs = [
     zlib
   ];
 
+  makeFlags = [ "CC=${lib.getExe stdenv.cc}" ];
   doCheck = stdenv.hostPlatform.isLinux;
-  checkTarget = "tests";
+
   nativeCheckInputs = [
     which
     ncompress
@@ -53,18 +51,24 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  __structuredAttrs = true;
+  checkTarget = "tests";
+  enableParallelBuilding = true;
+
   passthru = {
     updateScript = nix-update-script { };
   };
 
   meta = {
-    homepage = "https://www.zlib.net/pigz/";
     description = "Parallel implementation of gzip for multi-core machines";
-    mainProgram = "pigz";
+    homepage = "https://www.zlib.net/pigz/";
+    license = lib.licenses.zlib;
+
     maintainers = with lib.maintainers; [
       sandarukasa
     ];
-    license = lib.licenses.zlib;
+
     platforms = lib.platforms.unix;
+    mainProgram = "pigz";
   };
 })

@@ -2,22 +2,23 @@
   lib,
   buildPythonPackage,
   fetchPypi,
-  llama-index-core,
   hatchling,
+  llama-index-core,
   sentence-transformers,
 }:
 
 buildPythonPackage rec {
   pname = "llama-index-embeddings-huggingface";
   version = "0.7.0";
-  pyproject = true;
 
   src = fetchPypi {
-    pname = "llama_index_embeddings_huggingface";
     inherit version;
     hash = "sha256-2ooqZd+UBBEsRDDfraCdT4RroWUZeiXb539zQBTFaoc=";
+    pname = "llama_index_embeddings_huggingface";
   };
 
+  # Tests are only available in the mono repo
+  doCheck = false;
   build-system = [ hatchling ];
 
   dependencies = [
@@ -25,9 +26,7 @@ buildPythonPackage rec {
     sentence-transformers
   ];
 
-  # Tests are only available in the mono repo
-  doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "llama_index.embeddings.huggingface" ];
 
   meta = {

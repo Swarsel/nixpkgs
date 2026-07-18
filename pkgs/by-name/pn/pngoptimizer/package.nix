@@ -18,7 +18,6 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   nativeBuildInputs = [ pkg-config ];
-
   buildInputs = [ gtk3 ];
 
   makeFlags = [
@@ -36,14 +35,16 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   meta = {
-    homepage = "https://psydk.org/pngoptimizer";
     description = "PNG optimizer and converter";
+    homepage = "https://psydk.org/pngoptimizer";
+
     # https://github.com/hadrien-psydk/pngoptimizer#license-information
     license = with lib.licenses; [
       gpl2Only
       lgpl21Only
       zlib
     ];
+
     maintainers = with lib.maintainers; [ smitop ];
     platforms = with lib.platforms; linux;
   };

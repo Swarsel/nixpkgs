@@ -13,15 +13,9 @@ let
   targetOpentxl = if !crossCompiling then opentxl-unwrapped else targetPackages.opentxl-unwrapped;
 in
 stdenv.mkDerivation (finalAttrs: {
-  pname = "${targetPrefix}opentxl-wrapper";
   inherit (opentxl-unwrapped) version;
-  preferLocalBuild = true;
+  pname = "${targetPrefix}opentxl-wrapper";
   strictDeps = true;
-
-  dontUnpack = true;
-  dontConfigure = true;
-  dontBuild = true;
-
   nativeBuildInputs = [ makeWrapper ];
 
   installPhase = ''
@@ -61,9 +55,14 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  dontBuild = true;
+  dontConfigure = true;
+  dontUnpack = true;
+  preferLocalBuild = true;
+
   passthru = {
-    unwrapped = opentxl-unwrapped;
     inherit (opentxl-unwrapped.passthru) tests;
+    unwrapped = opentxl-unwrapped;
   };
 
   meta = opentxl-unwrapped.meta // {

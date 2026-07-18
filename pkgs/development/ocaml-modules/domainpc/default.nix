@@ -1,15 +1,13 @@
 {
   lib,
-  buildDunePackage,
   fetchFromGitHub,
+  buildDunePackage,
   processor,
 }:
 
 buildDunePackage (finalAttrs: {
   pname = "domainpc";
   version = "0.2";
-
-  minimalOCamlVersion = "5.1";
 
   src = fetchFromGitHub {
     owner = "ocamlpro";
@@ -21,6 +19,8 @@ buildDunePackage (finalAttrs: {
   propagatedBuildInputs = [
     processor
   ];
+
+  minimalOCamlVersion = "5.1";
 
   meta = {
     description = "Domain Per Core, spawn domains ensuring that they run on separate cores";

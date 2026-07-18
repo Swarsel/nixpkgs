@@ -1,18 +1,19 @@
 {
   lib,
   stdenv,
-  bash,
   fetchFromGitHub,
+  bash,
   gitUpdater,
   pkg-config,
+  versionCheckHook,
   wayland,
   wayland-protocols,
   wayland-scanner,
-  versionCheckHook,
 }:
 stdenv.mkDerivation (finalAttrs: {
   pname = "wayland-bongocat";
   version = "2.0.0";
+
   src = fetchFromGitHub {
     owner = "saatvik333";
     repo = "wayland-bongocat";
@@ -20,12 +21,19 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-kmwC3PQQL2saPj2QihxHbbNDO1IvhVGbrECFvCqirrM=";
   };
 
+  postPatch = ''
+    substituteInPlace Makefile \
+      --replace-fail 'CC = gcc' 'CC ?= gcc'
+  '';
+
   # Package dependencies
   strictDeps = true;
+
   nativeBuildInputs = [
     pkg-config
     wayland-scanner
   ];
+
   buildInputs = [
     bash
     wayland
@@ -36,11 +44,6 @@ stdenv.mkDerivation (finalAttrs: {
     "WAYLAND_PROTOCOLS_DIR=${wayland-protocols}/share/wayland-protocols"
     "release"
   ];
-
-  postPatch = ''
-    substituteInPlace Makefile \
-      --replace-fail 'CC = gcc' 'CC ?= gcc'
-  '';
 
   installPhase = ''
     runHook preInstall
@@ -72,7 +75,7 @@ stdenv.mkDerivation (finalAttrs: {
     homepage = "https://github.com/saatvik333/wayland-bongocat";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ voxi0 ];
-    mainProgram = "bongocat";
     platforms = lib.platforms.linux;
+    mainProgram = "bongocat";
   };
 })

@@ -1,15 +1,13 @@
 {
   lib,
-  fetchPypi,
   buildPythonPackage,
+  fetchPypi,
   isPy3k,
 }:
 
 buildPythonPackage rec {
   pname = "sslib";
   version = "0.2.0";
-  format = "setuptools";
-  disabled = !isPy3k;
 
   src = fetchPypi {
     inherit pname version;
@@ -18,10 +16,12 @@ buildPythonPackage rec {
 
   # No tests available
   doCheck = false;
+  disabled = !isPy3k;
+  format = "setuptools";
 
   meta = {
-    homepage = "https://github.com/jqueiroz/python-sslib";
     description = "Python3 library for sharing secrets";
+    homepage = "https://github.com/jqueiroz/python-sslib";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ jqueiroz ];
   };

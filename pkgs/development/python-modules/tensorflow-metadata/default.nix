@@ -1,22 +1,18 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # build-system
-  setuptools,
-
   # dependencies
   absl-py,
+  buildPythonPackage,
   googleapis-common-protos,
   protobuf,
+  # build-system
+  setuptools,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "tensorflow-metadata";
   version = "1.21.0";
-  pyproject = true;
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "tensorflow";
@@ -40,6 +36,9 @@ buildPythonPackage (finalAttrs: {
     done
   '';
 
+  # has no tests
+  doCheck = false;
+  __structuredAttrs = true;
   build-system = [ setuptools ];
 
   dependencies = [
@@ -48,8 +47,7 @@ buildPythonPackage (finalAttrs: {
     protobuf
   ];
 
-  # has no tests
-  doCheck = false;
+  pyproject = true;
 
   pythonImportsCheck = [
     "tensorflow_metadata"

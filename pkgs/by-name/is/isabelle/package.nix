@@ -3,27 +3,27 @@
   stdenv,
   fetchurl,
   fetchFromGitHub,
-  gcc14Stdenv,
   coreutils,
+  csdp,
+  cvc5,
+  electron,
+  eprover-ho,
+  fetchhg,
+  gcc14Stdenv,
+  isabelle-components,
+  libpoly,
+  makeDesktopItem,
   net-tools,
   openjdk21,
-  scala_3,
-  polyml,
-  verit,
-  vampire,
-  eprover-ho,
-  cvc5,
-  libpoly,
-  symfpu,
-  csdp,
-  rlwrap,
   perl,
+  polyml,
   procps,
-  makeDesktopItem,
-  isabelle-components,
+  rlwrap,
+  scala_3,
+  symfpu,
   symlinkJoin,
-  fetchhg,
-  electron,
+  vampire,
+  verit,
 }:
 
 let
@@ -47,6 +47,7 @@ let
       "--with-gmp"
       "--disable-shared"
     ];
+
     buildFlags = [ "compiler" ];
   };
 
@@ -71,14 +72,14 @@ let
 
         patches = [ ./vampire-add-install-directive.patch ];
 
-        postInstall = ''
-          mv $out/bin/vampire_rel $out/bin/vampire
-        '';
-
         cmakeFlags = [
           (lib.cmakeFeature "CMAKE_BUILD_HOL" "On")
           (lib.cmakeFeature "CMAKE_DISABLE_FIND_PACKAGE_Z3" "On")
         ];
+
+        postInstall = ''
+          mv $out/bin/vampire_rel $out/bin/vampire
+        '';
       });
 
   sha1 = stdenv.mkDerivation {
@@ -110,6 +111,7 @@ let
         version = "0.2.0";
         __intentionallyOverridingVersion = true;
       };
+
       symfpu = symfpu.overrideAttrs {
         version = "0-unstable-2019-05-17";
         __intentionallyOverridingVersion = true;
@@ -117,6 +119,7 @@ let
     }).overrideAttrs
       {
         version = "1.2.0";
+
         src = fetchFromGitHub {
           owner = "cvc5";
           repo = "cvc5";
@@ -129,8 +132,6 @@ in
 stdenv.mkDerivation (finalAttrs: {
   pname = "isabelle";
   version = "2025-2";
-
-  dirname = "Isabelle${finalAttrs.version}";
 
   src =
     if stdenv.hostPlatform.isDarwin then
@@ -149,35 +150,11 @@ stdenv.mkDerivation (finalAttrs: {
         hash = "sha256-ZQqWabSgh2da+zQpTYLe0vBwTUfVgN2e1FzdyfF2S90=";
       };
 
-  nativeBuildInputs = [ java ];
-
-  buildInputs = [
-    polyml'
-    verit
-    vampire'
-    eprover-ho
-    net-tools
-    cvc5'
-    csdp
-  ];
-
   patches = [
     # Make "isabelle build" work when generating documents
     # See: https://github.com/NixOS/nixpkgs/issues/289529
     ./fix-copied-permissions.patch
   ];
-
-  propagatedBuildInputs = lib.optionals stdenv.hostPlatform.isDarwin [ procps ];
-
-  sourceRoot = "${finalAttrs.dirname}${lib.optionalString stdenv.hostPlatform.isDarwin ".app"}";
-
-  doCheck = stdenv.hostPlatform.system != "aarch64-linux";
-  checkPhase = "bin/isabelle build -v HOL-SMT_Examples";
-
-  postUnpack = lib.optionalString stdenv.hostPlatform.isDarwin ''
-    mv $sourceRoot ${finalAttrs.dirname}
-    sourceRoot=${finalAttrs.dirname}
-  '';
 
   postPatch = ''
     patchShebangs lib/Tools/ bin/
@@ -275,6 +252,20 @@ stdenv.mkDerivation (finalAttrs: {
     patchelf --set-rpath "${lib.getLib stdenv.cc.cc}/lib" contrib/z3-*/$arch/z3
   '';
 
+  nativeBuildInputs = [ java ];
+
+  buildInputs = [
+    polyml'
+    verit
+    vampire'
+    eprover-ho
+    net-tools
+    cvc5'
+    csdp
+  ];
+
+  propagatedBuildInputs = lib.optionals stdenv.hostPlatform.isDarwin [ procps ];
+
   buildPhase = ''
     export HOME=$TMP # The build fails if home is not set
     setup_name=$(basename contrib/isabelle_setup*)
@@ -305,6 +296,9 @@ stdenv.mkDerivation (finalAttrs: {
     bin/isabelle build -v -o system_heaps -b HOL
   '';
 
+  doCheck = stdenv.hostPlatform.system != "aarch64-linux";
+  checkPhase = "bin/isabelle build -v HOL-SMT_Examples";
+
   installPhase = ''
     mkdir -p $out/bin
     mv $TMP/$dirname $out
@@ -321,50 +315,34 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   desktopItem = makeDesktopItem {
-    name = "isabelle";
-    exec = "isabelle jedit";
-    icon = "isabelle";
-    desktopName = "Isabelle";
-    comment = finalAttrs.meta.description;
     categories = [
       "Education"
       "Science"
       "Math"
     ];
+
+    comment = finalAttrs.meta.description;
+    desktopName = "Isabelle";
+    exec = "isabelle jedit";
+    icon = "isabelle";
+    name = "isabelle";
   };
 
-  meta = {
-    description = "Generic proof assistant";
-    longDescription = ''
-      Isabelle is a generic proof assistant.  It allows mathematical formulas
-      to be expressed in a formal language and provides tools for proving those
-      formulas in a logical calculus.
-    '';
-    homepage = "https://isabelle.in.tum.de/";
-    sourceProvenance = with lib.sourceTypes; [
-      fromSource
-      binaryNativeCode # source bundles binary dependencies
-    ];
-    license = lib.licenses.bsd3;
-    maintainers = [
-      lib.maintainers.jvanbruegge
-      lib.maintainers.sempiternal-aurora
-    ];
-    # need to compile the heaps for host on build
-    # which requires us to use the host polyml toolchain
-    broken = !(stdenv.buildPlatform.canExecute stdenv.hostPlatform);
-    platforms = [
-      "x86_64-linux"
-      "aarch64-linux"
-      "aarch64-darwin"
-    ];
-  };
+  dirname = "Isabelle${finalAttrs.version}";
+
+  postUnpack = lib.optionalString stdenv.hostPlatform.isDarwin ''
+    mv $sourceRoot ${finalAttrs.dirname}
+    sourceRoot=${finalAttrs.dirname}
+  '';
+
+  sourceRoot = "${finalAttrs.dirname}${lib.optionalString stdenv.hostPlatform.isDarwin ".app"}";
 
   passthru = {
-    vampire = vampire';
-    polyml = polyml';
     cvc5 = cvc5';
+    polyml = polyml';
     sha1 = sha1;
+    vampire = vampire';
+
     withComponents =
       f:
       let
@@ -373,9 +351,6 @@ stdenv.mkDerivation (finalAttrs: {
         components = f isabelle-components;
       in
       symlinkJoin {
-        name = "isabelle-with-components-${isabelle.version}";
-        paths = [ isabelle ] ++ (map (c: c.override { inherit isabelle; }) components);
-
         postBuild = ''
           rm $out/bin/*
 
@@ -392,6 +367,42 @@ stdenv.mkDerivation (finalAttrs: {
         + lib.concatMapStringsSep "\n" (c: ''
           echo contrib/${c.pname}-${c.version} >> ${base}/etc/components
         '') components;
+
+        name = "isabelle-with-components-${isabelle.version}";
+        paths = [ isabelle ] ++ (map (c: c.override { inherit isabelle; }) components);
       };
+  };
+
+  meta = {
+    description = "Generic proof assistant";
+
+    longDescription = ''
+      Isabelle is a generic proof assistant.  It allows mathematical formulas
+      to be expressed in a formal language and provides tools for proving those
+      formulas in a logical calculus.
+    '';
+
+    homepage = "https://isabelle.in.tum.de/";
+    license = lib.licenses.bsd3;
+
+    sourceProvenance = with lib.sourceTypes; [
+      fromSource
+      binaryNativeCode # source bundles binary dependencies
+    ];
+
+    maintainers = [
+      lib.maintainers.jvanbruegge
+      lib.maintainers.sempiternal-aurora
+    ];
+
+    platforms = [
+      "x86_64-linux"
+      "aarch64-linux"
+      "aarch64-darwin"
+    ];
+
+    # need to compile the heaps for host on build
+    # which requires us to use the host polyml toolchain
+    broken = !(stdenv.buildPlatform.canExecute stdenv.hostPlatform);
   };
 })

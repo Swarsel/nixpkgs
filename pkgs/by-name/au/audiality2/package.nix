@@ -2,11 +2,11 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  cmake,
-  pkg-config,
   # The two audio backends:
   SDL2,
+  cmake,
   jack2,
+  pkg-config,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -38,10 +38,10 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Realtime scripted modular audio engine for video games and musical applications";
-    mainProgram = "a2play";
     homepage = "http://audiality.org";
     license = lib.licenses.zlib;
-    platforms = lib.platforms.all;
     maintainers = with lib.maintainers; [ fgaz ];
+    platforms = lib.platforms.all;
+    mainProgram = "a2play";
   };
 })

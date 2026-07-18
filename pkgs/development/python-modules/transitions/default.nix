@@ -16,19 +16,11 @@
 buildPythonPackage rec {
   pname = "transitions";
   version = "0.9.3";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
     hash = "sha256-iB+3W7FlTtVdhgYLsGfyxxb44VX1e7c/1ETlNxOq/sg=";
   };
-
-  build-system = [ setuptools ];
-
-  dependencies = [
-    six
-    pygraphviz # optional
-  ];
 
   nativeCheckInputs = [
     pytestCheckHook
@@ -41,6 +33,13 @@ buildPythonPackage rec {
     export FONTCONFIG_FILE=${fontconfig.out}/etc/fonts/fonts.conf
     export HOME=$TMPDIR
   '';
+
+  build-system = [ setuptools ];
+
+  dependencies = [
+    six
+    pygraphviz # optional
+  ];
 
   disabledTestPaths = [
     # crashes in pygraphviz/graphviz
@@ -71,11 +70,12 @@ buildPythonPackage rec {
     "test_pickle"
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "transitions" ];
 
   meta = {
-    homepage = "https://github.com/pytransitions/transitions";
     description = "Lightweight, object-oriented finite state machine implementation in Python";
+    homepage = "https://github.com/pytransitions/transitions";
     changelog = "https://github.com/pytransitions/transitions/releases/tag/${version}";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ dotlambda ];

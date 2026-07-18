@@ -7,7 +7,6 @@
 python3Packages.buildPythonApplication (finalAttrs: {
   pname = "aactivator";
   version = "2.0.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "Yelp";
@@ -16,14 +15,14 @@ python3Packages.buildPythonApplication (finalAttrs: {
     hash = "sha256-vnBDtLEvU1jHbb5/MXAulXaBaugdCZdLQSP2b8P6SiQ=";
   };
 
-  build-system = with python3Packages; [
-    setuptools
-    wheel
-  ];
-
   nativeCheckInputs = with python3Packages; [
     pytestCheckHook
     pexpect
+  ];
+
+  build-system = with python3Packages; [
+    setuptools
+    wheel
   ];
 
   disabledTestPaths = [
@@ -31,11 +30,13 @@ python3Packages.buildPythonApplication (finalAttrs: {
     "tests/integration_test.py"
   ];
 
+  pyproject = true;
+
   meta = {
     description = "Automatically activate Python virtualenvs (and other environments)";
     homepage = "https://github.com/Yelp/aactivator";
     license = lib.licenses.mit;
-    mainProgram = "aactivator";
     maintainers = with lib.maintainers; [ keller00 ];
+    mainProgram = "aactivator";
   };
 })

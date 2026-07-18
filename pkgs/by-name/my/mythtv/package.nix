@@ -2,40 +2,40 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  which,
-  libpulseaudio,
-  fftwSinglePrec,
-  lame,
-  zlib,
-  libGLU,
-  libGL,
   alsa-lib,
-  freetype,
-  perl,
-  pkg-config,
-  libsamplerate,
-  libbluray,
-  lzo,
-  libx11,
-  libxv,
-  libxrandr,
-  libxvmc,
-  libxinerama,
-  libxxf86vm,
-  libxmu,
-  yasm,
-  libuuid,
-  taglib,
-  libtool,
   autoconf,
   automake,
-  file,
-  libsForQt5,
   exiv2,
-  linuxHeaders,
-  soundtouch,
-  libzip,
+  fftwSinglePrec,
+  file,
+  freetype,
+  lame,
+  libGL,
+  libGLU,
+  libbluray,
   libhdhomerun,
+  libpulseaudio,
+  libsForQt5,
+  libsamplerate,
+  libtool,
+  libuuid,
+  libx11,
+  libxinerama,
+  libxmu,
+  libxrandr,
+  libxv,
+  libxvmc,
+  libxxf86vm,
+  libzip,
+  linuxHeaders,
+  lzo,
+  perl,
+  pkg-config,
+  soundtouch,
+  taglib,
+  which,
+  yasm,
+  zlib,
 }:
 
 stdenv.mkDerivation rec {
@@ -54,7 +54,16 @@ stdenv.mkDerivation rec {
     ./dont-source-os-release.patch
   ];
 
-  setSourceRoot = "sourceRoot=$(echo */mythtv)";
+  nativeBuildInputs = [
+    pkg-config
+    which
+    yasm
+    libtool
+    autoconf
+    automake
+    file
+    libsForQt5.wrapQtAppsHook
+  ];
 
   buildInputs = [
     freetype
@@ -86,26 +95,16 @@ stdenv.mkDerivation rec {
     libzip
     libhdhomerun
   ];
-  nativeBuildInputs = [
-    pkg-config
-    which
-    yasm
-    libtool
-    autoconf
-    automake
-    file
-    libsForQt5.wrapQtAppsHook
-  ];
 
   configureFlags = [ "--dvb-path=${linuxHeaders}/include" ];
-
   enableParallelBuilding = true;
+  setSourceRoot = "sourceRoot=$(echo */mythtv)";
 
   meta = {
-    homepage = "https://www.mythtv.org/";
     description = "Open Source DVR";
+    homepage = "https://www.mythtv.org/";
     license = lib.licenses.gpl2Plus;
-    platforms = lib.platforms.linux;
     maintainers = [ ];
+    platforms = lib.platforms.linux;
   };
 }

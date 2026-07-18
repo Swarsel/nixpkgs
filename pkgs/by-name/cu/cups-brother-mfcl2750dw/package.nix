@@ -2,15 +2,15 @@
   lib,
   stdenv,
   fetchurl,
-  dpkg,
   autoPatchelfHook,
+  coreutils,
+  dpkg,
+  file,
+  ghostscript,
+  gnugrep,
+  gnused,
   makeWrapper,
   perl,
-  gnused,
-  ghostscript,
-  file,
-  coreutils,
-  gnugrep,
   which,
 }:
 
@@ -35,19 +35,18 @@ stdenv.mkDerivation rec {
   pname = "cups-brother-mfcl2750dw";
   version = "4.0.0-1";
 
+  src = fetchurl {
+    url = "https://download.brother.com/welcome/dlf103530/mfcl2750dwpdrv-${version}.i386.deb";
+    hash = "sha256-3uDwzLQTF8r1tsGZ7ChGhk4ryQmVsZYdUaj9eFaC0jc=";
+  };
+
   nativeBuildInputs = [
     dpkg
     makeWrapper
     autoPatchelfHook
   ];
+
   buildInputs = [ perl ];
-
-  dontUnpack = true;
-
-  src = fetchurl {
-    url = "https://download.brother.com/welcome/dlf103530/mfcl2750dwpdrv-${version}.i386.deb";
-    hash = "sha256-3uDwzLQTF8r1tsGZ7ChGhk4ryQmVsZYdUaj9eFaC0jc=";
-  };
 
   installPhase = ''
     runHook preInstall
@@ -94,12 +93,14 @@ stdenv.mkDerivation rec {
     runHook postInstall
   '';
 
+  dontUnpack = true;
+
   meta = {
-    homepage = "http://www.brother.com/";
     description = "Brother MFC-L2750DW printer driver";
-    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
+    homepage = "http://www.brother.com/";
     license = lib.licenses.unfree;
-    platforms = map (arch: "${arch}-linux") arches;
+    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
     maintainers = [ lib.maintainers.lovesegfault ];
+    platforms = map (arch: "${arch}-linux") arches;
   };
 }

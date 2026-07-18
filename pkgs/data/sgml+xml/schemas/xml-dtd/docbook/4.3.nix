@@ -2,8 +2,8 @@
   lib,
   stdenv,
   fetchurl,
-  unzip,
   findXMLCatalogs,
+  unzip,
 }:
 
 import ./generic.nix {
@@ -14,6 +14,7 @@ import ./generic.nix {
     unzip
     findXMLCatalogs
     ;
+
   version = "4.3";
   hash = "sha256-IwaKlOpv1ISwBMWnPsNqZqpH6o8Na2LMFpWTH1wUNGQ=";
 }

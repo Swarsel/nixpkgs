@@ -4,12 +4,12 @@
 # same LD_LIBRARY_PATH.
 # Other distributions do the same.
 {
+  lib,
   stdenv,
   pkgsi686Linux,
-  lib,
   primus-lib,
-  writeScriptBin,
   runtimeShell,
+  writeScriptBin,
   primus-lib_i686 ?
     if stdenv.hostPlatform.system == "x86_64-linux" then pkgsi686Linux.primus-lib else null,
   useNvidia ? true,

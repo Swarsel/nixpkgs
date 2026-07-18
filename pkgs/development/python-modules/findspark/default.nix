@@ -1,14 +1,13 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "findspark";
   version = "2.0.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "minrk";
@@ -17,14 +16,15 @@ buildPythonPackage rec {
     hash = "sha256-/+b1Pf+ySwlv6XP1wtHx1tx4WfYdu6GuxJVQkcX3MY8=";
   };
 
+  # No tests
+  doCheck = false;
+
   build-system = [
     setuptools
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "findspark" ];
-
-  # No tests
-  doCheck = false;
 
   meta = {
     description = "Find pyspark to make it importable";

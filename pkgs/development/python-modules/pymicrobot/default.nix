@@ -10,7 +10,6 @@
 buildPythonPackage rec {
   pname = "pymicrobot";
   version = "0.0.23";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
@@ -26,7 +25,7 @@ buildPythonPackage rec {
 
   # Module has no tests
   doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "microbot" ];
 
   meta = {

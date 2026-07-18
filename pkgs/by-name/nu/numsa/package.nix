@@ -2,31 +2,26 @@
   lib,
   stdenv,
   fetchFromGitHub,
-
-  buildType ? "meson",
-
   # nativeBuildInputs
   asciidoctor,
-  gfortran,
-  pkg-config,
-  python3,
-  # meson:
-  meson,
-  ninja,
+  blas,
   # cmake:
   cmake,
-
-  # buildInputs
-  mstore,
-  test-drive,
-  blas,
+  gfortran,
   lapack,
-
   # propagatedBuildInputs
   mctc-lib,
-
+  # meson:
+  meson,
+  # buildInputs
+  mstore,
+  ninja,
   # passthru
   nix-update-script,
+  pkg-config,
+  python3,
+  test-drive,
+  buildType ? "meson",
 }:
 
 assert (
@@ -38,8 +33,6 @@ assert (
 stdenv.mkDerivation (finalAttrs: {
   pname = "numsa";
   version = "0.2.0";
-  __structuredAttrs = true;
-  strictDeps = true;
 
   src = fetchFromGitHub {
     owner = "grimme-lab";
@@ -62,6 +55,8 @@ stdenv.mkDerivation (finalAttrs: {
     substituteInPlace config/install-mod.py \
       --replace-fail "/usr/bin/env python" "${lib.getExe python3}"
   '';
+
+  strictDeps = true;
 
   nativeBuildInputs = [
     asciidoctor
@@ -89,7 +84,7 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   doCheck = true;
-
+  __structuredAttrs = true;
   passthru.updateScript = nix-update-script { };
 
   meta = {

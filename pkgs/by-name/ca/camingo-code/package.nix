@@ -1,7 +1,7 @@
 {
   lib,
-  stdenvNoCC,
   fetchzip,
+  stdenvNoCC,
 }:
 
 stdenvNoCC.mkDerivation rec {
@@ -23,9 +23,9 @@ stdenvNoCC.mkDerivation rec {
   '';
 
   meta = {
-    homepage = "https://www.myfonts.com/fonts/jan-fromm/camingo-code/";
     description = "Monospaced typeface designed for source-code editors";
-    platforms = lib.platforms.all;
+    homepage = "https://www.myfonts.com/fonts/jan-fromm/camingo-code/";
     license = lib.licenses.cc-by-nd-30;
+    platforms = lib.platforms.all;
   };
 }

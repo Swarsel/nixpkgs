@@ -1,11 +1,11 @@
 {
   lib,
   stdenv,
-  rustPlatform,
   fetchFromGitHub,
-  versionCheckHook,
-  nix-update-script,
   installShellFiles,
+  nix-update-script,
+  rustPlatform,
+  versionCheckHook,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -19,14 +19,14 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-UfLgrukVYqkUKBI7CNLIkANO1md6ArrbSIh+f0F3bek=";
   };
 
-  cargoHash = "sha256-dohbFCxoPPXZa6mKkDNmdkqH3T52hHiRTDgQJTJHfYU=";
-
-  # many tests fail for various reasons of which most depend on the build sandbox
-  doCheck = false;
-
   nativeBuildInputs = [
     installShellFiles
   ];
+
+  cargoHash = "sha256-dohbFCxoPPXZa6mKkDNmdkqH3T52hHiRTDgQJTJHfYU=";
+  # many tests fail for various reasons of which most depend on the build sandbox
+  doCheck = false;
+
   postInstall = lib.optionalString (stdenv.buildPlatform.canExecute stdenv.hostPlatform) ''
     installShellCompletion --cmd mdsf \
       --bash <($out/bin/mdsf completions bash) \
@@ -35,8 +35,8 @@ rustPlatform.buildRustPackage (finalAttrs: {
       --nushell <($out/bin/mdsf completions nushell)
   '';
 
-  nativeInstallCheckInputs = [ versionCheckHook ];
   doInstallCheck = true;
+  nativeInstallCheckInputs = [ versionCheckHook ];
   passthru.updateScript = nix-update-script { };
 
   meta = {

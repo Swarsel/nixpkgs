@@ -2,13 +2,13 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  python3,
   installShellFiles,
+  python3,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
-  version = "2.2";
   pname = "ddgr";
+  version = "2.2";
 
   src = fetchFromGitHub {
     owner = "jarun";
@@ -18,9 +18,7 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   nativeBuildInputs = [ installShellFiles ];
-
   buildInputs = [ python3 ];
-
   makeFlags = [ "PREFIX=$(out)" ];
 
   postInstall = ''
@@ -30,13 +28,15 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   meta = {
-    homepage = "https://github.com/jarun/ddgr";
     description = "Search DuckDuckGo from the terminal";
+    homepage = "https://github.com/jarun/ddgr";
     license = lib.licenses.gpl3;
+
     maintainers = with lib.maintainers; [
       ceedubs
       markus1189
     ];
+
     platforms = python3.meta.platforms;
     mainProgram = "ddgr";
   };

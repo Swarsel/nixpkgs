@@ -1,9 +1,9 @@
 {
   lib,
+  fetchFromGitHub,
   clangStdenv,
   cmake,
   expat,
-  fetchFromGitHub,
   ffmpeg_4,
   fontconfig,
   freetype,
@@ -16,11 +16,11 @@
   libsForQt5,
   libunwind,
   libwebp,
+  libx11,
   ninja,
   pcre2,
   pkg-config,
   python3,
-  libx11,
   zlib,
   enableWayland ? false,
 }:
@@ -28,6 +28,7 @@
 clangStdenv.mkDerivation rec {
   pname = "friction";
   version = "1.0.0-rc.3";
+
   src = fetchFromGitHub {
     owner = "friction2d";
     repo = "friction";
@@ -35,6 +36,13 @@ clangStdenv.mkDerivation rec {
     hash = "sha256-JUDqjUhtYiDll7bTNmYCItT8eQHS5pV38OwqiTXKowM=";
     fetchSubmodules = true;
   };
+
+  postPatch = ''
+    grep -rl 'hb' src/skia | xargs sed -Ei 's/(["<])(hb.*\.h)/\1harfbuzz\/\2/'
+  ''
+  + lib.optionalString enableWayland ''
+    sed -i '/qputenv("QT_QPA_PLATFORM", "xcb")/d' src/core/appsupport.cpp
+  '';
 
   nativeBuildInputs = [
     cmake
@@ -83,20 +91,13 @@ clangStdenv.mkDerivation rec {
     "-DMAC_DEPLOY=ON"
   ];
 
-  postPatch = ''
-    grep -rl 'hb' src/skia | xargs sed -Ei 's/(["<])(hb.*\.h)/\1harfbuzz\/\2/'
-  ''
-  + lib.optionalString enableWayland ''
-    sed -i '/qputenv("QT_QPA_PLATFORM", "xcb")/d' src/core/appsupport.cpp
-  '';
-
   meta = {
     description = "Vector motion graphics program";
     longDescription = "Friction is a powerful and versatile motion graphics application that allows you to create stunning vector and raster animations for web and video platforms with ease.";
     homepage = "https://friction.graphics/";
     license = lib.licenses.gpl3;
-    platforms = lib.platforms.unix;
     maintainers = with lib.maintainers; [ socksy ];
+    platforms = lib.platforms.unix;
     mainProgram = "friction";
   };
 }

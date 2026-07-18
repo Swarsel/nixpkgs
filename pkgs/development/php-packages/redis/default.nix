@@ -1,8 +1,8 @@
 {
-  buildPecl,
   lib,
-  php,
   fetchFromGitHub,
+  buildPecl,
+  php,
 }:
 
 let
@@ -13,8 +13,8 @@ buildPecl {
   pname = "redis";
 
   src = fetchFromGitHub {
-    repo = "phpredis";
     owner = "phpredis";
+    repo = "phpredis";
     rev = version;
     hash = "sha256-mdphyUG4OUc1PBEA5Ub1X9afFDMJ5+HoXH4WnmeAKpE=";
   };
@@ -22,10 +22,10 @@ buildPecl {
   internalDeps = with php.extensions; [ session ];
 
   meta = {
-    changelog = "https://github.com/phpredis/phpredis/releases/tag/${version}";
     description = "PHP extension for interfacing with Redis";
-    license = lib.licenses.php301;
     homepage = "https://github.com/phpredis/phpredis/";
+    changelog = "https://github.com/phpredis/phpredis/releases/tag/${version}";
+    license = lib.licenses.php301;
     teams = [ lib.teams.php ];
   };
 }

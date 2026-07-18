@@ -1,19 +1,24 @@
 {
-  gauge-unwrapped,
+  lib,
   gauge,
+  gauge-unwrapped,
+  gaugePlugins,
+  lndir,
   makeWrapper,
   stdenvNoCC,
-  lib,
-  lndir,
-  gaugePlugins,
   plugins ? [ ],
 }:
 
 stdenvNoCC.mkDerivation {
-  pname = "gauge-wrapped";
   inherit (gauge-unwrapped) version;
+  inherit (gauge-unwrapped) meta;
+  pname = "gauge-wrapped";
 
-  dontUnpack = true;
+  nativeBuildInputs = [
+    gauge-unwrapped
+    makeWrapper
+    lndir
+  ];
 
   installPhase = ''
     mkdir -p $out{bin,/share/gauge/{plugins,config}}
@@ -44,14 +49,9 @@ stdenvNoCC.mkDerivation {
       --set GAUGE_HOME "$GAUGE_HOME"
   '';
 
-  nativeBuildInputs = [
-    gauge-unwrapped
-    makeWrapper
-    lndir
-  ];
+  dontUnpack = true;
 
   passthru = {
-    withPlugins = f: gauge.override { plugins = f gaugePlugins; };
     fromManifest =
       path:
       let
@@ -62,11 +62,12 @@ stdenvNoCC.mkDerivation {
           map (name: plugins.${name} or (throw "Gauge plugin ${name} is not available!")) requiredPlugins;
       in
       gauge.withPlugins manifestPlugins;
+
     # Builds gauge with all plugins and checks for successful installation
     tests.allPlugins = gaugePlugins.testGaugePlugins {
       plugins = lib.filter lib.isDerivation (lib.attrValues gaugePlugins);
     };
-  };
 
-  inherit (gauge-unwrapped) meta;
+    withPlugins = f: gauge.override { plugins = f gaugePlugins; };
+  };
 }

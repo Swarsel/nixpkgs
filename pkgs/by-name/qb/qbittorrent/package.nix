@@ -1,23 +1,23 @@
 {
+  lib,
+  stdenv,
+  fetchFromGitHub,
   boost,
   cmake,
   dbus,
-  fetchFromGitHub,
-  guiSupport ? true,
-  lib,
   libtorrent-rasterbar,
+  llvmPackages,
   nix-update-script,
+  nixosTests,
   openssl,
   pkg-config,
   python3,
   qt6,
-  stdenv,
-  trackerSearch ? true,
-  webuiSupport ? true,
   wrapGAppsHook3,
   zlib,
-  nixosTests,
-  llvmPackages,
+  guiSupport ? true,
+  trackerSearch ? true,
+  webuiSupport ? true,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -70,10 +70,6 @@ stdenv.mkDerivation (finalAttrs: {
     NIX_CFLAGS_LINK = "-fuse-ld=lld";
   };
 
-  qtWrapperArgs = lib.optionals trackerSearch [ "--prefix PATH : ${lib.makeBinPath [ python3 ]}" ];
-
-  dontWrapGApps = true;
-
   postInstall = lib.optionalString stdenv.hostPlatform.isDarwin ''
     APP_NAME=qbittorrent${lib.optionalString (!guiSupport) "-nox"}
     mkdir -p $out/{Applications,bin}
@@ -85,26 +81,32 @@ stdenv.mkDerivation (finalAttrs: {
     qtWrapperArgs+=("''${gappsWrapperArgs[@]}")
   '';
 
+  dontWrapGApps = true;
+  qtWrapperArgs = lib.optionals trackerSearch [ "--prefix PATH : ${lib.makeBinPath [ python3 ]}" ];
+
   passthru = {
-    updateScript = nix-update-script { extraArgs = [ "--version-regex=release-(.*)" ]; };
     tests.testService = nixosTests.qbittorrent;
+    updateScript = nix-update-script { extraArgs = [ "--version-regex=release-(.*)" ]; };
   };
 
   meta = {
     description = "Featureful free software BitTorrent client";
     homepage = "https://www.qbittorrent.org";
     changelog = "https://github.com/qbittorrent/qBittorrent/blob/release-${finalAttrs.version}/Changelog";
+
     license =
       with lib.licenses;
       AND [
         gpl2Plus # code
         gpl3Plus # assets
       ];
-    platforms = lib.platforms.unix;
+
     maintainers = with lib.maintainers; [
       Anton-Latukha
       kashw2
     ];
+
+    platforms = lib.platforms.unix;
     mainProgram = "qbittorrent" + lib.optionalString (!guiSupport) "-nox";
   };
 })

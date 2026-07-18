@@ -1,13 +1,13 @@
 {
-  cairo,
-  fetchFromGitHub,
   lib,
-  libx11,
+  stdenv,
+  fetchFromGitHub,
+  cairo,
   libjack2,
   libsndfile,
+  libx11,
   lv2,
   pkg-config,
-  stdenv,
   xorgproto,
 }:
 
@@ -23,7 +23,11 @@ stdenv.mkDerivation (finalAttrs: {
     fetchSubmodules = true;
   };
 
-  __structuredAttrs = true;
+  postPatch = ''
+    substituteInPlace Ratatouille/makefile \
+      --replace-fail "-flto=auto" ""
+  '';
+
   strictDeps = true;
 
   nativeBuildInputs = [
@@ -49,14 +53,11 @@ stdenv.mkDerivation (finalAttrs: {
     "STRIP=:"
   ];
 
-  postPatch = ''
-    substituteInPlace Ratatouille/makefile \
-      --replace-fail "-flto=auto" ""
-  '';
+  __structuredAttrs = true;
 
   meta = {
-    homepage = "https://github.com/brummer10/Ratatouille.lv2";
     description = "Neural Amp Modeler LV2 plugin";
+    homepage = "https://github.com/brummer10/Ratatouille.lv2";
     license = lib.licenses.bsd3;
     maintainers = with lib.maintainers; [ eymeric ];
     platforms = lib.platforms.linux;

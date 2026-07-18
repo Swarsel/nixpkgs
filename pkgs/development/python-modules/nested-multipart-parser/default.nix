@@ -1,21 +1,18 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # build-system
-  setuptools,
-
+  buildPythonPackage,
   # tests
   django,
   djangorestframework,
   pytestCheckHook,
+  # build-system
+  setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "nested-multipart-parser";
   version = "1.6.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "remigermain";
@@ -24,22 +21,23 @@ buildPythonPackage rec {
     hash = "sha256-FFALem8Y43tKL32VSZE1pIlOKEPh5Ryzbu509Xjd+VY=";
   };
 
-  build-system = [ setuptools ];
-
   nativeCheckInputs = [
     django
     djangorestframework
     pytestCheckHook
   ];
 
+  build-system = [ setuptools ];
+  pyproject = true;
+
   pythonImportsCheck = [
     "nested_multipart_parser"
   ];
 
   meta = {
-    changelog = "https://github.com/remigermain/nested-multipart-parser/releases/tag/${src.tag}";
     description = "Parser for nested data for 'multipart/form'";
     homepage = "https://github.com/remigermain/nested-multipart-parser";
+    changelog = "https://github.com/remigermain/nested-multipart-parser/releases/tag/${src.tag}";
     license = lib.licenses.mit;
   };
 }

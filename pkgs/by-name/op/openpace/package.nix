@@ -3,11 +3,11 @@
   stdenv,
   fetchFromGitHub,
   autoreconfHook,
-  pkg-config,
-  help2man,
   gengetopt,
-  openssl,
+  help2man,
   nix-update-script,
+  openssl,
+  pkg-config,
 }:
 stdenv.mkDerivation (finalAttrs: {
   pname = "openpace";
@@ -43,8 +43,8 @@ stdenv.mkDerivation (finalAttrs: {
     description = "Cryptographic library for EAC version 2";
     homepage = "https://github.com/frankmorgner/openpace";
     license = lib.licenses.gpl3Plus;
-    platforms = lib.platforms.unix;
     maintainers = with lib.maintainers; [ vaavaav ];
+    platforms = lib.platforms.unix;
     broken = !stdenv.buildPlatform.canExecute stdenv.hostPlatform; # help2man
   };
 })

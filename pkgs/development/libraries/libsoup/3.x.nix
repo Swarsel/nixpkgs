@@ -1,30 +1,35 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchurl,
+  brotli,
+  buildPackages,
+  gi-docgen,
   glib,
+  gnome,
+  gobject-introspection,
+  libnghttp2,
+  libpsl,
+  libsysprof-capture,
   meson,
   ninja,
   pkg-config,
-  gnome,
-  libsysprof-capture,
+  python3,
   sqlite,
-  buildPackages,
-  gobject-introspection,
+  vala,
   withIntrospection ?
     lib.meta.availableOn stdenv.hostPlatform gobject-introspection
     && stdenv.hostPlatform.emulatorAvailable buildPackages,
-  vala,
-  libpsl,
-  python3,
-  gi-docgen,
-  brotli,
-  libnghttp2,
 }:
 
 stdenv.mkDerivation rec {
   pname = "libsoup";
   version = "3.6.6";
+
+  src = fetchurl {
+    url = "mirror://gnome/sources/${pname}/${lib.versions.majorMinor version}/${pname}-${version}.tar.xz";
+    hash = "sha256-Ue0K4G+dWkD0Af9Fni5fZS+aUQt3MOE1nuZtFNSHJ0A=";
+  };
 
   outputs = [
     "out"
@@ -32,14 +37,9 @@ stdenv.mkDerivation rec {
   ]
   ++ lib.optional withIntrospection "devdoc";
 
-  src = fetchurl {
-    url = "mirror://gnome/sources/${pname}/${lib.versions.majorMinor version}/${pname}-${version}.tar.xz";
-    hash = "sha256-Ue0K4G+dWkD0Af9Fni5fZS+aUQt3MOE1nuZtFNSHJ0A=";
-  };
-
-  depsBuildBuild = [
-    pkg-config
-  ];
+  postPatch = ''
+    patchShebangs libsoup/
+  '';
 
   nativeBuildInputs = [
     meson
@@ -86,19 +86,19 @@ stdenv.mkDerivation rec {
 
   # TODO: For some reason the pkg-config setup hook does not pick this up.
   env.PKG_CONFIG_PATH = "${libnghttp2.dev}/lib/pkgconfig";
-
   # HSTS tests fail.
   doCheck = false;
-  separateDebugInfo = true;
-
-  postPatch = ''
-    patchShebangs libsoup/
-  '';
 
   postFixup = ''
     # Cannot be in postInstall, otherwise _multioutDocs hook in preFixup will move right back.
     moveToOutput "share/doc" "$devdoc"
   '';
+
+  depsBuildBuild = [
+    pkg-config
+  ];
+
+  separateDebugInfo = true;
 
   passthru = {
     updateScript = gnome.updateScript {
@@ -109,10 +109,10 @@ stdenv.mkDerivation rec {
   };
 
   meta = {
+    inherit (glib.meta) maintainers platforms teams;
     description = "HTTP client/server library for GNOME";
     homepage = "https://gitlab.gnome.org/GNOME/libsoup";
-    license = lib.licenses.lgpl2Plus;
     changelog = "https://gitlab.gnome.org/GNOME/libsoup/-/blob/${version}/NEWS";
-    inherit (glib.meta) maintainers platforms teams;
+    license = lib.licenses.lgpl2Plus;
   };
 }

@@ -1,19 +1,18 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   django,
-  python,
+  djangorestframework,
   pytest-django,
   pytestCheckHook,
-  djangorestframework,
+  python,
   setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "djangorestframework-jsonp";
   version = "1.0.2";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "jpadilla";
@@ -22,21 +21,14 @@ buildPythonPackage rec {
     hash = "sha256-4mIO69GhtvbQBtztHVQYIDDDSZpKg0g7BFNHEupiYTs=";
   };
 
-  build-system = [ setuptools ];
-
-  dependencies = [
-    django
-    djangorestframework
-  ];
+  # Test fail with Django >=4
+  # https://github.com/jpadilla/django-rest-framework-jsonp/issues/14
+  doCheck = false;
 
   checkInputs = [
     pytestCheckHook
     pytest-django
   ];
-
-  # Test fail with Django >=4
-  # https://github.com/jpadilla/django-rest-framework-jsonp/issues/14
-  doCheck = false;
 
   checkPhase = ''
     runHook preCheck
@@ -45,6 +37,14 @@ buildPythonPackage rec {
     runHook postCheck
   '';
 
+  build-system = [ setuptools ];
+
+  dependencies = [
+    django
+    djangorestframework
+  ];
+
+  pyproject = true;
   pythonImportsCheck = [ "rest_framework_jsonp" ];
 
   meta = {

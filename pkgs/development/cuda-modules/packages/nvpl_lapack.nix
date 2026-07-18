@@ -1,6 +1,5 @@
 { buildRedist, nvpl_blas }:
 buildRedist {
-  redistName = "nvpl";
   pname = "nvpl_lapack";
 
   outputs = [
@@ -11,6 +10,7 @@ buildRedist {
   ];
 
   buildInputs = [ nvpl_blas ];
+  redistName = "nvpl";
 
   meta = {
     description = "Part of NVIDIA Performance Libraries that provides standard Fortran 90 LAPACK and LAPACKE APIs";

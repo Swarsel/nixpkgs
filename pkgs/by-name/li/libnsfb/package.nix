@@ -3,8 +3,8 @@
   stdenv,
   fetchurl,
   SDL,
-  pkg-config,
   netsurf-buildsystem,
+  pkg-config,
   uilib ? "gtk3",
 }:
 
@@ -37,9 +37,9 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   meta = {
-    homepage = "https://www.netsurf-browser.org/projects/libnsfb/";
-    description = "Netsurf framebuffer abstraction library";
-    license = lib.licenses.mit;
     inherit (netsurf-buildsystem.meta) maintainers platforms;
+    description = "Netsurf framebuffer abstraction library";
+    homepage = "https://www.netsurf-browser.org/projects/libnsfb/";
+    license = lib.licenses.mit;
   };
 })

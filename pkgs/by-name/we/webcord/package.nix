@@ -1,13 +1,13 @@
 {
   lib,
-  buildNpmPackage,
   fetchFromGitHub,
+  buildNpmPackage,
   copyDesktopItems,
-  python3,
-  xdg-utils,
   electron_42,
   makeDesktopItem,
   nodejs_22,
+  python3,
+  xdg-utils,
 }:
 
 buildNpmPackage.override { nodejs = nodejs_22; } rec {
@@ -21,23 +21,20 @@ buildNpmPackage.override { nodejs = nodejs_22; } rec {
     hash = "sha256-td04ayA1AVDy6WCPQH3Y8zmZ6VfObqzFvm+cD8WZum4=";
   };
 
-  npmDepsHash = "sha256-LLxDJOLLBnjHRHTH/q1o3szu+armmwx9ZIKYKHUO+Z0=";
-
-  makeCacheWritable = true;
+  # remove husky commit hooks, errors and aren't needed for packaging
+  postPatch = ''
+    rm -rf .husky
+  '';
 
   nativeBuildInputs = [
     copyDesktopItems
     python3
   ];
 
+  npmDepsHash = "sha256-LLxDJOLLBnjHRHTH/q1o3szu+armmwx9ZIKYKHUO+Z0=";
   # npm install will error when electron tries to download its binary
   # we don't need it anyways since we wrap the program with our nixpkgs electron
   env.ELECTRON_SKIP_BINARY_DOWNLOAD = "1";
-
-  # remove husky commit hooks, errors and aren't needed for packaging
-  postPatch = ''
-    rm -rf .husky
-  '';
 
   # override installPhase so we can copy the only folders that matter
   installPhase =
@@ -66,31 +63,35 @@ buildNpmPackage.override { nodejs = nodejs_22; } rec {
 
   desktopItems = [
     (makeDesktopItem {
-      name = "webcord";
-      exec = "webcord";
-      icon = "webcord";
-      desktopName = "WebCord";
-      comment = meta.description;
       categories = [
         "Network"
         "InstantMessaging"
       ];
+
+      comment = meta.description;
+      desktopName = "WebCord";
+      exec = "webcord";
+      icon = "webcord";
+      name = "webcord";
     })
   ];
 
+  makeCacheWritable = true;
   passthru.updateScript = ./update.sh;
 
   meta = {
     description = "Discord and SpaceBar electron-based client implemented without Discord API";
     homepage = "https://github.com/SpacingBat3/WebCord";
-    downloadPage = "https://github.com/SpacingBat3/WebCord/releases";
     changelog = "https://github.com/SpacingBat3/WebCord/releases/tag/v${version}";
     license = lib.licenses.mit;
-    mainProgram = "webcord";
+
     maintainers = with lib.maintainers; [
       huantian
       NotAShelf
     ];
+
     platforms = lib.platforms.linux;
+    mainProgram = "webcord";
+    downloadPage = "https://github.com/SpacingBat3/WebCord/releases";
   };
 }

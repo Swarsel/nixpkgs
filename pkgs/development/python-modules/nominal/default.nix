@@ -1,27 +1,26 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
+  click,
+  conjure-python-client,
+  ffmpeg-python,
   hatchling,
-  requests,
   nominal-api,
   nominal-api-protos,
-  python-dateutil,
-  conjure-python-client,
   pandas,
-  typing-extensions,
-  click,
-  pyyaml,
-  tabulate,
-  ffmpeg-python,
   pytest-cov-stub,
   pytestCheckHook,
+  python-dateutil,
+  pyyaml,
+  requests,
+  tabulate,
+  typing-extensions,
 }:
 
 buildPythonPackage rec {
   pname = "nominal";
   version = "1.104.3";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "nominal-io";
@@ -29,6 +28,12 @@ buildPythonPackage rec {
     tag = "v${version}";
     hash = "sha256-+hJzDQND+eQ/za+V7HXHhwoGfIusXBUUWWSYwWu39ew=";
   };
+
+  nativeCheckInputs = [
+    nominal-api-protos
+    pytest-cov-stub
+    pytestCheckHook
+  ];
 
   build-system = [ hatchling ];
 
@@ -45,24 +50,20 @@ buildPythonPackage rec {
     ffmpeg-python
   ];
 
+  disabledTestPaths = [
+    "tests/cli/test_auth.py::test_good_request"
+  ];
+
   optional-dependencies = {
     protos = [ nominal-api-protos ];
     # tdms = [ nptdms ]; nptdms is not in nixpkgs
   };
 
-  nativeCheckInputs = [
-    nominal-api-protos
-    pytest-cov-stub
-    pytestCheckHook
-  ];
+  pyproject = true;
 
   pythonImportsCheck = [
     "nominal"
     "nominal.core"
-  ];
-
-  disabledTestPaths = [
-    "tests/cli/test_auth.py::test_good_request"
   ];
 
   meta = {

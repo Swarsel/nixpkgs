@@ -8,7 +8,6 @@
 buildPythonPackage rec {
   pname = "pyombi";
   version = "0.1.10";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
@@ -16,10 +15,9 @@ buildPythonPackage rec {
   };
 
   propagatedBuildInputs = [ requests ];
-
   # Project has no tests
   doCheck = false;
-
+  format = "setuptools";
   pythonImportsCheck = [ "pyombi" ];
 
   meta = {

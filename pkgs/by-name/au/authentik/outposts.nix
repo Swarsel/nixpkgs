@@ -1,6 +1,6 @@
 {
-  callPackage,
   authentik,
+  callPackage,
   apiGoVendorHook ? authentik.apiGoVendorHook,
   vendorHash ? authentik.proxy.vendorHash,
 }:

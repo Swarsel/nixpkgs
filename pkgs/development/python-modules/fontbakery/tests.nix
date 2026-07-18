@@ -1,6 +1,6 @@
 {
-  fontbakery,
   lib,
+  fontbakery,
   runCommand,
 }:
 

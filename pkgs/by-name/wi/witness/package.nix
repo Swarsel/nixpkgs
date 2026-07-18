@@ -1,12 +1,10 @@
 {
   lib,
   stdenv,
-  buildGoModule,
   fetchFromGitHub,
-
+  buildGoModule,
   buildPackages,
   installShellFiles,
-
   versionCheckHook,
 }:
 
@@ -20,18 +18,9 @@ buildGoModule (finalAttrs: {
     tag = "v${finalAttrs.version}";
     sha256 = "sha256-KdTKzBATux5QgSPd0qQBVZq0oZsDyLWhQtg+O/OFevM=";
   };
-  vendorHash = "sha256-wog0BwJSHJxa+YFEMiCr6Cg1cQL50fSiqI3AyJ44xiU=";
 
   nativeBuildInputs = [ installShellFiles ];
-
-  # We only want the witness binary, not the helper utilities for generating docs.
-  subPackages = [ "." ];
-
-  ldflags = [
-    "-s"
-    "-w"
-    "-X github.com/in-toto/witness/cmd.Version=${finalAttrs.src.tag}"
-  ];
+  vendorHash = "sha256-wog0BwJSHJxa+YFEMiCr6Cg1cQL50fSiqI3AyJ44xiU=";
 
   # Feed in all tests for testing
   # This is because subPackages above limits what is built to just what we
@@ -58,13 +47,24 @@ buildGoModule (finalAttrs: {
     '';
 
   doInstallCheck = true;
+
   nativeInstallCheckInputs = [
     versionCheckHook
   ];
+
+  ldflags = [
+    "-s"
+    "-w"
+    "-X github.com/in-toto/witness/cmd.Version=${finalAttrs.src.tag}"
+  ];
+
+  # We only want the witness binary, not the helper utilities for generating docs.
+  subPackages = [ "." ];
   versionCheckProgramArg = "version";
 
   meta = {
     description = "Pluggable framework for software supply chain security. Witness prevents tampering of build materials and verifies the integrity of the build process from source to target";
+
     longDescription = ''
       Witness prevents tampering of build materials and verifies the integrity
       of the build process from source to target. It works by wrapping commands
@@ -74,13 +74,16 @@ buildGoModule (finalAttrs: {
       PKI distribution system will mitigate against many software supply chain
       attack vectors and can be used as a framework for automated governance.
     '';
-    mainProgram = "witness";
+
     homepage = "https://github.com/in-toto/witness";
     changelog = "https://github.com/in-toto/witness/releases/tag/${finalAttrs.src.tag}";
     license = lib.licenses.asl20;
+
     maintainers = with lib.maintainers; [
       fkautz
       jk
     ];
+
+    mainProgram = "witness";
   };
 })

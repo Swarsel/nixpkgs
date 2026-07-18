@@ -1,15 +1,15 @@
 {
   lib,
-  stdenvNoCC,
   fetchurl,
-  unzip,
+  common-updater-scripts,
+  genericUpdater,
+  gnused,
   jre,
   jre8,
-  genericUpdater,
-  writeShellScript,
   makeWrapper,
-  common-updater-scripts,
-  gnused,
+  stdenvNoCC,
+  unzip,
+  writeShellScript,
 }:
 
 let
@@ -18,14 +18,14 @@ let
 
   common =
     {
-      pname,
-      version,
-      src,
       description,
-      java ? jre,
-      prog ? null,
+      pname,
+      src,
+      version,
       jar ? null,
+      java ? jre,
       license ? lib.licenses.mpl20,
+      prog ? null,
       updateScript ? null,
     }:
     stdenvNoCC.mkDerivation (
@@ -41,8 +41,6 @@ let
           unzip
           makeWrapper
         ];
-
-        sourceRoot = ".";
 
         installPhase = ''
           runHook preInstall
@@ -70,17 +68,21 @@ let
         ''
         + "runHook postInstall";
 
+        sourceRoot = ".";
+
         passthru = lib.optionalAttrs (updateScript != null) {
           inherit updateScript;
         };
 
         meta = {
           inherit description license mainProgram;
+
           homepage =
             if versionAtLeast finalAttrs.version "11" then
               "https://www.saxonica.com/products/latest.xml"
             else
               "https://www.saxonica.com/products/archive.xml";
+
           sourceProvenance = with lib.sourceTypes; [ binaryBytecode ];
           maintainers = with lib.maintainers; [ rvl ];
           platforms = lib.platforms.all;
@@ -97,6 +99,14 @@ let
   # Older releases were uploaded to SourceForge. They are also
   # available from the Saxon-Archive GitHub repository.
   github = {
+    downloadUrl =
+      version:
+      let
+        tag = "SaxonHE${dashify version}";
+        filename = "${major version}/Java/${tag}J.zip";
+      in
+      "https://raw.githubusercontent.com/Saxonica/Saxon-HE/${tag}/${filename}";
+
     updateScript =
       version:
       genericUpdater {
@@ -114,14 +124,6 @@ let
               -e "/^''${major_ver:-[0-9]+}\./p"
         '';
       };
-
-    downloadUrl =
-      version:
-      let
-        tag = "SaxonHE${dashify version}";
-        filename = "${major version}/Java/${tag}J.zip";
-      in
-      "https://raw.githubusercontent.com/Saxonica/Saxon-HE/${tag}/${filename}";
   };
 
 in
@@ -129,39 +131,47 @@ in
   saxon = common rec {
     pname = "saxon";
     version = "6.5.3";
+
     src = fetchurl {
       url = "mirror://sourceforge/saxon/OldFiles/${version}/saxon${
         builtins.replaceStrings [ "." ] [ "_" ] version
       }.zip";
+
       hash = "sha256-Q28wzqyUCPBJ2C3a8acdG2lmeee8GeEAgg9z8oUfvlA=";
     };
+
     description = "XSLT 1.0 processor";
+    java = jre8;
     # https://saxon.sourceforge.net/saxon6.5.3/conditions.html
     license = lib.licenses.mpl10;
-    java = jre8;
   };
 
-  saxonb_8_8 = common rec {
-    pname = "saxonb";
-    version = "8.8";
-    jar = "saxon8";
+  saxon_11-he = common rec {
+    pname = "saxon-he";
+    version = "11.7";
+
     src = fetchurl {
-      url = "mirror://sourceforge/saxon/saxonb${dashify version}j.zip";
-      hash = "sha256-aOk+BB5kAbZElAifVG+AP1bo7Se3patzISA40bzLf5U=";
+      url = github.downloadUrl version;
+      sha256 = "MGzhUW9ZLVvTSqEdpAZWAiwTYxCZxbn26zESDmIe4Vo=";
     };
-    description = "Complete and conformant processor of XSLT 2.0, XQuery 1.0, and XPath 2.0";
-    java = jre8;
+
+    description = "Processor for XSLT 3.0, XPath 2.0 and 3.1, and XQuery 3.1";
+    jar = "saxon-he-${version}";
+    updateScript = github.updateScript version;
   };
 
-  saxonb_9_1 = common rec {
-    pname = "saxonb";
-    version = "9.1.0.8";
-    jar = "saxon9";
+  saxon_12-he = common rec {
+    pname = "saxon-he";
+    version = "12.9";
+
     src = fetchurl {
-      url = "mirror://sourceforge/saxon/Saxon-B/${version}/saxonb${dashify version}j.zip";
-      sha256 = "1d39jdnwr3v3pzswm81zry6yikqlqy9dp2l2wmpqdiw00r5drg4j";
+      url = github.downloadUrl version;
+      hash = "sha256-8olb7zeUESxlChWL4nw5qG6IwXF+u44OiAZ9HwdjXRI=";
     };
-    description = "Complete and conformant processor of XSLT 2.0, XQuery 1.0, and XPath 2.0";
+
+    description = "Processor for XSLT 3.0, XPath 3.1, and XQuery 3.1";
+    jar = "saxon-he-${version}";
+    updateScript = github.updateScript version;
   };
 
   # Saxon-HE (home edition) replaces Saxon-B as the open source
@@ -169,35 +179,40 @@ in
   saxon_9-he = common rec {
     pname = "saxon-he";
     version = "9.9.0.1";
-    jar = "saxon9he";
+
     src = fetchurl {
       url = "mirror://sourceforge/saxon/Saxon-HE/${majorMinor version}/SaxonHE${dashify version}J.zip";
       sha256 = "1inxd7ia7rl9fxfrw8dy9sb7rqv76ipblaki5262688wf2dscs60";
     };
+
     description = "Processor for XSLT 3.0, XPath 2.0 and 3.1, and XQuery 3.1";
+    jar = "saxon9he";
   };
 
-  saxon_11-he = common rec {
-    pname = "saxon-he";
-    version = "11.7";
-    jar = "saxon-he-${version}";
+  saxonb_8_8 = common rec {
+    pname = "saxonb";
+    version = "8.8";
+
     src = fetchurl {
-      url = github.downloadUrl version;
-      sha256 = "MGzhUW9ZLVvTSqEdpAZWAiwTYxCZxbn26zESDmIe4Vo=";
+      url = "mirror://sourceforge/saxon/saxonb${dashify version}j.zip";
+      hash = "sha256-aOk+BB5kAbZElAifVG+AP1bo7Se3patzISA40bzLf5U=";
     };
-    updateScript = github.updateScript version;
-    description = "Processor for XSLT 3.0, XPath 2.0 and 3.1, and XQuery 3.1";
+
+    description = "Complete and conformant processor of XSLT 2.0, XQuery 1.0, and XPath 2.0";
+    jar = "saxon8";
+    java = jre8;
   };
 
-  saxon_12-he = common rec {
-    pname = "saxon-he";
-    version = "12.9";
-    jar = "saxon-he-${version}";
+  saxonb_9_1 = common rec {
+    pname = "saxonb";
+    version = "9.1.0.8";
+
     src = fetchurl {
-      url = github.downloadUrl version;
-      hash = "sha256-8olb7zeUESxlChWL4nw5qG6IwXF+u44OiAZ9HwdjXRI=";
+      url = "mirror://sourceforge/saxon/Saxon-B/${version}/saxonb${dashify version}j.zip";
+      sha256 = "1d39jdnwr3v3pzswm81zry6yikqlqy9dp2l2wmpqdiw00r5drg4j";
     };
-    updateScript = github.updateScript version;
-    description = "Processor for XSLT 3.0, XPath 3.1, and XQuery 3.1";
+
+    description = "Complete and conformant processor of XSLT 2.0, XQuery 1.0, and XPath 2.0";
+    jar = "saxon9";
   };
 }

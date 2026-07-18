@@ -32,7 +32,7 @@ swiftPackages.stdenv.mkDerivation {
     homepage = "https://github.com/vldmrkl/airdrop-cli";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ Enzime ];
-    mainProgram = "airdrop";
     platforms = lib.platforms.darwin;
+    mainProgram = "airdrop";
   };
 }

@@ -1,12 +1,12 @@
 {
-  fetchurl,
   lib,
   stdenv,
-  pkg-config,
+  fetchurl,
   courier-unicode,
-  pcre2,
   libidn2,
+  pcre2,
   perl,
+  pkg-config,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -18,7 +18,9 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-PFiQ9NQzItTmPz6Aw6YJzeYF9ylm1iNPyIZBjZSdJLk=";
   };
 
+  patches = [ ./maildrop.configure.hack.patch ]; # for building in chroot
   nativeBuildInputs = [ pkg-config ];
+
   buildInputs = [
     courier-unicode
     libidn2
@@ -26,13 +28,11 @@ stdenv.mkDerivation (finalAttrs: {
     perl
   ];
 
-  patches = [ ./maildrop.configure.hack.patch ]; # for building in chroot
-
   doCheck = false; # fails with "setlocale: LC_ALL: cannot change locale (en_US.UTF-8)"
 
   meta = {
-    homepage = "http://www.courier-mta.org/maildrop/";
     description = "Mail filter/mail delivery agent that is used by the Courier Mail Server";
+    homepage = "http://www.courier-mta.org/maildrop/";
     license = lib.licenses.gpl3;
     platforms = lib.platforms.linux;
   };

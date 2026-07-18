@@ -2,19 +2,19 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  makeWrapper,
-  nodejs,
-  pnpm_10,
-  fetchPnpmDeps,
-  pnpmConfigHook,
   autoPatchelfHook,
   cacert,
-  llvmPackages,
-  musl,
-  libx11,
+  fetchPnpmDeps,
   jq,
+  libx11,
+  llvmPackages,
+  makeWrapper,
   moreutils,
+  musl,
   nix-update-script,
+  nodejs,
+  pnpmConfigHook,
+  pnpm_10,
   versionCheckHook,
   writableTmpDirAsHomeHook,
 }:
@@ -29,36 +29,10 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-o/kD67hkj+/pr1grCmTsrWUggcusRWoHegbL4hIEdAw=";
   };
 
-  pnpmDeps = fetchPnpmDeps {
-    inherit (finalAttrs)
-      pname
-      version
-      src
-      postPatch
-      ;
-    pnpm = pnpm_10;
-    fetcherVersion = 3;
-    hash = "sha256-bc/L3bQl2BlcoqpTGBrFbGNl8IeRPoV65EVykAa8euA=";
-  };
   # pnpm packageManager version in workers-sdk root package.json may not match nixpkgs
   postPatch = ''
     jq 'del(.packageManager)' package.json | sponge package.json
   '';
-
-  passthru.updateScript = nix-update-script {
-    extraArgs = [
-      "--version-regex=wrangler@(.*)"
-    ];
-  };
-
-  buildInputs = [
-    llvmPackages.libcxx
-    llvmPackages.libunwind
-  ]
-  ++ lib.optionals (stdenv.hostPlatform.isLinux) [
-    musl # not used, but requires extra work to remove
-    libx11 # for the clipboardy package
-  ];
 
   nativeBuildInputs = [
     makeWrapper
@@ -70,6 +44,15 @@ stdenv.mkDerivation (finalAttrs: {
   ]
   ++ lib.optionals (stdenv.hostPlatform.isLinux) [
     autoPatchelfHook
+  ];
+
+  buildInputs = [
+    llvmPackages.libcxx
+    llvmPackages.libunwind
+  ]
+  ++ lib.optionals (stdenv.hostPlatform.isLinux) [
+    musl # not used, but requires extra work to remove
+    libx11 # for the clipboardy package
   ];
 
   # @cloudflare/vitest-pool-workers wanted to run a server as part of the build process
@@ -106,25 +89,54 @@ stdenv.mkDerivation (finalAttrs: {
       --set-default SSL_CERT_FILE "${cacert}/etc/ssl/certs/ca-bundle.crt" # https://github.com/cloudflare/workers-sdk/issues/3264
     runHook postInstall
   '';
+
   doInstallCheck = true;
+
   nativeInstallCheckInputs = [
     versionCheckHook
     writableTmpDirAsHomeHook
   ];
-  versionCheckKeepEnvironment = [ "HOME" ];
 
   preFixup = ''
     # fixupPhase spends a lot of time trying to strip text files, which is especially slow on Darwin
     stripExclude+=("*.js" "*.ts" "*.map" "*.json" "*.md")
   '';
 
+  pnpmDeps = fetchPnpmDeps {
+    inherit (finalAttrs)
+      pname
+      version
+      src
+      postPatch
+      ;
+
+    fetcherVersion = 3;
+    hash = "sha256-bc/L3bQl2BlcoqpTGBrFbGNl8IeRPoV65EVykAa8euA=";
+    pnpm = pnpm_10;
+  };
+
+  versionCheckKeepEnvironment = [ "HOME" ];
+
+  passthru.updateScript = nix-update-script {
+    extraArgs = [
+      "--version-regex=wrangler@(.*)"
+    ];
+  };
+
   meta = {
+    # Tunneling and other parts of wrangler, which require workerd won't run on
+    # other systems where precompiled binaries are not provided, but most
+    # commands are will still work everywhere.
+    # Potential improvements: build workerd from source instead.
+    inherit (nodejs.meta) platforms;
     description = "Command-line interface for all things Cloudflare Workers";
     homepage = "https://github.com/cloudflare/workers-sdk#readme";
+
     license = with lib.licenses; [
       mit
       apsl20
     ];
+
     maintainers = with lib.maintainers; [
       seanrmurphy
       dezren39
@@ -132,11 +144,7 @@ stdenv.mkDerivation (finalAttrs: {
       ezrizhu
       yuannan
     ];
+
     mainProgram = "wrangler";
-    # Tunneling and other parts of wrangler, which require workerd won't run on
-    # other systems where precompiled binaries are not provided, but most
-    # commands are will still work everywhere.
-    # Potential improvements: build workerd from source instead.
-    inherit (nodejs.meta) platforms;
   };
 })

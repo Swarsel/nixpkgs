@@ -1,71 +1,71 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchurl,
-  fetchpatch,
-  replaceVars,
+  aalib,
   autoreconfHook,
-  pkg-config,
-  intltool,
   babl,
-  gegl,
-  gtk2,
-  glib,
-  gdk-pixbuf,
-  isocodes,
-  pango,
   cairo,
-  freetype,
+  desktopToDarwinBundle,
+  fetchpatch,
   fontconfig,
+  freetype,
+  gdk-pixbuf,
+  gegl,
+  gettext,
+  gexiv2,
+  ghostscript,
+  glib,
+  glib-networking,
+  gtk-doc,
+  gtk-mac-integration-gtk2,
+  gtk2,
+  harfbuzz,
+  intltool,
+  isocodes,
   lcms,
-  libpng,
+  libexif,
+  libgudev,
+  libheif,
   libjpeg,
   libjxl,
+  libmng,
+  libmypaint,
+  libpng,
+  librsvg,
+  libtiff,
+  libwebp,
+  libwmf,
+  libxpm,
+  libxslt,
+  libzip,
+  makeWrapper,
+  mypaint-brushes1,
+  openexr,
+  pango,
+  pkg-config,
   poppler,
   poppler_data,
-  libtiff,
-  libmng,
-  librsvg,
-  libwmf,
-  zlib,
-  libzip,
-  xz,
-  ghostscript,
-  aalib,
+  replaceVars,
   shared-mime-info,
-  libexif,
-  gettext,
-  makeWrapper,
-  gtk-doc,
-  libxpm,
-  glib-networking,
-  libmypaint,
-  gexiv2,
-  harfbuzz,
-  mypaint-brushes1,
-  libwebp,
-  libheif,
-  libxslt,
-  libgudev,
-  openexr,
-  desktopToDarwinBundle,
-  gtk-mac-integration-gtk2,
+  xz,
+  zlib,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
   pname = "gimp";
   version = "2.10.38";
 
+  src = fetchurl {
+    url = "https://download.gimp.org/pub/gimp/v${lib.versions.majorMinor finalAttrs.version}/gimp-${finalAttrs.version}.tar.bz2";
+    sha256 = "sha256-UKhF7sEciDH+hmFweVD1uERuNfMO37ms+Y+FwRM/hW4=";
+  };
+
   outputs = [
     "out"
     "dev"
     "man"
   ];
-
-  src = fetchurl {
-    url = "https://download.gimp.org/pub/gimp/v${lib.versions.majorMinor finalAttrs.version}/gimp-${finalAttrs.version}.tar.bz2";
-    sha256 = "sha256-UKhF7sEciDH+hmFweVD1uERuNfMO37ms+Y+FwRM/hW4=";
-  };
 
   patches = [
     # to remove compiler from the runtime closure, reference was retained via
@@ -86,80 +86,75 @@ stdenv.mkDerivation (finalAttrs: {
     # (see https://gitlab.gnome.org/GNOME/gimp/-/issues/9080)
     ./force-enable-libheif.patch
     (fetchurl {
+      hash = "sha256-BH5cCyg0IjfamHPchZ0HBe8EAPrWeHINQ6r7FHaz0qw=";
       name = "CVE-2025-2760.patch";
       # https://gitlab.gnome.org/GNOME/gimp/-/commit/c17b324910204a47828d6fbb542bdcefbd66bcc1
       url = "https://salsa.debian.org/gnome-team/gimp/-/raw/4cb293ec1a3b273281d5d9daf94b833c293797d7/debian/patches/CVE-2025-2760.patch";
-      hash = "sha256-BH5cCyg0IjfamHPchZ0HBe8EAPrWeHINQ6r7FHaz0qw=";
     })
     (fetchpatch {
+      hash = "sha256-I5dyD3gLbVdk5bTft3TveTWgBN7RouNpIByKbCYmGbo=";
       name = "CVE-2025-2761.patch";
       url = "https://gitlab.gnome.org/GNOME/gimp/-/commit/0806bc76ca74543d20e1307ccf6aebd26395c56c.patch";
-      hash = "sha256-I5dyD3gLbVdk5bTft3TveTWgBN7RouNpIByKbCYmGbo=";
     })
     (fetchpatch {
+      hash = "sha256-QO8u5XQD3XR+sUN//LsvWpTxHe0i9m4VvdnsUGnor/0=";
       name = "CVE-2025-5473.patch";
       url = "https://gitlab.gnome.org/GNOME/gimp/-/commit/c855d1df60ebaf5ef8d02807d448eb088f147a2b.patch";
-      hash = "sha256-QO8u5XQD3XR+sUN//LsvWpTxHe0i9m4VvdnsUGnor/0=";
     })
     (fetchurl {
+      hash = "sha256-cbALgUEUO8k5jaN5Y7jUR/dHJ9rHF06m9zEM/AOcFDk=";
       name = "CVE-2025-6035.patch";
       # https://gitlab.gnome.org/GNOME/gimp/-/commit/548bc3a46d54711d974aae9ce1bce291376c0436
       url = "https://salsa.debian.org/gnome-team/gimp/-/raw/4cb293ec1a3b273281d5d9daf94b833c293797d7/debian/patches/CVE-2025-6035.patch";
-      hash = "sha256-cbALgUEUO8k5jaN5Y7jUR/dHJ9rHF06m9zEM/AOcFDk=";
     })
     (fetchpatch {
+      hash = "sha256-/JAUhbPko0EdHGSCnZIWVqPcXpdvRML5Fqx5w/B3P8k=";
       name = "CVE-2025-48797_1.patch";
       url = "https://gitlab.gnome.org/GNOME/gimp/-/commit/8d309dd0385fdd298520b69148542375f56ef977.patch";
-      hash = "sha256-/JAUhbPko0EdHGSCnZIWVqPcXpdvRML5Fqx5w/B3P8k=";
     })
     (fetchpatch {
+      hash = "sha256-tNG2fpZ0iRk0thrcxjZqb/zgvf4ctmXEy8iSOz5ufCo=";
       name = "CVE-2025-48797_2.patch";
       url = "https://gitlab.gnome.org/GNOME/gimp/-/commit/97f8c2e468cffce70c6772e74cbff8eda4e8c180.patch";
-      hash = "sha256-tNG2fpZ0iRk0thrcxjZqb/zgvf4ctmXEy8iSOz5ufCo=";
     })
     (fetchpatch {
+      hash = "sha256-Byvc0i8TS33ZAKONxkrS0iFdWTXZP2w8Ma+k15DGVkw=";
       name = "CVE-2025-48797_3.patch";
       url = "https://gitlab.gnome.org/GNOME/gimp/-/commit/d7f0829ae995ca7ca9c64851a1ed03b11702ef1c.patch";
-      hash = "sha256-Byvc0i8TS33ZAKONxkrS0iFdWTXZP2w8Ma+k15DGVkw=";
     })
     (fetchpatch {
+      hash = "sha256-PZvP4B3U+YalxWwmLhXyTZRacTtkG289JUWsQtZW4BE=";
       name = "CVE-2025-48797_4.patch";
       url = "https://gitlab.gnome.org/GNOME/gimp/-/commit/ffb7cad1a402377927bc2dc62dad324ae03cec92.patch";
-      hash = "sha256-PZvP4B3U+YalxWwmLhXyTZRacTtkG289JUWsQtZW4BE=";
     })
     (fetchpatch {
+      hash = "sha256-VyPbSyRTo+sYg2JkAH3h5exYHDMqIEHc9gYRcM/8wzg=";
       name = "CVE-2025-48798_1.patch";
       url = "https://gitlab.gnome.org/GNOME/gimp/-/commit/ebf0b569a63f15b5dc7532f16936104af1e09f02.patch";
-      hash = "sha256-VyPbSyRTo+sYg2JkAH3h5exYHDMqIEHc9gYRcM/8wzg=";
     })
     (fetchpatch {
+      hash = "sha256-ACoxobr2ySpH9VJVdJyWxQpZXOTSEs1me4Q0Rq3bDaE=";
       name = "CVE-2025-48798_2.patch";
       url = "https://gitlab.gnome.org/GNOME/gimp/-/commit/e7523ed41271e48a909011b8598d496c1be642e2.patch";
-      hash = "sha256-ACoxobr2ySpH9VJVdJyWxQpZXOTSEs1me4Q0Rq3bDaE=";
     })
     (fetchurl {
+      hash = "sha256-xkhmlOqk2QiOi4Le7v6e9PdTNxVHpSmuZJTTqKdThUo=";
       name = "CVE-2025-10922.patch";
       # https://gitlab.gnome.org/GNOME/gimp/-/commit/0f309f9a8d82f43fa01383bc5a5c41d28727d9e3
       url = "https://salsa.debian.org/gnome-team/gimp/-/raw/4cb293ec1a3b273281d5d9daf94b833c293797d7/debian/patches/CVE-2025-10922.patch";
-      hash = "sha256-xkhmlOqk2QiOi4Le7v6e9PdTNxVHpSmuZJTTqKdThUo=";
     })
     (fetchurl {
+      hash = "sha256-MmYdh74cky/dF3UTHC0xpDW6+aa8Vzh+4ADHCDtIDzo=";
       name = "CVE-2025-10934.patch";
       # https://gitlab.gnome.org/GNOME/gimp/-/commit/5c3e2122d53869599d77ef0f1bdece117b24fd7c
       url = "https://salsa.debian.org/gnome-team/gimp/-/raw/4cb293ec1a3b273281d5d9daf94b833c293797d7/debian/patches/CVE-2025-10934.patch";
-      hash = "sha256-MmYdh74cky/dF3UTHC0xpDW6+aa8Vzh+4ADHCDtIDzo=";
     })
     (fetchurl {
+      hash = "sha256-6g2Zhbx+WxX7lOCYAFII0yDbwILecExwFD22tZDED50=";
       name = "c23.patch";
       url = "https://gitlab.gnome.org/GNOME/gimp/-/commit/85bdad2b2ca7ba36a01bef945b1c4b193a2fa9d0.patch";
-      hash = "sha256-6g2Zhbx+WxX7lOCYAFII0yDbwILecExwFD22tZDED50=";
     })
   ];
-
-  # error: possibly undefined macro: AM_NLS
-  preAutoreconf = ''
-    cp ${gettext}/share/gettext/m4/nls.m4 m4macros
-  '';
 
   nativeBuildInputs = [
     autoreconfHook # hardcode-plugin-interpreters.patch changes Makefile.am
@@ -234,10 +229,6 @@ stdenv.mkDerivation (finalAttrs: {
     "--disable-python" # depends on Python2 which was EOLed on 2020-01-01
   ];
 
-  enableParallelBuilding = true;
-
-  doCheck = true;
-
   env = {
     NIX_CFLAGS_COMPILE = toString (
       [
@@ -256,9 +247,18 @@ stdenv.mkDerivation (finalAttrs: {
     export GIO_EXTRA_MODULES="${glib-networking}/lib/gio/modules:$GIO_EXTRA_MODULES"
   '';
 
+  doCheck = true;
+
   postFixup = ''
     wrapProgram $out/bin/gimp-${lib.versions.majorMinor finalAttrs.version} \
       --set GDK_PIXBUF_MODULE_FILE "$GDK_PIXBUF_MODULE_FILE"
+  '';
+
+  enableParallelBuilding = true;
+
+  # error: possibly undefined macro: AM_NLS
+  preAutoreconf = ''
+    cp ${gettext}/share/gettext/m4/nls.m4 m4macros
   '';
 
   passthru = {
@@ -270,22 +270,22 @@ stdenv.mkDerivation (finalAttrs: {
         + (if lib.versions.minor finalAttrs.version == "99" then 1 else 0)
       )
     }.0";
-    appVersion = lib.versions.majorMinor finalAttrs.version;
-    majorVersion = lib.warn "gimp2.majorVersion is deprecated in favour of gimp2.apiVersion and gimp2.appVersion" finalAttrs.passthru.apiVersion;
-    targetLibDir = "lib/gimp/${finalAttrs.passthru.apiVersion}";
-    targetDataDir = "share/gimp/${finalAttrs.passthru.apiVersion}";
-    targetPluginDir = "${finalAttrs.passthru.targetLibDir}/plug-ins";
-    targetScriptDir = "${finalAttrs.passthru.targetDataDir}/scripts";
 
+    appVersion = lib.versions.majorMinor finalAttrs.version;
     # probably its a good idea to use the same gtk in plugins ?
     gtk = gtk2;
+    majorVersion = lib.warn "gimp2.majorVersion is deprecated in favour of gimp2.apiVersion and gimp2.appVersion" finalAttrs.passthru.apiVersion;
+    targetDataDir = "share/gimp/${finalAttrs.passthru.apiVersion}";
+    targetLibDir = "lib/gimp/${finalAttrs.passthru.apiVersion}";
+    targetPluginDir = "${finalAttrs.passthru.targetLibDir}/plug-ins";
+    targetScriptDir = "${finalAttrs.passthru.targetDataDir}/scripts";
   };
 
   meta = {
     description = "GNU Image Manipulation Program";
     homepage = "https://www.gimp.org/";
-    maintainers = [ ];
     license = lib.licenses.gpl3Plus;
+    maintainers = [ ];
     platforms = lib.platforms.unix;
     mainProgram = "gimp";
   };

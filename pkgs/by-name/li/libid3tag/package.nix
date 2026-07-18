@@ -1,8 +1,8 @@
 {
   lib,
   stdenv,
-  fetchFromCodeberg,
   cmake,
+  fetchFromCodeberg,
   gperf,
   zlib,
 }:
@@ -11,17 +11,17 @@ stdenv.mkDerivation (finalAttrs: {
   pname = "libid3tag";
   version = "0.16.4";
 
-  outputs = [
-    "out"
-    "dev"
-  ];
-
   src = fetchFromCodeberg {
     owner = "tenacityteam";
     repo = "libid3tag";
     rev = finalAttrs.version;
     hash = "sha256-v3tvZmQE6G8Xsk+eluVtlou0Nyhyaisv0UclivQBi28=";
   };
+
+  outputs = [
+    "out"
+    "dev"
+  ];
 
   postPatch = ''
     substituteInPlace packaging/id3tag.pc.in \

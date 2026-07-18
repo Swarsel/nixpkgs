@@ -1,8 +1,8 @@
 {
   lib,
-  buildDotnetModule,
-  fetchFromGitHub,
   stdenv,
+  fetchFromGitHub,
+  buildDotnetModule,
 }:
 
 buildDotnetModule {
@@ -16,25 +16,26 @@ buildDotnetModule {
     hash = "sha256-86s6KLP0DliKOr0fVId7SGN333b7HkiL5p/q0vazwMc=";
   };
 
-  projectFile = [ "CertDump.sln" ];
-  nugetDeps = ./deps.json;
-
-  selfContainedBuild = true;
-  executables = [ "CertDump" ];
-
   dotnetFlags = [
     "-property:ImportByWildcardBeforeSolution=false"
   ];
 
+  executables = [ "CertDump" ];
+  nugetDeps = ./deps.json;
+  projectFile = [ "CertDump.sln" ];
+  selfContainedBuild = true;
+
   meta = {
     description = "Dump certificates from PE files in different formats";
-    mainProgram = "CertDump";
-    homepage = "https://github.com/secana/CertDump";
+
     longDescription = ''
       Cross-Platform tool to dump the signing certificate from a Portable Executable (PE) file.
     '';
+
+    homepage = "https://github.com/secana/CertDump";
     license = lib.licenses.asl20;
     maintainers = [ lib.maintainers.baloo ];
+    mainProgram = "CertDump";
     broken = stdenv.hostPlatform.isAarch64 && stdenv.hostPlatform.isDarwin;
   };
 }

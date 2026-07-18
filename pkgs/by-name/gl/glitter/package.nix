@@ -1,8 +1,8 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
   gitMinimal,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -22,16 +22,16 @@ rustPlatform.buildRustPackage (finalAttrs: {
     gitMinimal
   ];
 
-  # tests require it to be in a git repository
-  preCheck = ''
-    git init
-  '';
-
   # error: Found argument '--test-threads' which wasn't expected, or isn't valid in this context
   checkFlags = [
     "--skip"
     "runs_correctly"
   ];
+
+  # tests require it to be in a git repository
+  preCheck = ''
+    git init
+  '';
 
   meta = {
     description = "Git wrapper that allows you to compress multiple commands into one";

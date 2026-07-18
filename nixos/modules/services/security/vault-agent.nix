@@ -13,10 +13,12 @@ let
     }:
     lib.mkOption {
       default = { };
+
       description = ''
         Attribute set of ${flavour} instances.
         Creates independent `${flavour}-''${name}.service` systemd units for each instance defined here.
       '';
+
       type =
         with lib.types;
         attrsOf (
@@ -30,37 +32,17 @@ let
 
                 package = lib.mkPackageOption pkgs pkgName { };
 
-                user = lib.mkOption {
-                  type = types.str;
-                  default = "root";
-                  description = ''
-                    User under which this instance runs.
-                  '';
-                };
-
                 group = lib.mkOption {
-                  type = types.str;
                   default = "root";
+
                   description = ''
                     Group under which this instance runs.
                   '';
+
+                  type = types.str;
                 };
 
                 settings = lib.mkOption {
-                  type = types.submodule {
-                    freeformType = format.type;
-
-                    options = {
-                      pid_file = lib.mkOption {
-                        default = "/run/${flavour}/${name}.pid";
-                        type = types.str;
-                        description = ''
-                          Path to use for the pid file.
-                        '';
-                      };
-                    };
-                  };
-
                   default = { };
 
                   description =
@@ -80,6 +62,32 @@ let
                       Refer to <https://www.hcl2json.com/> if you are unsure how to convert HCL options to JSON.
                       :::
                     '';
+
+                  type = types.submodule {
+                    options = {
+                      pid_file = lib.mkOption {
+                        default = "/run/${flavour}/${name}.pid";
+
+                        description = ''
+                          Path to use for the pid file.
+                        '';
+
+                        type = types.str;
+                      };
+                    };
+
+                    freeformType = format.type;
+                  };
+                };
+
+                user = lib.mkOption {
+                  default = "root";
+
+                  description = ''
+                    User under which this instance runs.
+                  '';
+
+                  type = types.str;
                 };
               };
             }
@@ -89,40 +97,45 @@ let
 
   createAgentInstance =
     {
+      flavour,
       instance,
       name,
-      flavour,
     }:
     let
       configFile = format.generate "${name}.json" instance.settings;
     in
     lib.mkIf (instance.enable) {
-      description = "${flavour} daemon - ${name}";
-      wantedBy = [ "multi-user.target" ];
       after = [ "network.target" ];
+      description = "${flavour} daemon - ${name}";
       path = [ pkgs.getent ];
-      startLimitIntervalSec = 60;
-      startLimitBurst = 3;
+
       serviceConfig = {
-        User = instance.user;
-        Group = instance.group;
-        RuntimeDirectory = flavour;
+        ExecReload = "${pkgs.coreutils}/bin/kill -SIGHUP $MAINPID";
+
         ExecStart = "${lib.getExe instance.package} ${
           lib.optionalString (flavour == "vault-agent") "agent"
         } -config ${configFile}";
-        ExecReload = "${pkgs.coreutils}/bin/kill -SIGHUP $MAINPID";
+
+        Group = instance.group;
         KillSignal = "SIGINT";
-        TimeoutStopSec = "30s";
         Restart = "on-failure";
+        RuntimeDirectory = flavour;
+        TimeoutStopSec = "30s";
+        User = instance.user;
       };
+
+      startLimitBurst = 3;
+      startLimitIntervalSec = 60;
+      wantedBy = [ "multi-user.target" ];
     };
 in
 {
   options = {
     services.consul-template.instances = commonOptions { pkgName = "consul-template"; };
+
     services.vault-agent.instances = commonOptions {
-      pkgName = "vault";
       flavour = "vault-agent";
+      pkgName = "vault";
     };
   };
 

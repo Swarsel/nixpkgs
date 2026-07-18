@@ -1,9 +1,9 @@
 {
   lib,
-  mkTclDerivation,
-  fetchzip,
   expat,
+  fetchzip,
   gumbo,
+  mkTclDerivation,
   pkg-config,
 }:
 
@@ -16,12 +16,12 @@ mkTclDerivation rec {
     hash = "sha256-zN855tb9JQUtcB7K1DeAjUBrqhoNH44KbeHwp3qewqw=";
   };
 
+  nativeBuildInputs = [ pkg-config ];
+
   buildInputs = [
     expat
     gumbo
   ];
-
-  nativeBuildInputs = [ pkg-config ];
 
   configureFlags = [
     "--enable-html5"

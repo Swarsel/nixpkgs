@@ -1,7 +1,7 @@
 {
   lib,
-  buildDunePackage,
   fetchFromGitHub,
+  buildDunePackage,
 }:
 
 buildDunePackage (finalAttrs: {
@@ -16,8 +16,8 @@ buildDunePackage (finalAttrs: {
   };
 
   meta = {
-    homepage = "https://github.com/UnixJunkie/dolog";
     description = "Minimalistic lazy logger in OCaml";
+    homepage = "https://github.com/UnixJunkie/dolog";
     license = lib.licenses.bsd3;
     maintainers = with lib.maintainers; [ vbgl ];
   };

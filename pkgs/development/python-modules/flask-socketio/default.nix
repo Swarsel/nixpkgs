@@ -1,18 +1,17 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
+  buildPythonPackage,
   flask,
   pytestCheckHook,
   python-socketio,
   redis,
+  setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "flask-socketio";
   version = "5.6.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "miguelgrinberg";
@@ -21,6 +20,11 @@ buildPythonPackage rec {
     hash = "sha256-tTpogVhyMNLLtK3UDOtZD2m2zIbcIAc9Opa/1xdJRa8=";
   };
 
+  nativeCheckInputs = [
+    pytestCheckHook
+    redis
+  ];
+
   build-system = [ setuptools ];
 
   dependencies = [
@@ -28,13 +32,8 @@ buildPythonPackage rec {
     python-socketio
   ];
 
-  nativeCheckInputs = [
-    pytestCheckHook
-    redis
-  ];
-
   enabledTestPaths = [ "test_socketio.py" ];
-
+  pyproject = true;
   pythonImportsCheck = [ "flask_socketio" ];
 
   meta = {

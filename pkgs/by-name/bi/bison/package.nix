@@ -2,9 +2,9 @@
   lib,
   stdenv,
   fetchurl,
+  help2man,
   m4,
   perl,
-  help2man,
 }:
 
 # Note: this package is used for bootstrapping fetchurl, and thus
@@ -21,13 +21,6 @@ stdenv.mkDerivation (finalAttrs: {
     sha256 = "sha256-BsnhO99+sk1M62tZIFpPZ8LH5yExGWREMP6C+9FKCrs=";
   };
 
-  # gnulib relies on --host= to detect iconv() features on musl().
-  # Otherwise tests fail due to incorrect unicode symbol oconversion.
-  configurePlatforms = [
-    "build"
-    "host"
-  ];
-
   # there's a /bin/sh shebang in bin/yacc which when no strictDeps is patched with the build stdenv shell
   # however when cross-compiling it would still be patched with the build stdenv shell which would be wrong
   # cannot add bash to buildInputs due to infinite recursion
@@ -38,22 +31,27 @@ stdenv.mkDerivation (finalAttrs: {
     perl
   ]
   ++ lib.optional stdenv.hostPlatform.isSunOS help2man;
+
   propagatedBuildInputs = [ m4 ];
-
-  enableParallelBuilding = true;
-  # tests are flaky / timing sensitive on FreeBSD
-  enableParallelChecking = !stdenv.hostPlatform.isFreeBSD;
-
   # Normal check and install check largely execute the same test suite
   doCheck = false;
   # Tests were disabled on LLVM/Darwin due to https://github.com/NixOS/nixpkgs/issues/463659
   # TODO: enable doInstallCheck unconditionally when fixed upstream.
   doInstallCheck = !stdenv.cc.isClang;
 
+  # gnulib relies on --host= to detect iconv() features on musl().
+  # Otherwise tests fail due to incorrect unicode symbol oconversion.
+  configurePlatforms = [
+    "build"
+    "host"
+  ];
+
+  enableParallelBuilding = true;
+  # tests are flaky / timing sensitive on FreeBSD
+  enableParallelChecking = !stdenv.hostPlatform.isFreeBSD;
+
   meta = {
-    homepage = "https://www.gnu.org/software/bison/";
     description = "Yacc-compatible parser generator";
-    license = lib.licenses.gpl3Plus;
 
     longDescription = ''
       Bison is a general-purpose parser generator that converts an
@@ -69,6 +67,8 @@ stdenv.mkDerivation (finalAttrs: {
       to use Bison.
     '';
 
+    homepage = "https://www.gnu.org/software/bison/";
+    license = lib.licenses.gpl3Plus;
     platforms = lib.platforms.unix;
   };
 })

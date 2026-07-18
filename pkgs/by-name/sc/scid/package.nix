@@ -2,10 +2,10 @@
   lib,
   stdenv,
   fetchFromGitHub,
+  libx11,
   makeWrapper,
   tcl,
   tk,
-  libx11,
   zlib,
 }:
 
@@ -35,8 +35,6 @@ tcl.mkTclDerivation rec {
     zlib
   ];
 
-  addTclConfigureFlags = false;
-
   configureFlags = [
     "BINDIR=$(out)/bin"
     "SHAREDIR=$(out)/share"
@@ -46,13 +44,14 @@ tcl.mkTclDerivation rec {
     "CC=${stdenv.cc.targetPrefix}cc"
   ];
 
+  addTclConfigureFlags = false;
   enableParallelBuilding = true;
 
   meta = {
     description = "Chess database with play and training functionality";
-    maintainers = with lib.maintainers; [ agbrooks ];
     homepage = "https://scid.sourceforge.net/";
     license = lib.licenses.gpl2Only;
+    maintainers = with lib.maintainers; [ agbrooks ];
     platforms = lib.platforms.all;
   };
 }

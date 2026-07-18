@@ -1,14 +1,14 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  # build system
-  setuptools,
-  setuptools-scm,
+  buildPythonPackage,
   # runtime
   httpx,
   pydantic,
   requests,
+  # build system
+  setuptools,
+  setuptools-scm,
   tenacity,
   types-requests,
 }:
@@ -16,7 +16,6 @@
 buildPythonPackage rec {
   pname = "retryhttp";
   version = "1.4.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "austind";
@@ -38,6 +37,7 @@ buildPythonPackage rec {
     types-requests
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "retryhttp" ];
 
   meta = {

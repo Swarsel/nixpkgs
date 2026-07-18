@@ -1,16 +1,16 @@
 {
+  lib,
+  stdenv,
+  autoPatchelfHook,
   autoconf,
   automake,
-  autoPatchelfHook,
   cups,
   fetchpatch2,
   fetchzip,
   glib,
-  lib,
   libtool,
   libusb1,
   libxml2,
-  stdenv,
 }:
 let
   blobDir = "com/libs_bin_${stdenv.hostPlatform.uname.processor}";
@@ -32,10 +32,15 @@ stdenv.mkDerivation {
     # - https://github.com/NixOS/nixpkgs/pull/180681#issuecomment-1192304711
     # - https://bugs.gentoo.org/723186
     (fetchpatch2 {
-      url = "https://gitweb.gentoo.org/repo/gentoo.git/plain/net-print/cnijfilter2/files/cnijfilter2-5.80-fno-common.patch?id=24688d64544b43f2c14be54531ad8764419dde09";
       hash = "sha256-ygAfS68100ducWsxeA2Q2eoE8cBFMVO7KiXn/RGIHFw=";
+      url = "https://gitweb.gentoo.org/repo/gentoo.git/plain/net-print/cnijfilter2/files/cnijfilter2-5.80-fno-common.patch?id=24688d64544b43f2c14be54531ad8764419dde09";
     })
   ];
+
+  postPatch = ''
+    substituteInPlace lgmon3/src/Makefile.am \
+      --replace-fail /usr/include/libusb-1.0 ${lib.getDev libusb1}/include/libusb-1.0
+  '';
 
   nativeBuildInputs = [
     automake
@@ -51,10 +56,10 @@ stdenv.mkDerivation {
     libxml2
   ];
 
-  postPatch = ''
-    substituteInPlace lgmon3/src/Makefile.am \
-      --replace-fail /usr/include/libusb-1.0 ${lib.getDev libusb1}/include/libusb-1.0
-  '';
+  env = {
+    NIX_CFLAGS_COMPILE = "-I${lib.getDev libxml2}/include/libxml2";
+    NIX_LDFLAGS = "-L../../${blobDir}";
+  };
 
   preConfigure = ''
     for i in cmdtocanonij2 cmdtocanonij3 cnijbe2 lgmon3 rastertocanonij tocanonij tocnpwg; do
@@ -62,30 +67,6 @@ stdenv.mkDerivation {
       env NOCONFIGURE=1 ./autogen.sh
       cd ..
     done
-  '';
-
-  configurePhase = ''
-    runHook preConfigure
-    for i in cmdtocanonij2 cmdtocanonij3 cnijbe2 lgmon3 rastertocanonij tocanonij tocnpwg; do
-      cd $i
-      configureFlags="--build=${stdenv.buildPlatform.config}"
-      configureFlags="$configureFlags --host=${stdenv.hostPlatform.config}"
-      configureFlags="$configureFlags --target=${stdenv.targetPlatform.config}"
-      configureFlags="$configureFlags --prefix=$out --disable-dependency-tracking --disable-static"
-      if [ $i = cnijbe2 -o $i = lgmon3 -o $i = rastertocanonij ]; then
-        configureFlags="$configureFlags --enable-progpath=$out/bin"
-      fi
-      if [ $i = lgmon3 ]; then
-        # lgmon3's --enable-libdir flag is used solely for specifying in which
-        # directory the cnnnet.ini cache file should reside.
-        # NixOS uses /var/cache/cups, and given the name, it seems like a reasonable
-        # place to put the cnnet.ini file, and thus we do so.
-        configureFlags="$configureFlags --enable-libpath=/var/cache/cups"
-      fi
-      ./configure $configureFlags
-      cd ..
-    done
-    runHook postConfigure
   '';
 
   buildPhase = ''
@@ -113,15 +94,35 @@ stdenv.mkDerivation {
     install -Dm644 -t $out/share/cups/model ppd/*.ppd
   '';
 
-  runtimeDependencies = [ (placeholder "out") ];
+  configurePhase = ''
+    runHook preConfigure
+    for i in cmdtocanonij2 cmdtocanonij3 cnijbe2 lgmon3 rastertocanonij tocanonij tocnpwg; do
+      cd $i
+      configureFlags="--build=${stdenv.buildPlatform.config}"
+      configureFlags="$configureFlags --host=${stdenv.hostPlatform.config}"
+      configureFlags="$configureFlags --target=${stdenv.targetPlatform.config}"
+      configureFlags="$configureFlags --prefix=$out --disable-dependency-tracking --disable-static"
+      if [ $i = cnijbe2 -o $i = lgmon3 -o $i = rastertocanonij ]; then
+        configureFlags="$configureFlags --enable-progpath=$out/bin"
+      fi
+      if [ $i = lgmon3 ]; then
+        # lgmon3's --enable-libdir flag is used solely for specifying in which
+        # directory the cnnnet.ini cache file should reside.
+        # NixOS uses /var/cache/cups, and given the name, it seems like a reasonable
+        # place to put the cnnet.ini file, and thus we do so.
+        configureFlags="$configureFlags --enable-libpath=/var/cache/cups"
+      fi
+      ./configure $configureFlags
+      cd ..
+    done
+    runHook postConfigure
+  '';
 
-  env = {
-    NIX_CFLAGS_COMPILE = "-I${lib.getDev libxml2}/include/libxml2";
-    NIX_LDFLAGS = "-L../../${blobDir}";
-  };
+  runtimeDependencies = [ (placeholder "out") ];
 
   meta = {
     description = "Canon InkJet printer drivers for many Pixma series printers";
+
     longDescription = ''
       Canon InkJet printer drivers for series BX110, E200, E300, E460, E470,
       E480, E3100, E3300, E3400, E3600, E4200, E4500, G500, G600, G1020, G1030,
@@ -144,18 +145,23 @@ stdenv.mkDerivation {
       TS9000, TS9100, TS9180, TS9500, TS9580, XK50, XK60, XK70, XK80, XK90,
       XK100, XK110, XK120, XK130, XK140, XK500, XK510.
     '';
-    downloadPage = "https://hk.canon/en/support/0101281901";
+
     license = lib.licenses.unfree;
+
     sourceProvenance = with lib.sourceTypes; [
       fromSource
       binaryNativeCode
     ];
+
     maintainers = with lib.maintainers; [ prince213 ];
+
     platforms = [
       "aarch64-linux"
       "i686-linux"
       "mips64el-linux"
       "x86_64-linux"
     ];
+
+    downloadPage = "https://hk.canon/en/support/0101281901";
   };
 }

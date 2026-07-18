@@ -2,9 +2,9 @@
   lib,
   fetchFromGitHub,
   buildNpmPackage,
+  nix-update-script,
   nodejs,
   versionCheckHook,
-  nix-update-script,
 }:
 
 buildNpmPackage (finalAttrs: {
@@ -26,10 +26,11 @@ buildNpmPackage (finalAttrs: {
     rm $out/lib/node_modules/@apiture/openapi-down-convert/node_modules/.bin/*
   '';
 
+  doInstallCheck = true;
+
   nativeInstallCheckInputs = [
     versionCheckHook
   ];
-  doInstallCheck = true;
 
   passthru.updateScript = nix-update-script { };
 

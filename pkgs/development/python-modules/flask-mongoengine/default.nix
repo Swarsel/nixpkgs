@@ -1,8 +1,8 @@
 {
   lib,
+  fetchFromGitHub,
   buildPythonPackage,
   email-validator,
-  fetchFromGitHub,
   flask,
   flask-wtf,
   markupsafe,
@@ -15,7 +15,6 @@
 buildPythonPackage rec {
   pname = "flask-mongoengine";
   version = "1.0.0-unstable-2022-08-16";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "MongoEngine";
@@ -23,8 +22,6 @@ buildPythonPackage rec {
     rev = "d4526139cb1e2e94111ab7de96bb629d574c1690";
     hash = "sha256-oMQU9Z8boc0q+0KzIQAZ8qSyxiITDY0M9FCg75S9MEY=";
   };
-
-  env.SETUPTOOLS_SCM_PRETEND_VERSION = "1.0.0";
 
   nativeBuildInputs = [
     setuptools
@@ -38,21 +35,24 @@ buildPythonPackage rec {
     mongoengine
   ];
 
+  env.SETUPTOOLS_SCM_PRETEND_VERSION = "1.0.0";
+  # Tests require working mongodb connection
+  doCheck = false;
+
   optional-dependencies = {
+    # toolbar = [
+    #   flask-debugtoolbar
+    # ];
+    legacy = [ markupsafe ];
+
     wtf = [
       flask-wtf
       wtforms
     ]
     ++ wtforms.optional-dependencies.email;
-    # toolbar = [
-    #   flask-debugtoolbar
-    # ];
-    legacy = [ markupsafe ];
   };
 
-  # Tests require working mongodb connection
-  doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "flask_mongoengine" ];
 
   meta = {

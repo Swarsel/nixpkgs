@@ -1,17 +1,17 @@
 {
   mkKdeDerivation,
+  qtdeclarative,
   qttools,
   shared-mime-info,
-  qtdeclarative,
 }:
 mkKdeDerivation {
   pname = "kcoreaddons";
-
-  hasPythonBindings = true;
+  extraBuildInputs = [ qtdeclarative ];
 
   extraNativeBuildInputs = [
     qttools
     shared-mime-info
   ];
-  extraBuildInputs = [ qtdeclarative ];
+
+  hasPythonBindings = true;
 }

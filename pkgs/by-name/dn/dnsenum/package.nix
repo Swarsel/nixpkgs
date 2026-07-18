@@ -18,9 +18,7 @@ stdenv.mkDerivation (finalAttrs: {
     sha256 = "sha256-I4I+HNQC7xqIF2P7NBy2Ophh3znl5qy9fSicJKIBUis=";
   };
 
-  patchPhase = ''
-    rm Makefile
-  '';
+  nativeBuildInputs = [ makeWrapper ];
 
   propagatedBuildInputs = with perlPackages; [
     perl
@@ -32,7 +30,6 @@ stdenv.mkDerivation (finalAttrs: {
     NetWhoisIP
     WWWMechanize
   ];
-  nativeBuildInputs = [ makeWrapper ];
 
   installPhase = ''
     install -vD dnsenum.pl $out/bin/dnsenum
@@ -55,12 +52,16 @@ stdenv.mkDerivation (finalAttrs: {
       }"
   '';
 
+  patchPhase = ''
+    rm Makefile
+  '';
+
   meta = {
-    homepage = "https://github.com/SparrowOchon/dnsenum2";
     description = "Tool to enumerate DNS information";
-    mainProgram = "dnsenum";
-    maintainers = with lib.maintainers; [ tbutter ];
+    homepage = "https://github.com/SparrowOchon/dnsenum2";
     license = lib.licenses.gpl2Plus;
+    maintainers = with lib.maintainers; [ tbutter ];
     platforms = lib.platforms.all;
+    mainProgram = "dnsenum";
   };
 })

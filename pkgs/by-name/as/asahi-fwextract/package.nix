@@ -1,17 +1,16 @@
 {
   lib,
-  python3,
   fetchFromGitHub,
-  gzip,
   gnutar,
+  gzip,
   lzfse,
   nix-update-script,
+  python3,
 }:
 
 python3.pkgs.buildPythonApplication rec {
   pname = "asahi-fwextract";
   version = "0.8.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "AsahiLinux";
@@ -29,6 +28,7 @@ python3.pkgs.buildPythonApplication rec {
   '';
 
   build-system = [ python3.pkgs.setuptools ];
+  pyproject = true;
 
   passthru = {
     updateScript = nix-update-script { };
@@ -39,7 +39,7 @@ python3.pkgs.buildPythonApplication rec {
     homepage = "https://github.com/AsahiLinux/asahi-installer";
     license = lib.licenses.mit;
     maintainers = [ ];
-    mainProgram = "asahi-fwextract";
     platforms = [ "aarch64-linux" ];
+    mainProgram = "asahi-fwextract";
   };
 }

@@ -2,14 +2,14 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  fetchpatch,
   autoreconfHook,
+  fetchpatch,
   gettext,
-  intltool,
-  pkg-config,
   glib,
   imagemagick,
+  intltool,
   libpng,
+  pkg-config,
   pstoedit,
 }:
 
@@ -39,11 +39,11 @@ stdenv.mkDerivation rec {
   ];
 
   meta = {
-    homepage = "https://github.com/autotrace/autotrace";
     description = "Utility for converting bitmap into vector graphics";
-    platforms = lib.platforms.unix;
-    maintainers = [ ];
+    homepage = "https://github.com/autotrace/autotrace";
     license = lib.licenses.gpl2;
+    maintainers = [ ];
+    platforms = lib.platforms.unix;
     mainProgram = "autotrace";
   };
 }

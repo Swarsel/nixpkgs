@@ -1,11 +1,11 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
-  nix-update-script,
-  makeWrapper,
   ast-grep,
+  makeWrapper,
+  nix-update-script,
   ripgrep,
+  rustPlatform,
   versionCheckHook,
 }:
 
@@ -20,11 +20,13 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-ooxAmpsBA3KD+n8kN1GuMpy2TZGjpZwpmFM90t7nxMw=";
   };
 
-  buildFeatures = [ "ast_grep" ];
-
   nativeBuildInputs = [ makeWrapper ];
-
   cargoHash = "sha256-Y95Y2xo6lOsDj9Xqk1BTw3Ab2EGNUuhpKZ7BENKYyX8=";
+  doInstallCheck = true;
+
+  nativeInstallCheckInputs = [
+    versionCheckHook
+  ];
 
   postFixup = ''
     # Serpl needs ripgrep to function properly.
@@ -37,12 +39,8 @@ rustPlatform.buildRustPackage (finalAttrs: {
       }"
   '';
 
-  nativeInstallCheckInputs = [
-    versionCheckHook
-  ];
-  doInstallCheck = true;
+  buildFeatures = [ "ast_grep" ];
   versionCheckProgram = "${placeholder "out"}/bin/serpl";
-
   passthru.updateScript = nix-update-script { };
 
   meta = {

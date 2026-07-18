@@ -1,8 +1,8 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
   clippy,
+  rustPlatform,
   rustfmt,
 }:
 
@@ -18,22 +18,20 @@ rustPlatform.buildRustPackage (finalAttrs: {
   };
 
   cargoHash = "sha256-SSJg/Ns64+NgqrB4mJ5/xa40tZfGZ2VGdvNP7SSKv0E=";
-
   env.RUSTC_BOOTSTRAP = 1;
-
-  cargoBuildFlags = [
-    "--workspace"
-    "--bin cpz"
-    "--bin rmz"
-  ];
+  # error[E0602]: unknown lint: `clippy::unnecessary_debug_formatting`
+  doCheck = false;
 
   nativeCheckInputs = [
     clippy
     rustfmt
   ];
 
-  # error[E0602]: unknown lint: `clippy::unnecessary_debug_formatting`
-  doCheck = false;
+  cargoBuildFlags = [
+    "--workspace"
+    "--bin cpz"
+    "--bin rmz"
+  ];
 
   meta = {
     description = "Modern, performance focused unix commands";

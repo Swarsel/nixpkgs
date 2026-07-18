@@ -1,26 +1,26 @@
 { lib, stdenv }:
 let
   impossibleToBuildPackage = stdenv.mkDerivation {
+    buildCommand = ''
+      echo ERROR: It’s supposed to be impossible to start building this package. >&2
+      exit 1
+    '';
+
     name = "impossible-to-build-package";
     # According to the Nix manual, the "apple-virt" system feature is
     # Darwin-only and the "kvm" system feature is Linux-only [1].
     #
     # [1]: <https://nix.dev/manual/nix/2.32/command-ref/conf-file.html#conf-system-features>
     requiredSystemFeatures = if stdenv.buildPlatform.isLinux then "apple-virt" else "kvm";
-
-    buildCommand = ''
-      echo ERROR: It’s supposed to be impossible to start building this package. >&2
-      exit 1
-    '';
   };
 in
 stdenv.mkDerivation {
-  name = "stdenv-test-inputDerivationRequiredSystemFeatures";
-
-  impossibleToBuildPackageInputDerivation = impossibleToBuildPackage.inputDerivation;
   buildCommand = ''
     ln --symbolic "$impossibleToBuildPackageInputDerivation" "$out"
   '';
+
+  impossibleToBuildPackageInputDerivation = impossibleToBuildPackage.inputDerivation;
+  name = "stdenv-test-inputDerivationRequiredSystemFeatures";
 
   meta = {
     longDescription = ''
@@ -35,6 +35,7 @@ stdenv.mkDerivation {
       input derivations never requires any system features. This test checks to
       make sure that that limitation no longer exists.
     '';
+
     maintainers = [ lib.maintainers.jayman2000 ];
   };
 }

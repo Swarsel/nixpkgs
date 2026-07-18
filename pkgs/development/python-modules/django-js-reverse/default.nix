@@ -1,8 +1,8 @@
 {
   lib,
+  fetchFromGitHub,
   buildPythonPackage,
   django,
-  fetchFromGitHub,
   nodejs,
   packaging,
   python,
@@ -13,7 +13,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "django-js-reverse";
   version = "1.0.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "vintasoftware";
@@ -22,6 +21,18 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-XpHQXZuIRl6qBDmbFX/IhHxwrOiMiiiTIF5x3W13kGA=";
   };
 
+  # Js2py is needed for tests but it's unmaintained and insecure
+  doCheck = false;
+
+  nativeCheckInputs = [
+    nodejs
+    six
+  ];
+
+  checkPhase = ''
+    ${python.interpreter} django_js_reverse/tests/unit_tests.py
+  '';
+
   build-system = [ setuptools ];
 
   dependencies = [
@@ -29,18 +40,7 @@ buildPythonPackage (finalAttrs: {
     packaging
   ];
 
-  nativeCheckInputs = [
-    nodejs
-    six
-  ];
-
-  # Js2py is needed for tests but it's unmaintained and insecure
-  doCheck = false;
-
-  checkPhase = ''
-    ${python.interpreter} django_js_reverse/tests/unit_tests.py
-  '';
-
+  pyproject = true;
   pythonImportsCheck = [ "django_js_reverse" ];
 
   meta = {

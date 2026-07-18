@@ -2,10 +2,10 @@
   lib,
   stdenv,
   fetchurl,
+  bison,
+  flex,
   freetype,
   libtool,
-  flex,
-  bison,
   pkg-config,
 }:
 
@@ -22,8 +22,8 @@ stdenv.mkDerivation {
   # who knows more about C/C++ ..
   patches = [
     (fetchurl {
-      url = "http://mirror.fsf.org/trisquel/pool/main/t/ttmkfdir/ttmkfdir_3.0.9-6.diff.gz";
       sha256 = "141kxaf2by8nf87hqyszaxi0n7nnmswr1nh2i5r5bsvxxmaj9633";
+      url = "http://mirror.fsf.org/trisquel/pool/main/t/ttmkfdir/ttmkfdir_3.0.9-6.diff.gz";
     })
 
     ./cstring.patch # also fixes some other compilation issues (freetype includes)
@@ -40,18 +40,19 @@ stdenv.mkDerivation {
       --replace "freetype-config" "${stdenv.cc.targetPrefix}pkg-config freetype2"
   '';
 
-  makeFlags = [
-    "DESTDIR=${placeholder "out"}"
-    "BINDIR=/bin"
-    "CXX=${stdenv.cc.targetPrefix}c++"
-  ];
-
   nativeBuildInputs = [
     flex
     bison
     pkg-config
   ];
+
   buildInputs = [ freetype ];
+
+  makeFlags = [
+    "DESTDIR=${placeholder "out"}"
+    "BINDIR=/bin"
+    "CXX=${stdenv.cc.targetPrefix}c++"
+  ];
 
   meta = {
     description = "Create fonts.dir for TTF font directory";

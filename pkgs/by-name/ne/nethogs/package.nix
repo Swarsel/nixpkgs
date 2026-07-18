@@ -2,8 +2,8 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  ncurses,
   libpcap,
+  ncurses,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -34,6 +34,7 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Small 'net top' tool, grouping bandwidth by process";
+
     longDescription = ''
       NetHogs is a small 'net top' tool. Instead of breaking the traffic down
       per protocol or per subnet, like most tools do, it groups bandwidth by
@@ -43,10 +44,11 @@ stdenv.mkDerivation (finalAttrs: {
       identify programs that have gone wild and are suddenly taking up your
       bandwidth.
     '';
-    license = lib.licenses.gpl2Plus;
+
     homepage = "https://github.com/raboof/nethogs#readme";
-    platforms = lib.platforms.linux;
+    license = lib.licenses.gpl2Plus;
     maintainers = [ lib.maintainers.rycee ];
+    platforms = lib.platforms.linux;
     mainProgram = "nethogs";
   };
 })

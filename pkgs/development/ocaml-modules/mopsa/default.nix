@@ -1,18 +1,18 @@
 {
   lib,
-  buildDunePackage,
   fetchFromGitLab,
-  clang,
-  libclang,
-  libllvm,
-  flint,
-  mpfr,
-  pplite,
-  ocaml,
-  menhir,
   apron,
   arg-complete,
+  buildDunePackage,
   camlidl,
+  clang,
+  flint,
+  libclang,
+  libllvm,
+  menhir,
+  mpfr,
+  ocaml,
+  pplite,
   yojson,
   zarith,
 }:
@@ -21,14 +21,21 @@ buildDunePackage (finalAttrs: {
   pname = "mopsa";
   version = "1.1";
 
-  minimalOCamlVersion = "4.13";
-
   src = fetchFromGitLab {
     owner = "mopsa";
     repo = "mopsa-analyzer";
     tag = "v${finalAttrs.version}";
     hash = "sha256-lO5dtGAl1dq8oJco/hPXrAbN05rKc62Zrci/8CLrQ0c=";
   };
+
+  outputs = [
+    "bin"
+    "out"
+  ];
+
+  postPatch = ''
+    patchShebangs bin
+  '';
 
   nativeBuildInputs = [
     clang
@@ -51,10 +58,6 @@ buildDunePackage (finalAttrs: {
     zarith
   ];
 
-  postPatch = ''
-    patchShebangs bin
-  '';
-
   buildPhase = ''
     runHook preBuild
     dune build --profile release -p mopsa
@@ -67,15 +70,12 @@ buildDunePackage (finalAttrs: {
     runHook postInstall
   '';
 
-  outputs = [
-    "bin"
-    "out"
-  ];
+  minimalOCamlVersion = "4.13";
 
   meta = {
-    license = lib.licenses.lgpl3Plus;
-    homepage = "https://mopsa.lip6.fr/";
     description = "Modular and Open Platform for Static Analysis using Abstract Interpretation";
+    homepage = "https://mopsa.lip6.fr/";
+    license = lib.licenses.lgpl3Plus;
     maintainers = [ lib.maintainers.vbgl ];
   };
 

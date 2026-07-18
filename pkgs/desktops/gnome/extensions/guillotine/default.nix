@@ -1,6 +1,6 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitLab,
   glib,
 }:
@@ -19,11 +19,6 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   nativeBuildInputs = [ glib ];
-
-  passthru = {
-    extensionUuid = "guillotine@fopdoodle.net";
-    extensionPortalSlug = "guillotine";
-  };
 
   buildPhase = ''
     runHook preBuild
@@ -44,6 +39,11 @@ stdenv.mkDerivation (finalAttrs: {
     cp README.md "$out/share/gnome-shell/extensions/guillotine@fopdoodle.net"
     runHook postInstall
   '';
+
+  passthru = {
+    extensionPortalSlug = "guillotine";
+    extensionUuid = "guillotine@fopdoodle.net";
+  };
 
   meta = {
     description = "Gnome extension designed for efficiently carrying out executions of commands from a customizable menu";

@@ -1,11 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # build-system
-  setuptools,
-
+  buildPythonPackage,
   # dependencies
   certifi,
   charset-normalizer,
@@ -13,17 +9,16 @@
   htmldate,
   justext,
   lxml,
-  urllib3,
-
   # tests
   pytestCheckHook,
+  # build-system
+  setuptools,
+  urllib3,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "trafilatura";
   version = "2.1.0";
-  pyproject = true;
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "adbar";
@@ -41,11 +36,10 @@ buildPythonPackage (finalAttrs: {
           'trafilatura_bin = "${placeholder "out"}/bin/trafilatura"'
     '';
 
+  nativeCheckInputs = [ pytestCheckHook ];
+  __structuredAttrs = true;
   build-system = [ setuptools ];
 
-  pythonRelaxDeps = [
-    "lxml"
-  ];
   dependencies = [
     certifi
     charset-normalizer
@@ -55,8 +49,6 @@ buildPythonPackage (finalAttrs: {
     lxml
     urllib3
   ];
-
-  nativeCheckInputs = [ pytestCheckHook ];
 
   disabledTests = [
     # Disable tests that require an internet connection
@@ -74,15 +66,20 @@ buildPythonPackage (finalAttrs: {
     "test_whole"
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "trafilatura" ];
+
+  pythonRelaxDeps = [
+    "lxml"
+  ];
 
   meta = {
     description = "Python package and command-line tool designed to gather text on the Web";
     homepage = "https://trafilatura.readthedocs.io";
     changelog = "https://github.com/adbar/trafilatura/blob/${finalAttrs.src.tag}/HISTORY.md";
-    downloadPage = "https://github.com/adbar/trafilatura";
     license = lib.licenses.asl20;
     maintainers = with lib.maintainers; [ jokatzke ];
     mainProgram = "trafilatura";
+    downloadPage = "https://github.com/adbar/trafilatura";
   };
 })

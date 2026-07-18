@@ -1,12 +1,12 @@
 {
-  fetchFromGitHub,
   lib,
+  stdenv,
+  fetchFromGitHub,
   libpulseaudio,
   meson,
   ninja,
   nix-update-script,
   pkg-config,
-  stdenv,
   systemdMinimal,
 }:
 
@@ -38,6 +38,7 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Prevent swayidle/hypridle from sleeping";
+
     longDescription = ''
       SwayAudioIdleInhibit prevents swayidle/hypridle from sleeping
       while any application is outputting or receiving audio.
@@ -45,13 +46,16 @@ stdenv.mkDerivation (finalAttrs: {
       This requires systemd/elogind inhibit support and only works for
       Pulseaudio/Pipewire Pulse.
     '';
+
     homepage = "https://github.com/ErikReider/SwayAudioIdleInhibit";
     license = lib.licenses.gpl3Only;
-    platforms = lib.platforms.linux;
+
     maintainers = with lib.maintainers; [
       rafaelrc
       yiyu
     ];
+
+    platforms = lib.platforms.linux;
     mainProgram = "sway-audio-idle-inhibit";
   };
 })

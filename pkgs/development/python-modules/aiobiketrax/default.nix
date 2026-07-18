@@ -1,9 +1,9 @@
 {
   lib,
+  fetchFromGitHub,
   aiohttp,
   auth0-python,
   buildPythonPackage,
-  fetchFromGitHub,
   poetry-core,
   pyjwt,
   pytestCheckHook,
@@ -13,7 +13,6 @@
 buildPythonPackage rec {
   pname = "aiobiketrax";
   version = "1.3.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "basilfx";
@@ -28,8 +27,7 @@ buildPythonPackage rec {
       --replace-fail "auth0.v3" "auth0"
   '';
 
-  pythonRelaxDeps = [ "auth0-python" ];
-
+  nativeCheckInputs = [ pytestCheckHook ];
   build-system = [ poetry-core ];
 
   dependencies = [
@@ -39,9 +37,9 @@ buildPythonPackage rec {
     pyjwt
   ];
 
-  nativeCheckInputs = [ pytestCheckHook ];
-
+  pyproject = true;
   pythonImportsCheck = [ "aiobiketrax" ];
+  pythonRelaxDeps = [ "auth0-python" ];
 
   meta = {
     description = "Library for interacting with the PowUnity BikeTrax GPS tracker";

@@ -4,8 +4,8 @@
   fetchFromGitHub,
   boost,
   cmake,
-  nasm,
   libpng,
+  nasm,
   nix-update-script,
   versionCheckHook,
 }:
@@ -52,12 +52,10 @@ stdenv.mkDerivation (finalAttrs: {
     libpng
   ];
 
-  cmakeDir = "../src";
-
   cmakeFlags = [ "-DECT_FOLDER_SUPPORT=ON" ];
-
   doInstallCheck = true;
   nativeInstallCheckInputs = [ versionCheckHook ];
+  cmakeDir = "../src";
   versionCheckProgram = "${placeholder "out"}/bin/${finalAttrs.meta.mainProgram}";
   versionCheckProgramArg = "-help";
 
@@ -70,10 +68,12 @@ stdenv.mkDerivation (finalAttrs: {
     homepage = "https://github.com/fhanau/Efficient-Compression-Tool";
     changelog = "https://github.com/fhanau/Efficient-Compression-Tool/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.asl20;
+
     maintainers = with lib.maintainers; [
       jwillikers
       lunik1
     ];
+
     platforms = lib.platforms.all;
     mainProgram = "ect";
   };

@@ -2,10 +2,10 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  makeWrapper,
-  metasploit,
   curl,
   inetutils,
+  makeWrapper,
+  metasploit,
   openssl,
 }:
 
@@ -46,10 +46,10 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "MSFvenom Payload Creator";
-    mainProgram = "msfpc";
     homepage = "https://github.com/g0tmi1k/msfpc";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ emilytrau ];
     platforms = lib.platforms.unix;
+    mainProgram = "msfpc";
   };
 })

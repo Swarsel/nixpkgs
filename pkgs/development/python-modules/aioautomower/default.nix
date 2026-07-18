@@ -1,9 +1,9 @@
 {
   lib,
+  fetchFromGitHub,
   aiohttp,
   aioresponses,
   buildPythonPackage,
-  fetchFromGitHub,
   freezegun,
   ical,
   mashumaro,
@@ -23,7 +23,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "aioautomower";
   version = "2.7.6";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "Thomas55555";
@@ -37,6 +36,16 @@ buildPythonPackage (finalAttrs: {
     substituteInPlace pyproject.toml \
       --replace-fail 'version = "0.0.0"' 'version = "${finalAttrs.version}"'
   '';
+
+  nativeCheckInputs = [
+    aioresponses
+    freezegun
+    pytest-asyncio
+    pytest-cov-stub
+    pytestCheckHook
+    time-machine
+    syrupy
+  ];
 
   build-system = [
     poetry-core
@@ -53,24 +62,15 @@ buildPythonPackage (finalAttrs: {
     tzlocal
   ];
 
-  nativeCheckInputs = [
-    aioresponses
-    freezegun
-    pytest-asyncio
-    pytest-cov-stub
-    pytestCheckHook
-    time-machine
-    syrupy
-  ];
-
-  pythonImportsCheck = [ "aioautomower" ];
-
   disabledTests = [
     # Timezone mismatches
     "test_set_datetime"
     "test_message_event"
     "test_async_get_messages"
   ];
+
+  pyproject = true;
+  pythonImportsCheck = [ "aioautomower" ];
 
   meta = {
     description = "Module to communicate with the Automower Connect API";

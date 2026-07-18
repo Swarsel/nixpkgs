@@ -40,8 +40,8 @@ let
 
   configFile = pkgs.writeText "davfs2.conf" (
     toINIWithGlobalSection {
-      mkSectionName = escapeString;
       mkKeyValue = k: v: "${k} ${formatValue v}";
+      mkSectionName = escapeString;
     } cfg.settings
   );
 in
@@ -57,38 +57,37 @@ in
   options.services.davfs2 = {
     enable = mkEnableOption "davfs2";
 
-    davUser = mkOption {
-      type = str;
-      default = "davfs2";
-      description = ''
-        When invoked by root the mount.davfs daemon will run as this user.
-        Value must be given as name, not as numerical id.
-      '';
-    };
-
     davGroup = mkOption {
-      type = str;
       default = "davfs2";
+
       description = ''
         The group of the running mount.davfs daemon. Ordinary users must be
         member of this group in order to mount a davfs2 file system. Value must
         be given as name, not as numerical id.
       '';
+
+      type = str;
+    };
+
+    davUser = mkOption {
+      default = "davfs2";
+
+      description = ''
+        When invoked by root the mount.davfs daemon will run as this user.
+        Value must be given as name, not as numerical id.
+      '';
+
+      type = str;
     };
 
     settings = mkOption {
-      type = submodule {
-        freeformType =
-          let
-            valueTypes = [
-              bool
-              int
-              str
-            ];
-          in
-          attrsOf (attrsOf (oneOf (valueTypes ++ [ (attrsOf (oneOf valueTypes)) ])));
-      };
       default = { };
+
+      description = ''
+        Extra settings appended to the configuration of davfs2.
+        See {manpage}`davfs2.conf(5)` for available settings.
+      '';
+
       example = literalExpression ''
         {
           globalSection = {
@@ -105,22 +104,48 @@ in
           };
         }
       '';
-      description = ''
-        Extra settings appended to the configuration of davfs2.
-        See {manpage}`davfs2.conf(5)` for available settings.
-      '';
+
+      type = submodule {
+        freeformType =
+          let
+            valueTypes = [
+              bool
+              int
+              str
+            ];
+          in
+          attrsOf (attrsOf (oneOf (valueTypes ++ [ (attrsOf (oneOf valueTypes)) ])));
+      };
     };
   };
 
   config = mkIf cfg.enable {
 
-    environment.systemPackages = [ pkgs.davfs2 ];
     environment.etc."davfs2/davfs2.conf".source = configFile;
+    environment.systemPackages = [ pkgs.davfs2 ];
+
+    security.wrappers."mount.davfs" = {
+      group = cfg.davGroup;
+      owner = "root";
+      permissions = "u+rx,g+x";
+      program = "mount.davfs";
+      setuid = true;
+      source = "${pkgs.davfs2}/bin/mount.davfs";
+    };
+
+    security.wrappers."umount.davfs" = {
+      group = cfg.davGroup;
+      owner = "root";
+      permissions = "u+rx,g+x";
+      program = "umount.davfs";
+      setuid = true;
+      source = "${pkgs.davfs2}/bin/umount.davfs";
+    };
 
     services.davfs2.settings = {
       globalSection = {
-        dav_user = cfg.davUser;
         dav_group = cfg.davGroup;
+        dav_user = cfg.davUser;
       };
     };
 
@@ -131,28 +156,10 @@ in
     users.users = optionalAttrs (cfg.davUser == "davfs2") {
       davfs2 = {
         createHome = false;
+        description = "davfs2 user";
         group = cfg.davGroup;
         uid = config.ids.uids.davfs2;
-        description = "davfs2 user";
       };
-    };
-
-    security.wrappers."mount.davfs" = {
-      program = "mount.davfs";
-      source = "${pkgs.davfs2}/bin/mount.davfs";
-      owner = "root";
-      group = cfg.davGroup;
-      setuid = true;
-      permissions = "u+rx,g+x";
-    };
-
-    security.wrappers."umount.davfs" = {
-      program = "umount.davfs";
-      source = "${pkgs.davfs2}/bin/umount.davfs";
-      owner = "root";
-      group = cfg.davGroup;
-      setuid = true;
-      permissions = "u+rx,g+x";
     };
 
   };

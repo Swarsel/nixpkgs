@@ -1,23 +1,26 @@
 {
   lib,
-  fetchPypi,
   buildPythonPackage,
+  fetchPypi,
 }:
 
 buildPythonPackage rec {
   pname = "empy";
   version = "4.2";
-  format = "setuptools";
+
   src = fetchPypi {
     inherit pname version;
     hash = "sha256-hvFeHal0Pnmi6bLLrPGhPQt/sYNbYlTrJTyXi3Iof08=";
   };
+
+  format = "setuptools";
   pythonImportsCheck = [ "em" ];
+
   meta = {
-    homepage = "http://www.alcyone.com/software/empy/";
     description = "Templating system for Python";
-    mainProgram = "em.py";
-    maintainers = with lib.maintainers; [ nkalupahana ];
+    homepage = "http://www.alcyone.com/software/empy/";
     license = lib.licenses.bsd3;
+    maintainers = with lib.maintainers; [ nkalupahana ];
+    mainProgram = "em.py";
   };
 }

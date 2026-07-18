@@ -9,11 +9,12 @@ stdenv.mkDerivation (finalAttrs: {
   version = "20260126";
 
   src = fetchurl {
+    hash = "sha256-thjF+0TC9fBIhD25D30bJPePR7B5E8jHuoyULT6ySwA=";
+
     urls = [
       "https://invisible-mirror.net/archives/byacc/byacc-${finalAttrs.version}.tgz"
       "https://invisible-island.net/archives/byacc/byacc-${finalAttrs.version}.tgz"
     ];
-    hash = "sha256-thjF+0TC9fBIhD25D30bJPePR7B5E8jHuoyULT6ySwA=";
   };
 
   configureFlags = [
@@ -28,8 +29,8 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   meta = {
-    homepage = "https://invisible-island.net/byacc/byacc.html";
     description = "Berkeley YACC";
+
     longDescription = ''
       Berkeley Yacc (byacc) is generally conceded to be the best yacc variant
       available. In contrast to bison, it is written to avoid dependencies upon
@@ -41,6 +42,8 @@ stdenv.mkDerivation (finalAttrs: {
 
       Nowadays byacc is maintained by Thomas E. Dickey.
     '';
+
+    homepage = "https://invisible-island.net/byacc/byacc.html";
     changelog = "https://invisible-island.net/byacc/CHANGES.html";
     license = lib.licenses.publicDomain;
     maintainers = [ ];

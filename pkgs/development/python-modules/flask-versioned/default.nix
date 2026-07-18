@@ -1,16 +1,15 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
+  buildPythonPackage,
   flask,
   pytestCheckHook,
+  setuptools,
 }:
 
 buildPythonPackage {
   pname = "flask-versioned";
   version = "0.9.4";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "pilt";
@@ -19,14 +18,11 @@ buildPythonPackage {
     hash = "sha256-Z/jwCFTTvxXJpzI+HX9NfBNJxj3MAlbGc7/T0zdMNfI=";
   };
 
-  build-system = [ setuptools ];
-
-  dependencies = [ flask ];
-
-  pythonImportsCheck = [ "flaskext.versioned" ];
-
   nativeCheckInputs = [ pytestCheckHook ];
-
+  build-system = [ setuptools ];
+  dependencies = [ flask ];
+  pyproject = true;
+  pythonImportsCheck = [ "flaskext.versioned" ];
   pythonNamespaces = [ "flaskext" ];
 
   meta = {

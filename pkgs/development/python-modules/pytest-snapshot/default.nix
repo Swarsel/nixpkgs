@@ -1,17 +1,16 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   packaging,
   pytest,
-  setuptools-scm,
   pytest7CheckHook,
+  setuptools-scm,
 }:
 
 buildPythonPackage rec {
   pname = "pytest-snapshot";
   version = "0.9.0";
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "joseph-roitman";
@@ -21,9 +20,7 @@ buildPythonPackage rec {
   };
 
   nativeBuildInputs = [ setuptools-scm ];
-
   buildInputs = [ pytest ];
-
   propagatedBuildInputs = [ packaging ];
 
   nativeCheckInputs = [
@@ -31,6 +28,7 @@ buildPythonPackage rec {
     pytest7CheckHook
   ];
 
+  format = "setuptools";
   pythonImportsCheck = [ "pytest_snapshot" ];
 
   meta = {

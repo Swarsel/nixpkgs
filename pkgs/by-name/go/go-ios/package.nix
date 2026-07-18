@@ -1,12 +1,12 @@
 {
   lib,
   stdenv,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
+  iproute2,
+  libusb1,
   nix-update-script,
   pkg-config,
-  libusb1,
-  iproute2,
 }:
 
 buildGoModule (finalAttrs: {
@@ -19,18 +19,6 @@ buildGoModule (finalAttrs: {
     rev = "v${finalAttrs.version}";
     sha256 = "sha256-5fMsHSwJUH/JBaZXyB11rHCNOqzHF3MYI9gg29hj0O4=";
   };
-
-  proxyVendor = true;
-  vendorHash = "sha256-Bl9nlRnclqVgFF6mS6DX6oS+1c26DoISqDBY2rMS2yw=";
-
-  excludedPackages = [
-    "restapi"
-    "test/e2e"
-  ];
-
-  ldflags = [
-    "-X main.version=${finalAttrs.version}"
-  ];
 
   postPatch = ''
     substituteInPlace main.go \
@@ -53,10 +41,7 @@ buildGoModule (finalAttrs: {
     libusb1
   ];
 
-  postInstall = ''
-    # aligns the binary with what is expected from go-ios
-    mv $out/bin/go-ios $out/bin/ios
-  '';
+  vendorHash = "sha256-Bl9nlRnclqVgFF6mS6DX6oS+1c26DoISqDBY2rMS2yw=";
 
   # skips all the integration tests (requires iOS device) (`-tags=fast`)
   # as well as tests that requires networking
@@ -69,6 +54,21 @@ buildGoModule (finalAttrs: {
     in
     [ "-tags=fast" ] ++ [ "-skip=^${builtins.concatStringsSep "$|^" skippedTests}$" ];
 
+  postInstall = ''
+    # aligns the binary with what is expected from go-ios
+    mv $out/bin/go-ios $out/bin/ios
+  '';
+
+  excludedPackages = [
+    "restapi"
+    "test/e2e"
+  ];
+
+  ldflags = [
+    "-X main.version=${finalAttrs.version}"
+  ];
+
+  proxyVendor = true;
   passthru.updateScript = nix-update-script { };
 
   meta = {

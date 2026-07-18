@@ -2,30 +2,26 @@
   lib,
   buildPythonPackage,
   fetchPypi,
-  setuptools,
   isPy3k,
+  setuptools,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "web-cache";
   version = "1.1.0";
-  pyproject = true;
-
-  __structuredAttrs = true;
-
-  disabled = !isPy3k;
 
   src = fetchPypi {
     inherit (finalAttrs) version;
-    pname = "web_cache";
     hash = "sha256-1aEKNMh77/x5S44d7He/a0GYhrnMYLmxDHBoEIcODrU=";
+    pname = "web_cache";
   };
-
-  build-system = [ setuptools ];
 
   # No tests in downloaded archive
   doCheck = false;
-
+  __structuredAttrs = true;
+  build-system = [ setuptools ];
+  disabled = !isPy3k;
+  pyproject = true;
   pythonImportsCheck = [ "web_cache" ];
 
   meta = {

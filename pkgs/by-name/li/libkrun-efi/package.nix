@@ -1,21 +1,21 @@
 {
-  cargo,
-  fetchFromGitHub,
-  fetchurl,
-  fixDarwinDylibNames,
   lib,
+  stdenv,
+  fetchurl,
+  fetchFromGitHub,
+  buildPackages,
+  cargo,
+  fixDarwinDylibNames,
   libepoxy,
   libkrun-efi,
-  moltenvk,
-  pkg-config,
-  buildPackages,
-  rustc,
-  rustPlatform,
-  rutabaga_gfx,
-  nix-update-script,
-  stdenv,
   meson,
+  moltenvk,
   ninja,
+  nix-update-script,
+  pkg-config,
+  rustPlatform,
+  rustc,
+  rutabaga_gfx,
   vulkan-headers,
   withGpu ? true,
 }:
@@ -38,19 +38,17 @@ let
       hash = "sha256-M/buj97QUeY6CYeW0VICD5F6FBPi9ATPGHpNA48xL3o=";
     };
 
-    separateDebugInfo = true;
-
-    buildInputs = [
-      libepoxy
-      moltenvk
-      vulkan-headers
-    ];
-
     nativeBuildInputs = [
       meson
       ninja
       pkg-config
       (buildPackages.python3.withPackages (ps: [ ps.pyyaml ]))
+    ];
+
+    buildInputs = [
+      libepoxy
+      moltenvk
+      vulkan-headers
     ];
 
     mesonFlags = [
@@ -59,21 +57,21 @@ let
       (lib.mesonEnable "drm" false)
     ];
 
+    separateDebugInfo = true;
+
     meta = {
       description = "Virtual 3D GPU library that allows a qemu guest to use the host GPU for accelerated 3D rendering";
-      mainProgram = "virgl_test_server";
       homepage = "https://gitlab.freedesktop.org/slp/virglrenderer";
       license = lib.licenses.mit;
-      platforms = lib.platforms.unix;
       maintainers = [ lib.maintainers.quinneden ];
+      platforms = lib.platforms.unix;
+      mainProgram = "virgl_test_server";
     };
   });
 
   initBinary = buildPackages.pkgsCross.aarch64-multiplatform.pkgsStatic.stdenv.mkDerivation {
-    pname = "libkrun-init";
     inherit version src;
-
-    dontConfigure = true;
+    pname = "libkrun-init";
 
     buildPhase = ''
       runHook preBuild
@@ -87,21 +85,24 @@ let
       install -D init $out/init
       runHook postInstall
     '';
+
+    dontConfigure = true;
   };
 in
 stdenv.mkDerivation (finalAttrs: {
-  pname = "libkrun-efi";
   inherit version src;
+  pname = "libkrun-efi";
 
   outputs = [
     "out"
     "dev"
   ];
 
-  cargoDeps = rustPlatform.fetchCargoVendor {
-    inherit src;
-    hash = "sha256-PE8xO8T5TFuGnL+95Y1BAz9EdJVUrxgVtVssAgStW+8=";
-  };
+  postPatch = ''
+    substituteInPlace Makefile --replace-fail \
+      '$(LIBRARY_RELEASE_$(OS)): $(SYSROOT_TARGET) $(INIT_BINARY_BSD)' \
+      '$(LIBRARY_RELEASE_$(OS)):'
+  '';
 
   nativeBuildInputs = [
     cargo
@@ -126,15 +127,14 @@ stdenv.mkDerivation (finalAttrs: {
 
   env.KRUN_INIT_BINARY_PATH = "${initBinary}/init";
 
-  postPatch = ''
-    substituteInPlace Makefile --replace-fail \
-      '$(LIBRARY_RELEASE_$(OS)): $(SYSROOT_TARGET) $(INIT_BINARY_BSD)' \
-      '$(LIBRARY_RELEASE_$(OS)):'
-  '';
-
   postInstall = ''
     ln -s $out/lib/libkrun-efi.dylib $out/lib/libkrun.dylib
   '';
+
+  cargoDeps = rustPlatform.fetchCargoVendor {
+    inherit src;
+    hash = "sha256-PE8xO8T5TFuGnL+95Y1BAz9EdJVUrxgVtVssAgStW+8=";
+  };
 
   passthru = {
     tests.withoutGpu = libkrun-efi.override { withGpu = false; };

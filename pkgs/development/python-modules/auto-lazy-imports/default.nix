@@ -1,18 +1,17 @@
 {
   lib,
-  python,
-  buildPythonPackage,
   fetchFromGitHub,
-  hatchling,
+  buildPythonPackage,
   hatch-autorun,
+  hatchling,
   pytestCheckHook,
+  python,
   runCommand,
 }:
 
 buildPythonPackage rec {
   pname = "auto-lazy-imports"; # matches pypi
   version = "0.4.2";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "hmiladhia";
@@ -21,17 +20,18 @@ buildPythonPackage rec {
     hash = "sha256-DPk/fupBuYmm7Xy5+qFkqeRoglflECuX8A0C2ncARhI=";
   };
 
+  nativeCheckInputs = [
+    pytestCheckHook
+  ];
+
+  preCheck = ''
+    # Makes python load the .pth file in site-packages
+    export NIX_PYTHONPATH="$out/${python.sitePackages}''${NIX_PYTHONPATH:+:"$NIX_PYTHONPATH"}"
+  '';
+
   build-system = [
     hatchling
     hatch-autorun
-  ];
-
-  pythonImportsCheck = [
-    "lazyimports"
-  ];
-
-  nativeCheckInputs = [
-    pytestCheckHook
   ];
 
   preInstallCheck = ''
@@ -43,10 +43,11 @@ buildPythonPackage rec {
     fi
   '';
 
-  preCheck = ''
-    # Makes python load the .pth file in site-packages
-    export NIX_PYTHONPATH="$out/${python.sitePackages}''${NIX_PYTHONPATH:+:"$NIX_PYTHONPATH"}"
-  '';
+  pyproject = true;
+
+  pythonImportsCheck = [
+    "lazyimports"
+  ];
 
   # check if NIX_PYTHONPATH is properly set in downstream environments
   passthru.tests = {

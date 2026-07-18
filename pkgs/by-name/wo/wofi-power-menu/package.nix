@@ -1,11 +1,11 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
   makeBinaryWrapper,
-  wofi,
-  versionCheckHook,
   nix-update-script,
+  rustPlatform,
+  versionCheckHook,
+  wofi,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -19,18 +19,16 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-5dhwDfWL0pP28rgbS5eoOARrXDZVTF6EDNimcfcjH3Y=";
   };
 
-  cargoHash = "sha256-Avful4JlhYrdHpzWfseCmmx5jxuOJxEA2Yl6dfkJpXs=";
-
   nativeBuildInputs = [ makeBinaryWrapper ];
+  cargoHash = "sha256-Avful4JlhYrdHpzWfseCmmx5jxuOJxEA2Yl6dfkJpXs=";
 
   postInstall = ''
     wrapProgram $out/bin/wofi-power-menu \
       --prefix PATH : ${lib.makeBinPath [ wofi ]}
   '';
 
-  nativeInstallCheckInputs = [ versionCheckHook ];
   doInstallCheck = true;
-
+  nativeInstallCheckInputs = [ versionCheckHook ];
   passthru.updateScript = nix-update-script { };
 
   meta = {

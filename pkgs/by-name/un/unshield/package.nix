@@ -3,8 +3,8 @@
   stdenv,
   fetchFromGitHub,
   cmake,
-  zlib,
   openssl,
+  zlib,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -19,6 +19,7 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   nativeBuildInputs = [ cmake ];
+
   buildInputs = [
     zlib
     openssl

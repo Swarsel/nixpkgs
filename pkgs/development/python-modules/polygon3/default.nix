@@ -1,13 +1,12 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
 }:
 
 buildPythonPackage {
   pname = "polygon3";
   version = "3.0.9";
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "jraedler";
@@ -21,6 +20,7 @@ buildPythonPackage {
   # > python3.10(30620,0x115b74600) malloc: *** set a breakpoint in malloc_error_break to debug
   # > /nix/store/vbi8rnz0k3jyh4h4g16bbkchdd8mnxw7-setuptools-check-hook/nix-support/setup-hook: line 4: 30620 Abort trap: 6           /nix/store/5cxanhipcbfxnrqgw2qsr3zqr4z711bj-python3-3.10.12/bin/python3.10 nix_run_setup test
   doCheck = false;
+  format = "setuptools";
 
   meta = {
     description = "Polygon is a python package that handles polygonal shapes in 2D";

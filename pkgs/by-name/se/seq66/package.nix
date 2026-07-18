@@ -2,13 +2,13 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  autoreconfHook,
-  pkg-config,
-  which,
   alsa-lib,
+  autoreconfHook,
   libjack2,
   liblo,
+  pkg-config,
   qt5,
+  which,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -21,6 +21,12 @@ stdenv.mkDerivation (finalAttrs: {
     tag = finalAttrs.version;
     hash = "sha256-KtbMRRxKh+BuYujzh8kqKAbSN8xWUz/ktkCHBnTRaPw=";
   };
+
+  postPatch = ''
+    for d in libseq66/src libsessions/include libsessions/src seq_qt5/src seq_rtmidi/src; do
+      substituteInPlace "$d/Makefile.am" --replace-fail '$(git_info)' '${finalAttrs.version}'
+    done
+  '';
 
   nativeBuildInputs = [
     autoreconfHook
@@ -37,20 +43,14 @@ stdenv.mkDerivation (finalAttrs: {
     qt5.qtbase
   ];
 
-  postPatch = ''
-    for d in libseq66/src libsessions/include libsessions/src seq_qt5/src seq_rtmidi/src; do
-      substituteInPlace "$d/Makefile.am" --replace-fail '$(git_info)' '${finalAttrs.version}'
-    done
-  '';
-
   enableParallelBuilding = true;
 
   meta = {
-    homepage = "https://github.com/ahlstromcj/seq66";
     description = "Loop based midi sequencer with Qt GUI derived from seq24 and sequencer64";
+    homepage = "https://github.com/ahlstromcj/seq66";
     license = lib.licenses.gpl2Plus;
     maintainers = [ ];
-    mainProgram = "qseq66";
     platforms = lib.platforms.linux;
+    mainProgram = "qseq66";
   };
 })

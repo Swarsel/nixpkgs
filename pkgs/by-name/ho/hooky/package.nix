@@ -1,7 +1,7 @@
 {
   lib,
-  haskell,
   fetchFromGitHub,
+  haskell,
 }:
 
 let
@@ -20,8 +20,24 @@ haskellPackages.mkDerivation {
     hash = "sha256-Salq9DuFc+V88tRhLN62GGKIhCCSznUsnr3TD5ivN/I=";
   };
 
-  isLibrary = true;
+  doCheck = false;
+  description = "A minimal git hooks manager.";
+
+  executableHaskellDepends = with haskellPackages; [
+    base
+    containers
+    directory
+    filepath
+    optparse-applicative
+    process
+    text
+    unliftio
+  ];
+
+  homepage = "https://github.com/brandonchinn178/hooky";
   isExecutable = true;
+  isLibrary = true;
+
   libraryHaskellDepends = with haskellPackages; [
     base
     ansi-terminal
@@ -37,16 +53,11 @@ haskellPackages.mkDerivation {
     time
     unliftio
   ];
-  executableHaskellDepends = with haskellPackages; [
-    base
-    containers
-    directory
-    filepath
-    optparse-applicative
-    process
-    text
-    unliftio
-  ];
+
+  license = lib.licenses.bsd3;
+  mainProgram = "hooky";
+  maintainers = with lib.maintainers; [ brandonchinn178 ];
+
   testHaskellDepends = with haskellPackages; [
     base
     directory
@@ -57,11 +68,4 @@ haskellPackages.mkDerivation {
     text
     unliftio
   ];
-  doCheck = false;
-
-  homepage = "https://github.com/brandonchinn178/hooky";
-  description = "A minimal git hooks manager.";
-  maintainers = with lib.maintainers; [ brandonchinn178 ];
-  license = lib.licenses.bsd3;
-  mainProgram = "hooky";
 }

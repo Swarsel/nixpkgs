@@ -2,12 +2,12 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  replaceVars,
+  gettext,
   glib,
   gnome-shell,
-  gettext,
-  jq,
   intltool,
+  jq,
+  replaceVars,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -35,7 +35,6 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   makeFlags = [ "INSTALLBASE=$(out)/share/gnome-shell/extensions" ];
-
   passthru.extensionUuid = "EasyScreenCast@iacopodeenosee.gmail.com";
 
   meta = {

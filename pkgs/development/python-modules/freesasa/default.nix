@@ -1,17 +1,16 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
+  buildPythonPackage,
   cython,
   freesasa,
   pytestCheckHook,
+  setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "freesasa";
   version = "2.2.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "freesasa";
@@ -24,18 +23,17 @@ buildPythonPackage rec {
     ln -s ${freesasa.src}/* lib/
   '';
 
+  env.USE_CYTHON = true;
+  nativeCheckInputs = [ pytestCheckHook ];
+
   build-system = [
     cython
     setuptools
   ];
 
-  env.USE_CYTHON = true;
-
-  pythonImportsCheck = [ "freesasa" ];
-
-  nativeCheckInputs = [ pytestCheckHook ];
-
   enabledTestPaths = [ "test.py" ];
+  pyproject = true;
+  pythonImportsCheck = [ "freesasa" ];
 
   meta = {
     description = "FreeSASA Python Module";

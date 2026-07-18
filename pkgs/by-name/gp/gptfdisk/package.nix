@@ -1,13 +1,13 @@
 {
-  fetchurl,
   lib,
   stdenv,
-  libuuid,
-  popt,
+  fetchurl,
   icu,
+  installShellFiles,
+  libuuid,
   ncurses,
   nixosTests,
-  installShellFiles,
+  popt,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -21,8 +21,9 @@ stdenv.mkDerivation (finalAttrs: {
     sha256 = "sha256-Kr7WG8bSuexJiXPARAuLgEt6ctcUQGm1qSCbKtaTooI=";
   };
 
-  nativeBuildInputs = [
-    installShellFiles
+  outputs = [
+    "out"
+    "man"
   ];
 
   postPatch = ''
@@ -43,13 +44,18 @@ stdenv.mkDerivation (finalAttrs: {
       "/usr/local/Cellar/ncurses/6.2/lib/libncurses.dylib" "${ncurses.out}/lib/libncurses.dylib"
   '';
 
-  buildPhase = lib.optionalString stdenv.hostPlatform.isDarwin "make -f Makefile.mac";
+  nativeBuildInputs = [
+    installShellFiles
+  ];
+
   buildInputs = [
     libuuid
     popt
     icu
     ncurses
   ];
+
+  buildPhase = lib.optionalString stdenv.hostPlatform.isDarwin "make -f Makefile.mac";
 
   installPhase = ''
     for prog in gdisk sgdisk fixparts cgdisk
@@ -59,19 +65,14 @@ stdenv.mkDerivation (finalAttrs: {
     done
   '';
 
-  outputs = [
-    "out"
-    "man"
-  ];
-
   passthru.tests = lib.optionalAttrs stdenv.hostPlatform.isx86 {
     installer-simpleLabels = nixosTests.installer.simpleLabels;
   };
 
   meta = {
     description = "Set of text-mode partitioning tools for Globally Unique Identifier (GUID) Partition Table (GPT) disks";
-    license = lib.licenses.gpl2Plus;
     homepage = "https://www.rodsbooks.com/gdisk/";
+    license = lib.licenses.gpl2Plus;
     platforms = lib.platforms.all;
   };
 })

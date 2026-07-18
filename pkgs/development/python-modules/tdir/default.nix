@@ -1,17 +1,16 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  poetry-core,
+  buildPythonPackage,
   dek,
-  xmod,
+  poetry-core,
   pytestCheckHook,
+  xmod,
 }:
 
 buildPythonPackage rec {
   pname = "tdir";
   version = "1.8.2";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "rec";
@@ -20,6 +19,7 @@ buildPythonPackage rec {
     hash = "sha256-YYQ33Blhqk/CbocqkB9Nh6qbzMjQT07fmzx+fDTvdw8=";
   };
 
+  nativeCheckInputs = [ pytestCheckHook ];
   build-system = [ poetry-core ];
 
   dependencies = [
@@ -27,8 +27,7 @@ buildPythonPackage rec {
     xmod
   ];
 
-  nativeCheckInputs = [ pytestCheckHook ];
-
+  pyproject = true;
   pythonImportsCheck = [ "tdir" ];
 
   meta = {

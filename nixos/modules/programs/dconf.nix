@@ -45,6 +45,7 @@ let
     compileDconfDb (
       pkgs.symlinkJoin {
         name = "nixos-generated-dconf-keyfiles";
+
         paths = [
           (pkgs.writeTextDir "nixos-generated-dconf-keyfiles" (lib.generators.toDconfINI val.settings))
           (pkgs.writeTextDir "locks/nixos-generated-dconf-locks" (
@@ -111,17 +112,40 @@ let
     submodule {
       options = {
         keyfiles = lib.mkOption {
+          default = [ ];
+          description = "A list of dconf keyfile directories.";
+
           type = listOf (oneOf [
             path
             package
           ]);
-          default = [ ];
-          description = "A list of dconf keyfile directories.";
         };
+
+        lockAll = lib.mkOption {
+          default = false;
+          description = "Lockdown all dconf keys in `settings`.";
+          type = lib.types.bool;
+        };
+
+        locks = lib.mkOption {
+          default = [ ];
+
+          description = ''
+            A list of dconf keys to be lockdown. This doesn't take effect if `lockAll`
+            is set.
+          '';
+
+          example = literalExpression ''
+            [ "/org/gnome/desktop/background/picture-uri" ]
+          '';
+
+          type = with lib.types; listOf str;
+        };
+
         settings = lib.mkOption {
-          type = attrs;
           default = { };
           description = "An attrset used to generate dconf keyfile.";
+
           example = literalExpression ''
             with lib.gvariant;
             {
@@ -131,22 +155,8 @@ let
               };
             }
           '';
-        };
-        locks = lib.mkOption {
-          type = with lib.types; listOf str;
-          default = [ ];
-          description = ''
-            A list of dconf keys to be lockdown. This doesn't take effect if `lockAll`
-            is set.
-          '';
-          example = literalExpression ''
-            [ "/org/gnome/desktop/background/picture-uri" ]
-          '';
-        };
-        lockAll = lib.mkOption {
-          type = lib.types.bool;
-          default = false;
-          description = "Lockdown all dconf keys in `settings`.";
+
+          type = attrs;
         };
       };
     };
@@ -155,21 +165,9 @@ let
     with lib.types;
     submodule {
       options = {
-        enableUserDb = lib.mkOption {
-          type = bool;
-          default = true;
-          description = "Add `user-db:user` at the beginning of the profile.";
-        };
-
         databases = lib.mkOption {
-          type =
-            with lib.types;
-            listOf (oneOf [
-              path
-              package
-              dconfDatabase
-            ]);
           default = [ ];
+
           description = ''
             List of data sources for the profile. An element can be an attrset,
             or the path of an already compiled database. Each element is converted
@@ -180,6 +178,20 @@ let
             the last database in the profile where the key is locked will be used.
             This can be used to enforce mandatory settings.
           '';
+
+          type =
+            with lib.types;
+            listOf (oneOf [
+              path
+              package
+              dconfDatabase
+            ]);
+        };
+
+        enableUserDb = lib.mkOption {
+          default = true;
+          description = "Add `user-db:user` at the beginning of the profile.";
+          type = bool;
         };
       };
     };
@@ -190,19 +202,20 @@ in
     programs.dconf = {
       enable = lib.mkEnableOption "dconf";
 
+      packages = lib.mkOption {
+        default = [ ];
+        description = "A list of packages which provide dconf profiles and databases in {file}`/etc/dconf`.";
+        type = lib.types.listOf lib.types.package;
+      };
+
       profiles = lib.mkOption {
-        type =
-          with lib.types;
-          attrsOf (oneOf [
-            path
-            package
-            dconfProfile
-          ]);
         default = { };
+
         description = ''
           Attrset of dconf profiles. By default the `user` profile is used which
           ends up in `/etc/dconf/profile/user`.
         '';
+
         example = lib.literalExpression ''
           {
             # A "user" profile with a database
@@ -217,24 +230,25 @@ in
             foo = ''${./foo}
           };
         '';
-      };
 
-      packages = lib.mkOption {
-        type = lib.types.listOf lib.types.package;
-        default = [ ];
-        description = "A list of packages which provide dconf profiles and databases in {file}`/etc/dconf`.";
+        type =
+          with lib.types;
+          attrsOf (oneOf [
+            path
+            package
+            dconfProfile
+          ]);
       };
     };
   };
 
   config = lib.mkIf (cfg.profiles != { } || cfg.enable) {
-    programs.dconf.packages = lib.mapAttrsToList mkDconfProfile cfg.profiles;
-
     environment.etc.dconf = lib.mkIf (cfg.packages != [ ]) {
       source = pkgs.symlinkJoin {
         name = "dconf-system-config";
-        paths = map (x: "${x}/etc/dconf") cfg.packages;
         nativeBuildInputs = [ (lib.getBin pkgs.dconf) ];
+        paths = map (x: "${x}/etc/dconf") cfg.packages;
+
         postBuild = ''
           if test -d $out/db; then
             dconf update $out/db
@@ -243,16 +257,15 @@ in
       };
     };
 
-    services.dbus.packages = [ pkgs.dconf ];
-
-    systemd.packages = [ pkgs.dconf ];
-
-    # For dconf executable
-    environment.systemPackages = [ pkgs.dconf ];
-
     environment.sessionVariables = lib.mkIf cfg.enable {
       # Needed for unwrapped applications
       GIO_EXTRA_MODULES = [ "${pkgs.dconf.lib}/lib/gio/modules" ];
     };
+
+    # For dconf executable
+    environment.systemPackages = [ pkgs.dconf ];
+    programs.dconf.packages = lib.mapAttrsToList mkDconfProfile cfg.profiles;
+    services.dbus.packages = [ pkgs.dconf ];
+    systemd.packages = [ pkgs.dconf ];
   };
 }

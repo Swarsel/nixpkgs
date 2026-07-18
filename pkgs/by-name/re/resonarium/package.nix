@@ -2,15 +2,9 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  cmake,
-  ninja,
-  pkg-config,
-  python3,
-  writableTmpDirAsHomeHook,
-  copyDesktopItems,
-  makeDesktopItem,
-  nix-update-script,
   alsa-lib,
+  cmake,
+  copyDesktopItems,
   curl,
   fontconfig,
   freetype,
@@ -22,20 +16,50 @@
   libxi,
   libxinerama,
   libxrandr,
+  makeDesktopItem,
+  ninja,
+  nix-update-script,
+  pkg-config,
+  python3,
+  writableTmpDirAsHomeHook,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
   pname = "resonarium";
   version = "0.0.11";
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "gabrielsoule";
     repo = "resonarium";
     tag = "v${finalAttrs.version}";
-    fetchSubmodules = true;
     hash = "sha256-/ezkq1er/OteoLrqXe60/QmC5BOqoRcoGvtr93wBioE=";
+    fetchSubmodules = true;
   };
+
+  postPatch = ''
+    # Upstream forgot to bump the in-source version for v0.0.11; sync it
+    # to the git tag so the About screen and plugin metadata agree.
+    substituteInPlace CMakeLists.txt \
+    --replace-fail "set(PLUGIN_VERSION 0.0.10)" \
+                    "set(PLUGIN_VERSION ${finalAttrs.version})"
+    substituteInPlace plugin/Source/PluginProcessor.cpp \
+    --replace-fail '"0.0.10 (INST) ALPHA"' '"${finalAttrs.version} (INST) ALPHA"' \
+    --replace-fail '"0.0.10 (FX) ALPHA"'   '"${finalAttrs.version} (FX) ALPHA"'
+
+    # melatonin_perfetto's CMakeLists fetches CPM.cmake and the Perfetto SDK
+    # from the network at configure time, which the Nix sandbox blocks. The
+    # PERFETTO compile-time switch is OFF here, so melatonin_perfetto.h
+    # compiles every tracing macro to a no-op and never includes <perfetto.h>.
+    # Replace the module's CMakeLists with a stub that just registers the
+    # JUCE module and exposes the expected target/alias names.
+    cat > modules/melatonin_perfetto/CMakeLists.txt <<'EOF'
+    juce_add_module("''${CMAKE_CURRENT_LIST_DIR}/melatonin_perfetto")
+    add_library(perfetto INTERFACE)
+    add_library(perfetto::perfetto ALIAS perfetto)
+    target_link_libraries(melatonin_perfetto INTERFACE perfetto::perfetto)
+    add_library(Melatonin::Perfetto ALIAS melatonin_perfetto)
+    EOF
+  '';
 
   strictDeps = true;
 
@@ -68,43 +92,9 @@ stdenv.mkDerivation (finalAttrs: {
     libxrandr
   ];
 
-  postPatch = ''
-    # Upstream forgot to bump the in-source version for v0.0.11; sync it
-    # to the git tag so the About screen and plugin metadata agree.
-    substituteInPlace CMakeLists.txt \
-    --replace-fail "set(PLUGIN_VERSION 0.0.10)" \
-                    "set(PLUGIN_VERSION ${finalAttrs.version})"
-    substituteInPlace plugin/Source/PluginProcessor.cpp \
-    --replace-fail '"0.0.10 (INST) ALPHA"' '"${finalAttrs.version} (INST) ALPHA"' \
-    --replace-fail '"0.0.10 (FX) ALPHA"'   '"${finalAttrs.version} (FX) ALPHA"'
-
-    # melatonin_perfetto's CMakeLists fetches CPM.cmake and the Perfetto SDK
-    # from the network at configure time, which the Nix sandbox blocks. The
-    # PERFETTO compile-time switch is OFF here, so melatonin_perfetto.h
-    # compiles every tracing macro to a no-op and never includes <perfetto.h>.
-    # Replace the module's CMakeLists with a stub that just registers the
-    # JUCE module and exposes the expected target/alias names.
-    cat > modules/melatonin_perfetto/CMakeLists.txt <<'EOF'
-    juce_add_module("''${CMAKE_CURRENT_LIST_DIR}/melatonin_perfetto")
-    add_library(perfetto INTERFACE)
-    add_library(perfetto::perfetto ALIAS perfetto)
-    target_link_libraries(melatonin_perfetto INTERFACE perfetto::perfetto)
-    add_library(Melatonin::Perfetto ALIAS melatonin_perfetto)
-    EOF
-  '';
-
-  enableParallelBuilding = true;
-
   env = {
-    # JUCE dlopen's these at runtime; standalone executable crashes without them.
-    NIX_LDFLAGS = toString [
-      "-lX11"
-      "-lXext"
-      "-lXcursor"
-      "-lXinerama"
-      "-lXrandr"
-      "-ljack"
-    ];
+    # Fontconfig error: Cannot load default config file: No such file: (null)
+    FONTCONFIG_FILE = "${fontconfig.out}/etc/fonts/fonts.conf";
 
     NIX_CFLAGS_COMPILE = toString [
       # juce, compiled in this build as part of a Git submodule, uses `-flto` as
@@ -117,20 +107,16 @@ stdenv.mkDerivation (finalAttrs: {
       "-ffat-lto-objects"
     ];
 
-    # Fontconfig error: Cannot load default config file: No such file: (null)
-    FONTCONFIG_FILE = "${fontconfig.out}/etc/fonts/fonts.conf";
+    # JUCE dlopen's these at runtime; standalone executable crashes without them.
+    NIX_LDFLAGS = toString [
+      "-lX11"
+      "-lXext"
+      "-lXcursor"
+      "-lXinerama"
+      "-lXrandr"
+      "-ljack"
+    ];
   };
-
-  # Build only the plugin/standalone targets; skip Resonarium_Python so we
-  # don't have to install a python module as part of an audio-plugin package.
-  ninjaFlags = [
-    "Resonarium_Instrument_All"
-    "Resonarium_Effect_All"
-  ];
-
-  # The upstream `install` rules target "Applications" / "Program Files",
-  # which makes no sense on Linux and trips CMAKE_ERROR_ON_ABSOLUTE_INSTALL_DESTINATION.
-  dontUseCmakeInstall = true;
 
   installPhase = ''
     runHook preInstall
@@ -159,19 +145,22 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  __structuredAttrs = true;
+
   desktopItems = [
     (makeDesktopItem {
-      name = "resonarium";
-      desktopName = "Resonarium";
-      genericName = "Physical Modelling Synthesizer";
-      comment = "MPE-compatible physical modelling synthesizer based on coupled string waveguides";
-      exec = "Resonarium";
-      icon = "resonarium";
       categories = [
         "AudioVideo"
         "Audio"
         "Music"
       ];
+
+      comment = "MPE-compatible physical modelling synthesizer based on coupled string waveguides";
+      desktopName = "Resonarium";
+      exec = "Resonarium";
+      genericName = "Physical Modelling Synthesizer";
+      icon = "resonarium";
+
       keywords = [
         "synth"
         "synthesizer"
@@ -179,31 +168,49 @@ stdenv.mkDerivation (finalAttrs: {
         "MPE"
         "waveguide"
       ];
+
+      name = "resonarium";
     })
     (makeDesktopItem {
-      name = "resonarium-effect";
-      desktopName = "Resonarium Effect";
-      genericName = "Physical Modelling Audio Effect";
-      comment = "Resonarium as an audio effect, applying its physical models to external input";
-      exec = "Resonarium-Effect";
-      icon = "resonarium";
       categories = [
         "AudioVideo"
         "Audio"
       ];
+
+      comment = "Resonarium as an audio effect, applying its physical models to external input";
+      desktopName = "Resonarium Effect";
+      exec = "Resonarium-Effect";
+      genericName = "Physical Modelling Audio Effect";
+      icon = "resonarium";
+
       keywords = [
         "audio"
         "effect"
         "resonator"
         "waveguide"
       ];
+
+      name = "resonarium-effect";
     })
+  ];
+
+  # The upstream `install` rules target "Applications" / "Program Files",
+  # which makes no sense on Linux and trips CMAKE_ERROR_ON_ABSOLUTE_INSTALL_DESTINATION.
+  dontUseCmakeInstall = true;
+  enableParallelBuilding = true;
+
+  # Build only the plugin/standalone targets; skip Resonarium_Python so we
+  # don't have to install a python module as part of an audio-plugin package.
+  ninjaFlags = [
+    "Resonarium_Instrument_All"
+    "Resonarium_Effect_All"
   ];
 
   passthru.updateScript = nix-update-script { };
 
   meta = {
     description = "MPE-compatible physical modelling synthesizer based on coupled string waveguides";
+
     longDescription = ''
       Resonarium is a physical-modelling synthesizer plugin and standalone
       application designed for abstract sound design, exploration and
@@ -215,11 +222,12 @@ stdenv.mkDerivation (finalAttrs: {
       This package builds the Instrument (synth) and Effect variants and
       installs VST3 and LV2 bundles as well as the standalone applications.
     '';
+
     homepage = "https://github.com/gabrielsoule/resonarium";
     changelog = "https://github.com/gabrielsoule/resonarium/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.gpl3Only;
-    mainProgram = "Resonarium";
     maintainers = with lib.maintainers; [ magnetophon ];
     platforms = lib.platforms.linux;
+    mainProgram = "Resonarium";
   };
 })

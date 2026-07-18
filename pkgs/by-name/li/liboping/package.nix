@@ -1,11 +1,11 @@
 {
+  lib,
   stdenv,
   fetchurl,
   fetchpatch,
+  pkg-config,
   ncurses ? null,
   perl ? null,
-  pkg-config,
-  lib,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -26,12 +26,10 @@ stdenv.mkDerivation (finalAttrs: {
     #  https://github.com/octo/liboping/pull/60
     (fetchpatch {
       name = "format-args.patch";
-      url = "https://github.com/octo/liboping/commit/7a50e33f2a686564aa43e4920141e6f64e042df1.patch";
       sha256 = "118fl3k84m3iqwfp49g5qil4lw1gcznzmyxnfna0h7za2nm50cxw";
+      url = "https://github.com/octo/liboping/commit/7a50e33f2a686564aa43e4920141e6f64e042df1.patch";
     })
   ];
-
-  env.NIX_CFLAGS_COMPILE = lib.optionalString stdenv.cc.isGNU "-Wno-error=format-truncation";
 
   nativeBuildInputs = [
     perl
@@ -53,8 +51,11 @@ stdenv.mkDerivation (finalAttrs: {
     "LD=${stdenv.cc.targetPrefix}cc"
   ];
 
+  env.NIX_CFLAGS_COMPILE = lib.optionalString stdenv.cc.isGNU "-Wno-error=format-truncation";
+
   meta = {
     description = "C library to generate ICMP echo requests (a.k.a. ping packets)";
+
     longDescription = ''
       liboping is a C library to generate ICMP echo requests, better known as
       "ping packets". It is intended for use in network monitoring applications
@@ -62,9 +63,10 @@ stdenv.mkDerivation (finalAttrs: {
       Included is a sample application, called oping, which demonstrates the
       library's abilities.
     '';
+
     homepage = "https://noping.cc/";
     license = lib.licenses.lgpl21;
-    platforms = lib.platforms.unix;
     maintainers = [ lib.maintainers.bjornfor ];
+    platforms = lib.platforms.unix;
   };
 })

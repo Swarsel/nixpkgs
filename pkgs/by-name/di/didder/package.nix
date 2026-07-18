@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   pandoc,
 }:
 
@@ -16,9 +16,8 @@ buildGoModule (finalAttrs: {
     hash = "sha256-wYAudEyOLxbNfk4M720absGkuWXcaBPyBAcmBNBaaWU=";
   };
 
-  vendorHash = "sha256-UD90N3nE3H9GSdVhGt1zfCk8BhPaToKGu4i0zP0Lb3Q=";
-
   nativeBuildInputs = [ pandoc ];
+  vendorHash = "sha256-UD90N3nE3H9GSdVhGt1zfCk8BhPaToKGu4i0zP0Lb3Q=";
 
   postBuild = ''
     make man

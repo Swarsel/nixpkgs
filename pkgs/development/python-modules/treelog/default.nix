@@ -9,7 +9,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "treelog";
   version = "1.0";
-  pyproject = true;
 
   src = fetchPypi {
     inherit (finalAttrs) pname version;
@@ -17,9 +16,8 @@ buildPythonPackage (finalAttrs: {
   };
 
   build-system = [ setuptools ];
-
   dependencies = [ typing-extensions ];
-
+  pyproject = true;
   pythonImportsCheck = [ "treelog" ];
 
   meta = {

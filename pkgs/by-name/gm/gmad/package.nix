@@ -2,21 +2,13 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  premake4,
   bootil,
+  premake4,
 }:
 
 stdenv.mkDerivation rec {
   pname = "gmad";
   version = "unstable-2020-02-24";
-
-  meta = {
-    description = "Garry's Mod Addon Creator and Extractor";
-    homepage = "https://github.com/Facepunch/gmad";
-    license = lib.licenses.unfree;
-    maintainers = [ lib.maintainers.abigailbuccaneer ];
-    platforms = lib.platforms.all;
-  };
 
   src = fetchFromGitHub {
     owner = "Facepunch";
@@ -30,6 +22,16 @@ stdenv.mkDerivation rec {
     bootil
   ];
 
+  installPhase = ''
+    mkdir -p $out/bin
+    cp ${targetName} $out/bin/gmad
+  '';
+
+  premakeFlags = [
+    "--bootil_lib=${bootil}/lib"
+    "--bootil_inc=${bootil}/include"
+  ];
+
   targetName =
     if stdenv.hostPlatform.isLinux then
       "gmad_linux"
@@ -38,13 +40,11 @@ stdenv.mkDerivation rec {
     else
       "gmad";
 
-  premakeFlags = [
-    "--bootil_lib=${bootil}/lib"
-    "--bootil_inc=${bootil}/include"
-  ];
-
-  installPhase = ''
-    mkdir -p $out/bin
-    cp ${targetName} $out/bin/gmad
-  '';
+  meta = {
+    description = "Garry's Mod Addon Creator and Extractor";
+    homepage = "https://github.com/Facepunch/gmad";
+    license = lib.licenses.unfree;
+    maintainers = [ lib.maintainers.abigailbuccaneer ];
+    platforms = lib.platforms.all;
+  };
 }

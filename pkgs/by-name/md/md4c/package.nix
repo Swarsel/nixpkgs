@@ -1,9 +1,9 @@
 {
   lib,
-  cmake,
-  fetchFromGitHub,
-  pkg-config,
   stdenv,
+  fetchFromGitHub,
+  cmake,
+  pkg-config,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -24,16 +24,16 @@ stdenv.mkDerivation (finalAttrs: {
     "man"
   ];
 
+  strictDeps = true;
+
   nativeBuildInputs = [
     cmake
     pkg-config
   ];
 
-  strictDeps = true;
-
   meta = {
-    homepage = "https://github.com/mity/md4c";
     description = "Markdown parser made in C";
+
     longDescription = ''
       MD4C is Markdown parser implementation in C, with the following features:
 
@@ -61,11 +61,13 @@ stdenv.mkDerivation (finalAttrs: {
         "Unicode"). See more details below.
       - Permissive license: MD4C is available under the MIT license.
     '';
+
+    homepage = "https://github.com/mity/md4c";
     changelog = "https://github.com/mity/md4c/blob/${finalAttrs.src.rev}/CHANGELOG.md";
     license = with lib.licenses; [ mit ];
     maintainers = [ ];
-    mainProgram = "md2html";
     platforms = lib.platforms.all;
+    mainProgram = "md2html";
   };
 })
 # TODO: enable tests (needs Python)

@@ -1,15 +1,14 @@
 {
   lib,
+  fetchFromGitHub,
   aiohttp,
   buildPythonPackage,
-  fetchFromGitHub,
   hatchling,
 }:
 
 buildPythonPackage rec {
   pname = "pybravia";
   version = "0.4.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "Drafteed";
@@ -18,13 +17,11 @@ buildPythonPackage rec {
     hash = "sha256-VNdjdNmWcl8s1jRlA40DHlku3CPL59nJ4pZklZ452FU=";
   };
 
-  build-system = [ hatchling ];
-
-  dependencies = [ aiohttp ];
-
   # Module has no tests
   doCheck = false;
-
+  build-system = [ hatchling ];
+  dependencies = [ aiohttp ];
+  pyproject = true;
   pythonImportsCheck = [ "pybravia" ];
 
   meta = {

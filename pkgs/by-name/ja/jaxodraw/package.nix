@@ -1,12 +1,12 @@
 {
   lib,
-  maven,
-  fetchsvn,
-  makeWrapper,
-  makeDesktopItem,
   copyDesktopItems,
+  fetchsvn,
   jdk,
   jre,
+  makeDesktopItem,
+  makeWrapper,
+  maven,
 }:
 
 let
@@ -14,43 +14,23 @@ let
   description = "Java program for drawing Feynman diagrams";
 in
 maven.buildMavenPackage {
-  pname = "jaxodraw";
   inherit version;
+  pname = "jaxodraw";
 
   # pom.xml in the 2.1-0 source refers to non-existent ../pom/pom.xml and fails to build.
   # src = fetchurl {
   #   url = "mirror://sourceforge/jaxodraw/jaxodraw-${version}-src.tar.gz";
   #   hash = "sha256-EE0amcFKm/zUO4PzPhkPYZYykZw+ARJFu0/hlUOhu5s=";
   # };
-
   src = fetchsvn {
     url = "https://svn.code.sf.net/p/jaxodraw/code/trunk/jaxodraw";
     rev = "3346";
     hash = "sha256-jZ2Jvrysb5TeoAw5gubhtn39gMxdAGh/vTsaSIEZ7zs=";
   };
 
-  mvnJdk = jdk;
-  mvnParameters = "-PskipTests"; # Tests fail
-  mvnHash = "sha256-QfMyiz0zWFi3kUwH8pcgu7FiXleP/KO111avs1WWWG0=";
-
   nativeBuildInputs = [
     makeWrapper
     copyDesktopItems
-  ];
-
-  desktopItems = [
-    (makeDesktopItem {
-      name = "jaxodraw";
-      desktopName = "JaxoDraw";
-      exec = "jaxodraw";
-      icon = "jaxodraw";
-      categories = [
-        "Science"
-        "Education"
-        "Physics"
-      ];
-      comment = description;
-    })
   ];
 
   installPhase = ''
@@ -65,12 +45,32 @@ maven.buildMavenPackage {
     runHook postInstall
   '';
 
+  desktopItems = [
+    (makeDesktopItem {
+      categories = [
+        "Science"
+        "Education"
+        "Physics"
+      ];
+
+      comment = description;
+      desktopName = "JaxoDraw";
+      exec = "jaxodraw";
+      icon = "jaxodraw";
+      name = "jaxodraw";
+    })
+  ];
+
+  mvnHash = "sha256-QfMyiz0zWFi3kUwH8pcgu7FiXleP/KO111avs1WWWG0=";
+  mvnJdk = jdk;
+  mvnParameters = "-PskipTests"; # Tests fail
+
   meta = {
     inherit description;
     homepage = "https://jaxodraw.sourceforge.io";
     license = lib.licenses.gpl3Plus;
-    platforms = lib.platforms.unix;
     maintainers = with lib.maintainers; [ ulysseszhan ];
+    platforms = lib.platforms.unix;
     mainProgram = "jaxodraw";
   };
 }

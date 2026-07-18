@@ -2,11 +2,11 @@
   lib,
   stdenv,
   fetchurl,
-  makeWrapper,
   bc,
   findutils,
   flac,
   lame,
+  makeWrapper,
   opus-tools,
   procps,
   sox,
@@ -21,11 +21,11 @@ stdenv.mkDerivation (finalAttrs: {
     sha256 = "5d1f5ab3286bb748bd29cbf45df2ad2faf5ed86070f90deccf71c60be832f3d5";
   };
 
+  nativeBuildInputs = [ makeWrapper ];
+
   preBuild = ''
     patchShebangs ./install.sh
   '';
-
-  nativeBuildInputs = [ makeWrapper ];
 
   installPhase = ''
     ./install.sh --prefix=$out/bin
@@ -49,8 +49,8 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   meta = {
-    homepage = "https://caudec.cocatre.net/";
     description = "Multiprocess audio converter that supports many formats (FLAC, MP3, Ogg Vorbis, Windows codecs and many more)";
+    homepage = "https://caudec.cocatre.net/";
     license = lib.licenses.gpl3;
     platforms = lib.platforms.linux ++ lib.platforms.darwin;
   };

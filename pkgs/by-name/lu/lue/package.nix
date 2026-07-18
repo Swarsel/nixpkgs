@@ -1,15 +1,14 @@
 {
   lib,
-  python3,
   fetchFromGitHub,
   ffmpeg,
   nix-update-script,
+  python3,
 }:
 
 python3.pkgs.buildPythonApplication (finalAttrs: {
   pname = "lue";
   version = "0.4.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "superstarryeyes";
@@ -33,6 +32,8 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     striprtf
   ];
 
+  makeWrapperArgs = [ "--prefix PATH :${lib.makeBinPath [ ffmpeg ]}" ];
+
   optional-dependencies = with python3.pkgs; {
     kokoro = [
       huggingface-hub
@@ -41,10 +42,8 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     ];
   };
 
+  pyproject = true;
   pythonImportsCheck = [ "lue" ];
-
-  makeWrapperArgs = [ "--prefix PATH :${lib.makeBinPath [ ffmpeg ]}" ];
-
   passthru.updateScript = nix-update-script { };
 
   meta = {

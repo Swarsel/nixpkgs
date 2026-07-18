@@ -1,7 +1,7 @@
 {
   lib,
-  buildDunePackage,
   fetchFromGitHub,
+  buildDunePackage,
   dune-configurator,
   gd,
 }:
@@ -21,8 +21,8 @@ buildDunePackage (finalAttrs: {
   propagatedBuildInputs = [ gd ];
 
   meta = {
-    homepage = "https://github.com/savonet/ocaml-gd";
     description = "OCaml bindings for gd";
+    homepage = "https://github.com/savonet/ocaml-gd";
     license = lib.licenses.lgpl21Only;
     maintainers = with lib.maintainers; [ dandellion ];
   };

@@ -1,31 +1,30 @@
 {
+  lib,
+  fetchFromGitHub,
   asgiref,
   buildPythonPackage,
-  fetchFromGitHub,
-  lib,
-  setuptools,
+  celery,
+  crispy-bootstrap5,
   django,
   django-allauth,
-  crispy-bootstrap5,
   django-environ,
   django-extensions,
   django-ipware,
   django-ninja,
   django-redis,
   djangorestframework,
-  structlog,
-  celery,
   factory-boy,
   pytest-asyncio,
   pytest-django,
   pytest-mock,
-  redisTestHook,
   pytestCheckHook,
+  redisTestHook,
+  setuptools,
+  structlog,
 }:
 buildPythonPackage (finalAttrs: {
   pname = "django-structlog";
   version = "10.1.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "jrobichaud";
@@ -33,30 +32,6 @@ buildPythonPackage (finalAttrs: {
     tag = finalAttrs.version;
     hash = "sha256-HQxvkArh0WPbVoIoiiSlb2YRk+cJvow/dE/O2JjMlIQ=";
   };
-
-  build-system = [ setuptools ];
-
-  dependencies = [
-    asgiref
-    django
-    structlog
-    django-ipware
-  ];
-
-  optional-dependencies = {
-    celery = [ celery ];
-    commands = [ django-extensions ];
-  };
-
-  preCheck = ''
-    export DJANGO_SETTINGS_MODULE=config.settings.test_demo_app
-  '';
-
-  enabledTestPaths = [ "django_structlog_demo_project" ];
-
-  pythonImportsCheck = [
-    "django_structlog"
-  ];
 
   nativeCheckInputs = [
     redisTestHook
@@ -74,7 +49,32 @@ buildPythonPackage (finalAttrs: {
   ]
   ++ lib.concatAttrValues finalAttrs.passthru.optional-dependencies;
 
+  preCheck = ''
+    export DJANGO_SETTINGS_MODULE=config.settings.test_demo_app
+  '';
+
   __darwinAllowLocalNetworking = true;
+  build-system = [ setuptools ];
+
+  dependencies = [
+    asgiref
+    django
+    structlog
+    django-ipware
+  ];
+
+  enabledTestPaths = [ "django_structlog_demo_project" ];
+
+  optional-dependencies = {
+    celery = [ celery ];
+    commands = [ django-extensions ];
+  };
+
+  pyproject = true;
+
+  pythonImportsCheck = [
+    "django_structlog"
+  ];
 
   meta = {
     description = "Structured Logging for Django";

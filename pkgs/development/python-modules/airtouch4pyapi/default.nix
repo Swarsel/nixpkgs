@@ -1,14 +1,13 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   numpy,
 }:
 
 buildPythonPackage rec {
   pname = "airtouch4pyapi";
   version = "1.0.8";
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "LonePurpleWolf";
@@ -18,10 +17,9 @@ buildPythonPackage rec {
   };
 
   propagatedBuildInputs = [ numpy ];
-
   # Project has no tests
   doCheck = false;
-
+  format = "setuptools";
   pythonImportsCheck = [ "airtouch4pyapi" ];
 
   meta = {

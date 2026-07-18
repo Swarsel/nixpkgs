@@ -1,12 +1,12 @@
 {
   lib,
   stdenv,
+  fetchFromGitHub,
   buildGoModule,
   cilium-cli,
-  fetchFromGitHub,
   installShellFiles,
-  writableTmpDirAsHomeHook,
   testers,
+  writableTmpDirAsHomeHook,
 }:
 
 buildGoModule (finalAttrs: {
@@ -21,20 +21,7 @@ buildGoModule (finalAttrs: {
   };
 
   nativeBuildInputs = [ installShellFiles ];
-
-  # Required to workaround install check error:
-  # 2022/06/25 10:36:22 Unable to start gops: mkdir /homeless-shelter: permission denied
-  nativeInstallCheckInputs = [ writableTmpDirAsHomeHook ];
-
   vendorHash = null;
-
-  subPackages = [ "cmd/cilium" ];
-
-  ldflags = [
-    "-s"
-    "-w"
-    "-X=github.com/cilium/cilium/cilium-cli/defaults.CLIVersion=${finalAttrs.version}"
-  ];
 
   postInstall = lib.optionalString (stdenv.buildPlatform.canExecute stdenv.hostPlatform) ''
     installShellCompletion --cmd cilium \
@@ -43,10 +30,22 @@ buildGoModule (finalAttrs: {
       --zsh <($out/bin/cilium completion zsh)
   '';
 
+  # Required to workaround install check error:
+  # 2022/06/25 10:36:22 Unable to start gops: mkdir /homeless-shelter: permission denied
+  nativeInstallCheckInputs = [ writableTmpDirAsHomeHook ];
+
+  ldflags = [
+    "-s"
+    "-w"
+    "-X=github.com/cilium/cilium/cilium-cli/defaults.CLIVersion=${finalAttrs.version}"
+  ];
+
+  subPackages = [ "cmd/cilium" ];
+
   passthru.tests.version = testers.testVersion {
-    package = cilium-cli;
-    command = "cilium version --client";
     version = "${finalAttrs.version}";
+    command = "cilium version --client";
+    package = cilium-cli;
   };
 
   meta = {
@@ -54,11 +53,13 @@ buildGoModule (finalAttrs: {
     homepage = "https://www.cilium.io/";
     changelog = "https://github.com/cilium/cilium-cli/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.asl20;
+
     maintainers = with lib.maintainers; [
       humancalico
       qjoly
       ryan4yin
     ];
+
     mainProgram = "cilium";
   };
 })

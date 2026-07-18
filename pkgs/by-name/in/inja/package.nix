@@ -2,11 +2,11 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  cmake,
-  nlohmann_json,
-  doctest,
   callPackage,
+  cmake,
+  doctest,
   fetchpatch,
+  nlohmann_json,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -23,9 +23,9 @@ stdenv.mkDerivation (finalAttrs: {
   patches = [
     # https://github.com/pantor/inja/pull/317
     (fetchpatch {
+      hash = "sha256-Cz0EbYwGwFcfhKd8lJzXDy2DpMAcHkz7EC/vVFV60c0=";
       name = "cmake-install-pc.patch";
       url = "https://github.com/pantor/inja/commit/ebb7aeb3ae49ccb49a642aaecb0d41483078b8bd.patch";
-      hash = "sha256-Cz0EbYwGwFcfhKd8lJzXDy2DpMAcHkz7EC/vVFV60c0=";
     })
   ];
 
@@ -38,17 +38,17 @@ stdenv.mkDerivation (finalAttrs: {
     (lib.cmakeBool "BUILD_BENCHMARK" false)
   ];
 
-  checkInputs = [ doctest ];
   doCheck = true;
+  checkInputs = [ doctest ];
 
   passthru.tests = {
     simple-cmake = callPackage ./simple-cmake-test { };
   };
 
   meta = {
-    changelog = "https://github.com/pantor/inja/releases/tag/v${finalAttrs.version}";
     description = "Template engine for modern C++, loosely inspired by jinja for python";
     homepage = "https://github.com/pantor/inja";
+    changelog = "https://github.com/pantor/inja/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ xokdvium ];
     platforms = lib.platforms.all;

@@ -19,6 +19,7 @@ let
       hash = "sha256-PJq69EQXiOJKgQnegxsEcJqAaL10G542Joh5dBrZN0I=";
       isLTS = true;
     };
+
     # ./update-xanmod.sh main
     main = {
       version = "7.1.3";
@@ -30,24 +31,53 @@ let
 
   xanmodKernelFor =
     {
-      version,
-      suffix ? "xanmod1",
       hash,
+      version,
       isLTS ? false,
+      suffix ? "xanmod1",
     }:
     buildLinux (
       args
       // rec {
         inherit version;
+        inherit isLTS;
         pname = "linux-xanmod";
-        modDirVersion = lib.versions.pad 3 "${version}-${suffix}";
 
         src = fetchFromGitLab {
+          inherit hash;
           owner = "xanmod";
           repo = "linux";
           rev = modDirVersion;
-          inherit hash;
         };
+
+        extraMeta = {
+          branch = lib.versions.majorMinor version;
+          broken = stdenv.hostPlatform.isAarch64;
+          description = "Built with custom settings and new features built to provide a stable, responsive and smooth desktop experience";
+
+          maintainers = with lib.maintainers; [
+            moni
+            lovesegfault
+            atemu
+            zzzsy
+            eljamm
+          ];
+
+          teams = [ ];
+        };
+
+        extraPassthru.updateScript = {
+          command = [
+            ./update-xanmod.sh
+            variant
+          ];
+
+          supportedFeatures = [
+            "commit"
+          ];
+        };
+
+        modDirVersion = lib.versions.pad 3 "${version}-${suffix}";
 
         structuredExtraConfig =
           with lib.kernel;
@@ -55,36 +85,30 @@ let
             # CPUFreq governor Performance
             CPU_FREQ_DEFAULT_GOV_PERFORMANCE = lib.mkOverride 60 yes;
             CPU_FREQ_DEFAULT_GOV_SCHEDUTIL = lib.mkOverride 60 no;
-
-            # Preemption
-            PREEMPT = lib.mkOverride 60 yes;
-
-            # Google's BBRv3 TCP congestion Control
-            TCP_CONG_BBR = yes;
+            # CPU idle governors favored
+            CPU_IDLE_GOV_HALTPOLL = yes; # Already enabled
+            CPU_IDLE_GOV_LADDER = yes;
+            CPU_IDLE_GOV_TEO = yes;
             DEFAULT_BBR = yes;
-
             # Preemptive tickless idle kernel
             HZ = freeform "250";
             HZ_250 = yes;
             NO_HZ = no;
             NO_HZ_FULL = lib.mkOverride 60 no;
             NO_HZ_IDLE = yes;
-
-            # CPU idle governors favored
-            CPU_IDLE_GOV_HALTPOLL = yes; # Already enabled
-            CPU_IDLE_GOV_LADDER = yes;
-            CPU_IDLE_GOV_TEO = yes;
-
-            # RCU_BOOST and RCU_EXP_KTHREAD
-            RCU_EXPERT = yes;
-            RCU_FANOUT = freeform "64";
-            RCU_FANOUT_LEAF = freeform "16";
+            # Preemption
+            PREEMPT = lib.mkOverride 60 yes;
             RCU_BOOST = yes;
             RCU_BOOST_DELAY = freeform "0";
-            RCU_EXP_KTHREAD = yes;
-            RCU_NOCB_CPU = yes;
             RCU_DOUBLE_CHECK_CB_TIME = yes;
-
+            # RCU_BOOST and RCU_EXP_KTHREAD
+            RCU_EXPERT = yes;
+            RCU_EXP_KTHREAD = yes;
+            RCU_FANOUT = freeform "64";
+            RCU_FANOUT_LEAF = freeform "16";
+            RCU_NOCB_CPU = yes;
+            # Google's BBRv3 TCP congestion Control
+            TCP_CONG_BBR = yes;
             # x86 features
             X86_FRED = yes;
             X86_POSTED_MSI = yes;
@@ -97,32 +121,6 @@ let
             PREEMPT = lib.mkOverride 70 no;
             PREEMPT_LAZY = yes;
           };
-
-        extraPassthru.updateScript = {
-          command = [
-            ./update-xanmod.sh
-            variant
-          ];
-          supportedFeatures = [
-            "commit"
-          ];
-        };
-
-        inherit isLTS;
-
-        extraMeta = {
-          branch = lib.versions.majorMinor version;
-          maintainers = with lib.maintainers; [
-            moni
-            lovesegfault
-            atemu
-            zzzsy
-            eljamm
-          ];
-          teams = [ ];
-          description = "Built with custom settings and new features built to provide a stable, responsive and smooth desktop experience";
-          broken = stdenv.hostPlatform.isAarch64;
-        };
       }
       // (args.argsOverride or { })
     );

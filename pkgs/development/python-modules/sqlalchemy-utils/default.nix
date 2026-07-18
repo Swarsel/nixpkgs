@@ -1,12 +1,12 @@
 {
   lib,
-  buildPythonPackage,
+  fetchFromGitHub,
   arrow,
   babel,
+  buildPythonPackage,
   colour,
   cryptography,
   docutils,
-  fetchFromGitHub,
   flexmock,
   furl,
   # intervals,
@@ -32,7 +32,6 @@
 buildPythonPackage rec {
   pname = "sqlalchemy-utils";
   version = "0.41.2";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "kvesteri";
@@ -42,23 +41,7 @@ buildPythonPackage rec {
   };
 
   patches = [ ./skip-database-tests.patch ];
-
-  build-system = [ setuptools ];
-
   propagatedBuildInputs = [ sqlalchemy ];
-
-  optional-dependencies = {
-    babel = [ babel ];
-    arrow = [ arrow ];
-    pendulum = [ pendulum ];
-    #intervals = [ intervals ];
-    phone = [ phonenumbers ];
-    password = [ passlib ];
-    color = [ colour ];
-    timezone = [ python-dateutil ];
-    url = [ furl ];
-    encrypted = [ cryptography ];
-  };
 
   nativeCheckInputs = [
     pytestCheckHook
@@ -79,6 +62,8 @@ buildPythonPackage rec {
     psycopg2cffi
   ];
 
+  build-system = [ setuptools ];
+
   disabledTests = [
     "test_create_database_twice"
     "test_create_and_drop"
@@ -87,6 +72,21 @@ buildPythonPackage rec {
     # https://github.com/kvesteri/sqlalchemy-utils/issues/764
     "test_render_mock_ddl"
   ];
+
+  optional-dependencies = {
+    arrow = [ arrow ];
+    babel = [ babel ];
+    color = [ colour ];
+    encrypted = [ cryptography ];
+    password = [ passlib ];
+    pendulum = [ pendulum ];
+    #intervals = [ intervals ];
+    phone = [ phonenumbers ];
+    timezone = [ python-dateutil ];
+    url = [ furl ];
+  };
+
+  pyproject = true;
 
   pytestFlags = [
     "-Wignore::DeprecationWarning"

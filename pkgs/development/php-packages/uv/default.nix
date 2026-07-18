@@ -1,7 +1,7 @@
 {
-  buildPecl,
   lib,
   fetchFromGitHub,
+  buildPecl,
   libuv,
 }:
 
@@ -20,9 +20,9 @@ buildPecl rec {
 
   meta = {
     description = "Interface to libuv for php";
-    license = lib.licenses.php301;
     homepage = "https://github.com/amphp/ext-uv";
-    teams = [ lib.teams.php ];
+    license = lib.licenses.php301;
     platforms = lib.platforms.linux;
+    teams = [ lib.teams.php ];
   };
 }

@@ -2,9 +2,9 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  libpcap,
-  libnet,
   autoreconfHook,
+  libnet,
+  libpcap,
 }:
 
 stdenv.mkDerivation (finalAttrs: {

@@ -8,22 +8,29 @@
   libxml2,
   lime,
   mediastreamer2,
+  mkLinphoneDerivation,
   python3,
   sqlite,
   xercesc,
   zxing-cpp,
-  mkLinphoneDerivation,
 }:
 mkLinphoneDerivation {
   pname = "liblinphone";
 
-  cmakeFlags = [
-    "-DENABLE_UNIT_TESTS=NO" # Do not build test executables
-    "-DENABLE_STRICT=NO" # Do not build with -Werror
+  postPatch = ''
+    substituteInPlace CMakeLists.txt \
+      --replace-fail JsonCPP jsoncpp
+  '';
 
-    # normally set by a cmake module, but
-    # we need to disable it to prevent downstream link errors
-    "-DJsonCPP_TARGET=jsoncpp"
+  strictDeps = true;
+
+  nativeBuildInputs = [
+    doxygen
+    (python3.withPackages (ps: [
+      ps.pystache
+      ps.six
+      ps.pyturbojpeg
+    ]))
   ];
 
   buildInputs = [
@@ -46,25 +53,18 @@ mkLinphoneDerivation {
     jsoncpp
   ];
 
-  nativeBuildInputs = [
-    doxygen
-    (python3.withPackages (ps: [
-      ps.pystache
-      ps.six
-      ps.pyturbojpeg
-    ]))
-  ];
+  cmakeFlags = [
+    "-DENABLE_UNIT_TESTS=NO" # Do not build test executables
+    "-DENABLE_STRICT=NO" # Do not build with -Werror
 
-  postPatch = ''
-    substituteInPlace CMakeLists.txt \
-      --replace-fail JsonCPP jsoncpp
-  '';
+    # normally set by a cmake module, but
+    # we need to disable it to prevent downstream link errors
+    "-DJsonCPP_TARGET=jsoncpp"
+  ];
 
   preConfigure = ''
     rm cmake/FindJsonCPP.cmake
   '';
-
-  strictDeps = true;
 
   # Some grammar files needed to be copied too from some dependencies. I suppose
   # if one define a dependency in such a way that its share directory is found,

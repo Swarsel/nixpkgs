@@ -1,8 +1,8 @@
 {
   lib,
+  fetchFromGitHub,
   buildPythonPackage,
   callPackage,
-  fetchFromGitHub,
   gmp,
   setuptools,
 }:
@@ -13,7 +13,6 @@ in
 buildPythonPackage rec {
   pname = "pycryptodome";
   version = "3.23.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "Legrandin";
@@ -27,20 +26,21 @@ buildPythonPackage rec {
       --replace-fail 'load_lib("gmp"' 'load_lib("${gmp}/lib/libgmp.so.10"'
   '';
 
-  build-system = [ setuptools ];
-
   nativeCheckInputs = [ test-vectors ];
-
+  build-system = [ setuptools ];
+  pyproject = true;
   pythonImportsCheck = [ "Crypto" ];
 
   meta = {
     description = "Self-contained cryptographic library";
     homepage = "https://github.com/Legrandin/pycryptodome";
     changelog = "https://github.com/Legrandin/pycryptodome/blob/${src.tag}/Changelog.rst";
+
     license = with lib.licenses; [
       bsd2 # and
       asl20
     ];
+
     maintainers = with lib.maintainers; [ fab ];
   };
 }

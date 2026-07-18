@@ -17,8 +17,8 @@ stdenv.mkDerivation (finalAttrs: {
     description = "Advanced console ip subnet calculator";
     homepage = "http://www.routemeister.net/projects/sipcalc/";
     license = lib.licenses.bsd3;
-    platforms = lib.platforms.all;
     maintainers = [ lib.maintainers.globin ];
+    platforms = lib.platforms.all;
     mainProgram = "sipcalc";
   };
 })

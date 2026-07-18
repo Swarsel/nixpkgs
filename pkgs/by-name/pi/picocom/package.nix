@@ -2,12 +2,12 @@
   lib,
   stdenv,
   fetchFromGitLab,
-  replaceVars,
-  pkg-config,
   go-md2man,
   installShellFiles,
   linenoise,
   lrzsz,
+  pkg-config,
+  replaceVars,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -42,8 +42,6 @@ stdenv.mkDerivation (finalAttrs: {
     "doc"
   ];
 
-  enableParallelBuilding = true;
-
   installPhase = ''
     runHook preInstall
 
@@ -54,13 +52,15 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  enableParallelBuilding = true;
+
   meta = {
     description = "Minimal dumb-terminal emulation program";
     homepage = "https://gitlab.com/wsakernel/picocom";
     changelog = "https://gitlab.com/wsakernel/picocom/-/releases";
     license = lib.licenses.gpl2Plus;
+    maintainers = [ lib.maintainers.ninelore ];
     platforms = lib.platforms.unix;
     mainProgram = "picocom";
-    maintainers = [ lib.maintainers.ninelore ];
   };
 })

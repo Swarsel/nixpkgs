@@ -1,10 +1,10 @@
 {
   lib,
   fetchFromGitHub,
+  nix-update-script,
   rustPlatform,
   typst,
   versionCheckHook,
-  nix-update-script,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -18,26 +18,21 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-LoGgRiIQQEKvyYIVjvEjg7OuzDl5hmPsrnunDMPfPLI=";
   };
 
-  cargoHash = "sha256-Y/RCUAPohQ7lKPUM07zXM/2/RQpqUmF7cr19GUVVk4Y=";
-
   nativeBuildInputs = [ typst ];
-
-  buildAndTestSubdir = "crates/mitex-cli";
-
-  cargoBuildFlags = [ "--features generate-spec" ];
-
-  nativeInstallCheckInputs = [ versionCheckHook ];
+  cargoHash = "sha256-Y/RCUAPohQ7lKPUM07zXM/2/RQpqUmF7cr19GUVVk4Y=";
   doInstallCheck = true;
-
+  nativeInstallCheckInputs = [ versionCheckHook ];
+  buildAndTestSubdir = "crates/mitex-cli";
+  cargoBuildFlags = [ "--features generate-spec" ];
   passthru.updateScript = nix-update-script { extraArgs = [ "--use-github-releases" ]; };
 
   meta = {
     description = "LaTeX support for Typst, CLI for MiTeX";
     homepage = "https://mitex-rs.github.io/mitex/";
-    downloadPage = "https://github.com/mitex-rs/mitex";
     changelog = "https://github.com/mitex-rs/mitex/releases/tag/${finalAttrs.src.tag}";
-    maintainers = with lib.maintainers; [ chillcicada ];
     license = lib.licenses.asl20;
+    maintainers = with lib.maintainers; [ chillcicada ];
     mainProgram = "mitex";
+    downloadPage = "https://github.com/mitex-rs/mitex";
   };
 })

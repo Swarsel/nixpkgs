@@ -2,8 +2,8 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  installShellFiles,
   buildGoModule,
+  installShellFiles,
 }:
 
 buildGoModule (finalAttrs: {
@@ -17,9 +17,8 @@ buildGoModule (finalAttrs: {
     sha256 = "sha256-rladzcW6l5eR6ICj4kKd4e2R9vRIV/1enCzHLFdQDlk=";
   };
 
-  vendorHash = "sha256-riAjjIrG00vJweaFHc3ArhaAQb08v6cYUJsNys4Hwio=";
-
   nativeBuildInputs = [ installShellFiles ];
+  vendorHash = "sha256-riAjjIrG00vJweaFHc3ArhaAQb08v6cYUJsNys4Hwio=";
 
   postInstall = lib.optionalString (stdenv.buildPlatform.canExecute stdenv.hostPlatform) ''
     installShellCompletion --cmd autorestic \

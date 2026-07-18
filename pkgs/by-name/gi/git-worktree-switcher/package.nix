@@ -2,11 +2,11 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  makeWrapper,
-  installShellFiles,
-  git,
-  jq,
   fzf,
+  git,
+  installShellFiles,
+  jq,
+  makeWrapper,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -20,10 +20,8 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-OXUVIL4bIqqxnLLwdO0+8gxCDMqA4TPvjIc2i8BeBmw=";
   };
 
-  buildInputs = [
-    fzf
-    git
-    jq
+  patches = [
+    ./disable-update.patch # Disable update and auto update functionality
   ];
 
   nativeBuildInputs = [
@@ -31,8 +29,10 @@ stdenv.mkDerivation (finalAttrs: {
     installShellFiles
   ];
 
-  patches = [
-    ./disable-update.patch # Disable update and auto update functionality
+  buildInputs = [
+    fzf
+    git
+    jq
   ];
 
   installPhase = ''
@@ -53,14 +53,16 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   meta = {
-    homepage = "https://github.com/mateusauler/git-worktree-switcher";
     description = "Switch between git worktrees with speed";
+    homepage = "https://github.com/mateusauler/git-worktree-switcher";
     license = lib.licenses.mit;
-    platforms = lib.platforms.all;
-    mainProgram = "wt";
+
     maintainers = with lib.maintainers; [
       jiriks74
       mateusauler
     ];
+
+    platforms = lib.platforms.all;
+    mainProgram = "wt";
   };
 })

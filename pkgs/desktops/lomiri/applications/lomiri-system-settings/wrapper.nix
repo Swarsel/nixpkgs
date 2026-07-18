@@ -1,23 +1,18 @@
 {
-  stdenvNoCC,
   lib,
-  nixosTests,
   glib,
   lndir,
   lomiri-system-settings-unwrapped,
+  nixosTests,
+  stdenvNoCC,
   wrapGAppsHook3,
   wrapQtAppsHook,
   plugins ? [ ],
 }:
 
 stdenvNoCC.mkDerivation (finalAttrs: {
-  pname = "lomiri-system-settings";
   inherit (lomiri-system-settings-unwrapped) version;
-
-  dontUnpack = true;
-  dontConfigure = true;
-  dontBuild = true;
-
+  pname = "lomiri-system-settings";
   strictDeps = true;
 
   nativeBuildInputs = [
@@ -53,8 +48,6 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
-  dontWrapGApps = true;
-
   preFixup = ''
     qtWrapperArgs+=(
       "''${gappsWrapperArgs[@]}"
@@ -62,6 +55,10 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     )
   '';
 
+  dontBuild = true;
+  dontConfigure = true;
+  dontUnpack = true;
+  dontWrapGApps = true;
   passthru.tests.standalone = nixosTests.lomiri-system-settings;
 
   meta = lomiri-system-settings-unwrapped.meta // {

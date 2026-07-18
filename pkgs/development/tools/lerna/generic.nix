@@ -1,27 +1,27 @@
 {
   lib,
-  buildNpmPackage,
   fetchurl,
-  version,
+  buildNpmPackage,
   hash,
   npmDepsHash,
   packageLockFile,
+  version,
 }:
 
 buildNpmPackage rec {
-  pname = "lerna";
   inherit version;
+  inherit npmDepsHash;
+  pname = "lerna";
 
   src = fetchurl {
-    url = "https://registry.npmjs.org/lerna/-/lerna-${version}.tgz";
     inherit hash;
+    url = "https://registry.npmjs.org/lerna/-/lerna-${version}.tgz";
   };
 
   postPatch = ''
     ln -s ${packageLockFile} package-lock.json
   '';
 
-  inherit npmDepsHash;
   dontNpmBuild = true;
 
   meta = {

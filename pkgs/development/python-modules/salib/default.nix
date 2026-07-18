@@ -1,26 +1,28 @@
 {
   lib,
-  fetchPypi,
   buildPythonPackage,
-  hatchling,
+  fetchPypi,
   hatch-vcs,
-  numpy,
-  scipy,
+  hatchling,
   matplotlib,
-  pandas,
   multiprocess,
+  numpy,
+  pandas,
   pathos,
+  scipy,
 }:
 let
   finalAttrs = {
     pname = "salib";
     version = "1.5.2";
-    pyproject = true;
 
     src = fetchPypi {
       inherit (finalAttrs) pname version;
       hash = "sha256-qO7txOh88HD370ULds3s0SDR5cYCqcNYVex3d1kflJ8=";
     };
+
+    # There are no tests in the pypi package
+    doCheck = false;
 
     build-system = [
       hatchling
@@ -39,8 +41,7 @@ let
       distributed = [ pathos ];
     };
 
-    # There are no tests in the pypi package
-    doCheck = false;
+    pyproject = true;
 
     pythonImportsCheck = [
       "SALib"
@@ -52,9 +53,9 @@ let
     ];
 
     meta = {
-      changelog = "https://github.com/SALib/SALib/releases";
       description = "Python implementations of commonly used sensitivity analysis methods, useful in systems modeling to calculate the effects of model inputs or exogenous factors on outputs of interest";
       homepage = "https://github.com/SALib/SALib";
+      changelog = "https://github.com/SALib/SALib/releases";
       license = lib.licenses.mit;
       maintainers = with lib.maintainers; [ theobori ];
       mainProgram = "salib";

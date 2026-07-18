@@ -2,44 +2,29 @@
   lib,
   stdenv,
   buildPythonPackage,
+  # tests
+  cmake,
+  cython,
   fetchPypi,
   fetchpatch,
-
+  gitMinimal,
   # build-system, dependencies
   meson,
   ninja,
   pyproject-metadata,
-
-  # tests
-  cmake,
-  cython,
-  gitMinimal,
-  pytestCheckHook,
   pytest-mock,
+  pytestCheckHook,
 }:
 
 buildPythonPackage rec {
   pname = "meson-python";
   version = "0.20.0";
-  pyproject = true;
 
   src = fetchPypi {
     inherit version;
-    pname = "meson_python";
     hash = "sha256-bZcmrmzTfiLyEMdLNkswGApowgRC6X/wnzxWakFK9zg=";
+    pname = "meson_python";
   };
-
-  build-system = [
-    meson
-    ninja
-    pyproject-metadata
-  ];
-
-  dependencies = [
-    meson
-    ninja
-    pyproject-metadata
-  ];
 
   nativeCheckInputs = [
     cmake
@@ -48,8 +33,6 @@ buildPythonPackage rec {
     pytestCheckHook
     pytest-mock
   ];
-
-  dontUseCmakeConfigure = true;
 
   # meson-python respectes MACOSX_DEPLOYMENT_TARGET, but compares it with the
   # actual platform version during tests, which mismatches.
@@ -63,12 +46,26 @@ buildPythonPackage rec {
     else
       null;
 
+  build-system = [
+    meson
+    ninja
+    pyproject-metadata
+  ];
+
+  dependencies = [
+    meson
+    ninja
+    pyproject-metadata
+  ];
+
+  dontUseCmakeConfigure = true;
+  pyproject = true;
   setupHooks = [ ./add-build-flags.sh ];
 
   meta = {
-    changelog = "https://github.com/mesonbuild/meson-python/blob/${version}/CHANGELOG.rst";
     description = "Meson Python build backend (PEP 517)";
     homepage = "https://github.com/mesonbuild/meson-python";
+    changelog = "https://github.com/mesonbuild/meson-python/blob/${version}/CHANGELOG.rst";
     license = [ lib.licenses.mit ];
     maintainers = with lib.maintainers; [ doronbehar ];
     teams = [ lib.teams.python ];

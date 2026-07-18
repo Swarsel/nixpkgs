@@ -11,7 +11,6 @@
 buildPythonPackage rec {
   pname = "pytest-relaxed";
   version = "2.0.2";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
@@ -25,7 +24,6 @@ buildPythonPackage rec {
   ];
 
   buildInputs = [ pytest ];
-
   propagatedBuildInputs = [ decorator ];
 
   nativeCheckInputs = [
@@ -33,17 +31,17 @@ buildPythonPackage rec {
     pytestCheckHook
   ];
 
-  enabledTestPaths = [ "tests" ];
-
   disabledTests = [
     "test_skips_pytest_fixtures"
   ];
 
+  enabledTestPaths = [ "tests" ];
+  format = "setuptools";
   pythonImportsCheck = [ "pytest_relaxed" ];
 
   meta = {
-    homepage = "https://pytest-relaxed.readthedocs.io/";
     description = "Relaxed test discovery/organization for pytest";
+    homepage = "https://pytest-relaxed.readthedocs.io/";
     changelog = "https://github.com/bitprophet/pytest-relaxed/blob/${version}/docs/changelog.rst";
     license = lib.licenses.bsd0;
     maintainers = [ ];

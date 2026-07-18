@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   fetchpatch,
   flit-scm,
   pytestCheckHook,
@@ -13,7 +13,6 @@
 buildPythonPackage rec {
   pname = "exceptiongroup";
   version = "1.3.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "agronholm";
@@ -30,19 +29,16 @@ buildPythonPackage rec {
     # Upstream issue: https://github.com/agronholm/exceptiongroup/issues/154
     # Upstream PR: https://github.com/agronholm/exceptiongroup/pull/155
     (fetchpatch {
+      hash = "sha256-EeYu1/JKYRDwdq8+n38RrdogipNzX0ate1trDs1Z3c0=";
       name = "match-repr-fix.patch";
       url = "https://github.com/agronholm/exceptiongroup/commit/0c6cfbf677f6b50df17311cfdad01e9ff17310aa.patch";
-      hash = "sha256-EeYu1/JKYRDwdq8+n38RrdogipNzX0ate1trDs1Z3c0=";
     })
   ];
 
-  build-system = [ flit-scm ];
-
-  dependencies = lib.optionals (pythonOlder "3.13") [ typing-extensions ];
-
-  nativeCheckInputs = [ pytestCheckHook ];
-
   doCheck = pythonAtLeast "3.11"; # infinite recursion with pytest
+  nativeCheckInputs = [ pytestCheckHook ];
+  build-system = [ flit-scm ];
+  dependencies = lib.optionals (pythonOlder "3.13") [ typing-extensions ];
 
   disabledTests = lib.optionals (pythonAtLeast "3.14") [
     # RecursionError not raised
@@ -50,6 +46,7 @@ buildPythonPackage rec {
     "test_deep_subgroup"
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "exceptiongroup" ];
 
   meta = {

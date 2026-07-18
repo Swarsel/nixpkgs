@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   setuptools,
   unittestCheckHook,
 }:
@@ -9,7 +9,6 @@
 buildPythonPackage rec {
   pname = "gitignore-parser";
   version = "0.1.13";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "mherrmann";
@@ -18,10 +17,9 @@ buildPythonPackage rec {
     hash = "sha256-jd5C8whfdLuEC+ebDAAYso33o2H963P+8RWcm26koVM=";
   };
 
-  build-system = [ setuptools ];
-
   nativeCheckInputs = [ unittestCheckHook ];
-
+  build-system = [ setuptools ];
+  pyproject = true;
   pythonImportsCheck = [ "gitignore_parser" ];
 
   meta = {

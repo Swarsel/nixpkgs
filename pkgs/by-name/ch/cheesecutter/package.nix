@@ -1,11 +1,11 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
+  SDL,
   acme,
   ldc,
   patchelf,
-  SDL,
 }:
 stdenv.mkDerivation {
   pname = "cheesecutter";
@@ -40,10 +40,6 @@ stdenv.mkDerivation {
 
   buildInputs = [ SDL ];
 
-  enableParallelBuilding = true;
-
-  makefile = "Makefile.ldc";
-
   installPhase = ''
     runHook preInstall
 
@@ -76,15 +72,20 @@ stdenv.mkDerivation {
         patchelf --set-rpath "$rpath:${rpathSDL}" $out/bin/ccutter
       '';
 
+  enableParallelBuilding = true;
+  makefile = "Makefile.ldc";
+
   meta = {
     description = "Tracker program for composing music for the SID chip";
     homepage = "https://github.com/theyamo/CheeseCutter/";
     license = lib.licenses.gpl2Plus;
+    maintainers = with lib.maintainers; [ OPNA2608 ];
+
     platforms = [
       "x86_64-linux"
       "i686-linux"
     ];
-    maintainers = with lib.maintainers; [ OPNA2608 ];
+
     mainProgram = "ccutter";
   };
 }

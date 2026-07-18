@@ -1,9 +1,9 @@
 {
   lib,
   fetchFromGitHub,
-  stdenvNoCC,
   cairosvg,
   inkscape,
+  stdenvNoCC,
   xcursorgen,
 }:
 stdenvNoCC.mkDerivation {
@@ -17,15 +17,15 @@ stdenvNoCC.mkDerivation {
     hash = "sha256-zW7nJjmB3e+tjEwgiCrdEe5yzJuGBNdefDdyWvgYIUU=";
   };
 
+  postPatch = ''
+    patchShebangs .
+  '';
+
   nativeBuildInputs = [
     cairosvg
     inkscape
     xcursorgen
   ];
-
-  postPatch = ''
-    patchShebangs .
-  '';
 
   buildPhase = ''
     runHook preBuild

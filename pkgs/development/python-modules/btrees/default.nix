@@ -1,31 +1,23 @@
 {
   lib,
-  fetchPypi,
   buildPythonPackage,
+  fetchPypi,
   persistent,
-  zope-interface,
-  transaction,
-  zope-testrunner,
   python,
   setuptools,
+  transaction,
+  zope-interface,
+  zope-testrunner,
 }:
 
 buildPythonPackage rec {
   pname = "btrees";
   version = "6.3";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
     hash = "sha256-Fga9/6erKMaACYRUC2le7oSPbhWwFF2Fj/SwxiZOjtI=";
   };
-
-  build-system = [ setuptools ];
-
-  dependencies = [
-    persistent
-    zope-interface
-  ];
 
   nativeCheckInputs = [
     transaction
@@ -39,6 +31,15 @@ buildPythonPackage rec {
 
     runHook postCheck
   '';
+
+  build-system = [ setuptools ];
+
+  dependencies = [
+    persistent
+    zope-interface
+  ];
+
+  pyproject = true;
 
   pythonImportsCheck = [
     "BTrees.OOBTree"

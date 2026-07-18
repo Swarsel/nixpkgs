@@ -1,61 +1,54 @@
 {
   lib,
-
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # nativeBuildInputs
-  nodejs,
+  buildPythonPackage,
   fetchNpmDeps,
-  npmHooks,
-
+  gdown,
   # build-system
   hatchling,
-
-  # dependencies
-  imageio,
-  msgspec,
-  numpy,
-  requests,
-  rich,
-  tqdm,
-  trimesh,
-  typing-extensions,
-  websockets,
-  yourdfpy,
-  zstandard,
-
   # optional-dependencies
   hypothesis,
+  # dependencies
+  imageio,
   liblzfse,
+  matplotlib,
+  msgspec,
   nodeenv,
+  # nativeBuildInputs
+  nodejs,
+  npmHooks,
+  numpy,
   opencv-python,
+  pandas,
   playwright,
+  playwright-driver,
+  plotly,
+  plyfile,
   pre-commit,
   psutil,
   pyright,
   pytest,
   pytest-playwright,
   pytest-xdist,
-  ruff,
-  gdown,
-  matplotlib,
-  pandas,
-  plotly,
-  plyfile,
-  robot-descriptions,
-  torch,
-  tyro,
-
   # nativeCheckInputs
   pytestCheckHook,
-  playwright-driver,
+  requests,
+  rich,
+  robot-descriptions,
+  ruff,
+  torch,
+  tqdm,
+  trimesh,
+  typing-extensions,
+  tyro,
+  websockets,
+  yourdfpy,
+  zstandard,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "viser";
   version = "1.0.30";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "viser-project";
@@ -78,10 +71,10 @@ buildPythonPackage (finalAttrs: {
     nodejs
   ];
 
-  npmDeps = fetchNpmDeps {
-    name = "${finalAttrs.pname}-${finalAttrs.version}-npm-deps";
-    src = finalAttrs.src + "/src/viser/client/";
-    hash = "sha256-mx5vqgiZRWYruDbjAPgCCc7hewTqH9jsXrerL8XbOMY=";
+  env = {
+    PLAYWRIGHT_BROWSERS_PATH = playwright-driver.browsers;
+    PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD = true;
+    PLAYWRIGHT_SKIP_VALIDATE_HOST_REQUIREMENTS = true;
   };
 
   preBuild = ''
@@ -89,6 +82,16 @@ buildPythonPackage (finalAttrs: {
     npm --offline run build
     cd ../../..
   '';
+
+  nativeCheckInputs = [
+    hypothesis
+    playwright-driver
+    pytestCheckHook
+  ];
+
+  # adding pre-commit here break PYTHONPATH in 3.14
+  checkInputs = lib.filter (p: p.pname != "pre-commit") finalAttrs.passthru.optional-dependencies.dev;
+  __darwinAllowLocalNetworking = true;
 
   build-system = [
     hatchling
@@ -107,8 +110,28 @@ buildPythonPackage (finalAttrs: {
     zstandard
   ];
 
+  disabledTestPaths = [
+    # too many flaky tests
+    "tests/e2e"
+  ];
+
+  disabledTests = [
+    # assert 0 != 0
+    # (only when xdist)
+    "test_server_port_is_freed"
+
+    # counts ffmpeg pids, can be confused when
+    # building multiple times this package in parallel
+    "test_process_termination"
+  ];
+
+  npmDeps = fetchNpmDeps {
+    src = finalAttrs.src + "/src/viser/client/";
+    hash = "sha256-mx5vqgiZRWYruDbjAPgCCc7hewTqH9jsXrerL8XbOMY=";
+    name = "${finalAttrs.pname}-${finalAttrs.version}-npm-deps";
+  };
+
   optional-dependencies = {
-    urdf = [ yourdfpy ];
     dev = [
       hypothesis
       nodeenv
@@ -122,6 +145,7 @@ buildPythonPackage (finalAttrs: {
       ruff
     ]
     ++ finalAttrs.passthru.optional-dependencies.examples;
+
     examples = [
       gdown
       liblzfse
@@ -135,36 +159,11 @@ buildPythonPackage (finalAttrs: {
       tyro
     ]
     ++ finalAttrs.passthru.optional-dependencies.urdf;
+
+    urdf = [ yourdfpy ];
   };
 
-  nativeCheckInputs = [
-    hypothesis
-    playwright-driver
-    pytestCheckHook
-  ];
-
-  # adding pre-commit here break PYTHONPATH in 3.14
-  checkInputs = lib.filter (p: p.pname != "pre-commit") finalAttrs.passthru.optional-dependencies.dev;
-
-  env = {
-    PLAYWRIGHT_BROWSERS_PATH = playwright-driver.browsers;
-    PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD = true;
-    PLAYWRIGHT_SKIP_VALIDATE_HOST_REQUIREMENTS = true;
-  };
-
-  disabledTestPaths = [
-    # too many flaky tests
-    "tests/e2e"
-  ];
-  disabledTests = [
-    # assert 0 != 0
-    # (only when xdist)
-    "test_server_port_is_freed"
-
-    # counts ffmpeg pids, can be confused when
-    # building multiple times this package in parallel
-    "test_process_termination"
-  ];
+  pyproject = true;
 
   pythonImportsCheck = [
     "viser"
@@ -175,12 +174,10 @@ buildPythonPackage (finalAttrs: {
     "rich"
   ];
 
-  __darwinAllowLocalNetworking = true;
-
   meta = {
-    changelog = "https://github.com/viser-project/viser/releases/tag/${finalAttrs.src.tag}";
     description = "Web-based 3D visualization in Python";
     homepage = "https://github.com/viser-project/viser";
+    changelog = "https://github.com/viser-project/viser/releases/tag/${finalAttrs.src.tag}";
     license = lib.licenses.asl20;
     maintainers = with lib.maintainers; [ nim65s ];
   };

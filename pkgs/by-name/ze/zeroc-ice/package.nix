@@ -1,14 +1,14 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
   bzip2,
   expat,
   libedit,
+  libxcrypt,
   lmdb,
   mcpp,
   openssl,
-  libxcrypt,
   python3, # for tests only
   cpp11 ? false,
 }:
@@ -27,7 +27,6 @@ let
 
     # zeroc-ice's fork diverges quite a bit from upstream mcpp, so prevAttrs.patches is not used here
     patches = [ ];
-
     installFlags = prevAttrs.installFlags or [ ] ++ [ "PREFIX=$(out)" ];
   });
 in
@@ -41,6 +40,12 @@ stdenv.mkDerivation rec {
     rev = "v${version}";
     hash = "sha256-l3cKsR8HSdtFGw1S12xueQOu/U9ABlOxQQtbHBj2izs=";
   };
+
+  outputs = [
+    "out"
+    "bin"
+    "dev"
+  ];
 
   buildInputs = [
     mcpp'
@@ -63,16 +68,9 @@ stdenv.mkDerivation rec {
     )
   '';
 
-  enableParallelBuilding = true;
-
-  outputs = [
-    "out"
-    "bin"
-    "dev"
-  ];
-
   doCheck = true;
   nativeCheckInputs = with python3.pkgs; [ passlib ];
+
   checkPhase =
     let
       # these tests require network access so we need to skip them.
@@ -101,12 +99,14 @@ stdenv.mkDerivation rec {
     mv $out/share/ice $dev/share
   '';
 
+  enableParallelBuilding = true;
+
   meta = {
-    homepage = "https://www.zeroc.com/ice.html";
     description = "Internet communications engine";
+    homepage = "https://www.zeroc.com/ice.html";
     license = lib.licenses.gpl2Only;
-    platforms = lib.platforms.unix;
     maintainers = [ ];
+    platforms = lib.platforms.unix;
     broken = stdenv.hostPlatform.isDarwin;
   };
 }

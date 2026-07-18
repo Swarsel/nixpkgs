@@ -2,18 +2,18 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  ncurses,
   asciidoc,
-  xmlto,
-  docbook_xsl,
+  autoreconfHook,
   docbook_xml_dtd_45,
-  readline,
-  makeWrapper,
+  docbook_xsl,
+  findXMLCatalogs,
   git,
   libiconv,
-  autoreconfHook,
-  findXMLCatalogs,
+  makeWrapper,
+  ncurses,
   pkg-config,
+  readline,
+  xmlto,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -27,6 +27,17 @@ stdenv.mkDerivation (finalAttrs: {
     sha256 = "sha256-Zfmt2rpnH5sxiay1LAsXxvtvqvwEG4MbNI+p0GWJsMc=";
   };
 
+  outputs = [
+    "out"
+    "doc"
+    "man"
+  ];
+
+  # those files are inherently impure, we'll handle the corresponding dependencies.
+  postPatch = ''
+    rm contrib/config.make-*
+  '';
+
   nativeBuildInputs = [
     makeWrapper
     autoreconfHook
@@ -38,25 +49,12 @@ stdenv.mkDerivation (finalAttrs: {
     pkg-config
   ];
 
-  autoreconfFlags = [
-    "-I"
-    "tools"
-    "-v"
-  ];
-
   buildInputs = [
     ncurses
     readline
     git
   ]
   ++ lib.optionals stdenv.hostPlatform.isDarwin [ libiconv ];
-
-  # those files are inherently impure, we'll handle the corresponding dependencies.
-  postPatch = ''
-    rm contrib/config.make-*
-  '';
-
-  enableParallelBuilding = true;
 
   installPhase = ''
     make install
@@ -78,22 +76,26 @@ stdenv.mkDerivation (finalAttrs: {
       --suffix PATH ':' "${git}/bin"
   '';
 
-  outputs = [
-    "out"
-    "doc"
-    "man"
+  autoreconfFlags = [
+    "-I"
+    "tools"
+    "-v"
   ];
 
+  enableParallelBuilding = true;
+
   meta = {
-    homepage = "https://jonas.github.io/tig/";
     description = "Text-mode interface for git";
+    homepage = "https://jonas.github.io/tig/";
+    license = lib.licenses.gpl2Plus;
+
     maintainers = with lib.maintainers; [
       bjornfor
       qknight
       globin
       ma27
     ];
-    license = lib.licenses.gpl2Plus;
+
     platforms = lib.platforms.unix;
     mainProgram = "tig";
   };

@@ -2,8 +2,8 @@
 
 {
   config,
-  pkgs,
   lib,
+  pkgs,
   ...
 }:
 
@@ -28,8 +28,9 @@ let
   '';
 
   createGisStampFilesAutostart = pkgs.writeTextFile rec {
-    name = "create-g-i-s-stamp-files";
     destination = "/etc/xdg/autostart/${name}.desktop";
+    name = "create-g-i-s-stamp-files";
+
     text = ''
       [Desktop Entry]
       Type=Application
@@ -47,12 +48,7 @@ in
 
 {
 
-  meta = {
-    teams = [ lib.teams.gnome ];
-  };
-
   ###### interface
-
   options = {
 
     services.gnome.gnome-initial-setup = {
@@ -64,13 +60,16 @@ in
   };
 
   ###### implementation
-
   config = lib.mkIf config.services.gnome.gnome-initial-setup.enable {
 
     environment.systemPackages = [
       pkgs.gnome-initial-setup
     ]
     ++ lib.optional (lib.versionOlder config.system.stateVersion "20.03") createGisStampFilesAutostart;
+
+    programs.dconf.profiles.gnome-initial-setup.databases = [
+      "${pkgs.gnome-initial-setup}/share/gnome-initial-setup/initial-setup-dconf-defaults"
+    ];
 
     systemd.packages = [
       pkgs.gnome-initial-setup
@@ -80,22 +79,22 @@ in
       "gnome-initial-setup-first-login.service"
     ];
 
-    systemd.user.targets."graphical-session-pre".wants = [
-      "gnome-initial-setup-copy-worker.service"
-    ];
-
     systemd.user.targets."gnome-session@gnome-initial-setup".wants = [
       "gnome-initial-setup.service"
     ];
 
-    programs.dconf.profiles.gnome-initial-setup.databases = [
-      "${pkgs.gnome-initial-setup}/share/gnome-initial-setup/initial-setup-dconf-defaults"
+    systemd.user.targets."graphical-session-pre".wants = [
+      "gnome-initial-setup-copy-worker.service"
     ];
 
     users = {
       # TODO: switch to using provided gnome-initial-setup sysusers.d
       groups.gnome-initial-setup = { };
     };
+  };
+
+  meta = {
+    teams = [ lib.teams.gnome ];
   };
 
 }

@@ -1,7 +1,7 @@
 {
   lib,
-  php,
   fetchFromGitHub,
+  php,
   versionCheckHook,
   writableTmpDirAsHomeHook,
 }:
@@ -16,9 +16,8 @@ php.buildComposerProject2 (finalAttrs: {
     hash = "sha256-V+xncL02fY0olGxqjWBWqD6N1J0XOeOPe55aULuN2bA=";
   };
 
-  vendorHash = "sha256-r5LhN2OjEpiHR0RtK7d/pMd8bqFJbM8CuCXEDGjgG4A=";
-
   nativeBuildInputs = [ writableTmpDirAsHomeHook ];
+  vendorHash = "sha256-r5LhN2OjEpiHR0RtK7d/pMd8bqFJbM8CuCXEDGjgG4A=";
   doInstallCheck = true;
   nativeInstallCheckInputs = [ versionCheckHook ];
   versionCheckKeepEnvironment = [ "HOME" ];
@@ -28,7 +27,7 @@ php.buildComposerProject2 (finalAttrs: {
     description = "Opinionated PHP code formatter";
     homepage = "https://github.com/lkrms/pretty-php";
     license = lib.licenses.mit;
-    mainProgram = "pretty-php";
     maintainers = with lib.maintainers; [ piotrkwiecinski ];
+    mainProgram = "pretty-php";
   };
 })

@@ -2,20 +2,23 @@
   lib,
   callPackage,
   makeSetupHook,
-  valkey,
   python3Packages,
+  valkey,
 }:
 
 makeSetupHook {
   name = "redis-test-hook";
+
   substitutions = {
     cli = lib.getExe' valkey "redis-cli";
     server = lib.getExe' valkey "redis-server";
   };
+
   passthru.tests = {
-    simple = callPackage ./test.nix { };
     python3-valkey = python3Packages.valkey;
+    simple = callPackage ./test.nix { };
   };
+
   meta = {
     license = lib.licenses.mit;
     teams = [ lib.teams.redis ];

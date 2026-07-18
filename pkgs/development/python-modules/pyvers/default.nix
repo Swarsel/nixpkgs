@@ -1,14 +1,12 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # build-system
-  poetry-core,
-
+  buildPythonPackage,
   # tests
   jax,
   numpy,
+  # build-system
+  poetry-core,
   pytest-cov-stub,
   pytestCheckHook,
 }:
@@ -16,7 +14,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "pyvers";
   version = "0.2.3";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "vmoens";
@@ -25,18 +22,19 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-aXHOgKd/w1RKdL0wLoM4F05JWTaKAL3i3UerLcBG+vs=";
   };
 
-  build-system = [
-    poetry-core
-  ];
-
-  pythonImportsCheck = [ "pyvers" ];
-
   nativeCheckInputs = [
     jax
     numpy
     pytest-cov-stub
     pytestCheckHook
   ];
+
+  build-system = [
+    poetry-core
+  ];
+
+  pyproject = true;
+  pythonImportsCheck = [ "pyvers" ];
 
   meta = {
     description = "Python library for dynamic dispatch based on module versions and backends";

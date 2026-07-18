@@ -2,16 +2,16 @@
   lib,
   stdenv,
   fetchurl,
-  fetchpatch,
-  bison,
-  flex,
-  autoreconfHook,
-  openssl,
-  db,
   attr,
+  autoreconfHook,
+  bison,
+  db,
+  fetchpatch,
+  flex,
+  nixosTests,
+  openssl,
   perl,
   tcsh,
-  nixosTests,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -26,23 +26,10 @@ stdenv.mkDerivation (finalAttrs: {
   patches = [
     # Pull upstream fix for -fno-common toolchains
     (fetchpatch {
+      hash = "sha256-UTUIVBFW+y5P42T7somLi9uDMoLI69Yik9W/3pwLWEk=";
       name = "fno-common.patch";
       url = "https://github.com/waltligon/orangefs/commit/f472beb50356bea657d1c32f1ca8a73e4718fd57.patch";
-      hash = "sha256-UTUIVBFW+y5P42T7somLi9uDMoLI69Yik9W/3pwLWEk=";
     })
-  ];
-
-  nativeBuildInputs = [
-    bison
-    flex
-    perl
-    autoreconfHook
-  ];
-  buildInputs = [
-    openssl
-    db
-    attr
-    tcsh
   ];
 
   postPatch = ''
@@ -59,14 +46,26 @@ stdenv.mkDerivation (finalAttrs: {
     rm ./src/client/webpack/ltmain.sh
   '';
 
+  nativeBuildInputs = [
+    bison
+    flex
+    perl
+    autoreconfHook
+  ];
+
+  buildInputs = [
+    openssl
+    db
+    attr
+    tcsh
+  ];
+
   configureFlags = [
     "--sysconfdir=/etc/orangefs"
     "--enable-shared"
     "--enable-fast"
     "--with-ssl=${lib.getDev openssl}"
   ];
-
-  enableParallelBuilding = true;
 
   postInstall = ''
     # install useful helper scripts
@@ -81,11 +80,13 @@ stdenv.mkDerivation (finalAttrs: {
     sed -i 's:openssl:${openssl}/bin/openssl:' $out/bin/pvfs2-gen-keys.sh
   '';
 
+  enableParallelBuilding = true;
   passthru.tests = { inherit (nixosTests) orangefs; };
 
   meta = {
     description = "Scale-out network file system for use on high-end computing systems";
     homepage = "http://www.orangefs.org/";
+
     license = with lib.licenses; [
       asl20
       bsd3
@@ -94,7 +95,8 @@ stdenv.mkDerivation (finalAttrs: {
       lgpl21Plus
       openldap
     ];
-    platforms = [ "x86_64-linux" ];
+
     maintainers = with lib.maintainers; [ markuskowa ];
+    platforms = [ "x86_64-linux" ];
   };
 })

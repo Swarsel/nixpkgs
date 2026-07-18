@@ -8,7 +8,6 @@
 python3Packages.buildPythonApplication (finalAttrs: {
   pname = "sylkserver";
   version = "6.6.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "AGProjects";
@@ -16,6 +15,9 @@ python3Packages.buildPythonApplication (finalAttrs: {
     tag = finalAttrs.version;
     hash = "sha256-FeoyQWM4dvO1FJ6q5uXczPCtX2Aocm+jIkAy88uvPFI=";
   };
+
+  # no upstream tests exist
+  nativeCheckInputs = [ versionCheckHook ];
 
   build-system = with python3Packages; [
     setuptools
@@ -38,20 +40,17 @@ python3Packages.buildPythonApplication (finalAttrs: {
     xcaplib
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "sylk" ];
-
-  # no upstream tests exist
-
-  nativeCheckInputs = [ versionCheckHook ];
   versionCheckProgram = "${placeholder "out"}/bin/sylk-server";
 
   meta = {
     description = "SIP/XMPP/WebRTC Application Server";
     homepage = "https://sylkserver.com/";
-    downloadPage = "https://github.com/AGProjects/sylkserver";
     changelog = "https://github.com/AGProjects/sylkserver/blob/${finalAttrs.src.rev}/debian/changelog";
     license = lib.licenses.gpl3Plus;
-    teams = [ lib.teams.ngi ];
     mainProgram = "sylk-server";
+    downloadPage = "https://github.com/AGProjects/sylkserver";
+    teams = [ lib.teams.ngi ];
   };
 })

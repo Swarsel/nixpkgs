@@ -1,8 +1,8 @@
 {
   lib,
   stdenv,
-  fetchpatch,
   cmake,
+  fetchpatch,
   llvm,
   python3,
   rocm-device-libs,
@@ -20,25 +20,23 @@ let
       throw "Unsupported ROCm LLVM platform";
 in
 stdenv.mkDerivation (finalAttrs: {
-  pname = "rocm-comgr";
   # In-tree with ROCm LLVM
   inherit (llvm.llvm) version;
+  pname = "rocm-comgr";
   src = llvm.llvm.monorepoSrc;
-  sourceRoot = "${finalAttrs.src.name}/amd/comgr";
-  strictDeps = true;
 
   patches = [
     # [Comgr] Extend ISA compatibility
     (fetchpatch {
       hash = "sha256-X2VPGigK582J+a/u2Kg74w25/+CTpVWU9D3Eqgnb2PU=";
-      url = "https://github.com/GZGavinZhao/rocm-llvm-project/commit/7002dc04863d38c57cfd2e6fc60a1cf5a613fd8e.patch";
       relative = "amd/comgr";
+      url = "https://github.com/GZGavinZhao/rocm-llvm-project/commit/7002dc04863d38c57cfd2e6fc60a1cf5a613fd8e.patch";
     })
     # [Comgr] Extend ISA compatibility for CCOB
     (fetchpatch {
       hash = "sha256-/50I+PqxL3oaQMqg5vR7+ibUcXO1SvfXBdw/sybRt1o=";
-      url = "https://github.com/GZGavinZhao/rocm-llvm-project/commit/2c1e44fc3eacadcafdd4ada3e3184a092b6f26c5.patch";
       relative = "amd/comgr";
+      url = "https://github.com/GZGavinZhao/rocm-llvm-project/commit/2c1e44fc3eacadcafdd4ada3e3184a092b6f26c5.patch";
     })
     # Fix: CCOB compat patch used coerced (featureless) name for output filename,
     # causing CLR's code_obj_map key to miss when looking up device ISA with features
@@ -59,6 +57,8 @@ stdenv.mkDerivation (finalAttrs: {
           'return EnvLLVMPath ? EnvLLVMPath : "${llvm.rocm-toolchain}";'
     '';
 
+  strictDeps = true;
+
   nativeBuildInputs = [
     cmake
     python3
@@ -77,12 +77,14 @@ stdenv.mkDerivation (finalAttrs: {
     "-DLLVM_TARGETS_TO_BUILD=AMDGPU;${llvmNativeTarget}"
   ];
 
+  sourceRoot = "${finalAttrs.src.name}/amd/comgr";
+
   meta = {
     description = "APIs for compiling and inspecting AMDGPU code objects";
     homepage = "https://github.com/ROCm/ROCm-CompilerSupport/tree/amd-stg-open/lib/comgr";
     license = lib.licenses.ncsa;
     maintainers = with lib.maintainers; [ lovesegfault ];
-    teams = [ lib.teams.rocm ];
     platforms = lib.platforms.linux;
+    teams = [ lib.teams.rocm ];
   };
 })

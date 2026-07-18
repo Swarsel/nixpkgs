@@ -1,9 +1,9 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  poetry-core,
+  buildPythonPackage,
   lookyloo-models,
+  poetry-core,
   pydantic,
   requests,
   urllib3,
@@ -12,7 +12,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "pylookyloo";
   version = "1.40.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "Lookyloo";
@@ -21,6 +20,8 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-2SeEAzVMS4tyOU2WZw7wx+fOgyKnrQxMb6dJRjbSplU=";
   };
 
+  # Tests are outdated
+  doCheck = false;
   build-system = [ poetry-core ];
 
   dependencies = [
@@ -30,19 +31,19 @@ buildPythonPackage (finalAttrs: {
     urllib3
   ];
 
-  # Tests are outdated
-  doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "pylookyloo" ];
 
   meta = {
     description = "Python CLI and module for Lookyloo";
     homepage = "https://github.com/Lookyloo/PyLookyloo";
     changelog = "https://github.com/Lookyloo/PyLookyloo/releases/tag/${finalAttrs.src.tag}";
+
     license = with lib.licenses; [
       bsd3
       gpl2Plus
     ];
+
     maintainers = with lib.maintainers; [ fab ];
     mainProgram = "lookyloo";
   };

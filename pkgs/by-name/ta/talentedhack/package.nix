@@ -2,8 +2,8 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  lv2,
   fftwFloat,
+  lv2,
   pkg-config,
 }:
 
@@ -37,8 +37,8 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   meta = {
-    homepage = "https://github.com/jeremysalwen/TalentedHack";
     description = "LV2 port of Autotalent pitch correction plugin";
+    homepage = "https://github.com/jeremysalwen/TalentedHack";
     license = lib.licenses.gpl3;
     maintainers = [ lib.maintainers.michalrus ];
     platforms = lib.platforms.linux;

@@ -9,9 +9,9 @@ let
   version = "3.0.10";
 
   src = fetchurl {
-    name = "labymod-launcher";
     url = "https://releases.r2.labymod.net/launcher/linux/x64/LabyMod%20Launcher-${version}.AppImage";
     hash = "sha256-etrP2kfhaWVyTgRAsw8MeBy3ndScTkKi3ogXiaQZ2g0=";
+    name = "labymod-launcher";
   };
 
   appimageContents = appimageTools.extract { inherit pname version src; };
@@ -32,7 +32,7 @@ appimageTools.wrapType2 {
     homepage = "https://www.labymod.net/";
     license = lib.licenses.unfree;
     maintainers = with lib.maintainers; [ httprafa ];
-    mainProgram = "labymod-launcher";
     platforms = [ "x86_64-linux" ];
+    mainProgram = "labymod-launcher";
   };
 }

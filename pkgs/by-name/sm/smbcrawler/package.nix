@@ -7,7 +7,6 @@
 python3.pkgs.buildPythonApplication (finalAttrs: {
   pname = "smbcrawler";
   version = "1.2.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "SySS-Research";
@@ -15,6 +14,8 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     tag = finalAttrs.version;
     hash = "sha256-9hom/4wNCiBp70s0a3K4dq1BOcoVV+yAeiPQlvQ7yUw=";
   };
+
+  nativeCheckInputs = with python3.pkgs; [ pytestCheckHook ];
 
   build-system = with python3.pkgs; [
     hatch-vcs
@@ -33,21 +34,20 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     zundler
   ];
 
+  disabledTests = [
+    # Tests are container-based
+    "test_base_guest_access"
+    "test_full"
+  ];
+
   optional-dependencies = with python3.pkgs; {
     binary-conversion = [
       markitdown
     ];
   };
 
-  nativeCheckInputs = with python3.pkgs; [ pytestCheckHook ];
-
+  pyproject = true;
   pythonImportsCheck = [ "smbcrawler" ];
-
-  disabledTests = [
-    # Tests are container-based
-    "test_base_guest_access"
-    "test_full"
-  ];
 
   meta = {
     description = "Tool that takes credentials and a list of hosts and crawls through shares";

@@ -1,7 +1,6 @@
 {
   lib,
   stdenv,
-  python,
   fetchFromGitHub,
   cmake,
   fontconfig,
@@ -12,8 +11,9 @@
   libxext,
   libxi,
   libxmu,
-  opencascade-occt,
   numpy,
+  opencascade-occt,
+  python,
   rapidjson,
   swig,
 }:
@@ -33,6 +33,7 @@ stdenv.mkDerivation (finalAttrs: {
     cmake
     swig
   ];
+
   buildInputs = [
     python
     opencascade-occt
@@ -65,7 +66,7 @@ stdenv.mkDerivation (finalAttrs: {
     homepage = "https://github.com/tpaviot/pythonocc-core";
     changelog = "https://github.com/tpaviot/pythonocc-core/blob/${finalAttrs.src.rev}/NEWS";
     license = lib.licenses.lgpl3;
-    platforms = lib.platforms.unix;
     maintainers = [ ];
+    platforms = lib.platforms.unix;
   };
 })

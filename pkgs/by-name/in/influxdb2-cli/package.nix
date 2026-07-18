@@ -1,9 +1,9 @@
 {
-  buildGoModule,
-  fetchFromGitHub,
-  installShellFiles,
   lib,
   stdenv,
+  fetchFromGitHub,
+  buildGoModule,
+  installShellFiles,
 }:
 
 let
@@ -18,19 +18,11 @@ let
 
 in
 buildGoModule {
+  inherit src;
   pname = "influx-cli";
   version = version;
-  inherit src;
-
   nativeBuildInputs = [ installShellFiles ];
-
   vendorHash = "sha256-NsOkQwMH/AANUBReXmGR0fFQAtosA9iSla5JXyhrPYE=";
-  subPackages = [ "cmd/influx" ];
-
-  ldflags = [
-    "-X main.commit=v${version}"
-    "-X main.version=${version}"
-  ];
 
   postInstall = lib.optionalString (stdenv.buildPlatform.canExecute stdenv.hostPlatform) ''
     installShellCompletion --cmd influx \
@@ -38,10 +30,17 @@ buildGoModule {
       --zsh  <($out/bin/influx completion zsh)
   '';
 
+  ldflags = [
+    "-X main.commit=v${version}"
+    "-X main.version=${version}"
+  ];
+
+  subPackages = [ "cmd/influx" ];
+
   meta = {
     description = "CLI for managing resources in InfluxDB v2";
-    license = lib.licenses.mit;
     homepage = "https://influxdata.com/";
+    license = lib.licenses.mit;
     maintainers = [ ];
     mainProgram = "influx";
   };

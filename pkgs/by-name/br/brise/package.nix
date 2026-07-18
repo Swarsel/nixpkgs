@@ -16,35 +16,36 @@ stdenv.mkDerivation {
     sha256 = "1l13j3cfwida0ycl874fizz2jwjvlxid589a1iciqa9y25k21ql7";
   };
 
-  buildInputs = [ librime ];
-
   postPatch = ''
     patchShebangs scripts/*
   '';
 
-  # we need to use fetchFromGitHub to fetch sub-packages before we 'make',
-  # since nix won't allow networking during 'make'
-  preBuild = import ./fetchPackages.nix fetchFromGitHub;
+  buildInputs = [ librime ];
 
   makeFlags = [
     "BRISE_BUILD_BINARIES=yes"
     "PREFIX=$(out)"
   ];
 
+  # we need to use fetchFromGitHub to fetch sub-packages before we 'make',
+  # since nix won't allow networking during 'make'
+  preBuild = import ./fetchPackages.nix fetchFromGitHub;
   enableParallelBuilding = true;
 
   meta = {
     description = "Rime Schema Repository";
+
     longDescription = ''
       This software is a collection of data packages used by Rime
       to support various Chinese input methods, including those based on
       modern dialects or historical diasystems of the Chinese language.
     '';
+
     homepage = "https://rime.im";
     # Note that individual packages in this collection
     # may be released under different licenses
     license = lib.licenses.gpl3;
-    platforms = lib.platforms.linux;
     maintainers = [ lib.maintainers.sifmelcara ];
+    platforms = lib.platforms.linux;
   };
 }

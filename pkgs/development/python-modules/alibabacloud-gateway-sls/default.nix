@@ -17,16 +17,16 @@
 buildPythonPackage (finalAttrs: {
   pname = "alibabacloud-gateway-sls";
   version = "0.4.2";
-  pyproject = true;
-
-  __structuredAttrs = true;
 
   src = fetchPypi {
-    pname = "alibabacloud_gateway_sls";
     inherit (finalAttrs) version;
     hash = "sha256-EGaFojtJqy8Ggu4sPhYNqbUOpGbeUxtOklm8jAWD1h4=";
+    pname = "alibabacloud_gateway_sls";
   };
 
+  # Module has only tests in the untagged upstream repo
+  doCheck = false;
+  __structuredAttrs = true;
   build-system = [ setuptools ];
 
   dependencies = [
@@ -41,10 +41,8 @@ buildPythonPackage (finalAttrs: {
     alibabacloud-tea-util
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "alibabacloud_gateway_sls" ];
-
-  # Module has only tests in the untagged upstream repo
-  doCheck = false;
 
   meta = {
     description = "Aliyun Gateway SLS Library for Python";

@@ -6,7 +6,6 @@
 rustPlatform.buildRustPackage (finalAttrs: {
   pname = "re-derq";
   version = "1.0.1";
-  __structuredAttrs = true;
 
   src = fetchFromCodeberg {
     owner = "viraptor";
@@ -16,13 +15,14 @@ rustPlatform.buildRustPackage (finalAttrs: {
   };
 
   cargoHash = "sha256-KnH8jJb2rLn2LAgno+QbBg5K5NQErlvGDbhxEthwryM=";
+  __structuredAttrs = true;
 
   meta = {
-    mainProgram = "derq";
     description = "Open reimplementation of Apple's derq";
     homepage = "https://codeberg.org/viraptor/re-derq";
     license = with lib.licenses; [ mit ];
     maintainers = with lib.maintainers; [ viraptor ];
     platforms = lib.platforms.unix;
+    mainProgram = "derq";
   };
 })

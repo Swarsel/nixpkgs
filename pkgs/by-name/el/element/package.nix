@@ -1,8 +1,8 @@
 {
   lib,
   stdenv,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule (finalAttrs: {
@@ -20,10 +20,10 @@ buildGoModule (finalAttrs: {
 
   meta = {
     description = "Periodic table on the command line";
-    mainProgram = "element";
     homepage = "https://github.com/gennaro-tedesco/element";
     license = lib.licenses.asl20;
     maintainers = [ lib.maintainers.j0hax ];
+    mainProgram = "element";
     broken = stdenv.hostPlatform.isDarwin;
   };
 })

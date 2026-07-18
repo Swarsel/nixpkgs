@@ -1,17 +1,15 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # build-system
-  setuptools,
-
   # dependencies
   asn1crypto,
   asysocks,
   badauth,
+  buildPythonPackage,
   kerbad,
   prompt-toolkit,
+  # build-system
+  setuptools,
   tabulate,
   tqdm,
   unicrypto,
@@ -23,7 +21,6 @@
 buildPythonPackage {
   pname = "badldap";
   version = "0.7.1-unstable-2025-10-28";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "CravateRouge";
@@ -32,6 +29,8 @@ buildPythonPackage {
     hash = "sha256-14mV+EBrpoR9suPmOYdt2ro1Gcrpj3tuVx/meaVKC2c=";
   };
 
+  # Module doesn't have tests
+  doCheck = false;
   build-system = [ setuptools ];
 
   dependencies = [
@@ -48,9 +47,7 @@ buildPythonPackage {
     winacl
   ];
 
-  # Module doesn't have tests
-  doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "badldap" ];
 
   meta = {

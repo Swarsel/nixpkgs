@@ -1,13 +1,13 @@
 {
-  buildOctavePackage,
   lib,
   fetchFromGitHub,
-  nix-update-script,
-  jack2,
   alsa-lib,
-  rtmidi,
-  pkg-config,
   autoreconfHook,
+  buildOctavePackage,
+  jack2,
+  nix-update-script,
+  pkg-config,
+  rtmidi,
 }:
 
 buildOctavePackage rec {
@@ -32,6 +32,10 @@ buildOctavePackage rec {
     rtmidi
   ];
 
+  postAutoreconf = ''
+    popd
+  '';
+
   # autoreconfHook provides an autoreconfPhase that is run as a
   # preconfigurePhase, which means it runs AFTER the source is un-tarred, and
   # before buildOctavePackage's buildPhase re-tars it up into a format for later
@@ -43,17 +47,14 @@ buildOctavePackage rec {
     # actually fires for our environment.
     rm config.*
   '';
-  postAutoreconf = ''
-    popd
-  '';
 
   passthru.updateScript = nix-update-script { extraArgs = [ "--version-regex=release-(.*)" ]; };
 
   meta = {
+    description = "Audio and MIDI Toolbox for GNU Octave";
     homepage = "https://gnu-octave.github.io/packages/audio/";
     license = lib.licenses.gpl3Plus;
     maintainers = with lib.maintainers; [ ravenjoad ];
-    description = "Audio and MIDI Toolbox for GNU Octave";
     platforms = lib.platforms.linux; # Because of run-time dependency on jack2 and alsa-lib
   };
 }

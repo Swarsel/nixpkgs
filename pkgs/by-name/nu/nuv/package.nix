@@ -1,17 +1,17 @@
 {
   lib,
-  symlinkJoin,
-  callPackage,
   fetchFromGitHub,
   buildGoModule,
-  makeWrapper,
-  jq,
-  curl,
-  kubectl,
-  eksctl,
-  kind,
-  k3sup,
+  callPackage,
   coreutils,
+  curl,
+  eksctl,
+  jq,
+  k3sup,
+  kind,
+  kubectl,
+  makeWrapper,
+  symlinkJoin,
 }:
 
 let
@@ -29,22 +29,13 @@ buildGoModule {
     hash = "sha256-MdnBvlA4S2Mi/bcbE+O02x+wvlIrsK1Zc0dySz4FB/w=";
   };
 
-  subPackages = [ "." ];
-  vendorHash = "sha256-JkQbQ2NEaumXbAfsv0fNiQf/EwMs3SDLHvu7c/bU7fU=";
-
   nativeBuildInputs = [
     makeWrapper
     jq
     curl
   ];
 
-  ldflags = [
-    "-s"
-    "-w"
-    "-X main.NuvVersion=${version}"
-    "-X main.NuvBranch=${branch}"
-  ];
-
+  vendorHash = "sha256-JkQbQ2NEaumXbAfsv0fNiQf/EwMs3SDLHvu7c/bU7fU=";
   # false because tests require some modifications inside nix-env
   doCheck = false;
 
@@ -52,6 +43,7 @@ buildGoModule {
     let
       nuv-bin = symlinkJoin {
         name = "nuv-bin";
+
         paths = [
           coreutils
           kubectl
@@ -65,18 +57,29 @@ buildGoModule {
       wrapProgram $out/bin/nuv --set NUV_BIN "${nuv-bin}/bin"
     '';
 
+  ldflags = [
+    "-s"
+    "-w"
+    "-X main.NuvVersion=${version}"
+    "-X main.NuvBranch=${branch}"
+  ];
+
+  subPackages = [ "." ];
+
   passthru.tests = {
     simple = callPackage ./tests.nix { inherit version; };
   };
 
   meta = {
-    homepage = "https://nuvolaris.io/";
     description = "CLI tool for running tasks using the Nuvolaris serverless engine";
+    homepage = "https://nuvolaris.io/";
     license = lib.licenses.asl20;
-    mainProgram = "nuv";
+
     maintainers = with lib.maintainers; [
       msciabarra
       d4rkstar
     ];
+
+    mainProgram = "nuv";
   };
 }

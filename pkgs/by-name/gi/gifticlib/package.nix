@@ -3,10 +3,10 @@
   stdenv,
   fetchFromGitHub,
   cmake,
+  ctestCheckHook,
   expat,
   nifticlib,
   zlib,
-  ctestCheckHook,
 }:
 
 stdenv.mkDerivation {
@@ -20,31 +20,33 @@ stdenv.mkDerivation {
     sha256 = "0gcab06gm0irjnlrkpszzd4wr8z0fi7gx8f7966gywdp2jlxzw19";
   };
 
-  cmakeFlags = [
-    "-DUSE_SYSTEM_NIFTI=ON"
-    "-DDOWNLOAD_TEST_DATA=OFF"
-  ];
-
   nativeBuildInputs = [ cmake ];
+
   buildInputs = [
     expat
     nifticlib
     zlib
   ];
 
+  cmakeFlags = [
+    "-DUSE_SYSTEM_NIFTI=ON"
+    "-DDOWNLOAD_TEST_DATA=OFF"
+  ];
+
   # without the test data, this is only a few basic tests
   doCheck = !stdenv.hostPlatform.isDarwin;
   nativeCheckInputs = [ ctestCheckHook ];
+
   checkFlags = [
     "-LE"
     "NEEDS_DATA"
   ];
 
   meta = {
-    homepage = "https://www.nitrc.org/projects/gifti";
     description = "Medical imaging geometry format C API";
+    homepage = "https://www.nitrc.org/projects/gifti";
+    license = lib.licenses.publicDomain;
     maintainers = with lib.maintainers; [ bcdarwin ];
     platforms = lib.platforms.unix;
-    license = lib.licenses.publicDomain;
   };
 }

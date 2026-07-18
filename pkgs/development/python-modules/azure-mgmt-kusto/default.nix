@@ -11,14 +11,15 @@
 buildPythonPackage rec {
   pname = "azure-mgmt-kusto";
   version = "3.4.0";
-  pyproject = true;
 
   src = fetchPypi {
-    pname = "azure_mgmt_kusto";
     inherit version;
     hash = "sha256-K8keApefYp/u7cTZuWNYhltVlFethunG+ccJpAgyDmM=";
+    pname = "azure_mgmt_kusto";
   };
 
+  # no tests included
+  doCheck = false;
   build-system = [ setuptools ];
 
   dependencies = [
@@ -27,8 +28,7 @@ buildPythonPackage rec {
     isodate
   ];
 
-  # no tests included
-  doCheck = false;
+  pyproject = true;
 
   pythonImportsCheck = [
     "azure.common"

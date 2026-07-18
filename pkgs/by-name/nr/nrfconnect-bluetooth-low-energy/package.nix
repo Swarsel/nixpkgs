@@ -2,8 +2,8 @@
   lib,
   fetchurl,
   appimageTools,
-  segger-jlink-headless,
   libxshmfence,
+  segger-jlink-headless,
 }:
 
 let
@@ -24,11 +24,6 @@ in
 appimageTools.wrapType2 {
   inherit pname version src;
 
-  extraPkgs = pkgs: [
-    segger-jlink-headless
-    libxshmfence
-  ];
-
   extraInstallCommands = ''
     install -Dm444 ${appimageContents}/nrfconnect-bluetooth-low-energy.desktop -t $out/share/applications
     install -Dm444 ${appimageContents}/usr/share/icons/hicolor/512x512/apps/nrfconnect-bluetooth-low-energy.png \
@@ -37,12 +32,17 @@ appimageTools.wrapType2 {
       --replace-fail 'Exec=AppRun' 'Exec=nrfconnect-bluetooth-low-energy'
   '';
 
+  extraPkgs = pkgs: [
+    segger-jlink-headless
+    libxshmfence
+  ];
+
   meta = {
     description = "Nordic Semiconductor Bluetooth low energy app for nRF Connect for Desktop";
     homepage = "https://docs.nordicsemi.com/bundle/nrf-connect-ble/page/index.html";
     license = lib.licenses.unfree;
-    platforms = lib.platforms.linux;
     maintainers = with lib.maintainers; [ stargate01 ];
+    platforms = lib.platforms.linux;
     mainProgram = "nrfconnect-bluetooth-low-energy";
   };
 }

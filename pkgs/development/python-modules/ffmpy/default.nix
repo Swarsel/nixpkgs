@@ -1,18 +1,17 @@
 {
   lib,
   stdenv,
-  buildPythonPackage,
   fetchFromGitHub,
-  uv-build,
-  pytestCheckHook,
-  go,
+  buildPythonPackage,
   ffmpeg-headless,
+  go,
+  pytestCheckHook,
+  uv-build,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "ffmpy";
   version = "1.0.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "Ch00k";
@@ -39,18 +38,9 @@ buildPythonPackage (finalAttrs: {
     done
   '';
 
-  pythonImportsCheck = [ "ffmpy" ];
-
-  build-system = [ uv-build ];
-
   nativeCheckInputs = [
     pytestCheckHook
     go
-  ];
-
-  disabledTests = lib.optionals stdenv.hostPlatform.isDarwin [
-    # expects a FFExecutableNotFoundError, gets a NotADirectoryError raised by os
-    "test_invalid_executable_path"
   ];
 
   # the vendored ffmpeg mock binary assumes FHS
@@ -59,6 +49,16 @@ buildPythonPackage (finalAttrs: {
     echo Building tests/ffmpeg/ffmpeg...
     HOME=$(mktemp -d) go build -o tests/ffmpeg/ffmpeg tests/ffmpeg/ffmpeg.go
   '';
+
+  build-system = [ uv-build ];
+
+  disabledTests = lib.optionals stdenv.hostPlatform.isDarwin [
+    # expects a FFExecutableNotFoundError, gets a NotADirectoryError raised by os
+    "test_invalid_executable_path"
+  ];
+
+  pyproject = true;
+  pythonImportsCheck = [ "ffmpy" ];
 
   meta = {
     description = "Simple python interface for FFmpeg/FFprobe";

@@ -1,19 +1,18 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
-  dateutils,
-  requests,
-  monotonic,
   backoff,
+  buildPythonPackage,
+  dateutils,
+  monotonic,
+  requests,
+  setuptools,
   unittestCheckHook,
 }:
 
 buildPythonPackage {
   pname = "june-analytics-python";
   version = "2.3.0-unstable-2022-07-26";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "juneHQ";
@@ -22,7 +21,9 @@ buildPythonPackage {
     hash = "sha256-9IcikYQW1Q3aAyjIZw6UltD6cYFE+tBK+/EMQpRGCoQ=";
   };
 
-  pythonRelaxDeps = true;
+  nativeCheckInputs = [
+    unittestCheckHook
+  ];
 
   build-system = [ setuptools ];
 
@@ -33,13 +34,10 @@ buildPythonPackage {
     backoff
   ];
 
-  nativeCheckInputs = [
-    unittestCheckHook
-  ];
-
-  unittestFlagsArray = [ "june" ];
-
+  pyproject = true;
   pythonImportsCheck = [ "june" ];
+  pythonRelaxDeps = true;
+  unittestFlagsArray = [ "june" ];
 
   meta = {
     description = "Hassle-free way to integrate analytics into any python application";

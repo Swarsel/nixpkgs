@@ -2,13 +2,13 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  pkg-config,
   autoconf,
   automake,
-  libtool,
-  libsndfile,
-  libpulseaudio,
   espeak-ng,
+  libpulseaudio,
+  libsndfile,
+  libtool,
+  pkg-config,
   sonic,
   utf8cpp,
 }:
@@ -23,15 +23,6 @@ stdenv.mkDerivation (finalAttrs: {
     rev = "v${finalAttrs.version}";
     hash = "sha256-VYN9tR3BJXd3UA0V5vqQJNItJe1e1knZ+S7tLeaeYYk=";
   };
-
-  preConfigure = ''
-    ./autogen.sh
-  '';
-
-  env.CXXFLAGS = toString [
-    "-O0"
-    "-I${lib.getDev utf8cpp}/include/utf8cpp"
-  ];
 
   nativeBuildInputs = [
     pkg-config
@@ -48,9 +39,18 @@ stdenv.mkDerivation (finalAttrs: {
     utf8cpp
   ];
 
+  env.CXXFLAGS = toString [
+    "-O0"
+    "-I${lib.getDev utf8cpp}/include/utf8cpp"
+  ];
+
+  preConfigure = ''
+    ./autogen.sh
+  '';
+
   meta = {
     description = "Chinese text-to-speech software";
-    homepage = "https://www.eguidedog.net/ekho.php";
+
     longDescription = ''
       Ekho (余音) is a free, open source and multilingual text-to-speech (TTS)
       software. It supports Cantonese (Chinese dialect spoken in Hong Kong and
@@ -58,9 +58,11 @@ stdenv.mkDerivation (finalAttrs: {
       (a dialect in Taiwan), Tibetan, Ngangien (an ancient Chinese before
       Yuan Dynasty) and Korean (in trial).
     '';
+
+    homepage = "https://www.eguidedog.net/ekho.php";
     license = lib.licenses.gpl2Plus;
-    platforms = lib.platforms.linux ++ lib.platforms.darwin;
     maintainers = [ ];
+    platforms = lib.platforms.linux ++ lib.platforms.darwin;
     mainProgram = "ekho";
   };
 })

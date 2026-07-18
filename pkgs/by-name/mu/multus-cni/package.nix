@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule (finalAttrs: {
@@ -14,6 +14,9 @@ buildGoModule (finalAttrs: {
     rev = "v${finalAttrs.version}";
     sha256 = "sha256-Q6ACXOv1E3Ouki4ksdlUZFbWcDgo9xbCiTfEiVG5l18=";
   };
+
+  vendorHash = null;
+  doCheck = true;
 
   ldflags = [
     "-s"
@@ -28,19 +31,17 @@ buildGoModule (finalAttrs: {
     "cmd/thin_entrypoint"
   ];
 
-  vendorHash = null;
-
-  doCheck = true;
-
   meta = {
     description = "Multus CNI is a container network interface (CNI) plugin for Kubernetes that enables attaching multiple network interfaces to pods";
     homepage = "https://github.com/k8snetworkplumbingwg/multus-cni";
     license = lib.licenses.asl20;
-    platforms = lib.platforms.linux;
+
     maintainers = with lib.maintainers; [
       onixie
       kashw2
     ];
+
+    platforms = lib.platforms.linux;
     mainProgram = "multus";
   };
 })

@@ -1,11 +1,11 @@
 {
   lib,
-  flutter341,
   fetchFromGitHub,
-  runCommand,
-  nix-update-script,
-  yq-go,
   _experimental-update-script-combinators,
+  flutter341,
+  nix-update-script,
+  runCommand,
+  yq-go,
 }:
 
 flutter341.buildFlutterApplication rec {
@@ -31,6 +31,7 @@ flutter341.buildFlutterApplication rec {
         ''
           yq eval --output-format=json --prettyPrint $src/pubspec.lock > "$out"
         '';
+
     updateScript = _experimental-update-script-combinators.sequence [
       (nix-update-script { })
       (
@@ -43,13 +44,15 @@ flutter341.buildFlutterApplication rec {
   };
 
   meta = {
-    homepage = "https://convertall.bellz.org";
     description = "Graphical unit converter";
-    mainProgram = "convertall";
+    homepage = "https://convertall.bellz.org";
     license = lib.licenses.gpl2Plus;
+
     maintainers = with lib.maintainers; [
       Luflosi
     ];
+
     platforms = lib.platforms.linux;
+    mainProgram = "convertall";
   };
 }

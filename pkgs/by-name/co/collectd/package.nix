@@ -2,15 +2,15 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  fetchpatch,
-  callPackage,
   autoreconfHook,
-  pkg-config,
-  libtool,
   bison,
+  callPackage,
+  fetchpatch,
   flex,
-  perl,
+  libtool,
   nixosTests,
+  perl,
+  pkg-config,
   enabledPlugins ? null,
 }:
 let
@@ -32,14 +32,14 @@ stdenv.mkDerivation (finalAttrs: {
     # fix -t never printing syntax errors
     # should be included in next release
     (fetchpatch {
+      hash = "sha256-XkDxLITmG0FLpgf8Ut1bDqulM4DmPs8Xrec2QB1tkks=";
       name = "fix-broken-dash-t-option.patch";
       url = "https://github.com/collectd/collectd/commit/3f575419e7ccb37a3b10ecc82adb2e83ff2826e1.patch";
-      hash = "sha256-XkDxLITmG0FLpgf8Ut1bDqulM4DmPs8Xrec2QB1tkks=";
     })
     (fetchpatch {
+      hash = "sha256-0eD7yNW3TWVyNMpLsADhYFDvy6COoCaI0kS1XJrwDgM=";
       name = "no_include_longintrepr.patch";
       url = "https://github.com/collectd/collectd/commit/623e95394e0e62e7f9ced2104b786d21e9c0bf53.patch";
-      hash = "sha256-0eD7yNW3TWVyNMpLsADhYFDvy6COoCaI0kS1XJrwDgM=";
     })
   ];
 
@@ -87,7 +87,7 @@ stdenv.mkDerivation (finalAttrs: {
     description = "Daemon which collects system performance statistics periodically";
     homepage = "https://collectd.org";
     license = lib.licenses.gpl2Plus;
-    platforms = lib.platforms.unix;
     maintainers = with lib.maintainers; [ bjornfor ];
+    platforms = lib.platforms.unix;
   };
 })

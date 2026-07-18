@@ -1,18 +1,17 @@
 {
   lib,
-  python3Packages,
   fetchFromGitHub,
-  wrapGAppsHook3,
-  p7zip,
-  parted,
   grub2,
   ntfs3g,
+  p7zip,
+  parted,
+  python3Packages,
+  wrapGAppsHook3,
 }:
 
 python3Packages.buildPythonApplication (finalAttrs: {
   pname = "woeusb-ng";
   version = "0.2.12-unstable-2026-01-25";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "WoeUSB";
@@ -22,12 +21,17 @@ python3Packages.buildPythonApplication (finalAttrs: {
     hash = "sha256-TfrXq8zYtlqcA/jbxQul7HIGdYrn73ljKVY2x4BfS2E=";
   };
 
-  build-system = [ python3Packages.setuptools ];
-
   nativeBuildInputs = [
     wrapGAppsHook3
   ];
-  dontWrapGApps = true;
+
+  preConfigure = ''
+    mkdir -p $out/bin $out/share/applications $out/share/polkit-1/actions
+  '';
+
+  # Unable to access the X Display, is $DISPLAY set properly?
+  doCheck = false;
+
   preFixup = ''
     makeWrapperArgs+=(
       "''${gappsWrapperArgs[@]}"
@@ -42,25 +46,23 @@ python3Packages.buildPythonApplication (finalAttrs: {
     )
   '';
 
+  build-system = [ python3Packages.setuptools ];
+
   dependencies = [
     python3Packages.termcolor
     python3Packages.wxpython
     python3Packages.six
   ];
 
-  preConfigure = ''
-    mkdir -p $out/bin $out/share/applications $out/share/polkit-1/actions
-  '';
-
-  # Unable to access the X Display, is $DISPLAY set properly?
-  doCheck = false;
+  dontWrapGApps = true;
+  pyproject = true;
 
   meta = {
     description = "Tool to create a Windows USB stick installer from a real Windows DVD or image";
     homepage = "https://github.com/WoeUSB/WoeUSB-ng";
-    mainProgram = "woeusb";
     license = lib.licenses.gpl3Plus;
     maintainers = [ lib.maintainers.stunkymonkey ];
     platforms = lib.platforms.linux;
+    mainProgram = "woeusb";
   };
 })

@@ -1,25 +1,23 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchurl,
-  cmake,
-  doxygen,
-  graphviz,
-  pkg-config,
-  autoPatchelfHook,
-  kdePackages,
   alkimia,
   aqbanking,
+  autoPatchelfHook,
+  cmake,
+  doxygen,
   gmp,
+  graphviz,
   gwenhywfar,
+  kdePackages,
   libical,
   libofx,
+  pkg-config,
+  python3,
   sqlcipher,
-
   # Needed for running tests:
   xvfb-run,
-
-  python3,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -31,9 +29,21 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-QLZjnmohYQDSAkjtdPoVQgL5zN+8M1Inztwb746l03c=";
   };
 
-  cmakeFlags = [
-    "-DBUILD_WITH_QT6=1"
+  patches = [
+    # from https://src.fedoraproject.org/rpms/kmymoney/c/8f7f40d7fec6db96610e60a6a99717479594c8bd
+    ./kmymoney-fix-build-against-qt-6-10.patch
   ];
+
+  postPatch = ''
+    buildPythonPath "${python3.pkgs.woob}"
+    patchPythonScript "kmymoney/plugins/woob/interface/kmymoneywoob.py"
+
+    # Within the embedded Python interpreter, sys.argv is unavailable, so let's
+    # assign it to a dummy value so that the assignment of sys.argv[0] injected
+    # by patchPythonScript doesn't fail:
+    sed -i -e '1i import sys; sys.argv = [""]' \
+      "kmymoney/plugins/woob/interface/kmymoneywoob.py"
+  '';
 
   nativeBuildInputs = [
     cmake
@@ -77,21 +87,9 @@ stdenv.mkDerivation (finalAttrs: {
     python3.pkgs.woob
   ];
 
-  patches = [
-    # from https://src.fedoraproject.org/rpms/kmymoney/c/8f7f40d7fec6db96610e60a6a99717479594c8bd
-    ./kmymoney-fix-build-against-qt-6-10.patch
+  cmakeFlags = [
+    "-DBUILD_WITH_QT6=1"
   ];
-
-  postPatch = ''
-    buildPythonPath "${python3.pkgs.woob}"
-    patchPythonScript "kmymoney/plugins/woob/interface/kmymoneywoob.py"
-
-    # Within the embedded Python interpreter, sys.argv is unavailable, so let's
-    # assign it to a dummy value so that the assignment of sys.argv[0] injected
-    # by patchPythonScript doesn't fail:
-    sed -i -e '1i import sys; sys.argv = [""]' \
-      "kmymoney/plugins/woob/interface/kmymoneywoob.py"
-  '';
 
   # libpython is required by the python interpreter embedded in kmymoney, so we
   # need to explicitly tell autoPatchelf about it.
@@ -102,12 +100,14 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Personal finance manager for KDE";
-    mainProgram = "kmymoney";
     homepage = "https://kmymoney.org/";
-    platforms = lib.platforms.linux;
     license = lib.licenses.gpl2Plus;
+
     maintainers = with lib.maintainers; [
       das-g
     ];
+
+    platforms = lib.platforms.linux;
+    mainProgram = "kmymoney";
   };
 })

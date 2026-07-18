@@ -1,11 +1,11 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
-  gitUpdater,
-  cmake,
   bzip2,
+  cmake,
   curl,
+  gitUpdater,
   zlib,
 }:
 
@@ -48,17 +48,8 @@ stdenv.mkDerivation (finalAttrs: {
     # not showing us gethostbyname()
     NIX_CFLAGS_COMPILE = "-D__BSD_VISIBLE=1";
   };
-  hardeningDisable = [ "format" ];
 
   doCheck = true;
-  doInstallCheck = true;
-
-  # On testing cfitsio: https://heasarc.gsfc.nasa.gov/FTP/software/fitsio/c/README
-  installCheckPhase = ''
-    ./TestProg > testprog.lis
-    diff -s testprog.lis ../testprog.out
-    cmp testprog.fit ../testprog.std
-  '';
 
   # Fixup installation
   # Remove installed test tools and benchmark
@@ -68,13 +59,24 @@ stdenv.mkDerivation (finalAttrs: {
     rm "$bin/bin/smem" "$bin/bin/speed"
   '';
 
+  doInstallCheck = true;
+
+  # On testing cfitsio: https://heasarc.gsfc.nasa.gov/FTP/software/fitsio/c/README
+  installCheckPhase = ''
+    ./TestProg > testprog.lis
+    diff -s testprog.lis ../testprog.out
+    cmp testprog.fit ../testprog.std
+  '';
+
+  hardeningDisable = [ "format" ];
+
   passthru = {
     updateScript = gitUpdater { rev-prefix = "${finalAttrs.pname}-"; };
   };
 
   meta = {
-    homepage = "https://heasarc.gsfc.nasa.gov/docs/software/fitsio/";
     description = "Library for reading and writing FITS data files";
+
     longDescription = ''
       CFITSIO is a library of C and Fortran subroutines for reading and
       writing data files in FITS (Flexible Image Transport System) data
@@ -84,12 +86,16 @@ stdenv.mkDerivation (finalAttrs: {
       advanced features for manipulating and filtering the information in
       FITS files.
     '';
+
+    homepage = "https://heasarc.gsfc.nasa.gov/docs/software/fitsio/";
     changelog = "https://heasarc.gsfc.nasa.gov/FTP/software/fitsio/c/docs/changes.txt";
     license = lib.licenses.cfitsio;
+
     maintainers = with lib.maintainers; [
       returntoreality
       xbreak
     ];
+
     platforms = lib.platforms.unix;
   };
 })

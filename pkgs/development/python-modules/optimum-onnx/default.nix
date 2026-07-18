@@ -1,26 +1,22 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # build-system
-  setuptools,
-
+  buildPythonPackage,
   # dependencies
   onnx,
-  optimum,
-  transformers,
-
   # optional-dependencies
   onnxruntime,
+  optimum,
   # onnxruntime-gpu, unpackaged
   ruff,
+  # build-system
+  setuptools,
+  transformers,
 }:
 
 buildPythonPackage rec {
   pname = "optimum-onnx";
   version = "0.1.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "huggingface";
@@ -29,13 +25,13 @@ buildPythonPackage rec {
     hash = "sha256-Thx3QPLgi8w8znvMGSuCyRu/tUynCkQFywtKKv7UhuA=";
   };
 
+  # Almost all tests need internet access
+  doCheck = false;
+
   build-system = [
     setuptools
   ];
 
-  pythonRelaxDeps = [
-    "transformers"
-  ];
   dependencies = [
     onnx
     optimum
@@ -49,10 +45,12 @@ buildPythonPackage rec {
     # onnxruntime-gpu = [ onnxruntime-gpu ];
   };
 
+  pyproject = true;
   pythonImportsCheck = [ "optimum.onnxruntime" ];
 
-  # Almost all tests need internet access
-  doCheck = false;
+  pythonRelaxDeps = [
+    "transformers"
+  ];
 
   meta = {
     description = "Export your model to ONNX and run inference with ONNX Runtime";

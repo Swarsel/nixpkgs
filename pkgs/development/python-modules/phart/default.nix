@@ -4,9 +4,9 @@
   fetchPypi,
   hatchling,
   networkx,
-  pytestCheckHook,
-  pytest-cov-stub,
   pydot,
+  pytest-cov-stub,
+  pytestCheckHook,
 }:
 
 buildPythonPackage rec {
@@ -18,16 +18,6 @@ buildPythonPackage rec {
     hash = "sha256-JpHjEVKpOPSNUdUjZxWBHt6AFCpci1nSRWhDXxG6nyw=";
   };
 
-  pyproject = true;
-
-  build-system = [
-    hatchling
-  ];
-
-  preCheck = ''
-    export PATH=$out/bin:$PATH
-  '';
-
   postPatch = ''
     # pythonRelaxDeps = true; didn't work
     substituteInPlace pyproject.toml \
@@ -38,6 +28,20 @@ buildPythonPackage rec {
       --replace-fail "renderer.options.use_ascii = args.ascii" ""
   '';
 
+  nativeCheckInputs = [
+    pytestCheckHook
+    pytest-cov-stub
+    pydot
+  ];
+
+  preCheck = ''
+    export PATH=$out/bin:$PATH
+  '';
+
+  build-system = [
+    hatchling
+  ];
+
   dependencies = [
     networkx
   ];
@@ -47,12 +51,7 @@ buildPythonPackage rec {
     "tests/test_cli.py"
   ];
 
-  nativeCheckInputs = [
-    pytestCheckHook
-    pytest-cov-stub
-    pydot
-  ];
-
+  pyproject = true;
   pytestFlags = [ "-Wignore::DeprecationWarning" ];
 
   pythonImportsCheck = [

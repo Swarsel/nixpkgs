@@ -8,7 +8,6 @@
 buildPythonPackage rec {
   pname = "versiontools";
   version = "1.9.1";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
@@ -16,10 +15,11 @@ buildPythonPackage rec {
   };
 
   doCheck = (!isPy3k);
+  format = "setuptools";
 
   meta = {
-    homepage = "https://launchpad.net/versiontools";
     description = "Smart replacement for plain tuple used in __version__";
+    homepage = "https://launchpad.net/versiontools";
     license = lib.licenses.lgpl2;
   };
 }

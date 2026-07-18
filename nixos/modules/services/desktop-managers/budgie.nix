@@ -1,7 +1,7 @@
 {
+  config,
   lib,
   pkgs,
-  config,
   utils,
   ...
 }:
@@ -28,7 +28,9 @@ let
   };
 
   nixos-background-info = pkgs.writeTextFile {
+    destination = "/share/gnome-background-properties/nixos.xml";
     name = "nixos-background-info";
+
     text = ''
       <?xml version="1.0"?>
       <!DOCTYPE wallpapers SYSTEM "gnome-wp-list.dtd">
@@ -51,7 +53,6 @@ let
         </wallpaper>
       </wallpapers>
     '';
-    destination = "/share/gnome-background-properties/nixos.xml";
   };
 
   budgie-control-center' = pkgs.budgie-control-center.override {
@@ -61,8 +62,6 @@ let
   notExcluded = pkg: utils.disablePackageByName pkg config.environment.budgie.excludePackages;
 in
 {
-  meta.teams = [ lib.teams.budgie ];
-
   imports = [
     (lib.mkRenamedOptionModule
       [ "services" "xserver" "desktopManager" "budgie" ]
@@ -71,72 +70,52 @@ in
   ];
 
   options = {
+    environment.budgie.excludePackages = mkOption {
+      default = [ ];
+      description = "Which packages Budgie should exclude from the default environment.";
+      example = literalExpression "[ pkgs.mate-terminal ]";
+      type = types.listOf types.package;
+    };
+
     services.desktopManager.budgie = {
       enable = mkEnableOption "the Budgie desktop";
 
+      extraGSettingsOverridePackages = mkOption {
+        default = [ ];
+        description = "List of packages for which GSettings are overridden.";
+        type = types.listOf types.path;
+      };
+
+      extraGSettingsOverrides = mkOption {
+        default = "";
+        description = "Additional GSettings overrides.";
+        type = types.lines;
+      };
+
+      extraPlugins = mkOption {
+        default = [ ];
+        description = "Extra plugins for the Budgie desktop";
+        example = literalExpression "[ pkgs.budgie-analogue-clock-applet ]";
+        type = types.listOf types.package;
+      };
+
       sessionPath = mkOption {
+        default = [ ];
+
         description = ''
           Additional list of packages to be added to the session search path.
           Useful for GSettings-conditional autostart.
 
           Note that this should be a last resort; patching the package is preferred (see GPaste).
         '';
-        type = types.listOf types.package;
-        default = [ ];
+
         example = literalExpression "[ pkgs.gpaste ]";
-      };
-
-      extraGSettingsOverrides = mkOption {
-        description = "Additional GSettings overrides.";
-        type = types.lines;
-        default = "";
-      };
-
-      extraGSettingsOverridePackages = mkOption {
-        description = "List of packages for which GSettings are overridden.";
-        type = types.listOf types.path;
-        default = [ ];
-      };
-
-      extraPlugins = mkOption {
-        description = "Extra plugins for the Budgie desktop";
         type = types.listOf types.package;
-        default = [ ];
-        example = literalExpression "[ pkgs.budgie-analogue-clock-applet ]";
       };
-    };
-
-    environment.budgie.excludePackages = mkOption {
-      description = "Which packages Budgie should exclude from the default environment.";
-      type = types.listOf types.package;
-      default = [ ];
-      example = literalExpression "[ pkgs.mate-terminal ]";
     };
   };
 
   config = mkIf cfg.enable {
-    services.displayManager.sessionPackages = with pkgs; [
-      budgie-desktop
-    ];
-
-    services.xserver.displayManager.lightdm.greeters.slick = {
-      enable = mkDefault true;
-      theme = mkDefault {
-        name = "Qogir";
-        package = pkgs.qogir-theme;
-      };
-      iconTheme = mkDefault {
-        name = "Qogir";
-        package = pkgs.qogir-icon-theme;
-      };
-      cursorTheme = mkDefault {
-        name = "Qogir";
-        package = pkgs.qogir-icon-theme;
-      };
-    };
-
-    services.desktopManager.budgie.sessionPath = [ pkgs.budgie-desktop-view ];
-
     environment.extraInit = ''
       ${concatMapStrings (p: ''
         if [ -d "${p}/share/gsettings-schemas/${p.name}" ]; then
@@ -156,9 +135,12 @@ in
       fi
     '';
 
-    # https://docs.buddiesofbudgie.org/10.10/developer/workflow/building-budgie-desktop/#compositor-recommendations
-    programs.labwc.enable = mkDefault true;
-    programs.gtklock.enable = mkDefault true;
+    environment.pathsToLink = [
+      "/share" # TODO: https://github.com/NixOS/nixpkgs/issues/47173
+    ];
+
+    # GSettings overrides.
+    environment.sessionVariables.NIX_GSETTINGS_OVERRIDES_DIR = "${nixos-gsettings-overrides}/share/gsettings-schemas/nixos-gsettings-overrides/glib-2.0/schemas";
 
     environment.systemPackages =
       with pkgs;
@@ -217,76 +199,37 @@ in
       ] config.environment.budgie.excludePackages)
       ++ cfg.sessionPath;
 
-    # Both budgie-desktop-view and nemo defaults to this emulator.
-    programs.gnome-terminal.enable = mkDefault (notExcluded pkgs.gnome-terminal);
+    fonts.fontconfig.defaultFonts = {
+      monospace = mkDefault [ "Hack" ];
+      sansSerif = mkDefault [ "Noto Sans" ];
+    };
 
     # Fonts.
     fonts.packages = [
       pkgs.noto-fonts
       pkgs.hack-font
     ];
-    fonts.fontconfig.defaultFonts = {
-      sansSerif = mkDefault [ "Noto Sans" ];
-      monospace = mkDefault [ "Hack" ];
-    };
 
-    environment.pathsToLink = [
-      "/share" # TODO: https://github.com/NixOS/nixpkgs/issues/47173
-    ];
-
-    # GSettings overrides.
-    environment.sessionVariables.NIX_GSETTINGS_OVERRIDES_DIR = "${nixos-gsettings-overrides}/share/gsettings-schemas/nixos-gsettings-overrides/glib-2.0/schemas";
-
-    # Required by Budgie Desktop.
-    services.xserver.updateDbusEnvironment = true;
+    hardware.bluetooth.enable = mkDefault true; # for Budgie's Status Indicator and Bluejay.
+    # Required by Budgie Panel plugins and/or Budgie Control Center panels.
+    networking.networkmanager.enable = mkDefault true; # for BCC's Network panel.
+    # Shell integration for MATE Terminal.
+    programs.bash.vteIntegration = true;
     programs.dconf.enable = true;
-
+    # Both budgie-desktop-view and nemo defaults to this emulator.
+    programs.gnome-terminal.enable = mkDefault (notExcluded pkgs.gnome-terminal);
+    programs.gtklock.enable = mkDefault true;
+    # https://docs.buddiesofbudgie.org/10.10/developer/workflow/building-budgie-desktop/#compositor-recommendations
+    programs.labwc.enable = mkDefault true;
+    programs.nm-applet.enable = config.networking.networkmanager.enable; # Budgie has no Network applet.
+    programs.nm-applet.indicator = true; # Budgie uses AppIndicators.
+    programs.zsh.vteIntegration = true;
     # Required by Budgie's Polkit Dialog.
     security.polkit.enable = mkDefault true;
     # Required by Budige's Control Center and Desktop
     security.polkit.enablePkexecWrapper = mkDefault true;
-
-    # Required by Budgie Panel plugins and/or Budgie Control Center panels.
-    networking.networkmanager.enable = mkDefault true; # for BCC's Network panel.
-    programs.nm-applet.enable = config.networking.networkmanager.enable; # Budgie has no Network applet.
-    programs.nm-applet.indicator = true; # Budgie uses AppIndicators.
-
-    hardware.bluetooth.enable = mkDefault true; # for Budgie's Status Indicator and Bluejay.
-
-    xdg.portal.enable = mkDefault true; # for BCC's Applications panel.
-    xdg.portal.extraPortals = with pkgs; [
-      xdg-desktop-portal-gtk # provides a XDG Portals implementation.
-      xdg-desktop-portal-wlr # for screenshot and screencast.
-    ];
-    xdg.portal.configPackages = mkDefault [ pkgs.budgie-desktop ];
-
-    services.geoclue2.enable = mkDefault true; # for BCC's Privacy > Location Services panel.
-    services.upower.enable = config.powerManagement.enable; # for Budgie's Status Indicator and BCC's Power panel.
-    services.libinput.enable = mkDefault true; # for BCC's Mouse panel.
-    services.colord.enable = mkDefault true; # for BCC's Color panel.
-    services.gnome.at-spi2-core.enable = mkDefault true; # for BCC's A11y panel.
     services.accounts-daemon.enable = mkDefault true; # for BCC's Users panel.
-    services.udisks2.enable = mkDefault true; # for BCC's Details panel.
-
-    # For BCC's Online Accounts panel.
-    services.gnome.gnome-online-accounts.enable = mkDefault true;
-
-    # For BCC's Printers panel.
-    services.printing.enable = mkDefault true;
-    services.system-config-printer.enable = config.services.printing.enable;
-
-    # For BCC's Sharing panel.
-    services.dleyna.enable = mkDefault true;
-    services.gnome.gnome-user-share.enable = mkDefault true;
-    services.gnome.rygel.enable = mkDefault true;
-
-    # Other default services.
-    services.gnome.evolution-data-server.enable = mkDefault true;
-    services.gnome.glib-networking.enable = mkDefault true;
-    services.gnome.gnome-keyring.enable = mkDefault true;
-    services.gnome.gcr-ssh-agent.enable = mkDefault true;
-    services.gnome.gnome-settings-daemon.enable = mkDefault true;
-    services.gvfs.enable = mkDefault true;
+    services.colord.enable = mkDefault true; # for BCC's Color panel.
 
     # Register packages for DBus.
     services.dbus.packages = [
@@ -294,8 +237,63 @@ in
       pkgs.budgie-desktop-services
     ];
 
-    # Shell integration for MATE Terminal.
-    programs.bash.vteIntegration = true;
-    programs.zsh.vteIntegration = true;
+    services.desktopManager.budgie.sessionPath = [ pkgs.budgie-desktop-view ];
+
+    services.displayManager.sessionPackages = with pkgs; [
+      budgie-desktop
+    ];
+
+    # For BCC's Sharing panel.
+    services.dleyna.enable = mkDefault true;
+    services.geoclue2.enable = mkDefault true; # for BCC's Privacy > Location Services panel.
+    services.gnome.at-spi2-core.enable = mkDefault true; # for BCC's A11y panel.
+    # Other default services.
+    services.gnome.evolution-data-server.enable = mkDefault true;
+    services.gnome.gcr-ssh-agent.enable = mkDefault true;
+    services.gnome.glib-networking.enable = mkDefault true;
+    services.gnome.gnome-keyring.enable = mkDefault true;
+    # For BCC's Online Accounts panel.
+    services.gnome.gnome-online-accounts.enable = mkDefault true;
+    services.gnome.gnome-settings-daemon.enable = mkDefault true;
+    services.gnome.gnome-user-share.enable = mkDefault true;
+    services.gnome.rygel.enable = mkDefault true;
+    services.gvfs.enable = mkDefault true;
+    services.libinput.enable = mkDefault true; # for BCC's Mouse panel.
+    # For BCC's Printers panel.
+    services.printing.enable = mkDefault true;
+    services.system-config-printer.enable = config.services.printing.enable;
+    services.udisks2.enable = mkDefault true; # for BCC's Details panel.
+    services.upower.enable = config.powerManagement.enable; # for Budgie's Status Indicator and BCC's Power panel.
+
+    services.xserver.displayManager.lightdm.greeters.slick = {
+      enable = mkDefault true;
+
+      cursorTheme = mkDefault {
+        package = pkgs.qogir-icon-theme;
+        name = "Qogir";
+      };
+
+      iconTheme = mkDefault {
+        package = pkgs.qogir-icon-theme;
+        name = "Qogir";
+      };
+
+      theme = mkDefault {
+        package = pkgs.qogir-theme;
+        name = "Qogir";
+      };
+    };
+
+    # Required by Budgie Desktop.
+    services.xserver.updateDbusEnvironment = true;
+    xdg.portal.configPackages = mkDefault [ pkgs.budgie-desktop ];
+    xdg.portal.enable = mkDefault true; # for BCC's Applications panel.
+
+    xdg.portal.extraPortals = with pkgs; [
+      xdg-desktop-portal-gtk # provides a XDG Portals implementation.
+      xdg-desktop-portal-wlr # for screenshot and screencast.
+    ];
   };
+
+  meta.teams = [ lib.teams.budgie ];
 }

@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   requests,
   websocket-client,
   xmltodict,
@@ -10,7 +10,6 @@
 buildPythonPackage rec {
   pname = "pyskyqremote";
   version = "0.3.26";
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "RogerSelwyn";
@@ -27,7 +26,7 @@ buildPythonPackage rec {
 
   # Project has no tests, only a test script which looks like anusage example
   doCheck = false;
-
+  format = "setuptools";
   pythonImportsCheck = [ "pyskyqremote" ];
 
   meta = {

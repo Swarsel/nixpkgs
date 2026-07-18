@@ -2,11 +2,11 @@
   lib,
   stdenv,
   fetchgit,
-  pkg-config,
-  luajit,
   git,
+  luajit,
   makeWrapper,
   nix-update-script,
+  pkg-config,
   versionCheckHook,
 }:
 
@@ -19,8 +19,6 @@ stdenv.mkDerivation (finalAttrs: {
     tag = finalAttrs.version;
     hash = "sha256-xGrhkVA5H/expArfUbfJ8p1odUAeJiL/vbsPedd92EE=";
   };
-
-  __structuredAttrs = true;
 
   patches = [
     # main() loads the Lua config (which requires ~/.config/pkgit/init.lua)
@@ -38,11 +36,8 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   buildInputs = [ luajit ];
-
   # The Makefile defaults CC to clang via `?=`; stdenv exports CC, which wins.
   makeFlags = [ "PREFIX=${placeholder "out"}" ];
-
-  enableParallelBuilding = true;
 
   # pkgit shells out to git at runtime (src/fetch_git.c execvp's "git").
   postInstall = ''
@@ -52,7 +47,8 @@ stdenv.mkDerivation (finalAttrs: {
 
   doInstallCheck = true;
   nativeInstallCheckInputs = [ versionCheckHook ];
-
+  __structuredAttrs = true;
+  enableParallelBuilding = true;
   passthru.updateScript = nix-update-script { };
 
   meta = {
@@ -60,7 +56,7 @@ stdenv.mkDerivation (finalAttrs: {
     homepage = "https://git.symlinx.net/pkgit";
     license = lib.licenses.gpl3Plus;
     maintainers = with lib.maintainers; [ Ra77a3l3-jar ];
-    mainProgram = "pkgit";
     platforms = lib.platforms.unix;
+    mainProgram = "pkgit";
   };
 })

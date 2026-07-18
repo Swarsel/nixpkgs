@@ -2,23 +2,23 @@
   lib,
   stdenv,
   fetchurl,
-  gmp,
-  mpfr,
-  flint,
-  boost,
+  ant,
   bliss,
-  ppl,
-  singular,
+  boost,
   cddlib,
+  flint,
+  gmp,
   lrs,
+  makeWrapper,
+  mongoc,
+  mpfr,
   nauty,
   ninja,
-  ant,
   openjdk,
-  mongoc,
   perl,
   perlPackages,
-  makeWrapper,
+  ppl,
+  singular,
 }:
 
 # polymake compiles its own version of sympol and atint because we
@@ -69,23 +69,23 @@ stdenv.mkDerivation (finalAttrs: {
     "--with-mongoc=${mongoc}"
   ];
 
-  ninjaFlags = [
-    "-C"
-    "build/Opt"
-  ];
-
   postInstall = ''
     for i in "$out"/bin/*; do
       wrapProgram "$i" --prefix PERL5LIB : "$PERL5LIB"
     done
   '';
 
+  ninjaFlags = [
+    "-C"
+    "build/Opt"
+  ];
+
   meta = {
     description = "Software for research in polyhedral geometry";
     homepage = "https://www.polymake.org/doku.php";
     changelog = "https://github.com/polymake/polymake/blob/V${finalAttrs.version}/ChangeLog";
     license = lib.licenses.gpl2Plus;
-    teams = [ lib.teams.sage ];
     platforms = lib.platforms.linux;
+    teams = [ lib.teams.sage ];
   };
 })

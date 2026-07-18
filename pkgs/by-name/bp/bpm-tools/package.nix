@@ -1,13 +1,13 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchurl,
-  gnuplot,
-  sox,
   flac,
+  gnuplot,
   id3v2,
-  vorbis-tools,
   makeWrapper,
+  sox,
+  vorbis-tools,
 }:
 
 let
@@ -32,20 +32,20 @@ stdenv.mkDerivation (finalAttrs: {
     makeWrapper
   ];
 
-  installFlags = [
-    "PREFIX=${placeholder "out"}"
-  ];
-
   postFixup = ''
     wrapProgram $out/bin/bpm-tag --prefix PATH : "${path}"
     wrapProgram $out/bin/bpm-graph --prefix PATH : "${path}"
   '';
 
+  installFlags = [
+    "PREFIX=${placeholder "out"}"
+  ];
+
   meta = {
-    homepage = "http://www.pogo.org.uk/~mark/bpm-tools/";
     description = "Automatically calculate BPM (tempo) of music files";
+    homepage = "http://www.pogo.org.uk/~mark/bpm-tools/";
     license = lib.licenses.gpl2Only;
-    platforms = lib.platforms.all;
     maintainers = with lib.maintainers; [ doronbehar ];
+    platforms = lib.platforms.all;
   };
 })

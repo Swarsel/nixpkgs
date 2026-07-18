@@ -2,19 +2,19 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  cmake,
   SDL2,
-  libGLU,
+  cmake,
+  copyDesktopItems,
+  curl,
   libGL,
-  zlib,
+  libGLU,
   libjpeg,
   libogg,
   libvorbis,
   libx11,
-  openal,
-  curl,
-  copyDesktopItems,
   makeDesktopItem,
+  openal,
+  zlib,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -28,19 +28,11 @@ stdenv.mkDerivation (finalAttrs: {
     sha256 = "sha256-losqnxnjRPOczjrRPyyOxCeg9TNScXLcXADgo9Bxm5k=";
   };
 
-  # Add libGLU libGL linking
-  patchPhase = ''
-    sed -i 's/\<idlib\()\?\)$/idlib GL\1/' neo/CMakeLists.txt
-  '';
-
-  preConfigure = ''
-    cd "$(ls -d dhewm3-*.src)"/neo
-  '';
-
   nativeBuildInputs = [
     cmake
     copyDesktopItems
   ];
+
   buildInputs = [
     SDL2
     libGLU
@@ -54,23 +46,32 @@ stdenv.mkDerivation (finalAttrs: {
     curl
   ];
 
+  preConfigure = ''
+    cd "$(ls -d dhewm3-*.src)"/neo
+  '';
+
   desktopItems = [
     (makeDesktopItem {
-      name = "dhewm3";
-      exec = "dhewm3";
-      desktopName = "Doom 3";
       categories = [ "Game" ];
+      desktopName = "Doom 3";
+      exec = "dhewm3";
+      name = "dhewm3";
     })
   ];
 
   hardeningDisable = [ "format" ];
 
+  # Add libGLU libGL linking
+  patchPhase = ''
+    sed -i 's/\<idlib\()\?\)$/idlib GL\1/' neo/CMakeLists.txt
+  '';
+
   meta = {
-    homepage = "https://github.com/dhewm/dhewm3";
     description = "Doom 3 port to SDL";
-    mainProgram = "dhewm3";
+    homepage = "https://github.com/dhewm/dhewm3";
     license = lib.licenses.gpl3;
     maintainers = [ ];
     platforms = with lib.platforms; linux;
+    mainProgram = "dhewm3";
   };
 })

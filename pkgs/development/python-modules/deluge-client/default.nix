@@ -8,7 +8,6 @@
 buildPythonPackage rec {
   pname = "deluge-client";
   version = "1.10.2";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
@@ -16,10 +15,9 @@ buildPythonPackage rec {
   };
 
   nativeBuildInputs = [ setuptools ];
-
   # it will try to connect to a running instance
   doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "deluge_client" ];
 
   meta = {

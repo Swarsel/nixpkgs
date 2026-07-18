@@ -2,14 +2,14 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  sbcl,
-  libx11,
-  libxpm,
   libice,
   libsm,
-  libxt,
+  libx11,
   libxau,
   libxdmcp,
+  libxpm,
+  libxt,
+  sbcl,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -46,11 +46,10 @@ stdenv.mkDerivation (finalAttrs: {
   dontStrip = true;
 
   meta = {
-    homepage = "https://fricas.github.io";
     description = "Advanced computer algebra system";
+    homepage = "https://fricas.github.io";
     license = lib.licenses.bsd3;
-
-    platforms = lib.platforms.linux;
     maintainers = [ lib.maintainers.sprock ];
+    platforms = lib.platforms.linux;
   };
 })

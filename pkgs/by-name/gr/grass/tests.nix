@@ -1,4 +1,4 @@
-{ runCommand, grass }:
+{ grass, runCommand }:
 
 let
   inherit (grass) pname version;

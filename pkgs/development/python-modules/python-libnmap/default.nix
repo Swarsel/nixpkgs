@@ -1,14 +1,13 @@
 {
   lib,
+  fetchFromGitHub,
   buildPythonPackage,
   defusedxml,
-  fetchFromGitHub,
 }:
 
 buildPythonPackage rec {
   pname = "python-libnmap";
   version = "0.7.3";
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "savon-noir";
@@ -17,12 +16,13 @@ buildPythonPackage rec {
     hash = "sha256-cI8wdOvTmRy2cxLBkJn7vXRBRvewDMNl/tkIiRGhZJ8=";
   };
 
+  # We don't want the nmap binary being present
+  doCheck = false;
+  format = "setuptools";
+
   optional-dependencies = {
     defusedxml = [ defusedxml ];
   };
-
-  # We don't want the nmap binary being present
-  doCheck = false;
 
   pythonImportsCheck = [ "libnmap" ];
 

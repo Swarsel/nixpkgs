@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule {
@@ -16,21 +16,22 @@ buildGoModule {
   };
 
   vendorHash = null;
+  doCheck = false;
 
   ldflags = [
     "-s"
     "-w"
   ];
 
-  doCheck = false;
-
   meta = {
     description = "Export entries from systemd's journal and send them to a graylog server using gelf";
     homepage = "https://github.com/parse-nl/SystemdJournal2Gelf";
     license = lib.licenses.bsd2;
+
     maintainers = with lib.maintainers; [
       fpletz
     ];
+
     mainProgram = "SystemdJournal2Gelf";
   };
 }

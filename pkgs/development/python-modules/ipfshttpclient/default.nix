@@ -1,28 +1,27 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   flit-core,
-  python,
+  httpcore,
+  httpx,
+  kubo,
+  mock,
   py-multiaddr,
-  requests,
-  pytestCheckHook,
+  pytest-cid,
   pytest-cov-stub,
   pytest-dependency,
   pytest-localserver,
   pytest-mock,
   pytest-order,
-  pytest-cid,
-  mock,
-  kubo,
-  httpx,
-  httpcore,
+  pytestCheckHook,
+  python,
+  requests,
 }:
 
 buildPythonPackage rec {
   pname = "ipfshttpclient";
   version = "0.8.0a2";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "ipfs-shipyard";
@@ -30,27 +29,6 @@ buildPythonPackage rec {
     rev = version;
     hash = "sha256-OmC67pN2BbuGwM43xNDKlsLhwVeUbpvfOazyIDvoMEA=";
   };
-
-  nativeBuildInputs = [ flit-core ];
-
-  propagatedBuildInputs = [
-    py-multiaddr
-    requests
-  ];
-
-  nativeCheckInputs = [
-    pytestCheckHook
-    pytest-cov-stub
-    pytest-dependency
-    pytest-localserver
-    pytest-mock
-    pytest-order
-    pytest-cid
-    mock
-    kubo
-    httpcore
-    httpx
-  ];
 
   postPatch = ''
     # This can be removed for the 0.8.0 release
@@ -71,6 +49,29 @@ buildPythonPackage rec {
       --replace 'assert ipfs_is_available' 'pytest.skip("Unknown test failure with IPFS >=0.11.0"); assert ipfs_is_available'
   '';
 
+  nativeBuildInputs = [ flit-core ];
+
+  propagatedBuildInputs = [
+    py-multiaddr
+    requests
+  ];
+
+  doCheck = false;
+
+  nativeCheckInputs = [
+    pytestCheckHook
+    pytest-cov-stub
+    pytest-dependency
+    pytest-localserver
+    pytest-mock
+    pytest-order
+    pytest-cid
+    mock
+    kubo
+    httpcore
+    httpx
+  ];
+
   checkPhase = ''
     runHook preCheck
 
@@ -79,14 +80,14 @@ buildPythonPackage rec {
     runHook postCheck
   '';
 
-  doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "ipfshttpclient" ];
 
   meta = {
     description = "Python client library for the IPFS API";
     homepage = "https://github.com/ipfs-shipyard/py-ipfs-http-client";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       mguentner
       Luflosi

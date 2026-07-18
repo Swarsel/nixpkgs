@@ -12,8 +12,6 @@ stdenv.mkDerivation (finalAttrs: {
   pname = "dub";
   version = "1.39.0";
 
-  enableParallelBuilding = true;
-
   src = fetchFromGitHub {
     owner = "dlang";
     repo = "dub";
@@ -30,6 +28,7 @@ stdenv.mkDerivation (finalAttrs: {
     libevent
     rsync
   ];
+
   buildInputs = [ curl ];
 
   buildPhase = ''
@@ -153,17 +152,21 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  enableParallelBuilding = true;
+
   meta = {
     description = "Package and build manager for D programs and libraries";
     homepage = "https://code.dlang.org/";
     license = lib.licenses.mit;
-    mainProgram = "dub";
     maintainers = with lib.maintainers; [ jtbx ];
+
     platforms = [
       "x86_64-linux"
       "i686-linux"
       "aarch64-linux"
       "aarch64-darwin"
     ];
+
+    mainProgram = "dub";
   };
 })

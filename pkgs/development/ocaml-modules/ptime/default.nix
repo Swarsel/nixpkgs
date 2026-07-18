@@ -1,21 +1,24 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchurl,
-  ocaml,
   findlib,
+  ocaml,
   ocamlbuild,
   topkg,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
-  version = "1.2.0";
+  inherit (topkg) buildPhase installPhase;
   pname = "ocaml${ocaml.version}-ptime";
+  version = "1.2.0";
 
   src = fetchurl {
     url = "https://erratique.ch/software/ptime/releases/ptime-${finalAttrs.version}.tbz";
     hash = "sha256-lhZ0f99JDsNugCTKsn7gHjoK9XfYojImY4+kA03nOrA=";
   };
+
+  strictDeps = true;
 
   nativeBuildInputs = [
     findlib
@@ -28,14 +31,9 @@ stdenv.mkDerivation (finalAttrs: {
     topkg
   ];
 
-  strictDeps = true;
-
-  inherit (topkg) buildPhase installPhase;
-
   meta = {
     description = "POSIX time for OCaml";
-    homepage = "https://erratique.ch/software/ptime";
-    license = lib.licenses.isc;
+
     longDescription = ''
       Ptime has platform independent POSIX time support in pure OCaml.
       It provides a type to represent a well-defined range of POSIX timestamps
@@ -48,6 +46,9 @@ stdenv.mkDerivation (finalAttrs: {
 
       Ptime is not a calendar library.
     '';
+
+    homepage = "https://erratique.ch/software/ptime";
+    license = lib.licenses.isc;
     maintainers = with lib.maintainers; [ sternenseemann ];
     broken = !(lib.versionAtLeast ocaml.version "4.08");
   };

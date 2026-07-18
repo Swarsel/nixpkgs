@@ -1,11 +1,11 @@
 {
-  stdenv,
-  fetchFromCodeberg,
-  qt6,
-  cmark-gfm,
-  cmake,
-  pkg-config,
   lib,
+  stdenv,
+  cmake,
+  cmark-gfm,
+  fetchFromCodeberg,
+  pkg-config,
+  qt6,
 }:
 
 stdenv.mkDerivation {
@@ -47,8 +47,8 @@ stdenv.mkDerivation {
     description = "Markdown editor with support for multi-tab";
     homepage = "https://codeberg.org/ItsZariep/Phantom";
     license = lib.licenses.gpl3Only;
-    mainProgram = "phantom-qt";
-    platforms = lib.platforms.all;
     maintainers = with lib.maintainers; [ reylak ];
+    platforms = lib.platforms.all;
+    mainProgram = "phantom-qt";
   };
 }

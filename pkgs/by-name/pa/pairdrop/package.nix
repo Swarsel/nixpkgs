@@ -1,7 +1,7 @@
 {
   lib,
-  buildNpmPackage,
   fetchFromGitHub,
+  buildNpmPackage,
   nixosTests,
   nodejs,
 }:
@@ -19,8 +19,6 @@ buildNpmPackage rec {
 
   npmDepsHash = "sha256-Ovi5RzWPCVk6LkZ33Anb8abkyu+IrEaCXE/etBgsHYU=";
 
-  dontNpmBuild = true;
-
   installPhase = ''
     runHook preInstall
 
@@ -37,6 +35,8 @@ buildNpmPackage rec {
     runHook postInstall
   '';
 
+  dontNpmBuild = true;
+
   passthru = {
     tests = {
       inherit (nixosTests) pairdrop;
@@ -45,15 +45,19 @@ buildNpmPackage rec {
 
   meta = {
     description = "Local file sharing in your browser";
-    mainProgram = "pairdrop";
+
     longDescription = ''
       PairDrop is a sublime alternative to AirDrop that works on all platforms.
       Send images, documents or text via peer to peer connection to devices in the same local network/Wi-Fi or to paired devices.
     '';
+
     homepage = "https://github.com/schlagmichdoch/PairDrop";
     license = lib.licenses.gpl3Only;
+
     maintainers = with lib.maintainers; [
       diogotcorreia
     ];
+
+    mainProgram = "pairdrop";
   };
 }

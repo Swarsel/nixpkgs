@@ -8,17 +8,15 @@
 buildPythonPackage (finalAttrs: {
   pname = "multitasking";
   version = "0.0.13";
-  pyproject = true;
 
   src = fetchPypi {
     inherit (finalAttrs) pname version;
     hash = "sha256-2Ja134d8nKXu3b8OWZQSRpTWy1NaummPsjNExwJRVaE=";
   };
 
-  build-system = [ setuptools ];
-
   doCheck = false; # No tests included
-
+  build-system = [ setuptools ];
+  pyproject = true;
   pythonImportsCheck = [ "multitasking" ];
 
   meta = {

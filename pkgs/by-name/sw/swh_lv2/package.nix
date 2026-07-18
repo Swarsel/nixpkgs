@@ -19,12 +19,8 @@ stdenv.mkDerivation (finalAttrs: {
     sha256 = "sha256-v6aJUWDbBZEmz0v6+cSCi/KhOYNUeK/MJLUSgzi39ng=";
   };
 
-  patchPhase = ''
-    sed -e "s#xsltproc#${libxslt.bin}/bin/xsltproc#" -i Makefile
-    sed -e "s#PREFIX = /usr/local#PREFIX = $out#" -i Makefile
-  '';
-
   nativeBuildInputs = [ pkg-config ];
+
   buildInputs = [
     fftwSinglePrec
     lv2
@@ -32,9 +28,14 @@ stdenv.mkDerivation (finalAttrs: {
 
   installPhase = "make install-system";
 
+  patchPhase = ''
+    sed -e "s#xsltproc#${libxslt.bin}/bin/xsltproc#" -i Makefile
+    sed -e "s#PREFIX = /usr/local#PREFIX = $out#" -i Makefile
+  '';
+
   meta = {
-    homepage = "http://plugin.org.uk";
     description = "LV2 version of Steve Harris' SWH plugins";
+
     longDescription = ''
       SWH plugins include:
       amp, fast overdrive, overdrive (with colourisation), comb
@@ -43,6 +44,8 @@ stdenv.mkDerivation (finalAttrs: {
       chorus, flanger, decimater, oscillator, gverb, phasers, harmonic
       generators, surround encoders and more.
     '';
+
+    homepage = "http://plugin.org.uk";
     license = lib.licenses.gpl3;
     maintainers = [ ];
     platforms = lib.platforms.linux;

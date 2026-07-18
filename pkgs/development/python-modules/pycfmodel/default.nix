@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   httpx,
   pydantic,
   pytestCheckHook,
@@ -12,7 +12,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "pycfmodel";
   version = "2.1.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "Skyscanner";
@@ -21,7 +20,10 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-fI6CeBJc1ry0vbXCxq7sfGiNDIrb3TiyimNacoOg8Lw=";
   };
 
-  pythonRelaxDeps = [ "pydantic" ];
+  nativeCheckInputs = [
+    httpx
+    pytestCheckHook
+  ];
 
   build-system = [
     setuptools
@@ -30,9 +32,9 @@ buildPythonPackage (finalAttrs: {
 
   dependencies = [ pydantic ];
 
-  nativeCheckInputs = [
-    httpx
-    pytestCheckHook
+  disabledTestPaths = [
+    # Test requires network access
+    "tests/test_resource_generator.py"
   ];
 
   disabledTests = [
@@ -47,12 +49,9 @@ buildPythonPackage (finalAttrs: {
     "test_raise_error_if_invalid_fields_in_resource"
   ];
 
-  disabledTestPaths = [
-    # Test requires network access
-    "tests/test_resource_generator.py"
-  ];
-
+  pyproject = true;
   pythonImportsCheck = [ "pycfmodel" ];
+  pythonRelaxDeps = [ "pydantic" ];
 
   meta = {
     description = "Model for Cloud Formation scripts";

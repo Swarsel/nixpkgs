@@ -3,11 +3,11 @@
   stdenv,
   fetchurl,
   cmake,
-  zlib,
-  libpng,
   libGL,
   libGLU,
   libglut,
+  libpng,
+  zlib,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -40,13 +40,15 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   meta = {
-    homepage = "http://geuz.org/gl2ps";
     description = "OpenGL to PostScript printing library";
-    platforms = lib.platforms.all;
+    homepage = "http://geuz.org/gl2ps";
     license = lib.licenses.lgpl2;
+
     maintainers = with lib.maintainers; [
       raskin
       twhitehead
     ];
+
+    platforms = lib.platforms.all;
   };
 })

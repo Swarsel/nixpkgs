@@ -8,7 +8,6 @@
 python3.pkgs.buildPythonApplication (finalAttrs: {
   pname = "sherlock";
   version = "0.16.0-unstable-2026-05-09";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "sherlock-project";
@@ -31,25 +30,10 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
 
   nativeBuildInputs = [ makeWrapper ];
 
-  dependencies = with python3.pkgs; [
-    certifi
-    colorama
-    openpyxl
-    pandas
-    pysocks
-    requests
-    requests-futures
-    stem
-    torrequest
-    tomli
-  ];
-
-  build-system = with python3.pkgs; [
-    poetry-core
-  ];
-
-  pythonRelaxDeps = [
-    "pandas"
+  nativeCheckInputs = with python3.pkgs; [
+    rstr
+    pytestCheckHook
+    jsonschema
   ];
 
   installPhase = ''
@@ -68,10 +52,21 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
       --prefix PYTHONPATH : "$PYTHONPATH:$out/share"
   '';
 
-  nativeCheckInputs = with python3.pkgs; [
-    rstr
-    pytestCheckHook
-    jsonschema
+  build-system = with python3.pkgs; [
+    poetry-core
+  ];
+
+  dependencies = with python3.pkgs; [
+    certifi
+    colorama
+    openpyxl
+    pandas
+    pysocks
+    requests
+    requests-futures
+    stem
+    torrequest
+    tomli
   ];
 
   disabledTestMarks = [
@@ -79,11 +74,17 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     "online"
   ];
 
+  pyproject = true;
+
+  pythonRelaxDeps = [
+    "pandas"
+  ];
+
   meta = {
-    homepage = "https://sherlockproject.xyz/";
     description = "Hunt down social media accounts by username across social networks";
+    homepage = "https://sherlockproject.xyz/";
     license = lib.licenses.mit;
-    mainProgram = "sherlock";
     maintainers = with lib.maintainers; [ applePrincess ];
+    mainProgram = "sherlock";
   };
 })

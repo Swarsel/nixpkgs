@@ -1,14 +1,14 @@
 {
   lib,
   stdenv,
-  fetchFromCodeberg,
   cmake,
-  ninja,
-  libx11,
-  libxxf86vm,
-  libxrandr,
-  samurai,
+  fetchFromCodeberg,
   fetchpatch,
+  libx11,
+  libxrandr,
+  libxxf86vm,
+  ninja,
+  samurai,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -25,8 +25,8 @@ stdenv.mkDerivation (finalAttrs: {
   patches = [
     # bump min cmake to v3.5
     (fetchpatch {
-      url = "https://codeberg.org/OpenICC/xcalib/commit/e8566ead8c043b5f0003c3613b91deab6430eac8.patch";
       hash = "sha256-gZc4itfsP5T68ZucdYJWJ4sL11xFaw5ePABsmEYHxrU=";
+      url = "https://codeberg.org/OpenICC/xcalib/commit/e8566ead8c043b5f0003c3613b91deab6430eac8.patch";
     })
   ];
 

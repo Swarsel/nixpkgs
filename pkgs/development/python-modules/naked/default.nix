@@ -1,21 +1,20 @@
 {
-  buildPythonPackage,
-  python,
-  fetchFromGitHub,
   lib,
-  requests,
+  fetchFromGitHub,
+  buildPythonPackage,
+  nodejs,
+  pytestCheckHook,
+  python,
   pyyaml,
+  requests,
+  ruby,
   setuptools,
   wheel,
-  nodejs,
-  ruby,
-  pytestCheckHook,
 }:
 
 buildPythonPackage rec {
   pname = "naked";
   version = "0.1.32";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "chrissimpkins";
@@ -102,13 +101,14 @@ buildPythonPackage rec {
     "test_xdict_key_random_sample"
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "Naked" ];
 
   meta = {
     description = "Python command line application framework";
     homepage = "https://github.com/chrissimpkins/naked";
-    downloadPage = "https://github.com/chrissimpkins/naked/tags";
     license = lib.licenses.mit;
     maintainers = [ ];
+    downloadPage = "https://github.com/chrissimpkins/naked/tags";
   };
 }

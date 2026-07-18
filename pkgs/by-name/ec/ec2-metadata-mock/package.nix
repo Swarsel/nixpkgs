@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule (finalAttrs: {
@@ -16,14 +16,13 @@ buildGoModule (finalAttrs: {
   };
 
   vendorHash = "sha256-Px4vhFW1mhXbBuPbxEpukmeLZewF7zooOXKxL8sEFLU=";
-
   subPackages = [ "cmd/ec2-metadata-mock" ];
 
   meta = {
     description = "Amazon EC2 Metadata Mock";
-    mainProgram = "ec2-metadata-mock";
     homepage = "https://github.com/aws/amazon-ec2-metadata-mock";
     license = lib.licenses.asl20;
     maintainers = with lib.maintainers; [ ymatsiuk ];
+    mainProgram = "ec2-metadata-mock";
   };
 })

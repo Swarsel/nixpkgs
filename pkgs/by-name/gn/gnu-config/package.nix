@@ -15,37 +15,20 @@ let
 
   # Don't use fetchgit as this is needed during Aarch64 bootstrapping
   configGuess = fetchurl {
+    hash = "sha256-ZByuPAx0xJNU0+3gCfP+vYD+vhUBp3wdn6yNQsxFtss=";
     name = "config.guess-${builtins.substring 0 7 rev}";
     url = "https://git.savannah.gnu.org/cgit/config.git/plain/config.guess?id=${rev}";
-    hash = "sha256-ZByuPAx0xJNU0+3gCfP+vYD+vhUBp3wdn6yNQsxFtss=";
   };
   configSub = fetchurl {
+    hash = "sha256-/jovMvuv9XhIcyVJ9I2YP9ZSYCTsLw9ancdcL0NZo6Y=";
     name = "config.sub-${builtins.substring 0 7 rev}";
     url = "https://git.savannah.gnu.org/cgit/config.git/plain/config.sub?id=${rev}";
-    hash = "sha256-/jovMvuv9XhIcyVJ9I2YP9ZSYCTsLw9ancdcL0NZo6Y=";
   };
 in
 stdenv.mkDerivation {
   pname = "gnu-config";
   version = "2024-01-01";
-
-  unpackPhase = ''
-    runHook preUnpack
-    cp ${configGuess} ./config.guess
-    cp ${configSub} ./config.sub
-    chmod +w ./config.sub ./config.guess
-    runHook postUnpack
-  '';
-
-  # If this isn't set, `pkgs.gnu-config.overrideAttrs( _: { patches
-  # = ...; })` will behave very counterintuitively: the (unpatched)
-  # gnu-config from the updateAutotoolsGnuConfigScriptsHook stdenv's
-  # defaultNativeBuildInputs will "update" the patched gnu-config by
-  # reverting the patch!
-  dontUpdateAutotoolsGnuConfigScripts = true;
-
-  dontConfigure = true;
-  dontBuild = true;
+  strictDeps = true;
 
   installPhase = ''
     runHook preInstall
@@ -53,6 +36,15 @@ stdenv.mkDerivation {
     install -Dm755 ./config.sub $out/config.sub
     runHook postInstall
   '';
+
+  dontBuild = true;
+  dontConfigure = true;
+  # If this isn't set, `pkgs.gnu-config.overrideAttrs( _: { patches
+  # = ...; })` will behave very counterintuitively: the (unpatched)
+  # gnu-config from the updateAutotoolsGnuConfigScriptsHook stdenv's
+  # defaultNativeBuildInputs will "update" the patched gnu-config by
+  # reverting the patch!
+  dontUpdateAutotoolsGnuConfigScripts = true;
 
   fixupPhase = ''
     runHook preFixup
@@ -65,12 +57,19 @@ stdenv.mkDerivation {
     runHook postFixup
   '';
 
-  strictDeps = true;
+  unpackPhase = ''
+    runHook preUnpack
+    cp ${configGuess} ./config.guess
+    cp ${configSub} ./config.sub
+    chmod +w ./config.sub ./config.guess
+    runHook postUnpack
+  '';
 
   meta = {
     description = "Attempt to guess a canonical system name";
     homepage = "https://savannah.gnu.org/projects/config";
     license = lib.licenses.gpl3;
+
     # In addition to GPLv3:
     #   As a special exception to the GNU General Public License, if you
     #   distribute this file as part of a program that contains a
@@ -80,6 +79,7 @@ stdenv.mkDerivation {
     maintainers = with lib.maintainers; [
       emilytrau
     ];
+
     platforms = lib.platforms.all;
   };
 }

@@ -11,7 +11,6 @@ let
     cfg:
     pkgs.writeShellApplication {
       name = "honk-initdb-script";
-
       runtimeInputs = with pkgs; [ coreutils ];
 
       text = ''
@@ -27,26 +26,33 @@ in
       enable = lib.mkEnableOption "the Honk server";
       package = lib.mkPackageOption pkgs "honk" { };
 
+      extraCSS = lib.mkOption {
+        default = null;
+
+        description = ''
+          An extra CSS file to be loaded by the client.
+        '';
+
+        type = lib.types.nullOr lib.types.path;
+      };
+
+      extraJS = lib.mkOption {
+        default = null;
+
+        description = ''
+          An extra JavaScript file to be loaded by the client.
+        '';
+
+        type = lib.types.nullOr lib.types.path;
+      };
+
       host = lib.mkOption {
         default = "127.0.0.1";
+
         description = ''
           The host name or IP address the server should listen to.
         '';
-        type = lib.types.str;
-      };
 
-      port = lib.mkOption {
-        default = 8080;
-        description = ''
-          The port the server should listen to.
-        '';
-        type = lib.types.port;
-      };
-
-      username = lib.mkOption {
-        description = ''
-          The admin account username.
-        '';
         type = lib.types.str;
       };
 
@@ -55,30 +61,34 @@ in
           Password for admin account.
           NOTE: Should be string not a store path, to prevent the password from being world readable
         '';
+
         type = lib.types.path;
+      };
+
+      port = lib.mkOption {
+        default = 8080;
+
+        description = ''
+          The port the server should listen to.
+        '';
+
+        type = lib.types.port;
       };
 
       servername = lib.mkOption {
         description = ''
           The server name.
         '';
+
         type = lib.types.str;
       };
 
-      extraJS = lib.mkOption {
-        default = null;
+      username = lib.mkOption {
         description = ''
-          An extra JavaScript file to be loaded by the client.
+          The admin account username.
         '';
-        type = lib.types.nullOr lib.types.path;
-      };
 
-      extraCSS = lib.mkOption {
-        default = null;
-        description = ''
-          An extra CSS file to be loaded by the client.
-        '';
-        type = lib.types.nullOr lib.types.path;
+        type = lib.types.str;
       };
     };
   };
@@ -87,48 +97,25 @@ in
     assertions = [
       {
         assertion = cfg.username or "" != "";
+
         message = ''
           You have to define a username for Honk (`services.honk.username`).
         '';
       }
       {
         assertion = cfg.servername or "" != "";
+
         message = ''
           You have to define a servername for Honk (`services.honk.servername`).
         '';
       }
     ];
 
-    systemd.services.honk-initdb = {
-      description = "Honk server database setup";
-      requiredBy = [ "honk.service" ];
-      before = [ "honk.service" ];
-
-      serviceConfig = {
-        LoadCredential = [
-          "honk_passwordFile:${cfg.passwordFile}"
-        ];
-        Type = "oneshot";
-        StateDirectory = "honk";
-        DynamicUser = true;
-        RemainAfterExit = true;
-        ExecStart = lib.getExe (honk-initdb-script cfg);
-        PrivateTmp = true;
-      };
-
-      unitConfig = {
-        ConditionPathExists = [
-          # Skip this service if the database already exists
-          "!%S/honk/honk.db"
-        ];
-      };
-    };
-
     systemd.services.honk = {
-      description = "Honk server";
-      wantedBy = [ "multi-user.target" ];
       after = [ "network.target" ];
       bindsTo = [ "honk-initdb.service" ];
+      description = "Honk server";
+
       preStart = ''
         mkdir -p $STATE_DIRECTORY/views
         ${lib.optionalString (cfg.extraJS != null) "ln -fs ${cfg.extraJS} $STATE_DIRECTORY/views/local.js"}
@@ -139,20 +126,52 @@ in
         ${lib.getExe cfg.package} -datadir $STATE_DIRECTORY -viewdir ${cfg.package}/share/honk upgrade
         ${lib.getExe cfg.package} -datadir $STATE_DIRECTORY -viewdir ${cfg.package}/share/honk cleanup
       '';
+
       serviceConfig = {
+        DynamicUser = true;
+
         ExecStart = ''
           ${lib.getExe cfg.package} -datadir $STATE_DIRECTORY -viewdir ${cfg.package}/share/honk
         '';
-        StateDirectory = "honk";
-        DynamicUser = true;
+
         PrivateTmp = "yes";
         Restart = "on-failure";
+        StateDirectory = "honk";
+      };
+
+      wantedBy = [ "multi-user.target" ];
+    };
+
+    systemd.services.honk-initdb = {
+      before = [ "honk.service" ];
+      description = "Honk server database setup";
+      requiredBy = [ "honk.service" ];
+
+      serviceConfig = {
+        DynamicUser = true;
+        ExecStart = lib.getExe (honk-initdb-script cfg);
+
+        LoadCredential = [
+          "honk_passwordFile:${cfg.passwordFile}"
+        ];
+
+        PrivateTmp = true;
+        RemainAfterExit = true;
+        StateDirectory = "honk";
+        Type = "oneshot";
+      };
+
+      unitConfig = {
+        ConditionPathExists = [
+          # Skip this service if the database already exists
+          "!%S/honk/honk.db"
+        ];
       };
     };
   };
 
   meta = {
-    maintainers = [ ];
     doc = ./honk.md;
+    maintainers = [ ];
   };
 }

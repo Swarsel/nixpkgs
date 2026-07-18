@@ -1,11 +1,11 @@
 {
   lib,
-  buildDunePackage,
   fetchurl,
-  containers,
-  junit_alcotest,
   astring,
   base64,
+  buildDunePackage,
+  containers,
+  junit_alcotest,
   x509,
   yojson,
   zarith,
@@ -29,6 +29,7 @@ buildDunePackage (finalAttrs: {
   ];
 
   doCheck = true;
+
   checkInputs = [
     containers
     junit_alcotest
@@ -38,6 +39,7 @@ buildDunePackage (finalAttrs: {
     description = "JOSE specification implementation in OCaml";
     homepage = "https://github.com/ulrikstrid/ocaml-jose";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       ulrikstrid
       toastal

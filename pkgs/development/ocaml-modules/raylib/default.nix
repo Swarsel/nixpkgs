@@ -1,18 +1,18 @@
 {
   lib,
   fetchurl,
-  fetchpatch,
   buildDunePackage,
-  dune-configurator,
   ctypes,
+  dune-configurator,
+  fetchpatch,
   integers,
-  patch,
   libGL,
   libx11,
   libxcursor,
   libxi,
   libxinerama,
   libxrandr,
+  patch,
 }:
 
 buildDunePackage (finalAttrs: {
@@ -26,13 +26,14 @@ buildDunePackage (finalAttrs: {
 
   patches = [
     (fetchpatch {
-      name = "fix-build-with-patch-3.0.0.patch";
-      url = "https://github.com/tjammer/raylib-ocaml/commit/40e6fef44e3c39d4526806c4b830da77c4fe4bb8.patch";
       excludes = [
         "dune-project"
         "raygui.opam"
       ];
+
       hash = "sha256-MEZkkBgjL2iT6Av/s0tJCrW7+oyp9QD6sUbXEusCAWI=";
+      name = "fix-build-with-patch-3.0.0.patch";
+      url = "https://github.com/tjammer/raylib-ocaml/commit/40e6fef44e3c39d4526806c4b830da77c4fe4bb8.patch";
     })
   ];
 
@@ -55,7 +56,7 @@ buildDunePackage (finalAttrs: {
   meta = {
     description = "OCaml bindings for Raylib (5.0.0)";
     homepage = "https://tjammer.github.io/raylib-ocaml";
-    maintainers = with lib.maintainers; [ r17x ];
     license = lib.licenses.mit;
+    maintainers = with lib.maintainers; [ r17x ];
   };
 })

@@ -1,14 +1,15 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchurl,
-  makeWrapper,
   ghostscript_headless, # for ps2pdf binary
+  makeWrapper,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
   pname = "ccal";
   version = "2.5.3";
+
   src = fetchurl {
     url = "https://ccal.chinesebay.com/ccal-${finalAttrs.version}.tar.gz";
     sha256 = "sha256-PUy9yfkFzgKrSEBB+79/C3oxmuajUMbBbWNuGlpQ35Y=";
@@ -21,10 +22,6 @@ stdenv.mkDerivation (finalAttrs: {
     "BINDIR=$(out)/bin"
     "MANDIR=$(out)/share/man"
   ];
-  installTargets = [
-    "install"
-    "install-man"
-  ];
 
   # ccalpdf depends on a `ps2pdf` binary in PATH
   postFixup = ''
@@ -32,9 +29,14 @@ stdenv.mkDerivation (finalAttrs: {
       --prefix PATH : ${lib.makeBinPath [ ghostscript_headless ]}:$out/bin
   '';
 
+  installTargets = [
+    "install"
+    "install-man"
+  ];
+
   meta = {
-    homepage = "https://ccal.chinesebay.com/ccal.htm";
     description = "Command line Chinese calendar viewer, similar to cal";
+    homepage = "https://ccal.chinesebay.com/ccal.htm";
     license = lib.licenses.gpl3;
     maintainers = with lib.maintainers; [ sharzy ];
     platforms = lib.platforms.all;

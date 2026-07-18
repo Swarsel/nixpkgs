@@ -1,8 +1,8 @@
 {
   lib,
-  stdenvNoCC,
   fetchurl,
   mkfontscale,
+  stdenvNoCC,
 }:
 
 stdenvNoCC.mkDerivation rec {
@@ -15,8 +15,6 @@ stdenvNoCC.mkDerivation rec {
   };
 
   nativeBuildInputs = [ mkfontscale ];
-
-  dontBuild = true;
 
   installPhase = ''
     runHook preInstall
@@ -31,6 +29,8 @@ stdenvNoCC.mkDerivation rec {
 
     runHook postInstall
   '';
+
+  dontBuild = true;
 
   meta = {
     description = "Monospaced bitmap fonts";

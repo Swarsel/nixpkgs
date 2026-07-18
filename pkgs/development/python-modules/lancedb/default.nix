@@ -1,50 +1,43 @@
 {
   lib,
   stdenv,
-  buildPythonPackage,
   fetchFromGitHub,
-  rustPlatform,
-  pythonAtLeast,
-
-  # buildInputs
-  openssl,
-
-  # nativeBuildInputs
-  pkg-config,
-  protobuf,
-
-  # dependencies
-  deprecation,
-  lance-namespace,
-  numpy,
-  packaging,
-  pyarrow,
-  pydantic,
-  tqdm,
-  pythonOlder,
-  overrides,
-
   # tests
   aiohttp,
   boto3,
+  buildPythonPackage,
   datafusion,
+  # dependencies
+  deprecation,
   duckdb,
+  lance-namespace,
+  nix-update-script,
+  numpy,
+  # buildInputs
+  openssl,
+  overrides,
+  packaging,
   pandas,
+  # nativeBuildInputs
+  pkg-config,
   polars,
+  protobuf,
+  pyarrow,
+  pydantic,
   pylance,
   pytest-asyncio,
   pytest-mock,
   pytestCheckHook,
+  pythonAtLeast,
+  pythonOlder,
+  rustPlatform,
   tantivy,
-
-  nix-update-script,
+  tqdm,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "lancedb";
   version = "0.32.0";
-  pyproject = true;
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "lancedb";
@@ -52,15 +45,6 @@ buildPythonPackage (finalAttrs: {
     tag = "python-v${finalAttrs.version}";
     hash = "sha256-OIoQCk0YlWpaaau4AiWxarvH4oy1rAjaS9yvs3mIzzo=";
   };
-
-  buildAndTestSubdir = "python";
-
-  cargoDeps = rustPlatform.fetchCargoVendor {
-    inherit (finalAttrs) pname version src;
-    hash = "sha256-rfAhvC6byg134NF21CR5n0A0DL42CLGy7VvHi9aZUrw=";
-  };
-
-  build-system = [ rustPlatform.maturinBuildHook ];
 
   nativeBuildInputs = [
     pkg-config
@@ -71,21 +55,6 @@ buildPythonPackage (finalAttrs: {
   buildInputs = [
     openssl
   ];
-
-  dependencies = [
-    deprecation
-    lance-namespace
-    numpy
-    packaging
-    pyarrow
-    pydantic
-    tqdm
-  ]
-  ++ lib.optionals (pythonOlder "3.12") [
-    overrides
-  ];
-
-  pythonImportsCheck = [ "lancedb" ];
 
   nativeCheckInputs = [
     aiohttp
@@ -105,7 +74,39 @@ buildPythonPackage (finalAttrs: {
     cd python/python/tests
   '';
 
+  __structuredAttrs = true;
+  build-system = [ rustPlatform.maturinBuildHook ];
+  buildAndTestSubdir = "python";
+
+  cargoDeps = rustPlatform.fetchCargoVendor {
+    inherit (finalAttrs) pname version src;
+    hash = "sha256-rfAhvC6byg134NF21CR5n0A0DL42CLGy7VvHi9aZUrw=";
+  };
+
+  dependencies = [
+    deprecation
+    lance-namespace
+    numpy
+    packaging
+    pyarrow
+    pydantic
+    tqdm
+  ]
+  ++ lib.optionals (pythonOlder "3.12") [
+    overrides
+  ];
+
   disabledTestMarks = [ "slow" ];
+
+  disabledTestPaths = [
+    # touch the network
+    "test_namespace_integration.py"
+    "test_s3.py"
+  ]
+  ++ lib.optionals stdenv.hostPlatform.isDarwin [
+    # socket.gaierror: [Errno 8] nodename nor servname provided, or not known
+    "test_remote_db.py"
+  ];
 
   disabledTests = [
     # Requires internet access
@@ -139,15 +140,8 @@ buildPythonPackage (finalAttrs: {
     "test_merge_insert"
   ];
 
-  disabledTestPaths = [
-    # touch the network
-    "test_namespace_integration.py"
-    "test_s3.py"
-  ]
-  ++ lib.optionals stdenv.hostPlatform.isDarwin [
-    # socket.gaierror: [Errno 8] nodename nor servname provided, or not known
-    "test_remote_db.py"
-  ];
+  pyproject = true;
+  pythonImportsCheck = [ "lancedb" ];
 
   passthru.updateScript = nix-update-script {
     extraArgs = [

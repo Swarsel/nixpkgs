@@ -1,29 +1,31 @@
 {
-  cmake,
+  lib,
   fetchFromGitHub,
+  cmake,
   glib,
   gtk3,
-  lib,
   libsoup_3,
   networkmanager,
+  nix-update-script,
   pkg-config,
   rustPlatform,
   versionCheckHook,
   webkitgtk_4_1,
   wrapGAppsHook3,
   xdotool,
-  nix-update-script,
 }:
 rustPlatform.buildRustPackage (finalAttrs: {
   pname = "rmenu";
   version = "1.3.0";
 
   src = fetchFromGitHub {
-    tag = "v${finalAttrs.version}";
     owner = "imgurbot12";
     repo = "rmenu";
+    tag = "v${finalAttrs.version}";
     hash = "sha256-cmuB7JfHQuDFo8YaenTDwpe+TxKFaoJM5YwrT7eAfPM=";
   };
+
+  strictDeps = true;
 
   nativeBuildInputs = [
     pkg-config
@@ -39,8 +41,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
     webkitgtk_4_1
     xdotool
   ];
-
-  strictDeps = true;
 
   cargoHash = "sha256-FIlFy3/Hih40My5fTykYjvaQEmnB3ZC5vX3lfKdW9Gk=";
 
@@ -69,6 +69,9 @@ rustPlatform.buildRustPackage (finalAttrs: {
     ln -sf  $out/themes/dark.css $out/share/rmenu/style.css
   '';
 
+  doInstallCheck = true;
+  nativeInstallCheckInputs = [ versionCheckHook ];
+
   preFixup = ''
     # rmenu expects the config to be in XDG_CONFIG_DIRS
     # shell script plugins called from rmenu binary expect the rmenu-build binary to be on the PATH,
@@ -79,18 +82,15 @@ rustPlatform.buildRustPackage (finalAttrs: {
     )
   '';
 
-  doInstallCheck = true;
-  nativeInstallCheckInputs = [ versionCheckHook ];
-
   passthru.updateScript = nix-update-script { };
 
   meta = {
-    changelog = "https://github.com/imgurbot12/rmenu/releases/tag/v${finalAttrs.version}";
     description = "Another customizable Application-Launcher written in Rust";
     homepage = "https://github.com/imgurbot12/rmenu";
+    changelog = "https://github.com/imgurbot12/rmenu/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.mit;
-    mainProgram = "rmenu";
     maintainers = with lib.maintainers; [ grimmauld ];
     platforms = lib.platforms.linux;
+    mainProgram = "rmenu";
   };
 })

@@ -63,8 +63,6 @@ stdenv.mkDerivation (finalAttrs: {
                      '$(CXXLINK) -rpath $(libdir) $(libfAPPLgrid_la_OBJECTS) $(libfAPPLgrid_la_LIBADD) $(LIBS) -Wl,-undefined,dynamic_lookup'
   '');
 
-  enableParallelBuilding = false; # broken
-
   # Install private headers required by APFELgrid
   postInstall = ''
     for header in src/*.h; do
@@ -72,11 +70,13 @@ stdenv.mkDerivation (finalAttrs: {
     done
   '';
 
+  enableParallelBuilding = false; # broken
+
   meta = {
     description = "Fast and flexible way to reproduce the results of full NLO calculations with any input parton distribution set in only a few milliseconds rather than the weeks normally required to gain adequate statistics";
-    license = lib.licenses.gpl3;
     homepage = "http://applgrid.hepforge.org";
-    platforms = lib.platforms.unix;
+    license = lib.licenses.gpl3;
     maintainers = with lib.maintainers; [ veprbl ];
+    platforms = lib.platforms.unix;
   };
 })

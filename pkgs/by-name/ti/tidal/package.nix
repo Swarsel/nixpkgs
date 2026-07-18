@@ -23,14 +23,8 @@ stdenv.mkDerivation {
         hash = "sha256-5nUU8TOSph1v1C0+/KR/F5Y7m5TitbYH/ujsiZ/n6LU=";
       });
 
-  nativeBuildInputs = [ undmg ];
-
-  sourceRoot = ".";
-
   strictDeps = true;
-  __structuredAttrs = true;
-
-  dontStrip = true;
+  nativeBuildInputs = [ undmg ];
 
   installPhase = ''
     runHook preInstall
@@ -41,19 +35,25 @@ stdenv.mkDerivation {
     runHook postInstall
   '';
 
+  __structuredAttrs = true;
+  dontStrip = true;
+  sourceRoot = ".";
   passthru = { inherit updateScript; };
 
   meta = {
     description = "Play music from the Tidal streaming service";
     homepage = "https://tidal.com/";
-    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
     license = lib.licenses.unfree;
-    platforms = [
-      "aarch64-darwin"
-    ];
-    mainProgram = "tidal";
+    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
+
     maintainers = with lib.maintainers; [
       frostplexx
     ];
+
+    platforms = [
+      "aarch64-darwin"
+    ];
+
+    mainProgram = "tidal";
   };
 }

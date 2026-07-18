@@ -1,7 +1,7 @@
 {
+  config,
   lib,
   pkgs,
-  config,
   ...
 }:
 
@@ -15,46 +15,19 @@ in
     with types;
     {
       enable = mkEnableOption "slskd";
-
       package = mkPackageOption pkgs "slskd" { };
 
-      user = mkOption {
-        type = types.str;
-        default = defaultUser;
-        description = "User account under which slskd runs.";
-      };
-
-      group = mkOption {
-        type = types.str;
-        default = defaultUser;
-        description = "Group under which slskd runs.";
-      };
-
       domain = mkOption {
-        type = types.nullOr types.str;
         description = ''
           If non-null, enables an nginx reverse proxy virtual host at this FQDN,
           at the path configurated with `services.slskd.web.url_base`.
         '';
-        example = "slskd.example.com";
-      };
 
-      nginx = mkOption {
-        type = types.submodule (import ../web-servers/nginx/vhost-options.nix { inherit config lib; });
-        default = { };
-        example = lib.literalExpression ''
-          {
-            enableACME = true;
-            forceSSL = true;
-          }
-        '';
-        description = ''
-          This option customizes the nginx virtual host set up for slskd.
-        '';
+        example = "slskd.example.com";
+        type = types.nullOr types.str;
       };
 
       environmentFile = mkOption {
-        type = path;
         description = ''
           Path to the environment file sourced on startup.
           It must at least contain the variables `SLSKD_SLSK_USERNAME` and `SLSKD_SLSK_PASSWORD`.
@@ -63,185 +36,108 @@ in
           should all reside here instead of in the world-readable nix store.
           Variables are documented at <https://github.com/slskd/slskd/blob/master/docs/config.md>
         '';
+
+        type = path;
+      };
+
+      group = mkOption {
+        default = defaultUser;
+        description = "Group under which slskd runs.";
+        type = types.str;
+      };
+
+      nginx = mkOption {
+        default = { };
+
+        description = ''
+          This option customizes the nginx virtual host set up for slskd.
+        '';
+
+        example = lib.literalExpression ''
+          {
+            enableACME = true;
+            forceSSL = true;
+          }
+        '';
+
+        type = types.submodule (import ../web-servers/nginx/vhost-options.nix { inherit config lib; });
       };
 
       openFirewall = mkOption {
-        type = bool;
-        description = "Whether to open the firewall for the soulseek network listen port (not the web interface port).";
         default = false;
+        description = "Whether to open the firewall for the soulseek network listen port (not the web interface port).";
+        type = bool;
       };
 
       settings = mkOption {
+        default = { };
+
         description = ''
           Application configuration for slskd. See
           [documentation](https://github.com/slskd/slskd/blob/master/docs/config.md).
         '';
-        default = { };
+
         type = submodule {
-          freeformType = settingsFormat.type;
           options = {
-            remote_file_management = mkEnableOption "modification of share contents through the web ui";
-
-            flags = {
-              force_share_scan = mkOption {
-                type = bool;
-                description = "Force a rescan of shares on every startup.";
-              };
-              no_version_check = mkOption {
-                type = bool;
-                default = true;
-                visible = false;
-                description = "Don't perform a version check on startup.";
-              };
-            };
-
             directories = {
-              incomplete = mkOption {
-                type = nullOr path;
-                description = "Directory where incomplete downloading files are stored.";
-                defaultText = "/var/lib/slskd/incomplete";
-                default = null;
-              };
               downloads = mkOption {
-                type = nullOr path;
-                description = "Directory where downloaded files are stored.";
-                defaultText = "/var/lib/slskd/downloads";
                 default = null;
+                defaultText = "/var/lib/slskd/downloads";
+                description = "Directory where downloaded files are stored.";
+                type = nullOr path;
               };
-            };
 
-            shares = {
-              directories = mkOption {
-                type = listOf str;
-                description = ''
-                  Paths to shared directories. See
-                  [documentation](https://github.com/slskd/slskd/blob/master/docs/config.md#directories)
-                  for advanced usage.
-                '';
-                example = lib.literalExpression ''[ "/home/John/Music" "!/home/John/Music/Recordings" "[Music Drive]/mnt" ]'';
-              };
-              filters = mkOption {
-                type = listOf str;
-                example = lib.literalExpression ''[ "\.ini$" "Thumbs.db$" "\.DS_Store$" ]'';
-                description = "Regular expressions of files to exclude from sharing.";
-              };
-            };
-
-            rooms = mkOption {
-              type = listOf str;
-              description = "Chat rooms to join on startup.";
-            };
-
-            soulseek = {
-              description = mkOption {
-                type = str;
-                description = "The user description for the Soulseek network.";
-                defaultText = "A slskd user. https://github.com/slskd/slskd";
-              };
-              listen_port = mkOption {
-                type = port;
-                description = "The port on which to listen for incoming connections.";
-                default = 50300;
-              };
-            };
-
-            global = {
-              # TODO speed units
-              upload = {
-                slots = mkOption {
-                  type = ints.unsigned;
-                  description = "Limit of the number of concurrent upload slots.";
-                };
-                speed_limit = mkOption {
-                  type = ints.unsigned;
-                  description = "Total upload speed limit.";
-                };
-              };
-              download = {
-                slots = mkOption {
-                  type = ints.unsigned;
-                  description = "Limit of the number of concurrent download slots.";
-                };
-                speed_limit = mkOption {
-                  type = ints.unsigned;
-                  description = "Total upload download limit";
-                };
+              incomplete = mkOption {
+                default = null;
+                defaultText = "/var/lib/slskd/incomplete";
+                description = "Directory where incomplete downloading files are stored.";
+                type = nullOr path;
               };
             };
 
             filters.search.request = mkOption {
-              type = listOf str;
-              example = lib.literalExpression ''[ "^.{1,2}$" ]'';
               description = "Incoming search requests which match this filter are ignored.";
+              example = lib.literalExpression ''[ "^.{1,2}$" ]'';
+              type = listOf str;
             };
 
-            web = {
-              port = mkOption {
-                type = port;
-                default = 5030;
-                description = "The HTTP listen port.";
-              };
-              url_base = mkOption {
-                type = path;
-                default = "/";
-                description = "The base path in the url for web requests.";
-              };
-              # Users should use a reverse proxy instead for https
-              https.disabled = mkOption {
+            flags = {
+              force_share_scan = mkOption {
+                description = "Force a rescan of shares on every startup.";
                 type = bool;
+              };
+
+              no_version_check = mkOption {
                 default = true;
-                description = "Disable the built-in HTTPS server";
+                description = "Don't perform a version check on startup.";
+                type = bool;
+                visible = false;
               };
             };
 
-            retention = {
-              transfers = {
-                upload = {
-                  succeeded = mkOption {
-                    type = ints.unsigned;
-                    description = "Lifespan of succeeded upload tasks.";
-                    defaultText = "(indefinite)";
-                  };
-                  errored = mkOption {
-                    type = ints.unsigned;
-                    description = "Lifespan of errored upload tasks.";
-                    defaultText = "(indefinite)";
-                  };
-                  cancelled = mkOption {
-                    type = ints.unsigned;
-                    description = "Lifespan of cancelled upload tasks.";
-                    defaultText = "(indefinite)";
-                  };
+            global = {
+              download = {
+                slots = mkOption {
+                  description = "Limit of the number of concurrent download slots.";
+                  type = ints.unsigned;
                 };
-                download = {
-                  succeeded = mkOption {
-                    type = ints.unsigned;
-                    description = "Lifespan of succeeded download tasks.";
-                    defaultText = "(indefinite)";
-                  };
-                  errored = mkOption {
-                    type = ints.unsigned;
-                    description = "Lifespan of errored download tasks.";
-                    defaultText = "(indefinite)";
-                  };
-                  cancelled = mkOption {
-                    type = ints.unsigned;
-                    description = "Lifespan of cancelled download tasks.";
-                    defaultText = "(indefinite)";
-                  };
+
+                speed_limit = mkOption {
+                  description = "Total upload download limit";
+                  type = ints.unsigned;
                 };
               };
-              files = {
-                complete = mkOption {
+
+              # TODO speed units
+              upload = {
+                slots = mkOption {
+                  description = "Limit of the number of concurrent upload slots.";
                   type = ints.unsigned;
-                  description = "Lifespan of completely downloaded files in minutes.";
-                  example = 20160;
-                  defaultText = "(indefinite)";
                 };
-                incomplete = mkOption {
+
+                speed_limit = mkOption {
+                  description = "Total upload speed limit.";
                   type = ints.unsigned;
-                  description = "Lifespan of incomplete downloading files in minutes.";
-                  defaultText = "(indefinite)";
                 };
               };
             };
@@ -249,14 +145,142 @@ in
             logger = {
               # Disable by default, journald already retains as needed
               disk = mkOption {
-                type = bool;
-                description = "Whether to log to the application directory.";
                 default = false;
+                description = "Whether to log to the application directory.";
+                type = bool;
                 visible = false;
               };
             };
+
+            remote_file_management = mkEnableOption "modification of share contents through the web ui";
+
+            retention = {
+              files = {
+                complete = mkOption {
+                  defaultText = "(indefinite)";
+                  description = "Lifespan of completely downloaded files in minutes.";
+                  example = 20160;
+                  type = ints.unsigned;
+                };
+
+                incomplete = mkOption {
+                  defaultText = "(indefinite)";
+                  description = "Lifespan of incomplete downloading files in minutes.";
+                  type = ints.unsigned;
+                };
+              };
+
+              transfers = {
+                download = {
+                  cancelled = mkOption {
+                    defaultText = "(indefinite)";
+                    description = "Lifespan of cancelled download tasks.";
+                    type = ints.unsigned;
+                  };
+
+                  errored = mkOption {
+                    defaultText = "(indefinite)";
+                    description = "Lifespan of errored download tasks.";
+                    type = ints.unsigned;
+                  };
+
+                  succeeded = mkOption {
+                    defaultText = "(indefinite)";
+                    description = "Lifespan of succeeded download tasks.";
+                    type = ints.unsigned;
+                  };
+                };
+
+                upload = {
+                  cancelled = mkOption {
+                    defaultText = "(indefinite)";
+                    description = "Lifespan of cancelled upload tasks.";
+                    type = ints.unsigned;
+                  };
+
+                  errored = mkOption {
+                    defaultText = "(indefinite)";
+                    description = "Lifespan of errored upload tasks.";
+                    type = ints.unsigned;
+                  };
+
+                  succeeded = mkOption {
+                    defaultText = "(indefinite)";
+                    description = "Lifespan of succeeded upload tasks.";
+                    type = ints.unsigned;
+                  };
+                };
+              };
+            };
+
+            rooms = mkOption {
+              description = "Chat rooms to join on startup.";
+              type = listOf str;
+            };
+
+            shares = {
+              directories = mkOption {
+                description = ''
+                  Paths to shared directories. See
+                  [documentation](https://github.com/slskd/slskd/blob/master/docs/config.md#directories)
+                  for advanced usage.
+                '';
+
+                example = lib.literalExpression ''[ "/home/John/Music" "!/home/John/Music/Recordings" "[Music Drive]/mnt" ]'';
+                type = listOf str;
+              };
+
+              filters = mkOption {
+                description = "Regular expressions of files to exclude from sharing.";
+                example = lib.literalExpression ''[ "\.ini$" "Thumbs.db$" "\.DS_Store$" ]'';
+                type = listOf str;
+              };
+            };
+
+            soulseek = {
+              description = mkOption {
+                defaultText = "A slskd user. https://github.com/slskd/slskd";
+                description = "The user description for the Soulseek network.";
+                type = str;
+              };
+
+              listen_port = mkOption {
+                default = 50300;
+                description = "The port on which to listen for incoming connections.";
+                type = port;
+              };
+            };
+
+            web = {
+              # Users should use a reverse proxy instead for https
+              https.disabled = mkOption {
+                default = true;
+                description = "Disable the built-in HTTPS server";
+                type = bool;
+              };
+
+              port = mkOption {
+                default = 5030;
+                description = "The HTTP listen port.";
+                type = port;
+              };
+
+              url_base = mkOption {
+                default = "/";
+                description = "The base path in the url for web requests.";
+                type = path;
+              };
+            };
           };
+
+          freeformType = settingsFormat.type;
         };
+      };
+
+      user = mkOption {
+        default = defaultUser;
+        description = "User account under which slskd runs.";
+        type = types.str;
       };
     };
 
@@ -275,39 +299,34 @@ in
     in
     lib.mkIf cfg.enable {
 
+      networking.firewall.allowedTCPPorts = lib.optional cfg.openFirewall cfg.settings.soulseek.listen_port;
+
+      services.nginx = lib.mkIf (cfg.domain != null) {
+        enable = lib.mkDefault true;
+
+        virtualHosts."${cfg.domain}" = lib.mkMerge [
+          cfg.nginx
+          {
+            locations."${cfg.settings.web.url_base}" = {
+              proxyPass = "http://127.0.0.1:${toString cfg.settings.web.port}";
+              proxyWebsockets = true;
+            };
+          }
+        ];
+      };
+
       # Force off, configuration file is in nix store and is immutable
       services.slskd.settings.remote_configuration = lib.mkForce false;
 
-      users.users = lib.optionalAttrs (cfg.user == defaultUser) {
-        "${defaultUser}" = {
-          group = cfg.group;
-          isSystemUser = true;
-        };
-      };
-
-      users.groups = lib.optionalAttrs (cfg.group == defaultUser) {
-        "${defaultUser}" = { };
-      };
-
       systemd.services.slskd = {
-        description = "A modern client-server application for the Soulseek file sharing network";
         after = [ "network.target" ];
-        wantedBy = [ "multi-user.target" ];
+        description = "A modern client-server application for the Soulseek file sharing network";
+
         serviceConfig = {
-          Type = "simple";
-          User = cfg.user;
-          Group = cfg.group;
           Environment = [ "DOTNET_USE_POLLING_FILE_WATCHER=1" ];
           EnvironmentFile = lib.mkIf (cfg.environmentFile != null) cfg.environmentFile;
-          StateDirectory = "slskd"; # Creates /var/lib/slskd and manages permissions
           ExecStart = "${cfg.package}/bin/slskd --app-dir /var/lib/slskd --config ${configurationYaml}";
-          Restart = "on-failure";
-          ReadOnlyPaths = map (
-            d: builtins.elemAt (builtins.split "[^/]*(/.+)" d) 1
-          ) cfg.settings.shares.directories;
-          ReadWritePaths =
-            (lib.optional (cfg.settings.directories.incomplete != null) cfg.settings.directories.incomplete)
-            ++ (lib.optional (cfg.settings.directories.downloads != null) cfg.settings.directories.downloads);
+          Group = cfg.group;
           LockPersonality = true;
           NoNewPrivileges = true;
           PrivateDevices = true;
@@ -323,25 +342,36 @@ in
           ProtectKernelTunables = true;
           ProtectProc = "invisible";
           ProtectSystem = "strict";
+
+          ReadOnlyPaths = map (
+            d: builtins.elemAt (builtins.split "[^/]*(/.+)" d) 1
+          ) cfg.settings.shares.directories;
+
+          ReadWritePaths =
+            (lib.optional (cfg.settings.directories.incomplete != null) cfg.settings.directories.incomplete)
+            ++ (lib.optional (cfg.settings.directories.downloads != null) cfg.settings.directories.downloads);
+
           RemoveIPC = true;
+          Restart = "on-failure";
           RestrictNamespaces = true;
           RestrictSUIDSGID = true;
+          StateDirectory = "slskd"; # Creates /var/lib/slskd and manages permissions
+          Type = "simple";
+          User = cfg.user;
         };
+
+        wantedBy = [ "multi-user.target" ];
       };
 
-      networking.firewall.allowedTCPPorts = lib.optional cfg.openFirewall cfg.settings.soulseek.listen_port;
+      users.groups = lib.optionalAttrs (cfg.group == defaultUser) {
+        "${defaultUser}" = { };
+      };
 
-      services.nginx = lib.mkIf (cfg.domain != null) {
-        enable = lib.mkDefault true;
-        virtualHosts."${cfg.domain}" = lib.mkMerge [
-          cfg.nginx
-          {
-            locations."${cfg.settings.web.url_base}" = {
-              proxyPass = "http://127.0.0.1:${toString cfg.settings.web.port}";
-              proxyWebsockets = true;
-            };
-          }
-        ];
+      users.users = lib.optionalAttrs (cfg.user == defaultUser) {
+        "${defaultUser}" = {
+          group = cfg.group;
+          isSystemUser = true;
+        };
       };
     };
 

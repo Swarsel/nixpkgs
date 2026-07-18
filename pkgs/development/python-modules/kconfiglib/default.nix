@@ -7,7 +7,6 @@
 buildPythonPackage rec {
   pname = "kconfiglib";
   version = "14.1.0";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
@@ -21,6 +20,7 @@ buildPythonPackage rec {
 
   # doesnt work out of the box but might be possible
   doCheck = false;
+  format = "setuptools";
 
   meta = {
     description = "Flexible Python 2/3 Kconfig implementation and library";

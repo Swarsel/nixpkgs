@@ -1,18 +1,18 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitLab,
-  gitUpdater,
-  nixosTests,
   cmake,
   geonames,
   gettext,
+  gitUpdater,
   libusermetrics,
   lomiri-content-hub,
   lomiri-sounds,
   lomiri-ui-toolkit,
   makeWrapper,
   mesa,
+  nixosTests,
   pkg-config,
   qtbase,
   qtdeclarative,
@@ -77,14 +77,6 @@ stdenv.mkDerivation (finalAttrs: {
     u1db-qt
   ];
 
-  nativeCheckInputs = [
-    mesa.llvmpipeHook # ShapeMaterial needs an OpenGL context: https://gitlab.com/ubports/development/core/lomiri-ui-toolkit/-/issues/35
-    qtdeclarative # qmltestrunner
-    xvfb-run
-  ];
-
-  dontWrapGApps = true;
-
   cmakeFlags = [
     (lib.cmakeBool "CLICK_MODE" false)
     (lib.cmakeBool "INSTALL_TESTS" false)
@@ -92,6 +84,12 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   doCheck = stdenv.buildPlatform.canExecute stdenv.hostPlatform;
+
+  nativeCheckInputs = [
+    mesa.llvmpipeHook # ShapeMaterial needs an OpenGL context: https://gitlab.com/ubports/development/core/lomiri-ui-toolkit/-/issues/35
+    qtdeclarative # qmltestrunner
+    xvfb-run
+  ];
 
   preCheck =
     let
@@ -112,15 +110,16 @@ stdenv.mkDerivation (finalAttrs: {
       }
     '';
 
-  # Parallelism breaks xvfb-run usage
-  enableParallelChecking = false;
-
   postInstall = ''
     mkdir -p $out/share/{icons/hicolor/scalable/apps,lomiri-app-launch/splash}
 
     ln -s $out/share/lomiri-clock-app/clock-app.svg $out/share/icons/hicolor/scalable/apps/lomiri-clock-app.svg
     ln -s $out/share/lomiri-clock-app/clock-app-splash.svg $out/share/lomiri-app-launch/splash/lomiri-clock-app.svg
   '';
+
+  dontWrapGApps = true;
+  # Parallelism breaks xvfb-run usage
+  enableParallelChecking = false;
 
   passthru = {
     tests.vm = nixosTests.lomiri-clock-app;
@@ -132,8 +131,8 @@ stdenv.mkDerivation (finalAttrs: {
     homepage = "https://gitlab.com/ubports/development/apps/lomiri-clock-app";
     changelog = "https://gitlab.com/ubports/development/apps/lomiri-clock-app/-/blob/v${finalAttrs.version}/ChangeLog";
     license = lib.licenses.gpl3Only;
-    teams = [ lib.teams.lomiri ];
-    mainProgram = "lomiri-clock-app";
     platforms = lib.platforms.linux;
+    mainProgram = "lomiri-clock-app";
+    teams = [ lib.teams.lomiri ];
   };
 })

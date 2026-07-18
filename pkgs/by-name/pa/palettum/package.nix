@@ -1,12 +1,12 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
-  pkg-config,
   ffmpeg_7,
-  vulkan-loader,
-  versionCheckHook,
   nix-update-script,
+  pkg-config,
+  rustPlatform,
+  versionCheckHook,
+  vulkan-loader,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -20,8 +20,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-xJGXLJPsfrU/BiS2GuEoJNbXaQZbbkZaArf4otiUqqA=";
   };
 
-  cargoHash = "sha256-c1Xx7U7OU9hcjHNEkFAJ1dYksZq0rL6QcSKGGXuUJYY=";
-
   nativeBuildInputs = [
     pkg-config
     rustPlatform.bindgenHook
@@ -32,13 +30,14 @@ rustPlatform.buildRustPackage (finalAttrs: {
     vulkan-loader
   ];
 
+  cargoHash = "sha256-c1Xx7U7OU9hcjHNEkFAJ1dYksZq0rL6QcSKGGXuUJYY=";
   doInstallCheck = true;
   nativeInstallCheckInputs = [ versionCheckHook ];
-
   passthru.updateScript = nix-update-script { };
 
   meta = {
     description = "CLI tool that lets you recolor images, GIFs and videos";
+
     longDescription = ''
       Palettum is a web app and CLI tool that lets you recolor images,
       GIFs, and videos with any custom palette of your choosing. It
@@ -46,6 +45,7 @@ rustPlatform.buildRustPackage (finalAttrs: {
       to its closest color (ideal for pixel-art styles), or blending
       the palette as a filter for a smoother effect.
     '';
+
     homepage = "https://github.com/arrowpc/palettum";
     license = lib.licenses.agpl3Only;
     maintainers = with lib.maintainers; [ yiyu ];

@@ -2,11 +2,11 @@
   lib,
   stdenv,
   fetchurl,
+  autoPatchelfHook,
   glib,
   libxcb,
   nspr,
   nss,
-  autoPatchelfHook,
   unzip,
 }:
 
@@ -15,8 +15,8 @@ let
   pname = "electron-chromedriver";
 
   meta = {
-    homepage = "https://www.electronjs.org/";
     description = "WebDriver server for running Selenium tests on Chrome";
+
     longDescription = ''
       WebDriver is an open source tool for automated testing of webapps across
       many browsers. It provides capabilities for navigating to web pages, user
@@ -25,33 +25,38 @@ let
       an unofficial build of ChromeDriver compiled by the Electronjs
       project.
     '';
-    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
+
+    homepage = "https://www.electronjs.org/";
     license = lib.licenses.mit;
+    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
+
     maintainers = with lib.maintainers; [
       liammurphy14
     ];
-    teams = [ lib.teams.electron ];
+
     platforms = [
       "x86_64-linux"
       "armv7l-linux"
       "aarch64-linux"
       "aarch64-darwin"
     ];
+
     mainProgram = "chromedriver";
+    teams = [ lib.teams.electron ];
   };
 
   fetcher =
     vers: tag: hash:
     fetchurl {
-      url = "https://github.com/electron/electron/releases/download/v${vers}/chromedriver-v${vers}-${tag}.zip";
       sha256 = hash;
+      url = "https://github.com/electron/electron/releases/download/v${vers}/chromedriver-v${vers}-${tag}.zip";
     };
 
   tags = {
-    x86_64-linux = "linux-x64";
+    aarch64-darwin = "darwin-arm64";
     aarch64-linux = "linux-arm64";
     armv7l-linux = "linux-armv7l";
-    aarch64-darwin = "darwin-arm64";
+    x86_64-linux = "linux-x64";
   };
 
   get = as: platform: as.${platform.system} or (throw "Unsupported system: ${platform.system}");
@@ -70,13 +75,12 @@ let
   };
 
   linux = {
+    strictDeps = true;
+
     nativeBuildInputs = [
       autoPatchelfHook
       unzip
     ];
-
-    dontUnpack = true;
-    dontBuild = true;
 
     installPhase = ''
       runHook preInstall
@@ -86,14 +90,12 @@ let
     '';
 
     __structuredAttrs = true;
-    strictDeps = true;
+    dontBuild = true;
+    dontUnpack = true;
   };
 
   darwin = {
     nativeBuildInputs = [ unzip ];
-
-    dontUnpack = true;
-    dontBuild = true;
 
     # darwin distributions come with libffmpeg dependency + icudtl.dat file
     installPhase = ''
@@ -104,6 +106,9 @@ let
       cp icudtl.dat $out/bin/icudtl.dat
       runHook postInstall
     '';
+
+    dontBuild = true;
+    dontUnpack = true;
   };
 in
 stdenv.mkDerivation (

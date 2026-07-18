@@ -8,7 +8,6 @@
 buildPythonPackage rec {
   pname = "twinkly-client";
   version = "0.0.3";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
@@ -16,10 +15,9 @@ buildPythonPackage rec {
   };
 
   propagatedBuildInputs = [ aiohttp ];
-
   # Project has no tests
   doCheck = false;
-
+  format = "setuptools";
   pythonImportsCheck = [ "twinkly_client" ];
 
   meta = {

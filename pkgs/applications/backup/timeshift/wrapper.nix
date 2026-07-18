@@ -1,18 +1,17 @@
 {
-  stdenvNoCC,
   lib,
-  wrapGAppsHook3,
   gdk-pixbuf,
   librsvg,
   lndir,
   shared-mime-info,
+  stdenvNoCC,
+  wrapGAppsHook3,
 }:
 
 timeshift-unwrapped: runtimeDeps:
 stdenvNoCC.mkDerivation {
   inherit (timeshift-unwrapped) pname version outputs;
-
-  dontUnpack = true;
+  inherit (timeshift-unwrapped) meta;
 
   nativeBuildInputs = [
     wrapGAppsHook3
@@ -29,8 +28,6 @@ stdenvNoCC.mkDerivation {
   + ''
     runHook postInstall
   '';
-
-  dontWrapGApps = true;
 
   preFixup = ''
     makeWrapperArgs=(
@@ -56,5 +53,6 @@ stdenvNoCC.mkDerivation {
     chmod +x "$out/bin/timeshift-launcher"
   '';
 
-  inherit (timeshift-unwrapped) meta;
+  dontUnpack = true;
+  dontWrapGApps = true;
 }

@@ -1,13 +1,18 @@
 {
-  mkKdeDerivation,
-  docbook_xml_dtd_45,
   docbook-xsl-nons,
+  docbook_xml_dtd_45,
+  libxml2,
+  mkKdeDerivation,
   perl,
   perlPackages,
-  libxml2,
 }:
 mkKdeDerivation {
   pname = "kdoctools";
+
+  extraBuildInputs = [
+    docbook_xml_dtd_45
+    docbook-xsl-nons
+  ];
 
   # Perl could be used both at build time and at runtime.
   extraNativeBuildInputs = [
@@ -15,10 +20,7 @@ mkKdeDerivation {
     perlPackages.URI
     libxml2
   ];
-  extraBuildInputs = [
-    docbook_xml_dtd_45
-    docbook-xsl-nons
-  ];
+
   extraPropagatedBuildInputs = [
     perl
     perlPackages.URI

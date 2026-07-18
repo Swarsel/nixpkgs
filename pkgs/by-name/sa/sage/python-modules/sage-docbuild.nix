@@ -1,18 +1,17 @@
 {
   lib,
   buildPythonPackage,
-  sage-src,
   furo,
   jupyter-sphinx,
+  sage-src,
   sphinx,
   sphinx-copybutton,
   sphinx-inline-tabs,
 }:
 
 buildPythonPackage rec {
-  version = src.version;
-  format = "setuptools";
   pname = "sage-docbuild";
+  version = src.version;
   src = sage-src;
 
   propagatedBuildInputs = [
@@ -28,6 +27,7 @@ buildPythonPackage rec {
   '';
 
   doCheck = false; # we will run tests in sagedoc.nix
+  format = "setuptools";
 
   meta = {
     description = "Build system of the Sage documentation";

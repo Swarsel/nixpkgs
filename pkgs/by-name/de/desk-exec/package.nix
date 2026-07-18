@@ -1,9 +1,9 @@
 {
   lib,
-  fetchFromGitHub,
-  rustPlatform,
-  installShellFiles,
   stdenv,
+  fetchFromGitHub,
+  installShellFiles,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -17,9 +17,8 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-bJLdd07IAf+ba++vtS0iSmeQSGygwSVNry2bHTDAgjE=";
   };
 
-  cargoHash = "sha256-lwc+zth4qCynErG3ldUnu/lX4NfZfxn+XDzJA/kp7S4=";
-
   nativeBuildInputs = [ installShellFiles ];
+  cargoHash = "sha256-lwc+zth4qCynErG3ldUnu/lX4NfZfxn+XDzJA/kp7S4=";
 
   postInstall = ''
     pushd target/${stdenv.hostPlatform.config}/release/dist
@@ -34,7 +33,7 @@ rustPlatform.buildRustPackage (finalAttrs: {
     homepage = "https://github.com/AxerTheAxe/desk-exec";
     license = lib.licenses.unlicense;
     maintainers = [ lib.maintainers.axertheaxe ];
-    mainProgram = "desk-exec";
     platforms = lib.platforms.linux;
+    mainProgram = "desk-exec";
   };
 })

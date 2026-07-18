@@ -6,8 +6,8 @@
   libGL,
   libiconv,
   libx11,
-  openal,
   nix-update-script,
+  openal,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -24,9 +24,9 @@ stdenv.mkDerivation (finalAttrs: {
   # fix build with gcc14:
   # https://github.com/n64dev/cen64/pull/191/commits/f13bdf94c00a9da3b152ed9fe20001e240215b96
   patches = [ ./cast-mi_regs-callbacks.patch ];
-
   strictDeps = true;
   nativeBuildInputs = [ cmake ];
+
   buildInputs = [
     libGL
     libiconv
@@ -47,8 +47,8 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Cycle-Accurate Nintendo 64 Emulator";
-    license = lib.licenses.bsd3;
     homepage = "https://github.com/n64dev/cen64";
+    license = lib.licenses.bsd3;
     maintainers = with lib.maintainers; [ _414owen ];
     platforms = [ "x86_64-linux" ];
     mainProgram = "cen64";

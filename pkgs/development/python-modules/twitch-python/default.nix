@@ -2,29 +2,31 @@
   lib,
   buildPythonPackage,
   fetchPypi,
-  setuptools,
-  requests,
-  rx,
-  pytestCheckHook,
-  responses,
   isPy3k,
+  pytestCheckHook,
+  requests,
+  responses,
+  rx,
+  setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "twitch-python";
   version = "0.0.20";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
     hash = "sha256-bgnXIQuOCrtoknZ9ciB56zWxTCnncM2032TVaey6oXw=";
   };
 
-  disabled = !isPy3k;
-
   postPatch = ''
     substituteInPlace setup.py --replace-fail "'pipenv'," ""
   '';
+
+  nativeCheckInputs = [
+    pytestCheckHook
+    responses
+  ];
 
   build-system = [ setuptools ];
 
@@ -33,11 +35,8 @@ buildPythonPackage rec {
     rx
   ];
 
-  nativeCheckInputs = [
-    pytestCheckHook
-    responses
-  ];
-
+  disabled = !isPy3k;
+  pyproject = true;
   pythonImportsCheck = [ "twitch" ];
 
   meta = {

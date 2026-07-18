@@ -1,9 +1,9 @@
 {
   lib,
+  fetchFromGitHub,
   aiohttp,
   attrs,
   buildPythonPackage,
-  fetchFromGitHub,
   pythonOlder,
   setuptools,
   voluptuous,
@@ -12,9 +12,6 @@
 buildPythonPackage rec {
   pname = "hatasmota";
   version = "0.10.1";
-  pyproject = true;
-
-  disabled = pythonOlder "3.13";
 
   src = fetchFromGitHub {
     owner = "emontnemery";
@@ -23,6 +20,8 @@ buildPythonPackage rec {
     hash = "sha256-Be6W7+DMpMXezEQDkEN9+ei7cJXP1bGIURuXlMNyR0Y=";
   };
 
+  # Project has no tests
+  doCheck = false;
   build-system = [ setuptools ];
 
   dependencies = [
@@ -31,9 +30,8 @@ buildPythonPackage rec {
     voluptuous
   ];
 
-  # Project has no tests
-  doCheck = false;
-
+  disabled = pythonOlder "3.13";
+  pyproject = true;
   pythonImportsCheck = [ "hatasmota" ];
 
   meta = {

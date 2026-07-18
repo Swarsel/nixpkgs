@@ -1,12 +1,12 @@
 {
   lib,
   stdenv,
-  buildPackages,
   fetchurl,
-  bison,
-  m4,
   autoreconfHook,
+  bison,
+  buildPackages,
   help2man,
+  m4,
 }:
 
 # Avoid 'fetchpatch' to allow 'flex' to be used as a possible 'gcc'
@@ -27,13 +27,13 @@ stdenv.mkDerivation rec {
       # Also upstream, will be part of 2.6.5
       # https://github.com/westes/flex/commit/24fd0551333e
       name = "glibc-2.26.patch";
-      url = "https://raw.githubusercontent.com/lede-project/source/0fb14a2b1ab2f82ce63f4437b062229d73d90516/tools/flex/patches/200-build-AC_USE_SYSTEM_EXTENSIONS-in-configure.ac.patch";
       sha256 = "0mpp41zdg17gx30kcpj83jl8hssks3adbks0qzbhcz882b9c083r";
+      url = "https://raw.githubusercontent.com/lede-project/source/0fb14a2b1ab2f82ce63f4437b062229d73d90516/tools/flex/patches/200-build-AC_USE_SYSTEM_EXTENSIONS-in-configure.ac.patch";
     })
     (fetchurl {
+      hash = "sha256-Bnv23M2K1Qf7pEaEz0ueSNzTCdjMTDiMm+H7JaxUISs=";
       name = "gcc-15.patch";
       url = "https://github.com/westes/flex/commit/bf254c75b1e0d2641ebbd7fc85fb183f36a62ea7.patch";
-      hash = "sha256-Bnv23M2K1Qf7pEaEz0ueSNzTCdjMTDiMm+H7JaxUISs=";
     })
   ];
 
@@ -46,11 +46,11 @@ stdenv.mkDerivation rec {
     substituteInPlace doc/Makefile.am --replace 'flex.1: $(top_srcdir)/configure.ac' 'flex.1: '
   '';
 
-  depsBuildBuild = [ buildPackages.stdenv.cc ];
   nativeBuildInputs = [
     autoreconfHook
     help2man
   ];
+
   buildInputs = [ bison ];
   propagatedBuildInputs = [ m4 ];
 
@@ -63,15 +63,16 @@ stdenv.mkDerivation rec {
     sed -i Makefile -e 's/-no-undefined//;'
   '';
 
-  dontDisableStatic = stdenv.buildPlatform != stdenv.hostPlatform;
-
   postInstall = ''
     ln -s $out/bin/flex $out/bin/lex
   '';
 
+  depsBuildBuild = [ buildPackages.stdenv.cc ];
+  dontDisableStatic = stdenv.buildPlatform != stdenv.hostPlatform;
+
   meta = {
-    homepage = "https://github.com/westes/flex";
     description = "Fast lexical analyser generator";
+    homepage = "https://github.com/westes/flex";
     license = lib.licenses.bsd2;
     platforms = lib.platforms.unix;
   };

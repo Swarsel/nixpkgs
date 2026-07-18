@@ -1,16 +1,16 @@
 {
+  lib,
+  stdenv,
+  fetchFromGitHub,
   bazel_7,
   buildBazelPackage,
   fcitx5,
-  fetchFromGitHub,
   gettext,
-  lib,
   mozc,
   nixosTests,
   pkg-config,
   protobuf_27,
   python3,
-  stdenv,
   unzip,
 }:
 
@@ -21,10 +21,17 @@ buildBazelPackage {
   src = fetchFromGitHub {
     owner = "fcitx";
     repo = "mozc";
-    fetchSubmodules = true;
     rev = "57e67f2a25e4c0861e0e422da0c7d4c232d89fcc";
     hash = "sha256-1EZjEbMl+LRipH5gEgFpaKP8uEKPfupHmiiTNJc/T1k=";
+    fetchSubmodules = true;
   };
+
+  postPatch = ''
+    # replace protobuf with our own
+    rm -r src/third_party/protobuf
+    cp -r ${protobuf_27.src} src/third_party/protobuf
+    sed -i -e 's|^\(LINUX_MOZC_SERVER_DIR = \).\+|\1"${mozc}/lib/mozc"|' src/config.bzl
+  '';
 
   nativeBuildInputs = [
     gettext
@@ -38,16 +45,11 @@ buildBazelPackage {
     fcitx5
   ];
 
-  postPatch = ''
-    # replace protobuf with our own
-    rm -r src/third_party/protobuf
-    cp -r ${protobuf_27.src} src/third_party/protobuf
-    sed -i -e 's|^\(LINUX_MOZC_SERVER_DIR = \).\+|\1"${mozc}/lib/mozc"|' src/config.bzl
+  preConfigure = ''
+    cd src
   '';
 
   bazel = bazel_7;
-  removeRulesCC = false;
-  dontAddBazelOpts = true;
 
   bazelFlags = [
     "--config"
@@ -60,21 +62,6 @@ buildBazelPackage {
     "unix/fcitx5:fcitx5-mozc.so"
     "unix/icons"
   ];
-
-  fetchAttrs = {
-    preInstall = ''
-      # Remove reference to buildInput
-      rm -rf $bazelOut/external/fcitx5
-      # Remove reference to the host platform
-      rm -rv "$bazelOut"/external/host_platform
-    '';
-
-    hash = "sha256-ZjrXMQwxlaU5YGZtBZ+D2XBQHnOk+zV+a9cmkf3U5NU=";
-  };
-
-  preConfigure = ''
-    cd src
-  '';
 
   buildAttrs = {
     installPhase = ''
@@ -130,6 +117,21 @@ buildBazelPackage {
     '';
   };
 
+  dontAddBazelOpts = true;
+
+  fetchAttrs = {
+    preInstall = ''
+      # Remove reference to buildInput
+      rm -rf $bazelOut/external/fcitx5
+      # Remove reference to the host platform
+      rm -rv "$bazelOut"/external/host_platform
+    '';
+
+    hash = "sha256-ZjrXMQwxlaU5YGZtBZ+D2XBQHnOk+zV+a9cmkf3U5NU=";
+  };
+
+  removeRulesCC = false;
+
   passthru.tests = lib.optionalAttrs stdenv.hostPlatform.isLinux {
     inherit (nixosTests) fcitx5;
   };
@@ -137,6 +139,7 @@ buildBazelPackage {
   meta = {
     description = "Mozc - a Japanese Input Method Editor designed for multi-platform";
     homepage = "https://github.com/fcitx/mozc";
+
     license = with lib.licenses; [
       asl20 # abseil-cpp
       bsd3 # mozc, breakpad, gtest, gyp, japanese-usage-dictionary, protobuf
@@ -145,11 +148,13 @@ buildBazelPackage {
       publicDomain # src/data/test/stress_test, Okinawa dictionary
       unicode-30 # src/data/unicode, breakpad
     ];
+
     maintainers = with lib.maintainers; [
       berberman
       govanify
       musjj
     ];
+
     platforms = lib.platforms.linux;
   };
 }

@@ -1,15 +1,14 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  pytestCheckHook,
+  buildPythonPackage,
   pytest-cov-stub,
+  pytestCheckHook,
 }:
 
 buildPythonPackage rec {
   pname = "anonip";
   version = "1.1.0";
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "DigitaleGesellschaft";
@@ -24,14 +23,14 @@ buildPythonPackage rec {
   ];
 
   enabledTestPaths = [ "tests.py" ];
-
+  format = "setuptools";
   pythonImportsCheck = [ "anonip" ];
 
   meta = {
     description = "Tool to anonymize IP addresses in log files";
-    mainProgram = "anonip";
     homepage = "https://github.com/DigitaleGesellschaft/Anonip";
     license = lib.licenses.bsd3;
     maintainers = with lib.maintainers; [ mmahut ];
+    mainProgram = "anonip";
   };
 }

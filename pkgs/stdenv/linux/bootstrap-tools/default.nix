@@ -1,9 +1,9 @@
 {
   lib,
-  libc,
-  config,
-  system,
   bootstrapFiles,
+  config,
+  libc,
+  system,
   isFromBootstrapFiles ? false,
 }:
 

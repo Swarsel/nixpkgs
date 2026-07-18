@@ -1,30 +1,26 @@
 {
   lib,
+  bleach,
   buildPythonPackage,
   fetchPypi,
   setuptools,
-  bleach,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "bleach-allowlist";
   version = "1.0.3";
-  pyproject = true;
-
-  __structuredAttrs = true;
 
   src = fetchPypi {
     inherit (finalAttrs) pname version;
     hash = "sha256-VuIghgeaDmoxAK6Z5NuvIOslhUhlmOsOmUAIoRQo2ps=";
   };
 
-  build-system = [ setuptools ];
-
-  dependencies = [ bleach ];
-
   # No tests
   doCheck = false;
-
+  __structuredAttrs = true;
+  build-system = [ setuptools ];
+  dependencies = [ bleach ];
+  pyproject = true;
   pythonImportsCheck = [ "bleach_allowlist" ];
 
   meta = {

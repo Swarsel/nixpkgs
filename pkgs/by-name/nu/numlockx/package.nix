@@ -8,8 +8,8 @@
 }:
 
 stdenv.mkDerivation {
-  version = "1.2";
   pname = "numlockx";
+  version = "1.2";
 
   src = fetchFromGitHub {
     owner = "rg3";

@@ -19,7 +19,6 @@ stdenv.mkDerivation (finalAttrs: {
 
   nativeBuildInputs = [ cmake ];
   buildInputs = [ itk ];
-
   doCheck = !stdenv.hostPlatform.isDarwin; # usual dynamic linker issues
 
   # Fails due to numerical tolerance issues
@@ -35,12 +34,12 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   meta = {
-    homepage = "https://elastix.dev";
     description = "Image registration toolkit based on ITK";
+    homepage = "https://elastix.dev";
     changelog = "https://github.com/SuperElastix/elastix/releases/tag/${finalAttrs.version}";
-    maintainers = with lib.maintainers; [ bcdarwin ];
-    mainProgram = "elastix";
-    platforms = lib.platforms.x86_64; # libitkpng linker issues with ITK 5.1
     license = lib.licenses.asl20;
+    maintainers = with lib.maintainers; [ bcdarwin ];
+    platforms = lib.platforms.x86_64; # libitkpng linker issues with ITK 5.1
+    mainProgram = "elastix";
   };
 })

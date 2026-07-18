@@ -1,16 +1,16 @@
 {
   lib,
   stdenv,
-  buildGoModule,
   fetchFromGitHub,
-  installShellFiles,
-  writableTmpDirAsHomeHook,
-  pkg-config,
   btrfs-progs,
+  buildGoModule,
   gpgme,
+  installShellFiles,
+  nix-update-script,
+  pkg-config,
+  writableTmpDirAsHomeHook,
   xen,
   yajl,
-  nix-update-script,
 }:
 
 buildGoModule (finalAttrs: {
@@ -41,36 +41,6 @@ buildGoModule (finalAttrs: {
 
   vendorHash = "sha256-1rdpyOJVeyzYT0WHJbeqO3aH15FN1/9iQ9bEsjWwn4c=";
 
-  ldflags = [
-    "-s"
-    "-w"
-    "-X kraftkit.sh/internal/cli/kraft.sentryDsn="
-    "-X kraftkit.sh/internal/version.buildTime=1970-01-01T00:00:00Z"
-    "-X kraftkit.sh/internal/version.commit=nixpkgs"
-    "-X kraftkit.sh/internal/version.version=${finalAttrs.version}"
-  ];
-
-  tags = [
-    "containers_image_storage_stub"
-    "containers_image_openpgp"
-    "netgo"
-    "osusergo"
-  ]
-  ++ lib.optionals stdenv.hostPlatform.isLinux [
-    "xen"
-  ];
-
-  subPackages = [
-    "cmd/kraft"
-  ]
-  ++ lib.optionals (stdenv.buildPlatform.canExecute stdenv.hostPlatform) [ "tools/genman" ];
-
-  excludedPackages = [
-    "test/e2e"
-    "initrd"
-    "tools"
-  ];
-
   preCheck = ''
     # Run all tests.
     unset subPackages
@@ -87,6 +57,36 @@ buildGoModule (finalAttrs: {
       --zsh <($out/bin/kraft completion zsh)
   '';
 
+  excludedPackages = [
+    "test/e2e"
+    "initrd"
+    "tools"
+  ];
+
+  ldflags = [
+    "-s"
+    "-w"
+    "-X kraftkit.sh/internal/cli/kraft.sentryDsn="
+    "-X kraftkit.sh/internal/version.buildTime=1970-01-01T00:00:00Z"
+    "-X kraftkit.sh/internal/version.commit=nixpkgs"
+    "-X kraftkit.sh/internal/version.version=${finalAttrs.version}"
+  ];
+
+  subPackages = [
+    "cmd/kraft"
+  ]
+  ++ lib.optionals (stdenv.buildPlatform.canExecute stdenv.hostPlatform) [ "tools/genman" ];
+
+  tags = [
+    "containers_image_storage_stub"
+    "containers_image_openpgp"
+    "netgo"
+    "osusergo"
+  ]
+  ++ lib.optionals stdenv.hostPlatform.isLinux [
+    "xen"
+  ];
+
   passthru = {
     updateScript = nix-update-script {
       extraArgs = [
@@ -100,9 +100,11 @@ buildGoModule (finalAttrs: {
     description = "Build and use highly customized and ultra-lightweight unikernel VMs";
     homepage = "https://github.com/unikraft/kraftkit";
     license = lib.licenses.bsd3;
+
     maintainers = with lib.maintainers; [
       cloudripper
     ];
+
     mainProgram = "kraft";
   };
 })

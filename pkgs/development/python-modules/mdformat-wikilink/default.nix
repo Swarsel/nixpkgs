@@ -1,18 +1,17 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  poetry-core,
+  buildPythonPackage,
   markdown-it-py,
   mdformat,
-  pytestCheckHook,
+  poetry-core,
   pytest-cov-stub,
+  pytestCheckHook,
 }:
 
 buildPythonPackage rec {
   pname = "mdformat-wikilink";
   version = "0.3.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "tmr232";
@@ -21,6 +20,11 @@ buildPythonPackage rec {
     hash = "sha256-tYUF5gNmXjzlf0jQg0tL2ayFGCSFFeYJHkWA6cYLpvI=";
   };
 
+  nativeCheckInputs = [
+    pytestCheckHook
+    pytest-cov-stub
+  ];
+
   build-system = [ poetry-core ];
 
   dependencies = [
@@ -28,11 +32,7 @@ buildPythonPackage rec {
     mdformat
   ];
 
-  nativeCheckInputs = [
-    pytestCheckHook
-    pytest-cov-stub
-  ];
-
+  pyproject = true;
   pythonImportsCheck = [ "mdformat_wikilink" ];
 
   meta = {

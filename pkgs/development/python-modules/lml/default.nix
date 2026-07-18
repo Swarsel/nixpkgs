@@ -2,30 +2,30 @@
   lib,
   buildPythonPackage,
   fetchPypi,
-  pytestCheckHook,
   mock,
+  pytestCheckHook,
   setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "lml";
   version = "0.2.0";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
     hash = "sha256-jdWvtDZ6WT0c2yFEoFh0zZk49SZr67DJ4UEyAEI8DXQ=";
   };
 
-  build-system = [ setuptools ];
+  # Tests broken.
+  doCheck = false;
 
   nativeCheckInputs = [
     pytestCheckHook
     mock
   ];
 
-  # Tests broken.
-  doCheck = false;
+  build-system = [ setuptools ];
+  pyproject = true;
 
   meta = {
     description = "Plugin management system for Python";

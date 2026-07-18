@@ -1,9 +1,9 @@
 {
-  buildEnv,
   lib,
+  buildEnv,
   callPackage,
-  makeWrapper,
   makeDesktopItem,
+  makeWrapper,
 }:
 
 let
@@ -11,30 +11,37 @@ let
   engine = callPackage ./engine.nix { };
   data = callPackage ./data.nix { };
   desktopItem = makeDesktopItem {
-    name = "frogatto";
-    exec = "frogatto";
-    startupNotify = true;
-    icon = "${data}/share/frogatto/modules/frogatto/images/os/frogatto-icon.png";
-    comment = description;
-    desktopName = "Frogatto";
-    genericName = "frogatto";
     categories = [
       "Game"
       "ArcadeGame"
     ];
+
+    comment = description;
+    desktopName = "Frogatto";
+    exec = "frogatto";
+    genericName = "frogatto";
+    icon = "${data}/share/frogatto/modules/frogatto/images/os/frogatto-icon.png";
+    name = "frogatto";
+    startupNotify = true;
   };
   inherit (data) version;
 in
 buildEnv {
-  pname = "frogatto";
   inherit version;
-
+  pname = "frogatto";
   nativeBuildInputs = [ makeWrapper ];
+
+  postBuild = ''
+    wrapProgram $out/bin/frogatto \
+      --chdir "$out/share/frogatto"
+  '';
+
   paths = [
     engine
     data
     desktopItem
   ];
+
   pathsToLink = [
     "/bin"
     "/share/frogatto/data"
@@ -43,19 +50,16 @@ buildEnv {
     "/share/applications"
   ];
 
-  postBuild = ''
-    wrapProgram $out/bin/frogatto \
-      --chdir "$out/share/frogatto"
-  '';
-
   meta = {
-    homepage = "https://frogatto.com";
     description = description;
+    homepage = "https://frogatto.com";
+
     license = with lib.licenses; [
       cc-by-30
       unfree
     ];
-    platforms = lib.platforms.linux;
+
     maintainers = with lib.maintainers; [ astro ];
+    platforms = lib.platforms.linux;
   };
 }

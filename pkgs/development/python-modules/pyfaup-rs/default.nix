@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   pytestCheckHook,
   rustPlatform,
 }:
@@ -9,7 +9,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "pyfaup-rs";
   version = "0.4.14";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "ail-project";
@@ -18,20 +17,20 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-rECfx7um1Rk9Fd65y3377StGru68QE13xwqDOmXQ140=";
   };
 
-  cargoDeps = rustPlatform.fetchCargoVendor {
-    inherit (finalAttrs) pname version src;
-    hash = "sha256-F41gKLhly8V6dw8qE5lFLuQpSmGGfWg9EcAUMD29dsA=";
-  };
-
-  buildAndTestSubdir = "python";
-
   nativeBuildInputs = with rustPlatform; [
     cargoSetupHook
     maturinBuildHook
   ];
 
   nativeCheckInputs = [ pytestCheckHook ];
+  buildAndTestSubdir = "python";
 
+  cargoDeps = rustPlatform.fetchCargoVendor {
+    inherit (finalAttrs) pname version src;
+    hash = "sha256-F41gKLhly8V6dw8qE5lFLuQpSmGGfWg9EcAUMD29dsA=";
+  };
+
+  pyproject = true;
   pythonImportsCheck = [ "pyfaup" ];
 
   meta = {

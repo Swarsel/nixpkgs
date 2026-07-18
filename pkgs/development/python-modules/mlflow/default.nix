@@ -1,13 +1,12 @@
 {
   lib,
-  buildPythonPackage,
-  fetchPypi,
-
   # dependencies
   aiohttp,
   alembic,
+  buildPythonPackage,
   cryptography,
   docker,
+  fetchPypi,
   flask,
   flask-cors,
   graphene,
@@ -28,19 +27,23 @@
 buildPythonPackage (finalAttrs: {
   pname = "mlflow";
   version = "3.14.0";
-  format = "wheel";
-  __structuredAttrs = true;
 
   # We build from the PyPI wheel rather than fetchFromGitHub, because the mlflow-server
   # JS UI is absent from GitHub but provided in the wheel.
   src = fetchPypi {
-    pname = "mlflow";
     inherit (finalAttrs) version;
-    format = "wheel";
-    dist = "py3";
-    python = "py3";
     hash = "sha256-2/d/fNtbXA7Fm0ZxxhcwsbkUtN/3ookuJnpUfLVFT1Y=";
+    dist = "py3";
+    format = "wheel";
+    pname = "mlflow";
+    python = "py3";
   };
+
+  # I (@GaetanLepage) gave up at enabling tests:
+  # - They require a lot of dependencies (some unpackaged);
+  # - Many errors occur at collection time;
+  # - Most (all ?) tests require internet access anyway.
+  doCheck = false;
 
   # Nix-wrapped python populates sys.path via NIX_PYTHONPATH/site hooks,
   # but PYTHONPATH stays unset in os.environ. mlflow spawns the server
@@ -50,9 +53,7 @@ buildPythonPackage (finalAttrs: {
     patch -p1 -d "$out/lib/python"*/site-packages < ${./subprocess-pythonpath.patch}
   '';
 
-  pythonRelaxDeps = [
-    "cryptography"
-  ];
+  __structuredAttrs = true;
 
   dependencies = [
     aiohttp
@@ -76,27 +77,29 @@ buildPythonPackage (finalAttrs: {
     sqlalchemy
   ];
 
+  format = "wheel";
   pythonImportsCheck = [ "mlflow" ];
 
-  # I (@GaetanLepage) gave up at enabling tests:
-  # - They require a lot of dependencies (some unpackaged);
-  # - Many errors occur at collection time;
-  # - Most (all ?) tests require internet access anyway.
-  doCheck = false;
+  pythonRelaxDeps = [
+    "cryptography"
+  ];
 
   meta = {
     description = "Open source platform for the machine learning lifecycle";
-    mainProgram = "mlflow";
     homepage = "https://github.com/mlflow/mlflow";
     changelog = "https://github.com/mlflow/mlflow/blob/v${finalAttrs.version}/CHANGELOG.md";
     license = lib.licenses.asl20;
+
     # Build from wheel which contains pure Python and pre-built JS bundle.
     sourceProvenance = with lib.sourceTypes; [
       binaryBytecode
     ];
+
     maintainers = with lib.maintainers; [
       GaetanLepage
       gquetel
     ];
+
+    mainProgram = "mlflow";
   };
 })

@@ -18,7 +18,6 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-yrYLP2ewOtiry+EgH1IEaxz2Q55mqQ6mRGSxzVUnJ8Q=";
   };
 
-  __structuredAttrs = true;
   strictDeps = true;
 
   nativeBuildInputs = [
@@ -27,8 +26,8 @@ stdenv.mkDerivation (finalAttrs: {
 
   doInstallCheck = true;
   nativeInstallCheckInputs = [ versionCheckHook ];
+  __structuredAttrs = true;
   versionCheckProgramArg = [ "--help" ];
-
   passthru.updateScript = nix-update-script { };
 
   meta = {
@@ -36,9 +35,9 @@ stdenv.mkDerivation (finalAttrs: {
     homepage = "https://github.com/ECWolfEngine/WolfstoneExtract";
     changelog = "https://github.com/ECWolfEngine/WolfstoneExtract/blob/${finalAttrs.src.rev}/changelog";
     license = lib.licenses.gpl3Only;
-    maintainers = with lib.maintainers; [ keenanweaver ];
-    mainProgram = "wolfstoneextract";
     sourceProvenance = with lib.sourceTypes; [ fromSource ];
+    maintainers = with lib.maintainers; [ keenanweaver ];
     platforms = [ "x86_64-linux" ];
+    mainProgram = "wolfstoneextract";
   };
 })

@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   hatchling,
   mashumaro,
   orjson,
@@ -15,9 +15,6 @@
 buildPythonPackage rec {
   pname = "webrtc-models";
   version = "0.3.0";
-  pyproject = true;
-
-  disabled = pythonOlder "3.12";
 
   src = fetchFromGitHub {
     owner = "home-assistant-libs";
@@ -31,7 +28,12 @@ buildPythonPackage rec {
       --replace-fail 'version = "0.0.0"' 'version = "${version}"'
   '';
 
-  pythonRelaxDeps = [ "orjson" ];
+  nativeCheckInputs = [
+    pytest-asyncio
+    pytest-cov-stub
+    pytestCheckHook
+    syrupy
+  ];
 
   build-system = [ hatchling ];
 
@@ -40,14 +42,10 @@ buildPythonPackage rec {
     orjson
   ];
 
-  nativeCheckInputs = [
-    pytest-asyncio
-    pytest-cov-stub
-    pytestCheckHook
-    syrupy
-  ];
-
+  disabled = pythonOlder "3.12";
+  pyproject = true;
   pythonImportsCheck = [ "webrtc_models" ];
+  pythonRelaxDeps = [ "orjson" ];
 
   meta = {
     description = "WebRTC models as Python dataclasses with mashumaro";

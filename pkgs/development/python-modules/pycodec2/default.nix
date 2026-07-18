@@ -1,24 +1,19 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
+  buildPythonPackage,
+  # buildInputs
+  codec2,
   # build-system
   cython,
   numpy,
-  setuptools,
-
-  # buildInputs
-  codec2,
-
   pytestCheckHook,
+  setuptools,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "pycodec2";
   version = "4.1.1";
-  pyproject = true;
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "gregorias";
@@ -32,21 +27,12 @@ buildPythonPackage (finalAttrs: {
       --replace-fail "numpy==2.1.*" "numpy"
   '';
 
-  build-system = [
-    cython
-    numpy
-    setuptools
-  ];
-
   buildInputs = [
     codec2
   ];
 
-  dependencies = [
-    numpy
-  ];
-
-  pythonImportsCheck = [ "pycodec2" ];
+  # The only test fails with a cryptic AssertionError
+  doCheck = false;
 
   nativeCheckInputs = [
     pytestCheckHook
@@ -56,8 +42,20 @@ buildPythonPackage (finalAttrs: {
     rm -rf pycodec2
   '';
 
-  # The only test fails with a cryptic AssertionError
-  doCheck = false;
+  __structuredAttrs = true;
+
+  build-system = [
+    cython
+    numpy
+    setuptools
+  ];
+
+  dependencies = [
+    numpy
+  ];
+
+  pyproject = true;
+  pythonImportsCheck = [ "pycodec2" ];
 
   meta = {
     description = "Python's interface to codec 2";

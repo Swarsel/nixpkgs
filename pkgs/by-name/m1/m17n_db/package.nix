@@ -2,9 +2,9 @@
   lib,
   stdenv,
   fetchurl,
-  gettext,
-  gawk,
   bash,
+  gawk,
+  gettext,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -16,25 +16,27 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-MQJOBRNTNEi5sx6jKU01pkJuZpDrRGKGgHMaqVXAwWw=";
   };
 
+  strictDeps = true;
   nativeBuildInputs = [ gettext ];
+
   buildInputs = [
     gettext
     gawk
     bash
   ];
 
-  strictDeps = true;
-
   configureFlags = [ "--with-charmaps=${stdenv.cc.libc}/share/i18n/charmaps" ];
 
   meta = {
-    homepage = "https://www.nongnu.org/m17n/";
     description = "Multilingual text processing library (database)";
-    mainProgram = "m17n-db";
+    homepage = "https://www.nongnu.org/m17n/";
+
     changelog = "https://git.savannah.nongnu.org/cgit/m17n/m17n-db.git/plain/NEWS?h=REL-${
       lib.replaceStrings [ "." ] [ "-" ] finalAttrs.version
     }";
+
     license = lib.licenses.lgpl21Plus;
     platforms = lib.platforms.linux;
+    mainProgram = "m17n-db";
   };
 })

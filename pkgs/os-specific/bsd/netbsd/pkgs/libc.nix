@@ -1,27 +1,32 @@
 {
   lib,
-  symlinkJoin,
+  i18n_module,
   libcMinimal,
-  libpthread,
+  libcrypt,
   libm,
+  libpthread,
   libresolv,
   librpcsvc,
-  i18n_module,
-  libutil,
   librt,
-  libcrypt,
+  libutil,
+  symlinkJoin,
   version,
 }:
 
 symlinkJoin {
-  pname = "libc-netbsd";
   inherit version;
+  pname = "libc-netbsd";
 
   outputs = [
     "out"
     "dev"
     "man"
   ];
+
+  postBuild = ''
+    rm -r "$out/nix-support"
+    fixupPhase
+  '';
 
   paths =
     lib.concatMap
@@ -41,11 +46,6 @@ symlinkJoin {
         librt
         libcrypt
       ];
-
-  postBuild = ''
-    rm -r "$out/nix-support"
-    fixupPhase
-  '';
 
   meta.platforms = lib.platforms.netbsd;
 }

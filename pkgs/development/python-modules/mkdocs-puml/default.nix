@@ -1,21 +1,20 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  poetry-core,
+  buildPythonPackage,
   httpx,
   markdown,
   mkdocs,
   msgpack,
-  rich,
-  pytestCheckHook,
+  poetry-core,
   pytest-httpx,
+  pytestCheckHook,
+  rich,
 }:
 
 buildPythonPackage rec {
   pname = "mkdocs-puml";
   version = "2.3.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "MikhailKravets";
@@ -30,12 +29,12 @@ buildPythonPackage rec {
     ./fix-permissions.patch
   ];
 
-  build-system = [ poetry-core ];
-
-  pythonRelaxDeps = [
-    "httpx"
-    "rich"
+  nativeCheckInputs = [
+    pytestCheckHook
+    pytest-httpx
   ];
+
+  build-system = [ poetry-core ];
 
   dependencies = [
     httpx
@@ -45,11 +44,12 @@ buildPythonPackage rec {
     rich
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "mkdocs_puml" ];
 
-  nativeCheckInputs = [
-    pytestCheckHook
-    pytest-httpx
+  pythonRelaxDeps = [
+    "httpx"
+    "rich"
   ];
 
   meta = {

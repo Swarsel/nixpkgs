@@ -2,17 +2,17 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  coreutils,
-  grim,
-  gawk,
-  jq,
-  swaylock,
-  imagemagick,
-  getopt,
-  fontconfig,
-  wmctrl,
-  makeWrapper,
   bash,
+  coreutils,
+  fontconfig,
+  gawk,
+  getopt,
+  grim,
+  imagemagick,
+  jq,
+  makeWrapper,
+  swaylock,
+  wmctrl,
 }:
 
 let
@@ -49,7 +49,6 @@ stdenv.mkDerivation {
   strictDeps = true;
   nativeBuildInputs = [ makeWrapper ];
   buildInputs = [ bash ];
-
   makeFlags = [ "PREFIX=${placeholder "out"}" ];
 
   postInstall = ''
@@ -58,11 +57,11 @@ stdenv.mkDerivation {
   '';
 
   meta = {
+    inherit mainProgram;
     description = "swaylock bash script that takes a screenshot of the desktop, blurs the background and adds a lock icon and text";
     homepage = "https://github.com/Big-B/swaylock-fancy";
     license = lib.licenses.mit;
-    platforms = lib.platforms.linux;
     maintainers = [ ];
-    inherit mainProgram;
+    platforms = lib.platforms.linux;
   };
 }

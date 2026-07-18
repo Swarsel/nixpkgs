@@ -1,28 +1,24 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # build-system
-  setuptools,
-
+  buildPythonPackage,
   # dependencies
   librosa,
+  # tests
+  pytestCheckHook,
   resampy,
   scipy,
+  # build-system
+  setuptools,
   torch,
   torchaudio,
   torchcodec,
   tqdm,
-
-  # tests
-  pytestCheckHook,
 }:
 
 buildPythonPackage {
   pname = "torchcrepe";
   version = "0.0.24";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "maxrmorrison";
@@ -32,6 +28,7 @@ buildPythonPackage {
     hash = "sha256-w2T8D3ATCHVBCBhMdLSYdV0yb9vUYwZLz+B2X2gteEU=";
   };
 
+  nativeCheckInputs = [ pytestCheckHook ];
   build-system = [ setuptools ];
 
   dependencies = [
@@ -44,8 +41,7 @@ buildPythonPackage {
     tqdm
   ];
 
-  nativeCheckInputs = [ pytestCheckHook ];
-
+  pyproject = true;
   pythonImportsCheck = [ "torchcrepe" ];
 
   meta = {

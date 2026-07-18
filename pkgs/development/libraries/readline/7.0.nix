@@ -1,7 +1,7 @@
 {
-  fetchurl,
   lib,
   stdenv,
+  fetchurl,
   ncurses,
 }:
 
@@ -22,9 +22,15 @@ stdenv.mkDerivation rec {
     "info"
   ];
 
+  patches = [
+    ./link-against-ncurses.patch
+    ./no-arch_only-6.3.patch
+  ]
+  ++ upstreamPatches;
+
   strictDeps = true;
   propagatedBuildInputs = [ ncurses ];
-
+  env.NIX_CFLAGS_COMPILE = lib.optionalString stdenv.cc.isGNU "-std=gnu17";
   patchFlags = [ "-p0" ];
 
   upstreamPatches = (
@@ -32,20 +38,12 @@ stdenv.mkDerivation rec {
       patch =
         nr: sha256:
         fetchurl {
-          url = "mirror://gnu/readline/readline-${meta.branch}-patches/readline70-${nr}";
           inherit sha256;
+          url = "mirror://gnu/readline/readline-${meta.branch}-patches/readline70-${nr}";
         };
     in
     import ./readline-7.0-patches.nix patch
   );
-
-  patches = [
-    ./link-against-ncurses.patch
-    ./no-arch_only-6.3.patch
-  ]
-  ++ upstreamPatches;
-
-  env.NIX_CFLAGS_COMPILE = lib.optionalString stdenv.cc.isGNU "-std=gnu17";
 
   meta = {
     description = "Library for interactive line editing";
@@ -66,11 +64,8 @@ stdenv.mkDerivation rec {
     '';
 
     homepage = "https://savannah.gnu.org/projects/readline/";
-
     license = lib.licenses.gpl3Plus;
-
     maintainers = [ ];
-
     platforms = lib.platforms.unix;
     branch = "7.0";
   };

@@ -6,10 +6,10 @@
 }:
 
 stdenv.mkDerivation {
-  pname = "${imgui.pname}-demo";
   inherit (imgui) version;
-
+  pname = "${imgui.pname}-demo";
   src = "${imgui.src}/examples/example_glfw_opengl3";
+
   postPatch = ''
     rm Makefile*
     cp ${./CMakeLists.txt} CMakeLists.txt
@@ -23,7 +23,7 @@ stdenv.mkDerivation {
     homepage = "https://github.com/ocornut/imgui/tree/master/examples/example_glfw_opengl3";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ SomeoneSerge ];
-    mainProgram = "demo";
     platforms = lib.platforms.linux;
+    mainProgram = "demo";
   };
 }

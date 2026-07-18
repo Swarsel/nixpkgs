@@ -8,7 +8,6 @@
 buildPythonPackage rec {
   pname = "mailmanclient";
   version = "3.3.5";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
@@ -16,10 +15,9 @@ buildPythonPackage rec {
   };
 
   propagatedBuildInputs = [ requests ];
-
   # Tests require a running Mailman instance
   doCheck = false;
-
+  format = "setuptools";
   pythonImportsCheck = [ "mailmanclient" ];
 
   meta = {

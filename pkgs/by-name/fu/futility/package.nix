@@ -2,9 +2,9 @@
   lib,
   stdenv,
   fetchgit,
+  nss,
   openssl,
   pkg-config,
-  nss,
 }:
 let
   url = "https://chromium.googlesource.com/chromiumos/platform/vboot_reference";
@@ -20,18 +20,18 @@ stdenv.mkDerivation {
     hash = "sha256-LctTKkf8nTVcrErMiAkvSCYkZnBoTYjqxWj0xADi0Q4=";
   };
 
+  postPatch = ''
+    patchShebangs ./scripts
+    substituteInPlace ./scripts/getversion.sh \
+      --replace-fail "unknown" "${branch}"
+  '';
+
   nativeBuildInputs = [ pkg-config ];
 
   buildInputs = [
     openssl
     nss
   ];
-
-  postPatch = ''
-    patchShebangs ./scripts
-    substituteInPlace ./scripts/getversion.sh \
-      --replace-fail "unknown" "${branch}"
-  '';
 
   makeFlags = [
     "UB_DIR=$(out)/bin"
@@ -40,16 +40,15 @@ stdenv.mkDerivation {
   ++ lib.optionals stdenv.hostPlatform.isDarwin [ "HAVE_MACOS=1" ];
 
   buildFlags = "futil";
-
   installTargets = "futil_install";
 
   meta = {
-    homepage = url;
     description = "ChromeOS firmware utility";
+    homepage = url;
     license = lib.licenses.bsd3;
     maintainers = with lib.maintainers; [ ungeskriptet ];
-    teams = [ lib.teams.android ];
-    mainProgram = "futility";
     badPlatforms = lib.platforms.darwin;
+    mainProgram = "futility";
+    teams = [ lib.teams.android ];
   };
 }

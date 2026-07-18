@@ -1,12 +1,12 @@
 {
   lib,
   stdenv,
+  cairo,
   fetchFromSourcehut,
+  libx11,
+  pango,
   pkg-config,
   scdoc,
-  libx11,
-  cairo,
-  pango,
 }:
 
 stdenv.mkDerivation (finalAttrs: {

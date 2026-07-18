@@ -1,25 +1,24 @@
 {
+  lib,
   # utils
   stdenv,
   fetchFromGitHub,
-  lib,
-
-  # runtime dependencies
-  openssl,
-  tzdata,
-  zlib,
-
   # build dependencies
   bison,
+  buildPackages,
+  curl,
   flex,
+  gettext,
+  libkrb5,
   makeWrapper,
+  # runtime dependencies
+  openssl,
   perl,
   pkg-config,
-
   # passthru / meta
   postgresql,
-  buildPackages,
-
+  tzdata,
+  zlib,
   # Curl
   curlSupport ?
     lib.meta.availableOn stdenv.hostPlatform curl
@@ -27,15 +26,10 @@
     # configure: error: library 'curl' does not provide curl_multi_init
     # https://www.postgresql.org/message-id/487dacec-6d8d-46c0-a36f-d5b8c81a56f1%40technowledgy.de
     && !stdenv.hostPlatform.isStatic,
-  curl,
-
   # GSSAPI
   gssSupport ? with stdenv.hostPlatform; !isWindows && !isStatic,
-  libkrb5,
-
   # NLS
   nlsSupport ? false,
-  gettext,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -50,27 +44,26 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-Ac/Dqcj8vjcW3my5vsnKaMiQqTq/HPtUzckJ3SMyrfA=";
   };
 
-  __structuredAttrs = true;
-
   outputs = [
     "out"
     "dev"
   ];
-  outputChecks.out = {
-    disallowedReferences = [ "dev" ];
-    disallowedRequisites = [
-      stdenv.cc
-    ]
-    ++ (map lib.getDev (builtins.filter (drv: drv ? "dev") finalAttrs.buildInputs));
-  };
 
-  buildInputs = [
-    zlib
-    openssl
-  ]
-  ++ lib.optionals curlSupport [ curl ]
-  ++ lib.optionals gssSupport [ libkrb5 ]
-  ++ lib.optionals nlsSupport [ gettext ];
+  patches = lib.optionals stdenv.hostPlatform.isLinux [
+    ./patches/socketdir-in-run-13+.patch
+  ];
+
+  postPatch = ''
+    cat ${./pg_config.env.mk} >> src/common/Makefile
+  ''
+  # Explicitly disable building the shared libs, because that would fail with pkgsStatic.
+  + lib.optionalString stdenv.hostPlatform.isStatic ''
+    substituteInPlace src/interfaces/libpq/Makefile \
+      --replace-fail "all: all-lib libpq-refs-stamp" "all: all-lib"
+    substituteInPlace src/Makefile.shlib \
+      --replace-fail "all-lib: all-shared-lib" "all-lib: all-static-lib" \
+      --replace-fail "install-lib: install-lib-shared" "install-lib: install-lib-static"
+  '';
 
   nativeBuildInputs = [
     bison
@@ -80,10 +73,26 @@ stdenv.mkDerivation (finalAttrs: {
     pkg-config
   ];
 
-  # causes random build failures
-  enableParallelBuilding = false;
+  buildInputs = [
+    zlib
+    openssl
+  ]
+  ++ lib.optionals curlSupport [ curl ]
+  ++ lib.optionals gssSupport [ libkrb5 ]
+  ++ lib.optionals nlsSupport [ gettext ];
 
-  separateDebugInfo = true;
+  configureFlags = [
+    "--enable-debug"
+    "--sysconfdir=/etc"
+    "--with-openssl"
+    "--with-system-tzdata=${tzdata}/share/zoneinfo"
+    "--without-icu"
+    "--without-perl"
+    "--without-readline"
+  ]
+  ++ lib.optionals curlSupport [ "--with-libcurl" ]
+  ++ lib.optionals gssSupport [ "--with-gssapi" ]
+  ++ lib.optionals nlsSupport [ "--enable-nls" ];
 
   buildFlags = [
     "submake-libpgport"
@@ -107,35 +116,7 @@ stdenv.mkDerivation (finalAttrs: {
   # to have initdb load a libpq.so from a different major version and how to avoid that.
   # This doesn't apply to us with Nix.
   env.NIX_CFLAGS_COMPILE = "-UUSE_PRIVATE_ENCODING_FUNCS";
-
-  configureFlags = [
-    "--enable-debug"
-    "--sysconfdir=/etc"
-    "--with-openssl"
-    "--with-system-tzdata=${tzdata}/share/zoneinfo"
-    "--without-icu"
-    "--without-perl"
-    "--without-readline"
-  ]
-  ++ lib.optionals curlSupport [ "--with-libcurl" ]
-  ++ lib.optionals gssSupport [ "--with-gssapi" ]
-  ++ lib.optionals nlsSupport [ "--enable-nls" ];
-
-  patches = lib.optionals stdenv.hostPlatform.isLinux [
-    ./patches/socketdir-in-run-13+.patch
-  ];
-
-  postPatch = ''
-    cat ${./pg_config.env.mk} >> src/common/Makefile
-  ''
-  # Explicitly disable building the shared libs, because that would fail with pkgsStatic.
-  + lib.optionalString stdenv.hostPlatform.isStatic ''
-    substituteInPlace src/interfaces/libpq/Makefile \
-      --replace-fail "all: all-lib libpq-refs-stamp" "all: all-lib"
-    substituteInPlace src/Makefile.shlib \
-      --replace-fail "all-lib: all-shared-lib" "all-lib: all-static-lib" \
-      --replace-fail "install-lib: install-lib-shared" "install-lib: install-lib-static"
-  '';
+  doCheck = false;
 
   installPhase = ''
     runHook preInstall
@@ -171,10 +152,24 @@ stdenv.mkDerivation (finalAttrs: {
     else
       lib.optionalString (!(finalAttrs.dontDisableStatic or false)) "rm -rfv $dev/lib/*.a";
 
-  doCheck = false;
+  __structuredAttrs = true;
+  # causes random build failures
+  enableParallelBuilding = false;
+
+  outputChecks.out = {
+    disallowedReferences = [ "dev" ];
+
+    disallowedRequisites = [
+      stdenv.cc
+    ]
+    ++ (map lib.getDev (builtins.filter (drv: drv ? "dev") finalAttrs.buildInputs));
+  };
+
+  separateDebugInfo = true;
 
   passthru.pg_config = buildPackages.callPackage ./pg_config.nix {
     inherit (finalAttrs) finalPackage;
+
     outputs = {
       out = lib.getOutput "out" finalAttrs.finalPackage;
     };
@@ -187,6 +182,7 @@ stdenv.mkDerivation (finalAttrs: {
       teams
       platforms
       ;
+
     description = "C application programmer's interface to PostgreSQL";
     changelog = "https://www.postgresql.org/docs/release/${finalAttrs.version}/";
     pkgConfigModules = [ "libpq" ];

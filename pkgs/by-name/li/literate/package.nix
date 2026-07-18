@@ -1,7 +1,7 @@
 {
   lib,
-  buildDubPackage,
   fetchFromGitHub,
+  buildDubPackage,
 }:
 
 buildDubPackage {
@@ -16,9 +16,6 @@ buildDubPackage {
     fetchSubmodules = true;
   };
 
-  # as there aren't any non-local dub dependencies, this file just has any empty list
-  dubLock = ./dub-lock.json;
-
   # generate the actual .d source files defined in .lit files
   preBuild = ''
     make d-files
@@ -30,11 +27,14 @@ buildDubPackage {
     runHook postInstall
   '';
 
+  # as there aren't any non-local dub dependencies, this file just has any empty list
+  dubLock = ./dub-lock.json;
+
   meta = {
     description = "Literate programming tool for any language";
     homepage = "https://zyedidia.github.io/literate/";
     license = lib.licenses.mit;
-    mainProgram = "lit";
     platforms = lib.platforms.unix;
+    mainProgram = "lit";
   };
 }

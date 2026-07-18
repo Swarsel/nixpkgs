@@ -13,12 +13,12 @@ in
 {
   options.programs.lazygit = {
     enable = lib.mkEnableOption "lazygit, a simple terminal UI for git commands";
-
     package = lib.mkPackageOption pkgs "lazygit" { };
 
     settings = lib.mkOption {
       inherit (settingsFormat) type;
       default = { };
+
       description = ''
         Lazygit configuration.
 
@@ -29,10 +29,11 @@ in
 
   config = lib.mkIf cfg.enable {
     environment = {
-      systemPackages = [ cfg.package ];
       etc = lib.mkIf (cfg.settings != { }) {
         "xdg/lazygit/config.yml".source = settingsFormat.generate "lazygit-config.yml" cfg.settings;
       };
+
+      systemPackages = [ cfg.package ];
     };
   };
 

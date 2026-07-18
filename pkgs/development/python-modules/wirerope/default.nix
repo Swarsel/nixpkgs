@@ -1,18 +1,17 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
+  nix-update-script,
+  pytest-cov-stub,
+  pytestCheckHook,
   setuptools,
   six,
-  nix-update-script,
-  pytestCheckHook,
-  pytest-cov-stub,
 }:
 
 buildPythonPackage rec {
   pname = "wirerope";
   version = "1.0.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "youknowone";
@@ -21,17 +20,15 @@ buildPythonPackage rec {
     hash = "sha256-oojnv+2+nwL/TJhN+QZ5eiV6WGHC3SCxBQrCri0aHQc=";
   };
 
-  build-system = [ setuptools ];
-
-  dependencies = [ six ];
-
-  pythonImportsCheck = [ "wirerope" ];
-
   nativeCheckInputs = [
     pytestCheckHook
     pytest-cov-stub
   ];
 
+  build-system = [ setuptools ];
+  dependencies = [ six ];
+  pyproject = true;
+  pythonImportsCheck = [ "wirerope" ];
   passthru.updateScript = nix-update-script { };
 
   meta = {

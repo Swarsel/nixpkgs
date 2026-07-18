@@ -13,18 +13,19 @@ stdenv.mkDerivation rec {
     sha256 = "1sd3cwpamcbq9pv0mvcm8x6minqrlb4i0r12q3jg91girqswm2dp";
   };
 
+  installPhase = "install -D $src $out/share/lib/${pname}-${version}/${pname}-${version}.jar";
   dontUnpack = true;
 
-  installPhase = "install -D $src $out/share/lib/${pname}-${version}/${pname}-${version}.jar";
-
   meta = {
-    homepage = "https://github.com/SeleniumHQ/htmlunit-driver";
     description = "WebDriver server for running Selenium tests on the HtmlUnit headless browser";
+    homepage = "https://github.com/SeleniumHQ/htmlunit-driver";
+    license = lib.licenses.asl20;
+    sourceProvenance = with lib.sourceTypes; [ binaryBytecode ];
+
     maintainers = with lib.maintainers; [
       coconnor
     ];
+
     platforms = lib.platforms.all;
-    sourceProvenance = with lib.sourceTypes; [ binaryBytecode ];
-    license = lib.licenses.asl20;
   };
 }

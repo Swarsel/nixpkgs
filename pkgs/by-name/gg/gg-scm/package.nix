@@ -1,12 +1,12 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
-  installShellFiles,
-  makeWrapper,
   bash,
+  buildGoModule,
   coreutils,
   git,
+  installShellFiles,
+  makeWrapper,
   pandoc,
 }:
 
@@ -15,8 +15,8 @@ let
   commit = "b6be8bac78605c21a9670db0e44faf5e1eafe0d4";
 in
 buildGoModule {
-  pname = "gg-scm";
   inherit version;
+  pname = "gg-scm";
 
   src = fetchFromGitHub {
     owner = "gg-scm";
@@ -24,34 +24,28 @@ buildGoModule {
     rev = "v${version}";
     hash = "sha256-qw0KWhCkJVYRhDBNtiNactWGGMHjBwdQ1Po4lQQbaj4=";
   };
+
   postPatch = ''
     substituteInPlace cmd/gg/editor_unix.go \
       --replace /bin/sh ${bash}/bin/sh
   '';
-  subPackages = [ "cmd/gg" ];
-  ldflags = [
-    "-s"
-    "-w"
-    "-X"
-    "main.versionInfo=${version}"
-    "-X"
-    "main.buildCommit=${commit}"
-  ];
-
-  vendorHash = "sha256-56Sah030xbWsoOu8r3c3nN2UGHvQORheavebP+Z1Wc8=";
 
   nativeBuildInputs = [
     pandoc
     installShellFiles
     makeWrapper
   ];
+
+  buildInputs = [
+    bash
+    git
+  ];
+
+  vendorHash = "sha256-56Sah030xbWsoOu8r3c3nN2UGHvQORheavebP+Z1Wc8=";
+
   nativeCheckInputs = [
     bash
     coreutils
-    git
-  ];
-  buildInputs = [
-    bash
     git
   ];
 
@@ -64,16 +58,29 @@ buildGoModule {
       --zsh misc/_gg.zsh
   '';
 
+  ldflags = [
+    "-s"
+    "-w"
+    "-X"
+    "main.versionInfo=${version}"
+    "-X"
+    "main.buildCommit=${commit}"
+  ];
+
+  subPackages = [ "cmd/gg" ];
+
   meta = {
-    mainProgram = "gg";
     description = "Git with less typing";
+
     longDescription = ''
       gg is an alternative command-line interface for Git heavily inspired by Mercurial.
       It's designed for less typing in common workflows,
       making Git easier to use for both novices and advanced users alike.
     '';
+
     homepage = "https://gg-scm.io/";
     changelog = "https://github.com/gg-scm/gg/blob/v${version}/CHANGELOG.md";
     license = lib.licenses.asl20;
+    mainProgram = "gg";
   };
 }

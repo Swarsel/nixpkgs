@@ -1,8 +1,8 @@
 {
   lib,
-  stdenvNoCC,
   fetchzip,
   nix-update-script,
+  stdenvNoCC,
 }:
 
 stdenvNoCC.mkDerivation (finalAttrs: {
@@ -29,8 +29,8 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     description = "Windows Bootable USB creator for macOS";
     homepage = "https://github.com/TechUnRestricted/WinDiskWriter";
     license = lib.licenses.gpl3;
+    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
     maintainers = with lib.maintainers; [ _4evy ];
     platforms = lib.platforms.darwin;
-    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
   };
 })

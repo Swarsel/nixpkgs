@@ -1,12 +1,14 @@
 {
   lib,
   stdenv,
+  fetchurl,
+  fetchFromGitHub,
   autoreconfHook,
   avahi,
   coreutils,
-  fetchurl,
   freeipmi,
   gd,
+  gnused,
   i2c-tools,
   libgpiod_1,
   libmodbus,
@@ -20,9 +22,7 @@
   replaceVars,
   systemd,
   udev,
-  gnused,
   withApcModbus ? false,
-  fetchFromGitHub,
 }:
 let
   # rebuild libmodbus with downstream usb patches from
@@ -68,11 +68,17 @@ stdenv.mkDerivation (finalAttrs: {
       avahi = "${avahi}/lib";
       freeipmi = "${freeipmi}/lib";
       libgpiod = if stdenv.hostPlatform.isLinux then "${libgpiod_1}/lib" else "/homeless-shelter";
+      libmodbus = "${modbus}/lib";
       libusb = "${libusb1}/lib";
       neon = "${neon}/lib";
-      libmodbus = "${modbus}/lib";
       netsnmp = "${net-snmp.lib}/lib";
     })
+  ];
+
+  nativeBuildInputs = [
+    autoreconfHook
+    pkg-config
+    makeWrapper
   ];
 
   buildInputs = [
@@ -92,13 +98,6 @@ stdenv.mkDerivation (finalAttrs: {
     udev
   ];
 
-  nativeBuildInputs = [
-    autoreconfHook
-    pkg-config
-    makeWrapper
-  ];
-
-  doInstallCheck = true;
   configureFlags = [
     "--enable-docs-changelog=no" # TODO: add required build deps
     "--with-all"
@@ -116,20 +115,6 @@ stdenv.mkDerivation (finalAttrs: {
   ++ (lib.lists.optionals withApcModbus [
     "--with-modbus+usb"
   ]);
-
-  enableParallelBuilding = true;
-
-  # Add `cgi-bin` to the default list to avoid pulling in whole
-  # of `gcc` into build closure.
-  stripDebugList = [
-    "cgi-bin"
-    "lib"
-    "lib32"
-    "lib64"
-    "libexec"
-    "bin"
-    "sbin"
-  ];
 
   postInstall = lib.optionalString stdenv.hostPlatform.isLinux ''
     substituteInPlace $out/lib/systemd/system-shutdown/nutshutdown \
@@ -149,21 +134,40 @@ stdenv.mkDerivation (finalAttrs: {
     rm $out/etc/udev/rules.d/52-nut-ipmipsu.rules
   '';
 
+  doInstallCheck = true;
+  enableParallelBuilding = true;
+
+  # Add `cgi-bin` to the default list to avoid pulling in whole
+  # of `gcc` into build closure.
+  stripDebugList = [
+    "cgi-bin"
+    "lib"
+    "lib32"
+    "lib64"
+    "libexec"
+    "bin"
+    "sbin"
+  ];
+
   meta = {
     description = "Network UPS Tools";
+
     longDescription = ''
       Network UPS Tools is a collection of programs which provide a common
       interface for monitoring and administering UPS, PDU and SCD hardware.
       It uses a layered approach to connect all of the parts.
     '';
+
     homepage = "https://networkupstools.org/";
-    platforms = lib.platforms.unix;
-    maintainers = [ lib.maintainers.pierron ];
+
     license = with lib.licenses; [
       gpl1Plus
       gpl2Plus
       gpl3Plus
     ];
+
+    maintainers = [ lib.maintainers.pierron ];
+    platforms = lib.platforms.unix;
     priority = 10;
   };
 })

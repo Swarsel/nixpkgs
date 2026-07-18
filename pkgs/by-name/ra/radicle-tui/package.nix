@@ -1,13 +1,13 @@
 {
   lib,
-  rustPlatform,
-  fetchFromRadicle,
   stdenv,
-  libiconv,
-  zlib,
+  fetchFromRadicle,
   gitMinimal,
-  radicle-node,
+  libiconv,
   makeBinaryWrapper,
+  radicle-node,
+  rustPlatform,
+  zlib,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -15,30 +15,25 @@ rustPlatform.buildRustPackage (finalAttrs: {
   version = "0.7.0";
 
   src = fetchFromRadicle {
-    seed = "seed.radicle.dev";
     repo = "z39mP9rQAaGmERfUMPULfPUi473tY";
     tag = "releases/${finalAttrs.version}";
     hash = "sha256-2/pLlhilJyrZl9eLFWIh4YxlJwBbzjmb1Cg1xFSSl5k=";
     leaveDotGit = true;
+
     postFetch = ''
       git -C $out rev-parse HEAD > $out/.git_head
       git -C $out log -1 --pretty=%ct HEAD > $out/.git_time
       rm -rf $out/.git
     '';
-  };
 
-  cargoHash = "sha256-U5Gt8o2OLiJwpDkSK+dNlIx7PtbcBbg61s9GpLG50Vg=";
+    seed = "seed.radicle.dev";
+  };
 
   postPatch = ''
     substituteInPlace build.rs \
       --replace-fail "GIT_HEAD={hash}" "GIT_HEAD=$(<.git_head)" \
       --replace-fail "GIT_COMMIT_TIME={commit_time}" "GIT_COMMIT_TIME=$(<.git_time)"
   '';
-
-  nativeCheckInputs = [
-    gitMinimal
-    radicle-node
-  ];
 
   nativeBuildInputs = [ makeBinaryWrapper ];
 
@@ -47,7 +42,12 @@ rustPlatform.buildRustPackage (finalAttrs: {
     zlib
   ];
 
-  propagatedUserEnvPkgs = [ radicle-node ];
+  cargoHash = "sha256-U5Gt8o2OLiJwpDkSK+dNlIx7PtbcBbg61s9GpLG50Vg=";
+
+  nativeCheckInputs = [
+    gitMinimal
+    radicle-node
+  ];
 
   postInstall = ''
     wrapProgram $out/bin/rad-tui \
@@ -56,23 +56,27 @@ rustPlatform.buildRustPackage (finalAttrs: {
 
   # versionCheckHook doesn't support multiple arguments yet
   doInstallCheck = true;
+
   installCheckPhase = ''
     runHook preInstallCheck
     $out/bin/rad-tui --version --no-forward | grep -F 'rad-tui ${finalAttrs.version}'
     runHook postInstallCheck
   '';
 
+  propagatedUserEnvPkgs = [ radicle-node ];
   passthru.updateScript = ./update.sh;
 
   meta = {
     description = "Radicle terminal user interface";
     homepage = "https://radicle.network/nodes/seed.radicle.dev/rad:z39mP9rQAaGmERfUMPULfPUi473tY";
     changelog = "https://radicle.network/nodes/seed.radicle.dev/rad:z39mP9rQAaGmERfUMPULfPUi473tY/tree/CHANGELOG.md";
+
     license = with lib.licenses; [
       asl20 # or
       mit
     ];
-    teams = [ lib.teams.radicle ];
+
     mainProgram = "rad-tui";
+    teams = [ lib.teams.radicle ];
   };
 })

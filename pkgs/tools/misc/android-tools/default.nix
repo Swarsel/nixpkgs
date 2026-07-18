@@ -2,21 +2,21 @@
   lib,
   stdenv,
   fetchurl,
-  cmake,
-  ninja,
-  pkg-config,
-  perl,
-  go,
-  python3,
-  protobuf,
-  zlib,
-  gtest,
   brotli,
-  lz4,
-  zstd,
-  libusb1,
-  pcre2,
+  cmake,
   fmt,
+  go,
+  gtest,
+  libusb1,
+  lz4,
+  ninja,
+  pcre2,
+  perl,
+  pkg-config,
+  protobuf,
+  python3,
+  zlib,
+  zstd,
 }:
 
 let
@@ -39,6 +39,7 @@ stdenv.mkDerivation rec {
     perl
     go
   ];
+
   buildInputs = [
     protobuf
     zlib
@@ -50,6 +51,7 @@ stdenv.mkDerivation rec {
     pcre2
     fmt
   ];
+
   propagatedBuildInputs = [ pythonEnv ];
 
   preConfigure = ''
@@ -58,6 +60,7 @@ stdenv.mkDerivation rec {
 
   meta = {
     description = "Android SDK platform tools";
+
     longDescription = ''
       Android SDK Platform-Tools is a component for the Android SDK. It
       includes tools that interface with the Android platform, such as adb and
@@ -73,14 +76,17 @@ stdenv.mkDerivation rec {
       - mkbootimg, unpack_bootimg, repack_bootimg, avbtool
       - mkdtboimg
     '';
+
     # https://developer.android.com/studio/command-line#tools-platform
     # https://developer.android.com/studio/releases/platform-tools
     homepage = "https://github.com/nmeum/android-tools";
+
     license = with lib.licenses; [
       asl20
       unicode-dfs-2015
       mit
     ];
+
     platforms = lib.platforms.unix;
     teams = [ lib.teams.android ];
   };

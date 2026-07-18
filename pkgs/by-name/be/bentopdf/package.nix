@@ -1,7 +1,7 @@
 {
   lib,
-  buildNpmPackage,
   fetchFromGitHub,
+  buildNpmPackage,
   nix-update-script,
   nixosTests,
   simpleMode ? true,
@@ -16,15 +16,8 @@ buildNpmPackage (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-rbThEonDXFGcudgdMtDrQHq84Wh4IvOZZBn4kXvrhoI=";
   };
+
   npmDepsHash = "sha256-RT6ifx24mNfNS8oO93vyW+zbKQGCx21RqBQrAXK8dAY=";
-  npmDepsFetcherVersion = 2;
-
-  npmBuildFlags = [
-    "--"
-    "--mode"
-    "production"
-  ];
-
   env.SIMPLE_MODE = lib.boolToString simpleMode;
 
   installPhase = ''
@@ -36,10 +29,19 @@ buildNpmPackage (finalAttrs: {
     runHook postInstall
   '';
 
+  npmBuildFlags = [
+    "--"
+    "--mode"
+    "production"
+  ];
+
+  npmDepsFetcherVersion = 2;
+
   passthru = {
     tests = {
       inherit (nixosTests.bentopdf) caddy nginx;
     };
+
     updateScript = nix-update-script { };
   };
 
@@ -48,6 +50,7 @@ buildNpmPackage (finalAttrs: {
     homepage = "https://bentopdf.com";
     changelog = "https://github.com/alam00000/bentopdf/releases";
     license = lib.licenses.agpl3Only;
+
     maintainers = with lib.maintainers; [
       charludo
       stunkymonkey

@@ -1,8 +1,8 @@
 {
   lib,
-  rustPlatform,
-  fetchFromCodeberg,
   stdenv,
+  fetchFromCodeberg,
+  rustPlatform,
   versionCheckHook,
 }:
 
@@ -18,19 +18,19 @@ rustPlatform.buildRustPackage (finalAttrs: {
   };
 
   cargoHash = "sha256-6miju3dsKTHlyt+YMJEIP+Ygpm/wQGW4EVCe7iwOi08=";
-
-  nativeInstallCheckInputs = [ versionCheckHook ];
   doInstallCheck = true;
-
+  nativeInstallCheckInputs = [ versionCheckHook ];
   __structuredAttrs = true;
 
   meta = {
     description = "A parallel web transported by physical media";
     homepage = "https://sneakerweb.org/";
+
     license = lib.licenses.OR [
       lib.licenses.asl20
       lib.licenses.mit
     ];
+
     maintainers = [ lib.maintainers.munksgaard ];
     mainProgram = "sneakerweb";
   };

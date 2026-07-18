@@ -26,7 +26,7 @@ stdenv.mkDerivation (finalAttrs: {
     description = "C library for Convolutional codes and Reed-Solomon";
     homepage = "https://github.com/quiet/libcorrect";
     license = lib.licenses.bsd3;
-    platforms = lib.platforms.unix;
     maintainers = with lib.maintainers; [ noderyos ];
+    platforms = lib.platforms.unix;
   };
 })

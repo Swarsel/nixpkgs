@@ -1,8 +1,8 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
   installShellFiles,
+  rustPlatform,
   versionCheckHook,
 }:
 
@@ -17,15 +17,11 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-ZHiebrY0a7tUx8e6rC/l91rqAyyj/2fasOIhGi4E7FI=";
   };
 
-  cargoHash = "sha256-VL3ftML4GUNIqmY52N+Cr1sKmPFwCJp9s2eb1z5Au7o=";
-
   nativeBuildInputs = [
     installShellFiles
   ];
 
-  nativeInstallCheckInputs = [
-    versionCheckHook
-  ];
+  cargoHash = "sha256-VL3ftML4GUNIqmY52N+Cr1sKmPFwCJp9s2eb1z5Au7o=";
 
   postInstall = ''
     installShellCompletion --cmd panache \
@@ -35,6 +31,10 @@ rustPlatform.buildRustPackage (finalAttrs: {
 
     installManPage target/man/*
   '';
+
+  nativeInstallCheckInputs = [
+    versionCheckHook
+  ];
 
   meta = {
     description = "Language server, formatter, and linter for Pandoc, Quarto, and R Markdown";

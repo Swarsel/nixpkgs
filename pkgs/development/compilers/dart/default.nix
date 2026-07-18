@@ -2,11 +2,11 @@
   lib,
   stdenv,
   fetchurl,
-  unzip,
-  versionCheckHook,
-  runCommand,
   cctools,
   darwin,
+  runCommand,
+  unzip,
+  versionCheckHook,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -19,21 +19,22 @@ stdenv.mkDerivation (finalAttrs: {
         attrs:
         attrs.${stdenv.hostPlatform.system} or (throw "Unsupported system: ${stdenv.hostPlatform.system}");
       system = selectSystem {
-        x86_64-linux = "linux-x64";
-        aarch64-linux = "linux-arm64";
         aarch64-darwin = "macos-arm64";
+        aarch64-linux = "linux-arm64";
+        x86_64-linux = "linux-x64";
       };
       hash = selectSystem {
-        x86_64-linux = "sha256-KOR7RM8HXzZ3EEbAaLsNF0IBz5x2CHRK7RzCMgQpnC0=";
-        aarch64-linux = "sha256-+CyD7OfRaAR1UN/UpmTkBxrHxIi923LcQxAsItfgtRg=";
         aarch64-darwin = "sha256-zYdTko53trZlvXDc4OZLTsbS4v3hQdZAm7cWyKwfHAo=";
+        aarch64-linux = "sha256-+CyD7OfRaAR1UN/UpmTkBxrHxIi923LcQxAsItfgtRg=";
+        x86_64-linux = "sha256-KOR7RM8HXzZ3EEbAaLsNF0IBz5x2CHRK7RzCMgQpnC0=";
       };
     in
     fetchurl {
+      inherit hash;
+
       url = "https://storage.googleapis.com/dart-archive/channels/${
         if lib.strings.hasSuffix ".beta" finalAttrs.version then "beta" else "stable"
       }/release/${finalAttrs.version}/sdk/dartsdk-${system}-release.zip";
-      inherit hash;
     };
 
   nativeBuildInputs = [ unzip ];
@@ -56,25 +57,14 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
-  dontStrip = true;
-
   doInstallCheck = true;
-
   nativeInstallCheckInputs = [ versionCheckHook ];
+  dontStrip = true;
 
   passthru = {
     fetchGitHashesScript = ./fetch-git-hashes.py;
-    updateScript = ./update.sh;
+
     tests = {
-      testCreate = runCommand "dart-test-create" { nativeBuildInputs = [ finalAttrs.finalPackage ]; } ''
-        PROJECTNAME="dart_test_project"
-        dart create --no-pub $PROJECTNAME
-
-        [[ -d $PROJECTNAME ]]
-        [[ -f $PROJECTNAME/bin/$PROJECTNAME.dart ]]
-        touch $out
-      '';
-
       testCompile =
         runCommand "dart-test-compile"
           {
@@ -95,26 +85,41 @@ stdenv.mkDerivation (finalAttrs: {
             [[ "$PROGRAM_OUT" == "$HELLO_MESSAGE" ]]
             touch $out
           '';
+
+      testCreate = runCommand "dart-test-create" { nativeBuildInputs = [ finalAttrs.finalPackage ]; } ''
+        PROJECTNAME="dart_test_project"
+        dart create --no-pub $PROJECTNAME
+
+        [[ -d $PROJECTNAME ]]
+        [[ -f $PROJECTNAME/bin/$PROJECTNAME.dart ]]
+        touch $out
+      '';
     };
+
+    updateScript = ./update.sh;
   };
 
   meta = {
-    homepage = "https://dart.dev";
-    maintainers = [ ];
     description = "Scalable programming language, with robust libraries and runtimes, for building web, server, and mobile apps";
+
     longDescription = ''
       Dart is a class-based, single inheritance, object-oriented language
       with C-style syntax. It offers compilation to JavaScript, interfaces,
       mixins, abstract classes, reified generics, and optional typing.
     '';
-    mainProgram = "dart";
+
+    homepage = "https://dart.dev";
+    license = lib.licenses.bsd3;
+    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
+    maintainers = [ ];
+
     platforms = [
       "x86_64-linux"
       "aarch64-linux"
       "aarch64-darwin"
     ];
-    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
-    license = lib.licenses.bsd3;
+
+    mainProgram = "dart";
     teams = [ lib.teams.flutter ];
   };
 })

@@ -1,12 +1,12 @@
 {
-  coreutils,
+  lib,
+  stdenv,
   fetchurl,
+  coreutils,
   gnugrep,
   jre_headless,
-  lib,
   makeBinaryWrapper,
   nixosTests,
-  stdenv,
   stdenvNoCC,
 }:
 
@@ -61,11 +61,13 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     description = "Open Source, Distributed, RESTful Search Engine";
     homepage = "https://github.com/opensearch-project/OpenSearch";
     license = lib.licenses.asl20;
-    maintainers = [ ];
-    platforms = lib.platforms.unix;
+
     sourceProvenance = with lib.sourceTypes; [
       binaryBytecode
       binaryNativeCode
     ];
+
+    maintainers = [ ];
+    platforms = lib.platforms.unix;
   };
 })

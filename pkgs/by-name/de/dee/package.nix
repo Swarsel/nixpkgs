@@ -1,28 +1,22 @@
 {
   lib,
   stdenv,
+  autoreconfHook,
+  dbus-glib,
   fetchgit,
   fetchpatch,
-  pkg-config,
   glib,
-  icu,
   gobject-introspection,
-  dbus-glib,
-  vala,
-  python3,
-  autoreconfHook,
   gtk-doc,
+  icu,
+  pkg-config,
+  python3,
+  vala,
 }:
 
 stdenv.mkDerivation {
   pname = "dee";
   version = "unstable-2017-06-16";
-
-  outputs = [
-    "out"
-    "dev"
-    "py"
-  ];
 
   src = fetchgit {
     url = "https://git.launchpad.net/ubuntu/+source/dee";
@@ -30,12 +24,18 @@ stdenv.mkDerivation {
     hash = "sha256-ttfppqb0t8cOhWaB97uyD9heVZKlBKYF2zD6yRwPyos=";
   };
 
+  outputs = [
+    "out"
+    "dev"
+    "py"
+  ];
+
   patches = [
     # Fixes glib 2.62 deprecations
     (fetchpatch {
       name = "dee-1.2.7-deprecated-g_type_class_add_private.patch";
-      url = "https://src.fedoraproject.org/rpms/dee/raw/1a9a4ce3377074fabfca653ffe0287cd73aef82f/f/dee-1.2.7-deprecated-g_type_class_add_private.patch";
       sha256 = "13nyprq7bb7lnzkcb7frcpzidbl836ycn5bvmwa2k0nhmj6ycbx5";
+      url = "https://src.fedoraproject.org/rpms/dee/raw/1a9a4ce3377074fabfca653ffe0287cd73aef82f/f/dee-1.2.7-deprecated-g_type_class_add_private.patch";
     })
   ];
 
@@ -62,15 +62,14 @@ stdenv.mkDerivation {
   # Compilation fails after a change in glib where
   # g_string_free now returns a value
   env.NIX_CFLAGS_COMPILE = "-Wno-error=unused-result";
-
   enableParallelBuilding = true;
 
   meta = {
     description = "Library that uses DBus to provide objects allowing you to create Model-View-Controller type programs across DBus";
-    mainProgram = "dee-tool";
     homepage = "https://launchpad.net/dee";
     license = lib.licenses.lgpl3;
-    platforms = lib.platforms.linux;
     maintainers = [ ];
+    platforms = lib.platforms.linux;
+    mainProgram = "dee-tool";
   };
 }

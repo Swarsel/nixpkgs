@@ -1,18 +1,17 @@
 {
   lib,
   buildPythonPackage,
-  fetchPypi,
   cflow,
+  fetchPypi,
   graphviz,
-  pydot,
   networkx,
+  pydot,
   which,
 }:
 
 buildPythonPackage rec {
   pname = "pycflow2dot";
   version = "0.2.3";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
@@ -27,18 +26,20 @@ buildPythonPackage rec {
     which
   ];
 
-  pythonImportsCheck = [ "pycflow2dot" ];
   checkPhase = ''
     cd tests
     export PATH=$out/bin:$PATH
     make all
   '';
 
+  format = "setuptools";
+  pythonImportsCheck = [ "pycflow2dot" ];
+
   meta = {
     description = "Layout C call graphs from cflow using GraphViz dot";
-    mainProgram = "cflow2dot";
     homepage = "https://github.com/johnyf/pycflow2dot";
     license = lib.licenses.gpl3Plus;
     maintainers = [ ];
+    mainProgram = "cflow2dot";
   };
 }

@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   pytest8_3CheckHook,
   pythonAtLeast,
   setuptools,
@@ -10,7 +10,6 @@
 buildPythonPackage rec {
   pname = "ndeflib";
   version = "0.3.3";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "nfcpy";
@@ -20,16 +19,16 @@ buildPythonPackage rec {
   };
 
   nativeBuildInputs = [ setuptools ];
-
   nativeCheckInputs = [ pytest8_3CheckHook ];
-
-  pythonImportsCheck = [ "ndef" ];
 
   disabledTests = [
     # AssertionError caused due to wrong size
     "test_decode_error"
   ]
   ++ lib.optionals (pythonAtLeast "3.12") [ "test_encode_error" ];
+
+  pyproject = true;
+  pythonImportsCheck = [ "ndef" ];
 
   meta = {
     description = "Python package for parsing and generating NFC Data Exchange Format messages";

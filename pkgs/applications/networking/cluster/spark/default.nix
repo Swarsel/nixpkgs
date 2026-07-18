@@ -1,23 +1,23 @@
 {
   lib,
   stdenv,
-  fetchzip,
-  makeWrapper,
-  python3,
-  hadoop,
-  RSupport ? true,
   R,
-  nixosTests,
+  fetchzip,
+  hadoop,
   # needeed in situations where hadoop's jdk version is too old
   jdk21_headless,
+  makeWrapper,
+  nixosTests,
+  python3,
+  RSupport ? true,
 }:
 
 let
   spark =
     {
+      hash,
       pname,
       version,
-      hash,
       extraMeta ? { },
       pysparkPython ? python3,
     }:
@@ -30,22 +30,17 @@ let
         R
         pysparkPython
         ;
-      jdk =
-        if
-          (
-            (lib.versionAtLeast finalAttrs.version "4") && (lib.versionOlder finalAttrs.hadoop.jdk.version "21")
-          )
-        then
-          jdk21_headless
-        else
-          finalAttrs.hadoop.jdk;
+
       src = fetchzip {
+        inherit (finalAttrs) hash;
+
         url =
 
           "mirror://apache/spark/${pname}-${version}/${pname}-${version}-bin-without-hadoop.tgz";
-        inherit (finalAttrs) hash;
       };
+
       nativeBuildInputs = [ makeWrapper ];
+
       buildInputs =
         with finalAttrs;
         [
@@ -69,10 +64,21 @@ let
         ${lib.optionalString RSupport ''ln -s ${finalAttrs.R} "$out/opt/R"''}
       '';
 
+      jdk =
+        if
+          (
+            (lib.versionAtLeast finalAttrs.version "4") && (lib.versionOlder finalAttrs.hadoop.jdk.version "21")
+          )
+        then
+          jdk21_headless
+        else
+          finalAttrs.hadoop.jdk;
+
       passthru = {
         tests = nixosTests.spark.default.passthru.override {
           sparkPackage = finalAttrs.finalPackage;
         };
+
         # Add python packages to PYSPARK_PYTHON
         withPythonPackages =
           f:
@@ -84,19 +90,33 @@ let
       meta = {
         description = "Apache Spark is a fast and general engine for large-scale data processing";
         homepage = "https://spark.apache.org/";
-        sourceProvenance = with lib.sourceTypes; [ binaryBytecode ];
         license = lib.licenses.asl20;
-        platforms = lib.platforms.all;
+        sourceProvenance = with lib.sourceTypes; [ binaryBytecode ];
+
         maintainers = with lib.maintainers; [
           thoughtpolice
           kamilchm
           illustris
         ];
+
+        platforms = lib.platforms.all;
       }
       // extraMeta;
     });
 in
 {
+  spark_3_4 = spark {
+    pname = "spark";
+    version = "3.4.4";
+    hash = "sha256-GItHmthLhG7y0XSF3QINCyE7wYFb0+lPZmYLUuMa4Ww=";
+  };
+
+  spark_3_5 = spark {
+    pname = "spark";
+    version = "3.5.5";
+    hash = "sha256-vzcWgIfHPhN3nyrxdk3f0p4fW3MpQ+FuEPnWPw0xNPg=";
+  };
+
   # A note on EOL and removing old versions:
   # According to spark's versioning policy (https://spark.apache.org/versioning-policy.html),
   # minor releases are generally maintained with bugfixes for 18 months. But it doesn't
@@ -109,15 +129,5 @@ in
     pname = "spark";
     version = "4.0.1";
     hash = "sha256-AW+EQ83b4orJO3+dUPPDlTRAH/D94U7KQBKvKjguChY=";
-  };
-  spark_3_5 = spark {
-    pname = "spark";
-    version = "3.5.5";
-    hash = "sha256-vzcWgIfHPhN3nyrxdk3f0p4fW3MpQ+FuEPnWPw0xNPg=";
-  };
-  spark_3_4 = spark {
-    pname = "spark";
-    version = "3.4.4";
-    hash = "sha256-GItHmthLhG7y0XSF3QINCyE7wYFb0+lPZmYLUuMa4Ww=";
   };
 }

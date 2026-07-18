@@ -6,9 +6,8 @@
 }:
 
 buildDunePackage {
-  pname = "multicore-magic-dscheck";
-
   inherit (multicore-magic) src version;
+  pname = "multicore-magic-dscheck";
 
   propagatedBuildInputs = [
     dscheck

@@ -1,37 +1,32 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   fetchpatch,
-
-  # build-system
-  setuptools,
-
   # dependencies
   makefun,
   multipledispatch,
   numpy,
   opt-einsum,
-  typing-extensions,
-
-  # tests
-  pyro-ppl,
-  torch,
   pandas,
   pillow,
   pyro-api,
-  pytestCheckHook,
+  # tests
+  pyro-ppl,
   pytest-xdist,
+  pytestCheckHook,
   requests,
   scipy,
+  # build-system
+  setuptools,
+  torch,
   torchvision,
+  typing-extensions,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "funsor";
   version = "0.4.7";
-  pyproject = true;
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "pyro-ppl";
@@ -43,19 +38,9 @@ buildPythonPackage (finalAttrs: {
   patches = [
     # Compatibility with torch >= 2.5 (arg_constraints is now a property)
     (fetchpatch {
-      url = "https://github.com/pyro-ppl/funsor/commit/c5e2a48d73cad4e98058147af4090171272a44e5.patch";
       hash = "sha256-sTR+hbJtS0Th5sIqlvB2bReEC0wnEbnB7gAiZKiqjAQ=";
+      url = "https://github.com/pyro-ppl/funsor/commit/c5e2a48d73cad4e98058147af4090171272a44e5.patch";
     })
-  ];
-
-  build-system = [ setuptools ];
-
-  dependencies = [
-    makefun
-    multipledispatch
-    numpy
-    opt-einsum
-    typing-extensions
   ];
 
   nativeCheckInputs = [
@@ -77,6 +62,18 @@ buildPythonPackage (finalAttrs: {
     export FUNSOR_BACKEND=torch
   '';
 
+  __structuredAttrs = true;
+  build-system = [ setuptools ];
+
+  dependencies = [
+    makefun
+    multipledispatch
+    numpy
+    opt-einsum
+    typing-extensions
+  ];
+
+  pyproject = true;
   pythonImportsCheck = [ "funsor" ];
 
   meta = {

@@ -1,12 +1,12 @@
 {
-  buildGoModule,
-  fetchFromGitHub,
-  installShellFiles,
-  kclvm_cli,
-  kclvm,
   lib,
-  nix-update-script,
   stdenv,
+  fetchFromGitHub,
+  buildGoModule,
+  installShellFiles,
+  kclvm,
+  kclvm_cli,
+  nix-update-script,
 }:
 
 buildGoModule (finalAttrs: {
@@ -20,15 +20,6 @@ buildGoModule (finalAttrs: {
     hash = "sha256-jtAfFwgtIP2sJRH4RcGTgVn/S5yvA15q3u2xeWus/8s=";
   };
 
-  vendorHash = "sha256-aKXfVDu3uTEeSzs4nVWQMUj+HaVkzk+iTr+lti+Yb6E=";
-
-  subPackages = [ "cmd/kcl" ];
-
-  ldflags = [
-    "-w -s"
-    "-X=kcl-lang.io/cli/pkg/version.version=v${finalAttrs.version}"
-  ];
-
   nativeBuildInputs = [
     installShellFiles
   ];
@@ -37,6 +28,9 @@ buildGoModule (finalAttrs: {
     kclvm
     kclvm_cli
   ];
+
+  vendorHash = "sha256-aKXfVDu3uTEeSzs4nVWQMUj+HaVkzk+iTr+lti+Yb6E=";
+  doCheck = true;
 
   postInstall = lib.optionalString (stdenv.buildPlatform.canExecute stdenv.hostPlatform) ''
     export HOME=$(mktemp -d)
@@ -47,6 +41,7 @@ buildGoModule (finalAttrs: {
   '';
 
   doInstallCheck = true;
+
   installCheckPhase = ''
     runHook preInstallCheck
     set -o pipefail
@@ -58,19 +53,25 @@ buildGoModule (finalAttrs: {
   # By default, libs and bins are stripped. KCL will crash on darwin if they are.
   dontStrip = stdenv.hostPlatform.isDarwin;
 
-  doCheck = true;
+  ldflags = [
+    "-w -s"
+    "-X=kcl-lang.io/cli/pkg/version.version=v${finalAttrs.version}"
+  ];
 
+  subPackages = [ "cmd/kcl" ];
   passthru.updateScript = nix-update-script { };
 
   meta = {
     description = "Command line interface for KCL programming language";
-    changelog = "https://github.com/kcl-lang/cli/releases/tag/v${finalAttrs.version}";
     homepage = "https://github.com/kcl-lang/cli";
+    changelog = "https://github.com/kcl-lang/cli/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.asl20;
-    platforms = lib.platforms.linux ++ lib.platforms.darwin;
+
     maintainers = with lib.maintainers; [
       selfuryon
     ];
+
+    platforms = lib.platforms.linux ++ lib.platforms.darwin;
     mainProgram = "kcl";
     broken = stdenv.buildPlatform != stdenv.hostPlatform;
   };

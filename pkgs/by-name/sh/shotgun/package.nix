@@ -1,7 +1,7 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -21,9 +21,11 @@ rustPlatform.buildRustPackage (finalAttrs: {
     description = "Minimal X screenshot utility";
     homepage = "https://github.com/neXromancers/shotgun";
     license = with lib.licenses; [ mpl20 ];
+
     maintainers = with lib.maintainers; [
       lumi
     ];
+
     platforms = lib.platforms.linux;
     mainProgram = "shotgun";
   };

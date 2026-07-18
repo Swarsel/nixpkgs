@@ -2,11 +2,11 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  perl, # For building web manuals
-  which,
-  wayland,
-  libxkbcommon,
   ed,
+  libxkbcommon,
+  perl, # For building web manuals
+  wayland,
+  which,
 }:
 
 stdenv.mkDerivation {
@@ -39,6 +39,7 @@ stdenv.mkDerivation {
   '';
 
   nativeBuildInputs = [ ed ];
+
   buildInputs = [
     perl
     which
@@ -46,26 +47,7 @@ stdenv.mkDerivation {
     libxkbcommon
   ];
 
-  configurePhase = ''
-    runHook preConfigure
-    cat >LOCAL.config <<EOF
-    CC9='$(command -v $CC)'
-    CFLAGS='$NIX_CFLAGS_COMPILE'
-    LDFLAGS='$(for f in $NIX_LDFLAGS; do echo "-Wl,$f"; done | xargs echo)'
-    EOF
-
-    # make '9' available in the path so there's some way to find out $PLAN9
-    cat >LOCAL.INSTALL <<EOF
-    #!$out/plan9/bin/rc
-    mkdir $out/bin
-    ln -s $out/plan9/bin/9 $out/bin/
-    EOF
-    chmod +x LOCAL.INSTALL
-
-    # now, not in fixupPhase, so ./INSTALL works
-    patchShebangs .
-    runHook postConfigure
-  '';
+  env.XDG_SESSION_TYPE = "wayland";
 
   buildPhase = ''
     runHook preBuild
@@ -83,9 +65,8 @@ stdenv.mkDerivation {
     runHook postInstall
   '';
 
-  dontPatchShebangs = true;
-
   doInstallCheck = true;
+
   installCheckPhase = ''
     runHook preInstallCheck
 
@@ -110,20 +91,45 @@ stdenv.mkDerivation {
     runHook postInstallCheck
   '';
 
-  env.XDG_SESSION_TYPE = "wayland";
+  configurePhase = ''
+    runHook preConfigure
+    cat >LOCAL.config <<EOF
+    CC9='$(command -v $CC)'
+    CFLAGS='$NIX_CFLAGS_COMPILE'
+    LDFLAGS='$(for f in $NIX_LDFLAGS; do echo "-Wl,$f"; done | xargs echo)'
+    EOF
+
+    # make '9' available in the path so there's some way to find out $PLAN9
+    cat >LOCAL.INSTALL <<EOF
+    #!$out/plan9/bin/rc
+    mkdir $out/bin
+    ln -s $out/plan9/bin/9 $out/bin/
+    EOF
+    chmod +x LOCAL.INSTALL
+
+    # now, not in fixupPhase, so ./INSTALL works
+    patchShebangs .
+    runHook postConfigure
+  '';
+
+  dontPatchShebangs = true;
 
   meta = {
-    homepage = "https://github.com/eaburns/plan9port";
     description = "Plan 9 from User Space (fork with wayland support)";
+
     longDescription = ''
       Plan 9 from User Space (aka plan9port) is a port of many Plan 9 programs
       from their native Plan 9 environment to Unix-like operating systems.
     '';
+
+    homepage = "https://github.com/eaburns/plan9port";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       aleksana
     ];
-    mainProgram = "9";
+
     platforms = lib.platforms.linux;
+    mainProgram = "9";
   };
 }

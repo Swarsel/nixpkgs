@@ -35,7 +35,6 @@ in
 {
   options.programs.starship = {
     enable = lib.mkEnableOption "the Starship shell prompt";
-
     package = lib.mkPackageOption pkgs "starship" { };
 
     interactiveOnly =
@@ -49,16 +48,19 @@ in
 
     presets = lib.mkOption {
       default = [ ];
-      example = [ "nerd-font-symbols" ];
-      type = with lib.types; listOf str;
+
       description = ''
         Presets files to be merged with settings in order.
       '';
+
+      example = [ "nerd-font-symbols" ];
+      type = with lib.types; listOf str;
     };
 
     settings = lib.mkOption {
       inherit (settingsFormat) type;
       default = { };
+
       description = ''
         Configuration included in {file}`starship.toml`.
 
@@ -71,9 +73,8 @@ in
         mkTransientPromptOption =
           side:
           lib.mkOption {
-            type =
-              with lib.types;
-              nullOr (str // { description = "Fish shell code concatenated with \"\\n\""; });
+            default = null;
+
             description =
               let
                 function = "`starship_transient_${lib.optionalString (side == "right") "r"}prompt_func` function";
@@ -86,8 +87,12 @@ in
                 the ${function} from being generated. By default, the ${side}
                 prompt is ${if (side == "right") then "empty" else "a bold-green '❯' character"}.
               '';
+
             example = "starship module ${if (side == "right") then "time" else "character"}";
-            default = null;
+
+            type =
+              with lib.types;
+              nullOr (str // { description = "Fish shell code concatenated with \"\\n\""; });
           };
       in
       {
@@ -103,6 +108,7 @@ in
           involving [Ble.sh](https://github.com/akinomyoga/ble.sh), which can be
           enabled with `programs.bash.blesh.enable`, but not configured using NixOS
         '';
+
         left = mkTransientPromptOption "left";
         right = mkTransientPromptOption "right";
       };
@@ -110,6 +116,7 @@ in
 
   config = lib.mkIf cfg.enable {
     environment.systemPackages = [ cfg.package ];
+
     programs.bash.${initOption} = ''
       if [[ $TERM != "dumb" ]]; then
         # don't set STARSHIP_CONFIG automatically if there's a user-specified
@@ -148,19 +155,6 @@ in
       end
     '';
 
-    programs.zsh.${initOption} = ''
-      if [[ $TERM != "dumb" ]]; then
-        # don't set STARSHIP_CONFIG automatically if there's a user-specified
-        # config file.  starship appears to use a hardcoded config location
-        # rather than one inside an XDG folder:
-        # https://github.com/starship/starship/blob/686bda1706e5b409129e6694639477a0f8a3f01b/src/configure.rs#L651
-        if [[ ! -f "''${STARSHIP_CONFIG:-$HOME/.config/starship.toml}" ]]; then
-          export STARSHIP_CONFIG=${settingsFile}
-        fi
-        eval "$(${cfg.package}/bin/starship init zsh)"
-      fi
-    '';
-
     # use `config` instead of `${initOption}` because `programs.xonsh` doesn't have `shellInit` or `promptInit`
     programs.xonsh.config = ''
       if $TERM != "dumb":
@@ -174,6 +168,19 @@ in
           $STARSHIP_CONFIG = ('${settingsFile}')
         del _os, _sc
         execx($(${cfg.package}/bin/starship init xonsh))
+    '';
+
+    programs.zsh.${initOption} = ''
+      if [[ $TERM != "dumb" ]]; then
+        # don't set STARSHIP_CONFIG automatically if there's a user-specified
+        # config file.  starship appears to use a hardcoded config location
+        # rather than one inside an XDG folder:
+        # https://github.com/starship/starship/blob/686bda1706e5b409129e6694639477a0f8a3f01b/src/configure.rs#L651
+        if [[ ! -f "''${STARSHIP_CONFIG:-$HOME/.config/starship.toml}" ]]; then
+          export STARSHIP_CONFIG=${settingsFile}
+        fi
+        eval "$(${cfg.package}/bin/starship init zsh)"
+      fi
     '';
   };
 

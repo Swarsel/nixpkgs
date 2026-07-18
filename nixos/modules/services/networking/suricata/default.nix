@@ -1,7 +1,7 @@
 {
   config,
-  pkgs,
   lib,
+  pkgs,
   ...
 }:
 let
@@ -22,16 +22,11 @@ let
     ;
 in
 {
-  meta.maintainers = with lib.maintainers; [ felbinger ];
-
   options.services.suricata = {
     enable = mkEnableOption "Suricata";
-
     package = mkPackageOption pkgs "suricata" { };
 
     configFile = mkOption {
-      type = types.path;
-      visible = false;
       default =
         pkgs.runCommand "suricata.yaml"
           {
@@ -44,16 +39,62 @@ in
             echo "---" >> $out
             cat $settingsYaml >> $out
           '';
+
       description = ''
         Configuration file for suricata.
 
         It is not usual to override the default values; it is recommended to use `settings`.
         If you want to include extra configuration to the file, use the `settings.includes`.
       '';
+
+      type = types.path;
+      visible = false;
+    };
+
+    disabledRules = mkOption {
+      # protocol dnp3 seams to be disabled, which causes the signature evaluation to fail, so we disable the
+      # dnp3 rules, see https://github.com/OISF/suricata/blob/master/rules/dnp3-events.rules for more details
+      default = [
+        "2270000"
+        "2270001"
+        "2270002"
+        "2270003"
+        "2270004"
+      ];
+
+      description = ''
+        List of rules that should be disabled.
+      '';
+
+      type = types.listOf types.str;
+    };
+
+    enabledSources = mkOption {
+      # see: nix-shell -p suricata python3Packages.pyyaml --command 'suricata-update list-sources'
+      default = [
+        "abuse.ch/sslbl-blacklist"
+        "abuse.ch/sslbl-c2"
+        "abuse.ch/sslbl-ja3"
+        "et/open"
+        "etnetera/aggressive"
+        "stamus/lateral"
+        "oisf/trafficid"
+        "tgreen/hunting"
+        "pawpatrules"
+        "ptrules/open"
+      ];
+
+      description = ''
+        List of sources that should be enabled.
+        Currently sources which require a secret-code are not supported.
+      '';
+
+      type = types.listOf types.str;
     };
 
     settings = mkOption {
-      type = types.submodule (import ./settings.nix { inherit config lib yaml; });
+      description = "Suricata settings";
+
       example = literalExpression ''
         vars.address-groups.HOME_NET = "192.168.178.0/24";
         outputs = [
@@ -110,44 +151,8 @@ in
           modbus.enabled = "yes";
         };
       '';
-      description = "Suricata settings";
-    };
 
-    enabledSources = mkOption {
-      type = types.listOf types.str;
-      # see: nix-shell -p suricata python3Packages.pyyaml --command 'suricata-update list-sources'
-      default = [
-        "abuse.ch/sslbl-blacklist"
-        "abuse.ch/sslbl-c2"
-        "abuse.ch/sslbl-ja3"
-        "et/open"
-        "etnetera/aggressive"
-        "stamus/lateral"
-        "oisf/trafficid"
-        "tgreen/hunting"
-        "pawpatrules"
-        "ptrules/open"
-      ];
-      description = ''
-        List of sources that should be enabled.
-        Currently sources which require a secret-code are not supported.
-      '';
-    };
-
-    disabledRules = mkOption {
-      type = types.listOf types.str;
-      # protocol dnp3 seams to be disabled, which causes the signature evaluation to fail, so we disable the
-      # dnp3 rules, see https://github.com/OISF/suricata/blob/master/rules/dnp3-events.rules for more details
-      default = [
-        "2270000"
-        "2270001"
-        "2270002"
-        "2270003"
-        "2270004"
-      ];
-      description = ''
-        List of rules that should be disabled.
-      '';
+      type = types.submodule (import ./settings.nix { inherit config lib yaml; });
     };
   };
 
@@ -172,6 +177,7 @@ in
       assertions = [
         {
           assertion = (builtins.length captureInterfaces) > 0;
+
           message = ''
             At least one capture interface must be configured:
             - `services.suricata.settings.af-packet`
@@ -184,37 +190,52 @@ in
 
       boot.kernelModules = mkIf (cfg.settings.af-packet != null) [ "af_packet" ];
 
-      users = {
-        groups.${cfg.settings.run-as.group} = { };
-        users.${cfg.settings.run-as.user} = {
-          group = cfg.settings.run-as.group;
-          isSystemUser = true;
-        };
-      };
-
-      systemd.tmpfiles.rules = [
-        "d ${cfg.settings."default-log-dir"} 755 ${cfg.settings.run-as.user} ${cfg.settings.run-as.group}"
-        "d /var/lib/suricata 755 ${cfg.settings.run-as.user} ${cfg.settings.run-as.group}"
-        "d ${cfg.settings."default-rule-path"} 755 ${cfg.settings.run-as.user} ${cfg.settings.run-as.group}"
-      ];
-
-      systemd.timers = {
-        suricata-update = {
-          timerConfig = {
-            OnBootSec = lib.mkDefault "30s";
-            OnUnitActiveSec = lib.mkDefault "24h";
-            Persistent = true;
-            Unit = config.systemd.services.suricata-update.name;
-          };
-        };
-      };
-
       systemd.services = {
-        suricata-update = {
-          description = "Update Suricata Rules";
+        suricata = {
+          after = [ "suricata-update.service" ];
+          description = "Suricata";
+
+          serviceConfig =
+            let
+              interfaceOptions = strings.concatMapStrings (interface: " -i ${interface}") captureInterfaces;
+            in
+            {
+              DevicePolicy = "closed";
+              ExecStart = "!${pkg}/bin/suricata -c ${cfg.configFile}${interfaceOptions}";
+              ExecStartPre = "!${pkg}/bin/suricata -c ${cfg.configFile} -T";
+              Group = cfg.settings.run-as.group;
+              LockPersonality = true;
+              MemoryDenyWriteExecute = true;
+              NoNewPrivileges = true;
+              PrivateDevices = true;
+              PrivateIPC = true;
+              PrivateTmp = true;
+              ProcSubset = "pid";
+              ProtectControlGroups = true;
+              ProtectHostname = true;
+              ProtectKernelLogs = true;
+              ProtectKernelModules = true;
+              ProtectKernelTunables = true;
+              ProtectProc = true;
+              ProtectSystem = "strict";
+              ReadOnlyPaths = cfg.configFile;
+              ReadWritePaths = cfg.settings."default-log-dir";
+              RemoveIPC = true;
+              Restart = "on-failure";
+              RestrictNamespaces = true;
+              RestrictRealtime = true;
+              RestrictSUIDSGID = true;
+              RuntimeDirectory = "suricata";
+              SystemCallArchitectures = "native";
+              User = cfg.settings.run-as.user;
+            };
+
           wantedBy = [ "multi-user.target" ];
-          wants = [ "network-online.target" ];
+        };
+
+        suricata-update = {
           after = [ "network-online.target" ];
+          description = "Update Suricata Rules";
 
           script =
             let
@@ -229,66 +250,55 @@ in
               ${python.interpreter} ${pkg}/bin/suricata-update update --suricata-conf ${cfg.configFile} --no-test \
                 --disable-conf ${pkgs.writeText "suricata-disable-conf" "${concatStringsSep "\n" cfg.disabledRules}"}
             '';
-          serviceConfig = {
-            Type = "oneshot";
 
-            PrivateTmp = true;
+          serviceConfig = {
+            DynamicUser = true;
+            Group = cfg.settings.run-as.group;
             PrivateDevices = true;
             PrivateIPC = true;
-
-            DynamicUser = true;
-            User = cfg.settings.run-as.user;
-            Group = cfg.settings.run-as.group;
-
+            PrivateTmp = true;
             ReadOnlyPaths = cfg.configFile;
+
             ReadWritePaths = [
               "/var/lib/suricata"
               cfg.settings."default-rule-path"
             ];
+
+            Type = "oneshot";
+            User = cfg.settings.run-as.user;
+          };
+
+          wantedBy = [ "multi-user.target" ];
+          wants = [ "network-online.target" ];
+        };
+      };
+
+      systemd.timers = {
+        suricata-update = {
+          timerConfig = {
+            OnBootSec = lib.mkDefault "30s";
+            OnUnitActiveSec = lib.mkDefault "24h";
+            Persistent = true;
+            Unit = config.systemd.services.suricata-update.name;
           };
         };
-        suricata = {
-          description = "Suricata";
-          wantedBy = [ "multi-user.target" ];
-          after = [ "suricata-update.service" ];
-          serviceConfig =
-            let
-              interfaceOptions = strings.concatMapStrings (interface: " -i ${interface}") captureInterfaces;
-            in
-            {
-              ExecStartPre = "!${pkg}/bin/suricata -c ${cfg.configFile} -T";
-              ExecStart = "!${pkg}/bin/suricata -c ${cfg.configFile}${interfaceOptions}";
-              Restart = "on-failure";
+      };
 
-              User = cfg.settings.run-as.user;
-              Group = cfg.settings.run-as.group;
+      systemd.tmpfiles.rules = [
+        "d ${cfg.settings."default-log-dir"} 755 ${cfg.settings.run-as.user} ${cfg.settings.run-as.group}"
+        "d /var/lib/suricata 755 ${cfg.settings.run-as.user} ${cfg.settings.run-as.group}"
+        "d ${cfg.settings."default-rule-path"} 755 ${cfg.settings.run-as.user} ${cfg.settings.run-as.group}"
+      ];
 
-              NoNewPrivileges = true;
-              PrivateTmp = true;
-              PrivateDevices = true;
-              PrivateIPC = true;
-              ProtectSystem = "strict";
-              DevicePolicy = "closed";
-              LockPersonality = true;
-              MemoryDenyWriteExecute = true;
-              ProtectHostname = true;
-              ProtectProc = true;
-              ProtectKernelLogs = true;
-              ProtectKernelModules = true;
-              ProtectKernelTunables = true;
-              ProtectControlGroups = true;
-              ProcSubset = "pid";
-              RestrictNamespaces = true;
-              RestrictRealtime = true;
-              RestrictSUIDSGID = true;
-              SystemCallArchitectures = "native";
-              RemoveIPC = true;
+      users = {
+        groups.${cfg.settings.run-as.group} = { };
 
-              ReadOnlyPaths = cfg.configFile;
-              ReadWritePaths = cfg.settings."default-log-dir";
-              RuntimeDirectory = "suricata";
-            };
+        users.${cfg.settings.run-as.user} = {
+          group = cfg.settings.run-as.group;
+          isSystemUser = true;
         };
       };
     };
+
+  meta.maintainers = with lib.maintainers; [ felbinger ];
 }

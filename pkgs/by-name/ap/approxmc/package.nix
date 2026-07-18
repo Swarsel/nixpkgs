@@ -1,14 +1,14 @@
 {
+  lib,
   stdenv,
   fetchFromGitHub,
-  cmake,
-  zlib,
-  gmp,
-  cryptominisat,
-  boost,
   arjun-cnf,
+  boost,
+  cmake,
+  cryptominisat,
+  gmp,
   louvain-community,
-  lib,
+  zlib,
 }:
 
 stdenv.mkDerivation (finalAttrs: {

@@ -4,8 +4,8 @@
 
 {
   lib,
-  dotnet-sdk,
   buildPackages, # buildDotnetModule
+  dotnet-sdk,
   runCommand,
 }:
 
@@ -19,20 +19,18 @@ let
   TargetFramework = "net${lib.versions.majorMinor (lib.getVersion dotnet-sdk)}";
 
   library = buildDotnetModule {
-    name = "project-references-test-library";
-    src = ./library;
     inherit nugetDeps;
+    src = ./library;
     env.TargetFramework = TargetFramework;
-
+    name = "project-references-test-library";
     packNupkg = true;
   };
 
   application = buildDotnetModule {
-    name = "project-references-test-application";
-    src = ./application;
     inherit nugetDeps;
+    src = ./application;
     env.TargetFramework = TargetFramework;
-
+    name = "project-references-test-application";
     projectReferences = [ library ];
   };
 in

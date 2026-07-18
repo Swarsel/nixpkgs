@@ -2,25 +2,24 @@
   lib,
   stdenv,
   fetchFromGitHub,
+  erofs-utils,
   fetchpatch,
+  fsverity-utils,
+  fuse3,
+  go-md2man,
+  libcap,
   meson,
   ninja,
-  go-md2man,
-  pkg-config,
-  openssl,
-  fuse3,
-  libcap,
-  python3,
-  which,
-  valgrind,
-  erofs-utils,
-  fsverity-utils,
   nix-update-script,
-  testers,
   nixosTests,
-
-  fuseSupport ? lib.meta.availableOn stdenv.hostPlatform fuse3,
+  openssl,
+  pkg-config,
+  python3,
+  testers,
+  valgrind,
+  which,
   enableValgrindCheck ? false,
+  fuseSupport ? lib.meta.availableOn stdenv.hostPlatform fuse3,
   installExperimentalTools ? false,
 }:
 stdenv.mkDerivation (finalAttrs: {
@@ -34,7 +33,6 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-nuQ3R/0eDS58HmN+0iXcYT5EtkY3J257EdtLir5vm4c=";
   };
 
-  strictDeps = true;
   outputs = [
     "out"
     "lib"
@@ -44,8 +42,8 @@ stdenv.mkDerivation (finalAttrs: {
   patches = [
     # "tests: ignore EOPNOTSUPP in in fsverity tests" https://github.com/composefs/composefs/pull/415
     (fetchpatch {
-      url = "https://github.com/composefs/composefs/commit/b3cb176a771386081c993e29ae42e77dabe5a577.patch";
       hash = "sha256-nzUENLM24G6NezhPywVsRzRgWmL1VZdMfZTsXNorJl8=";
+      url = "https://github.com/composefs/composefs/commit/b3cb176a771386081c993e29ae42e77dabe5a577.patch";
     })
   ];
 
@@ -62,12 +60,15 @@ stdenv.mkDerivation (finalAttrs: {
         --replace-fail "install : false" "install : true"
     '';
 
+  strictDeps = true;
+
   nativeBuildInputs = [
     meson
     ninja
     go-md2man
     pkg-config
   ];
+
   buildInputs = [
     openssl
   ]
@@ -77,6 +78,7 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   doCheck = true;
+
   nativeCheckInputs = [
     python3
     which
@@ -88,33 +90,36 @@ stdenv.mkDerivation (finalAttrs: {
     fsverity-utils
   ];
 
-  mesonCheckFlags = lib.optionals enableValgrindCheck "--setup=valgrind";
-
   preCheck = ''
     patchShebangs --build ../tests/*dir ../tests/*.sh
   '';
 
+  mesonCheckFlags = lib.optionals enableValgrindCheck "--setup=valgrind";
+
   passthru = {
-    updateScript = nix-update-script { };
     tests = {
       # Broken on aarch64 unrelated to this package: https://github.com/NixOS/nixpkgs/issues/291398
       inherit (nixosTests) activation-etc-overlay-immutable activation-etc-overlay-mutable;
       pkg-config = testers.testMetaPkgConfig finalAttrs.finalPackage;
     };
+
+    updateScript = nix-update-script { };
   };
 
   meta = {
     description = "File system for mounting container images";
     homepage = "https://github.com/composefs/composefs";
     changelog = "https://github.com/composefs/composefs/releases/tag/v${finalAttrs.version}";
+
     license = with lib.licenses; [
       gpl2Only
       asl20
     ];
+
     maintainers = with lib.maintainers; [ kiskae ];
-    mainProgram = "mkcomposefs";
-    pkgConfigModules = [ "composefs" ];
     platforms = lib.platforms.unix;
     badPlatforms = lib.platforms.darwin;
+    mainProgram = "mkcomposefs";
+    pkgConfigModules = [ "composefs" ];
   };
 })

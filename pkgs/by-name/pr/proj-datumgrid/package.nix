@@ -15,8 +15,6 @@ stdenv.mkDerivation (finalAttrs: {
     sha256 = "132wp77fszx33wann0fjkmi1isxvsb0v9iw0gd9sxapa9h6hf3am";
   };
 
-  sourceRoot = "${finalAttrs.src.name}/scripts";
-
   buildPhase = ''
     $CC nad2bin.c -o nad2bin
   '';
@@ -26,12 +24,14 @@ stdenv.mkDerivation (finalAttrs: {
     cp nad2bin $out/bin/
   '';
 
+  sourceRoot = "${finalAttrs.src.name}/scripts";
+
   meta = {
     description = "Repository for proj datum grids";
     homepage = "https://proj4.org";
     license = lib.licenses.mit;
     maintainers = [ ];
-    mainProgram = "nad2bin";
     platforms = lib.platforms.linux ++ lib.platforms.darwin;
+    mainProgram = "nad2bin";
   };
 })

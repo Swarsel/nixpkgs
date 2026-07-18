@@ -5,10 +5,9 @@
   bison,
   boost,
   cmake,
-  makeWrapper,
-  pkg-config,
   curl,
   cyrus_sasl,
+  hash,
   libaio,
   libedit,
   libev,
@@ -16,33 +15,36 @@
   libgcrypt,
   libgpg-error,
   lz4,
+  makeWrapper,
   ncurses,
   numactl,
   openssl,
+  perlPackages,
+  pkg-config,
   procps,
   protobuf,
   valgrind,
+  version,
   xxd,
   zlib,
-  perlPackages,
-  version,
-  hash,
-  fetchSubmodules ? false,
   extraPatches ? [ ],
   extraPostInstall ? "",
+  fetchSubmodules ? false,
   ...
 }:
 
 stdenv.mkDerivation (finalAttrs: {
-  pname = "percona-xtrabackup";
   inherit version;
+  pname = "percona-xtrabackup";
 
   src = fetchFromGitHub {
+    inherit hash fetchSubmodules;
     owner = "percona";
     repo = "percona-xtrabackup";
     rev = "percona-xtrabackup-${finalAttrs.version}";
-    inherit hash fetchSubmodules;
   };
+
+  patches = extraPatches;
 
   nativeBuildInputs = [
     bison
@@ -77,8 +79,6 @@ stdenv.mkDerivation (finalAttrs: {
     DBDmysql
   ]);
 
-  patches = extraPatches;
-
   cmakeFlags = [
     "-DMYSQL_UNIX_ADDR=/run/mysqld/mysqld.sock"
     "-DBUILD_CONFIG=xtrabackup_release"
@@ -108,11 +108,13 @@ stdenv.mkDerivation (finalAttrs: {
     description = "Non-blocking backup tool for MySQL";
     homepage = "http://www.percona.com/software/percona-xtrabackup";
     license = lib.licenses.gpl2Only;
-    platforms = lib.platforms.linux;
+
     maintainers = [
       lib.maintainers.izorkin
       lib.maintainers.leona
       lib.maintainers.osnyx
     ];
+
+    platforms = lib.platforms.linux;
   };
 })

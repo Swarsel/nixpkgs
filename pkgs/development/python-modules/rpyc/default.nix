@@ -1,8 +1,8 @@
 {
   lib,
   stdenv,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   hatchling,
   plumbum,
   pytestCheckHook,
@@ -11,7 +11,6 @@
 buildPythonPackage rec {
   pname = "rpyc";
   version = "6.0.2";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "tomerfiliba";
@@ -20,15 +19,23 @@ buildPythonPackage rec {
     hash = "sha256-KLAOt0FStHV0senU/I4chxgn3PPM59CGhjTr/5U0sa8=";
   };
 
-  build-system = [ hatchling ];
-
-  dependencies = [ plumbum ];
-
+  doCheck = !stdenv.hostPlatform.isDarwin;
   nativeCheckInputs = [ pytestCheckHook ];
 
   preCheck = ''
     export PYTHONPATH=$(pwd)/tests:$PYTHONPATH
   '';
+
+  build-system = [ hatchling ];
+  dependencies = [ plumbum ];
+
+  disabledTestPaths = [
+    # Internal import issue
+    "tests/test_attributes.py"
+    "tests/test_service_pickle.py"
+    "tests/test_affinity.py"
+    "tests/test_magic.py"
+  ];
 
   disabledTests = [
     # Disable tests that requires network access
@@ -46,17 +53,8 @@ buildPythonPackage rec {
     "test_ssl_conenction"
   ];
 
-  disabledTestPaths = [
-    # Internal import issue
-    "tests/test_attributes.py"
-    "tests/test_service_pickle.py"
-    "tests/test_affinity.py"
-    "tests/test_magic.py"
-  ];
-
+  pyproject = true;
   pythonImportsCheck = [ "rpyc" ];
-
-  doCheck = !stdenv.hostPlatform.isDarwin;
 
   meta = {
     description = "Remote Python Call (RPyC), a transparent and symmetric RPC library";

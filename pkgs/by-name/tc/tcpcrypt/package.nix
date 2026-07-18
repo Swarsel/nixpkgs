@@ -3,12 +3,12 @@
   stdenv,
   fetchFromGitHub,
   autoreconfHook,
-  openssl,
   libcap,
-  libpcap,
-  libnfnetlink,
   libnetfilter_conntrack,
   libnetfilter_queue,
+  libnfnetlink,
+  libpcap,
+  openssl,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -16,20 +16,20 @@ stdenv.mkDerivation (finalAttrs: {
   version = "0.5";
 
   src = fetchFromGitHub {
-    repo = "tcpcrypt";
     owner = "scslab";
+    repo = "tcpcrypt";
     rev = "v${finalAttrs.version}";
     sha256 = "0a015rlyvagz714pgwr85f8gjq1fkc0il7d7l39qcgxrsp15b96w";
   };
-
-  postUnpack = "mkdir -vp $sourceRoot/m4";
 
   outputs = [
     "bin"
     "dev"
     "out"
   ];
+
   nativeBuildInputs = [ autoreconfHook ];
+
   buildInputs = [
     openssl
     libpcap
@@ -42,12 +42,13 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   enableParallelBuilding = true;
+  postUnpack = "mkdir -vp $sourceRoot/m4";
 
   meta = {
-    broken = stdenv.hostPlatform.isDarwin;
-    homepage = "http://tcpcrypt.org/";
     description = "Fast TCP encryption";
-    platforms = lib.platforms.all;
+    homepage = "http://tcpcrypt.org/";
     license = lib.licenses.bsd2;
+    platforms = lib.platforms.all;
+    broken = stdenv.hostPlatform.isDarwin;
   };
 })

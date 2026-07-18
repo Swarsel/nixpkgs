@@ -1,12 +1,12 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  hatchling,
+  buildPythonPackage,
   hatch-vcs,
+  hatchling,
   httpx,
-  pydantic,
   pillow,
+  pydantic,
   pytest-asyncio,
   pytest-httpserver,
   pytestCheckHook,
@@ -15,7 +15,6 @@
 buildPythonPackage rec {
   pname = "ollama";
   version = "0.6.2";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "ollama";
@@ -24,7 +23,14 @@ buildPythonPackage rec {
     hash = "sha256-kPFimI9h8BL3qQ+puZy70AYnX3zpbZ2nV5revmYPjIY=";
   };
 
-  pythonRelaxDeps = [ "httpx" ];
+  nativeCheckInputs = [
+    pillow
+    pytest-asyncio
+    pytest-httpserver
+    pytestCheckHook
+  ];
+
+  __darwinAllowLocalNetworking = true;
 
   build-system = [
     hatchling
@@ -36,21 +42,14 @@ buildPythonPackage rec {
     pydantic
   ];
 
-  nativeCheckInputs = [
-    pillow
-    pytest-asyncio
-    pytest-httpserver
-    pytestCheckHook
-  ];
-
-  __darwinAllowLocalNetworking = true;
-
-  pythonImportsCheck = [ "ollama" ];
-
   disabledTestPaths = [
     # Don't test the examples
     "examples/"
   ];
+
+  pyproject = true;
+  pythonImportsCheck = [ "ollama" ];
+  pythonRelaxDeps = [ "httpx" ];
 
   meta = {
     description = "Ollama Python library";

@@ -1,5 +1,6 @@
 {
   lib,
+  stdenv,
   aalib,
   alsa-lib,
   autoreconfHook,
@@ -8,10 +9,6 @@
   flac,
   libGL,
   libGLU,
-  libx11,
-  libxext,
-  libxinerama,
-  libxv,
   libcaca,
   libcdio,
   libmng,
@@ -20,12 +17,15 @@
   libtheora,
   libv4l,
   libvorbis,
+  libx11,
   libxcb,
+  libxext,
+  libxinerama,
+  libxv,
   ncurses,
   perl,
   pkg-config,
   speex,
-  stdenv,
   vcdimager,
   zlib,
 }:
@@ -45,6 +45,8 @@ stdenv.mkDerivation (finalAttrs: {
     "dev"
     "man"
   ];
+
+  strictDeps = true;
 
   nativeBuildInputs = [
     autoreconfHook
@@ -85,18 +87,17 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   env.NIX_LDFLAGS = "-lxcb-shm";
-
   enableParallelBuilding = true;
 
-  strictDeps = true;
-
   meta = {
-    homepage = "https://xine.sourceforge.net/";
     description = "High-performance, portable and reusable multimedia playback engine";
+    homepage = "https://xine.sourceforge.net/";
+
     license = with lib.licenses; [
       gpl2Plus
       lgpl2Plus
     ];
+
     # No useful mainProgram
     maintainers = [ ];
     platforms = lib.platforms.linux;

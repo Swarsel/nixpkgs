@@ -2,16 +2,16 @@
   lib,
   stdenv,
   fetchurl,
-  fetchpatch,
-  fetchDebianPatch,
-  libresample,
-  cmake,
-  pkg-config,
   boost,
+  cmake,
+  fetchDebianPatch,
+  fetchpatch,
   gd,
   libogg,
+  libresample,
   libtheora,
   libvorbis,
+  pkg-config,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -28,56 +28,56 @@ stdenv.mkDerivation (finalAttrs: {
     (fetchDebianPatch {
       inherit (finalAttrs) pname version;
       debianRevision = "7";
-      patch = "mayhem-crash-oggjoin.patch";
       hash = "sha256-0D22P+Qdf9Sfp6vptSnL4E33NVUL/XL72gNE36BF6QI=";
+      patch = "mayhem-crash-oggjoin.patch";
     })
     # Fix typos in manpages
     (fetchDebianPatch {
       inherit (finalAttrs) pname version;
       debianRevision = "7";
-      patch = "manual-typos.patch";
       hash = "sha256-yGzHGEADlSRnWZIN8x6xfg9ChAn8WKFQgZAJmbKtKq8=";
+      patch = "manual-typos.patch";
     })
     # Avoid crash on unknown command-line arguments
     (fetchDebianPatch {
       inherit (finalAttrs) pname version;
       debianRevision = "7";
-      patch = "oggThumb-zero-getopt-long.patch";
       hash = "sha256-LBgmpyyxmeAFE3zpeHRryuxboMBdBztUEGxbs0Ay+HU=";
+      patch = "oggThumb-zero-getopt-long.patch";
     })
     # Prevent uninitialized read
     (fetchDebianPatch {
       inherit (finalAttrs) pname version;
       debianRevision = "7";
-      patch = "init-for-valgrind.patch";
       hash = "sha256-7BtdAGHHW860hFZYlRWDVfEw6CDkb18HfFROZHl+guY=";
+      patch = "init-for-valgrind.patch";
     })
     # Fix compilation due to missing include
     (fetchDebianPatch {
       inherit (finalAttrs) pname version;
       debianRevision = "7";
-      patch = "import-cstring.patch";
       hash = "sha256-KMs4nyILveKY+ZmcSONmtS5+sAPPB+ypNUi9yzxBsXQ=";
+      patch = "import-cstring.patch";
     })
     # Fix out-of-bounds read
     (fetchpatch {
-      url = "https://salsa.debian.org/multimedia-team/oggvideotools/-/raw/ed006e5d78f9509508dbc72277de8ab3c06d2362/debian/patches/1010-kate-header-buffer-read-past-end.patch";
       hash = "sha256-CEkNG9tHZIggCvKRPj2pKI855pVWQUdudLfpda/ZVME=";
+      url = "https://salsa.debian.org/multimedia-team/oggvideotools/-/raw/ed006e5d78f9509508dbc72277de8ab3c06d2362/debian/patches/1010-kate-header-buffer-read-past-end.patch";
     })
     # Fix null pointer crash (CVE-2020-21723)
     (fetchpatch {
-      url = "https://salsa.debian.org/multimedia-team/oggvideotools/-/raw/122047a7cf644e282906370f277ae83b4672e5e4/debian/patches/1020-CVE-2020-21723-null-pointer-crash.patch";
       hash = "sha256-dUkMfEaB5Hn9I5+QbE/002X6ij+xIzzqjc8QTom1ITk=";
+      url = "https://salsa.debian.org/multimedia-team/oggvideotools/-/raw/122047a7cf644e282906370f277ae83b4672e5e4/debian/patches/1020-CVE-2020-21723-null-pointer-crash.patch";
     })
     # Unbundle libresample
     (fetchpatch {
-      url = "https://src.fedoraproject.org/rpms/oggvideotools/raw/23f918f39278d87adb5a5ab2e57d5cc1816e1e8a/f/0005-unbundle-libresample.patch";
       hash = "sha256-JSuH8ScYBi6zAgEhrFdPOGCSXzDk+lEnSHX9wuctAsg=";
+      url = "https://src.fedoraproject.org/rpms/oggvideotools/raw/23f918f39278d87adb5a5ab2e57d5cc1816e1e8a/f/0005-unbundle-libresample.patch";
     })
     # Fix buffer overflow (CVE-2020-21724)
     (fetchpatch {
-      url = "https://src.fedoraproject.org/rpms/oggvideotools/raw/2dd078ea81773a34cc0c4817ebbf3c4038b8098c/f/stream-serializer.diff";
       hash = "sha256-3HkAuCBaNjKoTN8Q3oW89e3zXo13Ev5g7VJ/RPO3zRA=";
+      url = "https://src.fedoraproject.org/rpms/oggvideotools/raw/2dd078ea81773a34cc0c4817ebbf3c4038b8098c/f/stream-serializer.diff";
     })
   ];
 

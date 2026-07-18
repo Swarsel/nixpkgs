@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   httpx,
   pytestCheckHook,
   requests,
@@ -11,7 +11,6 @@
 buildPythonPackage rec {
   pname = "requests-aws4auth";
   version = "1.3.2";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "tedder";
@@ -20,16 +19,15 @@ buildPythonPackage rec {
     hash = "sha256-GIbv4/a1ZdcIOemanzDiueLcKg8pUVeIFSAfErIr0HI=";
   };
 
+  nativeCheckInputs = [ pytestCheckHook ] ++ optional-dependencies.httpx;
   build-system = [ setuptools ];
-
   dependencies = [ requests ];
 
   optional-dependencies = {
     httpx = [ httpx ];
   };
 
-  nativeCheckInputs = [ pytestCheckHook ] ++ optional-dependencies.httpx;
-
+  pyproject = true;
   pythonImportsCheck = [ "requests_aws4auth" ];
 
   meta = {

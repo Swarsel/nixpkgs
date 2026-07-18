@@ -2,12 +2,12 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  python3,
-  stanc,
   buildPackages,
-  runtimeShell,
-  runCommandCC,
   cmdstan,
+  python3,
+  runCommandCC,
+  runtimeShell,
+  stanc,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -18,8 +18,8 @@ stdenv.mkDerivation (finalAttrs: {
     owner = "stan-dev";
     repo = "cmdstan";
     tag = "v${finalAttrs.version}";
-    fetchSubmodules = true;
     hash = "sha256-7vGEqIJOFWeESq4xL2z2ZjNaVWEqqzPmGT6tpWBzrU0=";
+    fetchSubmodules = true;
   };
 
   postPatch = ''
@@ -32,6 +32,16 @@ stdenv.mkDerivation (finalAttrs: {
     stanc
   ];
 
+  makeFlags = [
+    "build"
+  ]
+  ++ lib.optionals stdenv.hostPlatform.isDarwin [
+    "arch=${stdenv.hostPlatform.darwinArch}"
+  ];
+
+  # Disable inclusion of timestamps in PCH files when using Clang.
+  env.CXXFLAGS = lib.optionalString stdenv.cc.isClang "-Xclang -fno-pch-timestamp";
+
   preConfigure = ''
     patchShebangs test-all.sh runCmdStanTests.py stan/
   ''
@@ -43,18 +53,6 @@ stdenv.mkDerivation (finalAttrs: {
     mkdir -p bin
     ln -s ${buildPackages.stanc}/bin/stanc bin/stanc
   '';
-
-  makeFlags = [
-    "build"
-  ]
-  ++ lib.optionals stdenv.hostPlatform.isDarwin [
-    "arch=${stdenv.hostPlatform.darwinArch}"
-  ];
-
-  # Disable inclusion of timestamps in PCH files when using Clang.
-  env.CXXFLAGS = lib.optionalString stdenv.cc.isClang "-Xclang -fno-pch-timestamp";
-
-  enableParallelBuilding = true;
 
   installPhase = ''
     runHook preInstall
@@ -71,6 +69,8 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  enableParallelBuilding = true;
+
   passthru.tests = {
     test = runCommandCC "cmdstan-test" { } ''
       cp -R ${cmdstan}/opt/cmdstan cmdstan
@@ -83,12 +83,14 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Command-line interface to Stan";
+
     longDescription = ''
       Stan is a probabilistic programming language implementing full Bayesian
       statistical inference with MCMC sampling (NUTS, HMC), approximate Bayesian
       inference with Variational inference (ADVI) and penalized maximum
       likelihood estimation with Optimization (L-BFGS).
     '';
+
     homepage = "https://mc-stan.org/interfaces/cmdstan.html";
     license = lib.licenses.bsd3;
     maintainers = with lib.maintainers; [ wegank ];

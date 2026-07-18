@@ -39,7 +39,7 @@ stdenv.mkDerivation (finalAttrs: {
     description = "C99 implementation of huffman encoding/decoding";
     homepage = "https://github.com/awslabs/aws-c-compression";
     license = lib.licenses.asl20;
-    platforms = lib.platforms.unix;
     maintainers = with lib.maintainers; [ r-burns ];
+    platforms = lib.platforms.unix;
   };
 })

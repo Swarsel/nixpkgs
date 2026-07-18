@@ -1,17 +1,16 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
+  buildPythonPackage,
   cmake,
   ninja,
   pytestCheckHook,
+  setuptools,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "real-ladybug";
   version = "0.14.3";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "LadybugDB";
@@ -19,12 +18,6 @@ buildPythonPackage (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-0EasuvUlknJ4gguTMOlLFZNxC4WEowyUwzUo6VtosaE=";
   };
-
-  sourceRoot = "${finalAttrs.src.name}/tools/python_api";
-
-  postUnpack = ''
-    chmod -R +w ${finalAttrs.src.name}
-  '';
 
   postPatch = ''
         substituteInPlace pyproject.toml \
@@ -37,15 +30,11 @@ buildPythonPackage (finalAttrs: {
     TOML
   '';
 
-  build-system = [ setuptools ];
-
   # cmake and ninja are needed for preBuild which compiles the C++ engine
   nativeBuildInputs = [
     cmake
     ninja
   ];
-
-  dontUseCmakeConfigure = true;
 
   preBuild = ''
     cmake -S ../.. -B ../../cmake-build -G Ninja \
@@ -59,15 +48,7 @@ buildPythonPackage (finalAttrs: {
     pytestCheckHook
   ];
 
-  enabledTestPaths = [
-    "test/"
-  ];
-
-  disabledTests = [
-    # Subprocess tests spawn new processes where build_dir may not resolve
-    "test_database_close"
-    "test_database_context_manager"
-  ];
+  build-system = [ setuptools ];
 
   disabledTestPaths = [
     # Tests requiring dataset fixtures (conn_db_readonly/conn_db_readwrite)
@@ -98,7 +79,25 @@ buildPythonPackage (finalAttrs: {
     "test/test_wal.py"
   ];
 
+  disabledTests = [
+    # Subprocess tests spawn new processes where build_dir may not resolve
+    "test_database_close"
+    "test_database_context_manager"
+  ];
+
+  dontUseCmakeConfigure = true;
+
+  enabledTestPaths = [
+    "test/"
+  ];
+
+  postUnpack = ''
+    chmod -R +w ${finalAttrs.src.name}
+  '';
+
+  pyproject = true;
   pythonImportsCheck = [ "real_ladybug" ];
+  sourceRoot = "${finalAttrs.src.name}/tools/python_api";
 
   meta = {
     description = "Python bindings for LadybugDB, an embeddable property graph database management system (fork of Kuzu)";

@@ -1,19 +1,17 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
+  buildPythonPackage,
+  nix-update-script,
+  pytestCheckHook,
   setuptools,
   writableTmpDirAsHomeHook,
-  pytestCheckHook,
   xonsh,
-  nix-update-script,
 }:
 
 buildPythonPackage rec {
   pname = "xontrib-whole-word-jumping";
   version = "0.0.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "xonsh";
@@ -22,21 +20,22 @@ buildPythonPackage rec {
     hash = "sha256-zLAOGW9prjYDQBDITFNMggn4X1JTyAnVdjkBOH9gXPs=";
   };
 
-  prePatch = ''
-    substituteInPlace pyproject.toml \
-      --replace-fail '"xonsh>=0.12.5", ' ""
-  '';
-
-  build-system = [
-    setuptools
-  ];
-
   nativeCheckInputs = [
     writableTmpDirAsHomeHook
     pytestCheckHook
     xonsh
   ];
 
+  build-system = [
+    setuptools
+  ];
+
+  prePatch = ''
+    substituteInPlace pyproject.toml \
+      --replace-fail '"xonsh>=0.12.5", ' ""
+  '';
+
+  pyproject = true;
   passthru.updateScript = nix-update-script { };
 
   meta = {

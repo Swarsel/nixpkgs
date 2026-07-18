@@ -1,33 +1,29 @@
 {
-  stdenv,
   lib,
-  fetchzip,
+  stdenv,
   alsa-lib,
   autoPatchelfHook,
   copyDesktopItems,
+  fetchzip,
   # ffmpeg 7 not supported yet, results in MP4 playback being unavailable
   # https://repo.palemoon.org/MoonchildProductions/UXP/issues/2523
   ffmpeg_6,
   gtk2-x11,
-  withGTK3 ? true,
   gtk3,
   libglvnd,
-  libxt,
   libpulseaudio,
+  libxt,
   makeDesktopItem,
+  testers,
   wrapGAppsHook3,
   writeScript,
-  testers,
+  withGTK3 ? true,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
   pname = "palemoon-bin";
   version = "34.3.1";
-
   src = finalAttrs.passthru.sources."gtk${if withGTK3 then "3" else "2"}";
-
-  preferLocalBuild = true;
-
   strictDeps = true;
 
   nativeBuildInputs = [
@@ -45,72 +41,6 @@ stdenv.mkDerivation (finalAttrs: {
   ++ lib.optionals withGTK3 [
     gtk3
   ];
-
-  desktopItems = [
-    (makeDesktopItem {
-      name = "palemoon-bin";
-      desktopName = "Pale Moon Web Browser";
-      comment = "Browse the World Wide Web";
-      keywords = [
-        "Internet"
-        "WWW"
-        "Browser"
-        "Web"
-        "Explorer"
-      ];
-      exec = "palemoon %u";
-      terminal = false;
-      type = "Application";
-      icon = "palemoon";
-      categories = [
-        "Network"
-        "WebBrowser"
-      ];
-      mimeTypes = [
-        "text/html"
-        "text/xml"
-        "application/xhtml+xml"
-        "application/xml"
-        "application/rss+xml"
-        "application/rdf+xml"
-        "image/gif"
-        "image/jpeg"
-        "image/png"
-        "x-scheme-handler/http"
-        "x-scheme-handler/https"
-        "x-scheme-handler/ftp"
-        "x-scheme-handler/chrome"
-        "video/webm"
-        "application/x-xpinstall"
-      ];
-      startupNotify = true;
-      startupWMClass = "Pale moon";
-      extraConfig = {
-        X-MultipleArgs = "false";
-      };
-      actions = {
-        "NewTab" = {
-          name = "Open new tab";
-          exec = "palemoon -new-tab https://start.palemoon.org";
-        };
-        "NewWindow" = {
-          name = "Open new window";
-          exec = "palemoon -new-window";
-        };
-        "NewPrivateWindow" = {
-          name = "Open new private window";
-          exec = "palemoon -private-window";
-        };
-        "ProfileManager" = {
-          name = "Open the Profile Manager";
-          exec = "palemoon --ProfileManager";
-        };
-      };
-    })
-  ];
-
-  dontConfigure = true;
-  dontBuild = true;
 
   installPhase = ''
     runHook preInstall
@@ -137,8 +67,6 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
-  dontWrapGApps = true;
-
   preFixup = ''
     # Make optional dependencies available
     gappsWrapperArgs+=(
@@ -152,6 +80,84 @@ stdenv.mkDerivation (finalAttrs: {
     )
     wrapGApp $out/lib/palemoon/palemoon
   '';
+
+  desktopItems = [
+    (makeDesktopItem {
+      actions = {
+        "NewPrivateWindow" = {
+          exec = "palemoon -private-window";
+          name = "Open new private window";
+        };
+
+        "NewTab" = {
+          exec = "palemoon -new-tab https://start.palemoon.org";
+          name = "Open new tab";
+        };
+
+        "NewWindow" = {
+          exec = "palemoon -new-window";
+          name = "Open new window";
+        };
+
+        "ProfileManager" = {
+          exec = "palemoon --ProfileManager";
+          name = "Open the Profile Manager";
+        };
+      };
+
+      categories = [
+        "Network"
+        "WebBrowser"
+      ];
+
+      comment = "Browse the World Wide Web";
+      desktopName = "Pale Moon Web Browser";
+      exec = "palemoon %u";
+
+      extraConfig = {
+        X-MultipleArgs = "false";
+      };
+
+      icon = "palemoon";
+
+      keywords = [
+        "Internet"
+        "WWW"
+        "Browser"
+        "Web"
+        "Explorer"
+      ];
+
+      mimeTypes = [
+        "text/html"
+        "text/xml"
+        "application/xhtml+xml"
+        "application/xml"
+        "application/rss+xml"
+        "application/rdf+xml"
+        "image/gif"
+        "image/jpeg"
+        "image/png"
+        "x-scheme-handler/http"
+        "x-scheme-handler/https"
+        "x-scheme-handler/ftp"
+        "x-scheme-handler/chrome"
+        "video/webm"
+        "application/x-xpinstall"
+      ];
+
+      name = "palemoon-bin";
+      startupNotify = true;
+      startupWMClass = "Pale moon";
+      terminal = false;
+      type = "Application";
+    })
+  ];
+
+  dontBuild = true;
+  dontConfigure = true;
+  dontWrapGApps = true;
+  preferLocalBuild = true;
 
   passthru = {
     sources =
@@ -169,13 +175,14 @@ stdenv.mkDerivation (finalAttrs: {
             ];
       in
       {
-        gtk3 = fetchzip {
-          urls = urlRegionVariants "gtk3";
-          hash = "sha256-PFsdDuer6mbxFrcT0rSADcOxunoJIo3Y6O4NG4R8ygY=";
-        };
         gtk2 = fetchzip {
-          urls = urlRegionVariants "gtk2";
           hash = "sha256-C48vM0LI6rPSS0wFVnPRlppT4I5EFnWzBFg/Rxw++Bw=";
+          urls = urlRegionVariants "gtk2";
+        };
+
+        gtk3 = fetchzip {
+          hash = "sha256-PFsdDuer6mbxFrcT0rSADcOxunoJIo3Y6O4NG4R8ygY=";
+          urls = urlRegionVariants "gtk3";
         };
       };
 
@@ -203,8 +210,8 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   meta = {
-    homepage = "https://www.palemoon.org/";
     description = "Open Source, Goanna-based web browser focusing on efficiency and customization";
+
     longDescription = ''
       Pale Moon is an Open Source, Goanna-based web browser focusing on
       efficiency and customization.
@@ -216,7 +223,10 @@ stdenv.mkDerivation (finalAttrs: {
       experience, while offering full customization and a growing collection of
       extensions and themes to make the browser truly your own.
     '';
+
+    homepage = "https://www.palemoon.org/";
     changelog = "https://repo.palemoon.org/MoonchildProductions/Pale-Moon/releases/tag/${finalAttrs.version}_Release";
+
     license = [
       lib.licenses.mpl20
       {
@@ -225,10 +235,11 @@ stdenv.mkDerivation (finalAttrs: {
         # TODO free, redistributable? Has strict limitations on what modifications may be done & shipped by packagers
       }
     ];
-    maintainers = with lib.maintainers; [ OPNA2608 ];
+
     sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
-    mainProgram = "palemoon";
+    maintainers = with lib.maintainers; [ OPNA2608 ];
     platforms = [ "x86_64-linux" ];
+    mainProgram = "palemoon";
     hydraPlatforms = [ ];
   };
 })

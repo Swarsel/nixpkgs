@@ -5,13 +5,12 @@
   gradle,
   jdk17,
   jdk21,
-  makeBinaryWrapper,
-  openssl,
-  libdeflate,
   jre_headless,
-  writeScript,
+  libdeflate,
+  makeBinaryWrapper,
   nixosTests,
-
+  openssl,
+  writeScript,
   # native (openssl + libdeflate) compression and crypto implementations
   withVelocityNative ? builtins.elem stdenv.hostPlatform.system [
     "x86_64-linux"
@@ -22,8 +21,8 @@ let
   gradle_jdk17 = gradle.override { javaToolchains = [ jdk17 ]; };
   velocityNativePlatform =
     {
-      x86_64-linux = "linux_x86_64";
       aarch64-linux = "linux_aarch64";
+      x86_64-linux = "linux_x86_64";
     }
     .${stdenv.hostPlatform.system} or (
       if withVelocityNative then
@@ -43,6 +42,17 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-EzoR12YsXP0F7n1ifk/Eg16S//pmYnRpSiO7qkerBes=";
   };
 
+  patches = [
+    ./fix-version.patch # remove build-time dependency on git and use version string from a env var instead
+    ./disable-javadocs.patch # disable building java docs because they cause build failures
+  ];
+
+  postPatch = ''
+    rm -rf native/src/main/resources/{linux_x86_64,linux_aarch64,macos_aarch64}/*
+  '';
+
+  strictDeps = true;
+
   nativeBuildInputs = [
     gradle_jdk17
     makeBinaryWrapper
@@ -57,24 +67,7 @@ stdenv.mkDerivation (finalAttrs: {
     jdk21
   ];
 
-  strictDeps = true;
-
-  mitmCache = gradle_jdk17.fetchDeps {
-    inherit (finalAttrs) pname;
-    data = ./deps.json;
-  };
-
-  patches = [
-    ./fix-version.patch # remove build-time dependency on git and use version string from a env var instead
-    ./disable-javadocs.patch # disable building java docs because they cause build failures
-  ];
-
-  # tests require velocity native
-  doCheck = withVelocityNative;
-
-  postPatch = ''
-    rm -rf native/src/main/resources/{linux_x86_64,linux_aarch64,macos_aarch64}/*
-  '';
+  env.BUILD_VERSION = "nixpkgs-${finalAttrs.version}";
 
   # based on native/build-support/compile-linux-{compress,crypt}.sh
   preBuild =
@@ -90,6 +83,9 @@ stdenv.mkDerivation (finalAttrs: {
         -o native/src/main/resources/${velocityNativePlatform}/velocity-compress.so \
         -ldeflate
     '';
+
+  # tests require velocity native
+  doCheck = withVelocityNative;
 
   installPhase = ''
     runHook preInstall
@@ -110,9 +106,14 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
-  env.BUILD_VERSION = "nixpkgs-${finalAttrs.version}";
+  mitmCache = gradle_jdk17.fetchDeps {
+    inherit (finalAttrs) pname;
+    data = ./deps.json;
+  };
 
   passthru = {
+    tests.velocity = nixosTests.velocity;
+
     updateScript = writeScript "update-velocity" ''
       #!/usr/bin/env nix-shell
       #!nix-shell -i bash -p common-updater-scripts
@@ -132,20 +133,22 @@ stdenv.mkDerivation (finalAttrs: {
       update-source-version "$UPDATE_NIX_ATTR_PATH" "$main_version-unstable-$commit_date" --rev="$commit_hash"
       $(nix-build -A velocity.mitmCache.updateScript)
     '';
-    tests.velocity = nixosTests.velocity;
   };
 
   meta = {
     description = "Modern, next-generation Minecraft server proxy";
     homepage = "https://papermc.io/software/velocity";
+
     license = with lib.licenses; [
       gpl3Only
       mit
     ];
+
     sourceProvenance = with lib.sourceTypes; [
       fromSource
       binaryBytecode # java deps
     ];
+
     maintainers = with lib.maintainers; [ Tert0 ];
     platforms = lib.platforms.linux;
     mainProgram = "velocity";

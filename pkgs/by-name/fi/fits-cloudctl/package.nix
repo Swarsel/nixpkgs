@@ -1,15 +1,12 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule rec {
   pname = "fits-cloudctl";
   version = "0.12.21"; # also update these 3 vars:
-  gitversion = "tags/v0.12.21-0-g0a0d89a"; # git describe --long --all
-  gitsha = "0a0d89a8"; # git rev-parse --short=8 HEAD
-  gittime = "2024-05-15T17:34:46+02:00"; # date --iso-8601=seconds
 
   src = fetchFromGitHub {
     owner = "fi-ts";
@@ -19,6 +16,9 @@ buildGoModule rec {
   };
 
   vendorHash = "sha256-YSWO7Y9qtqCWfAMnzSMOWlXezjnggMLV8xF42vgOS7s=";
+  gitsha = "0a0d89a8"; # git rev-parse --short=8 HEAD
+  gittime = "2024-05-15T17:34:46+02:00"; # date --iso-8601=seconds
+  gitversion = "tags/v0.12.21-0-g0a0d89a"; # git describe --long --all
 
   ldflags = [
     "-X github.com/metal-stack/v.Version=${version}"

@@ -20,21 +20,22 @@ stdenv.mkDerivation {
     libsForQt5.qmake
     libsForQt5.wrapQtAppsHook
   ];
-  buildInputs = [ libsForQt5.qtbase ];
 
-  dontConfigure = true;
+  buildInputs = [ libsForQt5.qtbase ];
 
   installPhase = ''
     mkdir -p $out/bin
     cp -r editor/editor $out/bin/
   '';
 
+  dontConfigure = true;
+
   meta = {
     description = "Tool for synchronizing music and visuals in demoscene productions";
-    mainProgram = "editor";
     homepage = "https://github.com/rocket/rocket";
     license = lib.licenses.zlib;
-    platforms = lib.platforms.linux;
     maintainers = [ ];
+    platforms = lib.platforms.linux;
+    mainProgram = "editor";
   };
 }

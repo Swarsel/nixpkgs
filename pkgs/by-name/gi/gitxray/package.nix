@@ -1,13 +1,12 @@
 {
   lib,
-  python3,
   fetchFromGitHub,
+  python3,
 }:
 
 python3.pkgs.buildPythonApplication (finalAttrs: {
   pname = "gitxray";
   version = "1.0.20";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "kulkansecurity";
@@ -17,9 +16,8 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
   };
 
   build-system = with python3.pkgs; [ setuptools ];
-
   dependencies = with python3.pkgs; [ requests ];
-
+  pyproject = true;
   pythonImportsCheck = [ "gitxray" ];
 
   meta = {

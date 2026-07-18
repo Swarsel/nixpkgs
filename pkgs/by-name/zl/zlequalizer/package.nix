@@ -1,32 +1,30 @@
 {
   lib,
-  clangStdenv,
   fetchFromGitHub,
-  nix-update-script,
-
-  # nativeBuildInputs
-  cmake,
-  darwin,
-  ninja,
-  pkg-config,
-  python3,
-  writableTmpDirAsHomeHook,
-
   # buildInputs
   alsa-lib,
+  clangStdenv,
+  # nativeBuildInputs
+  cmake,
   curl,
+  darwin,
   expat,
   fontconfig,
   freetype,
   libGL,
+  libepoxy,
+  libjack2,
   libxcursor,
   libxext,
   libxinerama,
-  libxrandr,
-  libepoxy,
-  libjack2,
   libxkbcommon,
+  libxrandr,
   lv2,
+  ninja,
+  nix-update-script,
+  pkg-config,
+  python3,
+  writableTmpDirAsHomeHook,
   # Highway is built static-dispatch only upstream (HWY_COMPILE_ONLY_STATIC is
   # forced ON), so exactly one ISA is baked in -- there is no runtime dispatch.
   # Default to the portable baseline so the cached binary runs everywhere nixpkgs
@@ -46,9 +44,6 @@ clangStdenv.mkDerivation (finalAttrs: {
   pname = "zlequalizer";
   version = "1.2.2";
 
-  __structuredAttrs = true;
-  strictDeps = true;
-
   src = fetchFromGitHub {
     owner = "ZL-Audio";
     repo = "ZLEqualizer";
@@ -56,6 +51,8 @@ clangStdenv.mkDerivation (finalAttrs: {
     hash = "sha256-fIcplXdRKtCqWBm2Vw/Nm8dVDOpKnsejo2irv1xehvk=";
     fetchSubmodules = true;
   };
+
+  strictDeps = true;
 
   nativeBuildInputs = [
     cmake
@@ -85,16 +82,14 @@ clangStdenv.mkDerivation (finalAttrs: {
     libxkbcommon
   ];
 
-  env = lib.optionalAttrs clangStdenv.hostPlatform.isLinux {
-    # JUCE dlopen's these at runtime, crashes without them
-    NIX_LDFLAGS = toString [
-      "-lX11"
-      "-lXext"
-      "-lXcursor"
-      "-lXinerama"
-      "-lXrandr"
-    ];
+  cmakeFlags = [
+    (lib.cmakeFeature "ZL_HWY_STATIC_TARGET" simdTarget)
+    (lib.cmakeBool "ZL_JUCE_COPY_PLUGIN" false)
+    # set the version for the settings screen.
+    (lib.cmakeFeature "FOOBAR_VERSION" "${finalAttrs.version}")
+  ];
 
+  env = lib.optionalAttrs clangStdenv.hostPlatform.isLinux {
     NIX_CFLAGS_COMPILE = toString [
       # juce, compiled in this build as part of a Git submodule, uses `-flto` as
       # a Link Time Optimization flag, and instructs the plugin compiled here to
@@ -105,14 +100,16 @@ clangStdenv.mkDerivation (finalAttrs: {
       # Git Submodule.
       "-ffat-lto-objects"
     ];
-  };
 
-  cmakeFlags = [
-    (lib.cmakeFeature "ZL_HWY_STATIC_TARGET" simdTarget)
-    (lib.cmakeBool "ZL_JUCE_COPY_PLUGIN" false)
-    # set the version for the settings screen.
-    (lib.cmakeFeature "FOOBAR_VERSION" "${finalAttrs.version}")
-  ];
+    # JUCE dlopen's these at runtime, crashes without them
+    NIX_LDFLAGS = toString [
+      "-lX11"
+      "-lXext"
+      "-lXcursor"
+      "-lXinerama"
+      "-lXrandr"
+    ];
+  };
 
   installPhase = ''
     runHook preInstall
@@ -133,17 +130,20 @@ clangStdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  __structuredAttrs = true;
   passthru.updateScript = nix-update-script { };
 
   meta = {
+    description = "Versatile equalizer plugin for VST3, LV2 and standalone";
     homepage = "https://zl-audio.github.io/plugins/zlequalizer2/";
     changelog = "https://github.com/ZL-Audio/ZLEqualizer/releases/tag/${finalAttrs.version}";
-    description = "Versatile equalizer plugin for VST3, LV2 and standalone";
-    mainProgram = "ZL Equalizer 2";
     license = lib.licenses.agpl3Plus;
+
     maintainers = with lib.maintainers; [
       magnetophon
     ];
+
     platforms = lib.platforms.linux ++ lib.platforms.darwin;
+    mainProgram = "ZL Equalizer 2";
   };
 })

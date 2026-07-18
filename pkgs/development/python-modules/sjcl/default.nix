@@ -1,15 +1,14 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
+  buildPythonPackage,
   pycryptodome,
+  setuptools,
 }:
 
 buildPythonPackage {
   pname = "sjcl";
   version = "0.2.1";
-  pyproject = true;
 
   # PyPi release is missing tests
   src = fetchFromGitHub {
@@ -21,9 +20,8 @@ buildPythonPackage {
   };
 
   build-system = [ setuptools ];
-
   dependencies = [ pycryptodome ];
-
+  pyproject = true;
   pythonImportsCheck = [ "sjcl" ];
 
   meta = {

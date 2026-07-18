@@ -1,24 +1,20 @@
 {
-  buildPythonPackage,
-  pkgs,
   lib,
+  buildPythonPackage,
   hfst,
+  pkgs,
 }:
 
 buildPythonPackage rec {
-  pname = "omorfi";
-  format = "setuptools";
   inherit (pkgs.omorfi) src version;
-
-  sourceRoot = "${src.name}/src/python";
-
-  propagatedBuildInputs = [ hfst ];
-
+  pname = "omorfi";
   # Fixes some improper import paths
   patches = [ ./importfix.patch ];
-
+  propagatedBuildInputs = [ hfst ];
+  format = "setuptools";
   # Apply patch relative to source/src
   patchFlags = [ "-p3" ];
+  sourceRoot = "${src.name}/src/python";
 
   meta = {
     description = "Python interface for Omorfi";

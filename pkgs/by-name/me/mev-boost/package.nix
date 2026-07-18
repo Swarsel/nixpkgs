@@ -1,12 +1,13 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule (finalAttrs: {
   pname = "mev-boost";
   version = "1.12";
+
   src = fetchFromGitHub {
     owner = "flashbots";
     repo = "mev-boost";
@@ -20,8 +21,8 @@ buildGoModule (finalAttrs: {
     description = "Ethereum block-building middleware";
     homepage = "https://github.com/flashbots/mev-boost";
     license = lib.licenses.mit;
-    mainProgram = "mev-boost";
     maintainers = with lib.maintainers; [ ekimber ];
     platforms = lib.platforms.unix;
+    mainProgram = "mev-boost";
   };
 })

@@ -1,48 +1,28 @@
 {
   lib,
   stdenv,
+  SDL2,
   getdns,
   htslib,
   libsass,
+  libx11,
+  libxft,
+  libxinerama,
   openssl,
   pkg-config,
   raylib,
-  SDL2,
   tkrzw,
-  libxinerama,
-  libxft,
-  libx11,
 }:
 
 # The following is list of overrides that take two arguments each:
 # - lockAttrs: - an attrset from a Nim lockfile, use this for making constraints on the locked library
 # - prevAttrs: - preceding arguments to the depender package
 {
-  jester =
-    lockAttrs:
-    {
-      buildInputs ? [ ],
-      ...
-    }:
-    {
-      buildInputs = buildInputs ++ [ openssl ];
-    };
-
-  hts =
-    lockAttrs:
-    {
-      buildInputs ? [ ],
-      ...
-    }:
-    {
-      buildInputs = buildInputs ++ [ htslib ];
-    };
-
   getdns =
     lockAttrs:
     {
-      nativeBuildInputs ? [ ],
       buildInputs ? [ ],
+      nativeBuildInputs ? [ ],
       ...
     }:
     {
@@ -57,6 +37,26 @@
       # https://github.com/khchen/hashlib/pull/4
       # remove when fixed upstream
       (_: { });
+
+  hts =
+    lockAttrs:
+    {
+      buildInputs ? [ ],
+      ...
+    }:
+    {
+      buildInputs = buildInputs ++ [ htslib ];
+    };
+
+  jester =
+    lockAttrs:
+    {
+      buildInputs ? [ ],
+      ...
+    }:
+    {
+      buildInputs = buildInputs ++ [ openssl ];
+    };
 
   nimraylib_now =
     lockAttrs:
@@ -91,8 +91,8 @@
   tkrzw =
     lockAttrs:
     {
-      nativeBuildInputs ? [ ],
       buildInputs ? [ ],
+      nativeBuildInputs ? [ ],
       ...
     }:
     {

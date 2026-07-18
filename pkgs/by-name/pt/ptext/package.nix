@@ -15,15 +15,14 @@ stdenv.mkDerivation {
     hash = "sha256-bmqQslC/T7dFJwg/ZCevQRpmkVJHRQ++0EV4b88xF6k=";
   };
 
-  enableParallelBuilding = true;
-  hardeningDisable = [ "fortify" ];
-
   makeFlags = [
     "INSTALL_DIR=${placeholder "out"}/bin"
     "MANPAGE_INSTALL_DIR=${placeholder "out"}/share/man/man1"
   ];
 
   preInstall = "mkdir -p $out/{bin,share/man/man1}";
+  enableParallelBuilding = true;
+  hardeningDisable = [ "fortify" ];
 
   meta = {
     description = "Nano like text editor built with pure C";

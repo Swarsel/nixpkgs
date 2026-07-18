@@ -1,14 +1,13 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   callPackage,
 }:
 
 buildGoModule rec {
   pname = "tfk8s";
   version = "0.1.10";
-  tag = "v${version}";
 
   src = fetchFromGitHub {
     owner = "jrhouston";
@@ -18,6 +17,12 @@ buildGoModule rec {
   };
 
   vendorHash = "sha256-eTADcUW9b6l47BkWF9YLxdcgvMbCzWTjLF28FneJHg8=";
+  doCheck = true;
+  doInstallCheck = true;
+
+  installCheckPhase = ''
+    $out/bin/tfk8s --version | grep ${tag} > /dev/null
+  '';
 
   ldflags = [
     "-s"
@@ -26,12 +31,7 @@ buildGoModule rec {
     "-X main.builtBy=nixpkgs"
   ];
 
-  doCheck = true;
-
-  doInstallCheck = true;
-  installCheckPhase = ''
-    $out/bin/tfk8s --version | grep ${tag} > /dev/null
-  '';
+  tag = "v${version}";
 
   passthru.tests = {
     sample1 = callPackage ./tests/sample1 { };
@@ -39,7 +39,7 @@ buildGoModule rec {
 
   meta = {
     description = "Utility to convert Kubernetes YAML manifests to Terraform's HCL format";
-    license = lib.licenses.mit;
+
     longDescription = ''
       tfk8s is a tool that makes it easier to work with the Terraform Kubernetes Provider.
       If you want to copy examples from the Kubernetes documentation or migrate existing YAML manifests and use them with Terraform without having to convert YAML to HCL by hand, this tool is for you.
@@ -47,7 +47,9 @@ buildGoModule rec {
       * Convert a YAML file containing multiple manifests.
       * Strip out server side fields when piping kubectl get $R -o yaml | tfk8s --strip
     '';
+
     homepage = "https://github.com/jrhouston/tfk8s/";
+    license = lib.licenses.mit;
     maintainers = [ ];
     mainProgram = "tfk8s";
   };

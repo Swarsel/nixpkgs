@@ -7,17 +7,16 @@
 stdenv.mkDerivation (finalAttrs: {
   pname = "fcrackzip";
   version = "1.0";
+
   src = fetchurl {
     url = "https://oldhome.schmorp.de/marc/data/fcrackzip-${finalAttrs.version}.tar.gz";
     sha256 = "0l1qsk949vnz18k4vjf3ppq8p497966x4c7f2yx18x8pk35whn2a";
   };
 
-  env.CFLAGS = "-std=gnu89";
-
   # 'fcrackzip --use-unzip' cannot deal with file names containing a single quote
   # https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=430387
   patches = [ ./fcrackzip_forkexec.patch ];
-
+  env.CFLAGS = "-std=gnu89";
   # Do not clash with unizp/zipinfo
   postInstall = "mv $out/bin/zipinfo $out/bin/fcrackzip-zipinfo";
 

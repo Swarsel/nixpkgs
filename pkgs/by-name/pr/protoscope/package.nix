@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule {
@@ -24,9 +24,9 @@ buildGoModule {
 
   meta = {
     description = "Simple, human-editable language for representing and emitting the Protobuf wire format";
-    mainProgram = "protoscope";
     homepage = "https://github.com/protocolbuffers/protoscope";
     license = lib.licenses.asl20;
     maintainers = [ ];
+    mainProgram = "protoscope";
   };
 }

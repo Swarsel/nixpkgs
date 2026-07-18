@@ -1,35 +1,30 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # build-system
-  hatchling,
-
+  argcomplete,
   # dependencies
   attrs,
-  argcomplete,
+  buildPythonPackage,
   colorlog,
   dependency-groups,
+  # build-system
+  hatchling,
   humanize,
   jinja2,
   packaging,
-  tomli,
-
   # tests
   pytestCheckHook,
-  writableTmpDirAsHomeHook,
-
+  tomli,
   # passthru
   tox,
   uv,
   virtualenv,
+  writableTmpDirAsHomeHook,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "nox";
   version = "2026.07.11";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "wntrblm";
@@ -37,6 +32,12 @@ buildPythonPackage (finalAttrs: {
     tag = finalAttrs.version;
     hash = "sha256-Ve9mKZ6C9X/SjscEIO11fyMqokjlYZqbqXWC1R1+Kmc=";
   };
+
+  nativeCheckInputs = [
+    pytestCheckHook
+    writableTmpDirAsHomeHook
+  ]
+  ++ lib.flatten (builtins.attrValues finalAttrs.passthru.optional-dependencies);
 
   build-system = [ hatchling ];
 
@@ -50,21 +51,10 @@ buildPythonPackage (finalAttrs: {
     virtualenv
   ];
 
-  optional-dependencies = {
-    tox-to-nox = [
-      jinja2
-      tox
-    ];
-    uv = [ uv ];
-  };
-
-  nativeCheckInputs = [
-    pytestCheckHook
-    writableTmpDirAsHomeHook
-  ]
-  ++ lib.flatten (builtins.attrValues finalAttrs.passthru.optional-dependencies);
-
-  pythonImportsCheck = [ "nox" ];
+  disabledTestPaths = [
+    # AttributeError: module 'tox.config' has...
+    "tests/test_tox_to_nox.py"
+  ];
 
   disabledTests = [
     # Assertion errors
@@ -75,16 +65,24 @@ buildPythonPackage (finalAttrs: {
     "test_noxfile_script_mode"
   ];
 
-  disabledTestPaths = [
-    # AttributeError: module 'tox.config' has...
-    "tests/test_tox_to_nox.py"
-  ];
+  optional-dependencies = {
+    tox-to-nox = [
+      jinja2
+      tox
+    ];
+
+    uv = [ uv ];
+  };
+
+  pyproject = true;
+  pythonImportsCheck = [ "nox" ];
 
   meta = {
     description = "Flexible test automation for Python";
     homepage = "https://nox.thea.codes/";
     changelog = "https://github.com/wntrblm/nox/blob/${finalAttrs.src.tag}/CHANGELOG.md";
     license = lib.licenses.asl20;
+
     maintainers = with lib.maintainers; [
       doronbehar
       fab

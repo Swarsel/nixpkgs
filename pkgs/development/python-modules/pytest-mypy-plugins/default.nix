@@ -1,8 +1,8 @@
 {
   lib,
+  fetchFromGitHub,
   buildPythonPackage,
   decorator,
-  fetchFromGitHub,
   jinja2,
   jsonschema,
   mypy,
@@ -18,7 +18,6 @@
 buildPythonPackage rec {
   pname = "pytest-mypy-plugins";
   version = "4.0.3";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "typeddjango";
@@ -27,9 +26,18 @@ buildPythonPackage rec {
     hash = "sha256-RyHoZniVLtunqz42tuVeAoiUm/e5JvvwX2MMCAJBhy8=";
   };
 
-  build-system = [ setuptools ];
-
   buildInputs = [ pytest ];
+
+  nativeCheckInputs = [
+    mypy
+    pytestCheckHook
+  ];
+
+  preCheck = ''
+    export PATH="$PATH:$out/bin";
+  '';
+
+  build-system = [ setuptools ];
 
   dependencies = [
     decorator
@@ -42,19 +50,10 @@ buildPythonPackage rec {
     tomlkit
   ];
 
-  pythonImportsCheck = [ "pytest_mypy_plugins" ];
-
-  nativeCheckInputs = [
-    mypy
-    pytestCheckHook
-  ];
-
-  preCheck = ''
-    export PATH="$PATH:$out/bin";
-  '';
-
   disabledTestPaths = [ "pytest_mypy_plugins/tests/test_explicit_configs.py" ];
   disabledTests = [ "test_no_silence_site_packages" ];
+  pyproject = true;
+  pythonImportsCheck = [ "pytest_mypy_plugins" ];
 
   meta = {
     description = "Pytest plugin for testing mypy types, stubs, and plugins";

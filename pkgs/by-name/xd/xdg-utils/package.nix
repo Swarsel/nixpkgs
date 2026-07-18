@@ -3,19 +3,12 @@
   stdenv,
   fetchurl,
   fetchFromGitLab,
-  runCommand,
-  writeText,
-  # docs deps
-  libxslt,
-  docbook_xml_dtd_412,
-  docbook_xml_dtd_43,
-  docbook_xsl,
-  xmlto,
-  # runtime deps
-  resholve,
   bash,
   coreutils,
   dbus,
+  docbook_xml_dtd_412,
+  docbook_xml_dtd_43,
+  docbook_xsl,
   file,
   gawk,
   glib,
@@ -23,12 +16,19 @@
   gnused,
   hostname,
   jq,
-  procps,
-  which,
-  xdg-user-dirs,
-  shared-mime-info,
+  # docs deps
+  libxslt,
   perl,
   perlPackages,
+  procps,
+  # runtime deps
+  resholve,
+  runCommand,
+  shared-mime-info,
+  which,
+  writeText,
+  xdg-user-dirs,
+  xmlto,
   withXdgOpenUsePortalPatch ? true,
 }:
 
@@ -57,42 +57,38 @@ let
 
   solutions = [
     {
-      scripts = [ "bin/xdg-desktop-icon" ];
-      interpreter = "${bash}/bin/bash";
-      inputs = commonDeps ++ [ xdg-user-dirs ];
       execer = [
         "cannot:${xdg-user-dirs}/bin/xdg-user-dir"
       ];
+
       # These are desktop-specific, so we don't want xdg-utils to be able to
       # call them when in a different setup.
       fake.external = commonFakes ++ [
         "gconftool-2" # GNOME2
       ];
+
+      inputs = commonDeps ++ [ xdg-user-dirs ];
+      interpreter = "${bash}/bin/bash";
       keep."$KDE_SESSION_VERSION" = true;
       prologue = commonPrologue;
+      scripts = [ "bin/xdg-desktop-icon" ];
     }
 
     {
-      scripts = [ "bin/xdg-desktop-menu" ];
-      interpreter = "${bash}/bin/bash";
-      inputs = commonDeps ++ [ gawk ];
       fake.external = commonFakes;
+      inputs = commonDeps ++ [ gawk ];
+      interpreter = "${bash}/bin/bash";
       keep."$KDE_SESSION_VERSION" = true;
       prologue = commonPrologue;
+      scripts = [ "bin/xdg-desktop-menu" ];
     }
 
     {
-      scripts = [ "bin/xdg-email" ];
-      interpreter = "${bash}/bin/bash";
-      inputs = commonDeps ++ [
-        gawk
-        glib.bin
-        "${placeholder "out"}/bin"
-      ];
       execer = [
         "cannot:${placeholder "out"}/bin/xdg-mime"
         "cannot:${placeholder "out"}/bin/xdg-open"
       ];
+
       # These are desktop-specific, so we don't want xdg-utils to be able to
       # call them when in a different setup.
       fake.external = commonFakes ++ [
@@ -104,31 +100,37 @@ let
         "qtxdg-mat" # LXQT
         "xdg-email-hook.sh" # user-defined hook that may be available ambiently
       ];
+
       fix."/bin/echo" = true;
+
+      inputs = commonDeps ++ [
+        gawk
+        glib.bin
+        "${placeholder "out"}/bin"
+      ];
+
+      interpreter = "${bash}/bin/bash";
+
       keep = {
+        "$THUNDERBIRD" = true;
         "$command" = true;
         "$kreadconfig" = true;
-        "$THUNDERBIRD" = true;
         "$utf8" = true;
       };
+
+      scripts = [ "bin/xdg-email" ];
     }
 
     {
-      scripts = [ "bin/xdg-icon-resource" ];
-      interpreter = "${bash}/bin/bash";
-      inputs = commonDeps;
       fake.external = commonFakes;
+      inputs = commonDeps;
+      interpreter = "${bash}/bin/bash";
       keep."$KDE_SESSION_VERSION" = true;
       prologue = commonPrologue;
+      scripts = [ "bin/xdg-icon-resource" ];
     }
 
     {
-      scripts = [ "bin/xdg-mime" ];
-      interpreter = "${bash}/bin/bash";
-      inputs = commonDeps ++ [
-        file
-        gawk
-      ];
       # These are desktop-specific, so we don't want xdg-utils to be able to
       # call them when in a different setup.
       fake.external = commonFakes ++ [
@@ -145,11 +147,21 @@ let
         "qtpaths" # Plasma
         "qtxdg-mat" # LXQT
       ];
+
       fix."/usr/bin/file" = true;
+
+      inputs = commonDeps ++ [
+        file
+        gawk
+      ];
+
+      interpreter = "${bash}/bin/bash";
+
       keep = {
         "$KDE_SESSION_VERSION" = true;
         "$KTRADER" = true;
       };
+
       prologue = "${writeText "xdg-mime-prologue" ''
         export XDG_DATA_DIRS="$XDG_DATA_DIRS''${XDG_DATA_DIRS:+:}${shared-mime-info}/share"
         export PERL5LIB=${with perlPackages; makePerlPath [ FileMimeInfo ]}
@@ -160,19 +172,15 @@ let
           ]
         }
       ''}";
+
+      scripts = [ "bin/xdg-mime" ];
     }
 
     {
-      scripts = [ "bin/xdg-open" ];
-      interpreter = "${bash}/bin/bash";
-      inputs = commonDeps ++ [
-        hostname
-        glib.bin
-        "${placeholder "out"}/bin"
-      ];
       execer = [
         "cannot:${placeholder "out"}/bin/xdg-mime"
       ];
+
       # These are desktop-specific, so we don't want xdg-utils to be able to
       # call them when in a different setup.
       fake.external = commonFakes ++ [
@@ -194,22 +202,31 @@ let
         "rundll32.exe" # WSL
         "wslpath" # WSL
       ];
+
       fix."$printf" = [ "printf" ];
+
+      inputs = commonDeps ++ [
+        hostname
+        glib.bin
+        "${placeholder "out"}/bin"
+      ];
+
+      interpreter = "${bash}/bin/bash";
+
       keep = {
-        "env:$command" = true;
-        "$browser" = true;
         "$KDE_SESSION_VERSION" = true;
+        "$browser" = true;
+        "env:$command" = true;
       };
+
+      scripts = [ "bin/xdg-open" ];
     }
 
     {
-      scripts = [ "bin/xdg-screensaver" ];
-      interpreter = "${bash}/bin/bash";
-      inputs = commonDeps ++ [
-        hostname
-        perl
-        procps
+      execer = [
+        "cannot:${perl}/bin/perl"
       ];
+
       # These are desktop-specific, so we don't want xdg-utils to be able to
       # call them when in a different setup.
       fake.external = commonFakes ++ [
@@ -220,14 +237,21 @@ let
         "xscreensaver-command" # Xscreensaver
         "xset" # generic-ish X
       ];
+
+      inputs = commonDeps ++ [
+        hostname
+        perl
+        procps
+      ];
+
+      interpreter = "${bash}/bin/bash";
+
       keep = {
         "$MV" = true;
         "$XPROP" = true;
         "$lockfile_command" = true;
       };
-      execer = [
-        "cannot:${perl}/bin/perl"
-      ];
+
       prologue = "${writeText "xdg-screensaver-prologue" ''
         export PERL5LIB=${
           with perlPackages;
@@ -240,18 +264,15 @@ let
         }
         export PATH=$PATH:${coreutils}/bin
       ''}";
+
+      scripts = [ "bin/xdg-screensaver" ];
     }
 
     {
-      scripts = [ "bin/xdg-settings" ];
-      interpreter = "${bash}/bin/bash";
-      inputs = commonDeps ++ [
-        jq
-        "${placeholder "out"}/bin"
-      ];
       execer = [
         "cannot:${placeholder "out"}/bin/xdg-mime"
       ];
+
       # These are desktop-specific, so we don't want xdg-utils to be able to
       # call them when in a different setup.
       fake.external = commonFakes ++ [
@@ -265,21 +286,24 @@ let
         "kwriteconfig6" # Plasma 6
         "qtxdg-mat" # LXQT
       ];
+
+      inputs = commonDeps ++ [
+        jq
+        "${placeholder "out"}/bin"
+      ];
+
+      interpreter = "${bash}/bin/bash";
+
       keep = {
         "$KDE_SESSION_VERSION" = true;
         # get_browser_$handler
         "$handler" = true;
       };
+
+      scripts = [ "bin/xdg-settings" ];
     }
 
     {
-      scripts = [ "bin/xdg-terminal" ];
-      interpreter = "${bash}/bin/bash";
-      inputs = commonDeps ++ [
-        bash
-        glib.bin
-        which
-      ];
       fake.external = commonFakes ++ [
         "gconftool-2" # GNOME
         "exo-open" # XFCE
@@ -287,12 +311,23 @@ let
         "qterminal" # LXQT
         "terminology" # Englightenment
       ];
+
+      inputs = commonDeps ++ [
+        bash
+        glib.bin
+        which
+      ];
+
+      interpreter = "${bash}/bin/bash";
+
       keep = {
         "$command" = true;
         "$kreadconfig" = true;
         "$terminal_exec" = true;
       };
+
       prologue = commonPrologue;
+      scripts = [ "bin/xdg-terminal" ];
     }
   ];
 in
@@ -302,11 +337,11 @@ stdenv.mkDerivation (finalAttrs: {
   version = "1.2.1";
 
   src = fetchFromGitLab {
-    domain = "gitlab.freedesktop.org";
     owner = "xdg";
     repo = "xdg-utils";
     rev = "v${finalAttrs.version}";
     hash = "sha256-58ElbrVlk+13DUODSEHBPcDDt9H+Kuee8Rz9CIcoy0I=";
+    domain = "gitlab.freedesktop.org";
   };
 
   patches = lib.optionals withXdgOpenUsePortalPatch [
@@ -338,13 +373,16 @@ stdenv.mkDerivation (finalAttrs: {
       {
         nativeBuildInputs = [ finalAttrs.finalPackage ];
         preferLocalBuild = true;
+
         xenias = lib.mapAttrsToList (hash: urls: fetchurl { inherit hash urls; }) {
           "sha256-SL95tM1AjOi7vDnCyT10s0tvQvc+ZSZBbkNOYXfbOy0=" = [
             "https://static1.e621.net/data/0e/76/0e7672980d48e48c2d1373eb2505db5a.png"
           ];
+
           "sha256-Si9AtB7J9o6rK/oftv+saST77CNaeWomWU5ECfbRioM=" = [
             "https://static1.e621.net/data/25/3d/253dc77fbc60d7214bc60e4a647d1c32.jpg"
           ];
+
           "sha256-Z+onQRY5zlDWPp5/y4E6crLz3TaMCNipcxEEMSHuLkM=" = [
             "https://d.furaffinity.net/art/neotheta/1691409857/1691409857.neotheta_quickmakeanentry_by_neotheta-sig.png"
             "https://static1.e621.net/data/bf/e4/bfe43ba264ad68e5d8a101ecef69c03e.png"
@@ -364,8 +402,8 @@ stdenv.mkDerivation (finalAttrs: {
       '';
 
   meta = {
-    homepage = "https://www.freedesktop.org/wiki/Software/xdg-utils/";
     description = "Set of command line tools that assist applications with a variety of desktop integration tasks";
+    homepage = "https://www.freedesktop.org/wiki/Software/xdg-utils/";
     license = lib.licenses.mit;
     maintainers = [ ];
     platforms = lib.platforms.all;

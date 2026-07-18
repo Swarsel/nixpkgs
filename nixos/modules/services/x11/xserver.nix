@@ -1,8 +1,8 @@
 {
   config,
   lib,
-  utils,
   pkgs,
+  utils,
   ...
 }:
 
@@ -59,6 +59,7 @@ let
   videoDrivers =
     mapAttrs' (name: value: {
       name = removePrefix "xf86-video-" value.pname;
+
       value = {
         modules = [ value ];
       };
@@ -75,26 +76,26 @@ let
   };
 
   videoDriverAliases = {
-    # Alias so people can keep using "virtualbox" instead of "vboxvideo".
-    virtualbox = {
-      modules = [ knownVideoDriverPackages.xf86-video-vbox ];
-      driverName = "vboxvideo";
+    # modesetting does not have a xf86-video-modesetting package as it is included in xorg-server
+    modesetting = { };
+
+    # Alias so that "radeon" uses the xf86-video-ati driver.
+    radeon = {
+      driverName = "ati";
+      modules = [ knownVideoDriverPackages.xf86-video-ati ];
     };
 
     # Alias so people can keep using "vboxvideo" instead of "vbox".
     vboxvideo = {
-      modules = [ knownVideoDriverPackages.xf86-video-vbox ];
       driverName = "vboxvideo";
+      modules = [ knownVideoDriverPackages.xf86-video-vbox ];
     };
 
-    # Alias so that "radeon" uses the xf86-video-ati driver.
-    radeon = {
-      modules = [ knownVideoDriverPackages.xf86-video-ati ];
-      driverName = "ati";
+    # Alias so people can keep using "virtualbox" instead of "vboxvideo".
+    virtualbox = {
+      driverName = "vboxvideo";
+      modules = [ knownVideoDriverPackages.xf86-video-vbox ];
     };
-
-    # modesetting does not have a xf86-video-modesetting package as it is included in xorg-server
-    modesetting = { };
   };
 
   fontsForXServer =
@@ -112,35 +113,41 @@ let
     ];
 
   xrandrOptions = {
-    output = mkOption {
-      type = types.str;
-      example = "DVI-0";
-      description = ''
-        The output name of the monitor, as shown by
-        {manpage}`xrandr(1)` invoked without arguments.
-      '';
-    };
-
-    primary = mkOption {
-      type = types.bool;
-      default = false;
-      description = ''
-        Whether this head is treated as the primary monitor,
-      '';
-    };
-
     monitorConfig = mkOption {
-      type = types.lines;
       default = "";
-      example = ''
-        DisplaySize 408 306
-        Option "DPMS" "false"
-      '';
+
       description = ''
         Extra lines to append to the `Monitor` section
         verbatim. Available options are documented in the MONITOR section in
         {manpage}`xorg.conf(5)`.
       '';
+
+      example = ''
+        DisplaySize 408 306
+        Option "DPMS" "false"
+      '';
+
+      type = types.lines;
+    };
+
+    output = mkOption {
+      description = ''
+        The output name of the monitor, as shown by
+        {manpage}`xrandr(1)` invoked without arguments.
+      '';
+
+      example = "DVI-0";
+      type = types.str;
+    };
+
+    primary = mkOption {
+      default = false;
+
+      description = ''
+        Whether this head is treated as the primary monitor,
+      '';
+
+      type = types.bool;
     };
   };
 
@@ -148,8 +155,8 @@ let
   xrandrHeads =
     let
       mkHead = num: config: {
-        name = "multihead${toString num}";
         inherit config;
+        name = "multihead${toString num}";
       };
     in
     imap1 mkHead cfg.xrandrHeads;
@@ -172,6 +179,7 @@ let
         previous: current:
         singleton {
           inherit (current) name;
+
           value = ''
             Section "Monitor"
               Identifier "${current.name}"
@@ -193,8 +201,8 @@ let
   configFile =
     pkgs.runCommand "xserver.conf"
       {
-        fontpath = optionalString (cfg.fontPath != null) ''FontPath "${cfg.fontPath}"'';
         inherit (cfg) config;
+        fontpath = optionalString (cfg.fontPath != null) ''FontPath "${cfg.fontPath}"'';
         preferLocalBuild = true;
       }
       ''
@@ -273,12 +281,14 @@ in
       "Option services.xserver.useGlamor was removed because it is unnecessary. Drivers that uses Glamor will use it automatically."
     )
     (lib.mkRenamedOptionModuleWith {
-      sinceRelease = 2311;
       from = [
         "services"
         "xserver"
         "layout"
       ];
+
+      sinceRelease = 2311;
+
       to = [
         "services"
         "xserver"
@@ -287,12 +297,14 @@ in
       ];
     })
     (lib.mkRenamedOptionModuleWith {
-      sinceRelease = 2311;
       from = [
         "services"
         "xserver"
         "xkbModel"
       ];
+
+      sinceRelease = 2311;
+
       to = [
         "services"
         "xserver"
@@ -301,12 +313,14 @@ in
       ];
     })
     (lib.mkRenamedOptionModuleWith {
-      sinceRelease = 2311;
       from = [
         "services"
         "xserver"
         "xkbOptions"
       ];
+
+      sinceRelease = 2311;
+
       to = [
         "services"
         "xserver"
@@ -315,12 +329,14 @@ in
       ];
     })
     (lib.mkRenamedOptionModuleWith {
-      sinceRelease = 2311;
       from = [
         "services"
         "xserver"
         "xkbVariant"
       ];
+
+      sinceRelease = 2311;
+
       to = [
         "services"
         "xserver"
@@ -329,12 +345,14 @@ in
       ];
     })
     (lib.mkRenamedOptionModuleWith {
-      sinceRelease = 2311;
       from = [
         "services"
         "xserver"
         "xkbDir"
       ];
+
+      sinceRelease = 2311;
+
       to = [
         "services"
         "xserver"
@@ -355,146 +373,95 @@ in
 
     services.xserver = {
 
+      config = mkOption {
+        description = ''
+          The contents of the configuration file of the X server
+          ({file}`xorg.conf`).
+
+          This option is set by multiple modules, and the configs are
+          concatenated together.
+
+          In Xorg configs the last config entries take precedence,
+          so you may want to use `lib.mkAfter` on this option
+          to override NixOS's defaults.
+        '';
+
+        type = types.lines;
+      };
+
       enable = mkOption {
-        type = types.bool;
         default = false;
+
         description = ''
           Whether to enable the X server.
         '';
-      };
 
-      autorun = mkOption {
         type = types.bool;
-        default = true;
-        description = ''
-          Whether to start the X server automatically.
-        '';
-      };
-
-      excludePackages = mkOption {
-        default = [ ];
-        example = literalExpression "[ pkgs.xterm ]";
-        type = types.listOf types.package;
-        description = "Which X11 packages to exclude from the default environment";
-      };
-
-      exportConfiguration = mkOption {
-        type = types.bool;
-        default = false;
-        description = ''
-          Whether to symlink the X server configuration under
-          {file}`/etc/X11/xorg.conf`.
-        '';
-      };
-
-      enableTCP = mkOption {
-        type = types.bool;
-        default = false;
-        description = ''
-          Whether to allow the X server to accept TCP connections.
-        '';
       };
 
       autoRepeatDelay = mkOption {
-        type = types.nullOr types.int;
         default = null;
+
         description = ''
           Sets the autorepeat delay (length of time in milliseconds that a key must be depressed before autorepeat starts).
         '';
+
+        type = types.nullOr types.int;
       };
 
       autoRepeatInterval = mkOption {
-        type = types.nullOr types.int;
         default = null;
+
         description = ''
           Sets the autorepeat interval (length of time in milliseconds that should elapse between autorepeat-generated keystrokes).
         '';
+
+        type = types.nullOr types.int;
       };
 
-      inputClassSections = mkOption {
-        type = types.listOf types.lines;
-        default = [ ];
-        example = literalExpression ''
-          [ '''
-              Identifier      "Trackpoint Wheel Emulation"
-              MatchProduct    "ThinkPad USB Keyboard with TrackPoint"
-              Option          "EmulateWheel"          "true"
-              Option          "EmulateWheelButton"    "2"
-              Option          "Emulate3Buttons"       "false"
-            '''
-          ]
-        '';
-        description = "Content of additional InputClass sections of the X server configuration file.";
-      };
-
-      modules = mkOption {
-        type = types.listOf types.path;
-        default = [ ];
-        example = literalExpression "[ pkgs.xf86-input-wacom ]";
-        description = "Packages to be added to the module search path of the X server.";
-      };
-
-      resolutions = mkOption {
-        type = types.listOf types.attrs;
-        default = [ ];
-        example = [
-          {
-            x = 1600;
-            y = 1200;
-          }
-          {
-            x = 1024;
-            y = 786;
-          }
-        ];
-        description = ''
-          The screen resolutions for the X server.  The first element
-          is the default resolution.  If this list is empty, the X
-          server will automatically configure the resolution.
-        '';
-      };
-
-      videoDrivers = mkOption {
-        type = types.listOf types.str;
-        default = [
-          "modesetting"
-          "fbdev"
-        ];
-        example = [
-          "nvidia"
-          "amdgpu"
-        ];
-        relatedPackages = mapAttrsToList (name: value: {
-          path = [ name ];
-          title = removePrefix "xf86-video-" value.pname;
-        }) knownVideoDriverPackages;
+      autorun = mkOption {
+        default = true;
 
         description = ''
-          The names of the video drivers the configuration
-          supports. They will be tried in order until one that
-          supports your card is found.
-          Don't combine those with "incompatible" OpenGL implementations,
-          e.g. free ones (mesa-based) with proprietary ones.
-
-          For unfree "nvidia*", the supported GPU lists are on
-          https://www.nvidia.com/object/unix.html
+          Whether to start the X server automatically.
         '';
+
+        type = types.bool;
       };
 
-      videoDriver = mkOption {
-        type = types.nullOr types.str;
+      defaultDepth = mkOption {
+        default = 0;
+        description = "Default colour depth.";
+        example = 8;
+        type = types.int;
+      };
+
+      deviceSection = mkOption {
+        default = "";
+        description = "Contents of the first Device section of the X server configuration file.";
+        example = "VideoRAM 131072";
+        type = types.lines;
+      };
+
+      display = mkOption {
+        default = 0;
+        description = "Display number for the X server.";
+        type = types.nullOr types.int;
+      };
+
+      dpi = mkOption {
         default = null;
-        example = "i810";
+
         description = ''
-          The name of the video driver for your graphics card.  This
-          option is obsolete; please set the
-          {option}`services.xserver.videoDrivers` instead.
+          Force global DPI resolution to use for X server. It's recommended to
+          use this only when DPI is detected incorrectly; also consider using
+          `Monitor` section in configuration file instead.
         '';
+
+        type = types.nullOr types.int;
       };
 
       drivers = mkOption {
-        type = types.listOf types.attrs;
-        internal = true;
         description = ''
           A list of attribute sets specifying drivers to be loaded by
           the X11 server. This module will create a Device section in
@@ -507,161 +474,375 @@ in
           Users should not add drivers to this option but should instead
           add drivers to {option}`services.xserver.videoDrivers`.
         '';
+
+        internal = true;
+        type = types.listOf types.attrs;
+      };
+
+      enableCtrlAltBackspace = mkOption {
+        default = false;
+
+        description = ''
+          Whether to enable the DontZap option, which binds Ctrl+Alt+Backspace
+          to forcefully kill X. This can lead to data loss and is disabled
+          by default.
+        '';
+
+        type = types.bool;
+      };
+
+      enableTCP = mkOption {
+        default = false;
+
+        description = ''
+          Whether to allow the X server to accept TCP connections.
+        '';
+
+        type = types.bool;
+      };
+
+      enableTearFree = mkEnableOption "the TearFree option in the first Device section";
+
+      excludePackages = mkOption {
+        default = [ ];
+        description = "Which X11 packages to exclude from the default environment";
+        example = literalExpression "[ pkgs.xterm ]";
+        type = types.listOf types.package;
+      };
+
+      exportConfiguration = mkOption {
+        default = false;
+
+        description = ''
+          Whether to symlink the X server configuration under
+          {file}`/etc/X11/xorg.conf`.
+        '';
+
+        type = types.bool;
       };
 
       externallyConfiguredDrivers = mkOption {
-        type = types.listOf types.str;
-        internal = true;
         default = [ ];
+
         description = ''
           A list of externally configured drivers (by name). Modules that
           manually configure their drivers should add said drivers to this
           list to let this module know that the driver has been configured.
         '';
+
+        internal = true;
+        type = types.listOf types.str;
       };
 
-      dpi = mkOption {
-        type = types.nullOr types.int;
+      extraConfig = mkOption {
+        default = "";
+        description = "Additional contents (sections) included in the X server configuration file";
+        type = types.lines;
+      };
+
+      extraDisplaySettings = mkOption {
+        default = "";
+        description = "Lines to be added to every Display subsection of the Screen section.";
+        example = "Virtual 2048 2048";
+        type = types.lines;
+      };
+
+      filesSection = mkOption {
+        default = "";
+        description = "Contents of the first `Files` section of the X server configuration file.";
+        example = ''FontPath "/path/to/my/fonts"'';
+        type = types.lines;
+      };
+
+      fontPath = mkOption {
         default = null;
+
         description = ''
-          Force global DPI resolution to use for X server. It's recommended to
-          use this only when DPI is detected incorrectly; also consider using
-          `Monitor` section in configuration file instead.
+          Set the X server FontPath. Defaults to null, which
+          means the compiled in defaults will be used. See
+          man xorg.conf for details.
         '';
+
+        example = "unix/:7100";
+        type = types.nullOr types.str;
+      };
+
+      inputClassSections = mkOption {
+        default = [ ];
+        description = "Content of additional InputClass sections of the X server configuration file.";
+
+        example = literalExpression ''
+          [ '''
+              Identifier      "Trackpoint Wheel Emulation"
+              MatchProduct    "ThinkPad USB Keyboard with TrackPoint"
+              Option          "EmulateWheel"          "true"
+              Option          "EmulateWheelButton"    "2"
+              Option          "Emulate3Buttons"       "false"
+            '''
+          ]
+        '';
+
+        type = types.listOf types.lines;
+      };
+
+      logFile = mkOption {
+        default = "/dev/null";
+
+        description = ''
+          Controls the file Xorg logs to.
+
+          The default of `/dev/null` is set so that systemd services (like `displayManagers`) only log to the journal and don't create their own log files.
+
+          Setting this to `null` will not pass the `-logfile` argument to Xorg which allows it to log to its default logfile locations instead (see `man Xorg`). You probably only want this behaviour when running Xorg manually (e.g. via `startx`).
+        '';
+
+        example = "/var/log/Xorg.0.log";
+        type = types.nullOr types.str;
+      };
+
+      moduleSection = mkOption {
+        default = "";
+        description = "Contents of the Module section of the X server configuration file.";
+
+        example = ''
+          SubSection "extmod"
+          EndSubsection
+        '';
+
+        type = types.lines;
+      };
+
+      modules = mkOption {
+        default = [ ];
+        description = "Packages to be added to the module search path of the X server.";
+        example = literalExpression "[ pkgs.xf86-input-wacom ]";
+        type = types.listOf types.path;
+      };
+
+      monitorSection = mkOption {
+        default = "";
+        description = "Contents of the first Monitor section of the X server configuration file.";
+        example = "HorizSync 28-49";
+        type = types.lines;
+      };
+
+      resolutions = mkOption {
+        default = [ ];
+
+        description = ''
+          The screen resolutions for the X server.  The first element
+          is the default resolution.  If this list is empty, the X
+          server will automatically configure the resolution.
+        '';
+
+        example = [
+          {
+            x = 1600;
+            y = 1200;
+          }
+          {
+            x = 1024;
+            y = 786;
+          }
+        ];
+
+        type = types.listOf types.attrs;
+      };
+
+      screenSection = mkOption {
+        default = "";
+        description = "Contents of the first Screen section of the X server configuration file.";
+
+        example = ''
+          Option "RandRRotation" "on"
+        '';
+
+        type = types.lines;
+      };
+
+      serverFlagsSection = mkOption {
+        default = "";
+        description = "Contents of the ServerFlags section of the X server configuration file.";
+
+        example = ''
+          Option "BlankTime" "0"
+          Option "StandbyTime" "0"
+          Option "SuspendTime" "0"
+          Option "OffTime" "0"
+        '';
+
+        type = types.lines;
+      };
+
+      serverLayoutSection = mkOption {
+        default = "";
+        description = "Contents of the ServerLayout section of the X server configuration file.";
+
+        example = ''
+          Option "AIGLX" "true"
+        '';
+
+        type = types.lines;
+      };
+
+      terminateOnReset = mkOption {
+        default = true;
+
+        description = ''
+          Whether to terminate X upon server reset.
+        '';
+
+        type = types.bool;
       };
 
       updateDbusEnvironment = mkOption {
-        type = types.bool;
         default = false;
+
         description = ''
           Whether to update the DBus activation environment after launching the
           desktop manager.
         '';
+
+        type = types.bool;
+      };
+
+      upscaleDefaultCursor = mkOption {
+        default = false;
+
+        description = ''
+          Upscale the default X cursor to be more visible on high-density displays.
+          Requires `config.services.xserver.dpi` to be set.
+        '';
+
+        type = types.bool;
+      };
+
+      verbose = mkOption {
+        default = 3;
+
+        description = ''
+          Controls verbosity of X logging.
+        '';
+
+        example = 7;
+        type = types.nullOr types.int;
+      };
+
+      videoDriver = mkOption {
+        default = null;
+
+        description = ''
+          The name of the video driver for your graphics card.  This
+          option is obsolete; please set the
+          {option}`services.xserver.videoDrivers` instead.
+        '';
+
+        example = "i810";
+        type = types.nullOr types.str;
+      };
+
+      videoDrivers = mkOption {
+        default = [
+          "modesetting"
+          "fbdev"
+        ];
+
+        description = ''
+          The names of the video drivers the configuration
+          supports. They will be tried in order until one that
+          supports your card is found.
+          Don't combine those with "incompatible" OpenGL implementations,
+          e.g. free ones (mesa-based) with proprietary ones.
+
+          For unfree "nvidia*", the supported GPU lists are on
+          https://www.nvidia.com/object/unix.html
+        '';
+
+        example = [
+          "nvidia"
+          "amdgpu"
+        ];
+
+        relatedPackages = mapAttrsToList (name: value: {
+          path = [ name ];
+          title = removePrefix "xf86-video-" value.pname;
+        }) knownVideoDriverPackages;
+
+        type = types.listOf types.str;
+      };
+
+      virtualScreen = mkOption {
+        default = null;
+
+        description = ''
+          Virtual screen size for Xrandr.
+        '';
+
+        example = {
+          x = 2048;
+          y = 2048;
+        };
+
+        type = types.nullOr types.attrs;
       };
 
       xkb = {
-        layout = mkOption {
-          type = types.str;
-          default = "us";
-          description = ''
-            X keyboard layout, or multiple keyboard layouts separated by commas.
-          '';
-        };
-
-        model = mkOption {
-          type = types.str;
-          default = "pc104";
-          example = "presario";
-          description = ''
-            X keyboard model.
-          '';
-        };
-
         options = mkOption {
-          type = types.commas;
           default = "terminate:ctrl_alt_bksp";
-          example = "grp:caps_toggle,grp_led:scroll";
+
           description = ''
             X keyboard options; layout switching goes here.
           '';
-        };
 
-        variant = mkOption {
-          type = types.str;
-          default = "";
-          example = "colemak";
-          description = ''
-            X keyboard variant.
-          '';
+          example = "grp:caps_toggle,grp_led:scroll";
+          type = types.commas;
         };
 
         dir = mkOption {
-          type = types.path;
           default = "${pkgs.xkeyboard_config}/etc/X11/xkb";
           defaultText = literalExpression ''"''${pkgs.xkeyboard_config}/etc/X11/xkb"'';
+
           description = ''
             Path used for -xkbdir xserver parameter.
           '';
+
+          type = types.path;
+        };
+
+        layout = mkOption {
+          default = "us";
+
+          description = ''
+            X keyboard layout, or multiple keyboard layouts separated by commas.
+          '';
+
+          type = types.str;
+        };
+
+        model = mkOption {
+          default = "pc104";
+
+          description = ''
+            X keyboard model.
+          '';
+
+          example = "presario";
+          type = types.str;
+        };
+
+        variant = mkOption {
+          default = "";
+
+          description = ''
+            X keyboard variant.
+          '';
+
+          example = "colemak";
+          type = types.str;
         };
       };
 
-      config = mkOption {
-        type = types.lines;
-        description = ''
-          The contents of the configuration file of the X server
-          ({file}`xorg.conf`).
-
-          This option is set by multiple modules, and the configs are
-          concatenated together.
-
-          In Xorg configs the last config entries take precedence,
-          so you may want to use `lib.mkAfter` on this option
-          to override NixOS's defaults.
-        '';
-      };
-
-      filesSection = mkOption {
-        type = types.lines;
-        default = "";
-        example = ''FontPath "/path/to/my/fonts"'';
-        description = "Contents of the first `Files` section of the X server configuration file.";
-      };
-
-      deviceSection = mkOption {
-        type = types.lines;
-        default = "";
-        example = "VideoRAM 131072";
-        description = "Contents of the first Device section of the X server configuration file.";
-      };
-
-      screenSection = mkOption {
-        type = types.lines;
-        default = "";
-        example = ''
-          Option "RandRRotation" "on"
-        '';
-        description = "Contents of the first Screen section of the X server configuration file.";
-      };
-
-      monitorSection = mkOption {
-        type = types.lines;
-        default = "";
-        example = "HorizSync 28-49";
-        description = "Contents of the first Monitor section of the X server configuration file.";
-      };
-
-      enableTearFree = mkEnableOption "the TearFree option in the first Device section";
-
-      extraConfig = mkOption {
-        type = types.lines;
-        default = "";
-        description = "Additional contents (sections) included in the X server configuration file";
-      };
-
       xrandrHeads = mkOption {
-        default = [ ];
-        example = [
-          "HDMI-0"
-          {
-            output = "DVI-0";
-            primary = true;
-          }
-          {
-            output = "DVI-1";
-            monitorConfig = "Option \"Rotate\" \"left\"";
-          }
-        ];
-        type =
-          with types;
-          listOf (
-            coercedTo str
-              (output: {
-                inherit output;
-              })
-              (submodule {
-                options = xrandrOptions;
-              })
-          );
         # Set primary to true for the first head if no other has been set
         # primary already.
         apply =
@@ -674,6 +855,9 @@ in
             newHeads = singleton firstPrimary ++ tail heads;
           in
           if heads != [ ] && !hasPrimary then newHeads else heads;
+
+        default = [ ];
+
         description = ''
           Multiple monitor configuration, just specify a list of XRandR
           outputs. The individual elements should be either simple strings or
@@ -698,129 +882,30 @@ in
           drivers that have poor support for XRandR, unexpected things might
           happen with those.
         '';
-      };
 
-      serverFlagsSection = mkOption {
-        default = "";
-        type = types.lines;
-        example = ''
-          Option "BlankTime" "0"
-          Option "StandbyTime" "0"
-          Option "SuspendTime" "0"
-          Option "OffTime" "0"
-        '';
-        description = "Contents of the ServerFlags section of the X server configuration file.";
-      };
+        example = [
+          "HDMI-0"
+          {
+            output = "DVI-0";
+            primary = true;
+          }
+          {
+            monitorConfig = "Option \"Rotate\" \"left\"";
+            output = "DVI-1";
+          }
+        ];
 
-      moduleSection = mkOption {
-        type = types.lines;
-        default = "";
-        example = ''
-          SubSection "extmod"
-          EndSubsection
-        '';
-        description = "Contents of the Module section of the X server configuration file.";
-      };
-
-      serverLayoutSection = mkOption {
-        type = types.lines;
-        default = "";
-        example = ''
-          Option "AIGLX" "true"
-        '';
-        description = "Contents of the ServerLayout section of the X server configuration file.";
-      };
-
-      extraDisplaySettings = mkOption {
-        type = types.lines;
-        default = "";
-        example = "Virtual 2048 2048";
-        description = "Lines to be added to every Display subsection of the Screen section.";
-      };
-
-      defaultDepth = mkOption {
-        type = types.int;
-        default = 0;
-        example = 8;
-        description = "Default colour depth.";
-      };
-
-      fontPath = mkOption {
-        type = types.nullOr types.str;
-        default = null;
-        example = "unix/:7100";
-        description = ''
-          Set the X server FontPath. Defaults to null, which
-          means the compiled in defaults will be used. See
-          man xorg.conf for details.
-        '';
-      };
-
-      display = mkOption {
-        type = types.nullOr types.int;
-        default = 0;
-        description = "Display number for the X server.";
-      };
-
-      virtualScreen = mkOption {
-        type = types.nullOr types.attrs;
-        default = null;
-        example = {
-          x = 2048;
-          y = 2048;
-        };
-        description = ''
-          Virtual screen size for Xrandr.
-        '';
-      };
-
-      logFile = mkOption {
-        type = types.nullOr types.str;
-        default = "/dev/null";
-        example = "/var/log/Xorg.0.log";
-        description = ''
-          Controls the file Xorg logs to.
-
-          The default of `/dev/null` is set so that systemd services (like `displayManagers`) only log to the journal and don't create their own log files.
-
-          Setting this to `null` will not pass the `-logfile` argument to Xorg which allows it to log to its default logfile locations instead (see `man Xorg`). You probably only want this behaviour when running Xorg manually (e.g. via `startx`).
-        '';
-      };
-
-      verbose = mkOption {
-        type = types.nullOr types.int;
-        default = 3;
-        example = 7;
-        description = ''
-          Controls verbosity of X logging.
-        '';
-      };
-
-      enableCtrlAltBackspace = mkOption {
-        type = types.bool;
-        default = false;
-        description = ''
-          Whether to enable the DontZap option, which binds Ctrl+Alt+Backspace
-          to forcefully kill X. This can lead to data loss and is disabled
-          by default.
-        '';
-      };
-
-      terminateOnReset = mkOption {
-        type = types.bool;
-        default = true;
-        description = ''
-          Whether to terminate X upon server reset.
-        '';
-      };
-
-      upscaleDefaultCursor = mkOption {
-        type = types.bool;
-        default = false;
-        description = ''
-          Upscale the default X cursor to be more visible on high-density displays.
-          Requires `config.services.xserver.dpi` to be set.
-        '';
+        type =
+          with types;
+          listOf (
+            coercedTo str
+              (output: {
+                inherit output;
+              })
+              (submodule {
+                options = xrandrOptions;
+              })
+          );
       };
     };
 
@@ -829,41 +914,6 @@ in
   ###### implementation
 
   config = mkIf cfg.enable {
-    services.xserver.displayManager.lightdm.enable =
-      let
-        dmConf = cfg.displayManager;
-        default =
-          !(
-            config.services.displayManager.gdm.enable
-            || config.services.displayManager.sddm.enable
-            || dmConf.xpra.enable
-            || dmConf.sx.enable
-            || dmConf.startx.enable
-            || config.services.greetd.enable
-            || config.services.displayManager.ly.enable
-            || config.services.displayManager.lemurs.enable
-            || config.services.displayManager.plasma-login-manager.enable
-          );
-      in
-      mkIf default (mkDefault true);
-
-    services.xserver.videoDrivers = mkIf (cfg.videoDriver != null) [ cfg.videoDriver ];
-
-    # We ignore unknown drivers here because they may be resolved by other modules (e.g., the Nvidia
-    # module). We assert that all specified drivers were eventually found in the assertions below.
-    services.xserver.drivers = flip concatMap cfg.videoDrivers (
-      name:
-      lib.optional (videoDrivers ? ${name}) (
-        {
-          inherit name;
-          modules = [ ];
-          driverName = name;
-          display = true;
-        }
-        // videoDrivers.${name}
-      )
-    );
-
     assertions = [
       (
         let
@@ -871,6 +921,7 @@ in
         in
         {
           assertion = length primaryHeads < 2;
+
           message =
             "Only one head is allowed to be primary in "
             + "‘services.xserver.xrandrHeads’, but there are "
@@ -887,14 +938,15 @@ in
       assertion = builtins.elem driver (
         (builtins.catAttrs "name" cfg.drivers) ++ cfg.externallyConfiguredDrivers
       );
+
       message = "Unknown X11 driver ‘${driver}’ specified in `services.xserver.videoDrivers`.";
     }) cfg.videoDrivers;
 
     environment.etc =
       (optionalAttrs cfg.exportConfiguration {
-        "X11/xorg.conf".source = "${configFile}";
         # -xkbdir command line option does not seems to be passed to xkbcomp.
         "X11/xkb".source = "${cfg.xkb.dir}";
+        "X11/xorg.conf".source = "${configFile}";
       })
       # Needed since 1.18; see https://bugs.freedesktop.org/show_bug.cgi?id=89023#c5
       // (
@@ -905,6 +957,8 @@ in
           ${cfgPath}.source = pkgs.xf86-input-evdev.out + "/share/" + cfgPath;
         }
       );
+
+    environment.pathsToLink = [ "/share/X11" ];
 
     environment.systemPackages =
       utils.removePackagesByName [
@@ -924,53 +978,16 @@ in
       ] config.services.xserver.excludePackages
       ++ optional (elem "virtualbox" cfg.videoDrivers) pkgs.xrefresh;
 
-    environment.pathsToLink = [ "/share/X11" ];
+    fonts.packages = [
+      (if cfg.upscaleDefaultCursor then fontcursormisc_hidpi else pkgs.font-cursor-misc)
+      pkgs.font-misc-misc
+      pkgs.font-alias
+    ];
 
     # FIXME: what
     services.displayManager.generic.preStart = ''
       rm -f /tmp/.X0-lock
     '';
-
-    services.xserver.displayManager.xserverArgs = [
-      "-config ${configFile}"
-      "-xkbdir"
-      "${cfg.xkb.dir}"
-    ]
-    ++ optional (cfg.display != null) ":${toString cfg.display}"
-    ++ optional (cfg.dpi != null) "-dpi ${toString cfg.dpi}"
-    ++ optional (cfg.logFile != null) "-logfile ${toString cfg.logFile}"
-    ++ optional (cfg.verbose != null) "-verbose ${toString cfg.verbose}"
-    ++ optional (!cfg.enableTCP) "-nolisten tcp"
-    ++ optional (cfg.autoRepeatDelay != null) "-ardelay ${toString cfg.autoRepeatDelay}"
-    ++ optional (cfg.autoRepeatInterval != null) "-arinterval ${toString cfg.autoRepeatInterval}"
-    ++ optional cfg.terminateOnReset "-terminate";
-
-    services.xserver.modules = concatLists (catAttrs "modules" cfg.drivers) ++ [
-      pkgs.xorg-server.out
-      pkgs.xf86-input-evdev.out
-    ];
-
-    system.checks = singleton (
-      pkgs.runCommand "xkb-validated"
-        {
-          inherit (cfg.xkb)
-            dir
-            model
-            layout
-            variant
-            options
-            ;
-          nativeBuildInputs = with pkgs.buildPackages; [ xkbvalidate ];
-          preferLocalBuild = true;
-        }
-        ''
-          ${optionalString (
-            config.environment.sessionVariables ? XKB_CONFIG_ROOT
-          ) "export XKB_CONFIG_ROOT=${config.environment.sessionVariables.XKB_CONFIG_ROOT}"}
-          XKB_CONFIG_ROOT="$dir" xkbvalidate "$model" "$layout" "$variant" "$options"
-          touch "$out"
-        ''
-    );
 
     services.xserver.config = ''
       Section "ServerFlags"
@@ -1071,11 +1088,82 @@ in
       ${cfg.extraConfig}
     '';
 
-    fonts.packages = [
-      (if cfg.upscaleDefaultCursor then fontcursormisc_hidpi else pkgs.font-cursor-misc)
-      pkgs.font-misc-misc
-      pkgs.font-alias
+    services.xserver.displayManager.lightdm.enable =
+      let
+        dmConf = cfg.displayManager;
+        default =
+          !(
+            config.services.displayManager.gdm.enable
+            || config.services.displayManager.sddm.enable
+            || dmConf.xpra.enable
+            || dmConf.sx.enable
+            || dmConf.startx.enable
+            || config.services.greetd.enable
+            || config.services.displayManager.ly.enable
+            || config.services.displayManager.lemurs.enable
+            || config.services.displayManager.plasma-login-manager.enable
+          );
+      in
+      mkIf default (mkDefault true);
+
+    services.xserver.displayManager.xserverArgs = [
+      "-config ${configFile}"
+      "-xkbdir"
+      "${cfg.xkb.dir}"
+    ]
+    ++ optional (cfg.display != null) ":${toString cfg.display}"
+    ++ optional (cfg.dpi != null) "-dpi ${toString cfg.dpi}"
+    ++ optional (cfg.logFile != null) "-logfile ${toString cfg.logFile}"
+    ++ optional (cfg.verbose != null) "-verbose ${toString cfg.verbose}"
+    ++ optional (!cfg.enableTCP) "-nolisten tcp"
+    ++ optional (cfg.autoRepeatDelay != null) "-ardelay ${toString cfg.autoRepeatDelay}"
+    ++ optional (cfg.autoRepeatInterval != null) "-arinterval ${toString cfg.autoRepeatInterval}"
+    ++ optional cfg.terminateOnReset "-terminate";
+
+    # We ignore unknown drivers here because they may be resolved by other modules (e.g., the Nvidia
+    # module). We assert that all specified drivers were eventually found in the assertions below.
+    services.xserver.drivers = flip concatMap cfg.videoDrivers (
+      name:
+      lib.optional (videoDrivers ? ${name}) (
+        {
+          inherit name;
+          display = true;
+          driverName = name;
+          modules = [ ];
+        }
+        // videoDrivers.${name}
+      )
+    );
+
+    services.xserver.modules = concatLists (catAttrs "modules" cfg.drivers) ++ [
+      pkgs.xorg-server.out
+      pkgs.xf86-input-evdev.out
     ];
+
+    services.xserver.videoDrivers = mkIf (cfg.videoDriver != null) [ cfg.videoDriver ];
+
+    system.checks = singleton (
+      pkgs.runCommand "xkb-validated"
+        {
+          inherit (cfg.xkb)
+            dir
+            model
+            layout
+            variant
+            options
+            ;
+
+          nativeBuildInputs = with pkgs.buildPackages; [ xkbvalidate ];
+          preferLocalBuild = true;
+        }
+        ''
+          ${optionalString (
+            config.environment.sessionVariables ? XKB_CONFIG_ROOT
+          ) "export XKB_CONFIG_ROOT=${config.environment.sessionVariables.XKB_CONFIG_ROOT}"}
+          XKB_CONFIG_ROOT="$dir" xkbvalidate "$model" "$layout" "$variant" "$options"
+          touch "$out"
+        ''
+    );
 
   };
 

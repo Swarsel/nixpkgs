@@ -12,47 +12,22 @@ with lib;
 
     services.xray = {
       enable = mkOption {
-        type = types.bool;
         default = false;
+
         description = ''
           Whether to run xray server.
 
           Either `settingsFile` or `settings` must be specified.
         '';
+
+        type = types.bool;
       };
 
       package = mkPackageOption pkgs "xray" { };
 
-      settingsFile = mkOption {
-        type = types.nullOr types.path;
-        default = null;
-        example = "/etc/xray/config.json";
-        description = ''
-          The absolute path to the configuration file.
-
-          Either `settingsFile` or `settings` must be specified.
-
-          See <https://www.v2fly.org/en_US/config/overview.html>.
-        '';
-      };
-
       settings = mkOption {
-        type = types.nullOr (types.attrsOf types.unspecified);
         default = null;
-        example = {
-          inbounds = [
-            {
-              port = 1080;
-              listen = "127.0.0.1";
-              protocol = "http";
-            }
-          ];
-          outbounds = [
-            {
-              protocol = "freedom";
-            }
-          ];
-        };
+
         description = ''
           The configuration object.
 
@@ -60,6 +35,39 @@ with lib;
 
           See <https://www.v2fly.org/en_US/config/overview.html>.
         '';
+
+        example = {
+          inbounds = [
+            {
+              listen = "127.0.0.1";
+              port = 1080;
+              protocol = "http";
+            }
+          ];
+
+          outbounds = [
+            {
+              protocol = "freedom";
+            }
+          ];
+        };
+
+        type = types.nullOr (types.attrsOf types.unspecified);
+      };
+
+      settingsFile = mkOption {
+        default = null;
+
+        description = ''
+          The absolute path to the configuration file.
+
+          Either `settingsFile` or `settings` must be specified.
+
+          See <https://www.v2fly.org/en_US/config/overview.html>.
+        '';
+
+        example = "/etc/xray/config.json";
+        type = types.nullOr types.path;
       };
     };
 
@@ -73,11 +81,12 @@ with lib;
           cfg.settingsFile
         else
           pkgs.writeTextFile {
-            name = "xray.json";
-            text = builtins.toJSON cfg.settings;
             checkPhase = ''
               ${cfg.package}/bin/xray -test -config $out
             '';
+
+            name = "xray.json";
+            text = builtins.toJSON cfg.settings;
           };
 
     in
@@ -90,19 +99,22 @@ with lib;
       ];
 
       systemd.services.xray = {
-        description = "xray Daemon";
         after = [ "network.target" ];
-        wantedBy = [ "multi-user.target" ];
+        description = "xray Daemon";
+
         script = ''
           exec "${cfg.package}/bin/xray" -config "$CREDENTIALS_DIRECTORY/config.json"
         '';
+
         serviceConfig = {
+          AmbientCapabilities = "CAP_NET_ADMIN CAP_NET_BIND_SERVICE";
+          CapabilityBoundingSet = "CAP_NET_ADMIN CAP_NET_BIND_SERVICE";
           DynamicUser = true;
           LoadCredential = "config.json:${settingsFile}";
-          CapabilityBoundingSet = "CAP_NET_ADMIN CAP_NET_BIND_SERVICE";
-          AmbientCapabilities = "CAP_NET_ADMIN CAP_NET_BIND_SERVICE";
           NoNewPrivileges = true;
         };
+
+        wantedBy = [ "multi-user.target" ];
       };
     };
 }

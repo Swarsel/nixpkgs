@@ -6,8 +6,8 @@
 }:
 
 stdenv.mkDerivation (finalAttrs: {
-  version = "1.2.4";
   pname = "clustal-omega";
+  version = "1.2.4";
 
   src = fetchurl {
     url = "http://www.clustal.org/omega/clustal-omega-${finalAttrs.version}.tar.gz";
@@ -32,7 +32,7 @@ stdenv.mkDerivation (finalAttrs: {
     homepage = "http://www.clustal.org/omega/";
     license = lib.licenses.gpl2;
     maintainers = [ lib.maintainers.bzizou ];
-    mainProgram = "clustalo";
     platforms = lib.platforms.unix;
+    mainProgram = "clustalo";
   };
 })

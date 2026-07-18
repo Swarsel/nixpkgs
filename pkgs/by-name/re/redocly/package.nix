@@ -1,8 +1,8 @@
 {
   lib,
-  nodejs,
-  buildNpmPackage,
   fetchFromGitHub,
+  buildNpmPackage,
+  nodejs,
   redocly,
   testers,
 }:
@@ -19,8 +19,6 @@ buildNpmPackage rec {
   };
 
   npmDepsHash = "sha256-iWyFuyZJOW2/F1gE2nA601IlgXpYXeK31gwI+SfxRuY=";
-
-  npmBuildScript = "prepare";
 
   postBuild = ''
     npm --prefix packages/cli run copy-assets
@@ -48,16 +46,18 @@ buildNpmPackage rec {
     chmod +x $out/bin/redocly
   '';
 
+  npmBuildScript = "prepare";
+
   passthru = {
     tests.version = testers.testVersion { package = redocly; };
   };
 
   meta = {
-    changelog = "https://redocly.com/docs/cli/changelog/";
     description = "Makes OpenAPI easy. Lint/validate to any standard, generate beautiful docs, and more";
     homepage = "https://github.com/Redocly/redocly-cli";
+    changelog = "https://redocly.com/docs/cli/changelog/";
     license = lib.licenses.mit;
-    mainProgram = "redocly";
     maintainers = with lib.maintainers; [ szlend ];
+    mainProgram = "redocly";
   };
 }

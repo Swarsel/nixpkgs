@@ -1,10 +1,10 @@
 {
   lib,
-  stdenvNoCC,
   dockerTools,
-  makeBinaryWrapper,
-  jdk21_headless,
   gawk,
+  jdk21_headless,
+  makeBinaryWrapper,
+  stdenvNoCC,
   statePath ? "/var/lib/youtrack",
 }:
 
@@ -14,23 +14,16 @@ stdenvNoCC.mkDerivation (finalAttrs: {
 
   src = dockerTools.exportImage {
     diskSize = 8192;
+
     fromImage = dockerTools.pullImage {
-      imageName = "jetbrains/youtrack";
       arch = "amd64";
-      imageDigest = "sha256:fa50e2e07435dc91461c00ef05ee064ff76748d4d8feaf8aeaa9f9e4a9bf6606";
       hash = "sha256-8hoMtFqG5T4gnMDorIe6UXs/d3z7epAS352reipPjWI=";
+      imageDigest = "sha256:fa50e2e07435dc91461c00ef05ee064ff76748d4d8feaf8aeaa9f9e4a9bf6606";
+      imageName = "jetbrains/youtrack";
     };
   };
-  unpackPhase = ''
-    mkdir source
-    tar -C source -xvf $src ./opt/youtrack
-    cd source
-  '';
 
   nativeBuildInputs = [ makeBinaryWrapper ];
-
-  dontConfigure = true;
-  dontBuild = true;
 
   installPhase = ''
     runHook preInstall
@@ -50,14 +43,23 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  dontBuild = true;
+  dontConfigure = true;
+
+  unpackPhase = ''
+    mkdir source
+    tar -C source -xvf $src ./opt/youtrack
+    cd source
+  '';
+
   passthru.updateScript = ./update.sh;
 
   meta = {
     description = "Issue tracking and project management tool for developers";
-    maintainers = [ lib.maintainers.leona ];
-    sourceProvenance = with lib.sourceTypes; [ binaryBytecode ];
-    platforms = [ "x86_64-linux" ];
     # https://www.jetbrains.com/youtrack/buy/license.html
     license = lib.licenses.unfree;
+    sourceProvenance = with lib.sourceTypes; [ binaryBytecode ];
+    maintainers = [ lib.maintainers.leona ];
+    platforms = [ "x86_64-linux" ];
   };
 })

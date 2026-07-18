@@ -2,41 +2,41 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  pkg-config,
-  qt5,
-  cmake,
-  ninja,
+  alsa-lib,
   avahi,
   boost,
-  libopus,
-  libsndfile,
-  speexdsp,
-  protobuf,
-  libcap,
-  alsa-lib,
-  python3,
-  rnnoise,
-  nixosTests,
-  poco,
+  cmake,
   flac,
+  libcap,
+  libjack2,
   libogg,
+  libopus,
+  libpulseaudio,
+  libsndfile,
   libvorbis,
+  makeBinaryWrapper,
+  microsoft-gsl,
+  ninja,
+  nixosTests,
+  nlohmann_json,
+  pipewire,
+  pkg-config,
+  poco,
+  protobuf,
+  python3,
+  qt5,
+  rnnoise,
+  speechd-minimal,
+  speexdsp,
   stdenv_32bit,
+  xar,
+  zeroc-ice,
   alsaSupport ? stdenv.hostPlatform.isLinux,
   iceSupport ? true,
-  zeroc-ice,
   jackSupport ? false,
-  libjack2,
   pipewireSupport ? stdenv.hostPlatform.isLinux,
-  pipewire,
   pulseSupport ? true,
-  libpulseaudio,
   speechdSupport ? false,
-  speechd-minimal,
-  microsoft-gsl,
-  nlohmann_json,
-  xar,
-  makeBinaryWrapper,
 }:
 
 let
@@ -92,11 +92,13 @@ let
           description = "Low-latency, high quality voice chat software";
           homepage = "https://mumble.info";
           license = lib.licenses.bsd3;
+
           maintainers = with lib.maintainers; [
             felixsinger
             hax404
             lilacious
           ];
+
           platforms = lib.platforms.linux ++ (overrides.platforms or [ ]);
         };
       }
@@ -105,9 +107,10 @@ let
   client =
     source:
     generic {
-      type = "mumble";
+      patches = [
+        ./fix-plugin-copy.patch
+      ];
 
-      platforms = lib.platforms.darwin;
       nativeBuildInputs = [
         qt5.qttools
       ];
@@ -152,10 +155,6 @@ let
 
       env.NIX_CFLAGS_COMPILE = lib.optionalString speechdSupport "-I${speechd-minimal}/include/speech-dispatcher";
 
-      patches = [
-        ./fix-plugin-copy.patch
-      ];
-
       postInstall = lib.optionalString stdenv.hostPlatform.isDarwin ''
         # The build erraneously marks the *.dylib as executable
         # which causes the qt-hook to wrap it, which then prevents the app from loading it
@@ -185,12 +184,15 @@ let
           }"
       '';
 
+      platforms = lib.platforms.darwin;
+      type = "mumble";
+
     } source;
 
   server =
     source:
     generic {
-      type = "murmur";
+      buildInputs = [ libcap ] ++ lib.optional iceSupport zeroc-ice;
 
       cmakeFlags = [
         "-D client=OFF"
@@ -201,20 +203,20 @@ let
         "-D Ice_SLICE_DIR=${lib.getDev zeroc-ice}/share/ice/slice"
       ];
 
-      buildInputs = [ libcap ] ++ lib.optional iceSupport zeroc-ice;
+      type = "murmur";
     } source;
 
   overlay =
     source:
     generic {
-      stdenv = stdenv_32bit;
-      type = "mumble-overlay";
-
       cmakeFlags = [
         "-D server=OFF"
         "-D client=OFF"
         "-D overlay=ON"
       ];
+
+      stdenv = stdenv_32bit;
+      type = "mumble-overlay";
     } source;
 
   source = rec {

@@ -1,7 +1,7 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -16,16 +16,15 @@ rustPlatform.buildRustPackage (finalAttrs: {
   };
 
   cargoHash = "sha256-no5fJ5nlwyS/PVi9J5Ek3c3Rp7A3MflpReo9kwJrj6U=";
-
   # Currently no tests are implemented, so we avoid building the package twice
   doCheck = false;
 
   meta = {
     description = "Resize newly created windows";
-    mainProgram = "i3-ratiosplit";
     homepage = "https://github.com/333fred/i3-ratiosplit";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ svrana ];
     platforms = lib.platforms.linux;
+    mainProgram = "i3-ratiosplit";
   };
 })

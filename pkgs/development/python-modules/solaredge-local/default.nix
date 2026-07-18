@@ -10,14 +10,15 @@
 buildPythonPackage rec {
   pname = "solaredge-local";
   version = "0.2.3";
-  pyproject = true;
 
   src = fetchPypi {
-    pname = "solaredge_local";
     inherit version;
     hash = "sha256-tGUr4zlMdyJqRyFAs7INiH5rJYPmu7qoaImg4dzW5rk=";
+    pname = "solaredge_local";
   };
 
+  # Package has no tests
+  doCheck = false;
   build-system = [ setuptools ];
 
   dependencies = [
@@ -25,9 +26,7 @@ buildPythonPackage rec {
     uplink-protobuf
   ];
 
-  # Package has no tests
-  doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "solaredge_local" ];
 
   meta = {

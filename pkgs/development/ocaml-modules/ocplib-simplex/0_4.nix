@@ -1,10 +1,10 @@
 {
   lib,
-  fetchFromGitHub,
   stdenv,
+  fetchFromGitHub,
   autoreconfHook,
-  ocaml,
   findlib,
+  ocaml,
 }:
 
 stdenv.mkDerivation (finalAttrs: {

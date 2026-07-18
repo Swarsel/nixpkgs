@@ -1,34 +1,34 @@
 {
   lib,
-  testers,
   stdenv,
   fetchFromGitHub,
+  at-spi2-core,
   cmake,
-  pkg-config,
-  gtk3,
-  ncurses,
-  libcpuid,
-  pciutils,
-  procps,
-  wrapGAppsHook3,
-  nasm,
-  opencl-headers,
-  ocl-icd,
-  vulkan-headers,
-  vulkan-loader,
+  dbus,
   glfw,
-  libxdmcp,
-  util-linux,
+  gtk3,
+  gtkmm3,
+  libcpuid,
+  libdatrie,
+  libepoxy,
   libselinux,
   libsepol,
   libthai,
-  libdatrie,
+  libxdmcp,
   libxkbcommon,
-  libepoxy,
-  dbus,
-  at-spi2-core,
   libxtst,
-  gtkmm3,
+  nasm,
+  ncurses,
+  ocl-icd,
+  opencl-headers,
+  pciutils,
+  pkg-config,
+  procps,
+  testers,
+  util-linux,
+  vulkan-headers,
+  vulkan-loader,
+  wrapGAppsHook3,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -96,10 +96,10 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Free software that gathers information on CPU, motherboard and more";
-    mainProgram = "cpu-x";
     homepage = "https://thetumultuousunicornofdarkness.github.io/CPU-X";
     license = lib.licenses.gpl3Plus;
-    platforms = [ "x86_64-linux" ];
     maintainers = with lib.maintainers; [ viraptor ];
+    platforms = [ "x86_64-linux" ];
+    mainProgram = "cpu-x";
   };
 })

@@ -2,10 +2,10 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  automake,
   autoconf,
-  pkg-config,
+  automake,
   gtk3,
+  pkg-config,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -23,20 +23,19 @@ stdenv.mkDerivation (finalAttrs: {
     sed -i -e '/sys\/sysctl.h/d' src/Unique.cpp
   '';
 
-  enableParallelBuilding = true;
-
   nativeBuildInputs = [
     pkg-config
     automake
     autoconf
   ];
-  buildInputs = [ gtk3 ];
 
+  buildInputs = [ gtk3 ];
   preConfigure = "./autogen.sh";
+  enableParallelBuilding = true;
 
   meta = {
-    homepage = "http://dmedvinsky.github.io/gsimplecal/";
     description = "Lightweight calendar application written in C++ using GTK";
+
     longDescription = ''
       gsimplecal was intentionally made for use with tint2 panel in the
       openbox environment to be launched upon clock click, but of course it
@@ -49,6 +48,8 @@ stdenv.mkDerivation (finalAttrs: {
       Also, you can configure it to not only show the calendar, but also
       display multiple clocks for different world time zones.
     '';
+
+    homepage = "http://dmedvinsky.github.io/gsimplecal/";
     license = lib.licenses.bsd3;
     maintainers = [ lib.maintainers.romildo ];
     platforms = lib.platforms.linux;

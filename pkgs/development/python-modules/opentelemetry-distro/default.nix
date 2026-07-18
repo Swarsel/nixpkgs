@@ -1,25 +1,24 @@
 {
   buildPythonPackage,
-  opentelemetry-instrumentation,
-
   # build-system
   hatchling,
-
   # dependencies
   opentelemetry-api,
+  opentelemetry-instrumentation,
   opentelemetry-sdk,
-
   # tests
   opentelemetry-test-utils,
   pytestCheckHook,
 }:
 
 buildPythonPackage rec {
-  pname = "opentelemetry-distro";
   inherit (opentelemetry-instrumentation) src version;
-  pyproject = true;
+  pname = "opentelemetry-distro";
 
-  sourceRoot = "${src.name}/opentelemetry-distro";
+  nativeCheckInputs = [
+    opentelemetry-test-utils
+    pytestCheckHook
+  ];
 
   build-system = [ hatchling ];
 
@@ -29,13 +28,9 @@ buildPythonPackage rec {
     opentelemetry-sdk
   ];
 
-  nativeCheckInputs = [
-    opentelemetry-test-utils
-    pytestCheckHook
-  ];
-
+  pyproject = true;
   pythonImportsCheck = [ "opentelemetry.distro" ];
-
+  sourceRoot = "${src.name}/opentelemetry-distro";
   passthru.updateScript = opentelemetry-api.updateScript;
 
   meta = opentelemetry-instrumentation.meta // {

@@ -1,10 +1,10 @@
 {
   lib,
+  fetchFromGitHub,
   aiohttp,
   aioresponses,
   awesomeversion,
   buildPythonPackage,
-  fetchFromGitHub,
   mashumaro,
   orjson,
   poetry-core,
@@ -22,7 +22,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "fumis";
   version = "0.4.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "frenck";
@@ -35,6 +34,15 @@ buildPythonPackage (finalAttrs: {
     substituteInPlace pyproject.toml \
       --replace-fail "0.0.0" "${finalAttrs.version}"
   '';
+
+  nativeCheckInputs = [
+    aioresponses
+    pytest-asyncio
+    pytest-cov-stub
+    pytestCheckHook
+    syrupy
+  ]
+  ++ lib.concatAttrValues finalAttrs.passthru.optional-dependencies;
 
   build-system = [ poetry-core ];
 
@@ -55,15 +63,7 @@ buildPythonPackage (finalAttrs: {
     ];
   };
 
-  nativeCheckInputs = [
-    aioresponses
-    pytest-asyncio
-    pytest-cov-stub
-    pytestCheckHook
-    syrupy
-  ]
-  ++ lib.concatAttrValues finalAttrs.passthru.optional-dependencies;
-
+  pyproject = true;
   pythonImportsCheck = [ "fumis" ];
 
   meta = {

@@ -3,22 +3,22 @@
   stdenv,
   fetchFromGitLab,
   autoreconfHook,
-  pkg-config,
-  ipcalc,
-  nettle,
-  gnutls,
-  libev,
-  protobufc,
-  guile,
   geoip,
-  libseccomp,
+  gnutls,
   gperf,
-  readline,
-  lz4,
-  ronn,
-  pam,
+  guile,
+  ipcalc,
+  libev,
+  libseccomp,
   libxcrypt,
+  lz4,
+  nettle,
   oath-toolkit,
+  pam,
+  pkg-config,
+  protobufc,
+  readline,
+  ronn,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -38,6 +38,7 @@ stdenv.mkDerivation (finalAttrs: {
     pkg-config
     ronn
   ];
+
   buildInputs = [
     ipcalc
     nettle
@@ -55,9 +56,9 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   meta = {
+    description = "OpenConnect VPN server (ocserv), a server for the OpenConnect VPN client";
     homepage = "https://gitlab.com/openconnect/ocserv";
     license = lib.licenses.gpl2Plus;
-    description = "OpenConnect VPN server (ocserv), a server for the OpenConnect VPN client";
     maintainers = with lib.maintainers; [ neverbehave ];
   };
 })

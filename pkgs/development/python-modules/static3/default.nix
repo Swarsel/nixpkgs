@@ -1,21 +1,18 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
+  buildPythonPackage,
   # optionals
   genshi,
-
+  pytest-cov-stub,
   # tests
   pytestCheckHook,
-  pytest-cov-stub,
   webtest,
 }:
 
 buildPythonPackage rec {
   pname = "static3";
   version = "0.7.0";
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "rmohr";
@@ -24,15 +21,6 @@ buildPythonPackage rec {
     hash = "sha256-uFgv+57/UZs4KoOdkFxbvTEDQrJbb0iYJ5JoWWN4yFY=";
   };
 
-  optional-dependencies = {
-    KidMagic = [
-      # TODO: kid
-    ];
-    Genshimagic = [ genshi ];
-  };
-
-  pythonImportsCheck = [ "static" ];
-
   nativeCheckInputs = [
     pytestCheckHook
     pytest-cov-stub
@@ -40,12 +28,24 @@ buildPythonPackage rec {
   ]
   ++ lib.concatAttrValues optional-dependencies;
 
+  format = "setuptools";
+
+  optional-dependencies = {
+    Genshimagic = [ genshi ];
+
+    KidMagic = [
+      # TODO: kid
+    ];
+  };
+
+  pythonImportsCheck = [ "static" ];
+
   meta = {
-    changelog = "https://github.com/rmohr/static3/releases/tag/v${version}";
     description = "Really simple WSGI way to serve static (or mixed) content";
-    mainProgram = "static";
     homepage = "https://github.com/rmohr/static3";
+    changelog = "https://github.com/rmohr/static3/releases/tag/v${version}";
     license = lib.licenses.lgpl21Only;
     maintainers = with lib.maintainers; [ hexa ];
+    mainProgram = "static";
   };
 }

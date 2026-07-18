@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   pytestCheckHook,
   pythonAtLeast,
   standard-telnetlib,
@@ -10,7 +10,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "pyws66i";
   version = "1.1";
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "ssaenger";
@@ -19,10 +18,9 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-NTL2+xLqSNsz4YdUTwr0nFjhm1NNgB8qDnWSoE2sizY=";
   };
 
-  dependencies = lib.optionals (pythonAtLeast "3.13") [ standard-telnetlib ];
-
   nativeCheckInputs = [ pytestCheckHook ];
-
+  dependencies = lib.optionals (pythonAtLeast "3.13") [ standard-telnetlib ];
+  format = "setuptools";
   pythonImportsCheck = [ "pyws66i" ];
 
   meta = {

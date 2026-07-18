@@ -19,9 +19,9 @@ rustPlatform.buildRustPackage (finalAttrs: {
 
   meta = {
     description = "Simple LSP server made to display colors via textDocument/documentColor";
-    mainProgram = "uwu_colors";
     homepage = "https://codeberg.org/q60/uwu_colors";
     license = lib.licenses.unlicense;
     maintainers = with lib.maintainers; [ vel ];
+    mainProgram = "uwu_colors";
   };
 })

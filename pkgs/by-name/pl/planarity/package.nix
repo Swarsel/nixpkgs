@@ -25,11 +25,11 @@ stdenv.mkDerivation (finalAttrs: {
   doCheck = true;
 
   meta = {
-    homepage = "https://github.com/graph-algorithms/edge-addition-planarity-suite";
     description = "Library for implementing graph algorithms";
-    mainProgram = "planarity";
+    homepage = "https://github.com/graph-algorithms/edge-addition-planarity-suite";
     license = lib.licenses.bsd3;
-    teams = [ lib.teams.sage ];
     platforms = lib.platforms.unix;
+    mainProgram = "planarity";
+    teams = [ lib.teams.sage ];
   };
 })

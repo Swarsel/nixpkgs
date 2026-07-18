@@ -1,17 +1,16 @@
 {
-  fetchFromGitHub,
-  gperf,
-  openssl,
-  readline,
-  zlib,
-  cmake,
   lib,
   stdenv,
-  writeShellApplication,
-  common-updater-scripts,
-  jq,
+  fetchFromGitHub,
   buildPackages,
-
+  cmake,
+  common-updater-scripts,
+  gperf,
+  jq,
+  openssl,
+  readline,
+  writeShellApplication,
+  zlib,
   tde2eOnly ? false,
 }:
 
@@ -43,41 +42,12 @@ stdenv.mkDerivation {
   src = fetchFromGitHub {
     owner = "tdlib";
     repo = "td";
-
     # The tdlib authors do not set tags for minor versions, but
     # external programs depending on tdlib constrain the minor
     # version, hence we set a specific commit with a known version.
     rev = "a8f21f5230172634becc1739050ef23ecd6ea291";
     hash = "sha256-cCNXRyeu6ZMf/0oxipPPUyniGuLzvWFLWCvklPIYvzk=";
   };
-
-  buildInputs = [
-    openssl
-    readline
-    zlib
-  ];
-
-  nativeBuildInputs = [
-    cmake
-    gperf
-  ];
-
-  depsBuildBuild = [ buildPackages.stdenv.cc ];
-
-  preConfigure = lib.optionalString (stdenv.buildPlatform != stdenv.hostPlatform) ''
-    cmake -B native-build \
-      -DCMAKE_C_COMPILER=$CC_FOR_BUILD \
-      -DCMAKE_CXX_COMPILER=$CXX_FOR_BUILD \
-      -DCMAKE_AR=$(command -v $AR_FOR_BUILD) \
-      -DCMAKE_RANLIB=$(command -v $RANLIB_FOR_BUILD) \
-      -DCMAKE_STRIP=$(command -v $STRIP_FOR_BUILD) \
-      -DTD_GENERATE_SOURCE_FILES=ON .
-    cmake --build native-build -j $NIX_BUILD_CORES
-  '';
-
-  cmakeFlags = [
-    (lib.cmakeBool "TD_E2E_ONLY" tde2eOnly)
-  ];
 
   # https://github.com/tdlib/td/issues/1974
   postPatch = ''
@@ -92,16 +62,45 @@ stdenv.mkDerivation {
     sed -i "/vptr/d" test/CMakeLists.txt
   '';
 
+  nativeBuildInputs = [
+    cmake
+    gperf
+  ];
+
+  buildInputs = [
+    openssl
+    readline
+    zlib
+  ];
+
+  cmakeFlags = [
+    (lib.cmakeBool "TD_E2E_ONLY" tde2eOnly)
+  ];
+
+  preConfigure = lib.optionalString (stdenv.buildPlatform != stdenv.hostPlatform) ''
+    cmake -B native-build \
+      -DCMAKE_C_COMPILER=$CC_FOR_BUILD \
+      -DCMAKE_CXX_COMPILER=$CXX_FOR_BUILD \
+      -DCMAKE_AR=$(command -v $AR_FOR_BUILD) \
+      -DCMAKE_RANLIB=$(command -v $RANLIB_FOR_BUILD) \
+      -DCMAKE_STRIP=$(command -v $STRIP_FOR_BUILD) \
+      -DTD_GENERATE_SOURCE_FILES=ON .
+    cmake --build native-build -j $NIX_BUILD_CORES
+  '';
+
+  depsBuildBuild = [ buildPackages.stdenv.cc ];
   passthru.updateScript = lib.getExe updateScript;
 
   meta = {
     description = "Cross-platform library for building Telegram clients";
     homepage = "https://core.telegram.org/tdlib/";
     license = [ lib.licenses.boost ];
-    platforms = lib.platforms.unix;
+
     maintainers = [
       lib.maintainers.vyorkin
       lib.maintainers.vonfry
     ];
+
+    platforms = lib.platforms.unix;
   };
 }

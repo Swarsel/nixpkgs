@@ -2,9 +2,9 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  testers,
   endlessh,
   nixosTests,
+  testers,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -22,9 +22,10 @@ stdenv.mkDerivation (finalAttrs: {
 
   passthru.tests = {
     inherit (nixosTests) endlessh;
+
     version = testers.testVersion {
-      package = endlessh;
       command = "endlessh -V";
+      package = endlessh;
     };
   };
 

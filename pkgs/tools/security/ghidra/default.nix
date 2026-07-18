@@ -1,13 +1,13 @@
 {
-  stdenv,
-  fetchzip,
   lib,
-  makeWrapper,
+  stdenv,
   autoPatchelfHook,
+  fetchzip,
+  icoutils,
+  makeDesktopItem,
+  makeWrapper,
   openjdk21,
   pam,
-  makeDesktopItem,
-  icoutils,
 }:
 
 let
@@ -15,21 +15,21 @@ let
   pkg_path = "$out/lib/ghidra";
 
   desktopItem = makeDesktopItem {
-    name = "ghidra";
-    exec = "ghidra";
-    icon = "ghidra";
-    desktopName = "Ghidra";
-    genericName = "Ghidra Software Reverse Engineering Suite";
     categories = [ "Development" ];
-    terminal = false;
+    desktopName = "Ghidra";
+    exec = "ghidra";
+    genericName = "Ghidra Software Reverse Engineering Suite";
+    icon = "ghidra";
+    name = "ghidra";
     startupWMClass = "ghidra-Ghidra";
+    terminal = false;
   };
 
 in
 stdenv.mkDerivation rec {
   pname = "ghidra";
   version = "12.1.2";
-  versiondate = "20260605";
+
   src = fetchzip {
     url = "https://github.com/NationalSecurityAgency/ghidra/releases/download/Ghidra_${version}_build/ghidra_${version}_PUBLIC_${versiondate}.zip";
     hash = "sha256-ulIBecjWAnrM8iJmqQZAZRerUCKpIBcXyv6KIB7I/ZA=";
@@ -45,8 +45,6 @@ stdenv.mkDerivation rec {
     (lib.getLib stdenv.cc.cc)
     pam
   ];
-
-  dontStrip = true;
 
   installPhase = ''
     mkdir -p "${pkg_path}"
@@ -72,23 +70,29 @@ stdenv.mkDerivation rec {
       --prefix PATH : ${lib.makeBinPath [ openjdk21 ]}
   '';
 
+  dontStrip = true;
+  versiondate = "20260605";
+
   meta = {
     description = "Software reverse engineering (SRE) suite of tools developed by NSA's Research Directorate in support of the Cybersecurity mission";
-    mainProgram = "ghidra";
     homepage = "https://github.com/NationalSecurityAgency/ghidra";
-    platforms = [
-      "x86_64-linux"
-      "aarch64-linux"
-      "aarch64-darwin"
-    ];
-    sourceProvenance = with lib.sourceTypes; [ binaryBytecode ];
     license = lib.licenses.asl20;
+    sourceProvenance = with lib.sourceTypes; [ binaryBytecode ];
+
     maintainers = with lib.maintainers; [
       ck3d
       govanify
       tbaldwin
       mic92
     ];
+
+    platforms = [
+      "x86_64-linux"
+      "aarch64-linux"
+      "aarch64-darwin"
+    ];
+
+    mainProgram = "ghidra";
   };
 
 }

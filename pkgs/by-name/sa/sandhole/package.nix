@@ -1,12 +1,12 @@
 {
-  cmake,
-  fetchFromGitHub,
-  installShellFiles,
   lib,
+  stdenv,
+  fetchFromGitHub,
+  cmake,
+  installShellFiles,
   lld,
   perl,
   rustPlatform,
-  stdenv,
   versionCheckHook,
 }:
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -20,7 +20,7 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-iU9rMBiI+nlEqGthb/zHKsG/KPdBd16BKUsvzyCR0UY=";
   };
 
-  cargoHash = "sha256-PX2tRsNC60S2sc6kVuRS7uqFvX4CYV37v7HOqspEb7M=";
+  strictDeps = true;
 
   nativeBuildInputs = [
     cmake
@@ -28,14 +28,8 @@ rustPlatform.buildRustPackage (finalAttrs: {
     perl
   ]
   ++ lib.optionals stdenv.hostPlatform.isDarwin [ lld ];
-  strictDeps = true;
 
-  useNextest = true;
-  # Skip tests that require networking.
-  cargoTestFlags = [ "--profile=no-network" ];
-
-  doInstallCheck = true;
-  nativeInstallCheckInputs = [ versionCheckHook ];
+  cargoHash = "sha256-PX2tRsNC60S2sc6kVuRS7uqFvX4CYV37v7HOqspEb7M=";
 
   postInstall = lib.optionalString (stdenv.buildPlatform.canExecute stdenv.hostPlatform) ''
     installShellCompletion --cmd sandhole \
@@ -44,17 +38,25 @@ rustPlatform.buildRustPackage (finalAttrs: {
       --zsh <($out/bin/sandhole --completions zsh)
   '';
 
+  doInstallCheck = true;
+  nativeInstallCheckInputs = [ versionCheckHook ];
+  # Skip tests that require networking.
+  cargoTestFlags = [ "--profile=no-network" ];
+  useNextest = true;
+
   meta = {
     description = "Expose HTTP/SSH/TCP services through SSH port forwarding";
+
     longDescription = ''
       A reverse proxy that just works with an OpenSSH client.
       No extra software required to beat NAT!
     '';
+
     homepage = "https://sandhole.com.br";
     changelog = "https://github.com/EpicEric/sandhole/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.mit;
-    mainProgram = "sandhole";
     maintainers = with lib.maintainers; [ EpicEric ];
     platforms = lib.platforms.all;
+    mainProgram = "sandhole";
   };
 })

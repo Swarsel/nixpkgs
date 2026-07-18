@@ -1,8 +1,8 @@
 {
   lib,
   fetchFromGitHub,
-  rustPlatform,
   nix-update-script,
+  rustPlatform,
 }:
 rustPlatform.buildRustPackage {
   pname = "rust-stakeholder";
@@ -16,7 +16,6 @@ rustPlatform.buildRustPackage {
   };
 
   cargoHash = "sha256-NxO+7Wh8Ff6RPFtmbEa3EJszfDaZDXGWZDAoXPEAnpI=";
-
   passthru.updateScript = nix-update-script { };
 
   meta = {

@@ -17,17 +17,15 @@ stdenv.mkDerivation rec {
   };
 
   buildInputs = [ erlang ];
-
   buildPhase = "escript bootstrap";
+
   installPhase = ''
     mkdir -p $out/bin
     cp rebar $out/bin/rebar
   '';
 
   meta = {
-    homepage = "https://github.com/rebar/rebar";
     description = "Erlang build tool that makes it easy to compile and test Erlang applications, port drivers and releases";
-    mainProgram = "rebar";
 
     longDescription = ''
       rebar is a self-contained Erlang script, so it's easy to
@@ -39,8 +37,10 @@ stdenv.mkDerivation rec {
       variety of locations (git, hg, etc).
     '';
 
-    platforms = lib.platforms.unix;
+    homepage = "https://github.com/rebar/rebar";
     license = lib.licenses.asl20;
+    platforms = lib.platforms.unix;
+    mainProgram = "rebar";
     teams = [ lib.teams.beam ];
   };
 }

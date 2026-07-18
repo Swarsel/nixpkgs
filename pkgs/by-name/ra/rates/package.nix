@@ -17,19 +17,19 @@ rustPlatform.buildRustPackage (finalAttrs: {
   };
 
   cargoHash = "sha256-qfuCA1kAEbYIYI274lNrEKZNhltQP71CwtsjBr0REJs=";
-
-  nativeInstallCheckInputs = [ versionCheckHook ];
-
   doInstallCheck = true;
+  nativeInstallCheckInputs = [ versionCheckHook ];
 
   meta = {
     description = "CLI tool that brings currency exchange rates right into your terminal";
     homepage = "https://github.com/lunush/rates";
     changelog = "https://github.com/lunush/rates/releases/tag/${finalAttrs.version}";
+
     license = with lib.licenses; [
       asl20
       mit
     ];
+
     maintainers = with lib.maintainers; [ fab ];
     mainProgram = "rates";
   };

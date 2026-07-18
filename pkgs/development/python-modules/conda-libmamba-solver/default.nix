@@ -1,10 +1,10 @@
 {
+  lib,
+  fetchFromGitHub,
   boltons,
   buildPythonPackage,
-  fetchFromGitHub,
-  hatchling,
   hatch-vcs,
-  lib,
+  hatchling,
   libmambapy,
   msgpack,
   requests,
@@ -13,7 +13,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "conda-libmamba-solver";
   version = "26.4.2";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "conda";
@@ -35,9 +34,9 @@ buildPythonPackage (finalAttrs: {
     zstandard
   ];
 
+  pyproject = true;
   # this package depends on conda for the import to run successfully, but conda depends on this package to execute.
   # pythonImportsCheck = [ "conda_libmamba_solver" ];
-
   pythonRemoveDeps = [ "conda" ];
 
   meta = {

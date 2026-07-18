@@ -21,31 +21,61 @@ in
       "indexInterval"
     ] "These options are now managed within the tabby WebGUI")
   ];
+
   options = {
     services.tabby = {
       enable = lib.mkEnableOption "Self-hosted AI coding assistant using large language models";
-
       package = lib.mkPackageOption pkgs "tabby" { };
 
+      acceleration = lib.mkOption {
+        default = null;
+
+        description = ''
+          Specifies the device to use for hardware acceleration.
+
+          -   `cpu`: no acceleration just use the CPU
+          -  `rocm`: supported by modern AMD GPUs
+          -  `cuda`: supported by modern NVIDIA GPUs
+          - `metal`: supported on darwin aarch64 machines
+
+          Tabby will try and determine what type of acceleration that is
+          already enabled in your configuration when `acceleration = null`.
+
+          - nixpkgs.config.cudaSupport
+          - nixpkgs.config.rocmSupport
+          - if stdenv.hostPlatform.isDarwin && stdenv.hostPlatform.isAarch64
+
+          IFF multiple acceleration methods are found to be enabled or if you
+          haven't set either `cudaSupport or rocmSupport` you will have to
+          specify the device type manually here otherwise it will default to
+          the first from the list above or to cpu.
+        '';
+
+        example = "rocm";
+
+        type = types.nullOr (
+          types.enum [
+            "cpu"
+            "rocm"
+            "cuda"
+            "metal"
+          ]
+        );
+      };
+
       host = lib.mkOption {
-        type = types.str;
         default = "127.0.0.1";
+
         description = ''
           Specifies the hostname on which the tabby server HTTP interface listens.
         '';
-      };
 
-      port = lib.mkOption {
-        type = types.port;
-        default = 11029;
-        description = ''
-          Specifies the bind port on which the tabby server HTTP interface listens.
-        '';
+        type = types.str;
       };
 
       model = lib.mkOption {
-        type = types.str;
         default = "TabbyML/StarCoder-1B";
+
         description = ''
           Specify the model that tabby will use to generate completions.
 
@@ -72,50 +102,31 @@ in
           See for Model Options:
           > <https://github.com/TabbyML/registry-tabby>
         '';
+
+        type = types.str;
       };
 
-      acceleration = lib.mkOption {
-        type = types.nullOr (
-          types.enum [
-            "cpu"
-            "rocm"
-            "cuda"
-            "metal"
-          ]
-        );
-        default = null;
-        example = "rocm";
+      port = lib.mkOption {
+        default = 11029;
+
         description = ''
-          Specifies the device to use for hardware acceleration.
-
-          -   `cpu`: no acceleration just use the CPU
-          -  `rocm`: supported by modern AMD GPUs
-          -  `cuda`: supported by modern NVIDIA GPUs
-          - `metal`: supported on darwin aarch64 machines
-
-          Tabby will try and determine what type of acceleration that is
-          already enabled in your configuration when `acceleration = null`.
-
-          - nixpkgs.config.cudaSupport
-          - nixpkgs.config.rocmSupport
-          - if stdenv.hostPlatform.isDarwin && stdenv.hostPlatform.isAarch64
-
-          IFF multiple acceleration methods are found to be enabled or if you
-          haven't set either `cudaSupport or rocmSupport` you will have to
-          specify the device type manually here otherwise it will default to
-          the first from the list above or to cpu.
+          Specifies the bind port on which the tabby server HTTP interface listens.
         '';
+
+        type = types.port;
       };
 
       usageCollection = lib.mkOption {
-        type = types.bool;
         default = false;
+
         description = ''
           Enable sending anonymous usage data.
 
           See for more details:
           > <https://tabby.tabbyml.com/docs/configuration#usage-collection>
         '';
+
+        type = types.bool;
       };
     };
   };
@@ -130,12 +141,12 @@ in
     systemd =
       let
         serviceUser = {
-          WorkingDirectory = "/var/lib/tabby";
-          StateDirectory = [ "tabby" ];
           ConfigurationDirectory = [ "tabby" ];
           DynamicUser = true;
-          User = "tabby";
           Group = "tabby";
+          StateDirectory = [ "tabby" ];
+          User = "tabby";
+          WorkingDirectory = "/var/lib/tabby";
         };
 
         serviceEnv = lib.mkMerge [
@@ -149,16 +160,18 @@ in
       in
       {
         services.tabby = {
-          wantedBy = [ "multi-user.target" ];
-          description = "Self-hosted AI coding assistant using large language models";
           after = [ "network.target" ];
+          description = "Self-hosted AI coding assistant using large language models";
           environment = serviceEnv;
+
           serviceConfig = lib.mkMerge [
             serviceUser
             {
               ExecStart = "${lib.getExe tabbyPackage} serve --model ${cfg.model} --host ${cfg.host} --port ${toString cfg.port} --device ${tabbyPackage.featureDevice}";
             }
           ];
+
+          wantedBy = [ "multi-user.target" ];
         };
       };
   };

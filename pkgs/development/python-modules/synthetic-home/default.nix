@@ -1,8 +1,8 @@
 {
   lib,
+  fetchFromGitHub,
   aiohttp,
   buildPythonPackage,
-  fetchFromGitHub,
   mashumaro,
   pytest-asyncio,
   pytestCheckHook,
@@ -15,7 +15,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "synthetic-home";
   version = "5.0.3";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "allenporter";
@@ -23,13 +22,6 @@ buildPythonPackage (finalAttrs: {
     tag = finalAttrs.version;
     hash = "sha256-oXZVnw4Oc0jC1TBVTV4EI3Ta1zsqLop+c8uyEzAFpLI=";
   };
-
-  build-system = [ setuptools ];
-
-  dependencies = [
-    aiohttp
-    mashumaro
-  ];
 
   nativeCheckInputs = [
     pytest-asyncio
@@ -39,11 +31,19 @@ buildPythonPackage (finalAttrs: {
     syrupy
   ];
 
-  pythonImportsCheck = [ "synthetic_home" ];
-
   preCheck = ''
     export PATH="$PATH:$out/bin";
   '';
+
+  build-system = [ setuptools ];
+
+  dependencies = [
+    aiohttp
+    mashumaro
+  ];
+
+  pyproject = true;
+  pythonImportsCheck = [ "synthetic_home" ];
 
   meta = {
     description = "Library for managing synthetic home device registry";

@@ -5,15 +5,14 @@
 # https://github.com/flutter/flutter/issues/60118
 {
   lib,
-  runCommand,
-  lndir,
   cacert,
-  unzip,
-
-  flutterPlatform,
-  systemPlatform,
   flutter,
+  flutterPlatform,
   hash,
+  lndir,
+  runCommand,
+  systemPlatform,
+  unzip,
 }:
 
 let
@@ -29,16 +28,16 @@ let
   ];
 
   flutter' = flutter.override {
-    # Use a version of Flutter with just enough capabilities to download
-    # artifacts.
-    supportedTargetFlutterPlatforms = [ ];
-
     # Modify flutter-tool's system platform in order to get the desired platform's hashes.
     flutter = flutter.unwrapped.override {
       flutterTools = flutter.unwrapped.tools.override {
         inherit systemPlatform;
       };
     };
+
+    # Use a version of Flutter with just enough capabilities to download
+    # artifacts.
+    supportedTargetFlutterPlatforms = [ ];
   };
 in
 runCommand "flutter-artifacts-${flutterPlatform}-${systemPlatform}"
@@ -49,18 +48,18 @@ runCommand "flutter-artifacts-${flutterPlatform}-${systemPlatform}"
       unzip
     ];
 
-    NIX_FLUTTER_TOOLS_VM_OPTIONS = "--root-certs-file=${cacert}/etc/ssl/certs/ca-bundle.crt";
     NIX_FLUTTER_OPERATING_SYSTEM =
       {
-        "x86_64-linux" = "linux";
-        "aarch64-linux" = "linux";
         "aarch64-darwin" = "macos";
+        "aarch64-linux" = "linux";
+        "x86_64-linux" = "linux";
       }
       .${systemPlatform};
 
+    NIX_FLUTTER_TOOLS_VM_OPTIONS = "--root-certs-file=${cacert}/etc/ssl/certs/ca-bundle.crt";
     outputHash = hash;
-    outputHashMode = "recursive";
     outputHashAlgo = "sha256";
+    outputHashMode = "recursive";
 
     passthru = {
       inherit flutterPlatform;

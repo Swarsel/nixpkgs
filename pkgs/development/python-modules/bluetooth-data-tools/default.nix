@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   cryptography,
   cython,
   poetry-core,
@@ -14,7 +14,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "bluetooth-data-tools";
   version = "1.29.18";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "Bluetooth-Devices";
@@ -27,6 +26,12 @@ buildPythonPackage (finalAttrs: {
   # python version. This ensures we fail if we build the wrong one.
   env.REQUIRE_CYTHON = 1;
 
+  nativeCheckInputs = [
+    pytest-codspeed
+    pytest-cov-stub
+    pytestCheckHook
+  ];
+
   build-system = [
     cython
     poetry-core
@@ -34,13 +39,7 @@ buildPythonPackage (finalAttrs: {
   ];
 
   dependencies = [ cryptography ];
-
-  nativeCheckInputs = [
-    pytest-codspeed
-    pytest-cov-stub
-    pytestCheckHook
-  ];
-
+  pyproject = true;
   pythonImportsCheck = [ "bluetooth_data_tools" ];
 
   meta = {

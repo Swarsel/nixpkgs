@@ -10,8 +10,8 @@ appimageTools.wrapType2 rec {
 
   src = fetchurl {
     url = "https://download.storage5.infomaniak.com/kchat/kchat-desktop-${version}-linux-x86_64.AppImage";
-    name = "kchat-${version}.AppImage";
     hash = "sha256-5Nk2IMGk7BDDL7fuoOBO3wEcbtJDDDnQvUiqa8Pt8yU=";
+    name = "kchat-${version}.AppImage";
   };
 
   extraInstallCommands =
@@ -31,15 +31,17 @@ appimageTools.wrapType2 rec {
 
   meta = {
     description = "Instant messaging service part of Infomaniak KSuite";
-    homepage = "https://www.infomaniak.com/en/apps/download-kchat";
-    license = lib.licenses.unfree;
-    maintainers = [ lib.maintainers.vinetos ];
-    mainProgram = "kchat";
-    platforms = [ "x86_64-linux" ];
-    sourceProvenance = [ lib.sourceTypes.binaryNativeCode ];
+
     longDescription = ''
       kChat is an instant messaging service which enables you to discuss, share and coordinate your teams in complete
       security via your Internet browser, mobile phone, tablet or computer.
     '';
+
+    homepage = "https://www.infomaniak.com/en/apps/download-kchat";
+    license = lib.licenses.unfree;
+    sourceProvenance = [ lib.sourceTypes.binaryNativeCode ];
+    maintainers = [ lib.maintainers.vinetos ];
+    platforms = [ "x86_64-linux" ];
+    mainProgram = "kchat";
   };
 }

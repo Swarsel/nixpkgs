@@ -3,9 +3,9 @@
   stdenv,
   fetchFromGitHub,
   fetchYarnDeps,
+  fixup-yarn-lock,
   makeWrapper,
   nodejs,
-  fixup-yarn-lock,
   yarn,
 }:
 
@@ -20,29 +20,12 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-LY8Vde4YpGuKnQ5UnSOpsQDY7AOyZRziUrfZb5dRiX4=";
   };
 
-  offlineCache = fetchYarnDeps {
-    yarnLock = "${finalAttrs.src}/yarn.lock";
-    hash = "sha256-tJXJ8ePr5ArAV+0JcuJsTo/B2PUcgsXfZrSDCpna/9k=";
-  };
-
   nativeBuildInputs = [
     makeWrapper
     nodejs
     fixup-yarn-lock
     yarn
   ];
-
-  configurePhase = ''
-    runHook preConfigure
-
-    export HOME=$(mktemp -d)
-    yarn config --offline set yarn-offline-mirror "$offlineCache"
-    fixup-yarn-lock yarn.lock
-    yarn --offline --frozen-lockfile --ignore-platform --ignore-scripts --no-progress --non-interactive install
-    patchShebangs node_modules
-
-    runHook postConfigure
-  '';
 
   buildPhase = ''
     runHook preBuild
@@ -66,13 +49,30 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  configurePhase = ''
+    runHook preConfigure
+
+    export HOME=$(mktemp -d)
+    yarn config --offline set yarn-offline-mirror "$offlineCache"
+    fixup-yarn-lock yarn.lock
+    yarn --offline --frozen-lockfile --ignore-platform --ignore-scripts --no-progress --non-interactive install
+    patchShebangs node_modules
+
+    runHook postConfigure
+  '';
+
+  offlineCache = fetchYarnDeps {
+    hash = "sha256-tJXJ8ePr5ArAV+0JcuJsTo/B2PUcgsXfZrSDCpna/9k=";
+    yarnLock = "${finalAttrs.src}/yarn.lock";
+  };
+
   meta = {
-    changelog = "https://github.com/NerdWalletOSS/shepherd/blob/${finalAttrs.src.rev}/CHANGELOG.md";
     description = "Utility for applying code changes across many repositories";
     homepage = "https://github.com/NerdWalletOSS/shepherd";
+    changelog = "https://github.com/NerdWalletOSS/shepherd/blob/${finalAttrs.src.rev}/CHANGELOG.md";
     license = lib.licenses.asl20;
-    mainProgram = "shepherd";
     maintainers = with lib.maintainers; [ dbirks ];
     platforms = lib.platforms.all;
+    mainProgram = "shepherd";
   };
 })

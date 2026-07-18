@@ -1,17 +1,14 @@
 {
   lib,
+  stdenv,
   qtbase,
   runCommandLocal,
-  stdenv,
   wrapQtAppsHook,
 }:
 let
   testProgram = stdenv.mkDerivation {
     pname = "qt-wrapper-test-program";
     version = "0.0.1";
-    __structuredAttrs = true;
-
-    dontUnpack = true;
 
     src = /* c */ ''
       #include <stdio.h>
@@ -54,6 +51,8 @@ let
       install -m755 test $out/bin/test
     '';
 
+    __structuredAttrs = true;
+    dontUnpack = true;
     meta.mainProgram = "test";
   };
 
@@ -66,20 +65,20 @@ let
     runCommandLocal "${name}-check-qtWrapperArgs"
       {
         inherit qtWrapperArgs;
-        buildInputs = [ qtbase ];
         nativeBuildInputs = [ wrapQtAppsHook ];
+        buildInputs = [ qtbase ];
         __structuredAttrs = true;
       }
       ''
         ${lib.toShellVars {
-          # The resulting array should start with the exact user-defined args:
-          userDefinedArgs = qtWrapperArgs;
-
           # The hook's setup should also add internal flags, including:
           internalArgs = [
             "QT_PLUGIN_PATH"
             "${qtbase}/${qtbase.qtPluginPrefix}"
           ];
+
+          # The resulting array should start with the exact user-defined args:
+          userDefinedArgs = qtWrapperArgs;
         }}
 
         # The hook should have run its setup already, converting qtWrapperArgs
@@ -129,32 +128,19 @@ in
 
 lib.fix (self: {
 
-  simple = checkWrapperArgsArray {
-    name = "simple";
-    qtWrapperArgs = [
-      "--chdir"
-      "/foo"
-    ];
-  };
-
-  simple-no-structuredAttrs = self.simple.overrideAttrs (prevAttrs: {
-    name = prevAttrs.name + "-no-structuredAttrs";
-    __structuredAttrs = false;
-  });
-
   # Integration test: assert program is wrapped with the expected environment
   runtime =
     runCommandLocal "simple-wrapper-runtime"
       {
+        nativeBuildInputs = [ wrapQtAppsHook ];
+        buildInputs = [ qtbase ];
+        __structuredAttrs = true;
+
         qtWrapperArgs = [
           "--set"
           "WRAPPER_TEST"
           "expected"
         ];
-
-        buildInputs = [ qtbase ];
-        nativeBuildInputs = [ wrapQtAppsHook ];
-        __structuredAttrs = true;
       }
       ''
         # Install the test program
@@ -167,8 +153,22 @@ lib.fix (self: {
       '';
 
   runtime-no-structuredAttrs = self.runtime.overrideAttrs (prevAttrs: {
-    name = prevAttrs.name + "-no-structuredAttrs";
     __structuredAttrs = false;
+    name = prevAttrs.name + "-no-structuredAttrs";
+  });
+
+  simple = checkWrapperArgsArray {
+    name = "simple";
+
+    qtWrapperArgs = [
+      "--chdir"
+      "/foo"
+    ];
+  };
+
+  simple-no-structuredAttrs = self.simple.overrideAttrs (prevAttrs: {
+    __structuredAttrs = false;
+    name = prevAttrs.name + "-no-structuredAttrs";
   });
 
 })

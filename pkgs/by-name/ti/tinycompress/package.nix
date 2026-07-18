@@ -14,10 +14,10 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   meta = {
-    homepage = "http://www.alsa-project.org/";
     description = "Userspace library for anyone who wants to use the ALSA compressed APIs";
+    homepage = "http://www.alsa-project.org/";
     license = lib.licenses.bsd3;
-    platforms = lib.platforms.linux;
     maintainers = with lib.maintainers; [ k900 ];
+    platforms = lib.platforms.linux;
   };
 })

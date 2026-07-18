@@ -1,20 +1,17 @@
 {
   lib,
   fetchurl,
-  buildDunePackage,
-  fmt,
   alcotest,
-  hxd,
-  crowbar,
   bigstringaf,
+  buildDunePackage,
+  crowbar,
+  fmt,
+  hxd,
 }:
 
 buildDunePackage (finalAttrs: {
   pname = "duff";
   version = "0.5";
-
-  minimalOCamlVersion = "4.08";
-  duneVersion = "3";
 
   src = fetchurl {
     url = "https://github.com/mirage/duff/releases/download/v${finalAttrs.version}/duff-${finalAttrs.version}.tbz";
@@ -22,14 +19,17 @@ buildDunePackage (finalAttrs: {
   };
 
   propagatedBuildInputs = [ fmt ];
-
   doCheck = true;
+
   checkInputs = [
     alcotest
     crowbar
     hxd
     bigstringaf
   ];
+
+  duneVersion = "3";
+  minimalOCamlVersion = "4.08";
 
   meta = {
     description = "Pure OCaml implementation of libXdiff (Rabin’s fingerprint)";

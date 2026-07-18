@@ -1,8 +1,8 @@
 {
   lib,
-  stdenvNoCC,
   fetchFromGitHub,
   python3,
+  stdenvNoCC,
 }:
 
 stdenvNoCC.mkDerivation {
@@ -31,8 +31,8 @@ stdenvNoCC.mkDerivation {
   meta = {
     description = "Shellcode writing toolkit";
     homepage = "https://github.com/reyammer/shellnoob";
-    mainProgram = "snoob";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ emilytrau ];
+    mainProgram = "snoob";
   };
 }

@@ -1,11 +1,11 @@
 {
   lib,
-  stdenvNoCC,
+  cacert,
   dart,
   dartHooks,
   jq,
+  stdenvNoCC,
   yq,
-  cacert,
 }:
 
 {
@@ -49,15 +49,13 @@ let
   # Adds the root package to a dependency package_config.json file from pub2nix.
   linkPackageConfig =
     {
-      pubspecLock,
       packageConfig,
+      pubspecLock,
       extraSetupCommands ? "",
     }:
     stdenvNoCC.mkDerivation (
       drvArgs
       // {
-        name = "${name}-package-config-with-root.json";
-
         nativeBuildInputs =
           drvArgs.nativeBuildInputs or [ ]
           ++ args.nativeBuildInputs or [ ]
@@ -65,8 +63,6 @@ let
             jq
             yq
           ];
-
-        dontBuild = true;
 
         installPhase =
           let
@@ -89,6 +85,9 @@ let
 
             runHook postInstall
           '';
+
+        dontBuild = true;
+        name = "${name}-package-config-with-root.json";
       }
     );
 in

@@ -2,11 +2,11 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  readline,
-  ncurses,
   autoreconfHook,
-  pkg-config,
   gettext,
+  ncurses,
+  pkg-config,
+  readline,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -24,6 +24,7 @@ stdenv.mkDerivation (finalAttrs: {
     autoreconfHook
     pkg-config
   ];
+
   buildInputs = [
     readline
     ncurses
@@ -33,8 +34,8 @@ stdenv.mkDerivation (finalAttrs: {
   configureFlags = [ "--prefix=$(out)" ];
 
   meta = {
-    homepage = "https://github.com/dvorka-oss/hstr";
     description = "Shell history suggest box - easily view, navigate, search and use your command history";
+    homepage = "https://github.com/dvorka-oss/hstr";
     license = lib.licenses.asl20;
     maintainers = [ lib.maintainers.matthiasbeyer ];
     platforms = with lib.platforms; linux ++ darwin;

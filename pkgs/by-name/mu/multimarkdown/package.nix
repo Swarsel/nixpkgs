@@ -2,8 +2,8 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  fetchpatch,
   cmake,
+  fetchpatch,
   perl,
   pkg-config,
 }:
@@ -21,9 +21,9 @@ stdenv.mkDerivation (finalAttrs: {
 
   patches = [
     (fetchpatch {
+      hash = "sha256-d1b5NcBQDVnbmTvVnPyiTS8aSx/VGgRLHD0nSs+JksI=";
       name = "multimarkdown-fix-cmake-4.patch";
       url = "https://github.com/fletcher/MultiMarkdown-6/commit/655c0908155758e7c94858af2fb99dc992709075.patch";
-      hash = "sha256-d1b5NcBQDVnbmTvVnPyiTS8aSx/VGgRLHD0nSs+JksI=";
     })
   ];
 
@@ -38,8 +38,8 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   meta = {
-    homepage = "https://fletcher.github.io/MultiMarkdown-6/introduction.html";
     description = "Derivative of Markdown that adds new syntax features";
+
     longDescription = ''
       MultiMarkdown is a lightweight markup language created by
       Fletcher T. Penney and based on Markdown, which supports
@@ -61,8 +61,10 @@ stdenv.mkDerivation (finalAttrs: {
       - glossary entries (LaTeX only)
       - document metadata (e.g. title, author, date, etc.)
     '';
+
+    homepage = "https://fletcher.github.io/MultiMarkdown-6/introduction.html";
     license = with lib.licenses; [ mit ];
-    platforms = lib.platforms.all;
     maintainers = [ ];
+    platforms = lib.platforms.all;
   };
 })

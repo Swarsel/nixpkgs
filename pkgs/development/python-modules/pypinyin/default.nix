@@ -1,15 +1,14 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  pytestCheckHook,
+  buildPythonPackage,
   pytest-cov-stub,
+  pytestCheckHook,
 }:
 
 buildPythonPackage rec {
   pname = "pypinyin";
   version = "0.55.0";
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "mozillazg";
@@ -24,13 +23,14 @@ buildPythonPackage rec {
   ];
 
   enabledTestPaths = [ "tests" ];
+  format = "setuptools";
 
   meta = {
     description = "Chinese Characters to Pinyin - 汉字转拼音";
-    mainProgram = "pypinyin";
     homepage = "https://github.com/mozillazg/python-pinyin";
     changelog = "https://github.com/mozillazg/python-pinyin/blob/${src.tag}/CHANGELOG.rst";
     license = lib.licenses.mit;
+    mainProgram = "pypinyin";
     teams = [ lib.teams.tts ];
   };
 }

@@ -1,9 +1,9 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
-  runCommand,
   alp,
+  buildGoModule,
+  runCommand,
 }:
 
 buildGoModule (finalAttrs: {
@@ -16,9 +16,16 @@ buildGoModule (finalAttrs: {
     tag = finalAttrs.version;
     hash = "sha256-tE8qKNXLKvFcnDULVkJJ/EJyEsvATCk/3YFkZCmpHSo=";
   };
+
   vendorHash = "sha256-AHPVhtm6La7HWuxJfpxTsS5wFTUZUJoVyebLGYhNKTg=";
 
-  sourceRoot = "${finalAttrs.src.name}/linux";
+  buildPhase = ''
+    runHook preBuild
+
+    go build -o $GOPATH/bin/alp main.go
+
+    runHook postBuild
+  '';
 
   # Executing Go commands directly in checkPhase and buildPhase below,
   # because the default testsuite runs all go tests, some of which require docker.
@@ -31,13 +38,7 @@ buildGoModule (finalAttrs: {
     runHook postCheck
   '';
 
-  buildPhase = ''
-    runHook preBuild
-
-    go build -o $GOPATH/bin/alp main.go
-
-    runHook postBuild
-  '';
+  sourceRoot = "${finalAttrs.src.name}/linux";
 
   passthru.tests = {
     test-version = runCommand "alp-test" { } ''
@@ -50,7 +51,7 @@ buildGoModule (finalAttrs: {
     description = "Convenient authentication method that lets you use your android device as a key for your Linux machine";
     homepage = "https://github.com/gernotfeichter/alp";
     license = lib.licenses.gpl2Only;
-    mainProgram = "alp";
     maintainers = with lib.maintainers; [ gernotfeichter ];
+    mainProgram = "alp";
   };
 })

@@ -1,9 +1,9 @@
 {
   lib,
-  stdenvNoCC,
   fetchurl,
   mkfontdir,
   mkfontscale,
+  stdenvNoCC,
 }:
 
 stdenvNoCC.mkDerivation rec {
@@ -34,7 +34,6 @@ stdenvNoCC.mkDerivation rec {
   meta = {
     description = "CJK Unicode font Kai style";
     homepage = "https://www.freedesktop.org/wiki/Software/CJKUnifonts/";
-
     license = lib.licenses.arphicpl;
     maintainers = [ lib.maintainers.changlinli ];
     platforms = lib.platforms.all;

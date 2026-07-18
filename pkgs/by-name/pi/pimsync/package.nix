@@ -1,15 +1,15 @@
 {
   lib,
-  rustPlatform,
+  cacert,
   fetchFromSourcehut,
-  pkg-config,
-  sqlite,
   installShellFiles,
   makeWrapper,
-  xandikos,
-  cacert,
-  versionCheckHook,
   nix-update-script,
+  pkg-config,
+  rustPlatform,
+  sqlite,
+  versionCheckHook,
+  xandikos,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -23,10 +23,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-YqLOkv0I+1HOlWNA8HoKB6/3ccYbV8u/0BJ/+4xvde4=";
   };
 
-  cargoHash = "sha256-9sEYeKZDMsbEUQc5V8xJzcKIzF6ugGsk3d5bTOCtYnw=";
-
-  env.PIMSYNC_VERSION = finalAttrs.version;
-
   nativeBuildInputs = [
     pkg-config
     makeWrapper
@@ -36,6 +32,9 @@ rustPlatform.buildRustPackage (finalAttrs: {
   buildInputs = [
     sqlite
   ];
+
+  cargoHash = "sha256-9sEYeKZDMsbEUQc5V8xJzcKIzF6ugGsk3d5bTOCtYnw=";
+  env.PIMSYNC_VERSION = finalAttrs.version;
 
   nativeCheckInputs = [
     xandikos
@@ -47,26 +46,31 @@ rustPlatform.buildRustPackage (finalAttrs: {
     installShellCompletion --zsh contrib/_pimsync
   '';
 
+  doInstallCheck = true;
+
   nativeInstallCheckInputs = [
     versionCheckHook
   ];
-  versionCheckProgramArg = "version";
-  doInstallCheck = true;
 
+  versionCheckProgramArg = "version";
   passthru.updateScript = nix-update-script { };
 
   meta = {
     description = "Synchronise calendars and contacts";
     homepage = "https://git.sr.ht/~whynothugo/pimsync";
+
     changelog = "https://pimsync.whynothugo.nl/changelog.html#v${
       lib.replaceString "." "-" finalAttrs.version
     }";
+
     license = lib.licenses.eupl12;
-    platforms = lib.platforms.unix;
+
     maintainers = [
       lib.maintainers.qxrein
       lib.maintainers.antonmosich
     ];
+
+    platforms = lib.platforms.unix;
     mainProgram = "pimsync";
   };
 })

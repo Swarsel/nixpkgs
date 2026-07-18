@@ -1,5 +1,6 @@
 {
   lib,
+  stdenv,
   aiohttp,
   babel,
   blinker,
@@ -7,8 +8,8 @@
   docutils,
   doit,
   feedparser,
-  fetchpatch,
   fetchPypi,
+  fetchpatch,
   freezegun,
   ghp-import,
   hsluv,
@@ -29,13 +30,12 @@
   pygments,
   pyphen,
   pyrss2gen,
-  pytestCheckHook,
   pytest-cov-stub,
+  pytestCheckHook,
   python-dateutil,
   requests,
   ruamel-yaml,
   setuptools,
-  stdenv,
   toml,
   typogrify,
   unidecode,
@@ -46,7 +46,6 @@
 buildPythonPackage rec {
   pname = "nikola";
   version = "8.3.3";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
@@ -56,12 +55,20 @@ buildPythonPackage rec {
   patches = [
     # Upstream PR: https://github.com/getnikola/nikola/pull/3878
     (fetchpatch {
+      hash = "sha256-TmrYHEIvC8ZKngBJnnKcyU5S4kjzIjLk7KKm72hXx1A=";
       name = "python-3.14.patch";
       url = "https://github.com/getnikola/nikola/commit/635366b64149055844f2d2ef6070b456bd4ba245.patch";
-      hash = "sha256-TmrYHEIvC8ZKngBJnnKcyU5S4kjzIjLk7KKm72hXx1A=";
     })
   ];
 
+  nativeCheckInputs = [
+    freezegun
+    mock
+    pytestCheckHook
+    pytest-cov-stub
+  ];
+
+  __darwinAllowLocalNetworking = true;
   build-system = [ setuptools ];
 
   dependencies = [
@@ -99,11 +106,9 @@ buildPythonPackage rec {
     yapsy
   ];
 
-  nativeCheckInputs = [
-    freezegun
-    mock
-    pytestCheckHook
-    pytest-cov-stub
+  disabledTestPaths = lib.optionals stdenv.hostPlatform.isDarwin [
+    # Segfault in darwin sandbox via watchdog
+    "tests/integration/test_dev_server_auto.py::test_serves_root_dir"
   ];
 
   disabledTests = [
@@ -117,13 +122,7 @@ buildPythonPackage rec {
     "test_format_date_locale_variants"
   ];
 
-  disabledTestPaths = lib.optionals stdenv.hostPlatform.isDarwin [
-    # Segfault in darwin sandbox via watchdog
-    "tests/integration/test_dev_server_auto.py::test_serves_root_dir"
-  ];
-
-  __darwinAllowLocalNetworking = true;
-
+  pyproject = true;
   pythonImportsCheck = [ "nikola" ];
 
   meta = {

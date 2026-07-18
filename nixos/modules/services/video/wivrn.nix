@@ -1,7 +1,7 @@
 {
   config,
-  pkgs,
   lib,
+  pkgs,
   ...
 }:
 let
@@ -89,49 +89,15 @@ in
       WiVRn now manages the active runtime itself, so this option has been removed.
     '')
   ];
+
   options = {
     services.wivrn = {
-      enable = mkEnableOption "WiVRn, an OpenXR streaming application";
-
-      package = mkPackageOption pkgs "wivrn" { };
-
-      openFirewall = mkEnableOption "the default ports in the firewall for the WiVRn server";
-
-      autoStart = mkEnableOption "starting the service by default";
-
-      highPriority = mkEnableOption "high priority capability for asynchronous reprojection";
-
-      monadoEnvironment = mkOption {
-        type = types.attrs;
-        description = "Environment variables to be passed to the Monado environment.";
-        default = { };
-      };
-
-      extraServerFlags = mkOption {
-        type = types.listOf types.str;
-        description = "Flags to add to the wivrn service.";
-        default = [ ];
-        example = literalExpression ''[ "--no-publish-service" ]'';
-      };
-
-      steam = {
-        enable = lib.mkEnableOption "Steam support" // {
-          default = true;
-        };
-
-        importOXRRuntimes = mkEnableOption ''
-          Sets `PRESSURE_VESSEL_IMPORT_OPENXR_1_RUNTIMES` system-wide to allow Steam to automatically discover the WiVRn server.
-
-          Note that you may have to logout for this variable to be visible
-        '';
-
-        package = mkPackageOption pkgs "steam" { };
-      };
-
       config = {
         enable = mkEnableOption "configuration for WiVRn";
+
         json = mkOption {
-          type = configFormat.type;
+          default = { };
+
           description = ''
             Configuration for WiVRn. The attributes are serialized to JSON in config.json. The server will fallback to default values for any missing attributes.
 
@@ -142,7 +108,7 @@ in
 
             See <https://github.com/WiVRn/WiVRn/blob/master/docs/configuration.md>
           '';
-          default = { };
+
           example = literalExpression ''
             {
               # left eye, hardware; right eye, software; transparency, hardware
@@ -163,7 +129,44 @@ in
               application = [ pkgs.wayvr ];
             }
           '';
+
+          type = configFormat.type;
         };
+      };
+
+      enable = mkEnableOption "WiVRn, an OpenXR streaming application";
+      package = mkPackageOption pkgs "wivrn" { };
+      autoStart = mkEnableOption "starting the service by default";
+
+      extraServerFlags = mkOption {
+        default = [ ];
+        description = "Flags to add to the wivrn service.";
+        example = literalExpression ''[ "--no-publish-service" ]'';
+        type = types.listOf types.str;
+      };
+
+      highPriority = mkEnableOption "high priority capability for asynchronous reprojection";
+
+      monadoEnvironment = mkOption {
+        default = { };
+        description = "Environment variables to be passed to the Monado environment.";
+        type = types.attrs;
+      };
+
+      openFirewall = mkEnableOption "the default ports in the firewall for the WiVRn server";
+
+      steam = {
+        enable = lib.mkEnableOption "Steam support" // {
+          default = true;
+        };
+
+        package = mkPackageOption pkgs "steam" { };
+
+        importOXRRuntimes = mkEnableOption ''
+          Sets `PRESSURE_VESSEL_IMPORT_OPENXR_1_RUNTIMES` system-wide to allow Steam to automatically discover the WiVRn server.
+
+          Note that you may have to logout for this variable to be visible
+        '';
       };
     };
   };
@@ -176,33 +179,69 @@ in
       }
     ];
 
+    environment = {
+      pathsToLink = [ "/share/openxr" ];
+
+      sessionVariables = mkIf cfg.steam.importOXRRuntimes {
+        PRESSURE_VESSEL_IMPORT_OPENXR_1_RUNTIMES = "1";
+      };
+
+      systemPackages = [
+        cfg.package
+        applicationPackage
+      ];
+    };
+
+    networking.firewall = mkIf cfg.openFirewall {
+      allowedTCPPorts = [ 9757 ];
+      allowedUDPPorts = [ 9757 ];
+    };
+
     security.wrappers."wivrn-server" = mkIf cfg.highPriority {
-      setuid = false;
-      owner = "root";
-      group = "root";
       capabilities = "cap_sys_nice+eip";
+      group = "root";
+      owner = "root";
+      setuid = false;
       source = getExe cfg.package;
     };
+
+    services = {
+      avahi = {
+        enable = true;
+
+        publish = {
+          enable = true;
+          userServices = true;
+        };
+      };
+    };
+
+    services.firewalld.packages = [ cfg.package ];
 
     systemd.user = {
       services = {
         wivrn = {
           description = "WiVRn XR runtime service";
-          environment = recursiveUpdate {
-            # Default options
-            # https://gitlab.freedesktop.org/monado/monado/-/blob/598080453545c6bf313829e5780ffb7dde9b79dc/src/xrt/targets/service/monado.in.service#L12
-            XRT_COMPOSITOR_LOG = "debug";
-            XRT_PRINT_OPTIONS = "on";
-            IPC_EXIT_ON_DISCONNECT = "off";
-            PRESSURE_VESSEL_IMPORT_OPENXR_1_RUNTIMES = mkIf cfg.steam.importOXRRuntimes "1";
-          } cfg.monadoEnvironment;
           # WiVRn scans for .desktop files in $XDG_DATA_DIRS for the application launcher,
           # which will execute the command in Exec when selected in the headset. If the
           # Exec path isn't absolute, it will be resolved relative to $PATH, so we must
           # not override the value of $PATH.
           enableDefaultPath = false;
 
-          unitConfig.ConditionUser = "!@system";
+          environment = recursiveUpdate {
+            IPC_EXIT_ON_DISCONNECT = "off";
+            PRESSURE_VESSEL_IMPORT_OPENXR_1_RUNTIMES = mkIf cfg.steam.importOXRRuntimes "1";
+            # Default options
+            # https://gitlab.freedesktop.org/monado/monado/-/blob/598080453545c6bf313829e5780ffb7dde9b79dc/src/xrt/targets/service/monado.in.service#L12
+            XRT_COMPOSITOR_LOG = "debug";
+            XRT_PRINT_OPTIONS = "on";
+          } cfg.monadoEnvironment;
+
+          restartTriggers = [
+            cfg.package
+          ]
+          ++ lib.optionals cfg.steam.enable [ cfg.steam.package ];
+
           serviceConfig = (
             if cfg.highPriority then
               {
@@ -211,10 +250,10 @@ in
             # Hardening options break high-priority
             else
               {
-                ExecStart = serverExec;
+                AmbientCapabilities = [ "CAP_SYS_NICE" ];
                 # Hardening options
                 CapabilityBoundingSet = [ "CAP_SYS_NICE" ];
-                AmbientCapabilities = [ "CAP_SYS_NICE" ];
+                ExecStart = serverExec;
                 LockPersonality = true;
                 NoNewPrivileges = true;
                 PrivateTmp = true;
@@ -230,42 +269,13 @@ in
                 RestrictSUIDSGID = true;
               }
           );
+
+          unitConfig.ConditionUser = "!@system";
           wantedBy = mkIf cfg.autoStart [ "default.target" ];
-          restartTriggers = [
-            cfg.package
-          ]
-          ++ lib.optionals cfg.steam.enable [ cfg.steam.package ];
         };
       };
-    };
-
-    services = {
-      avahi = {
-        enable = true;
-        publish = {
-          enable = true;
-          userServices = true;
-        };
-      };
-    };
-
-    networking.firewall = mkIf cfg.openFirewall {
-      allowedTCPPorts = [ 9757 ];
-      allowedUDPPorts = [ 9757 ];
-    };
-
-    services.firewalld.packages = [ cfg.package ];
-
-    environment = {
-      systemPackages = [
-        cfg.package
-        applicationPackage
-      ];
-      sessionVariables = mkIf cfg.steam.importOXRRuntimes {
-        PRESSURE_VESSEL_IMPORT_OPENXR_1_RUNTIMES = "1";
-      };
-      pathsToLink = [ "/share/openxr" ];
     };
   };
+
   meta.maintainers = with maintainers; [ passivelemon ];
 }

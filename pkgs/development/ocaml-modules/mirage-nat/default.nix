@@ -1,22 +1,20 @@
 {
   lib,
-  buildDunePackage,
   fetchurl,
-  ipaddr,
+  alcotest,
+  buildDunePackage,
   cstruct,
+  ethernet,
+  ipaddr,
   logs,
   lru,
-  tcpip,
-  ethernet,
-  alcotest,
   mirage-clock-unix,
+  tcpip,
 }:
 
 buildDunePackage (finalAttrs: {
   pname = "mirage-nat";
   version = "3.0.2";
-
-  minimalOCamlVersion = "4.08";
 
   src = fetchurl {
     url = "https://github.com/mirage/mirage-nat/releases/download/v${finalAttrs.version}/mirage-nat-${finalAttrs.version}.tbz";
@@ -33,10 +31,13 @@ buildDunePackage (finalAttrs: {
   ];
 
   doCheck = true;
+
   checkInputs = [
     alcotest
     mirage-clock-unix
   ];
+
+  minimalOCamlVersion = "4.08";
 
   meta = {
     description = "Mirage-nat is a library for network address translation to be used with MirageOS";

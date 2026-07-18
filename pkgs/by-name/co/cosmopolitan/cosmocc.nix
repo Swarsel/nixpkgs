@@ -1,11 +1,11 @@
-{ runCommand, cosmopolitan }:
+{ cosmopolitan, runCommand }:
 
 let
   cosmocc =
     runCommand "cosmocc-${cosmopolitan.version}"
       {
-        pname = "cosmocc";
         inherit (cosmopolitan) version;
+        pname = "cosmocc";
 
         passthru.tests = {
           cc = runCommand "c-test" { } ''

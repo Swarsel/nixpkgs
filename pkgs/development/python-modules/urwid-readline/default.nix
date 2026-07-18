@@ -1,16 +1,15 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
+  pytestCheckHook,
   setuptools,
   urwid,
-  pytestCheckHook,
 }:
 
 buildPythonPackage rec {
   pname = "urwid-readline";
   version = "0.15.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "rr-";
@@ -24,13 +23,11 @@ buildPythonPackage rec {
       --replace-fail 'version="0.15"' 'version="${version}"'
   '';
 
-  build-system = [ setuptools ];
-
-  dependencies = [ urwid ];
-
-  pythonImportsCheck = [ "urwid_readline" ];
-
   nativeCheckInputs = [ pytestCheckHook ];
+  build-system = [ setuptools ];
+  dependencies = [ urwid ];
+  pyproject = true;
+  pythonImportsCheck = [ "urwid_readline" ];
 
   meta = {
     description = "Textbox edit widget for urwid that supports readline shortcuts";

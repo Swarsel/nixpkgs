@@ -2,18 +2,18 @@
   lib,
   stdenv,
   fetchurl,
-  libpcap,
   bison,
-  flex,
   cyrus_sasl,
-  tcp_wrappers,
-  pkg-config,
-  procps,
-  which,
-  wget,
+  flex,
+  libpcap,
   lsof,
   net-snmp,
   perl,
+  pkg-config,
+  procps,
+  tcp_wrappers,
+  wget,
+  which,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -30,11 +30,13 @@ stdenv.mkDerivation (finalAttrs: {
     bison
     flex
   ];
+
   buildInputs = [
     libpcap
     cyrus_sasl
     tcp_wrappers
   ];
+
   propagatedBuildInputs = [
     procps
     which
@@ -58,6 +60,7 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Audit Record Generation and Utilization System for networks";
+
     longDescription = ''
       The Argus Project is focused on developing all
       aspects of large scale network situtational awareness derived from
@@ -69,6 +72,7 @@ stdenv.mkDerivation (finalAttrs: {
       know what is going on in your network, right now or historically,
       you will find Argus a useful tool.
     '';
+
     homepage = "http://qosient.com/argus";
     license = lib.licenses.gpl2Plus;
     platforms = lib.platforms.linux;

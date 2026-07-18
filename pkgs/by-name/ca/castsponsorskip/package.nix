@@ -1,14 +1,12 @@
 {
+  lib,
   fetchFromGitHub,
   buildGoModule,
-  lib,
 }:
 
 buildGoModule (finalAttrs: {
   pname = "castsponsorskip";
   version = "0.8.3";
-
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "gabe565";
@@ -27,14 +25,18 @@ buildGoModule (finalAttrs: {
     in
     [ "-skip=^${builtins.concatStringsSep "$|^" skippedTests}$" ];
 
+  __structuredAttrs = true;
+
   meta = {
     description = "Skip YouTube sponsorships (and sometimes ads) on all local Google Cast devices";
     homepage = "https://github.com/gabe565/CastSponsorSkip";
-    mainProgram = "castsponsorskip";
     changelog = "https://github.com/gabe565/CastSponsorSkip/releases";
     license = lib.licenses.asl20;
+
     maintainers = with lib.maintainers; [
       wariuccio
     ];
+
+    mainProgram = "castsponsorskip";
   };
 })

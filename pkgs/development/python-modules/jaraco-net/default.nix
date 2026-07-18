@@ -1,40 +1,39 @@
 {
   lib,
   stdenv,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
-  setuptools-scm,
   autocommand,
-  more-itertools,
   beautifulsoup4,
-  mechanize,
-  keyring,
-  requests,
+  buildPythonPackage,
+  cherrypy,
   feedparser,
   icmplib,
-  jaraco-text,
-  jaraco-logging,
+  ifconfig-parser,
+  importlib-resources,
+  jaraco-collections,
   jaraco-email,
   jaraco-functools,
-  jaraco-collections,
-  path,
-  python-dateutil,
-  pathvalidate,
+  jaraco-logging,
+  jaraco-text,
   jsonpickle,
-  ifconfig-parser,
-  pytestCheckHook,
-  cherrypy,
-  importlib-resources,
+  keyring,
+  mechanize,
+  more-itertools,
+  net-tools,
+  path,
+  pathvalidate,
   pyparsing,
   pytest-responses,
-  net-tools,
+  pytestCheckHook,
+  python-dateutil,
+  requests,
+  setuptools,
+  setuptools-scm,
 }:
 
 buildPythonPackage rec {
   pname = "jaraco-net";
   version = "10.2.3";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "jaraco";
@@ -42,6 +41,15 @@ buildPythonPackage rec {
     tag = "v${version}";
     hash = "sha256-yZbiCGUZqJQdV3/vtNLs+B9ZDin2PH0agR4kYvB5HxA=";
   };
+
+  nativeCheckInputs = [
+    pytestCheckHook
+    cherrypy
+    importlib-resources
+    pyparsing
+    pytest-responses
+  ]
+  ++ lib.optionals stdenv.hostPlatform.isDarwin [ net-tools ];
 
   build-system = [
     setuptools
@@ -69,17 +77,6 @@ buildPythonPackage rec {
   ]
   ++ lib.optionals stdenv.hostPlatform.isDarwin [ ifconfig-parser ];
 
-  pythonImportsCheck = [ "jaraco.net" ];
-
-  nativeCheckInputs = [
-    pytestCheckHook
-    cherrypy
-    importlib-resources
-    pyparsing
-    pytest-responses
-  ]
-  ++ lib.optionals stdenv.hostPlatform.isDarwin [ net-tools ];
-
   disabledTestPaths = [
     # require networking
     "jaraco/net/icmp.py"
@@ -87,10 +84,13 @@ buildPythonPackage rec {
     "jaraco/net/scanner.py"
   ];
 
+  pyproject = true;
+  pythonImportsCheck = [ "jaraco.net" ];
+
   meta = {
-    changelog = "https://github.com/jaraco/jaraco.net/blob/${src.tag}/NEWS.rst";
     description = "Networking tools by jaraco";
     homepage = "https://github.com/jaraco/jaraco.net";
+    changelog = "https://github.com/jaraco/jaraco.net/blob/${src.tag}/NEWS.rst";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ dotlambda ];
   };

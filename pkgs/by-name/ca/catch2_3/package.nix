@@ -33,8 +33,6 @@ stdenv.mkDerivation rec {
     cmake
   ];
 
-  hardeningDisable = [ "trivialautovarinit" ];
-
   cmakeFlags = [
     "-DCATCH_DEVELOPMENT_BUILD=ON"
     "-DCATCH_BUILD_TESTING=${if doCheck then "ON" else "OFF"}"
@@ -61,6 +59,8 @@ stdenv.mkDerivation rec {
   nativeCheckInputs = [
     python3
   ];
+
+  hardeningDisable = [ "trivialautovarinit" ];
 
   passthru.tests = {
     inherit spdlog;

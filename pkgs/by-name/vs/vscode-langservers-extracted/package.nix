@@ -1,23 +1,18 @@
 {
   lib,
-  stdenvNoCC,
-  vscodium,
-  vscode-extensions,
-  nodejs-slim,
   makeBinaryWrapper,
-  unzip,
+  nodejs-slim,
   runCommandLocal,
+  stdenvNoCC,
+  unzip,
+  vscode-extensions,
+  vscodium,
 }:
 
 stdenvNoCC.mkDerivation (finalAttrs: {
   inherit (vscodium) version src;
   pname = "vscode-langservers-extracted";
-
-  sourceRoot =
-    if stdenvNoCC.hostPlatform.isDarwin then
-      "VSCodium.app/Contents/Resources/app/extensions"
-    else
-      "resources/app/extensions";
+  strictDeps = true;
 
   nativeBuildInputs = [
     makeBinaryWrapper
@@ -28,11 +23,6 @@ stdenvNoCC.mkDerivation (finalAttrs: {
   ++ lib.optionals stdenvNoCC.hostPlatform.isDarwin [
     unzip
   ];
-
-  __structuredAttrs = true;
-  strictDeps = true;
-  dontConfigure = true;
-  dontBuild = true;
 
   installPhase = ''
     runHook preInstall
@@ -57,6 +47,16 @@ stdenvNoCC.mkDerivation (finalAttrs: {
 
     runHook postInstall
   '';
+
+  __structuredAttrs = true;
+  dontBuild = true;
+  dontConfigure = true;
+
+  sourceRoot =
+    if stdenvNoCC.hostPlatform.isDarwin then
+      "VSCodium.app/Contents/Resources/app/extensions"
+    else
+      "resources/app/extensions";
 
   passthru.tests.initialization =
     runCommandLocal "vscode-langservers-extracted-initialization"

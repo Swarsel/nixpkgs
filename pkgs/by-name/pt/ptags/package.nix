@@ -1,7 +1,7 @@
 {
+  lib,
   fetchFromGitHub,
   ctags,
-  lib,
   makeWrapper,
   rustPlatform,
 }:
@@ -17,9 +17,13 @@ rustPlatform.buildRustPackage (finalAttrs: {
     sha256 = "sha256-bxp38zWufqS6PZqhw8X5HR5zMRcwH58MuZaJmDRuiys=";
   };
 
+  nativeBuildInputs = [ makeWrapper ];
   cargoHash = "sha256-zzbGyfuzJXB/Rf/cm4JTVfjx2rWz1iTnELokie6qBrw=";
 
-  nativeBuildInputs = [ makeWrapper ];
+  # Sanity check.
+  checkPhase = ''
+    $releaseDir/ptags --help > /dev/null
+  '';
 
   postInstall = ''
     # `ctags` must be accessible in `PATH` for `ptags` to work.
@@ -27,16 +31,11 @@ rustPlatform.buildRustPackage (finalAttrs: {
       --prefix PATH : "${lib.makeBinPath [ ctags ]}"
   '';
 
-  # Sanity check.
-  checkPhase = ''
-    $releaseDir/ptags --help > /dev/null
-  '';
-
   meta = {
     description = "Parallel universal-ctags wrapper for git repository";
-    mainProgram = "ptags";
     homepage = "https://github.com/dalance/ptags";
-    maintainers = with lib.maintainers; [ pamplemousse ];
     license = lib.licenses.mit;
+    maintainers = with lib.maintainers; [ pamplemousse ];
+    mainProgram = "ptags";
   };
 })

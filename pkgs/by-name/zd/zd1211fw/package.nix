@@ -1,7 +1,7 @@
 {
-  stdenvNoCC,
   lib,
   fetchurl,
+  stdenvNoCC,
 }:
 
 stdenvNoCC.mkDerivation (finalAttrs: {
@@ -26,7 +26,7 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     description = "Firmware for the ZyDAS ZD1211(b) 802.11a/b/g USB WLAN chip";
     homepage = "https://sourceforge.net/projects/zd1211/";
     license = lib.licenses.gpl2Only;
-    platforms = lib.platforms.linux;
     sourceProvenance = with lib.sourceTypes; [ binaryFirmware ];
+    platforms = lib.platforms.linux;
   };
 })

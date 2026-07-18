@@ -1,16 +1,15 @@
 {
   lib,
   buildDunePackage,
-  lwt,
   digestif,
-  httpun-ws,
   gluten-lwt,
+  httpun-ws,
+  lwt,
 }:
 
 buildDunePackage {
-  pname = "httpun-ws-lwt";
-
   inherit (httpun-ws) src version;
+  pname = "httpun-ws-lwt";
 
   propagatedBuildInputs = [
     httpun-ws

@@ -1,18 +1,18 @@
 {
   lib,
-  derivationWithMeta,
-  hostPlatform,
-  kaem-unwrapped,
   M1,
   M2,
+  baseAddress,
   blood-elf-0,
+  derivationWithMeta,
   hex2,
+  hostPlatform,
+  kaem-unwrapped,
   m2libc,
+  m2libcArch,
+  platforms,
   src,
   version,
-  platforms,
-  m2libcArch,
-  baseAddress,
 }:
 
 let
@@ -23,8 +23,18 @@ let
   buildMesccToolsExtraUtil =
     name:
     derivationWithMeta {
+      inherit
+        version
+        M1
+        M2
+        blood-elf-0
+        hex2
+        m2libc
+        src
+        ;
+
       pname = "mescc-tools-extra-${name}";
-      builder = kaem-unwrapped;
+
       args = [
         "--verbose"
         "--strict"
@@ -67,15 +77,8 @@ let
             -o ''${out}
         '')
       ];
-      inherit
-        version
-        M1
-        M2
-        blood-elf-0
-        hex2
-        m2libc
-        src
-        ;
+
+      builder = kaem-unwrapped;
     };
   mkdir = buildMesccToolsExtraUtil "mkdir";
   cp = buildMesccToolsExtraUtil "cp";
@@ -83,14 +86,6 @@ let
   replace = buildMesccToolsExtraUtil "replace";
 in
 derivationWithMeta {
-  pname = "mescc-tools";
-  builder = kaem-unwrapped;
-  args = [
-    "--verbose"
-    "--strict"
-    "--file"
-    ./build.kaem
-  ];
   inherit
     version
     M1
@@ -109,11 +104,22 @@ derivationWithMeta {
     endianFlag
     ;
 
+  pname = "mescc-tools";
+
+  args = [
+    "--verbose"
+    "--strict"
+    "--file"
+    ./build.kaem
+  ];
+
+  builder = kaem-unwrapped;
+
   meta = {
+    inherit platforms;
     description = "Collection of tools written for use in bootstrapping";
     homepage = "https://github.com/oriansj/mescc-tools";
     license = lib.licenses.gpl3Plus;
     teams = [ lib.teams.minimal-bootstrap ];
-    inherit platforms;
   };
 }

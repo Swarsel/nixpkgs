@@ -1,16 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # build-system
-  setuptools,
-
-  # dependencies
-  toolz,
-  tornado,
-  zict,
-
+  buildPythonPackage,
   # tests
   dask,
   distributed,
@@ -19,12 +10,17 @@
   pyarrow,
   pytest-asyncio,
   pytestCheckHook,
+  # build-system
+  setuptools,
+  # dependencies
+  toolz,
+  tornado,
+  zict,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "streamz";
   version = "0.6.6";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "python-streamz";
@@ -32,14 +28,6 @@ buildPythonPackage (finalAttrs: {
     tag = finalAttrs.version;
     hash = "sha256-m+kBRz3K5W5yuLRcamWCZ6j6A3MBT3HyjuCLzIzUqak=";
   };
-
-  build-system = [ setuptools ];
-
-  dependencies = [
-    toolz
-    tornado
-    zict
-  ];
 
   nativeCheckInputs = [
     dask
@@ -51,7 +39,14 @@ buildPythonPackage (finalAttrs: {
     pytestCheckHook
   ];
 
-  pythonImportsCheck = [ "streamz" ];
+  __darwinAllowLocalNetworking = true;
+  build-system = [ setuptools ];
+
+  dependencies = [
+    toolz
+    tornado
+    zict
+  ];
 
   disabledTests = [
     # Error with distutils version: fixture 'cleanup' not found
@@ -66,7 +61,8 @@ buildPythonPackage (finalAttrs: {
     "test_partition_timeout_cancel"
   ];
 
-  __darwinAllowLocalNetworking = true;
+  pyproject = true;
+  pythonImportsCheck = [ "streamz" ];
 
   meta = {
     description = "Pipelines to manage continuous streams of data";

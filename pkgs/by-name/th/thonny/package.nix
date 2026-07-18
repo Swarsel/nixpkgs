@@ -2,16 +2,15 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  python3,
-  makeDesktopItem,
   copyDesktopItems,
   desktopToDarwinBundle,
+  makeDesktopItem,
+  python3,
 }:
 
 python3.pkgs.buildPythonApplication (finalAttrs: {
   pname = "thonny";
   version = "4.1.7";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "thonny";
@@ -25,19 +24,17 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
   ]
   ++ lib.optional stdenv.hostPlatform.isDarwin desktopToDarwinBundle;
 
-  desktopItems = [
-    (makeDesktopItem {
-      name = "Thonny";
-      exec = "thonny";
-      icon = "thonny";
-      desktopName = "Thonny";
-      comment = "Python IDE for beginners";
-      categories = [
-        "Development"
-        "IDE"
-      ];
-    })
-  ];
+  # Tests need a DISPLAY
+  doCheck = false;
+
+  postInstall = ''
+    install -Dm644 ./packaging/icons/thonny-48x48.png $out/share/icons/hicolor/48x48/apps/thonny.png
+  '';
+
+  preFixup = ''
+    wrapProgram "$out/bin/thonny" \
+       --prefix PYTHONPATH : $PYTHONPATH:$(toPythonPath ${python3.pkgs.jedi})
+  '';
 
   build-system = with python3.pkgs; [ setuptools ];
 
@@ -60,28 +57,34 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
       ]
     );
 
-  preFixup = ''
-    wrapProgram "$out/bin/thonny" \
-       --prefix PYTHONPATH : $PYTHONPATH:$(toPythonPath ${python3.pkgs.jedi})
-  '';
+  desktopItems = [
+    (makeDesktopItem {
+      categories = [
+        "Development"
+        "IDE"
+      ];
 
-  postInstall = ''
-    install -Dm644 ./packaging/icons/thonny-48x48.png $out/share/icons/hicolor/48x48/apps/thonny.png
-  '';
+      comment = "Python IDE for beginners";
+      desktopName = "Thonny";
+      exec = "thonny";
+      icon = "thonny";
+      name = "Thonny";
+    })
+  ];
 
-  # Tests need a DISPLAY
-  doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "thonny" ];
 
   meta = {
     description = "Python IDE for beginners";
+
     longDescription = ''
       Thonny is a Python IDE for beginners. It supports different ways
       of stepping through the code, step-by-step expression
       evaluation, detailed visualization of the call stack and a mode
       for explaining the concepts of references and heap.
     '';
+
     homepage = "https://www.thonny.org/";
     license = lib.licenses.mit;
     platforms = lib.platforms.unix;

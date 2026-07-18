@@ -1,7 +1,7 @@
 {
+  lib,
   fetchzip,
   jre,
-  lib,
   stdenvNoCC,
 }:
 
@@ -11,18 +11,13 @@ let
 
 in
 stdenvNoCC.mkDerivation {
-  pname = "necesse-server";
   inherit version;
+  pname = "necesse-server";
 
   src = fetchzip {
     url = "https://necesse.pwn.sh/server/necesse-server-linux64-${urlVersion}.zip";
     hash = "sha256-PIguTYULddLKj6PpoSvX3gNSvqrS7oRTOPuwoA0/XOc=";
   };
-
-  # removing packaged jre since we use our own
-  postUnpack = ''
-    rm -rf "$sourceRoot/jre"
-  '';
 
   installPhase = ''
     runHook preInstall
@@ -39,15 +34,20 @@ stdenvNoCC.mkDerivation {
     runHook postInstall
   '';
 
+  # removing packaged jre since we use our own
+  postUnpack = ''
+    rm -rf "$sourceRoot/jre"
+  '';
+
   passthru.updateScript = ./update.sh;
 
   meta = {
-    homepage = "https://necessegame.com/server/";
     description = "Dedicated server for Necesse";
-    sourceProvenance = with lib.sourceTypes; [ binaryBytecode ];
-    platforms = lib.platforms.linux;
+    homepage = "https://necessegame.com/server/";
     license = lib.licenses.unfreeRedistributable;
-    mainProgram = "necesse-server";
+    sourceProvenance = with lib.sourceTypes; [ binaryBytecode ];
     maintainers = with lib.maintainers; [ cr0n ];
+    platforms = lib.platforms.linux;
+    mainProgram = "necesse-server";
   };
 }

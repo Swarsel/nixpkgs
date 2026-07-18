@@ -1,21 +1,21 @@
 {
   lib,
-  buildPlatform,
-  hostPlatform,
   fetchurl,
   bash,
-  gcc,
   binutils,
-  linux-headers,
-  gnumake,
-  gnused,
-  gnugrep,
-  gawk,
+  bison,
+  buildPlatform,
   diffutils,
   findutils,
-  python,
-  bison,
+  gawk,
+  gcc,
+  gnugrep,
+  gnumake,
+  gnused,
   gnutar,
+  hostPlatform,
+  linux-headers,
+  python,
   xz,
 }:
 let
@@ -29,8 +29,8 @@ let
 
   linkerFile =
     {
-      x86_64-linux = "ld-linux-x86-64";
       i686-linux = "ld-linux";
+      x86_64-linux = "ld-linux-x86-64";
     }
     .${buildPlatform.system};
 

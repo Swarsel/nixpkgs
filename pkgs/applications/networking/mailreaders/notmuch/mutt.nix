@@ -1,22 +1,20 @@
 {
-  stdenv,
   lib,
+  stdenv,
+  coreutils,
+  makeWrapper,
+  notmuch,
   perl,
   perlPackages,
-  makeWrapper,
-  coreutils,
-  notmuch,
 }:
 
 stdenv.mkDerivation {
   pname = "notmuch-mutt";
   version = notmuch.version;
-
+  src = notmuch.src;
   outputs = [ "out" ];
-
-  dontStrip = true;
-
   nativeBuildInputs = [ makeWrapper ];
+
   buildInputs = [
     perl
   ]
@@ -31,11 +29,6 @@ stdenv.mkDerivation {
     TermReadLineGnu
   ]);
 
-  src = notmuch.src;
-
-  dontConfigure = true;
-  dontBuild = true;
-
   installPhase = ''
     ${coreutils}/bin/install -Dm755 \
       ./contrib/notmuch-mutt/notmuch-mutt \
@@ -45,12 +38,16 @@ stdenv.mkDerivation {
       --prefix PERL5LIB : $PERL5LIB
   '';
 
+  dontBuild = true;
+  dontConfigure = true;
+  dontStrip = true;
+
   meta = {
     description = "Mutt support for notmuch";
-    mainProgram = "notmuch-mutt";
     homepage = "https://notmuchmail.org/";
     license = with lib.licenses; gpl3;
     maintainers = with lib.maintainers; [ peterhoeg ];
     platforms = lib.platforms.unix;
+    mainProgram = "notmuch-mutt";
   };
 }

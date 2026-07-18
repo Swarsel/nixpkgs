@@ -1,13 +1,13 @@
 {
   lib,
-  makeBinaryWrapper,
-  symlinkJoin,
-  idris2-unwrapped,
-  prelude,
-  linear,
   base,
-  network,
   contrib,
+  idris2-unwrapped,
+  linear,
+  makeBinaryWrapper,
+  network,
+  prelude,
+  symlinkJoin,
   test,
   extraPackages ? [ ],
 }:
@@ -29,9 +29,6 @@ in
 symlinkJoin {
   inherit (idris2-unwrapped) version;
   pname = "idris2-wrapped";
-
-  paths = [ idris2-unwrapped ];
-
   nativeBuildInputs = [ makeBinaryWrapper ];
 
   postBuild = ''
@@ -44,10 +41,12 @@ symlinkJoin {
       --suffix DYLD_LIBRARY_PATH ':' "${supportLibrariesPath}"
   '';
 
+  paths = [ idris2-unwrapped ];
+
   passthru = {
+    src = idris2-unwrapped.src;
     prelude = preludeLibs;
     unwrapped = idris2-unwrapped;
-    src = idris2-unwrapped.src;
   }
   // idris2-unwrapped.passthru;
 

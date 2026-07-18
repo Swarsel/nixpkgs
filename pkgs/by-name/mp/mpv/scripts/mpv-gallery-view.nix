@@ -1,8 +1,8 @@
 {
   lib,
   fetchFromGitHub,
-  unstableGitUpdater,
   buildLua,
+  unstableGitUpdater,
   extraThumbgens ? 0,
 }:
 let
@@ -37,8 +37,6 @@ buildLua (finalAttrs: {
       --replace-fail "~~/script-modules/?.lua;" "$out/share/mpv/script-modules/?.lua;"
   '';
 
-  dontFixup = true;
-
   installPhase = ''
     runHook preInstall
 
@@ -52,26 +50,30 @@ buildLua (finalAttrs: {
     runHook postInstall
   '';
 
-  scriptPath = "playlist-view.lua";
+  dontFixup = true;
+
   extraScripts = [
     "contact-sheet.lua"
     "gallery-thumbgen.lua"
   ]
   ++ extraThumbgenScripts;
 
+  scriptPath = "playlist-view.lua";
+
   passthru = {
-    updateScript = unstableGitUpdater { };
     extraWrapperArgs = map (script: [
       "--add-flags"
       "--script=${finalAttrs.finalPackage}/share/mpv/scripts/${script}"
     ]) finalAttrs.extraScripts;
+
+    updateScript = unstableGitUpdater { };
   };
 
   meta = {
     description = "Gallery-view scripts for mpv";
     homepage = "https://github.com/occivink/mpv-gallery-view";
-    platforms = lib.platforms.all;
     license = lib.licenses.unlicense;
     maintainers = with lib.maintainers; [ musjj ];
+    platforms = lib.platforms.all;
   };
 })

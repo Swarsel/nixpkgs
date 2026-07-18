@@ -1,28 +1,24 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # build
-  setuptools,
-  setuptools-scm,
-  cython,
-
+  buildPythonPackage,
   # dependencies
   colorama,
   configobj,
+  cython,
   ecpy,
   fastdtw,
   libusb1,
   pyserial,
+  pytestCheckHook,
+  # build
+  setuptools,
+  setuptools-scm,
   tqdm,
-
   # install
   udevCheckHook,
-
   # check
   writableTmpDirAsHomeHook,
-  pytestCheckHook,
 }:
 
 # Usage:
@@ -41,33 +37,13 @@ buildPythonPackage rec {
     hash = "sha256-C7QP044QEP7vmz1lMseLtMTYoKn5SoFV/q9URY7yQ6I=";
   };
 
-  pyproject = true;
-
-  build-system = [
-    setuptools
-    setuptools-scm
-  ];
-
   nativeBuildInputs = [
     cython
   ];
 
-  pythonRelaxDeps = [
-    "numpy"
-  ];
-
-  dependencies = [
-    colorama
-    configobj
-    ecpy
-    fastdtw
-    libusb1
-    pyserial
-    tqdm
-  ];
-
-  nativeInstallCheckInputs = [
-    udevCheckHook
+  nativeCheckInputs = [
+    writableTmpDirAsHomeHook
+    pytestCheckHook
   ];
 
   postInstall = ''
@@ -84,12 +60,26 @@ buildPythonPackage rec {
     EOF
   '';
 
-  pythonImportsCheck = [ "chipwhisperer" ];
-
-  nativeCheckInputs = [
-    writableTmpDirAsHomeHook
-    pytestCheckHook
+  nativeInstallCheckInputs = [
+    udevCheckHook
   ];
+
+  build-system = [
+    setuptools
+    setuptools-scm
+  ];
+
+  dependencies = [
+    colorama
+    configobj
+    ecpy
+    fastdtw
+    libusb1
+    pyserial
+    tqdm
+  ];
+
+  disabledTests = [ "TestCPA" ]; # Tries to open a tutorial project
 
   enabledTestPaths = [
     # All other tests require connected hardware
@@ -98,7 +88,12 @@ buildPythonPackage rec {
     "tests/test_api.py"
   ];
 
-  disabledTests = [ "TestCPA" ]; # Tries to open a tutorial project
+  pyproject = true;
+  pythonImportsCheck = [ "chipwhisperer" ];
+
+  pythonRelaxDeps = [
+    "numpy"
+  ];
 
   meta = {
     description = "Toolchain for side-channel power analysis and glitching attacks";

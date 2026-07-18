@@ -2,20 +2,17 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  buildPythonPackage,
-
-  # build-system
-  setuptools-scm,
-
-  # dependencies
-  numpy,
-  scipy,
-
   # tests
   autograd,
+  buildPythonPackage,
   jax,
   matplotlib,
+  # dependencies
+  numpy,
   pytestCheckHook,
+  scipy,
+  # build-system
+  setuptools-scm,
   tensorflow,
   torch,
 }:
@@ -23,7 +20,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "pymanopt";
   version = "2.2.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "pymanopt";
@@ -37,17 +33,6 @@ buildPythonPackage (finalAttrs: {
       --replace-fail '"pip==22.3.1",' ""
   '';
 
-  build-system = [
-    setuptools-scm
-  ];
-
-  dependencies = [
-    numpy
-    scipy
-  ];
-
-  pythonImportsCheck = [ "pymanopt" ];
-
   nativeCheckInputs = [
     autograd
     jax
@@ -55,6 +40,15 @@ buildPythonPackage (finalAttrs: {
     pytestCheckHook
     tensorflow
     torch
+  ];
+
+  build-system = [
+    setuptools-scm
+  ];
+
+  dependencies = [
+    numpy
+    scipy
   ];
 
   disabledTestPaths = lib.optionals stdenv.hostPlatform.isDarwin [
@@ -69,6 +63,9 @@ buildPythonPackage (finalAttrs: {
     "test_check_hessian"
     "test_check_retraction"
   ];
+
+  pyproject = true;
+  pythonImportsCheck = [ "pymanopt" ];
 
   meta = {
     description = "Python toolbox for optimization on Riemannian manifolds with support for automatic differentiation";

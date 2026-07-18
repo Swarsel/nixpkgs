@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   nixosTests,
 }:
 
@@ -24,12 +24,9 @@ buildGoModule (finalAttrs: {
     hash = "sha256-BLcpUbE2lkXkpzYWSIVaLNXlFTvSuXw9Vm0iTtrqOKQ=";
   };
 
-  proxyVendor = true;
-  vendorHash = "sha256-AOdGqr738EgwbZhHHP3ctQYUilgyOc/tIJyaI0H3oeM=";
-
-  doCheck = false;
-
   outputs = [ "out" ] ++ bins;
+  vendorHash = "sha256-AOdGqr738EgwbZhHHP3ctQYUilgyOc/tIJyaI0H3oeM=";
+  doCheck = false;
 
   # Move binaries to separate outputs and symlink them back to $out
   postInstall = lib.concatStringsSep "\n" (
@@ -38,6 +35,8 @@ buildGoModule (finalAttrs: {
       "mkdir -p \$${bin}/bin && mv $out/bin/${bin} \$${bin}/bin/ && ln -s \$${bin}/bin/${bin} $out/bin/"
     ) bins
   );
+
+  proxyVendor = true;
 
   subPackages = [
     "cmd/abidump"
@@ -55,20 +54,22 @@ buildGoModule (finalAttrs: {
 
   # Following upstream: https://github.com/ethereum/go-ethereum/blob/v1.11.6/build/ci.go#L218
   tags = [ "urfave_cli_no_docs" ];
-
   passthru.tests = { inherit (nixosTests) geth; };
 
   meta = {
-    homepage = "https://geth.ethereum.org/";
     description = "Official golang implementation of the Ethereum protocol";
+    homepage = "https://geth.ethereum.org/";
+
     license = with lib.licenses; [
       lgpl3Only
       gpl3Only
     ];
+
     maintainers = with lib.maintainers; [
       asymmetric
       RaghavSood
     ];
+
     mainProgram = "geth";
   };
 })

@@ -1,24 +1,23 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   git,
   hatch-vcs,
   hatchling,
   icalendar,
-  python-dateutil,
-  tzdata,
-  x-wr-timezone,
+  pygments,
   pytestCheckHook,
+  python-dateutil,
   pytz,
   restructuredtext-lint,
-  pygments,
+  tzdata,
+  x-wr-timezone,
 }:
 
 buildPythonPackage rec {
   pname = "recurring-ical-events";
   version = "3.9.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "niccokunzmann";
@@ -32,6 +31,13 @@ buildPythonPackage rec {
       --replace 'dynamic = ["urls", "version"]' 'version = "${version}"'
   '';
 
+  nativeCheckInputs = [
+    pytestCheckHook
+    pytz
+    restructuredtext-lint
+    pygments
+  ];
+
   build-system = [
     hatch-vcs
     hatchling
@@ -44,19 +50,13 @@ buildPythonPackage rec {
     x-wr-timezone
   ];
 
-  nativeCheckInputs = [
-    pytestCheckHook
-    pytz
-    restructuredtext-lint
-    pygments
-  ];
-
+  pyproject = true;
   pythonImportsCheck = [ "recurring_ical_events" ];
 
   meta = {
-    changelog = "https://github.com/niccokunzmann/python-recurring-ical-events/blob/${src.tag}/docs/changelog.md";
     description = "Repeat ICalendar events by RRULE, RDATE and EXDATE";
     homepage = "https://github.com/niccokunzmann/python-recurring-ical-events";
+    changelog = "https://github.com/niccokunzmann/python-recurring-ical-events/blob/${src.tag}/docs/changelog.md";
     license = lib.licenses.lgpl3Plus;
     maintainers = with lib.maintainers; [ dotlambda ];
   };

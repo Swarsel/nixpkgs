@@ -1,6 +1,6 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchurl,
   registryDat,
 }:
@@ -11,21 +11,20 @@ let
     name: info:
     let
       pkg = stdenv.mkDerivation {
-        name = lib.replaceStrings [ "/" ] [ "-" ] name + "-${info.version}";
-
         src = fetchurl {
+          inherit (info) sha256;
           url = "https://github.com/${name}/archive/${info.version}.tar.gz";
           meta.homepage = "https://github.com/${name}/";
-          inherit (info) sha256;
         };
-
-        dontConfigure = true;
-        dontBuild = true;
 
         installPhase = ''
           mkdir -p $out
           cp -r * $out
         '';
+
+        dontBuild = true;
+        dontConfigure = true;
+        name = lib.replaceStrings [ "/" ] [ "-" ] name + "-${info.version}";
       };
     in
     ''

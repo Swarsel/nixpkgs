@@ -3,17 +3,15 @@
   stdenv,
   fetchFromGitHub,
   cmake,
-  ninja,
-  kdePackages,
-  nix-update-script,
-  git,
   distrobox,
+  git,
+  kdePackages,
+  ninja,
+  nix-update-script,
 }:
 stdenv.mkDerivation (finalAttrs: {
   pname = "kontainer";
   version = "1.4.1";
-
-  strictDeps = true;
 
   src = fetchFromGitHub {
     owner = "DenysMb";
@@ -21,6 +19,8 @@ stdenv.mkDerivation (finalAttrs: {
     tag = finalAttrs.version;
     hash = "sha256-15H4fTZ4Tja+nt0iKtFuULj/4g/0UK+W79R4kH7BFcs=";
   };
+
+  strictDeps = true;
 
   nativeBuildInputs = [
     cmake
@@ -47,11 +47,11 @@ stdenv.mkDerivation (finalAttrs: {
   ]);
 
   qtWrapperArgs = [ "--prefix PATH : ${lib.makeBinPath [ distrobox ]}" ];
-
   passthru.updateScript = nix-update-script { };
 
   meta = {
     description = "Graphical management application for Distrobox containers";
+
     longDescription = ''
       Kontainer is a graphical user interface (GUI) application built with KDE Kirigami that provides a user-friendly way to manage Distrobox containers.
 
@@ -63,14 +63,17 @@ stdenv.mkDerivation (finalAttrs: {
 
       *Desktop Integration*: Generate desktop shortcuts for containers, full integration with the host system through Distrobox and color-coded container listing based on distribution.
     '';
+
     homepage = "https://github.com/DenysMb/Kontainer";
     changelog = "https://github.com/DenysMb/Kontainer/releases/tag/${finalAttrs.version}";
-    mainProgram = "kontainer";
     license = lib.licenses.gpl3Plus;
+
     maintainers = with lib.maintainers; [
       griffi-gh
       sigmasquadron
     ];
+
     platforms = lib.platforms.linux;
+    mainProgram = "kontainer";
   };
 })

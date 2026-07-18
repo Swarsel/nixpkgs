@@ -1,7 +1,7 @@
 {
   buildPythonPackage,
-  oslo-config,
   docutils,
+  oslo-config,
   oslo-log,
   oslotest,
   requests-mock,
@@ -11,18 +11,14 @@
 }:
 
 buildPythonPackage {
-  pname = "oslo-config-tests";
   inherit (oslo-config) version src;
-  pyproject = false;
+  pname = "oslo-config-tests";
 
   postPatch = ''
     # only a small portion of the listed packages are actually needed for running the tests
     # so instead of removing them one by one remove everything
     rm test-requirements.txt
   '';
-
-  dontBuild = true;
-  dontInstall = true;
 
   nativeCheckInputs = [
     oslo-config
@@ -38,4 +34,8 @@ buildPythonPackage {
   checkPhase = ''
     stestr run
   '';
+
+  dontBuild = true;
+  dontInstall = true;
+  pyproject = false;
 }

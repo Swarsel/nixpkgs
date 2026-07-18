@@ -1,22 +1,21 @@
 {
   lib,
   stdenv,
-  rustPlatform,
   fetchFromGitHub,
+  bubblewrap,
   installShellFiles,
-  pkg-config,
-  withBubblewrap ? stdenv.hostPlatform.isLinux,
   makeBinaryWrapper,
+  pkg-config,
+  rustPlatform,
+  writableTmpDirAsHomeHook,
   xz,
   zstd,
-  writableTmpDirAsHomeHook,
-  bubblewrap,
+  withBubblewrap ? stdenv.hostPlatform.isLinux,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
   pname = "unnix";
   version = "0.1.1";
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "figsoda";
@@ -24,8 +23,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-ZmCagknLEJlAtoVfHrQZeb3CbxpT37J6Mvyxn/qQRmQ=";
   };
-
-  cargoHash = "sha256-NXyB1Ic2EnLJPpFDn1idb5WYfS8gXzgvIRbQoJ3bsS8=";
 
   nativeBuildInputs = [
     installShellFiles
@@ -40,15 +37,17 @@ rustPlatform.buildRustPackage (finalAttrs: {
     zstd
   ];
 
-  # tests try to access ~/.cache/unnix
-  nativeCheckInputs = [
-    writableTmpDirAsHomeHook
-  ];
+  cargoHash = "sha256-NXyB1Ic2EnLJPpFDn1idb5WYfS8gXzgvIRbQoJ3bsS8=";
 
   env = {
     GENERATE_ARTIFACTS = "artifacts";
     ZSTD_SYS_USE_PKG_CONFIG = true;
   };
+
+  # tests try to access ~/.cache/unnix
+  nativeCheckInputs = [
+    writableTmpDirAsHomeHook
+  ];
 
   postInstall = ''
     installManPage artifacts/*.1
@@ -58,6 +57,8 @@ rustPlatform.buildRustPackage (finalAttrs: {
     wrapProgram $out/bin/unnix \
       --prefix PATH : ${lib.makeBinPath [ bubblewrap ]}
   '';
+
+  __structuredAttrs = true;
 
   meta = {
     description = "Reproducible Nix environments without installing Nix";

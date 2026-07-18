@@ -2,25 +2,25 @@
   lib,
   stdenv,
   fetchFromGitLab,
-  fetchpatch,
-  writeText,
-  replaceVars,
-  meson,
-  pkg-config,
-  ninja,
+  bashNonInteractive,
   docbook-xsl-nons,
+  fetchpatch,
+  fontconfig,
   gettext,
-  libxslt,
   gtk3,
   libdrm,
   libevdev,
   libpng,
   libxkbcommon,
+  libxslt,
+  meson,
+  ninja,
   pango,
+  pkg-config,
+  replaceVars,
   systemd,
+  writeText,
   xkeyboard-config,
-  fontconfig,
-  bashNonInteractive,
   systemdSupport ? lib.meta.availableOn stdenv.hostPlatform systemd,
 }:
 
@@ -28,18 +28,18 @@ stdenv.mkDerivation (finalAttrs: {
   pname = "plymouth";
   version = "26.134.222";
 
-  outputs = [
-    "out"
-    "dev"
-  ];
-
   src = fetchFromGitLab {
-    domain = "gitlab.freedesktop.org";
     owner = "plymouth";
     repo = "plymouth";
     tag = finalAttrs.version;
     hash = "sha256-TarN9NLWzYmE9GS/rtaa0w8SVOES86sUMZWbnsgRDHY=";
+    domain = "gitlab.freedesktop.org";
   };
+
+  outputs = [
+    "out"
+    "dev"
+  ];
 
   patches = [
     # do not create unnecessary symlink to non-existent header-image.png
@@ -51,6 +51,14 @@ stdenv.mkDerivation (finalAttrs: {
       fcmatch = "${fontconfig}/bin/fc-match";
     })
   ];
+
+  postPatch = ''
+    substituteInPlace meson.build \
+      --replace "run_command(['scripts/generate-version.sh'], check: true).stdout().strip()" "'${finalAttrs.version}'"
+
+    # prevent installing unused non-$out dirs to DESTDIR
+    sed -i '/^install_emptydir/d' src/meson.build
+  '';
 
   strictDeps = true;
 
@@ -102,13 +110,13 @@ stdenv.mkDerivation (finalAttrs: {
       "--cross-file=${crossFile}"
     ];
 
-  postPatch = ''
-    substituteInPlace meson.build \
-      --replace "run_command(['scripts/generate-version.sh'], check: true).stdout().strip()" "'${finalAttrs.version}'"
-
-    # prevent installing unused non-$out dirs to DESTDIR
-    sed -i '/^install_emptydir/d' src/meson.build
-  '';
+  # HACK: We want to install configuration files to $out/etc
+  # but Plymouth should read them from /etc on a NixOS system.
+  # With autotools, it was possible to override Make variables
+  # at install time but Meson does not support this
+  # so we need to convince it to install all files to a temporary
+  # location using DESTDIR and then move it to proper one in postInstall.
+  env.DESTDIR = "${placeholder "out"}/dest";
 
   postInstall = ''
     # Move stuff from DESTDIR to proper location.
@@ -123,19 +131,11 @@ stdenv.mkDerivation (finalAttrs: {
     rmdir "$DESTDIR/${builtins.storeDir}" "$DESTDIR/${dirOf builtins.storeDir}" "$DESTDIR"
   '';
 
-  # HACK: We want to install configuration files to $out/etc
-  # but Plymouth should read them from /etc on a NixOS system.
-  # With autotools, it was possible to override Make variables
-  # at install time but Meson does not support this
-  # so we need to convince it to install all files to a temporary
-  # location using DESTDIR and then move it to proper one in postInstall.
-  env.DESTDIR = "${placeholder "out"}/dest";
-
   meta = {
-    homepage = "https://www.freedesktop.org/wiki/Software/Plymouth/";
     description = "Boot splash and boot logger";
+    homepage = "https://www.freedesktop.org/wiki/Software/Plymouth/";
     license = lib.licenses.gpl2Plus;
-    teams = [ lib.teams.gnome ];
     platforms = lib.platforms.linux;
+    teams = [ lib.teams.gnome ];
   };
 })

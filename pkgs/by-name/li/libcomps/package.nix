@@ -1,14 +1,14 @@
 {
   lib,
+  stdenv,
+  fetchFromGitHub,
   check,
   cmake,
   doxygen,
   expat,
-  fetchFromGitHub,
   libxml2,
   python3,
   sphinx,
-  stdenv,
   zlib,
 }:
 
@@ -16,18 +16,18 @@ stdenv.mkDerivation (finalAttrs: {
   pname = "libcomps";
   version = "0.1.24";
 
-  outputs = [
-    "out"
-    "dev"
-    "py"
-  ];
-
   src = fetchFromGitHub {
     owner = "rpm-software-management";
     repo = "libcomps";
     rev = finalAttrs.version;
     hash = "sha256-O60+k3ZnSfP+wFI55s/WfgrPbvu52uXZh88Ebg3Nf+c=";
   };
+
+  outputs = [
+    "out"
+    "dev"
+    "py"
+  ];
 
   patches = [
     ./fix-python-install-dir.patch
@@ -52,13 +52,13 @@ stdenv.mkDerivation (finalAttrs: {
     zlib
   ];
 
-  dontUseCmakeBuildDir = true;
-  cmakeDir = "libcomps";
-
   postFixup = ''
     ls $out/lib
     moveToOutput "lib/${python3.libPrefix}" "$py"
   '';
+
+  cmakeDir = "libcomps";
+  dontUseCmakeBuildDir = true;
 
   meta = {
     description = "Comps XML file manipulation library";

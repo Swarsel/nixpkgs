@@ -1,14 +1,13 @@
 {
   lib,
-  fetchFromGitHub,
   stdenv,
+  fetchFromGitHub,
   nix-update-script,
   python3Packages,
 }:
 python3Packages.buildPythonApplication {
   pname = "tabbyapi";
   version = "0-unstable-2026-06-27";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "theroyallab";
@@ -17,18 +16,29 @@ python3Packages.buildPythonApplication {
     hash = "sha256-s97YFyij2/oYlClmV2laDrCkkoK4uVZgRsn5WwftLag=";
   };
 
-  build-system = with python3Packages; [
-    packaging
-    setuptools
-    wheel
-  ];
+  postPatch = ''
+    substituteInPlace pyproject.toml --replace-fail 'fastapi-slim' 'fastapi'
+  '';
 
   nativeBuildInputs = with python3Packages; [
     pythonRelaxDepsHook
   ];
 
-  pythonRelaxDeps = [
-    "pydantic"
+  postInstall = ''
+    cp *.py $out/${python3Packages.python.sitePackages}/
+    cp -r {common,endpoints,backends,templates} $out/${python3Packages.python.sitePackages}/
+  '';
+
+  postFixup = ''
+    makeWrapper ${python3Packages.python.interpreter} $out/bin/tabbyapi \
+      --prefix PYTHONPATH : "$PYTHONPATH" \
+      --add-flags "$out/${python3Packages.python.sitePackages}/main.py"
+  '';
+
+  build-system = with python3Packages; [
+    packaging
+    setuptools
+    wheel
   ];
 
   dependencies =
@@ -64,41 +74,36 @@ python3Packages.buildPythonApplication {
       uvloop
     ];
 
-  postPatch = ''
-    substituteInPlace pyproject.toml --replace-fail 'fastapi-slim' 'fastapi'
-  '';
-
   optional-dependencies = with python3Packages; {
     amd = [
       pytorch-triton-rocm
       torch
     ];
+
     cu118 = [
       torch
     ];
+
     cu121 = [
       flash-attn
       torch
     ];
+
     dev = [
       ruff
     ];
+
     extras = [
       infinity-emb
       sentence-transformers
     ];
   };
 
-  postInstall = ''
-    cp *.py $out/${python3Packages.python.sitePackages}/
-    cp -r {common,endpoints,backends,templates} $out/${python3Packages.python.sitePackages}/
-  '';
+  pyproject = true;
 
-  postFixup = ''
-    makeWrapper ${python3Packages.python.interpreter} $out/bin/tabbyapi \
-      --prefix PYTHONPATH : "$PYTHONPATH" \
-      --add-flags "$out/${python3Packages.python.sitePackages}/main.py"
-  '';
+  pythonRelaxDeps = [
+    "pydantic"
+  ];
 
   passthru = {
     cudaSupport = python3Packages.torch.cudaSupport;
@@ -109,11 +114,13 @@ python3Packages.buildPythonApplication {
     description = "Official API server for Exllama";
     homepage = "https://github.com/theroyallab/tabbyAPI";
     license = lib.licenses.agpl3Only;
+    maintainers = with lib.maintainers; [ BatteredBunny ];
+
     platforms = [
       "x86_64-windows"
       "x86_64-linux"
     ];
+
     mainProgram = "tabbyapi";
-    maintainers = with lib.maintainers; [ BatteredBunny ];
   };
 }

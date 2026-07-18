@@ -1,7 +1,7 @@
 {
   lib,
-  melpaBuild,
   fetchurl,
+  melpaBuild,
 }:
 
 let
@@ -15,7 +15,6 @@ let
 in
 melpaBuild {
   inherit pname version src;
-  melpaVersion = "1.4"; # upstream versions such as 1.04 are not supported
 
   outputs = [
     "out"
@@ -27,9 +26,11 @@ melpaBuild {
     install -Dm644 -t ''${!outputDoc}/share/doc/pod-mode/ ChangeLog README
   '';
 
+  melpaVersion = "1.4"; # upstream versions such as 1.04 are not supported
+
   meta = {
-    homepage = "https://metacpan.org/dist/pod-mode";
     description = "Major mode for editing .pod-files";
+    homepage = "https://metacpan.org/dist/pod-mode";
     license = lib.licenses.gpl2Plus;
     maintainers = with lib.maintainers; [ qyliss ];
   };

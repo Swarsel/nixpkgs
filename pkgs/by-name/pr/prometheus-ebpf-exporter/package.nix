@@ -1,15 +1,15 @@
 {
   lib,
-  clangStdenv,
-  buildGoModule,
   fetchFromGitHub,
-  nixosTests,
-  versionCheckHook,
-  nix-update-script,
+  buildGoModule,
+  clangStdenv,
   libbpf,
   libelf,
   libsystemtap,
   libz,
+  nix-update-script,
+  nixosTests,
+  versionCheckHook,
 }:
 
 # BPF programs must be compiled with Clang
@@ -24,8 +24,6 @@ buildGoModule.override { stdenv = clangStdenv; } (finalAttrs: {
     hash = "sha256-zIevVZ4ldPj/4OvQFo+Nv/g//xNZEppO9ccB6y65rZA=";
   };
 
-  vendorHash = "sha256-ZwKXIIoV4yEyjSpGjVDr91/CQmVuF9zc0IHkJYraE9o=";
-
   postPatch = ''
     substituteInPlace examples/Makefile \
       --replace-fail "-Wall -Werror" ""
@@ -38,8 +36,23 @@ buildGoModule.override { stdenv = clangStdenv; } (finalAttrs: {
     libz
   ];
 
+  vendorHash = "sha256-ZwKXIIoV4yEyjSpGjVDr91/CQmVuF9zc0IHkJYraE9o=";
   env.CGO_LDFLAGS = "-l bpf";
 
+  postBuild = ''
+    BUILD_LIBBPF=0 make examples
+  '';
+
+  # Tests fail on trying to access cgroups.
+  doCheck = false;
+
+  postInstall = ''
+    mkdir -p $out/examples
+    mv examples/*.o examples/*.yaml $out/examples
+  '';
+
+  doInstallCheck = true;
+  nativeInstallCheckInputs = [ versionCheckHook ];
   hardeningDisable = [ "zerocallusedregs" ];
 
   ldflags = [
@@ -52,36 +65,23 @@ buildGoModule.override { stdenv = clangStdenv; } (finalAttrs: {
     "-X github.com/prometheus/common/version.BuildDate=unknown"
   ];
 
-  postBuild = ''
-    BUILD_LIBBPF=0 make examples
-  '';
-
-  postInstall = ''
-    mkdir -p $out/examples
-    mv examples/*.o examples/*.yaml $out/examples
-  '';
-
-  # Tests fail on trying to access cgroups.
-  doCheck = false;
-
-  doInstallCheck = true;
-  nativeInstallCheckInputs = [ versionCheckHook ];
-
   passthru = {
-    updateScript = nix-update-script { };
     tests = { inherit (nixosTests.prometheus-exporters) ebpf; };
+    updateScript = nix-update-script { };
   };
 
   meta = {
     description = "Prometheus exporter for custom eBPF metrics";
-    mainProgram = "ebpf_exporter";
     homepage = "https://github.com/cloudflare/ebpf_exporter";
     changelog = "https://github.com/cloudflare/ebpf_exporter/releases/tag/${finalAttrs.src.tag}";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       jpds
       stepbrobd
     ];
+
     platforms = lib.platforms.linux;
+    mainProgram = "ebpf_exporter";
   };
 })

@@ -3,8 +3,8 @@
   stdenv,
   fetchzip,
   glib,
-  libgda6,
   gsound,
+  libgda6,
 }:
 
 stdenv.mkDerivation (finalAttrs: {

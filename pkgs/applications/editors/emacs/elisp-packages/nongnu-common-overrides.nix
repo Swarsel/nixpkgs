@@ -23,8 +23,8 @@ in
 
   # requires optional dependency for OMEMO support.
   jabber = super.jabber.overrideAttrs (old: {
-    buildInputs = old.buildInputs ++ [ pkgs.mbedtls ];
     nativeBuildInputs = old.nativeBuildInputs ++ [ pkgs.pkg-config ];
+    buildInputs = old.buildInputs ++ [ pkgs.mbedtls ];
 
     # We need to run this in postInstall for package directory to become available
     postInstall =

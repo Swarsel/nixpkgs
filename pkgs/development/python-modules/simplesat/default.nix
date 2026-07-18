@@ -1,8 +1,8 @@
 {
   lib,
+  fetchFromGitHub,
   attrs,
   buildPythonPackage,
-  fetchFromGitHub,
   mock,
   okonomiyaki,
   pytestCheckHook,
@@ -14,7 +14,6 @@
 buildPythonPackage rec {
   pname = "simplesat";
   version = "0.9.2";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "enthought";
@@ -28,6 +27,12 @@ buildPythonPackage rec {
       --replace-fail "version = file: VERSION" "version = ${version}"
   '';
 
+  nativeCheckInputs = [
+    mock
+    pytestCheckHook
+    pyyaml
+  ];
+
   build-system = [ setuptools ];
 
   dependencies = [
@@ -36,15 +41,9 @@ buildPythonPackage rec {
     six
   ];
 
-  nativeCheckInputs = [
-    mock
-    pytestCheckHook
-    pyyaml
-  ];
-
-  pythonImportsCheck = [ "simplesat" ];
-
   enabledTestPaths = [ "simplesat/tests" ];
+  pyproject = true;
+  pythonImportsCheck = [ "simplesat" ];
 
   meta = {
     description = "Prototype for SAT-based dependency handling";

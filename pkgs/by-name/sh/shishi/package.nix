@@ -2,18 +2,17 @@
   lib,
   stdenv,
   fetchurl,
-  pkg-config,
+  gnutls,
   libgcrypt,
   libgpg-error,
+  libidn,
   libtasn1,
-
+  pam,
+  pkg-config,
+  useGnutls ? lib.meta.availableOn stdenv.hostPlatform gnutls,
+  useLibidn ? lib.meta.availableOn stdenv.hostPlatform libidn,
   # Optional Dependencies
   usePam ? lib.meta.availableOn stdenv.hostPlatform pam && stdenv.hostPlatform.isLinux,
-  pam,
-  useLibidn ? lib.meta.availableOn stdenv.hostPlatform libidn,
-  libidn,
-  useGnutls ? lib.meta.availableOn stdenv.hostPlatform gnutls,
-  gnutls,
 }:
 
 let
@@ -28,7 +27,7 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-lXmP/RLdAaT4jgMR7gPKSibly05ekFmkDk/E2fKRfpI=";
   };
 
-  separateDebugInfo = true;
+  strictDeps = true;
 
   nativeBuildInputs = [
     libgcrypt
@@ -67,10 +66,7 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   env.NIX_CFLAGS_COMPILE = optionalString stdenv.hostPlatform.isDarwin "-DBIND_8_COMPAT";
-
   doCheck = true;
-
-  installFlags = [ "sysconfdir=\${out}/etc" ];
 
   # Fix *.la files
   postInstall = ''
@@ -88,11 +84,12 @@ stdenv.mkDerivation (finalAttrs: {
     -e 's,\(-ltasn1\),-L${libtasn1.out}/lib \1,'
   '';
 
-  strictDeps = true;
+  installFlags = [ "sysconfdir=\${out}/etc" ];
+  separateDebugInfo = true;
 
   meta = {
-    homepage = "https://www.gnu.org/software/shishi/";
     description = "Implementation of the Kerberos 5 network security system";
+    homepage = "https://www.gnu.org/software/shishi/";
     license = lib.licenses.gpl3Plus;
     maintainers = [ ];
     platforms = lib.platforms.linux;

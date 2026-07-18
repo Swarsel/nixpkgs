@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   lxml,
   matplotlib,
   numpy,
@@ -18,13 +18,11 @@ buildPythonPackage {
   version = "unstable-2023-04-26";
 
   src = fetchFromGitHub {
+    inherit rev;
     owner = "hajicj";
     repo = "muscima";
-    inherit rev;
     hash = "sha256-0mRLJATn+6dYswgDg2zs7RHKSvY4+gNt4SBHeF0G3Xg=";
   };
-
-  format = "setuptools";
 
   propagatedBuildInputs = [
     lxml
@@ -40,6 +38,8 @@ buildPythonPackage {
     # They hard-code the path to the dataset and expect you to edit the test to update it to your value
     "test/test_dataset.py"
   ];
+
+  format = "setuptools";
 
   meta = {
     description = "Tools for working with the MUSCIMA++ dataset of handwritten music notation";

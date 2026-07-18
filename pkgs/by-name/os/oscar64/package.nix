@@ -1,8 +1,8 @@
 {
   lib,
   stdenv,
-  nix-update-script,
   fetchFromGitHub,
+  nix-update-script,
 }:
 stdenv.mkDerivation (finalAttrs: {
   pname = "oscar64";
@@ -21,18 +21,15 @@ stdenv.mkDerivation (finalAttrs: {
       --replace-fail "/usr/local/share/oscar64/" "$out/include/oscar64"
   '';
 
-  enableParallelBuilding = true;
-
   makeFlags = [
     "-C ./make"
     "prefix=$(out)"
   ];
 
-  buildTarget = "compiler";
-
   doCheck = true;
+  buildTarget = "compiler";
   checkTarget = "check";
-
+  enableParallelBuilding = true;
   passthru.updateScript = nix-update-script { };
 
   meta = {
@@ -40,7 +37,7 @@ stdenv.mkDerivation (finalAttrs: {
     homepage = "https://github.com/drmortalwombat/oscar64";
     license = lib.licenses.gpl3Only;
     maintainers = [ lib.maintainers.nekowinston ];
-    mainProgram = "oscar64";
     platforms = lib.platforms.unix;
+    mainProgram = "oscar64";
   };
 })

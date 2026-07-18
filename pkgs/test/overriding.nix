@@ -49,35 +49,42 @@ let
       );
     in
     {
-      repeatedOverrides-pname = {
-        expr = repeatedOverrides.pname;
-        expected = "a-better-hello-with-blackjack";
-      };
-      repeatedOverrides-entangled-pname = {
-        expr = repeatedOverrides.entangled.pname;
-        expected = "a-better-figlet-with-blackjack";
-      };
       overriding-using-only-attrset = {
-        expr = (pkgs.hello.overrideAttrs { pname = "hello-overriden"; }).pname;
         expected = "hello-overriden";
+        expr = (pkgs.hello.overrideAttrs { pname = "hello-overriden"; }).pname;
       };
+
       overriding-using-only-attrset-no-final-attrs = {
-        name = "overriding-using-only-attrset-no-final-attrs";
+        expected = "hello-no-final-attrs-overridden";
+
         expr =
           ((stdenvNoCC.mkDerivation { pname = "hello-no-final-attrs"; }).overrideAttrs {
             pname = "hello-no-final-attrs-overridden";
           }).pname;
-        expected = "hello-no-final-attrs-overridden";
+
+        name = "overriding-using-only-attrset-no-final-attrs";
       };
+
+      repeatedOverrides-entangled-pname = {
+        expected = "a-better-figlet-with-blackjack";
+        expr = repeatedOverrides.entangled.pname;
+      };
+
+      repeatedOverrides-pname = {
+        expected = "a-better-hello-with-blackjack";
+        expr = repeatedOverrides.pname;
+      };
+
       structuredAttrs-allowedRequisites-nullability = {
+        expected = true;
+
         expr =
           lib.hasPrefix builtins.storeDir
             (pkgs.stdenv.mkDerivation {
-              __structuredAttrs = true;
               inherit (pkgs.hello) pname version src;
+              __structuredAttrs = true;
               allowedRequisites = null;
             }).drvPath;
-        expected = true;
       };
     };
 
@@ -85,19 +92,22 @@ let
     let
       mkLocalDerivation = lib.extendMkDerivation {
         constructDrv = pkgs.stdenv.mkDerivation;
+
         excludeDrvArgNames = [
           "specialArg"
         ];
+
         extendDrvArgs =
           finalAttrs:
           {
-            preferLocalBuild ? true,
             allowSubstitute ? false,
+            preferLocalBuild ? true,
             specialArg ? (_: false),
             ...
           }@args:
           {
             inherit preferLocalBuild allowSubstitute;
+
             passthru = args.passthru or { } // {
               greeting = if specialArg "Hi!" then "Hi!" else "Hello!";
             };
@@ -116,8 +126,8 @@ let
         helloLocalPlainAttrs
         // {
           passthru = pkgs.hello.passthru or { } // {
-            foo = "a";
             bar = "${finalAttrs.passthru.foo}b";
+            foo = "a";
           };
         }
       );
@@ -130,21 +140,24 @@ let
       );
     in
     {
-      extendMkDerivation-helloLocal-imp-arguments = {
-        expr = helloLocal.preferLocalBuild;
-        expected = true;
-      };
-      extendMkDerivation-helloLocal-plain-equivalence = {
-        expr = helloLocal.drvPath;
-        expected = helloLocalPlain.drvPath;
-      };
       extendMkDerivation-helloLocal-finalAttrs = {
-        expr = helloLocal.bar;
         expected = "ab";
+        expr = helloLocal.bar;
       };
+
+      extendMkDerivation-helloLocal-imp-arguments = {
+        expected = true;
+        expr = helloLocal.preferLocalBuild;
+      };
+
+      extendMkDerivation-helloLocal-plain-equivalence = {
+        expected = helloLocalPlain.drvPath;
+        expr = helloLocal.drvPath;
+      };
+
       extendMkDerivation-helloLocal-specialArg = {
-        expr = hiLocal.greeting;
         expected = "Hi!";
+        expr = hiLocal.greeting;
       };
     };
 
@@ -181,45 +194,50 @@ let
       fakeSha256-1 = genNonzeroFakeHash lib.fakeSha256 "1";
       fakeHash-2 = genNonzeroFakeHash lib.fakeHash "B";
       src-with-sha256 = pkgs.fetchgit {
-        url = "https://example.com/source.git";
         sha256 = fakeSha256-1;
+        url = "https://example.com/source.git";
       };
     in
     {
       test-fetchgit-hash-compat = {
+        expected = {
+          outputHash = fakeSha256-1;
+          outputHashAlgo = "sha256";
+        };
+
         expr = {
           inherit (src-with-sha256)
             outputHash
             outputHashAlgo
             ;
         };
-        expected = {
-          outputHash = fakeSha256-1;
-          outputHashAlgo = "sha256";
-        };
       };
+
       test-fetchgit-overrideAttrs-hash = {
+        expected = {
+          outputHash = fakeHash-2;
+          outputHashAlgo = null;
+        };
+
         expr = {
           inherit (src-with-sha256.overrideAttrs { hash = fakeHash-2; })
             outputHash
             outputHashAlgo
             ;
         };
+      };
+
+      test-fetchurl-overrideAttrs-hash-empty = {
         expected = {
-          outputHash = fakeHash-2;
+          outputHash = lib.fakeHash;
           outputHashAlgo = null;
         };
-      };
-      test-fetchurl-overrideAttrs-hash-empty = {
+
         expr = {
           inherit (src-with-sha256.overrideAttrs { hash = ""; })
             outputHash
             outputHashAlgo
             ;
-        };
-        expected = {
-          outputHash = lib.fakeHash;
-          outputHashAlgo = null;
         };
       };
     };
@@ -229,45 +247,50 @@ let
       fakeSha256-1 = genNonzeroFakeHash lib.fakeSha256 "1";
       fakeHash-2 = genNonzeroFakeHash lib.fakeHash "B";
       src-with-sha256 = pkgs.fetchurl {
-        url = "https://example.com/source.tar.gz";
         sha256 = fakeSha256-1;
+        url = "https://example.com/source.tar.gz";
       };
     in
     {
       test-fetchurl-hash-compat = {
+        expected = {
+          outputHash = fakeSha256-1;
+          outputHashAlgo = "sha256";
+        };
+
         expr = {
           inherit (src-with-sha256)
             outputHash
             outputHashAlgo
             ;
         };
-        expected = {
-          outputHash = fakeSha256-1;
-          outputHashAlgo = "sha256";
-        };
       };
+
       test-fetchurl-overrideAttrs-hash = {
+        expected = {
+          outputHash = fakeHash-2;
+          outputHashAlgo = null;
+        };
+
         expr = {
           inherit (src-with-sha256.overrideAttrs { hash = fakeHash-2; })
             outputHash
             outputHashAlgo
             ;
         };
+      };
+
+      test-fetchurl-overrideAttrs-hash-empty = {
         expected = {
-          outputHash = fakeHash-2;
+          outputHash = lib.fakeHash;
           outputHashAlgo = null;
         };
-      };
-      test-fetchurl-overrideAttrs-hash-empty = {
+
         expr = {
           inherit (src-with-sha256.overrideAttrs { hash = ""; })
             outputHash
             outputHashAlgo
             ;
-        };
-        expected = {
-          outputHash = lib.fakeHash;
-          outputHashAlgo = null;
         };
       };
     };
@@ -276,52 +299,54 @@ let
     let
       ruamel_0_18_14-hash = "sha256-HDkPPp1xI3uoGYlS9mwPp1ZjG2gKvx6vog0Blj6tBuI=";
       ruamel_0_18_14-src = pkgs.fetchhg {
-        url = "http://hg.code.sf.net/p/ruamel-yaml/code";
-        rev = "0.18.14";
         hash = ruamel_0_18_14-hash;
+        rev = "0.18.14";
+        url = "http://hg.code.sf.net/p/ruamel-yaml/code";
       };
       ruamel_0_17_21-hash = "sha256-6PV0NyPQfd+4RBqoj5vJaOHShx+TJVHD2IamRinU0VU=";
       ruamel_0_17_21-src = pkgs.fetchhg {
-        url = "http://hg.code.sf.net/p/ruamel-yaml/code";
-        rev = "0.17.21";
         hash = ruamel_0_17_21-hash;
+        rev = "0.17.21";
+        url = "http://hg.code.sf.net/p/ruamel-yaml/code";
       };
       ruamel_0_17_21-src-by-overriding = ruamel_0_18_14-src.overrideAttrs {
-        rev = "0.17.21";
         hash = ruamel_0_17_21-hash;
+        rev = "0.17.21";
       };
     in
     {
       hash-outputHash-equivalence = {
+        expected = ruamel_0_17_21-hash;
         expr = ruamel_0_17_21-src.outputHash;
-        expected = ruamel_0_17_21-hash;
-      };
-
-      hash-overridability-outputHash = {
-        expr = ruamel_0_17_21-src-by-overriding.outputHash;
-        expected = ruamel_0_17_21-hash;
       };
 
       hash-overridability-drvPath = {
-        expr = [
-          (lib.isString ruamel_0_17_21-src-by-overriding.drvPath)
-          ruamel_0_17_21-src-by-overriding.drvPath
-        ];
         expected = [
           true
           ruamel_0_17_21-src.drvPath
         ];
+
+        expr = [
+          (lib.isString ruamel_0_17_21-src-by-overriding.drvPath)
+          ruamel_0_17_21-src-by-overriding.drvPath
+        ];
       };
 
       hash-overridability-outPath = {
-        expr = [
-          (lib.isString ruamel_0_17_21-src-by-overriding.outPath)
-          ruamel_0_17_21-src-by-overriding.outPath
-        ];
         expected = [
           true
           ruamel_0_17_21-src.outPath
         ];
+
+        expr = [
+          (lib.isString ruamel_0_17_21-src-by-overriding.outPath)
+          ruamel_0_17_21-src-by-overriding.outPath
+        ];
+      };
+
+      hash-overridability-outputHash = {
+        expected = ruamel_0_17_21-hash;
+        expr = ruamel_0_17_21-src-by-overriding.outputHash;
       };
     };
 
@@ -398,6 +423,16 @@ let
       pet-vendored = pet-foo.overrideAttrs { vendorHash = null; };
     in
     {
+      buildGoModule-goModules-overrideAttrs = {
+        expected = "foo";
+        expr = pet-foo.goModules.FOO;
+      };
+
+      buildGoModule-goModules-overrideAttrs-vendored = {
+        expected = true;
+        expr = lib.isString pet-vendored.drvPath;
+      };
+
       buildGoModule-overrideAttrs =
         let
           getComparingAttrs = p: {
@@ -408,6 +443,7 @@ let
               version
               vendorHash
               ;
+
             goModules = {
               inherit (p.goModules)
                 drvPath
@@ -418,17 +454,9 @@ let
           };
         in
         {
-          expr = getComparingAttrs pet_0_4_0-overridden;
           expected = getComparingAttrs pet_0_4_0;
+          expr = getComparingAttrs pet_0_4_0-overridden;
         };
-      buildGoModule-goModules-overrideAttrs = {
-        expr = pet-foo.goModules.FOO;
-        expected = "foo";
-      };
-      buildGoModule-goModules-overrideAttrs-vendored = {
-        expr = lib.isString pet-vendored.drvPath;
-        expected = true;
-      };
     };
 
   tests-python =
@@ -441,8 +469,8 @@ let
         buildPythonPackage {
           pname = "python-package-stub";
           version = "0.1.0";
-          pyproject = true;
           src = emptyDirectory;
+          pyproject = true;
         }
       ) { };
 
@@ -479,70 +507,30 @@ let
         drv:
         drv.overrideAttrs (
           finalAttrs: previousAttrs: {
-            FOO = "a";
             BAR = finalAttrs.FOO;
+            FOO = "a";
           }
         );
     in
     {
-      buildPythonPackage-override-gccStdenv = {
-        expr = package-stub-gcc.stdenv;
-        expected = pkgs.gccStdenv;
-      };
       buildPythonPackage-override-clangStdenv = {
-        expr = package-stub-clang.stdenv;
         expected = pkgs.clangStdenv;
-      };
-      buildPythonPackage-override-libcxxStdenv = {
-        expr = package-stub-libcxx.stdenv;
-        expected = pkgs.libcxxStdenv;
+        expr = package-stub-clang.stdenv;
       };
 
-      overridePythonAttrs = {
-        expr = (applyOverridePythonAttrs package-stub).overridePythonAttrsFlag;
-        expected = 1;
+      buildPythonPackage-override-gccStdenv = {
+        expected = pkgs.gccStdenv;
+        expr = package-stub-gcc.stdenv;
       };
-      overridePythonAttrs-nested = {
-        expr = (applyOverridePythonAttrs (applyOverridePythonAttrs package-stub)).overridePythonAttrsFlag;
-        expected = 2;
+
+      buildPythonPackage-override-libcxxStdenv = {
+        expected = pkgs.libcxxStdenv;
+        expr = package-stub-libcxx.stdenv;
       };
-      overridePythonAttrs-plain = {
-        expr = (package-stub.overridePythonAttrs { overridePythonAttrsFlag = 0; }).overridePythonAttrsFlag;
-        expected = 0;
-      };
-      overridePythonAttrs-finalAttrs = {
-        expr = {
-          inherit (applyOverridePythonAttrsFP package-stub)
-            overridePythonAttrsFlag
-            overridePythonAttrsFlagP1
-            ;
-        };
-        expected = {
-          overridePythonAttrsFlag = 1;
-          overridePythonAttrsFlagP1 = 2;
-        };
-      };
-      overrideAttrs-overridePythonAttrs-test-overrideAttrs = {
-        expr = {
-          inherit (applyOverridePythonAttrs (overrideAttrsFooBar package-stub))
-            FOO
-            BAR
-            ;
-        };
-        expected = {
-          FOO = "a";
-          BAR = "a";
-        };
-      };
-      overrideAttrs-overridePythonAttrs-test-overridePythonAttrs = {
-        expr = (applyOverridePythonAttrs (overrideAttrsFooBar package-stub)) ? overridePythonAttrsFlag;
-        expected = true;
-      };
-      overrideAttrs-overridePythonAttrs-test-commutation = {
-        expr = overrideAttrsFooBar (applyOverridePythonAttrs package-stub);
-        expected = applyOverridePythonAttrs (overrideAttrsFooBar package-stub);
-      };
+
       chain-of-overrides = rec {
+        expected = lib.genAttrs [ "a" "b" "c" "d" ] lib.id;
+
         expr = lib.pipe package-stub [
           (p: p.overrideAttrs { inherit (expected) a; })
           (p: p.overridePythonAttrs { inherit (expected) b; })
@@ -550,7 +538,59 @@ let
           (p: p.overridePythonAttrs { inherit (expected) d; })
           (builtins.intersectAttrs expected)
         ];
-        expected = lib.genAttrs [ "a" "b" "c" "d" ] lib.id;
+      };
+
+      overrideAttrs-overridePythonAttrs-test-commutation = {
+        expected = applyOverridePythonAttrs (overrideAttrsFooBar package-stub);
+        expr = overrideAttrsFooBar (applyOverridePythonAttrs package-stub);
+      };
+
+      overrideAttrs-overridePythonAttrs-test-overrideAttrs = {
+        expected = {
+          BAR = "a";
+          FOO = "a";
+        };
+
+        expr = {
+          inherit (applyOverridePythonAttrs (overrideAttrsFooBar package-stub))
+            FOO
+            BAR
+            ;
+        };
+      };
+
+      overrideAttrs-overridePythonAttrs-test-overridePythonAttrs = {
+        expected = true;
+        expr = (applyOverridePythonAttrs (overrideAttrsFooBar package-stub)) ? overridePythonAttrsFlag;
+      };
+
+      overridePythonAttrs = {
+        expected = 1;
+        expr = (applyOverridePythonAttrs package-stub).overridePythonAttrsFlag;
+      };
+
+      overridePythonAttrs-finalAttrs = {
+        expected = {
+          overridePythonAttrsFlag = 1;
+          overridePythonAttrsFlagP1 = 2;
+        };
+
+        expr = {
+          inherit (applyOverridePythonAttrsFP package-stub)
+            overridePythonAttrsFlag
+            overridePythonAttrsFlagP1
+            ;
+        };
+      };
+
+      overridePythonAttrs-nested = {
+        expected = 2;
+        expr = (applyOverridePythonAttrs (applyOverridePythonAttrs package-stub)).overridePythonAttrsFlag;
+      };
+
+      overridePythonAttrs-plain = {
+        expected = 0;
+        expr = (package-stub.overridePythonAttrs { overridePythonAttrsFlag = 0; }).overridePythonAttrsFlag;
       };
     };
 
@@ -558,12 +598,7 @@ in
 
 stdenvNoCC.mkDerivation (finalAttrs: {
   __structuredAttrs = true;
-  name = "test-overriding";
-  passthru = {
-    inherit tests;
-    failures = lib.runTests (finalAttrs.passthru.tests // { tests = lib.attrNames tests; });
-  };
-  testResults = lib.mapAttrs (testName: test: test.expr == test.expected) finalAttrs.passthru.tests;
+
   buildCommand = ''
     touch $out
     for testName in "''${!testResults[@]}"; do
@@ -587,4 +622,12 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     } >&2
     exit 1
   '';
+
+  name = "test-overriding";
+  testResults = lib.mapAttrs (testName: test: test.expr == test.expected) finalAttrs.passthru.tests;
+
+  passthru = {
+    inherit tests;
+    failures = lib.runTests (finalAttrs.passthru.tests // { tests = lib.attrNames tests; });
+  };
 })

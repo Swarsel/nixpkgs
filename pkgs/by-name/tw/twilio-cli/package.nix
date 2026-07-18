@@ -1,8 +1,8 @@
 {
   lib,
-  stdenvNoCC,
-  nodejs-slim,
   fetchzip,
+  nodejs-slim,
+  stdenvNoCC,
   testers,
 }:
 

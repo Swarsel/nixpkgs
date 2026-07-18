@@ -1,17 +1,16 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
-  zope-interface,
-  webob,
+  buildPythonPackage,
   pytestCheckHook,
+  setuptools,
+  webob,
+  zope-interface,
 }:
 
 buildPythonPackage rec {
   pname = "repoze-who";
   version = "3.1.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "repoze";
@@ -19,13 +18,6 @@ buildPythonPackage rec {
     tag = version;
     hash = "sha256-vc4McZ0Mve2F/KjT/63NZwy5wl11WG2G/w5sUI71NWg=";
   };
-
-  build-system = [ setuptools ];
-
-  dependencies = [
-    zope-interface
-    webob
-  ];
 
   nativeCheckInputs = [ pytestCheckHook ];
 
@@ -35,6 +27,14 @@ buildPythonPackage rec {
     rm repoze/who/plugins/tests/test_htpasswd.py
   '';
 
+  build-system = [ setuptools ];
+
+  dependencies = [
+    zope-interface
+    webob
+  ];
+
+  pyproject = true;
   pythonImportsCheck = [ "repoze.who" ];
 
   pythonNamespaces = [

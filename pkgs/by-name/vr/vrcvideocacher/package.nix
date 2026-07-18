@@ -1,17 +1,16 @@
 {
-  buildDotnetModule,
-  dotnetCorePackages,
-  fetchFromGitHub,
   lib,
-  nix-update-script,
+  fetchFromGitHub,
+  buildDotnetModule,
   copyDesktopItems,
-  makeDesktopItem,
-  icoutils,
-
-  openxr-loader,
-  ffmpeg,
-  yt-dlp,
   deno,
+  dotnetCorePackages,
+  ffmpeg,
+  icoutils,
+  makeDesktopItem,
+  nix-update-script,
+  openxr-loader,
+  yt-dlp,
 }:
 buildDotnetModule (finalAttrs: {
   pname = "vrcvideocacher";
@@ -24,22 +23,38 @@ buildDotnetModule (finalAttrs: {
     hash = "sha256-rabx93WBYnVPAQHndNkz+lN45S8lWufoMQ6s50gW+rY=";
   };
 
-  __structuredAttrs = true;
   strictDeps = true;
-
-  dotnet-sdk = dotnetCorePackages.sdk_10_0;
-  dotnet-runtime = dotnetCorePackages.runtime_10_0;
-
-  projectFile = "VRCVideoCacher/VRCVideoCacher.csproj";
-  nugetDeps = ./deps.json;
-
-  executables = [ "VRCVideoCacher" ];
-  selfContainedBuild = true;
 
   nativeBuildInputs = [
     copyDesktopItems
     icoutils
   ];
+
+  postInstall = ''
+    icotool --icon -x $src/VRCVideoCacher/Assets/icon.ico
+
+    for i in 16 32 48 64 128 256; do
+      size=''${i}x''${i}
+      install -Dm444 *_''${size}x*.png $out/share/icons/hicolor/$size/apps/vrcvideocacher.png
+    done
+  '';
+
+  __structuredAttrs = true;
+
+  desktopItems = [
+    (makeDesktopItem {
+      categories = [ "Utility" ];
+      comment = finalAttrs.meta.description;
+      desktopName = "VRCVideoCacher";
+      exec = finalAttrs.meta.mainProgram;
+      icon = "vrcvideocacher";
+      name = "vrcvideocacher";
+    })
+  ];
+
+  dotnet-runtime = dotnetCorePackages.runtime_10_0;
+  dotnet-sdk = dotnetCorePackages.sdk_10_0;
+  executables = [ "VRCVideoCacher" ];
 
   makeWrapperArgs = [
     "--add-flags"
@@ -61,26 +76,10 @@ buildDotnetModule (finalAttrs: {
       deno
     ])
   ];
-  postInstall = ''
-    icotool --icon -x $src/VRCVideoCacher/Assets/icon.ico
 
-    for i in 16 32 48 64 128 256; do
-      size=''${i}x''${i}
-      install -Dm444 *_''${size}x*.png $out/share/icons/hicolor/$size/apps/vrcvideocacher.png
-    done
-  '';
-
-  desktopItems = [
-    (makeDesktopItem {
-      name = "vrcvideocacher";
-      desktopName = "VRCVideoCacher";
-      exec = finalAttrs.meta.mainProgram;
-      comment = finalAttrs.meta.description;
-      icon = "vrcvideocacher";
-      categories = [ "Utility" ];
-    })
-  ];
-
+  nugetDeps = ./deps.json;
+  projectFile = "VRCVideoCacher/VRCVideoCacher.csproj";
+  selfContainedBuild = true;
   passthru.updateScript = nix-update-script { };
 
   meta = {
@@ -89,7 +88,7 @@ buildDotnetModule (finalAttrs: {
     license = lib.licenses.unfree;
     sourceProvenance = with lib.sourceTypes; [ fromSource ];
     maintainers = with lib.maintainers; [ coolGi ];
-    mainProgram = "VRCVideoCacher";
     platforms = [ "x86_64-linux" ];
+    mainProgram = "VRCVideoCacher";
   };
 })

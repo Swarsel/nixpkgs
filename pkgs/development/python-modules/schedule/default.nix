@@ -7,7 +7,6 @@
 buildPythonPackage rec {
   pname = "schedule";
   version = "1.2.2";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
@@ -21,6 +20,7 @@ buildPythonPackage rec {
       "# self.assertRaises(ScheduleValueError, every().day.until, datetime.time(hour=5))"
   '';
 
+  format = "setuptools";
   pythonImportsCheck = [ "schedule" ];
 
   meta = {

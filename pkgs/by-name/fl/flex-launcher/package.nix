@@ -1,15 +1,15 @@
 {
+  lib,
   stdenv,
   fetchFromGitHub,
   SDL2,
-  SDL2_ttf,
   SDL2_image,
-  libx11,
+  SDL2_ttf,
   cmake,
-  validatePkgConfig,
-  inih,
-  lib,
   gitUpdater,
+  inih,
+  libx11,
+  validatePkgConfig,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -40,11 +40,11 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Customizable HTPC application launcher";
-    license = lib.licenses.unlicense;
-    platforms = lib.platforms.unix;
-    maintainers = with lib.maintainers; [ MasterEvarior ];
     homepage = "https://complexlogic.github.io/flex-launcher/";
     changelog = "https://github.com/complexlogic/flex-launcher/releases/tag/v${finalAttrs.version}";
+    license = lib.licenses.unlicense;
+    maintainers = with lib.maintainers; [ MasterEvarior ];
+    platforms = lib.platforms.unix;
     mainProgram = "flex-launcher";
   };
 })

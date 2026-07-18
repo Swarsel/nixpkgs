@@ -1,16 +1,15 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   numpy,
-  scikit-learn,
   pytestCheckHook,
+  scikit-learn,
 }:
 
 buildPythonPackage rec {
   pname = "seqeval";
   version = "1.2.2";
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "chakki-works";
@@ -37,6 +36,8 @@ buildPythonPackage rec {
     "test_statistical_tests"
     "test_by_ground_truth"
   ];
+
+  format = "setuptools";
 
   meta = {
     description = "Python framework for sequence labeling evaluation";

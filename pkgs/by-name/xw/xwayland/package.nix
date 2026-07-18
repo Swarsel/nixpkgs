@@ -1,46 +1,45 @@
 {
+  lib,
+  stdenv,
+  fetchurl,
+  bash,
   dri-pkgconfig-stub,
   egl-wayland,
   epoll-shim,
   evdev-proto,
-  bash,
-  libepoxy,
-  fetchurl,
   font-util,
-  lib,
-  libdecor,
-  libgbm,
-  libei,
+  gitUpdater,
   libGL,
   libGLU,
+  libdecor,
+  libdrm,
+  libei,
+  libepoxy,
+  libgbm,
+  libtirpc,
+  libunwind,
   libx11,
   libxau,
   libxaw,
+  libxcb,
+  libxcvt,
   libxdmcp,
   libxext,
   libxfixes,
   libxfont_2,
+  libxkbfile,
   libxmu,
   libxpm,
   libxrender,
   libxres,
-  libxt,
-  libdrm,
-  libtirpc,
-  # Disable withLibunwind as LLVM's libunwind will conflict and does not support the right symbols.
-  withLibunwind ? !(stdenv.hostPlatform.useLLVM or false),
-  libunwind,
-  libxcb,
-  libxkbfile,
   libxshmfence,
-  libxcvt,
+  libxt,
   mesa-gl-headers,
   meson,
   ninja,
   openssl,
-  pkg-config,
   pixman,
-  stdenv,
+  pkg-config,
   systemd,
   wayland,
   wayland-protocols,
@@ -51,7 +50,8 @@
   xtrans,
   zlib,
   defaultFontPath ? "",
-  gitUpdater,
+  # Disable withLibunwind as LLVM's libunwind will conflict and does not support the right symbols.
+  withLibunwind ? !(stdenv.hostPlatform.useLLVM or false),
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -68,15 +68,13 @@ stdenv.mkDerivation (finalAttrs: {
       --replace-fail '/bin/sh' '${lib.getExe' bash "sh"}'
   '';
 
-  depsBuildBuild = [
-    pkg-config
-  ];
   nativeBuildInputs = [
     pkg-config
     meson
     ninja
     wayland-scanner
   ];
+
   buildInputs = [
     dri-pkgconfig-stub
     egl-wayland
@@ -125,6 +123,7 @@ stdenv.mkDerivation (finalAttrs: {
   ++ lib.optionals withLibunwind [
     libunwind
   ];
+
   mesonFlags = [
     (lib.mesonBool "xcsecurity" true)
     (lib.mesonOption "default_font_path" defaultFontPath)
@@ -134,21 +133,27 @@ stdenv.mkDerivation (finalAttrs: {
     (lib.mesonBool "libunwind" withLibunwind)
   ];
 
+  depsBuildBuild = [
+    pkg-config
+  ];
+
   passthru.updateScript = gitUpdater {
+    rev-prefix = "xwayland-";
     # No nicer place to find latest release.
     url = "https://gitlab.freedesktop.org/xorg/xserver.git";
-    rev-prefix = "xwayland-";
   };
 
   meta = {
     description = "X server for interfacing X11 apps with the Wayland protocol";
     homepage = "https://gitlab.freedesktop.org/xorg/xserver";
     license = lib.licenses.mit;
-    mainProgram = "Xwayland";
+
     maintainers = with lib.maintainers; [
       emantor
       k900
     ];
+
     platforms = lib.platforms.linux ++ lib.platforms.freebsd;
+    mainProgram = "Xwayland";
   };
 })

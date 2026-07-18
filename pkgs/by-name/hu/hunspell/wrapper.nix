@@ -11,17 +11,15 @@ lib.makeOverridable (
   f:
   buildEnv {
     inherit (lib.appendToName "with-dicts" hunspell) name;
-
-    paths = f dicts;
-
-    pathsToLink = [ "/share/hunspell" ];
-
     nativeBuildInputs = [ makeBinaryWrapper ];
 
     postBuild = ''
       makeWrapper ${lib.getExe hunspell} $out/bin/hunspell \
         --prefix DICPATH : $out/share/hunspell
     '';
+
+    paths = f dicts;
+    pathsToLink = [ "/share/hunspell" ];
 
     meta = {
       inherit (hunspell.meta)

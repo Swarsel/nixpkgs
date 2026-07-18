@@ -9,17 +9,15 @@
 buildPythonPackage rec {
   pname = "queuelib";
   version = "1.9.0";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
     hash = "sha256-sS/qef2MHdI+ISsfPbWAA7dzlJgB1PTm802IJGfUoZI=";
   };
 
-  build-system = [ hatchling ];
-
   nativeCheckInputs = [ pytestCheckHook ];
-
+  build-system = [ hatchling ];
+  pyproject = true;
   pythonImportsCheck = [ "queuelib" ];
 
   meta = {

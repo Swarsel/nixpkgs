@@ -1,14 +1,13 @@
 {
   lib,
-  python3Packages,
   fetchFromGitHub,
+  python3Packages,
   udevCheckHook,
 }:
 
 python3Packages.buildPythonPackage {
   pname = "persistent-evdev";
   version = "unstable-2022-05-07";
-  pyproject = false;
 
   src = fetchFromGitHub {
     owner = "aiberia";
@@ -17,22 +16,18 @@ python3Packages.buildPythonPackage {
     hash = "sha256-d0i6DL/qgDELet4ew2lyVqzd9TApivRxL3zA3dcsQXY=";
   };
 
-  propagatedBuildInputs = with python3Packages; [
-    evdev
-    pyudev
-  ];
+  postPatch = ''
+    patchShebangs bin/persistent-evdev.py
+  '';
 
   nativeBuildInputs = [
     udevCheckHook
   ];
 
-  doInstallCheck = true;
-
-  postPatch = ''
-    patchShebangs bin/persistent-evdev.py
-  '';
-
-  dontBuild = true;
+  propagatedBuildInputs = with python3Packages; [
+    evdev
+    pyudev
+  ];
 
   installPhase = ''
     runHook preInstall
@@ -46,9 +41,13 @@ python3Packages.buildPythonPackage {
     runHook postInstall
   '';
 
+  doInstallCheck = true;
+  dontBuild = true;
+  pyproject = false;
+
   meta = {
-    homepage = "https://github.com/aiberia/persistent-evdev";
     description = "Persistent virtual input devices for qemu/libvirt/evdev hotplug support";
+    homepage = "https://github.com/aiberia/persistent-evdev";
     license = lib.licenses.mit;
     maintainers = [ lib.maintainers.lodi ];
     platforms = lib.platforms.linux;

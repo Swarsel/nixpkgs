@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   fetchpatch,
 }:
 
@@ -19,14 +19,14 @@ buildGoModule (finalAttrs: {
   patches = [
     # update dependencies to fix darwin build - remove in next release
     (fetchpatch {
-      url = "https://github.com/stefanoj3/dirstalk/commit/79aef14c5c048f3a3a8374f42c7a0d52fc9f7b50.patch";
       sha256 = "sha256-2rSrMowfYdKV69Yg2QBzam3WOwGrSHQB+3uVi1Z2oJ8=";
+      url = "https://github.com/stefanoj3/dirstalk/commit/79aef14c5c048f3a3a8374f42c7a0d52fc9f7b50.patch";
     })
   ];
 
   vendorHash = "sha256-XY4vIh5de0tp4KPXTpzTm7/2bDisTjCsojLzxVDf4Jw=";
-
-  subPackages = "cmd/dirstalk";
+  # Tests want to write to the root directory
+  doCheck = false;
 
   ldflags = [
     "-w"
@@ -34,14 +34,13 @@ buildGoModule (finalAttrs: {
     "-X github.com/stefanoj3/dirstalk/pkg/cmd.Version=${finalAttrs.version}"
   ];
 
-  # Tests want to write to the root directory
-  doCheck = false;
+  subPackages = "cmd/dirstalk";
 
   meta = {
     description = "Tool to brute force paths on web servers";
-    mainProgram = "dirstalk";
     homepage = "https://github.com/stefanoj3/dirstalk";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ fab ];
+    mainProgram = "dirstalk";
   };
 })

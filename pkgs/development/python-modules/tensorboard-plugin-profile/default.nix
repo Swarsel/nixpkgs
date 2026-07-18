@@ -1,24 +1,23 @@
 {
   lib,
-  fetchPypi,
   buildPythonPackage,
-  setuptools,
+  fetchPypi,
   gviz-api,
   protobuf,
+  setuptools,
   werkzeug,
 }:
 
 buildPythonPackage rec {
   pname = "tensorboard_plugin_profile";
   version = "2.11.1";
-  format = "wheel";
 
   src = fetchPypi {
     inherit pname version;
-    format = "wheel";
-    dist = "py3";
-    python = "py3";
     hash = "sha256-t9AZg0BGjDcOxtoRBHZO0joIgLHpoKqEUY4pxmw8sjg=";
+    dist = "py3";
+    format = "wheel";
+    python = "py3";
   };
 
   nativeBuildInputs = [ setuptools ];
@@ -28,6 +27,8 @@ buildPythonPackage rec {
     protobuf
     werkzeug
   ];
+
+  format = "wheel";
 
   meta = {
     description = "Profile Tensorboard Plugin";

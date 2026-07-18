@@ -1,10 +1,10 @@
 {
   lib,
   buildPythonPackage,
-  fetchPypi,
-  isPy3k,
   easyprocess,
   entrypoint2,
+  fetchPypi,
+  isPy3k,
   jeepney,
   mss,
   pillow,
@@ -13,7 +13,6 @@
 buildPythonPackage rec {
   pname = "pyscreenshot";
   version = "3.1";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
@@ -32,7 +31,7 @@ buildPythonPackage rec {
 
   # recursive dependency on pyvirtualdisplay
   doCheck = false;
-
+  format = "setuptools";
   pythonImportsCheck = [ "pyscreenshot" ];
 
   meta = {

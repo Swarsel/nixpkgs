@@ -1,7 +1,7 @@
 {
-  stdenv,
   lib,
   brscan4,
+  stdenv,
   netDevices ? [ ],
 }:
 
@@ -39,14 +39,6 @@ in
 
 stdenv.mkDerivation {
 
-  pname = "brscan4-etc-files";
-  version = "0.4.3-3";
-  src = "${brscan4}/opt/brother/scanner/brscan4";
-
-  nativeBuildInputs = [ brscan4 ];
-
-  dontConfigure = true;
-
   buildPhase = ''
     TARGET_DIR="$out/etc/opt/brother/scanner/brscan4"
     mkdir -p "$TARGET_DIR"
@@ -61,15 +53,20 @@ stdenv.mkDerivation {
     ${addAllNetDev netDevices}
   '';
 
+  dontConfigure = true;
   dontInstall = true;
-  dontStrip = true;
   dontPatchELF = true;
+  dontStrip = true;
+  nativeBuildInputs = [ brscan4 ];
+  pname = "brscan4-etc-files";
+  src = "${brscan4}/opt/brother/scanner/brscan4";
+  version = "0.4.3-3";
 
   meta = {
     description = "Brother brscan4 sane backend driver etc files";
     homepage = "http://www.brother.com";
-    platforms = lib.platforms.linux;
     license = lib.licenses.unfree;
     maintainers = with lib.maintainers; [ jraygauthier ];
+    platforms = lib.platforms.linux;
   };
 }

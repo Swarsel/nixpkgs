@@ -2,22 +2,22 @@
   lib,
   stdenv,
   fetchurl,
-  buildDunePackage,
-  ocaml,
-  findlib,
   alcotest,
   astring,
+  buildDunePackage,
+  camlp-streams,
   cmdliner,
   cppo,
+  csexp,
+  findlib,
   fmt,
+  gitUpdater,
   logs,
-  ocaml-version,
-  camlp-streams,
   lwt,
+  ocaml,
+  ocaml-version,
   re,
   result,
-  csexp,
-  gitUpdater,
 }:
 
 buildDunePackage (finalAttrs: {
@@ -29,18 +29,14 @@ buildDunePackage (finalAttrs: {
     hash = "sha256-yEjCxoDGJmLcSgX1WOXGwY7Sqre7ZQjB1JEJ1uqRo88=";
   };
 
-  env =
-    # Fix build with gcc15
-    lib.optionalAttrs
-      (
-        lib.versionAtLeast ocaml.version "4.10" && lib.versionOlder ocaml.version "4.14"
-        || lib.versions.majorMinor ocaml.version == "5.0"
-      )
-      {
-        NIX_CFLAGS_COMPILE = "-std=gnu11";
-      };
+  outputs = [
+    "bin"
+    "lib"
+    "out"
+  ];
 
   nativeBuildInputs = [ cppo ];
+
   propagatedBuildInputs = [
     astring
     fmt
@@ -53,17 +49,23 @@ buildDunePackage (finalAttrs: {
     result
     findlib
   ];
-  checkInputs = [
-    alcotest
-    lwt
-  ];
+
+  env =
+    # Fix build with gcc15
+    lib.optionalAttrs
+      (
+        lib.versionAtLeast ocaml.version "4.10" && lib.versionOlder ocaml.version "4.14"
+        || lib.versions.majorMinor ocaml.version == "5.0"
+      )
+      {
+        NIX_CFLAGS_COMPILE = "-std=gnu11";
+      };
 
   doCheck = !stdenv.hostPlatform.isDarwin;
 
-  outputs = [
-    "bin"
-    "lib"
-    "out"
+  checkInputs = [
+    alcotest
+    lwt
   ];
 
   installPhase = ''

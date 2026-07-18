@@ -2,15 +2,15 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  zlib,
-  zstd,
-  openssl,
+  cmake,
   curl,
   cyrus_sasl,
-  cmake,
-  ninja,
-  pkg-config,
   deterministic-host-uname,
+  ninja,
+  openssl,
+  pkg-config,
+  zlib,
+  zstd,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -28,6 +28,10 @@ stdenv.mkDerivation (finalAttrs: {
     "out"
     "dev"
   ];
+
+  postPatch = ''
+    patchShebangs .
+  '';
 
   nativeBuildInputs = [
     cmake
@@ -57,10 +61,6 @@ stdenv.mkDerivation (finalAttrs: {
     (lib.cmakeFeature "CMAKE_C_FLAGS" "-Wno-error=strict-overflow")
   ];
 
-  postPatch = ''
-    patchShebangs .
-  '';
-
   postFixup = lib.optionalString stdenv.hostPlatform.isStatic ''
     # rdkafka changes the library names for static libraries but users in pkgsStatic aren't likely to be aware of this
     # make sure the libraries are findable with both names
@@ -75,7 +75,7 @@ stdenv.mkDerivation (finalAttrs: {
     description = "Apache Kafka C/C++ client library";
     homepage = "https://github.com/confluentinc/librdkafka";
     license = lib.licenses.bsd2;
-    platforms = lib.platforms.linux ++ lib.platforms.darwin;
     maintainers = with lib.maintainers; [ commandodev ];
+    platforms = lib.platforms.linux ++ lib.platforms.darwin;
   };
 })

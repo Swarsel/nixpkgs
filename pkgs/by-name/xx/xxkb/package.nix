@@ -2,17 +2,17 @@
   lib,
   stdenv,
   fetchurl,
+  gccmakedep,
+  gdk-pixbuf,
+  glib,
+  imake,
+  librsvg,
   libx11,
-  libxt,
   libxext,
   libxpm,
-  imake,
-  gccmakedep,
-  svgSupport ? false,
-  librsvg,
-  glib,
-  gdk-pixbuf,
+  libxt,
   pkg-config,
+  svgSupport ? false,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -23,6 +23,11 @@ stdenv.mkDerivation (finalAttrs: {
     url = "mirror://sourceforge/xxkb/xxkb-${finalAttrs.version}-src.tar.gz";
     sha256 = "0hl1i38z9xnbgfjkaz04vv1n8xbgfg88g5z8fyzyb2hxv2z37anf";
   };
+
+  outputs = [
+    "out"
+    "man"
+  ];
 
   nativeBuildInputs = [
     imake
@@ -42,13 +47,6 @@ stdenv.mkDerivation (finalAttrs: {
     gdk-pixbuf
   ];
 
-  outputs = [
-    "out"
-    "man"
-  ];
-
-  imakeFlags = lib.optionalString svgSupport "-DWITH_SVG_SUPPORT";
-
   makeFlags = [
     "BINDIR=${placeholder "out"}/bin"
     "CONFDIR=${placeholder "out"}/etc/X11"
@@ -57,6 +55,8 @@ stdenv.mkDerivation (finalAttrs: {
     "XAPPLOADDIR=${placeholder "out"}/etc/X11/app-defaults"
     "MANDIR=${placeholder "man"}/share/man"
   ];
+
+  imakeFlags = lib.optionalString svgSupport "-DWITH_SVG_SUPPORT";
 
   installTargets = [
     "install"

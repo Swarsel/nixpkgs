@@ -2,18 +2,14 @@
   lib,
   stdenv,
   libagar,
-  perl,
   libjpeg,
   libpng,
   openssl,
+  perl,
 }:
 stdenv.mkDerivation {
-  pname = "libagar-test";
   inherit (libagar) version src;
-
-  sourceRoot = "agar-${libagar.version}/tests";
-
-  configureFlags = [ "--with-agar=${libagar}" ];
+  pname = "libagar-test";
 
   buildInputs = [
     perl
@@ -23,13 +19,16 @@ stdenv.mkDerivation {
     openssl
   ];
 
+  configureFlags = [ "--with-agar=${libagar}" ];
+  sourceRoot = "agar-${libagar.version}/tests";
+
   meta = {
     description = "Tests for libagar";
-    mainProgram = "agartest";
     homepage = "http://libagar.org/index.html";
     license = with lib.licenses; [ bsd3 ];
     maintainers = with lib.maintainers; [ ramkromberg ];
     platforms = lib.platforms.linux;
+    mainProgram = "agartest";
     broken = (stdenv.hostPlatform.isLinux && stdenv.hostPlatform.isAarch64);
   };
 }

@@ -8,19 +8,17 @@
 buildPythonPackage rec {
   pname = "adafruit-pureio";
   version = "1.1.11";
-  pyproject = true;
 
   src = fetchPypi {
-    pname = "Adafruit_PureIO";
     inherit version;
     hash = "sha256-xM+7NlcxlC0fEJKhFvR9/a4K7xjFsn8QcrWCStXqjHw=";
+    pname = "Adafruit_PureIO";
   };
 
   nativeBuildInputs = [ setuptools-scm ];
-
   # Physical SMBus is not present
   doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "Adafruit_PureIO" ];
 
   meta = {

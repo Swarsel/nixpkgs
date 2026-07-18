@@ -8,7 +8,6 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
   pname = "offensive-azure";
   # nixpkgs-update: no auto update
   version = "0.4.10";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "blacklanternsecurity";
@@ -16,6 +15,13 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     rev = "v${finalAttrs.version}";
     hash = "sha256-5JHix+/uGGhXM89VLimI81g4evci5ZUtNV1c1xopjuI=";
   };
+
+  postPatch = ''
+    # Use default Python module
+    substituteInPlace pyproject.toml \
+      --replace 'uuid = "^1.30"' "" \
+      --replace 'python-whois = "^0.7.3"' 'python-whois = "*"'
+  '';
 
   nativeBuildInputs = with python3.pkgs; [
     poetry-core
@@ -37,12 +43,7 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     pytestCheckHook
   ];
 
-  postPatch = ''
-    # Use default Python module
-    substituteInPlace pyproject.toml \
-      --replace 'uuid = "^1.30"' "" \
-      --replace 'python-whois = "^0.7.3"' 'python-whois = "*"'
-  '';
+  pyproject = true;
 
   pythonImportsCheck = [
     "offensive_azure"

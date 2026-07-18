@@ -1,48 +1,57 @@
 {
   lib,
   stdenv,
-  buildPythonPackage,
   fetchFromGitHub,
-  fetchpatch,
-
-  # build-system
-  pybind11,
-  setuptools,
-
   # dependencies
   ase,
+  buildPythonPackage,
+  fetchpatch,
   joblib,
   numpy,
-  scikit-learn,
-  scipy,
-  sparse,
-
+  # build-system
+  pybind11,
   # tests
   pytestCheckHook,
+  scikit-learn,
+  scipy,
+  setuptools,
+  sparse,
 }:
 
 buildPythonPackage rec {
   pname = "dscribe";
   version = "2.1.1";
 
-  pyproject = true;
-
   src = fetchFromGitHub {
     owner = "singroup";
     repo = "dscribe";
     tag = "v${version}";
-    fetchSubmodules = true; # Bundles a specific version of Eigen
     hash = "sha256-2JY24cR2ie4+4svVWC4rm3Iy6Wfg0n2vkINz032kPWc=";
+    fetchSubmodules = true; # Bundles a specific version of Eigen
   };
 
   patches = [
     # Fixes numpy compatibility
     (fetchpatch {
+      hash = "sha256-mSKIerAIqdRp6b/ylqcYr8VwLCGxw5fz/5foo0ZQqgk=";
       name = "dscribe-numpy-compatibility";
       url = "https://github.com/SINGROUP/dscribe/pull/162.patch";
-      hash = "sha256-mSKIerAIqdRp6b/ylqcYr8VwLCGxw5fz/5foo0ZQqgk=";
     })
   ];
+
+  nativeCheckInputs = [
+    pytestCheckHook
+  ];
+
+  preCheck =
+    # Prevents python from loading dscribe from the current working directory instead of using $out
+    ''
+      rm -rf dscribe
+    ''
+    # Prevents 'Fatal Python error: Aborted' on darwin during checkPhase
+    + lib.optionalString stdenv.hostPlatform.isDarwin ''
+      export MPLBACKEND="Agg"
+    '';
 
   build-system = [
     pybind11
@@ -58,23 +67,15 @@ buildPythonPackage rec {
     sparse
   ];
 
-  pythonImportsCheck = [
-    "dscribe"
-    "dscribe.ext"
-  ];
-
-  preCheck =
-    # Prevents python from loading dscribe from the current working directory instead of using $out
-    ''
-      rm -rf dscribe
-    ''
-    # Prevents 'Fatal Python error: Aborted' on darwin during checkPhase
-    + lib.optionalString stdenv.hostPlatform.isDarwin ''
-      export MPLBACKEND="Agg"
-    '';
-
-  nativeCheckInputs = [
-    pytestCheckHook
+  # Broken due to use of missing _get_constraints attr in ase >= 3.26.0
+  # https://github.com/SINGROUP/dscribe/issues/160
+  disabledTestPaths = [
+    "tests/test_examples.py::test_examples"
+    "tests/test_general.py::test_atoms_to_system"
+    "tests/test_lmbtr.py"
+    "tests/test_mbtr.py"
+    "tests/test_sinematrix.py"
+    "tests/test_valle_oganov.py"
   ];
 
   disabledTests = [
@@ -89,15 +90,11 @@ buildPythonPackage rec {
         "test_cell_list"
       ];
 
-  # Broken due to use of missing _get_constraints attr in ase >= 3.26.0
-  # https://github.com/SINGROUP/dscribe/issues/160
-  disabledTestPaths = [
-    "tests/test_examples.py::test_examples"
-    "tests/test_general.py::test_atoms_to_system"
-    "tests/test_lmbtr.py"
-    "tests/test_mbtr.py"
-    "tests/test_sinematrix.py"
-    "tests/test_valle_oganov.py"
+  pyproject = true;
+
+  pythonImportsCheck = [
+    "dscribe"
+    "dscribe.ext"
   ];
 
   meta = {

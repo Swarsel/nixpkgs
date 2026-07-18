@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   nixosTests,
 }:
 
@@ -18,12 +18,11 @@ buildGoModule (finalAttrs: {
 
   vendorHash = "sha256-W7K2hqR/8fet5LimpF1b7GFIEZ8c16X9kShApotC2Yw=";
 
-  subPackages = [ "cmd/server" ];
-
   postInstall = ''
     mv $out/bin/server $out/bin/livekit-server
   '';
 
+  subPackages = [ "cmd/server" ];
   passthru.tests = nixosTests.livekit;
 
   meta = {

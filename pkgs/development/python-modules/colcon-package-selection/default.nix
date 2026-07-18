@@ -1,19 +1,18 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   colcon,
   pytest-cov-stub,
   pytestCheckHook,
-  setuptools,
   scspell,
+  setuptools,
   writableTmpDirAsHomeHook,
 }:
 
 buildPythonPackage rec {
   pname = "colcon-package-selection";
   version = "0.2.10";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "colcon";
@@ -22,12 +21,6 @@ buildPythonPackage rec {
     hash = "sha256-27Kk1l/Zvc18d4EfFPdUR/yeCS9fU1VJuHglyjPwnh0=";
   };
 
-  build-system = [ setuptools ];
-
-  dependencies = [
-    colcon
-  ];
-
   nativeCheckInputs = [
     pytest-cov-stub
     pytestCheckHook
@@ -35,19 +28,27 @@ buildPythonPackage rec {
     writableTmpDirAsHomeHook
   ];
 
-  pythonImportsCheck = [
-    "colcon_package_selection"
+  build-system = [ setuptools ];
+
+  dependencies = [
+    colcon
   ];
 
   disabledTestPaths = [
     "test/test_flake8.py"
   ];
 
+  pyproject = true;
+
+  pythonImportsCheck = [
+    "colcon_package_selection"
+  ];
+
   meta = {
     description = "Extension for colcon to select the packages to process";
     homepage = "http://colcon.readthedocs.io/";
-    downloadPage = "https://github.com/colcon/colcon-package-selection";
     license = lib.licenses.asl20;
     maintainers = with lib.maintainers; [ guelakais ];
+    downloadPage = "https://github.com/colcon/colcon-package-selection";
   };
 }

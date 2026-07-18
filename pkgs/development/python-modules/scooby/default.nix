@@ -1,8 +1,8 @@
 {
   lib,
+  fetchFromGitHub,
   beautifulsoup4,
   buildPythonPackage,
-  fetchFromGitHub,
   iniconfig,
   numpy,
   psutil,
@@ -16,22 +16,12 @@
 buildPythonPackage rec {
   pname = "scooby";
   version = "0.11.2";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "banesullivan";
     repo = "scooby";
     tag = "v${version}";
     hash = "sha256-PP54hFyoM+QdKik9Gj0H6JhF8Ypqnh9yO/Z42O6NO4A=";
-  };
-
-  build-system = [ setuptools-scm ];
-
-  optional-dependencies = {
-    cpu = [
-      psutil
-      # mkl
-    ];
   };
 
   nativeCheckInputs = [
@@ -48,7 +38,7 @@ buildPythonPackage rec {
     export PATH="$PATH:$out/bin";
   '';
 
-  pythonImportsCheck = [ "scooby" ];
+  build-system = [ setuptools-scm ];
 
   disabledTests = [
     # Tests have additions requirements (e.g., time and module)
@@ -62,12 +52,22 @@ buildPythonPackage rec {
     "test_auto_report"
   ];
 
+  optional-dependencies = {
+    cpu = [
+      psutil
+      # mkl
+    ];
+  };
+
+  pyproject = true;
+  pythonImportsCheck = [ "scooby" ];
+
   meta = {
-    changelog = "https://github.com/banesullivan/scooby/releases/tag/v${version}";
     description = "Lightweight tool for reporting Python package versions and hardware resources";
-    mainProgram = "scooby";
     homepage = "https://github.com/banesullivan/scooby";
+    changelog = "https://github.com/banesullivan/scooby/releases/tag/v${version}";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ wegank ];
+    mainProgram = "scooby";
   };
 }

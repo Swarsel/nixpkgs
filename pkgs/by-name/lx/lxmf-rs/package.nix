@@ -1,20 +1,19 @@
 {
-  stdenv,
   lib,
-  rustPlatform,
+  stdenv,
   fetchFromGitHub,
-  pkg-config,
   bzip2,
   dbus,
-  sqlite,
   nix-update-script,
+  pkg-config,
+  rustPlatform,
+  sqlite,
   writableTmpDirAsHomeHook,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
   pname = "lxmf-rs";
   version = "0.9.0";
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "FreeTAKTeam";
@@ -22,8 +21,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-RKe19Tv4IP837fJX5V0T3TeauwaBXuD176lD8W8BRpo=";
   };
-
-  cargoHash = "sha256-BqiemIfYuqB+8qDvEXpRPtW2dW4ApcNsj3augivIMdc=";
 
   nativeBuildInputs = [
     pkg-config
@@ -35,6 +32,8 @@ rustPlatform.buildRustPackage (finalAttrs: {
     sqlite
   ];
 
+  cargoHash = "sha256-BqiemIfYuqB+8qDvEXpRPtW2dW4ApcNsj3augivIMdc=";
+
   env = {
     LIBSQLITE3_SYS_USE_PKG_CONFIG = true;
   };
@@ -42,8 +41,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
   nativeCheckInputs = [
     writableTmpDirAsHomeHook
   ];
-
-  __darwinAllowLocalNetworking = true;
 
   checkFlags = lib.optionals stdenv.hostPlatform.isDarwin [
     # assertion failed: matches
@@ -55,6 +52,8 @@ rustPlatform.buildRustPackage (finalAttrs: {
     "--skip=direct_link_proof_targeting_multicast_iface_falls_back_to_broadcast"
   ];
 
+  __darwinAllowLocalNetworking = true;
+  __structuredAttrs = true;
   passthru.updateScript = nix-update-script { };
 
   meta = {

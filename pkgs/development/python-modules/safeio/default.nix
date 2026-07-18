@@ -7,14 +7,14 @@
 buildPythonPackage rec {
   pname = "safeio";
   version = "1.2";
-  format = "setuptools";
 
   src = fetchPypi {
-    pname = "safeIO";
     inherit version;
     sha256 = "d480a6dab01a390ebc24c12d6b774ad00cef3db5348ad07d8bd11d272a808cd3";
+    pname = "safeIO";
   };
 
+  format = "setuptools";
   pythonImportsCheck = [ "safeIO" ];
 
   meta = {

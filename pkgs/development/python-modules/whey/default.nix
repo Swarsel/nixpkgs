@@ -1,9 +1,8 @@
 {
-  buildPythonPackage,
-  fetchFromGitHub,
   lib,
-  setuptools,
+  fetchFromGitHub,
   attrs,
+  buildPythonPackage,
   click,
   consolekit,
   dist-meta,
@@ -16,13 +15,13 @@
   packaging,
   pyproject-parser,
   pytestCheckHook,
+  setuptools,
   shippinglabel,
 }:
 
 buildPythonPackage rec {
   pname = "whey";
   version = "0.1.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "repo-helper";
@@ -35,6 +34,13 @@ buildPythonPackage rec {
     substituteInPlace pyproject.toml \
       --replace-fail 'setuptools!=61.*,<=67.1.0,>=40.6.0' setuptools
   '';
+
+  # missing dependency pyproject-examples
+  doCheck = false;
+
+  nativeCheckInputs = [
+    pytestCheckHook
+  ];
 
   build-system = [ setuptools ];
 
@@ -52,13 +58,13 @@ buildPythonPackage rec {
     shippinglabel
   ];
 
-  pythonImportsCheck = [ "whey" ];
-
   optional-dependencies = {
     all = lib.concatAttrValues (lib.removeAttrs optional-dependencies [ "all" ]);
+
     editable = [
       editables
     ];
+
     readme = [
       docutils
       pyproject-parser
@@ -66,12 +72,8 @@ buildPythonPackage rec {
     ++ pyproject-parser.optional-dependencies.readme;
   };
 
-  nativeCheckInputs = [
-    pytestCheckHook
-  ];
-
-  # missing dependency pyproject-examples
-  doCheck = false;
+  pyproject = true;
+  pythonImportsCheck = [ "whey" ];
 
   meta = {
     description = "Simple Python wheel builder for simple projects";

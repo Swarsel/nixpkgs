@@ -1,10 +1,10 @@
 {
   lib,
   fetchFromGitHub,
-  rustPlatform,
-  pkg-config,
-  openssl,
   nix-update-script,
+  openssl,
+  pkg-config,
+  rustPlatform,
 }:
 rustPlatform.buildRustPackage (finalAttrs: {
   pname = "sourcepawn-studio";
@@ -17,11 +17,9 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-piUgAvU5tbsYydEiF+70BAZVBK2t6SzG18MLf9cN+xM=";
   };
 
-  cargoHash = "sha256-Cy8YPcmRWEyG6b4kouuj7KVmq2wBL8akw9v9sB30eF4=";
-
   nativeBuildInputs = [ pkg-config ];
-
   buildInputs = [ openssl ];
+  cargoHash = "sha256-Cy8YPcmRWEyG6b4kouuj7KVmq2wBL8akw9v9sB30eF4=";
 
   checkFlags = [
     # requires rustup and rustfmt
@@ -31,11 +29,11 @@ rustPlatform.buildRustPackage (finalAttrs: {
   passthru.updateScript = nix-update-script { };
 
   meta = {
-    mainProgram = "sourcepawn-studio";
     description = "LSP implementation for the SourcePawn programming language written in Rust";
     homepage = "https://sarrus1.github.io/sourcepawn-studio/";
     changelog = "https://github.com/Sarrus1/sourcepawn-studio/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.mit;
     maintainers = [ lib.maintainers.da157 ];
+    mainProgram = "sourcepawn-studio";
   };
 })

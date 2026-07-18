@@ -1,21 +1,21 @@
 {
   lib,
-  fetchurl,
   stdenv,
-  fetchzip,
+  fetchurl,
   ant,
+  callPackage,
+  fetchzip,
   jdk,
   makeWrapper,
   stripJavaArchivesHook,
-  callPackage,
 }:
 
 let
   minimalJavaVersion = "11";
 
   newsPlugin = fetchurl {
-    url = "https://www.tvbrowser.org/data/uploads/1372016422809_543/NewsPlugin.jar";
     hash = "sha256-5XoypuMd2AFBE2SJ6EdECuvq6D81HLLuu9UoA9kcKAM=";
+    url = "https://www.tvbrowser.org/data/uploads/1372016422809_543/NewsPlugin.jar";
   };
 in
 stdenv.mkDerivation (finalAttrs: {
@@ -76,22 +76,26 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Electronic TV Program Guide";
-    downloadPage = "https://www.tvbrowser.org/index.php?id=tv-browser";
-    homepage = "https://www.tvbrowser.org/";
-    changelog = "https://www.tvbrowser.org/index.php?id=news";
-    sourceProvenance = with lib.sourceTypes; [
-      binaryBytecode
-      fromSource
-    ];
-    license = lib.licenses.gpl3Plus;
-    platforms = lib.platforms.linux;
-    mainProgram = "tvbrowser";
-    maintainers = with lib.maintainers; [ yarny ];
+
     longDescription = ''
       TV-Browser shows TV program data arranged like in printed
       TV programs after downloading it from the internet.
       Plugins are used to download program data
       and to provide additional functionality.
     '';
+
+    homepage = "https://www.tvbrowser.org/";
+    changelog = "https://www.tvbrowser.org/index.php?id=news";
+    license = lib.licenses.gpl3Plus;
+
+    sourceProvenance = with lib.sourceTypes; [
+      binaryBytecode
+      fromSource
+    ];
+
+    maintainers = with lib.maintainers; [ yarny ];
+    platforms = lib.platforms.linux;
+    mainProgram = "tvbrowser";
+    downloadPage = "https://www.tvbrowser.org/index.php?id=tv-browser";
   };
 })

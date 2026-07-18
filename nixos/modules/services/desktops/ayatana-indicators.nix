@@ -1,7 +1,7 @@
 {
   config,
-  pkgs,
   lib,
+  pkgs,
   ...
 }:
 
@@ -15,9 +15,8 @@ in
     '';
 
     packages = lib.mkOption {
-      type = lib.types.listOf lib.types.package;
       default = [ ];
-      example = lib.literalExpression "with pkgs; [ ayatana-indicator-messages ]";
+
       description = ''
         List of packages containing Ayatana Indicator services
         that should be brought up by a SystemD "ayatana-indicators" user target.
@@ -27,14 +26,16 @@ in
         If, how, and where these indicators are displayed will depend on your DE.
         Which target they will be brought up by depends on the packages' passthru.ayatana-indicators.
       '';
+
+      example = lib.literalExpression "with pkgs; [ ayatana-indicator-messages ]";
+      type = lib.types.listOf lib.types.package;
     };
   };
 
   config = lib.mkIf cfg.enable {
     environment = {
-      systemPackages = cfg.packages;
-
       pathsToLink = [ "/share/ayatana" ];
+      systemPackages = cfg.packages;
     };
 
     # libayatana-common's ayatana-indicators.target with explicit Wants & Before to bring up requested indicator services
@@ -66,10 +67,10 @@ in
       in
       lib.attrsets.mapAttrs
         (name: desc: {
+          before = indicatorServices name;
           description = "Target representing the lifecycle of the ${desc}. Each indicator should be bound to it in its individual service file";
           partOf = [ "graphical-session.target" ];
           wants = indicatorServices name;
-          before = indicatorServices name;
         })
         {
           ayatana-indicators = "Ayatana Indicators";

@@ -1,19 +1,18 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  pytestCheckHook,
-  requests-mock,
+  buildPythonPackage,
   oauthlib,
-  requests-oauthlib,
-  requests,
   pyaml,
+  pytestCheckHook,
+  requests,
+  requests-mock,
+  requests-oauthlib,
 }:
 
 buildPythonPackage rec {
   pname = "pleroma-bot";
   version = "0.8.6";
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "robertoszek";
@@ -34,13 +33,14 @@ buildPythonPackage rec {
     requests-mock
   ];
 
+  format = "setuptools";
   pythonImportsCheck = [ "pleroma_bot" ];
 
   meta = {
     description = "Bot for mirroring one or multiple Twitter accounts in Pleroma/Mastodon";
-    mainProgram = "pleroma-bot";
     homepage = "https://robertoszek.github.io/pleroma-bot/";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ robertoszek ];
+    mainProgram = "pleroma-bot";
   };
 }

@@ -3,12 +3,12 @@
   stdenv,
   fetchFromGitHub,
   asciidoc,
+  installShellFiles,
   libcap,
+  libseccomp,
+  nixosTests,
   pkg-config,
   systemdLibs,
-  installShellFiles,
-  nixosTests,
-  libseccomp,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -22,6 +22,10 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-a6FQxyClE9cXB0wHV0Z4kjYY6S1+mUE4ReroOifNjKg=";
   };
 
+  patches = [
+    ./take-config-file-from-env.patch
+  ];
+
   nativeBuildInputs = [
     asciidoc
     installShellFiles
@@ -32,10 +36,6 @@ stdenv.mkDerivation (finalAttrs: {
     libcap.dev
     systemdLibs.dev
     libseccomp
-  ];
-
-  patches = [
-    ./take-config-file-from-env.patch
   ];
 
   installPhase = ''
@@ -55,9 +55,9 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Sandbox for securely executing untrusted programs";
-    mainProgram = "isolate";
     homepage = "https://github.com/ioi/isolate";
     license = lib.licenses.gpl2Plus;
     maintainers = with lib.maintainers; [ virchau13 ];
+    mainProgram = "isolate";
   };
 })

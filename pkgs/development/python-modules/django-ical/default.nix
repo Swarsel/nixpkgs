@@ -1,18 +1,17 @@
 {
+  lib,
+  fetchFromGitHub,
   buildPythonPackage,
   django,
-  fetchFromGitHub,
-  lib,
+  django-recurrence,
+  icalendar,
   pytest-django,
   pytestCheckHook,
   setuptools-scm,
-  icalendar,
-  django-recurrence,
 }:
 buildPythonPackage (finalAttrs: {
   pname = "django-ical";
   version = "1.9.2";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "jazzband";
@@ -20,6 +19,15 @@ buildPythonPackage (finalAttrs: {
     tag = finalAttrs.version;
     hash = "sha256-DUe0loayGcUS7MTyLn+g0KBxbIY7VsaoQNHGSMbMI3U=";
   };
+
+  nativeCheckInputs = [
+    pytest-django
+    pytestCheckHook
+  ];
+
+  preCheck = ''
+    export DJANGO_SETTINGS_MODULE=test_settings
+  '';
 
   build-system = [ setuptools-scm ];
 
@@ -29,22 +37,15 @@ buildPythonPackage (finalAttrs: {
     icalendar
   ];
 
-  preCheck = ''
-    export DJANGO_SETTINGS_MODULE=test_settings
-  '';
-
   disabledTestPaths = [
     # AssertionError: 'Japan' != 'JST': there seems to be wrong raw data feed
     "django_ical/tests/test_feed.py::ICal20FeedTest::test_timezone"
   ];
 
+  pyproject = true;
+
   pythonImportsCheck = [
     "django_ical"
-  ];
-
-  nativeCheckInputs = [
-    pytest-django
-    pytestCheckHook
   ];
 
   meta = {

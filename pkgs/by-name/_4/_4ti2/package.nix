@@ -37,8 +37,8 @@ stdenv.mkDerivation (finalAttrs: {
   installFlags = [ "install-exec" ];
 
   meta = {
-    homepage = "https://4ti2.github.io/";
     description = "Software package for algebraic, geometric and combinatorial problems on linear spaces";
+    homepage = "https://4ti2.github.io/";
     license = lib.licenses.gpl2Plus;
     maintainers = [ ];
     platforms = lib.platforms.all;

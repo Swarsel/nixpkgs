@@ -1,14 +1,14 @@
 {
   lib,
-  rustPlatform,
-  fetchFromGitHub,
-  pkg-config,
   stdenv,
+  fetchFromGitHub,
   curl,
   installShellFiles,
   libgit2,
   libssh2,
   openssl,
+  pkg-config,
+  rustPlatform,
   zlib,
 }:
 
@@ -22,8 +22,6 @@ rustPlatform.buildRustPackage {
     rev = "9c5d40edec87b79db0c5bac1458aa0e2c8fdeb8e";
     hash = "sha256-DtOR7+vX7efNzYMRJwJTj5cXlFHQwzcS0Gp2feVdea4=";
   };
-
-  cargoHash = "sha256-hFiNK0MQmCPciflMwwR4gzU0Z+Q1WkPJrd4Hs33W8kw=";
 
   nativeBuildInputs = [
     pkg-config
@@ -39,6 +37,8 @@ rustPlatform.buildRustPackage {
   ]
   ++ lib.optionals stdenv.hostPlatform.isDarwin [ curl ];
 
+  cargoHash = "sha256-hFiNK0MQmCPciflMwwR4gzU0Z+Q1WkPJrd4Hs33W8kw=";
+
   env = {
     LIBGIT2_SYS_USE_PKG_CONFIG = true;
     LIBSSH2_SYS_USE_PKG_CONFIG = true;
@@ -50,18 +50,22 @@ rustPlatform.buildRustPackage {
 
   meta = {
     description = "Tool to help with formatting git patches for review on mailing lists";
+
     longDescription = ''
       git series tracks changes to a patch series over time. git
       series also tracks a cover letter for the patch series,
       formats the series for email, and prepares pull requests.
     '';
+
     homepage = "https://github.com/git-series/git-series";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       edef
       vmandela
       aleksana
     ];
+
     mainProgram = "git-series";
   };
 }

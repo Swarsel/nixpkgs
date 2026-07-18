@@ -19,6 +19,22 @@ let
 
   systemArgs =
     {
+      aarch64-darwin = {
+        src = fetchurl sources.aarch64-darwin;
+        nativeBuildInputs = [ undmg ];
+
+        installPhase = ''
+          runHook preInstall
+          mkdir -p $out/Applications/Breitbandmessung.app
+          cp -R . $out/Applications/Breitbandmessung.app
+          runHook postInstall
+        '';
+
+        dontFixup = true;
+        dontStrip = true;
+        sourceRoot = "Breitbandmessung.app";
+      };
+
       x86_64-linux = {
         src = fetchurl sources.x86_64-linux;
 
@@ -56,24 +72,6 @@ let
             --replace /opt/Breitbandmessung $out/bin
         '';
       };
-
-      aarch64-darwin = {
-        src = fetchurl sources.aarch64-darwin;
-
-        nativeBuildInputs = [ undmg ];
-
-        sourceRoot = "Breitbandmessung.app";
-
-        dontFixup = true;
-        dontStrip = true;
-
-        installPhase = ''
-          runHook preInstall
-          mkdir -p $out/Applications/Breitbandmessung.app
-          cp -R . $out/Applications/Breitbandmessung.app
-          runHook postInstall
-        '';
-      };
     }
     .${system} or {
       src = throw "Unsupported system: ${system}";
@@ -81,9 +79,8 @@ let
 in
 stdenv.mkDerivation (
   {
-    pname = "breitbandmessung";
     inherit (sources) version;
-
+    pname = "breitbandmessung";
     passthru.tests = { inherit (nixosTests) breitbandmessung; };
     passthru.updateScript = ./update.sh;
 
@@ -93,6 +90,7 @@ stdenv.mkDerivation (
       license = lib.licenses.unfree;
       sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
       maintainers = with lib.maintainers; [ b4dm4n ];
+
       platforms = [
         "x86_64-linux"
         "aarch64-darwin"

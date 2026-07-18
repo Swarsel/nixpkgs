@@ -17,15 +17,14 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   nativeBuildInputs = [ gfortran ];
-
   enableParallelBuilding = true;
 
   meta = {
     description = "Mellin Evolution LibrAry";
-    mainProgram = "mela-config";
-    license = lib.licenses.gpl3;
     homepage = "https://github.com/vbertone/MELA";
-    platforms = lib.platforms.unix;
+    license = lib.licenses.gpl3;
     maintainers = with lib.maintainers; [ veprbl ];
+    platforms = lib.platforms.unix;
+    mainProgram = "mela-config";
   };
 })

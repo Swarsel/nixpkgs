@@ -1,9 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  pytestCheckHook,
-  writeText,
+  buildPythonPackage,
   catboost,
   cloudpickle,
   cython,
@@ -17,6 +15,7 @@
   pandas,
   pyspark,
   pytest-mpl,
+  pytestCheckHook,
   scikit-learn,
   scipy,
   sentencepiece,
@@ -25,13 +24,13 @@
   slicer,
   tqdm,
   transformers,
+  writeText,
   xgboost,
 }:
 
 buildPythonPackage rec {
   pname = "shap";
   version = "0.50.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "slundberg";
@@ -46,36 +45,24 @@ buildPythonPackage rec {
       --replace-fail "numpy>=2.0" "numpy"
   '';
 
-  build-system = [
-    cython
-    numpy
-    setuptools
-    setuptools-scm
-  ];
+  # Test startup hangs with 0.43.0 and Hydra ends with a timeout
+  doCheck = false;
 
-  dependencies = [
-    cloudpickle
-    numba
-    numpy
-    pandas
-    scikit-learn
-    scipy
-    slicer
-    tqdm
+  nativeCheckInputs = [
+    ipython
+    matplotlib
+    pytest-mpl
+    pytestCheckHook
+    # optional dependencies, which only serve to enable more tests:
+    catboost
+    lightgbm
+    opencv4
+    pyspark
+    sentencepiece
+    #torch # we already skip all its tests due to slowness, adding it does nothing
+    transformers
+    xgboost
   ];
-
-  pythonRelaxDeps = [
-    "numba"
-    "llvmlite"
-  ];
-
-  optional-dependencies = {
-    plots = [
-      matplotlib
-      ipython
-    ];
-    others = [ lime ];
-  };
 
   preCheck =
     let
@@ -113,24 +100,23 @@ buildPythonPackage rec {
       cat ${conftestSkipNetworkErrors} >> tests/conftest.py
     '';
 
-  nativeCheckInputs = [
-    ipython
-    matplotlib
-    pytest-mpl
-    pytestCheckHook
-    # optional dependencies, which only serve to enable more tests:
-    catboost
-    lightgbm
-    opencv4
-    pyspark
-    sentencepiece
-    #torch # we already skip all its tests due to slowness, adding it does nothing
-    transformers
-    xgboost
+  build-system = [
+    cython
+    numpy
+    setuptools
+    setuptools-scm
   ];
 
-  # Test startup hangs with 0.43.0 and Hydra ends with a timeout
-  doCheck = false;
+  dependencies = [
+    cloudpickle
+    numba
+    numpy
+    pandas
+    scikit-learn
+    scipy
+    slicer
+    tqdm
+  ];
 
   disabledTestPaths = [
     # The resulting plots look sane, but does not match pixel-perfectly with the baseline.
@@ -147,13 +133,29 @@ buildPythonPackage rec {
     "test_simple_bar_with_cohorts_dict"
   ];
 
+  optional-dependencies = {
+    others = [ lime ];
+
+    plots = [
+      matplotlib
+      ipython
+    ];
+  };
+
+  pyproject = true;
   pythonImportsCheck = [ "shap" ];
+
+  pythonRelaxDeps = [
+    "numba"
+    "llvmlite"
+  ];
 
   meta = {
     description = "Unified approach to explain the output of any machine learning model";
     homepage = "https://github.com/slundberg/shap";
     changelog = "https://github.com/slundberg/shap/releases/tag/${src.tag}";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       evax
       natsukium

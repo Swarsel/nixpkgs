@@ -8,7 +8,6 @@
 buildPythonPackage rec {
   pname = "dotmap";
   version = "1.3.30";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
@@ -16,9 +15,8 @@ buildPythonPackage rec {
   };
 
   nativeCheckInputs = [ pytestCheckHook ];
-
   enabledTestPaths = [ "dotmap/test.py" ];
-
+  format = "setuptools";
   pythonImportsCheck = [ "dotmap" ];
 
   meta = {

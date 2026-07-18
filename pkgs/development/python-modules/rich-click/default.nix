@@ -1,8 +1,8 @@
 {
   lib,
+  fetchFromGitHub,
   buildPythonPackage,
   click,
-  fetchFromGitHub,
   rich,
   setuptools,
   typing-extensions,
@@ -11,7 +11,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "rich-click";
   version = "1.9.8";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "ewels";
@@ -20,6 +19,8 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-FjtwlWYFqI7vQ7JtpCtTIi90mbEkmHSKH8SROy9d+vU=";
   };
 
+  # Module has no test
+  doCheck = false;
   build-system = [ setuptools ];
 
   dependencies = [
@@ -28,9 +29,7 @@ buildPythonPackage (finalAttrs: {
     typing-extensions
   ];
 
-  # Module has no test
-  doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "rich_click" ];
 
   meta = {

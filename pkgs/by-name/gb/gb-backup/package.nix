@@ -1,15 +1,13 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   nix-update-script,
 }:
 
 buildGoModule (finalAttrs: {
   pname = "gb-backup";
   version = "0-unstable-2026-06-05";
-
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "leijurv";
@@ -19,6 +17,7 @@ buildGoModule (finalAttrs: {
   };
 
   vendorHash = "sha256-fjOIp2LUBaAPAPMxU2T+qbIQZgmVa0vNPYzW2hOsBr8=";
+  __structuredAttrs = true;
 
   passthru.updateScript = nix-update-script {
     extraArgs = [ "--version=branch" ];

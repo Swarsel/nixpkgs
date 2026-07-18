@@ -27,9 +27,6 @@ stdenv.mkDerivation {
     pciutils
   ];
 
-  # causes redefinition of _FORTIFY_SOURCE
-  hardeningDisable = [ "fortify3" ];
-
   postBuild = ''
     patchShebangs lsmsr/createheader.py
     make -C lsmsr
@@ -41,20 +38,26 @@ stdenv.mkDerivation {
     cp lsmsr/lsmsr $out/bin
   '';
 
+  # causes redefinition of _FORTIFY_SOURCE
+  hardeningDisable = [ "fortify3" ];
+
   meta = {
     description = "Identification utility for the x86 series of processors";
+
     longDescription = ''
       x86info will identify all Intel/AMD/Centaur/Cyrix/VIA CPUs. It leverages
       the cpuid kernel module where possible.  it supports parsing model specific
       registers (MSRs) via the msr kernel module.  it will approximate processor
       frequency, and identify the cache sizes and layout.
     '';
+
+    homepage = "https://github.com/kernelslacker/x86info";
+    license = lib.licenses.gpl2Only;
+    maintainers = with lib.maintainers; [ jcumming ];
+
     platforms = [
       "i686-linux"
       "x86_64-linux"
     ];
-    license = lib.licenses.gpl2Only;
-    homepage = "https://github.com/kernelslacker/x86info";
-    maintainers = with lib.maintainers; [ jcumming ];
   };
 }

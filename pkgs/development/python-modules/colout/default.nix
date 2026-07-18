@@ -1,8 +1,8 @@
 {
   lib,
+  fetchFromGitHub,
   babel,
   buildPythonPackage,
-  fetchFromGitHub,
   pygments,
   setuptools-scm,
 }:
@@ -10,7 +10,6 @@
 buildPythonPackage rec {
   pname = "colout";
   version = "1.1";
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "nojhan";
@@ -26,16 +25,16 @@ buildPythonPackage rec {
     pygments
   ];
 
-  pythonImportsCheck = [ "colout" ];
-
   # This project does not have a unit test
   doCheck = false;
+  format = "setuptools";
+  pythonImportsCheck = [ "colout" ];
 
   meta = {
     description = "Color Up Arbitrary Command Output";
-    mainProgram = "colout";
     homepage = "https://github.com/nojhan/colout";
     license = lib.licenses.gpl3Only;
     maintainers = with lib.maintainers; [ badele ];
+    mainProgram = "colout";
   };
 }

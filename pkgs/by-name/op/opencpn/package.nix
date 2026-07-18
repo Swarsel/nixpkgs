@@ -1,17 +1,16 @@
 {
-  stdenv,
   lib,
-  darwin,
+  stdenv,
+  fetchFromGitHub,
   alsa-utils,
   at-spi2-core,
   cmake,
   curl,
+  darwin,
   dbus,
   elfutils,
-  fetchFromGitHub,
   flac,
   gitMinimal,
-  wrapGAppsHook3,
   glew,
   gtest,
   jasper,
@@ -21,6 +20,7 @@
   libdatrie,
   libepoxy,
   libexif,
+  libmpg123,
   libogg,
   libopus,
   libselinux,
@@ -30,10 +30,11 @@
   libunarr,
   libusb1,
   libvorbis,
+  libxdmcp,
   libxkbcommon,
+  libxtst,
   lsb-release,
   lz4,
-  libmpg123,
   makeWrapper,
   pkg-config,
   portaudio,
@@ -42,9 +43,8 @@
   sqlite,
   tinyxml,
   util-linux,
+  wrapGAppsHook3,
   wxwidgets_3_2,
-  libxtst,
-  libxdmcp,
   xz,
 }:
 
@@ -142,22 +142,24 @@ stdenv.mkDerivation (finalAttrs: {
     ]
   );
 
+  doCheck = true;
+
   postInstall = lib.optionals stdenv.hostPlatform.isDarwin ''
     mkdir -p $out/Applications
     mv $out/bin/OpenCPN.app $out/Applications
     makeWrapper $out/Applications/OpenCPN.app/Contents/MacOS/OpenCPN $out/bin/opencpn
   '';
 
-  doCheck = true;
-
   meta = {
     description = "Concise ChartPlotter/Navigator";
+    homepage = "https://opencpn.org/";
+    license = lib.licenses.gpl2Plus;
+
     maintainers = with lib.maintainers; [
       kragniz
       lovesegfault
     ];
+
     platforms = lib.platforms.unix;
-    license = lib.licenses.gpl2Plus;
-    homepage = "https://opencpn.org/";
   };
 })

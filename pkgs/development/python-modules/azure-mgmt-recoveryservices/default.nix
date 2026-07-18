@@ -12,14 +12,15 @@
 buildPythonPackage rec {
   pname = "azure-mgmt-recoveryservices";
   version = "4.1.0";
-  pyproject = true;
 
   src = fetchPypi {
-    pname = "azure_mgmt_recoveryservices";
     inherit version;
     hash = "sha256-Y81Zbm/xuAHgYoPRU84Mfx1E9+3wUtMhwTJ0bDyMhx4=";
+    pname = "azure_mgmt_recoveryservices";
   };
 
+  # Module has no tests
+  doCheck = false;
   build-system = [ setuptools ];
 
   dependencies = [
@@ -29,9 +30,7 @@ buildPythonPackage rec {
     msrest
   ];
 
-  # Module has no tests
-  doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "azure.mgmt.recoveryservices" ];
 
   meta = {

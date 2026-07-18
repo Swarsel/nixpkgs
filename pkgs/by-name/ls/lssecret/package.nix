@@ -2,8 +2,8 @@
   lib,
   stdenv,
   fetchFromGitLab,
-  pkg-config,
   libsecret,
+  pkg-config,
 }:
 
 stdenv.mkDerivation {
@@ -19,7 +19,6 @@ stdenv.mkDerivation {
 
   nativeBuildInputs = [ pkg-config ];
   buildInputs = [ libsecret ];
-
   makeFlags = [ "DESTDIR=$(out)" ];
 
   meta = {

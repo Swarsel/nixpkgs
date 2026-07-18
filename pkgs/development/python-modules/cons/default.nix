@@ -1,11 +1,11 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   logical-unification,
   py,
-  pytestCheckHook,
   pytest-html,
+  pytestCheckHook,
   setuptools,
   setuptools-scm,
 }:
@@ -13,7 +13,6 @@
 buildPythonPackage rec {
   pname = "cons";
   version = "0.4.7";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "pythological";
@@ -22,18 +21,19 @@ buildPythonPackage rec {
     hash = "sha256-BS7lThnv+dxtztvw2aRhQa8yx2cRfrZLiXjcwvZ8QR0=";
   };
 
+  nativeCheckInputs = [
+    py
+    pytestCheckHook
+    pytest-html
+  ];
+
   build-system = [
     setuptools
     setuptools-scm
   ];
 
   dependencies = [ logical-unification ];
-
-  nativeCheckInputs = [
-    py
-    pytestCheckHook
-    pytest-html
-  ];
+  pyproject = true;
 
   pytestFlags = [
     "--html=testing-report.html"

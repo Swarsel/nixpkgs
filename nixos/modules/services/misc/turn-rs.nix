@@ -1,7 +1,7 @@
 {
   config,
-  pkgs,
   lib,
+  pkgs,
   ...
 }:
 
@@ -15,9 +15,8 @@ in
     package = lib.mkPackageOption pkgs "turn-rs" { };
 
     secretFile = lib.mkOption {
-      type = lib.types.nullOr lib.types.path;
       default = null;
-      example = "/run/keys/turn-rs.env";
+
       description = ''
         Environment variables from this file will be interpolated into the
         final config file using envsubst with this syntax: `$ENVIRONMENT` or
@@ -25,35 +24,41 @@ in
         The file should contain lines formatted as `SECRET_VAR=SECRET_VALUE`.
         This is useful to avoid putting secrets into the nix store.
       '';
+
+      example = "/run/keys/turn-rs.env";
+      type = lib.types.nullOr lib.types.path;
     };
 
     settings = lib.mkOption {
-      type = lib.types.submodule {
-        freeformType = format.type;
-      };
-      description = "Turn-rs server config file";
       default = { };
-      example = {
-        turn = {
-          realm = "localhost";
-          interfaces = [
-            {
-              transport = "udp";
-              bind = "127.0.0.1:3478";
-              external = "127.0.0.1:3478";
-            }
-            {
-              transport = "tcp";
-              bind = "127.0.0.1:3478";
-              external = "127.0.0.1:3478";
-            }
-          ];
-        };
+      description = "Turn-rs server config file";
 
+      example = {
         auth.static_credentials = {
           user1 = "test";
           user2 = "test";
         };
+
+        turn = {
+          interfaces = [
+            {
+              bind = "127.0.0.1:3478";
+              external = "127.0.0.1:3478";
+              transport = "udp";
+            }
+            {
+              bind = "127.0.0.1:3478";
+              external = "127.0.0.1:3478";
+              transport = "tcp";
+            }
+          ];
+
+          realm = "localhost";
+        };
+      };
+
+      type = lib.types.submodule {
+        freeformType = format.type;
       };
     };
   };
@@ -66,8 +71,8 @@ in
 
     systemd.services.turn-rs = {
       enable = true;
-      wantedBy = [ "multi-user.target" ];
       description = "Turn-rs Server Daemon";
+
       preStart =
         let
           configFile = format.generate "turn-rs-config.toml" cfg.settings;
@@ -75,12 +80,15 @@ in
         ''
           ${lib.getExe pkgs.envsubst} -i "${configFile}" -o /run/turn-rs/config.toml
         '';
+
       serviceConfig = {
-        RuntimeDirectory = "turn-rs";
+        DynamicUser = true;
         EnvironmentFile = lib.optional (cfg.secretFile != null) cfg.secretFile;
         ExecStart = "${lib.getExe cfg.package} --config=/run/turn-rs/config.toml";
-        DynamicUser = true;
+        RuntimeDirectory = "turn-rs";
       };
+
+      wantedBy = [ "multi-user.target" ];
     };
   };
 }

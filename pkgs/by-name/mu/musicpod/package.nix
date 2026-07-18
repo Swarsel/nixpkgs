@@ -1,19 +1,19 @@
 {
   lib,
   stdenv,
-  flutter341,
   fetchFromGitHub,
+  _experimental-update-script-combinators,
   alsa-lib,
-  mimalloc,
-  mpv-unwrapped,
+  dart,
+  flutter341,
   libass,
   libnotify,
+  mimalloc,
+  mpv-unwrapped,
+  nix-update-script,
   pulseaudio,
   runCommand,
-  _experimental-update-script-combinators,
   yq-go,
-  nix-update-script,
-  dart,
 }:
 
 flutter341.buildFlutterApplication (finalAttrs: {
@@ -27,14 +27,32 @@ flutter341.buildFlutterApplication (finalAttrs: {
     hash = "sha256-riBBJXeSsCi3i0+aKnGElIbhQdvkpvIqMdu4FB3veFU=";
   };
 
+  postPatch = ''
+    substituteInPlace snap/gui/musicpod.desktop \
+      --replace-fail 'Icon=''${SNAP}/meta/gui/musicpod.png' 'Icon=musicpod'
+  '';
+
+  buildInputs = [
+    alsa-lib
+    mpv-unwrapped
+    libass
+    libnotify
+  ];
+
+  postInstall = ''
+    ln --symbolic --no-dereference --force ${mpv-unwrapped}/lib/libmpv.so.2 $out/app/$pname/lib/libmpv.so.2
+    install -Dm644 snap/gui/musicpod.desktop -t $out/share/applications
+    install -Dm644 snap/gui/musicpod.png -t $out/share/icons/hicolor/256x256/apps
+  '';
+
   customSourceBuilders = {
     # unofficial media_kit_libs_linux
     media_kit_libs_linux =
-      { version, src, ... }:
+      { src, version, ... }:
       stdenv.mkDerivation {
-        pname = "media_kit_libs_linux";
         inherit version src;
         inherit (src) passthru;
+        pname = "media_kit_libs_linux";
 
         postPatch = ''
           sed -i '/set(MIMALLOC "mimalloc-/,/add_custom_target/d' libs/linux/media_kit_libs_linux/linux/CMakeLists.txt
@@ -49,13 +67,14 @@ flutter341.buildFlutterApplication (finalAttrs: {
           runHook postInstall
         '';
       };
+
     # unofficial media_kit_video
     media_kit_video =
-      { version, src, ... }:
+      { src, version, ... }:
       stdenv.mkDerivation {
-        pname = "media_kit_video";
         inherit version src;
         inherit (src) passthru;
+        pname = "media_kit_video";
 
         postPatch = ''
           sed -i '/if(ARCH_NAME STREQUAL "x86_64")/,/if(MEDIA_KIT_LIBS_AVAILABLE)/{ /if(MEDIA_KIT_LIBS_AVAILABLE)/!d; /set(LIBMPV_ZIP_URL/d }' media_kit_video/linux/CMakeLists.txt
@@ -75,40 +94,21 @@ flutter341.buildFlutterApplication (finalAttrs: {
       };
   };
 
-  postPatch = ''
-    substituteInPlace snap/gui/musicpod.desktop \
-      --replace-fail 'Icon=''${SNAP}/meta/gui/musicpod.png' 'Icon=musicpod'
-  '';
-
-  pubspecLock = lib.importJSON ./pubspec.lock.json;
-
   gitHashes = lib.importJSON ./git-hashes.json;
-
-  buildInputs = [
-    alsa-lib
-    mpv-unwrapped
-    libass
-    libnotify
-  ];
-
+  pubspecLock = lib.importJSON ./pubspec.lock.json;
   runtimeDependencies = [ pulseaudio ];
-
-  postInstall = ''
-    ln --symbolic --no-dereference --force ${mpv-unwrapped}/lib/libmpv.so.2 $out/app/$pname/lib/libmpv.so.2
-    install -Dm644 snap/gui/musicpod.desktop -t $out/share/applications
-    install -Dm644 snap/gui/musicpod.png -t $out/share/icons/hicolor/256x256/apps
-  '';
 
   passthru = {
     pubspecSource =
       runCommand "pubspec.lock.json"
         {
-          nativeBuildInputs = [ yq-go ];
           inherit (finalAttrs) src;
+          nativeBuildInputs = [ yq-go ];
         }
         ''
           yq eval --output-format=json --prettyPrint $src/pubspec.lock > "$out"
         '';
+
     updateScript = _experimental-update-script-combinators.sequence [
       (nix-update-script { })
       (
@@ -125,6 +125,7 @@ flutter341.buildFlutterApplication (finalAttrs: {
           "--output"
           ./git-hashes.json
         ];
+
         supportedFeatures = [ ];
       }
     ];
@@ -134,8 +135,8 @@ flutter341.buildFlutterApplication (finalAttrs: {
     description = "Music, radio, television and podcast player";
     homepage = "https://github.com/ubuntu-flutter-community/musicpod";
     license = lib.licenses.gpl3Only;
-    mainProgram = "musicpod";
     maintainers = with lib.maintainers; [ aleksana ];
     platforms = lib.platforms.linux;
+    mainProgram = "musicpod";
   };
 })

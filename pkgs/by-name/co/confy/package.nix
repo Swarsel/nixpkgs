@@ -1,5 +1,6 @@
 {
   lib,
+  stdenv,
   blueprint-compiler,
   desktop-file-utils,
   fetchFromSourcehut,
@@ -11,7 +12,6 @@
   ninja,
   pkg-config,
   python3,
-  stdenv,
   wrapGAppsHook4,
 }:
 
@@ -49,11 +49,11 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   meta = {
-    changelog = "https://git.sr.ht/~fabrixxm/confy/refs/${finalAttrs.version}";
     description = "Conferences schedule viewer";
     homepage = "https://confy.kirgroup.net/";
+    changelog = "https://git.sr.ht/~fabrixxm/confy/refs/${finalAttrs.version}";
     license = lib.licenses.gpl3Plus;
-    mainProgram = "confy";
     maintainers = with lib.maintainers; [ michaelgrahamevans ];
+    mainProgram = "confy";
   };
 })

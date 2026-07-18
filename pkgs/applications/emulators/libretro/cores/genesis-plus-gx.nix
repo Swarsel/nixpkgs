@@ -4,7 +4,6 @@
   mkLibretroCore,
 }:
 mkLibretroCore {
-  core = "genesis-plus-gx";
   version = "0-unstable-2026-07-10";
 
   src = fetchFromGitHub {
@@ -13,6 +12,8 @@ mkLibretroCore {
     rev = "fa4dca561e08d5be9077419f7b255e1da213ed21";
     hash = "sha256-FfO5LzCH0hYqiVpE2qPJhX4gOrXqqYCoW4XRbz93La4=";
   };
+
+  core = "genesis-plus-gx";
 
   meta = {
     description = "Enhanced Genesis Plus libretro port";

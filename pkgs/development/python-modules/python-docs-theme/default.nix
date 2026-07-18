@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   flit-core,
   pythonOlder,
   sphinx,
@@ -10,9 +10,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "python-docs-theme";
   version = "2026.4";
-  pyproject = true;
-
-  disabled = pythonOlder "3.12";
 
   src = fetchFromGitHub {
     owner = "python";
@@ -22,9 +19,9 @@ buildPythonPackage (finalAttrs: {
   };
 
   build-system = [ flit-core ];
-
   dependencies = [ sphinx ];
-
+  disabled = pythonOlder "3.12";
+  pyproject = true;
   pythonImportsCheck = [ "python_docs_theme" ];
 
   meta = {

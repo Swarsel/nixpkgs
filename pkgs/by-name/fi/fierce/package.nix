@@ -7,7 +7,6 @@
 python3.pkgs.buildPythonApplication (finalAttrs: {
   pname = "fierce";
   version = "1.6.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "mschwager";
@@ -16,16 +15,13 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     sha256 = "sha256-y5ZSDJCTqslU78kXGyk6DajBpX7xz1CVmbhYerHmyis=";
   };
 
-  pythonRelaxDeps = [ "dnspython" ];
-
-  build-system = with python3.pkgs; [ poetry-core ];
-
-  dependencies = with python3.pkgs; [ dnspython ];
-
   # Tests require network access
   doCheck = false;
-
+  build-system = with python3.pkgs; [ poetry-core ];
+  dependencies = with python3.pkgs; [ dnspython ];
+  pyproject = true;
   pythonImportsCheck = [ "fierce" ];
+  pythonRelaxDeps = [ "dnspython" ];
 
   meta = {
     description = "DNS reconnaissance tool for locating non-contiguous IP space";

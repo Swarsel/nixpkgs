@@ -1,24 +1,12 @@
 {
   lib,
-  vscode-utils,
   jaq,
   moreutils,
-  oxlint,
   oxfmt,
+  oxlint,
+  vscode-utils,
 }:
 vscode-utils.buildVscodeMarketplaceExtension {
-  mktplcRef = {
-    publisher = "oxc";
-    name = "oxc-vscode";
-    version = "1.58.0";
-    hash = "sha256-30dFeguNbY8WM3fLym6aUMkHYH5wA5scSNn04Ukbj9U=";
-  };
-
-  nativeBuildInputs = [
-    jaq
-    moreutils
-  ];
-
   postPatch = ''
     jaq \
       --arg oxlint "${lib.getExe oxlint}" \
@@ -29,11 +17,23 @@ vscode-utils.buildVscodeMarketplaceExtension {
       ' package.json | sponge package.json
   '';
 
+  nativeBuildInputs = [
+    jaq
+    moreutils
+  ];
+
+  mktplcRef = {
+    version = "1.58.0";
+    hash = "sha256-30dFeguNbY8WM3fLym6aUMkHYH5wA5scSNn04Ukbj9U=";
+    name = "oxc-vscode";
+    publisher = "oxc";
+  };
+
   meta = {
     description = "Oxlint and Oxfmt editor integration";
-    downloadPage = "https://marketplace.visualstudio.com/items?itemName=oxc.oxc-vscode";
     homepage = "https://github.com/oxc-project/oxc-vscode";
     license = lib.licenses.mit;
     maintainers = [ lib.maintainers.drupol ];
+    downloadPage = "https://marketplace.visualstudio.com/items?itemName=oxc.oxc-vscode";
   };
 }

@@ -1,7 +1,7 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage {
@@ -16,19 +16,20 @@ rustPlatform.buildRustPackage {
   };
 
   cargoHash = "sha256-oKpcYhD9QNW+8gFVybDEnz58cZ+2Bf4bwYuflXiJ1jc=";
-
   # Currently no tests are implemented, so we avoid building the package twice
   doCheck = false;
 
   meta = {
     description = "Automatic, optimal tiling for i3wm";
-    mainProgram = "i3-auto-layout";
     homepage = "https://github.com/chmln/i3-auto-layout";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       mephistophiles
       perstark
     ];
+
     platforms = lib.platforms.linux;
+    mainProgram = "i3-auto-layout";
   };
 }

@@ -1,19 +1,18 @@
 {
   lib,
+  fetchFromGitHub,
   buildPythonPackage,
   chardet,
-  fetchFromGitHub,
-  setuptools,
   karton-core,
   pytestCheckHook,
   python-magic,
+  setuptools,
   yara-python,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "karton-classifier";
   version = "2.1.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "CERT-Polska";
@@ -22,11 +21,7 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-YqxRiQ/kJheEJpYDqRNu9FydfnNX3OlGjgfX9Hwv+dM=";
   };
 
-  pythonRelaxDeps = [
-    "chardet"
-    "python-magic"
-  ];
-
+  nativeCheckInputs = [ pytestCheckHook ];
   build-system = [ setuptools ];
 
   dependencies = [
@@ -36,16 +31,20 @@ buildPythonPackage (finalAttrs: {
     yara-python
   ];
 
-  nativeCheckInputs = [ pytestCheckHook ];
-
-  pythonImportsCheck = [ "karton.classifier" ];
-
   disabledTests = [
     # Tests expecting results from a different version of libmagic
     "test_process_archive"
     "test_process_misc_csv"
     "test_process_runnable_win32_jar"
     "test_process_runnable_win32_lnk"
+  ];
+
+  pyproject = true;
+  pythonImportsCheck = [ "karton.classifier" ];
+
+  pythonRelaxDeps = [
+    "chardet"
+    "python-magic"
   ];
 
   meta = {

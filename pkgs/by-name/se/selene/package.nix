@@ -1,10 +1,10 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
-  robloxSupport ? true,
-  pkg-config,
   openssl,
+  pkg-config,
+  rustPlatform,
+  robloxSupport ? true,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -18,8 +18,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-1VxFhr/PxMVQktf1pfhCPEnEi9RF2nTM4p8vYJnPLAk=";
   };
 
-  cargoHash = "sha256-Hv/2F3xBbnYw6GAMUd7nYyZl7pTIuQlgGh6+r3OFglw=";
-
   nativeBuildInputs = lib.optionals robloxSupport [
     pkg-config
   ];
@@ -28,14 +26,15 @@ rustPlatform.buildRustPackage (finalAttrs: {
     openssl
   ];
 
+  cargoHash = "sha256-Hv/2F3xBbnYw6GAMUd7nYyZl7pTIuQlgGh6+r3OFglw=";
   buildNoDefaultFeatures = !robloxSupport;
 
   meta = {
     description = "Blazing-fast modern Lua linter written in Rust";
-    mainProgram = "selene";
     homepage = "https://github.com/kampfkarren/selene";
     changelog = "https://github.com/kampfkarren/selene/blob/${finalAttrs.version}/CHANGELOG.md";
     license = lib.licenses.mpl20;
     maintainers = with lib.maintainers; [ liberodark ];
+    mainProgram = "selene";
   };
 })

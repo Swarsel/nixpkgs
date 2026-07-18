@@ -1,6 +1,6 @@
 {
-  lib,
   config,
+  lib,
   pkgs,
   ...
 }:
@@ -22,38 +22,42 @@ let
   settingsFileUnformatted = format.generate "discord-config-unsubstituted.yaml" cfg.settings;
   default_token = "This value is generated when generating the registration";
   settingsDefault = {
+    appservice = {
+      address = "http://localhost:29334";
+      as_token = default_token;
+
+      bot = {
+        avatar = "mxc://maunium.net/nIdEykemnwdisvHbpxflpDlC";
+        displayname = "Discord bridge bot";
+        username = "discordbot";
+      };
+
+      database = {
+        type = "sqlite3";
+        uri = "file:${defaultDataDir}/mautrix-discord.db?_txlock=immediate";
+      };
+
+      hostname = "0.0.0.0";
+      hs_token = default_token;
+      id = "discord";
+      port = 29334;
+    };
+
+    bridge.permissions."*" = "relay";
+
     homeserver = {
       address = "";
       domain = "";
     };
 
-    appservice = {
-      address = "http://localhost:29334";
-      hostname = "0.0.0.0";
-      port = 29334;
-      database = {
-        type = "sqlite3";
-        uri = "file:${defaultDataDir}/mautrix-discord.db?_txlock=immediate";
-      };
-      id = "discord";
-      bot = {
-        username = "discordbot";
-        displayname = "Discord bridge bot";
-        avatar = "mxc://maunium.net/nIdEykemnwdisvHbpxflpDlC";
-      };
-      as_token = default_token;
-      hs_token = default_token;
-    };
-
-    bridge.permissions."*" = "relay";
-
     logging = {
       min_level = "info";
+
       writers = [
         {
-          type = "stdout";
           format = "pretty-colored";
           time_format = " ";
+          type = "stdout";
         }
       ];
     };
@@ -63,13 +67,53 @@ in
   options = {
     services.mautrix-discord = {
       enable = lib.mkEnableOption "Mautrix-Discord, a Matrix-Discord puppeting/relay-bot bridge";
-
       package = lib.mkPackageOption pkgs "mautrix-discord" { };
+
+      dataDir = lib.mkOption {
+        default = defaultDataDir;
+        defaultText = defaultDataDir;
+        description = "Directory to store the bridge's data.";
+        type = lib.types.path;
+      };
+
+      # TODO: Get upstream to add an environment File option. Refer to https://github.com/NixOS/nixpkgs/pull/404871#issuecomment-2895663652 and https://github.com/mautrix/discord/issues/187
+      environmentFile = lib.mkOption {
+        default = null;
+
+        description = ''
+          File containing environment variables for secret substitution.
+          Variables in the config like `$VARIABLE` will be replaced.
+        '';
+
+        type = lib.types.nullOr lib.types.path;
+      };
+
+      registerToSynapse = lib.mkOption {
+        default = config.services.matrix-synapse.enable;
+        defaultText = lib.literalExpression "config.services.matrix-synapse.enable";
+
+        description = ''
+          Whether to add the bridge's app service registration file to
+          `services.matrix-synapse.settings.app_service_config_files`.
+        '';
+
+        type = lib.types.bool;
+      };
 
       settings = lib.mkOption {
         apply = lib.recursiveUpdate settingsDefault;
-        type = format.type;
         default = settingsDefault;
+
+        description = ''
+          {file}`config.yaml` configuration as a Nix attribute set.
+
+          Configuration options should match those described in
+          [example-config.yaml](https://github.com/mautrix/discord/blob/main/example-config.yaml).
+
+          Secret tokens should be specified using {option}`environmentFile`
+          instead of this world-readable attribute set.
+        '';
+
         example = lib.literalExpression ''
           {
             homeserver = {
@@ -83,94 +127,101 @@ in
             };
           }
         '';
-        description = ''
-          {file}`config.yaml` configuration as a Nix attribute set.
 
-          Configuration options should match those described in
-          [example-config.yaml](https://github.com/mautrix/discord/blob/main/example-config.yaml).
-
-          Secret tokens should be specified using {option}`environmentFile`
-          instead of this world-readable attribute set.
-        '';
-      };
-
-      registerToSynapse = lib.mkOption {
-        type = lib.types.bool;
-        default = config.services.matrix-synapse.enable;
-        defaultText = lib.literalExpression "config.services.matrix-synapse.enable";
-        description = ''
-          Whether to add the bridge's app service registration file to
-          `services.matrix-synapse.settings.app_service_config_files`.
-        '';
-      };
-
-      dataDir = lib.mkOption {
-        type = lib.types.path;
-        default = defaultDataDir;
-        defaultText = defaultDataDir;
-        description = "Directory to store the bridge's data.";
-      };
-
-      # TODO: Get upstream to add an environment File option. Refer to https://github.com/NixOS/nixpkgs/pull/404871#issuecomment-2895663652 and https://github.com/mautrix/discord/issues/187
-      environmentFile = lib.mkOption {
-        type = lib.types.nullOr lib.types.path;
-        default = null;
-        description = ''
-          File containing environment variables for secret substitution.
-          Variables in the config like `$VARIABLE` will be replaced.
-        '';
+        type = format.type;
       };
 
     };
   };
+
   config = lib.mkIf cfg.enable {
 
     assertions = [
       {
         assertion =
           cfg.settings.homeserver.address or "" != "" && cfg.settings.homeserver.domain or "" != "";
+
         message = "services.mautrix-discord.settings.homeserver.{address,domain} must be set.";
       }
     ];
-
-    users.users.mautrix-discord = {
-      isSystemUser = true;
-      group = "mautrix-discord";
-      home = dataDir;
-      description = "Mautrix-Discord bridge user";
-    };
-
-    users.groups.mautrix-discord = { };
 
     services.matrix-synapse = lib.mkIf cfg.registerToSynapse {
       settings.app_service_config_files = [ registrationFile ];
     };
 
-    systemd.tmpfiles.rules = [
-      "d ${cfg.dataDir} 770 mautrix-discord mautrix-discord -"
-    ];
-
     systemd.services = {
       matrix-synapse = lib.mkIf cfg.registerToSynapse {
+        after = [ "mautrix-discord-registration.service" ];
+
         serviceConfig.SupplementaryGroups = [
           "mautrix-discord"
         ];
+
         # Make synapse depend on the registration service when auto-registering
         wants = [ "mautrix-discord-registration.service" ];
-        after = [ "mautrix-discord-registration.service" ];
+      };
+
+      mautrix-discord = {
+        after = [ "network-online.target" ] ++ serviceDependencies;
+        description = "Mautrix-Discord, a Matrix-Discord puppeting/relaybot bridge";
+
+        path = [
+          pkgs.lottieconverter
+          pkgs.ffmpeg-headless
+        ];
+
+        restartTriggers = [ settingsFileUnformatted ];
+
+        serviceConfig = {
+          EnvironmentFile = cfg.environmentFile;
+
+          ExecStart = ''
+            ${lib.getExe cfg.package} \
+              --config='${settingsFile}'
+          '';
+
+          Group = "mautrix-discord";
+          LockPersonality = true;
+          PrivateDevices = true;
+          PrivateTmp = true;
+          PrivateUsers = true;
+          ProtectClock = true;
+          ProtectControlGroups = true;
+          ProtectHome = true;
+          ProtectHostname = true;
+          ProtectKernelLogs = true;
+          ProtectKernelModules = true;
+          ProtectKernelTunables = true;
+          ProtectSystem = "strict";
+          ReadWritePaths = [ cfg.dataDir ];
+          Restart = "on-failure";
+          RestartSec = 30;
+          RestrictRealtime = true;
+          RestrictSUIDSGID = true;
+          SystemCallArchitectures = "native";
+          SystemCallErrorNumber = "EPERM";
+          SystemCallFilter = "@system-service";
+          Type = "simple";
+          UMask = "027";
+          User = "mautrix-discord";
+          WorkingDirectory = dataDir;
+        };
+
+        wantedBy = [ "multi-user.target" ];
+        wants = [ "network-online.target" ] ++ serviceDependencies;
       };
 
       mautrix-discord-registration = {
-        description = "Mautrix-Discord registration generation service";
-
-        wantedBy = lib.mkIf cfg.registerToSynapse [ "multi-user.target" ];
         before = lib.mkIf cfg.registerToSynapse [ "matrix-synapse.service" ];
+        description = "Mautrix-Discord registration generation service";
 
         path = [
           pkgs.yq
           pkgs.envsubst
           cfg.package
         ];
+
+        restartTriggers = [ settingsFileUnformatted ];
 
         script = ''
           # substitute the settings file by environment variables
@@ -242,83 +293,43 @@ in
         '';
 
         serviceConfig = {
-          Type = "oneshot";
-          RemainAfterExit = true;
-          UMask = "027";
-
-          User = "mautrix-discord";
+          EnvironmentFile = cfg.environmentFile;
           Group = "mautrix-discord";
-
-          SystemCallFilter = [ "@system-service" ];
-
-          ProtectSystem = "strict";
           ProtectHome = true;
-
+          ProtectSystem = "strict";
           ReadWritePaths = [ dataDir ];
+          RemainAfterExit = true;
           StateDirectory = "mautrix-discord";
-          EnvironmentFile = cfg.environmentFile;
-        };
-
-        restartTriggers = [ settingsFileUnformatted ];
-      };
-
-      mautrix-discord = {
-        description = "Mautrix-Discord, a Matrix-Discord puppeting/relaybot bridge";
-
-        wantedBy = [ "multi-user.target" ];
-        wants = [ "network-online.target" ] ++ serviceDependencies;
-        after = [ "network-online.target" ] ++ serviceDependencies;
-        path = [
-          pkgs.lottieconverter
-          pkgs.ffmpeg-headless
-        ];
-
-        serviceConfig = {
-          Type = "simple";
-          User = "mautrix-discord";
-          Group = "mautrix-discord";
-          PrivateUsers = true;
-          Restart = "on-failure";
-          RestartSec = 30;
-          WorkingDirectory = dataDir;
-          ExecStart = ''
-            ${lib.getExe cfg.package} \
-              --config='${settingsFile}'
-          '';
-          EnvironmentFile = cfg.environmentFile;
-
-          ProtectSystem = "strict";
-          ProtectHome = true;
-          ProtectKernelTunables = true;
-          ProtectKernelModules = true;
-          ProtectControlGroups = true;
-          PrivateDevices = true;
-          PrivateTmp = true;
-          RestrictSUIDSGID = true;
-          RestrictRealtime = true;
-          LockPersonality = true;
-          ProtectKernelLogs = true;
-          ProtectHostname = true;
-          ProtectClock = true;
-
+          SystemCallFilter = [ "@system-service" ];
+          Type = "oneshot";
           UMask = "027";
-
-          SystemCallArchitectures = "native";
-          SystemCallErrorNumber = "EPERM";
-          SystemCallFilter = "@system-service";
-          ReadWritePaths = [ cfg.dataDir ];
+          User = "mautrix-discord";
         };
 
-        restartTriggers = [ settingsFileUnformatted ];
+        wantedBy = lib.mkIf cfg.registerToSynapse [ "multi-user.target" ];
       };
+    };
+
+    systemd.tmpfiles.rules = [
+      "d ${cfg.dataDir} 770 mautrix-discord mautrix-discord -"
+    ];
+
+    users.groups.mautrix-discord = { };
+
+    users.users.mautrix-discord = {
+      description = "Mautrix-Discord bridge user";
+      group = "mautrix-discord";
+      home = dataDir;
+      isSystemUser = true;
     };
 
   };
 
   meta = {
+    doc = ./mautrix-discord.md;
+
     maintainers = with lib.maintainers; [
       mistyttm
     ];
-    doc = ./mautrix-discord.md;
   };
 }

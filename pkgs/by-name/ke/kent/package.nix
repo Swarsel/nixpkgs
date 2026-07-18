@@ -1,21 +1,21 @@
 {
   lib,
   stdenv,
-  writableTmpDirAsHomeHook,
+  fetchFromGitHub,
+  bash,
+  bzip2,
+  curl,
+  jq,
+  libmysqlclient,
   libpng,
   libuuid,
-  zlib,
-  bzip2,
-  xz,
-  openssl,
-  curl,
-  libmysqlclient,
-  bash,
-  fetchFromGitHub,
-  which,
-  writeShellScript,
-  jq,
   nix-update,
+  openssl,
+  which,
+  writableTmpDirAsHomeHook,
+  writeShellScript,
+  xz,
+  zlib,
 }:
 stdenv.mkDerivation (finalAttrs: {
   pname = "kent";
@@ -27,6 +27,14 @@ stdenv.mkDerivation (finalAttrs: {
     tag = "v${finalAttrs.version}_base";
     hash = "sha256-VXm/JwudwNqZhwp7iC/BjQ/grc+9kOFn/t43ceayC4c=";
   };
+
+  postPatch = ''
+    substituteInPlace ./src/checkUmask.sh \
+      --replace-fail "/bin/bash" "${bash}/bin/bash"
+
+    substituteInPlace ./src/hg/sqlEnvTest.sh \
+      --replace-fail "which mysql_config" "${which}/bin/which ${libmysqlclient}/bin/mysql_config"
+  '';
 
   nativeBuildInputs = [ writableTmpDirAsHomeHook ];
 
@@ -40,14 +48,6 @@ stdenv.mkDerivation (finalAttrs: {
     curl
     libmysqlclient
   ];
-
-  postPatch = ''
-    substituteInPlace ./src/checkUmask.sh \
-      --replace-fail "/bin/bash" "${bash}/bin/bash"
-
-    substituteInPlace ./src/hg/sqlEnvTest.sh \
-      --replace-fail "which mysql_config" "${which}/bin/which ${libmysqlclient}/bin/mysql_config"
-  '';
 
   buildPhase = ''
     runHook preBuild

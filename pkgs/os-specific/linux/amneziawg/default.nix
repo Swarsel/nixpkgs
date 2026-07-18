@@ -18,25 +18,25 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-eMApc7VHWB1GL8YWdAS7HyEgkV/nkLjwBMOP+gtuHOE=";
   };
 
-  sourceRoot = "${finalAttrs.src.name}/src";
-  hardeningDisable = [ "pic" ];
   nativeBuildInputs = kernel.moduleBuildDependencies;
-
-  buildFlags = [
-    "module"
-  ];
 
   makeFlags = kernelModuleMakeFlags ++ [
     "KERNELDIR=${kernel.dev}/lib/modules/${kernel.modDirVersion}/build"
   ];
 
+  buildFlags = [
+    "module"
+  ];
+
   enableParallelBuilding = true;
+  hardeningDisable = [ "pic" ];
 
   installFlags = [
     "DEPMOD=true"
     "INSTALL_MOD_PATH=${placeholder "out"}"
   ];
 
+  sourceRoot = "${finalAttrs.src.name}/src";
   passthru.updateScript = nix-update-script { };
 
   meta = {

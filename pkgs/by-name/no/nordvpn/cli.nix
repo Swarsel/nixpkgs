@@ -1,22 +1,21 @@
 {
-  desktopItemArgs,
-  meta,
-  src,
-  version,
-
+  lib,
+  fetchFromGitHub,
   buildGoModule,
   copyDesktopItems,
+  desktopItemArgs,
   e2fsprogs,
-  fetchFromGitHub,
   iproute2,
-  lib,
   libxslt,
   makeDesktopItem,
   makeWrapper,
+  meta,
   nftables,
   openvpn,
   procps,
+  src,
   systemdMinimal,
+  version,
   wireguard-tools,
 }:
 let
@@ -26,11 +25,11 @@ let
     patches =
       let
         tunnelblickSrc = fetchFromGitHub {
+          hash = "sha256-uLYrBgwX3HkEV06snlIYLsgfhD5lNDVR21D56ygoStY=";
           owner = "Tunnelblick";
           repo = "Tunnelblick";
           # https://github.com/NordSecurity/nordvpn-linux/blob/4.6.0/ci/openvpn/env.sh#L11
           tag = "v6.0beta09";
-          hash = "sha256-uLYrBgwX3HkEV06snlIYLsgfhD5lNDVR21D56ygoStY=";
         };
 
         pathDir = "third_party/sources/openvpn/openvpn-2.6.12/patches";
@@ -48,7 +47,6 @@ let
 in
 buildGoModule (finalAttrs: {
   inherit src version;
-
   pname = "nordvpn-cli";
 
   nativeBuildInputs = [
@@ -70,17 +68,6 @@ buildGoModule (finalAttrs: {
     substituteInPlace daemon/vpn/openvpn/config.go \
         --replace-fail "$old_ovpn_path" "$new_ovpn_path"
   '';
-
-  ldflags = [
-    "-X main.Environment=prod"
-    "-X main.Version=${finalAttrs.version}"
-  ];
-
-  subPackages = [
-    "cmd/cli"
-    "cmd/daemon"
-    "cmd/norduser"
-  ];
 
   checkPhase = ''
     runHook preCheck
@@ -140,12 +127,25 @@ buildGoModule (finalAttrs: {
     ))
   ];
 
+  ldflags = [
+    "-X main.Environment=prod"
+    "-X main.Version=${finalAttrs.version}"
+  ];
+
+  subPackages = [
+    "cmd/cli"
+    "cmd/daemon"
+    "cmd/norduser"
+  ];
+
   meta = meta // {
     description = "NordVPN command-line client and daemon";
+
     longDescription = ''
       Contains the nordvpn client and nordvpnd daemon.
       Even if you intend to use the GUI only, you'd need this package.
     '';
+
     mainProgram = "nordvpn";
   };
 })

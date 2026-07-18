@@ -36,15 +36,16 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  doInstallCheck = true;
+
   nativeInstallCheckInputs = [
     versionCheckHook
   ];
-  doInstallCheck = true;
 
   meta = {
-    changelog = "https://github.com/slavaGanzin/await/releases/tag/${finalAttrs.version}";
     description = "Small binary that runs a list of commands in parallel and awaits termination";
     homepage = "https://github.com/slavaGanzin/await";
+    changelog = "https://github.com/slavaGanzin/await/releases/tag/${finalAttrs.version}";
     license = lib.licenses.mit;
     maintainers = [ ];
     platforms = lib.platforms.all;

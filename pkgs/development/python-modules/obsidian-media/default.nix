@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   hatchling,
   markdown,
 }:
@@ -9,7 +9,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "obsidian-media";
   version = "2.0.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "GooRoo";
@@ -17,6 +16,9 @@ buildPythonPackage (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-+JerHkpQExP2ytYFFxNbsvAJInUqVg/483KtywP38/g=";
   };
+
+  # No tests are available
+  doCheck = false;
 
   build-system = [
     hatchling
@@ -26,20 +28,21 @@ buildPythonPackage (finalAttrs: {
     markdown
   ];
 
+  pyproject = true;
+
   pythonImportsCheck = [
     "obsidian_media"
   ];
 
-  # No tests are available
-  doCheck = false;
-
   meta = {
     description = "";
     homepage = "https://github.com/GooRoo/obsidian-media";
+
     license = with lib.licenses; [
       bsd3
       cc0
     ];
+
     maintainers = with lib.maintainers; [ drupol ];
     mainProgram = "obsidian-media";
   };

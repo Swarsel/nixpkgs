@@ -1,14 +1,14 @@
 {
   lib,
   stdenv,
-  buildNpmPackage,
   fetchFromGitHub,
-  electron,
-  jq,
-  makeWrapper,
-  makeDesktopItem,
+  buildNpmPackage,
   copyDesktopItems,
   desktopToDarwinBundle,
+  electron,
+  jq,
+  makeDesktopItem,
+  makeWrapper,
   nix-update-script,
 }:
 
@@ -23,17 +23,16 @@ buildNpmPackage (finalAttrs: {
     hash = "sha256-3/0pEzN90ZAeAoN7i+f604DvJl4VaQWkoOia1r5yQZY=";
   };
 
-  npmDepsHash = "sha256-k2OHeLcGcVCurTSefEqtqwUzolZ72rKA4WRFJifUPyY=";
-
-  env.ELECTRON_SKIP_BINARY_DOWNLOAD = "1";
-  env.PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD = "1";
-
   nativeBuildInputs = [
     jq
     makeWrapper
     copyDesktopItems
   ]
   ++ lib.optional stdenv.hostPlatform.isDarwin desktopToDarwinBundle;
+
+  npmDepsHash = "sha256-k2OHeLcGcVCurTSefEqtqwUzolZ72rKA4WRFJifUPyY=";
+  env.ELECTRON_SKIP_BINARY_DOWNLOAD = "1";
+  env.PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD = "1";
 
   buildPhase = ''
     runHook preBuild
@@ -71,12 +70,12 @@ buildNpmPackage (finalAttrs: {
 
   desktopItems = [
     (makeDesktopItem {
-      name = "twine";
-      desktopName = "Twine";
+      categories = [ "Development" ];
       comment = finalAttrs.meta.description;
+      desktopName = "Twine";
       exec = "twine %U";
       icon = "twine";
-      categories = [ "Development" ];
+      name = "twine";
     })
   ];
 

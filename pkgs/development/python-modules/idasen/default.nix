@@ -1,19 +1,18 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
   bleak,
-  pyyaml,
-  voluptuous,
-  pytestCheckHook,
+  buildPythonPackage,
   pytest-asyncio,
+  pytestCheckHook,
+  pyyaml,
   setuptools,
+  voluptuous,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "idasen";
   version = "0.13.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "newAM";
@@ -21,6 +20,11 @@ buildPythonPackage (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-ejKfXAVvHyWIkg06XqC2pKJjpPuOgHEciPzBb/TGiSU=";
   };
+
+  nativeCheckInputs = [
+    pytestCheckHook
+    pytest-asyncio
+  ];
 
   build-system = [ setuptools ];
 
@@ -30,19 +34,15 @@ buildPythonPackage (finalAttrs: {
     voluptuous
   ];
 
-  nativeCheckInputs = [
-    pytestCheckHook
-    pytest-asyncio
-  ];
-
+  pyproject = true;
   pythonImportsCheck = [ "idasen" ];
 
   meta = {
     description = "Python API and CLI for the ikea IDÅSEN desk";
-    mainProgram = "idasen";
     homepage = "https://github.com/newAM/idasen";
     changelog = "https://github.com/newAM/idasen/blob/${finalAttrs.src.tag}/CHANGELOG.md";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ newam ];
+    mainProgram = "idasen";
   };
 })

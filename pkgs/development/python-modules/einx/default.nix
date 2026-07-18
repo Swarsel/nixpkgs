@@ -1,18 +1,17 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
-  wheel,
-  numpy,
-  sympy,
+  buildPythonPackage,
   frozendict,
+  numpy,
+  setuptools,
+  sympy,
+  wheel,
 }:
 
 buildPythonPackage rec {
   pname = "einx";
   version = "0.4.3";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "fferflo";
@@ -31,6 +30,8 @@ buildPythonPackage rec {
     sympy
     frozendict
   ];
+
+  pyproject = true;
 
   pythonImportsCheck = [
     "einx"

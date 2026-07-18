@@ -3,14 +3,13 @@
   buildPythonPackage,
   fetchPypi,
   pytest,
-  zlib,
   xz,
+  zlib,
 }:
 
 buildPythonPackage rec {
   pname = "deeptoolsintervals";
   version = "0.1.9";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
@@ -23,10 +22,11 @@ buildPythonPackage rec {
   ];
 
   nativeCheckInputs = [ pytest ];
+  format = "setuptools";
 
   meta = {
-    homepage = "https://deeptools.readthedocs.io/en/develop";
     description = "Helper library for deeptools";
+    homepage = "https://deeptools.readthedocs.io/en/develop";
     license = lib.licenses.mit;
   };
 }

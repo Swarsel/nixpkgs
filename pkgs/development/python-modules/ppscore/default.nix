@@ -1,17 +1,16 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
+  buildPythonPackage,
   pandas,
   pytestCheckHook,
   scikit-learn,
+  setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "ppscore";
   version = "1.3.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "8080labs";
@@ -30,10 +29,9 @@ buildPythonPackage rec {
   ];
 
   nativeCheckInputs = [ pytestCheckHook ];
-
-  pythonRelaxDeps = [ "pandas" ];
-
+  pyproject = true;
   pythonImportsCheck = [ "ppscore" ];
+  pythonRelaxDeps = [ "pandas" ];
 
   meta = {
     description = "Python implementation of the Predictive Power Score (PPS)";

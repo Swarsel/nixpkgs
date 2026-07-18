@@ -1,18 +1,18 @@
 {
   buildDunePackage,
-  irmin-mirage,
-  irmin-graphql,
-  mirage-clock,
   cohttp-lwt,
-  lwt,
-  uri,
   git,
+  irmin-graphql,
+  irmin-mirage,
+  lwt,
+  mirage-clock,
+  uri,
 }:
 
 buildDunePackage {
-  pname = "irmin-mirage-graphql";
-
   inherit (irmin-mirage) version src;
+  inherit (irmin-mirage) meta;
+  pname = "irmin-mirage-graphql";
 
   propagatedBuildInputs = [
     irmin-mirage
@@ -23,6 +23,4 @@ buildDunePackage {
     uri
     git
   ];
-
-  inherit (irmin-mirage) meta;
 }

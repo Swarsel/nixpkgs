@@ -13,21 +13,24 @@ in
 {
   options.services.convos = {
     enable = mkEnableOption "Convos";
-    listenPort = mkOption {
-      type = types.port;
-      default = 3000;
-      example = 8080;
-      description = "Port the web interface should listen on";
-    };
+
     listenAddress = mkOption {
-      type = types.str;
       default = "*";
-      example = "127.0.0.1";
       description = "Address or host the web interface should listen on";
+      example = "127.0.0.1";
+      type = types.str;
     };
+
+    listenPort = mkOption {
+      default = 3000;
+      description = "Port the web interface should listen on";
+      example = 8080;
+      type = types.port;
+    };
+
     reverseProxy = mkOption {
-      type = types.bool;
       default = false;
+
       description = ''
         Enables reverse proxy support. This will allow Convos to automatically
         pick up the `X-Forwarded-For` and
@@ -35,46 +38,54 @@ in
         web server. Note that enabling this option without a reverse proxy in
         front will be a security issue.
       '';
+
+      type = types.bool;
     };
   };
+
   config = mkIf cfg.enable {
     systemd.services.convos = {
-      description = "Convos Service";
-      wantedBy = [ "multi-user.target" ];
       after = [ "network.target" ];
+      description = "Convos Service";
+
       environment = {
         CONVOS_HOME = "%S/convos";
         CONVOS_REVERSE_PROXY = if cfg.reverseProxy then "1" else "0";
         MOJO_LISTEN = "http://${toString cfg.listenAddress}:${toString cfg.listenPort}";
       };
+
       serviceConfig = {
-        ExecStart = "${pkgs.convos}/bin/convos daemon";
-        Restart = "on-failure";
-        StateDirectory = "convos";
-        WorkingDirectory = "%S/convos";
+        CapabilityBoundingSet = "";
         DynamicUser = true;
+        ExecStart = "${pkgs.convos}/bin/convos daemon";
+        LockPersonality = true;
         MemoryDenyWriteExecute = true;
-        ProtectHome = true;
-        ProtectClock = true;
-        ProtectHostname = true;
-        ProtectKernelTunables = true;
-        ProtectKernelModules = true;
-        ProtectKernelLogs = true;
-        ProtectControlGroups = true;
         PrivateDevices = true;
         PrivateMounts = true;
         PrivateUsers = true;
-        LockPersonality = true;
-        RestrictRealtime = true;
-        RestrictNamespaces = true;
+        ProtectClock = true;
+        ProtectControlGroups = true;
+        ProtectHome = true;
+        ProtectHostname = true;
+        ProtectKernelLogs = true;
+        ProtectKernelModules = true;
+        ProtectKernelTunables = true;
+        Restart = "on-failure";
+
         RestrictAddressFamilies = [
           "AF_INET"
           "AF_INET6"
         ];
-        SystemCallFilter = "@system-service";
+
+        RestrictNamespaces = true;
+        RestrictRealtime = true;
+        StateDirectory = "convos";
         SystemCallArchitectures = "native";
-        CapabilityBoundingSet = "";
+        SystemCallFilter = "@system-service";
+        WorkingDirectory = "%S/convos";
       };
+
+      wantedBy = [ "multi-user.target" ];
     };
   };
 }

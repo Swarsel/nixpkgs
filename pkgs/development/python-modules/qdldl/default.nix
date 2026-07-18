@@ -1,21 +1,20 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  replaceVars,
+  buildPythonPackage,
   cmake,
   numpy,
   pybind11,
-  setuptools,
-  scipy,
   pytestCheckHook,
   qdldl,
+  replaceVars,
+  scipy,
+  setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "qdldl";
   version = "0.1.7.post5";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "osqp";
@@ -31,7 +30,11 @@ buildPythonPackage rec {
     })
   ];
 
-  dontUseCmakeConfigure = true;
+  propagatedBuildInputs = [
+    qdldl
+  ];
+
+  nativeCheckInputs = [ pytestCheckHook ];
 
   build-system = [
     cmake
@@ -45,12 +48,9 @@ buildPythonPackage rec {
     scipy
   ];
 
-  propagatedBuildInputs = [
-    qdldl
-  ];
-
+  dontUseCmakeConfigure = true;
+  pyproject = true;
   pythonImportsCheck = [ "qdldl" ];
-  nativeCheckInputs = [ pytestCheckHook ];
 
   meta = {
     description = "Python interface to the QDLDL";

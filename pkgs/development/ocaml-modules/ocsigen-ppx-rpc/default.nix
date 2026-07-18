@@ -1,19 +1,20 @@
 {
   lib,
-  buildDunePackage,
   fetchFromGitHub,
+  buildDunePackage,
   ppxlib,
   version ? if lib.versionAtLeast ppxlib.version "0.36.0" then "1.1" else "1.0",
 }:
 
 buildDunePackage {
-  pname = "ocsigen-ppx-rpc";
   inherit version;
+  pname = "ocsigen-ppx-rpc";
 
   src = fetchFromGitHub {
     owner = "ocsigen";
     repo = "ocsigen-ppx-rpc";
     tag = version;
+
     hash =
       {
         "1.0" = "sha256:0qgasd89ayamgl2rfyxsipznmwa3pjllkyq9qg0g1f41h8ixpsfh";
@@ -25,8 +26,8 @@ buildDunePackage {
   propagatedBuildInputs = [ ppxlib ];
 
   meta = {
-    homepage = "https://github.com/ocsigen/ocsigen-ppx-rpc/";
     description = "Syntax for RPCs for Eliom and Ocsigen Start";
+    homepage = "https://github.com/ocsigen/ocsigen-ppx-rpc/";
     license = lib.licenses.lgpl21Only;
     maintainers = [ lib.maintainers.vbgl ];
   };

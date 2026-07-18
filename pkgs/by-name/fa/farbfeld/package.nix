@@ -2,10 +2,10 @@
   lib,
   stdenv,
   fetchurl,
-  makeWrapper,
   file,
-  libpng,
   libjpeg,
+  libpng,
+  makeWrapper,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -17,24 +17,26 @@ stdenv.mkDerivation (finalAttrs: {
     sha256 = "0ap7rcngffhdd57jw9j22arzkbrhwh0zpxhwbdfwl8fixlhmkpy7";
   };
 
+  nativeBuildInputs = [ makeWrapper ];
+
   buildInputs = [
     libpng
     libjpeg
   ];
-  nativeBuildInputs = [ makeWrapper ];
 
   makeFlags = [ "CC:=$(CC)" ];
 
-  installFlags = [ "PREFIX=$(out)" ];
   postInstall = ''
     wrapProgram "$out/bin/2ff" --prefix PATH : "${file}/bin"
   '';
+
+  installFlags = [ "PREFIX=$(out)" ];
 
   meta = {
     description = "Suckless image format with conversion tools";
     homepage = "https://tools.suckless.org/farbfeld/";
     license = lib.licenses.isc;
-    platforms = lib.platforms.unix;
     maintainers = with lib.maintainers; [ pSub ];
+    platforms = lib.platforms.unix;
   };
 })

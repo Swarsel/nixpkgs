@@ -1,22 +1,21 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   ibm-cloud-sdk-core,
   pytest-rerunfailures,
   pytestCheckHook,
   python-dateutil,
   python-dotenv,
   requests,
-  setuptools,
   responses,
+  setuptools,
   websocket-client,
 }:
 
 buildPythonPackage rec {
   pname = "ibm-watson";
   version = "11.2.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "watson-developer-cloud";
@@ -24,6 +23,13 @@ buildPythonPackage rec {
     tag = "v${version}";
     hash = "sha256-z+sGfYbPZcHQh6JGdVC2DDFHd0VIgC2GmvGvN+hrXU0=";
   };
+
+  nativeCheckInputs = [
+    pytest-rerunfailures
+    pytestCheckHook
+    python-dotenv
+    responses
+  ];
 
   build-system = [ setuptools ];
 
@@ -34,19 +40,13 @@ buildPythonPackage rec {
     websocket-client
   ];
 
-  nativeCheckInputs = [
-    pytest-rerunfailures
-    pytestCheckHook
-    python-dotenv
-    responses
-  ];
-
   # FileNotFoundError: [Errno 2] No such file or directory: './auth.json'
   disabledTestPaths = [
     "test/integration/test_assistant_v2.py"
     "test/integration/test_natural_language_understanding_v1.py"
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "ibm_watson" ];
 
   meta = {

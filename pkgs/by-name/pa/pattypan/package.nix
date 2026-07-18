@@ -3,13 +3,13 @@
   stdenv,
   fetchFromGitHub,
   ant,
-  jdk,
-  imagemagick,
-  makeWrapper,
-  wrapGAppsHook3,
-  makeDesktopItem,
   copyDesktopItems,
+  imagemagick,
+  jdk,
+  makeDesktopItem,
+  makeWrapper,
   stripJavaArchivesHook,
+  wrapGAppsHook3,
 }:
 let
   jdk' = jdk.override { enableJavaFX = true; };
@@ -34,8 +34,6 @@ stdenv.mkDerivation (finalAttrs: {
     stripJavaArchivesHook
     imagemagick
   ];
-
-  dontWrapGApps = true;
 
   env.JAVA_TOOL_OPTIONS = "-Dfile.encoding=UTF8"; # needed for jdk versions below jdk19
 
@@ -62,25 +60,29 @@ stdenv.mkDerivation (finalAttrs: {
 
   desktopItems = [
     (makeDesktopItem {
-      name = "pattypan";
-      exec = "pattypan";
-      icon = "pattypan";
-      desktopName = "Pattypan";
-      genericName = "An uploader for Wikimedia Commons";
       categories = [ "Utility" ];
+      desktopName = "Pattypan";
+      exec = "pattypan";
+      genericName = "An uploader for Wikimedia Commons";
+      icon = "pattypan";
+      name = "pattypan";
     })
   ];
+
+  dontWrapGApps = true;
 
   meta = {
     description = "Uploader for Wikimedia Commons";
     homepage = "https://commons.wikimedia.org/wiki/Commons:Pattypan";
     license = lib.licenses.mit;
-    mainProgram = "pattypan";
-    maintainers = with lib.maintainers; [ fee1-dead ];
-    platforms = lib.platforms.all;
+
     sourceProvenance = with lib.sourceTypes; [
       fromSource
       binaryBytecode # source bundles dependencies as jars
     ];
+
+    maintainers = with lib.maintainers; [ fee1-dead ];
+    platforms = lib.platforms.all;
+    mainProgram = "pattypan";
   };
 })

@@ -8,21 +8,26 @@ in
   options = {
     programs.systemtap = {
       enable = lib.mkOption {
-        type = lib.types.bool;
         default = false;
+
         description = ''
           Install {command}`systemtap` along with necessary kernel options.
         '';
+
+        type = lib.types.bool;
       };
     };
   };
+
   config = lib.mkIf cfg.enable {
-    system.requiredKernelConfig = with config.lib.kernelConfig; [
-      (isYes "DEBUG")
-    ];
     boot.kernel.features.debug = true;
+
     environment.systemPackages = [
       config.boot.kernelPackages.systemtap
+    ];
+
+    system.requiredKernelConfig = with config.lib.kernelConfig; [
+      (isYes "DEBUG")
     ];
   };
 

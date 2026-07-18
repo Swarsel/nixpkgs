@@ -1,13 +1,13 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
   hddtemp,
   hdparm,
+  installShellFiles,
+  makeWrapper,
+  rustPlatform,
   sdparm,
   smartmontools,
-  makeWrapper,
-  installShellFiles,
 }:
 rustPlatform.buildRustPackage (finalAttrs: {
   pname = "hddfancontrol";
@@ -20,12 +20,12 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-SQXzVUv+l14xUNJ7riXFwEq/T0HnL1Gmo6/bjU33Qz0=";
   };
 
-  cargoHash = "sha256-MJ9Cm/mzas8mapRF0vmwR6ivWTZevnhkxT5987dypD8=";
-
   nativeBuildInputs = [
     makeWrapper
     installShellFiles
   ];
+
+  cargoHash = "sha256-MJ9Cm/mzas8mapRF0vmwR6ivWTZevnhkxT5987dypD8=";
 
   postBuild = ''
     mkdir -p target/man target/shell-completions
@@ -61,14 +61,16 @@ rustPlatform.buildRustPackage (finalAttrs: {
 
   meta = {
     description = "Dynamically control fan speed according to hard drive temperature on Linux";
-    changelog = "https://github.com/desbma/hddfancontrol/releases/tag/${finalAttrs.version}";
     homepage = "https://github.com/desbma/hddfancontrol";
+    changelog = "https://github.com/desbma/hddfancontrol/releases/tag/${finalAttrs.version}";
     license = lib.licenses.gpl3Only;
+
     maintainers = with lib.maintainers; [
       benley
       jadewilk
     ];
-    mainProgram = "hddfancontrol";
+
     platforms = lib.platforms.linux;
+    mainProgram = "hddfancontrol";
   };
 })

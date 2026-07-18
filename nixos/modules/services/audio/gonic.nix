@@ -7,8 +7,8 @@
 let
   cfg = config.services.gonic;
   settingsFormat = pkgs.formats.keyValue {
-    mkKeyValue = lib.generators.mkKeyValueDefault { } " ";
     listsAsDuplicateKeys = true;
+    mkKeyValue = lib.generators.mkKeyValueDefault { } " ";
   };
   assertKey = key: {
     assertion = cfg.settings ? ${key};
@@ -20,26 +20,29 @@ in
     services.gonic = {
 
       enable = lib.mkEnableOption "Gonic music server";
-
       package = lib.mkPackageOption pkgs "gonic" { };
 
       settings = lib.mkOption rec {
-        type = settingsFormat.type;
         apply = lib.recursiveUpdate default;
+
         default = {
-          listen-addr = "127.0.0.1:4747";
           cache-path = "/var/cache/gonic";
+          listen-addr = "127.0.0.1:4747";
           tls-cert = null;
           tls-key = null;
         };
-        example = {
-          music-path = [ "/mnt/music" ];
-          podcast-path = "/mnt/podcasts";
-          playlists-path = "/mnt/playlists";
-        };
+
         description = ''
           Configuration for Gonic, see <https://github.com/sentriz/gonic#configuration-options> for supported values.
         '';
+
+        example = {
+          music-path = [ "/mnt/music" ];
+          playlists-path = "/mnt/playlists";
+          podcast-path = "/mnt/podcasts";
+        };
+
+        type = settingsFormat.type;
       };
 
     };
@@ -53,29 +56,16 @@ in
     ];
 
     systemd.services.gonic = {
-      description = "Gonic Media Server";
       after = [ "network.target" ];
-      wantedBy = [ "multi-user.target" ];
+      description = "Gonic Media Server";
+
       serviceConfig = {
-        ExecStart =
-          let
-            # these values are null by default but should not appear in the final config
-            filteredSettings = lib.filterAttrs (
-              n: v: !((n == "tls-cert" || n == "tls-key") && v == null)
-            ) cfg.settings;
-          in
-          "${lib.getExe cfg.package} -config-path ${settingsFormat.generate "gonic" filteredSettings}";
-        StateDirectory = "gonic";
-        CacheDirectory = "gonic";
-        WorkingDirectory = "/var/lib/gonic";
-        RuntimeDirectory = "gonic";
-        RootDirectory = "/run/gonic";
-        ReadWritePaths = "";
         BindPaths = [
           cfg.settings.playlists-path
           cfg.settings.podcast-path
           cfg.settings.cache-path
         ];
+
         BindReadOnlyPaths = [
           # gonic can access scrobbling services
           "-/etc/resolv.conf"
@@ -85,32 +75,55 @@ in
         ++ cfg.settings.music-path
         ++ lib.optional (cfg.settings.tls-cert != null) cfg.settings.tls-cert
         ++ lib.optional (cfg.settings.tls-key != null) cfg.settings.tls-key;
+
+        CacheDirectory = "gonic";
         CapabilityBoundingSet = "";
-        RestrictAddressFamilies = [
-          "AF_UNIX"
-          "AF_INET"
-          "AF_INET6"
-        ];
-        RestrictNamespaces = true;
+
+        ExecStart =
+          let
+            # these values are null by default but should not appear in the final config
+            filteredSettings = lib.filterAttrs (
+              n: v: !((n == "tls-cert" || n == "tls-key") && v == null)
+            ) cfg.settings;
+          in
+          "${lib.getExe cfg.package} -config-path ${settingsFormat.generate "gonic" filteredSettings}";
+
+        LockPersonality = true;
         PrivateDevices = true;
         PrivateTmp = true;
         PrivateUsers = true;
         ProtectClock = true;
         ProtectControlGroups = true;
         ProtectHome = true;
+        ProtectHostname = true;
         ProtectKernelLogs = true;
         ProtectKernelModules = true;
         ProtectKernelTunables = true;
+        ReadWritePaths = "";
+
+        RestrictAddressFamilies = [
+          "AF_UNIX"
+          "AF_INET"
+          "AF_INET6"
+        ];
+
+        RestrictNamespaces = true;
+        RestrictRealtime = true;
+        RootDirectory = "/run/gonic";
+        RuntimeDirectory = "gonic";
+        StateDirectory = "gonic";
         SystemCallArchitectures = "native";
+
         SystemCallFilter = [
           "@system-service"
           "~@privileged"
         ];
-        RestrictRealtime = true;
-        LockPersonality = true;
+
         UMask = "0066";
-        ProtectHostname = true;
+        WorkingDirectory = "/var/lib/gonic";
       };
+
+      wantedBy = [ "multi-user.target" ];
     };
   };
 

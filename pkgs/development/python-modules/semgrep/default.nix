@@ -1,20 +1,18 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  semgrep-core,
-
-  # check tools
-  git,
-  pytestCheckHook,
-
   # python runtime dependencies
   attrs,
   boltons,
+  buildPythonPackage,
   click,
   click-option-group,
   colorama,
   defusedxml,
+  # python check dependencies
+  flaky,
+  # check tools
+  git,
   glom,
   jsonschema,
   mcp,
@@ -25,25 +23,24 @@
   opentelemetry-sdk,
   packaging,
   peewee,
-  python-lsp-jsonrpc,
-  requests,
-  rich,
-  ruamel-yaml,
-  semantic-version,
-  tomli,
-  tqdm,
-  typing-extensions,
-  urllib3,
-  wcmatch,
-
-  # python check dependencies
-  flaky,
   pytest-asyncio,
   pytest-freezegun,
   pytest-mock,
   pytest-snapshot,
+  pytestCheckHook,
+  python-lsp-jsonrpc,
+  requests,
   requests-mock,
+  rich,
+  ruamel-yaml,
+  semantic-version,
+  semgrep-core,
+  tomli,
+  tqdm,
   types-freezegun,
+  typing-extensions,
+  urllib3,
+  wcmatch,
 }:
 
 # testing locally post build:
@@ -54,9 +51,9 @@ let
   semgrepBinPath = lib.makeBinPath [ semgrep-core ];
 in
 buildPythonPackage rec {
-  format = "setuptools";
-  pname = "semgrep";
   inherit (common) version;
+  pname = "semgrep";
+
   src = fetchFromGitHub {
     owner = "semgrep";
     repo = "semgrep";
@@ -84,11 +81,44 @@ buildPythonPackage rec {
   # this means we can share a copy of semgrep-core and avoid an issue where it
   # copies the binary but doesn't retain the executable bit
   env.SEMGREP_SKIP_BIN = true;
+  doCheck = true;
 
-  pythonRelaxDeps = [
-    "boltons"
-    "glom"
+  nativeCheckInputs = [
+    git
+    pytestCheckHook
+
+    flaky
+    pytest-asyncio
+    pytest-freezegun
+    pytest-mock
+    pytest-snapshot
+    requests-mock
+    types-freezegun
   ];
+
+  preCheck = ''
+    # tests need a home directory
+    export HOME="$(mktemp -d)"
+
+    # tests need access to `semgrep-core`
+    export OLD_PATH="$PATH"
+    export PATH="$PATH:${semgrepBinPath}"
+  '';
+
+  postCheck = ''
+    export PATH="$OLD_PATH"
+    unset OLD_PATH
+  '';
+
+  postInstall = ''
+    chmod +x $out/bin/{,py}semgrep
+  '';
+
+  # since we stop cli/setup.py from finding semgrep-core and copying it into
+  # the result we need to provide it on the PATH
+  preFixup = ''
+    makeWrapperArgs+=(--prefix PATH : ${semgrepBinPath})
+  '';
 
   dependencies = [
     attrs
@@ -119,21 +149,6 @@ buildPythonPackage rec {
     wcmatch
   ];
 
-  doCheck = true;
-
-  nativeCheckInputs = [
-    git
-    pytestCheckHook
-
-    flaky
-    pytest-asyncio
-    pytest-freezegun
-    pytest-mock
-    pytest-snapshot
-    requests-mock
-    types-freezegun
-  ];
-
   disabledTestPaths = [
     "tests/default/e2e"
     "tests/default/e2e-other"
@@ -154,29 +169,12 @@ buildPythonPackage rec {
     "TestConfigLoaderForProducts"
   ];
 
-  preCheck = ''
-    # tests need a home directory
-    export HOME="$(mktemp -d)"
+  format = "setuptools";
 
-    # tests need access to `semgrep-core`
-    export OLD_PATH="$PATH"
-    export PATH="$PATH:${semgrepBinPath}"
-  '';
-
-  postCheck = ''
-    export PATH="$OLD_PATH"
-    unset OLD_PATH
-  '';
-
-  # since we stop cli/setup.py from finding semgrep-core and copying it into
-  # the result we need to provide it on the PATH
-  preFixup = ''
-    makeWrapperArgs+=(--prefix PATH : ${semgrepBinPath})
-  '';
-
-  postInstall = ''
-    chmod +x $out/bin/{,py}semgrep
-  '';
+  pythonRelaxDeps = [
+    "boltons"
+    "glom"
+  ];
 
   passthru = {
     inherit common semgrep-core;
@@ -185,7 +183,7 @@ buildPythonPackage rec {
   };
 
   meta = common.meta // {
-    description = common.meta.description + " - cli";
     inherit (semgrep-core.meta) platforms;
+    description = common.meta.description + " - cli";
   };
 }

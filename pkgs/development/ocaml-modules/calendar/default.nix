@@ -1,14 +1,13 @@
 {
   lib,
-  buildDunePackage,
   fetchFromGitHub,
+  buildDunePackage,
   re,
 }:
 
 buildDunePackage (finalAttrs: {
   pname = "calendar";
   version = "3.0.0";
-  minimalOCamlVersion = "4.03";
 
   src = fetchFromGitHub {
     owner = "ocaml-community";
@@ -18,6 +17,7 @@ buildDunePackage (finalAttrs: {
   };
 
   propagatedBuildInputs = [ re ];
+  minimalOCamlVersion = "4.03";
 
   meta = {
     inherit (finalAttrs.src.meta) homepage;

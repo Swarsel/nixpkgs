@@ -1,10 +1,8 @@
 {
   lib,
-  buildGoModule,
-  fetchFromGitHub,
   stdenv,
-  enableWayland ? stdenv.hostPlatform.isLinux,
-  enableX11 ? false,
+  fetchFromGitHub,
+  buildGoModule,
   libpng,
   libx11,
   libxi,
@@ -16,6 +14,8 @@
   xkbcomp,
   xkbutils,
   xsel,
+  enableWayland ? stdenv.hostPlatform.isLinux,
+  enableX11 ? false,
 }:
 
 assert lib.assertMsg (
@@ -34,23 +34,6 @@ buildGoModule (finalAttrs: {
   };
 
   strictDeps = true;
-  __structuredAttrs = true;
-
-  vendorHash = "sha256-LxwST4Zjxq6Fwc47VeOdv19J3g/DHZ7Fywp2ZvVR06I=";
-
-  tags =
-    if stdenv.hostPlatform.isDarwin then
-      [ "darwin" ]
-    else if enableWayland then
-      [ "wayland" ]
-    else if enableX11 then
-      [ "linux" ]
-    else
-      [ ];
-
-  env = {
-    CGO_ENABLED = if enableX11 || stdenv.hostPlatform.isDarwin then "1" else "0";
-  };
 
   nativeBuildInputs = lib.optionals enableX11 [
     pkg-config
@@ -69,17 +52,36 @@ buildGoModule (finalAttrs: {
     xsel
   ];
 
+  vendorHash = "sha256-LxwST4Zjxq6Fwc47VeOdv19J3g/DHZ7Fywp2ZvVR06I=";
+
+  env = {
+    CGO_ENABLED = if enableX11 || stdenv.hostPlatform.isDarwin then "1" else "0";
+  };
+
+  __structuredAttrs = true;
   proxyVendor = true;
 
+  tags =
+    if stdenv.hostPlatform.isDarwin then
+      [ "darwin" ]
+    else if enableWayland then
+      [ "wayland" ]
+    else if enableX11 then
+      [ "linux" ]
+    else
+      [ ];
+
   meta = {
-    changelog = "https://github.com/savedra1/clipse/blob/main/CHANGELOG.md";
     description = "Useful clipboard manager TUI for Unix";
     homepage = "https://github.com/savedra1/clipse";
+    changelog = "https://github.com/savedra1/clipse/blob/main/CHANGELOG.md";
     license = lib.licenses.mit;
-    mainProgram = "clipse";
+
     maintainers = with lib.maintainers; [
       magicquark
       savedra1
     ];
+
+    mainProgram = "clipse";
   };
 })

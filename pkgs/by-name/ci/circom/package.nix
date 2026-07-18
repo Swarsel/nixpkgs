@@ -1,7 +1,7 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -20,10 +20,10 @@ rustPlatform.buildRustPackage (finalAttrs: {
 
   meta = {
     description = "zkSnark circuit compiler";
-    mainProgram = "circom";
     homepage = "https://github.com/iden3/circom";
     changelog = "https://github.com/iden3/circom/blob/${finalAttrs.src.rev}/RELEASES.md";
     license = lib.licenses.gpl3Only;
     maintainers = [ ];
+    mainProgram = "circom";
   };
 })

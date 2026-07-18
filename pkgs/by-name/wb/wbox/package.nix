@@ -8,14 +8,14 @@ stdenv.mkDerivation (finalAttrs: {
   pname = "wbox";
   version = "5";
 
-  installPhase = ''
-    install -vD wbox "$out/bin/wbox"
-  '';
-
   src = fetchurl {
     url = "http://www.hping.org/wbox/wbox-${finalAttrs.version}.tar.gz";
     sha256 = "06daxwbysppvbh1mwprw8fgsp6mbd3kqj7a978w7ivn8hdgdi28m";
   };
+
+  installPhase = ''
+    install -vD wbox "$out/bin/wbox"
+  '';
 
   meta = {
     description = "Simple HTTP benchmarking tool";

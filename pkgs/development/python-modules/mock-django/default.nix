@@ -1,17 +1,16 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
-  wheel,
+  buildPythonPackage,
   django,
   mock,
+  setuptools,
+  wheel,
 }:
 
 buildPythonPackage {
   pname = "mock-django";
   version = "0.6.10";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "dcramer";
@@ -19,6 +18,9 @@ buildPythonPackage {
     rev = "1168d3255e0d67fbf74a9c71feaccbdafef59d21";
     hash = "sha256-sjrRxu2754sAaXZRlAfBhdLFHqiRlqPHVPQv4B6oArw=";
   };
+
+  # tests are based on nose, which is not supported anymore
+  doCheck = false;
 
   build-system = [
     setuptools
@@ -30,8 +32,7 @@ buildPythonPackage {
     mock
   ];
 
-  # tests are based on nose, which is not supported anymore
-  doCheck = false;
+  pyproject = true;
 
   meta = {
     description = "Simple library for mocking certain Django behavior, such as the ORM";

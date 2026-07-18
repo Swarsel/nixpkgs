@@ -14,19 +14,20 @@
 buildPythonPackage (finalAttrs: {
   pname = "google-cloud-texttospeech";
   version = "2.37.0";
-  pyproject = true;
 
   src = fetchPypi {
-    pname = "google_cloud_texttospeech";
     inherit (finalAttrs) version;
     hash = "sha256-23JjgvOTzrazYALDWr1itTxNjhf8LzHfiwf9D6u+T4s=";
+    pname = "google_cloud_texttospeech";
   };
 
-  build-system = [ setuptools ];
-
-  pythonRelaxDeps = [
-    "protobuf"
+  nativeCheckInputs = [
+    mock
+    pytest-asyncio
+    pytestCheckHook
   ];
+
+  build-system = [ setuptools ];
 
   dependencies = [
     google-api-core
@@ -35,22 +36,22 @@ buildPythonPackage (finalAttrs: {
   ]
   ++ google-api-core.optional-dependencies.grpc;
 
-  nativeCheckInputs = [
-    mock
-    pytest-asyncio
-    pytestCheckHook
-  ];
-
   disabledTests = [
     # Tests that require credentials
     "test_list_voices"
     "test_synthesize_speech"
   ];
 
+  pyproject = true;
+
   pythonImportsCheck = [
     "google.cloud.texttospeech"
     "google.cloud.texttospeech_v1"
     "google.cloud.texttospeech_v1beta1"
+  ];
+
+  pythonRelaxDeps = [
+    "protobuf"
   ];
 
   meta = {

@@ -2,11 +2,11 @@
   lib,
   stdenv,
   fetchFromGitHub,
+  arrow-cpp,
   cmake,
+  fcft,
   # passthru.tests
   tmux,
-  fcft,
-  arrow-cpp,
   enableStatic ? stdenv.hostPlatform.isStatic,
 }:
 
@@ -38,9 +38,11 @@ stdenv.mkDerivation (finalAttrs: {
     description = "Clean C library for processing UTF-8 Unicode data";
     homepage = "https://juliastrings.github.io/utf8proc/";
     license = lib.licenses.mit;
-    platforms = lib.platforms.all;
+
     maintainers = [
       lib.maintainers.sternenseemann
     ];
+
+    platforms = lib.platforms.all;
   };
 })

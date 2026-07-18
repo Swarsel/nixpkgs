@@ -1,16 +1,16 @@
 {
   lib,
   fetchFromGitHub,
-  rustPlatform,
-  pkg-config,
-  dbus,
-  pango,
   cairo,
-  libxscrnsaver,
-  libxrandr,
-  libxi,
-  libxcursor,
+  dbus,
   libx11,
+  libxcursor,
+  libxi,
+  libxrandr,
+  libxscrnsaver,
+  pango,
+  pkg-config,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -24,11 +24,9 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-AWIV/+vVwDZECZ4lFMSFyuyUKJc/gb72PiBJv6lbhnc=";
   };
 
-  cargoHash = "sha256-xE6r8l3d9WAXf4DsGbhEiaeMPs02kXY2dG9dk0/7flQ=";
-
   strictDeps = true;
-
   nativeBuildInputs = [ pkg-config ];
+
   buildInputs = [
     dbus
     pango
@@ -39,6 +37,8 @@ rustPlatform.buildRustPackage (finalAttrs: {
     libx11
     libxi
   ];
+
+  cargoHash = "sha256-xE6r8l3d9WAXf4DsGbhEiaeMPs02kXY2dG9dk0/7flQ=";
 
   postInstall = ''
     mkdir -p $out/usr/lib/systemd/system

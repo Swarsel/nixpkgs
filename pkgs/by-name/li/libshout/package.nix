@@ -3,10 +3,10 @@
   stdenv,
   fetchurl,
   fetchpatch,
-  pkg-config,
-  openssl,
-  libvorbis,
   libtheora,
+  libvorbis,
+  openssl,
+  pkg-config,
   speex,
 }:
 
@@ -21,33 +21,35 @@ stdenv.mkDerivation (finalAttrs: {
     sha256 = "sha256-OcvU8O/f3cl1XYghfkf48tcQj6dn+dWKK6JqFtj3yRA=";
   };
 
-  patches = [
-    # Fixes building libshout with clang. Can be dropped once the following MR is merged:
-    # https://gitlab.xiph.org/xiph/icecast-libshout/-/merge_requests/4.
-    (fetchpatch {
-      url = "https://gitlab.xiph.org/xiph/icecast-libshout/-/commit/600fa105a799986efcccddfedfdfd3e9a1988cd0.patch";
-      hash = "sha256-XjogfcQJBPZX9MPAbNJyXaFZNekL1pabvtTT7N+cz+s=";
-    })
-    (fetchpatch {
-      url = "https://gitlab.xiph.org/xiph/icecast-libshout/-/commit/8ab2de318d55c9d0987ffae7d9b94b365af732c1.patch";
-      hash = "sha256-0+Wp2Xu59ESCJfoDcwAJHuAJyzMsaBe7f8Js3/ren2g=";
-    })
-  ];
-
   outputs = [
     "out"
     "dev"
     "doc"
   ];
 
-  depsBuildBuild = [ pkg-config ];
+  patches = [
+    # Fixes building libshout with clang. Can be dropped once the following MR is merged:
+    # https://gitlab.xiph.org/xiph/icecast-libshout/-/merge_requests/4.
+    (fetchpatch {
+      hash = "sha256-XjogfcQJBPZX9MPAbNJyXaFZNekL1pabvtTT7N+cz+s=";
+      url = "https://gitlab.xiph.org/xiph/icecast-libshout/-/commit/600fa105a799986efcccddfedfdfd3e9a1988cd0.patch";
+    })
+    (fetchpatch {
+      hash = "sha256-0+Wp2Xu59ESCJfoDcwAJHuAJyzMsaBe7f8Js3/ren2g=";
+      url = "https://gitlab.xiph.org/xiph/icecast-libshout/-/commit/8ab2de318d55c9d0987ffae7d9b94b365af732c1.patch";
+    })
+  ];
+
   nativeBuildInputs = [ pkg-config ];
+
   propagatedBuildInputs = [
     openssl
     libvorbis
     libtheora
     speex
   ];
+
+  depsBuildBuild = [ pkg-config ];
 
   meta = {
     description = "Icecast C language bindings";
@@ -61,7 +63,7 @@ stdenv.mkDerivation (finalAttrs: {
     homepage = "https://www.icecast.org";
     license = lib.licenses.gpl2;
     maintainers = with lib.maintainers; [ jcumming ];
-    mainProgram = "shout";
     platforms = with lib.platforms; unix;
+    mainProgram = "shout";
   };
 })

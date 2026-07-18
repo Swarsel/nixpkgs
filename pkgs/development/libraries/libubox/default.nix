@@ -1,14 +1,14 @@
 {
-  stdenv,
   lib,
-  fetchgit,
+  stdenv,
   cmake,
-  pkg-config,
+  fetchgit,
   json_c,
-  with_lua ? false,
   lua5_1,
-  with_ustream_ssl ? false,
+  pkg-config,
   ustream-ssl,
+  with_lua ? false,
+  with_ustream_ssl ? false,
 }:
 
 stdenv.mkDerivation {
@@ -21,20 +21,27 @@ stdenv.mkDerivation {
     hash = "sha256-SBw83zT/tMvmndo4bZ19sLWc493G2jefMhrvqjQ6WJc=";
   };
 
-  cmakeFlags = [
-    "-DBUILD_EXAMPLES=OFF"
-    (if with_lua then "-DLUAPATH=${placeholder "out"}/lib/lua" else "-DBUILD_LUA=OFF")
-  ];
-
   nativeBuildInputs = [
     cmake
     pkg-config
   ];
+
   buildInputs = [
     json_c
   ]
   ++ lib.optional with_lua lua5_1
   ++ lib.optional with_ustream_ssl ustream-ssl;
+
+  cmakeFlags = [
+    "-DBUILD_EXAMPLES=OFF"
+    (if with_lua then "-DLUAPATH=${placeholder "out"}/lib/lua" else "-DBUILD_LUA=OFF")
+  ];
+
+  env.NIX_CFLAGS_COMPILE = toString (
+    lib.optionals (stdenv.hostPlatform.isDarwin && stdenv.hostPlatform.isx86_64) [
+      "-Wno-error=gnu-folding-constant"
+    ]
+  );
 
   postInstall = lib.optionalString with_ustream_ssl ''
     for fin in $(find ${ustream-ssl} -type f); do
@@ -43,22 +50,18 @@ stdenv.mkDerivation {
     done
   '';
 
-  env.NIX_CFLAGS_COMPILE = toString (
-    lib.optionals (stdenv.hostPlatform.isDarwin && stdenv.hostPlatform.isx86_64) [
-      "-Wno-error=gnu-folding-constant"
-    ]
-  );
-
   meta = {
     description = "C utility functions for OpenWrt";
     homepage = "https://git.openwrt.org/?p=project/libubox.git;a=summary";
     license = lib.licenses.isc;
+
     maintainers = with lib.maintainers; [
       fpletz
       mkg20001
       dvn0
     ];
-    mainProgram = "jshn";
+
     platforms = lib.platforms.all;
+    mainProgram = "jshn";
   };
 }

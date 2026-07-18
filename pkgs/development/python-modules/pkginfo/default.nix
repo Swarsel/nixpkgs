@@ -2,23 +2,21 @@
   lib,
   buildPythonPackage,
   fetchPypi,
-  setuptools,
   pytestCheckHook,
+  setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "pkginfo";
   version = "1.12.1.2";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
     hash = "sha256-XNlXgkrDbxQCYJZOujxr5kQqg1m4xI9K35AhDzOgS3s=";
   };
 
-  build-system = [ setuptools ];
-
   nativeCheckInputs = [ pytestCheckHook ];
+  build-system = [ setuptools ];
 
   disabledTests = [
     # wheel metadata version mismatch 2.1 vs 2.2
@@ -29,13 +27,12 @@ buildPythonPackage rec {
     "test_installed_ctor_w_package"
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "pkginfo" ];
 
   meta = {
-    changelog = "https://pypi.org/project/pkginfo/#pkginfo-changelog";
     description = "Query metadatdata from sdists, bdists or installed packages";
-    mainProgram = "pkginfo";
-    homepage = "https://code.launchpad.net/~tseaver/pkginfo";
+
     longDescription = ''
       This package provides an API for querying the distutils metadata
       written in the PKG-INFO file inside a source distriubtion (an sdist)
@@ -44,7 +41,11 @@ buildPythonPackage rec {
       *.egg-info stored in a “development checkout” (e.g, created by running
       setup.py develop).
     '';
+
+    homepage = "https://code.launchpad.net/~tseaver/pkginfo";
+    changelog = "https://pypi.org/project/pkginfo/#pkginfo-changelog";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ dotlambda ];
+    mainProgram = "pkginfo";
   };
 }

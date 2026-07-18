@@ -1,43 +1,37 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # build-system
-  setuptools,
-  setuptools-scm,
-
+  buildPythonPackage,
+  # tests
+  cloudpickle,
+  einops,
+  flaxlib,
   # dependencies
   jax,
+  keras,
   msgpack,
   numpy,
   optax,
   orbax-checkpoint,
+  pytest-xdist,
+  pytestCheckHook,
   pyyaml,
   rich,
-  tensorstore,
-  typing-extensions,
-
-  # tests
-  cloudpickle,
-  keras,
-  einops,
-  flaxlib,
-  pytestCheckHook,
-  pytest-xdist,
+  # build-system
+  setuptools,
+  setuptools-scm,
   sphinx,
   tensorflow,
-  treescope,
-
-  writeScript,
+  tensorstore,
   tomlq,
+  treescope,
+  typing-extensions,
+  writeScript,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "flax";
   version = "0.12.7";
-  pyproject = true;
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "google";
@@ -53,6 +47,18 @@ buildPythonPackage (finalAttrs: {
         "with mesh:" \
         "with jax.set_mesh(mesh):"
   '';
+
+  nativeCheckInputs = [
+    cloudpickle
+    keras
+    einops
+    pytestCheckHook
+    pytest-xdist
+    sphinx
+    tensorflow
+  ];
+
+  __structuredAttrs = true;
 
   build-system = [
     setuptools
@@ -71,18 +77,6 @@ buildPythonPackage (finalAttrs: {
     tensorstore
     treescope
     typing-extensions
-  ];
-
-  pythonImportsCheck = [ "flax" ];
-
-  nativeCheckInputs = [
-    cloudpickle
-    keras
-    einops
-    pytestCheckHook
-    pytest-xdist
-    sphinx
-    tensorflow
   ];
 
   disabledTestPaths = [
@@ -117,6 +111,9 @@ buildPythonPackage (finalAttrs: {
     # AttributeError: 'MLP' object has no attribute 'scope
     "test_transforms"
   ];
+
+  pyproject = true;
+  pythonImportsCheck = [ "flax" ];
 
   passthru = {
     updateScript = writeScript "update.sh" ''

@@ -1,22 +1,18 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
+  buildPythonPackage,
   # build-system
   poetry-core,
-
-  # dependencies
-  typing-extensions,
-
   # tests
   pytestCheckHook,
+  # dependencies
+  typing-extensions,
 }:
 
 buildPythonPackage rec {
   pname = "dawg2-python";
   version = "0.9.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "pymorphy2-fork";
@@ -24,6 +20,10 @@ buildPythonPackage rec {
     tag = version;
     hash = "sha256-45k7QmozbMt7qYdDFRSL5JDeEtqdMHBoEXXQkLDoGfE=";
   };
+
+  nativeCheckInputs = [
+    pytestCheckHook
+  ];
 
   build-system = [
     poetry-core
@@ -33,9 +33,7 @@ buildPythonPackage rec {
     typing-extensions
   ];
 
-  nativeCheckInputs = [
-    pytestCheckHook
-  ];
+  pyproject = true;
 
   pythonImportsCheck = [
     "dawg_python"

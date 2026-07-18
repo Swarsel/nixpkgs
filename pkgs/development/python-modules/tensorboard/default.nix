@@ -1,45 +1,62 @@
 {
   lib,
-  fetchpatch,
-  fetchPypi,
-  buildPythonPackage,
-  python,
-
   # dependencies
   absl-py,
+  buildPythonPackage,
+  fetchPypi,
+  fetchpatch,
   grpcio,
   markdown,
   numpy,
   packaging,
   pillow,
   protobuf,
+  python,
   setuptools,
-  tensorboard-data-server,
-  werkzeug,
   standard-imghdr,
-
+  tensorboard-data-server,
   versionCheckHook,
+  werkzeug,
 }:
 
 buildPythonPackage rec {
   pname = "tensorboard";
   version = "2.20.0";
-  format = "wheel";
 
   # tensorflow/tensorboard is built from a downloaded wheel, because
   # https://github.com/tensorflow/tensorboard/issues/719 blocks buildBazelPackage.
   src = fetchPypi {
     inherit pname version;
-    format = "wheel";
-    dist = "py3";
-    python = "py3";
     hash = "sha256-ncn5eMuEwHI6z5o0XZbBhPApPRjxZruNWe4Jjmz6q6Y=";
+    dist = "py3";
+    format = "wheel";
+    python = "py3";
   };
 
-  pythonRelaxDeps = [
-    "google-auth-oauthlib"
-    "protobuf"
+  nativeCheckInputs = [
+    versionCheckHook
   ];
+
+  postInstall =
+    let
+      patch = fetchpatch {
+        excludes = [
+          "tensorboard/BUILD"
+          "tensorboard/data/BUILD"
+          "tensorboard/default_test.py"
+          "tensorboard/version_test.py"
+        ];
+
+        hash = "sha256-+jaXI4fVQP4mOg6y94KPMMCg3XuHV/gBUDNsp3ogS6c=";
+        name = "remove-runtime-pkg_resources-dependency.patch";
+        url = "https://github.com/tensorflow/tensorboard/commit/29f809f4737489912612635d9079a61f8e570bb8.patch";
+      };
+    in
+    ''
+      pushd $out/${python.sitePackages}
+      patch -p1 < ${patch}
+      popd
+    '';
 
   dependencies = [
     absl-py
@@ -59,25 +76,7 @@ buildPythonPackage rec {
     standard-imghdr
   ];
 
-  postInstall =
-    let
-      patch = fetchpatch {
-        name = "remove-runtime-pkg_resources-dependency.patch";
-        url = "https://github.com/tensorflow/tensorboard/commit/29f809f4737489912612635d9079a61f8e570bb8.patch";
-        excludes = [
-          "tensorboard/BUILD"
-          "tensorboard/data/BUILD"
-          "tensorboard/default_test.py"
-          "tensorboard/version_test.py"
-        ];
-        hash = "sha256-+jaXI4fVQP4mOg6y94KPMMCg3XuHV/gBUDNsp3ogS6c=";
-      };
-    in
-    ''
-      pushd $out/${python.sitePackages}
-      patch -p1 < ${patch}
-      popd
-    '';
+  format = "wheel";
 
   pythonImportsCheck = [
     "tensorboard"
@@ -89,17 +88,18 @@ buildPythonPackage rec {
     "tensorboard.util"
   ];
 
-  nativeCheckInputs = [
-    versionCheckHook
+  pythonRelaxDeps = [
+    "google-auth-oauthlib"
+    "protobuf"
   ];
 
   meta = {
-    changelog = "https://github.com/tensorflow/tensorboard/blob/${version}/RELEASE.md";
     description = "TensorFlow's Visualization Toolkit";
     homepage = "https://www.tensorflow.org/";
+    changelog = "https://github.com/tensorflow/tensorboard/blob/${version}/RELEASE.md";
     license = lib.licenses.asl20;
-    mainProgram = "tensorboard";
-    maintainers = [ ];
     sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
+    maintainers = [ ];
+    mainProgram = "tensorboard";
   };
 }

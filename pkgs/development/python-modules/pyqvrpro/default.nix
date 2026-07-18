@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   pytest-vcr,
   pytestCheckHook,
   pyyaml,
@@ -12,7 +12,6 @@
 buildPythonPackage rec {
   pname = "pyqvrpro";
   version = "0.52";
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "oblogic7";
@@ -32,6 +31,7 @@ buildPythonPackage rec {
     pytestCheckHook
   ];
 
+  format = "setuptools";
   pythonImportsCheck = [ "pyqvrpro" ];
 
   meta = {

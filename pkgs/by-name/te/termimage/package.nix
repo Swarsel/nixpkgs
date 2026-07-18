@@ -1,9 +1,9 @@
 {
   lib,
-  rustPlatform,
   fetchCrate,
   installShellFiles,
   ronn,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -15,13 +15,12 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-1FOPe466GqQfiIpsQT9DJn+FupI2vy9b4+7p31ceY6M=";
   };
 
-  cargoHash = "sha256-SIPak7tl/fIH6WzvAl8bjhclZqQ6imC/zdxCnBnEsbk=";
-
   nativeBuildInputs = [
     installShellFiles
     ronn
   ];
 
+  cargoHash = "sha256-SIPak7tl/fIH6WzvAl8bjhclZqQ6imC/zdxCnBnEsbk=";
   env.RUSTFLAGS = "-Adangerous_implicit_autorefs";
 
   postInstall = ''

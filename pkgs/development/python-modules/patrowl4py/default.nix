@@ -1,10 +1,10 @@
 {
   lib,
+  fetchFromGitHub,
   attrs,
   buildPythonPackage,
   certifi,
   chardet,
-  fetchFromGitHub,
   idna,
   iniconfig,
   more-itertools,
@@ -23,7 +23,6 @@
 buildPythonPackage rec {
   pname = "patrowl4py";
   version = "1.1.9";
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "Patrowl";
@@ -53,7 +52,7 @@ buildPythonPackage rec {
 
   # Tests require network access
   doCheck = false;
-
+  format = "setuptools";
   pythonImportsCheck = [ "patrowl4py" ];
 
   meta = {

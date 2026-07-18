@@ -1,16 +1,16 @@
 {
   lib,
   fetchurl,
-  fetchpatch,
   buildDunePackage,
-  replaceVars,
+  csexp,
   dot-merlin-reader,
   dune_2,
-  yojson,
-  csexp,
+  fetchpatch,
+  menhirSdk,
+  replaceVars,
   result,
   seq,
-  menhirSdk,
+  yojson,
 }:
 
 buildDunePackage rec {
@@ -22,8 +22,6 @@ buildDunePackage rec {
     sha256 = "sha256-wmBGNwXL3BduF4o1sUXtAOUHJ4xmMvsWAxl/QdNj/28=";
   };
 
-  minimalOCamlVersion = "4.02.3";
-
   patches = [
     (replaceVars ./fix-paths.patch {
       dot-merlin-reader = "${dot-merlin-reader}/bin/dot-merlin-reader";
@@ -31,9 +29,9 @@ buildDunePackage rec {
     })
     # https://github.com/ocaml/merlin/pull/1798
     (fetchpatch {
+      hash = "sha256-HmdTISE/s45C5cwLgsCHNUW6OAPSsvQ/GcJE6VDEobs=";
       name = "vim-python-12-syntax-warning-fix.patch";
       url = "https://github.com/ocaml/merlin/commit/9e0c47b0d5fd0c4edc37c4c7ce927b155877557d.patch";
-      hash = "sha256-HmdTISE/s45C5cwLgsCHNUW6OAPSsvQ/GcJE6VDEobs=";
     })
   ];
 
@@ -47,6 +45,8 @@ buildDunePackage rec {
     seq
     menhirSdk
   ];
+
+  minimalOCamlVersion = "4.02.3";
 
   meta = {
     description = "Editor-independent tool to ease the development of programs in OCaml";

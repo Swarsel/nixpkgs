@@ -1,10 +1,10 @@
 {
+  lib,
+  fetchFromGitHub,
   alcobar,
   buildDunePackage,
   dune-build-info,
-  fetchFromGitHub,
   lambdasoup,
-  lib,
   logs,
   mdx,
   memtrace,
@@ -15,8 +15,6 @@
 buildDunePackage (finalAttrs: {
   pname = "cascade";
   version = "0-unstable-2026-06-26";
-  minimalOCamlVersion = "5.2";
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "samoht";
@@ -25,23 +23,28 @@ buildDunePackage (finalAttrs: {
     hash = "sha256-6g8UKsXdR0PxihrOiMVC36q7+bomMByPDbmuISL7h4U=";
   };
 
+  buildInputs = [
+    lambdasoup
+    memtrace
+  ];
+
   propagatedBuildInputs = [
     dune-build-info
     logs
     psq
     uutf
   ];
-  buildInputs = [
-    lambdasoup
-    memtrace
-  ];
 
+  doCheck = true;
   nativeCheckInputs = [ mdx.bin ];
+
   checkInputs = [
     (mdx.override { inherit logs; })
     alcobar
   ];
-  doCheck = true;
+
+  __structuredAttrs = true;
+  minimalOCamlVersion = "5.2";
 
   meta = {
     description = "CSS generation and manipulation library for OCaml";

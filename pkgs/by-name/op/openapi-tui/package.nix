@@ -1,10 +1,10 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
-  pkg-config,
   oniguruma,
   openssl,
+  pkg-config,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -18,19 +18,20 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-rC0lfWZpiiAAShyVDqr1gKTeWmWC+gVp4UmL96Y81mE=";
   };
 
-  cargoHash = "sha256-911ARjYvTNqLVVUWxATbtiKXOC9AqalFvDvp/qAef1Q=";
-
-  # Do not vendor Oniguruma
-  env = {
-    RUSTONIG_SYSTEM_LIBONIG = true;
-    OPENSSL_NO_VENDOR = true;
-  };
-
   nativeBuildInputs = [ pkg-config ];
+
   buildInputs = [
     openssl
     oniguruma
   ];
+
+  cargoHash = "sha256-911ARjYvTNqLVVUWxATbtiKXOC9AqalFvDvp/qAef1Q=";
+
+  # Do not vendor Oniguruma
+  env = {
+    OPENSSL_NO_VENDOR = true;
+    RUSTONIG_SYSTEM_LIBONIG = true;
+  };
 
   meta = {
     description = "Terminal UI to list, browse and run APIs defined with openapi spec";

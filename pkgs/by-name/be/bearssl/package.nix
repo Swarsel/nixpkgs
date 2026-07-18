@@ -20,8 +20,6 @@ stdenv.mkDerivation (finalAttrs: {
     "out"
   ];
 
-  enableParallelBuilding = true;
-
   makeFlags = [
     "AR=${stdenv.cc.targetPrefix}ar"
     "CC=${stdenv.cc.targetPrefix}cc"
@@ -40,9 +38,11 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  enableParallelBuilding = true;
+
   meta = {
-    homepage = "https://www.bearssl.org/";
     description = "Implementation of the SSL/TLS protocol written in C";
+
     longDescription = ''
       BearSSL is an implementation of the SSL/TLS protocol (RFC 5246)
       written in C. It aims at offering the following features:
@@ -64,9 +64,11 @@ stdenv.mkDerivation (finalAttrs: {
         allow extra algorithm implementations to be added afterwards,
         possibly from third parties.
     '';
+
+    homepage = "https://www.bearssl.org/";
     license = lib.licenses.mit;
-    platforms = lib.platforms.all;
     maintainers = [ ];
+    platforms = lib.platforms.all;
   };
 
 })

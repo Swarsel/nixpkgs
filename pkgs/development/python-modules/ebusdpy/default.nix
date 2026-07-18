@@ -8,18 +8,16 @@
 buildPythonPackage rec {
   pname = "ebusdpy";
   version = "0.0.17";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
     hash = "sha256-t6O/fOBrJuDYpCVnkL+hUzyqMoGKFj5UYNoD6ExikNM=";
   };
 
-  build-system = [ setuptools ];
-
   # Package has no tests
   doCheck = false;
-
+  build-system = [ setuptools ];
+  pyproject = true;
   pythonImportsCheck = [ "ebusdpy" ];
 
   meta = {

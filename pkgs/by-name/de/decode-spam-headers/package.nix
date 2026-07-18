@@ -16,11 +16,18 @@ python3Packages.buildPythonApplication rec {
     sha256 = "sha256-gBDkvlZCndQjochn6TZtM/Lanza64LqMjNnLjn+pPR4=";
   };
 
-  pyproject = false;
-
   outputs = [
     "out"
     "doc"
+  ];
+
+  propagatedBuildInputs = [
+    python3Packages.python-dateutil
+    python3Packages.tldextract
+    python3Packages.packaging
+    python3Packages.dnspython
+    python3Packages.requests
+    python3Packages.colorama
   ];
 
   installPhase = ''
@@ -33,19 +40,11 @@ python3Packages.buildPythonApplication rec {
       $doc/share/doc/${pname}
   '';
 
-  propagatedBuildInputs = [
-    python3Packages.python-dateutil
-    python3Packages.tldextract
-    python3Packages.packaging
-    python3Packages.dnspython
-    python3Packages.requests
-    python3Packages.colorama
-  ];
+  pyproject = false;
 
   meta = {
-    homepage = "https://github.com/mgeeky/decode-spam-headers/";
     description = "Script that helps you understand why your E-Mail ended up in Spam";
-    mainProgram = "decode-spam-headers";
+
     longDescription = ''
       Whether you are trying to understand why a specific e-mail ended up in
       SPAM/Junk for your daily Administrative duties or for your Red-Team
@@ -61,7 +60,10 @@ python3Packages.buildPythonApplication rec {
       Resulting output will contain useful information on why this e-mail might
       have been blocked.
     '';
+
+    homepage = "https://github.com/mgeeky/decode-spam-headers/";
     license = lib.licenses.mit;
     maintainers = [ ];
+    mainProgram = "decode-spam-headers";
   };
 }

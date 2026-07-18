@@ -1,12 +1,14 @@
 {
   lib,
+  stdenv,
+  fetchFromGitHub,
   SDL2,
   addDriverRunpath,
+  bluez,
   boost,
   cmake,
   cubeb,
   curl,
-  fetchFromGitHub,
   fetchpatch2,
   fmt_9,
   gamemode,
@@ -15,9 +17,9 @@
   gtk3,
   hidapi,
   imgui,
-  libxrender,
   libpng,
   libusb1,
+  libxrender,
   libzip,
   nasm,
   ninja,
@@ -25,7 +27,6 @@
   pkg-config,
   pugixml,
   rapidjson,
-  stdenv,
   testers,
   vulkan-headers,
   vulkan-loader,
@@ -34,7 +35,6 @@
   wrapGAppsHook3,
   wxwidgets_3_2,
   zarchive,
-  bluez,
 }:
 
 let
@@ -42,6 +42,7 @@ let
   # before v1.91.4 (2024/10/08) the default type for ImTextureID was void*.
   imgui' = imgui.overrideAttrs rec {
     version = "1.91.3";
+
     src = fetchFromGitHub {
       owner = "ocornut";
       repo = "imgui";
@@ -68,10 +69,12 @@ stdenv.mkDerivation (finalAttrs: {
     ./0000-spirv-tools-opt-cmakelists.patch
     ./0002-cemu-imgui.patch
     (fetchpatch2 {
-      url = "https://github.com/cemu-project/Cemu/commit/c1c2962b6633017cd956c6925288e2529c532ee4.diff?full_index=1";
       sha256 = "sha256-Dz7WnCf5+Vbr/ETX71wIo/x/zPWdrsOtPH7bsL5Bd+A=";
+      url = "https://github.com/cemu-project/Cemu/commit/c1c2962b6633017cd956c6925288e2529c532ee4.diff?full_index=1";
     })
   ];
+
+  strictDeps = true;
 
   nativeBuildInputs = [
     SDL2
@@ -120,8 +123,6 @@ stdenv.mkDerivation (finalAttrs: {
     (lib.cmakeBool "PORTABLE" false)
   ];
 
-  strictDeps = true;
-
   preConfigure =
     let
       tag = lib.splitString "." (lib.last (lib.splitString "-" finalAttrs.version));
@@ -164,26 +165,30 @@ stdenv.mkDerivation (finalAttrs: {
     '';
 
   passthru = {
-    updateScript = nix-update-script { };
     tests = {
       version = testers.testVersion {
         package = finalAttrs.finalPackage;
       };
     };
+
+    updateScript = nix-update-script { };
   };
 
   meta = {
     description = "Software to emulate Wii U games and applications on PC";
     homepage = "https://cemu.info";
     license = lib.licenses.mpl20;
-    mainProgram = "cemu";
+
     maintainers = with lib.maintainers; [
       zhaofengli
       baduhai
     ];
+
     platforms = [
       "aarch64-linux"
       "x86_64-linux"
     ];
+
+    mainProgram = "cemu";
   };
 })

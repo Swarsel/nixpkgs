@@ -1,10 +1,10 @@
 {
-  buildPythonPackage,
+  lib,
   fetchFromGitHub,
+  buildPythonPackage,
   gitUpdater,
   google-api-core,
   google-auth,
-  lib,
   proto-plus,
   protobuf,
   pytestCheckHook,
@@ -14,7 +14,6 @@
 buildPythonPackage rec {
   pname = "google-geo-type";
   version = "0.7.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "googleapis";
@@ -23,13 +22,11 @@ buildPythonPackage rec {
     hash = "sha256-M/7uDWWz4YCfxa4gyM9BaAo10iyTMvtR2MhNpdFYnis=";
   };
 
-  sourceRoot = "${src.name}/packages/google-geo-type";
+  nativeCheckInputs = [
+    pytestCheckHook
+  ];
 
   build-system = [ setuptools ];
-
-  pythonRelaxDeps = [
-    "protobuf"
-  ];
 
   dependencies = [
     google-api-core
@@ -39,11 +36,14 @@ buildPythonPackage rec {
   ]
   ++ google-api-core.optional-dependencies.grpc;
 
+  pyproject = true;
   pythonImportsCheck = [ "google.geo.type" ];
 
-  nativeCheckInputs = [
-    pytestCheckHook
+  pythonRelaxDeps = [
+    "protobuf"
   ];
+
+  sourceRoot = "${src.name}/packages/google-geo-type";
 
   passthru = {
     skipBulkUpdate = true; # chooses tag for a different project
@@ -51,9 +51,9 @@ buildPythonPackage rec {
   };
 
   meta = {
-    changelog = "https://github.com/googleapis/google-cloud-python/blob/${src.tag}/packages/google-geo-type/CHANGELOG.md";
     description = "Google Geo Type API client library";
     homepage = "https://github.com/googleapis/google-cloud-python/tree/main/packages/google-geo-type";
+    changelog = "https://github.com/googleapis/google-cloud-python/blob/${src.tag}/packages/google-geo-type/CHANGELOG.md";
     license = lib.licenses.asl20;
     maintainers = with lib.maintainers; [ dotlambda ];
   };

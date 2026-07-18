@@ -1,46 +1,39 @@
 {
   lib,
-  stdenvNoCC,
   fetchurl,
   autoPatchelfHook,
-  unzip,
+  cctools,
+  common-updater-scripts,
+  curl,
+  darwin,
   installShellFiles,
+  jq,
   makeWrapper,
   openssl,
-  writeShellScript,
-  curl,
-  jq,
-  common-updater-scripts,
-  cctools,
-  darwin,
   rcodesign,
+  stdenvNoCC,
+  unzip,
+  writeShellScript,
 }:
 
 stdenvNoCC.mkDerivation (finalAttrs: {
-  version = "1.3.13";
   pname = "bun";
+  version = "1.3.13";
 
   src =
     finalAttrs.passthru.sources.${stdenvNoCC.hostPlatform.system}
       or (throw "Unsupported system: ${stdenvNoCC.hostPlatform.system}");
 
-  sourceRoot =
-    {
-      aarch64-darwin = "bun-darwin-aarch64";
-    }
-    .${stdenvNoCC.hostPlatform.system} or null;
-
   strictDeps = true;
+
   nativeBuildInputs = [
     unzip
     installShellFiles
     makeWrapper
   ]
   ++ lib.optionals stdenvNoCC.hostPlatform.isLinux [ autoPatchelfHook ];
-  buildInputs = [ openssl ];
 
-  dontConfigure = true;
-  dontBuild = true;
+  buildInputs = [ openssl ];
 
   installPhase = ''
     runHook preInstall
@@ -51,7 +44,9 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
-  postPhases = [ "postPatchelf" ];
+  dontBuild = true;
+  dontConfigure = true;
+
   postPatchelf =
     lib.optionalString stdenvNoCC.hostPlatform.isDarwin ''
       '${lib.getExe' cctools "${cctools.targetPrefix}install_name_tool"}' $out/bin/bun \
@@ -76,21 +71,32 @@ stdenvNoCC.mkDerivation (finalAttrs: {
             --fish <(SHELL="fish" $out/bin/bun completions)
         '';
 
+  postPhases = [ "postPatchelf" ];
+
+  sourceRoot =
+    {
+      aarch64-darwin = "bun-darwin-aarch64";
+    }
+    .${stdenvNoCC.hostPlatform.system} or null;
+
   passthru = {
     sources = {
       "aarch64-darwin" = fetchurl {
-        url = "https://github.com/oven-sh/bun/releases/download/bun-v${finalAttrs.version}/bun-darwin-aarch64.zip";
         hash = "sha256-VGfj9l26Umuf6pjwzOBO+vwMY+Fpcz7Ce4dqOtMtoZA=";
+        url = "https://github.com/oven-sh/bun/releases/download/bun-v${finalAttrs.version}/bun-darwin-aarch64.zip";
       };
+
       "aarch64-linux" = fetchurl {
-        url = "https://github.com/oven-sh/bun/releases/download/bun-v${finalAttrs.version}/bun-linux-aarch64.zip";
         hash = "sha256-cLrkGzkIsKEg4eWMXIrzDnSvrjuNEbDT/djnh937SyI=";
+        url = "https://github.com/oven-sh/bun/releases/download/bun-v${finalAttrs.version}/bun-linux-aarch64.zip";
       };
+
       "x86_64-linux" = fetchurl {
-        url = "https://github.com/oven-sh/bun/releases/download/bun-v${finalAttrs.version}/bun-linux-x64.zip";
         hash = "sha256-ecB3H6i5LDOq5B4VoODTB+qZ0OLwAxfHHGxTI3p44lo=";
+        url = "https://github.com/oven-sh/bun/releases/download/bun-v${finalAttrs.version}/bun-linux-x64.zip";
       };
     };
+
     updateScript = writeShellScript "update-bun" ''
       set -o errexit
       export PATH="${
@@ -110,19 +116,24 @@ stdenvNoCC.mkDerivation (finalAttrs: {
       done
     '';
   };
+
   meta = {
-    homepage = "https://bun.sh";
-    changelog = "https://bun.sh/blog/bun-v${finalAttrs.version}";
     description = "Incredibly fast JavaScript runtime, bundler, transpiler and package manager – all in one";
-    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
+
     longDescription = ''
       All in one fast & easy-to-use tool. Instead of 1,000 node_modules for development, you only need bun.
     '';
+
+    homepage = "https://bun.sh";
+    changelog = "https://bun.sh/blog/bun-v${finalAttrs.version}";
+
     license = with lib.licenses; [
       mit # bun core
       lgpl21Only # javascriptcore and webkit
     ];
-    mainProgram = "bun";
+
+    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
+
     maintainers = with lib.maintainers; [
       DAlperin
       jk
@@ -130,11 +141,12 @@ stdenvNoCC.mkDerivation (finalAttrs: {
       cdmistman
       diogomdp
     ];
+
     platforms = builtins.attrNames finalAttrs.passthru.sources;
+    mainProgram = "bun";
     # Broken for Musl at 2024-01-13, tracking issue:
     # https://github.com/NixOS/nixpkgs/issues/280716
     broken = stdenvNoCC.hostPlatform.isMusl;
-
     # Hangs when run via Rosetta 2 on Apple Silicon
     hydraPlatforms = lib.lists.remove "x86_64-darwin" lib.platforms.all;
   };

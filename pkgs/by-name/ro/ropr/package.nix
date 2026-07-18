@@ -1,9 +1,9 @@
 {
   lib,
   fetchFromGitHub,
+  nix-update-script,
   rustPlatform,
   versionCheckHook,
-  nix-update-script,
 }:
 rustPlatform.buildRustPackage (finalAttrs: {
   pname = "ropr";
@@ -17,11 +17,12 @@ rustPlatform.buildRustPackage (finalAttrs: {
   };
 
   cargoHash = "sha256-4YEriANTAt1dx9bXhlHFN+kNLde+8BLocuhXdFG24xo=";
+  doInstallCheck = true;
 
   nativeInstallCheckInputs = [
     versionCheckHook
   ];
-  doInstallCheck = true;
+
   preVersionCheck = ''
     version=${builtins.head (lib.splitString "-" finalAttrs.version)}
   '';
@@ -31,11 +32,13 @@ rustPlatform.buildRustPackage (finalAttrs: {
   meta = {
     description = "Multithreaded ROP gadget finder for x86(_64)";
     homepage = "https://github.com/Ben-Lichtman/ropr";
+
     license = with lib.licenses; [
       mit
       asl20
     ];
-    mainProgram = "ropr";
+
     maintainers = with lib.maintainers; [ feyorsh ];
+    mainProgram = "ropr";
   };
 })

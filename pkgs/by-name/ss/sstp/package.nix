@@ -2,11 +2,11 @@
   lib,
   stdenv,
   fetchFromGitLab,
-  pkg-config,
-  ppp,
+  autoreconfHook,
   libevent,
   openssl,
-  autoreconfHook,
+  pkg-config,
+  ppp,
 }:
 
 stdenv.mkDerivation {
@@ -25,12 +25,6 @@ stdenv.mkDerivation {
     sed "s,sstp-pppd-plugin.so,$out/lib/pppd/sstp-pppd-plugin.so," -i src/sstp-pppd.c
   '';
 
-  configureFlags = [
-    "--with-openssl=${openssl.dev}"
-    "--with-runtime-dir=/run/sstpc"
-    "--with-pppd-plugin-dir=$(out)/lib/pppd"
-  ];
-
   nativeBuildInputs = [
     pkg-config
     autoreconfHook
@@ -42,12 +36,18 @@ stdenv.mkDerivation {
     ppp
   ];
 
+  configureFlags = [
+    "--with-openssl=${openssl.dev}"
+    "--with-runtime-dir=/run/sstpc"
+    "--with-pppd-plugin-dir=$(out)/lib/pppd"
+  ];
+
   meta = {
     description = "SSTP client for Linux";
     homepage = "https://sstp-client.sourceforge.net/";
-    platforms = lib.platforms.linux;
-    maintainers = [ ];
     license = lib.licenses.gpl2Plus;
+    maintainers = [ ];
+    platforms = lib.platforms.linux;
     mainProgram = "sstpc";
   };
 }

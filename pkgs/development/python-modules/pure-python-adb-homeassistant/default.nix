@@ -6,7 +6,6 @@
 buildPythonPackage rec {
   pname = "pure-python-adb-homeassistant";
   version = "0.1.7.dev0";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
@@ -16,7 +15,7 @@ buildPythonPackage rec {
   # Disable tests as they require docker, docker-compose and a dedicated
   # android emulator
   doCheck = false;
-
+  format = "setuptools";
   pythonImportsCheck = [ "adb_messenger" ];
 
   meta = {

@@ -1,8 +1,8 @@
 {
   lib,
   stdenv,
-  fetchFromGitHub,
   fetchurl,
+  fetchFromGitHub,
   buildPackages,
   cimg,
   cmake,
@@ -15,11 +15,11 @@
   gnused,
   graphicsmagick,
   jq,
-  libx11,
-  libxext,
   libjpeg,
   libpng,
   libtiff,
+  libx11,
+  libxext,
   llvmPackages,
   ninja,
   opencv,
@@ -33,13 +33,6 @@ stdenv.mkDerivation (finalAttrs: {
   pname = "gmic";
   version = "3.7.6";
 
-  outputs = [
-    "out"
-    "lib"
-    "dev"
-    "man"
-  ];
-
   src = fetchFromGitHub {
     owner = "GreycLab";
     repo = "gmic";
@@ -47,15 +40,25 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-hewDoraw6DCmj1EryZrODFDqzbKI2RhgRuXAop+pg7c=";
   };
 
-  # TODO: build this from source
-  # Reference: src/Makefile, directive gmic_stdlib_community.h
-  gmic_stdlib = fetchurl {
-    name = "gmic_stdlib_community.h";
-    url = "https://gmic.eu/gmic_stdlib_community${
-      lib.replaceStrings [ "." ] [ "" ] finalAttrs.version
-    }.h";
-    hash = "sha256-ek8w9uCp4ey5zT8Y1+yM9gXtzigNINOQ0XW6kT6Zj5Q=";
-  };
+  outputs = [
+    "out"
+    "lib"
+    "dev"
+    "man"
+  ];
+
+  postPatch = ''
+    cp -r ${finalAttrs.gmic_stdlib} src/gmic_stdlib_community.h
+  ''
+  + lib.optionalString stdenv.hostPlatform.isDarwin ''
+    substituteInPlace CMakeLists.txt \
+      --replace "LD_LIBRARY_PATH" "DYLD_LIBRARY_PATH"
+  ''
+  + lib.optionalString (!stdenv.buildPlatform.canExecute stdenv.hostPlatform) ''
+    substituteInPlace CMakeLists.txt --replace-fail \
+      'LD_LIBRARY_PATH=''${GMIC_BINARIES_PATH} ''${GMIC_BINARIES_PATH}/gmic' \
+      '${lib.getExe buildPackages.gmic}'
+  '';
 
   nativeBuildInputs = [
     cmake
@@ -89,18 +92,16 @@ stdenv.mkDerivation (finalAttrs: {
     (lib.cmakeBool "USE_SYSTEM_CIMG" true)
   ];
 
-  postPatch = ''
-    cp -r ${finalAttrs.gmic_stdlib} src/gmic_stdlib_community.h
-  ''
-  + lib.optionalString stdenv.hostPlatform.isDarwin ''
-    substituteInPlace CMakeLists.txt \
-      --replace "LD_LIBRARY_PATH" "DYLD_LIBRARY_PATH"
-  ''
-  + lib.optionalString (!stdenv.buildPlatform.canExecute stdenv.hostPlatform) ''
-    substituteInPlace CMakeLists.txt --replace-fail \
-      'LD_LIBRARY_PATH=''${GMIC_BINARIES_PATH} ''${GMIC_BINARIES_PATH}/gmic' \
-      '${lib.getExe buildPackages.gmic}'
-  '';
+  # TODO: build this from source
+  # Reference: src/Makefile, directive gmic_stdlib_community.h
+  gmic_stdlib = fetchurl {
+    hash = "sha256-ek8w9uCp4ey5zT8Y1+yM9gXtzigNINOQ0XW6kT6Zj5Q=";
+    name = "gmic_stdlib_community.h";
+
+    url = "https://gmic.eu/gmic_stdlib_community${
+      lib.replaceStrings [ "." ] [ "" ] finalAttrs.version
+    }.h";
+  };
 
   passthru = {
     tests = {
@@ -138,11 +139,11 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   meta = {
-    homepage = "https://gmic.eu/";
     description = "Open and full-featured framework for image processing";
-    mainProgram = "gmic";
+    homepage = "https://gmic.eu/";
     license = lib.licenses.cecill21;
     maintainers = [ ];
     platforms = lib.platforms.unix;
+    mainProgram = "gmic";
   };
 })

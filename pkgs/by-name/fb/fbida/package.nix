@@ -2,12 +2,8 @@
   lib,
   stdenv,
   fetchFromGitLab,
-  hexdump,
-  meson,
-  ninja,
-  perl,
-  pkg-config,
   giflib,
+  hexdump,
   libdrm,
   libexif,
   libiconvReal,
@@ -17,8 +13,12 @@
   libxkbcommon,
   libxpm,
   libxt,
+  meson,
   motif,
+  ninja,
+  perl,
   pixman,
+  pkg-config,
   poppler,
   udev,
 }:
@@ -26,9 +26,6 @@
 stdenv.mkDerivation (finalAttrs: {
   pname = "fbida";
   version = "2.15-1";
-
-  __structuredAttrs = true;
-  strictDeps = true;
 
   src = fetchFromGitLab {
     owner = "kraxel";
@@ -41,6 +38,8 @@ stdenv.mkDerivation (finalAttrs: {
     # Prevents using function declaration without explicit parameters.
     ./function-parameters.patch
   ];
+
+  strictDeps = true;
 
   nativeBuildInputs = [
     hexdump
@@ -67,6 +66,12 @@ stdenv.mkDerivation (finalAttrs: {
     udev
   ];
 
+  makeFlags = [
+    "HOST=nix"
+  ];
+
+  __structuredAttrs = true;
+
   patchPhase = ''
     runHook prePatch
 
@@ -81,17 +86,13 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postPatch
   '';
 
-  makeFlags = [
-    "HOST=nix"
-  ];
-
   meta = {
     description = "Image viewing and manipulation programs including fbi, fbgs, ida, exiftran and thumbnail.cgi";
     homepage = "https://www.kraxel.org/blog/linux/fbida/";
-    downloadPage = "https://gitlab.com/kraxel/fbida/";
     changelog = "https://gitlab.com/kraxel/fbida/-/blob/${finalAttrs.src.tag}/Changes?ref_type=tags";
     license = lib.licenses.gpl2;
     maintainers = with lib.maintainers; [ pSub ];
     platforms = lib.platforms.linux;
+    downloadPage = "https://gitlab.com/kraxel/fbida/";
   };
 })

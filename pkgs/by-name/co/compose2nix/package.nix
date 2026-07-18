@@ -1,9 +1,9 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
-  testers,
+  buildGoModule,
   compose2nix,
+  testers,
 }:
 
 buildGoModule (finalAttrs: {
@@ -21,17 +21,17 @@ buildGoModule (finalAttrs: {
 
   passthru.tests = {
     version = testers.testVersion {
-      package = compose2nix;
       version = "compose2nix v${finalAttrs.version}";
+      package = compose2nix;
     };
   };
 
   meta = {
+    description = "Generate a NixOS config from a Docker Compose project";
     homepage = "https://github.com/aksiksi/compose2nix";
     changelog = "https://github.com/aksiksi/compose2nix/releases/tag/${finalAttrs.src.rev}";
-    description = "Generate a NixOS config from a Docker Compose project";
     license = lib.licenses.mit;
-    mainProgram = "compose2nix";
     maintainers = with lib.maintainers; [ aksiksi ];
+    mainProgram = "compose2nix";
   };
 })

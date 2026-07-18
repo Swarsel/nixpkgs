@@ -2,16 +2,12 @@
   lib,
   stdenv,
   fetchFromGitHub,
-
   SDL2,
-
   libx11,
   libxext,
-
-  guiBackend ? "sdl",
-
   enableSDL ? guiBackend == "sdl",
   enableX11 ? guiBackend == "x11",
+  guiBackend ? "sdl",
 }:
 
 assert lib.assertMsg (builtins.elem guiBackend [
@@ -43,28 +39,30 @@ stdenv.mkDerivation (finalAttrs: {
       libxext
     ];
 
-  enableParallelBuilding = true;
-
-  buildFlags = [
-    "all"
-    "lib"
-  ];
-
   makeFlags = [
     "PREFIX=$(out)"
   ]
   ++ lib.optional enableSDL "USE_SDL=2" # Use SDL2 instead of SDL1
   ++ lib.optional (!enableSDL && !enableX11) "USE_FB=0";
 
+  buildFlags = [
+    "all"
+    "lib"
+  ];
+
+  enableParallelBuilding = true;
+
   meta = {
-    homepage = "https://github.com/LekKit/RVVM";
     description = "RISC-V Virtual Machine";
+    homepage = "https://github.com/LekKit/RVVM";
+
     license = with lib.licenses; [
       gpl3 # or
       mpl20
     ];
-    platforms = lib.platforms.linux ++ lib.platforms.darwin;
+
     maintainers = with lib.maintainers; [ kamillaova ];
+    platforms = lib.platforms.linux ++ lib.platforms.darwin;
     mainProgram = "rvvm";
   };
 })

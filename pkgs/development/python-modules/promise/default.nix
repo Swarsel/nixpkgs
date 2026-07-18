@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   fetchpatch,
   mock,
   pytest-asyncio,
@@ -12,7 +12,6 @@
 buildPythonPackage rec {
   pname = "promise";
   version = "2.3.0";
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "syrusakbary";
@@ -24,9 +23,9 @@ buildPythonPackage rec {
   patches = [
     # Convert @asyncio.coroutine to async def, https://github.com/syrusakbary/promise/pull/99
     (fetchpatch {
+      hash = "sha256-XCbTo6RCv75nNrpbK3TFdV0h7tBJ0QK+WOAR8S8w9as=";
       name = "use-async-def.patch";
       url = "https://github.com/syrusakbary/promise/commit/3cde549d30b38dcff81b308e18c7f61783003791.patch";
-      hash = "sha256-XCbTo6RCv75nNrpbK3TFdV0h7tBJ0QK+WOAR8S8w9as=";
     })
   ];
 
@@ -43,13 +42,14 @@ buildPythonPackage rec {
     pytestCheckHook
   ];
 
+  disabledTestPaths = [ "tests/test_benchmark.py" ];
+
   disabledTests = [
     # Failed: async def functions are not natively supported
     "test_issue_9_safe"
   ];
 
-  disabledTestPaths = [ "tests/test_benchmark.py" ];
-
+  format = "setuptools";
   pythonImportsCheck = [ "promise" ];
 
   meta = {

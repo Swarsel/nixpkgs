@@ -6,18 +6,15 @@ in
 
 stdenv.mkDerivation {
 
-  pname = "sawjap";
-
   inherit (sawja) src version;
-
-  prePatch = "cd test";
-
+  pname = "sawjap";
   strictDeps = true;
 
   nativeBuildInputs = [
     ocaml
     findlib
   ];
+
   buildInputs = [ sawja ];
 
   buildPhase = ''
@@ -28,6 +25,7 @@ stdenv.mkDerivation {
   '';
 
   dontInstall = true;
+  prePatch = "cd test";
 
   meta = sawja.meta // {
     description = "Pretty-print .class files";

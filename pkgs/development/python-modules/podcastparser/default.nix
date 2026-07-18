@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   pytest-cov-stub,
   pytestCheckHook,
   setuptools,
@@ -10,7 +10,6 @@
 buildPythonPackage rec {
   pname = "podcastparser";
   version = "0.6.11";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "gpodder";
@@ -19,13 +18,13 @@ buildPythonPackage rec {
     hash = "sha256-eF/YHKSCMZnavkoX3LcAFHPSPABijn+aPVzaeRYY3WI=";
   };
 
-  build-system = [ setuptools ];
-
   nativeCheckInputs = [
     pytest-cov-stub
     pytestCheckHook
   ];
 
+  build-system = [ setuptools ];
+  pyproject = true;
   pythonImportsCheck = [ "podcastparser" ];
 
   meta = {

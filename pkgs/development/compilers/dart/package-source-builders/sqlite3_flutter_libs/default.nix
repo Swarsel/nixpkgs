@@ -2,12 +2,12 @@
   stdenv,
 }:
 
-{ version, src, ... }:
+{ src, version, ... }:
 
 stdenv.mkDerivation {
-  pname = "sqlite3_flutter_libs";
   inherit version src;
   inherit (src) passthru;
+  pname = "sqlite3_flutter_libs";
 
   postPatch = ''
     cp ${./CMakeLists.txt} linux/CMakeLists.txt

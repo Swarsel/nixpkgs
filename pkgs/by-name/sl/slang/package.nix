@@ -6,8 +6,8 @@
   libpng,
   ncurses,
   readline,
-  zlib,
   writeScript,
+  zlib,
 }:
 
 stdenv.mkDerivation rec {
@@ -26,21 +26,6 @@ stdenv.mkDerivation rec {
     "doc"
   ];
 
-  # Fix some wrong hardcoded paths
-  preConfigure = ''
-    sed -i -e "s|/usr/lib/terminfo|${ncurses.out}/lib/terminfo|" configure
-    sed -i -e "s|/usr/lib/terminfo|${ncurses.out}/lib/terminfo|" src/sltermin.c
-    sed -i -e "s|/bin/ln|ln|" src/Makefile.in
-    sed -i -e "s|-ltermcap|-lncurses|" ./configure
-  '';
-
-  configureFlags = [
-    "--without-pcre"
-    "--with-png=${libpng.dev}"
-    "--with-readline=${readline.dev}"
-    "--with-z=${zlib.dev}"
-  ];
-
   buildInputs = [
     libpng
     readline
@@ -50,19 +35,34 @@ stdenv.mkDerivation rec {
 
   propagatedBuildInputs = [ ncurses ];
 
+  configureFlags = [
+    "--without-pcre"
+    "--with-png=${libpng.dev}"
+    "--with-readline=${readline.dev}"
+    "--with-z=${zlib.dev}"
+  ];
+
   buildFlags = lib.optional stdenv.hostPlatform.isStatic "static";
-  installTargets = lib.optional stdenv.hostPlatform.isStatic "install-static";
+
+  # Fix some wrong hardcoded paths
+  preConfigure = ''
+    sed -i -e "s|/usr/lib/terminfo|${ncurses.out}/lib/terminfo|" configure
+    sed -i -e "s|/usr/lib/terminfo|${ncurses.out}/lib/terminfo|" src/sltermin.c
+    sed -i -e "s|/bin/ln|ln|" src/Makefile.in
+    sed -i -e "s|-ltermcap|-lncurses|" ./configure
+  '';
 
   preBuild = ''
     makeFlagsArray+=(AR_CR="${stdenv.cc.targetPrefix}ar cr")
   '';
 
-  enableParallelBuilding = true;
-
   postInstall = ''
     find "$out"/lib/ -name '*.so' -exec chmod +x "{}" \;
     sed '/^Libs:/s/$/ -lncurses/' -i "$dev"/lib/pkgconfig/slang.pc
   '';
+
+  enableParallelBuilding = true;
+  installTargets = lib.optional stdenv.hostPlatform.isStatic "install-static";
 
   passthru = {
     updateScript = writeScript "update-slang" ''
@@ -80,6 +80,7 @@ stdenv.mkDerivation rec {
 
   meta = {
     description = "Small, embeddable multi-platform programming library";
+
     longDescription = ''
       S-Lang is an interpreted language that was designed from the start to be
       easily embedded into a program to provide it with a powerful extension
@@ -100,10 +101,11 @@ stdenv.mkDerivation rec {
       library, the reader is referred to the S-Lang Library C Programmer's
       Guide.
     '';
+
     homepage = "http://www.jedsoft.org/slang/";
     license = lib.licenses.gpl2Plus;
     maintainers = [ ];
-    mainProgram = "slsh";
     platforms = lib.platforms.unix;
+    mainProgram = "slsh";
   };
 }

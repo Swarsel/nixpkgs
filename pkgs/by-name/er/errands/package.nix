@@ -1,26 +1,24 @@
 {
   lib,
   fetchFromGitHub,
-  python3Packages,
-  gobject-introspection,
-  libadwaita,
-  wrapGAppsHook4,
-  meson,
-  ninja,
-  desktop-file-utils,
-  pkg-config,
   appstream,
-  libsecret,
-  libportal,
+  desktop-file-utils,
+  gobject-introspection,
   gtk4,
   gtksourceview5,
+  libadwaita,
+  libportal,
+  libsecret,
+  meson,
+  ninja,
   nix-update-script,
+  pkg-config,
+  python3Packages,
+  wrapGAppsHook4,
 }:
 python3Packages.buildPythonApplication (finalAttrs: {
   pname = "errands";
   version = "46.2.10";
-
-  pyproject = false;
 
   src = fetchFromGitHub {
     owner = "mrvladus";
@@ -56,11 +54,12 @@ python3Packages.buildPythonApplication (finalAttrs: {
     requests
   ];
 
-  dontWrapGApps = true;
-
   preFixup = ''
     makeWrapperArgs+=("''${gappsWrapperArgs[@]}")
   '';
+
+  dontWrapGApps = true;
+  pyproject = false;
 
   passthru = {
     updateScript = nix-update-script { };
@@ -68,14 +67,16 @@ python3Packages.buildPythonApplication (finalAttrs: {
 
   meta = {
     description = "Manage your tasks";
-    changelog = "https://github.com/mrvladus/Errands/releases/tag/${finalAttrs.version}";
     homepage = "https://github.com/mrvladus/Errands";
+    changelog = "https://github.com/mrvladus/Errands/releases/tag/${finalAttrs.version}";
     license = lib.licenses.mit;
-    mainProgram = "errands";
+
     maintainers = with lib.maintainers; [
       luftmensch-luftmensch
       sund3RRR
     ];
+
+    mainProgram = "errands";
     teams = [ lib.teams.gnome-circle ];
   };
 })

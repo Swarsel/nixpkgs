@@ -17,23 +17,6 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-hY8nLRFWt0GAElhDIcYdUX6cJrzOE3NlYRQr0tC3on4=";
   };
 
-  buildInputs = [ zlib ];
-
-  buildFlags = [
-    (
-      if stdenv.hostPlatform.sse4_2Support then
-        "arch=sse42"
-      else if stdenv.hostPlatform.avxSupport then
-        "arch=avx"
-      else if stdenv.hostPlatform.avx2Support then
-        "arch=avx2"
-      else if stdenv.hostPlatform.avx512Support then
-        "arch=avx512"
-      else
-        "arch=sse41"
-    )
-  ];
-
   patches = [
     ./no-submodule.patch
   ];
@@ -60,18 +43,33 @@ stdenv.mkDerivation (finalAttrs: {
           "fmi_test smem2_test bwt_seed_strategy_test sa2ref_test"
     '';
 
+  nativeBuildInputs = [
+    safestringlib
+  ];
+
+  buildInputs = [ zlib ];
+
+  buildFlags = [
+    (
+      if stdenv.hostPlatform.sse4_2Support then
+        "arch=sse42"
+      else if stdenv.hostPlatform.avxSupport then
+        "arch=avx"
+      else if stdenv.hostPlatform.avx2Support then
+        "arch=avx2"
+      else if stdenv.hostPlatform.avx512Support then
+        "arch=avx512"
+      else
+        "arch=sse41"
+    )
+  ];
+
   env.NIX_CFLAGS_COMPILE = toString (
     lib.optionals stdenv.hostPlatform.isDarwin [
       "-Wno-error=register"
       "-Wno-error=implicit-function-declaration"
     ]
   );
-
-  nativeBuildInputs = [
-    safestringlib
-  ];
-
-  enableParallelBuilding = true;
 
   installPhase = ''
     runHook preInstall
@@ -82,13 +80,15 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  enableParallelBuilding = true;
+
   meta = {
     description = "Next version of the bwa-mem algorithm in bwa, a software package for mapping low-divergent sequences against a large reference genome";
-    mainProgram = "bwa-mem2";
-    license = lib.licenses.mit;
     homepage = "https://github.com/bwa-mem2/bwa-mem2/";
     changelog = "https://github.com/bwa-mem2/bwa-mem2/blob/${finalAttrs.src.rev}/NEWS.md";
-    platforms = lib.platforms.x86_64;
+    license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ apraga ];
+    platforms = lib.platforms.x86_64;
+    mainProgram = "bwa-mem2";
   };
 })

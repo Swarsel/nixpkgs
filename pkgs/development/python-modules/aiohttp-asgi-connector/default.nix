@@ -1,9 +1,9 @@
 {
   lib,
+  fetchFromGitHub,
   aiohttp,
   buildPythonPackage,
   fastapi,
-  fetchFromGitHub,
   pdm-backend,
   pytest-asyncio,
   pytestCheckHook,
@@ -13,7 +13,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "aiohttp-asgi-connector";
   version = "1.1.2";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "thearchitector";
@@ -22,10 +21,6 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-kvHsn8avq0Fi4ceg3ispFoQp0HJKzBv4tgley7XWMrY=";
   };
 
-  build-system = [ pdm-backend ];
-
-  dependencies = [ aiohttp ];
-
   nativeCheckInputs = [
     fastapi
     pytest-asyncio
@@ -33,6 +28,9 @@ buildPythonPackage (finalAttrs: {
     python-multipart
   ];
 
+  build-system = [ pdm-backend ];
+  dependencies = [ aiohttp ];
+  pyproject = true;
   pythonImportsCheck = [ "aiohttp_asgi_connector" ];
 
   meta = {

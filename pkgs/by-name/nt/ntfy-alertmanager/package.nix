@@ -1,7 +1,7 @@
 {
-  buildGoModule,
-  fetchurl,
   lib,
+  fetchurl,
+  buildGoModule,
 }:
 
 buildGoModule (finalAttrs: {
@@ -19,11 +19,13 @@ buildGoModule (finalAttrs: {
     description = "Bridge between ntfy and Alertmanager";
     homepage = "https://git.xenrox.net/~xenrox/ntfy-alertmanager";
     license = lib.licenses.agpl3Only;
-    mainProgram = "ntfy-alertmanager";
+
     maintainers = with lib.maintainers; [
       bleetube
       fpletz
     ];
+
     platforms = lib.platforms.linux;
+    mainProgram = "ntfy-alertmanager";
   };
 })

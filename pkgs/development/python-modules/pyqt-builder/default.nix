@@ -11,13 +11,15 @@
 buildPythonPackage rec {
   pname = "pyqt-builder";
   version = "1.19.1";
-  pyproject = true;
 
   src = fetchPypi {
-    pname = "pyqt_builder";
     inherit version;
     hash = "sha256-avZka6KWaHUbA5v9ztUWQstRDjAHlrWKTWi3+VagJNg=";
+    pname = "pyqt_builder";
   };
+
+  # There aren't tests
+  doCheck = false;
 
   build-system = [
     setuptools
@@ -29,10 +31,8 @@ buildPythonPackage rec {
     sip
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "pyqtbuild" ];
-
-  # There aren't tests
-  doCheck = false;
 
   meta = {
     description = "PEP 517 compliant build system for PyQt";

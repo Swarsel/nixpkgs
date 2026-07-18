@@ -3,12 +3,6 @@
   stdenv,
   fetchFromGitHub,
   autoreconfHook,
-  # By default, jemalloc puts a je_ prefix onto all its symbols on OSX, which
-  # then stops downstream builds (mariadb in particular) from detecting it. This
-  # option should remove the prefix and give us a working jemalloc.
-  # Causes segfaults with some software (ex. rustc), but defaults to true for backward
-  # compatibility.
-  stripPrefix ? stdenv.hostPlatform.isDarwin,
   disableInitExecTls ? false,
   # Page size in KiB to configure jemalloc for.
   # Defaults to 64 on architectures where 64KB pages are common, 4 otherwise.
@@ -22,12 +16,18 @@
       64
     else
       4,
+  # By default, jemalloc puts a je_ prefix onto all its symbols on OSX, which
+  # then stops downstream builds (mariadb in particular) from detecting it. This
+  # option should remove the prefix and give us a working jemalloc.
+  # Causes segfaults with some software (ex. rustc), but defaults to true for backward
+  # compatibility.
+  stripPrefix ? stdenv.hostPlatform.isDarwin,
 }:
 
 let
   pageSizeMap = {
-    "4" = 12;
     "16" = 14;
+    "4" = 12;
     "64" = 16;
   };
 in
@@ -75,11 +75,10 @@ stdenv.mkDerivation (finalAttrs: {
   ++ lib.optional (stdenv.hostPlatform.isDarwin && stdenv.hostPlatform.isx86_64) "--with-lg-vaddr=48";
 
   env.NIX_CFLAGS_COMPILE = lib.optionalString stdenv.hostPlatform.isDarwin "-Wno-error=array-bounds";
-
   # Tries to link test binaries binaries dynamically and fails
   doCheck = !stdenv.hostPlatform.isStatic;
-
   doInstallCheck = true;
+
   installCheckPhase = ''
     ! grep missing_version_try_git_fetch_tags $out/include/jemalloc/jemalloc.h
   '';
@@ -88,14 +87,16 @@ stdenv.mkDerivation (finalAttrs: {
   enableParallelBuilding = false;
 
   meta = {
-    homepage = "https://jemalloc.net/";
-    downloadPage = "https://github.com/jemalloc/jemalloc";
     description = "General purpose malloc(3) implementation";
+
     longDescription = ''
       malloc(3)-compatible memory allocator that emphasizes fragmentation
       avoidance and scalable concurrency support.
     '';
+
+    homepage = "https://jemalloc.net/";
     license = lib.licenses.bsd2;
     platforms = lib.platforms.all;
+    downloadPage = "https://github.com/jemalloc/jemalloc";
   };
 })

@@ -1,16 +1,14 @@
 {
-  buildDunePackage,
   atd,
+  buildDunePackage,
   re,
 }:
 
 buildDunePackage {
-  pname = "atd-jsonlike";
   inherit (atd) src version;
-
-  minimalOCamlVersion = "4.12";
-
+  pname = "atd-jsonlike";
   propagatedBuildInputs = [ re ];
+  minimalOCamlVersion = "4.12";
 
   meta = (removeAttrs atd.meta [ "mainProgram" ]) // {
     description = "Generic JSON-like AST for use with ATD code generators";

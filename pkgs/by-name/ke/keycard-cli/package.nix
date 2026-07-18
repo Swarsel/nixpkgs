@@ -1,10 +1,10 @@
 {
   lib,
   stdenv,
-  buildGoModule,
   fetchFromGitHub,
-  pkg-config,
+  buildGoModule,
   pcsclite,
+  pkg-config,
 }:
 
 buildGoModule (finalAttrs: {
@@ -18,10 +18,9 @@ buildGoModule (finalAttrs: {
     hash = "sha256-H9fipHGxINMAXdxUYhyVZusDXA3HW1iQl8iRX6AF7iE=";
   };
 
-  vendorHash = "sha256-6zZY6pMazapteJp2fsCdwXBEXbwSf/ZEUIcQONJYj2Q=";
-
   nativeBuildInputs = [ pkg-config ];
   buildInputs = [ pcsclite ];
+  vendorHash = "sha256-6zZY6pMazapteJp2fsCdwXBEXbwSf/ZEUIcQONJYj2Q=";
 
   ldflags = [
     "-s"
@@ -31,10 +30,10 @@ buildGoModule (finalAttrs: {
 
   meta = {
     description = "Command line tool and shell to manage keycards";
-    mainProgram = "keycard-cli";
     homepage = "https://keycard.status.im";
     license = lib.licenses.mpl20;
     maintainers = [ lib.maintainers.zimbatm ];
+    mainProgram = "keycard-cli";
     broken = stdenv.hostPlatform.isDarwin; # never built on Hydra https://hydra.nixos.org/job/nixpkgs/trunk/keycard-cli.x86_64-darwin
   };
 })

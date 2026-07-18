@@ -1,14 +1,14 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   dpkg,
-  pkg-config,
   glib,
+  nix-update-script,
   ostree,
+  pkg-config,
   qemu,
   unzip,
-  nix-update-script,
 }:
 
 buildGoModule (finalAttrs: {
@@ -22,8 +22,6 @@ buildGoModule (finalAttrs: {
     hash = "sha256-Bu0rLrRp1oeWSMm78DhNM6MsBeG+vAkoRbbqKTThD/8=";
   };
 
-  vendorHash = "sha256-+3PAqCOFtR8HC4uNNxH1cKk/qkD13zuydTsZte1mQ+c=";
-
   nativeBuildInputs = [
     dpkg
     pkg-config
@@ -35,6 +33,8 @@ buildGoModule (finalAttrs: {
     ostree
     qemu
   ];
+
+  vendorHash = "sha256-+3PAqCOFtR8HC4uNNxH1cKk/qkD13zuydTsZte1mQ+c=";
 
   passthru = {
     updateScript = nix-update-script { };

@@ -1,20 +1,16 @@
 {
   lib,
-  buildDunePackage,
   fetchFromGitHub,
+  buildDunePackage,
+  core_kernel,
+  cstruct-unix,
   ppx_cstruct,
   rresult,
-  cstruct-unix,
-  core_kernel,
 }:
 
 buildDunePackage (finalAttrs: {
   pname = "dbf";
   version = "0.2.0";
-
-  minimalOCamlVersion = "4.08";
-
-  duneVersion = "3";
 
   src = fetchFromGitHub {
     owner = "pveber";
@@ -24,11 +20,15 @@ buildDunePackage (finalAttrs: {
   };
 
   buildInputs = [ ppx_cstruct ];
+
   propagatedBuildInputs = [
     rresult
     cstruct-unix
     core_kernel
   ];
+
+  duneVersion = "3";
+  minimalOCamlVersion = "4.08";
 
   meta = {
     description = "DBF format parsing";

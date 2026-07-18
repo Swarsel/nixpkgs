@@ -1,9 +1,9 @@
 {
   lib,
+  fetchFromGitHub,
   aiohttp,
   aioresponses,
   buildPythonPackage,
-  fetchFromGitHub,
   pytest-aiohttp,
   pytest-asyncio,
   pytest-cov-stub,
@@ -14,7 +14,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "aiopulsegrow";
   version = "25.12.6";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "pvizeli";
@@ -22,10 +21,6 @@ buildPythonPackage (finalAttrs: {
     tag = finalAttrs.version;
     hash = "sha256-Srtk8EmvTQvx2//TuB2JR74lw58EdLORKWDnvTPStww=";
   };
-
-  build-system = [ setuptools ];
-
-  dependencies = [ aiohttp ];
 
   nativeCheckInputs = [
     aioresponses
@@ -35,6 +30,9 @@ buildPythonPackage (finalAttrs: {
     pytest-cov-stub
   ];
 
+  build-system = [ setuptools ];
+  dependencies = [ aiohttp ];
+  pyproject = true;
   pythonImportsCheck = [ "aiopulsegrow" ];
 
   meta = {

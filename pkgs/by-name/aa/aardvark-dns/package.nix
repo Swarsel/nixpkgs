@@ -1,8 +1,8 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
   nixosTests,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -17,16 +17,15 @@ rustPlatform.buildRustPackage (finalAttrs: {
   };
 
   cargoHash = "sha256-rpflZfMYNlrn13Cv3znkS2Jp9peyIJDQrXVnVnVuy9g=";
-
   passthru.tests = { inherit (nixosTests) podman; };
 
   meta = {
-    changelog = "https://github.com/containers/aardvark-dns/releases/tag/${finalAttrs.src.rev}";
     description = "Authoritative dns server for A/AAAA container records";
     homepage = "https://github.com/containers/aardvark-dns";
+    changelog = "https://github.com/containers/aardvark-dns/releases/tag/${finalAttrs.src.rev}";
     license = lib.licenses.asl20;
-    teams = with lib.teams; [ podman ];
     platforms = lib.platforms.linux;
     mainProgram = "aardvark-dns";
+    teams = with lib.teams; [ podman ];
   };
 })

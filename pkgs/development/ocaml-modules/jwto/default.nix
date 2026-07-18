@@ -1,24 +1,20 @@
 {
   lib,
-  buildDunePackage,
   fetchFromGitHub,
   alcotest,
+  base64,
+  buildDunePackage,
   digestif,
   fmt,
-  yojson,
-  ppxlib,
-  base64,
-  re,
   ppx_deriving,
+  ppxlib,
+  re,
+  yojson,
 }:
 
 buildDunePackage (finalAttrs: {
   pname = "jwto";
   version = "0.4.0";
-
-  duneVersion = "3";
-
-  minimalOCamlVersion = "4.08";
 
   src = fetchFromGitHub {
     owner = "sporto";
@@ -38,14 +34,16 @@ buildDunePackage (finalAttrs: {
     ppx_deriving
   ];
 
-  checkInputs = [ alcotest ];
-
   doCheck = true;
+  checkInputs = [ alcotest ];
+  duneVersion = "3";
+  minimalOCamlVersion = "4.08";
 
   meta = {
-    homepage = "https://github.com/sporto/jwto";
     description = "JSON Web Tokens (JWT) for OCaml";
+    homepage = "https://github.com/sporto/jwto";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       Zimmi48
       jtcoolen

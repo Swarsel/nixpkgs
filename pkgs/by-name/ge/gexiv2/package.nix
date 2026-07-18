@@ -1,36 +1,36 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchurl,
-  meson,
-  mesonEmulatorHook,
-  ninja,
-  pkg-config,
+  docbook-xsl-nons,
+  docbook_xml_dtd_43,
   exiv2,
   glib,
   gnome,
   gobject-introspection,
-  vala,
   gtk-doc,
-  docbook-xsl-nons,
-  docbook_xml_dtd_43,
+  meson,
+  mesonEmulatorHook,
+  ninja,
+  pkg-config,
   python3,
+  vala,
 }:
 
 stdenv.mkDerivation rec {
   pname = "gexiv2";
   version = "0.14.6";
 
+  src = fetchurl {
+    url = "mirror://gnome/sources/gexiv2/${lib.versions.majorMinor version}/gexiv2-${version}.tar.xz";
+    sha256 = "YGwoqq57Hz71yOq+Xn3/18WhyGbSW3Zx+4R/4oenK4s=";
+  };
+
   outputs = [
     "out"
     "dev"
     "devdoc"
   ];
-
-  src = fetchurl {
-    url = "mirror://gnome/sources/gexiv2/${lib.versions.majorMinor version}/gexiv2-${version}.tar.xz";
-    sha256 = "YGwoqq57Hz71yOq+Xn3/18WhyGbSW3Zx+4R/4oenK4s=";
-  };
 
   nativeBuildInputs = [
     meson
@@ -77,15 +77,15 @@ stdenv.mkDerivation rec {
 
   passthru = {
     updateScript = gnome.updateScript {
+      freeze = true;
       packageName = pname;
       versionPolicy = "odd-unstable";
-      freeze = true;
     };
   };
 
   meta = {
-    homepage = "https://gitlab.gnome.org/GNOME/gexiv2";
     description = "GObject wrapper around the Exiv2 photo metadata library";
+    homepage = "https://gitlab.gnome.org/GNOME/gexiv2";
     license = lib.licenses.gpl2Plus;
     platforms = lib.platforms.unix;
     teams = [ lib.teams.gnome ];

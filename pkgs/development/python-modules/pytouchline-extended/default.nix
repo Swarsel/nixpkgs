@@ -1,9 +1,9 @@
 {
+  lib,
+  fetchFromGitHub,
   buildPythonPackage,
   faust-cchardet,
-  fetchFromGitHub,
   httpx,
-  lib,
   pytest-asyncio,
   pytestCheckHook,
   setuptools,
@@ -12,7 +12,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "pytouchline-extended";
   version = "1.1.2";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "brondum";
@@ -26,6 +25,11 @@ buildPythonPackage (finalAttrs: {
       --replace-fail '$GITHUB_REF_NAME' '${finalAttrs.version}'
   '';
 
+  nativeCheckInputs = [
+    pytest-asyncio
+    pytestCheckHook
+  ];
+
   build-system = [ setuptools ];
 
   dependencies = [
@@ -33,17 +37,13 @@ buildPythonPackage (finalAttrs: {
     httpx
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "pytouchline_extended" ];
 
-  nativeCheckInputs = [
-    pytest-asyncio
-    pytestCheckHook
-  ];
-
   meta = {
-    changelog = "https://github.com/brondum/pytouchline/releases/tag/${finalAttrs.src.tag}";
     description = "Roth Touchline interface library";
     homepage = "https://github.com/brondum/pytouchline";
+    changelog = "https://github.com/brondum/pytouchline/releases/tag/${finalAttrs.src.tag}";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ dotlambda ];
   };

@@ -12,8 +12,8 @@ stdenv.mkDerivation (finalAttrs: {
   version = "unstable-2025-06-27";
 
   src = fetchFromGitHub {
-    repo = "ipu6-camera-bins";
     owner = "intel";
+    repo = "ipu6-camera-bins";
     tag = "20250923_ov02e"; # Released on 2025-06-27
     hash = "sha256-YPPzuK13o2jnRSB3ORoMUU5E9/IifKVSetAqZHRofhw=";
   };
@@ -56,9 +56,11 @@ stdenv.mkDerivation (finalAttrs: {
     description = "IPU firmware and proprietary image processing libraries";
     homepage = "https://github.com/intel/ipu6-camera-bins";
     license = lib.licenses.issl;
+
     sourceProvenance = with lib.sourceTypes; [
       binaryFirmware
     ];
+
     maintainers = [ ];
     platforms = [ "x86_64-linux" ];
   };

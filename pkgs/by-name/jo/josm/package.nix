@@ -3,10 +3,10 @@
   stdenv,
   fetchurl,
   fetchsvn,
-  makeWrapper,
-  unzip,
   jre,
   libxxf86vm,
+  makeWrapper,
+  unzip,
   extraJavaOpts ? "-Djosm.restart=true -Djava.net.useSystemProxies=true",
 }:
 let
@@ -14,17 +14,19 @@ let
   version = "19555";
   srcs = {
     jar = fetchurl {
-      url = "https://josm.openstreetmap.de/download/josm-snapshot-${version}.jar";
       hash = "sha256-OvpkNeppbaSnZBbRkHqoIVEVhKxhuJYTFDZm1n5reik=";
+      url = "https://josm.openstreetmap.de/download/josm-snapshot-${version}.jar";
     };
+
     macosx = fetchurl {
-      url = "https://josm.openstreetmap.de/download/macosx/josm-macos-${version}-java21.zip";
       hash = "sha256-dVy+gEokVDImS/wOM8h6RqgfAnMHIiSQfb/8BoZICJo=";
+      url = "https://josm.openstreetmap.de/download/macosx/josm-macos-${version}-java21.zip";
     };
+
     pkg = fetchsvn {
-      url = "https://josm.openstreetmap.de/svn/trunk/native/linux/tested";
-      rev = version;
       hash = "sha256-sAG9GI0SQpmdDqIXbSH/FN1io/QcsAJFv6/YT483aMA=";
+      rev = version;
+      url = "https://josm.openstreetmap.de/svn/trunk/native/linux/tested";
     };
   };
 
@@ -37,9 +39,6 @@ let
 in
 stdenv.mkDerivation {
   inherit pname version;
-
-  dontUnpack = true;
-
   nativeBuildInputs = [ makeWrapper ];
   buildInputs = lib.optionals (!stdenv.hostPlatform.isDarwin) [ jre ];
 
@@ -62,6 +61,8 @@ stdenv.mkDerivation {
           --prefix _JAVA_OPTIONS " " "-Dawt.useSystemAAFontSettings=gasp"
       '';
 
+  dontUnpack = true;
+
   passthru = {
     inherit srcs;
     updateScript = ./update.sh;
@@ -71,13 +72,15 @@ stdenv.mkDerivation {
     description = "Extensible editor for OpenStreetMap";
     homepage = "https://josm.openstreetmap.de/";
     changelog = "https://josm.openstreetmap.de/wiki/Changelog";
-    sourceProvenance = with lib.sourceTypes; [ binaryBytecode ];
     license = lib.licenses.gpl2Plus;
+    sourceProvenance = with lib.sourceTypes; [ binaryBytecode ];
+
     maintainers = with lib.maintainers; [
       rycee
       sikmir
       starsep
     ];
+
     platforms = lib.platforms.all;
     mainProgram = "josm";
   };

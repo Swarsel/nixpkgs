@@ -2,8 +2,8 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  fetchpatch,
   autoreconfHook,
+  fetchpatch,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -17,26 +17,25 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-ry29RUNa0Hv5gIhy2RTVT94mHhgfdIwb5aqjBycxxj0=";
   };
 
-  patches = [
-    # Fix for memory corruption in set_nodemask_size
-    (fetchpatch {
-      url = "https://github.com/numactl/numactl/commit/f9deba0c8404529772468d6dd01389f7dbfa5ba9.patch";
-      hash = "sha256-TmWfD99YaSIHA5PSsWHE91GSsdsVgVU+qIow7LOwOGw=";
-    })
-  ];
-
   outputs = [
     "out"
     "dev"
     "man"
   ];
 
-  nativeBuildInputs = [ autoreconfHook ];
+  patches = [
+    # Fix for memory corruption in set_nodemask_size
+    (fetchpatch {
+      hash = "sha256-TmWfD99YaSIHA5PSsWHE91GSsdsVgVU+qIow7LOwOGw=";
+      url = "https://github.com/numactl/numactl/commit/f9deba0c8404529772468d6dd01389f7dbfa5ba9.patch";
+    })
+  ];
 
   postPatch = ''
     patchShebangs test
   '';
 
+  nativeBuildInputs = [ autoreconfHook ];
   # You probably shouldn't ever run these! They will reconfigure Linux
   # NUMA settings, which on my build machine makes the rest of package
   # building ~5% slower until reboot. Ugh!
@@ -45,10 +44,12 @@ stdenv.mkDerivation (finalAttrs: {
   meta = {
     description = "Library and tools for non-uniform memory access (NUMA) machines";
     homepage = "https://github.com/numactl/numactl";
+
     license = with lib.licenses; [
       gpl2Only
       lgpl21
     ]; # libnuma is lgpl21
+
     platforms = lib.platforms.linux;
   };
 })

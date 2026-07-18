@@ -1,20 +1,20 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
-  cmake,
-  pkg-config,
-  makeWrapper,
-  zlib,
-  bzip2,
-  libjpeg,
   SDL2,
-  SDL2_net,
   SDL2_mixer,
+  SDL2_net,
+  bzip2,
+  cmake,
   gtk3,
-  writers,
-  python3Packages,
+  libjpeg,
+  makeWrapper,
   nix-update,
+  pkg-config,
+  python3Packages,
+  writers,
+  zlib,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -33,6 +33,7 @@ stdenv.mkDerivation (finalAttrs: {
     pkg-config
   ]
   ++ lib.optionals stdenv.hostPlatform.isDarwin [ makeWrapper ];
+
   buildInputs = [
     zlib
     bzip2
@@ -98,13 +99,15 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Advanced source port for Wolfenstein 3D, Spear of Destiny, and Super 3D Noah's Ark";
-    mainProgram = "ecwolf";
     homepage = "https://maniacsvault.net/ecwolf/";
     license = lib.licenses.gpl2Plus;
+
     maintainers = with lib.maintainers; [
       jayman2000
       keenanweaver
     ];
+
     platforms = lib.platforms.all;
+    mainProgram = "ecwolf";
   };
 })

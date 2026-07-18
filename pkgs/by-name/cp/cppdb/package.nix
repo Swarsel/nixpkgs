@@ -3,9 +3,9 @@
   stdenv,
   fetchurl,
   cmake,
-  sqlite,
   libmysqlclient,
   libpq,
+  sqlite,
   unixodbc,
 }:
 
@@ -24,6 +24,7 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   nativeBuildInputs = [ cmake ];
+
   buildInputs = [
     sqlite
     libmysqlclient
@@ -35,10 +36,10 @@ stdenv.mkDerivation (finalAttrs: {
   env.NIX_CFLAGS_COMPILE = "-I${libmysqlclient}/include/mysql -L${libmysqlclient}/lib/mysql";
 
   meta = {
-    homepage = "http://cppcms.com/sql/cppdb/";
     description = "C++ Connectivity library that supports MySQL, PostgreSQL, Sqlite3 databases and generic ODBC drivers";
-    platforms = lib.platforms.linux;
+    homepage = "http://cppcms.com/sql/cppdb/";
     license = lib.licenses.boost;
     maintainers = [ lib.maintainers.juliendehos ];
+    platforms = lib.platforms.linux;
   };
 })

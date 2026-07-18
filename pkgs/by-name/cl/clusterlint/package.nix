@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   versionCheckHook,
 }:
 
@@ -17,14 +17,11 @@ buildGoModule (finalAttrs: {
   };
 
   vendorHash = null;
-
-  ldflags = [ "-X main.Version=${finalAttrs.version}" ];
-
+  doInstallCheck = true;
+  nativeInstallCheckInputs = [ versionCheckHook ];
   # One subpackage fails to build
   excludedPackages = [ "example-plugin" ];
-
-  nativeInstallCheckInputs = [ versionCheckHook ];
-  doInstallCheck = true;
+  ldflags = [ "-X main.Version=${finalAttrs.version}" ];
 
   meta = {
     description = "Best practices checker for Kubernetes clusters";

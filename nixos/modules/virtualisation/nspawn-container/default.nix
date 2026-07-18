@@ -12,8 +12,8 @@
 
 {
   config,
-  pkgs,
   lib,
+  pkgs,
   ...
 }:
 let
@@ -28,53 +28,59 @@ in
   options = {
 
     virtualisation.cmdline = lib.mkOption {
-      type = types.listOf types.str;
       default = [ ];
+
+      description = ''
+        Command line arguments to pass to the init process (likely systemd).
+        Useful for debugging.
+      '';
+
       example = [
         "systemd.unit=rescue.target"
         "systemd.log_level=debug"
         "systemd.log_target=console"
       ];
-      description = ''
-        Command line arguments to pass to the init process (likely systemd).
-        Useful for debugging.
-      '';
+
+      type = types.listOf types.str;
     };
 
     virtualisation.rootDir = lib.mkOption {
-      type = types.str;
       default = "./${config.system.name}-root";
       defaultText = lib.literalExpression ''"./''${config.system.name}-root"'';
+
       description = ''
         Path to a directory for the root filesystem for the container.
         The directory will be created on startup if it does not
         exist.
       '';
+
+      type = types.str;
     };
 
     virtualisation.systemd-nspawn = {
 
-      package = lib.mkPackageOption pkgs "systemd" { };
-
       options = lib.mkOption {
-        type = types.listOf types.str;
         default = [ ];
-        example = [ "--bind=/home:/home" ];
+
         description = ''
           Options passed to systemd-nspawn.
           See [systemd-nspawn docs](https://www.freedesktop.org/software/systemd/man/latest/systemd-nspawn.html) for a complete list.
         '';
+
+        example = [ "--bind=/home:/home" ];
+        type = types.listOf types.str;
       };
+
+      package = lib.mkPackageOption pkgs "systemd" { };
 
     };
   };
 
   config = {
-    boot.isNspawnContainer = true;
-
     assertions = [
       {
         assertion = config.specialisation == { };
+
         message = ''
           Setting 'specialisation' is disallowed for systemd-nspawn container configurations.
           Activating a specialisation requires creating SUID wrappers (e.g., for 'sudo'),
@@ -111,6 +117,23 @@ in
       }
     ];
 
+    boot.isNspawnContainer = true;
+
+    system.build.nspawn =
+      let
+        run-nspawn = pkgs.callPackage ./run-nspawn { };
+        commandLineOptions = lib.cli.toCommandLineShellGNU { } {
+          cmdline-json = builtins.toJSON cfg.cmdline;
+          container-name = config.system.name;
+          init = "${config.system.build.toplevel}/init";
+          interfaces-json = builtins.toJSON (lib.attrValues cfg.allInterfaces);
+          root-dir = cfg.rootDir;
+        };
+      in
+      pkgs.writers.writeDashBin "run-${config.system.name}-nspawn" ''
+        exec ${lib.getExe run-nspawn} ${commandLineOptions} ${lib.escapeShellArgs config.virtualisation.systemd-nspawn.options} "$@"
+      '';
+
     virtualisation.systemd-nspawn.options = [
       "--private-network"
       "--machine=${config.system.name}"
@@ -137,20 +160,5 @@ in
       "--notify-ready=yes"
     ]
     ++ lib.mapAttrsToList (name: cred: "--load-credential=${name}:${cred.source}") cfg.credentials;
-
-    system.build.nspawn =
-      let
-        run-nspawn = pkgs.callPackage ./run-nspawn { };
-        commandLineOptions = lib.cli.toCommandLineShellGNU { } {
-          container-name = config.system.name;
-          root-dir = cfg.rootDir;
-          interfaces-json = builtins.toJSON (lib.attrValues cfg.allInterfaces);
-          init = "${config.system.build.toplevel}/init";
-          cmdline-json = builtins.toJSON cfg.cmdline;
-        };
-      in
-      pkgs.writers.writeDashBin "run-${config.system.name}-nspawn" ''
-        exec ${lib.getExe run-nspawn} ${commandLineOptions} ${lib.escapeShellArgs config.virtualisation.systemd-nspawn.options} "$@"
-      '';
   };
 }

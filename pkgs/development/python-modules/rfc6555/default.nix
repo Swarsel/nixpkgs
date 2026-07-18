@@ -1,14 +1,13 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   pytestCheckHook,
 }:
 
 buildPythonPackage rec {
   pname = "rfc6555";
   version = "0.1.0";
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "sethmlarson";
@@ -24,6 +23,7 @@ buildPythonPackage rec {
     "test_create_connection_has_proper_timeout"
   ];
 
+  format = "setuptools";
   pythonImportsCheck = [ "rfc6555" ];
 
   meta = {

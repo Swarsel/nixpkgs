@@ -1,31 +1,31 @@
 {
-  nix-update-script,
-  stdenvNoCC,
   lib,
+  nix-update-script,
   php,
+  stdenvNoCC,
 }@toplevel:
 
 let
   buildComposerProjectOverride =
     finalAttrs:
     {
-      php ? toplevel.php,
+      buildInputs ? [ ],
       composer ? php.packages.composer,
       composerLock ? null,
-      vendorHash ? "",
       composerNoDev ? true,
       composerNoPlugins ? true,
       composerNoScripts ? true,
       composerStrictValidation ? true,
-      buildInputs ? [ ],
-      nativeBuildInputs ? [ ],
-      strictDeps ? true,
-      patches ? [ ],
       doCheck ? true,
       doInstallCheck ? true,
       dontCheckForBrokenSymlinks ? true,
-      passthru ? { },
       meta ? { },
+      nativeBuildInputs ? [ ],
+      passthru ? { },
+      patches ? [ ],
+      php ? toplevel.php,
+      strictDeps ? true,
+      vendorHash ? "",
       ...
     }@args:
     {
@@ -47,14 +47,6 @@ let
       ];
 
       buildInputs = buildInputs ++ [ php ];
-
-      # Should we keep these empty phases?
-      configurePhase =
-        args.configurePhase or ''
-          runHook preConfigure
-
-          runHook postConfigure
-        '';
 
       buildPhase =
         args.buildPhase or ''
@@ -92,6 +84,7 @@ let
             vendorHash
             version
             ;
+
           inherit
             php
             composer
@@ -103,6 +96,14 @@ let
             dontCheckForBrokenSymlinks
             ;
         });
+
+      # Should we keep these empty phases?
+      configurePhase =
+        args.configurePhase or ''
+          runHook preConfigure
+
+          runHook postConfigure
+        '';
 
       # Projects providing a lockfile from upstream can be automatically updated.
       passthru = passthru // {

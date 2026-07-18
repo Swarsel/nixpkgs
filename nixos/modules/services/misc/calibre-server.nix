@@ -15,9 +15,9 @@ let
   execFlags =
     lib.mapAttrsToList (k: v: "--${k}=${toString v}") (
       lib.filterAttrs (name: value: value != null) {
+        auth-mode = cfg.auth.mode;
         listen-on = cfg.host;
         port = cfg.port;
-        auth-mode = cfg.auth.mode;
         userdb = cfg.auth.userDb;
       }
     )
@@ -46,124 +46,133 @@ in
       enable = lib.mkEnableOption "calibre-server (e-book software)";
       package = lib.mkPackageOption pkgs "calibre" { };
 
-      libraries = lib.mkOption {
-        type = lib.types.listOf lib.types.path;
-        default = [ "/var/lib/calibre-server" ];
-        description = ''
-          Make sure each library path is initialized before service startup.
-          The directories of the libraries to serve. They must be readable for the user under which the server runs.
-          See the [calibredb documentation](${documentationLink}/generated/en/calibredb.html#add) for details.
-        '';
-      };
-
-      extraFlags = lib.mkOption {
-        type = lib.types.listOf lib.types.str;
-        default = [ ];
-        description = ''
-          Extra flags to pass to the calibre-server command.
-          See the [calibre-server documentation](${generatedDocumentationLink}) for details.
-        '';
-      };
-
-      user = lib.mkOption {
-        type = lib.types.str;
-        default = "calibre-server";
-        description = "The user under which calibre-server runs.";
-      };
-
-      group = lib.mkOption {
-        type = lib.types.str;
-        default = "calibre-server";
-        description = "The group under which calibre-server runs.";
-      };
-
-      host = lib.mkOption {
-        type = lib.types.str;
-        default = "0.0.0.0";
-        example = "::1";
-        description = ''
-          The interface on which to listen for connections.
-          See the [calibre-server documentation](${generatedDocumentationLink}#cmdoption-calibre-server-listen-on) for details.
-        '';
-      };
-
-      port = lib.mkOption {
-        default = 8080;
-        type = lib.types.port;
-        description = ''
-          The port on which to listen for connections.
-          See the [calibre-server documentation](${generatedDocumentationLink}#cmdoption-calibre-server-port) for details.
-        '';
-      };
-
-      openFirewall = lib.mkOption {
-        type = lib.types.bool;
-        default = false;
-        description = "Open ports in the firewall for the Calibre Server web interface.";
-      };
-
       auth = {
         enable = lib.mkOption {
-          type = lib.types.bool;
           default = false;
+
           description = ''
             Password based authentication to access the server.
             See the [calibre-server documentation](${generatedDocumentationLink}#cmdoption-calibre-server-enable-auth) for details.
           '';
+
+          type = lib.types.bool;
         };
 
         mode = lib.mkOption {
-          type = lib.types.enum [
-            "auto"
-            "basic"
-            "digest"
-          ];
           default = "auto";
+
           description = ''
             Choose the type of authentication used.
             Set the HTTP authentication mode used by the server.
             See the [calibre-server documentation](${generatedDocumentationLink}#cmdoption-calibre-server-auth-mode) for details.
           '';
+
+          type = lib.types.enum [
+            "auto"
+            "basic"
+            "digest"
+          ];
         };
 
         userDb = lib.mkOption {
           default = null;
-          type = lib.types.nullOr lib.types.path;
+
           description = ''
             Choose users database file to use for authentication.
             Make sure users database file is initialized before service startup.
             See the [calibre-server documentation](${documentationLink}/server.html#managing-user-accounts-from-the-command-line-only) for details.
           '';
+
+          type = lib.types.nullOr lib.types.path;
         };
+      };
+
+      extraFlags = lib.mkOption {
+        default = [ ];
+
+        description = ''
+          Extra flags to pass to the calibre-server command.
+          See the [calibre-server documentation](${generatedDocumentationLink}) for details.
+        '';
+
+        type = lib.types.listOf lib.types.str;
+      };
+
+      group = lib.mkOption {
+        default = "calibre-server";
+        description = "The group under which calibre-server runs.";
+        type = lib.types.str;
+      };
+
+      host = lib.mkOption {
+        default = "0.0.0.0";
+
+        description = ''
+          The interface on which to listen for connections.
+          See the [calibre-server documentation](${generatedDocumentationLink}#cmdoption-calibre-server-listen-on) for details.
+        '';
+
+        example = "::1";
+        type = lib.types.str;
+      };
+
+      libraries = lib.mkOption {
+        default = [ "/var/lib/calibre-server" ];
+
+        description = ''
+          Make sure each library path is initialized before service startup.
+          The directories of the libraries to serve. They must be readable for the user under which the server runs.
+          See the [calibredb documentation](${documentationLink}/generated/en/calibredb.html#add) for details.
+        '';
+
+        type = lib.types.listOf lib.types.path;
+      };
+
+      openFirewall = lib.mkOption {
+        default = false;
+        description = "Open ports in the firewall for the Calibre Server web interface.";
+        type = lib.types.bool;
+      };
+
+      port = lib.mkOption {
+        default = 8080;
+
+        description = ''
+          The port on which to listen for connections.
+          See the [calibre-server documentation](${generatedDocumentationLink}#cmdoption-calibre-server-port) for details.
+        '';
+
+        type = lib.types.port;
+      };
+
+      user = lib.mkOption {
+        default = "calibre-server";
+        description = "The user under which calibre-server runs.";
+        type = lib.types.str;
       };
     };
   };
 
   config = lib.mkIf cfg.enable {
 
+    environment.systemPackages = [ cfg.package ];
+    networking.firewall = lib.mkIf cfg.openFirewall { allowedTCPPorts = [ cfg.port ]; };
+
     systemd.services.calibre-server = {
-      description = "Calibre Server";
       after = [ "network.target" ];
-      wantedBy = [ "multi-user.target" ];
+      description = "Calibre Server";
+
       serviceConfig = {
-        User = cfg.user;
-        Restart = "always";
         ExecStart = utils.escapeSystemdExecArgs (
           [ "${cfg.package}/bin/calibre-server" ] ++ execFlags ++ [ "--" ] ++ cfg.libraries
         );
+
+        Restart = "always";
+        User = cfg.user;
       };
 
-    };
+      wantedBy = [ "multi-user.target" ];
 
-    environment.systemPackages = [ cfg.package ];
-
-    users.users = lib.optionalAttrs (cfg.user == "calibre-server") {
-      calibre-server = {
-        home = "/var/lib/calibre-server";
-        createHome = true;
-        uid = config.ids.uids.calibre-server;
-        group = cfg.group;
-      };
     };
 
     users.groups = lib.optionalAttrs (cfg.group == "calibre-server") {
@@ -172,7 +181,14 @@ in
       };
     };
 
-    networking.firewall = lib.mkIf cfg.openFirewall { allowedTCPPorts = [ cfg.port ]; };
+    users.users = lib.optionalAttrs (cfg.user == "calibre-server") {
+      calibre-server = {
+        createHome = true;
+        group = cfg.group;
+        home = "/var/lib/calibre-server";
+        uid = config.ids.uids.calibre-server;
+      };
+    };
 
   };
 

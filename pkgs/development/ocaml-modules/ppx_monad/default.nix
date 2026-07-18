@@ -9,8 +9,6 @@ buildDunePackage (finalAttrs: {
   pname = "ppx_monad";
   version = "0.2.0";
 
-  duneVersion = "3";
-
   src = fetchFromGitHub {
     owner = "niols";
     repo = "ppx_monad";
@@ -23,13 +21,16 @@ buildDunePackage (finalAttrs: {
   ];
 
   doCheck = true;
+
   checkInputs = [
   ];
 
+  duneVersion = "3";
+
   meta = {
     description = "OCaml Syntax Extension for all Monadic Syntaxes";
+    homepage = "https://github.com/niols/ppx_monad";
     license = lib.licenses.lgpl3Plus;
     maintainers = [ lib.maintainers.niols ];
-    homepage = "https://github.com/niols/ppx_monad";
   };
 })

@@ -2,64 +2,67 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  fetchpatch2,
-  gitUpdater,
-  unstableGitUpdater,
+  SDL2,
+  a52dec,
+  alsa-lib,
   cctools,
-  pkg-config,
-  zlib,
+  curl,
+  faad2,
+  fetchpatch2,
   ffmpeg-headless,
   freetype,
+  gitUpdater,
+  jack2,
+  libcaca,
   libjpeg_turbo,
-  libpng,
   libmad,
-  faad2,
   libogg,
-  libvorbis,
+  libpng,
   libtheora,
-  a52dec,
+  libvorbis,
+  libx11,
+  libxv,
+  mesa_glu,
   nghttp2,
   openjpeg,
-  libcaca,
-  mesa_glu,
-  xvidcore,
   openssl,
-  jack2,
-  alsa-lib,
+  pkg-config,
   pulseaudio,
-  SDL2,
-  curl,
-  libxv,
-  libx11,
+  unstableGitUpdater,
   xorgproto,
-
-  withFullDeps ? false,
-  withFfmpeg ? withFullDeps,
+  xvidcore,
+  zlib,
   releaseChannel ? "stable",
+  withFfmpeg ? withFullDeps,
+  withFullDeps ? false,
 }:
 
 let
   stable = rec {
     version = "26.02.0";
+
     src = fetchFromGitHub {
       owner = "gpac";
       repo = "gpac";
       rev = "v${version}";
       hash = "sha256-UtL+KG3dsp6dD7cfTK7e17ngt/RHKJL0s5IopTM3VOk=";
     };
+
     updateScript = gitUpdater {
-      rev-prefix = "v";
       ignoredVersions = "^(abi|test)";
+      rev-prefix = "v";
     };
   };
   unstable = {
     version = "26.02.0-unstable-2026-04-29";
+
     src = fetchFromGitHub {
       owner = "gpac";
       repo = "gpac";
       rev = "525bf1af642c30af04e4df5345e6d798c0a4d8a1";
       hash = "sha256-G/4gefsS2hUKo8VEt80YZOaGJSjrzXFrdHO/u33BiDw=";
     };
+
     updateScript = unstableGitUpdater {
       tagFormat = "v*";
       tagPrefix = "v";
@@ -68,8 +71,16 @@ let
   channelToUse = if releaseChannel == "unstable" then unstable else stable;
 in
 stdenv.mkDerivation (finalAttrs: {
-  pname = "gpac";
   inherit (channelToUse) version src;
+  pname = "gpac";
+
+  patches = lib.optionals (releaseChannel == "stable") [
+    (fetchpatch2 {
+      hash = "sha256-JaJiQAQvzdB74ag2/aZTiQa2NqlgqgMYS1tsk/R+wiI=";
+      # CVE-2026-7135 fix
+      url = "https://github.com/gpac/gpac/commit/cf6ac48c972eaaee2af270adc3f36615325deb3e.patch?full_index=1";
+    })
+  ];
 
   nativeBuildInputs = [
     pkg-config
@@ -111,20 +122,12 @@ stdenv.mkDerivation (finalAttrs: {
     curl
   ];
 
-  patches = lib.optionals (releaseChannel == "stable") [
-    (fetchpatch2 {
-      # CVE-2026-7135 fix
-      url = "https://github.com/gpac/gpac/commit/cf6ac48c972eaaee2af270adc3f36615325deb3e.patch?full_index=1";
-      hash = "sha256-JaJiQAQvzdB74ag2/aZTiQa2NqlgqgMYS1tsk/R+wiI=";
-    })
-  ];
-
   enableParallelBuilding = true;
-
   passthru.updateScript = channelToUse.updateScript;
 
   meta = {
     description = "Open Source multimedia framework for research and academic purposes";
+
     longDescription = ''
       GPAC is an Open Source multimedia framework for research and academic purposes.
       The project covers different aspects of multimedia, with a focus on presentation
@@ -137,12 +140,15 @@ stdenv.mkDerivation (finalAttrs: {
       A multimedia packager, called MP4Box,
       And some server tools included in MP4Box and MP42TS applications.
     '';
+
     homepage = "https://gpac.wp.imt.fr";
     license = lib.licenses.lgpl21;
+
     maintainers = with lib.maintainers; [
       mgdelacroix
       thesn
     ];
+
     platforms = lib.platforms.unix;
   };
 })

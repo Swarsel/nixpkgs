@@ -2,8 +2,8 @@
   lib,
   stdenv,
   fetchFromGitLab,
-  pkg-config,
   libusb1,
+  pkg-config,
   util-linux,
   zlib,
 }:
@@ -23,10 +23,12 @@ stdenv.mkDerivation (finalAttrs: {
     pkg-config
     util-linux
   ];
+
   buildInputs = [
     libusb1
     zlib
   ];
+
   makeFlags = [
     "VERSION=${finalAttrs.version}"
     "PREFIX=$(out)"
@@ -40,11 +42,11 @@ stdenv.mkDerivation (finalAttrs: {
   doInstallCheck = true;
 
   meta = {
-    homepage = "https://gitlab.com/DavidGriffith/minipro";
     description = "Open source program for controlling the MiniPRO TL866xx series of chip programmers";
+    homepage = "https://gitlab.com/DavidGriffith/minipro";
     license = lib.licenses.gpl3Plus;
     maintainers = [ lib.maintainers.bmwalters ];
-    mainProgram = "minipro";
     platforms = lib.platforms.unix;
+    mainProgram = "minipro";
   };
 })

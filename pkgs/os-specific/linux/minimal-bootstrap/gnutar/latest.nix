@@ -1,18 +1,18 @@
 {
   lib,
-  buildPlatform,
-  hostPlatform,
   fetchurl,
   bash,
-  gcc,
-  musl,
   binutils,
+  buildPlatform,
+  gawk,
+  gcc,
+  gnugrep,
   gnumake,
   gnused,
-  gnugrep,
-  gawk,
-  gzip,
   gnutarBoot,
+  gzip,
+  hostPlatform,
+  musl,
 }:
 let
   inherit (import ./common.nix { inherit lib; }) meta;

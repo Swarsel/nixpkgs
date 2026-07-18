@@ -1,12 +1,12 @@
 {
   lib,
-  curl,
-  writeShellScript,
-  jq,
-  gnused,
-  git,
-  nix,
   coreutils,
+  curl,
+  git,
+  gnused,
+  jq,
+  nix,
+  writeShellScript,
 }:
 {
   platforms,

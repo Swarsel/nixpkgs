@@ -1,16 +1,14 @@
 {
   lib,
   stdenv,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # build-system
-  hatch-vcs,
-  hatchling,
-
   # dependencies
   acres,
   attrs,
+  buildPythonPackage,
+  # build-system
+  hatch-vcs,
+  hatchling,
   importlib-resources,
   jinja2,
   looseversion,
@@ -23,6 +21,10 @@
   packaging,
   pandas,
   pybids,
+  # tests
+  pytest-cov-stub,
+  pytest-env,
+  pytestCheckHook,
   pyyaml,
   scikit-image,
   scipy,
@@ -32,18 +34,12 @@
   templateflow,
   traits,
   transforms3d,
-
-  # tests
-  pytest-cov-stub,
-  pytest-env,
-  pytestCheckHook,
   writableTmpDirAsHomeHook,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "niworkflows";
   version = "1.14.4";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "nipreps";
@@ -55,7 +51,16 @@ buildPythonPackage (finalAttrs: {
   # fails to determine the version automatically
   env.SETUPTOOLS_SCM_PRETEND_VERSION = finalAttrs.version;
 
-  pythonRelaxDeps = [ "traits" ];
+  nativeCheckInputs = [
+    pytest-cov-stub
+    pytest-env
+    pytestCheckHook
+    writableTmpDirAsHomeHook
+  ]
+  ++ lib.optionals stdenv.hostPlatform.isDarwin [
+    # Needed for tests that read the system memory usage on Darwin
+    sysctl
+  ];
 
   build-system = [
     hatch-vcs
@@ -87,18 +92,9 @@ buildPythonPackage (finalAttrs: {
     transforms3d
   ];
 
-  nativeCheckInputs = [
-    pytest-cov-stub
-    pytest-env
-    pytestCheckHook
-    writableTmpDirAsHomeHook
-  ]
-  ++ lib.optionals stdenv.hostPlatform.isDarwin [
-    # Needed for tests that read the system memory usage on Darwin
-    sysctl
+  disabledTestPaths = [
+    "niworkflows/tests/test_registration.py"
   ];
-
-  enabledTestPaths = [ "niworkflows" ];
 
   disabledTests = [
     # try to download data:
@@ -112,18 +108,17 @@ buildPythonPackage (finalAttrs: {
     "test_brain_extraction_wf_smoketest"
   ];
 
-  disabledTestPaths = [
-    "niworkflows/tests/test_registration.py"
-  ];
-
+  enabledTestPaths = [ "niworkflows" ];
+  pyproject = true;
   pythonImportsCheck = [ "niworkflows" ];
+  pythonRelaxDeps = [ "traits" ];
 
   meta = {
     description = "Common workflows for MRI (anatomical, functional, diffusion, etc.)";
-    mainProgram = "niworkflows-boldref";
     homepage = "https://github.com/nipreps/niworkflows";
     changelog = "https://github.com/nipreps/niworkflows/blob/${finalAttrs.src.tag}/CHANGES.rst";
     license = lib.licenses.asl20;
     maintainers = with lib.maintainers; [ bcdarwin ];
+    mainProgram = "niworkflows-boldref";
   };
 })

@@ -2,12 +2,12 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  fetchpatch,
-  cmake,
-  ncurses,
   SDL2,
+  cmake,
+  fetchpatch,
   libGL,
   libx11,
+  ncurses,
 }:
 
 stdenv.mkDerivation {
@@ -23,18 +23,10 @@ stdenv.mkDerivation {
 
   patches = [
     (fetchpatch {
+      hash = "sha256-zLAx5FOvtUsUZM/nUCFW8Z1Xe3+oV95Nv1s3GaNcV/c=";
       name = "no-install-during-build.patch";
       url = "https://github.com/Aeva/tangerine/pull/12/commits/2d7d1ae1e21e8fe52df2c4a33e947b2ff6b07812.patch";
-      hash = "sha256-zLAx5FOvtUsUZM/nUCFW8Z1Xe3+oV95Nv1s3GaNcV/c=";
     })
-  ];
-
-  nativeBuildInputs = [ cmake ];
-  buildInputs = [
-    ncurses
-    SDL2
-    libGL
-    libx11
   ];
 
   postPatch = ''
@@ -44,6 +36,15 @@ stdenv.mkDerivation {
       --replace-fail "cmake_minimum_required(VERSION 3.2 FATAL_ERROR)" "cmake_minimum_required(VERSION 3.10)" \
       --replace-fail "cmake_policy(VERSION 3.2)" "cmake_policy(VERSION 3.10)"
   '';
+
+  nativeBuildInputs = [ cmake ];
+
+  buildInputs = [
+    ncurses
+    SDL2
+    libGL
+    libx11
+  ];
 
   meta = {
     description = "System for creating 3D models procedurally from a set of Signed Distance Function (SDF) primitive shapes and combining operators";

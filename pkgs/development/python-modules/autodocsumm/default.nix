@@ -1,20 +1,19 @@
 {
+  lib,
   buildPythonPackage,
   fetchPypi,
   setuptools,
-  versioneer,
   sphinx,
-  lib,
+  versioneer,
 }:
 buildPythonPackage rec {
   pname = "autodocsumm";
   version = "0.2.15";
-  pyproject = true;
 
   src = fetchPypi {
     inherit version;
-    pname = "autodocsumm";
     hash = "sha256-6vQx56WjnkGiFTERc8i5XoOFkFnfHM87ecZL89VYKzw=";
+    pname = "autodocsumm";
   };
 
   build-system = [ setuptools ];
@@ -24,6 +23,7 @@ buildPythonPackage rec {
     sphinx
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "autodocsumm" ];
 
   meta = {

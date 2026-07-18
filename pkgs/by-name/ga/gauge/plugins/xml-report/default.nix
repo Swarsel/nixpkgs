@@ -5,16 +5,16 @@
 makeGaugePlugin {
   pname = "xml-report";
   data = lib.importJSON ./data.json;
-
-  repo = "getgauge/xml-report";
   releasePrefix = "xml-report-";
+  repo = "getgauge/xml-report";
 
   meta = {
     description = "XML report generation plugin for Gauge";
     homepage = "https://github.com/getgauge/xml-report/";
     license = lib.licenses.asl20;
-    maintainers = [ ];
     sourceProvenance = [ lib.sourceTypes.binaryNativeCode ];
+    maintainers = [ ];
+
     platforms = [
       "aarch64-darwin"
       "aarch64-linux"

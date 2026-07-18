@@ -1,8 +1,8 @@
 {
   lib,
+  fetchFromGitHub,
   beautifulsoup4,
   buildPythonPackage,
-  fetchFromGitHub,
   griffe,
   inline-snapshot,
   mkdocs-autorefs,
@@ -15,7 +15,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "mkdocstrings-python";
   version = "2.0.2";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "mkdocstrings";
@@ -23,6 +22,13 @@ buildPythonPackage (finalAttrs: {
     tag = finalAttrs.version;
     hash = "sha256-MCR304sOqlS4azZOoNa4klITDdr+bD8N6wEZBuHhZms=";
   };
+
+  nativeCheckInputs = [
+    beautifulsoup4
+    inline-snapshot
+    mkdocs-material
+    pytestCheckHook
+  ];
 
   build-system = [ pdm-backend ];
 
@@ -32,21 +38,15 @@ buildPythonPackage (finalAttrs: {
     mkdocstrings
   ];
 
-  nativeCheckInputs = [
-    beautifulsoup4
-    inline-snapshot
-    mkdocs-material
-    pytestCheckHook
-  ];
-
-  pythonImportsCheck = [ "mkdocstrings_handlers" ];
-
   disabledTests = [
     # Tests fails with AssertionError
     "test_windows_root_conversion"
     # TypeError
     "test_format_code"
   ];
+
+  pyproject = true;
+  pythonImportsCheck = [ "mkdocstrings_handlers" ];
 
   meta = {
     description = "Python handler for mkdocstrings";

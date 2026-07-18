@@ -1,25 +1,22 @@
 {
   lib,
+  # dependencies
+  bidsschematools,
   buildPythonPackage,
   fetchPypi,
-
   # build-system
   setuptools,
   versioneer,
-
-  # dependencies
-  bidsschematools,
 }:
 
 buildPythonPackage rec {
   pname = "bids-validator";
   version = "1.14.7.post0";
-  pyproject = true;
 
   src = fetchPypi {
-    pname = "bids_validator";
     inherit version;
     hash = "sha256-5gBaUAt1+KlhWT+2fUYIUQfa2xFvWaXDtSSqBpeUW2Y=";
+    pname = "bids_validator";
   };
 
   build-system = [
@@ -31,6 +28,7 @@ buildPythonPackage rec {
     bidsschematools
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "bids_validator" ];
 
   meta = {

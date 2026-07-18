@@ -1,13 +1,13 @@
 {
   lib,
-  cmake,
+  stdenv,
   fetchFromGitHub,
-  libglut,
+  cmake,
   libGL,
+  libglut,
   libheif,
   libjpeg,
   pkg-config,
-  stdenv,
   enableHEIFCodec ? true,
   enableJPGCodec ? true,
   enableOpenGL ? true,
@@ -32,6 +32,8 @@ stdenv.mkDerivation (finalAttrs: {
     "man"
   ];
 
+  strictDeps = true;
+
   nativeBuildInputs = [
     cmake
     pkg-config
@@ -50,9 +52,6 @@ stdenv.mkDerivation (finalAttrs: {
     libGL
   ];
 
-  # Since "build" already exists and is populated, cmake tries to use it,
-  # throwing uncomprehensible error messages...
-  cmakeBuildDir = "build-directory";
   cmakeFlags = [
     (lib.cmakeBool "ALLOW_IN_SOURCE_BUILD" true)
     (lib.cmakeBool "JAS_ENABLE_HEIC_CODEC" enableHEIFCodec)
@@ -63,8 +62,6 @@ stdenv.mkDerivation (finalAttrs: {
     (lib.cmakeBool "JAS_ENABLE_OPENGL" enableOpenGL)
   ];
 
-  strictDeps = true;
-
   # The value of __STDC_VERSION__ cannot be automatically determined when cross-compiling
   # https://github.com/jasper-software/jasper/blob/87668487/CMakeLists.txt#L415
   # workaround taken from
@@ -73,9 +70,13 @@ stdenv.mkDerivation (finalAttrs: {
     cmakeFlagsArray+=(-DJAS_STDC_VERSION="$(echo __STDC_VERSION__ | $CXX -E -P -)")
   '';
 
+  # Since "build" already exists and is populated, cmake tries to use it,
+  # throwing uncomprehensible error messages...
+  cmakeBuildDir = "build-directory";
+
   meta = {
-    homepage = "https://jasper-software.github.io/jasper/";
     description = "Image processing/coding toolkit";
+
     longDescription = ''
       JasPer is a software toolkit for the handling of image data. The software
       provides a means for representing images, and facilitates the manipulation
@@ -93,10 +94,12 @@ stdenv.mkDerivation (finalAttrs: {
       was chosen primarily due to the availability of C development environments
       for most computing platforms when JasPer was first developed, circa 1999.
     '';
+
+    homepage = "https://jasper-software.github.io/jasper/";
     license = with lib.licenses; [ mit ];
-    mainProgram = "jasper";
     maintainers = [ ];
     platforms = lib.platforms.unix;
+    mainProgram = "jasper";
   };
 })
 # TODO: investigate opengl support

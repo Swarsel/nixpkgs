@@ -1,10 +1,10 @@
 {
   lib,
   stdenv,
+  fetchFromGitHub,
   aiohttp,
   buildPythonPackage,
   charset-normalizer,
-  fetchFromGitHub,
   h2,
   httpx,
   onecache,
@@ -21,9 +21,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "aiosonic";
   version = "0.31.1";
-  pyproject = true;
-
-  __darwinAllowLocalNetworking = true;
 
   src = fetchFromGitHub {
     owner = "sonic182";
@@ -31,14 +28,6 @@ buildPythonPackage (finalAttrs: {
     tag = finalAttrs.version;
     hash = "sha256-f0MSUGdwq0If4LrZmMqYmdyycfTKroCfkkkX/l0v8QM=";
   };
-
-  build-system = [ poetry-core ];
-
-  dependencies = [
-    charset-normalizer
-    h2
-    onecache
-  ];
 
   nativeCheckInputs = [
     aiohttp
@@ -52,7 +41,19 @@ buildPythonPackage (finalAttrs: {
     uvicorn
   ];
 
-  pythonImportsCheck = [ "aiosonic" ];
+  __darwinAllowLocalNetworking = true;
+  build-system = [ poetry-core ];
+
+  dependencies = [
+    charset-normalizer
+    h2
+    onecache
+  ];
+
+  disabledTestPaths = [
+    # tests hang
+    "tests/test_sse.py"
+  ];
 
   disabledTests =
     lib.optionals stdenv.hostPlatform.isLinux [
@@ -116,10 +117,8 @@ buildPythonPackage (finalAttrs: {
       "test_proxy_request"
     ];
 
-  disabledTestPaths = [
-    # tests hang
-    "tests/test_sse.py"
-  ];
+  pyproject = true;
+  pythonImportsCheck = [ "aiosonic" ];
 
   meta = {
     description = "Python asyncio http client";

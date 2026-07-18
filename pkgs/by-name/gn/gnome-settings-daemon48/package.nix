@@ -1,43 +1,43 @@
 {
-  stdenv,
   lib,
-  replaceVars,
-  buildPackages,
+  stdenv,
   fetchurl,
-  meson,
-  ninja,
-  pkg-config,
-  perl,
-  gettext,
-  gtk3,
-  glib,
-  libnotify,
-  libgnomekbd,
-  libpulseaudio,
   alsa-lib,
-  libcanberra-gtk3,
-  upower,
+  buildPackages,
   colord,
-  libgweather,
-  polkit,
-  gsettings-desktop-schemas,
+  docbook_xsl,
+  gcr_4,
   geoclue2,
-  systemd,
+  geocode-glib_2,
+  gettext,
+  glib,
+  gnome-desktop,
+  gnome-session-ctl,
+  gsettings-desktop-schemas,
+  gtk3,
+  libcanberra-gtk3,
+  libgnomekbd,
   libgudev,
+  libgweather,
+  libnotify,
+  libpulseaudio,
   libwacom,
-  libxslt,
   libxml2,
+  libxslt,
+  meson,
   modemmanager,
   networkmanager,
-  gnome-desktop,
-  geocode-glib_2,
-  docbook_xsl,
-  wrapGAppsHook3,
+  ninja,
+  perl,
+  pkg-config,
+  polkit,
   python3,
+  replaceVars,
+  systemd,
   tzdata,
-  gcr_4,
-  gnome-session-ctl,
   udevCheckHook,
+  upower,
+  wrapGAppsHook3,
   withSystemd ? lib.meta.availableOn stdenv.hostPlatform systemd,
 }:
 
@@ -59,10 +59,12 @@ stdenv.mkDerivation (finalAttrs: {
     })
   ];
 
-  depsBuildBuild = [
-    buildPackages.stdenv.cc
-    pkg-config
-  ];
+  postPatch = ''
+    for f in plugins/power/gsd-power-constants-update.pl; do
+      chmod +x $f
+      patchShebangs $f
+    done
+  '';
 
   nativeBuildInputs = [
     meson
@@ -116,21 +118,18 @@ stdenv.mkDerivation (finalAttrs: {
   # Default for release buildtype but passed manually because
   # we're using plain
   env.NIX_CFLAGS_COMPILE = "-DG_DISABLE_CAST_CHECKS";
-
-  postPatch = ''
-    for f in plugins/power/gsd-power-constants-update.pl; do
-      chmod +x $f
-      patchShebangs $f
-    done
-  '';
-
   doInstallCheck = true;
+
+  depsBuildBuild = [
+    buildPackages.stdenv.cc
+    pkg-config
+  ];
 
   meta = {
     description = "GNOME Settings Daemon";
     homepage = "https://gitlab.gnome.org/GNOME/gnome-settings-daemon/";
     license = lib.licenses.gpl2Plus;
-    teams = [ lib.teams.pantheon ];
     platforms = lib.platforms.linux;
+    teams = [ lib.teams.pantheon ];
   };
 })

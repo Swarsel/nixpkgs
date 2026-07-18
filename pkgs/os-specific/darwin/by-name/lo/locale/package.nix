@@ -1,8 +1,8 @@
 {
   lib,
+  fetchFromGitHub,
   adv_cmds,
   bmake,
-  fetchFromGitHub,
   stdenvNoCC,
 }:
 
@@ -19,8 +19,6 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     rev = "adv_cmds-118";
     hash = "sha256-KzaAlqXqfJW2s31qmA0D7qteaZY57Va2o86aZrwyR74=";
   };
-
-  sourceRoot = "${finalAttrs.src.name}/usr-share-locale.tproj";
 
   postPatch = ''
     # bmake expects `Makefile` not `BSDmakefile`.
@@ -41,24 +39,25 @@ stdenvNoCC.mkDerivation (finalAttrs: {
       --replace-fail bsdmake bmake
   '';
 
-  enableParallelBuilding = true;
-
   nativeBuildInputs = [
     adv_cmds
     bmake
   ];
 
+  enableParallelBuilding = true;
   enableParallelInstalling = true;
-
   installFlags = [ "DESTDIR=${placeholder "out"}" ];
+  sourceRoot = "${finalAttrs.src.name}/usr-share-locale.tproj";
 
   meta = {
     description = "Locale data for Darwin";
     homepage = "https://github.com/apple-oss-distributions/adv_cmds";
+
     license = [
       lib.licenses.apsl10
       lib.licenses.apsl20
     ];
+
     teams = [ lib.teams.darwin ];
   };
 })

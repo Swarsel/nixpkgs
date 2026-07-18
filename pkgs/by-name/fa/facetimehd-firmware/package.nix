@@ -1,10 +1,10 @@
 {
   lib,
-  stdenvNoCC,
   fetchurl,
   cpio,
-  xz,
   pkgs,
+  stdenvNoCC,
+  xz,
 }:
 
 let
@@ -40,16 +40,14 @@ in
 
 stdenvNoCC.mkDerivation {
 
-  pname = "facetimehd-firmware";
   inherit version;
+  pname = "facetimehd-firmware";
+
   src = fetchurl {
     url = dmgUrl;
     sha256 = "0s8crlh8rvpanzk1w4z3hich0a3mw0m5xhpcg07bxy02calhpdk1";
     curlOpts = "-r ${dmgRange}";
   };
-
-  dontUnpack = true;
-  dontInstall = true;
 
   nativeBuildInputs = [
     cpio
@@ -63,13 +61,18 @@ stdenvNoCC.mkDerivation {
     gunzip -c ${firmwareOut}.gz > $out/lib/firmware/facetimehd/${firmwareOut}
   '';
 
+  dontInstall = true;
+  dontUnpack = true;
+
   meta = {
     description = "facetimehd firmware";
     homepage = "https://support.apple.com/kb/DL1877";
     license = lib.licenses.unfree;
+
     maintainers = with lib.maintainers; [
       womfoo
     ];
+
     platforms = [
       "i686-linux"
       "x86_64-linux"

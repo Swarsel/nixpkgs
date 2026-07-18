@@ -30,11 +30,11 @@
   pytest-xdist,
   pytestCheckHook,
   pyyaml,
-  requests-mock,
   requests,
+  requests-mock,
   rich,
-  setuptools-scm,
   setuptools,
+  setuptools-scm,
   shaperglot,
   stringbrewer,
   toml,
@@ -48,29 +48,45 @@
 buildPythonPackage rec {
   pname = "fontbakery";
   version = "1.1.0";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
     hash = "sha256-cLQNjrpk8m3Rm1VBC4FNGB7e/E+hjIqcStFSDqfVIk4=";
   };
 
+  nativeBuildInputs = [
+    installShellFiles
+  ];
+
   env.PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION = "python";
 
-  pythonRelaxDeps = [
-    "collidoscope"
-    "freetype-py"
-    "protobuf"
-    "vharfbuzz"
+  nativeCheckInputs = [
+    gitMinimal
+    pytestCheckHook
+    pytest-xdist
+    requests-mock
+    ufolint
   ];
+
+  preCheck = ''
+    # Let the tests invoke 'fontbakery' command.
+    export PATH="$out/bin:$PATH"
+    # font-v tests assume they are running from a git checkout, although they
+    # don't care which one. Create a dummy git repo to satisfy the tests:
+    git init -b main
+    git config user.email test@example.invalid
+    git config user.name Test
+    git commit --allow-empty --message 'Dummy commit for tests'
+  '';
+
+  postInstall = ''
+    installShellCompletion --bash --name fontbakery \
+      snippets/fontbakery.bash-completion
+  '';
 
   build-system = [
     setuptools
     setuptools-scm
-  ];
-
-  nativeBuildInputs = [
-    installShellFiles
   ];
 
   dependencies = [
@@ -109,24 +125,11 @@ buildPythonPackage rec {
     vharfbuzz
   ];
 
-  nativeCheckInputs = [
-    gitMinimal
-    pytestCheckHook
-    pytest-xdist
-    requests-mock
-    ufolint
+  disabledTestPaths = [
+    # ValueError: Check 'googlefonts/glyphsets/shape_languages' not found
+    "tests/test_checks_filesize.py"
+    "tests/test_checks_googlefonts_overrides.py"
   ];
-
-  preCheck = ''
-    # Let the tests invoke 'fontbakery' command.
-    export PATH="$out/bin:$PATH"
-    # font-v tests assume they are running from a git checkout, although they
-    # don't care which one. Create a dummy git repo to satisfy the tests:
-    git init -b main
-    git config user.email test@example.invalid
-    git config user.name Test
-    git commit --allow-empty --message 'Dummy commit for tests'
-  '';
 
   disabledTests = [
     # These require network access
@@ -148,16 +151,14 @@ buildPythonPackage rec {
     "test_config_override"
   ];
 
-  disabledTestPaths = [
-    # ValueError: Check 'googlefonts/glyphsets/shape_languages' not found
-    "tests/test_checks_filesize.py"
-    "tests/test_checks_googlefonts_overrides.py"
-  ];
+  pyproject = true;
 
-  postInstall = ''
-    installShellCompletion --bash --name fontbakery \
-      snippets/fontbakery.bash-completion
-  '';
+  pythonRelaxDeps = [
+    "collidoscope"
+    "freetype-py"
+    "protobuf"
+    "vharfbuzz"
+  ];
 
   passthru.tests.simple = callPackage ./tests.nix { };
 
@@ -166,7 +167,7 @@ buildPythonPackage rec {
     homepage = "https://github.com/googlefonts/fontbakery";
     changelog = "https://github.com/fonttools/fontbakery/blob/v${version}/CHANGELOG.md";
     license = lib.licenses.asl20;
-    mainProgram = "fontbakery";
     maintainers = with lib.maintainers; [ danc86 ];
+    mainProgram = "fontbakery";
   };
 }

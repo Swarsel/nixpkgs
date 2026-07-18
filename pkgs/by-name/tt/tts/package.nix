@@ -1,17 +1,16 @@
 {
   lib,
-  python3,
   fetchFromGitHub,
-  espeak-ng,
-  tts,
   addBinToPathHook,
+  espeak-ng,
+  python3,
+  tts,
   writableTmpDirAsHomeHook,
 }:
 
 python3.pkgs.buildPythonApplication (finalAttrs: {
   pname = "coqui-tts";
   version = "0.26.2";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "idiap";
@@ -94,15 +93,8 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     monotonic-alignment-search
   ];
 
-  postInstall = ''
-    cp -r TTS/server/templates/ $out/${python3.sitePackages}/TTS/server
-  '';
-
   # tests get stuck when run in nixpkgs-review, tested in passthru
   doCheck = false;
-  passthru.tests.pytest = tts.overridePythonAttrs (_: {
-    doCheck = true;
-  });
 
   nativeCheckInputs =
     with python3.pkgs;
@@ -125,23 +117,9 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     done
   '';
 
-  disabledTests = [
-    # Requires network access to download models
-    "test_korean_text_to_phonemes"
-    "test_models_offset_0_step_3"
-    "test_models_offset_1_step_3"
-    "test_models_offset_2_step_3"
-    "test_run_all_models"
-    "test_synthesize"
-    "test_voice_cloning"
-    "test_voice_conversion"
-    "test_multi_speaker_multi_lingual_model"
-    "test_single_speaker_model"
-    # Mismatch between phonemes
-    "test_text_to_ids_phonemes_with_eos_bos_and_blank"
-    # Takes too long
-    "test_parametrized_wavernn_dataset"
-  ];
+  postInstall = ''
+    cp -r TTS/server/templates/ $out/${python3.sitePackages}/TTS/server
+  '';
 
   disabledTestPaths = [
     # phonemes mismatch between espeak-ng and gruuts phonemizer
@@ -179,14 +157,38 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     "tests/tts_tests/test_overflow.py"
   ];
 
+  disabledTests = [
+    # Requires network access to download models
+    "test_korean_text_to_phonemes"
+    "test_models_offset_0_step_3"
+    "test_models_offset_1_step_3"
+    "test_models_offset_2_step_3"
+    "test_run_all_models"
+    "test_synthesize"
+    "test_voice_cloning"
+    "test_voice_conversion"
+    "test_multi_speaker_multi_lingual_model"
+    "test_single_speaker_model"
+    # Mismatch between phonemes
+    "test_text_to_ids_phonemes_with_eos_bos_and_blank"
+    # Takes too long
+    "test_parametrized_wavernn_dataset"
+  ];
+
+  pyproject = true;
+
   passthru = {
     inherit python3;
   };
 
+  passthru.tests.pytest = tts.overridePythonAttrs (_: {
+    doCheck = true;
+  });
+
   meta = {
+    description = "Deep learning toolkit for Text-to-Speech, battle-tested in research and production";
     homepage = "https://github.com/idiap/coqui-ai-TTS";
     changelog = "https://github.com/idiap/coqui-ai-TTS/releases/tag/${finalAttrs.src.tag}";
-    description = "Deep learning toolkit for Text-to-Speech, battle-tested in research and production";
     license = lib.licenses.mpl20;
     teams = [ lib.teams.tts ];
   };

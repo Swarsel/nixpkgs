@@ -2,20 +2,20 @@
   lib,
   stdenv,
   fetchurl,
-  ladspa-header,
-  libjack2,
-  liblo,
   alsa-lib,
-  libx11,
-  libsndfile,
-  libsm,
-  libsamplerate,
-  libtool,
   autoconf,
   automake,
-  xorgproto,
+  ladspa-header,
   libice,
+  libjack2,
+  liblo,
+  libsamplerate,
+  libsm,
+  libsndfile,
+  libtool,
+  libx11,
   pkg-config,
+  xorgproto,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -36,6 +36,7 @@ stdenv.mkDerivation (finalAttrs: {
     automake
     pkg-config
   ];
+
   buildInputs = [
     ladspa-header
     libjack2
@@ -52,11 +53,13 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Plugin SDK for virtual instruments";
+    license = lib.licenses.lgpl21;
+
     maintainers = with lib.maintainers; [
       raskin
     ];
+
     platforms = lib.platforms.linux;
-    license = lib.licenses.lgpl21;
     downloadPage = "https://sourceforge.net/projects/dssi/files/dssi/";
   };
 })

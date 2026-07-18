@@ -1,29 +1,36 @@
 {
   lib,
   stdenv,
-  buildPythonPackage,
-  fetchPypi,
-
-  # build-system
-  setuptools,
-
   # dependencies
   adbc-driver-manager,
-  importlib-resources,
   arrow-adbc,
+  buildPythonPackage,
+  fetchPypi,
+  importlib-resources,
+  # build-system
+  setuptools,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "adbc-driver-postgresql";
   version = "1.11.0";
-  pyproject = true;
-  __structuredAttrs = true;
 
   src = fetchPypi {
-    pname = "adbc_driver_postgresql";
     inherit (finalAttrs) version;
     hash = "sha256-9WiLhkiseobYuJNAIxuzaGrF31buldHKC4ddrV1StIo=";
+    pname = "adbc_driver_postgresql";
   };
+
+  env.ADBC_POSTGRESQL_LIBRARY = "libadbc_driver_postgresql${stdenv.hostPlatform.extensions.sharedLibrary}";
+
+  preBuild = ''
+    cp ${lib.getLib arrow-adbc}/lib/$ADBC_POSTGRESQL_LIBRARY .
+    chmod u+w $ADBC_POSTGRESQL_LIBRARY
+  '';
+
+  # Tests require several unknown pytest fixture `postgres_uri`
+  doCheck = false;
+  __structuredAttrs = true;
 
   build-system = [
     setuptools
@@ -34,14 +41,7 @@ buildPythonPackage (finalAttrs: {
     importlib-resources
   ];
 
-  # Tests require several unknown pytest fixture `postgres_uri`
-  doCheck = false;
-
-  env.ADBC_POSTGRESQL_LIBRARY = "libadbc_driver_postgresql${stdenv.hostPlatform.extensions.sharedLibrary}";
-  preBuild = ''
-    cp ${lib.getLib arrow-adbc}/lib/$ADBC_POSTGRESQL_LIBRARY .
-    chmod u+w $ADBC_POSTGRESQL_LIBRARY
-  '';
+  pyproject = true;
 
   pythonImportsCheck = [
     "adbc_driver_postgresql"

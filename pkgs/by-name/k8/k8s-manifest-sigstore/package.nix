@@ -1,12 +1,12 @@
 {
   lib,
   stdenv,
-  buildGoModule,
   fetchFromGitHub,
-  installShellFiles,
-  testers,
-  k8s-manifest-sigstore,
+  buildGoModule,
   gitUpdater,
+  installShellFiles,
+  k8s-manifest-sigstore,
+  testers,
 }:
 
 buildGoModule (finalAttrs: {
@@ -21,10 +21,14 @@ buildGoModule (finalAttrs: {
   };
 
   nativeBuildInputs = [ installShellFiles ];
-
   vendorHash = "sha256-dIReCe+Qoq/chBrd/X5s4hucuDquvd7OTUSj0WpcIDE=";
 
-  subPackages = [ "cmd/kubectl-sigstore" ];
+  postInstall = lib.optionalString (stdenv.buildPlatform.canExecute stdenv.hostPlatform) ''
+    installShellCompletion --cmd kubectl-sigstore \
+      --bash <($out/bin/kubectl-sigstore completion bash) \
+      --fish <($out/bin/kubectl-sigstore completion fish) \
+      --zsh <($out/bin/kubectl-sigstore completion zsh)
+  '';
 
   ldflags =
     let
@@ -40,28 +44,24 @@ buildGoModule (finalAttrs: {
       "-X ${prefix}.GitVersion=v${finalAttrs.version}"
     ];
 
-  postInstall = lib.optionalString (stdenv.buildPlatform.canExecute stdenv.hostPlatform) ''
-    installShellCompletion --cmd kubectl-sigstore \
-      --bash <($out/bin/kubectl-sigstore completion bash) \
-      --fish <($out/bin/kubectl-sigstore completion fish) \
-      --zsh <($out/bin/kubectl-sigstore completion zsh)
-  '';
+  subPackages = [ "cmd/kubectl-sigstore" ];
 
   passthru = {
-    updateScript = gitUpdater { rev-prefix = "v"; };
     tests.version = testers.testVersion {
-      package = k8s-manifest-sigstore;
-      command = "kubectl-sigstore version";
       version = "v${finalAttrs.version}";
+      command = "kubectl-sigstore version";
+      package = k8s-manifest-sigstore;
     };
+
+    updateScript = gitUpdater { rev-prefix = "v"; };
   };
 
   meta = {
+    description = "Kubectl plugin for signing Kubernetes manifest YAML files with sigstore";
     homepage = "https://github.com/sigstore/k8s-manifest-sigstore";
     changelog = "https://github.com/sigstore/k8s-manifest-sigstore/releases/tag/v${finalAttrs.version}";
-    description = "Kubectl plugin for signing Kubernetes manifest YAML files with sigstore";
-    mainProgram = "kubectl-sigstore";
     license = lib.licenses.asl20;
     maintainers = with lib.maintainers; [ bbigras ];
+    mainProgram = "kubectl-sigstore";
   };
 })

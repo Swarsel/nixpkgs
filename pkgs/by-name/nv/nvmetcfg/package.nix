@@ -1,8 +1,8 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
   nixosTests,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -27,7 +27,7 @@ rustPlatform.buildRustPackage (finalAttrs: {
     homepage = "https://github.com/vifino/nvmetcfg";
     license = lib.licenses.isc;
     maintainers = with lib.maintainers; [ nickcao ];
-    mainProgram = "nvmetcfg";
     platforms = lib.platforms.linux;
+    mainProgram = "nvmetcfg";
   };
 })

@@ -3,16 +3,16 @@
   stdenv,
   fetchurl,
   cpio,
-  xorgproto,
+  fontconfig,
   libx11,
-  libxmu,
   libxaw,
+  libxext,
+  libxmu,
   libxt,
+  makeWrapper,
   tcl,
   tk,
-  libxext,
-  fontconfig,
-  makeWrapper,
+  xorgproto,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -25,6 +25,7 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   nativeBuildInputs = [ makeWrapper ];
+
   buildInputs = [
     cpio
     xorgproto
@@ -50,8 +51,13 @@ stdenv.mkDerivation (finalAttrs: {
     "-Wno-writable-strings"
   ];
 
-  enableParallelBuilding = true;
+  postInstall = ''
+    for file in $out/bin/*; do
+      wrapProgram $file --prefix TCLLIBPATH ' ' "${tk}/lib"
+    done
+  '';
 
+  enableParallelBuilding = true;
   hardeningDisable = [ "format" ];
 
   patchPhase = ''
@@ -71,16 +77,10 @@ stdenv.mkDerivation (finalAttrs: {
     sed -re 's@MediumBlue@LightBlue@g' -i tcltk/tkconq.tcl
   '';
 
-  postInstall = ''
-    for file in $out/bin/*; do
-      wrapProgram $file --prefix TCLLIBPATH ' ' "${tk}/lib"
-    done
-  '';
-
   meta = {
     description = "Programmable turn-based strategy game";
+    license = lib.licenses.gpl2Plus;
     maintainers = with lib.maintainers; [ raskin ];
     platforms = lib.platforms.unix;
-    license = lib.licenses.gpl2Plus;
   };
 })

@@ -1,4 +1,4 @@
-{ runCommand, kubo }:
+{ kubo, runCommand }:
 
 runCommand "kubo-test-repoVersion" { } ''
   export IPFS_PATH="$TMPDIR"

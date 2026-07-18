@@ -1,10 +1,10 @@
 {
   lib,
+  fetchFromGitHub,
   aiohttp,
   beautifulsoup4,
   buildPythonPackage,
   cryptography,
-  fetchFromGitHub,
   lxml,
   pyjwt,
   setuptools-scm,
@@ -14,7 +14,6 @@
 buildPythonPackage rec {
   pname = "seatconnect";
   version = "1.1.9";
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "farfar";
@@ -36,7 +35,7 @@ buildPythonPackage rec {
 
   # Project only has a dummy test
   doCheck = false;
-
+  format = "setuptools";
   pythonImportsCheck = [ "seatconnect" ];
 
   meta = {

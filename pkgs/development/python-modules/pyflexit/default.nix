@@ -1,13 +1,12 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
 }:
 
 buildPythonPackage rec {
   pname = "pyflexit";
   version = "0.3";
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "Sabesto";
@@ -18,7 +17,7 @@ buildPythonPackage rec {
 
   # Project has no tests
   doCheck = false;
-
+  format = "setuptools";
   pythonImportsCheck = [ "pyflexit" ];
 
   meta = {

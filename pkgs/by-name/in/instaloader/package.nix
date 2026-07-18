@@ -1,13 +1,12 @@
 {
   lib,
-  python3Packages,
   fetchFromGitHub,
+  python3Packages,
 }:
 
 python3Packages.buildPythonApplication (finalAttrs: {
   pname = "instaloader";
   version = "4.14.2";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "instaloader";
@@ -25,13 +24,14 @@ python3Packages.buildPythonApplication (finalAttrs: {
     python3Packages.sphinx
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "instaloader" ];
 
   meta = {
-    homepage = "https://instaloader.github.io/";
     description = "Download pictures (or videos) along with their captions and other metadata from Instagram";
-    maintainers = with lib.maintainers; [ creator54 ];
+    homepage = "https://instaloader.github.io/";
     license = lib.licenses.mit;
+    maintainers = with lib.maintainers; [ creator54 ];
     mainProgram = "instaloader";
   };
 })

@@ -1,14 +1,13 @@
 {
   lib,
-  python3Packages,
   fetchFromGitHub,
   addBinToPathHook,
+  python3Packages,
 }:
 
 python3Packages.buildPythonApplication (finalAttrs: {
   pname = "deeptools";
   version = "3.5.6";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "deeptools";
@@ -16,6 +15,11 @@ python3Packages.buildPythonApplication (finalAttrs: {
     tag = finalAttrs.version;
     hash = "sha256-dxXlOvOjF4KSc5YO+1A5hlp95sfeyPSbmp93tihm7Vo=";
   };
+
+  nativeCheckInputs = with python3Packages; [
+    pytestCheckHook
+    addBinToPathHook
+  ];
 
   build-system = with python3Packages; [
     setuptools
@@ -33,11 +37,6 @@ python3Packages.buildPythonApplication (finalAttrs: {
     deeptoolsintervals
   ];
 
-  nativeCheckInputs = with python3Packages; [
-    pytestCheckHook
-    addBinToPathHook
-  ];
-
   disabledTestPaths = [
     # tests trip on `len(sys.argv) == 1`
     "deeptools/test/test_bigwigAverage.py"
@@ -46,9 +45,11 @@ python3Packages.buildPythonApplication (finalAttrs: {
     "deeptools/test/test_multiBamSummary.py"
   ];
 
+  pyproject = true;
+
   meta = {
-    homepage = "https://deeptools.readthedocs.io/en/develop";
     description = "Tools for exploring deep DNA sequencing data";
+
     longDescription = ''
       deepTools contains useful modules to process the mapped reads data for multiple
       quality checks, creating normalized coverage files in standard bedGraph and bigWig
@@ -57,6 +58,9 @@ python3Packages.buildPythonApplication (finalAttrs: {
       publication-ready visualizations to identify enrichments and for functional
       annotations of the genome.
     '';
+
+    homepage = "https://deeptools.readthedocs.io/en/develop";
+
     license = with lib.licenses; [
       mit
       bsd3

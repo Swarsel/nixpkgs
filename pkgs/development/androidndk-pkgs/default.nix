@@ -2,9 +2,9 @@
   lib,
   androidenv,
   buildPackages,
+  config,
   pkgs,
   targetPackages,
-  config,
 }:
 
 let
@@ -12,22 +12,24 @@ let
     ndkVersion: llvmPackages:
     let
       buildAndroidComposition = buildPackages.buildPackages.androidenv.composeAndroidPackages {
-        includeNDK = true;
         inherit ndkVersion;
+        includeNDK = true;
       };
 
       androidComposition = androidenv.composeAndroidPackages {
-        includeNDK = true;
         inherit ndkVersion;
+        includeNDK = true;
       };
       majorVersion = lib.versions.major ndkVersion;
     in
     import ./androidndk-pkgs.nix {
       inherit config lib;
+
       inherit (buildPackages)
         makeWrapper
         autoPatchelfHook
         ;
+
       inherit (pkgs)
         stdenv
         runCommand
@@ -37,13 +39,13 @@ let
 
       # For hardeningUnsupportedFlagsByTargetPlatform
       inherit llvmPackages;
-
+      androidndk = androidComposition.ndk-bundle;
       # buildPackages.foo rather than buildPackages.buildPackages.foo would work,
       # but for splicing messing up on infinite recursion for the variants we
       # *dont't* use. Using this workaround, but also making a test to ensure
       # these two really are the same.
       buildAndroidndk = buildAndroidComposition.ndk-bundle;
-      androidndk = androidComposition.ndk-bundle;
+
       targetAndroidndkPkgs =
         if targetPackages ? "androidndkPkgs_${majorVersion}" then
           targetPackages."androidndkPkgs_${majorVersion}"

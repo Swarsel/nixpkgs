@@ -1,20 +1,19 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
+  appdirs,
+  buildPythonPackage,
+  callPackage,
   importlib-metadata,
   numpy,
   rpyc,
   scipy,
-  appdirs,
-  callPackage,
+  setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "linien-common";
   version = "2.1.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "linien-org";
@@ -23,18 +22,11 @@ buildPythonPackage rec {
     hash = "sha256-j6oiP/usLfV5HZtKLcXQ5pHhhxRG05kP2FMwingiWm0=";
   };
 
-  sourceRoot = "${src.name}/linien-common";
-
   preBuild = ''
     export HOME=$(mktemp -d)
   '';
 
   build-system = [ setuptools ];
-
-  pythonRelaxDeps = [
-    "importlib-metadata"
-    "numpy"
-  ];
 
   dependencies = [
     importlib-metadata
@@ -44,7 +36,15 @@ buildPythonPackage rec {
     appdirs
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "linien_common" ];
+
+  pythonRelaxDeps = [
+    "importlib-metadata"
+    "numpy"
+  ];
+
+  sourceRoot = "${src.name}/linien-common";
 
   passthru.tests = {
     pytest = callPackage ./tests.nix { };
@@ -55,10 +55,12 @@ buildPythonPackage rec {
     homepage = "https://github.com/linien-org/linien/tree/develop/linien-common";
     changelog = "https://github.com/linien-org/linien/blob/v${version}/CHANGELOG.md";
     license = lib.licenses.gpl3Plus;
+
     maintainers = with lib.maintainers; [
       fsagbuya
       doronbehar
     ];
+
     # Numpy 2 is not supported yet, because the server linien, (installed on the
     # RedPitaya) must use the same Numpy version as the client (installed with
     # Nix). The server linien is bound to use Numpy 1 because Numpy maintainers

@@ -1,26 +1,25 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
+  buildPythonPackage,
   click,
   deepmerge,
-  pyyaml,
-  rich,
-  pygments,
   llm,
   llm-git,
-  pytestCheckHook,
-  pytest-cov-stub,
+  pygments,
   pytest-asyncio,
+  pytest-cov-stub,
   pytest-httpx,
+  pytestCheckHook,
+  pyyaml,
+  rich,
+  setuptools,
   writableTmpDirAsHomeHook,
 }:
 
 buildPythonPackage rec {
   pname = "llm-git";
   version = "0.2.2";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "OttoAllmendinger";
@@ -28,6 +27,12 @@ buildPythonPackage rec {
     tag = "v${version}";
     hash = "sha256-LcIsJPQgZ4gj2t7sSa0Wu35WHWYyquZZTS/UxojH+XU=";
   };
+
+  nativeCheckInputs = [
+    pytestCheckHook
+    pytest-cov-stub
+    writableTmpDirAsHomeHook
+  ];
 
   build-system = [
     setuptools
@@ -42,14 +47,8 @@ buildPythonPackage rec {
     pygments
   ];
 
-  nativeCheckInputs = [
-    pytestCheckHook
-    pytest-cov-stub
-    writableTmpDirAsHomeHook
-  ];
-
+  pyproject = true;
   pythonImportsCheck = [ "llm_git" ];
-
   passthru.tests = llm.mkPluginTest llm-git;
 
   meta = {

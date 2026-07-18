@@ -2,8 +2,8 @@
   lib,
   stdenv,
   fetchurl,
-  patchelf,
   gmp,
+  patchelf,
 }:
 
 let
@@ -15,71 +15,11 @@ let
 in
 
 stdenv.mkDerivation rec {
-  pname = "mlton";
   inherit version;
-
-  binSrc =
-    if stdenv.hostPlatform.system == "i686-linux" then
-      (fetchurl {
-        url = "mirror://sourceforge/project/mlton/mlton/${version}/${pname}-${version}-1.x86-linux.tgz";
-        hash = "sha256-ktiWJ892DFbQ6XJ/MosAY0G/W+KD/H1hamJ2wm2Vss8=";
-      })
-    else if stdenv.hostPlatform.system == "x86_64-linux" then
-      (fetchurl {
-        url = "mirror://sourceforge/project/mlton/mlton/${version}/${pname}-${version}-1.amd64-linux.tgz";
-        hash = "sha256-9vkSAJsJRrc6+I/18+cTtr5juHFpbiaXzPFWS1bn0Ds=";
-      })
-    else if stdenv.hostPlatform.system == "x86_64-darwin" then
-      (fetchurl {
-        url = "mirror://sourceforge/project/mlton/mlton/${version}/${pname}-${version}-1.amd64-darwin.gmp-macports.tgz";
-        hash = "sha256-qb//O8Wnk+hDBvmM1g8ZWoE5kCkA+W4QctE8CBO0nBA=";
-      })
-    else
-      throw "Architecture not supported";
-
-  codeSrc = fetchurl {
-    url = "mirror://sourceforge/project/mlton/mlton/${version}/${pname}-${version}.src.tgz";
-    hash = "sha256-IVhXrRHUT42Uwn9150AXqkSyyXAzBLzsnjjCBDMUPWw=";
-  };
-
-  srcs = [
-    binSrc
-    codeSrc
-  ];
-
-  sourceRoot = "${pname}-${version}";
-
-  buildInputs = [ gmp ];
+  pname = "mlton";
   nativeBuildInputs = lib.optional stdenv.hostPlatform.isLinux patchelf;
-
+  buildInputs = [ gmp ];
   makeFlags = [ "all-no-docs" ];
-
-  configurePhase = ''
-    # Fix paths in the source.
-    find . -type f | grep -v -e '\.tgz''$' | xargs sed -i "s@/usr/bin/env bash@$(type -p bash)@"
-
-    substituteInPlace $(pwd)/Makefile --replace '/bin/cp' $(type -p cp)
-    substituteInPlace bin/mlton-script --replace gcc cc
-    substituteInPlace bin/regression --replace gcc cc
-    substituteInPlace lib/mlnlffi-lib/Makefile --replace gcc cc
-    substituteInPlace mlnlffigen/gen-cppcmd --replace gcc cc
-    substituteInPlace runtime/Makefile --replace gcc cc
-    substituteInPlace ../${usr_prefix}/bin/mlton --replace gcc cc
-
-    # Fix paths in the binary distribution.
-    BIN_DIST_DIR="$(pwd)/../${usr_prefix}"
-    for f in "bin/mlton" "lib/mlton/platform" "lib/mlton/static-library" ; do
-      substituteInPlace "$BIN_DIST_DIR/$f" --replace '/${usr_prefix}/bin/env bash' $(type -p bash)
-    done
-
-    substituteInPlace $(pwd)/../${usr_prefix}/bin/mlton --replace '/${usr_prefix}/lib/mlton' $(pwd)/../${usr_prefix}/lib/mlton
-  ''
-  + lib.optionalString stdenv.cc.isClang ''
-    sed -i "s_	patch -s -p0 <gdtoa.hide-public-fns.patch_	patch -s -p0 <gdtoa.hide-public-fns.patch\n\tsed -i 's|printf(emptyfmt|printf(\"\"|g' ./gdtoa/arithchk.c_" ./runtime/Makefile
-  ''
-  + lib.optionalString stdenv.hostPlatform.isDarwin ''
-    sed -i 's|XCFLAGS += -I/usr/local/include -I/sw/include -I/opt/local/include||' ./runtime/Makefile
-  '';
 
   preBuild = ''
     # To build the source we have to put the binary distribution in the $PATH.
@@ -110,8 +50,6 @@ stdenv.mkDerivation rec {
 
   doCheck = true;
 
-  installTargets = [ "install-no-docs" ];
-
   postInstall = ''
     # Fix path to mlton libraries.
     substituteInPlace $(pwd)/install/${usr_prefix}/bin/mlton --replace '/${usr_prefix}/lib/mlton' $out/lib/mlton
@@ -130,6 +68,65 @@ stdenv.mkDerivation rec {
     cp -r $(pwd)/install/${usr_prefix}/lib $out
     cp -r $(pwd)/install/${usr_prefix}/man $out
   '';
+
+  binSrc =
+    if stdenv.hostPlatform.system == "i686-linux" then
+      (fetchurl {
+        hash = "sha256-ktiWJ892DFbQ6XJ/MosAY0G/W+KD/H1hamJ2wm2Vss8=";
+        url = "mirror://sourceforge/project/mlton/mlton/${version}/${pname}-${version}-1.x86-linux.tgz";
+      })
+    else if stdenv.hostPlatform.system == "x86_64-linux" then
+      (fetchurl {
+        hash = "sha256-9vkSAJsJRrc6+I/18+cTtr5juHFpbiaXzPFWS1bn0Ds=";
+        url = "mirror://sourceforge/project/mlton/mlton/${version}/${pname}-${version}-1.amd64-linux.tgz";
+      })
+    else if stdenv.hostPlatform.system == "x86_64-darwin" then
+      (fetchurl {
+        hash = "sha256-qb//O8Wnk+hDBvmM1g8ZWoE5kCkA+W4QctE8CBO0nBA=";
+        url = "mirror://sourceforge/project/mlton/mlton/${version}/${pname}-${version}-1.amd64-darwin.gmp-macports.tgz";
+      })
+    else
+      throw "Architecture not supported";
+
+  codeSrc = fetchurl {
+    hash = "sha256-IVhXrRHUT42Uwn9150AXqkSyyXAzBLzsnjjCBDMUPWw=";
+    url = "mirror://sourceforge/project/mlton/mlton/${version}/${pname}-${version}.src.tgz";
+  };
+
+  configurePhase = ''
+    # Fix paths in the source.
+    find . -type f | grep -v -e '\.tgz''$' | xargs sed -i "s@/usr/bin/env bash@$(type -p bash)@"
+
+    substituteInPlace $(pwd)/Makefile --replace '/bin/cp' $(type -p cp)
+    substituteInPlace bin/mlton-script --replace gcc cc
+    substituteInPlace bin/regression --replace gcc cc
+    substituteInPlace lib/mlnlffi-lib/Makefile --replace gcc cc
+    substituteInPlace mlnlffigen/gen-cppcmd --replace gcc cc
+    substituteInPlace runtime/Makefile --replace gcc cc
+    substituteInPlace ../${usr_prefix}/bin/mlton --replace gcc cc
+
+    # Fix paths in the binary distribution.
+    BIN_DIST_DIR="$(pwd)/../${usr_prefix}"
+    for f in "bin/mlton" "lib/mlton/platform" "lib/mlton/static-library" ; do
+      substituteInPlace "$BIN_DIST_DIR/$f" --replace '/${usr_prefix}/bin/env bash' $(type -p bash)
+    done
+
+    substituteInPlace $(pwd)/../${usr_prefix}/bin/mlton --replace '/${usr_prefix}/lib/mlton' $(pwd)/../${usr_prefix}/lib/mlton
+  ''
+  + lib.optionalString stdenv.cc.isClang ''
+    sed -i "s_	patch -s -p0 <gdtoa.hide-public-fns.patch_	patch -s -p0 <gdtoa.hide-public-fns.patch\n\tsed -i 's|printf(emptyfmt|printf(\"\"|g' ./gdtoa/arithchk.c_" ./runtime/Makefile
+  ''
+  + lib.optionalString stdenv.hostPlatform.isDarwin ''
+    sed -i 's|XCFLAGS += -I/usr/local/include -I/sw/include -I/opt/local/include||' ./runtime/Makefile
+  '';
+
+  installTargets = [ "install-no-docs" ];
+  sourceRoot = "${pname}-${version}";
+
+  srcs = [
+    binSrc
+    codeSrc
+  ];
 
   meta = import ./meta.nix { inherit lib; };
 }

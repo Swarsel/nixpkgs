@@ -3,14 +3,14 @@
   stdenv,
   fetchFromGitHub,
   cmake,
+  libbass,
+  libbassmidi,
+  libchdr,
   ninja,
   qt6,
   spdlog,
-  zlib,
-  libbass,
-  libbassmidi,
   xz,
-  libchdr,
+  zlib,
 }:
 stdenv.mkDerivation (finalAttrs: {
   pname = "vgmtrans";
@@ -52,6 +52,7 @@ stdenv.mkDerivation (finalAttrs: {
   meta = {
     description = "Tool to convert proprietary, sequenced videogame music to industry-standard formats";
     homepage = "https://github.com/vgmtrans/vgmtrans";
+
     license = [
       # it has been previously observed that package inputs will override licenses with the same name
       # it is imperative to not use `with lib.license` here.
@@ -59,6 +60,9 @@ stdenv.mkDerivation (finalAttrs: {
       lib.licenses.libpng
       lib.licenses.bsd3 # oki_adpcm_state
     ];
+
+    maintainers = with lib.maintainers; [ pluiedev ];
+
     # See CMakePresets.json
     platforms = [
       "x86_64-linux"
@@ -66,7 +70,7 @@ stdenv.mkDerivation (finalAttrs: {
       "x86_64-windows"
       "aarch64-windows"
     ];
-    maintainers = with lib.maintainers; [ pluiedev ];
+
     mainProgram = "vgmtrans";
   };
 })

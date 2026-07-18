@@ -21,23 +21,27 @@ in
 
   options = {
 
-    services.atd.enable = mkOption {
-      type = types.bool;
-      default = false;
-      description = ''
-        Whether to enable the {command}`at` daemon, a command scheduler.
-      '';
-    };
-
     services.atd.allowEveryone = mkOption {
-      type = types.bool;
       default = false;
+
       description = ''
         Whether to make {file}`/var/spool/at{jobs,spool}`
         writeable by everyone (and sticky).  This is normally not
         needed since the {command}`at` commands are
         setuid/setgid `atd`.
       '';
+
+      type = types.bool;
+    };
+
+    services.atd.enable = mkOption {
+      default = false;
+
+      description = ''
+        Whether to enable the {command}`at` daemon, a command scheduler.
+      '';
+
+      type = types.bool;
     };
 
   };
@@ -46,18 +50,22 @@ in
 
   config = mkIf cfg.enable {
 
+    environment.systemPackages = [ at ];
+    security.pam.services.atd = { };
+
     # Not wrapping "batch" because it's a shell script (kernel drops perms
     # anyway) and it's patched to invoke the "at" setuid wrapper.
     security.wrappers = builtins.listToAttrs (
       map
         (program: {
           name = "${program}";
+
           value = {
-            source = "${at}/bin/${program}";
-            owner = "atd";
             group = "atd";
-            setuid = true;
+            owner = "atd";
             setgid = true;
+            setuid = true;
+            source = "${at}/bin/${program}";
           };
         })
         [
@@ -67,24 +75,9 @@ in
         ]
     );
 
-    environment.systemPackages = [ at ];
-
-    security.pam.services.atd = { };
-
-    users.users.atd = {
-      uid = config.ids.uids.atd;
-      group = "atd";
-      description = "atd user";
-      home = "/var/empty";
-    };
-
-    users.groups.atd.gid = config.ids.gids.atd;
-
     systemd.services.atd = {
       description = "Job Execution Daemon (atd)";
       documentation = [ "man:atd(8)" ];
-      wantedBy = [ "multi-user.target" ];
-
       path = [ at ];
 
       preStart = ''
@@ -113,8 +106,17 @@ in
       '';
 
       script = "atd";
-
       serviceConfig.Type = "forking";
+      wantedBy = [ "multi-user.target" ];
+    };
+
+    users.groups.atd.gid = config.ids.gids.atd;
+
+    users.users.atd = {
+      description = "atd user";
+      group = "atd";
+      home = "/var/empty";
+      uid = config.ids.uids.atd;
     };
   };
 }

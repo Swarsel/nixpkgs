@@ -1,24 +1,26 @@
 {
   lib,
   buildPythonPackage,
-  setuptools,
   colorama,
   fetchPypi,
   packaging,
   pykwalify,
   pyyaml,
+  setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "west";
   version = "1.5.0";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
     hash = "sha256-cIj+Dpr+Bxnr7pXFHFKRSfe8/JGdg6ggbTX6nGg+0KU=";
   };
 
+  # pypi package does not include tests (and for good reason):
+  # tests run under 'tox' and have west try to git clone repos (not sandboxable)
+  doCheck = false;
   build-system = [ setuptools ];
 
   dependencies = [
@@ -28,15 +30,12 @@ buildPythonPackage rec {
     pykwalify
   ];
 
-  # pypi package does not include tests (and for good reason):
-  # tests run under 'tox' and have west try to git clone repos (not sandboxable)
-  doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "west" ];
 
   meta = {
     description = "Zephyr RTOS meta tool";
-    mainProgram = "west";
+
     longDescription = ''
       West lets you manage multiple Git repositories under a single directory using a single file,
       called the west manifest file, or manifest for short.
@@ -53,9 +52,11 @@ buildPythonPackage rec {
       For more details, see Multiple Repository Management in the west documentation
       (https://docs.zephyrproject.org/latest/guides/west/repo-tool.html).
     '';
+
     homepage = "https://github.com/zephyrproject-rtos/west";
     changelog = "https://github.com/zephyrproject-rtos/west/releases/tag/v${version}";
     license = lib.licenses.asl20;
     maintainers = with lib.maintainers; [ siriobalmelli ];
+    mainProgram = "west";
   };
 }

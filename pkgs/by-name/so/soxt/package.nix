@@ -1,14 +1,14 @@
 {
-  fetchFromGitHub,
   lib,
   stdenv,
+  fetchFromGitHub,
   cmake,
   coin3d,
-  motif,
+  libGL,
+  libGLU,
   libxext,
   libxmu,
-  libGLU,
-  libGL,
+  motif,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -24,6 +24,7 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   nativeBuildInputs = [ cmake ];
+
   buildInputs = [
     coin3d
     motif
@@ -34,13 +35,15 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   meta = {
+    description = "GUI binding for using Open Inventor with Xt/Motif";
     homepage = "https://bitbucket.org/Coin3D/coin/wiki/Home";
     license = lib.licenses.bsd3;
-    description = "GUI binding for using Open Inventor with Xt/Motif";
+
     maintainers = with lib.maintainers; [
       tmplt
       skohtv
     ];
+
     platforms = lib.platforms.linux;
   };
 })

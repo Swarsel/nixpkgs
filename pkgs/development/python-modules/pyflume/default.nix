@@ -1,9 +1,9 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  pytestCheckHook,
+  buildPythonPackage,
   pyjwt,
+  pytestCheckHook,
   ratelimit,
   requests,
   requests-mock,
@@ -12,7 +12,6 @@
 buildPythonPackage rec {
   pname = "pyflume";
   version = "0.8.7";
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "ChrisMandich";
@@ -32,6 +31,7 @@ buildPythonPackage rec {
     pytestCheckHook
   ];
 
+  format = "setuptools";
   pythonImportsCheck = [ "pyflume" ];
 
   meta = {

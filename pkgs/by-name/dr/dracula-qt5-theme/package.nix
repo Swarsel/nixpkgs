@@ -1,7 +1,7 @@
 {
   lib,
-  stdenvNoCC,
   fetchFromGitHub,
+  stdenvNoCC,
 }:
 
 stdenvNoCC.mkDerivation {
@@ -27,7 +27,7 @@ stdenvNoCC.mkDerivation {
     description = "Dark theme for qt5";
     homepage = "https://github.com/dracula/qt5";
     license = lib.licenses.mit;
-    platforms = lib.platforms.all;
     maintainers = with lib.maintainers; [ vonfry ];
+    platforms = lib.platforms.all;
   };
 }

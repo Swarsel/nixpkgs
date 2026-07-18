@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule (finalAttrs: {
@@ -18,8 +18,8 @@ buildGoModule (finalAttrs: {
   vendorHash = "sha256-f6Jl78ZPLD7Oq4Bq8MBQpHEKnBvpyTWZ9qHa1fGOlgA=";
 
   meta = {
-    homepage = "https://github.com/anacrolix/dms";
     description = "UPnP DLNA Digital Media Server with basic video transcoding";
+    homepage = "https://github.com/anacrolix/dms";
     license = lib.licenses.bsd3;
     maintainers = [ lib.maintainers.claes ];
     platforms = lib.platforms.linux;

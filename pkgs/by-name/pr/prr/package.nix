@@ -1,10 +1,10 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
+  cacert,
   openssl,
   pkg-config,
-  cacert,
+  rustPlatform,
 }:
 rustPlatform.buildRustPackage (finalAttrs: {
   pname = "prr";
@@ -17,21 +17,17 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-G8/T3Jyr0ZtY302AvYxhaC+8Ld03cVL5Cuflz62e0mw=";
   };
 
-  cargoHash = "sha256-R3gycEs9k0VSNd0tD8Fzgbu2ibhGvXgw8H1mnSlQMug=";
-
-  buildInputs = [ openssl ];
-
   nativeBuildInputs = [ pkg-config ];
-
+  buildInputs = [ openssl ];
+  cargoHash = "sha256-R3gycEs9k0VSNd0tD8Fzgbu2ibhGvXgw8H1mnSlQMug=";
   env.SSL_CERT_FILE = "${cacert}/etc/ssl/certs/ca-bundle.crt";
-
   checkInputs = [ cacert ];
 
   meta = {
     description = "Tool that brings mailing list style code reviews to Github PRs";
     homepage = "https://github.com/danobi/prr";
     license = lib.licenses.gpl2Only;
-    mainProgram = "prr";
     maintainers = with lib.maintainers; [ evalexpr ];
+    mainProgram = "prr";
   };
 })

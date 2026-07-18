@@ -1,11 +1,11 @@
 {
   lib,
   fetchFromGitHub,
+  ffmpeg,
   installShellFiles,
   nix-update-script,
-  python3Packages,
   perl,
-  ffmpeg,
+  python3Packages,
 }:
 
 let
@@ -27,9 +27,8 @@ let
 in
 
 buildPythonApplication {
-  pname = "svtplay-dl";
   inherit version;
-  pyproject = true;
+  pname = "svtplay-dl";
 
   src = fetchFromGitHub {
     owner = "spaam";
@@ -37,6 +36,27 @@ buildPythonApplication {
     tag = version;
     hash = "sha256-BOgCJeEUUTt1BoyalBbzgmTS2EaAgFpzhKtWvjBC+VI=";
   };
+
+  nativeBuildInputs = [
+    # For `pod2man(1)`.
+    perl
+    installShellFiles
+  ];
+
+  postBuild = ''
+    make svtplay-dl.1
+  '';
+
+  nativeCheckInputs = [
+    pytestCheckHook
+    mock
+    requests-mock
+  ];
+
+  postInstall = ''
+    installManPage svtplay-dl.1
+    makeWrapperArgs+=(--prefix PATH : "${lib.makeBinPath [ ffmpeg ]}")
+  '';
 
   build-system = [ setuptools ];
 
@@ -47,44 +67,25 @@ buildPythonApplication {
     pyyaml
   ];
 
-  nativeBuildInputs = [
-    # For `pod2man(1)`.
-    perl
-    installShellFiles
-  ];
-
-  nativeCheckInputs = [
-    pytestCheckHook
-    mock
-    requests-mock
-  ];
-
-  pytestFlags = [
-    "--doctest-modules"
-  ];
-
   enabledTestPaths = [
     "lib"
   ];
-
-  postBuild = ''
-    make svtplay-dl.1
-  '';
-
-  postInstall = ''
-    installManPage svtplay-dl.1
-    makeWrapperArgs+=(--prefix PATH : "${lib.makeBinPath [ ffmpeg ]}")
-  '';
 
   postInstallCheck = ''
     $out/bin/svtplay-dl --help > /dev/null
   '';
 
+  pyproject = true;
+
+  pytestFlags = [
+    "--doctest-modules"
+  ];
+
   passthru.updateScript = nix-update-script { };
 
   meta = {
-    homepage = "https://github.com/spaam/svtplay-dl";
     description = "Command-line tool to download videos from svtplay.se and other sites";
+    homepage = "https://github.com/spaam/svtplay-dl";
     license = lib.licenses.mit;
     platforms = lib.platforms.unix;
     mainProgram = "svtplay-dl";

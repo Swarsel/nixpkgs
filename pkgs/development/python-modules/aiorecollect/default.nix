@@ -1,9 +1,9 @@
 {
   lib,
+  fetchFromGitHub,
   aiohttp,
   aresponses,
   buildPythonPackage,
-  fetchFromGitHub,
   freezegun,
   poetry-core,
   pytest-asyncio,
@@ -13,7 +13,6 @@
 buildPythonPackage rec {
   pname = "aiorecollect";
   version = "2023.12.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "bachya";
@@ -28,10 +27,7 @@ buildPythonPackage rec {
   '';
 
   nativeBuildInputs = [ poetry-core ];
-
   propagatedBuildInputs = [ aiohttp ];
-
-  __darwinAllowLocalNetworking = true;
 
   nativeCheckInputs = [
     aresponses
@@ -40,21 +36,26 @@ buildPythonPackage rec {
     pytestCheckHook
   ];
 
+  __darwinAllowLocalNetworking = true;
+
   disabledTestPaths = [
     # Ignore the examples directory as the files are prefixed with test_.
     "examples/"
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "aiorecollect" ];
 
   meta = {
     description = "Python library for the Recollect Waste API";
+
     longDescription = ''
       aiorecollect is a Python asyncio-based library for the ReCollect
       Waste API. It allows users to programmatically retrieve schedules
       for waste removal in their area, including trash, recycling, compost
       and more.
     '';
+
     homepage = "https://github.com/bachya/aiorecollect";
     changelog = "https://github.com/bachya/aiorecollect/releases/tag/${version}";
     license = with lib.licenses; [ mit ];

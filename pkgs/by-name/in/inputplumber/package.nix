@@ -1,11 +1,11 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
-  pkg-config,
-  udev,
-  libiio,
   libevdev,
+  libiio,
+  pkg-config,
+  rustPlatform,
+  udev,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -19,8 +19,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-LECHrL+yopymcdpuEZUFvNX1QI30Z+mOtMYP7fnMpBM=";
   };
 
-  cargoHash = "sha256-1g4nHBu9LUMMr0bPkD4LCEFyyIc+GdhIWu+hlyGH3IM=";
-
   nativeBuildInputs = [
     pkg-config
     rustPlatform.bindgenHook
@@ -32,6 +30,8 @@ rustPlatform.buildRustPackage (finalAttrs: {
     libiio
   ];
 
+  cargoHash = "sha256-1g4nHBu9LUMMr0bPkD4LCEFyyIc+GdhIWu+hlyGH3IM=";
+
   postInstall = ''
     cp -r rootfs/usr/* $out/
   '';
@@ -39,8 +39,8 @@ rustPlatform.buildRustPackage (finalAttrs: {
   meta = {
     description = "Open source input router and remapper daemon for Linux";
     homepage = "https://github.com/ShadowBlip/InputPlumber";
-    license = lib.licenses.gpl3Plus;
     changelog = "https://github.com/ShadowBlip/InputPlumber/releases/tag/v${finalAttrs.version}";
+    license = lib.licenses.gpl3Plus;
     maintainers = with lib.maintainers; [ shadowapex ];
     mainProgram = "inputplumber";
   };

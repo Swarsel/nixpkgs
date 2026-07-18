@@ -1,10 +1,10 @@
 {
   lib,
-  crystal,
   fetchFromGitHub,
+  crystal,
   llvmPackages,
-  openssl,
   makeWrapper,
+  openssl,
 }:
 
 let
@@ -17,17 +17,15 @@ let
   };
 in
 crystal.buildCrystalPackage {
-  pname = "crystalline";
   inherit version src;
-
-  format = "crystal";
-  shardsFile = ./shards.nix;
+  pname = "crystalline";
 
   nativeBuildInputs = [
     llvmPackages.llvm
     openssl
     makeWrapper
   ];
+
   env.LLVM_CONFIG = lib.getExe' (lib.getDev llvmPackages.llvm) "llvm-config";
 
   preConfigure = ''
@@ -37,17 +35,6 @@ crystal.buildCrystalPackage {
   '';
 
   doCheck = false;
-  doInstallCheck = false;
-
-  crystalBinaries.crystalline = {
-    src = "src/crystalline.cr";
-    options = [
-      "--release"
-      "--no-debug"
-      "--progress"
-      "-Dpreview_mt"
-    ];
-  };
 
   postInstall = ''
     wrapProgram "$out/bin/crystalline" --prefix PATH : '${
@@ -57,11 +44,27 @@ crystal.buildCrystalPackage {
     }'
   '';
 
+  doInstallCheck = false;
+
+  crystalBinaries.crystalline = {
+    src = "src/crystalline.cr";
+
+    options = [
+      "--release"
+      "--no-debug"
+      "--progress"
+      "-Dpreview_mt"
+    ];
+  };
+
+  format = "crystal";
+  shardsFile = ./shards.nix;
+
   meta = {
     description = "Language Server Protocol implementation for Crystal";
-    mainProgram = "crystalline";
     homepage = "https://github.com/elbywan/crystalline";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ donovanglover ];
+    mainProgram = "crystalline";
   };
 }

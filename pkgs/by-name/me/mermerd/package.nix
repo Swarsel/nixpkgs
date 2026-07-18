@@ -1,9 +1,9 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
-  testers,
+  buildGoModule,
   mermerd,
+  testers,
 }:
 
 buildGoModule (finalAttrs: {
@@ -18,6 +18,8 @@ buildGoModule (finalAttrs: {
   };
 
   vendorHash = "sha256-Uu/L1wL1999hHydUSVvDNaCKy8RlRMKdDEhERgryjBY=";
+  # the tests expect a database to be running
+  doCheck = false;
 
   ldflags = [
     "-s"
@@ -26,22 +28,19 @@ buildGoModule (finalAttrs: {
     "-X=main.commit=${finalAttrs.src.rev}"
   ];
 
-  # the tests expect a database to be running
-  doCheck = false;
-
   passthru.tests = {
     version = testers.testVersion {
-      package = mermerd;
       command = "mermerd version";
+      package = mermerd;
     };
   };
 
   meta = {
     description = "Create Mermaid-Js ERD diagrams from existing tables";
-    mainProgram = "mermerd";
     homepage = "https://github.com/KarnerTh/mermerd";
     changelog = "https://github.com/KarnerTh/mermerd/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ austin-artificial ];
+    mainProgram = "mermerd";
   };
 })

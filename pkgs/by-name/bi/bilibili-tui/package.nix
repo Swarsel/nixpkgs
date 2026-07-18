@@ -1,15 +1,14 @@
 {
   lib,
-  rustPlatform,
-  fetchFromGitHub,
-  nix-update-script,
   stdenv,
-  pkg-config,
+  fetchFromGitHub,
   makeWrapper,
-  openssl,
   mpv-unwrapped,
+  nix-update-script,
+  openssl,
+  pkg-config,
+  rustPlatform,
   yt-dlp-light,
-
   withMpv ? true,
 }:
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -23,12 +22,9 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-LACNDpVhlYEgT3fN+Ff2MVipblUqPlqwOUpTLaXSCbk=";
   };
 
-  cargoHash = "sha256-q3jRjmzQA64sZjVShoEmu1x2CFOAgBGgZYyTq7Lg4is=";
-
   nativeBuildInputs = [ makeWrapper ] ++ lib.optionals (!stdenv.hostPlatform.isDarwin) [ pkg-config ];
-
   buildInputs = lib.optionals (!stdenv.hostPlatform.isDarwin) [ openssl ];
-
+  cargoHash = "sha256-q3jRjmzQA64sZjVShoEmu1x2CFOAgBGgZYyTq7Lg4is=";
   env.OPENSSL_NO_VENDOR = true;
 
   # Wrap mpv as fallback; users should prefer their system's mpv in PATH
@@ -47,10 +43,10 @@ rustPlatform.buildRustPackage (finalAttrs: {
   meta = {
     description = "Terminal user interface (TUI) client for Bilibili";
     homepage = "https://maredevi.moe/projects/bilibili-tui/";
-    downloadPage = "https://github.com/MareDevi/bilibili-tui/releases";
     changelog = "https://github.com/MareDevi/bilibili-tui/releases/tag/${finalAttrs.src.tag}";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ puiyq ];
     mainProgram = "bilibili-tui";
+    downloadPage = "https://github.com/MareDevi/bilibili-tui/releases";
   };
 })

@@ -3,9 +3,9 @@
   stdenv,
   fetchFromCodeberg,
   guile,
-  pkg-config,
   guile-srfi-145,
   guile-srfi-180,
+  pkg-config,
 }:
 stdenv.mkDerivation (finalAttrs: {
   pname = "guile-json-rpc";
@@ -20,11 +20,6 @@ stdenv.mkDerivation (finalAttrs: {
 
   strictDeps = true;
 
-  propagatedBuildInputs = [
-    guile-srfi-145
-    guile-srfi-180
-  ];
-
   nativeBuildInputs = [
     pkg-config
     guile
@@ -32,6 +27,11 @@ stdenv.mkDerivation (finalAttrs: {
 
   buildInputs = [
     guile
+  ];
+
+  propagatedBuildInputs = [
+    guile-srfi-145
+    guile-srfi-180
   ];
 
   env.GUILE_AUTO_COMPILE = "0";

@@ -1,5 +1,6 @@
 {
   lib,
+  fetchFromGitHub,
   aiofiles,
   aiohttp,
   aiosqlite,
@@ -12,7 +13,6 @@
   click,
   cssselect,
   fake-useragent,
-  fetchFromGitHub,
   h2,
   httpx,
   humanize,
@@ -23,8 +23,8 @@
   numpy,
   patchright,
   pillow,
-  playwright-stealth,
   playwright,
+  playwright-stealth,
   psutil,
   pydantic,
   pyopenssl,
@@ -53,9 +53,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "crawl4ai";
   version = "0.9.1";
-  pyproject = true;
-
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "unclecode";
@@ -64,12 +61,14 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-8sUsve3ha+CXElnvYjOzqoIR16KEJP5UekGMB27sGeU=";
   };
 
-  pythonRelaxDeps = [
-    "lxml"
-    "snowballstemmer"
-  ];
+  nativeCheckInputs = [
+    h2
+    pytest-asyncio
+    pytestCheckHook
+  ]
+  ++ lib.flatten (builtins.attrValues finalAttrs.passthru.optional-dependencies);
 
-  pythonRemoveDeps = [ "patchright" ];
+  __structuredAttrs = true;
 
   build-system = [
     setuptools
@@ -112,46 +111,6 @@ buildPythonPackage (finalAttrs: {
     unclecode-litellm
     xxhash
   ];
-
-  optional-dependencies = {
-    all = [
-      nltk
-      pypdf
-      scikit-learn
-      selenium
-      sentence-transformers
-      tokenizers
-      torch
-      transformers
-    ];
-    cosine = [
-      nltk
-      sentence-transformers
-      torch
-      transformers
-    ];
-    pdf = [ pypdf ];
-    sync = [ selenium ];
-    torch = [
-      nltk
-      scikit-learn
-      torch
-    ];
-    transformer = [
-      sentence-transformers
-      tokenizers
-      transformers
-    ];
-  };
-
-  nativeCheckInputs = [
-    h2
-    pytest-asyncio
-    pytestCheckHook
-  ]
-  ++ lib.flatten (builtins.attrValues finalAttrs.passthru.optional-dependencies);
-
-  pytestFlags = [ "--continue-on-collection-errors" ];
 
   disabledTestPaths = [
     # sys.exit(1) that crashes pytest
@@ -257,7 +216,51 @@ buildPythonPackage (finalAttrs: {
     "test_no_v4_or_v5_checkout_remaining"
   ];
 
+  optional-dependencies = {
+    all = [
+      nltk
+      pypdf
+      scikit-learn
+      selenium
+      sentence-transformers
+      tokenizers
+      torch
+      transformers
+    ];
+
+    cosine = [
+      nltk
+      sentence-transformers
+      torch
+      transformers
+    ];
+
+    pdf = [ pypdf ];
+    sync = [ selenium ];
+
+    torch = [
+      nltk
+      scikit-learn
+      torch
+    ];
+
+    transformer = [
+      sentence-transformers
+      tokenizers
+      transformers
+    ];
+  };
+
+  pyproject = true;
+  pytestFlags = [ "--continue-on-collection-errors" ];
   pythonImportsCheck = [ "crawl4ai" ];
+
+  pythonRelaxDeps = [
+    "lxml"
+    "snowballstemmer"
+  ];
+
+  pythonRemoveDeps = [ "patchright" ];
 
   meta = {
     description = "LLM Friendly Web Crawler & Scraper";

@@ -1,15 +1,14 @@
 {
   lib,
+  fetchFromGitHub,
   aiohttp,
   buildPythonPackage,
-  fetchFromGitHub,
   setuptools,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "ohme";
   version = "1.9.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "dan-r";
@@ -18,14 +17,12 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-MhFDwEu67Gnk9WJCrWKLs3KSk/KryC/QFEpdkZqbgT4=";
   };
 
-  build-system = [ setuptools ];
-
-  dependencies = [ aiohttp ];
-
-  pythonImportsCheck = [ "ohme" ];
-
   # Module has no tests
   doCheck = false;
+  build-system = [ setuptools ];
+  dependencies = [ aiohttp ];
+  pyproject = true;
+  pythonImportsCheck = [ "ohme" ];
 
   meta = {
     description = "Module for interacting with the Ohme API";

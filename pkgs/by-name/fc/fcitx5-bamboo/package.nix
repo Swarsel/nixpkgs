@@ -3,10 +3,10 @@
   stdenv,
   fetchFromGitHub,
   cmake,
-  kdePackages,
   fcitx5,
   gettext,
   go,
+  kdePackages,
 }:
 
 stdenv.mkDerivation (finalAttrs: {

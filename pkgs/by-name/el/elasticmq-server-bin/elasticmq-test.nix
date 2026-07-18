@@ -26,6 +26,15 @@ runCommand "${elasticmq-server.name}-tests"
         python
         boto3
       ];
+
+      checkMessagePy = writeText "check_message.py" ''
+        ${commonPy}
+        messages = queue.receive_messages()
+        print(f"Received {messages!r}")
+        assert len(messages) == 1
+        assert messages[0].body == "bazqux"
+      '';
+
       emqConfig = writeText "emq-test.conf" ''
         generate-node-address = true
 
@@ -33,16 +42,10 @@ runCommand "${elasticmq-server.name}-tests"
           foobar {}
         }
       '';
+
       putMessagePy = writeText "put_message.py" ''
         ${commonPy}
         queue.send_message(MessageBody="bazqux")
-      '';
-      checkMessagePy = writeText "check_message.py" ''
-        ${commonPy}
-        messages = queue.receive_messages()
-        print(f"Received {messages!r}")
-        assert len(messages) == 1
-        assert messages[0].body == "bazqux"
       '';
     }
   )

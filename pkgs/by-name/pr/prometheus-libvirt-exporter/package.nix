@@ -1,9 +1,9 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
-  pkg-config,
+  buildGoModule,
   libvirt,
+  pkg-config,
 }:
 
 buildGoModule (finalAttrs: {
@@ -17,13 +17,10 @@ buildGoModule (finalAttrs: {
     hash = "sha256-loh7fgeF1/OuTt2MQSkl/7VnX25idoF57+HtzV9L/ns=";
   };
 
-  vendorHash = null;
-
-  ldflags = [ "-X=main.Version=${finalAttrs.version}" ];
-
-  buildInputs = [ libvirt ];
-
   nativeBuildInputs = [ pkg-config ];
+  buildInputs = [ libvirt ];
+  vendorHash = null;
+  ldflags = [ "-X=main.Version=${finalAttrs.version}" ];
 
   meta = {
     description = "Prometheus metrics exporter for libvirt";

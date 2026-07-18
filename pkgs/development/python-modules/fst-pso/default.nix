@@ -10,14 +10,15 @@
 buildPythonPackage rec {
   pname = "fst-pso";
   version = "1.9.0";
-  pyproject = true;
 
   src = fetchPypi {
-    pname = "fst_pso";
     inherit version;
     hash = "sha256-znf1A/Vcz5ELFGFrpDzdj8O3XEDxpu+mCCb35GfWqN8=";
+    pname = "fst_pso";
   };
 
+  # Module has no tests
+  doCheck = false;
   build-system = [ setuptools ];
 
   dependencies = [
@@ -25,9 +26,7 @@ buildPythonPackage rec {
     numpy
   ];
 
-  # Module has no tests
-  doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "fstpso" ];
 
   meta = {

@@ -7,12 +7,7 @@
 elpaBuild {
   pname = "mu4e";
   version = mu.mu4e.version;
-
   src = mu.mu4e;
-
-  propagatedUserEnvPkgs = [ mu ];
-
-  dontUnpack = false;
 
   # prepare a multi-file package tar archive according to info
   # "(elisp) Multi-file Packages" for elpaBuild to install
@@ -25,6 +20,9 @@ elpaBuild {
     src=$PWD/$content_directory.tar
     tar --create --verbose --file=$src $content_directory
   '';
+
+  dontUnpack = false;
+  propagatedUserEnvPkgs = [ mu ];
 
   meta = removeAttrs mu.meta [ "mainProgram" ] // {
     description = "Full-featured e-mail client";

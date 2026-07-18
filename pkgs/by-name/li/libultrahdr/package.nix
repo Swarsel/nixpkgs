@@ -1,22 +1,22 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
-  fetchpatch,
-  replaceVars,
   cmake,
+  ctestCheckHook,
+  fetchpatch,
+  gtest,
+  libjpeg,
   ninja,
   pkg-config,
-  libjpeg,
-  gtest,
-  ctestCheckHook,
-  versionCheckHook,
+  replaceVars,
   testers,
+  versionCheckHook,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
-  version = "1.4.0";
   pname = "libultrahdr";
+  version = "1.4.0";
 
   src = fetchFromGitHub {
     owner = "google";
@@ -33,8 +33,8 @@ stdenv.mkDerivation (finalAttrs: {
   patches = [
     # Fix build with gcc 15 by adding missing cstdint header
     (fetchpatch {
-      url = "https://github.com/google/libultrahdr/commit/5fa99b5271a3c80a13c78062d7adc6310222dd8e.patch";
       hash = "sha256-o6lbDOdx+ZrCy/Iq02WjM9Tas8C5P/FMwUtXMUCoZGY=";
+      url = "https://github.com/google/libultrahdr/commit/5fa99b5271a3c80a13c78062d7adc6310222dd8e.patch";
     })
 
     (replaceVars ./gtest.patch {
@@ -51,8 +51,8 @@ stdenv.mkDerivation (finalAttrs: {
     # fix tests on big-endian
     # https://github.com/google/libultrahdr/pull/396
     (fetchpatch {
-      url = "https://github.com/google/libultrahdr/commit/13a058f452d846e43d4691f6885eeeaa8b0ea8d0.patch";
       hash = "sha256-2ZVvBMz8wQLEThuXdRJbbx5m2ouRZpxVWoH88RLmit4=";
+      url = "https://github.com/google/libultrahdr/commit/13a058f452d846e43d4691f6885eeeaa8b0ea8d0.patch";
     })
   ];
 
@@ -67,20 +67,6 @@ stdenv.mkDerivation (finalAttrs: {
         'includedir=@CMAKE_INSTALL_FULL_INCLUDEDIR@'
   '';
 
-  # use sse2 for floating point math to fix tests
-  env = lib.optionalAttrs stdenv.hostPlatform.isi686 {
-    CFLAGS = "-mfpmath=sse -msse2";
-    CXXFLAGS = "-mfpmath=sse -msse2";
-  };
-
-  cmakeFlags = [
-    (lib.cmakeBool "UHDR_BUILD_TESTS" true)
-    # Build disables install target in cross-compilation mode so
-    # cross-compilation would fail on NixOS. Force flag to false.
-    # See https://github.com/google/libultrahdr/blob/8cbc983d2f6c2171af5cbcdb8801102f83fe92ab/CMakeLists.txt#L153
-    (lib.cmakeBool "CMAKE_CROSSCOMPILING" false)
-  ];
-
   nativeBuildInputs = [
     cmake
     ninja
@@ -92,17 +78,31 @@ stdenv.mkDerivation (finalAttrs: {
     libjpeg
   ];
 
+  cmakeFlags = [
+    (lib.cmakeBool "UHDR_BUILD_TESTS" true)
+    # Build disables install target in cross-compilation mode so
+    # cross-compilation would fail on NixOS. Force flag to false.
+    # See https://github.com/google/libultrahdr/blob/8cbc983d2f6c2171af5cbcdb8801102f83fe92ab/CMakeLists.txt#L153
+    (lib.cmakeBool "CMAKE_CROSSCOMPILING" false)
+  ];
+
+  # use sse2 for floating point math to fix tests
+  env = lib.optionalAttrs stdenv.hostPlatform.isi686 {
+    CFLAGS = "-mfpmath=sse -msse2";
+    CXXFLAGS = "-mfpmath=sse -msse2";
+  };
+
+  doCheck = true;
+
   nativeCheckInputs = [
     ctestCheckHook
   ];
 
-  doCheck = true;
+  doInstallCheck = true;
 
   nativeInstallCheckInputs = [
     versionCheckHook
   ];
-
-  doInstallCheck = true;
 
   passthru.tests = {
     pkg-config = testers.testMetaPkgConfig finalAttrs.finalPackage;
@@ -110,22 +110,27 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Reference codec for the Ultra HDR format";
+
     longDescription = ''
       Ultra HDR is a true HDR image format, and is backcompatible. libultrahdr
       is the reference codec for the Ultra HDR format. The codecs that support
       the format can render the HDR intent of the image on HDR displays; other
       codecs can still decode and display the SDR intent of the image.
     '';
+
     homepage = "https://developer.android.com/media/platform/hdr-image-format";
     changelog = "https://github.com/google/libultrahdr/releases/tag/v${finalAttrs.version}";
-    pkgConfigModules = [ "libuhdr" ];
-    maintainers = with lib.maintainers; [
-      yzx9
-    ];
-    platforms = lib.platforms.all;
+
     license = with lib.licenses; [
       asl20
     ];
+
+    maintainers = with lib.maintainers; [
+      yzx9
+    ];
+
+    platforms = lib.platforms.all;
     mainProgram = "ultrahdr_app";
+    pkgConfigModules = [ "libuhdr" ];
   };
 })

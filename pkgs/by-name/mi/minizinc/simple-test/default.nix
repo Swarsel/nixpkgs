@@ -5,11 +5,7 @@
 { stdenv, minizinc }:
 
 stdenv.mkDerivation {
-  name = "minizinc-simple-test";
-
   nativeBuildInputs = [ minizinc ];
-
-  dontInstall = true;
 
   buildCommand = ''
     mkdir -p $out
@@ -18,5 +14,7 @@ stdenv.mkDerivation {
     minizinc --solver cbc ${./loan.mzn} ${./loan1.dzn} | tee $out/loan.log
   '';
 
+  dontInstall = true;
+  name = "minizinc-simple-test";
   meta.timeout = 10;
 }

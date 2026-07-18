@@ -1,7 +1,7 @@
 {
   lib,
-  stdenvNoCC,
   fetchFromGitHub,
+  stdenvNoCC,
 }:
 
 stdenvNoCC.mkDerivation rec {
@@ -24,10 +24,10 @@ stdenvNoCC.mkDerivation rec {
   '';
 
   meta = {
-    homepage = "https://github.com/rastikerdar/nahid-font";
     description = "Persian (Farsi) Font - قلم (فونت) فارسی ناهید";
+    homepage = "https://github.com/rastikerdar/nahid-font";
     license = lib.licenses.free;
-    platforms = lib.platforms.all;
     maintainers = [ ];
+    platforms = lib.platforms.all;
   };
 }

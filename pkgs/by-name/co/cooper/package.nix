@@ -1,17 +1,12 @@
 {
   lib,
-  stdenvNoCC,
   fetchFromGitHub,
   installFonts,
+  stdenvNoCC,
 }:
 stdenvNoCC.mkDerivation {
   pname = "cooper";
   version = "1.01-unstable-2025-05-25";
-
-  outputs = [
-    "out"
-    "webfont"
-  ];
 
   src = fetchFromGitHub {
     owner = "indestructible-type";
@@ -20,13 +15,18 @@ stdenvNoCC.mkDerivation {
     hash = "sha256-4WaRFvAn32IfeCCDszOsmDxFuKnnADOXj/vj8SZB2mU=";
   };
 
+  outputs = [
+    "out"
+    "webfont"
+  ];
+
   nativeBuildInputs = [ installFonts ];
 
   meta = {
-    homepage = "https://indestructibletype.com/Cooper/index.html";
     description = "Cooper* a revival of the Cooper font family by indestructible type*";
+    homepage = "https://indestructibletype.com/Cooper/index.html";
     license = lib.licenses.ofl;
-    platforms = lib.platforms.all;
     maintainers = with lib.maintainers; [ gavink97 ];
+    platforms = lib.platforms.all;
   };
 }

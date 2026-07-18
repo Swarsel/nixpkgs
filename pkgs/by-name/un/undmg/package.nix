@@ -2,11 +2,11 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  zlib,
   bzip2,
   lzfse,
-  xz,
   pkg-config,
+  xz,
+  zlib,
 }:
 
 let
@@ -32,17 +32,18 @@ stdenv.mkDerivation {
     xz
   ];
 
-  setupHook = ./setup-hook.sh;
-
   makeFlags = [ "PREFIX=$(out)" ];
+  setupHook = ./setup-hook.sh;
 
   meta = {
     description = "Extract a DMG file";
     homepage = "https://github.com/matthewbauer/undmg";
     license = lib.licenses.gpl3;
-    mainProgram = "undmg";
+
     maintainers = [
     ];
+
     platforms = lib.platforms.all;
+    mainProgram = "undmg";
   };
 }

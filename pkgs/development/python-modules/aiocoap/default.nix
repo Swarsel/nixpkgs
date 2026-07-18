@@ -1,11 +1,11 @@
 {
   lib,
+  fetchFromGitHub,
   buildPythonPackage,
   cbor-diag,
   cbor2,
   cryptography,
   dtlssocket,
-  fetchFromGitHub,
   filelock,
   ge25519,
   pygments,
@@ -18,7 +18,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "aiocoap";
   version = "0.4.17";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "chrysn";
@@ -27,26 +26,8 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-l9MChfvBTJn/ABTqrw4i+YUNGJnDZmOJS/kumImaa/s=";
   };
 
-  build-system = [ setuptools ];
-
-  optional-dependencies = {
-    oscore = [
-      cbor2
-      cryptography
-      filelock
-      ge25519
-    ];
-    tinydtls = [ dtlssocket ];
-    ws = [ websockets ];
-    prettyprint = [
-      termcolor
-      cbor2
-      pygments
-      cbor-diag
-    ];
-  };
-
   nativeCheckInputs = [ pytestCheckHook ];
+  build-system = [ setuptools ];
 
   disabledTestPaths = [
     # Don't test the plugins
@@ -65,6 +46,26 @@ buildPythonPackage (finalAttrs: {
     "test_blame"
   ];
 
+  optional-dependencies = {
+    oscore = [
+      cbor2
+      cryptography
+      filelock
+      ge25519
+    ];
+
+    prettyprint = [
+      termcolor
+      cbor2
+      pygments
+      cbor-diag
+    ];
+
+    tinydtls = [ dtlssocket ];
+    ws = [ websockets ];
+  };
+
+  pyproject = true;
   pythonImportsCheck = [ "aiocoap" ];
 
   meta = {

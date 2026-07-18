@@ -1,16 +1,15 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
+  buildPythonPackage,
   llm,
   llm-fragments-github,
+  setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "llm-fragments-github";
   version = "0.4";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "simonw";
@@ -20,11 +19,9 @@ buildPythonPackage rec {
   };
 
   build-system = [ setuptools ];
-
   dependencies = [ llm ];
-
+  pyproject = true;
   pythonImportsCheck = [ "llm_fragments_github" ];
-
   passthru.tests = llm.mkPluginTest llm-fragments-github;
 
   meta = {

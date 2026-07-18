@@ -2,13 +2,13 @@
   lib,
   stdenv,
   fetchurl,
-  which,
   bison,
   flex,
   libmaa,
-  zlib,
   libtool,
   nixosTests,
+  which,
+  zlib,
 }:
 
 stdenv.mkDerivation rec {
@@ -24,11 +24,6 @@ stdenv.mkDerivation rec {
     ./buildfix.diff
   ];
 
-  buildInputs = [
-    libmaa
-    zlib
-  ];
-
   nativeBuildInputs = [
     bison
     flex
@@ -36,8 +31,10 @@ stdenv.mkDerivation rec {
     which
   ];
 
-  # In earlier versions, parallel building was not supported but it's OK with 1.13
-  enableParallelBuilding = true;
+  buildInputs = [
+    libmaa
+    zlib
+  ];
 
   configureFlags = [
     "--datadir=/run/current-system/sw/share/dictd"
@@ -48,6 +45,8 @@ stdenv.mkDerivation rec {
     install -Dm444 -t $out/share/doc/${pname} NEWS README
   '';
 
+  # In earlier versions, parallel building was not supported but it's OK with 1.13
+  enableParallelBuilding = true;
   passthru.tests.nixos = nixosTests.dictd;
 
   meta = {

@@ -27,12 +27,19 @@
 buildPythonPackage rec {
   pname = "okta";
   version = "3.1.0";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
     hash = "sha256-7ZYDrup+HJxlrOmSBGsWD4Ku8HRlQR4E68olWQtcazg=";
   };
+
+  checkInputs = [
+    pyfakefs
+    pytest-asyncio
+    pytest-mock
+    pytest-recording
+    pytestCheckHook
+  ];
 
   build-system = [ setuptools ];
 
@@ -53,16 +60,6 @@ buildPythonPackage rec {
     yarl
   ];
 
-  checkInputs = [
-    pyfakefs
-    pytest-asyncio
-    pytest-mock
-    pytest-recording
-    pytestCheckHook
-  ];
-
-  enabledTestPaths = [ "tests/" ];
-
   disabledTests = [
     "test_client_raise_exception"
     # vcr.errors.CannotOverwriteExistingCassetteException: Can't overwrite existing cassette
@@ -72,6 +69,9 @@ buildPythonPackage rec {
     "test_subscribe_unsubscribe"
     "test_client_invalid_url"
   ];
+
+  enabledTestPaths = [ "tests/" ];
+  pyproject = true;
 
   pythonImportsCheck = [
     "okta"

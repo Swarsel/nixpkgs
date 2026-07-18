@@ -15,18 +15,19 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   buildInputs = [ libiconv ];
-
   # Ignore errors since gcc-14.
   #   localconverter.c:602:21/607:26/633:26: error: passing argument 2 of 'iconv' from incompatible pointer type
   env.NIX_CFLAGS_COMPILE = "-Wno-error=incompatible-pointer-types";
 
   meta = {
-    homepage = "https://jprs.co.jp/idn/index-e.html";
     description = "Provides functionalities about i18n domain name processing";
+    homepage = "https://jprs.co.jp/idn/index-e.html";
+
     license = {
       fullName = "Open Source Code License version 1.1";
       url = "https://jprs.co.jp/idn/idnkit2-OSCL.txt";
     };
+
     platforms = lib.platforms.linux;
   };
 })

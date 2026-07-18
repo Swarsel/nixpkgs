@@ -1,14 +1,14 @@
 {
   lib,
-  buildGoModule,
+  stdenv,
   fetchFromGitLab,
+  buildGoModule,
+  gitMinimal,
   installShellFiles,
   makeBinaryWrapper,
-  stdenv,
   nix-update-script,
-  writableTmpDirAsHomeHook,
   versionCheckHook,
-  gitMinimal,
+  writableTmpDirAsHomeHook,
 }:
 
 buildGoModule (finalAttrs: {
@@ -21,6 +21,7 @@ buildGoModule (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-GO4SeXr/kT8vvg7v/ehreu9g3ZDeXIC7jKB9/Cg4ze4=";
     leaveDotGit = true;
+
     postFetch = ''
       cd "$out"
       git rev-parse --short HEAD > $out/COMMIT
@@ -28,24 +29,22 @@ buildGoModule (finalAttrs: {
     '';
   };
 
-  vendorHash = "sha256-fwsefYGNnx9OkITaZ0Z9Xc+1/Pj4FxEX+194C93d5K0=";
-
-  ldflags = [
-    "-s"
-    "-w"
-    "-X main.version=${finalAttrs.version}"
-  ];
-
-  preBuild = ''
-    ldflags+=" -X main.commit=$(cat COMMIT)"
-  '';
-
   nativeBuildInputs = [
     installShellFiles
     makeBinaryWrapper
   ];
 
-  subPackages = [ "cmd/glab" ];
+  vendorHash = "sha256-fwsefYGNnx9OkITaZ0Z9Xc+1/Pj4FxEX+194C93d5K0=";
+
+  preBuild = ''
+    ldflags+=" -X main.commit=$(cat COMMIT)"
+  '';
+
+  nativeCheckInputs = [ writableTmpDirAsHomeHook ];
+
+  preCheck = ''
+    git init
+  '';
 
   postInstall = lib.optionalString (stdenv.buildPlatform.canExecute stdenv.hostPlatform) ''
     make manpage
@@ -60,33 +59,37 @@ buildGoModule (finalAttrs: {
       --set-default GLAB_SEND_TELEMETRY 0
   '';
 
-  nativeCheckInputs = [ writableTmpDirAsHomeHook ];
-
-  preCheck = ''
-    git init
-  '';
-
   doInstallCheck = true;
+
   nativeInstallCheckInputs = [
     gitMinimal
     versionCheckHook
     writableTmpDirAsHomeHook
   ];
-  versionCheckProgramArg = "version";
-  versionCheckKeepEnvironment = [ "HOME" ];
 
+  ldflags = [
+    "-s"
+    "-w"
+    "-X main.version=${finalAttrs.version}"
+  ];
+
+  subPackages = [ "cmd/glab" ];
+  versionCheckKeepEnvironment = [ "HOME" ];
+  versionCheckProgramArg = "version";
   passthru.updateScript = nix-update-script { };
 
   meta = {
     description = "GitLab CLI tool bringing GitLab to your command line";
-    license = lib.licenses.mit;
     homepage = "https://gitlab.com/gitlab-org/cli";
     changelog = "https://gitlab.com/gitlab-org/cli/-/releases/v${finalAttrs.version}";
+    license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       luftmensch-luftmensch
       anthonyroussel
       turebentzin
     ];
+
     mainProgram = "glab";
   };
 })

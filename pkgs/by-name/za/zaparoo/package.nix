@@ -1,13 +1,13 @@
 {
   lib,
-  buildGoModule,
-  fetchFromGitHub,
   fetchurl,
-  versionCheckHook,
+  fetchFromGitHub,
+  buildGoModule,
+  libnfc,
+  libusb1,
   nix-update-script,
   pkg-config,
-  libusb1,
-  libnfc,
+  versionCheckHook,
 }:
 
 buildGoModule (finalAttrs: {
@@ -21,28 +21,10 @@ buildGoModule (finalAttrs: {
     hash = "sha256-U/MNK8K7XAEuIa06mjJdUJRKHUFWqH7BFhAgJCbdj/s=";
   };
 
-  vendorHash = "sha256-UTMYZ8la4VsxIVjcRg8l1yGy52CRjv/6WZQgHJ+oFdE=";
-
-  webUIVersion = "1.8.0";
-  webUI = fetchurl {
-    url = "https://github.com/ZaparooProject/zaparoo-app/releases/download/v${finalAttrs.webUIVersion}/zaparoo_app-web-${finalAttrs.webUIVersion}.tar.gz";
-    hash = "sha256-77QyMFbx73vaKIRDCnhdqDXBb8MfQSsCWghe3XEL0tk=";
-  };
-
-  subPackages = [ "cmd/linux" ];
-
-  tags = [
-    "netgo"
-    "osusergo"
-    "sqlite_omit_load_extension"
-  ];
-
-  ldflags = [
-    "-s"
-    "-X github.com/ZaparooProject/zaparoo-core/pkg/config.AppVersion=${finalAttrs.version}"
-  ];
-
-  env.CGO_ENABLED = 1;
+  postPatch = ''
+    mkdir -p pkg/assets/_app/dist
+    tar xf ${finalAttrs.webUI} -C pkg/assets/_app/dist/
+  '';
 
   nativeBuildInputs = [
     pkg-config
@@ -53,20 +35,38 @@ buildGoModule (finalAttrs: {
     libnfc
   ];
 
-  postPatch = ''
-    mkdir -p pkg/assets/_app/dist
-    tar xf ${finalAttrs.webUI} -C pkg/assets/_app/dist/
-  '';
+  vendorHash = "sha256-UTMYZ8la4VsxIVjcRg8l1yGy52CRjv/6WZQgHJ+oFdE=";
+  env.CGO_ENABLED = 1;
 
   postInstall = ''
     mv $out/bin/linux $out/bin/zaparoo
   '';
 
+  doInstallCheck = true;
+
   nativeInstallCheckInputs = [
     versionCheckHook
   ];
 
-  doInstallCheck = true;
+  ldflags = [
+    "-s"
+    "-X github.com/ZaparooProject/zaparoo-core/pkg/config.AppVersion=${finalAttrs.version}"
+  ];
+
+  subPackages = [ "cmd/linux" ];
+
+  tags = [
+    "netgo"
+    "osusergo"
+    "sqlite_omit_load_extension"
+  ];
+
+  webUI = fetchurl {
+    hash = "sha256-77QyMFbx73vaKIRDCnhdqDXBb8MfQSsCWghe3XEL0tk=";
+    url = "https://github.com/ZaparooProject/zaparoo-app/releases/download/v${finalAttrs.webUIVersion}/zaparoo_app-web-${finalAttrs.webUIVersion}.tar.gz";
+  };
+
+  webUIVersion = "1.8.0";
 
   passthru = {
     updateScript = nix-update-script { };

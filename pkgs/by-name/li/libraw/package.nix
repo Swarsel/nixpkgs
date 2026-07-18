@@ -3,12 +3,11 @@
   stdenv,
   fetchFromGitHub,
   autoreconfHook,
-  lcms2,
-  pkg-config,
-
   # for passthru.tests
   hdrmerge,
   imagemagick,
+  lcms2,
+  pkg-config,
   python3,
 }:
 
@@ -30,18 +29,17 @@ stdenv.mkDerivation (finalAttrs: {
     "doc"
   ];
 
-  propagatedBuildInputs = [ lcms2 ];
+  postPatch = lib.optionalString stdenv.hostPlatform.isFreeBSD ''
+    substituteInPlace libraw*.pc.in --replace-fail -lstdc++ ""
+  '';
 
   nativeBuildInputs = [
     autoreconfHook
     pkg-config
   ];
 
+  propagatedBuildInputs = [ lcms2 ];
   enableParallelBuilding = true;
-
-  postPatch = lib.optionalString stdenv.hostPlatform.isFreeBSD ''
-    substituteInPlace libraw*.pc.in --replace-fail -lstdc++ ""
-  '';
 
   passthru.tests = {
     inherit imagemagick hdrmerge;
@@ -51,10 +49,12 @@ stdenv.mkDerivation (finalAttrs: {
   meta = {
     description = "Library for reading RAW files obtained from digital photo cameras (CRW/CR2, NEF, RAF, DNG, and others)";
     homepage = "https://www.libraw.org/";
+
     license = with lib.licenses; [
       cddl
       lgpl2Plus
     ];
+
     platforms = lib.platforms.unix;
   };
 })

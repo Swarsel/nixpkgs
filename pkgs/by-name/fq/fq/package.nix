@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   fq,
   testers,
 }:
@@ -26,14 +26,13 @@ buildGoModule (finalAttrs: {
   ];
 
   subPackages = [ "." ];
-
   passthru.tests = testers.testVersion { package = fq; };
 
   meta = {
     description = "jq for binary formats";
-    mainProgram = "fq";
     homepage = "https://github.com/wader/fq";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ siraben ];
+    mainProgram = "fq";
   };
 })

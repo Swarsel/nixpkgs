@@ -32,7 +32,7 @@ stdenv.mkDerivation (finalAttrs: {
     homepage = "https://github.com/0e4ef622/wine-discord-ipc-bridge";
     license = lib.licenses.mit;
     maintainers = [ lib.maintainers.uku3lig ];
-    mainProgram = "winediscordipcbridge";
     platforms = [ "i686-windows" ];
+    mainProgram = "winediscordipcbridge";
   };
 })

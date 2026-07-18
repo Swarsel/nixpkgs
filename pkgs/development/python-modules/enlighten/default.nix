@@ -1,12 +1,10 @@
 {
   lib,
-  buildPythonPackage,
-  fetchPypi,
-
   # dependencies
   blessed,
+  buildPythonPackage,
+  fetchPypi,
   prefixed,
-
   # tests
   pytestCheckHook,
 }:
@@ -14,22 +12,22 @@
 buildPythonPackage rec {
   pname = "enlighten";
   version = "1.14.1";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
     hash = "sha256-hcNUEqmk84hrMzfUH4E0Qfq5ow2fW18MAVvQeKRBFHM=";
   };
 
+  nativeCheckInputs = [
+    pytestCheckHook
+  ];
+
   dependencies = [
     blessed
     prefixed
   ];
 
-  nativeCheckInputs = [
-    pytestCheckHook
-  ];
-
+  format = "setuptools";
   pythonImportsCheck = [ "enlighten" ];
 
   meta = {
@@ -37,6 +35,7 @@ buildPythonPackage rec {
     homepage = "https://github.com/Rockhopper-Technologies/enlighten";
     changelog = "https://github.com/Rockhopper-Technologies/enlighten/releases/tag/${version}";
     license = with lib.licenses; [ mpl20 ];
+
     maintainers = with lib.maintainers; [
       veprbl
       doronbehar

@@ -1,13 +1,12 @@
 {
   lib,
-  python3,
   fetchFromGitHub,
+  python3,
 }:
 
 python3.pkgs.buildPythonApplication (finalAttrs: {
   pname = "powerview";
   version = "2025.1.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "aniqfakhrul";
@@ -15,12 +14,6 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     tag = finalAttrs.version;
     hash = "sha256-kA7vb3YwUlolEnSJRFi+YZoq4yZsdMG+Snk7zsyOCmQ=";
   };
-
-  pythonRemoveDeps = [
-    "argparse"
-    "future"
-    "flask-basicauth"
-  ];
 
   build-system = with python3.pkgs; [ setuptools ];
 
@@ -46,7 +39,14 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     ];
   };
 
+  pyproject = true;
   pythonImportsCheck = [ "powerview" ];
+
+  pythonRemoveDeps = [
+    "argparse"
+    "future"
+    "flask-basicauth"
+  ];
 
   meta = {
     description = "Alternative PowerView.ps1 script in Python";

@@ -1,7 +1,7 @@
 {
-  pkgs,
   config,
   lib,
+  pkgs,
   ...
 }:
 let
@@ -16,18 +16,20 @@ in
   };
 
   config = lib.mkIf cfg.enable {
+    services.udisks2.enable = true;
+
     systemd.user.services.devmon = {
       description = "devmon automatic device mounting daemon";
-      wantedBy = [ "default.target" ];
+
       path = [
         pkgs.udevil
         pkgs.procps
         pkgs.udisks
         pkgs.which
       ];
-      serviceConfig.ExecStart = "${pkgs.udevil}/bin/devmon";
-    };
 
-    services.udisks2.enable = true;
+      serviceConfig.ExecStart = "${pkgs.udevil}/bin/devmon";
+      wantedBy = [ "default.target" ];
+    };
   };
 }

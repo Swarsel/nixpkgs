@@ -1,29 +1,17 @@
 {
+  lib,
   buildPythonPackage,
-  setuptools,
   darwin,
   pyobjc-core,
   pyobjc-framework-Cocoa,
-  pyobjc-framework-Quartz,
   pyobjc-framework-CoreText,
-  lib,
+  pyobjc-framework-Quartz,
+  setuptools,
 }:
 
 buildPythonPackage rec {
-  pname = "pyobjc-framework-ApplicationServices";
-  pyproject = true;
-
   inherit (pyobjc-core) version src;
-
-  sourceRoot = "${src.name}/pyobjc-framework-ApplicationServices";
-
-  build-system = [ setuptools ];
-
-  buildInputs = [ darwin.libffi ];
-
-  nativeBuildInputs = [
-    darwin.DarwinTools # sw_vers
-  ];
+  pname = "pyobjc-framework-ApplicationServices";
 
   # Same workaround as pyobjc-framework-Quartz; see
   # https://github.com/ronaldoussoren/pyobjc/pull/641.
@@ -35,6 +23,19 @@ buildPythonPackage rec {
       --replace-fail "/usr/bin/xcrun" "xcrun"
   '';
 
+  nativeBuildInputs = [
+    darwin.DarwinTools # sw_vers
+  ];
+
+  buildInputs = [ darwin.libffi ];
+
+  env.NIX_CFLAGS_COMPILE = toString [
+    "-I${darwin.libffi.dev}/include"
+    "-Wno-error=unused-command-line-argument"
+  ];
+
+  build-system = [ setuptools ];
+
   dependencies = [
     pyobjc-core
     pyobjc-framework-Cocoa
@@ -42,21 +43,20 @@ buildPythonPackage rec {
     pyobjc-framework-CoreText
   ];
 
-  env.NIX_CFLAGS_COMPILE = toString [
-    "-I${darwin.libffi.dev}/include"
-    "-Wno-error=unused-command-line-argument"
-  ];
+  pyproject = true;
 
   pythonImportsCheck = [
     "ApplicationServices"
     "HIServices"
   ];
 
+  sourceRoot = "${src.name}/pyobjc-framework-ApplicationServices";
+
   meta = {
     description = "PyObjC wrappers for the ApplicationServices framework on macOS";
     homepage = "https://github.com/ronaldoussoren/pyobjc";
     license = lib.licenses.mit;
-    platforms = lib.platforms.darwin;
     maintainers = with lib.maintainers; [ l1n ];
+    platforms = lib.platforms.darwin;
   };
 }

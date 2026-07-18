@@ -5,20 +5,19 @@
   buildGoModule,
   coredns,
   installShellFiles,
-  isFull ? true,
-  enableGateway ? false,
-  pname ? "kuma",
   components ? lib.optionals isFull [
     "kumactl"
     "kuma-cp"
     "kuma-dp"
   ],
+  enableGateway ? false,
+  isFull ? true,
+  pname ? "kuma",
 }:
 
 buildGoModule rec {
   inherit pname;
   version = "2.12.3";
-  tags = lib.optionals enableGateway [ "gateway" ];
 
   src = fetchFromGitHub {
     owner = "kumahq";
@@ -27,18 +26,15 @@ buildGoModule rec {
     hash = "sha256-C/q3fCcMMnqjXeoO/t/YOKHLq8HDNfF+x75nCcjwwvE=";
   };
 
-  vendorHash = "sha256-KgZYKopW+FOdwBIGxa2RLiEbefZ/1vAhcsWtcYhgdFs=";
-
-  # no test files
-  doCheck = false;
-
   nativeBuildInputs = [ installShellFiles ] ++ lib.optionals isFull [ coredns ];
+  vendorHash = "sha256-KgZYKopW+FOdwBIGxa2RLiEbefZ/1vAhcsWtcYhgdFs=";
 
   preBuild = ''
     export HOME=$TMPDIR
   '';
 
-  subPackages = map (p: "app/" + p) components;
+  # no test files
+  doCheck = false;
 
   postInstall =
     lib.optionalString (stdenv.buildPlatform.canExecute stdenv.hostPlatform) (
@@ -65,6 +61,9 @@ buildGoModule rec {
       "-X ${prefix}.gitCommit=${version}"
       "-X ${prefix}.buildDate=${version}"
     ];
+
+  subPackages = map (p: "app/" + p) components;
+  tags = lib.optionals enableGateway [ "gateway" ];
 
   meta = {
     description = "Service mesh controller";

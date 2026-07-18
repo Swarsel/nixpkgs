@@ -6,32 +6,37 @@
   pkg-config,
   cabextract ? null,
   cdrkit ? null,
-  mtools ? null,
   fuse3 ? null,
+  mtools ? null,
   ntfs3g ? null,
   syslinux ? null,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
-  version = "1.14.5";
   pname = "wimlib";
-
-  nativeBuildInputs = [
-    pkg-config
-    makeWrapper
-  ];
-  buildInputs = [ ntfs3g ] ++ lib.optionals (!stdenv.hostPlatform.isDarwin) [ fuse3 ];
+  version = "1.14.5";
 
   src = fetchurl {
     url = "https://wimlib.net/downloads/wimlib-${finalAttrs.version}.tar.gz";
     hash = "sha256-hCIaOr1bkSKPFfjmBlwzWjNiN7VzgZe3W/QZ7qVhoZQ=";
   };
 
-  enableParallelBuilding = true;
+  nativeBuildInputs = [
+    pkg-config
+    makeWrapper
+  ];
+
+  buildInputs = [ ntfs3g ] ++ lib.optionals (!stdenv.hostPlatform.isDarwin) [ fuse3 ];
 
   preBuild = lib.optionalString (!stdenv.hostPlatform.isDarwin) ''
     substituteInPlace programs/mkwinpeimg.in \
       --replace '/usr/lib/syslinux' "${syslinux}/share/syslinux"
+  '';
+
+  doCheck = (!stdenv.hostPlatform.isDarwin);
+
+  preCheck = ''
+    patchShebangs tests
   '';
 
   postInstall =
@@ -55,21 +60,19 @@ stdenv.mkDerivation (finalAttrs: {
       done
     '';
 
-  doCheck = (!stdenv.hostPlatform.isDarwin);
-
-  preCheck = ''
-    patchShebangs tests
-  '';
+  enableParallelBuilding = true;
 
   meta = {
-    homepage = "https://wimlib.net";
     description = "Library and program to extract, create, and modify WIM files";
-    platforms = lib.platforms.unix;
-    maintainers = [ ];
+    homepage = "https://wimlib.net";
+
     license = with lib.licenses; [
       gpl3
       lgpl3
       mit
     ];
+
+    maintainers = [ ];
+    platforms = lib.platforms.unix;
   };
 })

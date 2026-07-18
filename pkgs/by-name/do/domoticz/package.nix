@@ -2,23 +2,23 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  makeWrapper,
-  cmake,
-  python3,
-  openssl,
-  pkg-config,
-  mosquitto,
-  lua5_3,
-  sqlite,
-  jsoncpp,
-  zlib,
   boost,
+  cereal,
+  cmake,
   curl,
   git,
+  jsoncpp,
   libusb-compat-0_1,
-  cereal,
+  lua5_3,
+  makeWrapper,
   minizip,
+  mosquitto,
+  openssl,
+  pkg-config,
+  python3,
+  sqlite,
   versionCheckHook,
+  zlib,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -32,6 +32,12 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-+6EIEsgGTaLEPzBa/R5EYAxnYB3+cj54LGDJwutTQGA=";
     fetchSubmodules = true;
   };
+
+  nativeBuildInputs = [
+    cmake
+    pkg-config
+    makeWrapper
+  ];
 
   buildInputs = [
     openssl
@@ -47,12 +53,6 @@ stdenv.mkDerivation (finalAttrs: {
     libusb-compat-0_1
     cereal
     minizip
-  ];
-
-  nativeBuildInputs = [
-    cmake
-    pkg-config
-    makeWrapper
   ];
 
   cmakeFlags = [
@@ -78,27 +78,32 @@ stdenv.mkDerivation (finalAttrs: {
     wrapProgram $out/bin/domoticz --set LD_LIBRARY_PATH ${python3}/lib;
   '';
 
+  doInstallCheck = true;
+
   nativeInstallCheckInputs = [
     # versionCheckHook # readd once we can move to a tagged release again
   ];
-  doInstallCheck = true;
 
   meta = {
     description = "Home automation system";
+
     longDescription = ''
       Domoticz is a home automation system that lets you monitor and configure
       various devices like: lights, switches, various sensors/meters like
       temperature, rain, wind, UV, electra, gas, water and much more
     '';
+
+    homepage = "https://www.domoticz.com/";
+    changelog = "https://github.com/domoticz/domoticz/blob/${finalAttrs.version}/History.txt";
+    license = lib.licenses.gpl3Plus;
+
     maintainers = with lib.maintainers; [
       edcragg
       lenny
     ];
-    homepage = "https://www.domoticz.com/";
-    changelog = "https://github.com/domoticz/domoticz/blob/${finalAttrs.version}/History.txt";
-    license = lib.licenses.gpl3Plus;
+
     platforms = lib.platforms.all;
-    broken = stdenv.hostPlatform.isDarwin; # never built on Hydra https://hydra.nixos.org/job/nixpkgs/staging-next/domoticz.x86_64-darwin
     mainProgram = "domoticz";
+    broken = stdenv.hostPlatform.isDarwin; # never built on Hydra https://hydra.nixos.org/job/nixpkgs/staging-next/domoticz.x86_64-darwin
   };
 })

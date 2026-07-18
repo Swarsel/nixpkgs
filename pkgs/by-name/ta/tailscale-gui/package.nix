@@ -1,15 +1,15 @@
 {
   lib,
-  stdenvNoCC,
   fetchurl,
-  xar,
-  cpio,
-  pbzx,
-  writeShellApplication,
   cacert,
+  common-updater-scripts,
+  cpio,
   curl,
   jq,
-  common-updater-scripts,
+  pbzx,
+  stdenvNoCC,
+  writeShellApplication,
+  xar,
 }:
 
 stdenvNoCC.mkDerivation (finalAttrs: {
@@ -20,8 +20,6 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     url = "https://pkgs.tailscale.com/stable/Tailscale-${finalAttrs.version}-macos.pkg";
     hash = "sha256-r7e8aKNWaX1psI0a3sohTUv8xmUv8oebH/ndjeHLoVA=";
   };
-
-  dontUnpack = true;
 
   nativeBuildInputs = [
     xar
@@ -44,14 +42,18 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  dontUnpack = true;
+
   passthru.updateScript = lib.getExe (writeShellApplication {
     name = "tailscale-gui-update-script";
+
     runtimeInputs = [
       cacert
       curl
       jq
       common-updater-scripts
     ];
+
     text = ''
       version=$(curl --silent "https://pkgs.tailscale.com/stable/?mode=json&os=darwin" | jq -r '.MacZipsVersion')
       update-source-version tailscale-gui "$version"
@@ -64,10 +66,12 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     changelog = "https://tailscale.com/changelog#client";
     license = lib.licenses.unfree;
     sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
+
     maintainers = with lib.maintainers; [
       anish
       Br1ght0ne
     ];
+
     platforms = lib.platforms.darwin;
   };
 })

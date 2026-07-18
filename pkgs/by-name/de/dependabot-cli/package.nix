@@ -1,10 +1,10 @@
 {
   lib,
   stdenv,
+  fetchFromGitHub,
   buildGoModule,
   dependabot-cli,
   dockerTools,
-  fetchFromGitHub,
   installShellFiles,
   makeWrapper,
   symlinkJoin,
@@ -37,17 +37,18 @@ buildGoModule {
     hash = "sha256-8wDP9NRsO/xbtbRTXY1BviEbZUEsiZBosJAni62uyFE=";
   };
 
-  vendorHash = "sha256-mo/OOo+vw2jX0ggeEzNE8Qr5xXg0GEaTH6krdGQyeEE=";
-
-  ldflags = [
-    "-s"
-    "-w"
-    "-X github.com/dependabot/cli/cmd/dependabot/internal/cmd.version=v${version}"
-  ];
-
   nativeBuildInputs = [
     makeWrapper
     installShellFiles
+  ];
+
+  vendorHash = "sha256-mo/OOo+vw2jX0ggeEzNE8Qr5xXg0GEaTH6krdGQyeEE=";
+  # Some tests fail on *-darwin because they require host port binding or a Docker environment.
+  # So, we skip the test entirely on *-darwin.
+  doCheck = !stdenv.hostPlatform.isDarwin;
+
+  checkFlags = [
+    "-skip=TestDependabot"
   ];
 
   postInstall = lib.optionalString (stdenv.buildPlatform.canExecute stdenv.hostPlatform) ''
@@ -57,39 +58,43 @@ buildGoModule {
       --zsh <($out/bin/dependabot completion zsh)
   '';
 
-  checkFlags = [
-    "-skip=TestDependabot"
-  ];
-
-  # Some tests fail on *-darwin because they require host port binding or a Docker environment.
-  # So, we skip the test entirely on *-darwin.
-  doCheck = !stdenv.hostPlatform.isDarwin;
-
   doInstallCheck = true;
+
   installCheckPhase = ''
     $out/bin/dependabot --help
   '';
 
+  ldflags = [
+    "-s"
+    "-w"
+    "-X github.com/dependabot/cli/cmd/dependabot/internal/cmd.version=v${version}"
+  ];
+
+  passthru.tests.version = testers.testVersion {
+    version = "v${version}";
+    command = "dependabot --version";
+    package = dependabot-cli;
+  };
+
   passthru.updateScript = ./update.sh;
 
   passthru.withDockerImages = symlinkJoin {
-    name = "dependabot-cli-with-docker-images";
-    paths = [ dependabot-cli ];
     buildInputs = [ makeWrapper ];
+
     postBuild =
       let
         updateJobProxyImage = dockerTools.pullImage {
-          imageName = "ghcr.io/github/dependabot-update-job-proxy/dependabot-update-job-proxy";
+          inherit (updateJobProxy) imageDigest hash;
           finalImageName = "dependabot-update-job-proxy";
           finalImageTag = tag;
-          inherit (updateJobProxy) imageDigest hash;
+          imageName = "ghcr.io/github/dependabot-update-job-proxy/dependabot-update-job-proxy";
         };
 
         updaterGitHubActionsImage = dockerTools.pullImage {
-          imageName = "ghcr.io/dependabot/dependabot-updater-github-actions";
+          inherit (updaterGitHubActions) imageDigest hash;
           finalImageName = "dependabot-updater-github-actions";
           finalImageTag = tag;
-          inherit (updaterGitHubActions) imageDigest hash;
+          imageName = "ghcr.io/dependabot/dependabot-updater-github-actions";
         };
       in
       ''
@@ -100,23 +105,22 @@ buildGoModule {
           --run "docker load --input ${updaterGitHubActionsImage} >&2" \
           --add-flags "--updater-image=dependabot-updater-github-actions:${tag}"
       '';
-  };
 
-  passthru.tests.version = testers.testVersion {
-    package = dependabot-cli;
-    command = "dependabot --version";
-    version = "v${version}";
+    name = "dependabot-cli-with-docker-images";
+    paths = [ dependabot-cli ];
   };
 
   meta = {
-    changelog = "https://github.com/dependabot/cli/releases/tag/v${version}";
     description = "Tool for testing and debugging Dependabot update jobs";
-    mainProgram = "dependabot";
     homepage = "https://github.com/dependabot/cli";
+    changelog = "https://github.com/dependabot/cli/releases/tag/v${version}";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       infinisil
       philiptaron
     ];
+
+    mainProgram = "dependabot";
   };
 }

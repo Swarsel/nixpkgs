@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   iperf3,
   setuptools,
 }:
@@ -9,7 +9,6 @@
 buildPythonPackage rec {
   pname = "iperf3";
   version = "0.1.11";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "thiezn";
@@ -18,11 +17,10 @@ buildPythonPackage rec {
     hash = "sha256-kcEgG9lkYUqFtTgrGZdEQ0AHsx3yQIMFOG4A7d4mAnE=";
   };
 
-  build-system = [ setuptools ];
-
   # Tests require iperf3 client and server setup
   doCheck = false;
-
+  build-system = [ setuptools ];
+  pyproject = true;
   pythonImportsCheck = [ "iperf3" ];
 
   meta = {

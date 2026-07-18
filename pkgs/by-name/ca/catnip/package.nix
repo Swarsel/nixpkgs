@@ -1,11 +1,11 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
+  nix-update-script,
   pkg-config,
   portaudio,
   versionCheckHook,
-  nix-update-script,
 }:
 
 buildGoModule (finalAttrs: {
@@ -19,8 +19,6 @@ buildGoModule (finalAttrs: {
     hash = "sha256-M9VGpDsBambe9kXyEgDg53pKOSL2zH1ugfSbRgAiaCo=";
   };
 
-  vendorHash = "sha256-Hj453+5fhbUL6YMeupT5D6ydaEMe+ZQNgEYHtCUtTx4=";
-
   nativeBuildInputs = [
     pkg-config
   ];
@@ -29,15 +27,17 @@ buildGoModule (finalAttrs: {
     portaudio
   ];
 
-  ldflags = [
-    "-s"
-    "-X=main.version=${finalAttrs.version}"
-  ];
+  vendorHash = "sha256-Hj453+5fhbUL6YMeupT5D6ydaEMe+ZQNgEYHtCUtTx4=";
+  doInstallCheck = true;
 
   nativeInstallCheckInputs = [
     versionCheckHook
   ];
-  doInstallCheck = true;
+
+  ldflags = [
+    "-s"
+    "-X=main.version=${finalAttrs.version}"
+  ];
 
   passthru = {
     updateScript = nix-update-script { };

@@ -2,20 +2,19 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  rustPlatform,
   cmake,
   libiconv,
-  useMimalloc ? false,
-  doCheck ? true,
   nix-update-script,
+  rustPlatform,
   versionCheckHook,
+  doCheck ? true,
+  useMimalloc ? false,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
+  inherit doCheck;
   pname = "rust-analyzer-unwrapped";
   version = "2026-06-15";
-
-  cargoHash = "sha256-gVQGlbO6ylFNWt1JwGu8v4oLT7DBy23FGCnbP67Dj/0=";
 
   src = fetchFromGitHub {
     owner = "rust-lang";
@@ -24,42 +23,43 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-+V3nK4pCngbmgyVGXY6Kkrlevp4ocPkJJLf2aqwkDNA=";
   };
 
-  cargoBuildFlags = [
-    "--bin"
-    "rust-analyzer"
-    "--bin"
-    "rust-analyzer-proc-macro-srv"
-  ];
-  cargoTestFlags = [
-    "--package"
-    "rust-analyzer"
-    "--package"
-    "proc-macro-srv-cli"
-  ];
-
-  # Code format check requires more dependencies but don't really matter for packaging.
-  # So just ignore it.
-  checkFlags = [ "--skip=tidy::check_code_formatting" ];
-
   nativeBuildInputs = lib.optional useMimalloc cmake;
 
   buildInputs = lib.optionals stdenv.hostPlatform.isDarwin [
     libiconv
   ];
 
-  buildFeatures = lib.optional useMimalloc "mimalloc";
-
+  cargoHash = "sha256-gVQGlbO6ylFNWt1JwGu8v4oLT7DBy23FGCnbP67Dj/0=";
   env.CFG_RELEASE = finalAttrs.version;
+  # Code format check requires more dependencies but don't really matter for packaging.
+  # So just ignore it.
+  checkFlags = [ "--skip=tidy::check_code_formatting" ];
 
-  inherit doCheck;
   preCheck = lib.optionalString doCheck ''
     export RUST_SRC_PATH=${rustPlatform.rustLibSrc}
   '';
 
+  doInstallCheck = true;
+
   nativeInstallCheckInputs = [
     versionCheckHook
   ];
-  doInstallCheck = true;
+
+  buildFeatures = lib.optional useMimalloc "mimalloc";
+
+  cargoBuildFlags = [
+    "--bin"
+    "rust-analyzer"
+    "--bin"
+    "rust-analyzer-proc-macro-srv"
+  ];
+
+  cargoTestFlags = [
+    "--package"
+    "rust-analyzer"
+    "--package"
+    "proc-macro-srv-cli"
+  ];
 
   passthru = {
     updateScript = nix-update-script { };
@@ -72,10 +72,12 @@ rustPlatform.buildRustPackage (finalAttrs: {
   meta = {
     description = "Language server for the Rust language";
     homepage = "https://rust-analyzer.github.io";
+
     license = with lib.licenses; [
       mit
       asl20
     ];
+
     maintainers = with lib.maintainers; [ oxalica ];
     mainProgram = "rust-analyzer";
   };

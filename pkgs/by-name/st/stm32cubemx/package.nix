@@ -1,11 +1,11 @@
 {
-  fdupes,
+  lib,
   buildFHSEnv,
+  fdupes,
   fetchzip,
   icoutils,
   imagemagick,
   jdk21,
-  lib,
   makeDesktopItem,
   stdenvNoCC,
 }:
@@ -20,6 +20,7 @@ let
       url = "https://sw-center.st.com/packs/resource/library/stm32cube_mx_v${
         builtins.replaceStrings [ "." ] [ "" ] version
       }-lin.zip";
+
       hash = "sha256-OroIcdvNzCm7lyL62zNm4sbDgUb+GgJW50mqE1M1KT4=";
       stripRoot = false;
     };
@@ -29,20 +30,6 @@ let
       icoutils
       imagemagick
     ];
-    desktopItem = makeDesktopItem {
-      name = "STM32CubeMX";
-      exec = "stm32cubemx";
-      desktopName = "STM32CubeMX";
-      categories = [ "Development" ];
-      icon = "stm32cubemx";
-      comment = meta.description;
-      terminal = false;
-      startupNotify = false;
-      mimeTypes = [
-        "x-scheme-handler/sgnl"
-        "x-scheme-handler/signalcaptcha"
-      ];
-    };
 
     buildCommand = ''
       mkdir -p $out/{bin,opt/STM32CubeMX,share/applications}
@@ -84,8 +71,26 @@ let
       fi
     '';
 
+    desktopItem = makeDesktopItem {
+      categories = [ "Development" ];
+      comment = meta.description;
+      desktopName = "STM32CubeMX";
+      exec = "stm32cubemx";
+      icon = "stm32cubemx";
+
+      mimeTypes = [
+        "x-scheme-handler/sgnl"
+        "x-scheme-handler/signalcaptcha"
+      ];
+
+      name = "STM32CubeMX";
+      startupNotify = false;
+      terminal = false;
+    };
+
     meta = {
       description = "Graphical tool for configuring STM32 microcontrollers and microprocessors";
+
       longDescription = ''
         A graphical tool that allows a very easy configuration of STM32
         microcontrollers and microprocessors, as well as the generation of the
@@ -93,25 +98,31 @@ let
         partial Linux® Device Tree for Arm® Cortex®-A core), through a
         step-by-step process.
       '';
+
       homepage = "https://www.st.com/en/development-tools/stm32cubemx.html";
-      sourceProvenance = with lib.sourceTypes; [ binaryBytecode ];
       license = lib.licenses.unfree;
+      sourceProvenance = with lib.sourceTypes; [ binaryBytecode ];
+
       maintainers = with lib.maintainers; [
         angaz
         wucke13
       ];
+
       platforms = [ "x86_64-linux" ];
     };
   };
 in
 buildFHSEnv {
   inherit (package) pname version meta;
-  runScript = "${package.outPath}/bin/stm32cubemx";
+
   extraInstallCommands = ''
     mkdir -p $out/share/{applications,icons}
     ln -sf ${package.outPath}/share/applications/* $out/share/applications/
     ln -sf ${package.outPath}/share/icons/* $out/share/icons/
   '';
+
+  runScript = "${package.outPath}/bin/stm32cubemx";
+
   targetPkgs =
     pkgs: with pkgs; [
       alsa-lib

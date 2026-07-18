@@ -9,21 +9,21 @@
 buildPythonPackage rec {
   pname = "stop-words";
   version = "2025.11.4";
-  pyproject = true;
 
   src = fetchPypi {
-    pname = "stop_words";
     inherit version;
     hash = "sha256-BFkHK1SxHkOm+0xbBb2ofSrM/E8UwWl5dPNzmvD3tD0=";
+    pname = "stop_words";
   };
+
+  doCheck = false; # no tests
 
   build-system = [
     setuptools
     setuptools-scm
   ];
 
-  doCheck = false; # no tests
-
+  pyproject = true;
   pythonImportsCheck = [ "stop_words" ];
 
   meta = {

@@ -2,14 +2,14 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  pkg-config,
   cmake,
-  spdlog,
+  copyDesktopItems,
   ffmpeg,
-  taglib,
   kdePackages,
   makeDesktopItem,
-  copyDesktopItems,
+  pkg-config,
+  spdlog,
+  taglib,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -70,21 +70,23 @@ stdenv.mkDerivation (finalAttrs: {
 
   desktopItems = [
     (makeDesktopItem {
-      name = "easyaudiosync";
-      exec = "easyaudiosync";
-      icon = "easyaudiosync";
-      desktopName = "Easy Audio Sync";
       categories = [
         "Qt"
         "Audio"
         "AudioVideo"
       ];
+
       comment = "Audio library syncing and conversion utility";
+      desktopName = "Easy Audio Sync";
+      exec = "easyaudiosync";
+      icon = "easyaudiosync";
+      name = "easyaudiosync";
     })
   ];
 
   meta = {
     description = "Audio library syncing and conversion utility";
+
     longDescription = ''
       Easy Audio Sync is an audio library syncing and conversion utility.
       The intended use is syncing an audio library with many lossless files to a mobile device
@@ -94,6 +96,7 @@ stdenv.mkDerivation (finalAttrs: {
       source to destination syncing, with added audio transcoding capability, and is
       GUI-based instead of CLI-based.
     '';
+
     homepage = "https://github.com/complexlogic/EasyAudioSync";
     license = lib.licenses.unlicense;
     maintainers = with lib.maintainers; [ matteopacini ];

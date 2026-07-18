@@ -1,7 +1,7 @@
 {
-  qtModule,
-  stdenv,
   lib,
+  stdenv,
+  qtModule,
   qtbase,
   systemd,
 }:

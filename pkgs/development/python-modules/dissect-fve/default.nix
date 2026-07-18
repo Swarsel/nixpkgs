@@ -1,21 +1,20 @@
 {
   lib,
+  fetchFromGitHub,
   argon2-cffi,
   buildPythonPackage,
   dissect-cstruct,
-  dissect-util,
   dissect-target,
-  fetchFromGitHub,
+  dissect-util,
   pycryptodome,
   rich,
-  setuptools-scm,
   setuptools,
+  setuptools-scm,
 }:
 
 buildPythonPackage rec {
   pname = "dissect-fve";
   version = "4.6";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "fox-it";
@@ -43,6 +42,7 @@ buildPythonPackage rec {
     ];
   };
 
+  pyproject = true;
   pythonImportsCheck = [ "dissect.fve" ];
 
   meta = {

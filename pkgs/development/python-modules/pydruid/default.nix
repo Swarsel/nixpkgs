@@ -1,27 +1,26 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  # required dependencies
-  requests,
-  setuptools,
+  buildPythonPackage,
   # optional dependencies
   pandas,
-  tornado,
-  sqlalchemy,
   # test dependencies
   pycurl,
   pytestCheckHook,
+  # required dependencies
+  requests,
+  setuptools,
+  sqlalchemy,
+  tornado,
 }:
 
 buildPythonPackage rec {
   pname = "pydruid";
   version = "0.6.8";
-  format = "setuptools";
 
   src = fetchFromGitHub {
-    repo = "pydruid";
     owner = "druid-io";
+    repo = "pydruid";
     tag = version;
     hash = "sha256-em4UuNnGdfT6KC9XiWSkCmm4DxdvDS+DGY9kw25iepo=";
   };
@@ -32,7 +31,6 @@ buildPythonPackage rec {
   '';
 
   nativeBuildInputs = [ setuptools ];
-
   propagatedBuildInputs = [ requests ];
 
   nativeCheckInputs = [
@@ -41,14 +39,16 @@ buildPythonPackage rec {
   ]
   ++ lib.concatAttrValues optional-dependencies;
 
-  pythonImportsCheck = [ "pydruid" ];
+  format = "setuptools";
 
   optional-dependencies = {
-    pandas = [ pandas ];
     async = [ tornado ];
+    pandas = [ pandas ];
     sqlalchemy = [ sqlalchemy ];
     # druid has a `cli` extra, but it doesn't work with nixpkgs pygments
   };
+
+  pythonImportsCheck = [ "pydruid" ];
 
   meta = {
     description = "Simple API to create, execute, and analyze Druid queries";

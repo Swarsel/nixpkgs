@@ -1,14 +1,14 @@
 {
   lib,
   fetchFromGitHub,
-  buildPerlPackage,
   DBDmysql,
   DBI,
   IOSocketSSL,
   TermReadKey,
-  go,
   buildGoModule,
+  buildPerlPackage,
   git,
+  go,
 }:
 
 let
@@ -19,25 +19,28 @@ let
     repo = "percona-toolkit";
     rev = "v${version}";
     sha256 = "sha256-NpLUHIdGnuNJmSYBYErU7yzFkxKRFQVWJHJqJ2q4U5E=";
-
     # needed for build script
     leaveDotGit = true;
   };
 
   goDeps =
     (buildGoModule {
-      pname = "Percona-Toolkit go-bindings";
       inherit src version;
-
+      pname = "Percona-Toolkit go-bindings";
       vendorHash = "sha256-HAaoVYK6av085zSG0ZRpbmUgEA2UEt7CGWF/834e+z4=";
     }).goModules;
 in
 buildPerlPackage {
-  pname = "Percona-Toolkit";
-
   inherit src version;
-
+  pname = "Percona-Toolkit";
   outputs = [ "out" ];
+
+  postPatch = ''
+    cp -r --reflink=auto ${goDeps} vendor
+    chmod -R u+rw vendor
+    substituteInPlace src/go/Makefile \
+      --replace-fail "go get ./..." "echo 'Skipping go get due to offline build'"
+  '';
 
   nativeBuildInputs = [
     git
@@ -50,13 +53,6 @@ buildPerlPackage {
     IOSocketSSL
     TermReadKey
   ];
-
-  postPatch = ''
-    cp -r --reflink=auto ${goDeps} vendor
-    chmod -R u+rw vendor
-    substituteInPlace src/go/Makefile \
-      --replace-fail "go get ./..." "echo 'Skipping go get due to offline build'"
-  '';
 
   preBuild = ''
     export HOME=$TMPDIR

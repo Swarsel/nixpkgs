@@ -1,8 +1,8 @@
 {
   lib,
+  fetchFromGitHub,
   buildPythonPackage,
   decorator,
-  fetchFromGitHub,
   json-rpc,
   kaldi-active-grammar,
   lark,
@@ -25,7 +25,6 @@
 buildPythonPackage rec {
   pname = "dragonfly";
   version = "0.35.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "dictation-toolbox";
@@ -43,8 +42,6 @@ buildPythonPackage rec {
       --replace-fail 'wmctrl = "wmctrl"'${" "}'wmctrl = "${wmctrl}/bin/wmctrl"'
   '';
 
-  pythonRemoveDeps = [ "lark-parser" ];
-
   propagatedBuildInputs = [
     decorator
     json-rpc
@@ -60,6 +57,10 @@ buildPythonPackage rec {
     werkzeug
   ];
 
+  # Too many tests fail because of the unusual environment or
+  # because of the missing dependencies for some of the engines.
+  doCheck = false;
+
   optional-dependencies = {
     kaldi = [
       kaldi-active-grammar
@@ -68,11 +69,9 @@ buildPythonPackage rec {
     ];
   };
 
-  # Too many tests fail because of the unusual environment or
-  # because of the missing dependencies for some of the engines.
-  doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "dragonfly" ];
+  pythonRemoveDeps = [ "lark-parser" ];
 
   meta = {
     description = "Speech recognition framework allowing powerful Python-based scripting";

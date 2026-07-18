@@ -1,34 +1,29 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
-  replaceVars,
-  openssl,
-  gsound,
-  meson,
-  ninja,
-  pkg-config,
-  gobject-introspection,
-  wrapGAppsHook3,
-  glib,
-  glib-networking,
-  gtk3,
-  openssh,
-  gnome-shell,
+  desktop-file-utils,
   evolution-data-server-gtk4,
   gjs,
+  glib,
+  glib-networking,
+  gnome-shell,
+  gobject-introspection,
+  gsound,
+  gtk3,
+  meson,
+  ninja,
   nixosTests,
-  desktop-file-utils,
+  openssh,
+  openssl,
+  pkg-config,
+  replaceVars,
+  wrapGAppsHook3,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
   pname = "gnome-shell-extension-gsconnect";
   version = "72";
-
-  outputs = [
-    "out"
-    "installedTests"
-  ];
 
   src = fetchFromGitHub {
     owner = "GSConnect";
@@ -36,6 +31,11 @@ stdenv.mkDerivation (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-w9MQVEUQUcO1lqftBi76w5xSTlryKuZJxE6Ogg1J+ho=";
   };
+
+  outputs = [
+    "out"
+    "installedTests"
+  ];
 
   patches = [
     # Make typelibs available in the extension
@@ -49,6 +49,20 @@ stdenv.mkDerivation (finalAttrs: {
     # Allow installing installed tests to a separate output
     ./installed-tests-path.patch
   ];
+
+  postPatch = ''
+    patchShebangs installed-tests/prepare-tests.sh
+
+    # TODO: do not include every typelib everywhere
+    # for example, we definitely do not need nautilus
+    substituteInPlace src/__nix-prepend-search-paths.js \
+      --subst-var-by typelibPath "$GI_TYPELIB_PATH"
+
+    # slightly janky fix for gsettings_schemadir being removed
+    substituteInPlace data/config.js.in \
+      --subst-var-by GSETTINGS_SCHEMA_DIR \
+        ${glib.makeSchemaPath (placeholder "out") "${finalAttrs.pname}-${finalAttrs.version}"}
+  '';
 
   nativeBuildInputs = [
     meson
@@ -79,20 +93,6 @@ stdenv.mkDerivation (finalAttrs: {
     (lib.mesonOption "installed_test_prefix" "${placeholder "installedTests"}")
   ];
 
-  postPatch = ''
-    patchShebangs installed-tests/prepare-tests.sh
-
-    # TODO: do not include every typelib everywhere
-    # for example, we definitely do not need nautilus
-    substituteInPlace src/__nix-prepend-search-paths.js \
-      --subst-var-by typelibPath "$GI_TYPELIB_PATH"
-
-    # slightly janky fix for gsettings_schemadir being removed
-    substituteInPlace data/config.js.in \
-      --subst-var-by GSETTINGS_SCHEMA_DIR \
-        ${glib.makeSchemaPath (placeholder "out") "${finalAttrs.pname}-${finalAttrs.version}"}
-  '';
-
   postFixup = ''
     # Let’s wrap the daemons
     for file in $out/share/gnome-shell/extensions/gsconnect@andyholmes.github.io/service/{daemon,nativeMessagingHost}.js; do
@@ -108,8 +108,8 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   passthru = {
-    extensionUuid = "gsconnect@andyholmes.github.io";
     extensionPortalSlug = "gsconnect";
+    extensionUuid = "gsconnect@andyholmes.github.io";
   };
 
   passthru = {
@@ -124,7 +124,7 @@ stdenv.mkDerivation (finalAttrs: {
     changelog = "https://github.com/GSConnect/gnome-shell-extension-gsconnect/releases/tag/${finalAttrs.src.tag}";
     license = lib.licenses.gpl2Plus;
     maintainers = with lib.maintainers; [ doronbehar ];
-    teams = [ lib.teams.gnome ];
     platforms = lib.platforms.linux;
+    teams = [ lib.teams.gnome ];
   };
 })

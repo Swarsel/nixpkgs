@@ -1,11 +1,11 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
-  makeWrapper,
-  libuchardet,
   dos2unix,
   file,
+  libuchardet,
+  makeWrapper,
 }:
 
 stdenv.mkDerivation {
@@ -43,10 +43,10 @@ stdenv.mkDerivation {
   '';
 
   meta = {
-    homepage = "https://github.com/helixarch/subedit";
     description = "Command-line subtitle editor written in BASH";
-    mainProgram = "subedit";
+    homepage = "https://github.com/helixarch/subedit";
     license = lib.licenses.gpl2Plus;
     maintainers = with lib.maintainers; [ ppom ];
+    mainProgram = "subedit";
   };
 }

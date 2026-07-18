@@ -1,7 +1,7 @@
 {
   lib,
-  stdenvNoCC,
   fetchFromGitHub,
+  gitUpdater,
   glib,
   gnome-shell,
   gtk-engine-murrine,
@@ -10,6 +10,7 @@
   jdupes,
   optipng,
   sassc,
+  stdenvNoCC,
   which,
   buttonSizeVariants ? [ ], # default to standard
   buttonVariants ? [ ], # default to all
@@ -17,7 +18,6 @@
   opacityVariants ? [ ], # default to all
   themeVariants ? [ ], # default to MacOS blue
   wallpapers ? false,
-  gitUpdater,
 }:
 
 let
@@ -26,18 +26,18 @@ let
   version = "2024-11-15";
 
   main_src = fetchFromGitHub {
+    hash = "sha256-uL4lO6aWiDfOQkhpTnr/iVx1fI7n/fx7WYr5jDWPfYM=";
     owner = "vinceliuice";
     repo = "mojave-gtk-theme";
     rev = version;
-    hash = "sha256-uL4lO6aWiDfOQkhpTnr/iVx1fI7n/fx7WYr5jDWPfYM=";
   };
 
   wallpapers_src = fetchFromGitHub {
+    hash = "sha256-nkw8gXYx8fN1yn0A5M2fWwOvfUQ6izynxRw5JA61InM=";
+    name = "wallpapers";
     owner = "vinceliuice";
     repo = "mojave-gtk-theme";
     rev = "1dc23c2b45d7e073e080cfb02f43aab0e59b6b2c";
-    hash = "sha256-nkw8gXYx8fN1yn0A5M2fWwOvfUQ6izynxRw5JA61InM=";
-    name = "wallpapers";
   };
 
 in
@@ -75,32 +75,6 @@ lib.checkListOfEnum "${pname}: button size variants" [ "standard" "small" ] butt
   {
     inherit pname version;
 
-    srcs = [ main_src ] ++ lib.optional wallpapers wallpapers_src;
-
-    sourceRoot = main_src.name;
-
-    nativeBuildInputs = [
-      glib
-      gnome-shell
-      inkscape
-      jdupes
-      optipng
-      sassc
-      which
-    ];
-
-    buildInputs = [
-      gtk_engines
-    ];
-
-    propagatedUserEnvPkgs = [
-      gtk-engine-murrine
-    ];
-
-    # These fixup steps are slow and unnecessary.
-    dontPatchELF = true;
-    dontRewriteSymlinks = true;
-
     postPatch = ''
       patchShebangs \
         install.sh \
@@ -133,6 +107,20 @@ lib.checkListOfEnum "${pname}: button size variants" [ "standard" "small" ] butt
       ''}
     '';
 
+    nativeBuildInputs = [
+      glib
+      gnome-shell
+      inkscape
+      jdupes
+      optipng
+      sassc
+      which
+    ];
+
+    buildInputs = [
+      gtk_engines
+    ];
+
     installPhase = ''
       runHook preInstall
 
@@ -162,13 +150,23 @@ lib.checkListOfEnum "${pname}: button size variants" [ "standard" "small" ] butt
       runHook postInstall
     '';
 
+    # These fixup steps are slow and unnecessary.
+    dontPatchELF = true;
+    dontRewriteSymlinks = true;
+
+    propagatedUserEnvPkgs = [
+      gtk-engine-murrine
+    ];
+
+    sourceRoot = main_src.name;
+    srcs = [ main_src ] ++ lib.optional wallpapers wallpapers_src;
     passthru.updateScript = gitUpdater { };
 
     meta = {
       description = "Mac OSX Mojave like theme for GTK based desktop environments";
       homepage = "https://github.com/vinceliuice/Mojave-gtk-theme";
       license = lib.licenses.gpl3Only;
-      platforms = lib.platforms.unix;
       maintainers = [ lib.maintainers.romildo ];
+      platforms = lib.platforms.unix;
     };
   }

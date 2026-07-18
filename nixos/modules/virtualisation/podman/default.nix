@@ -1,8 +1,8 @@
 {
   config,
   lib,
-  utils,
   pkgs,
+  utils,
   ...
 }:
 let
@@ -16,12 +16,14 @@ let
   dockerCompat =
     pkgs.runCommand "${cfg.package.pname}-docker-compat-${cfg.package.version}"
       {
+        inherit (cfg.package) meta;
         nativeBuildInputs = [ pkgs.installShellFiles ];
+
         outputs = [
           "out"
           "man"
         ];
-        inherit (cfg.package) meta;
+
         preferLocalBuild = true;
       }
       (
@@ -62,108 +64,19 @@ in
     ./network-socket.nix
   ];
 
-  meta = {
-    teams = [ lib.teams.podman ];
-  };
-
   options.virtualisation.podman = {
 
     enable = mkOption {
-      type = types.bool;
       default = false;
+
       description = ''
         This option enables Podman, a daemonless container engine for
         developing, managing, and running OCI Containers on your Linux System.
 
         It is a drop-in replacement for the {command}`docker` command.
       '';
-    };
 
-    dockerSocket.enable = mkOption {
       type = types.bool;
-      default = false;
-      description = ''
-        Make the Podman socket available in place of the Docker socket, so
-        Docker tools can find the Podman socket.
-
-        Podman implements the Docker API.
-
-        Users must be in the `podman` group in order to connect. As
-        with Docker, members of this group can gain root access.
-      '';
-    };
-
-    dockerCompat = mkOption {
-      type = types.bool;
-      default = false;
-      description = ''
-        Create an alias mapping {command}`docker` to {command}`podman`.
-      '';
-    };
-
-    enableNvidia = mkOption {
-      type = types.bool;
-      default = false;
-      description = ''
-        **Deprecated**, please use {option}`hardware.nvidia-container-toolkit.enable` instead.
-
-        Enable use of Nvidia GPUs from within podman containers.
-      '';
-    };
-
-    extraPackages = mkOption {
-      type = with types; listOf package;
-      default = [ ];
-      description = ''
-        Extra dependencies for podman to be placed on $PATH in the wrapper.
-      '';
-    };
-
-    extraRuntimes = mkOption {
-      type = with types; listOf package;
-      # keep the default in sync with the podman package
-      default = lib.optionals pkgs.stdenv.hostPlatform.isLinux [ pkgs.runc ];
-      defaultText = lib.literalExpression "lib.optionals pkgs.stdenv.hostPlatform.isLinux [ pkgs.runc ]";
-      example = lib.literalExpression ''
-        [
-          pkgs.gvisor
-        ]
-      '';
-      description = ''
-        Extra runtime packages to be installed in the Podman wrapper.
-        Those are then placed in libexec/podman, i.e. are seen as podman internal commands.
-      '';
-    };
-
-    autoPrune = {
-      enable = mkOption {
-        type = types.bool;
-        default = false;
-        description = ''
-          Whether to periodically prune Podman resources. If enabled, a
-          systemd timer will run `podman system prune -f`
-          as specified by the `dates` option.
-        '';
-      };
-
-      flags = mkOption {
-        type = types.listOf types.str;
-        default = [ ];
-        example = [ "--all" ];
-        description = ''
-          Any additional flags passed to {command}`podman system prune`.
-        '';
-      };
-
-      dates = mkOption {
-        default = "weekly";
-        type = types.str;
-        description = ''
-          Specification (in the format described by
-          {manpage}`systemd.time(7)`) of the time at
-          which the prune will occur.
-        '';
-      };
     };
 
     package =
@@ -183,6 +96,7 @@ in
                 config.systemd.package # To allow systemd-based container healthchecks
               ]
               ++ lib.optional (config.boot.supportedFilesystems.zfs or false) config.boot.zfs.package;
+
             extraRuntimes =
               cfg.extraRuntimes
               ++
@@ -200,13 +114,119 @@ in
           };
       };
 
+    autoPrune = {
+      enable = mkOption {
+        default = false;
+
+        description = ''
+          Whether to periodically prune Podman resources. If enabled, a
+          systemd timer will run `podman system prune -f`
+          as specified by the `dates` option.
+        '';
+
+        type = types.bool;
+      };
+
+      dates = mkOption {
+        default = "weekly";
+
+        description = ''
+          Specification (in the format described by
+          {manpage}`systemd.time(7)`) of the time at
+          which the prune will occur.
+        '';
+
+        type = types.str;
+      };
+
+      flags = mkOption {
+        default = [ ];
+
+        description = ''
+          Any additional flags passed to {command}`podman system prune`.
+        '';
+
+        example = [ "--all" ];
+        type = types.listOf types.str;
+      };
+    };
+
     defaultNetwork.settings = lib.mkOption {
-      type = json.type;
       default = { };
-      example = lib.literalExpression "{ dns_enabled = true; }";
+
       description = ''
         Settings for podman's default network.
       '';
+
+      example = lib.literalExpression "{ dns_enabled = true; }";
+      type = json.type;
+    };
+
+    dockerCompat = mkOption {
+      default = false;
+
+      description = ''
+        Create an alias mapping {command}`docker` to {command}`podman`.
+      '';
+
+      type = types.bool;
+    };
+
+    dockerSocket.enable = mkOption {
+      default = false;
+
+      description = ''
+        Make the Podman socket available in place of the Docker socket, so
+        Docker tools can find the Podman socket.
+
+        Podman implements the Docker API.
+
+        Users must be in the `podman` group in order to connect. As
+        with Docker, members of this group can gain root access.
+      '';
+
+      type = types.bool;
+    };
+
+    enableNvidia = mkOption {
+      default = false;
+
+      description = ''
+        **Deprecated**, please use {option}`hardware.nvidia-container-toolkit.enable` instead.
+
+        Enable use of Nvidia GPUs from within podman containers.
+      '';
+
+      type = types.bool;
+    };
+
+    extraPackages = mkOption {
+      default = [ ];
+
+      description = ''
+        Extra dependencies for podman to be placed on $PATH in the wrapper.
+      '';
+
+      type = with types; listOf package;
+    };
+
+    extraRuntimes = mkOption {
+      # keep the default in sync with the podman package
+      default = lib.optionals pkgs.stdenv.hostPlatform.isLinux [ pkgs.runc ];
+      defaultText = lib.literalExpression "lib.optionals pkgs.stdenv.hostPlatform.isLinux [ pkgs.runc ]";
+
+      description = ''
+        Extra runtime packages to be installed in the Podman wrapper.
+        Those are then placed in libexec/podman, i.e. are seen as podman internal commands.
+      '';
+
+      example = lib.literalExpression ''
+        [
+          pkgs.gvisor
+        ]
+      '';
+
+      type = with types; listOf package;
     };
 
   };
@@ -219,12 +239,15 @@ in
           driver = "bridge";
           id = "0000000000000000000000000000000000000000000000000000000000000000";
           internal = false;
+
           ipam_options = {
             driver = "host-local";
           };
+
           ipv6_enabled = false;
           name = "podman";
           network_interface = "podman0";
+
           subnets = [
             {
               gateway = "10.88.0.1";
@@ -237,44 +260,42 @@ in
       inherit (networkConfig) dns_enabled network_interface;
     in
     lib.mkIf cfg.enable {
-      warnings = lib.optionals cfg.enableNvidia [
-        ''
-          You have set virtualisation.podman.enableNvidia. This option is deprecated, please set hardware.nvidia-container-toolkit.enable instead.
-        ''
-      ];
+      assertions = [
+        {
+          assertion = cfg.dockerCompat -> !config.virtualisation.docker.enable;
+          message = "Option dockerCompat conflicts with docker";
+        }
+        {
+          assertion = cfg.dockerSocket.enable -> !config.virtualisation.docker.enable;
 
-      environment.systemPackages = [ cfg.package ] ++ lib.optional cfg.dockerCompat dockerCompat;
+          message = ''
+            The options virtualisation.podman.dockerSocket.enable and virtualisation.docker.enable conflict, because only one can serve the socket.
+          '';
+        }
+      ];
 
       # https://github.com/containers/podman/blob/097cc6eb6dd8e598c0e8676d21267b4edb11e144/docs/tutorials/basic_networking.md#default-network
       environment.etc."containers/networks/podman.json" = lib.mkIf (cfg.defaultNetwork.settings != { }) {
         source = json.generate "podman.json" networkConfig;
       };
 
+      environment.systemPackages = [ cfg.package ] ++ lib.optional cfg.dockerCompat dockerCompat;
+
       # containers cannot reach aardvark-dns otherwise
       networking.firewall = lib.mkIf (config.networking.firewall.backend != "firewalld") {
         interfaces.${network_interface}.allowedUDPPorts = lib.mkIf dns_enabled [ 53 ];
       };
 
-      virtualisation.containers = {
-        enable = true; # Enable common /etc/containers configuration
-        containersConf.settings = {
-          network = {
-            network_backend = "netavark";
-            firewall_driver = lib.mkIf config.networking.nftables.enable "nftables";
-          };
-        };
-      };
-
       systemd.packages = [ cfg.package ];
+      systemd.services.podman.environment = config.networking.proxy.envVars;
 
       systemd.services.podman-prune = {
+        after = [ "podman.service" ];
         description = "Prune podman resources";
-
+        requires = [ "podman.service" ];
         restartIfChanged = false;
-        unitConfig.X-StopOnRemoval = false;
 
         serviceConfig = {
-          Type = "oneshot";
           ExecStart = utils.escapeSystemdExecArgs (
             [
               (lib.getExe cfg.package)
@@ -284,16 +305,16 @@ in
             ]
             ++ cfg.autoPrune.flags
           );
+
+          Type = "oneshot";
         };
 
         startAt = lib.optional cfg.autoPrune.enable cfg.autoPrune.dates;
-        after = [ "podman.service" ];
-        requires = [ "podman.service" ];
+        unitConfig.X-StopOnRemoval = false;
       };
 
-      systemd.services.podman.environment = config.networking.proxy.envVars;
-      systemd.sockets.podman.wantedBy = [ "sockets.target" ];
       systemd.sockets.podman.socketConfig.SocketGroup = "podman";
+
       # Podman does not support multiple sockets, as of podman 5.0.2, so we use
       # a symlink. Unfortunately this does not let us use an alternate group,
       # such as `docker`.
@@ -301,8 +322,7 @@ in
         "/run/docker.sock"
       ];
 
-      systemd.user.services.podman.environment = config.networking.proxy.envVars;
-      systemd.user.sockets.podman.wantedBy = [ "sockets.target" ];
+      systemd.sockets.podman.wantedBy = [ "sockets.target" ];
 
       systemd.timers.podman-prune.timerConfig = lib.mkIf cfg.autoPrune.enable {
         Persistent = true;
@@ -326,19 +346,29 @@ in
         )
       ];
 
+      systemd.user.services.podman.environment = config.networking.proxy.envVars;
+      systemd.user.sockets.podman.wantedBy = [ "sockets.target" ];
       users.groups.podman = { };
 
-      assertions = [
-        {
-          assertion = cfg.dockerCompat -> !config.virtualisation.docker.enable;
-          message = "Option dockerCompat conflicts with docker";
-        }
-        {
-          assertion = cfg.dockerSocket.enable -> !config.virtualisation.docker.enable;
-          message = ''
-            The options virtualisation.podman.dockerSocket.enable and virtualisation.docker.enable conflict, because only one can serve the socket.
-          '';
-        }
+      virtualisation.containers = {
+        enable = true; # Enable common /etc/containers configuration
+
+        containersConf.settings = {
+          network = {
+            firewall_driver = lib.mkIf config.networking.nftables.enable "nftables";
+            network_backend = "netavark";
+          };
+        };
+      };
+
+      warnings = lib.optionals cfg.enableNvidia [
+        ''
+          You have set virtualisation.podman.enableNvidia. This option is deprecated, please set hardware.nvidia-container-toolkit.enable instead.
+        ''
       ];
     };
+
+  meta = {
+    teams = [ lib.teams.podman ];
+  };
 }

@@ -1,13 +1,13 @@
 {
   lib,
-  mkRocqDerivation,
   mathcomp,
-  mathcomp-finmap,
   mathcomp-bigenough,
+  mathcomp-finmap,
   mathcomp-real-closed,
+  mkRocqDerivation,
+  rocq-core,
   stdlib,
   single ? false,
-  rocq-core,
   version ? null,
 }@args:
 
@@ -20,11 +20,12 @@ let
   defaultVersion =
     let
       case = rocq: mc: out: {
+        inherit out;
+
         cases = [
           rocq
           mc
         ];
-        inherit out;
       };
     in
     with lib.versions;
@@ -37,15 +38,17 @@ let
 
   # list of analysis packages sorted by dependency order
   packages = {
-    "classical" = [ ];
-    "reals" = [ "classical" ];
     "analysis" = [ "reals" ];
-    "experimental-reals" = [ "analysis" ];
-    "reals-stdlib" = [ "reals" ];
+
     "analysis-stdlib" = [
       "analysis"
       "reals-stdlib"
     ];
+
+    "classical" = [ ];
+    "experimental-reals" = [ "analysis" ];
+    "reals" = [ "classical" ];
+    "reals-stdlib" = [ "reals" ];
   };
 
   mathcomp_ =
@@ -84,11 +87,6 @@ let
           owner
           ;
 
-        namePrefix = [
-          "rocq-core"
-          "mathcomp"
-        ];
-
         propagatedBuildInputs =
           intra-deps
           ++ lib.optionals (lib.elem package [
@@ -113,13 +111,18 @@ let
           cd ${pkgpath}
         '';
 
-        meta = {
-          description = "Analysis library compatible with Mathematical Components";
-          maintainers = [ lib.maintainers.cohencyril ];
-          license = lib.licenses.cecill-c;
-        };
+        namePrefix = [
+          "rocq-core"
+          "mathcomp"
+        ];
 
         passthru = lib.mapAttrs (package: deps: mathcomp_ package) packages;
+
+        meta = {
+          description = "Analysis library compatible with Mathematical Components";
+          license = lib.licenses.cecill-c;
+          maintainers = [ lib.maintainers.cohencyril ];
+        };
       };
     in
     derivation;

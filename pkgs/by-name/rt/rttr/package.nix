@@ -17,6 +17,11 @@ stdenv.mkDerivation (finalAttrs: {
     sha256 = "1yxad8sj40wi75hny8w6imrsx8wjasjmsipnlq559n4b6kl84ijp";
   };
 
+  postPatch = ''
+    substituteInPlace CMakeLists.txt \
+      --replace-fail "cmake_minimum_required (VERSION 3.0)" "cmake_minimum_required(VERSION 3.10)"
+  '';
+
   nativeBuildInputs = [
     cmake
     ninja
@@ -28,16 +33,11 @@ stdenv.mkDerivation (finalAttrs: {
     "-DBUILD_PACKAGE=OFF"
   ];
 
-  postPatch = ''
-    substituteInPlace CMakeLists.txt \
-      --replace-fail "cmake_minimum_required (VERSION 3.0)" "cmake_minimum_required(VERSION 3.10)"
-  '';
-
   meta = {
-    broken = stdenv.hostPlatform.isDarwin;
     description = "C++ Reflection Library";
     homepage = "https://www.rttr.org";
     license = lib.licenses.mit;
     platforms = lib.platforms.unix;
+    broken = stdenv.hostPlatform.isDarwin;
   };
 })

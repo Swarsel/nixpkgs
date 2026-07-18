@@ -2,14 +2,14 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  cmake,
-  pkg-config,
-  perl,
-  libminc,
   bicpl,
-  itk_5_2,
+  cmake,
   fftwFloat,
   gsl,
+  itk_5_2,
+  libminc,
+  perl,
+  pkg-config,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -51,10 +51,10 @@ stdenv.mkDerivation (finalAttrs: {
   doCheck = false; # test programs/data exist but no actual test harness
 
   meta = {
-    homepage = "https://github.com/BIC-MNI/EZminc";
     description = "Collection of Perl and shell scripts for processing MINC files";
+    homepage = "https://github.com/BIC-MNI/EZminc";
+    license = lib.licenses.free;
     maintainers = with lib.maintainers; [ bcdarwin ];
     platforms = lib.platforms.linux; # can't detect opengl on Darwin
-    license = lib.licenses.free;
   };
 })

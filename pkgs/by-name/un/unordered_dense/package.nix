@@ -1,6 +1,6 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
   cmake,
 }:
@@ -21,8 +21,8 @@ stdenv.mkDerivation (finalAttrs: {
     description = "Fast & densely stored hashmap and hashset based on robin-hood backward shift deletion";
     homepage = "https://github.com/martinus/unordered_dense";
     changelog = "https://github.com/martinus/unordered_dense/releases/tag/${finalAttrs.src.tag}";
-    maintainers = with lib.maintainers; [ marcin-serwin ];
     license = lib.licenses.mit;
+    maintainers = with lib.maintainers; [ marcin-serwin ];
     platforms = lib.platforms.all;
   };
 })

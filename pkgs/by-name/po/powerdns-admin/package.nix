@@ -3,10 +3,10 @@
   stdenv,
   fetchFromGitHub,
   fetchYarnDeps,
-  yarnConfigHook,
   nixosTests,
-  writeText,
   python3,
+  writeText,
+  yarnConfigHook,
 }:
 
 let
@@ -74,24 +74,22 @@ let
   ];
 
   assets = stdenv.mkDerivation {
-    pname = "${pname}-assets";
     inherit version src;
+    pname = "${pname}-assets";
 
-    offlineCache = fetchYarnDeps {
-      yarnLock = "${src}/yarn.lock";
-      hash = "sha256-rXIts+dgOuZQGyiSke1NIG7b4lFlR/Gfu3J6T3wP3aY=";
-    };
+    patches = all_patches ++ [
+      ./0002-Remove-cssrewrite-filter.patch
+    ];
 
     nativeBuildInputs = [
       yarnConfigHook
     ]
     ++ pythonDeps;
-    patches = all_patches ++ [
-      ./0002-Remove-cssrewrite-filter.patch
-    ];
+
     buildPhase = ''
       SESSION_TYPE=filesystem FLASK_APP=./powerdnsadmin/__init__.py flask assets build
     '';
+
     installPhase = ''
       # https://github.com/PowerDNS-Admin/PowerDNS-Admin/blob/54b257768f600c5548a1c7e50eac49c40df49f92/docker/Dockerfile#L43
       mkdir $out
@@ -100,6 +98,11 @@ let
       find powerdnsadmin/static/node_modules -name fonts -exec cp -r {} $out \; -printf "Copying %P\n"
       find powerdnsadmin/static/node_modules/icheck/skins/square -name '*.png' -exec cp {} $out/generated \;
     '';
+
+    offlineCache = fetchYarnDeps {
+      hash = "sha256-rXIts+dgOuZQGyiSke1NIG7b4lFlR/Gfu3J6T3wP3aY=";
+      yarnLock = "${src}/yarn.lock";
+    };
   };
 
   assetsPy = writeText "assets.py" ''
@@ -115,19 +118,6 @@ in
 stdenv.mkDerivation {
   inherit pname version src;
 
-  nativeBuildInputs = [ python.pkgs.wrapPython ];
-
-  pythonPath = pythonDeps;
-
-  gunicornScript = ''
-    #!/bin/sh
-    if [ ! -z $CONFIG ]; then
-      exec python -m gunicorn.app.wsgiapp "powerdnsadmin:create_app(config='$CONFIG')" "$@"
-    fi
-
-    exec python -m gunicorn.app.wsgiapp "powerdnsadmin:create_app()" "$@"
-  '';
-
   patches = all_patches ++ [
     ./0003-Fix-flask-migrate-4.0-compatibility.patch
     ./0004-Fix-flask-session-and-powerdns-admin-compatibility.patch
@@ -140,6 +130,8 @@ stdenv.mkDerivation {
   postPatch = ''
     rm -r powerdnsadmin/static powerdnsadmin/assets.py
   '';
+
+  nativeBuildInputs = [ python.pkgs.wrapPython ];
 
   installPhase = ''
     runHook preInstall
@@ -162,6 +154,17 @@ stdenv.mkDerivation {
     runHook postInstall
   '';
 
+  gunicornScript = ''
+    #!/bin/sh
+    if [ ! -z $CONFIG ]; then
+      exec python -m gunicorn.app.wsgiapp "powerdnsadmin:create_app(config='$CONFIG')" "$@"
+    fi
+
+    exec python -m gunicorn.app.wsgiapp "powerdnsadmin:create_app()" "$@"
+  '';
+
+  pythonPath = pythonDeps;
+
   passthru = {
     # PYTHONPATH of all dependencies used by the package
     pythonPath = python3.pkgs.makePythonPath pythonDeps;
@@ -170,12 +173,14 @@ stdenv.mkDerivation {
 
   meta = {
     description = "PowerDNS web interface with advanced features";
-    mainProgram = "powerdns-admin";
     homepage = "https://github.com/PowerDNS-Admin/PowerDNS-Admin";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       Flakebi
       zhaofengli
     ];
+
+    mainProgram = "powerdns-admin";
   };
 }

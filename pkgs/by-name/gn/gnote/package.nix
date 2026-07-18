@@ -4,6 +4,7 @@
   fetchurl,
   desktop-file-utils,
   gettext,
+  gnome,
   gtkmm4,
   itstool,
   libadwaita,
@@ -15,7 +16,6 @@
   ninja,
   pkg-config,
   wrapGAppsHook4,
-  gnome,
 }:
 
 stdenv.mkDerivation rec {
@@ -27,15 +27,6 @@ stdenv.mkDerivation rec {
     hash = "sha256-lC8CsXIFff4HbdBNDwNlLqafNjg3Lsbrn8p3CBYEp7U=";
   };
 
-  buildInputs = [
-    gtkmm4
-    libadwaita
-    libsecret
-    libuuid
-    libxml2
-    libxslt
-  ];
-
   nativeBuildInputs = [
     desktop-file-utils
     gettext
@@ -46,6 +37,15 @@ stdenv.mkDerivation rec {
     wrapGAppsHook4
   ];
 
+  buildInputs = [
+    gtkmm4
+    libadwaita
+    libsecret
+    libuuid
+    libxml2
+    libxslt
+  ];
+
   passthru = {
     updateScript = gnome.updateScript {
       packageName = pname;
@@ -53,11 +53,11 @@ stdenv.mkDerivation rec {
   };
 
   meta = {
-    homepage = "https://gitlab.gnome.org/GNOME/gnote";
     description = "Note taking application";
-    mainProgram = "gnote";
-    maintainers = with lib.maintainers; [ jfvillablanca ];
+    homepage = "https://gitlab.gnome.org/GNOME/gnote";
     license = lib.licenses.gpl3Only;
+    maintainers = with lib.maintainers; [ jfvillablanca ];
     platforms = lib.platforms.linux;
+    mainProgram = "gnote";
   };
 }

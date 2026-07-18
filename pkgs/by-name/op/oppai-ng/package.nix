@@ -31,7 +31,7 @@ stdenv.mkDerivation (finalAttrs: {
     homepage = "https://github.com/Francesco149/oppai-ng";
     license = lib.licenses.unlicense;
     maintainers = [ ];
-    mainProgram = "oppai";
     platforms = lib.platforms.all;
+    mainProgram = "oppai";
   };
 })

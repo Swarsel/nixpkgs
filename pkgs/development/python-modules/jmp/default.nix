@@ -1,16 +1,15 @@
 {
-  buildPythonPackage,
+  lib,
   fetchFromGitHub,
+  buildPythonPackage,
   jax,
   jaxlib,
-  lib,
   pytestCheckHook,
 }:
 
 buildPythonPackage rec {
   pname = "jmp";
   version = "0.0.4";
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "deepmind";
@@ -22,12 +21,13 @@ buildPythonPackage rec {
   # Wheel requires only `numpy`, but the import needs `jax`.
   propagatedBuildInputs = [ jax ];
 
-  pythonImportsCheck = [ "jmp" ];
-
   nativeCheckInputs = [
     jaxlib
     pytestCheckHook
   ];
+
+  format = "setuptools";
+  pythonImportsCheck = [ "jmp" ];
 
   meta = {
     description = "This library implements support for mixed precision training in JAX";

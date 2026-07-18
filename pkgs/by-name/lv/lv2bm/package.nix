@@ -24,6 +24,7 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   nativeBuildInputs = [ pkg-config ];
+
   buildInputs = [
     glib
     libsndfile
@@ -39,8 +40,8 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   meta = {
-    homepage = "https://github.com/portalmod/lv2bm";
     description = "Benchmark tool for LV2 plugins";
+    homepage = "https://github.com/portalmod/lv2bm";
     license = lib.licenses.gpl3;
     maintainers = [ lib.maintainers.magnetophon ];
     platforms = lib.platforms.linux;

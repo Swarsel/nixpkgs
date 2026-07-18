@@ -1,10 +1,10 @@
 {
   lib,
+  fetchFromGitHub,
   aiohttp,
   beautifulsoup4,
   buildPythonPackage,
   cryptography,
-  fetchFromGitHub,
   flit-core,
   lxml,
   pyjwt,
@@ -13,7 +13,6 @@
 buildPythonPackage rec {
   pname = "skodaconnect";
   version = "1.3.11";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "lendy007";
@@ -34,7 +33,7 @@ buildPythonPackage rec {
 
   # Project has no tests
   doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "skodaconnect" ];
 
   meta = {

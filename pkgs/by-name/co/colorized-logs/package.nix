@@ -1,8 +1,8 @@
 {
-  cmake,
-  fetchFromGitHub,
   lib,
   stdenv,
+  fetchFromGitHub,
+  cmake,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -25,7 +25,7 @@ stdenv.mkDerivation (finalAttrs: {
     homepage = "https://github.com/kilobyte/colorized-logs";
     changelog = "https://github.com/kilobyte/colorized-logs/blob/v${finalAttrs.version}/ChangeLog";
     license = with lib.licenses; [ mit ];
-    platforms = lib.platforms.unix;
     maintainers = with lib.maintainers; [ CobaltCause ];
+    platforms = lib.platforms.unix;
   };
 })

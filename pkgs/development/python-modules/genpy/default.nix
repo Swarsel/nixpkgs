@@ -2,14 +2,13 @@
   lib,
   buildPythonPackage,
   fetchPypi,
-  pytools,
   numpy,
+  pytools,
 }:
 
 buildPythonPackage rec {
   pname = "genpy";
   version = "2022.1";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
@@ -20,6 +19,8 @@ buildPythonPackage rec {
     pytools
     numpy
   ];
+
+  format = "setuptools";
 
   meta = {
     description = "C/C++ source generation from an AST";

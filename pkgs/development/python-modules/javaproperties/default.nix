@@ -1,16 +1,15 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   hatchling,
   pytestCheckHook,
   python-dateutil,
 }:
 
 buildPythonPackage rec {
-  version = "0.8.2";
   pname = "javaproperties";
-  pyproject = true;
+  version = "0.8.2";
 
   src = fetchFromGitHub {
     owner = "jwodder";
@@ -19,16 +18,15 @@ buildPythonPackage rec {
     sha256 = "sha256-8Deo6icInp7QpTqa+Ou6l36/23skxKOYRef2GbumDqo=";
   };
 
-  build-system = [ hatchling ];
-
   nativeCheckInputs = [
     python-dateutil
     pytestCheckHook
   ];
 
-  disabledTests = [ "time" ];
-
+  build-system = [ hatchling ];
   disabledTestPaths = [ "test/test_propclass.py" ];
+  disabledTests = [ "time" ];
+  pyproject = true;
 
   meta = {
     description = "Python library for reading and writing Java .properties files";

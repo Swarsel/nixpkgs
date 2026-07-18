@@ -1,10 +1,10 @@
 {
   lib,
+  fetchFromGitHub,
   betamax,
   betamax-matchers,
   betamax-serializers,
   buildPythonPackage,
-  fetchFromGitHub,
   flit-core,
   mock,
   pytestCheckHook,
@@ -16,7 +16,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "prawcore";
   version = "2.4.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "praw-dev";
@@ -26,7 +25,6 @@ buildPythonPackage (finalAttrs: {
   };
 
   nativeBuildInputs = [ flit-core ];
-
   propagatedBuildInputs = [ requests ];
 
   nativeCheckInputs = [
@@ -39,16 +37,17 @@ buildPythonPackage (finalAttrs: {
     pytestCheckHook
   ];
 
-  disabledTests = [
-    # fixture out of date
-    "test_request__session_timeout_default"
-  ];
-
   disabledTestPaths = [
     # tests requiring network
     "tests/integration"
   ];
 
+  disabledTests = [
+    # fixture out of date
+    "test_request__session_timeout_default"
+  ];
+
+  pyproject = true;
   pythonImportsCheck = [ "prawcore" ];
 
   meta = {

@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   pytestCheckHook,
   setuptools,
   sqlalchemy,
@@ -10,7 +10,6 @@
 buildPythonPackage rec {
   pname = "sqlalchemy-json";
   version = "0.7.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "edelooff";
@@ -19,13 +18,11 @@ buildPythonPackage rec {
     hash = "sha256-Is3DznojvpWYFSDutzCxRLceQMIiS3ZIg0c//MIOF+s=";
   };
 
-  build-system = [ setuptools ];
-
-  dependencies = [ sqlalchemy ];
-
-  pythonImportsCheck = [ "sqlalchemy_json" ];
-
   nativeCheckInputs = [ pytestCheckHook ];
+  build-system = [ setuptools ];
+  dependencies = [ sqlalchemy ];
+  pyproject = true;
+  pythonImportsCheck = [ "sqlalchemy_json" ];
 
   meta = {
     description = "Full-featured JSON type with mutation tracking for SQLAlchemy";

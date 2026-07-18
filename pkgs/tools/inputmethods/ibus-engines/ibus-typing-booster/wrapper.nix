@@ -1,9 +1,9 @@
 {
-  typing-booster,
-  symlinkJoin,
-  hunspellDicts,
   lib,
+  hunspellDicts,
   makeWrapper,
+  symlinkJoin,
+  typing-booster,
   langs ? [
     "de-de"
     "en-gb-ise"
@@ -23,8 +23,7 @@ let
 in
 
 symlinkJoin {
-  name = "${typing-booster.name}-with-hunspell";
-  paths = [ typing-booster ];
+  inherit (typing-booster) meta;
   nativeBuildInputs = [ makeWrapper ];
 
   postBuild = ''
@@ -36,5 +35,6 @@ symlinkJoin {
     sed -i -e "s,${typing-booster},$out," $out/share/ibus/component/typing-booster.xml
   '';
 
-  inherit (typing-booster) meta;
+  name = "${typing-booster.name}-with-hunspell";
+  paths = [ typing-booster ];
 }

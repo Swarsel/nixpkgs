@@ -1,7 +1,7 @@
 {
   lib,
-  buildNpmPackage,
   fetchFromGitHub,
+  buildNpmPackage,
 }:
 
 buildNpmPackage rec {
@@ -16,15 +16,14 @@ buildNpmPackage rec {
   };
 
   npmDepsHash = "sha256-Es4Pu3XG9qQiCpYJMIfhKiqCGb4R4Focu/2ol4qRiW8=";
-
   dontNpmBuild = true;
 
   meta = {
-    homepage = "https://www.getpostman.com";
     description = "Command-line collection runner for Postman";
-    mainProgram = "newman";
+    homepage = "https://www.getpostman.com";
     changelog = "https://github.com/postmanlabs/newman/releases/tag/v${version}";
-    maintainers = [ ];
     license = lib.licenses.asl20;
+    maintainers = [ ];
+    mainProgram = "newman";
   };
 }

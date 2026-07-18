@@ -1,7 +1,7 @@
 {
   lib,
-  fetchFromCodeberg,
   buildPythonPackage,
+  fetchFromCodeberg,
   setuptools,
 }:
 
@@ -16,16 +16,15 @@ buildPythonPackage rec {
     hash = "sha256-AHFL0pahwS8/MH13NgPiKtKAP+nBqfbcUVWzV+Jdco0=";
   };
 
-  pyproject = true;
   build-system = [ setuptools ];
-
+  pyproject = true;
   pythonImportsCheck = [ "rpatool" ];
 
   meta = {
-    homepage = "https://codeberg.org/shiz/rpatool";
     description = "Simple tool allowing you to create, modify and extract Ren'Py Archive (.rpa/.rpi) files";
-    mainProgram = "rpatool";
+    homepage = "https://codeberg.org/shiz/rpatool";
     license = lib.licenses.wtfpl;
     maintainers = with lib.maintainers; [ ulysseszhan ];
+    mainProgram = "rpatool";
   };
 }

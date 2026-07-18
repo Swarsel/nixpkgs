@@ -1,19 +1,18 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  hatchling,
+  buildPythonPackage,
   clang,
-  sphinx,
+  hatchling,
   llvmPackages,
   pytestCheckHook,
+  sphinx,
   strictyaml,
 }:
 
 buildPythonPackage rec {
   pname = "hawkmoth";
   version = "0.22.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "jnikula";
@@ -22,12 +21,6 @@ buildPythonPackage rec {
     hash = "sha256-iFyTayPC4TWOfTZrfJJILJyi5BWrsVLwnSFnSeMpB2c=";
   };
 
-  build-system = [ hatchling ];
-
-  dependencies = [
-    clang
-    sphinx
-  ];
   propagatedBuildInputs = [ clang ];
 
   nativeCheckInputs = [
@@ -35,6 +28,15 @@ buildPythonPackage rec {
     pytestCheckHook
     strictyaml
   ];
+
+  build-system = [ hatchling ];
+
+  dependencies = [
+    clang
+    sphinx
+  ];
+
+  pyproject = true;
   pythonImportsCheck = [ "hawkmoth" ];
 
   meta = {

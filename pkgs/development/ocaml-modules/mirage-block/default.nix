@@ -3,15 +3,13 @@
   fetchurl,
   buildDunePackage,
   cstruct,
-  lwt,
   fmt,
+  lwt,
 }:
 
 buildDunePackage (finalAttrs: {
   pname = "mirage-block";
   version = "3.0.2";
-
-  duneVersion = "3";
 
   src = fetchurl {
     url = "https://github.com/mirage/mirage-block/releases/download/v${finalAttrs.version}/mirage-block-${finalAttrs.version}.tbz";
@@ -23,6 +21,8 @@ buildDunePackage (finalAttrs: {
     lwt
     fmt
   ];
+
+  duneVersion = "3";
 
   meta = {
     description = "Block signatures and implementations for MirageOS";

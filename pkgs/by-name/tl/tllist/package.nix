@@ -1,6 +1,6 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromCodeberg,
   meson,
   ninja,
@@ -22,14 +22,12 @@ stdenv.mkDerivation (finalAttrs: {
     ninja
   ];
 
+  doCheck = true;
   mesonBuildType = "release";
 
-  doCheck = true;
-
   meta = {
-    homepage = "https://codeberg.org/dnkl/tllist";
-    changelog = "https://codeberg.org/dnkl/tllist/releases/tag/${finalAttrs.version}";
     description = "C header file only implementation of a typed linked list";
+
     longDescription = ''
       Most C implementations of linked list are untyped. That is, their data
       carriers are typically void *. This is error prone since your compiler
@@ -41,6 +39,9 @@ stdenv.mkDerivation (finalAttrs: {
       primitive data types are supported as well as aggregated ones such as
       structs, enums and unions.
     '';
+
+    homepage = "https://codeberg.org/dnkl/tllist";
+    changelog = "https://codeberg.org/dnkl/tllist/releases/tag/${finalAttrs.version}";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ fionera ];
     platforms = lib.platforms.all;

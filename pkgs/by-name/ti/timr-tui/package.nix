@@ -1,15 +1,15 @@
 {
   lib,
   stdenv,
-  rustPlatform,
   fetchFromGitHub,
-  pkg-config,
   alsa-lib-with-plugins,
   alsa-plugins,
-  pipewire,
-  writableTmpDirAsHomeHook,
-  versionCheckHook,
   nix-update-script,
+  pipewire,
+  pkg-config,
+  rustPlatform,
+  versionCheckHook,
+  writableTmpDirAsHomeHook,
   enableSound ? false,
 }:
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -23,11 +23,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-/XsYDAvtkbGEtHz68ar2MqONAXyP3i5X0iZ08lnYOu4=";
   };
 
-  cargoHash = "sha256-DnjKH1EnOY9YnApJDO4R0M7XhxYs5k1f4hoa3J3J32c=";
-
-  # Enable upstream "sound" feature when requested
-  buildFeatures = lib.optionals enableSound [ "sound" ];
-
   nativeBuildInputs = lib.optionals (enableSound && stdenv.hostPlatform.isLinux) [ pkg-config ];
 
   # Runtime/FFI deps for the sound feature (Linux)
@@ -40,18 +35,23 @@ rustPlatform.buildRustPackage (finalAttrs: {
     })
   ];
 
+  cargoHash = "sha256-DnjKH1EnOY9YnApJDO4R0M7XhxYs5k1f4hoa3J3J32c=";
+
   nativeCheckInputs = [
     writableTmpDirAsHomeHook
   ];
 
+  doInstallCheck = true;
+
   nativeInstallCheckInputs = [
     versionCheckHook
   ];
-  versionCheckProgramArg = "--version";
+
+  # Enable upstream "sound" feature when requested
+  buildFeatures = lib.optionals enableSound [ "sound" ];
   # Error: Operation not permitted (os error 1)
   versionCheckKeepEnvironment = lib.optionals stdenv.hostPlatform.isDarwin [ "HOME" ];
-  doInstallCheck = true;
-
+  versionCheckProgramArg = "--version";
   passthru.updateScript = nix-update-script { };
 
   meta = {
@@ -59,11 +59,13 @@ rustPlatform.buildRustPackage (finalAttrs: {
     homepage = "https://github.com/sectore/timr-tui";
     changelog = "https://github.com/sectore/timr-tui/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.mit;
-    mainProgram = "timr-tui";
+
     maintainers = with lib.maintainers; [
       flokkq
       sectore
     ];
+
     platforms = lib.platforms.unix;
+    mainProgram = "timr-tui";
   };
 })

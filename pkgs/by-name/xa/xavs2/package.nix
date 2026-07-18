@@ -1,10 +1,10 @@
 {
   lib,
+  stdenv,
   fetchFromGitHub,
   gitUpdater,
-  stdenv,
-  testers,
   nasm,
+  testers,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -18,6 +18,29 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-4w/WTXvRQbohKL+YALQCCYglHQKVvehlUYfitX/lLPw=";
   };
 
+  outputs = [
+    "out"
+    "lib"
+    "dev"
+  ];
+
+  postPatch = ''
+    substituteInPlace ./version.sh \
+      --replace-fail "date" 'date -ud "@$SOURCE_DATE_EPOCH"'
+  '';
+
+  nativeBuildInputs = [
+    nasm
+  ];
+
+  configureFlags = [
+    "--cross-prefix=${stdenv.cc.targetPrefix}"
+  ]
+  ++ lib.optionals (!stdenv.hostPlatform.isStatic) [
+    (lib.enableFeature true "shared")
+    "--system-libxavs2"
+  ];
+
   env.NIX_CFLAGS_COMPILE = toString (
     [
       "-Wno-incompatible-pointer-types"
@@ -26,11 +49,6 @@ stdenv.mkDerivation (finalAttrs: {
       "-Wno-incompatible-function-pointer-types"
     ]
   );
-
-  postPatch = ''
-    substituteInPlace ./version.sh \
-      --replace-fail "date" 'date -ud "@$SOURCE_DATE_EPOCH"'
-  '';
 
   preConfigure = ''
     # Generate version.h
@@ -44,40 +62,22 @@ stdenv.mkDerivation (finalAttrs: {
     export AS=${if stdenv.hostPlatform.isx86 then "nasm" else ""}
   '';
 
-  configureFlags = [
-    "--cross-prefix=${stdenv.cc.targetPrefix}"
-  ]
-  ++ lib.optionals (!stdenv.hostPlatform.isStatic) [
-    (lib.enableFeature true "shared")
-    "--system-libxavs2"
-  ];
-
   postInstall = lib.optionalString (!stdenv.hostPlatform.isStatic) ''
     rm $lib/lib/*.a
   '';
 
-  nativeBuildInputs = [
-    nasm
-  ];
-
-  outputs = [
-    "out"
-    "lib"
-    "dev"
-  ];
-
   passthru = {
-    updateScript = gitUpdater { };
     tests.pkg-config = testers.hasPkgConfigModules { package = finalAttrs.finalPackage; };
+    updateScript = gitUpdater { };
   };
 
   meta = {
-    homepage = "https://github.com/pkuvcl/xavs2";
     description = "Open-source encoder of AVS2-P2/IEEE1857.4 video coding standard";
+    homepage = "https://github.com/pkuvcl/xavs2";
     license = lib.licenses.gpl2Plus;
-    mainProgram = "xavs2";
-    pkgConfigModules = [ "xavs2" ];
     maintainers = with lib.maintainers; [ jopejoe1 ];
     platforms = lib.platforms.all;
+    mainProgram = "xavs2";
+    pkgConfigModules = [ "xavs2" ];
   };
 })

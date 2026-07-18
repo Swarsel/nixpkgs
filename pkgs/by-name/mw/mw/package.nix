@@ -15,23 +15,25 @@ buildNpmPackage rec {
     hash = "sha256-i95WuTH8qY+0PYQA9kOykQL+4d4oB2Hlvg9sfGtDeCo=";
   };
 
-  npmDepsHash = "sha256-D1hTaoM4j81qrrLMoKJ7OxJTfRoht3/yqgJs95EFxY4=";
-
   # correctly substitute the usage message
   postPatch = ''
     substituteInPlace src/index.ts  --replace \
     '.usage("$0' '.usage("mw'
   '';
 
+  npmDepsHash = "sha256-D1hTaoM4j81qrrLMoKJ7OxJTfRoht3/yqgJs95EFxY4=";
+
   meta = {
-    changelog = "https://github.com/mark-when/mw/blob/${src.rev}/CHANGELOG.md";
     description = "Markwhen CLI";
-    homepage = "https://github.com/mark-when/mw";
-    license = lib.licenses.mit;
+
     longDescription = ''
       Markwhen is an interactive text-to-timeline tool. Write markdown-ish text and it gets converted into a nice looking cascading timeline.
     '';
-    mainProgram = "mw";
+
+    homepage = "https://github.com/mark-when/mw";
+    changelog = "https://github.com/mark-when/mw/blob/${src.rev}/CHANGELOG.md";
+    license = lib.licenses.mit;
     maintainers = [ ];
+    mainProgram = "mw";
   };
 }

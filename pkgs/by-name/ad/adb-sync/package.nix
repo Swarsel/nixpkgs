@@ -2,12 +2,12 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  python3,
-  makeWrapper,
-  socat,
-  go-mtpfs,
   adbfs-rootless,
   androidenv,
+  go-mtpfs,
+  makeWrapper,
+  python3,
+  socat,
 }:
 
 stdenv.mkDerivation {
@@ -23,8 +23,6 @@ stdenv.mkDerivation {
 
   nativeBuildInputs = [ makeWrapper ];
   buildInputs = [ python3 ];
-
-  dontBuild = true;
 
   installPhase =
     let
@@ -47,12 +45,14 @@ stdenv.mkDerivation {
       runHook postInstall
     '';
 
+  dontBuild = true;
+
   meta = {
     description = "Tool to synchronise files between a PC and an Android devices using ADB (Android Debug Bridge)";
     homepage = "https://github.com/google/adb-sync";
     license = lib.licenses.asl20;
+    maintainers = with lib.maintainers; [ scolobb ];
     platforms = lib.platforms.unix;
     hydraPlatforms = [ ];
-    maintainers = with lib.maintainers; [ scolobb ];
   };
 }

@@ -1,10 +1,10 @@
 {
   lib,
-  stdenvNoCC,
   fetchFromGitHub,
   makeWrapper,
-  tt-smi,
   pstree,
+  stdenvNoCC,
+  tt-smi,
 }:
 stdenvNoCC.mkDerivation (finalAttrs: {
   pname = "tt-system-tools";
@@ -21,9 +21,6 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     makeWrapper
   ];
 
-  dontConfigure = true;
-  dontBuild = true;
-
   installPhase = ''
     runHook preInstall
 
@@ -39,12 +36,15 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  dontBuild = true;
+  dontConfigure = true;
+
   meta = {
     description = "System tools for Tenstorrent cards";
     homepage = "https://github.com/tenstorrent/tt-system-tools";
     changelog = "https://github.com/tenstorrent/tt-system-tools/blob/${finalAttrs.src.tag}/debian/changelog";
-    maintainers = with lib.maintainers; [ RossComputerGuy ];
     license = with lib.licenses; [ asl20 ];
+    maintainers = with lib.maintainers; [ RossComputerGuy ];
     platforms = lib.platforms.linux;
   };
 })

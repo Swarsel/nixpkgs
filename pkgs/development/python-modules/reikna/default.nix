@@ -1,34 +1,27 @@
 {
   lib,
-  fetchPypi,
   buildPythonPackage,
-  sphinx,
-  pytest-cov-stub,
-  pytestCheckHook,
+  fetchPypi,
+  funcsigs,
   mako,
   numpy,
-  funcsigs,
-  withCuda ? false,
   pycuda,
-  withOpenCL ? true,
   pyopencl,
+  pytest-cov-stub,
+  pytestCheckHook,
+  sphinx,
+  withCuda ? false,
+  withOpenCL ? true,
 }:
 
 buildPythonPackage rec {
   pname = "reikna";
   version = "0.9.0";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
     hash = "sha256-uzIoGCkIINgmO+r0vAzmihS14GWv5ygakMz3tKIG3zA=";
   };
-
-  nativeCheckInputs = [
-    sphinx
-    pytest-cov-stub
-    pytestCheckHook
-  ];
 
   propagatedBuildInputs = [
     mako
@@ -40,6 +33,14 @@ buildPythonPackage rec {
 
   # Requires device
   doCheck = false;
+
+  nativeCheckInputs = [
+    sphinx
+    pytest-cov-stub
+    pytestCheckHook
+  ];
+
+  format = "setuptools";
 
   meta = {
     description = "GPGPU algorithms for PyCUDA and PyOpenCL";

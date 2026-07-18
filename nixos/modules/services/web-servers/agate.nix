@@ -14,56 +14,59 @@ in
   options = {
     services.agate = {
       enable = mkEnableOption "Agate Server";
-
       package = mkPackageOption pkgs "agate" { };
 
       addresses = mkOption {
-        type = types.listOf types.str;
         default = [ "0.0.0.0:1965" ];
+
         description = ''
           Addresses to listen on, IP:PORT, if you haven't disabled forwarding
           only set IPv4.
         '';
-      };
 
-      contentDir = mkOption {
-        default = "/var/lib/agate/content";
-        type = types.path;
-        description = "Root of the content directory.";
+        type = types.listOf types.str;
       };
 
       certificatesDir = mkOption {
         default = "/var/lib/agate/certificates";
-        type = types.path;
         description = "Root of the certificate directory.";
+        type = types.path;
+      };
+
+      contentDir = mkOption {
+        default = "/var/lib/agate/content";
+        description = "Root of the content directory.";
+        type = types.path;
+      };
+
+      extraArgs = mkOption {
+        default = [ "" ];
+        description = "Extra arguments to use running agate.";
+        example = [ "--log-ip" ];
+        type = types.listOf types.str;
       };
 
       hostnames = mkOption {
         default = [ ];
-        type = types.listOf types.str;
+
         description = ''
           Domain name of this Gemini server, enables checking hostname and port
           in requests. (multiple occurrences means basic vhosts)
         '';
+
+        type = types.listOf types.str;
       };
 
       language = mkOption {
         default = null;
-        type = types.nullOr types.str;
         description = "RFC 4646 Language code for text/gemini documents.";
+        type = types.nullOr types.str;
       };
 
       onlyTls_1_3 = mkOption {
         default = false;
-        type = types.bool;
         description = "Only use TLSv1.3 (default also allows TLSv1.2).";
-      };
-
-      extraArgs = mkOption {
-        type = types.listOf types.str;
-        default = [ "" ];
-        example = [ "--log-ip" ];
-        description = "Extra arguments to use running agate.";
+        type = types.bool;
       };
     };
   };
@@ -74,13 +77,12 @@ in
     environment.systemPackages = [ cfg.package ];
 
     systemd.services.agate = {
-      description = "Agate";
-      wantedBy = [ "multi-user.target" ];
-      wants = [ "network-online.target" ];
       after = [
         "network.target"
         "network-online.target"
       ];
+
+      description = "Agate";
 
       script =
         let
@@ -115,40 +117,36 @@ in
         '';
 
       serviceConfig = {
-        Restart = "always";
-        RestartSec = "5s";
-        DynamicUser = true;
-        StateDirectory = "agate";
-
         # Security options:
         AmbientCapabilities = "";
         CapabilityBoundingSet = "";
-
         # ProtectClock= adds DeviceAllow=char-rtc r
         DeviceAllow = "";
-
+        DynamicUser = true;
         LockPersonality = true;
-
-        PrivateTmp = true;
         PrivateDevices = true;
+        PrivateTmp = true;
         PrivateUsers = true;
-
         ProtectClock = true;
         ProtectControlGroups = true;
         ProtectHostname = true;
         ProtectKernelLogs = true;
         ProtectKernelModules = true;
         ProtectKernelTunables = true;
+        Restart = "always";
+        RestartSec = "5s";
 
-        RestrictNamespaces = true;
         RestrictAddressFamilies = [
           "AF_INET"
           "AF_INET6"
         ];
-        RestrictRealtime = true;
 
+        RestrictNamespaces = true;
+        RestrictRealtime = true;
+        StateDirectory = "agate";
         SystemCallArchitectures = "native";
         SystemCallErrorNumber = "EPERM";
+
         SystemCallFilter = [
           "@system-service"
           "~@cpu-emulation"
@@ -160,6 +158,9 @@ in
           "~@setuid"
         ];
       };
+
+      wantedBy = [ "multi-user.target" ];
+      wants = [ "network-online.target" ];
     };
   };
 }

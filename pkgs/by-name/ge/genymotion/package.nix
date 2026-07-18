@@ -1,28 +1,28 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchurl,
-  makeWrapper,
-  which,
-  zlib,
-  libGL,
-  glib,
-  libx11,
-  libxkbcommon,
-  xdg-utils,
-  libxrender,
+  cairo,
   fontconfig,
   freetype,
-  systemd,
-  libpulseaudio,
-  cairo,
   gdk-pixbuf,
+  glib,
   gtk3,
-  pixman,
+  libGL,
+  libpulseaudio,
+  libx11,
+  libxext,
+  libxi,
+  libxkbcommon,
   # For glewinfo
   libxmu,
-  libxi,
-  libxext,
+  libxrender,
+  makeWrapper,
+  pixman,
+  systemd,
+  which,
+  xdg-utils,
+  zlib,
 }:
 
 let
@@ -51,10 +51,11 @@ in
 stdenv.mkDerivation rec {
   pname = "genymotion";
   version = "3.8.0";
+
   src = fetchurl {
     url = "https://dl.genymotion.com/releases/genymotion-${version}/genymotion-${version}-linux_x64.bin";
-    name = "genymotion-${version}-linux_x64.bin";
     sha256 = "sha256-Tgp9ud/Tq0K9ADf/POr+luuFm+QBWMucjKTbELbIveo=";
+    name = "genymotion-${version}-linux_x64.bin";
   };
 
   nativeBuildInputs = [
@@ -62,18 +63,6 @@ stdenv.mkDerivation rec {
     which
     xdg-utils
   ];
-
-  unpackPhase = ''
-    mkdir -p phony-home $out/share/applications
-    export HOME=$TMP/phony-home
-
-    mkdir ${pname}
-    echo "y" | sh $src -d ${pname}
-    sourceRoot=${pname}
-
-    substitute phony-home/.local/share/applications/genymobile-genymotion.desktop \
-      $out/share/applications/genymobile-genymotion.desktop --replace "$TMP/${pname}" "$out/libexec"
-  '';
 
   installPhase = ''
     mkdir -p $out/bin $out/libexec
@@ -113,17 +102,31 @@ stdenv.mkDerivation rec {
     rm $out/libexec/genymotion/libxkbcommon*
   '';
 
+  unpackPhase = ''
+    mkdir -p phony-home $out/share/applications
+    export HOME=$TMP/phony-home
+
+    mkdir ${pname}
+    echo "y" | sh $src -d ${pname}
+    sourceRoot=${pname}
+
+    substitute phony-home/.local/share/applications/genymobile-genymotion.desktop \
+      $out/share/applications/genymobile-genymotion.desktop --replace "$TMP/${pname}" "$out/libexec"
+  '';
+
   meta = {
     description = "Fast and easy Android emulation";
+
     longDescription = ''
       Genymotion is a relatively fast Android emulator which comes with
       pre-configured Android (x86 with OpenGL hardware acceleration) images,
       suitable for application testing.
     '';
+
     homepage = "https://www.genymotion.com/";
-    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
     license = lib.licenses.unfree;
-    platforms = [ "x86_64-linux" ];
+    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
     maintainers = [ lib.maintainers.puffnfresh ];
+    platforms = [ "x86_64-linux" ];
   };
 }

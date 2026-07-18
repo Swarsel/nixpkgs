@@ -1,11 +1,11 @@
 {
-  buildOctavePackage,
   lib,
   fetchurl,
-  struct,
-  statistics,
-  lapack,
   blas,
+  buildOctavePackage,
+  lapack,
+  statistics,
+  struct,
 }:
 
 buildOctavePackage rec {
@@ -28,16 +28,18 @@ buildOctavePackage rec {
   ];
 
   meta = {
+    description = "Non-linear optimization toolkit";
     homepage = "https://gnu-octave.github.io/packages/optim/";
+
     license = with lib.licenses; [
       gpl3Plus
       publicDomain
     ];
+
     # Modified BSD code seems removed
     maintainers = with lib.maintainers; [
       ravenjoad
       lnk3
     ];
-    description = "Non-linear optimization toolkit";
   };
 }

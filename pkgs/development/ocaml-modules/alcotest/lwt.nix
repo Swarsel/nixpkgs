@@ -1,19 +1,16 @@
 {
-  buildDunePackage,
   alcotest,
+  buildDunePackage,
+  cmdliner,
+  fmt,
   logs,
   lwt,
-  fmt,
   re,
-  cmdliner,
 }:
 
 buildDunePackage {
-  pname = "alcotest-lwt";
-
   inherit (alcotest) version src;
-
-  duneVersion = "3";
+  pname = "alcotest-lwt";
 
   propagatedBuildInputs = [
     alcotest
@@ -23,10 +20,13 @@ buildDunePackage {
   ];
 
   doCheck = true;
+
   checkInputs = [
     re
     cmdliner
   ];
+
+  duneVersion = "3";
 
   meta = alcotest.meta // {
     description = "Lwt-based helpers for Alcotest";

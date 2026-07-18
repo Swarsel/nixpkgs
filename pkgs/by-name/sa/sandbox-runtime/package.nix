@@ -1,25 +1,21 @@
 {
   lib,
   stdenv,
-  buildNpmPackage,
   fetchFromGitHub,
-
-  # runtime dependencies
-  ripgrep,
-  which,
   # linux-only
   bubblewrap,
-  socat,
-
-  versionCheckHook,
+  buildNpmPackage,
   nix-update-script,
+  # runtime dependencies
+  ripgrep,
+  socat,
+  versionCheckHook,
+  which,
 }:
 
 buildNpmPackage (finalAttrs: {
   pname = "sandbox-runtime";
   version = "0.0.64";
-
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "anthropic-experimental";
@@ -36,8 +32,12 @@ buildNpmPackage (finalAttrs: {
     '';
 
   strictDeps = true;
-
   npmDepsHash = "sha256-3HOGoIG9syQJ407C8Bg7J7mtPpoIjVtUoFCdbSmT8BU=";
+  doInstallCheck = true;
+
+  nativeInstallCheckInputs = [
+    versionCheckHook
+  ];
 
   postFixup =
     let
@@ -55,20 +55,16 @@ buildNpmPackage (finalAttrs: {
         --prefix PATH : ${lib.makeBinPath runtimeDeps}
     '';
 
-  nativeInstallCheckInputs = [
-    versionCheckHook
-  ];
-  doInstallCheck = true;
-
+  __structuredAttrs = true;
   passthru.updateScript = nix-update-script { };
 
   meta = {
     description = "Lightweight sandboxing tool for enforcing filesystem and network restrictions on arbitrary processes at the OS level, without requiring a container";
-    changelog = "https://github.com/anthropic-experimental/sandbox-runtime/releases/tag/${finalAttrs.src.tag}";
     homepage = "https://github.com/anthropic-experimental/sandbox-runtime";
+    changelog = "https://github.com/anthropic-experimental/sandbox-runtime/releases/tag/${finalAttrs.src.tag}";
     license = lib.licenses.asl20;
     maintainers = with lib.maintainers; [ GaetanLepage ];
-    mainProgram = "srt";
     platforms = lib.platforms.linux ++ lib.platforms.darwin;
+    mainProgram = "srt";
   };
 })

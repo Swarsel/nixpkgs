@@ -1,13 +1,12 @@
 {
   lib,
-  python3,
   fetchFromGitHub,
+  python3,
 }:
 
 python3.pkgs.buildPythonApplication (finalAttrs: {
   pname = "h5glance";
   version = "0.9";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "European-XFEL";
@@ -15,6 +14,10 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     tag = finalAttrs.version;
     hash = "sha256-20gSaNZrH3AeFTGLho6sbWljfqln9SQEVdvEVe/WaYY=";
   };
+
+  nativeCheckInputs = [
+    python3.pkgs.pytestCheckHook
+  ];
 
   build-system = [
     python3.pkgs.flit-core
@@ -25,9 +28,7 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     htmlgen
   ];
 
-  nativeCheckInputs = [
-    python3.pkgs.pytestCheckHook
-  ];
+  pyproject = true;
 
   pythonImportsCheck = [
     "h5glance"

@@ -1,14 +1,12 @@
 {
   lib,
-  python3,
   fetchFromGitHub,
+  python3,
 }:
 
 python3.pkgs.buildPythonApplication {
   pname = "rmfuse";
   version = "0.2.3";
-
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "rschroll";
@@ -21,12 +19,6 @@ python3.pkgs.buildPythonApplication {
     poetry-core
   ];
 
-  pythonRelaxDeps = [
-    "bidict"
-    "rmrl"
-    "xdg"
-  ];
-
   propagatedBuildInputs = with python3.pkgs; [
     bidict
     rmrl
@@ -35,10 +27,17 @@ python3.pkgs.buildPythonApplication {
     xdg
   ];
 
+  pyproject = true;
+
+  pythonRelaxDeps = [
+    "bidict"
+    "rmrl"
+    "xdg"
+  ];
+
   meta = {
     description = "FUSE access to the reMarkable Cloud";
-    homepage = "https://github.com/rschroll/rmfuse";
-    license = lib.licenses.mit;
+
     longDescription = ''
       RMfuse provides access to your reMarkable Cloud files in the form of a
       FUSE filesystem. These files are exposed either in their original format,
@@ -46,6 +45,9 @@ python3.pkgs.buildPythonApplication {
       in the reMarkable Cloud using the same tools you use on your local
       system.
     '';
+
+    homepage = "https://github.com/rschroll/rmfuse";
+    license = lib.licenses.mit;
     maintainers = [ ];
     mainProgram = "rmfuse";
   };

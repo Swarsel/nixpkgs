@@ -1,13 +1,13 @@
 nvidia_x11: sha256:
 
 {
-  stdenv,
   lib,
+  stdenv,
   fetchurl,
-  patchelf,
-  zlib,
   glibc,
+  patchelf,
   versionCheckHook,
+  zlib,
 }:
 
 let
@@ -20,12 +20,26 @@ in
 stdenv.mkDerivation rec {
   pname = "fabricmanager";
   version = fmver;
+
   src = fetchurl {
+    inherit sha256;
+
     url =
       "https://developer.download.nvidia.com/compute/nvidia-driver/redist/fabricmanager/"
       + "${sys}/${pname}-${sys}-${fmver}-archive.tar.xz";
-    inherit sha256;
   };
+
+  doCheck = true;
+
+  checkPhase = ''
+    runHook preCheck
+
+    for b in $out/bin/*;do
+      ${ldd} $b | grep -vqz "not found"
+    done
+
+    runHook postCheck
+  '';
 
   installPhase = ''
     runHook preInstall
@@ -54,18 +68,8 @@ stdenv.mkDerivation rec {
     runHook postInstall
   '';
 
-  doCheck = true;
-  checkPhase = ''
-    runHook preCheck
-
-    for b in $out/bin/*;do
-      ${ldd} $b | grep -vqz "not found"
-    done
-
-    runHook postCheck
-  '';
-
   doInstallCheck = true;
+
   nativeInstallCheckInputs = [
     versionCheckHook
   ];
@@ -75,11 +79,11 @@ stdenv.mkDerivation rec {
   dontFixup = true;
 
   meta = {
-    homepage = "https://www.nvidia.com/object/unix.html";
     description = "Fabricmanager daemon for NVLink intialization and control";
+    homepage = "https://www.nvidia.com/object/unix.html";
     license = lib.licenses.unfreeRedistributable;
+    maintainers = with lib.maintainers; [ edwtjo ];
     platforms = nvidia_x11.meta.platforms;
     mainProgram = "nv-fabricmanager";
-    maintainers = with lib.maintainers; [ edwtjo ];
   };
 }

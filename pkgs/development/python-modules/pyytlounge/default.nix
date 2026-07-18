@@ -1,19 +1,18 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  hatchling,
   aiohttp,
+  buildPythonPackage,
+  hatchling,
   pytest,
-  pytestCheckHook,
-  pytest-mock,
   pytest-asyncio,
+  pytest-mock,
+  pytestCheckHook,
 }:
 
 buildPythonPackage rec {
   pname = "pyytlounge";
   version = "3.2.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "FabioGNR";
@@ -22,16 +21,16 @@ buildPythonPackage rec {
     hash = "sha256-8cdahP1u8Rf4m/167ie9aKcELLiWNvZOx7tV9YLK4nU=";
   };
 
-  build-system = [ hatchling ];
-
-  dependencies = [ aiohttp ];
-
   nativeCheckInputs = [
     pytest
     pytestCheckHook
     pytest-mock
     pytest-asyncio
   ];
+
+  build-system = [ hatchling ];
+  dependencies = [ aiohttp ];
+  pyproject = true;
 
   meta = {
     description = "Python YouTube Lounge API";

@@ -7,7 +7,6 @@
 python3.pkgs.buildPythonApplication (finalAttrs: {
   pname = "websploit";
   version = "4.0.4";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "f4rih";
@@ -27,6 +26,7 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
 
   # Project has no tests
   doCheck = false;
+  pyproject = true;
 
   pythonImportsCheck = [
     "websploit"

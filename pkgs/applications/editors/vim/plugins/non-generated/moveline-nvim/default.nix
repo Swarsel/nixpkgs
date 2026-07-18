@@ -1,9 +1,9 @@
 {
   lib,
+  stdenv,
   fetchFromGitHub,
   rustPlatform,
   vimUtils,
-  stdenv,
 }:
 let
   version = "0.3.1-unstable-2023-07-06";
@@ -17,14 +17,14 @@ let
     inherit src version;
     pname = "moveline-lib";
 
+    postPatch = ''
+      ln -s ${./Cargo.lock} Cargo.lock
+    '';
+
     # Upstream doesn't contain a cargo lock
     cargoLock = {
       lockFile = ./Cargo.lock;
     };
-
-    postPatch = ''
-      ln -s ${./Cargo.lock} Cargo.lock
-    '';
 
     env.RUSTFLAGS = lib.optionalString stdenv.hostPlatform.isDarwin "-C link-arg=-undefined -C link-arg=dynamic_lookup";
   };

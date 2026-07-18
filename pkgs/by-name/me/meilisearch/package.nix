@@ -1,9 +1,9 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
-  nixosTests,
   nix-update-script,
+  nixosTests,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -17,39 +17,39 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-obUX84KNeJzkuRjOFBtLmCo/lcq0AwsaY/WDgaLhN2k=";
   };
 
-  cargoBuildFlags = [ "--package=meilisearch" ];
-
+  nativeBuildInputs = [ rustPlatform.bindgenHook ];
   cargoHash = "sha256-1UjXuvzT3gN0byKtYs6fv6xyKAi4uPBip9l+r6I1lHU=";
-
+  # Tests will try to compile with mini-dashboard features which downloads something from the internet.
+  doCheck = false;
   # Default features include mini dashboard which downloads something from the internet.
   buildNoDefaultFeatures = true;
-
-  nativeBuildInputs = [ rustPlatform.bindgenHook ];
+  cargoBuildFlags = [ "--package=meilisearch" ];
 
   passthru = {
-    updateScript = nix-update-script { extraArgs = [ "--use-github-releases" ]; };
     tests = {
       meilisearch = nixosTests.meilisearch;
     };
-  };
 
-  # Tests will try to compile with mini-dashboard features which downloads something from the internet.
-  doCheck = false;
+    updateScript = nix-update-script { extraArgs = [ "--use-github-releases" ]; };
+  };
 
   meta = {
     description = "Powerful, fast, and an easy to use search engine";
-    mainProgram = "meilisearch";
     homepage = "https://docs.meilisearch.com/";
     changelog = "https://github.com/meilisearch/meilisearch/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       happysalada
       bbenno
     ];
+
     platforms = [
       "aarch64-linux"
       "aarch64-darwin"
       "x86_64-linux"
     ];
+
+    mainProgram = "meilisearch";
   };
 })

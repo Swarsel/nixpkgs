@@ -15,23 +15,32 @@ in
 
 lib.extendMkDerivation {
   constructDrv = python3Packages.buildPythonPackage;
+
   excludeDrvArgNames = [
     "meta"
     "nativeBuildInputs"
     "passthru"
   ];
+
   extendDrvArgs =
     finalAttrs:
     {
-      owner,
       domain,
+      owner,
       version,
       ...
     }@args:
     {
-      pname = "${owner}/${domain}";
       inherit version;
-      pyproject = false;
+      pname = "${owner}/${domain}";
+
+      nativeBuildInputs =
+        with home-assistant.python3Packages;
+        [
+          manifestRequirementsCheckHook
+          packaging
+        ]
+        ++ (args.nativeBuildInputs or [ ]);
 
       installPhase = ''
         runHook preInstall
@@ -52,13 +61,7 @@ lib.extendMkDerivation {
         runHook postInstall
       '';
 
-      nativeBuildInputs =
-        with home-assistant.python3Packages;
-        [
-          manifestRequirementsCheckHook
-          packaging
-        ]
-        ++ (args.nativeBuildInputs or [ ]);
+      pyproject = false;
 
       passthru = {
         isHomeAssistantComponent = true;

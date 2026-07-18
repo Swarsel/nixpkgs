@@ -1,20 +1,20 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
-  writeShellScriptBin,
   autoreconfHook,
-  libtool,
-  makeBinaryWrapper,
   coreutils,
   expect,
   git,
   gnugrep,
-  inetutils, # for telnet
   gnused,
+  inetutils, # for telnet
+  libtool,
+  makeBinaryWrapper,
   openssh,
   perl,
   runtimeShell,
+  writeShellScriptBin,
 }:
 
 # we cannot use resholve.mkDerivation yet - the scripts are too hairy, although it might be possible
@@ -47,8 +47,8 @@ let
   # executables that need additional directories on their PATHs
   needsBin = {
     hlogin = [ (placeholder "out") ];
-    ulogin = [ (placeholder "out") ];
     rancid-cvs = [ git ];
+    ulogin = [ (placeholder "out") ];
   };
 
   telnet' = inetutils;
@@ -107,8 +107,6 @@ stdenv.mkDerivation (finalAttrs: {
       --replace "'rancid-fe " "'${placeholder "out"}/bin/rancid-fe "
   '';
 
-  enableParallelBuilding = true;
-
   nativeBuildInputs = [
     autoreconfHook
     libtool
@@ -132,12 +130,16 @@ stdenv.mkDerivation (finalAttrs: {
     '') needsBin
   );
 
+  enableParallelBuilding = true;
+
   meta = {
     description = "Really Awesome New Cisco confIg Differ";
+
     longDescription = ''
       RANCID monitors a device's configuration, including software and hardware
       and uses a VCS to maintain history of changes.
     '';
+
     homepage = "https://shrubbery.net/rancid/";
     license = lib.licenses.bsd3;
     maintainers = with lib.maintainers; [ peterhoeg ];

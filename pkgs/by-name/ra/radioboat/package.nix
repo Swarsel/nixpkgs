@@ -21,20 +21,12 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-mjmrUWnc2oBuUiKnyKGULILI9mp5JZjXSwkp1WgqcHA=";
   };
 
-  __structuredAttrs = true;
-
-  cargoHash = "sha256-YvifggF8XZTzFBUs6u5IzdtPsxehjSNlwIT3Gb6wjW4=";
-
   nativeBuildInputs = [
     makeWrapper
     installShellFiles
   ];
 
-  nativeInstallCheckInputs = [ versionCheckHook ];
-
-  preFixup = ''
-    wrapProgram $out/bin/radioboat --prefix PATH ":" "${lib.makeBinPath [ mpv ]}";
-  '';
+  cargoHash = "sha256-YvifggF8XZTzFBUs6u5IzdtPsxehjSNlwIT3Gb6wjW4=";
 
   postInstall = lib.optionalString (stdenv.buildPlatform.canExecute stdenv.hostPlatform) ''
     installShellCompletion --cmd radioboat \
@@ -43,9 +35,15 @@ rustPlatform.buildRustPackage (finalAttrs: {
       --zsh <($out/bin/radioboat completion zsh)
   '';
 
-  passthru.updateScript = nix-update-script { };
-
   doInstallCheck = true;
+  nativeInstallCheckInputs = [ versionCheckHook ];
+
+  preFixup = ''
+    wrapProgram $out/bin/radioboat --prefix PATH ":" "${lib.makeBinPath [ mpv ]}";
+  '';
+
+  __structuredAttrs = true;
+  passthru.updateScript = nix-update-script { };
 
   meta = {
     description = "Terminal web radio client";
@@ -53,7 +51,7 @@ rustPlatform.buildRustPackage (finalAttrs: {
     changelog = "https://github.com/slashformotion/radioboat/releases/tag/${finalAttrs.src.tag}";
     license = lib.licenses.asl20;
     maintainers = with lib.maintainers; [ zendo ];
-    mainProgram = "radioboat";
     platforms = with lib.platforms; linux ++ darwin;
+    mainProgram = "radioboat";
   };
 })

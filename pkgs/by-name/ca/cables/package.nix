@@ -1,8 +1,8 @@
 {
   lib,
+  stdenv,
   fetchurl,
   appimageTools,
-  stdenv,
 }:
 
 let
@@ -16,6 +16,7 @@ let
 
   appimageContents = appimageTools.extract {
     inherit pname version src;
+
     postExtract = ''
       substituteInPlace $out/cables-${version}.desktop --replace 'Exec=AppRun' 'Exec=cables'
     '';
@@ -37,7 +38,7 @@ appimageTools.wrapType2 {
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ rubikcubed ];
     platforms = with lib.platforms; linux ++ darwin ++ windows;
-    broken = !(stdenv.hostPlatform.isLinux && stdenv.hostPlatform.isx86_64);
     mainProgram = "cables";
+    broken = !(stdenv.hostPlatform.isLinux && stdenv.hostPlatform.isx86_64);
   };
 }

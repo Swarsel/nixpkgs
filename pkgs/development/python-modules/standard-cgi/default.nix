@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   setuptools,
   unittestCheckHook,
 }:
@@ -9,7 +9,6 @@
 buildPythonPackage rec {
   pname = "standard-cgi";
   version = "3.13.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "youknowone";
@@ -18,11 +17,10 @@ buildPythonPackage rec {
     hash = "sha256-vhGFTd1yXL4Frqli5D1GwOatwByDjvcP8sxgkdu6Jqg=";
   };
 
-  sourceRoot = "${src.name}/cgi";
-
-  build-system = [ setuptools ];
-
   nativeCheckInputs = [ unittestCheckHook ];
+  build-system = [ setuptools ];
+  pyproject = true;
+  sourceRoot = "${src.name}/cgi";
 
   meta = {
     description = "Python dead batteries. See PEP 594";

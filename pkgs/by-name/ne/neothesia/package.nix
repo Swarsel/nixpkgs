@@ -1,19 +1,19 @@
 {
-  rustPlatform,
-  fetchFromGitHub,
   lib,
-  ffmpeg_7,
-  pkg-config,
+  fetchFromGitHub,
   alsa-lib,
-  wayland,
-  makeWrapper,
-  libxkbcommon,
-  vulkan-loader,
-  libxrender,
-  libxi,
-  libxcursor,
-  libx11,
   fetchpatch,
+  ffmpeg_7,
+  libx11,
+  libxcursor,
+  libxi,
+  libxkbcommon,
+  libxrender,
+  makeWrapper,
+  pkg-config,
+  rustPlatform,
+  vulkan-loader,
+  wayland,
 }:
 rustPlatform.buildRustPackage (finalAttrs: {
   pname = "neothesia";
@@ -28,14 +28,9 @@ rustPlatform.buildRustPackage (finalAttrs: {
 
   patches = [
     (fetchpatch {
-      url = "https://github.com/PolyMeilex/Neothesia/commit/c450689134e5e767293ae9a4878a0396e585259b.patch";
       hash = "sha256-A7GuaEHIfSFrvS1SCBWGCuh3rvb2gaaw8dQ970f6u2Y=";
+      url = "https://github.com/PolyMeilex/Neothesia/commit/c450689134e5e767293ae9a4878a0396e585259b.patch";
     })
-  ];
-
-  buildInputs = [
-    ffmpeg_7
-    alsa-lib
   ];
 
   nativeBuildInputs = [
@@ -44,11 +39,12 @@ rustPlatform.buildRustPackage (finalAttrs: {
     rustPlatform.bindgenHook
   ];
 
-  cargoHash = "sha256-gX9DlgPgrM8KukX3auxbBKpJq7QG4+kRhHSUk3eQjAQ=";
-
-  cargoBuildFlags = [
-    "-p neothesia -p neothesia-cli"
+  buildInputs = [
+    ffmpeg_7
+    alsa-lib
   ];
+
+  cargoHash = "sha256-gX9DlgPgrM8KukX3auxbBKpJq7QG4+kRhHSUk3eQjAQ=";
 
   postInstall = ''
     wrapProgram $out/bin/neothesia --prefix LD_LIBRARY_PATH : "${
@@ -68,14 +64,20 @@ rustPlatform.buildRustPackage (finalAttrs: {
     install -Dm 644 default.sf2 $out/share/neothesia/default.sf2
   '';
 
+  cargoBuildFlags = [
+    "-p neothesia -p neothesia-cli"
+  ];
+
   meta = {
     description = "Flashy Synthesia Like Software For Linux, Windows and macOS";
     homepage = "https://github.com/PolyMeilex/Neothesia";
     license = lib.licenses.gpl3;
-    platforms = lib.platforms.linux;
-    mainProgram = "neothesia";
+
     maintainers = [
       lib.maintainers.naxdy
     ];
+
+    platforms = lib.platforms.linux;
+    mainProgram = "neothesia";
   };
 })

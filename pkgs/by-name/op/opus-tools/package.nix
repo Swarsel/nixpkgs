@@ -2,13 +2,13 @@
   lib,
   stdenv,
   fetchFromGitLab,
-  libogg,
-  libao,
   autoreconfHook,
-  pkg-config,
   flac,
-  opusfile,
+  libao,
+  libogg,
   libopusenc,
+  opusfile,
+  pkg-config,
   versionCheckHook,
 }:
 
@@ -17,12 +17,13 @@ stdenv.mkDerivation (finalAttrs: {
   version = "0.2";
 
   src = fetchFromGitLab {
-    domain = "gitlab.xiph.org";
     owner = "xiph";
     repo = "opus-tools";
     tag = "v${finalAttrs.version}";
     hash = "sha256-Tr+xvZKu1nuachgN7GXwqFyJYPQ/sWqaVJQHWhLAt+k=";
+    domain = "gitlab.xiph.org";
   };
+
   postPatch = ''
     echo 'PACKAGE_VERSION="${finalAttrs.version}"' > package_version
   '';
@@ -31,6 +32,7 @@ stdenv.mkDerivation (finalAttrs: {
     autoreconfHook
     pkg-config
   ];
+
   buildInputs = [
     libogg
     libao
@@ -40,9 +42,11 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   doInstallCheck = true;
+
   nativeInstallCheckInputs = [
     versionCheckHook
   ];
+
   versionCheckProgram = "${placeholder "out"}/bin/opusenc";
 
   meta = {

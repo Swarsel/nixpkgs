@@ -1,7 +1,7 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -21,7 +21,7 @@ rustPlatform.buildRustPackage (finalAttrs: {
     description = "Blazingly fast touch alternative written in Rust";
     homepage = "https://github.com/elliot40404/bonk";
     license = lib.licenses.mit;
-    mainProgram = "bonk";
     maintainers = [ ];
+    mainProgram = "bonk";
   };
 })

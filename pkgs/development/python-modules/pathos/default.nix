@@ -1,8 +1,8 @@
 {
   lib,
+  fetchFromGitHub,
   buildPythonPackage,
   dill,
-  fetchFromGitHub,
   multiprocess,
   pox,
   ppft,
@@ -11,7 +11,6 @@
 buildPythonPackage rec {
   pname = "pathos";
   version = "0.3.5";
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "uqfoundation";
@@ -29,7 +28,7 @@ buildPythonPackage rec {
 
   # Require network
   doCheck = false;
-
+  format = "setuptools";
   pythonImportsCheck = [ "pathos" ];
 
   meta = {

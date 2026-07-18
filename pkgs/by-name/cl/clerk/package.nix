@@ -1,5 +1,6 @@
 {
   lib,
+  stdenv,
   fetchFromGitHub,
   fzf,
   installShellFiles,
@@ -8,7 +9,6 @@
   mpc,
   perlPackages,
   rofi,
-  stdenv,
   tmux,
   unstableGitUpdater,
   util-linux,
@@ -24,6 +24,13 @@ stdenv.mkDerivation {
     rev = "a3c4a0b88597e8194a5b29a20bc9eab1a12f4de9";
     hash = "sha256-UlACMlH4iYj1l/GIpBf6Pb7MuRHWlgxLPgAqzc+Zol8=";
   };
+
+  postPatch = ''
+    substituteInPlace clerk_rating_client.service \
+      --replace "/usr" "$out"
+  '';
+
+  strictDeps = true;
 
   nativeBuildInputs = [
     installShellFiles
@@ -42,15 +49,6 @@ stdenv.mkDerivation {
     ArrayUtils
     NetMPD
   ];
-
-  dontBuild = true;
-
-  strictDeps = true;
-
-  postPatch = ''
-    substituteInPlace clerk_rating_client.service \
-      --replace "/usr" "$out"
-  '';
 
   installPhase = ''
     runHook preInstall
@@ -81,20 +79,24 @@ stdenv.mkDerivation {
       done
     '';
 
+  dontBuild = true;
+
   passthru.updateScript = unstableGitUpdater {
-    url = "https://github.com/carnager/clerk.git";
     hardcodeZeroVersion = true;
+    url = "https://github.com/carnager/clerk.git";
   };
 
   meta = {
-    homepage = "https://github.com/carnager/clerk";
     description = "MPD client based on rofi/fzf";
+    homepage = "https://github.com/carnager/clerk";
     license = lib.licenses.mit;
-    mainProgram = "clerk";
+
     maintainers = with lib.maintainers; [
       anderspapitto
       wineee
     ];
+
     platforms = lib.platforms.linux;
+    mainProgram = "clerk";
   };
 }

@@ -3,8 +3,8 @@
   fetchFromGitHub,
   buildGoModule,
   installShellFiles,
-  testers,
   juju,
+  testers,
 }:
 
 buildGoModule (finalAttrs: {
@@ -18,14 +18,8 @@ buildGoModule (finalAttrs: {
     hash = "sha256-Gvrzk3xaMtEpOxMBMH17Aam14eymISYmuokdEyGGgCY=";
   };
 
-  vendorHash = "sha256-Aod6k9etHDEW5WtetlA15MB0ZfaVFLbIK0Ud4gy/MuY=";
-
-  subPackages = [
-    "cmd/juju"
-  ];
-
   nativeBuildInputs = [ installShellFiles ];
-
+  vendorHash = "sha256-Aod6k9etHDEW5WtetlA15MB0ZfaVFLbIK0Ud4gy/MuY=";
   # Disable tests because it attempts to use a mongodb instance
   doCheck = false;
 
@@ -35,9 +29,13 @@ buildGoModule (finalAttrs: {
     done
   '';
 
+  subPackages = [
+    "cmd/juju"
+  ];
+
   passthru.tests.version = testers.testVersion {
-    package = juju;
     command = "HOME=\"$(mktemp -d)\" juju --version";
+    package = juju;
   };
 
   meta = {

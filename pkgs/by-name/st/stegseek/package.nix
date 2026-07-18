@@ -1,8 +1,8 @@
 {
   lib,
   stdenv,
-  cmake,
   fetchFromGitHub,
+  cmake,
   libjpeg,
   libmcrypt,
   libmhash,
@@ -35,15 +35,17 @@ stdenv.mkDerivation (finalAttrs: {
   doCheck = stdenv.hostPlatform.isx86_64 && stdenv.hostPlatform.isLinux;
 
   meta = {
-    broken = stdenv.hostPlatform.isDarwin;
     description = "Tool to crack steganography";
+
     longDescription = ''
       Stegseek is a lightning fast steghide cracker that can be
       used to extract hidden data from files.
     '';
+
     homepage = "https://github.com/RickdeJager/stegseek";
     license = with lib.licenses; [ gpl2Only ];
     maintainers = with lib.maintainers; [ fab ];
     mainProgram = "stegseek";
+    broken = stdenv.hostPlatform.isDarwin;
   };
 })

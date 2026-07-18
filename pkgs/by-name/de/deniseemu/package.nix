@@ -1,15 +1,15 @@
 {
   lib,
   stdenv,
-  fetchFromBitbucket,
   cmake,
+  fetchFromBitbucket,
   freetype,
+  gtk3,
+  libuuid,
+  libxkbcommon,
   pkg-config,
   pulseaudio,
-  gtk3,
-  libxkbcommon,
   udev,
-  libuuid,
   wrapGAppsHook3,
 }:
 
@@ -24,6 +24,12 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-+PJtYuiZ1eawuVCTo1kqtCmIoBjNKOGRDnbuH3KRpNM=";
   };
 
+  nativeBuildInputs = [
+    cmake
+    pkg-config
+    wrapGAppsHook3
+  ];
+
   buildInputs = [
     gtk3
     udev
@@ -33,18 +39,12 @@ stdenv.mkDerivation (finalAttrs: {
     pulseaudio
   ];
 
-  nativeBuildInputs = [
-    cmake
-    pkg-config
-    wrapGAppsHook3
-  ];
-
   meta = {
-    homepage = "https://bitbucket.org/piciji/denise";
-    downloadPage = "https://sourceforge.net/projects/deniseemu/";
     description = "C64 / Amiga Emulator";
+    homepage = "https://bitbucket.org/piciji/denise";
     license = [ lib.licenses.gpl3Plus ];
     maintainers = [ lib.maintainers.matthewcroughan ];
     platforms = lib.platforms.linux;
+    downloadPage = "https://sourceforge.net/projects/deniseemu/";
   };
 })

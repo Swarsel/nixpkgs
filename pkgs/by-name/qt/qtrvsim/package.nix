@@ -26,14 +26,16 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "RISC-V CPU simulator for education purposes";
+
     longDescription = ''
       RISC-V CPU simulator for education purposes with pipeline and cache visualization.
       Developed at FEE CTU for computer architecture classes.
     '';
+
     homepage = "https://github.com/cvut/qtrvsim";
     license = lib.licenses.gpl3Plus;
-    platforms = lib.platforms.linux ++ lib.platforms.darwin;
     maintainers = with lib.maintainers; [ jdupak ];
+    platforms = lib.platforms.linux ++ lib.platforms.darwin;
     mainProgram = "qtrvsim_gui";
   };
 })

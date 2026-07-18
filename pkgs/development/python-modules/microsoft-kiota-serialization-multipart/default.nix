@@ -1,20 +1,19 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   flit-core,
+  gitUpdater,
   microsoft-kiota-abstractions,
   microsoft-kiota-serialization-json,
   pytest-asyncio,
   pytest-mock,
   pytestCheckHook,
-  gitUpdater,
 }:
 
 buildPythonPackage rec {
   pname = "microsoft-kiota-serialization-multipart";
   version = "1.11.7";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "microsoft";
@@ -23,12 +22,6 @@ buildPythonPackage rec {
     hash = "sha256-Fd9XSO3H1Au8y+Acft5to7hi7QNwWcmP0/NeWZlufjg=";
   };
 
-  sourceRoot = "${src.name}/packages/serialization/multipart/";
-
-  build-system = [ flit-core ];
-
-  dependencies = [ microsoft-kiota-abstractions ];
-
   nativeCheckInputs = [
     microsoft-kiota-serialization-json
     pytest-asyncio
@@ -36,7 +29,11 @@ buildPythonPackage rec {
     pytestCheckHook
   ];
 
+  build-system = [ flit-core ];
+  dependencies = [ microsoft-kiota-abstractions ];
+  pyproject = true;
   pythonImportsCheck = [ "kiota_serialization_multipart" ];
+  sourceRoot = "${src.name}/packages/serialization/multipart/";
 
   passthru.updateScript = gitUpdater {
     rev-prefix = "microsoft-kiota-serialization-multipart-v";

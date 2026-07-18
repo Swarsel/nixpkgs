@@ -1,13 +1,13 @@
 {
   lib,
-  stdenvNoCC,
   fetchurl,
-  writeShellApplication,
   cacert,
-  curl,
   common-updater-scripts,
+  curl,
   pup,
+  stdenvNoCC,
   undmg,
+  writeShellApplication,
 }:
 
 stdenvNoCC.mkDerivation (finalAttrs: {
@@ -21,8 +21,6 @@ stdenvNoCC.mkDerivation (finalAttrs: {
 
   nativeBuildInputs = [ undmg ];
 
-  sourceRoot = ".";
-
   installPhase = ''
     runHook preInstall
 
@@ -35,14 +33,18 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  sourceRoot = ".";
+
   passthru.updateScript = lib.getExe (writeShellApplication {
     name = "shottr-update-script";
+
     runtimeInputs = [
       cacert
       common-updater-scripts
       curl
       pup
     ];
+
     text = ''
       version="$(curl -s https://shottr.cc/newversion.html \
         | pup 'a[href*="Shottr-"] attr{href}' \
@@ -53,13 +55,13 @@ stdenvNoCC.mkDerivation (finalAttrs: {
   });
 
   meta = {
-    changelog = "https://shottr.cc/newversion.html";
     description = "MacOS screenshot app with scrolling screenshots, OCR, annotation and measurement instruments";
     homepage = "https://shottr.cc/";
+    changelog = "https://shottr.cc/newversion.html";
     license = lib.licenses.unfree;
-    mainProgram = "shottr";
+    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
     maintainers = with lib.maintainers; [ _4evy ];
     platforms = lib.platforms.darwin;
-    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
+    mainProgram = "shottr";
   };
 })

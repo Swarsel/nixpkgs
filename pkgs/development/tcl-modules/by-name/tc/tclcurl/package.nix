@@ -1,8 +1,8 @@
 {
   lib,
-  mkTclDerivation,
   fetchFromGitHub,
   curl,
+  mkTclDerivation,
   tcl,
 }:
 
@@ -17,11 +17,9 @@ mkTclDerivation rec {
     hash = "sha256-XQuP+SiqvGX3ckBShUxsGBADjV3QdvYpU4hW6LMbMMQ=";
   };
 
-  buildInputs = [ curl ];
-
   # Uses curl-config
   strictDeps = false;
-
+  buildInputs = [ curl ];
   makeFlags = [ "LDFLAGS=-lcurl" ];
 
   meta = {

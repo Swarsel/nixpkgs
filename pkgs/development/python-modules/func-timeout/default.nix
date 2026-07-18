@@ -8,12 +8,11 @@
 buildPythonPackage rec {
   pname = "func-timeout";
   version = "4.3.5";
-  format = "setuptools";
 
   src = fetchPypi {
-    pname = "func_timeout";
     inherit version;
     sha256 = "74cd3c428ec94f4edfba81f9b2f14904846d5ffccc27c92433b8b5939b5575dd";
+    pname = "func_timeout";
   };
 
   nativeCheckInputs = [ pytestCheckHook ];
@@ -27,6 +26,7 @@ buildPythonPackage rec {
     "test_setFuncTimeoutetry"
   ];
 
+  format = "setuptools";
   pythonImportsCheck = [ "func_timeout" ];
 
   meta = {

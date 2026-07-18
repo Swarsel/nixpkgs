@@ -1,23 +1,23 @@
 {
-  mkKdeDerivation,
-  pkg-config,
-  qtquick3d,
-  qtsensors,
-  qttools,
-  qtvirtualkeyboard,
-  qtwayland,
-  libinput,
-  libxcvt,
-  xwayland,
+  krunner,
+  lcms2,
   libcanberra,
   libdisplay-info,
   libei,
   libevdev,
   libgbm,
-  lcms2,
+  libinput,
+  libxcvt,
+  mkKdeDerivation,
   pipewire,
-  krunner,
+  pkg-config,
   python3,
+  qtquick3d,
+  qtsensors,
+  qttools,
+  qtvirtualkeyboard,
+  qtwayland,
+  xwayland,
 }:
 mkKdeDerivation {
   pname = "kwin";
@@ -31,16 +31,9 @@ mkKdeDerivation {
     patchShebangs src/plugins/strip-effect-metadata.py
   '';
 
-  # TZDIR may be unset when running through the kwin_wayland wrapper,
-  # but we need it for the lockscreen clock to render
-  qtWrapperArgs = [
-    "--set-default TZDIR /etc/zoneinfo"
-  ];
+  # plugin QML relies on non-global imports
+  dontQmlLint = true;
 
-  extraNativeBuildInputs = [
-    pkg-config
-    python3
-  ];
   extraBuildInputs = [
     qtquick3d
     qtsensors
@@ -64,6 +57,14 @@ mkKdeDerivation {
     xwayland
   ];
 
-  # plugin QML relies on non-global imports
-  dontQmlLint = true;
+  extraNativeBuildInputs = [
+    pkg-config
+    python3
+  ];
+
+  # TZDIR may be unset when running through the kwin_wayland wrapper,
+  # but we need it for the lockscreen clock to render
+  qtWrapperArgs = [
+    "--set-default TZDIR /etc/zoneinfo"
+  ];
 }

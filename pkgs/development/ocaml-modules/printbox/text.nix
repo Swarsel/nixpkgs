@@ -1,16 +1,16 @@
 {
-  buildDunePackage,
   lib,
+  buildDunePackage,
+  mdx,
   ocaml,
   printbox,
   uucp,
   uutf,
-  mdx,
 }:
 
 buildDunePackage {
-  pname = "printbox-text";
   inherit (printbox) src version;
+  pname = "printbox-text";
 
   propagatedBuildInputs = [
     printbox

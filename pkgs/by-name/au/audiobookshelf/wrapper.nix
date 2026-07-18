@@ -1,8 +1,8 @@
 {
   stdenv,
   ffmpeg-full,
-  nunicode,
   getopt,
+  nunicode,
 }:
 ''
   #!${stdenv.shell}

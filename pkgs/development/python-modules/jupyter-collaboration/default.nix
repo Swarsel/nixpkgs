@@ -1,20 +1,17 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
+  buildPythonPackage,
+  # tests
+  dirty-equals,
   # build-system
   hatchling,
-
+  httpx-ws,
   # dependencies
   jupyter-collaboration-ui,
   jupyter-docprovider,
   jupyter-server-ydoc,
   jupyterlab,
-
-  # tests
-  dirty-equals,
-  httpx-ws,
   pytest-jupyter,
   pytest-timeout,
   pytestCheckHook,
@@ -24,8 +21,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "jupyter-collaboration";
   version = "4.4.0";
-  pyproject = true;
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "jupyterlab";
@@ -33,19 +28,6 @@ buildPythonPackage (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-6FF4KtQSIrB0LeJDNMWWpRIAxRkFMzz566WB6H5ePXs=";
   };
-
-  sourceRoot = "${finalAttrs.src.name}/projects/jupyter-collaboration";
-
-  build-system = [ hatchling ];
-
-  dependencies = [
-    jupyter-collaboration-ui
-    jupyter-docprovider
-    jupyter-server-ydoc
-    jupyterlab
-  ];
-
-  pythonImportsCheck = [ "jupyter_collaboration" ];
 
   nativeCheckInputs = [
     dirty-equals
@@ -56,21 +38,35 @@ buildPythonPackage (finalAttrs: {
     writableTmpDirAsHomeHook
   ];
 
-  pytestFlags = [
-    # pytest.PytestCacheWarning: could not create cache path /build/source/.pytest_cache/v/cache/nodeids: [Errno 13] Permission denied: '/build/source/pytest-cache-files-plraagdr'
-    "-pno:cacheprovider"
-  ];
-
   preCheck = ''
     appendToVar enabledTestPaths "$src/tests"
   '';
+
+  __darwinAllowLocalNetworking = true;
+  __structuredAttrs = true;
+  build-system = [ hatchling ];
+
+  dependencies = [
+    jupyter-collaboration-ui
+    jupyter-docprovider
+    jupyter-server-ydoc
+    jupyterlab
+  ];
 
   disabledTests = [
     # Failed: Timeout (>300.0s) from pytest-timeout
     "test_document_ttl_from_settings"
   ];
 
-  __darwinAllowLocalNetworking = true;
+  pyproject = true;
+
+  pytestFlags = [
+    # pytest.PytestCacheWarning: could not create cache path /build/source/.pytest_cache/v/cache/nodeids: [Errno 13] Permission denied: '/build/source/pytest-cache-files-plraagdr'
+    "-pno:cacheprovider"
+  ];
+
+  pythonImportsCheck = [ "jupyter_collaboration" ];
+  sourceRoot = "${finalAttrs.src.name}/projects/jupyter-collaboration";
 
   meta = {
     description = "JupyterLab Extension enabling Real-Time Collaboration";

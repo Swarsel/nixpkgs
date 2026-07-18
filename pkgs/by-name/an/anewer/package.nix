@@ -1,7 +1,7 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -19,9 +19,9 @@ rustPlatform.buildRustPackage (finalAttrs: {
 
   meta = {
     description = "Append lines from stdin to a file if they don't already exist in the file";
-    mainProgram = "anewer";
     homepage = "https://github.com/ysf/anewer";
     license = lib.licenses.gpl3Plus;
     maintainers = [ ];
+    mainProgram = "anewer";
   };
 })

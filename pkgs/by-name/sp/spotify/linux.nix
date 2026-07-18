@@ -1,66 +1,66 @@
 {
-  fetchurl,
   lib,
   stdenv,
-  squashfsTools,
-  libxtst,
-  libxscrnsaver,
-  libxrender,
-  libxrandr,
-  libxi,
-  libxfixes,
-  libxext,
-  libxdamage,
-  libxcursor,
-  libxcomposite,
-  libx11,
-  libsm,
-  libice,
-  libxshmfence,
-  libxcb,
+  fetchurl,
   alsa-lib,
-  makeShellWrapper,
-  wrapGAppsHook3,
-  openssl,
-  freetype,
-  glib,
-  pango,
-  cairo,
+  at-spi2-atk,
+  at-spi2-core,
   atk,
-  gdk-pixbuf,
-  gtk3,
+  ayatana-ido,
+  cairo,
   cups,
-  nspr,
-  nss_latest,
-  libpng,
-  libnotify,
-  libgcrypt,
-  systemd,
-  fontconfig,
+  curlWithGnuTls,
   dbus,
   expat,
   ffmpeg_4,
-  curlWithGnuTls,
-  zlib,
-  zenity,
-  at-spi2-atk,
-  at-spi2-core,
-  libpulseaudio,
+  fontconfig,
+  freetype,
+  gdk-pixbuf,
+  glib,
+  gtk3,
+  harfbuzz,
+  libGL,
+  libayatana-appindicator,
+  libayatana-indicator,
+  libdbusmenu,
   libdrm,
   libgbm,
+  libgcrypt,
+  libice,
+  libnotify,
+  libpng,
+  libpulseaudio,
+  libsm,
+  libx11,
+  libxcb,
+  libxcomposite,
+  libxcursor,
+  libxdamage,
+  libxext,
+  libxfixes,
+  libxi,
   libxkbcommon,
-  pname,
+  libxrandr,
+  libxrender,
+  libxscrnsaver,
+  libxshmfence,
+  libxtst,
+  makeShellWrapper,
   meta,
-  harfbuzz,
-  libayatana-indicator,
-  libayatana-appindicator,
-  ayatana-ido,
-  libdbusmenu,
-  libGL,
+  nspr,
+  nss_latest,
+  openssl,
+  pango,
+  pname,
+  squashfsTools,
+  systemd,
+  updateScript,
+  wrapGAppsHook3,
+  zenity,
+  zlib,
   # High-DPI support: Spotify's --force-device-scale-factor argument
   # not added if `null`, otherwise, should be a number.
   deviceScaleFactor ? null,
-  updateScript,
 }:
 
 let
@@ -117,7 +117,6 @@ let
 in
 stdenv.mkDerivation (finalAttrs: {
   inherit pname;
-
   # TO UPDATE: just execute the ./update.sh script (won't do anything if there is no update)
   # "rev" decides what is actually being downloaded
   # If an update breaks things, one of those might have valuable info:
@@ -125,26 +124,17 @@ stdenv.mkDerivation (finalAttrs: {
   # https://community.spotify.com/t5/Desktop-Linux
   version = "1.2.90.451.gb094aab0";
 
-  # To get the latest stable revision:
-  # curl -H 'X-Ubuntu-Series: 16' 'https://api.snapcraft.io/api/v1/snaps/details/spotify?channel=stable' | jq '.download_url,.version,.last_updated'
-  # To get general information:
-  # curl -H 'Snap-Device-Series: 16' 'https://api.snapcraft.io/v2/snaps/info/spotify' | jq '.'
-  # More examples of api usage:
-  # https://github.com/canonical-websites/snapcraft.io/blob/master/webapp/publisher/snaps/views.py
-  rev = "96";
-
   # fetch from snapcraft instead of the debian repository most repos fetch from.
   # That is a bit more cumbersome. But the debian repository only keeps the last
   # two versions, while snapcraft should provide versions indefinitely:
   # https://forum.snapcraft.io/t/how-can-a-developer-remove-her-his-app-from-snap-store/512
-
   # This is the next-best thing, since we're not allowed to re-distribute
   # spotify ourselves:
   # https://community.spotify.com/t5/Desktop-Linux/Redistribute-Spotify-on-Linux-Distributions/td-p/1695334
   src = fetchurl {
-    name = "spotify-${finalAttrs.version}-${finalAttrs.rev}.snap";
     url = "https://api.snapcraft.io/api/v1/snaps/download/pOBIoZ2LrCB3rDohMxoYGnbN14EHOgD7_${finalAttrs.rev}.snap";
     hash = "sha512-rdffEwzlUf/kmxcO79+TzF0OKszWQhTdJgqQp/zhy+O5Ov+JhhjW2hXoltkhJbpQ2pJD9l4nuVDpTjQAc3VzAA==";
+    name = "spotify-${finalAttrs.version}-${finalAttrs.rev}.snap";
   };
 
   nativeBuildInputs = [
@@ -152,34 +142,6 @@ stdenv.mkDerivation (finalAttrs: {
     makeShellWrapper
     squashfsTools
   ];
-
-  dontStrip = true;
-  dontPatchELF = true;
-
-  unpackPhase = ''
-    runHook preUnpack
-    unsquashfs "$src" '/usr/share/spotify' '/usr/bin/spotify' '/meta/snap.yaml'
-    cd squashfs-root
-    if ! grep -q 'grade: stable' meta/snap.yaml; then
-      # Unfortunately this check is not reliable: At the moment (2018-07-26) the
-      # latest version in the "edge" channel is also marked as stable.
-      echo "The snap package is marked as unstable:"
-      grep 'grade: ' meta/snap.yaml
-      echo "You probably chose the wrong revision."
-      exit 1
-    fi
-    if ! grep -q '${finalAttrs.version}' meta/snap.yaml; then
-      echo "Package version differs from version found in snap metadata:"
-      grep 'version: ' meta/snap.yaml
-      echo "While the nix package specifies: ${finalAttrs.version}."
-      echo "You probably chose the wrong revision or forgot to update the nix version."
-      exit 1
-    fi
-    runHook postUnpack
-  '';
-
-  # Prevent double wrapping
-  dontWrapGApps = true;
 
   env = rec {
     libdir = "${placeholder "out"}/lib/spotify";
@@ -228,6 +190,11 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  dontPatchELF = true;
+  dontStrip = true;
+  # Prevent double wrapping
+  dontWrapGApps = true;
+
   fixupPhase = ''
     runHook preFixup
 
@@ -243,6 +210,36 @@ stdenv.mkDerivation (finalAttrs: {
       --run 'if [[ "''${NIXOS_OZONE_WL:-default}" == "1" ]]; then unset DISPLAY; fi'
 
     runHook postFixup
+  '';
+
+  # To get the latest stable revision:
+  # curl -H 'X-Ubuntu-Series: 16' 'https://api.snapcraft.io/api/v1/snaps/details/spotify?channel=stable' | jq '.download_url,.version,.last_updated'
+  # To get general information:
+  # curl -H 'Snap-Device-Series: 16' 'https://api.snapcraft.io/v2/snaps/info/spotify' | jq '.'
+  # More examples of api usage:
+  # https://github.com/canonical-websites/snapcraft.io/blob/master/webapp/publisher/snaps/views.py
+  rev = "96";
+
+  unpackPhase = ''
+    runHook preUnpack
+    unsquashfs "$src" '/usr/share/spotify' '/usr/bin/spotify' '/meta/snap.yaml'
+    cd squashfs-root
+    if ! grep -q 'grade: stable' meta/snap.yaml; then
+      # Unfortunately this check is not reliable: At the moment (2018-07-26) the
+      # latest version in the "edge" channel is also marked as stable.
+      echo "The snap package is marked as unstable:"
+      grep 'grade: ' meta/snap.yaml
+      echo "You probably chose the wrong revision."
+      exit 1
+    fi
+    if ! grep -q '${finalAttrs.version}' meta/snap.yaml; then
+      echo "Package version differs from version found in snap metadata:"
+      grep 'version: ' meta/snap.yaml
+      echo "While the nix package specifies: ${finalAttrs.version}."
+      echo "You probably chose the wrong revision or forgot to update the nix version."
+      exit 1
+    fi
+    runHook postUnpack
   '';
 
   passthru = { inherit updateScript; };

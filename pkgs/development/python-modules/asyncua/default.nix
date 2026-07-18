@@ -1,12 +1,12 @@
 {
   lib,
   stdenv,
+  fetchFromGitHub,
   aiofiles,
   aiosqlite,
   anyio,
   buildPythonPackage,
   cryptography,
-  fetchFromGitHub,
   hatchling,
   pyopenssl,
   pytest-asyncio,
@@ -22,7 +22,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "asyncua";
   version = "2.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "FreeOpcUa";
@@ -39,6 +38,14 @@ buildPythonPackage (finalAttrs: {
       --replace-fail "tools/" "$out/bin/"
   '';
 
+  nativeCheckInputs = [
+    pytestCheckHook
+    pytest-asyncio
+    pytest-mock
+  ];
+
+  # PermissionError: [Errno 1] Operation not permitted
+  __darwinAllowLocalNetworking = true;
   build-system = [ hatchling ];
 
   dependencies = [
@@ -53,16 +60,19 @@ buildPythonPackage (finalAttrs: {
     typing-extensions
   ];
 
-  nativeCheckInputs = [
-    pytestCheckHook
-    pytest-asyncio
-    pytest-mock
+  disabledTestPaths = lib.optionals stdenv.hostPlatform.isDarwin [
+    "tests/test_callback_service.py"
+    "tests/test_client_cert_chain.py"
+    "tests/test_crypto_connect.py"
+    "tests/test_crypto_connect.py"
+    "tests/test_gen_certificates.py"
+    "tests/test_password.py"
+    "tests/test_permissions.py"
+    "tests/test_pubsub.py"
+    "tests/test_sync.py"
+    "tests/test_truststore.py"
+    "tests/test_subscriptions.py"
   ];
-
-  pythonImportsCheck = [ "asyncua" ];
-
-  # PermissionError: [Errno 1] Operation not permitted
-  __darwinAllowLocalNetworking = true;
 
   disabledTests = [
     # Failed: DID NOT RAISE <class 'asyncio.exceptions.TimeoutError'>
@@ -84,19 +94,8 @@ buildPythonPackage (finalAttrs: {
     "test_client_user_x509identity_admin"
   ];
 
-  disabledTestPaths = lib.optionals stdenv.hostPlatform.isDarwin [
-    "tests/test_callback_service.py"
-    "tests/test_client_cert_chain.py"
-    "tests/test_crypto_connect.py"
-    "tests/test_crypto_connect.py"
-    "tests/test_gen_certificates.py"
-    "tests/test_password.py"
-    "tests/test_permissions.py"
-    "tests/test_pubsub.py"
-    "tests/test_sync.py"
-    "tests/test_truststore.py"
-    "tests/test_subscriptions.py"
-  ];
+  pyproject = true;
+  pythonImportsCheck = [ "asyncua" ];
 
   meta = {
     description = "OPC UA / IEC 62541 Client and Server for Python";

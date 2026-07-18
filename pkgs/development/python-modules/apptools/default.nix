@@ -1,8 +1,8 @@
 {
   lib,
+  fetchFromGitHub,
   buildPythonPackage,
   configobj,
-  fetchFromGitHub,
   numpy,
   pandas,
   pyface,
@@ -16,7 +16,6 @@
 buildPythonPackage rec {
   pname = "apptools";
   version = "5.3.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "enthought";
@@ -25,8 +24,13 @@ buildPythonPackage rec {
     hash = "sha256-46QiVLWdlM89GMCIqVNuNGJjT2nwWJ1c6DyyvEPcceQ=";
   };
 
-  build-system = [ setuptools ];
+  nativeCheckInputs = [ pytestCheckHook ] ++ lib.concatAttrValues optional-dependencies;
 
+  preCheck = ''
+    export HOME=$TMP
+  '';
+
+  build-system = [ setuptools ];
   dependencies = [ traits ];
 
   optional-dependencies = {
@@ -34,21 +38,18 @@ buildPythonPackage rec {
       pyface
       traitsui
     ];
+
     h5 = [
       numpy
       pandas
       tables
     ];
+
     persistence = [ numpy ];
     preferences = [ configobj ];
   };
 
-  nativeCheckInputs = [ pytestCheckHook ] ++ lib.concatAttrValues optional-dependencies;
-
-  preCheck = ''
-    export HOME=$TMP
-  '';
-
+  pyproject = true;
   pythonImportsCheck = [ "apptools" ];
 
   meta = {

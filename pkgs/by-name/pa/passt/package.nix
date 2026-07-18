@@ -1,8 +1,8 @@
 {
   lib,
   stdenv,
-  buildPackages,
   fetchurl,
+  buildPackages,
   getconf,
   gitUpdater,
   testers,
@@ -18,8 +18,6 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-3krWW/QKijgZsmHuelMjpcaL8OyRqmPKC/wUvag0ZHI=";
   };
 
-  separateDebugInfo = true;
-
   postPatch = ''
     substituteInPlace Makefile --replace-fail \
       'PAGE_SIZE=$(shell getconf PAGE_SIZE)' \
@@ -31,10 +29,12 @@ stdenv.mkDerivation (finalAttrs: {
     "VERSION=${finalAttrs.version}"
   ];
 
+  separateDebugInfo = true;
+
   passthru = {
     tests.version = testers.testVersion {
-      package = finalAttrs.finalPackage;
       command = "${unixtools.script}/bin/script -c 'passt --version'";
+      package = finalAttrs.finalPackage;
     };
 
     updateScript = gitUpdater {
@@ -43,8 +43,8 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   meta = {
-    homepage = "https://passt.top/passt/about/";
     description = "Plug A Simple Socket Transport";
+
     longDescription = ''
       passt implements a translation layer between a Layer-2 network interface
       and native Layer-4 sockets (TCP, UDP, ICMP/ICMPv6 echo) on a host.
@@ -57,10 +57,14 @@ stdenv.mkDerivation (finalAttrs: {
       interfaces on the host, hence not requiring any capabilities or
       privileges.
     '';
+
+    homepage = "https://passt.top/passt/about/";
+
     license = [
       lib.licenses.bsd3 # and
       lib.licenses.gpl2Plus
     ];
+
     platforms = lib.platforms.linux;
     mainProgram = "passt";
   };

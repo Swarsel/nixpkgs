@@ -1,16 +1,13 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
+  buildPythonPackage,
+  # dependencies
+  filelock,
   # build-system
   hatch-vcs,
   hatchling,
-
-  # dependencies
-  filelock,
   platformdirs,
-
   # tests
   pytest-mock,
   pytestCheckHook,
@@ -19,8 +16,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "python-discovery";
   version = "1.4.2";
-  pyproject = true;
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "tox-dev";
@@ -28,6 +23,13 @@ buildPythonPackage (finalAttrs: {
     tag = finalAttrs.version;
     hash = "sha256-xnQWXXStdgu99riKFW4+O7tqYL4w5f7etjC872q/LWc=";
   };
+
+  nativeCheckInputs = [
+    pytest-mock
+    pytestCheckHook
+  ];
+
+  __structuredAttrs = true;
 
   build-system = [
     hatch-vcs
@@ -39,17 +41,13 @@ buildPythonPackage (finalAttrs: {
     platformdirs
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "python_discovery" ];
-
-  nativeCheckInputs = [
-    pytest-mock
-    pytestCheckHook
-  ];
 
   meta = {
     description = "Python interpreter discovery";
-    changelog = "https://github.com/tox-dev/python-discovery/releases/tag/${finalAttrs.src.tag}";
     homepage = "https://github.com/tox-dev/python-discovery";
+    changelog = "https://github.com/tox-dev/python-discovery/releases/tag/${finalAttrs.src.tag}";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ GaetanLepage ];
   };

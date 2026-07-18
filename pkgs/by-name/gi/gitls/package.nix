@@ -1,8 +1,8 @@
 {
   lib,
+  fetchFromGitHub,
   buildGoModule,
   gitls,
-  fetchFromGitHub,
   testers,
 }:
 
@@ -20,9 +20,9 @@ buildGoModule (finalAttrs: {
   vendorHash = null;
 
   passthru.tests.version = testers.testVersion {
-    package = gitls;
-    command = "gitls -version";
     version = "v${finalAttrs.version}";
+    command = "gitls -version";
+    package = gitls;
   };
 
   meta = {

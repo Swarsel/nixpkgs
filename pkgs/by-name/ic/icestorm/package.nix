@@ -1,13 +1,12 @@
 {
   lib,
   stdenv,
-  callPackage,
   fetchFromGitHub,
-  pkg-config,
+  callPackage,
   libftdi1,
-  python3,
+  pkg-config,
   pypy3,
-
+  python3,
   # PyPy yields large improvements in build time and runtime performance, and
   # IceStorm isn't intended to be used as a library other than by the nextpnr
   # build process (which is also sped up by using PyPy), so we use it by default.
@@ -23,16 +22,6 @@ stdenv.mkDerivation (finalAttrs: {
   pname = "icestorm";
   version = "0-unstable-2025-06-03";
 
-  passthru = rec {
-    pythonPkg = if (false && usePyPy) then pypy3 else python3;
-    pythonInterp = pythonPkg.interpreter;
-
-    tests.examples = callPackage ./tests.nix {
-      inherit (finalAttrs) pname src;
-      icestorm = finalAttrs.finalPackage;
-    };
-  };
-
   src = fetchFromGitHub {
     owner = "YosysHQ";
     repo = "icestorm";
@@ -41,10 +30,12 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   nativeBuildInputs = [ pkg-config ];
+
   buildInputs = [
     finalAttrs.passthru.pythonPkg
     libftdi1
   ];
+
   makeFlags = [
     "PREFIX=$(out)"
     "PYTHON3=${finalAttrs.passthru.pythonInterp}"
@@ -65,20 +56,34 @@ stdenv.mkDerivation (finalAttrs: {
     substituteInPlace icebox/Makefile --replace-fail "sed -i '''" "sed -i"
   '';
 
+  passthru = rec {
+    pythonInterp = pythonPkg.interpreter;
+    pythonPkg = if (false && usePyPy) then pypy3 else python3;
+
+    tests.examples = callPackage ./tests.nix {
+      inherit (finalAttrs) pname src;
+      icestorm = finalAttrs.finalPackage;
+    };
+  };
+
   meta = {
     description = "Documentation and tools for Lattice iCE40 FPGAs";
+
     longDescription = ''
       Project IceStorm aims at reverse engineering and
       documenting the bitstream format of Lattice iCE40
       FPGAs and providing simple tools for analyzing and
       creating bitstream files.
     '';
+
     homepage = "https://github.com/YosysHQ/icestorm/";
     license = lib.licenses.isc;
+
     maintainers = with lib.maintainers; [
       shell
       thoughtpolice
     ];
+
     platforms = lib.platforms.all;
   };
 })

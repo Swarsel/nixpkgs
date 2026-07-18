@@ -2,12 +2,12 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  gitUpdater,
+  autoconf-archive,
   autoreconfHook,
+  frog,
+  gitUpdater,
   libtool,
   pkg-config,
-  autoconf-archive,
-  frog,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -25,13 +25,13 @@ stdenv.mkDerivation (finalAttrs: {
     pkg-config
     autoreconfHook
   ];
+
   buildInputs = [
     libtool
     autoconf-archive
   ];
 
   passthru = {
-    updateScript = gitUpdater { rev-prefix = "v"; };
     tests = {
       /**
         Reverse dependencies. Does not respect overrides.
@@ -40,14 +40,16 @@ stdenv.mkDerivation (finalAttrs: {
         inherit frog;
       };
     };
+
+    updateScript = gitUpdater { rev-prefix = "v"; };
   };
 
   meta = {
     description = "Data for Frog, a Tagger-Lemmatizer-Morphological-Analyzer-Dependency-Parser for Dutch";
     homepage = "https://languagemachines.github.io/frog";
     license = lib.licenses.gpl3;
-    platforms = lib.platforms.all;
     maintainers = with lib.maintainers; [ roberth ];
+    platforms = lib.platforms.all;
   };
 
 })

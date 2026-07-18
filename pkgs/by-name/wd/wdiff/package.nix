@@ -15,21 +15,18 @@ stdenv.mkDerivation (finalAttrs: {
     sha256 = "0sxgg0ms5lhi4aqqvz1rj4s77yi9wymfm3l3gbjfd1qchy66kzrl";
   };
 
+  strictDeps = true;
   # for makeinfo
   nativeBuildInputs = [ texinfo ];
-
   buildInputs = [ texinfo ];
-
   nativeCheckInputs = [ which ];
 
-  strictDeps = true;
-
   meta = {
-    homepage = "https://www.gnu.org/software/wdiff/";
     description = "Comparing files on a word by word basis";
-    mainProgram = "wdiff";
+    homepage = "https://www.gnu.org/software/wdiff/";
     license = lib.licenses.gpl3Plus;
     maintainers = with lib.maintainers; [ SuperSandro2000 ];
     platforms = lib.platforms.unix;
+    mainProgram = "wdiff";
   };
 })

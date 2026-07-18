@@ -1,28 +1,28 @@
 {
   lib,
   stdenv,
-  callPackage,
   fetchurl,
+  callPackage,
+  cmake,
+  freetype,
   gnutls,
   guile_1_8,
-  xmodmap,
-  which,
-  freetype,
   libjpeg,
-  sqlite,
-  texliveSmall ? null,
-  aspell ? null,
-  git ? null,
-  python3 ? null,
-  cmake,
   pkg-config,
-  xdg-utils,
   qt6,
-  ghostscriptX ? null,
-  extraFonts ? false,
+  sqlite,
+  which,
+  xdg-utils,
+  xmodmap,
+  aspell ? null,
   chineseFonts ? false,
+  extraFonts ? false,
+  ghostscriptX ? null,
+  git ? null,
   japaneseFonts ? false,
   koreanFonts ? false,
+  python3 ? null,
+  texliveSmall ? null,
 }:
 
 let
@@ -35,6 +35,7 @@ let
       japaneseFonts
       koreanFonts
       ;
+
     tex = texliveSmall;
   };
 in
@@ -88,6 +89,10 @@ stdenv.mkDerivation {
     makeWrapper $out/Applications/TeXmacs.app/Contents/MacOS/TeXmacs $out/bin/texmacs
   '';
 
+  postFixup = lib.optionalString (!stdenv.hostPlatform.isDarwin) ''
+    wrapQtApp $out/bin/texmacs
+  '';
+
   qtWrapperArgs = [
     "--suffix"
     "PATH"
@@ -107,10 +112,6 @@ stdenv.mkDerivation {
     "TEXMACS_PATH"
     "${placeholder "out"}/Applications/TeXmacs.app/Contents/Resources/share/TeXmacs"
   ];
-
-  postFixup = lib.optionalString (!stdenv.hostPlatform.isDarwin) ''
-    wrapQtApp $out/bin/texmacs
-  '';
 
   meta = common.meta // {
     maintainers = [ lib.maintainers.roconnor ];

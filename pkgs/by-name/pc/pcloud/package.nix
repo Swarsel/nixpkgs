@@ -15,20 +15,18 @@
 # ^1 https://github.com/NixOS/nixpkgs/issues/69338
 
 {
-  # Build dependencies
-  appimageTools,
-  autoPatchelfHook,
-  patchelfUnstable,
-  fetchzip,
   lib,
   stdenv,
-  bashInteractive,
-
   # Runtime dependencies;
   # A few additional ones (e.g. Node) are already shipped together with the
   # AppImage, so we don't have to duplicate them here.
   alsa-lib,
+  # Build dependencies
+  appimageTools,
+  autoPatchelfHook,
+  bashInteractive,
   dbus-glib,
+  fetchzip,
   fuse,
   gsettings-desktop-schemas,
   gtk3,
@@ -36,6 +34,7 @@
   libgbm,
   libxdamage,
   nss,
+  patchelfUnstable,
   udev,
 }:
 
@@ -56,12 +55,8 @@ stdenv.mkDerivation {
 
   src = appimageTools.extractType2 {
     inherit pname version;
-
     src = "${src}/pCloud.AppImage";
   };
-
-  dontConfigure = true;
-  dontBuild = true;
 
   nativeBuildInputs = [
     autoPatchelfHook
@@ -126,15 +121,18 @@ stdenv.mkDerivation {
     chmod +x bin/pcloud
   '';
 
+  dontBuild = true;
+  dontConfigure = true;
+
   meta = {
     description = "Secure and simple to use cloud storage for your files; pCloud Drive, Electron Edition";
     homepage = "https://www.pcloud.com/";
     changelog = "https://www.pcloud.com/release-notes/linux.html";
-    downloadPage = "https://www.pcloud.com/release-notes/linux.html";
-    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
     license = lib.licenses.unfree;
+    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
     maintainers = with lib.maintainers; [ patryk27 ];
     platforms = [ "x86_64-linux" ];
     mainProgram = "pcloud";
+    downloadPage = "https://www.pcloud.com/release-notes/linux.html";
   };
 }

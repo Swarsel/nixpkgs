@@ -30,6 +30,12 @@ stdenv.mkDerivation (finalAttrs: {
     done
   '';
 
+  postInstall = ''
+    mkdir -p $out/lib/systemd/system
+    substitute mcelog.service $out/lib/systemd/system/mcelog.service \
+      --replace-fail "/usr/sbin" "$out/bin"
+  '';
+
   enableParallelBuilding = true;
 
   installFlags = [
@@ -38,15 +44,9 @@ stdenv.mkDerivation (finalAttrs: {
     "DOCDIR=/share/doc"
   ];
 
-  postInstall = ''
-    mkdir -p $out/lib/systemd/system
-    substitute mcelog.service $out/lib/systemd/system/mcelog.service \
-      --replace-fail "/usr/sbin" "$out/bin"
-  '';
-
   meta = {
     description = "Log x86 machine checks: memory, IO, and CPU hardware errors";
-    mainProgram = "mcelog";
+
     longDescription = ''
       The mcelog daemon accounts memory and some other errors in various ways
       on modern x86 Linux systems. The daemon can be queried and/or execute
@@ -55,8 +55,10 @@ stdenv.mkDerivation (finalAttrs: {
       including bad page offlining and automatic cache error handling. All
       errors are logged to /var/log/mcelog or syslog or the journal.
     '';
+
     homepage = "http://mcelog.org/";
     license = lib.licenses.gpl2Plus;
     platforms = lib.platforms.linux;
+    mainProgram = "mcelog";
   };
 })

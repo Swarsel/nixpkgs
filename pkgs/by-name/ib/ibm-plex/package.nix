@@ -1,9 +1,9 @@
 {
   lib,
-  stdenvNoCC,
-  symlinkJoin,
   fetchzip,
   installFonts,
+  stdenvNoCC,
+  symlinkJoin,
   families ? [ ],
 }:
 let
@@ -15,20 +15,20 @@ let
   makeFont =
     font:
     stdenvNoCC.mkDerivation (finalAttrs: {
-      pname = lib.toLower (lib.replaceStrings [ " (" ")" " " ] [ "-" "" "-" ] font.name);
       inherit (font) version;
+      pname = lib.toLower (lib.replaceStrings [ " (" ")" " " ] [ "-" "" "-" ] font.name);
 
-      nativeBuildInputs = [ installFonts ];
+      src = fetchzip {
+        inherit (font) hash url;
+        stripRoot = font.stripRoot or true;
+      };
 
       outputs = [
         "out"
         "webfont"
       ];
 
-      src = fetchzip {
-        inherit (font) hash url;
-        stripRoot = font.stripRoot or true;
-      };
+      nativeBuildInputs = [ installFonts ];
 
       # Some fonts, e.g. "ibm-plex-sans-korean" and "ibm-plex-sans-japanese"
       # include both unhinted and hinted variants of the ttf and woff/woff2 type
@@ -50,22 +50,25 @@ let
     description = "IBM Plex Typeface";
     homepage = "https://www.ibm.com/plex/";
     license = lib.licenses.ofl;
-    platforms = lib.platforms.all;
+
     maintainers = with lib.maintainers; [
       magicquark
       ners
       romildo
       ryanccn
     ];
+
+    platforms = lib.platforms.all;
   };
 in
 assert lib.assertMsg (unknownFamilies == [ ]) "Unknown font(s): ${toString unknownFamilies}";
 symlinkJoin {
+  inherit meta;
   pname = "ibm-plex";
   version = "0-unstable-2026-02-12";
   paths = lib.attrValues fontDerivations;
+
   passthru = fontDerivations // {
     updateScript = ./update.py;
   };
-  inherit meta;
 }

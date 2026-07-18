@@ -1,12 +1,12 @@
 {
   lib,
-  rustPlatform,
+  stdenv,
   fetchFromGitHub,
-  pkg-config,
   installShellFiles,
   oniguruma,
+  pkg-config,
   rust-jemalloc-sys,
-  stdenv,
+  rustPlatform,
 }:
 rustPlatform.buildRustPackage (finalAttrs: {
   pname = "mado";
@@ -19,8 +19,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-wAuV4w0dKfUbJVLTdp59/u4y13SPy3wkRfTlpvyE/zY=";
   };
 
-  cargoHash = "sha256-fkalUnPkjjzhLaACh+WQP4tG5VzZ7wmrh5T1DVgSDwM=";
-
   nativeBuildInputs = [
     pkg-config
     installShellFiles
@@ -31,16 +29,11 @@ rustPlatform.buildRustPackage (finalAttrs: {
     rust-jemalloc-sys
   ];
 
+  cargoHash = "sha256-fkalUnPkjjzhLaACh+WQP4tG5VzZ7wmrh5T1DVgSDwM=";
+
   env = {
     RUSTONIG_SYSTEM_LIBONIG = true;
   };
-
-  postInstall = lib.optionalString (stdenv.buildPlatform.canExecute stdenv.hostPlatform) ''
-    installShellCompletion --cmd mado \
-      --bash <($out/bin/mado generate-shell-completion bash) \
-      --zsh <($out/bin/mado generate-shell-completion zsh) \
-      --fish <($out/bin/mado generate-shell-completion fish)
-  '';
 
   checkFlags = [
     #   # seem to be slightly broken inside of the build sandbox
@@ -50,6 +43,13 @@ rustPlatform.buildRustPackage (finalAttrs: {
     "--skip=generate_shell_completion_invalid"
     "--skip=unknown_command"
   ];
+
+  postInstall = lib.optionalString (stdenv.buildPlatform.canExecute stdenv.hostPlatform) ''
+    installShellCompletion --cmd mado \
+      --bash <($out/bin/mado generate-shell-completion bash) \
+      --zsh <($out/bin/mado generate-shell-completion zsh) \
+      --fish <($out/bin/mado generate-shell-completion fish)
+  '';
 
   meta = {
     description = "Markdown linter written in Rust";

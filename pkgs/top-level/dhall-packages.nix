@@ -37,15 +37,11 @@ let
         generateDhallDirectoryPackage
         ;
 
-      lib = import ../development/dhall-modules/lib.nix { inherit lib; };
-
-      dhall-cloudformation = callPackage ../development/dhall-modules/dhall-cloudformation.nix { };
-
-      dhall-grafana = callPackage ../development/dhall-modules/dhall-grafana.nix { };
-
-      dhall-kubernetes = callPackage ../development/dhall-modules/dhall-kubernetes.nix { };
-
       Prelude = callPackage ../development/dhall-modules/Prelude.nix { };
+      dhall-cloudformation = callPackage ../development/dhall-modules/dhall-cloudformation.nix { };
+      dhall-grafana = callPackage ../development/dhall-modules/dhall-grafana.nix { };
+      dhall-kubernetes = callPackage ../development/dhall-modules/dhall-kubernetes.nix { };
+      lib = import ../development/dhall-modules/lib.nix { inherit lib; };
     };
 
 in

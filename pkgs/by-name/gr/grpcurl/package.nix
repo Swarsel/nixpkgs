@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule (finalAttrs: {
@@ -15,8 +15,6 @@ buildGoModule (finalAttrs: {
     sha256 = "sha256-bgjlCK3sTRrz1FhAs7mQbaea2gMS7liLXU6z02FPTfg=";
   };
 
-  subPackages = [ "cmd/grpcurl" ];
-
   vendorHash = "sha256-OHU3uoQVui9qnzGi4waOmY9IpTIEGCpdV41CWIIL98E=";
 
   ldflags = [
@@ -24,6 +22,8 @@ buildGoModule (finalAttrs: {
     "-w"
     "-X main.version=${finalAttrs.version}"
   ];
+
+  subPackages = [ "cmd/grpcurl" ];
 
   meta = {
     description = "Like cURL, but for gRPC: Command-line tool for interacting with gRPC servers";

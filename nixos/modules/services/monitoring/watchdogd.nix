@@ -8,34 +8,46 @@ let
   cfg = config.services.watchdogd;
 
   mkPluginOpts = plugin: defWarn: defCrit: {
-    enabled = lib.mkEnableOption "watchdogd plugin ${plugin}";
-    interval = lib.mkOption {
-      type = lib.types.ints.unsigned;
-      default = 300;
-      description = ''
-        Amount of seconds between every poll.
-      '';
-    };
-    logmark = lib.mkOption {
-      type = lib.types.bool;
-      default = false;
-      description = ''
-        Whether to log current stats every poll interval.
-      '';
-    };
-    warning = lib.mkOption {
-      type = lib.types.numbers.nonnegative;
-      default = defWarn;
-      description = ''
-        The high watermark level. Alert sent to log.
-      '';
-    };
     critical = lib.mkOption {
-      type = lib.types.numbers.nonnegative;
       default = defCrit;
+
       description = ''
         The critical watermark level. Alert sent to log, followed by reboot or script action.
       '';
+
+      type = lib.types.numbers.nonnegative;
+    };
+
+    enabled = lib.mkEnableOption "watchdogd plugin ${plugin}";
+
+    interval = lib.mkOption {
+      default = 300;
+
+      description = ''
+        Amount of seconds between every poll.
+      '';
+
+      type = lib.types.ints.unsigned;
+    };
+
+    logmark = lib.mkOption {
+      default = false;
+
+      description = ''
+        Whether to log current stats every poll interval.
+      '';
+
+      type = lib.types.bool;
+    };
+
+    warning = lib.mkOption {
+      default = defWarn;
+
+      description = ''
+        The high watermark level. Alert sent to log.
+      '';
+
+      type = lib.types.numbers.nonnegative;
     };
   };
 in
@@ -45,9 +57,54 @@ in
     package = lib.mkPackageOption pkgs "watchdogd" { };
 
     settings = lib.mkOption {
+      default = { };
+
+      description = ''
+        Configuration to put in {file}`watchdogd.conf`.
+        See {manpage}`watchdogd.conf(5)` for more details.
+      '';
+
       type =
         with lib.types;
         submodule {
+          options = {
+            filenr = mkPluginOpts "filenr" 0.9 1.0;
+
+            interval = lib.mkOption {
+              default = 5;
+
+              description = ''
+                The kick interval, i.e. how often {manpage}`watchdogd(8)` should reset the WDT timer.
+              '';
+
+              type = types.ints.unsigned;
+            };
+
+            loadavg = mkPluginOpts "loadavg" 1.0 2.0;
+            meminfo = mkPluginOpts "meminfo" 0.9 0.95;
+
+            safe-exit = lib.mkOption {
+              default = true;
+
+              description = ''
+                With {var}`safeExit` enabled, the daemon will ask the driver to disable the WDT before exiting.
+                However, some WDT drivers (or hardware) may not support this.
+              '';
+
+              type = types.bool;
+            };
+
+            timeout = lib.mkOption {
+              default = 15;
+
+              description = ''
+                The WDT timeout before reset.
+              '';
+
+              type = types.ints.unsigned;
+            };
+          };
+
           freeformType =
             let
               valueType = oneOf [
@@ -58,44 +115,7 @@ in
               ];
             in
             attrsOf (either valueType (attrsOf valueType));
-
-          options = {
-            timeout = lib.mkOption {
-              type = types.ints.unsigned;
-              default = 15;
-              description = ''
-                The WDT timeout before reset.
-              '';
-            };
-            interval = lib.mkOption {
-              type = types.ints.unsigned;
-              default = 5;
-              description = ''
-                The kick interval, i.e. how often {manpage}`watchdogd(8)` should reset the WDT timer.
-              '';
-            };
-
-            safe-exit = lib.mkOption {
-              type = types.bool;
-              default = true;
-              description = ''
-                With {var}`safeExit` enabled, the daemon will ask the driver to disable the WDT before exiting.
-                However, some WDT drivers (or hardware) may not support this.
-              '';
-            };
-
-            filenr = mkPluginOpts "filenr" 0.9 1.0;
-
-            loadavg = mkPluginOpts "loadavg" 1.0 2.0;
-
-            meminfo = mkPluginOpts "meminfo" 0.9 0.95;
-          };
         };
-      default = { };
-      description = ''
-        Configuration to put in {file}`watchdogd.conf`.
-        See {manpage}`watchdogd.conf(5)` for more details.
-      '';
     };
   };
 
@@ -133,16 +153,19 @@ in
       environment.systemPackages = [ cfg.package ];
 
       systemd.services.watchdogd = {
+        description = "Advanced system & process supervisor";
+
         documentation = [
           "man:watchdogd(8)"
           "man:watchdogd.conf(5)"
         ];
-        wantedBy = [ "multi-user.target" ];
-        description = "Advanced system & process supervisor";
+
         serviceConfig = {
-          Type = "simple";
           ExecStart = "${cfg.package}/bin/watchdogd -n -f ${watchdogdConf}";
+          Type = "simple";
         };
+
+        wantedBy = [ "multi-user.target" ];
       };
     };
 

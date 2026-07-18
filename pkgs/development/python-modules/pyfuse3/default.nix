@@ -1,23 +1,22 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   cython,
+  fuse3,
   pkg-config,
+  pytest-trio,
+  pytestCheckHook,
+  python,
   setuptools,
   setuptools-scm,
-  fuse3,
   trio,
-  python,
-  pytestCheckHook,
-  pytest-trio,
   which,
 }:
 
 buildPythonPackage rec {
   pname = "pyfuse3";
   version = "3.5.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "libfuse";
@@ -26,17 +25,8 @@ buildPythonPackage rec {
     hash = "sha256-HhEtWYWdxJZOMS3dqB2VdQS7aSdpkRhq7EZCJ55n2OE=";
   };
 
-  build-system = [
-    cython
-    setuptools
-    setuptools-scm
-  ];
-
   nativeBuildInputs = [ pkg-config ];
-
   buildInputs = [ fuse3 ];
-
-  dependencies = [ trio ];
 
   nativeCheckInputs = [
     pytestCheckHook
@@ -45,8 +35,16 @@ buildPythonPackage rec {
     fuse3
   ];
 
+  build-system = [
+    cython
+    setuptools
+    setuptools-scm
+  ];
+
+  dependencies = [ trio ];
   # Checks if a /usr/bin directory exists, can't work on NixOS
   disabledTests = [ "test_listdir" ];
+  pyproject = true;
 
   pythonImportsCheck = [
     "pyfuse3"
@@ -56,12 +54,14 @@ buildPythonPackage rec {
   meta = {
     description = "Python 3 bindings for libfuse 3 with async I/O support";
     homepage = "https://github.com/libfuse/pyfuse3";
+    changelog = "https://github.com/libfuse/pyfuse3/blob/${src.tag}/Changes.rst";
     license = lib.licenses.lgpl2Plus;
+
     maintainers = with lib.maintainers; [
       nyanloutre
       dotlambda
     ];
-    changelog = "https://github.com/libfuse/pyfuse3/blob/${src.tag}/Changes.rst";
+
     platforms = lib.platforms.linux;
   };
 }

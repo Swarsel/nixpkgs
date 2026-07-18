@@ -1,26 +1,21 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
-  autoreconfHook,
   autoconf-archive,
-  gobject-introspection,
-  pkg-config,
-  wrapGAppsHook3,
-  glib,
+  autoreconfHook,
   dbus,
+  glib,
+  gobject-introspection,
   libnl,
+  pkg-config,
   python3Packages,
+  wrapGAppsHook3,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
   pname = "neard";
   version = "0.20";
-
-  outputs = [
-    "out"
-    "dev"
-  ];
 
   src = fetchFromGitHub {
     owner = "linux-nfc";
@@ -29,9 +24,16 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-Ty2jXaSuaI+ZuRBSpdh36Yi3V5nd8jGI43Jc9cLkMW4=";
   };
 
+  outputs = [
+    "out"
+    "dev"
+  ];
+
   postPatch = ''
     patchShebangs test/*
   '';
+
+  strictDeps = true;
 
   nativeBuildInputs = [
     autoreconfHook
@@ -42,7 +44,11 @@ stdenv.mkDerivation (finalAttrs: {
     wrapGAppsHook3
   ];
 
-  dontWrapGApps = true;
+  buildInputs = [
+    dbus
+    glib
+    libnl
+  ];
 
   configureFlags = [
     "--enable-pie"
@@ -52,21 +58,6 @@ stdenv.mkDerivation (finalAttrs: {
     "--with-systemdsystemunitdir=${placeholder "out"}/lib/systemd/system"
   ];
 
-  buildInputs = [
-    dbus
-    glib
-    libnl
-  ];
-
-  strictDeps = true;
-
-  enableParallelBuilding = true;
-
-  pythonPath = with python3Packages; [
-    pygobject3
-    dbus-python
-  ];
-
   doCheck = true;
 
   preFixup = ''
@@ -74,10 +65,18 @@ stdenv.mkDerivation (finalAttrs: {
     wrapPythonProgramsIn "$out/lib/neard" "''${pythonPath[*]}"
   '';
 
+  dontWrapGApps = true;
+  enableParallelBuilding = true;
+
+  pythonPath = with python3Packages; [
+    pygobject3
+    dbus-python
+  ];
+
   meta = {
-    changelog = "https://github.com/linux-nfc/neard/blob/${finalAttrs.src.tag}/ChangeLog";
     description = "Near Field Communication manager";
     homepage = "https://01.org/linux-nfc";
+    changelog = "https://github.com/linux-nfc/neard/blob/${finalAttrs.src.tag}/ChangeLog";
     license = lib.licenses.gpl2Only;
     maintainers = [ ];
     platforms = lib.platforms.unix;

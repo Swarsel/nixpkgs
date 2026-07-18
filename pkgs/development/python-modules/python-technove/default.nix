@@ -1,12 +1,12 @@
 {
   lib,
+  fetchFromGitHub,
   aiohttp,
   aresponses,
   awesomeversion,
   backoff,
   buildPythonPackage,
   cachetools,
-  fetchFromGitHub,
   poetry-core,
   pytest-asyncio,
   pytest-cov-stub,
@@ -17,7 +17,6 @@
 buildPythonPackage rec {
   pname = "python-technove";
   version = "2.1.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "Moustachauve";
@@ -25,6 +24,13 @@ buildPythonPackage rec {
     tag = "v${version}";
     hash = "sha256-TAB70EVrjxpl+vm3ncg45l2duaIXHjn7YKOURkS6k0k=";
   };
+
+  nativeCheckInputs = [
+    aresponses
+    pytest-asyncio
+    pytest-cov-stub
+    pytestCheckHook
+  ];
 
   build-system = [ poetry-core ];
 
@@ -36,13 +42,7 @@ buildPythonPackage rec {
     yarl
   ];
 
-  nativeCheckInputs = [
-    aresponses
-    pytest-asyncio
-    pytest-cov-stub
-    pytestCheckHook
-  ];
-
+  pyproject = true;
   pythonImportsCheck = [ "technove" ];
 
   meta = {

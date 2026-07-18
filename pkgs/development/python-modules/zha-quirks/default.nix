@@ -1,8 +1,8 @@
 {
   lib,
+  fetchFromGitHub,
   aiohttp,
   buildPythonPackage,
-  fetchFromGitHub,
   pytest-asyncio,
   pytestCheckHook,
   pythonOlder,
@@ -15,9 +15,6 @@
 buildPythonPackage rec {
   pname = "zha-quirks";
   version = "2.1.1";
-  pyproject = true;
-
-  disabled = pythonOlder "3.12";
 
   src = fetchFromGitHub {
     owner = "zigpy";
@@ -32,6 +29,12 @@ buildPythonPackage rec {
       --replace-fail 'dynamic = ["version"]' 'version = "${version}"'
   '';
 
+  nativeCheckInputs = [
+    pytest-asyncio
+    pytestCheckHook
+    time-machine
+  ];
+
   build-system = [ setuptools ];
 
   dependencies = [
@@ -40,16 +43,7 @@ buildPythonPackage rec {
     zigpy
   ];
 
-  nativeCheckInputs = [
-    pytest-asyncio
-    pytestCheckHook
-    time-machine
-  ];
-
-  disabledTests = [
-    # AssertionError: expected call not found
-    "test_tuya_mcu_set_time"
-  ];
+  disabled = pythonOlder "3.12";
 
   disabledTestPaths = [
     # function signature mismatch with zigpy 1.5.1
@@ -63,6 +57,12 @@ buildPythonPackage rec {
     "tests/test_tuya_valve.py"
   ];
 
+  disabledTests = [
+    # AssertionError: expected call not found
+    "test_tuya_mcu_set_time"
+  ];
+
+  pyproject = true;
   pythonImportsCheck = [ "zhaquirks" ];
 
   meta = {

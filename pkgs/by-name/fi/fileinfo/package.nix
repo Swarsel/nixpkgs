@@ -1,12 +1,11 @@
 {
   lib,
-  python3Packages,
   fetchFromGitHub,
+  python3Packages,
 }:
 python3Packages.buildPythonApplication {
   pname = "fileinfo";
   version = "0-unstable-2022-09-16";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "sdushantha";
@@ -16,12 +15,12 @@ python3Packages.buildPythonApplication {
   };
 
   build-system = with python3Packages; [ setuptools ];
-
   dependencies = with python3Packages; [ requests ];
+  pyproject = true;
 
   meta = {
-    homepage = "https://github.com/sdushantha/fileinfo";
     description = "File extension metadata lookup tool";
+    homepage = "https://github.com/sdushantha/fileinfo";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ h7x4 ];
     mainProgram = "fileinfo";

@@ -15,24 +15,25 @@ let
   inherit (platform) arch hash;
 in
 stdenv.mkDerivation {
-  pname = "typesense";
   inherit version;
+  pname = "typesense";
+
   src = fetchurl {
-    url = "https://dl.typesense.org/releases/${version}/typesense-server-${version}-${arch}.tar.gz";
     inherit hash;
+    url = "https://dl.typesense.org/releases/${version}/typesense-server-${version}-${arch}.tar.gz";
   };
 
   nativeBuildInputs = lib.optionals stdenv.hostPlatform.isLinux [
     autoPatchelfHook
   ];
 
-  # The tar.gz contains no subdirectory
-  sourceRoot = ".";
-
   installPhase = ''
     mkdir -p $out/bin
     cp $sourceRoot/typesense-server $out/bin
   '';
+
+  # The tar.gz contains no subdirectory
+  sourceRoot = ".";
 
   passthru = {
     tests = { inherit (nixosTests) typesense; };
@@ -40,9 +41,8 @@ stdenv.mkDerivation {
   };
 
   meta = {
-    homepage = "https://typesense.org";
     description = "Fast, typo-tolerant search engine for building delightful search experiences";
-    mainProgram = "typesense-server";
+    homepage = "https://typesense.org";
     license = lib.licenses.gpl3;
     # There has been an attempt at building this from source, which were deemed
     # unfeasible at the time of writing this (July 2023) for the following reasons.
@@ -60,7 +60,8 @@ stdenv.mkDerivation {
     #     This is where I stopped trying for now.
     # XXX: retry once typesense has officially released their bazel based build.
     sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
-    platforms = lib.platforms.linux ++ lib.platforms.darwin;
     maintainers = with lib.maintainers; [ oddlama ];
+    platforms = lib.platforms.linux ++ lib.platforms.darwin;
+    mainProgram = "typesense-server";
   };
 }

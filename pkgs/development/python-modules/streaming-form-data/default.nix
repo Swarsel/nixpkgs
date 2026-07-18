@@ -3,15 +3,14 @@
   fetchFromGitHub,
   buildPythonPackage,
   cython,
-  setuptools,
   pytestCheckHook,
   requests-toolbelt,
+  setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "streaming-form-data";
   version = "1.19.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "siddhantgoel";
@@ -25,18 +24,18 @@ buildPythonPackage rec {
   # So, just drop the dependency to not have to deal with it.
   patches = [ ./drop-smart-open.patch ];
 
-  build-system = [
-    cython
-    setuptools
-  ];
-
   nativeCheckInputs = [
     pytestCheckHook
     requests-toolbelt
   ];
 
-  enabledTestPaths = [ "tests" ];
+  build-system = [
+    cython
+    setuptools
+  ];
 
+  enabledTestPaths = [ "tests" ];
+  pyproject = true;
   pythonImportsCheck = [ "streaming_form_data" ];
 
   meta = {

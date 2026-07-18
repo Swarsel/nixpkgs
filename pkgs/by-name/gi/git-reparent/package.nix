@@ -2,9 +2,9 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  makeWrapper,
   git,
   gnused,
+  makeWrapper,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -20,8 +20,6 @@ stdenv.mkDerivation (finalAttrs: {
 
   nativeBuildInputs = [ makeWrapper ];
 
-  dontBuild = true;
-
   installPhase = ''
     install -m755 -Dt $out/bin git-reparent
   '';
@@ -35,11 +33,13 @@ stdenv.mkDerivation (finalAttrs: {
     }"
   '';
 
+  dontBuild = true;
+
   meta = {
     inherit (finalAttrs.src.meta) homepage;
     description = "Git command to recommit HEAD with a new set of parents";
-    maintainers = [ ];
     license = lib.licenses.gpl2;
+    maintainers = [ ];
     platforms = lib.platforms.unix;
     mainProgram = "git-reparent";
   };

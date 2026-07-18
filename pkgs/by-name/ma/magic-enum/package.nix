@@ -1,14 +1,13 @@
 {
-  fetchFromGitHub,
   lib,
   stdenv,
+  fetchFromGitHub,
   cmake,
   nix-update-script,
 }:
 stdenv.mkDerivation (finalAttrs: {
   pname = "magic-enum";
   version = "0.9.8";
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "Neargye";
@@ -26,6 +25,8 @@ stdenv.mkDerivation (finalAttrs: {
     (lib.cmakeFeature "CMAKE_INSTALL_INCLUDEDIR" "include")
     (lib.cmakeFeature "CMAKE_INSTALL_LIBDIR" "lib")
   ];
+
+  __structuredAttrs = true;
 
   passthru = {
     updateScript = nix-update-script { };

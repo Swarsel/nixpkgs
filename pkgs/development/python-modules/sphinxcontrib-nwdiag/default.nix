@@ -10,7 +10,6 @@
 buildPythonPackage rec {
   pname = "sphinxcontrib-nwdiag";
   version = "2.0.0";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
@@ -23,8 +22,8 @@ buildPythonPackage rec {
     sphinx
   ];
 
+  format = "setuptools";
   pythonImportsCheck = [ "sphinxcontrib.nwdiag" ];
-
   pythonNamespaces = [ "sphinxcontrib" ];
 
   meta = {

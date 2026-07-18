@@ -1,20 +1,19 @@
 {
   lib,
+  botocore,
   buildPythonPackage,
   fetchPypi,
   poetry-core,
-  botocore,
 }:
 
 buildPythonPackage rec {
   pname = "aws-error-utils";
   version = "2.7.0";
-  pyproject = true;
 
   src = fetchPypi {
-    pname = "aws_error_utils";
     inherit version;
     hash = "sha256-BxB68qLCZwbNlSW3/77UPy0HtQ0n45+ekVbBGy6ZPJc=";
+    pname = "aws_error_utils";
   };
 
   build-system = [
@@ -24,6 +23,8 @@ buildPythonPackage rec {
   dependencies = [
     botocore
   ];
+
+  pyproject = true;
 
   pythonImportsCheck = [
     "aws_error_utils"

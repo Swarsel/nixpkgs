@@ -15,9 +15,6 @@ stdenv.mkDerivation (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-eSTOUHs4y6n4cacpjQAp4JIfyu40aBJEMsvuCN6RFZc=";
   };
-  sourceRoot = "${finalAttrs.src.name}/cli";
-
-  passthru.updateScript = nix-update-script { };
 
   postPatch = ''
     substituteInPlace Makefile --replace-warn "-static" ""
@@ -29,12 +26,15 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  sourceRoot = "${finalAttrs.src.name}/cli";
+  passthru.updateScript = nix-update-script { };
+
   meta = {
     description = "CLI tool to control UGREEN NAS LEDs";
     homepage = "https://github.com/miskcoo/ugreen_leds_controller";
     license = lib.licenses.mit;
-    mainProgram = "ugreen_leds_cli";
     maintainers = with lib.maintainers; [ michaelvanstraten ];
     platforms = lib.platforms.linux;
+    mainProgram = "ugreen_leds_cli";
   };
 })

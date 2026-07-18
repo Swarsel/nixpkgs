@@ -1,16 +1,15 @@
 {
   lib,
-  python3Packages,
   fetchFromGitHub,
+  python3Packages,
 }:
 
 let
   version = "0.13.0";
 in
 python3Packages.buildPythonApplication {
-  pname = "whatsapp-chat-exporter";
   inherit version;
-  pyproject = true;
+  pname = "whatsapp-chat-exporter";
 
   src = fetchFromGitHub {
     owner = "KnugiHK";
@@ -29,19 +28,25 @@ python3Packages.buildPythonApplication {
     tqdm
   ];
 
+  pyproject = true;
+
   meta = {
-    homepage = "https://github.com/KnugiHK/Whatsapp-Chat-Exporter";
     description = "WhatsApp database parser";
-    changelog = "https://github.com/KnugiHK/Whatsapp-Chat-Exporter/releases/tag/${version}";
+
     longDescription = ''
       A customizable Android and iPhone WhatsApp database parser that will give
       you the history of your WhatsApp conversations inHTML and JSON. Android
       Backup Crypt12, Crypt14 and Crypt15 supported.
     '';
+
+    homepage = "https://github.com/KnugiHK/Whatsapp-Chat-Exporter";
+    changelog = "https://github.com/KnugiHK/Whatsapp-Chat-Exporter/releases/tag/${version}";
     license = lib.licenses.mit;
-    mainProgram = "wtsexporter";
+
     maintainers = with lib.maintainers; [
       bbenno
     ];
+
+    mainProgram = "wtsexporter";
   };
 }

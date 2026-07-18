@@ -6,19 +6,22 @@
   numpy,
   platformdirs,
   pytestCheckHook,
-  typing-extensions,
   siphash24,
+  typing-extensions,
 }:
 
 buildPythonPackage rec {
   pname = "pytools";
   version = "2026.1.1";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
     hash = "sha256-Jg4NiMmpA8Zc/jT76Bh2T0Sj+W5yLho2Rc5NWWrdIrE=";
   };
+
+  nativeCheckInputs = [
+    pytestCheckHook
+  ];
 
   build-system = [ hatchling ];
 
@@ -32,9 +35,7 @@ buildPythonPackage rec {
     numpy = [ numpy ];
   };
 
-  nativeCheckInputs = [
-    pytestCheckHook
-  ];
+  pyproject = true;
 
   pythonImportsCheck = [
     "pytools"

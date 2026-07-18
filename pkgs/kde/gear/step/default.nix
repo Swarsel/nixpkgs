@@ -1,15 +1,21 @@
 {
-  mkKdeDerivation,
-  qttools,
-  qtsvg,
-  pkg-config,
   eigen,
-  shared-mime-info,
   gsl,
   libqalculate,
+  mkKdeDerivation,
+  pkg-config,
+  qtsvg,
+  qttools,
+  shared-mime-info,
 }:
 mkKdeDerivation {
   pname = "step";
+
+  extraBuildInputs = [
+    eigen
+    gsl
+    libqalculate
+  ];
 
   extraNativeBuildInputs = [
     qttools
@@ -17,10 +23,6 @@ mkKdeDerivation {
     pkg-config
     shared-mime-info
   ];
-  extraBuildInputs = [
-    eigen
-    gsl
-    libqalculate
-  ];
+
   meta.mainProgram = "step";
 }

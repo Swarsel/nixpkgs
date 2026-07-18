@@ -2,12 +2,12 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  unzip,
-  zip,
-  libiconv,
-  perl,
   aspell,
   dos2unix,
+  libiconv,
+  perl,
+  unzip,
+  zip,
   singleWordlist ? null,
 }:
 
@@ -34,8 +34,8 @@ stdenv.mkDerivation (finalAttrs: {
     aspell
     dos2unix
   ];
-  buildInputs = lib.optional (!stdenv.hostPlatform.isLinux) libiconv;
 
+  buildInputs = lib.optional (!stdenv.hostPlatform.isLinux) libiconv;
   env.NIX_CFLAGS_COMPILE = "-Wno-narrowing";
 
   preConfigure = ''
@@ -50,8 +50,6 @@ stdenv.mkDerivation (finalAttrs: {
     make hunspell
     )
   '';
-
-  enableParallelBuilding = false;
 
   installPhase =
     if singleWordlist == null then
@@ -120,11 +118,13 @@ stdenv.mkDerivation (finalAttrs: {
         ./mk-list ${singleWordlist} > "$out/share/dict/words.txt"
       '';
 
+  enableParallelBuilding = false;
+
   meta = {
     description = "Spell checker oriented word lists";
+    homepage = "http://wordlist.aspell.net/";
     license = lib.licenses.mit;
     maintainers = [ lib.maintainers.raskin ];
     platforms = lib.platforms.unix;
-    homepage = "http://wordlist.aspell.net/";
   };
 })

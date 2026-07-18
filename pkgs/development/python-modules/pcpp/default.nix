@@ -1,13 +1,12 @@
 {
-  buildPythonPackage,
-  fetchFromGitHub,
   lib,
+  fetchFromGitHub,
+  buildPythonPackage,
 }:
 
 buildPythonPackage rec {
   pname = "pcpp";
   version = "1.30";
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "ned14";
@@ -17,11 +16,13 @@ buildPythonPackage rec {
     fetchSubmodules = true;
   };
 
+  format = "setuptools";
+
   meta = {
-    homepage = "https://github.com/ned14/pcpp";
     description = "C99 preprocessor written in pure Python";
-    mainProgram = "pcpp";
+    homepage = "https://github.com/ned14/pcpp";
     license = lib.licenses.bsd0;
     maintainers = with lib.maintainers; [ rakesh4g ];
+    mainProgram = "pcpp";
   };
 }

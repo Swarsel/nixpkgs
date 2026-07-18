@@ -9,15 +9,9 @@
 }:
 
 buildPythonPackage {
-  pname = "llama-index";
-
   inherit (llama-index-core) version src meta;
-
-  pyproject = true;
-
+  pname = "llama-index";
   build-system = [ hatchling ];
-
-  pythonRelaxDeps = [ "llama-index-core" ];
 
   dependencies = [
     llama-index-cli
@@ -27,5 +21,7 @@ buildPythonPackage {
     nltk
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "llama_index" ];
+  pythonRelaxDeps = [ "llama-index-core" ];
 }

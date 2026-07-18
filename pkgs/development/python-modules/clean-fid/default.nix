@@ -1,14 +1,13 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
-
+  buildPythonPackage,
   # dependencies
   numpy,
   pillow,
   requests,
   scipy,
+  setuptools,
   torch,
   torchvision,
   tqdm,
@@ -17,9 +16,6 @@
 buildPythonPackage {
   pname = "clean-fid";
   version = "0.1.35";
-  pyproject = true;
-
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "GaParmar";
@@ -28,6 +24,9 @@ buildPythonPackage {
     hash = "sha256-fqBU/TmCXDTPU3KTP0+VYQoP+HsT2UMcZeLzQHKD9hw=";
   };
 
+  # no tests1
+  doCheck = false;
+  __structuredAttrs = true;
   build-system = [ setuptools ];
 
   dependencies = [
@@ -40,16 +39,14 @@ buildPythonPackage {
     tqdm
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "cleanfid" ];
-
-  # no tests1
-  doCheck = false;
 
   meta = {
     description = "PyTorch - FID calculation with proper image resizing and quantization steps [CVPR 2022]";
     homepage = "https://www.cs.cmu.edu/~clean-fid/";
-    downloadPage = "https://github.com/GaParmar/clean-fid";
     license = lib.licenses.mit;
+    downloadPage = "https://github.com/GaParmar/clean-fid";
     teams = [ lib.teams.tts ];
   };
 }

@@ -1,32 +1,32 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitLab,
-  docbook_xml_dtd_412,
-  docbook-xsl-ns,
-  gettext,
-  meson,
-  ninja,
-  pkg-config,
-  wrapGAppsHook3,
-  xmlto,
   dbus-glib,
+  docbook-xsl-ns,
+  docbook_xml_dtd_412,
   garcon,
+  gettext,
+  gitUpdater,
   glib,
   gtk3,
-  libx11,
-  libxscrnsaver,
-  libxrandr,
   libwnck,
+  libx11,
   libxfce4ui,
   libxfce4util,
   libxklavier,
+  libxrandr,
+  libxscrnsaver,
+  meson,
+  ninja,
   pam,
+  pkg-config,
   python3,
   systemd,
+  wrapGAppsHook3,
   xfconf,
   xfdesktop,
-  gitUpdater,
+  xmlto,
 }:
 
 let
@@ -38,11 +38,11 @@ stdenv.mkDerivation (finalAttrs: {
   version = "4.20.2";
 
   src = fetchFromGitLab {
-    domain = "gitlab.xfce.org";
     owner = "apps";
     repo = "xfce4-screensaver";
     tag = "xfce4-screensaver-${finalAttrs.version}";
     hash = "sha256-zNA43ZrREZB5D0fNa+mmvtA9tDPxIMVpQsHzx/r+hzk=";
+    domain = "gitlab.xfce.org";
   };
 
   strictDeps = true;
@@ -85,12 +85,12 @@ stdenv.mkDerivation (finalAttrs: {
   passthru.updateScript = gitUpdater { rev-prefix = "xfce4-screensaver-"; };
 
   meta = {
-    homepage = "https://gitlab.xfce.org/apps/xfce4-screensaver";
     description = "Screensaver for Xfce";
+    homepage = "https://gitlab.xfce.org/apps/xfce4-screensaver";
     license = lib.licenses.gpl2Plus;
-    mainProgram = "xfce4-screensaver";
     maintainers = with lib.maintainers; [ symphorien ];
-    teams = [ lib.teams.xfce ];
     platforms = lib.platforms.linux;
+    mainProgram = "xfce4-screensaver";
+    teams = [ lib.teams.xfce ];
   };
 })

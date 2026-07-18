@@ -1,16 +1,15 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
-  requests,
+  buildPythonPackage,
   nix-update-script,
+  requests,
+  setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "python-nomad";
   version = "2.1.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "jrxfive";
@@ -19,15 +18,12 @@ buildPythonPackage rec {
     hash = "sha256-tLS463sYVlOr2iZSgSkd4pHUVCtiIPJ3L8+9omlX4NY=";
   };
 
-  build-system = [ setuptools ];
-
-  dependencies = [ requests ];
-
   # Tests require nomad agent
   doCheck = false;
-
+  build-system = [ setuptools ];
+  dependencies = [ requests ];
+  pyproject = true;
   pythonImportsCheck = [ "nomad" ];
-
   passthru.updateScript = nix-update-script { };
 
   meta = {

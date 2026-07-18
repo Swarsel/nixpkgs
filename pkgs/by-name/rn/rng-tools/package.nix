@@ -2,27 +2,27 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  autoreconfHook,
-  libtool,
-  pkg-config,
-  psmisc,
   argp-standalone,
-  openssl,
-  libcap,
-  jitterentropy,
-  withJitterEntropy ? true,
+  autoreconfHook,
   # WARNING: DO NOT USE BEACON GENERATED VALUES AS SECRET CRYPTOGRAPHIC KEYS
   # https://www.nist.gov/programs-projects/nist-randomness-beacon
   curl,
   jansson,
-  libxml2,
-  withNistBeacon ? false,
+  jitterentropy,
+  libcap,
   libp11,
+  libtool,
+  libxml2,
   opensc,
-  withPkcs11 ? true,
+  openssl,
+  pkg-config,
+  psmisc,
   rtl-sdr,
-  withRtlsdr ? true,
+  withJitterEntropy ? true,
+  withNistBeacon ? false,
+  withPkcs11 ? true,
   withQrypt ? false,
+  withRtlsdr ? true,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -40,14 +40,6 @@ stdenv.mkDerivation (finalAttrs: {
     autoreconfHook
     libtool
     pkg-config
-  ];
-
-  configureFlags = [
-    (lib.enableFeature withJitterEntropy "jitterentropy")
-    (lib.withFeature withNistBeacon "nistbeacon")
-    (lib.withFeature withPkcs11 "pkcs11")
-    (lib.withFeature withRtlsdr "rtlsdr")
-    (lib.withFeature withQrypt "qrypt")
   ];
 
   buildInputs = [
@@ -71,7 +63,13 @@ stdenv.mkDerivation (finalAttrs: {
     jansson
   ];
 
-  enableParallelBuilding = true;
+  configureFlags = [
+    (lib.enableFeature withJitterEntropy "jitterentropy")
+    (lib.withFeature withNistBeacon "nistbeacon")
+    (lib.withFeature withPkcs11 "pkcs11")
+    (lib.withFeature withRtlsdr "rtlsdr")
+    (lib.withFeature withQrypt "qrypt")
+  ];
 
   makeFlags = [
     "AR:=$(AR)" # For cross-compilation
@@ -81,10 +79,6 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   doCheck = true;
-  preCheck = ''
-    patchShebangs tests/*.sh
-    export RNGD_JITTER_TIMEOUT=10
-  '';
   # After updating to jitterentropy 3.4.1 jitterentropy initialization seams
   # to have increased. On some system rng-tools fail therefore to initialize the
   # jitterentropy entropy source. You can increase the init timeout with a command-line
@@ -94,7 +88,13 @@ stdenv.mkDerivation (finalAttrs: {
   # see (https://github.com/nhorman/rng-tools/pull/178).
   nativeCheckInputs = [ psmisc ]; # rngtestjitter.sh needs killall
 
+  preCheck = ''
+    patchShebangs tests/*.sh
+    export RNGD_JITTER_TIMEOUT=10
+  '';
+
   doInstallCheck = true;
+
   installCheckPhase = ''
     runHook preInstallCheck
     set -o pipefail
@@ -102,14 +102,18 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstallCheck
   '';
 
+  enableParallelBuilding = true;
+
   meta = {
     description = "Random number generator daemon";
     homepage = "https://github.com/nhorman/rng-tools";
     changelog = "https://github.com/nhorman/rng-tools/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.gpl2Plus;
-    platforms = lib.platforms.linux;
+
     maintainers = with lib.maintainers; [
       johnazoidberg
     ];
+
+    platforms = lib.platforms.linux;
   };
 })

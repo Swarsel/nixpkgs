@@ -19,9 +19,9 @@ rustPlatform.buildRustPackage (finalAttrs: {
 
   meta = {
     description = "Annotate output with relative durations between lines";
-    mainProgram = "rtss";
     homepage = "https://github.com/Freaky/rtss";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ djanatyn ];
+    mainProgram = "rtss";
   };
 })

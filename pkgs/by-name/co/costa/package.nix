@@ -1,11 +1,11 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
   cmake,
+  llvmPackages,
   mpi,
   scalapack,
-  llvmPackages,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -20,9 +20,7 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   nativeBuildInputs = [ cmake ];
-
   buildInputs = [ scalapack ] ++ lib.optional stdenv.hostPlatform.isDarwin llvmPackages.openmp;
-
   propagatedBuildInputs = [ mpi ];
 
   cmakeFlags = [
@@ -34,7 +32,7 @@ stdenv.mkDerivation (finalAttrs: {
     description = "Distributed Communication-Optimal Shuffle and Transpose Algorithm";
     homepage = "https://github.com/eth-cscs/COSTA";
     license = lib.licenses.bsd3;
-    platforms = lib.platforms.linux;
     maintainers = [ lib.maintainers.sheepforce ];
+    platforms = lib.platforms.linux;
   };
 })

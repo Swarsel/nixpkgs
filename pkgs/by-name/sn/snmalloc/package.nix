@@ -1,8 +1,8 @@
 {
   lib,
   stdenv,
-  clangStdenv,
   fetchFromGitHub,
+  clangStdenv,
   cmake,
   nix-update-script,
 }:
@@ -10,6 +10,7 @@
 clangStdenv.mkDerivation (finalAttrs: {
   pname = "snmalloc";
   version = "0.7.5";
+
   src = fetchFromGitHub {
     owner = "microsoft";
     repo = "snmalloc";
@@ -23,20 +24,20 @@ clangStdenv.mkDerivation (finalAttrs: {
   ];
 
   strictDeps = true;
-  __structuredAttrs = true;
 
   nativeBuildInputs = [
     cmake
   ];
 
+  __structuredAttrs = true;
   passthru.updateScript = nix-update-script { };
 
   meta = {
     description = "Message passing based memory allocator";
     homepage = "https://github.com/microsoft/snmalloc";
-    downloadPage = "https://github.com/microsoft/snmalloc/releases";
     changelog = "https://github.com/microsoft/snmalloc/releases/tag/${finalAttrs.src.tag}";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ VZstless ];
+    downloadPage = "https://github.com/microsoft/snmalloc/releases";
   };
 })

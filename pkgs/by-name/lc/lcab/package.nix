@@ -17,8 +17,8 @@ stdenv.mkDerivation (finalAttrs: {
   patches = [
     # Fix version number
     (fetchurl {
-      url = "https://salsa.debian.org/debian/lcab/-/raw/f72d6db6504123bd124b1a4be21ead8cc1535c9e/debian/patches/20-version.patch";
       hash = "sha256-Yb6E8nQVdicmjcGnxR7HHdsd7D+ThXk02UHiaB+PLvE=";
+      url = "https://salsa.debian.org/debian/lcab/-/raw/f72d6db6504123bd124b1a4be21ead8cc1535c9e/debian/patches/20-version.patch";
     })
   ];
 

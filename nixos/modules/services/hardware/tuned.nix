@@ -15,71 +15,70 @@ let
   settingsFormat = pkgs.formats.iniWithGlobalSection { };
 
   ppdSettingsSubmodule = {
-    freeformType = ppdSettingsFormat.type;
-
     options = {
-      main = lib.mkOption {
-        type = lib.types.submodule {
-          options = {
-            default = lib.mkOption {
-              type = lib.types.str;
-              default = "balanced";
-              description = "Default PPD profile.";
-              example = "performance";
-            };
-
-            battery_detection = lib.mkEnableOption "battery detection" // {
-              default = true;
-            };
-          };
-        };
-        default = { };
-        description = "Core configuration for power-profiles-daemon support.";
-      };
-
-      profiles = lib.mkOption {
-        type = lib.types.attrsOf lib.types.str;
-        default = {
-          power-saver = "powersave";
-          balanced = "balanced";
-          performance = "throughput-performance";
-        };
-        description = "Map of PPD profiles to native TuneD profiles.";
-      };
-
       battery = lib.mkOption {
-        type = lib.types.attrsOf lib.types.str;
         default = {
           balanced = "balanced-battery";
         };
+
         description = "Map of PPD battery states to TuneD profiles.";
+        type = lib.types.attrsOf lib.types.str;
+      };
+
+      main = lib.mkOption {
+        default = { };
+        description = "Core configuration for power-profiles-daemon support.";
+
+        type = lib.types.submodule {
+          options = {
+            battery_detection = lib.mkEnableOption "battery detection" // {
+              default = true;
+            };
+
+            default = lib.mkOption {
+              default = "balanced";
+              description = "Default PPD profile.";
+              example = "performance";
+              type = lib.types.str;
+            };
+          };
+        };
+      };
+
+      profiles = lib.mkOption {
+        default = {
+          balanced = "balanced";
+          performance = "throughput-performance";
+          power-saver = "powersave";
+        };
+
+        description = "Map of PPD profiles to native TuneD profiles.";
+        type = lib.types.attrsOf lib.types.str;
       };
     };
+
+    freeformType = ppdSettingsFormat.type;
   };
   settingsSubmodule = {
-    freeformType = settingsFormat.type;
-
     options = {
       daemon = lib.mkEnableOption "the use of a daemon for TuneD" // {
         default = true;
       };
 
+      default_instance_priority = lib.mkOption {
+        default = 0;
+        description = "Default instance (unit) priority.";
+        type = lib.types.int;
+      };
+
       dynamic_tuning = lib.mkEnableOption "dynamic tuning";
 
-      sleep_interval = lib.mkOption {
-        type = lib.types.int;
-        default = 1;
-        description = "Interval in which the TuneD daemon is waken up and checks for events (in seconds).";
-      };
-
-      update_interval = lib.mkOption {
-        type = lib.types.int;
-        default = 10;
-        description = "Update interval for dynamic tuning (in seconds).";
-      };
-
-      recommend_command = lib.mkEnableOption "recommend functionality" // {
-        default = true;
+      profile_dirs = lib.mkOption {
+        # Ensure we always have the vendored profiles available
+        apply = dirs: "${cfg.package}/lib/tuned/profiles," + dirs;
+        default = "/etc/tuned/profiles";
+        description = "Directories to search for profiles, separated by `,` or `;`.";
+        type = lib.types.str;
       };
 
       reapply_sysctl =
@@ -88,66 +87,76 @@ let
           default = true;
         };
 
-      default_instance_priority = lib.mkOption {
-        type = lib.types.int;
-        default = 0;
-        description = "Default instance (unit) priority.";
+      recommend_command = lib.mkEnableOption "recommend functionality" // {
+        default = true;
       };
 
-      profile_dirs = lib.mkOption {
-        type = lib.types.str;
-        default = "/etc/tuned/profiles";
-        # Ensure we always have the vendored profiles available
-        apply = dirs: "${cfg.package}/lib/tuned/profiles," + dirs;
-        description = "Directories to search for profiles, separated by `,` or `;`.";
+      sleep_interval = lib.mkOption {
+        default = 1;
+        description = "Interval in which the TuneD daemon is waken up and checks for events (in seconds).";
+        type = lib.types.int;
+      };
+
+      update_interval = lib.mkOption {
+        default = 10;
+        description = "Update interval for dynamic tuning (in seconds).";
+        type = lib.types.int;
       };
     };
+
+    freeformType = settingsFormat.type;
   };
 in
 {
   options.services.tuned = {
     enable = lib.mkEnableOption "TuneD";
-
     package = lib.mkPackageOption pkgs "tuned" { };
 
     ppdSettings = lib.mkOption {
-      type = lib.types.submodule ppdSettingsSubmodule;
       default = { };
+
       description = ''
         Settings for TuneD's power-profiles-daemon compatibility service.
       '';
+
+      type = lib.types.submodule ppdSettingsSubmodule;
     };
+
     ppdSupport = lib.mkEnableOption "translation of power-profiles-daemon API calls to TuneD" // {
       default = true;
     };
+
     profiles = lib.mkOption {
-      type = lib.types.attrsOf (
-        lib.types.submodule {
-          freeformType = profileFormat.type;
-        }
-      );
       default = { };
+
       description = ''
         Profiles for TuneD.
         See {manpage}`tuned.conf(5)` for details.
       '';
+
       example = {
         my-cool-profile = {
           main.include = "my-other-cool-profile";
 
           my_sysctl = {
-            type = "sysctl";
-            replace = true;
-
             "net.core.rmem_default" = 262144;
             "net.core.wmem_default" = 262144;
+            replace = true;
+            type = "sysctl";
           };
         };
       };
+
+      type = lib.types.attrsOf (
+        lib.types.submodule {
+          freeformType = profileFormat.type;
+        }
+      );
     };
+
     recommend = lib.mkOption {
-      type = recommendFormat.type;
       default = { };
+
       description = ''
         TuneD rules for `recommend_profile`, written to
         `/etc/tuned/recommend.conf`.
@@ -167,6 +176,7 @@ in
 
         See {manpage}`tuned-main.conf(5)` for more details.
       '';
+
       example = lib.literalExpression ''
         # Enable `virtual-guest` profile for VM guests
         virtual-guest = {
@@ -176,14 +186,19 @@ in
         # Default to the `desktop` profile for all other systems
         desktop = { };
       '';
+
+      type = recommendFormat.type;
     };
+
     settings = lib.mkOption {
-      type = lib.types.submodule settingsSubmodule;
       default = { };
+
       description = ''
         Configuration for TuneD.
         See {manpage}`tuned-main.conf(5)` for details.
       '';
+
+      type = lib.types.submodule settingsSubmodule;
     };
   };
 
@@ -223,8 +238,8 @@ in
       etc = lib.mkMerge [
         {
           "tuned/tuned-main.conf".source = settingsFormat.generate "tuned-main.conf" {
-            sections = { };
             globalSection = cfg.settings;
+            sections = { };
           };
         }
         (lib.mkIf cfg.ppdSupport {
@@ -253,11 +268,9 @@ in
 
     services = {
       dbus.packages = [ cfg.package ];
-
       # Many DEs (like GNOME and KDE Plasma) enable PPD by default
       # Let's try to make it easier to transition by only enabling this module
       power-profiles-daemon.enable = false;
-
       # NOTE: Required by `tuned-ppd` for handling power supply changes
       # (i.e., `services.tuned.ppdSettings.main.battery_detection`)
       # https://github.com/NixOS/nixpkgs/issues/431105

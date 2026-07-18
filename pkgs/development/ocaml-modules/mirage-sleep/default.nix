@@ -1,9 +1,9 @@
 {
   lib,
-  buildDunePackage,
   fetchurl,
-  lwt,
+  buildDunePackage,
   duration,
+  lwt,
   version ? "4.1.0",
 }:
 

@@ -2,9 +2,9 @@
   lib,
   stdenv,
   fetchurl,
-  pkg-config,
   libxaw,
   libxt,
+  pkg-config,
   wrapWithXFileSearchPathHook,
   writeScript,
 }:
@@ -44,15 +44,17 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Display a message or query in a window";
+
     longDescription = ''
       xmessage displays a message or query in a window. The user can click on an "okay" button to
       dismiss it or can select one of several buttons to answer a question. xmessage can also exit
       after a specified time.
     '';
+
     homepage = "https://gitlab.freedesktop.org/xorg/app/xmessage";
     license = lib.licenses.x11;
-    mainProgram = "xmessage";
     maintainers = [ ];
     platforms = lib.platforms.unix;
+    mainProgram = "xmessage";
   };
 })

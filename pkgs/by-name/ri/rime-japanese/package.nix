@@ -1,7 +1,7 @@
 {
   lib,
-  stdenvNoCC,
   fetchFromGitHub,
+  stdenvNoCC,
 }:
 stdenvNoCC.mkDerivation {
   pname = "rime-japanese";
@@ -25,7 +25,6 @@ stdenvNoCC.mkDerivation {
   meta = {
     description = "Layout for typing in Japanese with RIME";
     homepage = "https://github.com/gkovacs/rime-japanese";
-
     # Awaiting upstream response (gkovacs/rime-japanese#6)
     # Packages are assumed unfree unless explicitly indicated otherwise
     license = lib.licenses.unfree;

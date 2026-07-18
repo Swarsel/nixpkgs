@@ -1,7 +1,7 @@
 {
   lib,
-  buildNpmPackage,
   fetchFromGitHub,
+  buildNpmPackage,
   nix-update-script,
 }:
 
@@ -17,15 +17,13 @@ buildNpmPackage (finalAttrs: {
   };
 
   npmDepsHash = "sha256-4noXdD/KUNridPlwQ2cqVcAaUoP5XUwZhpbEPHVBeqo=";
-
   npmFlags = [ "--ignore-scripts" ];
-
   passthru.updateScript = nix-update-script { extraArgs = [ "--version=branch" ]; };
 
   meta = {
-    changelog = "https://github.com/mdgriffith/elm-optimize-level-2/blob/master/CHANGELOG.md";
     description = "A second level of optimization for the Javascript that the Elm Compiler produces.";
     homepage = "https://github.com/mdgriffith/elm-optimize-level-2";
+    changelog = "https://github.com/mdgriffith/elm-optimize-level-2/blob/master/CHANGELOG.md";
     license = lib.licenses.bsd3;
     maintainers = [ ];
     mainProgram = "elm-optimize-level-2";

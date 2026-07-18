@@ -2,14 +2,14 @@
   lib,
   stdenv,
   fetchurl,
+  common-updater-scripts,
   formats,
   installShellFiles,
   makeWrapper,
-  versionCheckHook,
-  php,
-  writeScript,
   nix-update,
-  common-updater-scripts,
+  php,
+  versionCheckHook,
+  writeScript,
   phpIniFile ? null,
 }:
 
@@ -17,8 +17,8 @@ let
   version = "2.12.0";
 
   completion = fetchurl {
-    url = "https://raw.githubusercontent.com/wp-cli/wp-cli/v${version}/utils/wp-completion.bash";
     hash = "sha256-RDygYQzK6NLWrOug7EqnkpuH7Wz1T2Zq/tGNZjoYo5U=";
+    url = "https://raw.githubusercontent.com/wp-cli/wp-cli/v${version}/utils/wp-completion.bash";
   };
 
   ini =
@@ -32,17 +32,13 @@ let
 
 in
 stdenv.mkDerivation (finalAttrs: {
-  pname = "wp-cli";
   inherit version;
+  pname = "wp-cli";
 
   src = fetchurl {
     url = "https://github.com/wp-cli/wp-cli/releases/download/v${version}/wp-cli-${version}.phar";
     hash = "sha256-zjTd2Dj3NR1nWQaNCXk/JnVUY7SkYQpaXAqXtoIg2Fw=";
   };
-
-  dontUnpack = true;
-  dontConfigure = true;
-  dontBuild = true;
 
   nativeBuildInputs = [
     installShellFiles
@@ -74,15 +70,16 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   doInstallCheck = true;
-
   nativeInstallCheckInputs = [ versionCheckHook ];
-
+  dontBuild = true;
+  dontConfigure = true;
+  dontUnpack = true;
   versionCheckProgram = "${placeholder "out"}/bin/wp";
-
   versionCheckProgramArg = "--info";
 
   passthru = {
     inherit completion;
+
     updateScript = writeScript "update-wp-cli" ''
       ${lib.getExe nix-update}
       version=$(nix-instantiate --eval -E "with import ./. {}; wp-cli.version or (lib.getVersion wp-cli)" | tr -d '"')

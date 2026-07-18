@@ -1,18 +1,20 @@
 {
   lib,
-  python3,
   fetchPypi,
+  python3,
 }:
 
 python3.pkgs.buildPythonApplication (finalAttrs: {
   pname = "adafruit-ampy";
   version = "1.1.0";
-  pyproject = true;
 
   src = fetchPypi {
     inherit (finalAttrs) pname version;
     sha256 = "f4cba36f564096f2aafd173f7fbabb845365cc3bb3f41c37541edf98b58d3976";
   };
+
+  # No tests
+  doCheck = false;
 
   build-system = with python3.pkgs; [
     setuptools
@@ -24,13 +26,12 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     pyserial
   ];
 
-  # No tests
-  doCheck = false;
+  pyproject = true;
 
   meta = {
+    description = "Utility to interact with a MicroPython board over a serial connection";
     homepage = "https://github.com/pycampers/ampy";
     license = lib.licenses.mit;
-    description = "Utility to interact with a MicroPython board over a serial connection";
     maintainers = [ ];
     mainProgram = "ampy";
   };

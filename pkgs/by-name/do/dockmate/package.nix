@@ -1,8 +1,8 @@
 {
   lib,
+  fetchFromGitHub,
   buildGoModule,
   dockmate,
-  fetchFromGitHub,
   versionCheckHook,
 }:
 
@@ -17,10 +17,6 @@ buildGoModule rec {
     hash = "sha256-kepv8jY/hddRpJMhwr55k0R8CPBKtifjrGiRxoIUDXw=";
   };
 
-  nativeInstallCheckInputs = [
-    versionCheckHook
-  ];
-
   vendorHash = "sha256-/votTA5Rn8beq1PgHpC01D01VjBIwciPVN5eNc8iZRM=";
 
   # Skip tests that require a Docker daemon or interactive filesystem access,
@@ -31,14 +27,20 @@ buildGoModule rec {
 
   doInstallCheck = true;
 
+  nativeInstallCheckInputs = [
+    versionCheckHook
+  ];
+
   meta = {
-    changelog = "https://github.com/shubh-io/DockMate/releases/tag/${src.tag}";
     description = "Terminal-based Docker container manager that actually works";
     homepage = "https://github.com/shubh-io/DockMate";
+    changelog = "https://github.com/shubh-io/DockMate/releases/tag/${src.tag}";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       sith-lord-vader
     ];
+
     mainProgram = "dockmate";
   };
 }

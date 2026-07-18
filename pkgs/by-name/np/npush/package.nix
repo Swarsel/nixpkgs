@@ -23,11 +23,10 @@ stdenv.mkDerivation (finalAttrs: {
     ncurses
   ];
 
-  dontConfigure = true;
-
   makeFlags = [
     "CC=${stdenv.cc.targetPrefix}c++"
   ];
+
   env.NIX_CFLAGS_COMPILE = "-Wno-error=format-security";
 
   installPhase = ''
@@ -42,13 +41,15 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  dontConfigure = true;
+
   meta = {
-    broken = stdenv.hostPlatform.isDarwin;
-    homepage = "https://npush.sourceforge.net/";
     description = "Sokoban-like game";
-    mainProgram = "npush";
+    homepage = "https://npush.sourceforge.net/";
     license = lib.licenses.gpl2Plus;
     maintainers = [ ];
     platforms = lib.platforms.unix;
+    mainProgram = "npush";
+    broken = stdenv.hostPlatform.isDarwin;
   };
 })

@@ -19,11 +19,11 @@ in
   };
 
   config = mkIf (ldmcfg.enable && cfg.enable) {
-    services.xserver.displayManager.lightdm.greeters.gtk.enable = false;
-
     services.xserver.displayManager.lightdm.greeter = mkDefault {
       package = pkgs.lightdm-mobile-greeter.xgreeters;
       name = "lightdm-mobile-greeter";
     };
+
+    services.xserver.displayManager.lightdm.greeters.gtk.enable = false;
   };
 }

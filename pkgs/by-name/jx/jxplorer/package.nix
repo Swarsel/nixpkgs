@@ -2,9 +2,9 @@
   lib,
   stdenv,
   fetchurl,
-  makeDesktopItem,
-  jdk8,
   copyDesktopItems,
+  jdk8,
+  makeDesktopItem,
   makeWrapper,
 }:
 
@@ -20,17 +20,6 @@ stdenv.mkDerivation (finalAttrs: {
   nativeBuildInputs = [
     copyDesktopItems
     makeWrapper
-  ];
-
-  desktopItems = [
-    (makeDesktopItem {
-      name = "JXplorer";
-      exec = "jxplorer";
-      comment = "A Java Ldap Browser";
-      desktopName = "JXplorer";
-      genericName = "Java Ldap Browser";
-      icon = "jxplorer";
-    })
   ];
 
   installPhase = ''
@@ -50,6 +39,17 @@ stdenv.mkDerivation (finalAttrs: {
       --chdir $out/opt/jxplorer \
       --set JAVA_HOME ${jdk8}
   '';
+
+  desktopItems = [
+    (makeDesktopItem {
+      comment = "A Java Ldap Browser";
+      desktopName = "JXplorer";
+      exec = "jxplorer";
+      genericName = "Java Ldap Browser";
+      icon = "jxplorer";
+      name = "JXplorer";
+    })
+  ];
 
   meta = {
     description = "Java Ldap Browser";

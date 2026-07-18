@@ -1,11 +1,28 @@
 {
   lib,
-  mkDerivation,
   libspl,
+  mkDerivation,
   zlib,
 }:
 mkDerivation {
-  path = "cddl/lib/libctf";
+  outputs = [
+    "out"
+    "man"
+  ];
+
+  buildInputs = [
+    zlib
+    libspl
+  ];
+
+  preBuild = ''
+    export OPENSOLARIS_USR_DISTDIR=$BSDSRCDIR/cddl/contrib/opensolaris
+    export OPENSOLARIS_SYS_DISTDIR=$BSDSRCDIR/sys/cddl/contrib/opensolaris
+  '';
+
+  MK_WERROR = "no";
+  alwaysKeepStatic = true;
+
   extraPaths = [
     "cddl/contrib/opensolaris/common/ctf"
     "cddl/contrib/opensolaris/lib/libctf/common"
@@ -23,24 +40,6 @@ mkDerivation {
     "sys/cddl/contrib/opensolaris/uts/common"
   ];
 
-  outputs = [
-    "out"
-    "man"
-  ];
-
-  buildInputs = [
-    zlib
-    libspl
-  ];
-
-  preBuild = ''
-    export OPENSOLARIS_USR_DISTDIR=$BSDSRCDIR/cddl/contrib/opensolaris
-    export OPENSOLARIS_SYS_DISTDIR=$BSDSRCDIR/sys/cddl/contrib/opensolaris
-  '';
-
-  MK_WERROR = "no";
-
-  alwaysKeepStatic = true;
-
+  path = "cddl/lib/libctf";
   meta.platforms = lib.platforms.freebsd;
 }

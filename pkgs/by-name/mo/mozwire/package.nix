@@ -1,7 +1,7 @@
 {
-  rustPlatform,
   lib,
   fetchFromGitHub,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -21,10 +21,12 @@ rustPlatform.buildRustPackage (finalAttrs: {
     description = "MozillaVPN configuration manager giving Linux, macOS users (among others), access to MozillaVPN";
     homepage = "https://github.com/NilsIrl/MozWire";
     license = lib.licenses.gpl3;
+
     maintainers = with lib.maintainers; [
       siraben
       nilsirl
     ];
+
     mainProgram = "mozwire";
   };
 })

@@ -2,8 +2,8 @@
   lib,
   stdenv,
   fetchzip,
-  python3Packages,
   makeWrapper,
+  python3Packages,
 }:
 
 with python3Packages;
@@ -11,6 +11,7 @@ with python3Packages;
 stdenv.mkDerivation (finalAttrs: {
   pname = "google-app-engine-go-sdk";
   version = "1.9.61";
+
   src =
     if stdenv.hostPlatform.system == "x86_64-linux" then
       fetchzip {
@@ -40,16 +41,20 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Google App Engine SDK for Go";
-    version = finalAttrs.version;
     homepage = "https://cloud.google.com/appengine/docs/go/";
+    license = lib.licenses.asl20;
+
     sourceProvenance = with lib.sourceTypes; [
       fromSource
       binaryNativeCode # includes golang toolchain binaries
     ];
-    license = lib.licenses.asl20;
+
+    maintainers = with lib.maintainers; [ lufia ];
+
     platforms = [
       "x86_64-linux"
     ];
-    maintainers = with lib.maintainers; [ lufia ];
+
+    version = finalAttrs.version;
   };
 })

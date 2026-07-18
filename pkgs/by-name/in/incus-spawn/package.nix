@@ -1,32 +1,27 @@
 {
   lib,
-  stdenvNoCC,
   fetchurl,
   autoPatchelfHook,
-  installShellFiles,
-  zlib,
-  testers,
-  incus-spawn,
-  writeShellScript,
-  curl,
-  jq,
   common-updater-scripts,
+  curl,
+  incus-spawn,
+  installShellFiles,
+  jq,
+  stdenvNoCC,
+  testers,
+  writeShellScript,
+  zlib,
 }:
 
 stdenvNoCC.mkDerivation (finalAttrs: {
-  version = "0.2.7";
   pname = "incus-spawn";
+  version = "0.2.7";
 
   src =
     finalAttrs.passthru.sources.${stdenvNoCC.hostPlatform.system}
       or (throw "Unsupported platform: ${stdenvNoCC.hostPlatform.system}");
 
-  dontUnpack = true;
-  dontBuild = true;
-  dontStrip = stdenvNoCC.hostPlatform.isDarwin;
-
   strictDeps = true;
-  __structuredAttrs = true;
 
   nativeBuildInputs = [
     installShellFiles
@@ -51,6 +46,7 @@ stdenvNoCC.mkDerivation (finalAttrs: {
   # which runs after fixup is fully complete. On Darwin no patching is needed but
   # we keep the same phase for consistency.
   doInstallCheck = stdenvNoCC.buildPlatform.canExecute stdenvNoCC.hostPlatform;
+
   installCheckPhase = ''
     runHook preInstallCheck
 
@@ -62,30 +58,37 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     runHook postInstallCheck
   '';
 
+  __structuredAttrs = true;
+  dontBuild = true;
+  dontStrip = stdenvNoCC.hostPlatform.isDarwin;
+  dontUnpack = true;
+
   passthru = {
-    sources = {
-      "x86_64-linux" = fetchurl {
-        url = "https://github.com/Sanne/incus-spawn/releases/download/v${finalAttrs.version}/incus-spawn-linux-amd64";
-        hash = "sha256-jgdNuVfVshbg8piAGGpIy4cnJj5glbsGqOENDBoqpzI=";
-      };
-      "aarch64-linux" = fetchurl {
-        url = "https://github.com/Sanne/incus-spawn/releases/download/v${finalAttrs.version}/incus-spawn-linux-aarch64";
-        hash = "sha256-Y7OaNgQKAN/HVt75+tawrCtkyZdAHfAiUxx2a0eD5P8=";
-      };
-      "aarch64-darwin" = fetchurl {
-        url = "https://github.com/Sanne/incus-spawn/releases/download/v${finalAttrs.version}/incus-spawn-macos-aarch64";
-        hash = "sha256-Uv0v7LxIcB0oNEnW1vK9Iy6MOwxoUeqtszGfsS5wt6k=";
-      };
+    git-remote-isx = fetchurl {
+      hash = "sha256-I9zmdLzO7VcfLHdgFD2Lvwiq4fkDw885j1JWsL8c+hA=";
+      url = "https://github.com/Sanne/incus-spawn/releases/download/v${finalAttrs.version}/git-remote-isx";
     };
 
-    git-remote-isx = fetchurl {
-      url = "https://github.com/Sanne/incus-spawn/releases/download/v${finalAttrs.version}/git-remote-isx";
-      hash = "sha256-I9zmdLzO7VcfLHdgFD2Lvwiq4fkDw885j1JWsL8c+hA=";
+    sources = {
+      "aarch64-darwin" = fetchurl {
+        hash = "sha256-Uv0v7LxIcB0oNEnW1vK9Iy6MOwxoUeqtszGfsS5wt6k=";
+        url = "https://github.com/Sanne/incus-spawn/releases/download/v${finalAttrs.version}/incus-spawn-macos-aarch64";
+      };
+
+      "aarch64-linux" = fetchurl {
+        hash = "sha256-Y7OaNgQKAN/HVt75+tawrCtkyZdAHfAiUxx2a0eD5P8=";
+        url = "https://github.com/Sanne/incus-spawn/releases/download/v${finalAttrs.version}/incus-spawn-linux-aarch64";
+      };
+
+      "x86_64-linux" = fetchurl {
+        hash = "sha256-jgdNuVfVshbg8piAGGpIy4cnJj5glbsGqOENDBoqpzI=";
+        url = "https://github.com/Sanne/incus-spawn/releases/download/v${finalAttrs.version}/incus-spawn-linux-amd64";
+      };
     };
 
     tests.version = testers.testVersion {
-      package = incus-spawn;
       command = "isx --version";
+      package = incus-spawn;
     };
 
     updateScript = writeShellScript "update-incus-spawn" ''
@@ -111,19 +114,23 @@ stdenvNoCC.mkDerivation (finalAttrs: {
 
   meta = {
     description = "CLI tool for managing isolated Incus development environments";
+
     longDescription = ''
       incus-spawn (isx) creates isolated Linux development environments using
       Incus system containers with copy-on-write branching, a MITM TLS proxy
       for credential isolation, and an interactive TUI.
     '';
+
     homepage = "https://github.com/Sanne/incus-spawn";
     changelog = "https://github.com/Sanne/incus-spawn/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.asl20;
     sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
-    platforms = lib.attrNames finalAttrs.passthru.sources;
-    mainProgram = "isx";
+
     maintainers = with lib.maintainers; [
       galder
     ];
+
+    platforms = lib.attrNames finalAttrs.passthru.sources;
+    mainProgram = "isx";
   };
 })

@@ -16,8 +16,8 @@ buildDunePackage (finalAttrs: {
   };
 
   meta = {
-    homepage = "https://github.com/mransan/ocaml-protoc";
     description = "Runtime library for Protobuf tooling";
+    homepage = "https://github.com/mransan/ocaml-protoc";
     license = lib.licenses.mit;
     maintainers = [ lib.maintainers.vyorkin ];
   };

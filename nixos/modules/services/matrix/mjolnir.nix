@@ -9,22 +9,21 @@ let
 
   yamlConfig = {
     inherit (cfg) dataPath managementRoom protectedRooms;
-
     accessToken = "@ACCESS_TOKEN@"; # will be replaced in "generateConfig"
+
     homeserverUrl =
       if cfg.pantalaimon.enable then
         "http://${cfg.pantalaimon.options.listenAddress}:${toString cfg.pantalaimon.options.listenPort}"
       else
         cfg.homeserverUrl;
 
-    rawHomeserverUrl = cfg.homeserverUrl;
-
     pantalaimon = {
       inherit (cfg.pantalaimon) username;
-
-      use = cfg.pantalaimon.enable;
       password = "@PANTALAIMON_PASSWORD@"; # will be replaced in "generateConfig"
+      use = cfg.pantalaimon.enable;
     };
+
+    rawHomeserverUrl = cfg.homeserverUrl;
   };
 
   moduleConfigFile = pkgs.writeText "module-config.yaml" (
@@ -79,108 +78,128 @@ in
   options.services.mjolnir = {
     enable = lib.mkEnableOption "Mjolnir, a moderation tool for Matrix";
 
+    accessTokenFile = lib.mkOption {
+      default = null;
+
+      description = ''
+        File containing the matrix access token for the `mjolnir` user.
+      '';
+
+      type = with lib.types; nullOr path;
+    };
+
+    dataPath = lib.mkOption {
+      default = "/var/lib/mjolnir";
+
+      description = ''
+        The directory the bot should store various bits of information in.
+      '';
+
+      type = lib.types.path;
+    };
+
     homeserverUrl = lib.mkOption {
-      type = lib.types.str;
       default = "https://matrix.org";
+
       description = ''
         Where the homeserver is located (client-server URL).
 
         If `pantalaimon.enable` is `true`, this option will become the homeserver to which `pantalaimon` connects.
         The listen address of `pantalaimon` will then become the `homeserverUrl` of `mjolnir`.
       '';
-    };
 
-    accessTokenFile = lib.mkOption {
-      type = with lib.types; nullOr path;
-      default = null;
-      description = ''
-        File containing the matrix access token for the `mjolnir` user.
-      '';
-    };
-
-    pantalaimon = lib.mkOption {
-      description = ''
-        `pantalaimon` options (enables E2E Encryption support).
-
-        This will create a `pantalaimon` instance with the name "mjolnir".
-      '';
-      default = { };
-      type = lib.types.submodule {
-        options = {
-          enable = lib.mkEnableOption ''
-            ignoring the accessToken. If true, accessToken is ignored and the username/password below will be
-            used instead. The access token of the bot will be stored in the dataPath
-          '';
-
-          username = lib.mkOption {
-            type = lib.types.str;
-            description = "The username to login with.";
-          };
-
-          passwordFile = lib.mkOption {
-            type = with lib.types; nullOr path;
-            default = null;
-            description = ''
-              File containing the matrix password for the `mjolnir` user.
-            '';
-          };
-
-          options = lib.mkOption {
-            type = lib.types.submodule (import ./pantalaimon-options.nix);
-            default = { };
-            description = ''
-              passthrough additional options to the `pantalaimon` service.
-            '';
-          };
-        };
-      };
-    };
-
-    dataPath = lib.mkOption {
-      type = lib.types.path;
-      default = "/var/lib/mjolnir";
-      description = ''
-        The directory the bot should store various bits of information in.
-      '';
+      type = lib.types.str;
     };
 
     managementRoom = lib.mkOption {
-      type = lib.types.str;
       default = "#moderators:example.org";
+
       description = ''
         The room ID where people can use the bot. The bot has no access controls, so
         anyone in this room can use the bot - secure your room!
         This should be a room alias or room ID - not a matrix.to URL.
         Note: `mjolnir` is fairly verbose - expect a lot of messages from it.
       '';
+
+      type = lib.types.str;
+    };
+
+    pantalaimon = lib.mkOption {
+      default = { };
+
+      description = ''
+        `pantalaimon` options (enables E2E Encryption support).
+
+        This will create a `pantalaimon` instance with the name "mjolnir".
+      '';
+
+      type = lib.types.submodule {
+        options = {
+          options = lib.mkOption {
+            default = { };
+
+            description = ''
+              passthrough additional options to the `pantalaimon` service.
+            '';
+
+            type = lib.types.submodule (import ./pantalaimon-options.nix);
+          };
+
+          enable = lib.mkEnableOption ''
+            ignoring the accessToken. If true, accessToken is ignored and the username/password below will be
+            used instead. The access token of the bot will be stored in the dataPath
+          '';
+
+          passwordFile = lib.mkOption {
+            default = null;
+
+            description = ''
+              File containing the matrix password for the `mjolnir` user.
+            '';
+
+            type = with lib.types; nullOr path;
+          };
+
+          username = lib.mkOption {
+            description = "The username to login with.";
+            type = lib.types.str;
+          };
+        };
+      };
     };
 
     protectedRooms = lib.mkOption {
-      type = lib.types.listOf lib.types.str;
       default = [ ];
+
+      description = ''
+        A list of rooms to protect (matrix.to URLs).
+      '';
+
       example = lib.literalExpression ''
         [
           "https://matrix.to/#/#yourroom:example.org"
           "https://matrix.to/#/#anotherroom:example.org"
         ]
       '';
-      description = ''
-        A list of rooms to protect (matrix.to URLs).
-      '';
+
+      type = lib.types.listOf lib.types.str;
     };
 
     settings = lib.mkOption {
       default = { };
-      type = (pkgs.formats.yaml { }).type;
+
+      description = ''
+        Additional settings (see [mjolnir default config](https://github.com/matrix-org/mjolnir/blob/main/config/default.yaml) for available settings). These settings will override settings made by the module config.
+      '';
+
       example = lib.literalExpression ''
         {
           autojoinOnlyIfManager = true;
           automaticallyRedactForReasons = [ "spam" "advertising" ];
         }
       '';
-      description = ''
-        Additional settings (see [mjolnir default config](https://github.com/matrix-org/mjolnir/blob/main/config/default.yaml) for available settings). These settings will override settings made by the module config.
-      '';
+
+      type = (pkgs.formats.yaml { }).type;
     };
   };
 
@@ -211,31 +230,26 @@ in
       // cfg.pantalaimon.options;
 
     systemd.services.mjolnir = {
-      description = "mjolnir - a moderation tool for Matrix";
-      wants = [
-        "network-online.target"
-      ]
-      ++ lib.optionals (cfg.pantalaimon.enable) [ "pantalaimon-mjolnir.service" ];
       after = [
         "network-online.target"
       ]
       ++ lib.optionals (cfg.pantalaimon.enable) [ "pantalaimon-mjolnir.service" ];
-      wantedBy = [ "multi-user.target" ];
+
+      description = "mjolnir - a moderation tool for Matrix";
 
       serviceConfig = {
         ExecStart = "${pkgs.mjolnir}/bin/mjolnir --mjolnir-config ./config/default.yaml";
         ExecStartPre = [ generateConfig ];
-        WorkingDirectory = cfg.dataPath;
-        StateDirectory = "mjolnir";
-        StateDirectoryMode = "0700";
-        ProtectSystem = "strict";
-        ProtectHome = true;
-        PrivateTmp = true;
         NoNewPrivileges = true;
         PrivateDevices = true;
-        User = "mjolnir";
+        PrivateTmp = true;
+        ProtectHome = true;
+        ProtectSystem = "strict";
         Restart = "on-failure";
-
+        StateDirectory = "mjolnir";
+        StateDirectoryMode = "0700";
+        User = "mjolnir";
+        WorkingDirectory = cfg.dataPath;
         /*
           TODO: wait for #102397 to be resolved. Then load secrets from $CREDENTIALS_DIRECTORY+"/NAME"
           DynamicUser = true;
@@ -248,14 +262,22 @@ in
             ];
         */
       };
+
+      wantedBy = [ "multi-user.target" ];
+
+      wants = [
+        "network-online.target"
+      ]
+      ++ lib.optionals (cfg.pantalaimon.enable) [ "pantalaimon-mjolnir.service" ];
     };
 
     users = {
+      groups.mjolnir = { };
+
       users.mjolnir = {
         group = "mjolnir";
         isSystemUser = true;
       };
-      groups.mjolnir = { };
     };
   };
 

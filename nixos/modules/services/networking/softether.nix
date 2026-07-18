@@ -22,38 +22,45 @@ in
     services.softether = {
 
       enable = mkEnableOption "SoftEther VPN services";
-
       package = mkPackageOption pkgs "softether" { };
 
-      vpnserver.enable = mkEnableOption "SoftEther VPN Server";
+      dataDir = mkOption {
+        default = "/var/lib/softether";
+
+        description = ''
+          Data directory for SoftEther VPN.
+        '';
+
+        type = types.path;
+      };
 
       vpnbridge.enable = mkEnableOption "SoftEther VPN Bridge";
 
       vpnclient = {
         enable = mkEnableOption "SoftEther VPN Client";
-        up = mkOption {
-          type = types.lines;
-          default = "";
-          description = ''
-            Shell commands executed when the Virtual Network Adapter(s) is/are starting.
-          '';
-        };
+
         down = mkOption {
-          type = types.lines;
           default = "";
+
           description = ''
             Shell commands executed when the Virtual Network Adapter(s) is/are shutting down.
           '';
+
+          type = types.lines;
+        };
+
+        up = mkOption {
+          default = "";
+
+          description = ''
+            Shell commands executed when the Virtual Network Adapter(s) is/are starting.
+          '';
+
+          type = types.lines;
         };
       };
 
-      dataDir = mkOption {
-        type = types.path;
-        default = "/var/lib/softether";
-        description = ''
-          Data directory for SoftEther VPN.
-        '';
-      };
+      vpnserver.enable = mkEnableOption "SoftEther VPN Server";
 
     };
 
@@ -69,11 +76,7 @@ in
 
         systemd.services.softether-init = {
           description = "SoftEther VPN services initial task";
-          wantedBy = [ "network.target" ];
-          serviceConfig = {
-            Type = "oneshot";
-            RemainAfterExit = false;
-          };
+
           script = ''
             for d in vpnserver vpnbridge vpnclient vpncmd; do
                 if ! test -e ${cfg.dataDir}/$d; then
@@ -84,77 +87,101 @@ in
             rm -rf ${cfg.dataDir}/vpncmd/vpncmd
             ln -s ${package}${cfg.dataDir}/vpncmd/vpncmd ${cfg.dataDir}/vpncmd/vpncmd
           '';
+
+          serviceConfig = {
+            RemainAfterExit = false;
+            Type = "oneshot";
+          };
+
+          wantedBy = [ "network.target" ];
         };
       }
 
       (mkIf cfg.vpnserver.enable {
         systemd.services.vpnserver = {
-          description = "SoftEther VPN Server";
           after = [ "softether-init.service" ];
-          requires = [ "softether-init.service" ];
-          wantedBy = [ "network.target" ];
-          serviceConfig = {
-            Type = "forking";
-            ExecStart = "${package}/bin/vpnserver start";
-            ExecStop = "${package}/bin/vpnserver stop";
-          };
+          description = "SoftEther VPN Server";
+
+          postStop = ''
+            rm -rf ${cfg.dataDir}/vpnserver/vpnserver
+          '';
+
           preStart = ''
             rm -rf ${cfg.dataDir}/vpnserver/vpnserver
             ln -s ${package}${cfg.dataDir}/vpnserver/vpnserver ${cfg.dataDir}/vpnserver/vpnserver
           '';
-          postStop = ''
-            rm -rf ${cfg.dataDir}/vpnserver/vpnserver
-          '';
+
+          requires = [ "softether-init.service" ];
+
+          serviceConfig = {
+            ExecStart = "${package}/bin/vpnserver start";
+            ExecStop = "${package}/bin/vpnserver stop";
+            Type = "forking";
+          };
+
+          wantedBy = [ "network.target" ];
         };
       })
 
       (mkIf cfg.vpnbridge.enable {
         systemd.services.vpnbridge = {
-          description = "SoftEther VPN Bridge";
           after = [ "softether-init.service" ];
-          requires = [ "softether-init.service" ];
-          wantedBy = [ "network.target" ];
-          serviceConfig = {
-            Type = "forking";
-            ExecStart = "${package}/bin/vpnbridge start";
-            ExecStop = "${package}/bin/vpnbridge stop";
-          };
+          description = "SoftEther VPN Bridge";
+
+          postStop = ''
+            rm -rf ${cfg.dataDir}/vpnbridge/vpnbridge
+          '';
+
           preStart = ''
             rm -rf ${cfg.dataDir}/vpnbridge/vpnbridge
             ln -s ${package}${cfg.dataDir}/vpnbridge/vpnbridge ${cfg.dataDir}/vpnbridge/vpnbridge
           '';
-          postStop = ''
-            rm -rf ${cfg.dataDir}/vpnbridge/vpnbridge
-          '';
+
+          requires = [ "softether-init.service" ];
+
+          serviceConfig = {
+            ExecStart = "${package}/bin/vpnbridge start";
+            ExecStop = "${package}/bin/vpnbridge stop";
+            Type = "forking";
+          };
+
+          wantedBy = [ "network.target" ];
         };
       })
 
       (mkIf cfg.vpnclient.enable {
+        boot.kernelModules = [ "tun" ];
+
         systemd.services.vpnclient = {
-          description = "SoftEther VPN Client";
           after = [ "softether-init.service" ];
-          requires = [ "softether-init.service" ];
-          wantedBy = [ "network.target" ];
-          serviceConfig = {
-            Type = "forking";
-            ExecStart = "${package}/bin/vpnclient start";
-            ExecStop = "${package}/bin/vpnclient stop";
-          };
-          preStart = ''
-            rm -rf ${cfg.dataDir}/vpnclient/vpnclient
-            ln -s ${package}${cfg.dataDir}/vpnclient/vpnclient ${cfg.dataDir}/vpnclient/vpnclient
-          '';
+          description = "SoftEther VPN Client";
+
           postStart = ''
             sleep 1
             ${cfg.vpnclient.up}
           '';
+
           postStop = ''
             rm -rf ${cfg.dataDir}/vpnclient/vpnclient
             sleep 1
             ${cfg.vpnclient.down}
           '';
+
+          preStart = ''
+            rm -rf ${cfg.dataDir}/vpnclient/vpnclient
+            ln -s ${package}${cfg.dataDir}/vpnclient/vpnclient ${cfg.dataDir}/vpnclient/vpnclient
+          '';
+
+          requires = [ "softether-init.service" ];
+
+          serviceConfig = {
+            ExecStart = "${package}/bin/vpnclient start";
+            ExecStop = "${package}/bin/vpnclient stop";
+            Type = "forking";
+          };
+
+          wantedBy = [ "network.target" ];
         };
-        boot.kernelModules = [ "tun" ];
       })
 
     ]

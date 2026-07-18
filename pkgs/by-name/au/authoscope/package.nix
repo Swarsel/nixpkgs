@@ -21,8 +21,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-SKgb/N249s0+Rb59moBT/MeFb4zAAElCMQJto0diyUk=";
   };
 
-  cargoHash = "sha256-TagEeT6EgvFgdEc/M7dVn9vC1TmAA2zou5ZoWX46fOI=";
-
   nativeBuildInputs = [
     installShellFiles
     pkg-config
@@ -34,12 +32,13 @@ rustPlatform.buildRustPackage (finalAttrs: {
     openssl
   ];
 
+  cargoHash = "sha256-TagEeT6EgvFgdEc/M7dVn9vC1TmAA2zou5ZoWX46fOI=";
+  # Tests requires access to httpin.org
+  doCheck = false;
+
   postInstall = ''
     installManPage docs/authoscope.1
   '';
-
-  # Tests requires access to httpin.org
-  doCheck = false;
 
   passthru.updateScript = nix-update-script { };
 

@@ -224,22 +224,6 @@ let
 
   jobs = recursiveUpdateMany [
     (mapTestOn {
-      haskellPackages = packagePlatforms pkgs.haskellPackages;
-      haskell.compiler = packagePlatforms pkgs.haskell.compiler;
-      tests.haskell = packagePlatforms pkgs.tests.haskell;
-
-      nixosTests = {
-        agda = packagePlatforms pkgs.nixosTests.agda;
-
-        inherit (packagePlatforms pkgs.nixosTests)
-          kmonad
-          xmonad
-          xmonad-xdg-autostart
-          ;
-      };
-
-      agdaPackages = packagePlatforms pkgs.agdaPackages;
-
       # top-level packages that depend on haskellPackages
       inherit (pkgsPlatforms)
         agda
@@ -354,12 +338,107 @@ let
         yi
         ;
 
+      agdaPackages = packagePlatforms pkgs.agdaPackages;
+
       # Members of the elmPackages set that are Haskell derivations
       elmPackages = {
         inherit (pkgsPlatforms.elmPackages)
           elm
           elm-format
           ;
+      };
+
+      haskell.compiler = packagePlatforms pkgs.haskell.compiler;
+      haskellPackages = packagePlatforms pkgs.haskellPackages;
+
+      nixosTests = {
+        inherit (packagePlatforms pkgs.nixosTests)
+          kmonad
+          xmonad
+          xmonad-xdg-autostart
+          ;
+
+        agda = packagePlatforms pkgs.nixosTests.agda;
+      };
+
+      pkgsCross = {
+        aarch64-multiplatform = {
+          # Cross compilation of GHC
+          haskell.compiler = {
+            inherit (packagePlatforms pkgs.pkgsCross.aarch64-multiplatform.haskell.compiler)
+              # Latest GHC we are able to cross-compile. Uses NCG backend.
+              ghc948
+              ;
+          };
+        }
+        //
+          removePlatforms
+            [
+              # Testing cross from x86_64-linux
+              "aarch64-darwin"
+              "aarch64-linux"
+            ]
+            {
+              haskellPackages = {
+                inherit (packagePlatforms pkgs.pkgsCross.aarch64-multiplatform.haskellPackages)
+                  ghc
+                  hello
+                  th-orphans
+                  ;
+              };
+            };
+
+        ghcjs =
+          removePlatforms
+            [
+              # Hydra output size of 3GB is exceeded
+              "aarch64-linux"
+            ]
+            {
+              haskell.packages.ghc912 = {
+                inherit (packagePlatforms pkgs.pkgsCross.ghcjs.haskell.packages.ghc912)
+                  ghc
+                  hello
+                  microlens
+                  miso
+                  reflex-dom
+                  ;
+              };
+
+              haskell.packages.ghcHEAD = {
+                inherit (packagePlatforms pkgs.pkgsCross.ghcjs.haskell.packages.ghcHEAD)
+                  ghc
+                  hello
+                  microlens
+                  ;
+              };
+
+              haskellPackages = {
+                inherit (packagePlatforms pkgs.pkgsCross.ghcjs.haskellPackages)
+                  ghc
+                  hello
+                  microlens
+                  ;
+              };
+            };
+
+        riscv64 = {
+          # Cross compilation of GHC
+          haskell.compiler = {
+            inherit (packagePlatforms pkgs.pkgsCross.riscv64.haskell.compiler)
+              # Latest GHC we are able to cross-compile.
+              ghc948
+              ;
+          };
+        };
+
+        ucrt64.haskell.packages.ghc912 = {
+          inherit (packagePlatforms pkgs.pkgsCross.ucrt64.haskell.packages.ghc912)
+            ghc
+            # hello # executables don't build yet
+            microlens
+            ;
+        };
       };
 
       # GHCs linked to musl.
@@ -403,19 +482,6 @@ let
             "aarch64-darwin"
           ]
           {
-            haskellPackages = {
-              inherit (packagePlatforms pkgs.pkgsStatic.haskellPackages)
-                hello
-                lens
-                random
-                QuickCheck
-                cabal2nix
-                terminfo # isn't bundled for cross
-                xhtml # isn't bundled for cross
-                postgrest
-                ;
-            };
-
             haskell.packages.native-bignum.ghc948 = {
               inherit (packagePlatforms pkgs.pkgsStatic.haskell.packages.native-bignum.ghc948)
                 hello
@@ -428,89 +494,42 @@ let
                 postgrest
                 ;
             };
-          };
 
-      pkgsCross = {
-        ghcjs =
-          removePlatforms
-            [
-              # Hydra output size of 3GB is exceeded
-              "aarch64-linux"
-            ]
-            {
-              haskellPackages = {
-                inherit (packagePlatforms pkgs.pkgsCross.ghcjs.haskellPackages)
-                  ghc
-                  hello
-                  microlens
-                  ;
-              };
-
-              haskell.packages.ghc912 = {
-                inherit (packagePlatforms pkgs.pkgsCross.ghcjs.haskell.packages.ghc912)
-                  ghc
-                  hello
-                  microlens
-                  miso
-                  reflex-dom
-                  ;
-              };
-
-              haskell.packages.ghcHEAD = {
-                inherit (packagePlatforms pkgs.pkgsCross.ghcjs.haskell.packages.ghcHEAD)
-                  ghc
-                  hello
-                  microlens
-                  ;
-              };
+            haskellPackages = {
+              inherit (packagePlatforms pkgs.pkgsStatic.haskellPackages)
+                hello
+                lens
+                random
+                QuickCheck
+                cabal2nix
+                terminfo # isn't bundled for cross
+                xhtml # isn't bundled for cross
+                postgrest
+                ;
             };
-
-        ucrt64.haskell.packages.ghc912 = {
-          inherit (packagePlatforms pkgs.pkgsCross.ucrt64.haskell.packages.ghc912)
-            ghc
-            # hello # executables don't build yet
-            microlens
-            ;
-        };
-
-        riscv64 = {
-          # Cross compilation of GHC
-          haskell.compiler = {
-            inherit (packagePlatforms pkgs.pkgsCross.riscv64.haskell.compiler)
-              # Latest GHC we are able to cross-compile.
-              ghc948
-              ;
           };
-        };
 
-        aarch64-multiplatform = {
-          # Cross compilation of GHC
-          haskell.compiler = {
-            inherit (packagePlatforms pkgs.pkgsCross.aarch64-multiplatform.haskell.compiler)
-              # Latest GHC we are able to cross-compile. Uses NCG backend.
-              ghc948
-              ;
-          };
-        }
-        //
-          removePlatforms
-            [
-              # Testing cross from x86_64-linux
-              "aarch64-darwin"
-              "aarch64-linux"
-            ]
-            {
-              haskellPackages = {
-                inherit (packagePlatforms pkgs.pkgsCross.aarch64-multiplatform.haskellPackages)
-                  ghc
-                  hello
-                  th-orphans
-                  ;
-              };
-            };
-      };
+      tests.haskell = packagePlatforms pkgs.tests.haskell;
     })
     (versionedCompilerJobs {
+      Cabal_3_10_3_0 = lib.subtractLists [
+        # time < 1.13 conflicts with time == 1.14.*
+        compilerNames.ghc9123
+      ] released;
+
+      Cabal_3_12_1_0 = released;
+      Cabal_3_14_2_0 = released;
+      Cabal_3_16_1_0 = released;
+
+      MicroCabal = [
+        compilerNames.microhs
+      ];
+
+      # MicroHs-specific replacement packages
+      array = [
+        compilerNames.microhs
+      ];
+
       # Packages which should be checked on more than the
       # default GHC version. This list can be used to test
       # the state of the package set with newer compilers
@@ -524,114 +543,130 @@ let
         # work with older compilers.
         compilerNames.ghc948
       ] released;
-      Cabal_3_10_3_0 = lib.subtractLists [
-        # time < 1.13 conflicts with time == 1.14.*
-        compilerNames.ghc9123
-      ] released;
-      Cabal_3_12_1_0 = released;
-      Cabal_3_14_2_0 = released;
-      Cabal_3_16_1_0 = released;
+
       cabal2nix = released;
       cabal2nix-unstable = released;
-      funcmp = released;
-      haskell-debugger = [
-        compilerNames.ghc9141
-      ];
-      haskell-language-server = released;
-      hoogle = released;
-      hlint = lib.subtractLists [
-        compilerNames.ghc9123
-      ] released;
-      hpack = released;
-      hsdns = released;
-      iserv-proxy = released;
-      jailbreak-cabal = released;
-      language-nix = released;
-      nix-paths = released;
-      titlecase = released;
-      ghc-lib = released;
-      ghc-lib-parser = released;
-      ghc-lib-parser-ex = released;
-      ghc-source-gen = lib.subtractLists [
-        compilerNames.ghc9123
-      ] released;
-      ghc-tags = lib.subtractLists [
-        compilerNames.ghc9123
-      ] released;
-      hashable = released;
-      primitive = released;
-      scrod = [
-        compilerNames.ghc9141
-      ];
-      semaphore-compat = [
-        # Compiler < 9.8 don't have the semaphore-compat core package, but
-        # requires unix >= 2.8.1.0 which implies GHC >= 9.6 for us.
-        compilerNames.ghc967
-      ];
-      weeder = lib.subtractLists [
-        compilerNames.ghc9123
-      ] released;
-
-      # MicroHs core packages
-      ghc-compat = [
-        compilerNames.microhs
-      ];
-      MicroCabal = [
-        compilerNames.microhs
-      ];
-
-      # MicroHs-specific replacement packages
-      array = [
-        compilerNames.microhs
-      ];
 
       # GHC boot packages known to be compatible with MicroHs
       containers = [
         compilerNames.microhs
       ];
+
       exceptions = [
         compilerNames.microhs
       ];
+
       filepath = [
         compilerNames.microhs
       ];
-      mtl = [
+
+      funcmp = released;
+
+      # MicroHs core packages
+      ghc-compat = [
         compilerNames.microhs
       ];
-      os-string = [
-        compilerNames.microhs
+
+      ghc-lib = released;
+      ghc-lib-parser = released;
+      ghc-lib-parser-ex = released;
+
+      ghc-source-gen = lib.subtractLists [
+        compilerNames.ghc9123
+      ] released;
+
+      ghc-tags = lib.subtractLists [
+        compilerNames.ghc9123
+      ] released;
+
+      hashable = released;
+
+      haskell-debugger = [
+        compilerNames.ghc9141
       ];
-      parsec = [
-        compilerNames.microhs
-      ];
-      terminfo = [
-        compilerNames.microhs
-      ];
-      time = [
-        compilerNames.microhs
-      ];
-      transformers = [
-        compilerNames.microhs
-      ];
+
+      haskell-language-server = released;
+
+      hlint = lib.subtractLists [
+        compilerNames.ghc9123
+      ] released;
+
+      hoogle = released;
+      hpack = released;
 
       # MicroHs upstream tested
       hscolour = [
         compilerNames.microhs
       ];
+
+      hsdns = released;
+      iserv-proxy = released;
+      jailbreak-cabal = released;
+      language-nix = released;
+
+      mtl = [
+        compilerNames.microhs
+      ];
+
+      nix-paths = released;
+
+      os-string = [
+        compilerNames.microhs
+      ];
+
+      parsec = [
+        compilerNames.microhs
+      ];
+
+      primitive = released;
+
       random = [
         compilerNames.microhs
       ];
+
+      scrod = [
+        compilerNames.ghc9141
+      ];
+
+      semaphore-compat = [
+        # Compiler < 9.8 don't have the semaphore-compat core package, but
+        # requires unix >= 2.8.1.0 which implies GHC >= 9.6 for us.
+        compilerNames.ghc967
+      ];
+
+      terminfo = [
+        compilerNames.microhs
+      ];
+
+      time = [
+        compilerNames.microhs
+      ];
+
+      titlecase = released;
+
+      transformers = [
+        compilerNames.microhs
+      ];
+
+      weeder = lib.subtractLists [
+        compilerNames.ghc9123
+      ] released;
     })
     {
-      mergeable = pkgs.releaseTools.aggregate {
-        name = "haskell-updates-mergeable";
+      maintained = pkgs.releaseTools.aggregate {
+        constituents = accumulateDerivations (
+          map (name: jobs.haskellPackages."${name}") (maintainedPkgNames pkgs.haskellPackages)
+        );
+
+        name = "maintained-haskell-packages";
+
         meta = {
-          description = ''
-            Critical haskell packages that should work at all times,
-            serves as minimum requirement for an update merge
-          '';
+          description = "Aggregate jobset of all haskell packages with a maintainer";
           teams = [ lib.teams.haskell ];
         };
+      };
+
+      mergeable = pkgs.releaseTools.aggregate {
         constituents = accumulateDerivations [
           # haskell specific tests
           jobs.tests.haskell
@@ -661,45 +696,52 @@ let
           jobs.haskellPackages.hsemail
           jobs.haskellPackages.hsyslog
         ];
-      };
-      maintained = pkgs.releaseTools.aggregate {
-        name = "maintained-haskell-packages";
+
+        name = "haskell-updates-mergeable";
+
         meta = {
-          description = "Aggregate jobset of all haskell packages with a maintainer";
+          description = ''
+            Critical haskell packages that should work at all times,
+            serves as minimum requirement for an update merge
+          '';
+
           teams = [ lib.teams.haskell ];
         };
-        constituents = accumulateDerivations (
-          map (name: jobs.haskellPackages."${name}") (maintainedPkgNames pkgs.haskellPackages)
-        );
       };
 
       muslGHCs = pkgs.releaseTools.aggregate {
-        name = "haskell-pkgsMusl-ghcs";
-        meta = {
-          description = "GHCs built with musl";
-          maintainers = with lib.maintainers; [
-            nh2
-          ];
-        };
         constituents = accumulateDerivations [
           jobs.pkgsMusl.haskell.compiler.ghcHEAD
           jobs.pkgsMusl.haskell.compiler.native-bignum.ghcHEAD
         ];
+
+        name = "haskell-pkgsMusl-ghcs";
+
+        meta = {
+          description = "GHCs built with musl";
+
+          maintainers = with lib.maintainers; [
+            nh2
+          ];
+        };
       };
 
       staticHaskellPackages = pkgs.releaseTools.aggregate {
+        constituents = accumulateDerivations [
+          jobs.pkgsStatic.haskell.packages.native-bignum.ghc948 # non-hadrian
+          jobs.pkgsStatic.haskellPackages
+        ];
+
         name = "static-haskell-packages";
+
         meta = {
           description = "Static haskell builds using the pkgsStatic infrastructure";
+
           maintainers = [
             lib.maintainers.sternenseemann
             lib.maintainers.rnhmjoj
           ];
         };
-        constituents = accumulateDerivations [
-          jobs.pkgsStatic.haskell.packages.native-bignum.ghc948 # non-hadrian
-          jobs.pkgsStatic.haskellPackages
-        ];
       };
     }
   ];

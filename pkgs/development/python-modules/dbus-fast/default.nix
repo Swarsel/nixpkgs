@@ -1,9 +1,9 @@
 {
   lib,
+  fetchFromGitHub,
   buildPythonPackage,
   cython,
   dbus,
-  fetchFromGitHub,
   poetry-core,
   pytest,
   pytest-asyncio,
@@ -16,7 +16,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "dbus-fast";
   version = "5.0.22";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "Bluetooth-Devices";
@@ -34,25 +33,12 @@ buildPythonPackage (finalAttrs: {
   # python version. This ensures we fail if we build the wrong one.
   env.REQUIRE_CYTHON = 1;
 
-  build-system = [
-    cython
-    poetry-core
-    setuptools
-  ];
-
   nativeCheckInputs = [
     dbus
     pytest
     pytest-asyncio
     pytest-codspeed
     pytest-cov-stub
-  ];
-
-  pythonImportsCheck = [
-    "dbus_fast"
-    "dbus_fast.aio"
-    "dbus_fast.service"
-    "dbus_fast.message"
   ];
 
   checkPhase = ''
@@ -65,6 +51,21 @@ buildPythonPackage (finalAttrs: {
 
     runHook postCheck
   '';
+
+  build-system = [
+    cython
+    poetry-core
+    setuptools
+  ];
+
+  pyproject = true;
+
+  pythonImportsCheck = [
+    "dbus_fast"
+    "dbus_fast.aio"
+    "dbus_fast.service"
+    "dbus_fast.message"
+  ];
 
   meta = {
     description = "Faster version of dbus-next";

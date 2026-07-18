@@ -26,10 +26,10 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   meta = {
-    homepage = "https://www.selenic.com/smem/";
     description = "Memory usage reporting tool that takes shared memory into account";
-    platforms = lib.platforms.linux;
-    maintainers = [ ];
+    homepage = "https://www.selenic.com/smem/";
     license = lib.licenses.gpl2Plus;
+    maintainers = [ ];
+    platforms = lib.platforms.linux;
   };
 })

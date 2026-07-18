@@ -1,17 +1,17 @@
 {
   lib,
   stdenv,
-  rustPlatform,
   fetchFromGitHub,
   cmake,
-  pkg-config,
-  wrapGAppsHook3,
+  copyDesktopItems,
   libglvnd,
   libxkbcommon,
-  openssl,
   makeDesktopItem,
-  copyDesktopItems,
   nix-update-script,
+  openssl,
+  pkg-config,
+  rustPlatform,
+  wrapGAppsHook3,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -24,8 +24,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-1qhBBa6Mzo8XqvzwiHKnP0W9Oo26nvMiwZTzRAnLtfs=";
   };
-
-  cargoHash = "sha256-I39SPTBH4JUx5z65eD2w2ntWKfjWSxweSco6QE9V5sM=";
 
   nativeBuildInputs = [
     cmake
@@ -40,6 +38,8 @@ rustPlatform.buildRustPackage (finalAttrs: {
     openssl
   ];
 
+  cargoHash = "sha256-I39SPTBH4JUx5z65eD2w2ntWKfjWSxweSco6QE9V5sM=";
+
   # Force linking to libEGL, which is always dlopen()ed, and to
   # libwayland-client & libxkbcommon, which is dlopen()ed based on the
   # winit backend.
@@ -50,10 +50,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
     "-lwayland-client"
     "-lxkbcommon"
     "--pop-state"
-  ];
-
-  cargoTestFlags = [
-    "--all"
   ];
 
   checkFlags = [
@@ -70,26 +66,31 @@ rustPlatform.buildRustPackage (finalAttrs: {
     "--skip=bnp::test_convert"
   ];
 
-  passthru.updateScript = nix-update-script { };
-
   postInstall = ''
     install -Dm444 assets/ukmm.png  $out/share/icons/hicolor/256x256/apps/ukmm.png
   '';
 
+  cargoTestFlags = [
+    "--all"
+  ];
+
   desktopItems = [
     (makeDesktopItem {
-      name = "ukmm";
-      exec = "ukmm %u";
-      mimeTypes = [ "x-scheme-handler/bcml" ];
-      icon = "ukmm";
-      desktopName = "UKMM";
       categories = [
         "Game"
         "Utility"
       ];
+
       comment = "Breath of the Wild Mod Manager";
+      desktopName = "UKMM";
+      exec = "ukmm %u";
+      icon = "ukmm";
+      mimeTypes = [ "x-scheme-handler/bcml" ];
+      name = "ukmm";
     })
   ];
+
+  passthru.updateScript = nix-update-script { };
 
   meta = {
     description = "New mod manager for The Legend of Zelda: Breath of the Wild";
@@ -98,7 +99,7 @@ rustPlatform.buildRustPackage (finalAttrs: {
     license = lib.licenses.gpl3Plus;
     maintainers = with lib.maintainers; [ kira-bruneau ];
     platforms = lib.platforms.linux;
-    broken = stdenv.hostPlatform.isLinux && stdenv.hostPlatform.isAarch64;
     mainProgram = "ukmm";
+    broken = stdenv.hostPlatform.isLinux && stdenv.hostPlatform.isAarch64;
   };
 })

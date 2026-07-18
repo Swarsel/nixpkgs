@@ -1,10 +1,10 @@
 {
   lib,
   stdenv,
+  fetchFromGitHub,
   aiohttp,
   audioop-lts,
   buildPythonPackage,
-  fetchFromGitHub,
   ffmpeg,
   libopus,
   pynacl,
@@ -18,7 +18,6 @@ let
 in
 buildPythonPackage {
   inherit pname version;
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "Rapptz";
@@ -27,6 +26,8 @@ buildPythonPackage {
     hash = "sha256-glFXgTNdOQ3cG/jlvi/1ASon2HpcoKli45IhLhjpIvA=";
   };
 
+  # Only have integration tests with discord
+  doCheck = false;
   build-system = [ setuptools ];
 
   dependencies = [
@@ -43,8 +44,7 @@ buildPythonPackage {
       --replace-fail "executable: str = 'ffmpeg'" "executable: str = '${lib.getExe ffmpeg}'"
   '';
 
-  # Only have integration tests with discord
-  doCheck = false;
+  pyproject = true;
 
   pythonImportsCheck = [
     "discord"

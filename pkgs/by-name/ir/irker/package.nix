@@ -2,12 +2,12 @@
   lib,
   stdenv,
   fetchFromGitLab,
-  python3,
-  pkg-config,
-  xmlto,
   docbook2x,
-  docbook_xsl,
   docbook_xml_dtd_412,
+  docbook_xsl,
+  pkg-config,
+  python3,
+  xmlto,
 }:
 
 stdenv.mkDerivation {
@@ -20,6 +20,13 @@ stdenv.mkDerivation {
     rev = "dc0f65a7846a3922338e72d8c6140053fe914b54";
     sha256 = "1hslwqa0gqsnl3l6hd5hxpn0wlachxd51infifhlwhyhd6iwgx8p";
   };
+
+  postPatch = ''
+    substituteInPlace Makefile \
+      --replace '-o 0 -g 0' ""
+  '';
+
+  strictDeps = true;
 
   nativeBuildInputs = [
     pkg-config
@@ -36,13 +43,6 @@ stdenv.mkDerivation {
     # python.pkgs.pysocks
   ];
 
-  strictDeps = true;
-
-  postPatch = ''
-    substituteInPlace Makefile \
-      --replace '-o 0 -g 0' ""
-  '';
-
   installFlags = [
     "prefix=/"
     "DESTDIR=$$out"
@@ -53,7 +53,7 @@ stdenv.mkDerivation {
     homepage = "https://gitlab.com/esr/irker";
     license = lib.licenses.bsd2;
     maintainers = [ ];
-    mainProgram = "irkerd";
     platforms = lib.platforms.unix;
+    mainProgram = "irkerd";
   };
 }

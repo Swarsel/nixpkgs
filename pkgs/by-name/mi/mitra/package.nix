@@ -1,9 +1,9 @@
 {
   lib,
   stdenv,
-  rustPlatform,
   fetchFromCodeberg,
   installShellFiles,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -17,23 +17,19 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-1G1XHLCdeETSqltrYxfxQCL4q1x7L2sqr9C2VOB9ecs=";
   };
 
-  cargoHash = "sha256-VGJ1ObOe/QQzSwRov06hkf9zkrmSmODiJUkhC2+Bcrk=";
+  nativeBuildInputs = [
+    installShellFiles
+  ];
 
-  # require running database
-  doCheck = false;
+  cargoHash = "sha256-VGJ1ObOe/QQzSwRov06hkf9zkrmSmODiJUkhC2+Bcrk=";
 
   env.RUSTFLAGS = toString [
     # MEMO: mitra use ammonia crate with unstable rustc flag
     "--cfg=ammonia_unstable"
   ];
 
-  buildFeatures = [
-    "production"
-  ];
-
-  nativeBuildInputs = [
-    installShellFiles
-  ];
+  # require running database
+  doCheck = false;
 
   postInstall = lib.optionalString (stdenv.buildPlatform.canExecute stdenv.hostPlatform) ''
     installShellCompletion --cmd mitra \
@@ -41,6 +37,10 @@ rustPlatform.buildRustPackage (finalAttrs: {
       --fish <($out/bin/mitra completion --shell fish) \
       --zsh <($out/bin/mitra completion --shell zsh)
   '';
+
+  buildFeatures = [
+    "production"
+  ];
 
   meta = {
     description = "Federated micro-blogging platform";

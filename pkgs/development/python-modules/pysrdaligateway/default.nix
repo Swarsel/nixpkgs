@@ -1,17 +1,16 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
+  buildPythonPackage,
   cryptography,
   paho-mqtt,
   psutil,
+  setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "pysrdaligateway";
   version = "0.21.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "maginawin";
@@ -20,6 +19,8 @@ buildPythonPackage rec {
     hash = "sha256-X9XLwlS4WAkNMghrs0AtHl2vwt/R2BEWPsqPY8gZNUs=";
   };
 
+  # upstream "relies on manual integration testing with physical DALI hardware"
+  doCheck = false;
   build-system = [ setuptools ];
 
   dependencies = [
@@ -28,15 +29,13 @@ buildPythonPackage rec {
     psutil
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "PySrDaliGateway" ];
 
-  # upstream "relies on manual integration testing with physical DALI hardware"
-  doCheck = false;
-
   meta = {
-    changelog = "https://github.com/maginawin/PySrDaliGateway/releases/tag/${src.tag}";
     description = "Python library for Sunricher DALI Gateway (EDA)";
     homepage = "https://github.com/maginawin/PySrDaliGateway";
+    changelog = "https://github.com/maginawin/PySrDaliGateway/releases/tag/${src.tag}";
     license = lib.licenses.asl20;
     maintainers = [ lib.maintainers.dotlambda ];
   };

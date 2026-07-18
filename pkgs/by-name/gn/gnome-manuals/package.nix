@@ -1,8 +1,8 @@
 {
-  stdenv,
   lib,
-  desktop-file-utils,
+  stdenv,
   fetchurl,
+  desktop-file-utils,
   flatpak,
   glib,
   gnome,
@@ -28,6 +28,8 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-foRBdV0N5xdCjIAORa4GyF7JZK9GrFO53GW0G8OjLHQ=";
   };
 
+  strictDeps = true;
+
   nativeBuildInputs = [
     desktop-file-utils
     meson
@@ -48,24 +50,22 @@ stdenv.mkDerivation (finalAttrs: {
     webkitgtk_6_0
   ];
 
-  strictDeps = true;
-
   preFixup = ''
     gappsWrapperArgs+=(--prefix XDG_DATA_DIRS : "${libpanel}/share")
   '';
 
   passthru.updateScript = gnome.updateScript {
-    packageName = "manuals";
     attrPath = "gnome-manuals";
+    packageName = "manuals";
   };
 
   meta = {
     description = "Tool for browsing documentation";
-    mainProgram = "manuals";
     homepage = "https://apps.gnome.org/Manuals/";
     changelog = "https://gitlab.gnome.org/GNOME/manuals/-/blob/${finalAttrs.version}/NEWS?ref_type=tags";
     license = lib.licenses.gpl3Plus;
-    teams = [ lib.teams.gnome ];
     platforms = lib.platforms.linux;
+    mainProgram = "manuals";
+    teams = [ lib.teams.gnome ];
   };
 })

@@ -1,19 +1,16 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
-  numpy,
+  buildPythonPackage,
   matplotlib,
+  numpy,
   pytestCheckHook,
+  setuptools,
 }:
 
 buildPythonPackage {
   pname = "showit";
   version = "1.1.4";
-  pyproject = true;
-
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "freeman-lab";
@@ -22,6 +19,8 @@ buildPythonPackage {
     hash = "sha256-JrcqfQtSjbbOhr5quHE+QwlKsA6eUpCifLRzTrOOqHU=";
   };
 
+  nativeCheckInputs = [ pytestCheckHook ];
+  __structuredAttrs = true;
   build-system = [ setuptools ];
 
   dependencies = [
@@ -29,8 +28,7 @@ buildPythonPackage {
     matplotlib
   ];
 
-  nativeCheckInputs = [ pytestCheckHook ];
-
+  pyproject = true;
   pythonImportsCheck = [ "showit" ];
 
   meta = {

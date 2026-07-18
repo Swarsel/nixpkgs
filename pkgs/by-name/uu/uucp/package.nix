@@ -2,8 +2,8 @@
   lib,
   stdenv,
   fetchurl,
-  fetchDebianPatch,
   autoreconfHook,
+  fetchDebianPatch,
   testers,
 }:
 
@@ -16,6 +16,32 @@ stdenv.mkDerivation (finalAttrs: {
     sha256 = "0b5nhl9vvif1w3wdipjsk8ckw49jj1w85xw1mmqi3zbcpazia306";
   };
 
+  patches = [
+    ./socklen_t.patch
+    (fetchDebianPatch {
+      inherit (finalAttrs) pname version;
+      debianRevision = "31";
+      hash = "sha256-6Aqghz6P+bWULHOXCQIdQLRuaE+Lci7t5ojQXJOyeA0=";
+      patch = "configure.patch";
+    })
+    (fetchDebianPatch {
+      inherit (finalAttrs) pname version;
+      debianRevision = "31";
+      hash = "sha256-EsJqZCV4x7ggzpoa4OaibCLvF8L8FGGnLlBtr4Cee18=";
+      patch = "implicit.patch";
+    })
+    (fetchDebianPatch {
+      inherit (finalAttrs) pname version;
+      debianRevision = "31";
+      hash = "sha256-+9H/gQLwkPx4GeWiZyy6oQdysvw2+P1O8wP5It/Tg5k=";
+      patch = "gcc15.patch";
+    })
+  ];
+
+  # Regenerate `configure`; the checked in version was generated in 2002 and
+  # contains snippets like `main(){return(0);}` that modern compilers dislike.
+  nativeBuildInputs = [ autoreconfHook ];
+  makeFlags = [ "AR:=$(AR)" ];
   hardeningDisable = [ "format" ];
 
   prePatch = ''
@@ -25,41 +51,12 @@ stdenv.mkDerivation (finalAttrs: {
     sed -i '/chown $(OWNER)/d' Makefile.am
   '';
 
-  patches = [
-    ./socklen_t.patch
-    (fetchDebianPatch {
-      inherit (finalAttrs) pname version;
-      debianRevision = "31";
-      patch = "configure.patch";
-      hash = "sha256-6Aqghz6P+bWULHOXCQIdQLRuaE+Lci7t5ojQXJOyeA0=";
-    })
-    (fetchDebianPatch {
-      inherit (finalAttrs) pname version;
-      debianRevision = "31";
-      patch = "implicit.patch";
-      hash = "sha256-EsJqZCV4x7ggzpoa4OaibCLvF8L8FGGnLlBtr4Cee18=";
-    })
-    (fetchDebianPatch {
-      inherit (finalAttrs) pname version;
-      debianRevision = "31";
-      patch = "gcc15.patch";
-      hash = "sha256-+9H/gQLwkPx4GeWiZyy6oQdysvw2+P1O8wP5It/Tg5k=";
-    })
-  ];
-
-  # Regenerate `configure`; the checked in version was generated in 2002 and
-  # contains snippets like `main(){return(0);}` that modern compilers dislike.
-  nativeBuildInputs = [ autoreconfHook ];
-
-  makeFlags = [ "AR:=$(AR)" ];
-
   passthru.tests.version = testers.testVersion {
     package = finalAttrs.finalPackage;
   };
 
   meta = {
     description = "Unix-unix cp over serial line, also includes cu program";
-    mainProgram = "uucp";
 
     longDescription = ''
       Taylor UUCP is a free implementation of UUCP and is the standard
@@ -69,10 +66,9 @@ stdenv.mkDerivation (finalAttrs: {
     '';
 
     homepage = "https://www.gnu.org/software/uucp/uucp.html";
-
     license = lib.licenses.gpl2Plus;
-
-    platforms = lib.platforms.all;
     maintainers = [ ];
+    platforms = lib.platforms.all;
+    mainProgram = "uucp";
   };
 })

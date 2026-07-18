@@ -1,7 +1,7 @@
 {
   config,
-  pkgs,
   lib,
+  pkgs,
   utils,
   ...
 }:
@@ -23,27 +23,30 @@ in
     enable = lib.mkEnableOption "the AppleTalk daemon";
 
     configFile = lib.mkOption {
-      type = lib.types.nullOr lib.types.path;
       default = atalkdConfFile;
       defaultText = "/nix/store/xxx-atalkd.conf";
+
       description = ''
         Optional path to a custom {file}`atalkd.conf` file. When set, this overrides the generated
         configuration from `services.atalkd.interfaces`.
       '';
+
+      type = lib.types.nullOr lib.types.path;
     };
 
     interfaces = lib.mkOption {
+      default = { };
       description = "Per-interface configuration for atalkd.";
+
       type = lib.types.attrsOf (
         lib.types.submodule {
           options.config = lib.mkOption {
-            type = lib.types.nullOr lib.types.str;
             default = null;
             description = "Optional configuration string for this interface.";
+            type = lib.types.nullOr lib.types.str;
           };
         }
       );
-      default = { };
     };
   };
 
@@ -57,9 +60,7 @@ in
       system.requiredKernelConfig = [
         (config.lib.kernelConfig.isEnabled "APPLETALK")
       ];
-      systemd.services.netatalk.partOf = [ "atalkd.service" ];
-      systemd.services.netatalk.after = interfaces;
-      systemd.services.netatalk.requires = interfaces;
+
       systemd.services.atalkd =
         let
           interfaces = map (iface: "sys-subsystem-net-devices-${utils.escapeSystemdPath iface}.device") (
@@ -68,31 +69,34 @@ in
         in
         {
 
-          description = "atalkd AppleTalk daemon";
-          unitConfig.Documentation = "man:atalkd.conf(5) man:atalkd(8)";
           after = interfaces;
-          wants = [ "network.target" ];
           before = [ "netatalk.service" ];
+          description = "atalkd AppleTalk daemon";
+          path = [ pkgs.netatalk ];
           requires = interfaces;
 
-          wantedBy = [ "multi-user.target" ];
-
-          path = [ pkgs.netatalk ];
-
           serviceConfig = {
-            Type = "forking";
-            GuessMainPID = "no";
-            DynamicUser = true;
             AmbientCapabilities = [ "CAP_NET_ADMIN" ];
-            RuntimeDirectory = "atalkd";
-            PIDFile = "/run/atalkd/atalkd";
             BindPaths = [ "/run/atalkd:/run/lock" ];
+            DynamicUser = true;
             ExecStart = "${pkgs.netatalk}/bin/atalkd -f ${cfg.configFile}";
+            GuessMainPID = "no";
+            PIDFile = "/run/atalkd/atalkd";
             Restart = "always";
+            RuntimeDirectory = "atalkd";
+            Type = "forking";
           };
+
+          unitConfig.Documentation = "man:atalkd.conf(5) man:atalkd(8)";
+          wantedBy = [ "multi-user.target" ];
+          wants = [ "network.target" ];
         };
+
+      systemd.services.netatalk.after = interfaces;
+      systemd.services.netatalk.partOf = [ "atalkd.service" ];
+      systemd.services.netatalk.requires = interfaces;
     };
 
-  meta.maintainers = with lib.maintainers; [ matthewcroughan ];
   meta.doc = ./atalkd.md;
+  meta.maintainers = with lib.maintainers; [ matthewcroughan ];
 }

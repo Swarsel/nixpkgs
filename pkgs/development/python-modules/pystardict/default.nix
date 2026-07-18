@@ -1,17 +1,16 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  hatchling,
+  buildPythonPackage,
   hatch-vcs,
-  six,
+  hatchling,
   pytestCheckHook,
+  six,
 }:
 
 buildPythonPackage rec {
   pname = "pystardict";
   version = "0.9";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "lig";
@@ -20,15 +19,15 @@ buildPythonPackage rec {
     hash = "sha256-VWOxggAKifN5f6nSN1xsSbg0hpKzrHDw+UqnAOzsXj0=";
   };
 
+  nativeCheckInputs = [ pytestCheckHook ];
+
   build-system = [
     hatchling
     hatch-vcs
   ];
 
   dependencies = [ six ];
-
-  nativeCheckInputs = [ pytestCheckHook ];
-
+  pyproject = true;
   pythonImportsCheck = [ "pystardict" ];
 
   meta = {

@@ -1,18 +1,17 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
+  defusedxml,
   flit-core,
   pytest,
-  sphinx,
-  defusedxml,
   pytestCheckHook,
+  sphinx,
 }:
 
 buildPythonPackage rec {
   pname = "sphinx-pytest";
   version = "0.3.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "chrisjsewell";
@@ -22,12 +21,8 @@ buildPythonPackage rec {
   };
 
   nativeBuildInputs = [ flit-core ];
-
-  propagatedBuildInputs = [ sphinx ];
-
   buildInputs = [ pytest ];
-
-  pythonImportsCheck = [ "sphinx_pytest" ];
+  propagatedBuildInputs = [ sphinx ];
 
   nativeCheckInputs = [
     defusedxml
@@ -39,10 +34,13 @@ buildPythonPackage rec {
     "test_no_transforms"
   ];
 
+  pyproject = true;
+  pythonImportsCheck = [ "sphinx_pytest" ];
+
   meta = {
-    changelog = "https://github.com/sphinx-extensions2/sphinx-pytest/releases/tag/${src.tag}";
     description = "Helpful pytest fixtures for Sphinx extensions";
     homepage = "https://github.com/chrisjsewell/sphinx-pytest";
+    changelog = "https://github.com/sphinx-extensions2/sphinx-pytest/releases/tag/${src.tag}";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ loicreynier ];
   };

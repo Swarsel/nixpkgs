@@ -9,13 +9,13 @@ let
   configFile = (pkgs.formats.yaml { }).generate "bcg.conf.yaml" (
     lib.filterAttrsRecursive (n: v: v != null) {
       inherit (cfg) device name mqtt;
-      retain_node_messages = cfg.retainNodeMessages;
-      qos_node_messages = cfg.qosNodeMessages;
-      base_topic_prefix = cfg.baseTopicPrefix;
       automatic_remove_kit_from_names = cfg.automaticRemoveKitFromNames;
-      automatic_rename_kit_nodes = cfg.automaticRenameKitNodes;
       automatic_rename_generic_nodes = cfg.automaticRenameGenericNodes;
+      automatic_rename_kit_nodes = cfg.automaticRenameKitNodes;
       automatic_rename_nodes = cfg.automaticRenameNodes;
+      base_topic_prefix = cfg.baseTopicPrefix;
+      qos_node_messages = cfg.qosNodeMessages;
+      retain_node_messages = cfg.retainNodeMessages;
     }
   );
 in
@@ -24,35 +24,103 @@ in
     services.bcg = {
       enable = lib.mkEnableOption "BigClown gateway";
       package = lib.mkPackageOption pkgs [ "python3Packages" "bcg" ] { };
+
+      automaticRemoveKitFromNames = lib.mkOption {
+        default = true;
+        description = "Automatically remove kits.";
+        type = lib.types.bool;
+      };
+
+      automaticRenameGenericNodes = lib.mkOption {
+        default = true;
+        description = "Automatically rename generic nodes.";
+        type = lib.types.bool;
+      };
+
+      automaticRenameKitNodes = lib.mkOption {
+        default = true;
+        description = "Automatically rename kit's nodes.";
+        type = lib.types.bool;
+      };
+
+      automaticRenameNodes = lib.mkOption {
+        default = true;
+        description = "Automatically rename all nodes.";
+        type = lib.types.bool;
+      };
+
+      baseTopicPrefix = lib.mkOption {
+        default = "";
+        description = "Topic prefix added to all MQTT messages.";
+        type = lib.types.str;
+      };
+
+      device = lib.mkOption {
+        description = "Device name to configure gateway to use.";
+        type = lib.types.str;
+      };
+
       environmentFiles = lib.mkOption {
-        type = lib.types.listOf lib.types.path;
         default = [ ];
-        example = [ "/run/keys/bcg.env" ];
+
         description = ''
           File to load as environment file. Environment variables from this file
           will be interpolated into the config file using envsubst with this
           syntax: `$ENVIRONMENT` or `''${VARIABLE}`.
           This is useful to avoid putting secrets into the nix store.
         '';
+
+        example = [ "/run/keys/bcg.env" ];
+        type = lib.types.listOf lib.types.path;
       };
-      verbose = lib.mkOption {
-        type = lib.types.enum [
-          "CRITICAL"
-          "ERROR"
-          "WARNING"
-          "INFO"
-          "DEBUG"
-        ];
-        default = "WARNING";
-        description = "Verbosity level.";
+
+      mqtt = {
+        cafile = lib.mkOption {
+          default = null;
+          description = "Certificate Authority file for MQTT server access.";
+          type = with lib.types; nullOr str;
+        };
+
+        certfile = lib.mkOption {
+          default = null;
+          description = "Certificate file for MQTT server access.";
+          type = with lib.types; nullOr str;
+        };
+
+        host = lib.mkOption {
+          default = "127.0.0.1";
+          description = "Host where MQTT server is running.";
+          type = lib.types.str;
+        };
+
+        keyfile = lib.mkOption {
+          default = null;
+          description = "Key file for MQTT server access.";
+          type = with lib.types; nullOr str;
+        };
+
+        password = lib.mkOption {
+          default = null;
+          description = "MQTT server access password.";
+          type = with lib.types; nullOr str;
+        };
+
+        port = lib.mkOption {
+          default = 1883;
+          description = "Port of MQTT server.";
+          type = lib.types.port;
+        };
+
+        username = lib.mkOption {
+          default = null;
+          description = "MQTT server access username.";
+          type = with lib.types; nullOr str;
+        };
       };
-      device = lib.mkOption {
-        type = lib.types.str;
-        description = "Device name to configure gateway to use.";
-      };
+
       name = lib.mkOption {
-        type = with lib.types; nullOr str;
         default = null;
+
         description = ''
           Name for the device.
 
@@ -62,83 +130,39 @@ in
 
           `null` can be used for automatic detection from gateway firmware.
         '';
+
+        type = with lib.types; nullOr str;
       };
-      mqtt = {
-        host = lib.mkOption {
-          type = lib.types.str;
-          default = "127.0.0.1";
-          description = "Host where MQTT server is running.";
-        };
-        port = lib.mkOption {
-          type = lib.types.port;
-          default = 1883;
-          description = "Port of MQTT server.";
-        };
-        username = lib.mkOption {
-          type = with lib.types; nullOr str;
-          default = null;
-          description = "MQTT server access username.";
-        };
-        password = lib.mkOption {
-          type = with lib.types; nullOr str;
-          default = null;
-          description = "MQTT server access password.";
-        };
-        cafile = lib.mkOption {
-          type = with lib.types; nullOr str;
-          default = null;
-          description = "Certificate Authority file for MQTT server access.";
-        };
-        certfile = lib.mkOption {
-          type = with lib.types; nullOr str;
-          default = null;
-          description = "Certificate file for MQTT server access.";
-        };
-        keyfile = lib.mkOption {
-          type = with lib.types; nullOr str;
-          default = null;
-          description = "Key file for MQTT server access.";
-        };
-      };
-      retainNodeMessages = lib.mkOption {
-        type = lib.types.bool;
-        default = false;
-        description = "Specify that node messages should be retaied in MQTT broker.";
-      };
+
       qosNodeMessages = lib.mkOption {
-        type = lib.types.int;
         default = 1;
         description = "Set the guarantee of MQTT message delivery.";
+        type = lib.types.int;
       };
-      baseTopicPrefix = lib.mkOption {
-        type = lib.types.str;
-        default = "";
-        description = "Topic prefix added to all MQTT messages.";
-      };
-      automaticRemoveKitFromNames = lib.mkOption {
-        type = lib.types.bool;
-        default = true;
-        description = "Automatically remove kits.";
-      };
-      automaticRenameKitNodes = lib.mkOption {
-        type = lib.types.bool;
-        default = true;
-        description = "Automatically rename kit's nodes.";
-      };
-      automaticRenameGenericNodes = lib.mkOption {
-        type = lib.types.bool;
-        default = true;
-        description = "Automatically rename generic nodes.";
-      };
-      automaticRenameNodes = lib.mkOption {
-        type = lib.types.bool;
-        default = true;
-        description = "Automatically rename all nodes.";
-      };
+
       rename = lib.mkOption {
-        type = with lib.types; attrsOf str;
         default = { };
         description = "Rename nodes to different name.";
+        type = with lib.types; attrsOf str;
+      };
+
+      retainNodeMessages = lib.mkOption {
+        default = false;
+        description = "Specify that node messages should be retaied in MQTT broker.";
+        type = lib.types.bool;
+      };
+
+      verbose = lib.mkOption {
+        default = "WARNING";
+        description = "Verbosity level.";
+
+        type = lib.types.enum [
+          "CRITICAL"
+          "ERROR"
+          "WARNING"
+          "INFO"
+          "DEBUG"
+        ];
       };
     };
   };
@@ -155,22 +179,26 @@ in
         finalConfig = if envConfig then "\${RUNTIME_DIRECTORY}/bcg.config.yaml" else configFile;
       in
       {
-        description = "BigClown Gateway";
-        wantedBy = [ "multi-user.target" ];
-        wants = [
-          "network-online.target"
-        ]
-        ++ lib.optional config.services.mosquitto.enable "mosquitto.service";
         after = [ "network-online.target" ];
+        description = "BigClown Gateway";
+
         preStart = lib.mkIf envConfig ''
           umask 077
           ${pkgs.envsubst}/bin/envsubst -i "${configFile}" -o "${finalConfig}"
         '';
+
         serviceConfig = {
           EnvironmentFile = cfg.environmentFiles;
           ExecStart = "${cfg.package}/bin/bcg -c ${finalConfig} -v ${cfg.verbose}";
           RuntimeDirectory = "bcg";
         };
+
+        wantedBy = [ "multi-user.target" ];
+
+        wants = [
+          "network-online.target"
+        ]
+        ++ lib.optional config.services.mosquitto.enable "mosquitto.service";
       };
   };
 }

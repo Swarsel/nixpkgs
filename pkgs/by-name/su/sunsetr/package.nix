@@ -1,8 +1,8 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
   nix-update-script,
+  rustPlatform,
 }:
 rustPlatform.buildRustPackage (finalAttrs: {
   pname = "sunsetr";
@@ -24,11 +24,11 @@ rustPlatform.buildRustPackage (finalAttrs: {
   passthru.updateScript = nix-update-script { };
 
   meta = {
-    mainProgram = "sunsetr";
     description = "Automatic blue light filter for Hyprland, Niri, and everything Wayland";
     homepage = "https://github.com/psi4j/sunsetr";
     license = lib.licenses.mit;
-    platforms = lib.platforms.linux;
     maintainers = [ lib.maintainers.DoctorDalek1963 ];
+    platforms = lib.platforms.linux;
+    mainProgram = "sunsetr";
   };
 })

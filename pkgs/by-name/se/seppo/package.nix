@@ -1,9 +1,9 @@
 {
-  ocamlPackages,
+  lib,
   fetchFromCodeberg,
   ocaml-crunch,
+  ocamlPackages,
   seppo,
-  lib,
 }:
 
 let
@@ -20,9 +20,6 @@ ocamlPackages.buildDunePackage {
     rev = "d927311cae64883fe2b88f5a1c7e17c8cc525bad";
     hash = "sha256-Lb2w0mRNNamCltAwdxOyAYh02wkN7yKJGBzqBIPKE8k=";
   };
-
-  # Provide git sha to avoid git dependency
-  env.GIT_SHA = seppo.src.rev;
 
   # Static build fails to find correct static libraries
   postPatch = ''
@@ -58,9 +55,12 @@ ocamlPackages.buildDunePackage {
     xmlm
   ];
 
+  # Provide git sha to avoid git dependency
+  env.GIT_SHA = seppo.src.rev;
+
   meta = {
-    homepage = "https://seppo.mro.name";
     description = "Personal Social Web";
+    homepage = "https://seppo.mro.name";
     license = lib.licenses.gpl3Plus;
     maintainers = with lib.maintainers; [ infinidoge ];
     mainProgram = "seppo";

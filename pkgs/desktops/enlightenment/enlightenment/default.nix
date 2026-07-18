@@ -2,27 +2,27 @@
   lib,
   stdenv,
   fetchurl,
+  acpid,
+  alsa-lib,
+  bc,
+  bluez5,
+  ddcutil,
+  directoryListingUpdater,
+  efl,
+  gettext,
+  libexif,
+  libpulseaudio,
   meson,
   ninja,
-  pkg-config,
-  gettext,
-  alsa-lib,
-  acpid,
-  bc,
-  ddcutil,
-  efl,
-  libexif,
   pam,
-  xkeyboard_config,
+  pkg-config,
   udisks,
-  waylandSupport ? false,
   wayland-protocols,
+  xkeyboard_config,
   xwayland,
   bluetoothSupport ? true,
-  bluez5,
   pulseSupport ? !stdenv.hostPlatform.isDarwin,
-  libpulseaudio,
-  directoryListingUpdater,
+  waylandSupport ? false,
 }:
 
 stdenv.mkDerivation rec {
@@ -33,6 +33,19 @@ stdenv.mkDerivation rec {
     url = "https://download.enlightenment.org/rel/apps/${pname}/${pname}-${version}.tar.xz";
     sha256 = "sha256-tB34dx9g47lqGXOuVm10JcU6gznxjlTjEjAhh4HaL6k=";
   };
+
+  patches = [
+    # Executables cannot be made setuid in nix store. They should be
+    # wrapped in the enlightenment service module, and the wrapped
+    # executables should be used instead.
+    ./0001-wrapped-setuid-executables.patch
+    ./0003-setuid-missing-path.patch
+  ];
+
+  postPatch = ''
+    substituteInPlace src/modules/everything/evry_plug_calc.c \
+      --replace "ecore_exe_pipe_run(\"bc -l\"" "ecore_exe_pipe_run(\"${bc}/bin/bc -l\""
+  '';
 
   nativeBuildInputs = [
     gettext
@@ -59,36 +72,24 @@ stdenv.mkDerivation rec {
     xwayland
   ];
 
-  patches = [
-    # Executables cannot be made setuid in nix store. They should be
-    # wrapped in the enlightenment service module, and the wrapped
-    # executables should be used instead.
-    ./0001-wrapped-setuid-executables.patch
-    ./0003-setuid-missing-path.patch
-  ];
-
-  postPatch = ''
-    substituteInPlace src/modules/everything/evry_plug_calc.c \
-      --replace "ecore_exe_pipe_run(\"bc -l\"" "ecore_exe_pipe_run(\"${bc}/bin/bc -l\""
-  '';
-
   mesonFlags = [
     "-D systemdunitdir=lib/systemd/user"
   ]
   ++ lib.optional waylandSupport "-Dwl=true";
 
   passthru.providedSessions = [ "enlightenment" ];
-
   passthru.updateScript = directoryListingUpdater { };
 
   meta = {
     description = "Compositing Window Manager and Desktop Shell";
     homepage = "https://www.enlightenment.org";
     license = lib.licenses.bsd2;
-    platforms = lib.platforms.linux;
+
     maintainers = with lib.maintainers; [
       matejc
     ];
+
+    platforms = lib.platforms.linux;
     teams = [ lib.teams.enlightenment ];
   };
 }

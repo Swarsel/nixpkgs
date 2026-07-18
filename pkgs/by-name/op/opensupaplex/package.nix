@@ -1,22 +1,22 @@
 {
   lib,
   stdenv,
-  fetchFromGitHub,
   fetchurl,
-  makeDesktopItem,
-  copyDesktopItems,
-  testers,
-  opensupaplex,
+  fetchFromGitHub,
   SDL2,
   SDL2_mixer,
+  copyDesktopItems,
   desktopToDarwinBundle,
+  makeDesktopItem,
+  opensupaplex,
+  testers,
 }:
 
 let
   # Doesn't seem to be included in tagged releases, but does exist on master.
   icon = fetchurl {
-    url = "https://raw.githubusercontent.com/sergiou87/open-supaplex/b102548699cf16910b59559f689ecfad88d2a7d2/open-supaplex.svg";
     sha256 = "sha256-nKeSBUGjSulbEP7xxc6smsfCRjyc/xsLykH0o3Rq5wo=";
+    url = "https://raw.githubusercontent.com/sergiou87/open-supaplex/b102548699cf16910b59559f689ecfad88d2a7d2/open-supaplex.svg";
   };
 in
 stdenv.mkDerivation (finalAttrs: {
@@ -45,8 +45,6 @@ stdenv.mkDerivation (finalAttrs: {
 
   buildInputs = [ SDL2_mixer ];
 
-  enableParallelBuilding = true;
-
   env.NIX_CFLAGS_COMPILE = toString [
     "-DFILE_DATA_PATH=${placeholder "out"}/lib/opensupaplex"
     "-DFILE_FHS_XDG_DIRS"
@@ -73,27 +71,29 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
-  passthru.tests.version = testers.testVersion {
-    package = opensupaplex;
-    command = "opensupaplex --help";
-    version = "v${finalAttrs.version}";
-  };
-
   desktopItems = [
     (makeDesktopItem {
-      name = "opensupaplex";
-      exec = finalAttrs.meta.mainProgram;
-      icon = "open-supaplex";
-      desktopName = "OpenSupaplex";
-      comment = finalAttrs.meta.description;
       categories = [
         "Game"
       ];
+
+      comment = finalAttrs.meta.description;
+      desktopName = "OpenSupaplex";
+      exec = finalAttrs.meta.mainProgram;
+      icon = "open-supaplex";
+      name = "opensupaplex";
     })
   ];
 
+  enableParallelBuilding = true;
   # Strip only the main binary, not the data files which would corrupt them.
   stripExclude = [ "lib/opensupaplex/*" ];
+
+  passthru.tests.version = testers.testVersion {
+    version = "v${finalAttrs.version}";
+    command = "opensupaplex --help";
+    package = opensupaplex;
+  };
 
   meta = {
     description = "Decompilation of Supaplex in C and SDL";

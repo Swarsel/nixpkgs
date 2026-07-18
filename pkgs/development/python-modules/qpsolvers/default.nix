@@ -2,29 +2,27 @@
   lib,
   fetchFromGitHub,
   buildPythonPackage,
-  unittestCheckHook,
-  flit-core,
-  numpy,
-  scipy,
-
   # optional dependencies
   clarabel,
   cvxopt,
   daqp,
   ecos,
+  flit-core,
   gurobipy,
-  jaxopt,
-  osqp,
-  quadprog,
-  scs,
   highspy,
+  jaxopt,
+  numpy,
+  osqp,
   piqp,
   proxsuite,
+  quadprog,
+  scipy,
+  scs,
+  unittestCheckHook,
 }:
 buildPythonPackage rec {
   pname = "qpsolvers";
   version = "4.12.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "qpsolvers";
@@ -33,9 +31,8 @@ buildPythonPackage rec {
     hash = "sha256-KUaDas2PIkTuy+Yi94vKm1P/n6QLPDcUXm8KjOq6JzI=";
   };
 
+  nativeCheckInputs = [ unittestCheckHook ] ++ optional-dependencies.open_source_solvers;
   build-system = [ flit-core ];
-
-  pythonImportsCheck = [ "qpsolvers" ];
 
   dependencies = [
     numpy
@@ -51,13 +48,7 @@ buildPythonPackage rec {
     gurobi = [ gurobipy ];
     highs = [ highspy ];
     jaxopt = [ jaxopt ];
-    # mosek = [ cvxopt mosek ];
-    osqp = [ osqp ];
-    piqp = [ piqp ];
-    proxqp = [ proxsuite ];
-    # qpalm = [ qpalm ];
-    quadprog = [ quadprog ];
-    scs = [ scs ];
+
     open_source_solvers =
       with optional-dependencies;
       lib.flatten [
@@ -73,14 +64,23 @@ buildPythonPackage rec {
         quadprog
         scs
       ];
+
+    # mosek = [ cvxopt mosek ];
+    osqp = [ osqp ];
+    piqp = [ piqp ];
+    proxqp = [ proxsuite ];
+    # qpalm = [ qpalm ];
+    quadprog = [ quadprog ];
+    scs = [ scs ];
   };
 
-  nativeCheckInputs = [ unittestCheckHook ] ++ optional-dependencies.open_source_solvers;
+  pyproject = true;
+  pythonImportsCheck = [ "qpsolvers" ];
 
   meta = {
-    changelog = "https://github.com/qpsolvers/qpsolvers/blob/${src.tag}/CHANGELOG.md";
     description = "Quadratic programming solvers in Python with a unified API";
     homepage = "https://github.com/qpsolvers/qpsolvers";
+    changelog = "https://github.com/qpsolvers/qpsolvers/blob/${src.tag}/CHANGELOG.md";
     license = lib.licenses.lgpl3Plus;
     maintainers = with lib.maintainers; [ renesat ];
   };

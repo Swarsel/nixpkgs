@@ -1,10 +1,10 @@
 {
   lib,
   stdenv,
-  fetchgit,
   autoreconfHook,
-  pkg-config,
+  fetchgit,
   ncurses,
+  pkg-config,
   readline,
 }:
 
@@ -42,8 +42,8 @@ stdenv.mkDerivation (finalAttrs: {
   configureFlags = [ "CFLAGS=-std=gnu17" ];
 
   meta = {
-    homepage = "http://abook.sourceforge.net/";
     description = "Text-based addressbook program designed to use with mutt mail client";
+    homepage = "http://abook.sourceforge.net/";
     license = lib.licenses.gpl3Only;
     platforms = lib.platforms.unix;
     mainProgram = "abook";

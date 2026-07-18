@@ -4,8 +4,8 @@
   fetchFromGitLab,
   callPackage,
   ensureNewerSourcesForZipFilesHook,
-  python3,
   makeWrapper,
+  python3,
   # optional list of extra waf tools, e.g. `[ "doxygen" "pytest" ]`
   extraTools ? [ ],
 }:
@@ -21,6 +21,8 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-myPGbJW/RkOtEas+qZ/vTL66bekwDBPhC6AmfXECkcw=";
   };
 
+  strictDeps = true;
+
   nativeBuildInputs = [
     ensureNewerSourcesForZipFilesHook
     python3
@@ -31,16 +33,6 @@ stdenv.mkDerivation (finalAttrs: {
     # waf executable uses `#!/usr/bin/env python`
     python3
   ];
-
-  strictDeps = true;
-
-  configurePhase = ''
-    runHook preConfigure
-
-    python waf-light configure
-
-    runHook postConfigure
-  '';
 
   buildPhase =
     let
@@ -70,21 +62,30 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  configurePhase = ''
+    runHook preConfigure
+
+    python waf-light configure
+
+    runHook postConfigure
+  '';
+
   passthru = {
     inherit python3 extraTools;
+
     hook = callPackage ./hook.nix {
       waf = finalAttrs.finalPackage;
     };
   };
 
   meta = {
-    homepage = "https://waf.io";
+    inherit (python3.meta) platforms;
     description = "Meta build system";
+    homepage = "https://waf.io";
     changelog = "https://gitlab.com/ita1024/waf/blob/waf-${finalAttrs.version}/ChangeLog";
     license = lib.licenses.bsd3;
-    mainProgram = "waf";
-    maintainers = [ ];
-    inherit (python3.meta) platforms;
     sourceProvenance = [ lib.sourceTypes.fromSource ];
+    maintainers = [ ];
+    mainProgram = "waf";
   };
 })

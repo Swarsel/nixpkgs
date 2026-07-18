@@ -3,15 +3,22 @@
   stdenv,
   fetchFromGitHub,
   autoPatchelfHook,
-  openssl,
-  curl,
   avahi,
+  curl,
   ndi,
+  openssl,
 }:
 
 stdenv.mkDerivation {
   pname = "v4l2-to-ndi";
   version = "0-unstable-2022-09-14";
+
+  src = fetchFromGitHub {
+    owner = "lplassman";
+    repo = "V4L2-to-NDI";
+    rev = "4dd5e9594acc4f154658283ee52718fa58018ac9";
+    hash = "sha256-blB8HRfO2k1zsZamugOXZzW8uS26uf8+7sA0zBbV/K4=";
+  };
 
   nativeBuildInputs = [ autoPatchelfHook ];
 
@@ -21,13 +28,6 @@ stdenv.mkDerivation {
     avahi
     ndi
   ];
-
-  src = fetchFromGitHub {
-    owner = "lplassman";
-    repo = "V4L2-to-NDI";
-    rev = "4dd5e9594acc4f154658283ee52718fa58018ac9";
-    hash = "sha256-blB8HRfO2k1zsZamugOXZzW8uS26uf8+7sA0zBbV/K4=";
-  };
 
   buildPhase = ''
     runHook preBuild
@@ -51,11 +51,13 @@ stdenv.mkDerivation {
     description = "Video input (V4L2) to NDI converter";
     homepage = "https://github.com/lplassman/V4L2-to-NDI";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       pinpox
       MayNiklas
     ];
-    mainProgram = "v4l2ndi";
+
     platforms = lib.platforms.linux;
+    mainProgram = "v4l2ndi";
   };
 }

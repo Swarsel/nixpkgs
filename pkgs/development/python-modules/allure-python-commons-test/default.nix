@@ -1,25 +1,31 @@
 {
   lib,
-  fetchPypi,
-  buildPythonPackage,
   attrs,
+  buildPythonPackage,
+  fetchPypi,
   pluggy,
-  six,
   pyhamcrest,
-  setuptools-scm,
   python,
+  setuptools-scm,
+  six,
 }:
 
 buildPythonPackage rec {
   pname = "allure-python-commons-test";
   version = "2.16.0";
-  pyproject = true;
 
   src = fetchPypi {
-    pname = "allure_python_commons_test";
     inherit version;
     hash = "sha256-otfGxWNnbMUGuQcqsroOOfiqhCQqe25c39Ur57ek2og=";
+    pname = "allure_python_commons_test";
   };
+
+  checkPhase = ''
+    ${python.interpreter} -m doctest ./src/container.py
+    ${python.interpreter} -m doctest ./src/report.py
+    ${python.interpreter} -m doctest ./src/label.py
+    ${python.interpreter} -m doctest ./src/result.py
+  '';
 
   build-system = [ setuptools-scm ];
 
@@ -30,13 +36,7 @@ buildPythonPackage rec {
     pyhamcrest
   ];
 
-  checkPhase = ''
-    ${python.interpreter} -m doctest ./src/container.py
-    ${python.interpreter} -m doctest ./src/report.py
-    ${python.interpreter} -m doctest ./src/label.py
-    ${python.interpreter} -m doctest ./src/result.py
-  '';
-
+  pyproject = true;
   pythonImportsCheck = [ "allure_commons_test" ];
 
   meta = {

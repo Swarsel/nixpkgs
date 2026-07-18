@@ -1,24 +1,23 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   unittestCheckHook,
 }:
 
 buildPythonPackage rec {
   pname = "simplefix";
   version = "1.0.17";
-  format = "setuptools";
 
   src = fetchFromGitHub {
-    repo = "simplefix";
     owner = "da4089";
+    repo = "simplefix";
     tag = "v${version}";
     hash = "sha256-D85JW3JRQ1xErw6krMbAg94WYjPi76Xqjv/MGNMY5ZU=";
   };
 
   nativeCheckInputs = [ unittestCheckHook ];
-
+  format = "setuptools";
   pythonImportsCheck = [ "simplefix" ];
 
   unittestFlagsArray = [

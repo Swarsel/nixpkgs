@@ -1,24 +1,27 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchurl,
+  exiv2,
+  gi-docgen,
+  glib,
+  gobject-introspection,
   meson,
   mesonEmulatorHook,
   ninja,
   pkg-config,
-  exiv2,
-  glib,
-  gobject-introspection,
-  vala,
-  gi-docgen,
   python3,
+  vala,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
   pname = "gexiv2";
-  __structuredAttrs = true;
-  strictDeps = true;
   version = "0.16.0";
+
+  src = fetchurl {
+    url = "mirror://gnome/sources/gexiv2/${lib.versions.majorMinor finalAttrs.version}/gexiv2-${finalAttrs.version}.tar.xz";
+    sha256 = "2W+JXyRTn5ZvV3srskia6E+CMpcKjQwGTkoAdHSne7s=";
+  };
 
   outputs = [
     "out"
@@ -26,14 +29,7 @@ stdenv.mkDerivation (finalAttrs: {
     "devdoc"
   ];
 
-  src = fetchurl {
-    url = "mirror://gnome/sources/gexiv2/${lib.versions.majorMinor finalAttrs.version}/gexiv2-${finalAttrs.version}.tar.xz";
-    sha256 = "2W+JXyRTn5ZvV3srskia6E+CMpcKjQwGTkoAdHSne7s=";
-  };
-
-  depsBuildBuild = [
-    pkg-config
-  ];
+  strictDeps = true;
 
   nativeBuildInputs = [
     meson
@@ -82,12 +78,18 @@ stdenv.mkDerivation (finalAttrs: {
     moveToOutput "share/doc" "$devdoc"
   '';
 
+  __structuredAttrs = true;
+
+  depsBuildBuild = [
+    pkg-config
+  ];
+
   meta = {
-    homepage = "https://gitlab.gnome.org/GNOME/gexiv2";
     description = "GObject wrapper around the Exiv2 photo metadata library";
+    homepage = "https://gitlab.gnome.org/GNOME/gexiv2";
     license = lib.licenses.gpl2Plus;
+    maintainers = [ lib.maintainers._7591yj ];
     platforms = lib.platforms.unix;
     teams = [ lib.teams.gnome ];
-    maintainers = [ lib.maintainers._7591yj ];
   };
 })

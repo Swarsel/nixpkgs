@@ -1,14 +1,15 @@
 {
   lib,
+  stdenv,
+  fetchFromGitHub,
   authlib,
   buildPythonPackage,
   deprecation,
   fastapi,
-  fetchFromGitHub,
   flask,
+  grpcio,
   grpcio-health-checking,
   grpcio-tools,
-  grpcio,
   h5py,
   httpx,
   litestar,
@@ -22,7 +23,6 @@
   pytestCheckHook,
   pythonOlder,
   requests,
-  stdenv,
   setuptools-scm,
   validators,
   writableTmpDirAsHomeHook,
@@ -31,9 +31,6 @@
 buildPythonPackage rec {
   pname = "weaviate-client";
   version = "4.22.0";
-  pyproject = true;
-
-  disabled = pythonOlder "3.12";
 
   src = fetchFromGitHub {
     owner = "weaviate";
@@ -42,14 +39,22 @@ buildPythonPackage rec {
     hash = "sha256-dAN4R71BQsYJkxdwnDvLEkw1rfJvxRX6IUVsh3+WWEE=";
   };
 
-  pythonRelaxDeps = [
-    "httpx"
-    "validators"
-    "authlib"
-    "grpcio"
-    "protobuf"
+  nativeCheckInputs = [
+    pytest-asyncio
+    pytest-httpserver
+    pytest-xdist
+    pytestCheckHook
+    writableTmpDirAsHomeHook
   ];
 
+  preCheck = ''
+    sed -i '/raw.githubusercontent.com/,+1d' test/test_util.py
+    substituteInPlace pytest.ini \
+      --replace-fail "--benchmark-skip" ""
+    rm -rf test/test_embedded.py # Need network
+  '';
+
+  __darwinAllowLocalNetworking = true;
   build-system = [ setuptools-scm ];
 
   dependencies = [
@@ -71,20 +76,11 @@ buildPythonPackage rec {
     validators
   ];
 
-  nativeCheckInputs = [
-    pytest-asyncio
-    pytest-httpserver
-    pytest-xdist
-    pytestCheckHook
-    writableTmpDirAsHomeHook
-  ];
+  disabled = pythonOlder "3.12";
 
-  preCheck = ''
-    sed -i '/raw.githubusercontent.com/,+1d' test/test_util.py
-    substituteInPlace pytest.ini \
-      --replace-fail "--benchmark-skip" ""
-    rm -rf test/test_embedded.py # Need network
-  '';
+  disabledTestPaths = [
+    "mock_tests" # mock gRPC/HTTP servers fail to bind ports
+  ];
 
   disabledTests = [
     # Need network
@@ -103,13 +99,16 @@ buildPythonPackage rec {
     "test"
   ];
 
-  disabledTestPaths = [
-    "mock_tests" # mock gRPC/HTTP servers fail to bind ports
-  ];
-
-  __darwinAllowLocalNetworking = true;
-
+  pyproject = true;
   pythonImportsCheck = [ "weaviate" ];
+
+  pythonRelaxDeps = [
+    "httpx"
+    "validators"
+    "authlib"
+    "grpcio"
+    "protobuf"
+  ];
 
   meta = {
     description = "Python native client for easy interaction with a Weaviate instance";

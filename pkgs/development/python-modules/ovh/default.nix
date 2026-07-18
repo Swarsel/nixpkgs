@@ -11,23 +11,19 @@
 buildPythonPackage rec {
   pname = "ovh";
   version = "1.2.0";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
     hash = "sha256-0xHwjsF7YsxhIWs9rPA+6J+VodqQNqWV2sKfydeYuCc=";
   };
 
+  nativeCheckInputs = [ pytestCheckHook ];
   build-system = [ setuptools ];
 
   dependencies = [
     requests
     requests-oauthlib
   ];
-
-  nativeCheckInputs = [ pytestCheckHook ];
-
-  pythonImportsCheck = [ "ovh" ];
 
   disabledTests = [
     # Tests require network access
@@ -42,6 +38,9 @@ buildPythonPackage rec {
     "test_config_invalid_oauth2"
     "test_config_incompatible_oauth2"
   ];
+
+  pyproject = true;
+  pythonImportsCheck = [ "ovh" ];
 
   meta = {
     description = "Thin wrapper around OVH's APIs";

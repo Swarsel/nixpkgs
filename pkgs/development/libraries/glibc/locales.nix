@@ -12,20 +12,20 @@
   stdenv,
   buildPackages,
   callPackage,
-  writeText,
   glibc,
+  linuxHeaders,
+  writeText,
   allLocales ? true,
   locales ? [ "en_US.UTF-8/UTF-8" ],
-  linuxHeaders,
   withLinuxHeaders ? !stdenv.cc.isGNU,
 }:
 
 (callPackage ./common.nix
   ({ inherit stdenv; } // lib.optionalAttrs withLinuxHeaders { inherit linuxHeaders; })
   {
+    inherit withLinuxHeaders;
     pname = "glibc-locales";
     extraNativeBuildInputs = [ glibc ];
-    inherit withLinuxHeaders;
   }
 ).overrideAttrs
   (
@@ -33,9 +33,13 @@
 
       outputs = [ "out" ];
 
+      makeFlags = (previousAttrs.makeFlags or [ ]) ++ [
+        "localedata/install-locales"
+        "localedir=${placeholder "out"}/lib/locale"
+      ];
+
       env = (previousAttrs.env or { }) // {
         LOCALEDEF_FLAGS = if stdenv.hostPlatform.isLittleEndian then "--little-endian" else "--big-endian";
-
         # Glibc cannot have itself in its RPATH.
         NIX_NO_SELF_RPATH = 1;
       };
@@ -88,11 +92,6 @@
 
           echo SUPPORTED-LOCALES='${toString locales}' > ../localedata/SUPPORTED
         '';
-
-      makeFlags = (previousAttrs.makeFlags or [ ]) ++ [
-        "localedata/install-locales"
-        "localedir=${placeholder "out"}/lib/locale"
-      ];
 
       installPhase = ''
         mkdir -p "$out/lib/locale" "$out/share/i18n"

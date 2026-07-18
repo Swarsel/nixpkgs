@@ -1,18 +1,20 @@
 {
-  mkDerivation,
-  libsbuf,
   libbsdxml,
+  libsbuf,
+  mkDerivation,
 }:
 mkDerivation {
-  path = "lib/lib80211";
   buildInputs = [
     libsbuf
     libbsdxml
   ];
+
   clangFixup = true;
 
   installTargets = [
     "install"
     "installconfig"
   ];
+
+  path = "lib/lib80211";
 }

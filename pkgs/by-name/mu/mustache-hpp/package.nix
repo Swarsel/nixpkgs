@@ -15,12 +15,12 @@ stdenv.mkDerivation (finalAttrs: {
     sha256 = "0r9rbk6v1wpld2ismfsk2lkhbyv3dkf0p03hkjivbj05qkfhvlbb";
   };
 
-  dontBuild = true;
-
   installPhase = ''
     mkdir -p $out/include
     cp mustache.hpp $out/include
   '';
+
+  dontBuild = true;
 
   meta = {
     description = "Mustache text templates for modern C++";

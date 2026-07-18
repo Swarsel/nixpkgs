@@ -1,17 +1,16 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
+  dill,
   poetry-core,
   pytestCheckHook,
-  dill,
   tabulate,
 }:
 
 buildPythonPackage {
   pname = "pyfunctional";
   version = "1.5.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "EntilZha";
@@ -20,20 +19,21 @@ buildPythonPackage {
     hash = "sha256-u7gcZEeg1exb98aVUOorVhxUHqjX50aPTpE5gR6sONI=";
   };
 
-  build-system = [ poetry-core ];
-
   postPatch = ''
     substituteInPlace pyproject.toml \
       --replace-fail poetry.masonry.api poetry.core.masonry.api \
       --replace-fail "poetry>=" "poetry-core>="
   '';
 
+  nativeCheckInputs = [ pytestCheckHook ];
+  build-system = [ poetry-core ];
+
   dependencies = [
     dill
     tabulate
   ];
 
-  nativeCheckInputs = [ pytestCheckHook ];
+  pyproject = true;
   pythonImportsCheck = [ "functional" ];
 
   meta = {

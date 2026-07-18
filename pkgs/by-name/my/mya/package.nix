@@ -2,12 +2,12 @@
   lib,
   stdenv,
   fetchFromGitHub,
+  argp-standalone,
   cmake,
-  ninja,
   curl,
   json_c,
   libbsd,
-  argp-standalone,
+  ninja,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -20,6 +20,10 @@ stdenv.mkDerivation (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-EmdkPpYEUIk9hr6rbnixjvznKSEnTCSMZz/17BfHGCk=";
   };
+
+  patches = [
+    ./argp.patch
+  ];
 
   nativeBuildInputs = [
     cmake
@@ -35,10 +39,6 @@ stdenv.mkDerivation (finalAttrs: {
     argp-standalone
   ];
 
-  patches = [
-    ./argp.patch
-  ];
-
   installPhase = ''
     runHook preInstall
 
@@ -52,6 +52,7 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Minimalistic command line interface for fetching user anime data from MyAnimeList";
+
     longDescription = ''
       Minimalistic command line interface for fetching user anime data from MyAnimeList.
 
@@ -59,11 +60,12 @@ stdenv.mkDerivation (finalAttrs: {
       Where to get one: <https://myanimelist.net/apiconfig>.
       Select the type `other`.
     '';
+
     homepage = "https://github.com/jmakhack/myanimelist-cli";
     changelog = "https://github.com/jmakhack/myanimelist-cli/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ pbsds ];
-    mainProgram = "mya";
     platforms = lib.platforms.all;
+    mainProgram = "mya";
   };
 })

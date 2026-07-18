@@ -3,8 +3,8 @@
   stdenv,
   fetchFromGitHub,
   deadbeef,
-  pkg-config,
   gtk3,
+  pkg-config,
   sqlite,
 }:
 
@@ -21,11 +21,13 @@ stdenv.mkDerivation {
   };
 
   nativeBuildInputs = [ pkg-config ];
+
   buildInputs = [
     deadbeef
     gtk3
     sqlite
   ];
+
   makeFlags = [ "gtk3" ];
 
   installPhase = ''
@@ -41,7 +43,7 @@ stdenv.mkDerivation {
     description = "Waveform Seekbar plugin for DeaDBeeF audio player";
     homepage = "https://github.com/cboxdoerfer/ddb_waveform_seekbar";
     license = lib.licenses.gpl2Plus;
-    platforms = lib.platforms.linux;
     maintainers = [ lib.maintainers.deudz ];
+    platforms = lib.platforms.linux;
   };
 }

@@ -9,20 +9,17 @@
 buildPythonPackage (finalAttrs: {
   pname = "arpeggio";
   version = "2.0.3";
-  pyproject = true;
-
-  __structuredAttrs = true;
 
   src = fetchPypi {
-    pname = "Arpeggio";
     inherit (finalAttrs) version;
     hash = "sha256-noWtNc/GyThnaBfHrpoQAKfHKjTHHbDGhxNsRg0SuF4=";
+    pname = "Arpeggio";
   };
 
-  build-system = [ setuptools ];
-
   nativeCheckInputs = [ pytestCheckHook ];
-
+  __structuredAttrs = true;
+  build-system = [ setuptools ];
+  pyproject = true;
   pythonImportsCheck = [ "arpeggio" ];
 
   meta = {

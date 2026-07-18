@@ -1,22 +1,23 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchurl,
-  makeWrapper,
   electron,
+  makeWrapper,
   writeScript,
 }:
 
 let
   version = "7.1.230";
   srcs = {
-    x86_64-linux = fetchurl {
-      url = "https://github.com/aunetx/deezer-linux/releases/download/v${version}/deezer-desktop-${version}-x64.tar.xz";
-      hash = "sha256-OP5ceyGQQFRgW1GZPElxdjkYikNVMkvomkXCr9dD67Y=";
-    };
     aarch64-linux = fetchurl {
-      url = "https://github.com/aunetx/deezer-linux/releases/download/v${version}/deezer-desktop-${version}-arm64.tar.xz";
       hash = "sha256-IiUZgMHdhkU0B5uDLARHpcCUxlsZ4+rj5sAKJXZpcBw=";
+      url = "https://github.com/aunetx/deezer-linux/releases/download/v${version}/deezer-desktop-${version}-arm64.tar.xz";
+    };
+
+    x86_64-linux = fetchurl {
+      hash = "sha256-OP5ceyGQQFRgW1GZPElxdjkYikNVMkvomkXCr9dD67Y=";
+      url = "https://github.com/aunetx/deezer-linux/releases/download/v${version}/deezer-desktop-${version}-x64.tar.xz";
     };
   };
 
@@ -33,16 +34,13 @@ let
 in
 
 stdenv.mkDerivation (finalAttrs: {
-  pname = "deezer-desktop";
   inherit version src;
+  pname = "deezer-desktop";
 
   nativeBuildInputs = [
     makeWrapper
   ];
 
-  sourceRoot = ".";
-
-  dontBuild = true;
   installPhase = ''
     runHook preInstall
     install -d $out/bin $out/share/deezer-desktop/resources $out/share/applications $out/share/icons/hicolor/scalable/apps
@@ -63,8 +61,12 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  dontBuild = true;
+  sourceRoot = ".";
+
   passthru = {
     inherit srcs;
+
     updateScript = writeScript "update-deezer-desktop" ''
       #!/usr/bin/env nix-shell
       #!nix-shell -i bash -p curl jq common-updater-scripts
@@ -85,10 +87,10 @@ stdenv.mkDerivation (finalAttrs: {
   meta = {
     description = "Unofficial Linux port of the music streaming application";
     homepage = "https://github.com/aunetx/deezer-linux";
-    downloadPage = "https://github.com/aunetx/deezer-linux/releases";
-    platforms = lib.platforms.linux;
     license = lib.licenses.unfree;
     maintainers = with lib.maintainers; [ FelixLusseau ];
+    platforms = lib.platforms.linux;
     mainProgram = "deezer-desktop";
+    downloadPage = "https://github.com/aunetx/deezer-linux/releases";
   };
 })

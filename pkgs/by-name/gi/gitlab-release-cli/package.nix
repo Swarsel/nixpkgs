@@ -1,8 +1,8 @@
 {
   lib,
+  stdenv,
   fetchFromGitLab,
   buildGoModule,
-  stdenv,
 }:
 
 buildGoModule (finalAttrs: {

@@ -3,11 +3,11 @@
   stdenv,
   fetchFromGitHub,
   cmake,
-  pkg-config,
-  validatePkgConfig,
-  tinyxml-2,
   console-bridge,
+  pkg-config,
+  tinyxml-2,
   urdfdom-headers,
+  validatePkgConfig,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -31,10 +31,12 @@ stdenv.mkDerivation (finalAttrs: {
     pkg-config
     validatePkgConfig
   ];
+
   buildInputs = [
     tinyxml-2
     console-bridge
   ];
+
   propagatedBuildInputs = [ urdfdom-headers ];
 
   meta = {

@@ -1,14 +1,14 @@
 nvidia_x11: sha256:
 
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
+  addDriverRunpath,
   buildPackages,
+  libtirpc,
   m4,
   pkg-config,
-  addDriverRunpath,
-  libtirpc,
 }:
 
 stdenv.mkDerivation {
@@ -16,18 +16,11 @@ stdenv.mkDerivation {
   version = nvidia_x11.persistencedVersion;
 
   src = fetchFromGitHub {
+    inherit sha256;
     owner = "NVIDIA";
     repo = "nvidia-persistenced";
     rev = nvidia_x11.persistencedVersion;
-    inherit sha256;
   };
-
-  env = lib.optionalAttrs (lib.versionOlder nvidia_x11.persistencedVersion "450.51") {
-    NIX_CFLAGS_COMPILE = toString [ "-I${libtirpc.dev}/include/tirpc" ];
-    NIX_LDFLAGS = toString [ "-ltirpc" ];
-  };
-
-  depsBuildBuild = [ buildPackages.stdenv.cc ];
 
   nativeBuildInputs = [
     m4
@@ -46,7 +39,10 @@ stdenv.mkDerivation {
     "HOST_LD=\$(LD_FOR_BUILD)"
   ];
 
-  installFlags = [ "PREFIX=$(out)" ];
+  env = lib.optionalAttrs (lib.versionOlder nvidia_x11.persistencedVersion "450.51") {
+    NIX_CFLAGS_COMPILE = toString [ "-I${libtirpc.dev}/include/tirpc" ];
+    NIX_LDFLAGS = toString [ "-ltirpc" ];
+  };
 
   postFixup = ''
     # Save a copy of persistenced for mounting in containers
@@ -57,12 +53,15 @@ stdenv.mkDerivation {
     addDriverRunpath $out/bin/nvidia-persistenced
   '';
 
+  depsBuildBuild = [ buildPackages.stdenv.cc ];
+  installFlags = [ "PREFIX=$(out)" ];
+
   meta = {
-    homepage = "https://github.com/NVIDIA/nvidia-persistenced";
     description = "NVIDIA driver persistence daemon";
+    homepage = "https://github.com/NVIDIA/nvidia-persistenced";
     license = lib.licenses.mit;
-    platforms = nvidia_x11.meta.platforms;
     maintainers = [ ];
+    platforms = nvidia_x11.meta.platforms;
     mainProgram = "nvidia-persistenced";
   };
 }

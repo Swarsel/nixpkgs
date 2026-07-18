@@ -16,8 +16,6 @@ stdenv.mkDerivation {
     sha256 = "004svkfzhc3ab6q2qvwzgj36wvicg5bs8d2gcibx6adq042di7zj";
   };
 
-  dontBuild = true;
-
   installPhase = ''
     mkdir -p $out/{bin,share}
     cp -R $src $out/share/zsh-autoenv
@@ -31,17 +29,21 @@ stdenv.mkDerivation {
     chmod +x $out/bin/zsh-autoenv-share
   '';
 
+  dontBuild = true;
+
   meta = {
     description = "Automatically sources whitelisted .autoenv.zsh files";
+
     longDescription = ''
       zsh-autoenv automatically sources (known/whitelisted)
       .autoenv.zsh files, typically used in project root directories.
       It handles "enter" and "leave" events, nesting, and stashing of
       variables (overwriting and restoring).
     '';
+
     homepage = "https://github.com/Tarrasch/zsh-autoenv";
-    mainProgram = "zsh-autoenv-share";
-    platforms = lib.platforms.all;
     license = lib.licenses.unfree;
+    platforms = lib.platforms.all;
+    mainProgram = "zsh-autoenv-share";
   };
 }

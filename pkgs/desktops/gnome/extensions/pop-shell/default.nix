@@ -1,9 +1,9 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
-  glib,
   gjs,
+  glib,
   typescript,
   unstableGitUpdater,
 }:
@@ -19,25 +19,9 @@ stdenv.mkDerivation {
     hash = "sha256-MmHoOxymo0QSRbRcSbFiv82+QWAwIwXwg/wyGQGVYiI=";
   };
 
-  nativeBuildInputs = [
-    glib
-    gjs
-    typescript
-  ];
-
-  buildInputs = [ gjs ];
-
   patches = [
     ./fix-gjs.patch
   ];
-
-  makeFlags = [ "XDG_DATA_HOME=$(out)/share" ];
-
-  passthru = {
-    extensionUuid = "pop-shell@system76.com";
-    extensionPortalSlug = "pop-shell";
-    updateScript = unstableGitUpdater { };
-  };
 
   postPatch = ''
     for file in */main.js; do
@@ -45,15 +29,30 @@ stdenv.mkDerivation {
     done
   '';
 
+  nativeBuildInputs = [
+    glib
+    gjs
+    typescript
+  ];
+
+  buildInputs = [ gjs ];
+  makeFlags = [ "XDG_DATA_HOME=$(out)/share" ];
+
   preFixup = ''
     chmod +x $out/share/gnome-shell/extensions/pop-shell@system76.com/*/main.js
   '';
 
+  passthru = {
+    extensionPortalSlug = "pop-shell";
+    extensionUuid = "pop-shell@system76.com";
+    updateScript = unstableGitUpdater { };
+  };
+
   meta = {
     description = "Keyboard-driven layer for GNOME Shell";
-    license = lib.licenses.gpl3Only;
-    platforms = lib.platforms.linux;
-    maintainers = [ lib.maintainers.genofire ];
     homepage = "https://github.com/pop-os/shell";
+    license = lib.licenses.gpl3Only;
+    maintainers = [ lib.maintainers.genofire ];
+    platforms = lib.platforms.linux;
   };
 }

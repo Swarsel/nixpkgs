@@ -1,9 +1,9 @@
 {
+  lib,
+  fetchFromGitHub,
   buildPythonPackage,
   click,
   fastapi,
-  fetchFromGitHub,
-  lib,
   lxml,
   mcp,
   primp,
@@ -16,7 +16,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "ddgs";
   version = "9.14.2";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "deedy5";
@@ -25,6 +24,7 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-4kTGiEVsmjlPH8pAbAoeTrC6a/ZshsPSErmPkLRwR9A=";
   };
 
+  nativeCheckInputs = [ versionCheckHook ];
   build-system = [ setuptools ];
 
   dependencies = [
@@ -38,27 +38,28 @@ buildPythonPackage (finalAttrs: {
       fastapi
       uvicorn
     ];
-    mcp = [
-      mcp
-    ];
+
     dht = [
       fastapi
       uvicorn
       trio
     ];
+
+    mcp = [
+      mcp
+    ];
   };
 
-  nativeCheckInputs = [ versionCheckHook ];
-  versionCheckProgramArg = "version";
-
+  pyproject = true;
   pythonImportsCheck = [ "ddgs" ];
+  versionCheckProgramArg = "version";
 
   meta = {
     description = "A metasearch library that aggregates results from diverse web search services";
-    mainProgram = "ddgs";
     homepage = "https://github.com/deedy5/ddgs";
     changelog = "https://github.com/deedy5/ddgs/releases/tag/${finalAttrs.src.tag}";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ drawbu ];
+    mainProgram = "ddgs";
   };
 })

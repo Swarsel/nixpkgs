@@ -1,15 +1,15 @@
 {
   lib,
   fetchFromGitHub,
-  llvmPackages,
-  libbpf,
-  pkg-config,
   bpftools,
   elfutils,
+  libbpf,
+  libseccomp,
+  llvmPackages,
+  pkg-config,
+  scx,
   zlib,
   zstd,
-  scx,
-  libseccomp,
 }:
 
 llvmPackages.stdenv.mkDerivation (finalAttrs: {
@@ -45,14 +45,9 @@ llvmPackages.stdenv.mkDerivation (finalAttrs: {
     "PREFIX=${placeholder "out"}"
   ];
 
-  hardeningDisable = [
-    "zerocallusedregs"
-  ];
-
-  __structuredAttrs = true;
   env.EXPECTED_SCHEDULERS = lib.concatStringsSep " " finalAttrs.passthru.schedulers;
-
   doInstallCheck = true;
+
   installCheckPhase = ''
     runHook preInstallCheck
 
@@ -66,8 +61,15 @@ llvmPackages.stdenv.mkDerivation (finalAttrs: {
     runHook postInstallCheck
   '';
 
+  __structuredAttrs = true;
+
+  hardeningDisable = [
+    "zerocallusedregs"
+  ];
+
   passthru = {
     inherit (scx.rustscheds.passthru) tests;
+
     schedulers = [
       "scx_central"
       "scx_flatcg"
@@ -82,6 +84,7 @@ llvmPackages.stdenv.mkDerivation (finalAttrs: {
 
   meta = scx.rustscheds.meta // {
     description = "Sched-ext C example schedulers";
+
     longDescription = ''
       This includes C based example schedulers such as scx_central, scx_flatcg,
       scx_nest, scx_pair, scx_qmap, scx_simple, scx_userland. These are examples,
@@ -92,6 +95,7 @@ llvmPackages.stdenv.mkDerivation (finalAttrs: {
       It is recommended to use the latest kernel for the best compatibility.
       :::
     '';
+
     homepage = "https://github.com/sched-ext/scx/tree/main/scheds/c";
   };
 })

@@ -3,8 +3,8 @@
   stdenv,
   fetchFromGitHub,
   cmake,
-  kdePackages,
   glib,
+  kdePackages,
   libnotify,
   libpulseaudio,
   pkg-config,
@@ -33,11 +33,11 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   meta = {
-    homepage = "https://github.com/ikrivosheev/pa-notify";
     description = "PulseAudio or PipeWire volume notification";
+    homepage = "https://github.com/ikrivosheev/pa-notify";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ juancmuller ];
-    mainProgram = "pa-notify";
     platforms = lib.platforms.linux;
+    mainProgram = "pa-notify";
   };
 })

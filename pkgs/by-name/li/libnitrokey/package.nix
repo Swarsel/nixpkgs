@@ -3,9 +3,9 @@
   stdenv,
   fetchFromGitHub,
   cmake,
-  pkg-config,
   hidapi,
   libusb1,
+  pkg-config,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -34,14 +34,13 @@ stdenv.mkDerivation (finalAttrs: {
     pkg-config
   ];
 
+  buildInputs = [ libusb1 ];
+  propagatedBuildInputs = [ hidapi ];
+
   cmakeFlags = [
     "-DADD_GIT_INFO=OFF"
     "-DCMAKE_INSTALL_UDEVRULESDIR=etc/udev/rules.d"
   ];
-
-  buildInputs = [ libusb1 ];
-
-  propagatedBuildInputs = [ hidapi ];
 
   doInstallCheck = true;
 
@@ -49,6 +48,7 @@ stdenv.mkDerivation (finalAttrs: {
     description = "Communicate with Nitrokey devices in a clean and easy manner";
     homepage = "https://github.com/Nitrokey/libnitrokey";
     license = lib.licenses.lgpl3;
+
     maintainers = with lib.maintainers; [
       panicgh
     ];

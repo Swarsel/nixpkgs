@@ -6,21 +6,21 @@
 }:
 
 buildPythonPackage rec {
-  version = "2.0.7";
-  format = "setuptools";
   pname = "pydispatcher";
+  version = "2.0.7";
 
   src = fetchPypi {
-    pname = "PyDispatcher";
     inherit version;
     hash = "sha256-t3fGrQgNwbrXSkwp1qRpFPpnAaxw+UsNZvvP3mL1vjE=";
+    pname = "PyDispatcher";
   };
 
   nativeCheckInputs = [ pytestCheckHook ];
+  format = "setuptools";
 
   meta = {
-    homepage = "https://pydispatcher.sourceforge.net/";
     description = "Signal-registration and routing infrastructure for use in multiple contexts";
+    homepage = "https://pydispatcher.sourceforge.net/";
     license = lib.licenses.bsd3;
   };
 }

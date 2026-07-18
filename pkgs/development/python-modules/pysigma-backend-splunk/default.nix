@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   poetry-core,
   pysigma,
   pysigma-pipeline-sysmon,
@@ -11,7 +11,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "pysigma-backend-splunk";
   version = "2.1.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "SigmaHQ";
@@ -20,15 +19,14 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-OIW/ylN4QlguKnY2/yLICEu3Ix41lfXN5qil5dD+eTM=";
   };
 
-  build-system = [ poetry-core ];
-
-  dependencies = [ pysigma ];
-
   nativeCheckInputs = [
     pysigma-pipeline-sysmon
     pytestCheckHook
   ];
 
+  build-system = [ poetry-core ];
+  dependencies = [ pysigma ];
+  pyproject = true;
   pythonImportsCheck = [ "sigma.backends.splunk" ];
 
   meta = {

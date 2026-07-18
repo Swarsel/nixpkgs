@@ -2,30 +2,28 @@
   lib,
   buildPythonPackage,
   fetchPypi,
-  setuptools,
   pytestCheckHook,
+  setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "sly";
   version = "0.5";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
     hash = "sha256-JR1CAV6FBxWK7CFk8GA130qCsDFM5kUPRX1xJedkkCQ=";
   };
 
-  nativeBuildInputs = [ setuptools ];
-
   postPatch = ''
     # imperative dev dependency installation
     rm Makefile
   '';
 
-  pythonImportsCheck = [ "sly" ];
-
+  nativeBuildInputs = [ setuptools ];
   nativeCheckInputs = [ pytestCheckHook ];
+  pyproject = true;
+  pythonImportsCheck = [ "sly" ];
 
   meta = {
     description = "Improved PLY implementation of lex and yacc for Python 3";

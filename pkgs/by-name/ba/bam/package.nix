@@ -17,16 +17,15 @@ stdenv.mkDerivation (finalAttrs: {
     sha256 = "13br735ig7lygvzyfd15fc2rdygrqm503j6xj5xkrl1r7w2wipq6";
   };
 
+  strictDeps = true;
+
   nativeBuildInputs = [
     lua5_3
     python3
   ];
 
   buildPhase = "${stdenv.shell} make_unix.sh";
-
   checkPhase = "${python3.interpreter} scripts/test.py";
-
-  strictDeps = true;
 
   installPhase = ''
     mkdir -p "$out/share/bam"
@@ -38,12 +37,14 @@ stdenv.mkDerivation (finalAttrs: {
   meta = {
     description = "Yet another build manager";
     homepage = "https://github.com/matricks/bam";
-    mainProgram = "bam";
+    license = lib.licenses.zlib;
+
     maintainers = with lib.maintainers; [
       raskin
     ];
+
     platforms = lib.platforms.linux;
-    license = lib.licenses.zlib;
+    mainProgram = "bam";
     downloadPage = "http://matricks.github.com/bam/";
   };
 })

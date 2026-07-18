@@ -2,28 +2,27 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  cmake,
+  arrow-cpp,
   bashNonInteractive,
-  gnugrep,
-  fixDarwinDylibNames,
+  cmake,
+  curl,
   file,
-  legacySupport ? false,
-  static ? stdenv.hostPlatform.isStatic, # generates static libraries *only*
-  enableStatic ? static,
+  fixDarwinDylibNames,
+  gnugrep,
+  haskellPackages,
+  # for passthru.tests
+  libarchive,
+  libzip,
+  nix-update-script,
+  python3Packages,
+  rocksdb,
+  testers,
   # these need to be ran on the host, thus disable when cross-compiling
   buildContrib ? stdenv.hostPlatform == stdenv.buildPlatform,
   doCheck ? stdenv.hostPlatform == stdenv.buildPlatform,
-  nix-update-script,
-
-  # for passthru.tests
-  libarchive,
-  rocksdb,
-  arrow-cpp,
-  libzip,
-  curl,
-  python3Packages,
-  haskellPackages,
-  testers,
+  enableStatic ? static,
+  legacySupport ? false,
+  static ? stdenv.hostPlatform.isStatic, # generates static libraries *only*
 }:
 
 # Note: this package is used for bootstrapping fetchurl, and thus
@@ -32,6 +31,7 @@
 # files.
 
 stdenv.mkDerivation (finalAttrs: {
+  inherit doCheck;
   pname = "zstd";
   version = "1.5.7";
 
@@ -42,8 +42,12 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-tNFWIT9ydfozB8dWcmTMuZLCQmQudTFJIkSr0aG7S44=";
   };
 
-  nativeBuildInputs = [ cmake ] ++ lib.optional stdenv.hostPlatform.isDarwin fixDarwinDylibNames;
-  buildInputs = lib.optional stdenv.hostPlatform.isUnix bashNonInteractive;
+  outputs = [
+    "bin"
+    "dev"
+  ]
+  ++ lib.optional stdenv.hostPlatform.isUnix "man"
+  ++ [ "out" ];
 
   patches = [
     # This patches makes sure we do not attempt to use the MD5 implementation
@@ -66,25 +70,26 @@ stdenv.mkDerivation (finalAttrs: {
       tests/playTests.sh
   '';
 
+  nativeBuildInputs = [ cmake ] ++ lib.optional stdenv.hostPlatform.isDarwin fixDarwinDylibNames;
+  buildInputs = lib.optional stdenv.hostPlatform.isUnix bashNonInteractive;
+
   cmakeFlags =
     lib.attrsets.mapAttrsToList (name: value: "-DZSTD_${name}:BOOL=${if value then "ON" else "OFF"}")
       {
+        BUILD_CONTRIB = buildContrib;
         BUILD_SHARED = !static;
         BUILD_STATIC = enableStatic;
-        BUILD_CONTRIB = buildContrib;
-        PROGRAMS_LINK_SHARED = !static;
-        LEGACY_SUPPORT = legacySupport;
         BUILD_TESTS = doCheck;
+        LEGACY_SUPPORT = legacySupport;
+        PROGRAMS_LINK_SHARED = !static;
       };
 
-  cmakeDir = "../build/cmake";
-  dontUseCmakeBuildDir = true;
   preConfigure = ''
     mkdir -p build_ && cd $_
   '';
 
   nativeCheckInputs = [ file ];
-  inherit doCheck;
+
   checkPhase = ''
     runHook preCheck
     # Patch shebangs for playTests
@@ -118,34 +123,29 @@ stdenv.mkDerivation (finalAttrs: {
     done
   '';
 
-  outputs = [
-    "bin"
-    "dev"
-  ]
-  ++ lib.optional stdenv.hostPlatform.isUnix "man"
-  ++ [ "out" ];
+  cmakeDir = "../build/cmake";
+  dontUseCmakeBuildDir = true;
 
   passthru = {
-    updateScript = nix-update-script { };
     tests = {
 
       # Reverse dependencies
-
       inherit libarchive rocksdb arrow-cpp;
-      libzip = libzip.override { withZstd = true; };
       curl = curl.override { zstdSupport = true; };
-      python-zstd = python3Packages.zstd;
-      haskell-zstd = haskellPackages.zstd;
       haskell-hs-zstd = haskellPackages.hs-zstd;
-
+      haskell-zstd = haskellPackages.zstd;
+      libzip = libzip.override { withZstd = true; };
       # Package tests (coherent with overrides)
-
       pkg-config = testers.hasPkgConfigModules { package = finalAttrs.finalPackage; };
+      python-zstd = python3Packages.zstd;
     };
+
+    updateScript = nix-update-script { };
   };
 
   meta = {
     description = "Zstandard real-time compression algorithm";
+
     longDescription = ''
       Zstd, short for Zstandard, is a fast lossless compression algorithm,
       targeting real-time compression scenarios at zlib-level compression
@@ -155,12 +155,13 @@ stdenv.mkDerivation (finalAttrs: {
       speed is preserved and remain roughly the same at all settings, a
       property shared by most LZ compression algorithms, such as zlib.
     '';
+
     homepage = "https://facebook.github.io/zstd/";
     changelog = "https://github.com/facebook/zstd/blob/v${finalAttrs.version}/CHANGELOG";
     license = with lib.licenses; [ bsd3 ]; # Or, at your opinion, GPL-2.0-only.
-    mainProgram = "zstd";
-    platforms = lib.platforms.all;
     maintainers = [ ];
+    platforms = lib.platforms.all;
+    mainProgram = "zstd";
     pkgConfigModules = [ "libzstd" ];
   };
 })

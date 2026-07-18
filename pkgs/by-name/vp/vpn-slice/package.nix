@@ -1,18 +1,17 @@
 {
   lib,
   stdenv,
-  python3Packages,
-  nix-update-script,
   fetchFromGitHub,
   iproute2,
   iptables,
+  nix-update-script,
+  python3Packages,
   unixtools,
 }:
 
 python3Packages.buildPythonApplication rec {
   pname = "vpn-slice";
   version = "0.16.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "dlenski";
@@ -32,6 +31,8 @@ python3Packages.buildPythonApplication rec {
         --replace-fail "'/sbin/iptables'" "'${iptables}/bin/iptables'"
     '';
 
+  doCheck = false;
+
   build-system = with python3Packages; [
     setuptools
   ];
@@ -42,17 +43,17 @@ python3Packages.buildPythonApplication rec {
     dnspython
   ];
 
-  doCheck = false;
+  pyproject = true;
 
   passthru = {
     updateScript = nix-update-script { };
   };
 
   meta = {
-    homepage = "https://github.com/dlenski/vpn-slice";
     description = "vpnc-script replacement for easy and secure split-tunnel VPN setup";
-    mainProgram = "vpn-slice";
+    homepage = "https://github.com/dlenski/vpn-slice";
     license = lib.licenses.gpl3;
     maintainers = [ ];
+    mainProgram = "vpn-slice";
   };
 }

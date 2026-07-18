@@ -1,10 +1,11 @@
 {
+  lib,
+  stdenv,
+  fetchFromGitHub,
   brotli,
   clang_18,
   cmake,
-  fetchFromGitHub,
   flex,
-  lib,
   netcat,
   perl,
   pkg-config,
@@ -12,7 +13,6 @@
   postgresqlBuildExtension,
   postgresqlTestExtension,
   python3,
-  stdenv,
   unstableGitUpdater,
 }:
 
@@ -78,7 +78,6 @@ postgresqlBuildExtension (finalAttrs: {
     "-DPostgreSQL_TARGET_PACKAGE_LIBRARY_DIR=${placeholder "out"}/lib/"
   ];
 
-  enableParallelBuilding = true;
   doCheck = false;
 
   preInstall = ''
@@ -87,11 +86,13 @@ postgresqlBuildExtension (finalAttrs: {
     mkdir -p $out/share/postgresql/extension/
   '';
 
+  enableParallelBuilding = true;
   # https://github.com/omnigres/omnigres?tab=readme-ov-file#building--using-extensions
   installTargets = [ "install_extensions" ];
 
   passthru.tests.extension = postgresqlTestExtension {
     inherit (finalAttrs) finalPackage;
+
     sql = ''
       -- https://docs.omnigres.org/omni_id/identity_type/#usage
       CREATE EXTENSION omni_id;
@@ -107,9 +108,9 @@ postgresqlBuildExtension (finalAttrs: {
   meta = {
     description = "Postgres as a Business Operating System";
     homepage = "https://docs.omnigres.org";
+    license = lib.licenses.asl20;
     maintainers = with lib.maintainers; [ mtrsk ];
     platforms = postgresql.meta.platforms;
-    license = lib.licenses.asl20;
     broken = lib.versionOlder postgresql.version "14";
   };
 })

@@ -2,13 +2,13 @@
   lib,
   stdenv,
   fetchurl,
+  copyDesktopItems,
+  imagemagick,
+  makeDesktopItem,
+  makeWrapper,
   openjdk11,
   unzip,
-  makeWrapper,
-  makeDesktopItem,
-  copyDesktopItems,
   xdg-utils,
-  imagemagick,
   maxMemoryAllocationPool ? "1000M",
 }:
 
@@ -65,37 +65,39 @@ stdenv.mkDerivation rec {
 
   desktopItems = [
     (makeDesktopItem {
-      name = "weka";
-      exec = "weka";
-      icon = "weka";
-      desktopName = "WEKA";
       categories = [
         "Science"
         "ArtificialIntelligence"
         "ComputerScience"
       ];
+
+      desktopName = "WEKA";
+      exec = "weka";
+      icon = "weka";
+      name = "weka";
     })
 
     (makeDesktopItem {
-      name = "weka-doc";
-      exec = "weka-doc";
-      icon = "weka";
-      desktopName = "View the WEKA documentation with a web browser";
       categories = [
         "Science"
         "ArtificialIntelligence"
         "ComputerScience"
       ];
+
+      desktopName = "View the WEKA documentation with a web browser";
+      exec = "weka-doc";
+      icon = "weka";
+      name = "weka-doc";
     })
   ];
 
   meta = {
-    homepage = "https://www.cs.waikato.ac.nz/ml/weka/";
     description = "Collection of machine learning algorithms for data mining tasks";
-    mainProgram = "weka";
-    sourceProvenance = with lib.sourceTypes; [ binaryBytecode ];
+    homepage = "https://www.cs.waikato.ac.nz/ml/weka/";
     license = lib.licenses.gpl2Plus;
+    sourceProvenance = with lib.sourceTypes; [ binaryBytecode ];
     maintainers = [ lib.maintainers.mimame ];
     platforms = lib.platforms.unix;
+    mainProgram = "weka";
   };
 }

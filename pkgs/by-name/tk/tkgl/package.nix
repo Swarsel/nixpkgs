@@ -1,11 +1,11 @@
 {
   lib,
   stdenv,
-  tcl,
   fetchFromGitHub,
   autoreconfHook,
-  tk,
   libGL,
+  tcl,
+  tk,
 }:
 
 tcl.mkTclDerivation {
@@ -24,15 +24,6 @@ tcl.mkTclDerivation {
       --replace-fail "-arch x86_64 -arch arm64" ""
   '';
 
-  configureFlags = [
-    "--with-tk=${lib.getLib tk}/lib"
-    "--with-tkinclude=${lib.getDev tk}/include"
-  ];
-
-  installTargets = [
-    "install-lib-binaries"
-  ];
-
   nativeBuildInputs = [
     autoreconfHook
   ];
@@ -42,10 +33,20 @@ tcl.mkTclDerivation {
     libGL
   ];
 
+  configureFlags = [
+    "--with-tk=${lib.getLib tk}/lib"
+    "--with-tkinclude=${lib.getDev tk}/include"
+  ];
+
+  installTargets = [
+    "install-lib-binaries"
+  ];
+
   meta = {
     description = "OpenGL drawing surface for Tk 8 and 9";
     homepage = "https://github.com/3-manifolds/TkGL";
     license = lib.licenses.tcltk;
+
     maintainers = with lib.maintainers; [
       noiioiu
       alejo7797

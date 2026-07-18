@@ -1,10 +1,10 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitLab,
-  gfortran,
   autoreconfHook,
   fftwMpi,
+  gfortran,
   mpi,
 }:
 
@@ -45,20 +45,20 @@ stdenv.mkDerivation {
     )
   '';
 
-  configureScript = "../configure";
-
-  hardeningDisable = [ "format" ];
-
   doCheck = true;
+  configureScript = "../configure";
+  hardeningDisable = [ "format" ];
 
   meta = {
     description = "Portable C library of density functionals with van der Waals interactions for density functional theory";
+    homepage = "https://libvdwxc.materialsmodeling.org/";
+
     license = with lib.licenses; [
       lgpl3Plus
       bsd3
     ];
-    homepage = "https://libvdwxc.materialsmodeling.org/";
-    platforms = lib.platforms.unix;
+
     maintainers = [ lib.maintainers.sheepforce ];
+    platforms = lib.platforms.unix;
   };
 }

@@ -2,28 +2,28 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  meson,
-  glib,
-  gjs,
-  ninja,
-  gtk4,
-  gsettings-desktop-schemas,
-  wrapGAppsHook4,
-  desktop-file-utils,
-  gobject-introspection,
-  glib-networking,
-  pkg-config,
-  libadwaita,
   appstream,
   blueprint-compiler,
-  gettext,
-  libportal-gtk4,
-  languagetool,
-  libsoup_3,
-  openjdk,
-  xdg-desktop-portal,
   dbus,
+  desktop-file-utils,
+  gettext,
+  gjs,
+  glib,
+  glib-networking,
+  gobject-introspection,
+  gsettings-desktop-schemas,
+  gtk4,
+  languagetool,
+  libadwaita,
+  libportal-gtk4,
+  libsoup_3,
+  meson,
+  ninja,
   nix-update-script,
+  openjdk,
+  pkg-config,
+  wrapGAppsHook4,
+  xdg-desktop-portal,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -34,9 +34,24 @@ stdenv.mkDerivation (finalAttrs: {
     owner = "sonnyp";
     repo = "Eloquent";
     tag = "v${finalAttrs.version}";
-    fetchSubmodules = true;
     hash = "sha256-wY/blD399GhEOdnQf/uVLHSmYUZTO1ZnL6+oOAhVqFA=";
+    fetchSubmodules = true;
   };
+
+  postPatch = ''
+    substituteInPlace troll/gjspack/bin/gjspack \
+      --replace-fail "/usr/bin/env -S gjs" "${gjs}/bin/gjs"
+
+    substituteInPlace src/languagetool.js \
+      --replace-fail "/app/LanguageTool/languagetool-server.jar" "${languagetool}/share/languagetool-server.jar" \
+      --replace-fail "--config" "" \
+      --replace-fail "/app/share/server.properties" ""
+
+    sed -i "1 a imports.package._findEffectiveEntryPointName = () => 're.sonny.Eloquent';" src/bin.js
+    patchShebangs .
+  '';
+
+  strictDeps = true;
 
   nativeBuildInputs = [
     appstream
@@ -65,21 +80,6 @@ stdenv.mkDerivation (finalAttrs: {
     xdg-desktop-portal
   ];
 
-  postPatch = ''
-    substituteInPlace troll/gjspack/bin/gjspack \
-      --replace-fail "/usr/bin/env -S gjs" "${gjs}/bin/gjs"
-
-    substituteInPlace src/languagetool.js \
-      --replace-fail "/app/LanguageTool/languagetool-server.jar" "${languagetool}/share/languagetool-server.jar" \
-      --replace-fail "--config" "" \
-      --replace-fail "/app/share/server.properties" ""
-
-    sed -i "1 a imports.package._findEffectiveEntryPointName = () => 're.sonny.Eloquent';" src/bin.js
-    patchShebangs .
-  '';
-
-  strictDeps = true;
-
   preFixup = ''
     gappsWrapperArgs+=(
       --set JAVA_HOME ${openjdk}
@@ -94,7 +94,7 @@ stdenv.mkDerivation (finalAttrs: {
     homepage = "https://github.com/sonnyp/eloquent";
     license = lib.licenses.gpl3Only;
     maintainers = with lib.maintainers; [ thtrf ];
-    mainProgram = "re.sonny.Eloquent";
     platforms = lib.platforms.linux;
+    mainProgram = "re.sonny.Eloquent";
   };
 })

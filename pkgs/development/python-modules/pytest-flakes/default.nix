@@ -2,8 +2,8 @@
   lib,
   buildPythonPackage,
   fetchPypi,
-  pytest,
   pyflakes,
+  pytest,
 }:
 
 buildPythonPackage (finalAttrs: {
@@ -11,7 +11,6 @@ buildPythonPackage (finalAttrs: {
   # retaining package to not break other packages
   pname = "pytest-flakes";
   version = "4.0.5";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit (finalAttrs) pname version;
@@ -20,19 +19,21 @@ buildPythonPackage (finalAttrs: {
 
   buildInputs = [ pytest ];
   propagatedBuildInputs = [ pyflakes ];
-  nativeCheckInputs = [ pytest ];
-
   # no longer passes
   doCheck = false;
-  pythonImportsCheck = [ "pytest_flakes" ];
+  nativeCheckInputs = [ pytest ];
+
   # disable one test case that looks broken
   checkPhase = ''
     py.test test_flakes.py -k 'not test_syntax_error'
   '';
 
+  format = "setuptools";
+  pythonImportsCheck = [ "pytest_flakes" ];
+
   meta = {
-    license = lib.licenses.mit;
-    homepage = "https://pypi.org/project/pytest-flakes/";
     description = "Pytest plugin to check source code with pyflakes";
+    homepage = "https://pypi.org/project/pytest-flakes/";
+    license = lib.licenses.mit;
   };
 })

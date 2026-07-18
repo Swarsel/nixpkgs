@@ -2,15 +2,15 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  python3,
-  wrapGAppsHook3,
-  gobject-introspection,
-  glib,
-  gtk3,
-  qt5,
-  makeDesktopItem,
   copyDesktopItems,
+  glib,
+  gobject-introspection,
+  gtk3,
   imagemagick,
+  makeDesktopItem,
+  python3,
+  qt5,
+  wrapGAppsHook3,
   withCurses ? false,
   withGTK ? false,
   withQT ? false,
@@ -25,16 +25,16 @@ let
         comment
         terminal
         ;
-      icon = "trackma";
-      exec = name + " %u";
-      type = "Application";
+
       categories = [ "Network" ];
+      exec = name + " %u";
+      icon = "trackma";
+      type = "Application";
     };
 in
 python3.pkgs.buildPythonApplication (finalAttrs: {
   pname = "trackma";
   version = "0.10.3";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "z411";
@@ -77,8 +77,12 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
       ++ lib.optionals (withGTK || withQT) [ pillow ]
     );
 
-  dontWrapQtApps = true;
-  dontWrapGApps = true;
+  doCheck = false;
+
+  postInstall = ''
+    mkdir -p $out/share/icons/hicolor/64x64/apps
+    magick $src/trackma/data/icon.png -resize 64x64! $out/share/icons/hicolor/64x64/apps/trackma.png
+  '';
 
   preFixup =
     lib.optional withQT "wrapQtApp $out/bin/trackma-qt"
@@ -95,27 +99,23 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
       mkDesktopItem "trackma-curses" "Trackma (ncurses)" "Trackma Updater (ncurses frontend)" true
     );
 
-  postInstall = ''
-    mkdir -p $out/share/icons/hicolor/64x64/apps
-    magick $src/trackma/data/icon.png -resize 64x64! $out/share/icons/hicolor/64x64/apps/trackma.png
-  '';
-
-  doCheck = false;
-
-  pythonImportsCheck = [ "trackma" ];
+  dontWrapGApps = true;
+  dontWrapQtApps = true;
 
   postDist =
     lib.optional (!withQT) "rm $out/bin/trackma-qt"
     ++ lib.optional (!withGTK) "rm $out/bin/trackma-gtk"
     ++ lib.optional (!withCurses) "rm $out/bin/trackma-curses";
 
+  pyproject = true;
+  pythonImportsCheck = [ "trackma" ];
   passthru.updateScript = ./update.sh;
 
   meta = {
-    homepage = "https://github.com/z411/trackma";
     description = "Open multi-site list manager for Unix-like systems (ex-wMAL)";
+    homepage = "https://github.com/z411/trackma";
     license = lib.licenses.gpl3Plus;
-    platforms = lib.platforms.linux;
     maintainers = [ ];
+    platforms = lib.platforms.linux;
   };
 })

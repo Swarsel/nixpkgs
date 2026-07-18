@@ -1,17 +1,17 @@
 {
-  buildPythonPackage,
   lib,
   stdenv,
+  buildPythonPackage,
   libsixel,
 }:
 
 buildPythonPackage rec {
-  version = libsixel.version;
-  format = "setuptools";
   pname = "libsixel";
-
+  version = libsixel.version;
   src = libsixel.src;
-  sourceRoot = "${src.name}/python";
+  # no tests
+  doCheck = false;
+  format = "setuptools";
 
   prePatch = ''
     substituteInPlace libsixel/__init__.py --replace \
@@ -19,10 +19,8 @@ buildPythonPackage rec {
       'find_library = lambda _x: "${lib.getLib libsixel}/lib/libsixel${stdenv.hostPlatform.extensions.sharedLibrary}"'
   '';
 
-  # no tests
-  doCheck = false;
-
   pythonImportsCheck = [ "libsixel" ];
+  sourceRoot = "${src.name}/python";
 
   meta = {
     description = "SIXEL graphics encoder/decoder implementation";

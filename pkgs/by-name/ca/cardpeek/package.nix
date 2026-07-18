@@ -2,21 +2,21 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  pkg-config,
   autoreconfHook,
+  curl,
   glib,
   gtk3,
-  pcsclite,
   lua5_2,
-  curl,
+  pcsclite,
+  pkg-config,
   readline,
 }:
 let
   version = "0.8.4";
 in
 stdenv.mkDerivation {
-  pname = "cardpeek";
   inherit version;
+  pname = "cardpeek";
 
   src = fetchFromGitHub {
     owner = "L1L1";
@@ -43,6 +43,7 @@ stdenv.mkDerivation {
     pkg-config
     autoreconfHook
   ];
+
   buildInputs = [
     glib
     gtk3
@@ -62,11 +63,11 @@ stdenv.mkDerivation {
   enableParallelBuilding = true;
 
   meta = {
-    homepage = "https://github.com/L1L1/cardpeek";
     description = "Tool to read the contents of ISO7816 smart cards";
+    homepage = "https://github.com/L1L1/cardpeek";
     license = lib.licenses.gpl3Plus;
-    platforms = lib.platforms.unix;
     maintainers = with lib.maintainers; [ embr ];
+    platforms = lib.platforms.unix;
     mainProgram = "cardpeek";
   };
 }

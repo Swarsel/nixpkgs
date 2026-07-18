@@ -1,8 +1,8 @@
 {
   lib,
-  stdenvNoCC,
   fetchzip,
   installFonts,
+  stdenvNoCC,
 }:
 
 stdenvNoCC.mkDerivation (finalAttrs: {
@@ -17,8 +17,8 @@ stdenvNoCC.mkDerivation (finalAttrs: {
   nativeBuildInputs = [ installFonts ];
 
   meta = {
-    homepage = "https://github.com/indestructible-type/Jost";
     description = "Sans serif font by Indestructible Type";
+    homepage = "https://github.com/indestructible-type/Jost";
     license = lib.licenses.ofl;
     maintainers = [ lib.maintainers.ar1a ];
   };

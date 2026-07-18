@@ -1,18 +1,16 @@
 {
   lib,
-  buildGoLatestModule,
-  fetchFromGitHub,
-  pkg-config,
-  pcsclite,
   stdenv,
+  fetchFromGitHub,
   apple-sdk_15,
+  buildGoLatestModule,
   nix-update-script,
+  pcsclite,
+  pkg-config,
   versionCheckHook,
 }:
 
 buildGoLatestModule (finalAttrs: {
-  __structuredAttrs = true;
-
   pname = "matcha";
   version = "0.43.0";
 
@@ -23,9 +21,6 @@ buildGoLatestModule (finalAttrs: {
     hash = "sha256-x+k1/k7pwJ0MW0t31ieaOkbP8LtqDSmHOBrNEGA0K6Q=";
   };
 
-  vendorHash = "sha256-5smWIw8ofG61ugHxFbmQ9r9vcxi098/UmxUE15lx4wE=";
-  proxyVendor = true;
-
   nativeBuildInputs = lib.optionals stdenv.hostPlatform.isLinux [
     pkg-config
   ];
@@ -34,9 +29,11 @@ buildGoLatestModule (finalAttrs: {
     lib.optionals stdenv.hostPlatform.isLinux [ pcsclite ]
     ++ lib.optionals stdenv.hostPlatform.isDarwin [ apple-sdk_15 ];
 
-  subPackages = [ "." ];
-
+  vendorHash = "sha256-5smWIw8ofG61ugHxFbmQ9r9vcxi098/UmxUE15lx4wE=";
   env.CGO_ENABLED = 1;
+  doInstallCheck = true;
+  nativeInstallCheckInputs = [ versionCheckHook ];
+  __structuredAttrs = true;
 
   ldflags = [
     "-s"
@@ -45,10 +42,9 @@ buildGoLatestModule (finalAttrs: {
     "-X main.date=1970-01-01T00:00:00Z"
   ];
 
-  nativeInstallCheckInputs = [ versionCheckHook ];
-  doInstallCheck = true;
+  proxyVendor = true;
+  subPackages = [ "." ];
   versionCheckProgramArg = "--version";
-
   passthru.updateScript = nix-update-script { };
 
   meta = {
@@ -56,8 +52,8 @@ buildGoLatestModule (finalAttrs: {
     homepage = "https://matcha.email";
     changelog = "https://github.com/floatpane/matcha/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.mit;
-    mainProgram = "matcha";
     maintainers = with lib.maintainers; [ andrinoff ];
     platforms = lib.platforms.darwin ++ lib.platforms.linux;
+    mainProgram = "matcha";
   };
 })

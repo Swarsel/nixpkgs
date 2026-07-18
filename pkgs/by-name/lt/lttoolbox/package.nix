@@ -2,16 +2,16 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  fetchpatch,
-  autoreconfHook,
   autoconf,
   automake,
-  pkg-config,
-  utf8cpp,
+  autoreconfHook,
+  fetchpatch,
+  icu,
   libtool,
   libxml2,
-  icu,
+  pkg-config,
   python3,
+  utf8cpp,
 }:
 
 stdenv.mkDerivation rec {
@@ -33,16 +33,19 @@ stdenv.mkDerivation rec {
     utf8cpp
     libtool
   ];
+
   buildInputs = [
     libxml2
     icu
   ];
+
   buildFlags = [
     "CPPFLAGS=-I${utf8cpp}/include/utf8cpp"
   ];
 
-  nativeCheckInputs = [ python3 ];
   doCheck = true;
+  nativeCheckInputs = [ python3 ];
+
   checkPhase = ''
     python3 tests/run_tests.py
   '';
@@ -50,9 +53,9 @@ stdenv.mkDerivation rec {
   meta = {
     description = "Finite state compiler, processor and helper tools used by apertium";
     homepage = "https://github.com/apertium/lttoolbox";
-    maintainers = with lib.maintainers; [ onthestairs ];
     changelog = "https://github.com/apertium/lttoolbox/releases/tag/v${version}";
     license = lib.licenses.gpl2;
+    maintainers = with lib.maintainers; [ onthestairs ];
     platforms = lib.platforms.linux ++ lib.platforms.darwin;
   };
 }

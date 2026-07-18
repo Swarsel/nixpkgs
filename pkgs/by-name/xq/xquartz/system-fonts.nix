@@ -1,16 +1,16 @@
 {
   stdenv,
   font-alias,
-  mkfontscale,
   fontDirs,
+  mkfontscale,
 }:
 
 stdenv.mkDerivation {
-  name = "xquartz-system-fonts";
   buildInputs = [
     mkfontscale
     mkfontscale
   ];
+
   buildCommand = ''
     for i in ${toString fontDirs} ; do
       if [ -d $i/ ]; then
@@ -35,4 +35,6 @@ stdenv.mkDerivation {
     mkfontscale
     cat $( find ${font-alias}/ -name fonts.alias) >fonts.alias
   '';
+
+  name = "xquartz-system-fonts";
 }

@@ -12,11 +12,12 @@ stdenv.mkDerivation (finalAttrs: {
   version = "7.10.0";
 
   src = fetchurl {
+    sha256 = "sha256-DbPr/3VdsXD2XnSmTsRRGBLp7jGFwjLu/+rNJ0GQ37A=";
+
     urls = [
       "http://www.ivmaisoft.com/_bin/atomic_ops/libatomic_ops-${finalAttrs.version}.tar.gz"
       "https://github.com/ivmai/libatomic_ops/releases/download/v${finalAttrs.version}/libatomic_ops-${finalAttrs.version}.tar.gz"
     ];
-    sha256 = "sha256-DbPr/3VdsXD2XnSmTsRRGBLp7jGFwjLu/+rNJ0GQ37A=";
   };
 
   outputs = [

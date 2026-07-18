@@ -1,20 +1,20 @@
 {
   lib,
-  rustPlatform,
-  fetchFromGitHub,
   stdenv,
-  pkg-config,
-  openssl,
-  libGL,
-  libxkbcommon,
-  wayland,
-  libxrandr,
-  libxi,
-  libxcursor,
-  libx11,
-  makeDesktopItem,
+  fetchFromGitHub,
   copyDesktopItems,
+  libGL,
+  libx11,
+  libxcursor,
+  libxi,
+  libxkbcommon,
+  libxrandr,
+  makeDesktopItem,
   nix-update-script,
+  openssl,
+  pkg-config,
+  rustPlatform,
+  wayland,
 }:
 
 rustPlatform.buildRustPackage {
@@ -28,14 +28,23 @@ rustPlatform.buildRustPackage {
     hash = "sha256-9NKBjOMyemgPX/r7ot/RLut1FqWl8RfuuHhXUnkv1IM=";
   };
 
-  cargoHash = "sha256-8lG+cKN3/W+LYWhmOfDwGiq6u3nlLJaD5uNABaY0zRY=";
-
   nativeBuildInputs = [
     pkg-config
     copyDesktopItems
   ];
 
   buildInputs = [ openssl ];
+  cargoHash = "sha256-8lG+cKN3/W+LYWhmOfDwGiq6u3nlLJaD5uNABaY0zRY=";
+  doInstallCheck = true;
+
+  installCheckPhase = ''
+    runHook preInstallCheck
+
+    $out/bin/par new hello
+    diff -U3 --color=auto <($out/bin/par run --package hello 2>&1) <(echo 'Hello, World!')
+
+    runHook postInstallCheck
+  '';
 
   postFixup =
     let
@@ -53,23 +62,13 @@ rustPlatform.buildRustPackage {
       patchelf --add-rpath ${lib.makeLibraryPath runtimeDependencies} $out/bin/par
     '';
 
-  doInstallCheck = true;
-  installCheckPhase = ''
-    runHook preInstallCheck
-
-    $out/bin/par new hello
-    diff -U3 --color=auto <($out/bin/par run --package hello 2>&1) <(echo 'Hello, World!')
-
-    runHook postInstallCheck
-  '';
-
   desktopItems = [
     (makeDesktopItem {
-      name = "par-playground";
-      desktopName = "Par Playground";
-      genericName = "Experimental concurrent programming language";
       categories = [ "Development" ];
+      desktopName = "Par Playground";
       exec = "par playground %f";
+      genericName = "Experimental concurrent programming language";
+      name = "par-playground";
     })
   ];
 

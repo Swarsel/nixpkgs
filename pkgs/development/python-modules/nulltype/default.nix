@@ -8,16 +8,15 @@
 buildPythonPackage rec {
   pname = "nulltype";
   version = "2.3.1";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
-    extension = "zip";
     sha256 = "0wpjbsmm0c9ifg9y6cnfz49qq9pa5f99nnqp6wdlv42ymfr3rak4";
+    extension = "zip";
   };
 
   nativeCheckInputs = [ pytestCheckHook ];
-
+  format = "setuptools";
   pythonImportsCheck = [ "nulltype" ];
 
   meta = {

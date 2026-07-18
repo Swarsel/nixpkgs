@@ -1,12 +1,12 @@
 {
+  lib,
+  stdenv,
+  fetchurl,
   cmake,
   docutils,
-  fetchurl,
-  lib,
   libbsd,
-  ncurses,
   libpq,
-  stdenv,
+  ncurses,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -18,19 +18,20 @@ stdenv.mkDerivation (finalAttrs: {
     sha256 = "sha256-4El3GmfP5UDJOsDxyU5z/s3JKw0jlMb8EB/hvtywwVs=";
   };
 
+  nativeBuildInputs = [
+    cmake
+    docutils
+  ];
+
   buildInputs = [
     libbsd
     libpq
     ncurses
   ];
 
-  nativeBuildInputs = [
-    cmake
-    docutils
-  ];
-
   meta = {
     description = "'top' like tool for PostgreSQL";
+
     longDescription = ''
       pg_top allows you to:
        * View currently running SQL statement of a process.
@@ -42,8 +43,8 @@ stdenv.mkDerivation (finalAttrs: {
 
     homepage = "https://pg_top.gitlab.io";
     changelog = "https://gitlab.com/pg_top/pg_top/-/blob/main/HISTORY.rst";
-    platforms = lib.platforms.linux;
     license = lib.licenses.bsd3;
+    platforms = lib.platforms.linux;
     mainProgram = "pg_top";
   };
 })

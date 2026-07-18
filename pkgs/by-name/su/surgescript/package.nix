@@ -2,11 +2,11 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  fetchpatch,
   cmake,
+  fetchpatch,
   ninja,
-  versionCheckHook,
   nix-update-script,
+  versionCheckHook,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -22,8 +22,8 @@ stdenv.mkDerivation (finalAttrs: {
 
   patches = [
     (fetchpatch {
-      url = "https://github.com/alemart/surgescript/commit/21a9c0696d592b7cc21e07db828fb93a12c95a7e.patch?full_index=1";
       hash = "sha256-d0l0xSrhJPIE5dMpEHdRlAMaD3f9x1IGBUpvjcMwDMs=";
+      url = "https://github.com/alemart/surgescript/commit/21a9c0696d592b7cc21e07db828fb93a12c95a7e.patch?full_index=1";
     })
   ];
 
@@ -32,19 +32,18 @@ stdenv.mkDerivation (finalAttrs: {
     ninja
   ];
 
-  nativeInstallCheckInputs = [ versionCheckHook ];
   doInstallCheck = true;
-
+  nativeInstallCheckInputs = [ versionCheckHook ];
   passthru.updateScript = nix-update-script { };
 
   meta = {
-    mainProgram = "surgescript";
     description = "Scripting language for games";
     homepage = "https://docs.opensurge2d.org/";
-    downloadPage = "https://github.com/alemart/surgescript";
     changelog = "https://github.com/alemart/surgescript/blob/v${finalAttrs.version}/CHANGES.md";
     license = lib.licenses.asl20;
-    platforms = lib.platforms.all;
     maintainers = [ ];
+    platforms = lib.platforms.all;
+    mainProgram = "surgescript";
+    downloadPage = "https://github.com/alemart/surgescript";
   };
 })

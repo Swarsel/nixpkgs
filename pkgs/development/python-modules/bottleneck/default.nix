@@ -2,24 +2,26 @@
   lib,
   buildPythonPackage,
   fetchPypi,
-  setuptools,
-  versioneer,
   numpy,
   pytestCheckHook,
   python,
+  setuptools,
+  versioneer,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "bottleneck";
   version = "1.6.0";
-  pyproject = true;
-
-  __structuredAttrs = true;
 
   src = fetchPypi {
     inherit (finalAttrs) pname version;
     hash = "sha256-Ao1G7ksCWtmrTXmSQROBb4JfYrF7h8nh0NjOFEpKDjE=";
   };
+
+  nativeCheckInputs = [ pytestCheckHook ];
+  preCheck = "pushd $out";
+  postCheck = "popd";
+  __structuredAttrs = true;
 
   build-system = [
     setuptools
@@ -27,12 +29,7 @@ buildPythonPackage (finalAttrs: {
   ];
 
   dependencies = [ numpy ];
-
-  nativeCheckInputs = [ pytestCheckHook ];
-
-  preCheck = "pushd $out";
-  postCheck = "popd";
-
+  pyproject = true;
   pythonImportsCheck = [ "bottleneck" ];
 
   meta = {

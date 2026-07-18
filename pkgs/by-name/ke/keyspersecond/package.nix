@@ -2,18 +2,18 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  gradle_8,
   copyDesktopItems,
-  makeDesktopItem,
-  makeWrapper,
+  gradle_8,
   jre,
   libGL,
   libx11,
-  libxtst,
-  libxkbcommon,
   libxcb,
-  libxt,
   libxinerama,
+  libxkbcommon,
+  libxt,
+  libxtst,
+  makeDesktopItem,
+  makeWrapper,
 }:
 
 let
@@ -49,23 +49,11 @@ stdenv.mkDerivation (finalAttrs: {
     ./gradleShadowJar.patch
   ];
 
-  sourceRoot = "${finalAttrs.src.name}/KeysPerSecond";
-
   nativeBuildInputs = [
     gradle
     copyDesktopItems
     makeWrapper
   ];
-
-  mitmCache = gradle.fetchDeps {
-    inherit (finalAttrs) pname;
-    data = ./deps.json;
-  };
-
-  # this is required for using mitm-cache on Darwin
-  __darwinAllowLocalNetworking = true;
-
-  gradleFlags = "-PrefName=v${finalAttrs.version}";
 
   installPhase = ''
     runHook preInstall
@@ -82,29 +70,43 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  # this is required for using mitm-cache on Darwin
+  __darwinAllowLocalNetworking = true;
+
   desktopItems = [
     (makeDesktopItem {
-      name = "keyspersecond";
+      categories = [ "Utility" ];
+      comment = finalAttrs.meta.description;
       desktopName = "KeysPerSecond";
       exec = "KeysPerSecond";
       icon = "keyspersecond";
-      comment = finalAttrs.meta.description;
-      categories = [ "Utility" ];
+      name = "keyspersecond";
     })
   ];
 
+  gradleFlags = "-PrefName=v${finalAttrs.version}";
+
+  mitmCache = gradle.fetchDeps {
+    inherit (finalAttrs) pname;
+    data = ./deps.json;
+  };
+
+  sourceRoot = "${finalAttrs.src.name}/KeysPerSecond";
+
   meta = {
-    changelog = "https://github.com/RoanH/KeysPerSecond/blob/${finalAttrs.src.rev}/CHANGELOG.md";
     description = "Keys-per-second meter and counter for rhythm games";
     homepage = "https://github.com/RoanH/KeysPerSecond";
+    changelog = "https://github.com/RoanH/KeysPerSecond/blob/${finalAttrs.src.rev}/CHANGELOG.md";
     license = lib.licenses.gpl3Only;
-    mainProgram = "KeysPerSecond";
-    maintainers = with lib.maintainers; [ tomasajt ];
-    platforms = jre.meta.platforms;
+
     sourceProvenance = with lib.sourceTypes; [
       fromSource
       binaryBytecode # deps
       binaryNativeCode # jnativehook shared library
     ];
+
+    maintainers = with lib.maintainers; [ tomasajt ];
+    platforms = jre.meta.platforms;
+    mainProgram = "KeysPerSecond";
   };
 })

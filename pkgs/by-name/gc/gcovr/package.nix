@@ -1,16 +1,15 @@
 {
-  stdenv,
   lib,
-  python3Packages,
+  stdenv,
   fetchFromGitHub,
-  writableTmpDirAsHomeHook,
   gitMinimal,
+  python3Packages,
+  writableTmpDirAsHomeHook,
 }:
 
 python3Packages.buildPythonPackage (finalAttrs: {
   pname = "gcovr";
   version = "8.4";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "gcovr";
@@ -18,12 +17,6 @@ python3Packages.buildPythonPackage (finalAttrs: {
     tag = finalAttrs.version;
     hash = "sha256-v3jNODYD9qa3mwttfuldhhIHrfR5LcsZ+WNWiOWb35E=";
   };
-
-  build-system = with python3Packages; [
-    hatchling
-    hatch-fancy-pypi-readme
-    hatch-vcs
-  ];
 
   # pythonRelaxDeps do not work on pyproject.toml
   preBuild = ''
@@ -33,24 +26,6 @@ python3Packages.buildPythonPackage (finalAttrs: {
       --replace-fail "hatch-fancy-pypi-readme==24.1.0" "hatch-fancy-pypi-readme>=24.1.0"
     substituteInPlace pyproject.toml \
       --replace-fail "hatch-vcs==0.4.0" "hatch-vcs>=0.4.0"
-  '';
-
-  dependencies = with python3Packages; [
-    colorlog
-    jinja2
-    lxml
-    pygments
-  ];
-
-  pythonImportsCheck = [
-    "gcovr"
-    "gcovr.configuration"
-  ];
-
-  preCheck = ''
-    rm -rf src # this causes some pycache issues
-    rm -rf admin/bump_version.py
-    export CC_REFERENCE="gcc-${lib.versions.major stdenv.cc.version}"
   '';
 
   nativeCheckInputs = with python3Packages; [
@@ -63,6 +38,25 @@ python3Packages.buildPythonPackage (finalAttrs: {
     gitMinimal
   ];
 
+  preCheck = ''
+    rm -rf src # this causes some pycache issues
+    rm -rf admin/bump_version.py
+    export CC_REFERENCE="gcc-${lib.versions.major stdenv.cc.version}"
+  '';
+
+  build-system = with python3Packages; [
+    hatchling
+    hatch-fancy-pypi-readme
+    hatch-vcs
+  ];
+
+  dependencies = with python3Packages; [
+    colorlog
+    jinja2
+    lxml
+    pygments
+  ];
+
   disabledTests = [
     # too fragile
     "test_build"
@@ -70,6 +64,13 @@ python3Packages.buildPythonPackage (finalAttrs: {
     # assert 40 == 30 on log levels
     "test_multiple_output_formats_to_stdout"
     "test_multiple_output_formats_to_stdout_1"
+  ];
+
+  pyproject = true;
+
+  pythonImportsCheck = [
+    "gcovr"
+    "gcovr.configuration"
   ];
 
   meta = {

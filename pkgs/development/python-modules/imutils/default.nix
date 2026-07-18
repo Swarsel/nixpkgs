@@ -6,9 +6,8 @@
 }:
 
 buildPythonPackage rec {
-  version = "0.5.4";
-  format = "setuptools";
   pname = "imutils";
+  version = "0.5.4";
 
   src = fetchPypi {
     inherit pname version;
@@ -16,9 +15,9 @@ buildPythonPackage rec {
   };
 
   propagatedBuildInputs = [ opencv4 ];
-
   # no tests
   doCheck = false;
+  format = "setuptools";
 
   pythonImportsCheck = [
     "imutils"
@@ -29,10 +28,10 @@ buildPythonPackage rec {
   ];
 
   meta = {
-    homepage = "https://github.com/jrosebr1/imutils";
     description = "Series of convenience functions to make basic image processing functions";
-    mainProgram = "range-detector";
+    homepage = "https://github.com/jrosebr1/imutils";
     license = lib.licenses.mit;
     maintainers = [ ];
+    mainProgram = "range-detector";
   };
 }

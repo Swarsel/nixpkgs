@@ -1,10 +1,10 @@
 {
   lib,
-  buildPythonPackage,
-  fetchPypi,
   aiosqlite,
   alembic,
+  buildPythonPackage,
   debtcollector,
+  fetchPypi,
   oslo-config,
   oslo-context,
   oslo-i18n,
@@ -14,8 +14,8 @@
   psycopg2,
   setuptools,
   sqlalchemy,
-  stevedore,
   stestr,
+  stevedore,
   testresources,
   testscenarios,
 }:
@@ -23,29 +23,12 @@
 buildPythonPackage rec {
   pname = "oslo-db";
   version = "18.1.0";
-  pyproject = true;
 
   src = fetchPypi {
-    pname = "oslo_db";
     inherit version;
     hash = "sha256-B16GziPAwh2x01CR8dyyGwVEnInDpDJtpPLT+4MwIj8=";
+    pname = "oslo_db";
   };
-
-  build-system = [
-    pbr
-    setuptools
-  ];
-
-  dependencies = [
-    alembic
-    debtcollector
-    oslo-config
-    oslo-i18n
-    oslo-utils
-    sqlalchemy
-    stevedore
-  ]
-  ++ sqlalchemy.optional-dependencies.asyncio;
 
   nativeCheckInputs = [
     aiosqlite
@@ -63,6 +46,23 @@ buildPythonPackage rec {
     runHook postCheck
   '';
 
+  build-system = [
+    pbr
+    setuptools
+  ];
+
+  dependencies = [
+    alembic
+    debtcollector
+    oslo-config
+    oslo-i18n
+    oslo-utils
+    sqlalchemy
+    stevedore
+  ]
+  ++ sqlalchemy.optional-dependencies.asyncio;
+
+  pyproject = true;
   pythonImportsCheck = [ "oslo_db" ];
 
   meta = {

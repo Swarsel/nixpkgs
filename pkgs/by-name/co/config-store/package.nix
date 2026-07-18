@@ -1,7 +1,7 @@
 {
-  rustPlatform,
-  fetchFromGitHub,
   lib,
+  fetchFromGitHub,
+  rustPlatform,
 }:
 rustPlatform.buildRustPackage (finalAttrs: {
   pname = "config-store";
@@ -19,12 +19,14 @@ rustPlatform.buildRustPackage (finalAttrs: {
   meta = {
     description = "Simple key-value store designed to be used from shell scripts written in Rust";
     homepage = "https://github.com/DOD-101/config-store";
-    mainProgram = "config-store";
+
     license = with lib.licenses; [
       mit
       asl20
     ];
-    platforms = lib.platforms.unix;
+
     maintainers = with lib.maintainers; [ dod-101 ];
+    platforms = lib.platforms.unix;
+    mainProgram = "config-store";
   };
 })

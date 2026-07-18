@@ -2,20 +2,20 @@
   lib,
   stdenv,
   fetchFromGitLab,
-  fetchzip,
   SDL2,
   SDL2_mixer,
   SDL2_net,
-  gtk3,
+  fetchzip,
   gobject-introspection,
+  gtk3,
   python3Packages,
   wrapGAppsHook3,
 }:
 
 let
   data = fetchzip {
-    url = "https://mirandir.pagesperso-orange.fr/files/additional-levels.tar.xz";
     sha256 = "167hisscsbldrwrs54gq6446shl8h26qdqigmfg0lq3daynqycg2";
+    url = "https://mirandir.pagesperso-orange.fr/files/additional-levels.tar.xz";
   };
 in
 
@@ -31,19 +31,20 @@ stdenv.mkDerivation {
     sha256 = "0f1k26jicmb95bx19wgcdpwsbbl343i7mqqqc2z9lkb8drlsyqcy";
   };
 
-  makeFlags = [ "PREFIX=$(out)" ];
-
   nativeBuildInputs = [
     python3Packages.wrapPython
     wrapGAppsHook3
     gobject-introspection
   ];
+
   buildInputs = [
     SDL2
     SDL2_mixer
     SDL2_net
     gtk3
   ];
+
+  makeFlags = [ "PREFIX=$(out)" ];
 
   postInstall = ''
     make -C menu PREFIX=$out all install
@@ -52,16 +53,18 @@ stdenv.mkDerivation {
     sed -i -e 's+Exec=jumpnbump+Exec=jumpnbump-menu+' $out/share/applications/jumpnbump.desktop
   '';
 
+  preFixup = ''
+    buildPythonPath "$out ''${pythonPath[*]}"
+  '';
+
+  postFixup = ''
+    wrapPythonPrograms
+  '';
+
   pythonPath = with python3Packages; [
     pygobject3
     pillow
   ];
-  preFixup = ''
-    buildPythonPath "$out ''${pythonPath[*]}"
-  '';
-  postFixup = ''
-    wrapPythonPrograms
-  '';
 
   meta = {
     description = "Cute, true multiplayer platform game with bunnies";

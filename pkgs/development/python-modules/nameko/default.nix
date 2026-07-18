@@ -1,11 +1,10 @@
 {
   lib,
   buildPythonPackage,
-  fetchPypi,
-
   # install_requires
   dnspython,
   eventlet,
+  fetchPypi,
   kombu,
   mock,
   packaging,
@@ -21,7 +20,6 @@
 buildPythonPackage rec {
   pname = "nameko";
   version = "2.14.1";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
@@ -32,6 +30,9 @@ buildPythonPackage rec {
     substituteInPlace setup.py --replace-fail "path.py" "path"
   '';
 
+  # tests depend on RabbitMQ being installed - https://nameko.readthedocs.io/en/stable/contributing.html#running-the-tests
+  # and most of the tests are network based
+  doCheck = false;
   build-system = [ setuptools ];
 
   dependencies = [
@@ -49,18 +50,15 @@ buildPythonPackage rec {
     wrapt
   ];
 
-  # tests depend on RabbitMQ being installed - https://nameko.readthedocs.io/en/stable/contributing.html#running-the-tests
-  # and most of the tests are network based
-  doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "nameko" ];
 
   meta = {
     description = "Microservices framework that lets service developers concentrate on application logic and encourages testability";
-    mainProgram = "nameko";
     homepage = "https://www.nameko.io/";
     changelog = "https://github.com/nameko/nameko/releases/tag/v${version}";
     license = lib.licenses.asl20;
     maintainers = with lib.maintainers; [ siddharthdhakane ];
+    mainProgram = "nameko";
   };
 }

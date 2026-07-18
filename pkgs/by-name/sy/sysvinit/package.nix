@@ -15,11 +15,6 @@ stdenv.mkDerivation (finalAttrs: {
     sha256 = "sha256-KmIf5uRSi8kTCLdIZ92q6733dT8COVwMW66Be9K346U=";
   };
 
-  prePatch = ''
-    # Patch some minimal hard references, so halt/shutdown work
-    sed -i -e "s,/sbin/,$out/sbin/," src/halt.c src/init.c src/paths.h
-  '';
-
   buildInputs = [ libxcrypt ];
 
   makeFlags = [
@@ -45,10 +40,15 @@ stdenv.mkDerivation (finalAttrs: {
     rm $out/bin/wall $out/share/man/man1/wall.1
   '';
 
+  prePatch = ''
+    # Patch some minimal hard references, so halt/shutdown work
+    sed -i -e "s,/sbin/,$out/sbin/," src/halt.c src/init.c src/paths.h
+  '';
+
   meta = {
-    homepage = "https://www.nongnu.org/sysvinit/";
     description = "Utilities related to booting and shutdown";
-    platforms = lib.platforms.linux;
+    homepage = "https://www.nongnu.org/sysvinit/";
     license = lib.licenses.gpl2Plus;
+    platforms = lib.platforms.linux;
   };
 })

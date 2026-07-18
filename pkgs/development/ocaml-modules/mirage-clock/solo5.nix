@@ -4,12 +4,12 @@
 }:
 
 buildDunePackage {
-  pname = "mirage-clock-solo5";
-
   inherit (mirage-clock)
     version
     src
     ;
+
+  pname = "mirage-clock-solo5";
 
   propagatedBuildInputs = [
     mirage-clock

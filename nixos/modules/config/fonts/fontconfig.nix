@@ -22,8 +22,8 @@
 
 {
   config,
-  pkgs,
   lib,
+  pkgs,
   ...
 }:
 let
@@ -289,9 +289,9 @@ let
   # Package with configuration files
   # this merge all the packages in the fonts.fontconfig.confPackages list
   fontconfigEtc = pkgs.buildEnv {
+    ignoreCollisions = true;
     name = "fontconfig-etc";
     paths = cfg.confPackages;
-    ignoreCollisions = true;
   };
 
   fontconfigNote = "Consider manually configuring fonts.fontconfig according to personal preference.";
@@ -341,8 +341,8 @@ in
 
       fontconfig = {
         enable = lib.mkOption {
-          type = lib.types.bool;
           default = true;
+
           description = ''
             If enabled, a Fontconfig configuration file will be built
             pointing to a set of default fonts.  If you don't care about
@@ -350,67 +350,143 @@ in
             Fontconfig, you can turn this option off and prevent a
             dependency on all those fonts.
           '';
+
+          type = lib.types.bool;
         };
 
-        confPackages = lib.mkOption {
-          internal = true;
-          type = with lib.types; listOf path;
-          default = [ ];
+        aliases = lib.mkOption {
+          default = { };
+
           description = ''
-            Fontconfig configuration packages.
+            Font aliases that can substitute preferential fonts,
+            or specify custom fallback fonts.
           '';
+
+          example = lib.literalExpression ''
+            {
+                # use FreeSans for Greek symbols missing in Helvetica
+                "Helvetica" = {
+                    default = [ "FreeSans" ];
+                };
+            };
+          '';
+
+          type = lib.types.attrsOf (
+            lib.types.submodule {
+              options = {
+                accept = lib.mkOption {
+                  default = [ ];
+
+                  description = ''
+                    Fonts that are chosen if none of the preferred
+                    fonts, nor the alias family could provide the
+                    desired glyph.
+                  '';
+
+                  type = lib.types.listOf lib.types.str;
+                };
+
+                binding = lib.mkOption {
+                  default = "same";
+
+                  description = ''
+                    Binding precedence for this font family. See
+                    fontconfig "Font Matching" section for details.
+                  '';
+
+                  type = lib.types.enum [
+                    "same"
+                    "weak"
+                    "strong"
+                  ];
+                };
+
+                default = lib.mkOption {
+                  default = [ ];
+
+                  description = ''
+                    Last chance fallback fonts which are chosen by
+                    default if none of the other options could
+                    provide the desired glyph.
+                  '';
+
+                  type = lib.types.listOf lib.types.str;
+                };
+
+                prefer = lib.mkOption {
+                  default = [ ];
+
+                  description = ''
+                    Fonts whose glyphs are chosen preferentially prior
+                    to fonts which match the alias family.
+                  '';
+
+                  type = lib.types.listOf lib.types.str;
+                };
+              };
+            }
+          );
+        };
+
+        allowBitmaps = lib.mkOption {
+          default = true;
+
+          description = ''
+            Allow bitmap fonts. Set to `false` to ban all
+            bitmap fonts.
+          '';
+
+          type = lib.types.bool;
+        };
+
+        allowType1 = lib.mkOption {
+          default = false;
+
+          description = ''
+            Allow Type-1 fonts. Default is `false` because of
+            poor rendering.
+          '';
+
+          type = lib.types.bool;
         };
 
         antialias = lib.mkOption {
-          type = lib.types.bool;
           default = true;
+
           description = ''
             Enable font antialiasing. At high resolution (> 200 DPI),
             antialiasing has no visible effect; users of such displays may want
             to disable this option.
           '';
+
+          type = lib.types.bool;
         };
 
-        localConf = lib.mkOption {
-          type = lib.types.lines;
-          default = "";
+        cache32Bit = lib.mkOption {
+          default = false;
+
           description = ''
-            System-wide customization file contents, has higher priority than
-            `defaultFonts` settings.
+            Generate system fonts cache for 32-bit applications.
           '';
+
+          type = lib.types.bool;
+        };
+
+        confPackages = lib.mkOption {
+          default = [ ];
+
+          description = ''
+            Fontconfig configuration packages.
+          '';
+
+          internal = true;
+          type = with lib.types; listOf path;
         };
 
         defaultFonts = {
-          monospace = lib.mkOption {
-            type = lib.types.listOf lib.types.str;
-            default = [ "DejaVu Sans Mono" ];
-            description = ''
-              System-wide default monospace font(s). Multiple fonts may be
-              listed in case multiple languages must be supported.
-            '';
-          };
-
-          sansSerif = lib.mkOption {
-            type = lib.types.listOf lib.types.str;
-            default = [ "DejaVu Sans" ];
-            description = ''
-              System-wide default sans serif font(s). Multiple fonts may be
-              listed in case multiple languages must be supported.
-            '';
-          };
-
-          serif = lib.mkOption {
-            type = lib.types.listOf lib.types.str;
-            default = [ "DejaVu Serif" ];
-            description = ''
-              System-wide default serif font(s). Multiple fonts may be listed
-              in case multiple languages must be supported.
-            '';
-          };
-
           emoji = lib.mkOption {
-            type = lib.types.listOf lib.types.str;
             default = [ "Noto Color Emoji" ];
+
             description = ''
               System-wide default emoji font(s). Multiple fonts may be listed
               in case a font does not support all emoji.
@@ -421,39 +497,82 @@ in
               Noto Emoji), fontconfig will still choose the color font even
               when it is later in the list.
             '';
+
+            type = lib.types.listOf lib.types.str;
+          };
+
+          monospace = lib.mkOption {
+            default = [ "DejaVu Sans Mono" ];
+
+            description = ''
+              System-wide default monospace font(s). Multiple fonts may be
+              listed in case multiple languages must be supported.
+            '';
+
+            type = lib.types.listOf lib.types.str;
+          };
+
+          sansSerif = lib.mkOption {
+            default = [ "DejaVu Sans" ];
+
+            description = ''
+              System-wide default sans serif font(s). Multiple fonts may be
+              listed in case multiple languages must be supported.
+            '';
+
+            type = lib.types.listOf lib.types.str;
+          };
+
+          serif = lib.mkOption {
+            default = [ "DejaVu Serif" ];
+
+            description = ''
+              System-wide default serif font(s). Multiple fonts may be listed
+              in case multiple languages must be supported.
+            '';
+
+            type = lib.types.listOf lib.types.str;
           };
         };
 
         hinting = {
           enable = lib.mkOption {
-            type = lib.types.bool;
             default = true;
+
             description = ''
               Enable font hinting. Hinting aligns glyphs to pixel boundaries to
               improve rendering sharpness at low resolution. At high resolution
               (> 200 dpi) hinting will do nothing (at best); users of such
               displays may want to disable this option.
             '';
+
+            type = lib.types.bool;
           };
 
           autohint = lib.mkOption {
-            type = lib.types.bool;
             default = false;
+
             description = ''
               Enable the autohinter in place of the default interpreter.
               The results are usually lower quality than correctly-hinted
               fonts, but better than unhinted fonts.
             '';
+
+            type = lib.types.bool;
           };
 
           style = lib.mkOption {
-            type = lib.types.enum [
-              "none"
-              "slight"
-              "medium"
-              "full"
-            ];
+            apply =
+              val:
+              let
+                from = "fonts.fontconfig.hinting.style";
+                val' = lib.removePrefix "hint" val;
+                warning = "The option `${from}` contains a deprecated value `${val}`. Use `${val'}` instead.";
+              in
+              lib.warnIf (lib.hasPrefix "hint" val) warning val';
+
             default = "slight";
+
             description = ''
               Hintstyle is the amount of font reshaping done to line up
               to the grid.
@@ -463,38 +582,61 @@ in
               crisp font that aligns well to the pixel grid but will lose a
               greater amount of font shape.
             '';
-            apply =
-              val:
-              let
-                from = "fonts.fontconfig.hinting.style";
-                val' = lib.removePrefix "hint" val;
-                warning = "The option `${from}` contains a deprecated value `${val}`. Use `${val'}` instead.";
-              in
-              lib.warnIf (lib.hasPrefix "hint" val) warning val';
+
+            type = lib.types.enum [
+              "none"
+              "slight"
+              "medium"
+              "full"
+            ];
           };
         };
 
         includeUserConf = lib.mkOption {
-          type = lib.types.bool;
           default = true;
+
           description = ''
             Include the user configuration from
             {file}`~/.config/fontconfig/fonts.conf` or
             {file}`~/.config/fontconfig/conf.d`.
           '';
+
+          type = lib.types.bool;
+        };
+
+        localConf = lib.mkOption {
+          default = "";
+
+          description = ''
+            System-wide customization file contents, has higher priority than
+            `defaultFonts` settings.
+          '';
+
+          type = lib.types.lines;
         };
 
         subpixel = {
 
+          lcdfilter = lib.mkOption {
+            default = "default";
+
+            description = ''
+              FreeType LCD filter. At high resolution (> 200 DPI), LCD filtering
+              has no visible effect; users of such displays may want to select
+              `none`.
+            '';
+
+            type = lib.types.enum [
+              "none"
+              "default"
+              "light"
+              "legacy"
+            ];
+          };
+
           rgba = lib.mkOption {
             default = "none";
-            type = lib.types.enum [
-              "rgb"
-              "bgr"
-              "vrgb"
-              "vbgr"
-              "none"
-            ];
+
             description = ''
               Subpixel order. The overwhelming majority of displays are
               `rgb` in their normal orientation. Select
@@ -506,118 +648,22 @@ in
               the improbable event that the display's native subpixel order is
               `bgr`.
             '';
-          };
 
-          lcdfilter = lib.mkOption {
-            default = "default";
             type = lib.types.enum [
+              "rgb"
+              "bgr"
+              "vrgb"
+              "vbgr"
               "none"
-              "default"
-              "light"
-              "legacy"
             ];
-            description = ''
-              FreeType LCD filter. At high resolution (> 200 DPI), LCD filtering
-              has no visible effect; users of such displays may want to select
-              `none`.
-            '';
           };
 
-        };
-
-        cache32Bit = lib.mkOption {
-          default = false;
-          type = lib.types.bool;
-          description = ''
-            Generate system fonts cache for 32-bit applications.
-          '';
-        };
-
-        allowBitmaps = lib.mkOption {
-          type = lib.types.bool;
-          default = true;
-          description = ''
-            Allow bitmap fonts. Set to `false` to ban all
-            bitmap fonts.
-          '';
-        };
-
-        allowType1 = lib.mkOption {
-          type = lib.types.bool;
-          default = false;
-          description = ''
-            Allow Type-1 fonts. Default is `false` because of
-            poor rendering.
-          '';
         };
 
         useEmbeddedBitmaps = lib.mkOption {
-          type = lib.types.bool;
           default = true;
           description = "Use embedded bitmaps in fonts like Calibri.";
-        };
-
-        aliases = lib.mkOption {
-          type = lib.types.attrsOf (
-            lib.types.submodule {
-              options = {
-                binding = lib.mkOption {
-                  type = lib.types.enum [
-                    "same"
-                    "weak"
-                    "strong"
-                  ];
-                  default = "same";
-                  description = ''
-                    Binding precedence for this font family. See
-                    fontconfig "Font Matching" section for details.
-                  '';
-                };
-
-                prefer = lib.mkOption {
-                  type = lib.types.listOf lib.types.str;
-                  default = [ ];
-                  description = ''
-                    Fonts whose glyphs are chosen preferentially prior
-                    to fonts which match the alias family.
-                  '';
-                };
-
-                accept = lib.mkOption {
-                  type = lib.types.listOf lib.types.str;
-                  default = [ ];
-                  description = ''
-                    Fonts that are chosen if none of the preferred
-                    fonts, nor the alias family could provide the
-                    desired glyph.
-                  '';
-                };
-
-                default = lib.mkOption {
-                  type = lib.types.listOf lib.types.str;
-                  default = [ ];
-                  description = ''
-                    Last chance fallback fonts which are chosen by
-                    default if none of the other options could
-                    provide the desired glyph.
-                  '';
-                };
-              };
-            }
-          );
-          default = { };
-          example = lib.literalExpression ''
-            {
-                # use FreeSans for Greek symbols missing in Helvetica
-                "Helvetica" = {
-                    default = [ "FreeSans" ];
-                };
-            };
-          '';
-          description = ''
-            Font aliases that can substitute preferential fonts,
-            or specify custom fallback fonts.
-          '';
+          type = lib.types.bool;
         };
 
       };
@@ -625,10 +671,12 @@ in
     };
 
   };
+
   config = lib.mkMerge [
     (lib.mkIf cfg.enable {
-      environment.systemPackages = [ pkgs.fontconfig ];
       environment.etc.fonts.source = "${fontconfigEtc}/etc/fonts/";
+      environment.systemPackages = [ pkgs.fontconfig ];
+
       security.apparmor.includes."abstractions/fonts" = ''
         # fonts.conf
         r ${pkg.out}/etc/fonts/fonts.conf,

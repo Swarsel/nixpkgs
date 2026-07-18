@@ -2,22 +2,18 @@
   lib,
   stdenv,
   fetchurl,
-  nixosTests,
   jre_headless,
   makeWrapper,
-  udev,
-  version,
-  url,
+  nixosTests,
   sha1,
+  udev,
+  url,
+  version,
 }:
 stdenv.mkDerivation {
-  pname = "minecraft-server";
   inherit version;
-
+  pname = "minecraft-server";
   src = fetchurl { inherit url sha1; };
-
-  preferLocalBuild = true;
-
   nativeBuildInputs = [ makeWrapper ];
 
   installPhase = ''
@@ -33,6 +29,7 @@ stdenv.mkDerivation {
   '';
 
   dontUnpack = true;
+  preferLocalBuild = true;
 
   passthru = {
     tests = { inherit (nixosTests) minecraft-server; };
@@ -42,14 +39,16 @@ stdenv.mkDerivation {
   meta = {
     description = "Minecraft Server";
     homepage = "https://minecraft.net";
-    sourceProvenance = with lib.sourceTypes; [ binaryBytecode ];
     license = lib.licenses.unfreeRedistributable;
-    platforms = lib.platforms.unix;
+    sourceProvenance = with lib.sourceTypes; [ binaryBytecode ];
+
     maintainers = with lib.maintainers; [
       thoughtpolice
       tomberek
       costrouc
     ];
+
+    platforms = lib.platforms.unix;
     mainProgram = "minecraft-server";
   };
 }

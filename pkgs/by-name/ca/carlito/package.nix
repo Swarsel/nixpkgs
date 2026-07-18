@@ -21,19 +21,20 @@ stdenvNoCC.mkDerivation rec {
   '';
 
   meta = {
-    # This font doesn't appear to have any official web site but this
-    # one provides some good information and samples.
-    homepage = "http://openfontlibrary.org/en/font/carlito";
     description = "Sans-serif font metric-compatible with Microsoft Calibri";
+
     longDescription = ''
       Carlito is a free font that is metric-compatible with the
       Microsoft Calibri font. The font is designed by Łukasz Dziedzic
       of the tyPoland foundry and based upon his Lato font.
     '';
-    license = lib.licenses.ofl;
-    platforms = lib.platforms.all;
-    maintainers = [ ];
 
+    # This font doesn't appear to have any official web site but this
+    # one provides some good information and samples.
+    homepage = "http://openfontlibrary.org/en/font/carlito";
+    license = lib.licenses.ofl;
+    maintainers = [ ];
+    platforms = lib.platforms.all;
     # Reduce the priority of this package. The intent is that if you
     # also install the `vista-fonts` package, then you probably will
     # not want to install the font alias of this package.

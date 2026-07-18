@@ -1,9 +1,9 @@
 {
   lib,
+  fetchFromGitHub,
   aiohttp,
   aioresponses,
   buildPythonPackage,
-  fetchFromGitHub,
   mashumaro,
   poetry-core,
   poetry-dynamic-versioning,
@@ -18,7 +18,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "google-air-quality-api";
   version = "3.0.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "Thomas55555";
@@ -32,16 +31,6 @@ buildPythonPackage (finalAttrs: {
       --replace-fail 'version = "0.0.0"' 'version = "${finalAttrs.version}"'
   '';
 
-  build-system = [
-    poetry-core
-    poetry-dynamic-versioning
-  ];
-
-  dependencies = [
-    aiohttp
-    mashumaro
-  ];
-
   nativeCheckInputs = [
     aioresponses
     pytest-aiohttp
@@ -52,12 +41,23 @@ buildPythonPackage (finalAttrs: {
     time-machine
   ];
 
+  build-system = [
+    poetry-core
+    poetry-dynamic-versioning
+  ];
+
+  dependencies = [
+    aiohttp
+    mashumaro
+  ];
+
+  pyproject = true;
   pythonImportsCheck = [ "google_air_quality_api" ];
 
   meta = {
-    changelog = "https://github.com/Thomas55555/python-google-air-quality-api/releases/tag/${finalAttrs.version}";
     description = "Python client library for the Google Air Quality API";
     homepage = "https://github.com/Thomas55555/python-google-air-quality-api";
+    changelog = "https://github.com/Thomas55555/python-google-air-quality-api/releases/tag/${finalAttrs.version}";
     license = lib.licenses.mit;
     maintainers = [ lib.maintainers.jamiemagee ];
   };

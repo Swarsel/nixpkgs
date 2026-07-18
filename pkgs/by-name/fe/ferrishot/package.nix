@@ -1,16 +1,16 @@
 {
   lib,
   stdenv,
-  rustPlatform,
   fetchFromGitHub,
-  makeBinaryWrapper,
-  writableTmpDirAsHomeHook,
   libGL,
   libx11,
-  libxkbcommon,
   libxcb,
-  wayland,
+  libxkbcommon,
+  makeBinaryWrapper,
   nix-update-script,
+  rustPlatform,
+  wayland,
+  writableTmpDirAsHomeHook,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -24,8 +24,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-QnIHLkxqL/4s6jgIbGmzR5tqCjH7yJcfpx0AhdxqVKc=";
   };
 
-  cargoHash = "sha256-TJWS8LzLTQSr+0uw0x38mNJrjYvMzr90URYI8UcRQqc=";
-
   nativeBuildInputs = [
     makeBinaryWrapper
   ]
@@ -37,6 +35,8 @@ rustPlatform.buildRustPackage (finalAttrs: {
   buildInputs = lib.optionals stdenv.hostPlatform.isLinux [
     libxcb
   ];
+
+  cargoHash = "sha256-TJWS8LzLTQSr+0uw0x38mNJrjYvMzr90URYI8UcRQqc=";
 
   postInstall =
     let

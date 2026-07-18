@@ -1,14 +1,13 @@
 {
   lib,
-  python3,
   fetchFromGitHub,
   ffmpeg,
+  python3,
 }:
 
 python3.pkgs.buildPythonApplication rec {
   pname = "shaq";
   version = "0.0.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "woodruffw";
@@ -28,25 +27,6 @@ python3.pkgs.buildPythonApplication rec {
     shazamio
   ];
 
-  optional-dependencies = with python3.pkgs; {
-    dev = [
-      build
-      shaq
-    ];
-    lint = [
-      black
-      mypy
-      ruff
-    ];
-    test = [
-      pretend
-      pytest
-      pytest-cov
-    ];
-  };
-
-  pythonImportsCheck = [ "shaq" ];
-
   makeWrapperArgs = [
     "--prefix"
     "PATH"
@@ -54,14 +34,38 @@ python3.pkgs.buildPythonApplication rec {
     (lib.makeBinPath [ ffmpeg ])
   ];
 
+  optional-dependencies = with python3.pkgs; {
+    dev = [
+      build
+      shaq
+    ];
+
+    lint = [
+      black
+      mypy
+      ruff
+    ];
+
+    test = [
+      pretend
+      pytest
+      pytest-cov
+    ];
+  };
+
+  pyproject = true;
+  pythonImportsCheck = [ "shaq" ];
+
   meta = {
     description = "CLI client for Shazam";
     homepage = "https://github.com/woodruffw/shaq";
     changelog = "https://github.com/woodruffw/shaq/releases/tag/${src.rev}";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       mig4ng
     ];
+
     mainProgram = "shaq";
   };
 }

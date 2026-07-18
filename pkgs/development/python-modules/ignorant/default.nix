@@ -13,20 +13,14 @@
 buildPythonPackage rec {
   pname = "ignorant";
   version = "1.2";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
     hash = "sha256-SLjED08uI+RjX+E0WHTQceReTEaY9WLPhXR3n0fP080=";
   };
 
-  pythonRemoveDeps = [
-    # https://github.com/megadose/ignorant/pull/37
-    "argparse"
-    # https://github.com/megadose/ignorant/pull/36
-    "bs4"
-  ];
-
+  # Module has no tests
+  doCheck = false;
   build-system = [ setuptools ];
 
   dependencies = [
@@ -37,10 +31,15 @@ buildPythonPackage rec {
     trio
   ];
 
-  # Module has no tests
-  doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "ignorant" ];
+
+  pythonRemoveDeps = [
+    # https://github.com/megadose/ignorant/pull/37
+    "argparse"
+    # https://github.com/megadose/ignorant/pull/36
+    "bs4"
+  ];
 
   meta = {
     description = "Module to check if a phone number is used on different sites";

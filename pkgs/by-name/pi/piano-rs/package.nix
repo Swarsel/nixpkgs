@@ -1,10 +1,10 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
+  alsa-lib,
   makeBinaryWrapper,
   pkg-config,
-  alsa-lib,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -18,8 +18,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-qZeH9xXQPIOJ87mvLahnJB3DuEgLX0EAXPvECgxNlq0=";
   };
 
-  cargoHash = "sha256-ygRyYFLNBCLnRhmO6DoK8fwvy/Y9jrOjWChzxc3CRPo=";
-
   nativeBuildInputs = [
     makeBinaryWrapper
     pkg-config
@@ -28,6 +26,8 @@ rustPlatform.buildRustPackage (finalAttrs: {
   buildInputs = [
     alsa-lib
   ];
+
+  cargoHash = "sha256-ygRyYFLNBCLnRhmO6DoK8fwvy/Y9jrOjWChzxc3CRPo=";
 
   postInstall = ''
     mkdir -p "$out"/share/piano-rs
@@ -40,8 +40,8 @@ rustPlatform.buildRustPackage (finalAttrs: {
     description = "Multiplayer piano using UDP sockets that can be played using computer keyboard, in the terminal";
     homepage = "https://github.com/ritiek/piano-rs";
     license = lib.licenses.mit;
-    mainProgram = "piano-rs";
     maintainers = with lib.maintainers; [ ritiek ];
     platforms = lib.platforms.unix;
+    mainProgram = "piano-rs";
   };
 })

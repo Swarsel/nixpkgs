@@ -1,11 +1,11 @@
 {
-  cmake,
-  eigen,
-  fetchFromGitHub,
-  fetchpatch,
-  gtest,
   lib,
   stdenv,
+  fetchFromGitHub,
+  cmake,
+  eigen,
+  fetchpatch,
+  gtest,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -22,9 +22,9 @@ stdenv.mkDerivation (finalAttrs: {
   patches = [
     # ref. https://github.com/bab2min/EigenRand/pull/61 merged upstream
     (fetchpatch {
+      hash = "sha256-2KivLlyYGSRZurtxLghNfWwUNEUNWZdC6q+H65EPLnQ=";
       name = "support-eigen-341.patch";
       url = "https://github.com/bab2min/EigenRand/commit/8114df93b4c8a84a4f853380f0875a2c9d683cd0.patch";
-      hash = "sha256-2KivLlyYGSRZurtxLghNfWwUNEUNWZdC6q+H65EPLnQ=";
     })
   ];
 
@@ -39,18 +39,16 @@ stdenv.mkDerivation (finalAttrs: {
     rm test/test_mv.cpp
   '';
 
+  nativeBuildInputs = [ cmake ];
+  propagatedBuildInputs = [ eigen ];
+  cmakeFlags = [ "-DCMAKE_CTEST_ARGUMENTS=--exclude-regex;EigenRand-test" ];
+  doCheck = true;
+  checkInputs = [ gtest ];
+
   postInstall = ''
     # Remove installed tests and googletest stuff
     rm -rf $out/bin $out/include/gmock $out/include/gtest $out/lib
   '';
-
-  nativeBuildInputs = [ cmake ];
-  propagatedBuildInputs = [ eigen ];
-  checkInputs = [ gtest ];
-
-  doCheck = true;
-
-  cmakeFlags = [ "-DCMAKE_CTEST_ARGUMENTS=--exclude-regex;EigenRand-test" ];
 
   meta = {
     description = "Fastest Random Distribution Generator for Eigen";

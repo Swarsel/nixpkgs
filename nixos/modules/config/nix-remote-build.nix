@@ -71,24 +71,58 @@ in
   options = {
     nix = {
       buildMachines = mkOption {
+        default = [ ];
+
+        description = ''
+          This option lists the machines to be used if distributed builds are
+          enabled (see {option}`nix.distributedBuilds`).
+          Nix will perform derivations on those machines via SSH by copying the
+          inputs to the Nix store on the remote machine, starting the build,
+          then copying the output back to the local Nix store.
+        '';
+
         type = types.listOf (
           types.submodule {
             options = {
               hostName = mkOption {
-                type = types.str;
-                example = "nixbuilder.example.org";
                 description = ''
                   The hostname of the build machine.
                 '';
+
+                example = "nixbuilder.example.org";
+                type = types.str;
               };
+
+              mandatoryFeatures = mkOption {
+                default = [ ];
+
+                description = ''
+                  A list of features mandatory for this builder. The builder will
+                  be ignored for derivations that don't require all features in
+                  this list. All mandatory features are automatically included in
+                  {var}`supportedFeatures`.
+                '';
+
+                example = [ "big-parallel" ];
+                type = types.listOf types.str;
+              };
+
+              maxJobs = mkOption {
+                default = 1;
+
+                description = ''
+                  The number of concurrent jobs the build machine supports. The
+                  build machine will enforce its own limits, but this allows hydra
+                  to schedule better since there is no work-stealing between build
+                  machines.
+                '';
+
+                type = types.int;
+              };
+
               protocol = mkOption {
-                type = types.enum [
-                  null
-                  "ssh"
-                  "ssh-ng"
-                ];
                 default = "ssh";
-                example = "ssh-ng";
+
                 description = ''
                   The protocol used for communicating with the build machine.
                   Use `ssh-ng` if your remote builder and your
@@ -97,47 +131,43 @@ in
                   Use `null` when trying to change the special localhost builder
                   without a protocol which is for example used by hydra.
                 '';
-              };
-              system = mkOption {
-                type = types.nullOr types.str;
-                default = null;
-                example = "x86_64-linux";
-                description = ''
-                  The system type the build machine can execute derivations on.
-                  Either this attribute or {var}`systems` must be
-                  present, where {var}`system` takes precedence if
-                  both are set.
-                '';
-              };
-              systems = mkOption {
-                type = types.listOf types.str;
-                default = [ ];
-                example = [
-                  "x86_64-linux"
-                  "aarch64-linux"
+
+                example = "ssh-ng";
+
+                type = types.enum [
+                  null
+                  "ssh"
+                  "ssh-ng"
                 ];
-                description = ''
-                  The system types the build machine can execute derivations on.
-                  Either this attribute or {var}`system` must be
-                  present, where {var}`system` takes precedence if
-                  both are set.
-                '';
               };
-              sshUser = mkOption {
-                type = types.nullOr types.str;
+
+              publicHostKey = mkOption {
                 default = null;
-                example = "builder";
+
                 description = ''
-                  The username to log in as on the remote host. This user must be
-                  able to log in and run nix commands non-interactively. It must
-                  also be privileged to build derivations, so must be included in
-                  {option}`nix.settings.trusted-users`.
+                  The (base64-encoded) public host key of this builder. The field
+                  is calculated via {command}`base64 -w0 /etc/ssh/ssh_host_type_key.pub`.
+                  If null, SSH will use its regular known-hosts file when connecting.
                 '';
+
+                type = types.nullOr types.str;
               };
+
+              speedFactor = mkOption {
+                default = 1;
+
+                description = ''
+                  The relative speed of this builder. This is an arbitrary integer
+                  that indicates the speed of this builder, relative to other
+                  builders. Higher is faster.
+                '';
+
+                type = types.int;
+              };
+
               sshKey = mkOption {
-                type = types.nullOr types.str;
                 default = null;
-                example = "/root/.ssh/id_buildhost_builduser";
+
                 description = ''
                   The path to the SSH private key with which to authenticate on
                   the build machine. The private key must not have a passphrase.
@@ -147,79 +177,87 @@ in
                   Note that for security reasons, this path must point to a file
                   in the local filesystem, *not* to the nix store.
                 '';
+
+                example = "/root/.ssh/id_buildhost_builduser";
+                type = types.nullOr types.str;
               };
-              maxJobs = mkOption {
-                type = types.int;
-                default = 1;
+
+              sshUser = mkOption {
+                default = null;
+
                 description = ''
-                  The number of concurrent jobs the build machine supports. The
-                  build machine will enforce its own limits, but this allows hydra
-                  to schedule better since there is no work-stealing between build
-                  machines.
+                  The username to log in as on the remote host. This user must be
+                  able to log in and run nix commands non-interactively. It must
+                  also be privileged to build derivations, so must be included in
+                  {option}`nix.settings.trusted-users`.
                 '';
+
+                example = "builder";
+                type = types.nullOr types.str;
               };
-              speedFactor = mkOption {
-                type = types.int;
-                default = 1;
-                description = ''
-                  The relative speed of this builder. This is an arbitrary integer
-                  that indicates the speed of this builder, relative to other
-                  builders. Higher is faster.
-                '';
-              };
-              mandatoryFeatures = mkOption {
-                type = types.listOf types.str;
-                default = [ ];
-                example = [ "big-parallel" ];
-                description = ''
-                  A list of features mandatory for this builder. The builder will
-                  be ignored for derivations that don't require all features in
-                  this list. All mandatory features are automatically included in
-                  {var}`supportedFeatures`.
-                '';
-              };
+
               supportedFeatures = mkOption {
-                type = types.listOf types.str;
                 default = [ ];
-                example = [
-                  "kvm"
-                  "big-parallel"
-                ];
+
                 description = ''
                   A list of features supported by this builder. The builder will
                   be ignored for derivations that require features not in this
                   list.
                 '';
+
+                example = [
+                  "kvm"
+                  "big-parallel"
+                ];
+
+                type = types.listOf types.str;
               };
-              publicHostKey = mkOption {
-                type = types.nullOr types.str;
+
+              system = mkOption {
                 default = null;
+
                 description = ''
-                  The (base64-encoded) public host key of this builder. The field
-                  is calculated via {command}`base64 -w0 /etc/ssh/ssh_host_type_key.pub`.
-                  If null, SSH will use its regular known-hosts file when connecting.
+                  The system type the build machine can execute derivations on.
+                  Either this attribute or {var}`systems` must be
+                  present, where {var}`system` takes precedence if
+                  both are set.
                 '';
+
+                example = "x86_64-linux";
+                type = types.nullOr types.str;
+              };
+
+              systems = mkOption {
+                default = [ ];
+
+                description = ''
+                  The system types the build machine can execute derivations on.
+                  Either this attribute or {var}`system` must be
+                  present, where {var}`system` takes precedence if
+                  both are set.
+                '';
+
+                example = [
+                  "x86_64-linux"
+                  "aarch64-linux"
+                ];
+
+                type = types.listOf types.str;
               };
             };
           }
         );
-        default = [ ];
-        description = ''
-          This option lists the machines to be used if distributed builds are
-          enabled (see {option}`nix.distributedBuilds`).
-          Nix will perform derivations on those machines via SSH by copying the
-          inputs to the Nix store on the remote machine, starting the build,
-          then copying the output back to the local Nix store.
-        '';
       };
 
       distributedBuilds = mkOption {
-        type = types.bool;
         default = false;
+
         description = ''
           Whether to distribute builds to the machines listed in
           {option}`nix.buildMachines`.
         '';
+
+        type = types.bool;
       };
     };
   };
@@ -234,6 +272,7 @@ in
       [
         {
           assertion = !(any badMachine cfg.buildMachines);
+
           message = ''
             At least one system type (via <varname>system</varname> or
               <varname>systems</varname>) must be set for every build machine.

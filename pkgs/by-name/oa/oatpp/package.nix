@@ -16,19 +16,18 @@ stdenv.mkDerivation (finalAttrs: {
     sha256 = "sha256-pTQ0DD4naE9m+6FfCVGg/i3WpNbtaR+38yyqjqN0uH0=";
   };
 
-  nativeBuildInputs = [ cmake ];
-
-  # Tests fail on darwin. See https://github.com/NixOS/nixpkgs/pull/105419#issuecomment-735826894
-  doCheck = !stdenv.hostPlatform.isDarwin;
-
   postPatch = ''
     substituteInPlace CMakeLists.txt \
       --replace-fail "cmake_minimum_required(VERSION 3.1 FATAL_ERROR)" "cmake_minimum_required(VERSION 3.10)"
   '';
 
+  nativeBuildInputs = [ cmake ];
+  # Tests fail on darwin. See https://github.com/NixOS/nixpkgs/pull/105419#issuecomment-735826894
+  doCheck = !stdenv.hostPlatform.isDarwin;
+
   meta = {
-    homepage = "https://oatpp.io/";
     description = "Light and powerful C++ web framework for highly scalable and resource-efficient web applications";
+    homepage = "https://oatpp.io/";
     license = lib.licenses.asl20;
     maintainers = [ ];
     platforms = lib.platforms.all;

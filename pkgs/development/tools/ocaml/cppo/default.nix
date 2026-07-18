@@ -2,10 +2,10 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  ocaml,
-  findlib,
-  ocamlbuild,
   buildDunePackage,
+  findlib,
+  ocaml,
+  ocamlbuild,
 }:
 
 let
@@ -13,13 +13,15 @@ let
 
   meta = {
     description = "C preprocessor for OCaml";
-    mainProgram = "cppo";
+
     longDescription = ''
       Cppo is an equivalent of the C preprocessor targeted at the OCaml language and its variants.
     '';
+
     homepage = "https://github.com/ocaml-community/${pname}";
-    maintainers = [ lib.maintainers.vbgl ];
     license = lib.licenses.bsd3;
+    maintainers = [ lib.maintainers.vbgl ];
+    mainProgram = "cppo";
   };
 
 in
@@ -28,6 +30,7 @@ if lib.versionAtLeast ocaml.version "4.02" then
 
   buildDunePackage rec {
     inherit pname;
+    inherit meta;
     version = "1.8.0";
 
     src = fetchFromGitHub {
@@ -38,8 +41,6 @@ if lib.versionAtLeast ocaml.version "4.02" then
     };
 
     doCheck = true;
-
-    inherit meta;
   }
 
 else
@@ -50,6 +51,7 @@ else
 
   stdenv.mkDerivation {
     inherit pname version;
+    inherit meta;
 
     src = fetchFromGitHub {
       owner = "mjambon";
@@ -66,14 +68,12 @@ else
       ocamlbuild
     ];
 
-    inherit meta;
-
-    createFindlibDestdir = true;
-
     makeFlags = [ "PREFIX=$(out)" ];
 
     preBuild = ''
       mkdir -p $out/bin
     '';
+
+    createFindlibDestdir = true;
 
   }

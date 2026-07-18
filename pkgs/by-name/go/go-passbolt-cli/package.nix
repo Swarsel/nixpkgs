@@ -1,9 +1,9 @@
 {
-  buildGoModule,
-  fetchFromGitHub,
-  installShellFiles,
   lib,
   stdenv,
+  fetchFromGitHub,
+  buildGoModule,
+  installShellFiles,
 }:
 
 buildGoModule (finalAttrs: {
@@ -17,19 +17,11 @@ buildGoModule (finalAttrs: {
     hash = "sha256-uccHe82p+56RV4tyZINFH0ilEdVREpZuxXXc7N5Vpgo=";
   };
 
-  vendorHash = "sha256-pjmKjTMPbjU0bI9+0YcwaIwoU2TG2NdWvNo9Uh3EHSA=";
-
-  ldflags = [
-    "-X=main.version=${finalAttrs.version}"
-    "-X=main.commit=${finalAttrs.src.rev}"
-    "-X=main.date=1970-01-01T00:00:00Z"
-  ];
-
-  subPackages = [ "." ];
-
   nativeBuildInputs = [
     installShellFiles
   ];
+
+  vendorHash = "sha256-pjmKjTMPbjU0bI9+0YcwaIwoU2TG2NdWvNo9Uh3EHSA=";
 
   installPhase = ''
     runHook preInstall
@@ -47,12 +39,20 @@ buildGoModule (finalAttrs: {
     cd $tmpDir && mkdir man && $out/bin/passbolt gendoc --type man && installManPage man/*
   '';
 
+  ldflags = [
+    "-X=main.version=${finalAttrs.version}"
+    "-X=main.commit=${finalAttrs.src.rev}"
+    "-X=main.date=1970-01-01T00:00:00Z"
+  ];
+
+  subPackages = [ "." ];
+
   meta = {
     description = "CLI tool to interact with Passbolt, an open source password manager for teams";
     homepage = "https://github.com/passbolt/go-passbolt-cli";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ pbek ];
-    mainProgram = "passbolt";
     platforms = lib.platforms.linux ++ lib.platforms.darwin;
+    mainProgram = "passbolt";
   };
 })

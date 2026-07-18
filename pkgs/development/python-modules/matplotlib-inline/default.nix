@@ -1,18 +1,16 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   flit-core,
-  traitlets,
-
   # tests
   ipython,
+  traitlets,
 }:
 
 buildPythonPackage rec {
   pname = "matplotlib-inline";
   version = "0.2.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "ipython";
@@ -21,12 +19,11 @@ buildPythonPackage rec {
     hash = "sha256-qExS0SsbnYgu0wFTew90z5QwPyJ+UWGVEgFURSMedSY=";
   };
 
-  build-system = [ flit-core ];
-
-  dependencies = [ traitlets ];
-
   # wants to import ipython, which creates a circular dependency
   doCheck = false;
+  build-system = [ flit-core ];
+  dependencies = [ traitlets ];
+  pyproject = true;
 
   #
   pythonImportsCheck = [

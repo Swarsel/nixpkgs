@@ -1,17 +1,17 @@
 {
-  stdenv,
   lib,
-  fetchFromGitHub,
+  stdenv,
   fetchurl,
-  cmake,
-  makeWrapper,
-  copyDesktopItems,
-  makeDesktopItem,
-  faudio,
-  physfs,
+  fetchFromGitHub,
   SDL2,
-  tinyxml-2,
+  cmake,
+  copyDesktopItems,
+  faudio,
   imagemagick,
+  makeDesktopItem,
+  makeWrapper,
+  physfs,
+  tinyxml-2,
   makeAndPlay ? false,
 }:
 
@@ -25,13 +25,6 @@ stdenv.mkDerivation rec {
     rev = version;
     hash = "sha256-IEspPNsKGWgukqmnb6nDORRetQp9jvUzJ/mSOTLGdmQ=";
     fetchSubmodules = true;
-  };
-
-  dataZip = fetchurl {
-    url = "https://thelettervsixtim.es/makeandplay/data.zip";
-    name = "data.zip";
-    hash = "sha256-x2eAlZT2Ry2p9WE252ZX44ZA1YQWSkYRIlCsYpPswOo=";
-    meta.license = lib.licenses.unfree;
   };
 
   nativeBuildInputs = [
@@ -48,25 +41,10 @@ stdenv.mkDerivation rec {
     tinyxml-2
   ];
 
-  cmakeDir = "../desktop_version";
-
   cmakeFlags = [
     "-DBUNDLE_DEPENDENCIES=OFF"
   ]
   ++ lib.optional makeAndPlay "-DMAKEANDPLAY=ON";
-
-  desktopItems = [
-    (makeDesktopItem {
-      type = "Application";
-      name = "VVVVVV";
-      desktopName = "VVVVVV";
-      comment = meta.description;
-      exec = "vvvvvv";
-      icon = "VVVVVV";
-      terminal = false;
-      categories = [ "Game" ];
-    })
-  ];
 
   installPhase = ''
     runHook preInstall
@@ -85,10 +63,33 @@ stdenv.mkDerivation rec {
     runHook postInstall
   '';
 
+  cmakeDir = "../desktop_version";
+
+  dataZip = fetchurl {
+    hash = "sha256-x2eAlZT2Ry2p9WE252ZX44ZA1YQWSkYRIlCsYpPswOo=";
+    name = "data.zip";
+    url = "https://thelettervsixtim.es/makeandplay/data.zip";
+    meta.license = lib.licenses.unfree;
+  };
+
+  desktopItems = [
+    (makeDesktopItem {
+      categories = [ "Game" ];
+      comment = meta.description;
+      desktopName = "VVVVVV";
+      exec = "vvvvvv";
+      icon = "VVVVVV";
+      name = "VVVVVV";
+      terminal = false;
+      type = "Application";
+    })
+  ];
+
   meta = {
     description =
       "A retro-styled platform game"
       + lib.optionalString makeAndPlay " (redistributable, without original levels)";
+
     longDescription = ''
       VVVVVV is a platform game all about exploring one simple mechanical
       idea - what if you reversed gravity instead of jumping?
@@ -96,6 +97,7 @@ stdenv.mkDerivation rec {
     + lib.optionalString makeAndPlay ''
       (Redistributable version, doesn't include the original levels.)
     '';
+
     homepage = "https://thelettervsixtim.es";
     changelog = "https://github.com/TerryCavanagh/VVVVVV/releases/tag/${src.rev}";
     license = lib.licenses.unfree;

@@ -55,6 +55,13 @@ stdenv.mkDerivation (finalAttrs: {
     wayland
   ];
 
+  postInstall = lib.optionalString stdenv.hostPlatform.isDarwin ''
+    mkdir -p "$out/Applications"
+    cp -r vulkanCapsViewer.app "$out/Applications"
+  '';
+
+  installFlags = [ "INSTALL_ROOT=$(out)" ];
+
   qmakeFlags = [
     "CONFIG+=release"
   ]
@@ -71,27 +78,24 @@ stdenv.mkDerivation (finalAttrs: {
     "DEFINES+=X11"
   ];
 
-  installFlags = [ "INSTALL_ROOT=$(out)" ];
-
-  postInstall = lib.optionalString stdenv.hostPlatform.isDarwin ''
-    mkdir -p "$out/Applications"
-    cp -r vulkanCapsViewer.app "$out/Applications"
-  '';
-
   meta = {
-    mainProgram = "vulkanCapsViewer";
     description = "Vulkan hardware capability viewer";
+
     longDescription = ''
       Client application to display hardware implementation details for GPUs supporting the Vulkan API by Khronos.
       The hardware reports can be submitted to a public online database that allows comparing different devices, browsing available features, extensions, formats, etc.
     '';
+
     homepage = "https://vulkan.gpuinfo.org/";
-    platforms = lib.platforms.unix;
+    changelog = "https://github.com/SaschaWillems/VulkanCapsViewer/releases/tag/${finalAttrs.version}";
     license = lib.licenses.lgpl3Only;
+
     maintainers = with lib.maintainers; [
       pedrohlc
       niklaskorz
     ];
-    changelog = "https://github.com/SaschaWillems/VulkanCapsViewer/releases/tag/${finalAttrs.version}";
+
+    platforms = lib.platforms.unix;
+    mainProgram = "vulkanCapsViewer";
   };
 })

@@ -15,12 +15,13 @@ in
       Add users to the `jlink` group in order to grant
       them access
     '';
+
     package = lib.mkPackageOption pkgs "libjaylink" { };
   };
 
   config = lib.mkIf cfg.enable {
-    users.groups.jlink = { };
     services.udev.packages = [ cfg.package ];
+    users.groups.jlink = { };
   };
 
   meta.maintainers = with lib.maintainers; [ felixsinger ];

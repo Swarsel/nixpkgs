@@ -1,16 +1,14 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
-  versionCheckHook,
+  buildGoModule,
   nix-update-script,
+  versionCheckHook,
 }:
 
 buildGoModule (finalAttrs: {
   pname = "reticulum-group-chat";
   version = "1.11.0";
-  __structuredAttrs = true;
-  __darwinAllowLocalNetworking = true;
 
   src = fetchFromGitHub {
     owner = "thatSFguy";
@@ -20,12 +18,11 @@ buildGoModule (finalAttrs: {
   };
 
   vendorHash = "sha256-qMmEi7OYv2xzYOoeBWQ0omeIrcTyhxylw2qvv9kd9dk=";
-
-  ldflags = [ "-s" ];
-
   doInstallCheck = true;
   nativeInstallCheckInputs = [ versionCheckHook ];
-
+  __darwinAllowLocalNetworking = true;
+  __structuredAttrs = true;
+  ldflags = [ "-s" ];
   passthru.updateScript = nix-update-script { };
 
   meta = {

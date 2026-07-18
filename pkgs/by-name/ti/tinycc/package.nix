@@ -1,17 +1,23 @@
 {
   lib,
+  stdenv,
+  apple-sdk,
   copyPkgconfigItems,
   fetchFromRepoOrCz,
   makePkgconfigItem,
-  apple-sdk,
   perl,
-  stdenv,
   texinfo,
   which,
 }:
 stdenv.mkDerivation (finalAttrs: {
   pname = "tcc";
   version = "0.9.27-unstable-2025-01-06";
+
+  src = fetchFromRepoOrCz {
+    repo = "tinycc";
+    rev = "f6385c05308f715bdd2c06336801193a21d69b50";
+    hash = "sha256-tO3N+NplYy8QUOC2N3x0CO5Ui75j9bQzLSZQF1HQyhY=";
+  };
 
   outputs = [
     "dev"
@@ -22,11 +28,11 @@ stdenv.mkDerivation (finalAttrs: {
     "out"
   ];
 
-  src = fetchFromRepoOrCz {
-    repo = "tinycc";
-    rev = "f6385c05308f715bdd2c06336801193a21d69b50";
-    hash = "sha256-tO3N+NplYy8QUOC2N3x0CO5Ui75j9bQzLSZQF1HQyhY=";
-  };
+  postPatch = ''
+    patchShebangs texi2pod.pl
+  '';
+
+  strictDeps = true;
 
   nativeBuildInputs = [
     copyPkgconfigItems
@@ -34,31 +40,6 @@ stdenv.mkDerivation (finalAttrs: {
     texinfo
     which
   ];
-
-  strictDeps = true;
-
-  pkgconfigItems =
-    let
-      libtcc-pcitem = {
-        name = "libtcc";
-        inherit (finalAttrs) version;
-        cflags = [ "-I${libtcc-pcitem.variables.includedir}" ];
-        libs = [
-          "-L${libtcc-pcitem.variables.libdir}"
-          "-Wl,--rpath ${libtcc-pcitem.variables.libdir}"
-          "-ltcc"
-        ];
-        variables = {
-          prefix = "${placeholder "out"}";
-          includedir = "${placeholder "dev"}/include";
-          libdir = "${placeholder "lib"}/lib";
-        };
-        description = "Tiny C compiler backend";
-      };
-    in
-    [
-      (makePkgconfigItem libtcc-pcitem)
-    ];
 
   configureFlags = [
     "--cc=$CC"
@@ -91,27 +72,10 @@ stdenv.mkDerivation (finalAttrs: {
     "--config-musl"
   ];
 
-  enableParallelBuilding = true;
-
-  preBuild = lib.optionalString (stdenv.hostPlatform.isDarwin && stdenv.hostPlatform.isAarch64) ''
-    # TCC cannot cross-compile x86 long double constants from aarch64-darwin.
-    makeFlagsArray+=("TCC_X=i386-win32 x86_64-win32 arm arm64 arm-wince c67 riscv64 arm64-osx")
-  '';
-
   env.NIX_CFLAGS_COMPILE = toString [
     "-Wno-error=implicit-int"
     "-Wno-error=int-conversion"
   ];
-
-  # Test segfault for static build
-  doInstallCheck =
-    !stdenv.hostPlatform.isStatic
-    && stdenv.buildPlatform.canExecute stdenv.hostPlatform
-    && !(stdenv.hostPlatform.isDarwin && stdenv.hostPlatform.isAarch64);
-
-  postPatch = ''
-    patchShebangs texi2pod.pl
-  '';
 
   preConfigure =
     let
@@ -128,7 +92,45 @@ stdenv.mkDerivation (finalAttrs: {
       configureFlagsArray+=("--elfinterp=$(< $NIX_CC/nix-support/dynamic-linker)")
     '';
 
+  preBuild = lib.optionalString (stdenv.hostPlatform.isDarwin && stdenv.hostPlatform.isAarch64) ''
+    # TCC cannot cross-compile x86 long double constants from aarch64-darwin.
+    makeFlagsArray+=("TCC_X=i386-win32 x86_64-win32 arm arm64 arm-wince c67 riscv64 arm64-osx")
+  '';
+
+  # Test segfault for static build
+  doInstallCheck =
+    !stdenv.hostPlatform.isStatic
+    && stdenv.buildPlatform.canExecute stdenv.hostPlatform
+    && !(stdenv.hostPlatform.isDarwin && stdenv.hostPlatform.isAarch64);
+
+  enableParallelBuilding = true;
   installCheckTarget = "test";
+
+  pkgconfigItems =
+    let
+      libtcc-pcitem = {
+        inherit (finalAttrs) version;
+        cflags = [ "-I${libtcc-pcitem.variables.includedir}" ];
+        description = "Tiny C compiler backend";
+
+        libs = [
+          "-L${libtcc-pcitem.variables.libdir}"
+          "-Wl,--rpath ${libtcc-pcitem.variables.libdir}"
+          "-ltcc"
+        ];
+
+        name = "libtcc";
+
+        variables = {
+          includedir = "${placeholder "dev"}/include";
+          libdir = "${placeholder "lib"}/lib";
+          prefix = "${placeholder "out"}";
+        };
+      };
+    in
+    [
+      (makePkgconfigItem libtcc-pcitem)
+    ];
 
   # https://www.mail-archive.com/tinycc-devel@nongnu.org/msg10142.html
   preInstallCheck =
@@ -138,8 +140,8 @@ stdenv.mkDerivation (finalAttrs: {
       '';
 
   meta = {
-    homepage = "https://repo.or.cz/tinycc.git";
     description = "Small, fast, and embeddable C compiler and interpreter";
+
     longDescription = ''
       TinyCC (aka TCC) is a small but hyper fast C compiler.  Unlike other C
       compilers, it is meant to be self-sufficient: you do not need an external
@@ -161,12 +163,16 @@ stdenv.mkDerivation (finalAttrs: {
 
       With libtcc, you can use TCC as a backend for dynamic code generation.
     '';
+
+    homepage = "https://repo.or.cz/tinycc.git";
     license = with lib.licenses; [ lgpl21Only ];
-    mainProgram = "tcc";
+
     maintainers = with lib.maintainers; [
       onemoresuza
     ];
+
     platforms = lib.platforms.unix;
+    mainProgram = "tcc";
   };
 })
 # TODO: self-compilation

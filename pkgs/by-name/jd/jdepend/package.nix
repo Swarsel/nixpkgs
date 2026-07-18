@@ -49,9 +49,9 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   meta = {
-    changelog = "https://github.com/clarkware/jdepend/blob/${finalAttrs.src.rev}/CHANGELOG.md";
     description = "Traverses Java class file directories and generates design quality metrics for each Java package";
     homepage = "http://www.clarkware.com/software/JDepend.html";
+    changelog = "https://github.com/clarkware/jdepend/blob/${finalAttrs.src.rev}/CHANGELOG.md";
     license = lib.licenses.bsd3;
     maintainers = with lib.maintainers; [ pSub ];
     platforms = lib.platforms.linux;

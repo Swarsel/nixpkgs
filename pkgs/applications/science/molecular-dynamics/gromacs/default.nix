@@ -2,23 +2,23 @@
   lib,
   stdenv,
   fetchurl,
-  fetchpatch2,
-  cmake,
-  hwloc,
-  fftw,
-  perl,
   blas,
+  cmake,
+  config,
+  cudaPackages,
+  fetchpatch2,
+  fftw,
+  hwloc,
   lapack,
   llvmPackages,
   mpi,
-  cudaPackages,
+  perl,
   plumed,
-  singlePrec ? true,
-  config,
+  cpuAcceleration ? null,
   enableCuda ? config.cudaSupport,
   enableMpi ? false,
   enablePlumed ? false,
-  cpuAcceleration ? null,
+  singlePrec ? true,
 }:
 
 # CUDA is only implemented for single precision
@@ -69,9 +69,15 @@ effectiveStdenv.mkDerivation (finalAttrs: {
   version = source.version;
 
   src = fetchurl {
-    url = "ftp://ftp.gromacs.org/pub/gromacs/gromacs-${finalAttrs.version}.tar.gz";
     inherit (source) hash;
+    url = "ftp://ftp.gromacs.org/pub/gromacs/gromacs-${finalAttrs.version}.tar.gz";
   };
+
+  outputs = [
+    "out"
+    "dev"
+    "man"
+  ];
 
   patches = [
     # Fix pkg-config paths for the version-specific gromacs variant.
@@ -80,20 +86,14 @@ effectiveStdenv.mkDerivation (finalAttrs: {
   ++ lib.optionals enablePlumed [
     # Backport gcc 15 cstdint include fix.
     (fetchpatch2 {
-      url = "https://gitlab.com/gromacs/gromacs/-/commit/e0180bc37f3111d7dcaffca3854c088ed910c3b4.diff";
       hash = "sha256-TvTzfb/RETAzFpYfFFr6/L5GV1Pile16gVJhNigwAB4=";
+      url = "https://gitlab.com/gromacs/gromacs/-/commit/e0180bc37f3111d7dcaffca3854c088ed910c3b4.diff";
     })
   ];
 
   postPatch = lib.optionalString enablePlumed ''
     plumed patch -p -e gromacs-${source.version}
   '';
-
-  outputs = [
-    "out"
-    "dev"
-    "man"
-  ];
 
   nativeBuildInputs = [
     cmake
@@ -118,7 +118,6 @@ effectiveStdenv.mkDerivation (finalAttrs: {
   ++ lib.optionals hostPlatform.isDarwin [ llvmPackages.openmp ];
 
   propagatedBuildInputs = lib.optionals enableMpi [ mpi ];
-  propagatedUserEnvPkgs = lib.optionals enableMpi [ mpi ];
 
   cmakeFlags = [
     (lib.cmakeBool "GMX_HWLOC" true)
@@ -146,10 +145,11 @@ effectiveStdenv.mkDerivation (finalAttrs: {
     moveToOutput share/cmake $dev
   '';
 
+  propagatedUserEnvPkgs = lib.optionals enableMpi [ mpi ];
+
   meta = {
-    homepage = "https://www.gromacs.org";
-    license = lib.licenses.lgpl21Plus;
     description = "Molecular dynamics software package";
+
     longDescription = ''
       GROMACS is a versatile package to perform molecular dynamics,
       i.e. simulate the Newtonian equations of motion for systems
@@ -169,10 +169,15 @@ effectiveStdenv.mkDerivation (finalAttrs: {
 
       See: https://www.gromacs.org/about.html for details.
     '';
-    platforms = lib.platforms.unix;
+
+    homepage = "https://www.gromacs.org";
+    license = lib.licenses.lgpl21Plus;
+
     maintainers = with lib.maintainers; [
       sheepforce
       markuskowa
     ];
+
+    platforms = lib.platforms.unix;
   };
 })

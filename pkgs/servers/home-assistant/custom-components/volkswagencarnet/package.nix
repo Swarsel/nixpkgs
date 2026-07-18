@@ -1,15 +1,13 @@
 {
   lib,
-  buildHomeAssistantComponent,
   fetchFromGitHub,
-  volkswagencarnet,
+  buildHomeAssistantComponent,
   pytest-homeassistant-custom-component,
   pytestCheckHook,
+  volkswagencarnet,
 }:
 
 buildHomeAssistantComponent rec {
-  owner = "robinostlund";
-  domain = "volkswagencarnet";
   version = "5.4.11";
 
   src = fetchFromGitHub {
@@ -23,17 +21,19 @@ buildHomeAssistantComponent rec {
     python3 manage/update_manifest.py --version '${version}'
   '';
 
-  dependencies = [ volkswagencarnet ];
-
   nativeCheckInputs = [
     pytest-homeassistant-custom-component
     pytestCheckHook
   ];
 
+  dependencies = [ volkswagencarnet ];
+  domain = "volkswagencarnet";
+  owner = "robinostlund";
+
   meta = {
-    changelog = "https://github.com/robinostlund/homeassistant-volkswagencarnet/releases/tag/${src.tag}";
     description = "Volkswagen Connect component for Home Assistant";
     homepage = "https://github.com/robinostlund/homeassistant-volkswagencarnet";
+    changelog = "https://github.com/robinostlund/homeassistant-volkswagencarnet/releases/tag/${src.tag}";
     license = lib.licenses.gpl3Only;
     maintainers = with lib.maintainers; [ dotlambda ];
   };

@@ -1,18 +1,17 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
+  hatch-vcs,
+  hatchling,
+  pandoc,
   panflute,
   pytestCheckHook,
-  pandoc,
-  hatchling,
-  hatch-vcs,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "pandoc-latex-environment";
   version = "1.2.1.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "chdemko";
@@ -21,18 +20,19 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-uyOqw8YnTljgXkwZOXTXAsnobVSV65EVicohREBNMCY=";
   };
 
+  nativeCheckInputs = [
+    pytestCheckHook
+    pandoc
+  ];
+
   build-system = [
     hatchling
     hatch-vcs
   ];
 
   dependencies = [ panflute ];
-
+  pyproject = true;
   pythonImportsCheck = [ "pandoc_latex_environment" ];
-  nativeCheckInputs = [
-    pytestCheckHook
-    pandoc
-  ];
 
   meta = {
     description = "Pandoc filter for adding LaTeX environment on specific div";

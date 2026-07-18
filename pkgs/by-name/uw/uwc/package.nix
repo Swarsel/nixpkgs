@@ -1,7 +1,7 @@
 {
-  rustPlatform,
   lib,
   fetchFromGitHub,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -16,14 +16,13 @@ rustPlatform.buildRustPackage (finalAttrs: {
   };
 
   cargoHash = "sha256-9inL/z19lbZY8OxIjut3d/HJJXQzZi/cL750Cx98Kcg=";
-
   doCheck = false;
 
   meta = {
     description = "Like wc, but unicode-aware, and with per-line mode";
-    mainProgram = "uwc";
     homepage = "https://github.com/dead10ck/uwc";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ ShamrockLee ];
+    mainProgram = "uwc";
   };
 })

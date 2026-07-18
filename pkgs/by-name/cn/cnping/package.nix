@@ -3,9 +3,9 @@
   stdenv,
   fetchFromGitHub,
   libglvnd,
-  libxinerama,
-  libxext,
   libx11,
+  libxext,
+  libxinerama,
 }:
 
 stdenv.mkDerivation {
@@ -38,10 +38,12 @@ stdenv.mkDerivation {
   meta = {
     description = "Minimal Graphical IPV4 Ping Tool";
     homepage = "https://github.com/cntools/cnping";
+
     license = with lib.licenses; [
       mit
       bsd3
     ]; # dual licensed, MIT-x11 & BSD-3-Clause
+
     maintainers = [ ];
     platforms = lib.platforms.linux;
     mainProgram = "cnping";

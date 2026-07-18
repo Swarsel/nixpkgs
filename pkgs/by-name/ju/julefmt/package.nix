@@ -1,8 +1,8 @@
 {
   lib,
-  julec,
-  clangStdenv,
   fetchFromGitHub,
+  clangStdenv,
+  julec,
 }:
 
 clangStdenv.mkDerivation (finalAttrs: {
@@ -17,14 +17,13 @@ clangStdenv.mkDerivation (finalAttrs: {
   };
 
   nativeBuildInputs = [ julec.hook ];
-
   env.JULE_OUT_NAME = "julefmt";
 
   meta = {
+    inherit (julec.meta) platforms maintainers;
     description = "Official formatter tool for the Jule programming language";
     homepage = "https://manual.jule.dev/tools/julefmt";
     license = lib.licenses.bsd3;
     mainProgram = "julefmt";
-    inherit (julec.meta) platforms maintainers;
   };
 })

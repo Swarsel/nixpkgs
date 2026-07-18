@@ -1,15 +1,15 @@
 {
   lib,
-  python3,
-  runCommand,
-  makeWrapper,
-  fetchgit,
-  nurl,
-  writers,
-  callPackage,
-  fetchFromGitiles,
   fetchFromGitHub,
   buildPackages,
+  callPackage,
+  fetchFromGitiles,
+  fetchgit,
+  makeWrapper,
+  nurl,
+  python3,
+  runCommand,
+  writers,
 }:
 
 let
@@ -37,15 +37,17 @@ let
   gclientUnpackHook = callPackage (
     {
       lib,
-      makeSetupHook,
       jq,
+      makeSetupHook,
     }:
 
     makeSetupHook {
       name = "gclient-unpack-hook";
+
       substitutions = {
         jq = lib.getExe buildPackages.jq;
       };
+
       meta.license = lib.licenses.mit;
     } ./gclient-unpack-hook.sh
   ) { };
@@ -68,9 +70,9 @@ runCommand "gclient2nix"
 
     # substitutions
     depot_tools_checkout = fetchgit {
-      url = "https://chromium.googlesource.com/chromium/tools/depot_tools";
-      rev = "977d597d75def6781f890cdce459969a9568ea07";
       hash = "sha256-OCIay+a+DHvKKIbDMSjTf6CbHHVfp8k0n1AO3E4yx1U=";
+      rev = "977d597d75def6781f890cdce459969a9568ea07";
+      url = "https://chromium.googlesource.com/chromium/tools/depot_tools";
     };
 
     passthru = {

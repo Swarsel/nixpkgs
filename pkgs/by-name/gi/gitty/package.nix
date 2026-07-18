@@ -24,8 +24,8 @@ buildGoModule (finalAttrs: {
   ];
 
   meta = {
-    homepage = "https://github.com/muesli/gitty/";
     description = "Contextual information about your git projects, right on the command-line";
+    homepage = "https://github.com/muesli/gitty/";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ izorkin ];
     mainProgram = "gitty";

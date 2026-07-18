@@ -1,23 +1,15 @@
 {
   nixpkgs,
   officialRelease,
-  pkgs ? import nixpkgs.outPath { },
-  nix ? pkgs.nix,
   lib-tests ? import ../../lib/tests/release.nix { inherit pkgs; },
+  nix ? pkgs.nix,
+  pkgs ? import nixpkgs.outPath { },
 }:
 
 pkgs.releaseTools.sourceTarball {
-  name = "nixpkgs-tarball";
-  src = nixpkgs;
-
   inherit officialRelease;
   version = pkgs.lib.fileContents ../../.version;
-  versionSuffix = "pre${
-    if nixpkgs ? lastModified then
-      builtins.substring 0 8 (nixpkgs.lastModifiedDate or nixpkgs.lastModified)
-    else
-      toString (nixpkgs.revCount or 0)
-  }.${nixpkgs.shortRev or "dirty"}";
+  src = nixpkgs;
 
   buildInputs = with pkgs; [
     nix.out
@@ -26,19 +18,6 @@ pkgs.releaseTools.sourceTarball {
     brotli
     zstd
   ];
-
-  configurePhase = ''
-    eval "$preConfigure"
-    releaseName=nixpkgs-$VERSION$VERSION_SUFFIX
-    echo -n $VERSION_SUFFIX > .version-suffix
-    echo -n ${nixpkgs.rev or nixpkgs.shortRev or "dirty"} > .git-revision
-    echo "release name is $releaseName"
-    echo "git-revision is $(cat .git-revision)"
-  '';
-
-  dontUnpack = true;
-
-  dontBuild = false;
 
   doCheck = true;
 
@@ -58,6 +37,15 @@ pkgs.releaseTools.sourceTarball {
     mkdir -p $out/nix-support
     brotli -9 < packages.json > $packages
     echo "file json-br $packages" >> $out/nix-support/hydra-build-products
+  '';
+
+  configurePhase = ''
+    eval "$preConfigure"
+    releaseName=nixpkgs-$VERSION$VERSION_SUFFIX
+    echo -n $VERSION_SUFFIX > .version-suffix
+    echo -n ${nixpkgs.rev or nixpkgs.shortRev or "dirty"} > .git-revision
+    echo "release name is $releaseName"
+    echo "git-revision is $(cat .git-revision)"
   '';
 
   # --hard-dereference: reproducibility for src if auto-optimise-store = true
@@ -101,4 +89,15 @@ pkgs.releaseTools.sourceTarball {
       --hard-dereference \
       $src $(pwd)/{.version-suffix,.git-revision}
   '';
+
+  dontBuild = false;
+  dontUnpack = true;
+  name = "nixpkgs-tarball";
+
+  versionSuffix = "pre${
+    if nixpkgs ? lastModified then
+      builtins.substring 0 8 (nixpkgs.lastModifiedDate or nixpkgs.lastModified)
+    else
+      toString (nixpkgs.revCount or 0)
+  }.${nixpkgs.shortRev or "dirty"}";
 }

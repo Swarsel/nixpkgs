@@ -1,11 +1,10 @@
 {
   lib,
   fetchFromCodeberg,
-  rustPlatform,
-  nix-update-script,
-
   # native check inputs
   git,
+  nix-update-script,
+  rustPlatform,
   versionCheckHook,
 }:
 
@@ -21,9 +20,7 @@ rustPlatform.buildRustPackage (finalAttrs: {
   };
 
   cargoHash = "sha256-8Geu6Cd83hTnd53/ZTKq1YIEMIX4oIgwzSS6h8RNaP8=";
-
   nativeCheckInputs = [ git ];
-
   doInstallCheck = true;
   nativeInstallCheckInputs = [ versionCheckHook ];
 
@@ -38,14 +35,16 @@ rustPlatform.buildRustPackage (finalAttrs: {
   meta = {
     description = "Syntax-aware git merge driver for a growing collection of programming languages and file formats";
     homepage = "https://mergiraf.org/";
-    downloadPage = "https://codeberg.org/mergiraf/mergiraf";
     changelog = "https://codeberg.org/mergiraf/mergiraf/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.gpl3Only;
+
     maintainers = with lib.maintainers; [
       zimbatm
       genga898
       defelo
     ];
+
     mainProgram = "mergiraf";
+    downloadPage = "https://codeberg.org/mergiraf/mergiraf";
   };
 })

@@ -40,8 +40,6 @@ in
       enable = mkEnableOption "regular btrfs scrub";
 
       fileSystems = mkOption {
-        type = types.listOf types.path;
-        example = [ "/" ];
         description = ''
           List of paths to btrfs filesystems to regularly call {command}`btrfs scrub` on.
           Defaults to all mount points with btrfs filesystems.
@@ -49,12 +47,14 @@ in
           take care to use the same device for any given mount point and let btrfs take care
           of automatically mounting the rest, in order to avoid scrubbing the same data multiple times.
         '';
+
+        example = [ "/" ];
+        type = types.listOf types.path;
       };
 
       interval = mkOption {
         default = "monthly";
-        type = types.str;
-        example = "weekly";
+
         description = ''
           Systemd calendar expression for when to scrub btrfs filesystems.
           The recommended period is a month but could be less
@@ -63,16 +63,21 @@ in
           {manpage}`systemd.time(7)`
           for more information on the syntax.
         '';
+
+        example = "weekly";
+        type = types.str;
       };
 
       limit = mkOption {
         default = null;
-        type = types.nullOr (types.strMatching "[0-9]+[KMGT]?");
-        example = "100M";
+
         description = ''
           The scrub throughput limit applied on all scrubbed filesystems.
           The value is bytes per second, and accepts the usual KMGT prefixes.
         '';
+
+        example = "100M";
+        type = types.nullOr (types.strMatching "[0-9]+[KMGT]?");
       };
 
     };
@@ -84,7 +89,6 @@ in
     })
 
     (mkIf inInitrd {
-      boot.initrd.kernelModules = [ "btrfs" ];
       boot.initrd.availableKernelModules = [
         "crc32c"
       ]
@@ -106,6 +110,8 @@ in
         $out/bin/btrfs --version
       '';
 
+      boot.initrd.kernelModules = [ "btrfs" ];
+
       boot.initrd.postDeviceCommands = mkIf (!config.boot.initrd.systemd.enable) ''
         btrfs device scan
       '';
@@ -117,6 +123,7 @@ in
       assertions = [
         {
           assertion = cfgScrub.enable -> (cfgScrub.fileSystems != [ ]);
+
           message = ''
             If 'services.btrfs.autoScrub' is enabled, you need to have at least one
             btrfs file system mounted via 'fileSystems' or specify a list manually
@@ -138,12 +145,53 @@ in
           map (e: e.mountPoint) (
             uniqueDeviceList (
               mapAttrsToList (name: fs: {
-                mountPoint = fs.mountPoint;
                 device = fs.device;
+                mountPoint = fs.mountPoint;
               }) (filterAttrs (name: fs: fs.fsType == "btrfs") config.fileSystems)
             )
           )
         );
+
+      systemd.services =
+        let
+          scrubService =
+            fs:
+            let
+              fs' = utils.escapeSystemdPath fs;
+            in
+            nameValuePair "btrfs-scrub-${fs'}" {
+              before = [
+                "shutdown.target"
+                "sleep.target"
+              ];
+
+              # scrub prevents suspend2ram or proper shutdown
+              conflicts = [
+                "shutdown.target"
+                "sleep.target"
+              ];
+
+              description = "btrfs scrub on ${fs}";
+              documentation = [ "man:btrfs-scrub(8)" ];
+
+              serviceConfig = {
+                ExecStart = "${pkgs.btrfs-progs}/bin/btrfs scrub start -B ${
+                  lib.optionalString (cfgScrub.limit != null) "--limit ${cfgScrub.limit}"
+                } ${fs}";
+
+                # if the service is stopped before scrub end, cancel it
+                ExecStop = pkgs.writeShellScript "btrfs-scrub-maybe-cancel" ''
+                  (${pkgs.btrfs-progs}/bin/btrfs scrub status ${fs} | ${pkgs.gnugrep}/bin/grep finished) || ${pkgs.btrfs-progs}/bin/btrfs scrub cancel ${fs}
+                '';
+
+                IOSchedulingClass = "idle";
+                Nice = 19;
+                # simple and not oneshot, otherwise ExecStop is not used
+                Type = "simple";
+              };
+            };
+        in
+        listToAttrs (map scrubService cfgScrub.fileSystems);
 
       # TODO: Did not manage to do it via the usual btrfs-scrub@.timer/.service
       # template units due to problems enabling the parameterized units,
@@ -159,52 +207,16 @@ in
             nameValuePair "btrfs-scrub-${fs'}" {
               description = "regular btrfs scrub timer on ${fs}";
 
-              wantedBy = [ "timers.target" ];
               timerConfig = {
-                OnCalendar = cfgScrub.interval;
                 AccuracySec = "1d";
+                OnCalendar = cfgScrub.interval;
                 Persistent = true;
               };
+
+              wantedBy = [ "timers.target" ];
             };
         in
         listToAttrs (map scrubTimer cfgScrub.fileSystems);
-
-      systemd.services =
-        let
-          scrubService =
-            fs:
-            let
-              fs' = utils.escapeSystemdPath fs;
-            in
-            nameValuePair "btrfs-scrub-${fs'}" {
-              description = "btrfs scrub on ${fs}";
-              documentation = [ "man:btrfs-scrub(8)" ];
-              # scrub prevents suspend2ram or proper shutdown
-              conflicts = [
-                "shutdown.target"
-                "sleep.target"
-              ];
-              before = [
-                "shutdown.target"
-                "sleep.target"
-              ];
-
-              serviceConfig = {
-                # simple and not oneshot, otherwise ExecStop is not used
-                Type = "simple";
-                Nice = 19;
-                IOSchedulingClass = "idle";
-                ExecStart = "${pkgs.btrfs-progs}/bin/btrfs scrub start -B ${
-                  lib.optionalString (cfgScrub.limit != null) "--limit ${cfgScrub.limit}"
-                } ${fs}";
-                # if the service is stopped before scrub end, cancel it
-                ExecStop = pkgs.writeShellScript "btrfs-scrub-maybe-cancel" ''
-                  (${pkgs.btrfs-progs}/bin/btrfs scrub status ${fs} | ${pkgs.gnugrep}/bin/grep finished) || ${pkgs.btrfs-progs}/bin/btrfs scrub cancel ${fs}
-                '';
-              };
-            };
-        in
-        listToAttrs (map scrubService cfgScrub.fileSystems);
     })
   ];
 }

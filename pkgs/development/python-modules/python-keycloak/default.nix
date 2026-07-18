@@ -1,23 +1,22 @@
 {
   lib,
+  fetchFromGitHub,
   aiofiles,
   buildPythonPackage,
   deprecation,
-  fetchFromGitHub,
+  freezegun,
   httpx,
   jwcrypto,
   poetry-core,
-  requests,
-  requests-toolbelt,
-  freezegun,
   pytest-asyncio,
   pytestCheckHook,
+  requests,
+  requests-toolbelt,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "python-keycloak";
   version = "7.1.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "marcospereirampj";
@@ -32,17 +31,6 @@ buildPythonPackage (finalAttrs: {
       --replace-fail 'version = "0.0.0"' 'version = "${finalAttrs.version}"'
   '';
 
-  build-system = [ poetry-core ];
-
-  dependencies = [
-    aiofiles
-    deprecation
-    httpx
-    jwcrypto
-    requests
-    requests-toolbelt
-  ];
-
   nativeCheckInputs = [
     freezegun
     pytest-asyncio
@@ -55,6 +43,17 @@ buildPythonPackage (finalAttrs: {
     export KEYCLOAK_{HOST,PORT,ADMIN{,_PASSWORD}}=
   '';
 
+  build-system = [ poetry-core ];
+
+  dependencies = [
+    aiofiles
+    deprecation
+    httpx
+    jwcrypto
+    requests
+    requests-toolbelt
+  ];
+
   disabledTestPaths = [
     # these tests require a running keycloak instance
     "tests/test_keycloak_openid.py"
@@ -64,6 +63,7 @@ buildPythonPackage (finalAttrs: {
     "tests/test_pkce_flow.py"
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "keycloak" ];
 
   meta = {

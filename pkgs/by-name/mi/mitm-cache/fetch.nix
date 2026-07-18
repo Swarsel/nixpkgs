@@ -6,9 +6,9 @@
 }:
 
 {
-  name ? "deps",
   data,
   dontFixup ? true,
+  name ? "deps",
   ...
 }@attrs:
 
@@ -42,11 +42,12 @@ let
         name = baseNameOf path;
         source =
           {
-            redirect = "$out/${urlToPath val}";
             hash = fetchurl {
               inherit url;
               hash = val;
             };
+
+            redirect = "$out/${urlToPath val}";
             text = writeText name val;
           }
           .${key} or (throw "Unknown key: ${url}");

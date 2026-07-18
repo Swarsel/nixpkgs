@@ -1,9 +1,9 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
-  ruby,
   makeWrapper,
+  ruby,
   sd,
 }:
 
@@ -22,9 +22,8 @@ stdenv.mkDerivation (finalAttrs: {
     makeWrapper
     sd
   ];
-  buildInputs = [ ruby ];
 
-  dontBuild = true;
+  buildInputs = [ ruby ];
 
   installPhase = ''
     mkdir -p $out/bin
@@ -38,12 +37,14 @@ stdenv.mkDerivation (finalAttrs: {
     wrapProgram $out/bin/discourse-smtp-fast-rejection --set RUBYLIB $out/lib
   '';
 
+  dontBuild = true;
+
   meta = {
-    homepage = "https://www.discourse.org/";
-    platforms = lib.platforms.linux;
-    maintainers = with lib.maintainers; [ talyz ];
-    license = lib.licenses.mit;
     description = "Helper program which receives incoming mail for Discourse";
+    homepage = "https://www.discourse.org/";
+    license = lib.licenses.mit;
+    maintainers = with lib.maintainers; [ talyz ];
+    platforms = lib.platforms.linux;
   };
 
 })

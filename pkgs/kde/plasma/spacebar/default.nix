@@ -1,19 +1,20 @@
 {
-  mkKdeDerivation,
-  pkg-config,
   c-ares,
   curl,
   libphonenumber,
+  mkKdeDerivation,
+  pkg-config,
   protobuf,
 }:
 mkKdeDerivation {
   pname = "spacebar";
 
-  extraNativeBuildInputs = [ pkg-config ];
   extraBuildInputs = [
     c-ares
     curl
     libphonenumber
     protobuf
   ];
+
+  extraNativeBuildInputs = [ pkg-config ];
 }

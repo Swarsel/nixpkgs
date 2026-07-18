@@ -8,7 +8,6 @@
 buildPythonPackage rec {
   pname = "filetype";
   version = "1.2.0";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
@@ -17,7 +16,10 @@ buildPythonPackage rec {
 
   nativeCheckInputs = [ pytestCheckHook ];
 
-  pythonImportsCheck = [ "filetype" ];
+  disabledTestPaths = [
+    # We don't care about benchmarks
+    "tests/test_benchmark.py"
+  ];
 
   disabledTests = [
     # https://github.com/h2non/filetype.py/issues/119
@@ -28,16 +30,14 @@ buildPythonPackage rec {
     "test_guess_zstd"
   ];
 
-  disabledTestPaths = [
-    # We don't care about benchmarks
-    "tests/test_benchmark.py"
-  ];
+  format = "setuptools";
+  pythonImportsCheck = [ "filetype" ];
 
   meta = {
     description = "Infer file type and MIME type of any file/buffer";
-    mainProgram = "filetype";
     homepage = "https://github.com/h2non/filetype.py";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ dotlambda ];
+    mainProgram = "filetype";
   };
 }

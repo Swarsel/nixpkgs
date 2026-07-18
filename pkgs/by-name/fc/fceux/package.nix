@@ -1,13 +1,13 @@
 {
   lib,
   stdenv,
+  fetchFromGitHub,
   SDL2,
   cmake,
-  fetchFromGitHub,
   ffmpeg,
   libx11,
-  libxdmcp,
   libxcb,
+  libxdmcp,
   lua5_1,
   minizip,
   pkg-config,
@@ -45,6 +45,8 @@ stdenv.mkDerivation (finalAttrs: {
     ./0001-cmake-fix-qt6-build-on-linux.patch
   ];
 
+  strictDeps = true;
+
   nativeBuildInputs = [
     cmake
     pkg-config
@@ -63,8 +65,6 @@ stdenv.mkDerivation (finalAttrs: {
     x264
   ];
 
-  strictDeps = true;
-
   postInstall = ''
     substituteInPlace $out/share/applications/fceux.desktop \
       --replace-fail "/usr/bin/" "" \
@@ -72,12 +72,12 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   meta = {
-    homepage = "http://www.fceux.com";
     description = "Nintendo Entertainment System (NES) Emulator";
+    homepage = "http://www.fceux.com";
     changelog = "https://github.com/TASEmulators/fceux/blob/${finalAttrs.src.rev}/changelog.txt";
     license = with lib.licenses; [ gpl2Plus ];
-    mainProgram = "fceux";
     maintainers = with lib.maintainers; [ kuflierl ];
     platforms = lib.platforms.linux;
+    mainProgram = "fceux";
   };
 })

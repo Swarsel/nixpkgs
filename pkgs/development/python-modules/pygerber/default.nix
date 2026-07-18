@@ -1,76 +1,43 @@
 {
   lib,
   stdenv,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # build-system
-  poetry-core,
-
-  # dependencies
-  numpy,
+  buildPythonPackage,
   click,
-  pillow,
-  pydantic,
-  pyparsing,
-  typing-extensions,
-
-  # optional dependencies
-  pygls,
-  lsprotocol,
   drawsvg,
-  pygments,
-  shapely,
-
+  dulwich,
   # test
   filelock,
-  dulwich,
-  tzlocal,
-  pytest-xdist,
-  pytest-lsp,
+  lsprotocol,
+  # dependencies
+  numpy,
+  pillow,
+  # build-system
+  poetry-core,
+  pydantic,
+  # optional dependencies
+  pygls,
+  pygments,
+  pyparsing,
   pytest-asyncio,
+  pytest-lsp,
   pytest-mock,
+  pytest-xdist,
   pytestCheckHook,
-
+  shapely,
+  typing-extensions,
+  tzlocal,
 }:
 
 buildPythonPackage rec {
   pname = "pygerber";
   version = "2.4.3";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "Argmaster";
     repo = "pygerber";
     tag = "v${version}";
     hash = "sha256-0AoRmIN1FNlummJSHdysO2IDBHtfNPhVnh9j0lyWNFI=";
-  };
-
-  build-system = [ poetry-core ];
-  dependencies = [
-    numpy
-    click
-    pillow
-    pydantic
-    pyparsing
-    typing-extensions
-  ];
-
-  passthru.optional-dependencies = {
-    language_server = [
-      pygls
-      lsprotocol
-    ];
-    svg = [ drawsvg ];
-    pygments = [ pygments ];
-    shapely = [ shapely ];
-    all = [
-      pygls
-      lsprotocol
-      drawsvg
-      pygments
-      shapely
-    ];
   };
 
   nativeCheckInputs = [
@@ -85,6 +52,17 @@ buildPythonPackage rec {
     filelock
   ];
 
+  build-system = [ poetry-core ];
+
+  dependencies = [
+    numpy
+    click
+    pillow
+    pydantic
+    pyparsing
+    typing-extensions
+  ];
+
   disabledTestPaths = [
     # require network access
     "test/gerberx3/test_assets.py"
@@ -96,9 +74,28 @@ buildPythonPackage rec {
     "test_project_render_with_file_type_tags"
   ];
 
+  pyproject = true;
   pytestFlags = [ "--override-ini=required_plugins=" ];
-
   pythonImportsCheck = [ "pygerber" ];
+
+  passthru.optional-dependencies = {
+    all = [
+      pygls
+      lsprotocol
+      drawsvg
+      pygments
+      shapely
+    ];
+
+    language_server = [
+      pygls
+      lsprotocol
+    ];
+
+    pygments = [ pygments ];
+    shapely = [ shapely ];
+    svg = [ drawsvg ];
+  };
 
   meta = {
     description = "Implementation of the Gerber X3/X2 format, based on Ucamco's The Gerber Layer Format Specification";

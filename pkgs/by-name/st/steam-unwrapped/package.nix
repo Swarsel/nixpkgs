@@ -45,14 +45,16 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Digital distribution platform";
+
     longDescription = ''
       Steam is a video game digital distribution service and storefront from Valve.
 
       To install on NixOS, please use the option `programs.steam.enable = true`.
     '';
+
     homepage = "https://store.steampowered.com/";
     license = lib.licenses.unfreeRedistributable;
-    teams = with lib.teams; [ steam ];
     mainProgram = "steam";
+    teams = with lib.teams; [ steam ];
   };
 })

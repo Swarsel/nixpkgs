@@ -1,24 +1,21 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
+  buildPythonPackage,
   # build-system
   cython,
-  pkgconfig,
-  setuptools,
-  setuptools-git-versioning,
-
   # dependencies
   mpi4py,
   numpy,
+  pkgconfig,
   precice,
+  setuptools,
+  setuptools-git-versioning,
 }:
 
 buildPythonPackage rec {
   pname = "pyprecice";
   version = "3.4.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "precice";
@@ -26,6 +23,13 @@ buildPythonPackage rec {
     tag = "v${version}";
     hash = "sha256-fKpedgdgXTRVHcTdU996xbIi/b2GlCued8xnL41KHVg=";
   };
+
+  buildInputs = [
+    precice
+  ];
+
+  # no official test instruction
+  doCheck = false;
 
   build-system = [
     cython
@@ -39,12 +43,7 @@ buildPythonPackage rec {
     mpi4py
   ];
 
-  buildInputs = [
-    precice
-  ];
-
-  # no official test instruction
-  doCheck = false;
+  pyproject = true;
 
   pythonImportsCheck = [
     "precice"

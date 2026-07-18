@@ -2,11 +2,11 @@
   lib,
   fetchFromGitHub,
   fetchpatch,
-  makeDesktopItem,
-  wxwidgets_3_1,
-  prusa-slicer,
   libspnav,
+  makeDesktopItem,
   opencascade-occt_7_6,
+  prusa-slicer,
+  wxwidgets_3_1,
 }:
 let
   appname = "SuperSlicer";
@@ -16,8 +16,8 @@ let
   patches = [
     # Drop if this fix gets merged upstream
     (fetchpatch {
-      url = "https://github.com/supermerill/SuperSlicer/commit/fa7c545efa5d1880cf24af32083094fc872d3692.patch";
       hash = "sha256-fh31qrqjQiRQL03pQl4KJAEtbKMwG8/nJroqIDOIePw=";
+      url = "https://github.com/supermerill/SuperSlicer/commit/fa7c545efa5d1880cf24af32083094fc872d3692.patch";
     })
     ./super-slicer-use-boost186.patch
     ./super-slicer-fix-cereal-1.3.1.patch
@@ -28,6 +28,7 @@ let
   wxwidgets_3_1-prusa = wxwidgets_3_1.overrideAttrs (old: {
     pname = "wxwidgets-prusa3d-patched";
     version = "3.1.4";
+
     src = fetchFromGitHub {
       owner = "prusa3d";
       repo = "wxWidgets";
@@ -35,44 +36,49 @@ let
       hash = "sha256-xGL5I2+bPjmZGSTYe1L7VAmvLHbwd934o/cxg9baEvQ=";
       fetchSubmodules = true;
     };
+
     patches = [
       ./0001-fix-assertion-using-hide-in-destroy.patch
     ];
   });
 
   versions = {
-    stable = {
-      version = "2.5.59.13";
-      hash = "sha256-FkoGcgVoBeHSZC3W5y30TBPmPrWnZSlO66TgwskgqAU=";
-      inherit patches;
-      overrides = {
-        wxGTK-override = wxwidgets_3_1-prusa;
-      };
-    };
-    latest = {
-      version = "2.5.59.13";
-      hash = "sha256-FkoGcgVoBeHSZC3W5y30TBPmPrWnZSlO66TgwskgqAU=";
-      inherit patches;
-      overrides = {
-        wxGTK-override = wxwidgets_3_1-prusa;
-      };
-    };
     beta = {
       version = "2.7.61.6";
-      hash = "sha256-j9er2/z4jl04HI6aOMJ6YCXwhZ6qEhgMJjW117cLnz0=";
       # this can be removed once prusa-slicer natively supports WayLand
       # https://github.com/prusa3d/PrusaSlicer/issues/8284
       # https://github.com/prusa3d/PrusaSlicer/pull/13307
       # https://gitlab.archlinux.org/schiele/prusa-slicer/-/blob/d839bb84345c0f3ab3eb151a5777f0ca85b5f318/allow_wayland.patch
       # https://gitlab.archlinux.org/archlinux/packaging/packages/prusa-slicer/-/issues/3
       patches = [ ./super-slicer-allow-wayland.patch ];
+      hash = "sha256-j9er2/z4jl04HI6aOMJ6YCXwhZ6qEhgMJjW117cLnz0=";
+    };
+
+    latest = {
+      inherit patches;
+      version = "2.5.59.13";
+      hash = "sha256-FkoGcgVoBeHSZC3W5y30TBPmPrWnZSlO66TgwskgqAU=";
+
+      overrides = {
+        wxGTK-override = wxwidgets_3_1-prusa;
+      };
+    };
+
+    stable = {
+      inherit patches;
+      version = "2.5.59.13";
+      hash = "sha256-FkoGcgVoBeHSZC3W5y30TBPmPrWnZSlO66TgwskgqAU=";
+
+      overrides = {
+        wxGTK-override = wxwidgets_3_1-prusa;
+      };
     };
   };
 
   override =
     {
-      version,
       hash,
+      version,
       patches ? [ ],
       ...
     }:
@@ -80,9 +86,9 @@ let
       inherit version pname patches;
 
       src = fetchFromGitHub {
+        inherit hash;
         owner = "supermerill";
         repo = "SuperSlicer";
-        inherit hash;
         rev = version;
         fetchSubmodules = true;
       };
@@ -103,6 +109,10 @@ let
           --replace-fail 'auto &vi' 'auto vi'
       '';
 
+      buildInputs = super.buildInputs ++ [
+        libspnav
+      ];
+
       # We don't need PS overrides anymore, and gcode-viewer is embedded in the binary
       # but we do still need to move OCCTWrapper.so to the lib directory
       postInstall = ''
@@ -111,36 +121,34 @@ let
           mv -v $out/bin/*.* $out/lib/
         fi
       '';
-      separateDebugInfo = true;
-
-      buildInputs = super.buildInputs ++ [
-        libspnav
-      ];
 
       desktopItems = [
         (makeDesktopItem {
-          name = "superslicer";
-          exec = "superslicer";
-          icon = appname;
+          categories = [ "Development" ];
           comment = description;
           desktopName = appname;
+          exec = "superslicer";
           genericName = "3D printer tool";
-          categories = [ "Development" ];
+          icon = appname;
+          name = "superslicer";
         })
       ];
+
+      separateDebugInfo = true;
+      passthru = allVersions;
 
       meta = {
         inherit description;
         homepage = "https://github.com/supermerill/SuperSlicer";
         license = lib.licenses.agpl3Plus;
+
         maintainers = with lib.maintainers; [
           cab404
           tmarkus
         ];
+
         mainProgram = "superslicer";
       };
-
-      passthru = allVersions;
 
     };
   prusa-slicer-deps-override = prusa-slicer.override {

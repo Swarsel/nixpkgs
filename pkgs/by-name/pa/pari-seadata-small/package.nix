@@ -5,8 +5,8 @@
 }:
 
 stdenv.mkDerivation {
-  version = "20090618";
   pname = "pari-seadata-small";
+  version = "20090618";
 
   src = fetchurl {
     url = "https://pari.math.u-bordeaux.fr/pub/pari/packages/seadata-small.tgz";

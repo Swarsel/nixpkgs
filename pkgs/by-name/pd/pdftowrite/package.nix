@@ -1,29 +1,27 @@
 {
   lib,
-  python3Packages,
   fetchFromGitHub,
-  makeWrapper,
-  versionCheckHook,
-  nix-update-script,
-
+  ghostscript,
   # shared
   gzip,
-  # pdftowrite
-  poppler-utils,
-  inkscape,
-  ghostscript,
   imagemagick,
+  inkscape,
+  librsvg,
   libxml2,
   libxslt,
+  makeWrapper,
+  nix-update-script,
+  pdftk,
+  # pdftowrite
+  poppler-utils,
+  python3Packages,
+  versionCheckHook,
   # writetopdf
   wkhtmltopdf,
-  pdftk,
-  librsvg,
 }:
 python3Packages.buildPythonApplication (finalAttrs: {
   pname = "pdftowrite";
   version = "2021.05.03";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "apebl";
@@ -32,21 +30,12 @@ python3Packages.buildPythonApplication (finalAttrs: {
     hash = "sha256-IFX9K74tfGKyMtqlc/RsV00baZEzE3HcPAGfrmTHnDQ=";
   };
 
-  dependencies = [
-    python3Packages.shortuuid
-    python3Packages.picosvg
-  ];
-
-  build-system = [
-    python3Packages.setuptools
-    python3Packages.setuptools-scm
-    makeWrapper
-  ];
-
   patches = [
     # fix inkscape flag (see https://gitlab.com/inkscape/inkscape/-/issues/4536)
     ./inkscape-unknown-option-pdf-page.patch
   ];
+
+  nativeCheckInputs = [ versionCheckHook ];
 
   postInstall =
     let
@@ -77,14 +66,25 @@ python3Packages.buildPythonApplication (finalAttrs: {
       wrapProgram $out/bin/writetopdf --prefix PATH : ${writetopdfPath}
     '';
 
-  nativeCheckInputs = [ versionCheckHook ];
+  build-system = [
+    python3Packages.setuptools
+    python3Packages.setuptools-scm
+    makeWrapper
+  ];
+
+  dependencies = [
+    python3Packages.shortuuid
+    python3Packages.picosvg
+  ];
+
+  pyproject = true;
   passthru.updateScript = nix-update-script { };
 
   meta = {
-    homepage = "https://github.com/apebl/pdftowrite";
     description = "Utility that converts PDF to Stylus Labs Write documents, and vice versa";
-    platforms = lib.platforms.linux;
+    homepage = "https://github.com/apebl/pdftowrite";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ henrispriet ];
+    platforms = lib.platforms.linux;
   };
 })

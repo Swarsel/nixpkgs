@@ -1,13 +1,12 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
   kernel,
   kernelModuleMakeFlags,
 }:
 
 stdenv.mkDerivation rec {
-  name = "${pname}-${version}-${kernel.version}";
   pname = "facetimehd";
   version = "0.7.0.2";
 
@@ -28,26 +27,29 @@ stdenv.mkDerivation rec {
     sha256 = "sha256-6Z0mOmp+/IXx2pkcan85rvm5grxq+kGNayj9YDChdp4=";
   };
 
-  preConfigure = ''
-    export INSTALL_MOD_PATH="$out"
-  '';
-
-  hardeningDisable = [ "pic" ];
-
   nativeBuildInputs = kernel.moduleBuildDependencies;
 
   makeFlags = kernelModuleMakeFlags ++ [
     "KDIR=${kernel.dev}/lib/modules/${kernel.modDirVersion}/build"
   ];
 
+  preConfigure = ''
+    export INSTALL_MOD_PATH="$out"
+  '';
+
+  hardeningDisable = [ "pic" ];
+  name = "${pname}-${version}-${kernel.version}";
+
   meta = {
-    homepage = "https://github.com/patjak/bcwc_pcie";
     description = "Linux driver for the Facetime HD (Broadcom 1570) PCIe webcam";
+    homepage = "https://github.com/patjak/bcwc_pcie";
     license = lib.licenses.gpl2Only;
+
     maintainers = with lib.maintainers; [
       womfoo
       kraem
     ];
+
     platforms = [
       "i686-linux"
       "x86_64-linux"

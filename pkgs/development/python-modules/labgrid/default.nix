@@ -1,31 +1,31 @@
 {
+  lib,
+  fetchFromGitHub,
   ansicolors,
   attrs,
   buildPythonPackage,
   exceptiongroup,
-  fetchFromGitHub,
   fetchpatch,
   fetchpatch2,
   grpcio,
-  grpcio-tools,
   grpcio-reflection,
+  grpcio-tools,
   jinja2,
-  lib,
-  nix-update-script,
   mock,
+  nix-update-script,
   openssh,
   pexpect,
   psutil,
+  py-netgear-plus,
   pyserial,
   pytest,
-  pytestCheckHook,
   pytest-benchmark,
   pytest-dependency,
   pytest-mock,
+  pytestCheckHook,
   pyudev,
   pyusb,
   pyyaml,
-  py-netgear-plus,
   requests,
   setuptools,
   setuptools-scm,
@@ -36,7 +36,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "labgrid";
   version = "26.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "labgrid-project";
@@ -45,7 +44,17 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-SX7FIaSl2sy1hMPEmgGCQQAzXUeFZRw/CrXf/ZHRBDU=";
   };
 
-  passthru.updateScript = nix-update-script { };
+  nativeCheckInputs = [
+    mock
+    openssh
+    psutil
+    pytestCheckHook
+    pytest-benchmark
+    pytest-mock
+    pytest-dependency
+    util-linux
+    py-netgear-plus
+  ];
 
   build-system = [
     setuptools
@@ -70,22 +79,6 @@ buildPythonPackage (finalAttrs: {
     xmodem
   ];
 
-  pythonRemoveDeps = [ "pyserial-labgrid" ];
-
-  pythonImportsCheck = [ "labgrid" ];
-
-  nativeCheckInputs = [
-    mock
-    openssh
-    psutil
-    pytestCheckHook
-    pytest-benchmark
-    pytest-mock
-    pytest-dependency
-    util-linux
-    py-netgear-plus
-  ];
-
   disabledTests = [
     # flaky, timing sensitive
     "test_timing"
@@ -108,7 +101,11 @@ buildPythonPackage (finalAttrs: {
     "test_socks"
   ];
 
+  pyproject = true;
   pytestFlags = [ "--benchmark-disable" ];
+  pythonImportsCheck = [ "labgrid" ];
+  pythonRemoveDeps = [ "pyserial-labgrid" ];
+  passthru.updateScript = nix-update-script { };
 
   meta = {
     description = "Embedded control & testing library";

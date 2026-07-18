@@ -1,36 +1,31 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # frontend
-  nodejs,
-  yarn-berry_3,
-
+  buildPythonPackage,
   # build-system
   hatch-jupyter-builder,
   hatch-nodejs-version,
   hatchling,
-  jupyterlab,
-
+  # tests
+  importlib-metadata,
   # dependencies
   ipython,
   ipywidgets,
+  jupyterlab,
   matplotlib,
+  nbval,
+  # frontend
+  nodejs,
   numpy,
   pillow,
-  traitlets,
-
-  # tests
-  importlib-metadata,
-  nbval,
   pytestCheckHook,
+  traitlets,
+  yarn-berry_3,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "ipympl";
   version = "0.10.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "matplotlib";
@@ -39,14 +34,15 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-IJ7tLUE0Ac4biQc9b87adgDcD8pa9XH1bo8rzDl9DCY=";
   };
 
-  yarnOfflineCache = yarn-berry_3.fetchYarnBerryDeps {
-    inherit (finalAttrs) src;
-    hash = "sha256-tdfrAf2BSz9n83ctWqRxDHZnhnfhKA3BFNhXVr9wvLY=";
-  };
-
   nativeBuildInputs = [
     nodejs
     yarn-berry_3.yarnBerryConfigHook
+  ];
+
+  nativeCheckInputs = [
+    importlib-metadata
+    nbval
+    pytestCheckHook
   ];
 
   build-system = [
@@ -65,24 +61,26 @@ buildPythonPackage (finalAttrs: {
     traitlets
   ];
 
-  nativeCheckInputs = [
-    importlib-metadata
-    nbval
-    pytestCheckHook
-  ];
+  pyproject = true;
 
   pythonImportsCheck = [
     "ipympl"
     "ipympl.backend_nbagg"
   ];
 
+  yarnOfflineCache = yarn-berry_3.fetchYarnBerryDeps {
+    inherit (finalAttrs) src;
+    hash = "sha256-tdfrAf2BSz9n83ctWqRxDHZnhnfhKA3BFNhXVr9wvLY=";
+  };
+
   meta = {
-    changelog = "https://github.com/matplotlib/ipympl/releases/tag/${finalAttrs.src.tag}";
     description = "Matplotlib Jupyter Extension";
     homepage = "https://github.com/matplotlib/jupyter-matplotlib";
+    changelog = "https://github.com/matplotlib/ipympl/releases/tag/${finalAttrs.src.tag}";
+    license = lib.licenses.bsd3;
+
     maintainers = with lib.maintainers; [
       jluttine
     ];
-    license = lib.licenses.bsd3;
   };
 })

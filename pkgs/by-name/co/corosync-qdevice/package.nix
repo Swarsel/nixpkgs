@@ -3,11 +3,11 @@
   stdenv,
   fetchFromGitHub,
   autoreconfHook,
-  pkg-config,
   corosync,
   libqb,
-  nss,
   nspr,
+  nss,
+  pkg-config,
   systemd,
   versionCheckHook,
 }:
@@ -42,16 +42,17 @@ stdenv.mkDerivation (finalAttrs: {
     "--enable-systemd"
   ];
 
+  doInstallCheck = true;
+  nativeInstallCheckInputs = [ versionCheckHook ];
+
   installFlags = [
     "sysconfdir=$(out)/etc"
     "localstatedir=$(out)/var"
     "COROSYSCONFDIR=$(out)/etc/corosync"
   ];
 
-  nativeInstallCheckInputs = [ versionCheckHook ];
   versionCheckProgram = "${placeholder "out"}/bin/corosync-qnetd";
   versionCheckProgramArg = "-v";
-  doInstallCheck = true;
 
   meta = {
     description = "Corosync Cluster Engine Qdevice";
@@ -59,7 +60,7 @@ stdenv.mkDerivation (finalAttrs: {
     changelog = "https://github.com/corosync/corosync-qdevice/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.bsd3;
     maintainers = with lib.maintainers; [ x123 ];
-    mainProgram = "corosync-qdevice";
     platforms = lib.platforms.linux;
+    mainProgram = "corosync-qdevice";
   };
 })

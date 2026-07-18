@@ -1,8 +1,8 @@
 {
   lib,
   stdenv,
-  autoreconfHook,
   fetchFromGitHub,
+  autoreconfHook,
   glib,
   pkg-config,
   readline,
@@ -20,6 +20,8 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-GNtuMqMv/87bp3GX9Lh+CK/VKPluNVeWZRRVOD5NY3Y=";
   };
 
+  strictDeps = true;
+
   nativeBuildInputs = [
     autoreconfHook
     pkg-config
@@ -30,16 +32,14 @@ stdenv.mkDerivation (finalAttrs: {
     readline
   ];
 
-  strictDeps = true;
-
   passthru.updateScript = unstableGitUpdater { };
 
   meta = {
-    homepage = "https://github.com/khvzak/bluez-tools";
     description = "Set of tools to manage bluetooth devices for linux";
+    homepage = "https://github.com/khvzak/bluez-tools";
     license = with lib.licenses; [ gpl2Plus ];
-    mainProgram = "bt-agent";
     maintainers = [ ];
     platforms = lib.platforms.linux;
+    mainProgram = "bt-agent";
   };
 })

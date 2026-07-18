@@ -1,22 +1,21 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
-  wheel,
+  apscheduler,
+  buildPythonPackage,
   # dependencies
   django,
-  apscheduler,
+  pytest-django,
   # tests
   pytestCheckHook,
-  pytest-django,
   pytz,
+  setuptools,
+  wheel,
 }:
 
 buildPythonPackage rec {
   pname = "django-apscheduler";
   version = "0.7.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "jcass77";
@@ -24,6 +23,14 @@ buildPythonPackage rec {
     rev = "v${version}";
     hash = "sha256-2YSVX4FxE1OfJkSYV9IRKd2scV4BrMA/mBzJARQCX38=";
   };
+
+  env.DJANGO_SETTINGS_MODULE = "tests.settings";
+
+  nativeCheckInputs = [
+    pytestCheckHook
+    pytest-django
+    pytz
+  ];
 
   build-system = [
     setuptools
@@ -35,13 +42,7 @@ buildPythonPackage rec {
     apscheduler
   ];
 
-  nativeCheckInputs = [
-    pytestCheckHook
-    pytest-django
-    pytz
-  ];
-
-  env.DJANGO_SETTINGS_MODULE = "tests.settings";
+  pyproject = true;
 
   pythonImportsCheck = [
     "django_apscheduler"

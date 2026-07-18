@@ -9,22 +9,19 @@
 buildPythonPackage rec {
   pname = "streamlit-card";
   version = "1.0.2";
-  pyproject = true;
 
   src = fetchPypi {
-    pname = "streamlit_card";
     inherit version;
     hash = "sha256-gAHNXt2Kbi2zbugfN9xkXwj3jCGiupaEAxdsaLTzPLE=";
+    pname = "streamlit_card";
   };
-
-  build-system = [ setuptools ];
-
-  dependencies = [ streamlit ];
-
-  pythonImportsCheck = [ "streamlit_card" ];
 
   # Module has no tests
   doCheck = false;
+  build-system = [ setuptools ];
+  dependencies = [ streamlit ];
+  pyproject = true;
+  pythonImportsCheck = [ "streamlit_card" ];
 
   meta = {
     description = "Streamlit component to make UI cards";

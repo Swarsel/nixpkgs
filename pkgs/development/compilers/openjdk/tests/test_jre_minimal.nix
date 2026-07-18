@@ -1,8 +1,8 @@
 {
-  runCommand,
   callPackage,
   jdk,
   jre_minimal,
+  runCommand,
 }:
 
 let

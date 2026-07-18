@@ -14,11 +14,11 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   meta = {
-    homepage = "https://zakalwe.fi/~shd/foss/cksfv/";
     description = "Tool for verifying files against a SFV checksum file";
+    homepage = "https://zakalwe.fi/~shd/foss/cksfv/";
+    license = lib.licenses.gpl2Plus;
     maintainers = [ ];
     platforms = lib.platforms.all;
-    license = lib.licenses.gpl2Plus;
     mainProgram = "cksfv";
   };
 })

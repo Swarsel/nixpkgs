@@ -3,15 +3,15 @@
   stdenv,
   fetchFromGitHub,
   cmake,
-  python3,
-  libx11,
-  libxxf86vm,
-  libxrandr,
-  vulkan-headers,
   libGL,
+  libx11,
+  libxrandr,
+  libxxf86vm,
+  pkg-config,
+  python3,
+  vulkan-headers,
   vulkan-loader,
   wayland,
-  pkg-config,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -24,25 +24,6 @@ stdenv.mkDerivation (finalAttrs: {
     tag = "release-${finalAttrs.version}";
     hash = "sha256-7aip1ymZqQ7XQottD9jVb7SBPAlGaj6e27tH6aXYc2I=";
   };
-
-  nativeBuildInputs = [
-    cmake
-    python3
-    pkg-config
-  ];
-  buildInputs = [
-    vulkan-headers
-    libGL
-    vulkan-loader
-  ]
-  ++ lib.optionals (!stdenv.hostPlatform.isDarwin) [
-    libx11
-    libxxf86vm
-    libxrandr
-    wayland
-  ];
-
-  cmakeFlags = [ "-DBUILD_TESTS=ON" ];
 
   outputs = [
     "out"
@@ -58,6 +39,26 @@ stdenv.mkDerivation (finalAttrs: {
       --replace '$'{exec_prefix}/@CMAKE_INSTALL_LIBDIR@ @CMAKE_INSTALL_FULL_LIBDIR@
   '';
 
+  nativeBuildInputs = [
+    cmake
+    python3
+    pkg-config
+  ];
+
+  buildInputs = [
+    vulkan-headers
+    libGL
+    vulkan-loader
+  ]
+  ++ lib.optionals (!stdenv.hostPlatform.isDarwin) [
+    libx11
+    libxxf86vm
+    libxrandr
+    wayland
+  ];
+
+  cmakeFlags = [ "-DBUILD_TESTS=ON" ];
+
   postInstall = lib.optionalString (!stdenv.hostPlatform.isDarwin) ''
     mkdir -p "$layers/share"
     mv "$out/share/openxr" "$layers/share"
@@ -72,8 +73,8 @@ stdenv.mkDerivation (finalAttrs: {
   meta = {
     description = "Khronos OpenXR loader";
     homepage = "https://www.khronos.org/openxr";
-    platforms = lib.platforms.linux ++ lib.platforms.darwin;
     license = lib.licenses.asl20;
     maintainers = [ lib.maintainers.ralith ];
+    platforms = lib.platforms.linux ++ lib.platforms.darwin;
   };
 })

@@ -1,14 +1,14 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
-  pkg-config,
-  protobuf,
+  cacert,
   libsodium,
   openssl,
+  pkg-config,
+  protobuf,
+  rustPlatform,
   xz,
   zeromq,
-  cacert,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -22,8 +22,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-n2ylJSCXPnnPHadfZaRS/3vxtnvkXhiTzCyObK7hmEk=";
   };
 
-  cargoHash = "sha256-JMIAHupv3da71j5ID5ZR0mD7ZLLj4ktIs0aQrdWi3jU=";
-
   nativeBuildInputs = [
     pkg-config
     protobuf
@@ -36,11 +34,7 @@ rustPlatform.buildRustPackage (finalAttrs: {
     zeromq
   ];
 
-  cargoBuildFlags = [
-    "-p"
-    "hab"
-  ];
-  cargoTestFlags = finalAttrs.cargoBuildFlags;
+  cargoHash = "sha256-JMIAHupv3da71j5ID5ZR0mD7ZLLj4ktIs0aQrdWi3jU=";
 
   env = {
     OPENSSL_NO_VENDOR = true;
@@ -48,16 +42,25 @@ rustPlatform.buildRustPackage (finalAttrs: {
     SSL_CERT_FILE = "${cacert}/etc/ssl/certs/ca-bundle.crt";
   };
 
+  cargoBuildFlags = [
+    "-p"
+    "hab"
+  ];
+
+  cargoTestFlags = finalAttrs.cargoBuildFlags;
+
   meta = {
     description = "Application automation framework";
     homepage = "https://www.habitat.sh";
     changelog = "https://github.com/habitat-sh/habitat/blob/${finalAttrs.src.rev}/CHANGELOG.md";
     license = lib.licenses.asl20;
+
     maintainers = with lib.maintainers; [
       rushmorem
       qjoly
     ];
-    mainProgram = "hab";
+
     platforms = [ "x86_64-linux" ];
+    mainProgram = "hab";
   };
 })

@@ -1,16 +1,16 @@
 {
   lib,
   stdenv,
-  buildPythonPackage,
-  fetchPypi,
-  numpy,
-  python-rapidjson,
-  urllib3,
   # optional dependencies
   aiohttp,
+  buildPythonPackage,
+  fetchPypi,
   geventhttpclient,
   grpcio,
+  numpy,
   packaging,
+  python-rapidjson,
+  urllib3,
 }:
 
 let
@@ -34,13 +34,17 @@ buildPythonPackage rec {
     in
     fetchPypi {
       inherit pname version format;
-      python = "py3";
+
+      hash =
+        hashes.${stdenv.hostPlatform.system} or (throw "Unsupported system: ${stdenv.hostPlatform.system}");
+
       dist = "py3";
+
       platform =
         platforms.${stdenv.hostPlatform.system}
           or (throw "Unsupported system: ${stdenv.hostPlatform.system}");
-      hash =
-        hashes.${stdenv.hostPlatform.system} or (throw "Unsupported system: ${stdenv.hostPlatform.system}");
+
+      python = "py3";
     };
 
   propagatedBuildInputs = [
@@ -53,13 +57,14 @@ buildPythonPackage rec {
 
   passthru = {
     optional-dependencies = {
-      http = [
-        aiohttp
-        geventhttpclient
-      ];
       grpc = [
         grpcio
         packaging
+      ];
+
+      http = [
+        aiohttp
+        geventhttpclient
       ];
     };
   };

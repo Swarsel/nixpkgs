@@ -2,8 +2,8 @@
   lib,
   stdenv,
   fetchurl,
-  gettext,
   emacs,
+  gettext,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -33,7 +33,6 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Tool to analyze the control flow of C programs";
-    mainProgram = "cflow";
 
     longDescription = ''
       GNU cflow analyzes a collection of C source files and prints a
@@ -48,12 +47,10 @@ stdenv.mkDerivation (finalAttrs: {
       produced flowcharts in Emacs.
     '';
 
-    license = lib.licenses.gpl3Plus;
-
     homepage = "https://www.gnu.org/software/cflow/";
-
+    license = lib.licenses.gpl3Plus;
     maintainers = [ ];
-
     platforms = lib.platforms.linux ++ lib.platforms.darwin;
+    mainProgram = "cflow";
   };
 })

@@ -2,20 +2,20 @@
   lib,
   stdenv,
   fetchurl,
-  pkg-config,
   libcap_ng,
   libnl,
   lz4,
   lzo,
+  nixosTests,
   openssl,
   pam,
-  useSystemd ? lib.meta.availableOn stdenv.hostPlatform systemd,
+  pkcs11helper,
+  pkg-config,
   systemd,
+  unixtools,
   update-systemd-resolved,
   pkcs11Support ? false,
-  pkcs11helper,
-  nixosTests,
-  unixtools,
+  useSystemd ? lib.meta.availableOn stdenv.hostPlatform systemd,
 }:
 
 let
@@ -76,11 +76,11 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Robust and highly flexible tunneling application";
-    downloadPage = "https://openvpn.net/community-downloads/";
     homepage = "https://openvpn.net/";
     license = lib.licenses.gpl2Only;
     maintainers = with lib.maintainers; [ peterhoeg ];
     platforms = lib.platforms.unix;
     mainProgram = "openvpn";
+    downloadPage = "https://openvpn.net/community-downloads/";
   };
 })

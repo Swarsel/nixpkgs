@@ -1,35 +1,26 @@
 {
   lib,
+  aiohttp,
   buildPythonPackage,
   fetchPypi,
   flit-core,
-  uritemplate,
-  pyjwt,
-  pytestCheckHook,
-  aiohttp,
   httpx,
   importlib-resources,
+  pyjwt,
   pytest-asyncio,
   pytest-tornasync,
+  pytestCheckHook,
+  uritemplate,
 }:
 
 buildPythonPackage rec {
   pname = "gidgethub";
   version = "5.4.0";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
     hash = "sha256-dHDXcj18F0NHGi1i55yHUvuhKxwJcuS61XJSM4pQHb0=";
   };
-
-  build-system = [ flit-core ];
-
-  dependencies = [
-    uritemplate
-    pyjwt
-  ]
-  ++ pyjwt.optional-dependencies.crypto;
 
   nativeCheckInputs = [
     pytestCheckHook
@@ -40,11 +31,21 @@ buildPythonPackage rec {
     pytest-tornasync
   ];
 
+  build-system = [ flit-core ];
+
+  dependencies = [
+    uritemplate
+    pyjwt
+  ]
+  ++ pyjwt.optional-dependencies.crypto;
+
   disabledTests = [
     # Require internet connection
     "test__request"
     "test_get"
   ];
+
+  pyproject = true;
 
   meta = {
     description = "Async GitHub API library";

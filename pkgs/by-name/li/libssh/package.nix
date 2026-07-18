@@ -2,16 +2,15 @@
   lib,
   stdenv,
   fetchurl,
-  pkg-config,
   cmake,
-  zlib,
-  openssl,
-  libsodium,
-
   # for passthru.tests
   ffmpeg,
+  libsodium,
+  openssl,
+  pkg-config,
   sshping,
   wireshark,
+  zlib,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -33,9 +32,10 @@ stdenv.mkDerivation (finalAttrs: {
     sed -i 's,nacl/,sodium/,g' ./include/libssh/curve25519.h src/curve25519.c
   '';
 
-  # Don’t build examples, which are not installed and require additional dependencies not
-  # included in `buildInputs` such as libx11.
-  cmakeFlags = [ "-DWITH_EXAMPLES=OFF" ];
+  nativeBuildInputs = [
+    cmake
+    pkg-config
+  ];
 
   buildInputs = [
     zlib
@@ -43,10 +43,9 @@ stdenv.mkDerivation (finalAttrs: {
     libsodium
   ];
 
-  nativeBuildInputs = [
-    cmake
-    pkg-config
-  ];
+  # Don’t build examples, which are not installed and require additional dependencies not
+  # included in `buildInputs` such as libx11.
+  cmakeFlags = [ "-DWITH_EXAMPLES=OFF" ];
 
   postFixup = ''
     substituteInPlace $dev/lib/cmake/libssh/libssh-config.cmake \

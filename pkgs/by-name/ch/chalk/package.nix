@@ -24,11 +24,11 @@ in
 stdenv.mkDerivation {
   pname = "chalk";
   version = chalkVersion;
+
   src = fetchurl {
     url = chalkUrl;
     hash = chalkHash;
   };
-  dontUnpack = true;
 
   installPhase = ''
     runHook preInstall
@@ -36,17 +36,21 @@ stdenv.mkDerivation {
     runHook postInstall
   '';
 
+  dontUnpack = true;
+
   meta = {
     description = "CLI tool for interacting with the Chalk platform";
     homepage = "https://docs.chalk.ai/cli";
-    sourceProvenance = [ lib.sourceTypes.binaryNativeCode ];
     license = lib.licenses.unfree;
+    sourceProvenance = [ lib.sourceTypes.binaryNativeCode ];
     maintainers = with lib.maintainers; [ curran ];
-    mainProgram = "chalk";
+
     platforms = [
       "x86_64-linux"
       "aarch64-linux"
       "aarch64-darwin"
     ];
+
+    mainProgram = "chalk";
   };
 }

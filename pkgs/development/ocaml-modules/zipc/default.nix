@@ -2,14 +2,15 @@
   lib,
   stdenv,
   fetchurl,
-  ocaml,
+  cmdliner,
   findlib,
+  ocaml,
   ocamlbuild,
   topkg,
-  cmdliner,
 }:
 
 stdenv.mkDerivation rec {
+  inherit (topkg) buildPhase installPhase;
   pname = "ocaml${ocaml.version}-zipc";
   version = "0.2.0";
 
@@ -30,8 +31,6 @@ stdenv.mkDerivation rec {
     cmdliner
     topkg
   ];
-
-  inherit (topkg) buildPhase installPhase;
 
   meta = {
     description = "ZIP archive and deflate codec for OCaml";

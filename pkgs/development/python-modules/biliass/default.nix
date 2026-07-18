@@ -1,11 +1,11 @@
 {
   lib,
   stdenv,
-  buildPythonPackage,
   fetchFromGitHub,
-  rustPlatform,
-  pytestCheckHook,
+  buildPythonPackage,
   libiconv,
+  pytestCheckHook,
+  rustPlatform,
 }:
 
 # r-ryantm wants to downgrade
@@ -13,27 +13,12 @@
 buildPythonPackage rec {
   pname = "biliass";
   version = "2.3.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "yutto-dev";
     repo = "yutto";
     tag = "biliass@${version}";
     hash = "sha256-ZB18BQJRSwA/ERHjqmp+D39UqTvdYpbhwLjaizM5R2I=";
-  };
-
-  sourceRoot = "${src.name}/packages/biliass";
-  cargoRoot = "rust";
-
-  cargoDeps = rustPlatform.fetchCargoVendor {
-    inherit
-      pname
-      version
-      src
-      sourceRoot
-      cargoRoot
-      ;
-    hash = "sha256-gOYgYi8RlWBe0astv6D6/J7Ge20TM/19zJHwoCevpIo=";
   };
 
   nativeBuildInputs = with rustPlatform; [
@@ -46,16 +31,30 @@ buildPythonPackage rec {
   ];
 
   doCheck = false; # test artifacts missing
-
   nativeCheckInputs = [ pytestCheckHook ];
 
+  cargoDeps = rustPlatform.fetchCargoVendor {
+    inherit
+      pname
+      version
+      src
+      sourceRoot
+      cargoRoot
+      ;
+
+    hash = "sha256-gOYgYi8RlWBe0astv6D6/J7Ge20TM/19zJHwoCevpIo=";
+  };
+
+  cargoRoot = "rust";
+  pyproject = true;
   pythonImportsCheck = [ "biliass" ];
+  sourceRoot = "${src.name}/packages/biliass";
 
   meta = {
-    homepage = "https://github.com/yutto-dev/biliass";
     description = "Convert Bilibili XML/protobuf danmaku to ASS subtitle";
-    mainProgram = "biliass";
+    homepage = "https://github.com/yutto-dev/biliass";
     license = lib.licenses.gpl3Only;
     maintainers = with lib.maintainers; [ linsui ];
+    mainProgram = "biliass";
   };
 }

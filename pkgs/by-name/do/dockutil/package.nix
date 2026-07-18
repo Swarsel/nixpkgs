@@ -1,15 +1,15 @@
 {
   lib,
   stdenv,
-  stdenvNoCC,
-  fetchFromGitHub,
   fetchurl,
-  swift,
-  swiftpm,
-  swiftpm2nix,
-  swiftPackages,
+  fetchFromGitHub,
   libarchive,
   p7zip,
+  stdenvNoCC,
+  swift,
+  swiftPackages,
+  swiftpm,
+  swiftpm2nix,
   # Building from source on x86_64 fails (among other things) due to:
   # error: cannot load underlying module for 'Darwin'
   fromSource ? (stdenv.system != "x86_64-darwin"),
@@ -26,8 +26,8 @@ let
     homepage = "https://github.com/kcrawford/dockutil";
     license = lib.licenses.asl20;
     maintainers = with lib.maintainers; [ tboerger ];
-    mainProgram = "dockutil";
     platforms = lib.platforms.darwin;
+    mainProgram = "dockutil";
   };
 
   buildFromSource = swiftPackages.stdenv.mkDerivation (finalAttrs: {
@@ -55,13 +55,13 @@ let
       swiftpm
     ];
 
-    configurePhase = generated.configure;
-
     installPhase = ''
       runHook preInstall
       install -Dm755 .build/${stdenv.hostPlatform.darwinArch}-apple-macosx/release/dockutil -t $out/bin
       runHook postInstall
     '';
+
+    configurePhase = generated.configure;
   });
 
   installBinary = stdenvNoCC.mkDerivation (finalAttrs: {
@@ -72,25 +72,25 @@ let
       hash = "sha256-9g24Jz/oDXxIJFiL7bU4pTh2dcORftsAENq59S0/JYI=";
     };
 
-    dontPatch = true;
-    dontConfigure = true;
-    dontBuild = true;
-
     nativeBuildInputs = [
       libarchive
       p7zip
     ];
-
-    unpackPhase = ''
-      7z x $src
-      bsdtar -xf Payload~
-    '';
 
     installPhase = ''
       runHook preInstall
       mkdir -p $out/bin
       install -Dm755 usr/local/bin/dockutil -t $out/bin
       runHook postInstall
+    '';
+
+    dontBuild = true;
+    dontConfigure = true;
+    dontPatch = true;
+
+    unpackPhase = ''
+      7z x $src
+      bsdtar -xf Payload~
     '';
 
     meta = meta // {

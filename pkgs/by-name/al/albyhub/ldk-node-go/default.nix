@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   ldkNode,
 }:
 
@@ -16,6 +16,11 @@ buildGoModule {
     hash = "sha256-+fuCvc2SuxBLXiacfc+0oNzAsBgFjUJgZ0+5B4Sy4vs=";
   };
 
+  buildInputs = [
+    ldkNode
+  ];
+
+  propagatedBuildInputs = [ ldkNode ];
   vendorHash = null;
 
   ldflags = [
@@ -23,17 +28,11 @@ buildGoModule {
     "-w"
   ];
 
-  buildInputs = [
-    ldkNode
-  ];
-
-  propagatedBuildInputs = [ ldkNode ];
-
   meta = {
     description = "Experimental Go bindings for LDK-node";
     homepage = "https://github.com/getAlby/ldk-node-go";
     license = lib.licenses.asl20;
-    platforms = lib.platforms.linux;
     maintainers = with lib.maintainers; [ bleetube ];
+    platforms = lib.platforms.linux;
   };
 }

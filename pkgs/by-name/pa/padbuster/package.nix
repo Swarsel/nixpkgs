@@ -37,9 +37,9 @@ stdenv.mkDerivation {
   meta = {
     description = "Automated script for performing Padding Oracle attacks";
     homepage = "https://www.gdssecurity.com/l/t.php";
-    mainProgram = "padBuster.pl";
-    maintainers = with lib.maintainers; [ emilytrau ];
     license = lib.licenses.asl20;
+    maintainers = with lib.maintainers; [ emilytrau ];
     platforms = lib.platforms.all;
+    mainProgram = "padBuster.pl";
   };
 }

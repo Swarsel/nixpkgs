@@ -1,6 +1,6 @@
 {
-  fetchzip,
   lib,
+  fetchzip,
   stdenvNoCC,
 }:
 
@@ -21,10 +21,9 @@ stdenvNoCC.mkDerivation rec {
     url = "https://iterm2.com/downloads/stable/iTerm2-${
       lib.replaceStrings [ "." ] [ "_" ] version
     }.zip";
+
     hash = "sha256-igdExoh3d8EZBuKkqyNqF087jUISax07rSWG3eenUbw=";
   };
-
-  dontFixup = true;
 
   installPhase = ''
     runHook preInstall
@@ -40,20 +39,24 @@ stdenvNoCC.mkDerivation rec {
     runHook postInstall
   '';
 
+  dontFixup = true;
   passthru.updateScript = ./update.sh;
 
   meta = {
     description = "Replacement for Terminal and the successor to iTerm";
     homepage = "https://www.iterm2.com/";
-    hydraPlatforms = [ ]; # The build is little more than copying the binary
     license = lib.licenses.gpl2;
+    sourceProvenance = [ lib.sourceTypes.binaryNativeCode ];
+
     maintainers = with lib.maintainers; [
       tricktron
       emaiax
     ];
+
     platforms = [
       "aarch64-darwin"
     ];
-    sourceProvenance = [ lib.sourceTypes.binaryNativeCode ];
+
+    hydraPlatforms = [ ]; # The build is little more than copying the binary
   };
 }

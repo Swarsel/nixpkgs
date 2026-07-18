@@ -1,7 +1,7 @@
 {
   lib,
-  stdenvNoCC,
   fetchzip,
+  stdenvNoCC,
 }:
 
 stdenvNoCC.mkDerivation rec {
@@ -10,8 +10,8 @@ stdenvNoCC.mkDerivation rec {
 
   src = fetchzip {
     url = "mirror://osdn/hanazono-font/68253/hanazono-${version}.zip";
-    stripRoot = false;
     hash = "sha256-qd0q4wQnHBGLT7C+UQIiOHnxCnRCscMZcj3P5RRxD1U=";
+    stripRoot = false;
   };
 
   installPhase = ''
@@ -25,7 +25,7 @@ stdenvNoCC.mkDerivation rec {
 
   meta = {
     description = "Japanese Mincho-typeface TrueType font";
-    homepage = "https://fonts.jp/hanazono/";
+
     longDescription = ''
       Hanazono Mincho typeface is a Japanese TrueType font that developed with a
       support of Grant-in-Aid for Publication of Scientific Research Results
@@ -33,6 +33,8 @@ stdenvNoCC.mkDerivation rec {
       Research Institute for Zen Buddhism (IRIZ), Hanazono University. also with
       volunteers who work together on glyphwiki.org.
     '';
+
+    homepage = "https://fonts.jp/hanazono/";
 
     # Dual-licensed under OFL and the following:
     # This font is a free software.
@@ -43,6 +45,7 @@ stdenvNoCC.mkDerivation rec {
       lib.licenses.ofl
       lib.licenses.free
     ];
+
     maintainers = with lib.maintainers; [ mathnerd314 ];
     platforms = lib.platforms.all;
   };

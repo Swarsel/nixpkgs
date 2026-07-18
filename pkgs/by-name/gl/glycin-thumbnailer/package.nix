@@ -12,15 +12,15 @@
   meson,
   ninja,
   pkg-config,
-  rustc,
   rustPlatform,
+  rustc,
   wrapGAppsNoGuiHook,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
-  pname = "glycin-thumbnailer";
-
   inherit (libglycin) version src cargoDeps;
+  pname = "glycin-thumbnailer";
+  strictDeps = true;
 
   nativeBuildInputs = [
     cargo
@@ -49,9 +49,6 @@ stdenv.mkDerivation (finalAttrs: {
     (lib.mesonBool "libglycin-gtk4" false)
   ];
 
-  strictDeps = true;
-  __structuredAttrs = true;
-
   # Thumbnailer files are in `glycin-loaders`, but we provide them in this package
   postInstall = ''
     mkdir -p $out/share/thumbnailers
@@ -67,6 +64,8 @@ stdenv.mkDerivation (finalAttrs: {
     )
   '';
 
+  __structuredAttrs = true;
+
   passthru.tests = {
     all-loaders = glycin-thumbnailer.override {
       glycin-loaders = glycin-loaders.override {
@@ -79,6 +78,7 @@ stdenv.mkDerivation (finalAttrs: {
         ];
       };
     };
+
     thumbnailer = callPackage ./tests.nix { };
   };
 
@@ -86,15 +86,17 @@ stdenv.mkDerivation (finalAttrs: {
     description = "Glycin thumbnailers for several formats";
     homepage = "https://gitlab.gnome.org/GNOME/glycin";
     changelog = "https://gitlab.gnome.org/GNOME/glycin/-/tags/${finalAttrs.version}";
+
     license =
       with lib.licenses;
       OR [
         mpl20
         lgpl21Plus
       ];
+
     maintainers = with lib.maintainers; [ thunze ];
-    teams = [ lib.teams.gnome ];
     platforms = lib.platforms.linux;
     mainProgram = "glycin-thumbnailer";
+    teams = [ lib.teams.gnome ];
   };
 })

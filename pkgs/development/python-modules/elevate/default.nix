@@ -1,7 +1,7 @@
 {
   lib,
-  fetchPypi,
   buildPythonPackage,
+  fetchPypi,
   fetchpatch,
   setuptools-scm,
 }:
@@ -9,7 +9,6 @@
 buildPythonPackage rec {
   pname = "elevate";
   version = "0.1.3";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
@@ -18,17 +17,16 @@ buildPythonPackage rec {
 
   patches = [
     (fetchpatch {
+      sha256 = "1ky3z1jxl1g28wbwbx8qq8jgx8sa8pr8s3fdcpdhdx1blw28cv61";
       # This is for not calling shell wrappers through Python, which fails.
       url = "https://github.com/rkitover/elevate/commit/148b2bf698203ea39c9fe5d635ecd03cd94051af.patch";
-      sha256 = "1ky3z1jxl1g28wbwbx8qq8jgx8sa8pr8s3fdcpdhdx1blw28cv61";
     })
   ];
 
   nativeBuildInputs = [ setuptools-scm ];
-
   # No tests included
   doCheck = false;
-
+  format = "setuptools";
   pythonImportsCheck = [ "elevate" ];
 
   meta = {

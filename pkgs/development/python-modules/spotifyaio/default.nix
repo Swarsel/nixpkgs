@@ -1,9 +1,9 @@
 {
   lib,
+  fetchFromGitHub,
   aiohttp,
   aioresponses,
   buildPythonPackage,
-  fetchFromGitHub,
   mashumaro,
   orjson,
   poetry-core,
@@ -17,7 +17,6 @@
 buildPythonPackage rec {
   pname = "spotifyaio";
   version = "2.0.2";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "joostlek";
@@ -32,6 +31,14 @@ buildPythonPackage rec {
       --replace-fail 'version = "0.2.0"' 'version = "${version}"'
   '';
 
+  nativeCheckInputs = [
+    aioresponses
+    syrupy
+    pytest-asyncio
+    pytest-cov-stub
+    pytestCheckHook
+  ];
+
   build-system = [ poetry-core ];
 
   dependencies = [
@@ -41,14 +48,7 @@ buildPythonPackage rec {
     yarl
   ];
 
-  nativeCheckInputs = [
-    aioresponses
-    syrupy
-    pytest-asyncio
-    pytest-cov-stub
-    pytestCheckHook
-  ];
-
+  pyproject = true;
   pythonImportsCheck = [ "spotifyaio" ];
 
   meta = {

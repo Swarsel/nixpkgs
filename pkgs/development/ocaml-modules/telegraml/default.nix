@@ -1,9 +1,9 @@
 {
+  lib,
+  fetchFromGitHub,
   batteries,
   buildDunePackage,
   cohttp-lwt-unix,
-  fetchFromGitHub,
-  lib,
   logs,
   yojson,
 }:

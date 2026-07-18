@@ -1,12 +1,12 @@
 {
   lib,
-  rustPlatform,
-  fetchFromGitHub,
-  shared-mime-info,
-  libiconv,
-  installShellFiles,
-  nix-update-script,
   stdenv,
+  fetchFromGitHub,
+  installShellFiles,
+  libiconv,
+  nix-update-script,
+  rustPlatform,
+  shared-mime-info,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -20,14 +20,13 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-7psjlu0qyoZYTVwq2JYJJkB76ejlmMtmstDw+liMcj8=";
   };
 
-  cargoHash = "sha256-a91WaIFBS9Rh4T/dwpLQJMoE604Tj0mVN38RKmNcZU0=";
-
   nativeBuildInputs = [
     installShellFiles
     shared-mime-info
   ];
 
   buildInputs = [ libiconv ];
+  cargoHash = "sha256-a91WaIFBS9Rh4T/dwpLQJMoE604Tj0mVN38RKmNcZU0=";
 
   preCheck = ''
     export HOME=$TEMPDIR

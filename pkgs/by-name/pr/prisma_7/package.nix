@@ -1,16 +1,16 @@
 {
   lib,
-  fetchFromGitHub,
   stdenv,
-  nodejs,
-  pnpm_10,
-  prisma-engines_7,
+  fetchFromGitHub,
+  callPackage,
+  fetchPnpmDeps,
   jq,
   makeWrapper,
   moreutils,
-  callPackage,
+  nodejs,
   pnpmConfigHook,
-  fetchPnpmDeps,
+  pnpm_10,
+  prisma-engines_7,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -32,23 +32,6 @@ stdenv.mkDerivation (finalAttrs: {
     moreutils
     pnpm_10
   ];
-
-  pnpmDeps = fetchPnpmDeps {
-    inherit (finalAttrs) pname version src;
-    pnpm = pnpm_10;
-    fetcherVersion = 3;
-    hash = "sha256-mrFU5SAF4QuTBJj5TP8tUkYDG4zchttjcQMLtx6OBnI=";
-  };
-
-  patchPhase = ''
-    runHook prePatch
-
-    for package in packages/*; do
-      jq --arg version $version '.version = $version' $package/package.json | sponge $package/package.json
-    done
-
-    runHook postPatch
-  '';
 
   buildPhase = ''
     runHook preBuild
@@ -103,6 +86,23 @@ stdenv.mkDerivation (finalAttrs: {
 
   dontStrip = true;
 
+  patchPhase = ''
+    runHook prePatch
+
+    for package in packages/*; do
+      jq --arg version $version '.version = $version' $package/package.json | sponge $package/package.json
+    done
+
+    runHook postPatch
+  '';
+
+  pnpmDeps = fetchPnpmDeps {
+    inherit (finalAttrs) pname version src;
+    fetcherVersion = 3;
+    hash = "sha256-mrFU5SAF4QuTBJj5TP8tUkYDG4zchttjcQMLtx6OBnI=";
+    pnpm = pnpm_10;
+  };
+
   passthru.tests = {
     cli = callPackage ./test-cli.nix { };
   };
@@ -112,7 +112,7 @@ stdenv.mkDerivation (finalAttrs: {
     homepage = "https://www.prisma.io/";
     license = lib.licenses.asl20;
     maintainers = with lib.maintainers; [ aqrln ];
-    mainProgram = "prisma";
     platforms = lib.platforms.unix;
+    mainProgram = "prisma";
   };
 })

@@ -11,11 +11,6 @@ stdenv.mkDerivation (finalAttrs: {
   pname = "wayclip";
   version = "0.5";
 
-  outputs = [
-    "out"
-    "man"
-  ];
-
   src = fetchFromSourcehut {
     owner = "~noocsharp";
     repo = "wayclip";
@@ -23,12 +18,14 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-Uej5ggtlPeDid1yKSfZt5FlCen1GLea6EWa4lL+BPRM=";
   };
 
+  outputs = [
+    "out"
+    "man"
+  ];
+
   strictDeps = true;
-
   nativeBuildInputs = [ wayland-scanner ];
-
   buildInputs = [ wayland ];
-
   makeFlags = [ "PREFIX=${placeholder "out"}" ];
 
   passthru = {
@@ -36,11 +33,11 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   meta = {
+    inherit (wayland.meta) platforms;
     description = "Wayland clipboard utility";
     homepage = "https://sr.ht/~noocsharp/wayclip/";
     license = lib.licenses.isc;
     maintainers = with lib.maintainers; [ getchoo ];
     mainProgram = "waycopy";
-    inherit (wayland.meta) platforms;
   };
 })

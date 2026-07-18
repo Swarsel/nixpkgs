@@ -1,12 +1,12 @@
 {
+  lib,
+  stdenv,
+  fetchFromGitHub,
   buildNpmPackage,
   cctools,
-  fetchFromGitHub,
-  lib,
   node-gyp,
   nodejs,
   python3,
-  stdenv,
 }:
 
 buildNpmPackage {
@@ -30,12 +30,14 @@ buildNpmPackage {
     ./remove-nodemon.patch
   ];
 
-  npmDepsHash = "sha256-GyNUPgLJhdjzbIpld916/l8durIw0aQRHojjSmGgEJE=";
   nativeBuildInputs = [
     node-gyp
     python3
   ]
   ++ lib.optionals stdenv.hostPlatform.isDarwin [ cctools ];
+
+  npmDepsHash = "sha256-GyNUPgLJhdjzbIpld916/l8durIw0aQRHojjSmGgEJE=";
+  nativeCheckInputs = [ nodejs ];
 
   postInstall = ''
     # Only keep the necessary parts of build/Release to reduce closure size
@@ -54,14 +56,13 @@ buildNpmPackage {
   '';
 
   doInstallCheck = true;
-  nativeCheckInputs = [ nodejs ];
+  disallowedReferences = [ nodejs ];
+
   postInstallCheck = ''
     # Smoke check: require() works
     export NODE_PATH=$out/lib/node_modules
     echo 'require("nodehun")' | node -
   '';
-
-  disallowedReferences = [ nodejs ];
 
   meta = {
     description = "Hunspell binding for NodeJS that exposes as much of Hunspell as possible and also adds new features";

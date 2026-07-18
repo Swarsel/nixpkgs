@@ -8,15 +8,14 @@
 buildPythonPackage rec {
   pname = "cx-oracle";
   version = "8.3.0";
-  format = "setuptools";
-
-  buildInputs = [ odpic ];
 
   src = fetchPypi {
-    pname = "cx_Oracle";
     inherit version;
     sha256 = "3b2d215af4441463c97ea469b9cc307460739f89fdfa8ea222ea3518f1a424d9";
+    pname = "cx_Oracle";
   };
+
+  buildInputs = [ odpic ];
 
   preConfigure = ''
     export ODPIC_INC_DIR="${odpic}/include"
@@ -25,6 +24,7 @@ buildPythonPackage rec {
 
   # Check need an Oracle database to run
   doCheck = false;
+  format = "setuptools";
 
   meta = {
     description = "Python interface to Oracle";

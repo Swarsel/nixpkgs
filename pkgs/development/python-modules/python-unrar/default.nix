@@ -1,27 +1,22 @@
 {
-  stdenv,
   lib,
-  replaceVars,
+  stdenv,
   buildPythonPackage,
   fetchPypi,
-  unrar,
   pytestCheckHook,
+  replaceVars,
   setuptools,
+  unrar,
 }:
 buildPythonPackage rec {
   pname = "python-unrar";
   version = "0.4";
-  pyproject = true;
 
   src = fetchPypi {
-    pname = "unrar";
     inherit version;
     hash = "sha256-skRHpbkwJL5gDvglVmi6I6MPRRF2V3tpFVnqE1n30WQ=";
+    pname = "unrar";
   };
-
-  build-system = [
-    setuptools
-  ];
 
   patches = [
     (replaceVars ./use_nix_unrar_path.patch {
@@ -29,16 +24,20 @@ buildPythonPackage rec {
     })
   ];
 
+  doCheck = true;
   nativeCheckInputs = [ pytestCheckHook ];
 
-  doCheck = true;
+  build-system = [
+    setuptools
+  ];
 
+  pyproject = true;
   pythonImportsCheck = [ "unrar" ];
 
   meta = {
+    description = "Wrapper for UnRAR library, plus a rarfile module on top of it";
     homepage = "http://github.com/matiasb/python-unrar";
     changelog = "https://github.com/matiasb/python-unrar/releases/tag/v${version}";
-    description = "Wrapper for UnRAR library, plus a rarfile module on top of it";
     license = lib.licenses.gpl3Plus;
     maintainers = with lib.maintainers; [ DrymarchonShaun ];
     platforms = lib.platforms.linux;

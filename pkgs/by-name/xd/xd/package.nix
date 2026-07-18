@@ -1,7 +1,7 @@
 {
-  buildGoModule,
-  fetchFromGitHub,
   lib,
+  fetchFromGitHub,
+  buildGoModule,
   perl,
 }:
 
@@ -17,7 +17,6 @@ buildGoModule (finalAttrs: {
   };
 
   vendorHash = "sha256-PhZZzB07BNPuBafWwvUD7pVu31awP6NkZxsO89xYPT0=";
-
   nativeCheckInputs = [ perl ];
 
   postInstall = ''
@@ -27,8 +26,8 @@ buildGoModule (finalAttrs: {
   meta = {
     description = "i2p bittorrent client";
     homepage = "https://xd-torrent.github.io";
-    maintainers = with lib.maintainers; [ nixbitcoin ];
     license = lib.licenses.mit;
+    maintainers = with lib.maintainers; [ nixbitcoin ];
     platforms = lib.platforms.linux;
   };
 })

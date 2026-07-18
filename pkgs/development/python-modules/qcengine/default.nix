@@ -2,27 +2,28 @@
   lib,
   buildPythonPackage,
   fetchPypi,
-  setuptools,
-  setuptools-scm,
-  pyyaml,
-  py-cpuinfo,
+  packaging,
   psutil,
-  qcelemental,
+  py-cpuinfo,
   pydantic,
   pydantic-settings,
-  packaging,
   pytestCheckHook,
+  pyyaml,
+  qcelemental,
+  setuptools,
+  setuptools-scm,
 }:
 
 buildPythonPackage rec {
   pname = "qcengine";
   version = "0.50.0";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
     hash = "sha256-x218Sq4QOoqTpcSM9TzQydhIn9LthflCuNh/P0stZmU=";
   };
+
+  nativeCheckInputs = [ pytestCheckHook ];
 
   build-system = [
     setuptools
@@ -39,14 +40,13 @@ buildPythonPackage rec {
     packaging
   ];
 
-  nativeCheckInputs = [ pytestCheckHook ];
-
-  pythonImportsCheck = [ "qcengine" ];
-
   # These tests require network access
   disabledTestPaths = [
     "qcengine/tests/test_harness_canonical.py"
   ];
+
+  pyproject = true;
+  pythonImportsCheck = [ "qcengine" ];
 
   meta = {
     description = "Quantum chemistry program executor and IO standardizer (QCSchema) for quantum chemistry";

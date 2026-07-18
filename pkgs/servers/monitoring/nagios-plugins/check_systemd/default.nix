@@ -1,13 +1,12 @@
 {
-  fetchFromGitHub,
   lib,
+  fetchFromGitHub,
   python3Packages,
 }:
 
 python3Packages.buildPythonApplication rec {
   pname = "check-systemd";
   version = "5.0.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "Josef-Friedrich";
@@ -21,6 +20,15 @@ python3Packages.buildPythonApplication rec {
       --replace-fail "./check_systemd.py" "check_systemd"
   '';
 
+  nativeCheckInputs = with python3Packages; [
+    pytestCheckHook
+  ];
+
+  # needs to be able to run check_systemd from PATH
+  preCheck = ''
+    export PATH=$PATH:$out/bin
+  '';
+
   build-system = with python3Packages; [
     poetry-core
   ];
@@ -29,22 +37,15 @@ python3Packages.buildPythonApplication rec {
     nagiosplugin
   ];
 
-  # needs to be able to run check_systemd from PATH
-  preCheck = ''
-    export PATH=$PATH:$out/bin
-  '';
-
-  nativeCheckInputs = with python3Packages; [
-    pytestCheckHook
-  ];
+  pyproject = true;
 
   meta = {
-    changelog = "https://github.com/Josef-Friedrich/check_systemd/releases";
     description = "Nagios / Icinga monitoring plugin to check systemd for failed units";
     homepage = "https://github.com/Josef-Friedrich/check_systemd";
+    changelog = "https://github.com/Josef-Friedrich/check_systemd/releases";
     license = lib.licenses.lgpl2Only;
-    mainProgram = "check_systemd";
     maintainers = with lib.maintainers; [ symphorien ];
     platforms = lib.platforms.linux;
+    mainProgram = "check_systemd";
   };
 }

@@ -1,11 +1,11 @@
 {
   lib,
   fetchurl,
-  ocaml,
   buildDunePackage,
+  ocaml,
+  ounit2,
   seq,
   stdlib-shims,
-  ounit2,
 }:
 
 buildDunePackage (finalAttrs: {
@@ -17,17 +17,18 @@ buildDunePackage (finalAttrs: {
     hash = "sha256-eW1XkeK/ezv/IAz1BXp6GHhDnrzXTtDxCIz4Z1bVK+Y=";
   };
 
-  minimalOCamlVersion = "4.14";
-
   propagatedBuildInputs = [
     seq
     stdlib-shims
   ];
 
+  doCheck = lib.versionAtLeast ocaml.version "4.08";
+
   checkInputs = [
     ounit2
   ];
-  doCheck = lib.versionAtLeast ocaml.version "4.08";
+
+  minimalOCamlVersion = "4.14";
 
   meta = {
     description = "OCaml API to manipulate real files (POSIX like) and filenames";

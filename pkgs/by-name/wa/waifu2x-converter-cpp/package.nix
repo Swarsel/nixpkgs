@@ -1,13 +1,13 @@
 {
-  cmake,
-  fetchFromGitHub,
-  makeWrapper,
-  opencv4,
   lib,
   stdenv,
+  fetchFromGitHub,
+  cmake,
+  config,
+  makeWrapper,
   ocl-icd,
   opencl-headers,
-  config,
+  opencv4,
   cudaSupport ? config.cudaSupport,
   cudatoolkit ? null,
 }:
@@ -28,6 +28,11 @@ stdenv.mkDerivation (finalAttrs: {
     ./waifu2x_darwin_build.diff
   ];
 
+  nativeBuildInputs = [
+    cmake
+    makeWrapper
+  ];
+
   buildInputs = [
     opencv4
   ]
@@ -37,19 +42,14 @@ stdenv.mkDerivation (finalAttrs: {
     opencl-headers
   ];
 
-  nativeBuildInputs = [
-    cmake
-    makeWrapper
+  cmakeFlags = [
+    # file RPATH_CHANGE could not write new RPATH
+    "-DCMAKE_SKIP_BUILD_RPATH=ON"
   ];
 
   preFixup = lib.optionalString stdenv.hostPlatform.isLinux ''
     wrapProgram $out/bin/waifu2x-converter-cpp --prefix LD_LIBRARY_PATH : "${ocl-icd}/lib"
   '';
-
-  cmakeFlags = [
-    # file RPATH_CHANGE could not write new RPATH
-    "-DCMAKE_SKIP_BUILD_RPATH=ON"
-  ];
 
   meta = {
     description = "Improved fork of Waifu2X C++ using OpenCL and OpenCV";

@@ -1,6 +1,6 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchurl,
   pam,
 }:
@@ -32,10 +32,10 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   meta = {
-    homepage = "http://jjacky.com/pam_rundir";
     description = "Provide user runtime directory on Linux systems";
+    homepage = "http://jjacky.com/pam_rundir";
     license = lib.licenses.gpl2Plus;
-    platforms = lib.platforms.unix;
     maintainers = with lib.maintainers; [ aanderse ];
+    platforms = lib.platforms.unix;
   };
 })

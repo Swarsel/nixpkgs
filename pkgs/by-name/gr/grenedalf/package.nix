@@ -1,33 +1,37 @@
 {
   lib,
   stdenv,
-  fetchFromGitHub,
-  cmake,
-  autoconf,
-  pkg-config,
-  libz,
-  bzip2,
-  xz,
-  libdeflate,
-  htslib,
   fetchurl,
+  fetchFromGitHub,
+  autoconf,
+  bzip2,
+  cmake,
+  htslib,
+  libdeflate,
+  libz,
+  pkg-config,
+  xz,
 }:
 
 let
   # Grenedalf is binded to htslib 1.16 and does not link with libcurl
   htslib_gr = htslib.overrideDerivation (oldAttrs: rec {
     version = "1.16";
-    name = "${oldAttrs.pname}-nocurl-${version}";
+
     src = fetchurl {
       url = "https://github.com/samtools/htslib/releases/download/${version}/htslib-${version}.tar.bz2";
       sha256 = "sha256-YGt8ev9zc0zwM+zRVvQFKfpXkvVFJJUqKJOMoIkNeSQ=";
     };
+
+    # Patches break the build
+    patches = [ ];
+
     configureFlags = [
       "--disable-libcurl"
       "--disable-plugins"
     ];
-    # Patches break the build
-    patches = [ ];
+
+    name = "${oldAttrs.pname}-nocurl-${version}";
   });
 in
 stdenv.mkDerivation (finalAttrs: {
@@ -79,8 +83,8 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   meta = {
-    homepage = "https://github.com/lczech/grenedalf";
     description = "Collection of commands for working with population genetic data";
+
     longDescription = ''
       grenedalf is a collection of commands for working with population genetic
       data, in particular from pool sequencing. Its main focus are statistical
@@ -89,8 +93,10 @@ stdenv.mkDerivation (finalAttrs: {
       compared to those, grenedalf is significantly more scalable, more user
       friendly, and offers more settings and input file formats.
     '';
-    platforms = lib.platforms.all;
+
+    homepage = "https://github.com/lczech/grenedalf";
     license = lib.licenses.gpl3Plus;
     maintainers = with lib.maintainers; [ bzizou ];
+    platforms = lib.platforms.all;
   };
 })

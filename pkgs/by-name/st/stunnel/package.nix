@@ -1,24 +1,18 @@
 {
-  fetchurl,
   lib,
+  stdenv,
+  fetchurl,
+  mimalloc,
   nixosTests,
   openssl,
-  stdenv,
   systemdLibs,
-  systemdSupport ? lib.meta.availableOn stdenv.hostPlatform systemdLibs,
-  mimalloc,
   mimallocSupport ? false,
+  systemdSupport ? lib.meta.availableOn stdenv.hostPlatform systemdLibs,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
   pname = "stunnel";
   version = "5.79";
-
-  outputs = [
-    "out"
-    "doc"
-    "man"
-  ];
 
   src = fetchurl {
     url = "https://www.stunnel.org/archive/${lib.versions.major finalAttrs.version}.x/stunnel-${finalAttrs.version}.tar.gz";
@@ -27,7 +21,11 @@ stdenv.mkDerivation (finalAttrs: {
     # not the output of `nix-prefetch-url`
   };
 
-  enableParallelBuilding = true;
+  outputs = [
+    "out"
+    "doc"
+    "man"
+  ];
 
   buildInputs = [
     openssl
@@ -50,6 +48,8 @@ stdenv.mkDerivation (finalAttrs: {
     # remove legacy compatibility-wrapper that would require perl
     rm $out/bin/stunnel3
   '';
+
+  enableParallelBuilding = true;
 
   installFlags = [
     "sysconfdir=\${out}/etc"

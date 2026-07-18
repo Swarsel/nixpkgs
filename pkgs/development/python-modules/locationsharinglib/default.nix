@@ -12,7 +12,6 @@
 buildPythonPackage rec {
   pname = "locationsharinglib";
   version = "5.0.3";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
@@ -26,6 +25,8 @@ buildPythonPackage rec {
     cp .VERSION locationsharinglib/.VERSION
   '';
 
+  # There are no tests
+  doCheck = false;
   build-system = [ setuptools ];
 
   dependencies = [
@@ -35,9 +36,7 @@ buildPythonPackage rec {
     pytz
   ];
 
-  # There are no tests
-  doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "locationsharinglib" ];
 
   meta = {

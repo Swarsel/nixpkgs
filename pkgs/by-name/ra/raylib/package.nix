@@ -1,23 +1,23 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
-  cmake,
-  autoPatchelfHook,
-  glfw,
   SDL2,
   alsa-lib,
-  libpulseaudio,
-  raylib-games,
+  autoPatchelfHook,
+  cmake,
+  glfw,
   libGLU,
+  libpulseaudio,
   libx11,
   libxrandr,
+  raylib-games,
+  alsaSupport ? false,
+  customFrameControlSupport ? false,
+  includeEverything ? true,
   platform ? "Desktop", # Note that "Web", "Android" and "Raspberry Pi" do not currently work
   pulseSupport ? stdenv.hostPlatform.isLinux,
-  alsaSupport ? false,
   sharedLib ? true,
-  includeEverything ? true,
-  customFrameControlSupport ? false,
 }:
 let
   inherit (lib) optional;
@@ -35,8 +35,6 @@ lib.checkListOfEnum "raylib: platform"
   [ platform ]
   (
     stdenv.mkDerivation (finalAttrs: {
-      __structuredAttrs = true;
-
       pname = "raylib";
       version = "6.0";
 
@@ -75,6 +73,8 @@ lib.checkListOfEnum "raylib: platform"
       ++ optional includeEverything (lib.cmakeBool "INCLUDE_EVERYTHING" true)
       ++ optional sharedLib (lib.cmakeBool "BUILD_SHARED_LIBS" true);
 
+      __structuredAttrs = true;
+
       appendRunpaths = optional stdenv.hostPlatform.isLinux (
         lib.makeLibraryPath (optional alsaSupport alsa-lib ++ optional pulseSupport libpulseaudio)
       );
@@ -86,12 +86,12 @@ lib.checkListOfEnum "raylib: platform"
       meta = {
         description = "Simple and easy-to-use library to enjoy videogames programming";
         homepage = "https://www.raylib.com/";
-        downloadPage = "https://github.com/raysan5/raylib";
+        changelog = "https://github.com/raysan5/raylib/blob/${finalAttrs.src.rev}/CHANGELOG";
         license = lib.licenses.zlib;
         maintainers = [ ];
-        teams = [ lib.teams.ngi ];
         platforms = lib.platforms.all;
-        changelog = "https://github.com/raysan5/raylib/blob/${finalAttrs.src.rev}/CHANGELOG";
+        downloadPage = "https://github.com/raysan5/raylib";
+        teams = [ lib.teams.ngi ];
       };
     })
   )

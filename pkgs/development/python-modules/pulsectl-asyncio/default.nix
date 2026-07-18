@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   pulsectl,
   setuptools,
 }:
@@ -9,7 +9,6 @@
 buildPythonPackage rec {
   pname = "pulsectl-asyncio";
   version = "1.2.2";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "mhthies";
@@ -22,13 +21,11 @@ buildPythonPackage rec {
     substituteInPlace setup.cfg --replace-fail "pulsectl >=23.5.0,<=24.11.0" "pulsectl >=23.5.0"
   '';
 
-  build-system = [ setuptools ];
-
-  dependencies = [ pulsectl ];
-
   # Tests require a running pulseaudio instance
   doCheck = false;
-
+  build-system = [ setuptools ];
+  dependencies = [ pulsectl ];
+  pyproject = true;
   pythonImportsCheck = [ "pulsectl_asyncio" ];
 
   meta = {

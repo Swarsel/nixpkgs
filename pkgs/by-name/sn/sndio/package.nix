@@ -18,24 +18,24 @@ stdenv.mkDerivation (finalAttrs: {
 
   nativeBuildInputs = lib.optional stdenv.hostPlatform.isDarwin fixDarwinDylibNames;
   buildInputs = lib.optional stdenv.hostPlatform.isLinux alsa-lib;
-  configurePlatforms = [ ];
 
   postInstall = ''
     install -Dm644 contrib/sndiod.service $out/lib/systemd/system/sndiod.service
   '';
 
-  enableParallelBuilding = true;
+  configurePlatforms = [ ];
   # does not provide --disable-static
   dontDisableStatic = true;
+  enableParallelBuilding = true;
 
   passthru.updateScript = gitUpdater {
-    url = "https://sndio.org/git/sndio";
     rev-prefix = "v";
+    url = "https://sndio.org/git/sndio";
   };
 
   meta = {
-    homepage = "https://www.sndio.org";
     description = "Small audio and MIDI framework part of the OpenBSD project";
+    homepage = "https://www.sndio.org";
     license = lib.licenses.isc;
     platforms = lib.platforms.all;
   };

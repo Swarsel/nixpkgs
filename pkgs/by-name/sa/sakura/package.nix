@@ -3,16 +3,16 @@
   stdenv,
   fetchFromGitHub,
   cmake,
+  gettext,
   glib,
   gtk3,
-  gettext,
-  pango,
   makeWrapper,
+  nixosTests,
+  pango,
   pcre2,
   perl,
   pkg-config,
   vte,
-  nixosTests,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -25,6 +25,8 @@ stdenv.mkDerivation (finalAttrs: {
     rev = "SAKURA_${lib.replaceStrings [ "." ] [ "_" ] finalAttrs.version}";
     hash = "sha256-YeZIYIfFgkK5nxMHq9mslrjIWTRAebhXyzXv5hTmOpI=";
   };
+
+  strictDeps = true;
 
   nativeBuildInputs = [
     cmake
@@ -42,8 +44,6 @@ stdenv.mkDerivation (finalAttrs: {
     vte
   ];
 
-  strictDeps = true;
-
   # Set path to gsettings-schemata so sakura knows where to find colorchooser,
   # fontchooser etc.
   postFixup = ''
@@ -54,8 +54,8 @@ stdenv.mkDerivation (finalAttrs: {
   passthru.tests.test = nixosTests.terminal-emulators.sakura;
 
   meta = {
-    homepage = "https://www.pleyades.net/david/projects/sakura";
     description = "Terminal emulator based on GTK and VTE";
+
     longDescription = ''
       sakura is a terminal emulator based on GTK and VTE. It's a terminal
       emulator with few dependencies, so you don't need a full GNOME desktop
@@ -66,9 +66,13 @@ stdenv.mkDerivation (finalAttrs: {
       terminals in one window and adds a contextual menu with some basic
       options. No more no less.
     '';
+
+    homepage = "https://www.pleyades.net/david/projects/sakura";
     license = lib.licenses.gpl2Only;
+
     maintainers = [
     ];
+
     platforms = lib.platforms.linux;
     mainProgram = "sakura";
   };

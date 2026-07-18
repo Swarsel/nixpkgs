@@ -1,6 +1,6 @@
 {
-  lib,
   config,
+  lib,
   pkgs,
   ...
 }:
@@ -20,29 +20,103 @@ in
 {
   options.services.acme-dns = {
     enable = mkEnableOption "acme-dns";
-
     package = mkPackageOption pkgs "acme-dns" { };
 
     settings = mkOption {
+      default = { };
+
       description = ''
         Free-form settings written directly to the `acme-dns.cfg` file.
         Refer to <https://github.com/joohoi/acme-dns/blob/master/README.md#configuration> for supported values.
       '';
 
-      default = { };
-
       type = types.submodule {
-        freeformType = format.type;
         options = {
-          general = {
-            listen = mkOption {
+          api = {
+            disable_registration = mkOption {
+              default = false;
+              description = "Whether to disable the HTTP registration endpoint.";
+              example = true;
+              type = types.bool;
+            };
+
+            ip = mkOption {
+              default = "[::]";
+              description = "IP to bind the HTTP API on.";
+              example = "127.0.0.1";
               type = types.str;
-              description = "IP+port combination to bind and serve the DNS server on.";
+            };
+
+            port = mkOption {
+              # acme-dns expects this value to be a string
+              apply = toString;
+              default = 8080;
+              description = "Listen port for the HTTP API.";
+              type = types.port;
+            };
+
+            tls = mkOption {
+              default = "none";
+              description = "TLS backend to use.";
+
+              type = types.enum [
+                "letsencrypt"
+                "letsencryptstaging"
+                "cert"
+                "none"
+              ];
+            };
+          };
+
+          database = {
+            connection = mkOption {
+              default = "/var/lib/acme-dns/acme-dns.db";
+              description = "Database connection string.";
+              example = "postgres://user:password@localhost/acmedns";
+              type = types.str;
+            };
+
+            engine = mkOption {
+              default = "sqlite";
+              description = "Database engine to use.";
+
+              type = types.enum [
+                "sqlite"
+                "postgres"
+              ];
+            };
+          };
+
+          general = {
+            domain = mkOption {
+              description = "Domain name to serve the requests off of.";
+              example = domain;
+              type = types.str;
+            };
+
+            listen = mkOption {
               default = "[::]:53";
+              description = "IP+port combination to bind and serve the DNS server on.";
               example = "127.0.0.1:53";
+              type = types.str;
+            };
+
+            nsadmin = mkOption {
+              description = "Zone admin email address for `SOA`.";
+              example = "admin.example.com";
+              type = types.str;
+            };
+
+            nsname = mkOption {
+              description = "Zone name server.";
+              example = domain;
+              type = types.str;
             };
 
             protocol = mkOption {
+              default = "both";
+              description = "Protocols to serve DNS responses on.";
+
               type = types.enum [
                 "both"
                 "both4"
@@ -54,31 +128,11 @@ in
                 "tcp4"
                 "tcp6"
               ];
-              description = "Protocols to serve DNS responses on.";
-              default = "both";
-            };
-
-            domain = mkOption {
-              type = types.str;
-              description = "Domain name to serve the requests off of.";
-              example = domain;
-            };
-
-            nsname = mkOption {
-              type = types.str;
-              description = "Zone name server.";
-              example = domain;
-            };
-
-            nsadmin = mkOption {
-              type = types.str;
-              description = "Zone admin email address for `SOA`.";
-              example = "admin.example.com";
             };
 
             records = mkOption {
-              type = types.listOf types.str;
               description = "Predefined DNS records served in addition to the `_acme-challenge` TXT records.";
+
               example = literalExpression ''
                 [
                   # replace with your acme-dns server's public IPv4
@@ -89,91 +143,48 @@ in
                   "${domain}. NS ${domain}."
                 ]
               '';
-            };
-          };
 
-          database = {
-            engine = mkOption {
-              type = types.enum [
-                "sqlite"
-                "postgres"
-              ];
-              description = "Database engine to use.";
-              default = "sqlite";
-            };
-            connection = mkOption {
-              type = types.str;
-              description = "Database connection string.";
-              example = "postgres://user:password@localhost/acmedns";
-              default = "/var/lib/acme-dns/acme-dns.db";
-            };
-          };
-
-          api = {
-            ip = mkOption {
-              type = types.str;
-              description = "IP to bind the HTTP API on.";
-              default = "[::]";
-              example = "127.0.0.1";
-            };
-
-            port = mkOption {
-              type = types.port;
-              description = "Listen port for the HTTP API.";
-              default = 8080;
-              # acme-dns expects this value to be a string
-              apply = toString;
-            };
-
-            disable_registration = mkOption {
-              type = types.bool;
-              description = "Whether to disable the HTTP registration endpoint.";
-              default = false;
-              example = true;
-            };
-
-            tls = mkOption {
-              type = types.enum [
-                "letsencrypt"
-                "letsencryptstaging"
-                "cert"
-                "none"
-              ];
-              description = "TLS backend to use.";
-              default = "none";
+              type = types.listOf types.str;
             };
           };
 
           logconfig = {
             loglevel = mkOption {
+              default = "info";
+              description = "Level to log on.";
+
               type = types.enum [
                 "error"
                 "warning"
                 "info"
                 "debug"
               ];
-              description = "Level to log on.";
-              default = "info";
             };
           };
         };
+
+        freeformType = format.type;
       };
     };
   };
 
   config = lib.mkIf cfg.enable {
     systemd.packages = [ cfg.package ];
+
     systemd.services.acme-dns = {
-      wantedBy = [ "multi-user.target" ];
       serviceConfig = {
+        DynamicUser = true;
+
         ExecStart = [
           ""
           "${lib.getExe cfg.package} -c ${format.generate "acme-dns.toml" cfg.settings}"
         ];
+
         StateDirectory = "acme-dns";
         WorkingDirectory = "%S/acme-dns";
-        DynamicUser = true;
       };
+
+      wantedBy = [ "multi-user.target" ];
     };
   };
 }

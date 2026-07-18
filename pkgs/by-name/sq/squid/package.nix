@@ -2,20 +2,20 @@
   lib,
   stdenv,
   fetchurl,
-  perl,
-  openldap,
-  pam,
-  db,
+  cppunit,
   cyrus_sasl,
-  libcap,
+  db,
   expat,
+  libcap,
   libxml2,
+  nixosTests,
+  openldap,
   openssl,
+  pam,
+  perl,
   pkg-config,
   systemd,
-  cppunit,
   ipv6 ? true,
-  nixosTests,
 }:
 stdenv.mkDerivation (finalAttrs: {
   pname = "squid";
@@ -25,10 +25,12 @@ stdenv.mkDerivation (finalAttrs: {
     url = "https://github.com/squid-cache/squid/releases/download/SQUID_${
       builtins.replaceStrings [ "." ] [ "_" ] finalAttrs.version
     }/squid-${finalAttrs.version}.tar.xz";
+
     hash = "sha256-hSF4/cN8WweGqTT8mQx9L//IKs8ZsihL4gm5ZDHSWZI=";
   };
 
   nativeBuildInputs = [ pkg-config ];
+
   buildInputs = [
     perl
     openldap
@@ -43,8 +45,6 @@ stdenv.mkDerivation (finalAttrs: {
     pam
     systemd
   ];
-
-  enableParallelBuilding = true;
 
   configureFlags = [
     "--disable-strict-error-checking"
@@ -64,6 +64,7 @@ stdenv.mkDerivation (finalAttrs: {
 
   doCheck = true;
   nativeCheckInputs = [ cppunit ];
+
   preCheck = ''
     # tests attempt to copy around "/bin/true" to make some things
     # no-ops but this doesn't work if our "true" is a multi-call
@@ -92,14 +93,15 @@ stdenv.mkDerivation (finalAttrs: {
     mv $out/sbin $out/bin
   '';
 
+  enableParallelBuilding = true;
   passthru.tests.squid = nixosTests.squid;
 
   meta = {
     description = "Caching proxy for the Web supporting HTTP, HTTPS, FTP, and more";
     homepage = "http://www.squid-cache.org";
     license = lib.licenses.gpl2Plus;
-    platforms = lib.platforms.linux;
     maintainers = with lib.maintainers; [ raskin ];
+    platforms = lib.platforms.linux;
     # In the past, it has been brought up that Squid had many security vulnerabilities
     # (see https://megamansec.github.io/Squid-Security-Audit/). As of version 7.0,
     # all of them have been solved, as tracked in their GitHub Security page:

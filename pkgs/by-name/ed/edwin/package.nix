@@ -1,8 +1,8 @@
 {
   lib,
-  stdenvNoCC,
   fetchurl,
   installFonts,
+  stdenvNoCC,
 }:
 
 stdenvNoCC.mkDerivation rec {
@@ -20,7 +20,7 @@ stdenvNoCC.mkDerivation rec {
     description = "Text font for musical scores";
     homepage = "https://github.com/MuseScoreFonts/Edwin";
     license = lib.licenses.ofl;
-    platforms = lib.platforms.all;
     maintainers = with lib.maintainers; [ moni ];
+    platforms = lib.platforms.all;
   };
 }

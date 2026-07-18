@@ -27,11 +27,11 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   meta = {
-    platforms = lib.platforms.linux;
     description = "Set an application's urgency hint (or not)";
-    mainProgram = "seturgent";
-    maintainers = with lib.maintainers; [ yarr ];
     homepage = "https://codemadness.org/seturgent-set-urgency-hints-for-x-applications.html";
     license = lib.licenses.mit;
+    maintainers = with lib.maintainers; [ yarr ];
+    platforms = lib.platforms.linux;
+    mainProgram = "seturgent";
   };
 })

@@ -1,8 +1,8 @@
 {
-  options,
   config,
   lib,
   pkgs,
+  options,
   ...
 }:
 
@@ -33,6 +33,7 @@ let
   # [0]: https://github.com/grafana/grafana/blob/main/conf/defaults.ini
   settingsFormatIni = pkgs.formats.ini {
     listToValue = concatMapStringsSep " " (generators.mkValueStringDefault { });
+
     mkKeyValue = generators.mkKeyValueDefault {
       mkValueString = v: if v == null then "" else generators.mkValueStringDefault { } v;
     } "=";
@@ -49,8 +50,8 @@ let
           provisionCfg.settings
         else
           {
-            apiVersion = 1;
             ${attr} = [ ];
+            apiVersion = 1;
           }
       );
 
@@ -71,9 +72,9 @@ let
 
   ln =
     {
-      src,
       dir,
       filename,
+      src,
     }:
     ''
       if [[ -d "${src}" ]]; then
@@ -92,39 +93,39 @@ let
       ''
         mkdir -p $out/{alerting,datasources,dashboards,plugins}
         ${ln {
-          src = datasourceFileOrDir;
           dir = "datasources";
           filename = "datasource";
+          src = datasourceFileOrDir;
         }}
         ${ln {
-          src = dashboardFileOrDir;
           dir = "dashboards";
           filename = "dashboard";
+          src = dashboardFileOrDir;
         }}
         ${ln {
-          src = rulesFileOrDir;
           dir = "alerting";
           filename = "rules";
+          src = rulesFileOrDir;
         }}
         ${ln {
-          src = contactPointsFileOrDir;
           dir = "alerting";
           filename = "contactPoints";
+          src = contactPointsFileOrDir;
         }}
         ${ln {
-          src = policiesFileOrDir;
           dir = "alerting";
           filename = "policies";
+          src = policiesFileOrDir;
         }}
         ${ln {
-          src = templatesFileOrDir;
           dir = "alerting";
           filename = "templates";
+          src = templatesFileOrDir;
         }}
         ${ln {
-          src = muteTimingsFileOrDir;
           dir = "alerting";
           filename = "muteTimings";
+          src = muteTimingsFileOrDir;
         }}
       '';
 
@@ -133,48 +134,37 @@ let
 
   # https://grafana.com/docs/grafana/latest/administration/provisioning/#datasources
   grafanaTypes.datasourceConfig = types.submodule {
-    freeformType = provisioningSettingsFormat.type;
-
     options = {
-      name = mkOption {
-        type = types.str;
-        description = "Name of the datasource. Required.";
-      };
-      type = mkOption {
-        type = types.str;
-        description = "Datasource type. Required.";
-      };
       access = mkOption {
+        default = "proxy";
+        description = "Access mode. proxy or direct (Server or Browser in the UI). Required.";
+
         type = types.enum [
           "proxy"
           "direct"
         ];
-        default = "proxy";
-        description = "Access mode. proxy or direct (Server or Browser in the UI). Required.";
       };
-      uid = mkOption {
-        type = types.nullOr types.str;
-        default = null;
-        description = "Custom UID which can be used to reference this datasource in other parts of the configuration, if not specified will be generated automatically.";
-      };
-      url = mkOption {
-        type = types.str;
-        default = "";
-        description = "Url of the datasource.";
-      };
+
       editable = mkOption {
-        type = types.bool;
         default = false;
         description = "Allow users to edit datasources from the UI.";
+        type = types.bool;
       };
+
       jsonData = mkOption {
-        type = types.nullOr types.attrs;
         default = null;
         description = "Extra data for datasource plugins.";
-      };
-      secureJsonData = mkOption {
         type = types.nullOr types.attrs;
+      };
+
+      name = mkOption {
+        description = "Name of the datasource. Required.";
+        type = types.str;
+      };
+
+      secureJsonData = mkOption {
         default = null;
+
         description = ''
           Datasource specific secure configuration. Please note that the contents of this option
           will end up in a world-readable Nix store. Use the file provider
@@ -182,30 +172,53 @@ let
           to work around that. Look at the documentation for details:
           <https://grafana.com/docs/grafana/latest/setup-grafana/configure-grafana/#file-provider>
         '';
+
+        type = types.nullOr types.attrs;
+      };
+
+      type = mkOption {
+        description = "Datasource type. Required.";
+        type = types.str;
+      };
+
+      uid = mkOption {
+        default = null;
+        description = "Custom UID which can be used to reference this datasource in other parts of the configuration, if not specified will be generated automatically.";
+        type = types.nullOr types.str;
+      };
+
+      url = mkOption {
+        default = "";
+        description = "Url of the datasource.";
+        type = types.str;
       };
     };
+
+    freeformType = provisioningSettingsFormat.type;
   };
 
   # https://grafana.com/docs/grafana/latest/administration/provisioning/#dashboards
   grafanaTypes.dashboardConfig = types.submodule {
-    freeformType = provisioningSettingsFormat.type;
-
     options = {
+      options.path = mkOption {
+        description = "Path grafana will watch for dashboards. Required when using the 'file' type.";
+        type = types.path;
+      };
+
       name = mkOption {
-        type = types.str;
         default = "default";
         description = "A unique provider name.";
-      };
-      type = mkOption {
         type = types.str;
+      };
+
+      type = mkOption {
         default = "file";
         description = "Dashboard provider type.";
-      };
-      options.path = mkOption {
-        type = types.path;
-        description = "Path grafana will watch for dashboards. Required when using the 'file' type.";
+        type = types.str;
       };
     };
+
+    freeformType = provisioningSettingsFormat.type;
   };
 in
 {
@@ -413,10 +426,21 @@ in
 
   options.services.grafana = {
     enable = mkEnableOption "grafana";
+    package = mkPackageOption pkgs "grafana" { };
+
+    dataDir = mkOption {
+      default = "/var/lib/grafana";
+      description = "Data directory.";
+      type = types.path;
+    };
 
     declarativePlugins = mkOption {
-      type = with types; nullOr (listOf path);
+      # Make sure each plugin is added only once; otherwise building
+      # the link farm fails, since the same path is added multiple
+      # times.
+      apply = x: if isList x then lib.unique x else x;
       default = null;
+
       description = ''
         If non-null, then a list of packages containing Grafana plugins to install. If set, plugins cannot
         be manually installed.
@@ -425,962 +449,105 @@ in
         `grafana-metricsdrilldown-app`, `grafana-lokiexplore-app`, `grafana-exploretraces-app`
         and `grafana-pyroscope-app` to this option.
       '';
+
       example = literalExpression "with pkgs.grafanaPlugins; [ grafana-piechart-panel ]";
-      # Make sure each plugin is added only once; otherwise building
-      # the link farm fails, since the same path is added multiple
-      # times.
-      apply = x: if isList x then lib.unique x else x;
-    };
-
-    package = mkPackageOption pkgs "grafana" { };
-
-    dataDir = mkOption {
-      description = "Data directory.";
-      default = "/var/lib/grafana";
-      type = types.path;
+      type = with types; nullOr (listOf path);
     };
 
     openFirewall = mkOption {
-      type = types.bool;
       default = false;
       description = "Open the ports in the firewall for the server.";
-    };
-
-    settings = mkOption {
-      description = ''
-        Grafana settings. See <https://grafana.com/docs/grafana/latest/setup-grafana/configure-grafana/>
-        for available options. INI format is used.
-      '';
-      default = { };
-      type = types.submodule {
-        freeformType = settingsFormatIni.type;
-
-        options = {
-          paths = {
-            plugins = mkOption {
-              description = "Directory where grafana will automatically scan and look for plugins";
-              default = if (cfg.declarativePlugins == null) then "${cfg.dataDir}/plugins" else declarativePlugins;
-              defaultText = literalExpression "if (cfg.declarativePlugins == null) then \"\${cfg.dataDir}/plugins\" else declarativePlugins";
-              type = types.path;
-            };
-
-            provisioning = mkOption {
-              description = ''
-                Folder that contains provisioning config files that grafana will apply on startup and while running.
-                Don't change the value of this option if you are planning to use `services.grafana.provision` options.
-              '';
-              default = provisionConfDir;
-              defaultText = "directory with links to files generated from services.grafana.provision";
-              type = types.path;
-            };
-          };
-
-          server = {
-            protocol = mkOption {
-              description = "Which protocol to listen.";
-              default = "http";
-              type = types.enum [
-                "http"
-                "https"
-                "h2"
-                "socket"
-              ];
-            };
-
-            http_addr = mkOption {
-              type = types.str;
-              default = "127.0.0.1";
-              description = ''
-                Listening address.
-
-                ::: {.note}
-                This setting intentionally varies from upstream's default to be a bit more secure by default.
-                :::
-              '';
-            };
-
-            http_port = mkOption {
-              description = "Listening port.";
-              default = 3000;
-              type = types.port;
-            };
-
-            domain = mkOption {
-              description = ''
-                The public facing domain name used to access grafana from a browser.
-
-                This setting is only used in the default value of the `root_url` setting.
-                If you set the latter manually, this option does not have to be specified.
-              '';
-              default = "localhost";
-              type = types.str;
-            };
-
-            enforce_domain = mkOption {
-              description = ''
-                Redirect to correct domain if the host header does not match the domain.
-                Prevents DNS rebinding attacks.
-              '';
-              default = false;
-              type = types.bool;
-            };
-
-            root_url = mkOption {
-              description = ''
-                This is the full URL used to access Grafana from a web browser.
-                This is important if you use Google or GitHub OAuth authentication (for the callback URL to be correct).
-
-                This setting is also important if you have a reverse proxy in front of Grafana that exposes it through a subpath.
-                In that case add the subpath to the end of this URL setting.
-              '';
-              default = "%(protocol)s://%(domain)s:%(http_port)s/";
-              type = types.str;
-            };
-
-            serve_from_sub_path = mkOption {
-              description = ''
-                Serve Grafana from subpath specified in the `root_url` setting.
-                By default it is set to `false` for compatibility reasons.
-
-                By enabling this setting and using a subpath in `root_url` above,
-                e.g. `root_url = "http://localhost:3000/grafana"`,
-                Grafana is accessible on `http://localhost:3000/grafana`.
-                If accessed without subpath, Grafana will redirect to an URL with the subpath.
-              '';
-              default = false;
-              type = types.bool;
-            };
-
-            router_logging = mkOption {
-              description = ''
-                Set to `true` for Grafana to log all HTTP requests (not just errors).
-                These are logged as Info level events to the Grafana log.
-              '';
-              default = false;
-              type = types.bool;
-            };
-
-            static_root_path = mkOption {
-              description = "Root path for static assets.";
-              default = "${cfg.package}/share/grafana/public";
-              defaultText = literalExpression ''"''${package}/share/grafana/public"'';
-              type = types.str;
-            };
-
-            enable_gzip = mkOption {
-              description = ''
-                Set this option to `true` to enable HTTP compression, this can improve transfer speed and bandwidth utilization.
-                It is recommended that most users set it to `true`. By default it is set to `false` for compatibility reasons.
-              '';
-              default = false;
-              type = types.bool;
-            };
-
-            cert_file = mkOption {
-              description = ''
-                Path to the certificate file (if `protocol` is set to `https` or `h2`).
-              '';
-              default = null;
-              type = types.nullOr types.str;
-            };
-
-            cert_key = mkOption {
-              description = ''
-                Path to the certificate key file (if `protocol` is set to `https` or `h2`).
-              '';
-              default = null;
-              type = types.nullOr types.str;
-            };
-
-            socket_gid = mkOption {
-              description = ''
-                GID where the socket should be set when `protocol=socket`.
-                Make sure that the target group is in the group of Grafana process and that Grafana process is the file owner before you change this setting.
-                It is recommended to set the gid as http server user gid.
-                Not set when the value is -1.
-              '';
-              default = -1;
-              type = types.int;
-            };
-
-            socket_mode = mkOption {
-              description = ''
-                Mode where the socket should be set when `protocol=socket`.
-                Make sure that Grafana process is the file owner before you change this setting.
-              '';
-              # I assume this value is interpreted as octal literal by grafana.
-              # If this was an int, people following tutorials or porting their
-              # old config could stumble across nix not having octal literals.
-              default = "0660";
-              type = types.str;
-            };
-
-            socket = mkOption {
-              description = ''
-                Path where the socket should be created when `protocol=socket`.
-                Make sure that Grafana has appropriate permissions before you change this setting.
-              '';
-              default = "/run/grafana/grafana.sock";
-              type = types.str;
-            };
-
-            cdn_url = mkOption {
-              description = ''
-                Specify a full HTTP URL address to the root of your Grafana CDN assets.
-                Grafana will add edition and version paths.
-
-                For example, given a cdn url like `https://cdn.myserver.com`
-                grafana will try to load a javascript file from `http://cdn.myserver.com/grafana-oss/7.4.0/public/build/app.<hash>.js`.
-              '';
-              default = null;
-              type = types.nullOr types.str;
-            };
-
-            read_timeout = mkOption {
-              description = ''
-                Sets the maximum time using a duration format (5s/5m/5ms)
-                before timing out read of an incoming request and closing idle connections.
-                0 means there is no timeout for reading the request.
-              '';
-              default = "0";
-              type = types.str;
-            };
-          };
-
-          database = {
-            type = mkOption {
-              description = "Database type.";
-              default = "sqlite3";
-              type = types.enum [
-                "mysql"
-                "sqlite3"
-                "postgres"
-              ];
-            };
-
-            host = mkOption {
-              description = ''
-                Only applicable to MySQL or Postgres.
-                Includes IP or hostname and port or in case of Unix sockets the path to it.
-                For example, for MySQL running on the same host as Grafana: `host = "127.0.0.1:3306"`
-                or with Unix sockets: `host = "/var/run/mysqld/mysqld.sock"`
-              '';
-              default = "127.0.0.1:3306";
-              type = types.str;
-            };
-
-            name = mkOption {
-              description = "The name of the Grafana database.";
-              default = "grafana";
-              type = types.str;
-            };
-
-            user = mkOption {
-              description = "The database user (not applicable for `sqlite3`).";
-              default = "root";
-              type = types.str;
-            };
-
-            password = mkOption {
-              description = ''
-                The database user's password (not applicable for `sqlite3`).
-
-                Please note that the contents of this option
-                will end up in a world-readable Nix store. Use the file provider
-                pointing at a reasonably secured file in the local filesystem
-                to work around that. Look at the documentation for details:
-                <https://grafana.com/docs/grafana/latest/setup-grafana/configure-grafana/#file-provider>
-              '';
-              default = "";
-              type = types.str;
-            };
-
-            max_idle_conn = mkOption {
-              description = "The maximum number of connections in the idle connection pool.";
-              default = 2;
-              type = types.int;
-            };
-
-            max_open_conn = mkOption {
-              description = "The maximum number of open connections to the database.";
-              default = 0;
-              type = types.int;
-            };
-
-            conn_max_lifetime = mkOption {
-              description = ''
-                Sets the maximum amount of time a connection may be reused.
-                The default is 14400 (which means 14400 seconds or 4 hours).
-                For MySQL, this setting should be shorter than the `wait_timeout` variable.
-              '';
-              default = 14400;
-              type = types.int;
-            };
-
-            locking_attempt_timeout_sec = mkOption {
-              description = ''
-                For `mysql`, if the `migrationLocking` feature toggle is set,
-                specify the time (in seconds) to wait before failing to lock the database for the migrations.
-              '';
-              default = 0;
-              type = types.int;
-            };
-
-            log_queries = mkOption {
-              description = "Set to `true` to log the sql calls and execution times";
-              default = false;
-              type = types.bool;
-            };
-
-            ssl_mode = mkOption {
-              description = ''
-                For Postgres, use either `disable`, `require` or `verify-full`.
-                For MySQL, use either `true`, `false`, or `skip-verify`.
-              '';
-              default = "disable";
-              type = types.enum [
-                "disable"
-                "require"
-                "verify-full"
-                "true"
-                "false"
-                "skip-verify"
-              ];
-            };
-
-            isolation_level = mkOption {
-              description = ''
-                Only the MySQL driver supports isolation levels in Grafana.
-                In case the value is empty, the driver's default isolation level is applied.
-              '';
-              default = null;
-              type = types.nullOr (
-                types.enum [
-                  "READ-UNCOMMITTED"
-                  "READ-COMMITTED"
-                  "REPEATABLE-READ"
-                  "SERIALIZABLE"
-                ]
-              );
-            };
-
-            ca_cert_path = mkOption {
-              description = "The path to the CA certificate to use.";
-              default = null;
-              type = types.nullOr types.str;
-            };
-
-            client_key_path = mkOption {
-              description = "The path to the client key. Only if server requires client authentication.";
-              default = null;
-              type = types.nullOr types.str;
-            };
-
-            client_cert_path = mkOption {
-              description = "The path to the client cert. Only if server requires client authentication.";
-              default = null;
-              type = types.nullOr types.str;
-            };
-
-            server_cert_name = mkOption {
-              description = ''
-                The common name field of the certificate used by the `mysql` or `postgres` server.
-                Not necessary if `ssl_mode` is set to `skip-verify`.
-              '';
-              default = null;
-              type = types.nullOr types.str;
-            };
-
-            path = mkOption {
-              description = "Only applicable to `sqlite3` database. The file path where the database will be stored.";
-              default = "${cfg.dataDir}/data/grafana.db";
-              defaultText = literalExpression ''"''${config.${opt.dataDir}}/data/grafana.db"'';
-              type = types.path;
-            };
-
-            cache_mode = mkOption {
-              description = ''
-                For `sqlite3` only.
-                [Shared cache](https://www.sqlite.org/sharedcache.html) setting used for connecting to the database.
-              '';
-              default = "private";
-              type = types.enum [
-                "private"
-                "shared"
-              ];
-            };
-
-            wal = mkOption {
-              description = ''
-                For `sqlite3` only.
-                Setting to enable/disable [Write-Ahead Logging](https://sqlite.org/wal.html).
-              '';
-              default = false;
-              type = types.bool;
-            };
-
-            query_retries = mkOption {
-              description = ''
-                This setting applies to `sqlite3` only and controls the number of times the system retries a query when the database is locked.
-              '';
-              default = 0;
-              type = types.int;
-            };
-
-            transaction_retries = mkOption {
-              description = ''
-                This setting applies to `sqlite3` only and controls the number of times the system retries a transaction when the database is locked.
-              '';
-              default = 5;
-              type = types.int;
-            };
-
-            # TODO Add "instrument_queries" option when upgrading to grafana 10.0
-            # instrument_queries = mkOption {
-            #   description = "Set to `true` to add metrics and tracing for database queries.";
-            #   default = false;
-            #   type = types.bool;
-            # };
-          };
-
-          security = {
-            disable_initial_admin_creation = mkOption {
-              description = "Disable creation of admin user on first start of Grafana.";
-              default = false;
-              type = types.bool;
-            };
-
-            admin_user = mkOption {
-              description = "Default admin username.";
-              default = "admin";
-              type = types.str;
-            };
-
-            admin_password = mkOption {
-              description = ''
-                Default admin password. Please note that the contents of this option
-                will end up in a world-readable Nix store. Use the file provider
-                pointing at a reasonably secured file in the local filesystem
-                to work around that. Look at the documentation for details:
-                <https://grafana.com/docs/grafana/latest/setup-grafana/configure-grafana/#file-provider>
-              '';
-              default = "admin";
-              type = types.str;
-            };
-
-            admin_email = mkOption {
-              description = "The email of the default Grafana Admin, created on startup.";
-              default = "admin@localhost";
-              type = types.str;
-            };
-
-            secret_key = mkOption {
-              description = ''
-                Secret key used for signing data source settings like secrets and passwords.
-                Set this to a unique, random string in production, generated for example by running `openssl rand -hex 32`.
-
-                If you change this later you will need to update data source settings to re-encode them.
-
-                <https://grafana.com/docs/grafana/latest/setup-grafana/configure-grafana/#secret_key>
-
-                Please note that the contents of this option
-                will end up in a world-readable Nix store. Use the file provider
-                pointing at a reasonably secured file in the local filesystem
-                to work around that. Look at the documentation for details:
-                <https://grafana.com/docs/grafana/latest/setup-grafana/configure-grafana/#file-provider>
-              '';
-              type = types.nullOr types.str;
-              default = null;
-            };
-
-            disable_gravatar = mkOption {
-              description = "Set to `true` to disable the use of Gravatar for user profile images.";
-              default = false;
-              type = types.bool;
-            };
-
-            data_source_proxy_whitelist = mkOption {
-              description = ''
-                Define a whitelist of allowed IP addresses or domains, with ports,
-                to be used in data source URLs with the Grafana data source proxy.
-                Format: `ip_or_domain:port` separated by spaces.
-                PostgreSQL, MySQL, and MSSQL data sources do not use the proxy and are therefore unaffected by this setting.
-              '';
-              default = [ ];
-              type = types.oneOf [
-                types.str
-                (types.listOf types.str)
-              ];
-            };
-
-            disable_brute_force_login_protection = mkOption {
-              description = "Set to `true` to disable [brute force login protection](https://cheatsheetseries.owasp.org/cheatsheets/Authentication_Cheat_Sheet.html#account-lockout).";
-              default = false;
-              type = types.bool;
-            };
-
-            cookie_secure = mkOption {
-              description = "Set to `true` if you host Grafana behind HTTPS.";
-              default = false;
-              type = types.bool;
-            };
-
-            cookie_samesite = mkOption {
-              description = ''
-                Sets the `SameSite` cookie attribute and prevents the browser from sending this cookie along with cross-site requests.
-                The main goal is to mitigate the risk of cross-origin information leakage.
-                This setting also provides some protection against cross-site request forgery attacks (CSRF),
-                [read more about SameSite here](https://owasp.org/www-community/SameSite).
-                Using value `disabled` does not add any `SameSite` attribute to cookies.
-              '';
-              default = "lax";
-              type = types.enum [
-                "lax"
-                "strict"
-                "none"
-                "disabled"
-              ];
-            };
-
-            allow_embedding = mkOption {
-              description = ''
-                When `false`, the HTTP header `X-Frame-Options: deny` will be set in Grafana HTTP responses
-                which will instruct browsers to not allow rendering Grafana in a `<frame>`, `<iframe>`, `<embed>` or `<object>`.
-                The main goal is to mitigate the risk of [Clickjacking](https://owasp.org/www-community/attacks/Clickjacking).
-              '';
-              default = false;
-              type = types.bool;
-            };
-
-            strict_transport_security = mkOption {
-              description = ''
-                Set to `true` if you want to enable HTTP `Strict-Transport-Security` (HSTS) response header.
-                Only use this when HTTPS is enabled in your configuration,
-                or when there is another upstream system that ensures your application does HTTPS (like a frontend load balancer).
-                HSTS tells browsers that the site should only be accessed using HTTPS.
-              '';
-              default = false;
-              type = types.bool;
-            };
-
-            strict_transport_security_max_age_seconds = mkOption {
-              description = ''
-                Sets how long a browser should cache HSTS in seconds.
-                Only applied if `strict_transport_security` is enabled.
-              '';
-              default = 86400;
-              type = types.int;
-            };
-
-            strict_transport_security_preload = mkOption {
-              description = ''
-                Set to `true` to enable HSTS `preloading` option.
-                Only applied if `strict_transport_security` is enabled.
-              '';
-              default = false;
-              type = types.bool;
-            };
-
-            strict_transport_security_subdomains = mkOption {
-              description = ''
-                Set to `true` to enable HSTS `includeSubDomains` option.
-                Only applied if `strict_transport_security` is enabled.
-              '';
-              default = false;
-              type = types.bool;
-            };
-
-            x_content_type_options = mkOption {
-              description = ''
-                Set to `false` to disable the `X-Content-Type-Options` response header.
-                The `X-Content-Type-Options` response HTTP header is a marker used by the server
-                to indicate that the MIME types advertised in the `Content-Type` headers should not be changed and be followed.
-              '';
-              default = true;
-              type = types.bool;
-            };
-
-            x_xss_protection = mkOption {
-              description = ''
-                Set to `true` to enable the `X-XSS-Protection` header,
-                which tells browsers to stop pages from loading when they detect reflected cross-site scripting (XSS) attacks.
-
-                __Note:__ this is the default in Grafana, it's turned off here
-                since it's [recommended to not use this header anymore](https://owasp.org/www-project-secure-headers/#x-xss-protection).
-              '';
-              default = false;
-              type = types.bool;
-            };
-
-            content_security_policy = mkOption {
-              description = ''
-                Set to `true` to add the `Content-Security-Policy` header to your requests.
-                CSP allows to control resources that the user agent can load and helps prevent XSS attacks.
-              '';
-              default = false;
-              type = types.bool;
-            };
-
-            content_security_policy_report_only = mkOption {
-              description = ''
-                Set to `true` to add the `Content-Security-Policy-Report-Only` header to your requests.
-                CSP in Report Only mode enables you to experiment with policies by monitoring their effects without enforcing them.
-                You can enable both policies simultaneously.
-              '';
-              default = false;
-              type = types.bool;
-            };
-
-            # The options content_security_policy_template and
-            # content_security_policy_template are missing because I'm not sure
-            # how exactly the quoting of the default value works. See also
-            # https://github.com/grafana/grafana/blob/cb7e18938b8eb6860a64b91aaba13a7eb31bc95b/conf/defaults.ini#L364
-            # https://github.com/grafana/grafana/blob/cb7e18938b8eb6860a64b91aaba13a7eb31bc95b/conf/defaults.ini#L373
-
-            # These two options are lists joined with spaces:
-            # https://github.com/grafana/grafana/blob/916d9793aa81c2990640b55a15dee0db6b525e41/pkg/middleware/csrf/csrf.go#L37-L38
-
-            csrf_trusted_origins = mkOption {
-              description = ''
-                List of additional allowed URLs to pass by the CSRF check.
-                Suggested when authentication comes from an IdP.
-              '';
-              default = [ ];
-              type = types.oneOf [
-                types.str
-                (types.listOf types.str)
-              ];
-            };
-
-            csrf_additional_headers = mkOption {
-              description = ''
-                List of allowed headers to be set by the user.
-                Suggested to use for if authentication lives behind reverse proxies.
-              '';
-              default = [ ];
-              type = types.oneOf [
-                types.str
-                (types.listOf types.str)
-              ];
-            };
-          };
-
-          smtp = {
-            enabled = mkOption {
-              description = "Whether to enable SMTP.";
-              default = false;
-              type = types.bool;
-            };
-
-            host = mkOption {
-              description = "Host to connect to.";
-              default = "localhost:25";
-              type = types.str;
-            };
-
-            user = mkOption {
-              description = "User used for authentication.";
-              default = null;
-              type = types.nullOr types.str;
-            };
-
-            password = mkOption {
-              description = ''
-                Password used for authentication. Please note that the contents of this option
-                will end up in a world-readable Nix store. Use the file provider
-                pointing at a reasonably secured file in the local filesystem
-                to work around that. Look at the documentation for details:
-                <https://grafana.com/docs/grafana/latest/setup-grafana/configure-grafana/#file-provider>
-              '';
-              default = "";
-              type = types.str;
-            };
-
-            cert_file = mkOption {
-              description = "File path to a cert file.";
-              default = null;
-              type = types.nullOr types.str;
-            };
-
-            key_file = mkOption {
-              description = "File path to a key file.";
-              default = null;
-              type = types.nullOr types.str;
-            };
-
-            skip_verify = mkOption {
-              description = "Verify SSL for SMTP server.";
-              default = false;
-              type = types.bool;
-            };
-
-            from_address = mkOption {
-              description = "Address used when sending out emails.";
-              default = "admin@grafana.localhost";
-              type = types.str;
-            };
-
-            from_name = mkOption {
-              description = "Name to be used as client identity for EHLO in SMTP dialog.";
-              default = "Grafana";
-              type = types.str;
-            };
-
-            ehlo_identity = mkOption {
-              description = "Name to be used as client identity for EHLO in SMTP dialog.";
-              default = null;
-              type = types.nullOr types.str;
-            };
-
-            startTLS_policy = mkOption {
-              description = "StartTLS policy when connecting to server.";
-              default = null;
-              type = types.nullOr (
-                types.enum [
-                  "OpportunisticStartTLS"
-                  "MandatoryStartTLS"
-                  "NoStartTLS"
-                ]
-              );
-            };
-          };
-
-          users = {
-            allow_sign_up = mkOption {
-              description = ''
-                Set to false to prohibit users from being able to sign up / create user accounts.
-                The admin user can still create users.
-              '';
-              default = false;
-              type = types.bool;
-            };
-
-            allow_org_create = mkOption {
-              description = "Set to `false` to prohibit users from creating new organizations.";
-              default = false;
-              type = types.bool;
-            };
-
-            auto_assign_org = mkOption {
-              description = ''
-                Set to `true` to automatically add new users to the main organization (id 1).
-                When set to `false,` new users automatically cause a new organization to be created for that new user.
-                The organization will be created even if the `allow_org_create` setting is set to `false`.
-              '';
-              default = true;
-              type = types.bool;
-            };
-
-            auto_assign_org_id = mkOption {
-              description = ''
-                Set this value to automatically add new users to the provided org.
-                This requires `auto_assign_org` to be set to `true`.
-                Please make sure that this organization already exists.
-              '';
-              default = 1;
-              type = types.int;
-            };
-
-            auto_assign_org_role = mkOption {
-              description = ''
-                The role new users will be assigned for the main organization (if the `auto_assign_org` setting is set to `true`).
-              '';
-              default = "Viewer";
-              type = types.enum [
-                "Viewer"
-                "Editor"
-                "Admin"
-              ];
-            };
-
-            verify_email_enabled = mkOption {
-              description = "Require email validation before sign up completes.";
-              default = false;
-              type = types.bool;
-            };
-
-            login_hint = mkOption {
-              description = "Text used as placeholder text on login page for login/username input.";
-              default = "email or username";
-              type = types.str;
-            };
-
-            password_hint = mkOption {
-              description = "Text used as placeholder text on login page for password input.";
-              default = "password";
-              type = types.str;
-            };
-
-            default_theme = mkOption {
-              description = "Sets the default UI theme. `system` matches the user's system theme.";
-              default = "dark";
-              type = types.enum [
-                "dark"
-                "light"
-                "system"
-              ];
-            };
-
-            default_language = mkOption {
-              description = "This setting configures the default UI language, which must be a supported IETF language tag, such as `en-US`.";
-              default = "en-US";
-              type = types.str;
-            };
-
-            home_page = mkOption {
-              description = ''
-                Path to a custom home page.
-                Users are only redirected to this if the default home dashboard is used.
-                It should match a frontend route and contain a leading slash.
-              '';
-              default = "";
-              type = types.str;
-            };
-
-            viewers_can_edit = mkOption {
-              description = ''
-                Viewers can access and use Explore and perform temporary edits on panels in dashboards they have access to.
-                They cannot save their changes.
-              '';
-              default = false;
-              type = types.bool;
-            };
-
-            user_invite_max_lifetime_duration = mkOption {
-              description = ''
-                The duration in time a user invitation remains valid before expiring.
-                This setting should be expressed as a duration.
-                Examples: `6h` (hours), `2d` (days), `1w` (week).
-                The minimum supported duration is `15m` (15 minutes).
-              '';
-              default = "24h";
-              type = types.str;
-            };
-
-            # Lists are joined via space, so this option can't be a list.
-            # Users have to manually join their values.
-            hidden_users = mkOption {
-              description = ''
-                This is a comma-separated list of usernames.
-                Users specified here are hidden in the Grafana UI.
-                They are still visible to Grafana administrators and to themselves.
-              '';
-              default = "";
-              type = types.str;
-            };
-          };
-
-          analytics = {
-            reporting_enabled = mkOption {
-              description = ''
-                When enabled Grafana will send anonymous usage statistics to `stats.grafana.org`.
-                No IP addresses are being tracked, only simple counters to track running instances, versions, dashboard and error counts.
-                Counters are sent every 24 hours.
-              '';
-              default = false;
-              type = types.bool;
-            };
-
-            check_for_updates = mkOption {
-              description = ''
-                When set to `false`, disables checking for new versions of Grafana from Grafana's GitHub repository.
-                When enabled, the check for a new version runs every 10 minutes.
-                It will notify, via the UI, when a new version is available.
-                The check itself will not prompt any auto-updates of the Grafana software, nor will it send any sensitive information.
-              '';
-              default = false;
-              type = types.bool;
-            };
-
-            check_for_plugin_updates = mkOption {
-              description = ''
-                When set to `false`, disables checking for new versions of installed plugins from https://grafana.com.
-                When enabled, the check for a new plugin runs every 10 minutes.
-                It will notify, via the UI, when a new plugin update exists.
-                The check itself will not prompt any auto-updates of the plugin, nor will it send any sensitive information.
-              '';
-              default = cfg.declarativePlugins == null;
-              defaultText = literalExpression "cfg.declarativePlugins == null";
-              type = types.bool;
-            };
-
-            feedback_links_enabled = mkOption {
-              description = "Set to `false` to remove all feedback links from the UI.";
-              default = true;
-              type = types.bool;
-            };
-          };
-
-          plugins = {
-            preinstall_disabled = mkOption {
-              description = ''
-                When set to `true`, disables the Background Plugin Installer, which runs before Grafana starts.
-                This component causes issues with `declarativePlugins` and is disabled by default if those are used.
-              '';
-              default = cfg.declarativePlugins != null;
-              defaultText = literalExpression "cfg.declarativePlugins != null";
-              type = types.bool;
-            };
-          };
-        };
-      };
+      type = types.bool;
     };
 
     provision = {
       enable = mkEnableOption "provision";
 
-      datasources = mkOption {
-        description = ''
-          Declaratively provision Grafana's datasources.
-        '';
-        default = { };
-        type = types.submodule {
-          options.settings = mkOption {
+      alerting = {
+        contactPoints = {
+          path = mkOption {
+            default = null;
+
             description = ''
-              Grafana datasource configuration in Nix. Can't be used with
-              [](#opt-services.grafana.provision.datasources.path) simultaneously. See
-              <https://grafana.com/docs/grafana/latest/administration/provisioning/#data-sources>
+              Path to YAML contact points configuration. Can't be used with
+              [](#opt-services.grafana.provision.alerting.contactPoints.settings) simultaneously.
+              Can be either a directory or a single YAML file. Will end up in the store.
+            '';
+
+            type = types.nullOr types.path;
+          };
+
+          settings = mkOption {
+            default = null;
+
+            description = ''
+              Grafana contact points configuration in Nix. Can't be used with
+              [](#opt-services.grafana.provision.alerting.contactPoints.path) simultaneously. See
+              <https://grafana.com/docs/grafana/latest/administration/provisioning/#contact-points>
               for supported options.
             '';
-            default = null;
+
+            example = literalExpression ''
+              {
+                apiVersion = 1;
+
+                contactPoints = [{
+                  orgId = 1;
+                  name = "cp_1";
+                  receivers = [{
+                    uid = "first_uid";
+                    type = "prometheus-alertmanager";
+                    settings.url = "http://test:9000";
+                  }];
+                }];
+
+                deleteContactPoints = [{
+                  orgId = 1;
+                  uid = "first_uid";
+                }];
+              }
+            '';
+
             type = types.nullOr (
               types.submodule {
                 options = {
                   apiVersion = mkOption {
-                    description = "Config file version.";
                     default = 1;
+                    description = "Config file version.";
                     type = types.int;
                   };
 
-                  prune = mkOption {
-                    default = false;
-                    type = types.bool;
-                    description = ''
-                      When `true`, provisioned datasources from this file will be deleted
-                      automatically when removed from
-                      {option}`services.grafana.provision.datasources.settings.datasources`.
-                    '';
-                  };
-
-                  datasources = mkOption {
-                    description = "List of datasources to insert/update.";
+                  contactPoints = mkOption {
                     default = [ ];
-                    type = types.listOf grafanaTypes.datasourceConfig;
-                  };
+                    description = "List of contact points to import or update.";
 
-                  deleteDatasources = mkOption {
-                    description = "List of datasources that should be deleted from the database.";
-                    default = [ ];
                     type = types.listOf (
                       types.submodule {
                         options.name = mkOption {
-                          description = "Name of the datasource to delete.";
+                          description = "Name of the contact point. Required.";
                           type = types.str;
                         };
 
+                        freeformType = provisioningSettingsFormat.type;
+                      }
+                    );
+                  };
+
+                  deleteContactPoints = mkOption {
+                    default = [ ];
+                    description = "List of receivers that should be deleted.";
+
+                    type = types.listOf (
+                      types.submodule {
                         options.orgId = mkOption {
-                          description = "Organization ID of the datasource to delete.";
+                          default = 1;
+                          description = "Organization ID, default = 1.";
                           type = types.int;
+                        };
+
+                        options.uid = mkOption {
+                          description = "Unique identifier for the receiver. Required.";
+                          type = types.str;
                         };
                       }
                     );
@@ -1388,163 +555,225 @@ in
                 };
               }
             );
+          };
+        };
+
+        muteTimings = {
+          path = mkOption {
+            default = null;
+
+            description = ''
+              Path to YAML mute timings configuration. Can't be used with
+              [](#opt-services.grafana.provision.alerting.muteTimings.settings) simultaneously.
+              Can be either a directory or a single YAML file. Will end up in the store.
+            '';
+
+            type = types.nullOr types.path;
+          };
+
+          settings = mkOption {
+            default = null;
+
+            description = ''
+              Grafana mute timings configuration in Nix. Can't be used with
+              [](#opt-services.grafana.provision.alerting.muteTimings.path) simultaneously. See
+              <https://grafana.com/docs/grafana/latest/administration/provisioning/#mute-timings>
+              for supported options.
+            '';
+
             example = literalExpression ''
               {
                 apiVersion = 1;
 
-                datasources = [{
-                  name = "Graphite";
-                  type = "graphite";
+                muteTimes = [{
+                  orgId = 1;
+                  name = "mti_1";
+                  time_intervals = [{
+                    times = [{
+                      start_time = "06:00";
+                      end_time = "23:59";
+                    }];
+                    weekdays = [
+                      "monday:wednesday"
+                      "saturday"
+                      "sunday"
+                    ];
+                    months = [
+                      "1:3"
+                      "may:august"
+                      "december"
+                    ];
+                    years = [
+                      "2020:2022"
+                      "2030"
+                    ];
+                    days_of_month = [
+                      "1:5"
+                      "-3:-1"
+                    ];
+                  }];
                 }];
 
-                deleteDatasources = [{
-                  name = "Graphite";
+                deleteMuteTimes = [{
                   orgId = 1;
+                  name = "mti_1";
                 }];
               }
             '';
-          };
 
-          options.path = mkOption {
-            description = ''
-              Path to YAML datasource configuration. Can't be used with
-              [](#opt-services.grafana.provision.datasources.settings) simultaneously.
-              Can be either a directory or a single YAML file. Will end up in the store.
-            '';
-            default = null;
-            type = types.nullOr types.path;
-          };
-        };
-      };
-
-      dashboards = mkOption {
-        description = ''
-          Declaratively provision Grafana's dashboards.
-        '';
-        default = { };
-        type = types.submodule {
-          options.settings = mkOption {
-            description = ''
-              Grafana dashboard configuration in Nix. Can't be used with
-              [](#opt-services.grafana.provision.dashboards.path) simultaneously. See
-              <https://grafana.com/docs/grafana/latest/administration/provisioning/#dashboards>
-              for supported options.
-            '';
-            default = null;
             type = types.nullOr (
               types.submodule {
-                options.apiVersion = mkOption {
-                  description = "Config file version.";
-                  default = 1;
-                  type = types.int;
-                };
+                options = {
+                  apiVersion = mkOption {
+                    default = 1;
+                    description = "Config file version.";
+                    type = types.int;
+                  };
 
-                options.providers = mkOption {
-                  description = "List of dashboards to insert/update.";
-                  default = [ ];
-                  type = types.listOf grafanaTypes.dashboardConfig;
+                  deleteMuteTimes = mkOption {
+                    default = [ ];
+                    description = "List of mute time intervals that should be deleted.";
+
+                    type = types.listOf (
+                      types.submodule {
+                        options.name = mkOption {
+                          description = "Name of the mute time interval, must be unique. Required.";
+                          type = types.str;
+                        };
+
+                        options.orgId = mkOption {
+                          default = 1;
+                          description = "Organization ID, default = 1.";
+                          type = types.int;
+                        };
+                      }
+                    );
+                  };
+
+                  muteTimes = mkOption {
+                    default = [ ];
+                    description = "List of mute time intervals to import or update.";
+
+                    type = types.listOf (
+                      types.submodule {
+                        options.name = mkOption {
+                          description = "Name of the mute time interval, must be unique. Required.";
+                          type = types.str;
+                        };
+
+                        freeformType = provisioningSettingsFormat.type;
+                      }
+                    );
+                  };
                 };
               }
             );
+          };
+        };
+
+        policies = {
+          path = mkOption {
+            default = null;
+
+            description = ''
+              Path to YAML notification policies configuration. Can't be used with
+              [](#opt-services.grafana.provision.alerting.policies.settings) simultaneously.
+              Can be either a directory or a single YAML file. Will end up in the store.
+            '';
+
+            type = types.nullOr types.path;
+          };
+
+          settings = mkOption {
+            default = null;
+
+            description = ''
+              Grafana notification policies configuration in Nix. Can't be used with
+              [](#opt-services.grafana.provision.alerting.policies.path) simultaneously. See
+              <https://grafana.com/docs/grafana/latest/administration/provisioning/#notification-policies>
+              for supported options.
+            '';
+
             example = literalExpression ''
               {
                 apiVersion = 1;
 
-                providers = [{
-                    name = "default";
-                    options.path = "/var/lib/grafana/dashboards";
+                policies = [{
+                  orgId = 1;
+                  receiver = "grafana-default-email";
+                  group_by = [ "..." ];
+                  matchers = [
+                    "alertname = Watchdog"
+                    "severity =~ \"warning|critical\""
+                  ];
+                  mute_time_intervals = [
+                    "abc"
+                  ];
+                  group_wait = "30s";
+                  group_interval = "5m";
+                  repeat_interval = "4h";
                 }];
+
+                resetPolicies = [
+                  1
+                ];
               }
             '';
-          };
 
-          options.path = mkOption {
-            description = ''
-              Path to YAML dashboard configuration. Can't be used with
-              [](#opt-services.grafana.provision.dashboards.settings) simultaneously.
-              Can be either a directory or a single YAML file. Will end up in the store.
-            '';
-            default = null;
-            type = types.nullOr types.path;
+            type = types.nullOr (
+              types.submodule {
+                options = {
+                  apiVersion = mkOption {
+                    default = 1;
+                    description = "Config file version.";
+                    type = types.int;
+                  };
+
+                  policies = mkOption {
+                    default = [ ];
+                    description = "List of contact points to import or update.";
+
+                    type = types.listOf (
+                      types.submodule {
+                        freeformType = provisioningSettingsFormat.type;
+                      }
+                    );
+                  };
+
+                  resetPolicies = mkOption {
+                    default = [ ];
+                    description = "List of orgIds that should be reset to the default policy.";
+                    type = types.listOf types.int;
+                  };
+                };
+              }
+            );
           };
         };
-      };
 
-      alerting = {
         rules = {
           path = mkOption {
+            default = null;
+
             description = ''
               Path to YAML rules configuration. Can't be used with
               [](#opt-services.grafana.provision.alerting.rules.settings) simultaneously.
               Can be either a directory or a single YAML file. Will end up in the store.
             '';
-            default = null;
+
             type = types.nullOr types.path;
           };
 
           settings = mkOption {
+            default = null;
+
             description = ''
               Grafana rules configuration in Nix. Can't be used with
               [](#opt-services.grafana.provision.alerting.rules.path) simultaneously. See
               <https://grafana.com/docs/grafana/latest/administration/provisioning/#rules>
               for supported options.
             '';
-            default = null;
-            type = types.nullOr (
-              types.submodule {
-                options = {
-                  apiVersion = mkOption {
-                    description = "Config file version.";
-                    default = 1;
-                    type = types.int;
-                  };
 
-                  groups = mkOption {
-                    description = "List of rule groups to import or update.";
-                    default = [ ];
-                    type = types.listOf (
-                      types.submodule {
-                        freeformType = provisioningSettingsFormat.type;
-
-                        options.name = mkOption {
-                          description = "Name of the rule group. Required.";
-                          type = types.str;
-                        };
-
-                        options.folder = mkOption {
-                          description = "Name of the folder the rule group will be stored in. Required.";
-                          type = types.str;
-                        };
-
-                        options.interval = mkOption {
-                          description = "Interval that the rule group should be evaluated at. Required.";
-                          type = types.str;
-                        };
-                      }
-                    );
-                  };
-
-                  deleteRules = mkOption {
-                    description = "List of alert rule UIDs that should be deleted.";
-                    default = [ ];
-                    type = types.listOf (
-                      types.submodule {
-                        options.orgId = mkOption {
-                          description = "Organization ID, default = 1";
-                          default = 1;
-                          type = types.int;
-                        };
-
-                        options.uid = mkOption {
-                          description = "Unique identifier for the rule. Required.";
-                          type = types.str;
-                        };
-                      }
-                    );
-                  };
-                };
-              }
-            );
             example = literalExpression ''
               {
                 apiVersion = 1;
@@ -1598,239 +827,90 @@ in
                 }];
               }
             '';
-          };
-        };
 
-        contactPoints = {
-          path = mkOption {
-            description = ''
-              Path to YAML contact points configuration. Can't be used with
-              [](#opt-services.grafana.provision.alerting.contactPoints.settings) simultaneously.
-              Can be either a directory or a single YAML file. Will end up in the store.
-            '';
-            default = null;
-            type = types.nullOr types.path;
-          };
-
-          settings = mkOption {
-            description = ''
-              Grafana contact points configuration in Nix. Can't be used with
-              [](#opt-services.grafana.provision.alerting.contactPoints.path) simultaneously. See
-              <https://grafana.com/docs/grafana/latest/administration/provisioning/#contact-points>
-              for supported options.
-            '';
-            default = null;
             type = types.nullOr (
               types.submodule {
                 options = {
                   apiVersion = mkOption {
-                    description = "Config file version.";
                     default = 1;
+                    description = "Config file version.";
                     type = types.int;
                   };
 
-                  contactPoints = mkOption {
-                    description = "List of contact points to import or update.";
+                  deleteRules = mkOption {
                     default = [ ];
-                    type = types.listOf (
-                      types.submodule {
-                        freeformType = provisioningSettingsFormat.type;
+                    description = "List of alert rule UIDs that should be deleted.";
 
-                        options.name = mkOption {
-                          description = "Name of the contact point. Required.";
-                          type = types.str;
-                        };
-                      }
-                    );
-                  };
-
-                  deleteContactPoints = mkOption {
-                    description = "List of receivers that should be deleted.";
-                    default = [ ];
                     type = types.listOf (
                       types.submodule {
                         options.orgId = mkOption {
-                          description = "Organization ID, default = 1.";
                           default = 1;
+                          description = "Organization ID, default = 1";
                           type = types.int;
                         };
 
                         options.uid = mkOption {
-                          description = "Unique identifier for the receiver. Required.";
+                          description = "Unique identifier for the rule. Required.";
                           type = types.str;
                         };
                       }
                     );
                   };
-                };
-              }
-            );
-            example = literalExpression ''
-              {
-                apiVersion = 1;
 
-                contactPoints = [{
-                  orgId = 1;
-                  name = "cp_1";
-                  receivers = [{
-                    uid = "first_uid";
-                    type = "prometheus-alertmanager";
-                    settings.url = "http://test:9000";
-                  }];
-                }];
-
-                deleteContactPoints = [{
-                  orgId = 1;
-                  uid = "first_uid";
-                }];
-              }
-            '';
-          };
-        };
-
-        policies = {
-          path = mkOption {
-            description = ''
-              Path to YAML notification policies configuration. Can't be used with
-              [](#opt-services.grafana.provision.alerting.policies.settings) simultaneously.
-              Can be either a directory or a single YAML file. Will end up in the store.
-            '';
-            default = null;
-            type = types.nullOr types.path;
-          };
-
-          settings = mkOption {
-            description = ''
-              Grafana notification policies configuration in Nix. Can't be used with
-              [](#opt-services.grafana.provision.alerting.policies.path) simultaneously. See
-              <https://grafana.com/docs/grafana/latest/administration/provisioning/#notification-policies>
-              for supported options.
-            '';
-            default = null;
-            type = types.nullOr (
-              types.submodule {
-                options = {
-                  apiVersion = mkOption {
-                    description = "Config file version.";
-                    default = 1;
-                    type = types.int;
-                  };
-
-                  policies = mkOption {
-                    description = "List of contact points to import or update.";
+                  groups = mkOption {
                     default = [ ];
+                    description = "List of rule groups to import or update.";
+
                     type = types.listOf (
                       types.submodule {
+                        options.folder = mkOption {
+                          description = "Name of the folder the rule group will be stored in. Required.";
+                          type = types.str;
+                        };
+
+                        options.interval = mkOption {
+                          description = "Interval that the rule group should be evaluated at. Required.";
+                          type = types.str;
+                        };
+
+                        options.name = mkOption {
+                          description = "Name of the rule group. Required.";
+                          type = types.str;
+                        };
+
                         freeformType = provisioningSettingsFormat.type;
                       }
                     );
                   };
-
-                  resetPolicies = mkOption {
-                    description = "List of orgIds that should be reset to the default policy.";
-                    default = [ ];
-                    type = types.listOf types.int;
-                  };
                 };
               }
             );
-            example = literalExpression ''
-              {
-                apiVersion = 1;
-
-                policies = [{
-                  orgId = 1;
-                  receiver = "grafana-default-email";
-                  group_by = [ "..." ];
-                  matchers = [
-                    "alertname = Watchdog"
-                    "severity =~ \"warning|critical\""
-                  ];
-                  mute_time_intervals = [
-                    "abc"
-                  ];
-                  group_wait = "30s";
-                  group_interval = "5m";
-                  repeat_interval = "4h";
-                }];
-
-                resetPolicies = [
-                  1
-                ];
-              }
-            '';
           };
         };
 
         templates = {
           path = mkOption {
+            default = null;
+
             description = ''
               Path to YAML templates configuration. Can't be used with
               [](#opt-services.grafana.provision.alerting.templates.settings) simultaneously.
               Can be either a directory or a single YAML file. Will end up in the store.
             '';
-            default = null;
+
             type = types.nullOr types.path;
           };
 
           settings = mkOption {
+            default = null;
+
             description = ''
               Grafana templates configuration in Nix. Can't be used with
               [](#opt-services.grafana.provision.alerting.templates.path) simultaneously. See
               <https://grafana.com/docs/grafana/latest/administration/provisioning/#templates>
               for supported options.
             '';
-            default = null;
-            type = types.nullOr (
-              types.submodule {
-                options = {
-                  apiVersion = mkOption {
-                    description = "Config file version.";
-                    default = 1;
-                    type = types.int;
-                  };
 
-                  templates = mkOption {
-                    description = "List of templates to import or update.";
-                    default = [ ];
-                    type = types.listOf (
-                      types.submodule {
-                        freeformType = provisioningSettingsFormat.type;
-
-                        options.name = mkOption {
-                          description = "Name of the template, must be unique. Required.";
-                          type = types.str;
-                        };
-
-                        options.template = mkOption {
-                          description = "Alerting with a custom text template";
-                          type = types.str;
-                        };
-                      }
-                    );
-                  };
-
-                  deleteTemplates = mkOption {
-                    description = "List of alert rule UIDs that should be deleted.";
-                    default = [ ];
-                    type = types.listOf (
-                      types.submodule {
-                        options.orgId = mkOption {
-                          description = "Organization ID, default = 1.";
-                          default = 1;
-                          type = types.int;
-                        };
-
-                        options.name = mkOption {
-                          description = "Name of the template, must be unique. Required.";
-                          type = types.str;
-                        };
-                      }
-                    );
-                  };
-                };
-              }
-            );
             example = literalExpression ''
               {
                 apiVersion = 1;
@@ -1847,119 +927,1380 @@ in
                 }];
               }
             '';
-          };
-        };
 
-        muteTimings = {
-          path = mkOption {
-            description = ''
-              Path to YAML mute timings configuration. Can't be used with
-              [](#opt-services.grafana.provision.alerting.muteTimings.settings) simultaneously.
-              Can be either a directory or a single YAML file. Will end up in the store.
-            '';
-            default = null;
-            type = types.nullOr types.path;
-          };
-
-          settings = mkOption {
-            description = ''
-              Grafana mute timings configuration in Nix. Can't be used with
-              [](#opt-services.grafana.provision.alerting.muteTimings.path) simultaneously. See
-              <https://grafana.com/docs/grafana/latest/administration/provisioning/#mute-timings>
-              for supported options.
-            '';
-            default = null;
             type = types.nullOr (
               types.submodule {
                 options = {
                   apiVersion = mkOption {
-                    description = "Config file version.";
                     default = 1;
+                    description = "Config file version.";
                     type = types.int;
                   };
 
-                  muteTimes = mkOption {
-                    description = "List of mute time intervals to import or update.";
+                  deleteTemplates = mkOption {
                     default = [ ];
+                    description = "List of alert rule UIDs that should be deleted.";
+
                     type = types.listOf (
                       types.submodule {
-                        freeformType = provisioningSettingsFormat.type;
-
                         options.name = mkOption {
-                          description = "Name of the mute time interval, must be unique. Required.";
+                          description = "Name of the template, must be unique. Required.";
                           type = types.str;
+                        };
+
+                        options.orgId = mkOption {
+                          default = 1;
+                          description = "Organization ID, default = 1.";
+                          type = types.int;
                         };
                       }
                     );
                   };
 
-                  deleteMuteTimes = mkOption {
-                    description = "List of mute time intervals that should be deleted.";
+                  templates = mkOption {
                     default = [ ];
+                    description = "List of templates to import or update.";
+
                     type = types.listOf (
                       types.submodule {
-                        options.orgId = mkOption {
-                          description = "Organization ID, default = 1.";
-                          default = 1;
-                          type = types.int;
-                        };
-
                         options.name = mkOption {
-                          description = "Name of the mute time interval, must be unique. Required.";
+                          description = "Name of the template, must be unique. Required.";
                           type = types.str;
                         };
+
+                        options.template = mkOption {
+                          description = "Alerting with a custom text template";
+                          type = types.str;
+                        };
+
+                        freeformType = provisioningSettingsFormat.type;
                       }
                     );
                   };
                 };
               }
             );
+          };
+        };
+      };
+
+      dashboards = mkOption {
+        default = { };
+
+        description = ''
+          Declaratively provision Grafana's dashboards.
+        '';
+
+        type = types.submodule {
+          options.path = mkOption {
+            default = null;
+
+            description = ''
+              Path to YAML dashboard configuration. Can't be used with
+              [](#opt-services.grafana.provision.dashboards.settings) simultaneously.
+              Can be either a directory or a single YAML file. Will end up in the store.
+            '';
+
+            type = types.nullOr types.path;
+          };
+
+          options.settings = mkOption {
+            default = null;
+
+            description = ''
+              Grafana dashboard configuration in Nix. Can't be used with
+              [](#opt-services.grafana.provision.dashboards.path) simultaneously. See
+              <https://grafana.com/docs/grafana/latest/administration/provisioning/#dashboards>
+              for supported options.
+            '';
+
             example = literalExpression ''
               {
                 apiVersion = 1;
 
-                muteTimes = [{
-                  orgId = 1;
-                  name = "mti_1";
-                  time_intervals = [{
-                    times = [{
-                      start_time = "06:00";
-                      end_time = "23:59";
-                    }];
-                    weekdays = [
-                      "monday:wednesday"
-                      "saturday"
-                      "sunday"
-                    ];
-                    months = [
-                      "1:3"
-                      "may:august"
-                      "december"
-                    ];
-                    years = [
-                      "2020:2022"
-                      "2030"
-                    ];
-                    days_of_month = [
-                      "1:5"
-                      "-3:-1"
-                    ];
-                  }];
-                }];
-
-                deleteMuteTimes = [{
-                  orgId = 1;
-                  name = "mti_1";
+                providers = [{
+                    name = "default";
+                    options.path = "/var/lib/grafana/dashboards";
                 }];
               }
             '';
+
+            type = types.nullOr (
+              types.submodule {
+                options.apiVersion = mkOption {
+                  default = 1;
+                  description = "Config file version.";
+                  type = types.int;
+                };
+
+                options.providers = mkOption {
+                  default = [ ];
+                  description = "List of dashboards to insert/update.";
+                  type = types.listOf grafanaTypes.dashboardConfig;
+                };
+              }
+            );
           };
         };
+      };
+
+      datasources = mkOption {
+        default = { };
+
+        description = ''
+          Declaratively provision Grafana's datasources.
+        '';
+
+        type = types.submodule {
+          options.path = mkOption {
+            default = null;
+
+            description = ''
+              Path to YAML datasource configuration. Can't be used with
+              [](#opt-services.grafana.provision.datasources.settings) simultaneously.
+              Can be either a directory or a single YAML file. Will end up in the store.
+            '';
+
+            type = types.nullOr types.path;
+          };
+
+          options.settings = mkOption {
+            default = null;
+
+            description = ''
+              Grafana datasource configuration in Nix. Can't be used with
+              [](#opt-services.grafana.provision.datasources.path) simultaneously. See
+              <https://grafana.com/docs/grafana/latest/administration/provisioning/#data-sources>
+              for supported options.
+            '';
+
+            example = literalExpression ''
+              {
+                apiVersion = 1;
+
+                datasources = [{
+                  name = "Graphite";
+                  type = "graphite";
+                }];
+
+                deleteDatasources = [{
+                  name = "Graphite";
+                  orgId = 1;
+                }];
+              }
+            '';
+
+            type = types.nullOr (
+              types.submodule {
+                options = {
+                  apiVersion = mkOption {
+                    default = 1;
+                    description = "Config file version.";
+                    type = types.int;
+                  };
+
+                  datasources = mkOption {
+                    default = [ ];
+                    description = "List of datasources to insert/update.";
+                    type = types.listOf grafanaTypes.datasourceConfig;
+                  };
+
+                  deleteDatasources = mkOption {
+                    default = [ ];
+                    description = "List of datasources that should be deleted from the database.";
+
+                    type = types.listOf (
+                      types.submodule {
+                        options.name = mkOption {
+                          description = "Name of the datasource to delete.";
+                          type = types.str;
+                        };
+
+                        options.orgId = mkOption {
+                          description = "Organization ID of the datasource to delete.";
+                          type = types.int;
+                        };
+                      }
+                    );
+                  };
+
+                  prune = mkOption {
+                    default = false;
+
+                    description = ''
+                      When `true`, provisioned datasources from this file will be deleted
+                      automatically when removed from
+                      {option}`services.grafana.provision.datasources.settings.datasources`.
+                    '';
+
+                    type = types.bool;
+                  };
+                };
+              }
+            );
+          };
+        };
+      };
+    };
+
+    settings = mkOption {
+      default = { };
+
+      description = ''
+        Grafana settings. See <https://grafana.com/docs/grafana/latest/setup-grafana/configure-grafana/>
+        for available options. INI format is used.
+      '';
+
+      type = types.submodule {
+        options = {
+          analytics = {
+            check_for_plugin_updates = mkOption {
+              default = cfg.declarativePlugins == null;
+              defaultText = literalExpression "cfg.declarativePlugins == null";
+
+              description = ''
+                When set to `false`, disables checking for new versions of installed plugins from https://grafana.com.
+                When enabled, the check for a new plugin runs every 10 minutes.
+                It will notify, via the UI, when a new plugin update exists.
+                The check itself will not prompt any auto-updates of the plugin, nor will it send any sensitive information.
+              '';
+
+              type = types.bool;
+            };
+
+            check_for_updates = mkOption {
+              default = false;
+
+              description = ''
+                When set to `false`, disables checking for new versions of Grafana from Grafana's GitHub repository.
+                When enabled, the check for a new version runs every 10 minutes.
+                It will notify, via the UI, when a new version is available.
+                The check itself will not prompt any auto-updates of the Grafana software, nor will it send any sensitive information.
+              '';
+
+              type = types.bool;
+            };
+
+            feedback_links_enabled = mkOption {
+              default = true;
+              description = "Set to `false` to remove all feedback links from the UI.";
+              type = types.bool;
+            };
+
+            reporting_enabled = mkOption {
+              default = false;
+
+              description = ''
+                When enabled Grafana will send anonymous usage statistics to `stats.grafana.org`.
+                No IP addresses are being tracked, only simple counters to track running instances, versions, dashboard and error counts.
+                Counters are sent every 24 hours.
+              '';
+
+              type = types.bool;
+            };
+          };
+
+          database = {
+            ca_cert_path = mkOption {
+              default = null;
+              description = "The path to the CA certificate to use.";
+              type = types.nullOr types.str;
+            };
+
+            cache_mode = mkOption {
+              default = "private";
+
+              description = ''
+                For `sqlite3` only.
+                [Shared cache](https://www.sqlite.org/sharedcache.html) setting used for connecting to the database.
+              '';
+
+              type = types.enum [
+                "private"
+                "shared"
+              ];
+            };
+
+            client_cert_path = mkOption {
+              default = null;
+              description = "The path to the client cert. Only if server requires client authentication.";
+              type = types.nullOr types.str;
+            };
+
+            client_key_path = mkOption {
+              default = null;
+              description = "The path to the client key. Only if server requires client authentication.";
+              type = types.nullOr types.str;
+            };
+
+            conn_max_lifetime = mkOption {
+              default = 14400;
+
+              description = ''
+                Sets the maximum amount of time a connection may be reused.
+                The default is 14400 (which means 14400 seconds or 4 hours).
+                For MySQL, this setting should be shorter than the `wait_timeout` variable.
+              '';
+
+              type = types.int;
+            };
+
+            host = mkOption {
+              default = "127.0.0.1:3306";
+
+              description = ''
+                Only applicable to MySQL or Postgres.
+                Includes IP or hostname and port or in case of Unix sockets the path to it.
+                For example, for MySQL running on the same host as Grafana: `host = "127.0.0.1:3306"`
+                or with Unix sockets: `host = "/var/run/mysqld/mysqld.sock"`
+              '';
+
+              type = types.str;
+            };
+
+            isolation_level = mkOption {
+              default = null;
+
+              description = ''
+                Only the MySQL driver supports isolation levels in Grafana.
+                In case the value is empty, the driver's default isolation level is applied.
+              '';
+
+              type = types.nullOr (
+                types.enum [
+                  "READ-UNCOMMITTED"
+                  "READ-COMMITTED"
+                  "REPEATABLE-READ"
+                  "SERIALIZABLE"
+                ]
+              );
+            };
+
+            locking_attempt_timeout_sec = mkOption {
+              default = 0;
+
+              description = ''
+                For `mysql`, if the `migrationLocking` feature toggle is set,
+                specify the time (in seconds) to wait before failing to lock the database for the migrations.
+              '';
+
+              type = types.int;
+            };
+
+            log_queries = mkOption {
+              default = false;
+              description = "Set to `true` to log the sql calls and execution times";
+              type = types.bool;
+            };
+
+            max_idle_conn = mkOption {
+              default = 2;
+              description = "The maximum number of connections in the idle connection pool.";
+              type = types.int;
+            };
+
+            max_open_conn = mkOption {
+              default = 0;
+              description = "The maximum number of open connections to the database.";
+              type = types.int;
+            };
+
+            name = mkOption {
+              default = "grafana";
+              description = "The name of the Grafana database.";
+              type = types.str;
+            };
+
+            password = mkOption {
+              default = "";
+
+              description = ''
+                The database user's password (not applicable for `sqlite3`).
+
+                Please note that the contents of this option
+                will end up in a world-readable Nix store. Use the file provider
+                pointing at a reasonably secured file in the local filesystem
+                to work around that. Look at the documentation for details:
+                <https://grafana.com/docs/grafana/latest/setup-grafana/configure-grafana/#file-provider>
+              '';
+
+              type = types.str;
+            };
+
+            path = mkOption {
+              default = "${cfg.dataDir}/data/grafana.db";
+              defaultText = literalExpression ''"''${config.${opt.dataDir}}/data/grafana.db"'';
+              description = "Only applicable to `sqlite3` database. The file path where the database will be stored.";
+              type = types.path;
+            };
+
+            query_retries = mkOption {
+              default = 0;
+
+              description = ''
+                This setting applies to `sqlite3` only and controls the number of times the system retries a query when the database is locked.
+              '';
+
+              type = types.int;
+            };
+
+            server_cert_name = mkOption {
+              default = null;
+
+              description = ''
+                The common name field of the certificate used by the `mysql` or `postgres` server.
+                Not necessary if `ssl_mode` is set to `skip-verify`.
+              '';
+
+              type = types.nullOr types.str;
+            };
+
+            ssl_mode = mkOption {
+              default = "disable";
+
+              description = ''
+                For Postgres, use either `disable`, `require` or `verify-full`.
+                For MySQL, use either `true`, `false`, or `skip-verify`.
+              '';
+
+              type = types.enum [
+                "disable"
+                "require"
+                "verify-full"
+                "true"
+                "false"
+                "skip-verify"
+              ];
+            };
+
+            transaction_retries = mkOption {
+              default = 5;
+
+              description = ''
+                This setting applies to `sqlite3` only and controls the number of times the system retries a transaction when the database is locked.
+              '';
+
+              type = types.int;
+            };
+
+            type = mkOption {
+              default = "sqlite3";
+              description = "Database type.";
+
+              type = types.enum [
+                "mysql"
+                "sqlite3"
+                "postgres"
+              ];
+            };
+
+            user = mkOption {
+              default = "root";
+              description = "The database user (not applicable for `sqlite3`).";
+              type = types.str;
+            };
+
+            wal = mkOption {
+              default = false;
+
+              description = ''
+                For `sqlite3` only.
+                Setting to enable/disable [Write-Ahead Logging](https://sqlite.org/wal.html).
+              '';
+
+              type = types.bool;
+            };
+            # TODO Add "instrument_queries" option when upgrading to grafana 10.0
+            # instrument_queries = mkOption {
+            #   description = "Set to `true` to add metrics and tracing for database queries.";
+            #   default = false;
+            #   type = types.bool;
+            # };
+          };
+
+          paths = {
+            plugins = mkOption {
+              default = if (cfg.declarativePlugins == null) then "${cfg.dataDir}/plugins" else declarativePlugins;
+              defaultText = literalExpression "if (cfg.declarativePlugins == null) then \"\${cfg.dataDir}/plugins\" else declarativePlugins";
+              description = "Directory where grafana will automatically scan and look for plugins";
+              type = types.path;
+            };
+
+            provisioning = mkOption {
+              default = provisionConfDir;
+              defaultText = "directory with links to files generated from services.grafana.provision";
+
+              description = ''
+                Folder that contains provisioning config files that grafana will apply on startup and while running.
+                Don't change the value of this option if you are planning to use `services.grafana.provision` options.
+              '';
+
+              type = types.path;
+            };
+          };
+
+          plugins = {
+            preinstall_disabled = mkOption {
+              default = cfg.declarativePlugins != null;
+              defaultText = literalExpression "cfg.declarativePlugins != null";
+
+              description = ''
+                When set to `true`, disables the Background Plugin Installer, which runs before Grafana starts.
+                This component causes issues with `declarativePlugins` and is disabled by default if those are used.
+              '';
+
+              type = types.bool;
+            };
+          };
+
+          security = {
+            admin_email = mkOption {
+              default = "admin@localhost";
+              description = "The email of the default Grafana Admin, created on startup.";
+              type = types.str;
+            };
+
+            admin_password = mkOption {
+              default = "admin";
+
+              description = ''
+                Default admin password. Please note that the contents of this option
+                will end up in a world-readable Nix store. Use the file provider
+                pointing at a reasonably secured file in the local filesystem
+                to work around that. Look at the documentation for details:
+                <https://grafana.com/docs/grafana/latest/setup-grafana/configure-grafana/#file-provider>
+              '';
+
+              type = types.str;
+            };
+
+            admin_user = mkOption {
+              default = "admin";
+              description = "Default admin username.";
+              type = types.str;
+            };
+
+            allow_embedding = mkOption {
+              default = false;
+
+              description = ''
+                When `false`, the HTTP header `X-Frame-Options: deny` will be set in Grafana HTTP responses
+                which will instruct browsers to not allow rendering Grafana in a `<frame>`, `<iframe>`, `<embed>` or `<object>`.
+                The main goal is to mitigate the risk of [Clickjacking](https://owasp.org/www-community/attacks/Clickjacking).
+              '';
+
+              type = types.bool;
+            };
+
+            content_security_policy = mkOption {
+              default = false;
+
+              description = ''
+                Set to `true` to add the `Content-Security-Policy` header to your requests.
+                CSP allows to control resources that the user agent can load and helps prevent XSS attacks.
+              '';
+
+              type = types.bool;
+            };
+
+            content_security_policy_report_only = mkOption {
+              default = false;
+
+              description = ''
+                Set to `true` to add the `Content-Security-Policy-Report-Only` header to your requests.
+                CSP in Report Only mode enables you to experiment with policies by monitoring their effects without enforcing them.
+                You can enable both policies simultaneously.
+              '';
+
+              type = types.bool;
+            };
+
+            cookie_samesite = mkOption {
+              default = "lax";
+
+              description = ''
+                Sets the `SameSite` cookie attribute and prevents the browser from sending this cookie along with cross-site requests.
+                The main goal is to mitigate the risk of cross-origin information leakage.
+                This setting also provides some protection against cross-site request forgery attacks (CSRF),
+                [read more about SameSite here](https://owasp.org/www-community/SameSite).
+                Using value `disabled` does not add any `SameSite` attribute to cookies.
+              '';
+
+              type = types.enum [
+                "lax"
+                "strict"
+                "none"
+                "disabled"
+              ];
+            };
+
+            cookie_secure = mkOption {
+              default = false;
+              description = "Set to `true` if you host Grafana behind HTTPS.";
+              type = types.bool;
+            };
+
+            csrf_additional_headers = mkOption {
+              default = [ ];
+
+              description = ''
+                List of allowed headers to be set by the user.
+                Suggested to use for if authentication lives behind reverse proxies.
+              '';
+
+              type = types.oneOf [
+                types.str
+                (types.listOf types.str)
+              ];
+            };
+
+            # The options content_security_policy_template and
+            # content_security_policy_template are missing because I'm not sure
+            # how exactly the quoting of the default value works. See also
+            # https://github.com/grafana/grafana/blob/cb7e18938b8eb6860a64b91aaba13a7eb31bc95b/conf/defaults.ini#L364
+            # https://github.com/grafana/grafana/blob/cb7e18938b8eb6860a64b91aaba13a7eb31bc95b/conf/defaults.ini#L373
+            # These two options are lists joined with spaces:
+            # https://github.com/grafana/grafana/blob/916d9793aa81c2990640b55a15dee0db6b525e41/pkg/middleware/csrf/csrf.go#L37-L38
+            csrf_trusted_origins = mkOption {
+              default = [ ];
+
+              description = ''
+                List of additional allowed URLs to pass by the CSRF check.
+                Suggested when authentication comes from an IdP.
+              '';
+
+              type = types.oneOf [
+                types.str
+                (types.listOf types.str)
+              ];
+            };
+
+            data_source_proxy_whitelist = mkOption {
+              default = [ ];
+
+              description = ''
+                Define a whitelist of allowed IP addresses or domains, with ports,
+                to be used in data source URLs with the Grafana data source proxy.
+                Format: `ip_or_domain:port` separated by spaces.
+                PostgreSQL, MySQL, and MSSQL data sources do not use the proxy and are therefore unaffected by this setting.
+              '';
+
+              type = types.oneOf [
+                types.str
+                (types.listOf types.str)
+              ];
+            };
+
+            disable_brute_force_login_protection = mkOption {
+              default = false;
+              description = "Set to `true` to disable [brute force login protection](https://cheatsheetseries.owasp.org/cheatsheets/Authentication_Cheat_Sheet.html#account-lockout).";
+              type = types.bool;
+            };
+
+            disable_gravatar = mkOption {
+              default = false;
+              description = "Set to `true` to disable the use of Gravatar for user profile images.";
+              type = types.bool;
+            };
+
+            disable_initial_admin_creation = mkOption {
+              default = false;
+              description = "Disable creation of admin user on first start of Grafana.";
+              type = types.bool;
+            };
+
+            secret_key = mkOption {
+              default = null;
+
+              description = ''
+                Secret key used for signing data source settings like secrets and passwords.
+                Set this to a unique, random string in production, generated for example by running `openssl rand -hex 32`.
+
+                If you change this later you will need to update data source settings to re-encode them.
+
+                <https://grafana.com/docs/grafana/latest/setup-grafana/configure-grafana/#secret_key>
+
+                Please note that the contents of this option
+                will end up in a world-readable Nix store. Use the file provider
+                pointing at a reasonably secured file in the local filesystem
+                to work around that. Look at the documentation for details:
+                <https://grafana.com/docs/grafana/latest/setup-grafana/configure-grafana/#file-provider>
+              '';
+
+              type = types.nullOr types.str;
+            };
+
+            strict_transport_security = mkOption {
+              default = false;
+
+              description = ''
+                Set to `true` if you want to enable HTTP `Strict-Transport-Security` (HSTS) response header.
+                Only use this when HTTPS is enabled in your configuration,
+                or when there is another upstream system that ensures your application does HTTPS (like a frontend load balancer).
+                HSTS tells browsers that the site should only be accessed using HTTPS.
+              '';
+
+              type = types.bool;
+            };
+
+            strict_transport_security_max_age_seconds = mkOption {
+              default = 86400;
+
+              description = ''
+                Sets how long a browser should cache HSTS in seconds.
+                Only applied if `strict_transport_security` is enabled.
+              '';
+
+              type = types.int;
+            };
+
+            strict_transport_security_preload = mkOption {
+              default = false;
+
+              description = ''
+                Set to `true` to enable HSTS `preloading` option.
+                Only applied if `strict_transport_security` is enabled.
+              '';
+
+              type = types.bool;
+            };
+
+            strict_transport_security_subdomains = mkOption {
+              default = false;
+
+              description = ''
+                Set to `true` to enable HSTS `includeSubDomains` option.
+                Only applied if `strict_transport_security` is enabled.
+              '';
+
+              type = types.bool;
+            };
+
+            x_content_type_options = mkOption {
+              default = true;
+
+              description = ''
+                Set to `false` to disable the `X-Content-Type-Options` response header.
+                The `X-Content-Type-Options` response HTTP header is a marker used by the server
+                to indicate that the MIME types advertised in the `Content-Type` headers should not be changed and be followed.
+              '';
+
+              type = types.bool;
+            };
+
+            x_xss_protection = mkOption {
+              default = false;
+
+              description = ''
+                Set to `true` to enable the `X-XSS-Protection` header,
+                which tells browsers to stop pages from loading when they detect reflected cross-site scripting (XSS) attacks.
+
+                __Note:__ this is the default in Grafana, it's turned off here
+                since it's [recommended to not use this header anymore](https://owasp.org/www-project-secure-headers/#x-xss-protection).
+              '';
+
+              type = types.bool;
+            };
+          };
+
+          server = {
+            cdn_url = mkOption {
+              default = null;
+
+              description = ''
+                Specify a full HTTP URL address to the root of your Grafana CDN assets.
+                Grafana will add edition and version paths.
+
+                For example, given a cdn url like `https://cdn.myserver.com`
+                grafana will try to load a javascript file from `http://cdn.myserver.com/grafana-oss/7.4.0/public/build/app.<hash>.js`.
+              '';
+
+              type = types.nullOr types.str;
+            };
+
+            cert_file = mkOption {
+              default = null;
+
+              description = ''
+                Path to the certificate file (if `protocol` is set to `https` or `h2`).
+              '';
+
+              type = types.nullOr types.str;
+            };
+
+            cert_key = mkOption {
+              default = null;
+
+              description = ''
+                Path to the certificate key file (if `protocol` is set to `https` or `h2`).
+              '';
+
+              type = types.nullOr types.str;
+            };
+
+            domain = mkOption {
+              default = "localhost";
+
+              description = ''
+                The public facing domain name used to access grafana from a browser.
+
+                This setting is only used in the default value of the `root_url` setting.
+                If you set the latter manually, this option does not have to be specified.
+              '';
+
+              type = types.str;
+            };
+
+            enable_gzip = mkOption {
+              default = false;
+
+              description = ''
+                Set this option to `true` to enable HTTP compression, this can improve transfer speed and bandwidth utilization.
+                It is recommended that most users set it to `true`. By default it is set to `false` for compatibility reasons.
+              '';
+
+              type = types.bool;
+            };
+
+            enforce_domain = mkOption {
+              default = false;
+
+              description = ''
+                Redirect to correct domain if the host header does not match the domain.
+                Prevents DNS rebinding attacks.
+              '';
+
+              type = types.bool;
+            };
+
+            http_addr = mkOption {
+              default = "127.0.0.1";
+
+              description = ''
+                Listening address.
+
+                ::: {.note}
+                This setting intentionally varies from upstream's default to be a bit more secure by default.
+                :::
+              '';
+
+              type = types.str;
+            };
+
+            http_port = mkOption {
+              default = 3000;
+              description = "Listening port.";
+              type = types.port;
+            };
+
+            protocol = mkOption {
+              default = "http";
+              description = "Which protocol to listen.";
+
+              type = types.enum [
+                "http"
+                "https"
+                "h2"
+                "socket"
+              ];
+            };
+
+            read_timeout = mkOption {
+              default = "0";
+
+              description = ''
+                Sets the maximum time using a duration format (5s/5m/5ms)
+                before timing out read of an incoming request and closing idle connections.
+                0 means there is no timeout for reading the request.
+              '';
+
+              type = types.str;
+            };
+
+            root_url = mkOption {
+              default = "%(protocol)s://%(domain)s:%(http_port)s/";
+
+              description = ''
+                This is the full URL used to access Grafana from a web browser.
+                This is important if you use Google or GitHub OAuth authentication (for the callback URL to be correct).
+
+                This setting is also important if you have a reverse proxy in front of Grafana that exposes it through a subpath.
+                In that case add the subpath to the end of this URL setting.
+              '';
+
+              type = types.str;
+            };
+
+            router_logging = mkOption {
+              default = false;
+
+              description = ''
+                Set to `true` for Grafana to log all HTTP requests (not just errors).
+                These are logged as Info level events to the Grafana log.
+              '';
+
+              type = types.bool;
+            };
+
+            serve_from_sub_path = mkOption {
+              default = false;
+
+              description = ''
+                Serve Grafana from subpath specified in the `root_url` setting.
+                By default it is set to `false` for compatibility reasons.
+
+                By enabling this setting and using a subpath in `root_url` above,
+                e.g. `root_url = "http://localhost:3000/grafana"`,
+                Grafana is accessible on `http://localhost:3000/grafana`.
+                If accessed without subpath, Grafana will redirect to an URL with the subpath.
+              '';
+
+              type = types.bool;
+            };
+
+            socket = mkOption {
+              default = "/run/grafana/grafana.sock";
+
+              description = ''
+                Path where the socket should be created when `protocol=socket`.
+                Make sure that Grafana has appropriate permissions before you change this setting.
+              '';
+
+              type = types.str;
+            };
+
+            socket_gid = mkOption {
+              default = -1;
+
+              description = ''
+                GID where the socket should be set when `protocol=socket`.
+                Make sure that the target group is in the group of Grafana process and that Grafana process is the file owner before you change this setting.
+                It is recommended to set the gid as http server user gid.
+                Not set when the value is -1.
+              '';
+
+              type = types.int;
+            };
+
+            socket_mode = mkOption {
+              # I assume this value is interpreted as octal literal by grafana.
+              # If this was an int, people following tutorials or porting their
+              # old config could stumble across nix not having octal literals.
+              default = "0660";
+
+              description = ''
+                Mode where the socket should be set when `protocol=socket`.
+                Make sure that Grafana process is the file owner before you change this setting.
+              '';
+
+              type = types.str;
+            };
+
+            static_root_path = mkOption {
+              default = "${cfg.package}/share/grafana/public";
+              defaultText = literalExpression ''"''${package}/share/grafana/public"'';
+              description = "Root path for static assets.";
+              type = types.str;
+            };
+          };
+
+          smtp = {
+            cert_file = mkOption {
+              default = null;
+              description = "File path to a cert file.";
+              type = types.nullOr types.str;
+            };
+
+            ehlo_identity = mkOption {
+              default = null;
+              description = "Name to be used as client identity for EHLO in SMTP dialog.";
+              type = types.nullOr types.str;
+            };
+
+            enabled = mkOption {
+              default = false;
+              description = "Whether to enable SMTP.";
+              type = types.bool;
+            };
+
+            from_address = mkOption {
+              default = "admin@grafana.localhost";
+              description = "Address used when sending out emails.";
+              type = types.str;
+            };
+
+            from_name = mkOption {
+              default = "Grafana";
+              description = "Name to be used as client identity for EHLO in SMTP dialog.";
+              type = types.str;
+            };
+
+            host = mkOption {
+              default = "localhost:25";
+              description = "Host to connect to.";
+              type = types.str;
+            };
+
+            key_file = mkOption {
+              default = null;
+              description = "File path to a key file.";
+              type = types.nullOr types.str;
+            };
+
+            password = mkOption {
+              default = "";
+
+              description = ''
+                Password used for authentication. Please note that the contents of this option
+                will end up in a world-readable Nix store. Use the file provider
+                pointing at a reasonably secured file in the local filesystem
+                to work around that. Look at the documentation for details:
+                <https://grafana.com/docs/grafana/latest/setup-grafana/configure-grafana/#file-provider>
+              '';
+
+              type = types.str;
+            };
+
+            skip_verify = mkOption {
+              default = false;
+              description = "Verify SSL for SMTP server.";
+              type = types.bool;
+            };
+
+            startTLS_policy = mkOption {
+              default = null;
+              description = "StartTLS policy when connecting to server.";
+
+              type = types.nullOr (
+                types.enum [
+                  "OpportunisticStartTLS"
+                  "MandatoryStartTLS"
+                  "NoStartTLS"
+                ]
+              );
+            };
+
+            user = mkOption {
+              default = null;
+              description = "User used for authentication.";
+              type = types.nullOr types.str;
+            };
+          };
+
+          users = {
+            allow_org_create = mkOption {
+              default = false;
+              description = "Set to `false` to prohibit users from creating new organizations.";
+              type = types.bool;
+            };
+
+            allow_sign_up = mkOption {
+              default = false;
+
+              description = ''
+                Set to false to prohibit users from being able to sign up / create user accounts.
+                The admin user can still create users.
+              '';
+
+              type = types.bool;
+            };
+
+            auto_assign_org = mkOption {
+              default = true;
+
+              description = ''
+                Set to `true` to automatically add new users to the main organization (id 1).
+                When set to `false,` new users automatically cause a new organization to be created for that new user.
+                The organization will be created even if the `allow_org_create` setting is set to `false`.
+              '';
+
+              type = types.bool;
+            };
+
+            auto_assign_org_id = mkOption {
+              default = 1;
+
+              description = ''
+                Set this value to automatically add new users to the provided org.
+                This requires `auto_assign_org` to be set to `true`.
+                Please make sure that this organization already exists.
+              '';
+
+              type = types.int;
+            };
+
+            auto_assign_org_role = mkOption {
+              default = "Viewer";
+
+              description = ''
+                The role new users will be assigned for the main organization (if the `auto_assign_org` setting is set to `true`).
+              '';
+
+              type = types.enum [
+                "Viewer"
+                "Editor"
+                "Admin"
+              ];
+            };
+
+            default_language = mkOption {
+              default = "en-US";
+              description = "This setting configures the default UI language, which must be a supported IETF language tag, such as `en-US`.";
+              type = types.str;
+            };
+
+            default_theme = mkOption {
+              default = "dark";
+              description = "Sets the default UI theme. `system` matches the user's system theme.";
+
+              type = types.enum [
+                "dark"
+                "light"
+                "system"
+              ];
+            };
+
+            # Lists are joined via space, so this option can't be a list.
+            # Users have to manually join their values.
+            hidden_users = mkOption {
+              default = "";
+
+              description = ''
+                This is a comma-separated list of usernames.
+                Users specified here are hidden in the Grafana UI.
+                They are still visible to Grafana administrators and to themselves.
+              '';
+
+              type = types.str;
+            };
+
+            home_page = mkOption {
+              default = "";
+
+              description = ''
+                Path to a custom home page.
+                Users are only redirected to this if the default home dashboard is used.
+                It should match a frontend route and contain a leading slash.
+              '';
+
+              type = types.str;
+            };
+
+            login_hint = mkOption {
+              default = "email or username";
+              description = "Text used as placeholder text on login page for login/username input.";
+              type = types.str;
+            };
+
+            password_hint = mkOption {
+              default = "password";
+              description = "Text used as placeholder text on login page for password input.";
+              type = types.str;
+            };
+
+            user_invite_max_lifetime_duration = mkOption {
+              default = "24h";
+
+              description = ''
+                The duration in time a user invitation remains valid before expiring.
+                This setting should be expressed as a duration.
+                Examples: `6h` (hours), `2d` (days), `1w` (week).
+                The minimum supported duration is `15m` (15 minutes).
+              '';
+
+              type = types.str;
+            };
+
+            verify_email_enabled = mkOption {
+              default = false;
+              description = "Require email validation before sign up completes.";
+              type = types.bool;
+            };
+
+            viewers_can_edit = mkOption {
+              default = false;
+
+              description = ''
+                Viewers can access and use Explore and perform temporary edits on panels in dashboards they have access to.
+                They cannot save their changes.
+              '';
+
+              type = types.bool;
+            };
+          };
+        };
+
+        freeformType = settingsFormatIni.type;
       };
     };
   };
 
   config = mkIf cfg.enable {
+    assertions = [
+      {
+        assertion = !(cfg.settings.users ? editors_can_admin);
+
+        message = ''
+          Option `services.grafana.settings.users.editors_can_admin` has been removed in Grafana 12.
+        '';
+      }
+      {
+        assertion = cfg.provision.datasources.settings == null || cfg.provision.datasources.path == null;
+        message = "Cannot set both datasources settings and datasources path";
+      }
+      {
+        assertion =
+          let
+            prometheusIsNotDirect =
+              opt: all ({ access, type, ... }: type == "prometheus" -> access != "direct") opt;
+          in
+          cfg.provision.datasources.settings == null
+          || prometheusIsNotDirect cfg.provision.datasources.settings.datasources;
+
+        message = "For datasources of type `prometheus`, the `direct` access mode is not supported anymore (since Grafana 9.2.0)";
+      }
+      {
+        assertion = cfg.provision.dashboards.settings == null || cfg.provision.dashboards.path == null;
+        message = "Cannot set both dashboards settings and dashboards path";
+      }
+      {
+        assertion =
+          cfg.provision.alerting.rules.settings == null || cfg.provision.alerting.rules.path == null;
+
+        message = "Cannot set both rules settings and rules path";
+      }
+      {
+        assertion =
+          cfg.provision.alerting.contactPoints.settings == null
+          || cfg.provision.alerting.contactPoints.path == null;
+
+        message = "Cannot set both contact points settings and contact points path";
+      }
+      {
+        assertion =
+          cfg.provision.alerting.policies.settings == null || cfg.provision.alerting.policies.path == null;
+
+        message = "Cannot set both policies settings and policies path";
+      }
+      {
+        assertion =
+          cfg.provision.alerting.templates.settings == null || cfg.provision.alerting.templates.path == null;
+
+        message = "Cannot set both templates settings and templates path";
+      }
+      {
+        assertion =
+          cfg.provision.alerting.muteTimings.settings == null
+          || cfg.provision.alerting.muteTimings.path == null;
+
+        message = "Cannot set both mute timings settings and mute timings path";
+      }
+      {
+        assertion = cfg.settings.security.secret_key != null;
+
+        message = ''
+          Grafana's secret key (services.grafana.settings.security.secret_key) doesn't have a default
+          value anymore. Please generate your own and use a file-provider on this option! See also
+          https://grafana.com/docs/grafana/latest/setup-grafana/configure-grafana/#secret_key
+          for more information.
+
+          See https://grafana.com/docs/grafana/latest/setup-grafana/configure-security/configure-database-encryption/#re-encrypt-secrets on how to re-encrypt.
+
+          As stated in the NixOS changelog for 26.05, there's no official way to rotate.
+          Either hard-code the old key ("SW2YcwTIb9zpOOhoPsMm") if your setup doesn't have any secrets in the DB that need
+          special protection or perform a rotation with a 3rd-party tool
+          (https://github.com/erooke/grafana-secretkey-rotation-tool/tree/d9dc788902fa5185e15cb15ce6129f7237ab6138).
+        '';
+      }
+    ];
+
+    environment.systemPackages = [ cfg.package ];
+    networking.firewall.allowedTCPPorts = mkIf cfg.openFirewall [ cfg.settings.server.http_port ];
+
+    systemd.services.grafana = {
+      after = [
+        "network.target"
+      ]
+      ++ lib.optional usePostgresql "postgresql.target"
+      ++ lib.optional useMysql "mysql.service";
+
+      description = "Grafana Service Daemon";
+
+      preStart = ''
+        ln -fs ${cfg.package}/share/grafana/conf ${cfg.dataDir}
+        ln -fs ${cfg.package}/share/grafana/tools ${cfg.dataDir}
+      '';
+
+      script = ''
+        set -o errexit -o pipefail -o nounset -o errtrace
+        shopt -s inherit_errexit
+
+        exec ${lib.getExe cfg.package} server -homepath ${cfg.dataDir} -config ${configFile}
+      '';
+
+      serviceConfig = {
+        # Hardening
+        AmbientCapabilities = lib.mkIf (cfg.settings.server.http_port < 1024) [ "CAP_NET_BIND_SERVICE" ];
+
+        CapabilityBoundingSet =
+          if (cfg.settings.server.http_port < 1024) then [ "CAP_NET_BIND_SERVICE" ] else [ "" ];
+
+        DeviceAllow = [ "" ];
+        LockPersonality = true;
+        NoNewPrivileges = true;
+        PrivateDevices = true;
+        PrivateTmp = true;
+        ProtectClock = true;
+        ProtectControlGroups = true;
+        ProtectHome = true;
+        ProtectHostname = true;
+        ProtectKernelLogs = true;
+        ProtectKernelModules = true;
+        ProtectKernelTunables = true;
+        ProtectProc = "invisible";
+        ProtectSystem = "full";
+        RemoveIPC = true;
+        Restart = "on-failure";
+
+        RestrictAddressFamilies = [
+          "AF_INET"
+          "AF_INET6"
+          "AF_UNIX"
+        ];
+
+        RestrictNamespaces = true;
+        RestrictRealtime = true;
+        RestrictSUIDSGID = true;
+        RuntimeDirectory = "grafana";
+        RuntimeDirectoryMode = "0755";
+        SystemCallArchitectures = "native";
+
+        # Upstream grafana is not setting SystemCallFilter for compatibility
+        # reasons, see https://github.com/grafana/grafana/pull/40176
+        SystemCallFilter = [
+          "@system-service"
+          "~@privileged"
+        ]
+        ++ lib.optionals (cfg.settings.server.protocol == "socket") [ "@chown" ];
+
+        UMask = "0027";
+        User = "grafana";
+        WorkingDirectory = cfg.dataDir;
+      };
+
+      wantedBy = [ "multi-user.target" ];
+    };
+
+    users.groups.grafana = { };
+
+    users.users.grafana = {
+      createHome = true;
+      description = "Grafana user";
+      group = "grafana";
+      home = cfg.dataDir;
+      uid = config.ids.uids.grafana;
+    };
+
     warnings =
       let
         doesntUseFileProvider =
@@ -2006,151 +2347,5 @@ in
             '';
       in
       passwordWithoutFileProvider ++ secureJsonDataWithoutFileProvider;
-
-    environment.systemPackages = [ cfg.package ];
-
-    assertions = [
-      {
-        assertion = !(cfg.settings.users ? editors_can_admin);
-        message = ''
-          Option `services.grafana.settings.users.editors_can_admin` has been removed in Grafana 12.
-        '';
-      }
-      {
-        assertion = cfg.provision.datasources.settings == null || cfg.provision.datasources.path == null;
-        message = "Cannot set both datasources settings and datasources path";
-      }
-      {
-        assertion =
-          let
-            prometheusIsNotDirect =
-              opt: all ({ type, access, ... }: type == "prometheus" -> access != "direct") opt;
-          in
-          cfg.provision.datasources.settings == null
-          || prometheusIsNotDirect cfg.provision.datasources.settings.datasources;
-        message = "For datasources of type `prometheus`, the `direct` access mode is not supported anymore (since Grafana 9.2.0)";
-      }
-      {
-        assertion = cfg.provision.dashboards.settings == null || cfg.provision.dashboards.path == null;
-        message = "Cannot set both dashboards settings and dashboards path";
-      }
-      {
-        assertion =
-          cfg.provision.alerting.rules.settings == null || cfg.provision.alerting.rules.path == null;
-        message = "Cannot set both rules settings and rules path";
-      }
-      {
-        assertion =
-          cfg.provision.alerting.contactPoints.settings == null
-          || cfg.provision.alerting.contactPoints.path == null;
-        message = "Cannot set both contact points settings and contact points path";
-      }
-      {
-        assertion =
-          cfg.provision.alerting.policies.settings == null || cfg.provision.alerting.policies.path == null;
-        message = "Cannot set both policies settings and policies path";
-      }
-      {
-        assertion =
-          cfg.provision.alerting.templates.settings == null || cfg.provision.alerting.templates.path == null;
-        message = "Cannot set both templates settings and templates path";
-      }
-      {
-        assertion =
-          cfg.provision.alerting.muteTimings.settings == null
-          || cfg.provision.alerting.muteTimings.path == null;
-        message = "Cannot set both mute timings settings and mute timings path";
-      }
-      {
-        assertion = cfg.settings.security.secret_key != null;
-        message = ''
-          Grafana's secret key (services.grafana.settings.security.secret_key) doesn't have a default
-          value anymore. Please generate your own and use a file-provider on this option! See also
-          https://grafana.com/docs/grafana/latest/setup-grafana/configure-grafana/#secret_key
-          for more information.
-
-          See https://grafana.com/docs/grafana/latest/setup-grafana/configure-security/configure-database-encryption/#re-encrypt-secrets on how to re-encrypt.
-
-          As stated in the NixOS changelog for 26.05, there's no official way to rotate.
-          Either hard-code the old key ("SW2YcwTIb9zpOOhoPsMm") if your setup doesn't have any secrets in the DB that need
-          special protection or perform a rotation with a 3rd-party tool
-          (https://github.com/erooke/grafana-secretkey-rotation-tool/tree/d9dc788902fa5185e15cb15ce6129f7237ab6138).
-        '';
-      }
-    ];
-
-    systemd.services.grafana = {
-      description = "Grafana Service Daemon";
-      wantedBy = [ "multi-user.target" ];
-      after = [
-        "network.target"
-      ]
-      ++ lib.optional usePostgresql "postgresql.target"
-      ++ lib.optional useMysql "mysql.service";
-      script = ''
-        set -o errexit -o pipefail -o nounset -o errtrace
-        shopt -s inherit_errexit
-
-        exec ${lib.getExe cfg.package} server -homepath ${cfg.dataDir} -config ${configFile}
-      '';
-      serviceConfig = {
-        WorkingDirectory = cfg.dataDir;
-        User = "grafana";
-        Restart = "on-failure";
-        RuntimeDirectory = "grafana";
-        RuntimeDirectoryMode = "0755";
-        # Hardening
-        AmbientCapabilities = lib.mkIf (cfg.settings.server.http_port < 1024) [ "CAP_NET_BIND_SERVICE" ];
-        CapabilityBoundingSet =
-          if (cfg.settings.server.http_port < 1024) then [ "CAP_NET_BIND_SERVICE" ] else [ "" ];
-        DeviceAllow = [ "" ];
-        LockPersonality = true;
-        NoNewPrivileges = true;
-        PrivateDevices = true;
-        PrivateTmp = true;
-        ProtectClock = true;
-        ProtectControlGroups = true;
-        ProtectHome = true;
-        ProtectHostname = true;
-        ProtectKernelLogs = true;
-        ProtectKernelModules = true;
-        ProtectKernelTunables = true;
-        ProtectProc = "invisible";
-        ProtectSystem = "full";
-        RemoveIPC = true;
-        RestrictAddressFamilies = [
-          "AF_INET"
-          "AF_INET6"
-          "AF_UNIX"
-        ];
-        RestrictNamespaces = true;
-        RestrictRealtime = true;
-        RestrictSUIDSGID = true;
-        SystemCallArchitectures = "native";
-        # Upstream grafana is not setting SystemCallFilter for compatibility
-        # reasons, see https://github.com/grafana/grafana/pull/40176
-        SystemCallFilter = [
-          "@system-service"
-          "~@privileged"
-        ]
-        ++ lib.optionals (cfg.settings.server.protocol == "socket") [ "@chown" ];
-        UMask = "0027";
-      };
-      preStart = ''
-        ln -fs ${cfg.package}/share/grafana/conf ${cfg.dataDir}
-        ln -fs ${cfg.package}/share/grafana/tools ${cfg.dataDir}
-      '';
-    };
-
-    networking.firewall.allowedTCPPorts = mkIf cfg.openFirewall [ cfg.settings.server.http_port ];
-
-    users.users.grafana = {
-      uid = config.ids.uids.grafana;
-      description = "Grafana user";
-      home = cfg.dataDir;
-      createHome = true;
-      group = "grafana";
-    };
-    users.groups.grafana = { };
   };
 }

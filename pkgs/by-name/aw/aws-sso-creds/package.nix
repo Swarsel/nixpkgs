@@ -1,7 +1,7 @@
 {
-  buildGoModule,
-  fetchFromGitHub,
   lib,
+  fetchFromGitHub,
+  buildGoModule,
   makeWrapper,
   xdg-utils,
 }:
@@ -15,9 +15,9 @@ buildGoModule (finalAttrs: {
     rev = "v${finalAttrs.version}";
     sha256 = "sha256-HFkPx/ptg/xXW2bbvZLSuuckj/SbuJQQcAbNfiTgTLM=";
   };
-  vendorHash = "sha256-GiloBizb8ec7PgXbzQEOKjyJP5doFnQ2ALH3Y1+AKZw=";
 
   nativeBuildInputs = [ makeWrapper ];
+  vendorHash = "sha256-GiloBizb8ec7PgXbzQEOKjyJP5doFnQ2ALH3Y1+AKZw=";
 
   postInstall = ''
     wrapProgram $out/bin/aws-sso-creds \
@@ -25,8 +25,8 @@ buildGoModule (finalAttrs: {
   '';
 
   meta = {
-    homepage = "https://github.com/jaxxstorm/aws-sso-creds";
     description = "Get AWS SSO temporary creds from an SSO profile";
+    homepage = "https://github.com/jaxxstorm/aws-sso-creds";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ lafrenierejm ];
     mainProgram = "aws-sso-creds";

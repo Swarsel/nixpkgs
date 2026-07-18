@@ -1,8 +1,8 @@
 {
   lib,
-  stdenvNoCC,
   fetchFromGitHub,
   python313Packages,
+  stdenvNoCC,
 }:
 
 stdenvNoCC.mkDerivation rec {
@@ -16,12 +16,12 @@ stdenvNoCC.mkDerivation rec {
     hash = "sha256-SW9d5yVud2BWUJpDOlqYn1E1cqicIHdSZjbXjqOAQGw=";
   };
 
-  env."PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION" = "python";
-
   nativeBuildInputs = [
     # Currently broken on 3.14
     python313Packages.gftools
   ];
+
+  env."PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION" = "python";
 
   buildPhase = ''
     runHook preBuild

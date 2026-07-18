@@ -1,23 +1,20 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # build-system
-  setuptools,
-
   # dependencies
   accelerate,
+  buildPythonPackage,
   datasets,
   packaging,
   rich,
+  # build-system
+  setuptools,
   transformers,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "trl";
   version = "0.24.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "huggingface";
@@ -26,6 +23,8 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-t0wOuEKlcZzFlQeS4PYHykFsz+43hYc0gJ9u4emr8HI=";
   };
 
+  # Many tests require internet access.
+  doCheck = false;
   build-system = [ setuptools ];
 
   dependencies = [
@@ -36,9 +35,7 @@ buildPythonPackage (finalAttrs: {
     transformers
   ];
 
-  # Many tests require internet access.
-  doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "trl" ];
 
   meta = {

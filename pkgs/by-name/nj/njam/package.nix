@@ -17,9 +17,7 @@ stdenv.mkDerivation (finalAttrs: {
     sha256 = "0ysvqw017xkvddj957pdfmbmji7qi20nyr7f0zxvcvm6c7d3cc7s";
   };
 
-  preBuild = ''
-    rm src/*.o
-  '';
+  patches = [ ./logfile.patch ];
 
   buildInputs = [
     SDL
@@ -28,15 +26,17 @@ stdenv.mkDerivation (finalAttrs: {
     SDL_net
   ];
 
+  preBuild = ''
+    rm src/*.o
+  '';
+
   hardeningDisable = [ "format" ];
 
-  patches = [ ./logfile.patch ];
-
   meta = {
-    homepage = "https://trackballs.sourceforge.net/";
     description = "Cross-platform pacman-like game";
-    mainProgram = "njam";
+    homepage = "https://trackballs.sourceforge.net/";
     license = lib.licenses.gpl2Plus;
     platforms = lib.platforms.linux;
+    mainProgram = "njam";
   };
 })

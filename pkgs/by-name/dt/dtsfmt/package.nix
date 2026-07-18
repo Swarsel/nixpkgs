@@ -1,14 +1,12 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
   nix-update-script,
+  rustPlatform,
 }:
 rustPlatform.buildRustPackage (finalAttrs: {
   pname = "dtsfmt";
   version = "0.8.0";
-
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "mskelton";
@@ -19,6 +17,7 @@ rustPlatform.buildRustPackage (finalAttrs: {
   };
 
   cargoHash = "sha256-BbX/IEfn5qhyW/IkgARfxD0rTx+hcoq8TmoDmUqclHQ=";
+  __structuredAttrs = true;
   passthru.updateScript = nix-update-script { };
 
   meta = {

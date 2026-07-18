@@ -1,20 +1,19 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   flask,
   lxml,
   numpy,
   pandas,
-  pyyaml,
   poetry-core,
   pytestCheckHook,
+  pyyaml,
 }:
 
 buildPythonPackage rec {
   pname = "succulent";
   version = "0.4.5";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "firefly-cpp";
@@ -23,11 +22,7 @@ buildPythonPackage rec {
     hash = "sha256-hoGYpXIrJYT+EZa0iWPDTv+5D4Egdzw4IzCA6rntyvU=";
   };
 
-  pythonRelaxDeps = [
-    "flask"
-    "lxml"
-    "numpy"
-  ];
+  nativeCheckInputs = [ pytestCheckHook ];
 
   build-system = [
     poetry-core
@@ -41,9 +36,14 @@ buildPythonPackage rec {
     pyyaml
   ];
 
-  nativeCheckInputs = [ pytestCheckHook ];
-
+  pyproject = true;
   pythonImportsCheck = [ "succulent" ];
+
+  pythonRelaxDeps = [
+    "flask"
+    "lxml"
+    "numpy"
+  ];
 
   meta = {
     description = "Collect POST requests";

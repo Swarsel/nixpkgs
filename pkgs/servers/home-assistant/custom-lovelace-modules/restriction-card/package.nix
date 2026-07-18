@@ -1,7 +1,7 @@
 {
   lib,
-  buildNpmPackage,
   fetchFromGitHub,
+  buildNpmPackage,
 }:
 
 buildNpmPackage (finalAttrs: {
@@ -27,9 +27,9 @@ buildNpmPackage (finalAttrs: {
   '';
 
   meta = {
-    changelog = "https://github.com/iantrich/restriction-card/releases/tag/${finalAttrs.src.tag}";
     description = "Apply restrictions to Lovelace cards";
     homepage = "https://github.com/iantrich/restriction-card";
+    changelog = "https://github.com/iantrich/restriction-card/releases/tag/${finalAttrs.src.tag}";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ jfly ];
   };

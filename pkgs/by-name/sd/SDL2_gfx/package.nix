@@ -1,9 +1,9 @@
 {
   lib,
-  SDL2,
-  fetchurl,
-  pkg-config,
   stdenv,
+  fetchurl,
+  SDL2,
+  pkg-config,
   testers,
   # Boolean flags
   enableMmx ? stdenv.hostPlatform.isx86,
@@ -19,6 +19,13 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-Y+DgGt3tyd8vhbk6JI8G6KBK/6AUqDXC6jS/405XYmI=";
   };
 
+  outputs = [
+    "out"
+    "dev"
+  ];
+
+  strictDeps = true;
+
   nativeBuildInputs = [
     SDL2
     pkg-config
@@ -28,22 +35,14 @@ stdenv.mkDerivation (finalAttrs: {
     SDL2
   ];
 
-  outputs = [
-    "out"
-    "dev"
-  ];
-
-  # Missing 'sincos()' implementation fails linking projects
-  # like 'freeciv_sdl2'.
-  env.NIX_LDFLAGS = "-lm";
-
   configureFlags = [
     (lib.enableFeature enableMmx "mmx")
     (lib.enableFeature enableSdltest "sdltest")
   ];
 
-  strictDeps = true;
-
+  # Missing 'sincos()' implementation fails linking projects
+  # like 'freeciv_sdl2'.
+  env.NIX_LDFLAGS = "-lm";
   enableParallelBuilding = true;
 
   passthru = {
@@ -53,8 +52,9 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   meta = {
-    homepage = "http://www.ferzkopp.net/wordpress/2016/01/02/sdl_gfx-sdl2_gfx/";
+    inherit (SDL2.meta) platforms;
     description = "SDL graphics drawing primitives and support functions";
+
     longDescription = ''
       The SDL_gfx library evolved out of the SDL_gfxPrimitives code which
       provided basic drawing routines such as lines, circles or polygons and
@@ -72,9 +72,10 @@ stdenv.mkDerivation (finalAttrs: {
       The library is backwards compatible to the above mentioned code. Its is
       written in plain C and can be used in C++ code.
     '';
+
+    homepage = "http://www.ferzkopp.net/wordpress/2016/01/02/sdl_gfx-sdl2_gfx/";
     license = lib.licenses.zlib;
-    teams = [ lib.teams.sdl ];
     pkgConfigModules = [ "SDL2_gfx" ];
-    inherit (SDL2.meta) platforms;
+    teams = [ lib.teams.sdl ];
   };
 })

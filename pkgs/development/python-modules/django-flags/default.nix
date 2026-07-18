@@ -1,10 +1,10 @@
 {
+  lib,
+  fetchFromGitHub,
   buildPythonPackage,
   django,
   django-debug-toolbar,
-  fetchFromGitHub,
   jinja2,
-  lib,
   pytest-django,
   pytestCheckHook,
   setuptools-scm,
@@ -12,7 +12,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "django-flags";
   version = "5.2.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "cfpb";
@@ -20,6 +19,17 @@ buildPythonPackage (finalAttrs: {
     tag = finalAttrs.version;
     hash = "sha256-4UOueNXfDouTqpLpG391zcGHTTJ8GfznYmEl33YKdv8=";
   };
+
+  nativeCheckInputs = [
+    django-debug-toolbar
+    jinja2
+    pytest-django
+    pytestCheckHook
+  ];
+
+  preCheck = ''
+    export DJANGO_SETTINGS_MODULE=flags.tests.settings
+  '';
 
   build-system = [
     setuptools-scm
@@ -29,18 +39,8 @@ buildPythonPackage (finalAttrs: {
     django
   ];
 
-  preCheck = ''
-    export DJANGO_SETTINGS_MODULE=flags.tests.settings
-  '';
-
+  pyproject = true;
   pythonImportsCheck = [ "flags" ];
-
-  nativeCheckInputs = [
-    django-debug-toolbar
-    jinja2
-    pytest-django
-    pytestCheckHook
-  ];
 
   meta = {
     description = "Feature flags for Django projects";

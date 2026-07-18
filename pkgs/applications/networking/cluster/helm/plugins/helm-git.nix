@@ -23,9 +23,6 @@ stdenv.mkDerivation rec {
 
   nativeBuildInputs = [ makeWrapper ];
 
-  # NOTE: helm-git is comprised of shell scripts.
-  dontBuild = true;
-
   installPhase = ''
     install -dm755 $out/helm-git
     install -m644 -Dt $out/helm-git plugin.yaml
@@ -45,6 +42,9 @@ stdenv.mkDerivation rec {
 
     runHook postInstall
   '';
+
+  # NOTE: helm-git is comprised of shell scripts.
+  dontBuild = true;
 
   meta = {
     description = "Helm downloader plugin that provides GIT protocol support";

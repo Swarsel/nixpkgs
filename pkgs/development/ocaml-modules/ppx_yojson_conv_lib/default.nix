@@ -1,15 +1,13 @@
 {
   lib,
-  buildDunePackage,
   fetchFromGitHub,
+  buildDunePackage,
   yojson,
 }:
 
 buildDunePackage (finalAttrs: {
   pname = "ppx_yojson_conv_lib";
   version = "0.17.0";
-
-  minimalOCamlVersion = "4.02.3";
 
   src = fetchFromGitHub {
     owner = "janestreet";
@@ -19,11 +17,12 @@ buildDunePackage (finalAttrs: {
   };
 
   propagatedBuildInputs = [ yojson ];
+  minimalOCamlVersion = "4.02.3";
 
   meta = {
     description = "Runtime lib for ppx_yojson_conv";
     homepage = "https://github.com/janestreet/ppx_yojson_conv_lib";
-    maintainers = [ ];
     license = lib.licenses.mit;
+    maintainers = [ ];
   };
 })

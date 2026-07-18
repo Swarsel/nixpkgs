@@ -1,10 +1,9 @@
-{ buildDotnetGlobalTool, lib }:
+{ lib, buildDotnetGlobalTool }:
 
 buildDotnetGlobalTool {
   pname = "csharpier";
   version = "1.3.0";
   executables = "csharpier";
-
   nugetHash = "sha256-hwieEoQTcATyKZIZ7CQSWANPBv+pEShg6cDXU5EIexU=";
 
   meta = {

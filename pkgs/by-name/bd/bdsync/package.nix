@@ -18,17 +18,17 @@ stdenv.mkDerivation (finalAttrs: {
     sha256 = "sha256-uvP26gdyIPC+IHxO5CYVuabfT4mnoWDOyaLTplYCW0I=";
   };
 
-  nativeBuildInputs = [
-    pandoc
-    which
-  ];
-  buildInputs = [ openssl ];
-
   postPatch = ''
     patchShebangs ./tests.sh
     patchShebangs ./tests/
   '';
 
+  nativeBuildInputs = [
+    pandoc
+    which
+  ];
+
+  buildInputs = [ openssl ];
   doCheck = true;
 
   installPhase = ''
@@ -40,8 +40,8 @@ stdenv.mkDerivation (finalAttrs: {
     description = "Fast block device synchronizing tool";
     homepage = "https://github.com/rolffokkens/bdsync";
     license = lib.licenses.gpl2Only;
-    platforms = lib.platforms.linux;
     maintainers = with lib.maintainers; [ jluttine ];
+    platforms = lib.platforms.linux;
     mainProgram = "bdsync";
   };
 })

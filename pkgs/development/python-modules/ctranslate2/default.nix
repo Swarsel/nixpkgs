@@ -2,18 +2,15 @@
   lib,
   stdenv,
   buildPythonPackage,
-
-  # build-system
-  pybind11,
-  setuptools,
-
   # dependencies
   ctranslate2-cpp,
   numpy,
-  pyyaml,
-
+  # build-system
+  pybind11,
   # tests
   pytestCheckHook,
+  pyyaml,
+  setuptools,
   torch,
   transformers,
   writableTmpDirAsHomeHook,
@@ -22,37 +19,14 @@
 
 buildPythonPackage rec {
   inherit (ctranslate2-cpp) pname version src;
-  pyproject = true;
-
-  # https://github.com/OpenNMT/CTranslate2/tree/master/python
-  sourceRoot = "${src.name}/python";
 
   postPatch = ''
     substituteInPlace pyproject.toml \
       --replace-fail "pybind11==" "pybind11>="
   '';
 
-  build-system = [
-    pybind11
-    setuptools
-  ];
-
   buildInputs = [ ctranslate2-cpp ];
-
-  dependencies = [
-    numpy
-    pyyaml
-  ];
-
   cmakeFlags = [ "-DCMAKE_POLICY_VERSION_MINIMUM=3.5" ];
-
-  pythonImportsCheck = [
-    # https://opennmt.net/CTranslate2/python/overview.html
-    "ctranslate2"
-    "ctranslate2.converters"
-    "ctranslate2.models"
-    "ctranslate2.specs"
-  ];
 
   nativeCheckInputs = [
     pytestCheckHook
@@ -67,6 +41,23 @@ buildPythonPackage rec {
     rm -rf ctranslate2
   '';
 
+  build-system = [
+    pybind11
+    setuptools
+  ];
+
+  dependencies = [
+    numpy
+    pyyaml
+  ];
+
+  disabledTestPaths = [
+    # TODO: ModuleNotFoundError: No module named 'opennmt'
+    "tests/test_opennmt_tf.py"
+    # OSError: We couldn't connect to 'https://huggingface.co' to load this file
+    "tests/test_transformers.py"
+  ];
+
   disabledTests =
     lib.optionals (stdenv.hostPlatform.isAarch64 && stdenv.hostPlatform.isLinux) [
       # RuntimeError: Failed to initialize cpuinfo!"
@@ -77,12 +68,18 @@ buildPythonPackage rec {
       "test_invalid_model_path"
     ];
 
-  disabledTestPaths = [
-    # TODO: ModuleNotFoundError: No module named 'opennmt'
-    "tests/test_opennmt_tf.py"
-    # OSError: We couldn't connect to 'https://huggingface.co' to load this file
-    "tests/test_transformers.py"
+  pyproject = true;
+
+  pythonImportsCheck = [
+    # https://opennmt.net/CTranslate2/python/overview.html
+    "ctranslate2"
+    "ctranslate2.converters"
+    "ctranslate2.models"
+    "ctranslate2.specs"
   ];
+
+  # https://github.com/OpenNMT/CTranslate2/tree/master/python
+  sourceRoot = "${src.name}/python";
 
   meta = {
     description = "Fast inference engine for Transformer models";

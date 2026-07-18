@@ -14,7 +14,6 @@
 buildPythonPackage rec {
   pname = "zconfig";
   version = "4.3";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
@@ -28,23 +27,21 @@ buildPythonPackage rec {
       --replace-fail "setuptools >= 78.1.1,< 81" setuptools
   '';
 
-  build-system = [ setuptools ];
-
   buildInputs = [
     docutils
     manuel
   ];
-
-  dependencies = [ zope-testrunner ];
 
   nativeCheckInputs = [
     pygments
     pytestCheckHook
   ];
 
-  pythonImportsCheck = [ "ZConfig" ];
-
+  build-system = [ setuptools ];
+  dependencies = [ zope-testrunner ];
+  pyproject = true;
   pytestFlags = [ "-s" ];
+  pythonImportsCheck = [ "ZConfig" ];
 
   meta = {
     description = "Structured Configuration Library";

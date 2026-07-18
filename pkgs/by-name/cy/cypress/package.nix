@@ -1,33 +1,35 @@
 {
+  lib,
+  stdenv,
   alsa-lib,
   autoPatchelfHook,
+  buildPackages,
   darwin,
   fetchzip,
   gtk2,
   gtk3,
-  lib,
-  buildPackages,
-  makeShellWrapper,
   libgbm,
+  makeShellWrapper,
   nss,
-  stdenv,
   udev,
   unzip,
 }:
 
 let
   availableBinaries = {
-    x86_64-linux = {
-      platform = "linux-x64";
-      hash = "sha256-oCTpVD7W1NHWD0nJBrgtmWZZozbcJeAfr7mn/JjqdcM=";
-    };
-    aarch64-linux = {
-      platform = "linux-arm64";
-      hash = "sha256-MIUVhWkfKN5056jhHN31h4dBcTHJI0iX+I2RbkNI80I=";
-    };
     aarch64-darwin = {
-      platform = "darwin-arm64";
       hash = "sha256-8qvMsC+tRKK12jC2r1A54kS/PZ6q+sErvLvTkse6Kn4=";
+      platform = "darwin-arm64";
+    };
+
+    aarch64-linux = {
+      hash = "sha256-MIUVhWkfKN5056jhHN31h4dBcTHJI0iX+I2RbkNI80I=";
+      platform = "linux-arm64";
+    };
+
+    x86_64-linux = {
+      hash = "sha256-oCTpVD7W1NHWD0nJBrgtmWZZozbcJeAfr7mn/JjqdcM=";
+      platform = "linux-x64";
     };
   };
   inherit (stdenv.hostPlatform) system;
@@ -40,13 +42,10 @@ stdenv.mkDerivation rec {
   version = "14.5.4";
 
   src = fetchzip {
-    url = "https://cdn.cypress.io/desktop/${version}/${platform}/cypress.zip";
     inherit hash;
+    url = "https://cdn.cypress.io/desktop/${version}/${platform}/cypress.zip";
     stripRoot = !stdenv.hostPlatform.isDarwin;
   };
-
-  # don't remove runtime deps
-  dontPatchELF = true;
 
   nativeBuildInputs = [
     unzip
@@ -68,8 +67,6 @@ stdenv.mkDerivation rec {
     gtk3
     libgbm
   ];
-
-  runtimeDependencies = lib.optional stdenv.hostPlatform.isLinux (lib.getLib udev);
 
   installPhase = ''
     runHook preInstall
@@ -101,9 +98,11 @@ stdenv.mkDerivation rec {
       --run 'echo "Warning: Use the lowercase cypress executable instead of the capitalized one."'
   '';
 
-  passthru = {
-    updateScript = ./update.sh;
+  # don't remove runtime deps
+  dontPatchELF = true;
+  runtimeDependencies = lib.optional stdenv.hostPlatform.isLinux (lib.getLib udev);
 
+  passthru = {
     tests = {
       # We used to have a test here, but was removed because
       #  - it broke, and ofborg didn't fail https://github.com/NixOS/ofborg/issues/629
@@ -112,20 +111,24 @@ stdenv.mkDerivation rec {
       # To provide a test once more, you may find useful information in
       # https://github.com/NixOS/nixpkgs/pull/223903
     };
+
+    updateScript = ./update.sh;
   };
 
   meta = {
     description = "Fast, easy and reliable testing for anything that runs in a browser";
     homepage = "https://www.cypress.io";
-    mainProgram = "Cypress";
-    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
     license = lib.licenses.mit;
-    platforms = lib.attrNames availableBinaries;
+    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
+
     maintainers = with lib.maintainers; [
       tweber
       mmahut
       Crafter
       jonhermansen
     ];
+
+    platforms = lib.attrNames availableBinaries;
+    mainProgram = "Cypress";
   };
 }

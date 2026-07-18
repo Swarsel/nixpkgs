@@ -2,14 +2,14 @@
   lib,
   stdenv,
   fetchFromGitHub,
+  cmake,
+  glib,
+  gtk3,
+  json-glib,
   meson,
   ninja,
-  glib,
-  cmake,
-  json-glib,
-  polkit,
-  gtk3,
   pkg-config,
+  polkit,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -43,7 +43,7 @@ stdenv.mkDerivation (finalAttrs: {
     changelog = "https://github.com/OmarCastro/cmd-polkit/blob/${finalAttrs.src.rev}/CHANGELOG";
     license = lib.licenses.lgpl21Only;
     maintainers = with lib.maintainers; [ daru-san ];
-    mainProgram = "cmd-polkit-agent";
     platforms = lib.platforms.linux;
+    mainProgram = "cmd-polkit-agent";
   };
 })

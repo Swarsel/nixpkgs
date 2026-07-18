@@ -1,18 +1,18 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
+  appstream,
+  appstream-glib,
+  desktop-file-utils,
+  gettext,
+  girara,
+  gitUpdater,
+  libspectre,
   meson,
   ninja,
   pkg-config,
   zathura_core,
-  girara,
-  libspectre,
-  gettext,
-  desktop-file-utils,
-  appstream,
-  appstream-glib,
-  gitUpdater,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -43,18 +43,19 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   env.PKG_CONFIG_ZATHURA_PLUGINDIR = "lib/zathura";
-
   passthru.updateScript = gitUpdater { };
 
   meta = {
-    homepage = "https://pwmt.org/projects/zathura-ps/";
     description = "Zathura PS plugin";
+
     longDescription = ''
       The zathura-ps plugin adds PS support to zathura by using the
       libspectre library.
     '';
+
+    homepage = "https://pwmt.org/projects/zathura-ps/";
     license = lib.licenses.zlib;
-    platforms = lib.platforms.unix;
     maintainers = with lib.maintainers; [ mithicspirit ];
+    platforms = lib.platforms.unix;
   };
 })

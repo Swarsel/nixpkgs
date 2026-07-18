@@ -7,7 +7,6 @@
 python3.pkgs.buildPythonApplication (finalAttrs: {
   pname = "lacus";
   version = "1.14.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "ail-project";
@@ -15,12 +14,6 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-fk6NfBdUGGyOhVOJcGCRNldcw4JRHFr7p+tFuccYp7Y=";
   };
-
-  pythonRelaxDeps = [
-    "gunicorn"
-    "psutil"
-    "redis"
-  ];
 
   build-system = with python3.pkgs; [
     poetry-core
@@ -34,6 +27,14 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     redis
     rich
     werkzeug
+  ];
+
+  pyproject = true;
+
+  pythonRelaxDeps = [
+    "gunicorn"
+    "psutil"
+    "redis"
   ];
 
   meta = {

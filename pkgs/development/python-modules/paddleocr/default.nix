@@ -1,40 +1,39 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
-  setuptools-scm,
   aiohttp,
   attrdict,
   beautifulsoup4,
+  buildPythonPackage,
   cython,
   fire,
   fonttools,
+  lanms-neo,
   lmdb,
   lxml,
   numpy,
   opencv-python,
   openpyxl,
+  paddlepaddle,
+  paddlex,
   pdf2docx,
   pillow,
+  polygon3,
   pyclipper,
   pymupdf,
   python-docx,
+  pyyaml,
   rapidfuzz,
   scikit-image,
+  setuptools,
+  setuptools-scm,
   shapely,
   tqdm,
-  paddlepaddle,
-  lanms-neo,
-  polygon3,
-  paddlex,
-  pyyaml,
 }:
 
 buildPythonPackage rec {
   pname = "paddleocr";
   version = "3.7.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "PaddlePaddle";
@@ -59,6 +58,12 @@ buildPythonPackage rec {
     substituteInPlace pyproject.toml \
       --replace-fail "setuptools==72.1.0" "setuptools"
   '';
+
+  # TODO: The tests depend, among possibly other things, on `cudatoolkit`.
+  # But Cudatoolkit fails to install.
+  # preCheck = "export HOME=$TMPDIR";
+  # nativeCheckInputs = with pkgs; [ which cudatoolkit ];
+  doCheck = false;
 
   build-system = [
     setuptools
@@ -93,22 +98,21 @@ buildPythonPackage rec {
     pyyaml
   ];
 
-  # TODO: The tests depend, among possibly other things, on `cudatoolkit`.
-  # But Cudatoolkit fails to install.
-  # preCheck = "export HOME=$TMPDIR";
-  # nativeCheckInputs = with pkgs; [ which cudatoolkit ];
-  doCheck = false;
+  pyproject = true;
 
   meta = {
-    homepage = "https://github.com/PaddlePaddle/PaddleOCR";
-    license = lib.licenses.asl20;
     description = "Multilingual OCR toolkits based on PaddlePaddle";
+
     longDescription = ''
       PaddleOCR aims to create multilingual, awesome, leading, and practical OCR
       tools that help users train better models and apply them into practice.
     '';
+
+    homepage = "https://github.com/PaddlePaddle/PaddleOCR";
     changelog = "https://github.com/PaddlePaddle/PaddleOCR/releases/tag/${src.tag}";
+    license = lib.licenses.asl20;
     maintainers = with lib.maintainers; [ happysalada ];
+
     platforms = [
       "x86_64-linux"
       "aarch64-darwin"

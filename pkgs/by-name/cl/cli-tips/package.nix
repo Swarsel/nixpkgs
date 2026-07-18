@@ -1,9 +1,9 @@
 {
   lib,
-  stdenvNoCC,
   fetchFromGitHub,
   makeWrapper,
   nix-update-script,
+  stdenvNoCC,
 }:
 
 stdenvNoCC.mkDerivation {
@@ -18,8 +18,6 @@ stdenvNoCC.mkDerivation {
   };
 
   nativeBuildInputs = [ makeWrapper ];
-
-  dontBuild = true;
 
   installPhase = ''
     runHook preInstall
@@ -36,6 +34,8 @@ stdenvNoCC.mkDerivation {
       --set TIPS_FOLDER "$out/share/tips"
   '';
 
+  dontBuild = true;
+
   passthru.updateScript = nix-update-script {
     extraArgs = [ "--version=branch" ];
   };
@@ -44,8 +44,8 @@ stdenvNoCC.mkDerivation {
     description = "CLI tool that provides useful tips and commands for Linux users";
     homepage = "https://github.com/cli-stuff/cli-tips";
     license = lib.licenses.unlicense;
-    platforms = with lib.platforms; linux ++ darwin ++ windows;
     maintainers = with lib.maintainers; [ PerchunPak ];
+    platforms = with lib.platforms; linux ++ darwin ++ windows;
     mainProgram = "cli-tips";
   };
 }

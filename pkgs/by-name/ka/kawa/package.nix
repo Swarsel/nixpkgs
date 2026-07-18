@@ -2,8 +2,8 @@
   lib,
   stdenv,
   fetchurl,
-  jdk11,
   ant,
+  jdk11,
   makeWrapper,
 }:
 
@@ -54,6 +54,7 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Scheme implementation running on the Java platform";
+
     longDescription = ''
       Kawa is a general-purpose programming language that runs on the Java platform.
       It aims to combine the benefits of dynamic scripting languages (less boiler-plate
@@ -61,11 +62,14 @@ stdenv.mkDerivation (finalAttrs: {
       benefits of traditional compiled languages (fast execution, static error detection,
       modularity, zero-overhead Java platform integration).
     '';
+
     homepage = "https://www.gnu.org/software/kawa";
+
     license = [
       lib.licenses.mit
       lib.licenses.gpl2Plus
     ];
+
     maintainers = with lib.maintainers; [ siraben ];
     platforms = lib.platforms.unix;
   };

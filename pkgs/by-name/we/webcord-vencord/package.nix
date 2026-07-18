@@ -1,10 +1,10 @@
 {
+  lib,
   # allow overriding electron
   electron_42,
-  webcord,
   replaceVars,
-  lib,
   vencord-web-extension,
+  webcord,
 }:
 
 # nixpkgs-update: no auto update
@@ -19,9 +19,9 @@
 
   meta = {
     inherit (old.meta) license mainProgram platforms;
-
     description = "Webcord with Vencord web extension";
     homepage = "https://github.com/SpacingBat3/WebCord";
+
     maintainers = with lib.maintainers; [
       FlafyDev
       NotAShelf

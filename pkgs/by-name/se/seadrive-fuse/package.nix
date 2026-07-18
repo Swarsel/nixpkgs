@@ -1,20 +1,20 @@
 {
   lib,
   stdenv,
-  nix-update-script,
   fetchFromGitHub,
   autoreconfHook,
   curl,
+  fuse,
   libargon2,
   libevent,
   libsearpc,
   libuuid,
+  libwebsockets,
+  nix-update-script,
   pkg-config,
   python3,
   sqlite,
   vala,
-  libwebsockets,
-  fuse,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -49,14 +49,16 @@ stdenv.mkDerivation (finalAttrs: {
   passthru.updateScript = nix-update-script { };
 
   meta = {
-    homepage = "https://github.com/haiwen/seadrive-fuse";
     description = "SeaDrive daemon with FUSE interface";
+    homepage = "https://github.com/haiwen/seadrive-fuse";
     changelog = "https://github.com/haiwen/seadrive-fuse/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.gpl3Only;
-    platforms = lib.platforms.linux;
+
     maintainers = with lib.maintainers; [
       wenbin-liu
     ];
+
+    platforms = lib.platforms.linux;
     mainProgram = "seadrive";
   };
 })

@@ -2,32 +2,32 @@
   lib,
   stdenv,
   fetchurl,
-  fetchpatch,
-  # native deps.
-  runCommand,
-  pkg-config,
-  meson,
-  ninja,
-  makeWrapper,
-  # build+runtime deps.
-  knot-dns,
-  luajitPackages,
-  libuv,
-  gnutls,
-  lmdb,
-  # optionals, in principle
-  jemalloc,
-  systemdMinimal,
-  libcap_ng,
-  dns-root-data,
-  nghttp2,
-  ngtcp2-gnutls,
-  fstrm,
-  protobufc,
+  cacert,
   # test-only deps.
   cmocka,
+  dns-root-data,
+  fetchpatch,
+  fstrm,
+  gnutls,
+  # optionals, in principle
+  jemalloc,
+  # build+runtime deps.
+  knot-dns,
+  libcap_ng,
+  libuv,
+  lmdb,
+  luajitPackages,
+  makeWrapper,
+  meson,
+  nghttp2,
+  ngtcp2-gnutls,
+  ninja,
+  pkg-config,
+  protobufc,
+  # native deps.
+  runCommand,
+  systemdMinimal,
   which,
-  cacert,
 }:
 let
   inherit (lib) optional optionals optionalString;
@@ -66,9 +66,7 @@ let
         tests/config/doh2.test.lua modules/http/http_doh.test.lua
     '';
 
-    preConfigure = ''
-      patchShebangs scripts/
-    '';
+    strictDeps = true;
 
     nativeBuildInputs = [
       pkg-config
@@ -113,6 +111,10 @@ let
     #"-Dextra_tests=enabled" # not suitable as in-distro tests; many deps, too.
     ;
 
+    preConfigure = ''
+      patchShebangs scripts/
+    '';
+
     postInstall = ''
       cp -r ./python "$config_py"
       rm "$out"/lib/libkres.a
@@ -121,8 +123,8 @@ let
       rm -r "$out"/lib/sysusers.d/ # ATM more likely to harm than help
     '';
 
-    __darwinAllowLocalNetworking = true;
     doInstallCheck = with stdenv; hostPlatform == buildPlatform;
+
     nativeInstallCheckInputs = [
       which
       cacert
@@ -130,14 +132,16 @@ let
       lua.basexx
       lua.http
     ];
-    installCheckInputs = [
-      cmocka
-    ];
+
     installCheckPhase = ''
       meson test --print-errorlogs --no-suite snowflake
     '';
 
-    strictDeps = true;
+    __darwinAllowLocalNetworking = true;
+
+    installCheckInputs = [
+      cmocka
+    ];
 
     passthru = {
       inherit lua;
@@ -148,12 +152,14 @@ let
       description = "Caching validating DNS resolver, from .cz domain registry";
       homepage = "https://knot-resolver.cz";
       license = lib.licenses.gpl3Plus;
-      platforms = lib.platforms.unix;
+
       maintainers = [
         lib.maintainers.vcunat # upstream developer
         lib.maintainers.leona
         lib.maintainers.osnyx
       ];
+
+      platforms = lib.platforms.unix;
       mainProgram = "kresd";
     };
   });

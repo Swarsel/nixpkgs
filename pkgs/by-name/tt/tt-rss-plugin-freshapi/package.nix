@@ -27,8 +27,8 @@ stdenv.mkDerivation {
 
   meta = {
     description = "FreshRSS / Google Reader API Plugin for Tiny-Tiny RSS";
-    license = lib.licenses.agpl3Only;
     homepage = "https://github.com/eric-pierce/freshapi";
+    license = lib.licenses.agpl3Only;
     maintainers = with lib.maintainers; [ wrvsrx ];
     platforms = lib.platforms.all;
   };

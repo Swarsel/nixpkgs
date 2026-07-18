@@ -9,10 +9,10 @@ stdenv.mkDerivation (finalAttrs: {
   version = "4.8.0";
 
   src = fetchMavenArtifact {
+    inherit (finalAttrs) version;
+    sha256 = "sha256-jZdDKAC4Cvmkih8VH84Z3Q8BzsqGO55Uefr8vOlbDAk=";
     artifactId = "liquibase-redshift";
     groupId = "org.liquibase.ext";
-    sha256 = "sha256-jZdDKAC4Cvmkih8VH84Z3Q8BzsqGO55Uefr8vOlbDAk=";
-    inherit (finalAttrs) version;
   };
 
   installPhase = ''
@@ -22,10 +22,10 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   meta = {
-    homepage = "https://github.com/liquibase/liquibase-redshift/";
     description = "Amazon Redshift extension for Liquibase";
+    homepage = "https://github.com/liquibase/liquibase-redshift/";
     license = lib.licenses.asl20;
-    platforms = lib.platforms.unix;
     maintainers = with lib.maintainers; [ sir4ur0n ];
+    platforms = lib.platforms.unix;
   };
 })

@@ -18,16 +18,8 @@ in
   options = {
 
     environment.freetds = lib.mkOption {
-      type = lib.types.attrsOf lib.types.str;
       default = { };
-      example = lib.literalExpression ''
-        { MYDATABASE = '''
-            host = 10.0.2.100
-            port = 1433
-            tds version = 7.2
-          ''';
-        }
-      '';
+
       description = ''
         Configure freetds database entries. Each attribute denotes
         a section within freetds.conf, and the value (a string) is the config
@@ -37,6 +29,17 @@ in
         library and config.
       '';
 
+      example = lib.literalExpression ''
+        { MYDATABASE = '''
+            host = 10.0.2.100
+            port = 1433
+            tds version = 7.2
+          ''';
+        }
+      '';
+
+      type = lib.types.attrsOf lib.types.str;
+
     };
 
   };
@@ -44,10 +47,6 @@ in
   ###### implementation
 
   config = lib.mkIf (builtins.length (builtins.attrNames cfg) > 0) {
-
-    environment.variables.FREETDSCONF = "/etc/freetds.conf";
-    environment.variables.FREETDS = "/etc/freetds.conf";
-    environment.variables.SYBASE = "${pkgs.freetds}";
 
     environment.etc."freetds.conf" = {
       text = (
@@ -59,6 +58,10 @@ in
         )
       );
     };
+
+    environment.variables.FREETDS = "/etc/freetds.conf";
+    environment.variables.FREETDSCONF = "/etc/freetds.conf";
+    environment.variables.SYBASE = "${pkgs.freetds}";
 
   };
 

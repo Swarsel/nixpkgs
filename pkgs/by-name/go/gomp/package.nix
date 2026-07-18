@@ -1,24 +1,25 @@
 {
   lib,
-  python3Packages,
   fetchPypi,
+  python3Packages,
 }:
 
 python3Packages.buildPythonApplication (finalAttrs: {
   pname = "gomp";
   version = "1.1.1";
-  pyproject = true;
 
   src = fetchPypi {
     inherit (finalAttrs) pname version;
     sha256 = "sha256-Ixq9jtV56FKbh68jqmRd3lwpbMG00GcOUIpjzJhnSp0=";
   };
 
+  doCheck = false; # tests require interactive terminal
+
   build-system = with python3Packages; [
     setuptools
   ];
 
-  doCheck = false; # tests require interactive terminal
+  pyproject = true;
 
   meta = {
     description = "Tool for comparing Git branches";

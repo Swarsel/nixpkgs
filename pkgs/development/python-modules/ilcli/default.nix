@@ -1,7 +1,7 @@
 {
-  buildPythonPackage,
-  fetchFromGitHub,
   lib,
+  fetchFromGitHub,
+  buildPythonPackage,
   pytestCheckHook,
   setuptools,
 }:
@@ -9,7 +9,6 @@
 buildPythonPackage {
   pname = "ilcli";
   version = "0.3.2";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "cloudant";
@@ -19,10 +18,9 @@ buildPythonPackage {
     hash = "sha256-6aLkzpeS1xeIbTwFFIT7V1KWOaFLLq3opjIxnUuXOBE=";
   };
 
-  build-system = [ setuptools ];
-
   nativeCheckInputs = [ pytestCheckHook ];
-
+  build-system = [ setuptools ];
+  pyproject = true;
   pythonImportsCheck = [ "ilcli" ];
 
   meta = {

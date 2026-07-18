@@ -23,10 +23,6 @@ stdenv.mkDerivation (finalAttrs: {
     ./cmake-3.10.patch
   ];
 
-  nativeBuildInputs = [ cmake ];
-
-  buildInputs = [ libiio ];
-
   postPatch = lib.optionalString stdenv.hostPlatform.isDarwin ''
     # Fix iio include path on darwin to match linux
     for i in test/*.c; do
@@ -34,6 +30,9 @@ stdenv.mkDerivation (finalAttrs: {
         --replace 'iio/iio.h' 'iio.h'
     done
   '';
+
+  nativeBuildInputs = [ cmake ];
+  buildInputs = [ libiio ];
 
   meta = {
     description = "IIO AD9361 library for filter design and handling, multi-chip sync, etc";

@@ -7,7 +7,6 @@
 python3Packages.buildPythonPackage rec {
   pname = "opsdroid";
   version = "0.30.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "opsdroid";
@@ -16,6 +15,8 @@ python3Packages.buildPythonPackage rec {
     hash = "sha256-7H44wdhJD4Z6OP1sUmSGlepuvx+LlwKLq7iR8cwqR24=";
   };
 
+  # Tests are not included in releases
+  doCheck = false;
   build-system = with python3Packages; [ setuptools ];
 
   dependencies = with python3Packages; [
@@ -58,10 +59,8 @@ python3Packages.buildPythonPackage rec {
     wrapt
   ];
 
+  pyproject = true;
   passthru.python = python3Packages.python;
-
-  # Tests are not included in releases
-  doCheck = false;
 
   meta = {
     description = "Open source chat-ops bot framework";

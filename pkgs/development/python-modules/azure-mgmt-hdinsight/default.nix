@@ -11,7 +11,6 @@
 buildPythonPackage rec {
   pname = "azure-mgmt-hdinsight";
   version = "9.0.0";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
@@ -19,6 +18,8 @@ buildPythonPackage rec {
     extension = "zip";
   };
 
+  # no tests included
+  doCheck = false;
   build-system = [ setuptools ];
 
   dependencies = [
@@ -27,14 +28,13 @@ buildPythonPackage rec {
     msrest
   ];
 
-  # no tests included
-  doCheck = false;
-
-  pythonNamespaces = [ "azure.mgmt" ];
+  pyproject = true;
 
   pythonImportsCheck = [
     "azure.mgmt.hdinsight"
   ];
+
+  pythonNamespaces = [ "azure.mgmt" ];
 
   meta = {
     description = "Microsoft Azure HDInsight Management Client Library for Python";

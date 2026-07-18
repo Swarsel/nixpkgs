@@ -2,8 +2,8 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  util-linux,
   coreutils,
+  util-linux,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -31,6 +31,7 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Syncs browser profile dirs to RAM";
+
     longDescription = ''
       Profile-sync-daemon (psd) is a tiny pseudo-daemon designed to manage your
       browser's profile in tmpfs and to periodically sync it back to your
@@ -39,10 +40,11 @@ stdenv.mkDerivation (finalAttrs: {
       between the two. One of the major design goals of psd is a completely
       transparent user experience.
     '';
+
     homepage = "https://github.com/graysky2/profile-sync-daemon";
-    downloadPage = "https://github.com/graysky2/profile-sync-daemon/releases";
     license = lib.licenses.mit;
     maintainers = [ lib.maintainers.prikhi ];
     platforms = lib.platforms.linux;
+    downloadPage = "https://github.com/graysky2/profile-sync-daemon/releases";
   };
 })

@@ -1,15 +1,13 @@
 {
-  pkgs,
   buildPythonPackage,
+  pkgs,
   setuptools,
 }:
 
 buildPythonPackage {
   inherit (pkgs.jsonnet) pname version src;
-  pyproject = true;
-
   build-system = [ setuptools ];
-
+  pyproject = true;
   pythonImportsCheck = [ "_jsonnet" ];
 
   meta = {

@@ -2,44 +2,32 @@
   lib,
   buildPythonPackage,
   fetchPypi,
-
-  # build-system
-  setuptools,
-  setuptools-scm,
-
   # dependencies
   importlib-metadata,
-
-  # Reverse dependency
-  sage,
-
   # tests
   jaraco-collections,
   jaraco-test,
   pytestCheckHook,
+  # Reverse dependency
+  sage,
+  # build-system
+  setuptools,
+  setuptools-scm,
 }:
 
 buildPythonPackage rec {
   pname = "importlib-resources";
   version = "7.1.0";
-  pyproject = true;
 
   src = fetchPypi {
-    pname = "importlib_resources";
     inherit version;
     hash = "sha256-ByLUxiEkicUw8qFFo0wKejtHIbyWoV+tpZMOKgt2Bwg=";
+    pname = "importlib_resources";
   };
 
   postPatch = ''
     sed -i '/coherent.licensed/d' pyproject.toml
   '';
-
-  build-system = [
-    setuptools
-    setuptools-scm
-  ];
-
-  dependencies = [ importlib-metadata ];
 
   nativeCheckInputs = [
     pytestCheckHook
@@ -47,6 +35,13 @@ buildPythonPackage rec {
     jaraco-test
   ];
 
+  build-system = [
+    setuptools
+    setuptools-scm
+  ];
+
+  dependencies = [ importlib-metadata ];
+  pyproject = true;
   pythonImportsCheck = [ "importlib_resources" ];
 
   passthru.tests = {

@@ -2,10 +2,10 @@
   lib,
   stdenv,
   fetchFromGitHub,
+  SDL2,
   autoconf,
   automake,
   pkg-config,
-  SDL2,
   wrapGAppsHook3,
 }:
 
@@ -34,11 +34,11 @@ stdenv.mkDerivation (finalAttrs: {
   configureScript = "./autogen.sh";
 
   meta = {
-    homepage = "https://github.com/cebix/frodo4";
     description = "C64 emulator with emphasis on graphical accuracy";
-    mainProgram = "Frodo";
+    homepage = "https://github.com/cebix/frodo4";
     license = with lib.licenses; [ gpl2Only ];
     maintainers = with lib.maintainers; [ chordtoll ];
     platforms = lib.platforms.all;
+    mainProgram = "Frodo";
   };
 })

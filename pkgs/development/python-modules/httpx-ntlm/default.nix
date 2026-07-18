@@ -9,12 +9,11 @@
 buildPythonPackage rec {
   pname = "httpx-ntlm";
   version = "1.4.0";
-  format = "setuptools";
 
   src = fetchPypi {
-    pname = "httpx_ntlm";
     inherit version;
     hash = "sha256-Qb6KK6hRQ0hOYX3LkX1LGeOuEq/caIYipJAQNJk7U+Q=";
+    pname = "httpx_ntlm";
   };
 
   propagatedBuildInputs = [
@@ -24,7 +23,7 @@ buildPythonPackage rec {
 
   # https://github.com/ulodciv/httpx-ntlm/issues/5
   doCheck = false;
-
+  format = "setuptools";
   pythonImportsCheck = [ "httpx_ntlm" ];
 
   meta = {

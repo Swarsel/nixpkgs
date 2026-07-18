@@ -26,8 +26,6 @@ let
   xnu = sourceRelease "xnu";
 
   privateHeaders = stdenvNoCC.mkDerivation {
-    name = "file_cmds-deps-private-headers";
-
     buildCommand = ''
       install -D -t "$out/include" \
         '${Libinfo}/membership.subproj/membershipPriv.h' \
@@ -76,18 +74,16 @@ let
       #include_next <sys/types.h>
       EOF
     '';
+
+    name = "file_cmds-deps-private-headers";
   };
 in
 mkAppleDerivation {
-  releaseName = "file_cmds";
-
   outputs = [
     "out"
     "man"
     "xattr"
   ];
-
-  xcodeHash = "sha256-O1eJGFrSVIZbZvBSonKkG4MeYZQ8W6izpYEcHIE+/DM=";
 
   patches = [
     # `O_RESOLVE_BENEATH` was added in macOS 26, but our default deployment target is older than that.
@@ -96,8 +92,6 @@ mkAppleDerivation {
   ];
 
   nativeBuildInputs = [ pkg-config ];
-
-  env.NIX_CFLAGS_COMPILE = "-I${privateHeaders}/include";
 
   buildInputs = [
     apple-sdk_26 # For `O_RESOLVE_BENEATH` and `AT_RESOLVE_BENEATH`
@@ -111,6 +105,8 @@ mkAppleDerivation {
     xz
     zlib
   ];
+
+  env.NIX_CFLAGS_COMPILE = "-I${privateHeaders}/include";
 
   postInstall = ''
     HOST_PATH='${lib.getBin shell_cmds}/bin' patchShebangs --host "$out/bin"
@@ -127,8 +123,12 @@ mkAppleDerivation {
     ln -s "$xattr/bin/xattr" "$out/bin/xattr"
   '';
 
+  releaseName = "file_cmds";
+  xcodeHash = "sha256-O1eJGFrSVIZbZvBSonKkG4MeYZQ8W6izpYEcHIE+/DM=";
+
   meta = {
     description = "File commands for Darwin";
+
     license = with lib.licenses; [
       apple-psl10
       bsd2

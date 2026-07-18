@@ -1,16 +1,13 @@
 {
   lib,
-  python3Packages,
   fetchFromGitHub,
   nix-update-script,
+  python3Packages,
 }:
 
 python3Packages.buildPythonApplication (finalAttrs: {
   pname = "scoutsuite";
   version = "5.14.0";
-  pyproject = true;
-
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "nccgroup";
@@ -19,29 +16,8 @@ python3Packages.buildPythonApplication (finalAttrs: {
     hash = "sha256-bSnmb1grm8aoRjvvuc30QKBjcKz8wxnDXMdzFMDkiDE=";
   };
 
-  pythonRelaxDeps = [
-    "asyncio-throttle"
-    "azure-identity"
-    "azure-mgmt-authorization"
-    "azure-mgmt-compute"
-    "azure-mgmt-keyvault"
-    "azure-mgmt-monitor"
-    "azure-mgmt-network"
-    "azure-mgmt-rdbms"
-    "azure-mgmt-redis"
-    "azure-mgmt-resource"
-    "azure-mgmt-security"
-    "azure-mgmt-sql"
-    "azure-mgmt-storage"
-    "azure-mgmt-web"
-    "coloredlogs"
-    "google-cloud-kms"
-    "google-cloud-monitoring"
-    "httplib2shim"
-    "msgraph-core"
-    "python-dateutil"
-  ];
-
+  nativeCheckInputs = with python3Packages; [ pytestCheckHook ];
+  __structuredAttrs = true;
   build-system = with python3Packages; [ setuptools ];
 
   dependencies = with python3Packages; [
@@ -96,14 +72,36 @@ python3Packages.buildPythonApplication (finalAttrs: {
     sqlitedict
   ];
 
-  nativeCheckInputs = with python3Packages; [ pytestCheckHook ];
-
-  pythonImportsCheck = [ "ScoutSuite" ];
-
   disabledTests = [
     # AssertionError
     "test_scout_suite_help"
     "test_snake_case"
+  ];
+
+  pyproject = true;
+  pythonImportsCheck = [ "ScoutSuite" ];
+
+  pythonRelaxDeps = [
+    "asyncio-throttle"
+    "azure-identity"
+    "azure-mgmt-authorization"
+    "azure-mgmt-compute"
+    "azure-mgmt-keyvault"
+    "azure-mgmt-monitor"
+    "azure-mgmt-network"
+    "azure-mgmt-rdbms"
+    "azure-mgmt-redis"
+    "azure-mgmt-resource"
+    "azure-mgmt-security"
+    "azure-mgmt-sql"
+    "azure-mgmt-storage"
+    "azure-mgmt-web"
+    "coloredlogs"
+    "google-cloud-kms"
+    "google-cloud-monitoring"
+    "httplib2shim"
+    "msgraph-core"
+    "python-dateutil"
   ];
 
   passthru.updateScript = nix-update-script { };

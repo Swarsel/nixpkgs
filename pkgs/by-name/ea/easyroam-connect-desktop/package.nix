@@ -1,20 +1,20 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchurl,
   autoPatchelfHook,
-  glib,
-  gtk3,
-  pango,
   cairo,
+  dpkg,
+  glib,
+  glib-networking,
+  gtk3,
   harfbuzz,
-  networkmanager,
   libsecret,
   libsoup_3,
+  networkmanager,
+  pango,
   webkitgtk_4_1,
-  glib-networking,
   wrapGAppsHook3,
-  dpkg,
 }:
 stdenv.mkDerivation rec {
   pname = "easyroam-connect-desktop";
@@ -24,9 +24,6 @@ stdenv.mkDerivation rec {
     url = "https://packages.easyroam.de/repos/easyroam-desktop/pool/main/e/easyroam-desktop/easyroam_connect_desktop-${version}+${version}-linux.deb";
     hash = "sha256-03PLAUQQWlaAO+0cYcCorc1Q6wAhvLQGXNu0mqh8Lvw=";
   };
-
-  dontConfigure = true;
-  dontBuild = true;
 
   nativeBuildInputs = [
     autoPatchelfHook
@@ -57,18 +54,25 @@ stdenv.mkDerivation rec {
     runHook postInstall
   '';
 
+  dontBuild = true;
+  dontConfigure = true;
+
   meta = {
     description = "Manage and install your easyroam WiFi profiles";
-    mainProgram = "easyroam_connect_desktop";
+
     longDescription = ''
       Using this software you can easily connect your device to eduroam® by simply logging in with your DFN-AAI account.
     '';
+
     homepage = "https://easyroam.de";
     license = lib.licenses.unfree;
+
     maintainers = with lib.maintainers; [
       shadows_withal
       MarchCraft
     ];
+
     platforms = [ "x86_64-linux" ];
+    mainProgram = "easyroam_connect_desktop";
   };
 }

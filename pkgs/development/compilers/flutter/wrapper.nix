@@ -1,9 +1,38 @@
 {
   lib,
   stdenv,
-  darwin,
+  atk,
+  cairo,
   callPackage,
+  clang,
+  cmake,
+  darwin,
   flutter,
+  gdk-pixbuf,
+  gitMinimal,
+  glib,
+  gtk3,
+  harfbuzz,
+  libdeflate,
+  libepoxy,
+  libx11,
+  makeWrapper,
+  ninja,
+  pango,
+  pkg-config,
+  symlinkJoin,
+  which,
+  wrapGAppsHook3,
+  writeShellScript,
+  xorgproto,
+  zlib,
+  artifactHashes ? flutter.artifactHashes,
+  extraCFlags ? [ ],
+  extraCxxFlags ? [ ],
+  extraIncludes ? [ ],
+  extraLibraries ? [ ],
+  extraLinkerFlags ? [ ],
+  extraPkgConfigPackages ? [ ],
   supportedTargetFlutterPlatforms ? [
     "universal"
     "web"
@@ -14,35 +43,6 @@
     "macos"
     "ios"
   ],
-  artifactHashes ? flutter.artifactHashes,
-  extraPkgConfigPackages ? [ ],
-  extraLibraries ? [ ],
-  extraIncludes ? [ ],
-  extraCxxFlags ? [ ],
-  extraCFlags ? [ ],
-  extraLinkerFlags ? [ ],
-  makeWrapper,
-  writeShellScript,
-  wrapGAppsHook3,
-  gitMinimal,
-  which,
-  pkg-config,
-  atk,
-  cairo,
-  gdk-pixbuf,
-  glib,
-  gtk3,
-  harfbuzz,
-  libepoxy,
-  pango,
-  libx11,
-  xorgproto,
-  libdeflate,
-  zlib,
-  cmake,
-  ninja,
-  clang,
-  symlinkJoin,
 }:
 
 let
@@ -53,20 +53,21 @@ let
     (callPackage ./artifacts/prepare-artifacts.nix {
       src = callPackage ./artifacts/fetch-artifacts.nix {
         inherit flutterPlatform;
-        systemPlatform = stdenv.hostPlatform.system;
-        flutter = callPackage ./wrapper.nix { inherit flutter; };
         hash = artifactHashes.${flutterPlatform}.${stdenv.hostPlatform.system} or "";
+        flutter = callPackage ./wrapper.nix { inherit flutter; };
+        systemPlatform = stdenv.hostPlatform.system;
       };
     })
   );
 
   cacheDir = symlinkJoin {
-    name = "flutter-cache-dir";
-    paths = builtins.attrValues flutterPlatformArtifacts;
     postBuild = ''
       mkdir --parents "$out/bin/cache"
       ln --symbolic '${flutter}/bin/cache/dart-sdk' "$out/bin/cache"
     '';
+
+    name = "flutter-cache-dir";
+    paths = builtins.attrValues flutterPlatformArtifacts;
     passthru.flutterPlatform = flutterPlatformArtifacts;
   };
 
@@ -111,8 +112,8 @@ let
     in
     lib.map (e: e.val) (
       lib.genericClosure {
-        startSet = lib.map withKey appRuntimeDeps;
         operator = item: collect item.val;
+        startSet = lib.map withKey appRuntimeDeps;
       }
     );
 
@@ -144,11 +145,10 @@ let
 in
 (callPackage ./sdk-symlink.nix { }) (
   stdenv.mkDerivation {
-    pname = "flutter-wrapped";
     inherit (flutter) version;
-
+    inherit (flutter) meta;
+    pname = "flutter-wrapped";
     strictDeps = true;
-    __structuredAttrs = true;
 
     nativeBuildInputs = [
       makeWrapper
@@ -158,16 +158,6 @@ in
       glib
       wrapGAppsHook3
     ];
-
-    passthru = flutter.passthru // {
-      inherit (flutter) version;
-      unwrapped = flutter;
-      updateScript = ./update/update.py;
-      inherit cacheDir;
-    };
-
-    dontUnpack = true;
-    dontWrapGApps = true;
 
     installPhase = ''
       runHook preInstall
@@ -209,6 +199,15 @@ in
       runHook postInstall
     '';
 
-    inherit (flutter) meta;
+    __structuredAttrs = true;
+    dontUnpack = true;
+    dontWrapGApps = true;
+
+    passthru = flutter.passthru // {
+      inherit (flutter) version;
+      inherit cacheDir;
+      unwrapped = flutter;
+      updateScript = ./update/update.py;
+    };
   }
 )

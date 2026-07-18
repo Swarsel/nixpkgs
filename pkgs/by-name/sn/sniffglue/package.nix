@@ -1,11 +1,11 @@
 {
   lib,
+  stdenv,
   fetchFromGitHub,
   libpcap,
   libseccomp,
   pkg-config,
   rustPlatform,
-  stdenv,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -19,8 +19,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-i4qTqFCoQ3gXTGQ6PD4R2YhRfWztw8cd6XuZuKRlS+U=";
   };
 
-  cargoHash = "sha256-aZQ7Nq44ACAx6M3XoJZiUw9Yfm4VlJA9zBnPpgV0q4A=";
-
   nativeBuildInputs = [ pkg-config ];
 
   buildInputs = [
@@ -29,6 +27,8 @@ rustPlatform.buildRustPackage (finalAttrs: {
   ++ lib.optionals stdenv.hostPlatform.isLinux [
     libseccomp
   ];
+
+  cargoHash = "sha256-aZQ7Nq44ACAx6M3XoJZiUw9Yfm4VlJA9zBnPpgV0q4A=";
 
   meta = {
     description = "Secure multithreaded packet sniffer";

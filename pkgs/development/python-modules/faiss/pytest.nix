@@ -3,22 +3,22 @@
   buildPythonPackage,
   faiss,
   faiss-build,
-  scipy,
   pytestCheckHook,
+  scipy,
 }:
 
 assert faiss.pythonSupport;
 
 buildPythonPackage {
-  pname = "faiss-pytest-suite";
   inherit (faiss) version;
-
-  pyproject = false;
-
+  pname = "faiss-pytest-suite";
   src = "${faiss-build.src}/tests";
 
-  dontBuild = true;
-  dontInstall = true;
+  nativeCheckInputs = [
+    faiss
+    pytestCheckHook
+    scipy
+  ];
 
   # Tests that need GPUs and would fail in the sandbox
   disabledTestPaths = lib.optionals faiss.cudaSupport [ "test_contrib.py" ];
@@ -28,11 +28,9 @@ buildPythonPackage {
     "test_update_codebooks_with_double"
   ];
 
-  nativeCheckInputs = [
-    faiss
-    pytestCheckHook
-    scipy
-  ];
+  dontBuild = true;
+  dontInstall = true;
+  pyproject = false;
 
   meta = faiss.meta // {
     description = "Faiss test suite";

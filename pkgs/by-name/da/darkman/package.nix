@@ -2,8 +2,8 @@
   lib,
   fetchFromGitLab,
   buildGoModule,
-  scdoc,
   nix-update-script,
+  scdoc,
 }:
 
 buildGoModule (finalAttrs: {
@@ -30,8 +30,8 @@ buildGoModule (finalAttrs: {
       --replace-fail /usr/bin/darkman $out/bin/darkman
   '';
 
-  vendorHash = "sha256-QO+fz8m2rILKTokimf+v4x0lon5lZy7zC+5qjTMdcs0=";
   nativeBuildInputs = [ scdoc ];
+  vendorHash = "sha256-QO+fz8m2rILKTokimf+v4x0lon5lZy7zC+5qjTMdcs0=";
 
   buildPhase = ''
     runHook preBuild

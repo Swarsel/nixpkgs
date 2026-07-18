@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule (finalAttrs: {
@@ -16,6 +16,8 @@ buildGoModule (finalAttrs: {
   };
 
   vendorHash = "sha256-SIEd/YVwEF4FleudzvYoOW2GnIflKMYRDEiWSv77H7o=";
+  # require network
+  doCheck = false;
 
   ldflags = [
     "-s"
@@ -23,18 +25,17 @@ buildGoModule (finalAttrs: {
     "-X github.com/falcosecurity/falcoctl/cmd/version.semVersion=${finalAttrs.version}"
   ];
 
-  # require network
-  doCheck = false;
-
   meta = {
     description = "Administrative tooling for Falco";
-    mainProgram = "falcoctl";
     homepage = "https://github.com/falcosecurity/falcoctl";
     license = lib.licenses.asl20;
+
     maintainers = with lib.maintainers; [
       developer-guy
       kranurag7
       LucaGuerra
     ];
+
+    mainProgram = "falcoctl";
   };
 })

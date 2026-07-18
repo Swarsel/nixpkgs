@@ -1,9 +1,9 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
-  pkg-config,
   gst_all_1,
+  pkg-config,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -18,11 +18,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-H27n2rsqmGbk7ru8K7LhEvvftpz6mxgTow/18SpQn1Q=";
   };
 
-  cargoHash = "sha256-n9CZ92ezRP9i4JpARwLpW4KIo9/6cB481YuG3qN1BKo=";
-
-  cargoBuildFlags = [ "--package tauri-asset-gst-plugin" ];
-  cargoTestFlags = finalAttrs.cargoBuildFlags;
-
   nativeBuildInputs = [
     pkg-config
   ];
@@ -31,18 +26,25 @@ rustPlatform.buildRustPackage (finalAttrs: {
     gst_all_1.gstreamer
   ];
 
+  cargoHash = "sha256-n9CZ92ezRP9i4JpARwLpW4KIo9/6cB481YuG3qN1BKo=";
+
   postInstall = ''
     mkdir $out/lib/gstreamer-1.0
     mv $out/lib/*.so $out/lib/gstreamer-1.0/
   '';
 
+  cargoBuildFlags = [ "--package tauri-asset-gst-plugin" ];
+  cargoTestFlags = finalAttrs.cargoBuildFlags;
+
   meta = {
     description = "GStreamer plugin to handle the tauri asset:// protocol";
     homepage = "https://github.com/tauri-apps/tauri/pull/14402";
+
     license = [
       lib.licenses.mit
       lib.licenses.asl20
     ];
+
     maintainers = with lib.maintainers; [ snu ];
     platforms = lib.platforms.linux;
   };

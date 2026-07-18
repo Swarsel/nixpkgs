@@ -1,8 +1,8 @@
 {
   lib,
-  openssl,
   stdenv,
   fetchurl,
+  openssl,
 }:
 stdenv.mkDerivation (finalAttrs: {
   pname = "ctf-ynetd";
@@ -31,8 +31,8 @@ stdenv.mkDerivation (finalAttrs: {
     description = "Fork of ynetd hardened for CTFs with isolation using PID namespaces, minimal overhead proof-of-work checking, and strict resource limits via cgroups";
     homepage = "https://hxp.io/code/";
     license = lib.licenses.mit;
-    platforms = lib.platforms.linux;
     maintainers = [ lib.maintainers.haylin ];
+    platforms = lib.platforms.linux;
     mainProgram = "ynetd";
   };
 })

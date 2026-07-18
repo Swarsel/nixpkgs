@@ -1,24 +1,23 @@
 {
-  stdenv,
   lib,
-  buildPythonPackage,
+  stdenv,
   fetchFromGitHub,
+  buildPythonPackage,
   cmake,
   cython,
-  poetry-core,
-  setuptools,
   numpy,
   openjpeg,
-  pytestCheckHook,
+  poetry-core,
   pydicom,
   pylibjpeg,
   pylibjpeg-data,
+  pytestCheckHook,
+  setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "pylibjpeg-openjpeg";
   version = "2.5.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "pydicom";
@@ -37,7 +36,12 @@ buildPythonPackage rec {
     substituteInPlace pyproject.toml --replace-fail "poetry-core >=1.8,<2" "poetry-core"
   '';
 
-  dontUseCmakeConfigure = true;
+  nativeCheckInputs = [
+    pytestCheckHook
+    pydicom
+    pylibjpeg-data
+    pylibjpeg
+  ];
 
   build-system = [
     cmake
@@ -48,19 +52,14 @@ buildPythonPackage rec {
 
   dependencies = [ numpy ];
 
-  nativeCheckInputs = [
-    pytestCheckHook
-    pydicom
-    pylibjpeg-data
-    pylibjpeg
-  ];
   disabledTestPaths = [
     # ignore a few Python test files (e.g. performance tests) in openjpeg itself:
     "lib/openjpeg"
   ];
 
+  dontUseCmakeConfigure = true;
   enabledTestPaths = [ "openjpeg/tests" ];
-
+  pyproject = true;
   pythonImportsCheck = [ "openjpeg" ];
 
   meta = {

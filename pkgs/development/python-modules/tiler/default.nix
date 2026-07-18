@@ -2,23 +2,24 @@
   lib,
   buildPythonPackage,
   fetchPypi,
+  numpy,
+  pytestCheckHook,
   setuptools,
   setuptools-scm,
-  wheel,
-  numpy,
   tqdm,
-  pytestCheckHook,
+  wheel,
 }:
 
 buildPythonPackage rec {
   pname = "tiler";
   version = "0.6.0";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
     hash = "sha256-ps0uHgzPa+ZoXXrB+0gfuVIEBUNmym/ym6xCxiyHhxA=";
   };
+
+  nativeCheckInputs = [ pytestCheckHook ];
 
   build-system = [
     setuptools
@@ -31,8 +32,7 @@ buildPythonPackage rec {
     tqdm
   ];
 
-  nativeCheckInputs = [ pytestCheckHook ];
-
+  pyproject = true;
   pythonImportsCheck = [ "tiler" ];
 
   meta = {

@@ -27,22 +27,16 @@ with lib;
         message = "systemd-repart already grows the root partition and thus you should not use boot.growPartition";
       }
     ];
+
     systemd.services.growpart = {
-      wantedBy = [ "-.mount" ];
       after = [ "-.mount" ];
+
       before = [
         "systemd-growfs-root.service"
         "shutdown.target"
       ];
+
       conflicts = [ "shutdown.target" ];
-      unitConfig.DefaultDependencies = false;
-      serviceConfig = {
-        Type = "oneshot";
-        RemainAfterExit = true;
-        TimeoutSec = "infinity";
-        # growpart returns 1 if the partition is already grown
-        SuccessExitStatus = "0 1";
-      };
 
       script = ''
         rootDevice="${config.fileSystems."/".device}"
@@ -57,6 +51,17 @@ with lib;
         fi
         "${pkgs.cloud-utils.guest}/bin/growpart" "$parentDevice" "$partNum"
       '';
+
+      serviceConfig = {
+        RemainAfterExit = true;
+        # growpart returns 1 if the partition is already grown
+        SuccessExitStatus = "0 1";
+        TimeoutSec = "infinity";
+        Type = "oneshot";
+      };
+
+      unitConfig.DefaultDependencies = false;
+      wantedBy = [ "-.mount" ];
     };
   };
 }

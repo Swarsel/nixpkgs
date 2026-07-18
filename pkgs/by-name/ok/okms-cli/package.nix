@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   nix-update-script,
   testers,
 }:
@@ -29,18 +29,19 @@ buildGoModule (finalAttrs: {
 
   passthru = {
     tests.version = testers.testVersion {
-      package = finalAttrs.finalPackage;
       command = "okms version";
+      package = finalAttrs.finalPackage;
     };
+
     updateScript = nix-update-script { };
   };
 
   meta = {
+    description = "Command Line Interface to interact with your OVHcloud KMS services";
     homepage = "https://github.com/ovh/okms-cli";
     changelog = "https://github.com/ovh/okms-cli/releases/tag/v${finalAttrs.version}";
-    description = "Command Line Interface to interact with your OVHcloud KMS services";
-    mainProgram = "okms";
     license = lib.licenses.asl20;
     maintainers = [ lib.maintainers.anthonyroussel ];
+    mainProgram = "okms";
   };
 })

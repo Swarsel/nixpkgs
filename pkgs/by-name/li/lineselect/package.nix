@@ -1,7 +1,7 @@
 {
   lib,
-  buildNpmPackage,
   fetchFromGitHub,
+  buildNpmPackage,
   makeBinaryWrapper,
   nodejs,
 }:
@@ -17,11 +17,11 @@ buildNpmPackage rec {
     hash = "sha256-dCmLD4Wjsdlta2xsFCMj1zWQr4HWCfcWsKVmrTND4Yw=";
   };
 
-  npmDepsHash = "sha256-wBtswfXtJTI7um0HZQk1YygpSggZ4j0/7IBcJiQpOUY=";
-
   nativeBuildInputs = [
     makeBinaryWrapper
   ];
+
+  npmDepsHash = "sha256-wBtswfXtJTI7um0HZQk1YygpSggZ4j0/7IBcJiQpOUY=";
 
   postInstall = ''
     makeWrapper ${lib.getExe nodejs} $out/bin/lineselect \

@@ -2,13 +2,12 @@
   lib,
   stdenv,
   fetchurl,
-  perl,
-  texinfo,
-
   # for passthru.tests
   gnutls,
-  samba,
+  perl,
   qemu,
+  samba,
+  texinfo,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -25,7 +24,6 @@ stdenv.mkDerivation (finalAttrs: {
     "dev"
     "devdoc"
   ];
-  outputBin = "dev";
 
   nativeBuildInputs = [
     texinfo
@@ -33,23 +31,28 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   doCheck = true;
+
   preCheck =
     if stdenv.hostPlatform.isDarwin then "export DYLD_LIBRARY_PATH=`pwd`/lib/.libs" else null;
+
+  outputBin = "dev";
 
   passthru.tests = {
     inherit gnutls samba qemu;
   };
 
   meta = {
-    homepage = "https://www.gnu.org/software/libtasn1/";
     description = "ASN.1 library";
+
     longDescription = ''
       Libtasn1 is the ASN.1 library used by GnuTLS, GNU Shishi and some
       other packages.  The goal of this implementation is to be highly
       portable, and only require an ANSI C89 platform.
     '';
+
+    homepage = "https://www.gnu.org/software/libtasn1/";
+    changelog = "https://gitlab.com/gnutls/libtasn1/-/blob/v${finalAttrs.version}/NEWS.md";
     license = lib.licenses.lgpl2Plus;
     platforms = lib.platforms.all;
-    changelog = "https://gitlab.com/gnutls/libtasn1/-/blob/v${finalAttrs.version}/NEWS.md";
   };
 })

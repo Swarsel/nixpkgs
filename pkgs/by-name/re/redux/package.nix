@@ -2,11 +2,11 @@
   lib,
   stdenv,
   fetchurl,
-  writeScript,
-  libx11,
-  libxext,
   alsa-lib,
   autoPatchelfHook,
+  libx11,
+  libxext,
+  writeScript,
   releasePath ? null,
 }:
 
@@ -25,6 +25,8 @@ stdenv.mkDerivation rec {
       releasePath
     else
       fetchurl {
+        sha256 = "sha256-q9hxDI8tgjIFaZyrguXn57C4vh0oeSQBY8koq8cPDlg=";
+
         urls = [
           "https://files.renoise.com/demo/Renoise_Redux_${
             lib.replaceStrings [ "." ] [ "_" ] version
@@ -33,7 +35,6 @@ stdenv.mkDerivation rec {
             lib.replaceStrings [ "." ] [ "_" ] version
           }_Demo_Linux_x86_64.tar.gz"
         ];
-        sha256 = "sha256-q9hxDI8tgjIFaZyrguXn57C4vh0oeSQBY8koq8cPDlg=";
       };
 
   nativeBuildInputs = [
@@ -76,8 +77,8 @@ stdenv.mkDerivation rec {
   meta = {
     description = "Sample-based instrument, with a powerful phrase sequencer";
     homepage = "https://www.renoise.com/products/redux";
-    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
     license = lib.licenses.unfree;
+    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
     maintainers = with lib.maintainers; [ mihnea-s ];
     platforms = [ "x86_64-linux" ];
   };

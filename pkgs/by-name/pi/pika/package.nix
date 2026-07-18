@@ -1,7 +1,7 @@
 {
   lib,
-  fetchurl,
   stdenv,
+  fetchurl,
   undmg,
 }:
 
@@ -16,18 +16,18 @@ stdenv.mkDerivation rec {
 
   nativeBuildInputs = [ undmg ];
 
-  sourceRoot = "Pika.app";
-
   installPhase = ''
     mkdir -p "$out/Applications/Pika.app"
     cp -R . "$out/Applications/Pika.app"
   '';
 
+  sourceRoot = "Pika.app";
+
   meta = {
-    homepage = "https://superhighfives.com/pika";
     description = "Open-source colour picker app for macOS";
-    platforms = lib.platforms.darwin;
+    homepage = "https://superhighfives.com/pika";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ arkivm ];
+    platforms = lib.platforms.darwin;
   };
 }

@@ -1,15 +1,15 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
 }:
 
 let
   version = "0.0.2";
 in
 buildGoModule {
-  pname = "archimede";
   inherit version;
+  pname = "archimede";
 
   src = fetchFromGitHub {
     owner = "gennaro-tedesco";
@@ -21,10 +21,10 @@ buildGoModule {
   vendorHash = "sha256-F74TVp6+UdV31YVYYHWtdIzpbbiYM2I8csGobesFN2g=";
 
   meta = {
-    homepage = "https://github.com/gennaro-tedesco/archimede";
     description = "Unobtrusive directory information fetcher";
+    homepage = "https://github.com/gennaro-tedesco/archimede";
     license = lib.licenses.asl20;
-    mainProgram = "archimede";
     maintainers = [ lib.maintainers.anugrahn1 ];
+    mainProgram = "archimede";
   };
 }

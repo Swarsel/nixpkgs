@@ -1,16 +1,14 @@
 {
-  fetchurl,
-  fetchzip,
   lib,
   stdenv,
-  callPackage,
+  fetchurl,
   autoPatchelfHook,
-  glib,
+  callPackage,
   darwin,
+  fetchzip,
+  glib,
 }:
 {
-  tests = callPackage ./tests.nix { };
-
   addPlugins =
     ide: unprocessedPlugins:
     let
@@ -24,23 +22,19 @@
       plugins = map processPlugin unprocessedPlugins;
     in
     stdenv.mkDerivation (finalAttrs: {
+      inherit (ide) meta;
       pname = finalAttrs.meta.mainProgram + "-with-plugins";
       version = ide.version;
       src = ide;
-      dontInstall = true;
-      dontStrip = true;
-      passthru.plugins = plugins ++ (ide.plugins or [ ]);
-      newPlugins = plugins;
-      disallowedReferences = [ ide ];
+
       nativeBuildInputs =
         (lib.optional stdenv.hostPlatform.isLinux autoPatchelfHook)
         # The buildPhase hook rewrites the binary, which invaliates the code
         # signature. Add the fixup hook to sign the output.
         ++ (lib.optional stdenv.hostPlatform.isDarwin darwin.autoSignDarwinBinariesHook)
         ++ (ide.nativeBuildInputs or [ ]);
-      buildInputs = lib.unique ((ide.buildInputs or [ ]) ++ [ glib ]);
 
-      inherit (ide) meta;
+      buildInputs = lib.unique ((ide.buildInputs or [ ]) ++ [ glib ]);
 
       buildPhase =
         let
@@ -75,5 +69,13 @@
             done
           )
         '';
+
+      disallowedReferences = [ ide ];
+      dontInstall = true;
+      dontStrip = true;
+      newPlugins = plugins;
+      passthru.plugins = plugins ++ (ide.plugins or [ ]);
     });
+
+  tests = callPackage ./tests.nix { };
 }

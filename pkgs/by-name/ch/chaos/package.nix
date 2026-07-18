@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   versionCheckHook,
 }:
 
@@ -17,17 +17,15 @@ buildGoModule (finalAttrs: {
   };
 
   vendorHash = "sha256-c5J2cTzyb7CiBlS4vS3PdRhr6DhIvXE2lt40u0s6G0k=";
-
-  subPackages = [ "cmd/chaos/" ];
+  doInstallCheck = true;
+  nativeInstallCheckInputs = [ versionCheckHook ];
 
   ldflags = [
     "-s"
     "-w"
   ];
 
-  nativeInstallCheckInputs = [ versionCheckHook ];
-
-  doInstallCheck = true;
+  subPackages = [ "cmd/chaos/" ];
 
   meta = {
     description = "Tool to communicate with Chaos DNS API";

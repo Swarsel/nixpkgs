@@ -2,25 +2,25 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  fetchpatch,
-  nix-update-script,
-  pkg-config,
-  meson,
-  ninja,
-  vala,
-  gtk3,
-  libxml2,
-  libhandy,
-  libportal-gtk3,
-  webkitgtk_4_1,
   elementary-gtk-theme,
   elementary-icon-theme,
+  evolution-data-server,
+  fetchpatch,
   folks,
   glib-networking,
   granite,
-  evolution-data-server,
-  wrapGAppsHook3,
+  gtk3,
   libgee,
+  libhandy,
+  libportal-gtk3,
+  libxml2,
+  meson,
+  ninja,
+  nix-update-script,
+  pkg-config,
+  vala,
+  webkitgtk_4_1,
+  wrapGAppsHook3,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -38,8 +38,8 @@ stdenv.mkDerivation (finalAttrs: {
     # Adapt to libcamel API changes in 3.57.1
     # https://github.com/elementary/mail/pull/1023
     (fetchpatch {
-      url = "https://github.com/elementary/mail/commit/8cb5bb87ceca9000c2a556bafeb059b9f1cbf2f1.patch";
       hash = "sha256-NFZVvKJyPTV+lRcefTIgm2jOmCfrY+TlawDYzGTBd7Y=";
+      url = "https://github.com/elementary/mail/commit/8cb5bb87ceca9000c2a556bafeb059b9f1cbf2f1.patch";
     })
   ];
 
@@ -81,9 +81,9 @@ stdenv.mkDerivation (finalAttrs: {
     homepage = "https://github.com/elementary/mail";
     changelog = "https://github.com/elementary/mail/releases/tag/${finalAttrs.version}";
     license = lib.licenses.gpl3Plus;
-    platforms = lib.platforms.linux;
     maintainers = with lib.maintainers; [ ethancedwards8 ];
-    teams = [ lib.teams.pantheon ];
+    platforms = lib.platforms.linux;
     mainProgram = "io.elementary.mail";
+    teams = [ lib.teams.pantheon ];
   };
 })

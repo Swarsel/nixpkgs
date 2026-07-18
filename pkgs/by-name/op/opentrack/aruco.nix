@@ -1,8 +1,8 @@
 {
   lib,
   stdenv,
-  cmake,
   fetchFromGitHub,
+  cmake,
   opencv4,
   opentrack,
 }:
@@ -21,7 +21,6 @@ stdenv.mkDerivation {
   strictDeps = true;
   nativeBuildInputs = [ cmake ];
   buildInputs = [ opencv4 ];
-
   env.NIX_CFLAGS_COMPILE = "-Wall -Wextra -Wpedantic -ffast-math -O3";
 
   installPhase = ''
@@ -34,8 +33,8 @@ stdenv.mkDerivation {
   '';
 
   meta = {
-    homepage = "https://github.com/opentrack/aruco";
     description = "C++ library for detection of AR markers based on OpenCV";
+    homepage = "https://github.com/opentrack/aruco";
     license = lib.licenses.isc;
     maintainers = opentrack.meta.maintainers;
   };

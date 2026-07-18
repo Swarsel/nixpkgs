@@ -1,22 +1,21 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  poetry-core,
+  buildPythonPackage,
   filterpy,
   importlib-metadata,
+  motmetrics,
   numpy,
+  opencv4,
+  poetry-core,
+  pytestCheckHook,
   rich,
   scipy,
-  motmetrics,
-  opencv4,
-  pytestCheckHook,
 }:
 
 buildPythonPackage rec {
   pname = "norfair";
   version = "2.3.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "tryolabs";
@@ -25,12 +24,8 @@ buildPythonPackage rec {
     hash = "sha256-3a9Z4mbmqmSnOD69RAcKSX6N7vdDU5F/xgsEURnzIR0=";
   };
 
+  nativeCheckInputs = [ pytestCheckHook ];
   build-system = [ poetry-core ];
-
-  pythonRelaxDeps = [
-    "numpy"
-    "rich"
-  ];
 
   dependencies = [
     filterpy
@@ -45,14 +40,18 @@ buildPythonPackage rec {
     video = [ opencv4 ];
   };
 
-  nativeCheckInputs = [ pytestCheckHook ];
-
+  pyproject = true;
   pythonImportsCheck = [ "norfair" ];
+
+  pythonRelaxDeps = [
+    "numpy"
+    "rich"
+  ];
 
   meta = {
     description = "Lightweight Python library for adding real-time multi-object tracking to any detector";
-    changelog = "https://github.com/tryolabs/norfair/releases/tag/${src.tag}";
     homepage = "https://github.com/tryolabs/norfair";
+    changelog = "https://github.com/tryolabs/norfair/releases/tag/${src.tag}";
     license = lib.licenses.bsd3;
     maintainers = with lib.maintainers; [ fleaz ];
   };

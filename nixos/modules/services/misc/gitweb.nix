@@ -15,95 +15,6 @@ let
 in
 {
 
-  options.services.gitweb = {
-
-    projectroot = lib.mkOption {
-      default = "/srv/git";
-      type = lib.types.path;
-      description = ''
-        Path to git projects (bare repositories) that should be served by
-        gitweb. Must not end with a slash.
-      '';
-    };
-
-    extraConfig = lib.mkOption {
-      default = "";
-      type = lib.types.lines;
-      description = ''
-        Verbatim configuration text appended to the generated gitweb.conf file.
-      '';
-      example = ''
-        $feature{'highlight'}{'default'} = [1];
-        $feature{'ctags'}{'default'} = [1];
-        $feature{'avatar'}{'default'} = ['gravatar'];
-      '';
-    };
-
-    gitwebTheme = lib.mkOption {
-      default = false;
-      type = lib.types.bool;
-      description = ''
-        Use an alternative theme for gitweb, strongly inspired by GitHub.
-      '';
-    };
-
-    gitwebConfigFile = lib.mkOption {
-      default = pkgs.writeText "gitweb.conf" ''
-        # path to git projects (<project>.git)
-        $projectroot = "${cfg.projectroot}";
-        $highlight_bin = "${pkgs.highlight}/bin/highlight";
-        ${cfg.extraConfig}
-      '';
-      defaultText = lib.literalMD "generated config file";
-      type = lib.types.path;
-      readOnly = true;
-      internal = true;
-    };
-
-    nginx = {
-      enable = lib.mkOption {
-        default = false;
-        type = lib.types.bool;
-        description = ''
-          If true, enable gitweb in nginx.
-        '';
-      };
-
-      location = lib.mkOption {
-        default = "/gitweb";
-        type = lib.types.str;
-        description = ''
-          Location to serve gitweb on.
-        '';
-      };
-
-      user = lib.mkOption {
-        default = "nginx";
-        type = lib.types.str;
-        description = ''
-          Existing user that the CGI process will belong to. (Default almost surely will do.)
-        '';
-      };
-
-      group = lib.mkOption {
-        default = "nginx";
-        type = lib.types.str;
-        description = ''
-          Group that the CGI process will belong to. (Set to `config.services.gitolite.group` if you are using gitolite.)
-        '';
-      };
-
-      virtualHost = lib.mkOption {
-        default = "_";
-        type = lib.types.str;
-        description = ''
-          VirtualHost to serve gitweb on. Default is catch-all.
-        '';
-      };
-    };
-
-  };
-
   imports = [
     (lib.mkRenamedOptionModule
       [ "services" "nginx" "gitweb" "enable" ]
@@ -127,27 +38,117 @@ in
     )
   ];
 
-  config = lib.mkIf cfgNginx.enable {
+  options.services.gitweb = {
 
-    systemd.services.gitweb = {
-      description = "GitWeb service";
-      script = "${package}/gitweb.cgi --fastcgi --nproc=1";
-      environment = {
-        FCGI_SOCKET_PATH = "/run/gitweb/gitweb.sock";
-      };
-      serviceConfig = {
-        User = cfgNginx.user;
-        Group = cfgNginx.group;
-        RuntimeDirectory = [ "gitweb" ];
-      };
-      wantedBy = [ "multi-user.target" ];
+    extraConfig = lib.mkOption {
+      default = "";
+
+      description = ''
+        Verbatim configuration text appended to the generated gitweb.conf file.
+      '';
+
+      example = ''
+        $feature{'highlight'}{'default'} = [1];
+        $feature{'ctags'}{'default'} = [1];
+        $feature{'avatar'}{'default'} = ['gravatar'];
+      '';
+
+      type = lib.types.lines;
     };
+
+    gitwebConfigFile = lib.mkOption {
+      default = pkgs.writeText "gitweb.conf" ''
+        # path to git projects (<project>.git)
+        $projectroot = "${cfg.projectroot}";
+        $highlight_bin = "${pkgs.highlight}/bin/highlight";
+        ${cfg.extraConfig}
+      '';
+
+      defaultText = lib.literalMD "generated config file";
+      internal = true;
+      readOnly = true;
+      type = lib.types.path;
+    };
+
+    gitwebTheme = lib.mkOption {
+      default = false;
+
+      description = ''
+        Use an alternative theme for gitweb, strongly inspired by GitHub.
+      '';
+
+      type = lib.types.bool;
+    };
+
+    nginx = {
+      enable = lib.mkOption {
+        default = false;
+
+        description = ''
+          If true, enable gitweb in nginx.
+        '';
+
+        type = lib.types.bool;
+      };
+
+      group = lib.mkOption {
+        default = "nginx";
+
+        description = ''
+          Group that the CGI process will belong to. (Set to `config.services.gitolite.group` if you are using gitolite.)
+        '';
+
+        type = lib.types.str;
+      };
+
+      location = lib.mkOption {
+        default = "/gitweb";
+
+        description = ''
+          Location to serve gitweb on.
+        '';
+
+        type = lib.types.str;
+      };
+
+      user = lib.mkOption {
+        default = "nginx";
+
+        description = ''
+          Existing user that the CGI process will belong to. (Default almost surely will do.)
+        '';
+
+        type = lib.types.str;
+      };
+
+      virtualHost = lib.mkOption {
+        default = "_";
+
+        description = ''
+          VirtualHost to serve gitweb on. Default is catch-all.
+        '';
+
+        type = lib.types.str;
+      };
+    };
+
+    projectroot = lib.mkOption {
+      default = "/srv/git";
+
+      description = ''
+        Path to git projects (bare repositories) that should be served by
+        gitweb. Must not end with a slash.
+      '';
+
+      type = lib.types.path;
+    };
+
+  };
+
+  config = lib.mkIf cfgNginx.enable {
 
     services.nginx = {
       virtualHosts.${cfgNginx.virtualHost} = {
-        locations."${cfgNginx.location}/static/" = {
-          alias = "${package}/static/";
-        };
         locations."${cfgNginx.location}/" = {
           extraConfig = ''
             include ${config.services.nginx.package}/conf/fastcgi_params;
@@ -155,7 +156,29 @@ in
             fastcgi_pass unix:/run/gitweb/gitweb.sock;
           '';
         };
+
+        locations."${cfgNginx.location}/static/" = {
+          alias = "${package}/static/";
+        };
       };
+    };
+
+    systemd.services.gitweb = {
+      description = "GitWeb service";
+
+      environment = {
+        FCGI_SOCKET_PATH = "/run/gitweb/gitweb.sock";
+      };
+
+      script = "${package}/gitweb.cgi --fastcgi --nproc=1";
+
+      serviceConfig = {
+        Group = cfgNginx.group;
+        RuntimeDirectory = [ "gitweb" ];
+        User = cfgNginx.user;
+      };
+
+      wantedBy = [ "multi-user.target" ];
     };
 
   };

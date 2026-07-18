@@ -3,8 +3,8 @@
   stdenv,
   fetchFromGitHub,
   installShellFiles,
-  versionCheckHook,
   nix-update-script,
+  versionCheckHook,
 }:
 
 stdenv.mkDerivation (finalAttrs: {

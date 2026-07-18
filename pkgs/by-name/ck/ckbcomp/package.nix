@@ -11,25 +11,25 @@ stdenv.mkDerivation (finalAttrs: {
   version = "1.242";
 
   src = fetchFromGitLab {
-    domain = "salsa.debian.org";
     owner = "installer-team";
     repo = "console-setup";
     rev = finalAttrs.version;
     sha256 = "sha256-5PV1Mbg7ZGQsotwnBVz8DI77Y8ULCnoTANqBLlP3YrE=";
+    domain = "salsa.debian.org";
   };
 
   buildInputs = [ perl ];
 
-  patchPhase = ''
-    substituteInPlace Keyboard/ckbcomp --replace "/usr/share/X11/xkb" "${xkeyboard_config}/share/X11/xkb"
-    substituteInPlace Keyboard/ckbcomp --replace "rules = 'xorg'" "rules = 'base'"
+  installPhase = ''
+    install -Dm0555 -t $out/bin Keyboard/ckbcomp
+    install -Dm0444 -t $out/share/man/man1 man/ckbcomp.1
   '';
 
   dontBuild = true;
 
-  installPhase = ''
-    install -Dm0555 -t $out/bin Keyboard/ckbcomp
-    install -Dm0444 -t $out/share/man/man1 man/ckbcomp.1
+  patchPhase = ''
+    substituteInPlace Keyboard/ckbcomp --replace "/usr/share/X11/xkb" "${xkeyboard_config}/share/X11/xkb"
+    substituteInPlace Keyboard/ckbcomp --replace "rules = 'xorg'" "rules = 'base'"
   '';
 
   meta = {

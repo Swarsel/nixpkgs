@@ -1,16 +1,14 @@
 {
   lib,
   stdenv,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # build-system
-  setuptools,
-
+  buildPythonPackage,
   # dependencies
   huggingface-hub,
   onnxruntime,
   sentencepiece,
+  # build-system
+  setuptools,
   torch,
   tqdm,
   transformers,
@@ -19,8 +17,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "gliner";
   version = "0.2.27";
-  pyproject = true;
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "urchade";
@@ -29,13 +25,14 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-pM2JenMxBvCiDQyj9VFMYJGRckWJWna3gCdAlhBGR1U=";
   };
 
+  # All tests require internet
+  doCheck = false;
+  __structuredAttrs = true;
+
   build-system = [
     setuptools
   ];
 
-  pythonRelaxDeps = [
-    "transformers"
-  ];
   dependencies = [
     huggingface-hub
     onnxruntime
@@ -44,6 +41,8 @@ buildPythonPackage (finalAttrs: {
     tqdm
     transformers
   ];
+
+  pyproject = true;
 
   # aarch64-linux fails cpuinfo test, because /sys/devices/system/cpu/ does not exist in the sandbox:
   # terminate called after throwing an instance of 'onnxruntime::OnnxRuntimeException'
@@ -55,8 +54,9 @@ buildPythonPackage (finalAttrs: {
         "gliner"
       ];
 
-  # All tests require internet
-  doCheck = false;
+  pythonRelaxDeps = [
+    "transformers"
+  ];
 
   meta = {
     description = "Generalist and Lightweight Model for Named Entity Recognition";
@@ -64,6 +64,7 @@ buildPythonPackage (finalAttrs: {
     changelog = "https://github.com/urchade/GLiNER/releases/tag/${finalAttrs.src.tag}";
     license = lib.licenses.asl20;
     maintainers = with lib.maintainers; [ GaetanLepage ];
+
     badPlatforms = [
       # terminate called after throwing an instance of 'onnxruntime::OnnxRuntimeException'
       # Attempt to use DefaultLogger but none has been registered.

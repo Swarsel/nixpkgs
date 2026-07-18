@@ -1,17 +1,17 @@
 {
   lib,
+  fetchFromGitHub,
   anyio,
   async-generator,
   buildPythonPackage,
-  fetchFromGitHub,
   cpyparsing,
   ipykernel,
   mypy,
   pexpect,
+  prompt-toolkit,
   pygments,
   pytestCheckHook,
   pythonAtLeast,
-  prompt-toolkit,
   setuptools,
   tkinter,
   tstr,
@@ -21,7 +21,6 @@
 buildPythonPackage rec {
   pname = "coconut";
   version = "3.2.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "evhub";
@@ -29,8 +28,6 @@ buildPythonPackage rec {
     tag = "v${version}";
     hash = "sha256-3L5n0nOE8NMXw2tPWjxDCWnHH94yecdnjQ+GBsxt08c=";
   };
-
-  disabled = pythonAtLeast "3.13";
 
   nativeBuildInputs = [ setuptools ];
 
@@ -53,9 +50,10 @@ buildPythonPackage rec {
     tkinter
   ];
 
+  disabled = pythonAtLeast "3.13";
   # Currently most tests have performance issues
   enabledTestPaths = [ "coconut/tests/constants_test.py" ];
-
+  pyproject = true;
   pythonImportsCheck = [ "coconut" ];
 
   meta = {

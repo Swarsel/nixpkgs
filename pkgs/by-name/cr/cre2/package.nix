@@ -29,9 +29,14 @@ stdenv.mkDerivation (finalAttrs: {
     libtool
     pkg-config
   ];
+
   buildInputs = [
     re2
     texinfo
+  ];
+
+  configureFlags = [
+    "--enable-maintainer-mode"
   ];
 
   env.NIX_LDFLAGS = toString [
@@ -39,13 +44,9 @@ stdenv.mkDerivation (finalAttrs: {
     "-lpthread"
   ];
 
-  configureFlags = [
-    "--enable-maintainer-mode"
-  ];
-
   meta = {
-    homepage = "http://marcomaggi.github.io/docs/cre2.html";
     description = "C Wrapper for RE2";
+    homepage = "http://marcomaggi.github.io/docs/cre2.html";
     license = lib.licenses.bsd3;
     platforms = lib.platforms.all;
   };

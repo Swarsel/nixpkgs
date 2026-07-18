@@ -1,19 +1,18 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
-  setuptools-scm,
   autocommand,
+  buildPythonPackage,
   importlib-resources,
   path,
   pytestCheckHook,
+  setuptools,
+  setuptools-scm,
 }:
 
 buildPythonPackage rec {
   pname = "oathtool";
   version = "2.4.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "jaraco";
@@ -21,6 +20,8 @@ buildPythonPackage rec {
     tag = "v${version}";
     hash = "sha256-Qa4/fVa7Ws8t42MxZpEVKI7Wyux/uN77VP0JBnrmgq0=";
   };
+
+  nativeCheckInputs = [ pytestCheckHook ];
 
   build-system = [
     setuptools
@@ -32,8 +33,7 @@ buildPythonPackage rec {
     path
   ];
 
-  nativeCheckInputs = [ pytestCheckHook ];
-
+  pyproject = true;
   pythonImportsCheck = [ "oathtool" ];
 
   meta = {

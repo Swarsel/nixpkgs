@@ -18,15 +18,14 @@ buildGoModule (finalAttrs: {
   };
 
   vendorHash = "sha256-O6Q9h5zcYAoKLjuzGu7f7UZY0Y5rL2INqFyJT2QZJ/E=";
+  # Tests need network
+  doCheck = false;
 
   ldflags = [
     "-s"
     "-w"
     "-X github.com/yusukebe/gh-markdown-preview/cmd.Version=${finalAttrs.version}"
   ];
-
-  # Tests need network
-  doCheck = false;
 
   passthru.tests = {
     version = testers.testVersion { package = gh-markdown-preview; };

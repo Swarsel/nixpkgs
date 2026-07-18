@@ -1,23 +1,22 @@
 {
   lib,
+  fetchFromGitHub,
   buildPythonPackage,
-  setuptools,
   certifi,
   charset-normalizer,
-  fetchFromGitHub,
   idna,
   lxml,
   pytest-mock,
   pytestCheckHook,
   requests,
   responses,
+  setuptools,
   urllib3,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "qualysclient";
   version = "0.0.4.8.4";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "woodtechie1428";
@@ -31,6 +30,12 @@ buildPythonPackage (finalAttrs: {
       --replace-fail "version=__version__," 'version="${finalAttrs.version}",'
   '';
 
+  nativeCheckInputs = [
+    pytest-mock
+    pytestCheckHook
+    responses
+  ];
+
   build-system = [ setuptools ];
 
   dependencies = [
@@ -42,12 +47,7 @@ buildPythonPackage (finalAttrs: {
     urllib3
   ];
 
-  nativeCheckInputs = [
-    pytest-mock
-    pytestCheckHook
-    responses
-  ];
-
+  pyproject = true;
   pythonImportsCheck = [ "qualysclient" ];
 
   meta = {

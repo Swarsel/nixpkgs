@@ -1,17 +1,19 @@
 {
   lib,
-  runCommand,
   openssh,
+  runCommand,
 }:
 
 runCommand "ssh-copy-id-${openssh.version}"
   {
-    pname = "ssh-copy-id";
     inherit (openssh) version;
+    pname = "ssh-copy-id";
+
     outputs = [
       "out"
       "man"
     ];
+
     meta = openssh.meta // {
       description = "Tool to copy SSH public keys to a remote machine";
       priority = (openssh.meta.priority or lib.meta.defaultPriority) - 1;

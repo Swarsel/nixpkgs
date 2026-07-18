@@ -1,8 +1,8 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
   rust-cbindgen,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage {
@@ -16,8 +16,6 @@ rustPlatform.buildRustPackage {
     hash = "sha256-PVso4ufBwxhF1yhzIkIwSbRJdnH9h8gn3nreWQJDMn4=";
   };
 
-  cargoHash = "sha256-vbhK4jHNhCI1nFv2pVOtjlxQe+b7NMP14z2Tk+no8Vs=";
-
   outputs = [
     "out"
     "dev"
@@ -27,6 +25,8 @@ rustPlatform.buildRustPackage {
   nativeBuildInputs = [
     rust-cbindgen
   ];
+
+  cargoHash = "sha256-vbhK4jHNhCI1nFv2pVOtjlxQe+b7NMP14z2Tk+no8Vs=";
 
   postInstall = ''
     cbindgen -o $dev/include/orz.h

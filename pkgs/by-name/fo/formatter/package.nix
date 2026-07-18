@@ -2,22 +2,22 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  nix-update-script,
-  meson,
-  ninja,
-  vala,
-  pkg-config,
-  pantheon,
-  python3,
-  replaceVars,
-  glib,
-  gtk3,
   dosfstools,
   e2fsprogs,
   exfat,
+  glib,
+  gtk3,
   hfsprogs,
-  ntfs3g,
   libgee,
+  meson,
+  ninja,
+  nix-update-script,
+  ntfs3g,
+  pantheon,
+  pkg-config,
+  python3,
+  replaceVars,
+  vala,
   wrapGAppsHook3,
 }:
 
@@ -34,13 +34,18 @@ stdenv.mkDerivation (finalAttrs: {
 
   patches = [
     (replaceVars ./fix-paths.patch {
-      ext4 = "${e2fsprogs}/bin/mkfs.ext4";
       exfat = "${exfat}/bin/mkfs.exfat";
+      ext4 = "${e2fsprogs}/bin/mkfs.ext4";
       fat = "${dosfstools}/bin/mkfs.fat";
-      ntfs = "${ntfs3g}/bin/mkfs.ntfs";
       hfsplus = "${hfsprogs}/bin/mkfs.hfsplus";
+      ntfs = "${ntfs3g}/bin/mkfs.ntfs";
     })
   ];
+
+  postPatch = ''
+    chmod +x meson/post_install.py
+    patchShebangs meson/post_install.py
+  '';
 
   nativeBuildInputs = [
     meson
@@ -58,11 +63,6 @@ stdenv.mkDerivation (finalAttrs: {
     pantheon.granite
   ];
 
-  postPatch = ''
-    chmod +x meson/post_install.py
-    patchShebangs meson/post_install.py
-  '';
-
   passthru = {
     updateScript = nix-update-script { };
   };
@@ -70,10 +70,10 @@ stdenv.mkDerivation (finalAttrs: {
   meta = {
     description = "Simple formatter designed for elementary OS";
     homepage = "https://github.com/Djaler/Formatter";
-    maintainers = with lib.maintainers; [ xiorcale ];
-    teams = [ lib.teams.pantheon ];
-    platforms = lib.platforms.linux;
     license = lib.licenses.lgpl2Plus;
+    maintainers = with lib.maintainers; [ xiorcale ];
+    platforms = lib.platforms.linux;
     mainProgram = "com.github.djaler.formatter";
+    teams = [ lib.teams.pantheon ];
   };
 })

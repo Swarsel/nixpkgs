@@ -1,10 +1,10 @@
 {
   lib,
-  runCommand,
-  makeBinaryWrapper,
-  rust-audit-info,
   cargo,
   cargo-auditable,
+  makeBinaryWrapper,
+  runCommand,
+  rust-audit-info,
 }:
 
 if cargo-auditable.meta.broken then

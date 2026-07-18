@@ -2,17 +2,17 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  pkg-config,
-  wrapQtAppsHook,
-  symlinkJoin,
-  qmake,
   diffPlugins,
-  qtbase,
-  qtmultimedia,
-  taglib,
+  libbass,
   libmediainfo,
   libzen,
-  libbass,
+  pkg-config,
+  qmake,
+  qtbase,
+  qtmultimedia,
+  symlinkJoin,
+  taglib,
+  wrapQtAppsHook,
 }:
 
 let
@@ -42,18 +42,16 @@ let
   patchedSrc =
     let
       src = fetchFromGitHub {
+        inherit rev sha256;
         owner = "UltraStar-Deluxe";
         repo = "UltraStar-Manager";
-        inherit rev sha256;
       };
     in
     stdenv.mkDerivation {
-      name = "${src.name}-patched";
       inherit src;
-
       nativeBuildInputs = [ wrapQtAppsHook ];
-
       dontInstall = true;
+      name = "${src.name}-patched";
 
       patchPhase = ''
         # we don’t want prebuild binaries checked into version control!
@@ -84,12 +82,7 @@ let
   buildPlugin =
     name:
     stdenv.mkDerivation {
-      name = "ultrastar-manager-${name}-plugin-${version}";
       src = patchedSrc;
-
-      nativeBuildInputs = [ wrapQtAppsHook ];
-
-      buildInputs = [ qmake ] ++ buildInputs;
 
       postPatch = ''
         sed -e "s|DESTDIR = .*$|DESTDIR = $out|" \
@@ -101,9 +94,15 @@ let
         done
 
       '';
+
+      nativeBuildInputs = [ wrapQtAppsHook ];
+      buildInputs = [ qmake ] ++ buildInputs;
+
       preConfigure = ''
         cd src/plugins/${name}
       '';
+
+      name = "ultrastar-manager-${name}-plugin-${version}";
     };
 
   builtPlugins = symlinkJoin {
@@ -113,8 +112,9 @@ let
 
 in
 stdenv.mkDerivation {
-  pname = "ultrastar-manager";
   inherit version;
+  inherit buildInputs;
+  pname = "ultrastar-manager";
   src = patchedSrc;
 
   postPatch = ''
@@ -123,6 +123,11 @@ stdenv.mkDerivation {
     # patch plugin manager to point to the collected plugin folder
     ${patchApplicationPath "src/plugins/QUPluginManager.cpp" builtPlugins}
   '';
+
+  nativeBuildInputs = [
+    pkg-config
+    wrapQtAppsHook
+  ];
 
   buildPhase = ''
     find -path './src/plugins/*' -prune -type d -print0 \
@@ -139,18 +144,11 @@ stdenv.mkDerivation {
     make install
   '';
 
-  nativeBuildInputs = [
-    pkg-config
-    wrapQtAppsHook
-  ];
-
-  inherit buildInputs;
-
   meta = {
     description = "Ultrastar karaoke song manager";
-    mainProgram = "UltraStar-Manager";
     homepage = "https://github.com/UltraStar-Deluxe/UltraStar-Manager";
     license = lib.licenses.gpl2Only;
     maintainers = [ ];
+    mainProgram = "UltraStar-Manager";
   };
 }

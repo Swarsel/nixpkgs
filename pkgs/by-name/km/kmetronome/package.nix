@@ -2,10 +2,10 @@
   lib,
   stdenv,
   fetchurl,
+  alsa-lib,
   cmake,
   pandoc,
   pkg-config,
-  alsa-lib,
   qt6Packages,
 }:
 
@@ -35,8 +35,8 @@ stdenv.mkDerivation (finalAttrs: {
   dontWrapQtApps = true;
 
   meta = {
-    homepage = "https://kmetronome.sourceforge.io/";
     description = "ALSA MIDI metronome with Qt interface";
+    homepage = "https://kmetronome.sourceforge.io/";
     license = lib.licenses.gpl2Plus;
     maintainers = [ ];
     platforms = lib.platforms.linux;

@@ -23,13 +23,15 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   meta = {
-    homepage = "https://github.com/leahneukirchen/extrace";
     description = "Trace exec() calls system-wide";
+    homepage = "https://github.com/leahneukirchen/extrace";
+
     license = with lib.licenses; [
       gpl2Plus
       bsd2
     ];
-    platforms = lib.platforms.linux;
+
     maintainers = [ lib.maintainers.leahneukirchen ];
+    platforms = lib.platforms.linux;
   };
 })

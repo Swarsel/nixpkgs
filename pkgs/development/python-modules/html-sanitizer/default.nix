@@ -1,16 +1,13 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
+  beautifulsoup4,
+  buildPythonPackage,
   # build-system
   hatchling,
-
   # dependencies
   lxml,
   lxml-html-clean,
-  beautifulsoup4,
-
   # tests
   pytestCheckHook,
 }:
@@ -18,7 +15,6 @@
 buildPythonPackage rec {
   pname = "html-sanitizer";
   version = "2.6";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "matthiask";
@@ -27,6 +23,7 @@ buildPythonPackage rec {
     hash = "sha256-egBGhv7vudH32jwh9rAXuXfMzPDxJ60S5WKbc4kzCTU=";
   };
 
+  nativeCheckInputs = [ pytestCheckHook ];
   build-system = [ hatchling ];
 
   dependencies = [
@@ -35,16 +32,14 @@ buildPythonPackage rec {
     beautifulsoup4
   ];
 
-  nativeCheckInputs = [ pytestCheckHook ];
-
-  enabledTestPaths = [ "html_sanitizer/tests.py" ];
-
   disabledTests = [
     # Tests are sensitive to output
     "test_billion_laughs"
     "test_10_broken_html"
   ];
 
+  enabledTestPaths = [ "html_sanitizer/tests.py" ];
+  pyproject = true;
   pythonImportsCheck = [ "html_sanitizer" ];
 
   meta = {

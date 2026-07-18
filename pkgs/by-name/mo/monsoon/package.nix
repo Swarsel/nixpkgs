@@ -1,17 +1,15 @@
 {
   lib,
   stdenv,
-  buildGoModule,
   fetchFromGitHub,
-  versionCheckHook,
+  buildGoModule,
   nix-update-script,
+  versionCheckHook,
 }:
 
 buildGoModule (finalAttrs: {
   pname = "monsoon";
   version = "0.10.1";
-
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "RedTeamPentesting";
@@ -21,29 +19,28 @@ buildGoModule (finalAttrs: {
   };
 
   vendorHash = "sha256-hGEUO1sl8IKXo4rkS81Wlf7187lu2PrSujNlGNTLwmE=";
+  # Tests fails on darwin
+  doCheck = !stdenv.hostPlatform.isDarwin;
+  doInstallCheck = true;
+  nativeInstallCheckInputs = [ versionCheckHook ];
+  __structuredAttrs = true;
 
   ldflags = [
     "-s"
     "-X=main.version=v${finalAttrs.version}"
   ];
 
-  nativeInstallCheckInputs = [ versionCheckHook ];
-
-  doInstallCheck = true;
-
   versionCheckProgramArg = [ "version" ];
-
-  # Tests fails on darwin
-  doCheck = !stdenv.hostPlatform.isDarwin;
-
   passthru.updateScript = nix-update-script { };
 
   meta = {
     description = "Fast HTTP enumerator";
+
     longDescription = ''
       A fast HTTP enumerator that allows you to execute a large number of HTTP
       requests, filter the responses and display them in real-time.
     '';
+
     homepage = "https://github.com/RedTeamPentesting/monsoon";
     changelog = "https://github.com/RedTeamPentesting/monsoon/releases/tag/v${finalAttrs.src.tag}";
     license = lib.licenses.mit;

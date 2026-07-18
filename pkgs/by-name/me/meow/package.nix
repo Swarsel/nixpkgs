@@ -1,8 +1,8 @@
 {
   lib,
   fetchCrate,
-  rustPlatform,
   nix-update-script,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -11,8 +11,8 @@ rustPlatform.buildRustPackage (finalAttrs: {
 
   src = fetchCrate {
     inherit (finalAttrs) version;
-    crateName = "${finalAttrs.pname}-cli";
     sha256 = "sha256-6tf4/KRZj+1zlxnNgz3kw/HYR2QKg0kEwu+TbKah3e8=";
+    crateName = "${finalAttrs.pname}-cli";
   };
 
   cargoHash = "sha256-Z3qAeIAiLJEHsqlDLvQXzX287dZSLhPg2V6clfI0Egs=";
@@ -27,7 +27,7 @@ rustPlatform.buildRustPackage (finalAttrs: {
     description = "Print ASCII cats to your terminal";
     homepage = "https://github.com/PixelSergey/meow";
     license = lib.licenses.mit;
-    mainProgram = "meow";
     maintainers = with lib.maintainers; [ pixelsergey ];
+    mainProgram = "meow";
   };
 })

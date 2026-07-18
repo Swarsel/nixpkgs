@@ -1,15 +1,15 @@
 {
   lib,
-  rustPlatform,
-  stdenvNoCC,
   fetchFromGitHub,
-  pkg-config,
-  openssl,
+  gitMinimal,
   libgit2,
   libssh2,
-  gitMinimal,
-  versionCheckHook,
   nix-update-script,
+  openssl,
+  pkg-config,
+  rustPlatform,
+  stdenvNoCC,
+  versionCheckHook,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -23,8 +23,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-pzJWXVCGUn85OCHMRlMY5ufrGyJyuhhkYLUk4e01Ri0=";
   };
 
-  cargoHash = "sha256-E1LKaiTClHmrF7zhGEj1rfELKryIiyVKIf/8Rozm1RQ=";
-
   nativeBuildInputs = [ pkg-config ];
 
   buildInputs = [
@@ -33,10 +31,12 @@ rustPlatform.buildRustPackage (finalAttrs: {
     libssh2
   ];
 
+  cargoHash = "sha256-E1LKaiTClHmrF7zhGEj1rfELKryIiyVKIf/8Rozm1RQ=";
+
   env = {
-    OPENSSL_NO_VENDOR = 1;
     LIBGIT2_NO_VENDOR = 1;
     LIBSSH2_SYS_USE_PKG_CONFIG = 1;
+    OPENSSL_NO_VENDOR = 1;
   };
 
   nativeCheckInputs = [ gitMinimal ];
@@ -50,12 +50,10 @@ rustPlatform.buildRustPackage (finalAttrs: {
     "--skip=unit::domain::services::scoring::calculator::stage::test_pause_resume"
   ];
 
-  nativeInstallCheckInputs = [ versionCheckHook ];
-  versionCheckProgramArg = "--version";
   doInstallCheck = true;
-
+  nativeInstallCheckInputs = [ versionCheckHook ];
   __structuredAttrs = true;
-
+  versionCheckProgramArg = "--version";
   passthru.updateScript = nix-update-script { };
 
   meta = {

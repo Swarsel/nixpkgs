@@ -1,9 +1,9 @@
 {
   lib,
-  SDL,
-  fetchFromGitHub,
-  pkg-config,
   stdenv,
+  fetchFromGitHub,
+  SDL,
+  pkg-config,
   unstableGitUpdater,
   # Boolean flags
   enableSdltest ? (!stdenv.hostPlatform.isDarwin),
@@ -20,6 +20,8 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-sAZ9I7jOo33Btitcl8mn4R7fYn2W8GWPttXELeEq7h4=";
   };
 
+  strictDeps = true;
+
   nativeBuildInputs = [
     SDL
     pkg-config
@@ -33,19 +35,17 @@ stdenv.mkDerivation (finalAttrs: {
     (lib.enableFeature enableSdltest "sdltest")
   ];
 
-  strictDeps = true;
-
   passthru.updateScript = unstableGitUpdater {
+    branch = "SDL-1.2";
     tagFormat = "release-1.*";
     tagPrefix = "release-";
-    branch = "SDL-1.2";
   };
 
   meta = {
-    homepage = "https://github.com/libsdl-org/SDL_net";
+    inherit (SDL.meta) platforms;
     description = "SDL networking library";
+    homepage = "https://github.com/libsdl-org/SDL_net";
     license = lib.licenses.zlib;
     teams = [ lib.teams.sdl ];
-    inherit (SDL.meta) platforms;
   };
 })

@@ -1,8 +1,8 @@
 {
   lib,
+  fetchFromGitHub,
   bash,
   buildGoModule,
-  fetchFromGitHub,
   hyprland,
   makeWrapper,
   nix-update-script,
@@ -13,36 +13,12 @@ buildGoModule (finalAttrs: {
   pname = "hyprmoncfg";
   version = "1.8.0";
 
-  __structuredAttrs = true;
-
   src = fetchFromGitHub {
     owner = "crmne";
     repo = "hyprmoncfg";
     tag = "v${finalAttrs.version}";
     hash = "sha256-hu3ekA4wAp83DE2v00B2n5gsZt2iSv0/OWbg5Mwo4gY=";
   };
-
-  vendorHash = "sha256-gQbjvdKtO0hCXrs9RnWo1s0YeHf5W9t+8AgS2ELXlPo=";
-
-  env.CGO_ENABLED = 0;
-
-  ldflags = [
-    "-s"
-    "-w"
-    "-X github.com/crmne/hyprmoncfg/internal/buildinfo.Version=${finalAttrs.version}"
-    "-X github.com/crmne/hyprmoncfg/internal/buildinfo.Commit=0000000"
-    "-X github.com/crmne/hyprmoncfg/internal/buildinfo.Date=unknown"
-  ];
-
-  nativeBuildInputs = [ makeWrapper ];
-
-  nativeCheckInputs = [ hyprland ];
-
-  nativeInstallCheckInputs = [ versionCheckHook ];
-
-  doCheck = true;
-
-  doInstallCheck = true;
 
   postPatch = ''
     substituteInPlace internal/daemon/daemon_test.go \
@@ -54,6 +30,12 @@ buildGoModule (finalAttrs: {
     substituteInPlace internal/hypr/client_test.go \
       --replace-fail '#!/usr/bin/env bash' '#!${lib.getExe bash}'
   '';
+
+  nativeBuildInputs = [ makeWrapper ];
+  vendorHash = "sha256-gQbjvdKtO0hCXrs9RnWo1s0YeHf5W9t+8AgS2ELXlPo=";
+  env.CGO_ENABLED = 0;
+  doCheck = true;
+  nativeCheckInputs = [ hyprland ];
 
   preCheck = ''
     export TMPDIR=/tmp
@@ -70,12 +52,25 @@ buildGoModule (finalAttrs: {
       $out/share/systemd/user/hyprmoncfgd.service
   '';
 
+  doInstallCheck = true;
+  nativeInstallCheckInputs = [ versionCheckHook ];
+
   postFixup = ''
     wrapProgram $out/bin/hyprmoncfg \
       --prefix PATH : ${lib.makeBinPath [ hyprland ]}
     wrapProgram $out/bin/hyprmoncfgd \
       --prefix PATH : ${lib.makeBinPath [ hyprland ]}
   '';
+
+  __structuredAttrs = true;
+
+  ldflags = [
+    "-s"
+    "-w"
+    "-X github.com/crmne/hyprmoncfg/internal/buildinfo.Version=${finalAttrs.version}"
+    "-X github.com/crmne/hyprmoncfg/internal/buildinfo.Commit=0000000"
+    "-X github.com/crmne/hyprmoncfg/internal/buildinfo.Date=unknown"
+  ];
 
   passthru.updateScript = nix-update-script { };
 
@@ -85,7 +80,7 @@ buildGoModule (finalAttrs: {
     changelog = "https://github.com/crmne/hyprmoncfg/releases/tag/${finalAttrs.src.tag}";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ crmne ];
-    mainProgram = "hyprmoncfg";
     platforms = hyprland.meta.platforms;
+    mainProgram = "hyprmoncfg";
   };
 })

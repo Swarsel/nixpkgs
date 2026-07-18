@@ -1,12 +1,12 @@
 # Version can be selected with the 'version' argument, see generic.nix.
 {
   lib,
-  callPackage,
   buildDunePackage,
-  ocaml,
-  re,
-  ocamlformat-lib,
+  callPackage,
   menhir,
+  ocaml,
+  ocamlformat-lib,
+  re,
   ...
 }@args:
 
@@ -14,9 +14,8 @@ let
   inherit (callPackage ./generic.nix args) src version library_deps;
 in
 buildDunePackage {
-  pname = "ocamlformat";
   inherit src version;
-
+  pname = "ocamlformat";
   nativeBuildInputs = if lib.versionAtLeast version "0.25.1" then [ ] else [ menhir ];
 
   buildInputs = [
@@ -28,14 +27,17 @@ buildDunePackage {
   ];
 
   meta = {
-    homepage = "https://github.com/ocaml-ppx/ocamlformat";
     description = "Auto-formatter for OCaml code";
+    homepage = "https://github.com/ocaml-ppx/ocamlformat";
+    license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       Zimmi48
       Julow
     ];
-    license = lib.licenses.mit;
+
     mainProgram = "ocamlformat";
+
     broken =
       lib.versionAtLeast ocaml.version "5.0" && !lib.versionAtLeast version "0.23"
       || lib.versionAtLeast ocaml.version "5.1" && !lib.versionAtLeast version "0.25"

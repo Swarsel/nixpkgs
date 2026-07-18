@@ -2,21 +2,21 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  meson,
-  ninja,
-  pkg-config,
-  vala,
-  gtk3,
-  glib,
-  gtk-layer-shell,
+  brightnessctl,
   dbus,
   dbus-glib,
-  librsvg,
-  gobject-introspection,
   gdk-pixbuf,
-  wrapGAppsHook3,
+  glib,
+  gobject-introspection,
+  gtk-layer-shell,
+  gtk3,
+  librsvg,
+  meson,
+  ninja,
   pamixer,
-  brightnessctl,
+  pkg-config,
+  vala,
+  wrapGAppsHook3,
 }:
 
 stdenv.mkDerivation {
@@ -58,10 +58,12 @@ stdenv.mkDerivation {
     description = "Neat notification daemon for Wayland";
     homepage = "https://github.com/heyjuvi/avizo";
     license = lib.licenses.gpl3;
-    platforms = lib.platforms.linux;
+
     maintainers = [
       lib.maintainers.berbiche
       lib.maintainers.flexiondotorg
     ];
+
+    platforms = lib.platforms.linux;
   };
 }

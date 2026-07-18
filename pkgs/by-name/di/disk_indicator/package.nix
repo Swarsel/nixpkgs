@@ -16,8 +16,6 @@ stdenv.mkDerivation {
     sha256 = "sha256-cRqgIxF6H1WyJs5hhaAXVdWAlv6t22BZLp3p/qRlCSM=";
   };
 
-  buildInputs = [ libx11 ];
-
   postPatch = ''
     # avoid -Werror
     substituteInPlace Makefile --replace "-Werror" ""
@@ -27,14 +25,16 @@ stdenv.mkDerivation {
     substituteInPlace src/main.c --replace-fail "void handle_signal()" "void handle_signal(int sig)"
   '';
 
-  postConfigure = ''
-    patchShebangs ./configure.sh
-    ./configure.sh --all
-  '';
+  buildInputs = [ libx11 ];
 
   makeFlags = [
     "COMPILER=${stdenv.cc.targetPrefix}cc"
   ];
+
+  postConfigure = ''
+    patchShebangs ./configure.sh
+    ./configure.sh --all
+  '';
 
   installPhase = ''
     runHook preInstall
@@ -46,14 +46,16 @@ stdenv.mkDerivation {
   '';
 
   meta = {
-    homepage = "https://github.com/MeanEYE/Disk-Indicator";
     description = "Program that will turn a LED into a hard disk indicator";
-    mainProgram = "disk_indicator";
+
     longDescription = ''
       Small program for Linux that will turn your Scroll, Caps or Num Lock LED
       or LED on your ThinkPad laptop into a hard disk activity indicator.
     '';
+
+    homepage = "https://github.com/MeanEYE/Disk-Indicator";
     license = lib.licenses.gpl3;
     platforms = lib.platforms.linux;
+    mainProgram = "disk_indicator";
   };
 }

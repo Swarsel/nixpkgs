@@ -1,21 +1,21 @@
 {
   buildDunePackage,
   caqti,
-  logs,
   eio,
+  logs,
 }:
 
 buildDunePackage {
-  pname = "caqti-eio";
   inherit (caqti) version src;
-
-  minimalOCamlVersion = "5.1";
+  pname = "caqti-eio";
 
   propagatedBuildInputs = [
     caqti
     logs
     eio
   ];
+
+  minimalOCamlVersion = "5.1";
 
   meta = caqti.meta // {
     description = "Eio support for Caqti";

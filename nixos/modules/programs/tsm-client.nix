@@ -67,42 +67,8 @@ let
   servernameType = strMatching "[^[:space:]]{1,64}";
 
   serverOptions =
-    { name, config, ... }:
+    { config, name, ... }:
     {
-      freeformType = attrsOf (either scalarType (listOf scalarType));
-      # Client system-options file directives are explained here:
-      # https://www.ibm.com/docs/en/storage-protect/8.2.1?topic=utilities-processing-options
-      options.servername = mkOption {
-        type = servernameType;
-        default = name;
-        example = "mainTsmServer";
-        description = ''
-          Local name of the IBM TSM server,
-          must not contain space or more than 64 chars.
-        '';
-      };
-      options.tcpserveraddress = mkOption {
-        type = nonEmptyStr;
-        example = "tsmserver.company.com";
-        description = ''
-          Host/domain name or IP address of the IBM TSM server.
-        '';
-      };
-      options.tcpport = mkOption {
-        type = addCheck port (p: p <= 32767);
-        default = 1500; # official default
-        description = ''
-          TCP port of the IBM TSM server.
-          TSM does not support ports above 32767.
-        '';
-      };
-      options.nodename = mkOption {
-        type = nonEmptyStr;
-        example = "MY-TSM-NODE";
-        description = ''
-          Target node name on the IBM TSM server.
-        '';
-      };
       options.genPasswd = mkEnableOption ''
         automatic client password generation.
         This option does *not* cause a line in
@@ -115,37 +81,91 @@ let
         to renew the password (e.g. on first connection),
         a random password will be generated and stored
       '';
-      options.passwordaccess = mkOption {
-        type = enum [
-          "generate"
-          "prompt"
-        ];
-        visible = false;
-      };
-      options.passworddir = mkOption {
-        type = nullOr path;
-        default = null;
-        example = "/home/alice/tsm-password";
-        description = ''
-          Directory that holds the TSM
-          node's password information.
-        '';
-      };
+
       options.inclexcl = mkOption {
-        type = coercedTo lines (pkgs.writeText "inclexcl.dsm.sys") (nullOr path);
         default = null;
-        example = ''
-          exclude.dir     /nix/store
-          include.encrypt /home/.../*
-        '';
+
         description = ''
           Text lines with `include.*` and `exclude.*` directives
           to be used when sending files to the IBM TSM server,
           or an absolute path pointing to a file with such lines.
         '';
+
+        example = ''
+          exclude.dir     /nix/store
+          include.encrypt /home/.../*
+        '';
+
+        type = coercedTo lines (pkgs.writeText "inclexcl.dsm.sys") (nullOr path);
       };
+
+      options.nodename = mkOption {
+        description = ''
+          Target node name on the IBM TSM server.
+        '';
+
+        example = "MY-TSM-NODE";
+        type = nonEmptyStr;
+      };
+
+      options.passwordaccess = mkOption {
+        type = enum [
+          "generate"
+          "prompt"
+        ];
+
+        visible = false;
+      };
+
+      options.passworddir = mkOption {
+        default = null;
+
+        description = ''
+          Directory that holds the TSM
+          node's password information.
+        '';
+
+        example = "/home/alice/tsm-password";
+        type = nullOr path;
+      };
+
+      # Client system-options file directives are explained here:
+      # https://www.ibm.com/docs/en/storage-protect/8.2.1?topic=utilities-processing-options
+      options.servername = mkOption {
+        default = name;
+
+        description = ''
+          Local name of the IBM TSM server,
+          must not contain space or more than 64 chars.
+        '';
+
+        example = "mainTsmServer";
+        type = servernameType;
+      };
+
+      options.tcpport = mkOption {
+        default = 1500; # official default
+
+        description = ''
+          TCP port of the IBM TSM server.
+          TSM does not support ports above 32767.
+        '';
+
+        type = addCheck port (p: p <= 32767);
+      };
+
+      options.tcpserveraddress = mkOption {
+        description = ''
+          Host/domain name or IP address of the IBM TSM server.
+        '';
+
+        example = "tsmserver.company.com";
+        type = nonEmptyStr;
+      };
+
       config.commmethod = mkDefault "v6tcpip"; # uses v4 or v6, based on dns lookup result
       config.passwordaccess = if config.genPasswd then "generate" else "prompt";
+      freeformType = attrsOf (either scalarType (listOf scalarType));
     };
 
   options.programs.tsmClient = {
@@ -154,14 +174,49 @@ let
       client command line applications with a
       client system-options file "dsm.sys"
     '';
+
+    package = mkPackageOption pkgs "tsm-client" {
+      example = "tsm-client-withGui";
+
+      extraDescription = ''
+        It will be used with `.override`
+        to add paths to the client system-options file.
+      '';
+    };
+
+    defaultServername = mkOption {
+      default = null;
+
+      description = ''
+        If multiple server stanzas are declared with
+        {option}`programs.tsmClient.servers`,
+        this option may be used to name a default
+        server stanza that IBM TSM uses in the absence of
+        a user-defined {file}`dsm.opt` file.
+        This option translates to a
+        `defaultserver` configuration line.
+      '';
+
+      example = "mainTsmServer";
+      type = nullOr servernameType;
+    };
+
+    dsmSysText = mkOption {
+      description = ''
+        This configuration key contains the effective text
+        of the client system-options file "dsm.sys".
+        It should not be changed, but may be
+        used to feed the configuration into other
+        TSM-depending packages used on the system.
+      '';
+
+      readOnly = true;
+      type = lines;
+    };
+
     servers = mkOption {
-      type = attrsOf (submodule serverOptions);
       default = { };
-      example.mainTsmServer = {
-        tcpserveraddress = "tsmserver.company.com";
-        nodename = "MY-TSM-NODE";
-        compression = "yes";
-      };
+
       description = ''
         Server definitions ("stanzas")
         for the client system-options file.
@@ -177,42 +232,20 @@ let
         A list as values generates an entry for
         each value, according to the rules above.
       '';
+
+      example.mainTsmServer = {
+        compression = "yes";
+        nodename = "MY-TSM-NODE";
+        tcpserveraddress = "tsmserver.company.com";
+      };
+
+      type = attrsOf (submodule serverOptions);
     };
-    defaultServername = mkOption {
-      type = nullOr servernameType;
-      default = null;
-      example = "mainTsmServer";
-      description = ''
-        If multiple server stanzas are declared with
-        {option}`programs.tsmClient.servers`,
-        this option may be used to name a default
-        server stanza that IBM TSM uses in the absence of
-        a user-defined {file}`dsm.opt` file.
-        This option translates to a
-        `defaultserver` configuration line.
-      '';
-    };
-    dsmSysText = mkOption {
-      type = lines;
-      readOnly = true;
-      description = ''
-        This configuration key contains the effective text
-        of the client system-options file "dsm.sys".
-        It should not be changed, but may be
-        used to feed the configuration into other
-        TSM-depending packages used on the system.
-      '';
-    };
-    package = mkPackageOption pkgs "tsm-client" {
-      example = "tsm-client-withGui";
-      extraDescription = ''
-        It will be used with `.override`
-        to add paths to the client system-options file.
-      '';
-    };
+
     wrappedPackage =
       mkPackageOption pkgs "tsm-client" {
         default = null;
+
         extraDescription = ''
           This option is to provide the effective derivation,
           wrapped with the path to the
@@ -232,6 +265,7 @@ let
   assertions = [
     {
       assertion = allUnique (map toLower servernames);
+
       message = ''
         TSM server names
         (option `programs.tsmClient.servers`)
@@ -241,6 +275,7 @@ let
     }
     {
       assertion = (cfg.defaultServername != null) -> (elem cfg.defaultServername servernames);
+
       message = ''
         TSM default server name
         `programs.tsmClient.defaultServername="${cfg.defaultServername}"`
@@ -251,6 +286,7 @@ let
   ]
   ++ (mapAttrsToList (name: serverCfg: {
     assertion = all (key: null != match "[^[:space:]]+" key) (attrNames serverCfg);
+
     message = ''
       TSM server setting names in
       `programs.tsmClient.servers.${name}.*`
@@ -259,6 +295,7 @@ let
   }) cfg.servers)
   ++ (mapAttrsToList (name: serverCfg: {
     assertion = allUnique (map toLower (attrNames serverCfg));
+
     message = ''
       TSM server setting names in
       `programs.tsmClient.servers.${name}.*`
@@ -331,12 +368,13 @@ in
 
   config = mkIf cfg.enable {
     inherit assertions;
-    programs.tsmClient.dsmSysText = dsmSysText;
-    programs.tsmClient.wrappedPackage = cfg.package.override rec {
-      dsmSysCli = pkgs.writeText "dsm.sys" cfg.dsmSysText;
-      dsmSysApi = dsmSysCli;
-    };
     environment.systemPackages = [ cfg.wrappedPackage ];
+    programs.tsmClient.dsmSysText = dsmSysText;
+
+    programs.tsmClient.wrappedPackage = cfg.package.override rec {
+      dsmSysApi = dsmSysCli;
+      dsmSysCli = pkgs.writeText "dsm.sys" cfg.dsmSysText;
+    };
   };
 
   meta.maintainers = [ lib.maintainers.yarny ];

@@ -1,10 +1,10 @@
 {
   lib,
-  buildGoModule,
-  fetchFromGitHub,
-  coreutils,
-  bash,
   stdenv,
+  fetchFromGitHub,
+  bash,
+  buildGoModule,
+  coreutils,
 }:
 
 buildGoModule {
@@ -19,16 +19,7 @@ buildGoModule {
   };
 
   vendorHash = "sha256-PmfHdl0GG84kPPUgKiLwhKvcgbbwJLFMnX1cI//U5T8=";
-
-  subPackages = [
-    "cmd/gentpldeps"
-    "cmd/mkuimage"
-  ];
-
   env.CGO_ENABLED = "0";
-
-  ldflags = [ "-s" ];
-
   # Tests are failing on darwin as they try to compile u-root binaries
   # that only work on linux.
   #
@@ -46,6 +37,13 @@ buildGoModule {
       --replace-fail '-files=/bin/ls"' '-files=${coreutils}/bin/ls:bin/ls"' \
       --replace-fail '-files=/bin/bash' '-files=${bash}/bin/bash'
   '';
+
+  ldflags = [ "-s" ];
+
+  subPackages = [
+    "cmd/gentpldeps"
+    "cmd/mkuimage"
+  ];
 
   meta = {
     description = "Create small Go-based root file systems -- with support for CPIOs and (TBD) Docker images";

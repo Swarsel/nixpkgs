@@ -1,21 +1,20 @@
 {
   lib,
   buildPythonPackage,
-  fetchPypi,
-  pytestCheckHook,
   cheroot,
-  legacy-cgi,
   dbutils,
-  mysqlclient,
-  pymysql,
+  fetchPypi,
+  legacy-cgi,
   mysql-connector-python,
+  mysqlclient,
   psycopg2,
+  pymysql,
+  pytestCheckHook,
 }:
 
 buildPythonPackage rec {
-  version = "0.62";
-  format = "setuptools";
   pname = "web.py";
+  version = "0.62";
 
   src = fetchPypi {
     inherit pname version;
@@ -30,8 +29,6 @@ buildPythonPackage rec {
   # requires multiple running databases
   doCheck = false;
 
-  pythonImportsCheck = [ "web" ];
-
   nativeCheckInputs = [
     pytestCheckHook
     dbutils
@@ -41,12 +38,17 @@ buildPythonPackage rec {
     psycopg2
   ];
 
+  format = "setuptools";
+  pythonImportsCheck = [ "web" ];
+
   meta = {
     description = "Makes web apps";
+
     longDescription = ''
       Think about the ideal way to write a web app.
       Write the code to make it happen.
     '';
+
     homepage = "https://webpy.org/";
     license = lib.licenses.publicDomain;
     maintainers = with lib.maintainers; [ layus ];

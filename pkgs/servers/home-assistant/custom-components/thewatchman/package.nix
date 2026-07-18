@@ -1,7 +1,7 @@
 {
   lib,
-  buildHomeAssistantComponent,
   fetchFromGitHub,
+  buildHomeAssistantComponent,
   prettytable,
   pytest-cov-stub,
   pytest-homeassistant-custom-component,
@@ -9,8 +9,6 @@
 }:
 
 buildHomeAssistantComponent rec {
-  owner = "dummylabs";
-  domain = "watchman";
   version = "0.8.3";
 
   src = fetchFromGitHub {
@@ -20,20 +18,14 @@ buildHomeAssistantComponent rec {
     hash = "sha256-5BXIKh8uPKuxsLbxu0fUbuCR2LYOXk1HpOvrqehg0u0=";
   };
 
-  ignoreVersionRequirement = [
-    "prettytable"
-  ];
-
-  dontBuild = true;
-
-  dependencies = [
-    prettytable
-  ];
-
   nativeCheckInputs = [
     pytest-cov-stub
     pytest-homeassistant-custom-component
     pytestCheckHook
+  ];
+
+  dependencies = [
+    prettytable
   ];
 
   disabledTests = [
@@ -43,10 +35,19 @@ buildHomeAssistantComponent rec {
     "test_automations_parsing"
   ];
 
+  domain = "watchman";
+  dontBuild = true;
+
+  ignoreVersionRequirement = [
+    "prettytable"
+  ];
+
+  owner = "dummylabs";
+
   meta = {
     description = "Keep track of missing entities and services in your config files";
     homepage = "https://github.com/dummylabs/thewatchman";
-    maintainers = with lib.maintainers; [ SuperSandro2000 ];
     license = lib.licenses.mit;
+    maintainers = with lib.maintainers; [ SuperSandro2000 ];
   };
 }

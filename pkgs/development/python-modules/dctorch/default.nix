@@ -2,8 +2,8 @@
   lib,
   buildPythonPackage,
   fetchPypi,
-  poetry-core,
   numpy,
+  poetry-core,
   scipy,
   torch,
 }:
@@ -11,15 +11,13 @@
 buildPythonPackage rec {
   pname = "dctorch";
   version = "0.1.2";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
     hash = "sha256-TmfLAkiofrQNWYBhIlY4zafbZPgFftISCGloO/rlEG4=";
   };
 
-  pythonRelaxDeps = [ "numpy" ];
-
+  doCheck = false; # no tests
   build-system = [ poetry-core ];
 
   dependencies = [
@@ -28,9 +26,9 @@ buildPythonPackage rec {
     torch
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "dctorch" ];
-
-  doCheck = false; # no tests
+  pythonRelaxDeps = [ "numpy" ];
 
   meta = {
     description = "Fast discrete cosine transforms for pytorch";

@@ -1,19 +1,18 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
-  pyyaml,
+  buildPythonPackage,
   posthog,
   pytestCheckHook,
   pythonAtLeast,
+  pyyaml,
+  setuptools,
   typing-extensions,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "ploomber-core";
   version = "0.2.27";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "ploomber";
@@ -22,6 +21,7 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-/HlJxaxsGbZ1UIJNwDdzJLR4bey7bv/qsmFmVi8eWjQ=";
   };
 
+  nativeCheckInputs = [ pytestCheckHook ];
   build-system = [ setuptools ];
 
   dependencies = [
@@ -30,18 +30,17 @@ buildPythonPackage (finalAttrs: {
     typing-extensions
   ];
 
-  nativeCheckInputs = [ pytestCheckHook ];
+  disabledTestPaths = lib.optionals (pythonAtLeast "3.14") [
+    # Depends on pre-3.14 attribute access
+    "tests/test_config.py"
+  ];
 
   disabledTests = [
     "telemetry" # requires network
     "exceptions" # requires stderr capture
   ];
 
-  disabledTestPaths = lib.optionals (pythonAtLeast "3.14") [
-    # Depends on pre-3.14 attribute access
-    "tests/test_config.py"
-  ];
-
+  pyproject = true;
   pythonImportsCheck = [ "ploomber_core" ];
 
   meta = {

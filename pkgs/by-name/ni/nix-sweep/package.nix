@@ -2,8 +2,8 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  rustPlatform,
   installShellFiles,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -17,16 +17,16 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-C83AtqexEzx+8cNZXZyYUtg4gAUyam00IM0eXO8xOgA=";
   };
 
-  cargoHash = "sha256-etqSdtoiSPMQLuMgBK/nnJM8dDTdmRk+MT++zu/9IjM=";
+  outputs = [
+    "out"
+    "man"
+  ];
 
   nativeBuildInputs = [
     installShellFiles
   ];
 
-  outputs = [
-    "out"
-    "man"
-  ];
+  cargoHash = "sha256-etqSdtoiSPMQLuMgBK/nnJM8dDTdmRk+MT++zu/9IjM=";
 
   postInstall = lib.optionalString (stdenv.buildPlatform.canExecute stdenv.hostPlatform) ''
     mkdir ./manpages
@@ -42,9 +42,11 @@ rustPlatform.buildRustPackage (finalAttrs: {
     homepage = "https://github.com/jzbor/nix-sweep";
     changelog = "https://github.com/jzbor/nix-sweep/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.mit;
-    mainProgram = "nix-sweep";
+
     maintainers = with lib.maintainers; [
       jzbor
     ];
+
+    mainProgram = "nix-sweep";
   };
 })

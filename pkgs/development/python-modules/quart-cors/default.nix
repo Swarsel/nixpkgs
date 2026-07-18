@@ -1,24 +1,20 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
+  buildPythonPackage,
   # build-system
   pdm-backend,
-
-  # propagates
-  quart,
-
-  # tests
-  pytestCheckHook,
   pytest-asyncio,
   pytest-cov-stub,
+  # tests
+  pytestCheckHook,
+  # propagates
+  quart,
 }:
 
 buildPythonPackage rec {
   pname = "quart-cors";
   version = "0.8.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "pgjones";
@@ -27,17 +23,16 @@ buildPythonPackage rec {
     hash = "sha256-f+l+j0bjzi5FTwJzdXNyCgh3uT4zldpg22ZOgW1Wub4=";
   };
 
-  build-system = [ pdm-backend ];
-
-  dependencies = [ quart ];
-
-  pythonImportsCheck = [ "quart_cors" ];
-
   nativeCheckInputs = [
     pytestCheckHook
     pytest-asyncio
     pytest-cov-stub
   ];
+
+  build-system = [ pdm-backend ];
+  dependencies = [ quart ];
+  pyproject = true;
+  pythonImportsCheck = [ "quart_cors" ];
 
   meta = {
     description = "Quart-CORS is an extension for Quart to enable and control Cross Origin Resource Sharing, CORS";

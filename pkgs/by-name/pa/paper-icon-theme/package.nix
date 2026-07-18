@@ -1,14 +1,14 @@
 {
   lib,
-  stdenvNoCC,
   fetchFromGitHub,
-  meson,
-  ninja,
-  gtk3,
   adwaita-icon-theme,
   gnome-icon-theme,
+  gtk3,
   hicolor-icon-theme,
   jdupes,
+  meson,
+  ninja,
+  stdenvNoCC,
 }:
 
 stdenvNoCC.mkDerivation {
@@ -35,12 +35,6 @@ stdenvNoCC.mkDerivation {
     hicolor-icon-theme
   ];
 
-  dontDropIconThemeCache = true;
-
-  # These fixup steps are slow and unnecessary for this package
-  dontPatchELF = true;
-  dontRewriteSymlinks = true;
-
   postInstall = ''
     # The cache for Paper-Mono-Dark is missing
     gtk-update-icon-cache "$out"/share/icons/Paper-Mono-Dark;
@@ -49,15 +43,22 @@ stdenvNoCC.mkDerivation {
     jdupes -l -r $out/share/icons
   '';
 
+  dontDropIconThemeCache = true;
+  # These fixup steps are slow and unnecessary for this package
+  dontPatchELF = true;
+  dontRewriteSymlinks = true;
+
   meta = {
     description = "Modern icon theme designed around bold colours and simple geometric shapes";
     homepage = "https://snwh.org/paper";
+
     license = with lib.licenses; [
       cc-by-sa-40
       lgpl3
     ];
+
+    maintainers = with lib.maintainers; [ romildo ];
     # darwin cannot deal with file names differing only in case
     platforms = lib.platforms.linux;
-    maintainers = with lib.maintainers; [ romildo ];
   };
 }

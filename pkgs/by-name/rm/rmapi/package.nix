@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule (finalAttrs: {
@@ -16,7 +16,6 @@ buildGoModule (finalAttrs: {
   };
 
   vendorHash = "sha256-Qisfw+lCFZns13jRe9NskCaCKVj5bV1CV8WPpGBhKFc=";
-
   doCheck = false;
 
   meta = {
@@ -24,11 +23,13 @@ buildGoModule (finalAttrs: {
     homepage = "https://github.com/ddvk/rmapi";
     changelog = "https://github.com/ddvk/rmapi/blob/v${finalAttrs.version}/CHANGELOG.md";
     license = lib.licenses.agpl3Only;
+
     maintainers = with lib.maintainers; [
       nickhu
       boltzmannrain
       wamserma
     ];
+
     mainProgram = "rmapi";
   };
 })

@@ -1,16 +1,14 @@
 {
   lib,
   stdenv,
-  python3Packages,
   fetchFromGitHub,
   nix-update-script,
+  python3Packages,
 }:
 
 python3Packages.buildPythonApplication (finalAttrs: {
   pname = "obliteratus";
   version = "0-unstable-2026-06-17";
-  pyproject = true;
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "elder-plinius";
@@ -19,6 +17,12 @@ python3Packages.buildPythonApplication (finalAttrs: {
     hash = "sha256-IxIpUlVlZRzXan53mCCsH8AYg/ajNofSm56iUO9XPrg=";
   };
 
+  nativeCheckInputs = with python3Packages; [
+    pytest-cov-stub
+    pytestCheckHook
+  ];
+
+  __structuredAttrs = true;
   build-system = with python3Packages; [ setuptools ];
 
   dependencies = with python3Packages; [
@@ -36,17 +40,6 @@ python3Packages.buildPythonApplication (finalAttrs: {
     torch
     tqdm
     transformers
-  ];
-
-  optional-dependencies = with python3Packages; {
-    spaces = [ gradio ];
-  };
-
-  pythonImportsCheck = [ "obliteratus" ];
-
-  nativeCheckInputs = with python3Packages; [
-    pytest-cov-stub
-    pytestCheckHook
   ];
 
   disabledTestPaths = [
@@ -72,6 +65,13 @@ python3Packages.buildPythonApplication (finalAttrs: {
     # RuntimeError: Failed to initialize cpuinfo!
     "test_output_dtype_preserved"
   ];
+
+  optional-dependencies = with python3Packages; {
+    spaces = [ gradio ];
+  };
+
+  pyproject = true;
+  pythonImportsCheck = [ "obliteratus" ];
 
   passthru.updateScript = nix-update-script {
     extraArgs = [ "--version=branch" ];

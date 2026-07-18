@@ -1,8 +1,8 @@
 {
   lib,
   stdenv,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   pytestCheckHook,
   setuptools,
 }:
@@ -10,7 +10,6 @@
 buildPythonPackage rec {
   pname = "can-isotp";
   version = "2.0.7";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "pylessard";
@@ -19,9 +18,8 @@ buildPythonPackage rec {
     hash = "sha256-Gts6eeeto++DKnkojFvCwyPVPRSq2OcTA0jAYrPAWJI=";
   };
 
-  build-system = [ setuptools ];
-
   nativeCheckInputs = [ pytestCheckHook ];
+  build-system = [ setuptools ];
 
   disabledTestPaths = [
     # we don't support socket tests
@@ -34,6 +32,7 @@ buildPythonPackage rec {
     "test/test_helper_classes.py"
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "isotp" ];
 
   meta = {
@@ -41,6 +40,7 @@ buildPythonPackage rec {
     homepage = "https://github.com/pylessard/python-can-isotp";
     changelog = "https://github.com/pylessard/python-can-isotp/releases/tag/${src.tag}";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       jacobkoziej
     ];

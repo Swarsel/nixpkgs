@@ -7,7 +7,6 @@
 python3Packages.buildPythonApplication {
   pname = "xdxf2slob";
   version = "0-unstable-2015-06-30";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "itkach";
@@ -23,6 +22,7 @@ python3Packages.buildPythonApplication {
     slob
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "xdxf2slob" ];
 
   meta = {

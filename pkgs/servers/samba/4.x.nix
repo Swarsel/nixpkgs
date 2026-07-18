@@ -1,68 +1,67 @@
 {
   lib,
   stdenv,
-  buildPackages,
   fetchurl,
-  fetchpatch,
-  wafHook,
-  pkg-config,
+  acl,
+  avahi,
+  bash,
   bison,
-  flex,
-  perl,
-  libxslt,
-  docbook_xsl,
-  fixDarwinDylibNames,
-  docbook_xml_dtd_45,
-  readline,
-  popt,
+  buildPackages,
+  ceph,
+  cmocka,
+  cups,
   dbus,
-  libbsd,
-  libarchive,
-  zlib,
-  liburing,
+  docbook_xml_dtd_45,
+  docbook_xsl,
+  fetchpatch,
+  fixDarwinDylibNames,
+  flex,
+  glusterfs,
   gnutls,
-  systemd,
-  samba,
-  talloc,
+  gpgme,
   jansson,
   ldb,
-  lmdb,
-  libtasn1,
-  tdb,
-  tevent,
-  libxcrypt,
-  cmocka,
-  rpcsvc-proto,
-  bash,
-  python3Packages,
-  pkgsHostTarget,
-  nixosTests,
+  libarchive,
+  libbsd,
   libiconv,
-  testers,
-  pkgsCross,
-
-  enableLDAP ? false,
-  openldap,
-  enablePrinting ? false,
-  cups,
-  enableProfiling ? true,
-  enableMDNS ? false,
-  avahi,
-  enableDomainController ? false,
-  gpgme,
-  enableRegedit ? true,
-  ncurses,
-  enableCephFS ? false,
-  ceph,
-  enableGlusterFS ? false,
-  glusterfs,
-  libuuid,
-  enableAcl ? stdenv.hostPlatform.isLinux,
-  acl,
-  enableLibunwind ? (!stdenv.hostPlatform.isDarwin),
+  libtasn1,
   libunwind,
-  enablePam ? (!stdenv.hostPlatform.isDarwin),
+  liburing,
+  libuuid,
+  libxcrypt,
+  libxslt,
+  lmdb,
+  ncurses,
+  nixosTests,
+  openldap,
   pam,
+  perl,
+  pkg-config,
+  pkgsCross,
+  pkgsHostTarget,
+  popt,
+  python3Packages,
+  readline,
+  rpcsvc-proto,
+  samba,
+  systemd,
+  talloc,
+  tdb,
+  testers,
+  tevent,
+  wafHook,
+  zlib,
+  enableAcl ? stdenv.hostPlatform.isLinux,
+  enableCephFS ? false,
+  enableDomainController ? false,
+  enableGlusterFS ? false,
+  enableLDAP ? false,
+  enableLibunwind ? (!stdenv.hostPlatform.isDarwin),
+  enableMDNS ? false,
+  enablePam ? (!stdenv.hostPlatform.isDarwin),
+  enablePrinting ? false,
+  enableProfiling ? true,
+  enableRegedit ? true,
 }:
 
 let
@@ -99,23 +98,45 @@ stdenv.mkDerivation (finalAttrs: {
     ./4.x-no-persistent-install-dynconfig.patch
     ./4.x-fix-systemd-detection.patch
     (fetchpatch {
+      hash = "sha256-0/c9TH5FZ4S1OoM04gwDBJoIN+10unjLSv7Hlwt9FEQ=";
       # workaround for https://bugzilla.samba.org/show_bug.cgi?id=14164
       name = "build-find-pre-built-heimdal-build-tools-in-case-of-.patch";
       url = "https://raw.githubusercontent.com/LibreELEC/LibreELEC.tv/fe5538114371b98c7350e6fffbfc0d1ac063719c/packages/network/samba/patches/samba-200-4.11-fix-ASN1-bso14164.patch";
-      hash = "sha256-0/c9TH5FZ4S1OoM04gwDBJoIN+10unjLSv7Hlwt9FEQ=";
     })
     (fetchpatch {
+      hash = "sha256-TVKK/7wGsfP1pVf8o1NwazobiR8jVJCCMj/FWji3f2A=";
       # workaround for https://github.com/NixOS/nixpkgs/issues/303436
       name = "samba-reproducible-builds.patch";
       url = "https://gitlab.com/raboof/samba/-/commit/9995c5c234ece6888544cdbe6578d47e83dea0b5.patch";
-      hash = "sha256-TVKK/7wGsfP1pVf8o1NwazobiR8jVJCCMj/FWji3f2A=";
     })
     (fetchpatch {
+      hash = "sha256-GMPxM6KMtMPRljhRI+dDD2fOp+y5kpRqbjqkj19Du4Q=";
       name = "cross-compile.patch";
       url = "https://gitlab.com/samba-team/samba/-/merge_requests/3990/diffs.patch?commit_id=52af20db81f24cbfaa6fef8233584fc40fc72d34";
-      hash = "sha256-GMPxM6KMtMPRljhRI+dDD2fOp+y5kpRqbjqkj19Du4Q=";
     })
   ];
+
+  postPatch = ''
+    # Removes absolute paths in scripts
+    sed -i 's,/sbin/,,g' ctdb/config/functions
+
+    # Fix the XML Catalog Paths
+    sed -i "s,\(XML_CATALOG_FILES=\"\),\1$XML_CATALOG_FILES ,g" buildtools/wafsamba/wafsamba.py
+
+    patchShebangs ./buildtools/bin
+  ''
+  + lib.optionalString stdenv.hostPlatform.isDarwin ''
+    # The discard_const macro casts through uintptr_t, which newer clang
+    # rejects as non-constant in static initializers. Use a direct cast.
+    substituteInPlace lib/replace/replace.h --replace-fail \
+      '#define discard_const(ptr) ((void *)((uintptr_t)(ptr)))' \
+      '#define discard_const(ptr) ((void *)(ptr))'
+  ''
+  + lib.optionalString isCross ''
+    substituteInPlace wscript source3/wscript nsswitch/wscript_build lib/replace/wscript source4/ntvfs/sysdep/wscript_configure --replace-fail 'sys.platform' '"${stdenv.hostPlatform.parsed.kernel.name}"'
+  '';
+
+  strictDeps = true;
 
   nativeBuildInputs = [
     python3Packages.python
@@ -144,8 +165,6 @@ stdenv.mkDerivation (finalAttrs: {
   ++ optionals stdenv.hostPlatform.isDarwin [
     fixDarwinDylibNames
   ];
-
-  wafPath = "buildtools/bin/waf";
 
   buildInputs = [
     bash
@@ -195,35 +214,6 @@ stdenv.mkDerivation (finalAttrs: {
   ++ optional enableLibunwind libunwind
   ++ optional enablePam pam;
 
-  postPatch = ''
-    # Removes absolute paths in scripts
-    sed -i 's,/sbin/,,g' ctdb/config/functions
-
-    # Fix the XML Catalog Paths
-    sed -i "s,\(XML_CATALOG_FILES=\"\),\1$XML_CATALOG_FILES ,g" buildtools/wafsamba/wafsamba.py
-
-    patchShebangs ./buildtools/bin
-  ''
-  + lib.optionalString stdenv.hostPlatform.isDarwin ''
-    # The discard_const macro casts through uintptr_t, which newer clang
-    # rejects as non-constant in static initializers. Use a direct cast.
-    substituteInPlace lib/replace/replace.h --replace-fail \
-      '#define discard_const(ptr) ((void *)((uintptr_t)(ptr)))' \
-      '#define discard_const(ptr) ((void *)(ptr))'
-  ''
-  + lib.optionalString isCross ''
-    substituteInPlace wscript source3/wscript nsswitch/wscript_build lib/replace/wscript source4/ntvfs/sysdep/wscript_configure --replace-fail 'sys.platform' '"${stdenv.hostPlatform.parsed.kernel.name}"'
-  '';
-
-  preConfigure = ''
-    export PKGCONFIG="$PKG_CONFIG"
-    export PYTHONHASHSEED=1
-  ''
-  + lib.optionalString needsAnswers ''
-    cp ${answers} answers
-    chmod +w answers
-  '';
-
   env = {
     # python-config from build Python gives incorrect values when cross-compiling.
     # If python-config is not found, the build falls back to using the sysconfig
@@ -236,63 +226,14 @@ stdenv.mkDerivation (finalAttrs: {
         NIX_LDFLAGS = "--undefined-version";
       };
 
-  wafConfigureFlags = [
-    "--with-static-modules=NONE"
-    "--with-shared-modules=ALL"
-    "--enable-fhs"
-    "--sysconfdir=/etc"
-    "--localstatedir=/var"
-    "--disable-rpath"
-    # otherwise third_party/waf/waflib/Tools/python.py would
-    # get the wrong pythondir from build platform python
-    "--pythondir=${placeholder "out"}/${python3Packages.python.sitePackages}"
-    (lib.enableFeature enablePrinting "cups")
-  ]
-  ++ optional (!enableDomainController) "--without-ad-dc"
-  ++ optionals (!enableLDAP) [
-    "--without-ldap"
-    "--without-ads"
-  ]
-  ++ optionals (!enableLDAP && stdenv.hostPlatform.isLinux) [
-    "--bundled-libraries=!ldb,!pyldb-util!talloc,!pytalloc-util,!tevent,!tdb,!pytdb"
-  ]
-  ++ optional enableLibunwind "--with-libunwind"
-  ++ optional enableProfiling "--with-profiling-data"
-  ++ optional (!enableAcl) "--without-acl-support"
-  ++ optional (!enablePam) "--without-pam"
-  ++ optionals (stdenv.hostPlatform != stdenv.buildPlatform) [
-    "--bundled-libraries=!asn1_compile,!compile_et"
-    "--cross-compile"
-    (
-      if (stdenv.hostPlatform.emulatorAvailable buildPackages) then
-        "--cross-execute=${stdenv.hostPlatform.emulator buildPackages}"
-      else
-        "--cross-answers=answers"
-    )
-  ]
-  ++ optionals stdenv.buildPlatform.is32bit [
-    # By default `waf configure` spawns as many as available CPUs. On
-    # 32-bit systems with many CPUs (like `i686` chroot on `x86_64`
-    # kernel) it can easily exhaust 32-bit address space and hang up:
-    #   https://github.com/NixOS/nixpkgs/issues/287339#issuecomment-1949462057
-    #   https://bugs.gentoo.org/683148
-    # Limit the job count down to the minimal on system with limited address
-    # space.
-    "--jobs 1"
-  ];
-
-  pythonPath = [
-    python3Packages.dnspython
-    python3Packages.markdown
-    tdb
-  ]
-  ++ lib.optionals enableDomainController [
-    python3Packages.cryptography
-  ];
-
-  strictDeps = true;
-
-  hardeningDisable = [ "strictflexarrays1" ];
+  preConfigure = ''
+    export PKGCONFIG="$PKG_CONFIG"
+    export PYTHONHASHSEED=1
+  ''
+  + lib.optionalString needsAnswers ''
+    cp ${answers} answers
+    chmod +w answers
+  '';
 
   preBuild = ''
     export MAKEFLAGS="-j $NIX_BUILD_CORES"
@@ -341,33 +282,95 @@ stdenv.mkDerivation (finalAttrs: {
     buildPackages.runtimeShellPackage
   ];
 
+  hardeningDisable = [ "strictflexarrays1" ];
+
+  pythonPath = [
+    python3Packages.dnspython
+    python3Packages.markdown
+    tdb
+  ]
+  ++ lib.optionals enableDomainController [
+    python3Packages.cryptography
+  ];
+
+  wafConfigureFlags = [
+    "--with-static-modules=NONE"
+    "--with-shared-modules=ALL"
+    "--enable-fhs"
+    "--sysconfdir=/etc"
+    "--localstatedir=/var"
+    "--disable-rpath"
+    # otherwise third_party/waf/waflib/Tools/python.py would
+    # get the wrong pythondir from build platform python
+    "--pythondir=${placeholder "out"}/${python3Packages.python.sitePackages}"
+    (lib.enableFeature enablePrinting "cups")
+  ]
+  ++ optional (!enableDomainController) "--without-ad-dc"
+  ++ optionals (!enableLDAP) [
+    "--without-ldap"
+    "--without-ads"
+  ]
+  ++ optionals (!enableLDAP && stdenv.hostPlatform.isLinux) [
+    "--bundled-libraries=!ldb,!pyldb-util!talloc,!pytalloc-util,!tevent,!tdb,!pytdb"
+  ]
+  ++ optional enableLibunwind "--with-libunwind"
+  ++ optional enableProfiling "--with-profiling-data"
+  ++ optional (!enableAcl) "--without-acl-support"
+  ++ optional (!enablePam) "--without-pam"
+  ++ optionals (stdenv.hostPlatform != stdenv.buildPlatform) [
+    "--bundled-libraries=!asn1_compile,!compile_et"
+    "--cross-compile"
+    (
+      if (stdenv.hostPlatform.emulatorAvailable buildPackages) then
+        "--cross-execute=${stdenv.hostPlatform.emulator buildPackages}"
+      else
+        "--cross-answers=answers"
+    )
+  ]
+  ++ optionals stdenv.buildPlatform.is32bit [
+    # By default `waf configure` spawns as many as available CPUs. On
+    # 32-bit systems with many CPUs (like `i686` chroot on `x86_64`
+    # kernel) it can easily exhaust 32-bit address space and hang up:
+    #   https://github.com/NixOS/nixpkgs/issues/287339#issuecomment-1949462057
+    #   https://bugs.gentoo.org/683148
+    # Limit the job count down to the minimal on system with limited address
+    # space.
+    "--jobs 1"
+  ];
+
+  wafPath = "buildtools/bin/waf";
+
   passthru.tests = {
-    samba = nixosTests.samba;
-    cross = pkgsCross.aarch64-multiplatform.samba;
-    pkg-config = testers.hasPkgConfigModules {
-      package = finalAttrs.finalPackage;
-    };
     version = testers.testVersion {
       command = "${finalAttrs.finalPackage}/bin/smbd -V";
       package = finalAttrs.finalPackage;
     };
+
+    cross = pkgsCross.aarch64-multiplatform.samba;
+
+    pkg-config = testers.hasPkgConfigModules {
+      package = finalAttrs.finalPackage;
+    };
+
+    samba = nixosTests.samba;
   }
   // lib.optionalAttrs enableDomainController {
     versionSambaTool = testers.testVersion {
+      version = finalAttrs.version;
       command = "${lib.getExe' finalAttrs.finalPackage "samba-tool"} --version";
       package = finalAttrs.finalPackage;
-      version = finalAttrs.version;
     };
   };
 
   meta = {
+    description = "Standard Windows interoperability suite of programs for Linux and Unix";
     homepage = "https://www.samba.org";
     changelog = "https://www.samba.org/samba/history/samba-${finalAttrs.version}.html";
-    description = "Standard Windows interoperability suite of programs for Linux and Unix";
     license = lib.licenses.gpl3;
+    maintainers = with lib.maintainers; [ aneeshusa ];
     platforms = lib.platforms.unix;
     broken = enableGlusterFS;
-    maintainers = with lib.maintainers; [ aneeshusa ];
+
     pkgConfigModules = [
       "ndr_krb5pac"
       "ndr_nbt"

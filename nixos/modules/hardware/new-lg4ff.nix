@@ -1,7 +1,7 @@
 {
-  pkgs,
-  lib,
   config,
+  lib,
+  pkgs,
   ...
 }:
 let
@@ -11,13 +11,15 @@ in
 {
   options.hardware.new-lg4ff = {
     enable = lib.mkOption {
-      type = lib.types.bool;
       default = false;
+
       description = ''
         Enables improved Linux module drivers for Logitech driving wheels.
         This will replace the existing in-kernel hid-logitech modules.
         Works most notably on the Logitech G25, G27, G29 and Driving Force (GT).
       '';
+
+      type = lib.types.bool;
     };
   };
 

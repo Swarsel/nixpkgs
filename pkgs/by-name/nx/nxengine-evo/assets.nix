@@ -1,7 +1,7 @@
 {
   lib,
-  stdenvNoCC,
   fetchzip,
+  stdenvNoCC,
 }:
 
 stdenvNoCC.mkDerivation (finalAttrs: {
@@ -13,9 +13,6 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     hash = "sha256-+PjjhJYL1yk67QJ7ixfpCRg1coQnSPpXDUIwsqp9aIM=";
   };
 
-  dontConfigure = true;
-  dontBuild = true;
-
   installPhase = ''
     runHook preInstall
 
@@ -25,14 +22,19 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  dontBuild = true;
+  dontConfigure = true;
+
   meta = {
-    homepage = "https://github.com/nxengine/nxengine-evo";
     description = "Assets for nxengine-evo";
+    homepage = "https://github.com/nxengine/nxengine-evo";
+
     license = with lib.licenses; [
       unfreeRedistributable
     ];
+
+    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
     maintainers = [ ];
     platforms = lib.platforms.all;
-    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
   };
 })

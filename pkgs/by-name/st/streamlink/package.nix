@@ -1,19 +1,18 @@
 {
   lib,
-  python3Packages,
   fetchPypi,
-  replaceVars,
+  fetchpatch2,
   ffmpeg,
+  python3Packages,
+  replaceVars,
   extras ? [
     "decompress"
   ],
-  fetchpatch2,
 }:
 
 python3Packages.buildPythonApplication rec {
   pname = "streamlink";
   version = "8.4.0";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
@@ -26,28 +25,14 @@ python3Packages.buildPythonApplication rec {
     })
     # remove when bumping to >8.4.0
     (fetchpatch2 {
+      hash = "sha256-9C4NedVyuk0ed3JvpKtvxei3Wo+r4SPlQXbBpoRXZ4k=";
       name = "fix-read-timeout-test.patch";
       url = "https://github.com/streamlink/streamlink/commit/a1875a2c85cef47ddf6b1375c3651d52c8e799a1.patch?full_index=1";
-      hash = "sha256-9C4NedVyuk0ed3JvpKtvxei3Wo+r4SPlQXbBpoRXZ4k=";
     })
   ];
 
   nativeBuildInputs = with python3Packages; [
     setuptools
-  ];
-
-  nativeCheckInputs = with python3Packages; [
-    pytestCheckHook
-    mock
-    requests-mock
-    freezegun
-    pytest-trio
-    pytest-cov-stub
-  ];
-
-  disabledTests = [
-    # requires ffmpeg to be in PATH
-    "test_no_cache"
   ];
 
   propagatedBuildInputs =
@@ -67,14 +52,29 @@ python3Packages.buildPythonApplication rec {
     ]
     ++ lib.flatten (lib.attrVals extras optional-dependencies);
 
+  nativeCheckInputs = with python3Packages; [
+    pytestCheckHook
+    mock
+    requests-mock
+    freezegun
+    pytest-trio
+    pytest-cov-stub
+  ];
+
+  disabledTests = [
+    # requires ffmpeg to be in PATH
+    "test_no_cache"
+  ];
+
   optional-dependencies = with python3Packages; {
     decompress = urllib3.optional-dependencies.brotli ++ urllib3.optional-dependencies.zstd;
   };
 
+  pyproject = true;
+
   meta = {
-    changelog = "https://streamlink.github.io/changelog.html";
     description = "CLI for extracting streams from various websites to video player of your choosing";
-    homepage = "https://streamlink.github.io/";
+
     longDescription = ''
       Streamlink is a CLI utility that pipes videos from online
       streaming services to a variety of video players such as VLC, or
@@ -82,11 +82,16 @@ python3Packages.buildPythonApplication rec {
 
       Streamlink is a fork of the livestreamer project.
     '';
+
+    homepage = "https://streamlink.github.io/";
+    changelog = "https://streamlink.github.io/changelog.html";
     license = lib.licenses.bsd2;
-    mainProgram = "streamlink";
+
     maintainers = with lib.maintainers; [
       zraexy
       DeeUnderscore
     ];
+
+    mainProgram = "streamlink";
   };
 }

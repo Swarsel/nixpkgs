@@ -1,55 +1,51 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
+  attrs,
+  buildPythonPackage,
   # build-system
   flit-core,
-  pythonRelaxDepsHook,
-
+  freetype-py,
+  graphviz,
+  ipykernel,
   # dependencies
   jinja2,
+  # tests
+  jsondiff,
+  jsonschema,
+  kfactory,
   loguru,
+  mapbox-earcut,
   matplotlib,
   natsort,
+  networkx,
   numpy,
   orjson,
   pandas,
   pydantic,
-  pydantic-settings,
   pydantic-extra-types,
+  pydantic-settings,
+  pyglet,
+  pytest-regressions,
+  pytestCheckHook,
+  pythonRelaxDepsHook,
   pyyaml,
   qrcode,
   rectpack,
   rich,
+  scikit-image,
   scipy,
   shapely,
   toolz,
-  types-pyyaml,
-  typer,
-  kfactory,
-  watchdog,
-  freetype-py,
-  mapbox-earcut,
-  networkx,
-  scikit-image,
   trimesh,
-  ipykernel,
-  attrs,
-  graphviz,
-  pyglet,
+  typer,
+  types-pyyaml,
   typing-extensions,
-
-  # tests
-  jsondiff,
-  jsonschema,
-  pytest-regressions,
-  pytestCheckHook,
+  watchdog,
 }:
 buildPythonPackage (finalAttrs: {
   pname = "gdsfactory";
   version = "9.45.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "gdsfactory";
@@ -58,12 +54,22 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-BO/4SoD2qSPfNGwRJTMpkbeZc8Zez7Xy23CgX9CIqC0=";
   };
 
-  build-system = [
-    flit-core
-  ];
-
   nativeBuildInputs = [
     pythonRelaxDepsHook
+  ];
+
+  # tests require >32GB of RAM
+  doCheck = false;
+
+  nativeCheckInputs = [
+    jsondiff
+    jsonschema
+    pytest-regressions
+    pytestCheckHook
+  ];
+
+  build-system = [
+    flit-core
   ];
 
   dependencies = [
@@ -100,23 +106,14 @@ buildPythonPackage (finalAttrs: {
     typing-extensions
   ];
 
-  nativeCheckInputs = [
-    jsondiff
-    jsonschema
-    pytest-regressions
-    pytestCheckHook
-  ];
+  pyproject = true;
+  pythonImportsCheck = [ "gdsfactory" ];
 
   pythonRelaxDeps = [
     "pydantic"
     "trimesh"
     "kfactory"
   ];
-
-  # tests require >32GB of RAM
-  doCheck = false;
-
-  pythonImportsCheck = [ "gdsfactory" ];
 
   meta = {
     description = "Python library to generate GDS layouts";

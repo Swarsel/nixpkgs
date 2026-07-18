@@ -2,16 +2,21 @@
   lib,
   stdenv,
   fetchurl,
-  pkg-config,
-  xorgproto,
   libx11,
   libxext,
-  writeScript,
+  pkg-config,
   testers,
+  writeScript,
+  xorgproto,
 }:
 stdenv.mkDerivation (finalAttrs: {
   pname = "libxv";
   version = "1.0.13";
+
+  src = fetchurl {
+    url = "mirror://xorg/individual/lib/libXv-${finalAttrs.version}.tar.xz";
+    hash = "sha256-fTSRCVjhwfjRk9go/qG32hkilygKNUN68GkvADugN1U=";
+  };
 
   outputs = [
     "out"
@@ -19,13 +24,7 @@ stdenv.mkDerivation (finalAttrs: {
     "devdoc"
   ];
 
-  src = fetchurl {
-    url = "mirror://xorg/individual/lib/libXv-${finalAttrs.version}.tar.xz";
-    hash = "sha256-fTSRCVjhwfjRk9go/qG32hkilygKNUN68GkvADugN1U=";
-  };
-
   strictDeps = true;
-
   nativeBuildInputs = [ pkg-config ];
 
   buildInputs = [
@@ -39,6 +38,8 @@ stdenv.mkDerivation (finalAttrs: {
   ) "--enable-malloc0returnsnull";
 
   passthru = {
+    tests.pkg-config = testers.testMetaPkgConfig finalAttrs.finalPackage;
+
     updateScript = writeScript "update-${finalAttrs.pname}" ''
       #!/usr/bin/env nix-shell
       #!nix-shell -i bash -p common-updater-scripts
@@ -47,18 +48,19 @@ stdenv.mkDerivation (finalAttrs: {
         | sort -V | tail -n1)"
       update-source-version ${finalAttrs.pname} "$version"
     '';
-    tests.pkg-config = testers.testMetaPkgConfig finalAttrs.finalPackage;
   };
 
   meta = {
     description = "Xlib-based library for the X Video (Xv) extension to the X Window System";
     homepage = "https://gitlab.freedesktop.org/xorg/lib/libxv";
+
     license = with lib.licenses; [
       hpnd
       hpndSellVariant
     ];
+
     maintainers = [ ];
-    pkgConfigModules = [ "xv" ];
     platforms = lib.platforms.unix;
+    pkgConfigModules = [ "xv" ];
   };
 })

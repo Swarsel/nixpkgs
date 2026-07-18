@@ -1,11 +1,11 @@
 {
   lib,
-  buildGoModule,
+  stdenv,
   fetchFromGitHub,
-  testers,
+  buildGoModule,
   installShellFiles,
   myks,
-  stdenv,
+  testers,
 }:
 
 buildGoModule (finalAttrs: {
@@ -19,9 +19,16 @@ buildGoModule (finalAttrs: {
     hash = "sha256-Ij1QmMr2JJSjs+5e80RxjZcCKoSqNb9mD+IKtQjX13w=";
   };
 
+  nativeBuildInputs = [ installShellFiles ];
   vendorHash = "sha256-x5yCigeM4ltL1wphW8ufa0WB3nd14AOkXGLggAxKTrs=";
+  env.CGO_ENABLED = 0;
 
-  subPackages = ".";
+  postInstall = lib.optionalString (stdenv.buildPlatform.canExecute stdenv.hostPlatform) ''
+    installShellCompletion --cmd myks \
+      --bash <($out/bin/myks completion bash) \
+      --zsh <($out/bin/myks completion zsh) \
+      --fish <($out/bin/myks completion fish)
+  '';
 
   ldflags = [
     "-s"
@@ -31,28 +38,20 @@ buildGoModule (finalAttrs: {
     "-X=main.date=1970-01-01"
   ];
 
-  nativeBuildInputs = [ installShellFiles ];
-
-  env.CGO_ENABLED = 0;
-
+  subPackages = ".";
   passthru.tests.version = testers.testVersion { package = myks; };
 
-  postInstall = lib.optionalString (stdenv.buildPlatform.canExecute stdenv.hostPlatform) ''
-    installShellCompletion --cmd myks \
-      --bash <($out/bin/myks completion bash) \
-      --zsh <($out/bin/myks completion zsh) \
-      --fish <($out/bin/myks completion fish)
-  '';
-
   meta = {
-    changelog = "https://github.com/mykso/myks/blob/v${finalAttrs.version}/CHANGELOG.md";
     description = "Configuration framework for Kubernetes applications";
-    license = lib.licenses.mit;
     homepage = "https://github.com/mykso/myks";
+    changelog = "https://github.com/mykso/myks/blob/v${finalAttrs.version}/CHANGELOG.md";
+    license = lib.licenses.mit;
+
     maintainers = [
       lib.maintainers.kbudde
       lib.maintainers.zebradil
     ];
+
     mainProgram = "myks";
   };
 })

@@ -3,11 +3,11 @@
   stdenv,
   fetchFromGitHub,
   autoreconfHook,
-  pkg-config,
-  zlib,
-  libffi,
   elfutils,
   libdwarf,
+  libffi,
+  pkg-config,
+  zlib,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -25,6 +25,7 @@ stdenv.mkDerivation (finalAttrs: {
     autoreconfHook
     pkg-config
   ];
+
   buildInputs = [
     zlib
     libffi
@@ -38,10 +39,10 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Foreign function interface for bash";
-    mainProgram = "ctypes.sh";
     homepage = "https://github.com/taviso/ctypes.sh";
     license = lib.licenses.mit;
     maintainers = [ ];
     platforms = lib.platforms.unix;
+    mainProgram = "ctypes.sh";
   };
 })

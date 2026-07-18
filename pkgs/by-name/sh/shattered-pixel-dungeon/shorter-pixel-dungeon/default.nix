@@ -1,6 +1,6 @@
 {
-  callPackage,
   fetchFromGitHub,
+  callPackage,
 }:
 
 callPackage ../generic.nix rec {
@@ -17,8 +17,8 @@ callPackage ../generic.nix rec {
   desktopName = "Shorter Pixel Dungeon";
 
   meta = {
+    description = "Shorter fork of the Shattered Pixel Dungeon roguelike";
     homepage = "https://github.com/TrashboxBobylev/Shorter-Pixel-Dungeon";
     downloadPage = "https://github.com/TrashboxBobylev/Shorter-Pixel-Dungeon/releases";
-    description = "Shorter fork of the Shattered Pixel Dungeon roguelike";
   };
 }

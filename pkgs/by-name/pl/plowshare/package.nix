@@ -2,8 +2,8 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  makeBinaryWrapper,
   curl,
+  makeBinaryWrapper,
   recode,
   spidermonkey_140,
 }:
@@ -22,8 +22,6 @@ stdenv.mkDerivation (finalAttrs: {
 
   nativeBuildInputs = [ makeBinaryWrapper ];
 
-  dontBuild = true;
-
   installPhase = ''
     make PREFIX="$out" install
 
@@ -37,6 +35,8 @@ stdenv.mkDerivation (finalAttrs: {
       }"
     done
   '';
+
+  dontBuild = true;
 
   meta = {
     description = "Command-line download/upload tool for popular file sharing websites";

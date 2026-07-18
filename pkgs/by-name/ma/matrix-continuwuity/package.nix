@@ -1,18 +1,18 @@
 {
   lib,
-  rustPlatform,
-  fetchFromGitea,
-  pkg-config,
-  bzip2,
-  zstd,
   stdenv,
-  rocksdb,
-  nix-update-script,
-  testers,
-  matrix-continuwuity,
-  rust-jemalloc-sys-unprefixed,
+  bzip2,
+  fetchFromGitea,
   liburing,
+  matrix-continuwuity,
+  nix-update-script,
   nixosTests,
+  pkg-config,
+  rocksdb,
+  rust-jemalloc-sys-unprefixed,
+  rustPlatform,
+  testers,
+  zstd,
 }:
 let
   rocksdb' =
@@ -24,12 +24,13 @@ let
       (
         final: old: {
           version = "11.1.1";
+
           src = fetchFromGitea {
-            domain = "forgejo.ellis.link";
             owner = "continuwuation";
             repo = "rocksdb";
             rev = "3756b2b905e13216d8b56bcc783d814e7b073aff";
             hash = "sha256-rSv4fr2bf9JJwdodgeuPCuceeh7k97KVxrAOC0wyPQY=";
+            domain = "forgejo.ellis.link";
           };
 
           patches = [ ];
@@ -41,14 +42,12 @@ rustPlatform.buildRustPackage (finalAttrs: {
   version = "26.6.2";
 
   src = fetchFromGitea {
-    domain = "forgejo.ellis.link";
     owner = "continuwuation";
     repo = "continuwuity";
     tag = "v${finalAttrs.version}";
     hash = "sha256-GcCjJiUOGX+vF7R4IRgNQs8KpfVj+MXwnhofwSm6gpA=";
+    domain = "forgejo.ellis.link";
   };
-
-  cargoHash = "sha256-p1Bz7op/qPogBn8bj9pQ7KjRhH2kZao8o0LPqWH2ZYo=";
 
   nativeBuildInputs = [
     pkg-config
@@ -62,15 +61,17 @@ rustPlatform.buildRustPackage (finalAttrs: {
     liburing
   ];
 
+  cargoHash = "sha256-p1Bz7op/qPogBn8bj9pQ7KjRhH2kZao8o0LPqWH2ZYo=";
+
   env = {
-    ZSTD_SYS_USE_PKG_CONFIG = true;
     ROCKSDB_INCLUDE_DIR = "${rocksdb'}/include";
     ROCKSDB_LIB_DIR = "${rocksdb'}/lib";
+    ZSTD_SYS_USE_PKG_CONFIG = true;
   };
 
   passthru = {
     rocksdb = rocksdb'; # make used rocksdb version available (e.g., for backup scripts)
-    updateScript = nix-update-script { };
+
     tests = {
       version = testers.testVersion {
         inherit (finalAttrs) version;
@@ -80,6 +81,8 @@ rustPlatform.buildRustPackage (finalAttrs: {
     // lib.optionalAttrs stdenv.hostPlatform.isLinux {
       inherit (nixosTests) matrix-continuwuity;
     };
+
+    updateScript = nix-update-script { };
   };
 
   meta = {
@@ -87,11 +90,13 @@ rustPlatform.buildRustPackage (finalAttrs: {
     homepage = "https://continuwuity.org/";
     changelog = "https://forgejo.ellis.link/continuwuation/continuwuity/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.asl20;
+
     maintainers = with lib.maintainers; [
       bartoostveen
       nyabinary
       snaki
     ];
+
     # Not a typo, continuwuity is a drop-in replacement for conduwuit.
     mainProgram = "conduwuit";
   };

@@ -2,39 +2,39 @@
   lib,
   stdenv,
   fetchurl,
-  meson,
-  ninja,
   adwaita-icon-theme,
-  gtk3,
-  libexif,
-  libgphoto2,
-  libwebp,
-  libsoup_3,
-  libxml2,
-  vala,
-  sqlite,
-  pkg-config,
-  gnome,
-  gst_all_1,
-  libgudev,
-  libraw,
+  desktop-file-utils,
+  gcr,
+  gdk-pixbuf,
+  gettext,
+  gexiv2_0_16,
   glib,
   glib-networking,
-  json-glib,
-  gcr,
-  libgee,
-  gexiv2_0_16,
-  gettext,
-  desktop-file-utils,
-  gdk-pixbuf,
-  librsvg,
-  wrapGAppsHook3,
+  gnome,
   gobject-introspection,
-  itstool,
-  libsecret,
-  libportal-gtk3,
   gsettings-desktop-schemas,
+  gst_all_1,
+  gtk3,
+  itstool,
+  json-glib,
+  libexif,
+  libgee,
+  libgphoto2,
+  libgudev,
   libheif,
+  libportal-gtk3,
+  libraw,
+  librsvg,
+  libsecret,
+  libsoup_3,
+  libwebp,
+  libxml2,
+  meson,
+  ninja,
+  pkg-config,
+  sqlite,
+  vala,
+  wrapGAppsHook3,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -107,10 +107,10 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Popular photo organizer for the GNOME desktop";
-    mainProgram = "shotwell";
     homepage = "https://gitlab.gnome.org/GNOME/shotwell";
     license = lib.licenses.lgpl21Plus;
     maintainers = with lib.maintainers; [ bobby285271 ];
     platforms = lib.platforms.linux;
+    mainProgram = "shotwell";
   };
 })

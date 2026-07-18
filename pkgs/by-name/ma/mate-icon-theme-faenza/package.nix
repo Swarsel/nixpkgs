@@ -3,10 +3,10 @@
   stdenv,
   fetchurl,
   autoreconfHook,
-  gtk3,
-  mate-icon-theme,
-  hicolor-icon-theme,
   gitUpdater,
+  gtk3,
+  hicolor-icon-theme,
+  mate-icon-theme,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -28,19 +28,18 @@ stdenv.mkDerivation (finalAttrs: {
     hicolor-icon-theme
   ];
 
-  dontDropIconThemeCache = true;
-
   postInstall = ''
     for theme in "$out"/share/icons/*; do
       gtk-update-icon-cache "$theme"
     done
   '';
 
+  dontDropIconThemeCache = true;
   enableParallelBuilding = true;
 
   passthru.updateScript = gitUpdater {
-    url = "https://github.com/mate-desktop-legacy-archive/mate-icon-theme-faenza";
     rev-prefix = "v";
+    url = "https://github.com/mate-desktop-legacy-archive/mate-icon-theme-faenza";
   };
 
   meta = {

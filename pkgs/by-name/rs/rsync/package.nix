@@ -2,29 +2,25 @@
   lib,
   stdenv,
   fetchurl,
-  fetchpatch,
-
-  updateAutotoolsGnuConfigScriptsHook,
-  perl,
-  python3,
-  libiconv,
-  zlib,
-  popt,
-
-  config,
-
-  enableACLs ? config.rsync.enableACLs or (lib.meta.availableOn stdenv.hostPlatform acl),
   acl,
-  enableLZ4 ? config.rsync.enableLZ4 or true,
+  config,
+  fetchpatch,
+  libiconv,
   lz4,
-  enableOpenSSL ? config.rsync.enableOpenSSL or true,
-  openssl,
-  enableXXHash ? config.rsync.enableXXHash or true,
-  xxhash,
-  enableZstd ? config.rsync.enableZstd or true,
-  zstd,
-
   nixosTests,
+  openssl,
+  perl,
+  popt,
+  python3,
+  updateAutotoolsGnuConfigScriptsHook,
+  xxhash,
+  zlib,
+  zstd,
+  enableACLs ? config.rsync.enableACLs or (lib.meta.availableOn stdenv.hostPlatform acl),
+  enableLZ4 ? config.rsync.enableLZ4 or true,
+  enableOpenSSL ? config.rsync.enableOpenSSL or true,
+  enableXXHash ? config.rsync.enableXXHash or true,
+  enableZstd ? config.rsync.enableZstd or true,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -40,17 +36,14 @@ stdenv.mkDerivation (finalAttrs: {
   patches = [
     # Fixes test failure on darwin
     (fetchpatch {
-      url = "https://github.com/RsyncProject/rsync/commit/e1c5f0e93a75dd45f32f3b92ba221ef158ac2e5f.patch";
-      hash = "sha256-pg65K9BCTq/WvS5icK6KT28ARccFKedp2445wLYdRsE=";
       excludes = [
         ".github/workflows/cygwin-build.yml"
       ];
+
+      hash = "sha256-pg65K9BCTq/WvS5icK6KT28ARccFKedp2445wLYdRsE=";
+      url = "https://github.com/RsyncProject/rsync/commit/e1c5f0e93a75dd45f32f3b92ba221ef158ac2e5f.patch";
     })
   ];
-
-  preBuild = ''
-    patchShebangs ./runtests.py
-  '';
 
   nativeBuildInputs = [
     updateAutotoolsGnuConfigScriptsHook
@@ -95,9 +88,11 @@ stdenv.mkDerivation (finalAttrs: {
     "rsync_cv_can_hardlink_symlink=yes"
   ];
 
-  enableParallelBuilding = true;
+  preBuild = ''
+    patchShebangs ./runtests.py
+  '';
 
-  passthru.tests = { inherit (nixosTests) rsyncd; };
+  doCheck = true;
 
   nativeCheckInputs = [
     python3
@@ -108,23 +103,27 @@ stdenv.mkDerivation (finalAttrs: {
     rm testsuite/chgrp.test
   '';
 
-  doCheck = true;
-
   __darwinAllowLocalNetworking = true;
+  enableParallelBuilding = true;
+  passthru.tests = { inherit (nixosTests) rsyncd; };
 
   meta = {
     description = "Fast incremental file transfer utility";
     homepage = "https://rsync.samba.org/";
     license = lib.licenses.gpl3Plus;
-    mainProgram = "rsync";
+
     maintainers = [
     ];
-    teams = [ lib.teams.security-review ];
+
     platforms = lib.platforms.unix;
+    mainProgram = "rsync";
+
     identifiers.cpeParts = {
-      vendor = "samba";
       inherit (finalAttrs) version;
       update = "-";
+      vendor = "samba";
     };
+
+    teams = [ lib.teams.security-review ];
   };
 })

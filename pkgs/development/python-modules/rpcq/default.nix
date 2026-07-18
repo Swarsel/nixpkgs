@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   msgpack,
   numpy,
   pytest-asyncio,
@@ -15,7 +15,6 @@
 buildPythonPackage rec {
   pname = "rpcq";
   version = "3.10.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "rigetti";
@@ -50,6 +49,7 @@ buildPythonPackage rec {
     "rpcq/test/test_spec.py"
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "rpcq" ];
 
   meta = {

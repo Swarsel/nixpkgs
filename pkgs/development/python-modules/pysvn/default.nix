@@ -1,21 +1,20 @@
 {
-  stdenv,
   lib,
-  buildPythonPackage,
+  stdenv,
   fetchurl,
-  python,
   apr,
   aprutil,
   bash,
+  buildPythonPackage,
   gcc,
   pycxx,
+  python,
   subversion,
 }:
 
 buildPythonPackage rec {
   pname = "pysvn";
   version = "1.9.25";
-  pyproject = false;
 
   src = fetchurl {
     url = "mirror://sourceforge/project/pysvn/pysvn/V${version}/pysvn-${version}.tar.gz";
@@ -56,8 +55,6 @@ buildPythonPackage rec {
     runHook postCheck
   '';
 
-  pythonImportsCheck = [ "pysvn" ];
-
   installPhase = ''
     dest=$(toPythonPath $out)/pysvn
     mkdir -p $dest
@@ -67,6 +64,9 @@ buildPythonPackage rec {
     mv -v ../Docs $out/share/doc/pysvn-${version}
     rm -v $out/share/doc/pysvn-${version}/generate_cpp_docs_from_html_docs.py
   '';
+
+  pyproject = false;
+  pythonImportsCheck = [ "pysvn" ];
 
   meta = {
     description = "Python bindings for Subversion";

@@ -16,10 +16,6 @@ stdenv.mkDerivation {
     hash = "sha256-9+isvwOw5Iw5OToztqZ5PiQPj6Pxl2ZqAC7UMF+tCM4=";
   };
 
-  preBuild = ''
-    substituteInPlace Makefile --replace /bin/rm rm --replace /usr/local/ $out/
-  '';
-
   strictDeps = true;
 
   nativeBuildInputs = with ocamlPackages; [
@@ -33,9 +29,13 @@ stdenv.mkDerivation {
     camlp-streams
   ];
 
+  preBuild = ''
+    substituteInPlace Makefile --replace /bin/rm rm --replace /usr/local/ $out/
+  '';
+
   meta = {
-    homepage = "http://pauillac.inria.fr/~ddr/ledit/";
     description = "Line editor, allowing to use shell commands with control characters like in emacs";
+    homepage = "http://pauillac.inria.fr/~ddr/ledit/";
     license = lib.licenses.bsd3;
     maintainers = [ lib.maintainers.delta ];
     mainProgram = "ledit";

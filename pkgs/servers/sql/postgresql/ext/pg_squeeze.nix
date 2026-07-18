@@ -1,6 +1,6 @@
 {
-  fetchFromGitHub,
   lib,
+  fetchFromGitHub,
   nix-update-script,
   postgresql,
   postgresqlBuildExtension,
@@ -18,15 +18,14 @@ postgresqlBuildExtension (finalAttrs: {
     hash = "sha256-lwjiRWbz+MzfodcP3jgaLdOcZ2/UheZn10iXabdfxh0=";
   };
 
-  passthru.updateScript = nix-update-script {
-    extraArgs = [ "--version-regex=^REL(\\d+)_(\\d+)_(\\d+)$" ];
-  };
   passthru.tests.extension = postgresqlTestExtension {
     inherit (finalAttrs) finalPackage;
+
     postgresqlExtraSettings = ''
       wal_level = logical
       shared_preload_libraries = 'pg_squeeze'
     '';
+
     sql = ''
       CREATE EXTENSION pg_squeeze;
 
@@ -38,6 +37,10 @@ postgresqlBuildExtension (finalAttrs: {
       VALUES ('public', 'a', ('{30}', '{22}', NULL, NULL, '{3, 5}'));
       SELECT squeeze.squeeze_table('public', 'a', NULL, NULL, NULL);
     '';
+  };
+
+  passthru.updateScript = nix-update-script {
+    extraArgs = [ "--version-regex=^REL(\\d+)_(\\d+)_(\\d+)$" ];
   };
 
   meta = {

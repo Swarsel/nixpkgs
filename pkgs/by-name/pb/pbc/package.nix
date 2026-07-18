@@ -2,9 +2,9 @@
   lib,
   stdenv,
   fetchurl,
-  gmp,
-  flex,
   bison,
+  flex,
+  gmp,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -21,15 +21,16 @@ stdenv.mkDerivation (finalAttrs: {
     "dev"
   ];
 
-  buildInputs = [
-    gmp
-  ];
+  strictDeps = true;
+
   nativeBuildInputs = [
     bison
     flex
   ];
 
-  strictDeps = true;
+  buildInputs = [
+    gmp
+  ];
 
   env = {
     LEX = "flex";
@@ -40,10 +41,12 @@ stdenv.mkDerivation (finalAttrs: {
   meta = {
     description = "Pairing-based cryptography library by Stanford";
     homepage = "https://crypto.stanford.edu/pbc/";
+
     license = with lib.licenses; [
       lgpl3Only
       asl20
     ];
+
     maintainers = with lib.maintainers; [ tphanir ];
     platforms = lib.platforms.unix;
   };

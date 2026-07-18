@@ -19,9 +19,6 @@ stdenv.mkDerivation (finalAttrs: {
   nativeBuildInputs = [ pkg-config ];
   buildInputs = [ python3 ];
 
-  enableParallelBuilding = true;
-  hardeningDisable = [ "format" ];
-
   # Transform omniidl_be into a PEP420 namespace to allow other projects to define
   # their omniidl backends. Especially useful for omniorbpy, the python backend.
   postInstall = ''
@@ -32,6 +29,9 @@ stdenv.mkDerivation (finalAttrs: {
   # Ensure postInstall didn't break cxx backend
   # Same as 'pythonImportsCheck = ["omniidl_be.cxx"];', but outside buildPythonPackage
   doInstallCheck = true;
+  enableParallelBuilding = true;
+  hardeningDisable = [ "format" ];
+
   postInstallCheck = ''
     export PYTHONPATH=$out/${python3.sitePackages}:$PYTHONPATH
     ${lib.getExe python3} -c "import omniidl_be.cxx"
@@ -39,17 +39,21 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Robust high performance CORBA ORB for C++ and Python";
+
     longDescription = ''
       omniORB is a robust high performance CORBA ORB for C++ and Python.
       It is freely available under the terms of the GNU Lesser General Public License
       (for the libraries),and GNU General Public License (for the tools).
       omniORB is largely CORBA 2.6 compliant.
     '';
+
     homepage = "http://omniorb.sourceforge.net/";
+
     license = with lib.licenses; [
       gpl2Plus
       lgpl21Plus
     ];
+
     maintainers = [ ];
     platforms = lib.platforms.unix;
   };

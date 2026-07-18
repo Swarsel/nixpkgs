@@ -1,10 +1,10 @@
 {
   lib,
+  stdenv,
+  cmake,
   fetchgit,
   llvmPackages,
   python,
-  cmake,
-  stdenv,
 }:
 
 let
@@ -23,8 +23,6 @@ stdenv'.mkDerivation (finalAttrs: {
   patches = [
     ./fix-include-qt-headers.patch
   ];
-
-  sourceRoot = "${finalAttrs.src.name}/sources/shiboken6_generator";
 
   nativeBuildInputs = [
     cmake
@@ -45,8 +43,6 @@ stdenv'.mkDerivation (finalAttrs: {
     "-Dis_pyside6_superproject_build=1"
   ];
 
-  dontWrapQtApps = true;
-
   postInstall = ''
     cd ../../..
     chmod +w .
@@ -54,15 +50,20 @@ stdenv'.mkDerivation (finalAttrs: {
     cp -r shiboken6_generator.egg-info $out/${python.sitePackages}/
   '';
 
+  dontWrapQtApps = true;
+  sourceRoot = "${finalAttrs.src.name}/sources/shiboken6_generator";
+
   meta = {
     description = "Generator for the pyside6 Qt bindings - tools";
+    homepage = "https://wiki.qt.io/Qt_for_Python";
+    changelog = "https://code.qt.io/cgit/pyside/pyside-setup.git/tree/doc/changelogs/changes-${finalAttrs.version}?h=v${finalAttrs.version}";
+
     license = with lib.licenses; [
       lgpl3Only
       gpl2Only
       gpl3Only
     ];
-    homepage = "https://wiki.qt.io/Qt_for_Python";
-    changelog = "https://code.qt.io/cgit/pyside/pyside-setup.git/tree/doc/changelogs/changes-${finalAttrs.version}?h=v${finalAttrs.version}";
+
     maintainers = [ ];
     platforms = lib.platforms.all;
     mainProgram = "shiboken6";

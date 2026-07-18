@@ -12,21 +12,21 @@ let
     {
       lib,
       callPackage,
+      concatTextFile,
+      gradle-unwrapped,
+      makeSetupHook,
       mitm-cache,
       replaceVars,
-      symlinkJoin,
-      concatTextFile,
-      makeSetupHook,
-      gradle-unwrapped,
       runCommand,
+      symlinkJoin,
       ...
     }@args:
     let
       gradle = gradle-unwrapped.override args;
     in
     symlinkJoin {
-      pname = "gradle";
       inherit (gradle) version;
+      pname = "gradle";
 
       paths = [
         (makeSetupHook
@@ -35,7 +35,6 @@ let
             meta.license = lib.licenses.mit;
           }
           (concatTextFile {
-            name = "setup-hook.sh";
             files = [
               (mitm-cache.setupHook)
               (replaceVars ./setup-hook.sh {
@@ -44,6 +43,8 @@ let
                 init_script = "${./init-build.gradle}";
               })
             ];
+
+            name = "setup-hook.sh";
           })
         )
         gradle
@@ -51,9 +52,9 @@ let
       ];
 
       passthru = {
-        fetchDeps = callPackage ./fetch-deps.nix { inherit mitm-cache; };
         inherit (gradle) jdk;
-        unwrapped = gradle;
+        fetchDeps = callPackage ./fetch-deps.nix { inherit mitm-cache; };
+
         tests = {
           toolchains =
             let
@@ -62,6 +63,8 @@ let
             in
             runCommand "detects-toolchains-from-nix-env"
               {
+                src = ./tests/toolchains;
+
                 # Use JDKs that are not the default for any of the gradle versions
                 nativeBuildInputs = [
                   (gradle.override {
@@ -70,7 +73,6 @@ let
                     ];
                   })
                 ];
-                src = ./tests/toolchains;
               }
               ''
                 cp -a $src/* .
@@ -85,6 +87,8 @@ let
               '';
         }
         // gradle.tests;
+
+        unwrapped = gradle;
       };
 
       meta = gradle.meta // {
@@ -97,13 +101,14 @@ let
   # Creates a Gradle without calling the package.
   mkGradle' =
     {
-      version,
-      hash,
-
       # The default JDK/JRE that will be used for derived Gradle packages.
       # A current LTS version of a JDK is a good choice.
       defaultJava,
-
+      hash,
+      version,
+      # Extra attributes to be merged into the resulting derivation's
+      # meta attribute.
+      meta ? { },
       # The platforms supported by this Gradle package.
       # Gradle Native-Platform ships some binaries that
       # are compatible only with specific platforms.
@@ -118,11 +123,6 @@ let
         "x86_64-linux"
         "x86_64-windows"
       ],
-
-      # Extra attributes to be merged into the resulting derivation's
-      # meta attribute.
-      meta ? { },
-
       # Put the update script in passthru. Should only be on a single attrpath
       # so that nixpkgs-update doesn't create duplicate PRs.
       updateScriptMajorVersion ? null,
@@ -132,41 +132,36 @@ let
       lib,
       stdenv,
       fetchurl,
-      callPackage,
-      makeWrapper,
-      unzip,
-      coreutils,
-      findutils,
-      ncurses5,
-      ncurses6,
-      gnused,
-      udev,
-      testers,
-      runCommand,
-      writeText,
       autoPatchelfHook,
       buildPackages,
-
+      callPackage,
+      coreutils,
+      findutils,
+      gnused,
+      makeWrapper,
+      ncurses5,
+      ncurses6,
+      runCommand,
+      testers,
+      udev,
+      unzip,
+      writeText,
       # The JDK/JRE used for running Gradle.
       java ? defaultJava,
-
       # Additional JDK/JREs to be registered as toolchains.
       # See https://docs.gradle.org/current/userguide/toolchains.html
       javaToolchains ? [ ],
-
       # Ignored arguments from calling .override on the wrapper.
       ...
     }:
     stdenv.mkDerivation (finalAttrs: {
-      pname = "gradle";
       inherit version;
+      pname = "gradle";
 
       src = fetchurl {
         inherit hash;
         url = "https://services.gradle.org/distributions/gradle-${version}-bin.zip";
       };
-
-      dontBuild = true;
 
       nativeBuildInputs = [
         makeWrapper
@@ -181,14 +176,6 @@ let
         ncurses5
         ncurses6
       ];
-
-      # We only need to patchelf some libs embedded in JARs.
-      dontAutoPatchelf = true;
-
-      # All the installed Gradle libraries and binaries go here. Note that the Gradle wrapper
-      # will look for a lib directory above its own directory (which is presumed to be bin)
-      # for loading the main Gradle jar.
-      gradleLibexec = "${placeholder "out"}/libexec/gradle";
 
       installPhase =
         let
@@ -228,6 +215,9 @@ let
             ${jnaFlag}
         '';
 
+      # We only need to patchelf some libs embedded in JARs.
+      dontAutoPatchelf = true;
+      dontBuild = true;
       dontFixup = !stdenv.hostPlatform.isLinux;
 
       fixupPhase =
@@ -277,23 +267,28 @@ let
           ${lib.optionalString stdenv.hostPlatform.isLinux "echo ${udev} >> $out/nix-support/manual-runtime-dependencies"}
         '';
 
+      # All the installed Gradle libraries and binaries go here. Note that the Gradle wrapper
+      # will look for a lib directory above its own directory (which is presumed to be bin)
+      # for loading the main Gradle jar.
+      gradleLibexec = "${placeholder "out"}/libexec/gradle";
+      passthru.jdk = java;
+
       passthru.tests = {
         version = testers.testVersion {
-          package = finalAttrs.finalPackage;
           command = ''
             env GRADLE_USER_HOME=$TMPDIR/gradle GRADLE_OPTS=-Dorg.gradle.native.dir=$TMPDIR/native \
               gradle --version
           '';
+
+          package = finalAttrs.finalPackage;
         };
 
         java-application = testers.testEqualContents {
-          assertion = "can build and run a trivial Java application";
-          expected = writeText "expected" "hello\n";
           actual =
             runCommand "actual"
               {
-                nativeBuildInputs = [ finalAttrs.finalPackage ];
                 src = ./tests/java-application;
+                nativeBuildInputs = [ finalAttrs.finalPackage ];
               }
               ''
                 cp -a $src/* .
@@ -304,12 +299,12 @@ let
                   GRADLE_OPTS="-Dorg.gradle.native.dir=$TMPDIR/native -Dnix.test.mainClass=Main" \
                   gradle run --no-daemon --quiet --console plain > $out
               '';
+
+          assertion = "can build and run a trivial Java application";
+          expected = writeText "expected" "hello\n";
         };
       };
-      passthru.jdk = java;
-      passthru.wrapped = callPackage wrapGradle {
-        gradle-unwrapped = mkGradle genArgs;
-      };
+
       passthru.updateScript =
         if updateScriptMajorVersion != null then
           nix-update-script {
@@ -325,11 +320,16 @@ let
         else
           null;
 
+      passthru.wrapped = callPackage wrapGradle {
+        gradle-unwrapped = mkGradle genArgs;
+      };
+
       meta =
 
         {
           inherit platforms;
           description = "Enterprise-grade build system";
+
           longDescription = ''
             Gradle is a build system which offers you ease, power and freedom.
             You can choose the balance for yourself. It has powerful multi-project
@@ -338,21 +338,25 @@ let
             between the flexibility of Ant and the convenience of a
             build-by-convention behavior.
           '';
+
           homepage = "https://www.gradle.org/";
           changelog = "https://docs.gradle.org/${version}/release-notes.html";
-          downloadPage = "https://gradle.org/next-steps/?version=${version}";
+          license = lib.licenses.asl20;
+
           sourceProvenance = with lib.sourceTypes; [
             binaryBytecode
             binaryNativeCode
           ];
-          license = lib.licenses.asl20;
+
           maintainers = with lib.maintainers; [
             britter
             liff
             lorenzleutgeb
           ];
-          teams = [ lib.teams.java ];
+
           mainProgram = "gradle";
+          downloadPage = "https://gradle.org/next-steps/?version=${version}";
+          teams = [ lib.teams.java ];
         }
         // meta;
     });
@@ -365,32 +369,33 @@ rec {
   # `gradle-packages.mkGradle` as we do below,
   # and still have wrapGradle available if necessary.
   inherit mkGradle wrapGradle;
+  # Default version of Gradle in nixpkgs.
+  gradle = gradle_8;
 
-  # NOTE: Default JDKs that are hardcoded below must be LTS versions
-  # and respect the compatibility matrix at
-  # https://docs.gradle.org/current/userguide/compatibility.html
-
-  gradle_9 = mkGradle {
-    version = "9.5.1";
-    hash = "sha256-uvwUG2Ga1jUP2XX8kDFW3VwVGZjMiwWOjBBEq197Ax8=";
-    defaultJava = jdk25;
-    updateScriptMajorVersion = "9";
-  };
-  gradle_8 = mkGradle {
-    version = "8.14.4";
-    hash = "sha256-8XcSmKcPbbWina9iN4xOGKF/wzybprFDYuDN9AYQOA0=";
-    defaultJava = jdk21;
-    updateScriptMajorVersion = "8";
-  };
   gradle_7 = mkGradle {
     version = "7.6.6";
-    hash = "sha256-Zz2XdvMDvHBI/DMp0jLW6/EFGweJO9nRFhb62ahnO+A=";
     defaultJava = jdk17;
+    hash = "sha256-Zz2XdvMDvHBI/DMp0jLW6/EFGweJO9nRFhb62ahnO+A=";
+
     meta.knownVulnerabilities = [
       "Gradle 7 no longer receives security updates with the release of Gradle 9 on 31 July 2025. https://endoflife.date/gradle"
     ];
   };
 
-  # Default version of Gradle in nixpkgs.
-  gradle = gradle_8;
+  gradle_8 = mkGradle {
+    version = "8.14.4";
+    defaultJava = jdk21;
+    hash = "sha256-8XcSmKcPbbWina9iN4xOGKF/wzybprFDYuDN9AYQOA0=";
+    updateScriptMajorVersion = "8";
+  };
+
+  # NOTE: Default JDKs that are hardcoded below must be LTS versions
+  # and respect the compatibility matrix at
+  # https://docs.gradle.org/current/userguide/compatibility.html
+  gradle_9 = mkGradle {
+    version = "9.5.1";
+    defaultJava = jdk25;
+    hash = "sha256-uvwUG2Ga1jUP2XX8kDFW3VwVGZjMiwWOjBBEq197Ax8=";
+    updateScriptMajorVersion = "9";
+  };
 }

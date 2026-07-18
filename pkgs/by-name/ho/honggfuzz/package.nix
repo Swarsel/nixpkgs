@@ -2,13 +2,13 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  makeWrapper,
   clang,
-  llvm,
   libbfd,
+  libblocksruntime,
   libopcodes,
   libunwind,
-  libblocksruntime,
+  llvm,
+  makeWrapper,
   unstableGitUpdater,
 }:
 
@@ -28,19 +28,15 @@ stdenv.mkDerivation (finalAttrs: {
       --replace '"clang' '"${clang}/bin/clang'
   '';
 
-  enableParallelBuilding = true;
-
   nativeBuildInputs = [ makeWrapper ];
   buildInputs = [ llvm ];
+
   propagatedBuildInputs = [
     libbfd
     libopcodes
     libunwind
     libblocksruntime
   ];
-
-  # Fortify causes build failures: 'str*' defined both normally and as 'alias' attribute
-  hardeningDisable = [ "fortify" ];
 
   makeFlags = [
     "PREFIX=$(out)"
@@ -58,12 +54,17 @@ stdenv.mkDerivation (finalAttrs: {
     cp libhfnetdriver/libhfnetdriver.a $out/lib
   '';
 
+  enableParallelBuilding = true;
+  # Fortify causes build failures: 'str*' defined both normally and as 'alias' attribute
+  hardeningDisable = [ "fortify" ];
+
   passthru.updateScript = unstableGitUpdater {
     tagFormat = "[0-9]*";
   };
 
   meta = {
     description = "Security oriented, feedback-driven, evolutionary, easy-to-use fuzzer";
+
     longDescription = ''
       Honggfuzz is a security oriented, feedback-driven, evolutionary,
       easy-to-use fuzzer with interesting analysis options. It is
@@ -77,12 +78,15 @@ stdenv.mkDerivation (finalAttrs: {
       fuzzing), and it will work its way up, expanding it by utilizing
       feedback-based coverage metrics.
     '';
+
     homepage = "https://honggfuzz.dev/";
     license = lib.licenses.asl20;
-    platforms = lib.platforms.linux;
+
     maintainers = with lib.maintainers; [
       cpu
       chivay
     ];
+
+    platforms = lib.platforms.linux;
   };
 })

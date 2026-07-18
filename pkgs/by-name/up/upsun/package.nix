@@ -1,9 +1,9 @@
 {
-  stdenvNoCC,
   lib,
   fetchurl,
-  testers,
   installShellFiles,
+  stdenvNoCC,
+  testers,
   upsun,
 }:
 
@@ -28,18 +28,12 @@ let
 
 in
 stdenvNoCC.mkDerivation (finalAttrs: {
-  pname = "upsun";
   inherit (versions) version;
-
-  nativeBuildInputs = [ installShellFiles ];
-
+  pname = "upsun";
   # run ./update
   src = fetchurl { inherit hash url; };
+  nativeBuildInputs = [ installShellFiles ];
 
-  dontConfigure = true;
-  dontBuild = true;
-
-  sourceRoot = ".";
   installPhase = ''
     runHook preInstall
 
@@ -51,25 +45,32 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  dontBuild = true;
+  dontConfigure = true;
+  sourceRoot = ".";
+
   passthru = {
-    updateScript = ./update.sh;
     tests.version = testers.testVersion {
       inherit (finalAttrs) version;
       package = upsun;
     };
+
+    updateScript = ./update.sh;
   };
 
   meta = {
     description = "Unified tool for managing your Upsun services from the command line";
     homepage = "https://github.com/upsun/cli";
     license = lib.licenses.mit;
-    mainProgram = "upsun";
+    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
     maintainers = with lib.maintainers; [ spk ];
+
     platforms = [
       "x86_64-linux"
       "aarch64-linux"
       "aarch64-darwin"
     ];
-    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
+
+    mainProgram = "upsun";
   };
 })

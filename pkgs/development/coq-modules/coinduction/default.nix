@@ -1,15 +1,16 @@
 {
   lib,
-  mkCoqDerivation,
   coq,
+  mkCoqDerivation,
   stdlib,
   version ? null,
 }:
 
 mkCoqDerivation {
-  pname = "coinduction";
-  owner = "damien-pous";
   inherit version;
+  pname = "coinduction";
+  propagatedBuildInputs = [ stdlib ];
+
   defaultVersion =
     let
       inherit (lib.versions) range;
@@ -20,14 +21,15 @@ mkCoqDerivation {
         out = "1.9";
       }
     ] null;
+
+  mlPlugin = true;
+  owner = "damien-pous";
+
   release = {
     "1.9".hash = "sha256-bBU+xDklnzJBeN41GarW5KXzD8eKsOYtb//ULYumwWE=";
   };
+
   releaseRev = v: "v${v}";
-
-  propagatedBuildInputs = [ stdlib ];
-
-  mlPlugin = true;
 
   meta = {
     description = "Library for doing proofs by (enhanced) coinduction";

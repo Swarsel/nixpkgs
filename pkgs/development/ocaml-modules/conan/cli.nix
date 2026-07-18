@@ -1,20 +1,20 @@
 {
   lib,
   stdenv,
-  buildDunePackage,
-  darwin,
-  conan-unix,
-  dune-site,
   alcotest,
+  buildDunePackage,
   conan-database,
+  conan-unix,
   crowbar,
+  darwin,
+  dune-site,
   fmt,
   rresult,
 }:
 
 buildDunePackage {
-  pname = "conan-cli";
   inherit (conan-unix) version src meta;
+  pname = "conan-cli";
 
   buildInputs = [
     conan-unix
@@ -22,10 +22,6 @@ buildDunePackage {
   ];
 
   doCheck = true;
-
-  preCheck = ''
-    export DUNE_CACHE=disabled
-  '';
 
   nativeCheckInputs = [
     conan-database
@@ -41,4 +37,8 @@ buildDunePackage {
     fmt
     rresult
   ];
+
+  preCheck = ''
+    export DUNE_CACHE=disabled
+  '';
 }

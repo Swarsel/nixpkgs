@@ -1,18 +1,14 @@
 {
-  fetchFromGitHub,
   lib,
-  python3Packages,
+  fetchFromGitHub,
   gnupg,
   perl,
+  python3Packages,
 }:
 
 python3Packages.buildPythonApplication (finalAttrs: {
   pname = "pius";
-  namePrefix = "";
   version = "3.0.0";
-  pyproject = true;
-
-  build-system = with python3Packages; [ setuptools ];
 
   src = fetchFromGitHub {
     owner = "jaymzh";
@@ -21,17 +17,19 @@ python3Packages.buildPythonApplication (finalAttrs: {
     hash = "sha256-fsBG5F2GFRMXjRqmooxqhM4AEVV7Q9upQp5HY09vB1E=";
   };
 
+  buildInputs = [ perl ];
+  build-system = with python3Packages; [ setuptools ];
+  namePrefix = "";
+
   patchPhase = ''
     for file in libpius/constants.py pius-keyring-mgr; do
       sed -i "$file" -E -e's|/usr/bin/gpg2?|${gnupg}/bin/gpg|g'
     done
   '';
 
-  buildInputs = [ perl ];
+  pyproject = true;
 
   meta = {
-    homepage = "https://www.phildev.net/pius/";
-
     description = "PGP Individual UID Signer (PIUS), quickly and easily sign UIDs on a set of PGP keys";
 
     longDescription = ''
@@ -41,9 +39,9 @@ python3Packages.buildPythonApplication (finalAttrs: {
       to the process.
     '';
 
+    homepage = "https://www.phildev.net/pius/";
     license = lib.licenses.gpl2Only;
-
-    platforms = lib.platforms.gnu ++ lib.platforms.linux;
     maintainers = [ ];
+    platforms = lib.platforms.gnu ++ lib.platforms.linux;
   };
 })

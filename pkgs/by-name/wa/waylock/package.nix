@@ -8,8 +8,8 @@
   pkg-config,
   scdoc,
   wayland,
-  wayland-scanner,
   wayland-protocols,
+  wayland-scanner,
   zig_0_16,
 }:
 let
@@ -30,8 +30,6 @@ stdenv.mkDerivation (finalAttrs: {
     substituteInPlace build.zig --replace-fail "1.4.0-dev" "${finalAttrs.version}"
   '';
 
-  deps = callPackage ./build.zig.zon.nix { };
-
   nativeBuildInputs = [
     pkg-config
     scdoc
@@ -46,28 +44,32 @@ stdenv.mkDerivation (finalAttrs: {
     pam
   ];
 
+  preBuild = ''
+    substituteInPlace pam.d/waylock --replace-fail "system-auth" "login"
+  '';
+
+  deps = callPackage ./build.zig.zon.nix { };
+
   zigBuildFlags = [
     "-Dman-pages"
     "--system"
     "${finalAttrs.deps}"
   ];
 
-  preBuild = ''
-    substituteInPlace pam.d/waylock --replace-fail "system-auth" "login"
-  '';
-
   passthru.updateScript = ./update.sh;
 
   meta = {
+    description = "Small screenlocker for Wayland compositors";
     homepage = "https://codeberg.org/ifreund/waylock";
     changelog = "https://codeberg.org/ifreund/waylock/releases/tag/v${finalAttrs.version}";
-    description = "Small screenlocker for Wayland compositors";
     license = lib.licenses.isc;
+
     maintainers = with lib.maintainers; [
       adamcstephens
       jordanisaacs
     ];
-    mainProgram = "waylock";
+
     platforms = lib.platforms.linux;
+    mainProgram = "waylock";
   };
 })

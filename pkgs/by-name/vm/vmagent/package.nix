@@ -5,11 +5,11 @@
 # nixpkgs-update: no auto update
 lib.addMetaAttrs { mainProgram = "vmagent"; } (
   victoriametrics.override {
+    withBackupTools = false;
     withServer = false;
+    withVmAgent = true;
     withVmAlert = false;
     withVmAuth = false;
-    withBackupTools = false;
     withVmctl = false;
-    withVmAgent = true;
   }
 )

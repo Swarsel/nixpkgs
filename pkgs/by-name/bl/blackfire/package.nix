@@ -1,12 +1,12 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchurl,
-  dpkg,
-  writeShellScript,
-  curl,
-  jq,
   common-updater-scripts,
+  curl,
+  dpkg,
+  jq,
+  writeShellScript,
 }:
 
 stdenv.mkDerivation rec {
@@ -20,8 +20,6 @@ stdenv.mkDerivation rec {
   nativeBuildInputs = lib.optionals stdenv.hostPlatform.isLinux [
     dpkg
   ];
-
-  dontUnpack = true;
 
   installPhase = ''
     runHook preInstall
@@ -56,23 +54,28 @@ stdenv.mkDerivation rec {
     runHook postInstall
   '';
 
+  dontUnpack = true;
+
   passthru = {
     sources = {
-      "x86_64-linux" = fetchurl {
-        url = "https://packages.blackfire.io/debian/pool/any/main/b/blackfire/blackfire_${version}_amd64.deb";
-        hash = "sha256-doeqXoS0B7AyzyhkLB9wUC6iuD0c2KIhAIEPeYaDC5E=";
-      };
-      "i686-linux" = fetchurl {
-        url = "https://packages.blackfire.io/debian/pool/any/main/b/blackfire/blackfire_${version}_i386.deb";
-        hash = "sha256-bQWhiSw9/gGyGoLEyz6BHaRPNLxuqouiobBMfB5ytYk=";
-      };
-      "aarch64-linux" = fetchurl {
-        url = "https://packages.blackfire.io/debian/pool/any/main/b/blackfire/blackfire_${version}_arm64.deb";
-        hash = "sha256-B+rhmnM2sVICVLDcYq2OEp402Wz6kywCRqeS95Vdzlw=";
-      };
       "aarch64-darwin" = fetchurl {
-        url = "https://packages.blackfire.io/blackfire/${version}/blackfire-darwin_arm64.pkg.tar.gz";
         hash = "sha256-Ofs9raAtx/duS8dXWfvjKGzhJr3j9+gkH8lP/VLfnkE=";
+        url = "https://packages.blackfire.io/blackfire/${version}/blackfire-darwin_arm64.pkg.tar.gz";
+      };
+
+      "aarch64-linux" = fetchurl {
+        hash = "sha256-B+rhmnM2sVICVLDcYq2OEp402Wz6kywCRqeS95Vdzlw=";
+        url = "https://packages.blackfire.io/debian/pool/any/main/b/blackfire/blackfire_${version}_arm64.deb";
+      };
+
+      "i686-linux" = fetchurl {
+        hash = "sha256-bQWhiSw9/gGyGoLEyz6BHaRPNLxuqouiobBMfB5ytYk=";
+        url = "https://packages.blackfire.io/debian/pool/any/main/b/blackfire/blackfire_${version}_i386.deb";
+      };
+
+      "x86_64-linux" = fetchurl {
+        hash = "sha256-doeqXoS0B7AyzyhkLB9wUC6iuD0c2KIhAIEPeYaDC5E=";
+        url = "https://packages.blackfire.io/debian/pool/any/main/b/blackfire/blackfire_${version}_amd64.deb";
       };
     };
 
@@ -101,9 +104,10 @@ stdenv.mkDerivation rec {
   meta = {
     description = "Profiler agent and client";
     homepage = "https://blackfire.io/";
-    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
     license = lib.licenses.unfree;
+    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
     maintainers = with lib.maintainers; [ spk ];
+
     platforms = [
       "x86_64-linux"
       "aarch64-linux"

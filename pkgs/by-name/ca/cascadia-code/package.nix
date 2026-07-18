@@ -1,7 +1,7 @@
 {
   lib,
-  stdenvNoCC,
   fetchzip,
+  stdenvNoCC,
   useVariableFont ? false,
 }:
 
@@ -11,8 +11,8 @@ stdenvNoCC.mkDerivation (finalAttrs: {
 
   src = fetchzip {
     url = "https://github.com/microsoft/cascadia-code/releases/download/v${finalAttrs.version}/CascadiaCode-${finalAttrs.version}.zip";
-    stripRoot = false;
     hash = "sha256-bCQzGCvjSQ1TXFVC3w9VPXNtjM4h7lRvljVjX/w1TJ4=";
+    stripRoot = false;
   };
 
   installPhase = ''

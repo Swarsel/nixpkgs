@@ -1,11 +1,11 @@
 {
+  lib,
   stdenv,
   fetchurl,
-  lib,
   exiv2,
   ffmpeg,
-  libvlc,
   kdePackages,
+  libvlc,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -17,17 +17,15 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-fznB/B2VriB+Wt6ZxrPrNoJP45AuK1vV4ONpAHYwUlY=";
   };
 
-  env.LANG = "C.UTF-8";
+  nativeBuildInputs = [
+    kdePackages.extra-cmake-modules
+    kdePackages.wrapQtAppsHook
+  ];
 
   buildInputs = [
     kdePackages.qtbase
     exiv2
     libvlc
-  ];
-
-  nativeBuildInputs = [
-    kdePackages.extra-cmake-modules
-    kdePackages.wrapQtAppsHook
   ];
 
   # not sure if we really need phonon when we have vlc, but on KDE it's bound to
@@ -42,15 +40,17 @@ stdenv.mkDerivation (finalAttrs: {
     libkdcraw
   ];
 
+  env.LANG = "C.UTF-8";
+
   qtWrapperArgs = [
     "--prefix PATH : ${lib.makeBinPath [ ffmpeg ]}"
   ];
 
   meta = {
+    inherit (kdePackages.kconfig.meta) platforms;
     description = "Efficient image organization and indexing";
     homepage = "https://www.kphotoalbum.org/";
     license = lib.licenses.gpl2Plus;
     maintainers = with lib.maintainers; [ peterhoeg ];
-    inherit (kdePackages.kconfig.meta) platforms;
   };
 })

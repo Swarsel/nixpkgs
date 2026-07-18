@@ -1,11 +1,11 @@
 {
   lib,
   stdenv,
+  fetchFromGitHub,
   adal,
   buildPythonPackage,
   certifi,
   durationpy,
-  fetchFromGitHub,
   google-auth,
   mock,
   pytestCheckHook,
@@ -22,7 +22,6 @@
 buildPythonPackage rec {
   pname = "kubernetes";
   version = "35.0.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "kubernetes-client";
@@ -30,6 +29,12 @@ buildPythonPackage rec {
     tag = "v${version}";
     hash = "sha256-q52LqOz8aQkzWPwEy1c2jUQJ3hQ2sDVrYGkOgOc7Mm0=";
   };
+
+  nativeCheckInputs = [
+    mock
+    pytestCheckHook
+  ]
+  ++ lib.concatAttrValues optional-dependencies;
 
   build-system = [
     setuptools
@@ -48,22 +53,17 @@ buildPythonPackage rec {
     websocket-client
   ];
 
-  optional-dependencies = {
-    adal = [ adal ];
-  };
-
-  pythonImportsCheck = [ "kubernetes" ];
-
-  nativeCheckInputs = [
-    mock
-    pytestCheckHook
-  ]
-  ++ lib.concatAttrValues optional-dependencies;
-
   disabledTests = lib.optionals stdenv.hostPlatform.isDarwin [
     # AssertionError: <class 'urllib3.poolmanager.ProxyManager'> != <class 'urllib3.poolmanager.Poolmanager'>
     "test_rest_proxycare"
   ];
+
+  optional-dependencies = {
+    adal = [ adal ];
+  };
+
+  pyproject = true;
+  pythonImportsCheck = [ "kubernetes" ];
 
   meta = {
     description = "Kubernetes Python client";

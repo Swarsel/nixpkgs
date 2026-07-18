@@ -1,14 +1,13 @@
 {
   lib,
-  python3,
-  git,
   fetchFromGitHub,
+  git,
+  python3,
 }:
 
 python3.pkgs.buildPythonApplication (finalAttrs: {
   pname = "gato";
   version = "1.6";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "praetorian-inc";
@@ -35,6 +34,8 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     pytest-cov-stub
     pytestCheckHook
   ];
+
+  pyproject = true;
 
   pythonImportsCheck = [
     "gato"

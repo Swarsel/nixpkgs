@@ -1,16 +1,15 @@
 {
   lib,
   fetchFromGitHub,
-  python3Packages,
-  writableTmpDirAsHomeHook,
   cdxgen,
   nixosTests,
+  python3Packages,
+  writableTmpDirAsHomeHook,
 }:
 
 python3Packages.buildPythonApplication (finalAttrs: {
   pname = "dep-scan";
   version = "6.2.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "owasp-dep-scan";
@@ -18,6 +17,14 @@ python3Packages.buildPythonApplication (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-pMqEzJhGVmLhy4HJE6O/doYGMPiys7KqM5jW5pJI6sU=";
   };
+
+  nativeCheckInputs = with python3Packages; [
+    httpretty
+    pytest-asyncio
+    pytest-cov-stub
+    pytestCheckHook
+    writableTmpDirAsHomeHook
+  ];
 
   build-system = with python3Packages; [ setuptools ];
 
@@ -41,16 +48,6 @@ python3Packages.buildPythonApplication (finalAttrs: {
     toml
   ];
 
-  nativeCheckInputs = with python3Packages; [
-    httpretty
-    pytest-asyncio
-    pytest-cov-stub
-    pytestCheckHook
-    writableTmpDirAsHomeHook
-  ];
-
-  pythonImportsCheck = [ "depscan" ];
-
   disabledTests = [
     # Test is not present
     "test_query_metadata2"
@@ -70,6 +67,8 @@ python3Packages.buildPythonApplication (finalAttrs: {
     }"
   ];
 
+  pyproject = true;
+  pythonImportsCheck = [ "depscan" ];
   passthru.tests = { inherit (nixosTests) dep-scan; };
 
   meta = {
@@ -78,7 +77,7 @@ python3Packages.buildPythonApplication (finalAttrs: {
     changelog = "https://github.com/owasp-dep-scan/dep-scan/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ fab ];
-    teams = [ lib.teams.ngi ];
     mainProgram = "depscan";
+    teams = [ lib.teams.ngi ];
   };
 })

@@ -1,20 +1,19 @@
 {
   buildPythonPackage,
-  sundials,
   cython,
   numpy,
   pkgconfig,
-  setuptools,
-  scikits-odes-core,
   pytestCheckHook,
+  scikits-odes-core,
+  setuptools,
+  sundials,
 }:
 
 buildPythonPackage rec {
   inherit (scikits-odes-core) version src;
   pname = "scikits-odes-sundials";
-  pyproject = true;
-
-  sourceRoot = "${src.name}/packages/scikits-odes-sundials";
+  buildInputs = [ sundials ];
+  nativeCheckInputs = [ pytestCheckHook ];
 
   build-system = [
     cython
@@ -23,16 +22,14 @@ buildPythonPackage rec {
     setuptools
   ];
 
-  buildInputs = [ sundials ];
-
   dependencies = [
     numpy
     scikits-odes-core
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "scikits_odes_sundials" ];
-
-  nativeCheckInputs = [ pytestCheckHook ];
+  sourceRoot = "${src.name}/packages/scikits-odes-sundials";
 
   meta = scikits-odes-core.meta // {
     description = "Sundials wrapper module for scikits-odes";

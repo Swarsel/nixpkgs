@@ -21,11 +21,11 @@ stdenv.mkDerivation (finalAttrs: {
   meta = {
     description = "Free Unicode plain-text editor for Unix-like systems";
     homepage = "https://www.yudit.org/";
-    mainProgram = "yudit";
     license = lib.licenses.gpl2Plus;
     maintainers = with lib.maintainers; [ doronbehar ];
     # Might work on Darwin but currently fails, and upstream doesn't officially
     # supports it.
     platforms = lib.platforms.linux;
+    mainProgram = "yudit";
   };
 })

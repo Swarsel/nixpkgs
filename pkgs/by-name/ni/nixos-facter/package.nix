@@ -1,15 +1,15 @@
 {
   lib,
+  stdenv,
+  fetchFromGitHub,
   buildGoModule,
   callPackage,
-  fetchFromGitHub,
+  gcc,
   hwinfo,
   libusb1,
-  gcc,
-  pkg-config,
   makeWrapper,
   nixosTests,
-  stdenv,
+  pkg-config,
   systemdMinimal,
 }:
 let
@@ -34,20 +34,19 @@ buildGoModule (finalAttrs: {
     hash = "sha256-w4tFIouJQLf/JeY7wvvSLbxQv73Bbs11a8EAu6iXwKU=";
   };
 
-  vendorHash = "sha256-5duwAxAgbPZIbbgzZE2m574TF/0+jF/TvTKI4YBH6jM=";
-
-  env.CGO_ENABLED = 1;
+  nativeBuildInputs = [
+    gcc
+    pkg-config
+    makeWrapper
+  ];
 
   buildInputs = [
     libusb1
     hwinfoOverride
   ];
 
-  nativeBuildInputs = [
-    gcc
-    pkg-config
-    makeWrapper
-  ];
+  vendorHash = "sha256-5duwAxAgbPZIbbgzZE2m574TF/0+jF/TvTKI4YBH6jM=";
+  env.CGO_ENABLED = 1;
 
   # nixos-facter calls systemd-detect-virt
   postInstall = ''
@@ -65,8 +64,8 @@ buildGoModule (finalAttrs: {
 
   passthru.tests = {
     inherit (nixosTests) facter;
-    debug-nvd = callPackage ./test-debug-nvd.nix { };
     debug-nix-diff = nixosTests.facter.nodes.machine.hardware.facter.debug.nix-diff;
+    debug-nvd = callPackage ./test-debug-nvd.nix { };
   };
 
   meta = {
@@ -74,7 +73,7 @@ buildGoModule (finalAttrs: {
     homepage = "https://github.com/numtide/nixos-facter";
     license = lib.licenses.gpl3Plus;
     maintainers = [ lib.maintainers.brianmcgee ];
-    mainProgram = "nixos-facter";
     platforms = lib.platforms.linux;
+    mainProgram = "nixos-facter";
   };
 })

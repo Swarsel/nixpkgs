@@ -1,9 +1,9 @@
 {
-  fetchFromGitHub,
+  lib,
   stdenv,
+  fetchFromGitHub,
   libusb1,
   pkg-config,
-  lib,
   writeText,
 }:
 let
@@ -21,7 +21,6 @@ stdenv.mkDerivation (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-ZjuCH/XjQEgg6KHAvb95/BkAy+C2OdbtBb/i6K30+uo=";
   };
-  sourceRoot = "${finalAttrs.src.name}/lm4flash";
 
   strictDeps = true;
 
@@ -35,25 +34,27 @@ stdenv.mkDerivation (finalAttrs: {
 
   buildFlags = [ "release" ];
 
-  installFlags = [ "PREFIX=$(out)" ];
-
-  doInstallCheck = true;
-
   postInstall = ''
     install -Dm644 "${stellaris-udev-rules}" "$out/etc/udev/rules.d/61.stellpad.rules"
   '';
 
+  doInstallCheck = true;
+  installFlags = [ "PREFIX=$(out)" ];
+  sourceRoot = "${finalAttrs.src.name}/lm4flash";
+
   meta = {
     description = "Command-line firmware flashing tool for the Stellaris Launchpad";
+
     longDescription = ''
       Command-line firmware flashing tool using libusb-1.0 to communicate with
       the Stellaris Launchpad ICDI. Works on all Linux, Mac OS X, Windows, and
       BSD systems.
     '';
+
     homepage = "https://github.com/utzig/lm4tools";
     license = lib.licenses.gpl2Plus;
-    mainProgram = "lm4flash";
     maintainers = with lib.maintainers; [ MostafaKhaled ];
     platforms = lib.platforms.all;
+    mainProgram = "lm4flash";
   };
 })

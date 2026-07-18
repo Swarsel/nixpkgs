@@ -2,24 +2,20 @@
   lib,
   fetchFromGitHub,
   buildPythonPackage,
-
-  # build-system
-  setuptools,
-
   # dependencies
   cython,
   hidapi,
+  mock,
   pyserial,
-
   # tests
   pytestCheckHook,
-  mock,
+  # build-system
+  setuptools,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "pyedbglib";
   version = "2.24.2.18";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "microchip-pic-avr-tools";
@@ -27,6 +23,11 @@ buildPythonPackage (finalAttrs: {
     tag = finalAttrs.version;
     hash = "sha256-iZB/+JEBy5n1zfajmJmEqRVQ2hPzJD/U85SvmyFiGhc=";
   };
+
+  nativeCheckInputs = [
+    mock
+    pytestCheckHook
+  ];
 
   build-system = [
     setuptools
@@ -38,12 +39,8 @@ buildPythonPackage (finalAttrs: {
     pyserial
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "pyedbglib" ];
-
-  nativeCheckInputs = [
-    mock
-    pytestCheckHook
-  ];
 
   meta = {
     description = "Low-level protocol library for communicating with Microchip CMSIS-DAP based debuggers";

@@ -1,16 +1,15 @@
 {
   lib,
   fetchFromGitLab,
-  python3Packages,
   git,
-  openssh,
   nix-update-script,
+  openssh,
+  python3Packages,
 }:
 
 python3Packages.buildPythonApplication (finalAttrs: {
   pname = "marge-bot";
   version = "1.1.0";
-  pyproject = true;
 
   src = fetchFromGitLab {
     owner = "marge-org";
@@ -18,6 +17,17 @@ python3Packages.buildPythonApplication (finalAttrs: {
     rev = finalAttrs.version;
     hash = "sha256-nTVfsprCTa2S/F8GDdDw5SwQw+OrGkHrX/QwU1FZDsw=";
   };
+
+  nativeCheckInputs =
+    (with python3Packages; [
+      pytest-cov-stub
+      pytestCheckHook
+      python-dateutil
+      time-machine
+    ])
+    ++ [
+      git
+    ];
 
   build-system = with python3Packages; [
     hatchling
@@ -36,19 +46,8 @@ python3Packages.buildPythonApplication (finalAttrs: {
       openssh
     ];
 
-  nativeCheckInputs =
-    (with python3Packages; [
-      pytest-cov-stub
-      pytestCheckHook
-      python-dateutil
-      time-machine
-    ])
-    ++ [
-      git
-    ];
-
+  pyproject = true;
   pythonImportsCheck = [ "marge" ];
-
   passthru.updateScript = nix-update-script { };
 
   meta = {
@@ -56,10 +55,12 @@ python3Packages.buildPythonApplication (finalAttrs: {
     homepage = "https://gitlab.com/marge-org/marge-bot";
     changelog = "https://gitlab.com/marge-org/marge-bot/-/blob/${finalAttrs.src.rev}/CHANGELOG.md";
     license = lib.licenses.bsd3;
+
     maintainers = with lib.maintainers; [
       bcdarwin
       lelgenio
     ];
+
     mainProgram = "marge.app";
   };
 })

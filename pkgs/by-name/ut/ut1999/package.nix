@@ -1,56 +1,59 @@
 {
   lib,
   stdenv,
-  autoPatchelfHook,
-  undmg,
   fetchurl,
-  makeDesktopItem,
-  makeWrapper,
-  copyDesktopItems,
-  libarchive,
-  imagemagick,
-  runCommand,
-  libgcc,
-  wxwidgets_3_2,
-  libGL,
   SDL2,
-  openal,
+  autoPatchelfHook,
+  copyDesktopItems,
+  darwin,
+  imagemagick,
+  libGL,
+  libarchive,
+  libgcc,
+  libiconv,
   libmpg123,
   libxmp,
-  libiconv,
-  darwin,
+  makeDesktopItem,
+  makeWrapper,
+  openal,
+  runCommand,
+  undmg,
+  wxwidgets_3_2,
 }:
 
 let
   version = "469e";
   srcs = {
-    x86_64-linux = fetchurl {
-      url = "https://github.com/OldUnreal/UnrealTournamentPatches/releases/download/v${version}/OldUnreal-UTPatch${builtins.elemAt (lib.strings.splitString "-" version) 0}-Linux-amd64.tar.bz2";
-      hash = "sha256-CMgGqjchsZcARaoVitkAUTKdmC6KmjZhFTkA6cy/aww=";
-    };
-    aarch64-linux = fetchurl {
-      url = "https://github.com/OldUnreal/UnrealTournamentPatches/releases/download/v${version}/OldUnreal-UTPatch${builtins.elemAt (lib.strings.splitString "-" version) 0}-Linux-arm64.tar.bz2";
-      hash = "sha256-TDl4BzsSsEnD/9600nXPx6IxNlDz61uU2wb7/ud8Pjs=";
-    };
-    i686-linux = fetchurl {
-      url = "https://github.com/OldUnreal/UnrealTournamentPatches/releases/download/v${version}/OldUnreal-UTPatch${builtins.elemAt (lib.strings.splitString "-" version) 0}-Linux-x86.tar.bz2";
-      hash = "sha256-y9bYAW77MOOYJ1elgsaIUygDch7B7HOPwor5s+FdPBQ=";
-    };
     aarch64-darwin = fetchurl {
-      url = "https://github.com/OldUnreal/UnrealTournamentPatches/releases/download/v${version}/OldUnreal-UTPatch${builtins.elemAt (lib.strings.splitString "-" version) 0}-macOS.dmg";
       hash = "sha256-trOh9GLktwLfDuz5DWY+8fhHzDaq3KHsbdNSeNCR+g0=";
+      url = "https://github.com/OldUnreal/UnrealTournamentPatches/releases/download/v${version}/OldUnreal-UTPatch${builtins.elemAt (lib.strings.splitString "-" version) 0}-macOS.dmg";
+    };
+
+    aarch64-linux = fetchurl {
+      hash = "sha256-TDl4BzsSsEnD/9600nXPx6IxNlDz61uU2wb7/ud8Pjs=";
+      url = "https://github.com/OldUnreal/UnrealTournamentPatches/releases/download/v${version}/OldUnreal-UTPatch${builtins.elemAt (lib.strings.splitString "-" version) 0}-Linux-arm64.tar.bz2";
+    };
+
+    i686-linux = fetchurl {
+      hash = "sha256-y9bYAW77MOOYJ1elgsaIUygDch7B7HOPwor5s+FdPBQ=";
+      url = "https://github.com/OldUnreal/UnrealTournamentPatches/releases/download/v${version}/OldUnreal-UTPatch${builtins.elemAt (lib.strings.splitString "-" version) 0}-Linux-x86.tar.bz2";
+    };
+
+    x86_64-linux = fetchurl {
+      hash = "sha256-CMgGqjchsZcARaoVitkAUTKdmC6KmjZhFTkA6cy/aww=";
+      url = "https://github.com/OldUnreal/UnrealTournamentPatches/releases/download/v${version}/OldUnreal-UTPatch${builtins.elemAt (lib.strings.splitString "-" version) 0}-Linux-amd64.tar.bz2";
     };
   };
   # This upload of the game is officially sanctioned by OldUnreal (who has received permission from Epic Games to link to archive.org) and the UT99.org community
   # This is a copy of the original Unreal Tournament: Game of the Year Edition (also known as UT or UT99). The first ISO contains the base game.
   iso1 = fetchurl {
-    url = "https://archive.org/download/ut-goty/UT_GOTY_CD1.iso";
     hash = "sha256-4YSYTKiPABxd3VIDXXbNZOJm4mx0l1Fhte1yNmx0cE8=";
+    url = "https://archive.org/download/ut-goty/UT_GOTY_CD1.iso";
   };
   # The second ISO contains bonus maps and game modes
   iso2 = fetchurl {
-    url = "https://archive.org/download/ut-goty/UT_GOTY_CD2.iso";
     hash = "sha256-2V2O4c+VVi7gI/1UA17IgT1CdfY9GEdCMiCYbtyNANg=";
+    url = "https://archive.org/download/ut-goty/UT_GOTY_CD2.iso";
   };
   baseGame =
     runCommand "ut1999-iso1"
@@ -76,19 +79,30 @@ let
       '';
   systemDir =
     {
-      x86_64-linux = "System64";
+      aarch64-darwin = "System";
       aarch64-linux = "SystemARM64";
       i686-linux = "System";
-      aarch64-darwin = "System";
+      x86_64-linux = "System64";
     }
     .${stdenv.hostPlatform.system} or (throw "unsupported system: ${stdenv.hostPlatform.system}");
 in
 stdenv.mkDerivation (finalAttrs: {
-  pname = "ut1999";
   inherit version;
-  sourceRoot = ".";
+  pname = "ut1999";
+
   src =
     srcs.${stdenv.hostPlatform.system} or (throw "Unsupported system: ${stdenv.hostPlatform.system}");
+
+  nativeBuildInputs =
+    lib.optionals stdenv.hostPlatform.isLinux [
+      copyDesktopItems
+      autoPatchelfHook
+    ]
+    ++ lib.optionals stdenv.hostPlatform.isDarwin [
+      makeWrapper
+      undmg
+      darwin.autoSignDarwinBinariesHook
+    ];
 
   buildInputs = [
     libgcc
@@ -103,17 +117,6 @@ stdenv.mkDerivation (finalAttrs: {
   ++ lib.optionals stdenv.hostPlatform.isDarwin [
     libiconv
   ];
-
-  nativeBuildInputs =
-    lib.optionals stdenv.hostPlatform.isLinux [
-      copyDesktopItems
-      autoPatchelfHook
-    ]
-    ++ lib.optionals stdenv.hostPlatform.isDarwin [
-      makeWrapper
-      undmg
-      darwin.autoSignDarwinBinariesHook
-    ];
 
   installPhase =
     let
@@ -209,14 +212,16 @@ stdenv.mkDerivation (finalAttrs: {
 
   desktopItems = [
     (makeDesktopItem {
-      name = "ut1999";
+      categories = [ "Game" ];
+      comment = "Unreal Tournament GOTY (1999) with the OldUnreal patch.";
       desktopName = "Unreal Tournament GOTY (1999)";
       exec = "ut1999";
       icon = "ut1999";
-      comment = "Unreal Tournament GOTY (1999) with the OldUnreal patch.";
-      categories = [ "Game" ];
+      name = "ut1999";
     })
   ];
+
+  sourceRoot = ".";
 
   passthru = {
     # The ISOs can be appended to `system.extraDependencies` in order to prevent them from getting garbage collected and redownloaded during rebuilds.
@@ -229,12 +234,14 @@ stdenv.mkDerivation (finalAttrs: {
   meta = {
     description = "Unreal Tournament GOTY (1999) with the OldUnreal patch";
     license = lib.licenses.unfree;
-    platforms = lib.attrNames srcs;
+    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
+
     maintainers = with lib.maintainers; [
       eliandoran
       dwt
     ];
-    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
+
+    platforms = lib.attrNames srcs;
     mainProgram = "ut1999";
   };
 })

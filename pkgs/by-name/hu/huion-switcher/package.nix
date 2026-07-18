@@ -1,11 +1,11 @@
 {
   lib,
-  nix-update-script,
   fetchFromGitHub,
+  installShellFiles,
+  nix-update-script,
+  pkg-config,
   rustPlatform,
   udev,
-  pkg-config,
-  installShellFiles,
   udevCheckHook,
   versionCheckHook,
 }:
@@ -21,13 +21,13 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-tdXebOUTu/O1piLt9VJaR1KC2J5tzdNh2rcy80vYtZ0=";
   };
 
-  buildInputs = [ udev ];
   nativeBuildInputs = [
     pkg-config
     installShellFiles
     udevCheckHook
   ];
 
+  buildInputs = [ udev ];
   cargoHash = "sha256-H/E3qE9ELZQPxfO6DYEGksl6mACMCYYGJ8CysBS6+/c=";
 
   postInstall = ''
@@ -46,7 +46,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
 
   doInstallCheck = true;
   nativeInstallCheckInputs = [ versionCheckHook ];
-
   passthru.updateScript = nix-update-script { };
 
   meta = {
@@ -54,8 +53,8 @@ rustPlatform.buildRustPackage (finalAttrs: {
     homepage = "https://github.com/whot/huion-switcher";
     changelog = "https://github.com/whot/huion-switcher/releases/tag/${finalAttrs.version}";
     license = lib.licenses.gpl2Only;
+    maintainers = with lib.maintainers; [ dramforever ];
     platforms = lib.platforms.linux;
     mainProgram = "huion-switcher";
-    maintainers = with lib.maintainers; [ dramforever ];
   };
 })

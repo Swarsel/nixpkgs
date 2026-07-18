@@ -2,12 +2,12 @@
   lib,
   stdenv,
   fetchurl,
-  pkg-config,
-  xorgproto,
   libx11,
-  libxv,
   libxext,
+  libxv,
+  pkg-config,
   writeScript,
+  xorgproto,
 }:
 stdenv.mkDerivation (finalAttrs: {
   pname = "xvinfo";
@@ -19,7 +19,6 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   strictDeps = true;
-
   nativeBuildInputs = [ pkg-config ];
 
   buildInputs = [
@@ -42,14 +41,16 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Utility to print out X-Video extension adaptor information";
+
     longDescription = ''
       xvinfo prints out the capabilities of any video adaptors associated with the display that are
       accessible through the X-Video extension.
     '';
+
     homepage = "https://gitlab.freedesktop.org/xorg/app/xvinfo";
     license = lib.licenses.x11;
-    mainProgram = "xvinfo";
     maintainers = [ ];
     platforms = lib.platforms.unix;
+    mainProgram = "xvinfo";
   };
 })

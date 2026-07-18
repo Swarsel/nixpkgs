@@ -7,7 +7,6 @@
 python3.pkgs.buildPythonApplication (finalAttrs: {
   pname = "puncia";
   version = "0.30";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "ARPSyndicate";
@@ -16,13 +15,11 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     hash = "sha256-woy8JL+yFOYUsAhYWxyskUj/hT3JmwrhKHg3JHyWzNY=";
   };
 
-  build-system = with python3.pkgs; [ setuptools ];
-
-  dependencies = with python3.pkgs; [ requests ];
-
   # Project has no tests
   doCheck = false;
-
+  build-system = with python3.pkgs; [ setuptools ];
+  dependencies = with python3.pkgs; [ requests ];
+  pyproject = true;
   pythonImportsCheck = [ "puncia" ];
 
   meta = {

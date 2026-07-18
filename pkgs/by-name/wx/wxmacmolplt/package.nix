@@ -1,14 +1,14 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
-  wxwidgets_3_2,
+  autoreconfHook,
   libGL,
   libGLU,
-  pkg-config,
   libx11,
-  autoreconfHook,
+  pkg-config,
   wrapGAppsHook4,
+  wxwidgets_3_2,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -27,6 +27,7 @@ stdenv.mkDerivation (finalAttrs: {
     autoreconfHook
     wrapGAppsHook4
   ];
+
   buildInputs = [
     wxwidgets_3_2
     libGL
@@ -36,18 +37,19 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   configureFlags = [ "LDFLAGS=-lGL" ];
-
   enableParallelBuilding = true;
 
   meta = {
     description = "Graphical user interface for GAMESS-US";
-    mainProgram = "wxmacmolplt";
     homepage = "https://brettbode.github.io/wxmacmolplt/";
     license = lib.licenses.gpl2Plus;
-    platforms = lib.platforms.linux;
+
     maintainers = with lib.maintainers; [
       sheepforce
       markuskowa
     ];
+
+    platforms = lib.platforms.linux;
+    mainProgram = "wxmacmolplt";
   };
 })

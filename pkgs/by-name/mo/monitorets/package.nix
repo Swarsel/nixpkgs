@@ -1,21 +1,19 @@
 {
   lib,
-  python3Packages,
   fetchFromGitHub,
+  desktop-file-utils,
+  gobject-introspection,
+  libadwaita,
   meson,
   ninja,
   pkg-config,
-  gobject-introspection,
+  python3Packages,
   wrapGAppsHook4,
-  desktop-file-utils,
-  libadwaita,
 }:
 
 python3Packages.buildPythonApplication (finalAttrs: {
   pname = "monitorets";
   version = "0.10.1";
-  # built with meson, not a python format
-  pyproject = false;
 
   src = fetchFromGitHub {
     owner = "jorchube";
@@ -35,6 +33,10 @@ python3Packages.buildPythonApplication (finalAttrs: {
 
   buildInputs = [ libadwaita ];
 
+  preFixup = ''
+    makeWrapperArgs+=("''${gappsWrapperArgs[@]}")
+  '';
+
   dependencies = with python3Packages; [
     pygobject3
     xdg
@@ -42,20 +44,20 @@ python3Packages.buildPythonApplication (finalAttrs: {
   ];
 
   dontWrapGApps = true;
-
-  preFixup = ''
-    makeWrapperArgs+=("''${gappsWrapperArgs[@]}")
-  '';
+  # built with meson, not a python format
+  pyproject = false;
 
   meta = {
     description = "Simple and quick view at the usage of your computer resources";
     homepage = "https://github.com/jorchube/monitorets";
+
     license = with lib.licenses; [
       gpl3Plus
       cc0
     ];
-    mainProgram = "monitorets";
+
     maintainers = with lib.maintainers; [ aleksana ];
     platforms = lib.platforms.linux;
+    mainProgram = "monitorets";
   };
 })

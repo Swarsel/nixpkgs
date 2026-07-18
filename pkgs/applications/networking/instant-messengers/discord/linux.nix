@@ -1,83 +1,83 @@
 {
-  pname,
-  source,
-  meta,
-  binaryName,
-  desktopName,
-  self,
-  autoPatchelfHook,
-  addDriverRunpath,
-  fetchurl,
-  makeDesktopItem,
   lib,
   stdenv,
-  wrapGAppsHook3,
-  makeShellWrapper,
+  fetchurl,
+  addDriverRunpath,
   alsa-lib,
   at-spi2-atk,
   at-spi2-core,
   atk,
+  autoPatchelfHook,
+  binaryName,
+  branch,
+  brotli,
   cairo,
   cups,
   dbus,
+  desktopName,
+  equicord,
   expat,
   fontconfig,
   freetype,
   gdk-pixbuf,
   glib,
   gtk3,
+  libappindicator-gtk3,
   libcxx,
+  libdbusmenu,
   libdrm,
+  libgbm,
   libglvnd,
   libnotify,
   libpulseaudio,
+  libunity,
   libuuid,
   libva,
   libx11,
-  libxscrnsaver,
+  libxcb,
   libxcomposite,
   libxcursor,
   libxdamage,
   libxext,
   libxfixes,
   libxi,
+  libxkbcommon,
   libxrandr,
   libxrender,
-  libxtst,
-  libxcb,
-  libxkbcommon,
+  libxscrnsaver,
   libxshmfence,
-  libgbm,
+  libxtst,
+  makeDesktopItem,
+  makeShellWrapper,
+  meta,
+  moonlight,
   nspr,
   nss,
+  openasar,
   pango,
-  systemdLibs,
-  libappindicator-gtk3,
-  libdbusmenu,
-  brotli,
-  writeShellScript,
   pipewire,
+  pname,
   python3,
   runCommand,
-  libunity,
+  self,
+  source,
   speechd-minimal,
-  wayland,
-  branch,
-  withOpenASAR ? false,
-  openasar,
-  withVencord ? false,
+  systemdLibs,
   vencord,
-  withEquicord ? false,
-  equicord,
-  withMoonlight ? false,
-  moonlight,
-  withTTS ? true,
-  enableAutoscroll ? false,
+  wayland,
+  wrapGAppsHook3,
+  writeShellScript,
+  commandLineArgs ? "",
   # Disabling this would normally break Discord.
   # The intended use-case for this is when SKIP_HOST_UPDATE is enabled via other means,
   # for example if a settings.json is linked declaratively (e.g., with home-manager).
   disableUpdates ? true,
-  commandLineArgs ? "",
+  enableAutoscroll ? false,
+  withEquicord ? false,
+  withMoonlight ? false,
+  withOpenASAR ? false,
+  withTTS ? true,
+  withVencord ? false,
 }:
 
 let
@@ -165,8 +165,8 @@ let
   disableBreakingUpdates =
     runCommand "disable-breaking-updates.py"
       {
-        pythonInterpreter = "${python3.interpreter}";
         configDirName = lib.toLower binaryName;
+        pythonInterpreter = "${python3.interpreter}";
         skipModuleUpdate = lib.boolToString withOpenASAR;
         meta.mainProgram = "disable-breaking-updates.py";
       }
@@ -188,6 +188,9 @@ stdenv.mkDerivation (finalAttrs: {
     meta
     ;
 
+  inherit libPath stageModules;
+  strictDeps = true;
+
   nativeBuildInputs = [
     autoPatchelfHook
     cups
@@ -204,8 +207,6 @@ stdenv.mkDerivation (finalAttrs: {
     brotli
   ];
 
-  dontWrapGApps = true;
-
   buildInputs = [
     alsa-lib
     libgbm
@@ -216,17 +217,6 @@ stdenv.mkDerivation (finalAttrs: {
     # Ignore the missing dependency on insecure openssl_1_1: discord_dispatch is
     # effectively unused in practice.
     libpulseaudio
-  ];
-
-  strictDeps = true;
-
-  dontUnpack = true;
-
-  inherit libPath stageModules;
-
-  autoPatchelfIgnoreMissingDeps = [
-    "libssl.so.1.1"
-    "libcrypto.so.1.1"
   ];
 
   installPhase = ''
@@ -299,40 +289,54 @@ stdenv.mkDerivation (finalAttrs: {
       echo 'require("${moonlight}/injector.js").inject(require("path").join(__dirname, "../_app.asar"));' > $out/opt/${binaryName}/resources/app/injector.js
     '';
 
+  autoPatchelfIgnoreMissingDeps = [
+    "libssl.so.1.1"
+    "libcrypto.so.1.1"
+  ];
+
   desktopItem = makeDesktopItem {
-    name = pname;
-    exec = binaryName;
-    icon = pname;
     inherit desktopName;
-    genericName = meta.description;
+
     categories = [
       "Network"
       "InstantMessaging"
     ];
+
+    exec = binaryName;
+    genericName = meta.description;
+    icon = pname;
     mimeTypes = [ "x-scheme-handler/discord" ];
+    name = pname;
     startupWMClass = "discord";
   };
+
+  dontUnpack = true;
+  dontWrapGApps = true;
 
   passthru = {
     # make it possible to run disableBreakingUpdates standalone
     inherit disableBreakingUpdates;
     # Exposed so reviewers can inspect which distro modules are pinned
     inherit source moduleVersions;
-    updateScript = ./update.py;
 
     tests = {
-      withVencord = self.override {
-        withVencord = true;
-      };
       withEquicord = self.override {
         withEquicord = true;
       };
+
       withMoonlight = self.override {
         withMoonlight = true;
       };
+
       withOpenASAR = self.override {
         withOpenASAR = true;
       };
+
+      withVencord = self.override {
+        withVencord = true;
+      };
     };
+
+    updateScript = ./update.py;
   };
 })

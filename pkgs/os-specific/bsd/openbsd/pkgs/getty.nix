@@ -1,11 +1,8 @@
 {
-  mkDerivation,
   login,
+  mkDerivation,
 }:
 mkDerivation {
-  path = "libexec/getty";
-  extraPaths = [ "etc/gettytab" ];
-
   postPatch = ''
     substituteInPlace $BSDSRCDIR/libexec/getty/pathnames.h \
         --replace-fail "/usr/libexec/getty" "$out/bin/getty" \
@@ -17,5 +14,7 @@ mkDerivation {
     cp $BSDSRCDIR/etc/gettytab $out/etc/gettytab
   '';
 
+  extraPaths = [ "etc/gettytab" ];
+  path = "libexec/getty";
   meta.mainProgram = "getty";
 }

@@ -9,11 +9,12 @@ stdenv.mkDerivation (finalAttrs: {
   version = "20251205";
 
   src = fetchurl {
+    sha256 = "sha256-zWiG+a7+aj9sVm+mEnGlVxCQGnGEnGML9TdqqYS/d8w=";
+
     urls = [
       "https://invisible-mirror.net/archives/vttest/vttest-${finalAttrs.version}.tgz"
       "https://invisible-island.net/archives/vttest/vttest-${finalAttrs.version}.tgz"
     ];
-    sha256 = "sha256-zWiG+a7+aj9sVm+mEnGlVxCQGnGEnGML9TdqqYS/d8w=";
   };
 
   meta = {

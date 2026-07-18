@@ -1,36 +1,36 @@
 nvidia_x11: sha256:
 
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
-  fetchpatch,
-  pkg-config,
-  m4,
-  jansson,
-  gtk2,
-  dbus,
-  vulkan-headers,
-  gtk3,
-  libxv,
-  libxrandr,
-  libxext,
-  libxxf86vm,
-  libvdpau,
-  librsvg,
-  libglvnd,
-  wrapGAppsHook3,
   addDriverRunpath,
+  dbus,
+  fetchpatch,
+  gtk2,
+  gtk3,
+  jansson,
+  libglvnd,
+  librsvg,
+  libvdpau,
+  libxext,
+  libxrandr,
+  libxv,
+  libxxf86vm,
+  m4,
+  pkg-config,
+  vulkan-headers,
+  wrapGAppsHook3,
   withGtk2 ? false,
   withGtk3 ? true,
 }:
 
 let
   src = fetchFromGitHub {
+    inherit sha256;
     owner = "NVIDIA";
     repo = "nvidia-settings";
     rev = nvidia_x11.settingsVersion;
-    inherit sha256;
   };
 
   meta = {
@@ -39,24 +39,9 @@ let
   };
 
   libXNVCtrl = stdenv.mkDerivation {
+    inherit src;
     pname = "libXNVCtrl";
     version = nvidia_x11.settingsVersion;
-    inherit src;
-
-    buildInputs = [
-      libxrandr
-      libxext
-    ];
-
-    preBuild = ''
-      cd src/libXNVCtrl
-    '';
-
-    makeFlags = [
-      "OUTPUTDIR=." # src/libXNVCtrl
-      "libXNVCtrl.a"
-      "libXNVCtrl.so"
-    ];
 
     patches = [
       # Patch the Makefile to also produce a shared library.
@@ -67,6 +52,21 @@ let
           ./libxnvctrl-build-shared.patch
       )
     ];
+
+    buildInputs = [
+      libxrandr
+      libxext
+    ];
+
+    makeFlags = [
+      "OUTPUTDIR=." # src/libXNVCtrl
+      "libXNVCtrl.a"
+      "libXNVCtrl.so"
+    ];
+
+    preBuild = ''
+      cd src/libXNVCtrl
+    '';
 
     installPhase = ''
       mkdir -p $out/lib
@@ -96,16 +96,15 @@ let
 in
 
 stdenv.mkDerivation {
+  inherit src;
   pname = "nvidia-settings";
   version = nvidia_x11.settingsVersion;
 
-  inherit src;
-
   patches =
     lib.optional (lib.versionOlder nvidia_x11.settingsVersion "440") (fetchpatch {
+      hash = "sha256-ZwF3dRTYt/hO8ELg9weoz1U/XcU93qiJL2d1aq1Jlak=";
       # fixes "multiple definition of `VDPAUDeviceFunctions'" linking errors
       url = "https://github.com/NVIDIA/nvidia-settings/commit/a7c1f5fce6303a643fadff7d85d59934bd0cf6b6.patch";
-      hash = "sha256-ZwF3dRTYt/hO8ELg9weoz1U/XcU93qiJL2d1aq1Jlak=";
     })
     ++
       lib.optional
@@ -114,24 +113,13 @@ stdenv.mkDerivation {
           && (lib.versionOlder nvidia_x11.settingsVersion "545.29")
         )
         (fetchpatch {
+          hash = "sha256-wKuO5CUTUuwYvsP46Pz+6fI0yxLNpZv8qlbL0TFkEFE=";
           # fix wayland support for compositors that use wl_output version 4
           url = "https://github.com/NVIDIA/nvidia-settings/pull/99/commits/2e0575197e2b3247deafd2a48f45afc038939a06.patch";
-          hash = "sha256-wKuO5CUTUuwYvsP46Pz+6fI0yxLNpZv8qlbL0TFkEFE=";
         });
 
   postPatch = lib.optionalString nvidia_x11.useProfiles ''
     sed -i 's,/usr/share/nvidia/,${nvidia_x11.bin}/share/nvidia/,g' src/gtk+-2.x/ctkappprofile.c
-  '';
-
-  enableParallelBuilding = true;
-  makeFlags = [ "NV_USE_BUNDLED_LIBJANSSON=0" ];
-
-  preBuild = ''
-    if [ -e src/libXNVCtrl/libXNVCtrl.a ]; then
-      ( cd src/libXNVCtrl
-        make $makeFlags
-      )
-    fi
   '';
 
   nativeBuildInputs = [
@@ -158,7 +146,15 @@ stdenv.mkDerivation {
     librsvg
   ];
 
-  installFlags = [ "PREFIX=$(out)" ];
+  makeFlags = [ "NV_USE_BUNDLED_LIBJANSSON=0" ];
+
+  preBuild = ''
+    if [ -e src/libXNVCtrl/libXNVCtrl.a ]; then
+      ( cd src/libXNVCtrl
+        make $makeFlags
+      )
+    fi
+  '';
 
   postInstall =
     lib.optionalString (!withGtk2) ''
@@ -180,13 +176,16 @@ stdenv.mkDerivation {
       install doc/nvidia-settings.png -D -t $out/share/icons/hicolor/128x128/apps/
     '';
 
-  binaryName = if withGtk3 then ".nvidia-settings-wrapped" else "nvidia-settings";
   postFixup = ''
     patchelf --set-rpath "$(patchelf --print-rpath $out/bin/$binaryName):$out/lib:${runtimeLibraryPath}" \
       $out/bin/$binaryName
 
     addDriverRunpath $out/bin/$binaryName
   '';
+
+  binaryName = if withGtk3 then ".nvidia-settings-wrapped" else "nvidia-settings";
+  enableParallelBuilding = true;
+  installFlags = [ "PREFIX=$(out)" ];
 
   passthru = {
     inherit libXNVCtrl;

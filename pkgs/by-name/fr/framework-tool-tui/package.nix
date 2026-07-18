@@ -1,8 +1,8 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
   pkg-config,
+  rustPlatform,
   udev,
 }:
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -16,25 +16,28 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-IZq2amZYQJxt9ojZfjgrj303vdh+NAKg6fmd2TZa4q8=";
   };
 
-  cargoHash = "sha256-jd6M7tq4BTAsETimFsSmX1KLz7G+wTloBFmq4V8svRg=";
-
   nativeBuildInputs = [ pkg-config ];
   buildInputs = [ udev ];
+  cargoHash = "sha256-jd6M7tq4BTAsETimFsSmX1KLz7G+wTloBFmq4V8svRg=";
 
   meta = {
     description = "TUI for controlling and monitoring Framework Computers hardware";
+
     longDescription = ''
       A snappy TUI dashboard for controlling and monitoring your Framework Laptop hardware —
       charging, privacy, lighting, USB PD ports, and more.
     '';
+
     homepage = "https://github.com/grouzen/framework-tool-tui";
     changelog = "https://github.com/grouzen/framework-tool-tui/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.mit;
-    platforms = [ "x86_64-linux" ];
+
     maintainers = with lib.maintainers; [
       griffi-gh
       autra
     ];
+
+    platforms = [ "x86_64-linux" ];
     mainProgram = "framework-tool-tui";
   };
 })

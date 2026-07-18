@@ -1,7 +1,7 @@
 {
+  lib,
   stdenv,
   fetchFromGitHub,
-  lib,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -21,6 +21,8 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-jM0mLVJRUmtHF9dcDJw81vkHpgqyz1RihB7+ZGJm8wQ=";
   };
 
+  makeFlags = [ "all" ]; # need "all" to be explicitely set
+
   env.NIX_CFLAGS_COMPILE = toString [
     "-fcommon -O -DFOUR"
     (lib.optional stdenv.hostPlatform.isx86_64 "-m64")
@@ -30,8 +32,6 @@ stdenv.mkDerivation (finalAttrs: {
     # gcc15
     "-std=gnu17"
   ];
-
-  makeFlags = [ "all" ]; # need "all" to be explicitely set
 
   installPhase = ''
     runHook preInstall
@@ -48,9 +48,11 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Multipole-accelerated inductance analysis program";
+
     longDescription = ''
       Fasthenry is an inductance extraction program based on a
       multipole-accelerated algorithm.'';
+
     homepage = "https://www.fastfieldsolvers.com/fasthenry2.htm";
     license = lib.licenses.lgpl2Only;
     maintainers = with lib.maintainers; [ fbeffa ];

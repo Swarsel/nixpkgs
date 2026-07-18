@@ -1,18 +1,18 @@
 {
+  lib,
   stdenv,
   fetchFromGitLab,
-  cmake,
-  ninja,
-  pkg-config,
   boost,
+  cairo,
+  cmake,
+  ctestCheckHook,
+  double-conversion,
   glib,
   gsl,
-  cairo,
-  double-conversion,
   gtest,
-  ctestCheckHook,
-  lib,
   inkscape,
+  ninja,
+  pkg-config,
   pkgsCross,
 }:
 
@@ -20,17 +20,19 @@ stdenv.mkDerivation (finalAttrs: {
   pname = "lib2geom";
   version = "1.4";
 
-  outputs = [
-    "out"
-    "dev"
-  ];
-
   src = fetchFromGitLab {
     owner = "inkscape";
     repo = "lib2geom";
     tag = finalAttrs.version;
     hash = "sha256-kbcnefzNhUj/ZKZaB9r19bpI68vxUKOLVAwUXSr/zz0=";
   };
+
+  outputs = [
+    "out"
+    "dev"
+  ];
+
+  strictDeps = true;
 
   nativeBuildInputs = [
     cmake
@@ -46,16 +48,6 @@ stdenv.mkDerivation (finalAttrs: {
     double-conversion
   ];
 
-  checkInputs = [
-    gtest
-  ];
-
-  nativeCheckInputs = [
-    ctestCheckHook
-  ];
-
-  strictDeps = true;
-
   cmakeFlags = [
     "-D2GEOM_BUILD_SHARED=ON"
     # For cross compilation.
@@ -63,7 +55,15 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   doCheck = stdenv.buildPlatform.canExecute stdenv.hostPlatform;
-  dontUseNinjaCheck = true;
+
+  nativeCheckInputs = [
+    ctestCheckHook
+  ];
+
+  checkInputs = [
+    gtest
+  ];
+
   disabledTests =
     lib.optionals stdenv.hostPlatform.isMusl [
       # Fails due to rounding differences
@@ -90,6 +90,8 @@ stdenv.mkDerivation (finalAttrs: {
       "ellipse-test"
     ];
 
+  dontUseNinjaCheck = true;
+
   passthru = {
     tests = {
       inherit inkscape;
@@ -103,10 +105,12 @@ stdenv.mkDerivation (finalAttrs: {
   meta = {
     description = "Easy to use 2D geometry library in C++";
     homepage = "https://gitlab.com/inkscape/lib2geom";
+
     license = [
       lib.licenses.lgpl21Only
       lib.licenses.mpl11
     ];
+
     maintainers = with lib.maintainers; [ jtojnar ];
     platforms = lib.platforms.unix;
   };

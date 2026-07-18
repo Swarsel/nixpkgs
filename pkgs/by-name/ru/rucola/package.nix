@@ -1,11 +1,11 @@
 {
   lib,
-  rustPlatform,
+  stdenv,
   fetchFromGitHub,
-  pkg-config,
   oniguruma,
   openssl,
-  stdenv,
+  pkg-config,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -19,8 +19,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-dE2XlO+CwC78GblNoyv7oA5d/GezzuiuOwcQjsm7Pns=";
   };
 
-  cargoHash = "sha256-yhBY/6NLn1aIRZLLpHrEsMo/yzSnKzsvrIiJFCRcYMc=";
-
   nativeBuildInputs = [
     pkg-config
   ];
@@ -29,6 +27,8 @@ rustPlatform.buildRustPackage (finalAttrs: {
     oniguruma
     openssl
   ];
+
+  cargoHash = "sha256-yhBY/6NLn1aIRZLLpHrEsMo/yzSnKzsvrIiJFCRcYMc=";
 
   env = {
     RUSTONIG_SYSTEM_LIBONIG = true;
@@ -45,7 +45,7 @@ rustPlatform.buildRustPackage (finalAttrs: {
     changelog = "https://github.com/Linus-Mussmaecher/rucola/blob/${finalAttrs.src.rev}/CHANGELOG.md";
     license = lib.licenses.gpl3Plus;
     maintainers = with lib.maintainers; [ donovanglover ];
-    mainProgram = "rucola";
     platforms = lib.platforms.linux ++ lib.platforms.darwin;
+    mainProgram = "rucola";
   };
 })

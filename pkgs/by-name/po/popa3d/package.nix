@@ -2,8 +2,8 @@
   lib,
   stdenv,
   fetchurl,
-  openssl,
   libxcrypt,
+  openssl,
   versionCheckHook,
 }:
 
@@ -24,28 +24,29 @@ stdenv.mkDerivation (finalAttrs: {
     ./fix-gcc15.patch
   ];
 
-  enableParallelBuilding = true;
+  buildInputs = [
+    openssl
+    libxcrypt
+  ];
 
   makeFlags = [
     "PREFIX=$(out)"
     "MANDIR=$(out)/share/man"
   ];
 
-  buildInputs = [
-    openssl
-    libxcrypt
-  ];
+  doInstallCheck = true;
 
   nativeInstallCheckInputs = [
     versionCheckHook
   ];
-  doInstallCheck = true;
+
+  enableParallelBuilding = true;
   versionCheckProgramArg = "-V";
 
   meta = {
-    homepage = "http://www.openwall.com/popa3d/";
     description = "Tiny POP3 daemon with security as the primary goal";
-    mainProgram = "popa3d";
+    homepage = "http://www.openwall.com/popa3d/";
     platforms = lib.platforms.linux;
+    mainProgram = "popa3d";
   };
 })

@@ -1,15 +1,15 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
-  pkg-config,
-  autoreconfHook,
   autoconf-archive,
-  guile,
-  texinfo,
-  makeWrapper,
-  rofi,
+  autoreconfHook,
   coreutils,
+  guile,
+  makeWrapper,
+  pkg-config,
+  rofi,
+  texinfo,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -48,8 +48,8 @@ stdenv.mkDerivation (finalAttrs: {
     description = "Rofi frontend to pinentry";
     homepage = "https://github.com/plattfot/pinentry-rofi";
     license = lib.licenses.gpl3Plus;
-    platforms = lib.platforms.unix;
     maintainers = with lib.maintainers; [ seqizz ];
+    platforms = lib.platforms.unix;
     mainProgram = "pinentry-rofi";
   };
 })

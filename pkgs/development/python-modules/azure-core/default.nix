@@ -1,10 +1,10 @@
 {
   lib,
   stdenv,
-  buildPythonPackage,
-  fetchPypi,
   aiodns,
   aiohttp,
+  buildPythonPackage,
+  fetchPypi,
   flask,
   mock,
   opentelemetry-api,
@@ -22,29 +22,13 @@
 }:
 
 buildPythonPackage rec {
-  version = "1.38.0";
   pname = "azure-core";
-  pyproject = true;
-
-  __darwinAllowLocalNetworking = true;
+  version = "1.38.0";
 
   src = fetchPypi {
-    pname = "azure_core";
     inherit version;
     hash = "sha256-gZTSaCJFo+TjFRpmfGhkZMN4b+15GLOU0DW9zWG7WZM=";
-  };
-
-  build-system = [ setuptools ];
-
-  dependencies = [
-    requests
-    six
-    typing-extensions
-  ];
-
-  optional-dependencies = {
-    aio = [ aiohttp ];
-    tracing = [ opentelemetry-api ];
+    pname = "azure_core";
   };
 
   nativeCheckInputs = [
@@ -66,22 +50,14 @@ buildPythonPackage rec {
     export PYTHONPATH=tests/testserver_tests/coretestserver:$PYTHONPATH
   '';
 
-  enabledTestPaths = [ "tests/" ];
+  __darwinAllowLocalNetworking = true;
+  build-system = [ setuptools ];
 
-  # disable tests which touch network
-  disabledTests = [
-    "aiohttp"
-    "multipart_send"
-    "response"
-    "request"
-    "timeout"
-    "test_sync_transport_short_read_download_stream"
-    "test_aio_transport_short_read_download_stream"
-    # disable 8 tests failing on some darwin machines with errors:
-    # azure.core.polling.base_polling.BadStatus: Invalid return status 403 for 'GET' operation
-    # azure.core.exceptions.HttpResponseError: Operation returned an invalid status 'Forbidden'
-  ]
-  ++ lib.optionals stdenv.hostPlatform.isDarwin [ "location_polling_fail" ];
+  dependencies = [
+    requests
+    six
+    typing-extensions
+  ];
 
   disabledTestPaths = [
     # requires testing modules which aren't published, and likely to create cyclic dependencies
@@ -103,6 +79,30 @@ buildPythonPackage rec {
     "tests/test_serialization.py"
     "tests/test_tracing_live.py"
   ];
+
+  # disable tests which touch network
+  disabledTests = [
+    "aiohttp"
+    "multipart_send"
+    "response"
+    "request"
+    "timeout"
+    "test_sync_transport_short_read_download_stream"
+    "test_aio_transport_short_read_download_stream"
+    # disable 8 tests failing on some darwin machines with errors:
+    # azure.core.polling.base_polling.BadStatus: Invalid return status 403 for 'GET' operation
+    # azure.core.exceptions.HttpResponseError: Operation returned an invalid status 'Forbidden'
+  ]
+  ++ lib.optionals stdenv.hostPlatform.isDarwin [ "location_polling_fail" ];
+
+  enabledTestPaths = [ "tests/" ];
+
+  optional-dependencies = {
+    aio = [ aiohttp ];
+    tracing = [ opentelemetry-api ];
+  };
+
+  pyproject = true;
 
   meta = {
     description = "Microsoft Azure Core Library for Python";

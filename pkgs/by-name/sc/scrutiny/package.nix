@@ -1,10 +1,10 @@
 {
-  buildNpmPackage,
-  buildGoModule,
-  fetchFromGitHub,
-  nixosTests,
   lib,
+  fetchFromGitHub,
+  buildGoModule,
+  buildNpmPackage,
   nix-update-script,
+  nixosTests,
 }:
 let
   frontend =
@@ -13,7 +13,6 @@ let
       inherit (finalAttrs) version;
       pname = "${finalAttrs.pname}-webapp";
       src = "${finalAttrs.src}/webapp/frontend";
-
       npmDepsHash = "sha256-1lOskHEU/3CmhQkUkQExryK6eMOSWvMI+Y+cX4Dlj98=";
 
       buildPhase = ''
@@ -44,21 +43,17 @@ buildGoModule (finalAttrs: {
     hash = "sha256-ZQHTwJZBOYJ2De0CmyxXc4Fb2Vt+jKg+YpDDZhSt+cg=";
   };
 
-  subPackages = "webapp/backend/cmd/scrutiny";
-
   vendorHash = "sha256-Em8k2AFoZv4TD4HFkkNIdyPj7IBOFiUIKffkifWfZFY=";
-
   env.CGO_ENABLED = 0;
-
-  ldflags = [ "-extldflags=-static" ];
-
-  tags = [ "static" ];
 
   postInstall = ''
     mkdir -p $out/share/scrutiny
     cp -r ${frontend finalAttrs}/* $out/share/scrutiny
   '';
 
+  ldflags = [ "-extldflags=-static" ];
+  subPackages = "webapp/backend/cmd/scrutiny";
+  tags = [ "static" ];
   passthru.tests.scrutiny = nixosTests.scrutiny;
   passthru.updateScript = nix-update-script { };
 
@@ -67,11 +62,13 @@ buildGoModule (finalAttrs: {
     homepage = "https://github.com/AnalogJ/scrutiny";
     changelog = "https://github.com/AnalogJ/scrutiny/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       samasaur
       svistoi
     ];
-    mainProgram = "scrutiny";
+
     platforms = lib.platforms.linux;
+    mainProgram = "scrutiny";
   };
 })

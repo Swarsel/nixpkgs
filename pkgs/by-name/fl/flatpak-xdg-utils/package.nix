@@ -1,12 +1,12 @@
 {
   lib,
+  stdenv,
   fetchFromGitHub,
   glib,
   meson,
   ninja,
   nix-update-script,
   pkg-config,
-  stdenv,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -33,9 +33,9 @@ stdenv.mkDerivation (finalAttrs: {
   passthru.updateScript = nix-update-script { };
 
   meta = {
-    changelog = "https://github.com/flatpak/flatpak-xdg-utils/releases/tag/${finalAttrs.version}";
     description = "Commandline utilities for use inside Flatpak sandboxes";
     homepage = "https://flatpak.org/";
+    changelog = "https://github.com/flatpak/flatpak-xdg-utils/releases/tag/${finalAttrs.version}";
     license = lib.licenses.lgpl21Plus;
     maintainers = with lib.maintainers; [ michaelgrahamevans ];
     platforms = lib.platforms.linux;

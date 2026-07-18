@@ -1,8 +1,8 @@
 {
   stdenv,
-  writeScriptBin,
   jupyter,
   wolfram-for-jupyter-kernel,
+  writeScriptBin,
 }:
 
 let

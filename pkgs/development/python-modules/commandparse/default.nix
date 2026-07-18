@@ -7,7 +7,6 @@
 buildPythonPackage rec {
   pname = "commandparse";
   version = "1.1.2";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
@@ -16,7 +15,7 @@ buildPythonPackage rec {
 
   # tests only distributed upstream source, not PyPi
   doCheck = false;
-
+  format = "setuptools";
   pythonImportsCheck = [ "commandparse" ];
 
   meta = {

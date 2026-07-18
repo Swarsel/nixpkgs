@@ -1,20 +1,20 @@
 {
+  lib,
+  stdenv,
+  fetchFromGitLab,
+  SDL2,
   callPackage,
   coreutils,
   discord-rpc,
   dosfstools,
-  fetchFromGitLab,
   findutils,
-  lib,
   libgcrypt,
   libgpg-error,
   parallel-launcher,
   qt6,
   replaceVars,
   retroarch-assets,
-  SDL2,
   sqlite,
-  stdenv,
   vulkan-loader,
   wrapRetroArch,
   xdg-utils,
@@ -43,12 +43,12 @@ stdenv.mkDerivation (
 
       # These settings take precedence over those supplied by user config files
       settings = {
+        assets_directory = retroArchAssetsPath;
         # Override the wrapper's libretro_info_path because that path doesn't
         # have any information about Parallel Launcher's parallel-n64 core fork.
         # Upstream provides this information in their own *.info files in $src/data.
         # Save states with the parallel-n64 core will not work without this.
         libretro_info_path = "${finalAttrs.src}/data";
-        assets_directory = retroArchAssetsPath;
       }
       // extraRetroArchSettings;
     };
@@ -73,17 +73,29 @@ stdenv.mkDerivation (
         # Fix FHS path assumptions
         (replaceVars ./fix-paths.patch {
           inherit retroArchAssetsPath retroArchCoresPath;
-          retroArchExePath = lib.getExe retroarch';
           parallelN64CorePath = "${retroArchCoresPath}/parallel_n64_next_libretro${suffix}";
+          retroArchExePath = lib.getExe retroarch';
           # Manually substituted later since we need to reference PL's $out
           sharePath = null;
         })
         # Bypass update checks and hardcode internal version checks to ours
         (replaceVars ./fix-version-checks.patch {
-          retroArchVersion = reformatVersion' (lib.getVersion retroarch');
           parallelN64CoreVersion = reformatVersion' (lib.getVersion parallel-n64-core);
+          retroArchVersion = reformatVersion' (lib.getVersion retroarch');
         })
       ];
+
+    postPatch =
+      let
+        sharePath = "${placeholder "out"}/share/parallel-launcher";
+      in
+      ''
+        substituteInPlace src/main.cpp \
+          --replace-fail '@sharePath@' '${sharePath}'
+
+        substituteInPlace src/polyfill/base-directory.cpp \
+          --replace-fail '@sharePath@' '${sharePath}'
+      '';
 
     nativeBuildInputs = [
       qt6.wrapQtAppsHook
@@ -99,6 +111,32 @@ stdenv.mkDerivation (
       SDL2
       sqlite
       zlib
+    ];
+
+    # Our patches result in unused params.
+    # Ignoring the warning is easier to maintain than more invasive patching.
+    env.NIX_CFLAGS_COMPILE = "-Wno-error=unused-parameter";
+
+    preConfigure = ''
+      lrelease app.pro
+    '';
+
+    installPhase = ''
+      runHook preInstall
+
+      # Taken from pkg/arch/PKGBUILD
+      install -D parallel-launcher -t $out/bin
+      install -D ca.parallel_launcher.ParallelLauncher.desktop -t $out/share/applications
+      install -D ca.parallel_launcher.ParallelLauncher.metainfo.xml -t $out/share/metainfo
+      install -D data/appicon.svg $out/share/icons/hicolor/scalable/apps/ca.parallel_launcher.ParallelLauncher.svg
+      install -D bps-mime.xml parallel-launcher-{lsjs,sdl-relay} -t $out/share/parallel-launcher
+      install -D lang/*.qm -t $out/share/parallel-launcher/translations
+
+      runHook postInstall
+    '';
+
+    qmakeFlags = [
+      "DEFINES+=RETROARCH_XWAYLAND"
     ];
 
     qtWrapperArgs = [
@@ -120,46 +158,9 @@ stdenv.mkDerivation (
       }"
     ];
 
-    qmakeFlags = [
-      "DEFINES+=RETROARCH_XWAYLAND"
-    ];
-
-    # Our patches result in unused params.
-    # Ignoring the warning is easier to maintain than more invasive patching.
-    env.NIX_CFLAGS_COMPILE = "-Wno-error=unused-parameter";
-
-    postPatch =
-      let
-        sharePath = "${placeholder "out"}/share/parallel-launcher";
-      in
-      ''
-        substituteInPlace src/main.cpp \
-          --replace-fail '@sharePath@' '${sharePath}'
-
-        substituteInPlace src/polyfill/base-directory.cpp \
-          --replace-fail '@sharePath@' '${sharePath}'
-      '';
-
-    preConfigure = ''
-      lrelease app.pro
-    '';
-
-    installPhase = ''
-      runHook preInstall
-
-      # Taken from pkg/arch/PKGBUILD
-      install -D parallel-launcher -t $out/bin
-      install -D ca.parallel_launcher.ParallelLauncher.desktop -t $out/share/applications
-      install -D ca.parallel_launcher.ParallelLauncher.metainfo.xml -t $out/share/metainfo
-      install -D data/appicon.svg $out/share/icons/hicolor/scalable/apps/ca.parallel_launcher.ParallelLauncher.svg
-      install -D bps-mime.xml parallel-launcher-{lsjs,sdl-relay} -t $out/share/parallel-launcher
-      install -D lang/*.qm -t $out/share/parallel-launcher/translations
-
-      runHook postInstall
-    '';
-
     passthru = {
       parallel-n64-core = callPackage ./parallel-n64-next.nix { };
+
       updateScript = {
         command = ./update.sh;
         supportedFeatures = [ "commit" ];
@@ -168,6 +169,7 @@ stdenv.mkDerivation (
 
     meta = {
       description = "Modern N64 Emulator";
+
       longDescription = ''
         Parallel Launcher is an emulator launcher that aims to make playing N64 games,
         both retail and homebrew, as simple and as accessible as possible. Parallel
@@ -175,15 +177,18 @@ stdenv.mkDerivation (
         controller setup with a much simpler user interface. It also features optional
         integration with romhacking.com.
       '';
+
       homepage = "https://parallel-launcher.ca";
       changelog = "https://gitlab.com/parallel-launcher/parallel-launcher/-/releases/${finalAttrs.src.tag}";
-      # Theoretically, platforms should be the intersection of what upstream supports,
-      # what nixpkgs RetroArch supports, and what the RetroArch core supports
-      platforms = [ "x86_64-linux" ];
       license = lib.licenses.gpl3Plus;
+
       maintainers = with lib.maintainers; [
         WheelsForReals
       ];
+
+      # Theoretically, platforms should be the intersection of what upstream supports,
+      # what nixpkgs RetroArch supports, and what the RetroArch core supports
+      platforms = [ "x86_64-linux" ];
       mainProgram = "parallel-launcher";
     };
   }

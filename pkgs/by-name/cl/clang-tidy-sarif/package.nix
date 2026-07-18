@@ -1,8 +1,8 @@
 {
   lib,
   fetchCrate,
-  rustPlatform,
   nix-update-script,
+  rustPlatform,
   versionCheckHook,
 }:
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -15,9 +15,8 @@ rustPlatform.buildRustPackage (finalAttrs: {
   };
 
   cargoHash = "sha256-cTBXStAA+oCRze2Bh/trultdqtBNOOpXQltJ6R34nF8=";
-
-  nativeInstallCheckInputs = [ versionCheckHook ];
   doInstallCheck = true;
+  nativeInstallCheckInputs = [ versionCheckHook ];
 
   passthru = {
     updateScript = nix-update-script { };
@@ -26,8 +25,8 @@ rustPlatform.buildRustPackage (finalAttrs: {
   meta = {
     description = "CLI tool to convert clang-tidy diagnostics into SARIF";
     homepage = "https://psastras.github.io/sarif-rs";
+    license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ getchoo ];
     mainProgram = "clang-tidy-sarif";
-    license = lib.licenses.mit;
   };
 })

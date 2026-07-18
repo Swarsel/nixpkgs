@@ -39,58 +39,70 @@ in
     services.syslogd = {
 
       enable = lib.mkOption {
-        type = lib.types.bool;
         default = false;
+
         description = ''
           Whether to enable syslogd.  Note that systemd also logs
           syslog messages, so you normally don't need to run syslogd.
         '';
-      };
 
-      tty = lib.mkOption {
-        type = lib.types.str;
-        default = "tty10";
-        description = ''
-          The tty device on which syslogd will print important log
-          messages. Leave this option blank to disable tty logging.
-        '';
+        type = lib.types.bool;
       };
 
       defaultConfig = lib.mkOption {
-        type = lib.types.lines;
         default = defaultConf;
+
         description = ''
           The default {file}`syslog.conf` file configures a
           fairly standard setup of log files, which can be extended by
           means of {var}`extraConfig`.
         '';
+
+        type = lib.types.lines;
       };
 
       enableNetworkInput = lib.mkOption {
-        type = lib.types.bool;
         default = false;
+
         description = ''
           Accept logging through UDP. Option -r of {manpage}`syslogd(8)`.
         '';
+
+        type = lib.types.bool;
       };
 
       extraConfig = lib.mkOption {
-        type = lib.types.lines;
         default = "";
-        example = "news.* -/var/log/news";
+
         description = ''
           Additional text appended to {file}`syslog.conf`,
           i.e. the contents of {var}`defaultConfig`.
         '';
+
+        example = "news.* -/var/log/news";
+        type = lib.types.lines;
       };
 
       extraParams = lib.mkOption {
-        type = lib.types.listOf lib.types.str;
         default = [ ];
-        example = [ "-m 0" ];
+
         description = ''
           Additional parameters passed to {command}`syslogd`.
         '';
+
+        example = [ "-m 0" ];
+        type = lib.types.listOf lib.types.str;
+      };
+
+      tty = lib.mkOption {
+        default = "tty10";
+
+        description = ''
+          The tty device on which syslogd will print important log
+          messages. Leave this option blank to disable tty logging.
+        '';
+
+        type = lib.types.str;
       };
 
     };
@@ -109,22 +121,20 @@ in
     ];
 
     environment.systemPackages = [ pkgs.sysklogd ];
-
     services.syslogd.extraParams = lib.optional cfg.enableNetworkInput "-r";
 
     # FIXME: restarting syslog seems to break journal logging.
     systemd.services.syslog = {
       description = "Syslog Daemon";
-
       requires = [ "syslog.socket" ];
-
-      wantedBy = [ "multi-user.target" ];
 
       serviceConfig = {
         ExecStart = "${pkgs.sysklogd}/sbin/syslogd ${toString cfg.extraParams} -f ${syslogConf} -n";
         # Prevent syslogd output looping back through journald.
         StandardOutput = "null";
       };
+
+      wantedBy = [ "multi-user.target" ];
     };
 
   };

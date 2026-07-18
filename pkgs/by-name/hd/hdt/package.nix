@@ -2,12 +2,12 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  fetchpatch,
   autoreconfHook,
+  fetchpatch,
   libtool,
   pkg-config,
-  zlib,
   serd,
+  zlib,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -25,15 +25,10 @@ stdenv.mkDerivation (finalAttrs: {
     # Pull fix for gcc-13 compatibility pending upstream inclusion:
     #   https://github.com/rdfhdt/hdt-cpp/pull/276
     (fetchpatch {
+      hash = "sha256-2ppcA+Ztw5G/buW2cwCNbuGeUuvgvSruW3OarWNCIHI=";
       name = "gcc-13.patch";
       url = "https://github.com/rdfhdt/hdt-cpp/commit/1b775835c6661c67cb18f5d6f65638ba7d4ecf3c.patch";
-      hash = "sha256-2ppcA+Ztw5G/buW2cwCNbuGeUuvgvSruW3OarWNCIHI=";
     })
-  ];
-
-  buildInputs = [
-    zlib
-    serd
   ];
 
   nativeBuildInputs = [
@@ -42,13 +37,18 @@ stdenv.mkDerivation (finalAttrs: {
     pkg-config
   ];
 
+  buildInputs = [
+    zlib
+    serd
+  ];
+
   enableParallelBuilding = true;
 
   meta = {
-    homepage = "http://www.rdfhdt.org/";
     description = "Header Dictionary Triples (HDT) is a compression format for RDF data that can also be queried for Triple Patterns";
+    homepage = "http://www.rdfhdt.org/";
     license = lib.licenses.lgpl21;
-    platforms = lib.platforms.linux;
     maintainers = [ lib.maintainers.koslambrou ];
+    platforms = lib.platforms.linux;
   };
 })

@@ -4,7 +4,6 @@
   mkLibretroCore,
 }:
 mkLibretroCore {
-  core = "nxengine";
   version = "0-unstable-2026-04-09";
 
   src = fetchFromGitHub {
@@ -14,6 +13,7 @@ mkLibretroCore {
     hash = "sha256-v7mUr4GeNc/bOe4gQvtPns4/uLA+r7UFGavDdtBNj6E=";
   };
 
+  core = "nxengine";
   makefile = "Makefile";
 
   meta = {

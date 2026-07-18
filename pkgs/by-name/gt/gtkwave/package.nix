@@ -1,19 +1,19 @@
 {
-  bzip2,
+  lib,
+  stdenv,
   fetchurl,
+  bzip2,
+  desktopToDarwinBundle,
   glib,
   gperf,
-  gtk3,
   gtk-mac-integration,
+  gtk3,
   judy,
-  lib,
   pkg-config,
-  stdenv,
   tcl,
   tk,
   wrapGAppsHook3,
   xz,
-  desktopToDarwinBundle,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -32,6 +32,7 @@ stdenv.mkDerivation (finalAttrs: {
   ++ lib.optionals stdenv.hostPlatform.isDarwin [
     desktopToDarwinBundle
   ];
+
   buildInputs = [
     bzip2
     glib
@@ -63,11 +64,13 @@ stdenv.mkDerivation (finalAttrs: {
     description = "VCD/Waveform viewer for Unix and Win32";
     homepage = "https://gtkwave.sourceforge.net";
     license = lib.licenses.gpl2Plus;
+
     maintainers = with lib.maintainers; [
       thoughtpolice
       jiegec
       jleightcap
     ];
+
     platforms = lib.platforms.linux ++ lib.platforms.darwin;
   };
 })

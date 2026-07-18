@@ -1,8 +1,8 @@
 {
   lib,
   fetchFromGitHub,
-  rustPlatform,
   nix-update-script,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -16,12 +16,12 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-0Gtqet6KKLtooh9cU2R/top142AeT+uIxFwe1dPTvAU=";
   };
 
-  # A lock file isn't provided, so it must be added manually.
-  cargoLock.lockFile = ./Cargo.lock;
   postPatch = ''
     cp ${./Cargo.lock} Cargo.lock
   '';
 
+  # A lock file isn't provided, so it must be added manually.
+  cargoLock.lockFile = ./Cargo.lock;
   # Not all of the tests pass.
   doCheck = false;
 
@@ -36,11 +36,13 @@ rustPlatform.buildRustPackage (finalAttrs: {
 
   meta = {
     description = "WebAssembly translation tools for various languages";
+
     longDescription = ''
       Wasynth provides the following WebAssembly translation tools:
        * wasm2luajit: translate WebAssembly to LuaJIT source code
        * wasm2luau: translate WebAssembly Luau source code
     '';
+
     homepage = "https://github.com/Rerumu/Wasynth";
     license = with lib.licenses; [ gpl3Only ];
     maintainers = [ ];

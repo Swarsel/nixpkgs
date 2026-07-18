@@ -4,11 +4,11 @@
   fetchurl,
   fetchpatch,
   getopt,
-  util-linuxMinimal,
-  which,
   gperf,
   nix-update-script,
   python3Packages,
+  util-linuxMinimal,
+  which,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -20,24 +20,6 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-g7YIUjLRWIw3ncm5yuR7s3QHzyYubnSZPGG6ctKnhNw=";
   };
 
-  patches = [
-    # Remove when version > 2.6.0
-    # Fixes test failures on big-endian archs
-    (fetchpatch {
-      name = "0001-libseccomp-remove-fuzzer-from-test-62-sim-arch_transactions.patch";
-      url = "https://github.com/seccomp/libseccomp/commit/2f0f3b0e9121720108431c5d054164016f476230.patch";
-      hash = "sha256-AKAQyALJlLgxnS23OEoqfyDswp0kU2vmja5ohgvFojw=";
-    })
-
-    # Remove when version > 2.6.0
-    # Fixes OOB reads & tests on musl
-    (fetchpatch {
-      name = "0002-libseccomp-fix-seccomp_export_bpf_mem-out-of-bounds-read.patch";
-      url = "https://github.com/seccomp/libseccomp/commit/dd759e8c4f5685b526638fba9ec4fc24c37c9aec.patch";
-      hash = "sha256-TdfQ5T8FrGE6+P24MIi9rKSC3fQu/Jlr4bsFiJd4yVY=";
-    })
-  ];
-
   outputs = [
     "out"
     "lib"
@@ -46,21 +28,36 @@ stdenv.mkDerivation (finalAttrs: {
     "pythonsrc"
   ];
 
-  nativeBuildInputs = [ gperf ];
-  buildInputs = [ getopt ];
+  patches = [
+    # Remove when version > 2.6.0
+    # Fixes test failures on big-endian archs
+    (fetchpatch {
+      hash = "sha256-AKAQyALJlLgxnS23OEoqfyDswp0kU2vmja5ohgvFojw=";
+      name = "0001-libseccomp-remove-fuzzer-from-test-62-sim-arch_transactions.patch";
+      url = "https://github.com/seccomp/libseccomp/commit/2f0f3b0e9121720108431c5d054164016f476230.patch";
+    })
+
+    # Remove when version > 2.6.0
+    # Fixes OOB reads & tests on musl
+    (fetchpatch {
+      hash = "sha256-TdfQ5T8FrGE6+P24MIi9rKSC3fQu/Jlr4bsFiJd4yVY=";
+      name = "0002-libseccomp-fix-seccomp_export_bpf_mem-out-of-bounds-read.patch";
+      url = "https://github.com/seccomp/libseccomp/commit/dd759e8c4f5685b526638fba9ec4fc24c37c9aec.patch";
+    })
+  ];
 
   postPatch = ''
     patchShebangs .
   '';
 
+  nativeBuildInputs = [ gperf ];
+  buildInputs = [ getopt ];
+  doCheck = !(stdenv.targetPlatform.useLLVM or false);
+
   nativeCheckInputs = [
     util-linuxMinimal
     which
   ];
-  doCheck = !(stdenv.targetPlatform.useLLVM or false);
-
-  # Hack to ensure that patchelf --shrink-rpath get rids of a $TMPDIR reference.
-  preFixup = "rm -rfv src";
 
   # Copy the python module code into a tarball that we can export and use as the
   # src input for buildPythonPackage calls
@@ -69,19 +66,24 @@ stdenv.mkDerivation (finalAttrs: {
     tar -zcf $pythonsrc --mtime="@$SOURCE_DATE_EPOCH" --sort=name --transform s/tmp-pythonsrc/python-foundationdb/ ./tmp-pythonsrc/
   '';
 
+  # Hack to ensure that patchelf --shrink-rpath get rids of a $TMPDIR reference.
+  preFixup = "rm -rfv src";
+
   passthru = {
-    updateScript = nix-update-script { };
     tests = {
       inherit (python3Packages) seccomp;
     };
+
+    updateScript = nix-update-script { };
   };
 
   meta = {
     description = "High level library for the Linux Kernel seccomp filter";
-    mainProgram = "scmp_sys_resolver";
     homepage = "https://github.com/seccomp/libseccomp";
     license = lib.licenses.lgpl21Only;
+    maintainers = with lib.maintainers; [ thoughtpolice ];
     platforms = lib.platforms.linux;
+
     badPlatforms = [
       "alpha-linux"
       "m68k-linux"
@@ -91,7 +93,8 @@ stdenv.mkDerivation (finalAttrs: {
       "sparc-linux"
       "sparc64-linux"
     ];
-    maintainers = with lib.maintainers; [ thoughtpolice ];
+
+    mainProgram = "scmp_sys_resolver";
     identifiers.cpeParts = lib.meta.cpeFullVersionWithVendor "libseccomp_project" finalAttrs.version;
   };
 })

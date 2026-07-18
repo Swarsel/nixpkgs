@@ -24,10 +24,12 @@ stdenv.mkDerivation (finalAttrs: {
   nativeBuildInputs = [
     cmake
   ];
+
   cmakeFlags = [
     (lib.cmakeBool "BUILD_SHARED_LIBS" true)
     (lib.cmakeFeature "UNITS_BASE_TYPE" baseType)
   ];
+
   doCheck = true;
 
   meta = {
@@ -36,7 +38,7 @@ stdenv.mkDerivation (finalAttrs: {
     changelog = "https://github.com/llnl/units/blob/${finalAttrs.src.tag}/CHANGELOG.md";
     license = lib.licenses.bsd3;
     maintainers = with lib.maintainers; [ doronbehar ];
-    mainProgram = "units-llnl";
     platforms = lib.platforms.all;
+    mainProgram = "units-llnl";
   };
 })

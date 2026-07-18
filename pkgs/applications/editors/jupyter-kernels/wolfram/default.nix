@@ -14,7 +14,6 @@ let
 in
 {
   definition = {
-    displayName = "Wolfram Language ${wolfram-engine.version}";
     argv = [
       "${wolfram-engine}/bin/wolfram"
       "-script"
@@ -22,6 +21,8 @@ in
       "{connection_file}"
       "ScriptInstall" # suppresses prompt
     ];
+
+    displayName = "Wolfram Language ${wolfram-engine.version}";
     language = "Wolfram Language";
     logo32 = "${wolfram-engine}/share/icons/hicolor/32x32/apps/wolfram-wolframlanguage.png";
     logo64 = "${wolfram-engine}/share/icons/hicolor/64x64/apps/wolfram-wolframlanguage.png";

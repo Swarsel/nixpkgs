@@ -1,19 +1,19 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
-  vala,
-  meson,
-  ninja,
-  wrapGAppsHook4,
+  appstream-glib,
+  blueprint-compiler,
+  desktop-file-utils,
   gst_all_1,
   libadwaita,
-  libxml2,
-  desktop-file-utils,
-  pkg-config,
   libportal-gtk4,
-  blueprint-compiler,
-  appstream-glib,
+  libxml2,
+  meson,
+  ninja,
+  pkg-config,
+  vala,
+  wrapGAppsHook4,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -50,12 +50,14 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Get what motivates you done, without losing concentration";
-    mainProgram = "flowtime";
     homepage = "https://github.com/Diego-Ivan/Flowtime";
     license = lib.licenses.gpl3Plus;
+
     maintainers = with lib.maintainers; [
       pokon548
     ];
+
     platforms = lib.platforms.linux;
+    mainProgram = "flowtime";
   };
 })

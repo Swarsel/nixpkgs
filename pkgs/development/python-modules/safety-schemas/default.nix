@@ -1,9 +1,9 @@
 {
   lib,
   buildPythonPackage,
+  dparse,
   fetchPypi,
   hatchling,
-  dparse,
   packaging,
   pydantic,
   ruamel-yaml,
@@ -13,12 +13,11 @@
 buildPythonPackage rec {
   pname = "safety-schemas";
   version = "0.0.18";
-  pyproject = true;
 
   src = fetchPypi {
-    pname = "safety_schemas";
     inherit version;
     hash = "sha256-OhJ6U7ruCoglMGtdG+SGZmks+YuqzpeF0Xv2BOkGSUo=";
+    pname = "safety_schemas";
   };
 
   postPatch = ''
@@ -26,11 +25,9 @@ buildPythonPackage rec {
       --replace hatchling==1.26.3 hatchling
   '';
 
+  # upstream has no tests
+  doCheck = false;
   build-system = [ hatchling ];
-
-  pythonRelaxDeps = [
-    "pydantic"
-  ];
 
   dependencies = [
     dparse
@@ -40,10 +37,12 @@ buildPythonPackage rec {
     typing-extensions
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "safety_schemas" ];
 
-  # upstream has no tests
-  doCheck = false;
+  pythonRelaxDeps = [
+    "pydantic"
+  ];
 
   meta = {
     description = "Schemas for Safety CLI";

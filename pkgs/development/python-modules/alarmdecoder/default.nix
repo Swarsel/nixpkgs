@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   mock,
   pyftdi,
   pyopenssl,
@@ -14,7 +14,6 @@
 buildPythonPackage rec {
   pname = "alarmdecoder";
   version = "1.13.14";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "nutechsoftware";
@@ -28,6 +27,11 @@ buildPythonPackage rec {
       --replace-fail assertEquals assertEqual
   '';
 
+  nativeCheckInputs = [
+    mock
+    pytestCheckHook
+  ];
+
   build-system = [ setuptools-scm ];
 
   dependencies = [
@@ -37,17 +41,13 @@ buildPythonPackage rec {
     pyusb
   ];
 
-  nativeCheckInputs = [
-    mock
-    pytestCheckHook
-  ];
-
   disabledTests = [
     # Socket issue, https://github.com/nutechsoftware/alarmdecoder/issues/45
     "test_ssl"
     "test_ssl_exception"
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "alarmdecoder" ];
 
   meta = {

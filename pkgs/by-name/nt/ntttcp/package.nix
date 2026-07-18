@@ -18,8 +18,8 @@ stdenv.mkDerivation (finalAttrs: {
 
   patches = [
     (fetchpatch {
-      url = "https://github.com/microsoft/ntttcp-for-linux/commit/e18597c05e3d4b439849ce0e149cb701ff5a36c2.patch";
       hash = "sha256-FOgjKseMDL1O1f+lgmmreGus4YRTZMwIJinh/7MT2Xk=";
+      url = "https://github.com/microsoft/ntttcp-for-linux/commit/e18597c05e3d4b439849ce0e149cb701ff5a36c2.patch";
     })
   ];
 

@@ -5,9 +5,9 @@
   boost186,
   cmake,
   copyDesktopItems,
-  imagemagick,
   fetchpatch,
   fetchzip,
+  imagemagick,
   killall,
   libjpeg,
   libpng,
@@ -16,7 +16,6 @@
   libusb1,
   makeDesktopItem,
   qt5,
-
   withGui ? true,
   withNonFreePlugins ? false,
 }:
@@ -39,9 +38,9 @@ let
   bundle =
     {
       "x86_64-linux" = fetchzip {
+        hash = "sha256-Smjp2PRcsNN9nP3W++HmKOw85zZj20zEIFEEVSO8lDo=";
         name = "${pname}-bundle";
         url = "https://download3.ebz.epson.net/dsc/f/03/00/17/08/12/9f3fec0ae80aa5c36f5170377ebcc38c93251e23/epsonscan2-bundle-6.7.80.0.x86_64.deb.tar.gz";
-        hash = "sha256-Smjp2PRcsNN9nP3W++HmKOw85zZj20zEIFEEVSO8lDo=";
       };
     }
     ."${system}" or (throw "Unsupported system: ${system}");
@@ -54,15 +53,15 @@ stdenv.mkDerivation {
     ./build.patch
     ./gcc15.patch
     (fetchpatch {
-      url = "https://github.com/flathub/net.epson.epsonscan2/raw/f9eb99109e63dbed907f46e36f435e46d7c01aad/patches/0002-Fix-crash.patch";
       hash = "sha256-Al5DkVnCBNoMtex4G3Zm7uZwTvnWGAjOk5xh/U9WyNU=";
+      url = "https://github.com/flathub/net.epson.epsonscan2/raw/f9eb99109e63dbed907f46e36f435e46d7c01aad/patches/0002-Fix-crash.patch";
     })
     # At the time of writing, some flathub patches are not updated to work with 6.7.90.0-1 (2026/01/01)
     ./xdg-open.patch # Rebase of https://github.com/flathub/net.epson.epsonscan2/blob/master/patches/0003-Use-XDG-open-to-open-the-directory.patch
     ./fix-oob-container-access.patch # Rebase of https://github.com/flathub/net.epson.epsonscan2/blob/master/patches/0004-Fix-a-crash-on-an-OOB-container-access.patch
     (fetchpatch {
-      url = "https://github.com/flathub/net.epson.epsonscan2/raw/f9eb99109e63dbed907f46e36f435e46d7c01aad/patches/0005-Added-missing-headers.patch";
       hash = "sha256-YJjCI8UNzLciSq9IfcHxiF4isFGM9A5Hn7Kxao/+lpQ=";
+      url = "https://github.com/flathub/net.epson.epsonscan2/raw/f9eb99109e63dbed907f46e36f435e46d7c01aad/patches/0005-Added-missing-headers.patch";
     })
   ];
 
@@ -112,8 +111,6 @@ stdenv.mkDerivation {
     "-DNO_GUI=ON"
   ];
 
-  doInstallCheck = true;
-
   postInstall = ''
     # But when we put all the libraries in lib/${system}-gnu, then SANE can't find the
     # required libraries so create a symlink to where it expects them to be.
@@ -134,24 +131,27 @@ stdenv.mkDerivation {
     cp -r usr/* $out
   '';
 
+  doInstallCheck = true;
+
   desktopItems = lib.optionals withGui [
     (makeDesktopItem {
-      name = "epsonscan2";
-      exec = "epsonscan2";
-      icon = "epsonscan2";
-      desktopName = "Epson Scan 2";
-      genericName = "Epson Scan 2";
-      comment = description;
       categories = [
         "Graphics"
         "Scanning"
       ];
+
+      comment = description;
+      desktopName = "Epson Scan 2";
+      exec = "epsonscan2";
+      genericName = "Epson Scan 2";
+      icon = "epsonscan2";
+      name = "epsonscan2";
     })
   ];
 
   meta = {
     inherit description;
-    mainProgram = "epsonscan2";
+
     longDescription = ''
       The Epson Scan 2 scanner driver, including optional non-free plugins such
       as OCR and network scanning.
@@ -172,12 +172,16 @@ stdenv.mkDerivation {
       }
       ```
     '';
+
     homepage = "https://support.epson.net/linux/en/epsonscan2.php";
-    platforms = lib.systems.inspect.patternLogicalAnd lib.systems.inspect.patterns.isLinux lib.systems.inspect.patterns.isx86_64;
+    license = with lib.licenses; if withNonFreePlugins then unfree else lgpl21Plus;
+
     sourceProvenance =
       with lib.sourceTypes;
       [ fromSource ] ++ lib.optionals withNonFreePlugins [ binaryNativeCode ];
-    license = with lib.licenses; if withNonFreePlugins then unfree else lgpl21Plus;
+
     maintainers = with lib.maintainers; [ james-atkins ];
+    platforms = lib.systems.inspect.patternLogicalAnd lib.systems.inspect.patterns.isLinux lib.systems.inspect.patterns.isx86_64;
+    mainProgram = "epsonscan2";
   };
 }

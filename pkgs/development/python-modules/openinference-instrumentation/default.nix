@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   hatchling,
   jsonschema,
   nix-update-script,
@@ -19,9 +19,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "openinference-instrumentation";
   version = "0.1.54";
-  pyproject = true;
-
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "Arize-ai";
@@ -30,8 +27,15 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-6GWZmgb9ZcT/yx7MvGUQlht5fljQGCKMHMpJWZQKpPI=";
   };
 
-  sourceRoot = "${finalAttrs.src.name}/python/${finalAttrs.pname}";
+  nativeCheckInputs = [
+    jsonschema
+    openai
+    pytest-asyncio
+    pytest-vcr
+    pytestCheckHook
+  ];
 
+  __structuredAttrs = true;
   build-system = [ hatchling ];
 
   dependencies = [
@@ -42,21 +46,14 @@ buildPythonPackage (finalAttrs: {
     wrapt
   ];
 
-  nativeCheckInputs = [
-    jsonschema
-    openai
-    pytest-asyncio
-    pytest-vcr
-    pytestCheckHook
-  ];
-
-  pythonImportsCheck = [ "openinference.instrumentation" ];
-
   disabledTests = [
     # Tests want to connect to OpenAI's API
     "TestTracerLLMDecorator"
   ];
 
+  pyproject = true;
+  pythonImportsCheck = [ "openinference.instrumentation" ];
+  sourceRoot = "${finalAttrs.src.name}/python/${finalAttrs.pname}";
   passthru.updateScript = nix-update-script { };
 
   meta = {

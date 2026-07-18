@@ -10,15 +10,16 @@
 }:
 
 buildPythonPackage rec {
-  version = "3.4.0";
   pname = "opt-einsum";
-  pyproject = true;
+  version = "3.4.0";
 
   src = fetchPypi {
-    pname = "opt_einsum";
     inherit version;
     hash = "sha256-lspy8biG0UgkE0h4NJgZTFd/owqPqsEIWGsU8bpEc6w=";
+    pname = "opt_einsum";
   };
+
+  nativeCheckInputs = [ pytestCheckHook ];
 
   build-system = [
     hatch-fancy-pypi-readme
@@ -27,9 +28,7 @@ buildPythonPackage rec {
   ];
 
   dependencies = [ numpy ];
-
-  nativeCheckInputs = [ pytestCheckHook ];
-
+  pyproject = true;
   pythonImportsCheck = [ "opt_einsum" ];
 
   meta = {

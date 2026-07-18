@@ -1,19 +1,19 @@
 {
   lib,
   stdenv,
-  cmake,
-  cctools,
   fetchFromGitHub,
+  cadical,
+  cctools,
+  cmake,
   git,
   gmp,
-  cadical,
   leangz,
-  makeWrapper,
-  pkg-config,
   libuv,
-  enableMimalloc ? true,
+  makeWrapper,
   perl,
+  pkg-config,
   testers,
+  enableMimalloc ? true,
 }:
 let
   cadical' = cadical.override { version = "2.1.3"; };
@@ -22,21 +22,14 @@ stdenv.mkDerivation (finalAttrs: {
   pname = "lean4";
   version = "4.30.0";
 
-  # Using a vendored version rather than nixpkgs' version to match the exact version required by
-  # Lean.  Apparently, even a slight version change can impact greatly the final performance.
-  mimalloc-src = fetchFromGitHub {
-    owner = "microsoft";
-    repo = "mimalloc";
-    tag = "v2.2.3";
-    hash = "sha256-B0gngv16WFLBtrtG5NqA2m5e95bYVcQraeITcOX9A74=";
-  };
-
   src = fetchFromGitHub {
     owner = "leanprover";
     repo = "lean4";
     tag = "v${finalAttrs.version}";
     hash = "sha256-YTsfIppd6km7wOjAxRH5KMPsW++ztFDCJT2up72J86Q=";
   };
+
+  patches = [ ./mimalloc.patch ];
 
   postPatch =
     let
@@ -59,10 +52,6 @@ stdenv.mkDerivation (finalAttrs: {
       done
     '');
 
-  preConfigure = ''
-    patchShebangs stage0/src/bin/ src/bin/
-  '';
-
   nativeBuildInputs = [
     cmake
     pkg-config
@@ -77,18 +66,6 @@ stdenv.mkDerivation (finalAttrs: {
     cadical'
   ];
 
-  postInstall = ''
-    wrapProgram $out/bin/lean \
-      --prefix PATH : ${cadical'}/bin
-  '';
-
-  nativeCheckInputs = [
-    git
-    perl
-  ];
-
-  patches = [ ./mimalloc.patch ];
-
   cmakeFlags = [
     "-DUSE_GITHASH=OFF"
     "-DINSTALL_LICENSE=OFF"
@@ -96,10 +73,33 @@ stdenv.mkDerivation (finalAttrs: {
     "-DUSE_MIMALLOC=${if enableMimalloc then "ON" else "OFF"}"
   ];
 
+  preConfigure = ''
+    patchShebangs stage0/src/bin/ src/bin/
+  '';
+
+  nativeCheckInputs = [
+    git
+    perl
+  ];
+
+  postInstall = ''
+    wrapProgram $out/bin/lean \
+      --prefix PATH : ${cadical'}/bin
+  '';
+
+  # Using a vendored version rather than nixpkgs' version to match the exact version required by
+  # Lean.  Apparently, even a slight version change can impact greatly the final performance.
+  mimalloc-src = fetchFromGitHub {
+    hash = "sha256-B0gngv16WFLBtrtG5NqA2m5e95bYVcQraeITcOX9A74=";
+    owner = "microsoft";
+    repo = "mimalloc";
+    tag = "v2.2.3";
+  };
+
   passthru.tests = {
     version = testers.testVersion {
-      package = finalAttrs.finalPackage;
       version = "v${finalAttrs.version}";
+      package = finalAttrs.finalPackage;
     };
   };
 
@@ -108,13 +108,15 @@ stdenv.mkDerivation (finalAttrs: {
     homepage = "https://leanprover.github.io/";
     changelog = "https://github.com/leanprover/lean4/blob/${finalAttrs.src.tag}/RELEASES.md";
     license = lib.licenses.asl20;
-    platforms = lib.platforms.all;
+
     maintainers = with lib.maintainers; [
       danielbritten
       jthulhu
       nadja-y
       niklashh
     ];
+
+    platforms = lib.platforms.all;
     mainProgram = "lean";
   };
 })

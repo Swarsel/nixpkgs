@@ -1,14 +1,14 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
-  tinyxml-2,
   cmake,
   qt5,
+  tinyxml-2,
 }:
 stdenv.mkDerivation (finalAttrs: {
-  version = "1.0.13";
   pname = "pro-office-calculator";
+  version = "1.0.13";
 
   src = fetchFromGitHub {
     owner = "RobJinman";
@@ -17,23 +17,23 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-7cYItmWOBDP/ajanwYnyBZobVny/9HumI7e+rLRn5ew=";
   };
 
+  nativeBuildInputs = [
+    cmake
+    qt5.wrapQtAppsHook
+  ];
+
   buildInputs = [
     qt5.qtbase
     qt5.qtmultimedia
     tinyxml-2
   ];
 
-  nativeBuildInputs = [
-    cmake
-    qt5.wrapQtAppsHook
-  ];
-
   meta = {
     description = "Completely normal office calculator";
-    mainProgram = "procalc";
     homepage = "https://proofficecalculator.com/";
+    license = lib.licenses.gpl3Only;
     maintainers = with lib.maintainers; [ pmiddend ];
     platforms = lib.platforms.linux;
-    license = lib.licenses.gpl3Only;
+    mainProgram = "procalc";
   };
 })

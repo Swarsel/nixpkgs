@@ -23,11 +23,11 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   meta = {
-    homepage = "https://github.com/mdolidon/endlines";
     description = "Easy conversion between new-line conventions";
+    homepage = "https://github.com/mdolidon/endlines";
     license = lib.licenses.asl20;
     maintainers = with lib.maintainers; [ zedseven ];
-    mainProgram = "endlines";
     platforms = lib.platforms.unix;
+    mainProgram = "endlines";
   };
 })

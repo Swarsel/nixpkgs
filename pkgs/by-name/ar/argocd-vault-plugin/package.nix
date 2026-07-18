@@ -1,9 +1,9 @@
 {
-  buildGoModule,
-  fetchFromGitHub,
   lib,
-  testers,
+  fetchFromGitHub,
   argocd-vault-plugin,
+  buildGoModule,
+  testers,
 }:
 
 buildGoModule (finalAttrs: {
@@ -18,6 +18,9 @@ buildGoModule (finalAttrs: {
   };
 
   vendorHash = "sha256-iZ3WWM5p0UuKpdLq6wczLtgX01q6Vtx8j/XCAH+4POs=";
+  # integration tests require filesystem and network access for credentials
+  doCheck = false;
+  doInstallCheck = true;
 
   ldflags = [
     "-X=github.com/argoproj-labs/argocd-vault-plugin/version.Version=v${finalAttrs.version}"
@@ -25,23 +28,18 @@ buildGoModule (finalAttrs: {
     "-X=github.com/argoproj-labs/argocd-vault-plugin/version.CommitSHA=unknown"
   ];
 
-  # integration tests require filesystem and network access for credentials
-  doCheck = false;
-
-  doInstallCheck = true;
-
   passthru.tests.version = testers.testVersion {
-    package = argocd-vault-plugin;
-    command = "argocd-vault-plugin version";
     version = "argocd-vault-plugin v${finalAttrs.version} (unknown) BuildDate: 1970-01-01T00:00:00Z";
+    command = "argocd-vault-plugin version";
+    package = argocd-vault-plugin;
   };
 
   meta = {
+    description = "Argo CD plugin to retrieve secrets from Secret Management tools and inject them into Kubernetes secrets";
     homepage = "https://argocd-vault-plugin.readthedocs.io";
     changelog = "https://github.com/argoproj-labs/argocd-vault-plugin/releases/tag/v${finalAttrs.version}";
-    description = "Argo CD plugin to retrieve secrets from Secret Management tools and inject them into Kubernetes secrets";
-    mainProgram = "argocd-vault-plugin";
     license = lib.licenses.asl20;
     maintainers = [ ];
+    mainProgram = "argocd-vault-plugin";
   };
 })

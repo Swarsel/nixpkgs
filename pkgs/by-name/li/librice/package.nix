@@ -1,12 +1,12 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
-  rustPlatform,
   buildPackages,
   cargo-c,
   openssl,
   pkg-config,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -26,8 +26,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-CM+YoeVdWfnT/RjkHP0ILwMOkFEylFaN83B71r+S5Ik=";
   };
 
-  cargoHash = "sha256-GNqzAFAnOYP5tCE4qb9F9XAlinX1xV4QyBWJjqXb5VE=";
-
   nativeBuildInputs = [
     cargo-c
     pkg-config
@@ -38,6 +36,10 @@ rustPlatform.buildRustPackage (finalAttrs: {
     openssl
   ];
 
+  cargoHash = "sha256-GNqzAFAnOYP5tCE4qb9F9XAlinX1xV4QyBWJjqXb5VE=";
+  # All tests require network calls
+  doCheck = false;
+
   postInstall = ''
     for p in rice-proto rice-io; do
       ${buildPackages.rust.envVars.setEnv} cargo cinstall -p ''${p} -j $NIX_BUILD_CORES --release \
@@ -45,16 +47,15 @@ rustPlatform.buildRustPackage (finalAttrs: {
     done
   '';
 
-  # All tests require network calls
-  doCheck = false;
-
   meta = {
     description = "A (sans-IO) implementation of ICE (RFC8445) protocol written in Rust";
     homepage = "https://github.com/ystreet/librice";
+
     license = with lib.licenses; [
       asl20
       mit
     ];
+
     maintainers = with lib.maintainers; [ azban ];
   };
 })

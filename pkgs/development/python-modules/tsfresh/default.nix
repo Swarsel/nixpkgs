@@ -1,37 +1,36 @@
 {
   lib,
-  buildPythonPackage,
-  fetchFromGitHub,
   stdenv,
-  requests,
-  numpy,
-  pandas,
-  scipy,
-  statsmodels,
-  patsy,
-  scikit-learn,
-  tqdm,
+  fetchFromGitHub,
+  buildPythonPackage,
+  cloudpickle,
   dask,
   distributed,
-  stumpy,
-  cloudpickle,
-  pytestCheckHook,
+  ipython,
+  matplotlib,
+  mock,
+  notebook,
+  numpy,
+  pandas,
+  pandas-datareader,
+  patsy,
   pytest-cov-stub,
   pytest-xdist,
-  mock,
-  matplotlib,
-  seaborn,
-  ipython,
-  notebook,
-  pandas-datareader,
-  setuptools,
+  pytestCheckHook,
   pywavelets,
+  requests,
+  scikit-learn,
+  scipy,
+  seaborn,
+  setuptools,
+  statsmodels,
+  stumpy,
+  tqdm,
 }:
 
 buildPythonPackage rec {
   pname = "tsfresh";
   version = "0.21.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "blue-yonder";
@@ -43,6 +42,21 @@ buildPythonPackage rec {
   patches = [
     # The pyscaffold is not a build dependency but just a python project bootstrapping tool, so we do not need it
     ./remove-pyscaffold.patch
+  ];
+
+  # python-datareader is disabled on Python 3.12+ and is require only for checks.
+  doCheck = !pandas-datareader.disabled;
+
+  nativeCheckInputs = [
+    pytestCheckHook
+    pytest-cov-stub
+    pytest-xdist
+    mock
+    matplotlib
+    seaborn
+    ipython
+    notebook
+    pandas-datareader
   ];
 
   dependencies = [
@@ -63,21 +77,6 @@ buildPythonPackage rec {
   ]
   ++ dask.optional-dependencies.dataframe;
 
-  # python-datareader is disabled on Python 3.12+ and is require only for checks.
-  doCheck = !pandas-datareader.disabled;
-
-  nativeCheckInputs = [
-    pytestCheckHook
-    pytest-cov-stub
-    pytest-xdist
-    mock
-    matplotlib
-    seaborn
-    ipython
-    notebook
-    pandas-datareader
-  ];
-
   disabledTests = [
     # touches network
     "test_relevant_extraction"
@@ -97,14 +96,15 @@ buildPythonPackage rec {
     "test_dask_cluster_extraction_two_workers"
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "tsfresh" ];
 
   meta = {
     description = "Automatic extraction of relevant features from time series";
-    mainProgram = "run_tsfresh";
     homepage = "https://github.com/blue-yonder/tsfresh";
     changelog = "https://github.com/blue-yonder/tsfresh/blob/${src.tag}/CHANGES.rst";
     license = lib.licenses.mit;
     maintainers = [ ];
+    mainProgram = "run_tsfresh";
   };
 }

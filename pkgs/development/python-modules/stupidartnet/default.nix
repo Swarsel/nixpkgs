@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   pytestCheckHook,
   setuptools,
 }:
@@ -9,7 +9,6 @@
 buildPythonPackage rec {
   pname = "stupidartnet";
   version = "1.6.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "cpvalente";
@@ -18,10 +17,9 @@ buildPythonPackage rec {
     hash = "sha256-prLIQn1vFp0Q8FR2WBaU1tr6eKJpEY1ul4ldd4c35ls=";
   };
 
-  build-system = [ setuptools ];
-
   nativeCheckInputs = [ pytestCheckHook ];
-
+  build-system = [ setuptools ];
+  pyproject = true;
   pythonImportsCheck = [ "stupidArtnet" ];
 
   meta = {

@@ -1,7 +1,7 @@
 {
   config,
-  pkgs,
   lib,
+  pkgs,
   ...
 }:
 {
@@ -26,14 +26,13 @@
       pkgs.system-config-printer
     ];
 
-    systemd.packages = [
-      pkgs.system-config-printer
-    ];
-
     services.udev.packages = [
       pkgs.system-config-printer
     ];
 
+    systemd.packages = [
+      pkgs.system-config-printer
+    ];
     # for $out/bin/install-printer-driver
     # TODO: Enable once #177946 is resolved
     # services.packagekit.enable = true;

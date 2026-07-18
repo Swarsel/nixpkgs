@@ -1,7 +1,7 @@
 {
+  lib,
   buildNpmPackage,
   fetchzip,
-  lib,
 }:
 buildNpmPackage (finalAttrs: {
   pname = "ionic-cli";
@@ -17,16 +17,17 @@ buildNpmPackage (finalAttrs: {
   '';
 
   npmDepsHash = "sha256-XI9+c4ECkmowA3Lz3S47m9wRcOKTmr51/wWr1lBy7Lo=";
-
   dontNpmBuild = true;
 
   meta = {
     description = "Your go-to tool for developing Ionic apps";
     homepage = "https://ionicframework.com/";
     license = lib.licenses.mit;
-    mainProgram = "ionic";
+
     maintainers = with lib.maintainers; [
       albertlarsan68
     ];
+
+    mainProgram = "ionic";
   };
 })

@@ -1,11 +1,11 @@
 {
   lib,
-  buildGoModule,
-  fetchFromGitHub,
-  installShellFiles,
   stdenv,
-  versionCheckHook,
+  fetchFromGitHub,
+  buildGoModule,
+  installShellFiles,
   nix-update-script,
+  versionCheckHook,
 }:
 
 buildGoModule (finalAttrs: {
@@ -19,17 +19,8 @@ buildGoModule (finalAttrs: {
     hash = "sha256-ZuYaYBSDpU2NCBssw+j3cP4jV6t+pCezFrQRQBS/zKk=";
   };
 
-  vendorHash = null;
-
-  ldflags = [
-    "-s"
-    "-w"
-    "-X github.com/openshift-pipelines/pipelines-as-code/pkg/params/version.Version=${finalAttrs.version}"
-  ];
-
   nativeBuildInputs = [ installShellFiles ];
-
-  subPackages = [ "cmd/tkn-pac" ];
+  vendorHash = null;
 
   postInstall = lib.optionalString (stdenv.buildPlatform.canExecute stdenv.hostPlatform) ''
     installShellCompletion --cmd tkn-pac \
@@ -38,9 +29,17 @@ buildGoModule (finalAttrs: {
       --zsh <($out/bin/tkn-pac completion zsh)
   '';
 
-  nativeInstallCheckInputs = [ versionCheckHook ];
-  versionCheckProgramArg = "version";
   doInstallCheck = true;
+  nativeInstallCheckInputs = [ versionCheckHook ];
+
+  ldflags = [
+    "-s"
+    "-w"
+    "-X github.com/openshift-pipelines/pipelines-as-code/pkg/params/version.Version=${finalAttrs.version}"
+  ];
+
+  subPackages = [ "cmd/tkn-pac" ];
+  versionCheckProgramArg = "version";
 
   passthru.updateScript = nix-update-script {
     extraArgs = [
@@ -50,18 +49,22 @@ buildGoModule (finalAttrs: {
   };
 
   meta = {
-    homepage = "https://pipelinesascode.com";
-    changelog = "https://github.com/openshift-pipelines/pipelines-as-code/releases/tag/v${finalAttrs.version}";
     description = "CLI for interacting with Tekton Pipelines as Code";
+
     longDescription = ''
       tkn-pac CLI Plugin – Easily manage Pipelines-as-Code repositories.
     '';
+
+    homepage = "https://pipelinesascode.com";
+    changelog = "https://github.com/openshift-pipelines/pipelines-as-code/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.asl20;
+
     maintainers = with lib.maintainers; [
       netbrain
       vdemeester
       chmouel
     ];
+
     mainProgram = "tkn-pac";
   };
 })

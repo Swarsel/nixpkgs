@@ -1,9 +1,9 @@
 {
   lib,
-  python3Packages,
   fetchFromGitHub,
   gettext,
   installShellFiles,
+  python3Packages,
   versionCheckHook,
 }:
 
@@ -11,9 +11,8 @@ let
   version = "2.8.0";
 in
 python3Packages.buildPythonApplication {
-  pname = "ytcc";
   inherit version;
-  pyproject = true;
+  pname = "ytcc";
 
   src = fetchFromGitHub {
     owner = "woefe";
@@ -22,21 +21,10 @@ python3Packages.buildPythonApplication {
     hash = "sha256-6Z5xoGbOtJnPlPj5GS9ElRkuuNd+ON9RsZyl5VLzLE0=";
   };
 
-  build-system = with python3Packages; [ hatchling ];
-
   nativeBuildInputs = [
     gettext
     installShellFiles
   ];
-
-  dependencies = with python3Packages; [
-    yt-dlp
-    click
-    wcwidth
-    defusedxml
-  ];
-
-  pythonRelaxDeps = [ "click" ];
 
   nativeCheckInputs =
     with python3Packages;
@@ -44,6 +32,23 @@ python3Packages.buildPythonApplication {
       pytestCheckHook
     ]
     ++ [ versionCheckHook ];
+
+  postInstall = ''
+    installManPage doc/ytcc.1
+    installShellCompletion --cmd ytcc \
+      --bash scripts/completions/bash/ytcc.completion.sh \
+      --fish scripts/completions/fish/ytcc.fish \
+      --zsh scripts/completions/zsh/_ytcc
+  '';
+
+  build-system = with python3Packages; [ hatchling ];
+
+  dependencies = with python3Packages; [
+    yt-dlp
+    click
+    wcwidth
+    defusedxml
+  ];
 
   # Disable tests that touch network or shell out to commands
   disabledTests = [
@@ -62,19 +67,14 @@ python3Packages.buildPythonApplication {
     "test_pipe_mark"
   ];
 
-  postInstall = ''
-    installManPage doc/ytcc.1
-    installShellCompletion --cmd ytcc \
-      --bash scripts/completions/bash/ytcc.completion.sh \
-      --fish scripts/completions/fish/ytcc.fish \
-      --zsh scripts/completions/zsh/_ytcc
-  '';
+  pyproject = true;
+  pythonRelaxDeps = [ "click" ];
 
   meta = {
     description = "Command Line tool to keep track of your favourite YouTube channels without signing up for a Google account";
     homepage = "https://github.com/woefe/ytcc";
     license = lib.licenses.gpl3Plus;
-    mainProgram = "ytcc";
     maintainers = with lib.maintainers; [ marius851000 ];
+    mainProgram = "ytcc";
   };
 }

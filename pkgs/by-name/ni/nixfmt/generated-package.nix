@@ -1,7 +1,7 @@
 # This file has been autogenerate with cabal2nix.
 # Update via ./update.sh
 {
-  mkDerivation,
+  lib,
   base,
   bytestring,
   cmdargs,
@@ -10,8 +10,8 @@
   fetchzip,
   file-embed,
   filepath,
-  lib,
   megaparsec,
+  mkDerivation,
   mtl,
   parser-combinators,
   pretty-simple,
@@ -25,23 +25,14 @@
 mkDerivation {
   pname = "nixfmt";
   version = "1.4.0";
+
   src = fetchzip {
     url = "https://github.com/nixos/nixfmt/archive/v1.4.0.tar.gz";
     sha256 = "123mc70ly0glvm8nm4a52fz4xa1619gf1g5k2m45cazb1d6di6z7";
   };
-  isLibrary = true;
-  isExecutable = true;
-  libraryHaskellDepends = [
-    base
-    containers
-    megaparsec
-    mtl
-    parser-combinators
-    pretty-simple
-    scientific
-    text
-    transformers
-  ];
+
+  description = "Official formatter for Nix code";
+
   executableHaskellDepends = [
     base
     bytestring
@@ -55,9 +46,24 @@ mkDerivation {
     transformers
     unix
   ];
-  jailbreak = true;
+
   homepage = "https://github.com/NixOS/nixfmt";
-  description = "Official formatter for Nix code";
+  isExecutable = true;
+  isLibrary = true;
+  jailbreak = true;
+
+  libraryHaskellDepends = [
+    base
+    containers
+    megaparsec
+    mtl
+    parser-combinators
+    pretty-simple
+    scientific
+    text
+    transformers
+  ];
+
   license = lib.meta.getLicenseFromSpdxId "MPL-2.0";
   mainProgram = "nixfmt";
 }

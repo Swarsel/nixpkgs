@@ -9,7 +9,6 @@
 buildPythonPackage rec {
   pname = "pyebus";
   version = "1.4.0";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
@@ -17,12 +16,10 @@ buildPythonPackage rec {
   };
 
   nativeBuildInputs = [ poetry-core ];
-
   propagatedBuildInputs = [ anytree ];
-
   # https://github.com/c0fec0de/pyebus/issues/3
   doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "pyebus" ];
 
   meta = {

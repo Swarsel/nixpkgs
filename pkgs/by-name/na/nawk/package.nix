@@ -19,16 +19,14 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-ndhSOl4xEwbDQ51g7yuwe3MOfmQrzePuanmyXYhWp+I=";
   };
 
-  depsBuildBuild = [ buildPackages.stdenv.cc ];
+  outputs = [
+    "out"
+    "man"
+  ];
 
   nativeBuildInputs = [
     bison
     installShellFiles
-  ];
-
-  outputs = [
-    "out"
-    "man"
   ];
 
   makeFlags = [
@@ -45,22 +43,27 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  depsBuildBuild = [ buildPackages.stdenv.cc ];
   passthru.updateScript = nix-update-script { };
 
   meta = {
-    homepage = "https://github.com/onetrueawk/awk";
     description = "One, true implementation of AWK";
+
     longDescription = ''
       This is the version of awk described in "The AWK Programming Language",
       Second Edition, by Al Aho, Brian Kernighan, and Peter Weinberger
       (Addison-Wesley, 2023, ISBN 0-13-826972-6).
     '';
+
+    homepage = "https://github.com/onetrueawk/awk";
     changelog = "https://github.com/onetrueawk/awk/blob/${finalAttrs.src.rev}/ChangeLog";
     license = lib.licenses.mit;
-    mainProgram = "nawk";
+
     maintainers = with lib.maintainers; [
       konimex
     ];
+
     platforms = lib.platforms.all;
+    mainProgram = "nawk";
   };
 })

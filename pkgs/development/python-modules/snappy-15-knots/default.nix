@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   setuptools,
   snappy-manifolds,
 }:
@@ -9,7 +9,6 @@
 buildPythonPackage rec {
   pname = "snappy-15-knots";
   version = "1.2.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "3-manifolds";
@@ -19,9 +18,8 @@ buildPythonPackage rec {
   };
 
   build-system = [ setuptools ];
-
   dependencies = [ snappy-manifolds ];
-
+  pyproject = true;
   pythonImportsCheck = [ "snappy_15_knots" ];
 
   meta = {
@@ -29,6 +27,7 @@ buildPythonPackage rec {
     homepage = "https://snappy.computop.org";
     changelog = "https://github.com/3-manifolds/snappy_15_knots/releases/tag/${src.tag}";
     license = lib.licenses.gpl2Plus;
+
     maintainers = with lib.maintainers; [
       noiioiu
       alejo7797

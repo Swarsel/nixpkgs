@@ -9,7 +9,6 @@
 buildPythonPackage rec {
   pname = "parameter-expansion-patched";
   version = "0.3.1";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
@@ -17,9 +16,8 @@ buildPythonPackage rec {
   };
 
   nativeBuildInputs = [ setuptools-scm ];
-
   nativeCheckInputs = [ pytestCheckHook ];
-
+  format = "setuptools";
   pythonImportsCheck = [ "parameter_expansion" ];
 
   meta = {

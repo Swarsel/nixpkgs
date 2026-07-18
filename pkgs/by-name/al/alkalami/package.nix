@@ -1,8 +1,8 @@
 {
   lib,
-  stdenvNoCC,
   fetchzip,
   installFonts,
+  stdenvNoCC,
 }:
 
 stdenvNoCC.mkDerivation (finalAttrs: {
@@ -27,8 +27,8 @@ stdenvNoCC.mkDerivation (finalAttrs: {
   '';
 
   meta = {
-    homepage = "https://software.sil.org/alkalami/";
     description = "Font for Arabic-based writing systems in the Kano region of Nigeria and in Niger";
+    homepage = "https://software.sil.org/alkalami/";
     license = lib.licenses.ofl;
     maintainers = [ lib.maintainers.vbgl ];
     platforms = lib.platforms.all;

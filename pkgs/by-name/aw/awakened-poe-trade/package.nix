@@ -1,13 +1,12 @@
 {
   lib,
-  fetchurl,
   stdenv,
+  fetchurl,
   appimageTools,
-  makeWrapper,
   electron,
-  libxtst,
   libxt,
-
+  libxtst,
+  makeWrapper,
   nix-update-script,
 }:
 
@@ -19,18 +18,6 @@ stdenv.mkDerivation (finalAttrs: {
     url = "https://github.com/SnosMe/awakened-poe-trade/releases/download/v${finalAttrs.version}/Awakened-PoE-Trade-${finalAttrs.version}.AppImage";
     hash = "sha256-p/XDWnE9lm/LwT3r/lhQWtEJ3YoaGRFd4Rv7RbdDIeg=";
   };
-
-  passthru = {
-    appImageContents = appimageTools.extractType2 {
-      inherit (finalAttrs) pname src version;
-    };
-
-    updateScript = nix-update-script { };
-  };
-
-  dontUnpack = true;
-  dontConfigure = true;
-  dontBuild = true;
 
   nativeBuildInputs = [ makeWrapper ];
 
@@ -59,15 +46,29 @@ stdenv.mkDerivation (finalAttrs: {
       }"
   '';
 
+  dontBuild = true;
+  dontConfigure = true;
+  dontUnpack = true;
+
+  passthru = {
+    appImageContents = appimageTools.extractType2 {
+      inherit (finalAttrs) pname src version;
+    };
+
+    updateScript = nix-update-script { };
+  };
+
   meta = {
     description = "Path of Exile trading app for price checking";
     homepage = "https://github.com/SnosMe/awakened-poe-trade";
     changelog = "https://github.com/SnosMe/awakened-poe-trade/releases/tag/v${finalAttrs.version}";
-    sourceProvenance = [ lib.sourceTypes.binaryNativeCode ];
     license = lib.licenses.mit;
+    sourceProvenance = [ lib.sourceTypes.binaryNativeCode ];
+
     maintainers = with lib.maintainers; [
       mreichardt95
     ];
+
     platforms = with lib.platforms; linux;
     mainProgram = "awakened-poe-trade";
   };

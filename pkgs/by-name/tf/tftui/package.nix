@@ -9,7 +9,6 @@
 python3Packages.buildPythonApplication (finalAttrs: {
   pname = "tftui";
   version = "0.13.5";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "idoavrah";
@@ -18,14 +17,14 @@ python3Packages.buildPythonApplication (finalAttrs: {
     hash = "sha256-xOlPuPVwfVT7jfBJPqZ5FbOs80HE0k2ZqcA+Jcxh9p4=";
   };
 
-  pythonRelaxDeps = [
-    "posthog"
-    "textual"
-  ];
-
   nativeBuildInputs = [
     makeWrapper
   ];
+
+  postInstall = lib.optionalString (!enableUsageTracking) ''
+    wrapProgram $out/bin/tftui \
+      --add-flags "--disable-usage-tracking"
+  '';
 
   build-system = [ python3Packages.poetry-core ];
 
@@ -37,24 +36,28 @@ python3Packages.buildPythonApplication (finalAttrs: {
     textual
   ];
 
+  pyproject = true;
+
   pythonImportsCheck = [
     "tftui"
   ];
 
-  postInstall = lib.optionalString (!enableUsageTracking) ''
-    wrapProgram $out/bin/tftui \
-      --add-flags "--disable-usage-tracking"
-  '';
+  pythonRelaxDeps = [
+    "posthog"
+    "textual"
+  ];
 
   meta = {
     description = "Textual UI to view and interact with Terraform state";
     homepage = "https://github.com/idoavrah/terraform-tui";
     changelog = "https://github.com/idoavrah/terraform-tui/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.asl20;
+
     maintainers = with lib.maintainers; [
       cdepillabout
       wraithm
     ];
+
     mainProgram = "tftui";
   };
 })

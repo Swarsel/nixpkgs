@@ -1,11 +1,11 @@
 {
   lib,
   stdenv,
-  buildPythonPackage,
-  fetchPypi,
-  cachelib,
-  flask,
   asgiref,
+  buildPythonPackage,
+  cachelib,
+  fetchPypi,
+  flask,
   pytest-asyncio,
   pytest-xprocess,
   pytestCheckHook,
@@ -14,12 +14,11 @@
 buildPythonPackage rec {
   pname = "flask-caching";
   version = "2.3.1";
-  format = "setuptools";
 
   src = fetchPypi {
-    pname = "flask_caching";
     inherit version;
     hash = "sha256-Zdf9G07r+BD4RN595iWCVLMkgpbuQpvcs/dBvL97mMk=";
+    pname = "flask_caching";
   };
 
   postPatch = ''
@@ -52,11 +51,13 @@ buildPythonPackage rec {
     "test_cached_view_class"
   ];
 
+  format = "setuptools";
+
   meta = {
     description = "Caching extension for Flask";
     homepage = "https://github.com/pallets-eco/flask-caching";
     changelog = "https://github.com/pallets-eco/flask-caching/blob/v${version}/CHANGES.rst";
-    maintainers = [ ];
     license = lib.licenses.bsd3;
+    maintainers = [ ];
   };
 }

@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule (finalAttrs: {
@@ -16,14 +16,13 @@ buildGoModule (finalAttrs: {
   };
 
   vendorHash = "sha256-RO/Xn8gDqCWVfI0yFuqHBj4rYh/fIMAJ80kKFj1ZFwI=";
+  # Some tests are failing because of wrong filename/path
+  doCheck = false;
 
   ldflags = [
     "-w"
     "-s"
   ];
-
-  # Some tests are failing because of wrong filename/path
-  doCheck = false;
 
   meta = {
     description = "Tool for situational awareness of cloud penetration tests";

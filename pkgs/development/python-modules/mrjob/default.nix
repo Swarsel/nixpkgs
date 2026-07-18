@@ -1,29 +1,25 @@
 {
   lib,
-  buildPythonPackage,
-  pythonAtLeast,
   fetchFromGitHub,
-
-  # build-system
-  setuptools,
-
-  # propagates
-  distutils,
-  pyyaml,
-  standard-pipes,
-
   # optionals
   boto3,
   botocore,
+  buildPythonPackage,
+  # propagates
+  distutils,
   google-cloud-dataproc,
   google-cloud-logging,
   google-cloud-storage,
-  python-rapidjson,
-  simplejson,
-  ujson,
-
   # tests
   pyspark,
+  python-rapidjson,
+  pythonAtLeast,
+  pyyaml,
+  # build-system
+  setuptools,
+  simplejson,
+  standard-pipes,
+  ujson,
   unittestCheckHook,
   warcio,
 }:
@@ -31,7 +27,6 @@
 buildPythonPackage rec {
   pname = "mrjob";
   version = "0.7.4";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "Yelp";
@@ -39,6 +34,15 @@ buildPythonPackage rec {
     tag = "v${version}";
     hash = "sha256-Yp4yUx6tkyGB622I9y+AWK2AkIDVGKQPMM+LtB/M3uo=";
   };
+
+  doCheck = false; # failing tests
+
+  nativeCheckInputs = [
+    pyspark
+    unittestCheckHook
+    warcio
+  ]
+  ++ lib.concatAttrValues optional-dependencies;
 
   build-system = [
     setuptools
@@ -55,31 +59,25 @@ buildPythonPackage rec {
       boto3
       botocore
     ];
+
     google = [
       google-cloud-dataproc
       google-cloud-logging
       google-cloud-storage
     ];
+
     rapidjson = [ python-rapidjson ];
     simplejson = [ simplejson ];
     ujson = [ ujson ];
   };
 
-  doCheck = false; # failing tests
-
-  nativeCheckInputs = [
-    pyspark
-    unittestCheckHook
-    warcio
-  ]
-  ++ lib.concatAttrValues optional-dependencies;
-
+  pyproject = true;
   unittestFlagsArray = [ "-v" ];
 
   meta = {
-    changelog = "https://github.com/Yelp/mrjob/blob/v${version}/CHANGES.txt";
     description = "Run MapReduce jobs on Hadoop or Amazon Web Services";
     homepage = "https://github.com/Yelp/mrjob";
+    changelog = "https://github.com/Yelp/mrjob/blob/v${version}/CHANGES.txt";
     license = lib.licenses.asl20;
     maintainers = [ ];
   };

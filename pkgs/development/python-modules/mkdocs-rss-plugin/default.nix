@@ -1,9 +1,9 @@
 {
   lib,
+  fetchFromGitHub,
   buildPythonPackage,
   cachecontrol,
   feedparser,
-  fetchFromGitHub,
   gitpython,
   jsonfeed,
   mkdocs,
@@ -17,7 +17,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "mkdocs-rss-plugin";
   version = "1.17.9";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "Guts";
@@ -25,6 +24,14 @@ buildPythonPackage (finalAttrs: {
     tag = finalAttrs.version;
     hash = "sha256-rUMjS0+895SsU7qNckLL3BprUQa/3lJDjpwhMkF0jYg=";
   };
+
+  nativeCheckInputs = [
+    feedparser
+    jsonfeed
+    pytest-cov-stub
+    pytestCheckHook
+    validator-collection
+  ];
 
   build-system = [
     setuptools
@@ -38,15 +45,12 @@ buildPythonPackage (finalAttrs: {
   ]
   ++ cachecontrol.optional-dependencies.filecache;
 
-  nativeCheckInputs = [
-    feedparser
-    jsonfeed
-    pytest-cov-stub
-    pytestCheckHook
-    validator-collection
+  disabledTestPaths = [
+    # Tests require network access
+    "tests/test_integrations_material_social_cards.py"
+    "tests/test_build_no_git.py"
+    "tests/test_build.py"
   ];
-
-  pythonImportsCheck = [ "mkdocs_rss_plugin" ];
 
   disabledTests = [
     # Tests require network access
@@ -59,12 +63,8 @@ buildPythonPackage (finalAttrs: {
     "test_simple_build"
   ];
 
-  disabledTestPaths = [
-    # Tests require network access
-    "tests/test_integrations_material_social_cards.py"
-    "tests/test_build_no_git.py"
-    "tests/test_build.py"
-  ];
+  pyproject = true;
+  pythonImportsCheck = [ "mkdocs_rss_plugin" ];
 
   meta = {
     description = "MkDocs plugin to generate a RSS feeds for created and updated pages, using git log and YAML frontmatter";

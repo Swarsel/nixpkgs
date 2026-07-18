@@ -1,15 +1,15 @@
 {
-  fetchFromGitLab,
-  rustPlatform,
   lib,
-  pnpm_10,
+  fetchFromGitLab,
   fetchPnpmDeps,
-  pnpmConfigHook,
-  stdenvNoCC,
-  nodejs-slim_22,
   ffmpeg,
   imagemagick,
   makeWrapper,
+  nodejs-slim_22,
+  pnpmConfigHook,
+  pnpm_10,
+  rustPlatform,
+  stdenvNoCC,
 }:
 let
   izzy = rustPlatform.buildRustPackage rec {
@@ -51,20 +51,6 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     hash = "sha256-wQ3dqLc0l2BmLGDYrbWxX2mPwO/Tqz0fY/fOQTEUv24=";
   };
 
-  pnpmDeps = fetchPnpmDeps {
-    inherit (finalAttrs) pname version src;
-    pnpm = pnpm';
-    fetcherVersion = 4;
-    hash = "sha256-5ZMa7/3nbG1xsTfd09oh+NTU+FFhd0lV425pU3s9bZE=";
-  };
-
-  nativeBuildInputs = [
-    nodejs-slim
-    pnpmConfigHook
-    pnpm'
-    makeWrapper
-  ];
-
   patches = [
     ./allow-use-of-systemd-temp-path.patch
   ];
@@ -73,6 +59,13 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     substituteInPlace server/binaries/izzy.ts \
       --replace-fail 'chmodSync(izzyPath, "111");' ""
   '';
+
+  nativeBuildInputs = [
+    nodejs-slim
+    pnpmConfigHook
+    pnpm'
+    makeWrapper
+  ];
 
   buildPhase = ''
     runHook preBuild
@@ -105,12 +98,19 @@ stdenvNoCC.mkDerivation (finalAttrs: {
       }"
   '';
 
+  pnpmDeps = fetchPnpmDeps {
+    inherit (finalAttrs) pname version src;
+    fetcherVersion = 4;
+    hash = "sha256-5ZMa7/3nbG1xsTfd09oh+NTU+FFhd0lV425pU3s9bZE=";
+    pnpm = pnpm';
+  };
+
   meta = {
+    inherit (nodejs-slim.meta) platforms;
     description = "Self-hosted organizer for adult videos and imagery";
     homepage = "https://gitlab.com/porn-vault/porn-vault";
     license = lib.licenses.gpl3Plus;
     maintainers = [ lib.maintainers.luNeder ];
-    inherit (nodejs-slim.meta) platforms;
     mainProgram = "porn-vault";
   };
 })

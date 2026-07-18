@@ -1,13 +1,12 @@
 {
   lib,
-  python3,
   fetchFromGitHub,
+  python3,
 }:
 
 python3.pkgs.buildPythonApplication (finalAttrs: {
   pname = "cloudflare-dyndns";
   version = "5.4";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "kissgyorgy";
@@ -15,6 +14,10 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     rev = "v${finalAttrs.version}";
     hash = "sha256-tCZX9CKDwGAZ8/rwI764uuE9SQ1A5WhVoqgUegJ19g4=";
   };
+
+  nativeCheckInputs = with python3.pkgs; [
+    pytestCheckHook
+  ];
 
   build-system = with python3.pkgs; [
     hatchling
@@ -27,13 +30,11 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     truststore
   ];
 
-  nativeCheckInputs = with python3.pkgs; [
-    pytestCheckHook
-  ];
-
   disabledTests = [
     "test_get_ipv4"
   ];
+
+  pyproject = true;
 
   meta = {
     description = "CloudFlare Dynamic DNS client";

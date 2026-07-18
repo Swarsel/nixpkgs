@@ -1,10 +1,10 @@
 {
   lib,
-  rustPlatform,
-  fetchCrate,
-  testers,
-  nix-update-script,
   dotslash,
+  fetchCrate,
+  nix-update-script,
+  rustPlatform,
+  testers,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -20,15 +20,16 @@ rustPlatform.buildRustPackage (finalAttrs: {
   doCheck = false; # http tests
 
   passthru = {
-    updateScript = nix-update-script { };
     tests = testers.testVersion {
       package = dotslash;
     };
+
+    updateScript = nix-update-script { };
   };
 
   meta = {
-    homepage = "https://dotslash-cli.com";
     description = "Simplified multi-platform executable deployment";
+
     longDescription = ''
       DotSlash is a command-line tool that is designed to facilitate fetching an
       executable, verifying it, and then running it. It maintains a local cache
@@ -38,11 +39,15 @@ rustPlatform.buildRustPackage (finalAttrs: {
       your developers seamlessly get the tools they need, ensuring consistent
       builds across platforms.
     '';
+
+    homepage = "https://dotslash-cli.com";
+
     license = with lib.licenses; [
       asl20 # or
       mit
     ];
-    mainProgram = "dotslash";
+
     maintainers = with lib.maintainers; [ thoughtpolice ];
+    mainProgram = "dotslash";
   };
 })

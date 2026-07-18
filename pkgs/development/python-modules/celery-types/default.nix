@@ -9,12 +9,11 @@
 buildPythonPackage rec {
   pname = "celery-types";
   version = "0.26.0";
-  pyproject = true;
 
   src = fetchPypi {
-    pname = "celery_types";
     inherit version;
     hash = "sha256-+jGBNv2tg/g/FTHe7Nn+Zktd///ynzwx6RIKRrjjkI8=";
+    pname = "celery_types";
   };
 
   postPatch = ''
@@ -22,11 +21,10 @@ buildPythonPackage rec {
       --replace-fail "uv_build>=0.9.18,<0.10.0" "uv_build"
   '';
 
-  build-system = [ uv-build ];
-
-  dependencies = [ typing-extensions ];
-
   doCheck = false;
+  build-system = [ uv-build ];
+  dependencies = [ typing-extensions ];
+  pyproject = true;
 
   meta = {
     description = "PEP-484 stubs for Celery";

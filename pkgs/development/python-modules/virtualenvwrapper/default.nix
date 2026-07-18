@@ -5,42 +5,22 @@
   pbr,
   pip,
   pkgs,
-  stevedore,
-  virtualenv,
-  virtualenv-clone,
   python,
   setuptools,
   setuptools-scm,
+  stevedore,
+  virtualenv,
+  virtualenv-clone,
 }:
 
 buildPythonPackage rec {
   pname = "virtualenvwrapper";
   version = "6.1.1";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
     hash = "sha256-ES5+o0qaPOkKrqVBgvDTr+9NGpE+63XpiiY7SXjNc8Y=";
   };
-
-  # pip depend on $HOME setting
-  preConfigure = "export HOME=$TMPDIR";
-
-  build-system = [
-    setuptools
-    setuptools-scm
-  ];
-
-  buildInputs = [
-    pbr
-    pip
-    pkgs.which
-  ];
-  propagatedBuildInputs = [
-    stevedore
-    virtualenv
-    virtualenv-clone
-  ];
 
   postPatch = ''
     for file in "virtualenvwrapper.sh" "virtualenvwrapper_lazy.sh"; do
@@ -60,6 +40,21 @@ buildPythonPackage rec {
       substituteInPlace "$file" --replace '"$VIRTUALENVWRAPPER_PYTHON" -' 'env PYTHONPATH="$VIRTUALENVWRAPPER_PYTHONPATH" "$VIRTUALENVWRAPPER_PYTHON" -'
     done
   '';
+
+  buildInputs = [
+    pbr
+    pip
+    pkgs.which
+  ];
+
+  propagatedBuildInputs = [
+    stevedore
+    virtualenv
+    virtualenv-clone
+  ];
+
+  # pip depend on $HOME setting
+  preConfigure = "export HOME=$TMPDIR";
 
   postInstall = ''
         # This might look like a dirty hack but we can't use the makeWrapper function because
@@ -82,6 +77,13 @@ buildPythonPackage rec {
           chmod +x "$wrapper"
         done
   '';
+
+  build-system = [
+    setuptools
+    setuptools-scm
+  ];
+
+  pyproject = true;
 
   meta = {
     description = "Enhancements to virtualenv";

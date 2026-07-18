@@ -1,17 +1,18 @@
 {
   lib,
-  rustPlatform,
-  fetchFromGitHub,
-  pkg-config,
-  openssl,
   stdenv,
+  fetchFromGitHub,
   installShellFiles,
   nix-update-script,
+  openssl,
+  pkg-config,
+  rustPlatform,
   versionCheckHook,
 }:
 rustPlatform.buildRustPackage (finalAttrs: {
   pname = "dioxionary";
   version = "1.2.0";
+
   src = fetchFromGitHub {
     owner = "vaaandark";
     repo = "dioxionary";
@@ -21,13 +22,19 @@ rustPlatform.buildRustPackage (finalAttrs: {
     fetchSubmodules = true;
   };
 
-  cargoHash = "sha256-YFx8V86awxVUX83bNLHRP6nIBZGHck/0ywriBgVqvxY=";
-
   nativeBuildInputs = [
     pkg-config
     installShellFiles
   ];
+
   buildInputs = [ openssl.dev ];
+  cargoHash = "sha256-YFx8V86awxVUX83bNLHRP6nIBZGHck/0ywriBgVqvxY=";
+
+  checkFlags = [
+    # skip these tests since they require internet access
+    "--skip=dict::online::test::look_up_online_by_chinese"
+    "--skip=dict::online::test::look_up_online_by_english"
+  ];
 
   postInstall = lib.optionalString (stdenv.buildPlatform.canExecute stdenv.hostPlatform) ''
     installShellCompletion --cmd dioxionary \
@@ -36,15 +43,8 @@ rustPlatform.buildRustPackage (finalAttrs: {
       --fish <($out/bin/dioxionary completion fish)
   '';
 
-  checkFlags = [
-    # skip these tests since they require internet access
-    "--skip=dict::online::test::look_up_online_by_chinese"
-    "--skip=dict::online::test::look_up_online_by_english"
-  ];
-
-  nativeInstallCheckInputs = [ versionCheckHook ];
   doInstallCheck = true;
-
+  nativeInstallCheckInputs = [ versionCheckHook ];
   passthru.updateScript = nix-update-script { };
 
   meta = {

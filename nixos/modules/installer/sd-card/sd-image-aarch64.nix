@@ -13,9 +13,6 @@
     ./sd-image.nix
   ];
 
-  boot.loader.grub.enable = false;
-  boot.loader.generic-extlinux-compatible.enable = true;
-
   boot.consoleLogLevel = lib.mkDefault 7;
 
   # The serial ports listed here are:
@@ -26,6 +23,9 @@
     "console=ttyAMA0,115200n8"
     "console=tty0"
   ];
+
+  boot.loader.generic-extlinux-compatible.enable = true;
+  boot.loader.grub.enable = false;
 
   sdImage = {
     populateFirmwareCommands =
@@ -107,6 +107,7 @@
         cp ${pkgs.raspberrypifw}/share/raspberrypi/boot/bcm2712-rpi-cm5l-cm4io.dtb firmware/
         cp ${pkgs.raspberrypifw}/share/raspberrypi/boot/bcm2712-rpi-cm5l-cm5io.dtb firmware/
       '';
+
     populateRootCommands = ''
       mkdir -p ./files/boot
       ${config.boot.loader.generic-extlinux-compatible.populateCmd} -c ${config.system.build.toplevel} -d ./files/boot

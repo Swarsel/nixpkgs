@@ -2,22 +2,22 @@
   lib,
   stdenv,
   fetchFromGitHub,
+  blueprint-compiler,
+  cargo,
+  dbus,
+  desktop-file-utils,
+  glib,
+  gst_all_1,
+  libadwaita,
   meson,
   ninja,
-  blueprint-compiler,
-  wrapGAppsHook4,
-  desktop-file-utils,
-  rustPlatform,
-  cargo,
-  rustc,
-  pkg-config,
-  glib,
-  libadwaita,
-  sqlite,
-  gst_all_1,
-  dbus,
-  openssl,
   nix-update-script,
+  openssl,
+  pkg-config,
+  rustPlatform,
+  rustc,
+  sqlite,
+  wrapGAppsHook4,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -29,11 +29,6 @@ stdenv.mkDerivation (finalAttrs: {
     repo = "musicus";
     tag = "v${finalAttrs.version}";
     hash = "sha256-6+JcgseNgHN7q6v0+gcDmZKA7wr52QVG1lncxNynORU=";
-  };
-
-  cargoDeps = rustPlatform.fetchCargoVendor {
-    inherit (finalAttrs) pname version src;
-    hash = "sha256-PWqt5G+OjijyAoSj61iUjWBT6bV5d54okF/vm0+hWsA=";
   };
 
   nativeBuildInputs = [
@@ -60,14 +55,19 @@ stdenv.mkDerivation (finalAttrs: {
     gst_all_1.gst-plugins-good
   ];
 
+  cargoDeps = rustPlatform.fetchCargoVendor {
+    inherit (finalAttrs) pname version src;
+    hash = "sha256-PWqt5G+OjijyAoSj61iUjWBT6bV5d54okF/vm0+hWsA=";
+  };
+
   passthru.updateScript = nix-update-script { };
 
   meta = {
-    homepage = "https://github.com/johrpan/musicus";
     description = "Classical music player and organizer";
-    mainProgram = "musicus";
+    homepage = "https://github.com/johrpan/musicus";
     license = lib.licenses.gpl3Plus;
-    platforms = lib.platforms.linux;
     maintainers = [ ];
+    platforms = lib.platforms.linux;
+    mainProgram = "musicus";
   };
 })

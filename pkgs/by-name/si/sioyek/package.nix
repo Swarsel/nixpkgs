@@ -1,17 +1,17 @@
 {
   lib,
   stdenv,
-  installShellFiles,
   fetchFromGitHub,
   freetype,
-  unstableGitUpdater,
   gumbo,
   harfbuzz,
+  installShellFiles,
   jbig2dec,
   mujs,
   mupdf,
   openjpeg,
   qt6,
+  unstableGitUpdater,
 }:
 stdenv.mkDerivation (finalAttrs: {
   pname = "sioyek";
@@ -23,6 +23,21 @@ stdenv.mkDerivation (finalAttrs: {
     rev = "8c4008653f3279633fe1e7e2a1be057aa210fe73";
     hash = "sha256-5GJpXyLhRziSWJLrDIfzXZS4QPMqiRhEp6gcPoSy1/8=";
   };
+
+  postPatch = ''
+    substituteInPlace pdf_viewer_build_config.pro \
+      --replace-fail "-lmupdf-threads" "-lgumbo -lharfbuzz -lfreetype -ljbig2dec -ljpeg -lopenjp2" \
+      --replace-fail "-lmupdf-third" ""
+    substituteInPlace pdf_viewer/main.cpp \
+      --replace-fail "/usr/share/sioyek" "$out/share" \
+      --replace-fail "/etc/sioyek" "$out/etc"
+  '';
+
+  nativeBuildInputs = [
+    installShellFiles
+    qt6.qmake
+    qt6.wrapQtAppsHook
+  ];
 
   buildInputs = [
     gumbo
@@ -37,23 +52,6 @@ stdenv.mkDerivation (finalAttrs: {
   ]
   ++ lib.optionals stdenv.hostPlatform.isLinux [ qt6.qtwayland ]
   ++ lib.optionals stdenv.hostPlatform.isDarwin [ freetype ];
-
-  nativeBuildInputs = [
-    installShellFiles
-    qt6.qmake
-    qt6.wrapQtAppsHook
-  ];
-
-  qmakeFlags = lib.optionals stdenv.hostPlatform.isDarwin [ "CONFIG+=non_portable" ];
-
-  postPatch = ''
-    substituteInPlace pdf_viewer_build_config.pro \
-      --replace-fail "-lmupdf-threads" "-lgumbo -lharfbuzz -lfreetype -ljbig2dec -ljpeg -lopenjp2" \
-      --replace-fail "-lmupdf-third" ""
-    substituteInPlace pdf_viewer/main.cpp \
-      --replace-fail "/usr/share/sioyek" "$out/share" \
-      --replace-fail "/etc/sioyek" "$out/etc"
-  '';
 
   postInstall =
     if stdenv.hostPlatform.isDarwin then
@@ -73,26 +71,30 @@ stdenv.mkDerivation (finalAttrs: {
         installManPage resources/sioyek.1
       '';
 
+  qmakeFlags = lib.optionals stdenv.hostPlatform.isDarwin [ "CONFIG+=non_portable" ];
+
   passthru.updateScript = unstableGitUpdater {
     branch = "development";
     tagPrefix = "v";
   };
 
   meta = {
-    homepage = "https://sioyek.info/";
     description = "PDF viewer designed for research papers and technical books";
-    mainProgram = "sioyek";
+    homepage = "https://sioyek.info/";
     # no changelog for unstable version, change back to
     # https://github.com/ahrm/sioyek/releases/tag/v${finalAttrs.version}
     # once stable again
     changelog = "https://github.com/ahrm/sioyek/releases";
     license = lib.licenses.gpl3Only;
+
     maintainers = with lib.maintainers; [
       podocarp
       stephen-huan
       xyven1
       stephsi
     ];
+
     platforms = lib.platforms.unix;
+    mainProgram = "sioyek";
   };
 })

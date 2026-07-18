@@ -1,22 +1,17 @@
 {
   stdenv,
-  go,
   docker,
+  go,
   nixosTests,
 }:
 
 stdenv.mkDerivation {
-  name = "tarsum";
-
   nativeBuildInputs = [ go ];
-  disallowedReferences = [ go ];
-
-  dontUnpack = true;
 
   env = {
     CGO_ENABLED = 0;
-    GOFLAGS = "-trimpath";
     GO111MODULE = "off";
+    GOFLAGS = "-trimpath";
   };
 
   buildPhase = ''
@@ -40,12 +35,16 @@ stdenv.mkDerivation {
     runHook postInstall
   '';
 
+  disallowedReferences = [ go ];
+  dontUnpack = true;
+  name = "tarsum";
+
   passthru = {
     tests = {
       dockerTools = nixosTests.docker-tools;
     };
   };
 
-  meta.platforms = go.meta.platforms;
   meta.mainProgram = "tarsum";
+  meta.platforms = go.meta.platforms;
 }

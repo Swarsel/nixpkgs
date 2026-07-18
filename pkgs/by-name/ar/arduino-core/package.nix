@@ -1,7 +1,7 @@
 {
   lib,
-  buildFHSEnv,
   arduino-core-unwrapped,
+  buildFHSEnv,
   withGui ? false,
   withTeensyduino ? false,
 }:
@@ -9,21 +9,8 @@ let
   arduino-unwrapped = arduino-core-unwrapped.override { inherit withGui withTeensyduino; };
 in
 buildFHSEnv {
-  pname = "arduino";
   inherit (arduino-core-unwrapped) version;
-
-  targetPkgs =
-    pkgs:
-    (with pkgs; [
-      ncurses
-      arduino-unwrapped
-      zlib
-      (python3.withPackages (
-        p: with p; [
-          pyserial
-        ]
-      ))
-    ]);
+  pname = "arduino";
 
   extraInstallCommands = ''
     ${lib.optionalString withGui ''
@@ -40,6 +27,19 @@ buildFHSEnv {
   '';
 
   runScript = "arduino";
+
+  targetPkgs =
+    pkgs:
+    (with pkgs; [
+      ncurses
+      arduino-unwrapped
+      zlib
+      (python3.withPackages (
+        p: with p; [
+          pyserial
+        ]
+      ))
+    ]);
 
   meta = arduino-core-unwrapped.meta;
 }

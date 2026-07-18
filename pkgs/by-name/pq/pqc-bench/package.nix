@@ -1,14 +1,13 @@
 {
   lib,
-  python3,
   fetchFromGitHub,
+  python3,
   writableTmpDirAsHomeHook,
 }:
 
 python3.pkgs.buildPythonApplication (finalAttrs: {
   pname = "pqc-bench";
   version = "0.3.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "csnp";
@@ -17,6 +16,12 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     hash = "sha256-9f4BJ7TM7hpZ4Z8TGwvo4t8Rlgx2u9U7xsE+5aCxWI8=";
   };
 
+  nativeCheckInputs = with python3.pkgs; [
+    pytest-cov-stub
+    pytestCheckHook
+    writableTmpDirAsHomeHook
+  ];
+
   build-system = with python3.pkgs; [ hatchling ];
 
   dependencies = with python3.pkgs; [
@@ -24,12 +29,7 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     typer
   ];
 
-  nativeCheckInputs = with python3.pkgs; [
-    pytest-cov-stub
-    pytestCheckHook
-    writableTmpDirAsHomeHook
-  ];
-
+  pyproject = true;
   pythonImportsCheck = [ "pqc_bench" ];
 
   meta = {

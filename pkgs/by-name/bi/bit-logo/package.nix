@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   nix-update-script,
 }:
 
@@ -27,10 +27,12 @@ buildGoModule (finalAttrs: {
 
   meta = {
     description = "Terminal ANSI Logo Designer & Font Library";
+
     longDescription = ''
       CLI/TUI logo designer + ANSI font library with gradient colors,
       shadows, and multi-format export.
     '';
+
     homepage = "https://github.com/superstarryeyes/bit";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ yiyu ];

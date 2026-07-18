@@ -1,6 +1,6 @@
 {
-  stdenv,
   lib,
+  stdenv,
   callPackage,
 }:
 let
@@ -8,16 +8,16 @@ let
     arch:
     callPackage (
       {
+        lib,
         bison,
         callPackage,
         curl,
         fetchgit,
         flex,
+        gcc14,
         getopt,
         git,
         gnat14,
-        gcc14,
-        lib,
         perl,
         stdenvNoCC,
         zlib,
@@ -34,29 +34,12 @@ let
           hash = "sha256-MESai+UGo/Ref5t1VcgCrgQk+2ZeZW4Vh0xk3Z5v8ZE=";
           fetchSubmodules = false;
           leaveDotGit = true;
+
           postFetch = ''
             PATH=${lib.makeBinPath [ getopt ]}:$PATH ${stdenv.shell} $out/util/crossgcc/buildgcc -W > $out/.crossgcc_version
             rm -rf $out/.git
           '';
         };
-
-        archives = ./stable.nix;
-
-        nativeBuildInputs = [
-          bison
-          curl
-          git
-          perl
-        ];
-        buildInputs = [
-          flex
-          zlib
-          (if withAda then gnat14 else gcc14)
-        ];
-
-        enableParallelBuilding = true;
-        dontConfigure = true;
-        dontInstall = true;
 
         postPatch = ''
           patchShebangs util/crossgcc/buildgcc
@@ -70,14 +53,33 @@ let
           patchShebangs util/genbuild_h/genbuild_h.sh
         '';
 
+        nativeBuildInputs = [
+          bison
+          curl
+          git
+          perl
+        ];
+
+        buildInputs = [
+          flex
+          zlib
+          (if withAda then gnat14 else gcc14)
+        ];
+
         buildPhase = ''
           export CROSSGCC_VERSION=$(cat .crossgcc_version)
           make crossgcc-${arch} CPUS=$NIX_BUILD_CORES DEST=$out
         '';
 
+        archives = ./stable.nix;
+        dontConfigure = true;
+        dontInstall = true;
+        enableParallelBuilding = true;
+
         meta = {
-          homepage = "https://www.coreboot.org";
           description = "Coreboot toolchain for ${arch} targets";
+          homepage = "https://www.coreboot.org";
+
           license = with lib.licenses; [
             bsd2
             bsd3
@@ -85,10 +87,12 @@ let
             lgpl2Plus
             gpl3Plus
           ];
+
           maintainers = with lib.maintainers; [
             felixsinger
             jmbaur
           ];
+
           platforms = lib.platforms.linux;
         };
       })

@@ -1,31 +1,31 @@
 {
-  stdenv,
   lib,
-  meson,
-  ninja,
+  stdenv,
   fetchFromGitHub,
+  appstream,
+  appstream-glib,
   cairo,
+  desktop-file-utils,
   girara,
+  gitUpdater,
   gtk-mac-integration,
   gumbo,
   jbig2dec,
+  leptonica,
   libjpeg,
+  meson,
+  mujs,
   mupdf,
+  ninja,
   openjpeg,
   pkg-config,
-  zathura_core,
   tesseract,
-  leptonica,
-  mujs,
-  desktop-file-utils,
-  appstream,
-  appstream-glib,
-  gitUpdater,
+  zathura_core,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
-  version = "2026.05.10";
   pname = "zathura-pdf-mupdf";
+  version = "2026.05.10";
 
   src = fetchFromGitHub {
     owner = "pwmt";
@@ -33,6 +33,10 @@ stdenv.mkDerivation (finalAttrs: {
     tag = finalAttrs.version;
     hash = "sha256-aHXTxmhFZrl701PhJ+jdSrWcHHt9obO24I2AInOem2I=";
   };
+
+  postPatch = ''
+    sed -i -e '/^mupdfthird =/d' -e 's/, mupdfthird//g' meson.build
+  '';
 
   nativeBuildInputs = [
     meson
@@ -59,22 +63,19 @@ stdenv.mkDerivation (finalAttrs: {
   ++ lib.optional stdenv.hostPlatform.isDarwin gtk-mac-integration;
 
   env.PKG_CONFIG_ZATHURA_PLUGINDIR = "lib/zathura";
-
-  postPatch = ''
-    sed -i -e '/^mupdfthird =/d' -e 's/, mupdfthird//g' meson.build
-  '';
-
   passthru.updateScript = gitUpdater { };
 
   meta = {
-    homepage = "https://pwmt.org/projects/zathura-pdf-mupdf/";
     description = "Zathura PDF plugin (mupdf)";
+
     longDescription = ''
       The zathura-pdf-mupdf plugin adds PDF support to zathura by
       using the mupdf rendering library.
     '';
+
+    homepage = "https://pwmt.org/projects/zathura-pdf-mupdf/";
     license = lib.licenses.zlib;
-    platforms = lib.platforms.unix;
     maintainers = with lib.maintainers; [ mithicspirit ];
+    platforms = lib.platforms.unix;
   };
 })

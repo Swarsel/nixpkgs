@@ -1,15 +1,15 @@
 {
   lib,
   fetchFromGitHub,
-  wrapGAppsHook3,
-  gettext,
-  python3Packages,
   adwaita-icon-theme,
-  gtk3,
-  glib,
   gdk-pixbuf,
-  gsettings-desktop-schemas,
+  gettext,
+  glib,
   gobject-introspection,
+  gsettings-desktop-schemas,
+  gtk3,
+  python3Packages,
+  wrapGAppsHook3,
 }:
 
 let
@@ -24,7 +24,6 @@ in
 buildPythonApplication (finalAttrs: {
   pname = "sonata";
   version = "1.7.3";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "multani";
@@ -32,6 +31,11 @@ buildPythonApplication (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-eyB+DHcAg1nYjE415VjpPnqZC9embYRhnwXhN2ZVN0o=";
   };
+
+  postPatch = ''
+    # Remove "Local MPD" tab which is not suitable for NixOS.
+    sed -i '/localmpd/d' sonata/consts.py
+  '';
 
   nativeBuildInputs = [
     gettext
@@ -48,6 +52,7 @@ buildPythonApplication (finalAttrs: {
   ];
 
   build-system = [ setuptools ];
+  pyproject = true;
 
   # The optional tagpy dependency (for editing metadata) is not yet
   # included because it's difficult to build.
@@ -58,14 +63,9 @@ buildPythonApplication (finalAttrs: {
     setuptools # pkg_resources is imported during runtime
   ];
 
-  postPatch = ''
-    # Remove "Local MPD" tab which is not suitable for NixOS.
-    sed -i '/localmpd/d' sonata/consts.py
-  '';
-
   meta = {
     description = "Elegant client for the Music Player Daemon";
-    mainProgram = "sonata";
+
     longDescription = ''
       Sonata is an elegant client for the Music Player Daemon.
 
@@ -89,10 +89,12 @@ buildPythonApplication (finalAttrs: {
        - Commandline control
        - Available in 24 languages
     '';
+
     homepage = "https://www.nongnu.org/sonata/";
     changelog = "https://github.com/multani/sonata/blob/${finalAttrs.src.tag}/CHANGELOG";
     license = lib.licenses.gpl3Plus;
     maintainers = [ ];
     platforms = lib.platforms.linux;
+    mainProgram = "sonata";
   };
 })

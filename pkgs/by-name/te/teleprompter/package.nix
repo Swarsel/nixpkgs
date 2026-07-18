@@ -1,26 +1,25 @@
 {
   lib,
-  python3Packages,
   fetchFromGitHub,
-  meson,
-  ninja,
-  pkg-config,
-  wrapGAppsHook4,
+  appstream-glib,
+  desktop-file-utils,
   gettext,
   glib,
-  desktop-file-utils,
-  appstream-glib,
   gobject-introspection,
   libadwaita,
+  meson,
+  ninja,
   nix-update-script,
+  pkg-config,
+  python3Packages,
+  wrapGAppsHook4,
 }:
 let
   version = "1.0.1";
 in
 python3Packages.buildPythonApplication {
-  pname = "teleprompter";
   inherit version;
-  pyproject = false;
+  pname = "teleprompter";
 
   src = fetchFromGitHub {
     owner = "Nokse22";
@@ -41,14 +40,11 @@ python3Packages.buildPythonApplication {
     gobject-introspection
   ];
 
-  pythonPath = [ python3Packages.pygobject3 ];
-
   buildInputs = [ libadwaita ];
-
   dontWrapGApps = true;
-
   makeWrapperArgs = [ "\${gappsWrapperArgs[@]}" ];
-
+  pyproject = false;
+  pythonPath = [ python3Packages.pygobject3 ];
   passthru.updateScript = nix-update-script { };
 
   meta = {
@@ -56,7 +52,7 @@ python3Packages.buildPythonApplication {
     homepage = "https://github.com/Nokse22/teleprompter";
     changelog = "https://github.com/Nokse22/teleprompter/releases/tag/v${version}";
     license = lib.licenses.gpl3Plus;
-    mainProgram = "teleprompter";
     maintainers = [ lib.maintainers.da157 ];
+    mainProgram = "teleprompter";
   };
 }

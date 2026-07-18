@@ -1,6 +1,6 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
   udevCheckHook,
 }:
@@ -20,8 +20,6 @@ stdenv.mkDerivation (finalAttrs: {
     udevCheckHook
   ];
 
-  doInstallCheck = true;
-
   installPhase = ''
     install -Dm755 -t $out/bin easypdkprog
   ''
@@ -29,12 +27,14 @@ stdenv.mkDerivation (finalAttrs: {
     install -Dm644 -t $out/etc/udev/rules.d Linux_udevrules/70-stm32vcp.rules
   '';
 
+  doInstallCheck = true;
+
   meta = {
     description = "Read, write and execute programs on PADAUK microcontroller";
-    mainProgram = "easypdkprog";
     homepage = "https://github.com/free-pdk/easy-pdk-programmer-software";
     license = lib.licenses.gpl3Plus;
     maintainers = with lib.maintainers; [ david-sawatzke ];
     platforms = lib.platforms.unix;
+    mainProgram = "easypdkprog";
   };
 })

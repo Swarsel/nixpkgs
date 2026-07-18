@@ -1,17 +1,17 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
-  makeWrapper,
-  ipcalc,
-  iproute2,
-  util-linux,
   coreutils,
   ethtool,
   gnugrep,
   gnused,
+  ipcalc,
+  iproute2,
+  makeWrapper,
   nvme-cli,
   udevCheckHook,
+  util-linux,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -25,24 +25,6 @@ stdenv.mkDerivation (finalAttrs: {
     sha256 = "sha256-0SRu6p/DsHNNI20mkXJitt/Ee5S2ooiy5hNmD+ndecM=";
   };
 
-  binDeps = lib.makeBinPath [
-    coreutils
-    util-linux
-    gnugrep
-    gnused
-    ethtool
-    ipcalc
-    iproute2
-  ];
-
-  nativeBuildInputs = [
-    makeWrapper
-    udevCheckHook
-  ];
-
-  dontConfigure = true;
-  dontBuild = true;
-
   postPatch = ''
     substitute ${./fix-paths.patch} fix-paths.patch \
       --subst-var out \
@@ -53,7 +35,10 @@ stdenv.mkDerivation (finalAttrs: {
     patch -p1 < ./fix-paths.patch
   '';
 
-  doInstallCheck = true;
+  nativeBuildInputs = [
+    makeWrapper
+    udevCheckHook
+  ];
 
   installPhase = ''
     mkdir -p $out/{bin,etc,lib}
@@ -68,11 +53,26 @@ stdenv.mkDerivation (finalAttrs: {
     done
   '';
 
+  doInstallCheck = true;
+
+  binDeps = lib.makeBinPath [
+    coreutils
+    util-linux
+    gnugrep
+    gnused
+    ethtool
+    ipcalc
+    iproute2
+  ];
+
+  dontBuild = true;
+  dontConfigure = true;
+
   meta = {
-    homepage = "https://github.com/GoogleCloudPlatform/guest-configs";
     description = "Linux Guest Environment for Google Compute Engine";
+    homepage = "https://github.com/GoogleCloudPlatform/guest-configs";
     license = lib.licenses.asl20;
-    platforms = lib.platforms.linux;
     maintainers = [ ];
+    platforms = lib.platforms.linux;
   };
 })

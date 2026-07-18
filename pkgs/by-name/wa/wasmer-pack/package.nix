@@ -1,9 +1,9 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
-  versionCheckHook,
   nix-update-script,
+  rustPlatform,
+  versionCheckHook,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -18,23 +18,19 @@ rustPlatform.buildRustPackage (finalAttrs: {
   };
 
   cargoHash = "sha256-Hz+cvi82K9NJrn2yEkrVa29yhDUiE1gXZOwHFPljqqw=";
-
-  cargoBuildFlags = [ "-p=wasmer-pack-cli" ];
-
   # requires internet access
   doCheck = false;
-
   doInstallCheck = true;
   nativeInstallCheckInputs = [ versionCheckHook ];
-
+  cargoBuildFlags = [ "-p=wasmer-pack-cli" ];
   passthru.updateScript = nix-update-script { };
 
   meta = {
     description = "Import your WebAssembly code just like any other dependency";
-    mainProgram = "wasmer-pack";
     homepage = "https://github.com/wasmerio/wasmer-pack";
     changelog = "https://github.com/wasmerio/wasmer-pack/blob/v${finalAttrs.version}/CHANGELOG.md";
     license = lib.licenses.mit;
     maintainers = [ lib.maintainers.progrm_jarvis ];
+    mainProgram = "wasmer-pack";
   };
 })

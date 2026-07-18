@@ -1,9 +1,9 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
-  versionCheckHook,
   nix-update-script,
+  rustPlatform,
+  versionCheckHook,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -18,28 +18,28 @@ rustPlatform.buildRustPackage (finalAttrs: {
   };
 
   cargoHash = "sha256-vNCqfXsPjb3mph28YuYKpWTs9VHbIcXs6GVn4XgQKtQ=";
+  doInstallCheck = true;
+  nativeInstallCheckInputs = [ versionCheckHook ];
 
   cargoBuildFlags = [
     "--package"
     "xdvdfs-cli"
   ];
+
   cargoTestFlags = [
     "--package"
     "xdvdfs-cli"
   ];
 
-  nativeInstallCheckInputs = [ versionCheckHook ];
   versionCheckProgram = "${placeholder "out"}/bin/xdvdfs";
-  doInstallCheck = true;
-
   passthru.updateScript = nix-update-script { };
 
   meta = {
-    mainProgram = "xdvdfs";
     description = "Original Xbox DVD Filesystem library and management tool";
     homepage = "https://github.com/antangelo/xdvdfs";
     changelog = "https://github.com/antangelo/xdvdfs/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.mit;
     maintainers = [ ];
+    mainProgram = "xdvdfs";
   };
 })

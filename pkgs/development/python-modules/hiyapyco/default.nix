@@ -1,16 +1,15 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
-  pyyaml,
+  buildPythonPackage,
   jinja2,
+  pyyaml,
+  setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "hiyapyco";
   version = "0.7.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "zerwes";
@@ -35,6 +34,7 @@ buildPythonPackage rec {
     runHook postCheck
   '';
 
+  pyproject = true;
   pythonImportsCheck = [ "hiyapyco" ];
 
   meta = {

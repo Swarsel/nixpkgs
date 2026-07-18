@@ -3,22 +3,22 @@
   stdenv,
   fetchFromGitHub,
   autoreconfHook,
-  pkg-config,
   bashNonInteractive,
   curl,
   db,
   gnused,
+  graphicsmagick,
+  libax25,
   libgeotiff,
   libtiff,
-  libxt,
   libxpm,
+  libxt,
   motif,
   pcre2,
   perl,
+  pkg-config,
   proj,
-  graphicsmagick,
   shapelib,
-  libax25,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -31,6 +31,20 @@ stdenv.mkDerivation (finalAttrs: {
     tag = "Release-${finalAttrs.version}";
     hash = "sha256-bpT8F3xURo9jRxBrGGflmcLD6U7F+FTW+VAK1WCgqF4=";
   };
+
+  postPatch = ''
+    patchShebangs --build scripts/lang*.pl
+
+    # checks for files in /usr/bin/
+    substituteInPlace acinclude.m4 \
+      --replace-fail "AC_CHECK_FILE" "# AC_CHECK_FILE"
+    # would pick up builder sed from $PATH
+    substituteInPlace configure.ac \
+      --replace-fail 'AC_DEFINE_UNQUOTED(SED_PATH, "''${sed}", [Path to sed])' \
+                     'AC_DEFINE_UNQUOTED(SED_PATH, "${lib.getExe gnused}", [Path to sed])'
+  '';
+
+  strictDeps = true;
 
   nativeBuildInputs = [
     autoreconfHook
@@ -55,8 +69,6 @@ stdenv.mkDerivation (finalAttrs: {
     libax25
   ];
 
-  strictDeps = true;
-
   configureFlags = [
     "--with-motif-includes=${lib.getDev motif}/include"
     "ac_cv_path_gm=${lib.getExe' graphicsmagick "gm"}"
@@ -68,18 +80,6 @@ stdenv.mkDerivation (finalAttrs: {
   makeFlags = [
     "AR=${stdenv.cc.targetPrefix}ar"
   ];
-
-  postPatch = ''
-    patchShebangs --build scripts/lang*.pl
-
-    # checks for files in /usr/bin/
-    substituteInPlace acinclude.m4 \
-      --replace-fail "AC_CHECK_FILE" "# AC_CHECK_FILE"
-    # would pick up builder sed from $PATH
-    substituteInPlace configure.ac \
-      --replace-fail 'AC_DEFINE_UNQUOTED(SED_PATH, "''${sed}", [Path to sed])' \
-                     'AC_DEFINE_UNQUOTED(SED_PATH, "${lib.getExe gnused}", [Path to sed])'
-  '';
 
   preInstall = ''
     patchShebangs --host --update .

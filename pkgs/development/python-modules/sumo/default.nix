@@ -1,26 +1,25 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
-  spglib,
-  numpy,
-  scipy,
-  h5py,
-  pymatgen,
-  phonopy,
-  matplotlib,
-  seekpath,
+  buildPythonPackage,
   castepxbin,
   colormath,
+  h5py,
   importlib-resources,
+  matplotlib,
+  numpy,
+  phonopy,
+  pymatgen,
   pytestCheckHook,
+  scipy,
+  seekpath,
+  setuptools,
+  spglib,
 }:
 
 buildPythonPackage rec {
   pname = "sumo";
   version = "2.3.12";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "SMTG-UCL";
@@ -28,6 +27,10 @@ buildPythonPackage rec {
     tag = "v${version}";
     hash = "sha256-OdoXcdLT/mTkSw/JOrpYjgvUiNLOnBI4avrjrXhzF3U=";
   };
+
+  nativeCheckInputs = [
+    pytestCheckHook
+  ];
 
   build-system = [
     setuptools
@@ -47,10 +50,7 @@ buildPythonPackage rec {
     importlib-resources
   ];
 
-  nativeCheckInputs = [
-    pytestCheckHook
-  ];
-
+  pyproject = true;
   pythonImportsCheck = [ "sumo" ];
 
   meta = {

@@ -1,16 +1,16 @@
 {
   lib,
   stdenv,
+  ant,
+  dbip-country-lite,
   fetchzip,
+  gettext,
+  gmp,
+  java-service-wrapper,
   jdk_headless,
   jre_minimal,
-  ant,
-  gettext,
-  which,
-  dbip-country-lite,
-  java-service-wrapper,
   makeWrapper,
-  gmp,
+  which,
 }:
 
 let
@@ -35,6 +35,8 @@ stdenv.mkDerivation (finalAttrs: {
   version = "2.12.0";
 
   src = fetchzip {
+    hash = "sha256-gpxmCNtatF6wVvBBB5/LWzgL5e7i8c145dQ/yzldwwQ=";
+
     urls = [
       "https://github.com/i2p/i2p.i2p/archive/i2p-${finalAttrs.version}.tar.gz"
     ]
@@ -43,7 +45,6 @@ stdenv.mkDerivation (finalAttrs: {
       "https://files.i2p-projekt.de/"
       "https://download.i2p2.no/releases/"
     ]);
-    hash = "sha256-gpxmCNtatF6wVvBBB5/LWzgL5e7i8c145dQ/yzldwwQ=";
   };
 
   strictDeps = true;
@@ -118,10 +119,7 @@ stdenv.mkDerivation (finalAttrs: {
     description = "Applications and router for I2P, anonymity over the Internet";
     homepage = "https://geti2p.net";
     changelog = "https://github.com/i2p/i2p.i2p/releases/tag/i2p-${finalAttrs.version}";
-    sourceProvenance = with lib.sourceTypes; [
-      fromSource
-      binaryBytecode # source bundles dependencies as jars
-    ];
+
     license = with lib.licenses; [
       asl20
       boost
@@ -137,12 +135,20 @@ stdenv.mkDerivation (finalAttrs: {
       mit
       publicDomain
     ];
+
+    sourceProvenance = with lib.sourceTypes; [
+      fromSource
+      binaryBytecode # source bundles dependencies as jars
+    ];
+
+    maintainers = with lib.maintainers; [ linsui ];
+
     platforms = [
       "x86_64-linux"
       "i686-linux"
       "aarch64-linux"
     ];
-    maintainers = with lib.maintainers; [ linsui ];
+
     mainProgram = "i2prouter-plain";
   };
 })

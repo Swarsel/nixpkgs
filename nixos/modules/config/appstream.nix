@@ -2,12 +2,14 @@
 {
   options = {
     appstream.enable = lib.mkOption {
-      type = lib.types.bool;
       default = true;
+
       description = ''
         Whether to install files to support the
         [AppStream metadata specification](https://www.freedesktop.org/software/appstream/docs/index.html).
       '';
+
+      type = lib.types.bool;
     };
   };
 

@@ -2,8 +2,8 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  python3Packages,
   makeWrapper,
+  python3Packages,
 }:
 
 stdenv.mkDerivation rec {
@@ -18,6 +18,7 @@ stdenv.mkDerivation rec {
   };
 
   nativeBuildInputs = [ makeWrapper ];
+
   buildInputs = [
     python3Packages.python
     python3Packages.influxdb-client

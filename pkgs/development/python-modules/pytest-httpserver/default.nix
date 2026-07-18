@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   poetry-core,
   pytestCheckHook,
   requests,
@@ -12,7 +12,6 @@
 buildPythonPackage rec {
   pname = "pytest-httpserver";
   version = "1.1.3";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "csernazs";
@@ -22,7 +21,6 @@ buildPythonPackage rec {
   };
 
   nativeBuildInputs = [ poetry-core ];
-
   propagatedBuildInputs = [ werkzeug ];
 
   nativeCheckInputs = [
@@ -37,6 +35,7 @@ buildPythonPackage rec {
     "test_wait_raise_assertion_false" # racy
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "pytest_httpserver" ];
 
   meta = {

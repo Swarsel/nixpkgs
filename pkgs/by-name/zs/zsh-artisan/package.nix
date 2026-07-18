@@ -1,7 +1,7 @@
 {
   lib,
-  stdenvNoCC,
   fetchFromGitHub,
+  stdenvNoCC,
 }:
 
 stdenvNoCC.mkDerivation {
@@ -15,8 +15,8 @@ stdenvNoCC.mkDerivation {
     hash = "sha256-O0Tn9zQWR0i7UWJ9VtOvxjqpqz9Sj7aKogdHZSOATC0=";
   };
 
-  __structuredAttrs = true;
   strictDeps = true;
+
   installPhase = ''
     runHook preInstall
 
@@ -25,12 +25,16 @@ stdenvNoCC.mkDerivation {
     runHook postInstall
   '';
 
+  __structuredAttrs = true;
+
   meta = {
     description = "Laravel artisan plugin for zsh";
+
     longDescription = ''
       Laravel artisan plugin for zsh to help you to run artisan from anywhere in the project tree,
       with auto-completion, and it can automatically open files created by artisan!
     '';
+
     homepage = "https://github.com/jessarcher/zsh-artisan";
     license = lib.licenses.mit;
     maintainers = [ lib.maintainers.FatBoyXPC ];

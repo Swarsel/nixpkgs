@@ -1,17 +1,20 @@
 {
-  composeAndroidPackages,
-  stdenv,
   lib,
-  runtimeShell,
+  stdenv,
+  composeAndroidPackages,
   meta,
+  runtimeShell,
 }:
 {
   name,
-  app ? null,
-  platformVersion ? "35",
   abiVersion ? "x86",
-  systemImageType ? "default",
-  enableGPU ? false, # Enable GPU acceleration. It's deprecated, instead use `configOptions` below.
+  activity ? null,
+  androidAvdFlags ? null,
+  androidAvdHome ? avdHomeDir,
+  androidEmulatorFlags ? null,
+  androidUserHome ? null,
+  app ? null,
+  avdHomeDir ? null, # Support old variable with non-standard naming!
   configOptions ? (
     # List of options to add in config.ini
     lib.optionalAttrs enableGPU (
@@ -20,16 +23,13 @@
       }
     )
   ),
+  deviceName ? "device",
+  enableGPU ? false, # Enable GPU acceleration. It's deprecated, instead use `configOptions` below.
   extraAVDFiles ? [ ],
   package ? null,
-  activity ? null,
-  androidUserHome ? null,
-  avdHomeDir ? null, # Support old variable with non-standard naming!
-  androidAvdHome ? avdHomeDir,
-  deviceName ? "device",
+  platformVersion ? "35",
   sdkExtraArgs ? { },
-  androidAvdFlags ? null,
-  androidEmulatorFlags ? null,
+  systemImageType ? "default",
 }:
 
 let
@@ -39,10 +39,10 @@ let
   }
   // sdkExtraArgs
   // {
+    abiVersions = [ abiVersion ];
     cmdLineToolsVersion = "8.0";
     platformVersions = [ platformVersion ];
     systemImageTypes = [ systemImageType ];
-    abiVersions = [ abiVersion ];
   };
 
   sdk = (composeAndroidPackages sdkArgs).androidsdk;

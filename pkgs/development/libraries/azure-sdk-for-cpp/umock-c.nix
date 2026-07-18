@@ -3,8 +3,8 @@
   stdenv,
   fetchFromGitHub,
   cmake,
-  ninja,
   macro-utils-c,
+  ninja,
 }:
 stdenv.mkDerivation {
   pname = "azure-umock-c";
@@ -25,6 +25,7 @@ stdenv.mkDerivation {
     cmake
     ninja
   ];
+
   buildInputs = [ macro-utils-c ];
 
   cmakeFlags = [
@@ -33,10 +34,10 @@ stdenv.mkDerivation {
   ];
 
   meta = {
-    homepage = "https://github.com/Azure/umock-c";
     description = "Pure C mocking library";
-    sourceProvenance = [ lib.sourceTypes.fromSource ];
+    homepage = "https://github.com/Azure/umock-c";
     license = lib.licenses.mit;
+    sourceProvenance = [ lib.sourceTypes.fromSource ];
     maintainers = [ lib.maintainers.tobim ];
     platforms = lib.platforms.all;
   };

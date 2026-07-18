@@ -1,27 +1,27 @@
 {
-  buildDunePackage,
-  zarith,
-  ff-sig,
   alcotest,
+  buildDunePackage,
+  ff-sig,
+  zarith,
 }:
 
 buildDunePackage {
-  pname = "ff-pbt";
   inherit (ff-sig) version src;
-
-  minimalOCamlVersion = "4.08";
-  duneVersion = "3";
-
-  checkInputs = [
-    alcotest
-  ];
-
-  doCheck = true;
+  pname = "ff-pbt";
 
   propagatedBuildInputs = [
     zarith
     ff-sig
   ];
+
+  doCheck = true;
+
+  checkInputs = [
+    alcotest
+  ];
+
+  duneVersion = "3";
+  minimalOCamlVersion = "4.08";
 
   meta = ff-sig.meta // {
     description = "Property based testing library for finite fields over the package ff-sig";

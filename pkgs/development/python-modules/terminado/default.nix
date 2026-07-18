@@ -4,15 +4,14 @@
   fetchPypi,
   hatchling,
   ptyprocess,
-  tornado,
   pytest-timeout,
   pytestCheckHook,
+  tornado,
 }:
 
 buildPythonPackage rec {
   pname = "terminado";
   version = "0.18.1";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
@@ -26,15 +25,15 @@ buildPythonPackage rec {
     tornado
   ];
 
-  pythonImportsCheck = [ "terminado" ];
-
-  __darwinAllowLocalNetworking = true;
-
   nativeCheckInputs = [
     pytest-timeout
     pytestCheckHook
   ];
+
+  __darwinAllowLocalNetworking = true;
+  pyproject = true;
   pytestFlags = [ "-Wignore::pytest.PytestUnraisableExceptionWarning" ];
+  pythonImportsCheck = [ "terminado" ];
 
   meta = {
     description = "Terminals served by Tornado websockets";

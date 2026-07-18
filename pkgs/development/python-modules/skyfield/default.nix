@@ -1,22 +1,21 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
-  certifi,
-  numpy,
-  sgp4,
-  jplephem,
-  pandas,
-  ipython,
-  matplotlib,
   assay,
+  buildPythonPackage,
+  certifi,
+  ipython,
+  jplephem,
+  matplotlib,
+  numpy,
+  pandas,
+  setuptools,
+  sgp4,
 }:
 
 buildPythonPackage rec {
   pname = "skyfield";
   version = "1.54";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "skyfielders";
@@ -31,15 +30,6 @@ buildPythonPackage rec {
     substituteInPlace skyfield/tests/test_planetarylib.py \
       --replace-fail "if IS_32_BIT" "if True"
   '';
-
-  build-system = [ setuptools ];
-
-  dependencies = [
-    certifi
-    numpy
-    sgp4
-    jplephem
-  ];
 
   nativeCheckInputs = [
     pandas
@@ -57,11 +47,21 @@ buildPythonPackage rec {
     runHook postCheck
   '';
 
+  build-system = [ setuptools ];
+
+  dependencies = [
+    certifi
+    numpy
+    sgp4
+    jplephem
+  ];
+
+  pyproject = true;
   pythonImportsCheck = [ "skyfield" ];
 
   meta = {
-    homepage = "https://github.com/skyfielders/python-skyfield";
     description = "Elegant astronomy for Python";
+    homepage = "https://github.com/skyfielders/python-skyfield";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ zane ];
   };

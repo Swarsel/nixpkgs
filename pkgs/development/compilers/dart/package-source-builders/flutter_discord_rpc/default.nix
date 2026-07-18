@@ -1,18 +1,16 @@
 {
   lib,
-  rustPlatform,
   stdenv,
   replaceVars,
+  rustPlatform,
 }:
 
-{ version, src, ... }:
+{ src, version, ... }:
 
 let
   rustDep = rustPlatform.buildRustPackage {
-    pname = "flutter_discord_rpc-rs";
     inherit version src;
-
-    buildAndTestSubdir = "rust";
+    pname = "flutter_discord_rpc-rs";
 
     cargoHash =
       {
@@ -25,13 +23,14 @@ let
         is the same with existing versions, add an alias here.
       '');
 
+    buildAndTestSubdir = "rust";
     passthru.libraryPath = "lib/libflutter_discord_rpc.so";
   };
 in
 stdenv.mkDerivation {
-  pname = "flutter_discord_rpc";
   inherit version src;
   inherit (src) passthru;
+  pname = "flutter_discord_rpc";
 
   patches = [
     (replaceVars ./cargokit.patch {

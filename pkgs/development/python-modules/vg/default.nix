@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   numpy,
   poetry-core,
   pytestCheckHook,
@@ -10,7 +10,6 @@
 buildPythonPackage rec {
   pname = "vg";
   version = "2.0.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "lace";
@@ -24,14 +23,11 @@ buildPythonPackage rec {
       --replace 'requires = ["setuptools", "poetry-core>=1.0.0"]' 'requires = ["poetry-core>=1.0.0"]'
   '';
 
-  build-system = [ poetry-core ];
-
-  dependencies = [ numpy ];
-
   nativeCheckInputs = [ pytestCheckHook ];
-
+  build-system = [ poetry-core ];
+  dependencies = [ numpy ];
   disabledTests = [ "test_basic" ];
-
+  pyproject = true;
   pythonImportsCheck = [ "vg" ];
 
   meta = {

@@ -2,10 +2,10 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  fetchpatch,
-  openssl,
   curl,
+  fetchpatch,
   libpq,
+  openssl,
   yajl,
 }:
 
@@ -22,13 +22,17 @@ stdenv.mkDerivation (finalAttrs: {
 
   patches = [
     (fetchpatch {
-      url = "https://github.com/jorisvink/kore/commit/978cb0ab79c9c939c35996f34f7d835f9c671831.patch";
       hash = "sha256-uHTWiliM4m2i9/6GQQfnAo31XBXd/2+fzysPeNo2dQ0=";
+      url = "https://github.com/jorisvink/kore/commit/978cb0ab79c9c939c35996f34f7d835f9c671831.patch";
     })
     (fetchpatch {
-      url = "https://github.com/jorisvink/kore/commit/6122affe22bf676eed0f544e421c53699aa7a2e2.patch";
       hash = "sha256-xaiUOjBJPEgEwwuseXe6VbOTkOCKdQ5tuwDdL7DojHM=";
+      url = "https://github.com/jorisvink/kore/commit/6122affe22bf676eed0f544e421c53699aa7a2e2.patch";
     })
+  ];
+
+  nativeBuildInputs = [
+    libpq.pg_config
   ];
 
   buildInputs = [
@@ -36,10 +40,6 @@ stdenv.mkDerivation (finalAttrs: {
     curl
     libpq
     yajl
-  ];
-
-  nativeBuildInputs = [
-    libpq.pg_config
   ];
 
   makeFlags = [
@@ -51,10 +51,6 @@ stdenv.mkDerivation (finalAttrs: {
     "JSONRPC=1"
     "DEBUG=1"
   ];
-
-  preBuild = ''
-    make platform.h
-  '';
 
   env.NIX_CFLAGS_COMPILE = toString (
     [
@@ -69,13 +65,17 @@ stdenv.mkDerivation (finalAttrs: {
     ]
   );
 
+  preBuild = ''
+    make platform.h
+  '';
+
   enableParallelBuilding = true;
 
   meta = {
     description = "Easy to use web application framework for C";
     homepage = "https://kore.io";
     license = lib.licenses.isc;
-    platforms = lib.platforms.all;
     maintainers = with lib.maintainers; [ johnmh ];
+    platforms = lib.platforms.all;
   };
 })

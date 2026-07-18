@@ -1,15 +1,15 @@
 {
-  buildPythonPackage,
-  fetchFromGitHub,
   lib,
+  fetchFromGitHub,
+  buildPythonPackage,
   future,
   gcc,
   llvmlite,
   parameterized,
   pycparser,
   pyparsing,
-  z3-solver,
   setuptools,
+  z3-solver,
 }:
 let
   commit = "cbc722eed8dc807955bd46f84886ae74d161dd0c";
@@ -17,9 +17,6 @@ in
 buildPythonPackage {
   pname = "miasm";
   version = "0.1.5-unstable-2024-08-20";
-
-  pyproject = true;
-  build-system = [ setuptools ];
 
   src = fetchFromGitHub {
     owner = "cea-sec";
@@ -36,6 +33,9 @@ buildPythonPackage {
     ./0002-core-remove-IDAPython-dependency.patch
   ];
 
+  buildInputs = [ gcc ];
+  build-system = [ setuptools ];
+
   dependencies = [
     future
     llvmlite
@@ -45,8 +45,7 @@ buildPythonPackage {
     z3-solver
   ];
 
-  buildInputs = [ gcc ];
-
+  pyproject = true;
   pythonImportsCheck = [ "miasm" ];
 
   meta = {

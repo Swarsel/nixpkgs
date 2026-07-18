@@ -1,17 +1,31 @@
 {
   lib,
-  writeShellApplication,
+  common-updater-scripts,
   curl,
-  jq,
   gnused,
+  jq,
   nix,
   nix-prefetch-github,
-  common-updater-scripts,
+  writeShellApplication,
 }:
 engine:
 
 lib.getExe (writeShellApplication {
+  bashOptions = [
+    "errexit"
+    "errtrace"
+    "nounset"
+    "pipefail"
+  ];
+
   name = "openra-updater";
+
+  runtimeEnv = {
+    build = engine.build;
+    currentRev = lib.optionalString (lib.hasAttr "rev" engine) engine.rev;
+    currentVersion = engine.version;
+  };
+
   runtimeInputs = [
     curl
     jq
@@ -19,17 +33,6 @@ lib.getExe (writeShellApplication {
     nix
     nix-prefetch-github
     common-updater-scripts
-  ];
-  runtimeEnv = {
-    build = engine.build;
-    currentVersion = engine.version;
-    currentRev = lib.optionalString (lib.hasAttr "rev" engine) engine.rev;
-  };
-  bashOptions = [
-    "errexit"
-    "errtrace"
-    "nounset"
-    "pipefail"
   ];
 
   text = lib.readFile ./updater.sh;

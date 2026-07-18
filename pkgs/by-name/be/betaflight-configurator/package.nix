@@ -2,37 +2,33 @@
   lib,
   stdenv,
   fetchurl,
-  unzip,
-  makeDesktopItem,
-  nwjs,
-  wrapGAppsHook3,
   gsettings-desktop-schemas,
   gtk3,
+  makeDesktopItem,
+  nwjs,
+  unzip,
+  wrapGAppsHook3,
 }:
 
 let
   pname = "betaflight-configurator";
   desktopItem = makeDesktopItem {
-    name = pname;
-    exec = pname;
-    icon = pname;
     comment = "Betaflight configuration tool";
     desktopName = "Betaflight Configurator";
+    exec = pname;
     genericName = "Flight controller configuration tool";
+    icon = pname;
+    name = pname;
   };
 in
 stdenv.mkDerivation rec {
   inherit pname;
   version = "10.10.0";
+
   src = fetchurl {
     url = "https://github.com/betaflight/${pname}/releases/download/${version}/${pname}_${version}_linux64-portable.zip";
     sha256 = "sha256-UB5Vr5wyCUZbOaQNckJQ1tAXwh8VSLNI1IgTiJzxV08=";
   };
-
-  # remove large unneeded files
-  postUnpack = ''
-    find -name "lib*.so" -delete
-  '';
 
   nativeBuildInputs = [
     wrapGAppsHook3
@@ -57,18 +53,25 @@ stdenv.mkDerivation rec {
     runHook postInstall
   '';
 
+  # remove large unneeded files
+  postUnpack = ''
+    find -name "lib*.so" -delete
+  '';
+
   meta = {
     description = "Betaflight flight control system configuration tool";
-    mainProgram = "betaflight-configurator";
+
     longDescription = ''
       A crossplatform configuration tool for the Betaflight flight control system.
       Various types of aircraft are supported by the tool and by Betaflight, e.g.
       quadcopters, hexacopters, octocopters and fixed-wing aircraft.
     '';
+
     homepage = "https://github.com/betaflight/betaflight/wiki";
-    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
     license = lib.licenses.gpl3;
+    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
     maintainers = with lib.maintainers; [ wucke13 ];
     platforms = lib.platforms.linux;
+    mainProgram = "betaflight-configurator";
   };
 }

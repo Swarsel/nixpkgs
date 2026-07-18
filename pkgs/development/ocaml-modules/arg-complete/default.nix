@@ -1,9 +1,9 @@
 {
   lib,
   fetchurl,
-  ocaml,
   buildDunePackage,
   cppo,
+  ocaml,
   ounit2,
 }:
 
@@ -17,7 +17,6 @@ buildDunePackage (finalAttrs: {
   };
 
   nativeBuildInputs = [ cppo ];
-
   doCheck = lib.versionAtLeast ocaml.version "4.08";
   checkInputs = [ ounit2 ];
 

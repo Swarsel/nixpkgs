@@ -2,22 +2,23 @@
   lib,
   stdenv,
   fetchFromGitLab,
-  cmake,
-  qt6,
-  kdePackages,
   bison,
+  cmake,
   flex,
+  kdePackages,
+  qt6,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
   pname = "kseexpr";
   version = "6.0.0.0";
+
   src = fetchFromGitLab {
-    domain = "invent.kde.org";
     owner = "graphics";
     repo = "kseexpr";
     rev = "v${finalAttrs.version}";
     hash = "sha256-Z3CjQdKHeZ/6He43qVYQj8Fo0y88v/ldJJD8bPYOaEo=";
+    domain = "invent.kde.org";
   };
 
   patches = [
@@ -30,8 +31,6 @@ stdenv.mkDerivation (finalAttrs: {
     kdePackages.extra-cmake-modules
   ];
 
-  dontWrapQtApps = true;
-
   buildInputs = [
     bison
     flex
@@ -40,10 +39,12 @@ stdenv.mkDerivation (finalAttrs: {
     qt6.qttools
   ];
 
+  dontWrapQtApps = true;
+
   meta = {
-    homepage = "https://invent.kde.org/graphics/kseexpr";
     description = "Embeddable expression evaluation engine";
-    maintainers = [ ];
+    homepage = "https://invent.kde.org/graphics/kseexpr";
     license = lib.licenses.lgpl3Plus;
+    maintainers = [ ];
   };
 })

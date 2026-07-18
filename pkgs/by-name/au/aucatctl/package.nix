@@ -2,8 +2,8 @@
   lib,
   stdenv,
   fetchurl,
-  sndio,
   libbsd,
+  sndio,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -15,15 +15,15 @@ stdenv.mkDerivation (finalAttrs: {
     sha256 = "524f2fae47db785234f166551520d9605b9a27551ca438bd807e3509ce246cf0";
   };
 
-  buildInputs = [
-    sndio
-  ]
-  ++ lib.optional (!stdenv.hostPlatform.isDarwin && !stdenv.hostPlatform.isBSD) libbsd;
-
   outputs = [
     "out"
     "man"
   ];
+
+  buildInputs = [
+    sndio
+  ]
+  ++ lib.optional (!stdenv.hostPlatform.isDarwin && !stdenv.hostPlatform.isBSD) libbsd;
 
   preBuild = ''
     makeFlagsArray+=("PREFIX=$out")

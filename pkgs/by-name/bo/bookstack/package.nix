@@ -1,8 +1,8 @@
 {
   lib,
   fetchFromGitHub,
-  php83,
   nixosTests,
+  php83,
   dataDir ? "/var/lib/bookstack",
 }:
 
@@ -19,11 +19,6 @@ php83.buildComposerProject2 (finalAttrs: {
 
   vendorHash = "sha256-m98QXFqvdomVEVs2P8gnoKaYEBNYe/CchSvBEc448ko=";
 
-  passthru = {
-    phpPackage = php83;
-    tests = nixosTests.bookstack;
-  };
-
   postInstall = ''
     chmod -R u+w $out/share
     mv $out/share/php/bookstack/* $out
@@ -34,17 +29,26 @@ php83.buildComposerProject2 (finalAttrs: {
     ln -s ${dataDir}/themes $out/themes
   '';
 
+  passthru = {
+    phpPackage = php83;
+    tests = nixosTests.bookstack;
+  };
+
   meta = {
     description = "Platform to create documentation/wiki content built with PHP & Laravel";
+
     longDescription = ''
       A platform for storing and organising information and documentation.
       Details for BookStack can be found on the official website at https://www.bookstackapp.com/.
     '';
+
     homepage = "https://www.bookstackapp.com/";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       savyajha
     ];
+
     platforms = lib.platforms.linux;
   };
 })

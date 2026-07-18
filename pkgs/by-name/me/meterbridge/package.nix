@@ -2,16 +2,16 @@
   lib,
   stdenv,
   fetchurl,
-  pkg-config,
-  libGL,
   SDL,
   SDL_image,
+  libGL,
   libjack2,
+  pkg-config,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
-  version = "0.9.3";
   pname = "meterbridge";
+  version = "0.9.3";
 
   src = fetchurl {
     url = "http://plugin.org.uk/meterbridge/meterbridge-${finalAttrs.version}.tar.gz";
@@ -24,6 +24,7 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   nativeBuildInputs = [ pkg-config ];
+
   buildInputs = [
     libGL
     SDL
@@ -35,8 +36,8 @@ stdenv.mkDerivation (finalAttrs: {
     description = "Various meters (VU, PPM, DPM, JF, SCO) for Jack Audio Connection Kit";
     homepage = "http://plugin.org.uk/meterbridge/";
     license = lib.licenses.gpl2;
-    platforms = lib.platforms.linux;
     maintainers = [ lib.maintainers.nico202 ];
+    platforms = lib.platforms.linux;
     mainProgram = "meterbridge";
   };
 })

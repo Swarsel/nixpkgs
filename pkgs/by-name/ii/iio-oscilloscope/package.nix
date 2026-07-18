@@ -2,21 +2,21 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  fetchpatch,
   cmake,
-  pkg-config,
-  wrapGAppsHook3,
-  libiio,
+  curl,
+  fetchpatch,
+  fftw,
   glib,
   gtk3,
   gtkdatabox,
-  matio,
-  fftw,
-  libxml2,
-  curl,
   jansson,
-  enable9361 ? true,
   libad9361,
+  libiio,
+  libxml2,
+  matio,
+  pkg-config,
+  wrapGAppsHook3,
+  enable9361 ? true,
   # enable9166 ? true,
   # libad9166,
 }:
@@ -35,8 +35,8 @@ stdenv.mkDerivation (finalAttrs: {
   patches = [
     # make sure the sizeof argument to calloc is the second argument.
     (fetchpatch {
-      url = "https://github.com/analogdevicesinc/iio-oscilloscope/commit/565cade20566d50adec7be191a6dd7b21217f878.patch";
       hash = "sha256-JeRve3xtWi+EcZR+qZlek+YwAbPB56OYxkFVd8MmIb0=";
+      url = "https://github.com/analogdevicesinc/iio-oscilloscope/commit/565cade20566d50adec7be191a6dd7b21217f878.patch";
     })
   ];
 
@@ -71,10 +71,10 @@ stdenv.mkDerivation (finalAttrs: {
   meta = {
     description = "GTK+ based oscilloscope application for interfacing with various IIO devices";
     homepage = "https://wiki.analog.com/resources/tools-software/linux-software/iio_oscilloscope";
-    mainProgram = "osc";
-    license = lib.licenses.gpl2Only;
     changelog = "https://github.com/analogdevicesinc/iio-oscilloscope/releases/tag/v${finalAttrs.version}-master";
+    license = lib.licenses.gpl2Only;
     maintainers = with lib.maintainers; [ chuangzhu ];
     platforms = lib.platforms.linux;
+    mainProgram = "osc";
   };
 })

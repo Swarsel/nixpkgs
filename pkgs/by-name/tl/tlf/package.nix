@@ -2,20 +2,20 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  fetchpatch,
-  autoreconfHook,
   autoconf,
   automake,
-  pkg-config,
+  autoreconfHook,
+  cmocka,
+  fetchpatch,
   glib,
-  perl,
-  python3Packages,
-  ncurses5,
   hamlib,
+  ncurses5,
+  perl,
+  pkg-config,
+  python3,
+  python3Packages,
   xmlrpc_c,
   pythonPluginSupport ? true,
-  python3,
-  cmocka,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -55,11 +55,11 @@ stdenv.mkDerivation (finalAttrs: {
     "--enable-python-plugin"
   ];
 
+  doCheck = true;
+
   nativeCheckInputs = [
     cmocka
   ];
-
-  doCheck = true;
 
   postInstall = ''
     mkdir -p $out/lib
@@ -68,6 +68,7 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Advanced ham radio logging and contest program";
+
     longDescription = ''
       TLF is a curses based console mode general logging and contest program for
       amateur radio.
@@ -76,6 +77,7 @@ stdenv.mkDerivation (finalAttrs: {
       EU SPRINT shortwave contests (single operator) as well as a LOT MORE basic
       contests, general QSO and DXpedition mode.
     '';
+
     homepage = "https://tlf.github.io/";
     license = lib.licenses.gpl2;
     maintainers = [ ];

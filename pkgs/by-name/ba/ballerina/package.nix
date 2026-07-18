@@ -1,13 +1,13 @@
 {
-  ballerina,
   lib,
-  writeText,
-  writeScript,
-  runCommand,
-  makeWrapper,
-  fetchzip,
   stdenv,
+  ballerina,
+  fetchzip,
+  makeWrapper,
   openjdk21_headless,
+  runCommand,
+  writeScript,
+  writeText,
 }:
 let
   version = "2201.13.4";
@@ -15,8 +15,8 @@ let
   openjdk = openjdk21_headless;
 in
 stdenv.mkDerivation {
-  pname = "ballerina";
   inherit version;
+  pname = "ballerina";
 
   src = fetchzip {
     url = "https://dist.ballerina.io/downloads/${version}/ballerina-${version}-${codeName}.zip";
@@ -30,6 +30,7 @@ stdenv.mkDerivation {
     cp -rv distributions/ballerina-${version} $out
     runHook postInstall
   '';
+
   preFixup = ''
     wrapProgram $out/bin/bal --set JAVA_HOME ${openjdk}
   '';
@@ -62,10 +63,10 @@ stdenv.mkDerivation {
 
   meta = {
     description = "Open-source programming language for the cloud";
-    mainProgram = "bal";
     license = lib.licenses.asl20;
-    platforms = openjdk.meta.platforms;
-    maintainers = with lib.maintainers; [ cbrxyz ];
     sourceProvenance = with lib.sourceTypes; [ binaryBytecode ];
+    maintainers = with lib.maintainers; [ cbrxyz ];
+    platforms = openjdk.meta.platforms;
+    mainProgram = "bal";
   };
 }

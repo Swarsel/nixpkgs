@@ -1,12 +1,12 @@
 {
   lib,
   stdenv,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
+  file,
+  glibcLocales,
   makeWrapper,
   re2c,
-  glibcLocales,
-  file,
   six,
   typing,
 }:
@@ -17,7 +17,6 @@
 buildPythonPackage rec {
   pname = "oildev-unstable";
   version = "2024-02-26";
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "oilshell";
@@ -39,14 +38,6 @@ buildPythonPackage rec {
     '';
   };
 
-  # patch to support a python package, pass tests on macOS, drop deps, etc.
-  patchSrc = fetchFromGitHub {
-    owner = "abathur";
-    repo = "nix-py-dev-oil";
-    rev = "v0.20.0.0";
-    hash = "sha256-qoA54rnzAdnFZ3k4kRzQWEdgtEjraCT5+NFw8AWnRDk=";
-  };
-
   patches = [
     "${patchSrc}/0001-add_setup_py.patch"
     "${patchSrc}/0002-add_MANIFEST_in.patch"
@@ -60,9 +51,12 @@ buildPythonPackage rec {
     "${patchSrc}/0015-fix-compiled-extension-import-paths.patch"
   ];
 
-  configureFlags = [
-    "--without-readline"
-  ];
+  postPatch = ''
+    patchShebangs asdl build core doctools frontend pyext oil_lang ysh
+    rm cpp/stdlib.h # keep modules from finding the wrong stdlib?
+    # work around hard parse failure documented in oilshell/oil#1468
+    substituteInPlace osh/cmd_parse.py --replace 'elif self.c_id == Id.Op_LParen' 'elif False'
+  '';
 
   nativeBuildInputs = [
     re2c
@@ -75,23 +69,30 @@ buildPythonPackage rec {
     typing
   ];
 
-  doCheck = true;
+  configureFlags = [
+    "--without-readline"
+  ];
 
   preBuild = ''
     build/py.sh all
   '';
 
-  postPatch = ''
-    patchShebangs asdl build core doctools frontend pyext oil_lang ysh
-    rm cpp/stdlib.h # keep modules from finding the wrong stdlib?
-    # work around hard parse failure documented in oilshell/oil#1468
-    substituteInPlace osh/cmd_parse.py --replace 'elif self.c_id == Id.Op_LParen' 'elif False'
-  '';
+  doCheck = true;
 
   # See earlier note on glibcLocales TODO: verify needed?
   LOCALE_ARCHIVE = lib.optionalString (
     stdenv.buildPlatform.libc == "glibc"
   ) "${glibcLocales}/lib/locale/locale-archive";
+
+  format = "setuptools";
+
+  # patch to support a python package, pass tests on macOS, drop deps, etc.
+  patchSrc = fetchFromGitHub {
+    hash = "sha256-qoA54rnzAdnFZ3k4kRzQWEdgtEjraCT5+NFw8AWnRDk=";
+    owner = "abathur";
+    repo = "nix-py-dev-oil";
+    rev = "v0.20.0.0";
+  };
 
   # not exhaustive; sample what resholve uses as a sanity check
   pythonImportsCheck = [

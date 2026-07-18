@@ -1,11 +1,11 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
-  pkg-config,
+  makeWrapper,
   mpv,
   openssl,
-  makeWrapper,
+  pkg-config,
+  rustPlatform,
 }:
 rustPlatform.buildRustPackage {
   pname = "jellytui";
@@ -18,9 +18,9 @@ rustPlatform.buildRustPackage {
     hash = "sha256-cMSZDSN2qnTeKL3ZcNVRtS45Xa1kEcps9WpWuWruX/0=";
   };
 
-  cargoLock = {
-    lockFile = ./Cargo.lock;
-  };
+  postPatch = ''
+    ln -s ${./Cargo.lock} Cargo.lock
+  '';
 
   nativeBuildInputs = [
     pkg-config
@@ -32,9 +32,9 @@ rustPlatform.buildRustPackage {
     mpv
   ];
 
-  postPatch = ''
-    ln -s ${./Cargo.lock} Cargo.lock
-  '';
+  cargoLock = {
+    lockFile = ./Cargo.lock;
+  };
 
   postInstall = ''
     wrapProgram $out/bin/jellytui \

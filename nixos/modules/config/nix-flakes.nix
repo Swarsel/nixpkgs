@@ -28,6 +28,14 @@ in
   options = {
     nix = {
       registry = mkOption {
+        default = { };
+
+        description = ''
+          A system-wide flake registry.
+
+          See {manpage}`nix3-registry(1)` for more information.
+        '';
+
         type = types.attrsOf (
           types.submodule (
             let
@@ -44,59 +52,72 @@ in
             { config, name, ... }:
             {
               options = {
-                from = mkOption {
-                  type = referenceAttrs;
-                  example = {
-                    type = "indirect";
-                    id = "nixpkgs";
-                  };
-                  description = ''
-                    The flake reference to be rewritten.
-
-                    ${flakeRefFormat}
-                  '';
-                };
-                to = mkOption {
-                  type = referenceAttrs;
-                  example = {
-                    type = "github";
-                    owner = "my-org";
-                    repo = "my-nixpkgs";
-                  };
-                  description = ''
-                    The flake reference {option}`from` is rewritten to.
-
-                    ${flakeRefFormat}
-                  '';
-                };
-                flake = mkOption {
-                  type = types.nullOr types.attrs;
-                  default = null;
-                  example = literalExpression "nixpkgs";
-                  description = ''
-                    The flake input {option}`from` is rewritten to.
-                  '';
-                };
                 exact = mkOption {
-                  type = types.bool;
                   default = true;
+
                   description = ''
                     Whether the {option}`from` reference needs to match exactly. If set,
                     a {option}`from` reference like `nixpkgs` does not
                     match with a reference like `nixpkgs/nixos-20.03`.
                   '';
+
+                  type = types.bool;
+                };
+
+                flake = mkOption {
+                  default = null;
+
+                  description = ''
+                    The flake input {option}`from` is rewritten to.
+                  '';
+
+                  example = literalExpression "nixpkgs";
+                  type = types.nullOr types.attrs;
+                };
+
+                from = mkOption {
+                  description = ''
+                    The flake reference to be rewritten.
+
+                    ${flakeRefFormat}
+                  '';
+
+                  example = {
+                    id = "nixpkgs";
+                    type = "indirect";
+                  };
+
+                  type = referenceAttrs;
+                };
+
+                to = mkOption {
+                  description = ''
+                    The flake reference {option}`from` is rewritten to.
+
+                    ${flakeRefFormat}
+                  '';
+
+                  example = {
+                    owner = "my-org";
+                    repo = "my-nixpkgs";
+                    type = "github";
+                  };
+
+                  type = referenceAttrs;
                 };
               };
+
               config = {
                 from = mkDefault {
-                  type = "indirect";
                   id = name;
+                  type = "indirect";
                 };
+
                 to = mkIf (config.flake != null) (
                   mkDefault (
                     {
-                      type = "path";
                       path = config.flake.outPath;
+                      type = "path";
                     }
                     // filterAttrs (n: _: n == "lastModified" || n == "rev" || n == "narHash") config.flake
                   )
@@ -105,20 +126,14 @@ in
             }
           )
         );
-        default = { };
-        description = ''
-          A system-wide flake registry.
-
-          See {manpage}`nix3-registry(1)` for more information.
-        '';
       };
     };
   };
 
   config = mkIf cfg.enable {
     environment.etc."nix/registry.json".text = builtins.toJSON {
-      version = 2;
       flakes = mapAttrsToList (n: v: { inherit (v) from to exact; }) cfg.registry;
+      version = 2;
     };
   };
 }

@@ -1,8 +1,8 @@
 {
   lib,
+  fetchFromGitHub,
   buildGoModule,
   cloudflare-dynamic-dns,
-  fetchFromGitHub,
   testers,
 }:
 buildGoModule (finalAttrs: {
@@ -17,8 +17,7 @@ buildGoModule (finalAttrs: {
   };
 
   vendorHash = "sha256-1x1Hw343ylhGsbNcj4hwweYnACoVZSdycwBbGUVuu+k=";
-
-  subPackages = ".";
+  env.CGO_ENABLED = 0;
 
   ldflags = [
     "-s"
@@ -28,16 +27,15 @@ buildGoModule (finalAttrs: {
     "-X=main.date=1970-01-01"
   ];
 
-  env.CGO_ENABLED = 0;
-
+  subPackages = ".";
   passthru.tests.version = testers.testVersion { package = cloudflare-dynamic-dns; };
 
   meta = {
-    changelog = "https://github.com/Zebradil/cloudflare-dynamic-dns/blob/${finalAttrs.version}/CHANGELOG.md";
     description = "Dynamic DNS client for Cloudflare";
     homepage = "https://github.com/Zebradil/cloudflare-dynamic-dns";
+    changelog = "https://github.com/Zebradil/cloudflare-dynamic-dns/blob/${finalAttrs.version}/CHANGELOG.md";
     license = lib.licenses.mit;
-    mainProgram = "cloudflare-dynamic-dns";
     maintainers = [ lib.maintainers.zebradil ];
+    mainProgram = "cloudflare-dynamic-dns";
   };
 })

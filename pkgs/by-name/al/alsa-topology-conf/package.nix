@@ -13,8 +13,6 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-98W64VRavNc4JLyX9OcsNA4Rq+oYi6DxwG9eCtd2sXk=";
   };
 
-  dontBuild = true;
-
   installPhase = ''
     runHook preInstall
 
@@ -24,8 +22,9 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  dontBuild = true;
+
   meta = {
-    homepage = "https://www.alsa-project.org/";
     description = "ALSA topology configuration files";
 
     longDescription = ''
@@ -33,6 +32,7 @@ stdenv.mkDerivation (finalAttrs: {
       MIDI functionality to the Linux-based operating system.
     '';
 
+    homepage = "https://www.alsa-project.org/";
     license = lib.licenses.bsd3;
     maintainers = [ lib.maintainers.roastiek ];
     platforms = lib.platforms.linux ++ lib.platforms.freebsd;

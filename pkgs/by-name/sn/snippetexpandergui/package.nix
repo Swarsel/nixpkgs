@@ -1,27 +1,20 @@
 {
   lib,
   buildGoModule,
-  wrapGAppsHook3,
-  wails,
-  scdoc,
+  gtk3,
   installShellFiles,
   libx11,
-  gtk3,
+  scdoc,
   # webkitgtk_4_0,
   snippetexpanderd,
   snippetexpanderx,
+  wails,
+  wrapGAppsHook3,
 }:
 
 buildGoModule rec {
   inherit (snippetexpanderd) src version;
-
   pname = "snippetexpandergui";
-
-  vendorHash = "sha256-2nLO/b6XQC88VXE+SewhgKpkRtIHsva+fDudgKpvZiY=";
-
-  proxyVendor = true;
-
-  modRoot = "cmd/snippetexpandergui";
 
   nativeBuildInputs = [
     wails
@@ -38,16 +31,7 @@ buildGoModule rec {
     snippetexpanderx
   ];
 
-  ldflags = [
-    "-s"
-    "-w"
-    "-X 'main.version=${src.rev}'"
-  ];
-
-  tags = [
-    "desktop"
-    "production"
-  ];
+  vendorHash = "sha256-2nLO/b6XQC88VXE+SewhgKpkRtIHsva+fDudgKpvZiY=";
 
   postInstall = ''
     mv build/linux/share $out/share
@@ -67,14 +51,28 @@ buildGoModule rec {
     )
   '';
 
+  ldflags = [
+    "-s"
+    "-w"
+    "-X 'main.version=${src.rev}'"
+  ];
+
+  modRoot = "cmd/snippetexpandergui";
+  proxyVendor = true;
+
+  tags = [
+    "desktop"
+    "production"
+  ];
+
   meta = {
-    # webkitgtk_4_0 was removed
-    broken = true;
     description = "Your little expandable text snippet helper GUI";
     homepage = "https://snippetexpander.org";
     license = lib.licenses.gpl2Plus;
     maintainers = [ ];
     platforms = lib.platforms.linux;
     mainProgram = "snippetexpandergui";
+    # webkitgtk_4_0 was removed
+    broken = true;
   };
 }

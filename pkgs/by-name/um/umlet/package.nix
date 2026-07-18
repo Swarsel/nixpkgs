@@ -3,8 +3,8 @@
   stdenv,
   fetchurl,
   jre,
-  unzip,
   runtimeShell,
+  unzip,
 }:
 
 stdenv.mkDerivation {
@@ -44,6 +44,7 @@ stdenv.mkDerivation {
 
   meta = {
     description = "Free, open-source UML tool with a simple user interface";
+
     longDescription = ''
       UMLet is a free, open-source UML tool with a simple user interface:
       draw UML diagrams fast, produce sequence and activity diagrams from
@@ -52,9 +53,10 @@ stdenv.mkDerivation {
       UMLet runs stand-alone or as Eclipse plug-in on Windows, macOS and
       Linux.
     '';
+
     homepage = "https://www.umlet.com";
-    sourceProvenance = with lib.sourceTypes; [ binaryBytecode ];
     license = lib.licenses.gpl3;
+    sourceProvenance = with lib.sourceTypes; [ binaryBytecode ];
     maintainers = [ ];
     platforms = lib.platforms.all;
     mainProgram = "umlet";

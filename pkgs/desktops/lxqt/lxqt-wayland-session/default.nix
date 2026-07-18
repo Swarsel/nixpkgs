@@ -3,6 +3,7 @@
   stdenv,
   fetchFromGitHub,
   cmake,
+  gitUpdater,
   kwindowsystem,
   layer-shell-qt,
   liblxqt,
@@ -15,7 +16,6 @@
   qtxdg-tools,
   xdg-user-dirs,
   xkeyboard_config,
-  gitUpdater,
 }:
 
 stdenv.mkDerivation rec {
@@ -28,6 +28,15 @@ stdenv.mkDerivation rec {
     rev = version;
     hash = "sha256-7wNp1a+JCnFu2h391KUeNRlZqybA5gY3ZCciYbIx5Rs=";
   };
+
+  postPatch = ''
+    substituteInPlace startlxqtwayland.in \
+      --replace-fail /usr/share/X11/xkb/rules ${xkeyboard_config}/share/X11/xkb/rules \
+      --replace-fail "cp -av " "cp -av --no-preserve=mode "
+
+    substituteInPlace configurations/{labwc/autostart,lxqt-hyprland.conf,lxqt-wayfire.ini} \
+      --replace-fail /usr/share/lxqt/wallpapers $out/share/lxqt/wallpapers
+  '';
 
   nativeBuildInputs = [
     cmake
@@ -47,24 +56,14 @@ stdenv.mkDerivation rec {
     xdg-user-dirs # startlxqtwayland sets XDG_CURRENT_DESKTOP
   ];
 
-  postPatch = ''
-    substituteInPlace startlxqtwayland.in \
-      --replace-fail /usr/share/X11/xkb/rules ${xkeyboard_config}/share/X11/xkb/rules \
-      --replace-fail "cp -av " "cp -av --no-preserve=mode "
-
-    substituteInPlace configurations/{labwc/autostart,lxqt-hyprland.conf,lxqt-wayfire.ini} \
-      --replace-fail /usr/share/lxqt/wallpapers $out/share/lxqt/wallpapers
-  '';
-
   dontWrapQtApps = true;
-
+  passthru.providedSessions = [ "lxqt-wayland" ];
   passthru.updateScript = gitUpdater { };
 
-  passthru.providedSessions = [ "lxqt-wayland" ];
-
   meta = {
-    homepage = "https://github.com/lxqt/lxqt-wayland-session";
     description = "Files needed for the LXQt Wayland Session";
+    homepage = "https://github.com/lxqt/lxqt-wayland-session";
+
     license = with lib.licenses; [
       bsd3
       cc-by-sa-40
@@ -73,6 +72,7 @@ stdenv.mkDerivation rec {
       lgpl21Only
       mit
     ];
+
     platforms = lib.platforms.linux;
     teams = [ lib.teams.lxqt ];
   };

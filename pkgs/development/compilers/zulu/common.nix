@@ -2,34 +2,34 @@
   lib,
   stdenv,
   fetchurl,
-  setJavaClassPath,
-  testers,
-  enableJavaFX ? false,
-  dists,
-  # minimum dependencies
-  unzip,
-  autoPatchelfHook,
-  makeWrapper,
   alsa-lib,
-  fontconfig,
-  freetype,
-  zlib,
-  libxxf86vm,
-  libxtst,
-  libxrender,
-  libxi,
-  libxext,
-  libx11,
+  autoPatchelfHook,
+  cairo,
   # runtime dependencies
   cups,
-  # runtime dependencies for GTK+ Look and Feel
-  gtkSupport ? stdenv.hostPlatform.isLinux,
-  cairo,
+  dists,
+  # runtime dependencies for JavaFX
+  ffmpeg,
+  fontconfig,
+  freetype,
   glib,
   gtk2,
   gtk3,
-  # runtime dependencies for JavaFX
-  ffmpeg,
+  libx11,
+  libxext,
+  libxi,
+  libxrender,
+  libxtst,
+  libxxf86vm,
+  makeWrapper,
+  setJavaClassPath,
+  testers,
+  # minimum dependencies
+  unzip,
+  zlib,
+  enableJavaFX ? false,
+  # runtime dependencies for GTK+ Look and Feel
+  gtkSupport ? stdenv.hostPlatform.isLinux,
 }:
 let
   dist =
@@ -69,8 +69,8 @@ let
   runtimeLibraryPath = lib.makeLibraryPath runtimeDependencies;
 
   jce-policies = fetchurl {
-    url = "https://web.archive.org/web/20211126120343/http://cdn.azul.com/zcek/bin/ZuluJCEPolicies.zip";
     hash = "sha256-gCGii4ysQbRPFCH9IQoKCCL8r4jWLS5wo1sv9iioZ1o=";
+    url = "https://web.archive.org/web/20211126120343/http://cdn.azul.com/zcek/bin/ZuluJCEPolicies.zip";
   };
 
   javaPackage = if enableJavaFX then "ca-fx-jdk" else "ca-jdk";
@@ -82,8 +82,8 @@ let
     version = dist.jdkVersion;
 
     src = fetchurl {
-      url = "https://cdn.azul.com/zulu/bin/zulu${dist.zuluVersion}-${javaPackage}${dist.jdkVersion}-${platform}_${arch}.tar.gz";
       inherit (dist) hash;
+      url = "https://cdn.azul.com/zulu/bin/zulu${dist.zuluVersion}-${javaPackage}${dist.jdkVersion}-${platform}_${arch}.tar.gz";
       curlOpts = "-H Referer:https://www.azul.com/downloads/zulu/";
     };
 
@@ -110,15 +110,6 @@ let
         zlib
       ]
       ++ lib.optionals (stdenv.hostPlatform.isLinux && enableJavaFX) runtimeDependencies;
-
-    autoPatchelfIgnoreMissingDeps =
-      if (stdenv.hostPlatform.isLinux && enableJavaFX) then
-        [
-          "libavcodec*.so.*"
-          "libavformat*.so.*"
-        ]
-      else
-        null;
 
     installPhase = ''
       mkdir -p $out
@@ -179,18 +170,29 @@ let
       ln -nsf $bundle/Contents/Home/man $out/share/man
     '';
 
+    autoPatchelfIgnoreMissingDeps =
+      if (stdenv.hostPlatform.isLinux && enableJavaFX) then
+        [
+          "libavcodec*.so.*"
+          "libavformat*.so.*"
+        ]
+      else
+        null;
+
     passthru =
       (lib.optionalAttrs isJdk8 {
         jre = jdk;
       })
       // {
         home = jdk;
+
         tests.version = testers.testVersion {
-          package = jdk;
-          command = "java -version";
           version = ''openjdk version \""${
             if lib.versions.major version == "8" then "1.8" else lib.versions.major version
           }"'';
+
+          command = "java -version";
+          package = jdk;
         };
       }
       // lib.optionalAttrs stdenv.hostPlatform.isDarwin {
@@ -199,19 +201,23 @@ let
 
     meta = {
       description = "Certified builds of OpenJDK";
+
       longDescription = ''
         Certified builds of OpenJDK that can be deployed across multiple
         operating systems, containers, hypervisors and Cloud platforms.
       '';
+
       homepage = "https://www.azul.com/products/zulu/";
       license = lib.licenses.gpl2Only;
-      mainProgram = "java";
-      teams = [ lib.teams.java ];
-      platforms = builtins.attrNames dists;
+
       sourceProvenance = with lib.sourceTypes; [
         binaryBytecode
         binaryNativeCode
       ];
+
+      platforms = builtins.attrNames dists;
+      mainProgram = "java";
+      teams = [ lib.teams.java ];
     };
   };
 in

@@ -4,10 +4,10 @@
 # If you don't specify neither one date="NOW" will be used (get latest)
 
 {
-  stdenvNoCC,
+  lib,
   cvs,
   openssh,
-  lib,
+  stdenvNoCC,
 }:
 
 lib.makeOverridable (
@@ -15,22 +15,14 @@ lib.makeOverridable (
     {
       cvsRoot,
       module,
-      tag ? null,
-      date ? null,
       outputHash,
       outputHashAlgo,
+      date ? null,
+      tag ? null,
     }:
 
     stdenvNoCC.mkDerivation {
-      name = "cvs-export";
-      builder = ./builder.sh;
-      nativeBuildInputs = [
-        cvs
-        openssh
-      ];
-
       inherit outputHash outputHashAlgo;
-      outputHashMode = "recursive";
 
       inherit
         cvsRoot
@@ -38,6 +30,15 @@ lib.makeOverridable (
         tag
         date
         ;
+
+      nativeBuildInputs = [
+        cvs
+        openssh
+      ];
+
+      builder = ./builder.sh;
+      name = "cvs-export";
+      outputHashMode = "recursive";
     }
   )
 )

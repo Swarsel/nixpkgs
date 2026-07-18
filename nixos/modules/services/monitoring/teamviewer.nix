@@ -18,31 +18,31 @@ in
 
   config = lib.mkIf (cfg.enable) {
     environment.systemPackages = [ cfg.package ];
-
     services.dbus.packages = [ cfg.package ];
 
     systemd.services.teamviewerd = {
-      description = "TeamViewer remote control daemon";
-
-      wantedBy = [ "multi-user.target" ];
-      wants = [ "network-online.target" ];
       after = [
         "network-online.target"
         "network.target"
         "dbus.service"
       ];
-      requires = [ "dbus.service" ];
-      preStart = "mkdir -pv /var/lib/teamviewer /var/log/teamviewer";
 
-      startLimitIntervalSec = 60;
-      startLimitBurst = 10;
+      description = "TeamViewer remote control daemon";
+      preStart = "mkdir -pv /var/lib/teamviewer /var/log/teamviewer";
+      requires = [ "dbus.service" ];
+
       serviceConfig = {
-        Type = "simple";
+        ExecReload = "${pkgs.coreutils}/bin/kill -HUP $MAINPID";
         ExecStart = "${cfg.package}/bin/teamviewerd -f";
         PIDFile = "/run/teamviewerd.pid";
-        ExecReload = "${pkgs.coreutils}/bin/kill -HUP $MAINPID";
         Restart = "on-abort";
+        Type = "simple";
       };
+
+      startLimitBurst = 10;
+      startLimitIntervalSec = 60;
+      wantedBy = [ "multi-user.target" ];
+      wants = [ "network-online.target" ];
     };
   };
 }

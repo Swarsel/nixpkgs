@@ -1,9 +1,9 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
-  ldc ? null,
   dcompiler ? ldc,
+  ldc ? null,
 }:
 
 assert dcompiler != null;
@@ -20,6 +20,7 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   buildInputs = [ dcompiler ];
+
   buildPhase = ''
     for candidate in dmd ldmd2; do
       echo Checking for DCompiler $candidate ...
@@ -36,6 +37,7 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   doCheck = true;
+
   checkPhase = ''
     $NIX_BUILD_TOP/rund make.d test
   '';
@@ -47,10 +49,10 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Compiler-wrapper that runs and caches D programs";
-    mainProgram = "rund";
     homepage = "https://github.com/dragon-lang/rund";
     license = lib.licenses.boost;
     maintainers = with lib.maintainers; [ jonathanmarler ];
     platforms = lib.platforms.unix;
+    mainProgram = "rund";
   };
 })

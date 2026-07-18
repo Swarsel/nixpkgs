@@ -1,10 +1,10 @@
 {
   lib,
   stdenv,
-  buildPythonPackage,
   fetchFromGitHub,
-  hatchling,
+  buildPythonPackage,
   hatch-vcs,
+  hatchling,
   pytest-asyncio,
   pytestCheckHook,
 }:
@@ -12,7 +12,6 @@
 buildPythonPackage rec {
   pname = "aiofiles";
   version = "25.1.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "Tinche";
@@ -21,14 +20,14 @@ buildPythonPackage rec {
     hash = "sha256-NBmzoUb2una3+eWqR1HraVPibaRb9I51aYwskrjxskQ=";
   };
 
-  build-system = [
-    hatchling
-    hatch-vcs
-  ];
-
   nativeCheckInputs = [
     pytest-asyncio
     pytestCheckHook
+  ];
+
+  build-system = [
+    hatchling
+    hatch-vcs
   ];
 
   disabledTests = lib.optionals stdenv.hostPlatform.isDarwin [
@@ -41,6 +40,7 @@ buildPythonPackage rec {
     "test_slow_file"
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "aiofiles" ];
 
   meta = {

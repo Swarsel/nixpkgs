@@ -1,12 +1,12 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
   basemap-data,
+  buildPythonPackage,
   cython,
   geos,
-  numpy,
   matplotlib,
+  numpy,
   pillow,
   pyproj,
   pyshp,
@@ -17,7 +17,6 @@
 buildPythonPackage rec {
   pname = "basemap";
   version = "2.0.0";
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "matplotlib";
@@ -31,8 +30,6 @@ buildPythonPackage rec {
     geos
     setuptools
   ];
-
-  pythonRelaxDeps = true;
 
   propagatedBuildInputs = [
     basemap-data
@@ -57,18 +54,25 @@ buildPythonPackage rec {
     ${python.interpreter} run_all.py
   '';
 
+  format = "setuptools";
+  pythonRelaxDeps = true;
+
   meta = {
-    homepage = "https://matplotlib.org/basemap/";
     description = "Plot data on map projections with matplotlib";
+
     longDescription = ''
       An add-on toolkit for matplotlib that lets you plot data on map projections with
       coastlines, lakes, rivers and political boundaries. See
       https://matplotlib.org/basemap/stable/users/examples.html for examples of what it can do.
     '';
-    teams = [ lib.teams.geospatial ];
+
+    homepage = "https://matplotlib.org/basemap/";
+
     license = with lib.licenses; [
       mit
       lgpl21
     ];
+
+    teams = [ lib.teams.geospatial ];
   };
 }

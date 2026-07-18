@@ -11,6 +11,13 @@ stdenv.mkDerivation (finalAttrs: {
   pname = "fstl";
   version = "0.11.1";
 
+  src = fetchFromGitHub {
+    owner = "fstl-app";
+    repo = "fstl";
+    rev = "v" + finalAttrs.version;
+    hash = "sha256-puDYXANiyTluSlmnT+gnNPA5eCcw0Ny6md6Ock6pqLc=";
+  };
+
   postPatch = ''
     patchShebangs --build xdg/xdg_install.sh
     substituteInPlace xdg/fstlapp-fstl.desktop \
@@ -36,19 +43,12 @@ stdenv.mkDerivation (finalAttrs: {
     env --chdir ../xdg XDG_DATA_HOME=$out/share ./xdg_install.sh fstl
   '';
 
-  src = fetchFromGitHub {
-    owner = "fstl-app";
-    repo = "fstl";
-    rev = "v" + finalAttrs.version;
-    hash = "sha256-puDYXANiyTluSlmnT+gnNPA5eCcw0Ny6md6Ock6pqLc=";
-  };
-
   meta = {
     description = "Fastest STL file viewer";
-    mainProgram = "fstl";
     homepage = "https://github.com/fstl-app/fstl";
     license = lib.licenses.mit;
-    platforms = lib.platforms.linux ++ lib.platforms.darwin;
     maintainers = with lib.maintainers; [ tweber ];
+    platforms = lib.platforms.linux ++ lib.platforms.darwin;
+    mainProgram = "fstl";
   };
 })

@@ -2,10 +2,10 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  cmake,
   boost,
-  gtest,
+  cmake,
   fetchpatch,
+  gtest,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -22,22 +22,17 @@ stdenv.mkDerivation (finalAttrs: {
   patches = [
     # Add missing #include <stdint.h> for gcc 15
     (fetchpatch {
-      url = "https://github.com/serge1/ELFIO/commit/34d2c64237bb40f09879e7421db120e50e7e2923.patch";
       hash = "sha256-HD+rOwqkuvu4lgeIHhiORNxpuowDfy94i0OgUVqbhJ8=";
+      url = "https://github.com/serge1/ELFIO/commit/34d2c64237bb40f09879e7421db120e50e7e2923.patch";
     })
     # Replace including of <stdint.h> by <cstdint>
     (fetchpatch {
-      url = "https://github.com/serge1/ELFIO/commit/575bfdb12cd90fa8913660295103549f151d116a.patch";
       hash = "sha256-9N/NC5U+zs9eFKYLw/kVdrMGySWakWH7HG4fsK0mvNw=";
+      url = "https://github.com/serge1/ELFIO/commit/575bfdb12cd90fa8913660295103549f151d116a.patch";
     })
   ];
 
   nativeBuildInputs = [ cmake ];
-
-  nativeCheckInputs = [
-    boost
-    gtest
-  ];
 
   cmakeFlags = [
     "-DELFIO_BUILD_TESTS=ON"
@@ -46,11 +41,16 @@ stdenv.mkDerivation (finalAttrs: {
 
   doCheck = true;
 
+  nativeCheckInputs = [
+    boost
+    gtest
+  ];
+
   meta = {
     description = "Header-only C++ library for reading and generating files in the ELF binary format";
     homepage = "https://github.com/serge1/ELFIO";
     license = lib.licenses.mit;
-    platforms = lib.platforms.unix;
     maintainers = with lib.maintainers; [ prusnak ];
+    platforms = lib.platforms.unix;
   };
 })

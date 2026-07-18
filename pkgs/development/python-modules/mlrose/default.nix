@@ -1,18 +1,17 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   fetchpatch,
-  setuptools,
-  scikit-learn,
-  pytestCheckHook,
   pytest-randomly,
+  pytestCheckHook,
+  scikit-learn,
+  setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "mlrose";
   version = "1.3.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "gkhayes";
@@ -24,31 +23,32 @@ buildPythonPackage rec {
   patches = [
     # Fixes compatibility with scikit-learn 0.24.1
     (fetchpatch {
-      url = "https://github.com/gkhayes/mlrose/pull/55/commits/19caf8616fc194402678aa67917db334ad02852a.patch";
       sha256 = "1nivz3bn21nd21bxbcl16a6jmy7y5j8ilz90cjmd0xq4v7flsahf";
+      url = "https://github.com/gkhayes/mlrose/pull/55/commits/19caf8616fc194402678aa67917db334ad02852a.patch";
     })
-  ];
-
-  build-system = [ setuptools ];
-  dependencies = [ scikit-learn ];
-  nativeCheckInputs = [
-    pytest-randomly
-    pytestCheckHook
   ];
 
   postPatch = ''
     substituteInPlace setup.py --replace-fail sklearn scikit-learn
   '';
 
-  pythonImportsCheck = [ "mlrose" ];
+  nativeCheckInputs = [
+    pytest-randomly
+    pytestCheckHook
+  ];
 
-  # Fix random seed during tests
-  pytestFlags = [ "--randomly-seed=0" ];
+  build-system = [ setuptools ];
+  dependencies = [ scikit-learn ];
 
   disabledTests = [
     # mimic optimizer fails to converge under current numpy
     "test_mimic_discrete_max_fast"
   ];
+
+  pyproject = true;
+  # Fix random seed during tests
+  pytestFlags = [ "--randomly-seed=0" ];
+  pythonImportsCheck = [ "mlrose" ];
 
   meta = {
     description = "Machine Learning, Randomized Optimization and SEarch";

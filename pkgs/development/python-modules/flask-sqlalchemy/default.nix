@@ -3,8 +3,8 @@
   buildPythonPackage,
   fetchPypi,
   flask,
-  mock,
   flit-core,
+  mock,
   pytestCheckHook,
   pythonAtLeast,
   pythonOlder,
@@ -14,12 +14,11 @@
 buildPythonPackage rec {
   pname = "flask-sqlalchemy";
   version = "3.1.1";
-  pyproject = true;
 
   src = fetchPypi {
-    pname = "flask_sqlalchemy";
     inherit version;
     hash = "sha256-5LaLuIGALdoafYeLL8hMBtHuV/tAuHTT3Jfav6NrgxI=";
+    pname = "flask_sqlalchemy";
   };
 
   nativeBuildInputs = [ flit-core ];
@@ -29,12 +28,12 @@ buildPythonPackage rec {
     sqlalchemy
   ];
 
+  doCheck = pythonOlder "3.13"; # https://github.com/pallets-eco/flask-sqlalchemy/issues/1379
+
   nativeCheckInputs = [
     mock
     pytestCheckHook
   ];
-
-  doCheck = pythonOlder "3.13"; # https://github.com/pallets-eco/flask-sqlalchemy/issues/1379
 
   disabledTests = [
     # flaky
@@ -42,6 +41,8 @@ buildPythonPackage rec {
     # https://github.com/pallets-eco/flask-sqlalchemy/issues/1378
     "test_explicit_table"
   ];
+
+  pyproject = true;
 
   pytestFlags = lib.optionals (pythonAtLeast "3.12") [
     # datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version.

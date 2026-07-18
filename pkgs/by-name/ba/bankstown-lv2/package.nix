@@ -1,9 +1,9 @@
 {
   lib,
-  rustPlatform,
-  fetchFromGitHub,
   stdenv,
+  fetchFromGitHub,
   nix-update-script,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -24,7 +24,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
   '';
 
   cargoHash = "sha256-eMN95QNnQtC7QDix9g3dwb9ZbtQuiVBj8+R+opFs0KI=";
-
   dontCargoInstall = true;
 
   installFlags = [
@@ -37,12 +36,14 @@ rustPlatform.buildRustPackage (finalAttrs: {
   };
 
   meta = {
-    homepage = "https://github.com/chadmed/bankstown";
     description = "Lightweight psychoacoustic bass enhancement plugin";
+    homepage = "https://github.com/chadmed/bankstown";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       yuka
     ];
+
     platforms = lib.platforms.linux;
   };
 })

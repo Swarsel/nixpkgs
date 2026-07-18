@@ -1,15 +1,14 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
+  buildPythonPackage,
   pytestCheckHook,
+  setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "zope-cachedescriptors";
   version = "6.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "zopefoundation";
@@ -23,16 +22,12 @@ buildPythonPackage rec {
       --replace-fail "setuptools ==" "setuptools >="
   '';
 
-  build-system = [ setuptools ];
-
-  dependencies = [ setuptools ];
-
   nativeCheckInputs = [ pytestCheckHook ];
-
+  build-system = [ setuptools ];
+  dependencies = [ setuptools ];
   enabledTestPaths = [ "src/zope/cachedescriptors/tests.py" ];
-
+  pyproject = true;
   pythonImportsCheck = [ "zope.cachedescriptors" ];
-
   pythonNamespaces = [ "zope" ];
 
   meta = {

@@ -1,23 +1,15 @@
 {
-  mkDerivation,
   lib,
   stdenv,
-  compat,
   bsdSetupHook,
   byacc,
+  compat,
   freebsdSetupHook,
-  makeMinimal,
   install,
+  makeMinimal,
+  mkDerivation,
 }:
 mkDerivation {
-  path = "usr.bin/localedef";
-
-  extraPaths = [
-    "lib/libc/locale"
-    "lib/libc/stdtime"
-  ]
-  ++ lib.optionals (!stdenv.hostPlatform.isFreeBSD) [ "." ];
-
   nativeBuildInputs = [
     bsdSetupHook
     byacc
@@ -34,4 +26,12 @@ mkDerivation {
   '';
 
   MK_TESTS = "no";
+
+  extraPaths = [
+    "lib/libc/locale"
+    "lib/libc/stdtime"
+  ]
+  ++ lib.optionals (!stdenv.hostPlatform.isFreeBSD) [ "." ];
+
+  path = "usr.bin/localedef";
 }

@@ -9,10 +9,10 @@ stdenv.mkDerivation rec {
   version = "3.49.1.0";
 
   src = fetchMavenArtifact {
-    groupId = "org.xerial";
-    artifactId = "sqlite-jdbc";
     inherit version;
     hash = "sha256-XIYJ0so0HeuMb3F3iXS1ukmVx9MtfHyJ2TkqPnLDkpE=";
+    artifactId = "sqlite-jdbc";
+    groupId = "org.xerial";
   };
 
   installPhase = ''
@@ -20,11 +20,11 @@ stdenv.mkDerivation rec {
   '';
 
   meta = {
-    homepage = "https://github.com/xerial/sqlite-jdbc";
     description = "Library for accessing and creating SQLite database files in Java";
+    homepage = "https://github.com/xerial/sqlite-jdbc";
     license = lib.licenses.asl20;
     sourceProvenance = with lib.sourceTypes; [ binaryBytecode ];
-    platforms = lib.platforms.linux;
     maintainers = with lib.maintainers; [ jraygauthier ];
+    platforms = lib.platforms.linux;
   };
 }

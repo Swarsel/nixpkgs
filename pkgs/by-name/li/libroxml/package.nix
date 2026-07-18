@@ -18,7 +18,7 @@ stdenv.mkDerivation (finalAttrs: {
     homepage = "https://www.libroxml.net/";
     license = lib.licenses.lgpl3;
     maintainers = with lib.maintainers; [ mpickering ];
-    mainProgram = "roxml";
     platforms = lib.platforms.unix;
+    mainProgram = "roxml";
   };
 })

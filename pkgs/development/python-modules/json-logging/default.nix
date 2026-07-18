@@ -1,8 +1,8 @@
 {
   lib,
+  fetchFromGitHub,
   buildPythonPackage,
   fastapi,
-  fetchFromGitHub,
   flask,
   httpx,
   pytestCheckHook,
@@ -17,7 +17,6 @@
 buildPythonPackage rec {
   pname = "json-logging";
   version = "1.5.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "bobbui";
@@ -32,6 +31,8 @@ buildPythonPackage rec {
         --replace-fail '"written_at",' '"taskName", "written_at",'
   '';
 
+  nativeCheckInputs = [ pytestCheckHook ];
+  __darwinAllowLocalNetworking = true;
   build-system = [ setuptools ];
 
   dependencies = [
@@ -44,25 +45,23 @@ buildPythonPackage rec {
     uvicorn
   ];
 
-  nativeCheckInputs = [ pytestCheckHook ];
-
-  pythonImportsCheck = [ "json_logging" ];
-
-  disabledTests = [ "quart" ];
-
   disabledTestPaths = [
     # Smoke tests don't always work
     "tests/smoketests/test_run_smoketest.py"
   ];
 
-  __darwinAllowLocalNetworking = true;
+  disabledTests = [ "quart" ];
+  pyproject = true;
+  pythonImportsCheck = [ "json_logging" ];
 
   meta = {
     description = "Python library to emit logs in JSON format";
+
     longDescription = ''
       Python logging library to emit JSON log that can be easily indexed and searchable by logging
       infrastructure such as ELK, EFK, AWS Cloudwatch, GCP Stackdriver.
     '';
+
     homepage = "https://github.com/bobbui/json-logging-python";
     changelog = "https://github.com/bobbui/json-logging-python/releases/tag/${src.tag}";
     license = lib.licenses.asl20;

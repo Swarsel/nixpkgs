@@ -1,7 +1,7 @@
 {
-  fetchurl,
   lib,
   stdenv,
+  fetchurl,
   flex,
 }:
 
@@ -15,7 +15,6 @@ stdenv.mkDerivation rec {
   };
 
   patches = [ ./tmpdir.patch ] ++ lib.optional stdenv.hostPlatform.isDarwin ./darwin.patch;
-
   buildInputs = [ flex ];
 
   buildFlags = [
@@ -25,9 +24,7 @@ stdenv.mkDerivation rec {
   doCheck = true;
 
   meta = {
-    homepage = "http://www.splint.org/";
     description = "Annotation-assisted lightweight static analyzer for C";
-    mainProgram = "splint";
 
     longDescription = ''
       Splint is a tool for statically checking C programs for security
@@ -37,7 +34,9 @@ stdenv.mkDerivation rec {
       checking than can be done by any standard lint.
     '';
 
+    homepage = "http://www.splint.org/";
     license = lib.licenses.gpl2Plus;
     platforms = lib.platforms.unix;
+    mainProgram = "splint";
   };
 }

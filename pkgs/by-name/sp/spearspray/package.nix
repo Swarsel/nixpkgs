@@ -1,13 +1,12 @@
 {
   lib,
-  python3,
   fetchFromGitHub,
+  python3,
 }:
 
 python3.pkgs.buildPythonApplication {
   pname = "spearspray";
   version = "2.0.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "sikumy";
@@ -16,8 +15,8 @@ python3.pkgs.buildPythonApplication {
     hash = "sha256-6CSVWUOdpv7GyD8qoTbQAqqf6GHitifsV0n5GOuFawU=";
   };
 
-  pythonRelaxDeps = [ "neo4j" ];
-
+  # Project has no tests
+  doCheck = false;
   build-system = with python3.pkgs; [ poetry-core ];
 
   dependencies = with python3.pkgs; [
@@ -30,10 +29,9 @@ python3.pkgs.buildPythonApplication {
     unidecode
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "spearspray" ];
-
-  # Project has no tests
-  doCheck = false;
+  pythonRelaxDeps = [ "neo4j" ];
 
   meta = {
     description = "Tool for doing Password Spraying with User Intelligence";

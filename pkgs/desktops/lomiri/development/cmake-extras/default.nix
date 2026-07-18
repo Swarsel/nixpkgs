@@ -1,9 +1,9 @@
 {
-  stdenvNoCC,
   lib,
   fetchFromGitLab,
   cmake,
   qtbase,
+  stdenvNoCC,
 }:
 
 stdenvNoCC.mkDerivation (finalAttrs: {
@@ -29,9 +29,6 @@ stdenvNoCC.mkDerivation (finalAttrs: {
 
   strictDeps = true;
 
-  # Produces no binaries
-  dontWrapQtApps = true;
-
   nativeBuildInputs = [
     cmake
   ];
@@ -40,12 +37,15 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     qtbase
   ];
 
+  # Produces no binaries
+  dontWrapQtApps = true;
+
   meta = {
     description = "Collection of add-ons for the CMake build tool";
     homepage = "https://gitlab.com/ubports/development/core/cmake-extras";
     changelog = "https://gitlab.com/ubports/development/core/cmake-extras/-/blob/${finalAttrs.version}/ChangeLog";
     license = lib.licenses.gpl3Only;
-    teams = [ lib.teams.lomiri ];
     platforms = lib.platforms.all;
+    teams = [ lib.teams.lomiri ];
   };
 })

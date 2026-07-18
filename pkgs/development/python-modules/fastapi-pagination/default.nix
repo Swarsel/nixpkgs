@@ -1,13 +1,11 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # build-system
-  hatchling,
-
+  buildPythonPackage,
   # dependencies
   fastapi,
+  # build-system
+  hatchling,
   pydantic,
   typing-extensions,
 }:
@@ -15,8 +13,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "fastapi-pagination";
   version = "0.15.15";
-  pyproject = true;
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "uriyyo";
@@ -24,6 +20,10 @@ buildPythonPackage (finalAttrs: {
     tag = finalAttrs.version;
     hash = "sha256-G6qF57MWlrZ4Poc+M2YtpKqquhOR/Zh4TnFmL2qZ1Uk=";
   };
+
+  # Tests require network access
+  doCheck = false;
+  __structuredAttrs = true;
 
   build-system = [
     hatchling
@@ -35,10 +35,8 @@ buildPythonPackage (finalAttrs: {
     typing-extensions
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "fastapi_pagination" ];
-
-  # Tests require network access
-  doCheck = false;
 
   meta = {
     description = "FastAPI pagination";

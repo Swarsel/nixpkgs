@@ -1,19 +1,18 @@
 {
   lib,
-  buildDunePackage,
   fetchurl,
+  alcotest,
   angstrom,
   base64,
   bstr,
+  buildDunePackage,
   faraday,
   httpun-types,
-  alcotest,
   version ? "1.1.0",
 }:
 
 buildDunePackage {
   inherit version;
-
   pname = "h1";
 
   src = fetchurl {
@@ -30,6 +29,7 @@ buildDunePackage {
   ];
 
   doCheck = true;
+
   checkInputs = [
     alcotest
   ];
@@ -37,7 +37,7 @@ buildDunePackage {
   meta = {
     description = "High-performance, memory-efficient, and scalable web server for OCaml";
     homepage = "https://github.com/robur-coop/ocaml-h1";
-    maintainers = [ lib.maintainers.vbgl ];
     license = lib.licenses.bsd3;
+    maintainers = [ lib.maintainers.vbgl ];
   };
 }

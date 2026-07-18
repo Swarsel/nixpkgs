@@ -18,23 +18,23 @@ in
 
   options.hardware.facetimehd.withCalibration = lib.mkOption {
     default = false;
-    example = true;
-    type = lib.types.bool;
+
     description = ''
       Whether to include sensor calibration files for facetimehd.
       This makes colors look much better but is experimental, see
       <https://github.com/patjak/facetimehd/wiki/Extracting-the-sensor-calibration-files>
       for details.
     '';
+
+    example = true;
+    type = lib.types.bool;
   };
 
   config = lib.mkIf cfg.enable {
 
-    boot.kernelModules = [ "facetimehd" ];
-
     boot.blacklistedKernelModules = [ "bdc_pci" ];
-
     boot.extraModulePackages = [ kernelPackages.facetimehd ];
+    boot.kernelModules = [ "facetimehd" ];
 
     hardware.firmware = [
       pkgs.facetimehd-firmware

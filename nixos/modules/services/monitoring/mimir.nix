@@ -22,46 +22,49 @@ in
 {
   options.services.mimir = {
     enable = mkEnableOption "mimir";
-
-    configuration = mkOption {
-      type = (pkgs.formats.json { }).type;
-      default = { };
-      description = ''
-        Specify the configuration for Mimir in Nix.
-      '';
-    };
+    package = mkPackageOption pkgs "mimir" { };
 
     configFile = mkOption {
-      type = types.nullOr types.path;
       default = null;
+
       description = ''
         Specify a configuration file that Mimir should use.
       '';
+
+      type = types.nullOr types.path;
     };
 
-    package = mkPackageOption pkgs "mimir" { };
+    configuration = mkOption {
+      default = { };
+
+      description = ''
+        Specify the configuration for Mimir in Nix.
+      '';
+
+      type = (pkgs.formats.json { }).type;
+    };
 
     extraFlags = mkOption {
-      type = types.listOf types.str;
       default = [ ];
-      example = [ "--config.expand-env=true" ];
+
       description = ''
         Specify a list of additional command line flags,
         which get escaped and are then passed to Mimir.
       '';
+
+      example = [ "--config.expand-env=true" ];
+      type = types.listOf types.str;
     };
   };
 
   config = mkIf cfg.enable {
-    # for mimirtool
-    environment.systemPackages = [ cfg.package ];
-
     assertions = [
       {
         assertion = (
           (cfg.configuration == { } -> cfg.configFile != null)
           && (cfg.configFile != null -> cfg.configuration == { })
         );
+
         message = ''
           Please specify either
           'services.mimir.configuration' or
@@ -70,9 +73,11 @@ in
       }
     ];
 
+    # for mimirtool
+    environment.systemPackages = [ cfg.package ];
+
     systemd.services.mimir = {
       description = "mimir Service Daemon";
-      wantedBy = [ "multi-user.target" ];
 
       serviceConfig =
         let
@@ -83,15 +88,17 @@ in
               cfg.configFile;
         in
         {
-          ExecStart = "${cfg.package}/bin/mimir --config.file=${conf} ${escapeShellArgs cfg.extraFlags}";
-          DynamicUser = true;
-          Restart = "always";
-          ProtectSystem = "full";
           DevicePolicy = "closed";
+          DynamicUser = true;
+          ExecStart = "${cfg.package}/bin/mimir --config.file=${conf} ${escapeShellArgs cfg.extraFlags}";
           NoNewPrivileges = true;
-          WorkingDirectory = "/var/lib/mimir";
+          ProtectSystem = "full";
+          Restart = "always";
           StateDirectory = "mimir";
+          WorkingDirectory = "/var/lib/mimir";
         };
+
+      wantedBy = [ "multi-user.target" ];
     };
   };
 }

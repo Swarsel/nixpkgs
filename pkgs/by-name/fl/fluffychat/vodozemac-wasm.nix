@@ -1,21 +1,21 @@
 {
   lib,
   stdenv,
-  fluffychat-web,
-  symlinkJoin,
+  binaryen,
   buildPackages,
-  rustc,
-  rustPlatform,
   cargo,
+  fluffychat-web,
   flutter,
   flutter_rust_bridge_codegen,
-  which,
-  wasm-pack,
-  wasm-bindgen-cli_0_2_100,
-  binaryen,
-  writableTmpDirAsHomeHook,
-  runCommand,
   removeReferencesTo,
+  runCommand,
+  rustPlatform,
+  rustc,
+  symlinkJoin,
+  wasm-bindgen-cli_0_2_100,
+  wasm-pack,
+  which,
+  writableTmpDirAsHomeHook,
 }:
 
 let
@@ -32,50 +32,30 @@ let
 
   # wasm-pack doesn't take 'RUST_SRC_PATH' into consideration
   sysroot = symlinkJoin {
-    name = "rustc_unwrapped_with_libsrc";
-    paths = [
-      buildPackages.rustc.unwrapped
-    ];
     postBuild = ''
       mkdir -p $out/lib/rustlib/src/rust
       ln -s ${rustPlatform.rustLibSrc} $out/lib/rustlib/src/rust/library
     '';
+
+    name = "rustc_unwrapped_with_libsrc";
+
+    paths = [
+      buildPackages.rustc.unwrapped
+    ];
   };
   rustcWithLibSrc = buildPackages.rustc.override { inherit sysroot; };
 in
 
 # https://github.com/krille-chan/fluffychat/blob/main/scripts/prepare-web.sh
 stdenv.mkDerivation {
-  pname = "vodozemac-wasm";
   inherit (pubSources.vodozemac) version;
-
-  # These two were in the same repository, so just reuse them
-  unpackPhase = ''
-    runHook preUnpack
-
-    cp -r ${pubSources.flutter_vodozemac}/rust ./rust
-    cp -r ${pubSources.vodozemac} ./dart
-    chmod -R +rwx .
-
-    runHook postUnpack
-  '';
+  inherit (fluffychat-web) meta;
+  pname = "vodozemac-wasm";
 
   # Remove dev_dependencies to avoid downloading them
   postPatch = ''
     sed -i '/^dev_dependencies:/,/^$/d' dart/pubspec.yaml
   '';
-
-  cargoRoot = "rust";
-
-  cargoDeps = symlinkJoin {
-    name = "vodozemac-wasm-cargodeps";
-    paths = [ pubSources.flutter_vodozemac.passthru.cargoDeps ];
-    # Pull in rust vendor so we don't have to vendor rustLibSrc again
-    # This is required because `-Z build-std=std,panic_abort` rebuilds std
-    postBuild = ''
-      cp -rsn ${rustPlatform.rustVendorSrc}/* $out/*/
-    '';
-  };
 
   nativeBuildInputs = [
     rustPlatform.cargoSetupHook
@@ -91,6 +71,10 @@ stdenv.mkDerivation {
     writableTmpDirAsHomeHook
     removeReferencesTo
   ];
+
+  env = {
+    RUSTC_BOOTSTRAP = 1; # `-Z build-std=std,panic_abort` requires nightly toolchain
+  };
 
   buildPhase = ''
     runHook preBuild
@@ -123,9 +107,27 @@ stdenv.mkDerivation {
     find $out -name "*.wasm" -exec remove-references-to -t ${sysroot} {} +
   '';
 
-  env = {
-    RUSTC_BOOTSTRAP = 1; # `-Z build-std=std,panic_abort` requires nightly toolchain
+  cargoDeps = symlinkJoin {
+    # Pull in rust vendor so we don't have to vendor rustLibSrc again
+    # This is required because `-Z build-std=std,panic_abort` rebuilds std
+    postBuild = ''
+      cp -rsn ${rustPlatform.rustVendorSrc}/* $out/*/
+    '';
+
+    name = "vodozemac-wasm-cargodeps";
+    paths = [ pubSources.flutter_vodozemac.passthru.cargoDeps ];
   };
 
-  inherit (fluffychat-web) meta;
+  cargoRoot = "rust";
+
+  # These two were in the same repository, so just reuse them
+  unpackPhase = ''
+    runHook preUnpack
+
+    cp -r ${pubSources.flutter_vodozemac}/rust ./rust
+    cp -r ${pubSources.vodozemac} ./dart
+    chmod -R +rwx .
+
+    runHook postUnpack
+  '';
 }

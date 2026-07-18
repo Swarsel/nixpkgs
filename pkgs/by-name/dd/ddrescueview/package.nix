@@ -1,14 +1,14 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchurl,
-  fpc,
-  lazarus,
   atk,
   cairo,
+  fpc,
   gdk-pixbuf,
   glib,
   gtk2,
+  lazarus,
   libx11,
   pango,
 }:
@@ -21,7 +21,6 @@ stdenv.mkDerivation rec {
     url = "mirror://sourceforge/ddrescueview/ddrescueview-source-${version}.tar.xz";
     sha256 = "sha256-Vzg8OU5iYSzip5lDiwDG48Rlwx+bqUDgd/Yk4ucChGU=";
   };
-  sourceRoot = "ddrescueview-source-${version}/source";
 
   nativeBuildInputs = [
     fpc
@@ -55,12 +54,14 @@ stdenv.mkDerivation rec {
     cp -ar applications icons man $out/share
   '';
 
+  sourceRoot = "ddrescueview-source-${version}/source";
+
   meta = {
     description = "Tool to graphically examine ddrescue mapfiles";
     homepage = "https://sourceforge.net/projects/ddrescueview/";
     license = lib.licenses.gpl3Plus;
-    platforms = lib.platforms.linux;
     maintainers = [ ];
+    platforms = lib.platforms.linux;
     mainProgram = "ddrescueview";
   };
 }

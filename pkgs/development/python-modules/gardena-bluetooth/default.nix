@@ -1,10 +1,10 @@
 {
   lib,
-  asyncclick,
-  bleak-retry-connector,
-  bleak,
-  buildPythonPackage,
   fetchFromGitHub,
+  asyncclick,
+  bleak,
+  bleak-retry-connector,
+  buildPythonPackage,
   pytest-asyncio,
   pytestCheckHook,
   setuptools,
@@ -14,7 +14,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "gardena-bluetooth";
   version = "2.8.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "elupus";
@@ -22,6 +21,11 @@ buildPythonPackage (finalAttrs: {
     tag = finalAttrs.version;
     hash = "sha256-yl1I36p21lemKigijqks7cwOxWej+35bDB2D0KO3pa0=";
   };
+
+  nativeCheckInputs = [
+    pytestCheckHook
+    pytest-asyncio
+  ];
 
   build-system = [ setuptools ];
 
@@ -35,11 +39,7 @@ buildPythonPackage (finalAttrs: {
     cli = [ asyncclick ];
   };
 
-  nativeCheckInputs = [
-    pytestCheckHook
-    pytest-asyncio
-  ];
-
+  pyproject = true;
   pythonImportsCheck = [ "gardena_bluetooth" ];
 
   meta = {

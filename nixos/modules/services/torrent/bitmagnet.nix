@@ -1,7 +1,7 @@
 {
-  pkgs,
   config,
   lib,
+  pkgs,
   ...
 }:
 let
@@ -27,84 +27,109 @@ in
 {
   options.services.bitmagnet = {
     enable = mkEnableOption "Bitmagnet service";
-    useLocalPostgresDB = mkOption {
-      description = "Use a local postgresql database, create user and database";
-      type = bool;
-      default = true;
+    package = mkPackageOption pkgs "bitmagnet" { };
+
+    group = mkOption {
+      default = "bitmagnet";
+      description = "Group of user running bitmagnet";
+      type = str;
     };
+
+    openFirewall = mkOption {
+      default = false;
+      description = "Open DHT ports in firewall";
+      type = bool;
+    };
+
     settings = mkOption {
-      description = "Bitmagnet configuration (https://bitmagnet.io/setup/configuration.html).";
       default = { };
+      description = "Bitmagnet configuration (https://bitmagnet.io/setup/configuration.html).";
+
       type = submodule {
         inherit freeformType;
+
         options = {
-          http_server = mkOption {
-            default = { };
-            description = "HTTP server settings";
-            type = submodule {
-              inherit freeformType;
-              options = {
-                local_address = mkOption {
-                  type = str;
-                  default = ":3333";
-                  description = "HTTP server listen address";
-                };
-              };
-            };
-          };
           dht_server = mkOption {
             default = { };
             description = "DHT server settings";
+
             type = submodule {
               inherit freeformType;
+
               options = {
                 port = mkOption {
-                  type = port;
                   default = 3334;
                   description = "DHT listen port";
+                  type = port;
                 };
               };
             };
           };
+
+          http_server = mkOption {
+            default = { };
+            description = "HTTP server settings";
+
+            type = submodule {
+              inherit freeformType;
+
+              options = {
+                local_address = mkOption {
+                  default = ":3333";
+                  description = "HTTP server listen address";
+                  type = str;
+                };
+              };
+            };
+          };
+
           postgres = mkOption {
             default = { };
             description = "PostgreSQL database configuration";
+
             type = submodule {
               inherit freeformType;
+
               options = {
                 host = mkOption {
-                  type = str;
                   default = "";
                   description = "Address, hostname or Unix socket path of the database server";
-                };
-                name = mkOption {
                   type = str;
+                };
+
+                name = mkOption {
                   default = "bitmagnet";
                   description = "Database name to connect to";
-                };
-                user = mkOption {
                   type = str;
-                  default = "";
-                  description = "User to connect as";
                 };
+
                 password = mkOption {
-                  type = str;
                   default = "";
                   description = "Password for database user";
+                  type = str;
+                };
+
+                user = mkOption {
+                  default = "";
+                  description = "User to connect as";
+                  type = str;
                 };
               };
             };
           };
+
           tmdb = mkOption {
             default = { };
             description = "TMDB api settings";
+
             type = submodule {
               inherit freeformType;
+
               options = {
                 api_key = mkOption {
-                  type = nullOr str;
                   default = null;
                   description = "TMDB api key, to avoid api limits. Leave null to use the default shared key.";
+                  type = nullOr str;
                 };
               };
             };
@@ -112,98 +137,107 @@ in
         };
       };
     };
-    package = mkPackageOption pkgs "bitmagnet" { };
+
+    useLocalPostgresDB = mkOption {
+      default = true;
+      description = "Use a local postgresql database, create user and database";
+      type = bool;
+    };
+
     user = mkOption {
+      default = "bitmagnet";
       description = "User running bitmagnet";
       type = str;
-      default = "bitmagnet";
-    };
-    group = mkOption {
-      description = "Group of user running bitmagnet";
-      type = str;
-      default = "bitmagnet";
-    };
-    openFirewall = mkOption {
-      description = "Open DHT ports in firewall";
-      type = bool;
-      default = false;
     };
   };
+
   config = mkIf cfg.enable {
     environment.etc."xdg/bitmagnet/config.yml" = {
-      text = toYAML { } cfg.settings;
-      mode = "0440";
-      user = cfg.user;
       group = cfg.group;
+      mode = "0440";
+      text = toYAML { } cfg.settings;
+      user = cfg.user;
     };
+
+    networking.firewall = mkIf cfg.openFirewall {
+      allowedTCPPorts = [ cfg.settings.dht_server.port ];
+      allowedUDPPorts = [ cfg.settings.dht_server.port ];
+    };
+
+    services.postgresql = mkIf cfg.useLocalPostgresDB {
+      enable = true;
+
+      ensureDatabases = [
+        cfg.settings.postgres.name
+        (if (cfg.settings.postgres.user == "") then cfg.user else cfg.settings.postgres.user)
+      ];
+
+      ensureUsers = [
+        {
+          ensureDBOwnership = true;
+          name = if (cfg.settings.postgres.user == "") then cfg.user else cfg.settings.postgres.user;
+        }
+      ];
+    };
+
     systemd.services.bitmagnet = {
       enable = true;
-      wantedBy = [ "multi-user.target" ];
+
       after = [
         "network.target"
       ]
       ++ optional cfg.useLocalPostgresDB "postgresql.target";
+
       requires = optional cfg.useLocalPostgresDB "postgresql.target";
       restartTriggers = [ config.environment.etc."xdg/bitmagnet/config.yml".source ];
-      serviceConfig = {
-        Type = "simple";
-        DynamicUser = true;
-        User = cfg.user;
-        Group = cfg.group;
-        ExecStart = "${cfg.package}/bin/bitmagnet worker run --all";
-        Restart = "on-failure";
-        WorkingDirectory = "/var/lib/bitmagnet";
-        StateDirectory = "bitmagnet";
-        BindReadOnlyPaths = [ "/etc/xdg/bitmagnet/config.yml" ];
 
+      serviceConfig = {
+        BindReadOnlyPaths = [ "/etc/xdg/bitmagnet/config.yml" ];
+        DynamicUser = true;
+        ExecStart = "${cfg.package}/bin/bitmagnet worker run --all";
+        Group = cfg.group;
+        LockPersonality = true;
+        MemoryDenyWriteExecute = true;
+        PrivateDevices = true;
+        PrivateMounts = true;
+        PrivateTmp = true;
+        ProtectClock = true;
+        ProtectControlGroups = true;
+        ProtectHome = true;
+        ProtectHostname = true;
+        ProtectKernelLogs = true;
+        ProtectKernelModules = true;
+        ProtectKernelTunables = true;
         # Sandboxing (sorted by occurrence in https://www.freedesktop.org/software/systemd/man/systemd.exec.html)
         ProtectSystem = "strict";
-        ProtectHome = true;
-        PrivateTmp = true;
-        PrivateDevices = true;
-        ProtectHostname = true;
-        ProtectClock = true;
-        ProtectKernelTunables = true;
-        ProtectKernelModules = true;
-        ProtectKernelLogs = true;
-        ProtectControlGroups = true;
+        RemoveIPC = true;
+        Restart = "on-failure";
+
         RestrictAddressFamilies = [
           "AF_UNIX"
           "AF_INET"
           "AF_INET6"
         ];
+
         RestrictNamespaces = true;
-        LockPersonality = true;
-        MemoryDenyWriteExecute = true;
         RestrictRealtime = true;
         RestrictSUIDSGID = true;
-        RemoveIPC = true;
-        PrivateMounts = true;
+        StateDirectory = "bitmagnet";
+        Type = "simple";
+        User = cfg.user;
+        WorkingDirectory = "/var/lib/bitmagnet";
       };
+
+      wantedBy = [ "multi-user.target" ];
     };
+
+    users.groups = mkIf (cfg.group == "bitmagnet") { bitmagnet = { }; };
+
     users.users = mkIf (cfg.user == "bitmagnet") {
       bitmagnet = {
         group = cfg.group;
         isSystemUser = true;
       };
-    };
-    users.groups = mkIf (cfg.group == "bitmagnet") { bitmagnet = { }; };
-    networking.firewall = mkIf cfg.openFirewall {
-      allowedTCPPorts = [ cfg.settings.dht_server.port ];
-      allowedUDPPorts = [ cfg.settings.dht_server.port ];
-    };
-    services.postgresql = mkIf cfg.useLocalPostgresDB {
-      enable = true;
-      ensureDatabases = [
-        cfg.settings.postgres.name
-        (if (cfg.settings.postgres.user == "") then cfg.user else cfg.settings.postgres.user)
-      ];
-      ensureUsers = [
-        {
-          name = if (cfg.settings.postgres.user == "") then cfg.user else cfg.settings.postgres.user;
-          ensureDBOwnership = true;
-        }
-      ];
     };
   };
 

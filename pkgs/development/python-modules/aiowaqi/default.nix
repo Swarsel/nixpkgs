@@ -1,9 +1,9 @@
 {
   lib,
+  fetchFromGitHub,
   aiohttp,
   aresponses,
   buildPythonPackage,
-  fetchFromGitHub,
   poetry-core,
   pytest-asyncio,
   pytest-cov-stub,
@@ -15,7 +15,6 @@
 buildPythonPackage rec {
   pname = "aiowaqi";
   version = "3.1.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "joostlek";
@@ -23,13 +22,6 @@ buildPythonPackage rec {
     tag = "v${version}";
     hash = "sha256-YWTGEOSSkZ0XbZUE3k+Dn9qg8Pmwip9wCp8e/j1D9io=";
   };
-
-  build-system = [ poetry-core ];
-
-  dependencies = [
-    aiohttp
-    yarl
-  ];
 
   nativeCheckInputs = [
     aresponses
@@ -40,15 +32,21 @@ buildPythonPackage rec {
   ];
 
   __darwinAllowLocalNetworking = true;
+  build-system = [ poetry-core ];
 
-  pythonImportsCheck = [ "aiowaqi" ];
+  dependencies = [
+    aiohttp
+    yarl
+  ];
 
   disabledTests = [
     # Upstream mocking fails
     "test_search"
   ];
 
+  pyproject = true;
   pytestFlags = [ "--snapshot-update" ];
+  pythonImportsCheck = [ "aiowaqi" ];
 
   meta = {
     description = "Module to interact with the WAQI API";

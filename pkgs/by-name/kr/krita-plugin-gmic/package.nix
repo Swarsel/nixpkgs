@@ -5,8 +5,8 @@
   cmake,
   curl,
   fftw,
-  krita-unwrapped,
   kdePackages,
+  krita-unwrapped,
   qt6,
 }:
 
@@ -21,14 +21,13 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-xyln60z9r4spPtN3r2+3a1e5yzd8+B7d9UAR3VsRZ78=";
   };
 
-  sourceRoot = "${finalAttrs.src.name}/gmic-qt";
-  dontWrapQtApps = true;
-
   postPatch = ''
     patchShebangs \
       translations/filters/csv2ts.sh \
       translations/lrelease.sh
   '';
+
+  strictDeps = true;
 
   nativeBuildInputs = [
     cmake
@@ -44,17 +43,18 @@ stdenv.mkDerivation (finalAttrs: {
     qt6.qtbase
   ];
 
-  strictDeps = true;
-
   cmakeFlags = [
     (lib.cmakeFeature "GMIC_QT_HOST" "krita-plugin")
     # build krita's gmic instead of using the one from nixpkgs
     (lib.cmakeBool "ENABLE_SYSTEM_GMIC" false)
   ];
 
+  dontWrapQtApps = true;
+  sourceRoot = "${finalAttrs.src.name}/gmic-qt";
+
   meta = {
-    homepage = "https://krita.org";
     description = "GMic plugin for Krita";
+    homepage = "https://krita.org";
     license = lib.licenses.cecill21;
     maintainers = with lib.maintainers; [ lelgenio ];
   };

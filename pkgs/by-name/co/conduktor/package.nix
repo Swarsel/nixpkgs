@@ -2,18 +2,18 @@
   lib,
   stdenv,
   fetchurl,
-  fetchzip,
-  jdk11,
-  openjfx17,
-  gtk3,
-  glib,
-  pango,
   cairo,
+  copyDesktopItems,
+  fetchzip,
   gdk-pixbuf,
+  glib,
+  gtk3,
+  jdk11,
   libxtst,
   makeBinaryWrapper,
   makeDesktopItem,
-  copyDesktopItems,
+  openjfx17,
+  pango,
 }:
 
 let
@@ -32,24 +32,6 @@ stdenv.mkDerivation (finalAttrs: {
     makeBinaryWrapper
     copyDesktopItems
   ];
-
-  desktopItems = [
-    (makeDesktopItem {
-      type = "Application";
-      name = "conduktor";
-      desktopName = "Conduktor";
-      genericName = finalAttrs.meta.description;
-      exec = "conduktor";
-      icon = fetchurl {
-        url = "https://github.com/conduktor/builds/raw/v${finalAttrs.version}/.github/resources/Conduktor.png";
-        hash = "sha256-mk4c9ecookRb7gR56cedIWfPfQy2uGF+ZbX6NI90KI0=";
-      };
-      comment = "A beautiful and fully-featured desktop client for Apache Kafka";
-    })
-  ];
-
-  dontConfigure = true;
-  dontBuild = true;
 
   installPhase = ''
     runHook preInstall
@@ -74,12 +56,34 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  desktopItems = [
+    (makeDesktopItem {
+      comment = "A beautiful and fully-featured desktop client for Apache Kafka";
+      desktopName = "Conduktor";
+      exec = "conduktor";
+      genericName = finalAttrs.meta.description;
+
+      icon = fetchurl {
+        hash = "sha256-mk4c9ecookRb7gR56cedIWfPfQy2uGF+ZbX6NI90KI0=";
+        url = "https://github.com/conduktor/builds/raw/v${finalAttrs.version}/.github/resources/Conduktor.png";
+      };
+
+      name = "conduktor";
+      type = "Application";
+    })
+  ];
+
+  dontBuild = true;
+  dontConfigure = true;
+
   meta = {
     description = "Apache Kafka Desktop Client";
+
     longDescription = ''
       Conduktor is a GUI over the Kafka ecosystem, to make the development
       and management of Apache Kafka clusters as easy as possible.
     '';
+
     homepage = "https://www.conduktor.io/";
     changelog = "https://www.conduktor.io/changelog/#${finalAttrs.version}";
     license = lib.licenses.unfree;

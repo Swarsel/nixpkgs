@@ -1,15 +1,14 @@
 {
-  fetchFromGitHub,
-  gradle,
   lib,
+  fetchFromGitHub,
   REAndroidLibrary,
+  gradle,
 }:
 
 let
   self = REAndroidLibrary {
     pname = "jcommand";
     version = "0-unstable-2025-01-21";
-    projectName = "JCommand";
 
     src = fetchFromGitHub {
       owner = "REAndroid";
@@ -23,10 +22,11 @@ let
     };
 
     mitmCache = gradle.fetchDeps {
-      pkg = self;
       data = ./deps.json;
+      pkg = self;
     };
 
+    projectName = "JCommand";
     meta.license = lib.licenses.asl20;
   };
 in

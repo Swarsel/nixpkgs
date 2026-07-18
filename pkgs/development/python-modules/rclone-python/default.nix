@@ -1,19 +1,18 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   pytestCheckHook,
-  replaceVars,
-  setuptools,
-  rich,
   rclone,
+  replaceVars,
+  rich,
+  setuptools,
   writableTmpDirAsHomeHook,
 }:
 
 buildPythonPackage rec {
   pname = "rclone-python";
   version = "0.1.23";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "Johannes11833";
@@ -26,12 +25,6 @@ buildPythonPackage rec {
     (replaceVars ./hardcode-rclone-path.patch {
       rclone = lib.getExe rclone;
     })
-  ];
-
-  build-system = [ setuptools ];
-
-  dependencies = [
-    rich
   ];
 
   nativeCheckInputs = [
@@ -50,6 +43,12 @@ buildPythonPackage rec {
     EOF
   '';
 
+  build-system = [ setuptools ];
+
+  dependencies = [
+    rich
+  ];
+
   disabledTestPaths = [
     # test requires a remote that supports public links
     "tests/test_link.py"
@@ -57,12 +56,13 @@ buildPythonPackage rec {
     "tests/test_version.py"
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "rclone_python" ];
 
   meta = {
-    changelog = "https://github.com/Johannes11833/rclone_python/releases/tag/${src.tag}";
     description = "Python wrapper for rclone";
     homepage = "https://github.com/Johannes11833/rclone_python";
+    changelog = "https://github.com/Johannes11833/rclone_python/releases/tag/${src.tag}";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ CaptainJawZ ];
   };

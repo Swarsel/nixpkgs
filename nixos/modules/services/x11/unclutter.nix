@@ -12,57 +12,66 @@ let
 
 in
 {
+  imports = [
+    (mkRenamedOptionModule
+      [ "services" "unclutter" "threeshold" ]
+      [ "services" "unclutter" "threshold" ]
+    )
+  ];
+
   options.services.unclutter = {
 
     enable = mkOption {
+      default = false;
       description = "Enable unclutter to hide your mouse cursor when inactive";
       type = types.bool;
-      default = false;
     };
 
     package = mkPackageOption pkgs "unclutter" { };
 
-    keystroke = mkOption {
-      description = "Wait for a keystroke before hiding the cursor";
-      type = types.bool;
-      default = false;
-    };
-
-    timeout = mkOption {
-      description = "Number of seconds before the cursor is marked inactive";
-      type = types.int;
-      default = 1;
-    };
-
-    threshold = mkOption {
-      description = "Minimum number of pixels considered cursor movement";
-      type = types.int;
-      default = 1;
-    };
-
     excluded = mkOption {
-      description = "Names of windows where unclutter should not apply";
-      type = types.listOf types.str;
       default = [ ];
+      description = "Names of windows where unclutter should not apply";
       example = [ "" ];
+      type = types.listOf types.str;
     };
 
     extraOptions = mkOption {
-      description = "More arguments to pass to the unclutter command";
-      type = types.listOf types.str;
       default = [ ];
+      description = "More arguments to pass to the unclutter command";
+
       example = [
         "noevent"
         "grab"
       ];
+
+      type = types.listOf types.str;
+    };
+
+    keystroke = mkOption {
+      default = false;
+      description = "Wait for a keystroke before hiding the cursor";
+      type = types.bool;
+    };
+
+    threshold = mkOption {
+      default = 1;
+      description = "Minimum number of pixels considered cursor movement";
+      type = types.int;
+    };
+
+    timeout = mkOption {
+      default = 1;
+      description = "Number of seconds before the cursor is marked inactive";
+      type = types.int;
     };
   };
 
   config = mkIf cfg.enable {
     systemd.user.services.unclutter = {
       description = "unclutter";
-      wantedBy = [ "graphical-session.target" ];
       partOf = [ "graphical-session.target" ];
+
       serviceConfig.ExecStart = ''
         ${cfg.package}/bin/unclutter \
           -idle ${toString cfg.timeout} \
@@ -71,18 +80,13 @@ in
           ${concatMapStrings (x: " -" + x) cfg.extraOptions} \
           -not ${concatStringsSep " " cfg.excluded}
       '';
+
       serviceConfig.PassEnvironment = "DISPLAY";
-      serviceConfig.RestartSec = 3;
       serviceConfig.Restart = "always";
+      serviceConfig.RestartSec = 3;
+      wantedBy = [ "graphical-session.target" ];
     };
   };
-
-  imports = [
-    (mkRenamedOptionModule
-      [ "services" "unclutter" "threeshold" ]
-      [ "services" "unclutter" "threshold" ]
-    )
-  ];
 
   meta.maintainers = with lib.maintainers; [ rnhmjoj ];
 

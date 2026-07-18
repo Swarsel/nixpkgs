@@ -23,9 +23,8 @@ stdenv.mkDerivation (finalAttrs: {
     udevCheckHook
   ];
 
-  doInstallCheck = true;
-
   makeFlags = [ "prefix=${placeholder "out"}" ];
+  doInstallCheck = true;
 
   meta = {
     description = "Firmware loader for Qualcomm Gobi USB chipsets";

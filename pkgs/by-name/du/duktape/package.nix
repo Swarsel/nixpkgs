@@ -9,18 +9,19 @@
 stdenv.mkDerivation (finalAttrs: {
   pname = "duktape";
   version = "2.7.0";
+
   src = fetchurl {
     url = "https://duktape.org/duktape-${finalAttrs.version}.tar.xz";
     sha256 = "sha256-kPjS+otVZ8aJmDDd7ywD88J5YLEayiIvoXqnrGE8KJA=";
   };
 
-  # https://github.com/svaarala/duktape/issues/2464
-  env.LDFLAGS = "-lm";
-
   nativeBuildInputs = [
     validatePkgConfig
   ]
   ++ lib.optionals stdenv.hostPlatform.isDarwin [ fixDarwinDylibNames ];
+
+  # https://github.com/svaarala/duktape/issues/2464
+  env.LDFLAGS = "-lm";
 
   buildPhase = ''
     make -f Makefile.cmdline
@@ -45,10 +46,10 @@ stdenv.mkDerivation (finalAttrs: {
   meta = {
     description = "Embeddable Javascript engine, with a focus on portability and compact footprint";
     homepage = "https://duktape.org/";
-    downloadPage = "https://duktape.org/download.html";
     license = lib.licenses.mit;
     maintainers = [ lib.maintainers.fgaz ];
-    mainProgram = "duk";
     platforms = lib.platforms.all;
+    mainProgram = "duk";
+    downloadPage = "https://duktape.org/download.html";
   };
 })

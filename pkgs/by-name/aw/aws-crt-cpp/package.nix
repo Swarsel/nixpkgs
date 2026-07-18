@@ -13,8 +13,8 @@
   aws-c-s3,
   aws-checksums,
   cmake,
-  s2n-tls,
   nix,
+  s2n-tls,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -22,17 +22,17 @@ stdenv.mkDerivation (finalAttrs: {
   # nixpkgs-update: no auto update
   version = "0.34.3";
 
-  outputs = [
-    "out"
-    "dev"
-  ];
-
   src = fetchFromGitHub {
     owner = "awslabs";
     repo = "aws-crt-cpp";
     rev = "v${finalAttrs.version}";
     sha256 = "sha256-jKmIsWAzxnfsNgHavR6crhIQXVJq/PbQgaj4KVGrMP0=";
   };
+
+  outputs = [
+    "out"
+    "dev"
+  ];
 
   postPatch = ''
     substituteInPlace CMakeLists.txt \
@@ -76,7 +76,7 @@ stdenv.mkDerivation (finalAttrs: {
     description = "C++ wrapper around the aws-c-* libraries";
     homepage = "https://github.com/awslabs/aws-crt-cpp";
     license = lib.licenses.asl20;
-    platforms = lib.platforms.unix;
     maintainers = with lib.maintainers; [ r-burns ];
+    platforms = lib.platforms.unix;
   };
 })

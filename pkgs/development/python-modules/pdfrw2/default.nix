@@ -11,7 +11,6 @@
 buildPythonPackage rec {
   pname = "pdfrw2";
   version = "0.5.0";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
@@ -26,12 +25,13 @@ buildPythonPackage rec {
     pycryptodome
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "pdfrw" ];
 
   meta = {
     description = "Pure Python library that reads and writes PDFs";
     homepage = "https://github.com/sarnold/pdfrw";
-    maintainers = with lib.maintainers; [ loicreynier ];
     license = lib.licenses.mit;
+    maintainers = with lib.maintainers; [ loicreynier ];
   };
 }

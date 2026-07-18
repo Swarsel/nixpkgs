@@ -1,7 +1,7 @@
 {
   lib,
-  buildNpmPackage,
   fetchFromGitHub,
+  buildNpmPackage,
 }:
 
 buildNpmPackage rec {
@@ -28,8 +28,8 @@ buildNpmPackage rec {
 
   meta = {
     description = "Command line interface for Hexo";
-    mainProgram = "hexo";
     homepage = "https://hexo.io/";
     license = lib.licenses.mit;
+    mainProgram = "hexo";
   };
 }

@@ -1,29 +1,25 @@
 {
   lib,
   stdenv,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # build-system
-  setuptools,
-
+  buildPythonPackage,
   # dependencies
   cloudpickle,
-  numpy,
   gym-notices,
-
   # tests
   moviepy,
+  numpy,
+  opencv-python,
   pybox2d,
   pygame,
   pytestCheckHook,
-  opencv-python,
+  # build-system
+  setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "gym";
   version = "0.26.2";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "openai";
@@ -52,18 +48,6 @@ buildPythonPackage rec {
       --replace-fail "np.alltrue" "np.all"
   '';
 
-  build-system = [
-    setuptools
-  ];
-
-  dependencies = [
-    cloudpickle
-    numpy
-    gym-notices
-  ];
-
-  pythonImportsCheck = [ "gym" ];
-
   nativeCheckInputs = [
     moviepy
     opencv-python
@@ -75,6 +59,22 @@ buildPythonPackage rec {
   preCheck = ''
     export SDL_VIDEODRIVER=dummy
   '';
+
+  build-system = [
+    setuptools
+  ];
+
+  dependencies = [
+    cloudpickle
+    numpy
+    gym-notices
+  ];
+
+  disabledTestPaths = lib.optionals stdenv.hostPlatform.isDarwin [
+    # Fatal Python error: Aborted
+    # gym/utils/play.py", line 62 in __init__
+    "tests/utils/test_play.py"
+  ];
 
   disabledTests = [
     # TypeError: Converting from sequence to b2Vec2, expected int/float arguments index 0
@@ -118,11 +118,8 @@ buildPythonPackage rec {
     "test_text_envs"
   ];
 
-  disabledTestPaths = lib.optionals stdenv.hostPlatform.isDarwin [
-    # Fatal Python error: Aborted
-    # gym/utils/play.py", line 62 in __init__
-    "tests/utils/test_play.py"
-  ];
+  pyproject = true;
+  pythonImportsCheck = [ "gym" ];
 
   meta = {
     description = "Toolkit for developing and comparing your reinforcement learning agents";

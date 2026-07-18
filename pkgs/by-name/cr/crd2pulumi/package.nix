@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule (finalAttrs: {
@@ -27,9 +27,9 @@ buildGoModule (finalAttrs: {
 
   meta = {
     description = "Generate typed CustomResources from a Kubernetes CustomResourceDefinition";
-    mainProgram = "crd2pulumi";
     homepage = "https://github.com/pulumi/crd2pulumi";
     license = lib.licenses.asl20;
     maintainers = [ ];
+    mainProgram = "crd2pulumi";
   };
 })

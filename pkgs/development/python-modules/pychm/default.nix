@@ -1,14 +1,13 @@
 {
   lib,
   buildPythonPackage,
-  fetchPypi,
   chmlib,
+  fetchPypi,
 }:
 
 buildPythonPackage rec {
   pname = "pychm";
   version = "0.8.6";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
@@ -16,7 +15,7 @@ buildPythonPackage rec {
   };
 
   buildInputs = [ chmlib ];
-
+  format = "setuptools";
   pythonImportsCheck = [ "chm" ];
 
   meta = {

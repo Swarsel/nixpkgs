@@ -1,16 +1,15 @@
 {
   lib,
-  python3Packages,
   fetchFromGitHub,
-  nix-update-script,
-  testers,
   icloudpd,
+  nix-update-script,
+  python3Packages,
+  testers,
 }:
 
 python3Packages.buildPythonApplication (finalAttrs: {
   pname = "icloudpd";
   version = "1.32.3";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "icloud-photos-downloader";
@@ -19,7 +18,24 @@ python3Packages.buildPythonApplication (finalAttrs: {
     hash = "sha256-u7fG/rPNzeru+DU84G/77BqrLHONz8yEg18xG3gsP70=";
   };
 
-  pythonRelaxDeps = true;
+  preBuild = ''
+    substituteInPlace pyproject.toml \
+      --replace-fail "setuptools==80.9.0" "setuptools" \
+      --replace-fail "wheel==0.45.1" "wheel"
+
+    substituteInPlace src/foundation/__init__.py \
+      --replace-fail "0.0.1" "${finalAttrs.version}"
+  '';
+
+  nativeCheckInputs = with python3Packages; [
+    freezegun
+    mock
+    pytest-timeout
+    pytestCheckHook
+    vcrpy
+  ];
+
+  build-system = with python3Packages; [ setuptools ];
 
   dependencies = with python3Packages; [
     certifi
@@ -40,16 +56,6 @@ python3Packages.buildPythonApplication (finalAttrs: {
     urllib3
     waitress
     wheel
-  ];
-
-  build-system = with python3Packages; [ setuptools ];
-
-  nativeCheckInputs = with python3Packages; [
-    freezegun
-    mock
-    pytest-timeout
-    pytestCheckHook
-    vcrpy
   ];
 
   disabledTests = [
@@ -79,27 +85,23 @@ python3Packages.buildPythonApplication (finalAttrs: {
     "test_missing_directory"
   ];
 
+  pyproject = true;
+  pythonRelaxDeps = true;
+
   passthru = {
-    updateScript = nix-update-script { };
     tests = testers.testVersion { package = icloudpd; };
+    updateScript = nix-update-script { };
   };
 
-  preBuild = ''
-    substituteInPlace pyproject.toml \
-      --replace-fail "setuptools==80.9.0" "setuptools" \
-      --replace-fail "wheel==0.45.1" "wheel"
-
-    substituteInPlace src/foundation/__init__.py \
-      --replace-fail "0.0.1" "${finalAttrs.version}"
-  '';
-
   meta = {
-    homepage = "https://github.com/icloud-photos-downloader/icloud_photos_downloader";
     description = "iCloud Photos Downloader";
+    homepage = "https://github.com/icloud-photos-downloader/icloud_photos_downloader";
     license = lib.licenses.mit;
-    mainProgram = "icloudpd";
+
     maintainers = with lib.maintainers; [
       anpin
     ];
+
+    mainProgram = "icloudpd";
   };
 })

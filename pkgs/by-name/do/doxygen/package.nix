@@ -1,17 +1,17 @@
 {
   lib,
   stdenv,
-  cmake,
   fetchFromGitHub,
-  python3,
-  flex,
   bison,
-  withGui ? false,
-  qt6,
-  libiconv,
-  spdlog,
+  cmake,
+  flex,
   fmt,
+  libiconv,
+  python3,
+  qt6,
+  spdlog,
   sqlite,
+  withGui ? false,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -24,6 +24,12 @@ stdenv.mkDerivation (finalAttrs: {
     tag = "Release_${lib.replaceStrings [ "." ] [ "_" ] finalAttrs.version}";
     hash = "sha256-SSq/sFB9y2CFMeL58vgcHa2ulo+tPPUGT347ABoHoD4=";
   };
+
+  # put examples in an output so people/tools can test against them
+  outputs = [
+    "out"
+    "examples"
+  ];
 
   # https://github.com/doxygen/doxygen/issues/10928#issuecomment-2179320509
   postPatch = ''
@@ -65,22 +71,13 @@ stdenv.mkDerivation (finalAttrs: {
   ]
   ++ lib.optional withGui "-Dbuild_wizard=YES";
 
-  # put examples in an output so people/tools can test against them
-  outputs = [
-    "out"
-    "examples"
-  ];
-
   postInstall = ''
     cp -r ../examples $examples
   '';
 
   meta = {
-    license = lib.licenses.gpl2Plus;
-    homepage = "https://www.doxygen.nl";
-    changelog = "https://www.doxygen.nl/manual/changelog.html";
     description = "Source code documentation generator tool";
-    mainProgram = "doxygen";
+
     longDescription = ''
       Doxygen is the de facto standard tool for generating documentation from
       annotated C++ sources, but it also supports other popular programming
@@ -90,6 +87,11 @@ stdenv.mkDerivation (finalAttrs: {
       off-line reference manual (in LaTeX) from a set of documented source
       files.
     '';
+
+    homepage = "https://www.doxygen.nl";
+    changelog = "https://www.doxygen.nl/manual/changelog.html";
+    license = lib.licenses.gpl2Plus;
     platforms = if withGui then lib.platforms.linux else lib.platforms.unix;
+    mainProgram = "doxygen";
   };
 })

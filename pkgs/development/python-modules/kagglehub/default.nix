@@ -1,46 +1,40 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # build-system
-  hatchling,
-
-  # dependencies
-  kagglesdk,
-  packaging,
-  pyyaml,
-  requests,
-  tqdm,
-
+  # signing
+  betterproto,
+  buildPythonPackage,
   # optional-dependencies
   # hf-datasets
   datasets,
-  kagglehub,
-  # pandas-datasets
-  pandas,
-  # polars-datasets
-  polars,
-  # signing
-  betterproto,
-  model-signing,
-  sigstore,
-
   # tests
   fastexcel,
   flask,
   flask-jwt-extended,
+  # build-system
+  hatchling,
   jwt,
+  kagglehub,
+  # dependencies
+  kagglesdk,
+  model-signing,
   openpyxl,
+  packaging,
+  # pandas-datasets
+  pandas,
+  # polars-datasets
+  polars,
   pytestCheckHook,
+  pyyaml,
+  requests,
+  sigstore,
+  tqdm,
   writableTmpDirAsHomeHook,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "kagglehub";
   version = "1.0.2";
-  pyproject = true;
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "Kaggle";
@@ -48,38 +42,6 @@ buildPythonPackage (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-a21HFUNU7zWGb0ZpXx8MSDVpgu7Ykx6SLbLaIO6wRm8=";
   };
-
-  build-system = [
-    hatchling
-  ];
-
-  dependencies = [
-    kagglesdk
-    packaging
-    pyyaml
-    requests
-    tqdm
-  ];
-
-  optional-dependencies = {
-    hf-datasets = [
-      datasets
-      kagglehub
-    ];
-    pandas-datasets = [
-      pandas
-    ];
-    polars-datasets = [
-      polars
-    ];
-    signing = [
-      betterproto
-      model-signing
-      sigstore
-    ];
-  };
-
-  pythonImportsCheck = [ "kagglehub" ];
 
   nativeCheckInputs = [
     datasets
@@ -95,6 +57,21 @@ buildPythonPackage (finalAttrs: {
   ]
   ++ finalAttrs.passthru.optional-dependencies.pandas-datasets;
 
+  __darwinAllowLocalNetworking = true;
+  __structuredAttrs = true;
+
+  build-system = [
+    hatchling
+  ];
+
+  dependencies = [
+    kagglesdk
+    packaging
+    pyyaml
+    requests
+    tqdm
+  ];
+
   disabledTestPaths = [
     # Require internet access
     "integration_tests/"
@@ -105,7 +82,29 @@ buildPythonPackage (finalAttrs: {
     "test_model_signing"
   ];
 
-  __darwinAllowLocalNetworking = true;
+  optional-dependencies = {
+    hf-datasets = [
+      datasets
+      kagglehub
+    ];
+
+    pandas-datasets = [
+      pandas
+    ];
+
+    polars-datasets = [
+      polars
+    ];
+
+    signing = [
+      betterproto
+      model-signing
+      sigstore
+    ];
+  };
+
+  pyproject = true;
+  pythonImportsCheck = [ "kagglehub" ];
 
   meta = {
     description = "Python library to access Kaggle resources";

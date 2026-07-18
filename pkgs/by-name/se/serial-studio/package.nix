@@ -3,12 +3,12 @@
   stdenv,
   fetchFromGitHub,
   cmake,
-  qt6,
   expat,
-  zlib,
-  pkg-config,
-  wrapGAppsHook3,
   nix-update-script,
+  pkg-config,
+  qt6,
+  wrapGAppsHook3,
+  zlib,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -21,6 +21,8 @@ stdenv.mkDerivation (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-KY7ePFeO29jKnaFbP5IJo1Z/OqldTvmZUGuzZ+yqyK8=";
   };
+
+  patches = [ ./0001-CMake-Deploy-Fix.patch ];
 
   nativeBuildInputs = [
     cmake
@@ -49,19 +51,17 @@ stdenv.mkDerivation (finalAttrs: {
     (lib.cmakeBool "USE_SYSTEM_EXPAT" true)
   ];
 
-  patches = [ ./0001-CMake-Deploy-Fix.patch ];
-
   postInstall = lib.optionalString stdenv.hostPlatform.isDarwin ''
     mkdir -p $out/{Applications,bin}
     mv $out/Serial-Studio-GPL3.app $out/Applications
     ln -s $out/Applications/Serial-Studio-GPL3.app/Contents/MacOS/Serial-Studio-GPL3 $out/bin/serial-studio-gpl3
   '';
 
-  dontWrapGApps = true;
-
   preFixup = ''
     qtWrapperArgs+=("''${gappsWrapperArgs[@]}")
   '';
+
+  dontWrapGApps = true;
 
   passthru.updateScript = nix-update-script {
     extraArgs = [ "--version=branch" ];
@@ -69,10 +69,10 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Multi-purpose serial data visualization & processing program";
-    mainProgram = "serial-studio-gpl3";
     homepage = "https://serial-studio.com/";
     license = lib.licenses.gpl3Only;
     maintainers = with lib.maintainers; [ sikmir ];
     platforms = lib.platforms.unix;
+    mainProgram = "serial-studio-gpl3";
   };
 })

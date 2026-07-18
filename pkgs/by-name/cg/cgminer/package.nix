@@ -2,19 +2,19 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  pkg-config,
-  libtool,
   autoconf,
   automake,
   curl,
+  jansson,
+  libtool,
+  libusb1,
+  libx11,
+  libxext,
+  libxinerama,
   ncurses,
   ocl-icd,
   opencl-headers,
-  libusb1,
-  libxinerama,
-  libxext,
-  libx11,
-  jansson,
+  pkg-config,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -33,6 +33,7 @@ stdenv.mkDerivation (finalAttrs: {
     autoconf
     automake
   ];
+
   buildInputs = [
     libtool
     curl
@@ -46,7 +47,6 @@ stdenv.mkDerivation (finalAttrs: {
     libusb1
   ];
 
-  configureScript = "./autogen.sh";
   configureFlags = [
     "--enable-scrypt"
     "--enable-opencl"
@@ -66,15 +66,18 @@ stdenv.mkDerivation (finalAttrs: {
   #     multiple definition of `bitforce_drv'; cgminer-cgminer.o:/build/source/miner.h:285:
   #     first defined here
   env.NIX_CFLAGS_COMPILE = "-fcommon";
+  configureScript = "./autogen.sh";
 
   meta = {
     description = "CPU/GPU miner in c for bitcoin";
-    mainProgram = "cgminer";
     homepage = "https://github.com/ckolivas/cgminer";
     license = lib.licenses.gpl3;
+
     maintainers = with lib.maintainers; [
       mmahut
     ];
+
     platforms = lib.platforms.linux;
+    mainProgram = "cgminer";
   };
 })

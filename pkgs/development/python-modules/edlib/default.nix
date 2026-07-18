@@ -1,7 +1,7 @@
 {
   buildPythonPackage,
-  edlib,
   cython,
+  edlib,
   python,
   setuptools,
 }:
@@ -13,23 +13,14 @@ buildPythonPackage {
     version
     meta
     ;
-  pyproject = true;
 
-  sourceRoot = "${edlib.src.name}/bindings/python";
+  buildInputs = [ edlib ];
+  env.EDLIB_OMIT_README_RST = 1;
+  env.EDLIB_USE_CYTHON = 1;
 
   preBuild = ''
     ln -s ${edlib.src}/edlib .
   '';
-
-  env.EDLIB_OMIT_README_RST = 1;
-  env.EDLIB_USE_CYTHON = 1;
-
-  build-system = [
-    setuptools
-    cython
-  ];
-
-  buildInputs = [ edlib ];
 
   checkPhase = ''
     runHook preCheck
@@ -37,5 +28,12 @@ buildPythonPackage {
     runHook postCheck
   '';
 
+  build-system = [
+    setuptools
+    cython
+  ];
+
+  pyproject = true;
   pythonImportsCheck = [ "edlib" ];
+  sourceRoot = "${edlib.src.name}/bindings/python";
 }

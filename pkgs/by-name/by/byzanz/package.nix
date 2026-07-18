@@ -1,9 +1,8 @@
 {
   lib,
   stdenv,
-  fetchgit,
-  wrapGAppsHook3,
   cairo,
+  fetchgit,
   gettext,
   glib,
   gnome-common,
@@ -11,9 +10,10 @@
   gtk3,
   intltool,
   libtool,
+  libxdamage,
   pkg-config,
   which,
-  libxdamage,
+  wrapGAppsHook3,
   xwininfo,
 }:
 
@@ -32,25 +32,11 @@ stdenv.mkDerivation {
     ./gettext-0.25.patch
   ];
 
-  preBuild = ''
-    ./autogen.sh --prefix=$out
-  '';
-
-  env.NIX_CFLAGS_COMPILE = builtins.concatStringsSep " " [
-    "-Wno-error=deprecated-declarations"
-    "-Wno-error=incompatible-pointer-types"
-    "-Wno-error=discarded-qualifiers"
-  ];
-
-  preAutoreconf = ''
-    # error: possibly undefined macro: AM_NLS
-    cp ${gettext}/share/gettext/m4/nls.m4 macros/
-  '';
-
   nativeBuildInputs = [
     pkg-config
     intltool
   ];
+
   buildInputs = [
     which
     gnome-common
@@ -71,11 +57,26 @@ stdenv.mkDerivation {
     wrapGAppsHook3
   ]);
 
+  env.NIX_CFLAGS_COMPILE = builtins.concatStringsSep " " [
+    "-Wno-error=deprecated-declarations"
+    "-Wno-error=incompatible-pointer-types"
+    "-Wno-error=discarded-qualifiers"
+  ];
+
+  preBuild = ''
+    ./autogen.sh --prefix=$out
+  '';
+
+  preAutoreconf = ''
+    # error: possibly undefined macro: AM_NLS
+    cp ${gettext}/share/gettext/m4/nls.m4 macros/
+  '';
+
   meta = {
     description = "Tool to record a running X desktop to an animation suitable for presentation in a web browser";
     homepage = "https://github.com/GNOME/byzanz";
     license = lib.licenses.gpl3;
-    platforms = lib.platforms.linux;
     maintainers = with lib.maintainers; [ bot-wxt1221 ];
+    platforms = lib.platforms.linux;
   };
 }

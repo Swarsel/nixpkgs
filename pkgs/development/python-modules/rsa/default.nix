@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   poetry-core,
   pyasn1,
   pytestCheckHook,
@@ -10,7 +10,6 @@
 buildPythonPackage rec {
   pname = "rsa";
   version = "4.9";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "sybrenstuvel";
@@ -20,20 +19,19 @@ buildPythonPackage rec {
   };
 
   nativeBuildInputs = [ poetry-core ];
-
   propagatedBuildInputs = [ pyasn1 ];
+  nativeCheckInputs = [ pytestCheckHook ];
 
   preCheck = ''
     sed -i '/addopts/d' tox.ini
   '';
 
-  nativeCheckInputs = [ pytestCheckHook ];
-
   disabledTestPaths = [ "tests/test_mypy.py" ];
+  pyproject = true;
 
   meta = {
+    description = "Pure-Python RSA implementation";
     homepage = "https://stuvel.eu/rsa";
     license = lib.licenses.asl20;
-    description = "Pure-Python RSA implementation";
   };
 }

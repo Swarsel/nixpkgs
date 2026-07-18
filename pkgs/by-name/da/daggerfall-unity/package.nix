@@ -1,10 +1,11 @@
 {
+  lib,
+  stdenv,
+  fetchurl,
   alsa-lib,
   autoPatchelfHook,
   copyDesktopItems,
-  fetchurl,
   fetchzip,
-  lib,
   libGL,
   libpulseaudio,
   libudev0-shim,
@@ -16,25 +17,24 @@
   libxxf86vm,
   makeDesktopItem,
   nix-update-script,
-  stdenv,
   vulkan-loader,
   zlib,
-  pname ? "daggerfall-unity",
   includeUnfree ? false,
+  pname ? "daggerfall-unity",
 }:
 let
   docFiles = [
     (fetchurl {
-      url = "https://www.dfworkshop.net/static_files/daggerfallunity/Daggerfall%20Unity%20Manual.pdf";
       hash = "sha256-FywlD0K5b4vUWzyzANlF9575XTDLivbsym7F+qe0Dm8=";
       name = "Daggerfall Unity Manual.pdf";
+      url = "https://www.dfworkshop.net/static_files/daggerfallunity/Daggerfall%20Unity%20Manual.pdf";
       meta.license = lib.licenses.mit;
     })
   ]
   ++ lib.optionals includeUnfree [
     (fetchurl {
-      url = "https://cdn.bethsoft.com/bethsoft.com/manuals/Daggerfall/daggerfall-en.pdf";
       hash = "sha256-24KSP/E7+KvSRTMDq63NVlVWTFZnQj1yya8wc36yrC0=";
+      url = "https://cdn.bethsoft.com/bethsoft.com/manuals/Daggerfall/daggerfall-en.pdf";
       meta.license = lib.licenses.unfree;
     })
   ];
@@ -48,6 +48,8 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-JuhhVLpREM9e9UtlDttvFUhHWpH7Sh79OEo1OM4ggKA=";
     stripRoot = false;
   };
+
+  strictDeps = true;
 
   nativeBuildInputs = [
     autoPatchelfHook
@@ -69,8 +71,6 @@ stdenv.mkDerivation (finalAttrs: {
     zlib
   ];
 
-  strictDeps = true;
-
   installPhase = ''
     runHook preInstall
 
@@ -90,12 +90,12 @@ stdenv.mkDerivation (finalAttrs: {
 
   desktopItems = [
     (makeDesktopItem {
-      name = "daggerfall-unity";
-      desktopName = "Daggerfall Unity";
-      comment = finalAttrs.meta.description;
-      icon = "daggerfall-unity";
-      exec = finalAttrs.meta.mainProgram;
       categories = [ "Game" ];
+      comment = finalAttrs.meta.description;
+      desktopName = "Daggerfall Unity";
+      exec = finalAttrs.meta.mainProgram;
+      icon = "daggerfall-unity";
+      name = "daggerfall-unity";
     })
   ];
 
@@ -104,8 +104,8 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   meta = {
-    homepage = "https://www.dfworkshop.net/";
     description = "Open source recreation of Daggerfall in the Unity engine";
+
     longDescription = ''
       Daggerfall Unity is an open source recreation of Daggerfall in the Unity engine created by Daggerfall Workshop.
 
@@ -117,10 +117,12 @@ stdenv.mkDerivation (finalAttrs: {
         This "unfree" variant also includes the manual for Daggerfall (the game, not the open source engine).
       ''}
     '';
+
+    homepage = "https://www.dfworkshop.net/";
     changelog = "https://github.com/Interkarma/daggerfall-unity/releases/tag/v${finalAttrs.version}";
-    mainProgram = "DaggerfallUnity.x86_64";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ l0b0 ];
     platforms = [ "x86_64-linux" ];
+    mainProgram = "DaggerfallUnity.x86_64";
   };
 })

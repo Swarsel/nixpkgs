@@ -9,21 +9,22 @@
 stdenv.mkDerivation (finalAttrs: {
   pname = "uammd";
   version = "3.1.0";
-  __structuredAttrs = true;
-  strictDeps = true;
 
   src = fetchFromGitHub {
     owner = "RaulPPelaez";
     repo = "UAMMD";
     tag = "v${finalAttrs.version}";
-    fetchSubmodules = true;
     hash = "sha256-TgGtjERxor/82ueWbl4zW712MyoI7N7f6qloJg+mXRM=";
+    fetchSubmodules = true;
   };
+
+  strictDeps = true;
 
   nativeBuildInputs = [
     cmake
   ];
 
+  __structuredAttrs = true;
   passthru.updateScript = nix-update-script { };
 
   meta = {

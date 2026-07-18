@@ -1,14 +1,13 @@
 {
   lib,
-  rel,
+  addonUpdateScript,
   buildKodiAddon,
   fetchzip,
-  addonUpdateScript,
+  rel,
 }:
 
 buildKodiAddon rec {
   pname = "simplejson";
-  namespace = "script.module.simplejson";
   version = "3.19.1+matrix.1";
 
   src = fetchzip {
@@ -16,16 +15,19 @@ buildKodiAddon rec {
     sha256 = "sha256-RJy75WAr0XmXnSrPjqKhFjWJnWo3c5IEtUGumcE/mRo=";
   };
 
+  namespace = "script.module.simplejson";
+
   passthru = {
     pythonPath = "lib";
+
     updateScript = addonUpdateScript {
       attrPath = "kodi.packages.simplejson";
     };
   };
 
   meta = {
-    homepage = "https://github.com/simplejson/simplejson";
     description = "Simple, fast, extensible JSON encoder/decoder for Python";
+    homepage = "https://github.com/simplejson/simplejson";
     license = lib.licenses.mit;
     teams = [ lib.teams.kodi ];
   };

@@ -1,8 +1,8 @@
 {
   lib,
+  fetchFromGitHub,
   buildPythonPackage,
   certifi,
-  fetchFromGitHub,
   hatchling,
   orjson,
   pinecone-plugin-assistant,
@@ -15,7 +15,6 @@
 buildPythonPackage rec {
   pname = "pinecone-client";
   version = "8.1.2";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "pinecone-io";
@@ -36,6 +35,7 @@ buildPythonPackage rec {
     urllib3
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "pinecone" ];
 
   meta = {

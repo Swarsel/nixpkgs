@@ -2,13 +2,13 @@
   lib,
   stdenv,
   fetchurl,
-  imagemagick,
   desktopToDarwinBundle,
-  motif,
-  ncurses,
+  gdb,
+  imagemagick,
   libx11,
   libxt,
-  gdb,
+  motif,
+  ncurses,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -37,10 +37,6 @@ stdenv.mkDerivation (finalAttrs: {
     libxt
   ];
 
-  # ioctl is not found without this flag. fixed in next release
-  # Upstream issue ref: https://savannah.gnu.org/bugs/index.php?64188
-  env = lib.optionalAttrs stdenv.hostPlatform.isDarwin { NIX_CFLAGS_COMPILE = "-DHAVE_SYS_IOCTL_H"; };
-
   configureFlags = [
     "--enable-builtin-manual"
     "--enable-builtin-app-defaults"
@@ -50,7 +46,9 @@ stdenv.mkDerivation (finalAttrs: {
   # file "Ddd" in the same directory, as HFS+ is case-insensitive by default
   # this will loosely FAIL
   makeFlags = [ "EXEEXT=exe" ];
-  enableParallelBuilding = true;
+  # ioctl is not found without this flag. fixed in next release
+  # Upstream issue ref: https://savannah.gnu.org/bugs/index.php?64188
+  env = lib.optionalAttrs stdenv.hostPlatform.isDarwin { NIX_CFLAGS_COMPILE = "-DHAVE_SYS_IOCTL_H"; };
 
   postInstall = ''
     mv $out/bin/dddexe $out/bin/ddd
@@ -58,13 +56,15 @@ stdenv.mkDerivation (finalAttrs: {
     install -D ddd.png $out/share/icons/hicolor/48x48/apps/ddd.png
   '';
 
+  enableParallelBuilding = true;
+
   meta = {
-    changelog = "https://www.gnu.org/software/ddd/news.html";
     description = "Graphical front-end for command-line debuggers";
     homepage = "https://www.gnu.org/software/ddd";
+    changelog = "https://www.gnu.org/software/ddd/news.html";
     license = lib.licenses.gpl3Only;
-    mainProgram = "ddd";
     maintainers = with lib.maintainers; [ emilytrau ];
     platforms = lib.platforms.unix;
+    mainProgram = "ddd";
   };
 })

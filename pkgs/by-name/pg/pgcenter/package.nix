@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule (finalAttrs: {
@@ -16,8 +16,11 @@ buildGoModule (finalAttrs: {
   };
 
   vendorHash = "sha256-nHPS/iLHQwM39UYpajQRAbZcK7PxTPU0mO2HapDRFDU=";
+  doCheck = false;
 
-  subPackages = [ "cmd" ];
+  postInstall = ''
+    mv $out/bin/cmd $out/bin/pgcenter
+  '';
 
   ldflags = [
     "-w"
@@ -27,16 +30,12 @@ buildGoModule (finalAttrs: {
     "-X main.gitBranch=master"
   ];
 
-  postInstall = ''
-    mv $out/bin/cmd $out/bin/pgcenter
-  '';
-
-  doCheck = false;
+  subPackages = [ "cmd" ];
 
   meta = {
+    description = "Command-line admin tool for observing and troubleshooting PostgreSQL";
     homepage = "https://github.com/lesovsky/pgcenter";
     changelog = "https://github.com/lesovsky/pgcenter/raw/v${finalAttrs.version}/doc/Changelog";
-    description = "Command-line admin tool for observing and troubleshooting PostgreSQL";
     license = lib.licenses.bsd3;
     maintainers = [ ];
     mainProgram = "pgcenter";

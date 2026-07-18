@@ -1,9 +1,9 @@
 {
   lib,
-  boost186,
-  fetchFromGitHub,
-  qt5,
   stdenv,
+  fetchFromGitHub,
+  boost186,
+  qt5,
 }:
 
 let
@@ -20,6 +20,8 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-OSQXm0gDI1zM2MBM4iiY43dthJcAZJkprklolsNMEvk=";
   };
 
+  strictDeps = true;
+
   nativeBuildInputs = [
     qmake
     wrapQtAppsHook
@@ -29,18 +31,18 @@ stdenv.mkDerivation (finalAttrs: {
     boost186
   ];
 
-  strictDeps = true;
-
   meta = {
-    homepage = "https://zegrapher.com/en/";
     description = "Open source math plotter";
+
     longDescription = ''
       An open source, free and easy to use math plotter. It can plot functions,
       sequences, parametric equations and data on the plane.
     '';
+
+    homepage = "https://zegrapher.com/en/";
     license = lib.licenses.gpl3Plus;
-    mainProgram = "ZeGrapher";
     maintainers = [ ];
     platforms = lib.platforms.unix;
+    mainProgram = "ZeGrapher";
   };
 })

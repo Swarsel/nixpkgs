@@ -16,17 +16,13 @@ stdenv.mkDerivation rec {
     hash = "sha256-J0J9EKC/4cCiZr/y4lz+Hm7OcmJmMIIWzQ+4c+KhqXg=";
   };
 
-  sourceRoot = "glucose-${version}/sources/${if enableUnfree then "parallel" else "simp"}";
-
   postPatch = ''
     substituteInPlace Main.cc \
       --replace "defined(__linux__)" "defined(__linux__) && defined(__x86_64__)"
   '';
 
   nativeBuildInputs = [ unzip ];
-
   buildInputs = [ zlib ];
-
   makeFlags = [ "r" ];
 
   installPhase = ''
@@ -39,14 +35,17 @@ stdenv.mkDerivation rec {
     runHook postInstall
   '';
 
+  sourceRoot = "glucose-${version}/sources/${if enableUnfree then "parallel" else "simp"}";
+
   meta = {
     description = "Modern, parallel SAT solver (${
       if enableUnfree then "parallel" else "sequential"
     } version)";
-    mainProgram = "glucose";
+
     homepage = "https://www.labri.fr/perso/lsimon/research/glucose/";
     license = if enableUnfree then lib.licenses.unfreeRedistributable else lib.licenses.mit;
-    platforms = lib.platforms.unix;
     maintainers = [ ];
+    platforms = lib.platforms.unix;
+    mainProgram = "glucose";
   };
 }

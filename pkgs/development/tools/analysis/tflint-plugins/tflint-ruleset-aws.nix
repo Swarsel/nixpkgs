@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule rec {
@@ -15,12 +15,12 @@ buildGoModule rec {
     hash = "sha256-mcFsjn/lj2pkecI1BVaUwv8Zv11OSN+EIDYGuxrtfrQ=";
   };
 
-  vendorHash = "sha256-VWZkNtvlOqF6DX2duFih4nFGrxBAfeIIbtc+9hTiUJo=";
-
   postPatch = ''
     # some automation for creating new releases on GitHub, which we don't need
     rm -rf tools/release
   '';
+
+  vendorHash = "sha256-VWZkNtvlOqF6DX2duFih4nFGrxBAfeIIbtc+9hTiUJo=";
 
   # upstream Makefile also does a  go test $(go list ./... | grep -v integration)
   preCheck = ''
@@ -42,10 +42,10 @@ buildGoModule rec {
   '';
 
   meta = {
+    description = "TFLint ruleset plugin for Terraform AWS Provider";
     homepage = "https://github.com/terraform-linters/tflint-ruleset-aws";
     changelog = "https://github.com/terraform-linters/tflint-ruleset-aws/blob/v${version}/CHANGELOG.md";
-    description = "TFLint ruleset plugin for Terraform AWS Provider";
-    maintainers = with lib.maintainers; [ flokli ];
     license = with lib.licenses; [ mpl20 ];
+    maintainers = with lib.maintainers; [ flokli ];
   };
 }

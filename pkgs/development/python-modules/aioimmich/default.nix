@@ -1,10 +1,10 @@
 {
+  lib,
+  fetchFromGitHub,
   aiofiles,
   aiohttp,
   aiointercept,
   buildPythonPackage,
-  fetchFromGitHub,
-  lib,
   mashumaro,
   pytest-asyncio,
   pytestCheckHook,
@@ -15,7 +15,6 @@
 buildPythonPackage rec {
   pname = "aioimmich";
   version = "0.16.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "mib1185";
@@ -29,6 +28,13 @@ buildPythonPackage rec {
       --replace-fail setuptools==82.0.1 setuptools
   '';
 
+  nativeCheckInputs = [
+    aiointercept
+    pytest-asyncio
+    pytestCheckHook
+    syrupy
+  ];
+
   build-system = [ setuptools ];
 
   dependencies = [
@@ -37,19 +43,13 @@ buildPythonPackage rec {
     mashumaro
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "aioimmich" ];
 
-  nativeCheckInputs = [
-    aiointercept
-    pytest-asyncio
-    pytestCheckHook
-    syrupy
-  ];
-
   meta = {
-    changelog = "https://github.com/mib1185/aioimmich/releases/tag/${src.tag}";
     description = "Asynchronous library to fetch albums and assests from immich";
     homepage = "https://github.com/mib1185/aioimmich";
+    changelog = "https://github.com/mib1185/aioimmich/releases/tag/${src.tag}";
     license = lib.licenses.asl20;
     maintainers = with lib.maintainers; [ dotlambda ];
   };

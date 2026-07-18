@@ -1,10 +1,10 @@
 {
   lib,
+  fetchFromGitHub,
   asttokens,
   buildPythonPackage,
   executing,
   hatchling,
-  fetchFromGitHub,
   pygments,
   pytest-mock,
   pytestCheckHook,
@@ -13,7 +13,6 @@
 buildPythonPackage rec {
   pname = "devtools";
   version = "0.12.2";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "samuelcolvin";
@@ -32,6 +31,11 @@ buildPythonPackage rec {
       --replace-fail 'asttokens>=2.0.0,<3.0.0' 'asttokens>=2.0.0'
   '';
 
+  nativeCheckInputs = [
+    pytestCheckHook
+    pytest-mock
+  ];
+
   build-system = [ hatchling ];
 
   dependencies = [
@@ -40,9 +44,9 @@ buildPythonPackage rec {
     pygments
   ];
 
-  nativeCheckInputs = [
-    pytestCheckHook
-    pytest-mock
+  disabledTestPaths = [
+    # pytester_pretty is not available in Nixpkgs
+    "tests/test_insert_assert.py"
   ];
 
   disabledTests = [
@@ -55,11 +59,7 @@ buildPythonPackage rec {
     "test_expr_render"
   ];
 
-  disabledTestPaths = [
-    # pytester_pretty is not available in Nixpkgs
-    "tests/test_insert_assert.py"
-  ];
-
+  pyproject = true;
   pythonImportsCheck = [ "devtools" ];
 
   meta = {

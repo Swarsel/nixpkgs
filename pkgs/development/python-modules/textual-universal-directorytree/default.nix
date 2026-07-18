@@ -1,22 +1,21 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  hatchling,
-  textual,
-  universal-pathlib,
   adlfs,
   aiohttp,
+  buildPythonPackage,
   gcsfs,
+  hatchling,
   paramiko,
   requests,
   s3fs,
+  textual,
+  universal-pathlib,
 }:
 
 buildPythonPackage rec {
   pname = "textual-universal-directorytree";
   version = "1.7.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "juftin";
@@ -43,6 +42,7 @@ buildPythonPackage rec {
     ];
   };
 
+  pyproject = true;
   pythonImportsCheck = [ "textual_universal_directorytree" ];
 
   meta = {

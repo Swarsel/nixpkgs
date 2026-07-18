@@ -7,7 +7,6 @@
 buildPythonPackage rec {
   pname = "dicttoxml";
   version = "1.7.16";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
@@ -16,6 +15,7 @@ buildPythonPackage rec {
 
   # No tests in archive
   doCheck = false;
+  format = "setuptools";
 
   meta = {
     description = "Converts a Python dictionary or other native data type into a valid XML string";

@@ -1,58 +1,39 @@
 {
-  stdenv,
   lib,
-  buildPythonPackage,
+  stdenv,
   fetchFromGitHub,
-  pythonOlder,
-
-  # build-system
-  setuptools-scm,
-
+  buildPythonPackage,
   # dependencies
   exceptiongroup,
-  idna,
-  typing-extensions,
-
-  # optionals
-  trio,
-
   # tests
   hypothesis,
+  idna,
   psutil,
   pytest-mock,
   pytest-timeout,
   pytest-xdist,
   pytestCheckHook,
-  trustme,
-  uvloop,
-
+  pythonOlder,
+  # build-system
+  setuptools-scm,
   # smoke tests
   starlette,
+  # optionals
+  trio,
+  trustme,
+  typing-extensions,
+  uvloop,
 }:
 
 buildPythonPackage rec {
   pname = "anyio";
   version = "4.14.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "agronholm";
     repo = "anyio";
     tag = version;
     hash = "sha256-LPNRNb1RuSVQqsI6aAAiYWC2c2CZAhFS67XW9OfbIiE=";
-  };
-
-  build-system = [ setuptools-scm ];
-
-  dependencies = [
-    idna
-  ]
-  ++ lib.optionals (pythonOlder "3.13") [
-    typing-extensions
-  ];
-
-  optional-dependencies = {
-    trio = [ trio ];
   };
 
   nativeCheckInputs = [
@@ -68,21 +49,29 @@ buildPythonPackage rec {
   ]
   ++ optional-dependencies.trio;
 
-  pytestFlags = [
-    "-Wignore::trio.TrioDeprecationWarning"
-    # DeprecationWarning for asyncio.iscoroutinefunction is propagated from uvloop used internally
-    # https://github.com/agronholm/anyio/commit/e7bb0bd496b1ae0d1a81b86de72312d52e8135ed
-    "-Wignore::DeprecationWarning"
+  preCheck = lib.optionalString stdenv.hostPlatform.isDarwin ''
+    # Work around "OSError: AF_UNIX path too long"
+    export TMPDIR="/tmp"
+  '';
+
+  __darwinAllowLocalNetworking = true;
+  build-system = [ setuptools-scm ];
+
+  dependencies = [
+    idna
+  ]
+  ++ lib.optionals (pythonOlder "3.13") [
+    typing-extensions
   ];
 
   disabledTestMarks = [
     "network"
   ];
 
-  preCheck = lib.optionalString stdenv.hostPlatform.isDarwin ''
-    # Work around "OSError: AF_UNIX path too long"
-    export TMPDIR="/tmp"
-  '';
+  disabledTestPaths = [
+    # lots of DNS lookups
+    "tests/test_sockets.py"
+  ];
 
   disabledTests = [
     # TypeError: __subprocess_run() got an unexpected keyword argument 'umask'
@@ -113,12 +102,18 @@ buildPythonPackage rec {
     "test_group"
   ];
 
-  disabledTestPaths = [
-    # lots of DNS lookups
-    "tests/test_sockets.py"
-  ];
+  optional-dependencies = {
+    trio = [ trio ];
+  };
 
-  __darwinAllowLocalNetworking = true;
+  pyproject = true;
+
+  pytestFlags = [
+    "-Wignore::trio.TrioDeprecationWarning"
+    # DeprecationWarning for asyncio.iscoroutinefunction is propagated from uvloop used internally
+    # https://github.com/agronholm/anyio/commit/e7bb0bd496b1ae0d1a81b86de72312d52e8135ed
+    "-Wignore::DeprecationWarning"
+  ];
 
   pythonImportsCheck = [ "anyio" ];
 
@@ -127,9 +122,9 @@ buildPythonPackage rec {
   };
 
   meta = {
-    changelog = "https://github.com/agronholm/anyio/blob/${src.tag}/docs/versionhistory.rst";
     description = "High level compatibility layer for multiple asynchronous event loop implementations on Python";
     homepage = "https://github.com/agronholm/anyio";
+    changelog = "https://github.com/agronholm/anyio/blob/${src.tag}/docs/versionhistory.rst";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ hexa ];
   };

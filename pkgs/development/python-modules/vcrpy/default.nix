@@ -1,21 +1,20 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
+  buildPythonPackage,
   pytest-httpbin,
   pytestCheckHook,
   pyyaml,
+  setuptools,
   six,
   urllib3,
-  yarl,
   wrapt,
+  yarl,
 }:
 
 buildPythonPackage rec {
   pname = "vcrpy";
   version = "8.2.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "kevin1024";
@@ -23,6 +22,11 @@ buildPythonPackage rec {
     tag = "v${version}";
     hash = "sha256-PlpbBzAj9a4bAfORGozAAsbrzngJt2Pnnp3bI96wYfI=";
   };
+
+  nativeCheckInputs = [
+    pytest-httpbin
+    pytestCheckHook
+  ];
 
   build-system = [ setuptools ];
 
@@ -34,11 +38,6 @@ buildPythonPackage rec {
     yarl
   ];
 
-  nativeCheckInputs = [
-    pytest-httpbin
-    pytestCheckHook
-  ];
-
   disabledTestPaths = [ "tests/integration" ];
 
   disabledTests = [
@@ -48,6 +47,7 @@ buildPythonPackage rec {
     "test_testcase_playback"
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "vcr" ];
 
   meta = {

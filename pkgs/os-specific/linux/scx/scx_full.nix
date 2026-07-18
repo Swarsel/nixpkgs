@@ -3,8 +3,8 @@
   scx,
 }:
 buildEnv {
-  pname = "scx_full";
   inherit (scx.rustscheds) version;
+  pname = "scx_full";
 
   paths = [
     scx.cscheds
@@ -15,6 +15,7 @@ buildEnv {
 
   meta = {
     description = "Sched-ext C and Rust userspace schedulers";
+
     longDescription = ''
       This includes C based schedulers such as scx_central, scx_flatcg,
       scx_pair, scx_qmap, scx_simple, scx_userland and Rust based schedulers
@@ -25,6 +26,7 @@ buildEnv {
       It is recommended to use the latest kernel for the best compatibility.
       :::
     '';
+
     homepage = "https://github.com/sched-ext/scx";
   };
 }

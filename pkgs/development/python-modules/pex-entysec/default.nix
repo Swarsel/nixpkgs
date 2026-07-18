@@ -1,9 +1,9 @@
 {
   lib,
+  fetchFromGitHub,
   adb-shell,
   alive-progress,
   buildPythonPackage,
-  fetchFromGitHub,
   hatasm,
   manuf,
   netaddr,
@@ -23,7 +23,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "pex-entysec";
   version = "1.0.0-unstable-2024-10-13";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "EntySec";
@@ -33,6 +32,8 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-37NoQL/BieMoZbaRiIu9QVAO2SEt7QQFPZ+KHzv3dRk=";
   };
 
+  # Module has no tests
+  doCheck = false;
   build-system = [ setuptools ];
 
   dependencies = [
@@ -53,10 +54,8 @@ buildPythonPackage (finalAttrs: {
     scapy
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "pex" ];
-
-  # Module has no tests
-  doCheck = false;
 
   meta = {
     description = "Collection of special tools for providing high quality penetration testing using pure python programming language";

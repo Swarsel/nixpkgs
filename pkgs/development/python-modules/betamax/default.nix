@@ -10,20 +10,15 @@
 buildPythonPackage (finalAttrs: {
   pname = "betamax";
   version = "0.9.0";
-  pyproject = true;
 
   src = fetchPypi {
     inherit (finalAttrs) pname version;
     hash = "sha256-gjFuFnm8aHnjyDMY0Ba1S3ySJf8IxEYt5IE+IgONX5Q=";
   };
 
-  build-system = [ setuptools ];
-
-  dependencies = [ requests ];
-
   nativeCheckInputs = [ pytestCheckHook ];
-
-  pythonImportsCheck = [ "betamax" ];
+  build-system = [ setuptools ];
+  dependencies = [ requests ];
 
   disabledTestPaths = [
     # Tests require network access
@@ -34,6 +29,9 @@ buildPythonPackage (finalAttrs: {
     "tests/regression/test_gzip_compression.py"
     "tests/regression/test_requests_2_11_body_matcher.py"
   ];
+
+  pyproject = true;
+  pythonImportsCheck = [ "betamax" ];
 
   meta = {
     description = "VCR imitation for requests";

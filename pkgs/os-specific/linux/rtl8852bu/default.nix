@@ -2,8 +2,8 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  kernel,
   bc,
+  kernel,
   nukeReferences,
 }:
 
@@ -18,16 +18,6 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-8bO82ytorBYgIT0dNKRocOhiCrUhya7DkkMlJ1XM3Hk=";
   };
 
-  nativeBuildInputs = [
-    bc
-    nukeReferences
-  ]
-  ++ kernel.moduleBuildDependencies;
-  hardeningDisable = [
-    "pic"
-    "format"
-  ];
-
   postPatch = ''
     substituteInPlace ./Makefile \
       --replace-fail /sbin/depmod \# \
@@ -39,6 +29,12 @@ stdenv.mkDerivation (finalAttrs: {
       --replace-fail /lib/modules "${kernel.dev}/lib/modules"
   '';
 
+  nativeBuildInputs = [
+    bc
+    nukeReferences
+  ]
+  ++ kernel.moduleBuildDependencies;
+
   makeFlags = [
     "ARCH=${stdenv.hostPlatform.linuxArch}"
     ("CONFIG_PLATFORM_I386_PC=" + (if stdenv.hostPlatform.isx86 then "y" else "n"))
@@ -47,6 +43,8 @@ stdenv.mkDerivation (finalAttrs: {
   ++ lib.optionals (stdenv.hostPlatform != stdenv.buildPlatform) [
     "CROSS_COMPILE=${stdenv.cc.targetPrefix}"
   ];
+
+  env.NIX_CFLAGS_COMPILE = "-Wno-designated-init"; # Similar to 79c1cf6
 
   preInstall = ''
     mkdir -p "$out/lib/modules/${kernel.modDirVersion}/kernel/net/wireless/"
@@ -57,19 +55,24 @@ stdenv.mkDerivation (finalAttrs: {
     nuke-refs $out/lib/modules/*/kernel/net/wireless/*.ko
   '';
 
-  env.NIX_CFLAGS_COMPILE = "-Wno-designated-init"; # Similar to 79c1cf6
-
   enableParallelBuilding = true;
+
+  hardeningDisable = [
+    "pic"
+    "format"
+  ];
 
   meta = {
     description = "Driver for Realtek rtl8852bu and rtl8832bu chipsets, provides the 8852bu mod";
     homepage = "https://github.com/morrownr/rtl8852bu-20240418";
     license = lib.licenses.gpl2Only;
-    platforms = [ "x86_64-linux" ];
-    broken = kernel.kernelAtLeast "6.18"; # Similar to 79c1cf6
+
     maintainers = with lib.maintainers; [
       lonyelon
       thtrf
     ];
+
+    platforms = [ "x86_64-linux" ];
+    broken = kernel.kernelAtLeast "6.18"; # Similar to 79c1cf6
   };
 })

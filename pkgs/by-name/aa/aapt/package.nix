@@ -1,9 +1,9 @@
 {
   lib,
-  stdenvNoCC,
-  fetchzip,
   autoPatchelfHook,
+  fetchzip,
   libcxx,
+  stdenvNoCC,
 }:
 
 stdenvNoCC.mkDerivation (finalAttrs: {
@@ -15,13 +15,13 @@ stdenvNoCC.mkDerivation (finalAttrs: {
       urlAndHash =
         if stdenvNoCC.hostPlatform.isLinux then
           {
-            url = "https://dl.google.com/android/maven2/com/android/tools/build/aapt2/${finalAttrs.version}/aapt2-${finalAttrs.version}-linux.jar";
             hash = "sha256-eiNY58ueDpcyKvAteRuKFVr3r22kOhwSADkaH3CRwKw=";
+            url = "https://dl.google.com/android/maven2/com/android/tools/build/aapt2/${finalAttrs.version}/aapt2-${finalAttrs.version}-linux.jar";
           }
         else if stdenvNoCC.hostPlatform.isDarwin then
           {
-            url = "https://dl.google.com/android/maven2/com/android/tools/build/aapt2/${finalAttrs.version}/aapt2-${finalAttrs.version}-osx.jar";
             hash = "sha256-RI/S2oXMSvipALRfeRTsiXUh130/b8iP+EO0yltd7x0=";
+            url = "https://dl.google.com/android/maven2/com/android/tools/build/aapt2/${finalAttrs.version}/aapt2-${finalAttrs.version}-osx.jar";
           }
         else
           throw "Unsupport platform: ${stdenvNoCC.system}";
@@ -47,12 +47,12 @@ stdenvNoCC.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Build tool that compiles and packages Android app's resources";
-    mainProgram = "aapt2";
     homepage = "https://developer.android.com/tools/aapt2";
     license = lib.licenses.asl20;
-    maintainers = with lib.maintainers; [ linsui ];
-    teams = [ lib.teams.android ];
-    platforms = lib.platforms.darwin ++ [ "x86_64-linux" ];
     sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
+    maintainers = with lib.maintainers; [ linsui ];
+    platforms = lib.platforms.darwin ++ [ "x86_64-linux" ];
+    mainProgram = "aapt2";
+    teams = [ lib.teams.android ];
   };
 })

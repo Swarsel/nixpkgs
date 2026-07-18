@@ -1,33 +1,31 @@
 {
   lib,
   stdenv,
-  makeWrapper,
-  sage-tests,
-  sage-with-env,
   jupyter-kernel-definition,
   jupyter-kernel-specs,
+  makeWrapper,
+  requireSageTests,
+  sage-tests,
+  sage-with-env,
   sagedoc,
   withDoc,
-  requireSageTests,
 }:
 
 # A wrapper that makes sure sage finds its docs (if they were build) and the
 # jupyter kernel spec.
 
 stdenv.mkDerivation (finalAttrs: {
-  version = finalAttrs.src.version;
   pname = "sage";
+  version = finalAttrs.src.version;
   src = sage-with-env.env.lib.src;
-
   nativeBuildInputs = [ makeWrapper ];
+
   buildInputs = lib.optionals requireSageTests [
     # This is a hack to make sure sage-tests is evaluated. It doesn't actually
     # produce anything of value, it just decouples the tests from the build.
     sage-tests
   ];
 
-  dontUnpack = true;
-  configurePhase = "#do nothing";
   buildPhase = "#do nothing";
 
   installPhase = ''
@@ -38,21 +36,27 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   doInstallCheck = withDoc;
+
   installCheckPhase = ''
     export HOME="$TMPDIR/sage-home"
     mkdir -p "$HOME"
     "$out/bin/sage" -c 'browse_sage_doc._open("reference", testing=True)'
   '';
 
+  configurePhase = "#do nothing";
+  dontUnpack = true;
+
   passthru = {
-    tests = sage-tests;
+    kernelspec = jupyter-kernel-definition;
+    lib = sage-with-env.env.lib;
+
     quicktest = sage-tests.override {
       longTests = false;
       timeLimit = 600;
     }; # as many tests as possible in ~10m
-    lib = sage-with-env.env.lib;
+
+    tests = sage-tests;
     with-env = sage-with-env;
-    kernelspec = jupyter-kernel-definition;
   }
   // lib.optionalAttrs withDoc {
     doc = sagedoc;
@@ -60,10 +64,10 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Open Source Mathematics Software, free alternative to Magma, Maple, Mathematica, and Matlab";
-    mainProgram = "sage";
     homepage = "https://www.sagemath.org";
     license = lib.licenses.gpl2Plus;
-    teams = [ lib.teams.sage ];
     platforms = lib.platforms.linux ++ [ "aarch64-darwin" ];
+    mainProgram = "sage";
+    teams = [ lib.teams.sage ];
   };
 })

@@ -1,11 +1,11 @@
 {
   lib,
+  fetchFromGitHub,
   aioconsole,
-  bleak-retry-connector,
   bleak,
+  bleak-retry-connector,
   buildPythonPackage,
   deprecated,
-  fetchFromGitHub,
   freezegun,
   poetry-core,
   poetry-dynamic-versioning,
@@ -19,7 +19,6 @@
 buildPythonPackage rec {
   pname = "melnor-bluetooth";
   version = "0.0.25";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "vanstinator";
@@ -27,6 +26,13 @@ buildPythonPackage rec {
     tag = "v${version}";
     hash = "sha256-BQKXQrPT/+qm9cRO7pfScPwW0iwdhliTfX4XJ/kRQG0=";
   };
+
+  nativeCheckInputs = [
+    freezegun
+    pytest-asyncio
+    pytestCheckHook
+    syrupy
+  ];
 
   build-system = [
     poetry-core
@@ -42,13 +48,7 @@ buildPythonPackage rec {
     tzlocal
   ];
 
-  nativeCheckInputs = [
-    freezegun
-    pytest-asyncio
-    pytestCheckHook
-    syrupy
-  ];
-
+  pyproject = true;
   pythonImportsCheck = [ "melnor_bluetooth" ];
 
   meta = {

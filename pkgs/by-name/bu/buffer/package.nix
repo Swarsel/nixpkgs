@@ -1,8 +1,9 @@
 {
   lib,
+  stdenv,
+  fetchFromGitLab,
   cargo,
   desktop-file-utils,
-  fetchFromGitLab,
   gtk4,
   gtksourceview5,
   libadwaita,
@@ -12,7 +13,6 @@
   pkg-config,
   rustPlatform,
   rustc,
-  stdenv,
   wrapGAppsHook4,
 }:
 
@@ -21,16 +21,11 @@ stdenv.mkDerivation (finalAttrs: {
   version = "2026.1";
 
   src = fetchFromGitLab {
-    domain = "gitlab.gnome.org";
     owner = "cheywood";
     repo = "buffer";
     tag = finalAttrs.version;
     hash = "sha256-O2Kuw3UMHUP+PIyeXlgtUJC9/85tMk3ZL5SvWb+7gdU=";
-  };
-
-  cargoDeps = rustPlatform.fetchCargoVendor {
-    inherit (finalAttrs) src pname version;
-    hash = "sha256-ipZgmk5Lb5LX6O6dSDVTetLN41VNJcAFJ+fNfkQnksc=";
+    domain = "gitlab.gnome.org";
   };
 
   nativeBuildInputs = [
@@ -51,12 +46,17 @@ stdenv.mkDerivation (finalAttrs: {
     libspelling
   ];
 
+  cargoDeps = rustPlatform.fetchCargoVendor {
+    inherit (finalAttrs) src pname version;
+    hash = "sha256-ipZgmk5Lb5LX6O6dSDVTetLN41VNJcAFJ+fNfkQnksc=";
+  };
+
   meta = {
     description = "Minimal editing space for all those things that don't need keeping";
     homepage = "https://gitlab.gnome.org/cheywood/buffer";
     license = lib.licenses.gpl3Plus;
-    mainProgram = "buffer";
     maintainers = with lib.maintainers; [ michaelgrahamevans ];
     platforms = lib.platforms.linux;
+    mainProgram = "buffer";
   };
 })

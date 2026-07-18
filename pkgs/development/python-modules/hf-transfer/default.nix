@@ -1,24 +1,21 @@
 {
   lib,
-  buildPythonPackage,
+  stdenv,
   fetchFromGitHub,
-
+  buildPythonPackage,
   # build-system
   cargo,
+  libiconv,
+  # buildInputs
+  openssl,
   pkg-config,
   rustPlatform,
   rustc,
-
-  # buildInputs
-  openssl,
-  stdenv,
-  libiconv,
 }:
 
 buildPythonPackage rec {
   pname = "hf-transfer";
   version = "0.1.9";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "huggingface";
@@ -27,9 +24,15 @@ buildPythonPackage rec {
     hash = "sha256-mcU3YuJVfuwBvtLfqceV3glcJcpjSX7M3VjvbvLCxZg=";
   };
 
-  cargoDeps = rustPlatform.fetchCargoVendor {
-    inherit pname version src;
-    hash = "sha256-O4aKqVSShFpt8mdZkY3WV55j9CIczRSRkIMC7dJoGv0=";
+  buildInputs = [
+    openssl
+  ]
+  ++ lib.optionals stdenv.hostPlatform.isDarwin [
+    libiconv
+  ];
+
+  env = {
+    OPENSSL_NO_VENDOR = true;
   };
 
   build-system = [
@@ -40,18 +43,13 @@ buildPythonPackage rec {
     rustc
   ];
 
-  buildInputs = [
-    openssl
-  ]
-  ++ lib.optionals stdenv.hostPlatform.isDarwin [
-    libiconv
-  ];
-
-  pythonImportsCheck = [ "hf_transfer" ];
-
-  env = {
-    OPENSSL_NO_VENDOR = true;
+  cargoDeps = rustPlatform.fetchCargoVendor {
+    inherit pname version src;
+    hash = "sha256-O4aKqVSShFpt8mdZkY3WV55j9CIczRSRkIMC7dJoGv0=";
   };
+
+  pyproject = true;
+  pythonImportsCheck = [ "hf_transfer" ];
 
   meta = {
     description = "High speed download python library";

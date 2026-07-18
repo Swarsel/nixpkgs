@@ -1,23 +1,23 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitLab,
+  garcon,
   gettext,
-  meson,
-  ninja,
-  pkg-config,
+  gitUpdater,
   glib,
   gtk3,
   libnotify,
   librsvg,
   libwnck,
-  libxklavier,
-  garcon,
   libxfce4ui,
   libxfce4util,
+  libxklavier,
+  meson,
+  ninja,
+  pkg-config,
   xfce4-panel,
   xfconf,
-  gitUpdater,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -25,11 +25,11 @@ stdenv.mkDerivation (finalAttrs: {
   version = "0.9.0";
 
   src = fetchFromGitLab {
-    domain = "gitlab.xfce.org";
     owner = "panel-plugins";
     repo = "xfce4-xkb-plugin";
     tag = "xfce4-xkb-plugin-${finalAttrs.version}";
     hash = "sha256-yLlUKp7X8bylJs7ioQJ36mfqFlsiZXOgFXa0ZP7AG1E=";
+    domain = "gitlab.xfce.org";
   };
 
   strictDeps = true;
@@ -61,7 +61,7 @@ stdenv.mkDerivation (finalAttrs: {
     description = "Allows you to setup and use multiple keyboard layouts";
     homepage = "https://gitlab.xfce.org/panel-plugins/xfce4-xkb-plugin";
     license = lib.licenses.gpl2Plus;
-    teams = [ lib.teams.xfce ];
     platforms = lib.platforms.linux;
+    teams = [ lib.teams.xfce ];
   };
 })

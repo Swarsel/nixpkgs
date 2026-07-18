@@ -1,17 +1,16 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  pytestCheckHook,
+  buildPythonPackage,
   flit-core,
   installer,
   mock,
+  pytestCheckHook,
 }:
 
 buildPythonPackage rec {
   pname = "installer";
   version = "1.0.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "pypa";
@@ -27,25 +26,25 @@ buildPythonPackage rec {
   ];
 
   nativeBuildInputs = [ flit-core ];
-
   # We need to disable tests because this package is part of the bootstrap chain
   # and its test dependencies cannot be built yet when this is being built.
   doCheck = false;
+  pyproject = true;
 
   passthru.tests = {
     pytest = buildPythonPackage {
-      pname = "${pname}-pytest";
       inherit version;
-      pyproject = false;
-
-      dontBuild = true;
-      dontInstall = true;
+      pname = "${pname}-pytest";
 
       nativeCheckInputs = [
         installer
         mock
         pytestCheckHook
       ];
+
+      dontBuild = true;
+      dontInstall = true;
+      pyproject = false;
     };
   };
 

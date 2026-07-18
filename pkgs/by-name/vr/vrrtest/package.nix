@@ -2,9 +2,9 @@
   lib,
   stdenv,
   fetchFromGitHub,
+  love,
   makeWrapper,
   zip,
-  love,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -19,7 +19,6 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   nativeBuildInputs = [ makeWrapper ];
-
   buildInputs = [ zip ];
 
   buildPhase = ''
@@ -37,11 +36,11 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   meta = {
+    inherit (love.meta) platforms;
     description = "Tool testing variable refresh rates";
     homepage = "https://github.com/Nixola/VRRTest";
     license = lib.licenses.zlib;
-    mainProgram = "vrrtest";
     maintainers = with lib.maintainers; [ justinlime ];
-    inherit (love.meta) platforms;
+    mainProgram = "vrrtest";
   };
 })

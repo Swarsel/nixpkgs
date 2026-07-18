@@ -8,7 +8,6 @@
 buildPythonPackage rec {
   pname = "pytlv";
   version = "0.71";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
@@ -16,7 +15,7 @@ buildPythonPackage rec {
   };
 
   nativeBuildInputs = [ setuptools ];
-
+  pyproject = true;
   pythonImportsCheck = [ "pytlv" ];
 
   meta = {

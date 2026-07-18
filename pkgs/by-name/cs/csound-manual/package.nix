@@ -2,10 +2,10 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  docbook_xsl,
   docbook_xml_dtd_45,
-  python3,
+  docbook_xsl,
   libxslt,
+  python3,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -18,12 +18,6 @@ stdenv.mkDerivation (finalAttrs: {
     rev = finalAttrs.version;
     sha256 = "sha256-W8MghqUBr3V7LPgNwU6Ugw16wdK3G37zAPuasMlZ2+I=";
   };
-
-  prePatch = ''
-    substituteInPlace manual.xml \
-      --replace "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd" \
-                "${docbook_xml_dtd_45}/xml/dtd/docbook/docbookx.dtd"
-  '';
 
   nativeBuildInputs = [
     libxslt.bin
@@ -39,6 +33,12 @@ stdenv.mkDerivation (finalAttrs: {
   installPhase = ''
     mkdir -p $out/share/doc/csound
     cp -r ./html $out/share/doc/csound
+  '';
+
+  prePatch = ''
+    substituteInPlace manual.xml \
+      --replace "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd" \
+                "${docbook_xml_dtd_45}/xml/dtd/docbook/docbookx.dtd"
   '';
 
   meta = {

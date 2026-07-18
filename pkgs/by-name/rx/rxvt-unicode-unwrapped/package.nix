@@ -3,24 +3,24 @@
   stdenv,
   fetchurl,
   fetchpatch,
-  makeDesktopItem,
-  libx11,
-  libxt,
-  libxft,
-  libxrender,
-  libxext,
-  ncurses,
   fontconfig,
   freetype,
-  pkg-config,
   gdk-pixbuf,
-  perl,
   libptytty,
-  perlSupport ? true,
-  gdkPixbufSupport ? true,
-  unicode3Support ? true,
-  emojiSupport ? false,
+  libx11,
+  libxext,
+  libxft,
+  libxrender,
+  libxt,
+  makeDesktopItem,
+  ncurses,
   nixosTests,
+  perl,
+  pkg-config,
+  emojiSupport ? false,
+  gdkPixbufSupport ? true,
+  perlSupport ? true,
+  unicode3Support ? true,
 }:
 
 let
@@ -29,57 +29,40 @@ let
   description = "Clone of the well-known terminal emulator rxvt";
 
   desktopItem = makeDesktopItem {
-    name = pname;
-    exec = "urxvt";
-    icon = "utilities-terminal";
-    comment = description;
-    desktopName = "URxvt";
-    genericName = pname;
     categories = [
       "System"
       "TerminalEmulator"
     ];
+
+    comment = description;
+    desktopName = "URxvt";
+    exec = "urxvt";
+    genericName = pname;
+    icon = "utilities-terminal";
+    name = pname;
   };
 
   fetchPatchFromAUR =
     {
-      package,
       name,
+      package,
       rev,
       sha256,
     }:
     fetchpatch rec {
-      url = "https://aur.archlinux.org/cgit/aur.git/plain/${name}?h=${package}&id=${rev}";
-      extraPrefix = "";
       inherit name sha256;
+      extraPrefix = "";
+      url = "https://aur.archlinux.org/cgit/aur.git/plain/${name}?h=${package}&id=${rev}";
     };
 in
 
 stdenv.mkDerivation {
-  name = "${pname}-unwrapped-${version}";
   inherit pname version;
 
   src = fetchurl {
     url = "https://dist.schmorp.de/rxvt-unicode/Attic/rxvt-unicode-${version}.tar.bz2";
     sha256 = "qqE/y8FJ/g8/OR+TMnlYD3Spb9MS1u0GuP8DwtRmcug=";
   };
-
-  nativeBuildInputs = [ pkg-config ];
-  buildInputs = [
-    libx11
-    libxt
-    libxft
-    ncurses # required to build the terminfo file
-    fontconfig
-    freetype
-    libxrender
-    libptytty
-  ]
-  ++ lib.optionals perlSupport [
-    perl
-    libxext
-  ]
-  ++ lib.optional gdkPixbufSupport gdk-pixbuf;
 
   outputs = [
     "out"
@@ -118,12 +101,30 @@ stdenv.mkDerivation {
       })
     ]
     ++ lib.optional (perlSupport && lib.versionAtLeast perl.version "5.38") (fetchpatch {
-      name = "perl538-locale-c.patch";
-      url = "https://github.com/exg/rxvt-unicode/commit/16634bc8dd5fc4af62faf899687dfa8f27768d15.patch";
       excludes = [ "Changes" ];
+      name = "perl538-locale-c.patch";
       sha256 = "sha256-JVqzYi3tcWIN2j5JByZSztImKqbbbB3lnfAwUXrumHM=";
+      url = "https://github.com/exg/rxvt-unicode/commit/16634bc8dd5fc4af62faf899687dfa8f27768d15.patch";
     })
     ++ lib.optional stdenv.hostPlatform.isDarwin ./patches/makefile-phony.patch;
+
+  nativeBuildInputs = [ pkg-config ];
+
+  buildInputs = [
+    libx11
+    libxt
+    libxft
+    ncurses # required to build the terminfo file
+    fontconfig
+    freetype
+    libxrender
+    libptytty
+  ]
+  ++ lib.optionals perlSupport [
+    perl
+    libxext
+  ]
+  ++ lib.optional gdkPixbufSupport gdk-pixbuf;
 
   configureFlags = [
     "--with-terminfo=${placeholder "terminfo"}/share/terminfo"
@@ -134,13 +135,14 @@ stdenv.mkDerivation {
   ++ lib.optional emojiSupport "--enable-wide-glyphs";
 
   env = {
+    CFLAGS = toString [
+      "-I${freetype.dev}/include/freetype2"
+    ];
+
     LDFLAGS = toString [
       "-lfontconfig"
       "-lXrender"
       "-lpthread"
-    ];
-    CFLAGS = toString [
-      "-I${freetype.dev}/include/freetype2"
     ];
   };
 
@@ -162,15 +164,16 @@ stdenv.mkDerivation {
     cp -r ${desktopItem}/share/applications/ $out/share/
   '';
 
+  name = "${pname}-unwrapped-${version}";
   passthru.tests.test = nixosTests.terminal-emulators.urxvt;
 
   meta = {
     inherit description;
     homepage = "http://software.schmorp.de/pkg/rxvt-unicode.html";
-    downloadPage = "http://dist.schmorp.de/rxvt-unicode/Attic/";
+    license = lib.licenses.gpl3;
     maintainers = with lib.maintainers; [ rnhmjoj ];
     platforms = lib.platforms.unix;
-    license = lib.licenses.gpl3;
     mainProgram = "urxvt";
+    downloadPage = "http://dist.schmorp.de/rxvt-unicode/Attic/";
   };
 }

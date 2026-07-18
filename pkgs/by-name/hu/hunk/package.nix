@@ -1,8 +1,8 @@
 {
   lib,
   stdenv,
-  bun,
   fetchFromGitHub,
+  bun,
   nix-update-script,
   versionCheckHook,
   writableTmpDirAsHomeHook,
@@ -20,15 +20,13 @@ let
   };
 
   node_modules = stdenv.mkDerivation {
-    pname = "${pname}-node_modules";
     inherit version src;
+    pname = "${pname}-node_modules";
 
     nativeBuildInputs = [
       bun
       writableTmpDirAsHomeHook
     ];
-
-    dontConfigure = true;
 
     buildPhase = ''
       runHook preBuild
@@ -54,32 +52,20 @@ let
       runHook postInstall
     '';
 
+    dontConfigure = true;
     dontFixup = true;
-
     outputHash = "sha256-LkOAWScuNPx9/KOcG110ngLz0QmB4/S3VxIAb3EIH7I=";
     outputHashMode = "recursive";
   };
 in
 stdenv.mkDerivation {
   inherit pname version src;
-
   strictDeps = true;
-  __structuredAttrs = true;
 
   nativeBuildInputs = [
     bun
     writableTmpDirAsHomeHook
   ];
-
-  configurePhase = ''
-    runHook preConfigure
-
-    cp -R ${node_modules}/. .
-    chmod -R u+w node_modules
-    find packages -type d -name node_modules -exec chmod -R u+w {} \;
-
-    runHook postConfigure
-  '';
 
   buildPhase = ''
     runHook preBuild
@@ -107,15 +93,12 @@ stdenv.mkDerivation {
     runHook postInstall
   '';
 
-  dontFixup = true;
-  dontStrip = true;
-
   doInstallCheck = true;
+
   nativeInstallCheckInputs = [
     versionCheckHook
     writableTmpDirAsHomeHook
   ];
-  versionCheckProgramArg = "--version";
 
   installCheckPhase = ''
     runHook preInstallCheck
@@ -126,8 +109,25 @@ stdenv.mkDerivation {
     runHook postInstallCheck
   '';
 
+  __structuredAttrs = true;
+
+  configurePhase = ''
+    runHook preConfigure
+
+    cp -R ${node_modules}/. .
+    chmod -R u+w node_modules
+    find packages -type d -name node_modules -exec chmod -R u+w {} \;
+
+    runHook postConfigure
+  '';
+
+  dontFixup = true;
+  dontStrip = true;
+  versionCheckProgramArg = "--version";
+
   passthru = {
     inherit node_modules;
+
     updateScript = nix-update-script {
       extraArgs = [
         "--subpackage"
@@ -141,12 +141,14 @@ stdenv.mkDerivation {
     homepage = "https://github.com/modem-dev/hunk";
     changelog = "https://github.com/modem-dev/hunk/releases/tag/v${version}";
     license = lib.licenses.mit;
-    mainProgram = "hunk";
+    sourceProvenance = [ lib.sourceTypes.fromSource ];
+
     maintainers = with lib.maintainers; [
       MarkusZoppelt
       kaynetik
     ];
+
     platforms = lib.platforms.linux ++ lib.platforms.darwin;
-    sourceProvenance = [ lib.sourceTypes.fromSource ];
+    mainProgram = "hunk";
   };
 }

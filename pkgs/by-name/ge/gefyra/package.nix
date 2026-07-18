@@ -1,10 +1,10 @@
 {
   lib,
   stdenv,
-  fetchzip,
-  makeWrapper,
   docker,
+  fetchzip,
   kubectl,
+  makeWrapper,
   nix-update-script,
 }:
 
@@ -41,10 +41,10 @@ stdenv.mkDerivation (finalAttrs: {
   meta = {
     description = "Tool to connect local containers to kubernetes clusters";
     homepage = "https://gefyra.dev";
-    downloadPage = "https://github.com/gefyrahq/gefyra";
-    mainProgram = "gefyra";
     license = lib.licenses.asl20;
     maintainers = with lib.maintainers; [ tobifroe ];
     platforms = lib.platforms.linux;
+    mainProgram = "gefyra";
+    downloadPage = "https://github.com/gefyrahq/gefyra";
   };
 })

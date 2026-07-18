@@ -1,38 +1,35 @@
 {
   lib,
   stdenv,
-  buildPythonPackage,
   fetchFromGitHub,
-
+  buildPythonPackage,
   # dependencies
   google-generativeai,
   huggingface-hub,
   joblib,
+  # tests
+  jsonschema,
+  mock,
   networkx,
   numpy,
   opt-einsum,
   pandas,
   pyparsing,
   pyro-ppl,
+  pytest-cov-stub,
+  pytestCheckHook,
   scikit-base,
   scikit-learn,
   scipy,
   statsmodels,
   torch,
   tqdm,
-  xgboost,
-
-  # tests
-  jsonschema,
-  pytestCheckHook,
-  pytest-cov-stub,
-  mock,
   writableTmpDirAsHomeHook,
+  xgboost,
 }:
 buildPythonPackage (finalAttrs: {
   pname = "pgmpy";
   version = "1.1.2";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "pgmpy";
@@ -40,6 +37,14 @@ buildPythonPackage (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-qZoyeUaRsatWUiFoL1VaRqApjM/AFS8xqTjVBcUpYas=";
   };
+
+  nativeCheckInputs = [
+    jsonschema
+    pytestCheckHook
+    pytest-cov-stub
+    mock
+    writableTmpDirAsHomeHook
+  ];
 
   dependencies = [
     google-generativeai
@@ -58,6 +63,15 @@ buildPythonPackage (finalAttrs: {
     torch
     tqdm
     xgboost
+  ];
+
+  disabledTestPaths = [
+    # requires network access
+    "pgmpy/tests/test_datasets"
+
+    # Very slow
+    "pgmpy/tests/test_estimators"
+    "pgmpy/tests/test_models"
   ];
 
   disabledTests = [
@@ -152,23 +166,7 @@ buildPythonPackage (finalAttrs: {
     "pgmpy/tests"
   ];
 
-  disabledTestPaths = [
-    # requires network access
-    "pgmpy/tests/test_datasets"
-
-    # Very slow
-    "pgmpy/tests/test_estimators"
-    "pgmpy/tests/test_models"
-  ];
-
-  nativeCheckInputs = [
-    jsonschema
-    pytestCheckHook
-    pytest-cov-stub
-    mock
-    writableTmpDirAsHomeHook
-  ];
-
+  pyproject = true;
   pythonImportsCheck = [ "pgmpy" ];
 
   meta = {
@@ -176,6 +174,7 @@ buildPythonPackage (finalAttrs: {
     homepage = "https://github.com/pgmpy/pgmpy";
     changelog = "https://github.com/pgmpy/pgmpy/releases/tag/${finalAttrs.src.tag}";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       happysalada
       sarahec

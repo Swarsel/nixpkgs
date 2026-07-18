@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   graphql-core,
   pytest-asyncio,
   pytest8_3CheckHook,
@@ -12,10 +12,6 @@
 buildPythonPackage rec {
   pname = "apischema";
   version = "0.18.3";
-  pyproject = true;
-
-  # Hasn't been updated in two years
-  disabled = pythonAtLeast "3.14";
 
   src = fetchFromGitHub {
     owner = "wyfo";
@@ -30,18 +26,21 @@ buildPythonPackage rec {
       --replace-fail "wheel~=0.44.0" "wheel"
   '';
 
-  build-system = [ setuptools ];
-
-  optional-dependencies = {
-    graphql = [ graphql-core ];
-  };
-
   nativeCheckInputs = [
     pytest-asyncio
     pytest8_3CheckHook
   ]
   ++ lib.concatAttrValues optional-dependencies;
 
+  build-system = [ setuptools ];
+  # Hasn't been updated in two years
+  disabled = pythonAtLeast "3.14";
+
+  optional-dependencies = {
+    graphql = [ graphql-core ];
+  };
+
+  pyproject = true;
   pythonImportsCheck = [ "apischema" ];
 
   meta = {

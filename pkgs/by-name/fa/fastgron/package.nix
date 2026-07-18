@@ -19,7 +19,6 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   nativeBuildInputs = [ cmake ];
-
   buildInputs = [ curl ];
 
   passthru.tests.version = testers.testVersion {
@@ -27,12 +26,12 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   meta = {
-    changelog = "https://github.com/adamritter/fastgron/releases/tag/${finalAttrs.src.rev}";
     description = "High-performance JSON to GRON (greppable, flattened JSON) converter";
-    mainProgram = "fastgron";
     homepage = "https://github.com/adamritter/fastgron";
+    changelog = "https://github.com/adamritter/fastgron/releases/tag/${finalAttrs.src.rev}";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ zowoq ];
     platforms = lib.platforms.all;
+    mainProgram = "fastgron";
   };
 })

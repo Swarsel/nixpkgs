@@ -1,18 +1,15 @@
 {
-  buildRubyGem,
-  fetchFromGitHub,
-  makeWrapper,
   lib,
+  fetchFromGitHub,
+  buildRubyGem,
   bundler,
+  makeWrapper,
   nix,
   nix-prefetch-git,
 }:
 
 buildRubyGem rec {
   inherit (bundler) ruby;
-
-  name = "${gemName}-${version}";
-  gemName = "bundix";
   version = "2.5.2";
 
   src = fetchFromGitHub {
@@ -22,11 +19,12 @@ buildRubyGem rec {
     hash = "sha256-QnNdseCSwQYhO/ybzWsflMEk68TMgPU3HqXJ7av3SHE=";
   };
 
+  nativeBuildInputs = [ makeWrapper ];
+
   buildInputs = [
     ruby
     bundler
   ];
-  nativeBuildInputs = [ makeWrapper ];
 
   preFixup = ''
     wrapProgram $out/bin/bundix \
@@ -37,19 +35,26 @@ buildRubyGem rec {
                 --set GEM_PATH "${bundler}/${bundler.ruby.gemPath}"
   '';
 
+  gemName = "bundix";
+  name = "${gemName}-${version}";
+
   meta = {
     description = "Creates Nix packages from Gemfiles";
+
     longDescription = ''
       This is a tool that converts Gemfile.lock files to nix expressions.
 
       The output is then usable by the bundlerEnv derivation to list all the
       dependencies of a ruby package.
     '';
+
     homepage = "https://github.com/nix-community/bundix";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       zimbatm
     ];
+
     platforms = lib.platforms.all;
   };
 }

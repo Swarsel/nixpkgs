@@ -1,9 +1,9 @@
 {
   lib,
+  fetchFromGitHub,
   aiohttp,
   aioresponses,
   buildPythonPackage,
-  fetchFromGitHub,
   pandas,
   pytestCheckHook,
   requests,
@@ -14,7 +14,6 @@
 buildPythonPackage rec {
   pname = "alpha-vantage";
   version = "3.0.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "RomelTorres";
@@ -29,6 +28,16 @@ buildPythonPackage rec {
     cp alpha_vantage/{cryptocurrencies.py,foreignexchange.py,techindicators.py,timeseries.py} alpha_vantage/async_support/
   '';
 
+  # Starting with 3.0.0 most tests require an API key
+  doCheck = false;
+
+  nativeCheckInputs = [
+    aioresponses
+    requests-mock
+    pytestCheckHook
+  ]
+  ++ lib.concatAttrValues optional-dependencies;
+
   build-system = [ setuptools ];
 
   dependencies = [
@@ -42,16 +51,7 @@ buildPythonPackage rec {
     ];
   };
 
-  nativeCheckInputs = [
-    aioresponses
-    requests-mock
-    pytestCheckHook
-  ]
-  ++ lib.concatAttrValues optional-dependencies;
-
-  # Starting with 3.0.0 most tests require an API key
-  doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "alpha_vantage" ];
 
   meta = {

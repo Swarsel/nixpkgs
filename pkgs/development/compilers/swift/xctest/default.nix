@@ -1,32 +1,22 @@
 {
   lib,
   stdenv,
+  DarwinTools,
+  Foundation,
   callPackage,
   cmake,
   ninja,
   swift,
-  Foundation,
-  DarwinTools,
 }:
 
 let
   sources = callPackage ../sources.nix { };
 in
 stdenv.mkDerivation {
-  pname = "swift-corelibs-xctest";
-
   inherit (sources) version;
+  pname = "swift-corelibs-xctest";
   src = sources.swift-corelibs-xctest;
-
   outputs = [ "out" ];
-
-  nativeBuildInputs = [
-    cmake
-    ninja
-    swift
-  ]
-  ++ lib.optional stdenv.hostPlatform.isDarwin DarwinTools; # sw_vers
-  buildInputs = [ Foundation ];
 
   postPatch = lib.optionalString stdenv.hostPlatform.isDarwin ''
     # On Darwin only, Swift uses arm64 as cpu arch.
@@ -34,13 +24,21 @@ stdenv.mkDerivation {
       --replace-fail '"aarch64" PARENT_SCOPE' '"arm64" PARENT_SCOPE'
   '';
 
+  nativeBuildInputs = [
+    cmake
+    ninja
+    swift
+  ]
+  ++ lib.optional stdenv.hostPlatform.isDarwin DarwinTools; # sw_vers
+
+  buildInputs = [ Foundation ];
+  cmakeFlags = lib.optional stdenv.hostPlatform.isDarwin "-DUSE_FOUNDATION_FRAMEWORK=ON";
+
   preConfigure = ''
     # On aarch64-darwin, our minimum target is 11.0, but we can target lower,
     # and some dependants require a lower target. Harmless on non-Darwin.
     export MACOSX_DEPLOYMENT_TARGET=10.12
   '';
-
-  cmakeFlags = lib.optional stdenv.hostPlatform.isDarwin "-DUSE_FOUNDATION_FRAMEWORK=ON";
 
   postInstall = lib.optionalString stdenv.hostPlatform.isDarwin ''
     # Darwin normally uses the Xcode version of XCTest. Installing
@@ -54,8 +52,8 @@ stdenv.mkDerivation {
   meta = {
     description = "Framework for writing unit tests in Swift";
     homepage = "https://github.com/apple/swift-corelibs-xctest";
-    platforms = lib.platforms.all;
     license = lib.licenses.asl20;
+    platforms = lib.platforms.all;
     teams = [ lib.teams.swift ];
   };
 }

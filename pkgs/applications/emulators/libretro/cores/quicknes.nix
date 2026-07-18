@@ -4,7 +4,6 @@
   mkLibretroCore,
 }:
 mkLibretroCore {
-  core = "quicknes";
   version = "0-unstable-2026-07-06";
 
   src = fetchFromGitHub {
@@ -14,6 +13,7 @@ mkLibretroCore {
     hash = "sha256-0W6kYAnRw7uVdjoFL+f4Y8Ut932NbsoEer5TTwf9rBk=";
   };
 
+  core = "quicknes";
   makefile = "Makefile";
 
   meta = {

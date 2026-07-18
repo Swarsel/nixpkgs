@@ -2,8 +2,8 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  python3Packages,
   installFonts,
+  python3Packages,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -17,6 +17,10 @@ stdenv.mkDerivation (finalAttrs: {
     sha256 = "1x3r505dylz9rz8dj98h5n9d0zixyxmvvhnjnms9qxdrz9bxy9g1";
   };
 
+  postPatch = ''
+    rm *.otf
+  '';
+
   nativeBuildInputs =
     (with python3Packages; [
       python
@@ -24,10 +28,6 @@ stdenv.mkDerivation (finalAttrs: {
       fontforge
     ])
     ++ [ installFonts ];
-
-  postPatch = ''
-    rm *.otf
-  '';
 
   # installFonts adds a hook to `postInstall` that installs fonts
   # into the correct directories
@@ -37,10 +37,10 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   meta = {
-    homepage = "https://github.com/alif-type/xits";
     description = "OpenType implementation of STIX fonts with math support";
+    homepage = "https://github.com/alif-type/xits";
     license = lib.licenses.ofl;
-    platforms = lib.platforms.all;
     maintainers = [ ];
+    platforms = lib.platforms.all;
   };
 })

@@ -1,8 +1,8 @@
 {
   lib,
+  fetchFromGitHub,
   buildPythonPackage,
   cffi,
-  fetchFromGitHub,
   flatbuffers,
   h3,
   numba,
@@ -16,7 +16,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "timezonefinder";
   version = "8.2.5";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "jannikmi";
@@ -25,21 +24,7 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-NDxGYiBYFqYU3tK/RwlHYARcncAB1GJk+qHxRNrT1oU=";
   };
 
-  build-system = [ setuptools ];
-
   nativeBuildInputs = [ cffi ];
-
-  dependencies = [
-    cffi
-    flatbuffers
-    h3
-    numpy
-  ];
-
-  optional-dependencies = {
-    numba = [ numba ];
-    pytz = [ pytz ];
-  };
 
   nativeCheckInputs = [
     pydantic
@@ -47,12 +32,19 @@ buildPythonPackage (finalAttrs: {
   ]
   ++ lib.concatAttrValues finalAttrs.passthru.optional-dependencies;
 
-  pythonImportsCheck = [ "timezonefinder" ];
-
   preCheck = ''
     # Some tests need the CLI on the PATH
     export PATH=$out/bin:$PATH
   '';
+
+  build-system = [ setuptools ];
+
+  dependencies = [
+    cffi
+    flatbuffers
+    h3
+    numpy
+  ];
 
   disabledTestPaths = [
     # Don't test the archive content
@@ -63,6 +55,14 @@ buildPythonPackage (finalAttrs: {
     # Tests require clang extension
     "tests/utils_test.py"
   ];
+
+  optional-dependencies = {
+    numba = [ numba ];
+    pytz = [ pytz ];
+  };
+
+  pyproject = true;
+  pythonImportsCheck = [ "timezonefinder" ];
 
   meta = {
     description = "Module for finding the timezone of any point on earth (coordinates) offline";

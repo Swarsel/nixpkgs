@@ -1,26 +1,25 @@
 {
   lib,
   buildPythonPackage,
+  configupdater,
   fetchPypi,
-  setuptools,
-  setuptools-scm,
-  wheel,
   importlib-metadata,
+  pre-commit,
   pyscaffold,
   pyscaffoldext-markdown,
-  configupdater,
-  pre-commit,
   pytest,
   pytest-cov,
   pytest-xdist,
+  setuptools,
+  setuptools-scm,
   tox,
   virtualenv,
+  wheel,
 }:
 
 buildPythonPackage rec {
   pname = "pyscaffoldext-dsproject";
   version = "0.7.2";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
@@ -52,6 +51,7 @@ buildPythonPackage rec {
     ];
   };
 
+  pyproject = true;
   pythonImportsCheck = [ "pyscaffoldext.dsproject" ];
 
   meta = {

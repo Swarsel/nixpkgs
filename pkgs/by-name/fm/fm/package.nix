@@ -1,13 +1,13 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
-  pkg-config,
-  wrapGAppsHook4,
+  gtksourceview5,
   libadwaita,
   libpanel,
-  gtksourceview5,
+  pkg-config,
   poppler,
+  rustPlatform,
+  wrapGAppsHook4,
 }:
 
 rustPlatform.buildRustPackage {
@@ -21,8 +21,6 @@ rustPlatform.buildRustPackage {
     hash = "sha256-fCufqCy5H5Up6V15sOz8SJrixth7OQ7tc4yIymmfq1M=";
   };
 
-  cargoHash = "sha256-5B5TIFsfg7fWF5OEq0xVfkIUm1nlkvGfupr5qUtaiwA=";
-
   nativeBuildInputs = [
     pkg-config
     wrapGAppsHook4
@@ -35,12 +33,14 @@ rustPlatform.buildRustPackage {
     poppler
   ];
 
+  cargoHash = "sha256-5B5TIFsfg7fWF5OEq0xVfkIUm1nlkvGfupr5qUtaiwA=";
+
   meta = {
     description = "Small, general purpose file manager built with GTK4";
     homepage = "https://github.com/euclio/fm";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ aleksana ];
-    mainProgram = "fm";
     platforms = lib.platforms.unix;
+    mainProgram = "fm";
   };
 }

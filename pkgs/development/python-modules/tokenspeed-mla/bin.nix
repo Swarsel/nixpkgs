@@ -1,22 +1,20 @@
 {
   lib,
-  buildPythonPackage,
-  fetchPypi,
-  python,
   stdenv,
-
-  # nativeBuildInputs
-  autoPatchelfHook,
-  pypaInstallHook,
-  pythonRuntimeDepsCheckHook,
-  wheelUnpackHook,
-
   # dependencies
   apache-tvm-ffi,
+  # nativeBuildInputs
+  autoPatchelfHook,
+  buildPythonPackage,
+  fetchPypi,
   nvidia-cutlass-dsl,
   nvidia-cutlass-dsl-libs-base,
+  pypaInstallHook,
+  python,
+  pythonRuntimeDepsCheckHook,
   tokenspeed-triton,
   torch,
+  wheelUnpackHook,
 }:
 let
   inherit (stdenv.hostPlatform) system;
@@ -29,18 +27,16 @@ in
 buildPythonPackage (finalAttrs: {
   pname = "tokenspeed-mla";
   version = "0.1.5";
-  pyproject = false;
-  __structuredAttrs = true;
 
   src = fetchPypi {
-    format = "wheel";
-    pname = "tokenspeed_mla";
     inherit (finalAttrs) version;
-    dist = "py3";
-    python = "py3";
-    abi = "none";
-    platform = "manylinux_2_28_${stdenv.hostPlatform.uname.processor}";
     hash = hashes.${system} or (throw "Unsupported system: ${system}");
+    abi = "none";
+    dist = "py3";
+    format = "wheel";
+    platform = "manylinux_2_28_${stdenv.hostPlatform.uname.processor}";
+    pname = "tokenspeed_mla";
+    python = "py3";
   };
 
   nativeBuildInputs = [
@@ -50,13 +46,6 @@ buildPythonPackage (finalAttrs: {
     wheelUnpackHook
   ];
 
-  dependencies = [
-    apache-tvm-ffi
-    nvidia-cutlass-dsl
-    tokenspeed-triton
-    torch
-  ];
-
   preFixup = ''
     # libtvm_ffi.so
     addAutoPatchelfSearchPath "${apache-tvm-ffi}/${python.sitePackages}/tvm_ffi/lib"
@@ -64,16 +53,26 @@ buildPythonPackage (finalAttrs: {
     addAutoPatchelfSearchPath "${nvidia-cutlass-dsl-libs-base}/${python.sitePackages}/nvidia_cutlass_dsl/lib"
   '';
 
+  __structuredAttrs = true;
+
+  dependencies = [
+    apache-tvm-ffi
+    nvidia-cutlass-dsl
+    tokenspeed-triton
+    torch
+  ];
+
+  pyproject = false;
   pythonImportsCheck = [ "tokenspeed_mla" ];
 
   meta = {
     description = "Speed-of-light TokenSpeed MLA kernels for Blackwell SM100 and SM103";
     homepage = "https://github.com/lightseekorg/tokenspeed/tree/main/tokenspeed-mla";
-    downloadPage = "https://pypi.org/project/tokenspeed-mla/#files";
     license = lib.licenses.mit;
     sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
     maintainers = with lib.maintainers; [ prince213 ];
     platforms = lib.attrNames hashes;
     broken = !torch.cudaSupport;
+    downloadPage = "https://pypi.org/project/tokenspeed-mla/#files";
   };
 })

@@ -2,11 +2,11 @@
   lib,
   stdenv,
   fetchurl,
+  autoreconfHook,
   file,
+  net-tools,
   openssl,
   perl,
-  net-tools,
-  autoreconfHook,
   withPerlTools ? false,
 }:
 let
@@ -36,6 +36,18 @@ stdenv.mkDerivation (finalAttrs: {
     "lib"
   ];
 
+  postPatch = ''
+    substituteInPlace testing/fulltests/support/simple_TESTCONF.sh --replace-fail "/bin/netstat" "${net-tools}/bin/netstat"
+  '';
+
+  nativeBuildInputs = [
+    net-tools
+    file
+    autoreconfHook
+  ];
+
+  buildInputs = [ openssl ] ++ lib.optional withPerlTools perlWithPkgs;
+
   configureFlags = [
     "--with-default-snmp-version=3"
     "--with-sys-location=Unknown"
@@ -55,10 +67,6 @@ stdenv.mkDerivation (finalAttrs: {
     ]
   );
 
-  postPatch = ''
-    substituteInPlace testing/fulltests/support/simple_TESTCONF.sh --replace-fail "/bin/netstat" "${net-tools}/bin/netstat"
-  '';
-
   postConfigure = ''
     # libraries contain configure options. Mangle store paths out from
     # ./configure-generated file.
@@ -66,17 +74,6 @@ stdenv.mkDerivation (finalAttrs: {
       -e "/NETSNMP_CONFIGURE_OPTIONS/ s|$NIX_STORE/[a-z0-9]\{32\}-|$NIX_STORE/eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee-|g"
   '';
 
-  nativeBuildInputs = [
-    net-tools
-    file
-    autoreconfHook
-  ];
-  buildInputs = [ openssl ] ++ lib.optional withPerlTools perlWithPkgs;
-
-  enableParallelBuilding = true;
-  # Missing dependencies during relinking:
-  #   ./.libs/libnetsnmpagent.so: file not recognized: file format not recognized
-  enableParallelInstalling = false;
   doCheck = false; # tries to use networking
 
   postInstall = ''
@@ -87,11 +84,16 @@ stdenv.mkDerivation (finalAttrs: {
     mv $bin/bin/net-snmp-config $dev/bin
   '';
 
+  enableParallelBuilding = true;
+  # Missing dependencies during relinking:
+  #   ./.libs/libnetsnmpagent.so: file not recognized: file format not recognized
+  enableParallelInstalling = false;
+
   meta = {
     description = "Clients and server for the SNMP network monitoring protocol";
     homepage = "https://www.net-snmp.org/";
+    changelog = "https://github.com/net-snmp/net-snmp/blob/v${finalAttrs.version}/NEWS";
     license = lib.licenses.bsd3;
     platforms = lib.platforms.unix;
-    changelog = "https://github.com/net-snmp/net-snmp/blob/v${finalAttrs.version}/NEWS";
   };
 })

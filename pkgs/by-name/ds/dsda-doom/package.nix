@@ -2,20 +2,20 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  cmake,
   SDL2,
-  SDL2_mixer,
   SDL2_image,
+  SDL2_mixer,
+  alsa-lib,
+  cmake,
   fluidsynth,
-  portmidi,
-  libxmp,
+  libGLU,
+  libmad,
   libsndfile,
   libvorbis,
-  libmad,
-  libGLU,
+  libxmp,
   libzip,
-  alsa-lib,
   nix-update-script,
+  portmidi,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -28,8 +28,6 @@ stdenv.mkDerivation (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-iZV8lsefEix0/iHXUGXJohSGxJDJC+eTijGVkOrwK0Q=";
   };
-
-  sourceRoot = "${finalAttrs.src.name}/prboom2";
 
   nativeBuildInputs = [ cmake ];
 
@@ -48,15 +46,16 @@ stdenv.mkDerivation (finalAttrs: {
     SDL2_mixer
   ];
 
+  sourceRoot = "${finalAttrs.src.name}/prboom2";
   passthru.updateScript = nix-update-script { };
 
   meta = {
+    description = "Advanced Doom source port with a focus on speedrunning, successor of PrBoom+";
     homepage = "https://github.com/kraflab/dsda-doom";
     changelog = "https://github.com/kraflab/dsda-doom/releases/tag/v${finalAttrs.version}";
-    description = "Advanced Doom source port with a focus on speedrunning, successor of PrBoom+";
-    mainProgram = "dsda-doom";
     license = lib.licenses.gpl2Plus;
-    platforms = lib.platforms.linux;
     maintainers = with lib.maintainers; [ Gliczy ];
+    platforms = lib.platforms.linux;
+    mainProgram = "dsda-doom";
   };
 })

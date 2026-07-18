@@ -1,22 +1,18 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  bson,
+  buildPythonPackage,
   more-properties,
-  typing-inspect,
+  pytestCheckHook,
   toolz,
   toposort,
-  bson,
-  pytestCheckHook,
+  typing-inspect,
 }:
 
 buildPythonPackage rec {
   pname = "dataclasses-serialization";
   version = "1.3.1";
-
-  # upstream requires >= 3.6 but only 3.7 includes dataclasses
-
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "madman-bob";
@@ -34,9 +30,6 @@ buildPythonPackage rec {
     sed -i '/(\(Dict\|List\)/d' tests/test_json.py tests/test_bson.py
   '';
 
-  # dataclasses is included in Python 3.7
-  pythonRemoveDeps = [ "dataclasses" ];
-
   propagatedBuildInputs = [
     more-properties
     typing-inspect
@@ -49,11 +42,17 @@ buildPythonPackage rec {
     pytestCheckHook
   ];
 
+  # upstream requires >= 3.6 but only 3.7 includes dataclasses
+  format = "setuptools";
+
   pythonImportsCheck = [
     "dataclasses_serialization.bson"
     "dataclasses_serialization.json"
     "dataclasses_serialization.serializer_base"
   ];
+
+  # dataclasses is included in Python 3.7
+  pythonRemoveDeps = [ "dataclasses" ];
 
   meta = {
     description = "Serialize/deserialize Python dataclasses to various other data formats";

@@ -6,10 +6,10 @@
   boost,
   expat,
   intltool,
-  pkg-config,
   libxml2,
   libxslt,
   pcre2,
+  pkg-config,
   wxwidgets_3_2,
   xercesc,
 }:
@@ -54,15 +54,14 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   env.NIX_LDFLAGS = lib.optionalString stdenv.hostPlatform.isDarwin "-liconv";
-
   enableParallelBuilding = true;
 
   meta = {
     description = "Fast, free, validating XML editor";
     homepage = "https://xml-copy-editor.sourceforge.io/";
     license = lib.licenses.gpl2Plus;
-    platforms = lib.platforms.unix;
     maintainers = with lib.maintainers; [ wegank ];
+    platforms = lib.platforms.unix;
     mainProgram = "xmlcopyeditor";
   };
 })

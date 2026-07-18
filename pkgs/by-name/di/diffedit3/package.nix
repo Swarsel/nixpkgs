@@ -1,10 +1,10 @@
 {
   lib,
-  rustPlatform,
-  fetchCrate,
-  testers,
-  nix-update-script,
   diffedit3,
+  fetchCrate,
+  nix-update-script,
+  rustPlatform,
+  testers,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -19,17 +19,18 @@ rustPlatform.buildRustPackage (finalAttrs: {
   cargoHash = "sha256-Hv3T0pxNUwp7No5tmFopMGjNdxfje4gRODj3B7sDVcg=";
 
   passthru = {
-    updateScript = nix-update-script { };
     tests = testers.testVersion {
       package = diffedit3;
     };
+
+    updateScript = nix-update-script { };
   };
 
   meta = {
-    homepage = "https://github.com/ilyagr/diffedit3";
     description = "3-pane diff editor";
+    homepage = "https://github.com/ilyagr/diffedit3";
     license = with lib.licenses; [ asl20 ];
-    mainProgram = "diffedit3";
     maintainers = with lib.maintainers; [ thoughtpolice ];
+    mainProgram = "diffedit3";
   };
 })

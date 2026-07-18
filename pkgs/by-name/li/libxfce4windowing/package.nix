@@ -1,47 +1,47 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitLab,
+  buildPackages,
   gettext,
-  meson,
-  ninja,
-  pkg-config,
-  python3,
-  vala,
-  wayland-scanner,
+  gitUpdater,
   glib,
+  gobject-introspection,
   gtk3,
   libdisplay-info,
   libwnck,
   libx11,
   libxrandr,
+  meson,
+  ninja,
+  pkg-config,
+  python3,
+  vala,
   wayland,
   wayland-protocols,
+  wayland-scanner,
   wlr-protocols,
   withIntrospection ?
     lib.meta.availableOn stdenv.hostPlatform gobject-introspection
     && stdenv.hostPlatform.emulatorAvailable buildPackages,
-  buildPackages,
-  gobject-introspection,
-  gitUpdater,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
   pname = "libxfce4windowing";
   version = "4.20.6";
 
-  outputs = [
-    "out"
-    "dev"
-  ];
-
   src = fetchFromGitLab {
-    domain = "gitlab.xfce.org";
     owner = "xfce";
     repo = "libxfce4windowing";
     tag = "libxfce4windowing-${finalAttrs.version}";
     hash = "sha256-lTOCvxUSo0CCok5nPCX7B6RqVoNMYcSb97alR+htBtY=";
+    domain = "gitlab.xfce.org";
   };
+
+  outputs = [
+    "out"
+    "dev"
+  ];
 
   patches = [
     # Headers depend on gtk3 but it is only listed in Requires.private,
@@ -50,9 +50,11 @@ stdenv.mkDerivation (finalAttrs: {
     ./pkg-config-requires.patch
   ];
 
-  strictDeps = true;
+  postPatch = ''
+    patchShebangs xdt-gen-visibility
+  '';
 
-  depsBuildBuild = [ pkg-config ];
+  strictDeps = true;
 
   nativeBuildInputs = [
     gettext
@@ -82,18 +84,16 @@ stdenv.mkDerivation (finalAttrs: {
     gtk3
   ];
 
-  postPatch = ''
-    patchShebangs xdt-gen-visibility
-  '';
-
   mesonFlags = [
     (lib.mesonBool "introspection" withIntrospection)
     (lib.mesonEnable "vala" withIntrospection)
   ];
 
+  depsBuildBuild = [ pkg-config ];
+
   passthru.updateScript = gitUpdater {
-    rev-prefix = "libxfce4windowing-";
     odd-unstable = true;
+    rev-prefix = "libxfce4windowing-";
   };
 
   meta = {

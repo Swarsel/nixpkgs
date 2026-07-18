@@ -2,12 +2,12 @@
   lib,
   stdenv,
   fetchurl,
-  makeDesktopItem,
   imagemagick,
+  makeDesktopItem,
   p7zip,
+  symlinkJoin,
   wine,
   writeShellScriptBin,
-  symlinkJoin,
   use64 ? false,
 }:
 
@@ -16,18 +16,18 @@ let
   version = "1.8.0";
 
   eac_exe = fetchurl {
-    url = "http://www.exactaudiocopy.de/eac-${lib.versions.majorMinor version}.exe";
     sha256 = "205530cfbfdff82343858f38b0e709e586051fb8900ecd513d7992a3c1ef031b";
+    url = "http://www.exactaudiocopy.de/eac-${lib.versions.majorMinor version}.exe";
   };
 
   cygwin = fetchurl {
-    url = "https://mirrors.kernel.org/sourceware/cygwin/x86_64/release/cygwin/cygwin-3.6.6-1-x86_64.tar.xz";
     hash = "sha256-xcgYjfVB9dF0twGC1ww7r4NCPHT/+aEk1CMmS7ndJuA=";
+    url = "https://mirrors.kernel.org/sourceware/cygwin/x86_64/release/cygwin/cygwin-3.6.6-1-x86_64.tar.xz";
   };
 
   patched_eac = stdenv.mkDerivation {
-    pname = "patched_eac";
     inherit version;
+    pname = "patched_eac";
 
     nativeBuildInputs = [
       imagemagick
@@ -65,15 +65,16 @@ let
   '';
 
   desktopItem = makeDesktopItem {
-    name = pname;
-    exec = pname;
-    comment = "Audio Grabber for CDs";
-    desktopName = "Exact Audio Copy";
     categories = [
       "Audio"
       "AudioVideo"
     ];
+
+    comment = "Audio Grabber for CDs";
+    desktopName = "Exact Audio Copy";
+    exec = pname;
     icon = "${patched_eac}/eac.ico.128.png";
+    name = pname;
   };
 in
 symlinkJoin {

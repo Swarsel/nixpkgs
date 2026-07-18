@@ -4,11 +4,11 @@
   fetchFromGitHub,
   autoreconfHook,
   bison,
-  flex,
-  gfortran,
   blas,
   bzip2,
   fftw,
+  flex,
+  gfortran,
   lapack,
   libxml2,
   protobuf_21,
@@ -25,13 +25,6 @@ stdenv.mkDerivation (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-T59Bb014KSUOOFTFjPOrWmbF6GqIqAIyrb3Xe5TwU88=";
   };
-
-  configureFlags = [
-    "--enable-openmp"
-    "--disable-gccopt"
-  ];
-
-  enableParallelBuilding = true;
 
   nativeBuildInputs = [
     autoreconfHook
@@ -50,11 +43,18 @@ stdenv.mkDerivation (finalAttrs: {
     zlib
   ];
 
+  configureFlags = [
+    "--enable-openmp"
+    "--disable-gccopt"
+  ];
+
+  enableParallelBuilding = true;
+
   meta = {
     description = "Molecular wavepacket dynamics package";
     homepage = "https://github.com/quantum-dynamics-ng/QDng";
-    platforms = lib.platforms.linux;
-    maintainers = [ lib.maintainers.markuskowa ];
     license = lib.licenses.gpl3Only;
+    maintainers = [ lib.maintainers.markuskowa ];
+    platforms = lib.platforms.linux;
   };
 })

@@ -1,17 +1,16 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   pip-tools,
   pytestCheckHook,
-  setuptools-scm,
   setuptools,
+  setuptools-scm,
 }:
 
 buildPythonPackage rec {
   pname = "databackend";
   version = "0.0.3";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "machow";
@@ -20,16 +19,17 @@ buildPythonPackage rec {
     hash = "sha256-M5Nm33Vae6FDy4aurru4CeHjeNxyZZnqzpdkqNEvrm0=";
   };
 
-  build-system = [
-    setuptools
-    setuptools-scm
-  ];
-
   nativeCheckInputs = [
     pytestCheckHook
     pip-tools
   ];
 
+  build-system = [
+    setuptools
+    setuptools-scm
+  ];
+
+  pyproject = true;
   pythonImportsCheck = [ "databackend" ];
 
   meta = {

@@ -1,15 +1,15 @@
 {
   lib,
-  nixosTests,
   stdenv,
   fetchFromGitHub,
+  libmysqlclient,
+  libxcrypt,
+  mariadb,
   meson,
   ninja,
+  nixosTests,
   pam,
   pkg-config,
-  libmysqlclient,
-  mariadb,
-  libxcrypt,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -28,6 +28,7 @@ stdenv.mkDerivation (finalAttrs: {
     pkg-config
     ninja
   ];
+
   buildInputs = [
     pam
     libmysqlclient
@@ -43,7 +44,7 @@ stdenv.mkDerivation (finalAttrs: {
     description = "PAM authentication module against a MySQL database";
     homepage = "https://github.com/NigelCunningham/pam-MySQL";
     license = lib.licenses.gpl2Plus;
-    platforms = lib.platforms.linux;
     maintainers = with lib.maintainers; [ netali ];
+    platforms = lib.platforms.linux;
   };
 })

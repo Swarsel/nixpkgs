@@ -1,14 +1,13 @@
 {
   lib,
-  python3Packages,
   fetchFromGitHub,
+  python3Packages,
   versionCheckHook,
 }:
 
 python3Packages.buildPythonApplication (finalAttrs: {
   pname = "famly-fetch";
   version = "0.6.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "jacobbunk";
@@ -16,6 +15,10 @@ python3Packages.buildPythonApplication (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-MU9T8eP/LNOLAQFPOC1EEy58+kcn7G+Hh2R8wC92qnQ=";
   };
+
+  # No tests in the repository
+  doCheck = false;
+  nativeInstallCheckInputs = [ versionCheckHook ];
 
   build-system = with python3Packages; [
     setuptools
@@ -27,11 +30,8 @@ python3Packages.buildPythonApplication (finalAttrs: {
     piexif
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "famly_fetch" ];
-
-  # No tests in the repository
-  doCheck = false;
-  nativeInstallCheckInputs = [ versionCheckHook ];
 
   meta = {
     description = "Fetch your (kid's) images from famly.co";

@@ -1,14 +1,13 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "iglo";
   version = "1.2.7";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "jesserockz";
@@ -17,14 +16,12 @@ buildPythonPackage rec {
     hash = "sha256-torDjfQcQ+ytv/Qab7PNugt1eLQJ0pPPz6p4f4kcFws=";
   };
 
-  sourceRoot = "${src.name}/src";
-
-  build-system = [ setuptools ];
-
   # Package has no tests
   doCheck = false;
-
+  build-system = [ setuptools ];
+  pyproject = true;
   pythonImportsCheck = [ "iglo" ];
+  sourceRoot = "${src.name}/src";
 
   meta = {
     description = "Library to control iGlo based RGB lights";

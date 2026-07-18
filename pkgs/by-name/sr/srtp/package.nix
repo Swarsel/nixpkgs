@@ -36,12 +36,6 @@ stdenv.mkDerivation rec {
     openssl
   ];
 
-  # rtpw tests hang
-  preConfigure = ''
-    rm test/rtpw_test.sh \
-       test/rtpw_test_gcm.sh
-  '';
-
   mesonFlags = [
     "-Dcrypto-library=openssl"
     "-Dcrypto-library-kdf=disabled"
@@ -49,13 +43,19 @@ stdenv.mkDerivation rec {
     "-Dtests=${if doCheck then "enabled" else "disabled"}"
   ];
 
+  # rtpw tests hang
+  preConfigure = ''
+    rm test/rtpw_test.sh \
+       test/rtpw_test_gcm.sh
+  '';
+
   doCheck = true;
 
   meta = {
-    homepage = "https://github.com/cisco/libsrtp";
     description = "Secure RTP (SRTP) Reference Implementation";
+    homepage = "https://github.com/cisco/libsrtp";
     license = lib.licenses.bsd3;
-    platforms = lib.platforms.all;
     maintainers = with lib.maintainers; [ r-burns ];
+    platforms = lib.platforms.all;
   };
 }

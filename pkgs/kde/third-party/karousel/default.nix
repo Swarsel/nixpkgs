@@ -30,8 +30,8 @@ stdenv.mkDerivation (finalAttrs: {
     nodejs
     typescript
   ];
+
   buildInputs = [ kwin ];
-  dontWrapQtApps = true;
 
   installPhase = ''
     runHook preInstall
@@ -40,6 +40,8 @@ stdenv.mkDerivation (finalAttrs: {
 
     runHook postInstall
   '';
+
+  dontWrapQtApps = true;
 
   meta = {
     description = "Scrollable tiling Kwin script";

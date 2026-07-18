@@ -1,11 +1,11 @@
 {
   lib,
-  buildDunePackage,
   fetchFromGitHub,
+  buildDunePackage,
   dune-configurator,
-  pkg-config,
   glib,
   gst_all_1,
+  pkg-config,
 }:
 
 buildDunePackage (finalAttrs: {
@@ -21,6 +21,7 @@ buildDunePackage (finalAttrs: {
 
   nativeBuildInputs = [ pkg-config ];
   buildInputs = [ dune-configurator ];
+
   propagatedBuildInputs = [
     glib.dev
     gst_all_1.gstreamer.dev
@@ -35,8 +36,8 @@ buildDunePackage (finalAttrs: {
   ];
 
   meta = {
-    homepage = "https://github.com/savonet/ocaml-gstreamer";
     description = "Bindings for the GStreamer library which provides functions for playning and manipulating multimedia streams";
+    homepage = "https://github.com/savonet/ocaml-gstreamer";
     license = lib.licenses.lgpl21Only;
     maintainers = with lib.maintainers; [ dandellion ];
   };

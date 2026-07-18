@@ -1,14 +1,14 @@
 {
   lib,
   stdenv,
-  fetchFromCodeberg,
-  cmake,
-  sqlite,
-  corrosion,
-  rustPlatform,
   cargo,
-  rustc,
+  cmake,
+  corrosion,
+  fetchFromCodeberg,
   nix-update-script,
+  rustPlatform,
+  rustc,
+  sqlite,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -19,8 +19,8 @@ stdenv.mkDerivation (finalAttrs: {
     owner = "chewing";
     repo = "libchewing";
     tag = "v${finalAttrs.version}";
-    fetchSubmodules = true;
     hash = "sha256-1/aamkc66pjAf/jl4pD2rJ9ipFW0bAWjvKg6KtINWuQ=";
+    fetchSubmodules = true;
   };
 
   # ld: unknown option: -version-script
@@ -28,11 +28,6 @@ stdenv.mkDerivation (finalAttrs: {
     substituteInPlace CMakeLists.txt \
       --replace-fail "if(CMAKE_C_COMPILER_ID MATCHES GNU|^Clang)" "if((CMAKE_C_COMPILER_ID MATCHES GNU|^Clang) AND NOT APPLE)"
   '';
-
-  cargoDeps = rustPlatform.fetchCargoVendor {
-    inherit (finalAttrs) src;
-    hash = "sha256-1b8GbZ75jBVmvXquOjG2CEcLXg4AthAwQzdO68CjjPs=";
-  };
 
   nativeBuildInputs = [
     cmake
@@ -45,6 +40,11 @@ stdenv.mkDerivation (finalAttrs: {
     sqlite
     corrosion
   ];
+
+  cargoDeps = rustPlatform.fetchCargoVendor {
+    inherit (finalAttrs) src;
+    hash = "sha256-1b8GbZ75jBVmvXquOjG2CEcLXg4AthAwQzdO68CjjPs=";
+  };
 
   passthru.updateScript = nix-update-script { };
 

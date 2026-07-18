@@ -1,19 +1,16 @@
 {
   lib,
   fetchurl,
-  buildDunePackage,
-  pkg-config,
-  cstruct,
   bigarray-compat,
+  buildDunePackage,
+  cstruct,
   ounit,
+  pkg-config,
 }:
 
 buildDunePackage (finalAttrs: {
   pname = "io-page";
   version = "3.0.0";
-
-  minimalOCamlVersion = "4.08";
-  duneVersion = "3";
 
   src = fetchurl {
     url = "https://github.com/mirage/io-page/releases/download/v${finalAttrs.version}/io-page-${finalAttrs.version}.tbz";
@@ -21,17 +18,21 @@ buildDunePackage (finalAttrs: {
   };
 
   nativeBuildInputs = [ pkg-config ];
+
   propagatedBuildInputs = [
     cstruct
     bigarray-compat
   ];
-  checkInputs = [ ounit ];
+
   doCheck = true;
+  checkInputs = [ ounit ];
+  duneVersion = "3";
+  minimalOCamlVersion = "4.08";
 
   meta = {
+    description = "IO memory page library for Mirage backends";
     homepage = "https://github.com/mirage/io-page";
     license = lib.licenses.isc;
-    description = "IO memory page library for Mirage backends";
     maintainers = with lib.maintainers; [ vbgl ];
   };
 })

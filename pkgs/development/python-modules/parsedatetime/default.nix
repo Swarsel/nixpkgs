@@ -9,18 +9,14 @@
 buildPythonPackage rec {
   pname = "parsedatetime";
   version = "2.6";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
     hash = "sha256-TLNo+7GKC3Ix9NdhGRZUUcjS41lRRV3+6XxiqHsE1FU=";
   };
 
-  build-system = [ setuptools ];
-
   nativeCheckInputs = [ pytestCheckHook ];
-
-  enabledTestPaths = [ "tests/Test*.py" ];
+  build-system = [ setuptools ];
 
   disabledTests = [
     # https://github.com/bear/parsedatetime/issues/263
@@ -29,6 +25,8 @@ buildPythonPackage rec {
     "testFloat"
   ];
 
+  enabledTestPaths = [ "tests/Test*.py" ];
+  pyproject = true;
   pythonImportsCheck = [ "parsedatetime" ];
 
   meta = {

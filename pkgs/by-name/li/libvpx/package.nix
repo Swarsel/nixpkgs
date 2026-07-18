@@ -2,51 +2,50 @@
   lib,
   stdenv,
   fetchFromGitHub,
+  # for passthru.tests
+  ffmpeg,
+  gst_all_1,
   perl,
   yasm,
+  coefficientRangeCheckingSupport ? false, # decoder checks if intermediate transform coefficients are in valid range
+  coreutils ? null, # unit tests
+  curl ? null,
+  debugLibsSupport ? false, # include debug version of each library
+  debugSupport ? false, # debug mode
+  decodePerfTestsSupport ? false, # build decoder perf tests with unit tests
+  encodePerfTestsSupport ? false, # build encoder perf tests with unit tests
+  errorConcealmentSupport ? false, # decoder conceals losses
+  examplesSupport ? true, # build examples (vpxdec & vpxenc are part of examples)
+  experimentalEmulateHardwareSupport ? false,
+  experimentalFpMbStatsSupport ? false,
+  # Experimental features
+  experimentalSpatialSvcSupport ? false, # Spatial scalable video coding
+  extraWarningsSupport ? false, # emit non-fatal warnings
+  gcovSupport ? false, # gcov coverage instrumentation
+  gprofSupport ? false, # gprof profiling instrumentation
+  internalStatsSupport ? false, # output of encoder internal stats for debug, if supported (encoders)
+  libyuvSupport ? true, # libyuv
+  multiResEncodingSupport ? false, # multiple-resolution encoding
+  multithreadSupport ? true, # multithreaded decoding & encoding
+  ontheflyBitpackingSupport ? false, # on-the-fly bitpacking in real-time encoding
+  optimizationsSupport ? true, # compiler optimization flags
+  postprocSupport ? true, # postprocessing
+  postprocVisualizerSupport ? false, # macro block/block level visualizers
+  realtimeOnlySupport ? false, # build for real-time encoding
+  runtimeCpuDetectSupport ? true, # detect cpu capabilities at runtime
+  sizeLimitSupport ? true, # limit max size to allow in the decoder
+  smallSupport ? false, # favor smaller binary over speed
+  spatialResamplingSupport ? true, # spatial sampling (scaling)
+  temporalDenoisingSupport ? true, # use temporal denoising instead of spatial denoising
+  thumbSupport ? false, # build arm assembly in thumb mode
+  unitTestsSupport ? false,
   vp8DecoderSupport ? true, # VP8 decoder
   vp8EncoderSupport ? true, # VP8 encoder
   vp9DecoderSupport ? true, # VP9 decoder
   vp9EncoderSupport ? true, # VP9 encoder
-  extraWarningsSupport ? false, # emit non-fatal warnings
-  werrorSupport ? false, # treat warnings as errors (not available with all compilers)
-  debugSupport ? false, # debug mode
-  gprofSupport ? false, # gprof profiling instrumentation
-  gcovSupport ? false, # gcov coverage instrumentation
-  sizeLimitSupport ? true, # limit max size to allow in the decoder
-  optimizationsSupport ? true, # compiler optimization flags
-  runtimeCpuDetectSupport ? true, # detect cpu capabilities at runtime
-  thumbSupport ? false, # build arm assembly in thumb mode
-  examplesSupport ? true, # build examples (vpxdec & vpxenc are part of examples)
-  debugLibsSupport ? false, # include debug version of each library
-  postprocSupport ? true, # postprocessing
-  multithreadSupport ? true, # multithreaded decoding & encoding
-  internalStatsSupport ? false, # output of encoder internal stats for debug, if supported (encoders)
-  spatialResamplingSupport ? true, # spatial sampling (scaling)
-  realtimeOnlySupport ? false, # build for real-time encoding
-  ontheflyBitpackingSupport ? false, # on-the-fly bitpacking in real-time encoding
-  errorConcealmentSupport ? false, # decoder conceals losses
-  smallSupport ? false, # favor smaller binary over speed
-  postprocVisualizerSupport ? false, # macro block/block level visualizers
-  unitTestsSupport ? false,
-  curl ? null,
-  coreutils ? null, # unit tests
-  webmIOSupport ? true, # input from and output to webm container
-  libyuvSupport ? true, # libyuv
-  decodePerfTestsSupport ? false, # build decoder perf tests with unit tests
-  encodePerfTestsSupport ? false, # build encoder perf tests with unit tests
-  multiResEncodingSupport ? false, # multiple-resolution encoding
-  temporalDenoisingSupport ? true, # use temporal denoising instead of spatial denoising
-  coefficientRangeCheckingSupport ? false, # decoder checks if intermediate transform coefficients are in valid range
   vp9HighbitdepthSupport ? true, # 10/12 bit color support in VP9
-  # Experimental features
-  experimentalSpatialSvcSupport ? false, # Spatial scalable video coding
-  experimentalFpMbStatsSupport ? false,
-  experimentalEmulateHardwareSupport ? false,
-
-  # for passthru.tests
-  ffmpeg,
-  gst_all_1,
+  webmIOSupport ? true, # input from and output to webm container
+  werrorSupport ? false, # treat warnings as errors (not available with all compilers)
 }:
 
 let
@@ -145,6 +144,12 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-z1Ov3BHnAGuayeY4D86oTRiDfuZ2Wpc4ZD7pXGaakVI=";
   };
 
+  outputs = [
+    "bin"
+    "dev"
+    "out"
+  ];
+
   postPatch = ''
     patchShebangs --build \
       build/make/*.sh \
@@ -161,14 +166,18 @@ stdenv.mkDerivation (finalAttrs: {
       --replace "check_cflags -Wshorten-64-to-32 && add_cflags_only -Wshorten-64-to-32" ""
   '';
 
-  outputs = [
-    "bin"
-    "dev"
-    "out"
+  nativeBuildInputs = [
+    perl
+    yasm
   ];
-  setOutputFlags = false;
 
-  configurePlatforms = [ ];
+  buildInputs =
+    [ ]
+    ++ optionals unitTestsSupport [
+      coreutils
+      curl
+    ];
+
   configureFlags = [
     (enableFeature (vp8EncoderSupport || vp8DecoderSupport) "vp8")
     (enableFeature vp8EncoderSupport "vp8-encoder")
@@ -237,25 +246,14 @@ stdenv.mkDerivation (finalAttrs: {
   ++ optional experimentalFpMbStatsSupport "--enable-fp-mb-stats"
   ++ optional experimentalEmulateHardwareSupport "--enable-emulate-hardware";
 
-  nativeBuildInputs = [
-    perl
-    yasm
-  ];
-
-  buildInputs =
-    [ ]
-    ++ optionals unitTestsSupport [
-      coreutils
-      curl
-    ];
-
   env.NIX_LDFLAGS = toString [
     "-lpthread" # fixes linker errors
   ];
 
-  enableParallelBuilding = true;
-
   postInstall = ''moveToOutput bin "$bin" '';
+  configurePlatforms = [ ];
+  enableParallelBuilding = true;
+  setOutputFlags = false;
 
   passthru.tests = {
     inherit (gst_all_1) gst-plugins-good;

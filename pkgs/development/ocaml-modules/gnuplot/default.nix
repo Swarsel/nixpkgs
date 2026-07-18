@@ -1,7 +1,7 @@
 {
   lib,
-  buildDunePackage,
   fetchFromGitHub,
+  buildDunePackage,
   gnuplot,
   iso8601,
 }:
@@ -23,9 +23,9 @@ buildDunePackage (finalAttrs: {
   ];
 
   meta = {
-    homepage = "https://github.com/c-cube/ocaml-gnuplot";
     description = "OCaml bindings to Gnuplot";
-    maintainers = [ lib.maintainers.bcdarwin ];
+    homepage = "https://github.com/c-cube/ocaml-gnuplot";
     license = lib.licenses.lgpl21;
+    maintainers = [ lib.maintainers.bcdarwin ];
   };
 })

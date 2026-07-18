@@ -1,11 +1,10 @@
 {
   lib,
   stdenv,
-  cmake,
   fetchFromGitHub,
-  pkg-config,
-
+  SDL2,
   bzip2,
+  cmake,
   feather-tk,
   ffmpeg_7,
   freetype,
@@ -13,8 +12,8 @@
   imath,
   libGL,
   libjpeg,
-  libtiff,
   libpng,
+  libtiff,
   lunasvg,
   minizip-ng,
   nasm,
@@ -25,30 +24,28 @@
   openssl,
   opentimelineio,
   openusd,
+  pkg-config,
   plutovg,
-  SDL2,
   sdl3,
   xz,
   zlib,
   zstd,
-
+  enableExamples ? false,
+  enableFfmpeg ? true,
+  enableJpeg ? true,
   # optional dependencies
   enableNet ? false,
   enableOcio ? true,
+  enableOpenexr ? true,
+  enablePng ? true,
+  enableProgram ? true,
   enableSdl2 ? true,
   enableSdl3 ? false,
-  enableJpeg ? true,
-  enableTiff ? true,
-  enableStb ? true,
-  enablePng ? true,
-  enableOpenexr ? true,
-  enableFfmpeg ? true,
-  enableUsd ? false,
-
   # build options
   enableShared ? !stdenv.hostPlatform.isStatic,
-  enableProgram ? true,
-  enableExamples ? false,
+  enableStb ? true,
+  enableTiff ? true,
+  enableUsd ? false,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -139,6 +136,7 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Open source library for building playback and review applications";
+
     longDescription = ''
       An open source library for building playback and review applications for
       visual effects, film, and animation.
@@ -147,6 +145,7 @@ stdenv.mkDerivation (finalAttrs: {
       image sequences, audio clips, and transitions. Examples are provided for
       integrating the library with Qt and OpenGL applications.
     '';
+
     homepage = "https://github.com/darbyjohnston/tlRender";
     license = lib.licenses.bsd3;
     maintainers = with lib.maintainers; [ yzx9 ];

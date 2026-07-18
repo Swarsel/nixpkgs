@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   lxml,
   pytestCheckHook,
   pythonAtLeast,
@@ -12,7 +12,6 @@
 buildPythonPackage rec {
   pname = "unittest-xml-reporting";
   version = "4.0.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "xmlrunner";
@@ -21,14 +20,14 @@ buildPythonPackage rec {
     hash = "sha256-9gV/DX/G12bthonBJlMDKaS6Iwt9nF5DrNG33KK7KbU=";
   };
 
+  nativeCheckInputs = [ pytestCheckHook ];
+
   build-system = [
     setuptools
     setuptools-scm
   ];
 
   dependencies = [ lxml ];
-
-  nativeCheckInputs = [ pytestCheckHook ];
 
   disabledTests =
     lib.optionals (pythonAtLeast "3.11") [
@@ -38,6 +37,7 @@ buildPythonPackage rec {
     ]
     ++ lib.optionals (pythonAtLeast "3.12") [ "test_xmlrunner_hold_traceback" ];
 
+  pyproject = true;
   pythonImportsCheck = [ "xmlrunner" ];
 
   meta = {

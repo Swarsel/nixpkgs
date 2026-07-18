@@ -1,11 +1,11 @@
 {
   lib,
-  rustPlatform,
-  fetchFromGitHub,
   stdenv,
+  fetchFromGitHub,
   installShellFiles,
-  versionCheckHook,
   nix-update-script,
+  rustPlatform,
+  versionCheckHook,
   enableLegacySg ? false,
 }:
 
@@ -25,14 +25,8 @@ rustPlatform.buildRustPackage (finalAttrs: {
     rm .cargo/config.toml
   '';
 
-  cargoHash = "sha256-waeAXcxnvTWbuAhVWdA5wPdWvS1aSSptGerFoGEtFUE=";
-
   nativeBuildInputs = [ installShellFiles ];
-
-  cargoBuildFlags = [
-    "--package ast-grep --bin ast-grep"
-  ]
-  ++ lib.optionals enableLegacySg [ "--package ast-grep --bin sg" ];
+  cargoHash = "sha256-waeAXcxnvTWbuAhVWdA5wPdWvS1aSSptGerFoGEtFUE=";
 
   postInstall = lib.optionalString (stdenv.buildPlatform.canExecute stdenv.hostPlatform) ''
     installShellCompletion --cmd ast-grep \
@@ -47,24 +41,32 @@ rustPlatform.buildRustPackage (finalAttrs: {
     ''}
   '';
 
+  doInstallCheck = true;
+
   nativeInstallCheckInputs = [
     versionCheckHook
   ];
-  doInstallCheck = true;
+
+  cargoBuildFlags = [
+    "--package ast-grep --bin ast-grep"
+  ]
+  ++ lib.optionals enableLegacySg [ "--package ast-grep --bin sg" ];
 
   passthru.updateScript = nix-update-script { };
 
   meta = {
-    mainProgram = "ast-grep";
     description = "Fast and polyglot tool for code searching, linting, rewriting at large scale";
     homepage = "https://ast-grep.github.io/";
     changelog = "https://github.com/ast-grep/ast-grep/blob/${finalAttrs.version}/CHANGELOG.md";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       xiaoxiangmoe
       astratagem
       lord-valen
       cafkafk
     ];
+
+    mainProgram = "ast-grep";
   };
 })

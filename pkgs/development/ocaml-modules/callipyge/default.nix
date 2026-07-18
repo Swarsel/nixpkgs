@@ -1,8 +1,8 @@
 {
   lib,
-  buildDunePackage,
   fetchurl,
   alcotest,
+  buildDunePackage,
   eqaf,
   fmt,
 }:
@@ -16,10 +16,6 @@ buildDunePackage (finalAttrs: {
     hash = "sha256-T/94a88xvK51TggjXecdKc9kyTE9aIyueIt5T24sZB0=";
   };
 
-  duneVersion = "3";
-
-  minimalOCamlVersion = "4.08";
-
   propagatedBuildInputs = [
     fmt
     eqaf
@@ -27,10 +23,12 @@ buildDunePackage (finalAttrs: {
 
   doCheck = true;
   checkInputs = [ alcotest ];
+  duneVersion = "3";
+  minimalOCamlVersion = "4.08";
 
   meta = {
-    homepage = "https://github.com/oklm-wsh/Callipyge";
     description = "Curve25519 in OCaml";
+    homepage = "https://github.com/oklm-wsh/Callipyge";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ fufexan ];
   };

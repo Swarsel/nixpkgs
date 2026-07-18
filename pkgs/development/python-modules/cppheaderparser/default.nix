@@ -1,23 +1,22 @@
 {
+  lib,
   buildPythonPackage,
   fetchPypi,
   ply,
-  lib,
 }:
 
 buildPythonPackage rec {
   pname = "cppheaderparser";
   version = "2.7.4";
-  format = "setuptools";
 
   src = fetchPypi {
-    pname = "CppHeaderParser";
     inherit version;
     hash = "sha256-OCswQW2VsKXoUCshSBDcrCpWQykX4mUUR9Or4lPjzEI=";
+    pname = "CppHeaderParser";
   };
 
   propagatedBuildInputs = [ ply ];
-
+  format = "setuptools";
   pythonImportsCheck = [ "CppHeaderParser" ];
 
   meta = {

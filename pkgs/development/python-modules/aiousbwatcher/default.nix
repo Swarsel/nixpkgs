@@ -1,18 +1,17 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
   asyncinotify,
+  buildPythonPackage,
   pytest-asyncio,
   pytest-cov-stub,
   pytestCheckHook,
+  setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "aiousbwatcher";
   version = "1.1.2";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "Bluetooth-Devices";
@@ -21,16 +20,15 @@ buildPythonPackage rec {
     hash = "sha256-kCuY4+pdfnO8BuYSQjZEyGxSaCwVYXRHWYhnbzxlDzM=";
   };
 
-  build-system = [ setuptools ];
-
-  dependencies = [ asyncinotify ];
-
   nativeCheckInputs = [
     pytest-asyncio
     pytest-cov-stub
     pytestCheckHook
   ];
 
+  build-system = [ setuptools ];
+  dependencies = [ asyncinotify ];
+  pyproject = true;
   pythonImportsCheck = [ "aiousbwatcher" ];
 
   meta = {

@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   marisa-trie,
   setuptools-scm,
 }:
@@ -9,7 +9,6 @@
 buildPythonPackage rec {
   pname = "language-data";
   version = "1.4.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "georgkrause";
@@ -18,14 +17,12 @@ buildPythonPackage rec {
     hash = "sha256-cWjeb2toGrnNSsK566e18NgWhv6YdQrKEzFPilmBdoA=";
   };
 
-  build-system = [ setuptools-scm ];
-
-  dependencies = [ marisa-trie ];
-
-  pythonImportsCheck = [ "language_data" ];
-
   # No unittests
   doCheck = false;
+  build-system = [ setuptools-scm ];
+  dependencies = [ marisa-trie ];
+  pyproject = true;
+  pythonImportsCheck = [ "language_data" ];
 
   meta = {
     description = "Supplement module for langcodes";

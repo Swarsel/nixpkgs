@@ -1,20 +1,18 @@
 {
   lib,
-  ffmpeg_6,
   alvr,
+  ffmpeg_6,
 }:
 
 (ffmpeg_6.override {
   version = "6.0";
   hash = "sha256-RVbgsafIbeUUNXmUbDQ03ZN42oaUo0njqROo7KOQgv0=";
-
+  withDocumentation = false;
   withHardcodedTables = false;
-
   withHtmlDoc = false;
   withManPages = false;
   withPodDoc = false;
   withTxtDoc = false;
-  withDocumentation = false;
 }).overrideAttrs
   (old: {
     # apply our own ffmpeg patches, but skip texinfo-7.1.patch as it does not apply to 6.0.

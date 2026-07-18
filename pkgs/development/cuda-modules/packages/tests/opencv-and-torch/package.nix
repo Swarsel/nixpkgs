@@ -1,6 +1,6 @@
 {
-  cudaPackages,
   lib,
+  cudaPackages,
   writeGpuTestPython,
 }:
 let
@@ -84,6 +84,7 @@ let
           "with-default-cuda"
         ]
       );
+
       value =
         let
           content = if openCVFirst then openCVBlock + torchBlock else torchBlock + openCVBlock;
@@ -94,7 +95,6 @@ let
         # TODO: Ensure the expected CUDA libraries are loaded.
         # TODO: Ensure GPU access works as expected.
         writeGpuTestPython {
-          name = if openCVFirst then "${openCVName}-then-${torchName}" else "${torchName}-then-${openCVName}";
           libraries =
             # NOTE: These are purposefully in this order.
             pythonPackages:
@@ -116,6 +116,8 @@ let
                 effectiveTorch
                 effectiveOpenCV
               ];
+
+          name = if openCVFirst then "${openCVName}-then-${torchName}" else "${torchName}-then-${openCVName}";
         } content;
     };
 in

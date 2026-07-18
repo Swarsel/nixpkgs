@@ -1,12 +1,11 @@
 {
   lib,
-  buildKodiAddon,
   fetchFromGitHub,
+  buildKodiAddon,
 }:
 
 buildKodiAddon rec {
   pname = "robotocjksc";
-  namespace = "resource.font.robotocjksc";
   version = "0.0.3";
 
   src = fetchFromGitHub {
@@ -16,9 +15,11 @@ buildKodiAddon rec {
     hash = "sha256-s/h/KKlGYGMvf7RdI9ONk4S+NCzlaDX5w3CdNfbC2KE=";
   };
 
+  namespace = "resource.font.robotocjksc";
+
   meta = {
-    homepage = "https://github.com/jurialmunkey/resource.font.robotocjksc";
     description = "Roboto CJKSC fonts";
+    homepage = "https://github.com/jurialmunkey/resource.font.robotocjksc";
     license = lib.licenses.asl20;
     teams = [ lib.teams.kodi ];
   };

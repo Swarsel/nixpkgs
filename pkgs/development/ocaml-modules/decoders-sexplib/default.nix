@@ -1,20 +1,17 @@
 {
   lib,
   buildDunePackage,
+  containers,
   decoders,
+  ounit2,
   sexplib,
   sexplib0,
-  containers,
-  ounit2,
 }:
 
 buildDunePackage (finalAttrs: {
-  pname = "decoders-sexplib";
-
   # sub-package built separately from the same source
   inherit (decoders) src version;
-
-  minimalOCamlVersion = "4.03.0";
+  pname = "decoders-sexplib";
 
   propagatedBuildInputs = [
     decoders
@@ -23,10 +20,13 @@ buildDunePackage (finalAttrs: {
   ];
 
   doCheck = true;
+
   checkInputs = [
     containers
     ounit2
   ];
+
+  minimalOCamlVersion = "4.03.0";
 
   meta = {
     description = "sexplib backend for decoders";

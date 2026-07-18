@@ -6,15 +6,15 @@
 
 {
   # : string
-  pname,
-  # : string
-  version,
-  # : string
-  sha256,
-  # : string
   description,
   # : list Maintainer
   maintainers,
+  # : string
+  pname,
+  # : string
+  sha256,
+  # : string
+  version,
   # : license
   license ? lib.licenses.isc,
   # : string

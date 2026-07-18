@@ -2,20 +2,20 @@
   lib,
   stdenv,
   fetchurl,
-  pkg-config,
+  expat,
   freexl,
   geos,
-  expat,
   librttopo,
   libspatialite,
   libxml2,
   libz,
   minizip,
+  pkg-config,
   proj,
   readosm,
+  spatialite-tools,
   sqlite,
   testers,
-  spatialite-tools,
 }:
 
 stdenv.mkDerivation rec {
@@ -54,22 +54,24 @@ stdenv.mkDerivation rec {
   enableParallelBuilding = true;
 
   passthru.tests.version = testers.testVersion {
-    package = spatialite-tools;
-    command = "! spatialite_tool --version";
     version = "${libspatialite.version}";
+    command = "! spatialite_tool --version";
+    package = spatialite-tools;
   };
 
   meta = {
     description = "Complete sqlite3-compatible CLI front-end for libspatialite";
     homepage = "https://www.gaia-gis.it/fossil/spatialite-tools";
+
     license = with lib.licenses; [
       mpl11
       gpl2Plus
       lgpl21Plus
     ];
-    platforms = lib.platforms.unix;
+
     maintainers = with lib.maintainers; [ dotlambda ];
-    teams = [ lib.teams.geospatial ];
+    platforms = lib.platforms.unix;
     mainProgram = "spatialite_tool";
+    teams = [ lib.teams.geospatial ];
   };
 }

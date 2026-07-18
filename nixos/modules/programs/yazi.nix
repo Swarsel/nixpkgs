@@ -20,10 +20,74 @@ in
 {
   options.programs.yazi = {
     enable = lib.mkEnableOption "yazi terminal file manager";
-
     package = lib.mkPackageOption pkgs "yazi" { };
 
+    flavors = lib.mkOption {
+      default = { };
+
+      description = ''
+        Pre-made themes.
+
+        See <https://yazi-rs.github.io/docs/flavors/overview/> for documentation.
+      '';
+
+      example = lib.literalExpression ''
+        {
+          foo = ./foo;
+          inherit (pkgs.yaziPlugins) bar;
+        }
+      '';
+
+      type =
+        with lib.types;
+        attrsOf (oneOf [
+          path
+          package
+        ]);
+    };
+
+    initLua = lib.mkOption {
+      default = null;
+
+      description = ''
+        The init.lua for Yazi itself.
+      '';
+
+      example = lib.literalExpression "./init.lua";
+      type = with lib.types; nullOr path;
+    };
+
+    plugins = lib.mkOption {
+      default = { };
+
+      description = ''
+        Lua plugins.
+
+        See <https://yazi-rs.github.io/docs/plugins/overview/> for documentation.
+      '';
+
+      example = lib.literalExpression ''
+        {
+          foo = ./foo;
+          inherit (pkgs.yaziPlugins) bar;
+        }
+      '';
+
+      type =
+        with lib.types;
+        attrsOf (oneOf [
+          path
+          package
+        ]);
+    };
+
     settings = lib.mkOption {
+      default = { };
+
+      description = ''
+        Configuration included in `$YAZI_CONFIG_HOME`.
+      '';
+
       type =
         with lib.types;
         submodule {
@@ -32,6 +96,7 @@ in
             lib.mkOption {
               inherit (settingsFormat) type;
               default = { };
+
               description = ''
                 Configuration included in `${name}.toml`.
 
@@ -40,61 +105,6 @@ in
             }
           );
         };
-      default = { };
-      description = ''
-        Configuration included in `$YAZI_CONFIG_HOME`.
-      '';
-    };
-
-    initLua = lib.mkOption {
-      type = with lib.types; nullOr path;
-      default = null;
-      description = ''
-        The init.lua for Yazi itself.
-      '';
-      example = lib.literalExpression "./init.lua";
-    };
-
-    plugins = lib.mkOption {
-      type =
-        with lib.types;
-        attrsOf (oneOf [
-          path
-          package
-        ]);
-      default = { };
-      description = ''
-        Lua plugins.
-
-        See <https://yazi-rs.github.io/docs/plugins/overview/> for documentation.
-      '';
-      example = lib.literalExpression ''
-        {
-          foo = ./foo;
-          inherit (pkgs.yaziPlugins) bar;
-        }
-      '';
-    };
-
-    flavors = lib.mkOption {
-      type =
-        with lib.types;
-        attrsOf (oneOf [
-          path
-          package
-        ]);
-      default = { };
-      description = ''
-        Pre-made themes.
-
-        See <https://yazi-rs.github.io/docs/flavors/overview/> for documentation.
-      '';
-      example = lib.literalExpression ''
-        {
-          foo = ./foo;
-          inherit (pkgs.yaziPlugins) bar;
-        }
-      '';
     };
 
   };

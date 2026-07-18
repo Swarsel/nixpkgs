@@ -1,35 +1,29 @@
 {
   lib,
   stdenv,
-  config,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # build-system
-  setuptools,
-
-  # dependencies
-  numpy,
-  scikit-learn,
-  torch,
-  tqdm,
-
+  buildPythonPackage,
+  config,
   # optional-dependencies
   faiss,
-  tensorboard,
-
+  # dependencies
+  numpy,
   # tests
   pytestCheckHook,
+  scikit-learn,
+  # build-system
+  setuptools,
+  tensorboard,
+  torch,
   torchvision,
+  tqdm,
   writableTmpDirAsHomeHook,
-
   cudaSupport ? config.cudaSupport,
 }:
 
 buildPythonPackage rec {
   pname = "pytorch-metric-learning";
   version = "2.9.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "KevinMusgrave";
@@ -37,6 +31,19 @@ buildPythonPackage rec {
     tag = "v${version}";
     hash = "sha256-JKWE2wVXVx8xp2kpiX6CxvCKkrwYRW80A20K/UTxIaQ=";
   };
+
+  # package only requires `unittest`, but use `pytest` to exclude tests
+  nativeCheckInputs = [
+    pytestCheckHook
+    torchvision
+    writableTmpDirAsHomeHook
+  ]
+  ++ lib.concatAttrValues optional-dependencies;
+
+  preCheck = ''
+    export TEST_DEVICE=cpu
+    export TEST_DTYPES=float32,float64  # half-precision tests fail on CPU
+  '';
 
   build-system = [
     setuptools
@@ -49,31 +56,11 @@ buildPythonPackage rec {
     tqdm
   ];
 
-  optional-dependencies = {
-    with-hooks = [
-      # TODO: record-keeper
-      faiss
-      tensorboard
-    ];
-    with-hooks-cpu = [
-      # TODO: record-keeper
-      faiss
-      tensorboard
-    ];
-  };
-
-  preCheck = ''
-    export TEST_DEVICE=cpu
-    export TEST_DTYPES=float32,float64  # half-precision tests fail on CPU
-  '';
-
-  # package only requires `unittest`, but use `pytest` to exclude tests
-  nativeCheckInputs = [
-    pytestCheckHook
-    torchvision
-    writableTmpDirAsHomeHook
-  ]
-  ++ lib.concatAttrValues optional-dependencies;
+  disabledTestPaths = lib.optionals stdenv.hostPlatform.isDarwin [
+    # Fatal Python error: Segmentation fault
+    "tests/testers/"
+    "tests/utils/"
+  ];
 
   disabledTests = [
     # network access
@@ -99,11 +86,21 @@ buildPythonPackage rec {
     "test_with_same_parent_label_tester"
   ];
 
-  disabledTestPaths = lib.optionals stdenv.hostPlatform.isDarwin [
-    # Fatal Python error: Segmentation fault
-    "tests/testers/"
-    "tests/utils/"
-  ];
+  optional-dependencies = {
+    with-hooks = [
+      # TODO: record-keeper
+      faiss
+      tensorboard
+    ];
+
+    with-hooks-cpu = [
+      # TODO: record-keeper
+      faiss
+      tensorboard
+    ];
+  };
+
+  pyproject = true;
 
   meta = {
     description = "Metric learning library for PyTorch";

@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   cachetools,
   numpy,
   redis,
@@ -12,7 +12,6 @@
 buildPythonPackage rec {
   pname = "gptcache";
   version = "0.1.44";
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "zilliztech";
@@ -31,15 +30,15 @@ buildPythonPackage rec {
 
   # many tests require network access and complicated dependencies
   doCheck = false;
-
+  format = "setuptools";
   pythonImportsCheck = [ "gptcache" ];
 
   meta = {
     description = "Semantic cache for LLMs and fully integrated with LangChain and llama_index";
-    mainProgram = "gptcache_server";
     homepage = "https://github.com/zilliztech/GPTCache";
     changelog = "https://github.com/zilliztech/GPTCache/releases/tag/${version}";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ natsukium ];
+    mainProgram = "gptcache_server";
   };
 }

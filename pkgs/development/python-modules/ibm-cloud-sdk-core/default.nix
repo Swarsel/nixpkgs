@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   pyjwt,
   pytestCheckHook,
   python-dateutil,
@@ -13,7 +13,6 @@
 buildPythonPackage rec {
   pname = "ibm-cloud-sdk-core";
   version = "3.25.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "IBM";
@@ -22,7 +21,10 @@ buildPythonPackage rec {
     hash = "sha256-UA4xZ9doaz/4yYdbXJoevXrdzsrfuv/nhSd2+rkHAQ4=";
   };
 
-  pythonRelaxDeps = [ "requests" ];
+  nativeCheckInputs = [
+    pytestCheckHook
+    responses
+  ];
 
   build-system = [ setuptools ];
 
@@ -32,9 +34,9 @@ buildPythonPackage rec {
     requests
   ];
 
-  nativeCheckInputs = [
-    pytestCheckHook
-    responses
+  disabledTestPaths = [
+    # Tests require credentials
+    "test_integration/"
   ];
 
   disabledTests = [
@@ -54,10 +56,8 @@ buildPythonPackage rec {
     "test_tls_v1_2"
   ];
 
-  disabledTestPaths = [
-    # Tests require credentials
-    "test_integration/"
-  ];
+  pyproject = true;
+  pythonRelaxDeps = [ "requests" ];
 
   meta = {
     description = "Client library for the IBM Cloud services";

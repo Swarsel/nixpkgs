@@ -2,16 +2,14 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  writeScript,
-
   # nativeBuildInputs
   cmake,
-  xxd,
-
+  gtest,
   # buildInputs
   nlohmann_json,
   nlohmann_json_schema_validator,
-  gtest,
+  writeScript,
+  xxd,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -25,22 +23,24 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-zM8NRdVKY4RI9fNrVU/BpWOkhmmT9HLrOi21YKPGd0k=";
   };
 
+  outputs = [
+    "out"
+    "dev"
+  ];
+
   nativeBuildInputs = [
     cmake
     xxd
+  ];
+
+  buildInputs = [
+    nlohmann_json_schema_validator
   ];
 
   propagatedBuildInputs = [
     # nlohmann_json is a header only library, and we propagate it because it is
     # being `#include`d in `${placeholder "dev"}/include`.
     nlohmann_json
-  ];
-  buildInputs = [
-    nlohmann_json_schema_validator
-  ];
-
-  checkInputs = [
-    gtest
   ];
 
   cmakeFlags = [
@@ -50,11 +50,11 @@ stdenv.mkDerivation (finalAttrs: {
     (lib.cmakeBool "BUILD_SHARED_LIBS" (!stdenv.hostPlatform.isStatic))
     (lib.cmakeFeature "MNX_W3C_SOURCE" (toString (finalAttrs.finalPackage.mnx_w3c)))
   ];
+
   doCheck = true;
 
-  outputs = [
-    "out"
-    "dev"
+  checkInputs = [
+    gtest
   ];
 
   passthru = {
@@ -91,7 +91,7 @@ stdenv.mkDerivation (finalAttrs: {
     homepage = "https://github.com/rpatters1/mnxdom";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ doronbehar ];
-    mainProgram = "mnxdom";
     platforms = lib.platforms.all;
+    mainProgram = "mnxdom";
   };
 })

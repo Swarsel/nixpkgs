@@ -12,13 +12,15 @@
 buildPythonPackage rec {
   pname = "bandit";
   version = "1.9.4";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
     hash = "sha256-tYnl3ir+cL1NU/oMHaYZn0CFr2Zv3gDooDTxUqUs1ig=";
   };
 
+  # Framework is Tox, tox performs 'pip install' inside the virtual-env
+  # and this requires Network Connectivity
+  doCheck = false;
   build-system = [ pbr ];
 
   dependencies = [
@@ -28,10 +30,7 @@ buildPythonPackage rec {
     stevedore
   ];
 
-  # Framework is Tox, tox performs 'pip install' inside the virtual-env
-  # and this requires Network Connectivity
-  doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "bandit" ];
 
   meta = {

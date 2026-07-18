@@ -2,10 +2,10 @@
   lib,
   stdenv,
   fetchFromGitLab,
-  ocamlPackages,
   darwin,
   dune,
   nix-update-script,
+  ocamlPackages,
   writableTmpDirAsHomeHook,
 }:
 
@@ -15,11 +15,11 @@ stdenv.mkDerivation {
   version = "2.2.0";
 
   src = fetchFromGitLab {
-    domain = "gitlab.inria.fr";
     owner = "acg";
     repo = "dev/acgtk";
     tag = "release-2.2.0";
     hash = "sha256-cDP41a3CHh+KW2PAZ3WTRA2HTXKhb8mMCTNddv6M8Bg=";
+    domain = "gitlab.inria.fr";
   };
 
   strictDeps = true;
@@ -68,10 +68,10 @@ stdenv.mkDerivation {
   };
 
   meta = {
-    homepage = "https://acg.loria.fr/";
-    description = "Toolkit for developing ACG signatures and lexicon";
-    license = lib.licenses.cecill20;
     inherit (ocamlPackages.ocaml.meta) platforms;
+    description = "Toolkit for developing ACG signatures and lexicon";
+    homepage = "https://acg.loria.fr/";
+    license = lib.licenses.cecill20;
     maintainers = with lib.maintainers; [ tournev ];
   };
 }

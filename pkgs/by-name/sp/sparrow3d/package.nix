@@ -1,25 +1,20 @@
 {
   lib,
   stdenv,
-  copyPkgconfigItems,
   fetchFromGitHub,
-  makePkgconfigItem,
-  pkg-config,
   SDL,
   SDL_image,
   SDL_mixer,
   SDL_net,
   SDL_ttf,
+  copyPkgconfigItems,
+  makePkgconfigItem,
+  pkg-config,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
   pname = "sparrow3d";
   version = "unstable-2020-10-06";
-
-  outputs = [
-    "out"
-    "dev"
-  ];
 
   src = fetchFromGitHub {
     owner = "theZiz";
@@ -28,26 +23,9 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-28j5nbTYBrMN8BQ6XrTlO1D8Viw+RiT3MAl99BAbhR4=";
   };
 
-  pkgconfigItems = [
-    (makePkgconfigItem rec {
-      name = "sparrow3d";
-      inherit (finalAttrs) version;
-      inherit (finalAttrs.meta) description;
-
-      cflags = [ "-isystem${variables.includedir}" ];
-      libs = [
-        "-L${variables.libdir}"
-        "-lsparrow3d"
-        "-lsparrowNet"
-        "-lsparrowSound"
-      ];
-      variables = rec {
-        prefix = "@dev@";
-        exec_prefix = "@out@";
-        includedir = "${prefix}/include";
-        libdir = "${exec_prefix}/lib";
-      };
-    })
+  outputs = [
+    "out"
+    "dev"
   ];
 
   nativeBuildInputs = [
@@ -63,22 +41,10 @@ stdenv.mkDerivation (finalAttrs: {
     SDL_net
   ];
 
-  postConfigure = ''
-    NIX_CFLAGS_COMPILE=$(pkg-config --cflags SDL_image SDL_ttf SDL_mixer SDL_net)
-  '';
-
   buildFlags = [ "dynamic" ];
 
-  installPhase = ''
-    runHook preInstall
-
-    mkdir -p $out/lib
-    cp libsparrow{3d,Net,Sound}.so $out/lib
-
-    mkdir -p $dev/include
-    cp sparrow*.h $dev/include
-
-    runHook postInstall
+  postConfigure = ''
+    NIX_CFLAGS_COMPILE=$(pkg-config --cflags SDL_image SDL_ttf SDL_mixer SDL_net)
   '';
 
   doCheck = true;
@@ -92,9 +58,45 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postCheck
   '';
 
+  installPhase = ''
+    runHook preInstall
+
+    mkdir -p $out/lib
+    cp libsparrow{3d,Net,Sound}.so $out/lib
+
+    mkdir -p $dev/include
+    cp sparrow*.h $dev/include
+
+    runHook postInstall
+  '';
+
+  pkgconfigItems = [
+    (makePkgconfigItem rec {
+      inherit (finalAttrs) version;
+      inherit (finalAttrs.meta) description;
+      cflags = [ "-isystem${variables.includedir}" ];
+
+      libs = [
+        "-L${variables.libdir}"
+        "-lsparrow3d"
+        "-lsparrowNet"
+        "-lsparrowSound"
+      ];
+
+      name = "sparrow3d";
+
+      variables = rec {
+        exec_prefix = "@out@";
+        includedir = "${prefix}/include";
+        libdir = "${exec_prefix}/lib";
+        prefix = "@dev@";
+      };
+    })
+  ];
+
   meta = {
-    homepage = "https://github.com/theZiz/sparrow3d";
     description = "Software renderer for different open handhelds like the gp2x, wiz, caanoo and pandora";
+    homepage = "https://github.com/theZiz/sparrow3d";
     license = lib.licenses.lgpl21;
     maintainers = with lib.maintainers; [ colinsane ];
     platforms = lib.platforms.linux;

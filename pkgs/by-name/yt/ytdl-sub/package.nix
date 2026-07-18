@@ -1,8 +1,8 @@
 {
-  python3Packages,
+  lib,
   fetchFromGitHub,
   ffmpeg_7,
-  lib,
+  python3Packages,
   versionCheckHook,
   writableTmpDirAsHomeHook,
 }:
@@ -10,7 +10,6 @@
 python3Packages.buildPythonApplication (finalAttrs: {
   pname = "ytdl-sub";
   version = "2026.06.23";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "jmbannon";
@@ -23,7 +22,16 @@ python3Packages.buildPythonApplication (finalAttrs: {
     echo '__pypi_version__ = "${finalAttrs.version}"; __local_version__ = "${finalAttrs.version}"' > src/ytdl_sub/__init__.py
   '';
 
-  pythonRelaxDeps = [ "yt-dlp" ];
+  env = {
+    YTDL_SUB_FFMPEG_PATH = "${lib.getExe' ffmpeg_7 "ffmpeg"}";
+    YTDL_SUB_FFPROBE_PATH = "${lib.getExe' ffmpeg_7 "ffprobe"}";
+  };
+
+  nativeCheckInputs = [
+    versionCheckHook
+    python3Packages.pytestCheckHook
+    writableTmpDirAsHomeHook
+  ];
 
   build-system = with python3Packages; [
     setuptools
@@ -38,21 +46,11 @@ python3Packages.buildPythonApplication (finalAttrs: {
     pyyaml
   ];
 
-  makeWrapperArgs = [
-    "--set YTDL_SUB_FFMPEG_PATH ${lib.getExe' ffmpeg_7 "ffmpeg"}"
-    "--set YTDL_SUB_FFPROBE_PATH ${lib.getExe' ffmpeg_7 "ffprobe"}"
+  disabledTestPaths = [
+    # According to documentation, e2e tests can be flaky:
+    # "This checksum can be inaccurate for end-to-end tests"
+    "tests/e2e"
   ];
-
-  nativeCheckInputs = [
-    versionCheckHook
-    python3Packages.pytestCheckHook
-    writableTmpDirAsHomeHook
-  ];
-
-  env = {
-    YTDL_SUB_FFMPEG_PATH = "${lib.getExe' ffmpeg_7 "ffmpeg"}";
-    YTDL_SUB_FFPROBE_PATH = "${lib.getExe' ffmpeg_7 "ffprobe"}";
-  };
 
   disabledTests = [
     "test_logger_can_be_cleaned_during_execution"
@@ -63,26 +61,31 @@ python3Packages.buildPythonApplication (finalAttrs: {
     "test_directory_exists"
   ];
 
-  disabledTestPaths = [
-    # According to documentation, e2e tests can be flaky:
-    # "This checksum can be inaccurate for end-to-end tests"
-    "tests/e2e"
+  makeWrapperArgs = [
+    "--set YTDL_SUB_FFMPEG_PATH ${lib.getExe' ffmpeg_7 "ffmpeg"}"
+    "--set YTDL_SUB_FFPROBE_PATH ${lib.getExe' ffmpeg_7 "ffprobe"}"
   ];
 
+  pyproject = true;
+  pythonRelaxDeps = [ "yt-dlp" ];
   passthru.updateScript = ./update.sh;
 
   meta = {
-    homepage = "https://github.com/jmbannon/ytdl-sub";
     description = "Lightweight tool to automate downloading and metadata generation with yt-dlp";
+
     longDescription = ''
       ytdl-sub is a command-line tool that downloads media via yt-dlp and prepares it for your favorite media player, including Kodi, Jellyfin, Plex, Emby, and modern music players. No additional plugins or external scrapers are needed.
     '';
+
+    homepage = "https://github.com/jmbannon/ytdl-sub";
     changelog = "https://github.com/jmbannon/ytdl-sub/releases/tag/${finalAttrs.version}";
     license = lib.licenses.gpl3Only;
+
     maintainers = with lib.maintainers; [
       loc
       defelo
     ];
+
     mainProgram = "ytdl-sub";
   };
 })

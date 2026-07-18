@@ -2,14 +2,14 @@
   lib,
   stdenv,
   fetchurl,
+  coreutils,
+  gnugrep, # for purity
+  gnused,
+  ncurses,
   unzip,
   # If jdk is null, require JAVA_HOME in runtime environment, else store
   # JAVA_HOME=${jdk.home} into grails.
   jdk ? null,
-  coreutils,
-  ncurses,
-  gnused,
-  gnugrep, # for purity
 }:
 
 let
@@ -34,8 +34,6 @@ stdenv.mkDerivation rec {
 
   nativeBuildInputs = [ unzip ];
 
-  dontBuild = true;
-
   installPhase = ''
     mkdir -p "$out"
     cp -vr . "$out"
@@ -49,21 +47,24 @@ stdenv.mkDerivation rec {
     sed -i -e '2iJAVA_HOME=${jdk.home}' "$out"/bin/grails
   '';
 
+  dontBuild = true;
   preferLocalBuild = true;
 
   meta = {
     description = "Full stack, web application framework for the JVM";
-    mainProgram = "grails";
+
     longDescription = ''
       Grails is an Open Source, full stack, web application framework for the
       JVM. It takes advantage of the Groovy programming language and convention
       over configuration to provide a productive and stream-lined development
       experience.
     '';
+
     homepage = "https://grails.org/";
     license = lib.licenses.asl20;
     sourceProvenance = with lib.sourceTypes; [ binaryBytecode ];
-    platforms = lib.platforms.linux;
     maintainers = [ lib.maintainers.bjornfor ];
+    platforms = lib.platforms.linux;
+    mainProgram = "grails";
   };
 }

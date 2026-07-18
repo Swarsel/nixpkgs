@@ -1,11 +1,11 @@
 {
   lib,
-  stdenvNoCC,
   fetchurl,
-  jre8,
-  makeWrapper,
-  makeDesktopItem,
   copyDesktopItems,
+  jre8,
+  makeDesktopItem,
+  makeWrapper,
+  stdenvNoCC,
 }:
 
 stdenvNoCC.mkDerivation rec {
@@ -26,30 +26,6 @@ stdenvNoCC.mkDerivation rec {
     jre8
   ];
 
-  dontUnpack = true;
-
-  desktopItems = [
-    (makeDesktopItem {
-      name = "jflap";
-      desktopName = "jflap";
-      genericName = "Formal language application";
-      exec = "jflap";
-      icon = fetchurl {
-        url = "https://www.jflap.org/jflapLogo2.jpg";
-        sha256 = "sha256-IiworHI+GT6Fm6B0E+FXnKe+hN8nZYPrxHGZFAcsWDw=";
-      };
-      comment = meta.description;
-      categories = [
-        "Development"
-        "Education"
-        "ComputerScience"
-        "DataVisualization"
-        "Engineering"
-        "Java"
-      ];
-    })
-  ];
-
   installPhase = ''
     runHook preInstall
     mkdir -p $out/share/java
@@ -60,14 +36,43 @@ stdenvNoCC.mkDerivation rec {
     runHook postInstall
   '';
 
+  desktopItems = [
+    (makeDesktopItem {
+      categories = [
+        "Development"
+        "Education"
+        "ComputerScience"
+        "DataVisualization"
+        "Engineering"
+        "Java"
+      ];
+
+      comment = meta.description;
+      desktopName = "jflap";
+      exec = "jflap";
+      genericName = "Formal language application";
+
+      icon = fetchurl {
+        sha256 = "sha256-IiworHI+GT6Fm6B0E+FXnKe+hN8nZYPrxHGZFAcsWDw=";
+        url = "https://www.jflap.org/jflapLogo2.jpg";
+      };
+
+      name = "jflap";
+    })
+  ];
+
+  dontUnpack = true;
+
   meta = {
     description = "GUI tool for experimenting with formal languages topics";
     homepage = "https://www.jflap.org/";
     license = lib.licenses.unfree;
     sourceProvenance = with lib.sourceTypes; [ binaryBytecode ];
+
     maintainers = with lib.maintainers; [
       grnnja
     ];
+
     platforms = jre8.meta.platforms;
   };
 }

@@ -1,9 +1,9 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
-  nix,
   installShellFiles,
+  nix,
+  rustPlatform,
 }:
 rustPlatform.buildRustPackage (finalAttrs: {
   pname = "ragenix";
@@ -16,13 +16,9 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-iQf1WdNxaApOFHIx4RLMRZ4f8g+8Xp0Z1/E/Mz2rLxY=";
   };
 
-  cargoHash = "sha256-aM7kjyJJ8h4Yd1k2FTE8Vk/ezAXcCbfdAPxuNewptNQ=";
-
-  env.RAGENIX_NIX_BIN_PATH = lib.getExe nix;
-
-  checkNoDefaultFeatures = true;
-
   nativeBuildInputs = [ installShellFiles ];
+  cargoHash = "sha256-aM7kjyJJ8h4Yd1k2FTE8Vk/ezAXcCbfdAPxuNewptNQ=";
+  env.RAGENIX_NIX_BIN_PATH = lib.getExe nix;
 
   postInstall = ''
     set -euo pipefail
@@ -43,13 +39,17 @@ rustPlatform.buildRustPackage (finalAttrs: {
     installManPage docs/ragenix.1
   '';
 
+  checkNoDefaultFeatures = true;
+
   meta = {
     description = "Age-encrypted secrets for NixOS, drop-in replacement for agenix";
     homepage = "https://github.com/yaxitech/ragenix";
     license = lib.licenses.asl20;
+
     maintainers = with lib.maintainers; [
       aciceri
     ];
+
     platforms = lib.platforms.linux ++ lib.platforms.darwin;
     mainProgram = "ragenix";
   };

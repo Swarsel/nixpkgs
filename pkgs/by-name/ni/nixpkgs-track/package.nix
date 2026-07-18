@@ -1,17 +1,15 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
+  nix-update-script,
   openssl,
   pkg-config,
+  rustPlatform,
   versionCheckHook,
-  nix-update-script,
 }:
 rustPlatform.buildRustPackage (finalAttrs: {
   pname = "nixpkgs-track";
   version = "0.6.0";
-
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "uncenter";
@@ -20,25 +18,25 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-wxmM69bUp98CS4oCYhaliH7fRts9+Ay/JjhuP5IMgeE=";
   };
 
-  cargoHash = "sha256-lnv0nCyb2+7Xl+qAAeaHdbk4XOGdq4FINxPOIPchDhg=";
-
-  buildInputs = [ openssl ];
   nativeBuildInputs = [ pkg-config ];
-
-  nativeInstallCheckInputs = [ versionCheckHook ];
+  buildInputs = [ openssl ];
+  cargoHash = "sha256-lnv0nCyb2+7Xl+qAAeaHdbk4XOGdq4FINxPOIPchDhg=";
   doInstallCheck = true;
-
+  nativeInstallCheckInputs = [ versionCheckHook ];
+  __structuredAttrs = true;
   passthru.updateScript = nix-update-script { };
 
   meta = {
     description = "Track where Nixpkgs pull requests have reached";
     homepage = "https://github.com/uncenter/nixpkgs-track";
     license = lib.licenses.mit;
-    mainProgram = "nixpkgs-track";
+
     maintainers = with lib.maintainers; [
       isabelroses
       uncenter
       matthiasbeyer
     ];
+
+    mainProgram = "nixpkgs-track";
   };
 })

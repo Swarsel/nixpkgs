@@ -1,9 +1,9 @@
 {
   lib,
+  fetchFromGitHub,
   attrs,
   buildPythonPackage,
   domdf-python-tools,
-  fetchFromGitHub,
   flit-core,
   pytestCheckHook,
   setuptools,
@@ -13,7 +13,6 @@
 buildPythonPackage rec {
   pname = "dom-toml";
   version = "2.3.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "domdfcoding";
@@ -22,8 +21,9 @@ buildPythonPackage rec {
     hash = "sha256-ukRnQecbgZBdTHhyEBIoHUwGTwQVJxo+u7Dqg4Kjvsw=";
   };
 
+  # Circular dependency whey -> domdf-python-tools -> coincidence
+  doCheck = false;
   build-system = [ flit-core ];
-
   dependencies = [ domdf-python-tools ];
 
   optional-dependencies = {
@@ -31,15 +31,14 @@ buildPythonPackage rec {
       attrs
       tomli-w
     ];
+
     config = [
       attrs
       tomli-w
     ];
   };
 
-  # Circular dependency whey -> domdf-python-tools -> coincidence
-  doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "dom_toml" ];
 
   meta = {

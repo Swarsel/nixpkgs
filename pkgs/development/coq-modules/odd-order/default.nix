@@ -1,32 +1,28 @@
 {
   lib,
   coq,
-  mkCoqDerivation,
   mathcomp-character,
+  mkCoqDerivation,
   version ? null,
 }:
 
 mkCoqDerivation {
-  pname = "odd-order";
-  owner = "math-comp";
-
-  release."2.3.0".hash = "sha256-53FG8I9O+tsIlmaa9qy6VYyJNwWfGmhavKhbZ0VqAGc=";
-  release."2.2.0".hash = "sha256-z0C7+wtY8NpoT8wYqHiy8mB2HPYAeJndzDmf7Bb0mg8=";
-  release."2.1.0".hash = "sha256-TPlaQbO0yXEpUgy3rlCx/w1MSLECJk5tdU26fAGe48Q=";
-  release."1.14.0".hash = "sha256:0iln70npkvixqyz469l6nry545a15jlaix532i1l7pzfkqqn6v68";
-  release."1.13.0".hash = "sha256-EzNKR/JzM8T17sMhPhgZNs14e50X4dY3OwFi133IsT0=";
-  release."1.12.0".hash = "sha256-omsfdc294CxKAHNMMeqJCcVimvyRCHgxcQ4NJOWSfNM=";
-  releaseRev = v: "mathcomp-odd-order.${v}";
-
   inherit version;
+  pname = "odd-order";
+
+  propagatedBuildInputs = [
+    mathcomp-character
+  ];
+
   defaultVersion =
     let
       case = coq: mc: out: {
+        inherit out;
+
         cases = [
           coq
           mc
         ];
-        inherit out;
       };
     in
     with lib.versions;
@@ -42,14 +38,19 @@ mkCoqDerivation {
       ]
       null;
 
-  propagatedBuildInputs = [
-    mathcomp-character
-  ];
+  owner = "math-comp";
+  release."1.12.0".hash = "sha256-omsfdc294CxKAHNMMeqJCcVimvyRCHgxcQ4NJOWSfNM=";
+  release."1.13.0".hash = "sha256-EzNKR/JzM8T17sMhPhgZNs14e50X4dY3OwFi133IsT0=";
+  release."1.14.0".hash = "sha256:0iln70npkvixqyz469l6nry545a15jlaix532i1l7pzfkqqn6v68";
+  release."2.1.0".hash = "sha256-TPlaQbO0yXEpUgy3rlCx/w1MSLECJk5tdU26fAGe48Q=";
+  release."2.2.0".hash = "sha256-z0C7+wtY8NpoT8wYqHiy8mB2HPYAeJndzDmf7Bb0mg8=";
+  release."2.3.0".hash = "sha256-53FG8I9O+tsIlmaa9qy6VYyJNwWfGmhavKhbZ0VqAGc=";
+  releaseRev = v: "mathcomp-odd-order.${v}";
 
   meta = {
     description = "Formal proof of the Odd Order Theorem";
-    maintainers = with lib.maintainers; [ siraben ];
     license = lib.licenses.cecill-b;
+    maintainers = with lib.maintainers; [ siraben ];
     platforms = lib.platforms.unix;
   };
 }

@@ -2,18 +2,16 @@
   lib,
   fetchurl,
   buildDunePackage,
-  saturn,
   domain-local-await,
   kcas,
   mirage-clock-unix,
   qcheck-stm,
+  saturn,
 }:
 
 buildDunePackage (finalAttrs: {
   pname = "domainslib";
   version = "0.5.2";
-
-  minimalOCamlVersion = "5.0";
 
   src = fetchurl {
     url = "https://github.com/ocaml-multicore/domainslib/releases/download/${finalAttrs.version}/domainslib-${finalAttrs.version}.tbz";
@@ -26,15 +24,18 @@ buildDunePackage (finalAttrs: {
   ];
 
   doCheck = true;
+
   checkInputs = [
     kcas
     mirage-clock-unix
     qcheck-stm
   ];
 
+  minimalOCamlVersion = "5.0";
+
   meta = {
-    homepage = "https://github.com/ocaml-multicore/domainslib";
     description = "Nested-parallel programming";
+    homepage = "https://github.com/ocaml-multicore/domainslib";
     license = lib.licenses.isc;
     maintainers = [ lib.maintainers.vbgl ];
   };

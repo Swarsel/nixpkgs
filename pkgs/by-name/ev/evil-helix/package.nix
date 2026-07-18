@@ -3,10 +3,10 @@
   fetchFromGitHub,
   helix,
   installShellFiles,
-  nix-update-script,
-  rustPlatform,
-  runCommand,
   makeBinaryWrapper,
+  nix-update-script,
+  runCommand,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (
@@ -28,17 +28,17 @@ rustPlatform.buildRustPackage (
       hash = "sha256-6kqKTZNS1RZwfxcFoa2uC7fUKcQ+KhT5KXusyCt59YQ=";
     };
 
-    cargoHash = "sha256-Mf0nrgMk1MlZkSyUN6mlM5lmTcrOHn3xBNzmVGtApEU=";
-
     nativeBuildInputs = [
       installShellFiles
       makeBinaryWrapper
     ];
 
+    cargoHash = "sha256-Mf0nrgMk1MlZkSyUN6mlM5lmTcrOHn3xBNzmVGtApEU=";
+
     env = {
+      HELIX_DEFAULT_RUNTIME = defaultRuntimeDir;
       # disable fetching and building of tree-sitter grammars in the helix-term build.rs
       HELIX_DISABLE_AUTO_GRAMMAR_BUILD = "1";
-      HELIX_DEFAULT_RUNTIME = defaultRuntimeDir;
     };
 
     postInstall = ''
@@ -55,8 +55,8 @@ rustPlatform.buildRustPackage (
       description = "Post-modern modal text editor, with vim keybindings";
       homepage = "https://github.com/usagi-flow/evil-helix";
       license = lib.licenses.mpl20;
-      mainProgram = "hx";
       maintainers = with lib.maintainers; [ thiagokokada ];
+      mainProgram = "hx";
     };
   }
 )

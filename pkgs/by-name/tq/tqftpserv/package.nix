@@ -1,13 +1,13 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
-  qrtr,
   meson,
-  zstd,
-  pkg-config,
-  systemd,
   ninja,
+  pkg-config,
+  qrtr,
+  systemd,
+  zstd,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -23,11 +23,9 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-IlM/HVdo/7cA9NnJrCW/B0yKks5jWYqxRyy3ay4wDr8=";
   };
 
-  buildInputs = [
-    qrtr
-    zstd
-    systemd
-  ];
+  postPatch = ''
+    substituteInPlace translate.c --replace-fail '/lib/firmware/' '/run/current-system/sw/share/uncompressed-firmware'
+  '';
 
   nativeBuildInputs = [
     meson
@@ -35,17 +33,19 @@ stdenv.mkDerivation (finalAttrs: {
     ninja
   ];
 
-  postPatch = ''
-    substituteInPlace translate.c --replace-fail '/lib/firmware/' '/run/current-system/sw/share/uncompressed-firmware'
-  '';
+  buildInputs = [
+    qrtr
+    zstd
+    systemd
+  ];
 
   installFlags = [ "prefix=$(out)" ];
 
   meta = {
-    maintainers = with lib.maintainers; [ matthewcroughan ];
     description = "Trivial File Transfer Protocol server over AF_QIPCRTR";
     homepage = "https://github.com/andersson/tqftpserv";
     license = lib.licenses.bsd3;
+    maintainers = with lib.maintainers; [ matthewcroughan ];
     platforms = lib.platforms.aarch64;
     mainProgram = "tqftpserv";
   };

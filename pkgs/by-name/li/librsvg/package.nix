@@ -2,55 +2,59 @@
   lib,
   stdenv,
   fetchurl,
-  pkg-config,
-  meson,
-  ninja,
-  glib,
-  gdk-pixbuf,
-  installShellFiles,
-  pango,
-  freetype,
-  cairo,
-  libxml2,
-  bzip2,
-  dav1d,
-  rustPlatform,
-  rustc,
-  cargo-c,
-  cargo-auditable-cargo-wrapper,
-  gi-docgen,
-  python3Packages,
-  gnome,
-  vala,
-  shared-mime-info,
-  # Requires building a cdylib and running a target binary
-  withPixbufLoader ?
-    !stdenv.hostPlatform.isStatic && stdenv.hostPlatform.emulatorAvailable buildPackages,
-  withIntrospection ?
-    lib.meta.availableOn stdenv.hostPlatform gobject-introspection
-    && stdenv.hostPlatform.emulatorAvailable buildPackages,
-  buildPackages,
-  gobject-introspection,
-  mesonEmulatorHook,
   _experimental-update-script-combinators,
+  buildPackages,
+  bzip2,
+  cairo,
+  cargo-auditable-cargo-wrapper,
+  cargo-c,
   common-updater-scripts,
-  jq,
-  nix,
-
+  dav1d,
   # for passthru.tests
   enlightenment,
   ffmpeg,
+  freetype,
+  gdk-pixbuf,
   gegl,
+  gi-docgen,
   gimp,
+  glib,
+  gnome,
+  gobject-introspection,
   imagemagick,
   imlib2,
+  installShellFiles,
+  jq,
+  libxml2,
+  meson,
+  mesonEmulatorHook,
+  ninja,
+  nix,
+  pango,
+  pkg-config,
+  python3Packages,
+  rustPlatform,
+  rustc,
+  shared-mime-info,
+  vala,
   vips,
   xfwm4,
+  withIntrospection ?
+    lib.meta.availableOn stdenv.hostPlatform gobject-introspection
+    && stdenv.hostPlatform.emulatorAvailable buildPackages,
+  # Requires building a cdylib and running a target binary
+  withPixbufLoader ?
+    !stdenv.hostPlatform.isStatic && stdenv.hostPlatform.emulatorAvailable buildPackages,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
   pname = "librsvg";
   version = "2.62.3";
+
+  src = fetchurl {
+    url = "mirror://gnome/sources/librsvg/${lib.versions.majorMinor finalAttrs.version}/librsvg-${finalAttrs.version}.tar.xz";
+    hash = "sha256-frRJsnIqdoAhNW9m3+4yAsIptU7U5qcM5AwJDpf/FvI=";
+  };
 
   outputs = [
     "out"
@@ -60,23 +64,18 @@ stdenv.mkDerivation (finalAttrs: {
     "devdoc"
   ];
 
-  src = fetchurl {
-    url = "mirror://gnome/sources/librsvg/${lib.versions.majorMinor finalAttrs.version}/librsvg-${finalAttrs.version}.tar.xz";
-    hash = "sha256-frRJsnIqdoAhNW9m3+4yAsIptU7U5qcM5AwJDpf/FvI=";
-  };
+  postPatch = ''
+    patchShebangs \
+      meson/cargo_wrapper.py \
+      meson/makedef.py \
+      meson/query-rustc.py
 
-  cargoDeps = rustPlatform.fetchCargoVendor {
-    inherit (finalAttrs) src;
-    name = "librsvg-deps-${finalAttrs.version}";
-    hash = "sha256-9ubfIl9R2BdcAWn7i050KBbb4cMdlakvrKdnjpZCQjA=";
-    dontConfigure = true;
-  };
+    # Fix thumbnailer path
+    substituteInPlace gdk-pixbuf-loader/librsvg.thumbnailer.in \
+      --replace-fail '@bindir@/gdk-pixbuf-thumbnailer' '${gdk-pixbuf}/bin/gdk-pixbuf-thumbnailer'
+  '';
 
   strictDeps = true;
-
-  depsBuildBuild = [
-    pkg-config
-  ];
 
   nativeBuildInputs = [
     installShellFiles
@@ -123,26 +122,15 @@ stdenv.mkDerivation (finalAttrs: {
     (lib.mesonBool "tests" finalAttrs.finalPackage.doCheck)
   ];
 
-  # Probably broken MIME type detection on Darwin.
-  # Tests fail with imprecise rendering on i686.
-  doCheck = !stdenv.hostPlatform.isDarwin && !stdenv.hostPlatform.isi686;
-
   env = {
     PKG_CONFIG_GDK_PIXBUF_2_0_GDK_PIXBUF_QUERY_LOADERS = buildPackages.writeShellScript "gdk-pixbuf-loader-loaders-wrapped" ''
       ${lib.optionalString (stdenv.hostPlatform.emulatorAvailable buildPackages) (stdenv.hostPlatform.emulator buildPackages)} ${lib.getDev gdk-pixbuf}/bin/gdk-pixbuf-query-loaders
     '';
   };
 
-  postPatch = ''
-    patchShebangs \
-      meson/cargo_wrapper.py \
-      meson/makedef.py \
-      meson/query-rustc.py
-
-    # Fix thumbnailer path
-    substituteInPlace gdk-pixbuf-loader/librsvg.thumbnailer.in \
-      --replace-fail '@bindir@/gdk-pixbuf-thumbnailer' '${gdk-pixbuf}/bin/gdk-pixbuf-thumbnailer'
-  '';
+  # Probably broken MIME type detection on Darwin.
+  # Tests fail with imprecise rendering on i686.
+  doCheck = !stdenv.hostPlatform.isDarwin && !stdenv.hostPlatform.isi686;
 
   preCheck = ''
     # Tests complain: Fontconfig error: No writable cache directories
@@ -174,7 +162,32 @@ stdenv.mkDerivation (finalAttrs: {
     moveToOutput "share/doc" "$devdoc"
   '';
 
+  cargoDeps = rustPlatform.fetchCargoVendor {
+    inherit (finalAttrs) src;
+    dontConfigure = true;
+    hash = "sha256-9ubfIl9R2BdcAWn7i050KBbb4cMdlakvrKdnjpZCQjA=";
+    name = "librsvg-deps-${finalAttrs.version}";
+  };
+
+  depsBuildBuild = [
+    pkg-config
+  ];
+
   passthru = {
+    tests = {
+      inherit
+        gegl
+        gimp
+        imagemagick
+        imlib2
+        vips
+        ;
+
+      inherit (enlightenment) efl;
+      inherit xfwm4;
+      ffmpeg = ffmpeg.override { withSvg = true; };
+    };
+
     updateScript =
       let
         updateSource = gnome.updateScript {
@@ -196,6 +209,7 @@ stdenv.mkDerivation (finalAttrs: {
               update-source-version librsvg --ignore-same-version --source-key=cargoDeps.vendorStaging > /dev/null
             ''
           ];
+
           # Experimental feature: do not copy!
           supportedFeatures = [ "silent" ];
         };
@@ -204,26 +218,14 @@ stdenv.mkDerivation (finalAttrs: {
         updateSource
         updateLockfile
       ];
-    tests = {
-      inherit
-        gegl
-        gimp
-        imagemagick
-        imlib2
-        vips
-        ;
-      inherit (enlightenment) efl;
-      inherit xfwm4;
-      ffmpeg = ffmpeg.override { withSvg = true; };
-    };
   };
 
   meta = {
     description = "Small library to render SVG images to Cairo surfaces";
     homepage = "https://gitlab.gnome.org/GNOME/librsvg";
     license = lib.licenses.lgpl2Plus;
-    teams = [ lib.teams.gnome ];
-    mainProgram = "rsvg-convert";
     platforms = lib.platforms.unix;
+    mainProgram = "rsvg-convert";
+    teams = [ lib.teams.gnome ];
   };
 })

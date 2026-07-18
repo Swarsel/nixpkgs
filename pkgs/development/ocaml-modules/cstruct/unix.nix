@@ -9,11 +9,9 @@ if lib.versionOlder (cstruct.version or "1") "3" then
 else
 
   buildDunePackage {
-    pname = "cstruct-unix";
     inherit (cstruct) version src meta;
-
-    minimalOCamlVersion = "4.08";
-    duneVersion = "3";
-
+    pname = "cstruct-unix";
     propagatedBuildInputs = [ cstruct ];
+    duneVersion = "3";
+    minimalOCamlVersion = "4.08";
   }

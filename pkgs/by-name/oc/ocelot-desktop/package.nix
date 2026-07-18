@@ -2,48 +2,35 @@
   lib,
   stdenv,
   fetchurl,
-
-  makeBinaryWrapper,
-  makeDesktopItem,
-  copyDesktopItems,
-
-  jre,
-
   # deps
   alsa-lib,
+  copyDesktopItems,
+  jre,
+  libGL,
   libjack2,
   libpulseaudio,
-  pipewire,
-  libGL,
   libx11,
   libxcursor,
   libxext,
   libxrandr,
   libxxf86vm,
-
-  # runtime (path)
-  xrandr,
-
+  makeBinaryWrapper,
+  makeDesktopItem,
+  pipewire,
   # native
   unzip,
+  # runtime (path)
+  xrandr,
 }:
 stdenv.mkDerivation (finalAttrs: {
   pname = "ocelot-desktop";
   version = "1.14.2";
-
-  __darwinAllowLocalNetworking = true;
 
   # Cannot build from source because sbt/scala support is completely non-existent in nixpkgs
   src = fetchurl {
     url = "https://gitlab.com/api/v4/projects/9941848/packages/generic/ocelot-desktop/v${finalAttrs.version}/ocelot-desktop-v${finalAttrs.version}.jar";
     hash = "sha256-ZnXFCcm/b4hXLUrL7QZmRYwEFksKkIGI8zDqfXB+uhc=";
   };
-
-  dontUnpack = true;
-  dontConfigure = true;
-  dontBuild = true;
-
-  preferLocal = true;
 
   nativeBuildInputs = [
     makeBinaryWrapper
@@ -99,18 +86,21 @@ stdenv.mkDerivation (finalAttrs: {
       runHook postInstall
     '';
 
+  __darwinAllowLocalNetworking = true;
+
   desktopItems = [
     (makeDesktopItem {
-      name = "ocelot-desktop";
-      desktopName = "Ocelot Desktop";
-      genericName = "OpenComputers Emulator";
+      categories = [
+        "Development"
+        "Emulator"
+      ];
+
       comment = "An advanced OpenComputers emulator";
-      tryExec = "ocelot-desktop";
+      desktopName = "Ocelot Desktop";
       exec = "ocelot-desktop -w %f";
+      genericName = "OpenComputers Emulator";
       icon = "ocelot-desktop";
-      startupNotify = true;
-      startupWMClass = "Ocelot Desktop"; # (maybe broken)
-      terminal = false;
+
       keywords = [
         "Ocelot"
         "OpenComputers"
@@ -122,28 +112,38 @@ stdenv.mkDerivation (finalAttrs: {
         "mc"
         "Minecraft"
       ];
-      categories = [
-        "Development"
-        "Emulator"
-      ];
+
       mimeTypes = [
         "inode/directory"
       ];
+
+      name = "ocelot-desktop";
+      startupNotify = true;
+      startupWMClass = "Ocelot Desktop"; # (maybe broken)
+      terminal = false;
+      tryExec = "ocelot-desktop";
     })
   ];
+
+  dontBuild = true;
+  dontConfigure = true;
+  dontUnpack = true;
+  preferLocal = true;
 
   meta = {
     description = "Advanced OpenComputers emulator";
     homepage = "https://ocelot.fomalhaut.me/desktop";
     changelog = "https://gitlab.com/cc-ru/ocelot/ocelot-desktop/-/releases/v${finalAttrs.version}";
     license = lib.licenses.mit;
-    mainProgram = "ocelot-desktop";
+    sourceProvenance = with lib.sourceTypes; [ binaryBytecode ];
+    maintainers = with lib.maintainers; [ griffi-gh ];
     platforms = with lib.platforms; linux ++ darwin;
+
     badPlatforms = [
       # missing compatible lwjgl.dylib
       "aarch64-darwin"
     ];
-    maintainers = with lib.maintainers; [ griffi-gh ];
-    sourceProvenance = with lib.sourceTypes; [ binaryBytecode ];
+
+    mainProgram = "ocelot-desktop";
   };
 })

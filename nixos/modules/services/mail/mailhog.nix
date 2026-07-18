@@ -38,41 +38,42 @@ in
     services.mailhog = {
       enable = lib.mkEnableOption "MailHog, web and API based SMTP testing";
 
+      apiPort = lib.mkOption {
+        default = 8025;
+        description = "Port on which the API endpoint will listen.";
+        type = lib.types.port;
+      };
+
+      extraArgs = lib.mkOption {
+        default = [ ];
+        description = "List of additional arguments to pass to the MailHog process.";
+        type = lib.types.listOf lib.types.str;
+      };
+
       setSendmail = lib.mkEnableOption "set the system sendmail to mailhogs's" // {
         default = true;
       };
 
+      smtpPort = lib.mkOption {
+        default = 1025;
+        description = "Port on which the SMTP endpoint will listen.";
+        type = lib.types.port;
+      };
+
       storage = lib.mkOption {
+        default = "memory";
+        description = "Store mails on disk or in memory.";
+
         type = lib.types.enum [
           "maildir"
           "memory"
         ];
-        default = "memory";
-        description = "Store mails on disk or in memory.";
-      };
-
-      apiPort = lib.mkOption {
-        type = lib.types.port;
-        default = 8025;
-        description = "Port on which the API endpoint will listen.";
-      };
-
-      smtpPort = lib.mkOption {
-        type = lib.types.port;
-        default = 1025;
-        description = "Port on which the SMTP endpoint will listen.";
       };
 
       uiPort = lib.mkOption {
-        type = lib.types.port;
         default = 8025;
         description = "Port on which the HTTP UI will listen.";
-      };
-
-      extraArgs = lib.mkOption {
-        type = lib.types.listOf lib.types.str;
-        default = [ ];
-        description = "List of additional arguments to pass to the MailHog process.";
+        type = lib.types.port;
       };
     };
   };
@@ -81,25 +82,27 @@ in
 
   config = lib.mkIf cfg.enable {
 
-    systemd.services.mailhog = {
-      description = "MailHog - Web and API based SMTP testing";
-      after = [ "network.target" ];
-      wantedBy = [ "multi-user.target" ];
-      serviceConfig = {
-        Type = "exec";
-        ExecStart = "${lib.getExe pkgs.mailhog} ${args}";
-        DynamicUser = true;
-        Restart = "on-failure";
-        StateDirectory = "mailhog";
-      };
-    };
-
     services.mail.sendmailSetuidWrapper = lib.mkIf cfg.setSendmail {
-      program = "sendmail";
-      source = lib.getExe mhsendmail;
+      group = "nogroup";
       # Communication happens through the network, no data is written to disk
       owner = "nobody";
-      group = "nogroup";
+      program = "sendmail";
+      source = lib.getExe mhsendmail;
+    };
+
+    systemd.services.mailhog = {
+      after = [ "network.target" ];
+      description = "MailHog - Web and API based SMTP testing";
+
+      serviceConfig = {
+        DynamicUser = true;
+        ExecStart = "${lib.getExe pkgs.mailhog} ${args}";
+        Restart = "on-failure";
+        StateDirectory = "mailhog";
+        Type = "exec";
+      };
+
+      wantedBy = [ "multi-user.target" ];
     };
   };
 

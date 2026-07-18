@@ -1,36 +1,50 @@
 {
   lib,
   buildPythonPackage,
-  fetchPypi,
-  setuptools,
-  setuptools-scm,
-  django,
-  djangorestframework,
-  inflection,
-  packaging,
-  pytz,
-  pyyaml,
-  uritemplate,
   datadiff,
   dj-database-url,
+  django,
+  djangorestframework,
+  fetchPypi,
+  inflection,
+  packaging,
   pytest-django,
   pytestCheckHook,
+  pytz,
+  pyyaml,
+  setuptools,
+  setuptools-scm,
+  uritemplate,
 }:
 
 buildPythonPackage rec {
   pname = "drf-yasg";
   version = "1.21.15";
-  pyproject = true;
 
   src = fetchPypi {
     inherit version;
-    pname = "drf_yasg";
     hash = "sha256-74aDjE7xDc06wevyvmAcvgKXi5mWccqkNmf3yduWFGg=";
+    pname = "drf_yasg";
   };
 
   postPatch = ''
     substituteInPlace pyproject.toml \
       --replace-fail "setuptools-scm ~= 7.0" "setuptools-scm >= 7.0"
+  '';
+
+  env.DJANGO_SETTINGS_MODULE = "testproj.settings.local";
+  # a lot of libraries are missing
+  doCheck = false;
+
+  nativeCheckInputs = [
+    pytestCheckHook
+    pytest-django
+    datadiff
+    dj-database-url
+  ];
+
+  preCheck = ''
+    cd testproj
   '';
 
   build-system = [
@@ -48,28 +62,13 @@ buildPythonPackage rec {
     uritemplate
   ];
 
-  nativeCheckInputs = [
-    pytestCheckHook
-    pytest-django
-    datadiff
-    dj-database-url
-  ];
-
-  env.DJANGO_SETTINGS_MODULE = "testproj.settings.local";
-
-  preCheck = ''
-    cd testproj
-  '';
-
-  # a lot of libraries are missing
-  doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "drf_yasg" ];
 
   meta = {
     description = "Generation of Swagger/OpenAPI schemas for Django REST Framework";
     homepage = "https://github.com/axnsan12/drf-yasg";
-    maintainers = [ ];
     license = lib.licenses.bsd3;
+    maintainers = [ ];
   };
 }

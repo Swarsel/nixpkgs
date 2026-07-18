@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   hatchling,
   pytestCheckHook,
   rich,
@@ -10,7 +10,6 @@
 buildPythonPackage rec {
   pname = "rich-argparse";
   version = "1.7.2";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "hamdanal";
@@ -19,11 +18,9 @@ buildPythonPackage rec {
     hash = "sha256-gzPz8vRxZyZ6Du2r4PdqHjeeLkXZV8eDdX0d+TMrVUc=";
   };
 
-  build-system = [ hatchling ];
-
-  dependencies = [ rich ];
-
   nativeCheckInputs = [ pytestCheckHook ];
+  build-system = [ hatchling ];
+  dependencies = [ rich ];
 
   disabledTests = [
     # coloring mismatch in fixture
@@ -32,6 +29,7 @@ buildPythonPackage rec {
     "test_rich_renderables"
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "rich_argparse" ];
 
   meta = {

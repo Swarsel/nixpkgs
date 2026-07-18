@@ -1,19 +1,19 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
-  makeBinaryWrapper,
-  meson,
-  ninja,
-  scdoc,
-  pkg-config,
-  fetchpatch,
-  nix-update-script,
   bash,
   dmenu,
+  fetchpatch,
   libnotify,
+  makeBinaryWrapper,
+  meson,
   newt,
+  ninja,
+  nix-update-script,
+  pkg-config,
   python3Packages,
+  scdoc,
   systemd,
   util-linux,
   fumonSupport ? true,
@@ -38,6 +38,11 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-5wfQ2Iv4j2Gd/CV1BQ7mdkIXG7sA90iMiBAefmM3BvY=";
   };
 
+  outputs = [
+    "out"
+    "man"
+  ];
+
   nativeBuildInputs = [
     makeBinaryWrapper
     meson
@@ -60,11 +65,11 @@ stdenv.mkDerivation (finalAttrs: {
     "--prefix=${placeholder "out"}"
   ]
   ++ (lib.mapAttrsToList lib.mesonEnable {
-    "uwsm-app" = uwsmAppSupport;
-    "fumon" = fumonSupport;
-    "uuctl" = uuctlSupport;
-    "man-pages" = true;
     "canonicalize-bins" = true;
+    "fumon" = fumonSupport;
+    "man-pages" = true;
+    "uuctl" = uuctlSupport;
+    "uwsm-app" = uwsmAppSupport;
   })
   ++ (lib.mapAttrsToList lib.mesonOption {
     "python-bin" = python.interpreter;
@@ -84,11 +89,6 @@ stdenv.mkDerivation (finalAttrs: {
       wrapProgram $out/bin/fumon ${wrapperArgs}
     '';
 
-  outputs = [
-    "out"
-    "man"
-  ];
-
   passthru = {
     updateScript = nix-update-script { };
   };
@@ -97,12 +97,14 @@ stdenv.mkDerivation (finalAttrs: {
     description = "Universal wayland session manager";
     homepage = "https://github.com/Vladimir-csp/uwsm";
     changelog = "https://github.com/Vladimir-csp/uwsm/releases/tag/v${finalAttrs.version}";
-    mainProgram = "uwsm";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       johnrtitor
       kai-tub
     ];
+
     platforms = lib.platforms.linux;
+    mainProgram = "uwsm";
   };
 })

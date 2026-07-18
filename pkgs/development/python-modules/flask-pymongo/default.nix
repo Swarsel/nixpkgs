@@ -2,8 +2,8 @@
   lib,
   buildPythonPackage,
   fetchPypi,
-  hatchling,
   flask,
+  hatchling,
   pymongo,
   pytestCheckHook,
 }:
@@ -11,14 +11,16 @@
 buildPythonPackage rec {
   pname = "flask-pymongo";
   version = "3.0.1";
-  pyproject = true;
 
   src = fetchPypi {
-    pname = "flask_pymongo";
     inherit version;
     hash = "sha256-0iW1HCHOyi5nDmzKebXFhK0XuWJStI6E47Qj3bczBMw=";
+    pname = "flask_pymongo";
   };
 
+  # requires running MongoDB
+  doCheck = false;
+  nativeCheckInputs = [ pytestCheckHook ];
   build-system = [ hatchling ];
 
   dependencies = [
@@ -26,16 +28,12 @@ buildPythonPackage rec {
     pymongo
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "flask_pymongo" ];
 
-  nativeCheckInputs = [ pytestCheckHook ];
-
-  # requires running MongoDB
-  doCheck = false;
-
   meta = {
-    homepage = "https://github.com/dcrosta/flask-pymongo";
     description = "PyMongo support for Flask applications";
+    homepage = "https://github.com/dcrosta/flask-pymongo";
     license = lib.licenses.bsd2;
     maintainers = [ ];
   };

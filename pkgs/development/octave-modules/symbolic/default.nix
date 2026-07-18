@@ -1,7 +1,7 @@
 {
-  buildOctavePackage,
   lib,
   fetchFromGitHub,
+  buildOctavePackage,
   # Octave's Python (Python 3)
   python,
 }:
@@ -27,9 +27,9 @@ buildOctavePackage rec {
   propagatedBuildInputs = [ pythonEnv ];
 
   meta = {
+    description = "Adds symbolic calculation features to GNU Octave";
     homepage = "https://gnu-octave.github.io/packages/symbolic/";
     license = lib.licenses.gpl3Plus;
     maintainers = with lib.maintainers; [ ravenjoad ];
-    description = "Adds symbolic calculation features to GNU Octave";
   };
 }

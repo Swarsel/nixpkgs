@@ -6,8 +6,8 @@
   fastparquet,
   fetchPypi,
   fsspec,
-  hatchling,
   hatch-vcs,
+  hatchling,
   pandas,
   pyarrow,
   python-dateutil,
@@ -18,12 +18,16 @@
 buildPythonPackage rec {
   pname = "pyathena";
   version = "3.30.1";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
     hash = "sha256-AS2s9OUgXc5wW73HCogCWorq3BFLydLQrE/LEir6BFc=";
   };
+
+  # Nearly all tests depend on a working AWS Athena instance,
+  # therefore deactivating them.
+  # https://github.com/laughingman7743/PyAthena/#testing
+  doCheck = false;
 
   build-system = [
     hatchling
@@ -39,17 +43,13 @@ buildPythonPackage rec {
   ];
 
   optional-dependencies = {
-    pandas = [ pandas ];
-    sqlalchemy = [ sqlalchemy ];
     arrow = [ pyarrow ];
     fastparquet = [ fastparquet ];
+    pandas = [ pandas ];
+    sqlalchemy = [ sqlalchemy ];
   };
 
-  # Nearly all tests depend on a working AWS Athena instance,
-  # therefore deactivating them.
-  # https://github.com/laughingman7743/PyAthena/#testing
-  doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "pyathena" ];
 
   meta = {

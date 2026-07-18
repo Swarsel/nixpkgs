@@ -25,6 +25,17 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-BMK5kZVoYTUA7AFZc/IVv4rpbn893b/QYXySuPAz2Z8=";
   };
 
+  outputs = [
+    "out"
+    "man"
+  ];
+
+  postPatch = ''
+    sed -i --regexp-extended 's/(pkg_verstr=").*(")/\1${finalAttrs.version}\2/' configure
+  '';
+
+  strictDeps = true;
+
   nativeBuildInputs = [
     copyDesktopItems
     pkg-config
@@ -40,37 +51,27 @@ stdenv.mkDerivation (finalAttrs: {
     freetype
   ];
 
-  outputs = [
-    "out"
-    "man"
-  ];
-
-  strictDeps = true;
-
-  postPatch = ''
-    sed -i --regexp-extended 's/(pkg_verstr=").*(")/\1${finalAttrs.version}\2/' configure
-  '';
+  env.NIX_CFLAGS_COMPILE = lib.optionalString stdenv.hostPlatform.isDarwin "-D_C99_SOURCE";
 
   preConfigure = ''
     patchShebangs configure
   '';
 
-  env.NIX_CFLAGS_COMPILE = lib.optionalString stdenv.hostPlatform.isDarwin "-D_C99_SOURCE";
-
   desktopItems = [
     (makeDesktopItem {
-      name = "berry";
-      exec = "berry";
+      categories = [ "Utility" ];
       comment = "A healthy, bite-sized window manager";
       desktopName = "Berry Window Manager";
+      exec = "berry";
       genericName = "Berry Window Manager";
-      categories = [ "Utility" ];
+      name = "berry";
     })
   ];
 
   meta = {
-    homepage = "https://berrywm.org/";
+    inherit (libx11.meta) platforms;
     description = "Healthy, bite-sized window manager";
+
     longDescription = ''
       berry is a healthy, bite-sized window manager written in C for unix
       systems. Its main features include:
@@ -84,9 +85,10 @@ stdenv.mkDerivation (finalAttrs: {
       - Intuitively place new windows in unoccupied spaces.
       - Virtual desktops.
     '';
+
+    homepage = "https://berrywm.org/";
     license = lib.licenses.mit;
-    mainProgram = "berry";
     maintainers = [ ];
-    inherit (libx11.meta) platforms;
+    mainProgram = "berry";
   };
 })

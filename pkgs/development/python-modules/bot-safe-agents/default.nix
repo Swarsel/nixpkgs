@@ -1,14 +1,13 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "bot-safe-agents";
   version = "1.2";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "ivan-sincek";
@@ -18,7 +17,7 @@ buildPythonPackage rec {
   };
 
   build-system = [ setuptools ];
-
+  pyproject = true;
   pythonImportsCheck = [ "bot_safe_agents" ];
 
   meta = {

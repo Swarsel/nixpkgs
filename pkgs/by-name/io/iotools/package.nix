@@ -1,6 +1,6 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
 }:
 
@@ -29,6 +29,7 @@ stdenv.mkDerivation (finalAttrs: {
   meta = {
     description = "Set of simple command line tools which allow access to
       hardware device registers";
+
     longDescription = ''
       Provides a set of simple command line tools which allow access to
       hardware device registers. Supported register interfaces include PCI,
@@ -36,13 +37,16 @@ stdenv.mkDerivation (finalAttrs: {
       utilities which allow for simple arithmetic, logical, and other
       operations.
     '';
+
     homepage = "https://github.com/adurbin/iotools";
     license = lib.licenses.gpl2Only;
     maintainers = with lib.maintainers; [ felixsinger ];
+
     platforms = [
       "x86_64-linux"
       "i686-linux"
     ];
+
     mainProgram = "iotools";
   };
 })

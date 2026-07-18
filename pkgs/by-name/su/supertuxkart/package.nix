@@ -2,37 +2,37 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  fetchsvn,
-  cmake,
-  pkg-config,
-  makeWrapper,
   SDL2,
-  glew,
-  openal,
-  libvorbis,
-  libogg,
-  curl,
-  freetype,
-  libjpeg,
-  libpng,
-  libx11,
-  harfbuzz,
-  mcpp,
-  wiiuse,
   angelscript,
+  cmake,
+  curl,
+  fetchsvn,
+  freetype,
+  glew,
+  harfbuzz,
+  libjpeg,
+  libogg,
   libopenglrecorder,
-  sqlite,
+  libpng,
   libsamplerate,
+  libvorbis,
+  libx11,
+  makeWrapper,
+  mcpp,
+  openal,
+  pkg-config,
   shaderc,
-  serverOnly ? false,
+  sqlite,
+  wiiuse,
   nameSuffix ? "",
+  serverOnly ? false,
 }:
 let
   assets = fetchsvn {
-    url = "https://svn.code.sf.net/p/supertuxkart/code/stk-assets";
+    name = "stk-assets";
     rev = "18621";
     sha256 = "sha256-iqQSezGu0tecA53qhrtYA77SLj28WUUCcL4ZCJbK5C8=";
-    name = "stk-assets";
+    url = "https://svn.code.sf.net/p/supertuxkart/code/stk-assets";
   };
 
   # List of bundled libraries in stk-code/lib to keep
@@ -153,19 +153,23 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "3D open-source arcade racer";
-    mainProgram = "supertuxkart";
+
     longDescription = ''
       Karts. Nitro. Action! SuperTuxKart is a 3D open-source arcade racer
       with a variety of characters, tracks, and modes to play.
       It aims to be more fun than realistic, and provides an enjoyable experience for all ages.
     '';
+
     homepage = "https://supertuxkart.net/";
+    changelog = "https://github.com/supertuxkart/stk-code/blob/${finalAttrs.version}/CHANGELOG.md";
     license = lib.licenses.gpl3Plus;
+
     maintainers = with lib.maintainers; [
       peterhoeg
       SchweGELBin
     ];
+
     platforms = with lib.platforms; unix;
-    changelog = "https://github.com/supertuxkart/stk-code/blob/${finalAttrs.version}/CHANGELOG.md";
+    mainProgram = "supertuxkart";
   };
 })

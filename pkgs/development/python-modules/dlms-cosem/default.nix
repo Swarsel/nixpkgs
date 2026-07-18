@@ -1,10 +1,10 @@
 {
   lib,
+  fetchFromGitHub,
   asn1crypto,
   attrs,
   buildPythonPackage,
   cryptography,
-  fetchFromGitHub,
   pyserial,
   pytestCheckHook,
   python-dateutil,
@@ -16,7 +16,6 @@
 buildPythonPackage rec {
   pname = "dlms-cosem";
   version = "25.1.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "pwitab";
@@ -25,6 +24,7 @@ buildPythonPackage rec {
     hash = "sha256-ZsF+GUVG9bZNZE5daROQJIZZgqpjAkB/bFyre2oGu+E=";
   };
 
+  nativeCheckInputs = [ pytestCheckHook ];
   build-system = [ setuptools ];
 
   dependencies = [
@@ -37,8 +37,7 @@ buildPythonPackage rec {
     typing-extensions
   ];
 
-  nativeCheckInputs = [ pytestCheckHook ];
-
+  pyproject = true;
   pythonImportsCheck = [ "dlms_cosem" ];
 
   meta = {

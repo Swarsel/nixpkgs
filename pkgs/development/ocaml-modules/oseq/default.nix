@@ -7,8 +7,8 @@
 }:
 
 buildDunePackage (finalAttrs: {
-  version = "0.5.1";
   pname = "oseq";
+  version = "0.5.1";
 
   src = fetchFromGitHub {
     owner = "c-cube";
@@ -17,18 +17,19 @@ buildDunePackage (finalAttrs: {
     hash = "sha256-fyr/OKlvvHBfovtdubSW4rd4OwQbMLKWXghyU3uBy/k=";
   };
 
-  minimalOCamlVersion = "4.08";
-  duneVersion = "3";
-
   doCheck = true;
+
   checkInputs = [
     containers
     qcheck
   ];
 
+  duneVersion = "3";
+  minimalOCamlVersion = "4.08";
+
   meta = {
-    homepage = "https://c-cube.github.io/oseq/";
     description = "Purely functional iterators compatible with standard `seq`";
+    homepage = "https://c-cube.github.io/oseq/";
     license = lib.licenses.bsd2;
     maintainers = [ lib.maintainers.vbgl ];
   };

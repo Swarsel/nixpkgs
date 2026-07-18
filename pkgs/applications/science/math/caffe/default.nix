@@ -1,35 +1,35 @@
 {
-  stdenv,
   lib,
-  fetchFromGitHub,
+  stdenv,
   fetchurl,
-  fetchpatch,
-  cmake,
+  fetchFromGitHub,
+  blas,
   boost,
+  cmake,
+  doxygen,
+  fetchpatch,
   gflags,
   glog,
   hdf5-cpp,
+  leveldb,
+  lmdb,
   opencv4,
   protobuf,
-  doxygen,
-  blas,
-  lmdbSupport ? true,
-  lmdb,
-  leveldbSupport ? true,
-  leveldb,
-  snappy,
-  pythonSupport ? false,
-  python ? null,
-  numpy ? null,
   replaceVars,
+  snappy,
+  leveldbSupport ? true,
+  lmdbSupport ? true,
+  numpy ? null,
+  python ? null,
+  pythonSupport ? false,
 }:
 
 let
   toggle = bool: if bool then "ON" else "OFF";
 
   test_model_weights = fetchurl {
-    url = "http://dl.caffe.berkeleyvision.org/bvlc_reference_caffenet.caffemodel";
     sha256 = "472d4a06035497b180636d8a82667129960371375bd10fcb6df5c6c7631f25e0";
+    url = "http://dl.caffe.berkeleyvision.org/bvlc_reference_caffenet.caffemodel";
   };
 in
 
@@ -44,21 +44,42 @@ stdenv.mkDerivation rec {
     sha256 = "104jp3cm823i3cdph7hgsnj6l77ygbwsy35mdmzhmsi4jxprd9j3";
   };
 
+  outputs = [
+    "bin"
+    "out"
+  ];
+
+  patches = [
+    ./cmake-minimum-required.patch
+    ./darwin.patch
+    ./glog-cmake.patch
+    ./random-shuffle.patch
+    ./random-shuffle-includes.patch
+    (fetchpatch {
+      hash = "sha256-ZegTvp0tTHlopQv+UzHDigs6XLkP2VfqLCWXl6aKJSI=";
+      name = "support-opencv4";
+      url = "https://github.com/BVLC/caffe/pull/6638/commits/0a04cc2ccd37ba36843c18fea2d5cbae6e7dd2b5.patch";
+    })
+  ]
+  ++ lib.optional pythonSupport (
+    replaceVars ./python.patch {
+      inherit (python.sourceVersion) major minor; # Should be changed in case of PyPy
+    }
+  );
+
+  postPatch = ''
+    substituteInPlace src/caffe/util/io.cpp --replace-fail \
+      'SetTotalBytesLimit(kProtoReadBytesLimit, 536870912)' \
+      'SetTotalBytesLimit(kProtoReadBytesLimit)'
+    substituteInPlace cmake/Dependencies.cmake --replace-fail \
+      'find_package(Boost 1.55 REQUIRED COMPONENTS system thread filesystem)' \
+      'find_package(Boost 1.55 REQUIRED COMPONENTS thread filesystem)'
+  '';
+
   nativeBuildInputs = [
     cmake
     doxygen
   ];
-
-  cmakeFlags =
-    # It's important that caffe is passed the major and minor version only because that's what
-    # boost_python expects
-    [
-      (if pythonSupport then "-Dpython_version=${python.pythonVersion}" else "-DBUILD_python=OFF")
-      "-DBLAS=open"
-      "-DCPU_ONLY=ON"
-    ]
-    ++ [ "-DUSE_LEVELDB=${toggle leveldbSupport}" ]
-    ++ [ "-DUSE_LMDB=${toggle lmdbSupport}" ];
 
   buildInputs = [
     boost
@@ -105,38 +126,16 @@ stdenv.mkDerivation rec {
     )
   );
 
-  outputs = [
-    "bin"
-    "out"
-  ];
-  propagatedBuildOutputs = [ ]; # otherwise propagates out -> bin cycle
-
-  patches = [
-    ./cmake-minimum-required.patch
-    ./darwin.patch
-    ./glog-cmake.patch
-    ./random-shuffle.patch
-    ./random-shuffle-includes.patch
-    (fetchpatch {
-      name = "support-opencv4";
-      url = "https://github.com/BVLC/caffe/pull/6638/commits/0a04cc2ccd37ba36843c18fea2d5cbae6e7dd2b5.patch";
-      hash = "sha256-ZegTvp0tTHlopQv+UzHDigs6XLkP2VfqLCWXl6aKJSI=";
-    })
-  ]
-  ++ lib.optional pythonSupport (
-    replaceVars ./python.patch {
-      inherit (python.sourceVersion) major minor; # Should be changed in case of PyPy
-    }
-  );
-
-  postPatch = ''
-    substituteInPlace src/caffe/util/io.cpp --replace-fail \
-      'SetTotalBytesLimit(kProtoReadBytesLimit, 536870912)' \
-      'SetTotalBytesLimit(kProtoReadBytesLimit)'
-    substituteInPlace cmake/Dependencies.cmake --replace-fail \
-      'find_package(Boost 1.55 REQUIRED COMPONENTS system thread filesystem)' \
-      'find_package(Boost 1.55 REQUIRED COMPONENTS thread filesystem)'
-  '';
+  cmakeFlags =
+    # It's important that caffe is passed the major and minor version only because that's what
+    # boost_python expects
+    [
+      (if pythonSupport then "-Dpython_version=${python.pythonVersion}" else "-DBUILD_python=OFF")
+      "-DBLAS=open"
+      "-DCPU_ONLY=ON"
+    ]
+    ++ [ "-DUSE_LEVELDB=${toggle leveldbSupport}" ]
+    ++ [ "-DUSE_LMDB=${toggle lmdbSupport}" ];
 
   preConfigure = lib.optionalString pythonSupport ''
     # We need this when building with Python bindings
@@ -159,6 +158,7 @@ stdenv.mkDerivation rec {
   '';
 
   doInstallCheck = false; # build takes more than 30 min otherwise
+
   installCheckPhase = ''
     model=bvlc_reference_caffenet
     m_path="$out/share/Caffe/models/$model"
@@ -168,19 +168,24 @@ stdenv.mkDerivation rec {
       -weights "${test_model_weights}"
   '';
 
+  propagatedBuildOutputs = [ ]; # otherwise propagates out -> bin cycle
+
   meta = {
     description = "Deep learning framework";
+
     longDescription = ''
       Caffe is a deep learning framework made with expression, speed, and
       modularity in mind. It is developed by the Berkeley Vision and Learning
       Center (BVLC) and by community contributors.
     '';
+
     homepage = "http://caffe.berkeleyvision.org/";
+    license = lib.licenses.bsd2;
     maintainers = [ ];
+    platforms = lib.platforms.linux ++ lib.platforms.darwin;
+
     broken =
       !(leveldbSupport -> (leveldb != null && snappy != null))
       || !(pythonSupport -> (python != null && numpy != null));
-    license = lib.licenses.bsd2;
-    platforms = lib.platforms.linux ++ lib.platforms.darwin;
   };
 }

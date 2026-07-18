@@ -1,8 +1,8 @@
 {
   lib,
+  black,
   buildPythonPackage,
   fetchPypi,
-  black,
   pytest,
   setuptools-scm,
   toml,
@@ -11,26 +11,24 @@
 buildPythonPackage rec {
   pname = "pytest-black";
   version = "0.6.0";
-  format = "setuptools";
 
   src = fetchPypi {
-    pname = "pytest_black";
     inherit version;
     sha256 = "sha256-7Ld0VfN5gFy0vY9FqBOjdUw7vuMZmt8bNmXA39CGtRE=";
+    pname = "pytest_black";
   };
 
-  build-system = [ setuptools-scm ];
-
   buildInputs = [ pytest ];
+  # does not contain tests
+  doCheck = false;
+  build-system = [ setuptools-scm ];
 
   dependencies = [
     black
     toml
   ];
 
-  # does not contain tests
-  doCheck = false;
-
+  format = "setuptools";
   pythonImportsCheck = [ "pytest_black" ];
 
   meta = {

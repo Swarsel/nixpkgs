@@ -1,20 +1,16 @@
 {
   lib,
   stdenv,
-  skawarePackages,
-  skalibs,
   execline,
   s6,
+  skalibs,
+  skawarePackages,
   targetPackages,
 }:
 
 skawarePackages.buildPackage {
   pname = "s6-linux-init";
   version = "1.2.0.1";
-  sha256 = "sha256-ctWbE2g9E5D335ooa+Rn5zKTQWAhr5+hAjySk+xcfXw=";
-
-  description = "Set of minimalistic tools used to create a s6-based init system, including a /sbin/init binary, on a Linux kernel";
-  platforms = lib.platforms.linux;
 
   outputs = [
     "bin"
@@ -54,5 +50,9 @@ skawarePackages.buildPackage {
 
     mv doc $doc/share/doc/s6-linux-init/html
   '';
+
+  description = "Set of minimalistic tools used to create a s6-based init system, including a /sbin/init binary, on a Linux kernel";
+  platforms = lib.platforms.linux;
+  sha256 = "sha256-ctWbE2g9E5D335ooa+Rn5zKTQWAhr5+hAjySk+xcfXw=";
 
 }

@@ -1,11 +1,11 @@
 {
+  lib,
+  fetchFromGitHub,
   aiofiles,
   buildPythonPackage,
   deepdiff,
-  fetchFromGitHub,
   httpcore,
   httpx,
-  lib,
   pydantic,
   pypdf,
   pypdfium2,
@@ -19,7 +19,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "unstructured-client";
   version = "0.45.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "Unstructured-IO";
@@ -31,6 +30,12 @@ buildPythonPackage (finalAttrs: {
   preBuild = ''
     ${python.interpreter} scripts/prepare_readme.py
   '';
+
+  nativeCheckInputs = [
+    deepdiff
+    pytest-asyncio
+    pytestCheckHook
+  ];
 
   build-system = [ setuptools ];
 
@@ -44,14 +49,6 @@ buildPythonPackage (finalAttrs: {
     requests-toolbelt
   ];
 
-  pythonImportsCheck = [ "unstructured_client" ];
-
-  nativeCheckInputs = [
-    deepdiff
-    pytest-asyncio
-    pytestCheckHook
-  ];
-
   # see test-unit in Makefile
   enabledTestPaths = [
     "_test_unstructured_client"
@@ -61,10 +58,13 @@ buildPythonPackage (finalAttrs: {
     "unit"
   ];
 
+  pyproject = true;
+  pythonImportsCheck = [ "unstructured_client" ];
+
   meta = {
-    changelog = "https://github.com/Unstructured-IO/unstructured-python-client/blob/${finalAttrs.src.tag}/RELEASES.md";
     description = "Python Client SDK for Unstructured API";
     homepage = "https://github.com/Unstructured-IO/unstructured-python-client";
+    changelog = "https://github.com/Unstructured-IO/unstructured-python-client/blob/${finalAttrs.src.tag}/RELEASES.md";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ dotlambda ];
   };

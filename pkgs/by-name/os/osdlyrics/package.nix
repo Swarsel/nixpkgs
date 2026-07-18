@@ -2,20 +2,18 @@
   lib,
   stdenv,
   fetchFromGitHub,
-
   autoreconfHook,
-  gobject-introspection,
-  intltool,
-  pkg-config,
-  wrapGAppsNoGuiHook,
-
-  glib,
-  gtk2,
   dbus-glib,
+  glib,
+  gobject-introspection,
+  gtk2,
+  intltool,
   libappindicator-gtk2,
   libnotify,
+  pkg-config,
   python3,
   runtimeShell,
+  wrapGAppsNoGuiHook,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -54,8 +52,6 @@ stdenv.mkDerivation (finalAttrs: {
     ))
   ];
 
-  dontWrapGApps = true;
-
   postFixup = ''
     extractExecLine() {
       serviceFile=$1
@@ -85,6 +81,8 @@ stdenv.mkDerivation (finalAttrs: {
         --prefix PYTHONPATH : "$out/${python3.sitePackages}"
     done
   '';
+
+  dontWrapGApps = true;
 
   meta = {
     description = "Standalone lyrics fetcher/displayer";

@@ -1,18 +1,16 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
+  buildPythonPackage,
   drf-extra-fields,
-  python,
   netbox,
+  python,
+  setuptools,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "netbox-documents";
   version = "0.8.4";
-  pyproject = true;
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "jasonyates";
@@ -21,17 +19,17 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-6t7r/98UILL73JT1TwUBAqygQOtOWj1s1bY7IbRcUKQ=";
   };
 
-  build-system = [ setuptools ];
-
-  dependencies = [ drf-extra-fields ];
-
   nativeCheckInputs = [ netbox ];
 
   preFixup = ''
     export PYTHONPATH=${netbox}/opt/netbox/netbox:$PYTHONPATH
   '';
 
+  __structuredAttrs = true;
+  build-system = [ setuptools ];
+  dependencies = [ drf-extra-fields ];
   dontUsePythonImportsCheck = python.pythonVersion != netbox.python.pythonVersion;
+  pyproject = true;
   pythonImportsCheck = [ "netbox_documents" ];
 
   meta = {

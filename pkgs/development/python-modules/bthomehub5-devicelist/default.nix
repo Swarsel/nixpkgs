@@ -2,23 +2,22 @@
   lib,
   buildPythonPackage,
   fetchPypi,
-  setuptools,
   html-table-parser-python3,
   requests,
+  setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "bthomehub5-devicelist";
   version = "0.1.1";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
     hash = "sha256-bWMwLbFGdMRcZLIVbOptWMOOFzVBm2KxQ9jwqvAU6zA=";
   };
 
-  pythonRelaxDeps = [ "html-table-parser-python3" ];
-
+  # No tests in the package
+  doCheck = false;
   build-system = [ setuptools ];
 
   dependencies = [
@@ -26,10 +25,9 @@ buildPythonPackage rec {
     requests
   ];
 
-  # No tests in the package
-  doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "bthomehub5_devicelist" ];
+  pythonRelaxDeps = [ "html-table-parser-python3" ];
 
   meta = {
     description = "Returns a list of devices currently connected to a BT Home Hub 5";

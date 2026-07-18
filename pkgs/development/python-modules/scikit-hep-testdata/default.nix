@@ -1,20 +1,17 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # build-system
-  setuptools-scm,
-
+  buildPythonPackage,
   # dependencies
   pyyaml,
   requests,
+  # build-system
+  setuptools-scm,
 }:
 
 buildPythonPackage rec {
   pname = "scikit-hep-testdata";
   version = "0.6.7";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "scikit-hep";
@@ -23,6 +20,8 @@ buildPythonPackage rec {
     hash = "sha256-rBZWD3lzJwVQkibBLScfnYL3ChRsFDeDtheqqNjepEc=";
   };
 
+  env.SKHEP_DATA = 1; # install the actual root files
+  doCheck = false; # tests require networking
   build-system = [ setuptools-scm ];
 
   dependencies = [
@@ -30,15 +29,12 @@ buildPythonPackage rec {
     requests
   ];
 
-  env.SKHEP_DATA = 1; # install the actual root files
-
-  doCheck = false; # tests require networking
-
+  pyproject = true;
   pythonImportsCheck = [ "skhep_testdata" ];
 
   meta = {
-    homepage = "https://github.com/scikit-hep/scikit-hep-testdata";
     description = "Common package to provide example files (e.g., ROOT) for testing and developing packages against";
+    homepage = "https://github.com/scikit-hep/scikit-hep-testdata";
     changelog = "https://github.com/scikit-hep/scikit-hep-testdata/releases/tag/${src.tag}";
     license = lib.licenses.bsd3;
     maintainers = with lib.maintainers; [ veprbl ];

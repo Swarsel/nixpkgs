@@ -1,10 +1,10 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
-  testers,
-  nix-update-script,
   acr-cli,
+  buildGoModule,
+  nix-update-script,
+  testers,
 }:
 buildGoModule (finalAttrs: {
   pname = "acr-cli";
@@ -18,6 +18,11 @@ buildGoModule (finalAttrs: {
   };
 
   vendorHash = null;
+  # Test checks for legacy error which has been changed in newer go versions.
+  checkFlags = [ "-skip=^TestParseDuration" ];
+  # Required for some tests on darwin.
+  __darwinAllowLocalNetworking = true;
+  executable = [ "acr" ];
 
   ldflags = [
     "-s"
@@ -26,17 +31,9 @@ buildGoModule (finalAttrs: {
     "-X=github.com/Azure/acr-cli/version.Revision=${finalAttrs.src.rev}"
   ];
 
-  executable = [ "acr" ];
-
-  # Required for some tests on darwin.
-  __darwinAllowLocalNetworking = true;
-
-  # Test checks for legacy error which has been changed in newer go versions.
-  checkFlags = [ "-skip=^TestParseDuration" ];
-
   passthru.tests.version = testers.testVersion {
-    package = acr-cli;
     command = "acr version";
+    package = acr-cli;
   };
 
   passthru.updateScript = nix-update-script { };

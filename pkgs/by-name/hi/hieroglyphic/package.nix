@@ -2,21 +2,21 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  rustPlatform,
+  appstream,
   cargo,
-  rustc,
-  meson,
-  ninja,
-  pkg-config,
-  wrapGAppsHook4,
   desktop-file-utils,
   glib,
   gtk4,
   libadwaita,
-  openssl,
-  appstream,
-  onnxruntime,
+  meson,
+  ninja,
   nix-update-script,
+  onnxruntime,
+  openssl,
+  pkg-config,
+  rustPlatform,
+  rustc,
+  wrapGAppsHook4,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -28,11 +28,6 @@ stdenv.mkDerivation (finalAttrs: {
     repo = "Hieroglyphic";
     tag = "v${finalAttrs.version}";
     hash = "sha256-uCzxv3jyBIFXYoEk2q26rB0Me3MAt1NiINulA1FjQtA=";
-  };
-
-  cargoDeps = rustPlatform.fetchCargoVendor {
-    inherit (finalAttrs) pname version src;
-    hash = "sha256-vqTySi22Gi4WrkNolAIFFbpSmIzjgbIcmW0gkStK6H4=";
   };
 
   nativeBuildInputs = [
@@ -56,9 +51,14 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   env = {
-    ORT_STRATEGY = "system";
     ORT_LIB_LOCATION = "${lib.getLib onnxruntime}/lib";
     ORT_PREFER_DYNAMIC_LINK = "1";
+    ORT_STRATEGY = "system";
+  };
+
+  cargoDeps = rustPlatform.fetchCargoVendor {
+    inherit (finalAttrs) pname version src;
+    hash = "sha256-vqTySi22Gi4WrkNolAIFFbpSmIzjgbIcmW0gkStK6H4=";
   };
 
   passthru = {
@@ -66,15 +66,15 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   meta = {
-    changelog = "https://github.com/FineFindus/Hieroglyphic/releases/tag/v${finalAttrs.version}";
     description = "Tool based on detexify for finding LaTeX symbols from drawings";
     homepage = "https://apps.gnome.org/en/Hieroglyphic/";
+    changelog = "https://github.com/FineFindus/Hieroglyphic/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.gpl3Only;
-    mainProgram = "hieroglyphic";
     maintainers = with lib.maintainers; [ tomasajt ];
-    teams = [ lib.teams.gnome-circle ];
     # Note: upstream currently has case-insensititvity issues on darwin
     # https://github.com/FineFindus/Hieroglyphic/issues/40
     platforms = lib.platforms.linux;
+    mainProgram = "hieroglyphic";
+    teams = [ lib.teams.gnome-circle ];
   };
 })

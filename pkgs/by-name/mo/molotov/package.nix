@@ -1,7 +1,7 @@
 {
-  appimageTools,
   lib,
   fetchurl,
+  appimageTools,
 }:
 
 let
@@ -15,6 +15,7 @@ let
 in
 appimageTools.wrapType2 {
   inherit pname version src;
+
   extraInstallCommands = ''
     install -m 444 -D \
       ${appimageContents}/@molotovdesktop-wrapper.desktop \
@@ -23,6 +24,7 @@ appimageTools.wrapType2 {
       --replace 'Exec=AppRun' 'Exec=${pname}'
     cp -r ${appimageContents}/usr/share/icons $out/share
   '';
+
   meta = {
     description = "French TV service";
     homepage = "https://www.molotov.tv/";

@@ -1,9 +1,9 @@
 {
-  stdenvNoCC,
   lib,
   fetchurl,
-  unzip,
   makeWrapper,
+  stdenvNoCC,
+  unzip,
 }:
 
 stdenvNoCC.mkDerivation (finalAttrs: {
@@ -15,16 +15,10 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     hash = "sha256-UU6X+qs4Q837ixhZuRMzcEY5oaLOWA5PaE117+AH04Y=";
   };
 
-  sourceRoot = ".";
-
   nativeBuildInputs = [
     unzip
     makeWrapper
   ];
-
-  dontPatch = true;
-  dontConfigure = true;
-  dontBuild = true;
 
   installPhase = ''
     runHook preInstall
@@ -35,6 +29,11 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  dontBuild = true;
+  dontConfigure = true;
+  dontPatch = true;
+  sourceRoot = ".";
+
   passthru = {
     updateScript = ./update.sh;
   };
@@ -43,9 +42,9 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     description = "macOS Window management made elegant";
     homepage = "https://github.com/MrKai77/Loop";
     license = lib.licenses.gpl3Only;
-    maintainers = with lib.maintainers; [ matteopacini ];
-    mainProgram = "loopwm";
-    platforms = lib.platforms.darwin;
     sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
+    maintainers = with lib.maintainers; [ matteopacini ];
+    platforms = lib.platforms.darwin;
+    mainProgram = "loopwm";
   };
 })

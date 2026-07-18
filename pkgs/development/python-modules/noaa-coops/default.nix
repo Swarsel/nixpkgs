@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   fetchPypi,
   pandas,
   poetry-core,
@@ -12,14 +12,15 @@
 buildPythonPackage rec {
   pname = "noaa-coops";
   version = "0.4.0";
-  pyproject = true;
 
   src = fetchPypi {
-    pname = "noaa_coops";
     inherit version;
     hash = "sha256-m3hTzUspYTMukwcj3uBbRahTmXbL1aJVD9NXfjwghB8=";
+    pname = "noaa_coops";
   };
 
+  # The package does not include tests in the PyPI source distribution
+  doCheck = false;
   build-system = [ poetry-core ];
 
   dependencies = [
@@ -28,8 +29,7 @@ buildPythonPackage rec {
     zeep
   ];
 
-  # The package does not include tests in the PyPI source distribution
-  doCheck = false;
+  pyproject = true;
 
   pythonImportsCheck = [
     "noaa_coops"

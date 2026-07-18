@@ -2,25 +2,25 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  fetchpatch,
+  bzip2,
   cmake,
+  db,
+  expat,
+  fetchpatch,
   ninja,
   pkg-config,
-  zlib,
-  xz,
-  bzip2,
-  zchunk,
-  zstd,
-  expat,
-  withRpm ? !stdenv.hostPlatform.isDarwin,
   rpm,
-  db,
+  xz,
+  zchunk,
+  zlib,
+  zstd,
   withConda ? true,
+  withRpm ? !stdenv.hostPlatform.isDarwin,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
-  version = "0.7.37";
   pname = "libsolv";
+  version = "0.7.37";
 
   src = fetchFromGitHub {
     owner = "openSUSE";
@@ -31,11 +31,28 @@ stdenv.mkDerivation (finalAttrs: {
 
   patches = [
     (fetchpatch {
+      hash = "sha256-ju3xn78UGMR5usq1e1ovFTWnKW1TPDA77sNGx8yc8Z8=";
       name = "CVE-2026-9149";
       url = "https://github.com/openSUSE/libsolv/commit/210386037c892a720972ad35a3d8f7073b4d763b.patch";
-      hash = "sha256-ju3xn78UGMR5usq1e1ovFTWnKW1TPDA77sNGx8yc8Z8=";
     })
   ];
+
+  nativeBuildInputs = [
+    cmake
+    ninja
+    pkg-config
+  ];
+
+  buildInputs = [
+    zlib
+    xz
+    bzip2
+    zchunk
+    zstd
+    expat
+    db
+  ]
+  ++ lib.optional withRpm rpm;
 
   cmakeFlags = [
     "-DENABLE_COMPLEX_DEPS=true"
@@ -54,27 +71,11 @@ stdenv.mkDerivation (finalAttrs: {
     "-DENABLE_RPMMD=true"
   ];
 
-  nativeBuildInputs = [
-    cmake
-    ninja
-    pkg-config
-  ];
-  buildInputs = [
-    zlib
-    xz
-    bzip2
-    zchunk
-    zstd
-    expat
-    db
-  ]
-  ++ lib.optional withRpm rpm;
-
   meta = {
     description = "Free package dependency solver";
     homepage = "https://github.com/openSUSE/libsolv";
     license = lib.licenses.bsd3;
-    platforms = lib.platforms.linux ++ lib.platforms.darwin;
     maintainers = [ ];
+    platforms = lib.platforms.linux ++ lib.platforms.darwin;
   };
 })

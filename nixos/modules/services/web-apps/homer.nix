@@ -15,31 +15,12 @@ in
       A dead simple static HOMepage for your servER to keep your services on hand, from a simple yaml configuration file.
     '';
 
-    virtualHost = {
-      nginx.enable = lib.mkEnableOption "a virtualhost to serve homer through nginx";
-      caddy.enable = lib.mkEnableOption "a virtualhost to serve homer through caddy";
-
-      domain = lib.mkOption {
-        description = ''
-          Domain to use for the virtual host.
-
-          This can be used to change nginx options like
-          ```nix
-          services.nginx.virtualHosts."$\{config.services.homer.virtualHost.domain}".listen = [ ... ]
-          ```
-          or
-          ```nix
-          services.nginx.virtualHosts."example.com".listen = [ ... ]
-          ```
-        '';
-        type = lib.types.str;
-      };
-    };
-
     package = lib.mkPackageOption pkgs "homer" { };
 
     settings = lib.mkOption {
+      inherit (pkgs.formats.yaml { }) type;
       default = { };
+
       description = ''
         Settings serialized into {file}`config.yml` before build.
         If left empty, the default configuration shipped with the package will be used instead.
@@ -53,6 +34,7 @@ in
         ```
         This will add the file to the nix store upon build, referencing it by file path as expected by Homer.
       '';
+
       example = ''
         {
           title = "App dashboard";
@@ -148,25 +130,36 @@ in
         }
 
       '';
-      inherit (pkgs.formats.yaml { }) type;
+    };
+
+    virtualHost = {
+      caddy.enable = lib.mkEnableOption "a virtualhost to serve homer through caddy";
+
+      domain = lib.mkOption {
+        description = ''
+          Domain to use for the virtual host.
+
+          This can be used to change nginx options like
+          ```nix
+          services.nginx.virtualHosts."$\{config.services.homer.virtualHost.domain}".listen = [ ... ]
+          ```
+          or
+          ```nix
+          services.nginx.virtualHosts."example.com".listen = [ ... ]
+          ```
+        '';
+
+        type = lib.types.str;
+      };
+
+      nginx.enable = lib.mkEnableOption "a virtualhost to serve homer through nginx";
     };
   };
 
   config = lib.mkIf cfg.enable {
-    services.nginx = lib.mkIf cfg.virtualHost.nginx.enable {
-      enable = true;
-      virtualHosts."${cfg.virtualHost.domain}" = {
-        locations."/" = {
-          root = cfg.package;
-          tryFiles = "$uri /index.html";
-        };
-        locations."= /assets/config.yml" = {
-          alias = configFile;
-        };
-      };
-    };
     services.caddy = lib.mkIf cfg.virtualHost.caddy.enable {
       enable = true;
+
       virtualHosts."${cfg.virtualHost.domain}".extraConfig = ''
         root * ${cfg.package}
         file_server
@@ -175,6 +168,21 @@ in
           file_server
         }
       '';
+    };
+
+    services.nginx = lib.mkIf cfg.virtualHost.nginx.enable {
+      enable = true;
+
+      virtualHosts."${cfg.virtualHost.domain}" = {
+        locations."/" = {
+          root = cfg.package;
+          tryFiles = "$uri /index.html";
+        };
+
+        locations."= /assets/config.yml" = {
+          alias = configFile;
+        };
+      };
     };
   };
 

@@ -1,11 +1,11 @@
 {
   lib,
-  pkgs,
   alsa-lib,
-  plugins ? [ pkgs.alsa-plugins ],
   lndir,
-  symlinkJoin,
+  pkgs,
   runCommand,
+  symlinkJoin,
+  plugins ? [ pkgs.alsa-plugins ],
 }:
 let
   merged = symlinkJoin {
@@ -16,12 +16,13 @@ in
 runCommand "${alsa-lib.pname}-${alsa-lib.version}"
   {
     inherit (alsa-lib) pname version;
+    outputs = alsa-lib.outputs;
+
     meta = {
       description = "Wrapper to ease access to ALSA plugins";
-      mainProgram = "aserver";
       platforms = lib.platforms.linux;
+      mainProgram = "aserver";
     };
-    outputs = alsa-lib.outputs;
   }
   (
     (lib.concatMapStringsSep "\n" (output: ''

@@ -1,12 +1,12 @@
 {
   lib,
+  stdenv,
+  fetchurl,
   SDL,
   SDL_mixer,
   fetchpatch,
-  fetchurl,
   libintl,
   libpng,
-  stdenv,
   zlib,
 }:
 
@@ -21,13 +21,9 @@ stdenv.mkDerivation (finalAttrs: {
 
   patches = [
     (fetchpatch {
-      url = "https://sources.debian.org/data/main/l/lbreakout2/2.6.5-2/debian/patches/sdl_fix_pauses.patch";
       hash = "sha256-ycsuxfokpOblLky42MwtJowdEp7v5dZRMFIR4id4ZBI=";
+      url = "https://sources.debian.org/data/main/l/lbreakout2/2.6.5-2/debian/patches/sdl_fix_pauses.patch";
     })
-  ];
-
-  configureFlags = [
-    (lib.enableFeature (!stdenv.hostPlatform.isDarwin) "sdltest")
   ];
 
   buildInputs = [
@@ -38,18 +34,22 @@ stdenv.mkDerivation (finalAttrs: {
     zlib
   ];
 
+  configureFlags = [
+    (lib.enableFeature (!stdenv.hostPlatform.isDarwin) "sdltest")
+  ];
+
   # With fortify it crashes at runtime:
   #   *** buffer overflow detected ***: terminated
   #   Aborted (core dumped)
   hardeningDisable = [ "fortify" ];
 
   meta = {
-    homepage = "http://lgames.sourceforge.net/LBreakout2/";
     description = "Breakout clone from the LGames series";
+    homepage = "http://lgames.sourceforge.net/LBreakout2/";
     license = with lib.licenses; [ gpl2Plus ];
-    mainProgram = "lbreakout2";
     maintainers = [ ];
     platforms = lib.platforms.unix;
+    mainProgram = "lbreakout2";
     hydraPlatforms = lib.platforms.linux; # build hangs on both Darwin platforms, needs investigation
   };
 })

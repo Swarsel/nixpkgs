@@ -1,8 +1,8 @@
 {
   lib,
-  stdenvNoCC,
   fetchzip,
   installFonts,
+  stdenvNoCC,
 }:
 stdenvNoCC.mkDerivation rec {
   pname = "victor-mono";
@@ -17,24 +17,27 @@ stdenvNoCC.mkDerivation rec {
   # we can safely reason about what version it is.
   src = fetchzip {
     url = "https://github.com/rubjo/victor-mono/raw/v${version}/public/VictorMonoAll.zip";
-    stripRoot = false;
     hash = "sha256-PnCCU7PO+XcxUk445sU5xVl8XqdSPJighjtDTqI6qiw=";
+    stripRoot = false;
   };
 
-  nativeBuildInputs = [ installFonts ];
   outputs = [
     "out"
     "webfont"
   ];
 
+  nativeBuildInputs = [ installFonts ];
+
   meta = {
     description = "Free programming font with cursive italics and ligatures";
     homepage = "https://rubjo.github.io/victor-mono";
     license = lib.licenses.ofl;
+
     maintainers = with lib.maintainers; [
       jpotier
       seudonym
     ];
+
     platforms = lib.platforms.all;
   };
 }

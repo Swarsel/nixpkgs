@@ -31,7 +31,10 @@ stdenv.mkDerivation rec {
     texinfo
     unzip
   ];
+
   buildInputs = [ scheme ];
+  # There's no test suite (?!).
+  doCheck = false;
 
   postInstall = ''
     ln -s mklibcat{.scm,}
@@ -43,14 +46,10 @@ stdenv.mkDerivation rec {
       $out/bin/slib
   '';
 
-  # There's no test suite (?!).
-  doCheck = false;
-
   setupHook = ./setup-hook.sh;
 
   meta = {
     description = "SLIB Portable Scheme Library";
-    mainProgram = "slib";
 
     longDescription = ''
       SLIB is a portable library for the programming language Scheme.  It
@@ -65,12 +64,11 @@ stdenv.mkDerivation rec {
       Scheme48, SCM, SCM Mac, scsh, sisc, Stk, T3.1, umb-scheme, and VSCM.
     '';
 
+    homepage = "https://people.csail.mit.edu/jaffer/SLIB";
     # Public domain + permissive (non-copyleft) licensing of some files.
     license = lib.licenses.publicDomain;
-
-    homepage = "https://people.csail.mit.edu/jaffer/SLIB";
-
     maintainers = [ ];
     platforms = lib.platforms.unix;
+    mainProgram = "slib";
   };
 }

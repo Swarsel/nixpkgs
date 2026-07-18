@@ -1,16 +1,16 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
-  pkg-config,
-  openssl,
-  sqlite,
-  mpv,
-  yt-dlp,
-  makeBinaryWrapper,
   _experimental-update-script-combinators,
-  unstableGitUpdater,
+  makeBinaryWrapper,
+  mpv,
   nix-update-script,
+  openssl,
+  pkg-config,
+  rustPlatform,
+  sqlite,
+  unstableGitUpdater,
+  yt-dlp,
 }:
 
 rustPlatform.buildRustPackage {
@@ -23,13 +23,6 @@ rustPlatform.buildRustPackage {
     rev = "b90293d226f6fc27835372f145e55d385112768b";
     hash = "sha256-pRD8ySpkJz8o7DURXG8DmBsbZV9MqVlMN63gAjYl4vc=";
   };
-
-  cargoHash = "sha256-zwlg4BDHCM+KALjP929upaDpgy1mXEz5PYaVw+BhRp0=";
-
-  checkFlags = [
-    "--skip=tests::display_config_path"
-    "--skip=tests::inspect_server_list"
-  ];
 
   patches = [
     # This patch comes from https://github.com/sudipghimire533/ytui-music/pull/57, which was unmerged.
@@ -45,6 +38,13 @@ rustPlatform.buildRustPackage {
     openssl
     sqlite
     mpv
+  ];
+
+  cargoHash = "sha256-zwlg4BDHCM+KALjP929upaDpgy1mXEz5PYaVw+BhRp0=";
+
+  checkFlags = [
+    "--skip=tests::display_config_path"
+    "--skip=tests::inspect_server_list"
   ];
 
   postInstall = ''
@@ -65,13 +65,12 @@ rustPlatform.buildRustPackage {
   passthru = {
     updateScript = _experimental-update-script-combinators.sequence [
       (unstableGitUpdater {
-        tagFormat = "v[0-9]*";
-        tagPrefix = "v";
-
         # * "main" branch is newer than "latest" branch
         # * "main" branch is newer than "main" tag
         # * The "main" tag doesn't seem to be associated with commits on branches like "main" or "latest".
         branch = "main";
+        tagFormat = "v[0-9]*";
+        tagPrefix = "v";
       })
       (nix-update-script {
         # Updating `cargoHash`

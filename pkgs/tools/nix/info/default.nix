@@ -1,47 +1,27 @@
 {
-  stdenv,
   lib,
+  stdenv,
+  bash,
   coreutils,
+  darwin,
   findutils,
   gnugrep,
-  darwin,
-  bash,
+  shellcheck,
   # Avoid having GHC in the build-time closure of all NixOS configurations
   doCheck ? false,
-  shellcheck,
 }:
 
 stdenv.mkDerivation {
-  name = "nix-info";
+  inherit doCheck;
   src = ./info.sh;
-
-  path = lib.makeBinPath (
-    [
-      coreutils
-      findutils
-      gnugrep
-    ]
-    ++ (lib.optionals stdenv.hostPlatform.isDarwin [ darwin.DarwinTools ])
-  );
-  is_darwin = lib.boolToYesNo stdenv.hostPlatform.isDarwin;
-
-  sandboxtest = ./sandbox.nix;
-  relaxedsandboxtest = ./relaxedsandbox.nix;
-  multiusertest = ./multiuser.nix;
-
-  unpackCmd = ''
-    mkdir nix-info
-    cp $src ./nix-info/nix-info
-  '';
+  strictDeps = true;
+  buildInputs = [ bash ];
 
   buildPhase = ''
     substituteAllInPlace ./nix-info
   '';
 
-  inherit doCheck;
-  strictDeps = true;
   nativeCheckInputs = [ shellcheck ];
-  buildInputs = [ bash ];
 
   checkPhase = ''
     shellcheck ./nix-info
@@ -52,7 +32,27 @@ stdenv.mkDerivation {
     cp ./nix-info $out/bin/nix-info
   '';
 
+  is_darwin = lib.boolToYesNo stdenv.hostPlatform.isDarwin;
+  multiusertest = ./multiuser.nix;
+  name = "nix-info";
+
+  path = lib.makeBinPath (
+    [
+      coreutils
+      findutils
+      gnugrep
+    ]
+    ++ (lib.optionals stdenv.hostPlatform.isDarwin [ darwin.DarwinTools ])
+  );
+
   preferLocalBuild = true;
+  relaxedsandboxtest = ./relaxedsandbox.nix;
+  sandboxtest = ./sandbox.nix;
+
+  unpackCmd = ''
+    mkdir nix-info
+    cp $src ./nix-info/nix-info
+  '';
 
   meta = {
     platforms = lib.platforms.all;

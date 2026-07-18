@@ -1,9 +1,9 @@
 {
   lib,
-  python3,
   stdenv,
-  replaceVars,
   fetchFromGitHub,
+  python3,
+  replaceVars,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -43,6 +43,7 @@ stdenv.mkDerivation (finalAttrs: {
   meta = {
     description = "VNC client web application";
     homepage = "https://novnc.com";
+
     license = with lib.licenses; [
       mpl20
       ofl
@@ -50,6 +51,7 @@ stdenv.mkDerivation (finalAttrs: {
       bsd2
       mit
     ];
+
     maintainers = with lib.maintainers; [ neverbehave ];
     mainProgram = "novnc";
   };

@@ -1,8 +1,8 @@
 {
-  stdenv,
   lib,
-  buildPythonPackage,
+  stdenv,
   fetchFromGitHub,
+  buildPythonPackage,
   pytestCheckHook,
   six,
 }:
@@ -10,7 +10,6 @@
 buildPythonPackage rec {
   pname = "jsonstreams";
   version = "0.6.0";
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "dcbaker";
@@ -20,21 +19,21 @@ buildPythonPackage rec {
   };
 
   propagatedBuildInputs = [ six ];
-
   nativeCheckInputs = [ pytestCheckHook ];
-
-  pytestFlags = [ "--doctest-modules" ];
 
   enabledTestPaths = [
     "tests"
     "jsonstreams"
   ];
 
+  format = "setuptools";
+  pytestFlags = [ "--doctest-modules" ];
+
   meta = {
-    broken = stdenv.hostPlatform.isDarwin;
     description = "JSON streaming writer";
     homepage = "https://github.com/dcbaker/jsonstreams";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ chkno ];
+    broken = stdenv.hostPlatform.isDarwin;
   };
 }

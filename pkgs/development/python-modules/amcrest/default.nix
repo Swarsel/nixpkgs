@@ -1,8 +1,8 @@
 {
   lib,
+  fetchFromGitHub,
   argcomplete,
   buildPythonPackage,
-  fetchFromGitHub,
   fetchpatch2,
   httpx,
   mock,
@@ -17,7 +17,6 @@
 buildPythonPackage rec {
   pname = "amcrest";
   version = "1.9.9";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "tchellomello";
@@ -28,11 +27,17 @@ buildPythonPackage rec {
 
   patches = [
     (fetchpatch2 {
+      hash = "sha256-i9UeYo43Eiwz06KfWyVQUPTLCJLmMjjNcjA7ZQcPIqQ=";
       # https://github.com/tchellomello/python-amcrest/pull/240
       name = "distutils-str2bool.patch";
       url = "https://github.com/tchellomello/python-amcrest/commit/9cced67d643da6c33d92e85dde22e01b44fb0936.patch";
-      hash = "sha256-i9UeYo43Eiwz06KfWyVQUPTLCJLmMjjNcjA7ZQcPIqQ=";
     })
+  ];
+
+  nativeCheckInputs = [
+    mock
+    pytestCheckHook
+    responses
   ];
 
   build-system = [ setuptools ];
@@ -45,12 +50,7 @@ buildPythonPackage rec {
     typing-extensions
   ];
 
-  nativeCheckInputs = [
-    mock
-    pytestCheckHook
-    responses
-  ];
-
+  pyproject = true;
   pythonImportsCheck = [ "amcrest" ];
 
   meta = {

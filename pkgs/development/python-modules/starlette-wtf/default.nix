@@ -1,21 +1,20 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
-  itsdangerous,
-  python-multipart,
-  starlette,
-  wtforms,
+  buildPythonPackage,
   httpx,
+  itsdangerous,
   jinja2,
   pytestCheckHook,
+  python-multipart,
+  setuptools,
+  starlette,
+  wtforms,
 }:
 
 buildPythonPackage rec {
   pname = "starlette-wtf";
   version = "0.4.5";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "muicss";
@@ -25,6 +24,7 @@ buildPythonPackage rec {
   };
 
   nativeBuildInputs = [ setuptools ];
+
   propagatedBuildInputs = [
     itsdangerous
     python-multipart
@@ -38,10 +38,12 @@ buildPythonPackage rec {
     jinja2
   ];
 
+  pyproject = true;
+
   meta = {
     description = "Simple tool for integrating Starlette and WTForms";
-    changelog = "https://github.com/amorey/starlette-wtf/releases/tag/${version}";
     homepage = "https://github.com/muicss/starlette-wtf";
+    changelog = "https://github.com/amorey/starlette-wtf/releases/tag/${version}";
     license = lib.licenses.mit;
   };
 }

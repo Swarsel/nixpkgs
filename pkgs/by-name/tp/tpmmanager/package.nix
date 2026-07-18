@@ -2,8 +2,8 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  trousers,
   libsForQt5,
+  trousers,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -48,11 +48,11 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   meta = {
-    homepage = "https://projects.sirrix.com/trac/tpmmanager";
     description = "Tool for managing the TPM";
-    mainProgram = "tpmmanager";
+    homepage = "https://projects.sirrix.com/trac/tpmmanager";
     license = lib.licenses.gpl2;
     maintainers = [ ];
     platforms = lib.platforms.linux;
+    mainProgram = "tpmmanager";
   };
 })

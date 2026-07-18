@@ -3,11 +3,11 @@
   stdenv,
   fetchFromGitHub,
   ant,
+  copyDesktopItems,
   jdk8, # the build script wants JAVA 8 for compilation
   jre, # version can be >= 8 (latest version by default)
-  makeWrapper,
   makeDesktopItem,
-  copyDesktopItems,
+  makeWrapper,
   stripJavaArchivesHook,
 }:
 
@@ -21,8 +21,6 @@ stdenv.mkDerivation (finalAttrs: {
     rev = "v${finalAttrs.version}";
     hash = "sha256-X55/FKfPLSwl7veB0LOmXeFEh5zJ10zKdTbCUnnyB5g=";
   };
-
-  sourceRoot = "${finalAttrs.src.name}/jpsxdec";
 
   nativeBuildInputs = [
     ant
@@ -55,28 +53,33 @@ stdenv.mkDerivation (finalAttrs: {
 
   desktopItems = [
     (makeDesktopItem {
-      name = "jpsxdec";
-      exec = "jpsxdec";
-      icon = "jpsxdec";
-      desktopName = "jPSXdec";
-      comment = finalAttrs.meta.description;
       categories = [
         "AudioVideo"
         "Utility"
       ];
+
+      comment = finalAttrs.meta.description;
+      desktopName = "jPSXdec";
+      exec = "jpsxdec";
+      icon = "jpsxdec";
+      name = "jpsxdec";
     })
   ];
 
+  sourceRoot = "${finalAttrs.src.name}/jpsxdec";
+
   meta = {
-    changelog = "https://github.com/m35/jpsxdec/blob/${finalAttrs.src.rev}/jpsxdec/doc/CHANGES.txt";
     description = "Cross-platform PlayStation 1 audio and video converter";
     homepage = "https://jpsxdec.blogspot.com/";
+    changelog = "https://github.com/m35/jpsxdec/blob/${finalAttrs.src.rev}/jpsxdec/doc/CHANGES.txt";
+
     license = {
-      url = "https://raw.githubusercontent.com/m35/jpsxdec/${finalAttrs.src.rev}/.github/LICENSE.md";
       free = true;
+      url = "https://raw.githubusercontent.com/m35/jpsxdec/${finalAttrs.src.rev}/.github/LICENSE.md";
     };
-    mainProgram = "jpsxdec";
+
     maintainers = with lib.maintainers; [ zane ];
     platforms = lib.platforms.all;
+    mainProgram = "jpsxdec";
   };
 })

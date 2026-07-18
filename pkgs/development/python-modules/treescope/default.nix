@@ -1,23 +1,19 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
+  # tests
+  absl-py,
+  buildPythonPackage,
   # build-system
   flit-core,
-
-  # dependencies
-  numpy,
-
   # optional-dependencies
   ipython,
   jax,
-  palettable,
-
-  # tests
-  absl-py,
   jaxlib,
+  # dependencies
+  numpy,
   omegaconf,
+  palettable,
   pydantic,
   pytestCheckHook,
   torch,
@@ -26,7 +22,6 @@
 buildPythonPackage rec {
   pname = "treescope";
   version = "0.1.10";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "google-deepmind";
@@ -34,20 +29,6 @@ buildPythonPackage rec {
     tag = "v${version}";
     hash = "sha256-SfycwuI/B7S/rKkaqxtnJI26q89313pvj/Xsomg6qyA=";
   };
-
-  build-system = [ flit-core ];
-
-  dependencies = [ numpy ];
-
-  optional-dependencies = {
-    notebook = [
-      ipython
-      jax
-      palettable
-    ];
-  };
-
-  pythonImportsCheck = [ "treescope" ];
 
   nativeCheckInputs = [
     absl-py
@@ -58,6 +39,20 @@ buildPythonPackage rec {
     pytestCheckHook
     torch
   ];
+
+  build-system = [ flit-core ];
+  dependencies = [ numpy ];
+
+  optional-dependencies = {
+    notebook = [
+      ipython
+      jax
+      palettable
+    ];
+  };
+
+  pyproject = true;
+  pythonImportsCheck = [ "treescope" ];
 
   meta = {
     description = "Interactive HTML pretty-printer for machine learning research in IPython notebooks";

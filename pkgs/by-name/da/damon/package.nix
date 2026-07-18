@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule {
@@ -18,9 +18,9 @@ buildGoModule {
   vendorHash = "sha256-/ZZxw6qEUJQUz3J0TxUYJECCcX276r74g0N2tV77+8I=";
 
   meta = {
+    description = "Terminal UI (TUI) for HashiCorp Nomad";
     homepage = "https://github.com/hashicorp/damon";
     license = lib.licenses.mpl20;
-    description = "Terminal UI (TUI) for HashiCorp Nomad";
     mainProgram = "damon";
   };
 }

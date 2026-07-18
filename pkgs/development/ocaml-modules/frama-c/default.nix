@@ -1,13 +1,13 @@
 {
   stdenv,
-  pkgs,
-  ocaml,
-  findlib,
-  frama-c,
   camlzip,
   dune-site,
-  ocamlgraph,
+  findlib,
+  frama-c,
   menhirLib,
+  ocaml,
+  ocamlgraph,
+  pkgs,
   ppx_deriving,
   ppx_inline_test,
   yaml,
@@ -17,11 +17,8 @@
 }:
 
 stdenv.mkDerivation {
-  pname = "ocaml${ocaml.version}-frama-c";
   inherit (frama-c) version meta;
-
-  dontUnpack = true;
-
+  pname = "ocaml${ocaml.version}-frama-c";
   buildInputs = [ findlib ];
 
   propagatedBuildInputs = [
@@ -46,4 +43,6 @@ stdenv.mkDerivation {
     done
     runHook postInstall
   '';
+
+  dontUnpack = true;
 }

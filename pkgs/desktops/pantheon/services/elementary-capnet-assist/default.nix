@@ -2,16 +2,16 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  nix-update-script,
-  pkg-config,
-  meson,
-  ninja,
-  vala,
-  gtk4,
+  gcr_4,
   granite7,
+  gtk4,
   libadwaita,
   libgee,
-  gcr_4,
+  meson,
+  ninja,
+  nix-update-script,
+  pkg-config,
+  vala,
   webkitgtk_6_0,
   wrapGAppsHook4,
 }:
@@ -53,7 +53,7 @@ stdenv.mkDerivation rec {
     homepage = "https://github.com/elementary/capnet-assist";
     license = lib.licenses.gpl3Plus;
     platforms = lib.platforms.linux;
-    teams = [ lib.teams.pantheon ];
     mainProgram = "io.elementary.capnet-assist";
+    teams = [ lib.teams.pantheon ];
   };
 }

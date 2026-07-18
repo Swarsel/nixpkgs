@@ -1,14 +1,14 @@
 {
   lib,
-  config,
   stdenv,
   fetchFromGitHub,
   cairo,
   cmake,
+  config,
+  cudaPackages,
   opencv,
   pkg-config,
   cudaSupport ? config.cudaSupport,
-  cudaPackages,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -26,6 +26,7 @@ stdenv.mkDerivation (finalAttrs: {
     cmake
     pkg-config
   ];
+
   buildInputs = [
     cairo
     opencv
@@ -42,8 +43,8 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   meta = {
-    homepage = "https://frei0r.dyne.org";
     description = "Minimalist, cross-platform, shared video plugins";
+    homepage = "https://frei0r.dyne.org";
     license = lib.licenses.gpl2Plus;
     maintainers = [ ];
     platforms = lib.platforms.unix;

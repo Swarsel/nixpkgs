@@ -5,8 +5,8 @@
   libclthreads,
   libx11,
   libxft,
-  xorgproto,
   pkg-config,
+  xorgproto,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -18,6 +18,8 @@ stdenv.mkDerivation (finalAttrs: {
     sha256 = "10bq6fy8d3pr1x2x3xx9qhf2hdxrwdgvg843a2y6lx70y1jfj0c5";
   };
 
+  nativeBuildInputs = [ pkg-config ];
+
   buildInputs = [
     libclthreads
     libx11
@@ -25,9 +27,21 @@ stdenv.mkDerivation (finalAttrs: {
     xorgproto
   ];
 
-  nativeBuildInputs = [ pkg-config ];
+  makeFlags = [
+    "PREFIX=$(out)"
+    "SUFFIX=''"
+  ];
 
   env.NIX_CFLAGS_COMPILE = "-I${xorgproto}/include -I${libxft.dev}/include";
+
+  preInstall = ''
+    # The Makefile does not create the include directory
+    mkdir -p $out/include
+  '';
+
+  postInstall = ''
+    ln $out/lib/libclxclient.so $out/lib/libclxclient.so.3
+  '';
 
   patchPhase = ''
     cd source
@@ -37,20 +51,6 @@ stdenv.mkDerivation (finalAttrs: {
     sed -e "/ldconfig/d" -i ./Makefile
     # make sure it can find clxclient.h:
     sed -e 's/<clxclient.h>/"clxclient.h"/' -i ./enumip.cc
-  '';
-
-  makeFlags = [
-    "PREFIX=$(out)"
-    "SUFFIX=''"
-  ];
-
-  preInstall = ''
-    # The Makefile does not create the include directory
-    mkdir -p $out/include
-  '';
-
-  postInstall = ''
-    ln $out/lib/libclxclient.so $out/lib/libclxclient.so.3
   '';
 
   meta = {

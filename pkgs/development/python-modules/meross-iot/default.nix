@@ -1,8 +1,8 @@
 {
   lib,
+  fetchFromGitHub,
   aiohttp,
   buildPythonPackage,
-  fetchFromGitHub,
   paho-mqtt,
   pycryptodomex,
   requests,
@@ -12,7 +12,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "meross-iot";
   version = "0.4.10.4";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "albertogeniola";
@@ -21,6 +20,8 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-9y8/q218hD7BZIbjJvzwmc9bEzWZI+OrA8ERW36ya3w=";
   };
 
+  # Test require network access
+  doCheck = false;
   build-system = [ setuptools ];
 
   dependencies = [
@@ -31,9 +32,7 @@ buildPythonPackage (finalAttrs: {
   ]
   ++ aiohttp.optional-dependencies.speedups;
 
-  # Test require network access
-  doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "meross_iot" ];
 
   meta = {

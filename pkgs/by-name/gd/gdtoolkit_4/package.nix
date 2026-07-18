@@ -1,18 +1,18 @@
 {
   lib,
-  python3,
   fetchFromGitHub,
   addBinToPathHook,
+  python3,
   writableTmpDirAsHomeHook,
 }:
 
 let
   python = python3.override {
-    self = python;
     packageOverrides = self: super: {
       lark = super.lark.overridePythonAttrs (old: rec {
         # gdtoolkit needs exactly this lark version
         version = "1.2.2";
+
         src = fetchFromGitHub {
           owner = "lark-parser";
           repo = "lark";
@@ -20,15 +20,17 @@ let
           hash = "sha256-Dc7wbMBY8CSeP4JE3hBk5m1lwzmCnNTkVoLdIukRw1Q=";
           fetchSubmodules = true;
         };
+
         patches = [ ];
       });
     };
+
+    self = python;
   };
 in
 python.pkgs.buildPythonApplication rec {
   pname = "gdtoolkit";
   version = "4.5.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "Scony";
@@ -36,18 +38,6 @@ python.pkgs.buildPythonApplication rec {
     tag = version;
     hash = "sha256-Jam7Txm+Fq5zEkJZMmbWW5Ok4ThsPyi6NIeawQot0RE=";
   };
-
-  build-system = with python.pkgs; [
-    setuptools
-  ];
-
-  dependencies = with python.pkgs; [
-    docopt-ng
-    lark
-    pyyaml
-    radon
-    setuptools
-  ];
 
   doCheck = true;
 
@@ -62,10 +52,24 @@ python.pkgs.buildPythonApplication rec {
       writableTmpDirAsHomeHook
     ];
 
+  build-system = with python.pkgs; [
+    setuptools
+  ];
+
+  dependencies = with python.pkgs; [
+    docopt-ng
+    lark
+    pyyaml
+    radon
+    setuptools
+  ];
+
   # The tests are not working on NixOS
   disabledTestPaths = [
     "tests/generated/test_expression_parsing.py"
   ];
+
+  pyproject = true;
 
   pythonImportsCheck = [
     "gdtoolkit"

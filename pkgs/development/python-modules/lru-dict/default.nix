@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   pytestCheckHook,
   setuptools,
 }:
@@ -9,7 +9,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "lru-dict";
   version = "1.4.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "amitdev";
@@ -23,10 +22,9 @@ buildPythonPackage (finalAttrs: {
       --replace-fail "setuptools==" "setuptools>="
   '';
 
-  build-system = [ setuptools ];
-
   nativeCheckInputs = [ pytestCheckHook ];
-
+  build-system = [ setuptools ];
+  pyproject = true;
   pythonImportsCheck = [ "lru" ];
 
   meta = {

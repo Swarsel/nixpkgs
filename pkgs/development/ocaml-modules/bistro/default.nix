@@ -1,19 +1,19 @@
 {
   lib,
   fetchFromGitHub,
-  buildDunePackage,
   base64,
   bos,
+  buildDunePackage,
   core,
   core_kernel,
-  core_unix ? null,
   lwt_react,
   ocamlgraph,
   ppx_sexp_conv,
+  ppxlib,
   rresult,
   sexplib,
   tyxml,
-  ppxlib,
+  core_unix ? null,
 }:
 
 buildDunePackage (finalAttrs: {
@@ -46,8 +46,8 @@ buildDunePackage (finalAttrs: {
   meta = {
     inherit (finalAttrs.src.meta) homepage;
     description = "Build and execute typed scientific workflows";
-    maintainers = [ lib.maintainers.vbgl ];
     license = lib.licenses.gpl2;
+    maintainers = [ lib.maintainers.vbgl ];
     broken = lib.versionAtLeast ppxlib.version "0.36";
   };
 })

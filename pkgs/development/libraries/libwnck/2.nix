@@ -2,11 +2,11 @@
   lib,
   stdenv,
   fetchurl,
-  pkg-config,
   gtk2,
   intltool,
-  libxres,
   libx11,
+  libxres,
+  pkg-config,
 }:
 
 stdenv.mkDerivation rec {
@@ -23,20 +23,21 @@ stdenv.mkDerivation rec {
     "dev"
     "devdoc"
   ];
-  outputBin = "dev";
 
   nativeBuildInputs = [
     pkg-config
     intltool
   ];
+
   buildInputs = [
     gtk2
     libx11
     libxres
   ];
-  # ?another optional: startup-notification
 
+  # ?another optional: startup-notification
   configureFlags = [ "--disable-introspection" ]; # not needed anywhere AFAIK
+  outputBin = "dev";
 
   meta = {
     description = "Library for creating task lists and pagers";

@@ -1,13 +1,14 @@
 {
-  makeSetupHook,
   lib,
   callPackage,
+  makeSetupHook,
 }:
 makeSetupHook {
-  name = "projucer-hook";
   propagatedBuildInputs = [ (callPackage ./package.nix { }) ];
+  name = "projucer-hook";
+
   meta = {
-    platforms = lib.platforms.linux;
     license = lib.licenses.mit;
+    platforms = lib.platforms.linux;
   };
 } ./projucer-hook.sh

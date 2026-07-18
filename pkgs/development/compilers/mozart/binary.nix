@@ -2,12 +2,12 @@
   lib,
   stdenv,
   fetchurl,
-  makeWrapper,
   boost,
+  emacs,
   gmp,
+  makeWrapper,
   tcl-8_5,
   tk-8_5,
-  emacs,
 }:
 
 let
@@ -15,33 +15,22 @@ let
 
   binaries = {
     x86_64-linux = fetchurl {
-      url = "mirror://sourceforge/project/mozart-oz/v${version}-alpha.0/mozart2-${version}-alpha.0+build.4105.5c06ced-x86_64-linux.tar.gz";
       sha256 = "0rsfrjimjxqbwprpzzlmydl3z3aiwg5qkb052jixdxjyad7gyh5z";
+      url = "mirror://sourceforge/project/mozart-oz/v${version}-alpha.0/mozart2-${version}-alpha.0+build.4105.5c06ced-x86_64-linux.tar.gz";
     };
   };
 in
 
 stdenv.mkDerivation {
-  pname = "mozart-binary";
   inherit version;
-
-  preferLocalBuild = true;
+  pname = "mozart-binary";
 
   src =
     binaries.${stdenv.hostPlatform.system}
       or (throw "unsupported system: ${stdenv.hostPlatform.system}");
 
-  libPath = lib.makeLibraryPath [
-    stdenv.cc.cc
-    boost
-    gmp
-    tcl-8_5
-    tk-8_5
-  ];
-
-  env.TK_LIBRARY = "${tk-8_5}/lib/tk8.5";
-
   nativeBuildInputs = [ makeWrapper ];
+  env.TK_LIBRARY = "${tk-8_5}/lib/tk8.5";
 
   buildCommand = ''
     mkdir $out
@@ -71,9 +60,19 @@ stdenv.mkDerivation {
     patchShebangs $out
   '';
 
+  libPath = lib.makeLibraryPath [
+    stdenv.cc.cc
+    boost
+    gmp
+    tcl-8_5
+    tk-8_5
+  ];
+
+  preferLocalBuild = true;
+
   meta = {
-    homepage = "https://www.mozart-oz.org/";
     description = "Multiplatform implementation of the Oz programming language";
+
     longDescription = ''
       The Mozart Programming System combines ongoing research in
       programming language design and implementation, constraint logic
@@ -81,8 +80,10 @@ stdenv.mkDerivation {
       interfaces. Mozart implements the Oz language and provides both
       expressive power and advanced functionality.
     '';
-    sourceProvenance = with lib.sourceTypes; [ binaryBytecode ];
+
+    homepage = "https://www.mozart-oz.org/";
     license = lib.licenses.mit;
+    sourceProvenance = with lib.sourceTypes; [ binaryBytecode ];
     platforms = lib.attrNames binaries;
     hydraPlatforms = [ ];
   };

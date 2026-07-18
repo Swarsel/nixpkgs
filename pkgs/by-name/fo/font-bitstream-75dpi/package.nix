@@ -2,10 +2,10 @@
   lib,
   stdenv,
   fetchurl,
-  pkg-config,
-  font-util,
   bdftopcf,
+  font-util,
   mkfontscale,
+  pkg-config,
   writeScript,
 }:
 stdenv.mkDerivation (finalAttrs: {
@@ -26,7 +26,6 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   buildInputs = [ font-util ];
-
   configureFlags = [ "--with-fontrootdir=$(out)/share/fonts/X11" ];
 
   passthru = {
@@ -43,6 +42,7 @@ stdenv.mkDerivation (finalAttrs: {
   meta = {
     description = "Bitstream Charter and Terminal 75dpi pcf fonts";
     homepage = "https://gitlab.freedesktop.org/xorg/font/bitstream-75dpi";
+
     license = with lib.licenses; [
       hpnd
       # TODO: change this license or remove this comment when
@@ -50,6 +50,7 @@ stdenv.mkDerivation (finalAttrs: {
       # gets resolved
       xfig
     ];
+
     maintainers = [ ];
     platforms = lib.platforms.unix;
   };

@@ -1,18 +1,15 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  fetchpatch,
-
-  setuptools,
-
-  pytestCheckHook,
-
+  buildPythonPackage,
   docopt,
+  fetchpatch,
   fire,
   numpy,
+  pytestCheckHook,
   python-crfsuite,
   pyyaml,
+  setuptools,
   six,
   ssg,
   torch,
@@ -21,7 +18,6 @@
 buildPythonPackage rec {
   pname = "attacut";
   version = "1.1.0-dev";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "PyThaiNLP";
@@ -30,20 +26,21 @@ buildPythonPackage rec {
     hash = "sha256-x3JJC1Xd+tsOAHJEHGzIrhIrNGSvLSanAFc7+uXb2Kk=";
   };
 
+  patches = [
+    (fetchpatch {
+      hash = "sha256-k2DJPwiH1Fyf5u6+zavx0bankCXsJVZrw1MGcf8ZL+M=";
+      includes = [ "attacut/evaluation.py" ];
+      name = "fix-nptyping-deprecated-array.patch";
+      url = "https://github.com/PyThaiNLP/attacut/commit/a707297b3f08a015d32d8ac241aa8cb11128cbd4.patch";
+    })
+  ];
+
   # no more need, see patch...
   postPatch = ''
     sed -i "/nptyping>=/d" setup.py
   '';
 
-  patches = [
-    (fetchpatch {
-      name = "fix-nptyping-deprecated-array.patch";
-      url = "https://github.com/PyThaiNLP/attacut/commit/a707297b3f08a015d32d8ac241aa8cb11128cbd4.patch";
-      includes = [ "attacut/evaluation.py" ];
-      hash = "sha256-k2DJPwiH1Fyf5u6+zavx0bankCXsJVZrw1MGcf8ZL+M=";
-    })
-  ];
-
+  nativeCheckInputs = [ pytestCheckHook ];
   build-system = [ setuptools ];
 
   dependencies = [
@@ -57,10 +54,8 @@ buildPythonPackage rec {
     torch
   ];
 
-  nativeCheckInputs = [ pytestCheckHook ];
-
   enabledTestPaths = [ "tests/*" ];
-
+  pyproject = true;
   pythonImportsCheck = [ "attacut" ];
 
   meta = {

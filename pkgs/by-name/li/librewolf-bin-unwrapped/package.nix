@@ -2,28 +2,28 @@
   lib,
   stdenv,
   fetchurl,
-  config,
-  wrapGAppsHook3,
-  autoPatchelfHook,
+  adwaita-icon-theme,
   alsa-lib,
+  autoPatchelfHook,
+  config,
   curl,
   dbus-glib,
   gtk3,
-  libxtst,
   libva,
+  libxtst,
+  patchelfUnstable, # have to use patchelfUnstable to support --no-clobber-old-sections
   pciutils,
   pipewire,
-  adwaita-icon-theme,
+  wrapGAppsHook3,
   writeText,
-  patchelfUnstable, # have to use patchelfUnstable to support --no-clobber-old-sections
 }:
 
 let
   binaryName = "librewolf";
 
   mozillaPlatforms = {
-    x86_64-linux = "linux-x86_64";
     aarch64-linux = "linux-arm64";
+    x86_64-linux = "linux-x86_64";
   };
 
   throwSystem = throw "Unsupported system: ${stdenv.hostPlatform.system}";
@@ -44,10 +44,11 @@ stdenv.mkDerivation {
 
   src = fetchurl {
     url = "https://codeberg.org/api/packages/librewolf/generic/librewolf/${version}/librewolf-${version}-${arch}-package.tar.xz";
+
     hash =
       {
-        x86_64-linux = "sha256-9Y0n3UHRK9WgKhKFIMB3CLmh1Gp5aHoIiKxlKNKe5gc=";
         aarch64-linux = "sha256-x9vUXaEtjnY6+mOLbLiXmBr5c7ZmEYRTJK9fDIpfgVs=";
+        x86_64-linux = "sha256-9Y0n3UHRK9WgKhKFIMB3CLmh1Gp5aHoIiKxlKNKe5gc=";
       }
       .${stdenv.hostPlatform.system} or throwSystem;
   };
@@ -66,17 +67,6 @@ stdenv.mkDerivation {
     libxtst
   ];
 
-  runtimeDependencies = [
-    curl
-    libva.out
-    pciutils
-  ];
-
-  appendRunpaths = [ "${pipewire}/lib" ];
-
-  # Firefox uses "relrhack" to manually process relocations from a fixed offset
-  patchelfFlags = [ "--no-clobber-old-sections" ];
-
   installPhase = ''
     runHook preInstall
 
@@ -92,13 +82,23 @@ stdenv.mkDerivation {
     runHook postInstall
   '';
 
+  appendRunpaths = [ "${pipewire}/lib" ];
+  # Firefox uses "relrhack" to manually process relocations from a fixed offset
+  patchelfFlags = [ "--no-clobber-old-sections" ];
+
+  runtimeDependencies = [
+    curl
+    libva.out
+    pciutils
+  ];
+
   passthru = {
     inherit binaryName;
     applicationName = "LibreWolf";
-    libName = "librewolf-bin-${version}";
     ffmpegSupport = true;
     gssSupport = true;
     gtk3 = gtk3;
+    libName = "librewolf-bin-${version}";
     updateScript = ./update.sh;
   };
 
@@ -106,14 +106,16 @@ stdenv.mkDerivation {
     description = "Fork of Firefox, focused on privacy, security and freedom (upstream binary release)";
     homepage = "https://librewolf.net";
     license = lib.licenses.mpl20;
+    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
+
     maintainers = with lib.maintainers; [
       azahi
       eclairevoyant
       dwrege
     ];
+
     platforms = builtins.attrNames mozillaPlatforms;
     mainProgram = "librewolf";
     hydraPlatforms = [ ];
-    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
   };
 }

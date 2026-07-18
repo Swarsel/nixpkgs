@@ -1,6 +1,6 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
 }:
 
@@ -36,11 +36,11 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Manage multiple NodeJS versions";
-    mainProgram = "nodenv";
     homepage = "https://github.com/nodenv/nodenv/";
     changelog = "https://github.com/nodenv/nodenv/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ alexnortung ];
     platforms = lib.platforms.unix;
+    mainProgram = "nodenv";
   };
 })

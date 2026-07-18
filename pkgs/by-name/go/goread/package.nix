@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule (finalAttrs: {
@@ -16,7 +16,6 @@ buildGoModule (finalAttrs: {
   };
 
   vendorHash = "sha256-3H2n/VsJHZ/69YR6P38B36mFz85cNHaTtT9N0YQOVew=";
-
   env.TEST_OFFLINE_ONLY = 1;
 
   meta = {
@@ -24,7 +23,7 @@ buildGoModule (finalAttrs: {
     homepage = "https://github.com/TypicalAM/goread";
     changelog = "https://github.com/TypicalAM/goread/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.gpl3Plus;
-    mainProgram = "goread";
     maintainers = with lib.maintainers; [ schnow265 ];
+    mainProgram = "goread";
   };
 })

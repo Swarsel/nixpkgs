@@ -1,12 +1,11 @@
 {
   lib,
-  mkHyprlandPlugin,
   fetchFromGitHub,
+  mkHyprlandPlugin,
   nix-update-script,
 }:
 
 mkHyprlandPlugin (finalAttrs: {
-  pluginName = "hypr-darkwindow";
   version = "0.55.4";
 
   src = fetchFromGitHub {
@@ -25,6 +24,7 @@ mkHyprlandPlugin (finalAttrs: {
     runHook postInstall
   '';
 
+  pluginName = "hypr-darkwindow";
   passthru.updateScript = nix-update-script { };
 
   meta = {

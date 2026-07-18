@@ -17,7 +17,6 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   nativeBuildInputs = [ installShellFiles ];
-
   buildInputs = [ perl ];
 
   buildPhase = ''
@@ -44,12 +43,12 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   meta = {
+    description = "Check shell scripts for non-portable syntax";
     homepage = "https://sourceforge.net/projects/checkbaskisms/";
     changelog = "https://salsa.debian.org/debian/devscripts/-/blob/v${finalAttrs.version}/debian/changelog";
-    description = "Check shell scripts for non-portable syntax";
-    mainProgram = "checkbashisms";
     license = lib.licenses.gpl2Plus;
     maintainers = with lib.maintainers; [ kaction ];
     platforms = lib.platforms.unix;
+    mainProgram = "checkbashisms";
   };
 })

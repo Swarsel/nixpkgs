@@ -22,10 +22,10 @@ stdenv.mkDerivation {
 
   meta = {
     description = "Verification script generator for Spin";
-    mainProgram = "swarm";
     homepage = "http://spinroot.com/";
     license = lib.licenses.free;
-    platforms = lib.platforms.unix;
     maintainers = [ ];
+    platforms = lib.platforms.unix;
+    mainProgram = "swarm";
   };
 }

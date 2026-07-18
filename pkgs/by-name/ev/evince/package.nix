@@ -2,40 +2,40 @@
   lib,
   stdenv,
   fetchurl,
-  meson,
-  ninja,
-  pkg-config,
-  gettext,
-  libxml2,
   appstream,
-  desktop-file-utils,
-  glib,
-  gtk3,
-  pango,
   atk,
-  gdk-pixbuf,
-  shared-mime-info,
-  itstool,
-  gnome,
-  poppler,
-  ghostscriptX,
+  dbus,
+  desktop-file-utils,
   djvulibre,
-  libspectre,
+  gdk-pixbuf,
+  gettext,
+  ghostscriptX,
+  gi-docgen,
+  glib,
+  gnome,
+  gnome-desktop,
+  gobject-introspection,
+  gsettings-desktop-schemas,
+  gspell,
+  gst_all_1,
+  gtk3,
+  itstool,
   libarchive,
   libgxps,
   libhandy,
-  libsecret,
-  wrapGAppsHook3,
   librsvg,
-  gobject-introspection,
-  yelp-tools,
-  gspell,
-  gsettings-desktop-schemas,
-  gnome-desktop,
-  dbus,
+  libsecret,
+  libspectre,
+  libxml2,
+  meson,
+  ninja,
+  pango,
+  pkg-config,
+  poppler,
+  shared-mime-info,
   texlive,
-  gst_all_1,
-  gi-docgen,
+  wrapGAppsHook3,
+  yelp-tools,
   supportMultimedia ? true, # PDF multimedia
   withLibsecret ? true,
 }:
@@ -44,19 +44,15 @@ stdenv.mkDerivation (finalAttrs: {
   pname = "evince";
   version = "48.4";
 
-  outputs = [
-    "out"
-    "dev"
-    "devdoc"
-  ];
-
   src = fetchurl {
     url = "mirror://gnome/sources/evince/${lib.versions.major finalAttrs.version}/evince-${finalAttrs.version}.tar.xz";
     hash = "sha256-8pbFxmKIZjXUzVl+isCvzeeYK+RIZTPCt/CVsmi+hmg=";
   };
 
-  depsBuildBuild = [
-    pkg-config
+  outputs = [
+    "out"
+    "dev"
+    "devdoc"
   ];
 
   nativeBuildInputs = [
@@ -141,16 +137,19 @@ stdenv.mkDerivation (finalAttrs: {
     moveToOutput "share/doc" "$devdoc"
   '';
 
+  depsBuildBuild = [
+    pkg-config
+  ];
+
   passthru = {
     updateScript = gnome.updateScript {
-      packageName = "evince";
       # 49.alpha bumps API and breaks sushi.
       freeze = true;
+      packageName = "evince";
     };
   };
 
   meta = {
-    homepage = "https://apps.gnome.org/Evince/";
     description = "GNOME's document viewer";
 
     longDescription = ''
@@ -160,9 +159,11 @@ stdenv.mkDerivation (finalAttrs: {
       on the GNOME Desktop with a single simple application.
     '';
 
+    homepage = "https://apps.gnome.org/Evince/";
     license = lib.licenses.gpl2Plus;
     platforms = lib.platforms.unix;
     mainProgram = "evince";
+
     teams = [
       lib.teams.gnome
       lib.teams.pantheon

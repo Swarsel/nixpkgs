@@ -1,9 +1,9 @@
 {
   lib,
   stdenv,
+  fetchurl,
   cairo,
   curl,
-  fetchurl,
   freealut,
   gdk-pixbuf,
   git,
@@ -55,8 +55,8 @@ let
   wrapFactorScript =
     {
       from,
-      to ? false,
       runtimeLibs,
+      to ? false,
     }:
     ''
       # Set Gdk pixbuf loaders file to the one from the build dependencies here
@@ -81,16 +81,16 @@ let
       }
       (wrapFactorScript {
         from = "${interpreter}/lib/factor/.factor-wrapped";
-        to = "$out/bin/factor";
         runtimeLibs = (runtimeLibs ++ interpreter.runtimeLibs);
+        to = "$out/bin/factor";
       });
 
   # Development helper for use in nix shell
   wrapLocalFactor = writeScriptBin "wrapFactor" ''
     #!${runtimeShell}
     ${wrapFactorScript {
-      from = "./factor";
       inherit runtimeLibs;
+      from = "./factor";
     }}
     ln -sf factor.image .factor-wrapped.image
   '';
@@ -99,8 +99,8 @@ let
 
 in
 stdenv.mkDerivation {
-  pname = "factor-lang";
   inherit version;
+  pname = "factor-lang";
 
   src = fetchurl {
     url = "https://downloads.factorcode.org/releases/${version}/factor-src-${version}.zip";
@@ -112,15 +112,6 @@ stdenv.mkDerivation {
     ./workdir-0.99-pre.patch
     ./adjust-paths-in-unit-tests.patch
   ];
-
-  nativeBuildInputs = [
-    git
-    makeWrapper
-    curl
-    unzip
-    wrapLocalFactor
-  ];
-  buildInputs = runtimeLibs;
 
   postPatch = ''
     sed -i -e '4i GIT_LABEL = heads/master-${rev}' GNUmakefile
@@ -146,6 +137,16 @@ stdenv.mkDerivation {
     substituteInPlace misc/fuel/fuel-listener.el \
       --replace '(defcustom fuel-factor-root-dir nil' "(defcustom fuel-factor-root-dir \"$out/lib/factor\""
   '';
+
+  nativeBuildInputs = [
+    git
+    makeWrapper
+    curl
+    unzip
+    wrapLocalFactor
+  ];
+
+  buildInputs = runtimeLibs;
 
   buildPhase = ''
     runHook preBuild
@@ -180,6 +181,7 @@ stdenv.mkDerivation {
   # contain the test failures until all unit tests are fixed. Then, it should
   # return 1 if any test failures have occurred.
   doCheck = false;
+
   checkPhase = ''
     runHook preCheck
     set +e
@@ -200,8 +202,8 @@ stdenv.mkDerivation {
 
     # Create a wrapper in bin/ and lib/factor/
     ${wrapFactorScript {
-      from = "$out/lib/factor/factor";
       inherit runtimeLibs;
+      from = "$out/lib/factor/factor";
     }}
     mv $out/lib/factor/factor.image $out/lib/factor/.factor-wrapped.image
     cp $out/lib/factor/factor $out/bin/
@@ -221,8 +223,8 @@ stdenv.mkDerivation {
   };
 
   meta = {
-    homepage = "https://factorcode.org/";
     description = "Concatenative, stack-based programming language";
+
     longDescription = ''
       The Factor programming language is a concatenative, stack-based
       programming language with high-level features including dynamic types,
@@ -236,6 +238,8 @@ stdenv.mkDerivation {
       on all platforms. Full source code for the Factor project is available
       under a BSD license.
     '';
+
+    homepage = "https://factorcode.org/";
     license = lib.licenses.bsd2;
     maintainers = with lib.maintainers; [ spacefrogg ];
     platforms = lib.intersectLists lib.platforms.x86_64 lib.platforms.linux;

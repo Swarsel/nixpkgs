@@ -6,10 +6,8 @@
 }:
 
 stdenv.mkDerivation (finalAttrs: {
-  pname = "gst-thumbnailers-test";
   inherit (gst-thumbnailers) version src;
-
-  sourceRoot = "${finalAttrs.src.name}/tests";
+  pname = "gst-thumbnailers-test";
 
   nativeBuildInputs = [
     # fontconfig tries to write to `~/.cache/fontconfig`
@@ -43,4 +41,6 @@ stdenv.mkDerivation (finalAttrs: {
 
     runHook postBuild
   '';
+
+  sourceRoot = "${finalAttrs.src.name}/tests";
 })

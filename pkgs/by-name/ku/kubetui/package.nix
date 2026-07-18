@@ -1,7 +1,7 @@
 {
-  rustPlatform,
   lib,
   fetchFromGitHub,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -15,19 +15,19 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-tLnZLZUYaV5o91wO95arZfkDtnSxui+3TLFCe+uAVdY=";
   };
 
+  cargoHash = "sha256-En58/bR1UEqUlkIoyU9iEm/UzB2m7mhdAqWp44sU2z4=";
+
   checkFlags = [
     "--skip=workers::kube::store::tests::kubeconfigからstateを生成"
   ];
 
-  cargoHash = "sha256-En58/bR1UEqUlkIoyU9iEm/UzB2m7mhdAqWp44sU2z4=";
-
   meta = {
+    description = "Intuitive TUI tool for real-time monitoring and exploration of Kubernetes resources";
     homepage = "https://github.com/sarub0b0/kubetui";
     changelog = "https://github.com/sarub0b0/kubetui/releases/tag/v${finalAttrs.version}";
-    platforms = lib.platforms.unix;
-    maintainers = with lib.maintainers; [ bot-wxt1221 ];
     license = lib.licenses.mit;
-    description = "Intuitive TUI tool for real-time monitoring and exploration of Kubernetes resources";
+    maintainers = with lib.maintainers; [ bot-wxt1221 ];
+    platforms = lib.platforms.unix;
     mainProgram = "kubetui";
   };
 })

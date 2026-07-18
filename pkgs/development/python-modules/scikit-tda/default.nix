@@ -1,26 +1,25 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  numpy,
-  scipy,
-  scikit-learn,
+  buildPythonPackage,
+  cython,
+  kmapper,
   matplotlib,
   numba,
-  umap-learn,
-  cython,
-  ripser,
+  numpy,
   persim,
   pillow,
-  kmapper,
-  tadasets,
   pytest,
+  ripser,
+  scikit-learn,
+  scipy,
+  tadasets,
+  umap-learn,
 }:
 
 buildPythonPackage rec {
   pname = "scikit-tda";
   version = "1.1.1";
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "scikit-tda";
@@ -44,14 +43,15 @@ buildPythonPackage rec {
     tadasets
   ];
 
+  # tests will be included in next release
+  doCheck = false;
   nativeCheckInputs = [ pytest ];
 
   checkPhase = ''
     pytest test
   '';
 
-  # tests will be included in next release
-  doCheck = false;
+  format = "setuptools";
 
   meta = {
     description = "Topological Data Analysis for humans";

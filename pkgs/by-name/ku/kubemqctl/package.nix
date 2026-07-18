@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule (finalAttrs: {
@@ -22,19 +22,19 @@ buildGoModule (finalAttrs: {
     cp ${./go.sum} go.sum
   '';
 
+  doCheck = false; # TODO tests are failing
+
   ldflags = [
     "-w"
     "-s"
     "-X main.version=${finalAttrs.version}"
   ];
 
-  doCheck = false; # TODO tests are failing
-
   meta = {
-    homepage = "https://github.com/kubemq-io/kubemqctl";
     description = "CLI for Kubemq Kubernetes Message Broker";
-    mainProgram = "kubemqctl";
+    homepage = "https://github.com/kubemq-io/kubemqctl";
     license = lib.licenses.asl20;
     maintainers = with lib.maintainers; [ brianmcgee ];
+    mainProgram = "kubemqctl";
   };
 })

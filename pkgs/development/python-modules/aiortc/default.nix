@@ -1,28 +1,27 @@
 {
   lib,
-  buildPythonPackage,
-  setuptools,
+  fetchFromGitHub,
   aioice,
   av,
+  buildPythonPackage,
   cffi,
   cryptography,
+  dnspython,
   google-crc32c,
+  ifaddr,
+  libopus,
+  libvpx,
+  numpy,
   pyee,
   pylibsrtp,
   pyopenssl,
-  libopus,
-  libvpx,
-  ifaddr,
-  dnspython,
-  fetchFromGitHub,
   pytestCheckHook,
-  numpy,
+  setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "aiortc";
   version = "1.14.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "aiortc";
@@ -30,6 +29,13 @@ buildPythonPackage rec {
     tag = version;
     hash = "sha256-ZgxSaiKkJrA5XvUT1zq8kwqB8mOvn46vLWXHyJSsHbM=";
   };
+
+  doCheck = true;
+
+  nativeCheckInputs = [
+    numpy
+    pytestCheckHook
+  ];
 
   build-system = [
     setuptools
@@ -50,22 +56,20 @@ buildPythonPackage rec {
     dnspython
   ];
 
-  pythonRelaxDeps = [ "av" ];
-
-  nativeCheckInputs = [
-    numpy
-    pytestCheckHook
-  ];
   disabledTestPaths = [
     "tests/test_ortc.py" # hangs on: aiortc.rtcicetransport:rtcicetransport.py:365 RTCIceTransport(controlled) - new -> checking
     "tests/test_rtcicetransport.py" # hangs on: aiortc.rtcicetransport:rtcicetransport.py:365 RTCIceTransport(controlled) - new -> checking
     "tests/test_rtcpeerconnection.py" # fails
     "tests/test_contrib_signaling.py" # fails on darwin
   ];
-  doCheck = true;
+
+  pyproject = true;
+
   pythonImportsCheck = [
     "aiortc"
   ];
+
+  pythonRelaxDeps = [ "av" ];
 
   meta = {
     description = "WebRTC and ORTC implementation for Python using asyncio";

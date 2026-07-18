@@ -1,15 +1,13 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   nix-update-script,
 }:
 
 buildGoModule (finalAttrs: {
   pname = "pvetui";
   version = "1.4.2";
-
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "devnullvoid";
@@ -19,8 +17,7 @@ buildGoModule (finalAttrs: {
   };
 
   vendorHash = "sha256-JOo/7/3J9LqefIYuRl9efSlSfzLvQ/B8Jpy2e5cdEio=";
-
-  subPackages = [ "cmd/pvetui" ];
+  __structuredAttrs = true;
 
   ldflags = [
     "-s"
@@ -30,6 +27,7 @@ buildGoModule (finalAttrs: {
     "-X github.com/devnullvoid/pvetui/internal/version.buildDate=1970-01-01T00:00:00Z"
   ];
 
+  subPackages = [ "cmd/pvetui" ];
   passthru.updateScript = nix-update-script { };
 
   meta = {

@@ -1,13 +1,12 @@
 {
-  stdenvNoCC,
   fetchurl,
-  dpkg,
   autoPatchelfHook,
-  webkitgtk_4_1,
-
-  pname,
-  version,
+  dpkg,
   meta,
+  pname,
+  stdenvNoCC,
+  version,
+  webkitgtk_4_1,
 }:
 stdenvNoCC.mkDerivation {
   inherit
@@ -28,16 +27,16 @@ stdenvNoCC.mkDerivation {
 
   buildInputs = [ webkitgtk_4_1 ];
 
-  unpackPhase = ''
-    runHook preUnpack
-    dpkg -X $src .
-    runHook postUnpack
-  '';
-
   installPhase = ''
     runHook preInstall
     mkdir -p $out
     cp -r usr/share usr/bin $out
     runHook postInstall
+  '';
+
+  unpackPhase = ''
+    runHook preUnpack
+    dpkg -X $src .
+    runHook postUnpack
   '';
 }

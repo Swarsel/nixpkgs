@@ -1,9 +1,9 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  pytestCheckHook,
+  buildPythonPackage,
   coverage,
+  pytestCheckHook,
   python,
   setuptools,
 }:
@@ -11,7 +11,6 @@
 buildPythonPackage rec {
   pname = "miss-hit-core";
   version = "0.9.44";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "florianschanda";
@@ -19,19 +18,6 @@ buildPythonPackage rec {
     tag = version;
     hash = "sha256-dJZIleDWmdarhmxoKvQxWvI/Tmx9pSCNlgFXj5NFIUc=";
   };
-
-  build-system = [ setuptools ];
-
-  configurePhase = ''
-    runHook preConfigure
-
-    cp setup_gpl.py setup.py
-    mkdir -p miss_hit_core/resources/assets
-    cp docs/style.css miss_hit_core/resources
-    cp docs/assets/* miss_hit_core/resources/assets
-
-    runHook postConfigure
-  '';
 
   nativeCheckInputs = [
     coverage
@@ -47,6 +33,21 @@ buildPythonPackage rec {
     runHook postCheck
   '';
 
+  build-system = [ setuptools ];
+
+  configurePhase = ''
+    runHook preConfigure
+
+    cp setup_gpl.py setup.py
+    mkdir -p miss_hit_core/resources/assets
+    cp docs/style.css miss_hit_core/resources
+    cp docs/assets/* miss_hit_core/resources/assets
+
+    runHook postConfigure
+  '';
+
+  pyproject = true;
+
   pythonImportsCheck = [
     "miss_hit_core"
   ];
@@ -56,6 +57,7 @@ buildPythonPackage rec {
     homepage = "https://misshit.org/";
     changelog = "https://github.com/florianschanda/miss_hit/releases/tag/${version}";
     license = lib.licenses.gpl3Plus;
+
     maintainers = with lib.maintainers; [
       jacobkoziej
     ];

@@ -16,6 +16,8 @@ stdenv.mkDerivation {
     sha256 = "sha256-JlDOowJYJJNB1opNabJgYfdt0khQFsdDvzbtY/bJwRI=";
   };
 
+  buildInputs = [ zlib ];
+
   makeFlags = [
     "CC=${stdenv.cc.targetPrefix}cc"
   ];
@@ -24,16 +26,16 @@ stdenv.mkDerivation {
     install --target $out/bin -D cramfsck mkcramfs
   '';
 
-  buildInputs = [ zlib ];
-
   meta = {
     description = "Tools to create, check, and extract content of CramFs images";
     homepage = "https://github.com/npitre/cramfs-tools";
     license = lib.licenses.gpl2Plus;
+
     maintainers = with lib.maintainers; [
       pamplemousse
       blitz
     ];
+
     platforms = lib.platforms.linux;
   };
 }

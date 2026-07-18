@@ -1,15 +1,14 @@
 {
   lib,
+  fetchFromGitHub,
   aiohttp,
   buildPythonPackage,
-  fetchFromGitHub,
   lxml,
 }:
 
 buildPythonPackage rec {
   pname = "pysaj";
   version = "0.0.16";
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "fredericvl";
@@ -25,7 +24,7 @@ buildPythonPackage rec {
 
   # Module has no tests
   doCheck = false;
-
+  format = "setuptools";
   pythonImportsCheck = [ "pysaj" ];
 
   meta = {

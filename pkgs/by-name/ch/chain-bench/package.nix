@@ -1,8 +1,8 @@
 {
   lib,
   stdenv,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   installShellFiles,
 }:
 
@@ -16,15 +16,9 @@ buildGoModule (finalAttrs: {
     rev = "v${finalAttrs.version}";
     sha256 = "sha256-5+jSbXbT1UwHMVeZ07qcY8Is88ddHdr7QlgcbQK+8FA=";
   };
-  vendorHash = "sha256-uN4TSAxb229NhcWmiQmWBajla9XKnpiZrXOWJxt/mic=";
 
   nativeBuildInputs = [ installShellFiles ];
-
-  ldflags = [
-    "-s"
-    "-w"
-    "-X main.version=v${finalAttrs.version}"
-  ];
+  vendorHash = "sha256-uN4TSAxb229NhcWmiQmWBajla9XKnpiZrXOWJxt/mic=";
 
   postInstall = lib.optionalString (stdenv.buildPlatform.canExecute stdenv.hostPlatform) ''
     installShellCompletion --cmd chain-bench \
@@ -34,6 +28,7 @@ buildGoModule (finalAttrs: {
   '';
 
   doInstallCheck = true;
+
   installCheckPhase = ''
     runHook preInstallCheck
     $out/bin/chain-bench --help
@@ -41,11 +36,15 @@ buildGoModule (finalAttrs: {
     runHook postInstallCheck
   '';
 
+  ldflags = [
+    "-s"
+    "-w"
+    "-X main.version=v${finalAttrs.version}"
+  ];
+
   meta = {
-    homepage = "https://github.com/aquasecurity/chain-bench";
-    changelog = "https://github.com/aquasecurity/chain-bench/releases/tag/v${finalAttrs.version}";
     description = "Open-source tool for auditing your software supply chain stack for security compliance based on a new CIS Software Supply Chain benchmark";
-    mainProgram = "chain-bench";
+
     longDescription = ''
       Chain-bench is an open-source tool for auditing your software supply chain
       stack for security compliance based on a new CIS Software Supply Chain
@@ -54,7 +53,11 @@ buildGoModule (finalAttrs: {
       hackers and protect your sensitive data and customer trust, you need to
       ensure your code is compliant with your organization's policies.
     '';
+
+    homepage = "https://github.com/aquasecurity/chain-bench";
+    changelog = "https://github.com/aquasecurity/chain-bench/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.asl20;
     maintainers = with lib.maintainers; [ jk ];
+    mainProgram = "chain-bench";
   };
 })

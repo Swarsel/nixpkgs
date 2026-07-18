@@ -10,16 +10,16 @@
 buildPythonPackage (finalAttrs: {
   pname = "alibabacloud-vpc20160428";
   version = "7.1.3";
-  pyproject = true;
-
-  __structuredAttrs = true;
 
   src = fetchPypi {
-    pname = "alibabacloud_vpc20160428";
     inherit (finalAttrs) version;
     hash = "sha256-Hmrk0SWSH/r6Oa3LdpFjqIPko9ZdKt7Tl3ACxWnH9qM=";
+    pname = "alibabacloud_vpc20160428";
   };
 
+  # Module has no tests
+  doCheck = false;
+  __structuredAttrs = true;
   build-system = [ setuptools ];
 
   dependencies = [
@@ -27,10 +27,8 @@ buildPythonPackage (finalAttrs: {
     darabonba-core
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "alibabacloud_vpc20160428" ];
-
-  # Module has no tests
-  doCheck = false;
 
   meta = {
     description = "Alibaba Cloud Virtual Private Cloud (20160428) SDK Library for Python";

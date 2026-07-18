@@ -1,19 +1,19 @@
 {
   lib,
-  rustPlatform,
-  fetchFromGitHub,
-  pkg-config,
-  libxkbcommon,
-  vulkan-loader,
-  zstd,
   stdenv,
-  wayland,
-  nix-update-script,
-  versionCheckHook,
+  fetchFromGitHub,
   libx11,
   libxcursor,
   libxi,
+  libxkbcommon,
   libxrandr,
+  nix-update-script,
+  pkg-config,
+  rustPlatform,
+  versionCheckHook,
+  vulkan-loader,
+  wayland,
+  zstd,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -26,8 +26,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-xVYZrQUgHxaefAMmSXG/rrVlCr0H5lRmyyXtRmOtbTU=";
   };
-
-  cargoHash = "sha256-KBgE0fiaUEsGuAYGhBjqMX7ftj5JnGggH86brxq6280=";
 
   nativeBuildInputs = [
     pkg-config
@@ -46,9 +44,17 @@ rustPlatform.buildRustPackage (finalAttrs: {
     wayland
   ];
 
+  cargoHash = "sha256-KBgE0fiaUEsGuAYGhBjqMX7ftj5JnGggH86brxq6280=";
+
   env = {
     ZSTD_SYS_USE_PKG_CONFIG = true;
   };
+
+  doInstallCheck = true;
+
+  nativeInstallCheckInputs = [
+    versionCheckHook
+  ];
 
   postFixup = lib.optionalString stdenv.hostPlatform.isLinux ''
     patchelf --add-rpath "${
@@ -60,11 +66,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
     }" $out/bin/brush_app
   '';
 
-  nativeInstallCheckInputs = [
-    versionCheckHook
-  ];
-  doInstallCheck = true;
-
   passthru = {
     updateScript = nix-update-script { };
   };
@@ -74,8 +75,8 @@ rustPlatform.buildRustPackage (finalAttrs: {
     homepage = "https://github.com/ArthurBrussee/brush";
     changelog = "https://github.com/ArthurBrussee/brush/blob/${finalAttrs.src.rev}/CHANGELOG.md";
     license = lib.licenses.asl20;
-    platforms = lib.platforms.linux;
     maintainers = with lib.maintainers; [ matthewcroughan ];
+    platforms = lib.platforms.linux;
     mainProgram = "brush_app";
   };
 })

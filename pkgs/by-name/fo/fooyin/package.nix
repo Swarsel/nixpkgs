@@ -1,24 +1,24 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
-  fetchpatch,
-  cmake,
-  pkg-config,
+  SDL2,
   alsa-lib,
+  cmake,
+  fetchpatch,
   ffmpeg,
+  game-music-emu,
+  icu,
   kdePackages,
   kdsingleapplication,
-  pipewire,
-  taglib,
-  libebur128,
-  libvgm,
-  libsndfile,
   libarchive,
+  libebur128,
   libopenmpt,
-  game-music-emu,
-  SDL2,
-  icu,
+  libsndfile,
+  libvgm,
+  pipewire,
+  pkg-config,
+  taglib,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -31,6 +31,28 @@ stdenv.mkDerivation (finalAttrs: {
     tag = "v" + finalAttrs.version;
     hash = "sha256-sQ1zsQ/6OHGPkofiKhusCrpW2XnO+PpMvH1M2OG5Huw=";
   };
+
+  # Remove after next release
+  patches = [
+    (fetchpatch {
+      hash = "sha256-Uvggz2F6DuWYAg20qi8uHkshzCnTLrchambQ/yDyIfA=";
+      name = "add-missing-header.patch";
+      url = "https://github.com/fooyin/fooyin/commit/7b171c0da2b9289468696424fe51f76e1c365bb5.patch";
+    })
+  ];
+
+  # Fix compatibility with Qt 6.10.1 - should be fixed in next release
+  postPatch = ''
+    substituteInPlace src/utils/starrating.cpp \
+      --replace-fail '.arg(alignment);' '.arg(alignment.toInt());'
+  '';
+
+  nativeBuildInputs = [
+    cmake
+    pkg-config
+    kdePackages.qttools
+    kdePackages.wrapQtAppsHook
+  ];
 
   buildInputs = [
     kdePackages.qcoro
@@ -54,13 +76,6 @@ stdenv.mkDerivation (finalAttrs: {
     game-music-emu
   ];
 
-  nativeBuildInputs = [
-    cmake
-    pkg-config
-    kdePackages.qttools
-    kdePackages.wrapQtAppsHook
-  ];
-
   cmakeFlags = [
     (lib.cmakeBool "BUILD_TESTING" finalAttrs.finalPackage.doCheck)
     # we need INSTALL_FHS to be true as the various artifacts are otherwise just dumped in the root
@@ -70,29 +85,14 @@ stdenv.mkDerivation (finalAttrs: {
 
   env.LANG = "C.UTF-8";
 
-  # Remove after next release
-  patches = [
-    (fetchpatch {
-      name = "add-missing-header.patch";
-      url = "https://github.com/fooyin/fooyin/commit/7b171c0da2b9289468696424fe51f76e1c365bb5.patch";
-      hash = "sha256-Uvggz2F6DuWYAg20qi8uHkshzCnTLrchambQ/yDyIfA=";
-    })
-  ];
-
-  # Fix compatibility with Qt 6.10.1 - should be fixed in next release
-  postPatch = ''
-    substituteInPlace src/utils/starrating.cpp \
-      --replace-fail '.arg(alignment);' '.arg(alignment.toInt());'
-  '';
-
   meta = {
     description = "Customisable music player";
     homepage = "https://www.fooyin.org/";
     changelog = "https://github.com/fooyin/fooyin/blob/${finalAttrs.src.rev}/CHANGELOG.md";
-    downloadPage = "https://github.com/fooyin/fooyin";
-    mainProgram = "fooyin";
     license = lib.licenses.gpl3Only;
     maintainers = with lib.maintainers; [ peterhoeg ];
     platforms = lib.platforms.linux;
+    mainProgram = "fooyin";
+    downloadPage = "https://github.com/fooyin/fooyin";
   };
 })

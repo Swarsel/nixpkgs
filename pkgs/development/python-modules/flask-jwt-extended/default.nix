@@ -1,8 +1,8 @@
 {
   lib,
   buildPythonPackage,
-  fetchPypi,
   cryptography,
+  fetchPypi,
   flask,
   pyjwt,
   pytestCheckHook,
@@ -14,13 +14,17 @@
 buildPythonPackage rec {
   pname = "flask-jwt-extended";
   version = "4.7.4";
-  pyproject = true;
 
   src = fetchPypi {
-    pname = "flask_jwt_extended";
     inherit version;
     hash = "sha256-eP0PRgMX+s86AISmRX/68vHdqe771Xb5TOo1sOrdVTE=";
+    pname = "flask_jwt_extended";
   };
+
+  nativeCheckInputs = [
+    pytestCheckHook
+  ]
+  ++ lib.concatAttrValues optional-dependencies;
 
   build-system = [ setuptools ];
 
@@ -32,18 +36,13 @@ buildPythonPackage rec {
   ];
 
   optional-dependencies.asymmetric_crypto = [ cryptography ];
-
-  nativeCheckInputs = [
-    pytestCheckHook
-  ]
-  ++ lib.concatAttrValues optional-dependencies;
-
+  pyproject = true;
   pythonImportsCheck = [ "flask_jwt_extended" ];
 
   meta = {
-    changelog = "https://github.com/vimalloc/flask-jwt-extended/releases/tag/${version}";
     description = "JWT extension for Flask";
     homepage = "https://flask-jwt-extended.readthedocs.io/";
+    changelog = "https://github.com/vimalloc/flask-jwt-extended/releases/tag/${version}";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ gerschtli ];
   };

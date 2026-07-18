@@ -1,13 +1,13 @@
 {
   lib,
-  gcc15Stdenv,
   fetchFromGitHub,
-  fetchpatch,
   cmake,
-  pkg-config,
-  hyprutils,
+  fetchpatch,
+  gcc15Stdenv,
   hyprland-qt-support,
+  hyprutils,
   pciutils,
+  pkg-config,
   qt6,
 }:
 let
@@ -27,9 +27,9 @@ gcc15Stdenv.mkDerivation (finalAttrs: {
   patches = [
     # this should be removed in the next release
     (fetchpatch {
+      hash = "sha256-5nVj4AFJpmazX9o9tQD6mzBW9KtRYov4yRbGpUwFcgc=";
       name = "Fix build with Qt 6.10";
       url = "https://github.com/hyprwm/hyprland-qtutils/commit/5ffdfc13ed03df1dae5084468d935f0a3f2c9a4c.patch";
-      hash = "sha256-5nVj4AFJpmazX9o9tQD6mzBW9KtRYov4yRbGpUwFcgc=";
     })
   ];
 
@@ -58,7 +58,7 @@ gcc15Stdenv.mkDerivation (finalAttrs: {
     description = "Hyprland QT/qml utility apps";
     homepage = "https://github.com/hyprwm/hyprland-qtutils";
     license = lib.licenses.bsd3;
-    teams = [ lib.teams.hyprland ];
     platforms = lib.platforms.linux;
+    teams = [ lib.teams.hyprland ];
   };
 })

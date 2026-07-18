@@ -1,33 +1,26 @@
 {
+  lib,
+  stdenv,
+  fetchFromGitHub,
   autoreconfHook,
   coreutils,
-  fetchFromGitHub,
   gnugrep,
   gnused,
-  lib,
   makeWrapper,
   perlPackages,
-  stdenv,
 }:
 
 let
   generic =
     {
-      pname,
-      version,
-      src,
-      description,
       buildInputs,
+      description,
+      pname,
+      src,
+      version,
     }:
     stdenv.mkDerivation {
       inherit pname version src;
-
-      buildInputs = [ perlPackages.perl ] ++ buildInputs;
-
-      nativeBuildInputs = [
-        autoreconfHook
-        makeWrapper
-      ];
 
       postPatch = ''
         substituteInPlace plugins-scripts/Makefile.am \
@@ -36,6 +29,13 @@ let
           --replace-fail /bin/grep ${lib.getExe gnugrep} \
           --replace-fail /bin/sed  ${lib.getExe gnused}
       '';
+
+      nativeBuildInputs = [
+        autoreconfHook
+        makeWrapper
+      ];
+
+      buildInputs = [ perlPackages.perl ] ++ buildInputs;
 
       postInstall = ''
         if [[ -d $out/libexec ]]; then
@@ -50,10 +50,10 @@ let
       '';
 
       meta = {
+        inherit description;
         homepage = "https://labs.consol.de/";
         license = lib.licenses.gpl2Only;
         maintainers = with lib.maintainers; [ peterhoeg ];
-        inherit description;
       };
     };
 
@@ -71,8 +71,8 @@ in
       fetchSubmodules = true;
     };
 
-    description = "Check plugin for Microsoft SQL Server";
     buildInputs = [ perlPackages.DBDsybase ];
+    description = "Check plugin for Microsoft SQL Server";
   };
 
   check_nwc_health = generic rec {
@@ -87,8 +87,8 @@ in
       fetchSubmodules = true;
     };
 
-    description = "Check plugin for network equipment";
     buildInputs = [ perlPackages.NetSNMP ];
+    description = "Check plugin for network equipment";
   };
 
   check_ups_health = generic rec {
@@ -103,7 +103,7 @@ in
       fetchSubmodules = true;
     };
 
-    description = "Check plugin for UPSs";
     buildInputs = [ perlPackages.NetSNMP ];
+    description = "Check plugin for UPSs";
   };
 }

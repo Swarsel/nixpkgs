@@ -1,7 +1,7 @@
 {
   config,
-  pkgs,
   lib,
+  pkgs,
   ...
 }:
 
@@ -10,10 +10,6 @@ let
 
 in
 {
-  meta = {
-    teams = [ lib.teams.gnome ];
-  };
-
   options = {
     programs.geary.enable = lib.mkEnableOption "Geary, a Mail client for GNOME";
   };
@@ -23,5 +19,9 @@ in
     programs.dconf.enable = true;
     services.gnome.gnome-keyring.enable = true;
     services.gnome.gnome-online-accounts.enable = true;
+  };
+
+  meta = {
+    teams = [ lib.teams.gnome ];
   };
 }

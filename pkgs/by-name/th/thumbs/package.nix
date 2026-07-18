@@ -1,7 +1,7 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -15,13 +15,12 @@ rustPlatform.buildRustPackage (finalAttrs: {
     sha256 = "sha256-XMz1ZOTz2q1Dt4QdxG83re9PIsgvxTTkytESkgKxhGM=";
   };
 
+  patches = [ ./fix.patch ];
   cargoHash = "sha256-xvfjWS1QZWrlwytFyWVtjOyB3EPT9leodVLt72yyM4E=";
 
-  patches = [ ./fix.patch ];
-
   meta = {
-    homepage = "https://github.com/fcsonline/tmux-thumbs";
     description = "Lightning fast version of tmux-fingers written in Rust, copy/pasting tmux like vimium/vimperator";
+    homepage = "https://github.com/fcsonline/tmux-thumbs";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ ghostbuster91 ];
   };

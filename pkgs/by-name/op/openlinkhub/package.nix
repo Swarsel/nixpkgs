@@ -1,10 +1,10 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   nix-update-script,
-  pkg-config,
   pipewire,
+  pkg-config,
   udev,
   usbutils,
 }:
@@ -20,9 +20,6 @@ buildGoModule (finalAttrs: {
     hash = "sha256-g8ZdiBaEelS+LhnOA23mMR+irN1wKD6Rp66sCnSD2tU=";
   };
 
-  proxyVendor = true;
-  vendorHash = "sha256-/itomxsbTDT7ML52bpUfDZIBZ/Rh/zx4Blg+PP7m7gE=";
-
   nativeBuildInputs = [ pkg-config ];
 
   buildInputs = [
@@ -31,6 +28,7 @@ buildGoModule (finalAttrs: {
     usbutils
   ];
 
+  vendorHash = "sha256-/itomxsbTDT7ML52bpUfDZIBZ/Rh/zx4Blg+PP7m7gE=";
   env.CGO_CFLAGS_ALLOW = "-fno-strict-overflow";
 
   installPhase = ''
@@ -47,18 +45,21 @@ buildGoModule (finalAttrs: {
     runHook postInstall
   '';
 
+  proxyVendor = true;
   passthru.updateScript = nix-update-script { };
 
   meta = {
-    homepage = "https://github.com/jurkovic-nikola/OpenLinkHub";
     description = "Open source interface for iCUE LINK Hub and other Corsair AIOs, Hubs for Linux";
+    homepage = "https://github.com/jurkovic-nikola/OpenLinkHub";
     changelog = "https://github.com/jurkovic-nikola/OpenLinkHub/releases/tag/${finalAttrs.version}";
-    mainProgram = "OpenLinkHub";
     license = lib.licenses.gpl3Only;
-    platforms = lib.platforms.linux;
+
     maintainers = with lib.maintainers; [
       bot-wxt1221
       mikaeladev
     ];
+
+    platforms = lib.platforms.linux;
+    mainProgram = "OpenLinkHub";
   };
 })

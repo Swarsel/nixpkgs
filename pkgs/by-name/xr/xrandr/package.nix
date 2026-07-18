@@ -2,14 +2,14 @@
   lib,
   stdenv,
   fetchurl,
-  meson,
-  ninja,
-  pkg-config,
-  xorgproto,
   libx11,
   libxrandr,
   libxrender,
+  meson,
+  ninja,
+  pkg-config,
   writeScript,
+  xorgproto,
 }:
 stdenv.mkDerivation (finalAttrs: {
   pname = "xrandr";
@@ -56,10 +56,12 @@ stdenv.mkDerivation (finalAttrs: {
     description = "Command line interface to X11 Resize, Rotate, and Reflect (RandR) extension";
     homepage = "https://gitlab.freedesktop.org/xorg/app/xrandr";
     license = lib.licenses.hpndSellVariant;
-    mainProgram = "xrandr";
+
     maintainers = with lib.maintainers; [
       nick-linux
     ];
+
     platforms = lib.platforms.unix;
+    mainProgram = "xrandr";
   };
 })

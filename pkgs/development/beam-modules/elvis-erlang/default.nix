@@ -1,23 +1,22 @@
 {
-  buildRebar3,
+  lib,
   fetchFromGitHub,
+  buildRebar3,
   fetchHex,
   fetchgit,
-  lib,
   rebar3Relx,
   writeScript,
 }:
 
 rebar3Relx rec {
-  releaseType = "escript";
   pname = "elvis-erlang";
   version = "5.0.4";
 
   src = fetchFromGitHub {
     owner = "inaka";
     repo = "elvis";
-    hash = "sha256-T1LRumm3mP6Vfv3vEiCBm7XnkcY3GvDbe0nYcaxlrGg=";
     tag = version;
+    hash = "sha256-T1LRumm3mP6Vfv3vEiCBm7XnkcY3GvDbe0nYcaxlrGg=";
   };
 
   beamDeps = builtins.attrValues (
@@ -26,6 +25,8 @@ rebar3Relx rec {
       builder = buildRebar3;
     }
   );
+
+  releaseType = "escript";
 
   passthru.updateScript = writeScript "update.sh" ''
     #!/usr/bin/env nix-shell
@@ -48,11 +49,11 @@ rebar3Relx rec {
   '';
 
   meta = {
-    homepage = "https://github.com/inaka/elvis";
     description = "Erlang Style Reviewer";
-    platforms = lib.platforms.unix;
+    homepage = "https://github.com/inaka/elvis";
     license = lib.licenses.asl20;
     maintainers = with lib.maintainers; [ dlesl ];
+    platforms = lib.platforms.unix;
     mainProgram = "elvis";
   };
 }

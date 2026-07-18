@@ -1,10 +1,10 @@
 {
   lib,
-  buildNpmPackage,
   fetchFromGitHub,
+  buildNpmPackage,
+  dart-sass,
   nixosTests,
   python3,
-  dart-sass,
   vaultwarden,
 }:
 
@@ -27,15 +27,12 @@ buildNpmPackage rec {
       --replace-fail '"@napi-rs/cli": "3.5.1"' '"@napi-rs/cli": "3.2.0"'
   '';
 
-  npmDepsFetcherVersion = 2;
-  npmDepsHash = "sha256-NBhII5HySIkv0bCeWjH6MknX5NMp11Gwno7RnfCKgjc=";
-
   nativeBuildInputs = [
     python3
     dart-sass
   ];
 
-  makeCacheWritable = true;
+  npmDepsHash = "sha256-NBhII5HySIkv0bCeWjH6MknX5NMp11Gwno7RnfCKgjc=";
 
   env = {
     ELECTRON_SKIP_BINARY_DOWNLOAD = "1";
@@ -46,20 +43,6 @@ buildNpmPackage rec {
     echo "export const compilerCommand = ['dart-sass'];" > node_modules/sass-embedded/dist/lib/src/compiler-path.js
   '';
 
-  npmRebuildFlags = [
-    # FIXME one of the esbuild versions fails to download @esbuild/linux-x64
-    "--ignore-scripts"
-  ];
-
-  npmBuildScript = "dist:oss:selfhost";
-
-  npmBuildFlags = [
-    "--workspace"
-    "apps/web"
-  ];
-
-  npmFlags = [ "--legacy-peer-deps" ];
-
   installPhase = ''
     runHook preInstall
     mkdir -p $out/share/vaultwarden
@@ -67,15 +50,31 @@ buildNpmPackage rec {
     runHook postInstall
   '';
 
+  makeCacheWritable = true;
+
+  npmBuildFlags = [
+    "--workspace"
+    "apps/web"
+  ];
+
+  npmBuildScript = "dist:oss:selfhost";
+  npmDepsFetcherVersion = 2;
+  npmFlags = [ "--legacy-peer-deps" ];
+
+  npmRebuildFlags = [
+    # FIXME one of the esbuild versions fails to download @esbuild/linux-x64
+    "--ignore-scripts"
+  ];
+
   passthru = {
     tests = nixosTests.vaultwarden;
   };
 
   meta = {
+    inherit (vaultwarden.meta) maintainers;
     description = "Integrates the web vault into vaultwarden";
     homepage = "https://github.com/vaultwarden/vw_web_builds";
-    platforms = lib.platforms.all;
     license = lib.licenses.gpl3Plus;
-    inherit (vaultwarden.meta) maintainers;
+    platforms = lib.platforms.all;
   };
 }

@@ -1,16 +1,15 @@
 {
   lib,
   stdenv,
-  stdenvNoCC,
   fetchFromGitHub,
-  pkg-config,
-  glib,
-  zlib,
-  libpng,
   cmake,
+  glib,
+  libpng,
+  pkg-config,
   python3,
   python3Packages,
-
+  stdenvNoCC,
+  zlib,
   # optionally specify a derivation containing the lens data as generated from the `generate_db.py` script
   lensfunDatabases ? null,
 }:
@@ -25,15 +24,13 @@ let
     else
       # fetch a more recent version of the lens database
       stdenvNoCC.mkDerivation {
-        name = "lensfun-databases";
-
         src = fetchFromGitHub {
           owner = "lensfun";
           repo = "lensfun";
           rev = "201da1a7433626a2a1ecd67e1f21a42fb17aa4a5";
           sha256 = "sha256-64ZcupHA4oClPRCnG8KofGC46M/mZFermugzQ15B6k4=";
-
           leaveDotGit = true;
+
           # generate timestamp based on the most recent commit
           postFetch = ''
             cd $out
@@ -57,6 +54,8 @@ let
           python3 tools/update_database/generate_db.py --input data/db --output $out
           cp timestamp.txt $out/timestamp.txt
         '';
+
+        name = "lensfun-databases";
       };
 
 in
@@ -69,6 +68,19 @@ stdenv.mkDerivation {
     rev = "v${version}";
     sha256 = "sha256-FyYilIz9ssSHG6S02Z2bXy7fjSY51+SWW3v8bm7sLvY=";
   };
+
+  nativeBuildInputs = [
+    cmake
+    pkg-config
+  ];
+
+  buildInputs = [
+    glib
+    zlib
+    libpng
+  ];
+
+  cmakeFlags = [ "-DINSTALL_HELPER_SCRIPTS=OFF" ];
 
   # replace database with a more recent snapshot
   # the master branch uses version 2 profiles, while this version requires version 1 profiles
@@ -90,27 +102,16 @@ stdenv.mkDerivation {
         'CMAKE_MINIMUM_REQUIRED(VERSION 3.12 FATAL_ERROR)'
   '';
 
-  nativeBuildInputs = [
-    cmake
-    pkg-config
-  ];
-
-  buildInputs = [
-    glib
-    zlib
-    libpng
-  ];
-
-  cmakeFlags = [ "-DINSTALL_HELPER_SCRIPTS=OFF" ];
-
   meta = {
-    platforms = lib.platforms.linux ++ lib.platforms.darwin;
+    description = "Opensource database of photographic lenses and their characteristics";
+    homepage = "https://lensfun.github.io";
+    license = lib.licenses.lgpl3;
+
     maintainers = with lib.maintainers; [
       flokli
       paperdigits
     ];
-    license = lib.licenses.lgpl3;
-    description = "Opensource database of photographic lenses and their characteristics";
-    homepage = "https://lensfun.github.io";
+
+    platforms = lib.platforms.linux ++ lib.platforms.darwin;
   };
 }

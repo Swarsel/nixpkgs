@@ -1,21 +1,23 @@
 {
   lib,
-  callPackage,
-  stdenvNoCC,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   buildNpmPackage,
-  nodejs,
-  nix-update-script,
-  npm-lockfile-fix,
+  callPackage,
   fetchNpmDeps,
   jq,
+  nix-update-script,
   nixosTests,
-
+  nodejs,
+  npm-lockfile-fix,
+  stdenvNoCC,
   latestVersionInfo ? null,
-  removeUserLimit ? false,
   removeFreeBadge ? false,
+  removeUserLimit ? false,
   versionInfo ? {
+    version = "11.7.6";
+    vendorHash = "sha256-XaXqQN20c3DhW2/L0zhTA8dLeRp4MyBxUKpiMVwp/7s=";
+    npmDepsHash = "sha256-F7o+AVM1WiuHKDQaqHbxDjWT1vAiddh4/D8EktxncAs=";
     # ESR releases only. Note: if NixOS would release with an ESR that goes out
     # of support during the lifetime of the NixOS release, it is acceptable
     # to put the latest non-ESR release here if we change it to an ESR shortly after
@@ -27,10 +29,7 @@
     #
     # Ensure you also check ../mattermostLatest/package.nix.
     regex = "^v(11\\.7\\.[0-9]+)$";
-    version = "11.7.6";
     srcHash = "sha256-oMjfSX45+sEQwNpNVDTOlCBUK7OSBCCKpaUMMrRzdQM=";
-    vendorHash = "sha256-XaXqQN20c3DhW2/L0zhTA8dLeRp4MyBxUKpiMVwp/7s=";
-    npmDepsHash = "sha256-F7o+AVM1WiuHKDQaqHbxDjWT1vAiddh4/D8EktxncAs=";
   },
   ...
 }:
@@ -69,8 +68,6 @@ let
             meta
             ;
 
-          dontUnpack = true;
-
           # Just link all the server and webapp root directories together.
           installPhase = ''
             mkdir -p $out
@@ -81,6 +78,7 @@ let
             done
           '';
 
+          dontUnpack = true;
           passthru = finalPassthru;
         };
       finalPassthru =
@@ -89,9 +87,9 @@ let
           withTestsUnwrapped = callPackage ./tests.nix { mattermost = withoutTestsUnwrapped; };
         in
         lib.recursiveUpdate passthru rec {
-          withoutTests = wrapMattermost withoutTestsUnwrapped;
-          withTests = wrapMattermost withTestsUnwrapped;
           tests.mattermostWithTests = withTests;
+          withTests = wrapMattermost withTestsUnwrapped;
+          withoutTests = wrapMattermost withoutTestsUnwrapped;
         };
     in
     finalPassthru.withoutTests;
@@ -108,14 +106,16 @@ let
       versionInfo;
 in
 buildMattermost rec {
-  pname = "mattermost";
   inherit (versionInfo') version;
+  inherit (versionInfo') vendorHash;
+  pname = "mattermost";
 
   src = fetchFromGitHub {
     owner = "mattermost";
     repo = "mattermost";
     tag = "v${version}";
     hash = versionInfo'.srcHash;
+
     postFetch = ''
       cd $out/webapp
 
@@ -147,53 +147,9 @@ buildMattermost rec {
     ./mattermost-remove-user-limit.patch
   ];
 
-  # Needed because buildGoModule does not support go workspaces yet.
-  # We use go 1.22's workspace vendor command, which is not yet available
-  # in the default version of go used in nixpkgs, nor is it used by upstream:
-  # https://github.com/mattermost/mattermost/issues/26221#issuecomment-1945351597
-  overrideModAttrs = _: {
-    buildPhase = ''
-      runHook preBuild
-
-      make setup-go-work
-      go work vendor -e -v
-
-      runHook postBuild
-    '';
-  };
-
-  npmDeps = fetchNpmDeps {
-    inherit src;
-    sourceRoot = "${src.name}/webapp";
-    hash = versionInfo'.npmDepsHash;
-    makeCacheWritable = true;
-    forceGitDeps = true;
-  };
-
-  inherit (versionInfo') vendorHash;
-
-  modRoot = "./server";
   preBuild = ''
     make setup-go-work
   '';
-
-  subPackages = [
-    "cmd/mattermost"
-    "cmd/mmctl"
-  ];
-
-  tags = [ "production" ];
-
-  ldflags = [
-    "-s"
-    "-w"
-    "-X github.com/mattermost/mattermost/server/public/model.Version=${version}"
-    "-X github.com/mattermost/mattermost/server/public/model.BuildNumber=${version}-nixpkgs"
-    "-X github.com/mattermost/mattermost/server/public/model.BuildDate=1970-01-01"
-    "-X github.com/mattermost/mattermost/server/public/model.BuildHash=v${version}"
-    "-X github.com/mattermost/mattermost/server/public/model.BuildHashEnterprise=none"
-    "-X github.com/mattermost/mattermost/server/public/model.BuildEnterpriseReady=false"
-  ];
 
   postInstall = ''
     shopt -s extglob
@@ -214,6 +170,7 @@ buildMattermost rec {
   '';
 
   doInstallCheck = true;
+
   installCheckPhase = ''
     runHook preInstallCheck
 
@@ -225,7 +182,54 @@ buildMattermost rec {
     runHook postInstallCheck
   '';
 
+  ldflags = [
+    "-s"
+    "-w"
+    "-X github.com/mattermost/mattermost/server/public/model.Version=${version}"
+    "-X github.com/mattermost/mattermost/server/public/model.BuildNumber=${version}-nixpkgs"
+    "-X github.com/mattermost/mattermost/server/public/model.BuildDate=1970-01-01"
+    "-X github.com/mattermost/mattermost/server/public/model.BuildHash=v${version}"
+    "-X github.com/mattermost/mattermost/server/public/model.BuildHashEnterprise=none"
+    "-X github.com/mattermost/mattermost/server/public/model.BuildEnterpriseReady=false"
+  ];
+
+  modRoot = "./server";
+
+  npmDeps = fetchNpmDeps {
+    inherit src;
+    forceGitDeps = true;
+    hash = versionInfo'.npmDepsHash;
+    makeCacheWritable = true;
+    sourceRoot = "${src.name}/webapp";
+  };
+
+  # Needed because buildGoModule does not support go workspaces yet.
+  # We use go 1.22's workspace vendor command, which is not yet available
+  # in the default version of go used in nixpkgs, nor is it used by upstream:
+  # https://github.com/mattermost/mattermost/issues/26221#issuecomment-1945351597
+  overrideModAttrs = _: {
+    buildPhase = ''
+      runHook preBuild
+
+      make setup-go-work
+      go work vendor -e -v
+
+      runHook postBuild
+    '';
+  };
+
+  subPackages = [
+    "cmd/mattermost"
+    "cmd/mmctl"
+  ];
+
+  tags = [ "production" ];
+
   passthru = {
+    # Builds a Mattermost plugin.
+    buildPlugin = callPackage ./build-plugin.nix { };
+    tests.mattermost = nixosTests.mattermost;
+
     updateScript = nix-update-script {
       extraArgs = [
         "--use-github-releases"
@@ -237,17 +241,12 @@ buildMattermost rec {
         versionInfo'.autoUpdate
       ];
     };
-    tests.mattermost = nixosTests.mattermost;
-
-    # Builds a Mattermost plugin.
-    buildPlugin = callPackage ./build-plugin.nix { };
 
     # Builds the webapp.
     webapp = buildNpmPackage rec {
-      pname = "mattermost-webapp";
       inherit version src;
-
-      sourceRoot = "${src.name}/webapp";
+      inherit nodejs;
+      pname = "mattermost-webapp";
 
       patches = lib.optionals removeFreeBadge [
         ./mattermost-remove-free-banner.patch
@@ -260,12 +259,7 @@ buildMattermost rec {
           --replace-fail 'options: {}' 'options: { disable: true }'
       '';
 
-      inherit nodejs;
       npmDepsHash = npmDeps.hash;
-      makeCacheWritable = true;
-      forceGitDeps = true;
-
-      npmRebuildFlags = [ "--ignore-scripts" ];
 
       buildPhase = ''
         runHook preBuild
@@ -287,21 +281,29 @@ buildMattermost rec {
 
         runHook postInstall
       '';
+
+      forceGitDeps = true;
+      makeCacheWritable = true;
+      npmRebuildFlags = [ "--ignore-scripts" ];
+      sourceRoot = "${src.name}/webapp";
     };
   };
 
   meta = {
     description = "Open source platform for secure collaboration across the entire software development lifecycle";
     homepage = "https://www.mattermost.org";
+
     license = with lib.licenses; [
       agpl3Only
       asl20
     ];
+
     maintainers = with lib.maintainers; [
       ryantm
       numinit
       mgdelacroix
     ];
+
     platforms = lib.platforms.linux;
     mainProgram = "mattermost";
   };

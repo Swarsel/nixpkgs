@@ -1,13 +1,13 @@
 {
   lib,
-  stdenvNoCC,
   fetchFromGitHub,
-  pnpm_10,
   fetchPnpmDeps,
-  pnpmConfigHook,
-  nodejs-slim,
   makeBinaryWrapper,
+  nodejs-slim,
+  pnpmConfigHook,
+  pnpm_10,
   shellcheck,
+  stdenvNoCC,
   versionCheckHook,
 }:
 stdenvNoCC.mkDerivation (finalAttrs: {
@@ -21,19 +21,6 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     hash = "sha256-Pe32lQSlyWcyUbqwhfoulwNwhrnWdRcKFIl3Jj0Skac=";
   };
 
-  pnpmWorkspaces = [ "bash-language-server" ];
-  pnpmDeps = fetchPnpmDeps {
-    inherit (finalAttrs)
-      pname
-      version
-      src
-      pnpmWorkspaces
-      ;
-    pnpm = pnpm_10;
-    fetcherVersion = 3;
-    hash = "sha256-6i+1V3ZkjiJ/IXDun3JfwmfDOiemxCmAXMzS/rGT6ZU=";
-  };
-
   nativeBuildInputs = [
     nodejs-slim
     pnpmConfigHook
@@ -41,6 +28,7 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     makeBinaryWrapper
     versionCheckHook
   ];
+
   buildPhase = ''
     runHook preBuild
 
@@ -79,16 +67,33 @@ stdenvNoCC.mkDerivation (finalAttrs: {
 
   doInstallCheck = true;
 
+  pnpmDeps = fetchPnpmDeps {
+    inherit (finalAttrs)
+      pname
+      version
+      src
+      pnpmWorkspaces
+      ;
+
+    fetcherVersion = 3;
+    hash = "sha256-6i+1V3ZkjiJ/IXDun3JfwmfDOiemxCmAXMzS/rGT6ZU=";
+    pnpm = pnpm_10;
+  };
+
+  pnpmWorkspaces = [ "bash-language-server" ];
+
   meta = {
     description = "Language server for Bash";
     homepage = "https://github.com/bash-lsp/bash-language-server";
     changelog = "https://github.com/bash-lsp/bash-language-server/releases/tag/${finalAttrs.src.tag}";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       doronbehar
       gepbird
     ];
-    mainProgram = "bash-language-server";
+
     platforms = lib.platforms.all;
+    mainProgram = "bash-language-server";
   };
 })

@@ -1,9 +1,9 @@
 {
-  buildPythonPackage,
+  lib,
   fetchFromGitHub,
+  buildPythonPackage,
   hatch-vcs,
   hatchling,
-  lib,
   pytestCheckHook,
   typer,
 }:
@@ -11,7 +11,6 @@
 buildPythonPackage rec {
   pname = "typer-injector";
   version = "0.3.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "BenjyWiener";
@@ -19,6 +18,10 @@ buildPythonPackage rec {
     tag = "v${version}";
     hash = "sha256-rhYeTNQh1DZuQ7/yNleZPMMBiF29OrcT0vr/yb5HJXk=";
   };
+
+  nativeCheckInputs = [
+    pytestCheckHook
+  ];
 
   build-system = [
     hatch-vcs
@@ -29,11 +32,8 @@ buildPythonPackage rec {
     typer
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "typer_injector" ];
-
-  nativeCheckInputs = [
-    pytestCheckHook
-  ];
 
   meta = {
     description = "Dependency injection for Typer";

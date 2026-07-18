@@ -1,10 +1,9 @@
 {
-  callPackage,
   lib,
+  fetchFromGitHub,
+  callPackage,
   ghidra,
   gradle,
-  fetchFromGitHub,
-
   binary-file-toolkit ? callPackage ./binary-file-toolkit.nix { },
 }:
 ghidra.buildGhidraExtension (finalAttrs: {
@@ -33,13 +32,12 @@ ghidra.buildGhidraExtension (finalAttrs: {
       --replace-fail '"@binary-file-toolkit@"' '"${binary-file-toolkit}"'
   '';
 
+  __darwinAllowLocalNetworking = true;
   gradleBuildTask = "buildExtension";
 
-  __darwinAllowLocalNetworking = true;
-
   mitmCache = gradle.fetchDeps {
-    pkg = finalAttrs.finalPackage;
     data = ./deps.json;
+    pkg = finalAttrs.finalPackage;
   };
 
   meta = {

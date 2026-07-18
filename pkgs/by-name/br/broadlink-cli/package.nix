@@ -1,7 +1,7 @@
 {
   lib,
-  python3Packages,
   fetchFromGitHub,
+  python3Packages,
 }:
 
 python3Packages.buildPythonApplication (finalAttrs: {
@@ -17,8 +17,6 @@ python3Packages.buildPythonApplication (finalAttrs: {
     sha256 = "sha256-fqhi4K8Ceh8Rs0ExteCfAuVfEamFjMCjCFm6DRAJDmI=";
   };
 
-  pyproject = false;
-
   propagatedBuildInputs = with python3Packages; [
     broadlink
   ];
@@ -32,9 +30,11 @@ python3Packages.buildPythonApplication (finalAttrs: {
     runHook postInstall
   '';
 
+  pyproject = false;
+
   meta = {
+    inherit (python3Packages.broadlink.meta) homepage license;
     description = "Tools for interfacing with Broadlink RM2/3 (Pro) remote controls, A1 sensor platforms and SP2/3 smartplugs";
     maintainers = with lib.maintainers; [ peterhoeg ];
-    inherit (python3Packages.broadlink.meta) homepage license;
   };
 })

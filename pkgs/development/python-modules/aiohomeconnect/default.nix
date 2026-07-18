@@ -1,11 +1,11 @@
 {
   lib,
+  fetchFromGitHub,
   authlib,
   buildPythonPackage,
   fastapi,
-  fetchFromGitHub,
-  httpx-sse,
   httpx,
+  httpx-sse,
   mashumaro,
   pytest-asyncio,
   pytest-cov-stub,
@@ -20,7 +20,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "aiohomeconnect";
   version = "0.38.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "MartinHjelmare";
@@ -28,6 +27,15 @@ buildPythonPackage (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-KJlkJXxbTSA1j/lvCAsIEheF5h2HQpJXVmiM3dyINPw=";
   };
+
+  nativeCheckInputs = [
+    pytest-asyncio
+    pytest-cov-stub
+    pytest-httpx
+    pytestCheckHook
+    sybil
+  ]
+  ++ lib.concatAttrValues finalAttrs.passthru.optional-dependencies;
 
   build-system = [ setuptools ];
 
@@ -46,15 +54,7 @@ buildPythonPackage (finalAttrs: {
     ];
   };
 
-  nativeCheckInputs = [
-    pytest-asyncio
-    pytest-cov-stub
-    pytest-httpx
-    pytestCheckHook
-    sybil
-  ]
-  ++ lib.concatAttrValues finalAttrs.passthru.optional-dependencies;
-
+  pyproject = true;
   pythonImportsCheck = [ "aiohomeconnect" ];
 
   meta = {

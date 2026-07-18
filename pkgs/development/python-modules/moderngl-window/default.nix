@@ -1,36 +1,31 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # build-system
-  setuptools,
-
+  av,
+  buildPythonPackage,
+  glfw,
+  mesa,
   # dependencies
   moderngl,
   numpy,
   pillow,
+  pygame,
   pyglet,
   pyglm,
-
-  # optional-dependencies
-  trimesh,
-  scipy,
-  glfw,
-  pygame,
+  pyqt5,
   pysdl2,
   pyside2,
-  pyqt5,
   reportlab,
-  av,
-
-  mesa,
+  scipy,
+  # build-system
+  setuptools,
+  # optional-dependencies
+  trimesh,
 }:
 
 buildPythonPackage rec {
   pname = "moderngl-window";
   version = "3.1.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "moderngl";
@@ -38,6 +33,9 @@ buildPythonPackage rec {
     tag = version;
     hash = "sha256-pElSwzNbZlZT8imK1UsLy2TyvS8TEM7hsVqLxEK1tbg=";
   };
+
+  # Tests need a display to run.
+  doCheck = false;
 
   build-system = [
     setuptools
@@ -52,30 +50,29 @@ buildPythonPackage rec {
   ];
 
   optional-dependencies = {
+    PySDL2 = [ pysdl2 ];
+    PySide2 = [ pyside2 ];
+    av = [ av ];
+    glfw = [ glfw ];
+    pdf = [ reportlab ];
+    pygame = [ pygame ];
+    pyqt5 = [ pyqt5 ];
+
     trimesh = [
       trimesh
       scipy
     ];
-    glfw = [ glfw ];
-    pygame = [ pygame ];
-    PySDL2 = [ pysdl2 ];
-    PySide2 = [ pyside2 ];
-    pyqt5 = [ pyqt5 ];
-    pdf = [ reportlab ];
-    av = [ av ];
   };
 
-  # Tests need a display to run.
-  doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "moderngl_window" ];
 
   meta = {
+    inherit (mesa.meta) platforms;
     description = "Cross platform helper library for ModernGL making window creation and resource loading simple";
     homepage = "https://github.com/moderngl/moderngl-window";
     changelog = "https://github.com/moderngl/moderngl-window/blob/${version}/CHANGELOG.md";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ c0deaddict ];
-    inherit (mesa.meta) platforms;
   };
 }

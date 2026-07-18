@@ -40,33 +40,30 @@ in
 
       server = {
         enable = lib.mkOption {
-          type = lib.types.bool;
           default = false;
+
           description = ''
             Whether to enable the kernel's NFS server.
           '';
+
+          type = lib.types.bool;
         };
 
-        extraNfsdConfig = lib.mkOption {
-          type = lib.types.str;
-          default = "";
-          description = ''
-            Extra configuration options for the [nfsd] section of /etc/nfs.conf.
-          '';
+        createMountPoints = lib.mkOption {
+          default = false;
+          description = "Whether to create the mount points in the exports file at startup time.";
+          type = lib.types.bool;
         };
 
         exports = lib.mkOption {
-          type = with lib.types; coercedTo (attrsOf (attrsOf (listOf str))) attrsToExports lines;
           default = "";
+
           description = ''
             Contents of the /etc/exports file.  See
             {manpage}`exports(5)` for the format.
           '';
+
           example = {
-            "/usr" = {
-              "*.local.domain" = [ "ro" ];
-              "@trusted" = [ "rw" ];
-            };
             "/home/joe" = {
               "pc001" = [
                 "rw"
@@ -75,61 +72,82 @@ in
                 "anongid=100"
               ];
             };
+
+            "/usr" = {
+              "*.local.domain" = [ "ro" ];
+              "@trusted" = [ "rw" ];
+            };
           };
+
+          type = with lib.types; coercedTo (attrsOf (attrsOf (listOf str))) attrsToExports lines;
+        };
+
+        extraNfsdConfig = lib.mkOption {
+          default = "";
+
+          description = ''
+            Extra configuration options for the [nfsd] section of /etc/nfs.conf.
+          '';
+
+          type = lib.types.str;
         };
 
         hostName = lib.mkOption {
-          type = lib.types.nullOr lib.types.str;
           default = null;
+
           description = ''
             Hostname or address on which NFS requests will be accepted.
             Default is all.  See the {option}`-H` option in
             {manpage}`nfsd(8)`.
           '';
-        };
 
-        nproc = lib.mkOption {
-          type = lib.types.int;
-          default = 8;
-          description = ''
-            Number of NFS server threads.  Defaults to the recommended value of 8.
-          '';
-        };
-
-        createMountPoints = lib.mkOption {
-          type = lib.types.bool;
-          default = false;
-          description = "Whether to create the mount points in the exports file at startup time.";
-        };
-
-        mountdPort = lib.mkOption {
-          type = lib.types.nullOr lib.types.port;
-          default = null;
-          example = 4002;
-          description = ''
-            Use fixed port for rpc.mountd, useful if server is behind firewall.
-          '';
+          type = lib.types.nullOr lib.types.str;
         };
 
         lockdPort = lib.mkOption {
-          type = lib.types.nullOr lib.types.port;
           default = null;
-          example = 4001;
+
           description = ''
             Use a fixed port for the NFS lock manager kernel module
             (`lockd/nlockmgr`).  This is useful if the
             NFS server is behind a firewall.
           '';
+
+          example = 4001;
+          type = lib.types.nullOr lib.types.port;
+        };
+
+        mountdPort = lib.mkOption {
+          default = null;
+
+          description = ''
+            Use fixed port for rpc.mountd, useful if server is behind firewall.
+          '';
+
+          example = 4002;
+          type = lib.types.nullOr lib.types.port;
+        };
+
+        nproc = lib.mkOption {
+          default = 8;
+
+          description = ''
+            Number of NFS server threads.  Defaults to the recommended value of 8.
+          '';
+
+          type = lib.types.int;
         };
 
         statdPort = lib.mkOption {
-          type = lib.types.nullOr lib.types.port;
           default = null;
-          example = 4000;
+
           description = ''
             Use a fixed port for {command}`rpc.statd`. This is
             useful if the NFS server is behind a firewall.
           '';
+
+          example = 4000;
+          type = lib.types.nullOr lib.types.port;
         };
 
       };
@@ -142,24 +160,12 @@ in
 
   config = lib.mkIf cfg.enable {
 
-    services.rpcbind.enable = true;
-
     boot.supportedFilesystems = [ "nfs" ]; # needed for statd and idmapd
-
     environment.etc.exports.source = exports;
-
-    systemd.services.nfs-server = {
-      enable = true;
-      wantedBy = [ "multi-user.target" ];
-
-      preStart = ''
-        mkdir -p /var/lib/nfs/v4recovery
-      '';
-    };
+    services.rpcbind.enable = true;
 
     systemd.services.nfs-mountd = {
       enable = true;
-      restartTriggers = [ exports ];
 
       preStart = ''
         mkdir -p /var/lib/nfs
@@ -172,6 +178,18 @@ in
           | xargs -d '\n' mkdir -p
         ''}
       '';
+
+      restartTriggers = [ exports ];
+    };
+
+    systemd.services.nfs-server = {
+      enable = true;
+
+      preStart = ''
+        mkdir -p /var/lib/nfs/v4recovery
+      '';
+
+      wantedBy = [ "multi-user.target" ];
     };
 
   };

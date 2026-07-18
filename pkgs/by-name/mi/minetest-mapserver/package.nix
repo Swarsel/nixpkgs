@@ -1,7 +1,7 @@
 {
-  buildGoModule,
-  fetchFromGitHub,
   lib,
+  fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule (finalAttrs: {
@@ -19,13 +19,15 @@ buildGoModule (finalAttrs: {
 
   meta = {
     description = "Realtime mapserver for minetest";
-    mainProgram = "mapserver";
     homepage = "https://github.com/minetest-mapserver/mapserver/blob/master/readme.md";
     changelog = "https://github.com/minetest-mapserver/mapserver/releases/tag/v${finalAttrs.version}";
+
     license = with lib.licenses; [
       mit
       cc-by-sa-30
     ];
+
     platforms = lib.platforms.all;
+    mainProgram = "mapserver";
   };
 })

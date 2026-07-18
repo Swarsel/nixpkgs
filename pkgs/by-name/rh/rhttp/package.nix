@@ -1,14 +1,11 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
 }:
 buildGoModule {
   pname = "rhttp";
   version = "0-unstable-2024-04-28";
-
-  __structuredAttrs = true;
-  strictDeps = true;
 
   src = fetchFromGitHub {
     owner = "1buran";
@@ -17,7 +14,9 @@ buildGoModule {
     hash = "sha256-KrMkTp4J5yMiEca4A08u8fmTEFId58KM5bSv+75x49s=";
   };
 
+  strictDeps = true;
   vendorHash = "sha256-NR1q44IUSME+x1EOcnXXRoIXw8Av0uH7iXhD+cdd99I=";
+  __structuredAttrs = true;
 
   meta = {
     description = "Go REPL for HTTP";

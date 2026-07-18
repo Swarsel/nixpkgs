@@ -26,11 +26,11 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   meta = {
-    homepage = "https://github.com/emmanuel-marty/lzsa";
     description = "Byte-aligned, efficient lossless packer that is optimized for fast decompression on 8-bit micros";
-    mainProgram = "lzsa";
+    homepage = "https://github.com/emmanuel-marty/lzsa";
     license = with lib.licenses; [ cc0 ];
     maintainers = [ ];
     platforms = lib.platforms.unix;
+    mainProgram = "lzsa";
   };
 })

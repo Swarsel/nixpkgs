@@ -1,29 +1,20 @@
 {
   lib,
   stdenv,
-  which,
-  callPackage,
-  python3,
-
-  # apparmor deps
-  libapparmor,
   apparmor-parser,
   apparmor-utils,
+  callPackage,
+  # apparmor deps
+  libapparmor,
+  python3,
+  which,
 }:
 stdenv.mkDerivation {
-  pname = "apparmor-profiles";
   inherit (libapparmor) version src;
-
-  sourceRoot = "${libapparmor.src.name}/profiles";
-
+  pname = "apparmor-profiles";
+  strictDeps = true;
   nativeBuildInputs = [ which ];
-
-  installFlags = [
-    "DESTDIR=$(out)"
-    "EXTRAS_DEST=$(out)/share/apparmor/extra-profiles"
-  ];
-
-  checkTarget = "check";
+  doCheck = true;
 
   nativeCheckInputs = [
     apparmor-parser
@@ -42,8 +33,14 @@ stdenv.mkDerivation {
       --replace-fail '../parser/apparmor_parser' '${lib.getExe apparmor-parser}'
   '';
 
-  doCheck = true;
-  strictDeps = true;
+  checkTarget = "check";
+
+  installFlags = [
+    "DESTDIR=$(out)"
+    "EXTRAS_DEST=$(out)/share/apparmor/extra-profiles"
+  ];
+
+  sourceRoot = "${libapparmor.src.name}/profiles";
 
   meta = libapparmor.meta // {
     description = "Mandatory access control system - profiles";

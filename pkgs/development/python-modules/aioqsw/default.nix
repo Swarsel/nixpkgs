@@ -1,15 +1,14 @@
 {
   lib,
+  fetchFromGitHub,
   aiohttp,
   buildPythonPackage,
-  fetchFromGitHub,
   setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "aioqsw";
   version = "0.4.3";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "Noltari";
@@ -18,13 +17,11 @@ buildPythonPackage rec {
     hash = "sha256-2v3PhhlVeQs/jMnOzji/aKeWD7pWfqXVf4iBOgXD7kc=";
   };
 
-  build-system = [ setuptools ];
-
-  dependencies = [ aiohttp ];
-
   # Module has no tests
   doCheck = false;
-
+  build-system = [ setuptools ];
+  dependencies = [ aiohttp ];
+  pyproject = true;
   pythonImportsCheck = [ "aioqsw" ];
 
   meta = {

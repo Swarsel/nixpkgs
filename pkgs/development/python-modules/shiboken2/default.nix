@@ -1,17 +1,16 @@
 {
-  python,
   lib,
   stdenv,
-  pyside2,
   cmake,
-  qt5,
   llvmPackages,
+  pyside2,
+  python,
+  qt5,
 }:
 
 stdenv.mkDerivation {
-  pname = "shiboken2";
-
   inherit (pyside2) version src patches;
+  pname = "shiboken2";
 
   postPatch = ''
     cd sources/shiboken2
@@ -28,8 +27,6 @@ stdenv.mkDerivation {
     done
     head CMakeLists.txt
   '';
-
-  env.CLANG_INSTALL_DIR = llvmPackages.libclang.out;
 
   nativeBuildInputs = [
     cmake
@@ -50,8 +47,7 @@ stdenv.mkDerivation {
   ];
 
   cmakeFlags = [ "-DBUILD_TESTS=OFF" ];
-
-  dontWrapQtApps = true;
+  env.CLANG_INSTALL_DIR = llvmPackages.libclang.out;
 
   postInstall = ''
     cd ../../..
@@ -60,15 +56,19 @@ stdenv.mkDerivation {
     rm $out/bin/shiboken_tool.py
   '';
 
+  dontWrapQtApps = true;
+
   meta = {
     description = "Generator for the PySide2 Qt bindings";
-    mainProgram = "shiboken2";
+    homepage = "https://wiki.qt.io/Qt_for_Python";
+
     license = with lib.licenses; [
       gpl2
       lgpl21
     ];
-    homepage = "https://wiki.qt.io/Qt_for_Python";
+
     maintainers = [ ];
+    mainProgram = "shiboken2";
     broken = python.pythonAtLeast "3.13";
   };
 }

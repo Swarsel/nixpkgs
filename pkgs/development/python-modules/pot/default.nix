@@ -1,42 +1,37 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
+  autograd,
+  buildPythonPackage,
+  # cvxopt
+  cvxopt,
   # build-system
   cython,
-  numpy,
-  setuptools,
-
-  # dependencies
-  scipy,
-
   # optional-dependencies
   # backend-jax
   jax,
   jaxlib,
+  # plot
+  matplotlib,
+  numpy,
+  pymanopt,
+  pytest-cov-stub,
+  # tests
+  pytestCheckHook,
+  # dr
+  scikit-learn,
+  # dependencies
+  scipy,
+  setuptools,
   # backend-tf
   tensorflow,
   # backend-torch
   torch,
-  # cvxopt
-  cvxopt,
-  # dr
-  scikit-learn,
-  pymanopt,
-  autograd,
-  # plot
-  matplotlib,
-
-  # tests
-  pytestCheckHook,
-  pytest-cov-stub,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "pot";
   version = "0.9.6.post1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "PythonOT";
@@ -54,39 +49,6 @@ buildPythonPackage (finalAttrs: {
     sed -i '/sdk_path/d' setup.py
   '';
 
-  build-system = [
-    cython
-    numpy
-    setuptools
-  ];
-
-  dependencies = [
-    numpy
-    scipy
-  ];
-
-  optional-dependencies = {
-    backend-numpy = [ ];
-    backend-jax = [
-      jax
-      jaxlib
-    ];
-    backend-cupy = [ ];
-    backend-tf = [ tensorflow ];
-    backend-torch = [ torch ];
-    cvxopt = [ cvxopt ];
-    dr = [
-      scikit-learn
-      pymanopt
-      autograd
-    ];
-    gnn = [
-      torch
-      # torch-geometric
-    ];
-    plot = [ matplotlib ];
-  };
-
   nativeCheckInputs = [
     pytestCheckHook
     pytest-cov-stub
@@ -102,6 +64,17 @@ buildPythonPackage (finalAttrs: {
     popd
     rm -rf ot
   '';
+
+  build-system = [
+    cython
+    numpy
+    setuptools
+  ];
+
+  dependencies = [
+    numpy
+    scipy
+  ];
 
   disabledTests = [
     # GPU tests are always skipped because of sandboxing
@@ -141,6 +114,35 @@ buildPythonPackage (finalAttrs: {
     "test_dist_vs_cdist"
   ];
 
+  optional-dependencies = {
+    backend-cupy = [ ];
+
+    backend-jax = [
+      jax
+      jaxlib
+    ];
+
+    backend-numpy = [ ];
+    backend-tf = [ tensorflow ];
+    backend-torch = [ torch ];
+    cvxopt = [ cvxopt ];
+
+    dr = [
+      scikit-learn
+      pymanopt
+      autograd
+    ];
+
+    gnn = [
+      torch
+      # torch-geometric
+    ];
+
+    plot = [ matplotlib ];
+  };
+
+  pyproject = true;
+
   pythonImportsCheck = [
     "ot"
     "ot.lp"
@@ -149,9 +151,9 @@ buildPythonPackage (finalAttrs: {
   meta = {
     description = "Python Optimal Transport Library";
     homepage = "https://pythonot.github.io/";
-    downloadPage = "https://github.com/PythonOT/POT";
     changelog = "https://github.com/PythonOT/POT/blob/${finalAttrs.src.tag}/RELEASES.md";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ yl3dy ];
+    downloadPage = "https://github.com/PythonOT/POT";
   };
 })

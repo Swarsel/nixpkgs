@@ -1,17 +1,15 @@
 {
-  mkKdeDerivation,
-  pkg-config,
+  libavif,
   libheif,
   libjxl,
-  libavif,
   libraw,
+  mkKdeDerivation,
   openexr,
+  pkg-config,
 }:
 mkKdeDerivation {
   pname = "kimageformats";
 
-  extraCmakeFlags = [ "-DKIMAGEFORMATS_HEIF=1" ];
-  extraNativeBuildInputs = [ pkg-config ];
   extraBuildInputs = [
     libheif
     libjxl
@@ -19,4 +17,7 @@ mkKdeDerivation {
     libraw
     openexr
   ];
+
+  extraCmakeFlags = [ "-DKIMAGEFORMATS_HEIF=1" ];
+  extraNativeBuildInputs = [ pkg-config ];
 }

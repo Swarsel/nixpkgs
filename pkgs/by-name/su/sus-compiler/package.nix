@@ -1,10 +1,10 @@
 {
   lib,
   stdenv,
-  rustPlatform,
   fetchFromGitHub,
-  versionCheckHook,
   nix-update-script,
+  rustPlatform,
+  versionCheckHook,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -39,16 +39,16 @@ rustPlatform.buildRustPackage (finalAttrs: {
     '';
   };
 
+  postPatch = ''
+    ln -s ${./Cargo.lock} Cargo.lock
+  '';
+
   # no lockfile upstream
   cargoLock.lockFile = ./Cargo.lock;
 
   preBuild = ''
     export INSTALL_SUS_HOME="$out/share/sus-compiler";
     mkdir -p "$INSTALL_SUS_HOME"
-  '';
-
-  postPatch = ''
-    ln -s ${./Cargo.lock} Cargo.lock
   '';
 
   # Do the install version check only on stable versions of this compiler, when the build platform
@@ -63,7 +63,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
 
   nativeInstallCheckInputs = [ versionCheckHook ];
   versionCheckProgram = "${placeholder "out"}/bin/sus_compiler";
-
   passthru.updateScript = nix-update-script { extraArgs = [ "--generate-lockfile" ]; };
 
   meta = {

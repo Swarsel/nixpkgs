@@ -1,13 +1,11 @@
 {
   lib,
   fetchFromGitHub,
-  rustPlatform,
   nix-update-script,
+  rustPlatform,
   versionCheckHook,
 }:
 rustPlatform.buildRustPackage (finalAttrs: {
-  __structuredAttrs = true;
-
   pname = "putzen";
   version = "3.3.2";
 
@@ -19,10 +17,9 @@ rustPlatform.buildRustPackage (finalAttrs: {
   };
 
   cargoHash = "sha256-RqTBJCCJnvqujknJp7tK4oXMfBir9McfLaA5dtgYU90=";
-
   doInstallCheck = true;
   nativeInstallCheckInputs = [ versionCheckHook ];
-
+  __structuredAttrs = true;
   passthru.updateScript = nix-update-script { };
 
   meta = {

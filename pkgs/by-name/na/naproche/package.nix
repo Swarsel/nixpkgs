@@ -1,9 +1,9 @@
 {
   lib,
   fetchFromGitHub,
+  eprover,
   haskellPackages,
   makeWrapper,
-  eprover,
 }:
 
 with haskellPackages;
@@ -18,12 +18,20 @@ mkDerivation {
     hash = "sha256-pIRKjbSFP1q8ldMZXm0WSP0FJqy/lQslNQcoed/y9W0=";
   };
 
-  isExecutable = true;
+  doCheck = false; # Tests are broken in upstream
+
+  postInstall = ''
+    wrapProgram $out/bin/Naproche-SAD \
+      --set-default NAPROCHE_EPROVER ${eprover}/bin/eprover
+  '';
 
   buildTools = [
     hpack
     makeWrapper
   ];
+
+  description = "Write formal proofs in natural language and LaTeX";
+
   executableHaskellDepends = [
     base
     array
@@ -43,17 +51,10 @@ mkDerivation {
     uuid
   ];
 
-  prePatch = "hpack";
-  doCheck = false; # Tests are broken in upstream
-
-  postInstall = ''
-    wrapProgram $out/bin/Naproche-SAD \
-      --set-default NAPROCHE_EPROVER ${eprover}/bin/eprover
-  '';
-
   homepage = "https://github.com/naproche/naproche#readme";
-  description = "Write formal proofs in natural language and LaTeX";
-  maintainers = with lib.maintainers; [ jvanbruegge ];
+  isExecutable = true;
   license = lib.licenses.gpl3Only;
   mainProgram = "Naproche-SAD";
+  maintainers = with lib.maintainers; [ jvanbruegge ];
+  prePatch = "hpack";
 }

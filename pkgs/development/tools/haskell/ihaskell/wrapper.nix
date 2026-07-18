@@ -1,12 +1,12 @@
 {
   lib,
   stdenv,
-  writeScriptBin,
-  makeWrapper,
   buildEnv,
   ghcWithPackages,
   jupyter,
+  makeWrapper,
   packages,
+  writeScriptBin,
 }:
 let
   ihaskellEnv = ghcWithPackages (
@@ -31,12 +31,8 @@ let
   '';
 in
 buildEnv {
-  name = "ihaskell-with-packages";
   nativeBuildInputs = [ makeWrapper ];
-  paths = [
-    ihaskellEnv
-    jupyter
-  ];
+
   postBuild = ''
     ln -s ${ihaskellSh}/bin/ihaskell-notebook $out/bin/
     for prg in $out/bin"/"*;do
@@ -45,4 +41,11 @@ buildEnv {
       fi
     done
   '';
+
+  name = "ihaskell-with-packages";
+
+  paths = [
+    ihaskellEnv
+    jupyter
+  ];
 }

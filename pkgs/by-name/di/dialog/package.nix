@@ -19,6 +19,8 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-eLPdGNleUPC+j5ucHnz/4oyb8c3yDVs+8XJ5xNo1xbU=";
   };
 
+  strictDeps = true;
+
   nativeBuildInputs = lib.optionals withLibrary [
     libtool
   ];
@@ -26,8 +28,6 @@ stdenv.mkDerivation (finalAttrs: {
   buildInputs = [
     ncurses
   ];
-
-  strictDeps = true;
 
   configureFlags = [
     "--disable-rpath-hacks"
@@ -41,13 +41,15 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   meta = {
-    homepage = "https://invisible-island.net/dialog/dialog.html";
+    inherit (ncurses.meta) platforms;
     description = "Display dialog boxes from shell";
+    homepage = "https://invisible-island.net/dialog/dialog.html";
     license = lib.licenses.lgpl21Plus;
-    mainProgram = "dialog";
+
     maintainers = with lib.maintainers; [
       spacefrogg
     ];
-    inherit (ncurses.meta) platforms;
+
+    mainProgram = "dialog";
   };
 })

@@ -2,15 +2,15 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  vim,
-  makeWrapper,
-  jq,
-  rofi,
-  xrandr,
-  xdotool,
-  i3,
   gawk,
+  i3,
+  jq,
   libnotify,
+  makeWrapper,
+  rofi,
+  vim,
+  xdotool,
+  xrandr,
 }:
 
 let
@@ -39,8 +39,6 @@ stdenv.mkDerivation {
 
   nativeBuildInputs = [ makeWrapper ];
 
-  dontBuild = true;
-
   installPhase = ''
     runHook preInstall
 
@@ -51,12 +49,14 @@ stdenv.mkDerivation {
     runHook postInstall
   '';
 
+  dontBuild = true;
+
   meta = {
-    homepage = "https://github.com/klaxalk/i3-layout-manager";
     description = "Saving, loading and managing layouts for i3wm";
-    mainProgram = "layout_manager";
+    homepage = "https://github.com/klaxalk/i3-layout-manager";
     license = lib.licenses.mit;
-    platforms = lib.platforms.linux;
     maintainers = [ ];
+    platforms = lib.platforms.linux;
+    mainProgram = "layout_manager";
   };
 }

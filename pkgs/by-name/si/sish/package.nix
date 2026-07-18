@@ -1,9 +1,9 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
-  testers,
+  buildGoModule,
   sish,
+  testers,
 }:
 
 buildGoModule (finalAttrs: {

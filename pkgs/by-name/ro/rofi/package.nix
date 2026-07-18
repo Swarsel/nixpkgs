@@ -1,35 +1,26 @@
 {
-  symlinkJoin,
   lib,
-  rofi-unwrapped,
-  makeWrapper,
-  wrapGAppsHook3,
   gdk-pixbuf,
   hicolor-icon-theme,
-  theme ? null,
+  makeWrapper,
+  rofi-unwrapped,
+  symlinkJoin,
+  wrapGAppsHook3,
   plugins ? [ ],
   symlink-dmenu ? false,
+  theme ? null,
 }:
 
 symlinkJoin {
-  pname = "rofi";
   inherit (rofi-unwrapped) version;
-
-  paths = [
-    rofi-unwrapped.out
-  ]
-  ++ (lib.forEach plugins (p: p.out));
+  pname = "rofi";
 
   nativeBuildInputs = [
     makeWrapper
     wrapGAppsHook3
   ];
+
   buildInputs = [ gdk-pixbuf ];
-
-  preferLocalBuild = true;
-  passthru.unwrapped = rofi-unwrapped;
-
-  dontWrapGApps = true;
 
   postBuild = ''
     rm -rf $out/bin
@@ -54,6 +45,16 @@ symlinkJoin {
     makeWrapper ${rofi-unwrapped}/bin/rofi-theme-selector $out/bin/rofi-theme-selector \
       --prefix XDG_DATA_DIRS : $out/share
   '';
+
+  dontWrapGApps = true;
+
+  paths = [
+    rofi-unwrapped.out
+  ]
+  ++ (lib.forEach plugins (p: p.out));
+
+  preferLocalBuild = true;
+  passthru.unwrapped = rofi-unwrapped;
 
   meta = rofi-unwrapped.meta // {
     priority = (rofi-unwrapped.meta.priority or lib.meta.defaultPriority) - 1;

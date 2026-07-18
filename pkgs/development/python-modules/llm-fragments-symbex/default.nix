@@ -1,19 +1,18 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
-  symbex,
+  buildPythonPackage,
   llm,
   llm-fragments-symbex,
   pytestCheckHook,
+  setuptools,
+  symbex,
   writableTmpDirAsHomeHook,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "llm-fragments-symbex";
   version = "0.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "simonw";
@@ -22,6 +21,11 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-LECMHv4tGMCY60JU68y2Sfxp97Px7T/RJVhYVDSFCy4=";
   };
 
+  nativeCheckInputs = [
+    pytestCheckHook
+    writableTmpDirAsHomeHook
+  ];
+
   build-system = [ setuptools ];
 
   dependencies = [
@@ -29,13 +33,8 @@ buildPythonPackage (finalAttrs: {
     symbex
   ];
 
-  nativeCheckInputs = [
-    pytestCheckHook
-    writableTmpDirAsHomeHook
-  ];
-
+  pyproject = true;
   pythonImportsCheck = [ "llm_fragments_symbex" ];
-
   passthru.tests = llm.mkPluginTest llm-fragments-symbex;
 
   meta = {

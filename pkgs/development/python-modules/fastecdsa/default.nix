@@ -9,7 +9,6 @@
 buildPythonPackage rec {
   pname = "fastecdsa";
   version = "3.0.1";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
@@ -17,7 +16,10 @@ buildPythonPackage rec {
   };
 
   buildInputs = [ gmp ];
-
+  # skip tests for now, they fail with
+  # ImportError: cannot import name '_ecdsa' from 'fastecdsa'
+  # but the installed package works just fine
+  doCheck = false;
   nativeCheckInputs = [ pytestCheckHook ];
 
   disabledTestPaths = [
@@ -26,11 +28,7 @@ buildPythonPackage rec {
     "fastecdsa/tests/test_rfc6979_ecdsa.py"
   ];
 
-  # skip tests for now, they fail with
-  # ImportError: cannot import name '_ecdsa' from 'fastecdsa'
-  # but the installed package works just fine
-  doCheck = false;
-
+  format = "setuptools";
   pythonImportsCheck = [ "fastecdsa" ];
 
   meta = {

@@ -36,15 +36,14 @@ stdenv.mkDerivation (finalAttrs: {
     ];
 
   preConfigure = "cd wamr-compiler";
-
   passthru.updateScript = nix-update-script { extraArgs = [ "--version-regex=WAMR-(.*)" ]; };
 
   meta = {
     description = "WebAssembly Micro Runtime AOT compiler";
     homepage = "https://github.com/bytecodealliance/wasm-micro-runtime";
     license = lib.licenses.asl20;
-    mainProgram = "wamrc";
     maintainers = with lib.maintainers; [ bubblepipe ];
     platforms = lib.platforms.unix;
+    mainProgram = "wamrc";
   };
 })

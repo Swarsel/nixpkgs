@@ -1,12 +1,12 @@
 {
   lib,
   stdenv,
-  clang,
   fetchFromGitHub,
+  clang,
   fetchpatch,
   installShellFiles,
-  openssl,
   libpcap,
+  openssl,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -24,9 +24,9 @@ stdenv.mkDerivation (finalAttrs: {
     # Pull upstream fix for parallel builds:
     #   https://github.com/joswr1ght/cowpatty/pull/5
     (fetchpatch {
+      hash = "sha256-k0Qht80HcjvPoxVPF6wAXwxN3d2mxBrEyeFGuU7w9eA=";
       name = "fix-parallel.patch";
       url = "https://github.com/joswr1ght/cowpatty/commit/9c8cc09c4fa90aebee44afcd0ad6a35539178478.patch";
-      hash = "sha256-k0Qht80HcjvPoxVPF6wAXwxN3d2mxBrEyeFGuU7w9eA=";
     })
   ];
 
@@ -40,8 +40,6 @@ stdenv.mkDerivation (finalAttrs: {
     libpcap
   ];
 
-  enableParallelBuilding = true;
-
   makeFlags = [
     "DESTDIR=$(out)"
     "BINDIR=/bin"
@@ -52,14 +50,18 @@ stdenv.mkDerivation (finalAttrs: {
     installManPage genpmk.1
   '';
 
+  enableParallelBuilding = true;
+
   meta = {
     description = "Offline dictionary attack against WPA/WPA2 networks";
     homepage = "https://github.com/joswr1ght/cowpatty";
     license = lib.licenses.bsd3;
+
     maintainers = with lib.maintainers; [
       nico202
       fab
     ];
+
     platforms = lib.platforms.linux;
   };
 })

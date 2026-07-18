@@ -1,21 +1,16 @@
 {
-  mkDerivation,
   bsdSetupHook,
   freebsdSetupHook,
-  makeMinimal,
-  install,
-  mandoc,
   groff,
+  install,
+  makeMinimal,
+  mandoc,
+  mkDerivation,
 }:
 
 mkDerivation {
-  path = "usr.bin/tsort";
-  extraPaths = [ ];
   outputs = [ "out" ];
-  MK_TESTS = "no";
-  makeFlags = [
-    "STRIP=-s" # flag to install, not command
-  ];
+
   nativeBuildInputs = [
     bsdSetupHook
     freebsdSetupHook
@@ -24,4 +19,12 @@ mkDerivation {
     mandoc
     groff
   ];
+
+  makeFlags = [
+    "STRIP=-s" # flag to install, not command
+  ];
+
+  MK_TESTS = "no";
+  extraPaths = [ ];
+  path = "usr.bin/tsort";
 }

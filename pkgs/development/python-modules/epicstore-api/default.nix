@@ -1,16 +1,15 @@
 {
-  buildPythonPackage,
-  fetchFromGitHub,
   lib,
-  pytestCheckHook,
+  fetchFromGitHub,
+  buildPythonPackage,
   cloudscraper,
+  pytestCheckHook,
   setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "epicstore-api";
   version = "0.2.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "SD4RK";
@@ -19,21 +18,18 @@ buildPythonPackage rec {
     hash = "sha256-XSynUz8rAl/+jcPMCZoVKlGZLVcTCAr36VEWVhAydoM=";
   };
 
-  build-system = [ setuptools ];
-
-  dependencies = [ cloudscraper ];
-
-  pythonImportsCheck = [ "epicstore_api" ];
-
-  nativeCheckInputs = [ pytestCheckHook ];
-
   # tests directory exists but contains no test cases
   doCheck = false;
+  nativeCheckInputs = [ pytestCheckHook ];
+  build-system = [ setuptools ];
+  dependencies = [ cloudscraper ];
+  pyproject = true;
+  pythonImportsCheck = [ "epicstore_api" ];
 
   meta = {
-    changelog = "https://github.com/SD4RK/epicstore_api/releases/tag/${src.tag}";
     description = "Epic Games Store Web API Wrapper written in Python";
     homepage = "https://github.com/SD4RK/epicstore_api";
+    changelog = "https://github.com/SD4RK/epicstore_api/releases/tag/${src.tag}";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ dotlambda ];
   };

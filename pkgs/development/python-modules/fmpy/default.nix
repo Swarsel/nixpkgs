@@ -1,48 +1,39 @@
 {
   lib,
   stdenv,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # patches
-  qt6,
-  fmpy,
-  replaceVars,
-
-  # nativeBuildInputs
-  cmake,
-
-  # build-system
-  hatchling,
-
   # dependencies
   attrs,
+  buildPythonPackage,
+  # nativeBuildInputs
+  cmake,
+  fmi-reference-fmus,
+  fmpy,
+  # build-system
+  hatchling,
   jinja2,
+  lapack,
   lark,
   lxml,
   msgpack,
   nbformat,
   numpy,
   pyside6,
-
+  # patches
+  qt6,
+  replaceVars,
   # preBuild
   rpclib,
-
-  # tests
-  versionCheckHook,
-
+  runCommand,
   # passthru
   sundials,
-  lapack,
-  runCommand,
-  fmi-reference-fmus,
-
+  # tests
+  versionCheckHook,
   enableRemoting ? true,
 }:
 buildPythonPackage rec {
   pname = "fmpy";
   version = "0.3.27";
-  pyproject = true;
 
   # Bumping version? Make sure to look through the commit history for
   # bumped native/build_cvode.py pins (see above).
@@ -50,8 +41,8 @@ buildPythonPackage rec {
     owner = "CATIA-Systems";
     repo = "FMPy";
     tag = "v${version}";
-    fetchSubmodules = true;
     hash = "sha256-Sx3lHiEMPESbUN8LIb4o0J7t/ZPavsyfh1QJJpocNaA=";
+    fetchSubmodules = true;
   };
 
   patches = [
@@ -80,25 +71,6 @@ buildPythonPackage rec {
     cmake
   ];
 
-  build-system = [
-    hatchling
-  ];
-
-  dependencies = [
-    attrs
-    cmake
-    jinja2
-    lark
-    lxml
-    msgpack
-    nbformat
-    numpy
-    pyside6
-  ];
-
-  dontUseCmakeConfigure = true;
-  dontUseCmakeBuildDir = true;
-
   # Don't run upstream build scripts as they are too specialized.
   # cvode is already built, so we only need to build native binaries.
   # We run these cmake builds and then run the standard
@@ -125,6 +97,30 @@ buildPythonPackage rec {
     popd
   '';
 
+  nativeCheckInputs = [
+    versionCheckHook
+  ];
+
+  build-system = [
+    hatchling
+  ];
+
+  dependencies = [
+    attrs
+    cmake
+    jinja2
+    lark
+    lxml
+    msgpack
+    nbformat
+    numpy
+    pyside6
+  ];
+
+  dontUseCmakeBuildDir = true;
+  dontUseCmakeConfigure = true;
+  pyproject = true;
+
   pythonImportsCheck = [
     "fmpy"
     "fmpy.cross_check"
@@ -138,10 +134,6 @@ buildPythonPackage rec {
     "fmpy.sundials"
   ];
 
-  nativeCheckInputs = [
-    versionCheckHook
-  ];
-
   passthru = {
     # From sundials, build only the CVODE solver. C.f.
     # src/native/build_cvode.py
@@ -149,6 +141,7 @@ buildPythonPackage rec {
       (sundials.overrideAttrs (prev: rec {
         # hash copied from native/build_cvode.py
         version = "5.3.0";
+
         src = fetchFromGitHub {
           owner = "LLNL";
           repo = "sundials";
@@ -167,15 +160,13 @@ buildPythonPackage rec {
         cmakeFlags =
           prev.cmakeFlags
           ++ lib.mapAttrsToList (option: enable: lib.cmakeBool option enable) {
+            BUILD_ARKODE = false;
             # only build the CVODE solver
             BUILD_CVODE = true;
-
             BUILD_CVODES = false;
-            BUILD_ARKODE = false;
             BUILD_IDA = false;
             BUILD_IDAS = false;
             BUILD_KINSOL = false;
-
             BUILD_SHARED_LIBS = true;
           };
 
@@ -190,10 +181,10 @@ buildPythonPackage rec {
         '';
       })).override
         {
-          lapackSupport = false;
-          lapack.isILP64 = stdenv.hostPlatform.is64bit;
           blas = lapack;
           kluSupport = false;
+          lapack.isILP64 = stdenv.hostPlatform.is64bit;
+          lapackSupport = false;
         };
 
     # Simulate reference FMUs from
@@ -217,10 +208,6 @@ buildPythonPackage rec {
   };
 
   meta = {
-    # A logging.dylib is built but is not packaged correctly so as to
-    # be found. C.f.
-    # <https://logs.ofborg.org/?key=nixos/nixpkgs.397658&attempt_id=9d7cb742-db51-4d9e-99ca-49425d87d14d>
-    broken = stdenv.hostPlatform.isDarwin;
     description = "Simulate Functional Mockup Units (FMUs) in Python";
     homepage = "https://github.com/CATIA-Systems/FMPy";
     license = lib.licenses.bsd2;
@@ -231,5 +218,9 @@ buildPythonPackage rec {
     # <https://github.com/CATIA-Systems/FMPy/blob/v0.3.23/pyproject.toml?plain=1#L71-L112>
     platforms = lib.platforms.x86_64 ++ [ "i686-windows" ];
     mainProgram = "fmpy";
+    # A logging.dylib is built but is not packaged correctly so as to
+    # be found. C.f.
+    # <https://logs.ofborg.org/?key=nixos/nixpkgs.397658&attempt_id=9d7cb742-db51-4d9e-99ca-49425d87d14d>
+    broken = stdenv.hostPlatform.isDarwin;
   };
 }

@@ -9,19 +9,12 @@ let
   cfg = config.services.yubikey-agent;
 in
 {
-  ###### interface
-
-  meta.maintainers = with lib.maintainers; [
-    philandstuff
-    rawkode
-  ];
-
   options = {
 
     services.yubikey-agent = {
       enable = lib.mkOption {
-        type = lib.types.bool;
         default = false;
+
         description = ''
           Whether to start yubikey-agent when you log in.  Also sets
           SSH_AUTH_SOCK to point at yubikey-agent.
@@ -29,6 +22,8 @@ in
           Note that yubikey-agent will use whatever pinentry is
           specified in programs.gnupg.agent.pinentryPackage.
         '';
+
+        type = lib.types.bool;
       };
 
       package = lib.mkPackageOption pkgs "yubikey-agent" { };
@@ -36,7 +31,15 @@ in
   };
 
   config = lib.mkIf cfg.enable {
+    environment.extraInit = ''
+      if [ -z "$SSH_AUTH_SOCK" -a -n "$XDG_RUNTIME_DIR" ]; then
+        export SSH_AUTH_SOCK="$XDG_RUNTIME_DIR/yubikey-agent/yubikey-agent.sock"
+      fi
+    '';
+
     environment.systemPackages = [ cfg.package ];
+    # Yubikey-agent expects pcsd to be running in order to function.
+    services.pcscd.enable = true;
     systemd.packages = [ cfg.package ];
 
     # This overrides the systemd user unit shipped with the
@@ -47,14 +50,11 @@ in
           path = [ config.programs.gnupg.agent.pinentryPackage ];
           wantedBy = [ "default.target" ];
         };
-
-    # Yubikey-agent expects pcsd to be running in order to function.
-    services.pcscd.enable = true;
-
-    environment.extraInit = ''
-      if [ -z "$SSH_AUTH_SOCK" -a -n "$XDG_RUNTIME_DIR" ]; then
-        export SSH_AUTH_SOCK="$XDG_RUNTIME_DIR/yubikey-agent/yubikey-agent.sock"
-      fi
-    '';
   };
+
+  ###### interface
+  meta.maintainers = with lib.maintainers; [
+    philandstuff
+    rawkode
+  ];
 }

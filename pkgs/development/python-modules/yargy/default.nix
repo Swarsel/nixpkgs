@@ -2,29 +2,27 @@
   lib,
   buildPythonPackage,
   fetchPypi,
-  setuptools,
   pymorphy2,
   pytestCheckHook,
+  setuptools,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "yargy";
   version = "0.16.0";
-  pyproject = true;
-
-  __structuredAttrs = true;
 
   src = fetchPypi {
     inherit (finalAttrs) pname version;
     hash = "sha256-yRfu+zKkDCPEa2yojWiScHLdAKuU6Q/V3GqwpitZtZM=";
   };
 
-  build-system = [ setuptools ];
-
-  dependencies = [ pymorphy2 ];
-  pythonImportsCheck = [ "yargy" ];
   nativeCheckInputs = [ pytestCheckHook ];
+  __structuredAttrs = true;
+  build-system = [ setuptools ];
+  dependencies = [ pymorphy2 ];
   enabledTestPaths = [ "tests" ];
+  pyproject = true;
+  pythonImportsCheck = [ "yargy" ];
 
   meta = {
     description = "Rule-based facts extraction for Russian language";

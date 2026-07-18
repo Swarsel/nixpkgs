@@ -2,9 +2,9 @@
   lib,
   stdenv,
   fetchFromGitHub,
+  autoreconfHook,
   openssl,
   sqlite,
-  autoreconfHook,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -19,8 +19,15 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-gwqdgGCVPQwPkE6gFlZxZdk6Ln/qZn3CmMfbcLm9p04=";
   };
 
+  strictDeps = true;
+
   nativeBuildInputs = [
     autoreconfHook
+  ];
+
+  buildInputs = [
+    openssl
+    sqlite
   ];
 
   configureFlags = [
@@ -34,18 +41,11 @@ stdenv.mkDerivation (finalAttrs: {
     "ac_cv_path_SQLITE3=/"
   ];
 
-  buildInputs = [
-    openssl
-    sqlite
-  ];
-
-  strictDeps = true;
-
   postInstall = "rm -rf $out/var";
 
   meta = {
-    homepage = "https://www.softhsm.org/";
     description = "Cryptographic store accessible through a PKCS #11 interface";
+
     longDescription = "
       SoftHSM provides a software implementation of a generic
       cryptographic device with a PKCS#11 interface, which is of
@@ -57,6 +57,8 @@ stdenv.mkDerivation (finalAttrs: {
       able to work with many cryptographic products. SoftHSM is a
       programme of The Commons Conservancy.
     ";
+
+    homepage = "https://www.softhsm.org/";
     license = lib.licenses.bsd2;
     platforms = lib.platforms.unix;
   };

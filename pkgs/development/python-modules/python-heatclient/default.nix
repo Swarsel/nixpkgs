@@ -1,8 +1,8 @@
 {
   lib,
+  fetchFromGitHub,
   buildPythonPackage,
   cliff,
-  fetchFromGitHub,
   iso8601,
   keystoneauth1,
   openstackdocstheme,
@@ -15,8 +15,8 @@
   python-openstackclient,
   python-swiftclient,
   pyyaml,
-  requests-mock,
   requests,
+  requests-mock,
   setuptools,
   sphinxHook,
   stestrCheckHook,
@@ -27,7 +27,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "python-heatclient";
   version = "5.1.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "openstack";
@@ -38,6 +37,18 @@ buildPythonPackage (finalAttrs: {
 
   env.PBR_VERSION = finalAttrs.version;
 
+  nativeCheckInputs = [
+    stestrCheckHook
+    testscenarios
+    requests-mock
+  ];
+
+  doInstallCheck = true;
+
+  nativeInstallCheckInputs = [
+    versionCheckHook
+  ];
+
   build-system = [
     openstackdocstheme
     python-openstackclient
@@ -45,8 +56,6 @@ buildPythonPackage (finalAttrs: {
     pbr
     sphinxHook
   ];
-
-  sphinxBuilders = [ "man" ];
 
   dependencies = [
     cliff
@@ -60,12 +69,6 @@ buildPythonPackage (finalAttrs: {
     python-swiftclient
     pyyaml
     requests
-  ];
-
-  nativeCheckInputs = [
-    stestrCheckHook
-    testscenarios
-    requests-mock
   ];
 
   # These tests are failing on Python 3.14 because request.pathname2url fails to add // after the protocol's name.
@@ -103,6 +106,8 @@ buildPythonPackage (finalAttrs: {
     "heatclient.tests.unit.test_utils.TestURLFunctions.test_normalise_file_path_to_url_relative"
   ];
 
+  pyproject = true;
+
   pythonImportsCheck = [
     "heatclient"
     "heatclient.client"
@@ -113,17 +118,14 @@ buildPythonPackage (finalAttrs: {
     "heatclient.tests.unit"
   ];
 
-  nativeInstallCheckInputs = [
-    versionCheckHook
-  ];
-  doInstallCheck = true;
+  sphinxBuilders = [ "man" ];
 
   meta = {
     description = "OpenStack Heat Client and bindings";
-    mainProgram = "heat";
     homepage = "https://docs.openstack.org/python-heatclient/latest/";
-    downloadPage = "https://github.com/openstack/python-heatclient/releases/tag/${finalAttrs.src.tag}";
     license = lib.licenses.asl20;
+    mainProgram = "heat";
+    downloadPage = "https://github.com/openstack/python-heatclient/releases/tag/${finalAttrs.src.tag}";
     teams = [ lib.teams.openstack ];
   };
 })

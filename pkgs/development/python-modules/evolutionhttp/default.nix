@@ -1,15 +1,12 @@
 {
   lib,
-  buildPythonPackage,
-  fetchPypi,
-
-  # build-system
-  hatchling,
-
   # dependencies
   aiofiles,
   aiohttp,
-
+  buildPythonPackage,
+  fetchPypi,
+  # build-system
+  hatchling,
   # tests
   mock,
   pytestCheckHook,
@@ -18,12 +15,16 @@
 buildPythonPackage rec {
   pname = "evolutionhttp";
   version = "0.0.19";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
     hash = "sha256-VhWYhkrZVUDu1I6ZZTZlTUhNfpma29tEYBLoT7xBd1M=";
   };
+
+  nativeCheckInputs = [
+    mock
+    pytestCheckHook
+  ];
 
   build-system = [ hatchling ];
 
@@ -32,11 +33,7 @@ buildPythonPackage rec {
     aiohttp
   ];
 
-  nativeCheckInputs = [
-    mock
-    pytestCheckHook
-  ];
-
+  pyproject = true;
   pythonImportsCheck = [ "evolutionhttp" ];
 
   meta = {

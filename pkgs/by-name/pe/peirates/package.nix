@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule (finalAttrs: {
@@ -15,17 +15,15 @@ buildGoModule (finalAttrs: {
     hash = "sha256-VSb0l1yLFl5dZQn0Pb0HWLbeFiTUhZQBsJcjmrt4C7g=";
   };
 
-  __structuredAttrs = true;
-
   vendorHash = "sha256-QwESK8ZTlb0boI+PCvoXYbVG6a47Ws1k8nrc7yQWPtE=";
-
-  proxyVendor = true;
 
   preBuild = ''
     export GOFLAGS="$GOFLAGS -mod=mod"
   '';
 
+  __structuredAttrs = true;
   ldflags = [ "-s" ];
+  proxyVendor = true;
 
   meta = {
     description = "Kubernetes Penetration Testing tool";

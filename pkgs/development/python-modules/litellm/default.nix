@@ -1,5 +1,6 @@
 {
   lib,
+  fetchFromGitHub,
   a2a-sdk,
   aiohttp,
   anthropic,
@@ -16,7 +17,6 @@
   fastapi,
   fastapi-sso,
   fastuuid,
-  fetchFromGitHub,
   google-cloud-iam,
   google-cloud-kms,
   google-genai,
@@ -28,6 +28,8 @@
   jsonschema,
   langfuse,
   mcp,
+  nix-update-script,
+  nixosTests,
   openai,
   opentelemetry-api,
   opentelemetry-exporter-otlp,
@@ -55,14 +57,11 @@
   uvicorn,
   uvloop,
   websockets,
-  nixosTests,
-  nix-update-script,
 }:
 
 buildPythonPackage rec {
   pname = "litellm";
   version = "1.89.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "BerriAI";
@@ -76,6 +75,8 @@ buildPythonPackage rec {
       --replace-fail "uv_build==0.11.8" "uv_build"
   '';
 
+  # access network
+  doCheck = false;
   build-system = [ uv-build ];
 
   dependencies = [
@@ -94,6 +95,17 @@ buildPythonPackage rec {
   ];
 
   optional-dependencies = {
+    extra_proxy = [
+      a2a-sdk
+      azure-identity
+      azure-keyvault-secrets
+      google-cloud-iam
+      google-cloud-kms
+      prisma
+      # FIXME package redisvl
+      resend
+    ];
+
     proxy = [
       apscheduler
       azure-identity
@@ -122,17 +134,6 @@ buildPythonPackage rec {
       websockets
     ];
 
-    extra_proxy = [
-      a2a-sdk
-      azure-identity
-      azure-keyvault-secrets
-      google-cloud-iam
-      google-cloud-kms
-      prisma
-      # FIXME package redisvl
-      resend
-    ];
-
     proxy-runtime = [
       anthropic
       # FIXME package azure-ai-contentsafety
@@ -154,6 +155,7 @@ buildPythonPackage rec {
     ];
   };
 
+  pyproject = true;
   pythonImportsCheck = [ "litellm" ];
 
   pythonRelaxDeps = [
@@ -166,11 +168,9 @@ buildPythonPackage rec {
     "python-dotenv"
   ];
 
-  # access network
-  doCheck = false;
-
   passthru = {
     tests = { inherit (nixosTests) litellm; };
+
     updateScript = nix-update-script {
       extraArgs = [
         "--version-regex"
@@ -181,10 +181,10 @@ buildPythonPackage rec {
 
   meta = {
     description = "Use any LLM as a drop in replacement for gpt-3.5-turbo. Use Azure, OpenAI, Cohere, Anthropic, Ollama, VLLM, Sagemaker, HuggingFace, Replicate (100+ LLMs)";
-    mainProgram = "litellm";
     homepage = "https://github.com/BerriAI/litellm";
     changelog = "https://github.com/BerriAI/litellm/releases/tag/${src.tag}";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ happysalada ];
+    mainProgram = "litellm";
   };
 }

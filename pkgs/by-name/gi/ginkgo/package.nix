@@ -1,10 +1,10 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   fetchpatch,
-  testers,
   ginkgo,
+  testers,
 }:
 
 buildGoModule (finalAttrs: {
@@ -17,16 +17,19 @@ buildGoModule (finalAttrs: {
     rev = "v${finalAttrs.version}";
     sha256 = "sha256-mevZN35RUpaPmAYw3lfmzvdT2H+yucD8g3/bX9Rl00s=";
   };
-  vendorHash = "sha256-I3n1FPINb/nhi4QUzRFEspn7REN1dQEPg8Bhb3PemQU=";
 
   patches = [
     # Add ArtifactDir() to support Go 1.26 testing.TB interface
     # https://github.com/onsi/ginkgo/pull/1648
     (fetchpatch {
-      url = "https://github.com/onsi/ginkgo/pull/1648.patch";
       hash = "sha256-O8YWPAvf0ukPWSTm6+YKnV/L+qSL0RCoBswmiQVXOKI=";
+      url = "https://github.com/onsi/ginkgo/pull/1648.patch";
     })
   ];
+
+  vendorHash = "sha256-I3n1FPINb/nhi4QUzRFEspn7REN1dQEPg8Bhb3PemQU=";
+  __darwinAllowLocalNetworking = true;
+
   # integration tests expect more file changes
   # types tests are missing CodeLocation
   excludedPackages = [
@@ -34,18 +37,14 @@ buildGoModule (finalAttrs: {
     "types"
   ];
 
-  __darwinAllowLocalNetworking = true;
-
   passthru.tests.version = testers.testVersion {
-    package = ginkgo;
     command = "ginkgo version";
+    package = ginkgo;
   };
 
   meta = {
-    homepage = "https://onsi.github.io/ginkgo/";
-    changelog = "https://github.com/onsi/ginkgo/blob/master/CHANGELOG.md";
     description = "Modern Testing Framework for Go";
-    mainProgram = "ginkgo";
+
     longDescription = ''
       Ginkgo is a testing framework for Go designed to help you write expressive
       tests. It is best paired with the Gomega matcher library. When combined,
@@ -57,10 +56,16 @@ buildGoModule (finalAttrs: {
       active use across a wide variety of testing contexts: unit tests,
       integration tests, acceptance test, performance tests, etc.
     '';
+
+    homepage = "https://onsi.github.io/ginkgo/";
+    changelog = "https://github.com/onsi/ginkgo/blob/master/CHANGELOG.md";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       saschagrunert
       jk
     ];
+
+    mainProgram = "ginkgo";
   };
 })

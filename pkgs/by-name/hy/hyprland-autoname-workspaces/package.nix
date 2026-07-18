@@ -1,7 +1,7 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -16,7 +16,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
   };
 
   cargoHash = "sha256-91UxBjKSg/fAtiEqvyassIzeZYUc7SYbv5N+WF0vqGM=";
-
   doCheck = false;
 
   meta = {
@@ -24,7 +23,7 @@ rustPlatform.buildRustPackage (finalAttrs: {
     homepage = "https://github.com/hyprland-community/hyprland-autoname-workspaces";
     license = lib.licenses.isc;
     maintainers = with lib.maintainers; [ donovanglover ];
-    mainProgram = "hyprland-autoname-workspaces";
     platforms = lib.platforms.linux;
+    mainProgram = "hyprland-autoname-workspaces";
   };
 })

@@ -1,28 +1,27 @@
 {
   lib,
+  stdenv,
   fetchFromGitHub,
-  makeDesktopItem,
   boost186,
   cmake,
+  hidapi,
   libgcrypt,
   libgpg-error,
   libsodium,
+  libusb1,
+  makeDesktopItem,
   monero-cli,
   pkg-config,
+  protobuf_21,
+  python3,
   qt5,
   quirc,
   randomx,
   rapidjson,
-  stdenv,
+  udev,
   unbound,
   zeromq,
-
   trezorSupport ? true,
-  hidapi,
-  libusb1,
-  protobuf_21,
-  python3,
-  udev,
 }:
 
 stdenv.mkDerivation rec {
@@ -35,6 +34,28 @@ stdenv.mkDerivation rec {
     rev = "v${version}";
     hash = "sha256-uBZMBQ6Co1+H8DsyeL1vbjtVlKyIkJopKxHxr24BZv0=";
   };
+
+  patches = [
+    ./move-log-file.patch
+    ./use-system-libquirc.patch
+  ];
+
+  postPatch = ''
+    # set monero-gui version
+    substituteInPlace src/version.js.in \
+       --replace '@VERSION_TAG_GUI@' '${version}'
+
+    # use monerod from the monero package
+    substituteInPlace src/daemon/DaemonManager.cpp \
+      --replace 'QApplication::applicationDirPath() + "' '"${monero-cli}/bin'
+
+    # 1: only build external deps, *not* the full monero
+    # 2: use nixpkgs libraries
+    substituteInPlace CMakeLists.txt \
+      --replace 'add_subdirectory(monero)' \
+                'add_subdirectory(monero EXCLUDE_FROM_ALL)' \
+      --replace 'add_subdirectory(external)' ""
+  '';
 
   nativeBuildInputs = [
     cmake
@@ -72,35 +93,6 @@ stdenv.mkDerivation rec {
     udev
   ];
 
-  postUnpack = ''
-    # copy monero sources here
-    # (needs to be writable)
-    cp -r ${monero-cli.source}/* source/monero
-    chmod -R +w source/monero
-  '';
-
-  patches = [
-    ./move-log-file.patch
-    ./use-system-libquirc.patch
-  ];
-
-  postPatch = ''
-    # set monero-gui version
-    substituteInPlace src/version.js.in \
-       --replace '@VERSION_TAG_GUI@' '${version}'
-
-    # use monerod from the monero package
-    substituteInPlace src/daemon/DaemonManager.cpp \
-      --replace 'QApplication::applicationDirPath() + "' '"${monero-cli}/bin'
-
-    # 1: only build external deps, *not* the full monero
-    # 2: use nixpkgs libraries
-    substituteInPlace CMakeLists.txt \
-      --replace 'add_subdirectory(monero)' \
-                'add_subdirectory(monero EXCLUDE_FROM_ALL)' \
-      --replace 'add_subdirectory(external)' ""
-  '';
-
   cmakeFlags = [
     "-DARCH=default"
   ]
@@ -108,18 +100,6 @@ stdenv.mkDerivation rec {
     # fix build on recent gcc versions
     "-DCMAKE_CXX_FLAGS=-fpermissive"
   ];
-
-  desktopItem = makeDesktopItem {
-    name = "monero-wallet-gui";
-    exec = "monero-wallet-gui";
-    icon = "monero";
-    desktopName = "Monero";
-    genericName = "Wallet";
-    categories = [
-      "Network"
-      "Utility"
-    ];
-  };
 
   postInstall = ''
     # install desktop entry
@@ -135,12 +115,32 @@ stdenv.mkDerivation rec {
     done;
   '';
 
+  desktopItem = makeDesktopItem {
+    categories = [
+      "Network"
+      "Utility"
+    ];
+
+    desktopName = "Monero";
+    exec = "monero-wallet-gui";
+    genericName = "Wallet";
+    icon = "monero";
+    name = "monero-wallet-gui";
+  };
+
+  postUnpack = ''
+    # copy monero sources here
+    # (needs to be writable)
+    cp -r ${monero-cli.source}/* source/monero
+    chmod -R +w source/monero
+  '';
+
   meta = {
     description = "Private, secure, untraceable currency";
     homepage = "https://getmonero.org/";
     license = lib.licenses.bsd3;
-    platforms = lib.platforms.all;
     maintainers = with lib.maintainers; [ rnhmjoj ];
+    platforms = lib.platforms.all;
     mainProgram = "monero-wallet-gui";
   };
 }

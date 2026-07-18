@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   pytestCheckHook,
   requests,
   setuptools,
@@ -10,7 +10,6 @@
 buildPythonPackage {
   pname = "python-coinmarketcap";
   version = "0.6";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "rsz44";
@@ -19,17 +18,18 @@ buildPythonPackage {
     hash = "sha256-FQIfDV7O3z5S2HGKi2k8NPsvkAS66rsueggoSAGvbVU=";
   };
 
+  doCheck = false; # Tests use the CoinMarketCap API
   build-system = [ setuptools ];
 
   dependencies = [
     requests
   ];
 
+  pyproject = true;
+
   pythonImportsCheck = [
     "coinmarketcapapi"
   ];
-
-  doCheck = false; # Tests use the CoinMarketCap API
 
   meta = {
     description = "Python package to wrap the CoinMarketCap API";

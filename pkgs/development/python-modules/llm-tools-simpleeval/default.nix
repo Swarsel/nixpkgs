@@ -1,12 +1,12 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
+  buildPythonPackage,
   llm,
-  llm-tools-simpleeval,
   llm-echo,
+  llm-tools-simpleeval,
   pytestCheckHook,
+  setuptools,
   simpleeval,
   writableTmpDirAsHomeHook,
 }:
@@ -14,7 +14,6 @@
 buildPythonPackage rec {
   pname = "llm-tools-simpleeval";
   version = "0.1.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "simonw";
@@ -23,6 +22,12 @@ buildPythonPackage rec {
     hash = "sha256-IOmYu7zoim7Co/xIm5VLaGkCPI0o+2Nb2Pu3U2fH0BU=";
   };
 
+  nativeCheckInputs = [
+    llm-echo
+    pytestCheckHook
+    writableTmpDirAsHomeHook
+  ];
+
   build-system = [ setuptools ];
 
   dependencies = [
@@ -30,14 +35,8 @@ buildPythonPackage rec {
     simpleeval
   ];
 
-  nativeCheckInputs = [
-    llm-echo
-    pytestCheckHook
-    writableTmpDirAsHomeHook
-  ];
-
+  pyproject = true;
   pythonImportsCheck = [ "llm_tools_simpleeval" ];
-
   passthru.tests = llm.mkPluginTest llm-tools-simpleeval;
 
   meta = {

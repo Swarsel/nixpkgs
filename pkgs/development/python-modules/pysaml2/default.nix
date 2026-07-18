@@ -1,20 +1,20 @@
 {
   lib,
+  fetchFromGitHub,
   buildPythonPackage,
   cryptography,
   defusedxml,
-  fetchFromGitHub,
   paste,
   poetry-core,
   pyasn1,
   pymongo,
   pytestCheckHook,
   python-dateutil,
+  replaceVars,
   repoze-who,
   requests,
   responses,
   setuptools,
-  replaceVars,
   xmlschema,
   xmlsec,
   zope-interface,
@@ -23,7 +23,6 @@
 buildPythonPackage rec {
   pname = "pysaml2";
   version = "7.5.4";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "IdentityPython";
@@ -46,7 +45,13 @@ buildPythonPackage rec {
     sed -i 's/2999\(-.*T\)/2029\1/g' tests/*.xml
   '';
 
-  pythonRelaxDeps = [ "xmlschema" ];
+  nativeCheckInputs = [
+    pyasn1
+    pymongo
+    pytestCheckHook
+    python-dateutil
+    responses
+  ];
 
   build-system = [
     poetry-core
@@ -57,22 +62,6 @@ buildPythonPackage rec {
     defusedxml
     requests
     xmlschema
-  ];
-
-  optional-dependencies = {
-    s2repoze = [
-      paste
-      repoze-who
-      zope-interface
-    ];
-  };
-
-  nativeCheckInputs = [
-    pyasn1
-    pymongo
-    pytestCheckHook
-    python-dateutil
-    responses
   ];
 
   disabledTests = [
@@ -86,15 +75,25 @@ buildPythonPackage rec {
     "test_namespace_processing"
   ];
 
+  optional-dependencies = {
+    s2repoze = [
+      paste
+      repoze-who
+      zope-interface
+    ];
+  };
+
+  pyproject = true;
   pythonImportsCheck = [ "saml2" ];
+  pythonRelaxDeps = [ "xmlschema" ];
 
   meta = {
-    # https://github.com/IdentityPython/pysaml2/issues/947
-    broken = lib.versionAtLeast xmlschema.version "4.2.0";
     description = "Python implementation of SAML Version 2 Standard";
     homepage = "https://github.com/IdentityPython/pysaml2";
     changelog = "https://github.com/IdentityPython/pysaml2/blob/v${version}/CHANGELOG.md";
     license = lib.licenses.asl20;
     maintainers = [ ];
+    # https://github.com/IdentityPython/pysaml2/issues/947
+    broken = lib.versionAtLeast xmlschema.version "4.2.0";
   };
 }

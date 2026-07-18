@@ -1,23 +1,22 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
-  setuptools-scm,
+  buildPythonPackage,
+  cryptography,
+  gitpython,
+  joblib,
   pyasn1,
   pyasn1-modules,
-  cryptography,
-  joblib,
-  gitpython,
-  sqlalchemy,
   pygount,
   pytestCheckHook,
+  setuptools,
+  setuptools-scm,
+  sqlalchemy,
 }:
 
 buildPythonPackage rec {
   pname = "edk2-pytool-library";
   version = "0.23.15";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "tianocore";
@@ -25,6 +24,8 @@ buildPythonPackage rec {
     tag = "v${version}";
     hash = "sha256-ZWQvqhQb9mjvShWVER7iS5vTI8KUn7RefqyGhjpO9NI=";
   };
+
+  nativeCheckInputs = [ pytestCheckHook ];
 
   build-system = [
     setuptools
@@ -41,13 +42,12 @@ buildPythonPackage rec {
     pygount
   ];
 
-  nativeCheckInputs = [ pytestCheckHook ];
-
   disabledTests = [
     # requires network access
     "test_basic_parse"
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "edk2toollib" ];
 
   meta = {

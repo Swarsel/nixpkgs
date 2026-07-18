@@ -2,10 +2,10 @@
   lib,
   stdenv,
   fetchFromGitHub,
+  nix-update-script,
   pkg-config,
   vst2-sdk,
   wine64,
-  nix-update-script,
   enableJackAssWine64 ? false,
 }:
 
@@ -25,7 +25,6 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   nativeBuildInputs = [ pkg-config ] ++ lib.optionals enableJackAssWine64 [ wine64 ];
-
   makeFlags = [ "linux" ] ++ lib.optionals enableJackAssWine64 [ "wine64" ];
 
   installPhase = ''
@@ -46,17 +45,21 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "VST plugin that provides JACK-MIDI support for VST hosts";
+
     longDescription = ''
       Simply load the plugin in your favourite host to get a JACK-MIDI port.
       Optionally includes a special Wine build for running in Wine
       applications. Set enableJackAssWine64 to true to enable this output.
     '';
+
     homepage = "https://github.com/falkTX/JackAss";
+    license = [ lib.licenses.mit ];
+
     maintainers = with lib.maintainers; [
       PowerUser64
       l1npengtul
     ];
-    license = [ lib.licenses.mit ];
+
     platforms = lib.platforms.linux;
   };
 })

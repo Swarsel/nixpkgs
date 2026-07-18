@@ -9,23 +9,19 @@
 buildPythonPackage (finalAttrs: {
   pname = "caido-schema-proxy";
   version = "0.57.1";
-  pyproject = true;
-
-  __structuredAttrs = true;
 
   src = fetchPypi {
-    pname = "caido_schema_proxy";
     inherit (finalAttrs) version;
     hash = "sha256-gIElEhHnMDfz6hu0UTOtTiYaB/ZnfeBCskEWTM9419M=";
+    pname = "caido_schema_proxy";
   };
-
-  build-system = [ hatchling ];
-
-  pythonImportsCheck = [ "caido_schema_proxy" ];
 
   # Module has no tests
   doCheck = false;
-
+  __structuredAttrs = true;
+  build-system = [ hatchling ];
+  pyproject = true;
+  pythonImportsCheck = [ "caido_schema_proxy" ];
   passthru.updateScript = nix-update-script { };
 
   meta = {

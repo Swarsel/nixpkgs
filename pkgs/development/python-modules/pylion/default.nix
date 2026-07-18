@@ -1,19 +1,18 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   h5py,
-  termcolor,
-  pexpect,
   jinja2,
-  sphinxHook,
+  pexpect,
   sphinx-rtd-theme,
+  sphinxHook,
+  termcolor,
 }:
 
 buildPythonPackage {
   pname = "pylion";
   version = "0.5.3";
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "dtrypogeorgos";
@@ -37,8 +36,6 @@ buildPythonPackage {
     jinja2
   ];
 
-  pythonImportsCheck = [ "pylion" ];
-
   # Tests fail from some reason - some files seem to be missing from the repo.
   doCheck = false;
 
@@ -46,6 +43,9 @@ buildPythonPackage {
     mkdir -p $out/share/doc/$name
     cp -r examples $out/share/doc/$name/examples
   '';
+
+  format = "setuptools";
+  pythonImportsCheck = [ "pylion" ];
 
   meta = {
     description = "LAMMPS wrapper for molecular dynamics simulations of trapped ions";

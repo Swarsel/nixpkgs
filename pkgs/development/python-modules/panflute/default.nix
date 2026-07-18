@@ -1,15 +1,14 @@
 {
   lib,
-  fetchPypi,
-  click,
-  pyyaml,
   buildPythonPackage,
+  click,
+  fetchPypi,
+  pyyaml,
 }:
 
 buildPythonPackage rec {
   pname = "panflute";
   version = "2.3.1";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
@@ -21,6 +20,7 @@ buildPythonPackage rec {
     pyyaml
   ];
 
+  format = "setuptools";
   pythonImportsCheck = [ "panflute" ];
 
   meta = {

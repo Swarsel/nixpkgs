@@ -1,27 +1,23 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
+  buildPythonPackage,
   # build-system
   cmake,
+  # buildInputs
+  isl,
   nanobind,
   ninja,
   pcpp,
-  scikit-build-core,
-  typing-extensions,
-
-  # buildInputs
-  isl,
-
   # tests
   pytestCheckHook,
+  scikit-build-core,
+  typing-extensions,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "islpy";
   version = "2026.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "inducer";
@@ -29,6 +25,24 @@ buildPythonPackage (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-WZl9ix9ZwJsoUCJ23bYcuYGiJzcOMh7I38PHVxWrPBo=";
   };
+
+  buildInputs = [
+    isl
+  ];
+
+  cmakeFlags = [
+    (lib.cmakeBool "USE_SHIPPED_ISL" false)
+    (lib.cmakeBool "USE_BARVINOK" false)
+    (lib.cmakeOptionType "list" "ISL_INC_DIRS" "${lib.getDev isl}/include")
+    (lib.cmakeOptionType "list" "ISL_LIB_DIRS" "${lib.getLib isl}/lib")
+  ];
+
+  nativeCheckInputs = [ pytestCheckHook ];
+
+  # Force resolving the package from $out to make generated ext files usable by tests
+  preCheck = ''
+    rm -rf islpy
+  '';
 
   build-system = [
     cmake
@@ -39,26 +53,8 @@ buildPythonPackage (finalAttrs: {
     typing-extensions
   ];
 
-  buildInputs = [
-    isl
-  ];
-
   dontUseCmakeConfigure = true;
-
-  cmakeFlags = [
-    (lib.cmakeBool "USE_SHIPPED_ISL" false)
-    (lib.cmakeBool "USE_BARVINOK" false)
-    (lib.cmakeOptionType "list" "ISL_INC_DIRS" "${lib.getDev isl}/include")
-    (lib.cmakeOptionType "list" "ISL_LIB_DIRS" "${lib.getLib isl}/lib")
-  ];
-
-  # Force resolving the package from $out to make generated ext files usable by tests
-  preCheck = ''
-    rm -rf islpy
-  '';
-
-  nativeCheckInputs = [ pytestCheckHook ];
-
+  pyproject = true;
   pythonImportsCheck = [ "islpy" ];
 
   meta = {

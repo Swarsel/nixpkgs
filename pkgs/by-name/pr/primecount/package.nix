@@ -1,10 +1,10 @@
 {
   lib,
-  cmake,
+  stdenv,
   fetchFromGitHub,
+  cmake,
   gitUpdater,
   primesieve,
-  stdenv,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -25,11 +25,9 @@ stdenv.mkDerivation (finalAttrs: {
     "man"
   ];
 
-  nativeBuildInputs = [ cmake ];
-
-  buildInputs = [ primesieve ];
-
   strictDeps = true;
+  nativeBuildInputs = [ cmake ];
+  buildInputs = [ primesieve ];
 
   cmakeFlags = [
     (lib.cmakeBool "BUILD_LIBPRIMESIEVE" true)
@@ -43,12 +41,14 @@ stdenv.mkDerivation (finalAttrs: {
     tests = {
       inherit primesieve; # dependency
     };
+
     updateScript = gitUpdater { rev-prefix = "v"; };
   };
 
   meta = {
-    homepage = "https://github.com/kimwalisch/primecount";
+    inherit (primesieve.meta) teams platforms;
     description = "Fast prime counting function implementations";
+
     longDescription = ''
       primecount is a command-line program and C/C++ library that counts the
       primes below an integer x ≤ 10^31 using highly optimized implementations
@@ -63,9 +63,10 @@ stdenv.mkDerivation (finalAttrs: {
       of CPU cores. primecount has already been used to compute several prime
       counting function world records.
     '';
+
+    homepage = "https://github.com/kimwalisch/primecount";
     changelog = "https://github.com/kimwalisch/primecount/blob/${finalAttrs.src.rev}/ChangeLog";
     license = lib.licenses.bsd2;
     mainProgram = "primecount";
-    inherit (primesieve.meta) teams platforms;
   };
 })

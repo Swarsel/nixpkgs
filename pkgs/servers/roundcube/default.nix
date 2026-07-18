@@ -1,11 +1,11 @@
 {
-  fetchurl,
   lib,
   stdenv,
+  fetchurl,
   buildEnv,
+  nixosTests,
   roundcube,
   roundcubePlugins,
-  nixosTests,
   runCommand,
 }:
 
@@ -20,11 +20,6 @@ stdenv.mkDerivation rec {
 
   patches = [ ./0001-Don-t-resolve-symlinks-when-trying-to-find-INSTALL_P.patch ];
 
-  dontBuild = true;
-
-  # FIXME: this should be removed after upstream releases the update forcing the use of public_html.
-  dontCheckForBrokenSymlinks = true;
-
   installPhase = ''
     mkdir $out
     cp -r * $out/
@@ -32,10 +27,16 @@ stdenv.mkDerivation rec {
     rm -rf $out/installer
   '';
 
+  dontBuild = true;
+  # FIXME: this should be removed after upstream releases the update forcing the use of public_html.
+  dontCheckForBrokenSymlinks = true;
+  passthru.tests = { inherit (nixosTests) roundcube; };
+
   passthru.withPlugins =
     f:
     buildEnv {
       name = "${roundcube.name}-with-plugins";
+
       paths = (f roundcubePlugins) ++ [
         roundcube
         (runCommand "dummy" { } ''
@@ -44,15 +45,15 @@ stdenv.mkDerivation rec {
       ];
     };
 
-  passthru.tests = { inherit (nixosTests) roundcube; };
-
   meta = {
     description = "Open Source Webmail Software";
+    license = lib.licenses.gpl3;
+
     maintainers = with lib.maintainers; [
       vskilet
       ma27
     ];
-    license = lib.licenses.gpl3;
+
     platforms = lib.platforms.all;
   };
 }

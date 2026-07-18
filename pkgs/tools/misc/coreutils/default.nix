@@ -2,27 +2,27 @@
   lib,
   stdenv,
   fetchurl,
-  buildPackages,
-  libiconv,
-  perl,
-  xz,
-  binlore,
-  gmpSupport ? true,
-  gmp,
-  aclSupport ? lib.meta.availableOn stdenv.hostPlatform acl,
   acl,
-  attrSupport ? lib.meta.availableOn stdenv.hostPlatform attr,
   attr,
-  selinuxSupport ? false,
+  binlore,
+  buildPackages,
+  gmp,
+  libiconv,
   libselinux,
   libsepol,
+  openssl,
+  perl,
+  xz,
+  aclSupport ? lib.meta.availableOn stdenv.hostPlatform acl,
+  attrSupport ? lib.meta.availableOn stdenv.hostPlatform attr,
+  gmpSupport ? true,
   # No openssl in default version, so openssl-induced rebuilds aren't too big.
   # It makes *sum functions significantly faster.
   minimal ? true,
-  withOpenssl ? !minimal,
-  openssl,
-  withPrefix ? false,
+  selinuxSupport ? false,
   singleBinary ? "symlinks", # you can also pass "shebangs" or false
+  withOpenssl ? !minimal,
+  withPrefix ? false,
 }:
 
 # Note: this package is used for bootstrapping fetchurl, and thus cannot use
@@ -51,6 +51,11 @@ stdenv.mkDerivation (finalAttrs: {
     url = "mirror://gnu/coreutils/coreutils-${finalAttrs.version}.tar.xz";
     hash = "sha256-OUAk7aCllVIXztqc0SAeZdyPo6opwpURNaSVIdV8PMM=";
   };
+
+  outputs = [
+    "out"
+    "info"
+  ];
 
   postPatch = ''
     # The test tends to fail on btrfs, f2fs and maybe other unusual filesystems.
@@ -127,12 +132,6 @@ stdenv.mkDerivation (finalAttrs: {
     ''
   );
 
-  outputs = [
-    "out"
-    "info"
-  ];
-  separateDebugInfo = true;
-
   nativeBuildInputs = [
     perl
     xz.bin
@@ -150,8 +149,6 @@ stdenv.mkDerivation (finalAttrs: {
     ]
     # TODO(@Ericson2314): Investigate whether Darwin could benefit too
     ++ optional (isCross && stdenv.hostPlatform.libc != "glibc") libiconv;
-
-  hardeningDisable = [ "trivialautovarinit" ];
 
   configureFlags = [
     "--with-packager=https://nixos.org"
@@ -183,21 +180,9 @@ stdenv.mkDerivation (finalAttrs: {
   # such as when cross-compiling.
   ++ optional stdenv.hostPlatform.isLinux "gl_cv_have_proc_uptime=yes";
 
-  # The tests are known broken on Cygwin
-  # (http://article.gmane.org/gmane.comp.gnu.core-utils.bugs/19025),
-  # Darwin (http://article.gmane.org/gmane.comp.gnu.core-utils.bugs/19351),
-  # and {Open,Free}BSD.
-  # With non-standard storeDir: https://github.com/NixOS/nix/issues/512
-  doCheck =
-    (!isCross)
-    && (stdenv.hostPlatform.libc == "glibc" || stdenv.hostPlatform.libc == "musl")
-    && !stdenv.hostPlatform.isAarch32;
-
-  enableParallelBuilding = true;
-
   env = {
-    NIX_LDFLAGS = optionalString selinuxSupport "-lsepol";
     FORCE_UNSAFE_CONFIGURE = optionalString stdenv.hostPlatform.isSunOS "1";
+
     NIX_CFLAGS_COMPILE = toString (
       [ ]
       # Work around a bogus warning in conjunction with musl.
@@ -208,11 +193,23 @@ stdenv.mkDerivation (finalAttrs: {
       # TODO: find out why these are happening on cygwin, which is gcc
       ++ optional (stdenv.cc.isClang || stdenv.hostPlatform.isCygwin) "-Wno-error=format-security"
     );
+
+    NIX_LDFLAGS = optionalString selinuxSupport "-lsepol";
   }
   // optionalAttrs isCross {
     # Prevents attempts of running 'help2man' on cross-built binaries.
     PERL = "missing";
   };
+
+  # The tests are known broken on Cygwin
+  # (http://article.gmane.org/gmane.comp.gnu.core-utils.bugs/19025),
+  # Darwin (http://article.gmane.org/gmane.comp.gnu.core-utils.bugs/19351),
+  # and {Open,Free}BSD.
+  # With non-standard storeDir: https://github.com/NixOS/nix/issues/512
+  doCheck =
+    (!isCross)
+    && (stdenv.hostPlatform.libc == "glibc" || stdenv.hostPlatform.libc == "musl")
+    && !stdenv.hostPlatform.isAarch32;
 
   # Works around a bug with 8.26:
   # Makefile:3440: *** Recursive variable 'INSTALL' references itself (eventually).  Stop.
@@ -229,6 +226,10 @@ stdenv.mkDerivation (finalAttrs: {
     + optionalString minimal ''
       rm -r "$out/share"
     '';
+
+  enableParallelBuilding = true;
+  hardeningDisable = [ "trivialautovarinit" ];
+  separateDebugInfo = true;
 
   passthru =
     { }
@@ -258,21 +259,25 @@ stdenv.mkDerivation (finalAttrs: {
     };
 
   meta = {
-    homepage = "https://www.gnu.org/software/coreutils/";
     description = "GNU Core Utilities";
+
     longDescription = ''
       The GNU Core Utilities are the basic file, shell and text manipulation
       utilities of the GNU operating system. These are the core utilities which
       are expected to exist on every operating system.
     '';
+
+    homepage = "https://www.gnu.org/software/coreutils/";
     license = lib.licenses.gpl3Plus;
+
     maintainers = with lib.maintainers; [
       das_j
       mdaniels5757
     ];
-    teams = [ lib.teams.security-review ];
+
     platforms = with lib.platforms; unix ++ windows;
-    priority = 10;
     identifiers.cpeParts = lib.meta.cpeFullVersionWithVendor "gnu" finalAttrs.version;
+    priority = 10;
+    teams = [ lib.teams.security-review ];
   };
 })

@@ -24,6 +24,7 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Helps you figure out when and why a commit was merged into a branch";
+
     longDescription = ''
       If you use standard Git workflows, then you create a feature
       branch for each feature that you are working on. When the feature
@@ -36,10 +37,11 @@ stdenv.mkDerivation (finalAttrs: {
       when-merged can be used to ask, "When (and why) was commit C
       merged into the current branch?"
     '';
+
     homepage = "https://github.com/mhagger/git-when-merged";
     license = lib.licenses.gpl2Only;
-    platforms = python3.meta.platforms;
     maintainers = with lib.maintainers; [ DamienCassou ];
+    platforms = python3.meta.platforms;
     mainProgram = "git-when-merged";
   };
 })

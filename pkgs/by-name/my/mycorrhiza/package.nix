@@ -2,8 +2,8 @@
   lib,
   fetchFromGitHub,
   buildGoModule,
-  makeWrapper,
   git,
+  makeWrapper,
 }:
 
 buildGoModule (finalAttrs: {
@@ -17,16 +17,15 @@ buildGoModule (finalAttrs: {
     sha256 = "sha256-Cgf2YtAatfKWxhe4xAqNRB4ktsGs3ONi5XqbjcZwzTw=";
   };
 
-  vendorHash = "sha256-UQT6BvJT26NViZDyh6yokgW18ptMiGCSf7CgMqtD9Oc=";
-
-  subPackages = [ "." ];
-
   nativeBuildInputs = [ makeWrapper ];
+  vendorHash = "sha256-UQT6BvJT26NViZDyh6yokgW18ptMiGCSf7CgMqtD9Oc=";
 
   postInstall = ''
     wrapProgram $out/bin/mycorrhiza \
       --prefix PATH : ${lib.makeBinPath [ git ]}
   '';
+
+  subPackages = [ "." ];
 
   meta = {
     description = "Filesystem and git-based wiki engine written in Go using mycomarkup as its primary markup language";

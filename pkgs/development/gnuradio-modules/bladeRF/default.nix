@@ -1,16 +1,16 @@
 {
   lib,
-  mkDerivation,
   fetchFromGitHub,
-  cmake,
-  pkg-config,
   boost,
+  cmake,
   doxygen,
   gmp,
   gnuradio,
   libbladeRF,
+  mkDerivation,
   mpir,
   osmosdr,
+  pkg-config,
   python,
   spdlog,
 }:
@@ -26,6 +26,15 @@ mkDerivation {
     hash = "sha256-josovHEp2VxgZqItkTAISdY1LARMIvQKD604fh4iZWc=";
   };
 
+  nativeBuildInputs = [
+    cmake
+    pkg-config
+  ]
+  ++ lib.optionals (gnuradio.hasFeature "python-support") [
+    python.pkgs.mako
+    python.pkgs.pygccxml
+  ];
+
   buildInputs = [
     boost
     doxygen
@@ -40,16 +49,9 @@ mkDerivation {
     python.pkgs.numpy
     python.pkgs.pybind11
   ];
+
   cmakeFlags = [
     (lib.cmakeBool "ENABLE_PYTHON" (gnuradio.hasFeature "python-support"))
-  ];
-  nativeBuildInputs = [
-    cmake
-    pkg-config
-  ]
-  ++ lib.optionals (gnuradio.hasFeature "python-support") [
-    python.pkgs.mako
-    python.pkgs.pygccxml
   ];
 
   meta = {

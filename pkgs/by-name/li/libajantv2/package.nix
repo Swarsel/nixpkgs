@@ -1,13 +1,13 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
   cmake,
+  linuxPackages,
+  mbedtls,
   ninja,
   pkg-config,
-  mbedtls,
   udev,
-  linuxPackages,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -20,6 +20,12 @@ stdenv.mkDerivation (finalAttrs: {
     rev = "ntv2_${builtins.replaceStrings [ "." ] [ "_" ] finalAttrs.version}";
     hash = "sha256-/BfFbBScS75TpUZEeYzAHd1PtnZgnCNfGtjwYPJJjkg=";
   };
+
+  outputs = [
+    "out"
+    "dev"
+  ];
+
   patches = [
     ./use-system-mbedtls.patch
     ./device-info-list.patch
@@ -27,16 +33,12 @@ stdenv.mkDerivation (finalAttrs: {
     ./demos-ntv2overlay-no-makefile.patch
   ];
 
-  outputs = [
-    "out"
-    "dev"
-  ];
-
   nativeBuildInputs = [
     cmake
     ninja
     pkg-config
   ];
+
   buildInputs = [
     mbedtls
     udev

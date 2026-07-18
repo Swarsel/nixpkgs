@@ -1,8 +1,8 @@
 {
   lib,
+  fetchFromGitHub,
   buildPythonPackage,
   claude-agent-sdk,
-  fetchFromGitHub,
   hatchling,
   nix-update-script,
   openinference-instrumentation,
@@ -22,9 +22,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "openinference-instrumentation-claude-agent-sdk";
   version = "0.1.7";
-  pyproject = true;
-
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "Arize-ai";
@@ -33,8 +30,16 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-BqDIHI2moNW+m5/CC7NLL0fLzAF9aGv5ncoVe6B2cRQ=";
   };
 
-  sourceRoot = "${finalAttrs.src.name}/python/instrumentation/${finalAttrs.pname}";
+  nativeCheckInputs = [
+    pytest-asyncio
+    pytest-timeout
+    pytestCheckHook
+    pyyaml
+    sniffio
+  ]
+  ++ lib.flatten (builtins.attrValues finalAttrs.passthru.optional-dependencies);
 
+  __structuredAttrs = true;
   build-system = [ hatchling ];
 
   dependencies = [
@@ -51,17 +56,9 @@ buildPythonPackage (finalAttrs: {
     instruments = [ claude-agent-sdk ];
   };
 
-  nativeCheckInputs = [
-    pytest-asyncio
-    pytest-timeout
-    pytestCheckHook
-    pyyaml
-    sniffio
-  ]
-  ++ lib.flatten (builtins.attrValues finalAttrs.passthru.optional-dependencies);
-
+  pyproject = true;
   pythonImportsCheck = [ "openinference.instrumentation.claude_agent_sdk" ];
-
+  sourceRoot = "${finalAttrs.src.name}/python/instrumentation/${finalAttrs.pname}";
   passthru.updateScript = nix-update-script { };
 
   meta = {

@@ -17,12 +17,11 @@ stdenv.mkDerivation {
   };
 
   buildInputs = [ lv2 ];
-
   installFlags = [ "INSTALL_PATH=$(out)/lib/lv2" ];
 
   meta = {
-    homepage = "https://github.com/mod-audio/mod-distortion";
     description = "Analog distortion emulation lv2 plugins";
+    homepage = "https://github.com/mod-audio/mod-distortion";
     license = lib.licenses.gpl3;
     maintainers = [ lib.maintainers.magnetophon ];
     platforms = lib.platforms.linux;

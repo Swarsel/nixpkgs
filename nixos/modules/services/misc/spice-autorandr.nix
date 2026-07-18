@@ -1,7 +1,7 @@
 {
   config,
-  pkgs,
   lib,
+  pkgs,
   ...
 }:
 
@@ -20,12 +20,14 @@ in
     environment.systemPackages = [ cfg.package ];
 
     systemd.user.services.spice-autorandr = {
-      wantedBy = [ "default.target" ];
       after = [ "spice-vdagentd.service" ];
+
       serviceConfig = {
         ExecStart = "${cfg.package}/bin/spice-autorandr";
         Restart = "on-failure";
       };
+
+      wantedBy = [ "default.target" ];
     };
   };
 }

@@ -4,8 +4,8 @@
   fetchurl,
   fetchpatch,
   unzip,
-  zlib,
   versionCheckHook,
+  zlib,
 }:
 
 stdenv.mkDerivation {
@@ -19,10 +19,10 @@ stdenv.mkDerivation {
 
   patches = [
     (fetchpatch {
-      url = "https://gitweb.gentoo.org/repo/gentoo.git/plain/app-cdr/uif2iso/files/uif2iso-0.1.7c-fix_c23.patch?id=80ed6e7c6b7b628e80f9f76d614c49f583ed5152";
+      extraPrefix = "";
       hash = "sha256-8b18Q6gGVd2pjQzRf17jhrYuaz86crHH26gOJy/krqk=";
       stripLen = 2;
-      extraPrefix = "";
+      url = "https://gitweb.gentoo.org/repo/gentoo.git/plain/app-cdr/uif2iso/files/uif2iso-0.1.7c-fix_c23.patch?id=80ed6e7c6b7b628e80f9f76d614c49f583ed5152";
     })
   ];
 
@@ -33,8 +33,8 @@ stdenv.mkDerivation {
     make -C . prefix="$out" install;
   '';
 
-  nativeInstallCheckInputs = [ versionCheckHook ];
   doInstallCheck = true;
+  nativeInstallCheckInputs = [ versionCheckHook ];
 
   meta = {
     description = "Tool for converting single/multi part UIF image files to ISO";

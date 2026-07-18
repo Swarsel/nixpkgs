@@ -1,7 +1,7 @@
 {
   config,
-  pkgs,
   lib,
+  pkgs,
   ...
 }:
 let
@@ -16,22 +16,23 @@ in
 
   config = lib.mkIf cfg.enable {
     environment.systemPackages = [ pkgs.oo7 ];
-    services.dbus.packages = [ pkgs.oo7-server ];
-
-    systemd = {
-      packages = [ pkgs.oo7-server ];
-      user.services.oo7-daemon.wantedBy = [ "default.target" ];
-    };
 
     security = {
       pam.services.login.oo7.enable = true;
 
       wrappers.oo7-daemon = {
-        owner = "root";
-        group = "root";
         capabilities = "cap_ipc_lock=ep";
+        group = "root";
+        owner = "root";
         source = "${pkgs.oo7-server}/libexec/oo7-daemon";
       };
+    };
+
+    services.dbus.packages = [ pkgs.oo7-server ];
+
+    systemd = {
+      packages = [ pkgs.oo7-server ];
+      user.services.oo7-daemon.wantedBy = [ "default.target" ];
     };
 
     xdg.portal.extraPortals = [ pkgs.oo7-portal ];

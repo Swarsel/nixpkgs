@@ -1,9 +1,9 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  marshmallow-dataclass,
+  buildPythonPackage,
   marshmallow,
+  marshmallow-dataclass,
   pdm-backend,
   pytestCheckHook,
   requests,
@@ -16,7 +16,6 @@
 buildPythonPackage rec {
   pname = "pygitguardian";
   version = "1.32.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "GitGuardian";
@@ -24,6 +23,14 @@ buildPythonPackage rec {
     tag = "v${version}";
     hash = "sha256-f8DkRwgtwaB5R78zklAI0ZvA2gfSwsHFOS3IgDgcEEo=";
   };
+
+  env.GITGUARDIAN_API_KEY = "Test key for tests";
+
+  nativeCheckInputs = [
+    pytestCheckHook
+    vcrpy
+    responses
+  ];
 
   build-system = [ pdm-backend ];
 
@@ -35,15 +42,8 @@ buildPythonPackage rec {
     typing-extensions
   ];
 
-  nativeCheckInputs = [
-    pytestCheckHook
-    vcrpy
-    responses
-  ];
-
+  pyproject = true;
   pythonImportsCheck = [ "pygitguardian" ];
-
-  env.GITGUARDIAN_API_KEY = "Test key for tests";
 
   meta = {
     description = "Library to access the GitGuardian API";

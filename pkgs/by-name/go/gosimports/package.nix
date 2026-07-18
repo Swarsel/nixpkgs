@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule (finalAttrs: {
@@ -17,17 +17,17 @@ buildGoModule (finalAttrs: {
 
   vendorHash = "sha256-xR1YTwUcJcpe4NXH8sp9bNAWggvcvVJLztD49gQIdMU=";
 
-  subPackages = [ "cmd/gosimports" ];
-
   ldflags = [
     "-s"
     "-w"
     "-X main.version=${finalAttrs.version}"
   ];
 
+  subPackages = [ "cmd/gosimports" ];
+
   meta = {
-    homepage = "https://github.com/rinchsan/gosimports";
     description = "Simpler goimports";
+    homepage = "https://github.com/rinchsan/gosimports";
     license = lib.licenses.bsd3;
     maintainers = with lib.maintainers; [ maolonglong ];
     mainProgram = "gosimports";

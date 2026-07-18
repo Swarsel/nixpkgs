@@ -1,15 +1,13 @@
 {
   lib,
-  buildHomeAssistantComponent,
   fetchFromGitHub,
-  pillow,
+  buildHomeAssistantComponent,
   fnv-hash-fast,
+  pillow,
   psutil-home-assistant,
   sqlalchemy,
 }:
 buildHomeAssistantComponent rec {
-  owner = "frenck";
-  domain = "spook";
   version = "5.0.0";
 
   src = fetchFromGitHub {
@@ -33,10 +31,13 @@ buildHomeAssistantComponent rec {
     sqlalchemy
   ];
 
+  domain = "spook";
+  owner = "frenck";
+
   meta = {
-    changelog = "https://github.com/frenck/spook/releases/tag/v${version}";
     description = "Toolbox for Home Assistant";
     homepage = "https://spook.boo/";
+    changelog = "https://github.com/frenck/spook/releases/tag/v${version}";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ kkoniuszy ];
   };

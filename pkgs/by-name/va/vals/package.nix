@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   testers,
   vals,
 }:
@@ -11,15 +11,15 @@ buildGoModule (finalAttrs: {
   version = "0.44.4";
 
   src = fetchFromGitHub {
-    rev = "v${finalAttrs.version}";
     owner = "helmfile";
     repo = "vals";
+    rev = "v${finalAttrs.version}";
     sha256 = "sha256-R9TVsajh/IaXWAwdz2b85GuhNP9G/rP1CAxeMEqApt8=";
   };
 
   vendorHash = "sha256-xSeT1QnQBj66n9hexSxFi3NHdR2PArljJQqL9p6pdPc=";
-
-  proxyVendor = true;
+  # Tests require connectivity to various backends.
+  doCheck = false;
 
   ldflags = [
     "-s"
@@ -27,20 +27,19 @@ buildGoModule (finalAttrs: {
     "-X main.version=${finalAttrs.version}"
   ];
 
-  # Tests require connectivity to various backends.
-  doCheck = false;
+  proxyVendor = true;
 
   passthru.tests.version = testers.testVersion {
-    package = vals;
     command = "vals version";
+    package = vals;
   };
 
   meta = {
     description = "Helm-like configuration values loader with support for various sources";
-    mainProgram = "vals";
-    license = lib.licenses.asl20;
     homepage = "https://github.com/helmfile/vals";
     changelog = "https://github.com/helmfile/vals/releases/v${finalAttrs.version}";
+    license = lib.licenses.asl20;
     maintainers = with lib.maintainers; [ stehessel ];
+    mainProgram = "vals";
   };
 })

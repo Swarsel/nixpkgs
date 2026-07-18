@@ -1,7 +1,7 @@
 {
   lib,
-  buildDunePackage,
   fetchFromGitHub,
+  buildDunePackage,
   dune-configurator,
   xmlm,
 }:
@@ -21,8 +21,8 @@ buildDunePackage (finalAttrs: {
   propagatedBuildInputs = [ xmlm ];
 
   meta = {
-    homepage = "https://github.com/savonet/ocaml-xmlplaylist";
     description = "Module to parse various RSS playlist formats";
+    homepage = "https://github.com/savonet/ocaml-xmlplaylist";
     license = lib.licenses.lgpl21Only;
     maintainers = with lib.maintainers; [ dandellion ];
   };

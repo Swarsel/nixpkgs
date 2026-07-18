@@ -18,20 +18,20 @@ buildGoModule {
 
   vendorHash = "sha256-5mVI5cyuIB+6KHlTpDxSNGU7yBsGQC4IA+iDgvVFVZM=";
 
-  subPackages = [
-    "cmd/bosun"
-    "cmd/scollector"
-  ];
-
   ldflags = [
     "-s"
     "-w"
   ];
 
+  subPackages = [
+    "cmd/bosun"
+    "cmd/scollector"
+  ];
+
   meta = {
     description = "Time Series Alerting Framework";
-    license = lib.licenses.mit;
     homepage = "https://bosun.org";
+    license = lib.licenses.mit;
     maintainers = [ ];
     broken = stdenv.hostPlatform.isDarwin;
   };

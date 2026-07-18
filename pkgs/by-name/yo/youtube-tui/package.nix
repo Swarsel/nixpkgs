@@ -1,15 +1,15 @@
 {
   lib,
-  rustPlatform,
-  fetchFromGitHub,
-  pkg-config,
-  openssl,
-  libxcb,
   stdenv,
-  python3,
-  makeBinaryWrapper,
+  fetchFromGitHub,
   libsixel,
+  libxcb,
+  makeBinaryWrapper,
   mpv,
+  openssl,
+  pkg-config,
+  python3,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -23,8 +23,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-bTdhncgtQaC367P7OLfX5om+Zn0+V5HHGaWJ252xnrA=";
   };
 
-  cargoHash = "sha256-Mq0FyapMGufTyPJXfRVZtPa3XMdimZ8nSXqTue1tdA0=";
-
   nativeBuildInputs = [
     pkg-config
     python3
@@ -37,6 +35,8 @@ rustPlatform.buildRustPackage (finalAttrs: {
     libsixel
     mpv
   ];
+
+  cargoHash = "sha256-Mq0FyapMGufTyPJXfRVZtPa3XMdimZ8nSXqTue1tdA0=";
 
   # sixel-sys is dynamically linked to libsixel
   postInstall = lib.optionalString stdenv.hostPlatform.isDarwin ''

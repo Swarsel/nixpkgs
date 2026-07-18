@@ -1,19 +1,18 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   hatchling,
   pyrate-limiter,
   pytestCheckHook,
-  requests-mock,
   requests,
   requests-cache,
+  requests-mock,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "requests-ratelimiter";
   version = "0.10.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "JWCook";
@@ -22,6 +21,12 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-P6tDx/jzGEyFC10WIyHQZIFMSEmtMnHjl+jEih987j8=";
   };
 
+  nativeCheckInputs = [
+    pytestCheckHook
+    requests-cache
+    requests-mock
+  ];
+
   build-system = [ hatchling ];
 
   dependencies = [
@@ -29,12 +34,7 @@ buildPythonPackage (finalAttrs: {
     requests
   ];
 
-  nativeCheckInputs = [
-    pytestCheckHook
-    requests-cache
-    requests-mock
-  ];
-
+  pyproject = true;
   pythonImportsCheck = [ "requests_ratelimiter" ];
 
   meta = {

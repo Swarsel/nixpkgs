@@ -1,12 +1,15 @@
 {
   lib,
   stdenv,
-  resholve,
   fetchFromGitHub,
-  git,
   bash,
-  openssl,
+  coreutils,
+  esh,
   gawk,
+  git,
+  gnupg,
+  gnutar,
+  installShellFiles,
   /*
     TODO: yadm can use git-crypt and transcrypt
     but it does so in a way that resholve 0.6.0
@@ -19,21 +22,16 @@
   # git-crypt,
   # transcrypt,
   j2cli,
-  esh,
-  gnupg,
-  coreutils,
-  gnutar,
-  installShellFiles,
+  openssl,
+  resholve,
   runCommand,
   yadm,
-
   # Templates:
   withAwk ? true,
   withEsh ? true,
-  withJ2 ? true,
-
   # Encryption:
   withGpg ? true,
+  withJ2 ? true,
   withOpenssl ? true,
 }:
 let
@@ -43,11 +41,6 @@ resholve.mkDerivation (finalAttrs: {
   pname = "yadm";
   version = "3.5.0";
 
-  strictDeps = true;
-  __structuredAttrs = true;
-
-  nativeBuildInputs = [ installShellFiles ];
-
   src = fetchFromGitHub {
     owner = "yadm-dev";
     repo = "yadm";
@@ -55,8 +48,8 @@ resholve.mkDerivation (finalAttrs: {
     hash = "sha256-hDo6zs70apNhKmuvR+eD51FzuTLj3SL/wHQXqLMD9QE=";
   };
 
-  dontConfigure = true;
-  dontBuild = true;
+  strictDeps = true;
+  nativeBuildInputs = [ installShellFiles ];
 
   installPhase = ''
     runHook preInstall
@@ -71,10 +64,42 @@ resholve.mkDerivation (finalAttrs: {
       --bash completion/bash/yadm
   '';
 
+  __structuredAttrs = true;
+  dontBuild = true;
+  dontConfigure = true;
+
   solutions = {
     yadm = {
-      scripts = [ "bin/yadm" ];
-      interpreter = "${bash}/bin/sh";
+      /*
+        TODO: these should be dropped as fast as they can be dealt
+              with properly in binlore and/or resholve.
+      */
+      execer = [
+        "cannot:${j2cli}/bin/j2"
+        "cannot:${esh}/bin/esh"
+        "cannot:${git}/bin/git"
+        "cannot:${gnupg}/bin/gpg"
+      ];
+
+      fake = {
+        external = lib.optional (!stdenv.hostPlatform.isCygwin) "cygpath" ++ lib.optional (!withTar) "tar";
+      };
+
+      fix = {
+        "$AWK_PROGRAM" = lib.optional withAwk "awk";
+        "$ESH_PROGRAM" = lib.optional withEsh "esh";
+        "$GIT_PROGRAM" = [ "git" ];
+        "$GPG_PROGRAM" = lib.optional withGpg "gpg";
+        # see head comment
+        # "$GIT_CRYPT_PROGRAM" = [ "git-crypt" ];
+        # "$TRANSCRYPT_PROGRAM" = [ "transcrypt" ];
+        "$J2CLI_PROGRAM" = lib.optional withJ2 "j2";
+        "$OPENSSL_PROGRAM" = lib.optional withOpenssl "openssl";
+        # not in nixpkgs (yet)
+        # "$ENVTPL_PROGRAM" = [ "envtpl" ];
+        # "$LSB_RELEASE_PROGRAM" = [ "lsb_release" ];
+      };
+
       inputs = [
         bash
         coreutils
@@ -89,51 +114,27 @@ resholve.mkDerivation (finalAttrs: {
       ++ lib.optional withJ2 j2cli
       ++ lib.optional withEsh esh
       ++ lib.optional withTar gnutar;
-      fake = {
-        external = lib.optional (!stdenv.hostPlatform.isCygwin) "cygpath" ++ lib.optional (!withTar) "tar";
-      };
-      fix = {
-        "$GIT_PROGRAM" = [ "git" ];
-        "$GPG_PROGRAM" = lib.optional withGpg "gpg";
-        "$OPENSSL_PROGRAM" = lib.optional withOpenssl "openssl";
-        "$AWK_PROGRAM" = lib.optional withAwk "awk";
-        # see head comment
-        # "$GIT_CRYPT_PROGRAM" = [ "git-crypt" ];
-        # "$TRANSCRYPT_PROGRAM" = [ "transcrypt" ];
-        "$J2CLI_PROGRAM" = lib.optional withJ2 "j2";
-        "$ESH_PROGRAM" = lib.optional withEsh "esh";
-        # not in nixpkgs (yet)
-        # "$ENVTPL_PROGRAM" = [ "envtpl" ];
-        # "$LSB_RELEASE_PROGRAM" = [ "lsb_release" ];
-      };
+
+      interpreter = "${bash}/bin/sh";
+
       keep = {
-        "$YADM_COMMAND" = true; # internal cmds
-        "$processor" = true; # dynamic, template-engine
-        "$log" = true; # dynamic level-specific loggers
-        "$SHELL" = true; # probably user env? unsure
-        "$hook_command" = true; # ~git hooks?
-        "exec" = [ "$YADM_BOOTSTRAP" ]; # yadm bootstrap script
-
-        "$GPG_PROGRAM" = !withGpg;
-        "$OPENSSL_PROGRAM" = !withOpenssl;
         "$AWK_PROGRAM" = !withAwk;
-        "$J2CLI_PROGRAM" = !withJ2;
-        "$ESH_PROGRAM" = !withEsh;
-
         # not in nixpkgs
         "$ENVTPL_PROGRAM" = true;
+        "$ESH_PROGRAM" = !withEsh;
+        "$GPG_PROGRAM" = !withGpg;
+        "$J2CLI_PROGRAM" = !withJ2;
         "$LSB_RELEASE_PROGRAM" = true;
+        "$OPENSSL_PROGRAM" = !withOpenssl;
+        "$SHELL" = true; # probably user env? unsure
+        "$YADM_COMMAND" = true; # internal cmds
+        "$hook_command" = true; # ~git hooks?
+        "$log" = true; # dynamic level-specific loggers
+        "$processor" = true; # dynamic, template-engine
+        "exec" = [ "$YADM_BOOTSTRAP" ]; # yadm bootstrap script
       };
-      /*
-        TODO: these should be dropped as fast as they can be dealt
-              with properly in binlore and/or resholve.
-      */
-      execer = [
-        "cannot:${j2cli}/bin/j2"
-        "cannot:${esh}/bin/esh"
-        "cannot:${git}/bin/git"
-        "cannot:${gnupg}/bin/gpg"
-      ];
+
+      scripts = [ "bin/yadm" ];
     };
   };
 
@@ -145,20 +146,24 @@ resholve.mkDerivation (finalAttrs: {
   };
 
   meta = {
-    homepage = "https://github.com/yadm-dev/yadm";
     description = "Yet Another Dotfiles Manager";
+
     longDescription = ''
       yadm is a dotfile management tool with 3 main features:
       * Manages files across systems using a single Git repository.
       * Provides a way to use alternate files on a specific OS or host.
       * Supplies a method of encrypting confidential data so it can safely be stored in your repository.
     '';
+
+    homepage = "https://github.com/yadm-dev/yadm";
     changelog = "https://github.com/yadm-dev/yadm/blob/${finalAttrs.version}/CHANGES";
     license = lib.licenses.gpl3Plus;
+
     maintainers = with lib.maintainers; [
       abathur
       sandarukasa
     ];
+
     platforms = lib.platforms.unix;
     mainProgram = "yadm";
   };

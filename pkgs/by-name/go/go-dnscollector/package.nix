@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule (finalAttrs: {
@@ -16,7 +16,6 @@ buildGoModule (finalAttrs: {
   };
 
   vendorHash = "sha256-pEex5xu3Cf6vqFp7YLwk+Ku+Yc0coOGLXP7/NUtDYbg=";
-
   subPackages = [ "." ];
 
   meta = {

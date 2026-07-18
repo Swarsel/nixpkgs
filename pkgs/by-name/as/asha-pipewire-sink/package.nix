@@ -1,12 +1,12 @@
 {
-  cmake,
+  lib,
   stdenv,
   fetchFromGitHub,
-  lib,
-  pkg-config,
-  pipewire,
   bluez,
+  cmake,
   glib,
+  pipewire,
+  pkg-config,
 }:
 
 stdenv.mkDerivation {
@@ -39,8 +39,8 @@ stdenv.mkDerivation {
     description = "Sample ASHA implementation for Linux designed to work with pipewire and bluez";
     homepage = "https://github.com/thewierdnut/asha_pipewire_sink";
     license = lib.licenses.unlicense;
-    platforms = lib.platforms.all;
     maintainers = with lib.maintainers; [ onny ];
+    platforms = lib.platforms.all;
     mainProgram = "asha_pipewire_sink";
   };
 }

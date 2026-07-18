@@ -1,26 +1,22 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # build-system
-  setuptools,
-  setuptools-scm,
-
+  buildPythonPackage,
   # dependencies
   numpy,
   packaging,
   pandas,
-  scipy,
-
   # tests
   pytestCheckHook,
+  scipy,
+  # build-system
+  setuptools,
+  setuptools-scm,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "formulae";
   version = "0.6.2";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "bambinos";
@@ -28,6 +24,8 @@ buildPythonPackage (finalAttrs: {
     tag = finalAttrs.version;
     hash = "sha256-Q+oHt9euUBQs/D5TlJeeUN76HwQkmGHC1cTzmAQx+2M=";
   };
+
+  nativeCheckInputs = [ pytestCheckHook ];
 
   build-system = [
     setuptools
@@ -41,8 +39,6 @@ buildPythonPackage (finalAttrs: {
     scipy
   ];
 
-  nativeCheckInputs = [ pytestCheckHook ];
-
   disabledTests = [
     # use assertions of form `assert pytest.approx(...)`, which is now disallowed:
     "test_basic"
@@ -51,14 +47,16 @@ buildPythonPackage (finalAttrs: {
     "test_evalenv_equality"
   ];
 
+  pyproject = true;
+
   pythonImportsCheck = [
     "formulae"
     "formulae.matrices"
   ];
 
   meta = {
-    homepage = "https://bambinos.github.io/formulae";
     description = "Formulas for mixed-effects models in Python";
+    homepage = "https://bambinos.github.io/formulae";
     changelog = "https://github.com/bambinos/formulae/releases/tag/${finalAttrs.src.tag}";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ bcdarwin ];

@@ -1,10 +1,10 @@
 {
   lib,
   stdenv,
-  fetchsvn,
   fetchurl,
   cups,
   cups-filters,
+  fetchsvn,
   jbigkit,
   zlib,
 }:
@@ -43,23 +43,23 @@ stdenv.mkDerivation (finalAttrs: {
       --replace "RASTERDIR" "\"${cups-filters}/lib/cups/filter\""
   '';
 
-  makeFlags = [
-    "CUPSFILTER=$(out)/lib/cups/filter"
-    "CUPSPPD=$(out)/share/cups/model"
-    "CUPSPROFILE=${color-profiles}/share/cups/profiles"
-  ];
-
   buildInputs = [
     cups
     zlib
     jbigkit
   ];
 
+  makeFlags = [
+    "CUPSFILTER=$(out)/lib/cups/filter"
+    "CUPSPPD=$(out)/share/cups/model"
+    "CUPSPROFILE=${color-profiles}/share/cups/profiles"
+  ];
+
   meta = {
     description = "CUPS drivers for SPL (Samsung Printer Language) printers";
     homepage = "https://web.archive.org/web/20220729010458/http://splix.ap2c.org/";
     license = lib.licenses.gpl2Only;
-    platforms = lib.platforms.linux;
     maintainers = [ ];
+    platforms = lib.platforms.linux;
   };
 })

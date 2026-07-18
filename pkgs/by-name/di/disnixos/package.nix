@@ -2,11 +2,11 @@
   lib,
   stdenv,
   fetchurl,
-  dysnomia,
   disnix,
-  socat,
-  pkg-config,
+  dysnomia,
   getopt,
+  pkg-config,
+  socat,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -19,6 +19,7 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   nativeBuildInputs = [ pkg-config ];
+
   buildInputs = [
     socat
     dysnomia

@@ -4,8 +4,8 @@
   fetchurl,
   commons-daemon,
   jdk,
-  makeWrapper,
   jre,
+  makeWrapper,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -17,11 +17,13 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-SPnE5jrw1zAy7vIzGrjp0+B4SwCLoufLef3XUcUgK6Y=";
   };
 
-  buildInputs = [ commons-daemon ];
   nativeBuildInputs = [
     jdk
     makeWrapper
   ];
+
+  buildInputs = [ commons-daemon ];
+  env.NIX_CFLAGS_COMPILE = lib.optionalString stdenv.cc.isGNU "-std=gnu17";
 
   preConfigure = ''
     cd ./src/native/unix/
@@ -31,8 +33,6 @@ stdenv.mkDerivation (finalAttrs: {
   preBuild = ''
     export JAVA_HOME=${jre}
   '';
-
-  env.NIX_CFLAGS_COMPILE = lib.optionalString stdenv.cc.isGNU "-std=gnu17";
 
   installPhase = ''
     runHook preInstall
@@ -44,10 +44,10 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   meta = {
-    homepage = "https://commons.apache.org/proper/commons-daemon";
     description = "Part of the Apache Commons Daemon software, a set of utilities and Java support classes for running Java applications as server processes";
-    maintainers = with lib.maintainers; [ rsynnest ];
+    homepage = "https://commons.apache.org/proper/commons-daemon";
     license = lib.licenses.asl20;
+    maintainers = with lib.maintainers; [ rsynnest ];
     platforms = with lib.platforms; unix;
     mainProgram = "jsvc";
   };

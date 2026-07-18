@@ -1,7 +1,7 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -17,15 +17,15 @@ rustPlatform.buildRustPackage (finalAttrs: {
 
   cargoHash = "sha256-cVOAmwX/pYA6R0HK8+RLt/IvzowAO/g1i2YM71bYFoA=";
 
+  postInstall = ''
+    install -Dm644 -t $out/include crates/c-api/*.h
+  '';
+
   cargoBuildFlags = [
     "--package=resvg"
     "--package=resvg-capi"
     "--package=usvg"
   ];
-
-  postInstall = ''
-    install -Dm644 -t $out/include crates/c-api/*.h
-  '';
 
   meta = {
     description = "SVG rendering library";

@@ -2,14 +2,14 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  openssl,
-  tcl,
   buildPackages,
-  readline,
   ncurses,
-  zlib,
+  openssl,
+  readline,
   sqlite,
+  tcl,
   util-linux,
+  zlib,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -35,10 +35,6 @@ stdenv.mkDerivation (finalAttrs: {
     zlib
   ];
 
-  depsBuildBuild = [
-    buildPackages.stdenv.cc
-  ];
-
   configureFlags = [
     "--enable-threadsafe"
     "--with-readline-inc=-I${lib.getDev readline}/include"
@@ -46,6 +42,13 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   env = {
+    BUILD_CC = "$(CC_FOR_BUILD)";
+
+    LDFLAGS = toString [
+      "-lssl"
+      "-lcrypto"
+    ];
+
     NIX_CFLAGS_COMPILE = toString [
       # We want feature parity with sqlite
       sqlite.NIX_CFLAGS_COMPILE
@@ -54,11 +57,7 @@ stdenv.mkDerivation (finalAttrs: {
       "-DSQLITE_EXTRA_SHUTDOWN=sqlcipher_extra_shutdown"
       "-DSQLITE_TEMP_STORE=3"
     ];
-    LDFLAGS = toString [
-      "-lssl"
-      "-lcrypto"
-    ];
-    BUILD_CC = "$(CC_FOR_BUILD)";
+
     TCLLIBDIR = "${placeholder "out"}/lib/tcl${lib.versions.majorMinor tcl.version}";
   };
 
@@ -90,13 +89,17 @@ stdenv.mkDerivation (finalAttrs: {
     ln --symbolic --force "$f" $out/lib/libsqlcipher.so
   '';
 
+  depsBuildBuild = [
+    buildPackages.stdenv.cc
+  ];
+
   meta = {
-    changelog = "https://github.com/sqlcipher/sqlcipher/blob/${finalAttrs.src.rev}/CHANGELOG.md";
     description = "SQLite extension that provides 256 bit AES encryption of database files";
-    mainProgram = "sqlcipher";
     homepage = "https://www.zetetic.net/sqlcipher/";
+    changelog = "https://github.com/sqlcipher/sqlcipher/blob/${finalAttrs.src.rev}/CHANGELOG.md";
     license = lib.licenses.bsd3;
     maintainers = [ ];
     platforms = lib.platforms.unix;
+    mainProgram = "sqlcipher";
   };
 })

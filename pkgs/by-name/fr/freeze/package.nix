@@ -1,8 +1,8 @@
 {
   lib,
   stdenv,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule (finalAttrs: {
@@ -18,20 +18,20 @@ buildGoModule (finalAttrs: {
 
   vendorHash = "sha256-R8kdFweMhAUjJ8zJ7HdF5+/vllbNmARdhU4hOw4etZo=";
 
+  postInstall = lib.optionalString (!stdenv.hostPlatform.isDarwin) ''
+    mv $out/bin/Freeze $out/bin/freeze
+  '';
+
   ldflags = [
     "-s"
     "-w"
   ];
 
-  postInstall = lib.optionalString (!stdenv.hostPlatform.isDarwin) ''
-    mv $out/bin/Freeze $out/bin/freeze
-  '';
-
   meta = {
     description = "Payload toolkit for bypassing EDRs";
-    mainProgram = "freeze";
     homepage = "https://github.com/optiv/Freeze";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ fab ];
+    mainProgram = "freeze";
   };
 })

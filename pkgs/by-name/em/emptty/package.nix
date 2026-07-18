@@ -1,10 +1,10 @@
 {
-  buildGoModule,
-  fetchFromGitHub,
   lib,
+  stdenv,
+  fetchFromGitHub,
+  buildGoModule,
   libx11,
   pam,
-  stdenv,
 }:
 
 buildGoModule (finalAttrs: {
@@ -30,8 +30,8 @@ buildGoModule (finalAttrs: {
     homepage = "https://github.com/tvrzna/emptty";
     license = lib.licenses.mit;
     maintainers = [ ];
+    mainProgram = "emptty";
     # many undefined functions
     broken = stdenv.hostPlatform.isDarwin;
-    mainProgram = "emptty";
   };
 })

@@ -1,19 +1,29 @@
 {
   lib,
-  mkCoqDerivation,
   coq,
+  mkCoqDerivation,
   version ? null,
 }:
 
 mkCoqDerivation {
-  pname = "autosubst-ocaml";
-  owner = "uds-psl";
-
-  release."1.1+9.0".hash = "sha256-fCQjmF+0ik2QdKog61VfIv5ERmw+AJO8y5+CWmDGGk0=";
-  release."1.1+8.20".hash = "sha256-S3uKkwbGFsvauP9lKc3UsdszHahbZQhlOOK3fCBXlSE=";
-  release."1.1+8.19".hash = "sha256-AGbhw/6lg4GpDE6hZBhau9DLW7HVXa0UzGvJfSV8oHE=";
-
   inherit version;
+  pname = "autosubst-ocaml";
+
+  buildInputs = with coq.ocamlPackages; [
+    angstrom
+    ocamlgraph
+    ppx_deriving
+    ppxlib
+  ];
+
+  buildPhase = ''
+    dune build
+  '';
+
+  installPhase = ''
+    dune install --prefix $out --libdir $OCAMLFIND_DESTDIR
+  '';
+
   defaultVersion =
     with lib.versions;
     lib.switch coq.coq-version [
@@ -31,27 +41,17 @@ mkCoqDerivation {
       }
     ] null;
 
-  buildInputs = with coq.ocamlPackages; [
-    angstrom
-    ocamlgraph
-    ppx_deriving
-    ppxlib
-  ];
+  owner = "uds-psl";
+  release."1.1+8.19".hash = "sha256-AGbhw/6lg4GpDE6hZBhau9DLW7HVXa0UzGvJfSV8oHE=";
+  release."1.1+8.20".hash = "sha256-S3uKkwbGFsvauP9lKc3UsdszHahbZQhlOOK3fCBXlSE=";
+  release."1.1+9.0".hash = "sha256-fCQjmF+0ik2QdKog61VfIv5ERmw+AJO8y5+CWmDGGk0=";
   useDune = true;
-
-  buildPhase = ''
-    dune build
-  '';
-
-  installPhase = ''
-    dune install --prefix $out --libdir $OCAMLFIND_DESTDIR
-  '';
 
   meta = {
     description = "OCaml reimplementation of the Autosubst 2 code generator";
     homepage = "https://github.com/uds-psl/autosubst-ocaml";
-    mainProgram = "autosubst";
-    maintainers = with lib.maintainers; [ chen ];
     license = lib.licenses.mit;
+    maintainers = with lib.maintainers; [ chen ];
+    mainProgram = "autosubst";
   };
 }

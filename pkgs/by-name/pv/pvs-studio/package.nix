@@ -2,14 +2,12 @@
   lib,
   stdenv,
   fetchzip,
-
   installShellFiles,
   makeWrapper,
   perl,
-  strace,
-
-  testers,
   pvs-studio,
+  strace,
+  testers,
 }:
 
 # nixpkgs-update: no auto update
@@ -27,6 +25,7 @@ stdenv.mkDerivation rec {
         aarch64-darwin = "https://web.archive.org/web/20260131193428/https://files.pvs-studio.com/pvs-studio-${version}-macos-arm64.zip";
         x86_64-linux = "https://web.archive.org/web/20260131192910/https://files.pvs-studio.com/pvs-studio-${version}-x86_64.tgz";
       };
+
       hash = selectSystem {
         aarch64-darwin = "sha256-ExJldpqwD9dqGtY/QQ2i3qiNXSyR6exhYKIrwgdQrtQ=";
         x86_64-linux = "sha256-c7+Zvo+cHtGtdaHi+3w7Vjluo7uQ2CfptCO8RkVm7wU=";
@@ -37,15 +36,6 @@ stdenv.mkDerivation rec {
     installShellFiles
     makeWrapper
   ];
-
-  nativeRuntimeInputs = lib.makeBinPath (
-    [
-      perl
-    ]
-    ++ lib.optionals (lib.meta.availableOn stdenv.hostPlatform strace) [
-      strace
-    ]
-  );
 
   installPhase = ''
     runHook preInstall
@@ -61,6 +51,15 @@ stdenv.mkDerivation rec {
       --prefix PATH ":" ${nativeRuntimeInputs}
   '';
 
+  nativeRuntimeInputs = lib.makeBinPath (
+    [
+      perl
+    ]
+    ++ lib.optionals (lib.meta.availableOn stdenv.hostPlatform strace) [
+      strace
+    ]
+  );
+
   passthru = {
     tests.version = testers.testVersion { package = pvs-studio; };
   };
@@ -69,11 +68,12 @@ stdenv.mkDerivation rec {
     description = "Static analyzer for C and C++";
     homepage = "https://pvs-studio.com/en/pvs-studio";
     license = lib.licenses.unfreeRedistributable;
+    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
+    maintainers = with lib.maintainers; [ sikmir ];
+
     platforms = [
       "aarch64-darwin"
       "x86_64-linux"
     ];
-    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
-    maintainers = with lib.maintainers; [ sikmir ];
   };
 }

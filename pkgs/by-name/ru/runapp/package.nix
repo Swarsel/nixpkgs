@@ -1,7 +1,7 @@
 {
+  lib,
   fetchFromGitHub,
   gcc15Stdenv,
-  lib,
   nix-update-script,
   pkg-config,
   systemd,
@@ -17,14 +17,13 @@ gcc15Stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-V9MYExbLIKpAB9sXDaBkiNgCiHJb+nDK7rvKHV/zsDE=";
   };
 
-  strictDeps = true;
-  nativeBuildInputs = [ pkg-config ];
-  buildInputs = [ systemd ];
-
   postPatch = ''
     substituteInPlace Makefile --replace-fail "-march=native" ""
   '';
 
+  strictDeps = true;
+  nativeBuildInputs = [ pkg-config ];
+  buildInputs = [ systemd ];
   buildFlags = [ "release" ];
 
   installFlags = [
@@ -39,7 +38,7 @@ gcc15Stdenv.mkDerivation (finalAttrs: {
     homepage = "https://github.com/c4rlo/runapp";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ clementpoiret ];
-    mainProgram = "runapp";
     platforms = lib.platforms.linux;
+    mainProgram = "runapp";
   };
 })

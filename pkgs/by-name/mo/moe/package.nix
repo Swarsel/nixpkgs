@@ -14,6 +14,8 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-TCXNeJGScq6+wKf4wSYBG7Wktdh0IoB6NCMhbwoXqGg=";
   };
 
+  strictDeps = true;
+
   nativeBuildInputs = [
     lzip
   ];
@@ -22,11 +24,9 @@ stdenv.mkDerivation (finalAttrs: {
     ncurses
   ];
 
-  strictDeps = true;
-
   meta = {
-    homepage = "https://www.gnu.org/software/moe/";
     description = "Small, 8-bit clean editor";
+
     longDescription = ''
       GNU moe is a powerful, 8-bit clean, console text editor for ISO-8859 and
       ASCII character encodings. It has a modeless, user-friendly interface,
@@ -36,6 +36,8 @@ stdenv.mkDerivation (finalAttrs: {
       completion, directory browser, duplicate removal from prompt histories,
       delimiter matching, text conversion from/to UTF-8, romanization, etc.
     '';
+
+    homepage = "https://www.gnu.org/software/moe/";
     license = lib.licenses.gpl2Plus;
     maintainers = with lib.maintainers; [ videl ];
     platforms = lib.platforms.unix;

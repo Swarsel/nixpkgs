@@ -1,18 +1,18 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitLab,
   gettext,
-  meson,
-  ninja,
-  pkg-config,
+  gitUpdater,
   glib,
   gtk3,
   libxfce4ui,
   libxfce4util,
+  meson,
+  ninja,
   pcre2,
+  pkg-config,
   xfce4-panel,
-  gitUpdater,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -20,11 +20,11 @@ stdenv.mkDerivation (finalAttrs: {
   version = "2.1.0";
 
   src = fetchFromGitLab {
-    domain = "gitlab.xfce.org";
     owner = "panel-plugins";
     repo = "xfce4-verve-plugin";
     tag = "xfce4-verve-plugin-${finalAttrs.version}";
     hash = "sha256-mxSjYBeBc2HjdTFVdZSVdspAQTEyS+uQA6K17lJoLlc=";
+    domain = "gitlab.xfce.org";
   };
 
   strictDeps = true;
@@ -51,7 +51,7 @@ stdenv.mkDerivation (finalAttrs: {
     description = "Command-line plugin";
     homepage = "https://gitlab.xfce.org/panel-plugins/xfce4-verve-plugin";
     license = lib.licenses.gpl2Plus;
-    teams = [ lib.teams.xfce ];
     platforms = lib.platforms.linux;
+    teams = [ lib.teams.xfce ];
   };
 })

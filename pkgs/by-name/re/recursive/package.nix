@@ -19,8 +19,8 @@ stdenvNoCC.mkDerivation rec {
   '';
 
   meta = {
-    homepage = "https://recursive.design/";
     description = "Variable font family for code & UI";
+    homepage = "https://recursive.design/";
     license = lib.licenses.ofl;
     maintainers = [ lib.maintainers.eadwu ];
     platforms = lib.platforms.all;

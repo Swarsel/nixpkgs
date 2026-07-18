@@ -1,19 +1,18 @@
 {
   lib,
-  python3Packages,
   fetchFromGitHub,
   buildPythonPackage,
-  mozjpeg,
-  pytestCheckHook,
-  setuptools,
-  cmake,
-  nix-update-script,
   cffi,
+  cmake,
+  mozjpeg,
+  nix-update-script,
+  pytestCheckHook,
+  python3Packages,
+  setuptools,
 }:
 buildPythonPackage rec {
   pname = "mozjpeg_lossless_optimization";
   version = "1.3.2";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "wanadev";
@@ -24,12 +23,10 @@ buildPythonPackage rec {
     fetchSubmodules = true;
   };
 
-  # This package needs cmake, but it is not the default builder
-  dontUseCmakeConfigure = true;
-
-  buildInputs = [ mozjpeg ];
   nativeBuildInputs = [ cmake ];
+  buildInputs = [ mozjpeg ];
   propagatedBuildInputs = [ cffi ];
+  nativeCheckInputs = [ pytestCheckHook ];
 
   # https://github.com/NixOS/nixpkgs/issues/255262
   preCheck = ''
@@ -37,7 +34,9 @@ buildPythonPackage rec {
   '';
 
   build-system = [ setuptools ];
-  nativeCheckInputs = [ pytestCheckHook ];
+  # This package needs cmake, but it is not the default builder
+  dontUseCmakeConfigure = true;
+  pyproject = true;
 
   passthru = {
     updateScript = nix-update-script { };

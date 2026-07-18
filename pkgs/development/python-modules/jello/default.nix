@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   installShellFiles,
   pygments,
   unittestCheckHook,
@@ -10,7 +10,6 @@
 buildPythonPackage rec {
   pname = "jello";
   version = "1.6.1";
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "kellyjonbrazil";
@@ -20,23 +19,22 @@ buildPythonPackage rec {
   };
 
   nativeBuildInputs = [ installShellFiles ];
-
   propagatedBuildInputs = [ pygments ];
-
   nativeCheckInputs = [ unittestCheckHook ];
-
-  pythonImportsCheck = [ "jello" ];
 
   postInstall = ''
     installManPage man/jello.1
   '';
 
+  format = "setuptools";
+  pythonImportsCheck = [ "jello" ];
+
   meta = {
     description = "CLI tool to filter JSON and JSON Lines data with Python syntax";
-    mainProgram = "jello";
     homepage = "https://github.com/kellyjonbrazil/jello";
     changelog = "https://github.com/kellyjonbrazil/jello/blob/${src.tag}/CHANGELOG";
     license = lib.licenses.mit;
     maintainers = [ ];
+    mainProgram = "jello";
   };
 }

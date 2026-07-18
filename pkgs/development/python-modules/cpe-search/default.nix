@@ -1,9 +1,9 @@
 {
   lib,
+  fetchFromGitHub,
   aiohttp,
   aiolimiter,
   buildPythonPackage,
-  fetchFromGitHub,
   hatchling,
   mariadb,
   requests,
@@ -14,7 +14,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "cpe-search";
   version = "0.2.9";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "ra1nb0rn";
@@ -23,6 +22,8 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-TEZTQvUZJYP0+Dtp/VAjyPNkxmKLV/+ApjsRSqEiH6w=";
   };
 
+  # Tests requires DB and API access
+  doCheck = false;
   build-system = [ hatchling ];
 
   dependencies = [
@@ -42,14 +43,13 @@ buildPythonPackage (finalAttrs: {
       tqdm
       ujson
     ];
+
     mariadb = [
       mariadb
     ];
   };
 
-  # Tests requires DB and API access
-  doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "cpe_search" ];
 
   meta = {

@@ -1,11 +1,11 @@
 {
-  stdenv,
-  stdenvNoCC,
-  gccStdenv,
   lib,
+  stdenv,
+  gccStdenv,
   libsForQt5,
   newScope,
   perlPackages,
+  stdenvNoCC,
 }:
 
 # To whomever it may concern:
@@ -74,6 +74,7 @@ let
   df-games = listToAttrs (
     map (dfVersion: {
       name = versionToName dfVersion;
+
       value =
         let
           isAtLeast50 = versionAtLeast dfVersion "50.0";
@@ -97,14 +98,15 @@ let
 
           mkDfWrapper =
             {
-              dwarf-fortress,
               dfhack,
+              dwarf-fortress,
               dwarf-therapist ? null,
               ...
             }@args:
             callPackage ./wrapper (
               {
                 inherit (self) themes;
+
                 inherit
                   dwarf-fortress
                   twbt
@@ -117,6 +119,7 @@ let
 
           dwarf-therapist = libsForQt5.callPackage ./dwarf-therapist/wrapper.nix {
             inherit dwarf-fortress dfhack mkDfWrapper;
+
             dwarf-therapist =
               (libsForQt5.callPackage ./dwarf-therapist {
                 inherit (self) dfVersions;
@@ -125,8 +128,8 @@ let
                   optionalAttrs (!isAtLeast50) {
                     # 41.2.5 is the last version to support Dwarf Fortress 0.47.
                     version = "41.2.5";
-                    maxDfVersion = "0.47.05";
                     hash = "sha256-xfYBtnO1n6OcliVt07GsQ9alDJIfWdVhtuyWwuvXSZs=";
+                    maxDfVersion = "0.47.05";
                   }
                 );
           };
@@ -136,30 +139,27 @@ let
   );
 
   self = rec {
+    cla-theme = themes.cla;
     dfVersions = importJSON ./df.lock.json;
-
     # Aliases for the latest Dwarf Fortress and the selected Therapist install
     dwarf-fortress = getAttr (versionToName latestVersion) df-games;
-    dwarf-therapist = dwarf-fortress.dwarf-therapist;
-    dwarf-fortress-original = dwarf-fortress.dwarf-fortress;
 
     dwarf-fortress-full = callPackage ./lazy-pack.nix {
       inherit df-games versionToName latestVersion;
     };
 
-    soundSense = callPackage ./soundsense.nix { };
-
+    dwarf-fortress-original = dwarf-fortress.dwarf-fortress;
+    dwarf-therapist = dwarf-fortress.dwarf-therapist;
     legends-browser = callPackage ./legends-browser { };
+    # Theme aliases
+    phoebus-theme = themes.phoebus;
+    soundSense = callPackage ./soundsense.nix { };
 
     themes = recurseIntoAttrs (
       callPackage ./themes {
         stdenv = stdenvNoCC;
       }
     );
-
-    # Theme aliases
-    phoebus-theme = themes.phoebus;
-    cla-theme = themes.cla;
   };
 
 in

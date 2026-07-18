@@ -2,8 +2,8 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  cmake,
   catch2_3,
+  cmake,
   python3Packages,
 }:
 

@@ -1,7 +1,7 @@
 {
-  stdenvNoCC,
-  fetchFromGitHub,
   lib,
+  fetchFromGitHub,
+  stdenvNoCC,
 }:
 stdenvNoCC.mkDerivation (finalAttrs: {
   pname = "rose-pine-kvantum";
@@ -14,7 +14,6 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     hash = "sha256-0xSMYYPsW7Rw5O8FL0iAt63Hya8GkI2VuOZf64PewyQ=";
   };
 
-  dontBuild = true;
   installPhase = ''
     runHook preInstall
 
@@ -26,11 +25,13 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  dontBuild = true;
+
   meta = {
     description = "Kvantum-themes based on Rose Pine";
     homepage = "https://github.com/rose-pine/kvantum";
-    platforms = lib.platforms.linux;
-    maintainers = with lib.maintainers; [ amadaluzia ];
     license = lib.licenses.mit;
+    maintainers = with lib.maintainers; [ amadaluzia ];
+    platforms = lib.platforms.linux;
   };
 })

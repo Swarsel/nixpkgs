@@ -126,439 +126,6 @@ let
 in
 {
 
-  ###### interface
-
-  options = {
-
-    services.tt-rss = {
-
-      enable = mkEnableOption "tt-rss";
-
-      root = mkOption {
-        type = types.path;
-        default = "/var/lib/tt-rss";
-        description = ''
-          Root of the application.
-        '';
-      };
-
-      user = mkOption {
-        type = types.str;
-        default = "tt_rss";
-        description = ''
-          User account under which both the update daemon and the web-application run.
-        '';
-      };
-
-      pool = mkOption {
-        type = types.str;
-        default = "${poolName}";
-        description = ''
-          Name of existing phpfpm pool that is used to run web-application.
-          If not specified a pool will be created automatically with
-          default values.
-        '';
-      };
-
-      virtualHost = mkOption {
-        type = types.nullOr types.str;
-        default = "tt-rss";
-        description = ''
-          Name of the nginx virtualhost to use and setup. If null, do not setup any virtualhost.
-        '';
-      };
-
-      database = {
-        type = mkOption {
-          type = types.enum [
-            "pgsql"
-            "mysql"
-          ];
-          default = "pgsql";
-          description = ''
-            Database to store feeds. Supported are pgsql and mysql.
-          '';
-        };
-
-        host = mkOption {
-          type = types.nullOr types.str;
-          default = null;
-          description = ''
-            Host of the database. Leave null to use Unix domain socket.
-          '';
-        };
-
-        name = mkOption {
-          type = types.str;
-          default = "tt_rss";
-          description = ''
-            Name of the existing database.
-          '';
-        };
-
-        user = mkOption {
-          type = types.str;
-          default = "tt_rss";
-          description = ''
-            The database user. The user must exist and has access to
-            the specified database.
-          '';
-        };
-
-        password = mkOption {
-          type = types.nullOr types.str;
-          default = null;
-          description = ''
-            The database user's password.
-          '';
-        };
-
-        passwordFile = mkOption {
-          type = types.nullOr types.str;
-          default = null;
-          description = ''
-            The database user's password.
-          '';
-        };
-
-        port = mkOption {
-          type = types.nullOr types.port;
-          default = null;
-          description = ''
-            The database's port. If not set, the default ports will be provided (5432
-            and 3306 for pgsql and mysql respectively).
-          '';
-        };
-
-        createLocally = mkOption {
-          type = types.bool;
-          default = true;
-          description = "Create the database and database user locally.";
-        };
-      };
-
-      auth = {
-        autoCreate = mkOption {
-          type = types.bool;
-          default = true;
-          description = ''
-            Allow authentication modules to auto-create users in tt-rss internal
-            database when authenticated successfully.
-          '';
-        };
-
-        autoLogin = mkOption {
-          type = types.bool;
-          default = true;
-          description = ''
-            Automatically login user on remote or other kind of externally supplied
-            authentication, otherwise redirect to login form as normal.
-            If set to true, users won't be able to set application language
-            and settings profile.
-          '';
-        };
-      };
-
-      pubSubHubbub = {
-        hub = mkOption {
-          type = types.str;
-          default = "";
-          description = ''
-            URL to a PubSubHubbub-compatible hub server. If defined, "Published
-            articles" generated feed would automatically become PUSH-enabled.
-          '';
-        };
-
-        enable = mkOption {
-          type = types.bool;
-          default = false;
-          description = ''
-            Enable client PubSubHubbub support in tt-rss. When disabled, tt-rss
-            won't try to subscribe to PUSH feed updates.
-          '';
-        };
-      };
-
-      sphinx = {
-        server = mkOption {
-          type = types.str;
-          default = "localhost:9312";
-          description = ''
-            Hostname:port combination for the Sphinx server.
-          '';
-        };
-
-        index = mkOption {
-          type = types.listOf types.str;
-          default = [
-            "ttrss"
-            "delta"
-          ];
-          description = ''
-            Index names in Sphinx configuration. Example configuration
-            files are available on tt-rss wiki.
-          '';
-        };
-      };
-
-      registration = {
-        enable = mkOption {
-          type = types.bool;
-          default = false;
-          description = ''
-            Allow users to register themselves. Please be aware that allowing
-            random people to access your tt-rss installation is a security risk
-            and potentially might lead to data loss or server exploit. Disabled
-            by default.
-          '';
-        };
-
-        notifyAddress = mkOption {
-          type = types.str;
-          default = "";
-          description = ''
-            Email address to send new user notifications to.
-          '';
-        };
-
-        maxUsers = mkOption {
-          type = types.int;
-          default = 0;
-          description = ''
-            Maximum amount of users which will be allowed to register on this
-            system. 0 - no limit.
-          '';
-        };
-      };
-
-      email = {
-        server = mkOption {
-          type = types.str;
-          default = "";
-          example = "localhost:25";
-          description = ''
-            Hostname:port combination to send outgoing mail. Blank - use system
-            MTA.
-          '';
-        };
-
-        login = mkOption {
-          type = types.str;
-          default = "";
-          description = ''
-            SMTP authentication login used when sending outgoing mail.
-          '';
-        };
-
-        password = mkOption {
-          type = types.str;
-          default = "";
-          description = ''
-            SMTP authentication password used when sending outgoing mail.
-          '';
-        };
-
-        security = mkOption {
-          type = types.enum [
-            ""
-            "ssl"
-            "tls"
-          ];
-          default = "";
-          description = ''
-            Used to select a secure SMTP connection. Allowed values: ssl, tls,
-            or empty.
-          '';
-        };
-
-        fromName = mkOption {
-          type = types.str;
-          default = "Tiny Tiny RSS";
-          description = ''
-            Name for sending outgoing mail. This applies to password reset
-            notifications, digest emails and any other mail.
-          '';
-        };
-
-        fromAddress = mkOption {
-          type = types.str;
-          default = "";
-          description = ''
-            Address for sending outgoing mail. This applies to password reset
-            notifications, digest emails and any other mail.
-          '';
-        };
-
-        digestSubject = mkOption {
-          type = types.str;
-          default = "[tt-rss] New headlines for last 24 hours";
-          description = ''
-            Subject line for email digests.
-          '';
-        };
-      };
-
-      sessionCookieLifetime = mkOption {
-        type = types.int;
-        default = 86400;
-        description = ''
-          Default lifetime of a session (e.g. login) cookie. In seconds,
-          0 means cookie will be deleted when browser closes.
-        '';
-      };
-
-      selfUrlPath = mkOption {
-        type = types.str;
-        description = ''
-          Full URL of your tt-rss installation. This should be set to the
-          location of tt-rss directory, e.g. http://example.org/tt-rss/
-          You need to set this option correctly otherwise several features
-          including PUSH, bookmarklets and browser integration will not work properly.
-        '';
-        example = "http://localhost";
-      };
-
-      feedCryptKey = mkOption {
-        type = types.str;
-        default = "";
-        description = ''
-          Key used for encryption of passwords for password-protected feeds
-          in the database. A string of 24 random characters. If left blank, encryption
-          is not used. Requires mcrypt functions.
-          Warning: changing this key will make your stored feed passwords impossible
-          to decrypt.
-        '';
-      };
-
-      singleUserMode = mkOption {
-        type = types.bool;
-        default = false;
-
-        description = ''
-          Operate in single user mode, disables all functionality related to
-          multiple users and authentication. Enabling this assumes you have
-          your tt-rss directory protected by other means (e.g. http auth).
-        '';
-      };
-
-      simpleUpdateMode = mkOption {
-        type = types.bool;
-        default = false;
-        description = ''
-          Enables fallback update mode where tt-rss tries to update feeds in
-          background while tt-rss is open in your browser.
-          If you don't have a lot of feeds and don't want to or can't run
-          background processes while not running tt-rss, this method is generally
-          viable to keep your feeds up to date.
-          Still, there are more robust (and recommended) updating methods
-          available, you can read about them here: <https://tt-rss.org/wiki/UpdatingFeeds>
-        '';
-      };
-
-      forceArticlePurge = mkOption {
-        type = types.int;
-        default = 0;
-        description = ''
-          When this option is not 0, users ability to control feed purging
-          intervals is disabled and all articles (which are not starred)
-          older than this amount of days are purged.
-        '';
-      };
-
-      enableGZipOutput = mkOption {
-        type = types.bool;
-        default = true;
-        description = ''
-          Selectively gzip output to improve wire performance. This requires
-          PHP Zlib extension on the server.
-          Enabling this can break tt-rss in several httpd/php configurations,
-          if you experience weird errors and tt-rss failing to start, blank pages
-          after login, or content encoding errors, disable it.
-        '';
-      };
-
-      phpPackage = lib.mkOption {
-        type = lib.types.package;
-        default = pkgs.php;
-        defaultText = "pkgs.php";
-        description = ''
-          php package to use for php fpm and update daemon.
-        '';
-      };
-
-      plugins = mkOption {
-        type = types.listOf types.str;
-        default = [
-          "auth_internal"
-          "note"
-        ];
-        description = ''
-          List of plugins to load automatically for all users.
-          System plugins have to be specified here. Please enable at least one
-          authentication plugin here (auth_*).
-          Users may enable other user plugins from Preferences/Plugins but may not
-          disable plugins specified in this list.
-          Disabling auth_internal in this list would automatically disable
-          reset password link on the login form.
-        '';
-      };
-
-      pluginPackages = mkOption {
-        type = types.listOf types.package;
-        default = [ ];
-        description = ''
-          List of plugins to install. The list elements are expected to
-          be derivations. All elements in this derivation are automatically
-          copied to the `plugins.local` directory.
-        '';
-      };
-
-      themePackages = mkOption {
-        type = types.listOf types.package;
-        default = [ ];
-        description = ''
-          List of themes to install. The list elements are expected to
-          be derivations. All elements in this derivation are automatically
-          copied to the `themes.local` directory.
-        '';
-      };
-
-      logDestination = mkOption {
-        type = types.enum [
-          ""
-          "sql"
-          "syslog"
-        ];
-        default = "sql";
-        description = ''
-          Log destination to use. Possible values: sql (uses internal logging
-          you can read in Preferences -> System), syslog - logs to system log.
-          Setting this to blank uses PHP logging (usually to http server
-          error.log).
-        '';
-      };
-
-      updateDaemon = {
-        commandFlags = mkOption {
-          type = types.str;
-          default = "--quiet";
-          description = ''
-            Command-line flags passed to the update daemon.
-            The default --quiet flag mutes all logging, including errors.
-          '';
-        };
-      };
-
-      extraConfig = mkOption {
-        type = types.lines;
-        default = "";
-        description = ''
-          Additional lines to append to `config.php`.
-        '';
-      };
-    };
-  };
-
   imports = [
     (mkRemovedOptionModule [ "services" "tt-rss" "checkForUpdates" ] ''
       This option was removed because setting this to true will cause TT-RSS
@@ -568,8 +135,519 @@ in
     '')
   ];
 
-  ###### implementation
+  ###### interface
+  options = {
 
+    services.tt-rss = {
+
+      enable = mkEnableOption "tt-rss";
+
+      auth = {
+        autoCreate = mkOption {
+          default = true;
+
+          description = ''
+            Allow authentication modules to auto-create users in tt-rss internal
+            database when authenticated successfully.
+          '';
+
+          type = types.bool;
+        };
+
+        autoLogin = mkOption {
+          default = true;
+
+          description = ''
+            Automatically login user on remote or other kind of externally supplied
+            authentication, otherwise redirect to login form as normal.
+            If set to true, users won't be able to set application language
+            and settings profile.
+          '';
+
+          type = types.bool;
+        };
+      };
+
+      database = {
+        createLocally = mkOption {
+          default = true;
+          description = "Create the database and database user locally.";
+          type = types.bool;
+        };
+
+        host = mkOption {
+          default = null;
+
+          description = ''
+            Host of the database. Leave null to use Unix domain socket.
+          '';
+
+          type = types.nullOr types.str;
+        };
+
+        name = mkOption {
+          default = "tt_rss";
+
+          description = ''
+            Name of the existing database.
+          '';
+
+          type = types.str;
+        };
+
+        password = mkOption {
+          default = null;
+
+          description = ''
+            The database user's password.
+          '';
+
+          type = types.nullOr types.str;
+        };
+
+        passwordFile = mkOption {
+          default = null;
+
+          description = ''
+            The database user's password.
+          '';
+
+          type = types.nullOr types.str;
+        };
+
+        port = mkOption {
+          default = null;
+
+          description = ''
+            The database's port. If not set, the default ports will be provided (5432
+            and 3306 for pgsql and mysql respectively).
+          '';
+
+          type = types.nullOr types.port;
+        };
+
+        type = mkOption {
+          default = "pgsql";
+
+          description = ''
+            Database to store feeds. Supported are pgsql and mysql.
+          '';
+
+          type = types.enum [
+            "pgsql"
+            "mysql"
+          ];
+        };
+
+        user = mkOption {
+          default = "tt_rss";
+
+          description = ''
+            The database user. The user must exist and has access to
+            the specified database.
+          '';
+
+          type = types.str;
+        };
+      };
+
+      email = {
+        digestSubject = mkOption {
+          default = "[tt-rss] New headlines for last 24 hours";
+
+          description = ''
+            Subject line for email digests.
+          '';
+
+          type = types.str;
+        };
+
+        fromAddress = mkOption {
+          default = "";
+
+          description = ''
+            Address for sending outgoing mail. This applies to password reset
+            notifications, digest emails and any other mail.
+          '';
+
+          type = types.str;
+        };
+
+        fromName = mkOption {
+          default = "Tiny Tiny RSS";
+
+          description = ''
+            Name for sending outgoing mail. This applies to password reset
+            notifications, digest emails and any other mail.
+          '';
+
+          type = types.str;
+        };
+
+        login = mkOption {
+          default = "";
+
+          description = ''
+            SMTP authentication login used when sending outgoing mail.
+          '';
+
+          type = types.str;
+        };
+
+        password = mkOption {
+          default = "";
+
+          description = ''
+            SMTP authentication password used when sending outgoing mail.
+          '';
+
+          type = types.str;
+        };
+
+        security = mkOption {
+          default = "";
+
+          description = ''
+            Used to select a secure SMTP connection. Allowed values: ssl, tls,
+            or empty.
+          '';
+
+          type = types.enum [
+            ""
+            "ssl"
+            "tls"
+          ];
+        };
+
+        server = mkOption {
+          default = "";
+
+          description = ''
+            Hostname:port combination to send outgoing mail. Blank - use system
+            MTA.
+          '';
+
+          example = "localhost:25";
+          type = types.str;
+        };
+      };
+
+      enableGZipOutput = mkOption {
+        default = true;
+
+        description = ''
+          Selectively gzip output to improve wire performance. This requires
+          PHP Zlib extension on the server.
+          Enabling this can break tt-rss in several httpd/php configurations,
+          if you experience weird errors and tt-rss failing to start, blank pages
+          after login, or content encoding errors, disable it.
+        '';
+
+        type = types.bool;
+      };
+
+      extraConfig = mkOption {
+        default = "";
+
+        description = ''
+          Additional lines to append to `config.php`.
+        '';
+
+        type = types.lines;
+      };
+
+      feedCryptKey = mkOption {
+        default = "";
+
+        description = ''
+          Key used for encryption of passwords for password-protected feeds
+          in the database. A string of 24 random characters. If left blank, encryption
+          is not used. Requires mcrypt functions.
+          Warning: changing this key will make your stored feed passwords impossible
+          to decrypt.
+        '';
+
+        type = types.str;
+      };
+
+      forceArticlePurge = mkOption {
+        default = 0;
+
+        description = ''
+          When this option is not 0, users ability to control feed purging
+          intervals is disabled and all articles (which are not starred)
+          older than this amount of days are purged.
+        '';
+
+        type = types.int;
+      };
+
+      logDestination = mkOption {
+        default = "sql";
+
+        description = ''
+          Log destination to use. Possible values: sql (uses internal logging
+          you can read in Preferences -> System), syslog - logs to system log.
+          Setting this to blank uses PHP logging (usually to http server
+          error.log).
+        '';
+
+        type = types.enum [
+          ""
+          "sql"
+          "syslog"
+        ];
+      };
+
+      phpPackage = lib.mkOption {
+        default = pkgs.php;
+        defaultText = "pkgs.php";
+
+        description = ''
+          php package to use for php fpm and update daemon.
+        '';
+
+        type = lib.types.package;
+      };
+
+      pluginPackages = mkOption {
+        default = [ ];
+
+        description = ''
+          List of plugins to install. The list elements are expected to
+          be derivations. All elements in this derivation are automatically
+          copied to the `plugins.local` directory.
+        '';
+
+        type = types.listOf types.package;
+      };
+
+      plugins = mkOption {
+        default = [
+          "auth_internal"
+          "note"
+        ];
+
+        description = ''
+          List of plugins to load automatically for all users.
+          System plugins have to be specified here. Please enable at least one
+          authentication plugin here (auth_*).
+          Users may enable other user plugins from Preferences/Plugins but may not
+          disable plugins specified in this list.
+          Disabling auth_internal in this list would automatically disable
+          reset password link on the login form.
+        '';
+
+        type = types.listOf types.str;
+      };
+
+      pool = mkOption {
+        default = "${poolName}";
+
+        description = ''
+          Name of existing phpfpm pool that is used to run web-application.
+          If not specified a pool will be created automatically with
+          default values.
+        '';
+
+        type = types.str;
+      };
+
+      pubSubHubbub = {
+        enable = mkOption {
+          default = false;
+
+          description = ''
+            Enable client PubSubHubbub support in tt-rss. When disabled, tt-rss
+            won't try to subscribe to PUSH feed updates.
+          '';
+
+          type = types.bool;
+        };
+
+        hub = mkOption {
+          default = "";
+
+          description = ''
+            URL to a PubSubHubbub-compatible hub server. If defined, "Published
+            articles" generated feed would automatically become PUSH-enabled.
+          '';
+
+          type = types.str;
+        };
+      };
+
+      registration = {
+        enable = mkOption {
+          default = false;
+
+          description = ''
+            Allow users to register themselves. Please be aware that allowing
+            random people to access your tt-rss installation is a security risk
+            and potentially might lead to data loss or server exploit. Disabled
+            by default.
+          '';
+
+          type = types.bool;
+        };
+
+        maxUsers = mkOption {
+          default = 0;
+
+          description = ''
+            Maximum amount of users which will be allowed to register on this
+            system. 0 - no limit.
+          '';
+
+          type = types.int;
+        };
+
+        notifyAddress = mkOption {
+          default = "";
+
+          description = ''
+            Email address to send new user notifications to.
+          '';
+
+          type = types.str;
+        };
+      };
+
+      root = mkOption {
+        default = "/var/lib/tt-rss";
+
+        description = ''
+          Root of the application.
+        '';
+
+        type = types.path;
+      };
+
+      selfUrlPath = mkOption {
+        description = ''
+          Full URL of your tt-rss installation. This should be set to the
+          location of tt-rss directory, e.g. http://example.org/tt-rss/
+          You need to set this option correctly otherwise several features
+          including PUSH, bookmarklets and browser integration will not work properly.
+        '';
+
+        example = "http://localhost";
+        type = types.str;
+      };
+
+      sessionCookieLifetime = mkOption {
+        default = 86400;
+
+        description = ''
+          Default lifetime of a session (e.g. login) cookie. In seconds,
+          0 means cookie will be deleted when browser closes.
+        '';
+
+        type = types.int;
+      };
+
+      simpleUpdateMode = mkOption {
+        default = false;
+
+        description = ''
+          Enables fallback update mode where tt-rss tries to update feeds in
+          background while tt-rss is open in your browser.
+          If you don't have a lot of feeds and don't want to or can't run
+          background processes while not running tt-rss, this method is generally
+          viable to keep your feeds up to date.
+          Still, there are more robust (and recommended) updating methods
+          available, you can read about them here: <https://tt-rss.org/wiki/UpdatingFeeds>
+        '';
+
+        type = types.bool;
+      };
+
+      singleUserMode = mkOption {
+        default = false;
+
+        description = ''
+          Operate in single user mode, disables all functionality related to
+          multiple users and authentication. Enabling this assumes you have
+          your tt-rss directory protected by other means (e.g. http auth).
+        '';
+
+        type = types.bool;
+      };
+
+      sphinx = {
+        index = mkOption {
+          default = [
+            "ttrss"
+            "delta"
+          ];
+
+          description = ''
+            Index names in Sphinx configuration. Example configuration
+            files are available on tt-rss wiki.
+          '';
+
+          type = types.listOf types.str;
+        };
+
+        server = mkOption {
+          default = "localhost:9312";
+
+          description = ''
+            Hostname:port combination for the Sphinx server.
+          '';
+
+          type = types.str;
+        };
+      };
+
+      themePackages = mkOption {
+        default = [ ];
+
+        description = ''
+          List of themes to install. The list elements are expected to
+          be derivations. All elements in this derivation are automatically
+          copied to the `themes.local` directory.
+        '';
+
+        type = types.listOf types.package;
+      };
+
+      updateDaemon = {
+        commandFlags = mkOption {
+          default = "--quiet";
+
+          description = ''
+            Command-line flags passed to the update daemon.
+            The default --quiet flag mutes all logging, including errors.
+          '';
+
+          type = types.str;
+        };
+      };
+
+      user = mkOption {
+        default = "tt_rss";
+
+        description = ''
+          User account under which both the update daemon and the web-application run.
+        '';
+
+        type = types.str;
+      };
+
+      virtualHost = mkOption {
+        default = "tt-rss";
+
+        description = ''
+          Name of the nginx virtualhost to use and setup. If null, do not setup any virtualhost.
+        '';
+
+        type = types.nullOr types.str;
+      };
+    };
+  };
+
+  ###### implementation
   config = mkIf cfg.enable {
 
     assertions = [
@@ -580,6 +658,7 @@ in
       {
         assertion =
           cfg.database.createLocally -> cfg.database.name == cfg.user && cfg.database.user == cfg.user;
+
         message = ''
           When creating a database via NixOS, the db user and db name must be equal!
           If you already have an existing DB+user and this assertion is new, you can safely set
@@ -589,40 +668,30 @@ in
       }
     ];
 
-    services.phpfpm.pools = mkIf (cfg.pool == "${poolName}") {
-      ${poolName} = {
-        inherit (cfg) user;
-        inherit phpPackage;
-        settings = mapAttrs (name: mkDefault) {
-          "listen.owner" = config.services.nginx.user;
-          "listen.group" = config.services.nginx.group;
-          "listen.mode" = "0600";
-          "pm" = "dynamic";
-          "pm.max_children" = 75;
-          "pm.start_servers" = 10;
-          "pm.min_spare_servers" = 5;
-          "pm.max_spare_servers" = 20;
-          "pm.max_requests" = 500;
-          "catch_workers_output" = 1;
-        };
-      };
+    services.mysql = mkIf mysqlLocal {
+      enable = true;
+      package = mkDefault pkgs.mariadb;
+      ensureDatabases = [ cfg.database.name ];
+
+      ensureUsers = [
+        {
+          ensurePermissions = {
+            "${cfg.database.name}.*" = "ALL PRIVILEGES";
+          };
+
+          name = cfg.user;
+        }
+      ];
     };
 
     # NOTE: No configuration is done if not using virtual host
     services.nginx = mkIf (cfg.virtualHost != null) {
       enable = true;
+
       virtualHosts = {
         ${cfg.virtualHost} = {
-          root = "${cfg.root}/www";
-
           locations."/" = {
             index = "index.php";
-          };
-
-          # some clients might still access this old path directly, forward them to the API instead
-          # e.g. https://apps.apple.com/de/app/tiny-reader-rss/id689519762 at version 2.2.0
-          locations."~* /feed-icons/(\\d+)\\.ico" = {
-            return = "302 /public.php?op=feed_icon&id=$1";
           };
 
           locations."~ \\.php$" = {
@@ -632,7 +701,80 @@ in
               fastcgi_index index.php;
             '';
           };
+
+          # some clients might still access this old path directly, forward them to the API instead
+          # e.g. https://apps.apple.com/de/app/tiny-reader-rss/id689519762 at version 2.2.0
+          locations."~* /feed-icons/(\\d+)\\.ico" = {
+            return = "302 /public.php?op=feed_icon&id=$1";
+          };
+
+          root = "${cfg.root}/www";
         };
+      };
+    };
+
+    services.phpfpm.pools = mkIf (cfg.pool == "${poolName}") {
+      ${poolName} = {
+        inherit (cfg) user;
+        inherit phpPackage;
+
+        settings = mapAttrs (name: mkDefault) {
+          "catch_workers_output" = 1;
+          "listen.group" = config.services.nginx.group;
+          "listen.mode" = "0600";
+          "listen.owner" = config.services.nginx.user;
+          "pm" = "dynamic";
+          "pm.max_children" = 75;
+          "pm.max_requests" = 500;
+          "pm.max_spare_servers" = 20;
+          "pm.min_spare_servers" = 5;
+          "pm.start_servers" = 10;
+        };
+      };
+    };
+
+    services.postgresql = mkIf pgsqlLocal {
+      enable = mkDefault true;
+      ensureDatabases = [ cfg.database.name ];
+
+      ensureUsers = [
+        {
+          ensureDBOwnership = true;
+          name = cfg.database.user;
+        }
+      ];
+    };
+
+    systemd.services = {
+      phpfpm-tt-rss = mkIf (cfg.pool == "${poolName}") {
+        restartTriggers = [ servedRoot ];
+      };
+
+      tt-rss = {
+        after = [
+          "network.target"
+        ]
+        ++ optional mysqlLocal "mysql.service"
+        ++ optional pgsqlLocal "postgresql.target";
+
+        description = "Tiny Tiny RSS feeds update daemon";
+
+        preStart = ''
+          ${phpPackage}/bin/php ${cfg.root}/www/update.php --update-schema --force-yes
+        '';
+
+        requires = optional mysqlLocal "mysql.service" ++ optional pgsqlLocal "postgresql.target";
+
+        serviceConfig = {
+          ExecStart = "${phpPackage}/bin/php ${cfg.root}/www/update.php --daemon ${cfg.updateDaemon.commandFlags}";
+          Group = "tt_rss";
+          Restart = "on-failure";
+          RestartSec = "60";
+          SyslogIdentifier = "tt-rss";
+          User = "${cfg.user}";
+        };
+
+        wantedBy = [ "multi-user.target" ];
       };
     };
 
@@ -647,68 +789,12 @@ in
       "L+ '${cfg.root}/www' - - - - ${servedRoot}"
     ];
 
-    systemd.services = {
-      phpfpm-tt-rss = mkIf (cfg.pool == "${poolName}") {
-        restartTriggers = [ servedRoot ];
-      };
-
-      tt-rss = {
-        description = "Tiny Tiny RSS feeds update daemon";
-
-        preStart = ''
-          ${phpPackage}/bin/php ${cfg.root}/www/update.php --update-schema --force-yes
-        '';
-
-        serviceConfig = {
-          User = "${cfg.user}";
-          Group = "tt_rss";
-          ExecStart = "${phpPackage}/bin/php ${cfg.root}/www/update.php --daemon ${cfg.updateDaemon.commandFlags}";
-          Restart = "on-failure";
-          RestartSec = "60";
-          SyslogIdentifier = "tt-rss";
-        };
-
-        wantedBy = [ "multi-user.target" ];
-        requires = optional mysqlLocal "mysql.service" ++ optional pgsqlLocal "postgresql.target";
-        after = [
-          "network.target"
-        ]
-        ++ optional mysqlLocal "mysql.service"
-        ++ optional pgsqlLocal "postgresql.target";
-      };
-    };
-
-    services.mysql = mkIf mysqlLocal {
-      enable = true;
-      package = mkDefault pkgs.mariadb;
-      ensureDatabases = [ cfg.database.name ];
-      ensureUsers = [
-        {
-          name = cfg.user;
-          ensurePermissions = {
-            "${cfg.database.name}.*" = "ALL PRIVILEGES";
-          };
-        }
-      ];
-    };
-
-    services.postgresql = mkIf pgsqlLocal {
-      enable = mkDefault true;
-      ensureDatabases = [ cfg.database.name ];
-      ensureUsers = [
-        {
-          name = cfg.database.user;
-          ensureDBOwnership = true;
-        }
-      ];
-    };
+    users.groups.tt_rss = { };
 
     users.users.tt_rss = optionalAttrs (cfg.user == "tt_rss") {
       description = "tt-rss service user";
-      isSystemUser = true;
       group = "tt_rss";
+      isSystemUser = true;
     };
-
-    users.groups.tt_rss = { };
   };
 }

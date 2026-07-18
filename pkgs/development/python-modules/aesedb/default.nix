@@ -1,9 +1,9 @@
 {
   lib,
+  fetchFromGitHub,
   aiowinreg,
   buildPythonPackage,
   colorama,
-  fetchFromGitHub,
   pycryptodomex,
   setuptools,
   tqdm,
@@ -13,7 +13,6 @@
 buildPythonPackage rec {
   pname = "aesedb";
   version = "0.1.8";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "skelsec";
@@ -34,15 +33,15 @@ buildPythonPackage rec {
 
   # Module has no tests
   doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "aesedb" ];
 
   meta = {
     description = "Parser for JET databases";
-    mainProgram = "antdsparse";
     homepage = "https://github.com/skelsec/aesedb";
     changelog = "https://github.com/skelsec/aesedb/releases/tag/${version}";
     license = with lib.licenses; [ mit ];
     maintainers = with lib.maintainers; [ fab ];
+    mainProgram = "antdsparse";
   };
 }

@@ -2,14 +2,14 @@
   lib,
   stdenv,
   fetchFromGitHub,
+  autoconf,
+  automake,
   cups,
   cups-filters,
   ghostscript,
   gnused,
-  perl,
-  autoconf,
-  automake,
   patchPpdFilesHook,
+  perl,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -25,21 +25,6 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-mQEOV+NJId5h/hYOL+2JrEHjqM77qRExDNeqZ0IyA08=";
   };
 
-  buildInputs = [
-    cups
-    cups-filters
-    ghostscript
-    gnused
-    perl
-  ];
-
-  nativeBuildInputs = [
-    autoconf
-    automake
-    patchPpdFilesHook
-    perl
-  ];
-
   # sed-substitute indirection is more robust
   # against characters in paths that might need escaping
   postPatch = ''
@@ -50,14 +35,29 @@ stdenv.mkDerivation (finalAttrs: {
       --subst-var-by DATA "${placeholder "out"}/share"
   '';
 
-  preConfigure = ''
-    mkdir -p "${placeholder "out"}/share/foomatic/db/source"
-    ./make_configure
-  '';
+  nativeBuildInputs = [
+    autoconf
+    automake
+    patchPpdFilesHook
+    perl
+  ];
+
+  buildInputs = [
+    cups
+    cups-filters
+    ghostscript
+    gnused
+    perl
+  ];
 
   # don't let the installer gzip ppd files as we would
   # have to unzip them later in order to patch them
   configureFlags = [ "--disable-gzip-ppds" ];
+
+  preConfigure = ''
+    mkdir -p "${placeholder "out"}/share/foomatic/db/source"
+    ./make_configure
+  '';
 
   # make ppd files available to cups,
   # use a package-specific subdirectory to avoid
@@ -70,6 +70,13 @@ stdenv.mkDerivation (finalAttrs: {
     mkdir -p "${placeholder "out"}/share/cups/model"
     ln -s "${placeholder "out"}/share/foomatic/db/source/PPD"  \
       "${placeholder "out"}/share/cups/model/foomatic-db"
+  '';
+
+  # compress ppd files
+  postFixup = ''
+    echo 'compressing ppd files'
+    find -H "${placeholder "out"}/share/cups/model/foomatic-db" -type f -iname '*.ppd' -print0  \
+      | xargs -0r -n 64 -P "$NIX_BUILD_CORES" gzip -9n
   '';
 
   # Comments indicate the respective
@@ -85,20 +92,9 @@ stdenv.mkDerivation (finalAttrs: {
     "perl" # perl
   ];
 
-  # compress ppd files
-  postFixup = ''
-    echo 'compressing ppd files'
-    find -H "${placeholder "out"}/share/cups/model/foomatic-db" -type f -iname '*.ppd' -print0  \
-      | xargs -0r -n 64 -P "$NIX_BUILD_CORES" gzip -9n
-  '';
-
   meta = {
-    changelog = "https://github.com/OpenPrinting/foomatic-db/blob/${finalAttrs.src.rev}/ChangeLog";
     description = "OpenPrinting printer support database (free content)";
-    downloadPage = "https://www.openprinting.org/download/foomatic/";
-    homepage = "https://openprinting.github.io/projects/02-foomatic/";
-    license = lib.licenses.free; # mostly GPL and MIT, see README in source dir
-    maintainers = [ lib.maintainers.yarny ];
+
     # list printer manufacturers here so people
     # searching for ppd files can find this package
     longDescription = ''
@@ -113,5 +109,11 @@ stdenv.mkDerivation (finalAttrs: {
       Infotec, KONICA_MINOLTA, Kyocera, Lanier, Lexmark, NRG,
       Oce, Oki, Ricoh, Samsung, Savin, Sharp, Toshiba and Utax.
     '';
+
+    homepage = "https://openprinting.github.io/projects/02-foomatic/";
+    changelog = "https://github.com/OpenPrinting/foomatic-db/blob/${finalAttrs.src.rev}/ChangeLog";
+    license = lib.licenses.free; # mostly GPL and MIT, see README in source dir
+    maintainers = [ lib.maintainers.yarny ];
+    downloadPage = "https://www.openprinting.org/download/foomatic/";
   };
 })

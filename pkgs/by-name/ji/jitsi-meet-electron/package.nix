@@ -1,22 +1,18 @@
 {
   lib,
   stdenv,
-
-  buildNpmPackage,
   fetchFromGitHub,
-  makeDesktopItem,
-
+  buildNpmPackage,
   copyDesktopItems,
-  makeWrapper,
-  xcbuild,
-
+  electron_41,
   libpng,
   libx11,
   libxi,
   libxtst,
+  makeDesktopItem,
+  makeWrapper,
+  xcbuild,
   zlib,
-
-  electron_41,
 }:
 
 let
@@ -53,8 +49,6 @@ buildNpmPackage rec {
   ];
 
   npmDepsHash = "sha256-5y7q6SnA9s85+HFOhqif1N8XRO7ekGJ4nfVbWZ/diuI=";
-
-  makeCacheWritable = true;
 
   env = {
     ELECTRON_SKIP_BINARY_DOWNLOAD = 1;
@@ -115,11 +109,6 @@ buildNpmPackage rec {
 
   desktopItems = [
     (makeDesktopItem {
-      name = "jitsi-meet-electron";
-      exec = "jitsi-meet-electron %U";
-      icon = "jitsi-meet-electron";
-      desktopName = "Jitsi Meet";
-      comment = meta.description;
       categories = [
         "VideoConference"
         "AudioVideo"
@@ -127,19 +116,27 @@ buildNpmPackage rec {
         "Video"
         "Network"
       ];
+
+      comment = meta.description;
+      desktopName = "Jitsi Meet";
+      exec = "jitsi-meet-electron %U";
+      icon = "jitsi-meet-electron";
       mimeTypes = [ "x-scheme-handler/jitsi-meet" ];
+      name = "jitsi-meet-electron";
       terminal = false;
     })
   ];
 
+  makeCacheWritable = true;
+
   meta = {
-    changelog = "https://github.com/jitsi/jitsi-meet-electron/releases/tag/${src.rev}";
+    inherit (electron.meta) platforms;
     description = "Jitsi Meet desktop application powered by Electron";
     homepage = "https://github.com/jitsi/jitsi-meet-electron";
+    changelog = "https://github.com/jitsi/jitsi-meet-electron/releases/tag/${src.rev}";
     license = lib.licenses.asl20;
-    mainProgram = "jitsi-meet-electron";
     maintainers = [ lib.maintainers.tomasajt ];
+    mainProgram = "jitsi-meet-electron";
     teams = [ lib.teams.jitsi ];
-    inherit (electron.meta) platforms;
   };
 }

@@ -1,22 +1,15 @@
 {
   lib,
   buildPythonPackage,
-  openvino-native,
   numpy,
+  openvino-native,
   packaging,
 }:
 
 buildPythonPackage {
-  pname = "openvino";
   inherit (openvino-native) version;
-  pyproject = false;
-
+  pname = "openvino";
   src = openvino-native.python;
-
-  dependencies = [
-    numpy
-    packaging
-  ];
 
   installPhase = ''
     runHook preInstall
@@ -26,6 +19,13 @@ buildPythonPackage {
 
     runHook postInstall
   '';
+
+  dependencies = [
+    numpy
+    packaging
+  ];
+
+  pyproject = false;
 
   pythonImportsCheck = [
     "openvino"

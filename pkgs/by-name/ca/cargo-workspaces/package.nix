@@ -1,10 +1,10 @@
 {
   lib,
-  rustPlatform,
   fetchCrate,
-  pkg-config,
   libssh2,
   openssl,
+  pkg-config,
+  rustPlatform,
   zlib,
 }:
 
@@ -17,8 +17,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-/h7v5Wq7YsNMVzLHw3QQmcknbjARpI7HFPAUGX72wZ0=";
   };
 
-  cargoHash = "sha256-eaTLKQdz8Kyee7Bhub/OBueteeQ8jY36g4DgqctrToY=";
-
   nativeBuildInputs = [
     pkg-config
   ];
@@ -29,24 +27,30 @@ rustPlatform.buildRustPackage (finalAttrs: {
     zlib
   ];
 
+  cargoHash = "sha256-eaTLKQdz8Kyee7Bhub/OBueteeQ8jY36g4DgqctrToY=";
+
   env = {
     LIBSSH2_SYS_USE_PKG_CONFIG = true;
   };
 
   meta = {
     description = "Tool for managing cargo workspaces and their crates, inspired by lerna";
+
     longDescription = ''
       A tool that optimizes the workflow around cargo workspaces with
       git and cargo by providing utilities to version, publish, execute
       commands and more.
     '';
+
     homepage = "https://github.com/pksunkara/cargo-workspaces";
     changelog = "https://github.com/pksunkara/cargo-workspaces/blob/v${finalAttrs.version}/CHANGELOG.md";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       macalinao
       matthiasbeyer
     ];
+
     mainProgram = "cargo-workspaces";
   };
 })

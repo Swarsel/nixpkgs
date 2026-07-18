@@ -1,11 +1,11 @@
 {
   lib,
-  fetchpatch,
   fetchFromGitHub,
+  bash,
   buildNpmPackage,
+  fetchpatch,
   installShellFiles,
   makeWrapper,
-  bash,
   nodejs,
   python3,
 }:
@@ -26,41 +26,23 @@ buildNpmPackage rec {
 
     # upgrade dependencies to make it compatible with node 18
     (fetchpatch {
-      url = "https://github.com/midchildan/EPGStation/commit/5d6cad746b7d9b6d246adcdecf9c991b77c9d89e.patch";
       sha256 = "sha256-9a8VUjczlyQHVO7w9MYorPIZunAuBuif1HNmtp1yMk8=";
+      url = "https://github.com/midchildan/EPGStation/commit/5d6cad746b7d9b6d246adcdecf9c991b77c9d89e.patch";
     })
     (fetchpatch {
-      url = "https://github.com/midchildan/EPGStation/commit/c948e833e485c2b7cb7fb33b953cca1e20de3a70.patch";
       sha256 = "sha256-nM6KkVRURuQFZLXZ2etLU1a1+BoaJnfjngo07TFbe58=";
+      url = "https://github.com/midchildan/EPGStation/commit/c948e833e485c2b7cb7fb33b953cca1e20de3a70.patch";
     })
   ];
 
-  npmDepsHash = "sha256-dohencRGuvc+vSoclLVn5iles4GOuTq26BrEVeJ4GC4=";
-  npmBuildScript = "build-server";
-  npmRootPath = "/lib/node_modules/epgstation";
-
-  buildInputs = [ bash ];
   nativeBuildInputs = [
     installShellFiles
     makeWrapper
     python3
   ];
 
-  clientDir = buildNpmPackage {
-    pname = "${pname}-client";
-    inherit
-      version
-      src
-      installPhase
-      meta
-      ;
-
-    npmDepsHash = "sha256-a/cDPABWI4lPxvSOI4D90O71A9lm8icPMak/g6DPYQY=";
-    npmRootPath = "";
-
-    sourceRoot = "${src.name}/client";
-    NODE_OPTIONS = "--openssl-legacy-provider";
-  };
+  buildInputs = [ bash ];
+  npmDepsHash = "sha256-dohencRGuvc+vSoclLVn5iles4GOuTq26BrEVeJ4GC4=";
 
   postBuild = ''
     rm -rf client
@@ -125,6 +107,24 @@ buildNpmPackage rec {
 
       popd
     '';
+
+  clientDir = buildNpmPackage {
+    inherit
+      version
+      src
+      installPhase
+      meta
+      ;
+
+    pname = "${pname}-client";
+    npmDepsHash = "sha256-a/cDPABWI4lPxvSOI4D90O71A9lm8icPMak/g6DPYQY=";
+    NODE_OPTIONS = "--openssl-legacy-provider";
+    npmRootPath = "";
+    sourceRoot = "${src.name}/client";
+  };
+
+  npmBuildScript = "build-server";
+  npmRootPath = "/lib/node_modules/epgstation";
 
   meta = {
     description = "DVR software compatible with Mirakurun";

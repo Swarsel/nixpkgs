@@ -2,30 +2,30 @@
   lib,
   stdenv,
   fetchurl,
-  makeDesktopItem,
-  copyDesktopItems,
-  cmake,
   blas,
-  lapack,
+  cmake,
+  copyDesktopItems,
+  fltk,
   gfortran,
   gmm,
-  fltk,
-  libjpeg,
-  zlib,
+  lapack,
   libGL,
   libGLU,
-  libxrender,
-  libxinerama,
-  libxft,
-  libxfixes,
-  libxext,
-  libxcursor,
-  libx11,
-  libsm,
   libice,
-  opencascade-occt,
+  libjpeg,
+  libsm,
+  libx11,
+  libxcursor,
+  libxext,
+  libxfixes,
+  libxft,
+  libxinerama,
+  libxrender,
   llvmPackages,
+  makeDesktopItem,
+  opencascade-occt,
   python3Packages,
+  zlib,
   enablePython ? false,
 }:
 
@@ -82,26 +82,11 @@ stdenv.mkDerivation (finalAttrs: {
 
   doCheck = true;
 
-  desktopItems = [
-    (makeDesktopItem {
-      name = "gmsh";
-      exec = "gmsh";
-      comment = finalAttrs.meta.description;
-      desktopName = "Gmsh";
-      genericName = "3D Mesh Generator";
-      categories = [
-        "Science"
-        "Math"
-      ];
-      icon = "gmsh";
-    })
-  ];
-
   postInstall =
     let
       logo = fetchurl {
-        url = "https://salsa.debian.org/science-team/gmsh/-/raw/d2d8b4e3488c7b0f51879f809f624b537b4bd28f/debian/gmsh.svg";
         hash = "sha256-p69Cju3bn1ShWmESOSOmJj0x3IYDGI9oD25SFTh2GLo=";
+        url = "https://salsa.debian.org/science-team/gmsh/-/raw/d2d8b4e3488c7b0f51879f809f624b537b4bd28f/debian/gmsh.svg";
       };
     in
     lib.optionalString stdenv.hostPlatform.isLinux ''
@@ -113,14 +98,30 @@ stdenv.mkDerivation (finalAttrs: {
       mv $out/lib/*.dist-info $out/${python3Packages.python.sitePackages}
     '';
 
+  desktopItems = [
+    (makeDesktopItem {
+      categories = [
+        "Science"
+        "Math"
+      ];
+
+      comment = finalAttrs.meta.description;
+      desktopName = "Gmsh";
+      exec = "gmsh";
+      genericName = "3D Mesh Generator";
+      icon = "gmsh";
+      name = "gmsh";
+    })
+  ];
+
   pythonImportsCheck = [ "gmsh" ];
 
   meta = {
     description = "Three-dimensional finite element mesh generator";
-    mainProgram = "gmsh";
     homepage = "https://gmsh.info/";
     changelog = "https://gitlab.onelab.info/gmsh/gmsh/-/releases/gmsh_${lib.concatStringsSep "_" (lib.versions.splitVersion finalAttrs.version)}#changelog";
     license = lib.licenses.gpl2Plus;
     maintainers = [ ];
+    mainProgram = "gmsh";
   };
 })

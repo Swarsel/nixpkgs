@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   nix-update-script,
   versionCheckHook,
 }:
@@ -9,8 +9,6 @@
 buildGoModule (finalAttrs: {
   pname = "pspy";
   version = "1.2.1";
-
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "dominicbreuker";
@@ -20,16 +18,15 @@ buildGoModule (finalAttrs: {
   };
 
   vendorHash = "sha256-mgAsy2ufMDNpeCXG/cZ10zdmzFoGfcpCzPWIABnvJWU=";
-
+  doInstallCheck = true;
   nativeInstallCheckInputs = [ versionCheckHook ];
+  __structuredAttrs = true;
 
   ldflags = [
     "-s"
     "-X=main.version=${finalAttrs.version}"
     "-X=main.commit=${finalAttrs.src.rev}"
   ];
-
-  doInstallCheck = true;
 
   passthru.updateScript = nix-update-script { };
 

@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   gitUpdater,
   google-api-core,
   google-auth,
@@ -18,7 +18,6 @@
 buildPythonPackage rec {
   pname = "google-cloud-iam";
   version = "2.24.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "googleapis";
@@ -27,7 +26,11 @@ buildPythonPackage rec {
     hash = "sha256-ywRS1BfK6s+gcU8QRem0cSnfZq4BUQ2ABNcgnOa01LI=";
   };
 
-  sourceRoot = "${src.name}/packages/google-cloud-iam";
+  nativeCheckInputs = [
+    mock
+    pytest-asyncio
+    pytestCheckHook
+  ];
 
   build-system = [ setuptools ];
 
@@ -41,27 +44,25 @@ buildPythonPackage rec {
   ]
   ++ google-api-core.optional-dependencies.grpc;
 
-  pythonRelaxDeps = [ "protobuf" ];
-
-  nativeCheckInputs = [
-    mock
-    pytest-asyncio
-    pytestCheckHook
-  ];
-
   disabledTestPaths = [
     # unmaintained, reference wrong import path for google.cloud.iam.v1
     "tests/unit/gapic/iam_admin_v1/test_iam.py"
   ];
+
+  pyproject = true;
 
   pythonImportsCheck = [
     "google.cloud.iam_credentials"
     "google.cloud.iam_credentials_v1"
   ];
 
+  pythonRelaxDeps = [ "protobuf" ];
+  sourceRoot = "${src.name}/packages/google-cloud-iam";
+
   passthru = {
     # bulk updater selects wrong tag
     skipBulkUpdate = true;
+
     updateScript = gitUpdater {
       rev-prefix = "google-cloud-iam-v";
     };
@@ -72,6 +73,7 @@ buildPythonPackage rec {
     homepage = "https://github.com/googleapis/google-cloud-python/tree/main/packages/google-cloud-iam";
     changelog = "https://github.com/googleapis/google-cloud-python/blob/${src.tag}/packages/google-cloud-iam/CHANGELOG.md";
     license = lib.licenses.asl20;
+
     maintainers = with lib.maintainers; [
       austinbutler
       sarahec

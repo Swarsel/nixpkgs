@@ -1,9 +1,9 @@
 {
   lib,
-  maven,
   fetchFromGitHub,
-  makeWrapper,
   jre,
+  makeWrapper,
+  maven,
 }:
 
 maven.buildMavenPackage (finalAttrs: {
@@ -17,11 +17,7 @@ maven.buildMavenPackage (finalAttrs: {
     hash = "sha256-3DTyo7rPswpEVzFkcprT6FD+ITGJ+qCXFKXEGoCK+oE=";
   };
 
-  mvnHash = "sha256-qGxpeb+8hP0ljbI0+aHnuO5efzXvVQWo8VFYMuRzYck=";
-  mvnParameters = "compile";
-
   nativeBuildInputs = [ makeWrapper ];
-
   doCheck = false;
 
   installPhase = ''
@@ -35,8 +31,12 @@ maven.buildMavenPackage (finalAttrs: {
     runHook postInstall
   '';
 
+  mvnHash = "sha256-qGxpeb+8hP0ljbI0+aHnuO5efzXvVQWo8VFYMuRzYck=";
+  mvnParameters = "compile";
+
   meta = {
     description = "Kotlin Language Interactive Shell";
+
     longDescription = ''
       The shell is an extensible implementation of Kotlin REPL with a rich set of features including:
       - Syntax highlight
@@ -44,6 +44,7 @@ maven.buildMavenPackage (finalAttrs: {
       - Downloading dependencies in runtime using Maven coordinates
       - List declared symbols
     '';
+
     homepage = "https://github.com/Kotlin/kotlin-interactive-shell";
     license = lib.licenses.asl20;
     maintainers = [ lib.maintainers.starsep ];

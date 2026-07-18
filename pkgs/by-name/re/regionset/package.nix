@@ -8,18 +8,13 @@ let
   version = "0.2";
 in
 stdenv.mkDerivation {
-  pname = "regionset";
   inherit version;
+  pname = "regionset";
 
   src = fetchurl {
     url = "http://linvdr.org/download/regionset/regionset-${version}.tar.gz";
     sha256 = "1fgps85dmjvj41a5bkira43vs2aiivzhqwzdvvpw5dpvdrjqcp0d";
   };
-
-  prePatch = ''
-    substituteInPlace regionset.8 \
-        --replace-fail /usr/share/doc/ "$out"/share/doc/
-  '';
 
   installPhase = ''
     install -Dm755 {.,$out/bin}/regionset
@@ -27,12 +22,17 @@ stdenv.mkDerivation {
     install -Dm644 {.,$out/share/doc/regionset}/README
   '';
 
+  prePatch = ''
+    substituteInPlace regionset.8 \
+        --replace-fail /usr/share/doc/ "$out"/share/doc/
+  '';
+
   meta = {
     inherit version;
-    homepage = "http://linvdr.org/projects/regionset/";
     description = "Tool for changing the region code setting of DVD players";
-    mainProgram = "regionset";
+    homepage = "http://linvdr.org/projects/regionset/";
     license = lib.licenses.gpl2Plus;
     platforms = lib.platforms.linux;
+    mainProgram = "regionset";
   };
 }

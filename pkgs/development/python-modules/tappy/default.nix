@@ -3,23 +3,24 @@
   buildPythonPackage,
   fetchPypi,
   hatchling,
-  pyyaml,
   more-itertools,
   pytestCheckHook,
+  pyyaml,
 }:
 let
   version = "3.2.1";
 in
 buildPythonPackage {
-  pname = "tap.py";
   inherit version;
-  pyproject = true;
+  pname = "tap.py";
 
   src = fetchPypi {
-    pname = "tap_py";
     inherit version;
     hash = "sha256-0DyeavClb62ZTxxp8UBB5naBHXPu7vIL9Ad8Q9Yh1gg=";
+    pname = "tap_py";
   };
+
+  nativeCheckInputs = [ pytestCheckHook ];
 
   build-system = [
     hatchling
@@ -32,16 +33,15 @@ buildPythonPackage {
     ];
   };
 
-  nativeCheckInputs = [ pytestCheckHook ];
-
+  pyproject = true;
   pythonImportsCheck = [ "tap" ];
 
   meta = {
     description = "Set of tools for working with the Test Anything Protocol (TAP) in Python";
     homepage = "https://github.com/python-tap/tappy";
     changelog = "https://tappy.readthedocs.io/en/latest/releases.html";
-    mainProgram = "tappy";
     license = lib.licenses.bsd2;
     maintainers = [ ];
+    mainProgram = "tappy";
   };
 }

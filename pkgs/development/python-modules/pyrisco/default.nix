@@ -1,8 +1,8 @@
 {
   lib,
+  fetchFromGitHub,
   aiohttp,
   buildPythonPackage,
-  fetchFromGitHub,
   setuptools,
   setuptools-scm,
 }:
@@ -10,7 +10,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "pyrisco";
   version = "0.8.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "OnFreund";
@@ -19,16 +18,16 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-tzCwimkSLazD6LtimFUcRjOvnvSlYY1MpJLZ2u4WgUg=";
   };
 
+  # All tests require cloud access
+  doCheck = false;
+
   build-system = [
     setuptools
     setuptools-scm
   ];
 
   dependencies = [ aiohttp ];
-
-  # All tests require cloud access
-  doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "pyrisco" ];
 
   meta = {

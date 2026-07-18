@@ -1,35 +1,23 @@
 {
-  python3,
   buildPythonPackage,
-  rustPlatform,
-  pkg-config,
   bzip2,
-  zstd,
-  pytestCheckHook,
-
   ironcalc,
+  pkg-config,
+  pytestCheckHook,
+  python3,
+  rustPlatform,
+  zstd,
 }:
 
 buildPythonPackage {
-  pname = "ironcalc";
   inherit (ironcalc) src version;
-  pyproject = true;
+  pname = "ironcalc";
 
   postPatch = ''
     cd bindings/python
   '';
 
   strictDeps = true;
-  __structuredAttrs = true;
-
-  cargoDeps = rustPlatform.fetchCargoVendor {
-    inherit (ironcalc) src;
-    hash = ironcalc.cargoHash;
-  };
-
-  cargoRoot = "../..";
-
-  env.PYO3_PYTHON = "${python3}/bin/python3";
 
   nativeBuildInputs = [
     rustPlatform.cargoSetupHook
@@ -42,12 +30,22 @@ buildPythonPackage {
     zstd
   ];
 
+  env.PYO3_PYTHON = "${python3}/bin/python3";
   doCheck = true;
 
   nativeCheckInputs = [
     pytestCheckHook
   ];
 
+  __structuredAttrs = true;
+
+  cargoDeps = rustPlatform.fetchCargoVendor {
+    inherit (ironcalc) src;
+    hash = ironcalc.cargoHash;
+  };
+
+  cargoRoot = "../..";
+  pyproject = true;
   pythonImportsCheck = [ "ironcalc" ];
 
   meta = ironcalc.meta // {

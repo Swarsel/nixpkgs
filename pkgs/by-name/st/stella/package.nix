@@ -1,10 +1,10 @@
 {
   lib,
-  SDL2,
-  fetchFromGitHub,
-  sqlite,
-  pkg-config,
   stdenv,
+  fetchFromGitHub,
+  SDL2,
+  pkg-config,
+  sqlite,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -18,6 +18,8 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-AbZBBg4P0qnB+mZpiG8/kHixBfkKQptyLrF4lwgRr/Y=";
   };
 
+  strictDeps = true;
+
   nativeBuildInputs = [
     SDL2
     pkg-config
@@ -28,11 +30,9 @@ stdenv.mkDerivation (finalAttrs: {
     sqlite
   ];
 
-  strictDeps = true;
-
   meta = {
-    homepage = "https://stella-emu.github.io/";
     description = "Open-source Atari 2600 VCS emulator";
+
     longDescription = ''
       Stella is a multi-platform Atari 2600 VCS emulator released under the GNU
       General Public License (GPL). Stella was originally developed for Linux by
@@ -44,10 +44,12 @@ stdenv.mkDerivation (finalAttrs: {
 
       As of its 3.5 release, Stella is officially donationware.
     '';
+
+    homepage = "https://stella-emu.github.io/";
     changelog = "https://github.com/stella-emu/stella/releases/tag/${finalAttrs.src.rev}";
     license = with lib.licenses; [ gpl2Plus ];
-    mainProgram = "stella";
     maintainers = [ ];
     platforms = lib.platforms.unix;
+    mainProgram = "stella";
   };
 })

@@ -1,11 +1,11 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
+  py,
+  pytest,
   # build inputs
   tblib,
-  pytest,
-  py,
 }:
 let
   pname = "pytest-parallel";
@@ -13,7 +13,6 @@ let
 in
 buildPythonPackage {
   inherit pname version;
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "kevlened";
@@ -27,6 +26,8 @@ buildPythonPackage {
     pytest
     py
   ];
+
+  format = "setuptools";
 
   meta = {
     description = "Pytest plugin for parallel and concurrent testing";

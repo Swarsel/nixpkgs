@@ -1,16 +1,16 @@
 {
   lib,
   stdenv,
-  fetchFromCodeberg,
-  libusb1,
-  hidapi,
-  pkg-config,
+  autoAddDriverRunpath,
   coreutils,
+  fetchFromCodeberg,
+  hidapi,
+  libusb1,
   makeBinaryWrapper,
   mbedtls,
-  symlinkJoin,
+  pkg-config,
   qt6Packages,
-  autoAddDriverRunpath,
+  symlinkJoin,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -27,6 +27,12 @@ stdenv.mkDerivation (finalAttrs: {
   patches = [
     ./system-plugins-env.patch
   ];
+
+  postPatch = ''
+    patchShebangs scripts/build-udev-rules.sh
+    substituteInPlace scripts/build-udev-rules.sh \
+      --replace-fail '/usr/bin/env chmod' ${lib.getExe' coreutils "chmod"}
+  '';
 
   nativeBuildInputs = [
     pkg-config
@@ -48,18 +54,13 @@ stdenv.mkDerivation (finalAttrs: {
     qtwayland
   ]);
 
-  postPatch = ''
-    patchShebangs scripts/build-udev-rules.sh
-    substituteInPlace scripts/build-udev-rules.sh \
-      --replace-fail '/usr/bin/env chmod' ${lib.getExe' coreutils "chmod"}
-  '';
-
   postInstall = ''
     substituteInPlace "$out/lib/systemd/system/openrgb.service" \
       --replace-fail /usr/bin/openrgb "$out/bin/openrgb"
   '';
 
   doInstallCheck = true;
+
   installCheckPhase = ''
     runHook preInstallCheck
 
@@ -83,7 +84,7 @@ stdenv.mkDerivation (finalAttrs: {
       inherit (finalAttrs) version meta;
       pname = finalAttrs.pname + "-with-plugins";
       nativeBuildInputs = [ makeBinaryWrapper ];
-      paths = [ finalAttrs.finalPackage ] ++ plugins;
+
       postBuild = ''
         wrapProgram "$out/bin/openrgb" \
           --set OPENRGB_SYSTEM_PLUGIN_DIRECTORY "$out/lib/openrgb/plugins"
@@ -106,14 +107,16 @@ stdenv.mkDerivation (finalAttrs: {
           exit 1
         fi
       '';
+
+      paths = [ finalAttrs.finalPackage ] ++ plugins;
     };
 
   meta = {
     description = "Open source RGB lighting control";
-    changelog = "https://codeberg.org/OpenRGB/OpenRGB/releases/tag/${finalAttrs.src.tag}";
     homepage = "https://openrgb.org";
-    maintainers = with lib.maintainers; [ johnrtitor ];
+    changelog = "https://codeberg.org/OpenRGB/OpenRGB/releases/tag/${finalAttrs.src.tag}";
     license = lib.licenses.gpl2Plus;
+    maintainers = with lib.maintainers; [ johnrtitor ];
     platforms = lib.platforms.linux;
     mainProgram = "openrgb";
   };

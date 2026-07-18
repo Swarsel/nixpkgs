@@ -1,14 +1,13 @@
 {
   lib,
   fetchFromGitHub,
-  python3Packages,
   nixosTests,
+  python3Packages,
 }:
 
 python3Packages.buildPythonApplication (finalAttrs: {
   pname = "toot";
   version = "0.52.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "ihabunek";
@@ -18,6 +17,12 @@ python3Packages.buildPythonApplication (finalAttrs: {
   };
 
   nativeCheckInputs = with python3Packages; [ pytest ];
+
+  checkPhase = ''
+    runHook preCheck
+    py.test
+    runHook postCheck
+  '';
 
   build-system = with python3Packages; [
     setuptools
@@ -37,23 +42,20 @@ python3Packages.buildPythonApplication (finalAttrs: {
     pysocks
   ];
 
-  checkPhase = ''
-    runHook preCheck
-    py.test
-    runHook postCheck
-  '';
-
+  pyproject = true;
   passthru.tests.toot = nixosTests.pleroma;
 
   meta = {
     description = "Mastodon CLI interface";
-    mainProgram = "toot";
     homepage = "https://github.com/ihabunek/toot";
     changelog = "https://github.com/ihabunek/toot/blob/refs/tags/${finalAttrs.version}/CHANGELOG.md";
     license = lib.licenses.gpl3Only;
+
     maintainers = with lib.maintainers; [
       matthiasbeyer
       aleksana
     ];
+
+    mainProgram = "toot";
   };
 })

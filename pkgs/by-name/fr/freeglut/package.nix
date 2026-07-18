@@ -2,14 +2,14 @@
   lib,
   stdenv,
   fetchurl,
+  cmake,
+  libGLU,
+  libGLX,
   libice,
   libxext,
   libxi,
   libxrandr,
   libxxf86vm,
-  libGLX,
-  libGLU,
-  cmake,
   testers,
 }:
 
@@ -28,6 +28,7 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   nativeBuildInputs = [ cmake ];
+
   buildInputs = [
     libice
     libxext
@@ -47,6 +48,7 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Create and manage windows containing OpenGL contexts";
+
     longDescription = ''
       FreeGLUT is an open source alternative to the OpenGL Utility Toolkit
       (GLUT) library. GLUT (and hence FreeGLUT) allows the user to create and
@@ -55,10 +57,11 @@ stdenv.mkDerivation (finalAttrs: {
       intended to be a full replacement for GLUT, and has only a few
       differences.
     '';
+
     homepage = "https://freeglut.sourceforge.net/";
     license = lib.licenses.mit;
-    pkgConfigModules = [ "glut" ];
-    platforms = lib.platforms.all;
     maintainers = [ lib.maintainers.bjornfor ];
+    platforms = lib.platforms.all;
+    pkgConfigModules = [ "glut" ];
   };
 })

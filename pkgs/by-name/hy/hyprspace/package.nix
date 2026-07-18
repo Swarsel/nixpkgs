@@ -1,10 +1,10 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
-  writeShellScript,
-  nix-update,
+  buildGoModule,
   nix,
+  nix-update,
+  writeShellScript,
 }:
 
 buildGoModule (finalAttrs: {
@@ -18,19 +18,18 @@ buildGoModule (finalAttrs: {
     hash = "sha256-DmcfR8hA0IsFVEJPZ50jL81u3rw0ieVReTDDC8fTREQ=";
   };
 
+  vendorHash = "sha256-Pkj4q5v35JWwd4OPqj3AX8QLdrjnceT+90sioK5+VvQ=";
   env.CGO_ENABLED = "0";
 
-  vendorHash = "sha256-Pkj4q5v35JWwd4OPqj3AX8QLdrjnceT+90sioK5+VvQ=";
+  preBuild = ''
+    ln -s ${./config_generated.go} ./schema/config_generated.go
+  '';
 
   ldflags = [
     "-s"
     "-w"
     "-X github.com/hyprspace/hyprspace/cli.appVersion=${finalAttrs.version}"
   ];
-
-  preBuild = ''
-    ln -s ${./config_generated.go} ./schema/config_generated.go
-  '';
 
   passthru.updateScript = writeShellScript "update" ''
     ${lib.getExe nix-update} hyprspace
@@ -50,10 +49,12 @@ buildGoModule (finalAttrs: {
     description = "Lightweight VPN Built on top of Libp2p for Truly Distributed Networks";
     homepage = "https://github.com/hyprspace/hyprspace";
     license = lib.licenses.asl20;
+
     maintainers = with lib.maintainers; [
       gerg-l
       max
     ];
+
     platforms = lib.platforms.linux;
     mainProgram = "hyprspace";
   };

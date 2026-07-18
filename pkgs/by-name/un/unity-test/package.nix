@@ -3,13 +3,13 @@
   stdenv,
   fetchFromGitHub,
   fetchpatch2,
+  iniparser,
   meson,
   ninja,
-  ruby,
-  python3,
   nix-update-script,
+  python3,
+  ruby,
   testers,
-  iniparser,
   validatePkgConfig,
   # Adds test groups and extra CLI flags.
   buildFixture ? false,
@@ -19,7 +19,6 @@
   buildMemory ? buildFixture,
   # Adds double precision floating point assertions
   supportDouble ? false,
-
 }:
 let
   # On newer versions of Clang, Weverything is too much of everything.
@@ -41,16 +40,21 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-g0ubq7RxGQmL1R6vz9RIGJpVWYsgrZhsTWSrL1ySEug=";
   };
 
+  outputs = [
+    "out"
+    "dev"
+  ];
+
   patches = [
     # The meson file does not have the subdir set correctly
     (fetchpatch2 {
-      url = "https://patch-diff.githubusercontent.com/raw/ThrowTheSwitch/Unity/pull/771.patch";
       hash = "sha256-r8ldVb7WrzVwTC2CtGul9Jk4Rzt+6ejk+paYAfFlR5M=";
+      url = "https://patch-diff.githubusercontent.com/raw/ThrowTheSwitch/Unity/pull/771.patch";
     })
     # Fix up the shebangs in the auto directory as not all are correct
     (fetchpatch2 {
-      url = "https://patch-diff.githubusercontent.com/raw/ThrowTheSwitch/Unity/pull/790.patch";
       hash = "sha256-K+OxMe/ZMXPPjZXjGhgc5ULLN7plBwL0hV5gwmgA3FM=";
+      url = "https://patch-diff.githubusercontent.com/raw/ThrowTheSwitch/Unity/pull/790.patch";
     })
   ];
 
@@ -58,12 +62,8 @@ stdenv.mkDerivation (finalAttrs: {
     patchShebangs --build auto
   '';
 
-  outputs = [
-    "out"
-    "dev"
-  ];
-
   strictDeps = true;
+
   nativeBuildInputs = [
     meson
     ninja
@@ -100,14 +100,16 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   passthru = {
-    updateScript = nix-update-script { };
     tests = {
       inherit iniparser;
+
       pkg-config = testers.hasPkgConfigModules {
         package = finalAttrs.finalPackage;
         versionCheck = true;
       };
     };
+
+    updateScript = nix-update-script { };
   };
 
   meta = {
@@ -115,11 +117,13 @@ stdenv.mkDerivation (finalAttrs: {
     homepage = "https://www.throwtheswitch.org/unity";
     changelog = "https://github.com/ThrowTheSwitch/Unity/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.mit;
-    platforms = lib.platforms.all;
-    pkgConfigModules = [ "unity" ];
+
     maintainers = with lib.maintainers; [
       i01011001
       RossSmyth
     ];
+
+    platforms = lib.platforms.all;
+    pkgConfigModules = [ "unity" ];
   };
 })

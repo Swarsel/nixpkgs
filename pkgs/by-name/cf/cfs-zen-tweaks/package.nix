@@ -3,8 +3,8 @@
   stdenv,
   fetchFromGitHub,
   cmake,
-  makeWrapper,
   gawk,
+  makeWrapper,
 }:
 
 stdenv.mkDerivation rec {
@@ -18,6 +18,8 @@ stdenv.mkDerivation rec {
     hash = "sha256-E3sNWWXm0NEqLCzFccd/nfYby+/b/MVjIHeGlDxV1W4=";
   };
 
+  nativeBuildInputs = [ cmake ];
+
   preConfigure = ''
     substituteInPlace set-cfs-zen-tweaks.sh \
       --replace '$(gawk' '$(${gawk}/bin/gawk'
@@ -27,13 +29,11 @@ stdenv.mkDerivation rec {
     chmod +x $out/lib/cfs-zen-tweaks/set-cfs-zen-tweaks.sh
   '';
 
-  nativeBuildInputs = [ cmake ];
-
   meta = {
     description = "Tweak Linux CPU scheduler for desktop responsiveness";
     homepage = "https://github.com/igo95862/cfs-zen-tweaks";
     license = lib.licenses.gpl2Only;
-    platforms = lib.platforms.linux;
     maintainers = with lib.maintainers; [ mkg20001 ];
+    platforms = lib.platforms.linux;
   };
 }

@@ -9,21 +9,18 @@
 buildPythonPackage rec {
   pname = "types-html5lib";
   version = "1.1.11.20260518";
-  pyproject = true;
 
   src = fetchPypi {
-    pname = "types_html5lib";
     inherit version;
     hash = "sha256-TzPAh8sRGdZcTIDspDI8K1Afnq+K+WFri3Mu1Njq6Po=";
+    pname = "types_html5lib";
   };
-
-  build-system = [ setuptools ];
-
-  dependencies = [ types-webencodings ];
 
   # Module has no tests
   doCheck = false;
-
+  build-system = [ setuptools ];
+  dependencies = [ types-webencodings ];
+  pyproject = true;
   pythonImportsCheck = [ "html5lib-stubs" ];
 
   meta = {

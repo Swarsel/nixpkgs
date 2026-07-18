@@ -2,17 +2,16 @@
   lib,
   buildPythonPackage,
   fetchFromCodeberg,
-  setuptools,
-  setuptools-scm,
   hypothesis,
   pytest-timeout,
   pytestCheckHook,
+  setuptools,
+  setuptools-scm,
 }:
 
 buildPythonPackage rec {
   pname = "multivolumefile";
   version = "0.2.3";
-  pyproject = true;
 
   src = fetchFromCodeberg {
     owner = "miurahr";
@@ -29,16 +28,18 @@ buildPythonPackage rec {
         --replace-fail 'tools.setuptools_scm' 'tool.setuptools_scm'
     '';
 
-  build-system = [
-    setuptools
-    setuptools-scm
-  ];
-
   nativeCheckInputs = [
     hypothesis
     pytest-timeout
     pytestCheckHook
   ];
+
+  build-system = [
+    setuptools
+    setuptools-scm
+  ];
+
+  pyproject = true;
 
   pythonImportsCheck = [
     "multivolumefile"
@@ -49,6 +50,7 @@ buildPythonPackage rec {
     homepage = "https://codeberg.org/miurahr/multivolume";
     changelog = "https://codeberg.org/miurahr/multivolume/src/tag/v${version}/Changelog.rst#v${version}";
     license = lib.licenses.gpl2Plus;
+
     maintainers = with lib.maintainers; [
       pitkling
       PopeRigby

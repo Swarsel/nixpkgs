@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   pytestCheckHook,
   requests,
   setuptools,
@@ -10,7 +10,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "pyhik";
   version = "0.4.3";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "mezz64";
@@ -18,6 +17,13 @@ buildPythonPackage (finalAttrs: {
     tag = finalAttrs.version;
     hash = "sha256-3q1dCu/VY+4WnsLOZk+O2NLW2Ibun7IuNtXEHJ0GEms=";
   };
+
+  # Tests are disabled due to fragile XML namespace assertions
+  doCheck = false;
+
+  nativeCheckInputs = [
+    pytestCheckHook
+  ];
 
   build-system = [
     setuptools
@@ -27,12 +33,7 @@ buildPythonPackage (finalAttrs: {
     requests
   ];
 
-  # Tests are disabled due to fragile XML namespace assertions
-  doCheck = false;
-
-  nativeCheckInputs = [
-    pytestCheckHook
-  ];
+  pyproject = true;
 
   pythonImportsCheck = [
     "pyhik"

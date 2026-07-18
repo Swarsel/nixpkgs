@@ -43,11 +43,11 @@ stdenv.mkDerivation (finalAttrs: {
   enableParallelBuilding = true;
 
   meta = {
-    homepage = "https://github.com/pixop/video-compare";
     description = "Split screen video comparison tool";
-    maintainers = [ ];
+    homepage = "https://github.com/pixop/video-compare";
     license = lib.licenses.gpl2Only;
-    mainProgram = "video-compare";
+    maintainers = [ ];
     platforms = lib.platforms.unix;
+    mainProgram = "video-compare";
   };
 })

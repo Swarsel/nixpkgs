@@ -23,16 +23,15 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   nativeBuildInputs = [ cmake ];
-
   doCheck = true;
 
   meta = {
     description = "GitHub's fork of cmark, a CommonMark parsing and rendering library and program in C";
-    mainProgram = "cmark-gfm";
     homepage = "https://github.com/github/cmark-gfm";
     changelog = "https://github.com/github/cmark-gfm/raw/${finalAttrs.version}/changelog.txt";
+    license = lib.licenses.bsd2;
     maintainers = with lib.maintainers; [ cyplo ];
     platforms = lib.platforms.unix;
-    license = lib.licenses.bsd2;
+    mainProgram = "cmark-gfm";
   };
 })

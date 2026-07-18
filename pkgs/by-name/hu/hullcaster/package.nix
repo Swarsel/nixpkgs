@@ -1,8 +1,8 @@
 {
   lib,
+  fetchFromGitHub,
   alsa-lib,
   dbus,
-  fetchFromGitHub,
   openssl,
   pkg-config,
   rustPlatform,
@@ -20,7 +20,9 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-O3MBvadayZ6hryexPX/VN1NUZpHTg/JZATJRIOBgZCg=";
   };
 
-  cargoHash = "sha256-/2prlOy3h+TtACJ9Oa7f9kYiaFGjFhoS8dO26w0fTrk=";
+  nativeBuildInputs = [
+    pkg-config
+  ];
 
   buildInputs = [
     alsa-lib
@@ -29,9 +31,7 @@ rustPlatform.buildRustPackage (finalAttrs: {
     sqlite
   ];
 
-  nativeBuildInputs = [
-    pkg-config
-  ];
+  cargoHash = "sha256-/2prlOy3h+TtACJ9Oa7f9kYiaFGjFhoS8dO26w0fTrk=";
 
   # work around error: Could not create filepath: /homeless-shelter/.local/share
   checkFlags = [

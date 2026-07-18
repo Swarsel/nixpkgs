@@ -1,17 +1,15 @@
 {
   lib,
-  mkCoqDerivation,
   coq,
+  mkCoqDerivation,
   version ? null,
 }:
 
 let
   derivation = mkCoqDerivation {
-    pname = "parseque";
-    repo = "parseque";
-    owner = "rocq-community";
-
     inherit version;
+    pname = "parseque";
+
     defaultVersion =
       let
         case = case: out: { inherit case out; };
@@ -20,14 +18,15 @@ let
         (case (lib.versions.range "8.16" "8.20") "0.2.2")
       ] null;
 
+    owner = "rocq-community";
     release."0.2.2".hash = "sha256-O50Rs7Yf1H4wgwb7ltRxW+7IF0b04zpfs+mR83rxT+E=";
-
     releaseRev = v: "v${v}";
+    repo = "parseque";
 
     meta = {
       description = "Total parser combinators in Coq/Rocq";
-      maintainers = with lib.maintainers; [ womeier ];
       license = lib.licenses.mit;
+      maintainers = with lib.maintainers; [ womeier ];
     };
   };
 in

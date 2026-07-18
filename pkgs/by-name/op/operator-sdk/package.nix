@@ -1,11 +1,11 @@
 {
   lib,
+  fetchFromGitHub,
   buildGoModule,
   go,
-  fetchFromGitHub,
+  gpgme,
   makeWrapper,
   pkg-config,
-  gpgme,
 }:
 
 buildGoModule (finalAttrs: {
@@ -19,8 +19,6 @@ buildGoModule (finalAttrs: {
     hash = "sha256-DuNgesrqZvMoGHsi9wnVPHYvvSSEYi9FxAsSEhmlTZM=";
   };
 
-  vendorHash = "sha256-FbLi+HoDsPIRoslSgMTJbb8bQ3F8pGMgOAnrSr0mGLQ=";
-
   nativeBuildInputs = [
     makeWrapper
     pkg-config
@@ -31,19 +29,20 @@ buildGoModule (finalAttrs: {
     gpgme
   ];
 
+  vendorHash = "sha256-FbLi+HoDsPIRoslSgMTJbb8bQ3F8pGMgOAnrSr0mGLQ=";
   doCheck = false;
+
+  postFixup = ''
+    wrapProgram $out/bin/operator-sdk --prefix PATH : ${lib.makeBinPath [ go ]}
+  '';
+
+  # operator-sdk uses the go compiler at runtime
+  allowGoReference = true;
 
   subPackages = [
     "cmd/helm-operator"
     "cmd/operator-sdk"
   ];
-
-  # operator-sdk uses the go compiler at runtime
-  allowGoReference = true;
-
-  postFixup = ''
-    wrapProgram $out/bin/operator-sdk --prefix PATH : ${lib.makeBinPath [ go ]}
-  '';
 
   meta = {
     description = "SDK for building Kubernetes applications. Provides high level APIs, useful abstractions, and project scaffolding";

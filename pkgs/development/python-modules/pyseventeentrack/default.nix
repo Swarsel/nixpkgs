@@ -1,11 +1,11 @@
 {
+  lib,
+  fetchFromGitHub,
   aiohttp,
   aresponses,
   attrs,
   buildPythonPackage,
   cryptography,
-  fetchFromGitHub,
-  lib,
   poetry-core,
   pytestCheckHook,
   pytz,
@@ -14,7 +14,6 @@
 buildPythonPackage rec {
   pname = "pyseventeentrack";
   version = "1.1.3";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "shaiu";
@@ -23,9 +22,12 @@ buildPythonPackage rec {
     hash = "sha256-aIECWBOozGdCpyqih3YNMioq4Fcc6Ttw9hiTl7m/r28=";
   };
 
-  build-system = [ poetry-core ];
+  nativeCheckInputs = [
+    aresponses
+    pytestCheckHook
+  ];
 
-  pythonRelaxDeps = [ "cryptography" ];
+  build-system = [ poetry-core ];
 
   dependencies = [
     aiohttp
@@ -34,17 +36,14 @@ buildPythonPackage rec {
     pytz
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "pyseventeentrack" ];
-
-  nativeCheckInputs = [
-    aresponses
-    pytestCheckHook
-  ];
+  pythonRelaxDeps = [ "cryptography" ];
 
   meta = {
-    changelog = "https://github.com/shaiu/pyseventeentrack/releases/tag/v${version}";
     description = "Simple Python API for 17track.net";
     homepage = "https://github.com/shaiu/pyseventeentrack";
+    changelog = "https://github.com/shaiu/pyseventeentrack/releases/tag/v${version}";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ dotlambda ];
   };

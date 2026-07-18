@@ -1,7 +1,7 @@
 {
   lib,
-  stdenvNoCC,
   fetchzip,
+  stdenvNoCC,
 }:
 
 stdenvNoCC.mkDerivation rec {
@@ -13,6 +13,7 @@ stdenvNoCC.mkDerivation rec {
     url = "https://www.dropbox.com/s/2rnpya9ecb9m4jh/arachno-soundfont-${
       builtins.replaceStrings [ "." ] [ "" ] version
     }-sf2.zip";
+
     hash = "sha256-Z5ETe0AKPCi4KlM2xOlNcyQn1xvCuor3S/tcrF+AwNQ=";
     stripRoot = false;
   };
@@ -27,7 +28,7 @@ stdenvNoCC.mkDerivation rec {
     description = "General MIDI-compliant bank, aimed at enhancing the realism of your MIDI files and arrangements";
     homepage = "http://www.arachnosoft.com/main/soundfont.php";
     license = lib.licenses.unfree;
-    platforms = lib.platforms.all;
     maintainers = with lib.maintainers; [ mrtnvgr ];
+    platforms = lib.platforms.all;
   };
 }

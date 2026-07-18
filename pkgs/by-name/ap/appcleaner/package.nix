@@ -1,7 +1,7 @@
 {
   lib,
-  stdenvNoCC,
   fetchurl,
+  stdenvNoCC,
   unzip,
 }:
 stdenvNoCC.mkDerivation (finalAttrs: {
@@ -12,7 +12,6 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     url = "https://freemacsoft.net/downloads/AppCleaner_${finalAttrs.version}.zip";
     hash = "sha256-4BL3KUQkc8IOfM4zSwAYJSHktmcupoGzSTGxgP6z1r4=";
   };
-  dontUnpack = true;
 
   nativeBuildInputs = [ unzip ];
 
@@ -24,6 +23,8 @@ stdenvNoCC.mkDerivation (finalAttrs: {
 
     runHook postInstall
   '';
+
+  dontUnpack = true;
 
   meta = {
     description = "Uninstall unwanted apps";

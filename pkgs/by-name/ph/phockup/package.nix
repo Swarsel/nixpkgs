@@ -1,10 +1,10 @@
 {
   lib,
   stdenv,
-  python3,
   fetchFromGitHub,
   exiftool,
   makeWrapper,
+  python3,
 }:
 let
   pythonEnv = python3.withPackages (p: with p; [ tqdm ]);

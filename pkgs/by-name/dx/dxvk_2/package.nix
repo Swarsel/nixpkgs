@@ -2,20 +2,20 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  pkgsBuildHost,
+  SDL2,
+  gitUpdater,
+  glfw,
   glslang,
   meson,
   ninja,
   pkg-config,
-  windows,
+  pkgsBuildHost,
+  sdl3,
   spirv-headers,
   vulkan-headers,
-  SDL2,
-  sdl3,
-  glfw,
-  gitUpdater,
-  sdl2Support ? (!stdenv.hostPlatform.isWindows),
+  windows,
   glfwSupport ? (!stdenv.hostPlatform.isWindows),
+  sdl2Support ? (!stdenv.hostPlatform.isWindows),
 }:
 
 assert stdenv.hostPlatform.isWindows -> !glfwSupport && !sdl2Support;
@@ -89,22 +89,20 @@ stdenv.mkDerivation (finalAttrs: {
     mkdir -p include/spirv/include include/vulkan/include
   '';
 
-  mesonBuildType = "release";
-
   doCheck = true;
-
-  passthru.updateScript = gitUpdater { rev-prefix = "v"; };
-
   __structuredAttrs = true;
+  mesonBuildType = "release";
+  passthru.updateScript = gitUpdater { rev-prefix = "v"; };
 
   meta = {
     description = "Vulkan-based translation layer for Direct3D 8/9/10/11";
     homepage = "https://github.com/doitsujin/dxvk";
     changelog = "https://github.com/doitsujin/dxvk/releases";
-    maintainers = [ lib.maintainers.reckenrode ];
     license = lib.licenses.zlib;
-    badPlatforms = lib.platforms.darwin;
+    maintainers = [ lib.maintainers.reckenrode ];
     platforms = lib.platforms.windows ++ lib.platforms.unix;
+    badPlatforms = lib.platforms.darwin;
+
     pkgConfigModules = [
       "dxvk-d3d10core"
       "dxvk-d3d11"

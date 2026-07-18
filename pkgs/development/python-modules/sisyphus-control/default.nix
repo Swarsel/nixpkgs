@@ -1,8 +1,8 @@
 {
   lib,
+  fetchFromGitHub,
   aiohttp,
   buildPythonPackage,
-  fetchFromGitHub,
   fetchpatch2,
   netifaces,
   poetry-core,
@@ -13,7 +13,6 @@
 buildPythonPackage rec {
   pname = "sisyphus-control";
   version = "3.1.4";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "jkeljo";
@@ -25,12 +24,14 @@ buildPythonPackage rec {
   patches = [
     # https://github.com/jkeljo/sisyphus-control/pull/9
     (fetchpatch2 {
+      hash = "sha256-573YLPrNbbMXSrZ3gK8cmHmuk2+UeggcKL/+eo4pgrs=";
       name = "specify-build-system.patch";
       url = "https://github.com/jkeljo/sisyphus-control/commit/dd48079e03a53cdb3af721de0d307209286c38f0.patch";
-      hash = "sha256-573YLPrNbbMXSrZ3gK8cmHmuk2+UeggcKL/+eo4pgrs=";
     })
   ];
 
+  # Module has no tests
+  doCheck = false;
   build-system = [ poetry-core ];
 
   dependencies = [
@@ -40,9 +41,7 @@ buildPythonPackage rec {
     python-socketio-v4
   ];
 
-  # Module has no tests
-  doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "sisyphus_control" ];
 
   meta = {

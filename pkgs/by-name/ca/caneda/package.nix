@@ -1,9 +1,9 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
-  fetchpatch,
   cmake,
+  fetchpatch,
   libsForQt5,
 }:
 
@@ -20,8 +20,8 @@ stdenv.mkDerivation (finalAttrs: {
 
   patches = [
     (fetchpatch {
-      url = "https://sources.debian.org/data/main/c/caneda/0.4.0-2/debian/patches/fix_cmake_minimum_version.patch";
       hash = "sha256-MRkCA0GWcI6yEo4Ej+F67k0iNG1JHeLNhH0Rbz1QWoA=";
+      url = "https://sources.debian.org/data/main/c/caneda/0.4.0-2/debian/patches/fix_cmake_minimum_version.patch";
     })
   ];
 
@@ -39,11 +39,11 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Open source EDA software focused on easy of use and portability";
-    changelog = "https://github.com/Caneda/Caneda/releases/tag/${finalAttrs.version}";
-    mainProgram = "caneda";
     homepage = "http://caneda.org";
+    changelog = "https://github.com/Caneda/Caneda/releases/tag/${finalAttrs.version}";
     license = lib.licenses.gpl2Plus;
     maintainers = with lib.maintainers; [ magicquark ];
     platforms = with lib.platforms; linux;
+    mainProgram = "caneda";
   };
 })

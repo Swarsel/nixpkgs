@@ -1,16 +1,15 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
+  buildPythonPackage,
   colorama,
+  setuptools,
   six,
 }:
 
 buildPythonPackage rec {
   pname = "reprint";
   version = "0.6.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "Yinzo";
@@ -33,6 +32,8 @@ buildPythonPackage rec {
     six
   ];
 
+  pyproject = true;
+
   pythonImportsCheck = [
     "reprint"
   ];
@@ -41,6 +42,7 @@ buildPythonPackage rec {
     description = "Module for binding variables and refreshing multi-line output in terminal";
     homepage = "https://github.com/Yinzo/reprint";
     license = lib.licenses.asl20;
+
     maintainers = with lib.maintainers; [
       jasonodoom
       jleightcap

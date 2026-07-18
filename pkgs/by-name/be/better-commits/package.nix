@@ -1,9 +1,9 @@
 {
   lib,
-  buildNpmPackage,
   fetchFromGitHub,
-  nodejs,
+  buildNpmPackage,
   nix-update-script,
+  nodejs,
 }:
 
 buildNpmPackage rec {
@@ -18,7 +18,6 @@ buildNpmPackage rec {
   };
 
   npmDepsHash = "sha256-1ASVbn8MqWDiDKx+vYs2DNv9GuvHg4Acv8Kuj7JVBHE=";
-
   passthru.updateScript = nix-update-script { };
 
   meta = {

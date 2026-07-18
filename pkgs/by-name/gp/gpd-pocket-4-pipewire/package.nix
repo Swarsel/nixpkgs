@@ -36,9 +36,9 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Pipewire audio DSP for internal speakers of GPD Pocket 4";
-    license = lib.licenses.mit;
     homepage = "https://github.com/Manawyrm/gpd-pocket-4-pipewire/";
-    platforms = lib.platforms.linux;
+    license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ marcel ];
+    platforms = lib.platforms.linux;
   };
 })

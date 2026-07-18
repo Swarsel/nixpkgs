@@ -1,10 +1,10 @@
 {
   lib,
   stdenv,
-  buildGoModule,
   fetchFromGitHub,
-  installShellFiles,
+  buildGoModule,
   buildPackages,
+  installShellFiles,
 }:
 
 buildGoModule (finalAttrs: {
@@ -18,9 +18,8 @@ buildGoModule (finalAttrs: {
     hash = "sha256-XyEV45z/f4X8LXATWngakqjm5qSszry1jk4Jzag54gA=";
   };
 
-  vendorHash = "sha256-1ue5NHt/+QCtmzwQder6H7WqRBJ42on53ixuD+wiZpg=";
-
   nativeBuildInputs = [ installShellFiles ];
+  vendorHash = "sha256-1ue5NHt/+QCtmzwQder6H7WqRBJ42on53ixuD+wiZpg=";
 
   postInstall =
     let
@@ -34,8 +33,8 @@ buildGoModule (finalAttrs: {
     '';
 
   meta = {
-    homepage = "https://github.com/spacelift-io/spacectl";
     description = "Spacelift client and CLI";
+    homepage = "https://github.com/spacelift-io/spacectl";
     changelog = "https://github.com/spacelift-io/spacectl/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ kashw2 ];

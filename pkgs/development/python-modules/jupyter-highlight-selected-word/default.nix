@@ -1,13 +1,12 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
 }:
 
 buildPythonPackage rec {
   pname = "jupyter-highlight-selected-word";
   version = "0.2.0";
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "jcb91";
@@ -18,7 +17,7 @@ buildPythonPackage rec {
 
   # This package does not have tests
   doChecks = false;
-
+  format = "setuptools";
   pythonImportsCheck = [ "jupyter_highlight_selected_word" ];
 
   meta = {

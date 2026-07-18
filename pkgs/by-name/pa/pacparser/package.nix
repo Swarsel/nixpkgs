@@ -22,25 +22,23 @@ stdenv.mkDerivation (finalAttrs: {
     "VERSION=v${finalAttrs.version}"
   ];
 
-  enableParallelBuilding = true;
-
   preConfigure = ''
     patchShebangs tests/runtests.sh
     cd src
   '';
 
-  hardeningDisable = [ "format" ];
-
-  nativeInstallCheckInputs = [ versionCheckHook ];
-  versionCheckProgramArg = "-v";
   doInstallCheck = true;
+  nativeInstallCheckInputs = [ versionCheckHook ];
+  enableParallelBuilding = true;
+  hardeningDisable = [ "format" ];
+  versionCheckProgramArg = "-v";
 
   meta = {
     description = "Library to parse proxy auto-config (PAC) files";
     homepage = "https://pacparser.manugarg.com/";
     license = lib.licenses.lgpl3;
-    platforms = lib.platforms.all;
     maintainers = [ ];
+    platforms = lib.platforms.all;
     mainProgram = "pactester";
   };
 })

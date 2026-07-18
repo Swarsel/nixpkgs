@@ -1,62 +1,42 @@
 {
   lib,
   stdenv,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # nativeBuildInputs
-  cmake,
-
-  # build-system
-  pybind11,
-  nanobind,
-  ninja,
-  scikit-build-core,
-  setuptools-scm,
-
   # buildInputs
   boost,
-
+  buildPythonPackage,
+  cloudpickle,
+  # nativeBuildInputs
+  cmake,
+  hypothesis,
+  nanobind,
+  ninja,
   # dependencies
   numpy,
-
-  # tests
-  pytestCheckHook,
+  # build-system
+  pybind11,
   pytest-benchmark,
   pytest-xdist,
-  cloudpickle,
-  hypothesis,
+  # tests
+  pytestCheckHook,
+  scikit-build-core,
+  setuptools-scm,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "boost-histogram";
   version = "1.7.2";
-  pyproject = true;
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "scikit-hep";
     repo = "boost-histogram";
     tag = "v${finalAttrs.version}";
-    fetchSubmodules = true;
     hash = "sha256-nDNSLpmQ3YOo/nEkHfvsE0l9yATzQnrlunX1qWupbLQ=";
+    fetchSubmodules = true;
   };
 
   nativeBuildInputs = [ cmake ];
-
-  dontUseCmakeConfigure = true;
-
-  build-system = [
-    pybind11
-    nanobind
-    ninja
-    scikit-build-core
-    setuptools-scm
-  ];
-
   buildInputs = [ boost ];
-
-  dependencies = [ numpy ];
 
   nativeCheckInputs = [
     pytestCheckHook
@@ -66,7 +46,17 @@ buildPythonPackage (finalAttrs: {
     hypothesis
   ];
 
-  pytestFlags = [ "--benchmark-disable" ];
+  __structuredAttrs = true;
+
+  build-system = [
+    pybind11
+    nanobind
+    ninja
+    scikit-build-core
+    setuptools-scm
+  ];
+
+  dependencies = [ numpy ];
 
   disabledTests =
     lib.optionals stdenv.hostPlatform.isDarwin [
@@ -79,6 +69,9 @@ buildPythonPackage (finalAttrs: {
       "test_numpy_conversion_4"
     ];
 
+  dontUseCmakeConfigure = true;
+  pyproject = true;
+  pytestFlags = [ "--benchmark-disable" ];
   pythonImportsCheck = [ "boost_histogram" ];
 
   meta = {

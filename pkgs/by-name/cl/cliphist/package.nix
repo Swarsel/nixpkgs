@@ -1,8 +1,8 @@
 {
   lib,
+  fetchFromGitHub,
   bash,
   buildGoModule,
-  fetchFromGitHub,
   nix-update-script,
 }:
 
@@ -17,6 +17,7 @@ buildGoModule (finalAttrs: {
     hash = "sha256-y4FSl/Bj80XqCR0ZwjGEkqYUIF6zJHrYyy01XPFlzjU=";
   };
 
+  buildInputs = [ bash ];
   vendorHash = "sha256-4XyDLOJHdre/1BpjgFt/W6gOlPOvKztE+MsbwE3JAaQ=";
 
   postInstall = ''
@@ -27,14 +28,12 @@ buildGoModule (finalAttrs: {
     updateScript = nix-update-script { };
   };
 
-  buildInputs = [ bash ];
-
   meta = {
     description = "Wayland clipboard manager";
     homepage = "https://github.com/sentriz/cliphist";
     license = lib.licenses.gpl3Only;
-    platforms = lib.platforms.linux;
     maintainers = [ ];
+    platforms = lib.platforms.linux;
     mainProgram = "cliphist";
   };
 })

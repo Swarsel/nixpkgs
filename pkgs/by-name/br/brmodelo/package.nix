@@ -2,12 +2,12 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  fetchpatch,
   ant,
-  jdk8,
-  makeWrapper,
-  makeDesktopItem,
   copyDesktopItems,
+  fetchpatch,
+  jdk8,
+  makeDesktopItem,
+  makeWrapper,
   strip-nondeterminism,
   stripJavaArchivesHook,
 }:
@@ -23,6 +23,39 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-YJcGfrcB+Qw35bMnqVs/tBzMGVj2DmfhRZ0YsSGGGSc=";
   };
 
+  patches = [
+    # Fixes for building with Ant.
+    # https://github.com/chcandido/brModelo/pull/22
+    (fetchpatch {
+      hash = "sha256-yy03arE6xetotzyvpToi9o9crg3KnMRn1J70jDUvSXE=";
+      name = "fix-self-closing-element-not-allowed.patch";
+      url = "https://github.com/yuuyins/brModelo/commit/0d712b74fd5d29d67be07480ed196da28a77893b.patch";
+    })
+    (fetchpatch {
+      hash = "sha256-MNuh/ORbaAkB5qDSlA/nPrXN+tqzz4oOglVyEtSangI=";
+      name = "fix-tag-closing.patch";
+      url = "https://github.com/yuuyins/brModelo/commit/e8530ff75f024cf6effe0408ed69985405e9709c.patch";
+    })
+    (fetchpatch {
+      hash = "sha256-MmAwYUmx38DGRsiSxCWCObtpqxk0ykUQiDSC76bCpFc=";
+      name = "fix-bad-use-greater-than.patch";
+      url = "https://github.com/yuuyins/brModelo/commit/498a6ef8129daff5a472b318f93c8f7f2897fc7f.patch";
+    })
+    (fetchpatch {
+      hash = "sha256-qME9gZChSMzu1vs9HaosD+snb+jlOrQLY97meNoA8oU=";
+      name = "fix-param-errors.patch";
+      url = "https://github.com/yuuyins/brModelo/commit/8a508aaba0bcffe13a3f95cff495230beea36bc4.patch";
+    })
+
+    # Add SVG icons.
+    # https://github.com/chcandido/brModelo/pull/23
+    (fetchpatch {
+      hash = "sha256-UhgcWxsHkNFS1GgaRnmlZohjDR8JwHof2cIb3SBetYs=";
+      name = "add-brmodelo-logo-icons-svg.patch";
+      url = "https://github.com/yuuyins/brModelo/commit/f260b82b664fad3325bbf3ebd7a15488d496946b.patch";
+    })
+  ];
+
   nativeBuildInputs = [
     ant
     jdk8
@@ -32,65 +65,11 @@ stdenv.mkDerivation (finalAttrs: {
     stripJavaArchivesHook
   ];
 
-  patches = [
-    # Fixes for building with Ant.
-    # https://github.com/chcandido/brModelo/pull/22
-    (fetchpatch {
-      name = "fix-self-closing-element-not-allowed.patch";
-      url = "https://github.com/yuuyins/brModelo/commit/0d712b74fd5d29d67be07480ed196da28a77893b.patch";
-      hash = "sha256-yy03arE6xetotzyvpToi9o9crg3KnMRn1J70jDUvSXE=";
-    })
-    (fetchpatch {
-      name = "fix-tag-closing.patch";
-      url = "https://github.com/yuuyins/brModelo/commit/e8530ff75f024cf6effe0408ed69985405e9709c.patch";
-      hash = "sha256-MNuh/ORbaAkB5qDSlA/nPrXN+tqzz4oOglVyEtSangI=";
-    })
-    (fetchpatch {
-      name = "fix-bad-use-greater-than.patch";
-      url = "https://github.com/yuuyins/brModelo/commit/498a6ef8129daff5a472b318f93c8f7f2897fc7f.patch";
-      hash = "sha256-MmAwYUmx38DGRsiSxCWCObtpqxk0ykUQiDSC76bCpFc=";
-    })
-    (fetchpatch {
-      name = "fix-param-errors.patch";
-      url = "https://github.com/yuuyins/brModelo/commit/8a508aaba0bcffe13a3f95cff495230beea36bc4.patch";
-      hash = "sha256-qME9gZChSMzu1vs9HaosD+snb+jlOrQLY97meNoA8oU=";
-    })
-
-    # Add SVG icons.
-    # https://github.com/chcandido/brModelo/pull/23
-    (fetchpatch {
-      name = "add-brmodelo-logo-icons-svg.patch";
-      url = "https://github.com/yuuyins/brModelo/commit/f260b82b664fad3325bbf3ebd7a15488d496946b.patch";
-      hash = "sha256-UhgcWxsHkNFS1GgaRnmlZohjDR8JwHof2cIb3SBetYs=";
-    })
-  ];
-
   buildPhase = ''
     runHook postBuild
     ant
     runHook preBuild
   '';
-
-  desktopItems = [
-    (makeDesktopItem {
-      name = "brmodelo";
-      desktopName = "brModelo";
-      genericName = "Entity-relationship diagramming tool";
-      exec = "brmodelo";
-      icon = "brmodelo";
-      comment = finalAttrs.meta.description;
-      categories = [
-        "Development"
-        "Education"
-        "Database"
-        "2DGraphics"
-        "ComputerScience"
-        "DataVisualization"
-        "Engineering"
-        "Java"
-      ];
-    })
-  ];
 
   installPhase = ''
     runHook preInstall
@@ -122,11 +101,33 @@ stdenv.mkDerivation (finalAttrs: {
     find $out/share/doc/brmodelo/javadoc -name "*.html" -exec strip-nondeterminism --type javadoc {} +
   '';
 
+  desktopItems = [
+    (makeDesktopItem {
+      categories = [
+        "Development"
+        "Education"
+        "Database"
+        "2DGraphics"
+        "ComputerScience"
+        "DataVisualization"
+        "Engineering"
+        "Java"
+      ];
+
+      comment = finalAttrs.meta.description;
+      desktopName = "brModelo";
+      exec = "brmodelo";
+      genericName = "Entity-relationship diagramming tool";
+      icon = "brmodelo";
+      name = "brmodelo";
+    })
+  ];
+
   meta = {
     description = "Entity-relationship diagram tool for making conceptual and logical database models";
     homepage = "https://github.com/chcandido/brModelo";
     license = lib.licenses.gpl3;
-    mainProgram = "brmodelo";
     maintainers = [ ];
+    mainProgram = "brmodelo";
   };
 })

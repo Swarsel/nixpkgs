@@ -3,8 +3,6 @@
   fetchFromGitHub,
   # python module stuff
   buildPythonPackage,
-  pythonAtLeast,
-  setuptools,
   # dependencies
   cached-property,
   ckzg,
@@ -12,26 +10,24 @@
   eth-keys,
   eth-typing,
   eth-utils,
-  lru-dict,
-  pydantic,
-  py-ecc,
-  rlp,
-  trie,
   # nativeCheckInputs
   factory-boy,
   hypothesis,
-  pytestCheckHook,
-  pytest-xdist,
+  lru-dict,
+  py-ecc,
   pycryptodome,
+  pydantic,
+  pytest-xdist,
+  pytestCheckHook,
+  pythonAtLeast,
+  rlp,
+  setuptools,
+  trie,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "py-evm";
   version = "0.12.1-beta.1";
-  pyproject = true;
-
-  # py-evm project has been archived by upstream; its support should be deprecated from "3.14".
-  disabled = pythonAtLeast "3.14";
 
   src = fetchFromGitHub {
     owner = "ethereum";
@@ -39,6 +35,14 @@ buildPythonPackage (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-n2F0ApdmIED0wrGuNN45lyb7cGu8pRn8mLDehT7Ru9E=";
   };
+
+  nativeCheckInputs = [
+    factory-boy
+    hypothesis
+    pytestCheckHook
+    pytest-xdist
+    pycryptodome
+  ];
 
   build-system = [ setuptools ];
 
@@ -56,17 +60,12 @@ buildPythonPackage (finalAttrs: {
     trie
   ];
 
-  nativeCheckInputs = [
-    factory-boy
-    hypothesis
-    pytestCheckHook
-    pytest-xdist
-    pycryptodome
-  ];
+  # py-evm project has been archived by upstream; its support should be deprecated from "3.14".
+  disabled = pythonAtLeast "3.14";
 
-  pytestFlags = [
-    # 'asyncio.iscoroutinefunction' is deprecated and slated for removal in Python 3.16; use inspect.iscoroutinefunction() instead
-    "-Wignore::DeprecationWarning"
+  disabledTestPaths = [
+    # json-fixtures require fixture submodule and execution spec
+    "tests/json-fixtures"
   ];
 
   disabledTests = [
@@ -74,9 +73,11 @@ buildPythonPackage (finalAttrs: {
     "test_install_local_wheel"
   ];
 
-  disabledTestPaths = [
-    # json-fixtures require fixture submodule and execution spec
-    "tests/json-fixtures"
+  pyproject = true;
+
+  pytestFlags = [
+    # 'asyncio.iscoroutinefunction' is deprecated and slated for removal in Python 3.16; use inspect.iscoroutinefunction() instead
+    "-Wignore::DeprecationWarning"
   ];
 
   pythonImportsCheck = [ "eth" ];

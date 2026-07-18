@@ -7,7 +7,6 @@
 stdenv.mkDerivation rec {
   pname = "ipmicfg";
   version = "1.34.0";
-  buildVersion = "220906";
 
   src = fetchzip {
     url = "https://www.supermicro.com/Bios/sw_download/481/IPMICFG_${version}_build.${buildVersion}.zip";
@@ -26,14 +25,15 @@ stdenv.mkDerivation rec {
     ln -s "$out/opt/ipmicfg/IPMICFG-Linux.x86_64" "$out/bin/ipmicfg"
   '';
 
+  buildVersion = "220906";
   dontPatchShebangs = true; # There are no scripts and it complains about null bytes.
 
   meta = {
     description = "Supermicro IPMI configuration tool";
     homepage = "http://www.supermicro.com/products/nfo/ipmi.cfm";
-    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
     license = lib.licenses.unfree;
-    platforms = [ "x86_64-linux" ];
+    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
     maintainers = with lib.maintainers; [ sorki ];
+    platforms = [ "x86_64-linux" ];
   };
 }

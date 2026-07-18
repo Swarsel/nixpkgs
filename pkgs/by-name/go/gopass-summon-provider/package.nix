@@ -1,9 +1,9 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
-  makeWrapper,
+  buildGoModule,
   gopass,
+  makeWrapper,
   versionCheckHook,
   writableTmpDirAsHomeHook,
 }:
@@ -19,11 +19,20 @@ buildGoModule (finalAttrs: {
     hash = "sha256-j3N/snUCsw/NlMQO9CoVRf6JCG48DEHqrJnZ7wiVUPk=";
   };
 
-  vendorHash = "sha256-FhS79dSY9FjlScoXd6EbYRRwEBObZLO9g/SXBEXQpjM=";
-
-  subPackages = [ "." ];
-
   nativeBuildInputs = [ makeWrapper ];
+  vendorHash = "sha256-FhS79dSY9FjlScoXd6EbYRRwEBObZLO9g/SXBEXQpjM=";
+  doInstallCheck = true;
+
+  nativeInstallCheckInputs = [
+    versionCheckHook
+    writableTmpDirAsHomeHook
+    gopass
+  ];
+
+  postFixup = ''
+    wrapProgram $out/bin/gopass-summon-provider \
+      --prefix PATH : "${gopass.wrapperPath}"
+  '';
 
   ldflags = [
     "-s"
@@ -32,21 +41,12 @@ buildGoModule (finalAttrs: {
     "-X main.commit=${finalAttrs.src.rev}"
   ];
 
-  postFixup = ''
-    wrapProgram $out/bin/gopass-summon-provider \
-      --prefix PATH : "${gopass.wrapperPath}"
-  '';
-
-  doInstallCheck = true;
-  nativeInstallCheckInputs = [
-    versionCheckHook
-    writableTmpDirAsHomeHook
-    gopass
-  ];
-  versionCheckKeepEnvironment = [ "HOME" ];
   preVersionCheck = ''
     gopass setup --name "user" --email "user@localhost"
   '';
+
+  subPackages = [ "." ];
+  versionCheckKeepEnvironment = [ "HOME" ];
 
   meta = {
     description = "Gopass Summon Provider";

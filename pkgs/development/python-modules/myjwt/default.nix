@@ -1,12 +1,12 @@
 {
   lib,
   stdenv,
+  fetchFromGitHub,
   buildPythonPackage,
   click,
   colorama,
   cryptography,
   exrex,
-  fetchFromGitHub,
   poetry-core,
   pyopenssl,
   pyperclip,
@@ -20,7 +20,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "myjwt";
   version = "2.1.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "tyki6";
@@ -29,10 +28,10 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-jqBnxo7Omn5gLMCQ7SNbjo54nyFK7pn94796z2Qc9lg=";
   };
 
-  pythonRelaxDeps = [
-    "cryptography"
-    "pyopenssl"
-    "questionary"
+  nativeCheckInputs = [
+    pytest-mock
+    pytestCheckHook
+    requests-mock
   ];
 
   build-system = [ poetry-core ];
@@ -48,13 +47,14 @@ buildPythonPackage (finalAttrs: {
     requests
   ];
 
-  nativeCheckInputs = [
-    pytest-mock
-    pytestCheckHook
-    requests-mock
-  ];
-
+  pyproject = true;
   pythonImportsCheck = [ "myjwt" ];
+
+  pythonRelaxDeps = [
+    "cryptography"
+    "pyopenssl"
+    "questionary"
+  ];
 
   meta = {
     description = "CLI tool for testing vulnerabilities of JSON Web Tokens (JWT)";

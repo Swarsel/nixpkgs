@@ -1,24 +1,23 @@
 {
-  hypothesis,
-  pytestCheckHook,
+  lib,
+  argon2-cffi-bindings,
   buildPythonPackage,
   fetchPypi,
-  lib,
-  hatchling,
-  hatch-vcs,
   hatch-fancy-pypi-readme,
-  argon2-cffi-bindings,
+  hatch-vcs,
+  hatchling,
+  hypothesis,
+  pytestCheckHook,
 }:
 
 buildPythonPackage rec {
   pname = "argon2-cffi";
   version = "25.1.0";
-  pyproject = true;
 
   src = fetchPypi {
-    pname = "argon2_cffi";
     inherit version;
     hash = "sha256-aUrlzIpC9MTivyyg5k5R4joEDGpReoUHRoPTlZ4TRsE=";
+    pname = "argon2_cffi";
   };
 
   nativeBuildInputs = [
@@ -34,6 +33,7 @@ buildPythonPackage rec {
     pytestCheckHook
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "argon2" ];
 
   meta = {

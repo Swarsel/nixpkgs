@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   fonttools,
   importlib-resources,
   setuptools,
@@ -20,7 +20,8 @@ buildPythonPackage rec {
     hash = "sha256-mMsmccIuilKeOUjt68etYefibuorjlW32gLcLgV8jxo=";
   };
 
-  pyproject = true;
+  # Package has no unit tests.
+  doCheck = false;
 
   build-system = [
     setuptools
@@ -33,8 +34,7 @@ buildPythonPackage rec {
     youseedee
   ];
 
-  # Package has no unit tests.
-  doCheck = false;
+  pyproject = true;
   pythonImportsCheck = [ "gfsubsets" ];
 
   meta = {

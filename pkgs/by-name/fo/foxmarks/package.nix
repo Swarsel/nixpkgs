@@ -16,9 +16,8 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-6lJ9acVo444RMxc3wUakBz4zT74oNUpwoP69rdf2mmE=";
   };
 
-  cargoHash = "sha256-BAUqH2RVpLLXvN43J67xqtrQZT3OgNA9ot+joOB70DY=";
-
   buildInputs = [ sqlite ];
+  cargoHash = "sha256-BAUqH2RVpLLXvN43J67xqtrQZT3OgNA9ot+joOB70DY=";
 
   meta = {
     description = "CLI read-only interface for Mozilla Firefox's bookmarks";

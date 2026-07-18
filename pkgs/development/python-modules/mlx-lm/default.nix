@@ -1,32 +1,27 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # build-system
-  setuptools,
-
+  # tests
+  aiohttp,
+  buildPythonPackage,
   # dependencies
   jinja2,
+  lm-eval,
   mlx,
   numpy,
   protobuf,
-  pyyaml,
-  transformers,
-
-  # tests
-  aiohttp,
-  lm-eval,
   pytestCheckHook,
+  pyyaml,
   sentencepiece,
+  # build-system
+  setuptools,
+  transformers,
   writableTmpDirAsHomeHook,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "mlx-lm";
   version = "0.31.3";
-  pyproject = true;
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "ml-explore";
@@ -34,22 +29,6 @@ buildPythonPackage (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-DPOJfsIucG8mWt4ZKenymCJo/i9Jw+a+iuIygIIYkA8=";
   };
-
-  build-system = [
-    setuptools
-  ];
-
-  pythonRelaxDeps = [
-    "transformers"
-  ];
-  dependencies = [
-    jinja2
-    mlx
-    numpy
-    protobuf
-    pyyaml
-    transformers
-  ];
 
   nativeCheckInputs = [
     aiohttp
@@ -59,7 +38,20 @@ buildPythonPackage (finalAttrs: {
     writableTmpDirAsHomeHook
   ];
 
-  pythonImportsCheck = [ "mlx_lm" ];
+  __structuredAttrs = true;
+
+  build-system = [
+    setuptools
+  ];
+
+  dependencies = [
+    jinja2
+    mlx
+    numpy
+    protobuf
+    pyyaml
+    transformers
+  ];
 
   disabledTestPaths = [
     # Requires network access to huggingface.co
@@ -78,6 +70,13 @@ buildPythonPackage (finalAttrs: {
     # TypeError: 'NoneType' object is not callable
     "tests/test_models.py::TestModels::test_gated_delta"
     "tests/test_models.py::TestModels::test_gated_delta_masked"
+  ];
+
+  pyproject = true;
+  pythonImportsCheck = [ "mlx_lm" ];
+
+  pythonRelaxDeps = [
+    "transformers"
   ];
 
   meta = {

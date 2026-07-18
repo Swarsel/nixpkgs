@@ -1,16 +1,15 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
   aiohttp,
   async-timeout,
+  buildPythonPackage,
   xmltodict,
 }:
 
 buildPythonPackage rec {
   pname = "pymetno";
   version = "0.13.0";
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "Danielhiversen";
@@ -25,10 +24,10 @@ buildPythonPackage rec {
     xmltodict
   ];
 
-  pythonImportsCheck = [ "metno" ];
-
   # Project has no tests
   doCheck = false;
+  format = "setuptools";
+  pythonImportsCheck = [ "metno" ];
 
   meta = {
     description = "Library to communicate with the met.no API";

@@ -25,10 +25,10 @@ buildGoModule (finalAttrs: {
   ];
 
   meta = {
-    homepage = "https://github.com/arsham/figurine";
     description = "Print your name in style";
-    mainProgram = "figurine";
+    homepage = "https://github.com/arsham/figurine";
     license = lib.licenses.asl20;
     maintainers = with lib.maintainers; [ ironicbadger ];
+    mainProgram = "figurine";
   };
 })

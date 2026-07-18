@@ -14,10 +14,6 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-mtQcFU70dpV3GiaHXVQVvO3LE5NSseIXXzhtIGsAOP0=";
   };
 
-  buildInputs = [ libx11 ];
-
-  buildFlags = [ "CC=${stdenv.cc.targetPrefix}cc" ]; # fix darwin and cross-compiled builds
-
   # Function are declared after they are used in the file, this is error since gcc-14.
   #   randnum.c:25:3: warning: implicit declaration of function 'srand' [-Wimplicit-function-declaration]
   #   randnum.c:33:7: warning: implicit declaration of function 'rand'; did you mean 'randnum'? [-Wimplicit-function-declaration]
@@ -33,6 +29,9 @@ stdenv.mkDerivation (finalAttrs: {
     sed -i '/INSTALLROOT/d' makefile
   '';
 
+  buildInputs = [ libx11 ];
+  buildFlags = [ "CC=${stdenv.cc.targetPrefix}cc" ]; # fix darwin and cross-compiled builds
+
   installPhase = ''
     runHook preInstall
 
@@ -42,10 +41,10 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   meta = {
-    homepage = "http://www.newbreedsoftware.com/icbm3d/";
     description = "3D vector-based clone of the atari game Missile Command";
-    mainProgram = "icbm3d";
+    homepage = "http://www.newbreedsoftware.com/icbm3d/";
     license = lib.licenses.gpl2Plus;
     platforms = lib.platforms.unix;
+    mainProgram = "icbm3d";
   };
 })

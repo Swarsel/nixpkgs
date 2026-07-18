@@ -2,8 +2,8 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  pkg-config,
   jansson,
+  pkg-config,
 }:
 
 let
@@ -15,8 +15,9 @@ let
   };
 in
 stdenv.mkDerivation (finalAttrs: {
-  version = "0.3.0";
   pname = "sailsd";
+  version = "0.3.0";
+
   src = fetchFromGitHub {
     owner = "sails-simulator";
     repo = "sailsd";
@@ -25,6 +26,7 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   nativeBuildInputs = [ pkg-config ];
+
   buildInputs = [
     jansson
     libsailing
@@ -32,25 +34,27 @@ stdenv.mkDerivation (finalAttrs: {
 
   env.INSTALL_PATH = "$(out)";
 
+  patchPhase = ''
+    substituteInPlace Makefile \
+      --replace gcc cc
+  '';
+
   postUnpack = ''
     rmdir $sourceRoot/libsailing
     cp -r ${libsailing} $sourceRoot/libsailing
     chmod 755 -R $sourceRoot/libsailing
   '';
 
-  patchPhase = ''
-    substituteInPlace Makefile \
-      --replace gcc cc
-  '';
-
   meta = {
     description = "Simulator daemon for autonomous sailing boats";
-    homepage = "https://github.com/sails-simulator/sailsd";
-    license = lib.licenses.gpl3;
+
     longDescription = ''
       Sails is a simulator designed to test the AI of autonomous sailing
       robots. It emulates the basic physics of sailing a small single sail
       boat'';
+
+    homepage = "https://github.com/sails-simulator/sailsd";
+    license = lib.licenses.gpl3;
     maintainers = with lib.maintainers; [ kragniz ];
     platforms = lib.platforms.all;
     mainProgram = "sailsd";

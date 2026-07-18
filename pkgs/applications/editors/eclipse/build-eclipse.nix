@@ -1,50 +1,41 @@
 {
   lib,
   stdenv,
-  makeDesktopItem,
-  freetype,
   fontconfig,
-  libx11,
-  libxrender,
-  zlib,
-  jdk,
+  freetype,
   glib,
   glib-networking,
-  gtk,
-  libxtst,
-  libsecret,
   gsettings-desktop-schemas,
-  webkitgtk_4_1,
+  gtk,
+  jdk,
+  libsecret,
+  libx11,
+  libxrender,
+  libxtst,
+  makeDesktopItem,
   makeWrapper,
   perl,
+  webkitgtk_4_1,
+  zlib,
   ...
 }:
 
 {
-  pname,
-  src ? builtins.getAttr stdenv.hostPlatform.system sources,
-  sources ? null,
   description,
+  pname,
   version,
+  sources ? null,
+  src ? builtins.getAttr stdenv.hostPlatform.system sources,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
   inherit pname version src;
 
-  desktopItem = makeDesktopItem {
-    name = "Eclipse";
-    exec = "eclipse";
-    icon = "eclipse";
-    comment = "Integrated Development Environment";
-    desktopName = "Eclipse IDE";
-    genericName = "Integrated Development Environment";
-    categories = [ "Development" ];
-  };
-
   nativeBuildInputs = [
     makeWrapper
     perl
   ];
+
   buildInputs = [
     fontconfig
     freetype
@@ -111,16 +102,27 @@ stdenv.mkDerivation (finalAttrs: {
     perl -i -p0e 's|-vm\nplugins/org.eclipse.justj.*/jre/bin.*\n||' $out/eclipse/eclipse.ini
   ''; # */
 
+  desktopItem = makeDesktopItem {
+    categories = [ "Development" ];
+    comment = "Integrated Development Environment";
+    desktopName = "Eclipse IDE";
+    exec = "eclipse";
+    genericName = "Integrated Development Environment";
+    icon = "eclipse";
+    name = "Eclipse";
+  };
+
   passthru.updateScript = ./update.sh;
 
   meta = {
-    homepage = "https://www.eclipse.org/";
     inherit description;
+    homepage = "https://www.eclipse.org/";
     sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
+    maintainers = [ lib.maintainers.jerith666 ];
+
     platforms = [
       "x86_64-linux"
       "aarch64-linux"
     ];
-    maintainers = [ lib.maintainers.jerith666 ];
   };
 })

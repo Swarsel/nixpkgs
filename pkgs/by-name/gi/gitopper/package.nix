@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   git,
   makeWrapper,
 }:
@@ -16,8 +16,6 @@ buildGoModule (finalAttrs: {
     rev = "v${finalAttrs.version}";
     hash = "sha256-y0gzoXSIQDQ6TMVsAijPaN0sRqFEtTKyd297YxXAukM=";
   };
-
-  ldflags = [ "-X main.Version=${finalAttrs.version}" ];
 
   vendorHash = "sha256-b9lLOGk0h0kaWuZb142V8ojfpstRhzC9q2kSu0q7r7I=";
 
@@ -41,12 +39,14 @@ buildGoModule (finalAttrs: {
       --suffix PATH : ${lib.makeBinPath [ git ]}
   '';
 
+  ldflags = [ "-X main.Version=${finalAttrs.version}" ];
+
   meta = {
     description = "Gitops for non-Kubernetes folks";
     homepage = "https://github.com/miekg/gitopper/";
     license = lib.licenses.asl20;
-    platforms = lib.platforms.linux;
     maintainers = with lib.maintainers; [ luftmensch-luftmensch ];
+    platforms = lib.platforms.linux;
     mainProgram = "gitopper";
   };
 })

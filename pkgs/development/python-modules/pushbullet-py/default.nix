@@ -1,25 +1,24 @@
 {
   lib,
   buildPythonPackage,
-  fetchPypi,
-  setuptools,
-  requests,
-  websocket-client,
-  python-magic,
   cryptography,
+  fetchPypi,
   pytestCheckHook,
+  python-magic,
   pythonAtLeast,
+  requests,
+  setuptools,
+  websocket-client,
 }:
 
 buildPythonPackage rec {
   pname = "pushbullet-py";
   version = "0.12.0";
-  pyproject = true;
 
   src = fetchPypi {
     inherit version;
-    pname = "pushbullet.py";
     sha256 = "917883e1af4a0c979ce46076b391e0243eb8fe0a81c086544bcfa10f53e5ae64";
+    pname = "pushbullet.py";
   };
 
   nativeBuildInputs = [ setuptools ];
@@ -31,11 +30,11 @@ buildPythonPackage rec {
     websocket-client
   ];
 
+  nativeCheckInputs = [ pytestCheckHook ];
+
   preCheck = ''
     export PUSHBULLET_API_KEY=""
   '';
-
-  nativeCheckInputs = [ pytestCheckHook ];
 
   disabledTests = [
     "test_auth_fail"
@@ -47,6 +46,8 @@ buildPythonPackage rec {
     "test_new_device_ok"
     "test_new_chat_ok"
   ];
+
+  pyproject = true;
 
   meta = {
     description = "Simple python client for pushbullet.com";

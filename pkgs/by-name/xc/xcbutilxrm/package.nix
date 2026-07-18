@@ -2,16 +2,16 @@
   lib,
   stdenv,
   fetchurl,
-  pkg-config,
-  m4,
+  libx11,
   libxcb,
   libxcb-util,
-  libx11,
+  m4,
+  pkg-config,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
-  version = "1.3";
   pname = "xcb-util-xrm";
+  version = "1.3";
 
   src = fetchurl {
     url = "https://github.com/Airblader/xcb-util-xrm/releases/download/v${finalAttrs.version}/xcb-util-xrm-${finalAttrs.version}.tar.bz2";
@@ -24,12 +24,14 @@ stdenv.mkDerivation (finalAttrs: {
     pkg-config
     m4
   ];
-  doCheck = true;
+
   buildInputs = [
     libxcb
     libxcb-util
     libx11
   ];
+
+  doCheck = true;
 
   meta = {
     description = "XCB utility functions for the X resource manager";

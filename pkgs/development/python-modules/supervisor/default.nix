@@ -15,14 +15,11 @@ let
 in
 buildPythonPackage {
   inherit pname version;
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
     hash = "sha256-SivxSa30KZfhu0S3DEO2EydeyYUsPtrMqGqRZrJ+lF4=";
   };
-
-  build-system = [ setuptools ];
 
   # wants to write to /tmp/foo which is likely already owned by another
   # nixbld user on hydra
@@ -33,6 +30,8 @@ buildPythonPackage {
     pytestCheckHook
   ];
 
+  build-system = [ setuptools ];
+  pyproject = true;
   pythonImportsCheck = [ "supervisor" ];
 
   meta = {

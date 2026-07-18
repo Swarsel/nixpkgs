@@ -1,19 +1,18 @@
 {
   lib,
-  pythonPackages,
   fetchPypi,
   mopidy,
+  pythonPackages,
 }:
 
 pythonPackages.buildPythonApplication (finalAttrs: {
   pname = "mopidy-bandcamp";
   version = "1.1.5";
-  pyproject = true;
 
   src = fetchPypi {
     inherit (finalAttrs) version;
-    pname = "Mopidy-Bandcamp";
     hash = "sha256-wg9zcOKfZQRhpyA1Cu5wvdwKpmrlcr2m9mrqBHgUXAQ=";
+    pname = "Mopidy-Bandcamp";
   };
 
   build-system = [
@@ -25,6 +24,7 @@ pythonPackages.buildPythonApplication (finalAttrs: {
     pythonPackages.pykka
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "mopidy_bandcamp" ];
 
   meta = {

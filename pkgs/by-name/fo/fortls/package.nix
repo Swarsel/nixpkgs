@@ -1,14 +1,13 @@
 {
   lib,
-  python3Packages,
   fetchFromGitHub,
+  python3Packages,
   versionCheckHook,
 }:
 
 python3Packages.buildPythonApplication (finalAttrs: {
   pname = "fortls";
   version = "3.2.2";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "fortran-lang";
@@ -17,13 +16,6 @@ python3Packages.buildPythonApplication (finalAttrs: {
     hash = "sha256-cUZBr+dtTFbd68z6ts4quIPp9XYMikUBrCq+icrZ1KU=";
   };
 
-  build-system = [ python3Packages.setuptools-scm ];
-
-  dependencies = with python3Packages; [
-    json5
-    packaging
-  ];
-
   nativeCheckInputs = with python3Packages; [
     pytest-cov-stub
     pytest-xdist
@@ -31,9 +23,11 @@ python3Packages.buildPythonApplication (finalAttrs: {
     versionCheckHook
   ];
 
-  disabledTests = [
-    "test_hover"
-    "test_version_update_pypi"
+  build-system = [ python3Packages.setuptools-scm ];
+
+  dependencies = with python3Packages; [
+    json5
+    packaging
   ];
 
   disabledTestPaths = [
@@ -50,11 +44,18 @@ python3Packages.buildPythonApplication (finalAttrs: {
     "test/test_server_signature_help.py"
   ];
 
+  disabledTests = [
+    "test_hover"
+    "test_version_update_pypi"
+  ];
+
+  pyproject = true;
+
   meta = {
     description = "Fortran Language Server";
-    mainProgram = "fortls";
     homepage = "https://github.com/fortran-lang/fortls";
     license = [ lib.licenses.mit ];
     maintainers = [ lib.maintainers.sheepforce ];
+    mainProgram = "fortls";
   };
 })

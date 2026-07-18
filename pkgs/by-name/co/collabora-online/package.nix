@@ -1,11 +1,12 @@
 {
+  lib,
+  stdenv,
+  fetchFromGitHub,
   autoreconfHook,
   cairo,
   cppunit,
-  fetchFromGitHub,
-  fetchpatch,
   fetchNpmDeps,
-  lib,
+  fetchpatch,
   libcap,
   libpng,
   libreoffice-collabora,
@@ -18,7 +19,6 @@
   poco,
   python3,
   rsync,
-  stdenv,
   zstd,
 }:
 
@@ -32,6 +32,17 @@ stdenv.mkDerivation (finalAttrs: {
     tag = "cp-${finalAttrs.version}";
     hash = "sha256-+9dGNNduWq4+jxlVd49PDllIyI7vfYmFlly/t70eNtg=";
   };
+
+  patches = [
+    ./fix-file-server-regex.patch
+  ];
+
+  postPatch = ''
+    cp ${./package-lock.json} ${finalAttrs.npmRoot}/package-lock.json
+
+    patchShebangs browser/util/*.py coolwsd-systemplate-setup scripts/*
+    substituteInPlace configure.ac --replace-fail '/usr/bin/env python3' python3
+  '';
 
   nativeBuildInputs = [
     autoreconfHook
@@ -56,8 +67,6 @@ stdenv.mkDerivation (finalAttrs: {
     zstd
   ];
 
-  enableParallelBuilding = true;
-
   configureFlags = [
     "--disable-setcap"
     "--disable-werror"
@@ -66,30 +75,22 @@ stdenv.mkDerivation (finalAttrs: {
     "--with-lokit-path=${libreoffice-collabora.src}/include"
   ];
 
-  patches = [
-    ./fix-file-server-regex.patch
-  ];
-
-  postPatch = ''
-    cp ${./package-lock.json} ${finalAttrs.npmRoot}/package-lock.json
-
-    patchShebangs browser/util/*.py coolwsd-systemplate-setup scripts/*
-    substituteInPlace configure.ac --replace-fail '/usr/bin/env python3' python3
-  '';
-
   # Copy dummy self-signed certificates provided for testing.
   postInstall = ''
     cp etc/ca-chain.cert.pem etc/cert.pem etc/key.pem $out/etc/coolwsd
   '';
 
+  enableParallelBuilding = true;
+
   npmDeps = fetchNpmDeps {
-    unpackPhase = "true";
     # TODO: Use upstream `npm-shrinkwrap.json` once it's fixed
     # https://github.com/CollaboraOnline/online/issues/9644
     postPatch = ''
       cp ${./package-lock.json} package-lock.json
     '';
+
     hash = "sha256-c78C5yt/RH4jmjZpaBskV+1u4wTTVJoWjFqq6eNUVOA=";
+    unpackPhase = "true";
   };
 
   npmRoot = "browser";
@@ -100,9 +101,9 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Collaborative online office suite based on LibreOffice technology";
+    homepage = "https://www.collaboraonline.com";
     license = lib.licenses.mpl20;
     maintainers = [ lib.maintainers.xzfc ];
-    homepage = "https://www.collaboraonline.com";
     platforms = lib.platforms.linux;
   };
 })

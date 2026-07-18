@@ -1,29 +1,24 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
+  buildPythonPackage,
   # build-system
   cysignals,
   cython,
-  setuptools,
-
-  # native dependencies
-  pkg-config,
   leptonica,
-  tesseract5,
-
   # dependencies
   pillow,
-
+  # native dependencies
+  pkg-config,
   # tests
   pytestCheckHook,
+  setuptools,
+  tesseract5,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "tesserocr";
   version = "2.10.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "sirfz";
@@ -39,12 +34,6 @@ buildPythonPackage (finalAttrs: {
         "Cython"
   '';
 
-  build-system = [
-    cysignals
-    cython
-    setuptools
-  ];
-
   nativeBuildInputs = [
     pkg-config
   ];
@@ -54,13 +43,6 @@ buildPythonPackage (finalAttrs: {
     tesseract5
   ];
 
-  dependencies = [
-    cysignals # also needed at runtime
-    pillow
-  ];
-
-  pythonImportsCheck = [ "tesserocr" ];
-
   nativeCheckInputs = [
     pytestCheckHook
   ];
@@ -69,10 +51,24 @@ buildPythonPackage (finalAttrs: {
     rm -rf tesserocr
   '';
 
+  build-system = [
+    cysignals
+    cython
+    setuptools
+  ];
+
+  dependencies = [
+    cysignals # also needed at runtime
+    pillow
+  ];
+
   disabledTests = [
     # AssertionError: '.bl' != '.tif'
     "test_init_full"
   ];
+
+  pyproject = true;
+  pythonImportsCheck = [ "tesserocr" ];
 
   meta = {
     description = "Simple, Pillow-friendly, wrapper around the tesseract-ocr API for Optical Character Recognition (OCR)";

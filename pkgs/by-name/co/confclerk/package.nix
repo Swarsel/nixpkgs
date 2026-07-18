@@ -14,12 +14,12 @@ stdenv.mkDerivation rec {
     sha256 = "sha256-GgWvPHcQnQrK9SOC8U9F2P8kuPCn8I2EhoWEEMtKBww=";
   };
 
-  buildInputs = [ libsForQt5.qtbase ];
-
   nativeBuildInputs = [
     libsForQt5.qmake
     libsForQt5.wrapQtAppsHook
   ];
+
+  buildInputs = [ libsForQt5.qtbase ];
 
   postInstall = ''
     mkdir -p $out/bin
@@ -28,9 +28,9 @@ stdenv.mkDerivation rec {
 
   meta = {
     description = "Offline conference schedule viewer";
-    mainProgram = "confclerk";
     homepage = "http://www.toastfreeware.priv.at/confclerk";
     license = lib.licenses.gpl2;
     platforms = lib.platforms.linux;
+    mainProgram = "confclerk";
   };
 }

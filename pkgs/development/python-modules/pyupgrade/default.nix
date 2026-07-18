@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   pytestCheckHook,
   setuptools,
   tokenize-rt,
@@ -10,7 +10,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "pyupgrade";
   version = "3.21.2";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "asottile";
@@ -19,19 +18,17 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-u4iudzPhVuAOS9cL3z6FCVpWKJZHg7UGpe9aHnN7Byc=";
   };
 
-  build-system = [ setuptools ];
-
-  dependencies = [ tokenize-rt ];
-
   nativeCheckInputs = [ pytestCheckHook ];
-
+  build-system = [ setuptools ];
+  dependencies = [ tokenize-rt ];
+  pyproject = true;
   pythonImportsCheck = [ "pyupgrade" ];
 
   meta = {
     description = "Tool to automatically upgrade syntax for newer versions of the language";
-    mainProgram = "pyupgrade";
     homepage = "https://github.com/asottile/pyupgrade";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ lovesegfault ];
+    mainProgram = "pyupgrade";
   };
 })

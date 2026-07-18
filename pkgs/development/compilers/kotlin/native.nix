@@ -26,9 +26,9 @@ stdenv.mkDerivation rec {
       getHash =
         arch:
         {
+          "linux-x86_64" = "sha256-oTW6qe+SklxcKu8gwc8DZzTKj+L65duYYXO+uWp6gfg=";
           "macos-aarch64" = "sha256-UnDl9wj/7RXrEaApuAaLczIfz0lscQPf+pCeSdJxJeY=";
           "macos-x86_64" = "sha256-mmsBQrx0yKqvvhnD8CU+oxqhWsOT1RzvzSniN3CeG7g=";
-          "linux-x86_64" = "sha256-oTW6qe+SklxcKu8gwc8DZzTKj+L65duYYXO+uWp6gfg=";
         }
         .${arch};
     in
@@ -56,16 +56,18 @@ stdenv.mkDerivation rec {
   '';
 
   meta = {
-    homepage = "https://kotlinlang.org/";
     description = "Modern programming language that makes developers happier";
+
     longDescription = ''
       Kotlin/Native is a technology for compiling Kotlin code to native
       binaries, which can run without a virtual machine. It is an LLVM based
       backend for the Kotlin compiler and native implementation of the Kotlin
       standard library.
     '';
-    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
+
+    homepage = "https://kotlinlang.org/";
     license = lib.licenses.asl20;
+    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
     maintainers = with lib.maintainers; [ fabianhjr ];
     platforms = [ "x86_64-linux" ] ++ lib.platforms.darwin;
   };

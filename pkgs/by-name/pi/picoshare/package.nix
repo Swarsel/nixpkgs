@@ -1,9 +1,9 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
-  nix-update-script,
+  buildGoModule,
   litestream,
+  nix-update-script,
   litestreamSupport ? false,
 }:
 
@@ -18,6 +18,7 @@ buildGoModule (finalAttrs: {
     hash = "sha256-iKLO0m9zPYGQB3aJxyYCs9sHSheihnKn8QWec4D+a4g=";
   };
 
+  buildInputs = lib.optional litestreamSupport litestream;
   vendorHash = "sha256-X2vrEhgEnKKNXRyLCtT+wBbunFHgkcyWZh6DMpQieQ0=";
 
   ldflags = [
@@ -27,8 +28,6 @@ buildGoModule (finalAttrs: {
     "-X github.com/mtlynch/picoshare/v2/build.Version=${finalAttrs.version}"
   ];
 
-  buildInputs = lib.optional litestreamSupport litestream;
-
   passthru = {
     updateScript = nix-update-script { };
   };
@@ -37,10 +36,12 @@ buildGoModule (finalAttrs: {
     description = "Minimalist, easy-to-host service for sharing images and other files";
     homepage = "https://github.com/mtlynch/picoshare";
     license = lib.licenses.agpl3Only;
-    platforms = lib.platforms.linux ++ lib.platforms.darwin;
-    mainProgram = "picoshare";
+
     maintainers = with lib.maintainers; [
       blokyk
     ];
+
+    platforms = lib.platforms.linux ++ lib.platforms.darwin;
+    mainProgram = "picoshare";
   };
 })

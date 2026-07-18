@@ -1,9 +1,9 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
-  testers,
+  buildGoModule,
   devspace,
+  testers,
 }:
 
 buildGoModule (finalAttrs: {
@@ -18,16 +18,15 @@ buildGoModule (finalAttrs: {
   };
 
   vendorHash = null;
+  # Check are disable since they required a working K8S cluster
+  # TODO: add a nixosTest to be able to perform the package check
+  doCheck = false;
 
   ldflags = [
     "-s"
     "-w"
     "-X main.version=${finalAttrs.version}"
   ];
-
-  # Check are disable since they required a working K8S cluster
-  # TODO: add a nixosTest to be able to perform the package check
-  doCheck = false;
 
   passthru.tests.version = testers.testVersion {
     package = devspace;

@@ -13,50 +13,30 @@ let
   } cfg.settings "/run/immich-kiosk/config.yaml";
 in
 {
-  meta.maintainers = with lib.maintainers; [ tlvince ];
-
   options.services.immich-kiosk = {
     enable = lib.mkEnableOption "Immich Kiosk slideshow service";
-
     package = lib.mkPackageOption pkgs "immich-kiosk" { };
 
     openFirewall = lib.mkOption {
-      type = lib.types.bool;
       default = false;
+
       description = ''
         Whether to open the firewall for the immich-kiosk port.
       '';
+
+      type = lib.types.bool;
     };
 
     settings = lib.mkOption {
-      type = lib.types.submodule {
-        freeformType = format.type;
-        options = {
-          immich_url = lib.mkOption {
-            type = lib.types.str;
-            default = config.services.immich.settings.server.externalDomain;
-            defaultText = lib.literalExpression "config.services.immich.settings.server.externalDomain";
-            description = ''
-              URL of the immich instance.
-            '';
-          };
-
-          kiosk.port = lib.mkOption {
-            type = lib.types.port;
-            default = 3000;
-            description = ''
-              Port on which immich-kiosk will listen.
-            '';
-          };
-        };
-      };
       default = { };
+
       description = ''
         Configuration for immich-kiosk. See
         <https://docs.immichkiosk.app/configuration/>
         for available options. Secret values can be loaded from files using
         `._secret = "/path/to/secret";`.
       '';
+
       example = lib.literalExpression ''
         {
           immich_url = "https://immich.example.com";
@@ -70,33 +50,51 @@ in
           disable_ui = true;
         }
       '';
+
+      type = lib.types.submodule {
+        options = {
+          immich_url = lib.mkOption {
+            default = config.services.immich.settings.server.externalDomain;
+            defaultText = lib.literalExpression "config.services.immich.settings.server.externalDomain";
+
+            description = ''
+              URL of the immich instance.
+            '';
+
+            type = lib.types.str;
+          };
+
+          kiosk.port = lib.mkOption {
+            default = 3000;
+
+            description = ''
+              Port on which immich-kiosk will listen.
+            '';
+
+            type = lib.types.port;
+          };
+        };
+
+        freeformType = format.type;
+      };
     };
   };
 
   config = lib.mkIf cfg.enable {
-    systemd.services.immich-kiosk = {
-      description = "Immich Kiosk slideshow service";
-      after = [ "immich-server.service" ];
-      wantedBy = [ "multi-user.target" ];
+    networking.firewall.allowedTCPPorts = lib.mkIf cfg.openFirewall [ cfg.settings.kiosk.port ];
 
+    systemd.services.immich-kiosk = {
+      after = [ "immich-server.service" ];
+      description = "Immich Kiosk slideshow service";
       preStart = secretsReplacement.script;
 
       serviceConfig = {
+        # Hardening
+        CapabilityBoundingSet = [ "" ];
         DynamicUser = true;
         ExecStart = lib.getExe cfg.package;
         Group = "immich-kiosk";
         LoadCredential = secretsReplacement.credentials;
-        Restart = "on-failure";
-        RestartSec = 10;
-        RuntimeDirectory = "immich-kiosk";
-        RuntimeDirectoryMode = "0700";
-        SyslogIdentifier = "immich-kiosk";
-        Type = "simple";
-        User = "immich-kiosk";
-        WorkingDirectory = "/run/immich-kiosk";
-
-        # Hardening
-        CapabilityBoundingSet = [ "" ];
         LockPersonality = true;
         NoNewPrivileges = true;
         PrivateDevices = true;
@@ -110,23 +108,37 @@ in
         ProtectKernelModules = true;
         ProtectKernelTunables = true;
         ProtectProc = "invisible";
+        Restart = "on-failure";
+        RestartSec = 10;
+
         RestrictAddressFamilies = [
           "AF_INET"
           "AF_INET6"
         ];
+
         RestrictNamespaces = true;
         RestrictRealtime = true;
         RestrictSUIDSGID = true;
+        RuntimeDirectory = "immich-kiosk";
+        RuntimeDirectoryMode = "0700";
+        SyslogIdentifier = "immich-kiosk";
         SystemCallArchitectures = "native";
+
         SystemCallFilter = [
           "@system-service"
           "~@privileged"
           "~@resources"
         ];
-        UMask = "0077";
-      };
-    };
 
-    networking.firewall.allowedTCPPorts = lib.mkIf cfg.openFirewall [ cfg.settings.kiosk.port ];
+        Type = "simple";
+        UMask = "0077";
+        User = "immich-kiosk";
+        WorkingDirectory = "/run/immich-kiosk";
+      };
+
+      wantedBy = [ "multi-user.target" ];
+    };
   };
+
+  meta.maintainers = with lib.maintainers; [ tlvince ];
 }

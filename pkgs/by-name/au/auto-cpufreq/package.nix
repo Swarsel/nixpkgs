@@ -1,20 +1,19 @@
 {
   lib,
-  python3Packages,
   fetchFromGitHub,
-  replaceVars,
-  gobject-introspection,
-  wrapGAppsHook3,
   gawk,
-  gtk3,
   getent,
+  gobject-introspection,
+  gtk3,
   nixosTests,
+  python3Packages,
+  replaceVars,
+  wrapGAppsHook3,
 }:
 
 python3Packages.buildPythonPackage rec {
   pname = "auto-cpufreq";
   version = "3.0.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "AdnanHodzic";
@@ -47,26 +46,6 @@ python3Packages.buildPythonPackage rec {
     substituteInPlace auto_cpufreq/gui/app.py \
       --replace-fail "/usr/local/share/auto-cpufreq/scripts/style.css" "$out/share/auto-cpufreq/scripts/style.css"
   '';
-
-  build-system = with python3Packages; [
-    poetry-core
-    poetry-dynamic-versioning
-  ];
-
-  dependencies = with python3Packages; [
-    click
-    distro
-    psutil
-    pygobject3
-    poetry-dynamic-versioning
-    setuptools
-    pyinotify
-    urwid
-    pyasyncore
-    requests
-  ];
-
-  pythonRelaxDeps = [ "urwid" ];
 
   nativeBuildInputs = [
     gobject-introspection
@@ -103,24 +82,43 @@ python3Packages.buildPythonPackage rec {
       install -Dm 0644 scripts/org.auto-cpufreq.pkexec.policy -t $out/share/polkit-1/actions
     '';
 
-  dontWrapGApps = true;
-
   preFixup = ''
     makeWrapperArgs+=("''${gappsWrapperArgs[@]}")
   '';
 
+  build-system = with python3Packages; [
+    poetry-core
+    poetry-dynamic-versioning
+  ];
+
+  dependencies = with python3Packages; [
+    click
+    distro
+    psutil
+    pygobject3
+    poetry-dynamic-versioning
+    setuptools
+    pyinotify
+    urwid
+    pyasyncore
+    requests
+  ];
+
+  dontWrapGApps = true;
+  pyproject = true;
   pythonImportsCheck = [ "auto_cpufreq" ];
+  pythonRelaxDeps = [ "urwid" ];
 
   passthru.tests = {
     inherit (nixosTests) auto-cpufreq;
   };
 
   meta = {
-    mainProgram = "auto-cpufreq";
-    homepage = "https://github.com/AdnanHodzic/auto-cpufreq";
     description = "Automatic CPU speed & power optimizer for Linux";
+    homepage = "https://github.com/AdnanHodzic/auto-cpufreq";
     license = lib.licenses.lgpl3Plus;
-    platforms = lib.platforms.linux;
     maintainers = with lib.maintainers; [ sarcasticadmin ];
+    platforms = lib.platforms.linux;
+    mainProgram = "auto-cpufreq";
   };
 }

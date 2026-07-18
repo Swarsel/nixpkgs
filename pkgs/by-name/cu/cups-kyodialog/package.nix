@@ -1,16 +1,15 @@
 {
   lib,
   stdenv,
-  fetchzip,
-  cups,
   autoPatchelfHook,
+  cups,
+  fetchzip,
   python3Packages,
-
+  qt5,
   # Sets the default paper format: use "EU" for A4, or "Global" for Letter
   region ? "EU",
   # optional GUI, quite redundant to CUPS admin web GUI
   withQtGui ? false,
-  qt5,
 }:
 
 # Open issues:
@@ -31,9 +30,17 @@ stdenv.mkDerivation rec {
   pname = "cups-kyodialog";
   version = "${kyodialog_version}-${date}";
 
-  dontStrip = true;
-
   src = fetchzip {
+    hash = "sha256-H9n4KpaLGNk5du4+BAmMjRyLmXaHap8HdNZlX/Kia4E=";
+    extension = "tar.gz";
+
+    postFetch = ''
+      # delete redundant Linux package dirs to reduce size in the Nix store; only keep Debian
+      rm -r $out/{CentOS,Fedora,OpenSUSE,Redhat,Ubuntu}
+    '';
+
+    stripRoot = false;
+
     # Steps to find the release download URL:
     # 1. Go to https://www.kyoceradocumentsolutions.us/en/support/downloads.html
     # 2. Search for printer model, e.g. "TASKalfa 6053ci"
@@ -42,30 +49,7 @@ stdenv.mkDerivation rec {
       "https://www.kyoceradocumentsolutions.us/content/download-center-americas/us/drivers/drivers/KyoceraLinuxPackages_${date}_tar_gz.download.gz"
       "https://web.archive.org/web/20260107200228/https://www.kyoceradocumentsolutions.us/content/download-center-americas/us/drivers/drivers/KyoceraLinuxPackages_${date}_tar_gz.download.gz"
     ];
-    hash = "sha256-H9n4KpaLGNk5du4+BAmMjRyLmXaHap8HdNZlX/Kia4E=";
-    extension = "tar.gz";
-    stripRoot = false;
-    postFetch = ''
-      # delete redundant Linux package dirs to reduce size in the Nix store; only keep Debian
-      rm -r $out/{CentOS,Fedora,OpenSUSE,Redhat,Ubuntu}
-    '';
   };
-
-  sourceRoot = ".";
-
-  unpackCmd =
-    let
-      platforms = {
-        x86_64-linux = "amd64";
-        i686-linux = "i386";
-      };
-      platform =
-        platforms.${stdenv.hostPlatform.system}
-          or (throw "unsupported system: ${stdenv.hostPlatform.system}");
-    in
-    ''
-      ar p "$src/Debian/${region}/kyodialog_${platform}/kyodialog_${kyodialog_version}-0_${platform}.deb" data.tar.gz | tar -xz
-    '';
 
   nativeBuildInputs = [
     autoPatchelfHook
@@ -112,12 +96,30 @@ stdenv.mkDerivation rec {
       --replace Icon=/usr/share/kyocera/appicon_H.png Icon=$out/share/${pname}/icons/appicon_H.png
   '';
 
+  dontStrip = true;
+  sourceRoot = ".";
+
+  unpackCmd =
+    let
+      platforms = {
+        i686-linux = "i386";
+        x86_64-linux = "amd64";
+      };
+      platform =
+        platforms.${stdenv.hostPlatform.system}
+          or (throw "unsupported system: ${stdenv.hostPlatform.system}");
+    in
+    ''
+      ar p "$src/Debian/${region}/kyodialog_${platform}/kyodialog_${kyodialog_version}-0_${platform}.deb" data.tar.gz | tar -xz
+    '';
+
   meta = {
     description = "CUPS drivers for several Kyocera printers";
     homepage = "https://www.kyoceradocumentsolutions.com";
-    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
     license = lib.licenses.unfree;
+    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
     maintainers = [ lib.maintainers.steveej ];
+
     platforms = [
       "i686-linux"
       "x86_64-linux"

@@ -1,7 +1,7 @@
 {
-  capnproto,
   lib,
   fetchFromGitHub,
+  capnproto,
   protobuf,
   rustPlatform,
 }:
@@ -21,15 +21,15 @@ rustPlatform.buildRustPackage (finalAttrs: {
     capnproto
     protobuf
   ];
-  doCheck = false;
 
   cargoHash = "sha256-8GtwbX+FOE+upKJbQFGv+RJDZHPNMcA5SUTPK6qgrIs=";
+  doCheck = false;
 
   meta = {
     description = "OCI container runtime monitor written in Rust";
     homepage = "https://github.com/containers/conmon-rs";
     license = lib.licenses.asl20;
-    teams = [ lib.teams.podman ];
     platforms = lib.platforms.linux;
+    teams = [ lib.teams.podman ];
   };
 })

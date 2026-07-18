@@ -61,72 +61,90 @@ in
   options = {
     programs.zsh.ohMyZsh = {
       enable = lib.mkOption {
-        type = lib.types.bool;
         default = false;
+
         description = ''
           Enable oh-my-zsh.
         '';
+
+        type = lib.types.bool;
       };
 
       package = lib.mkPackageOption pkgs "oh-my-zsh" { };
 
-      plugins = lib.mkOption {
-        default = [ ];
-        type = lib.types.listOf (lib.types.str);
-        description = ''
-          List of oh-my-zsh plugins
-        '';
-      };
-
-      custom = lib.mkOption {
-        default = null;
-        type = with lib.types; nullOr str;
-        description = ''
-          Path to a custom oh-my-zsh package to override config of oh-my-zsh.
-          (Can't be used along with `customPkgs`).
-        '';
-      };
-
-      customPkgs = lib.mkOption {
-        default = [ ];
-        type = lib.types.listOf lib.types.package;
-        description = ''
-          List of custom packages that should be loaded into `oh-my-zsh`.
-        '';
-      };
-
-      theme = lib.mkOption {
-        default = "";
-        type = lib.types.str;
-        description = ''
-          Name of the theme to be used by oh-my-zsh.
-        '';
-      };
-
       cacheDir = lib.mkOption {
         default = "$HOME/.cache/oh-my-zsh";
-        type = lib.types.str;
+
         description = ''
           Cache directory to be used by `oh-my-zsh`.
           Without this option it would default to the read-only nix store.
         '';
+
+        type = lib.types.str;
+      };
+
+      custom = lib.mkOption {
+        default = null;
+
+        description = ''
+          Path to a custom oh-my-zsh package to override config of oh-my-zsh.
+          (Can't be used along with `customPkgs`).
+        '';
+
+        type = with lib.types; nullOr str;
+      };
+
+      customPkgs = lib.mkOption {
+        default = [ ];
+
+        description = ''
+          List of custom packages that should be loaded into `oh-my-zsh`.
+        '';
+
+        type = lib.types.listOf lib.types.package;
+      };
+
+      plugins = lib.mkOption {
+        default = [ ];
+
+        description = ''
+          List of oh-my-zsh plugins
+        '';
+
+        type = lib.types.listOf (lib.types.str);
       };
 
       preLoaded = lib.mkOption {
-        type = lib.types.lines;
         default = "";
+
         description = ''
           Shell commands executed before the `oh-my-zsh` is loaded.
           For example, to disable async git prompt write `zstyle ':omz:alpha:lib:git' async-prompt no` (more information <https://github.com/ohmyzsh/ohmyzsh?tab=readme-ov-file#async-git-prompt>)
         '';
+
+        type = lib.types.lines;
+      };
+
+      theme = lib.mkOption {
+        default = "";
+
+        description = ''
+          Name of the theme to be used by oh-my-zsh.
+        '';
+
+        type = lib.types.str;
       };
     };
   };
 
   config = lib.mkIf cfg.enable {
 
-    # Prevent zsh from overwriting oh-my-zsh's prompt
-    programs.zsh.promptInit = lib.mkDefault "";
+    assertions = [
+      {
+        assertion = cfg.custom != null -> cfg.customPkgs == [ ];
+        message = "If `cfg.custom` is set for `ZSH_CUSTOM`, `customPkgs` can't be used!";
+      }
+    ];
 
     environment.systemPackages = [ cfg.package ];
 
@@ -153,12 +171,8 @@ in
       source $ZSH/oh-my-zsh.sh
     '';
 
-    assertions = [
-      {
-        assertion = cfg.custom != null -> cfg.customPkgs == [ ];
-        message = "If `cfg.custom` is set for `ZSH_CUSTOM`, `customPkgs` can't be used!";
-      }
-    ];
+    # Prevent zsh from overwriting oh-my-zsh's prompt
+    programs.zsh.promptInit = lib.mkDefault "";
 
   };
 

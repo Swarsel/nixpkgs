@@ -5,7 +5,6 @@
   type ? "x64",
 }:
 mkLibretroCore {
-  core = "vice-${type}";
   version = "0-unstable-2026-06-03";
 
   src = fetchFromGitHub {
@@ -15,11 +14,12 @@ mkLibretroCore {
     hash = "sha256-tsOACtp58eXar5y3unuz46sVkQ/ZTSF9go9G56iNyxo=";
   };
 
-  makefile = "Makefile";
-
   env = {
     EMUTYPE = "${type}";
   };
+
+  core = "vice-${type}";
+  makefile = "Makefile";
 
   meta = {
     description = "Port of vice to libretro";

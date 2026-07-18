@@ -1,22 +1,16 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  pillow,
+  buildPythonPackage,
   numpy,
+  pillow,
 }:
 let
   version = "0.2.1";
 in
 buildPythonPackage {
-  pname = "pyphotonfile";
-  format = "setuptools";
   inherit version;
-
-  propagatedBuildInputs = [
-    pillow
-    numpy
-  ];
+  pname = "pyphotonfile";
 
   src = fetchFromGitHub {
     owner = "cab404";
@@ -25,10 +19,17 @@ buildPythonPackage {
     sha256 = "sha256-iB5ky4fPX8ZnvXlDpggqS/345k2x/mPC4cIgb9M0f/c=";
   };
 
+  propagatedBuildInputs = [
+    pillow
+    numpy
+  ];
+
+  format = "setuptools";
+
   meta = {
-    maintainers = [ lib.maintainers.cab404 ];
-    license = lib.licenses.gpl3Plus;
     description = "Library for reading and writing files for the Anycubic Photon 3D-Printer";
     homepage = "https://github.com/cab404/pyphotonfile";
+    license = lib.licenses.gpl3Plus;
+    maintainers = [ lib.maintainers.cab404 ];
   };
 }

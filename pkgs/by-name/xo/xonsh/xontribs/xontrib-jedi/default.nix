@@ -1,20 +1,18 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  poetry-core,
+  buildPythonPackage,
   jedi,
-  writableTmpDirAsHomeHook,
-  pytestCheckHook,
-  xonsh,
   nix-update-script,
+  poetry-core,
+  pytestCheckHook,
+  writableTmpDirAsHomeHook,
+  xonsh,
 }:
 
 buildPythonPackage rec {
   pname = "xontrib-jedi";
   version = "0.1.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "xonsh";
@@ -23,9 +21,15 @@ buildPythonPackage rec {
     hash = "sha256-T4Yxr91emM2mjclQOjQsnnPO/JijAGNcqmZjxrz72Bs=";
   };
 
-  prePatch = ''
-    substituteInPlace pyproject.toml \
-      --replace-fail 'xonsh = ">=0.17"' ""
+  nativeCheckInputs = [
+    writableTmpDirAsHomeHook
+    pytestCheckHook
+    xonsh
+  ];
+
+  preCheck = ''
+    substituteInPlace tests/test_jedi.py \
+      --replace-fail "/usr/bin" "${jedi}/bin"
   '';
 
   build-system = [
@@ -36,17 +40,12 @@ buildPythonPackage rec {
     jedi
   ];
 
-  preCheck = ''
-    substituteInPlace tests/test_jedi.py \
-      --replace-fail "/usr/bin" "${jedi}/bin"
+  prePatch = ''
+    substituteInPlace pyproject.toml \
+      --replace-fail 'xonsh = ">=0.17"' ""
   '';
 
-  nativeCheckInputs = [
-    writableTmpDirAsHomeHook
-    pytestCheckHook
-    xonsh
-  ];
-
+  pyproject = true;
   passthru.updateScript = nix-update-script { };
 
   meta = {

@@ -1,8 +1,8 @@
 {
   lib,
+  fetchFromGitHub,
   buildPythonPackage,
   cython,
-  fetchFromGitHub,
   pytest-cov-stub,
   pytestCheckHook,
   setuptools,
@@ -11,14 +11,13 @@
 buildPythonPackage rec {
   pname = "pglast";
   version = "7.13";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "lelit";
     repo = "pglast";
     tag = "v${version}";
-    fetchSubmodules = true;
     hash = "sha256-q5QiP8UPQQnG2Ehgj9hngXnhCKvZyCy8mKA0rzWM7EY=";
+    fetchSubmodules = true;
   };
 
   postPatch = ''
@@ -26,11 +25,6 @@ buildPythonPackage rec {
       --replace-fail cython==3.2.3 cython \
       --replace-fail setuptools==80.9.0 setuptools
   '';
-
-  build-system = [
-    cython
-    setuptools
-  ];
 
   nativeCheckInputs = [
     pytestCheckHook
@@ -41,6 +35,13 @@ buildPythonPackage rec {
     # import from $out
     rm -r pglast
   '';
+
+  build-system = [
+    cython
+    setuptools
+  ];
+
+  pyproject = true;
 
   pythonImportsCheck = [
     "pglast"

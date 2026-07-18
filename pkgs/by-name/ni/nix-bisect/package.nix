@@ -7,7 +7,6 @@
 python3.pkgs.buildPythonApplication {
   pname = "nix-bisect";
   version = "0.4.1-unstable-2024-04-19";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "timokau";
@@ -16,6 +15,7 @@ python3.pkgs.buildPythonApplication {
     hash = "sha256-zyeE1jYo/9NEG8fB4gQBAR01siP4tyLvjjHN1yUS4Ug=";
   };
 
+  doCheck = false;
   build-system = with python3.pkgs; [ setuptools ];
 
   dependencies = with python3.pkgs; [
@@ -24,8 +24,7 @@ python3.pkgs.buildPythonApplication {
     pexpect
   ];
 
-  doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "nix_bisect" ];
 
   meta = {

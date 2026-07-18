@@ -1,11 +1,11 @@
 {
   lib,
   stdenv,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   installShellFiles,
-  versionCheckHook,
   nix-update-script,
+  versionCheckHook,
 }:
 
 buildGoModule (finalAttrs: {
@@ -19,18 +19,10 @@ buildGoModule (finalAttrs: {
     hash = "sha256-aiObEOw+osGRzvkSwo/aWbby8eb/jPiruxcGehafUvw=";
   };
 
-  vendorHash = "sha256-aQ0My2re9rCoU6EZ0VSyHYT1TMZEMAwnhmcqGBd95ks=";
-
   nativeBuildInputs = [ installShellFiles ];
-
+  vendorHash = "sha256-aQ0My2re9rCoU6EZ0VSyHYT1TMZEMAwnhmcqGBd95ks=";
   # Tests require git and are integration tests
   doCheck = false;
-
-  ldflags = [
-    "-s"
-    "-w"
-    "-X main.version=${finalAttrs.version}"
-  ];
 
   postInstall = ''
     install -Dm444 shell/functions.{bash,fish,zsh} -t $out/share/lazyworktree
@@ -46,6 +38,12 @@ buildGoModule (finalAttrs: {
   doInstallCheck = true;
   nativeInstallCheckInputs = [ versionCheckHook ];
 
+  ldflags = [
+    "-s"
+    "-w"
+    "-X main.version=${finalAttrs.version}"
+  ];
+
   passthru.updateScript = nix-update-script { };
 
   meta = {
@@ -53,10 +51,12 @@ buildGoModule (finalAttrs: {
     homepage = "https://github.com/chmouel/lazyworktree";
     changelog = "https://github.com/chmouel/lazyworktree/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.asl20;
+
     maintainers = with lib.maintainers; [
       chmouel
       vdemeester
     ];
+
     mainProgram = "lazyworktree";
   };
 })

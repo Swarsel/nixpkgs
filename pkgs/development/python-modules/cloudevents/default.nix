@@ -1,22 +1,21 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  pythonAtLeast,
-  setuptools,
+  buildPythonPackage,
   deprecation,
   flask,
   pydantic,
   pytestCheckHook,
+  pythonAtLeast,
   requests,
   sanic,
   sanic-testing,
+  setuptools,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "cloudevents";
   version = "1.12.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "cloudevents";
@@ -24,12 +23,6 @@ buildPythonPackage (finalAttrs: {
     tag = finalAttrs.version;
     hash = "sha256-0WdCBwYz3XJWjUP0gf+IWdF4ZgPHFvUZFoQp9taqNz8=";
   };
-
-  build-system = [ setuptools ];
-
-  dependencies = [ deprecation ];
-
-  pythonImportsCheck = [ "cloudevents" ];
 
   nativeCheckInputs = [
     flask
@@ -39,6 +32,10 @@ buildPythonPackage (finalAttrs: {
     sanic
     sanic-testing
   ];
+
+  __darwinAllowLocalNetworking = true;
+  build-system = [ setuptools ];
+  dependencies = [ deprecation ];
 
   disabledTestPaths = [
     "samples/http-image-cloudevents/image_sample_test.py"
@@ -50,7 +47,8 @@ buildPythonPackage (finalAttrs: {
     "cloudevents/tests/test_pydantic_events.py"
   ];
 
-  __darwinAllowLocalNetworking = true;
+  pyproject = true;
+  pythonImportsCheck = [ "cloudevents" ];
 
   meta = {
     description = "Python SDK for CloudEvents";

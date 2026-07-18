@@ -2,29 +2,29 @@
   lib,
   stdenv,
   fetchFromGitHub,
+  alsa-lib,
+  faad2,
+  ffmpeg,
   flac,
   libgpiod,
   libmad,
   libpulseaudio,
   libvorbis,
   mpg123,
-  audioBackend ? if stdenv.hostPlatform.isLinux then "alsa" else "portaudio",
-  alsaSupport ? stdenv.hostPlatform.isLinux,
-  alsa-lib,
-  dsdSupport ? true,
-  faad2Support ? true,
-  faad2,
-  ffmpegSupport ? true,
-  ffmpeg,
-  opusSupport ? true,
-  opusfile,
-  resampleSupport ? true,
-  soxr,
-  sslSupport ? true,
   openssl,
-  portaudioSupport ? stdenv.hostPlatform.isDarwin,
+  opusfile,
   portaudio,
   slimserver,
+  soxr,
+  alsaSupport ? stdenv.hostPlatform.isLinux,
+  audioBackend ? if stdenv.hostPlatform.isLinux then "alsa" else "portaudio",
+  dsdSupport ? true,
+  faad2Support ? true,
+  ffmpegSupport ? true,
+  opusSupport ? true,
+  portaudioSupport ? stdenv.hostPlatform.isDarwin,
+  resampleSupport ? true,
+  sslSupport ? true,
 }:
 
 let
@@ -48,6 +48,11 @@ stdenv.mkDerivation {
     hash = "sha256-mKMlm6oQdrECckBJ7Et6pehimAWd1z07BQsu1njKA50=";
   };
 
+  postPatch = ''
+    substituteInPlace opus.c \
+      --replace "<opusfile.h>" "<opus/opusfile.h>"
+  '';
+
   buildInputs = [
     flac
     libmad
@@ -64,13 +69,6 @@ stdenv.mkDerivation {
   ++ optional resampleSupport soxr
   ++ optional sslSupport openssl
   ++ optional (stdenv.hostPlatform.isAarch32 or stdenv.hostPlatform.isAarch64) libgpiod;
-
-  enableParallelBuilding = true;
-
-  postPatch = ''
-    substituteInPlace opus.c \
-      --replace "<opusfile.h>" "<opus/opusfile.h>"
-  '';
 
   env = {
     EXECUTABLE = binName;
@@ -107,6 +105,8 @@ stdenv.mkDerivation {
     runHook postInstall
   '';
 
+  enableParallelBuilding = true;
+
   passthru = {
     inherit (slimserver) tests;
     updateScript = ./update.sh;
@@ -116,12 +116,14 @@ stdenv.mkDerivation {
     description = "Lightweight headless squeezebox client emulator";
     homepage = "https://github.com/ralph-irving/squeezelite";
     license = with lib.licenses; [ gpl3Plus ] ++ optional dsdSupport bsd2;
-    mainProgram = binName;
     maintainers = with lib.maintainers; [ adamcstephens ];
+
     platforms =
       if (audioBackend == "pulse") then
         lib.platforms.linux
       else
         lib.platforms.linux ++ lib.platforms.darwin;
+
+    mainProgram = binName;
   };
 }

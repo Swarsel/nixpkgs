@@ -2,13 +2,12 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  qt6,
+  installShellFiles,
   mdbtools,
   p7zip,
   python3,
+  qt6,
   sqlite,
-  installShellFiles,
-
   # Whether to compile with XDG support
   # (See: https://gemba.github.io/skyscraper/XDG/)
   enableXdg ? false,
@@ -25,6 +24,10 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-lX+ew/PkZdOFjYDVLCsF3JH8oqQBAjxfZQegHZ1vcDo=";
   };
 
+  postPatch = lib.optionalString enableXdg ''
+    substituteInPlace skyscraper.pro --replace-fail "#DEFINES+=XDG" "DEFINES+=XDG"
+  '';
+
   strictDeps = true;
 
   nativeBuildInputs = [
@@ -40,9 +43,7 @@ stdenv.mkDerivation (finalAttrs: {
     python3
   ];
 
-  postPatch = lib.optionalString enableXdg ''
-    substituteInPlace skyscraper.pro --replace-fail "#DEFINES+=XDG" "DEFINES+=XDG"
-  '';
+  env.PREFIX = placeholder "out";
 
   postInstall = ''
     installShellCompletion --cmd Skyscraper \
@@ -61,15 +62,13 @@ stdenv.mkDerivation (finalAttrs: {
       $out/bin/mdb2sqlite.sh
   '';
 
-  env.PREFIX = placeholder "out";
-
   meta = {
     description = "Powerful and versatile game data scraper written in Qt and C++";
     homepage = "https://gemba.github.io/skyscraper/";
-    downloadPage = "https://github.com/Gemba/skyscraper/releases/tag/${finalAttrs.version}";
     license = lib.licenses.gpl3Plus;
     maintainers = with lib.maintainers; [ ashgoldofficial ];
-    mainProgram = "Skyscraper";
     platforms = lib.platforms.linux;
+    mainProgram = "Skyscraper";
+    downloadPage = "https://github.com/Gemba/skyscraper/releases/tag/${finalAttrs.version}";
   };
 })

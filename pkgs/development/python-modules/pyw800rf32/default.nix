@@ -2,28 +2,25 @@
   lib,
   buildPythonPackage,
   fetchPypi,
-  setuptools,
   pyserial,
+  setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "pyW800rf32";
   version = "0.4";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
     hash = "sha256-i0XXqohKY5pWIjcOCUxUQdx/FSSqgTnTaWcDxnIYjMk=";
   };
 
-  build-system = [ setuptools ];
-
-  dependencies = [ pyserial ];
-
-  pythonImportsCheck = [ "W800rf32" ];
-
   # upstream has no tests
   doCheck = false;
+  build-system = [ setuptools ];
+  dependencies = [ pyserial ];
+  pyproject = true;
+  pythonImportsCheck = [ "W800rf32" ];
 
   meta = {
     description = "Python library to communicate with the W800rf32 family of devices";

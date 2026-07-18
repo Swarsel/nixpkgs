@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitLab,
+  buildPythonPackage,
   pytestCheckHook,
   python-dateutil,
   pytz,
@@ -11,7 +11,6 @@
 buildPythonPackage rec {
   pname = "crontab";
   version = "3.3.0";
-  pyproject = true;
 
   src = fetchFromGitLab {
     owner = "doctormo";
@@ -20,14 +19,14 @@ buildPythonPackage rec {
     hash = "sha256-eJXtvTRwokbewWrTArHJ2FXGDLvlkGA/5ZZR01koMW8=";
   };
 
-  build-system = [ setuptools ];
-
   nativeCheckInputs = [
     pytestCheckHook
     python-dateutil
     pytz
   ];
 
+  build-system = [ setuptools ];
+  pyproject = true;
   pythonImportsCheck = [ "crontab" ];
 
   meta = {

@@ -1,9 +1,9 @@
 {
   lib,
   stdenv,
+  fetchFromGitHub,
   meson,
   ninja,
-  fetchFromGitHub,
   nixosTests,
 }:
 
@@ -40,6 +40,7 @@ stdenv.mkDerivation {
     homepage = "https://github.com/bonzini/qboot";
     license = lib.licenses.gpl2;
     maintainers = [ ];
+
     platforms = [
       "x86_64-linux"
       "i686-linux"

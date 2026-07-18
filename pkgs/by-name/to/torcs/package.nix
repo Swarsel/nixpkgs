@@ -1,6 +1,6 @@
 {
-  imagemagick,
   stdenv,
+  imagemagick,
   symlinkJoin,
   torcs-without-data,
 }:
@@ -10,16 +10,14 @@ let
   # the official cache. The compiled program gets built by Hydra and cached,
   # while the game data does not and gets handled locally instead.
   torcs-data = stdenv.mkDerivation (finalAttrs: {
-    pname = "torcs-data";
     inherit (torcs-without-data)
       version
       src
       buildInputs
       ;
 
-    dontBuild = true;
+    pname = "torcs-data";
 
-    installTargets = "export datainstall";
     postInstall = ''
       mkdir -p $out/share/icons/hicolor/64x64/apps
       ${imagemagick}/bin/magick Ticon.png -resize 64x64 $out/share/icons/hicolor/64x64/apps/torcs.png
@@ -29,25 +27,28 @@ let
       install -D -m644 torcs.desktop $out/share/applications/torcs.desktop
     '';
 
+    dontBuild = true;
+    installTargets = "export datainstall";
     meta.hydraPlatforms = [ ];
   });
 in
 symlinkJoin {
-  pname = "torcs";
   inherit (torcs-without-data)
     version
     ;
 
-  paths = [
-    torcs-without-data
-    torcs-data
-  ];
+  pname = "torcs";
 
   postBuild = ''
     cp --remove-destination $(realpath $out/bin/torcs) $out/bin/torcs
     substituteInPlace $out/bin/torcs \
       --replace-fail "${torcs-without-data}" "$out"
   '';
+
+  paths = [
+    torcs-without-data
+    torcs-data
+  ];
 
   meta = torcs-without-data.meta // {
     description = "Car racing game";

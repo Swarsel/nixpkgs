@@ -1,24 +1,23 @@
 {
   lib,
   buildPythonPackage,
-  fetchPypi,
-  fastprogress,
   fastcore,
   fastdownload,
-  torchvision,
+  fastprogress,
+  fetchPypi,
   matplotlib,
+  pandas,
   pillow,
+  requests,
   scikit-learn,
   scipy,
   spacy,
-  pandas,
-  requests,
+  torchvision,
 }:
 
 buildPythonPackage rec {
   pname = "fastai";
   version = "2.8.6";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
@@ -40,14 +39,15 @@ buildPythonPackage rec {
   ];
 
   doCheck = false;
+  format = "setuptools";
   pythonImportsCheck = [ "fastai" ];
 
   meta = {
-    homepage = "https://github.com/fastai/fastai";
     description = "Fastai deep learning library";
-    mainProgram = "configure_accelerate";
+    homepage = "https://github.com/fastai/fastai";
     changelog = "https://github.com/fastai/fastai/blob/${version}/CHANGELOG.md";
     license = lib.licenses.asl20;
     maintainers = with lib.maintainers; [ rxiao ];
+    mainProgram = "configure_accelerate";
   };
 }

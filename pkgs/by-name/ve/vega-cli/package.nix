@@ -1,12 +1,12 @@
 {
   lib,
-  buildNpmPackage,
   fetchFromGitHub,
-  pkg-config,
-  pixman,
+  buildNpmPackage,
   cairo,
-  pango,
   jq,
+  pango,
+  pixman,
+  pkg-config,
 }:
 
 buildNpmPackage (finalAttrs: {
@@ -31,9 +31,10 @@ buildNpmPackage (finalAttrs: {
     mv lerna.json.tmp lerna.json
   '';
 
-  npmDepsHash = "sha256-mBe1fHnhor7ZR8CuRNs1zD7JzaZXZI5VM7mdAieVKqE=";
-
-  npmWorkspace = "vega-cli";
+  nativeBuildInputs = [
+    pkg-config
+    jq
+  ];
 
   buildInputs = [
     pixman
@@ -41,10 +42,7 @@ buildNpmPackage (finalAttrs: {
     pango
   ];
 
-  nativeBuildInputs = [
-    pkg-config
-    jq
-  ];
+  npmDepsHash = "sha256-mBe1fHnhor7ZR8CuRNs1zD7JzaZXZI5VM7mdAieVKqE=";
 
   buildPhase = ''
     runHook preBuild
@@ -68,10 +66,13 @@ buildNpmPackage (finalAttrs: {
     runHook postInstall
   '';
 
+  npmWorkspace = "vega-cli";
+
   meta = {
     description = "Command line tools for the Vega visualization grammar";
     homepage = "https://vega.github.io/vega/";
     license = lib.licenses.bsd3;
+
     maintainers = with lib.maintainers; [
       philocalyst
     ];

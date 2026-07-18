@@ -1,8 +1,8 @@
 {
   lib,
+  fetchFromGitHub,
   buildPythonPackage,
   colorama,
-  fetchFromGitHub,
   griffelib,
   hatchling,
   pdm-backend,
@@ -12,7 +12,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "griffecli";
   version = "2.1.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "mkdocstrings";
@@ -20,8 +19,6 @@ buildPythonPackage (finalAttrs: {
     tag = finalAttrs.version;
     hash = "sha256-hNKL86LSE9PwIofxt2t5PrlThiX7hTgYADK2HDVhNjk=";
   };
-
-  sourceRoot = "${finalAttrs.src.name}/packages/griffecli";
 
   build-system = [
     hatchling
@@ -34,7 +31,9 @@ buildPythonPackage (finalAttrs: {
     griffelib
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "griffecli" ];
+  sourceRoot = "${finalAttrs.src.name}/packages/griffecli";
 
   meta = {
     description = "Signatures for entire Python programs. Extract the structure, the frame, the skeleton of your project, to generate API documentation or find breaking changes in your API";

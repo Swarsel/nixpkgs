@@ -1,18 +1,18 @@
 {
   lib,
   stdenv,
-  gcc_meta,
-  release_version,
-  version,
-  getVersionFile,
-  monorepoSrc ? null,
-  fetchpatch,
   autoreconfHook269,
+  fetchpatch,
+  gcc_meta,
+  getVersionFile,
+  release_version,
   runCommand,
+  version,
+  monorepoSrc ? null,
 }:
 stdenv.mkDerivation (finalAttrs: {
-  pname = "libatomic";
   inherit version;
+  pname = "libatomic";
 
   src = runCommand "libatomic-src-${version}" { src = monorepoSrc; } ''
     runPhase unpackPhase
@@ -40,36 +40,21 @@ stdenv.mkDerivation (finalAttrs: {
 
   patches = [
     (fetchpatch {
-      name = "custom-threading-model.patch";
-      url = "https://github.com/gcc-mirror/gcc/commit/e5d853bbe9b05d6a00d98ad236f01937303e40c4.diff";
       hash = "sha256-U1Eh6ByhmseHQigfHIyO4MlAQB3fECmpPEP/M00DOg0=";
+
       includes = [
         "config/*"
         "libatomic/configure.ac"
       ];
+
+      name = "custom-threading-model.patch";
+      url = "https://github.com/gcc-mirror/gcc/commit/e5d853bbe9b05d6a00d98ad236f01937303e40c4.diff";
     })
     (getVersionFile "libatomic/gthr-include.patch")
   ];
 
-  postUnpack = ''
-    mkdir -p ./build
-    buildRoot=$(readlink -e "./build")
-  '';
-
-  preAutoreconf = ''
-    sourceRoot=$(readlink -e "./libatomic")
-    cd $sourceRoot
-  '';
-
-  enableParallelBuilding = true;
-
   nativeBuildInputs = [
     autoreconfHook269
-  ];
-
-  configurePlatforms = [
-    "build"
-    "host"
   ];
 
   configureFlags = [
@@ -84,6 +69,23 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   doCheck = true;
+
+  configurePlatforms = [
+    "build"
+    "host"
+  ];
+
+  enableParallelBuilding = true;
+
+  postUnpack = ''
+    mkdir -p ./build
+    buildRoot=$(readlink -e "./build")
+  '';
+
+  preAutoreconf = ''
+    sourceRoot=$(readlink -e "./libatomic")
+    cd $sourceRoot
+  '';
 
   passthru = {
     isGNU = true;

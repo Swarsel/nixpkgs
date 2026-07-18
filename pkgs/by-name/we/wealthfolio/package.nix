@@ -3,19 +3,19 @@
   stdenv,
   fetchFromGitHub,
   cargo-tauri,
+  fetchPnpmDeps,
   jq,
   libsoup_3,
   moreutils,
+  nix-update-script,
   nodejs,
   openssl,
   pkg-config,
-  pnpm_10,
-  fetchPnpmDeps,
   pnpmConfigHook,
+  pnpm_10,
   rustPlatform,
   webkitgtk_4_1,
   wrapGAppsHook3,
-  nix-update-script,
 }:
 stdenv.mkDerivation (finalAttrs: {
   pname = "wealthfolio";
@@ -28,25 +28,13 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-7RX5u4Qr5OSBCQvsf9F0LlIVd9VycpvoVvIKj08xA3A=";
   };
 
-  pnpmDeps = fetchPnpmDeps {
-    inherit (finalAttrs) src pname version;
-    pnpm = pnpm_10;
-    fetcherVersion = 4;
-    hash = "sha256-dpxUdXqRbYPwq/wKu8XFdcjhDSGYo5ory9rIovHGJwk=";
-  };
-
-  cargoRoot = ".";
-  buildAndTestSubdir = finalAttrs.cargoRoot;
-
-  cargoDeps = rustPlatform.fetchCargoVendor {
-    inherit (finalAttrs)
-      pname
-      version
-      src
-      cargoRoot
-      ;
-    hash = "sha256-vNFYouLMP462N6G8cJppnKMBp9Wphh4mrMVO4WWaPJ4=";
-  };
+  postPatch = ''
+    jq \
+      '.plugins.updater.endpoints = [ ]
+      | .bundle.createUpdaterArtifacts = false' \
+      apps/tauri/tauri.conf.json \
+      | sponge apps/tauri/tauri.conf.json
+  '';
 
   nativeBuildInputs = [
     cargo-tauri.hook
@@ -66,13 +54,27 @@ stdenv.mkDerivation (finalAttrs: {
     webkitgtk_4_1
   ];
 
-  postPatch = ''
-    jq \
-      '.plugins.updater.endpoints = [ ]
-      | .bundle.createUpdaterArtifacts = false' \
-      apps/tauri/tauri.conf.json \
-      | sponge apps/tauri/tauri.conf.json
-  '';
+  buildAndTestSubdir = finalAttrs.cargoRoot;
+
+  cargoDeps = rustPlatform.fetchCargoVendor {
+    inherit (finalAttrs)
+      pname
+      version
+      src
+      cargoRoot
+      ;
+
+    hash = "sha256-vNFYouLMP462N6G8cJppnKMBp9Wphh4mrMVO4WWaPJ4=";
+  };
+
+  cargoRoot = ".";
+
+  pnpmDeps = fetchPnpmDeps {
+    inherit (finalAttrs) src pname version;
+    fetcherVersion = 4;
+    hash = "sha256-dpxUdXqRbYPwq/wKu8XFdcjhDSGYo5ory9rIovHGJwk=";
+    pnpm = pnpm_10;
+  };
 
   passthru.updateScript = nix-update-script { };
 
@@ -80,8 +82,8 @@ stdenv.mkDerivation (finalAttrs: {
     description = "Beautiful Private and Secure Desktop Investment Tracking Application";
     homepage = "https://wealthfolio.app/";
     license = lib.licenses.agpl3Only;
-    mainProgram = "wealthfolio";
     maintainers = with lib.maintainers; [ kilianar ];
     platforms = lib.platforms.linux;
+    mainProgram = "wealthfolio";
   };
 })

@@ -1,18 +1,17 @@
 {
   lib,
+  fetchFromGitHub,
   aiohttp,
   buildPythonPackage,
-  fetchFromGitHub,
   pytest-asyncio,
-  python-dotenv,
   pytestCheckHook,
+  python-dotenv,
   uv-build,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "bandcamp-async-api";
   version = "0.2.2";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "ALERTua";
@@ -20,6 +19,12 @@ buildPythonPackage (finalAttrs: {
     tag = finalAttrs.version;
     hash = "sha256-pL1V3xAcI48cgddf0tmE+djGI7sagGAI3w0Qu7/O8pI=";
   };
+
+  nativeCheckInputs = [
+    pytest-asyncio
+    python-dotenv
+    pytestCheckHook
+  ];
 
   build-system = [
     uv-build
@@ -29,13 +34,8 @@ buildPythonPackage (finalAttrs: {
     aiohttp
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "bandcamp_async_api" ];
-
-  nativeCheckInputs = [
-    pytest-asyncio
-    python-dotenv
-    pytestCheckHook
-  ];
 
   meta = {
     description = "Modern, asynchronous Python client for the Bandcamp API";

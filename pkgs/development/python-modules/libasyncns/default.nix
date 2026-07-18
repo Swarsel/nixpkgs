@@ -1,8 +1,8 @@
 {
   lib,
   stdenv,
-  buildPythonPackage,
   fetchurl,
+  buildPythonPackage,
   libasyncns,
   pkg-config,
 }:
@@ -10,7 +10,6 @@
 buildPythonPackage rec {
   pname = "libasyncns-python";
   version = "0.7.1";
-  format = "setuptools";
 
   src = fetchurl {
     url = "https://launchpad.net/libasyncns-python/trunk/${version}/+download/libasyncns-python-${version}.tar.bz2";
@@ -24,16 +23,16 @@ buildPythonPackage rec {
       --replace '<arpa/nameser.h>' '<arpa/nameser_compat.h>'
   '';
 
-  buildInputs = [ libasyncns ];
   nativeBuildInputs = [ pkg-config ];
+  buildInputs = [ libasyncns ];
   doCheck = false; # requires network access
-
+  format = "setuptools";
   pythonImportsCheck = [ "libasyncns" ];
 
   meta = {
     description = "Libasyncns-python is a python binding for the asynchronous name service query library";
+    homepage = "https://launchpad.net/libasyncns-python";
     license = lib.licenses.lgpl21;
     maintainers = [ lib.maintainers.mic92 ];
-    homepage = "https://launchpad.net/libasyncns-python";
   };
 }

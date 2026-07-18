@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule (finalAttrs: {
@@ -16,17 +16,16 @@ buildGoModule (finalAttrs: {
   };
 
   vendorHash = "sha256-3jIWxjjPeEj02OQkXLvcqLJH+PjuEtL2zhfUAOtQJio=";
+  # network required
+  doCheck = false;
 
   ldflags = [
     "-X main.version=${finalAttrs.version}"
   ];
 
-  # network required
-  doCheck = false;
-
   meta = {
-    homepage = "https://github.com/jeessy2/ddns-go";
     description = "Simple and easy to use DDNS";
+    homepage = "https://github.com/jeessy2/ddns-go";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ oluceps ];
     mainProgram = "ddns-go";

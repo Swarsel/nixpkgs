@@ -1,20 +1,16 @@
 {
-  stdenvNoCC,
+  clapper-enhancers,
   clapper-unwrapped,
-  wrapGAppsHook4,
   gobject-introspection,
   lndir,
-  clapper-enhancers,
+  stdenvNoCC,
+  wrapGAppsHook4,
 }:
 
 stdenvNoCC.mkDerivation {
-  pname = "clapper";
   inherit (clapper-unwrapped) version meta;
-
+  pname = "clapper";
   src = clapper-unwrapped;
-
-  dontConfigure = true;
-  dontBuild = true;
 
   nativeBuildInputs = [
     wrapGAppsHook4
@@ -43,4 +39,7 @@ stdenvNoCC.mkDerivation {
       --set-default CLAPPER_ENHANCERS_PATH "${clapper-enhancers}/${clapper-enhancers.passthru.pluginPath}"
     )
   '';
+
+  dontBuild = true;
+  dontConfigure = true;
 }

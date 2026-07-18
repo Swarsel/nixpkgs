@@ -11,9 +11,11 @@
 buildPythonPackage {
   inherit (opentelemetry-api) version src;
   pname = "opentelemetry-exporter-otlp";
-  pyproject = true;
 
-  sourceRoot = "${opentelemetry-api.src.name}/exporter/opentelemetry-exporter-otlp";
+  nativeCheckInputs = [
+    opentelemetry-test-utils
+    pytestCheckHook
+  ];
 
   build-system = [ hatchling ];
 
@@ -22,15 +24,12 @@ buildPythonPackage {
     opentelemetry-exporter-otlp-proto-http
   ];
 
-  nativeCheckInputs = [
-    opentelemetry-test-utils
-    pytestCheckHook
-  ];
-
+  pyproject = true;
   pythonImportsCheck = [ "opentelemetry.exporter.otlp" ];
+  sourceRoot = "${opentelemetry-api.src.name}/exporter/opentelemetry-exporter-otlp";
 
   meta = opentelemetry-api.meta // {
-    homepage = "https://github.com/open-telemetry/opentelemetry-python/tree/main/exporter/opentelemetry-exporter-otlp";
     description = "OpenTelemetry Collector Exporters";
+    homepage = "https://github.com/open-telemetry/opentelemetry-python/tree/main/exporter/opentelemetry-exporter-otlp";
   };
 }

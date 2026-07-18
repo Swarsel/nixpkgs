@@ -2,48 +2,46 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  runCommand,
   buildNpmPackage,
-  nodejs_22,
   ffmpeg-full,
-  nunicode,
-  util-linux,
-  python3,
   getopt,
   nixosTests,
+  nodejs_22,
+  nunicode,
+  python3,
+  runCommand,
+  util-linux,
 }:
 
 let
   source = {
     version = "2.35.1";
-    hash = "sha256-31cKSjSTJyUetjCSOCDY2wnTFV+Z52LcvGrh7Emc0cM=";
     npmDepsHash = "sha256-wmbzbMQHrbHcL9JSpPXpc+vjjj5LTNN8e6Ug3ZRQ7mo=";
     clientNpmDepsHash = "sha256-wJdCvUVLZzCY3iW/Q7QVuRu96s49TehnuQNqbImbe0g=";
+    hash = "sha256-31cKSjSTJyUetjCSOCDY2wnTFV+Z52LcvGrh7Emc0cM=";
   };
 
   src = fetchFromGitHub {
+    inherit (source) hash;
     owner = "advplyr";
     repo = "audiobookshelf";
     tag = "v${source.version}";
-    inherit (source) hash;
   };
 
   client = buildNpmPackage {
-    pname = "audiobookshelf-client";
     inherit (source) version;
-
-    nodejs = nodejs_22;
+    pname = "audiobookshelf-client";
 
     src = runCommand "cp-source" { } ''
       cp -r ${src}/client $out
     '';
 
+    npmDepsHash = source.clientNpmDepsHash;
     # don't download the Cypress binary
     CYPRESS_INSTALL_BINARY = 0;
     NODE_OPTIONS = "--openssl-legacy-provider";
-
+    nodejs = nodejs_22;
     npmBuildScript = "generate";
-    npmDepsHash = source.clientNpmDepsHash;
   };
 
   wrapper = import ./wrapper.nix {
@@ -57,17 +55,11 @@ let
 
 in
 buildNpmPackage {
-  pname = "audiobookshelf";
-
   inherit src;
   inherit (source) npmDepsHash version;
-  nodejs = nodejs_22;
-
-  buildInputs = [ util-linux ];
+  pname = "audiobookshelf";
   nativeBuildInputs = [ python3 ];
-
-  dontNpmBuild = true;
-  npmInstallFlags = [ "--only-production" ];
+  buildInputs = [ util-linux ];
 
   installPhase = ''
     mkdir -p $out/opt/client
@@ -81,21 +73,27 @@ buildNpmPackage {
     chmod +x $out/bin/audiobookshelf
   '';
 
+  dontNpmBuild = true;
+  nodejs = nodejs_22;
+  npmInstallFlags = [ "--only-production" ];
+
   passthru = {
     tests.basic = nixosTests.audiobookshelf;
     updateScript = ./update.sh;
   };
 
   meta = {
-    homepage = "https://www.audiobookshelf.org/";
     description = "Self-hosted audiobook and podcast server";
+    homepage = "https://www.audiobookshelf.org/";
     changelog = "https://github.com/advplyr/audiobookshelf/releases/tag/v${source.version}";
     license = lib.licenses.gpl3;
+
     maintainers = with lib.maintainers; [
       jvanbruegge
       adamcstephens
       tebriel
     ];
+
     platforms = lib.platforms.linux;
     mainProgram = "audiobookshelf";
   };

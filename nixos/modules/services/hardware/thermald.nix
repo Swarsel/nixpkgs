@@ -12,24 +12,11 @@ in
   options = {
     services.thermald = {
       enable = lib.mkEnableOption "thermald, the temperature management daemon";
-
-      debug = lib.mkOption {
-        type = lib.types.bool;
-        default = false;
-        description = ''
-          Whether to enable debug logging.
-        '';
-      };
-
-      ignoreCpuidCheck = lib.mkOption {
-        type = lib.types.bool;
-        default = false;
-        description = "Whether to ignore the cpuid check to allow running on unsupported platforms";
-      };
+      package = lib.mkPackageOption pkgs "thermald" { };
 
       configFile = lib.mkOption {
-        type = lib.types.nullOr lib.types.path;
         default = null;
+
         description = ''
           The thermald manual configuration file.
 
@@ -37,9 +24,25 @@ in
 
           See `man thermald` for more information.
         '';
+
+        type = lib.types.nullOr lib.types.path;
       };
 
-      package = lib.mkPackageOption pkgs "thermald" { };
+      debug = lib.mkOption {
+        default = false;
+
+        description = ''
+          Whether to enable debug logging.
+        '';
+
+        type = lib.types.bool;
+      };
+
+      ignoreCpuidCheck = lib.mkOption {
+        default = false;
+        description = "Whether to ignore the cpuid check to allow running on unsupported platforms";
+        type = lib.types.bool;
+      };
     };
   };
 
@@ -50,9 +53,8 @@ in
     systemd.services.thermald = {
       description = "Thermal Daemon Service";
       documentation = [ "man:thermald(8)" ];
-      wantedBy = [ "multi-user.target" ];
+
       serviceConfig = {
-        PrivateNetwork = true;
         ExecStart = ''
           ${cfg.package}/sbin/thermald \
             --no-daemon \
@@ -61,7 +63,11 @@ in
             ${if cfg.configFile != null then "--config-file ${cfg.configFile}" else "--adaptive"} \
             --dbus-enable
         '';
+
+        PrivateNetwork = true;
       };
+
+      wantedBy = [ "multi-user.target" ];
     };
   };
 }

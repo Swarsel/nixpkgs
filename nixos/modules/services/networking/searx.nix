@@ -1,8 +1,8 @@
 {
-  options,
   config,
   lib,
   pkgs,
+  options,
   ...
 }:
 let
@@ -51,117 +51,81 @@ let
   '';
 in
 {
+  imports = [
+    (mkRenamedOptionModule [ "services" "searx" "settingsFile" ] [ "services" "searx" "settingsPath" ])
+    (mkRenamedOptionModule [ "services" "searx" "configFile" ] [ "services" "searx" "settingsFile" ])
+    (mkRenamedOptionModule [ "services" "searx" "runInUwsgi" ] [ "services" "searx" "configureUwsgi" ])
+  ];
+
   options = {
     services.searx = {
       enable = mkOption {
-        type = types.bool;
         default = false;
-        relatedPackages = [ "searx" ];
         description = "Whether to enable Searx, the meta search engine.";
+        relatedPackages = [ "searx" ];
+        type = types.bool;
       };
 
-      openFirewall = mkOption {
-        type = types.bool;
-        default = false;
-        description = ''
-          Whether to open the port in the firewall.
-          Enabling this option adds the port specified in {option}`services.settings.server.port` to {option}`networking.firewall.allowedTCPPorts`.
+      package = mkPackageOption pkgs "searxng" { };
 
-          ::: {.note}
-          When this option is set to true, {option}`services.settings.server.port` must be set as well or an error will be thrown.
+      configureNginx = mkOption {
+        default = false;
+
+        description = ''
+          Whether to configure nginx as an frontend to uwsgi.
+        '';
+
+        type = types.bool;
+      };
+
+      configureUwsgi = mkOption {
+        default = false;
+
+        description = ''
+          Whether to run searx in uWSGI as a "vassal", instead of using its
+          built-in HTTP server. This is the recommended mode for public or
+          large instances, but is unnecessary for LAN or local-only use.
+
+          ::: {.warning}
+          The built-in HTTP server logs all queries by default.
           :::
         '';
+
+        type = types.bool;
       };
 
       domain = mkOption {
-        type = types.str;
         description = ''
           The domain under which searxng will be served.
           Right now this is only used with the configureNginx option.
         '';
+
+        type = types.str;
       };
 
       environmentFile = mkOption {
-        type = types.nullOr types.path;
         default = null;
+
         description = ''
           Environment file (see {manpage}`systemd.exec(5)` "EnvironmentFile=" section for the syntax) to define variables for Searx.
           This option can be used to safely include secret keys into the Searx configuration.
         '';
-      };
 
-      redisCreateLocally = mkOption {
-        type = types.bool;
-        default = false;
-        description = ''
-          Configure a local Redis server for SearXNG.
-          This is required if you want to enable the rate limiter and bot protection of SearXNG.
-        '';
-      };
-
-      settings = mkOption {
-        type = types.submodule (
-          { config, ... }:
-          {
-            options = {
-              valkey = lib.mkOption {
-                internal = true;
-                default = { };
-              };
-            };
-            config.valkey = lib.mkIf (config ? redis) (
-              lib.warn "Obsolete option `services.searx.settings.redis' is used. It was renamed to `services.searx.settings.valkey'" config.redis
-            );
-
-            freeformType = yamlFormat.type;
-          }
-        );
-        default = { };
-        example = literalExpression ''
-          {
-            server.port = 8080;
-            server.bind_address = "0.0.0.0";
-            server.secret_key = "$SEARX_SECRET_KEY";
-
-            engines = [ {
-              name = "wolframalpha";
-              shortcut = "wa";
-              api_key = "$WOLFRAM_API_KEY";
-              engine = "wolframalpha_api";
-            } ];
-          }
-        '';
-        description = ''
-          Searx settings.
-          These will be merged with (taking precedence over) the default configuration.
-          It's also possible to refer to environment variables (defined in [](#opt-services.searx.environmentFile)) using the syntax `$VARIABLE_NAME`.
-
-          ::: {.note}
-          For available settings, see the Searx [docs](https://docs.searxng.org/admin/settings/index.html).
-          :::
-        '';
-      };
-
-      settingsPath = mkOption {
-        type = types.path;
-        default = runDir;
-        description = ''
-          The path of the SearXNG settings directory or the settings.yml file.
-          If no path is specified, a default one is used (default config file has debug mode enabled).
-
-          ::: {.note}
-          Setting this options overrides [](#opt-services.searx.settings).
-          :::
-
-          ::: {.warning}
-          This path, along with any secret keys it contains, will be copied into the world-readable Nix store.
-          :::
-        '';
+        type = types.nullOr types.path;
       };
 
       faviconsSettings = mkOption {
-        type = types.attrsOf tomlFormat.type;
         default = { };
+
+        description = ''
+          Favicons settings for SearXNG.
+
+          ::: {.note}
+          For available settings, see the SearXNG
+          [schema file](https://github.com/searxng/searxng/blob/master/searx/favicons/favicons.toml).
+          :::
+        '';
+
         example = literalExpression ''
           {
             favicons = {
@@ -177,19 +141,21 @@ in
             };
           }
         '';
-        description = ''
-          Favicons settings for SearXNG.
 
-          ::: {.note}
-          For available settings, see the SearXNG
-          [schema file](https://github.com/searxng/searxng/blob/master/searx/favicons/favicons.toml).
-          :::
-        '';
+        type = types.attrsOf tomlFormat.type;
       };
 
       limiterSettings = mkOption {
-        type = types.attrsOf tomlFormat.type;
         default = { };
+
+        description = ''
+          Limiter settings for SearXNG.
+
+          ::: {.note}
+          For available settings, see the SearXNG [schema file](https://github.com/searxng/searxng/blob/master/searx/limiter.toml).
+          :::
+        '';
+
         example = literalExpression ''
           {
             botdetection = {
@@ -207,44 +173,115 @@ in
             };
           }
         '';
+
+        type = types.attrsOf tomlFormat.type;
+      };
+
+      openFirewall = mkOption {
+        default = false;
+
         description = ''
-          Limiter settings for SearXNG.
+          Whether to open the port in the firewall.
+          Enabling this option adds the port specified in {option}`services.settings.server.port` to {option}`networking.firewall.allowedTCPPorts`.
 
           ::: {.note}
-          For available settings, see the SearXNG [schema file](https://github.com/searxng/searxng/blob/master/searx/limiter.toml).
+          When this option is set to true, {option}`services.settings.server.port` must be set as well or an error will be thrown.
           :::
         '';
+
+        type = types.bool;
       };
 
-      package = mkPackageOption pkgs "searxng" { };
-
-      configureUwsgi = mkOption {
-        type = types.bool;
+      redisCreateLocally = mkOption {
         default = false;
+
         description = ''
-          Whether to run searx in uWSGI as a "vassal", instead of using its
-          built-in HTTP server. This is the recommended mode for public or
-          large instances, but is unnecessary for LAN or local-only use.
+          Configure a local Redis server for SearXNG.
+          This is required if you want to enable the rate limiter and bot protection of SearXNG.
+        '';
+
+        type = types.bool;
+      };
+
+      settings = mkOption {
+        default = { };
+
+        description = ''
+          Searx settings.
+          These will be merged with (taking precedence over) the default configuration.
+          It's also possible to refer to environment variables (defined in [](#opt-services.searx.environmentFile)) using the syntax `$VARIABLE_NAME`.
+
+          ::: {.note}
+          For available settings, see the Searx [docs](https://docs.searxng.org/admin/settings/index.html).
+          :::
+        '';
+
+        example = literalExpression ''
+          {
+            server.port = 8080;
+            server.bind_address = "0.0.0.0";
+            server.secret_key = "$SEARX_SECRET_KEY";
+
+            engines = [ {
+              name = "wolframalpha";
+              shortcut = "wa";
+              api_key = "$WOLFRAM_API_KEY";
+              engine = "wolframalpha_api";
+            } ];
+          }
+        '';
+
+        type = types.submodule (
+          { config, ... }:
+          {
+            options = {
+              valkey = lib.mkOption {
+                default = { };
+                internal = true;
+              };
+            };
+
+            config.valkey = lib.mkIf (config ? redis) (
+              lib.warn "Obsolete option `services.searx.settings.redis' is used. It was renamed to `services.searx.settings.valkey'" config.redis
+            );
+
+            freeformType = yamlFormat.type;
+          }
+        );
+      };
+
+      settingsPath = mkOption {
+        default = runDir;
+
+        description = ''
+          The path of the SearXNG settings directory or the settings.yml file.
+          If no path is specified, a default one is used (default config file has debug mode enabled).
+
+          ::: {.note}
+          Setting this options overrides [](#opt-services.searx.settings).
+          :::
 
           ::: {.warning}
-          The built-in HTTP server logs all queries by default.
+          This path, along with any secret keys it contains, will be copied into the world-readable Nix store.
           :::
         '';
-      };
 
-      configureNginx = mkOption {
-        type = types.bool;
-        default = false;
-        description = ''
-          Whether to configure nginx as an frontend to uwsgi.
-        '';
+        type = types.path;
       };
 
       uwsgiConfig = mkOption {
         inherit (options.services.uwsgi.instance) type;
+
         default = {
           http = ":8080";
         };
+
+        description = ''
+          Additional configuration of the uWSGI vassal running searx. It
+          should notably specify on which interfaces and ports the vassal
+          should listen.
+        '';
+
         example = literalExpression ''
           {
             disable-logging = true;
@@ -253,20 +290,9 @@ in
             chmod-socket = "660";             # allow the searx group to read/write to the socket
           }
         '';
-        description = ''
-          Additional configuration of the uWSGI vassal running searx. It
-          should notably specify on which interfaces and ports the vassal
-          should listen.
-        '';
       };
     };
   };
-
-  imports = [
-    (mkRenamedOptionModule [ "services" "searx" "settingsFile" ] [ "services" "searx" "settingsPath" ])
-    (mkRenamedOptionModule [ "services" "searx" "configFile" ] [ "services" "searx" "settingsFile" ])
-    (mkRenamedOptionModule [ "services" "searx" "runInUwsgi" ] [ "services" "searx" "configureUwsgi" ])
-  ];
 
   config = mkIf cfg.enable {
     assertions = [
@@ -277,15 +303,14 @@ in
     ];
 
     environment.systemPackages = [ cfg.package ];
+    networking.firewall = lib.mkIf cfg.openFirewall { allowedTCPPorts = [ cfg.settings.server.port ]; };
 
     services = {
       nginx = lib.mkIf cfg.configureNginx {
         enable = true;
+
         virtualHosts."${cfg.domain}".locations = {
           "/" = {
-            recommendedProxySettings = true;
-            recommendedUwsgiSettings = true;
-            uwsgiPass = "unix:${config.services.uwsgi.instance.vassals.searx.socket}";
             extraConfig = # nginx
               ''
                 uwsgi_param  HTTP_HOST             $host;
@@ -295,22 +320,26 @@ in
                 uwsgi_param  HTTP_X_REAL_IP        $remote_addr;
                 uwsgi_param  HTTP_X_FORWARDED_FOR  $proxy_add_x_forwarded_for;
               '';
+
+            recommendedProxySettings = true;
+            recommendedUwsgiSettings = true;
+            uwsgiPass = "unix:${config.services.uwsgi.instance.vassals.searx.socket}";
           };
+
           "/static/".alias = lib.mkDefault "${cfg.package}/share/static/";
         };
       };
 
       redis.servers.searx = lib.mkIf cfg.redisCreateLocally {
         enable = true;
-        user = "searx";
         port = 0;
+        user = "searx";
       };
 
       searx = {
         configureUwsgi = lib.mkIf cfg.configureNginx true;
+
         settings = {
-          # merge NixOS settings with defaults settings.yml
-          use_default_settings = mkDefault true;
           server.base_url = lib.mkIf cfg.configureNginx "http${
             lib.optionalString (lib.any lib.id (
               with config.services.nginx.virtualHosts."${cfg.domain}";
@@ -321,6 +350,10 @@ in
               ]
             )) "s"
           }://${cfg.domain}/";
+
+          # merge NixOS settings with defaults settings.yml
+          use_default_settings = mkDefault true;
+
           valkey = lib.mkIf cfg.redisCreateLocally {
             url = "unix://${config.services.redis.servers.searx.unixSocket}";
           };
@@ -329,27 +362,31 @@ in
 
       uwsgi = mkIf cfg.configureUwsgi {
         enable = true;
-        plugins = [ "python3" ];
         instance.type = "emperor";
+
         instance.vassals.searx = {
-          type = "normal";
-          strict = true;
-          immediate-uid = "searx";
-          immediate-gid = "searx";
-          lazy-apps = true;
+          buffer-size = 32768;
           enable-threads = true;
-          module = "searx.webapp";
+
           env = [
             "SEARXNG_SETTINGS_PATH=${cfg.settingsPath}"
           ];
-          buffer-size = 32768;
+
+          immediate-gid = "searx";
+          immediate-uid = "searx";
+          lazy-apps = true;
+          module = "searx.webapp";
           pythonPackages = _: [ cfg.package ];
+          strict = true;
+          type = "normal";
         }
         // lib.optionalAttrs cfg.configureNginx {
-          socket = "/run/searx/uwsgi.sock";
           chmod-socket = "660";
+          socket = "/run/searx/uwsgi.sock";
         }
         // cfg.uwsgiConfig;
+
+        plugins = [ "python3" ];
       };
     };
 
@@ -358,48 +395,37 @@ in
         serviceConfig.SupplementaryGroups = [ "searx" ];
       };
 
-      searx-init = {
-        description = "Initialise Searx settings";
-        serviceConfig = {
-          Type = "oneshot";
-          RemainAfterExit = true;
-          User = "searx";
-          RuntimeDirectory = "searx";
-          RuntimeDirectoryMode = "750";
-          RuntimeDirectoryPreserve = "yes";
-        }
-        // optionalAttrs (cfg.environmentFile != null) {
-          EnvironmentFile = cfg.environmentFile;
-        };
-        script = generateConfig;
-      };
-
       searx = mkIf (!cfg.configureUwsgi) {
-        description = "Searx server, the meta search engine.";
-        wantedBy = [ "multi-user.target" ];
-        requires = [ "searx-init.service" ];
         after = [
           "searx-init.service"
           "network.target"
         ]
         ++ lib.optionals cfg.redisCreateLocally [ "redis-searx.service" ];
-        serviceConfig = {
-          User = "searx";
-          DynamicUser = true;
-          Group = "searx";
-          ExecStart = lib.getExe cfg.package;
 
+        description = "Searx server, the meta search engine.";
+
+        environment = {
+          SEARXNG_SETTINGS_PATH = cfg.settingsPath;
+        };
+
+        requires = [ "searx-init.service" ];
+
+        serviceConfig = {
           CacheDirectory = "searx";
           CacheDirectoryMode = "0700";
-
-          ReadOnlyPaths = [ cfg.settingsPath ];
-          ReadWritePaths = lib.optional cfg.redisCreateLocally config.services.redis.servers.searx.unixSocket;
-
           CapabilityBoundingSet = null;
           DevicePolicy = "closed";
+          DynamicUser = true;
+          ExecStart = lib.getExe cfg.package;
+          Group = "searx";
           LockPersonality = true;
           MemoryDenyWriteExecute = true;
           NoNewPrivileges = true;
+          PrivateDevices = true;
+          PrivateIPC = true;
+          PrivateMounts = true;
+          PrivateTmp = true;
+          PrivateUsers = true;
           ProtectClock = true;
           ProtectControlGroups = true;
           ProtectHome = true;
@@ -409,38 +435,57 @@ in
           ProtectKernelTunables = true;
           ProtectProc = "invisible";
           ProtectSystem = "strict";
-          PrivateDevices = true;
-          PrivateMounts = true;
-          PrivateTmp = true;
-          PrivateUsers = true;
-          PrivateIPC = true;
+          ReadOnlyPaths = [ cfg.settingsPath ];
+          ReadWritePaths = lib.optional cfg.redisCreateLocally config.services.redis.servers.searx.unixSocket;
           RemoveIPC = true;
+
           RestrictAddressFamilies = [
             "AF_INET"
             "AF_INET6"
             "AF_UNIX"
           ];
+
           RestrictNamespaces = true;
           RestrictRealtime = true;
           SystemCallArchitectures = "native";
           SystemCallErrorNumber = "EPERM";
+
           SystemCallFilter = [
             "@system-service"
             "~@privileged @resources"
           ];
+
           UMask = "0077";
+          User = "searx";
         }
         // optionalAttrs (cfg.environmentFile != null) {
           EnvironmentFile = cfg.environmentFile;
         };
-        environment = {
-          SEARXNG_SETTINGS_PATH = cfg.settingsPath;
+
+        wantedBy = [ "multi-user.target" ];
+      };
+
+      searx-init = {
+        description = "Initialise Searx settings";
+        script = generateConfig;
+
+        serviceConfig = {
+          RemainAfterExit = true;
+          RuntimeDirectory = "searx";
+          RuntimeDirectoryMode = "750";
+          RuntimeDirectoryPreserve = "yes";
+          Type = "oneshot";
+          User = "searx";
+        }
+        // optionalAttrs (cfg.environmentFile != null) {
+          EnvironmentFile = cfg.environmentFile;
         };
       };
 
       uwsgi = mkIf cfg.configureUwsgi {
-        requires = [ "searx-init.service" ];
         after = [ "searx-init.service" ];
+        requires = [ "searx-init.service" ];
+
         restartTriggers = [
           cfg.package
           cfg.settingsPath
@@ -451,14 +496,13 @@ in
 
     users = {
       groups.searx = { };
+
       users.searx = {
         description = "Searx daemon user";
         group = "searx";
         isSystemUser = true;
       };
     };
-
-    networking.firewall = lib.mkIf cfg.openFirewall { allowedTCPPorts = [ cfg.settings.server.port ]; };
   };
 
   meta.maintainers = with lib.maintainers; [

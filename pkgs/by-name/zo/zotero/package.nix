@@ -3,27 +3,27 @@
   stdenv,
   fetchFromGitHub,
   buildNpmPackage,
+  copyDesktopItems,
   darwin,
+  firefox-esr-140-unwrapped,
+  gawk,
+  libGL,
+  makeBinaryWrapper,
+  makeDesktopItem,
+  nix-update-script,
   nodejs_22,
+  pciutils,
   perl,
   python3,
-  zip,
-  unzip,
-  xz,
-  gawk,
   rsync,
-  firefox-esr-140-unwrapped,
-  makeDesktopItem,
-  copyDesktopItems,
-  libGL,
-  pciutils,
   speechd-minimal,
+  unzip,
   wrapGAppsHook3,
-  nix-update-script,
   xvfb-run,
-  makeBinaryWrapper,
-  doCheck ? false,
+  xz,
+  zip,
   zotero,
+  doCheck ? false,
 }:
 let
   # note-editor needs nodejs 22. Any newer version fails to build zotero's fork of @benrbray/prosemirror-math during npm install.
@@ -36,15 +36,16 @@ let
     owner = "zotero";
     repo = "zotero";
     tag = version;
-    fetchSubmodules = true;
     hash = "sha256-9Rku6iF7Sczqekw8ms8hluIc+B/5BE9zHlBqp7vGlY4=";
+    fetchSubmodules = true;
   };
 
   pdf-js = buildNpmPackage {
-    pname = "zotero-pdf-js";
     inherit version nodejs;
+    pname = "zotero-pdf-js";
     src = "${src}/pdf-worker/pdf.js";
     npmDepsHash = "sha256-KeYAY6EWBZVd3QucDEDtI6lwtTahCEFBFf2Ebib9HKg=";
+
     buildPhase = ''
       runHook preBuild
 
@@ -54,6 +55,7 @@ let
 
       runHook postBuild
     '';
+
     installPhase = ''
       runHook preInstall
 
@@ -65,10 +67,11 @@ let
   };
 
   epub-js = buildNpmPackage {
-    pname = "zotero-epub-js";
     inherit version nodejs;
+    pname = "zotero-epub-js";
     src = "${src}/reader/epubjs/epub.js";
     npmDepsHash = "sha256-6XY6uczPOpMpRHDQbkQRHKBDDRQ/MXIVepGBx1V+h5Q=";
+
     buildPhase = ''
       runHook preBuild
 
@@ -77,6 +80,7 @@ let
 
       runHook postBuild
     '';
+
     installPhase = ''
       runHook preInstall
 
@@ -88,14 +92,15 @@ let
   };
 
   pdf-reader = buildNpmPackage {
-    pname = "zotero-pdf-reader";
     inherit version nodejs;
+    pname = "zotero-pdf-reader";
     src = "${src}/reader";
-    npmDepsHash = "sha256-8marAeBAW5cKDaJT3xbVsXyVfGa5ehZYUYijDzFng38=";
+
     patches = [
       ./pdf-reader-locales.patch
       ./pdf-reader-build-fix.patch
     ];
+
     postPatch = ''
       rm -rf pdfjs/pdf.js
       cp -r ${pdf-js} pdfjs/pdf.js
@@ -108,7 +113,9 @@ let
       mkdir -p locales/en-US/
       cp -r ${src}/chrome/locale/en-US/zotero/* locales/en-US/
     '';
-    npmBuildScript = "build:zotero";
+
+    npmDepsHash = "sha256-8marAeBAW5cKDaJT3xbVsXyVfGa5ehZYUYijDzFng38=";
+
     installPhase = ''
       runHook preInstall
 
@@ -117,20 +124,26 @@ let
 
       runHook postInstall
     '';
+
+    npmBuildScript = "build:zotero";
   };
 
   pdf-worker = buildNpmPackage {
-    pname = "zotero-pdf-worker";
     inherit version nodejs;
+    pname = "zotero-pdf-worker";
     src = "${src}/pdf-worker";
-    npmDepsHash = "sha256-TGuN1fZOClzm6xD2rmn5BAemN4mbyOVaLbSRyMeDIm8=";
-    nativeBuildInputs = [
-      rsync
-    ];
+
     postPatch = ''
       rm -rf pdf.js
       cp -r ${pdf-js} pdf.js
     '';
+
+    nativeBuildInputs = [
+      rsync
+    ];
+
+    npmDepsHash = "sha256-TGuN1fZOClzm6xD2rmn5BAemN4mbyOVaLbSRyMeDIm8=";
+
     installPhase = ''
       runHook preInstall
 
@@ -142,16 +155,18 @@ let
   };
 
   note-editor = buildNpmPackage {
-    pname = "zotero-note-editor";
     inherit version nodejs;
+    pname = "zotero-note-editor";
     src = "${src}/note-editor";
-    npmDepsHash = "sha256-3KSSm8oCNOIDN/ZHhDbx7+cF20qtjtZwpnCOOWe3WQc=";
-    makeCacheWritable = true;
     patches = [ ./pdf-reader-locales.patch ];
+
     postPatch = ''
       mkdir -p locales/en-US/
       cp -r ${src}/chrome/locale/en-US/zotero/* locales/en-US/
     '';
+
+    npmDepsHash = "sha256-3KSSm8oCNOIDN/ZHhDbx7+cF20qtjtZwpnCOOWe3WQc=";
+
     installPhase = ''
       runHook preInstall
 
@@ -160,6 +175,8 @@ let
 
       runHook postInstall
     '';
+
+    makeCacheWritable = true;
   };
 
 in
@@ -171,25 +188,7 @@ buildNpmPackage (finalAttrs: {
     nodejs
     ;
 
-  npmDepsHash = "sha256-dtbA1V38u26gqWoN+kW/tnccl6HFX7p8fPAneq+mw6U=";
-
-  nativeBuildInputs = [
-    perl
-    python3
-    zip
-    unzip
-    xz
-    gawk
-    rsync
-    copyDesktopItems
-  ]
-  ++ lib.optionals stdenv.hostPlatform.isDarwin [
-    makeBinaryWrapper
-    darwin.autoSignDarwinBinariesHook
-  ]
-  ++ lib.optionals (!stdenv.hostPlatform.isDarwin) [
-    wrapGAppsHook3
-  ];
+  inherit doCheck;
 
   patches = [
     ./avoid-git.patch
@@ -226,6 +225,28 @@ buildNpmPackage (finalAttrs: {
       sed -i "s|it(\"$test|it.skip(\"$test|" test/tests/*.js
     done
   '';
+
+  nativeBuildInputs = [
+    perl
+    python3
+    zip
+    unzip
+    xz
+    gawk
+    rsync
+    copyDesktopItems
+  ]
+  ++ lib.optionals stdenv.hostPlatform.isDarwin [
+    makeBinaryWrapper
+    darwin.autoSignDarwinBinariesHook
+  ]
+  ++ lib.optionals (!stdenv.hostPlatform.isDarwin) [
+    wrapGAppsHook3
+  ];
+
+  npmDepsHash = "sha256-dtbA1V38u26gqWoN+kW/tnccl6HFX7p8fPAneq+mw6U=";
+  # Build with test support if `doCheck` is enabled.
+  env.ZOTERO_TEST = doCheck;
 
   buildPhase =
     let
@@ -268,10 +289,6 @@ buildNpmPackage (finalAttrs: {
       runHook postBuild
     '';
 
-  inherit doCheck;
-  # Build with test support if `doCheck` is enabled.
-  env.ZOTERO_TEST = doCheck;
-
   nativeCheckInputs = [
     xvfb-run
   ];
@@ -283,26 +300,6 @@ buildNpmPackage (finalAttrs: {
 
     runHook postCheck
   '';
-
-  desktopItems = [
-    (makeDesktopItem {
-      name = "zotero";
-      exec = "zotero -url %U";
-      icon = "zotero";
-      comment = finalAttrs.meta.description;
-      desktopName = "Zotero";
-      genericName = "Reference Management";
-      categories = [
-        "Office"
-        "Database"
-      ];
-      startupNotify = true;
-      mimeTypes = [
-        "x-scheme-handler/zotero"
-        "text/plain"
-      ];
-    })
-  ];
 
   installPhase = ''
     runHook preInstall
@@ -346,22 +343,48 @@ buildNpmPackage (finalAttrs: {
     makeWrapper $out/Applications/Zotero.app/Contents/MacOS/zotero $out/bin/zotero
   '';
 
+  desktopItems = [
+    (makeDesktopItem {
+      categories = [
+        "Office"
+        "Database"
+      ];
+
+      comment = finalAttrs.meta.description;
+      desktopName = "Zotero";
+      exec = "zotero -url %U";
+      genericName = "Reference Management";
+      icon = "zotero";
+
+      mimeTypes = [
+        "x-scheme-handler/zotero"
+        "text/plain"
+      ];
+
+      name = "zotero";
+      startupNotify = true;
+    })
+  ];
+
   passthru = {
     tests.build-with-checks = zotero.override {
       doCheck = true;
     };
+
     updateScript = nix-update-script { };
   };
 
   meta = {
-    homepage = "https://www.zotero.org";
     description = "Collect, organize, cite, and share your research sources";
+    homepage = "https://www.zotero.org";
     changelog = "https://www.zotero.org/support/changelog";
-    mainProgram = "zotero";
     license = lib.licenses.agpl3Only;
-    platforms = lib.platforms.linux ++ lib.platforms.darwin;
+
     maintainers = with lib.maintainers; [
       mynacol
     ];
+
+    platforms = lib.platforms.linux ++ lib.platforms.darwin;
+    mainProgram = "zotero";
   };
 })

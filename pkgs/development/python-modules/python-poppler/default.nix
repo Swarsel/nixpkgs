@@ -2,23 +2,22 @@
   lib,
   buildPythonPackage,
   fetchPypi,
-  pytestCheckHook,
   meson-python,
   ninja,
-  poppler,
   pkg-config,
+  poppler,
   pybind11,
+  pytestCheckHook,
 }:
 
 buildPythonPackage rec {
   pname = "python-poppler";
   version = "0.4.1";
-  pyproject = true;
 
   src = fetchPypi {
     inherit version;
-    pname = "python_poppler";
     hash = "sha256-5spcI+wCNQvyzvhaa/nxsmF5ZDbbR4F2+dJPsU7uzGo=";
+    pname = "python_poppler";
   };
 
   patches = [
@@ -29,19 +28,16 @@ buildPythonPackage rec {
     ./poppler-25.patch
   ];
 
-  build-system = [ meson-python ];
-
-  buildInputs = [ pybind11 ];
-
   nativeBuildInputs = [
     ninja
     pkg-config
   ];
 
+  buildInputs = [ pybind11 ];
   propagatedBuildInputs = [ poppler ];
-
   nativeCheckInputs = [ pytestCheckHook ];
-
+  build-system = [ meson-python ];
+  pyproject = true;
   pythonImportsCheck = [ "poppler" ];
 
   meta = {

@@ -3,8 +3,8 @@
   stdenv,
   fetchFromGitHub,
   kernel,
-  kmod,
   kernelModuleMakeFlags,
+  kmod,
   nix-update-script,
 }:
 
@@ -19,9 +19,17 @@ stdenv.mkDerivation rec {
     hash = "sha256-KXJgsEJJTr4TG4Ww5HlF42v2F1J+AsHwrllUP1n/7g8=";
   };
 
-  hardeningDisable = [
-    "format"
-    "pic"
+  outputs = [
+    "out"
+    "bin"
+  ];
+
+  nativeBuildInputs = [ kmod ] ++ kernel.moduleBuildDependencies;
+
+  makeFlags = kernelModuleMakeFlags ++ [
+    "KERNELRELEASE=${kernel.modDirVersion}"
+    "KERNEL_DIR=${kernel.dev}/lib/modules/${kernel.modDirVersion}/build"
+    "v4l2loopback.ko"
   ];
 
   preBuild = ''
@@ -34,35 +42,29 @@ stdenv.mkDerivation rec {
     make utils
   '';
 
-  nativeBuildInputs = [ kmod ] ++ kernel.moduleBuildDependencies;
-
   postInstall = ''
     make install-utils PREFIX=$bin
   '';
 
-  outputs = [
-    "out"
-    "bin"
-  ];
-
-  makeFlags = kernelModuleMakeFlags ++ [
-    "KERNELRELEASE=${kernel.modDirVersion}"
-    "KERNEL_DIR=${kernel.dev}/lib/modules/${kernel.modDirVersion}/build"
-    "v4l2loopback.ko"
+  hardeningDisable = [
+    "format"
+    "pic"
   ];
 
   passthru.updateScript = nix-update-script { };
 
   meta = {
     description = "Kernel module to create V4L2 loopback devices";
-    mainProgram = "v4l2loopback-ctl";
     homepage = "https://github.com/umlaeute/v4l2loopback";
     license = lib.licenses.gpl2Only;
+
     maintainers = with lib.maintainers; [
       moni
       bot-wxt1221
     ];
+
     platforms = lib.platforms.linux;
+    mainProgram = "v4l2loopback-ctl";
     outputsToInstall = [ "out" ];
   };
 }

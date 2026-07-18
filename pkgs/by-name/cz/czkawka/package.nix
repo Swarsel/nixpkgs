@@ -1,9 +1,10 @@
 {
   lib,
+  stdenv,
+  fetchFromGitHub,
   atk,
   cairo,
   callPackage,
-  fetchFromGitHub,
   fontconfig,
   gdk-pixbuf,
   glib,
@@ -18,12 +19,11 @@
   pango,
   pkg-config,
   rustPlatform,
-  stdenv,
   testers,
+  versionCheckHook,
   wayland,
   wrapGAppsHook4,
   xvfb-run,
-  versionCheckHook,
 }:
 
 let
@@ -38,7 +38,7 @@ let
       hash = "sha256-KbGcaeQcpf2IL3I2PmsBpg8n+IfSuJl5tkLOxNCtYaQ=";
     };
 
-    cargoHash = "sha256-+1K2a64XcbBePiQ/LeaSVCU/Ih0Fr4EjzNU5xpzfz2Q=";
+    strictDeps = true;
 
     nativeBuildInputs = [
       gobject-introspection
@@ -61,11 +61,9 @@ let
       wayland
     ];
 
-    nativeCheckInputs = [ xvfb-run ];
-
-    strictDeps = true;
-
+    cargoHash = "sha256-+1K2a64XcbBePiQ/LeaSVCU/Ih0Fr4EjzNU5xpzfz2Q=";
     doCheck = stdenv.hostPlatform.isLinux && (stdenv.hostPlatform == stdenv.buildPlatform);
+    nativeCheckInputs = [ xvfb-run ];
 
     checkPhase = ''
       runHook preCheck
@@ -86,7 +84,12 @@ let
       install -Dm444 -t $out/share/icons/hicolor/scalable/apps data/icons/io.github.qarmin.krokiet.svg
       install -Dm444 -t $out/share/metainfo data/io.github.qarmin.krokiet.metainfo.xml
     '';
-    dontWrapGApps = true;
+
+    doInstallCheck = true;
+
+    nativeInstallCheckInputs = [
+      versionCheckHook
+    ];
 
     postFixup = ''
       wrapGApp $out/bin/czkawka_gui
@@ -106,32 +109,32 @@ let
       }" $out/bin/krokiet
     '';
 
-    nativeInstallCheckInputs = [
-      versionCheckHook
-    ];
+    dontWrapGApps = true;
     versionCheckProgram = "${placeholder "out"}/bin/czkawka_cli";
-    doInstallCheck = true;
 
     passthru = {
       tests.version = testers.testVersion {
-        package = self;
         command = "czkawka_cli --version";
+        package = self;
       };
+
       wrapper = callPackage ./wrapper.nix {
         czkawka = self;
       };
     };
 
     meta = {
-      homepage = "https://github.com/qarmin/czkawka";
       description = "Simple, fast and easy to use app to remove unnecessary files from your computer";
+      homepage = "https://github.com/qarmin/czkawka";
       changelog = "https://github.com/qarmin/czkawka/raw/${self.version}/Changelog.md";
       license = with lib.licenses; [ mit ];
-      mainProgram = "czkawka_gui";
+
       maintainers = with lib.maintainers; [
         yanganto
         _0x4A6F
       ];
+
+      mainProgram = "czkawka_gui";
     };
   };
 in

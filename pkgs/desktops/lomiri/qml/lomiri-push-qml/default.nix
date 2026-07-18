@@ -1,9 +1,9 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitLab,
-  gitUpdater,
   cmake,
+  gitUpdater,
   lomiri-api,
   lomiri-indicator-network,
   pkg-config,
@@ -55,8 +55,6 @@ stdenv.mkDerivation (finalAttrs: {
     qtdeclarative
   ];
 
-  dontWrapQtApps = true;
-
   cmakeFlags = [
     (lib.cmakeBool "ENABLE_QT6" withQt6)
     (lib.cmakeBool "ENABLE_UBUNTU_COMPAT" (!withQt6))
@@ -67,16 +65,19 @@ stdenv.mkDerivation (finalAttrs: {
     export QT_PLUGIN_PATH=${lib.getBin qtbase}/${qtbase.qtPluginPrefix}
   '';
 
+  dontWrapQtApps = true;
   passthru.updateScript = gitUpdater { };
 
   meta = {
     description = "Lomiri Push Notifications QML plugin";
     homepage = "https://gitlab.com/ubports/development/core/lomiri-push-qml";
+
     changelog = "https://gitlab.com/ubports/development/core/lomiri-push-qml/-/blob/${
       if (!isNull finalAttrs.src.tag) then finalAttrs.src.tag else finalAttrs.src.rev
     }/ChangeLog";
+
     license = lib.licenses.lgpl3Only;
-    teams = [ lib.teams.lomiri ];
     platforms = lib.platforms.linux;
+    teams = [ lib.teams.lomiri ];
   };
 })

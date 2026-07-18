@@ -22,17 +22,19 @@ stdenv.mkDerivation (finalAttrs: {
     # remove unneeded definition of __deprecated__
     sed '/^#define __deprecated__$/d' -i scan/scan_iso8601.c scan/scan_httpdate.c || die
   '';
-  preBuild = ''
-    make headers
-  '';
 
   makeFlags = [
     "prefix=$(out)"
     "CC=${stdenv.cc.targetPrefix}cc"
   ];
-  enableParallelBuilding = true;
 
   env.NIX_CFLAGS_COMPILE = toString [ "-Wno-error=incompatible-pointer-types" ];
+
+  preBuild = ''
+    make headers
+  '';
+
+  enableParallelBuilding = true;
 
   meta = {
     description = "GPL reimplementation of libdjb";

@@ -19,19 +19,17 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-OC84SxB0N+QbyXGAfdHDSWde16IwdCkIPbU699wnvY0=";
   };
 
-  nativeBuildInputs = [ zig.hook ];
-
   strictDeps = true;
-
+  nativeBuildInputs = [ zig.hook ];
   __structuredAttrs = true;
 
   meta = {
-    homepage = "https://github.com/rockorager/zigdoc";
+    inherit (zig.meta) platforms;
     description = "CLI tool to view documentation for zig library symbols";
+    homepage = "https://github.com/rockorager/zigdoc";
     changelog = "https://github.com/rockorager/zigdoc/releases";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ ddogfoodd ];
     mainProgram = "zigdoc";
-    inherit (zig.meta) platforms;
   };
 })

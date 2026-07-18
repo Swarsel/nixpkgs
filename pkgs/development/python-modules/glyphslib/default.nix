@@ -1,25 +1,23 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
+  defcon,
   fonttools,
   openstep-plist,
-  ufolib2,
   pytestCheckHook,
-  unicodedata2,
   setuptools-scm,
-  ufonormalizer,
-  xmldiff,
-  defcon,
-  ufo2ft,
   skia-pathops,
+  ufo2ft,
+  ufolib2,
+  ufonormalizer,
+  unicodedata2,
+  xmldiff,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "glyphslib";
   version = "6.13.1";
-
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "googlefonts";
@@ -28,6 +26,7 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-MV6dEAk7toBzcXzCWpjnEoJwhdYPC609HpNWzCvVyGc=";
   };
 
+  nativeCheckInputs = [ pytestCheckHook ];
   build-system = [ setuptools-scm ];
 
   dependencies = [
@@ -42,14 +41,13 @@ buildPythonPackage (finalAttrs: {
     skia-pathops
   ];
 
-  nativeCheckInputs = [ pytestCheckHook ];
-
-  pythonImportsCheck = [ "glyphsLib" ];
-
   disabledTestPaths = [
     "tests/builder/designspace_gen_test.py" # this test tries to use non-existent font "CoolFoundry Examplary Serif"
     "tests/builder/interpolation_test.py" # this test tries to use a font that previous test should made
   ];
+
+  pyproject = true;
+  pythonImportsCheck = [ "glyphsLib" ];
 
   meta = {
     description = "Bridge from Glyphs source files (.glyphs) to UFOs and Designspace files via defcon and designspaceLib";

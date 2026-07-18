@@ -3,8 +3,6 @@
   stdenv,
   fetchFromGitHub,
   godot_4_6,
-  vulkan-headers,
-  vulkan-loader,
   libx11,
   libxcursor,
   libxext,
@@ -14,6 +12,8 @@
   libxrandr,
   libxrender,
   nix-update-script,
+  vulkan-headers,
+  vulkan-loader,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -100,10 +100,10 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Procedural materials authoring tool";
-    mainProgram = "material-maker";
     homepage = "https://www.materialmaker.org";
     license = lib.licenses.mit;
-    platforms = [ "x86_64-linux" ];
     maintainers = with lib.maintainers; [ lelgenio ];
+    platforms = [ "x86_64-linux" ];
+    mainProgram = "material-maker";
   };
 })

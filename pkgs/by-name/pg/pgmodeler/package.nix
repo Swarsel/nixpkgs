@@ -1,13 +1,13 @@
 {
   lib,
   stdenv,
-  copyDesktopItems,
   fetchFromGitHub,
+  copyDesktopItems,
+  cups,
+  libpq,
+  libxml2,
   makeDesktopItem,
   pkg-config,
-  libpq,
-  cups,
-  libxml2,
   qt6,
 }:
 
@@ -29,18 +29,6 @@ stdenv.mkDerivation (finalAttrs: {
     copyDesktopItems
   ];
 
-  qmakeFlags = [
-    "pgmodeler.pro"
-    "CONFIG+=release"
-  ]
-  ++ lib.optionals stdenv.hostPlatform.isDarwin [
-    "PGSQL_INC=${lib.getDev libpq}/include"
-    "PGSQL_LIB=${lib.getLib libpq}/lib/libpq.dylib"
-    "XML_INC=${libxml2.dev}/include/libxml2"
-    "XML_LIB=${libxml2.out}/lib/libxml2.dylib"
-    "PREFIX=${placeholder "out"}/Applications/pgModeler.app/Contents"
-  ];
-
   buildInputs = [
     qt6.qtbase
     qt6.qtsvg
@@ -50,19 +38,6 @@ stdenv.mkDerivation (finalAttrs: {
   ++ lib.optionals stdenv.hostPlatform.isDarwin [
     cups
     libxml2
-  ];
-
-  desktopItems = [
-    (makeDesktopItem {
-      name = "pgModeler";
-      exec = "pgmodeler";
-      icon = "pgmodeler";
-      desktopName = "PgModeler";
-      genericName = "PgModeler";
-      comment = finalAttrs.meta.description;
-      categories = [ "Development" ];
-      startupWMClass = "pgmodeler";
-    })
   ];
 
   postInstall = ''
@@ -76,7 +51,32 @@ stdenv.mkDerivation (finalAttrs: {
     done
   '';
 
+  desktopItems = [
+    (makeDesktopItem {
+      categories = [ "Development" ];
+      comment = finalAttrs.meta.description;
+      desktopName = "PgModeler";
+      exec = "pgmodeler";
+      genericName = "PgModeler";
+      icon = "pgmodeler";
+      name = "pgModeler";
+      startupWMClass = "pgmodeler";
+    })
+  ];
+
   dontWrapQtApps = stdenv.hostPlatform.isDarwin;
+
+  qmakeFlags = [
+    "pgmodeler.pro"
+    "CONFIG+=release"
+  ]
+  ++ lib.optionals stdenv.hostPlatform.isDarwin [
+    "PGSQL_INC=${lib.getDev libpq}/include"
+    "PGSQL_LIB=${lib.getLib libpq}/lib/libpq.dylib"
+    "XML_INC=${libxml2.dev}/include/libxml2"
+    "XML_LIB=${libxml2.out}/lib/libxml2.dylib"
+    "PREFIX=${placeholder "out"}/Applications/pgModeler.app/Contents"
+  ];
 
   meta = {
     description = "Database modeling tool for PostgreSQL";

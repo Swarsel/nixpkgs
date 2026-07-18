@@ -13,14 +13,16 @@
 buildPythonPackage rec {
   pname = "in-toto-attestation";
   version = "0.9.3";
-  pyproject = true;
 
   # Tags on GitHub do not match the Pypi versions
   src = fetchPypi {
-    pname = "in_toto_attestation";
     inherit version;
     hash = "sha256-zAz5dBfZSVO5/ubp1BWhHFm01HzuTxN0b/6TWyjj6MQ=";
+    pname = "in_toto_attestation";
   };
+
+  # No tests in the Pypi archive
+  doCheck = false;
 
   build-system = [
     hatchling
@@ -30,10 +32,8 @@ buildPythonPackage rec {
     protobuf
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "in_toto_attestation" ];
-
-  # No tests in the Pypi archive
-  doCheck = false;
 
   meta = {
     description = "Python implementation of in-toto attestations";

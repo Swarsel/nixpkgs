@@ -1,17 +1,16 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   poetry-core,
-  pytestCheckHook,
   pytest-asyncio_0,
+  pytestCheckHook,
   responses,
 }:
 
 buildPythonPackage rec {
   pname = "backoff";
   version = "2.2.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "litl";
@@ -33,6 +32,7 @@ buildPythonPackage rec {
     responses
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "backoff" ];
 
   meta = {

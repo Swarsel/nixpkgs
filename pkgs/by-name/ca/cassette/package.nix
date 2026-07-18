@@ -4,11 +4,6 @@
   fetchFromGitHub,
   blueprint-compiler,
   desktop-file-utils,
-  meson,
-  ninja,
-  pkg-config,
-  vala,
-  wrapGAppsHook4,
   glib-networking,
   gst_all_1,
   gtk4,
@@ -17,9 +12,14 @@
   libgee,
   libsoup_3,
   libxml2,
-  sqlite,
-  webkitgtk_6_0,
+  meson,
+  ninja,
   nix-update-script,
+  pkg-config,
+  sqlite,
+  vala,
+  webkitgtk_6_0,
+  wrapGAppsHook4,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -32,6 +32,8 @@ stdenv.mkDerivation (finalAttrs: {
     rev = "v${finalAttrs.version}";
     hash = "sha256-ceXEWcSBQMbG9cuhWjtwI0z/gTzI1t5+9qvFcUeKyrQ=";
   };
+
+  strictDeps = true;
 
   nativeBuildInputs = [
     blueprint-compiler
@@ -58,8 +60,6 @@ stdenv.mkDerivation (finalAttrs: {
     sqlite
     webkitgtk_6_0
   ];
-
-  strictDeps = true;
 
   passthru.updateScript = nix-update-script {
     extraArgs = [ "--version-regex=^v([0-9].*)$" ];

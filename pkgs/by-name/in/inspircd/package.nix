@@ -68,22 +68,22 @@ in
   lib,
   stdenv,
   fetchFromGitHub,
+  gnutls,
+  http-parser,
+  libargon2,
+  libmaxminddb,
+  libmysqlclient,
+  libpq,
   nixosTests,
+  openldap,
+  openssl,
+  pcre2,
   perl,
   pkg-config,
-  http-parser,
-  utf8cpp,
-  libargon2,
-  openldap,
-  libpq,
-  libmysqlclient,
-  pcre2,
   re2,
   sqlite,
-  gnutls,
-  libmaxminddb,
-  openssl,
   tre,
+  utf8cpp,
   yyjson,
   # For a full list of module names, see https://docs.inspircd.org/packaging/
   extraModules ? compatibleModules lib stdenv,
@@ -105,24 +105,25 @@ let
         }
       )
     ];
+
+    # GPLv2 incompatible
+    geo_maxmind = [ libmaxminddb ];
     ldap = [ openldap ];
     log_json = [ yyjson ];
     log_syslog = [ ];
     mysql = [ libmysqlclient ];
     pgsql = [ libpq ];
     regex_pcre2 = [ pcre2 ];
-    regex_re2 = [ re2 ];
-    sqlite3 = [ sqlite ];
-    ssl_gnutls = [ gnutls ];
     # depends on stdenv.cc.libc
     regex_posix = [ ];
-    sslrehashsignal = [ ];
+    regex_re2 = [ re2 ];
     # depends on used libc++
     regex_stdlib = [ ];
     regex_tre = [ tre ];
-    # GPLv2 incompatible
-    geo_maxmind = [ libmaxminddb ];
+    sqlite3 = [ sqlite ];
+    ssl_gnutls = [ gnutls ];
     ssl_openssl = [ openssl ];
+    sslrehashsignal = [ ];
   };
 
   # buildInputs necessary for the enabled extraModules
@@ -176,17 +177,22 @@ stdenv.mkDerivation (finalAttrs: {
     libpq.pg_config
   ];
 
+  buildInputs = [
+    http-parser
+    utf8cpp
+  ]
+  ++ extraInputs;
+
   # Disable use of the vendored versions of these libraries
   env = {
     SYSTEM_HTTP_PARSER = "1";
     SYSTEM_UTFCPP = "1";
   };
 
-  buildInputs = [
-    http-parser
-    utf8cpp
-  ]
-  ++ extraInputs;
+  postInstall = ''
+    # for some reasons the executables are not executable
+    chmod +x $bin/bin/*
+  '';
 
   configurePhase = ''
     runHook preConfigure
@@ -217,11 +223,6 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postConfigure
   '';
 
-  postInstall = ''
-    # for some reasons the executables are not executable
-    chmod +x $bin/bin/*
-  '';
-
   enableParallelBuilding = true;
 
   passthru.tests = {
@@ -230,6 +231,8 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Modular C++ IRC server";
+    homepage = "https://www.inspircd.org/";
+
     license = [
       lib.licenses.gpl2Only
     ]
@@ -241,12 +244,12 @@ stdenv.mkDerivation (finalAttrs: {
     # a GPL 2 incompatibility even if it is not in a top-level attribute,
     # but pulled in indirectly somehow.
     ++ lib.optional gpl2Conflict lib.licenses.unfree;
+
     maintainers = [ lib.maintainers.sternenseemann ];
     # windows is theoretically possible, but requires extra work
     # which I am not willing to do and can't test.
     # https://github.com/inspircd/inspircd/blob/master/win/README.txt
     platforms = lib.platforms.unix;
-    homepage = "https://www.inspircd.org/";
   }
   // lib.optionalAttrs gpl2Conflict {
     # make sure we never distribute a GPLv2-violating module

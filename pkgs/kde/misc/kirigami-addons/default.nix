@@ -1,12 +1,12 @@
 {
   lib,
-  mkKdeDerivation,
   fetchurl,
+  kitemmodels,
+  mkKdeDerivation,
+  qt5compat,
   qtdeclarative,
   qtmultimedia,
-  qt5compat,
   qttools,
-  kitemmodels,
 }:
 mkKdeDerivation rec {
   pname = "kirigami-addons";
@@ -17,8 +17,9 @@ mkKdeDerivation rec {
     hash = "sha256-xUOkk85YdfQF+xyf9tUxBg7QgsxtcQ5W1GrELRZCB7s=";
   };
 
-  extraNativeBuildInputs = [ qttools ];
   extraBuildInputs = [ qtdeclarative ];
+  extraNativeBuildInputs = [ qttools ];
+
   extraPropagatedBuildInputs = [
     qt5compat
     qtmultimedia

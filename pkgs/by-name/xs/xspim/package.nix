@@ -1,18 +1,18 @@
 {
   lib,
   stdenv,
-  fetchsvn,
-  imake,
   bison,
+  fetchsvn,
   flex,
-  libxt,
-  libxpm,
-  libxmu,
-  libxext,
-  libxaw,
-  libx11,
-  libsm,
+  imake,
   libice,
+  libsm,
+  libx11,
+  libxaw,
+  libxext,
+  libxmu,
+  libxpm,
+  libxt,
 }:
 
 stdenv.mkDerivation {
@@ -30,6 +30,7 @@ stdenv.mkDerivation {
     bison
     flex
   ];
+
   buildInputs = [
     libice
     libsm
@@ -41,21 +42,23 @@ stdenv.mkDerivation {
     libxt
   ];
 
-  preConfigure = ''
-    cd xspim
-    xmkmf
-  '';
-
   makeFlags = [
     "BIN_DIR=${placeholder "out"}/bin"
     "EXCEPTION_DIR=${placeholder "out"}/share/spim"
     "MAN_DIR=${placeholder "out"}/share/man/man1"
   ];
 
+  preConfigure = ''
+    cd xspim
+    xmkmf
+  '';
+
   doCheck = true;
+
   preCheck = ''
     pushd ../spim
   '';
+
   postCheck = ''
     popd
   '';

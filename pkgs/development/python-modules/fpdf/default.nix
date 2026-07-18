@@ -7,7 +7,6 @@
 buildPythonPackage rec {
   pname = "fpdf";
   version = "1.7.2";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
@@ -16,10 +15,11 @@ buildPythonPackage rec {
 
   # No tests available
   doCheck = false;
+  format = "setuptools";
 
   meta = {
-    homepage = "https://github.com/reingart/pyfpdf";
     description = "Simple PDF generation for Python";
+    homepage = "https://github.com/reingart/pyfpdf";
     license = lib.licenses.lgpl3;
     maintainers = [ ];
   };

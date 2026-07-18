@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule (finalAttrs: {
@@ -23,9 +23,9 @@ buildGoModule (finalAttrs: {
 
   meta = {
     description = "Protocol Buffer companion tool. Track your .proto files and prevent changes to messages and services which impact API compatibility. https://protolock.dev";
-    mainProgram = "protolock";
     homepage = "https://github.com/nilslice/protolock";
     license = lib.licenses.bsd3;
     maintainers = with lib.maintainers; [ groodt ];
+    mainProgram = "protolock";
   };
 })

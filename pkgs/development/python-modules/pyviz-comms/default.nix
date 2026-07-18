@@ -1,29 +1,31 @@
 {
+  lib,
   buildPythonPackage,
   fetchPypi,
   hatch-jupyter-builder,
   hatch-nodejs-version,
   hatchling,
-  lib,
-  param,
   panel,
+  param,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "pyviz-comms";
   version = "3.0.6";
-  pyproject = true;
 
   src = fetchPypi {
-    pname = "pyviz_comms";
     inherit (finalAttrs) version;
     hash = "sha256-c9ZrYgOQ2XlZssTYosB3jUH+IFgb5HF/AeRrj66MVpU=";
+    pname = "pyviz_comms";
   };
 
   postPatch = ''
     substituteInPlace pyproject.toml \
       --replace-fail '"jupyterlab>=4.0.0,<5",' ""
   '';
+
+  # there are not tests with the package
+  doCheck = false;
 
   build-system = [
     hatch-jupyter-builder
@@ -32,10 +34,7 @@ buildPythonPackage (finalAttrs: {
   ];
 
   dependencies = [ param ];
-
-  # there are not tests with the package
-  doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "pyviz_comms" ];
 
   passthru.tests = {

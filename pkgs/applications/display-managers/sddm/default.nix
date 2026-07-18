@@ -2,23 +2,21 @@
   lib,
   callPackage,
   runCommand,
-  wrapQtAppsHook,
   sddm-unwrapped,
+  wrapQtAppsHook,
   extraPackages ? [ ],
 }:
 runCommand "sddm-wrapped"
   {
-    pname = "sddm";
     inherit (sddm-unwrapped) version outputs;
-
-    buildInputs = sddm-unwrapped.buildInputs ++ extraPackages;
-    nativeBuildInputs = [ wrapQtAppsHook ];
-
+    pname = "sddm";
     strictDeps = true;
+    nativeBuildInputs = [ wrapQtAppsHook ];
+    buildInputs = sddm-unwrapped.buildInputs ++ extraPackages;
 
     passthru = {
-      unwrapped = sddm-unwrapped;
       inherit (sddm-unwrapped.passthru) tests;
+      unwrapped = sddm-unwrapped;
     };
 
     meta = sddm-unwrapped.meta;

@@ -1,8 +1,8 @@
 {
   lib,
-  stdenvNoCC,
   fetchurl,
   jre,
+  stdenvNoCC,
 }:
 
 let
@@ -10,17 +10,13 @@ let
   versionSnakeCase = builtins.replaceStrings [ "." ] [ "_" ] version;
 in
 stdenvNoCC.mkDerivation {
-  pname = "aspectj";
   inherit version;
-
-  __structuredAttrs = true;
+  pname = "aspectj";
 
   src = fetchurl {
     url = "https://github.com/eclipse/org.aspectj/releases/download/V${versionSnakeCase}/aspectj-${version}.jar";
     hash = "sha256-p+UOtuP8hNymfvmL/SPg99YrhU7m5GDudtLISqL5TWQ=";
   };
-
-  dontUnpack = true;
 
   nativeBuildInputs = [ jre ];
 
@@ -46,11 +42,14 @@ stdenvNoCC.mkDerivation {
     runHook postInstall
   '';
 
+  __structuredAttrs = true;
+  dontUnpack = true;
+
   meta = {
-    homepage = "https://www.eclipse.org/aspectj/";
     description = "Seamless aspect-oriented extension to the Java programming language";
+    homepage = "https://www.eclipse.org/aspectj/";
     license = lib.licenses.epl10;
-    platforms = lib.platforms.unix;
     sourceProvenance = with lib.sourceTypes; [ binaryBytecode ];
+    platforms = lib.platforms.unix;
   };
 }

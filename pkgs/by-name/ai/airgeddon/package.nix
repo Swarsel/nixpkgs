@@ -2,60 +2,60 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  makeWrapper,
   # Required
   aircrack-ng,
-  bash,
-  coreutils-full,
-  gawk,
-  gnugrep,
-  gnused,
-  iproute2,
-  iw,
-  pciutils,
-  procps,
-  tmux,
-  # X11 Front
-  xterm,
-  xset,
-  xdpyinfo,
-  # what the author calls "Internals"
-  usbutils,
-  wget,
-  ethtool,
-  util-linux,
-  ccze,
+  # Undocumented requirements (there is also ping)
+  apparmor-bin-utils,
   # Optionals
   # Missing in nixpkgs: beef, hostapd-wpe
   asleap,
+  bash,
   bettercap,
   bully,
+  ccze,
+  coreutils-full,
   crunch,
+  curl,
   dnsmasq,
+  ethtool,
   ettercap,
+  gawk,
+  glibc,
+  gnugrep,
+  gnused,
   hashcat,
   hcxdumptool,
   hcxtools,
   hostapd,
+  iproute2,
+  iw,
   john,
   lighttpd,
+  makeWrapper,
   mdk4,
-  nftables,
-  openssl,
-  pixiewps,
-  reaverwps-t6x, # Could be the upstream version too
-  wireshark-cli,
-  # Undocumented requirements (there is also ping)
-  apparmor-bin-utils,
-  curl,
-  glibc,
   ncurses,
   networkmanager,
+  nftables,
+  openssl,
+  pciutils,
+  pixiewps,
+  procps,
+  reaverwps-t6x, # Could be the upstream version too
   systemd,
+  tmux,
+  # what the author calls "Internals"
+  usbutils,
+  util-linux,
+  wget,
+  wireshark-cli,
+  xdpyinfo,
+  xset,
+  # X11 Front
+  xterm,
+  supportEvilTwin ? false,
+  supportHashCracking ? false,
   # Support groups
   supportWpaWps ? true, # Most common use-case
-  supportHashCracking ? false,
-  supportEvilTwin ? false,
   supportX11 ? false, # Allow using xterm instead of tmux, hard to test
 }:
 let
@@ -124,9 +124,6 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-FQB348wOXi89CnjS32cwZwTewjkguTbhK5Izvh/74Q0=";
   };
 
-  strictDeps = true;
-  nativeBuildInputs = [ makeWrapper ];
-
   # What these replacings do?
   # - Disable the auto-updates (we'll run from a read-only directory);
   # - Silence the checks (NixOS will enforce the PATH, it will only see the tools as we listed);
@@ -148,10 +145,8 @@ stdenv.mkDerivation (finalAttrs: {
       ' airgeddon.sh
   '';
 
-  # ATTENTION: No need to chdir around, we're removing the occurrences of "$(pwd)"
-  postInstall = ''
-    wrapProgram $out/bin/airgeddon --prefix PATH : ${lib.makeBinPath deps}
-  '';
+  strictDeps = true;
+  nativeBuildInputs = [ makeWrapper ];
 
   # Install only the interesting files
   installPhase = ''
@@ -162,13 +157,18 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  # ATTENTION: No need to chdir around, we're removing the occurrences of "$(pwd)"
+  postInstall = ''
+    wrapProgram $out/bin/airgeddon --prefix PATH : ${lib.makeBinPath deps}
+  '';
+
   meta = {
     description = "Multi-use TUI to audit wireless networks";
-    mainProgram = "airgeddon";
     homepage = "https://github.com/v1s1t0r1sh3r3/airgeddon";
     changelog = "https://github.com/v1s1t0r1sh3r3/airgeddon/blob/v${finalAttrs.version}/CHANGELOG.md";
     license = lib.licenses.gpl3Plus;
     maintainers = [ ];
     platforms = lib.platforms.linux;
+    mainProgram = "airgeddon";
   };
 })

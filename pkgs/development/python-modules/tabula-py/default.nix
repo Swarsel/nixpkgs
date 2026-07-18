@@ -1,21 +1,20 @@
 {
   lib,
+  fetchFromGitHub,
   buildPythonPackage,
   distro,
-  fetchFromGitHub,
+  jpype1,
   jre,
   numpy,
   pandas,
   pytestCheckHook,
   setuptools,
   setuptools-scm,
-  jpype1,
 }:
 
 buildPythonPackage rec {
   pname = "tabula-py";
   version = "2.10.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "chezou";
@@ -29,12 +28,13 @@ buildPythonPackage rec {
       --replace-fail '"java"' '"${lib.getExe jre}"'
   '';
 
+  buildInputs = [ jre ];
+  nativeCheckInputs = [ pytestCheckHook ];
+
   build-system = [
     setuptools
     setuptools-scm
   ];
-
-  buildInputs = [ jre ];
 
   dependencies = [
     distro
@@ -42,10 +42,6 @@ buildPythonPackage rec {
     pandas
     jpype1
   ];
-
-  nativeCheckInputs = [ pytestCheckHook ];
-
-  pythonImportsCheck = [ "tabula" ];
 
   disabledTests = [
     # Tests require network access
@@ -59,6 +55,9 @@ buildPythonPackage rec {
     # Failed: DID NOT RAISE <class 'RuntimeError'>
     "test_read_pdf_with_silent_true"
   ];
+
+  pyproject = true;
+  pythonImportsCheck = [ "tabula" ];
 
   meta = {
     description = "Module to extract table from PDF into pandas DataFrame";

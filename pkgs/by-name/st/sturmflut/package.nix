@@ -1,9 +1,9 @@
 {
-  stdenv,
   lib,
-  pkg-config,
-  imagemagick,
+  stdenv,
   fetchFromGitHub,
+  imagemagick,
+  pkg-config,
   unstableGitUpdater,
 }:
 
@@ -19,7 +19,6 @@ stdenv.mkDerivation {
   };
 
   nativeBuildInputs = [ pkg-config ];
-
   buildInputs = [ imagemagick ];
 
   installPhase = ''

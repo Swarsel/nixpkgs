@@ -1,11 +1,11 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
+  buildPythonPackage,
+  # passthru
+  gitUpdater,
   # build-system
   hatchling,
-
   # dependencies
   httpx,
   httpx-sse,
@@ -14,16 +14,11 @@
   orjson,
   typing-extensions,
   websockets,
-
-  # passthru
-  gitUpdater,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "langgraph-sdk";
   version = "0.4.2";
-  pyproject = true;
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "langchain-ai";
@@ -32,11 +27,8 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-30BY7f8m3YiqEBhb3+TQYTW0N40xI9kTQbMTh4BwcyU=";
   };
 
-  sourceRoot = "${finalAttrs.src.name}/libs/sdk-py";
-
+  __structuredAttrs = true;
   build-system = [ hatchling ];
-
-  pythonRelaxDeps = [ "websockets" ];
 
   dependencies = [
     httpx
@@ -49,15 +41,18 @@ buildPythonPackage (finalAttrs: {
   ];
 
   disabledTests = [ "test_aevaluate_results" ]; # Compares execution time to magic number
-
+  pyproject = true;
   pythonImportsCheck = [ "langgraph_sdk" ];
+  pythonRelaxDeps = [ "websockets" ];
+  sourceRoot = "${finalAttrs.src.name}/libs/sdk-py";
 
   passthru = {
     # python updater script sets the wrong tag
     skipBulkUpdate = true;
+
     updateScript = gitUpdater {
-      rev-prefix = "sdk==";
       ignoredVersions = "a|b|dev|rc";
+      rev-prefix = "sdk==";
     };
   };
 

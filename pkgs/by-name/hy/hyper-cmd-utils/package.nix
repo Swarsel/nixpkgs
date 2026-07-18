@@ -1,20 +1,14 @@
 {
-  buildNpmPackage,
   lib,
   fetchurl,
   fetchFromGitHub,
+  buildNpmPackage,
   patchelfUnstable,
 }:
 
 buildNpmPackage {
   pname = "hyper-cmd-utils";
   version = "1.0.0";
-
-  npmDepsHash = "sha256-FgUIHdmmeRhVoXisc2WdWUNA76vzFCfkM58RpqLoK5s=";
-
-  dontNpmBuild = true;
-
-  makeCacheWritable = true;
 
   src = fetchFromGitHub {
     owner = "holepunchto";
@@ -26,14 +20,16 @@ buildNpmPackage {
   patches = [
     # TODO: remove after this is merged: https://github.com/holepunchto/hyper-cmd-utils/pull/6
     (fetchurl {
-      url = "https://github.com/holepunchto/hyper-cmd-utils/commit/9bec5ca0a58fc9ba263afe750134f82e7e1c30c4.patch";
       hash = "sha256-p32r5y8PnROePbpsBLYza1+lGR2n0amSdo8qDWhyYxo=";
+      url = "https://github.com/holepunchto/hyper-cmd-utils/commit/9bec5ca0a58fc9ba263afe750134f82e7e1c30c4.patch";
     })
   ];
 
   nativeBuildInputs = [
     patchelfUnstable # --clear-execstack is only available on 0.18
   ];
+
+  npmDepsHash = "sha256-FgUIHdmmeRhVoXisc2WdWUNA76vzFCfkM58RpqLoK5s=";
 
   postInstall = ''
     # glibc 2.41+ refuses to make the stack executable if it isn't executable,
@@ -48,12 +44,15 @@ buildNpmPackage {
     done < <(find $out/lib/node_modules -name 'sodium-native.node' -print0)
   '';
 
+  dontNpmBuild = true;
+  makeCacheWritable = true;
+
   meta = {
     description = "HyperCmd Utils";
     homepage = "https://github.com/holepunchto/hyper-cmd-utils";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ davhau ];
-    mainProgram = "hyper-cmd-utils";
     platforms = lib.platforms.all;
+    mainProgram = "hyper-cmd-utils";
   };
 }

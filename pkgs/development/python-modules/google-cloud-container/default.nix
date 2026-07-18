@@ -15,19 +15,20 @@
 buildPythonPackage rec {
   pname = "google-cloud-container";
   version = "2.64.0";
-  pyproject = true;
 
   src = fetchPypi {
-    pname = "google_cloud_container";
     inherit version;
     hash = "sha256-tBWT4YnyXUxaW195ZmnB5DhLoKJfaymPZLVWkVseN00=";
+    pname = "google_cloud_container";
   };
 
-  build-system = [ setuptools ];
-
-  pythonRelaxDeps = [
-    "protobuf"
+  nativeCheckInputs = [
+    mock
+    pytest-asyncio
+    pytestCheckHook
   ];
+
+  build-system = [ setuptools ];
 
   dependencies = [
     google-api-core
@@ -37,21 +38,21 @@ buildPythonPackage rec {
   ]
   ++ google-api-core.optional-dependencies.grpc;
 
-  nativeCheckInputs = [
-    mock
-    pytest-asyncio
-    pytestCheckHook
-  ];
-
   disabledTests = [
     # Test requires credentials
     "test_list_clusters"
   ];
 
+  pyproject = true;
+
   pythonImportsCheck = [
     "google.cloud.container"
     "google.cloud.container_v1"
     "google.cloud.container_v1beta1"
+  ];
+
+  pythonRelaxDeps = [
+    "protobuf"
   ];
 
   meta = {

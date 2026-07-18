@@ -1,9 +1,9 @@
 {
   lib,
-  llvmPackages,
   fetchFromGitHub,
-  opencflite,
   libuuid,
+  llvmPackages,
+  opencflite,
   zlib,
 }:
 
@@ -54,10 +54,10 @@ stdenv.mkDerivation {
   '';
 
   meta = {
+    inherit (opencflite.meta) platforms;
     description = "Mach-O loader for Linux";
     homepage = "https://github.com/shinh/maloader";
     license = lib.licenses.bsd2;
     maintainers = with lib.maintainers; [ wegank ];
-    inherit (opencflite.meta) platforms;
   };
 }

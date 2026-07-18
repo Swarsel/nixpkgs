@@ -1,12 +1,12 @@
 {
-  pname,
-  version,
-  src,
+  stdenv,
+  meta,
   nativeBuildInputs,
   passthru,
-  meta,
-  stdenv,
+  pname,
+  src,
   undmg,
+  version,
 }:
 
 stdenv.mkDerivation {
@@ -16,12 +16,8 @@ stdenv.mkDerivation {
     src
     ;
 
-  sourceRoot = ".";
-
+  inherit passthru meta;
   nativeBuildInputs = nativeBuildInputs ++ [ undmg ];
-
-  # don't break code signing
-  dontFixup = true;
 
   installPhase = ''
     runHook preInstall
@@ -32,5 +28,7 @@ stdenv.mkDerivation {
     runHook postInstall
   '';
 
-  inherit passthru meta;
+  # don't break code signing
+  dontFixup = true;
+  sourceRoot = ".";
 }

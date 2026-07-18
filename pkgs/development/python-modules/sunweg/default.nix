@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   python-dateutil,
   requests,
   setuptools,
@@ -10,7 +10,6 @@
 buildPythonPackage rec {
   pname = "sunweg";
   version = "3.1.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "rokam";
@@ -28,7 +27,7 @@ buildPythonPackage rec {
 
   # Module has no tests
   doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "sunweg" ];
 
   meta = {

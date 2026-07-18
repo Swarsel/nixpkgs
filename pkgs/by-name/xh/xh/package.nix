@@ -1,14 +1,14 @@
 {
   lib,
-  rustPlatform,
+  stdenv,
   fetchFromGitHub,
   installShellFiles,
-  pkg-config,
-  withNativeTls ? true,
-  stdenv,
-  openssl,
-  versionCheckHook,
   nix-update-script,
+  openssl,
+  pkg-config,
+  rustPlatform,
+  versionCheckHook,
+  withNativeTls ? true,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -22,21 +22,22 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-Y8T/r7DaKha0cjWewJPzq4jo6Lab18cDrAj8Ek1D5Bg=";
   };
 
-  cargoHash = "sha256-JjXv4QMmOF0xsRloaKqbdJ8ztHtEg80QRJmnTW1/3Lc=";
-
-  buildFeatures = lib.optional withNativeTls "native-tls";
-
   nativeBuildInputs = [
     installShellFiles
     pkg-config
   ];
 
   buildInputs = lib.optionals (withNativeTls && !stdenv.hostPlatform.isDarwin) [ openssl ];
+  cargoHash = "sha256-JjXv4QMmOF0xsRloaKqbdJ8ztHtEg80QRJmnTW1/3Lc=";
 
   env = {
     # Get openssl-sys to use pkg-config
     OPENSSL_NO_VENDOR = 1;
   };
+
+  # Nix build happens in sandbox without internet connectivity
+  # disable tests as some of them require internet due to nature of application
+  doCheck = false;
 
   postInstall = ''
     installShellCompletion \
@@ -51,16 +52,14 @@ rustPlatform.buildRustPackage (finalAttrs: {
     ln -s $out/bin/xh $out/bin/xhs
   '';
 
-  # Nix build happens in sandbox without internet connectivity
-  # disable tests as some of them require internet due to nature of application
-  doCheck = false;
   doInstallCheck = true;
+  nativeInstallCheckInputs = [ versionCheckHook ];
+  buildFeatures = lib.optional withNativeTls "native-tls";
+
   postInstallCheck = ''
     $out/bin/xh --help > /dev/null
     $out/bin/xhs --help > /dev/null
   '';
-
-  nativeInstallCheckInputs = [ versionCheckHook ];
 
   passthru.updateScript = nix-update-script { };
 
@@ -69,9 +68,11 @@ rustPlatform.buildRustPackage (finalAttrs: {
     homepage = "https://github.com/ducaale/xh";
     changelog = "https://github.com/ducaale/xh/blob/v${finalAttrs.version}/CHANGELOG.md";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       defelo
     ];
+
     mainProgram = "xh";
   };
 })

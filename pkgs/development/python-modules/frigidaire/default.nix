@@ -1,9 +1,9 @@
 {
   lib,
+  fetchFromGitHub,
   buildPythonPackage,
   certifi,
   chardet,
-  fetchFromGitHub,
   idna,
   requests,
   setuptools,
@@ -13,7 +13,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "frigidaire";
   version = "0.18.49";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "bm1549";
@@ -39,7 +38,7 @@ buildPythonPackage (finalAttrs: {
 
   # Project has no tests
   doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "frigidaire" ];
 
   meta = {

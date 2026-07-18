@@ -5,21 +5,23 @@
   faiss-build,
   numpy,
   packaging,
-  setuptools,
   pip,
+  setuptools,
 }:
 
 buildPythonPackage {
   inherit (faiss-build) pname version;
-  pyproject = true;
-  __structuredAttrs = true;
-
+  # E.g. cuda libraries; needed because reference scanning
+  # can't see inside the wheels
+  inherit (faiss-build) buildInputs;
   src = "${lib.getOutput "dist" faiss-build}";
 
   postPatch = ''
     mkdir dist
     mv *.whl dist/
   '';
+
+  __structuredAttrs = true;
 
   build-system = [
     setuptools
@@ -31,12 +33,8 @@ buildPythonPackage {
     packaging
   ];
 
-  # E.g. cuda libraries; needed because reference scanning
-  # can't see inside the wheels
-  inherit (faiss-build) buildInputs;
-
   dontBuild = true;
-
+  pyproject = true;
   pythonImportsCheck = [ "faiss" ];
 
   passthru = {

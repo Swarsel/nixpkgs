@@ -1,16 +1,14 @@
 {
   lib,
+  fetchFromGitHub,
   astunparse,
   buildPythonPackage,
-  fetchFromGitHub,
   isPy3k,
 }:
 
 buildPythonPackage rec {
   pname = "frilouz";
   version = "0.0.2";
-  format = "setuptools";
-  disabled = !isPy3k;
 
   src = fetchFromGitHub {
     owner = "QuantStack";
@@ -20,7 +18,6 @@ buildPythonPackage rec {
   };
 
   nativeCheckInputs = [ astunparse ];
-
   preCheck = "cd test";
 
   checkPhase = ''
@@ -29,11 +26,13 @@ buildPythonPackage rec {
     runHook postCheck
   '';
 
+  disabled = !isPy3k;
+  format = "setuptools";
   pythonImportsCheck = [ "frilouz" ];
 
   meta = {
-    homepage = "https://github.com/QuantStack/frilouz";
     description = "Python AST parser adapter with partial error recovery";
+    homepage = "https://github.com/QuantStack/frilouz";
     license = lib.licenses.bsd3;
     maintainers = with lib.maintainers; [ cpcloud ];
   };

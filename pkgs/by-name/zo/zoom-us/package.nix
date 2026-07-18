@@ -1,17 +1,32 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchurl,
-  makeWrapper,
-  xar,
-  cpio,
-  callPackage,
-  nixosTests,
   buildFHSEnv,
-
+  callPackage,
+  cpio,
+  makeWrapper,
+  nixosTests,
+  xar,
+  # This is GNOME XDG portal support
+  gnomeXdgDesktopPortalSupport ? false,
+  # This is Hyprland XDG portal support
+  hyprlandXdgDesktopPortalSupport ? false,
+  # This is LXQT XDG portal support
+  lxqtXdgDesktopPortalSupport ? false,
+  # This is Plasma 6 (KDE) XDG portal support
+  plasma6XdgDesktopPortalSupport ? false,
   # Support pulseaudio by default
   pulseaudioSupport ? true,
-
+  # This function can be overridden to add in extra packages
+  targetPkgs ? pkgs: [ ],
+  # This list can be overridden to add in extra packages
+  # that are independent of the underlying package attrset
+  targetPkgsFixed ? [ ],
+  # This is `wlroots` XDG portal support
+  wlrXdgDesktopPortalSupport ? false,
+  # This is Xapp XDG portal support, used for GTK and various Cinnamon/MATE/Xfce4 infrastructure.
+  xappXdgDesktopPortalSupport ? false,
   # Whether to support XDG portals at all
   xdgDesktopPortalSupport ? (
     plasma6XdgDesktopPortalSupport
@@ -21,31 +36,6 @@
     || wlrXdgDesktopPortalSupport
     || xappXdgDesktopPortalSupport
   ),
-
-  # This is Plasma 6 (KDE) XDG portal support
-  plasma6XdgDesktopPortalSupport ? false,
-
-  # This is LXQT XDG portal support
-  lxqtXdgDesktopPortalSupport ? false,
-
-  # This is GNOME XDG portal support
-  gnomeXdgDesktopPortalSupport ? false,
-
-  # This is Hyprland XDG portal support
-  hyprlandXdgDesktopPortalSupport ? false,
-
-  # This is `wlroots` XDG portal support
-  wlrXdgDesktopPortalSupport ? false,
-
-  # This is Xapp XDG portal support, used for GTK and various Cinnamon/MATE/Xfce4 infrastructure.
-  xappXdgDesktopPortalSupport ? false,
-
-  # This function can be overridden to add in extra packages
-  targetPkgs ? pkgs: [ ],
-
-  # This list can be overridden to add in extra packages
-  # that are independent of the underlying package attrset
-  targetPkgsFixed ? [ ],
 }:
 
 let
@@ -62,27 +52,21 @@ let
 
   srcs = {
     aarch64-darwin = fetchurl {
-      url = "https://zoom.us/client/${versions.aarch64-darwin}/zoomusInstallerFull.pkg?archType=arm64";
-      name = "zoomusInstallerFull.pkg";
       hash = "sha256-HReyDktQ+EiHM857kgvzQD8tSHtSFYrAfv1YSTVFCLw=";
+      name = "zoomusInstallerFull.pkg";
+      url = "https://zoom.us/client/${versions.aarch64-darwin}/zoomusInstallerFull.pkg?archType=arm64";
     };
+
     x86_64-linux = fetchurl {
-      url = "https://zoom.us/client/${versions.x86_64-linux}/zoom_x86_64.pkg.tar.xz";
       hash = "sha256-OxzJtNqV50C2kPonXylvyOL3/3ItChkpDw7KIOzDiPw=";
+      url = "https://zoom.us/client/${versions.x86_64-linux}/zoom_x86_64.pkg.tar.xz";
     };
   };
 
   unpacked = stdenv.mkDerivation {
     pname = "zoom";
     version = versions.${system} or versions.x86_64-linux;
-
     src = srcs.${system} or srcs.x86_64-linux;
-
-    dontUnpack = stdenv.hostPlatform.isLinux;
-    unpackPhase = lib.optionalString stdenv.hostPlatform.isDarwin ''
-      xar -xf $src
-      zcat < zoomus.pkg/Payload | cpio -i
-    '';
 
     # Note: In order to uncover missing libraries
     # on x86_64-linux, add "pkgs" to this file's arguments
@@ -129,21 +113,29 @@ let
     '';
 
     dontPatchELF = true;
+    dontUnpack = stdenv.hostPlatform.isLinux;
 
-    passthru.updateScript = ./update.sh;
+    unpackPhase = lib.optionalString stdenv.hostPlatform.isDarwin ''
+      xar -xf $src
+      zcat < zoomus.pkg/Payload | cpio -i
+    '';
+
     passthru.tests.nixos-module = nixosTests.zoom-us;
+    passthru.updateScript = ./update.sh;
 
     meta = {
+      description = "zoom.us video conferencing application";
       homepage = "https://zoom.us/";
       changelog = "https://support.zoom.com/hc/en/article?id=zm_kb&sysparm_article=KB0061222";
-      description = "zoom.us video conferencing application";
-      sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
       license = lib.licenses.unfree;
-      platforms = builtins.attrNames srcs;
+      sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
+
       maintainers = with lib.maintainers; [
         philiptaron
         ryan4yin
       ];
+
+      platforms = builtins.attrNames srcs;
       mainProgram = "zoom";
     };
   };
@@ -229,11 +221,8 @@ else
   # This should assist Zoom in finding all its files in the places where it expects them to be.
   buildFHSEnv {
     inherit (unpacked) pname version;
-
-    targetPkgs = pkgs: (linuxGetDependencies pkgs) ++ [ unpacked ];
-    extraPreBwrapCmds = "unset QT_PLUGIN_PATH";
+    inherit (unpacked) meta;
     extraBwrapArgs = [ "--ro-bind ${unpacked}/opt /opt" ];
-    runScript = "/opt/zoom/ZoomLauncher";
 
     extraInstallCommands = ''
       cp -Rt $out/ ${unpacked}/share
@@ -245,8 +234,11 @@ else
       ln -s $out/bin/{zoom,zoom-us}
     '';
 
+    extraPreBwrapCmds = "unset QT_PLUGIN_PATH";
+    runScript = "/opt/zoom/ZoomLauncher";
+    targetPkgs = pkgs: (linuxGetDependencies pkgs) ++ [ unpacked ];
+
     passthru = unpacked.passthru // {
       inherit unpacked;
     };
-    inherit (unpacked) meta;
   }

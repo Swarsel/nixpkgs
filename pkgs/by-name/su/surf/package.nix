@@ -1,25 +1,26 @@
 {
   lib,
   stdenv,
+  coreutils,
+  dmenu,
   fetchgit,
-  pkg-config,
-  wrapGAppsHook3,
-  glib,
+  findutils,
   gcr,
+  glib,
   glib-networking,
+  gnused,
   gsettings-desktop-schemas,
+  gst_all_1,
   gtk3,
   libsoup_3,
+  pkg-config,
   webkitgtk_4_1,
+  wrapGAppsHook3,
   xprop,
-  dmenu,
-  findutils,
-  gnused,
-  coreutils,
-  gst_all_1,
   patches ? null,
 }:
 stdenv.mkDerivation {
+  inherit patches;
   pname = "surf";
   version = "2.1-unstable-2025-04-19";
 
@@ -34,6 +35,7 @@ stdenv.mkDerivation {
     pkg-config
     wrapGAppsHook3
   ];
+
   buildInputs = [
     glib
     gcr
@@ -50,8 +52,6 @@ stdenv.mkDerivation {
     gst-plugins-good
     gst-plugins-bad
   ]);
-
-  inherit patches;
 
   makeFlags = [ "PREFIX=$(out)" ];
 
@@ -76,16 +76,18 @@ stdenv.mkDerivation {
 
   meta = {
     description = "Simple web browser based on WebKitGTK";
-    mainProgram = "surf";
+
     longDescription = ''
       surf is a simple web browser based on WebKitGTK. It is able to display
       websites and follow links. It supports the XEmbed protocol which makes it
       possible to embed it in another application. Furthermore, one can point
       surf to another URI by setting its XProperties.
     '';
+
     homepage = "https://surf.suckless.org";
     license = lib.licenses.mit;
-    platforms = webkitgtk_4_1.meta.platforms;
     maintainers = [ ];
+    platforms = webkitgtk_4_1.meta.platforms;
+    mainProgram = "surf";
   };
 }

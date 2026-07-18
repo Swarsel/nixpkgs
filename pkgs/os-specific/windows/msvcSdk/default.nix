@@ -1,10 +1,10 @@
 {
   lib,
-  stdenvNoCC,
-  xwin,
-  testers,
-  llvmPackages,
   callPackage,
+  llvmPackages,
+  stdenvNoCC,
+  testers,
+  xwin,
 }:
 let
   version = (builtins.fromJSON (builtins.readFile ./manifest.json)).info.buildVersion;
@@ -18,23 +18,14 @@ stdenvNoCC.mkDerivation (finalAttrs: {
   pname = "win-sdk";
 
   src = fetchWinSdk {
-    manifest = ./manifest.json;
     hash = hashes.${finalAttrs.src.arch};
+    manifest = ./manifest.json;
   };
 
   strictDeps = true;
+
   nativeBuildInputs = [
     xwin
-  ];
-
-  __structuredAttrs = true;
-  xwinArgs = [
-    "--accept-license"
-    "--cache-dir=."
-    "--manifest=${./manifest.json}"
-    "--arch=${finalAttrs.src.arch}"
-    "splat"
-    "--preserve-ms-arch-notation"
   ];
 
   installPhase = ''
@@ -48,18 +39,27 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  __structuredAttrs = true;
   dontFixup = true;
 
+  xwinArgs = [
+    "--accept-license"
+    "--cache-dir=."
+    "--manifest=${./manifest.json}"
+    "--arch=${finalAttrs.src.arch}"
+    "splat"
+    "--preserve-ms-arch-notation"
+  ];
+
   passthru = {
-    updateScript = ./update.nu;
     tests = {
       hello-world = testers.runCommand {
-        name = "hello-msvc";
-
         nativeBuildInputs = [
           llvmPackages.clang-unwrapped
           llvmPackages.bintools-unwrapped
         ];
+
+        name = "hello-msvc";
 
         script = ''
           set -euo pipefail
@@ -87,24 +87,28 @@ stdenvNoCC.mkDerivation (finalAttrs: {
         '';
       };
     };
+
+    updateScript = ./update.nu;
   };
 
   meta = {
     description = "MSVC SDK and Windows CRT for cross compiling";
     homepage = "https://developer.microsoft.com/en-us/windows/downloads/windows-sdk/";
-    maintainers = [ lib.maintainers.RossSmyth ];
+
     license = {
       deprecated = false;
+      free = false;
       fullName = "Microsoft Software License Terms";
       shortName = "msvc";
       spdxId = "unknown";
-      free = false;
       url = "https://www.visualstudio.com/license-terms/mt644918/";
     };
+
+    sourceProvenance = [ lib.sourceTypes.binaryNativeCode ];
+    maintainers = [ lib.maintainers.RossSmyth ];
     platforms = lib.platforms.all;
     # The arm32 manifest is missing critical pieces.
     broken = stdenvNoCC.hostPlatform.isAarch32;
-    sourceProvenance = [ lib.sourceTypes.binaryNativeCode ];
     teams = [ lib.teams.windows ];
   };
 })

@@ -1,14 +1,14 @@
 {
+  lib,
+  _experimental-update-script-combinators,
   cwtch,
+  dart,
   fetchgit,
   flutter329,
-  lib,
-  tor,
-  _experimental-update-script-combinators,
   nix-update-script,
   runCommand,
+  tor,
   yq-go,
-  dart,
 }:
 
 let
@@ -21,12 +21,16 @@ let
   };
 in
 flutter329.buildFlutterApplication {
-  pname = "cwtch-ui";
   inherit version src;
+  pname = "cwtch-ui";
 
-  pubspecLock = lib.importJSON ./pubspec.lock.json;
+  postInstall = ''
+    mkdir -p $out/share/applications
+    substitute linux/cwtch.template.desktop "$out/share/applications/cwtch.desktop" \
+      --replace-fail PREFIX "$out"
+  '';
 
-  gitHashes = lib.importJSON ./git-hashes.json;
+  extraWrapProgramArgs = "--prefix PATH : ${lib.makeBinPath [ tor ]}";
 
   flutterBuildFlags = [
     "--dart-define"
@@ -35,16 +39,10 @@ flutter329.buildFlutterApplication {
     "BUILD_DATE=1980-01-01-00:00"
   ];
 
+  gitHashes = lib.importJSON ./git-hashes.json;
+  pubspecLock = lib.importJSON ./pubspec.lock.json;
   # These things are added to LD_LIBRARY_PATH, but not PATH
   runtimeDependencies = [ cwtch ];
-
-  extraWrapProgramArgs = "--prefix PATH : ${lib.makeBinPath [ tor ]}";
-
-  postInstall = ''
-    mkdir -p $out/share/applications
-    substitute linux/cwtch.template.desktop "$out/share/applications/cwtch.desktop" \
-      --replace-fail PREFIX "$out"
-  '';
 
   passthru = {
     pubspecSource =
@@ -56,6 +54,7 @@ flutter329.buildFlutterApplication {
         ''
           yq eval --output-format=json --prettyPrint $src/pubspec.lock > "$out"
         '';
+
     updateScript = _experimental-update-script-combinators.sequence [
       (nix-update-script { })
       (
@@ -72,6 +71,7 @@ flutter329.buildFlutterApplication {
           "--output"
           ./git-hashes.json
         ];
+
         supportedFeatures = [ ];
       }
     ];
@@ -82,8 +82,8 @@ flutter329.buildFlutterApplication {
     homepage = "https://cwtch.im/";
     changelog = "https://docs.cwtch.im/changelog";
     license = lib.licenses.mit;
-    mainProgram = "cwtch";
-    platforms = [ "x86_64-linux" ];
     maintainers = [ lib.maintainers.gmacon ];
+    platforms = [ "x86_64-linux" ];
+    mainProgram = "cwtch";
   };
 }

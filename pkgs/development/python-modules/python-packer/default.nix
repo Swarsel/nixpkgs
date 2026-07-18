@@ -9,7 +9,6 @@
 buildPythonPackage rec {
   pname = "python-packer";
   version = "0.1.2";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
@@ -17,15 +16,15 @@ buildPythonPackage rec {
   };
 
   patches = fetchpatch {
-    url = "${meta.homepage}/commit/de3421bf13bf7c3ec11fe0a381f0944e102b1d97.patch";
     excludes = [ "dev-requirements.txt" ];
     sha256 = "0rgmkyn7i6y1xs8m75dpl8hq7j2ns2s3dvp7kv9j4zwic93rrlsc";
+    url = "${meta.homepage}/commit/de3421bf13bf7c3ec11fe0a381f0944e102b1d97.patch";
   };
 
   propagatedBuildInputs = [ sh ];
-
   # Tests requires network connections
   doCheck = false;
+  format = "setuptools";
 
   meta = {
     description = "Interface for packer.io";

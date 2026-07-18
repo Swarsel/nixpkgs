@@ -7,8 +7,8 @@
 }:
 
 stdenv.mkDerivation (finalAttrs: {
-  version = "1.7.679";
   pname = "fatsort";
+  version = "1.7.679";
 
   src = fetchurl {
     url = "mirror://sourceforge/fatsort/fatsort-${finalAttrs.version}.tar.xz";
@@ -38,10 +38,10 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   meta = {
-    homepage = "http://fatsort.sourceforge.net/";
     description = "Sorts FAT partition table, for devices that don't do sorting of files";
-    maintainers = [ lib.maintainers.kovirobi ];
+    homepage = "http://fatsort.sourceforge.net/";
     license = lib.licenses.gpl2Plus;
+    maintainers = [ lib.maintainers.kovirobi ];
     platforms = lib.platforms.unix;
     mainProgram = "fatsort";
   };

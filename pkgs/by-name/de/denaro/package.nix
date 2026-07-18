@@ -1,16 +1,16 @@
 {
   lib,
-  buildDotnetModule,
   fetchFromGitHub,
+  blueprint-compiler,
+  buildDotnetModule,
   dotnetCorePackages,
+  gdk-pixbuf,
+  glib,
   gtk4,
   libadwaita,
   pkg-config,
-  wrapGAppsHook4,
-  glib,
   shared-mime-info,
-  gdk-pixbuf,
-  blueprint-compiler,
+  wrapGAppsHook4,
 }:
 
 buildDotnetModule rec {
@@ -23,13 +23,6 @@ buildDotnetModule rec {
     rev = version;
     hash = "sha256-fEhwup8SiYvKH2FtzruEFsj8axG5g3YJ917aqc8dn/8=";
   };
-
-  dotnet-sdk = dotnetCorePackages.sdk_8_0;
-  dotnet-runtime = dotnetCorePackages.runtime_8_0;
-
-  projectFile = "NickvisionMoney.GNOME/NickvisionMoney.GNOME.csproj";
-  nugetDeps = ./deps.json;
-  executables = "NickvisionMoney.GNOME";
 
   nativeBuildInputs = [
     pkg-config
@@ -54,6 +47,12 @@ buildDotnetModule rec {
     install -Dm444 NickvisionMoney.Shared/Linux/org.nickvision.money.desktop.in -T $out/share/applications/org.nickvision.money.desktop
   '';
 
+  dotnet-runtime = dotnetCorePackages.runtime_8_0;
+  dotnet-sdk = dotnetCorePackages.sdk_8_0;
+  executables = "NickvisionMoney.GNOME";
+  nugetDeps = ./deps.json;
+  projectFile = "NickvisionMoney.GNOME/NickvisionMoney.GNOME.csproj";
+
   runtimeDeps = [
     gtk4
     libadwaita
@@ -66,13 +65,15 @@ buildDotnetModule rec {
   meta = {
     description = "Personal finance manager for GNOME";
     homepage = "https://github.com/nlogozzo/NickvisionMoney";
-    mainProgram = "NickvisionMoney.GNOME";
-    license = lib.licenses.mit;
     changelog = "https://github.com/nlogozzo/NickvisionMoney/releases/tag/${version}";
+    license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       chuangzhu
       kashw2
     ];
+
     platforms = lib.platforms.linux;
+    mainProgram = "NickvisionMoney.GNOME";
   };
 }

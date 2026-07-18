@@ -7,7 +7,6 @@
 python3.pkgs.buildPythonApplication (finalAttrs: {
   pname = "nextinspace";
   version = "3.0.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "gideonshaked";
@@ -15,6 +14,12 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-oEvRxaxx1pIco2+jm/3HUN0a0nqdo2VosCisM0MWTjU=";
   };
+
+  nativeCheckInputs = with python3.pkgs; [
+    pytest-lazy-fixtures
+    pytestCheckHook
+    requests-mock
+  ];
 
   build-system = with python3.pkgs; [
     poetry-core
@@ -26,11 +31,7 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     colorama
   ];
 
-  nativeCheckInputs = with python3.pkgs; [
-    pytest-lazy-fixtures
-    pytestCheckHook
-    requests-mock
-  ];
+  pyproject = true;
 
   pythonImportsCheck = [
     "nextinspace"
@@ -38,9 +39,9 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
 
   meta = {
     description = "Print upcoming space-related events in your terminal";
-    mainProgram = "nextinspace";
     homepage = "https://github.com/The-Kid-Gid/nextinspace";
     license = lib.licenses.gpl3Only;
     maintainers = [ ];
+    mainProgram = "nextinspace";
   };
 })

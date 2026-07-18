@@ -1,9 +1,9 @@
 {
   lib,
+  fetchFromGitHub,
   buildPythonPackage,
   dissect-cstruct,
   dissect-util,
-  fetchFromGitHub,
   setuptools,
   setuptools-scm,
 }:
@@ -11,7 +11,6 @@
 buildPythonPackage rec {
   pname = "dissect-cramfs";
   version = "1.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "fox-it";
@@ -19,6 +18,9 @@ buildPythonPackage rec {
     tag = version;
     hash = "sha256-hoH93iQwJ1m8RqrpSOtLCUCQOgT7llkAiqCsJUcNr84=";
   };
+
+  # Issue with the test file handling
+  doCheck = false;
 
   build-system = [
     setuptools
@@ -30,9 +32,7 @@ buildPythonPackage rec {
     dissect-util
   ];
 
-  # Issue with the test file handling
-  doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "dissect.cramfs" ];
 
   meta = {

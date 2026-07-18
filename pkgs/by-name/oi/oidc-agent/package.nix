@@ -3,14 +3,14 @@
   stdenv,
   fetchFromGitHub,
   curl,
-  webkitgtk_4_1,
+  help2man,
   libmicrohttpd,
   libsecret,
-  qrencode,
   libsodium,
-  pkg-config,
-  help2man,
   nix-update-script,
+  pkg-config,
+  qrencode,
+  webkitgtk_4_1,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -38,8 +38,6 @@ stdenv.mkDerivation (finalAttrs: {
     libsodium
   ];
 
-  enableParallelBuilding = true;
-
   makeFlags = [
     "PREFIX=$(out)"
     "BIN_PATH=$(out)"
@@ -48,24 +46,26 @@ stdenv.mkDerivation (finalAttrs: {
     "WEBKITGTK=webkit2gtk-4.1"
   ];
 
-  installTargets = [
-    "install_bin"
-    "install_lib"
-    "install_conf"
-  ];
-
   postFixup = ''
     # Override with patched binary to be used by help2man
     cp -r $out/bin/* bin
     make install_man PREFIX=$out MAN_PATH=$out/share/man PROMPT_MAN_PATH=$out/share/man WEBKITGTK=webkit2gtk-4.1
   '';
 
+  enableParallelBuilding = true;
+
+  installTargets = [
+    "install_bin"
+    "install_lib"
+    "install_conf"
+  ];
+
   passthru.updateScript = nix-update-script { };
 
   meta = {
     description = "Manage OpenID Connect tokens on the command line";
     homepage = "https://github.com/indigo-dc/oidc-agent";
-    maintainers = with lib.maintainers; [ xinyangli ];
     license = lib.licenses.mit;
+    maintainers = with lib.maintainers; [ xinyangli ];
   };
 })

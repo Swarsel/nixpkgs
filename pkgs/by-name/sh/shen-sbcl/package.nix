@@ -1,12 +1,12 @@
 {
   lib,
-  stdenvNoCC,
   fetchzip,
   sbcl,
-  installStandardLibrary ? true,
+  stdenvNoCC,
   installConcurrency ? true,
-  installThorn ? true,
   installLogicLab ? true,
+  installStandardLibrary ? true,
+  installThorn ? true,
 }:
 stdenvNoCC.mkDerivation (finalAttrs: {
   pname = "shen-sbcl";
@@ -17,9 +17,23 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     hash = "sha256-hgO/g0XefSXn5pjiV5LzGmoZ8nsqmZcyZpK6nbcE0es=";
   };
 
-  nativeBuildInputs = [ sbcl ];
+  postPatch = ''
+    # allow SBCL to define *release* global
+    substituteInPlace Primitives/globals.lsp \
+      --replace-fail '"2.0.0"' '(LISP-IMPLEMENTATION-VERSION)'
+
+    # remove interactive prompts during image creation
+    # shen/tk requires further configuration and isn't supported by default
+    substituteInPlace Lib/install.shen \
+      --replace-fail '(y-or-n? "install standard library?")' '${lib.boolToString installStandardLibrary}' \
+      --replace-fail '(y-or-n? "install concurrency? (required for Shen/tk)")' '${lib.boolToString installConcurrency}' \
+      --replace-fail '(y-or-n? "install Shen/tk + IDE?")' 'false' \
+      --replace-fail '(y-or-n? "install THORN?")' '${lib.boolToString installThorn}' \
+      --replace-fail '(y-or-n? "install Logic Lab?")' '${lib.boolToString installLogicLab}'
+  '';
+
   strictDeps = true;
-  dontStrip = true; # necessary to prevent runtime errors with sbcl
+  nativeBuildInputs = [ sbcl ];
 
   buildPhase = ''
     runHook preBuild
@@ -37,28 +51,15 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
-  postPatch = ''
-    # allow SBCL to define *release* global
-    substituteInPlace Primitives/globals.lsp \
-      --replace-fail '"2.0.0"' '(LISP-IMPLEMENTATION-VERSION)'
-
-    # remove interactive prompts during image creation
-    # shen/tk requires further configuration and isn't supported by default
-    substituteInPlace Lib/install.shen \
-      --replace-fail '(y-or-n? "install standard library?")' '${lib.boolToString installStandardLibrary}' \
-      --replace-fail '(y-or-n? "install concurrency? (required for Shen/tk)")' '${lib.boolToString installConcurrency}' \
-      --replace-fail '(y-or-n? "install Shen/tk + IDE?")' 'false' \
-      --replace-fail '(y-or-n? "install THORN?")' '${lib.boolToString installThorn}' \
-      --replace-fail '(y-or-n? "install Logic Lab?")' '${lib.boolToString installLogicLab}'
-  '';
+  dontStrip = true; # necessary to prevent runtime errors with sbcl
 
   meta = {
-    homepage = "https://shenlanguage.org";
     description = "Port of Shen running on Steel Bank Common Lisp";
+    homepage = "https://shenlanguage.org";
     changelog = "https://shenlanguage.org/download.html#kernel";
-    platforms = sbcl.meta.platforms;
-    maintainers = with lib.maintainers; [ hakujin ];
     license = lib.licenses.bsd3;
+    maintainers = with lib.maintainers; [ hakujin ];
+    platforms = sbcl.meta.platforms;
     mainProgram = "shen-sbcl";
   };
 })

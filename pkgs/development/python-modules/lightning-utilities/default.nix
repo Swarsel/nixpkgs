@@ -1,26 +1,22 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # build-system
-  packaging,
-  setuptools,
-
+  buildPythonPackage,
   # dependencies
   jsonargparse,
-  tomlkit,
-  typing-extensions,
-
+  # build-system
+  packaging,
   # tests
   pytest-timeout,
   pytestCheckHook,
+  setuptools,
+  tomlkit,
+  typing-extensions,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "lightning-utilities";
   version = "0.15.3";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "Lightning-AI";
@@ -28,6 +24,11 @@ buildPythonPackage (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-j997nvn6iRFvJeI8wJbickUDPc5Zyi1Lj4yG2JbaLU8=";
   };
+
+  nativeCheckInputs = [
+    pytest-timeout
+    pytestCheckHook
+  ];
 
   build-system = [
     packaging
@@ -41,11 +42,10 @@ buildPythonPackage (finalAttrs: {
     typing-extensions
   ];
 
-  pythonImportsCheck = [ "lightning_utilities" ];
-
-  nativeCheckInputs = [
-    pytest-timeout
-    pytestCheckHook
+  disabledTestPaths = [
+    "docs"
+    # doctests that expect docs.txt in the wrong location
+    "src/lightning_utilities/install/requirements.py"
   ];
 
   disabledTests = [
@@ -63,16 +63,13 @@ buildPythonPackage (finalAttrs: {
     "lightning_utilities.core.imports.ModuleAvailableCache"
   ];
 
-  disabledTestPaths = [
-    "docs"
-    # doctests that expect docs.txt in the wrong location
-    "src/lightning_utilities/install/requirements.py"
-  ];
+  pyproject = true;
+  pythonImportsCheck = [ "lightning_utilities" ];
 
   meta = {
-    changelog = "https://github.com/Lightning-AI/utilities/releases/tag/${finalAttrs.src.tag}";
     description = "Common Python utilities and GitHub Actions in Lightning Ecosystem";
     homepage = "https://github.com/Lightning-AI/utilities";
+    changelog = "https://github.com/Lightning-AI/utilities/releases/tag/${finalAttrs.src.tag}";
     license = lib.licenses.asl20;
     maintainers = with lib.maintainers; [ GaetanLepage ];
   };

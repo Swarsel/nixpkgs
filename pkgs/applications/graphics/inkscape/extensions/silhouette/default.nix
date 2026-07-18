@@ -1,6 +1,6 @@
 {
-  fetchFromGitHub,
   lib,
+  fetchFromGitHub,
   gettext,
   python3,
   udevCheckHook,
@@ -25,7 +25,6 @@ in
 python3.pkgs.buildPythonApplication (finalAttrs: {
   pname = "inkscape-silhouette";
   version = "1.29";
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "fablabnbg";
@@ -39,6 +38,10 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     ./use-prefix-for-udev.patch
   ];
 
+  nativeBuildInputs = [
+    gettext # msgfmt
+  ];
+
   propagatedBuildInputs = [
     python3.pkgs.pyusb
     python3.pkgs.lxml
@@ -48,22 +51,13 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     python3.pkgs.xmltodict
   ];
 
-  nativeBuildInputs = [
-    gettext # msgfmt
-  ];
+  doCheck = true;
 
   nativeCheckInputs = [
     python3.pkgs.pytestCheckHook
     udevCheckHook
     umockdev
   ];
-
-  enabledTestPaths = [
-    "test"
-  ];
-
-  doCheck = true;
-  doInstallCheck = true;
 
   installPhase = ''
     runHook preInstall
@@ -80,9 +74,17 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     cp ${launch-silhouette_multi} $out/share/inkscape/extensions/silhouette_multi.sh
   '';
 
+  doInstallCheck = true;
+
   postFixup = ''
     wrapPythonProgramsIn "$out/share/inkscape/extensions/" "$out ''${pythonPath[*]}"
   '';
+
+  enabledTestPaths = [
+    "test"
+  ];
+
+  format = "setuptools";
 
   meta = {
     description = "Extension to drive Silhouette vinyl cutters (e.g. Cameo, Portrait, Curio series) from within Inkscape";

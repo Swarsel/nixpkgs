@@ -21,12 +21,14 @@ stdenv.mkDerivation {
   '';
 
   meta = {
-    homepage = "https://github.com/frogatto/frogatto";
     description = "Data files to the frogatto game";
+    homepage = "https://github.com/frogatto/frogatto";
+
     license = with lib.licenses; [
       cc-by-30
       unfree
     ];
+
     maintainers = with lib.maintainers; [ astro ];
   };
 }

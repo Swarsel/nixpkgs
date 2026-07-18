@@ -1,22 +1,21 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
-  pytest,
-  pytestCheckHook,
+  anyio,
+  buildPythonPackage,
   docutils,
   pygments,
-  pytest-rerunfailures,
+  pytest,
   pytest-asyncio,
-  anyio,
+  pytest-rerunfailures,
+  pytestCheckHook,
+  setuptools,
   typing-extensions,
 }:
 
 buildPythonPackage rec {
   pname = "pytest-subprocess";
   version = "1.6.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "aklajnert";
@@ -24,8 +23,6 @@ buildPythonPackage rec {
     tag = version;
     hash = "sha256-zPKExIrCt8ZwhKGU0l3tyTcDhRIGPSiM8OWy5cpmsuE=";
   };
-
-  build-system = [ setuptools ];
 
   buildInputs = [ pytest ];
 
@@ -38,6 +35,9 @@ buildPythonPackage rec {
     anyio
     typing-extensions
   ];
+
+  build-system = [ setuptools ];
+  pyproject = true;
 
   meta = {
     description = "Plugin to fake subprocess for pytest";

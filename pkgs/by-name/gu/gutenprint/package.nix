@@ -1,18 +1,18 @@
 # this package was called gimp-print in the past
 {
-  stdenv,
   lib,
+  stdenv,
   fetchurl,
-  makeWrapper,
-  pkg-config,
-  ijs,
-  zlib,
-  gimp2Support ? false,
-  gimp,
-  cupsSupport ? true,
   cups,
+  gimp,
+  ijs,
   libusb1,
+  makeWrapper,
   perl,
+  pkg-config,
+  zlib,
+  cupsSupport ? true,
+  gimp2Support ? false,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -25,6 +25,7 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   strictDeps = true;
+
   nativeBuildInputs = [
     makeWrapper
     pkg-config
@@ -33,6 +34,7 @@ stdenv.mkDerivation (finalAttrs: {
     cups
     perl
   ]; # for cups-config
+
   buildInputs = [
     ijs
     zlib

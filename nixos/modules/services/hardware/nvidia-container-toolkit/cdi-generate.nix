@@ -1,18 +1,18 @@
 {
+  lib,
   csv-files,
   device-name-strategy,
-  discovery-mode,
-  mounts,
   disable-hooks,
+  discovery-mode,
   enable-hooks,
+  extraArgs,
   glibc,
   jq,
-  lib,
+  mounts,
   nvidia-container-toolkit,
   nvidia-driver,
   runtimeShell,
   writeScriptBin,
-  extraArgs,
 }:
 let
   mountToCommand =

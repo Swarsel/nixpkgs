@@ -1,21 +1,15 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # build-system
-  hatchling,
-
   # dependencies
   asn1crypto,
   blake3,
+  buildPythonPackage,
   click,
   cryptography,
+  # build-system
+  hatchling,
   in-toto-attestation,
-  sigstore,
-  sigstore-models,
-  typing-extensions,
-
   # optional-dependencies
   opentelemetry-api,
   opentelemetry-distro,
@@ -24,16 +18,17 @@
   opentelemetry-instrumentation-urllib3,
   opentelemetry-sdk,
   pykcs11,
-
   # tests
   pytestCheckHook,
+  sigstore,
+  sigstore-models,
+  typing-extensions,
   writableTmpDirAsHomeHook,
 }:
 
 buildPythonPackage rec {
   pname = "model-signing";
   version = "1.1.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "sigstore";
@@ -41,6 +36,12 @@ buildPythonPackage rec {
     tag = "v${version}";
     hash = "sha256-z6PaNVoA5VL5CNYDp7XRXOs9rLfsJggoCu7kyewRm+o=";
   };
+
+  nativeCheckInputs = [
+    pykcs11
+    pytestCheckHook
+    writableTmpDirAsHomeHook
+  ];
 
   build-system = [
     hatchling
@@ -57,28 +58,6 @@ buildPythonPackage rec {
     typing-extensions
   ];
 
-  optional-dependencies = {
-    otel = [
-      opentelemetry-api
-      opentelemetry-distro
-      opentelemetry-exporter-otlp
-      opentelemetry-instrumentation
-      opentelemetry-instrumentation-urllib3
-      opentelemetry-sdk
-    ];
-    pkcs11 = [
-      pykcs11
-    ];
-  };
-
-  pythonImportsCheck = [ "model_signing" ];
-
-  nativeCheckInputs = [
-    pykcs11
-    pytestCheckHook
-    writableTmpDirAsHomeHook
-  ];
-
   disabledTests = [
     # Require internet access
     "test_sign_and_verify"
@@ -89,6 +68,24 @@ buildPythonPackage rec {
     "test_verify_key_v0_3_1"
     "test_verify_key_v1_0_0"
   ];
+
+  optional-dependencies = {
+    otel = [
+      opentelemetry-api
+      opentelemetry-distro
+      opentelemetry-exporter-otlp
+      opentelemetry-instrumentation
+      opentelemetry-instrumentation-urllib3
+      opentelemetry-sdk
+    ];
+
+    pkcs11 = [
+      pykcs11
+    ];
+  };
+
+  pyproject = true;
+  pythonImportsCheck = [ "model_signing" ];
 
   meta = {
     description = "Supply chain security for ML";

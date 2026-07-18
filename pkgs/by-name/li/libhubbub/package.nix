@@ -3,10 +3,10 @@
   stdenv,
   fetchurl,
   gperf,
+  libparserutils,
+  netsurf-buildsystem,
   perl,
   pkg-config,
-  netsurf-buildsystem,
-  libparserutils,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -33,8 +33,9 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   meta = {
-    homepage = "https://www.netsurf-browser.org/projects/hubbub/";
+    inherit (netsurf-buildsystem.meta) maintainers platforms;
     description = "HTML5 parser library for netsurf browser";
+
     longDescription = ''
       Hubbub is an HTML5 compliant parsing library, written in C. It was
       developed as part of the NetSurf project and is available for use by other
@@ -45,7 +46,8 @@ stdenv.mkDerivation (finalAttrs: {
       parse all markup, both valid and invalid. As a result, Hubbub parses web
       content well.
     '';
+
+    homepage = "https://www.netsurf-browser.org/projects/hubbub/";
     license = lib.licenses.mit;
-    inherit (netsurf-buildsystem.meta) maintainers platforms;
   };
 })

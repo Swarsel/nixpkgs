@@ -1,14 +1,13 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   poetry-core,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "gitlike-commands";
   version = "0.3.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "unixorn";
@@ -17,11 +16,10 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-7z6JJgTbELWor8GodtWRg51/oeakLcb9rAdT6K0/JQs=";
   };
 
-  build-system = [ poetry-core ];
-
   # Module has no real tests
   doCheck = false;
-
+  build-system = [ poetry-core ];
+  pyproject = true;
   pythonImportsCheck = [ "gitlike_commands" ];
 
   meta = {

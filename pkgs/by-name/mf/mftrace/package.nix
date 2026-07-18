@@ -1,13 +1,13 @@
 {
+  lib,
   stdenv,
   fetchFromGitHub,
-  lib,
-  makeWrapper,
   autoreconfHook,
-  python3,
-  fontforge,
-  potrace,
   fetchpatch2,
+  fontforge,
+  makeWrapper,
+  potrace,
+  python3,
 }:
 
 /*
@@ -36,9 +36,9 @@ stdenv.mkDerivation (finalAttrs: {
 
   patches = [
     (fetchpatch2 {
+      hash = "sha256-eTDohSGzy2hxZmpAXiYaAk3DBnrXduNum0fO6bHGUQw=";
       name = "gcc-15.patch";
       url = "https://salsa.debian.org/debian/mftrace/-/raw/628987e5ce8bdab737f9fbc730a75fdd29ce81d2/debian/patches/gcc-15.patch";
-      hash = "sha256-eTDohSGzy2hxZmpAXiYaAk3DBnrXduNum0fO6bHGUQw=";
     })
   ];
 
@@ -67,16 +67,20 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Scalable PostScript Fonts for MetaFont";
+
     longDescription = ''
       mftrace is a small Python program that lets you trace a TeX bitmap
       font into a PFA or PFB font (A PostScript Type1 Scalable Font) or
       TTF (TrueType) font.
     '';
+
     homepage = "https://lilypond.org/mftrace/";
+
     license = with lib.licenses; [
       gpl2Only
       mit
     ];
+
     maintainers = with lib.maintainers; [ xworld21 ];
     platforms = lib.platforms.all;
   };

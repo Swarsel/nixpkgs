@@ -1,7 +1,7 @@
 {
   lib,
-  buildDubPackage,
   fetchFromGitHub,
+  buildDubPackage,
   dtools,
 }:
 
@@ -17,9 +17,6 @@ buildDubPackage rec {
   };
 
   nativeBuildInputs = [ dtools ];
-
-  dubLock = ./dub-lock.json;
-
   doCheck = true;
 
   installPhase = ''
@@ -28,12 +25,14 @@ buildDubPackage rec {
     runHook postInstall
   '';
 
+  dubLock = ./dub-lock.json;
+
   meta = {
-    changelog = "https://github.com/Pure-D/serve-d/releases/tag/${src.rev}";
     description = "D LSP server (dlang language server protocol server)";
     homepage = "https://github.com/Pure-D/serve-d";
+    changelog = "https://github.com/Pure-D/serve-d/releases/tag/${src.rev}";
     license = lib.licenses.mit;
-    mainProgram = "serve-d";
     maintainers = with lib.maintainers; [ tomasajt ];
+    mainProgram = "serve-d";
   };
 }

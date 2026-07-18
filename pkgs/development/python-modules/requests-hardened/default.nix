@@ -1,21 +1,18 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
+  buildPythonPackage,
   poetry-core,
-  requests,
-
   pproxy,
-  pytest-socket,
   pysocks,
-  trustme,
+  pytest-socket,
   pytestCheckHook,
+  requests,
+  trustme,
 }:
 buildPythonPackage rec {
   pname = "requests-hardened";
   version = "1.2.2";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "saleor";
@@ -23,9 +20,6 @@ buildPythonPackage rec {
     tag = "v${version}";
     hash = "sha256-tvSS3z1fhQdcxvsj5vK//mr5xYeIrLl+6/gtnWsiETk=";
   };
-
-  build-system = [ poetry-core ];
-  dependencies = [ requests ];
 
   nativeCheckInputs = [
     pproxy
@@ -35,6 +29,9 @@ buildPythonPackage rec {
     pytestCheckHook
   ];
 
+  build-system = [ poetry-core ];
+  dependencies = [ requests ];
+  pyproject = true;
   pythonImportsCheck = [ "requests_hardened" ];
 
   meta = {

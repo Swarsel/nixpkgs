@@ -2,12 +2,11 @@
   lib,
   stdenv,
   fetchFromGitHub,
+  buildPackages,
   dtc,
   gcc,
   openssl,
   pkgsCross,
-  buildPackages,
-
   # Warning: this blob (hdcp.bin) runs on the main CPU (not the GPU) at
   # privilege level EL3, which is above both the kernel and the
   # hypervisor.
@@ -22,11 +21,11 @@ let
   buildArmTrustedFirmware = lib.makeOverridable (
     {
       filesToInstall,
+      extraMakeFlags ? [ ],
+      extraMeta ? { },
       installDir ? "$out",
       platform ? null,
       platformCanUseHDCPBlob ? false, # set this to true if the platform is able to use hdcp.bin
-      extraMakeFlags ? [ ],
-      extraMeta ? { },
       ...
     }@args:
 
@@ -58,8 +57,6 @@ let
           rm plat/rockchip/rk3399/drivers/dp/hdcp.bin
         '';
 
-        depsBuildBuild = [ buildPackages.stdenv.cc ];
-
         nativeBuildInputs = [
           pkgsCross.arm-embedded.stdenv.cc # For Cortex-M0 firmware in RK3399
           openssl # For fiptool
@@ -68,11 +65,6 @@ let
           dtc
           gcc
         ];
-
-        # Make the new toolchain guessing (from 2.14+) happy
-        # https://github.com/ARM-software/arm-trusted-firmware/blob/1d5aa939bc8d3d892e2ed9945fa50e36a1a924cc/make_helpers/toolchain.mk#L370
-        # https://github.com/ARM-software/arm-trusted-firmware/blob/1d5aa939bc8d3d892e2ed9945fa50e36a1a924cc/make_helpers/toolchains/rk3399-m0.mk#L22
-        rk3399-m0-oc-parameter = "rk3399-m0-oc-default";
 
         buildInputs = [ openssl ];
 
@@ -92,18 +84,6 @@ let
         ++ (lib.optional (platform != null) "PLAT=${platform}")
         ++ extraMakeFlags;
 
-        installPhase = ''
-          runHook preInstall
-
-          mkdir -p ${installDir}
-          cp ${lib.concatStringsSep " " filesToInstall} ${installDir}
-
-          runHook postInstall
-        '';
-
-        hardeningDisable = [ "all" ];
-        dontStrip = true;
-
         env.NIX_CFLAGS_COMPILE = lib.concatStringsSep " " [
           # breaks secondary CPU bringup on at least RK3588, maybe others
           "-fomit-frame-pointer"
@@ -118,15 +98,34 @@ let
           "-no-pie"
         ];
 
+        installPhase = ''
+          runHook preInstall
+
+          mkdir -p ${installDir}
+          cp ${lib.concatStringsSep " " filesToInstall} ${installDir}
+
+          runHook postInstall
+        '';
+
+        depsBuildBuild = [ buildPackages.stdenv.cc ];
+        dontStrip = true;
+        hardeningDisable = [ "all" ];
+        # Make the new toolchain guessing (from 2.14+) happy
+        # https://github.com/ARM-software/arm-trusted-firmware/blob/1d5aa939bc8d3d892e2ed9945fa50e36a1a924cc/make_helpers/toolchain.mk#L370
+        # https://github.com/ARM-software/arm-trusted-firmware/blob/1d5aa939bc8d3d892e2ed9945fa50e36a1a924cc/make_helpers/toolchains/rk3399-m0.mk#L22
+        rk3399-m0-oc-parameter = "rk3399-m0-oc-default";
+
         meta =
 
           {
-            homepage = "https://github.com/ARM-software/arm-trusted-firmware";
             description = "Reference implementation of secure world software for ARMv8-A";
+            homepage = "https://github.com/ARM-software/arm-trusted-firmware";
+
             license = [
               lib.licenses.bsd3
             ]
             ++ lib.optionals (!deleteHDCPBlobBeforeBuild) [ lib.licenses.unfreeRedistributable ];
+
             maintainers = with lib.maintainers; [ lopsided98 ];
           }
           // extraMeta;
@@ -139,88 +138,93 @@ in
 {
   inherit buildArmTrustedFirmware;
 
-  armTrustedFirmwareTools = buildArmTrustedFirmware {
-    # Normally, arm-trusted-firmware builds the build tools for buildPlatform
-    # using CC_FOR_BUILD (or as it calls it HOSTCC). Since want to build them
-    # for the hostPlatform here, we trick it by overriding the HOSTCC setting
-    # and, to be safe, remove CC_FOR_BUILD from the environment.
-    depsBuildBuild = [ ];
-    extraMakeFlags = [
-      "HOSTCC=${stdenv.cc.targetPrefix}gcc"
-      "fiptool"
-      "certtool"
-    ];
-    filesToInstall = [
-      "tools/fiptool/fiptool"
-      "tools/cert_create/cert_create"
-    ];
-    postInstall = ''
-      mkdir -p "$out/bin"
-      find "$out" -type f -executable -exec mv -t "$out/bin" {} +
-    '';
-  };
-
   armTrustedFirmwareAllwinner = buildArmTrustedFirmware rec {
+    extraMeta.platforms = [ "aarch64-linux" ];
+    filesToInstall = [ "build/${platform}/release/bl31.bin" ];
     platform = "sun50i_a64";
-    extraMeta.platforms = [ "aarch64-linux" ];
-    filesToInstall = [ "build/${platform}/release/bl31.bin" ];
-  };
-
-  armTrustedFirmwareAllwinnerH616 = buildArmTrustedFirmware rec {
-    platform = "sun50i_h616";
-    extraMeta.platforms = [ "aarch64-linux" ];
-    filesToInstall = [ "build/${platform}/release/bl31.bin" ];
   };
 
   armTrustedFirmwareAllwinnerH6 = buildArmTrustedFirmware rec {
-    platform = "sun50i_h6";
     extraMeta.platforms = [ "aarch64-linux" ];
     filesToInstall = [ "build/${platform}/release/bl31.bin" ];
+    platform = "sun50i_h6";
+  };
+
+  armTrustedFirmwareAllwinnerH616 = buildArmTrustedFirmware rec {
+    extraMeta.platforms = [ "aarch64-linux" ];
+    filesToInstall = [ "build/${platform}/release/bl31.bin" ];
+    platform = "sun50i_h616";
   };
 
   armTrustedFirmwareQemu = buildArmTrustedFirmware rec {
-    platform = "qemu";
     extraMeta.platforms = [ "aarch64-linux" ];
+
     filesToInstall = [
       "build/${platform}/release/bl1.bin"
       "build/${platform}/release/bl2.bin"
       "build/${platform}/release/bl31.bin"
     ];
+
+    platform = "qemu";
   };
 
   armTrustedFirmwareRK3328 = buildArmTrustedFirmware rec {
     extraMakeFlags = [ "bl31" ];
-    platform = "rk3328";
     extraMeta.platforms = [ "aarch64-linux" ];
     filesToInstall = [ "build/${platform}/release/bl31/bl31.elf" ];
+    platform = "rk3328";
   };
 
   armTrustedFirmwareRK3399 = buildArmTrustedFirmware rec {
     extraMakeFlags = [ "bl31" ];
-    platform = "rk3399";
     extraMeta.platforms = [ "aarch64-linux" ];
     filesToInstall = [ "build/${platform}/release/bl31/bl31.elf" ];
+    platform = "rk3399";
     platformCanUseHDCPBlob = true;
   };
 
   armTrustedFirmwareRK3568 = buildArmTrustedFirmware rec {
     extraMakeFlags = [ "bl31" ];
-    platform = "rk3568";
     extraMeta.platforms = [ "aarch64-linux" ];
     filesToInstall = [ "build/${platform}/release/bl31/bl31.elf" ];
+    platform = "rk3568";
   };
 
   armTrustedFirmwareRK3588 = buildArmTrustedFirmware rec {
     extraMakeFlags = [ "bl31" ];
-    platform = "rk3588";
     extraMeta.platforms = [ "aarch64-linux" ];
     filesToInstall = [ "build/${platform}/release/bl31/bl31.elf" ];
+    platform = "rk3588";
   };
 
   armTrustedFirmwareS905 = buildArmTrustedFirmware rec {
     extraMakeFlags = [ "bl31" ];
-    platform = "gxbb";
     extraMeta.platforms = [ "aarch64-linux" ];
     filesToInstall = [ "build/${platform}/release/bl31.bin" ];
+    platform = "gxbb";
+  };
+
+  armTrustedFirmwareTools = buildArmTrustedFirmware {
+    postInstall = ''
+      mkdir -p "$out/bin"
+      find "$out" -type f -executable -exec mv -t "$out/bin" {} +
+    '';
+
+    # Normally, arm-trusted-firmware builds the build tools for buildPlatform
+    # using CC_FOR_BUILD (or as it calls it HOSTCC). Since want to build them
+    # for the hostPlatform here, we trick it by overriding the HOSTCC setting
+    # and, to be safe, remove CC_FOR_BUILD from the environment.
+    depsBuildBuild = [ ];
+
+    extraMakeFlags = [
+      "HOSTCC=${stdenv.cc.targetPrefix}gcc"
+      "fiptool"
+      "certtool"
+    ];
+
+    filesToInstall = [
+      "tools/fiptool/fiptool"
+      "tools/cert_create/cert_create"
+    ];
   };
 }

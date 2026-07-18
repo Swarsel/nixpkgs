@@ -1,16 +1,15 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   gitUpdater,
-  six,
   setuptools,
+  six,
 }:
 
 buildPythonPackage rec {
   pname = "xmpppy";
   version = "0.7.4";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "xmpppy";
@@ -19,10 +18,9 @@ buildPythonPackage rec {
     hash = "sha256-wg7mxNHQ1+cFDLmHNafwQ2+45Jiqy36uZh28Ksu0k7Y=";
   };
 
-  dependencies = [ six ];
-
   build-system = [ setuptools ];
-
+  dependencies = [ six ];
+  pyproject = true;
   passthru.updateScript = gitUpdater { };
 
   meta = {

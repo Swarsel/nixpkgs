@@ -36,7 +36,7 @@ stdenv.mkDerivation (finalAttrs: {
     homepage = "https://github.com/BuddiesOfBudgie/budgie-backgrounds";
     changelog = "https://github.com/BuddiesOfBudgie/budgie-backgrounds/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.cc0;
-    teams = [ lib.teams.budgie ];
     platforms = lib.platforms.linux;
+    teams = [ lib.teams.budgie ];
   };
 })

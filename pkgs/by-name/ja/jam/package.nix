@@ -1,11 +1,11 @@
 {
   lib,
+  stdenv,
+  fetchurl,
   bison,
   buildPackages,
-  fetchurl,
   installShellFiles,
   pkgsBuildTarget,
-  stdenv,
   testers,
 }:
 
@@ -22,32 +22,6 @@ stdenv.mkDerivation (finalAttrs: {
     "out"
     "doc"
   ];
-
-  depsBuildBuild = [ buildPackages.stdenv.cc ];
-
-  nativeBuildInputs = [
-    bison
-    installShellFiles
-  ];
-
-  makeFlags = [
-    "CC=${buildPackages.stdenv.cc.targetPrefix}cc"
-  ];
-
-  env = {
-    LOCATE_TARGET = "bin.unix";
-    # Jam uses c89 conventions
-    NIX_CFLAGS_COMPILE = "-std=c89";
-  };
-
-  enableParallelBuilding = true;
-
-  strictDeps = true;
-
-  # Jambase expects ar to have flags.
-  preConfigure = ''
-    export AR="$AR rc"
-  '';
 
   postPatch = ''
     substituteInPlace jam.h --replace-fail 'ifdef linux' 'ifdef __linux__'
@@ -69,6 +43,28 @@ stdenv.mkDerivation (finalAttrs: {
       EOF
     '';
 
+  strictDeps = true;
+
+  nativeBuildInputs = [
+    bison
+    installShellFiles
+  ];
+
+  makeFlags = [
+    "CC=${buildPackages.stdenv.cc.targetPrefix}cc"
+  ];
+
+  env = {
+    LOCATE_TARGET = "bin.unix";
+    # Jam uses c89 conventions
+    NIX_CFLAGS_COMPILE = "-std=c89";
+  };
+
+  # Jambase expects ar to have flags.
+  preConfigure = ''
+    export AR="$AR rc"
+  '';
+
   buildPhase = ''
     runHook preBuild
     make $makeFlags jam0
@@ -86,25 +82,30 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  depsBuildBuild = [ buildPackages.stdenv.cc ];
+  enableParallelBuilding = true;
+
   passthru = {
-    tests.version = testers.testVersion {
-      package = finalAttrs.finalPackage;
-      command = "jam -v";
-    };
     tests.os = testers.runCommand {
-      name = "${finalAttrs.finalPackage.name}-os";
       nativeBuildInputs = [ finalAttrs.finalPackage ];
+      name = "${finalAttrs.finalPackage.name}-os";
+
       script = ''
         echo 'echo $(OS) ;' > Jamfile
         os=$(jam -d0)
         [[ $os != UNKNOWN* ]] && touch $out
       '';
     };
+
+    tests.version = testers.testVersion {
+      command = "jam -v";
+      package = finalAttrs.finalPackage;
+    };
   };
 
   meta = {
-    homepage = "https://swarm.workshop.perforce.com/projects/perforce_software-jam";
     description = "Just Another Make";
+
     longDescription = ''
       Jam is a program construction tool, like make(1).
 
@@ -114,11 +115,15 @@ stdenv.mkDerivation (finalAttrs: {
       into jam and provides a boilerplate for common use, relying on a
       user-provide file "Jamfile" to enumerate actual targets and sources.
     '';
+
+    homepage = "https://swarm.workshop.perforce.com/projects/perforce_software-jam";
     license = lib.licenses.free;
-    mainProgram = "jam";
+
     maintainers = with lib.maintainers; [
       impl
     ];
+
     platforms = lib.platforms.unix;
+    mainProgram = "jam";
   };
 })

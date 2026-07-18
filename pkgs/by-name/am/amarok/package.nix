@@ -1,23 +1,23 @@
 {
+  lib,
   stdenv,
   fetchurl,
-  lib,
   cmake,
-  pkg-config,
-  kdePackages,
-  fftw,
   curl,
   ffmpeg,
+  fftw,
   gdk-pixbuf,
   gst_all_1,
+  kdePackages,
   libaio,
   libmtp,
   libsysprof-capture,
   libunwind,
   loudmouth,
-  lzo,
   lz4,
+  lzo,
   mariadb-embedded,
+  pkg-config,
   snappy,
   taglib,
   taglib_extras,
@@ -36,6 +36,17 @@ stdenv.mkDerivation (finalAttrs: {
     "out"
     "doc"
   ];
+
+  nativeBuildInputs = [
+    cmake
+    pkg-config
+  ]
+  ++ (with kdePackages; [
+    extra-cmake-modules
+    kdoctools
+    qttools
+    wrapQtAppsHook
+  ]);
 
   buildInputs = [
     curl
@@ -75,17 +86,6 @@ stdenv.mkDerivation (finalAttrs: {
     gst-plugins-good
   ]);
 
-  nativeBuildInputs = [
-    cmake
-    pkg-config
-  ]
-  ++ (with kdePackages; [
-    extra-cmake-modules
-    kdoctools
-    qttools
-    wrapQtAppsHook
-  ]);
-
   env.LANG = "C.UTF-8";
 
   postInstall = ''
@@ -95,8 +95,8 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   meta = {
-    homepage = "https://amarok.kde.org";
     description = "Powerful music player with an intuitive interface";
+    homepage = "https://amarok.kde.org";
     license = lib.licenses.gpl2Plus;
     maintainers = [ ];
     mainProgram = "amarok";

@@ -1,30 +1,29 @@
 {
   lib,
   fetchFromGitHub,
-  python3Packages,
-  wrapGAppsHook3,
+  atk,
+  brightnessctl, # brightnessctl
+  gdk-pixbuf,
   gobject-introspection,
   gtk-layer-shell,
-  pango,
-  gdk-pixbuf,
-  atk,
   # Extra packages called by various internal nwg-panel modules
   hyprland, # hyprctl
+  libdbusmenu-gtk3, # tray
+  nwg-menu, # nwg-menu
+  pamixer, # pamixer
+  pango,
+  playerctl,
+  pulseaudio, # pactl
+  python3Packages,
   sway, # swaylock, swaymsg
   systemd, # systemctl
   wlr-randr, # wlr-randr
-  nwg-menu, # nwg-menu
-  brightnessctl, # brightnessctl
-  pamixer, # pamixer
-  pulseaudio, # pactl
-  libdbusmenu-gtk3, # tray
-  playerctl,
+  wrapGAppsHook3,
 }:
 
 python3Packages.buildPythonApplication (finalAttrs: {
   pname = "nwg-panel";
   version = "0.10.15";
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "nwg-piotr";
@@ -33,12 +32,13 @@ python3Packages.buildPythonApplication (finalAttrs: {
     hash = "sha256-zRoOsVnwn2DQctB9ZP0pAAnf9Ragd2RZGHZGN1KnMsQ=";
   };
 
-  # No tests
-  doCheck = false;
-
   # Because of wrapGAppsHook3
   strictDeps = false;
-  dontWrapGApps = true;
+
+  nativeBuildInputs = [
+    wrapGAppsHook3
+    gobject-introspection
+  ];
 
   buildInputs = [
     atk
@@ -47,10 +47,7 @@ python3Packages.buildPythonApplication (finalAttrs: {
     pango
     playerctl
   ];
-  nativeBuildInputs = [
-    wrapGAppsHook3
-    gobject-introspection
-  ];
+
   propagatedBuildInputs =
     (with python3Packages; [
       i3ipc
@@ -64,6 +61,9 @@ python3Packages.buildPythonApplication (finalAttrs: {
     ])
     # Run-time GTK dependency required by the Tray module
     ++ [ libdbusmenu-gtk3 ];
+
+  # No tests
+  doCheck = false;
 
   postInstall = ''
     install -D $src/nwg-panel-config.desktop nwg-processes.desktop -t $out/share/applications/
@@ -89,13 +89,16 @@ python3Packages.buildPythonApplication (finalAttrs: {
     )
   '';
 
+  dontWrapGApps = true;
+  format = "setuptools";
+
   meta = {
+    description = "GTK3-based panel for Sway window manager";
     homepage = "https://github.com/nwg-piotr/nwg-panel";
     changelog = "https://github.com/nwg-piotr/nwg-panel/releases/tag/${finalAttrs.src.tag}";
-    description = "GTK3-based panel for Sway window manager";
     license = lib.licenses.mit;
-    platforms = lib.platforms.linux;
     maintainers = with lib.maintainers; [ ludovicopiero ];
+    platforms = lib.platforms.linux;
     mainProgram = "nwg-panel";
   };
 })

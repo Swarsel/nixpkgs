@@ -1,9 +1,9 @@
 {
-  stdenv,
   lib,
-  fetchFromCodeberg,
+  stdenv,
   autoconf,
   automake,
+  fetchFromCodeberg,
   libtool,
 }:
 
@@ -25,7 +25,6 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   preConfigure = "./bootstrap";
-
   enableParallelBuilding = true;
 
   meta = {
@@ -33,7 +32,7 @@ stdenv.mkDerivation (finalAttrs: {
     homepage = "https://www.surina.net/soundtouch/";
     license = lib.licenses.lgpl21Plus;
     maintainers = [ ];
-    mainProgram = "soundstretch";
     platforms = lib.platforms.all;
+    mainProgram = "soundstretch";
   };
 })

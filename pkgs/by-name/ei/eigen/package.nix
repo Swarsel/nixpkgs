@@ -1,15 +1,12 @@
 {
   lib,
-
   stdenv,
   fetchFromGitLab,
-  fetchpatch,
-
   # nativeBuildInputs
   cmake,
-
   # nativeCheckInputs
   ctestCheckHook,
+  fetchpatch,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -27,17 +24,13 @@ stdenv.mkDerivation (finalAttrs: {
     # fix bug1213 test
     # ref https://gitlab.com/libeigen/eigen/-/merge_requests/2005 merged upstream
     (fetchpatch {
-      url = "https://gitlab.com/libeigen/eigen/-/commit/3e1367a3b5efcdc8ce716db77a322cedeb5e01b4.patch";
       hash = "sha256-oykUbzaZeVW1A8nBoiMtJvh68Zpu7PDFtAfAjtTQoC0=";
+      url = "https://gitlab.com/libeigen/eigen/-/commit/3e1367a3b5efcdc8ce716db77a322cedeb5e01b4.patch";
     })
   ];
 
   nativeBuildInputs = [
     cmake
-  ];
-
-  nativeCheckInputs = [
-    ctestCheckHook
   ];
 
   cmakeFlags = [
@@ -47,13 +40,19 @@ stdenv.mkDerivation (finalAttrs: {
   # too many flaky tests
   doCheck = false;
 
+  nativeCheckInputs = [
+    ctestCheckHook
+  ];
+
   meta = {
-    homepage = "https://eigen.tuxfamily.org";
     description = "C++ template library for linear algebra: vectors, matrices, and related algorithms";
+    homepage = "https://eigen.tuxfamily.org";
     license = lib.licenses.lgpl3Plus;
+
     maintainers = with lib.maintainers; [
       raskin
     ];
+
     platforms = lib.platforms.unix;
   };
 })

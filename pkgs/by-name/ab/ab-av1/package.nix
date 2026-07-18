@@ -1,9 +1,9 @@
 {
   lib,
-  rustPlatform,
+  stdenv,
   fetchFromGitHub,
   installShellFiles,
-  stdenv,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -17,9 +17,8 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-830STu0YfEhsYr4EU3ATF6kgH5J/tUEhm4b47VOwMEQ=";
   };
 
-  cargoHash = "sha256-mKtP+QoG0MjbBB4kMLlioyxshlgVyhqLH4C5GKx9Hes=";
-
   nativeBuildInputs = [ installShellFiles ];
+  cargoHash = "sha256-mKtP+QoG0MjbBB4kMLlioyxshlgVyhqLH4C5GKx9Hes=";
 
   postInstall = lib.optionalString (stdenv.buildPlatform.canExecute stdenv.hostPlatform) ''
     installShellCompletion --cmd ab-av1 \

@@ -9,21 +9,18 @@
 buildPythonPackage (finalAttrs: {
   pname = "prana-api-client";
   version = "0.12.0";
-  pyproject = true;
 
   src = fetchPypi {
-    pname = "prana_api_client";
     inherit (finalAttrs) version;
     hash = "sha256-woERY0H9s8P6z375axzPz2k5VWb0xRJtWcAuWtLFtJU=";
+    pname = "prana_api_client";
   };
-
-  build-system = [ setuptools ];
-
-  dependencies = [ aiohttp ];
 
   # upstream has no tests
   doCheck = false;
-
+  build-system = [ setuptools ];
+  dependencies = [ aiohttp ];
+  pyproject = true;
   pythonImportsCheck = [ "prana_local_api_client" ];
 
   meta = {

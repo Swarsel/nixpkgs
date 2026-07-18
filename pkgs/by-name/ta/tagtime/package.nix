@@ -2,9 +2,9 @@
   lib,
   stdenv,
   fetchFromGitHub,
+  coreutils,
   perl,
   xterm,
-  coreutils,
 }:
 
 stdenv.mkDerivation {
@@ -70,6 +70,7 @@ stdenv.mkDerivation {
 
   meta = {
     description = "Stochastic Time Tracking for Space Cadets";
+
     longDescription = ''
       To determine how you spend your time, TagTime literally randomly samples
       you. At random times it pops up and asks what you're doing right at that
@@ -79,6 +80,7 @@ stdenv.mkDerivation {
 
       [maintainer’s note]: This is the original perl script implementation.
     '';
+
     homepage = "https://messymatters.com/tagtime/";
     license = lib.licenses.bsd3;
     maintainers = [ ];

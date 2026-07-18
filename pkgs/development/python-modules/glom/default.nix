@@ -14,23 +14,10 @@
 buildPythonPackage rec {
   pname = "glom";
   version = "25.12.0";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
     hash = "sha256-GufaiL42k99ArSe99Xp2WlXAdchslxvN3WeSdAPrAGk=";
-  };
-
-  build-system = [ setuptools ];
-
-  dependencies = [
-    boltons
-    attrs
-    face
-  ];
-
-  optional-dependencies = {
-    yaml = [ pyyaml ];
   };
 
   nativeCheckInputs = [
@@ -42,6 +29,14 @@ buildPythonPackage rec {
     # test_cli.py checks the output of running "glom"
     export PATH=$out/bin:$PATH
   '';
+
+  build-system = [ setuptools ];
+
+  dependencies = [
+    boltons
+    attrs
+    face
+  ];
 
   disabledTests = lib.optionals (pythonAtLeast "3.11") [
     "test_regular_error_stack"
@@ -56,14 +51,21 @@ buildPythonPackage rec {
     "test_3_11_byte_code_caret"
   ];
 
+  optional-dependencies = {
+    yaml = [ pyyaml ];
+  };
+
+  pyproject = true;
   pythonImportsCheck = [ "glom" ];
 
   meta = {
     description = "Module for restructuring data";
+
     longDescription = ''
       glom helps pull together objects from other objects in a
       declarative, dynamic, and downright simple way.
     '';
+
     homepage = "https://github.com/mahmoud/glom";
     changelog = "https://github.com/mahmoud/glom/blob/v${version}/CHANGELOG.md";
     license = lib.licenses.bsd3;

@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   chromium,
   makeWrapper,
 }:
@@ -17,9 +17,9 @@ buildGoModule (finalAttrs: {
     hash = "sha256-NfLS7N1J71HnDx3oTfWf3lsWp3XNx18Jk7qwNPMfOZA=";
   };
 
+  nativeBuildInputs = [ makeWrapper ];
   vendorHash = "sha256-Czxxuy4ptsUx9cqog6wsHkUzS+j7WGj8PGsa4MDRJEE=";
 
-  nativeBuildInputs = [ makeWrapper ];
   postFixup = ''
     wrapProgram $out/bin/grafana-kiosk --prefix PATH : ${lib.makeBinPath [ chromium ]}
   '';

@@ -1,31 +1,31 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
-  cmake,
-  pkg-config,
-  gtkmm3,
   cairomm,
-  yaml-cpp,
+  cmake,
+  ffts,
+  glew,
   glfw,
-  libtirpc,
+  glslang,
+  gtkmm3,
+  hidapi,
   liblxi,
   libsigcxx,
-  glew,
-  zstd,
-  wrapGAppsHook3,
+  libtirpc,
+  llvmPackages,
   makeBinaryWrapper,
-  writeDarwinBundle,
+  moltenvk,
+  pkg-config,
   shaderc,
+  spirv-tools,
   vulkan-headers,
   vulkan-loader,
   vulkan-tools,
-  glslang,
-  spirv-tools,
-  ffts,
-  moltenvk,
-  llvmPackages,
-  hidapi,
+  wrapGAppsHook3,
+  writeDarwinBundle,
+  yaml-cpp,
+  zstd,
 }:
 
 let
@@ -43,6 +43,13 @@ stdenv.mkDerivation {
     hash = "sha256-7ZXfxfRa+1fbMj2IDF/boNL/qCy4i9IyMnzIgOZunDw=";
     fetchSubmodules = true;
   };
+
+  patches = [
+    ./remove-required-lsb-release.patch
+  ]
+  ++ lib.optionals stdenv.hostPlatform.isDarwin [
+    ./remove-brew-molten-vk-lookup.patch
+  ];
 
   strictDeps = true;
 
@@ -94,19 +101,6 @@ stdenv.mkDerivation {
     "-Wno-error=uninitialized"
   ];
 
-  patches = [
-    ./remove-required-lsb-release.patch
-  ]
-  ++ lib.optionals stdenv.hostPlatform.isDarwin [
-    ./remove-brew-molten-vk-lookup.patch
-  ];
-
-  postFixup = lib.optionalString stdenv.hostPlatform.isDarwin ''
-    mv -v $out/bin/ngscopeclient $out/bin/.ngscopeclient-unwrapped
-    makeWrapper $out/bin/.ngscopeclient-unwrapped $out/bin/ngscopeclient \
-      --prefix DYLD_LIBRARY_PATH : "${lib.makeLibraryPath [ vulkan-loader ]}"
-  '';
-
   postInstall = lib.optionalString stdenv.hostPlatform.isDarwin ''
     mkdir -p $out/Applications/ngscopeclient.app/Contents/{MacOS,Resources}
 
@@ -115,15 +109,23 @@ stdenv.mkDerivation {
     write-darwin-bundle $out ngscopeclient ngscopeclient ngscopeclient
   '';
 
+  postFixup = lib.optionalString stdenv.hostPlatform.isDarwin ''
+    mv -v $out/bin/ngscopeclient $out/bin/.ngscopeclient-unwrapped
+    makeWrapper $out/bin/.ngscopeclient-unwrapped $out/bin/ngscopeclient \
+      --prefix DYLD_LIBRARY_PATH : "${lib.makeLibraryPath [ vulkan-loader ]}"
+  '';
+
   meta = {
     description = "Advanced test & measurement remote control and analysis suite";
     homepage = "https://www.ngscopeclient.org/";
     license = lib.licenses.bsd3;
-    mainProgram = "ngscopeclient";
+
     maintainers = with lib.maintainers; [
       bgamari
       carlossless
     ];
+
     platforms = lib.platforms.linux ++ lib.platforms.darwin;
+    mainProgram = "ngscopeclient";
   };
 }

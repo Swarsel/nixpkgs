@@ -2,21 +2,18 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  testers,
-
-  cmake,
-  ninja,
-
   alsa-lib,
+  cmake,
   libjack2,
   libpulseaudio,
   libvorbis,
+  ninja,
   opusfile,
   sndio,
-
+  testers,
   alsaSupport ? true,
-  pulseSupport ? true,
   jackSupport ? true,
+  pulseSupport ? true,
   sndioSupport ? true,
 }:
 stdenv.mkDerivation (finalAttrs: {
@@ -63,19 +60,20 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   doCheck = true;
-
   passthru.tests.pkg-config = testers.testMetaPkgConfig finalAttrs.finalPackage;
 
   meta = {
     description = "Single header audio playback and capture library written in C";
     homepage = "https://github.com/mackron/miniaudio";
     changelog = "https://github.com/mackron/miniaudio/blob/${finalAttrs.version}/CHANGES.md";
+
     license = with lib.licenses; [
       unlicense # or
       mit0
     ];
+
     maintainers = [ lib.maintainers.jansol ];
-    pkgConfigModules = [ "miniaudio" ];
     platforms = lib.platforms.linux;
+    pkgConfigModules = [ "miniaudio" ];
   };
 })

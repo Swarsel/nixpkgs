@@ -1,8 +1,8 @@
 {
+  lib,
+  fetchFromGitHub,
   buildPythonPackage,
   click,
-  fetchFromGitHub,
-  lib,
   olefile,
   pytestCheckHook,
   setuptools,
@@ -12,7 +12,6 @@
 buildPythonPackage rec {
   pname = "python-oxmsg";
   version = "0.0.2";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "scanny";
@@ -20,6 +19,10 @@ buildPythonPackage rec {
     tag = "v${version}";
     hash = "sha256-ramM27+SylBeJyb3kkRm1xn3qAefiLuBOvI/iucK2wM=";
   };
+
+  nativeCheckInputs = [
+    pytestCheckHook
+  ];
 
   build-system = [ setuptools ];
 
@@ -29,18 +32,15 @@ buildPythonPackage rec {
     typing-extensions
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "oxmsg" ];
 
-  nativeCheckInputs = [
-    pytestCheckHook
-  ];
-
   meta = {
-    changelog = "https://github.com/scanny/python-oxmsg/blob/${src.tag}/CHANGELOG.md";
     description = "Extract attachments from Outlook .msg files";
     homepage = "https://github.com/scanny/python-oxmsg";
+    changelog = "https://github.com/scanny/python-oxmsg/blob/${src.tag}/CHANGELOG.md";
     license = lib.licenses.mit;
-    mainProgram = "oxmsg";
     maintainers = with lib.maintainers; [ dotlambda ];
+    mainProgram = "oxmsg";
   };
 }

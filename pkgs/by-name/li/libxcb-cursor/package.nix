@@ -2,28 +2,28 @@
   lib,
   stdenv,
   fetchurl,
-  pkg-config,
-  m4,
   libxcb,
   libxcb-image,
   libxcb-render-util,
-  xorgproto,
-  writeScript,
+  m4,
+  pkg-config,
   testers,
+  writeScript,
+  xorgproto,
 }:
 stdenv.mkDerivation (finalAttrs: {
   pname = "libxcb-cursor";
   version = "0.1.6";
 
-  outputs = [
-    "out"
-    "dev"
-  ];
-
   src = fetchurl {
     url = "mirror://xorg/individual/lib/xcb-util-cursor-${finalAttrs.version}.tar.xz";
     hash = "sha256-/euL0SeHNRm+XMcNzQ07XTO2Z4dyAPmSWln9ytj3qTM=";
   };
+
+  outputs = [
+    "out"
+    "dev"
+  ];
 
   strictDeps = true;
 
@@ -42,6 +42,8 @@ stdenv.mkDerivation (finalAttrs: {
   propagatedBuildInputs = [ libxcb ];
 
   passthru = {
+    tests.pkg-config = testers.testMetaPkgConfig finalAttrs.finalPackage;
+
     updateScript = writeScript "update-${finalAttrs.pname}" ''
       #!/usr/bin/env nix-shell
       #!nix-shell -i bash -p common-updater-scripts
@@ -50,7 +52,6 @@ stdenv.mkDerivation (finalAttrs: {
         | sort -V | tail -n1)"
       update-source-version ${finalAttrs.pname} "$version"
     '';
-    tests.pkg-config = testers.testMetaPkgConfig finalAttrs.finalPackage;
   };
 
   meta = {
@@ -58,7 +59,7 @@ stdenv.mkDerivation (finalAttrs: {
     homepage = "https://gitlab.freedesktop.org/xorg/lib/libxcb-cursor";
     license = lib.licenses.x11;
     maintainers = [ ];
-    pkgConfigModules = [ "xcb-cursor" ];
     platforms = lib.platforms.unix;
+    pkgConfigModules = [ "xcb-cursor" ];
   };
 })

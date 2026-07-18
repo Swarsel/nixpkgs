@@ -1,18 +1,18 @@
 {
   lib,
+  fetchFromGitHub,
   btrfs-progs,
   buildGoModule,
-  fetchFromGitHub,
   glibc,
+  go-md2man,
   gpgme,
   installShellFiles,
   libapparmor,
   libseccomp,
   libselinux,
   lvm2,
-  pkg-config,
   nixosTests,
-  go-md2man,
+  pkg-config,
 }:
 
 buildGoModule (finalAttrs: {
@@ -25,14 +25,12 @@ buildGoModule (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-mrR0Q23PCe2OMCgH6AgmSzE4zmZzTA6SiMD8OYiWdpE=";
   };
-  vendorHash = null;
-
-  doCheck = false;
 
   outputs = [
     "out"
     "man"
   ];
+
   nativeBuildInputs = [
     installShellFiles
     go-md2man
@@ -52,6 +50,8 @@ buildGoModule (finalAttrs: {
     glibc.static
   ];
 
+  vendorHash = null;
+
   env.BUILDTAGS = toString [
     "apparmor"
     "seccomp"
@@ -66,6 +66,8 @@ buildGoModule (finalAttrs: {
     make binaries docs BUILDTAGS="$BUILDTAGS"
     runHook postBuild
   '';
+
+  doCheck = false;
 
   installPhase = ''
     runHook preInstall
@@ -85,13 +87,14 @@ buildGoModule (finalAttrs: {
   passthru.tests = { inherit (nixosTests) cri-o; };
 
   meta = {
-    homepage = "https://cri-o.io";
     description = ''
       Open Container Initiative-based implementation of the
       Kubernetes Container Runtime Interface
     '';
+
+    homepage = "https://cri-o.io";
     license = lib.licenses.asl20;
-    teams = [ lib.teams.podman ];
     platforms = lib.platforms.linux;
+    teams = [ lib.teams.podman ];
   };
 })

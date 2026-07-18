@@ -1,11 +1,11 @@
 {
   lib,
+  fetchFromGitHub,
   aiofiles,
   aiohttp,
   aioresponses,
   buildPythonPackage,
   ciso8601,
-  fetchFromGitHub,
   freenub,
   poetry-core,
   propcache,
@@ -16,15 +16,14 @@
   pytestCheckHook,
   python-dateutil,
   python-socketio,
-  requests-mock,
   requests,
+  requests-mock,
   typing-extensions,
 }:
 
 buildPythonPackage rec {
   pname = "yalexs";
   version = "9.2.7";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "bdraco";
@@ -33,9 +32,16 @@ buildPythonPackage rec {
     hash = "sha256-HZN3ot5z/JbWZaWLffyTWLneD1gG3tTdYLKevXYnJnw=";
   };
 
-  build-system = [ poetry-core ];
+  nativeCheckInputs = [
+    aioresponses
+    pytest-asyncio
+    pytest-cov-stub
+    pytest-freezegun
+    pytestCheckHook
+    requests-mock
+  ];
 
-  pythonRelaxDeps = [ "aiohttp" ];
+  build-system = [ poetry-core ];
 
   dependencies = [
     aiofiles
@@ -51,21 +57,14 @@ buildPythonPackage rec {
   ]
   ++ python-socketio.optional-dependencies.asyncio_client;
 
-  nativeCheckInputs = [
-    aioresponses
-    pytest-asyncio
-    pytest-cov-stub
-    pytest-freezegun
-    pytestCheckHook
-    requests-mock
-  ];
-
   disabledTests = [
     # aiohttp api breakage, remove when bumping to 9.2.8 or newer
     "test__raise_response_exceptions"
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "yalexs" ];
+  pythonRelaxDeps = [ "aiohttp" ];
 
   meta = {
     description = "Python API for Yale Access (formerly August) Smart Lock and Doorbell";

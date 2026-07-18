@@ -1,27 +1,21 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
+  buildPythonPackage,
   # build-system
   hatchling,
-
-  # dependencies
-  snakemake-interface-common,
-
   # tests
   pytestCheckHook,
-  snakemake-logger-plugin-rich,
-
+  # dependencies
+  snakemake-interface-common,
   # passthru
   snakemake-interface-logger-plugins,
+  snakemake-logger-plugin-rich,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "snakemake-interface-logger-plugins";
   version = "2.1.0";
-  pyproject = true;
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "snakemake";
@@ -29,6 +23,16 @@ buildPythonPackage (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-UBdzJtKukR4Y9KPpu8qJv4HmN9ghncvEqGsTQnHk36k=";
   };
+
+  # Circular dependency with snakemake
+  doCheck = false;
+
+  nativeCheckInputs = [
+    pytestCheckHook
+    snakemake-logger-plugin-rich
+  ];
+
+  __structuredAttrs = true;
 
   build-system = [
     hatchling
@@ -38,17 +42,10 @@ buildPythonPackage (finalAttrs: {
     snakemake-interface-common
   ];
 
+  enabledTestPaths = [ "tests/tests.py" ];
+  pyproject = true;
   pythonImportsCheck = [ "snakemake_interface_logger_plugins" ];
 
-  nativeCheckInputs = [
-    pytestCheckHook
-    snakemake-logger-plugin-rich
-  ];
-
-  enabledTestPaths = [ "tests/tests.py" ];
-
-  # Circular dependency with snakemake
-  doCheck = false;
   passthru.tests.pytest = snakemake-interface-logger-plugins.overridePythonAttrs {
     doCheck = true;
   };

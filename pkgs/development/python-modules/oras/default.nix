@@ -1,8 +1,8 @@
 {
   lib,
+  fetchFromGitHub,
   boto3,
   buildPythonPackage,
-  fetchFromGitHub,
   jsonschema,
   pytestCheckHook,
   requests,
@@ -12,7 +12,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "oras";
   version = "0.2.42";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "oras-project";
@@ -21,6 +20,11 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-fuDvhz7dTsPM1AZkPUUgalXUnslAKqTXplslbOUjS/I=";
   };
 
+  nativeCheckInputs = [
+    boto3
+    pytestCheckHook
+  ];
+
   build-system = [ setuptools ];
 
   dependencies = [
@@ -28,18 +32,14 @@ buildPythonPackage (finalAttrs: {
     requests
   ];
 
-  nativeCheckInputs = [
-    boto3
-    pytestCheckHook
-  ];
-
-  pythonImportsCheck = [ "oras" ];
-
   disabledTests = [
     # Test requires network access
     "test_get_many_tags"
     "test_ssl"
   ];
+
+  pyproject = true;
+  pythonImportsCheck = [ "oras" ];
 
   meta = {
     description = "ORAS Python SDK";

@@ -2,8 +2,8 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  writeShellScriptBin,
   skawarePackages,
+  writeShellScriptBin,
 }:
 
 let
@@ -12,14 +12,14 @@ let
 
 in
 stdenv.mkDerivation {
-  pname = "git-vendor";
   inherit version;
+  pname = "git-vendor";
 
   src = fetchFromGitHub {
+    inherit sha256;
     owner = "brettlangdon";
     repo = "git-vendor";
     rev = "v${version}";
-    inherit sha256;
   };
 
   outputs = [
@@ -29,16 +29,16 @@ stdenv.mkDerivation {
     "out"
   ];
 
-  env = {
-    PREFIX = (placeholder "out");
-    BINPREFIX = "${placeholder "bin"}/bin";
-    MANPREFIX = "${placeholder "man"}/share/man/man1";
-  };
-
   buildInputs = [
     # stubbing out a `git config` check that `make install` tries to do
     (writeShellScriptBin "git" "")
   ];
+
+  env = {
+    BINPREFIX = "${placeholder "bin"}/bin";
+    MANPREFIX = "${placeholder "man"}/share/man/man1";
+    PREFIX = (placeholder "out");
+  };
 
   postInstall = ''
     ${
@@ -47,6 +47,7 @@ stdenv.mkDerivation {
           "LICENSE"
           "README.md"
         ];
+
         noiseFiles = [
           "bin/git-vendor"
           "Makefile"
@@ -64,6 +65,7 @@ stdenv.mkDerivation {
 
   meta = {
     description = "Git command for managing vendored dependencies";
+
     longDescription = ''
       git-vendor is a wrapper around git-subtree commands for checking out and updating vendored dependencies.
 
@@ -72,6 +74,7 @@ stdenv.mkDerivation {
         * Dependencies are stored under the fully qualified project path.
             e.g. https://github.com/brettlangdon/forge will be stored under vendor/github.com/brettlangdon/forge.
     '';
+
     homepage = "https://github.com/brettlangdon/git-vendor";
     license = lib.licenses.mit;
     maintainers = [ ];

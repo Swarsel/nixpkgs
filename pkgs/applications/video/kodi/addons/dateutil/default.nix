@@ -1,15 +1,14 @@
 {
   lib,
-  rel,
+  addonUpdateScript,
   buildKodiAddon,
   fetchzip,
-  addonUpdateScript,
+  rel,
   six,
 }:
 
 buildKodiAddon rec {
   pname = "dateutil";
-  namespace = "script.module.dateutil";
   version = "2.8.2";
 
   src = fetchzip {
@@ -21,20 +20,25 @@ buildKodiAddon rec {
     six
   ];
 
+  namespace = "script.module.dateutil";
+
   passthru = {
     pythonPath = "lib";
+
     updateScript = addonUpdateScript {
       attrPath = "kodi.packages.dateutil";
     };
   };
 
   meta = {
-    homepage = "https://dateutil.readthedocs.io/en/stable/";
     description = "Extensions to the standard Python datetime module";
+    homepage = "https://dateutil.readthedocs.io/en/stable/";
+
     license = with lib.licenses; [
       asl20
       bsd3
     ];
+
     teams = [ lib.teams.kodi ];
   };
 }

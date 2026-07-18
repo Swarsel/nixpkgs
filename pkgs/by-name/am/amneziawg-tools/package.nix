@@ -2,14 +2,14 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  makeWrapper,
+  amneziawg-go,
   bash,
-  procps,
   iproute2,
   iptables,
-  openresolv,
-  amneziawg-go,
+  makeWrapper,
   nix-update-script,
+  openresolv,
+  procps,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -23,13 +23,12 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-b/ol1OovcZm0OFzz29GVO6EzxGvDDeixaABwGLaR3O0=";
   };
 
-  sourceRoot = "${finalAttrs.src.name}/src";
-
   outputs = [
     "out"
     "man"
   ];
 
+  strictDeps = true;
   nativeBuildInputs = [ makeWrapper ];
   buildInputs = [ bash ];
 
@@ -71,8 +70,7 @@ stdenv.mkDerivation (finalAttrs: {
     done
   '';
 
-  strictDeps = true;
-
+  sourceRoot = "${finalAttrs.src.name}/src";
   passthru.updateScript = nix-update-script { };
 
   meta = {

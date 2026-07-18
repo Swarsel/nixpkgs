@@ -2,12 +2,12 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  installShellFiles,
-  pkg-config,
-  qt5,
   boost,
+  installShellFiles,
   libGLU,
   muparser,
+  pkg-config,
+  qt5,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -15,11 +15,11 @@ stdenv.mkDerivation (finalAttrs: {
   version = "3.32.6.0";
 
   src = fetchFromGitHub {
-    name = "${finalAttrs.pname}-${finalAttrs.version}-src";
     owner = "qcad";
     repo = "qcad";
     rev = "v${finalAttrs.version}";
     hash = "sha256-7PckPPD7CWd+IQWTLhr5+vizIjPpRdva2yDOyC6t0Uc=";
+    name = "${finalAttrs.pname}-${finalAttrs.version}-src";
   };
 
   patches = [
@@ -56,21 +56,6 @@ stdenv.mkDerivation (finalAttrs: {
   ++ lib.optionals stdenv.hostPlatform.isDarwin [
     qt5.qtmacextras
   ];
-
-  qmakeFlags = [
-    "MUPARSER_DIR=${muparser}"
-    "INSTALLROOT=$(out)"
-    "BOOST_DIR=${boost.dev}"
-    "QMAKE_CXXFLAGS=-std=c++14"
-  ];
-
-  qtWrapperArgs =
-    lib.optionals stdenv.hostPlatform.isLinux [
-      "--prefix LD_LIBRARY_PATH : ${placeholder "out"}/lib"
-    ]
-    ++ lib.optionals stdenv.hostPlatform.isDarwin [
-      "--prefix DYLD_LIBRARY_PATH : ${placeholder "out"}/lib"
-    ];
 
   installPhase = ''
     runHook preInstall
@@ -122,12 +107,27 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  qmakeFlags = [
+    "MUPARSER_DIR=${muparser}"
+    "INSTALLROOT=$(out)"
+    "BOOST_DIR=${boost.dev}"
+    "QMAKE_CXXFLAGS=-std=c++14"
+  ];
+
+  qtWrapperArgs =
+    lib.optionals stdenv.hostPlatform.isLinux [
+      "--prefix LD_LIBRARY_PATH : ${placeholder "out"}/lib"
+    ]
+    ++ lib.optionals stdenv.hostPlatform.isDarwin [
+      "--prefix DYLD_LIBRARY_PATH : ${placeholder "out"}/lib"
+    ];
+
   meta = {
     description = "2D CAD package based on Qt";
     homepage = "https://qcad.org";
     license = lib.licenses.gpl3Only;
-    mainProgram = "qcad";
     maintainers = with lib.maintainers; [ yvesf ];
     platforms = qt5.qtbase.meta.platforms;
+    mainProgram = "qcad";
   };
 })

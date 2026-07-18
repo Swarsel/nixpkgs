@@ -24,8 +24,8 @@ in
   options = {
     services.xserver.displayManager.startx = {
       enable = lib.mkOption {
-        type = lib.types.bool;
         default = false;
+
         description = ''
           Whether to enable the dummy "startx" pseudo-display manager, which
           allows users to start X manually via the `startx` command from a
@@ -35,11 +35,23 @@ in
           The X server will run under the current user, not as root.
           :::
         '';
+
+        type = lib.types.bool;
+      };
+
+      extraCommands = lib.mkOption {
+        default = "";
+
+        description = ''
+          Shell commands to be added to the system-wide xinitrc script.
+        '';
+
+        type = lib.types.lines;
       };
 
       generateScript = lib.mkOption {
-        type = lib.types.bool;
         default = false;
+
         description = ''
           Whether to generate the system-wide xinitrc script (/etc/X11/xinit/xinitrc).
           This script will take care of setting up the session for systemd user
@@ -50,14 +62,8 @@ in
           exists and the `XINITRC` environment variable is unset.
           :::
         '';
-      };
 
-      extraCommands = lib.mkOption {
-        type = lib.types.lines;
-        default = "";
-        description = ''
-          Shell commands to be added to the system-wide xinitrc script.
-        '';
+        type = lib.types.bool;
       };
 
     };
@@ -66,21 +72,6 @@ in
   ###### implementation
 
   config = lib.mkIf cfg.enable {
-    services.xserver.exportConfiguration = true;
-
-    # Other displayManagers log to /dev/null because they're services and put
-    # Xorg's stdout in the journal
-    #
-    # To send log to Xorg's default log location ($XDG_DATA_HOME/xorg/), we do
-    # not specify a log file when running X
-    services.xserver.logFile = lib.mkDefault null;
-
-    # Implement xserverArgs via xinit's system-wide xserverrc
-    environment.etc."X11/xinit/xserverrc".source = pkgs.writeShellScript "xserverrc" ''
-      exec ${pkgs.xorg-server}/bin/X \
-        ${toString config.services.xserver.displayManager.xserverArgs} "$@"
-    '';
-
     # Add a sane system-wide xinitrc script
     environment.etc."X11/xinit/xinitrc" = lib.mkIf cfg.generateScript {
       source = pkgs.writeShellScript "xinitrc" ''
@@ -100,7 +91,20 @@ in
       '';
     };
 
+    # Implement xserverArgs via xinit's system-wide xserverrc
+    environment.etc."X11/xinit/xserverrc".source = pkgs.writeShellScript "xserverrc" ''
+      exec ${pkgs.xorg-server}/bin/X \
+        ${toString config.services.xserver.displayManager.xserverArgs} "$@"
+    '';
+
     environment.systemPackages = with pkgs; [ xinit ];
+    services.xserver.exportConfiguration = true;
+    # Other displayManagers log to /dev/null because they're services and put
+    # Xorg's stdout in the journal
+    #
+    # To send log to Xorg's default log location ($XDG_DATA_HOME/xorg/), we do
+    # not specify a log file when running X
+    services.xserver.logFile = lib.mkDefault null;
 
   };
 

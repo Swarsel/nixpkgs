@@ -8,7 +8,6 @@
 buildPythonPackage rec {
   pname = "python-gc100";
   version = "1.0.3a0";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
@@ -16,7 +15,7 @@ buildPythonPackage rec {
   };
 
   build-system = [ setuptools ];
-
+  pyproject = true;
   pythonImportsCheck = [ "gc100" ];
 
   meta = {

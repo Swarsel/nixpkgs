@@ -1,7 +1,7 @@
 {
-  buildDunePackage,
-  fetchFromGitHub,
   lib,
+  fetchFromGitHub,
+  buildDunePackage,
   reason,
 }:
 

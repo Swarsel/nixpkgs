@@ -23,7 +23,6 @@ stdenv.mkDerivation {
   '';
 
   nativeBuildInputs = [ installShellFiles ];
-
   buildInputs = [ dtc ];
 
   installPhase = ''
@@ -44,10 +43,10 @@ stdenv.mkDerivation {
   '';
 
   meta = {
-    homepage = "https://gitlab.com/DarkElvenAngel/argononed";
     description = "Replacement daemon for the Argon One Raspberry Pi case";
+    homepage = "https://gitlab.com/DarkElvenAngel/argononed";
     license = lib.licenses.mit;
-    platforms = lib.platforms.linux;
     maintainers = [ lib.maintainers.misterio77 ];
+    platforms = lib.platforms.linux;
   };
 }

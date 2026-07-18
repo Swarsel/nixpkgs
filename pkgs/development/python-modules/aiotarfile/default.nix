@@ -2,28 +2,22 @@
   lib,
   fetchFromGitHub,
   buildPythonPackage,
-  pythonOlder,
-  unittestCheckHook,
   cargo,
-  rustc,
+  pythonOlder,
   rustPlatform,
+  rustc,
+  unittestCheckHook,
 }:
 
 buildPythonPackage rec {
   pname = "aiotarfile";
   version = "0.5.2";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "rhelmot";
     repo = "aiotarfile";
     tag = "v${version}";
     hash = "sha256-V88cvVw6ss7iiojhlqDd2frG/gCEH0YKTP0IpgeFASw=";
-  };
-
-  cargoDeps = rustPlatform.fetchCargoVendor {
-    inherit pname version src;
-    hash = "sha256-Yf6N615X9ZB+HDp3xehMc3kjKbdsSbIJrqARRXwCRDQ=";
   };
 
   nativeBuildInputs = [
@@ -33,14 +27,18 @@ buildPythonPackage rec {
     rustc
   ];
 
-  nativeCheckInputs = [ unittestCheckHook ];
-
-  unittestFlagsArray = [ "tests/" ]; # Not sure why it isn't autodiscovered
-
   # pyo3-asyncio 0.20 segfaults on the python 3.14 interpreter state.
   doCheck = pythonOlder "3.14";
+  nativeCheckInputs = [ unittestCheckHook ];
 
+  cargoDeps = rustPlatform.fetchCargoVendor {
+    inherit pname version src;
+    hash = "sha256-Yf6N615X9ZB+HDp3xehMc3kjKbdsSbIJrqARRXwCRDQ=";
+  };
+
+  pyproject = true;
   pythonImportsCheck = [ "aiotarfile" ];
+  unittestFlagsArray = [ "tests/" ]; # Not sure why it isn't autodiscovered
 
   meta = {
     description = "Stream-based, asynchronous tarball processing";

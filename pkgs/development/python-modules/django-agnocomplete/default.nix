@@ -1,22 +1,21 @@
 {
   lib,
-  django,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
-  setuptools-scm,
-  requests,
-  six,
-  pytestCheckHook,
+  buildPythonPackage,
+  django,
+  mock,
   pytest-cov-stub,
   pytest-django,
-  mock,
+  pytestCheckHook,
   pyyaml,
+  requests,
+  setuptools,
+  setuptools-scm,
+  six,
 }:
 buildPythonPackage rec {
   pname = "django-agnocomplete";
   version = "2.2.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "peopledoc";
@@ -24,29 +23,6 @@ buildPythonPackage rec {
     rev = version;
     hash = "sha256-SDuLJM/ZvROkBOSbaVi6FMDRcR5Um4UrdPSq1ZMrlXM=";
   };
-
-  build-system = [
-    setuptools
-    setuptools-scm
-  ];
-
-  dependencies = [
-    django
-    requests
-    six
-  ];
-
-  pythonImportsCheck = [
-    "agnocomplete"
-  ];
-
-  nativeCheckInputs = [
-    pytestCheckHook
-    pytest-cov-stub
-    pytest-django
-    mock
-    pyyaml
-  ];
 
   postPatch = ''
     # 1. The "default.html" templates for forms and formsets will be removed.
@@ -61,6 +37,27 @@ buildPythonPackage rec {
       --replace-fail "assertQuerysetEqual" "assertQuerySetEqual"
   '';
 
+  nativeCheckInputs = [
+    pytestCheckHook
+    pytest-cov-stub
+    pytest-django
+    mock
+    pyyaml
+  ];
+
+  __darwinAllowLocalNetworking = true;
+
+  build-system = [
+    setuptools
+    setuptools-scm
+  ];
+
+  dependencies = [
+    django
+    requests
+    six
+  ];
+
   disabledTests = [
     # Exception message does not match for abstract class test, but the result
     # should be the same: can't instantiate abstract class
@@ -68,13 +65,18 @@ buildPythonPackage rec {
     "test_AgnocompleteModel"
   ];
 
-  __darwinAllowLocalNetworking = true;
+  pyproject = true;
+
+  pythonImportsCheck = [
+    "agnocomplete"
+  ];
 
   meta = {
     description = "front-end agnostic toolbox for autocompletion fields";
     homepage = "https://github.com/peopledoc/django-agnocomplete";
     changelog = "https://github.com/peopledoc/django-agnocomplete/blob/${src.rev}/CHANGELOG.rst";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       LorenzBischof
       jcollie

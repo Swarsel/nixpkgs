@@ -1,17 +1,14 @@
 {
   lib,
-  stdenvNoCC,
   fetchzip,
-  versionCheckHook,
   nix-update-script,
+  stdenvNoCC,
+  versionCheckHook,
 }:
 
 stdenvNoCC.mkDerivation (finalAttrs: {
   pname = "periphery";
   version = "3.7.4";
-
-  __structuredAttrs = true;
-  strictDeps = true;
 
   src = fetchzip {
     url = "https://github.com/peripheryapp/periphery/releases/download/${finalAttrs.version}/periphery-${finalAttrs.version}.zip";
@@ -19,8 +16,7 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     stripRoot = false;
   };
 
-  dontConfigure = true;
-  dontBuild = true;
+  strictDeps = true;
 
   installPhase = ''
     runHook preInstall
@@ -31,8 +27,10 @@ stdenvNoCC.mkDerivation (finalAttrs: {
 
   doInstallCheck = true;
   nativeInstallCheckInputs = [ versionCheckHook ];
+  __structuredAttrs = true;
+  dontBuild = true;
+  dontConfigure = true;
   versionCheckProgramArg = "version";
-
   passthru.updateScript = nix-update-script { };
 
   meta = {
@@ -40,9 +38,9 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     homepage = "https://github.com/peripheryapp/periphery";
     changelog = "https://github.com/peripheryapp/periphery/releases/tag/${finalAttrs.version}";
     license = lib.licenses.mit;
-    mainProgram = "periphery";
+    sourceProvenance = [ lib.sourceTypes.binaryNativeCode ];
     maintainers = with lib.maintainers; [ jeremystucki ];
     platforms = lib.platforms.darwin;
-    sourceProvenance = [ lib.sourceTypes.binaryNativeCode ];
+    mainProgram = "periphery";
   };
 })

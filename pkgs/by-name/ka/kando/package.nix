@@ -1,24 +1,21 @@
 {
   lib,
   stdenv,
-  buildNpmPackage,
   fetchFromGitHub,
-
-  electron,
-  nodejs_22,
-
+  buildNpmPackage,
   cmake,
-  zip,
-  makeWrapper,
-  wayland-scanner,
   copyDesktopItems,
-  makeDesktopItem,
-
-  libxkbcommon,
+  electron,
   libx11,
-  libxtst,
   libxi,
+  libxkbcommon,
+  libxtst,
+  makeDesktopItem,
+  makeWrapper,
+  nodejs_22,
   wayland,
+  wayland-scanner,
+  zip,
 }:
 
 let
@@ -39,12 +36,6 @@ buildNpmPackage.override { inherit nodejs; } rec {
     ./add-deep-link-note.patch
   ];
 
-  npmDepsHash = "sha256-2J74igNLl5CwXm9WtHzxqTVt7+S113qcioxJja6uUOE=";
-
-  npmFlags = [ "--ignore-scripts" ];
-
-  makeCacheWritable = true;
-
   nativeBuildInputs = [
     cmake
     zip
@@ -63,14 +54,14 @@ buildNpmPackage.override { inherit nodejs; } rec {
     wayland
   ];
 
-  dontUseCmakeConfigure = true;
+  npmDepsHash = "sha256-2J74igNLl5CwXm9WtHzxqTVt7+S113qcioxJja6uUOE=";
 
   env = {
+    # electron-forge's console output is squeezed into one narrow column if unset
+    CI = "1";
     ELECTRON_SKIP_BINARY_DOWNLOAD = "1";
     # use our own node headers since we skip downloading them
     NIX_CFLAGS_COMPILE = "-I${nodejs}/include/node";
-    # electron-forge's console output is squeezed into one narrow column if unset
-    CI = "1";
   };
 
   postConfigure = ''
@@ -99,8 +90,6 @@ buildNpmPackage.override { inherit nodejs; } rec {
     npm rebuild --verbose
   '';
 
-  npmBuildScript = "package";
-
   installPhase = ''
     runHook preInstall
 
@@ -127,24 +116,29 @@ buildNpmPackage.override { inherit nodejs; } rec {
 
   desktopItems = [
     (makeDesktopItem {
-      name = "kando";
-      exec = "kando %U";
-      icon = "kando";
-      desktopName = "Kando";
-      genericName = "Pie Menu";
-      comment = "The Cross-Platform Pie Menu";
       categories = [ "Utility" ];
+      comment = "The Cross-Platform Pie Menu";
+      desktopName = "Kando";
+      exec = "kando %U";
+      genericName = "Pie Menu";
+      icon = "kando";
       mimeTypes = [ "x-scheme-handler/kando" ];
+      name = "kando";
     })
   ];
 
+  dontUseCmakeConfigure = true;
+  makeCacheWritable = true;
+  npmBuildScript = "package";
+  npmFlags = [ "--ignore-scripts" ];
+
   meta = {
-    changelog = "https://github.com/kando-menu/kando/releases/tag/v${version}";
     description = "Cross-Platform Pie Menu";
     homepage = "https://github.com/kando-menu/kando";
+    changelog = "https://github.com/kando-menu/kando/releases/tag/v${version}";
     license = lib.licenses.mit;
-    mainProgram = "kando";
     maintainers = with lib.maintainers; [ tomasajt ];
     platforms = electron.meta.platforms;
+    mainProgram = "kando";
   };
 }

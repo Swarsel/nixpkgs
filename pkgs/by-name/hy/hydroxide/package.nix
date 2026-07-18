@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule (finalAttrs: {
@@ -16,9 +16,7 @@ buildGoModule (finalAttrs: {
   };
 
   vendorHash = "sha256-BIHvURCgqEzhl4NsVB7vBwLqMPxkM3CQgHmIcSTdOE4=";
-
   doCheck = false;
-
   subPackages = [ "cmd/hydroxide" ];
 
   meta = {

@@ -4,11 +4,11 @@
   fetchFromGitHub,
   cmake,
   doxygen,
-  zlib,
-  nix-update-script,
-  stb,
   libmeshb,
+  nix-update-script,
   rply,
+  stb,
+  zlib,
 }:
 stdenv.mkDerivation (finalAttrs: {
   pname = "geogram";
@@ -29,8 +29,28 @@ stdenv.mkDerivation (finalAttrs: {
     "out"
   ];
 
+  patches = [
+    # This patch replaces the bundled (outdated) zlib with our zlib
+    # Should be harmless, but if there are issues this patch can also be removed
+    # Also check https://github.com/BrunoLevy/geogram/issues/49 for progress
+    ./replace-bundled-zlib.patch
+
+    ./cmake-fix-link-libraries.patch
+  ];
+
   strictDeps = true;
-  __structuredAttrs = true;
+
+  nativeBuildInputs = [
+    cmake
+    doxygen
+  ];
+
+  buildInputs = [
+    zlib
+    stb
+    libmeshb
+    rply
+  ];
 
   cmakeFlags = [
     # Triangle is unfree
@@ -59,50 +79,31 @@ stdenv.mkDerivation (finalAttrs: {
     (lib.cmakeOptionType "path" "GEOGRAM_INSTALL_PKGCONFIG_DIR" "${placeholder "dev"}/lib/pkgconfig")
   ];
 
-  nativeBuildInputs = [
-    cmake
-    doxygen
-  ];
-
-  buildInputs = [
-    zlib
-    stb
-    libmeshb
-    rply
-  ];
-
-  patches = [
-    # This patch replaces the bundled (outdated) zlib with our zlib
-    # Should be harmless, but if there are issues this patch can also be removed
-    # Also check https://github.com/BrunoLevy/geogram/issues/49 for progress
-    ./replace-bundled-zlib.patch
-
-    ./cmake-fix-link-libraries.patch
-  ];
-
   postBuild = ''
     make doc-devkit-full
   '';
 
   doCheck = false;
-
+  __structuredAttrs = true;
   passthru.updateScript = nix-update-script { };
 
   meta = {
     description = "Programming Library with Geometric Algorithms";
+
     longDescription = ''
       Geogram contains the main results in Geometry Processing from the former ALICE Inria project,
       that is, more than 30 research articles published in ACM SIGGRAPH, ACM Transactions on Graphics,
       Symposium on Geometry Processing and Eurographics.
     '';
+
     homepage = "https://github.com/BrunoLevy/geogram";
     license = lib.licenses.bsd3;
+    maintainers = with lib.maintainers; [ tmarkus ];
 
     platforms = [
       "x86_64-linux"
       "aarch64-linux"
       "aarch64-darwin"
     ];
-    maintainers = with lib.maintainers; [ tmarkus ];
   };
 })

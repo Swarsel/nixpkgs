@@ -15,9 +15,9 @@ stdenv.mkDerivation (finalAttrs: {
       inherit (finalAttrs) pname version;
     in
     fetchzip {
-      name = "${pname}-${version}";
       url = "http://john.ccac.rwth-aachen.de:8000/ftp/as/source/c_version/asl-current-${version}.tar.bz2";
       hash = "sha256-Q50GzXBxFMhbt5s9OgHPNH4bdqz2hhEmTnMmKowVn2E=";
+      name = "${pname}-${version}";
     };
 
   outputs = [
@@ -25,8 +25,6 @@ stdenv.mkDerivation (finalAttrs: {
     "doc"
     "man"
   ];
-
-  nativeBuildInputs = lib.optionals buildDocs [ texliveMedium ];
 
   postPatch =
     lib.optionalString (!buildDocs) ''
@@ -36,7 +34,7 @@ stdenv.mkDerivation (finalAttrs: {
       substituteInPlace sysdefs.h --replace "x86_64" "aarch64"
     '';
 
-  dontConfigure = true;
+  nativeBuildInputs = lib.optionals buildDocs [ texliveMedium ];
 
   preBuild = ''
     bindir="${placeholder "out"}/bin" \
@@ -48,15 +46,19 @@ stdenv.mkDerivation (finalAttrs: {
     mkdir -p .objdir
   '';
 
+  dontConfigure = true;
+
   meta = {
-    homepage = "http://john.ccac.rwth-aachen.de:8000/as/index.html";
     description = "Portable macro cross assembler";
+
     longDescription = ''
       AS is a portable macro cross assembler for a variety of microprocessors
       and -controllers. Though it is mainly targeted at embedded processors and
       single-board computers, you also find CPU families in the target list that
       are used in workstations and PCs.
     '';
+
+    homepage = "http://john.ccac.rwth-aachen.de:8000/as/index.html";
     license = lib.licenses.gpl2Plus;
     maintainers = [ ];
     platforms = lib.platforms.unix;

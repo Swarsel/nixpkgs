@@ -1,7 +1,7 @@
 {
   lib,
-  stdenvNoCC,
   fetchFromGitHub,
+  stdenvNoCC,
 }:
 
 stdenvNoCC.mkDerivation (finalAttrs: {
@@ -15,9 +15,6 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     hash = "sha256-RbqywBm+C1Bo1KeFL2MdsE2PMKWbc3x2iWswKGXtO9o=";
   };
 
-  dontConfigure = true;
-  dontBuild = true;
-
   installPhase = ''
     runHook preInstall
 
@@ -28,9 +25,12 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  dontBuild = true;
+  dontConfigure = true;
+
   meta = {
-    homepage = "https://github.com/TheLartians/PackageProject.cmake";
     description = "CMake script for packaging C/C++ projects";
+
     longDescription = ''
       Help other developers use your project. A CMake script for packaging
       C/C++ projects for simple project installation while employing
@@ -39,6 +39,8 @@ stdenvNoCC.mkDerivation (finalAttrs: {
       to get things working. This small script should simplify the CMake
       packaging process into a single, easy-to-use command.
     '';
+
+    homepage = "https://github.com/TheLartians/PackageProject.cmake";
     license = lib.licenses.mit;
     maintainers = [ ];
     platforms = lib.platforms.all;

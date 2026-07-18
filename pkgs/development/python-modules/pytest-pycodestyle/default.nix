@@ -1,10 +1,10 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   pycodestyle,
-  pytest-isort,
   pytest,
+  pytest-isort,
   pytestCheckHook,
   setuptools,
 }:
@@ -12,7 +12,6 @@
 buildPythonPackage rec {
   pname = "pytest-pycodestyle";
   version = "2.5.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "henry0312";
@@ -21,17 +20,16 @@ buildPythonPackage rec {
     hash = "sha256-X/vacxI0RFHIqlZ2omzvvFDePS/SZYSFQHEmfcbvf/4=";
   };
 
-  build-system = [ setuptools ];
-
   buildInputs = [ pytest ];
-
-  dependencies = [ pycodestyle ];
 
   nativeCheckInputs = [
     pytest-isort
     pytestCheckHook
   ];
 
+  build-system = [ setuptools ];
+  dependencies = [ pycodestyle ];
+  pyproject = true;
   pythonImportsCheck = [ "pytest_pycodestyle" ];
 
   meta = {

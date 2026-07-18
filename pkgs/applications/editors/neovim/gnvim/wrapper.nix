@@ -2,13 +2,19 @@
   lib,
   stdenv,
   gnvim-unwrapped,
-  neovim,
   makeWrapper,
+  neovim,
 }:
 
 stdenv.mkDerivation {
+  inherit (gnvim-unwrapped) meta;
   pname = "gnvim";
   version = gnvim-unwrapped.version;
+
+  nativeBuildInputs = [
+    makeWrapper
+  ];
+
   buildCommand = ''
     makeWrapper '${gnvim-unwrapped}/bin/gnvim' "$out/bin/gnvim" \
       --prefix PATH : "${neovim}/bin" \
@@ -26,12 +32,5 @@ stdenv.mkDerivation {
   '';
 
   preferLocalBuild = true;
-
-  nativeBuildInputs = [
-    makeWrapper
-  ];
-
   passthru.unwrapped = gnvim-unwrapped;
-
-  inherit (gnvim-unwrapped) meta;
 }

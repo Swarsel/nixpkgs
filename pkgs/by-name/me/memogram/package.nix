@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   nix-update-script,
 }:
 buildGoModule (finalAttrs: {
@@ -16,9 +16,7 @@ buildGoModule (finalAttrs: {
   };
 
   vendorHash = "sha256-aSq+wjWZUK4Rh7bw9NqqxnD9H3X+EgMF6F4w+SUtm70=";
-
   subPackages = [ "bin/memogram" ];
-
   passthru.updateScript = nix-update-script { };
 
   meta = {
@@ -27,7 +25,7 @@ buildGoModule (finalAttrs: {
     changelog = "https://github.com/usememos/telegram-integration/releases/v${finalAttrs.version}";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ merrkry ];
-    mainProgram = "memogram";
     platforms = lib.platforms.linux;
+    mainProgram = "memogram";
   };
 })

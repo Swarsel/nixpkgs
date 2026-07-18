@@ -9,25 +9,25 @@ buildGo126Module (finalAttrs: {
   version = "1.3.0";
 
   src = fetchFromGitea {
-    domain = "gitea.com";
     owner = "gitea";
     repo = "gitea-mcp";
     tag = "v${finalAttrs.version}";
     hash = "sha256-vufclzgshz9/+7B4tO2xtz7pEfBX+xhKOngC7N6se6U=";
+    domain = "gitea.com";
   };
 
   vendorHash = "sha256-35zVDzivvO3tSi1RYvXJoLvrlvnp3JCzwC5FqDEj91M=";
-
-  subPackages = [ "." ];
-
   doCheck = false; # no test
 
   postInstall = ''
     install -Dm644 README.md LICENSE -t $out/share/doc/gitea-mcp-server
   '';
 
+  subPackages = [ "." ];
+
   meta = {
     description = "Gitea Model Context Protocol (MCP) Server";
+
     longDescription = ''
       The Gitea MCP Server is a Model Context Protocol (MCP) server that provides
       seamless integration with Gitea APIs, enabling advanced automation and
@@ -36,9 +36,10 @@ buildGo126Module (finalAttrs: {
       This server allows LLMs to interact with Gitea repositories, issues, pull
       requests, and other Gitea features through structured API interactions.
     '';
+
     homepage = "https://gitea.com/gitea/gitea-mcp";
     license = lib.licenses.mit;
-    mainProgram = "gitea-mcp";
     maintainers = with lib.maintainers; [ connerohnesorge ];
+    mainProgram = "gitea-mcp";
   };
 })

@@ -2,12 +2,12 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  fetchpatch2,
-  qt5,
   cmake,
-  pkg-config,
+  fetchpatch2,
   imagemagick,
   nix-update-script,
+  pkg-config,
+  qt5,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -25,9 +25,9 @@ stdenv.mkDerivation (finalAttrs: {
     # cmake-4 build fix:
     #   https://github.com/rodlie/cyan/pull/123
     (fetchpatch2 {
+      hash = "sha256-5VhXKamDNGeEvi86l+R3Lvzb4G5JFBq2dqqd6TdyxZ4=";
       name = "cmake-4.patch";
       url = "https://github.com/rodlie/cyan/commit/885e81310de8df7f32a5e1d2c722f89bcd969cd1.patch?full_index=1";
-      hash = "sha256-5VhXKamDNGeEvi86l+R3Lvzb4G5JFBq2dqqd6TdyxZ4=";
     })
   ];
 
@@ -38,15 +38,14 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   buildInputs = [ imagemagick ];
-
   passthru.updateScript = nix-update-script { };
 
   meta = {
     description = "Image viewer and converter, designed for prepress (print) work";
     homepage = "https://github.com/rodlie/cyan";
-    mainProgram = "Cyan";
     license = lib.licenses.cecill21;
-    platforms = lib.platforms.linux;
     maintainers = with lib.maintainers; [ zendo ];
+    platforms = lib.platforms.linux;
+    mainProgram = "Cyan";
   };
 })

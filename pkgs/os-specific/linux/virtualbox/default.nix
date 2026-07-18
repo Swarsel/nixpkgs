@@ -1,27 +1,25 @@
 {
   stdenv,
-  virtualbox,
   kernel,
+  virtualbox,
 }:
 
 stdenv.mkDerivation {
   pname = "virtualbox-modules";
   version = "${virtualbox.version}-${kernel.version}";
   src = virtualbox.modsrc;
+  nativeBuildInputs = kernel.moduleBuildDependencies;
+  makeFlags = [ "INSTALL_MOD_PATH=$(out)" ];
+  env.KERN_DIR = "${kernel.dev}/lib/modules/${kernel.modDirVersion}/build";
+  enableParallelBuilding = true;
+
   hardeningDisable = [
     "fortify"
     "pic"
     "stackprotector"
   ];
 
-  nativeBuildInputs = kernel.moduleBuildDependencies;
-
-  env.KERN_DIR = "${kernel.dev}/lib/modules/${kernel.modDirVersion}/build";
-
-  makeFlags = [ "INSTALL_MOD_PATH=$(out)" ];
   installTargets = [ "install" ];
-
-  enableParallelBuilding = true;
 
   meta = virtualbox.meta // {
     description = virtualbox.meta.description + " (kernel modules)";

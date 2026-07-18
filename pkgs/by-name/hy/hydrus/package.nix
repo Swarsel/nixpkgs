@@ -1,23 +1,21 @@
 {
   lib,
   stdenv,
-  python3Packages,
   fetchFromGitHub,
-  qt6,
   copyDesktopItems,
-  makeDesktopItem,
-  writableTmpDirAsHomeHook,
-  swftools,
   ffmpeg,
+  makeDesktopItem,
   miniupnpc,
-
+  python3Packages,
+  qt6,
+  swftools,
+  writableTmpDirAsHomeHook,
   enableSwftools ? false,
 }:
 
 python3Packages.buildPythonApplication (finalAttrs: {
   pname = "hydrus";
   version = "675";
-  pyproject = false;
 
   src = fetchFromGitHub {
     owner = "hydrusnetwork";
@@ -25,6 +23,11 @@ python3Packages.buildPythonApplication (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-c/jt7CnGCbyTEtR/OW0IkRp9OeUnypfuS+yUZR6Nshs=";
   };
+
+  outputs = [
+    "out"
+    "doc"
+  ];
 
   nativeBuildInputs = [
     qt6.wrapQtAppsHook
@@ -37,53 +40,9 @@ python3Packages.buildPythonApplication (finalAttrs: {
     qt6.qtcharts
   ];
 
-  desktopItems = [
-    (makeDesktopItem {
-      name = "hydrus-client";
-      exec = "hydrus-client";
-      desktopName = "Hydrus Client";
-      icon = "hydrus-client";
-      comment = finalAttrs.meta.description;
-      terminal = false;
-      type = "Application";
-      categories = [
-        "FileTools"
-        "Utility"
-      ];
-    })
-  ];
-
-  dependencies = with python3Packages; [
-    beautifulsoup4
-    cbor2
-    chardet
-    cloudscraper
-    dateparser
-    html5lib
-    lxml
-    lz4
-    numpy
-    opencv4
-    olefile
-    pillow
-    pillow-heif
-    psutil
-    psd-tools
-    pympler
-    pyopenssl
-    pyqt6
-    pyqt6-charts
-    pysocks
-    python-dateutil
-    python3Packages.mpv
-    pyyaml
-    qtpy
-    requests
-    show-in-file-manager
-    send2trash
-    service-identity
-    twisted
-  ];
+  # Tests crash even with __darwinAllowLocalNetworking enabled
+  # hydrus.core.HydrusExceptions.DataMissing: That service was not found!
+  doCheck = !stdenv.hostPlatform.isDarwin;
 
   nativeCheckInputs =
     (with python3Packages; [
@@ -94,10 +53,14 @@ python3Packages.buildPythonApplication (finalAttrs: {
       writableTmpDirAsHomeHook
     ];
 
-  outputs = [
-    "out"
-    "doc"
-  ];
+  checkPhase = ''
+    runHook preCheck
+
+    export QT_QPA_PLATFORM=offscreen
+    $out/bin/hydrus-test
+
+    runHook postCheck
+  '';
 
   installPhase = ''
     runHook preInstall
@@ -133,20 +96,6 @@ python3Packages.buildPythonApplication (finalAttrs: {
     runHook postInstall
   '';
 
-  checkPhase = ''
-    runHook preCheck
-
-    export QT_QPA_PLATFORM=offscreen
-    $out/bin/hydrus-test
-
-    runHook postCheck
-  '';
-
-  # Tests crash even with __darwinAllowLocalNetworking enabled
-  # hydrus.core.HydrusExceptions.DataMissing: That service was not found!
-  doCheck = !stdenv.hostPlatform.isDarwin;
-
-  dontWrapQtApps = true;
   preFixup = ''
     makeWrapperArgs+=("''${qtWrapperArgs[@]}")
     makeWrapperArgs+=(--prefix PATH : ${
@@ -157,11 +106,64 @@ python3Packages.buildPythonApplication (finalAttrs: {
     })
   '';
 
+  dependencies = with python3Packages; [
+    beautifulsoup4
+    cbor2
+    chardet
+    cloudscraper
+    dateparser
+    html5lib
+    lxml
+    lz4
+    numpy
+    opencv4
+    olefile
+    pillow
+    pillow-heif
+    psutil
+    psd-tools
+    pympler
+    pyopenssl
+    pyqt6
+    pyqt6-charts
+    pysocks
+    python-dateutil
+    python3Packages.mpv
+    pyyaml
+    qtpy
+    requests
+    show-in-file-manager
+    send2trash
+    service-identity
+    twisted
+  ];
+
+  desktopItems = [
+    (makeDesktopItem {
+      categories = [
+        "FileTools"
+        "Utility"
+      ];
+
+      comment = finalAttrs.meta.description;
+      desktopName = "Hydrus Client";
+      exec = "hydrus-client";
+      icon = "hydrus-client";
+      name = "hydrus-client";
+      terminal = false;
+      type = "Application";
+    })
+  ];
+
+  dontWrapQtApps = true;
+  pyproject = false;
+
   meta = {
     description = "Danbooru-like image tagging and searching system for the desktop";
-    license = lib.licenses.wtfpl;
     homepage = "https://hydrusnetwork.github.io/hydrus/";
     changelog = "https://github.com/hydrusnetwork/hydrus/releases/tag/${finalAttrs.src.tag}";
+    license = lib.licenses.wtfpl;
+
     maintainers = with lib.maintainers; [
       dandellion
       evanjs

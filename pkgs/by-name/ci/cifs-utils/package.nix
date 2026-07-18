@@ -1,17 +1,17 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchurl,
   autoreconfHook,
   docutils,
-  pkg-config,
+  keyutils,
   libcap,
   libkrb5,
-  keyutils,
   pam,
+  pkg-config,
+  python3,
   samba,
   talloc,
-  python3,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -22,6 +22,13 @@ stdenv.mkDerivation (finalAttrs: {
     url = "https://download.samba.org/pub/linux-cifs/cifs-utils/cifs-utils-${finalAttrs.version}.tar.bz2";
     sha256 = "sha256-f6zoXj0tXrXnrb0YGt7mdZCX8TWxDW+zC+jgcK9+cFQ=";
   };
+
+  outputs = [
+    "out"
+    "bin"
+    "man"
+    "dev"
+  ];
 
   nativeBuildInputs = [
     autoreconfHook
@@ -48,17 +55,10 @@ stdenv.mkDerivation (finalAttrs: {
     "ac_cv_func_realloc_0_nonnull=yes"
   ];
 
-  outputs = [
-    "out"
-    "bin"
-    "man"
-    "dev"
-  ];
-
   meta = {
-    homepage = "https://wiki.samba.org/index.php/LinuxCIFS_utils";
     description = "Tools for managing Linux CIFS client filesystems";
-    platforms = lib.platforms.linux;
+    homepage = "https://wiki.samba.org/index.php/LinuxCIFS_utils";
     license = lib.licenses.lgpl3;
+    platforms = lib.platforms.linux;
   };
 })

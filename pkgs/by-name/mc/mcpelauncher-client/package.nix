@@ -1,28 +1,28 @@
 {
   lib,
-  clangStdenv,
   stdenv,
   fetchFromGitHub,
+  clangStdenv,
   cmake,
-  pkg-config,
-  openssl,
-  zlib,
-  libpng,
-  libglvnd,
-  libxtst,
-  libxi,
-  libx11,
-  libevdev,
   curl,
+  fetchzip,
+  glfw,
+  libevdev,
+  libglvnd,
+  libpng,
+  libx11,
+  libxi,
+  libxtst,
+  openssl,
+  pkg-config,
   pulseaudio,
   qt6,
-  glfw,
-  withQtWebview ? true,
-  withQtErrorWindow ? true,
-  fetchzip,
-  zenity,
-  xdg-utils,
   sdl3,
+  xdg-utils,
+  zenity,
+  zlib,
+  withQtErrorWindow ? true,
+  withQtWebview ? true,
 }:
 
 # Bionic libc part doesn't compile with GCC
@@ -35,8 +35,8 @@ clangStdenv.mkDerivation (finalAttrs: {
     owner = "minecraft-linux";
     repo = "mcpelauncher-manifest";
     tag = "v${finalAttrs.version}";
-    fetchSubmodules = true;
     hash = "sha256-L9QWA50T4bhpFmKodGpu2Y5Vea5HckeKs0OkH3O7lTY=";
+    fetchSubmodules = true;
   };
 
   patches = [
@@ -53,9 +53,6 @@ clangStdenv.mkDerivation (finalAttrs: {
     substituteInPlace file-picker/src/file_picker_zenity.cpp \
       --replace-fail 'EXECUTABLE_NAME = "zenity"' 'EXECUTABLE_NAME = "${lib.getExe zenity}"'
   '';
-
-  # FORTIFY_SOURCE breaks libc_shim and the project will fail to compile
-  hardeningDisable = [ "fortify" ];
 
   nativeBuildInputs = [
     cmake
@@ -92,9 +89,9 @@ clangStdenv.mkDerivation (finalAttrs: {
     (lib.cmakeBool "FETCHCONTENT_FULLY_DISCONNECTED" true)
     (lib.cmakeFeature "FETCHCONTENT_SOURCE_DIR_NLOHMANN_JSON_EXT" (
       toString (fetchzip {
-        url = "https://github.com/nlohmann/json/releases/download/v3.7.3/include.zip";
         hash = "sha256-h8czZ4f5vZqvHkDVQawrQdUeQnWxewu4OONisqlrmmM=";
         stripRoot = false;
+        url = "https://github.com/nlohmann/json/releases/download/v3.7.3/include.zip";
       })
     ))
     (lib.cmakeBool "USE_OWN_CURL" false)
@@ -107,16 +104,20 @@ clangStdenv.mkDerivation (finalAttrs: {
     (lib.cmakeBool "ENABLE_QT_ERROR_UI" withQtErrorWindow)
   ];
 
+  # FORTIFY_SOURCE breaks libc_shim and the project will fail to compile
+  hardeningDisable = [ "fortify" ];
+
   meta = {
     description = "Unofficial Minecraft Bedrock Edition launcher with CLI";
     homepage = "https://minecraft-linux.github.io";
     license = lib.licenses.gpl3Plus;
+
     maintainers = with lib.maintainers; [
       aleksana
       morxemplum
       phanirithvij
     ];
-    mainProgram = "mcpelauncher-client";
+
     platforms = lib.platforms.unix;
     # Minecraft Bedrock Edition is raising minimal OpenGL version to OpenGL ES 3.1
     # which is currently not supported on macOS.
@@ -124,5 +125,6 @@ clangStdenv.mkDerivation (finalAttrs: {
     # https://help.minecraft.net/hc/en-us/articles/30298767427597-Upcoming-OS-Sunset-Announcements-in-Minecraft
     # The program is also not tested on darwin. Any help from darwin users are welcomed.
     badPlatforms = lib.platforms.darwin;
+    mainProgram = "mcpelauncher-client";
   };
 })

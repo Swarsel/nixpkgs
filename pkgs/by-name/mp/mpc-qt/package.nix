@@ -2,13 +2,13 @@
   lib,
   stdenv,
   fetchFromGitHub,
+  boost,
   cmake,
+  gitUpdater,
+  mpv,
   ninja,
   pkg-config,
-  boost,
   qt6Packages,
-  mpv,
-  gitUpdater,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -40,17 +40,17 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   passthru.updateScript = gitUpdater {
-    rev-prefix = "v";
     ignoredVersions = "master";
+    rev-prefix = "v";
   };
 
   meta = {
     description = "Media Player Classic Qute Theater";
     homepage = "https://mpc-qt.github.io";
     license = lib.licenses.gpl2;
-    platforms = lib.platforms.unix;
-    broken = stdenv.hostPlatform.isDarwin;
     maintainers = with lib.maintainers; [ romildo ];
+    platforms = lib.platforms.unix;
     mainProgram = "mpc-qt";
+    broken = stdenv.hostPlatform.isDarwin;
   };
 })

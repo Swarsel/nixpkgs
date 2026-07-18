@@ -2,11 +2,11 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  makeDesktopItem,
-  ncurses,
-  libx11,
   boost,
   cmake,
+  libx11,
+  makeDesktopItem,
+  ncurses,
 }:
 
 let
@@ -14,17 +14,18 @@ let
   description = "Dungeon crawler similar to Angband, based on the works of Tolkien";
 
   desktopItem = makeDesktopItem {
-    desktopName = pname;
-    name = pname;
-    exec = "${pname}-x11";
-    icon = pname;
-    comment = description;
-    type = "Application";
     categories = [
       "Game"
       "RolePlaying"
     ];
+
+    comment = description;
+    desktopName = pname;
+    exec = "${pname}-x11";
     genericName = pname;
+    icon = pname;
+    name = pname;
+    type = "Application";
   };
 
 in
@@ -39,13 +40,13 @@ stdenv.mkDerivation {
     hash = "sha256-OL59zktCJGBHPE8Y89S+OdcnJ/Hj+dGif1DNhePEQXo=";
   };
 
+  nativeBuildInputs = [ cmake ];
+
   buildInputs = [
     ncurses
     libx11
     boost
   ];
-
-  nativeBuildInputs = [ cmake ];
 
   cmakeFlags = [
     "-DSYSTEM_INSTALL=ON"
@@ -58,9 +59,9 @@ stdenv.mkDerivation {
 
   meta = {
     inherit description;
+    homepage = "https://github.com/tome2/tome2";
     license = lib.licenses.unfree;
     maintainers = with lib.maintainers; [ cizra ];
     platforms = lib.platforms.all;
-    homepage = "https://github.com/tome2/tome2";
   };
 }

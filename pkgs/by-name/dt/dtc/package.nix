@@ -1,19 +1,19 @@
 {
-  stdenv,
   lib,
+  stdenv,
+  bison,
   fetchpatch2,
   fetchzip,
+  flex,
+  libyaml,
   meson,
   ninja,
-  flex,
-  bison,
   pkg-config,
-  which,
-  pythonSupport ? false,
-  python ? null,
   replaceVars,
   swig,
-  libyaml,
+  which,
+  python ? null,
+  pythonSupport ? false,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -31,13 +31,13 @@ stdenv.mkDerivation (finalAttrs: {
     ./static.patch
     # backport fix for SWIG 4.3
     (fetchpatch2 {
-      url = "https://github.com/dgibson/dtc/commit/9a969f3b70b07bbf1c9df44a38d7f8d1d3a6e2a5.patch";
       hash = "sha256-YrRzc3ATNmU6LYNHEQeU8wtjt1Ap7/gNFvtRR14PQEE=";
+      url = "https://github.com/dgibson/dtc/commit/9a969f3b70b07bbf1c9df44a38d7f8d1d3a6e2a5.patch";
     })
     # glibc-2.41 support
     (fetchpatch2 {
-      url = "https://github.com/dgibson/dtc/commit/ce1d8588880aecd7af264e422a16a8b33617cef7.patch";
       hash = "sha256-t1CxKnbCXUArtVcniAIdNvahOGXPbYhPCZiTynGLvfo=";
+      url = "https://github.com/dgibson/dtc/commit/ce1d8588880aecd7af264e422a16a8b33617cef7.patch";
     })
   ]
   ++
@@ -48,6 +48,13 @@ stdenv.mkDerivation (finalAttrs: {
           python_bin = lib.getExe python;
         }
       );
+
+  postPatch = ''
+    patchShebangs setup.py
+
+    # Align the name with pypi
+    sed -i "s/name='libfdt',/name='pylibfdt',/" setup.py
+  '';
 
   nativeBuildInputs = [
     meson
@@ -65,20 +72,12 @@ stdenv.mkDerivation (finalAttrs: {
 
   buildInputs = [ libyaml ];
 
-  postPatch = ''
-    patchShebangs setup.py
-
-    # Align the name with pypi
-    sed -i "s/name='libfdt',/name='pylibfdt',/" setup.py
-  '';
-
-  # Required for installation of Python library and is innocuous otherwise.
-  env.DESTDIR = "/";
-
-  mesonAutoFeatures = "auto";
   mesonFlags = [
     (lib.mesonBool "tests" finalAttrs.finalPackage.doCheck)
   ];
+
+  # Required for installation of Python library and is innocuous otherwise.
+  env.DESTDIR = "/";
 
   doCheck =
     # Checks are broken on aarch64 darwin
@@ -96,6 +95,8 @@ stdenv.mkDerivation (finalAttrs: {
       # `-Dtests=disabled`; without it meson will attempt to run
       # hostPlatform binaries during the configurePhase.
       (with stdenv; buildPlatform.canExecute hostPlatform);
+
+  mesonAutoFeatures = "auto";
 
   meta = {
     description = "Device Tree Compiler";

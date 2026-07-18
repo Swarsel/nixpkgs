@@ -1,17 +1,16 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
+  curl,
   pytestCheckHook,
+  requests,
   setuptools,
   urllib3,
-  requests,
-  curl,
 }:
 buildPythonPackage (finalAttrs: {
   pname = "uploadserver";
   version = "6.0.3";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "Densaugeo";
@@ -20,7 +19,8 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-aG/s7C55QaAvOMFWrYKlDdjQFWljKBjal2Qe6j1/B/o=";
   };
 
-  build-system = [ setuptools ];
+  env.PROTOCOL = "HTTP";
+  env.VERBOSE = 0;
 
   nativeCheckInputs = [
     pytestCheckHook
@@ -29,10 +29,9 @@ buildPythonPackage (finalAttrs: {
     curl
   ];
 
-  env.VERBOSE = 0;
-  env.PROTOCOL = "HTTP";
+  build-system = [ setuptools ];
   enabledTestPaths = [ "test.py" ];
-
+  pyproject = true;
   pythonImportsCheck = [ "uploadserver" ];
 
   meta = {

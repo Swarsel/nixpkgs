@@ -1,8 +1,8 @@
 {
   lib,
   stdenv,
-  boost,
   fetchFromGitHub,
+  boost,
   installShellFiles,
   muparser,
   pkg-config,
@@ -21,12 +21,16 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-p2/mwFQq5VWNXvS8KsfvxYZP4mtJT/eWmQ6K+M+6TLQ=";
   };
 
-  buildInputs = [
-    boost
-    muparser
-    qt5.qtbase
-    qt5.qtsvg
-  ];
+  postPatch = ''
+    substituteInPlace librecad/src/main/qc_applicationwindow.cpp \
+      --replace-warn __DATE__ 0
+
+    substituteInPlace librecad/src/src.pro \
+      --replace-warn '$$[QT_INSTALL_BINS]' '${lib.getDev qt5.qttools}/bin' \
+      --replace-warn '/usr/libexec/PlistBuddy' 'PlistBuddy'
+    substituteInPlace librecad/src/muparser.pri \
+      --replace-warn "macx|" ""
+  '';
 
   nativeBuildInputs = [
     installShellFiles
@@ -39,21 +43,12 @@ stdenv.mkDerivation (finalAttrs: {
     xcbuild
   ];
 
-  qmakeFlags = [
-    "MUPARSER_DIR=${muparser}"
-    "BOOST_DIR=${boost.dev}"
+  buildInputs = [
+    boost
+    muparser
+    qt5.qtbase
+    qt5.qtsvg
   ];
-
-  postPatch = ''
-    substituteInPlace librecad/src/main/qc_applicationwindow.cpp \
-      --replace-warn __DATE__ 0
-
-    substituteInPlace librecad/src/src.pro \
-      --replace-warn '$$[QT_INSTALL_BINS]' '${lib.getDev qt5.qttools}/bin' \
-      --replace-warn '/usr/libexec/PlistBuddy' 'PlistBuddy'
-    substituteInPlace librecad/src/muparser.pri \
-      --replace-warn "macx|" ""
-  '';
 
   installPhase = ''
     runHook preInstall
@@ -81,6 +76,11 @@ stdenv.mkDerivation (finalAttrs: {
 
     runHook postInstall
   '';
+
+  qmakeFlags = [
+    "MUPARSER_DIR=${muparser}"
+    "BOOST_DIR=${boost.dev}"
+  ];
 
   meta = {
     description = "2D CAD package based on Qt";

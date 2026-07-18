@@ -1,9 +1,9 @@
 {
   lib,
+  fetchFromGitHub,
   asyncssh,
   buildPythonPackage,
   cryptography,
-  fetchFromGitHub,
   httpcore,
   httpx,
   psrpcore,
@@ -21,7 +21,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "pypsrp";
   version = "0.9.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "jborean93";
@@ -29,6 +28,13 @@ buildPythonPackage (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-a0xTYrdy0SwYQ7NS/hm80BAarjhUazP/I/J7PlsIWIM=";
   };
+
+  nativeCheckInputs = [
+    pytest-mock
+    pytestCheckHook
+    pyyaml
+    xmldiff
+  ];
 
   build-system = [ setuptools ];
 
@@ -41,6 +47,13 @@ buildPythonPackage (finalAttrs: {
     requests
   ];
 
+  disabledTests = [
+    # TypeError: Backend.load_rsa_private_numbers() missing 1 required...
+    "test_psrp_pshost_ui_mocked_methods"
+    "test_psrp_key_exchange_timeout"
+    "test_psrp_multiple_commands"
+  ];
+
   optional-dependencies = {
     credssp = [ requests-credssp ];
     kerberos = pyspnego.optional-dependencies.kerberos;
@@ -48,21 +61,8 @@ buildPythonPackage (finalAttrs: {
     ssh = [ asyncssh ];
   };
 
-  nativeCheckInputs = [
-    pytest-mock
-    pytestCheckHook
-    pyyaml
-    xmldiff
-  ];
-
+  pyproject = true;
   pythonImportsCheck = [ "pypsrp" ];
-
-  disabledTests = [
-    # TypeError: Backend.load_rsa_private_numbers() missing 1 required...
-    "test_psrp_pshost_ui_mocked_methods"
-    "test_psrp_key_exchange_timeout"
-    "test_psrp_multiple_commands"
-  ];
 
   meta = {
     description = "PowerShell Remoting Protocol Client library";

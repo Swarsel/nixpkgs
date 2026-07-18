@@ -1,36 +1,33 @@
 {
   lib,
-  isPyPy,
   buildPythonPackage,
-  pytest-fixture-config,
-
-  # build-time
-  setuptools,
-
+  execnet,
+  isPyPy,
   # runtime
   pytest,
-  execnet,
-  termcolor,
-  six,
-
+  pytest-fixture-config,
   # tests
   pytestCheckHook,
+  # build-time
+  setuptools,
+  six,
+  termcolor,
 }:
 
 buildPythonPackage {
-  pname = "pytest-shutil";
   inherit (pytest-fixture-config) version src patches;
-  pyproject = true;
+  pname = "pytest-shutil";
 
   postPatch = ''
     cd pytest-shutil
   '';
 
+  buildInputs = [ pytest ];
+  nativeCheckInputs = [ pytestCheckHook ];
+
   build-system = [
     setuptools
   ];
-
-  buildInputs = [ pytest ];
 
   dependencies = [
     execnet
@@ -38,17 +35,17 @@ buildPythonPackage {
     six
   ];
 
-  nativeCheckInputs = [ pytestCheckHook ];
-
   disabledTests = lib.optionals isPyPy [
     "test_run"
     "test_run_integration"
   ];
 
+  pyproject = true;
+
   meta = {
     description = "Goodie-bag of unix shell and environment tools for py.test";
     homepage = "https://github.com/manahl/pytest-plugins";
-    maintainers = with lib.maintainers; [ ryansydnor ];
     license = lib.licenses.mit;
+    maintainers = with lib.maintainers; [ ryansydnor ];
   };
 }

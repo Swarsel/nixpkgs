@@ -1,7 +1,7 @@
 {
   lib,
-  buildNpmPackage,
   fetchFromGitHub,
+  buildNpmPackage,
   nix-update-script,
 }:
 
@@ -21,8 +21,6 @@ buildNpmPackage (finalAttrs: {
       --replace-fail "/local/community/weather-radar-card/" "/local/nixos-lovelace-modules/"
   '';
 
-  npmDepsFetcherVersion = 2;
-  npmFlags = [ "--legacy-peer-deps" ];
   npmDepsHash = "sha256-1ln1V9UzyN9KyaYkUfCJbeItSIcV3/Mqzc90CoNM3W4=";
 
   installPhase = ''
@@ -35,9 +33,10 @@ buildNpmPackage (finalAttrs: {
     runHook postInstall
   '';
 
-  passthru.updateScript = nix-update-script { };
-
   __structuredAttrs = true;
+  npmDepsFetcherVersion = 2;
+  npmFlags = [ "--legacy-peer-deps" ];
+  passthru.updateScript = nix-update-script { };
 
   meta = {
     description = "Rrain radar card using the tiled images from RainViewer";

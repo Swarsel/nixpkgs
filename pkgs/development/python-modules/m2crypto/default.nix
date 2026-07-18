@@ -1,8 +1,8 @@
 {
   lib,
   stdenv,
-  buildPythonPackage,
   fetchFromGitLab,
+  buildPythonPackage,
   openssl,
   pytestCheckHook,
   setuptools,
@@ -12,7 +12,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "m2crypto";
   version = "0.48.0";
-  pyproject = true;
 
   src = fetchFromGitLab {
     owner = "m2crypto";
@@ -30,10 +29,7 @@ buildPythonPackage (finalAttrs: {
       --replace-fail "PRAGMA_WARN_STRICT_PROTOTYPES" ""
   '';
 
-  build-system = [ setuptools ];
-
   nativeBuildInputs = [ swig ];
-
   buildInputs = [ openssl ];
 
   env = {
@@ -41,6 +37,7 @@ buildPythonPackage (finalAttrs: {
       "-Wno-error=implicit-function-declaration"
       "-Wno-error=incompatible-pointer-types"
     ]);
+
     OPENSSL_PATH = lib.optionalString stdenv.hostPlatform.isDarwin "${openssl.dev}";
   }
   // lib.optionalAttrs (stdenv.hostPlatform != stdenv.buildPlatform) {
@@ -52,14 +49,16 @@ buildPythonPackage (finalAttrs: {
     openssl
   ];
 
+  # Tests require localhost access
+  __darwinAllowLocalNetworking = true;
+  build-system = [ setuptools ];
+
   disabledTests = [
     # Connection refused
     "test_makefile_err"
   ];
 
-  # Tests require localhost access
-  __darwinAllowLocalNetworking = true;
-
+  pyproject = true;
   pythonImportsCheck = [ "M2Crypto" ];
 
   meta = {

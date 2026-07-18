@@ -3,10 +3,10 @@
   stdenv,
   fetchFromGitHub,
   gdk-pixbuf,
+  gitUpdater,
   gtk-engine-murrine,
   gtk_engines,
   librsvg,
-  gitUpdater,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -26,12 +26,6 @@ stdenv.mkDerivation (finalAttrs: {
     librsvg
   ];
 
-  propagatedUserEnvPkgs = [
-    gtk-engine-murrine
-  ];
-
-  dontBuild = true;
-
   installPhase = ''
     runHook preInstall
     mkdir -p $out/share/themes
@@ -39,13 +33,19 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  dontBuild = true;
+
+  propagatedUserEnvPkgs = [
+    gtk-engine-murrine
+  ];
+
   passthru.updateScript = gitUpdater { };
 
   meta = {
     description = "Manjaro Style of Marwaita GTK theme";
     homepage = "https://www.pling.com/p/1351213/";
     license = lib.licenses.gpl3Only;
-    platforms = lib.platforms.unix;
     maintainers = [ lib.maintainers.romildo ];
+    platforms = lib.platforms.unix;
   };
 })

@@ -1,13 +1,13 @@
 {
-  stdenv,
   lib,
-  rkbin,
+  stdenv,
   qemu,
+  rkbin,
 }:
 
 stdenv.mkDerivation {
-  pname = "rkboot";
   inherit (rkbin) src version;
+  pname = "rkboot";
 
   postPatch = ''
     substituteInPlace RKBOOT/*.ini --replace 'PATH=' 'PATH=rkboot/'
@@ -38,6 +38,7 @@ stdenv.mkDerivation {
     homepage = "https://github.com/rockchip-linux/rkbin";
     license = lib.licenses.unfreeRedistributable;
     maintainers = with lib.maintainers; [ matthewcroughan ];
+
     platforms = [
       "x86_64-linux"
       "aarch64-linux"

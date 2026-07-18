@@ -1,9 +1,9 @@
 {
+  lib,
   fetchurl,
   appimageTools,
-  makeWrapper,
   imagemagick,
-  lib,
+  makeWrapper,
 }:
 let
   pname = "capacities";
@@ -59,10 +59,10 @@ appimageTools.wrapType2 {
   meta = {
     description = "Calm place to make sense of the world and create amazing things";
     homepage = "https://capacities.io/";
-    platforms = [ "x86_64-linux" ];
-    sourceProvenance = [ lib.sourceTypes.binaryNativeCode ];
     license = lib.licenses.unfree;
-    mainProgram = "capacities";
+    sourceProvenance = [ lib.sourceTypes.binaryNativeCode ];
     maintainers = [ lib.maintainers.keysmashes ];
+    platforms = [ "x86_64-linux" ];
+    mainProgram = "capacities";
   };
 }

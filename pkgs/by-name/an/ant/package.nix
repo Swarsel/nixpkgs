@@ -1,22 +1,22 @@
 {
-  fetchurl,
   lib,
   stdenv,
+  fetchurl,
   coreutils,
-  makeWrapper,
   gitUpdater,
+  makeWrapper,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
   pname = "ant";
   version = "1.10.17";
 
-  nativeBuildInputs = [ makeWrapper ];
-
   src = fetchurl {
     url = "mirror://apache/ant/binaries/apache-ant-${finalAttrs.version}-bin.tar.bz2";
     hash = "sha256-UhD8nXfpa/X0Y5KH8pgm2oXlSlQuCkCUY7FkK8PKruc=";
   };
+
+  nativeBuildInputs = [ makeWrapper ];
 
   installPhase = ''
     mkdir -p $out/bin $out/share/ant
@@ -81,6 +81,7 @@ stdenv.mkDerivation (finalAttrs: {
 
   passthru = {
     home = "${finalAttrs.finalPackage}/share/ant";
+
     updateScript = gitUpdater {
       rev-prefix = "rel/";
       url = "https://gitbox.apache.org/repos/asf/ant";
@@ -88,9 +89,7 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   meta = {
-    homepage = "https://ant.apache.org/";
     description = "Java-based build tool";
-    mainProgram = "ant";
 
     longDescription = ''
       Apache Ant is a Java-based build tool.  In theory, it is kind of like
@@ -113,9 +112,11 @@ stdenv.mkDerivation (finalAttrs: {
       by an object that implements a particular Task interface.
     '';
 
-    sourceProvenance = with lib.sourceTypes; [ binaryBytecode ];
+    homepage = "https://ant.apache.org/";
     license = lib.licenses.asl20;
-    teams = [ lib.teams.java ];
+    sourceProvenance = with lib.sourceTypes; [ binaryBytecode ];
     platforms = lib.platforms.all;
+    mainProgram = "ant";
+    teams = [ lib.teams.java ];
   };
 })

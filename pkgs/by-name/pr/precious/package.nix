@@ -1,8 +1,8 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
   nix-update-script,
+  rustPlatform,
   versionCheckHook,
 }:
 
@@ -18,21 +18,21 @@ rustPlatform.buildRustPackage (finalAttrs: {
   };
 
   cargoHash = "sha256-tOkd++KxroZyFMSf9abYKiz/OTlAEyB3Wn1BzQPrX2k=";
-
-  nativeInstallCheckInputs = [ versionCheckHook ];
   doInstallCheck = true;
-
+  nativeInstallCheckInputs = [ versionCheckHook ];
   passthru.updateScript = nix-update-script { };
 
   meta = {
     description = "One code quality tool to rule them all";
     homepage = "https://github.com/houseabsolute/precious";
     changelog = "https://github.com/houseabsolute/precious/releases/tag/v${finalAttrs.version}";
-    mainProgram = "precious";
-    maintainers = with lib.maintainers; [ abhisheksingh0x558 ];
+
     license = with lib.licenses; [
       mit # or
       asl20
     ];
+
+    maintainers = with lib.maintainers; [ abhisheksingh0x558 ];
+    mainProgram = "precious";
   };
 })

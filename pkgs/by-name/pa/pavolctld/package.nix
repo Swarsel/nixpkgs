@@ -16,15 +16,14 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   buildInputs = [ libpulseaudio ];
-
   installFlags = [ "PREFIX=$(out)" ];
 
   meta = {
     description = "Minimal volume control/monitoring daemon for PulseAudio and PipeWire";
     homepage = "https://tjkeller.xyz/projects/pavolctld";
-    platforms = lib.platforms.linux;
     license = lib.licenses.mit;
     maintainers = [ lib.maintainers.tjkeller ];
+    platforms = lib.platforms.linux;
     mainProgram = "pavolctld";
   };
 })

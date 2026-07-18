@@ -1,8 +1,8 @@
 {
-  stdenv,
-  buildGoModule,
-  fetchFromGitHub,
   lib,
+  stdenv,
+  fetchFromGitHub,
+  buildGoModule,
   enableStatic ? stdenv.hostPlatform.isStatic,
 }:
 

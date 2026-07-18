@@ -1,12 +1,13 @@
 {
-  self,
-  callPackage,
-  fetchFromGitHub,
   lib,
+  fetchFromGitHub,
+  callPackage,
   passthruFun,
+  self,
 }:
 
 callPackage ./default.nix {
+  inherit self passthruFun;
   # The patch version is the timestamp of the git commit,
   # obtain via `cat $(nix-build -A luajit_2_0.src)/.relver`
   version = "2.0.1774896119";
@@ -24,5 +25,4 @@ callPackage ./default.nix {
       lib.platforms.linux ++ lib.platforms.darwin
     );
   };
-  inherit self passthruFun;
 }

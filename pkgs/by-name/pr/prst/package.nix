@@ -18,14 +18,6 @@ stdenv.mkDerivation (finalAttrs: {
     fetchSubmodules = true;
   };
 
-  enableParallelBuilding = true;
-
-  strictDeps = true;
-
-  buildInputs = [ gmp ];
-
-  nativeBuildInputs = [ installShellFiles ];
-
   # add #include <cstdint>
   # remove static flag
   postPatch = ''
@@ -36,6 +28,10 @@ stdenv.mkDerivation (finalAttrs: {
     substituteInPlace src/linux64/Makefile \
       --replace-fail "-static" "" \
   '';
+
+  strictDeps = true;
+  nativeBuildInputs = [ installShellFiles ];
+  buildInputs = [ gmp ];
 
   makeFlags = [
     "-C"
@@ -51,27 +47,31 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   doInstallCheck = true;
+
   nativeInstallCheckInputs = [
     versionCheckHook
   ];
 
+  enableParallelBuilding = true;
   versionCheckProgramArg = "-v";
 
   meta = {
     description = "Primality testing utility written in C++";
+
     longDescription = ''
       This utility is best used for systematic searches of large prime numbers, either by public distributed projects or by private individuals.
       It can handle numbers of many popular forms like Proth numbers, Thabit numbers, generalized Fermat numbers, factorials, primorials and arbitrary numbers.
       Mersenne numbers are better handled by GIMPS.
       It is assumed that input candiates are previously sieved by a sieving utility best suited for the specific form of numbers.
     '';
+
     homepage = "https://github.com/patnashev/prst";
-    maintainers = with lib.maintainers; [ dstremur ];
     license = lib.licenses.unfree;
     # PRST links against gwnum.a which is part of the proprietary gwnum library,
     # making the resulting binary unfree even though the PRST source code itself
     # may have different licensing terms.
     sourceProvenance = [ lib.sourceTypes.binaryNativeCode ];
+    maintainers = with lib.maintainers; [ dstremur ];
     platforms = [ "x86_64-linux" ];
     mainProgram = "prst";
   };

@@ -1,16 +1,16 @@
 {
-  fetchFromGitHub,
   lib,
   stdenv,
+  fetchFromGitHub,
   autoreconfHook,
-  pkg-config,
-  libxml2,
+  bash,
   gd,
-  glib,
   getopt,
+  glib,
+  libxml2,
   libxslt,
   nix,
-  bash,
+  pkg-config,
 }:
 
 stdenv.mkDerivation {
@@ -24,22 +24,22 @@ stdenv.mkDerivation {
     sha256 = "sha256-HKQnCkO1TDs1e0MDil0Roq4YRembqRHQvb7lK3GAftQ=";
   };
 
-  prePatch = ''
-    # Remove broken test
-    substituteInPlace tests/draw/Makefile.am \
-      --replace "draw-wrong.sh" ""
-    rm tests/draw/draw-wrong.sh
+  strictDeps = true;
 
-    # Fix bash path
-    substituteInPlace scripts/nixexpr2xml.in \
-      --replace "/bin/bash" "${bash}/bin/bash"
-  '';
+  nativeBuildInputs = [
+    autoreconfHook
+    pkg-config
+    getopt
+    libxslt
+  ];
 
-  preAutoreconf = ''
-    # Copied from bootstrap script
-    ln -s README.md README
-    mkdir -p config
-  '';
+  buildInputs = [
+    bash
+    libxml2
+    gd.dev
+    glib
+    nix
+  ];
 
   configureFlags = [
     "--with-gd"
@@ -51,25 +51,28 @@ stdenv.mkDerivation {
     "-std=c90"
   ];
 
-  strictDeps = true;
-  nativeBuildInputs = [
-    autoreconfHook
-    pkg-config
-    getopt
-    libxslt
-  ];
-  buildInputs = [
-    bash
-    libxml2
-    gd.dev
-    glib
-    nix
-  ];
+  doCheck = true;
+
   nativeCheckInputs = [
     nix
   ];
 
-  doCheck = true;
+  preAutoreconf = ''
+    # Copied from bootstrap script
+    ln -s README.md README
+    mkdir -p config
+  '';
+
+  prePatch = ''
+    # Remove broken test
+    substituteInPlace tests/draw/Makefile.am \
+      --replace "draw-wrong.sh" ""
+    rm tests/draw/draw-wrong.sh
+
+    # Fix bash path
+    substituteInPlace scripts/nixexpr2xml.in \
+      --replace "/bin/bash" "${bash}/bin/bash"
+  '';
 
   meta = {
     description = "XML-based Nix-friendly data integration library";

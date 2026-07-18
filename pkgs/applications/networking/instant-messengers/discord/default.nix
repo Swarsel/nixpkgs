@@ -1,76 +1,83 @@
 {
-  callPackage,
   lib,
   stdenv,
+  callPackage,
   discord,
-  discord-ptb,
   discord-canary,
   discord-development,
+  discord-ptb,
 }:
 let
   variants = rec {
-    x86_64-linux = {
-      discord = rec {
-        branch = "stable";
-        binaryName = desktopName;
-        desktopName = "Discord";
-        self = discord;
-      };
-      discord-ptb = {
-        branch = "ptb";
-        binaryName = "DiscordPTB";
-        desktopName = "Discord PTB";
-        self = discord-ptb;
-      };
-      discord-canary = {
-        branch = "canary";
-        binaryName = "DiscordCanary";
-        desktopName = "Discord Canary";
-        self = discord-canary;
-      };
-      discord-development = {
-        branch = "development";
-        binaryName = "DiscordDevelopment";
-        desktopName = "Discord Development";
-        self = discord-development;
-      };
-    };
     aarch64-darwin = {
       discord = rec {
-        branch = "stable";
         binaryName = desktopName;
+        branch = "stable";
         desktopName = "Discord";
         self = discord;
       };
-      discord-ptb = rec {
-        branch = "ptb";
-        binaryName = desktopName;
-        desktopName = "Discord PTB";
-        self = discord-ptb;
-      };
+
       discord-canary = rec {
-        branch = "canary";
         binaryName = desktopName;
+        branch = "canary";
         desktopName = "Discord Canary";
         self = discord-canary;
       };
+
       discord-development = rec {
-        branch = "development";
         binaryName = desktopName;
+        branch = "development";
         desktopName = "Discord Development";
         self = discord-development;
+      };
+
+      discord-ptb = rec {
+        binaryName = desktopName;
+        branch = "ptb";
+        desktopName = "Discord PTB";
+        self = discord-ptb;
       };
     };
 
     default = x86_64-linux; # Used for unsupported platforms, so we can return *something* there.
+
+    x86_64-linux = {
+      discord = rec {
+        binaryName = desktopName;
+        branch = "stable";
+        desktopName = "Discord";
+        self = discord;
+      };
+
+      discord-canary = {
+        binaryName = "DiscordCanary";
+        branch = "canary";
+        desktopName = "Discord Canary";
+        self = discord-canary;
+      };
+
+      discord-development = {
+        binaryName = "DiscordDevelopment";
+        branch = "development";
+        desktopName = "Discord Development";
+        self = discord-development;
+      };
+
+      discord-ptb = {
+        binaryName = "DiscordPTB";
+        branch = "ptb";
+        desktopName = "Discord PTB";
+        self = discord-ptb;
+      };
+    };
   };
 
   meta = {
     description = "All-in-one cross-platform voice and text chat for gamers";
-    downloadPage = "https://discordapp.com/download";
     homepage = "https://discordapp.com/";
     license = lib.licenses.unfree;
-    mainProgram = "discord";
+    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
+
     maintainers = with lib.maintainers; [
       artturin
       _4evy
@@ -78,11 +85,14 @@ let
       jopejoe1
       Scrumplex
     ];
+
     platforms = [
       "x86_64-linux"
       "aarch64-darwin"
     ];
-    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
+
+    mainProgram = "discord";
+    downloadPage = "https://discordapp.com/download";
   };
   package = if stdenv.hostPlatform.isLinux then ./linux.nix else ./darwin.nix;
 
@@ -99,6 +109,7 @@ lib.genAttrs [ "discord" "discord-ptb" "discord-canary" "discord-development" ] 
     args
     // {
       inherit pname source;
+
       meta = meta // {
         mainProgram = args.binaryName;
       };

@@ -1,29 +1,26 @@
 {
-  mkDerivation,
   bsdSetupHook,
-  netbsdSetupHook,
   compatIfNeeded,
+  mkDerivation,
+  netbsdSetupHook,
 }:
 
 mkDerivation {
   pname = "fts";
-  path = "include/fts.h";
+
   nativeBuildInputs = [
     bsdSetupHook
     netbsdSetupHook
   ];
+
   propagatedBuildInputs = compatIfNeeded;
-  extraPaths = [
-    "lib/libc/gen/fts.c"
-    "lib/libc/include/namespace.h"
-    "lib/libc/gen/fts.3"
-  ];
-  skipIncludesPhase = true;
+
   buildPhase = ''
     "$CC" -c -Iinclude -Ilib/libc/include lib/libc/gen/fts.c \
         -o lib/libc/gen/fts.o
     "$AR" -rsc libfts.a lib/libc/gen/fts.o
   '';
+
   installPhase = ''
     runHook preInstall
 
@@ -34,8 +31,19 @@ mkDerivation {
 
     runHook postInstall
   '';
+
+  extraPaths = [
+    "lib/libc/gen/fts.c"
+    "lib/libc/include/namespace.h"
+    "lib/libc/gen/fts.3"
+  ];
+
+  path = "include/fts.h";
+
   setupHooks = [
     ../../../../../build-support/setup-hooks/role.bash
     ./fts-setup-hook.sh
   ];
+
+  skipIncludesPhase = true;
 }

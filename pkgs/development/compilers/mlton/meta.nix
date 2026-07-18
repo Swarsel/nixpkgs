@@ -3,6 +3,9 @@
 }:
 {
   description = "Open-source, whole-program, optimizing Standard ML compiler";
+  homepage = "http://mlton.org/";
+  license = lib.licenses.smlnj;
+
   longDescription = ''
     MLton is an open source, whole-program optimizing compiler for the Standard ML programming language.
     MLton aims to produce fast executables, and to encourage rapid prototyping and modular programming
@@ -12,9 +15,8 @@
     Description taken from http://en.wikipedia.org/wiki/Mlton .
   '';
 
-  homepage = "http://mlton.org/";
-  license = lib.licenses.smlnj;
   maintainers = [ lib.maintainers.poz ];
+
   platforms = [
     "i686-linux"
     "x86_64-linux"

@@ -1,8 +1,8 @@
 {
   lib,
+  fetchFromGitHub,
   buildPythonPackage,
   cython,
-  fetchFromGitHub,
   jq,
   oniguruma,
   pytestCheckHook,
@@ -11,7 +11,6 @@
 buildPythonPackage rec {
   pname = "jq";
   version = "1.12.0";
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "mwilliamson";
@@ -20,14 +19,14 @@ buildPythonPackage rec {
     hash = "sha256-glWEqoS+QaoIiBJu9DXd+VvhPnWOgRT4VaYfMpjbR5g=";
   };
 
-  env.JQPY_USE_SYSTEM_LIBS = 1;
-
   nativeBuildInputs = [ cython ];
 
   buildInputs = [
     jq
     oniguruma
   ];
+
+  env.JQPY_USE_SYSTEM_LIBS = 1;
 
   preBuild = ''
     cython jq.pyx
@@ -41,6 +40,7 @@ buildPythonPackage rec {
     "test_value_error_is_raised_if_input_cannot_be_processed_by_program"
   ];
 
+  format = "setuptools";
   pythonImportsCheck = [ "jq" ];
 
   meta = {

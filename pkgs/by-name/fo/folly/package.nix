@@ -1,53 +1,38 @@
 {
   lib,
   stdenv,
-
   fetchFromGitHub,
-  fetchpatch2,
-
+  boost,
   cmake,
-  ninja,
-  pkg-config,
-
+  ctestCheckHook,
+  darwinMinVersionHook,
   double-conversion,
   fast-float,
+  fetchpatch2,
+  fmt,
   gflags,
   glog,
+  gtest,
   libevent,
-  zlib,
-  openssl,
-  xz,
-  lz4,
-  zstd,
   libiberty,
   libunwind,
-  darwinMinVersionHook,
-
-  boost,
-  fmt,
-
-  ctestCheckHook,
-
-  gtest,
-
-  follyMobile ? false,
-
+  lz4,
+  ninja,
   nix-update-script,
-
+  openssl,
+  pkg-config,
   # for passthru.tests
   python3,
   watchman,
+  xz,
+  zlib,
+  zstd,
+  follyMobile ? false,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
   pname = "folly";
   version = "2026.01.19.00";
-
-  # split outputs to reduce downstream closure sizes
-  outputs = [
-    "out"
-    "dev"
-  ];
 
   src = fetchFromGitHub {
     owner = "facebook";
@@ -55,6 +40,66 @@ stdenv.mkDerivation (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-gfmN/9LizPdacUd1eJxFx79I63SwqX0NaWFgbe6vbFk=";
   };
+
+  # split outputs to reduce downstream closure sizes
+  outputs = [
+    "out"
+    "dev"
+  ];
+
+  patches = [
+    # Install the certificate files used by `libfolly_test_util` rather
+    # than leaving a dangling reference to the build directory in the
+    # `dev` output’s CMake files.
+    ./install-test-certs.patch
+
+    # The base template for std::char_traits has been removed in LLVM 19
+    # https://releases.llvm.org/19.1.0/projects/libcxx/docs/ReleaseNotes.html
+    ./char_traits.patch
+
+    # <https://github.com/facebook/folly/issues/2171>
+    ./folly-fix-glog-0.7.patch
+
+    # https://github.com/facebook/folly/pull/2561
+    ./memset-memcpy-aarch64.patch
+
+    # `.align 64` is invalid on x86_64 Mach-O, where `.align` takes a
+    # power-of-two exponent (64 means 2^64). The guard only excluded
+    # aarch64, so add !__APPLE__ to also skip x86_64-darwin.
+    ./memset-benchmark-darwin.patch
+
+    # Use feature detection directly instead of private standard library
+    # macros to detect the presence of ASAN and otherwise fallback to
+    # _not_ having ASAN.
+    (fetchpatch2 {
+      hash = "sha256-+1XJRAl4o9YubjqdIgQZpyrMmcb2imBfQUmiHNmFMRE=";
+      url = "https://github.com/facebook/folly/commit/fdde9bc360d525a1b2889b9ba89d671c3a13e72e.patch?full_index=1";
+    })
+  ];
+
+  # https://github.com/NixOS/nixpkgs/issues/144170
+  postPatch = ''
+    substituteInPlace CMake/libfolly.pc.in \
+      --replace-fail \
+        ${lib.escapeShellArg "\${exec_prefix}/@LIB_INSTALL_DIR@"} \
+        '@CMAKE_INSTALL_FULL_LIBDIR@' \
+      --replace-fail \
+        ${lib.escapeShellArg "\${prefix}/@CMAKE_INSTALL_INCLUDEDIR@"} \
+        '@CMAKE_INSTALL_FULL_INCLUDEDIR@'
+  ''
+  # Fix duplicate symbol errors on aarch64-linux caused by both
+  # memcpy_aarch64 and memcpy_aarch64-use (same for memset) being linked
+  # into libfolly.so. Add EXCLUDE_FROM_MONOLITH to -use variants.
+  # https://github.com/facebook/folly/pull/2562
+  + lib.optionalString stdenv.hostPlatform.isAarch64 ''
+    substituteInPlace folly/external/aor/CMakeLists.txt \
+      --replace-fail \
+        "NAME memcpy_aarch64-use" \
+        "NAME memcpy_aarch64-use EXCLUDE_FROM_MONOLITH" \
+      --replace-fail \
+        "NAME memset_aarch64-use" \
+        "NAME memset_aarch64-use EXCLUDE_FROM_MONOLITH"
+  '';
 
   nativeBuildInputs = [
     cmake
@@ -88,14 +133,6 @@ stdenv.mkDerivation (finalAttrs: {
     fmt
   ];
 
-  nativeCheckInputs = [
-    ctestCheckHook
-  ];
-
-  checkInputs = [
-    gtest
-  ];
-
   cmakeFlags = [
     (lib.cmakeBool "BUILD_SHARED_LIBS" (!stdenv.hostPlatform.isStatic))
 
@@ -126,61 +163,13 @@ stdenv.mkDerivation (finalAttrs: {
     || stdenv.hostPlatform.isPower64
     || stdenv.hostPlatform.isRiscV64;
 
-  dontUseNinjaCheck = true;
-
-  patches = [
-    # Install the certificate files used by `libfolly_test_util` rather
-    # than leaving a dangling reference to the build directory in the
-    # `dev` output’s CMake files.
-    ./install-test-certs.patch
-
-    # The base template for std::char_traits has been removed in LLVM 19
-    # https://releases.llvm.org/19.1.0/projects/libcxx/docs/ReleaseNotes.html
-    ./char_traits.patch
-
-    # <https://github.com/facebook/folly/issues/2171>
-    ./folly-fix-glog-0.7.patch
-
-    # https://github.com/facebook/folly/pull/2561
-    ./memset-memcpy-aarch64.patch
-
-    # `.align 64` is invalid on x86_64 Mach-O, where `.align` takes a
-    # power-of-two exponent (64 means 2^64). The guard only excluded
-    # aarch64, so add !__APPLE__ to also skip x86_64-darwin.
-    ./memset-benchmark-darwin.patch
-
-    # Use feature detection directly instead of private standard library
-    # macros to detect the presence of ASAN and otherwise fallback to
-    # _not_ having ASAN.
-    (fetchpatch2 {
-      url = "https://github.com/facebook/folly/commit/fdde9bc360d525a1b2889b9ba89d671c3a13e72e.patch?full_index=1";
-      hash = "sha256-+1XJRAl4o9YubjqdIgQZpyrMmcb2imBfQUmiHNmFMRE=";
-    })
+  nativeCheckInputs = [
+    ctestCheckHook
   ];
 
-  # https://github.com/NixOS/nixpkgs/issues/144170
-  postPatch = ''
-    substituteInPlace CMake/libfolly.pc.in \
-      --replace-fail \
-        ${lib.escapeShellArg "\${exec_prefix}/@LIB_INSTALL_DIR@"} \
-        '@CMAKE_INSTALL_FULL_LIBDIR@' \
-      --replace-fail \
-        ${lib.escapeShellArg "\${prefix}/@CMAKE_INSTALL_INCLUDEDIR@"} \
-        '@CMAKE_INSTALL_FULL_INCLUDEDIR@'
-  ''
-  # Fix duplicate symbol errors on aarch64-linux caused by both
-  # memcpy_aarch64 and memcpy_aarch64-use (same for memset) being linked
-  # into libfolly.so. Add EXCLUDE_FROM_MONOLITH to -use variants.
-  # https://github.com/facebook/folly/pull/2562
-  + lib.optionalString stdenv.hostPlatform.isAarch64 ''
-    substituteInPlace folly/external/aor/CMakeLists.txt \
-      --replace-fail \
-        "NAME memcpy_aarch64-use" \
-        "NAME memcpy_aarch64-use EXCLUDE_FROM_MONOLITH" \
-      --replace-fail \
-        "NAME memset_aarch64-use" \
-        "NAME memset_aarch64-use EXCLUDE_FROM_MONOLITH"
-  '';
+  checkInputs = [
+    gtest
+  ];
 
   disabledTests = [
     "io_async_ssl_session_test.SSLSessionTest.BasicTest"
@@ -223,29 +212,33 @@ stdenv.mkDerivation (finalAttrs: {
     "futures_future_test.Future.makeFutureFromMoveOnlyException"
   ];
 
+  dontUseNinjaCheck = true;
+
   passthru = {
     inherit boost fmt;
-
-    updateScript = nix-update-script { };
 
     tests = {
       inherit watchman;
       inherit (python3.pkgs) django pywatchman;
     };
+
+    updateScript = nix-update-script { };
   };
 
   meta = {
     description = "Open-source C++ library developed and used at Facebook";
     homepage = "https://github.com/facebook/folly";
     license = lib.licenses.asl20;
-    # 32bit is not supported: https://github.com/facebook/folly/issues/103
-    platforms = lib.platforms.unix;
-    badPlatforms = [ lib.systems.inspect.patterns.is32bit ];
+
     maintainers = with lib.maintainers; [
       pierreis
       emily
       techknowlogick
       lf-
     ];
+
+    # 32bit is not supported: https://github.com/facebook/folly/issues/103
+    platforms = lib.platforms.unix;
+    badPlatforms = [ lib.systems.inspect.patterns.is32bit ];
   };
 })

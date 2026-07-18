@@ -1,12 +1,13 @@
 {
   lib,
-  buildPythonPackage,
+  stdenv,
   fetchFromGitHub,
+  beautifulsoup4,
+  buildPythonPackage,
   django,
   django-debug-toolbar,
-  psycopg2,
   jinja2,
-  beautifulsoup4,
+  psycopg2,
   pytest-django,
   pytestCheckHook,
   python,
@@ -14,13 +15,11 @@
   redis,
   redisTestHook,
   setuptools,
-  stdenv,
 }:
 
 buildPythonPackage rec {
   pname = "django-cachalot";
   version = "2.9.0";
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "noripyt";
@@ -35,9 +34,8 @@ buildPythonPackage rec {
     ./disable-unsupported-tests.patch
   ];
 
-  build-system = [ setuptools ];
-
-  dependencies = [ django ];
+  # redisTestHook does not work on darwin
+  doCheck = !stdenv.hostPlatform.isDarwin;
 
   nativeCheckInputs = [
     beautifulsoup4
@@ -51,14 +49,21 @@ buildPythonPackage rec {
     redisTestHook
   ];
 
-  pythonImportsCheck = [ "cachalot" ];
-
-  # redisTestHook does not work on darwin
-  doCheck = !stdenv.hostPlatform.isDarwin;
-
   preCheck = ''
     export DJANGO_SETTINGS_MODULE=settings
   '';
+
+  build-system = [ setuptools ];
+  dependencies = [ django ];
+
+  disabledTests = [
+    # relies on specific EXPLAIN output format from sqlite, which is not stable
+    "test_explain"
+    # broken on django-debug-toolbar 6.0
+    "test_rendering"
+  ];
+
+  format = "setuptools";
 
   pytestFlags = [
     "-o python_files=*.py"
@@ -67,12 +72,7 @@ buildPythonPackage rec {
     "cachalot/admin_tests"
   ];
 
-  disabledTests = [
-    # relies on specific EXPLAIN output format from sqlite, which is not stable
-    "test_explain"
-    # broken on django-debug-toolbar 6.0
-    "test_rendering"
-  ];
+  pythonImportsCheck = [ "cachalot" ];
 
   meta = {
     description = "No effort, no worry, maximum performance";

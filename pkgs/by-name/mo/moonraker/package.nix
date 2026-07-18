@@ -1,11 +1,11 @@
 {
   lib,
-  stdenvNoCC,
   fetchFromGitHub,
-  python3,
   makeWrapper,
   nix-update-script,
   nixosTests,
+  python3,
+  stdenvNoCC,
   useGpiod ? false,
 }:
 
@@ -55,8 +55,8 @@ stdenvNoCC.mkDerivation rec {
   '';
 
   passthru = {
-    updateScript = nix-update-script { };
     tests.moonraker = nixosTests.moonraker;
+    updateScript = nix-update-script { };
   };
 
   meta = {

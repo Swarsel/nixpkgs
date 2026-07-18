@@ -1,10 +1,10 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
-  makeWrapper,
-  installShellFiles,
   flac,
+  installShellFiles,
+  makeWrapper,
   sox,
 }:
 
@@ -18,8 +18,6 @@ stdenv.mkDerivation (finalAttrs: {
     rev = "4ca544cbc075d0865884906208cb2b8bc318cf9e";
     sha256 = "19lcl09d4ngz2zzwd8dnnxx41ddvznhar6ggrlf1xvkr5gd7lafp";
   };
-
-  dontBuild = true;
 
   nativeBuildInputs = [
     installShellFiles
@@ -46,12 +44,14 @@ stdenv.mkDerivation (finalAttrs: {
       }
   '';
 
+  dontBuild = true;
+
   meta = {
     description = "Parallel BASH commandline FLAC compressor, verifier, organizer, analyzer, and retagger";
-    mainProgram = "redoflacs";
     homepage = finalAttrs.src.meta.homepage;
     license = lib.licenses.gpl2;
     maintainers = with lib.maintainers; [ peterhoeg ];
     platforms = lib.platforms.all;
+    mainProgram = "redoflacs";
   };
 })

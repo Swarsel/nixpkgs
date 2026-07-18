@@ -1,41 +1,28 @@
 {
   lib,
+  fetchFromGitHub,
   buildPythonPackage,
   django,
   djangorestframework,
-  fetchFromGitHub,
   filetype,
   pillow,
   psycopg2,
   pytest-django,
   pytestCheckHook,
   pythonAtLeast,
-  setuptools,
   pytz,
+  setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "drf-extra-fields";
   version = "3.7.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "hipo";
     repo = "drf-extra-fields";
     tag = "v${version}";
     hash = "sha256-Ym4vnZ/t0ZdSxU53BC0ducJl1YiTygRSWql/35PNbOU";
-  };
-
-  build-system = [ setuptools ];
-
-  dependencies = [
-    django
-    djangorestframework
-    filetype
-  ];
-
-  optional-dependencies = {
-    Base64ImageField = [ pillow ];
   };
 
   nativeCheckInputs = [
@@ -47,7 +34,13 @@ buildPythonPackage rec {
   ]
   ++ optional-dependencies.Base64ImageField;
 
-  pythonImportsCheck = [ "drf_extra_fields" ];
+  build-system = [ setuptools ];
+
+  dependencies = [
+    django
+    djangorestframework
+    filetype
+  ];
 
   disabledTests = [
     # pytz causes the following tests to fail
@@ -60,6 +53,13 @@ buildPythonPackage rec {
     # https://github.com/Hipo/drf-extra-fields/issues/210
     "test_read_source_with_context"
   ];
+
+  optional-dependencies = {
+    Base64ImageField = [ pillow ];
+  };
+
+  pyproject = true;
+  pythonImportsCheck = [ "drf_extra_fields" ];
 
   meta = {
     description = "Extra Fields for Django Rest Framework";

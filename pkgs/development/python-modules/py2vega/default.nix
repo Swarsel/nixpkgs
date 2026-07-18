@@ -1,16 +1,15 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
+  gast,
   pytestCheckHook,
   setuptools,
-  gast,
 }:
 
 buildPythonPackage rec {
   pname = "py2vega";
   version = "0.7.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "QuantStack";
@@ -19,7 +18,9 @@ buildPythonPackage rec {
     hash = "sha256-GU4mSOHsU/DPBdKFau6pOYQpaojXOfQIXrSG3skWr/I=";
   };
 
-  pythonRelaxDeps = [ "gast" ];
+  nativeCheckInputs = [
+    pytestCheckHook
+  ];
 
   build-system = [
     setuptools
@@ -29,9 +30,8 @@ buildPythonPackage rec {
     gast
   ];
 
-  nativeCheckInputs = [
-    pytestCheckHook
-  ];
+  pyproject = true;
+  pythonRelaxDeps = [ "gast" ];
 
   meta = {
     description = "Python to Vega-expression transpiler";

@@ -13,13 +13,14 @@ stdenv.mkDerivation (
   finalAttrs:
   let
     sources = {
-      "x86_64-linux" = {
-        url = "https://www.unifiedremote.com/static/builds/server/linux-x64/${builtins.elemAt (builtins.splitVersion finalAttrs.version) 3}/urserver-${finalAttrs.version}.tar.gz";
-        hash = "sha256-4wA2VPb5QN30TWa72pUVTYfvsxlGTO8Vngh7wDHXhDE=";
-      };
       "aarch64-linux" = {
-        url = "https://www.unifiedremote.com/static/builds/server/linux-arm64/${builtins.elemAt (builtins.splitVersion finalAttrs.version) 3}/urserver-${finalAttrs.version}.tar.gz";
         hash = "sha256-GmYekCGb64GdFdABEJl9CgqycnsBX95W9/b0xZJntEs=";
+        url = "https://www.unifiedremote.com/static/builds/server/linux-arm64/${builtins.elemAt (builtins.splitVersion finalAttrs.version) 3}/urserver-${finalAttrs.version}.tar.gz";
+      };
+
+      "x86_64-linux" = {
+        hash = "sha256-4wA2VPb5QN30TWa72pUVTYfvsxlGTO8Vngh7wDHXhDE=";
+        url = "https://www.unifiedremote.com/static/builds/server/linux-x64/${builtins.elemAt (builtins.splitVersion finalAttrs.version) 3}/urserver-${finalAttrs.version}.tar.gz";
       };
     };
   in
@@ -58,14 +59,14 @@ stdenv.mkDerivation (
       cp -r manager $out/bin/manager
     '';
 
-    nativeInstallCheckInputs = [ versionCheckHook ];
     doInstallCheck = true;
+    nativeInstallCheckInputs = [ versionCheckHook ];
 
     meta = {
-      homepage = "https://www.unifiedremote.com/";
       description = "One-and-only remote for your computer";
-      sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
+      homepage = "https://www.unifiedremote.com/";
       license = lib.licenses.unfree;
+      sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
       maintainers = with lib.maintainers; [ sfrijters ];
       platforms = lib.attrNames sources;
       mainProgram = "urserver";

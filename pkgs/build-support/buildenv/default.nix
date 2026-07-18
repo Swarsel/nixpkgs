@@ -2,10 +2,10 @@
 # This is a fork of the hardcoded buildEnv in the Nix distribution.
 
 {
-  buildPackages,
-  stdenvNoCC,
   lib,
+  buildPackages,
   replaceVars,
+  stdenvNoCC,
   writeClosure,
 }:
 
@@ -21,6 +21,7 @@ in
 lib.makeOverridable (
   lib.extendMkDerivation {
     constructDrv = stdenvNoCC.mkDerivation;
+
     excludeDrvArgNames = [
       # Override these arguments directly
       "derivationArgs"
@@ -34,69 +35,53 @@ lib.makeOverridable (
     extendDrvArgs =
       finalAttrs:
       {
-        # The manifest file (if any).  A symlink $out/manifest will be
-        # created to it.
-        manifest ? "",
-
         # The paths to symlink.
         paths,
-
-        # Whether to ignore collisions or abort.
-        ignoreCollisions ? false,
-
-        # Whether to ignore outputs that are a single file instead of a directory.
-        ignoreSingleFileOutputs ? false,
-
-        # Whether to include closures of all input paths.
-        includeClosures ? false,
-
+        buildInputs ? null,
         # If there is a collision, check whether the contents and permissions match
         # and only if not, throw a collision error.
         checkCollisionContents ? true,
-
+        # Additional stdenv.mkDerivation arguments
+        # such as nativeBuildInputs/buildInputs for postBuild dependencies.
+        derivationArgs ? { },
+        # The package outputs to include. By default, only the default
+        # output is included.
+        extraOutputsToInstall ? [ ],
+        # Root the result in directory "$out${extraPrefix}", e.g. "/share".
+        extraPrefix ? "",
+        # Whether to ignore collisions or abort.
+        ignoreCollisions ? false,
+        # Whether to ignore outputs that are a single file instead of a directory.
+        ignoreSingleFileOutputs ? false,
+        # Whether to include closures of all input paths.
+        includeClosures ? false,
+        # The manifest file (if any).  A symlink $out/manifest will be
+        # created to it.
+        manifest ? "",
+        meta ? { },
+        # Placeholder name arguments.
+        name ? null,
+        # `stdenv.mkDerivation` args before introducing derivationArgs.
+        nativeBuildInputs ? null,
+        passthru ? { },
         # The paths (relative to each element of `paths') that we want to
         # symlink (e.g., ["/bin"]).  Any file not inside any of the
         # directories in the list is not symlinked.
         pathsToLink ? [ "/" ],
-
-        # The package outputs to include. By default, only the default
-        # output is included.
-        extraOutputsToInstall ? [ ],
-
-        # Root the result in directory "$out${extraPrefix}", e.g. "/share".
-        extraPrefix ? "",
-
+        pname ? null,
         # Shell commands to run after building the symlink tree.
         postBuild ? "",
-
-        passthru ? { },
-        meta ? { },
-
-        # Additional stdenv.mkDerivation arguments
-        # such as nativeBuildInputs/buildInputs for postBuild dependencies.
-        derivationArgs ? { },
-
-        # Placeholder name arguments.
-        name ? null,
-        pname ? null,
         version ? null,
-
-        # `stdenv.mkDerivation` args before introducing derivationArgs.
-        nativeBuildInputs ? null,
-        buildInputs ? null,
       }@args:
       let
         compatArgs = {
-          ${if args ? nativeBuildInputs then "nativeBuildInputs" else null} = nativeBuildInputs;
           ${if args ? buildInputs then "buildInputs" else null} = buildInputs;
+          ${if args ? nativeBuildInputs then "nativeBuildInputs" else null} = nativeBuildInputs;
         };
       in
       compatArgs
       // derivationArgs
       // {
-        # Explicitly opt in: builder.pl reads all configuration from file $ENV["NIX_ATTRS_JSON_FILE"].
-        __structuredAttrs = true;
-
         inherit
           extraOutputsToInstall
           manifest
@@ -109,6 +94,15 @@ lib.makeOverridable (
           extraPrefix
           postBuild
           ;
+
+        # Explicitly opt in: builder.pl reads all configuration from file $ENV["NIX_ATTRS_JSON_FILE"].
+        __structuredAttrs = true;
+        allowSubstitutes = derivationArgs.allowSubstitutes or false;
+
+        buildCommand = ''
+          ${buildPackages.perl}/bin/perl -w ${builder}
+          eval "$postBuild"
+        '';
 
         chosenOutputs = map (drv: {
           paths =
@@ -128,6 +122,7 @@ lib.makeOverridable (
             ++ concatMap (
               outName: if drv ? ${outName} then [ drv.${outName} ] else [ ]
             ) finalAttrs.extraOutputsToInstall;
+
           priority = drv.meta.priority or lib.meta.defaultPriority;
           # Silently use the original `paths` if `passthru.paths` is missing.
         }) finalAttrs.passthru.paths or paths;
@@ -139,12 +134,6 @@ lib.makeOverridable (
         );
 
         preferLocalBuild = derivationArgs.preferLocalBuild or true;
-        allowSubstitutes = derivationArgs.allowSubstitutes or false;
-
-        buildCommand = ''
-          ${buildPackages.perl}/bin/perl -w ${builder}
-          eval "$postBuild"
-        '';
 
         passthru = {
           # The `paths` attribute is referenced and overridden from passthru

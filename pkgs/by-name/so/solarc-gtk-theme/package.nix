@@ -4,9 +4,9 @@
   fetchFromGitHub,
   autoconf,
   automake,
-  pkg-config,
   gtk-engine-murrine,
   gtk3,
+  pkg-config,
 }:
 
 stdenv.mkDerivation {
@@ -27,14 +27,14 @@ stdenv.mkDerivation {
     gtk3
   ];
 
+  buildPhase = ''
+    ./autogen.sh --prefix=$out
+  '';
+
   propagatedUserEnvPkgs = [
     gtk-engine-murrine
     gtk3
   ];
-
-  buildPhase = ''
-    ./autogen.sh --prefix=$out
-  '';
 
   meta = {
     description = "Solarized version of the Arc theme";

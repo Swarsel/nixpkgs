@@ -12,14 +12,15 @@
 buildPythonPackage rec {
   pname = "azure-storage-queue";
   version = "12.15.0";
-  pyproject = true;
 
   src = fetchPypi {
-    pname = "azure_storage_queue";
     inherit version;
     hash = "sha256-TgHcrlrv0MRj97rlx1yKkflVyJPxTtdZD8DNRHrEZm0=";
+    pname = "azure_storage_queue";
   };
 
+  # has no tests
+  doCheck = false;
   build-system = [ setuptools ];
 
   dependencies = [
@@ -33,9 +34,7 @@ buildPythonPackage rec {
     aio = [ azure-core ] ++ azure-core.optional-dependencies.aio;
   };
 
-  # has no tests
-  doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "azure.storage.queue" ];
 
   meta = {

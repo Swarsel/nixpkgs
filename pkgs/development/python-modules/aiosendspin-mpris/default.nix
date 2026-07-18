@@ -1,8 +1,8 @@
 {
   lib,
+  fetchFromGitHub,
   aiosendspin,
   buildPythonPackage,
-  fetchFromGitHub,
   mpris-api,
   setuptools,
 }:
@@ -10,7 +10,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "aiosendspin-mpris";
   version = "2.1.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "abmantis";
@@ -19,6 +18,8 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-hOF6rTm0pppk+J7tTVaLDK5C1ofGXz1YU6RVGm92geQ=";
   };
 
+  # Module has no tests
+  doCheck = false;
   build-system = [ setuptools ];
 
   dependencies = [
@@ -26,10 +27,8 @@ buildPythonPackage (finalAttrs: {
     mpris-api
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "aiosendspin_mpris" ];
-
-  # Module has no tests
-  doCheck = false;
 
   meta = {
     description = "MPRIS integration for aiosendspin";

@@ -1,17 +1,16 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
-  pkg-config,
-  zstd,
-  versionCheckHook,
   nix-update-script,
+  pkg-config,
+  rustPlatform,
+  versionCheckHook,
+  zstd,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
   pname = "ferron";
   version = "2.8.1";
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "ferronweb";
@@ -26,8 +25,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
       --replace-fail '#![doc = include_str!("../../README.md")]' ""
   '';
 
-  cargoHash = "sha256-H6AMHYlUdlCFAzOcso5V7uagB1Is304TuXR6+IrqWOU=";
-
   nativeBuildInputs = [
     pkg-config
   ];
@@ -36,14 +33,19 @@ rustPlatform.buildRustPackage (finalAttrs: {
     zstd
   ];
 
+  cargoHash = "sha256-H6AMHYlUdlCFAzOcso5V7uagB1Is304TuXR6+IrqWOU=";
+
   env = {
     ZSTD_SYS_USE_PKG_CONFIG = true;
   };
 
+  doInstallCheck = true;
+
   nativeInstallCheckInputs = [
     versionCheckHook
   ];
-  doInstallCheck = true;
+
+  __structuredAttrs = true;
 
   passthru = {
     updateScript = nix-update-script { };
@@ -54,10 +56,12 @@ rustPlatform.buildRustPackage (finalAttrs: {
     homepage = "https://github.com/ferronweb/ferron";
     changelog = "https://github.com/ferronweb/ferron/releases/tag/${finalAttrs.src.tag}";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       _0x4A6F
       GaetanLepage
     ];
+
     mainProgram = "ferron";
   };
 })

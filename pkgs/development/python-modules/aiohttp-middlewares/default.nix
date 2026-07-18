@@ -1,9 +1,9 @@
 {
   lib,
+  fetchFromGitHub,
   aiohttp,
   async-timeout,
   buildPythonPackage,
-  fetchFromGitHub,
   poetry-core,
   pytest-aiohttp,
   pytestCheckHook,
@@ -13,7 +13,6 @@
 buildPythonPackage rec {
   pname = "aiohttp-middlewares";
   version = "2.4.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "playpauseandstop";
@@ -22,11 +21,14 @@ buildPythonPackage rec {
     hash = "sha256-jUH1XhkytRwR76wUTsGQGu6m8s+SZ/GO114Lz9atwE8=";
   };
 
-  pythonRelaxDeps = [ "async-timeout" ];
-
   postPatch = ''
     sed -i "/addopts/d" pyproject.toml
   '';
+
+  nativeCheckInputs = [
+    pytest-aiohttp
+    pytestCheckHook
+  ];
 
   build-system = [ poetry-core ];
 
@@ -36,13 +38,6 @@ buildPythonPackage rec {
     yarl
   ];
 
-  nativeCheckInputs = [
-    pytest-aiohttp
-    pytestCheckHook
-  ];
-
-  pythonImportsCheck = [ "aiohttp_middlewares" ];
-
   disabledTests = [
     # TRests are outdated
     "test_shield_middleware_funcitonal[DELETE-False]"
@@ -50,6 +45,10 @@ buildPythonPackage rec {
     "test_shield_middleware_funcitonal[POST-True]"
     "test_shield_middleware_funcitonal[PUT-False]"
   ];
+
+  pyproject = true;
+  pythonImportsCheck = [ "aiohttp_middlewares" ];
+  pythonRelaxDeps = [ "async-timeout" ];
 
   meta = {
     description = "Collection of useful middlewares for aiohttp.web applications";

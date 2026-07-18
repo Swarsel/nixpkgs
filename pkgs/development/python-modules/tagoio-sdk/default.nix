@@ -1,8 +1,8 @@
 {
   lib,
+  fetchFromGitHub,
   aiohttp,
   buildPythonPackage,
-  fetchFromGitHub,
   hatchling,
   pytestCheckHook,
   python-dateutil,
@@ -16,7 +16,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "tagoio-sdk";
   version = "5.1.2";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "tago-io";
@@ -25,7 +24,10 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-PwybHVls5TDqCj/S2LOc8ZNIIg8DyaFZJnutKy0v+2w=";
   };
 
-  pythonRelaxDeps = [ "requests" ];
+  nativeCheckInputs = [
+    requests-mock
+    pytestCheckHook
+  ];
 
   build-system = [ hatchling ];
 
@@ -38,12 +40,9 @@ buildPythonPackage (finalAttrs: {
     sseclient-py
   ];
 
-  nativeCheckInputs = [
-    requests-mock
-    pytestCheckHook
-  ];
-
+  pyproject = true;
   pythonImportsCheck = [ "tagoio_sdk" ];
+  pythonRelaxDeps = [ "requests" ];
 
   meta = {
     description = "Module for interacting with Tago.io";

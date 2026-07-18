@@ -14,22 +14,24 @@
     ./sd-image.nix
   ];
 
+  boot.consoleLogLevel = lib.mkDefault 7;
+  boot.kernelParams = [ "console=hvc0" ];
+
   boot.loader = {
-    # powerpc64le-linux typically uses petitboot
-    grub.enable = false;
     generic-extlinux-compatible = {
       # petitboot is not does not support all of the extlinux extensions to
       # syslinux, but its parser is very forgiving; it essentially ignores
       # whatever it doesn't understand.  See below for a filename adjustment.
       enable = true;
     };
-  };
 
-  boot.consoleLogLevel = lib.mkDefault 7;
-  boot.kernelParams = [ "console=hvc0" ];
+    # powerpc64le-linux typically uses petitboot
+    grub.enable = false;
+  };
 
   sdImage = {
     populateFirmwareCommands = "";
+
     populateRootCommands = ''
       mkdir -p ./files/boot
       ${config.boot.loader.generic-extlinux-compatible.populateCmd} \

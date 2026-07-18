@@ -1,8 +1,8 @@
 {
   lib,
   fetchFromGitHub,
-  rustPlatform,
   autoAddDriverRunpath,
+  rustPlatform,
 }:
 rustPlatform.buildRustPackage (finalAttrs: {
   pname = "gpu-usage-waybar";
@@ -15,18 +15,18 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-8kj5QQ7yknLct6PfVGz+TiSS6nmQPzDXt2LF0h1hMNE=";
   };
 
-  cargoHash = "sha256-wGKMZDT+B/AD8onnfslnqKBFgqVJNo/idWKLZOiQb/c=";
-
   nativeBuildInputs = [
     autoAddDriverRunpath
   ];
+
+  cargoHash = "sha256-wGKMZDT+B/AD8onnfslnqKBFgqVJNo/idWKLZOiQb/c=";
 
   meta = {
     description = "Tool to display GPU usage in Waybar";
     homepage = "https://github.com/PolpOnline/gpu-usage-waybar";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ nouritsu ];
-    mainProgram = "gpu-usage-waybar";
     platforms = lib.platforms.linux;
+    mainProgram = "gpu-usage-waybar";
   };
 })

@@ -1,16 +1,14 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
+  buildPythonPackage,
   pytestCheckHook,
+  setuptools,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "sqlparams";
   version = "6.2.0";
-  pyproject = true;
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "cpburnz";
@@ -19,10 +17,10 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-PcAv76ZtArJDbddziOMTiDmMXyDTieDpqMA92iG2vgA=";
   };
 
-  build-system = [ setuptools ];
-
   nativeCheckInputs = [ pytestCheckHook ];
-
+  __structuredAttrs = true;
+  build-system = [ setuptools ];
+  pyproject = true;
   pythonImportsCheck = [ "sqlparams" ];
 
   meta = {

@@ -1,28 +1,24 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # build-system
-  setuptools,
-
   # dependencies
   argon2-cffi,
+  buildPythonPackage,
   certifi,
-  urllib3,
-  pycryptodome,
-  typing-extensions,
-
   # test
   faker,
   mock,
+  pycryptodome,
   pytestCheckHook,
+  # build-system
+  setuptools,
+  typing-extensions,
+  urllib3,
 }:
 
 buildPythonPackage rec {
   pname = "minio";
   version = "7.2.20";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "minio";
@@ -36,6 +32,12 @@ buildPythonPackage rec {
       --replace-fail "assertEquals" "assertEqual"
   '';
 
+  nativeCheckInputs = [
+    faker
+    mock
+    pytestCheckHook
+  ];
+
   build-system = [ setuptools ];
 
   dependencies = [
@@ -46,17 +48,12 @@ buildPythonPackage rec {
     typing-extensions
   ];
 
-  nativeCheckInputs = [
-    faker
-    mock
-    pytestCheckHook
-  ];
-
   disabledTestPaths = [
     # example credentials aren't present
     "tests/unit/credentials_test.py"
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "minio" ];
 
   meta = {

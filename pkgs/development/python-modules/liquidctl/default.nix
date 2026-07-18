@@ -1,27 +1,26 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  installShellFiles,
-  setuptools,
-  setuptools-scm,
-  wheel,
-  docopt,
-  hidapi,
-  pyusb,
-  smbus-cffi,
-  i2c-tools,
-  pytestCheckHook,
+  buildPythonPackage,
   colorlog,
   crcmod,
+  docopt,
+  hidapi,
+  i2c-tools,
+  installShellFiles,
   pillow,
+  pytestCheckHook,
+  pyusb,
+  setuptools,
+  setuptools-scm,
+  smbus-cffi,
   udevCheckHook,
+  wheel,
 }:
 
 buildPythonPackage rec {
   pname = "liquidctl";
   version = "1.16.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "liquidctl";
@@ -29,6 +28,11 @@ buildPythonPackage rec {
     tag = "v${version}";
     hash = "sha256-NN/LPcRwj1c9xIIBmNCSLkb+8LHPIqH/YuLPm3kxqEQ=";
   };
+
+  outputs = [
+    "out"
+    "man"
+  ];
 
   nativeBuildInputs = [
     installShellFiles
@@ -49,12 +53,12 @@ buildPythonPackage rec {
     pillow
   ];
 
-  propagatedNativeBuildInputs = [ smbus-cffi ];
+  postBuild = ''
+    # needed for pythonImportsCheck
+    export XDG_RUNTIME_DIR=$TMPDIR
+  '';
 
-  outputs = [
-    "out"
-    "man"
-  ];
+  nativeCheckInputs = [ pytestCheckHook ];
 
   postInstall = ''
     installManPage liquidctl.8
@@ -64,13 +68,8 @@ buildPythonPackage rec {
     cp extra/linux/71-liquidctl.rules $out/lib/udev/rules.d/.
   '';
 
-  nativeCheckInputs = [ pytestCheckHook ];
-
-  postBuild = ''
-    # needed for pythonImportsCheck
-    export XDG_RUNTIME_DIR=$TMPDIR
-  '';
-
+  propagatedNativeBuildInputs = [ smbus-cffi ];
+  pyproject = true;
   pythonImportsCheck = [ "liquidctl" ];
 
   meta = {
@@ -78,9 +77,11 @@ buildPythonPackage rec {
     homepage = "https://github.com/liquidctl/liquidctl";
     changelog = "https://github.com/liquidctl/liquidctl/blob/${src.tag}/CHANGELOG.md";
     license = lib.licenses.gpl3Plus;
+
     maintainers = with lib.maintainers; [
       arturcygan
     ];
+
     mainProgram = "liquidctl";
   };
 }

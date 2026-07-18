@@ -1,7 +1,7 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -22,9 +22,11 @@ rustPlatform.buildRustPackage (finalAttrs: {
     homepage = "https://github.com/smasher164/pw-volume";
     changelog = "https://github.com/smasher164/pw-volume/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       astro
     ];
+
     platforms = lib.platforms.linux;
     mainProgram = "pw-volume";
   };

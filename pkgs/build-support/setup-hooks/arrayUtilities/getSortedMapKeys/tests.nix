@@ -1,7 +1,7 @@
 # NOTE: Tests related to getSortedMapKeys go here.
 {
-  getSortedMapKeys,
   lib,
+  getSortedMapKeys,
   testers,
 }:
 let
@@ -10,12 +10,13 @@ let
 
   check =
     {
+      expectedArray,
       name,
       valuesMap,
-      expectedArray,
     }:
     (testEqualArrayOrMap {
       inherit name valuesMap expectedArray;
+
       script = ''
         set -eu
         nixLog "running getSortedMapKeys with valuesMap to populate actualArray"
@@ -27,54 +28,59 @@ let
       });
 in
 recurseIntoAttrs {
-  shellcheck = shellcheck {
-    name = "getSortedMapKeys";
-    src = ./getSortedMapKeys.bash;
-  };
-
-  shfmt = shfmt {
-    name = "getSortedMapKeys";
-    src = ./getSortedMapKeys.bash;
-  };
-
   empty = check {
+    expectedArray = [ ];
     name = "empty";
     valuesMap = { };
-    expectedArray = [ ];
-  };
-
-  singleton = check {
-    name = "singleton";
-    valuesMap = {
-      "apple" = "fruit";
-    };
-    expectedArray = [ "apple" ];
   };
 
   keysAreSorted = check {
-    name = "keysAreSorted";
-    valuesMap = {
-      "apple" = "fruit";
-      "bee" = "insect";
-      "carrot" = "vegetable";
-    };
     expectedArray = [
       "apple"
       "bee"
       "carrot"
     ];
+
+    name = "keysAreSorted";
+
+    valuesMap = {
+      "apple" = "fruit";
+      "bee" = "insect";
+      "carrot" = "vegetable";
+    };
   };
 
   # NOTE: While keys can be whitespace, they cannot be null (empty).
   keysCanBeWhitespace = check {
-    name = "keysCanBeWhitespace";
-    valuesMap = {
-      " " = 1;
-      "  " = 2;
-    };
     expectedArray = [
       " "
       "  "
     ];
+
+    name = "keysCanBeWhitespace";
+
+    valuesMap = {
+      " " = 1;
+      "  " = 2;
+    };
+  };
+
+  shellcheck = shellcheck {
+    src = ./getSortedMapKeys.bash;
+    name = "getSortedMapKeys";
+  };
+
+  shfmt = shfmt {
+    src = ./getSortedMapKeys.bash;
+    name = "getSortedMapKeys";
+  };
+
+  singleton = check {
+    expectedArray = [ "apple" ];
+    name = "singleton";
+
+    valuesMap = {
+      "apple" = "fruit";
+    };
   };
 }

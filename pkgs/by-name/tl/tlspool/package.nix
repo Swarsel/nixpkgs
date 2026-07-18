@@ -2,21 +2,21 @@
   lib,
   stdenv,
   fetchFromGitLab,
-  cmake,
-  pkg-config,
   arpa2cm,
   arpa2common,
+  cmake,
   db,
+  gitUpdater,
   gnutls,
   ldns,
   libkrb5,
   libtasn1,
   openldap,
+  openssl,
   p11-kit,
+  pkg-config,
   quickder,
   unbound,
-  openssl,
-  gitUpdater,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -59,14 +59,16 @@ stdenv.mkDerivation (finalAttrs: {
     description = "TLS daemon with PKCS #11 backend";
     homepage = "https://gitlab.com/arpa2/tlspool";
     changelog = "https://gitlab.com/arpa2/tlspool/-/blob/v${finalAttrs.version}/CHANGES";
+
     license = with lib.licenses; [
       gpl3Plus # daemon
       cc-by-sa-40 # docs
       bsd2 # userspace
     ];
-    teams = with lib.teams; [ ngi ];
+
     maintainers = with lib.maintainers; [ ethancedwards8 ];
     platforms = lib.platforms.linux;
     mainProgram = "tlsserver";
+    teams = with lib.teams; [ ngi ];
   };
 })

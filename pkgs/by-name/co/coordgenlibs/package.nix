@@ -1,12 +1,12 @@
 {
-  fetchFromGitHub,
-  fetchpatch,
   lib,
   stdenv,
+  fetchFromGitHub,
   boost,
-  zlib,
   cmake,
+  fetchpatch,
   maeparser,
+  zlib,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -22,17 +22,10 @@ stdenv.mkDerivation (finalAttrs: {
 
   patches = [
     (fetchpatch {
+      hash = "sha256-x34v+XumVip43LYb4bEkdqPFcTRTeC/zsRuQjnrh2zw=";
       name = "coordgenlibs-fix-unused-but-set-variable.patch";
       url = "https://github.com/schrodinger/coordgenlibs/commit/6a1485643feb71c6d609d263f28751004c733cf7.patch";
-      hash = "sha256-x34v+XumVip43LYb4bEkdqPFcTRTeC/zsRuQjnrh2zw=";
     })
-  ];
-
-  nativeBuildInputs = [ cmake ];
-  buildInputs = [
-    boost
-    zlib
-    maeparser
   ];
 
   # Fix the build with CMake 4.
@@ -45,6 +38,14 @@ stdenv.mkDerivation (finalAttrs: {
         'cmake_minimum_required(VERSION 3.5)'
   '';
 
+  nativeBuildInputs = [ cmake ];
+
+  buildInputs = [
+    boost
+    zlib
+    maeparser
+  ];
+
   cmakeFlags = [
     # Be more permissive to compiler warnings
     # Fix the new -Wrestrict warning in gcc 15 blocking build
@@ -52,16 +53,15 @@ stdenv.mkDerivation (finalAttrs: {
     (lib.cmakeBool "COORDGEN_RIGOROUS_BUILD" false)
   ];
 
-  doCheck = true;
-
   # Fix the build with Clang 20.
   env.NIX_CFLAGS_COMPILE = lib.optionalString stdenv.cc.isClang "-Wno-error=deprecated-literal-operator";
+  doCheck = true;
 
   meta = {
     description = "Schrodinger-developed 2D Coordinate Generation";
     homepage = "https://github.com/schrodinger/coordgenlibs";
     changelog = "https://github.com/schrodinger/coordgenlibs/releases/tag/v${finalAttrs.version}";
-    maintainers = [ lib.maintainers.rmcgibbo ];
     license = lib.licenses.bsd3;
+    maintainers = [ lib.maintainers.rmcgibbo ];
   };
 })

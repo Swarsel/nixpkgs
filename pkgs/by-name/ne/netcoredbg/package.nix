@@ -1,12 +1,12 @@
 {
   lib,
-  clangStdenv,
   stdenv,
-  cmake,
-  autoPatchelfHook,
   fetchFromGitHub,
-  dotnetCorePackages,
+  autoPatchelfHook,
   buildDotnetModule,
+  clangStdenv,
+  cmake,
+  dotnetCorePackages,
   netcoredbg,
   testers,
 }:
@@ -19,39 +19,30 @@ let
 
   coreclr-version = "v10.0.1";
   coreclr-src = fetchFromGitHub {
+    hash = "sha256-pVcLvew3THRqXgKMVO6jTZyPP06R46KZPMpYdiM3yXU=";
+    name = "coreclr";
     owner = "dotnet";
     repo = "runtime";
     rev = coreclr-version;
-    hash = "sha256-pVcLvew3THRqXgKMVO6jTZyPP06R46KZPMpYdiM3yXU=";
-    name = "coreclr";
   };
 
   dotnet-sdk = dotnetCorePackages.sdk_10_0;
 
   src = fetchFromGitHub {
+    inherit hash;
     owner = "Samsung";
     repo = "netcoredbg";
     rev = version;
     name = pname;
-    inherit hash;
   };
 
   unmanaged = clangStdenv.mkDerivation {
     inherit pname version;
 
-    srcs = [
-      src
-      coreclr-src
-    ];
-
-    sourceRoot = pname;
-
     nativeBuildInputs = [
       cmake
       dotnet-sdk
     ];
-
-    hardeningDisable = [ "strictoverflow" ];
 
     preConfigure = ''
       export DOTNET_SYSTEM_GLOBALIZATION_INVARIANT=1
@@ -63,6 +54,14 @@ let
         "-DBUILD_MANAGED=0"
       )
     '';
+
+    hardeningDisable = [ "strictoverflow" ];
+    sourceRoot = pname;
+
+    srcs = [
+      src
+      coreclr-src
+    ];
   };
 
   managed = buildDotnetModule {
@@ -72,15 +71,13 @@ let
       src
       dotnet-sdk
       ;
+
     dotnet-runtime = null;
-
-    projectFile = "src/managed/ManagedPart.csproj";
-    nugetDeps = ./deps.json;
-
     # include platform-specific dbgshim binary in nugetDeps
     dotnetFlags = [ "-p:UseDbgShimDependency=true" ];
     executables = [ ];
-
+    nugetDeps = ./deps.json;
+    projectFile = "src/managed/ManagedPart.csproj";
     # this passes RID down to dotnet build command
     # and forces dotnet to include binary dependencies in the output (libdbgshim)
     selfContainedBuild = true;
@@ -91,9 +88,9 @@ stdenv.mkDerivation {
   # managed brings external binaries (libdbgshim.*)
   # include source here so that autoPatchelfHook can do it's job
   src = managed;
-
   nativeBuildInputs = lib.optionals stdenv.hostPlatform.isLinux [ autoPatchelfHook ];
   buildInputs = lib.optionals stdenv.hostPlatform.isLinux [ (lib.getLib stdenv.cc.cc) ];
+
   installPhase = ''
     mkdir -p $out/share/netcoredbg $out/bin
     cp ${unmanaged}/* $out/share/netcoredbg
@@ -104,10 +101,11 @@ stdenv.mkDerivation {
 
   passthru = {
     inherit (managed) fetch-deps;
+
     tests.version = testers.testVersion {
-      package = netcoredbg;
-      command = "netcoredbg --version";
       version = "NET Core debugger ${release}";
+      command = "netcoredbg --version";
+      package = netcoredbg;
     };
   };
 
@@ -115,11 +113,13 @@ stdenv.mkDerivation {
     description = "Managed code debugger with MI interface for CoreCLR";
     homepage = "https://github.com/Samsung/netcoredbg";
     license = lib.licenses.mit;
-    platforms = lib.platforms.unix;
-    mainProgram = "netcoredbg";
+
     maintainers = with lib.maintainers; [
       leo60228
       konradmalik
     ];
+
+    platforms = lib.platforms.unix;
+    mainProgram = "netcoredbg";
   };
 }

@@ -1,9 +1,9 @@
 {
   lib,
-  buildGoModule,
-  fetchFromGitHub,
-  installShellFiles,
   stdenv,
+  fetchFromGitHub,
+  buildGoModule,
+  installShellFiles,
   versionCheckHook,
 }:
 
@@ -18,16 +18,8 @@ buildGoModule (finalAttrs: {
     hash = "sha256-wJXdl4C9jwtEyKVgdXRU9GCBqjkdJ6N58pK5kEL9tnY=";
   };
 
-  vendorHash = "sha256-TprfPZ/clb7PLMAkxF0y78bCef4XarhgHlIhIPn1nQA=";
-
   nativeBuildInputs = [ installShellFiles ];
-
-  ldflags = [
-    "-s"
-    "-X github.com/hmans/beans/cmd.version=${finalAttrs.version}"
-    "-X github.com/hmans/beans/cmd.commit=${finalAttrs.src.rev}"
-    "-X github.com/hmans/beans/cmd.date=unknown"
-  ];
+  vendorHash = "sha256-TprfPZ/clb7PLMAkxF0y78bCef4XarhgHlIhIPn1nQA=";
 
   postInstall = lib.optionalString (stdenv.buildPlatform.canExecute stdenv.hostPlatform) ''
     installShellCompletion --cmd beans \
@@ -38,6 +30,14 @@ buildGoModule (finalAttrs: {
 
   doInstallCheck = true;
   nativeInstallCheckInputs = [ versionCheckHook ];
+
+  ldflags = [
+    "-s"
+    "-X github.com/hmans/beans/cmd.version=${finalAttrs.version}"
+    "-X github.com/hmans/beans/cmd.commit=${finalAttrs.src.rev}"
+    "-X github.com/hmans/beans/cmd.date=unknown"
+  ];
+
   versionCheckProgramArg = "version";
 
   meta = {
@@ -46,7 +46,7 @@ buildGoModule (finalAttrs: {
     changelog = "https://github.com/hmans/beans/releases/tag/${finalAttrs.src.tag}";
     license = lib.licenses.asl20;
     maintainers = with lib.maintainers; [ sleroq ];
-    mainProgram = "beans";
     platforms = lib.platforms.linux ++ lib.platforms.darwin;
+    mainProgram = "beans";
   };
 })

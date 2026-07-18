@@ -1,10 +1,10 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   gitUpdater,
-  testers,
   prometheus-nats-exporter,
+  testers,
 }:
 
 buildGoModule rec {
@@ -32,12 +32,13 @@ buildGoModule rec {
   ];
 
   passthru = {
-    updateScript = gitUpdater { rev-prefix = "v"; };
     tests = {
       prometheus-nats-exporter-version = testers.testVersion {
         package = prometheus-nats-exporter;
       };
     };
+
+    updateScript = gitUpdater { rev-prefix = "v"; };
   };
 
   meta = {

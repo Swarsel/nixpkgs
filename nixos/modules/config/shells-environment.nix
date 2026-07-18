@@ -3,8 +3,8 @@
 {
   config,
   lib,
-  utils,
   pkgs,
+  utils,
   ...
 }:
 let
@@ -36,9 +36,113 @@ in
 
   options = {
 
+    environment.binsh = lib.mkOption {
+      default = null;
+      defaultText = lib.literalExpression ''"''${pkgs.bashInteractive}/bin/sh"'';
+
+      description = ''
+        The shell executable that is linked system-wide to
+        `/bin/sh`. Please note that NixOS assumes all
+        over the place that shell to be Bash, so override the default
+        setting only if you know exactly what you're doing.
+      '';
+
+      example = lib.literalExpression ''"''${pkgs.dash}/bin/dash"'';
+      type = lib.types.nullOr lib.types.path;
+      visible = false;
+    };
+
+    # !!! isn't there a better way?
+    environment.extraInit = lib.mkOption {
+      default = "";
+
+      description = ''
+        Shell script code called during global environment initialisation
+        after all variables and profileVariables have been set.
+        This code is assumed to be shell-independent, which means you should
+        stick to pure sh without sh word split.
+      '';
+
+      type = lib.types.lines;
+    };
+
+    environment.homeBinInPath = lib.mkOption {
+      default = false;
+
+      description = ''
+        Include ~/bin/ in $PATH.
+      '';
+
+      type = lib.types.bool;
+    };
+
+    environment.interactiveShellInit = lib.mkOption {
+      default = "";
+
+      description = ''
+        Shell script code called during interactive shell initialisation.
+        This code is assumed to be shell-independent, which means you should
+        stick to pure sh without sh word split.
+      '';
+
+      type = lib.types.lines;
+    };
+
+    environment.localBinInPath = lib.mkOption {
+      default = false;
+
+      description = ''
+        Add ~/.local/bin/ to $PATH
+      '';
+
+      type = lib.types.bool;
+    };
+
+    environment.loginShellInit = lib.mkOption {
+      default = "";
+
+      description = ''
+        Shell script code called during login shell initialisation.
+        This code is assumed to be shell-independent, which means you should
+        stick to pure sh without sh word split.
+      '';
+
+      type = lib.types.lines;
+    };
+
+    environment.profileRelativeEnvVars = lib.mkOption {
+      description = ''
+        Attribute set of environment variable.  Each attribute maps to a list
+        of relative paths.  Each relative path is appended to the each profile
+        of {option}`environment.profiles` to form the content of the
+        corresponding environment variable.
+      '';
+
+      example = {
+        MANPATH = [
+          "/man"
+          "/share/man"
+        ];
+
+        PATH = [ "/bin" ];
+      };
+
+      type = lib.types.attrsOf (lib.types.listOf lib.types.str);
+    };
+
+    environment.profiles = lib.mkOption {
+      default = [ ];
+
+      description = ''
+        A list of profiles used to setup the global environment.
+      '';
+
+      type = lib.types.listOf lib.types.str;
+    };
+
     environment.shell.enable = lib.mkEnableOption "" // {
       default = true;
-      internal = true;
+
       description = ''
         Whether to enable the shell environment.
 
@@ -52,14 +156,63 @@ in
         Only set this option if you're sure that you can recover from potential
         issues.
       '';
+
+      internal = true;
+    };
+
+    environment.shellAliases = lib.mkOption {
+      description = ''
+        An attribute set that maps aliases (the top level attribute names in
+        this option) to command strings or directly to build outputs. The
+        aliases are added to all users' shells.
+        Aliases mapped to `null` are ignored.
+      '';
+
+      example = {
+        l = null;
+        ll = "ls -l";
+      };
+
+      type = with lib.types; attrsOf (nullOr (either str path));
+    };
+
+    environment.shellInit = lib.mkOption {
+      default = "";
+
+      description = ''
+        Shell script code called during shell initialisation.
+        This code is assumed to be shell-independent, which means you should
+        stick to pure sh without sh word split.
+      '';
+
+      type = lib.types.lines;
+    };
+
+    environment.shells = lib.mkOption {
+      default = [ ];
+
+      description = ''
+        A list of permissible login shells for user accounts.
+        No need to mention `/bin/sh`
+        here, it is placed into this list implicitly.
+      '';
+
+      example = lib.literalExpression "[ pkgs.bashInteractive pkgs.zsh ]";
+      type = lib.types.listOf (lib.types.either lib.types.shellPackage lib.types.path);
     };
 
     environment.variables = lib.mkOption {
+      apply =
+        let
+          toStr = v: if lib.isPath v then "${v}" else toString v;
+        in
+        attrs:
+        lib.mapAttrs (n: v: if lib.isList v then lib.concatMapStringsSep ":" toStr v else toStr v) (
+          lib.filterAttrs (n: v: v != null) attrs
+        );
+
       default = { };
-      example = {
-        EDITOR = "nvim";
-        VISUAL = "nvim";
-      };
+
       description = ''
         A set of environment variables used in the global environment.
         These variables will be set on shell initialisation (e.g. in /etc/profile).
@@ -71,6 +224,12 @@ in
         Setting a variable to `null` does nothing. You can override a
         variable set by another module to `null` to unset it.
       '';
+
+      example = {
+        EDITOR = "nvim";
+        VISUAL = "nvim";
+      };
+
       type =
         with lib.types;
         attrsOf (
@@ -85,136 +244,6 @@ in
             path
           ])
         );
-      apply =
-        let
-          toStr = v: if lib.isPath v then "${v}" else toString v;
-        in
-        attrs:
-        lib.mapAttrs (n: v: if lib.isList v then lib.concatMapStringsSep ":" toStr v else toStr v) (
-          lib.filterAttrs (n: v: v != null) attrs
-        );
-    };
-
-    environment.profiles = lib.mkOption {
-      default = [ ];
-      description = ''
-        A list of profiles used to setup the global environment.
-      '';
-      type = lib.types.listOf lib.types.str;
-    };
-
-    environment.profileRelativeEnvVars = lib.mkOption {
-      type = lib.types.attrsOf (lib.types.listOf lib.types.str);
-      example = {
-        PATH = [ "/bin" ];
-        MANPATH = [
-          "/man"
-          "/share/man"
-        ];
-      };
-      description = ''
-        Attribute set of environment variable.  Each attribute maps to a list
-        of relative paths.  Each relative path is appended to the each profile
-        of {option}`environment.profiles` to form the content of the
-        corresponding environment variable.
-      '';
-    };
-
-    # !!! isn't there a better way?
-    environment.extraInit = lib.mkOption {
-      default = "";
-      description = ''
-        Shell script code called during global environment initialisation
-        after all variables and profileVariables have been set.
-        This code is assumed to be shell-independent, which means you should
-        stick to pure sh without sh word split.
-      '';
-      type = lib.types.lines;
-    };
-
-    environment.shellInit = lib.mkOption {
-      default = "";
-      description = ''
-        Shell script code called during shell initialisation.
-        This code is assumed to be shell-independent, which means you should
-        stick to pure sh without sh word split.
-      '';
-      type = lib.types.lines;
-    };
-
-    environment.loginShellInit = lib.mkOption {
-      default = "";
-      description = ''
-        Shell script code called during login shell initialisation.
-        This code is assumed to be shell-independent, which means you should
-        stick to pure sh without sh word split.
-      '';
-      type = lib.types.lines;
-    };
-
-    environment.interactiveShellInit = lib.mkOption {
-      default = "";
-      description = ''
-        Shell script code called during interactive shell initialisation.
-        This code is assumed to be shell-independent, which means you should
-        stick to pure sh without sh word split.
-      '';
-      type = lib.types.lines;
-    };
-
-    environment.shellAliases = lib.mkOption {
-      example = {
-        l = null;
-        ll = "ls -l";
-      };
-      description = ''
-        An attribute set that maps aliases (the top level attribute names in
-        this option) to command strings or directly to build outputs. The
-        aliases are added to all users' shells.
-        Aliases mapped to `null` are ignored.
-      '';
-      type = with lib.types; attrsOf (nullOr (either str path));
-    };
-
-    environment.homeBinInPath = lib.mkOption {
-      description = ''
-        Include ~/bin/ in $PATH.
-      '';
-      default = false;
-      type = lib.types.bool;
-    };
-
-    environment.localBinInPath = lib.mkOption {
-      description = ''
-        Add ~/.local/bin/ to $PATH
-      '';
-      default = false;
-      type = lib.types.bool;
-    };
-
-    environment.binsh = lib.mkOption {
-      default = null;
-      defaultText = lib.literalExpression ''"''${pkgs.bashInteractive}/bin/sh"'';
-      example = lib.literalExpression ''"''${pkgs.dash}/bin/dash"'';
-      type = lib.types.nullOr lib.types.path;
-      visible = false;
-      description = ''
-        The shell executable that is linked system-wide to
-        `/bin/sh`. Please note that NixOS assumes all
-        over the place that shell to be Bash, so override the default
-        setting only if you know exactly what you're doing.
-      '';
-    };
-
-    environment.shells = lib.mkOption {
-      default = [ ];
-      example = lib.literalExpression "[ pkgs.bashInteractive pkgs.zsh ]";
-      description = ''
-        A list of permissible login shells for user accounts.
-        No need to mention `/bin/sh`
-        here, it is placed into this list implicitly.
-      '';
-      type = lib.types.listOf (lib.types.either lib.types.shellPackage lib.types.path);
     };
 
   };
@@ -223,6 +252,22 @@ in
 
     # Set this here so its enabled only when shell support is enabled
     environment.binsh = lib.mkDefault "${pkgs.bashInteractive}/bin/sh";
+    # For resetting environment with `. /etc/set-environment` when needed
+    # and discoverability (see motivation of #30418).
+    environment.etc.set-environment.source = config.system.build.setEnvironment;
+
+    environment.etc.shells.text = ''
+      ${lib.concatStringsSep "\n" (map utils.toShellPath cfg.shells)}
+      /bin/sh
+    '';
+
+    environment.profileRelativeEnvVars = config.environment.profileRelativeSessionVariables;
+
+    environment.shellAliases = lib.mapAttrs (name: lib.mkDefault) {
+      l = "ls -alh";
+      ll = "ls -l";
+      ls = "ls --color=tty";
+    };
 
     # Set session variables in the shell as well. This is usually
     # unnecessary, but it allows changes to session variables to take
@@ -230,22 +275,14 @@ in
     # terminal instead of logging out of X11).
     environment.variables = config.environment.sessionVariables;
 
-    environment.profileRelativeEnvVars = config.environment.profileRelativeSessionVariables;
-
-    environment.shellAliases = lib.mapAttrs (name: lib.mkDefault) {
-      ls = "ls --color=tty";
-      ll = "ls -l";
-      l = "ls -alh";
-    };
-
-    environment.etc.shells.text = ''
-      ${lib.concatStringsSep "\n" (map utils.toShellPath cfg.shells)}
-      /bin/sh
+    system.activationScripts.binsh = lib.stringAfter [ "stdio" ] ''
+      # Create the required /bin/sh symlink; otherwise lots of things
+      # (notably the system() function) won't work.
+      mkdir -p /bin
+      chmod 0755 /bin
+      ln -sfn "${cfg.binsh}" /bin/.sh.tmp
+      mv /bin/.sh.tmp /bin/sh # atomically replace /bin/sh
     '';
-
-    # For resetting environment with `. /etc/set-environment` when needed
-    # and discoverability (see motivation of #30418).
-    environment.etc.set-environment.source = config.system.build.setEnvironment;
 
     system.build.setEnvironment = pkgs.writeText "set-environment" ''
       # DO NOT EDIT -- this file has been generated automatically.
@@ -265,15 +302,6 @@ in
       ${lib.optionalString cfg.localBinInPath ''
         export PATH="$HOME/.local/bin:$PATH"
       ''}
-    '';
-
-    system.activationScripts.binsh = lib.stringAfter [ "stdio" ] ''
-      # Create the required /bin/sh symlink; otherwise lots of things
-      # (notably the system() function) won't work.
-      mkdir -p /bin
-      chmod 0755 /bin
-      ln -sfn "${cfg.binsh}" /bin/.sh.tmp
-      mv /bin/.sh.tmp /bin/sh # atomically replace /bin/sh
     '';
 
   };

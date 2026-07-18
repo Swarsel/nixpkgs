@@ -31,8 +31,8 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   meta = {
-    homepage = "https://github.com/ncbi/ncbi-vdb";
     description = "Libraries for the INSDC Sequence Read Archives";
+    homepage = "https://github.com/ncbi/ncbi-vdb";
     license = lib.licenses.ncbiPd;
     maintainers = with lib.maintainers; [ t4ccer ];
     platforms = lib.platforms.unix;

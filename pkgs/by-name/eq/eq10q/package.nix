@@ -2,44 +2,31 @@
   lib,
   stdenv,
   fetchurl,
-  fetchpatch,
   cmake,
+  fetchpatch,
   fftw,
   gtkmm2,
+  libpthread-stubs,
   libxcb,
+  libxdmcp,
+  libxshmfence,
   lv2,
   pkg-config,
-  libxdmcp,
-  libpthread-stubs,
-  libxshmfence,
 }:
 stdenv.mkDerivation (finalAttrs: {
   pname = "eq10q";
   version = "2.2";
+
   src = fetchurl {
     url = "mirror://sourceforge/project/eq10q/eq10q-${finalAttrs.version}.tar.gz";
     sha256 = "16mhcav8gwkp29k9ki4dlkajlcgh1i2wvldabxb046d37dq4qzrk";
   };
 
-  nativeBuildInputs = [
-    cmake
-    pkg-config
-  ];
-  buildInputs = [
-    fftw
-    gtkmm2
-    libxcb
-    lv2
-    libpthread-stubs
-    libxdmcp
-    libxshmfence
-  ];
-
   patches = [
     (fetchpatch {
+      sha256 = "07b0wf6k4xqgigv4h095bzfaw8r218wa36r9w1817jcys13r6c5r";
       # glibc 2.27 compatibility
       url = "https://sources.debian.org/data/main/e/eq10q/2.2~repack0-2.1/debian/patches/05-pow10.patch";
-      sha256 = "07b0wf6k4xqgigv4h095bzfaw8r218wa36r9w1817jcys13r6c5r";
     })
   ];
 
@@ -52,7 +39,20 @@ stdenv.mkDerivation (finalAttrs: {
       --replace-fail "cmake_minimum_required(VERSION 2.8)" "cmake_minimum_required(VERSION 3.10)"
   '';
 
-  installFlags = [ "DESTDIR=$(out)" ];
+  nativeBuildInputs = [
+    cmake
+    pkg-config
+  ];
+
+  buildInputs = [
+    fftw
+    gtkmm2
+    libxcb
+    lv2
+    libpthread-stubs
+    libxdmcp
+    libxshmfence
+  ];
 
   fixupPhase = ''
     mkdir -p $out/lib
@@ -60,9 +60,11 @@ stdenv.mkDerivation (finalAttrs: {
     rm -R $out/usr
   '';
 
+  installFlags = [ "DESTDIR=$(out)" ];
+
   meta = {
-    broken = (stdenv.hostPlatform.isLinux && stdenv.hostPlatform.isAarch64);
     description = "LV2 EQ plugins and more, with 64 bit processing";
+
     longDescription = ''
       Up to 10-Bands parametric equalizer with mono and stereo versions.
       Versatile noise-gate plugin with mono and stereo versions.
@@ -72,9 +74,11 @@ stdenv.mkDerivation (finalAttrs: {
       64 bits floating point internal audio processing.
       Nice GUI with powerful metering for every plugin.
     '';
+
     homepage = "https://eq10q.sourceforge.net/";
     license = lib.licenses.gpl3;
     maintainers = [ lib.maintainers.magnetophon ];
     platforms = lib.platforms.linux;
+    broken = (stdenv.hostPlatform.isLinux && stdenv.hostPlatform.isAarch64);
   };
 })

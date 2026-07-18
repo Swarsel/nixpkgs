@@ -2,133 +2,133 @@
   lib,
   stdenv,
   fetchurl,
-  fetchpatch,
-  replaceVars,
-  meson,
-  ninja,
-  gettext,
-  pkg-config,
-  python3,
-  gst-plugins-base,
-  orc,
-  gstreamer,
-  gobject-introspection,
-  wayland-scanner,
-  enableZbar ? false,
-  faacSupport ? false,
-  faac,
-  opencvSupport ? false,
-  opencv4,
-  faad2,
-  # Enabling lcevcdecoder currently causes issues when attempting to decode regular h264 data
-  # warning: No decoder available for type 'video/x-h264, stream-format=(string)avc, [...], lcevc=(boolean)false, [...]
-  lcevcdecSupport ? false,
-  lcevcdec,
-  ldacbtSupport ? lib.meta.availableOn stdenv.hostPlatform ldacbt,
-  ldacbt,
-  liblc3,
-  libass,
-  lrdf,
-  ladspa-header,
-  lcms2,
-  libnice,
-  webrtcAudioProcessingSupport ? lib.meta.availableOn stdenv.hostPlatform webrtc-audio-processing_1,
-  webrtc-audio-processing_1,
-  lilv,
-  lv2,
-  serd,
-  sord,
-  sratom,
-  libbs2b,
-  libmodplug,
-  libmpeg2,
-  libmicrodns,
-  openjpeg,
-  libopus,
-  librsvg,
+  addDriverRunpath,
+  apple-sdk_gstreamer,
   bluez,
   chromaprint,
   curl,
+  directoryListingUpdater,
+  faac,
+  faad2,
   fdk_aac,
+  fetchpatch,
   flite,
+  fluidsynth,
+  game-music-emu,
+  gettext,
+  gnutls,
+  gobject-introspection,
   gsm,
+  gst-plugins-bad,
+  gst-plugins-base,
+  gstreamer,
+  gtk3,
+  hotdoc,
   json-glib,
-  ajaSupport ? lib.meta.availableOn stdenv.hostPlatform libajantv2,
+  ladspa-header,
+  lcevcdec,
+  lcms2,
+  ldacbt,
+  libGL,
   libajantv2,
   libaom,
+  libass,
+  libbs2b,
   libdc1394,
   libde265,
   libdrm,
   libdvdnav,
   libdvdread,
+  libfreeaptx,
   libgudev,
-  qrencode,
+  libintl,
+  liblc3,
+  libmicrodns,
+  libmodplug,
+  libmpeg2,
+  libnice,
+  libopenmpt,
+  libopus,
+  librsvg,
   libsndfile,
   libusb1,
-  neon,
-  openal,
-  openexr,
-  openh264Support ? lib.meta.availableOn stdenv.hostPlatform openh264,
-  openh264,
-  libopenmpt,
-  pango,
-  rtmpdump,
-  sbc,
-  soundtouch,
-  spandsp,
-  srtp,
-  zbar,
-  wayland-protocols,
-  wildmidi,
-  svt-av1,
-  fluidsynth,
   libva,
-  wayland,
   libwebp,
-  gnutls,
-  mjpegtools,
-  libGL,
-  addDriverRunpath,
-  gtk3,
-  libintl,
-  game-music-emu,
-  openssl,
-  x265,
   libxml2,
-  srt,
-  vo-aacenc,
-  libfreeaptx,
-  zxing-cpp,
-  usrsctp,
-  directoryListingUpdater,
-  enableGplPlugins ? true,
-  bluezSupport ? stdenv.hostPlatform.isLinux,
-  # Causes every application using GstDeviceMonitor to send mDNS queries every 2 seconds
-  microdnsSupport ? false,
-  # Checks meson.is_cross_build(), so even canExecute isn't enough.
-  enableDocumentation ? stdenv.hostPlatform == stdenv.buildPlatform,
-  hotdoc,
-  # causes gtk4 to depend on gtk3 and makes little sense
-  guiSupport ? false,
-  gst-plugins-bad,
-  apple-sdk_gstreamer,
+  lilv,
   # TODO: Clean up on `staging`.
   llvmPackages,
+  lrdf,
+  lv2,
+  meson,
+  mjpegtools,
+  neon,
+  ninja,
+  openal,
+  opencv4,
+  openexr,
+  openh264,
+  openjpeg,
+  openssl,
+  orc,
+  pango,
+  pkg-config,
+  python3,
+  qrencode,
+  replaceVars,
+  rtmpdump,
+  sbc,
+  serd,
+  sord,
+  soundtouch,
+  spandsp,
+  sratom,
+  srt,
+  srtp,
+  svt-av1,
+  usrsctp,
+  vo-aacenc,
+  wayland,
+  wayland-protocols,
+  wayland-scanner,
+  webrtc-audio-processing_1,
+  wildmidi,
+  x265,
+  zbar,
+  zxing-cpp,
+  ajaSupport ? lib.meta.availableOn stdenv.hostPlatform libajantv2,
+  bluezSupport ? stdenv.hostPlatform.isLinux,
+  # Checks meson.is_cross_build(), so even canExecute isn't enough.
+  enableDocumentation ? stdenv.hostPlatform == stdenv.buildPlatform,
+  enableGplPlugins ? true,
+  enableZbar ? false,
+  faacSupport ? false,
+  # causes gtk4 to depend on gtk3 and makes little sense
+  guiSupport ? false,
+  # Enabling lcevcdecoder currently causes issues when attempting to decode regular h264 data
+  # warning: No decoder available for type 'video/x-h264, stream-format=(string)avc, [...], lcevc=(boolean)false, [...]
+  lcevcdecSupport ? false,
+  ldacbtSupport ? lib.meta.availableOn stdenv.hostPlatform ldacbt,
+  # Causes every application using GstDeviceMonitor to send mDNS queries every 2 seconds
+  microdnsSupport ? false,
+  opencvSupport ? false,
+  openh264Support ? lib.meta.availableOn stdenv.hostPlatform openh264,
+  webrtcAudioProcessingSupport ? lib.meta.availableOn stdenv.hostPlatform webrtc-audio-processing_1,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
   pname = "gst-plugins-bad";
   version = "1.28.4";
 
-  outputs = [
-    "out"
-    "dev"
-  ];
-
   src = fetchurl {
     url = "https://gstreamer.freedesktop.org/src/gst-plugins-bad/gst-plugins-bad-${finalAttrs.version}.tar.xz";
     hash = "sha256-MytzIPMMYPLVlBRG0DudBeN4HywlYb776IcYvXd/Dkc=";
   };
+
+  outputs = [
+    "out"
+    "dev"
+  ];
 
   patches = [
     # Add fallback paths for nvidia userspace libraries
@@ -137,9 +137,11 @@ stdenv.mkDerivation (finalAttrs: {
     })
   ];
 
-  separateDebugInfo = true;
+  postPatch = ''
+    patchShebangs \
+      scripts/extract-release-date-from-doap-file.py
+  '';
 
-  __structuredAttrs = true;
   # Argument list too long
   strictDeps = true;
 
@@ -405,23 +407,19 @@ stdenv.mkDerivation (finalAttrs: {
       ]
   );
 
-  postPatch = ''
-    patchShebangs \
-      scripts/extract-release-date-from-doap-file.py
-  '';
-
-  # This package has some `_("string literal")` string formats
-  # that trip up clang with format security enabled.
-  hardeningDisable = [ "format" ];
-
   # TODO: Clean up on `staging`.
   env.NIX_CFLAGS_LINK = lib.optionalString stdenv.hostPlatform.isDarwin "-fuse-ld=lld";
-
   doCheck = false; # fails 20 out of 58 tests, expensive
 
   preFixup = ''
     moveToOutput "lib/gstreamer-1.0/pkgconfig" "$dev"
   '';
+
+  __structuredAttrs = true;
+  # This package has some `_("string literal")` string formats
+  # that trip up clang with format security enabled.
+  hardeningDisable = [ "format" ];
+  separateDebugInfo = true;
 
   passthru = {
     tests = {
@@ -441,16 +439,18 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "GStreamer Bad Plugins";
-    mainProgram = "gst-transcoder-1.0";
-    homepage = "https://gstreamer.freedesktop.org";
+
     longDescription = ''
       a set of plug-ins that aren't up to par compared to the
       rest.  They might be close to being good quality, but they're missing
       something - be it a good code review, some documentation, a set of tests,
       a real live maintainer, or some actual wide use.
     '';
+
+    homepage = "https://gstreamer.freedesktop.org";
     license = if enableGplPlugins then lib.licenses.gpl2Plus else lib.licenses.lgpl2Plus;
-    platforms = lib.platforms.linux ++ lib.platforms.darwin;
     maintainers = with lib.maintainers; [ tmarkus ];
+    platforms = lib.platforms.linux ++ lib.platforms.darwin;
+    mainProgram = "gst-transcoder-1.0";
   };
 })

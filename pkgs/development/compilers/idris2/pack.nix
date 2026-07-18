@@ -1,147 +1,170 @@
 {
   lib,
-  idris2Packages,
+  stdenv,
   fetchFromGitHub,
-  clang,
   chez,
+  clang,
   gmp,
   gnumake,
-  zsh,
+  idris2Packages,
   makeBinaryWrapper,
-  stdenv,
+  zsh,
 }:
 let
   inherit (idris2Packages) idris2Api buildIdris;
 
   elab-util = buildIdris {
-    ipkgName = "elab-util";
     version = "2025-08-14";
+
     src = fetchFromGitHub {
       owner = "stefan-hoeck";
       repo = "idris2-elab-util";
       rev = "6786ac7ef9931b1c8321a83e007f36a66e139e86";
       hash = "sha256-qInoAE28tEJIP8/R0Yjgn/+DoIDzI3GU8BAyWaIrrJE=";
     };
+
     idrisLibraries = [ ];
+    ipkgName = "elab-util";
   };
 
   filepath = buildIdris {
-    ipkgName = "filepath";
     version = "2024-10-06";
+
     src = fetchFromGitHub {
       owner = "stefan-hoeck";
       repo = "idris2-filepath";
       rev = "0441eaee9ff1d921fc3f4619c2a8d542588c0e99";
       hash = "sha256-HiaT1Ggbzm7aAEMnCobhhavdheKbYyMA5D9BO0cdG7Y=";
     };
+
     idrisLibraries = [ ];
+    ipkgName = "filepath";
   };
 
   getopts = buildIdris {
-    ipkgName = "getopts";
     version = "2023-10-28";
+
     src = fetchFromGitHub {
       owner = "idris-community";
       repo = "idris2-getopts";
       rev = "0d41b98f83f3707deb0ffbc595ef36b7d9cb9eab";
       hash = "sha256-CthWByg4uFic0ktri1AuFqkHtyRzIUrreCTegQgdpVo=";
     };
+
     idrisLibraries = [ ];
+    ipkgName = "getopts";
   };
 
   algebra = buildIdris {
-    ipkgName = "algebra";
     version = "2024-04-05";
+
     src = fetchFromGitHub {
       owner = "stefan-hoeck";
       repo = "idris2-algebra";
       rev = "829f44b7fd961e3f0a7ad9174b395f97ebc33336";
       hash = "sha256-etsWqF07j/XBgfnlaA8pyF06BeoXqg7iViG0o09s4Zc=";
     };
+
     idrisLibraries = [ ];
+    ipkgName = "algebra";
   };
 
   ref1 = buildIdris {
-    ipkgName = "ref1";
     version = "2025-10-30";
+
     src = fetchFromGitHub {
       owner = "stefan-hoeck";
       repo = "idris2-ref1";
       rev = "ef6d4265deaa6a4f1b5228932102847a4e54e4d2";
       hash = "sha256-NwA6KezZFdF/ZGTOf3Z1zDjsGiy2hgYinGPeeofhZfw=";
     };
+
     idrisLibraries = [ ];
+    ipkgName = "ref1";
   };
 
   array = buildIdris {
-    ipkgName = "array";
     version = "2025-10-30";
+
     src = fetchFromGitHub {
       owner = "stefan-hoeck";
       repo = "idris2-array";
       rev = "cecbd1dd3bae94669a2ed3689ee91ce1616cc34f";
       hash = "sha256-fRhIzkvL7n7wyXNQE3LHalexqYmTt6RVPoVEOqTb7d4=";
     };
+
     idrisLibraries = [
       algebra
       ref1
     ];
+
+    ipkgName = "array";
   };
 
   bytestring = buildIdris {
-    ipkgName = "bytestring";
     version = "2025-10-02";
+
     src = fetchFromGitHub {
       owner = "stefan-hoeck";
       repo = "idris2-bytestring";
       rev = "082c5114b4016425c9957e955e22fcb0b194ada4";
       hash = "sha256-KuHa1pDfsR4BmBiaw7k6ghZMf2/b+5AQc5I+NuQqbyw=";
     };
+
     idrisLibraries = [
       algebra
       array
     ];
+
+    ipkgName = "bytestring";
   };
 
   refined = buildIdris {
-    ipkgName = "refined";
     version = "2024-04-05";
+
     src = fetchFromGitHub {
       owner = "stefan-hoeck";
       repo = "idris2-refined";
       rev = "c585013c33ad5398c91beed71fec61a5b721a8da";
       hash = "sha256-9YQjVpJ5McpgjJx6hXCaXMKyEAFCnynw4ahHdY3Kz8Y=";
     };
+
     idrisLibraries = [
       elab-util
       algebra
     ];
+
+    ipkgName = "refined";
   };
 
   ilex-core = buildIdris {
-    ipkgName = "core/ilex-core";
     version = "2025-10-31";
+
     src = fetchFromGitHub {
       owner = "stefan-hoeck";
       repo = "idris2-ilex";
       rev = "c2d5a219c701a8f694aa95e8d34c7a58d58e5795";
       hash = "sha256-EseTOCNr0EuYqrjEd2SLqSz5ONOO3hRYghrHul0ccPA=";
     };
+
     idrisLibraries = [
       elab-util
       bytestring
     ];
+
+    ipkgName = "core/ilex-core";
   };
 
   ilex = buildIdris {
-    ipkgName = "ilex";
     version = "2025-10-31";
+
     src = fetchFromGitHub {
       owner = "stefan-hoeck";
       repo = "idris2-ilex";
       rev = "c2d5a219c701a8f694aa95e8d34c7a58d58e5795";
       hash = "sha256-EseTOCNr0EuYqrjEd2SLqSz5ONOO3hRYghrHul0ccPA=";
     };
+
     idrisLibraries = [
       elab-util
       algebra
@@ -150,39 +173,37 @@ let
       ilex-core
       refined
     ];
+
+    ipkgName = "ilex";
   };
 
   ilex-toml = buildIdris {
-    ipkgName = "toml/ilex-toml";
     version = "2025-10-31";
+
     src = fetchFromGitHub {
       owner = "stefan-hoeck";
       repo = "idris2-ilex";
       rev = "c2d5a219c701a8f694aa95e8d34c7a58d58e5795";
       hash = "sha256-EseTOCNr0EuYqrjEd2SLqSz5ONOO3hRYghrHul0ccPA=";
     };
+
     idrisLibraries = [
       ilex
       refined
     ];
+
+    ipkgName = "toml/ilex-toml";
   };
 
   packPkg = buildIdris {
-    ipkgName = "pack";
     version = "2025-12-27";
+
     src = fetchFromGitHub {
       owner = "stefan-hoeck";
       repo = "idris2-pack";
       rev = "cd512a0bf61a6effacc24060bb04106a849df0fe";
       hash = "sha256-309k3ALAnCno8C09Fy7zz/oiSCzKI2ZbH5WFn6QIwF0=";
     };
-    idrisLibraries = [
-      idris2Api
-      elab-util
-      filepath
-      getopts
-      ilex-toml
-    ];
 
     nativeBuildInputs = [ makeBinaryWrapper ];
 
@@ -209,16 +230,28 @@ let
         }
     '';
 
+    idrisLibraries = [
+      idris2Api
+      elab-util
+      filepath
+      getopts
+      ilex-toml
+    ];
+
+    ipkgName = "pack";
+
     meta = {
+      inherit (idris2Packages.idris2.meta) platforms;
       description = "Idris2 Package Manager with Curated Package Collections";
-      mainProgram = "pack";
       homepage = "https://github.com/stefan-hoeck/idris2-pack";
       license = lib.licenses.bsd3;
+
       maintainers = with lib.maintainers; [
         mattpolzin
         mithicspirit
       ];
-      inherit (idris2Packages.idris2.meta) platforms;
+
+      mainProgram = "pack";
     };
   };
 in

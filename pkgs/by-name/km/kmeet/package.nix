@@ -10,8 +10,8 @@ appimageTools.wrapType2 rec {
 
   src = fetchurl {
     url = "https://download.storage5.infomaniak.com/meet/kmeet-desktop-${version}-linux-x86_64.AppImage";
-    name = "kmeet-${version}.AppImage";
     hash = "sha256-0lygBbIwaEydvFEfvADiL2k5GWzVpM1jX4orweriBYw=";
+    name = "kmeet-${version}.AppImage";
   };
 
   extraInstallCommands =
@@ -30,15 +30,17 @@ appimageTools.wrapType2 rec {
 
   meta = {
     description = "Organise secure online meetings via your web browser, your mobile, your tablet or your computer";
-    homepage = "https://www.infomaniak.com/en/apps/download-kmeet";
-    license = lib.licenses.unfree;
-    maintainers = [ lib.maintainers.vinetos ];
-    mainProgram = "kmeet";
-    platforms = [ "x86_64-linux" ];
-    sourceProvenance = [ lib.sourceTypes.binaryNativeCode ];
+
     longDescription = ''
       kMeet allows you to organise secure online meetings via your web browser, your mobile, your tablet or your
       computer.
     '';
+
+    homepage = "https://www.infomaniak.com/en/apps/download-kmeet";
+    license = lib.licenses.unfree;
+    sourceProvenance = [ lib.sourceTypes.binaryNativeCode ];
+    maintainers = [ lib.maintainers.vinetos ];
+    platforms = [ "x86_64-linux" ];
+    mainProgram = "kmeet";
   };
 }

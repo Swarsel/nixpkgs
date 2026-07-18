@@ -25,7 +25,7 @@ stdenv.mkDerivation {
   '';
 
   nativeBuildInputs = [ cmake ];
-  enableParallelBuilding = true;
+
   buildInputs = [
     gklib
     metis
@@ -41,8 +41,11 @@ stdenv.mkDerivation {
     runHook postConfigure
   '';
 
+  enableParallelBuilding = true;
+
   meta = {
     description = "Parallel Graph Partitioning and Fill-reducing Matrix Ordering";
+
     longDescription = ''
       MPI-based parallel library that implements a variety of algorithms for
       partitioning unstructured graphs, meshes, and for computing fill-reducing
@@ -51,9 +54,10 @@ stdenv.mkDerivation {
       recursive-bisection, multilevel k-way, and multi-constraint partitioning
       schemes
     '';
+
     homepage = "https://github.com/KarypisLab/ParMETIS";
-    platforms = lib.platforms.all;
     license = lib.licenses.unfree;
     maintainers = [ lib.maintainers.costrouc ];
+    platforms = lib.platforms.all;
   };
 }

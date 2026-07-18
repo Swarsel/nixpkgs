@@ -2,42 +2,33 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  rustPlatform,
+  autoPatchelfHook,
+  cacert,
   cargo-tauri,
-  nodejs,
-  npmHooks,
   fetchNpmDeps,
-  pkg-config,
-  webkitgtk_4_1,
   libayatana-appindicator,
   libxscrnsaver,
-  cacert,
+  nodejs,
+  npmHooks,
+  pkg-config,
+  rustPlatform,
+  webkitgtk_4_1,
   wrapGAppsHook3,
-  autoPatchelfHook,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
   pname = "fluux-messenger";
   version = "0.17.1";
-  __structuredAttrs = true;
-  strictDeps = true;
 
   src = fetchFromGitHub {
-    name = "${finalAttrs.pname}-${finalAttrs.version}-source";
     owner = "processone";
     repo = "fluux-messenger";
     tag = "v${finalAttrs.version}";
     hash = "sha256-aT7X11BOmksEcCLk5hkokfLx7Q8Jk2zTWskoN8aZha0=";
+    name = "${finalAttrs.pname}-${finalAttrs.version}-source";
   };
 
-  cargoRoot = "apps/fluux/src-tauri";
-  cargoHash = "sha256-fEHe7enJzdEauou1xWfM94WHL1uAP1sfY2JN1ZmZmEE=";
-
-  npmDeps = fetchNpmDeps {
-    name = "${finalAttrs.pname}-${finalAttrs.version}-npm-deps";
-    inherit (finalAttrs) src;
-    hash = "sha256-4Op4jykCtc9oFBIn8vOUqxGr7/OloIhPD1JT+q4dX7Y=";
-  };
+  strictDeps = true;
 
   nativeBuildInputs = [
     cargo-tauri.hook
@@ -57,26 +48,34 @@ rustPlatform.buildRustPackage (finalAttrs: {
     cacert
   ];
 
-  # libayatana-appindicator is not in the RUNPATH by default
-  runtimeDependencies = [ libayatana-appindicator ];
-
-  tauriBuildFlags = [ "--no-sign" ];
-
+  cargoHash = "sha256-fEHe7enJzdEauou1xWfM94WHL1uAP1sfY2JN1ZmZmEE=";
   # setting buildAndTestSubdir from the beginning interferes with buildPhase
   preCheck = "export buildAndTestSubdir=${finalAttrs.cargoRoot}";
   # tauriInstallHook only works when we are in cargoRoot
   preInstall = "pushd $buildAndTestSubdir";
   postInstall = "popd";
+  __structuredAttrs = true;
+  cargoRoot = "apps/fluux/src-tauri";
+
+  npmDeps = fetchNpmDeps {
+    inherit (finalAttrs) src;
+    hash = "sha256-4Op4jykCtc9oFBIn8vOUqxGr7/OloIhPD1JT+q4dX7Y=";
+    name = "${finalAttrs.pname}-${finalAttrs.version}-npm-deps";
+  };
+
+  # libayatana-appindicator is not in the RUNPATH by default
+  runtimeDependencies = [ libayatana-appindicator ];
+  tauriBuildFlags = [ "--no-sign" ];
 
   meta = {
     description = "XMPP client for communities and organizations";
     longDescription = "A modern, Web and Desktop cross-platform XMPP client for communities and organizations, built with a reusable Typescript SDK and Tauri for desktop";
-    changelog = "https://github.com/processone/fluux-messenger/blob/${finalAttrs.src.tag}/CHANGELOG.md";
     homepage = "https://github.com/processone/fluux-messenger";
+    changelog = "https://github.com/processone/fluux-messenger/blob/${finalAttrs.src.tag}/CHANGELOG.md";
     license = lib.licenses.agpl3Plus;
-    mainProgram = "fluux";
     maintainers = [ lib.maintainers.haansn08 ];
     platforms = lib.platforms.all;
+    mainProgram = "fluux";
     # see also https://github.com/processone/fluux-messenger/blob/main/fluux-messenger.doap
   };
 })

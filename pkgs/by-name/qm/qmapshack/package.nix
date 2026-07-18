@@ -2,12 +2,12 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  cmake,
-  qt6,
-  qt6Packages,
   alglib,
+  cmake,
   gdal,
   proj,
+  qt6,
+  qt6Packages,
   routino,
 }:
 
@@ -57,10 +57,12 @@ stdenv.mkDerivation (finalAttrs: {
     homepage = "https://github.com/Maproom/qmapshack";
     changelog = "https://github.com/Maproom/qmapshack/blob/V_${finalAttrs.version}/changelog.txt";
     license = lib.licenses.gpl3Plus;
+
     maintainers = with lib.maintainers; [
       dotlambda
       sikmir
     ];
+
     platforms = lib.platforms.linux;
   };
 })

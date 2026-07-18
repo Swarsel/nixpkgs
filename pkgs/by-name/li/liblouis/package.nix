@@ -1,20 +1,27 @@
 {
-  fetchFromGitHub,
   lib,
   stdenv,
+  fetchFromGitHub,
   autoreconfHook,
-  pkg-config,
   gettext,
-  python3,
-  texinfo,
   help2man,
   libyaml,
   perl,
+  pkg-config,
+  python3,
+  texinfo,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
   pname = "liblouis";
   version = "3.38.0";
+
+  src = fetchFromGitHub {
+    owner = "liblouis";
+    repo = "liblouis";
+    rev = "v${finalAttrs.version}";
+    hash = "sha256-OmYMldo2id2HKAM0Hxi6r86khSUnzu22CkJhGBhaaL8=";
+  };
 
   outputs = [
     "out"
@@ -25,14 +32,14 @@ stdenv.mkDerivation (finalAttrs: {
   # configure: WARNING: cannot generate manual pages while cross compiling
   ++ lib.optionals (stdenv.hostPlatform == stdenv.buildPlatform) [ "man" ];
 
-  src = fetchFromGitHub {
-    owner = "liblouis";
-    repo = "liblouis";
-    rev = "v${finalAttrs.version}";
-    hash = "sha256-OmYMldo2id2HKAM0Hxi6r86khSUnzu22CkJhGBhaaL8=";
-  };
+  postPatch = ''
+    patchShebangs tests
+    substituteInPlace python/louis/__init__.py.in \
+      --replace-fail "###LIBLOUIS_SONAME###" "$out/lib/liblouis.so"
+  '';
 
   strictDeps = true;
+
   nativeBuildInputs = [
     autoreconfHook
     pkg-config
@@ -52,20 +59,16 @@ stdenv.mkDerivation (finalAttrs: {
     libyaml
   ];
 
-  nativeCheckInputs = [
-    perl
-  ];
-
   configureFlags = [
     # Required by Python bindings
     "--enable-ucs4"
   ];
 
-  postPatch = ''
-    patchShebangs tests
-    substituteInPlace python/louis/__init__.py.in \
-      --replace-fail "###LIBLOUIS_SONAME###" "$out/lib/liblouis.so"
-  '';
+  doCheck = true;
+
+  nativeCheckInputs = [
+    perl
+  ];
 
   postInstall = ''
     pushd python
@@ -80,15 +83,15 @@ stdenv.mkDerivation (finalAttrs: {
     install -D -t "$doc/share/doc/liblouis" doc/liblouis.txt
   '';
 
-  doCheck = true;
-
   meta = {
     description = "Open-source braille translator and back-translator";
     homepage = "https://liblouis.io/";
+
     license = with lib.licenses; [
       lgpl21Plus # library
       gpl3Plus # tools
     ];
+
     maintainers = with lib.maintainers; [ jtojnar ];
     platforms = lib.platforms.unix;
   };

@@ -1,15 +1,14 @@
 {
-  mkDerivation,
   include,
+  mkDerivation,
 }:
 
 mkDerivation {
-  path = "lib/libssp_nonshared";
-  noLibc = true;
-
   buildInputs = [
     include
   ];
 
   alwaysKeepStatic = true;
+  noLibc = true;
+  path = "lib/libssp_nonshared";
 }

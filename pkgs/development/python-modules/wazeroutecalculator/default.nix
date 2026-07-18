@@ -9,20 +9,17 @@
 buildPythonPackage (finalAttrs: {
   pname = "wazeroutecalculator";
   version = "0.16";
-  pyproject = true;
 
   src = fetchPypi {
     inherit (finalAttrs) pname version;
     hash = "sha256-tJip0tSlwr7a5UVH77dAPNHag4v1JShU1vHA9xKhbwg=";
   };
 
-  build-system = [ setuptools ];
-
-  dependencies = [ requests ];
-
   # there are no tests
   doCheck = false;
-
+  build-system = [ setuptools ];
+  dependencies = [ requests ];
+  pyproject = true;
   pythonImportsCheck = [ "WazeRouteCalculator" ];
 
   meta = {

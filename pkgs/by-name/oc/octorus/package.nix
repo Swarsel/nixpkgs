@@ -1,8 +1,8 @@
 {
   lib,
   fetchFromGitHub,
-  rustPlatform,
   installShellFiles,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -16,18 +16,19 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-xVbLh1fe+59KxcZOtCoSAh6O+VdhAyBSGCPP3UZLidA=";
   };
 
-  cargoHash = "sha256-mOHjNQWeEcoBS4OhPj5RRja+b1PCPAeOM49t7OUtx1s=";
-
   nativeBuildInputs = [ installShellFiles ];
+  cargoHash = "sha256-mOHjNQWeEcoBS4OhPj5RRja+b1PCPAeOM49t7OUtx1s=";
 
   meta = {
     description = "TUI PR review tool for GitHub";
     homepage = "https://github.com/ushironoko/octorus";
     changelog = "https://github.com/ushironoko/octorus/releases/tag/${finalAttrs.src.tag}";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       matthiasbeyer
     ];
+
     mainProgram = "octorus";
   };
 })

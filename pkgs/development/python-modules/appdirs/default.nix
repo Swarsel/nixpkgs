@@ -9,17 +9,15 @@
 buildPythonPackage rec {
   pname = "appdirs";
   version = "1.4.4";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
     hash = "sha256-fV0BZ7KxuoIWR2Fq9Gp0nRxlN0DdDSQVEA/ibiev30E=";
   };
 
-  build-system = [ setuptools ];
-
   nativeCheckInputs = [ unittestCheckHook ];
-
+  build-system = [ setuptools ];
+  pyproject = true;
   pythonImportsCheck = [ "appdirs" ];
 
   meta = {

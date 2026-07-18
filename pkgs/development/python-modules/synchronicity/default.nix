@@ -1,50 +1,32 @@
 {
   lib,
   stdenv,
-  buildPythonPackage,
   fetchFromGitHub,
-
+  buildPythonPackage,
+  gevent,
   # build-system
   hatchling,
-
-  # dependencies
-  typing-extensions,
-
-  # optional-dependencies
-  sigtools,
-
   # tests
   mypy,
   pytest-asyncio,
   pytest-markdown-docs,
   pytestCheckHook,
   pythonOlder,
-  gevent,
+  # optional-dependencies
+  sigtools,
+  # dependencies
+  typing-extensions,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "synchronicity";
   version = "0.12.5";
-  pyproject = true;
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "modal-labs";
     repo = "synchronicity";
     tag = "v${finalAttrs.version}";
     hash = "sha256-npn6SX3NV0Vcq305zyi0jEFGpdyoTESpnDTyuf+WKsQ=";
-  };
-
-  build-system = [
-    hatchling
-  ];
-
-  dependencies = [
-    typing-extensions
-  ];
-
-  optional-dependencies = {
-    compile = [ sigtools ];
   };
 
   nativeCheckInputs = [
@@ -58,6 +40,16 @@ buildPythonPackage (finalAttrs: {
     gevent
   ];
 
+  __structuredAttrs = true;
+
+  build-system = [
+    hatchling
+  ];
+
+  dependencies = [
+    typing-extensions
+  ];
+
   disabledTests = [
     # Assert execution time, non-deterministic
     "test_blocking"
@@ -69,6 +61,11 @@ buildPythonPackage (finalAttrs: {
     "test_async"
   ];
 
+  optional-dependencies = {
+    compile = [ sigtools ];
+  };
+
+  pyproject = true;
   pythonImportsCheck = [ "synchronicity" ];
 
   meta = {

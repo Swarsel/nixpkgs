@@ -9,10 +9,6 @@
 buildPythonPackage rec {
   pname = "untokenize";
   version = "0.1.1";
-  format = "setuptools";
-
-  # https://github.com/myint/untokenize/issues/4
-  disabled = pythonAtLeast "3.14";
 
   src = fetchPypi {
     inherit pname version;
@@ -20,6 +16,9 @@ buildPythonPackage rec {
   };
 
   nativeCheckInputs = [ unittestCheckHook ];
+  # https://github.com/myint/untokenize/issues/4
+  disabled = pythonAtLeast "3.14";
+  format = "setuptools";
 
   meta = {
     description = "Transforms tokens into original source code while preserving whitespace";

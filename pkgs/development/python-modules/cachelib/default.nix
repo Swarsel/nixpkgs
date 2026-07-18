@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   pytest-xprocess,
   pytestCheckHook,
 }:
@@ -9,7 +9,6 @@
 buildPythonPackage rec {
   pname = "cachelib";
   version = "0.13.0";
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "pallets";
@@ -29,11 +28,12 @@ buildPythonPackage rec {
     "tests/test_mongodb_cache.py"
   ];
 
+  format = "setuptools";
   pythonImportsCheck = [ "cachelib" ];
 
   meta = {
-    homepage = "https://github.com/pallets/cachelib";
     description = "Collection of cache libraries in the same API interface";
+    homepage = "https://github.com/pallets/cachelib";
     license = lib.licenses.bsd3;
     maintainers = [ ];
   };

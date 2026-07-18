@@ -1,33 +1,28 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # build-system
-  setuptools,
-
+  buildPythonPackage,
+  config,
+  # cuda-only
+  cupy,
   # dependencies
   numba,
   numpy,
   pillow,
-  scipy,
-  # cuda-only
-  cupy,
-  pyopencl,
-
   # tests
   pocl,
+  pyopencl,
   pytestCheckHook,
+  scipy,
+  # build-system
+  setuptools,
   writableTmpDirAsHomeHook,
-
-  config,
   cudaSupport ? config.cudaSupport,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "pymatting";
   version = "1.1.15";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "pymatting";
@@ -35,6 +30,17 @@ buildPythonPackage (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-rcatlQE+YgppY//ZgGY9jO5KI0ED30fLlqW9N+xRNqk=";
   };
+
+  nativeCheckInputs = [
+    pytestCheckHook
+  ]
+  ++ lib.optionals cudaSupport [
+    # Provides a CPU-based OpenCL ICD so that pyopencl's module-level
+    # cl.create_some_context() succeeds without GPU hardware.
+    pocl
+    # pocl needs a writable $HOME for its kernel cache directory.
+    writableTmpDirAsHomeHook
+  ];
 
   build-system = [ setuptools ];
 
@@ -49,17 +55,9 @@ buildPythonPackage (finalAttrs: {
     pyopencl
   ];
 
-  pythonImportsCheck = [ "pymatting" ];
-
-  nativeCheckInputs = [
-    pytestCheckHook
-  ]
-  ++ lib.optionals cudaSupport [
-    # Provides a CPU-based OpenCL ICD so that pyopencl's module-level
-    # cl.create_some_context() succeeds without GPU hardware.
-    pocl
-    # pocl needs a writable $HOME for its kernel cache directory.
-    writableTmpDirAsHomeHook
+  disabledTestPaths = lib.optionals cudaSupport [
+    # Requires a CUDA driver for cupy GPU operations
+    "tests/test_foreground.py"
   ];
 
   disabledTests = [
@@ -71,10 +69,8 @@ buildPythonPackage (finalAttrs: {
     "test_lkm"
   ];
 
-  disabledTestPaths = lib.optionals cudaSupport [
-    # Requires a CUDA driver for cupy GPU operations
-    "tests/test_foreground.py"
-  ];
+  pyproject = true;
+  pythonImportsCheck = [ "pymatting" ];
 
   meta = {
     description = "Python library for alpha matting";

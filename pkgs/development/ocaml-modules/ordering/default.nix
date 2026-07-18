@@ -1,9 +1,8 @@
 { buildDunePackage, dune }:
 
 buildDunePackage {
-  pname = "ordering";
   inherit (dune) version src;
-
+  pname = "ordering";
   dontAddPrefix = true;
 
   meta = dune.meta // {

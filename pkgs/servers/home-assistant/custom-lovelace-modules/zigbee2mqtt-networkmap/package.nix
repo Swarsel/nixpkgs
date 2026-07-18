@@ -3,10 +3,10 @@
   stdenv,
   fetchFromGitHub,
   fetchYarnDeps,
-  yarnConfigHook,
-  yarnBuildHook,
-  nodejs,
   nix-update-script,
+  nodejs,
+  yarnBuildHook,
+  yarnConfigHook,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -18,11 +18,6 @@ stdenv.mkDerivation (finalAttrs: {
     repo = "zigbee2mqtt-networkmap";
     tag = "v${finalAttrs.version}";
     hash = "sha256-b1B8M2EP+lt7H3M+8tlgVCRWX43jeOr6a2XJT+cRI18=";
-  };
-
-  offlineCache = fetchYarnDeps {
-    inherit (finalAttrs) src;
-    hash = "sha256-juql9gJX3NPOR0AVXejHC0XmRWwdtemMUCDS3iKM+wA=";
   };
 
   nativeBuildInputs = [
@@ -42,14 +37,19 @@ stdenv.mkDerivation (finalAttrs: {
 
   dontFixup = true;
 
+  offlineCache = fetchYarnDeps {
+    inherit (finalAttrs) src;
+    hash = "sha256-juql9gJX3NPOR0AVXejHC0XmRWwdtemMUCDS3iKM+wA=";
+  };
+
   passthru.entrypoint = "zigbee2mqtt-networkmap.js";
   passthru.updateScript = nix-update-script { };
 
   meta = {
-    changelog = "https://github.com/azuwis/zigbee2mqtt-networkmap/releases/tag/v${finalAttrs.version}";
     description = "Home Assistant Custom Card to show Zigbee2mqtt network map";
     homepage = "https://github.com/azuwis/zigbee2mqtt-networkmap";
-    maintainers = with lib.maintainers; [ azuwis ];
+    changelog = "https://github.com/azuwis/zigbee2mqtt-networkmap/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.mit;
+    maintainers = with lib.maintainers; [ azuwis ];
   };
 })

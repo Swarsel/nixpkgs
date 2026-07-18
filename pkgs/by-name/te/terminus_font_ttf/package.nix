@@ -1,7 +1,7 @@
 {
   lib,
-  stdenvNoCC,
   fetchzip,
+  stdenvNoCC,
 }:
 
 stdenvNoCC.mkDerivation (finalAttrs: {
@@ -28,10 +28,12 @@ stdenvNoCC.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Clean fixed width TTF font";
+
     longDescription = ''
       Monospaced bitmap font designed for long work with computers
       (TTF version, mainly for Java applications)
     '';
+
     homepage = "https://files.ax86.net/terminus-ttf";
     license = lib.licenses.ofl;
     maintainers = with lib.maintainers; [ maevii ];

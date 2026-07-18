@@ -1,20 +1,18 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
-  pytestCheckHook,
-  flask,
   apscheduler,
+  buildPythonPackage,
+  flask,
+  pytestCheckHook,
   python-dateutil,
   pytz,
+  setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "flask-apscheduler";
   version = "1.13.1";
-  pyproject = true;
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "viniciuschiele";
@@ -23,6 +21,12 @@ buildPythonPackage rec {
     hash = "sha256-0gZueUuBBpKGWE6OCJiJL/EEIMqCVc3hgLKwIWFuSZI=";
   };
 
+  nativeCheckInputs = [
+    pytestCheckHook
+    pytz
+  ];
+
+  __structuredAttrs = true;
   build-system = [ setuptools ];
 
   dependencies = [
@@ -31,11 +35,7 @@ buildPythonPackage rec {
     python-dateutil
   ];
 
-  nativeCheckInputs = [
-    pytestCheckHook
-    pytz
-  ];
-
+  pyproject = true;
   pythonImportsCheck = [ "flask_apscheduler" ];
 
   meta = {

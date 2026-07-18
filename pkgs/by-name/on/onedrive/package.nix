@@ -2,22 +2,19 @@
   lib,
   stdenv,
   fetchFromGitHub,
-
   # native
   autoreconfHook,
-  installShellFiles,
-  ldc,
-  pkg-config,
-
   # host
   coreutils,
   curl,
   dbus,
+  installShellFiles,
+  ldc,
   libnotify,
+  pkg-config,
   sqlite,
   systemd,
   testers,
-
   # Boolean flags
   withSystemd ? lib.meta.availableOn stdenv.hostPlatform systemd,
 }:
@@ -74,21 +71,23 @@ stdenv.mkDerivation (finalAttrs: {
 
   passthru = {
     tests.version = testers.testVersion {
-      package = finalAttrs.finalPackage;
       version = "v${finalAttrs.version}";
+      package = finalAttrs.finalPackage;
     };
   };
 
   meta = {
-    homepage = "https://github.com/abraunegg/onedrive";
     description = "Complete tool to interact with OneDrive on Linux";
+    homepage = "https://github.com/abraunegg/onedrive";
     license = lib.licenses.gpl3Only;
-    mainProgram = "onedrive";
+
     maintainers = with lib.maintainers; [
       peterhoeg
       bertof
       guylamar2006
     ];
+
     platforms = lib.platforms.linux;
+    mainProgram = "onedrive";
   };
 })

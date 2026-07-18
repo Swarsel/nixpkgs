@@ -3,10 +3,10 @@
   stdenv,
   fetchFromGitHub,
   cmake,
+  ebtks,
+  libminc,
   makeWrapper,
   perlPackages,
-  libminc,
-  ebtks,
 }:
 
 stdenv.mkDerivation {
@@ -52,10 +52,10 @@ stdenv.mkDerivation {
   '';
 
   meta = {
-    homepage = "https://github.com/BIC-MNI/inormalize";
     description = "Program to normalize intensity of MINC files";
+    homepage = "https://github.com/BIC-MNI/inormalize";
+    license = lib.licenses.free;
     maintainers = with lib.maintainers; [ bcdarwin ];
     platforms = lib.platforms.unix;
-    license = lib.licenses.free;
   };
 }

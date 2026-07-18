@@ -1,21 +1,19 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
+  buildPythonPackage,
   numpy,
+  onnx,
+  onnxruntime,
   packaging,
   protobuf,
-  onnx,
+  setuptools,
   unittestCheckHook,
-  onnxruntime,
 }:
 
 buildPythonPackage rec {
   pname = "onnxconverter-common";
   version = "0.16.0";
-
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "microsoft";
@@ -24,11 +22,18 @@ buildPythonPackage rec {
     hash = "sha256-M62mbIqFwnPdRlf6J8DrNRhLH0uHns51K/pWnWLxI5Q=";
   };
 
+  # Failing tests
+  # https://github.com/microsoft/onnxconverter-common/issues/242
+  doCheck = false;
+
+  nativeCheckInputs = [
+    onnxruntime
+    unittestCheckHook
+  ];
+
   build-system = [
     setuptools
   ];
-
-  pythonRelaxDeps = [ "protobuf" ];
 
   dependencies = [
     numpy
@@ -37,21 +42,14 @@ buildPythonPackage rec {
     onnx
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "onnxconverter_common" ];
-
-  nativeCheckInputs = [
-    onnxruntime
-    unittestCheckHook
-  ];
+  pythonRelaxDeps = [ "protobuf" ];
 
   unittestFlagsArray = [
     "-s"
     "tests"
   ];
-
-  # Failing tests
-  # https://github.com/microsoft/onnxconverter-common/issues/242
-  doCheck = false;
 
   meta = {
     description = "ONNX Converter and Optimization Tools";

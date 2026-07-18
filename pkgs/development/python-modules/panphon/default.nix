@@ -1,32 +1,29 @@
 {
   lib,
   buildPythonPackage,
+  editdistance,
   fetchPypi,
-
-  unittestCheckHook,
-
-  setuptools,
-
-  unicodecsv,
+  levenshtein,
+  munkres,
+  numpy,
+  pandas,
   pyyaml,
   regex,
-  numpy,
-  editdistance,
-  munkres,
-  pandas,
-  levenshtein,
+  setuptools,
+  unicodecsv,
+  unittestCheckHook,
 }:
 
 buildPythonPackage rec {
   pname = "panphon";
   version = "0.22.2";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
     hash = "sha256-OD1HfVh/66HKWoKHjiT+d8FkXW++ngHJ6X1JjYopujU=";
   };
 
+  nativeCheckInputs = [ unittestCheckHook ];
   build-system = [ setuptools ];
 
   dependencies = [
@@ -40,17 +37,17 @@ buildPythonPackage rec {
     levenshtein # need for align_wordlists.py script
   ];
 
-  nativeCheckInputs = [ unittestCheckHook ];
-
-  unittestFlagsArray = [
-    "-s"
-    "test"
-  ];
+  pyproject = true;
 
   pythonImportsCheck = [
     "panphon"
     "panphon.segment"
     "panphon.distance"
+  ];
+
+  unittestFlagsArray = [
+    "-s"
+    "test"
   ];
 
   meta = {

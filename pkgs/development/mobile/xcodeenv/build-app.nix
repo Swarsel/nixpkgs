@@ -1,29 +1,29 @@
 {
-  stdenv,
   lib,
+  stdenv,
   composeXcodeWrapper,
 }:
 {
   name,
   src,
-  sdkVersion ? "13.1",
-  target ? null,
-  configuration ? null,
-  scheme ? null,
-  sdk ? null,
-  xcodeFlags ? "",
-  release ? false,
+  appVersion ? null,
+  bundleId ? null,
   certificateFile ? null,
   certificatePassword ? null,
-  provisioningProfile ? null,
   codeSignIdentity ? null,
-  signMethod ? null,
+  configuration ? null,
+  enableWirelessDistribution ? false,
   generateIPA ? false,
   generateXCArchive ? false,
-  enableWirelessDistribution ? false,
   installURL ? null,
-  bundleId ? null,
-  appVersion ? null,
+  provisioningProfile ? null,
+  release ? false,
+  scheme ? null,
+  sdk ? null,
+  sdkVersion ? "13.1",
+  signMethod ? null,
+  target ? null,
+  xcodeFlags ? "",
   ...
 }@args:
 
@@ -83,7 +83,6 @@ let
 in
 stdenv.mkDerivation (
   {
-    name = lib.replaceStrings [ " " ] [ "" ] name; # iOS app names can contain spaces, but in the Nix store this is not allowed
     buildPhase = ''
       # Be sure that the Xcode wrapper has priority over everything else.
       # When using buildInputs this does not seem to be the case.
@@ -178,9 +177,9 @@ stdenv.mkDerivation (
       ''}
     '';
 
-    failureHook = lib.optionalString release deleteKeychain;
-
     installPhase = "true";
+    failureHook = lib.optionalString release deleteKeychain;
+    name = lib.replaceStrings [ " " ] [ "" ] name; # iOS app names can contain spaces, but in the Nix store this is not allowed
   }
   // extraArgs
 )

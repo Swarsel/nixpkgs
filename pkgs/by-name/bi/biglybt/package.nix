@@ -1,11 +1,11 @@
 {
   lib,
   stdenv,
-  swt,
   fetchurl,
   jre,
-  wrapGAppsHook3,
   nix-update-script,
+  swt,
+  wrapGAppsHook3,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -25,19 +25,6 @@ stdenv.mkDerivation (finalAttrs: {
   buildInputs = [
     swt
   ];
-
-  runtimeDeps = [
-    swt
-  ];
-
-  configurePhase = ''
-    runHook preConfigure
-
-    sed -e 's/AUTOUPDATE_SCRIPT=1/AUTOUPDATE_SCRIPT=0/g' \
-      -i biglybt || die
-
-    runHook postConfigure
-  '';
 
   installPhase = ''
     runHook preInstall
@@ -62,6 +49,19 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  configurePhase = ''
+    runHook preConfigure
+
+    sed -e 's/AUTOUPDATE_SCRIPT=1/AUTOUPDATE_SCRIPT=0/g' \
+      -i biglybt || die
+
+    runHook postConfigure
+  '';
+
+  runtimeDeps = [
+    swt
+  ];
+
   passthru.updateScript = nix-update-script {
     extraArgs = [
       "--version-regex"
@@ -70,14 +70,14 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   meta = {
-    changelog = "https://github.com/BiglySoftware/BiglyBT/releases/tag/v${finalAttrs.version}";
     description = "BitTorrent client based on the Azureus that supports I2P darknet for privacy";
-    downloadPage = "https://github.com/BiglySoftware/BiglyBT";
     homepage = "https://www.biglybt.com/";
+    changelog = "https://github.com/BiglySoftware/BiglyBT/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.gpl3Plus;
-    platforms = lib.platforms.unix;
     sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
-    mainProgram = "biglybt";
     maintainers = with lib.maintainers; [ raspher ];
+    platforms = lib.platforms.unix;
+    mainProgram = "biglybt";
+    downloadPage = "https://github.com/BiglySoftware/BiglyBT";
   };
 })

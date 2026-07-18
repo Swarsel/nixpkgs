@@ -1,6 +1,6 @@
 {
-  runCommand,
   gcc,
+  runCommand,
   sparse,
   writeText,
 }:
@@ -21,6 +21,7 @@ runCommand "${sparse.pname}-tests"
       gcc
       sparse
     ];
+
     meta.timeout = 3;
   }
   ''

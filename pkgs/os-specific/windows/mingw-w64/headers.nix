@@ -1,8 +1,8 @@
 {
   lib,
+  fetchurl,
   nixosTests,
   stdenvNoCC,
-  fetchurl,
   crt ? stdenvNoCC.hostPlatform.libc,
 }:
 stdenvNoCC.mkDerivation (finalAttrs: {
@@ -26,13 +26,14 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     tests = {
       inherit (nixosTests) wine;
     };
+
     updateScript = ./update.nu;
   };
 
   meta = {
-    homepage = "https://www.mingw-w64.org/";
-    downloadPage = "https://sourceforge.net/projects/mingw-w64/files/mingw-w64/mingw-w64-release/";
     description = "Collection of headers and libraries for building native Windows applications";
+    homepage = "https://www.mingw-w64.org/";
+
     license = with lib.licenses; [
       # Primarily under
       zpl21
@@ -41,7 +42,9 @@ stdenvNoCC.mkDerivation (finalAttrs: {
       # Certain headers imported from Wine
       lgpl21Plus
     ];
+
     platforms = lib.platforms.windows;
+    downloadPage = "https://sourceforge.net/projects/mingw-w64/files/mingw-w64/mingw-w64-release/";
     teams = [ lib.teams.windows ];
   };
 })

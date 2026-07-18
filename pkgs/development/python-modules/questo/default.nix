@@ -1,23 +1,19 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
+  buildPythonPackage,
   # build-system
   poetry-core,
-
+  # nativeCheckInputs
+  pytestCheckHook,
   # dependencies
   python-yakh,
   rich,
-
-  # nativeCheckInputs
-  pytestCheckHook,
 }:
 
 buildPythonPackage rec {
   pname = "questo";
   version = "0.4.2";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "petereon";
@@ -25,6 +21,10 @@ buildPythonPackage rec {
     rev = "v${version}";
     hash = "sha256-1T8HRgIW9P5iX1a75Bn9XqiVMCPtL7tdQTpixPbTbv0=";
   };
+
+  nativeCheckInputs = [
+    pytestCheckHook
+  ];
 
   build-system = [
     poetry-core
@@ -35,12 +35,10 @@ buildPythonPackage rec {
     rich
   ];
 
+  pyproject = true;
+
   pythonImportsCheck = [
     "questo"
-  ];
-
-  nativeCheckInputs = [
-    pytestCheckHook
   ];
 
   meta = {

@@ -1,16 +1,15 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  simplejson,
+  buildPythonPackage,
   pytz,
   requests,
+  simplejson,
 }:
 
 buildPythonPackage rec {
   pname = "etcd";
   version = "2.0.8";
-  format = "setuptools";
 
   # PyPI package is incomplete
   src = fetchFromGitHub {
@@ -32,6 +31,7 @@ buildPythonPackage rec {
 
   # No proper tests are available
   doCheck = false;
+  format = "setuptools";
 
   meta = {
     description = "Python etcd client that just works";

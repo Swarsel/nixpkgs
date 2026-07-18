@@ -2,20 +2,9 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  lndir,
-  makeWrapper,
-  mkDerivation,
-  replaceVars,
-  wrapGAppsHook3,
-  wrapQtAppsHook,
-
-  withGrass,
-  withServer,
-
-  darwin,
-  libtasn1,
   bison,
   cmake,
+  darwin,
   draco,
   exiv2,
   fcgi,
@@ -26,7 +15,11 @@
   hdf5,
   libpq,
   libspatialite,
+  libtasn1,
   libzip,
+  lndir,
+  makeWrapper,
+  mkDerivation,
   netcdf,
   ninja,
   openssl,
@@ -46,20 +39,26 @@
   qtsvg,
   qtxmlpatterns,
   qwt,
+  replaceVars,
   sqlite,
   txt2tags,
+  withGrass,
+  withServer,
+  wrapGAppsHook3,
+  wrapQtAppsHook,
   zstd,
 }:
 
 let
   py = python3.override {
-    self = py;
     packageOverrides = self: super: {
       pyqt5 = super.pyqt5.override {
         withLocation = true;
         withSerialPort = true;
       };
     };
+
+    self = py;
   };
 
   pythonBuildInputs = with py.pkgs; [
@@ -85,9 +84,8 @@ let
   ];
 in
 mkDerivation rec {
-  version = "3.44.11";
   pname = "qgis-ltr-unwrapped";
-  outputs = [ "out" ] ++ lib.optional (!stdenv.hostPlatform.isDarwin) "man";
+  version = "3.44.11";
 
   src = fetchFromGitHub {
     owner = "qgis";
@@ -96,10 +94,17 @@ mkDerivation rec {
     hash = "sha256-gWSl9OrRSxreQdKxKKDCOUWBE5uE2w3/ebW266LCWLI=";
   };
 
-  passthru = {
-    inherit pythonBuildInputs;
-    inherit py;
-  };
+  outputs = [ "out" ] ++ lib.optional (!stdenv.hostPlatform.isDarwin) "man";
+
+  patches = [
+    (replaceVars ./set-pyqt-package-dirs-ltr.patch {
+      pyQt5PackageDir = "${py.pkgs.pyqt5}/${py.pkgs.python.sitePackages}";
+      qsciPackageDir = "${py.pkgs.qscintilla-qt5}/${py.pkgs.python.sitePackages}";
+    })
+    (replaceVars ./spatialite-path.patch {
+      spatialiteLib = "${libspatialite}/lib/mod_spatialite.so";
+    })
+  ];
 
   nativeBuildInputs = [
     makeWrapper
@@ -151,20 +156,6 @@ mkDerivation rec {
   ++ lib.optional stdenv.hostPlatform.isDarwin libtasn1
   ++ pythonBuildInputs;
 
-  patches = [
-    (replaceVars ./set-pyqt-package-dirs-ltr.patch {
-      pyQt5PackageDir = "${py.pkgs.pyqt5}/${py.pkgs.python.sitePackages}";
-      qsciPackageDir = "${py.pkgs.qscintilla-qt5}/${py.pkgs.python.sitePackages}";
-    })
-    (replaceVars ./spatialite-path.patch {
-      spatialiteLib = "${libspatialite}/lib/mod_spatialite.so";
-    })
-  ];
-
-  # Add path to Qt platform plugins
-  # (offscreen is needed by "${APIS_SRC_DIR}/generate_console_pap.py")
-  env.QT_QPA_PLATFORM_PLUGIN_PATH = "${qtbase}/${qtbase.qtPluginPrefix}/platforms";
-
   cmakeFlags = [
     "-DWITH_3D=True"
     "-DWITH_PDAL=True"
@@ -197,12 +188,9 @@ mkDerivation rec {
     "-DGRASS_PREFIX${gmajor}=${grass}/grass${gmajor}${gminor}"
   );
 
-  qtWrapperArgs = [
-    "--set QT_QPA_PLATFORM_PLUGIN_PATH ${qtbase}/${qtbase.qtPluginPrefix}/platforms"
-  ];
-
-  dontWrapGApps = true; # wrapper params passed below
-  dontWrapQtApps = stdenv.hostPlatform.isDarwin;
+  # Add path to Qt platform plugins
+  # (offscreen is needed by "${APIS_SRC_DIR}/generate_console_pap.py")
+  env.QT_QPA_PLATFORM_PLUGIN_PATH = "${qtbase}/${qtbase.qtPluginPrefix}/platforms";
 
   postFixup =
     lib.optionalString (withGrass && stdenv.hostPlatform.isLinux) ''
@@ -299,14 +287,26 @@ mkDerivation rec {
       EOF
     '';
 
+  dontWrapGApps = true; # wrapper params passed below
+  dontWrapQtApps = stdenv.hostPlatform.isDarwin;
+
+  qtWrapperArgs = [
+    "--set QT_QPA_PLATFORM_PLUGIN_PATH ${qtbase}/${qtbase.qtPluginPrefix}/platforms"
+  ];
+
   # >9k objects, >3h build time on a normal build slot
   requiredSystemFeatures = [ "big-parallel" ];
+
+  passthru = {
+    inherit pythonBuildInputs;
+    inherit py;
+  };
 
   meta = {
     description = "Free and Open Source Geographic Information System";
     homepage = "https://www.qgis.org";
     license = lib.licenses.gpl2Plus;
-    teams = [ lib.teams.geospatial ];
     platforms = lib.platforms.unix;
+    teams = [ lib.teams.geospatial ];
   };
 }

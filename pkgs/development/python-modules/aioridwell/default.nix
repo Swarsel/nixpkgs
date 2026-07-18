@@ -1,10 +1,10 @@
 {
   lib,
+  fetchFromGitHub,
   aiohttp,
   aresponses,
   buildPythonPackage,
   certifi,
-  fetchFromGitHub,
   freezegun,
   poetry-core,
   pyjwt,
@@ -19,7 +19,6 @@
 buildPythonPackage rec {
   pname = "aioridwell";
   version = "2025.09.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "bachya";
@@ -38,8 +37,6 @@ buildPythonPackage rec {
     titlecase
   ];
 
-  __darwinAllowLocalNetworking = true;
-
   nativeCheckInputs = [
     aresponses
     freezegun
@@ -49,16 +46,19 @@ buildPythonPackage rec {
     types-pytz
   ];
 
-  disabledTests = [
-    # AssertionError: assert datetime.date(...
-    "test_get_next_pickup_event"
-  ];
+  __darwinAllowLocalNetworking = true;
 
   disabledTestPaths = [
     # Ignore the examples directory as the files are prefixed with test_
     "examples/"
   ];
 
+  disabledTests = [
+    # AssertionError: assert datetime.date(...
+    "test_get_next_pickup_event"
+  ];
+
+  pyproject = true;
   pythonImportsCheck = [ "aioridwell" ];
 
   meta = {

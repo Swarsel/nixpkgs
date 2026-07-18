@@ -2,17 +2,15 @@
   lib,
   stdenv,
   fetchurl,
-
-  # nativeBuildInputs
-  zstd,
-  pkg-config,
-  jq,
   cargo,
-  rustc,
-  rustPlatform,
-
+  jq,
   # buildInputs
   libgit2,
+  pkg-config,
+  rustPlatform,
+  rustc,
+  # nativeBuildInputs
+  zstd,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -24,12 +22,12 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-Fq0fb2EZkBHJvcwOF9xRIvfh6yAICQ6cpvkFLJtxF78=";
   };
 
-  cargoDeps = rustPlatform.fetchCargoVendor {
-    inherit (finalAttrs) pname version src;
-    dontConfigure = true;
-    nativeBuildInputs = [ zstd ];
-    hash = "sha256-46NDJEGUk1NWk3fbpwenMSlxX0S5sYA1cpOghigInrU=";
-  };
+  outputs = [
+    "out"
+    "doc"
+    "man"
+    "dev"
+  ];
 
   nativeBuildInputs = [
     zstd
@@ -48,29 +46,33 @@ stdenv.mkDerivation (finalAttrs: {
     LIBGIT2_NO_VENDOR = "1";
   };
 
-  outputs = [
-    "out"
-    "doc"
-    "man"
-    "dev"
-  ];
+  cargoDeps = rustPlatform.fetchCargoVendor {
+    inherit (finalAttrs) pname version src;
+    nativeBuildInputs = [ zstd ];
+    dontConfigure = true;
+    hash = "sha256-46NDJEGUk1NWk3fbpwenMSlxX0S5sYA1cpOghigInrU=";
+  };
 
   enableParallelBuilding = true;
 
   meta = {
     description = "Utility to reset filesystem timestamps based on Git history";
+
     longDescription = ''
       A CLI utility that resets the timestamps of files in a Git repository
       working directory to the exact timestamp of the last commit which
       modified each file.
     '';
+
     homepage = "https://github.com/alerque/git-warp-time";
     changelog = "https://github.com/alerque/git-warp-time/raw/v${finalAttrs.version}/CHANGELOG.md";
-    platforms = lib.platforms.unix;
+    license = lib.licenses.gpl3Only;
+
     maintainers = with lib.maintainers; [
       alerque
     ];
-    license = lib.licenses.gpl3Only;
+
+    platforms = lib.platforms.unix;
     mainProgram = "git-warp-time";
   };
 })

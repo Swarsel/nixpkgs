@@ -19,14 +19,14 @@ stdenv.mkDerivation (finalAttrs: {
       pname = "gputils";
       version = "1.5.2";
       debianRevision = "2";
-      patch = "01-use-stdbool.diff";
       hash = "sha256-YuQqWWKC5cntaok1J7hZUv6NX/Xv1mI6+K3if3Owkzc=";
+      patch = "01-use-stdbool.diff";
     })
   ];
 
   meta = {
-    homepage = "https://gputils.sourceforge.io";
     description = "Collection of tools for the Microchip (TM) PIC microcontrollers. It includes gpasm, gplink, and gplib";
+    homepage = "https://gputils.sourceforge.io";
     license = lib.licenses.gpl2;
     maintainers = with lib.maintainers; [ yorickvp ];
     platforms = lib.platforms.linux;

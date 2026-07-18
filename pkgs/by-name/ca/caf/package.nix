@@ -18,7 +18,6 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   nativeBuildInputs = [ cmake ];
-
   buildInputs = [ openssl ];
 
   cmakeFlags = [
@@ -31,12 +30,14 @@ stdenv.mkDerivation (finalAttrs: {
   meta = {
     description = "Open source implementation of the actor model in C++";
     homepage = "https://www.actor-framework.org/";
-    license = lib.licenses.bsd3;
-    platforms = lib.platforms.unix;
     changelog = "https://github.com/actor-framework/actor-framework/raw/${finalAttrs.version}/CHANGELOG.md";
+    license = lib.licenses.bsd3;
+
     maintainers = with lib.maintainers; [
       bobakker
       tobim
     ];
+
+    platforms = lib.platforms.unix;
   };
 })

@@ -3,9 +3,9 @@
   stdenv,
   fetchurl,
   cmake,
-  kdePackages,
   exiv2,
   graphicsmagick,
+  kdePackages,
   libarchive,
   libraw,
   mpv,
@@ -73,10 +73,10 @@ stdenv.mkDerivation (finalAttrs: {
     description = "Simple, yet powerful and good looking image viewer";
     homepage = "https://photoqt.org/";
     license = lib.licenses.gpl2Plus;
-    mainProgram = "photoqt";
     maintainers = with lib.maintainers; [ wegank ];
     platforms = lib.platforms.unix;
     # cplusplus/singletons/scripts/pqc_scriptsimages.cpp:1740:19: error: no matching function for call to 'setxattr'
     badPlatforms = lib.platforms.darwin;
+    mainProgram = "photoqt";
   };
 })

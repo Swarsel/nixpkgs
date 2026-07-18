@@ -9,6 +9,7 @@
 stdenv.mkDerivation (finalAttrs: {
   pname = "curlpp";
   version = "0.8.1";
+
   src = fetchFromGitHub {
     owner = "jpbarrette";
     repo = "curlpp";
@@ -21,14 +22,14 @@ stdenv.mkDerivation (finalAttrs: {
     ./curl_8_10_build_failure.patch
   ];
 
-  buildInputs = [ curl ];
   nativeBuildInputs = [ cmake ];
+  buildInputs = [ curl ];
 
   meta = {
-    homepage = "https://www.curlpp.org/";
     description = "C++ wrapper around libcURL";
-    mainProgram = "curlpp-config";
+    homepage = "https://www.curlpp.org/";
     license = lib.licenses.mit;
     maintainers = [ ];
+    mainProgram = "curlpp-config";
   };
 })

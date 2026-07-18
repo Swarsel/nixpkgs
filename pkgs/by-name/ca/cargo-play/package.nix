@@ -1,9 +1,9 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
-  versionCheckHook,
   nix-update-script,
+  rustPlatform,
+  versionCheckHook,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -28,15 +28,14 @@ rustPlatform.buildRustPackage (finalAttrs: {
   doInstallCheck = true;
   nativeInstallCheckInputs = [ versionCheckHook ];
   versionCheckProgramArg = "--version";
-
   passthru.updateScript = nix-update-script { };
 
   meta = {
     description = "Run your rust code without setting up cargo";
-    mainProgram = "cargo-play";
     homepage = "https://github.com/fanzeyi/cargo-play";
     changelog = "https://github.com/fanzeyi/cargo-play/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.mit;
     maintainers = [ lib.maintainers.progrm_jarvis ];
+    mainProgram = "cargo-play";
   };
 })

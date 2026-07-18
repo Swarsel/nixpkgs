@@ -2,12 +2,13 @@
   lib,
   stdenv,
   fetchFromGitHub,
+  makeWrapper,
   python3,
   texinfo,
-  makeWrapper,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
+  inherit python3;
   pname = "ponysay";
   version = "unstable-2021-03-27";
 
@@ -19,12 +20,11 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   nativeBuildInputs = [ makeWrapper ];
+
   buildInputs = [
     python3
     texinfo
   ];
-
-  inherit python3;
 
   installPhase = ''
     runHook preInstall

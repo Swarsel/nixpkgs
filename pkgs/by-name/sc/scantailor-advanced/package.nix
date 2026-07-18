@@ -2,12 +2,12 @@
   lib,
   stdenv,
   fetchFromGitHub,
+  boost,
   cmake,
-  libsForQt5,
   libjpeg,
   libpng,
+  libsForQt5,
   libtiff,
-  boost,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -26,6 +26,7 @@ stdenv.mkDerivation (finalAttrs: {
     libsForQt5.wrapQtAppsHook
     libsForQt5.qttools
   ];
+
   buildInputs = [
     libjpeg
     libpng
@@ -35,11 +36,11 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   meta = {
-    homepage = "https://github.com/vigri/scantailor-advanced";
     description = "Interactive post-processing tool for scanned pages (vigri's fork)";
-    mainProgram = "scantailor";
+    homepage = "https://github.com/vigri/scantailor-advanced";
     license = lib.licenses.gpl3Plus;
     maintainers = [ ];
     platforms = with lib.platforms; gnu ++ linux ++ darwin;
+    mainProgram = "scantailor";
   };
 })

@@ -3,17 +3,17 @@
   stdenv,
   fetchFromGitHub,
   cmake,
-  pkg-config,
-  lxqt-build-tools,
+  gitUpdater,
   json-glib,
   libexif,
   libfm-qt,
+  lxqt-build-tools,
   menu-cache,
+  pkg-config,
   qtbase,
   qttools,
   qtwayland,
   wrapQtAppsHook,
-  gitUpdater,
 }:
 
 stdenv.mkDerivation rec {
@@ -45,16 +45,15 @@ stdenv.mkDerivation rec {
   ];
 
   hardeningDisable = [ "format" ];
-
   passthru.updateScript = gitUpdater { };
 
   meta = {
-    homepage = "https://github.com/lxqt/lxqt-archiver/";
     description = "Archive tool for the LXQt desktop environment";
-    mainProgram = "lxqt-archiver";
+    homepage = "https://github.com/lxqt/lxqt-archiver/";
     license = lib.licenses.gpl2Plus;
-    platforms = with lib.platforms; unix;
     maintainers = with lib.maintainers; [ jchw ];
+    platforms = with lib.platforms; unix;
+    mainProgram = "lxqt-archiver";
     teams = [ lib.teams.lxqt ];
   };
 }

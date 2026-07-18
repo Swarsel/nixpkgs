@@ -1,29 +1,25 @@
 {
   lib,
-  callPackage,
-  buildPythonPackage,
   fetchFromGitHub,
-
+  buildPythonPackage,
+  callPackage,
   # build-system
   cython,
-  setuptools,
-
   # dependencies
   numpy,
+  # tests
+  pytestCheckHook,
+  setuptools,
   spacy,
   spacy-alignments,
   srsly,
   torch,
   transformers,
-
-  # tests
-  pytestCheckHook,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "spacy-transformers";
   version = "1.3.9";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "explosion";
@@ -43,6 +39,10 @@ buildPythonPackage (finalAttrs: {
         "from transformers import BatchEncoding"
   '';
 
+  # Test fails due to missing arguments for trfs2arrays().
+  doCheck = false;
+  nativeCheckInputs = [ pytestCheckHook ];
+
   build-system = [
     cython
     setuptools
@@ -57,15 +57,9 @@ buildPythonPackage (finalAttrs: {
     transformers
   ];
 
-  nativeCheckInputs = [ pytestCheckHook ];
-
-  pythonRelaxDeps = [ "transformers" ];
-
-  # Test fails due to missing arguments for trfs2arrays().
-  doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "spacy_transformers" ];
-
+  pythonRelaxDeps = [ "transformers" ];
   passthru.tests.annotation = callPackage ./annotation-test { };
 
   meta = {

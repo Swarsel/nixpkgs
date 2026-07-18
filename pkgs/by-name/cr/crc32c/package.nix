@@ -1,9 +1,9 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
-  fetchpatch,
   cmake,
+  fetchpatch,
   gflags,
   staticOnly ? stdenv.hostPlatform.isStatic,
 }:
@@ -22,20 +22,15 @@ stdenv.mkDerivation (finalAttrs: {
 
   patches = [
     (fetchpatch {
-      name = "crc32c-fix-cmake-4.patch";
-      url = "https://github.com/google/crc32c/commit/2bbb3be42e20a0e6c0f7b39dc07dc863d9ffbc07.patch";
       excludes = [ "third_party/*" ];
       hash = "sha256-XYH0Mwvmf8RkXscVo6pAejTbRmVl9tY+lpp1sqbNXa0=";
+      name = "crc32c-fix-cmake-4.patch";
+      url = "https://github.com/google/crc32c/commit/2bbb3be42e20a0e6c0f7b39dc07dc863d9ffbc07.patch";
     })
   ];
 
   nativeBuildInputs = [ cmake ];
   buildInputs = [ gflags ];
-
-  env.NIX_CFLAGS_COMPILE =
-    lib.optionalString stdenv.hostPlatform.isAarch64 "-march=armv8-a+crc"
-    # TODO: probably fixed for version > 1.1.2
-    + lib.optionalString stdenv.cc.isClang " -Wno-error=character-conversion";
 
   cmakeFlags = [
     "-DCRC32C_INSTALL=1"
@@ -45,6 +40,11 @@ stdenv.mkDerivation (finalAttrs: {
     "-DINSTALL_GTEST=0"
     "-DBUILD_SHARED_LIBS=${if staticOnly then "0" else "1"}"
   ];
+
+  env.NIX_CFLAGS_COMPILE =
+    lib.optionalString stdenv.hostPlatform.isAarch64 "-march=armv8-a+crc"
+    # TODO: probably fixed for version > 1.1.2
+    + lib.optionalString stdenv.cc.isClang " -Wno-error=character-conversion";
 
   doCheck = false;
   doInstallCheck = true;
@@ -65,8 +65,8 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   meta = {
-    homepage = "https://github.com/google/crc32c";
     description = "CRC32C implementation with support for CPU-specific acceleration instructions";
+    homepage = "https://github.com/google/crc32c";
     license = with lib.licenses; [ bsd3 ];
     maintainers = with lib.maintainers; [ cpcloud ];
   };

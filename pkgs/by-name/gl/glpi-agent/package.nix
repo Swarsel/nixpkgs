@@ -1,17 +1,17 @@
 {
   lib,
-  perlPackages,
-  libiec61850,
-  nix,
-  dmidecode,
-  pciutils,
-  usbutils,
-  iproute2,
-  net-tools,
   fetchFromGitHub,
+  dmidecode,
+  iproute2,
+  libiec61850,
   makeWrapper,
-  versionCheckHook,
+  net-tools,
+  nix,
   nix-update-script,
+  pciutils,
+  perlPackages,
+  usbutils,
+  versionCheckHook,
 }:
 
 perlPackages.buildPerlPackage rec {
@@ -25,6 +25,8 @@ perlPackages.buildPerlPackage rec {
     hash = "sha256-oXnV862kb7hP1+tWIaXaFMFsGVww0/4Rw3UFEePC5KU=";
   };
 
+  outputs = [ "out" ];
+
   postPatch = ''
     patchShebangs bin
 
@@ -35,6 +37,7 @@ perlPackages.buildPerlPackage rec {
   '';
 
   nativeBuildInputs = [ makeWrapper ];
+
   buildInputs = (
     with perlPackages;
     [
@@ -115,12 +118,11 @@ perlPackages.buildPerlPackage rec {
     done
   '';
 
-  outputs = [ "out" ];
+  doInstallCheck = true;
 
   nativeInstallCheckInputs = [
     versionCheckHook
   ];
-  doInstallCheck = true;
 
   passthru = {
     updateScript = nix-update-script { };

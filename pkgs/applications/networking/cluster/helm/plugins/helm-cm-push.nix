@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule rec {
@@ -15,29 +15,27 @@ buildGoModule rec {
     hash = "sha256-a3+07/Kc0m679ONDldjRs9+E2sqFGsUWuEQPutM+jK4=";
   };
 
-  vendorHash = "sha256-W7nWiWCLrzevunxYoDAqVbG5LhG+VXCAeI1D78fQQvw=";
-
-  subPackage = [ "cmd/helm-cm-push" ];
-
   # Remove hooks.
   postPatch = ''
     sed -e '/^hooks:/,+2 d' -i plugin.yaml
   '';
 
+  vendorHash = "sha256-W7nWiWCLrzevunxYoDAqVbG5LhG+VXCAeI1D78fQQvw=";
   env.CGO_ENABLED = 0;
-
-  ldflags = [
-    "-s"
-    "-w"
-  ];
+  # Tests require the ChartMuseum service.
+  doCheck = false;
 
   postInstall = ''
     install -Dm644 plugin.yaml $out/helm-cm-push/plugin.yaml
     mv $out/bin $out/helm-cm-push
   '';
 
-  # Tests require the ChartMuseum service.
-  doCheck = false;
+  ldflags = [
+    "-s"
+    "-w"
+  ];
+
+  subPackage = [ "cmd/helm-cm-push" ];
 
   meta = {
     description = "Helm plugin to push chart package to ChartMuseum";

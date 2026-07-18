@@ -1,11 +1,11 @@
 {
   lib,
+  fetchFromGitHub,
   aiofiles,
   aiohttp,
   aresponses,
   buildPythonPackage,
   ciso8601,
-  fetchFromGitHub,
   pytest-asyncio,
   pytest-freezegun,
   pytestCheckHook,
@@ -15,7 +15,6 @@
 buildPythonPackage rec {
   pname = "aioskybell";
   version = "23.12.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "tkdrob";
@@ -51,6 +50,7 @@ buildPythonPackage rec {
     "test_async_change_setting"
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "aioskybell" ];
 
   meta = {

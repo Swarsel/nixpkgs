@@ -22,6 +22,11 @@ stdenv.mkDerivation {
     hash = "sha256-I8BupNE49+9oExR/GhoZUVbCHhDJEz3hhvQnbi8ZVGs=";
   };
 
+  nativeBuildInputs = [
+    autoreconfHook
+    pkg-config
+  ];
+
   buildInputs = [
     boost
     flac
@@ -30,18 +35,13 @@ stdenv.mkDerivation {
     zlib
   ];
 
-  nativeBuildInputs = [
-    autoreconfHook
-    pkg-config
-  ];
-
-  enableParallelBuilding = true;
+  configureFlags = [ "--with-boost-libdir=${boost.out}/lib" ];
 
   preConfigure = ''
     export LIBS="$LIBS -lz -lboost_timer"
   '';
 
-  configureFlags = [ "--with-boost-libdir=${boost.out}/lib" ];
+  enableParallelBuilding = true;
 
   meta = {
     description = "DSD to FLAC transcoding tool";

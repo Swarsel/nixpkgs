@@ -3,36 +3,36 @@
   stdenv,
   fetchurl,
   cmake,
-  pkg-config,
-  util-linux,
+  exiv2,
+  expat,
+  fftwSinglePrec,
+  gtk-mac-integration,
+  gtkmm3,
+  lcms2,
+  lensfun,
+  lerc,
+  libcanberra-gtk3,
+  libdatrie,
+  libepoxy,
+  libiptcdata,
+  libjxl,
+  libpthread-stubs,
+  libraw,
+  librsvg,
   libselinux,
   libsepol,
-  lerc,
+  libsigcxx,
   libthai,
-  libdatrie,
-  libxkbcommon,
-  libepoxy,
-  libxtst,
-  wrapGAppsHook3,
-  makeWrapper,
-  pixman,
-  libpthread-stubs,
-  gtkmm3,
   libxau,
   libxdmcp,
-  lcms2,
-  libiptcdata,
-  fftwSinglePrec,
-  expat,
+  libxkbcommon,
+  libxtst,
+  makeWrapper,
   pcre2,
-  libsigcxx,
-  lensfun,
-  librsvg,
-  libcanberra-gtk3,
-  gtk-mac-integration,
-  exiv2,
-  libraw,
-  libjxl,
+  pixman,
+  pkg-config,
+  util-linux,
+  wrapGAppsHook3,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -126,6 +126,7 @@ stdenv.mkDerivation (finalAttrs: {
       "-Wno-deprecated-declarations"
       "-Wno-unused-result"
     ];
+
     # needed at least with gcc13 on aarch64-linux
     CXXFLAGS = toString [
       "-include"
@@ -145,10 +146,12 @@ stdenv.mkDerivation (finalAttrs: {
     description = "RAW converter and digital photo processing software";
     homepage = "http://www.rawtherapee.com/";
     license = lib.licenses.gpl3Plus;
+
     maintainers = with lib.maintainers; [
       jcumming
       mahe
     ];
+
     platforms = with lib.platforms; unix;
   };
 })

@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   versionCheckHook,
 }:
 
@@ -17,14 +17,13 @@ buildGoModule (finalAttrs: {
   };
 
   vendorHash = "sha256-HGmJVxmAj9ijsWX+qJ7J9l3uO7WvXtRU2gvx2G7N7/M=";
-
-  ldflags = [ "-X main.Version=v${finalAttrs.version}" ];
+  doInstallCheck = true;
 
   nativeInstallCheckInputs = [
     versionCheckHook
   ];
 
-  doInstallCheck = true;
+  ldflags = [ "-X main.Version=v${finalAttrs.version}" ];
 
   meta = {
     description = "Argo expression tester";

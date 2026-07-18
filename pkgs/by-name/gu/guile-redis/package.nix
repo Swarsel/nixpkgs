@@ -4,8 +4,8 @@
   fetchFromGitHub,
   autoreconfHook,
   guile,
-  pkg-config,
   nix-update-script,
+  pkg-config,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -28,7 +28,6 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   buildInputs = [ guile ];
-
   passthru.updateScript = nix-update-script { };
 
   meta = {

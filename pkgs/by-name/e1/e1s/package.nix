@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
 }:
 buildGoModule (finalAttrs: {
   pname = "e1s";
@@ -21,10 +21,12 @@ buildGoModule (finalAttrs: {
     homepage = "https://github.com/keidarcy/e1s";
     changelog = "https://github.com/keidarcy/e1s/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.mit;
-    mainProgram = "e1s";
+
     maintainers = with lib.maintainers; [
       zelkourban
       carlossless
     ];
+
+    mainProgram = "e1s";
   };
 })

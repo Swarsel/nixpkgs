@@ -2,8 +2,8 @@
   lib,
   stdenv,
   fetchurl,
-  dpkg,
   autoPatchelfHook,
+  dpkg,
   qt6,
 }:
 
@@ -36,12 +36,12 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   meta = {
-    changelog = "https://www.codeandweb.com/texturepacker/download";
     description = "Sprite sheet creator and game graphics optimizer";
     homepage = "https://www.codeandweb.com/texturepacker";
+    changelog = "https://www.codeandweb.com/texturepacker/download";
     license = lib.licenses.unfree;
-    mainProgram = "TexturePacker";
     maintainers = with lib.maintainers; [ tomasajt ];
     platforms = [ "x86_64-linux" ];
+    mainProgram = "TexturePacker";
   };
 })

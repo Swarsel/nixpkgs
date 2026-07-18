@@ -1,14 +1,12 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
   pname = "pid1";
   version = "0.1.6";
-
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "fpco";
@@ -18,9 +16,9 @@ rustPlatform.buildRustPackage (finalAttrs: {
   };
 
   cargoHash = "sha256-mXZszLmIOEq3ZL6cJhrhBCi0bHNgbKG6gr6Rf4iFvEM=";
-
   # all tests require docker env
   doCheck = false;
+  __structuredAttrs = true;
 
   meta = {
     description = "Signal handling and zombie reaping for PID1 process";

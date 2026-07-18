@@ -3,34 +3,34 @@
   stdenv,
   fetchFromGitLab,
   autoreconfHook,
-  pkg-config,
-  util-macros,
-  xorgproto,
   libevdev,
-  udev,
   mtdev,
-  xorg-server,
   nix-update-script,
+  pkg-config,
   testers,
+  udev,
+  util-macros,
+  xorg-server,
+  xorgproto,
 }:
 stdenv.mkDerivation (finalAttrs: {
   pname = "xf86-input-evdev";
   version = "2.11.0";
+
+  src = fetchFromGitLab {
+    owner = "driver";
+    repo = "xf86-input-evdev";
+    tag = "xf86-input-evdev-${finalAttrs.version}";
+    hash = "sha256-tXB50laCJcLoBbwM/hE+qEiHzmN7Q+r8uu6NPlRmpTM=";
+    domain = "gitlab.freedesktop.org";
+    group = "xorg";
+  };
 
   # to get rid of xorg-server.dev; man is tiny
   outputs = [
     "out"
     "dev"
   ];
-
-  src = fetchFromGitLab {
-    domain = "gitlab.freedesktop.org";
-    group = "xorg";
-    owner = "driver";
-    repo = "xf86-input-evdev";
-    tag = "xf86-input-evdev-${finalAttrs.version}";
-    hash = "sha256-tXB50laCJcLoBbwM/hE+qEiHzmN7Q+r8uu6NPlRmpTM=";
-  };
 
   strictDeps = true;
 
@@ -53,21 +53,24 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   passthru = {
-    updateScript = nix-update-script { extraArgs = [ "--version-regex=xf86-input-evdev-(.*)" ]; };
     tests.pkg-config = testers.testMetaPkgConfig finalAttrs.finalPackage;
+    updateScript = nix-update-script { extraArgs = [ "--version-regex=xf86-input-evdev-(.*)" ]; };
   };
 
   meta = {
     description = "Generic Linux input driver for the Xorg X server";
     homepage = "https://gitlab.freedesktop.org/xorg/driver/xf86-input-evdev";
+
     license = with lib.licenses; [
       hpndSellVariant
       mit
     ];
+
     maintainers = with lib.maintainers; [
       nick-linux
     ];
-    pkgConfigModules = [ "xorg-evdev" ];
+
     platforms = lib.platforms.unix;
+    pkgConfigModules = [ "xorg-evdev" ];
   };
 })

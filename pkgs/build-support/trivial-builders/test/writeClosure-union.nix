@@ -1,16 +1,17 @@
 {
   lib,
   runCommandLocal,
+  samples,
   # Test targets
   writeClosure,
-  samples,
 }:
 runCommandLocal "test-trivial-builders-writeClosure-union"
   {
+    inherit samples;
     __structuredAttrs = true;
     closures = lib.mapAttrs (n: v: writeClosure [ v ]) samples;
     collectiveClosure = writeClosure (lib.attrValues samples);
-    inherit samples;
+
     meta.maintainers = with lib.maintainers; [
       ShamrockLee
     ];

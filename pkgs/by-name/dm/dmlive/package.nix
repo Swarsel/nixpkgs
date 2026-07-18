@@ -1,19 +1,19 @@
 {
   lib,
-  rustPlatform,
-  fetchFromGitHub,
   fetchurl,
-  pkg-config,
-  makeWrapper,
-  openssl,
-  mpv,
+  fetchFromGitHub,
   ffmpeg,
+  makeWrapper,
+  mpv,
+  openssl,
+  pkg-config,
+  rustPlatform,
 }:
 
 let
   desktop = fetchurl {
-    url = "https://github.com/THMonster/Revda/raw/e1c236f6f940443419b6202735b6f8a0c9cdbe8b/misc/dmlive-mime.desktop";
     hash = "sha256-k4h0cSfjuTZAYLjbaTfcye1aC5obd6D3tAZjgBV8xCI=";
+    url = "https://github.com/THMonster/Revda/raw/e1c236f6f940443419b6202735b6f8a0c9cdbe8b/misc/dmlive-mime.desktop";
   };
 in
 
@@ -28,8 +28,6 @@ rustPlatform.buildRustPackage {
     hash = "sha256-Q1QOJZ6VW65MG0wzJAgW9p4mF6a48qYRdDaeQyDTbk8=";
   };
 
-  cargoHash = "sha256-hRJ81Opxh3tHHZAVTXzQKTmv+psbeGW1KHyoRBfnnWI=";
-
   nativeBuildInputs = [
     pkg-config
     makeWrapper
@@ -38,6 +36,9 @@ rustPlatform.buildRustPackage {
   buildInputs = [
     openssl
   ];
+
+  cargoHash = "sha256-hRJ81Opxh3tHHZAVTXzQKTmv+psbeGW1KHyoRBfnnWI=";
+  env.OPENSSL_NO_VENDOR = true;
 
   postInstall = ''
     wrapProgram "$out/bin/dmlive" --suffix PATH : "${
@@ -49,16 +50,16 @@ rustPlatform.buildRustPackage {
     install -Dm644 ${desktop} $out/share/applications/dmlive-mime.desktop
   '';
 
-  env.OPENSSL_NO_VENDOR = true;
-
   meta = {
     description = "Tool to play and record videos or live streams with danmaku";
     homepage = "https://github.com/THMonster/dmlive";
     license = lib.licenses.mit;
-    mainProgram = "dmlive";
+
     maintainers = with lib.maintainers; [
       nickcao
       rebmit
     ];
+
+    mainProgram = "dmlive";
   };
 }

@@ -1,15 +1,14 @@
 {
   lib,
+  fetchFromGitHub,
   aiohttp,
   buildPythonPackage,
-  fetchFromGitHub,
   setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "aiooncue";
   version = "0.3.9";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "bdraco";
@@ -23,13 +22,11 @@ buildPythonPackage rec {
       --replace '"setuptools>=75.8.0"' ""
   '';
 
-  build-system = [ setuptools ];
-
-  dependencies = [ aiohttp ];
-
   # Tests are out-dated
   doCheck = false;
-
+  build-system = [ setuptools ];
+  dependencies = [ aiohttp ];
+  pyproject = true;
   pythonImportsCheck = [ "aiooncue" ];
 
   meta = {

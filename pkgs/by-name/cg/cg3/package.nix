@@ -2,14 +2,14 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  runCommand,
-  dieHook,
-  cmake,
-  icu,
   boost,
-  pkg-config,
-  sqlite,
   cg3,
+  cmake,
+  dieHook,
+  icu,
+  pkg-config,
+  runCommand,
+  sqlite,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -61,10 +61,10 @@ stdenv.mkDerivation (finalAttrs: {
   # - Enable tcmalloc unless darwin?
   # - Enable python bindings?
   meta = {
-    homepage = "https://github.com/GrammarSoft/cg3";
     description = "Constraint Grammar interpreter, compiler and applicator vislcg3";
-    maintainers = with lib.maintainers; [ unhammer ];
+    homepage = "https://github.com/GrammarSoft/cg3";
     license = lib.licenses.gpl3Plus;
+    maintainers = with lib.maintainers; [ unhammer ];
     platforms = lib.platforms.all;
   };
 })

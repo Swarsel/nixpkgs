@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   hatchling,
   httpx,
   pytest-freezer,
@@ -15,7 +15,6 @@
 buildPythonPackage rec {
   pname = "urlscan-python";
   version = "0.0.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "urlscan";
@@ -23,13 +22,6 @@ buildPythonPackage rec {
     tag = "v${version}";
     hash = "sha256-HkovBmmVvUYA5U43w5TUOcwhZAN/0o0BETd1s9R940w=";
   };
-
-  build-system = [
-    hatchling
-    uv-dynamic-versioning
-  ];
-
-  dependencies = [ httpx ];
 
   nativeCheckInputs = [
     pytest-freezer
@@ -39,6 +31,13 @@ buildPythonPackage rec {
     pytestCheckHook
   ];
 
+  build-system = [
+    hatchling
+    uv-dynamic-versioning
+  ];
+
+  dependencies = [ httpx ];
+  pyproject = true;
   pythonImportsCheck = [ "urlscan" ];
 
   meta = {

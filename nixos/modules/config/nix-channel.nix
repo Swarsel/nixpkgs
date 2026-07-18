@@ -27,6 +27,8 @@ in
     nix = {
       channel = {
         enable = mkOption {
+          default = true;
+
           description = ''
             Whether the `nix-channel` command and state files are made available on the machine.
 
@@ -37,13 +39,12 @@ in
 
             Disabling this option will not remove the state files from the system.
           '';
+
           type = types.bool;
-          default = true;
         };
       };
 
       nixPath = mkOption {
-        type = types.listOf types.str;
         default =
           if cfg.channel.enable then
             [
@@ -53,6 +54,7 @@ in
             ]
           else
             [ ];
+
         defaultText = ''
           if nix.channel.enable
           then [
@@ -62,20 +64,23 @@ in
           ]
           else [];
         '';
+
         description = ''
           The default Nix expression search path, used by the Nix
           evaluator to look up paths enclosed in angle brackets
           (e.g. `<nixpkgs>`).
         '';
+
+        type = types.listOf types.str;
       };
     };
 
     system = {
       defaultChannel = mkOption {
-        internal = true;
-        type = types.str;
         default = "https://channels.nixos.org/nixos-unstable";
         description = "Default NixOS channel to which the root user is subscribed.";
+        internal = true;
+        type = types.str;
       };
     };
   };
@@ -98,14 +103,14 @@ in
       NIX_PATH = cfg.nixPath;
     };
 
-    systemd.tmpfiles.rules = lib.mkIf cfg.channel.enable [
-      ''f /root/.nix-channels - - - - ${config.system.defaultChannel} nixos\n''
-    ];
-
     system.preSwitchChecks.no-nix-channel = mkIf (!cfg.channel.enable) (
       lib.replaceStrings [ "@getent@" ] [ (lib.getExe pkgs.getent) ] (
         builtins.readFile ./nix-channel/pre-switch-check.sh
       )
     );
+
+    systemd.tmpfiles.rules = lib.mkIf cfg.channel.enable [
+      ''f /root/.nix-channels - - - - ${config.system.defaultChannel} nixos\n''
+    ];
   };
 }

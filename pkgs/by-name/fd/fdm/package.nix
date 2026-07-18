@@ -3,11 +3,11 @@
   stdenv,
   fetchFromGitHub,
   autoreconfHook,
+  bison,
+  flex,
   openssl,
   tdb,
   zlib,
-  flex,
-  bison,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -22,6 +22,7 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   nativeBuildInputs = [ autoreconfHook ];
+
   buildInputs = [
     openssl
     tdb
@@ -39,10 +40,10 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Mail fetching and delivery tool - should do the job of getmail and procmail";
+    homepage = "https://github.com/nicm/fdm";
+    license = lib.licenses.isc;
     maintainers = with lib.maintainers; [ raskin ];
     platforms = with lib.platforms; linux ++ darwin;
-    homepage = "https://github.com/nicm/fdm";
     downloadPage = "https://github.com/nicm/fdm/releases";
-    license = lib.licenses.isc;
   };
 })

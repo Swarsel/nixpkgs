@@ -1,17 +1,16 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
-  typing-extensions,
+  buildPythonPackage,
   mypy-extensions,
   pytestCheckHook,
+  setuptools,
+  typing-extensions,
 }:
 
 buildPythonPackage {
   pname = "typing-inspect";
   version = "0.9.0-unstable-2025-10-20";
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "ilevkivskyi";
@@ -20,6 +19,7 @@ buildPythonPackage {
     hash = "sha256-uGGtV32TGckoM3JALNu2OjIE+gmzJc7VMJlQeKJVFd8=";
   };
 
+  nativeCheckInputs = [ pytestCheckHook ];
   build-system = [ setuptools ];
 
   dependencies = [
@@ -27,8 +27,7 @@ buildPythonPackage {
     mypy-extensions
   ];
 
-  nativeCheckInputs = [ pytestCheckHook ];
-
+  format = "setuptools";
   pythonImportsCheck = [ "typing_inspect" ];
 
   meta = {

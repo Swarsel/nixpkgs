@@ -3,24 +3,24 @@
   stdenv,
   fetchFromGitLab,
   autoreconfHook,
+  libx11,
+  libxkbfile,
+  nix-update-script,
   pkg-config,
   util-macros,
-  libxkbfile,
-  libx11,
   xorgproto,
-  nix-update-script,
 }:
 stdenv.mkDerivation (finalAttrs: {
   pname = "xwd";
   version = "1.0.9";
 
   src = fetchFromGitLab {
-    domain = "gitlab.freedesktop.org";
-    group = "xorg";
     owner = "app";
     repo = "xwd";
     tag = "xwd-${finalAttrs.version}";
     hash = "sha256-cEKm0c50qwWzGSkH1sdovNfN3dW1hmnaEDwuJKwxGdo=";
+    domain = "gitlab.freedesktop.org";
+    group = "xorg";
   };
 
   strictDeps = true;
@@ -42,12 +42,14 @@ stdenv.mkDerivation (finalAttrs: {
   meta = {
     description = "Utility to dump an image of an X window in XWD format";
     homepage = "https://gitlab.freedesktop.org/xorg/app/xwd";
+
     license = with lib.licenses; [
       mitOpenGroup
       hpndSellVariant
     ];
-    mainProgram = "xwd";
+
     maintainers = [ ];
     platforms = lib.platforms.unix;
+    mainProgram = "xwd";
   };
 })

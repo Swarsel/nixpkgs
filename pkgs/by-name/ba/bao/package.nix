@@ -1,7 +1,7 @@
 {
   lib,
-  rustPlatform,
   fetchCrate,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -10,8 +10,8 @@ rustPlatform.buildRustPackage (finalAttrs: {
 
   src = fetchCrate {
     inherit (finalAttrs) version;
-    pname = "${finalAttrs.pname}_bin";
     hash = "sha256-8h5otpu3z2Hgy0jMCITJNr8Q4iVdlR5Lea2X+WuenWs=";
+    pname = "${finalAttrs.pname}_bin";
   };
 
   cargoHash = "sha256-B0wvJTcIRJxBU0G1DONnKeQYrmsmMIorhTLc73o4/kE=";
@@ -19,11 +19,13 @@ rustPlatform.buildRustPackage (finalAttrs: {
   meta = {
     description = "Implementation of BLAKE3 verified streaming";
     homepage = "https://github.com/oconnor663/bao";
-    maintainers = with lib.maintainers; [ amarshall ];
+
     license = with lib.licenses; [
       cc0
       asl20
     ];
+
+    maintainers = with lib.maintainers; [ amarshall ];
     mainProgram = "bao";
   };
 })

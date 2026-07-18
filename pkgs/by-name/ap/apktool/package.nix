@@ -2,9 +2,9 @@
   lib,
   stdenv,
   fetchurl,
-  makeWrapper,
-  jre_minimal,
   aapt,
+  jre_minimal,
+  makeWrapper,
 }:
 
 let
@@ -22,17 +22,14 @@ stdenv.mkDerivation (finalAttrs: {
   version = "3.0.2";
 
   src = fetchurl {
+    hash = "sha256-7uRmmnBKFOBiNAfmcBsLkYh+YeHkBJy3qCgz4Urotf0=";
+
     urls = [
       "https://github.com/iBotPeaches/Apktool/releases/download/v${finalAttrs.version}/apktool_${finalAttrs.version}.jar"
     ];
-    hash = "sha256-7uRmmnBKFOBiNAfmcBsLkYh+YeHkBJy3qCgz4Urotf0=";
   };
 
-  dontUnpack = true;
-
   nativeBuildInputs = [ makeWrapper ];
-
-  sourceRoot = ".";
 
   installPhase = ''
     install -D ${finalAttrs.src} "$out/libexec/apktool/apktool.jar"
@@ -49,14 +46,17 @@ stdenv.mkDerivation (finalAttrs: {
       --prefix PATH : ${lib.getBin aapt}
   '';
 
+  dontUnpack = true;
+  sourceRoot = ".";
+
   meta = {
     description = "Tool for reverse engineering Android apk files";
-    mainProgram = "apktool";
     homepage = "https://apktool.org";
     changelog = "https://github.com/iBotPeaches/Apktool/releases/tag/v${finalAttrs.version}";
-    sourceProvenance = with lib.sourceTypes; [ binaryBytecode ];
     license = lib.licenses.asl20;
+    sourceProvenance = with lib.sourceTypes; [ binaryBytecode ];
     maintainers = with lib.maintainers; [ qrzbing ];
     platforms = with lib.platforms; unix;
+    mainProgram = "apktool";
   };
 })

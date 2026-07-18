@@ -1,19 +1,17 @@
 {
   lib,
   fetchFromGitHub,
+  autoAddDriverRunpath,
   buildPythonPackage,
-
   # nativeBuildInputs
   cmake,
+  # dependencies
+  openmm,
   pip,
   setuptools,
   swig,
-  wheel,
-  autoAddDriverRunpath,
-
-  # dependencies
-  openmm,
   torch,
+  wheel,
 }:
 let
   inherit (torch) cudaSupport cudaPackages;
@@ -21,8 +19,6 @@ in
 buildPythonPackage.override { inherit (torch) stdenv; } (finalAttrs: {
   pname = "openmm-torch";
   version = "1.5.1";
-  pyproject = false;
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "openmm";
@@ -39,18 +35,6 @@ buildPythonPackage.override { inherit (torch) stdenv; } (finalAttrs: {
         '-m pip install --no-index --no-build-isolation --no-deps --prefix=$ENV{out} .'
   '';
 
-  cmakeFlags = [
-    (lib.cmakeFeature "OPENMM_DIR" "${openmm}")
-
-    # Upstream's CMakeLists.txt registers OPENMM_DIR's lib directories as the build RPATH. CMake then
-    # fails trying to rewrite the install RPATH because Nix's cc-wrapper has already baked the correct
-    # RUNPATH (torch, openmm, ...) into the library at link time. Disable CMake's RPATH handling and
-    # keep the Nix-set RUNPATH.
-    (lib.cmakeBool "CMAKE_SKIP_RPATH" true)
-
-    (lib.cmakeBool "NN_BUILD_CUDA_LIB" cudaSupport)
-  ];
-
   nativeBuildInputs = [
     cmake
     pip
@@ -61,6 +45,27 @@ buildPythonPackage.override { inherit (torch) stdenv; } (finalAttrs: {
   ++ lib.optionals cudaSupport [
     cudaPackages.cuda_nvcc
     autoAddDriverRunpath
+  ];
+
+  buildInputs = [
+    openmm
+    torch
+  ]
+  ++ lib.optionals cudaSupport [
+    cudaPackages.cuda_cudart
+    cudaPackages.cuda_nvrtc
+  ];
+
+  cmakeFlags = [
+    (lib.cmakeFeature "OPENMM_DIR" "${openmm}")
+
+    # Upstream's CMakeLists.txt registers OPENMM_DIR's lib directories as the build RPATH. CMake then
+    # fails trying to rewrite the install RPATH because Nix's cc-wrapper has already baked the correct
+    # RUNPATH (torch, openmm, ...) into the library at link time. Disable CMake's RPATH handling and
+    # keep the Nix-set RUNPATH.
+    (lib.cmakeBool "CMAKE_SKIP_RPATH" true)
+
+    (lib.cmakeBool "NN_BUILD_CUDA_LIB" cudaSupport)
   ];
 
   env.NIX_LDFLAGS = toString (
@@ -78,19 +83,8 @@ buildPythonPackage.override { inherit (torch) stdenv; } (finalAttrs: {
     ]
   );
 
-  buildInputs = [
-    openmm
-    torch
-  ]
-  ++ lib.optionals cudaSupport [
-    cudaPackages.cuda_cudart
-    cudaPackages.cuda_nvrtc
-  ];
-
-  dependencies = [
-    openmm
-    torch
-  ];
+  # No tests
+  doCheck = false;
 
   # Install the python bindings
   postInstall = ''
@@ -103,10 +97,15 @@ buildPythonPackage.override { inherit (torch) stdenv; } (finalAttrs: {
     make PythonInstall
   '';
 
-  pythonImportsCheck = [ "openmmtorch" ];
+  __structuredAttrs = true;
 
-  # No tests
-  doCheck = false;
+  dependencies = [
+    openmm
+    torch
+  ];
+
+  pyproject = false;
+  pythonImportsCheck = [ "openmmtorch" ];
 
   meta = {
     description = "OpenMM plugin to define forces with neural networks";

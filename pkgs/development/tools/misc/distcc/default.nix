@@ -2,22 +2,22 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  popt,
-  avahi,
-  pkg-config,
-  python3,
-  gtk3,
-  runCommand,
-  gcc,
   autoconf,
   automake,
-  which,
-  procps,
-  libiberty_static,
-  runtimeShell,
+  avahi,
+  gcc,
   gitUpdater,
-  sysconfDir ? "", # set this parameter to override the default value $out/etc
+  gtk3,
+  libiberty_static,
+  pkg-config,
+  popt,
+  procps,
+  python3,
+  runCommand,
+  runtimeShell,
+  which,
   static ? false,
+  sysconfDir ? "", # set this parameter to override the default value $out/etc
 }:
 
 let
@@ -25,6 +25,7 @@ let
   version = "3.4";
   distcc = stdenv.mkDerivation {
     inherit pname version;
+
     src = fetchFromGitHub {
       owner = "distcc";
       repo = "distcc";
@@ -39,6 +40,7 @@ let
       which
       (python3.withPackages (p: [ p.setuptools ]))
     ];
+
     buildInputs = [
       popt
       avahi
@@ -46,6 +48,7 @@ let
       procps
       libiberty_static
     ];
+
     preConfigure = ''
       export CPATH=$(ls -d ${gcc.cc}/lib/gcc/*/${gcc.cc.version}/plugin/include)
 
@@ -106,9 +109,8 @@ let
       description = "Fast, free distributed C/C++ compiler";
       homepage = "http://distcc.org";
       license = lib.licenses.gpl2Only;
-
-      platforms = lib.platforms.linux ++ lib.platforms.darwin;
       maintainers = with lib.maintainers; [ pascalj ];
+      platforms = lib.platforms.linux ++ lib.platforms.darwin;
     };
   };
 in

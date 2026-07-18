@@ -1,9 +1,9 @@
 {
   lib,
-  clangStdenv,
   fetchFromGitHub,
-  libxslt,
+  clangStdenv,
   docbook_xsl,
+  libxslt,
   postgresql,
 }:
 
@@ -43,9 +43,9 @@ clangStdenv.mkDerivation rec {
   meta = {
     description = "Activate/deactivate/verify checksums in offline PostgreSQL clusters";
     homepage = "https://github.com/credativ/pg_checksums";
-    maintainers = [ ];
-    mainProgram = "pg_checksums_ext";
-    platforms = postgresql.meta.platforms;
     license = lib.licenses.postgresql;
+    maintainers = [ ];
+    platforms = postgresql.meta.platforms;
+    mainProgram = "pg_checksums_ext";
   };
 }

@@ -1,17 +1,16 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  pytestCheckHook,
-  pytest-cov-stub,
+  buildPythonPackage,
   lxml,
   lxml-html-clean,
+  pytest-cov-stub,
+  pytestCheckHook,
 }:
 
 buildPythonPackage rec {
   pname = "justext";
   version = "3.0.2";
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "miso-belica";
@@ -30,6 +29,7 @@ buildPythonPackage rec {
     pytest-cov-stub
   ];
 
+  format = "setuptools";
   pythonImportsCheck = [ "justext" ];
 
   meta = {

@@ -1,10 +1,10 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  nix-update-script,
   android-image-kitchen,
+  buildPythonPackage,
   gitpython,
+  nix-update-script,
   poetry-core,
   pyelftools,
   requests,
@@ -13,7 +13,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "sebaubuntu-libs";
   version = "2.0.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "sebaubuntu-python";
@@ -21,16 +20,6 @@ buildPythonPackage (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-LV7Me+GmgOvDh0XGoLaftCKtP/fnB5xVqb8nArOMIys=";
   };
-
-  build-system = [
-    poetry-core
-  ];
-
-  dependencies = [
-    gitpython
-    pyelftools
-    requests
-  ];
 
   postPatch = ''
     # Patch libaik to use AIK from nixpkgs
@@ -55,8 +44,18 @@ buildPythonPackage (finalAttrs: {
   # Module has no tests
   doCheck = false;
 
-  pythonImportsCheck = [ "sebaubuntu_libs" ];
+  build-system = [
+    poetry-core
+  ];
 
+  dependencies = [
+    gitpython
+    pyelftools
+    requests
+  ];
+
+  pyproject = true;
+  pythonImportsCheck = [ "sebaubuntu_libs" ];
   passthru.updateScript = nix-update-script { };
 
   meta = {

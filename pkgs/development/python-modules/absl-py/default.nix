@@ -1,14 +1,13 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   hatchling,
 }:
 
 buildPythonPackage rec {
   pname = "absl-py";
   version = "2.3.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "abseil";
@@ -17,11 +16,10 @@ buildPythonPackage rec {
     hash = "sha256-U8doys7SoOhtUkF0dsCFKnM9ItOoi5a6cK6zGOe/U8s=";
   };
 
-  build-system = [ hatchling ];
-
   # checks use bazel; should be revisited
   doCheck = false;
-
+  build-system = [ hatchling ];
+  pyproject = true;
   pythonImportsCheck = [ "absl" ];
 
   meta = {

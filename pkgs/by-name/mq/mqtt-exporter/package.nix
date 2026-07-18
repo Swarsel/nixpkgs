@@ -7,7 +7,6 @@
 python3.pkgs.buildPythonApplication (finalAttrs: {
   pname = "mqtt-exporter";
   version = "1.12.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "kpetremann";
@@ -16,6 +15,11 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     hash = "sha256-cCVbvO1+69zIxbGGW7p3YTbDQgSU41uVR7M3jOHaqO8=";
   };
 
+  nativeCheckInputs = with python3.pkgs; [
+    pytest-mock
+    pytestCheckHook
+  ];
+
   build-system = with python3.pkgs; [ setuptools ];
 
   dependencies = with python3.pkgs; [
@@ -23,14 +27,9 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     prometheus-client
   ];
 
-  pythonRelaxDeps = [ "prometheus-client" ];
-
-  nativeCheckInputs = with python3.pkgs; [
-    pytest-mock
-    pytestCheckHook
-  ];
-
+  pyproject = true;
   pythonImportsCheck = [ "mqtt_exporter" ];
+  pythonRelaxDeps = [ "prometheus-client" ];
 
   meta = {
     description = "Generic MQTT Prometheus exporter for IoT";

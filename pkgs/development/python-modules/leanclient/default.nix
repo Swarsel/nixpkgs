@@ -1,11 +1,9 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
+  buildPythonPackage,
   # build-system
   hatchling,
-
   # dependencies
   orjson,
   psutil,
@@ -15,7 +13,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "leanclient";
   version = "0.12.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "oOo0oOo";
@@ -24,6 +21,8 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-h90AMErcwdmHfIBgFerFEaUwjfRkJMl1iesXjtEpdlA=";
   };
 
+  # Tests require a real Lean toolchain
+  doCheck = false;
   build-system = [ hatchling ];
 
   dependencies = [
@@ -32,9 +31,7 @@ buildPythonPackage (finalAttrs: {
     tqdm
   ];
 
-  # Tests require a real Lean toolchain
-  doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "leanclient" ];
 
   meta = {

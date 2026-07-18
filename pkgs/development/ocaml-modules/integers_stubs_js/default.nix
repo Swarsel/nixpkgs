@@ -9,9 +9,6 @@ buildDunePackage (finalAttrs: {
   pname = "integers_stubs_js";
   version = "1.0";
 
-  minimalOCamlVersion = "4.08";
-  duneVersion = "3";
-
   src = fetchFromGitHub {
     owner = "o1-labs";
     repo = "integers_stubs_js";
@@ -21,11 +18,13 @@ buildDunePackage (finalAttrs: {
 
   propagatedBuildInputs = [ zarith_stubs_js ];
   doCheck = true;
+  duneVersion = "3";
+  minimalOCamlVersion = "4.08";
 
   meta = {
+    inherit (finalAttrs.src.meta) homepage;
     description = "Javascript stubs for the integers library in js_of_ocaml";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ bezmuth ];
-    inherit (finalAttrs.src.meta) homepage;
   };
 })

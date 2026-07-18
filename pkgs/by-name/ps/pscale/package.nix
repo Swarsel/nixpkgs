@@ -1,9 +1,9 @@
 {
-  stdenv,
-  buildGoModule,
-  fetchFromGitHub,
-  installShellFiles,
   lib,
+  stdenv,
+  fetchFromGitHub,
+  buildGoModule,
+  installShellFiles,
   pscale,
   testers,
 }:
@@ -19,17 +19,8 @@ buildGoModule (finalAttrs: {
     sha256 = "sha256-eROK3Bqp72rhUTUUZZlIUbMLTNmjEUXw2TBSsNVLONQ=";
   };
 
-  vendorHash = "sha256-IkqXij3i3nUCHfu36yS7e4+5PM6ZHmPuYbgVo7Uv0X8=";
-
-  ldflags = [
-    "-s"
-    "-w"
-    "-X main.version=v${finalAttrs.version}"
-    "-X main.commit=v${finalAttrs.version}"
-    "-X main.date=unknown"
-  ];
-
   nativeBuildInputs = [ installShellFiles ];
+  vendorHash = "sha256-IkqXij3i3nUCHfu36yS7e4+5PM6ZHmPuYbgVo7Uv0X8=";
 
   postInstall = lib.optionalString (stdenv.buildPlatform.canExecute stdenv.hostPlatform) ''
     installShellCompletion --cmd pscale \
@@ -40,18 +31,28 @@ buildGoModule (finalAttrs: {
 
   __darwinAllowLocalNetworking = true;
 
+  ldflags = [
+    "-s"
+    "-w"
+    "-X main.version=v${finalAttrs.version}"
+    "-X main.commit=v${finalAttrs.version}"
+    "-X main.date=unknown"
+  ];
+
   passthru.tests.version = testers.testVersion {
     package = pscale;
   };
 
   meta = {
     description = "CLI for PlanetScale Database";
-    mainProgram = "pscale";
-    changelog = "https://github.com/planetscale/cli/releases/tag/v${finalAttrs.version}";
     homepage = "https://www.planetscale.com/";
+    changelog = "https://github.com/planetscale/cli/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.asl20;
+
     maintainers = with lib.maintainers; [
       kashw2
     ];
+
+    mainProgram = "pscale";
   };
 })

@@ -2,20 +2,18 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  cmake,
   callPackage,
-  pkg-config,
-
+  cmake,
   # Linux deps
   libGL,
+  libx11,
   libxcursor,
   libxext,
   libxi,
-  libx11,
   libxrandr,
   libxscrnsaver,
   libxtst,
-
+  pkg-config,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -33,6 +31,7 @@ stdenv.mkDerivation (finalAttrs: {
     cmake
     pkg-config
   ];
+
   buildInputs = lib.optionals (!stdenv.hostPlatform.isDarwin) [
     # TODO devendor sdl3 and remove these
     libGL
@@ -60,17 +59,19 @@ stdenv.mkDerivation (finalAttrs: {
   passthru.tests.can-run-hello-world = callPackage ./test-can-run-hello-world.nix { };
 
   meta = {
-    broken = stdenv.hostPlatform.isDarwin;
-    homepage = "https://strlen.com/lobster/";
     description = "Lobster programming language";
-    mainProgram = "lobster";
+
     longDescription = ''
       Lobster is a programming language that tries to combine the advantages of
       very static typing and memory management with a very lightweight,
       friendly and terse syntax, by doing most of the heavy lifting for you.
     '';
+
+    homepage = "https://strlen.com/lobster/";
     license = lib.licenses.asl20;
     maintainers = with lib.maintainers; [ fgaz ];
     platforms = lib.platforms.all;
+    mainProgram = "lobster";
+    broken = stdenv.hostPlatform.isDarwin;
   };
 })

@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   versionCheckHook,
 }:
 
@@ -17,7 +17,8 @@ buildGoModule (finalAttrs: {
   };
 
   vendorHash = "sha256-Rs1UXvSP3iXQySW5yVkP5JTWmEOej4atTpYpmQccbro=";
-
+  checkFlags = [ "-skip=TestPythonMatch" ];
+  doInstallCheck = true;
   nativeInstallCheckInputs = [ versionCheckHook ];
 
   ldflags = [
@@ -25,11 +26,7 @@ buildGoModule (finalAttrs: {
     "-w"
   ];
 
-  doInstallCheck = true;
-
   versionCheckProgramArg = [ "version" ];
-
-  checkFlags = [ "-skip=TestPythonMatch" ];
 
   meta = {
     description = "Static analysis of vulnerabilities, Docker and Kubernetes cluster configuration";

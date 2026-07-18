@@ -1,26 +1,22 @@
 {
   lib,
-  python3Packages,
   fetchPypi,
+  python3Packages,
 }:
 
 python3Packages.buildPythonApplication (finalAttrs: {
   pname = "meraki-cli";
   version = "1.5.1";
-  pyproject = true;
 
   src = fetchPypi {
-    pname = "meraki_cli";
     inherit (finalAttrs) version;
     hash = "sha256-FHcKgppclc0L6yuCkpVYfr+jq8hNkt7Hq/44mpHMR20=";
+    pname = "meraki_cli";
   };
 
-  disabledTests = [
-    # requires files not in PyPI tarball
-    "TestDocVersions"
-    "TestHelps"
-    # requires running "pip install"
-    "TestUpgrade"
+  nativeCheckInputs = with python3Packages; [
+    pytestCheckHook
+    requests-mock
   ];
 
   build-system = with python3Packages; [
@@ -34,18 +30,23 @@ python3Packages.buildPythonApplication (finalAttrs: {
     rich
   ];
 
-  nativeCheckInputs = with python3Packages; [
-    pytestCheckHook
-    requests-mock
+  disabledTests = [
+    # requires files not in PyPI tarball
+    "TestDocVersions"
+    "TestHelps"
+    # requires running "pip install"
+    "TestUpgrade"
   ];
+
+  pyproject = true;
 
   pythonImportsCheck = [
     "meraki_cli"
   ];
 
   meta = {
-    homepage = "https://github.com/PackeTsar/meraki-cli";
     description = "Simple CLI tool to automate and control your Cisco Meraki Dashboard";
+    homepage = "https://github.com/PackeTsar/meraki-cli";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ dylanmtaylor ];
     platforms = lib.platforms.unix;

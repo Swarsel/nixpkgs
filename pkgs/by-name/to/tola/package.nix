@@ -1,14 +1,13 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
   cmake,
-  pkg-config,
   openssl,
+  pkg-config,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
-  __structuredAttrs = true;
   pname = "tola";
   version = "0.7.1";
 
@@ -29,14 +28,15 @@ rustPlatform.buildRustPackage (finalAttrs: {
   ];
 
   cargoHash = "sha256-3Y7+UJD2QyNs+GjijvOAyTQ9ZP7lRf/MpaWThN2/e5s=";
-
   # There are not any tests in source project.
   doCheck = false;
+  __structuredAttrs = true;
 
   meta = {
     description = "A static site generator for typst-based blog, written in Rust";
     homepage = "https://github.com/KawaYww/tola";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       matthiasbeyer
     ];

@@ -2,31 +2,27 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  fetchNpmDeps,
-  rustPlatform,
-
   cargo,
   cargo-tauri,
+  fetchNpmDeps,
+  glib-networking,
   go-task,
   gradle_8,
-  makeBinaryWrapper,
-  nodejs,
-  npmHooks,
-  pkg-config,
-  wrapGAppsHook3,
-
-  glib-networking,
   jdk25,
   libsoup_3,
-  openssl,
-  webkitgtk_4_1,
-
+  makeBinaryWrapper,
   nix-update-script,
   nixosTests,
-
+  nodejs,
+  npmHooks,
+  openssl,
+  pkg-config,
+  rustPlatform,
+  webkitgtk_4_1,
+  wrapGAppsHook3,
+  buildWithFrontend ? !isDesktopVariant,
   isDesktopVariant ? false,
   withAdditionalFeatures ? true,
-  buildWithFrontend ? !isDesktopVariant,
 }:
 
 # you may only toggle this when building the server
@@ -55,48 +51,6 @@ stdenv.mkDerivation (finalAttrs: {
     ./fix-cargo-lock.patch
   ];
 
-  npmRoot = "frontend";
-
-  npmDeps = fetchNpmDeps {
-    name = "${finalAttrs.pname}-${finalAttrs.version}-npm-deps";
-    inherit (finalAttrs) src patches;
-    postPatch = "cd ${finalAttrs.npmRoot}";
-    hash = "sha256-y+mviHatwhdIGCOKir1nnG/0Zm8oSoLKW345tU9upls=";
-  };
-
-  cargoRoot = "frontend/src-tauri";
-  buildAndTestSubdir = finalAttrs.cargoRoot;
-
-  cargoDeps = rustPlatform.fetchCargoVendor {
-    inherit (finalAttrs)
-      pname
-      version
-      src
-      patches
-      cargoRoot
-      ;
-    hash = "sha256-Tx6twcyFupNOzuXbW8uUulMJFObyPg/i2U0QnvyhIRQ=";
-  };
-
-  mitmCache = gradle.fetchDeps {
-    inherit (finalAttrs) pname;
-    data = ./deps.json;
-  };
-
-  __darwinAllowLocalNetworking = true;
-
-  env = {
-    PUPPETEER_SKIP_DOWNLOAD = "1";
-    DISABLE_ADDITIONAL_FEATURES = if withAdditionalFeatures then "false" else "true";
-  };
-
-  gradleFlags = [
-    "-PnoSpotless" # disable spotless because it tries to fetch files not in deps.json and also because it slows down the build process
-  ]
-  ++ lib.optionals buildWithFrontend [ "-PbuildWithFrontend=true" ];
-
-  doCheck = true;
-
   nativeBuildInputs = [
     go-task
     gradle
@@ -124,7 +78,10 @@ stdenv.mkDerivation (finalAttrs: {
     webkitgtk_4_1
   ];
 
-  dontUseGradleBuild = isDesktopVariant; # we'll use the buildPhase from cargo-tauri-hook for the desktop app
+  env = {
+    DISABLE_ADDITIONAL_FEATURES = if withAdditionalFeatures then "false" else "true";
+    PUPPETEER_SKIP_DOWNLOAD = "1";
+  };
 
   # prepare the resources before building the desktop app
   preBuild = lib.optionals isDesktopVariant ''
@@ -141,6 +98,8 @@ stdenv.mkDerivation (finalAttrs: {
       --replace-fail 'MimeType=application/pdf;' 'MimeType=application/pdf;x-scheme-handler/stirlingpdf;'
   '';
 
+  doCheck = true;
+
   # we use the installPhase from cargo-tauri-hook when we're building the desktop variant
   installPhase = lib.optionalString (!isDesktopVariant) ''
     runHook preInstall
@@ -156,27 +115,68 @@ stdenv.mkDerivation (finalAttrs: {
     makeWrapper "$out/Applications/Stirling-PDF.app/Contents/MacOS/stirling-pdf" "$out/bin/stirling-pdf"
   '';
 
+  __darwinAllowLocalNetworking = true;
+  buildAndTestSubdir = finalAttrs.cargoRoot;
+
+  cargoDeps = rustPlatform.fetchCargoVendor {
+    inherit (finalAttrs)
+      pname
+      version
+      src
+      patches
+      cargoRoot
+      ;
+
+    hash = "sha256-Tx6twcyFupNOzuXbW8uUulMJFObyPg/i2U0QnvyhIRQ=";
+  };
+
+  cargoRoot = "frontend/src-tauri";
+  dontUseGradleBuild = isDesktopVariant; # we'll use the buildPhase from cargo-tauri-hook for the desktop app
+
+  gradleFlags = [
+    "-PnoSpotless" # disable spotless because it tries to fetch files not in deps.json and also because it slows down the build process
+  ]
+  ++ lib.optionals buildWithFrontend [ "-PbuildWithFrontend=true" ];
+
+  mitmCache = gradle.fetchDeps {
+    inherit (finalAttrs) pname;
+    data = ./deps.json;
+  };
+
+  npmDeps = fetchNpmDeps {
+    inherit (finalAttrs) src patches;
+    postPatch = "cd ${finalAttrs.npmRoot}";
+    hash = "sha256-y+mviHatwhdIGCOKir1nnG/0Zm8oSoLKW345tU9upls=";
+    name = "${finalAttrs.pname}-${finalAttrs.version}-npm-deps";
+  };
+
+  npmRoot = "frontend";
+
   passthru = {
-    updateScript = nix-update-script { };
     tests = { inherit (nixosTests) stirling-pdf-desktop; };
+    updateScript = nix-update-script { };
   };
 
   meta = {
-    changelog = "https://github.com/Stirling-Tools/Stirling-PDF/releases/tag/v${finalAttrs.version}";
     description =
       "Powerful, open-source PDF editing platform "
       + (if isDesktopVariant then "runnable as a desktop app" else "hostable as a web app");
+
     homepage = "https://github.com/Stirling-Tools/Stirling-PDF";
+    changelog = "https://github.com/Stirling-Tools/Stirling-PDF/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.mit; # TODO: figure out what proper licensing should be
-    mainProgram = if isDesktopVariant then "stirling-pdf" else "Stirling-PDF";
-    maintainers = with lib.maintainers; [
-      tomasajt
-      staticdev
-    ];
-    platforms = lib.platforms.linux ++ lib.platforms.darwin;
+
     sourceProvenance = with lib.sourceTypes; [
       fromSource
       binaryBytecode # java deps
     ];
+
+    maintainers = with lib.maintainers; [
+      tomasajt
+      staticdev
+    ];
+
+    platforms = lib.platforms.linux ++ lib.platforms.darwin;
+    mainProgram = if isDesktopVariant then "stirling-pdf" else "Stirling-PDF";
   };
 })

@@ -22,11 +22,7 @@ let
 
   npmPkg = buildNpmPackage {
     inherit src version;
-
     pname = "openrefine-npm";
-    sourceRoot = "${src.name}/main/webapp";
-
-    npmDepsHash = "sha256-I0iqGniXeqyCWf1DG2nMNkTScCrtJYeYF9n2Zt6Syjc=";
 
     # package.json doesn't supply a version, which npm doesn't like - fix this.
     # directly referencing jq because buildNpmPackage doesn't pass
@@ -37,29 +33,27 @@ let
       cp $NEW_PACKAGE_JSON package.json
     '';
 
-    dontNpmBuild = true;
+    npmDepsHash = "sha256-I0iqGniXeqyCWf1DG2nMNkTScCrtJYeYF9n2Zt6Syjc=";
+
     installPhase = ''
       mkdir -p $out
       cp -r modules/core/3rdparty/* $out/
     '';
+
+    dontNpmBuild = true;
+    sourceRoot = "${src.name}/main/webapp";
   };
 
 in
 maven.buildMavenPackage {
   inherit src version;
-
   pname = "openrefine";
 
   postPatch = ''
     cp -r ${npmPkg} main/webapp/modules/core/3rdparty
   '';
 
-  mvnJdk = jdk;
-  mvnParameters = "-pl !packaging";
-  mvnHash = "sha256-95lyc+pimtSM6v8S58bLG16/TotbHGa4EhHDzfxwPAk=";
-
   nativeBuildInputs = [ makeWrapper ];
-
   doCheck = false;
 
   installPhase = ''
@@ -114,6 +108,10 @@ maven.buildMavenPackage {
       --set-default REFINE_INI_PATH "$out/etc/refine.ini"
   '';
 
+  mvnHash = "sha256-95lyc+pimtSM6v8S58bLG16/TotbHGa4EhHDzfxwPAk=";
+  mvnJdk = jdk;
+  mvnParameters = "-pl !packaging";
+
   passthru = {
     inherit npmPkg;
     updateScript = ./update.sh;
@@ -123,15 +121,18 @@ maven.buildMavenPackage {
     description = "Power tool for working with messy data and improving it";
     homepage = "https://openrefine.org";
     license = lib.licenses.bsd3;
-    maintainers = with lib.maintainers; [
-      ris
-      arcstur
-    ];
+
     sourceProvenance = with lib.sourceTypes; [
       fromSource
       binaryBytecode # maven dependencies
     ];
-    broken = stdenv.hostPlatform.isDarwin; # builds, doesn't run
+
+    maintainers = with lib.maintainers; [
+      ris
+      arcstur
+    ];
+
     mainProgram = "refine";
+    broken = stdenv.hostPlatform.isDarwin; # builds, doesn't run
   };
 }

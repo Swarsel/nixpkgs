@@ -2,15 +2,15 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  rustPlatform,
-  runCommandLocal,
-  withFzf ? true,
   fzf,
   installShellFiles,
   libiconv,
-  testers,
   nushell,
+  runCommandLocal,
+  rustPlatform,
+  testers,
   zoxide,
+  withFzf ? true,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -24,22 +24,29 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-BLGjsmljY2UZSWmbRX+Xf5sIgSBrDviKGzXjyGmB+2w=";
   };
 
-  nativeBuildInputs = [ installShellFiles ];
-
-  buildInputs = lib.optionals stdenv.hostPlatform.isDarwin [ libiconv ];
-
   postPatch = lib.optionalString withFzf ''
     substituteInPlace src/util.rs \
       --replace '"fzf"' '"${fzf}/bin/fzf"'
   '';
 
+  nativeBuildInputs = [ installShellFiles ];
+  buildInputs = lib.optionals stdenv.hostPlatform.isDarwin [ libiconv ];
   cargoHash = "sha256-5Be/eIMn3JurFIhoPK6B5L054lLPek9CR93zTJzJS6w=";
+
+  postInstall = ''
+    installManPage man/man*/*
+    installShellCompletion --cmd zoxide \
+      --bash contrib/completions/zoxide.bash \
+      --fish contrib/completions/zoxide.fish \
+      --zsh contrib/completions/_zoxide
+  '';
 
   passthru = {
     tests = {
       version = testers.testVersion {
         package = zoxide;
       };
+
       nushell-integration =
         runCommandLocal "test-${zoxide.name}-nushell-integration"
           {
@@ -47,6 +54,7 @@ rustPlatform.buildRustPackage (finalAttrs: {
               nushell
               zoxide
             ];
+
             meta.platforms = nushell.meta.platforms;
           }
           ''
@@ -57,19 +65,12 @@ rustPlatform.buildRustPackage (finalAttrs: {
     };
   };
 
-  postInstall = ''
-    installManPage man/man*/*
-    installShellCompletion --cmd zoxide \
-      --bash contrib/completions/zoxide.bash \
-      --fish contrib/completions/zoxide.fish \
-      --zsh contrib/completions/_zoxide
-  '';
-
   meta = {
     description = "Fast cd command that learns your habits";
     homepage = "https://github.com/ajeetdsouza/zoxide";
     changelog = "https://github.com/ajeetdsouza/zoxide/blob/v${finalAttrs.version}/CHANGELOG.md";
     license = with lib.licenses; [ mit ];
+
     maintainers = with lib.maintainers; [
       ysndr
       cole-h
@@ -77,6 +78,7 @@ rustPlatform.buildRustPackage (finalAttrs: {
       matthiasbeyer
       ryan4yin
     ];
+
     mainProgram = "zoxide";
   };
 })

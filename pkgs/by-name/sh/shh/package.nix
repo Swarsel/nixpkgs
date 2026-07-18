@@ -1,12 +1,12 @@
 {
   lib,
-  rustPlatform,
+  stdenv,
   fetchFromGitHub,
-  nix-update-script,
   installShellFiles,
+  nix-update-script,
+  rustPlatform,
   strace,
   systemd,
-  stdenv,
   enableDocumentationFeature ? true,
   enableDocumentationGeneration ? true,
 }:
@@ -25,24 +25,22 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-PWbPyhn103eLHelhf+m1iIIaKDCooiIRMzrn9xPTzoA=";
   };
 
-  cargoHash = "sha256-zE4qRXrQHqppTmZ9rHeqt4mvMgoRIzX73/CPf4IRgYo=";
-
   patches = [
     ./fix_run_checks.patch
   ];
-
-  env = {
-    SHH_STRACE_BIN_PATH = lib.getExe strace;
-    # RUST_BACKTRACE = 1;
-  };
-
-  buildFeatures = lib.optional enableDocumentationFeature "generate-extras";
 
   nativeBuildInputs = [
     installShellFiles
     systemd
   ]
   ++ (lib.optional (!isNativeDocgen) strace);
+
+  cargoHash = "sha256-zE4qRXrQHqppTmZ9rHeqt4mvMgoRIzX73/CPf4IRgYo=";
+
+  env = {
+    SHH_STRACE_BIN_PATH = lib.getExe strace;
+    # RUST_BACKTRACE = 1;
+  };
 
   # todo elvish
   postInstall = lib.optionalString enableDocumentationGeneration ''
@@ -69,19 +67,22 @@ rustPlatform.buildRustPackage (finalAttrs: {
       --zsh target/shellcomplete/_${finalAttrs.meta.mainProgram}
   '';
 
+  buildFeatures = lib.optional enableDocumentationFeature "generate-extras";
   passthru.updateScript = nix-update-script { };
 
   meta = {
     description = "Automatic systemd service hardening guided by strace profiling";
     homepage = "https://github.com/desbma/shh";
-    license = lib.licenses.gpl3Only;
-    platforms = lib.platforms.linux;
     changelog = "https://github.com/desbma/shh/blob/v${finalAttrs.version}/CHANGELOG.md";
-    mainProgram = "shh";
+    license = lib.licenses.gpl3Only;
+
     maintainers = with lib.maintainers; [
       erdnaxe
       kuflierl
       jk
     ];
+
+    platforms = lib.platforms.linux;
+    mainProgram = "shh";
   };
 })

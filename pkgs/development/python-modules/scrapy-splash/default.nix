@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   hypothesis,
   pytest-twisted,
   pytestCheckHook,
@@ -13,7 +13,6 @@
 buildPythonPackage rec {
   pname = "scrapy-splash";
   version = "0.11.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "scrapy-plugins";
@@ -22,6 +21,12 @@ buildPythonPackage rec {
     hash = "sha256-eOWqSCuuZtUtaEuAew4g0P67N0zClaguHn2u4ZMT3FU=";
   };
 
+  nativeCheckInputs = [
+    hypothesis
+    pytest-twisted
+    pytestCheckHook
+  ];
+
   build-system = [ setuptools ];
 
   dependencies = [
@@ -29,18 +34,13 @@ buildPythonPackage rec {
     six
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "scrapy_splash" ];
 
-  nativeCheckInputs = [
-    hypothesis
-    pytest-twisted
-    pytestCheckHook
-  ];
-
   meta = {
-    changelog = "https://github.com/scrapy-plugins/scrapy-splash/blob/${src.tag}/CHANGES.rst";
     description = "Scrapy+Splash for JavaScript integration";
     homepage = "https://github.com/scrapy-plugins/scrapy-splash";
+    changelog = "https://github.com/scrapy-plugins/scrapy-splash/blob/${src.tag}/CHANGES.rst";
     license = lib.licenses.bsd3;
     maintainers = with lib.maintainers; [ evanjs ];
     # incompatible with scrapy >= 2.14

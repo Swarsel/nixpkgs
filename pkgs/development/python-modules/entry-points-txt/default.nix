@@ -1,16 +1,15 @@
 {
   lib,
-  pytestCheckHook,
-  pytest-cov-stub,
-  hatchling,
   fetchFromGitHub,
   buildPythonPackage,
+  hatchling,
+  pytest-cov-stub,
+  pytestCheckHook,
 }:
 
 buildPythonPackage rec {
   pname = "entry-points-txt";
   version = "0.3.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "jwodder";
@@ -19,13 +18,13 @@ buildPythonPackage rec {
     hash = "sha256-8oGK7aIDgXkCLh/d38hWzfF367KhmggG2s820D2r/EA=";
   };
 
-  build-system = [ hatchling ];
-
   nativeCheckInputs = [
     pytestCheckHook
     pytest-cov-stub
   ];
 
+  build-system = [ hatchling ];
+  pyproject = true;
   pythonImportsCheck = [ "entry_points_txt" ];
 
   meta = {

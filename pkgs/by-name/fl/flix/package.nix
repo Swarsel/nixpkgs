@@ -1,9 +1,9 @@
 {
   lib,
   fetchurl,
-  stdenvNoCC,
-  makeWrapper,
   jre,
+  makeWrapper,
+  stdenvNoCC,
 }:
 
 stdenvNoCC.mkDerivation rec {
@@ -14,8 +14,6 @@ stdenvNoCC.mkDerivation rec {
     url = "https://github.com/flix/flix/releases/download/v${version}/flix.jar";
     sha256 = "sha256-4xd3AK6tiiKkLJEOc7+4oyb+/bq04+rq9tVcMopr2Tg=";
   };
-
-  dontUnpack = true;
 
   nativeBuildInputs = [ makeWrapper ];
 
@@ -30,13 +28,15 @@ stdenvNoCC.mkDerivation rec {
     runHook postInstall
   '';
 
+  dontUnpack = true;
+
   meta = {
-    description = "Flix Programming Language";
-    mainProgram = "flix";
-    homepage = "https://github.com/flix/flix";
-    sourceProvenance = with lib.sourceTypes; [ binaryBytecode ];
-    license = lib.licenses.asl20;
-    maintainers = with lib.maintainers; [ athas ];
     inherit (jre.meta) platforms;
+    description = "Flix Programming Language";
+    homepage = "https://github.com/flix/flix";
+    license = lib.licenses.asl20;
+    sourceProvenance = with lib.sourceTypes; [ binaryBytecode ];
+    maintainers = with lib.maintainers; [ athas ];
+    mainProgram = "flix";
   };
 }

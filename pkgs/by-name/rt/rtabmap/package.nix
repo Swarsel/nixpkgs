@@ -2,39 +2,36 @@
   lib,
   stdenv,
   fetchFromGitHub,
-
+  ceres-solver,
   # nativeBuildInputs
   cmake,
-  qt6,
-  pkg-config,
-  wrapGAppsHook3,
-
+  eigen,
+  freenect,
+  g2o,
+  # passthru
+  gitUpdater,
+  hidapi,
+  libGL,
+  libGLU,
+  libdc1394,
+  libice,
+  liblapack,
+  libnabo,
+  libpointmatcher,
+  librealsense,
+  libsm,
+  libusb1,
+  libxt,
+  octomap,
   # buildInputs
   opencv,
   pcl,
-  liblapack,
-  libxt,
-  libsm,
-  libice,
-  libusb1,
-  yaml-cpp,
-  libnabo,
-  libpointmatcher,
-  eigen,
-  g2o,
-  ceres-solver,
-  octomap,
-  freenect,
-  libdc1394,
-  libGL,
-  libGLU,
-  librealsense,
+  pkg-config,
+  qt6,
   vtkWithQt6,
+  wrapGAppsHook3,
+  yaml-cpp,
   zed-open-capture,
-  hidapi,
-
-  # passthru
-  gitUpdater,
 }:
 let
   pcl' = pcl.override { vtk = vtkWithQt6; };
@@ -42,9 +39,6 @@ in
 stdenv.mkDerivation (finalAttrs: {
   pname = "rtabmap";
   version = "0.23.8";
-
-  __structuredAttrs = true;
-  strictDeps = true;
 
   src = fetchFromGitHub {
     owner = "introlab";
@@ -61,12 +55,15 @@ stdenv.mkDerivation (finalAttrs: {
         "find_package(Boost COMPONENTS thread filesystem program_options date_time chrono timer serialization REQUIRED)"
   '';
 
+  strictDeps = true;
+
   nativeBuildInputs = [
     cmake
     qt6.wrapQtAppsHook
     pkg-config
     wrapGAppsHook3
   ];
+
   buildInputs = [
     ## Required
     opencv
@@ -96,12 +93,13 @@ stdenv.mkDerivation (finalAttrs: {
     hidapi
   ];
 
-  # Configure environment variables
-  env.NIX_CFLAGS_COMPILE = "-Wno-c++20-extensions";
-
   cmakeFlags = [
     (lib.cmakeFeature "CMAKE_INCLUDE_PATH" "${pcl'}/include/pcl-${lib.versions.majorMinor pcl'.version}")
   ];
+
+  # Configure environment variables
+  env.NIX_CFLAGS_COMPILE = "-Wno-c++20-extensions";
+  __structuredAttrs = true;
 
   passthru = {
     updateScript = gitUpdater { };

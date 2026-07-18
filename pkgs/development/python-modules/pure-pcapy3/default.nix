@@ -7,7 +7,6 @@
 buildPythonPackage rec {
   pname = "pure-pcapy3";
   version = "1.0.1";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
@@ -20,6 +19,7 @@ buildPythonPackage rec {
       --replace-fail "assertEquals" "assertEqual"
   '';
 
+  format = "setuptools";
   pythonImportsCheck = [ "pure_pcapy" ];
 
   meta = {

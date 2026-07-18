@@ -2,25 +2,23 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  cmake,
-  pkg-config,
   buildPackages,
+  cacert,
   callPackage,
-  sqlite,
-  libtiff,
+  cmake,
   curl,
   gtest,
+  libtiff,
   nlohmann_json,
+  pkg-config,
   python3,
-  cacert,
+  sqlite,
   writableTmpDirAsHomeHook,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
   pname = "proj";
   version = "9.8.1";
-  __structuredAttrs = true;
-  strictDeps = true;
 
   src = fetchFromGitHub {
     owner = "OSGeo";
@@ -29,15 +27,17 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-sOAxWihgU1TAMWcju5LN4cPenHHoGgd4oYJ4HA3F/Ks=";
   };
 
+  outputs = [
+    "out"
+    "dev"
+  ];
+
   patches = [
     # https://github.com/OSGeo/PROJ/pull/3252
     ./only-add-curl-for-static-builds.patch
   ];
 
-  outputs = [
-    "out"
-    "dev"
-  ];
+  strictDeps = true;
 
   nativeBuildInputs = [
     cmake
@@ -51,20 +51,23 @@ stdenv.mkDerivation (finalAttrs: {
     nlohmann_json
   ];
 
-  nativeCheckInputs = [
-    cacert
-    sqlite
-    writableTmpDirAsHomeHook
-  ];
-  checkInputs = [
-    gtest
-  ];
-
   cmakeFlags = [
     "-DUSE_EXTERNAL_GTEST=ON"
     "-DRUN_NETWORK_DEPENDENT_TESTS=OFF"
     "-DNLOHMANN_JSON_ORIGIN=external"
     "-DEXE_SQLITE3=${lib.getExe buildPackages.sqlite}"
+  ];
+
+  doCheck = true;
+
+  nativeCheckInputs = [
+    cacert
+    sqlite
+    writableTmpDirAsHomeHook
+  ];
+
+  checkInputs = [
+    gtest
   ];
 
   preCheck =
@@ -76,20 +79,20 @@ stdenv.mkDerivation (finalAttrs: {
       export ${libPathEnvVar}=$PWD/lib
     '';
 
-  doCheck = true;
+  __structuredAttrs = true;
 
   passthru.tests = {
-    python = python3.pkgs.pyproj;
     proj = callPackage ./tests.nix { proj = finalAttrs.finalPackage; };
+    python = python3.pkgs.pyproj;
   };
 
   meta = {
-    changelog = "https://github.com/OSGeo/PROJ/blob/${finalAttrs.src.tag}/NEWS.md";
     description = "Cartographic Projections Library";
     homepage = "https://proj.org/";
+    changelog = "https://github.com/OSGeo/PROJ/blob/${finalAttrs.src.tag}/NEWS.md";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ dotlambda ];
-    teams = [ lib.teams.geospatial ];
     platforms = lib.platforms.unix;
+    teams = [ lib.teams.geospatial ];
   };
 })

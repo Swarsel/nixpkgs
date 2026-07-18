@@ -1,17 +1,14 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  setuptools,
+  buildPythonPackage,
   numpy,
-
   pytestCheckHook,
+  setuptools,
 }:
 buildPythonPackage rec {
   pname = "stackprinter";
   version = "0.2.13";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "cknd";
@@ -19,6 +16,10 @@ buildPythonPackage rec {
     tag = version;
     hash = "sha256-R6s1YBbb52oK1zIQtRR80W+6Ca/gATtC6S3rUEC4Mes=";
   };
+
+  nativeCheckInputs = [
+    pytestCheckHook
+  ];
 
   build-system = [
     setuptools
@@ -28,9 +29,7 @@ buildPythonPackage rec {
     numpy
   ];
 
-  nativeCheckInputs = [
-    pytestCheckHook
-  ];
+  pyproject = true;
 
   pythonImportsCheck = [
     "stackprinter"

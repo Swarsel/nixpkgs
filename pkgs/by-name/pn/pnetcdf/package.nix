@@ -2,12 +2,12 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  gfortran,
   autoreconfHook,
-  perl,
+  gfortran,
+  gitUpdater,
   mpi,
   mpiCheckPhaseHook,
-  gitUpdater,
+  perl,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -21,6 +21,10 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-nz40Ji9qh6UatlLOuChsWYvHwfVNacJI87usGBcYyFk=";
   };
 
+  postPatch = ''
+    patchShebangs src/binding/f77/buildiface test examples benchmarks
+  '';
+
   nativeBuildInputs = [
     perl
     autoreconfHook
@@ -28,16 +32,9 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   buildInputs = [ mpi ];
-
-  postPatch = ''
-    patchShebangs src/binding/f77/buildiface test examples benchmarks
-  '';
-
-  __darwinAllowLocalNetworking = true;
-
   doCheck = true;
-
   nativeCheckInputs = [ mpiCheckPhaseHook ];
+  __darwinAllowLocalNetworking = true;
 
   checkTarget = lib.concatStringsSep " " [
     # build all test programs (build only, no run)
@@ -48,17 +45,18 @@ stdenv.mkDerivation (finalAttrs: {
     "ptests"
   ];
 
+  enableParallelBuilding = true;
   # cannot do parallel check otherwise failed
   enableParallelChecking = false;
-
-  enableParallelBuilding = true;
 
   passthru.updateScript = gitUpdater {
     rev-prefix = "checkpoint.";
   };
 
   meta = {
+    description = "Parallel I/O Library for NetCDF File Access";
     homepage = "https://parallel-netcdf.github.io/";
+
     license = with lib.licenses; [
       # Files: *
       # Copyright: (c) 2003 Northwestern University and Argonne National Laboratory
@@ -72,8 +70,8 @@ stdenv.mkDerivation (finalAttrs: {
       # Copyright: 1991-2007 Unicode, Inc.
       unicode-30
     ];
-    description = "Parallel I/O Library for NetCDF File Access";
-    platforms = lib.platforms.unix;
+
     maintainers = with lib.maintainers; [ qbisi ];
+    platforms = lib.platforms.unix;
   };
 })

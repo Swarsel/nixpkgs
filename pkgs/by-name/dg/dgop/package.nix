@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   installShellFiles,
   nix-update-script,
 }:
@@ -17,15 +17,8 @@ buildGoModule (finalAttrs: {
     hash = "sha256-wH1A4bg7OSD/vb5r0naaT+5x5oy6wwTRh12a60sXPxU=";
   };
 
-  vendorHash = "sha256-M46W8rnexs0GR5hahAqCiAX+bsQEmdwTIccUox+oJas=";
-
-  ldflags = [
-    "-w"
-    "-s"
-    "-X main.Version=${finalAttrs.version}"
-  ];
-
   nativeBuildInputs = [ installShellFiles ];
+  vendorHash = "sha256-M46W8rnexs0GR5hahAqCiAX+bsQEmdwTIccUox+oJas=";
 
   postInstall = ''
     installShellCompletion --cmd dgop \
@@ -33,6 +26,12 @@ buildGoModule (finalAttrs: {
       --fish <($out/bin/dgop completion fish) \
       --zsh <($out/bin/dgop completion zsh)
   '';
+
+  ldflags = [
+    "-w"
+    "-s"
+    "-X main.Version=${finalAttrs.version}"
+  ];
 
   passthru = {
     updateScript = nix-update-script { };
@@ -43,8 +42,8 @@ buildGoModule (finalAttrs: {
     homepage = "https://github.com/AvengeMedia/dgop";
     changelog = "https://github.com/AvengeMedia/dgop/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.mit;
-    teams = [ lib.teams.danklinux ];
-    mainProgram = "dgop";
     platforms = lib.platforms.unix;
+    mainProgram = "dgop";
+    teams = [ lib.teams.danklinux ];
   };
 })

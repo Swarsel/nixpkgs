@@ -1,15 +1,15 @@
 {
   lib,
-  testers,
   stdenv,
   fetchFromGitHub,
-  openssl,
-  libsamplerate,
-  swig,
   alsa-lib,
+  libsamplerate,
+  openssl,
   python3,
-  pythonSupport ? true,
   runCommand,
+  swig,
+  testers,
+  pythonSupport ? true,
 }:
 stdenv.mkDerivation (finalAttrs: {
   pname = "pjsip";
@@ -21,6 +21,8 @@ stdenv.mkDerivation (finalAttrs: {
     tag = finalAttrs.version;
     hash = "sha256-WDKkC/M8khhPaRLsAh6FXoUSTgCBK+RAFpEcB9+MBHc=";
   };
+
+  outputs = [ "out" ] ++ lib.optional pythonSupport "py";
 
   postPatch = ''
     substituteInPlace \
@@ -46,6 +48,8 @@ stdenv.mkDerivation (finalAttrs: {
   ]
   ++ lib.optional stdenv.hostPlatform.isLinux alsa-lib;
 
+  configureFlags = [ "--enable-shared" ];
+
   env = {
     NIX_LDFLAGS = if stdenv.hostPlatform.isDarwin then "-lc++" else "-lstdc++";
   }
@@ -61,10 +65,6 @@ stdenv.mkDerivation (finalAttrs: {
   postBuild = lib.optionalString pythonSupport ''
     make -C pjsip-apps/src/swig/python
   '';
-
-  configureFlags = [ "--enable-shared" ];
-
-  outputs = [ "out" ] ++ lib.optional pythonSupport "py";
 
   postInstall = ''
     mkdir -p $out/bin
@@ -118,25 +118,24 @@ stdenv.mkDerivation (finalAttrs: {
 
   # We need the libgcc_s.so.1 loadable (for pthread_cancel to work)
   dontPatchELF = true;
-
-  passthru.tests.version = testers.testVersion {
-    package = finalAttrs.finalPackage;
-    command = "pjsua --version";
-  };
-
   passthru.tests.pkg-config = testers.hasPkgConfigModules { package = finalAttrs.finalPackage; };
 
   passthru.tests.python-pjsua2 = runCommand "python-pjsua2" { } ''
     ${(python3.withPackages (pkgs: [ pkgs.pjsua2 ])).interpreter} -c "import pjsua2" > $out
   '';
 
+  passthru.tests.version = testers.testVersion {
+    command = "pjsua --version";
+    package = finalAttrs.finalPackage;
+  };
+
   meta = {
     description = "Multimedia communication library written in C, implementing standard based protocols such as SIP, SDP, RTP, STUN, TURN, and ICE";
     homepage = "https://pjsip.org/";
     license = lib.licenses.gpl2Plus;
     maintainers = with lib.maintainers; [ olynch ];
-    mainProgram = "pjsua";
     platforms = lib.platforms.linux ++ lib.platforms.darwin;
+    mainProgram = "pjsua";
     pkgConfigModules = [ "libpjproject" ];
   };
 })

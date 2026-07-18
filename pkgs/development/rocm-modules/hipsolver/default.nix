@@ -2,26 +2,38 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  rocmUpdateScript,
-  cmake,
-  rocm-cmake,
   clr,
+  cmake,
   gfortran,
+  gtest,
+  lapack-reference,
   rocblas,
+  rocm-cmake,
+  rocmUpdateScript,
   rocsolver,
   rocsparse,
   suitesparse,
-  gtest,
-  lapack-reference,
-  buildTests ? false,
   buildBenchmarks ? false,
   buildSamples ? false,
+  buildTests ? false,
 }:
 
 # Can also use cuSOLVER
 stdenv.mkDerivation (finalAttrs: {
   pname = "hipsolver";
   version = "7.2.3";
+
+  src = fetchFromGitHub {
+    owner = "ROCm";
+    repo = "rocm-libraries";
+    rev = "rocm-${finalAttrs.version}";
+    hash = "sha256-ts5wuXHoBFZ1WMAk8Ir5cucP75G0SMOWmn3FEH04ZEQ=";
+
+    sparseCheckout = [
+      "projects/hipsolver"
+      "shared"
+    ];
+  };
 
   outputs = [
     "out"
@@ -35,18 +47,6 @@ stdenv.mkDerivation (finalAttrs: {
   ++ lib.optionals buildSamples [
     "sample"
   ];
-
-  src = fetchFromGitHub {
-    owner = "ROCm";
-    repo = "rocm-libraries";
-    rev = "rocm-${finalAttrs.version}";
-    sparseCheckout = [
-      "projects/hipsolver"
-      "shared"
-    ];
-    hash = "sha256-ts5wuXHoBFZ1WMAk8Ir5cucP75G0SMOWmn3FEH04ZEQ=";
-  };
-  sourceRoot = "${finalAttrs.src.name}/projects/hipsolver";
 
   nativeBuildInputs = [
     cmake
@@ -105,13 +105,14 @@ stdenv.mkDerivation (finalAttrs: {
       rmdir $out/bin
     '';
 
+  sourceRoot = "${finalAttrs.src.name}/projects/hipsolver";
   passthru.updateScript = rocmUpdateScript { inherit finalAttrs; };
 
   meta = {
     description = "ROCm SOLVER marshalling library";
     homepage = "https://github.com/ROCm/rocm-libraries/tree/develop/projects/hipsolver";
     license = with lib.licenses; [ mit ];
-    teams = [ lib.teams.rocm ];
     platforms = lib.platforms.linux;
+    teams = [ lib.teams.rocm ];
   };
 })

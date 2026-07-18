@@ -1,15 +1,15 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchurl,
+  glib,
+  gnome,
+  gobject-introspection,
+  gtk3,
+  libarchive,
   meson,
   ninja,
   pkg-config,
-  gnome,
-  gtk3,
-  glib,
-  gobject-introspection,
-  libarchive,
   vala,
 }:
 
@@ -17,15 +17,15 @@ stdenv.mkDerivation (finalAttrs: {
   pname = "gnome-autoar";
   version = "0.4.5";
 
-  outputs = [
-    "out"
-    "dev"
-  ];
-
   src = fetchurl {
     url = "mirror://gnome/sources/gnome-autoar/${lib.versions.majorMinor finalAttrs.version}/gnome-autoar-${finalAttrs.version}.tar.xz";
     hash = "sha256-g4xTBvw4v6ovI6viQmL0vxV3HjMD+13LdPW5x6YV2r4=";
   };
+
+  outputs = [
+    "out"
+    "dev"
+  ];
 
   nativeBuildInputs = [
     gobject-introspection
@@ -55,9 +55,9 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   meta = {
+    description = "Library to integrate compressed files management with GNOME";
+    license = lib.licenses.lgpl21Plus;
     platforms = lib.platforms.linux;
     teams = [ lib.teams.gnome ];
-    license = lib.licenses.lgpl21Plus;
-    description = "Library to integrate compressed files management with GNOME";
   };
 })

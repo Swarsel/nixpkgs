@@ -1,22 +1,21 @@
 {
-  mkKdeDerivation,
-  pkg-config,
-  qtspeech,
-  qtsvg,
-  plasma-activities,
-  poppler,
-  libtiff,
-  libspectre,
-  libzip,
+  discount,
   djvulibre,
   ebook_tools,
   fetchpatch,
-  discount,
+  libspectre,
+  libtiff,
+  libzip,
+  mkKdeDerivation,
+  pkg-config,
+  plasma-activities,
+  poppler,
+  qtspeech,
+  qtsvg,
 }:
 mkKdeDerivation {
   pname = "okular";
 
-  extraNativeBuildInputs = [ pkg-config ];
   extraBuildInputs = [
     qtspeech
     qtsvg
@@ -32,5 +31,6 @@ mkKdeDerivation {
     discount
   ];
 
+  extraNativeBuildInputs = [ pkg-config ];
   meta.mainProgram = "okular";
 }

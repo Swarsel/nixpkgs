@@ -1,18 +1,25 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchurl,
-  unzip,
-  makeDesktopItem,
   jre8,
+  makeDesktopItem,
+  unzip,
 }:
 
 let
   desktopItem = makeDesktopItem {
-    name = "jmol";
-    exec = "jmol";
+    categories = [
+      "Graphics"
+      "Education"
+      "Science"
+      "Chemistry"
+    ];
+
     desktopName = "JMol";
+    exec = "jmol";
     genericName = "Molecular Modeler";
+
     mimeTypes = [
       "chemical/x-pdb"
       "chemical/x-mdl-molfile"
@@ -22,17 +29,13 @@ let
       "chemical/x-xyz"
       "chemical/x-mdl-sdf"
     ];
-    categories = [
-      "Graphics"
-      "Education"
-      "Science"
-      "Chemistry"
-    ];
+
+    name = "jmol";
   };
 in
 stdenv.mkDerivation (finalAttrs: {
-  version = "16.4.11";
   pname = "jmol";
+  version = "16.4.11";
 
   src =
     let
@@ -42,10 +45,6 @@ stdenv.mkDerivation (finalAttrs: {
       url = "mirror://sourceforge/jmol/Jmol/Version%20${baseVersion}/Jmol%20${finalAttrs.version}/Jmol-${finalAttrs.version}-binary.tar.gz";
       hash = "sha256-kDt6XF5axy9DhygLZcImV37plkq/xDqi2aL2wKV9wh4=";
     };
-
-  patchPhase = ''
-    sed -i -e "4s:.*:command=${jre8}/bin/java:" -e "10s:.*:jarpath=$out/share/jmol/Jmol.jar:" -e "11,21d" jmol
-  '';
 
   installPhase = ''
     mkdir -p "$out/share/jmol" "$out/bin"
@@ -59,13 +58,17 @@ stdenv.mkDerivation (finalAttrs: {
 
   enableParallelBuilding = true;
 
+  patchPhase = ''
+    sed -i -e "4s:.*:command=${jre8}/bin/java:" -e "10s:.*:jarpath=$out/share/jmol/Jmol.jar:" -e "11,21d" jmol
+  '';
+
   meta = {
     description = "Java 3D viewer for chemical structures";
-    mainProgram = "jmol";
     homepage = "https://sourceforge.net/projects/jmol";
-    sourceProvenance = with lib.sourceTypes; [ binaryBytecode ];
     license = lib.licenses.lgpl2;
+    sourceProvenance = with lib.sourceTypes; [ binaryBytecode ];
     platforms = lib.platforms.all;
+    mainProgram = "jmol";
     teams = [ lib.teams.sage ];
   };
 })

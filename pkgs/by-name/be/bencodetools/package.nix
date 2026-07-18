@@ -1,6 +1,6 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitLab,
   gitUpdater,
   python3Packages,
@@ -21,10 +21,7 @@ stdenv.mkDerivation (finalAttrs: {
     patchShebangs configure
   '';
 
-  enableParallelBuilding = true;
-
   configureFlags = [ (lib.strings.withFeature false "python") ];
-
   # installCheck instead of check due to -install_name'd library on Darwin
   doInstallCheck = stdenv.buildPlatform.canExecute stdenv.hostPlatform;
 
@@ -36,6 +33,8 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstallCheck
   '';
 
+  enableParallelBuilding = true;
+
   passthru = {
     tests.python-module = python3Packages.bencodetools;
     updateScript = gitUpdater { rev-prefix = "v"; };
@@ -46,7 +45,7 @@ stdenv.mkDerivation (finalAttrs: {
     homepage = "https://gitlab.com/heikkiorsila/bencodetools";
     license = lib.licenses.bsd2;
     maintainers = with lib.maintainers; [ OPNA2608 ];
-    mainProgram = "bencat";
     platforms = lib.platforms.unix;
+    mainProgram = "bencat";
   };
 })

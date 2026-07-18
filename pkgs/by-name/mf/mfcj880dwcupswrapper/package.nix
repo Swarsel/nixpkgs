@@ -2,9 +2,9 @@
   lib,
   stdenv,
   fetchurl,
-  mfcj880dwlpr,
-  makeWrapper,
   bash,
+  makeWrapper,
+  mfcj880dwlpr,
 }:
 
 stdenv.mkDerivation rec {
@@ -17,6 +17,7 @@ stdenv.mkDerivation rec {
   };
 
   nativeBuildInputs = [ makeWrapper ];
+
   buildInputs = [
     bash # shebang
   ];
@@ -47,11 +48,11 @@ stdenv.mkDerivation rec {
   '';
 
   meta = {
-    homepage = "http://www.brother.com/";
     description = "Brother MFC-J880DW CUPS wrapper driver";
+    homepage = "http://www.brother.com/";
     license = with lib.licenses; gpl2;
+    maintainers = with lib.maintainers; [ _6543 ];
     platforms = with lib.platforms; linux;
     downloadPage = "https://support.brother.com/g/b/downloadlist.aspx?c=us&lang=en&prod=mfcj880dw_us_eu_as&os=128";
-    maintainers = with lib.maintainers; [ _6543 ];
   };
 }

@@ -14,21 +14,15 @@
 buildPythonPackage rec {
   pname = "llama-index-readers-file";
   version = "0.6.0";
-  pyproject = true;
 
   src = fetchPypi {
-    pname = "llama_index_readers_file";
     inherit version;
     hash = "sha256-/zZtb/XstxGSdayFkxDYtnLYtrMmGvrgL0CE/OkHa9A=";
+    pname = "llama_index_readers_file";
   };
 
-  pythonRelaxDeps = [
-    "pymupdf"
-    "pypdf"
-    "striprtf"
-    "pandas"
-  ];
-
+  # Tests are only available in the mono repo
+  doCheck = false;
   build-system = [ hatchling ];
 
   dependencies = [
@@ -40,10 +34,15 @@ buildPythonPackage rec {
     striprtf
   ];
 
-  # Tests are only available in the mono repo
-  doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "llama_index.readers.file" ];
+
+  pythonRelaxDeps = [
+    "pymupdf"
+    "pypdf"
+    "striprtf"
+    "pandas"
+  ];
 
   meta = {
     description = "LlamaIndex Readers Integration for files";

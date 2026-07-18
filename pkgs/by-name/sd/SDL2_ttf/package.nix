@@ -1,12 +1,12 @@
 {
   lib,
-  SDL2,
+  stdenv,
   fetchurl,
+  SDL2,
   freetype,
   harfbuzz,
   libGL,
   pkg-config,
-  stdenv,
   testers,
   # Boolean flags
   enableSdltest ? (!stdenv.hostPlatform.isDarwin),
@@ -25,6 +25,8 @@ stdenv.mkDerivation (finalAttrs: {
     "out"
     "dev"
   ];
+
+  strictDeps = true;
 
   nativeBuildInputs = [
     SDL2
@@ -46,8 +48,6 @@ stdenv.mkDerivation (finalAttrs: {
     (lib.enableFeature enableSdltest "sdltest")
   ];
 
-  strictDeps = true;
-
   passthru = {
     tests.pkg-config = testers.hasPkgConfigModules {
       package = finalAttrs.finalPackage;
@@ -55,11 +55,11 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   meta = {
-    homepage = "https://github.com/libsdl-org/SDL_ttf";
-    description = "Support for TrueType (.ttf) font files with Simple Directmedia Layer";
-    license = lib.licenses.zlib;
-    teams = [ lib.teams.sdl ];
     inherit (SDL2.meta) platforms;
+    description = "Support for TrueType (.ttf) font files with Simple Directmedia Layer";
+    homepage = "https://github.com/libsdl-org/SDL_ttf";
+    license = lib.licenses.zlib;
     pkgConfigModules = [ "SDL2_ttf" ];
+    teams = [ lib.teams.sdl ];
   };
 })

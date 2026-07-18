@@ -1,25 +1,25 @@
 {
-  stdenv,
   lib,
-  fetchgit,
-  pkg-config,
+  stdenv,
   addDriverRunpath,
   desktop-file-utils,
+  fetchgit,
+  gitUpdater,
+  gpu-screen-recorder,
+  gtk3,
+  libayatana-appindicator,
+  libdrm,
+  libglvnd,
+  libpulseaudio,
+  libx11,
+  libxrandr,
   makeWrapper,
   meson,
   ninja,
-  gtk3,
-  libayatana-appindicator,
-  libpulseaudio,
-  libdrm,
-  gpu-screen-recorder,
-  libglvnd,
-  libx11,
-  libxrandr,
+  pkg-config,
   wayland,
   wrapGAppsHook3,
   wrapperDir ? "/run/wrappers/bin",
-  gitUpdater,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -71,15 +71,17 @@ stdenv.mkDerivation (finalAttrs: {
   passthru.updateScript = gitUpdater { };
 
   meta = {
-    changelog = "https://git.dec05eba.com/gpu-screen-recorder-gtk/tree/com.dec05eba.gpu_screen_recorder.appdata.xml#n82";
     description = "GTK frontend for gpu-screen-recorder";
     homepage = "https://git.dec05eba.com/gpu-screen-recorder-gtk/about/";
+    changelog = "https://git.dec05eba.com/gpu-screen-recorder-gtk/tree/com.dec05eba.gpu_screen_recorder.appdata.xml#n82";
     license = lib.licenses.gpl3Only;
-    mainProgram = "gpu-screen-recorder-gtk";
+
     maintainers = with lib.maintainers; [
       babbaj
       js6pak
     ];
+
     platforms = lib.platforms.linux;
+    mainProgram = "gpu-screen-recorder-gtk";
   };
 })

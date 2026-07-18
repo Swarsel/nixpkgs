@@ -2,8 +2,8 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  ocaml-ng,
   dune,
+  ocaml-ng,
   versionCheckHook,
 }:
 
@@ -29,8 +29,6 @@ stdenv.mkDerivation (finalAttrs: {
     # error: 'uint64_t' does not name a type
     ./gcc-15-compat.patch
   ];
-
-  makeFlags = [ "FLOW_RELEASE=1" ];
 
   strictDeps = true;
 
@@ -60,6 +58,8 @@ stdenv.mkDerivation (finalAttrs: {
     ++ lib.optionals stdenv.hostPlatform.isLinux [ inotify ]
   );
 
+  makeFlags = [ "FLOW_RELEASE=1" ];
+
   installPhase = ''
     runHook preInstall
 
@@ -69,22 +69,26 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  doInstallCheck = true;
+
   nativeInstallCheckInputs = [
     versionCheckHook
   ];
+
   versionCheckProgramArg = "--version";
-  doInstallCheck = true;
 
   meta = {
     description = "Static type checker for JavaScript";
-    mainProgram = "flow";
     homepage = "https://flow.org/";
     changelog = "https://github.com/facebook/flow/blob/${finalAttrs.src.tag}/Changelog.md";
     license = lib.licenses.mit;
-    platforms = ocamlPackages.ocaml.meta.platforms;
+
     maintainers = with lib.maintainers; [
       puffnfresh
       miniharinn
     ];
+
+    platforms = ocamlPackages.ocaml.meta.platforms;
+    mainProgram = "flow";
   };
 })

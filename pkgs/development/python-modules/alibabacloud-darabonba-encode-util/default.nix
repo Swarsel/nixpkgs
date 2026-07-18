@@ -8,22 +8,19 @@
 buildPythonPackage (finalAttrs: {
   pname = "alibabacloud-darabonba-encode-util";
   version = "0.0.2";
-  pyproject = true;
-
-  __structuredAttrs = true;
 
   src = fetchPypi {
-    pname = "alibabacloud_darabonba_encode_util";
     inherit (finalAttrs) version;
     hash = "sha256-8cSE8nbWBFD6SbSymHGU50H8svf6rn8ofArmWryF/U0=";
+    pname = "alibabacloud_darabonba_encode_util";
   };
-
-  build-system = [ setuptools ];
-
-  pythonImportsCheck = [ "alibabacloud_darabonba_encode_util" ];
 
   # Module has no tests
   doCheck = false;
+  __structuredAttrs = true;
+  build-system = [ setuptools ];
+  pyproject = true;
+  pythonImportsCheck = [ "alibabacloud_darabonba_encode_util" ];
 
   meta = {
     description = "Darabonba Encode Util Library for Alibaba Cloud Python SDK";

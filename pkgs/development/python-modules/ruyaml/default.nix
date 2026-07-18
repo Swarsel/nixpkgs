@@ -1,8 +1,8 @@
 {
   lib,
+  fetchFromGitHub,
   buildPythonPackage,
   distro,
-  fetchFromGitHub,
   pytestCheckHook,
   setuptools-scm,
 }:
@@ -10,7 +10,6 @@
 buildPythonPackage rec {
   pname = "ruyaml";
   version = "0.91.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "pycontribs";
@@ -27,16 +26,8 @@ buildPythonPackage rec {
   '';
 
   nativeBuildInputs = [ setuptools-scm ];
-
   propagatedBuildInputs = [ distro ];
-
   nativeCheckInputs = [ pytestCheckHook ];
-
-  pytestFlags = [
-    "-Wignore::DeprecationWarning"
-  ];
-
-  pythonImportsCheck = [ "ruyaml" ];
 
   disabledTests = [
     # Assertion error
@@ -44,6 +35,14 @@ buildPythonPackage rec {
     "test_issue_60_1"
     "test_issue_61"
   ];
+
+  pyproject = true;
+
+  pytestFlags = [
+    "-Wignore::DeprecationWarning"
+  ];
+
+  pythonImportsCheck = [ "ruyaml" ];
 
   meta = {
     description = "YAML 1.2 loader/dumper package for Python";

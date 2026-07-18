@@ -2,16 +2,15 @@
   lib,
   buildPythonPackage,
   fetchPypi,
-  six,
   mock,
+  six,
 }:
 buildPythonPackage rec {
   pname = "hiro";
   version = "1.1.1";
-  format = "setuptools";
+
   src = fetchPypi {
     inherit pname version;
-
     hash = "sha256-2jM5rx3JpZTMqdycccclJysuMGYE5F0OBXXNE8X5XWg=";
   };
 
@@ -19,6 +18,8 @@ buildPythonPackage rec {
     six
     mock
   ];
+
+  format = "setuptools";
 
   meta = {
     description = "Time manipulation utilities for Python";

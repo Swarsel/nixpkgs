@@ -1,7 +1,7 @@
 {
   lib,
-  stdenvNoCC,
   fetchzip,
+  stdenvNoCC,
 }:
 
 stdenvNoCC.mkDerivation (finalAttrs: {
@@ -25,7 +25,7 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     description = "Composite font of Hack, GenJyuu-Gothic and nerd-fonts";
     homepage = "https://github.com/yuru7/HackGen";
     license = lib.licenses.ofl;
-    platforms = lib.platforms.all;
     maintainers = with lib.maintainers; [ natsukium ];
+    platforms = lib.platforms.all;
   };
 })

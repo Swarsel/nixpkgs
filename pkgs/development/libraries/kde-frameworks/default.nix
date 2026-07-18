@@ -23,11 +23,11 @@
 */
 
 {
-  config,
-  libsForQt5,
   lib,
   fetchurl,
+  config,
   kdePackages,
+  libsForQt5,
 }:
 
 let
@@ -141,55 +141,51 @@ let
     (
       {
         inherit (kdePackages) extra-cmake-modules;
-
         # TIER 1
         attica = callPackage ./attica.nix { };
         breeze-icons = callPackage ./breeze-icons.nix { };
-        karchive = callPackage ./karchive.nix { };
-        kcalendarcore = callPackage ./kcalendarcore.nix { };
-        kcodecs = callPackage ./kcodecs.nix { };
-        kconfig = callPackage ./kconfig.nix { };
-        kcoreaddons = callPackage ./kcoreaddons.nix { };
-        kdbusaddons = callPackage ./kdbusaddons.nix { };
-        kdnssd = callPackage ./kdnssd.nix { };
-        kguiaddons = callPackage ./kguiaddons.nix { };
-        ki18n = callPackage ./ki18n.nix { };
-        kirigami2 = callPackage ./kirigami2.nix { };
-        kitemviews = callPackage ./kitemviews.nix { };
-        kwayland = callPackage ./kwayland.nix { };
-        kwidgetsaddons = callPackage ./kwidgetsaddons.nix { };
-        kwindowsystem = callPackage ./kwindowsystem { };
-        solid = callPackage ./solid { };
-        sonnet = callPackage ./sonnet.nix { };
-        syntax-highlighting = callPackage ./syntax-highlighting.nix { };
-
+        # TIER 4
+        frameworkintegration = callPackage ./frameworkintegration.nix { };
         # TIER 2
         kactivities = callPackage ./kactivities.nix { };
-        kauth = callPackage ./kauth { };
-        kcompletion = callPackage ./kcompletion.nix { };
-        kcrash = callPackage ./kcrash.nix { };
-        kdoctools = callPackage ./kdoctools { };
-        kjobwidgets = callPackage ./kjobwidgets.nix { };
-        knotifications = callPackage ./knotifications.nix { };
-        kpackage = callPackage ./kpackage { };
-        syndication = callPackage ./syndication.nix { };
-
         # TIER 3
         kactivities-stats = callPackage ./kactivities-stats.nix { };
+        karchive = callPackage ./karchive.nix { };
+        kauth = callPackage ./kauth { };
         kbookmarks = callPackage ./kbookmarks.nix { };
+        kcalendarcore = callPackage ./kcalendarcore.nix { };
+        kcodecs = callPackage ./kcodecs.nix { };
+        kcompletion = callPackage ./kcompletion.nix { };
+        kconfig = callPackage ./kconfig.nix { };
         kconfigwidgets = callPackage ./kconfigwidgets.nix { };
+        kcoreaddons = callPackage ./kcoreaddons.nix { };
+        kcrash = callPackage ./kcrash.nix { };
+        kdbusaddons = callPackage ./kdbusaddons.nix { };
         kded = callPackage ./kded.nix { };
+        kdnssd = callPackage ./kdnssd.nix { };
+        kdoctools = callPackage ./kdoctools { };
         kglobalaccel = callPackage ./kglobalaccel.nix { };
+        kguiaddons = callPackage ./kguiaddons.nix { };
+        ki18n = callPackage ./ki18n.nix { };
         kiconthemes = callPackage ./kiconthemes { };
         kio = callPackage ./kio { };
+        kirigami2 = callPackage ./kirigami2.nix { };
+        kitemviews = callPackage ./kitemviews.nix { };
+        kjobwidgets = callPackage ./kjobwidgets.nix { };
         knewstuff = callPackage ./knewstuff { };
+        knotifications = callPackage ./knotifications.nix { };
+        kpackage = callPackage ./kpackage { };
         kservice = callPackage ./kservice { };
         ktextwidgets = callPackage ./ktextwidgets.nix { };
         kwallet = callPackage ./kwallet.nix { };
+        kwayland = callPackage ./kwayland.nix { };
+        kwidgetsaddons = callPackage ./kwidgetsaddons.nix { };
+        kwindowsystem = callPackage ./kwindowsystem { };
         kxmlgui = callPackage ./kxmlgui.nix { };
-
-        # TIER 4
-        frameworkintegration = callPackage ./frameworkintegration.nix { };
+        solid = callPackage ./solid { };
+        sonnet = callPackage ./sonnet.nix { };
+        syndication = callPackage ./syndication.nix { };
+        syntax-highlighting = callPackage ./syntax-highlighting.nix { };
       }
       // lib.optionalAttrs config.allowAliases {
         baloo = mkThrow "baloo";
@@ -206,8 +202,8 @@ let
         kfilemetadata = mkThrow "kfilemetadata";
         kholidays = mkThrow "kholidays";
         khtml = mkThrow "kthml";
-        kimageformats = mkThrow "kimageformats";
         kidletime = mkThrow "kidletime";
+        kimageformats = mkThrow "kimageformats";
         kinit = mkThrow "kinit";
         kitemmodels = mkThrow "kitemmodels";
         kjs = mkThrow "kjs";

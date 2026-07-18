@@ -1,13 +1,12 @@
 {
   lib,
-  python3,
   fetchFromGitHub,
+  python3,
 }:
 
 python3.pkgs.buildPythonApplication {
   pname = "bmc-tools";
   version = "3.0.4-unstable-2025-01-21";
-  pyproject = false;
 
   src = fetchFromGitHub {
     owner = "ANSSI-FR";
@@ -23,6 +22,8 @@ python3.pkgs.buildPythonApplication {
 
     runHook postInstall
   '';
+
+  pyproject = false;
 
   meta = {
     description = "RDP Bitmap Cache parser";

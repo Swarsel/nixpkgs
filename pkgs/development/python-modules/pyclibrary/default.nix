@@ -1,21 +1,18 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
+  buildPythonPackage,
+  pyparsing,
+  # tests
+  pytestCheckHook,
   # build-system
   setuptools,
   setuptools-scm,
-  pyparsing,
-
-  # tests
-  pytestCheckHook,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "pyclibrary";
   version = "0.3.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "MatthieuDartiailh";
@@ -23,6 +20,10 @@ buildPythonPackage (finalAttrs: {
     tag = finalAttrs.version;
     hash = "sha256-RyIbRySRWSZwKP5G6yXYCOnfKOV0165aPyjMf3nSbOM=";
   };
+
+  nativeCheckInputs = [
+    pytestCheckHook
+  ];
 
   build-system = [
     setuptools
@@ -33,11 +34,8 @@ buildPythonPackage (finalAttrs: {
     pyparsing
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "pyclibrary" ];
-
-  nativeCheckInputs = [
-    pytestCheckHook
-  ];
 
   meta = {
     description = "C parser and ctypes automation for python";

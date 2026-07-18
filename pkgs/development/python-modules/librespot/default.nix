@@ -1,8 +1,8 @@
 {
   lib,
+  fetchFromGitHub,
   buildPythonPackage,
   defusedxml,
-  fetchFromGitHub,
   protobuf,
   pycryptodomex,
   pyogg,
@@ -15,7 +15,6 @@
 buildPythonPackage rec {
   pname = "librespot";
   version = "0.0.10";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "kokarare1212";
@@ -25,9 +24,8 @@ buildPythonPackage rec {
   };
 
   env.PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION = "python";
-
-  pythonRelaxDeps = true;
-
+  # Doesn't include any tests
+  doCheck = false;
   build-system = [ setuptools ];
 
   dependencies = [
@@ -40,10 +38,9 @@ buildPythonPackage rec {
     zeroconf
   ];
 
-  # Doesn't include any tests
-  doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "librespot" ];
+  pythonRelaxDeps = true;
 
   meta = {
     description = "Open Source Spotify Client";

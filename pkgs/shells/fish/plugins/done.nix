@@ -1,7 +1,7 @@
 {
   lib,
-  buildFishPlugin,
   fetchFromGitHub,
+  buildFishPlugin,
   fishtape,
   jq,
 }:
@@ -22,15 +22,17 @@ buildFishPlugin (finalAttrs: {
       --replace-fail "and type -q jq" "and type -q ${lib.getExe jq}"
   '';
 
-  checkPlugins = [ fishtape ];
   checkPhase = ''
     fishtape test/done.fish
   '';
+
+  checkPlugins = [ fishtape ];
 
   meta = {
     description = "Automatically receive notifications when long processes finish";
     homepage = "https://github.com/franciscolourenco/done";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       malo
       rexies

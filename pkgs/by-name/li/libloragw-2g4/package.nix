@@ -15,8 +15,6 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-EvsYCkZ55nEdZXhxp7AjCw954+uUIoi2Fc3xhaIjZys=";
   };
 
-  passthru.updateScript = gitUpdater { rev-prefix = "V"; };
-
   makeFlags = [
     "-e"
     "-C"
@@ -37,13 +35,17 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  passthru.updateScript = gitUpdater { rev-prefix = "V"; };
+
   meta = {
     description = "LoRa 2.4Ghz Gateway - Linux host Hardware Abstraction Layer, and tools (Packet Forwarder...)";
     homepage = "https://github.com/Lora-net/gateway_2g4_hal";
+
     license = [
       lib.licenses.bsd3
       lib.licenses.mit
     ];
+
     maintainers = [ lib.maintainers.stv0g ];
     platforms = lib.platforms.linux;
   };

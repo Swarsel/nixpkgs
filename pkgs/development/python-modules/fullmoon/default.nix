@@ -1,13 +1,12 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   setuptools,
 }:
 buildPythonPackage {
   pname = "fullmoon";
   version = "1.0.2";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "jr-k";
@@ -16,13 +15,14 @@ buildPythonPackage {
     hash = "sha256-d0OL5z2DCOp0xSYBAdaMHZV9wmZJ6jiQTl7NZjMYJRA=";
   };
 
-  build-system = [ setuptools ];
-
   checkPhase = ''
     runHook preCheck
     python example.py
     runHook postCheck
   '';
+
+  build-system = [ setuptools ];
+  pyproject = true;
 
   meta = {
     description = "Determine the occurrence of the next full moon or to determine if a given date is/was/will be a full moon";

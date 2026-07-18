@@ -1,4 +1,4 @@
-{ runCommandLocal, maid }:
+{ maid, runCommandLocal }:
 
 runCommandLocal "test-maid-run"
   {

@@ -2,22 +2,21 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  fetchpatch,
   callPackage,
+  cmake,
+  curl,
+  fetchpatch,
+  gdb,
+  lit,
+  llvm_18,
   makeWrapper,
+  ninja,
   removeReferencesTo,
   runCommand,
-  writeText,
   targetPackages,
-  cmake,
-  ninja,
-  llvm_18,
-  curl,
   tzdata,
-  lit,
-  gdb,
   unzip,
-
+  writeText,
   ldcBootstrap ? callPackage ./bootstrap.nix { },
 }:
 
@@ -42,8 +41,10 @@ stdenv.mkDerivation (finalAttrs: {
     fetchSubmodules = true;
   };
 
-  # https://issues.dlang.org/show_bug.cgi?id=19553
-  hardeningDisable = [ "fortify" ];
+  outputs = [
+    "out"
+    "include"
+  ];
 
   postPatch = ''
     patchShebangs runtime tools tests
@@ -85,44 +86,16 @@ stdenv.mkDerivation (finalAttrs: {
     tzdata
   ];
 
-  outputs = [
-    "out"
-    "include"
-  ];
-  outputInclude = "include";
-
   cmakeFlags = [
     "-DD_FLAGS=-d-version=TZDatabaseDir;-d-version=LibcurlPath;-J${pathConfig}"
     "-DINCLUDE_INSTALL_DIR=${placeholder "include"}/include/d"
   ];
 
+  makeFlags = [ "DMD=$DMD" ];
+
   postConfigure = ''
     export DMD=$PWD/bin/ldmd2
   '';
-
-  makeFlags = [ "DMD=$DMD" ];
-
-  fixNames = lib.optionalString stdenv.hostPlatform.isDarwin ''
-    fixDarwinDylibNames() {
-      local flags=()
-
-      for fn in "$@"; do
-        flags+=(-change "$(basename "$fn")" "$fn")
-      done
-
-      for fn in "$@"; do
-        if [ -L "$fn" ]; then continue; fi
-        echo "$fn: fixing dylib"
-        install_name_tool -id "$fn" "''${flags[@]}" "$fn"
-      done
-    }
-
-    fixDarwinDylibNames $(find "$(pwd)/lib" -name "*.dylib")
-    export DYLD_LIBRARY_PATH=$(pwd)/lib
-  '';
-
-  # https://github.com/ldc-developers/ldc/issues/2497#issuecomment-459633746
-  additionalExceptions = lib.optionalString stdenv.hostPlatform.isDarwin "|druntime-test-shared";
 
   checkPhase = ''
     # Build default lib test runners
@@ -154,12 +127,76 @@ stdenv.mkDerivation (finalAttrs: {
     find $out/bin -type f -exec ${removeReferencesTo}/bin/remove-references-to -t ${ldcBootstrap} '{}' +
   '';
 
+  # https://github.com/ldc-developers/ldc/issues/2497#issuecomment-459633746
+  additionalExceptions = lib.optionalString stdenv.hostPlatform.isDarwin "|druntime-test-shared";
   disallowedReferences = [ ldcBootstrap ];
+
+  fixNames = lib.optionalString stdenv.hostPlatform.isDarwin ''
+    fixDarwinDylibNames() {
+      local flags=()
+
+      for fn in "$@"; do
+        flags+=(-change "$(basename "$fn")" "$fn")
+      done
+
+      for fn in "$@"; do
+        if [ -L "$fn" ]; then continue; fi
+        echo "$fn: fixing dylib"
+        install_name_tool -id "$fn" "''${flags[@]}" "$fn"
+      done
+    }
+
+    fixDarwinDylibNames $(find "$(pwd)/lib" -name "*.dylib")
+    export DYLD_LIBRARY_PATH=$(pwd)/lib
+  '';
+
+  # https://issues.dlang.org/show_bug.cgi?id=19553
+  hardeningDisable = [ "fortify" ];
+  outputInclude = "include";
+  passthru.ldcBootstrap = ldcBootstrap;
+
+  passthru.tests =
+    let
+      ldc = finalAttrs.finalPackage;
+      helloWorld = stdenv.mkDerivation (finalAttrs: {
+        src = writeText "hello_world.d" ''
+          module hello_world;
+          import std.stdio;
+          void main() {
+            writeln("Hello, world!");
+          }
+        '';
+
+        buildInputs = [ ldc ];
+
+        buildPhase = ''
+          ldc2 ${lib.escapeShellArgs finalAttrs.dFlags} -of=test $src
+        '';
+
+        installPhase = ''
+          mkdir -p $out/bin
+          mv test $out/bin
+        '';
+
+        dFlags = [ ];
+        dontUnpack = true;
+        name = "ldc-hello-world";
+      });
+    in
+    {
+      # Without -shared, built binaries should not contain
+      # references to the compiler binaries.
+      no-references-to-compiler = helloWorld.overrideAttrs {
+        dFlags = [ "-g" ];
+        disallowedReferences = [ ldc ];
+      };
+    };
 
   meta = {
     description = "LLVM-based D compiler";
     homepage = "https://github.com/ldc-developers/ldc";
     changelog = "https://github.com/ldc-developers/ldc/releases/tag/v${finalAttrs.version}";
+
     # from https://github.com/ldc-developers/ldc/blob/master/LICENSE
     license = with lib.licenses; [
       bsd3
@@ -168,50 +205,19 @@ stdenv.mkDerivation (finalAttrs: {
       ncsa
       gpl2Plus
     ];
-    mainProgram = "ldc2";
+
     maintainers = with lib.maintainers; [
       lionello
       jtbx
     ];
+
     platforms = [
       "x86_64-linux"
       "i686-linux"
       "aarch64-linux"
       "aarch64-darwin"
     ];
-  };
 
-  passthru.ldcBootstrap = ldcBootstrap;
-  passthru.tests =
-    let
-      ldc = finalAttrs.finalPackage;
-      helloWorld = stdenv.mkDerivation (finalAttrs: {
-        name = "ldc-hello-world";
-        src = writeText "hello_world.d" ''
-          module hello_world;
-          import std.stdio;
-          void main() {
-            writeln("Hello, world!");
-          }
-        '';
-        dontUnpack = true;
-        buildInputs = [ ldc ];
-        dFlags = [ ];
-        buildPhase = ''
-          ldc2 ${lib.escapeShellArgs finalAttrs.dFlags} -of=test $src
-        '';
-        installPhase = ''
-          mkdir -p $out/bin
-          mv test $out/bin
-        '';
-      });
-    in
-    {
-      # Without -shared, built binaries should not contain
-      # references to the compiler binaries.
-      no-references-to-compiler = helloWorld.overrideAttrs {
-        disallowedReferences = [ ldc ];
-        dFlags = [ "-g" ];
-      };
-    };
+    mainProgram = "ldc2";
+  };
 })

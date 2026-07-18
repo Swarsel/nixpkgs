@@ -1,11 +1,11 @@
 {
   lib,
   stdenv,
-  udev,
-  ncurses,
-  pkg-config,
   fetchFromGitHub,
   autoreconfHook,
+  ncurses,
+  pkg-config,
+  udev,
 }:
 
 stdenv.mkDerivation {
@@ -19,17 +19,17 @@ stdenv.mkDerivation {
     hash = "sha256-y68bi62H7ErVekcs0RZUXPpW+QJ97sTQP4lajB9PsgU=";
   };
 
-  configureFlags = [ "--with-doxygen=no" ];
+  nativeBuildInputs = [
+    pkg-config
+    autoreconfHook
+  ];
 
   buildInputs = [
     udev
     ncurses
   ];
 
-  nativeBuildInputs = [
-    pkg-config
-    autoreconfHook
-  ];
+  configureFlags = [ "--with-doxygen=no" ];
 
   postInstallPhase = ''
     mkdir -p "$out/etc/X11/xorg.conf.d/"
@@ -37,11 +37,11 @@ stdenv.mkDerivation {
   '';
 
   meta = {
-    homepage = "https://xwiimote.github.io/xwiimote/";
     description = "Userspace utilities to control connected Nintendo Wii Remotes";
-    mainProgram = "xwiishow";
-    platforms = lib.platforms.linux;
+    homepage = "https://xwiimote.github.io/xwiimote/";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ pyrox0 ];
+    platforms = lib.platforms.linux;
+    mainProgram = "xwiishow";
   };
 }

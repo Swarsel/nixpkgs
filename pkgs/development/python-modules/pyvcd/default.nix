@@ -2,15 +2,14 @@
   lib,
   buildPythonPackage,
   fetchPypi,
+  pytestCheckHook,
   setuptools-scm,
   six,
-  pytestCheckHook,
 }:
 
 buildPythonPackage rec {
-  version = "0.4.1";
-  format = "setuptools";
   pname = "pyvcd";
+  version = "0.4.1";
 
   src = fetchPypi {
     inherit pname version;
@@ -18,16 +17,16 @@ buildPythonPackage rec {
   };
 
   buildInputs = [ setuptools-scm ];
-
   propagatedBuildInputs = [ six ];
-
   nativeCheckInputs = [ pytestCheckHook ];
+  format = "setuptools";
 
   meta = {
     description = "Python package for writing Value Change Dump (VCD) files";
     homepage = "https://github.com/SanDisk-Open-Source/pyvcd";
     changelog = "https://github.com/SanDisk-Open-Source/pyvcd/blob/${version}/CHANGELOG.rst";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       sb0
     ];

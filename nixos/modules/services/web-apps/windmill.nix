@@ -1,7 +1,7 @@
 {
   config,
-  pkgs,
   lib,
+  pkgs,
   ...
 }:
 
@@ -11,74 +11,71 @@ in
 {
   options.services.windmill = {
     enable = lib.mkEnableOption "windmill service";
-
     package = lib.mkPackageOption pkgs "windmill" { };
 
-    serverPort = lib.mkOption {
-      type = lib.types.port;
-      default = 8001;
-      description = "Port the windmill server listens on.";
-    };
-
-    lspPort = lib.mkOption {
-      type = lib.types.port;
-      default = 3001;
-      description = "Port the windmill lsp listens on.";
-    };
-
-    database = {
-      name = lib.mkOption {
-        type = lib.types.str;
-        # the simplest database setup is to have the database named like the user.
-        default = "windmill";
-        description = "Database name.";
-      };
-
-      user = lib.mkOption {
-        type = lib.types.str;
-        # the simplest database setup is to have the database user like the name.
-        default = "windmill";
-        description = "Database user.";
-      };
-
-      url = lib.mkOption {
-        type = lib.types.str;
-        default = "postgres://${config.services.windmill.database.name}?host=/var/run/postgresql";
-        defaultText = lib.literalExpression ''
-          "postgres://\$\{config.services.windmill.database.name}?host=/var/run/postgresql";
-        '';
-        description = "Database url. Note that any secret here would be world-readable. Use `services.windmill.database.urlPath` unstead to include secrets in the url.";
-      };
-
-      urlPath = lib.mkOption {
-        type = lib.types.nullOr lib.types.path;
-        description = ''
-          Path to the file containing the database url windmill should connect to. This is not deducted from database user and name as it might contain a secret
-        '';
-        default = null;
-        example = "config.age.secrets.DATABASE_URL_FILE.path";
-      };
-
-      createLocally = lib.mkOption {
-        type = lib.types.bool;
-        default = true;
-        description = "Whether to create a local database automatically.";
-      };
-    };
-
     baseUrl = lib.mkOption {
-      type = lib.types.str;
       default = "https://localhost:${toString config.services.windmill.serverPort}";
+
       defaultText = lib.literalExpression ''
         "https://localhost:\$\{toString config.services.windmill.serverPort}";
       '';
+
       description = ''
         The base url that windmill will be served on.
       '';
+
       example = "https://windmill.example.com";
+      type = lib.types.str;
+    };
+
+    database = {
+      createLocally = lib.mkOption {
+        default = true;
+        description = "Whether to create a local database automatically.";
+        type = lib.types.bool;
+      };
+
+      name = lib.mkOption {
+        # the simplest database setup is to have the database named like the user.
+        default = "windmill";
+        description = "Database name.";
+        type = lib.types.str;
+      };
+
+      url = lib.mkOption {
+        default = "postgres://${config.services.windmill.database.name}?host=/var/run/postgresql";
+
+        defaultText = lib.literalExpression ''
+          "postgres://\$\{config.services.windmill.database.name}?host=/var/run/postgresql";
+        '';
+
+        description = "Database url. Note that any secret here would be world-readable. Use `services.windmill.database.urlPath` unstead to include secrets in the url.";
+        type = lib.types.str;
+      };
+
+      urlPath = lib.mkOption {
+        default = null;
+
+        description = ''
+          Path to the file containing the database url windmill should connect to. This is not deducted from database user and name as it might contain a secret
+        '';
+
+        example = "config.age.secrets.DATABASE_URL_FILE.path";
+        type = lib.types.nullOr lib.types.path;
+      };
+
+      user = lib.mkOption {
+        # the simplest database setup is to have the database user like the name.
+        default = "windmill";
+        description = "Database user.";
+        type = lib.types.str;
+      };
     };
 
     logLevel = lib.mkOption {
+      default = "info";
+      description = "Log level";
+
       type = lib.types.enum [
         "error"
         "warn"
@@ -86,8 +83,18 @@ in
         "debug"
         "trace"
       ];
-      default = "info";
-      description = "Log level";
+    };
+
+    lspPort = lib.mkOption {
+      default = 3001;
+      description = "Port the windmill lsp listens on.";
+      type = lib.types.port;
+    };
+
+    serverPort = lib.mkOption {
+      default = 8001;
+      description = "Port the windmill server listens on.";
+      type = lib.types.port;
     };
   };
 
@@ -96,6 +103,7 @@ in
     assertions = [
       {
         assertion = cfg.database.createLocally -> cfg.database.name == cfg.database.user;
+
         message = ''
           Automatically provisioning the windmill database requires both database name and database user to be equal. '${cfg.database.name}' != '${cfg.database.user}'
           To fix this problem, assign the same value to both options services.windmill.database.{name,user}.
@@ -105,26 +113,14 @@ in
 
     services.postgresql = lib.optionalAttrs (cfg.database.createLocally) {
       enable = lib.mkDefault true;
-
       ensureDatabases = [ cfg.database.name ];
+
       ensureUsers = [
         {
-          name = cfg.database.user;
           ensureDBOwnership = true;
+          name = cfg.database.user;
         }
       ];
-    };
-
-    systemd.targets.windmill = {
-      description = "Windmill";
-      wantedBy = [ "multi-user.target" ];
-      requires =
-        [ ]
-        ++ (lib.optionals config.systemd.services.windmill-server.enable [ "windmill-server.service" ])
-        ++ (lib.optionals config.systemd.services.windmill-worker.enable [ "windmill-worker.service" ])
-        ++ (lib.optionals config.systemd.services.windmill-worker-native.enable [
-          "windmill-worker-native.service"
-        ]);
     };
 
     systemd.services =
@@ -132,10 +128,10 @@ in
         useUrlPath = (cfg.database.urlPath != null);
         serviceConfig = {
           DynamicUser = true;
-          # using the same user to simplify db connection
-          User = cfg.database.user;
           ExecStart = lib.getExe cfg.package;
           Restart = "always";
+          # using the same user to simplify db connection
+          User = cfg.database.user;
         }
         // lib.optionalAttrs useUrlPath {
           LoadCredential = [
@@ -152,16 +148,8 @@ in
       in
       {
         windmill-initdb = lib.mkIf cfg.database.createLocally {
-          description = "Windmill database setup";
-          requires = [ "postgresql.target" ];
           after = [ "postgresql.target" ];
-          requiredBy =
-            [ ]
-            ++ (lib.optionals config.systemd.services.windmill-server.enable [ "windmill-server.service" ])
-            ++ (lib.optionals config.systemd.services.windmill-worker.enable [ "windmill-worker.service" ])
-            ++ (lib.optionals config.systemd.services.windmill-worker-native.enable [
-              "windmill-worker-native.service"
-            ]);
+
           before =
             [ ]
             ++ (lib.optionals config.systemd.services.windmill-server.enable [ "windmill-server.service" ])
@@ -170,7 +158,19 @@ in
               "windmill-worker-native.service"
             ]);
 
+          description = "Windmill database setup";
           path = [ config.services.postgresql.package ];
+
+          requiredBy =
+            [ ]
+            ++ (lib.optionals config.systemd.services.windmill-server.enable [ "windmill-server.service" ])
+            ++ (lib.optionals config.systemd.services.windmill-worker.enable [ "windmill-worker.service" ])
+            ++ (lib.optionals config.systemd.services.windmill-worker-native.enable [
+              "windmill-worker-native.service"
+            ]);
+
+          requires = [ "postgresql.target" ];
+
           # coming from https://github.com/windmill-labs/windmill/blob/main/init-db-as-superuser.sql
           # modified to not grant privileges on all tables
           # create role windmill_user and windmill_admin only if they don't exist
@@ -203,70 +203,86 @@ in
           '';
 
           serviceConfig = {
-            Type = "oneshot";
+            ProtectHome = "read-only";
+            ProtectSystem = "strict";
             RemainAfterExit = true;
+            Type = "oneshot";
             # Superuser because of required permission CREATE ROLE
             User = "postgres";
-
-            ProtectSystem = "strict";
-            ProtectHome = "read-only";
           };
         };
 
         windmill-server = {
-          description = "Windmill server";
           after = [ "network.target" ];
+          description = "Windmill server";
+
+          environment = {
+            MODE = "server";
+            PORT = toString cfg.serverPort;
+            RUST_LOG = cfg.logLevel;
+            WM_BASE_URL = cfg.baseUrl;
+          }
+          // db_url_envs;
+
           partOf = [ "windmill.target" ];
 
           serviceConfig = serviceConfig // {
             StateDirectory = "windmill";
           };
-
-          environment = {
-            PORT = toString cfg.serverPort;
-            WM_BASE_URL = cfg.baseUrl;
-            RUST_LOG = cfg.logLevel;
-            MODE = "server";
-          }
-          // db_url_envs;
         };
 
         windmill-worker = {
-          description = "Windmill worker";
           after = [ "network.target" ];
+          description = "Windmill worker";
+
+          environment = {
+            KEEP_JOB_DIR = "false";
+            MODE = "worker";
+            RUST_LOG = cfg.logLevel;
+            WM_BASE_URL = cfg.baseUrl;
+            WORKER_GROUP = "default";
+          }
+          // db_url_envs;
+
           partOf = [ "windmill.target" ];
 
           serviceConfig = serviceConfig // {
             StateDirectory = "windmill-worker";
           };
-
-          environment = {
-            WM_BASE_URL = cfg.baseUrl;
-            RUST_LOG = cfg.logLevel;
-            MODE = "worker";
-            WORKER_GROUP = "default";
-            KEEP_JOB_DIR = "false";
-          }
-          // db_url_envs;
         };
 
         windmill-worker-native = {
-          description = "Windmill worker native";
           after = [ "network.target" ];
+          description = "Windmill worker native";
+
+          environment = {
+            MODE = "worker";
+            RUST_LOG = cfg.logLevel;
+            WM_BASE_URL = cfg.baseUrl;
+            WORKER_GROUP = "native";
+          }
+          // db_url_envs;
+
           partOf = [ "windmill.target" ];
 
           serviceConfig = serviceConfig // {
             StateDirectory = "windmill-worker-native";
           };
-
-          environment = {
-            WM_BASE_URL = cfg.baseUrl;
-            RUST_LOG = cfg.logLevel;
-            MODE = "worker";
-            WORKER_GROUP = "native";
-          }
-          // db_url_envs;
         };
       };
+
+    systemd.targets.windmill = {
+      description = "Windmill";
+
+      requires =
+        [ ]
+        ++ (lib.optionals config.systemd.services.windmill-server.enable [ "windmill-server.service" ])
+        ++ (lib.optionals config.systemd.services.windmill-worker.enable [ "windmill-worker.service" ])
+        ++ (lib.optionals config.systemd.services.windmill-worker-native.enable [
+          "windmill-worker-native.service"
+        ]);
+
+      wantedBy = [ "multi-user.target" ];
+    };
   };
 }

@@ -1,11 +1,11 @@
 {
   lib,
   stdenv,
-  rustPlatform,
   fetchFromGitHub,
   nix-update-script,
-  versionCheckHook,
   protobuf,
+  rustPlatform,
+  versionCheckHook,
 }:
 rustPlatform.buildRustPackage rec {
   pname = "chirpstack-udp-forwarder";
@@ -18,14 +18,10 @@ rustPlatform.buildRustPackage rec {
     hash = "sha256-hGqkeDH/LHqBhpZQsss0jzMIQxhkryKucaLuWJtmseI=";
   };
 
-  cargoHash = "sha256-WkFQXOY6JVjpw8UsrKgRgR6UzRBNOIg56zBqdcM9LuE=";
-
   nativeBuildInputs = [ protobuf ];
-
-  nativeInstallCheckInputs = [ versionCheckHook ];
-
+  cargoHash = "sha256-WkFQXOY6JVjpw8UsrKgRgR6UzRBNOIg56zBqdcM9LuE=";
   doInstallCheck = true;
-
+  nativeInstallCheckInputs = [ versionCheckHook ];
   passthru.updateScript = nix-update-script { };
 
   meta = {

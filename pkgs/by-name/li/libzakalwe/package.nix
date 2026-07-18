@@ -1,6 +1,6 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitLab,
   unstableGitUpdater,
 }:
@@ -31,20 +31,16 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   strictDeps = true;
-
-  enableParallelBuilding = true;
-
   env.NIX_CFLAGS_COMPILE = lib.optionalString stdenv.hostPlatform.isDarwin "-D_DARWIN_C_SOURCE";
-
   # Darwin: Assertion failed at thread_util_test_0:52: tr != NULL
   doCheck = stdenv.buildPlatform.canExecute stdenv.hostPlatform && (!stdenv.hostPlatform.isDarwin);
-
-  installFlags = [ "PREFIX=$(out)" ];
 
   preInstall = ''
     mkdir -p $out/lib
   '';
 
+  enableParallelBuilding = true;
+  installFlags = [ "PREFIX=$(out)" ];
   passthru.updateScript = unstableGitUpdater { tagPrefix = "v"; };
 
   meta = {

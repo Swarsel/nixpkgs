@@ -1,29 +1,24 @@
 {
   lib,
   stdenv,
-  symlinkJoin,
-  buildPythonPackage,
   fetchFromGitHub,
-  gitUpdater,
-
+  buildPythonPackage,
   cmake,
-
+  gitUpdater,
   # build-system
   ninja,
   scikit-build-core,
+  scipy,
   setuptools,
-
+  symlinkJoin,
   # dependencies
   torch,
-  scipy,
   trove-classifiers,
-
-  cudaSupport ? torch.cudaSupport,
   cudaPackages ? torch.cudaPackages,
-  rocmSupport ? torch.rocmSupport,
-  rocmPackages ? torch.rocmPackages,
-
+  cudaSupport ? torch.cudaSupport,
   rocmGpuTargets ? rocmPackages.clr.localGpuTargets or rocmPackages.clr.gpuTargets,
+  rocmPackages ? torch.rocmPackages,
+  rocmSupport ? torch.rocmSupport,
 }:
 
 let
@@ -55,6 +50,7 @@ let
 
   cuda-native-redist = symlinkJoin {
     name = "cuda-native-redist-${cudaMajorMinorVersion}";
+
     paths =
       with cudaPackages;
       [
@@ -74,7 +70,6 @@ in
 buildPythonPackage (finalAttrs: {
   pname = "bitsandbytes";
   version = "0.49.2";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "bitsandbytes-foundation";
@@ -121,12 +116,6 @@ buildPythonPackage (finalAttrs: {
     rocmPackages.clr
   ];
 
-  build-system = [
-    ninja
-    scikit-build-core
-    setuptools
-  ];
-
   buildInputs =
     lib.optional cudaSupport cuda-redist
     ++ lib.optionals rocmSupport (
@@ -166,6 +155,7 @@ buildPythonPackage (finalAttrs: {
 
   env = lib.optionalAttrs cudaSupport {
     CUDA_HOME = cuda-native-redist;
+
     NVCC_PREPEND_FLAGS = toString [
       "-I${cuda-native-redist}/include"
       "-L${cuda-native-redist}/lib"
@@ -177,14 +167,21 @@ buildPythonPackage (finalAttrs: {
     cd .. # leave /build/source/build
   '';
 
+  doCheck = false; # tests require CUDA and also GPU access
+
+  build-system = [
+    ninja
+    scikit-build-core
+    setuptools
+  ];
+
   dependencies = [
     scipy
     torch
     trove-classifiers
   ];
 
-  doCheck = false; # tests require CUDA and also GPU access
-
+  pyproject = true;
   pythonImportsCheck = [ "bitsandbytes" ];
 
   passthru = {
@@ -206,6 +203,7 @@ buildPythonPackage (finalAttrs: {
     homepage = "https://github.com/bitsandbytes-foundation/bitsandbytes";
     changelog = "https://github.com/bitsandbytes-foundation/bitsandbytes/releases/tag/${finalAttrs.src.tag}";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       bcdarwin
       jk

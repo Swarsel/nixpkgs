@@ -1,7 +1,7 @@
 {
+  lib,
   stdenv,
   fetchFromGitHub,
-  lib,
   zlib,
 }:
 
@@ -17,22 +17,19 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   buildInputs = [ zlib ];
-
-  # Do not include --enable-static and --disable-shared flags during static compilation
-  dontAddStaticConfigureFlags = true;
-
-  # Don't add --build and --host flags as they are not supported
-  configurePlatforms = lib.optionals stdenv.hostPlatform.isStatic [ ];
-
   # ./configure script expects --static not standard --enable-static
   configureFlags = lib.optional stdenv.hostPlatform.isStatic "--static";
-
   # 'make check' requires internet connection
   doCheck = true;
   checkTarget = "test";
+  # Don't add --build and --host flags as they are not supported
+  configurePlatforms = lib.optionals stdenv.hostPlatform.isStatic [ ];
+  # Do not include --enable-static and --disable-shared flags during static compilation
+  dontAddStaticConfigureFlags = true;
 
   meta = {
     description = "Tiniest x86-64-linux emulator";
+
     longDescription = ''
       blink is a virtual machine that runs x86-64-linux programs on different operating systems and hardware architectures. It's designed to do the same thing as the qemu-x86_64 command, except that
       - blink is much smaller in size than qemu-x86_64

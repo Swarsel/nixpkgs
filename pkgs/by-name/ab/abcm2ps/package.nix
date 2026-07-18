@@ -1,11 +1,11 @@
 {
   lib,
   stdenv,
-  fetchfossil,
   docutils,
-  pkg-config,
+  fetchfossil,
   freetype,
   pango,
+  pkg-config,
   testers,
 }:
 
@@ -19,10 +19,6 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-2nmKjLEZ9dTk+oE16gBm9iheVlLvQFvcdc5FPcxaq6M=";
   };
 
-  configureFlags = [
-    "--INSTALL=install"
-  ];
-
   nativeBuildInputs = [
     docutils
     pkg-config
@@ -33,19 +29,23 @@ stdenv.mkDerivation (finalAttrs: {
     pango
   ];
 
+  configureFlags = [
+    "--INSTALL=install"
+  ];
+
   passthru.tests = {
     version = testers.testVersion {
-      package = finalAttrs.finalPackage;
       command = "abcm2ps -V";
+      package = finalAttrs.finalPackage;
     };
   };
 
   meta = {
+    description = "Command line program which converts ABC to music sheet in PostScript or SVG format";
     homepage = "http://moinejf.free.fr/";
     license = lib.licenses.lgpl3Plus;
-    description = "Command line program which converts ABC to music sheet in PostScript or SVG format";
-    platforms = lib.platforms.unix;
     maintainers = with lib.maintainers; [ dotlambda ];
+    platforms = lib.platforms.unix;
     mainProgram = "abcm2ps";
   };
 })

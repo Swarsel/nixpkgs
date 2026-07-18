@@ -1,10 +1,10 @@
 {
   lib,
-  wrapPython,
-  python,
   stdenv,
-  dnf4,
   dnf-plugins-core,
+  dnf4,
+  python,
+  wrapPython,
   plugins ? [ dnf-plugins-core ],
 }:
 let
@@ -14,8 +14,8 @@ let
 in
 
 stdenv.mkDerivation {
-  pname = "dnf4";
   inherit (dnf4-unwrapped) version;
+  pname = "dnf4";
 
   outputs = [
     "out"
@@ -23,15 +23,8 @@ stdenv.mkDerivation {
     "py"
   ];
 
-  dontUnpack = true;
-
   nativeBuildInputs = [ wrapPython ];
-
   propagatedBuildInputs = [ dnf4-unwrapped ] ++ plugins;
-
-  makeWrapperArgs = lib.optional (
-    plugins != [ ]
-  ) ''--add-flags "--setopt=pluginpath=${lib.concatStringsSep "," pluginPaths}"'';
 
   installPhase = ''
     runHook preInstall
@@ -46,6 +39,12 @@ stdenv.mkDerivation {
   postFixup = ''
     wrapPythonPrograms
   '';
+
+  dontUnpack = true;
+
+  makeWrapperArgs = lib.optional (
+    plugins != [ ]
+  ) ''--add-flags "--setopt=pluginpath=${lib.concatStringsSep "," pluginPaths}"'';
 
   passthru = {
     unwrapped = dnf4-unwrapped;

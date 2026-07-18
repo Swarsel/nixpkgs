@@ -1,20 +1,23 @@
 {
   lib,
   stdenv,
-  windows,
   autoreconfHook,
   mingw_w64_headers,
+  windows,
   crt ? stdenv.hostPlatform.libc,
 }:
 
 stdenv.mkDerivation {
-  pname = "mingw-w64";
   inherit (mingw_w64_headers) version src meta;
+  pname = "mingw-w64";
 
   outputs = [
     "out"
     "dev"
   ];
+
+  nativeBuildInputs = [ autoreconfHook ];
+  buildInputs = [ mingw_w64_headers ];
 
   configureFlags = [
     (lib.enableFeature true "idl")
@@ -29,8 +32,6 @@ stdenv.mkDerivation {
 
   enableParallelBuilding = true;
 
-  nativeBuildInputs = [ autoreconfHook ];
-  buildInputs = [ mingw_w64_headers ];
   hardeningDisable = [
     "stackprotector"
     "fortify"

@@ -3,10 +3,10 @@
   stdenv,
   fetchFromGitHub,
   fetchpatch,
-  libsForQt5,
-  writableTmpDirAsHomeHook,
   ffmpeg-headless,
+  libsForQt5,
   nix-update-script,
+  writableTmpDirAsHomeHook,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -22,8 +22,8 @@ stdenv.mkDerivation (finalAttrs: {
 
   patches = [
     (fetchpatch {
-      url = "https://github.com/ilia3101/MLV-App/commit/b7643b1031955f085ade30e27974ddd889a4641f.patch";
       hash = "sha256-DQkoB+fjshWDLzKouhEQXzpqn78WL+eqo5oTfE9ltEk=";
+      url = "https://github.com/ilia3101/MLV-App/commit/b7643b1031955f085ade30e27974ddd889a4641f.patch";
     })
   ];
 
@@ -32,26 +32,19 @@ stdenv.mkDerivation (finalAttrs: {
       --replace-fail '"ffmpeg"' '"${lib.getExe ffmpeg-headless}"'
   '';
 
-  qmakeFlags = [ "MLVApp.pro" ];
-
-  preConfigure = ''
-    cd platform/qt/
-  '';
-
   nativeBuildInputs = [
     libsForQt5.wrapQtAppsHook
     libsForQt5.qmake
     writableTmpDirAsHomeHook
   ];
+
   buildInputs = [
     libsForQt5.qtmultimedia
     libsForQt5.qtbase
   ];
 
-  dontWrapQtApps = true;
-
-  preFixup = ''
-    wrapQtApp "$out/bin/mlvapp"
+  preConfigure = ''
+    cd platform/qt/
   '';
 
   installPhase = ''
@@ -62,16 +55,22 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  preFixup = ''
+    wrapQtApp "$out/bin/mlvapp"
+  '';
+
+  dontWrapQtApps = true;
+  qmakeFlags = [ "MLVApp.pro" ];
   passthru.updateScript = nix-update-script { };
 
   meta = {
     description = "All in one MLV processing app that is pretty great";
     homepage = "https://mlv.app";
-    downloadPage = "https://github.com/ilia3101/MLV-App";
     changelog = "https://github.com/ilia3101/MLV-App/releases/tag/QTv${finalAttrs.version}";
     license = lib.licenses.gpl3Only;
     maintainers = [ ];
     platforms = [ "x86_64-linux" ];
     mainProgram = "mlvapp";
+    downloadPage = "https://github.com/ilia3101/MLV-App";
   };
 })

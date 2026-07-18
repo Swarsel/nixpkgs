@@ -1,13 +1,13 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchurl,
-  makeWrapper,
-  git,
   coreutils,
-  jdk,
+  git,
   gnuplot,
   graphviz,
+  jdk,
+  makeWrapper,
 }:
 stdenv.mkDerivation (finalAttrs: {
   pname = "maelstrom";
@@ -17,6 +17,10 @@ stdenv.mkDerivation (finalAttrs: {
     url = "https://github.com/jepsen-io/maelstrom/releases/download/v${finalAttrs.version}/maelstrom.tar.bz2";
     hash = "sha256-MB7HHWsSrw12XttBP1z1qhBGtWCb1OMTdqC1SVSOV5k=";
   };
+
+  nativeBuildInputs = [
+    makeWrapper
+  ];
 
   installPhase = ''
     runHook preInstall
@@ -33,10 +37,6 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
-  nativeBuildInputs = [
-    makeWrapper
-  ];
-
   runtimeDependencies = [
     git
     coreutils
@@ -49,10 +49,10 @@ stdenv.mkDerivation (finalAttrs: {
     description = "Workbench for writing toy implementations of distributed systems";
     homepage = "https://github.com/jepsen-io/maelstrom";
     changelog = "https://github.com/jepsen-io/maelstrom/releases/tag/v${finalAttrs.version}";
-    mainProgram = "maelstrom";
-    sourceProvenance = [ lib.sourceTypes.binaryBytecode ];
     license = lib.licenses.epl10;
+    sourceProvenance = [ lib.sourceTypes.binaryBytecode ];
     maintainers = [ lib.maintainers.emilioziniades ];
     platforms = lib.platforms.linux ++ lib.platforms.darwin;
+    mainProgram = "maelstrom";
   };
 })

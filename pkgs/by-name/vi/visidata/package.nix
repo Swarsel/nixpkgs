@@ -1,20 +1,19 @@
 {
   lib,
-  python3Packages,
+  stdenv,
   fetchFromGitHub,
   # other
   gitMinimal,
-  withPcap ? true,
-  withXclip ? stdenv.hostPlatform.isLinux,
-  xclip,
+  python3Packages,
   testers,
   visidata,
-  stdenv,
+  xclip,
+  withPcap ? true,
+  withXclip ? stdenv.hostPlatform.isLinux,
 }:
 python3Packages.buildPythonApplication (finalAttrs: {
   pname = "visidata";
   version = "3.3";
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "saulpw";
@@ -87,12 +86,12 @@ python3Packages.buildPythonApplication (finalAttrs: {
     )
     ++ lib.optional withXclip xclip;
 
+  # check phase uses the output bin, which is not possible when cross-compiling
+  doCheck = stdenv.buildPlatform.canExecute stdenv.hostPlatform;
+
   nativeCheckInputs = [
     gitMinimal
   ];
-
-  # check phase uses the output bin, which is not possible when cross-compiling
-  doCheck = stdenv.buildPlatform.canExecute stdenv.hostPlatform;
 
   checkPhase = ''
     runHook preCheck
@@ -118,27 +117,31 @@ python3Packages.buildPythonApplication (finalAttrs: {
     bash dev/test.sh
     runHook postCheck
   '';
+
   postInstall = ''
     python dev/zsh-completion.py
     install -Dm644 _visidata -t $out/share/zsh/site-functions
   '';
 
+  format = "setuptools";
   pythonImportsCheck = [ "visidata" ];
 
   passthru.tests.version = testers.testVersion {
-    package = visidata;
     version = "v${finalAttrs.version}";
+    package = visidata;
   };
 
   meta = {
     description = "Interactive terminal multitool for tabular data";
-    mainProgram = "visidata";
+    homepage = "https://visidata.org/";
+    changelog = "https://github.com/saulpw/visidata/blob/v${finalAttrs.version}/CHANGELOG.md";
     license = lib.licenses.gpl3;
+
     maintainers = with lib.maintainers; [
       raskin
       markus1189
     ];
-    homepage = "https://visidata.org/";
-    changelog = "https://github.com/saulpw/visidata/blob/v${finalAttrs.version}/CHANGELOG.md";
+
+    mainProgram = "visidata";
   };
 })

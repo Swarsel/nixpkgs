@@ -1,19 +1,20 @@
 {
-  writeShellApplication,
   lib,
-  nix,
-  nix-prefetch-git,
-  nix-update,
   curl,
   git,
   gnugrep,
   gnused,
   jq,
+  nix,
+  nix-prefetch-git,
+  nix-update,
+  writeShellApplication,
   yq,
 }:
 
 lib.getExe (writeShellApplication {
   name = "update-vaultwarden";
+
   runtimeInputs = [
     curl
     git

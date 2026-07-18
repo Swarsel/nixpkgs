@@ -2,30 +2,30 @@
   lib,
   stdenv,
   fetchurl,
-  pkg-config,
+  dconf,
   gettext,
+  gitUpdater,
+  gtk3,
   isocodes,
   libstartup_notification,
-  gtk3,
-  dconf,
+  pkg-config,
   wrapGAppsHook3,
-  gitUpdater,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
   pname = "mate-desktop";
   version = "1.28.2";
 
+  src = fetchurl {
+    url = "https://pub.mate-desktop.org/releases/${lib.versions.majorMinor finalAttrs.version}/mate-desktop-${finalAttrs.version}.tar.xz";
+    sha256 = "MrtLeSAUs5HB4biunBioK01EdlCYS0y6fSjpVWSWSqI=";
+  };
+
   outputs = [
     "out"
     "dev"
     "man"
   ];
-
-  src = fetchurl {
-    url = "https://pub.mate-desktop.org/releases/${lib.versions.majorMinor finalAttrs.version}/mate-desktop-${finalAttrs.version}.tar.xz";
-    sha256 = "MrtLeSAUs5HB4biunBioK01EdlCYS0y6fSjpVWSWSqI=";
-  };
 
   nativeBuildInputs = [
     pkg-config
@@ -46,9 +46,9 @@ stdenv.mkDerivation (finalAttrs: {
   enableParallelBuilding = true;
 
   passthru.updateScript = gitUpdater {
-    url = "https://git.mate-desktop.org/mate-desktop";
     odd-unstable = true;
     rev-prefix = "v";
+    url = "https://git.mate-desktop.org/mate-desktop";
   };
 
   meta = {

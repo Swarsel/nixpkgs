@@ -8,7 +8,6 @@
 buildPythonPackage rec {
   pname = "pillowfight";
   version = "0.4";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
@@ -16,6 +15,7 @@ buildPythonPackage rec {
   };
 
   propagatedBuildInputs = [ pillow ];
+  format = "setuptools";
 
   meta = {
     description = "Eases the transition from PIL to Pillow for Python packages";

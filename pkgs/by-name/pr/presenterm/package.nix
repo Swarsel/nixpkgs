@@ -1,12 +1,12 @@
 {
   lib,
   stdenv,
-  rustPlatform,
   fetchFromGitHub,
-  makeBinaryWrapper,
   lld,
-  versionCheckHook,
+  makeBinaryWrapper,
   nix-update-script,
+  rustPlatform,
+  versionCheckHook,
 }:
 let
   inherit (stdenv.hostPlatform) isDarwin isx86_64;
@@ -41,10 +41,11 @@ rustPlatform.buildRustPackage (finalAttrs: {
     "--skip=external_snippet"
   ];
 
+  doInstallCheck = true;
+
   nativeInstallCheckInputs = [
     versionCheckHook
   ];
-  doInstallCheck = true;
 
   passthru = {
     updateScript = nix-update-script { };
@@ -52,13 +53,15 @@ rustPlatform.buildRustPackage (finalAttrs: {
 
   meta = {
     description = "Terminal based slideshow tool";
-    changelog = "https://github.com/mfontanini/presenterm/releases/tag/v${finalAttrs.version}";
     homepage = "https://github.com/mfontanini/presenterm";
+    changelog = "https://github.com/mfontanini/presenterm/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.bsd2;
+
     maintainers = with lib.maintainers; [
       GaetanLepage
       mikaelfangel
     ];
+
     mainProgram = "presenterm";
   };
 })

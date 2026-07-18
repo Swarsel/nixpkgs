@@ -1,9 +1,9 @@
 {
   lib,
+  fetchFromGitHub,
   aiohttp,
   async-timeout,
   buildPythonPackage,
-  fetchFromGitHub,
   pytest-aiohttp,
   pytestCheckHook,
 }:
@@ -11,7 +11,6 @@
 buildPythonPackage rec {
   pname = "moonraker-api";
   version = "2.0.6";
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "cmroche";
@@ -36,6 +35,7 @@ buildPythonPackage rec {
     pytestCheckHook
   ];
 
+  format = "setuptools";
   pythonImportsCheck = [ "moonraker_api" ];
 
   meta = {

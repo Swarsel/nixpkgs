@@ -1,16 +1,15 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  poetry-core,
   bidict,
   bubop,
+  buildPythonPackage,
+  poetry-core,
 }:
 
 buildPythonPackage rec {
   pname = "item-synchronizer";
   version = "1.1.5";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "bergercookie";
@@ -21,17 +20,18 @@ buildPythonPackage rec {
 
   nativeBuildInputs = [ poetry-core ];
 
-  pythonRelaxDeps = [
-    "bidict"
-    "bubop"
-  ];
-
   propagatedBuildInputs = [
     bidict
     bubop
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "item_synchronizer" ];
+
+  pythonRelaxDeps = [
+    "bidict"
+    "bubop"
+  ];
 
   meta = {
     description = "";

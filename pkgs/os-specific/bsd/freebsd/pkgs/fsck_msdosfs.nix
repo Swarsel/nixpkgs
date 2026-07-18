@@ -1,14 +1,14 @@
 { lib, mkDerivation }:
 mkDerivation {
-  path = "sbin/fsck_msdosfs";
+  NIX_CFLAGS_COMPILE = [
+    "-Wno-unterminated-string-initialization"
+  ];
+
   extraPaths = [
     "sbin/mount"
     "sbin/fsck"
   ];
 
-  NIX_CFLAGS_COMPILE = [
-    "-Wno-unterminated-string-initialization"
-  ];
-
+  path = "sbin/fsck_msdosfs";
   meta.platforms = lib.platforms.freebsd;
 }

@@ -1,29 +1,29 @@
 {
   lib,
   fetchFromGitHub,
-  rustPlatform,
-  cargo-tauri,
-  nodejs,
-  pnpm_11,
-  fetchPnpmDeps,
-  pnpmConfigHook,
-  pkg-config,
-  wrapGAppsHook3,
-  desktop-file-utils,
-  webkitgtk_4_1,
+  bzip2,
   cairo,
+  cargo-tauri,
+  desktop-file-utils,
+  fetchPnpmDeps,
+  fontconfig,
   gdk-pixbuf,
   glib,
   glib-networking,
+  gst_all_1,
   gtk3,
   libsoup_3,
-  pango,
-  openssl,
-  bzip2,
-  gst_all_1,
   makeDesktopItem,
-  fontconfig,
   nix-update-script,
+  nodejs,
+  openssl,
+  pango,
+  pkg-config,
+  pnpmConfigHook,
+  pnpm_11,
+  rustPlatform,
+  webkitgtk_4_1,
+  wrapGAppsHook3,
 }:
 rustPlatform.buildRustPackage (finalAttrs: {
   pname = "deadlock-mod-manager";
@@ -36,10 +36,9 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-tSOSjapAlAd63Xkc+MNFVKn1k4+AtW3w3GhicRTV9Pg=";
   };
 
-  cargoRoot = "apps/desktop";
-  buildAndTestSubdir = finalAttrs.cargoRoot;
-
-  cargoHash = "sha256-x0lhn8nAV9xTgWbRAabJscATSCNpkKpzWvdnuZ4BEvw=";
+  patches = [
+    ./no-updater-artifacts.patch
+  ];
 
   nativeBuildInputs = [
     rustPlatform.cargoSetupHook
@@ -69,23 +68,7 @@ rustPlatform.buildRustPackage (finalAttrs: {
     gst_all_1.gst-plugins-bad
   ];
 
-  pnpmRoot = ".";
-  pnpmDeps = fetchPnpmDeps {
-    inherit (finalAttrs)
-      pname
-      version
-      src
-      ;
-    pnpm = pnpm_11;
-    fetcherVersion = 4;
-    sourceRoot = "source";
-    hash = "sha256-ZxlP6zOwY9Fxa4BCqnUoCmci3lviHn7H3HU5SnmdrSU=";
-  };
-
-  patches = [
-    ./no-updater-artifacts.patch
-  ];
-
+  cargoHash = "sha256-x0lhn8nAV9xTgWbRAabJscATSCNpkKpzWvdnuZ4BEvw=";
   env.VITE_API_URL = "https://api.deadlockmods.app";
 
   checkFlags = [
@@ -107,21 +90,40 @@ rustPlatform.buildRustPackage (finalAttrs: {
     )
   '';
 
+  buildAndTestSubdir = finalAttrs.cargoRoot;
+  cargoRoot = "apps/desktop";
+
   desktopItems = [
     (makeDesktopItem {
-      desktopName = "deadlock-mod-manager";
-      name = "Deadlock Mod Manager";
-      exec = "deadlock-mod-manager %u";
-      terminal = false;
-      type = "Application";
-      icon = "deadlock-mod-manager";
-      mimeTypes = [ "x-scheme-handler/deadlock-mod-manager" ];
       categories = [
         "Utility"
         "Game"
       ];
+
+      desktopName = "deadlock-mod-manager";
+      exec = "deadlock-mod-manager %u";
+      icon = "deadlock-mod-manager";
+      mimeTypes = [ "x-scheme-handler/deadlock-mod-manager" ];
+      name = "Deadlock Mod Manager";
+      terminal = false;
+      type = "Application";
     })
   ];
+
+  pnpmDeps = fetchPnpmDeps {
+    inherit (finalAttrs)
+      pname
+      version
+      src
+      ;
+
+    fetcherVersion = 4;
+    hash = "sha256-ZxlP6zOwY9Fxa4BCqnUoCmci3lviHn7H3HU5SnmdrSU=";
+    pnpm = pnpm_11;
+    sourceRoot = "source";
+  };
+
+  pnpmRoot = ".";
 
   passthru = {
     updateScript = nix-update-script { };
@@ -131,10 +133,12 @@ rustPlatform.buildRustPackage (finalAttrs: {
     description = "Mod manager for the Valve game Deadlock";
     homepage = "https://github.com/deadlock-mod-manager/deadlock-mod-manager";
     license = lib.licenses.gpl3Plus;
+
     maintainers = with lib.maintainers; [
       mistyttm
       schromp
     ];
+
     platforms = lib.platforms.linux;
     mainProgram = "deadlock-mod-manager";
   };

@@ -3,12 +3,12 @@
   xdg-user-dirs,
 }:
 
-{ version, src, ... }:
+{ src, version, ... }:
 
 stdenv.mkDerivation rec {
-  pname = "xdg_directories";
   inherit version src;
   inherit (src) passthru;
+  pname = "xdg_directories";
 
   postPatch = ''
     substituteInPlace ./lib/xdg_directories.dart \

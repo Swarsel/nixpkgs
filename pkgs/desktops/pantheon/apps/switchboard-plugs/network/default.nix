@@ -2,21 +2,21 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  nix-update-script,
-  meson,
-  ninja,
-  pkg-config,
-  replaceVars,
-  vala,
-  libadwaita,
-  libgee,
   gettext,
   granite7,
   gtk4,
+  libadwaita,
+  libgee,
+  libnma-gtk4,
+  meson,
   networkmanager,
   networkmanagerapplet,
-  libnma-gtk4,
+  ninja,
+  nix-update-script,
+  pkg-config,
+  replaceVars,
   switchboard,
+  vala,
 }:
 
 stdenv.mkDerivation rec {
@@ -36,6 +36,8 @@ stdenv.mkDerivation rec {
     })
   ];
 
+  strictDeps = true;
+
   nativeBuildInputs = [
     gettext
     meson
@@ -53,8 +55,6 @@ stdenv.mkDerivation rec {
     libnma-gtk4
     switchboard
   ];
-
-  strictDeps = true;
 
   passthru = {
     updateScript = nix-update-script { };

@@ -11,19 +11,19 @@ in
 {
   options.services.crossmacro = {
     enable = lib.mkEnableOption "CrossMacro, a cross-platform mouse and keyboard macro application";
-
     package = lib.mkPackageOption pkgs "crossmacro" { };
-
     daemonPackage = lib.mkPackageOption pkgs "crossmacro-daemon" { };
 
     users = lib.mkOption {
-      type = lib.types.listOf lib.types.str;
       default = [ ];
+      description = "List of users granted permission to use CrossMacro.";
+
       example = [
         "alice"
         "bob"
       ];
-      description = "List of users granted permission to use CrossMacro.";
+
+      type = lib.types.listOf lib.types.str;
     };
   };
 
@@ -35,8 +35,13 @@ in
       }
     ];
 
-    environment.systemPackages = [ cfg.package ];
+    environment.etc."polkit-1/actions/io.github.alper_han.crossmacro.policy".source =
+      "${cfg.daemonPackage}/share/polkit-1/actions/io.github.alper_han.crossmacro.policy";
 
+    environment.etc."polkit-1/rules.d/50-crossmacro.rules".source =
+      "${cfg.daemonPackage}/share/polkit-1/rules.d/50-crossmacro.rules";
+
+    environment.systemPackages = [ cfg.package ];
     hardware.uinput.enable = true;
 
     services.udev.extraRules = ''
@@ -44,61 +49,24 @@ in
       ACTION=="add|change", KERNEL=="event*", ATTRS{name}=="CrossMacro Virtual Input Device", ENV{LIBINPUT_ATTR_POINTER_ACCEL}="0"
     '';
 
-    environment.etc."polkit-1/actions/io.github.alper_han.crossmacro.policy".source =
-      "${cfg.daemonPackage}/share/polkit-1/actions/io.github.alper_han.crossmacro.policy";
-
-    environment.etc."polkit-1/rules.d/50-crossmacro.rules".source =
-      "${cfg.daemonPackage}/share/polkit-1/rules.d/50-crossmacro.rules";
-
-    users.groups.crossmacro = { };
-
-    users.users =
-      lib.listToAttrs (
-        map (user: {
-          name = user;
-          value = {
-            extraGroups = [ "crossmacro" ];
-          };
-        }) cfg.users
-      )
-      // {
-        crossmacro = {
-          isSystemUser = true;
-          group = "crossmacro";
-          extraGroups = [
-            "input"
-            "uinput"
-          ];
-          description = "CrossMacro Input Daemon User";
-        };
-      };
-
     systemd.services.crossmacro = {
-      description = "CrossMacro Input Daemon Service";
-      documentation = [ "https://github.com/alper-han/CrossMacro" ];
-
-      wantedBy = [ "multi-user.target" ];
       after = [
         "network.target"
         "dbus.service"
         "polkit.service"
       ];
-      wants = [
-        "dbus.service"
-        "polkit.service"
-      ];
 
+      description = "CrossMacro Input Daemon Service";
+      documentation = [ "https://github.com/alper-han/CrossMacro" ];
       path = [ pkgs.polkit ];
 
       serviceConfig = {
-        Type = "notify";
-        User = "crossmacro";
-        Group = "crossmacro";
-        ExecStart = lib.getExe cfg.daemonPackage;
-        Restart = "always";
-        RestartSec = 5;
-        RuntimeDirectory = "crossmacro";
-        RuntimeDirectoryMode = "0750";
+        AmbientCapabilities = [
+          "CAP_SYS_ADMIN"
+          "CAP_CHOWN"
+          "CAP_DAC_READ_SEARCH"
+        ];
+
         CapabilityBoundingSet = [
           "CAP_SYS_ADMIN"
           "CAP_SETUID"
@@ -106,13 +74,50 @@ in
           "CAP_CHOWN"
           "CAP_DAC_READ_SEARCH"
         ];
-        AmbientCapabilities = [
-          "CAP_SYS_ADMIN"
-          "CAP_CHOWN"
-          "CAP_DAC_READ_SEARCH"
-        ];
+
+        ExecStart = lib.getExe cfg.daemonPackage;
+        Group = "crossmacro";
+        Restart = "always";
+        RestartSec = 5;
+        RuntimeDirectory = "crossmacro";
+        RuntimeDirectoryMode = "0750";
+        Type = "notify";
+        User = "crossmacro";
       };
+
+      wantedBy = [ "multi-user.target" ];
+
+      wants = [
+        "dbus.service"
+        "polkit.service"
+      ];
     };
+
+    users.groups.crossmacro = { };
+
+    users.users =
+      lib.listToAttrs (
+        map (user: {
+          name = user;
+
+          value = {
+            extraGroups = [ "crossmacro" ];
+          };
+        }) cfg.users
+      )
+      // {
+        crossmacro = {
+          description = "CrossMacro Input Daemon User";
+
+          extraGroups = [
+            "input"
+            "uinput"
+          ];
+
+          group = "crossmacro";
+          isSystemUser = true;
+        };
+      };
   };
 
   meta.maintainers = with lib.maintainers; [ alper-han ];

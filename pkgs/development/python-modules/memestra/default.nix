@@ -1,8 +1,8 @@
 {
   lib,
+  beniget,
   buildPythonPackage,
   fetchPypi,
-  beniget,
   frilouz,
   gast,
   nbconvert,
@@ -13,7 +13,6 @@
 buildPythonPackage rec {
   pname = "memestra";
   version = "0.2.1";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
@@ -31,7 +30,7 @@ buildPythonPackage rec {
 
   # Tests are not detected and so the checkPhase fails
   doCheck = false;
-
+  format = "setuptools";
   pythonImportsCheck = [ "memestra" ];
 
   meta = {

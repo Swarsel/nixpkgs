@@ -1,7 +1,7 @@
 {
   lib,
-  melpaBuild,
   fetchFromGitHub,
+  melpaBuild,
   unstableGitUpdater,
 }:
 
@@ -19,8 +19,8 @@ melpaBuild {
   passthru.updateScript = unstableGitUpdater { };
 
   meta = {
-    homepage = "https://github.com/jdtsmith/eglot-booster";
     description = "Boost eglot using lsp-booster";
+    homepage = "https://github.com/jdtsmith/eglot-booster";
     license = lib.licenses.gpl3Only;
     maintainers = with lib.maintainers; [ mannerbund ];
   };

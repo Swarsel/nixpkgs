@@ -2,9 +2,9 @@
   lib,
   stdenv,
   fetchFromCodeberg,
-  rustPlatform,
   openssl,
   pkg-config,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -18,10 +18,9 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-KjH78yqfZoN24TBYyFZuxf7z9poRov0uFYQ8+eq9p/o=";
   };
 
-  cargoHash = "sha256-iF2hIeRnyYYyyg45c1E3NIR9m7oonY18JlGvFSXy/Lc=";
-
-  buildInputs = [ openssl ];
   nativeBuildInputs = [ pkg-config ];
+  buildInputs = [ openssl ];
+  cargoHash = "sha256-iF2hIeRnyYYyyg45c1E3NIR9m7oonY18JlGvFSXy/Lc=";
 
   meta = {
     description = "CLI Tool for Codeberg similar to gh and glab";

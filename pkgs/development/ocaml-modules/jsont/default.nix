@@ -1,21 +1,19 @@
 {
   lib,
+  brr,
+  buildTopkgPackage,
+  bytesrw,
+  cmdliner,
   fetchzip,
   topkg,
-  buildTopkgPackage,
   withBrr ? true,
-  brr,
   withBytesrw ? true,
-  bytesrw,
   withCmdliner ? true,
-  cmdliner,
 }:
 
 buildTopkgPackage rec {
   pname = "jsont";
   version = "0.2.0";
-
-  minimalOCamlVersion = "4.14.0";
 
   src = fetchzip {
     url = "https://erratique.ch/software/jsont/releases/jsont-${version}.tbz";
@@ -23,7 +21,6 @@ buildTopkgPackage rec {
   };
 
   buildInputs = lib.optional withCmdliner cmdliner;
-
   propagatedBuildInputs = lib.optional withBrr brr ++ lib.optional withBytesrw bytesrw;
 
   buildPhase = "${topkg.run} build ${
@@ -39,8 +36,11 @@ buildTopkgPackage rec {
     ]
   }";
 
+  minimalOCamlVersion = "4.14.0";
+
   meta = {
     description = "Declarative JSON data manipulation";
+
     longDescription = ''
       Jsont is an OCaml library for declarative JSON data manipulation. it
       provides:
@@ -56,6 +56,7 @@ buildTopkgPackage rec {
       The descriptions are independent from the codec and can be used by
       third-party processors or codecs.
     '';
+
     homepage = "https://erratique.ch/software/jsont";
     license = lib.licenses.isc;
     maintainers = with lib.maintainers; [ toastal ];

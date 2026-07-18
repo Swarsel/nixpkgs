@@ -11,16 +11,16 @@
 buildPythonPackage (finalAttrs: {
   pname = "alibabacloud-actiontrail20200706";
   version = "2.6.0";
-  pyproject = true;
-
-  __structuredAttrs = true;
 
   src = fetchPypi {
-    pname = "alibabacloud_actiontrail20200706";
     inherit (finalAttrs) version;
     hash = "sha256-+vsUsjOZPaV8+GjmSQMGu62hmuNLDRcCvJo52WFNAVc=";
+    pname = "alibabacloud_actiontrail20200706";
   };
 
+  # Module has no tests
+  doCheck = false;
+  __structuredAttrs = true;
   build-system = [ setuptools ];
 
   dependencies = [
@@ -28,11 +28,8 @@ buildPythonPackage (finalAttrs: {
     darabonba-core
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "alibabacloud_actiontrail20200706" ];
-
-  # Module has no tests
-  doCheck = false;
-
   passthru.updateScript = nix-update-script { };
 
   meta = {

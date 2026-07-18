@@ -1,8 +1,8 @@
 {
-  buildPythonPackage,
-  fetchFromGitHub,
-  ftfy,
   lib,
+  fetchFromGitHub,
+  buildPythonPackage,
+  ftfy,
   regex,
   setuptools,
   torch,
@@ -13,9 +13,6 @@
 buildPythonPackage {
   pname = "clip";
   version = "unstable-2022-11-17";
-  pyproject = true;
-
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "openai";
@@ -24,6 +21,7 @@ buildPythonPackage {
     hash = "sha256-GAitNBb5CzFVv2+Dky0VqSdrFIpKKtoAoyqeLoDaHO4=";
   };
 
+  __structuredAttrs = true;
   build-system = [ setuptools ];
 
   dependencies = [
@@ -34,6 +32,7 @@ buildPythonPackage {
     tqdm
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "clip" ];
 
   meta = {

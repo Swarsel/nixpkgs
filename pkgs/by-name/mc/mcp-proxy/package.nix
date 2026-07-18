@@ -1,7 +1,7 @@
 {
   lib,
-  python3Packages,
   fetchFromGitHub,
+  python3Packages,
 }:
 python3Packages.buildPythonApplication (finalAttrs: {
   pname = "mcp-proxy";
@@ -14,18 +14,17 @@ python3Packages.buildPythonApplication (finalAttrs: {
     hash = "sha256-Hig+ZDFdToiYGOjb/rpqxnu8MaLmQLgSh5WYcgJGA1I=";
   };
 
-  pyproject = true;
+  nativeCheckInputs = with python3Packages; [
+    pytestCheckHook
+    pytest-asyncio
+  ];
 
+  __darwinAllowLocalNetworking = true;
   build-system = [ python3Packages.setuptools ];
 
   dependencies = with python3Packages; [
     uvicorn
     mcp
-  ];
-
-  nativeCheckInputs = with python3Packages; [
-    pytestCheckHook
-    pytest-asyncio
   ];
 
   disabledTests = [
@@ -38,13 +37,13 @@ python3Packages.buildPythonApplication (finalAttrs: {
     "test_complete[proxy-AsyncMock]"
   ];
 
-  __darwinAllowLocalNetworking = true;
+  pyproject = true;
 
   meta = {
     description = "MCP server which proxies other MCP servers from stdio to SSE or from SSE to stdio";
     homepage = "https://github.com/sparfenyuk/mcp-proxy";
-    mainProgram = "mcp-proxy";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ keyruu ];
+    mainProgram = "mcp-proxy";
   };
 })

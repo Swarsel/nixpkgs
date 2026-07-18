@@ -1,22 +1,21 @@
 {
   lib,
   fetchFromGitHub,
-  python3,
-  gtk3,
-  wrapGAppsHook3,
-  glibcLocales,
-  gobject-introspection,
-  gettext,
-  pango,
-  gdk-pixbuf,
   atk,
   fluxbox,
+  gdk-pixbuf,
+  gettext,
+  glibcLocales,
+  gobject-introspection,
+  gtk3,
+  pango,
+  python3,
+  wrapGAppsHook3,
 }:
 
 python3.pkgs.buildPythonApplication {
   pname = "fluxboxlauncher";
   version = "0.2.3";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "mothsart";
@@ -41,10 +40,10 @@ python3.pkgs.buildPythonApplication {
     fluxbox
   ];
 
-  makeWrapperArgs = [
-    "--set LOCALE_ARCHIVE ${glibcLocales}/lib/locale/locale-archive"
-    "--set CHARSET en_us.UTF-8"
-  ];
+  postInstall = ''
+    install -Dm444 fluxboxlauncher.desktop -t $out/share/applications
+    install -Dm444 fluxboxlauncher.svg -t $out/share/icons/hicolor/scalable/apps
+  '';
 
   build-system = with python3.pkgs; [
     setuptools
@@ -54,17 +53,19 @@ python3.pkgs.buildPythonApplication {
     pygobject3
   ];
 
-  postInstall = ''
-    install -Dm444 fluxboxlauncher.desktop -t $out/share/applications
-    install -Dm444 fluxboxlauncher.svg -t $out/share/icons/hicolor/scalable/apps
-  '';
+  makeWrapperArgs = [
+    "--set LOCALE_ARCHIVE ${glibcLocales}/lib/locale/locale-archive"
+    "--set CHARSET en_us.UTF-8"
+  ];
+
+  pyproject = true;
 
   meta = {
     description = "Gui editor (gtk) to configure applications launching on a fluxbox session";
-    mainProgram = "fluxboxlauncher";
     homepage = "https://github.com/mothsART/fluxboxlauncher";
-    maintainers = with lib.maintainers; [ mothsart ];
     license = lib.licenses.bsdOriginal;
+    maintainers = with lib.maintainers; [ mothsart ];
     platforms = lib.platforms.linux;
+    mainProgram = "fluxboxlauncher";
   };
 }

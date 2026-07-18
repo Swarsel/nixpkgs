@@ -16,6 +16,11 @@ stdenv.mkDerivation (finalAttrs: {
 
   nativeBuildInputs = [ which ];
 
+  makeFlags = [
+    "CC=${stdenv.cc.targetPrefix}cc"
+    "PREFIX=$(out)"
+  ];
+
   preBuild = ''
     substituteInPlace Makefile \
       --replace '-g root -o root' "" \
@@ -23,17 +28,12 @@ stdenv.mkDerivation (finalAttrs: {
       --replace 'sudo ' ""
   '';
 
-  makeFlags = [
-    "CC=${stdenv.cc.targetPrefix}cc"
-    "PREFIX=$(out)"
-  ];
-
   meta = {
     description = "Wordlist generator";
-    mainProgram = "crunch";
     homepage = "https://sourceforge.net/projects/crunch-wordlist/";
-    platforms = lib.platforms.unix;
     license = with lib.licenses; [ gpl2Only ];
     maintainers = [ ];
+    platforms = lib.platforms.unix;
+    mainProgram = "crunch";
   };
 })

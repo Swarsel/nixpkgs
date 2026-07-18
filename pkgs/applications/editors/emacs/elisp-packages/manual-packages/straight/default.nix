@@ -1,9 +1,9 @@
 {
-  melpaBuild,
+  lib,
   fetchFromGitHub,
   git,
+  melpaBuild,
   unstableGitUpdater,
-  lib,
 }:
 
 melpaBuild {
@@ -18,12 +18,11 @@ melpaBuild {
   };
 
   nativeBuildInputs = [ git ];
-
   passthru.updateScript = unstableGitUpdater { };
 
   meta = {
-    homepage = "https://github.com/radian-software/straight.el";
     description = "Next-generation, purely functional package manager for the Emacs hacker";
+    homepage = "https://github.com/radian-software/straight.el";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ abhisheksingh0x558 ];
   };

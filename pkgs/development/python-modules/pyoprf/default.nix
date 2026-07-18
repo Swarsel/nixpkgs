@@ -1,26 +1,25 @@
 {
   lib,
   stdenv,
+  ble-serial,
   buildPythonPackage,
   liboprf,
-  setuptools,
-  ble-serial,
   pyserial,
   pyserial-asyncio,
   pysodium,
+  pytestCheckHook,
   pyudev,
   securestring,
-  pytestCheckHook,
+  setuptools,
 }:
 
 buildPythonPackage (finalAttrs: {
-  pname = "pyoprf";
-  pyproject = true;
-
   inherit (liboprf)
     version
     src
     ;
+
+  pname = "pyoprf";
 
   postPatch =
     let
@@ -34,8 +33,7 @@ buildPythonPackage (finalAttrs: {
         --replace-fail "or ctypes.util.find_library('liboprf-noiseXK')" ""
     '';
 
-  sourceRoot = "${finalAttrs.src.name}/python";
-
+  nativeCheckInputs = [ pytestCheckHook ];
   build-system = [ setuptools ];
 
   dependencies = [
@@ -47,19 +45,19 @@ buildPythonPackage (finalAttrs: {
     securestring
   ];
 
-  pythonImportsCheck = [ "pyoprf" ];
-
-  nativeCheckInputs = [ pytestCheckHook ];
-
   enabledTestPaths = [ "tests/test.py" ];
+  pyproject = true;
+  pythonImportsCheck = [ "pyoprf" ];
+  sourceRoot = "${finalAttrs.src.name}/python";
 
   meta = {
-    homepage = "https://github.com/stef/liboprf/tree/master/python";
     inherit (liboprf.meta)
       description
       changelog
       license
       teams
       ;
+
+    homepage = "https://github.com/stef/liboprf/tree/master/python";
   };
 })

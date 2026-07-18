@@ -1,7 +1,7 @@
 {
-  stdenvNoCC,
   lib,
   fetchurl,
+  stdenvNoCC,
   undmg,
   writeScript,
 }:
@@ -15,14 +15,15 @@ let
     aarch64-darwin = rec {
       arch = "aarch64";
       archSuffix = arch;
-      url = "https://download.documentfoundation.org/libreoffice/stable/${version}/mac/${arch}/LibreOffice_${version}_MacOS_${archSuffix}.dmg";
       sha256 = "64e0ad05564554eeee639d49b08b20908a38d4722ec95f1620d05c99bcbe9fb1";
+      url = "https://download.documentfoundation.org/libreoffice/stable/${version}/mac/${arch}/LibreOffice_${version}_MacOS_${archSuffix}.dmg";
     };
   };
 in
 stdenvNoCC.mkDerivation {
   inherit version;
   pname = "libreoffice";
+
   src = fetchurl {
     inherit
       (dist.${stdenvNoCC.hostPlatform.system}
@@ -34,7 +35,6 @@ stdenvNoCC.mkDerivation {
   };
 
   nativeBuildInputs = [ undmg ];
-  sourceRoot = appName;
 
   installPhase = ''
     runHook preInstall
@@ -47,6 +47,8 @@ stdenvNoCC.mkDerivation {
     chmod +x $out/bin/${scriptName}
     runHook postInstall
   '';
+
+  sourceRoot = appName;
 
   passthru.updateScript =
     let
@@ -68,8 +70,9 @@ stdenvNoCC.mkDerivation {
     description = "Comprehensive, professional-quality productivity suite, a variant of openoffice.org";
     homepage = "https://libreoffice.org/";
     license = lib.licenses.lgpl3;
-    maintainers = with lib.maintainers; [ tricktron ];
     sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
+    maintainers = with lib.maintainers; [ tricktron ];
+
     platforms = [
       "aarch64-darwin"
     ];

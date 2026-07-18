@@ -7,37 +7,38 @@
 {
   lib,
   stdenv,
+  callPackage,
+  computeRequiredOctavePackages,
   config,
   octave,
-  callPackage,
   texinfo,
-  computeRequiredOctavePackages,
   writeRequiredOctavePackagesHook,
 }:
 
 # The inner function contains information required to build the individual
 # libraries.
 {
-  fullLibName ? "${attrs.pname}-${attrs.version}",
-
   src,
-
-  dontPatch ? false,
-  patches ? [ ],
-  patchPhase ? "",
-
-  enableParallelBuilding ? true,
-  # Build-time dependencies for the package, which were compiled for the system compiling this.
-  nativeBuildInputs ? [ ],
-
   # Build-time dependencies for the package, which may not have been compiled for the system compiling this.
   buildInputs ? [ ],
-
+  dontPatch ? false,
+  enableParallelBuilding ? true,
+  fullLibName ? "${attrs.pname}-${attrs.version}",
+  meta ? { },
+  # Build-time dependencies for the package, which were compiled for the system compiling this.
+  nativeBuildInputs ? [ ],
+  # Dependencies and `env` for octave package tests,
+  # which are run with .passthru.tests.testOctavePkgTests
+  nativeOctavePkgTestInputs ? [ ],
+  octavePkgTestEnv ? { },
+  passthru ? { },
+  patchPhase ? "",
+  patches ? [ ],
+  preBuild ? "",
   # Propagate build dependencies so in case we have A -> B -> C,
   # C can import package A propagated by B
   # Run-time dependencies for the package.
   propagatedBuildInputs ? [ ],
-
   # Octave packages that are required at runtime for this one.
   # These behave similarly to propagatedBuildInputs, where if
   # package A is needed by B, and C needs B, then C also requires A.
@@ -45,18 +46,6 @@
   # during the package's installation into octave, where all
   # requiredOctavePackages are ALSO installed into octave.
   requiredOctavePackages ? [ ],
-
-  # Dependencies and `env` for octave package tests,
-  # which are run with .passthru.tests.testOctavePkgTests
-  nativeOctavePkgTestInputs ? [ ],
-  octavePkgTestEnv ? { },
-
-  preBuild ? "",
-
-  meta ? { },
-
-  passthru ? { },
-
   ...
 }@attrs:
 
@@ -87,35 +76,16 @@ in
 stdenv.mkDerivation (
   finalAttrs:
   {
-    packageName = "${fullLibName}";
-    # The name of the octave package ends up being
-    # "octave-version-package-version"
-    name = "${octave.pname}-${octave.version}-${fullLibName}";
-
-    # This states that any package built with the function that this returns
-    # will be an octave package. This is used for ensuring other octave
-    # packages are installed into octave during the environment building phase.
-    isOctavePackage = true;
+    inherit src;
+    inherit dontPatch patches patchPhase;
+    inherit meta;
+    nativeBuildInputs = nativeBuildInputs';
+    buildInputs = buildInputs ++ requiredOctavePackages';
+    propagatedBuildInputs = propagatedBuildInputs ++ [ texinfo ];
 
     env = attrs.env or { } // {
       OCTAVE_HISTFILE = "/dev/null";
     };
-
-    inherit src;
-
-    inherit dontPatch patches patchPhase;
-
-    dontConfigure = true;
-
-    enableParallelBuilding = enableParallelBuilding;
-
-    requiredOctavePackages = requiredOctavePackages';
-
-    nativeBuildInputs = nativeBuildInputs';
-
-    buildInputs = buildInputs ++ requiredOctavePackages';
-
-    propagatedBuildInputs = propagatedBuildInputs ++ [ texinfo ];
 
     preBuild =
       if preBuild == "" then
@@ -136,9 +106,20 @@ stdenv.mkDerivation (
       runHook postBuild
     '';
 
+    dontConfigure = true;
     # We don't install here, because that's handled when we build the environment
     # together with Octave.
     dontInstall = true;
+    enableParallelBuilding = enableParallelBuilding;
+    # This states that any package built with the function that this returns
+    # will be an octave package. This is used for ensuring other octave
+    # packages are installed into octave during the environment building phase.
+    isOctavePackage = true;
+    # The name of the octave package ends up being
+    # "octave-version-package-version"
+    name = "${octave.pname}-${octave.version}-${fullLibName}";
+    packageName = "${fullLibName}";
+    requiredOctavePackages = requiredOctavePackages';
 
     passthru = {
       updateScript = [
@@ -152,14 +133,13 @@ stdenv.mkDerivation (
         testOctaveBuildEnv = (octave.withPackages (os: [ finalAttrs.finalPackage ])).overrideAttrs (old: {
           name = "${finalAttrs.name}-pkg-install";
         });
+
         testOctavePkgTests = callPackage ./run-pkg-test.nix {
           inherit nativeOctavePkgTestInputs octavePkgTestEnv;
         } finalAttrs.finalPackage;
       }
       // passthru.tests or { };
     };
-
-    inherit meta;
   }
   // attrs'
 )

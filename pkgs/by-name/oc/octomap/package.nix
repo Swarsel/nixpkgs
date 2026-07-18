@@ -16,14 +16,14 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-QxQHxxFciR6cvB/b8i0mr1hqGxOXhXmB4zgdsD977Mw=";
   };
 
-  sourceRoot = "${finalAttrs.src.name}/octomap";
-
   nativeBuildInputs = [ cmake ];
 
   env.NIX_CFLAGS_COMPILE = toString [
     # Needed with GCC 12
     "-Wno-error=deprecated-declarations"
   ];
+
+  sourceRoot = "${finalAttrs.src.name}/octomap";
 
   meta = {
     description = "Probabilistic, flexible, and compact 3D mapping library for robotic systems";

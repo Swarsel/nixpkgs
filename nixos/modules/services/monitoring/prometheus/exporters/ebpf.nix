@@ -15,17 +15,21 @@ let
     ;
 in
 {
-  port = 9435;
   extraOpts = {
     names = mkOption {
-      type = types.listOf types.str;
       default = [ ];
-      example = [ "timers" ];
+
       description = ''
         List of eBPF programs to load
       '';
+
+      example = [ "timers" ];
+      type = types.listOf types.str;
     };
   };
+
+  port = 9435;
+
   serviceOpts = {
     serviceConfig = {
       AmbientCapabilities = [
@@ -33,11 +37,13 @@ in
         "CAP_DAC_READ_SEARCH"
         "CAP_PERFMON"
       ];
+
       CapabilityBoundingSet = [
         "CAP_BPF"
         "CAP_DAC_READ_SEARCH"
         "CAP_PERFMON"
       ];
+
       ExecStart = ''
         ${pkgs.prometheus-ebpf-exporter}/bin/ebpf_exporter \
         --config.dir=${pkgs.prometheus-ebpf-exporter}/examples \

@@ -1,9 +1,9 @@
 {
   lib,
+  fetchFromGitHub,
   awesomeversion,
   buildPythonPackage,
   docutils,
-  fetchFromGitHub,
   flaky,
   installShellFiles,
   jq,
@@ -13,8 +13,8 @@
   platformdirs,
   pycurl,
   pytest-asyncio,
-  pytestCheckHook,
   pytest-httpbin,
+  pytestCheckHook,
   pythonOlder,
   setuptools,
   structlog,
@@ -25,7 +25,6 @@
 buildPythonPackage rec {
   pname = "nvchecker";
   version = "2.20";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "lilydjwg";
@@ -34,30 +33,15 @@ buildPythonPackage rec {
     hash = "sha256-udwflm3C7C6Q7rSA0x0+8uf1F5quy2okf2IyZqKtA3E=";
   };
 
-  __darwinAllowLocalNetworking = true;
-
-  build-system = [ setuptools ];
-
   nativeBuildInputs = [
     docutils
     installShellFiles
   ];
 
-  dependencies = [
-    structlog
-    platformdirs
-    tornado
-    pycurl
-  ];
-
-  optional-dependencies = {
-    # vercmp = [ pyalpm ];
-    awesomeversion = [ awesomeversion ];
-    pypi = [ packaging ];
-    htmlparser = [ lxml ];
-    rpmrepo = [ lxml ] ++ lib.optionals (pythonOlder "3.14") [ zstandard ];
-    jq = [ jq ];
-  };
+  postBuild = ''
+    patchShebangs docs/myrst2man.py
+    make -C docs man
+  '';
 
   nativeCheckInputs = [
     flaky
@@ -66,19 +50,33 @@ buildPythonPackage rec {
     pytestCheckHook
   ];
 
-  postBuild = ''
-    patchShebangs docs/myrst2man.py
-    make -C docs man
-  '';
-
   postInstall = ''
     installManPage docs/_build/man/nvchecker.1
   '';
 
-  pythonImportsCheck = [ "nvchecker" ];
+  __darwinAllowLocalNetworking = true;
+  build-system = [ setuptools ];
+
+  dependencies = [
+    structlog
+    platformdirs
+    tornado
+    pycurl
+  ];
 
   disabledTestMarks = [ "needs_net" ];
 
+  optional-dependencies = {
+    # vercmp = [ pyalpm ];
+    awesomeversion = [ awesomeversion ];
+    htmlparser = [ lxml ];
+    jq = [ jq ];
+    pypi = [ packaging ];
+    rpmrepo = [ lxml ] ++ lib.optionals (pythonOlder "3.14") [ zstandard ];
+  };
+
+  pyproject = true;
+  pythonImportsCheck = [ "nvchecker" ];
   passthru.updateScript = nix-update-script { };
 
   meta = {

@@ -2,12 +2,12 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  autoreconfHook,
-  pkg-config,
-  boost,
   SDL2,
-  SDL2_ttf,
   SDL2_image,
+  SDL2_ttf,
+  autoreconfHook,
+  boost,
+  pkg-config,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -21,28 +21,29 @@ stdenv.mkDerivation (finalAttrs: {
     sha256 = "sha256-NAjsDQ4/hklYRfa85uleOr50tmc6UJVo2xiDnEbmIxk=";
   };
 
-  nativeBuildInputs = [
-    pkg-config
-    autoreconfHook
-  ];
-  buildInputs = [
-    boost
-    SDL2
-    SDL2_ttf
-    SDL2_image
-  ];
-  # From some reason, this is needed as otherwise SDL.h is not found
-  env.NIX_CFLAGS_COMPILE = "-I${lib.getInclude SDL2}/include/SDL2";
-
   outputs = [
     "out"
     "dev"
     "lib"
   ];
 
+  nativeBuildInputs = [
+    pkg-config
+    autoreconfHook
+  ];
+
+  buildInputs = [
+    boost
+    SDL2
+    SDL2_ttf
+    SDL2_image
+  ];
+
+  # From some reason, this is needed as otherwise SDL.h is not found
+  env.NIX_CFLAGS_COMPILE = "-I${lib.getInclude SDL2}/include/SDL2";
+
   meta = {
     description = "Simplistic SDL2 GUI framework in early developement";
-    mainProgram = "libwtk-sdl2-test";
     homepage = "https://github.com/muesli4/libwtk-sdl2";
     # See: https://github.com/muesli4/mpd-touch-screen-gui/tree/master/LICENSES
     license = lib.licenses.lgpl3Plus;
@@ -54,5 +55,6 @@ stdenv.mkDerivation (finalAttrs: {
          >                             ~~~~~^
     */
     platforms = lib.platforms.linux;
+    mainProgram = "libwtk-sdl2-test";
   };
 })

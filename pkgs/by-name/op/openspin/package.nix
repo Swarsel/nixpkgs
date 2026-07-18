@@ -22,10 +22,10 @@ stdenv.mkDerivation {
 
   meta = {
     description = "Compiler for SPIN/PASM languages for Parallax Propeller MCU";
-    mainProgram = "openspin";
     homepage = "https://github.com/parallaxinc/OpenSpin";
     license = lib.licenses.mit;
     maintainers = [ lib.maintainers.redvers ];
     platforms = lib.platforms.all;
+    mainProgram = "openspin";
   };
 }

@@ -9,15 +9,15 @@ stdenv.mkDerivation rec {
   version = "2.39";
 
   src = fetchurl {
+    sha256 = "17s7v15c4gryjpi11y1xq75022nkg4ggzvjlq2dkmyg67ssc76vw";
+
     urls = [
       "https://distfiles.macports.org/${pname}/${pname}-${version}.tar.gz"
       "https://fossies.org/linux/misc/${pname}-${version}.tar.gz"
       "ftp://ftp.thp.uni-duisburg.de/pub/source/${pname}-${version}.tar.gz"
     ];
-    sha256 = "17s7v15c4gryjpi11y1xq75022nkg4ggzvjlq2dkmyg67ssc76vw";
   };
 
-  sourceRoot = ".";
   buildPhase = ''
     runHook preBuild
     $CC $NIX_CFLAGS -o pstree pstree.c
@@ -31,13 +31,15 @@ stdenv.mkDerivation rec {
     runHook postInstall
   '';
 
+  sourceRoot = ".";
+
   meta = {
     description = "Show the set of running processes as a tree";
     homepage = "http://www.thp.uni-duisburg.de/pstree/";
     license = lib.licenses.gpl2;
     maintainers = [ ];
     platforms = lib.platforms.unix;
-    priority = 5; # Lower than psmisc also providing pstree on Linux platforms
     mainProgram = "pstree";
+    priority = 5; # Lower than psmisc also providing pstree on Linux platforms
   };
 }

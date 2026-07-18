@@ -1,13 +1,13 @@
 {
   lib,
+  fetchFromGitHub,
   apispec,
   asgiref,
   buildPythonPackage,
-  fetchFromGitHub,
+  flask,
   flask-httpauth,
   flask-marshmallow,
   flask-sqlalchemy,
-  flask,
   marshmallow,
   marshmallow-dataclass,
   openapi-spec-validator,
@@ -23,7 +23,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "apiflask";
   version = "3.1.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "apiflask";
@@ -31,6 +30,13 @@ buildPythonPackage (finalAttrs: {
     tag = finalAttrs.version;
     hash = "sha256-iW7OCWJlJXg9zVslYgdk13LyLHl2nLJkNZViHrJ9bOE=";
   };
+
+  nativeCheckInputs = [
+    openapi-spec-validator
+    pytest-cov-stub
+    pytestCheckHook
+  ]
+  ++ lib.flatten (builtins.attrValues finalAttrs.passthru.optional-dependencies);
 
   build-system = [ setuptools ];
 
@@ -53,13 +59,7 @@ buildPythonPackage (finalAttrs: {
     yaml = [ pyyaml ];
   };
 
-  nativeCheckInputs = [
-    openapi-spec-validator
-    pytest-cov-stub
-    pytestCheckHook
-  ]
-  ++ lib.flatten (builtins.attrValues finalAttrs.passthru.optional-dependencies);
-
+  pyproject = true;
   pythonImportsCheck = [ "apiflask" ];
 
   meta = {

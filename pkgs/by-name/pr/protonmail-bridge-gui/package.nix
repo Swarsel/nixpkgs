@@ -1,44 +1,60 @@
 {
   lib,
   stdenv,
-  pkg-config,
-  libsecret,
   cmake,
-  ninja,
-  qt6,
-  grpc,
-  protobuf,
-  zlib,
-  gtest,
-  sentry-native,
-  protonmail-bridge,
   fetchpatch2,
+  grpc,
+  gtest,
+  libsecret,
+  ninja,
+  pkg-config,
+  protobuf,
+  protonmail-bridge,
+  qt6,
+  sentry-native,
+  zlib,
 }:
 
 let
   guiSourcePath = "internal/frontend/bridge-gui";
 in
 stdenv.mkDerivation (finalAttrs: {
-  pname = "protonmail-bridge-gui";
-
   inherit (protonmail-bridge) version src;
+  pname = "protonmail-bridge-gui";
 
   patches = [
     # Use `gtest` from Nixpkgs to allow an offline build
     ./use-nix-googletest.patch
     # fix: qt6_generate_deploy_app_script deprecated keyword
     (fetchpatch2 {
-      url = "https://github.com/daniel-fahey/proton-bridge/commit/9b282369523ce2aabcf95369a2ed3867efb5a4ac.patch?full_index=1";
-      relative = guiSourcePath;
       hash = "sha256-CGBelsplAqLI+6GtDR+VELfVsLoHPN0324gfZ3obKpI=";
+      relative = guiSourcePath;
+      url = "https://github.com/daniel-fahey/proton-bridge/commit/9b282369523ce2aabcf95369a2ed3867efb5a4ac.patch?full_index=1";
     })
     # fix: make libQt6WaylandEglClientHwIntegration conditional for Qt 6.10
     (fetchpatch2 {
-      url = "https://github.com/daniel-fahey/proton-bridge/commit/7823fe4904186253798fc633724988d43dd642e0.patch?full_index=1";
-      relative = guiSourcePath;
       hash = "sha256-2heMfZdXLL8/uyM0jZ860Jw76c+gHtc0G6pWmIRCONY=";
+      relative = guiSourcePath;
+      url = "https://github.com/daniel-fahey/proton-bridge/commit/7823fe4904186253798fc633724988d43dd642e0.patch?full_index=1";
     })
   ];
+
+  postPatch = ''
+    # Bypass `vcpkg` by deleting lines that `include` BridgeSetup.cmake
+    find . -type f -name "CMakeLists.txt" -exec sed -i "/BridgeSetup\\.cmake/d" {} \;
+
+    # Use the available ICU version
+    sed -i "s/libicu\(i18n\|uc\|data\)\.so\.[0-9][0-9]/libicu\1.so/g" bridge-gui/DeployLinux.cmake
+
+    # Create a Desktop Entry that uses a `protonmail-bridge-gui` binary without upstream's launcher
+    sed "s/^\(Icon\|Exec\)=.*$/\1=protonmail-bridge-gui/" ../../../dist/proton-bridge.desktop > proton-bridge-gui.desktop
+
+    # Also update `StartupWMClass` to match the GUI binary's `wmclass` (Wayland app id)
+    sed -i "s/^\(StartupWMClass=\)Proton Mail Bridge$/\1ch.proton.bridge-gui/" proton-bridge-gui.desktop
+
+    # Don't build `bridge-gui-tester`
+    sed -i "/add_subdirectory(bridge-gui-tester)/d" CMakeLists.txt
+  '';
 
   nativeBuildInputs = [
     pkg-config
@@ -59,25 +75,6 @@ stdenv.mkDerivation (finalAttrs: {
     gtest
     sentry-native
   ];
-
-  sourceRoot = "${finalAttrs.src.name}/${guiSourcePath}";
-
-  postPatch = ''
-    # Bypass `vcpkg` by deleting lines that `include` BridgeSetup.cmake
-    find . -type f -name "CMakeLists.txt" -exec sed -i "/BridgeSetup\\.cmake/d" {} \;
-
-    # Use the available ICU version
-    sed -i "s/libicu\(i18n\|uc\|data\)\.so\.[0-9][0-9]/libicu\1.so/g" bridge-gui/DeployLinux.cmake
-
-    # Create a Desktop Entry that uses a `protonmail-bridge-gui` binary without upstream's launcher
-    sed "s/^\(Icon\|Exec\)=.*$/\1=protonmail-bridge-gui/" ../../../dist/proton-bridge.desktop > proton-bridge-gui.desktop
-
-    # Also update `StartupWMClass` to match the GUI binary's `wmclass` (Wayland app id)
-    sed -i "s/^\(StartupWMClass=\)Proton Mail Bridge$/\1ch.proton.bridge-gui/" proton-bridge-gui.desktop
-
-    # Don't build `bridge-gui-tester`
-    sed -i "/add_subdirectory(bridge-gui-tester)/d" CMakeLists.txt
-  '';
 
   cmakeFlags = [
     "-DBRIDGE_APP_FULL_NAME=Proton Mail Bridge"
@@ -108,20 +105,24 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  sourceRoot = "${finalAttrs.src.name}/${guiSourcePath}";
+
   meta = {
-    changelog = "https://github.com/ProtonMail/proton-bridge/blob/${finalAttrs.src.rev}/Changelog.md";
     description = "Qt-based GUI to use your ProtonMail account with your local e-mail client";
-    downloadPage = "https://github.com/ProtonMail/proton-bridge/releases";
-    homepage = "https://github.com/ProtonMail/proton-bridge";
-    license = lib.licenses.gpl3Plus;
+
     longDescription = ''
       Provides a GUI application that runs in the background and seamlessly encrypts
       and decrypts your mail as it enters and leaves your computer.
 
       To work, use secret-service freedesktop.org API (e.g. Gnome keyring) or pass.
     '';
-    mainProgram = "protonmail-bridge-gui";
+
+    homepage = "https://github.com/ProtonMail/proton-bridge";
+    changelog = "https://github.com/ProtonMail/proton-bridge/blob/${finalAttrs.src.rev}/Changelog.md";
+    license = lib.licenses.gpl3Plus;
     maintainers = with lib.maintainers; [ daniel-fahey ];
     platforms = lib.platforms.linux;
+    mainProgram = "protonmail-bridge-gui";
+    downloadPage = "https://github.com/ProtonMail/proton-bridge/releases";
   };
 })

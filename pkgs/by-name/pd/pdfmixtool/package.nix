@@ -3,11 +3,11 @@
   stdenv,
   fetchFromGitLab,
   cmake,
-  pkg-config,
-  qt6Packages,
-  qpdf,
-  podofo,
   imagemagick,
+  pkg-config,
+  podofo,
+  qpdf,
+  qt6Packages,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -38,9 +38,9 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Application to split, merge, rotate and mix PDF files";
-    mainProgram = "pdfmixtool";
     homepage = "https://gitlab.com/scarpetta/pdfmixtool";
     license = lib.licenses.gpl3Only;
     maintainers = with lib.maintainers; [ onny ];
+    mainProgram = "pdfmixtool";
   };
 })

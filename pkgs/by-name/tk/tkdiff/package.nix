@@ -1,9 +1,9 @@
 {
+  lib,
+  stdenv,
   diffutils,
   fetchzip,
-  lib,
   makeBinaryWrapper,
-  stdenv,
   tk,
 }:
 
@@ -15,6 +15,7 @@ stdenv.mkDerivation (finalAttrs: {
     url = "mirror://sourceforge/tkdiff/tkdiff-${
       builtins.replaceStrings [ "." ] [ "-" ] finalAttrs.version
     }.zip";
+
     hash = "sha256-fBPeXL6G9LZZHIapj/lncNrUU02ocnqDOOJfvlKIyRA=";
   };
 
@@ -37,8 +38,7 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Graphical front end to the diff program";
-    homepage = "https://tkdiff.sourceforge.io/";
-    license = lib.licenses.gpl2Plus;
+
     longDescription = ''
       TkDiff is a graphical front end to the diff program. It provides a
       side-by-side view of the differences between two text files, along
@@ -46,8 +46,11 @@ stdenv.mkDerivation (finalAttrs: {
       map of differences for quick navigation, and a facility for slicing
       diff regions to achieve exactly the merge output desired.
     '';
-    mainProgram = "tkdiff";
+
+    homepage = "https://tkdiff.sourceforge.io/";
+    license = lib.licenses.gpl2Plus;
     maintainers = with lib.maintainers; [ mikaelfangel ];
     platforms = tk.meta.platforms;
+    mainProgram = "tkdiff";
   };
 })

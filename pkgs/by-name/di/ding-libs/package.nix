@@ -14,19 +14,20 @@ stdenv.mkDerivation (finalAttrs: {
     sha256 = "1h97mx2jdv4caiz4r7y8rxfsq78fx0k4jjnfp7x2s7xqvqks66d3";
   };
 
-  enableParallelBuilding = true;
   buildInputs = [ check ];
-
   doCheck = true;
+  enableParallelBuilding = true;
 
   meta = {
     description = "'D is not GLib' utility libraries";
     homepage = "https://pagure.io/SSSD/ding-libs";
-    platforms = with lib.platforms; linux;
-    maintainers = [ ];
+
     license = [
       lib.licenses.gpl3
       lib.licenses.lgpl3
     ];
+
+    maintainers = [ ];
+    platforms = with lib.platforms; linux;
   };
 })

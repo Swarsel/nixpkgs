@@ -1,14 +1,14 @@
 {
-  cmake,
+  lib,
+  stdenv,
   fetchFromGitHub,
+  SDL2,
+  cmake,
   fetchpatch2,
   fpattern,
-  lib,
-  SDL2,
-  stdenv,
+  nix-update-script,
   writeShellScript,
   zlib,
-  nix-update-script,
 }:
 
 let
@@ -58,10 +58,16 @@ stdenv.mkDerivation (finalAttrs: {
   patches = [
     # Fix case-sensitive filesystems issue when save/load games
     (fetchpatch2 {
-      url = "https://github.com/alexbatalov/fallout2-ce/commit/e770e64a48cd4d0a58a07f8db72839e4747e4c1e.patch?full_index=1";
       sha256 = "sha256-49N6uXwOBL/sE+f+W4nX6Gpwwpmbgvy38B1NjECiia0=";
+      url = "https://github.com/alexbatalov/fallout2-ce/commit/e770e64a48cd4d0a58a07f8db72839e4747e4c1e.patch?full_index=1";
     })
   ];
+
+  postPatch = ''
+    substituteInPlace third_party/fpattern/CMakeLists.txt \
+      --replace-fail "FetchContent_Populate" "#FetchContent_Populate" \
+      --replace-fail "\''${fpattern_SOURCE_DIR}" "${fpattern}/include"
+  '';
 
   nativeBuildInputs = [ cmake ];
 
@@ -69,14 +75,6 @@ stdenv.mkDerivation (finalAttrs: {
     SDL2
     zlib
   ];
-
-  hardeningDisable = [ "format" ];
-
-  postPatch = ''
-    substituteInPlace third_party/fpattern/CMakeLists.txt \
-      --replace-fail "FetchContent_Populate" "#FetchContent_Populate" \
-      --replace-fail "\''${fpattern_SOURCE_DIR}" "${fpattern}/include"
-  '';
 
   installPhase = ''
     runHook preInstall
@@ -88,14 +86,17 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  hardeningDisable = [ "format" ];
   passthru.updateScript = nix-update-script { };
 
   meta = {
     description = "Fallout 2 for modern operating systems";
+
     longDescription = ''
       Fully working re-implementation of Fallout 2, with the same original gameplay, engine bugfixes, and some quality of life improvements.
       You must own the game and copy the files to the specified folder to play.
     '';
+
     homepage = "https://github.com/alexbatalov/fallout2-ce";
     license = lib.licenses.sustainableUse;
     maintainers = with lib.maintainers; [ hughobrien ];

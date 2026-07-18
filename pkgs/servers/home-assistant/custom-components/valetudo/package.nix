@@ -1,11 +1,9 @@
 {
-  buildHomeAssistantComponent,
-  fetchFromGitHub,
   lib,
+  fetchFromGitHub,
+  buildHomeAssistantComponent,
 }:
 buildHomeAssistantComponent rec {
-  owner = "Hypfer";
-  domain = "valetudo";
   version = "2026.01.1";
 
   src = fetchFromGitHub {
@@ -14,6 +12,10 @@ buildHomeAssistantComponent rec {
     tag = "${version}";
     hash = "sha256-xJ8kA+ujWuen5660GWZSo90WsHpfwQVStIheaIRxAg8=";
   };
+
+  domain = "valetudo";
+  owner = "Hypfer";
+
   meta = {
     description = "Valetudo for Home Assistant";
     homepage = "https://github.com/Hypfer/hass-valetudo";

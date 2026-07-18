@@ -1,9 +1,9 @@
 {
   lib,
   fetchFromCodeberg,
-  rustPlatform,
   makeWrapper,
   nix-update-script,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -17,9 +17,8 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-0ahyyuihpwmAmaBwZv7lNmjuy8UsAm1a9XUhWcYq76w=";
   };
 
-  cargoHash = "sha256-5GpNVcnwWjxYgIXGoFkuf5CFD46kxxQwb3t0/i/2nFM=";
-
   nativeBuildInputs = [ makeWrapper ];
+  cargoHash = "sha256-5GpNVcnwWjxYgIXGoFkuf5CFD46kxxQwb3t0/i/2nFM=";
 
   postInstall = ''
     mkdir -p $out/share/meme-bingo-web
@@ -34,9 +33,9 @@ rustPlatform.buildRustPackage (finalAttrs: {
 
   meta = {
     description = "Play meme bingo using this neat web app";
-    mainProgram = "meme-bingo-web";
     homepage = "https://codeberg.org/annaaurora/meme-bingo-web";
     license = lib.licenses.unlicense;
     maintainers = with lib.maintainers; [ annaaurora ];
+    mainProgram = "meme-bingo-web";
   };
 })

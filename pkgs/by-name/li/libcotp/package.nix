@@ -1,16 +1,14 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
   cmake,
-  pkg-config,
   libgcrypt,
+  pkg-config,
 }:
 stdenv.mkDerivation (finalAttrs: {
   pname = "libcotp";
   version = "4.1.0";
-
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "paolostivanin";
@@ -19,12 +17,13 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-iNmCQHAl2LIkdJiVByc9CWiJSTo1HIz5Ma5Xjo2n9mA=";
   };
 
-  buildInputs = [ libgcrypt ];
-
   nativeBuildInputs = [
     cmake
     pkg-config
   ];
+
+  buildInputs = [ libgcrypt ];
+  __structuredAttrs = true;
 
   meta = {
     description = "C library that generates TOTP and HOTP";

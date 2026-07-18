@@ -1,11 +1,11 @@
 {
   lib,
   stdenv,
+  fetchFromGitHub,
   aiofiles,
   aioquic,
   beautifulsoup4,
   buildPythonPackage,
-  fetchFromGitHub,
   gunicorn,
   html5tagger,
   httptools,
@@ -27,7 +27,6 @@
 buildPythonPackage rec {
   pname = "sanic";
   version = "25.12.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "sanic-org";
@@ -38,26 +37,6 @@ buildPythonPackage rec {
 
   # test compat for testing with pytest-asyncio
   patches = [ ./pytest9-compat.patch ];
-
-  build-system = [ setuptools ];
-
-  dependencies = [
-    aiofiles
-    httptools
-    html5tagger
-    multidict
-    sanic-routing
-    tracerite
-    typing-extensions
-    ujson
-    uvloop
-    websockets
-  ];
-
-  optional-dependencies = {
-    ext = [ sanic-ext ];
-    http3 = [ aioquic ];
-  };
 
   nativeCheckInputs = [
     beautifulsoup4
@@ -82,6 +61,35 @@ buildPythonPackage rec {
     substituteInPlace worker/test_socket.py \
       --replace-fail '"./test.sock"' '"/tmp/test.sock"'
   '';
+
+  # Avoid usage of nixpkgs-review in darwin since tests will compete usage
+  # for the same local port
+  __darwinAllowLocalNetworking = true;
+  build-system = [ setuptools ];
+
+  dependencies = [
+    aiofiles
+    httptools
+    html5tagger
+    multidict
+    sanic-routing
+    tracerite
+    typing-extensions
+    ujson
+    uvloop
+    websockets
+  ];
+
+  disabledTestPaths = [
+    # We are not interested in benchmarks
+    "benchmark/"
+    # We are also not interested in typing
+    "typing/test_typing.py"
+    # occasionally hangs
+    "test_multiprocessing.py"
+    # Failed: async def functions are not natively supported.
+    "test_touchup.py"
+  ];
 
   disabledTests = [
     # EOFError: Ran out of input
@@ -113,21 +121,12 @@ buildPythonPackage rec {
     "test_validate_group_sets_gid"
   ];
 
-  disabledTestPaths = [
-    # We are not interested in benchmarks
-    "benchmark/"
-    # We are also not interested in typing
-    "typing/test_typing.py"
-    # occasionally hangs
-    "test_multiprocessing.py"
-    # Failed: async def functions are not natively supported.
-    "test_touchup.py"
-  ];
+  optional-dependencies = {
+    ext = [ sanic-ext ];
+    http3 = [ aioquic ];
+  };
 
-  # Avoid usage of nixpkgs-review in darwin since tests will compete usage
-  # for the same local port
-  __darwinAllowLocalNetworking = true;
-
+  pyproject = true;
   pythonImportsCheck = [ "sanic" ];
 
   meta = {

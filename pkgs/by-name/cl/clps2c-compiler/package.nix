@@ -1,9 +1,9 @@
 {
-  keystone,
+  lib,
   fetchFromGitHub,
   buildDotnetModule,
   dotnetCorePackages,
-  lib,
+  keystone,
 }:
 let
   version = "1.0.1";
@@ -13,8 +13,8 @@ let
   keystone-sha256 = "sha256-xLkO06ZgnmAavJMP1kjDwXT1hc5eSDXv+4MUkOz6xeo=";
   keystone-src = (
     fetchFromGitHub {
-      name = "keystone";
       inherit owner;
+      name = "keystone";
       repo = "keystone";
       rev = keystone-rev;
       sha256 = keystone-sha256;
@@ -27,19 +27,6 @@ in
 buildDotnetModule rec {
   inherit version pname;
 
-  srcs = [
-    (fetchFromGitHub {
-      name = pname;
-      inherit owner;
-      repo = "CLPS2C-Compiler";
-      rev = "CLPS2C-Compiler-${version}";
-      sha256 = "sha256-4gLdrIxyw9BFSxF+EXZqTgUf9Kik6oK7eO9HBUzk4QM=";
-    })
-    keystone-src
-  ];
-
-  sourceRoot = ".";
-
   patches = [
     ./patches/dont_trim_leading_newline.patch
     ./patches/build_fixes.patch
@@ -50,26 +37,38 @@ buildDotnetModule rec {
     ./patches/keystone_set_targetframework.patch
   ];
 
-  dotnet-sdk = dotnetCorePackages.sdk_8_0;
   dotnet-runtime = dotnetCorePackages.runtime_8_0;
+  dotnet-sdk = dotnetCorePackages.sdk_8_0;
 
   dotnetFlags = [
     "-p:TargetFramework=net8.0"
   ];
 
   nugetDeps = ./deps.json;
+  projectFile = "CLPS2C-Compiler/CLPS2C-Compiler/CLPS2C-Compiler.csproj";
 
   runtimeDeps = [
     keystone-override
   ];
 
-  projectFile = "CLPS2C-Compiler/CLPS2C-Compiler/CLPS2C-Compiler.csproj";
+  sourceRoot = ".";
+
+  srcs = [
+    (fetchFromGitHub {
+      inherit owner;
+      name = pname;
+      repo = "CLPS2C-Compiler";
+      rev = "CLPS2C-Compiler-${version}";
+      sha256 = "sha256-4gLdrIxyw9BFSxF+EXZqTgUf9Kik6oK7eO9HBUzk4QM=";
+    })
+    keystone-src
+  ];
 
   meta = {
-    homepage = "https://github.com/NiV-L-A/CLPS2C-Compiler";
     description = "Compiler for CLPS2C, a domain-specific language built specifically for writing PS2 cheat codes";
-    mainProgram = "CLPS2C-Compiler";
-    maintainers = [ lib.maintainers.gigahawk ];
+    homepage = "https://github.com/NiV-L-A/CLPS2C-Compiler";
     license = lib.licenses.gpl3Only;
+    maintainers = [ lib.maintainers.gigahawk ];
+    mainProgram = "CLPS2C-Compiler";
   };
 }

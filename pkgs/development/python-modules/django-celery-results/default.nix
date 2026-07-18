@@ -1,20 +1,19 @@
 {
   lib,
-  fetchPypi,
   buildPythonPackage,
   celery,
   django,
+  fetchPypi,
 }:
 
 buildPythonPackage rec {
   pname = "django-celery-results";
   version = "2.6.0";
-  format = "setuptools";
 
   src = fetchPypi {
-    pname = "django_celery_results";
     inherit version;
     hash = "sha256-mrzYNq5rYQY3eSRNiIeoj+gLv6uhQ98208sHA0ZxJ3w=";
+    pname = "django_celery_results";
   };
 
   postPatch = ''
@@ -29,6 +28,7 @@ buildPythonPackage rec {
 
   # Tests need access to a database.
   doCheck = false;
+  format = "setuptools";
 
   meta = {
     description = "Celery result back end with django";

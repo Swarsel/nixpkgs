@@ -8,17 +8,16 @@
 buildPythonPackage rec {
   pname = "durus";
   version = "4.3";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
     hash = "sha256-aQM0I26juo2WbjrszgJUd5CdayQNCzID0zJ/YkNyYAc=";
   };
 
-  build-system = [ setuptools ];
-
   # Checks disabled due to missing python unittest framework 'sancho' in nixpkgs
   doCheck = false;
+  build-system = [ setuptools ];
+  pyproject = true;
 
   pythonImportsCheck = [
     "durus.connection"
@@ -29,9 +28,9 @@ buildPythonPackage rec {
 
   meta = {
     description = "Object persistence layer";
-    mainProgram = "durus";
     homepage = "https://github.com/nascheme/durus";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ grindhold ];
+    mainProgram = "durus";
   };
 }

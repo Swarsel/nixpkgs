@@ -1,21 +1,21 @@
 {
-  stdenv,
   lib,
-  pkg-config,
-  makeWrapper,
-  texinfo,
+  stdenv,
   fetchurl,
   autoreconfHook,
-  guile,
   flex,
-  gtk3,
-  glib,
-  gtksheet,
-  gettext,
   gawk,
-  shared-mime-info,
+  gettext,
+  glib,
   groff,
+  gtk3,
+  gtksheet,
+  guile,
   libstroke,
+  makeWrapper,
+  pkg-config,
+  shared-mime-info,
+  texinfo,
 }:
 
 stdenv.mkDerivation rec {
@@ -66,14 +66,16 @@ stdenv.mkDerivation rec {
   '';
 
   meta = {
-    homepage = "https://github.com/lepton-eda";
     description = "Lepton Electronic Design Automation";
+
     longDescription = ''
       Lepton EDA is a suite of free software tools for designing electronics.
       It provides schematic capture, netlisting into over 30 netlist formats, and many other features.
     '';
+
+    homepage = "https://github.com/lepton-eda";
     license = lib.licenses.gpl2Plus;
-    platforms = lib.platforms.linux;
     maintainers = with lib.maintainers; [ tesq0 ];
+    platforms = lib.platforms.linux;
   };
 }

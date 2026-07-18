@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   gitUpdater,
   versionCheckHook,
 }:
@@ -9,7 +9,6 @@
 buildGoModule (finalAttrs: {
   pname = "gopodder";
   version = "1.2.1";
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "cbrgm";
@@ -19,6 +18,15 @@ buildGoModule (finalAttrs: {
   };
 
   vendorHash = "sha256-iG2IUfBVLQ7P0W4HOiGShVyD4mGUQ0dfGjG4XIYVtWU=";
+  env.CGO_ENABLED = 0;
+  doInstallCheck = true;
+
+  nativeInstallCheckInputs = [
+    versionCheckHook
+  ];
+
+  __darwinAllowLocalNetworking = true;
+  __structuredAttrs = true;
 
   ldflags = [
     "-s"
@@ -26,16 +34,6 @@ buildGoModule (finalAttrs: {
     "-X main.Revision=${finalAttrs.src.tag}"
     "-X main.BuildDate=1970-01-01"
   ];
-
-  env.CGO_ENABLED = 0;
-
-  nativeInstallCheckInputs = [
-    versionCheckHook
-  ];
-
-  doInstallCheck = true;
-
-  __darwinAllowLocalNetworking = true;
 
   passthru.updateScript = gitUpdater {
     rev-prefix = "v";

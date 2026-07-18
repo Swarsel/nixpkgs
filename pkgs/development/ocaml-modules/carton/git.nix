@@ -1,21 +1,20 @@
 {
+  astring,
+  bigstringaf,
   buildDunePackage,
   carton,
   carton-lwt,
-  bigstringaf,
-  lwt,
-  fpath,
-  result,
-  fmt,
   decompress,
-  astring,
+  fmt,
+  fpath,
+  lwt,
+  result,
 }:
 
 buildDunePackage {
-  pname = "carton-git";
-
   inherit (carton) version src postPatch;
-  duneVersion = "3";
+  inherit (carton) meta;
+  pname = "carton-git";
 
   propagatedBuildInputs = [
     carton
@@ -29,5 +28,5 @@ buildDunePackage {
     astring
   ];
 
-  inherit (carton) meta;
+  duneVersion = "3";
 }

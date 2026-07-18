@@ -1,13 +1,13 @@
 {
   lib,
   stdenv,
+  bzip2,
   cmake,
   fetchFromBitbucket,
   pkg-config,
-  zlib,
-  bzip2,
-  xxd,
   qt5,
+  xxd,
+  zlib,
 }:
 
 stdenv.mkDerivation {
@@ -34,6 +34,7 @@ stdenv.mkDerivation {
     pkg-config
     xxd
   ];
+
   buildInputs = [
     qt5.qtbase
     qt5.qtmultimedia
@@ -41,21 +42,21 @@ stdenv.mkDerivation {
     bzip2
   ];
 
-  hardeningDisable = lib.optional stdenv.hostPlatform.isDarwin "format";
-
   # Doomseeker looks for the engines in the program directory
   postInstall = ''
     mv $out/bin/* $out/lib/doomseeker/
     ln -s $out/lib/doomseeker/doomseeker $out/bin/
   '';
 
+  hardeningDisable = lib.optional stdenv.hostPlatform.isDarwin "format";
+
   meta = {
-    homepage = "http://doomseeker.drdteam.org/";
     description = "Multiplayer server browser for many Doom source ports";
-    mainProgram = "doomseeker";
+    homepage = "http://doomseeker.drdteam.org/";
     license = lib.licenses.gpl2Plus;
-    platforms = lib.platforms.unix;
     maintainers = [ ];
+    platforms = lib.platforms.unix;
+    mainProgram = "doomseeker";
     # The last successful Darwin Hydra build was in 2023
     broken = stdenv.hostPlatform.isDarwin;
   };

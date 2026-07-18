@@ -2,16 +2,15 @@
   lib,
   buildPythonPackage,
   fetchPypi,
-  replaceVars,
-  pkgs,
   hatchling,
+  pkgs,
   pytestCheckHook,
+  replaceVars,
 }:
 
 buildPythonPackage rec {
   pname = "libevdev";
   version = "0.13.1";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
@@ -24,9 +23,9 @@ buildPythonPackage rec {
     })
   ];
 
-  build-system = [ hatchling ];
-
   nativeCheckInputs = [ pytestCheckHook ];
+  build-system = [ hatchling ];
+  pyproject = true;
 
   meta = {
     description = "Python wrapper around the libevdev C library";

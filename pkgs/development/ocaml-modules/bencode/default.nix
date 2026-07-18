@@ -1,7 +1,7 @@
 {
   lib,
-  buildDunePackage,
   fetchFromGitHub,
+  buildDunePackage,
   ounit,
   qcheck,
 }:
@@ -9,7 +9,6 @@
 buildDunePackage (finalAttrs: {
   pname = "bencode";
   version = "2.0";
-  minimalOCamlVersion = "4.02.0";
 
   src = fetchFromGitHub {
     owner = "rgrinberg";
@@ -19,10 +18,13 @@ buildDunePackage (finalAttrs: {
   };
 
   doCheck = true;
+
   checkInputs = [
     ounit
     qcheck
   ];
+
+  minimalOCamlVersion = "4.02.0";
 
   meta = {
     description = "Bencode (.torrent file format) reader/writer in OCaml ";

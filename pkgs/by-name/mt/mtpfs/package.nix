@@ -3,30 +3,18 @@
   stdenv,
   fetchFromGitHub,
   autoreconfHook,
-  pkg-config,
   fuse,
-  libmtp,
   glib,
-  libmad,
   libid3tag,
+  libmad,
+  libmtp,
+  pkg-config,
   unstableGitUpdater,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
   pname = "mtpfs";
   version = "0-unstable-2024-12-10";
-
-  nativeBuildInputs = [
-    autoreconfHook
-    pkg-config
-  ];
-  buildInputs = [
-    fuse
-    libmtp
-    glib
-    libid3tag
-    libmad
-  ];
 
   src = fetchFromGitHub {
     owner = "cjd";
@@ -35,18 +23,31 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-/84C8FUW+7U7u7yOzVB6ROoIUKtyIBG0wdD5t53yays=";
   };
 
+  nativeBuildInputs = [
+    autoreconfHook
+    pkg-config
+  ];
+
+  buildInputs = [
+    fuse
+    libmtp
+    glib
+    libid3tag
+    libmad
+  ];
+
   # Use unstable version to pull in gcc-15 fix until the next release
   # is out: https://github.com/cjd/mtpfs/pull/28
   passthru.updateScript = unstableGitUpdater {
   };
 
   meta = {
-    homepage = "https://github.com/cjd/mtpfs";
     description = "FUSE Filesystem providing access to MTP devices";
-    platforms = lib.platforms.all;
+    homepage = "https://github.com/cjd/mtpfs";
     license = lib.licenses.gpl3;
     maintainers = [ lib.maintainers.qknight ];
-    broken = stdenv.hostPlatform.isDarwin; # never built on Hydra https://hydra.nixos.org/job/nixpkgs/trunk/mtpfs.x86_64-darwin
+    platforms = lib.platforms.all;
     mainProgram = "mtpfs";
+    broken = stdenv.hostPlatform.isDarwin; # never built on Hydra https://hydra.nixos.org/job/nixpkgs/trunk/mtpfs.x86_64-darwin
   };
 })

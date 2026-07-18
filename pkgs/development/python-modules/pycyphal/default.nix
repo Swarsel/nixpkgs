@@ -1,31 +1,26 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  pythonAtLeast,
-
-  # build system
-  setuptools,
-
-  # dependencies
-  numpy,
-  nunavut,
-
+  buildPythonPackage,
   # optional dependencies
   cobs,
   libpcap,
+  # dependencies
+  numpy,
+  nunavut,
   pyserial,
-  python-can,
-
   # tests
   pytest-asyncio,
   pytestCheckHook,
+  python-can,
+  pythonAtLeast,
+  # build system
+  setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "pycyphal";
   version = "1.24.5";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "OpenCyphal";
@@ -37,24 +32,6 @@ buildPythonPackage rec {
 
   # Set an event loop in the doctest helper; policy.get_event_loop no longer auto-creates one on 3.14.
   patches = lib.optional (pythonAtLeast "3.14") ./python-3.14-asyncio-loop.patch;
-
-  build-system = [ setuptools ];
-
-  pythonRelaxDeps = [ "numpy" ];
-
-  dependencies = [
-    numpy
-    nunavut
-  ];
-
-  optional-dependencies = {
-    transport-can-pythoncan = [ python-can ] ++ python-can.optional-dependencies.serial;
-    transport-serial = [
-      cobs
-      pyserial
-    ];
-    transport-udp = [ libpcap ];
-  };
 
   nativeCheckInputs = [
     pytestCheckHook
@@ -77,6 +54,13 @@ buildPythonPackage rec {
     ''}
     export PYTHONPATH="$(pwd)/.dsdl_compiled:$PYTHONPATH"
   '';
+
+  build-system = [ setuptools ];
+
+  dependencies = [
+    numpy
+    nunavut
+  ];
 
   # These require extra permissions and/or actual hardware connected
   disabledTestPaths = [
@@ -102,13 +86,28 @@ buildPythonPackage rec {
     "PythonCANMedia"
   ];
 
+  optional-dependencies = {
+    transport-can-pythoncan = [ python-can ] ++ python-can.optional-dependencies.serial;
+
+    transport-serial = [
+      cobs
+      pyserial
+    ];
+
+    transport-udp = [ libpcap ];
+  };
+
+  pyproject = true;
   pythonImportsCheck = [ "pycyphal" ];
+  pythonRelaxDeps = [ "numpy" ];
 
   meta = {
     description = "Full-featured implementation of the Cyphal protocol stack in Python";
+
     longDescription = ''
       Cyphal is an open technology for real-time intravehicular distributed computing and communication based on modern networking standards (Ethernet, CAN FD, etc.).
     '';
+
     homepage = "https://opencyphal.org/";
     changelog = "https://github.com/OpenCyphal/pycyphal/blob/${version}/CHANGELOG.rst";
     license = lib.licenses.mit;

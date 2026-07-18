@@ -1,18 +1,17 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  poetry-core,
+  buildPythonPackage,
   jsonpatch,
   jsonschema,
-  pytestCheckHook,
+  poetry-core,
   pytest-cov-stub,
+  pytestCheckHook,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "warlock";
   version = "2.0.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "bcwaldon";
@@ -38,6 +37,7 @@ buildPythonPackage (finalAttrs: {
     "test_recursive_models"
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "warlock" ];
 
   meta = {

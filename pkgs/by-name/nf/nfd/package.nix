@@ -1,8 +1,8 @@
 {
   lib,
   stdenv,
-  boost186,
   fetchFromGitHub,
+  boost186,
   libpcap,
   ndn-cxx,
   openssl,
@@ -26,15 +26,12 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-HbKPO3gwQWOZf4QZE+N7tAiqsNl1GrcwE4EUGjWmf5s=";
   };
 
-  prePatch = lib.optional withWebSocket ''
-    ln -s ${websocketpp}/include/websocketpp websocketpp
-  '';
-
   nativeBuildInputs = [
     pkg-config
     sphinx
     wafHook
   ];
+
   buildInputs = [
     libpcap
     ndn-cxx
@@ -42,6 +39,11 @@ stdenv.mkDerivation (finalAttrs: {
   ]
   ++ lib.optional withWebSocket websocketpp
   ++ lib.optional withSystemd systemd;
+
+  prePatch = lib.optional withWebSocket ''
+    ln -s ${websocketpp}/include/websocketpp websocketpp
+  '';
+
   wafConfigureFlags = [
     "--boost-includes=${boost186.dev}/include"
     "--boost-libs=${boost186.out}/lib"
@@ -49,10 +51,10 @@ stdenv.mkDerivation (finalAttrs: {
   ++ lib.optional (!withWebSocket) "--without-websocket";
 
   meta = {
-    homepage = "https://named-data.net/";
     description = "Named Data Networking (NDN) Forwarding Daemon";
+    homepage = "https://named-data.net/";
     license = lib.licenses.gpl3Plus;
-    platforms = lib.platforms.unix;
     maintainers = with lib.maintainers; [ bertof ];
+    platforms = lib.platforms.unix;
   };
 })

@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   pbr,
   sphinx,
 }:
@@ -9,7 +9,6 @@
 buildPythonPackage rec {
   pname = "sphinxcontrib-fulltoc";
   version = "1.3";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "sphinx-contrib";
@@ -19,16 +18,12 @@ buildPythonPackage rec {
   };
 
   env.PBR_VERSION = version;
-
-  build-system = [ pbr ];
-
-  dependencies = [ sphinx ];
-
   # Module has no unit tests
   doCheck = false;
-
+  build-system = [ pbr ];
+  dependencies = [ sphinx ];
+  pyproject = true;
   pythonImportsCheck = [ "sphinxcontrib.fulltoc" ];
-
   pythonNamespaces = [ "sphinxcontrib" ];
 
   meta = {

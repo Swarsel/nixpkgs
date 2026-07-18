@@ -1,8 +1,8 @@
 {
   lib,
+  fetchFromGitHub,
   buildPythonPackage,
   chameleon,
-  fetchFromGitHub,
   gitpython,
   importlib-metadata,
   lingva,
@@ -17,7 +17,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "holidays";
   version = "0.100";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "vacanza";
@@ -25,16 +24,6 @@ buildPythonPackage (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-PY2N/UysRcz8AWQQ8cA4WlY0jVV6mpxhzVE65uLuWPg=";
   };
-
-  build-system = [
-    setuptools
-
-    # l10n
-    lingva
-    chameleon
-    gitpython
-    polib
-  ];
 
   postPatch = ''
     patchShebangs scripts/l10n/*.py
@@ -49,8 +38,6 @@ buildPythonPackage (finalAttrs: {
     ./scripts/l10n/generate_mo_files.py
   '';
 
-  dependencies = [ python-dateutil ];
-
   nativeCheckInputs = [
     importlib-metadata
     numpy
@@ -59,6 +46,18 @@ buildPythonPackage (finalAttrs: {
     pytestCheckHook
   ];
 
+  build-system = [
+    setuptools
+
+    # l10n
+    lingva
+    chameleon
+    gitpython
+    polib
+  ];
+
+  dependencies = [ python-dateutil ];
+  pyproject = true;
   pythonImportsCheck = [ "holidays" ];
 
   meta = {
@@ -66,6 +65,7 @@ buildPythonPackage (finalAttrs: {
     homepage = "https://github.com/vacanza/python-holidays";
     changelog = "https://github.com/vacanza/holidays/blob/${finalAttrs.src.tag}/CHANGES.md";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       fab
       jluttine

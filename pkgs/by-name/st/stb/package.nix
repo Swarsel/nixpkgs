@@ -19,21 +19,6 @@ stdenv.mkDerivation (finalAttrs: {
 
   nativeBuildInputs = [ copyPkgconfigItems ];
 
-  pkgconfigItems = [
-    (makePkgconfigItem rec {
-      name = "stb";
-      version = "1";
-      cflags = [ "-I${variables.includedir}/stb" ];
-      variables = rec {
-        prefix = "${placeholder "out"}";
-        includedir = "${prefix}/include";
-      };
-      inherit (finalAttrs.meta) description;
-    })
-  ];
-
-  dontBuild = true;
-
   installPhase = ''
     runHook preInstall
     mkdir -p $out/include/stb
@@ -42,15 +27,33 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  dontBuild = true;
+
+  pkgconfigItems = [
+    (makePkgconfigItem rec {
+      inherit (finalAttrs.meta) description;
+      version = "1";
+      cflags = [ "-I${variables.includedir}/stb" ];
+      name = "stb";
+
+      variables = rec {
+        includedir = "${prefix}/include";
+        prefix = "${placeholder "out"}";
+      };
+    })
+  ];
+
   meta = {
     description = "Single-file public domain libraries for C/C++";
     homepage = "https://github.com/nothings/stb";
+
     license = with lib.licenses; [
       mit
       # OR
       unlicense
     ];
-    platforms = lib.platforms.all;
+
     maintainers = [ ];
+    platforms = lib.platforms.all;
   };
 })

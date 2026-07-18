@@ -1,20 +1,20 @@
 {
+  lib,
   buildFHSEnv,
   dbus,
   fetchzip,
   fontconfig,
   freetype,
   glib,
-  lib,
   libGL,
-  xkeyboard_config,
-  libxrender,
-  libxi,
-  libxext,
-  libx11,
-  libsm,
   libice,
+  libsm,
+  libx11,
   libxcb,
+  libxext,
+  libxi,
+  libxrender,
+  xkeyboard_config,
   zlib,
 }:
 
@@ -29,6 +29,13 @@ in
 
 buildFHSEnv {
   inherit pname version;
+
+  extraInstallCommands = ''
+    install -Dvm644 ${src}/Driver/99-Kingst.rules \
+      $out/lib/udev/rules.d/99-Kingst.rules
+  '';
+
+  runScript = "${src}/KingstVIS";
 
   targetPkgs = pkgs: [
     dbus
@@ -47,18 +54,11 @@ buildFHSEnv {
     zlib
   ];
 
-  extraInstallCommands = ''
-    install -Dvm644 ${src}/Driver/99-Kingst.rules \
-      $out/lib/udev/rules.d/99-Kingst.rules
-  '';
-
-  runScript = "${src}/KingstVIS";
-
   meta = {
     description = "Kingst Virtual Instruments Studio, software for logic analyzers";
     homepage = "http://www.qdkingst.com/";
-    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
     license = lib.licenses.unfree;
+    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
     maintainers = [ lib.maintainers.luisdaranda ];
     platforms = [ "x86_64-linux" ];
   };

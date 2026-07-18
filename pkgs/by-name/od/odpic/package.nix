@@ -3,8 +3,8 @@
   stdenv,
   fetchFromGitHub,
   fixDarwinDylibNames,
-  oracle-instantclient,
   libaio,
+  oracle-instantclient,
 }:
 
 let
@@ -14,7 +14,6 @@ let
 in
 stdenv.mkDerivation {
   inherit version;
-
   pname = "odpic";
 
   src = fetchFromGitHub {
@@ -25,10 +24,8 @@ stdenv.mkDerivation {
   };
 
   nativeBuildInputs = lib.optional stdenv.hostPlatform.isDarwin fixDarwinDylibNames;
-
   buildInputs = [ oracle-instantclient ] ++ lib.optionals stdenv.hostPlatform.isLinux [ libaio ];
 
-  dontPatchELF = true;
   makeFlags = [
     "PREFIX=$(out)"
     "CC=${stdenv.cc.targetPrefix}cc"
@@ -44,14 +41,18 @@ stdenv.mkDerivation {
     ''}
   '';
 
+  dontPatchELF = true;
+
   meta = {
     description = "Oracle ODPI-C library";
     homepage = "https://oracle.github.io/odpi/";
     license = lib.licenses.asl20;
+
     platforms = [
       "x86_64-linux"
       "aarch64-linux"
     ];
+
     hydraPlatforms = [ ];
   };
 }

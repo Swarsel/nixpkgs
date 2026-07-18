@@ -106,106 +106,122 @@ in
     services.snapserver = {
 
       enable = mkEnableOption "snapserver";
-
       package = mkPackageOption pkgs "snapcast" { };
+
+      openFirewall = lib.mkOption {
+        default = false;
+
+        description = ''
+          Whether to automatically open the specified ports in the firewall.
+        '';
+
+        type = lib.types.bool;
+      };
 
       settings = mkOption {
         default = { };
+
         description = ''
           Snapserver configuration.
 
           Refer to the [example configuration](https://github.com/badaix/snapcast/blob/develop/server/etc/snapserver.conf) for possible options.
         '';
+
         type = types.submodule {
-          freeformType = format.type;
           options = {
-            stream = {
-              source = mkOption {
-                type = with types; either str (listOf str);
-                example = "pipe:///tmp/snapfifo?name=default";
-                description = ''
-                  One or multiple URIs to PCM input streams.
-                '';
-              };
-            };
-
-            tcp-streaming = {
-              enabled = mkEnableOption "streaming via TCP" // {
-                default = true;
-              };
-
-              bind_to_address = mkOption {
-                default = "::";
-                description = ''
-                  Address to listen on for snapclient connections.
-                '';
-              };
-
-              port = mkOption {
-                type = types.port;
-                default = 1704;
-                description = ''
-                  Port to listen on for snapclient connections.
-                '';
-              };
-            };
-
-            tcp-control = {
-              enabled = mkEnableOption "the TCP JSON-RPC";
-
-              bind_to_address = mkOption {
-                default = "::";
-                description = ''
-                  Address to listen on for snapclient connections.
-                '';
-              };
-
-              port = mkOption {
-                type = types.port;
-                default = 1705;
-                description = ''
-                  Port to listen on for snapclient connections.
-                '';
-              };
-            };
-
             http = {
-              enabled = mkEnableOption "the HTTP JSON-RPC";
-
               bind_to_address = mkOption {
                 default = "::";
+
                 description = ''
                   Address to listen on for snapclient connections.
-                '';
-              };
-
-              port = mkOption {
-                type = types.port;
-                default = 1780;
-                description = ''
-                  Port to listen on for snapclient connections.
                 '';
               };
 
               doc_root = lib.mkOption {
-                type = with lib.types; nullOr path;
                 default = pkgs.snapweb;
                 defaultText = literalExpression "pkgs.snapweb";
+
                 description = ''
                   Path to serve from the HTTP servers root.
                 '';
+
+                type = with lib.types; nullOr path;
+              };
+
+              enabled = mkEnableOption "the HTTP JSON-RPC";
+
+              port = mkOption {
+                default = 1780;
+
+                description = ''
+                  Port to listen on for snapclient connections.
+                '';
+
+                type = types.port;
+              };
+            };
+
+            stream = {
+              source = mkOption {
+                description = ''
+                  One or multiple URIs to PCM input streams.
+                '';
+
+                example = "pipe:///tmp/snapfifo?name=default";
+                type = with types; either str (listOf str);
+              };
+            };
+
+            tcp-control = {
+              bind_to_address = mkOption {
+                default = "::";
+
+                description = ''
+                  Address to listen on for snapclient connections.
+                '';
+              };
+
+              enabled = mkEnableOption "the TCP JSON-RPC";
+
+              port = mkOption {
+                default = 1705;
+
+                description = ''
+                  Port to listen on for snapclient connections.
+                '';
+
+                type = types.port;
+              };
+            };
+
+            tcp-streaming = {
+              bind_to_address = mkOption {
+                default = "::";
+
+                description = ''
+                  Address to listen on for snapclient connections.
+                '';
+              };
+
+              enabled = mkEnableOption "streaming via TCP" // {
+                default = true;
+              };
+
+              port = mkOption {
+                default = 1704;
+
+                description = ''
+                  Port to listen on for snapclient connections.
+                '';
+
+                type = types.port;
               };
             };
           };
-        };
-      };
 
-      openFirewall = lib.mkOption {
-        type = lib.types.bool;
-        default = false;
-        description = ''
-          Whether to automatically open the specified ports in the firewall.
-        '';
+          freeformType = format.type;
+        };
       };
     };
   };
@@ -215,46 +231,52 @@ in
   config = lib.mkIf cfg.enable {
     environment.etc."snapserver.conf".source = configFile;
 
-    systemd.services.snapserver = {
-      after = [
-        "network.target"
-        "nss-lookup.target"
-      ];
-      description = "Snapserver";
-      wantedBy = [ "multi-user.target" ];
-      before = [
-        "mpd.service"
-        "mopidy.service"
-      ];
-      restartTriggers = [ configFile ];
-      serviceConfig = {
-        DynamicUser = true;
-        ExecStart = toString [
-          (lib.getExe' cfg.package "snapserver")
-          "--daemon"
-        ];
-        Type = "forking";
-        LimitRTPRIO = 50;
-        LimitRTTIME = "infinity";
-        NoNewPrivileges = true;
-        PIDFile = "/run/${name}/pid";
-        ProtectKernelTunables = true;
-        ProtectControlGroups = true;
-        ProtectKernelModules = true;
-        Restart = "on-failure";
-        RestrictAddressFamilies = "AF_INET AF_INET6 AF_UNIX AF_NETLINK";
-        RestrictNamespaces = true;
-        RuntimeDirectory = name;
-        StateDirectory = name;
-      };
-    };
-
     networking.firewall.allowedTCPPorts =
       lib.optionals (cfg.openFirewall && cfg.settings.tcp-streaming.enabled) [
         cfg.settings.tcp-streaming.port
       ]
       ++ lib.optional (cfg.openFirewall && cfg.settings.tcp-control.enabled) cfg.settings.tcp-control.port
       ++ lib.optional (cfg.openFirewall && cfg.settings.http.enabled) cfg.settings.http.port;
+
+    systemd.services.snapserver = {
+      after = [
+        "network.target"
+        "nss-lookup.target"
+      ];
+
+      before = [
+        "mpd.service"
+        "mopidy.service"
+      ];
+
+      description = "Snapserver";
+      restartTriggers = [ configFile ];
+
+      serviceConfig = {
+        DynamicUser = true;
+
+        ExecStart = toString [
+          (lib.getExe' cfg.package "snapserver")
+          "--daemon"
+        ];
+
+        LimitRTPRIO = 50;
+        LimitRTTIME = "infinity";
+        NoNewPrivileges = true;
+        PIDFile = "/run/${name}/pid";
+        ProtectControlGroups = true;
+        ProtectKernelModules = true;
+        ProtectKernelTunables = true;
+        Restart = "on-failure";
+        RestrictAddressFamilies = "AF_INET AF_INET6 AF_UNIX AF_NETLINK";
+        RestrictNamespaces = true;
+        RuntimeDirectory = name;
+        StateDirectory = name;
+        Type = "forking";
+      };
+
+      wantedBy = [ "multi-user.target" ];
+    };
   };
 
   meta = {

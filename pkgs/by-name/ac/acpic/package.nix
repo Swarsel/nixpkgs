@@ -7,7 +7,6 @@
 python3Packages.buildPythonApplication (finalAttrs: {
   pname = "acpic";
   version = "1.0.0";
-  pyproject = true;
 
   src = fetchPypi {
     inherit (finalAttrs) version pname;
@@ -26,12 +25,13 @@ python3Packages.buildPythonApplication (finalAttrs: {
 
   # no tests
   doCheck = false;
+  pyproject = true;
 
   meta = {
     description = "Daemon extending acpid event handling capabilities";
-    mainProgram = "acpic";
     homepage = "https://github.com/psliwka/acpic";
     license = lib.licenses.wtfpl;
     maintainers = with lib.maintainers; [ aacebedo ];
+    mainProgram = "acpic";
   };
 })

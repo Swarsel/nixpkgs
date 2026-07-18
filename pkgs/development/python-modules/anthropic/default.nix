@@ -1,46 +1,40 @@
 {
   lib,
-  buildPythonPackage,
-  fetchFromGitHub,
   stdenv,
-
+  fetchFromGitHub,
+  aiohttp,
+  # dependencies
+  anyio,
+  boto3,
+  botocore,
+  buildPythonPackage,
+  # test
+  dirty-equals,
+  distro,
+  docstring-parser,
+  # optional dependencies
+  google-auth,
   # build-system
   hatch-fancy-pypi-readme,
   hatchling,
-
-  # dependencies
-  anyio,
-  distro,
-  docstring-parser,
-  httpx,
-  jiter,
-  pydantic,
-  sniffio,
-  typing-extensions,
-
-  # optional dependencies
-  google-auth,
-  boto3,
-  botocore,
-  aiohttp,
-  httpx-aiohttp,
-
-  # test
-  dirty-equals,
   http-snapshot,
+  httpx,
+  httpx-aiohttp,
   inline-snapshot,
+  jiter,
   nest-asyncio,
+  pydantic,
   pytest-asyncio,
   pytest-xdist,
   pytestCheckHook,
   respx,
+  sniffio,
+  typing-extensions,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "anthropic";
   version = "0.109.1";
-  pyproject = true;
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "anthropics";
@@ -53,6 +47,20 @@ buildPythonPackage (finalAttrs: {
     substituteInPlace pyproject.toml \
       --replace-fail '"hatchling==1.26.3"' '"hatchling>=1.26.3"'
   '';
+
+  nativeCheckInputs = [
+    dirty-equals
+    http-snapshot
+    inline-snapshot
+    nest-asyncio
+    pytest-asyncio
+    pytest-xdist
+    pytestCheckHook
+    respx
+  ]
+  ++ lib.flatten (builtins.attrValues finalAttrs.passthru.optional-dependencies);
+
+  __structuredAttrs = true;
 
   build-system = [
     hatchling
@@ -70,31 +78,11 @@ buildPythonPackage (finalAttrs: {
     typing-extensions
   ];
 
-  optional-dependencies = {
-    aiohttp = [
-      aiohttp
-      httpx-aiohttp
-    ];
-    bedrock = [
-      boto3
-      botocore
-    ];
-    vertex = [ google-auth ] ++ google-auth.optional-dependencies.requests;
-  };
-
-  nativeCheckInputs = [
-    dirty-equals
-    http-snapshot
-    inline-snapshot
-    nest-asyncio
-    pytest-asyncio
-    pytest-xdist
-    pytestCheckHook
-    respx
-  ]
-  ++ lib.flatten (builtins.attrValues finalAttrs.passthru.optional-dependencies);
-
-  pythonImportsCheck = [ "anthropic" ];
+  disabledTestPaths = [
+    # Test require network access
+    "tests/api_resources"
+    "tests/lib/test_bedrock.py"
+  ];
 
   disabledTests = [
     # Test require network access
@@ -113,21 +101,34 @@ buildPythonPackage (finalAttrs: {
     "test_get_platform"
   ];
 
-  disabledTestPaths = [
-    # Test require network access
-    "tests/api_resources"
-    "tests/lib/test_bedrock.py"
-  ];
+  optional-dependencies = {
+    aiohttp = [
+      aiohttp
+      httpx-aiohttp
+    ];
+
+    bedrock = [
+      boto3
+      botocore
+    ];
+
+    vertex = [ google-auth ] ++ google-auth.optional-dependencies.requests;
+  };
+
+  pyproject = true;
 
   pytestFlags = [
     "-Wignore::DeprecationWarning"
   ];
+
+  pythonImportsCheck = [ "anthropic" ];
 
   meta = {
     description = "Anthropic's safety-first language model APIs";
     homepage = "https://github.com/anthropics/anthropic-sdk-python";
     changelog = "https://github.com/anthropics/anthropic-sdk-python/releases/tag/${finalAttrs.src.tag}";
     license = lib.licenses.mit;
+
     maintainers = [
       lib.maintainers.natsukium
       lib.maintainers.sarahec

@@ -34,8 +34,6 @@ stdenv.mkDerivation (finalAttrs: {
     "STATIC_UTILITIES="
   ];
 
-  enableParallelBuilding = true;
-
   postInstall = lib.optionalString stdenv.hostPlatform.isDarwin ''
     install_name_tool -change libfreeaptx.dylib.0 $out/lib/libfreeaptx.dylib.0 $out/bin/freeaptxdec
     install_name_tool -change libfreeaptx.dylib.0 $out/lib/libfreeaptx.dylib.0 $out/bin/freeaptxenc
@@ -43,11 +41,13 @@ stdenv.mkDerivation (finalAttrs: {
     install_name_tool -id $out/lib/libfreeaptx.dylib.0 $out/lib/libfreeaptx.dylib.0
   '';
 
+  enableParallelBuilding = true;
+
   meta = {
     description = "Free Implementation of Audio Processing Technology codec (aptX)";
-    license = lib.licenses.lgpl21Plus;
     homepage = "https://github.com/regularhunter/libfreeaptx";
-    platforms = lib.platforms.unix;
+    license = lib.licenses.lgpl21Plus;
     maintainers = [ ];
+    platforms = lib.platforms.unix;
   };
 })

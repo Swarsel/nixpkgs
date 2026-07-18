@@ -1,22 +1,25 @@
 {
   lib,
   fetchFromGitHub,
-  sdl3,
   cmake,
   cubeb,
   curl,
-  kdePackages,
   ffmpeg,
   gtk3,
-  libxrandr,
+  kddockwidgets,
+  kdePackages,
   libaio,
   libbacktrace,
   libpcap,
   libwebp,
+  libxrandr,
   llvmPackages,
   lz4,
   pkg-config,
+  plutosvg,
+  plutovg,
   qt6,
+  sdl3,
   shaderc,
   soundtouch,
   strip-nondeterminism,
@@ -26,17 +29,14 @@
   wrapGAppsHook3,
   zip,
   zstd,
-  plutovg,
-  plutosvg,
-  kddockwidgets,
 }:
 
 let
   pcsx2_patches = fetchFromGitHub {
+    hash = "sha256-C5diPrIXvzOvskKQFjYWOfjQUkb/Omw2IN3K4b3nsK4=";
     owner = "PCSX2";
     repo = "pcsx2_patches";
     rev = "39c64ed2151155a9e7b9cc41129618c1ba0ad04f";
-    hash = "sha256-C5diPrIXvzOvskKQFjYWOfjQUkb/Omw2IN3K4b3nsK4=";
   };
 
   inherit (qt6)
@@ -50,12 +50,13 @@ in
 llvmPackages.stdenv.mkDerivation (finalAttrs: {
   pname = "pcsx2";
   version = "2.6.3";
+
   src = fetchFromGitHub {
-    pname = "pcsx2-source";
     owner = "PCSX2";
     repo = "pcsx2";
     tag = "v${finalAttrs.version}";
     hash = "sha256-85PZ7ZDoannmwoFeKM7hm7fQS1X2MPxAwm6k+Sa+bGc=";
+    pname = "pcsx2-source";
   };
 
   patches = [
@@ -67,11 +68,7 @@ llvmPackages.stdenv.mkDerivation (finalAttrs: {
       --replace-fail 'set(PCSX2_GIT_TAG "")' 'set(PCSX2_GIT_TAG "${finalAttrs.src.tag}")'
   '';
 
-  cmakeFlags = [
-    (lib.cmakeBool "PACKAGE_MODE" true)
-    (lib.cmakeBool "DISABLE_ADVANCE_SIMD" true)
-    (lib.cmakeBool "USE_LINKED_FFMPEG" true)
-  ];
+  strictDeps = true;
 
   nativeBuildInputs = [
     cmake
@@ -110,7 +107,11 @@ llvmPackages.stdenv.mkDerivation (finalAttrs: {
     cubeb
   ];
 
-  strictDeps = true;
+  cmakeFlags = [
+    (lib.cmakeBool "PACKAGE_MODE" true)
+    (lib.cmakeBool "DISABLE_ADVANCE_SIMD" true)
+    (lib.cmakeBool "USE_LINKED_FFMPEG" true)
+  ];
 
   postInstall = ''
     install -Dm644 $src/pcsx2-qt/resources/icons/AppIcon64.png $out/share/icons/hicolor/64x64/apps/PCSX2.png
@@ -119,6 +120,12 @@ llvmPackages.stdenv.mkDerivation (finalAttrs: {
     zip -jq $out/share/PCSX2/resources/patches.zip ${pcsx2_patches}/patches/*
     strip-nondeterminism $out/share/PCSX2/resources/patches.zip
   '';
+
+  preFixup = ''
+    qtWrapperArgs+=("''${gappsWrapperArgs[@]}")
+  '';
+
+  dontWrapGApps = true;
 
   qtWrapperArgs =
     let
@@ -129,20 +136,14 @@ llvmPackages.stdenv.mkDerivation (finalAttrs: {
     in
     [ "--prefix LD_LIBRARY_PATH : ${libs}" ];
 
-  dontWrapGApps = true;
-
-  preFixup = ''
-    qtWrapperArgs+=("''${gappsWrapperArgs[@]}")
-  '';
-
   passthru = {
     inherit pcsx2_patches;
     updateScript.command = [ ./update.sh ];
   };
 
   meta = {
-    homepage = "https://pcsx2.net";
     description = "Playstation 2 emulator";
+
     longDescription = ''
       PCSX2 is an open-source PlayStation 2 (AKA PS2) emulator. Its purpose is
       to emulate the PS2 hardware, using a combination of MIPS CPU Interpreters,
@@ -150,18 +151,23 @@ llvmPackages.stdenv.mkDerivation (finalAttrs: {
       system memory. This allows you to play PS2 games on your PC, with many
       additional features and benefits.
     '';
+
+    homepage = "https://pcsx2.net";
     changelog = "https://github.com/PCSX2/pcsx2/releases/tag/v${finalAttrs.version}";
-    downloadPage = "https://github.com/PCSX2/pcsx2";
+
     license = with lib.licenses; [
       gpl3Plus
       lgpl3Plus
     ];
-    mainProgram = "pcsx2-qt";
+
     maintainers = with lib.maintainers; [
       _0david0mp
       govanify
       matteopacini
     ];
+
     platforms = lib.systems.inspect.patternLogicalAnd lib.systems.inspect.patterns.isLinux lib.systems.inspect.patterns.isx86_64;
+    mainProgram = "pcsx2-qt";
+    downloadPage = "https://github.com/PCSX2/pcsx2";
   };
 })

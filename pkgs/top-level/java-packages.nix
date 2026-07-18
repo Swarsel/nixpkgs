@@ -9,6 +9,7 @@ let
 in
 {
   inherit (pkgs) openjfx17 openjfx21 openjfx25;
+
   compiler = lib.recurseIntoAttrs (
     let
       # merge meta.platforms of both packages so that dependent packages and hydra build them
@@ -48,29 +49,15 @@ in
       corretto17 = callPackage ../development/compilers/corretto/17.nix { };
       corretto21 = callPackage ../development/compilers/corretto/21.nix { };
       corretto25 = callPackage ../development/compilers/corretto/25.nix { };
-
-      openjdk8 = mkOpenjdk "8";
       openjdk11 = mkOpenjdk "11";
+      openjdk11-bootstrap = temurin-bin.jdk-11;
       openjdk17 = mkOpenjdk "17";
+      openjdk17-bootstrap = temurin-bin.jdk-17;
       openjdk21 = mkOpenjdk "21";
       openjdk25 = mkOpenjdk "25";
-
+      openjdk8 = mkOpenjdk "8";
       # Legacy aliases
       openjdk8-bootstrap = temurin-bin.jdk-8;
-      openjdk11-bootstrap = temurin-bin.jdk-11;
-      openjdk17-bootstrap = temurin-bin.jdk-17;
-
-      temurin-bin = lib.recurseIntoAttrs (
-        let
-          temurinLinux = import ../development/compilers/temurin-bin/jdk-linux.nix {
-            inherit (pkgs) lib callPackage stdenv;
-          };
-          temurinDarwin = import ../development/compilers/temurin-bin/jdk-darwin.nix {
-            inherit (pkgs) lib callPackage;
-          };
-        in
-        lib.mapAttrs (name: drv: mkLinuxDarwin drv temurinDarwin.${name}) temurinLinux
-      );
 
       semeru-bin = lib.recurseIntoAttrs (
         let
@@ -82,6 +69,18 @@ in
           };
         in
         lib.mapAttrs (name: drv: mkLinuxDarwin drv semeruDarwin.${name}) semeruLinux
+      );
+
+      temurin-bin = lib.recurseIntoAttrs (
+        let
+          temurinLinux = import ../development/compilers/temurin-bin/jdk-linux.nix {
+            inherit (pkgs) lib callPackage stdenv;
+          };
+          temurinDarwin = import ../development/compilers/temurin-bin/jdk-darwin.nix {
+            inherit (pkgs) lib callPackage;
+          };
+        in
+        lib.mapAttrs (name: drv: mkLinuxDarwin drv temurinDarwin.${name}) temurinLinux
       );
     }
   );

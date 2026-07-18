@@ -1,7 +1,7 @@
 {
   lib,
-  stdenvNoCC,
   fetchurl,
+  stdenvNoCC,
 }:
 
 let
@@ -47,8 +47,6 @@ let
           inherit url sha256;
         };
 
-      sourceRoot = ".";
-
       installPhase =
         let
           dirName = lib.strings.concatStrings (lib.strings.splitString " " patchedName);
@@ -65,8 +63,11 @@ let
           runHook postInstall
         '';
 
+      sourceRoot = ".";
+
       passthru = {
         inherit releaseVersion;
+
         updateScript = {
           command = ./update.py;
           supportedFeatures = [ "commit" ];
@@ -75,6 +76,9 @@ let
 
       meta = {
         description = "Nerd Fonts: " + description;
+        homepage = "https://nerdfonts.com/";
+        changelog = "https://github.com/ryanoasis/nerd-fonts/blob/${releaseInfo.tag_name}/changelog.md";
+
         license = lib.unique (
           (with lib.licenses; [
             # > Nerd Fonts source fonts, patched fonts, and folders with explicit OFL SIL files
@@ -84,13 +88,13 @@ let
           ])
           ++ lib.toList (convertLicense licenseId)
         );
-        homepage = "https://nerdfonts.com/";
-        changelog = "https://github.com/ryanoasis/nerd-fonts/blob/${releaseInfo.tag_name}/changelog.md";
-        platforms = lib.platforms.all;
+
         maintainers = with lib.maintainers; [
           doronbehar
           rc-zb
         ];
+
+        platforms = lib.platforms.all;
       };
     };
 

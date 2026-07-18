@@ -1,6 +1,5 @@
 {
   lib,
-  python3,
   fetchFromGitLab,
   desktop-file-utils,
   gobject-introspection,
@@ -9,6 +8,7 @@
   meson,
   ninja,
   pkg-config,
+  python3,
   wrapGAppsHook4,
 }:
 
@@ -16,20 +16,20 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
   pname = "powersupply";
   version = "0.10.2";
 
-  pyproject = false;
-
   src = fetchFromGitLab {
-    domain = "gitlab.postmarketos.org";
     owner = "postmarketOS";
     repo = "powersupply";
     rev = finalAttrs.version;
     hash = "sha256-i0AZfxYWj8ct2jiXl2GnCGMU3xBSRRny4H0G/5Qs14Y=";
+    domain = "gitlab.postmarketos.org";
   };
 
   postPatch = ''
     substituteInPlace build-aux/meson/postinstall.py \
       --replace 'gtk-update-icon-cache' 'gtk4-update-icon-cache'
   '';
+
+  strictDeps = true;
 
   nativeBuildInputs = [
     desktop-file-utils
@@ -50,14 +50,14 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     pygobject3
   ];
 
-  strictDeps = true;
+  pyproject = false;
 
   meta = {
     description = "Graphical app to display power status of mobile Linux platforms";
     homepage = "https://gitlab.postmarketos.org/postmarketOS/powersupply";
     license = lib.licenses.mit;
-    mainProgram = "powersupply";
-    platforms = lib.platforms.linux;
     maintainers = with lib.maintainers; [ Luflosi ];
+    platforms = lib.platforms.linux;
+    mainProgram = "powersupply";
   };
 })

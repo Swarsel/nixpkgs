@@ -1,27 +1,27 @@
 {
   lib,
   stdenv,
+  fetchFromGitHub,
+  antlr4,
   antlr4-python3-runtime,
   asciimatics,
   buildPythonPackage,
   click,
   dacite,
   decorator,
-  fetchFromGitHub,
   first,
   jsonpath-ng,
   loguru,
   overrides,
+  parameterized,
   pillow,
   ply,
   pyfiglet,
   pyperclip,
   pytestCheckHook,
-  antlr4,
   pyyaml,
   setuptools,
   urwid,
-  parameterized,
   wcwidth,
   yamale,
 }:
@@ -29,7 +29,6 @@
 buildPythonPackage rec {
   pname = "python-fx";
   version = "0.3.2";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "cielong";
@@ -48,11 +47,16 @@ buildPythonPackage rec {
       --replace-fail "self.__super.__init__()" "super().__init__()"
   '';
 
-  pythonRelaxDeps = true;
+  nativeBuildInputs = [ antlr4 ];
+  # FAILED tests/test_event_loops.py::TwistedEventLoopTest::test_run - AssertionError: 'callback called with future outcome: True' not found in ['...
+  doCheck = !stdenv.hostPlatform.isDarwin;
+
+  nativeCheckInputs = [
+    pytestCheckHook
+    parameterized
+  ];
 
   build-system = [ setuptools ];
-
-  nativeBuildInputs = [ antlr4 ];
 
   dependencies = [
     antlr4-python3-runtime
@@ -74,20 +78,14 @@ buildPythonPackage rec {
     yamale
   ];
 
-  nativeCheckInputs = [
-    pytestCheckHook
-    parameterized
-  ];
-
-  # FAILED tests/test_event_loops.py::TwistedEventLoopTest::test_run - AssertionError: 'callback called with future outcome: True' not found in ['...
-  doCheck = !stdenv.hostPlatform.isDarwin;
-
-  pythonImportsCheck = [ "pyfx" ];
-
   disabledTests = [
     # TypeError: CliRunner.__init__() got an unexpected keyword argument 'mix_stderr'
     "test_start"
   ];
+
+  pyproject = true;
+  pythonImportsCheck = [ "pyfx" ];
+  pythonRelaxDeps = true;
 
   meta = {
     description = "Module to view JSON in a TUI";

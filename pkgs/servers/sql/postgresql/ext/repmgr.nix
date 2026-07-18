@@ -1,9 +1,9 @@
 {
-  curl,
+  lib,
   fetchFromGitHub,
+  curl,
   flex,
   json_c,
-  lib,
   postgresql,
   postgresqlBuildExtension,
 }:
@@ -27,10 +27,10 @@ postgresqlBuildExtension (finalAttrs: {
   ];
 
   meta = {
-    homepage = "https://repmgr.org/";
     description = "Replication manager for PostgreSQL cluster";
+    homepage = "https://repmgr.org/";
     license = lib.licenses.postgresql;
-    platforms = postgresql.meta.platforms;
     maintainers = with lib.maintainers; [ zimbatm ];
+    platforms = postgresql.meta.platforms;
   };
 })

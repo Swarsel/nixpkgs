@@ -4,7 +4,6 @@
   mkLibretroCore,
 }:
 mkLibretroCore {
-  core = "vbam";
   version = "0-unstable-2026-04-10";
 
   src = fetchFromGitHub {
@@ -14,8 +13,9 @@ mkLibretroCore {
     hash = "sha256-tq2MxjPwVPkZotaZAKxmiz7Zjws22E8tK+FPcS+uujk=";
   };
 
-  makefile = "Makefile";
   preBuild = "cd src/libretro";
+  core = "vbam";
+  makefile = "Makefile";
 
   meta = {
     description = "VBA-M libretro port";

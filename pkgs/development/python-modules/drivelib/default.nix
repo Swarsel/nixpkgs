@@ -15,7 +15,6 @@
 buildPythonPackage rec {
   pname = "drivelib";
   version = "0.3.0";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
@@ -26,6 +25,9 @@ buildPythonPackage rec {
     # Remove vendorized versioneer.py
     rm versioneer.py
   '';
+
+  # Tests depend on a google auth token
+  doCheck = false;
 
   build-system = [
     setuptools
@@ -41,9 +43,7 @@ buildPythonPackage rec {
     oauth2client
   ];
 
-  # Tests depend on a google auth token
-  doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "drivelib" ];
 
   meta = {

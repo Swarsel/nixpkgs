@@ -1,14 +1,14 @@
 {
   lib,
-  buildDotnetModule,
   fetchFromGitHub,
-  fetchpatch2,
-  dotnetCorePackages,
   bc,
+  buildDotnetModule,
   copyDesktopItems,
+  dotnetCorePackages,
+  fetchpatch2,
   icoutils,
-  versionCheckHook,
   makeDesktopItem,
+  versionCheckHook,
 }:
 
 buildDotnetModule rec {
@@ -24,20 +24,10 @@ buildDotnetModule rec {
 
   patches = [
     (fetchpatch2 {
+      hash = "sha256-N5a0QeJFQzvxX8RavwPILuLg10pWLVQhvodWpeUtItE=";
       name = "fix-test-missing-shasum.patch";
       url = "https://github.com/fifty-six/Scarab/commit/581e86fefb457772d2d067f094b6dafcc49a4075.patch?full_index=1";
-      hash = "sha256-N5a0QeJFQzvxX8RavwPILuLg10pWLVQhvodWpeUtItE=";
     })
-  ];
-
-  dotnet-sdk = dotnetCorePackages.sdk_8_0;
-  nugetDeps = ./deps.json;
-  projectFile = "Scarab/Scarab.csproj";
-  testProjectFile = "Scarab.Tests/Scarab.Tests.csproj";
-  executables = [ "Scarab" ];
-
-  runtimeDeps = [
-    bc
   ];
 
   nativeBuildInputs = [
@@ -46,9 +36,8 @@ buildDotnetModule rec {
   ];
 
   doCheck = true;
-
-  nativeInstallCheckInputs = [ versionCheckHook ];
   doInstallCheck = true;
+  nativeInstallCheckInputs = [ versionCheckHook ];
 
   postFixup = ''
     # Icons for the desktop file
@@ -65,29 +54,41 @@ buildDotnetModule rec {
 
   desktopItems = [
     (makeDesktopItem {
+      categories = [ "Game" ];
+      comment = "Hollow Knight mod installer and manager";
       desktopName = "Scarab";
-      name = "scarab";
       exec = "Scarab";
       icon = "scarab";
-      comment = "Hollow Knight mod installer and manager";
+      name = "scarab";
       type = "Application";
-      categories = [ "Game" ];
     })
   ];
 
+  dotnet-sdk = dotnetCorePackages.sdk_8_0;
+  executables = [ "Scarab" ];
+  nugetDeps = ./deps.json;
+  projectFile = "Scarab/Scarab.csproj";
+
+  runtimeDeps = [
+    bc
+  ];
+
+  testProjectFile = "Scarab.Tests/Scarab.Tests.csproj";
   passthru.updateScript = ./update.sh;
 
   meta = {
     description = "Hollow Knight mod installer and manager";
     homepage = "https://github.com/fifty-six/Scarab";
-    downloadPage = "https://github.com/fifty-six/Scarab/releases";
     changelog = "https://github.com/fifty-six/Scarab/releases/tag/v${version}";
     license = lib.licenses.gpl3Only;
+
     maintainers = with lib.maintainers; [
       huantian
       sigmasquadron
     ];
-    mainProgram = "Scarab";
+
     platforms = lib.platforms.linux;
+    mainProgram = "Scarab";
+    downloadPage = "https://github.com/fifty-six/Scarab/releases";
   };
 }

@@ -95,32 +95,13 @@ in
 
   options = {
 
-    system.etc.overlay = {
-      enable = lib.mkOption {
-        type = lib.types.bool;
-        default = false;
-        description = ''
-          Mount `/etc` as an overlayfs instead of generating it via a perl script.
-
-          Note: This is currently experimental. Only enable this option if you're
-          confident that you can recover your system if it breaks.
-        '';
-      };
-
-      mutable = lib.mkOption {
-        type = lib.types.bool;
-        default = true;
-        description = ''
-          Whether to mount `/etc` mutably (i.e. read-write) or immutably (i.e. read-only).
-
-          If this is false, only the immutable lowerdir is mounted. If it is
-          true, a writable upperdir is mounted on top.
-        '';
-      };
-    };
-
     environment.etc = lib.mkOption {
       default = { };
+
+      description = ''
+        Set of files that have to be linked in {file}`/etc`.
+      '';
+
       example = lib.literalExpression ''
         { example-configuration-file =
             { source = "/nix/store/.../etc/dir/file.conf.example";
@@ -129,99 +110,45 @@ in
           "default/useradd".text = "GROUP=100 ...";
         }
       '';
-      description = ''
-        Set of files that have to be linked in {file}`/etc`.
-      '';
 
       type =
         with lib.types;
         attrsOf (
           submodule (
             {
-              name,
               config,
               options,
+              name,
               ...
             }:
             {
               options = {
 
                 enable = lib.mkOption {
-                  type = lib.types.bool;
                   default = true;
+
                   description = ''
                     Whether this /etc file should be generated.  This
                     option allows specific /etc files to be disabled.
                   '';
-                };
 
-                target = lib.mkOption {
-                  type = lib.types.str;
-                  description = ''
-                    Name of symlink (relative to
-                    {file}`/etc`).  Defaults to the attribute
-                    name.
-                  '';
-                };
-
-                text = lib.mkOption {
-                  default = null;
-                  type = lib.types.nullOr lib.types.lines;
-                  description = "Text of the file.";
-                };
-
-                source = lib.mkOption {
-                  type = lib.types.path;
-                  description = "Path of the source file.";
-                };
-
-                mode = lib.mkOption {
-                  type = lib.types.str;
-                  default = "symlink";
-                  example = "0600";
-                  description = ''
-                    If set to something else than `symlink`,
-                    the file is copied instead of symlinked, with the given
-                    file mode.
-                  '';
-                };
-
-                uid = lib.mkOption {
-                  default = 0;
-                  type = lib.types.int;
-                  description = ''
-                    UID of created file. Only takes effect when the file is
-                    copied (that is, the mode is not 'symlink').
-                  '';
+                  type = lib.types.bool;
                 };
 
                 gid = lib.mkOption {
                   default = 0;
-                  type = lib.types.int;
+
                   description = ''
                     GID of created file. Only takes effect when the file is
                     copied (that is, the mode is not 'symlink').
                   '';
-                };
 
-                user = lib.mkOption {
-                  default = "+${toString config.uid}";
-                  type = lib.types.str;
-                  description = ''
-                    User name of file owner.
-
-                    Only takes effect when the file is copied (that is, the
-                    mode is not `symlink`).
-
-                    When `services.userborn.enable`, this option has no effect.
-                    You have to assign a `uid` instead. Otherwise this option
-                    takes precedence over `uid`.
-                  '';
+                  type = lib.types.int;
                 };
 
                 group = lib.mkOption {
                   default = "+${toString config.gid}";
-                  type = lib.types.str;
+
                   description = ''
                     Group name of file owner.
 
@@ -232,24 +159,117 @@ in
                     You have to assign a `gid` instead. Otherwise this option
                     takes precedence over `gid`.
                   '';
+
+                  type = lib.types.str;
+                };
+
+                mode = lib.mkOption {
+                  default = "symlink";
+
+                  description = ''
+                    If set to something else than `symlink`,
+                    the file is copied instead of symlinked, with the given
+                    file mode.
+                  '';
+
+                  example = "0600";
+                  type = lib.types.str;
+                };
+
+                source = lib.mkOption {
+                  description = "Path of the source file.";
+                  type = lib.types.path;
+                };
+
+                target = lib.mkOption {
+                  description = ''
+                    Name of symlink (relative to
+                    {file}`/etc`).  Defaults to the attribute
+                    name.
+                  '';
+
+                  type = lib.types.str;
+                };
+
+                text = lib.mkOption {
+                  default = null;
+                  description = "Text of the file.";
+                  type = lib.types.nullOr lib.types.lines;
+                };
+
+                uid = lib.mkOption {
+                  default = 0;
+
+                  description = ''
+                    UID of created file. Only takes effect when the file is
+                    copied (that is, the mode is not 'symlink').
+                  '';
+
+                  type = lib.types.int;
+                };
+
+                user = lib.mkOption {
+                  default = "+${toString config.uid}";
+
+                  description = ''
+                    User name of file owner.
+
+                    Only takes effect when the file is copied (that is, the
+                    mode is not `symlink`).
+
+                    When `services.userborn.enable`, this option has no effect.
+                    You have to assign a `uid` instead. Otherwise this option
+                    takes precedence over `uid`.
+                  '';
+
+                  type = lib.types.str;
                 };
 
               };
 
               config = {
-                target = lib.mkDefault name;
                 source = lib.mkIf (config.text != null) (
                   let
                     name' = "etc-" + lib.replaceStrings [ "/" ] [ "-" ] name;
                   in
                   lib.mkDerivedConfig options.text (pkgs.writeText name')
                 );
+
+                target = lib.mkDefault name;
               };
 
             }
           )
         );
 
+    };
+
+    system.etc.overlay = {
+      enable = lib.mkOption {
+        default = false;
+
+        description = ''
+          Mount `/etc` as an overlayfs instead of generating it via a perl script.
+
+          Note: This is currently experimental. Only enable this option if you're
+          confident that you can recover your system if it breaks.
+        '';
+
+        type = lib.types.bool;
+      };
+
+      mutable = lib.mkOption {
+        default = true;
+
+        description = ''
+          Whether to mount `/etc` mutably (i.e. read-write) or immutably (i.e. read-only).
+
+          If this is false, only the immutable lowerdir is mounted. If it is
+          true, a writable upperdir is mounted on top.
+        '';
+
+        type = lib.types.bool;
+      };
     };
 
   };
@@ -259,6 +279,7 @@ in
   config = {
 
     system.build.etc = etc;
+
     system.build.etcActivationCommands =
       let
         etcOverlayOptions = lib.concatStringsSep "," (

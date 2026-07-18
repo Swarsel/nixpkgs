@@ -8,7 +8,6 @@
 python3.pkgs.buildPythonApplication (finalAttrs: {
   pname = "heisenbridge";
   version = "1.15.4";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "hifi";
@@ -21,14 +20,12 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     echo "${finalAttrs.version}" > heisenbridge/version.txt
   '';
 
-  build-system = with python3.pkgs; [
-    setuptools
+  nativeCheckInputs = with python3.pkgs; [
+    pytestCheckHook
   ];
 
-  pythonRelaxDeps = [
-    "irc"
-    "ruamel.yaml"
-    "mautrix"
+  build-system = with python3.pkgs; [
+    setuptools
   ];
 
   dependencies = with python3.pkgs; [
@@ -38,8 +35,12 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     python-socks
   ];
 
-  nativeCheckInputs = with python3.pkgs; [
-    pytestCheckHook
+  pyproject = true;
+
+  pythonRelaxDeps = [
+    "irc"
+    "ruamel.yaml"
+    "mautrix"
   ];
 
   passthru.updateScript = nix-update-script { };

@@ -29,8 +29,8 @@ in
 
       gestures = mkOption {
         default = false;
-        type = types.bool;
         description = "Whether or not to enable libstroke for gesture support";
+        type = types.bool;
       };
     };
   };
@@ -38,14 +38,15 @@ in
   ###### implementation
 
   config = mkIf cfg.enable {
+    environment.systemPackages = [ fvwm2 ];
+
     services.xserver.windowManager.session = singleton {
       name = "fvwm2";
+
       start = ''
         ${fvwm2}/bin/fvwm &
         waitPID=$!
       '';
     };
-
-    environment.systemPackages = [ fvwm2 ];
   };
 }

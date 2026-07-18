@@ -1,21 +1,20 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  poetry-core,
+  buildPythonPackage,
   dataclasses-json,
   isodate,
-  requests,
-  requests-oauthlib,
+  poetry-core,
   pytest-cov-stub,
   pytestCheckHook,
+  requests,
+  requests-oauthlib,
   responses,
 }:
 
 buildPythonPackage rec {
   pname = "python-youtube";
   version = "0.9.9";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "sns-sdks";
@@ -24,8 +23,10 @@ buildPythonPackage rec {
     hash = "sha256-80iGKxz3rwxuYB1bqEEMxMKogiiNK43tNrVnOiVPwWU=";
   };
 
-  pythonRelaxDeps = [
-    "requests-oauthlib"
+  nativeCheckInputs = [
+    pytestCheckHook
+    responses
+    pytest-cov-stub
   ];
 
   build-system = [ poetry-core ];
@@ -37,12 +38,11 @@ buildPythonPackage rec {
     requests-oauthlib
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "pyyoutube" ];
 
-  nativeCheckInputs = [
-    pytestCheckHook
-    responses
-    pytest-cov-stub
+  pythonRelaxDeps = [
+    "requests-oauthlib"
   ];
 
   meta = {

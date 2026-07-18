@@ -1,24 +1,23 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchurl,
-  automake,
-  ocaml,
   autoconf,
-  gnum4,
-  pkg-config,
-  freetype,
-  lablgtk,
-  unzip,
+  automake,
   cairo,
   findlib,
+  freetype,
   gdk-pixbuf,
+  gnum4,
   gtk2,
+  lablgtk,
+  ocaml,
   pango,
+  pkg-config,
+  unzip,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
-  name = "ocaml${ocaml.version}-${finalAttrs.pname}-${finalAttrs.version}";
   pname = "ocaml-cairo";
   version = "1.2.0";
 
@@ -28,7 +27,6 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   patches = [ ./META.patch ];
-
   strictDeps = true;
 
   nativeBuildInputs = [
@@ -40,6 +38,7 @@ stdenv.mkDerivation (finalAttrs: {
     autoconf
     findlib
   ];
+
   buildInputs = [
     freetype
     lablgtk
@@ -49,7 +48,7 @@ stdenv.mkDerivation (finalAttrs: {
     pango
   ];
 
-  createFindlibDestdir = true;
+  makeFlags = [ "INSTALLDIR=$(out)/lib/ocaml/${ocaml.version}/site-lib/cairo" ];
 
   preConfigure = ''
     aclocal -I support
@@ -64,13 +63,14 @@ stdenv.mkDerivation (finalAttrs: {
     cp META $out/lib/ocaml/${ocaml.version}/site-lib/cairo/
   '';
 
-  makeFlags = [ "INSTALLDIR=$(out)/lib/ocaml/${ocaml.version}/site-lib/cairo" ];
+  createFindlibDestdir = true;
+  name = "ocaml${ocaml.version}-${finalAttrs.pname}-${finalAttrs.version}";
 
   meta = {
-    homepage = "http://cairographics.org/cairo-ocaml";
+    inherit (ocaml.meta) platforms;
     description = "Ocaml bindings for cairo library";
+    homepage = "http://cairographics.org/cairo-ocaml";
     license = lib.licenses.gpl2;
     broken = lib.versionAtLeast ocaml.version "4.06";
-    inherit (ocaml.meta) platforms;
   };
 })

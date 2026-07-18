@@ -10,12 +10,8 @@
 }:
 
 stdenv.mkDerivation {
-  pname = "miopen-frugally-deep-model-test";
   inherit version src;
-
-  dontConfigure = true;
-  dontInstall = true;
-  doCheck = true;
+  pname = "miopen-frugally-deep-model-test";
 
   buildPhase = ''
     runHook preBuild
@@ -31,6 +27,8 @@ stdenv.mkDerivation {
     runHook postBuild
   '';
 
+  doCheck = true;
+
   checkPhase = ''
     runHook preCheck
 
@@ -41,9 +39,12 @@ stdenv.mkDerivation {
     runHook postCheck
   '';
 
+  dontConfigure = true;
+  dontInstall = true;
+
   meta = {
     description = "Test that frugally-deep can load MIOpen model files";
-    teams = with lib.teams; [ rocm ];
     platforms = lib.platforms.linux;
+    teams = with lib.teams; [ rocm ];
   };
 }

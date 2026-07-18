@@ -6,13 +6,6 @@
 }:
 let
   settingsFormat = {
-    type =
-      with lib.types;
-      attrsOf (oneOf [
-        bool
-        int
-        str
-      ]);
     generate =
       name: attrs:
       pkgs.writeText name (
@@ -20,6 +13,14 @@ let
           lib.attrsets.mapAttrsToList (key: value: "${key}=${builtins.toJSON value}") attrs
         )
       );
+
+    type =
+      with lib.types;
+      attrsOf (oneOf [
+        bool
+        int
+        str
+      ]);
   };
 in
 {
@@ -28,6 +29,7 @@ in
     services.uhub = lib.mkOption {
       default = { };
       description = "Uhub ADC hub instances";
+
       type = lib.types.attrsOf (
         lib.types.submodule {
           options = {
@@ -37,48 +39,54 @@ in
             };
 
             enableTLS = lib.mkOption {
-              type = lib.types.bool;
               default = false;
               description = "Whether to enable TLS support.";
-            };
-
-            settings = lib.mkOption {
-              inherit (settingsFormat) type;
-              description = ''
-                Configuration of uhub.
-                See <https://www.uhub.org/doc/config.php> for a list of options.
-              '';
-              default = { };
-              example = {
-                server_bind_addr = "any";
-                server_port = 1511;
-                hub_name = "My Public Hub";
-                hub_description = "Yet another ADC hub";
-                max_users = 150;
-              };
+              type = lib.types.bool;
             };
 
             plugins = lib.mkOption {
+              default = [ ];
               description = "Uhub plugin configuration.";
+
               type =
                 with lib.types;
                 listOf (submodule {
                   options = {
                     plugin = lib.mkOption {
-                      type = path;
-                      example = lib.literalExpression "$${pkgs.uhub}/plugins/mod_auth_sqlite.so";
                       description = "Path to plugin file.";
+                      example = lib.literalExpression "$${pkgs.uhub}/plugins/mod_auth_sqlite.so";
+                      type = path;
                     };
+
                     settings = lib.mkOption {
                       description = "Settings specific to this plugin.";
-                      type = with types; attrsOf str;
+
                       example = {
                         file = "/etc/uhub/users.db";
                       };
+
+                      type = with types; attrsOf str;
                     };
                   };
                 });
-              default = [ ];
+            };
+
+            settings = lib.mkOption {
+              inherit (settingsFormat) type;
+              default = { };
+
+              description = ''
+                Configuration of uhub.
+                See <https://www.uhub.org/doc/config.php> for a list of options.
+              '';
+
+              example = {
+                hub_description = "Yet another ADC hub";
+                hub_name = "My Public Hub";
+                max_users = 150;
+                server_bind_addr = "any";
+                server_port = 1511;
+              };
             };
 
           };
@@ -98,7 +106,6 @@ in
         name: cfg:
         let
           settings' = cfg.settings // {
-            tls_enable = cfg.enableTLS;
             file_plugins = pkgs.writeText "uhub-plugins.conf" (
               lib.strings.concatStringsSep "\n" (
                 map (
@@ -109,6 +116,8 @@ in
                 ) cfg.plugins
               )
             );
+
+            tls_enable = cfg.enableTLS;
           };
         in
         {
@@ -119,24 +128,26 @@ in
 
       systemd.services = lib.attrsets.mapAttrs' (name: cfg: {
         name = "uhub-${name}";
+
         value =
           let
             pkg = pkgs.uhub.override { tlsSupport = cfg.enableTLS; };
           in
           {
-            description = "high performance peer-to-peer hub for the ADC network";
             after = [ "network.target" ];
-            wantedBy = [ "multi-user.target" ];
+            description = "high performance peer-to-peer hub for the ADC network";
             reloadIfChanged = true;
-            serviceConfig = {
-              Type = "notify";
-              ExecStart = "${pkg}/bin/uhub -c /etc/uhub/${name}.conf -L";
-              ExecReload = "${pkgs.coreutils}/bin/kill -HUP $MAINPID";
-              DynamicUser = true;
 
+            serviceConfig = {
               AmbientCapabilities = "CAP_NET_BIND_SERVICE";
               CapabilityBoundingSet = "CAP_NET_BIND_SERVICE";
+              DynamicUser = true;
+              ExecReload = "${pkgs.coreutils}/bin/kill -HUP $MAINPID";
+              ExecStart = "${pkg}/bin/uhub -c /etc/uhub/${name}.conf -L";
+              Type = "notify";
             };
+
+            wantedBy = [ "multi-user.target" ];
           };
       }) hubs;
     };

@@ -1,8 +1,7 @@
 {
   lib,
-  fetchPypi,
   buildPythonPackage,
-
+  fetchPypi,
   # build-system
   setuptools,
 }:
@@ -10,20 +9,20 @@
 buildPythonPackage rec {
   pname = "pymorphy3-dicts-uk";
   version = "2.4.1.1.1663094765";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
     hash = "sha256-s5RaNBNuGTgGzeZXuicdiKYHYedRN8E9E4qNFCqNEqw=";
   };
 
+  # has no tests
+  doCheck = false;
+
   build-system = [
     setuptools
   ];
 
-  # has no tests
-  doCheck = false;
-
+  format = "setuptools";
   pythonImportsCheck = [ "pymorphy3_dicts_uk" ];
 
   meta = {

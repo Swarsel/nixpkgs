@@ -1,12 +1,12 @@
 {
   lib,
-  stdenvNoCC,
   fetchurl,
   _7zz,
   cpio,
-  xar,
   darwin,
   nix-update-script,
+  stdenvNoCC,
+  xar,
 }:
 
 stdenvNoCC.mkDerivation (finalAttrs: {
@@ -25,16 +25,6 @@ stdenvNoCC.mkDerivation (finalAttrs: {
   ]
   ++ lib.optionals stdenvNoCC.hostPlatform.isAarch64 [ darwin.autoSignDarwinBinariesHook ];
 
-  unpackPhase = ''
-    runHook preUnpack
-
-    7zz x $src
-    xar -xf macSKK-${finalAttrs.version}.pkg
-    cat app.pkg/Payload | gunzip -dc | cpio -i
-
-    runHook postUnpack
-  '';
-
   installPhase = ''
     runHook preInstall
 
@@ -46,6 +36,16 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  unpackPhase = ''
+    runHook preUnpack
+
+    7zz x $src
+    xar -xf macSKK-${finalAttrs.version}.pkg
+    cat app.pkg/Payload | gunzip -dc | cpio -i
+
+    runHook postUnpack
+  '';
+
   passthru.updateScript = nix-update-script { };
 
   meta = {
@@ -53,9 +53,9 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     homepage = "https://github.com/mtgto/macSKK";
     changelog = "https://github.com/mtgto/macSKK/blob/${finalAttrs.version}/CHANGELOG.md";
     license = lib.licenses.gpl3Plus;
+    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
     maintainers = with lib.maintainers; [ wattmto ];
     platforms = lib.platforms.darwin;
-    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
     mainProgram = "macSKK";
   };
 })

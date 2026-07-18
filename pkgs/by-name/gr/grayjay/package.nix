@@ -1,63 +1,59 @@
 {
-  buildDotnetModule,
-  fetchFromGitLab,
-  dotnetCorePackages,
-  buildNpmPackage,
   lib,
-  libz,
+  fetchFromGitLab,
+  _experimental-update-script-combinators,
+  alsa-lib,
+  atk,
+  autoPatchelfHook,
+  buildDotnetModule,
+  buildNpmPackage,
+  cairo,
+  copyDesktopItems,
+  cups,
+  dbus,
+  dotnetCorePackages,
+  expat,
+  glib,
+  gtk3,
   icu,
-  openssl,
+  krb5,
+  libGL,
+  libdrm,
   libgbm,
-  libxrandr,
-  libxfixes,
-  libxext,
-  libxdamage,
-  libxcomposite,
+  libgcc,
+  libsecret,
   libx11,
   libxcb,
-  gtk3,
-  glib,
-  nss,
-  nspr,
-  dbus,
-  atk,
-  cups,
-  libdrm,
-  expat,
+  libxcomposite,
+  libxdamage,
+  libxext,
+  libxfixes,
   libxkbcommon,
-  pango,
-  cairo,
-  udev,
-  alsa-lib,
-  libGL,
-  libsecret,
-  nix-update-script,
-  autoPatchelfHook,
+  libxrandr,
+  libz,
   makeDesktopItem,
-  copyDesktopItems,
-  libgcc,
-  krb5,
+  nix-update-script,
+  nspr,
+  nss,
+  openssl,
+  pango,
+  udev,
   wrapGAppsHook3,
-  _experimental-update-script-combinators,
 }:
 let
   version = "17";
   src = fetchFromGitLab {
-    domain = "gitlab.futo.org";
     owner = "videostreaming";
     repo = "Grayjay.Desktop";
     tag = version;
     hash = "sha256-/oeoLXKewjYkCO7naZNOzauWm1OYDKnsxXY9EkI7fTM=";
     fetchSubmodules = true;
+    domain = "gitlab.futo.org";
     fetchLFS = true;
   };
   frontend = buildNpmPackage {
-    pname = "grayjay-frontend";
     inherit version src;
-
-    sourceRoot = "source/Grayjay.Desktop.Web";
-
-    npmBuildScript = "build";
+    pname = "grayjay-frontend";
     npmDepsHash = "sha256-3yJIPkuEvkFL9Wb4y/r0yEULQbXx/wHqicFBLzOPj68=";
 
     installPhase = ''
@@ -65,12 +61,20 @@ let
       cp -r dist/ $out
       runHook postInstall
     '';
+
+    npmBuildScript = "build";
+    sourceRoot = "source/Grayjay.Desktop.Web";
   };
 in
 buildDotnetModule (finalAttrs: {
+  inherit version src frontend;
   pname = "grayjay";
 
-  inherit version src frontend;
+  nativeBuildInputs = [
+    autoPatchelfHook
+    wrapGAppsHook3
+    copyDesktopItems
+  ];
 
   buildInputs = [
     openssl
@@ -85,53 +89,6 @@ buildDotnetModule (finalAttrs: {
     icu
     krb5
   ];
-
-  nativeBuildInputs = [
-    autoPatchelfHook
-    wrapGAppsHook3
-    copyDesktopItems
-  ];
-
-  dontWrapGApps = true;
-
-  desktopItems = [
-    (makeDesktopItem {
-      name = "Grayjay";
-      exec = "Grayjay";
-      icon = "grayjay";
-      comment = "Cross platform media application for streaming and downloading media";
-      desktopName = "Grayjay Desktop";
-      categories = [ "Network" ];
-    })
-  ];
-
-  projectFile = [
-    "Grayjay.ClientServer/Grayjay.ClientServer.csproj"
-    "Grayjay.Engine/Grayjay.Engine/Grayjay.Engine.csproj"
-    "Grayjay.Desktop.CEF/Grayjay.Desktop.CEF.csproj"
-    "FUTO.MDNS/FUTO.MDNS/FUTO.MDNS.csproj"
-    "JustCef/DotCef.csproj"
-  ];
-
-  testProjectFile = [
-    "Grayjay.Engine/Grayjay.Engine.Tests/Grayjay.Engine.Tests.csproj"
-  ];
-
-  nugetDeps = ./deps.json;
-
-  dotnet-sdk = dotnetCorePackages.sdk_9_0 // {
-    inherit
-      (dotnetCorePackages.combinePackages [
-        dotnetCorePackages.sdk_9_0
-        dotnetCorePackages.sdk_8_0
-      ])
-      packages
-      targetPackages
-      ;
-  };
-  dotnet-runtime = dotnetCorePackages.aspnetcore_8_0;
-
-  executables = [ "Grayjay" ];
 
   preBuild = ''
     rm -r Grayjay.ClientServer/wwwroot/web
@@ -148,14 +105,51 @@ buildDotnetModule (finalAttrs: {
     ln -s $out/lib/grayjay/grayjay.png $out/share/icons/hicolor/scalable/apps/grayjay.png
   '';
 
+  preFixup = ''
+    makeWrapperArgs+=("''${gappsWrapperArgs[@]}")
+  '';
+
+  desktopItems = [
+    (makeDesktopItem {
+      categories = [ "Network" ];
+      comment = "Cross platform media application for streaming and downloading media";
+      desktopName = "Grayjay Desktop";
+      exec = "Grayjay";
+      icon = "grayjay";
+      name = "Grayjay";
+    })
+  ];
+
+  dontWrapGApps = true;
+  dotnet-runtime = dotnetCorePackages.aspnetcore_8_0;
+
+  dotnet-sdk = dotnetCorePackages.sdk_9_0 // {
+    inherit
+      (dotnetCorePackages.combinePackages [
+        dotnetCorePackages.sdk_9_0
+        dotnetCorePackages.sdk_8_0
+      ])
+      packages
+      targetPackages
+      ;
+  };
+
+  executables = [ "Grayjay" ];
+
   makeWrapperArgs = [
     "--chdir"
     "${placeholder "out"}/lib/grayjay"
   ];
 
-  preFixup = ''
-    makeWrapperArgs+=("''${gappsWrapperArgs[@]}")
-  '';
+  nugetDeps = ./deps.json;
+
+  projectFile = [
+    "Grayjay.ClientServer/Grayjay.ClientServer.csproj"
+    "Grayjay.Engine/Grayjay.Engine/Grayjay.Engine.csproj"
+    "Grayjay.Desktop.CEF/Grayjay.Desktop.CEF.csproj"
+    "FUTO.MDNS/FUTO.MDNS/FUTO.MDNS.csproj"
+    "JustCef/DotCef.csproj"
+  ];
 
   runtimeDeps = [
     libz
@@ -180,6 +174,10 @@ buildDotnetModule (finalAttrs: {
     libsecret
   ];
 
+  testProjectFile = [
+    "Grayjay.Engine/Grayjay.Engine.Tests/Grayjay.Engine.Tests.csproj"
+  ];
+
   passthru.updateScript = _experimental-update-script-combinators.sequence [
     (nix-update-script {
       extraArgs = [
@@ -194,6 +192,7 @@ buildDotnetModule (finalAttrs: {
 
   meta = {
     description = "Cross-platform application to stream and download content from various sources";
+
     longDescription = ''
       Grayjay is a cross-platform application that enables users to
       stream and download multimedia content from various online sources,
@@ -201,12 +200,15 @@ buildDotnetModule (finalAttrs: {
       It also offers an extensible plugin API to create and import new
       integrations.
     '';
+
     homepage = "https://grayjay.app/desktop/";
     license = lib.licenses.sfl;
+
     maintainers = with lib.maintainers; [
       kruziikrel13
       samfundev
     ];
+
     platforms = [ "x86_64-linux" ];
     mainProgram = "Grayjay";
   };

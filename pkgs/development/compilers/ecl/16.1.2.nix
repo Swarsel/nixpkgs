@@ -2,19 +2,19 @@
   lib,
   stdenv,
   fetchurl,
-  fetchpatch,
-  libtool,
   autoconf,
   automake,
-  gmp,
-  mpfr,
-  libffi,
-  makeWrapper,
-  noUnicode ? false,
+  boehmgc,
+  fetchpatch,
   gcc,
+  gmp,
+  libffi,
+  libtool,
+  makeWrapper,
+  mpfr,
+  noUnicode ? false,
   threadSupport ? false,
   useBoehmgc ? true,
-  boehmgc,
 }:
 
 stdenv.mkDerivation rec {
@@ -26,12 +26,31 @@ stdenv.mkDerivation rec {
     sha256 = "sha256-LUgrGgpPvV2IFDRRcDInnYCMtkBeIt2R721zNTRGS5k=";
   };
 
+  patches = [
+    (fetchpatch {
+      # Avoid infinite loop, see https://gitlab.com/embeddable-common-lisp/ecl/issues/43 (fixed upstream)
+      name = "avoid-infinite-loop.patch";
+      sha256 = "07vw91psbc9gdn8grql46ra8lq3bgkzg5v480chnbryna4sv6lbb";
+      url = "https://gitlab.com/embeddable-common-lisp/ecl/commit/caba1989f40ef917e7486f41b9cd5c7e3c5c2d79.patch";
+    })
+    (fetchpatch {
+      # Fix getcwd with long pathnames
+      # Rebased version of
+      # https://gitlab.com/embeddable-common-lisp/ecl/commit/ac5f011f57a85a38627af154bc3ee7580e7fecd4.patch
+      name = "getcwd.patch";
+      sha256 = "1fbi8gn7rv8nqff5mpaijsrch3k3z7qc5cn4h1vl8qrr8xwqlqhb";
+      url = "https://raw.githubusercontent.com/sagemath/sage/07d6c37d18811e2b377a9689790a7c5e24da16ba/build/pkgs/ecl/patches/16.1.2-getcwd.patch";
+    })
+    ./ecl-1.16.2-libffi-3.3-abi.patch
+  ];
+
   nativeBuildInputs = [
     autoconf
     automake
     makeWrapper
     libtool
   ];
+
   propagatedBuildInputs = [
     libffi
     gmp
@@ -51,26 +70,6 @@ stdenv.mkDerivation rec {
     "--with-libffi-prefix=${lib.getDev libffi}"
   ]
   ++ lib.optional (!noUnicode) "--enable-unicode";
-
-  patches = [
-    (fetchpatch {
-      # Avoid infinite loop, see https://gitlab.com/embeddable-common-lisp/ecl/issues/43 (fixed upstream)
-      name = "avoid-infinite-loop.patch";
-      url = "https://gitlab.com/embeddable-common-lisp/ecl/commit/caba1989f40ef917e7486f41b9cd5c7e3c5c2d79.patch";
-      sha256 = "07vw91psbc9gdn8grql46ra8lq3bgkzg5v480chnbryna4sv6lbb";
-    })
-    (fetchpatch {
-      # Fix getcwd with long pathnames
-      # Rebased version of
-      # https://gitlab.com/embeddable-common-lisp/ecl/commit/ac5f011f57a85a38627af154bc3ee7580e7fecd4.patch
-      name = "getcwd.patch";
-      url = "https://raw.githubusercontent.com/sagemath/sage/07d6c37d18811e2b377a9689790a7c5e24da16ba/build/pkgs/ecl/patches/16.1.2-getcwd.patch";
-      sha256 = "1fbi8gn7rv8nqff5mpaijsrch3k3z7qc5cn4h1vl8qrr8xwqlqhb";
-    })
-    ./ecl-1.16.2-libffi-3.3-abi.patch
-  ];
-
-  hardeningDisable = [ "format" ];
 
   postInstall = ''
     sed -e 's/@[-a-zA-Z_]*@//g' -i $out/bin/ecl-config
@@ -96,12 +95,14 @@ stdenv.mkDerivation rec {
     --prefix NIX_LDFLAGS_BEFORE_${gcc.bintools.suffixSalt} ' ' "-L${lib.getLib libffi}/lib"
   '';
 
+  hardeningDisable = [ "format" ];
+
   meta = {
     description = "Lisp implementation aiming to be small, fast and easy to embed";
     license = lib.licenses.mit;
-    teams = [ lib.teams.lisp ];
     platforms = lib.platforms.unix;
     # never built on aarch64-darwin since first introduction in nixpkgs
     broken = stdenv.hostPlatform.isDarwin && stdenv.hostPlatform.isAarch64;
+    teams = [ lib.teams.lisp ];
   };
 }

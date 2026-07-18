@@ -10,20 +10,19 @@
 buildPythonPackage rec {
   pname = "validobj";
   version = "1.6";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
     hash = "sha256-dXUvInNYkl10zdGQhJ6h1JqCNlZ+VsvwnEMb2xj6qOA=";
   };
 
-  build-system = [ flit-core ];
-
   nativeCheckInputs = [
     hypothesis
     pytestCheckHook
   ];
 
+  build-system = [ flit-core ];
+  pyproject = true;
   pythonImportsCheck = [ "validobj" ];
 
   meta = {

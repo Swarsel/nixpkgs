@@ -1,13 +1,12 @@
 {
   lib,
-  python3,
   fetchFromGitHub,
+  python3,
 }:
 
 python3.pkgs.buildPythonApplication (finalAttrs: {
   pname = "ghauri";
   version = "1.3.8";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "r0oth3x49";
@@ -15,6 +14,9 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     tag = finalAttrs.version;
     hash = "sha256-GEUuQMtp8XO32uOIILWiMfngPXx/3vCKk+YbA0E13rg=";
   };
+
+  # Project has no tests
+  doCheck = false;
 
   build-system = with python3.pkgs; [
     setuptools
@@ -27,8 +29,7 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     tldextract
   ];
 
-  # Project has no tests
-  doCheck = false;
+  pyproject = true;
 
   pythonImportsCheck = [
     "ghauri"

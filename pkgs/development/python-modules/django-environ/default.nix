@@ -9,21 +9,18 @@
 buildPythonPackage rec {
   pname = "django-environ";
   version = "0.12.0";
-  pyproject = true;
 
   src = fetchPypi {
-    pname = "django_environ";
     inherit version;
     hash = "sha256-In3IkUU91b3nacNEnPSnS28u6PerI2HJOgcGj0F5BBo=";
+    pname = "django_environ";
   };
 
-  build-system = [ setuptools ];
-
   buildInputs = [ django ];
-
   # The testsuite fails to modify the base environment
   doCheck = false;
-
+  build-system = [ setuptools ];
+  pyproject = true;
   pythonImportsCheck = [ "environ" ];
 
   meta = {

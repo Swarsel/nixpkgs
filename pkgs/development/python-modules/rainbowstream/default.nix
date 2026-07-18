@@ -1,8 +1,8 @@
 {
   lib,
+  fetchFromGitHub,
   arrow,
   buildPythonPackage,
-  fetchFromGitHub,
   freetype,
   glibcLocales,
   libjpeg,
@@ -20,7 +20,6 @@
 buildPythonPackage {
   pname = "rainbowstream";
   version = "1.5.5";
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "orakaro";
@@ -29,6 +28,15 @@ buildPythonPackage {
     rev = "96141fac10675e0775d703f65a59c4477a48c57e";
     sha256 = "0j0qcc428lk9b3l0cr2j418gd6wd5k4160ham2zn2mmdmxn5bldg";
   };
+
+  patches = [ ./image.patch ];
+
+  postPatch = ''
+    clib=$out/${python.sitePackages}/rainbowstream/image.so
+    substituteInPlace rainbowstream/c_image.py \
+      --replace @CLIB@ $clib
+    sed -i 's/requests.*"/requests"/' setup.py
+  '';
 
   buildInputs = [
     freetype
@@ -48,16 +56,9 @@ buildPythonPackage {
     twitter
   ];
 
-  patches = [ ./image.patch ];
-
-  postPatch = ''
-    clib=$out/${python.sitePackages}/rainbowstream/image.so
-    substituteInPlace rainbowstream/c_image.py \
-      --replace @CLIB@ $clib
-    sed -i 's/requests.*"/requests"/' setup.py
-  '';
-
   env.LC_ALL = "en_US.UTF-8";
+  # Project has no tests
+  doCheck = false;
 
   postInstall = ''
     mkdir -p $out/lib
@@ -68,16 +69,14 @@ buildPythonPackage {
     done
   '';
 
-  # Project has no tests
-  doCheck = false;
-
+  format = "setuptools";
   pythonImportsCheck = [ "rainbowstream" ];
 
   meta = {
     description = "Streaming command-line twitter client";
-    mainProgram = "rainbowstream";
     homepage = "https://github.com/orakaro/rainbowstream";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ thoughtpolice ];
+    mainProgram = "rainbowstream";
   };
 }

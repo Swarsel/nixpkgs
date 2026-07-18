@@ -1,15 +1,15 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  python,
+  buildPythonPackage,
   pkgs,
   pycparser,
   pytestCheckHook,
-  setuptools-git-versioning,
+  python,
   setuptools,
-  writableTmpDirAsHomeHook,
+  setuptools-git-versioning,
   stdenvNoCC,
+  writableTmpDirAsHomeHook,
 }:
 let
   inherit (stdenvNoCC) targetPlatform;
@@ -19,7 +19,6 @@ in
 buildPythonPackage (finalAttrs: {
   pname = "wasmtime";
   version = "46.0.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "bytecodealliance";
@@ -48,26 +47,13 @@ buildPythonPackage (finalAttrs: {
     ln -s ${lib.getLib pkgs.wasmtime}/lib/libwasmtime${libExt} wasmtime/${systemDir}/_libwasmtime${libExt}
   '';
 
-  build-system = [
-    setuptools
-    setuptools-git-versioning
-  ];
-
   buildInputs = [ pkgs.wasmtime ];
-
-  postInstall = ''
-    # Ensure the installed module can find the shared library at runtime
-    mkdir -p "$out/${python.sitePackages}/wasmtime/${systemDir}"
-    ln -sf ${lib.getLib pkgs.wasmtime}/lib/libwasmtime${libExt} "$out/${python.sitePackages}/wasmtime/${systemDir}/_libwasmtime${libExt}"
-  '';
 
   nativeCheckInputs = [
     pycparser
     pytestCheckHook
     writableTmpDirAsHomeHook
   ];
-
-  pythonImportsCheck = [ "wasmtime" ];
 
   preCheck = ''
     # cbindgen.py checks bindings against C headers during test collection.
@@ -79,6 +65,20 @@ buildPythonPackage (finalAttrs: {
     # $out is first in path which causes "import file mismatch"
     export PYTHONPATH="$PWD:$PYTHONPATH"
   '';
+
+  postInstall = ''
+    # Ensure the installed module can find the shared library at runtime
+    mkdir -p "$out/${python.sitePackages}/wasmtime/${systemDir}"
+    ln -sf ${lib.getLib pkgs.wasmtime}/lib/libwasmtime${libExt} "$out/${python.sitePackages}/wasmtime/${systemDir}/_libwasmtime${libExt}"
+  '';
+
+  build-system = [
+    setuptools
+    setuptools-git-versioning
+  ];
+
+  pyproject = true;
+  pythonImportsCheck = [ "wasmtime" ];
 
   meta = {
     description = "Python WebAssembly runtime powered by Wasmtime";

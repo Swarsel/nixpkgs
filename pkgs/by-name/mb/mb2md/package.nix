@@ -10,8 +10,8 @@ let
   perlDeps = with perlPackages; [ TimeDate ];
 in
 stdenv.mkDerivation (finalAttrs: {
-  version = "3.20";
   pname = "mb2md";
+  version = "3.20";
 
   src = fetchurl {
     url = "http://batleth.sapienti-sat.org/projects/mb2md/mb2md-${finalAttrs.version}.pl.gz";
@@ -20,11 +20,6 @@ stdenv.mkDerivation (finalAttrs: {
 
   nativeBuildInputs = [ makeWrapper ];
   buildInputs = [ perlPackages.perl ];
-
-  unpackPhase = ''
-    sourceRoot=.
-    gzip -d < $src > mb2md.pl
-  '';
 
   installPhase = ''
     install -D $sourceRoot/mb2md.pl $out/bin/mb2md
@@ -35,11 +30,16 @@ stdenv.mkDerivation (finalAttrs: {
       --set PERL5LIB "${perlPackages.makePerlPath perlDeps}"
   '';
 
+  unpackPhase = ''
+    sourceRoot=.
+    gzip -d < $src > mb2md.pl
+  '';
+
   meta = {
     description = "mbox to maildir tool";
-    mainProgram = "mb2md";
     license = lib.licenses.publicDomain;
-    platforms = lib.platforms.all;
     maintainers = [ lib.maintainers.jb55 ];
+    platforms = lib.platforms.all;
+    mainProgram = "mb2md";
   };
 })

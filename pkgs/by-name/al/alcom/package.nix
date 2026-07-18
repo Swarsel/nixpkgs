@@ -1,10 +1,11 @@
 {
+  lib,
+  stdenv,
+  fetchFromGitHub,
   cargo-about,
   cargo-tauri,
-  fetchFromGitHub,
   fetchNpmDeps,
   glib-networking,
-  lib,
   libsoup_3,
   makeBinaryWrapper,
   nodejs,
@@ -12,9 +13,8 @@
   openssl,
   pkg-config,
   rustPlatform,
-  stdenv,
-  wrapGAppsHook4,
   webkitgtk_4_1,
+  wrapGAppsHook4,
 }:
 let
   subdir = "vrc-get-gui";
@@ -22,6 +22,7 @@ in
 rustPlatform.buildRustPackage (finalAttrs: {
   pname = "alcom";
   version = "1.1.8";
+
   src = fetchFromGitHub {
     owner = "vrc-get";
     repo = "vrc-get";
@@ -49,8 +50,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
   ];
 
   cargoHash = "sha256-z3VLIRTyS127TS+jdGTdlt1xmMHdwFAsMzkkuVc78lU=";
-  buildFeatures = [ "no-self-updater" ];
-  buildAndTestSubdir = subdir;
 
   postInstall = ''
     install -Dm644 ${subdir}/icons/icon.png $out/share/icons/hicolor/512x512/apps/ALCOM.png
@@ -59,23 +58,29 @@ rustPlatform.buildRustPackage (finalAttrs: {
     done
   '';
 
+  buildAndTestSubdir = subdir;
+  buildFeatures = [ "no-self-updater" ];
+
   npmDeps = fetchNpmDeps {
-    name = "${finalAttrs.pname}-${finalAttrs.version}-npm-deps";
     inherit (finalAttrs) src;
-    sourceRoot = "${finalAttrs.src.name}/${subdir}";
     hash = "sha256-flWM2ctaGak/KaTZ5sCj3Z28vIqOeiX8VJMTaIxg2fw=";
+    name = "${finalAttrs.pname}-${finalAttrs.version}-npm-deps";
+    sourceRoot = "${finalAttrs.src.name}/${subdir}";
   };
+
   npmRoot = subdir;
 
   meta = {
     description = "Experimental GUI application to manage VRChat Unity Projects";
     homepage = "https://github.com/vrc-get/vrc-get";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       Scrumplex
       ImSapphire
     ];
-    broken = stdenv.hostPlatform.isDarwin;
+
     mainProgram = "ALCOM";
+    broken = stdenv.hostPlatform.isDarwin;
   };
 })

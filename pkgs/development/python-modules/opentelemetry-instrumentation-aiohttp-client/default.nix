@@ -1,4 +1,5 @@
 {
+  aiohttp,
   buildPythonPackage,
   hatchling,
   opentelemetry-api,
@@ -6,17 +7,21 @@
   opentelemetry-semantic-conventions,
   opentelemetry-test-utils,
   opentelemetry-util-http,
-  wrapt,
   pytestCheckHook,
-  aiohttp,
+  wrapt,
 }:
 
 buildPythonPackage {
   inherit (opentelemetry-instrumentation) version src;
   pname = "opentelemetry-instrumentation-aiohttp-client";
-  pyproject = true;
+  # missing https://github.com/ezequielramos/http-server-mock
+  # which looks unmaintained
+  doCheck = false;
 
-  sourceRoot = "${opentelemetry-instrumentation.src.name}/instrumentation/opentelemetry-instrumentation-aiohttp-client";
+  nativeCheckInputs = [
+    opentelemetry-test-utils
+    pytestCheckHook
+  ];
 
   build-system = [ hatchling ];
 
@@ -29,19 +34,12 @@ buildPythonPackage {
     wrapt
   ];
 
-  # missing https://github.com/ezequielramos/http-server-mock
-  # which looks unmaintained
-  doCheck = false;
-
-  nativeCheckInputs = [
-    opentelemetry-test-utils
-    pytestCheckHook
-  ];
-
+  pyproject = true;
   pythonImportsCheck = [ "opentelemetry.instrumentation.aiohttp_client" ];
+  sourceRoot = "${opentelemetry-instrumentation.src.name}/instrumentation/opentelemetry-instrumentation-aiohttp-client";
 
   meta = opentelemetry-instrumentation.meta // {
-    homepage = "https://github.com/open-telemetry/opentelemetry-python-contrib/blob/main/instrumentation/opentelemetry-instrumentation-aiohttp-client";
     description = "OpenTelemetry Instrumentation for aiohttp-client";
+    homepage = "https://github.com/open-telemetry/opentelemetry-python-contrib/blob/main/instrumentation/opentelemetry-instrumentation-aiohttp-client";
   };
 }

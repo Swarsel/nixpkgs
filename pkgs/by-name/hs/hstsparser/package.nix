@@ -1,13 +1,12 @@
 {
   lib,
-  python3,
   fetchFromGitHub,
+  python3,
 }:
 
 python3.pkgs.buildPythonApplication (finalAttrs: {
   pname = "hstsparser";
   version = "1.2.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "thebeanogamer";
@@ -24,16 +23,18 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     prettytable
   ];
 
+  pyproject = true;
+
   pythonImportsCheck = [
     "hstsparser"
   ];
 
   meta = {
     description = "Tool to parse Firefox and Chrome HSTS databases into forensic artifacts";
-    mainProgram = "hstsparser";
     homepage = "https://github.com/thebeanogamer/hstsparser";
     changelog = "https://github.com/thebeanogamer/hstsparser/releases/tag/${finalAttrs.version}";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ fab ];
+    mainProgram = "hstsparser";
   };
 })

@@ -1,21 +1,21 @@
 {
-  stdenv,
-  kernel,
-  callPackage,
   lib,
+  stdenv,
+  callPackage,
   dbus,
+  kernel,
   kmod,
-  libxt,
-  libxrandr,
-  libxmu,
-  libxfixes,
-  libxext,
-  libxcursor,
-  zlib,
-  patchelf,
-  makeWrapper,
-  wayland,
   libx11,
+  libxcursor,
+  libxext,
+  libxfixes,
+  libxmu,
+  libxrandr,
+  libxt,
+  makeWrapper,
+  patchelf,
+  wayland,
+  zlib,
 }:
 let
   virtualboxVersion = "7.2.10";
@@ -72,21 +72,7 @@ in
 stdenv.mkDerivation {
   pname = "VirtualBox-GuestAdditions";
   version = "${virtualboxVersion}${virtualboxSubVersion}-${kernel.version}";
-
   src = "${virtualBoxNixGuestAdditionsBuilder}/VBoxGuestAdditions-${platform}.tar.bz2";
-  sourceRoot = ".";
-
-  hardeningDisable = [ "pic" ];
-
-  env = {
-    NIX_CFLAGS_COMPILE = toString [
-      "-Wno-error=incompatible-pointer-types"
-      "-Wno-error=implicit-function-declaration"
-    ];
-
-    KERN_DIR = "${kernel.dev}/lib/modules/${kernel.modDirVersion}/build";
-    KERN_INCL = "${kernel.dev}/lib/modules/${kernel.modDirVersion}/source/include";
-  };
 
   nativeBuildInputs = [
     patchelf
@@ -95,6 +81,16 @@ stdenv.mkDerivation {
     kmod
   ]
   ++ kernel.moduleBuildDependencies;
+
+  env = {
+    KERN_DIR = "${kernel.dev}/lib/modules/${kernel.modDirVersion}/build";
+    KERN_INCL = "${kernel.dev}/lib/modules/${kernel.modDirVersion}/source/include";
+
+    NIX_CFLAGS_COMPILE = toString [
+      "-Wno-error=incompatible-pointer-types"
+      "-Wno-error=implicit-function-declaration"
+    ];
+  };
 
   buildPhase = ''
     runHook preBuild
@@ -160,9 +156,6 @@ stdenv.mkDerivation {
     runHook postInstall
   '';
 
-  # Stripping breaks these binaries for some reason.
-  dontStrip = true;
-
   # Patch RUNPATH according to dlopenLibs (see the comment there).
   postFixup = lib.concatMapStrings (library: ''
     for i in $(grep -F ${lib.escapeShellArg library.name} -l -r $out/{lib,bin}); do
@@ -171,23 +164,33 @@ stdenv.mkDerivation {
     done
   '') dlopenLibs;
 
+  # Stripping breaks these binaries for some reason.
+  dontStrip = true;
+  hardeningDisable = [ "pic" ];
+  sourceRoot = ".";
+
   meta = {
     description = "Guest additions for VirtualBox";
+
     longDescription = ''
       Various add-ons which makes NixOS work better as guest OS inside VirtualBox.
       This add-on provides support for dynamic resizing of the virtual display, shared
       host/guest clipboard support.
     '';
-    sourceProvenance = with lib.sourceTypes; [ fromSource ];
+
     license = lib.licenses.gpl3Only;
+    sourceProvenance = with lib.sourceTypes; [ fromSource ];
+
     maintainers = [
       lib.maintainers.friedrichaltheide
     ];
+
     platforms = [
       "i686-linux"
       "x86_64-linux"
       "aarch64-linux"
     ];
+
     broken = stdenv.hostPlatform.is32bit && (kernel.kernelAtLeast "5.10");
   };
 }

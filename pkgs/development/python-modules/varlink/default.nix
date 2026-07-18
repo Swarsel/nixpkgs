@@ -1,8 +1,8 @@
 {
-  buildPythonPackage,
-  fetchFromGitHub,
-  gitUpdater,
   lib,
+  fetchFromGitHub,
+  buildPythonPackage,
+  gitUpdater,
   setuptools,
   setuptools-scm,
 }:
@@ -10,7 +10,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "varlink";
   version = "32.1.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "varlink";
@@ -24,6 +23,7 @@ buildPythonPackage (finalAttrs: {
     setuptools-scm
   ];
 
+  pyproject = true;
   passthru.updateScript = gitUpdater { };
 
   meta = {

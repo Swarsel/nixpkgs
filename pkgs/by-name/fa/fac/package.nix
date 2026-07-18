@@ -1,10 +1,10 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
-  makeBinaryWrapper,
-  installShellFiles,
+  buildGoModule,
   git,
+  installShellFiles,
+  makeBinaryWrapper,
 }:
 
 buildGoModule (finalAttrs: {
@@ -18,12 +18,12 @@ buildGoModule (finalAttrs: {
     hash = "sha256-puSHbrzxTUebK1qRdWh71jY/f7TKgONS45T7PcZcy00=";
   };
 
-  vendorHash = "sha256-bmGRVTjleAFS5GGf2i/zN8k3SBtaEc3RbKSVZyF6eN4=";
-
   nativeBuildInputs = [
     makeBinaryWrapper
     installShellFiles
   ];
+
+  vendorHash = "sha256-bmGRVTjleAFS5GGf2i/zN8k3SBtaEc3RbKSVZyF6eN4=";
 
   postInstall = ''
     wrapProgram $out/bin/fac \
@@ -34,11 +34,11 @@ buildGoModule (finalAttrs: {
   '';
 
   meta = {
-    changelog = "https://github.com/mkchoi212/fac/releases/tag/v${finalAttrs.version}";
     description = "CUI for fixing git conflicts";
     homepage = "https://github.com/mkchoi212/fac";
+    changelog = "https://github.com/mkchoi212/fac/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.mit;
-    mainProgram = "fac";
     maintainers = [ ];
+    mainProgram = "fac";
   };
 })

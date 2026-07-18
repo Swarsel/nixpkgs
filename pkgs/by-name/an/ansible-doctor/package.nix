@@ -1,8 +1,8 @@
 {
   lib,
   stdenv,
-  python3Packages,
   fetchFromGitHub,
+  python3Packages,
   versionCheckHook,
   writableTmpDirAsHomeHook,
 }:
@@ -10,7 +10,6 @@
 python3Packages.buildPythonApplication (finalAttrs: {
   pname = "ansible-doctor";
   version = "8.3.3";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "thegeeklab";
@@ -18,6 +17,13 @@ python3Packages.buildPythonApplication (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-3xdMTuy6Rtb2VwfzN6SV73UZmp+9fmU9SfPySHCayJg=";
   };
+
+  doCheck = true;
+
+  nativeInstallCheckInputs = [
+    writableTmpDirAsHomeHook
+    versionCheckHook
+  ];
 
   build-system = with python3Packages; [
     poetry-core
@@ -40,24 +46,17 @@ python3Packages.buildPythonApplication (finalAttrs: {
     structlog
   ];
 
-  pythonRelaxDeps = true;
-
-  doCheck = true;
-
+  pyproject = true;
   pythonImportsCheck = [ "ansibledoctor" ];
-
-  nativeInstallCheckInputs = [
-    writableTmpDirAsHomeHook
-    versionCheckHook
-  ];
+  pythonRelaxDeps = true;
   versionCheckKeepEnvironment = [ "HOME" ];
 
   meta = {
     description = "Annotation based documentation for your Ansible roles";
-    mainProgram = "ansible-doctor";
     homepage = "https://github.com/thegeeklab/ansible-doctor";
     changelog = "https://github.com/thegeeklab/ansible-doctor/releases/tag/${finalAttrs.src.tag}";
     license = lib.licenses.lgpl3Only;
     maintainers = with lib.maintainers; [ tboerger ];
+    mainProgram = "ansible-doctor";
   };
 })

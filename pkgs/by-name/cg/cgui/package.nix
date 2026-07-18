@@ -2,10 +2,10 @@
   lib,
   stdenv,
   fetchurl,
-  texinfo,
   allegro,
-  perl,
   libx11,
+  perl,
+  texinfo,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -28,6 +28,8 @@ stdenv.mkDerivation (finalAttrs: {
     libx11
   ];
 
+  makeFlags = [ "SYSTEM_DIR=$(out)" ];
+
   configurePhase = ''
     runHook preConfigure
 
@@ -38,12 +40,10 @@ stdenv.mkDerivation (finalAttrs: {
 
   hardeningDisable = [ "format" ];
 
-  makeFlags = [ "SYSTEM_DIR=$(out)" ];
-
   meta = {
     description = "Multiplatform basic GUI library";
+    license = lib.licenses.free;
     maintainers = [ lib.maintainers.raskin ];
     platforms = lib.platforms.linux;
-    license = lib.licenses.free;
   };
 })

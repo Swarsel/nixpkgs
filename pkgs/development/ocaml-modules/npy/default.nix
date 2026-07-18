@@ -1,18 +1,14 @@
 {
   lib,
-  buildDunePackage,
   fetchFromGitHub,
-  numpy,
+  buildDunePackage,
   camlzip,
+  numpy,
 }:
 
 buildDunePackage (finalAttrs: {
   pname = "npy";
   version = "0.0.9";
-
-  duneVersion = "3";
-
-  minimalOCamlVersion = "4.06";
 
   src = fetchFromGitHub {
     owner = "LaurentMazare";
@@ -22,14 +18,15 @@ buildDunePackage (finalAttrs: {
   };
 
   propagatedBuildInputs = [ camlzip ];
-  nativeCheckInputs = [ numpy ];
-
   doCheck = true;
+  nativeCheckInputs = [ numpy ];
+  duneVersion = "3";
+  minimalOCamlVersion = "4.06";
 
   meta = {
     inherit (finalAttrs.src.meta) homepage;
     description = "OCaml implementation of the Npy format spec";
-    maintainers = [ lib.maintainers.bcdarwin ];
     license = lib.licenses.asl20;
+    maintainers = [ lib.maintainers.bcdarwin ];
   };
 })

@@ -2,14 +2,14 @@
   lib,
   stdenv,
   fetchurl,
-  cmake,
   brotli,
+  cmake,
+  curl,
+  jemalloc,
   libev,
   nghttp3,
   openssl,
   withJemalloc ? false,
-  jemalloc,
-  curl,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -28,6 +28,7 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   nativeBuildInputs = [ cmake ];
+
   buildInputs = [
     brotli
     libev
@@ -57,11 +58,11 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   meta = {
+    description = "Implementation of the QUIC protocol (RFC9000)";
     homepage = "https://github.com/ngtcp2/ngtcp2";
     changelog = "https://github.com/ngtcp2/ngtcp2/releases/tag/v${finalAttrs.version}";
-    description = "Implementation of the QUIC protocol (RFC9000)";
     license = lib.licenses.mit;
-    platforms = lib.platforms.unix ++ lib.platforms.windows;
     maintainers = with lib.maintainers; [ izorkin ];
+    platforms = lib.platforms.unix ++ lib.platforms.windows;
   };
 })

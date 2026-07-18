@@ -13,16 +13,6 @@ stdenv.mkDerivation (finalAttrs: {
     sha256 = "0m578rpa5rdn08d10kr4lbsdwp4402hpavrz6n7n53xs517rn5hm";
   };
 
-  prePatch = ''
-    substituteInPlace picosat.c --replace "sys/unistd.h" "unistd.h"
-
-    substituteInPlace makefile.in \
-      --replace 'ar rc' '$(AR) rc' \
-      --replace 'ranlib' '$(RANLIB)'
-  '';
-
-  configurePhase = "./configure.sh --shared --trace";
-
   makeFlags = lib.optional stdenv.hostPlatform.isDarwin "SONAME=-Wl,-install_name,$(out)/lib/libpicosat.so";
 
   installPhase = ''
@@ -37,14 +27,26 @@ stdenv.mkDerivation (finalAttrs: {
     cp picosat.h "$out"/include/picosat
   '';
 
+  configurePhase = "./configure.sh --shared --trace";
+
+  prePatch = ''
+    substituteInPlace picosat.c --replace "sys/unistd.h" "unistd.h"
+
+    substituteInPlace makefile.in \
+      --replace 'ar rc' '$(AR) rc' \
+      --replace 'ranlib' '$(RANLIB)'
+  '';
+
   meta = {
     description = "SAT solver with proof and core support";
     homepage = "https://fmv.jku.at/picosat/";
     license = lib.licenses.mit;
-    platforms = lib.platforms.unix;
+
     maintainers = with lib.maintainers; [
       roconnor
       thoughtpolice
     ];
+
+    platforms = lib.platforms.unix;
   };
 })

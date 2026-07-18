@@ -1,11 +1,11 @@
 {
   lib,
+  fetchFromGitHub,
   aiohttp,
   aioredis,
   buildPythonPackage,
   coloredlogs,
   fastapi,
-  fetchFromGitHub,
   hatchling,
   pillow,
   psutil,
@@ -20,7 +20,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "pytelegrambotapi";
   version = "4.33.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "eternnoir";
@@ -29,27 +28,28 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-za2krpb8Gll0zjuVFgQApDeROI7YSYo4fG6pi2hdv3g=";
   };
 
-  build-system = [ hatchling ];
-
-  optional-dependencies = {
-    json = [ ujson ];
-    PIL = [ pillow ];
-    redis = [ redis ];
-    aioredis = [ aioredis ];
-    aiohttp = [ aiohttp ];
-    fastapi = [ fastapi ];
-    uvicorn = [ uvicorn ];
-    psutil = [ psutil ];
-    coloredlogs = [ coloredlogs ];
-    watchdog = [ watchdog ];
-  };
-
   nativeCheckInputs = [
     pytestCheckHook
     requests
   ]
   ++ lib.flatten (builtins.attrValues finalAttrs.passthru.optional-dependencies);
 
+  build-system = [ hatchling ];
+
+  optional-dependencies = {
+    PIL = [ pillow ];
+    aiohttp = [ aiohttp ];
+    aioredis = [ aioredis ];
+    coloredlogs = [ coloredlogs ];
+    fastapi = [ fastapi ];
+    json = [ ujson ];
+    psutil = [ psutil ];
+    redis = [ redis ];
+    uvicorn = [ uvicorn ];
+    watchdog = [ watchdog ];
+  };
+
+  pyproject = true;
   pythonImportsCheck = [ "telebot" ];
 
   meta = {

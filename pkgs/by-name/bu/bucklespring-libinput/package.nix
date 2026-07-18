@@ -2,17 +2,14 @@
   lib,
   stdenv,
   fetchFromGitHub,
-
-  legacy ? false,
-  libinput,
-
-  pkg-config,
-  makeWrapper,
-
-  openal,
   alure,
-  libxtst,
+  libinput,
   libx11,
+  libxtst,
+  makeWrapper,
+  openal,
+  pkg-config,
+  legacy ? false,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -57,15 +54,17 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Nostalgia bucklespring keyboard sound";
-    mainProgram = "buckle";
+
     longDescription = ''
       When built with libinput (wayland or bare console),
       users need to be in the input group to use this:
       <code>users.users.alice.extraGroups = [ "input" ];</code>
     '';
+
     homepage = "https://github.com/zevv/bucklespring";
     license = lib.licenses.gpl2Only;
-    platforms = lib.platforms.unix;
     maintainers = [ ];
+    platforms = lib.platforms.unix;
+    mainProgram = "buckle";
   };
 })

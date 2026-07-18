@@ -7,7 +7,6 @@
 python3.pkgs.buildPythonApplication (finalAttrs: {
   pname = "cfripper";
   version = "1.21.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "Skyscanner";
@@ -16,16 +15,17 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     hash = "sha256-psuUG8Kk+pl9Qv9vpH7yCn2X6leciftgFN1Ft+zEgtg=";
   };
 
-  pythonRelaxDeps = [
-    "pluggy"
+  nativeBuildInputs = [
+  ];
+
+  nativeCheckInputs = with python3.pkgs; [
+    moto
+    pytestCheckHook
   ];
 
   build-system = with python3.pkgs; [
     setuptools
     setuptools-scm
-  ];
-
-  nativeBuildInputs = [
   ];
 
   dependencies = with python3.pkgs; [
@@ -39,11 +39,6 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     setuptools
   ];
 
-  nativeCheckInputs = with python3.pkgs; [
-    moto
-    pytestCheckHook
-  ];
-
   disabledTestPaths = [
     # Tests are failing
     "tests/test_boto3_client.py"
@@ -55,8 +50,14 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     "test_multiple_resources_with_wildcard_resources_are_detected"
   ];
 
+  pyproject = true;
+
   pythonImportsCheck = [
     "cfripper"
+  ];
+
+  pythonRelaxDeps = [
+    "pluggy"
   ];
 
   meta = {

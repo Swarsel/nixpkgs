@@ -1,32 +1,28 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
+  buildPythonPackage,
   # build-system
   hatch-vcs,
   hatchling,
-
   # dependencies
   joblib,
   lxml,
   nibabel,
   numpy,
+  numpydoc,
+  packaging,
   pandas,
+  pytest-timeout,
+  pytestCheckHook,
   requests,
   scikit-learn,
   scipy,
-  packaging,
-
-  pytestCheckHook,
-  pytest-timeout,
-  numpydoc,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "nilearn";
   version = "0.13.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "nilearn";
@@ -39,6 +35,12 @@ buildPythonPackage (finalAttrs: {
     substituteInPlace pyproject.toml \
       --replace-fail " --template=maint_tools/templates/index.html" ""
   '';
+
+  nativeCheckInputs = [
+    pytestCheckHook
+    pytest-timeout
+    numpydoc
+  ];
 
   build-system = [
     hatchling
@@ -57,14 +59,9 @@ buildPythonPackage (finalAttrs: {
     packaging
   ];
 
-  nativeCheckInputs = [
-    pytestCheckHook
-    pytest-timeout
-    numpydoc
-  ];
-
   # do subset of tests which don't fetch resources
   enabledTestPaths = [ "nilearn/connectome/tests" ];
+  pyproject = true;
 
   meta = {
     description = "Module for statistical learning on neuroimaging data";

@@ -7,8 +7,8 @@
 }:
 
 stdenv.mkDerivation (finalAttrs: {
-  version = "1.10";
   pname = "dnstracer";
+  version = "1.10";
 
   src = fetchurl {
     url = "https://www.mavetju.org/download/dnstracer-${finalAttrs.version}.tar.bz2";
@@ -24,18 +24,18 @@ stdenv.mkDerivation (finalAttrs: {
     perl # for pod2man
   ];
 
-  setOutputFlags = false;
+  buildInputs = [ ] ++ lib.optionals stdenv.hostPlatform.isDarwin [ darwin.libresolv ];
+
+  env = lib.optionalAttrs stdenv.hostPlatform.isDarwin {
+    NIX_LDFLAGS = "-lresolv";
+  };
 
   installPhase = ''
     install -Dm755 -t $out/bin dnstracer
     install -Dm755 -t $man/share/man/man8 dnstracer.8
   '';
 
-  buildInputs = [ ] ++ lib.optionals stdenv.hostPlatform.isDarwin [ darwin.libresolv ];
-
-  env = lib.optionalAttrs stdenv.hostPlatform.isDarwin {
-    NIX_LDFLAGS = "-lresolv";
-  };
+  setOutputFlags = false;
 
   meta = {
     description = "Determines where a given Domain Name Server (DNS) gets its information from, and follows the chain of DNS servers back to the servers which know the data";

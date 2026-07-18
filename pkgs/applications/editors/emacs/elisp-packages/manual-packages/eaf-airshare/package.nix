@@ -1,8 +1,8 @@
 {
   # Basic
   lib,
-  melpaBuild,
   fetchFromGitHub,
+  melpaBuild,
   # Updater
   unstableGitUpdater,
 }:
@@ -25,7 +25,6 @@ melpaBuild {
   '';
 
   passthru = {
-    updateScript = unstableGitUpdater { };
     eafPythonDeps =
       ps:
       with ps;
@@ -33,12 +32,15 @@ melpaBuild {
         qrcode
       ]
       ++ ps.qrcode.optional-dependencies.pil;
+
+    updateScript = unstableGitUpdater { };
   };
 
   meta = {
     description = "Share text by qr-code in Emacs";
     homepage = "https://github.com/emacs-eaf/eaf-airshare";
     license = lib.licenses.gpl3Only;
+
     maintainers = with lib.maintainers; [
       thattemperature
     ];

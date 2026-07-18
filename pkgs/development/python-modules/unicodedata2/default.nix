@@ -8,7 +8,6 @@
 buildPythonPackage rec {
   pname = "unicodedata2";
   version = "17.0.1";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit version pname;
@@ -16,7 +15,7 @@ buildPythonPackage rec {
   };
 
   nativeCheckInputs = [ pytestCheckHook ];
-
+  format = "setuptools";
   pythonImportsCheck = [ "unicodedata2" ];
 
   meta = {

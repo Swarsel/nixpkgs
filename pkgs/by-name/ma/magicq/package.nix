@@ -2,26 +2,25 @@
   lib,
   stdenv,
   fetchurl,
+  alsa-lib-with-plugins,
   autoPatchelfHook,
   copyDesktopItems,
-  makeDesktopItem,
   dpkg,
-  alsa-lib-with-plugins,
   ffmpeg_4,
   libGL,
   libGLU,
   libarchive,
   libgcc,
-  qt5,
   libusb-compat-0_1,
   libusb1,
   libz,
+  makeDesktopItem,
   portaudio,
+  qt5,
 }:
 stdenv.mkDerivation (finalAttrs: {
   pname = "magicq";
   version = "1.9.7.3";
-  src_version = builtins.replaceStrings [ "." ] [ "_" ] finalAttrs.version;
 
   src = fetchurl {
     url = "https://secure.chamsys.co.uk/downloads/v${finalAttrs.src_version}/magicq_ubuntu_v${finalAttrs.src_version}.deb";
@@ -29,7 +28,6 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   strictDeps = true;
-  __structuredAttrs = true;
 
   nativeBuildInputs = [
     autoPatchelfHook
@@ -37,6 +35,7 @@ stdenv.mkDerivation (finalAttrs: {
     dpkg
     qt5.wrapQtAppsHook
   ];
+
   buildInputs = [
     alsa-lib-with-plugins
     ffmpeg_4
@@ -72,28 +71,33 @@ stdenv.mkDerivation (finalAttrs: {
     sed "s|@out@|$out|g" -i $out/share/applications/magicq.desktop
   '';
 
+  __structuredAttrs = true;
+
   desktopItems = [
     (makeDesktopItem {
-      name = "magicq";
-      desktopName = "MagicQ by ChamSys Ltd.";
-      genericName = "MagicQ";
-      exec = "@out@/bin/magicq";
-      path = "@out@/opt/magicq/";
-      icon = "magicq";
       categories = [
         "AudioVideo"
         "Qt"
       ];
+
+      desktopName = "MagicQ by ChamSys Ltd.";
+      exec = "@out@/bin/magicq";
+      genericName = "MagicQ";
+      icon = "magicq";
+      name = "magicq";
+      path = "@out@/opt/magicq/";
     })
   ];
+
+  src_version = builtins.replaceStrings [ "." ] [ "_" ] finalAttrs.version;
 
   meta = {
     description = "MagicQ Lighting Console Software";
     homepage = "https://chamsyslighting.com/product/magicq-software/";
     license = lib.licenses.unfree;
-    platforms = lib.platforms.linux;
-    mainProgram = "magicq";
     sourceProvenance = [ lib.sourceTypes.binaryNativeCode ];
     maintainers = with lib.maintainers; [ panakotta00 ];
+    platforms = lib.platforms.linux;
+    mainProgram = "magicq";
   };
 })

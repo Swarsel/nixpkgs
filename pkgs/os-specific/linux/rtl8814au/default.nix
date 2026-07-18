@@ -20,6 +20,11 @@ stdenv.mkDerivation {
   nativeBuildInputs = kernel.moduleBuildDependencies;
   makeFlags = kernelModuleMakeFlags;
 
+  preInstall = ''
+    mkdir -p "$out/lib/modules/${kernel.modDirVersion}/kernel/net/wireless/"
+  '';
+
+  enableParallelBuilding = true;
   hardeningDisable = [ "pic" ];
 
   prePatch = ''
@@ -28,12 +33,6 @@ stdenv.mkDerivation {
       --replace /sbin/depmod \# \
       --replace '$(MODDESTDIR)' "$out/lib/modules/${kernel.modDirVersion}/kernel/net/wireless/"
   '';
-
-  preInstall = ''
-    mkdir -p "$out/lib/modules/${kernel.modDirVersion}/kernel/net/wireless/"
-  '';
-
-  enableParallelBuilding = true;
 
   meta = {
     description = "Realtek 8814AU USB WiFi driver";

@@ -1,13 +1,13 @@
 {
   lib,
   stdenv,
-  fetchzip,
-  pkg-config,
   boost,
   cppunit,
   doxygen,
+  fetchzip,
   icu,
   librevenge,
+  pkg-config,
 }:
 stdenv.mkDerivation (finalAttrs: {
   pname = "libqxp";

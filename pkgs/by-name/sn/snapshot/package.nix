@@ -1,27 +1,27 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchurl,
-  libglycin,
-  libglycin-gtk4,
-  glycin-loaders,
   cargo,
   desktop-file-utils,
-  meson,
-  ninja,
-  pkg-config,
-  rustc,
-  rustPlatform,
-  wrapGAppsHook4,
   glib,
+  glycin-loaders,
+  gnome,
   gst_all_1,
   gtk4,
+  lcms2,
   libadwaita,
   libcamera,
-  lcms2,
+  libglycin,
+  libglycin-gtk4,
   libseccomp,
+  meson,
+  ninja,
   pipewire,
-  gnome,
+  pkg-config,
+  rustPlatform,
+  rustc,
+  wrapGAppsHook4,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -33,7 +33,11 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-7J2vmIPrkDMJEbtR5rae7YydvdVDjoZK3JDuVaX+nu0=";
   };
 
-  cargoVendorDir = "vendor";
+  postPatch = ''
+    substituteInPlace src/meson.build --replace-fail \
+      "'cp', cargo_target / rust_target / meson.project_name()" \
+      "'cp', cargo_target / '${stdenv.hostPlatform.rust.cargoShortTarget}' / rust_target / meson.project_name()"
+  '';
 
   nativeBuildInputs = [
     cargo
@@ -65,11 +69,8 @@ stdenv.mkDerivation (finalAttrs: {
     pipewire # for device provider
   ];
 
-  postPatch = ''
-    substituteInPlace src/meson.build --replace-fail \
-      "'cp', cargo_target / rust_target / meson.project_name()" \
-      "'cp', cargo_target / '${stdenv.hostPlatform.rust.cargoShortTarget}' / rust_target / meson.project_name()"
-  '';
+  # For https://gitlab.gnome.org/GNOME/snapshot/-/blob/34236a6dded23b66fdc4e4ed613e5b09eec3872c/src/meson.build#L57
+  env.CARGO_BUILD_TARGET = stdenv.hostPlatform.rust.rustcTargetSpec;
 
   preFixup = ''
     gappsWrapperArgs+=(
@@ -78,19 +79,18 @@ stdenv.mkDerivation (finalAttrs: {
     )
   '';
 
-  # For https://gitlab.gnome.org/GNOME/snapshot/-/blob/34236a6dded23b66fdc4e4ed613e5b09eec3872c/src/meson.build#L57
-  env.CARGO_BUILD_TARGET = stdenv.hostPlatform.rust.rustcTargetSpec;
+  cargoVendorDir = "vendor";
 
   passthru.updateScript = gnome.updateScript {
     packageName = "snapshot";
   };
 
   meta = {
-    homepage = "https://gitlab.gnome.org/GNOME/snapshot";
     description = "Take pictures and videos on your computer, tablet, or phone";
-    teams = [ lib.teams.gnome ];
+    homepage = "https://gitlab.gnome.org/GNOME/snapshot";
     license = lib.licenses.gpl3Plus;
     platforms = lib.platforms.unix;
     mainProgram = "snapshot";
+    teams = [ lib.teams.gnome ];
   };
 })

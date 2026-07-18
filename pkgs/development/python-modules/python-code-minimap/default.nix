@@ -1,8 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
+  buildPythonPackage,
   # build-system
   uv-build,
 }:
@@ -10,7 +9,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "python-code-minimap";
   version = "0.1.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "joouha";
@@ -26,14 +24,15 @@ buildPythonPackage (finalAttrs: {
         "uv_build"
   '';
 
+  # No tests
+  doCheck = false;
+
   build-system = [
     uv-build
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "code_minimap" ];
-
-  # No tests
-  doCheck = false;
 
   meta = {
     description = "Pure Python code minimap render";

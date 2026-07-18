@@ -1,11 +1,11 @@
 {
   lib,
   stdenv,
-  pkgsCross,
   makeBinaryWrapper,
-  writeText,
+  pkgsCross,
   runCommand,
   runCommandCC,
+  writeText,
 }:
 
 let

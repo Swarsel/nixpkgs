@@ -3,9 +3,9 @@
   stdenv,
   fetchurl,
   autoreconfHook,
+  libpciaccess,
   pciutils,
   pkg-config,
-  libpciaccess,
 }:
 
 stdenv.mkDerivation rec {
@@ -21,6 +21,7 @@ stdenv.mkDerivation rec {
     autoreconfHook
     pkg-config
   ];
+
   buildInputs = [ libpciaccess ];
 
   meta = {

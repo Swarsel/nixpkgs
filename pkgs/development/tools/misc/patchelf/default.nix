@@ -19,20 +19,17 @@ stdenv.mkDerivation rec {
   };
 
   strictDeps = true;
-
-  setupHook = [ ./setup-hook.sh ];
-
-  enableParallelBuilding = true;
-
   # fails 8 out of 24 tests, problems when loading libc.so.6
   doCheck = stdenv.name == "stdenv-linux";
+  enableParallelBuilding = true;
+  setupHook = [ ./setup-hook.sh ];
 
   meta = {
+    description = "Small utility to modify the dynamic linker and RPATH of ELF executables";
     homepage = "https://github.com/NixOS/patchelf";
     license = lib.licenses.gpl3Plus;
-    description = "Small utility to modify the dynamic linker and RPATH of ELF executables";
-    mainProgram = "patchelf";
     maintainers = [ ];
     platforms = lib.platforms.all;
+    mainProgram = "patchelf";
   };
 }

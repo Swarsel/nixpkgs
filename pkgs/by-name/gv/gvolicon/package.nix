@@ -1,14 +1,14 @@
 {
   lib,
   stdenv,
-  makeWrapper,
-  alsa-lib,
-  pkg-config,
   fetchFromGitHub,
-  gtk3,
   adwaita-icon-theme,
+  alsa-lib,
   gdk-pixbuf,
+  gtk3,
   librsvg,
+  makeWrapper,
+  pkg-config,
   wrapGAppsHook3,
 }:
 
@@ -27,6 +27,7 @@ stdenv.mkDerivation {
     pkg-config
     makeWrapper
   ];
+
   buildInputs = [
     alsa-lib
     gtk3
@@ -37,15 +38,14 @@ stdenv.mkDerivation {
   ];
 
   makeFlags = [ "PREFIX=$(out)" ];
-
   env.NIX_CFLAGS_COMPILE = "-D_POSIX_C_SOURCE";
 
   meta = {
     description = "Simple and lightweight volume icon that sits in your system tray";
     homepage = "https://github.com/Hjdskes/gvolicon";
-    platforms = lib.platforms.linux;
     license = lib.licenses.gpl3Plus;
     maintainers = [ lib.maintainers.bennofs ];
+    platforms = lib.platforms.linux;
     mainProgram = "gvolicon";
   };
 }

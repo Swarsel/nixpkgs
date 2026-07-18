@@ -1,8 +1,8 @@
 {
   lib,
+  stdenv,
   callPackage,
   fetchzip,
-  stdenv,
   zlib,
 }:
 
@@ -11,10 +11,10 @@ stdenv.mkDerivation (finalAttrs: {
   version = "0.98";
 
   src = fetchzip {
-    pname = "fastjar-source";
     inherit (finalAttrs) version;
     url = "mirror://savannah/fastjar/fastjar-${finalAttrs.version}.tar.gz";
     hash = "sha256-8VyKNQaPLrXAy/UEm2QkBx56SSSoLdU/7w4IwrxbsQc=";
+    pname = "fastjar-source";
   };
 
   outputs = [
@@ -23,10 +23,8 @@ stdenv.mkDerivation (finalAttrs: {
     "man"
   ];
 
-  buildInputs = [ zlib ];
-
   strictDeps = true;
-
+  buildInputs = [ zlib ];
   doCheck = true;
 
   passthru = {
@@ -37,8 +35,8 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   meta = {
-    homepage = "https://savannah.nongnu.org/projects/fastjar/";
     description = "Fast Java archiver written in C";
+
     longDescription = ''
       FastJar is an attempt at creating a feature-for-feature copy of Sun's
       JDK's 'jar' command.  Sun's jar (or Blackdown's for that matter) is
@@ -46,9 +44,11 @@ stdenv.mkDerivation (finalAttrs: {
       written in C, it can create the same .jar file as Sun's tool in a fraction
       of the time.
     '';
+
+    homepage = "https://savannah.nongnu.org/projects/fastjar/";
     license = lib.licenses.gpl2Plus;
-    mainProgram = "fastjar";
     maintainers = [ ];
     platforms = lib.platforms.all;
+    mainProgram = "fastjar";
   };
 })

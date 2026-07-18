@@ -8,20 +8,22 @@
   pylsqpack,
   pyopenssl,
   pytestCheckHook,
-  setuptools,
   service-identity,
+  setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "aioquic";
   version = "1.3.0";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
     hash = "sha256-KNBwshg+PnmvqdTnvVWJYNDVOuuYvAzwo1iyebp5fJI=";
   };
 
+  buildInputs = [ openssl ];
+  nativeCheckInputs = [ pytestCheckHook ];
+  __darwinAllowLocalNetworking = true;
   build-system = [ setuptools ];
 
   dependencies = [
@@ -32,13 +34,8 @@ buildPythonPackage rec {
     service-identity
   ];
 
-  buildInputs = [ openssl ];
-
-  nativeCheckInputs = [ pytestCheckHook ];
-
+  pyproject = true;
   pythonImportsCheck = [ "aioquic" ];
-
-  __darwinAllowLocalNetworking = true;
 
   meta = {
     description = "Implementation of QUIC and HTTP/3";

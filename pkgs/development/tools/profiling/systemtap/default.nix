@@ -1,13 +1,13 @@
 {
   lib,
-  runCommand,
-  makeWrapper,
-  systemtap-unwrapped,
   elfutils,
-  kernel,
   gnumake,
-  python3,
+  kernel,
+  makeWrapper,
   nixosTests,
+  python3,
+  runCommand,
+  systemtap-unwrapped,
   withStap ? true, # avoid cyclic dependency with glib, reduce closure size substantially
 }:
 
@@ -27,10 +27,10 @@ let
 in
 runCommand "systemtap-${systemtap-unwrapped.version}"
   {
-    stapBuild = systemtap-unwrapped;
-    nativeBuildInputs = [ makeWrapper ];
-    passthru.tests = { inherit (nixosTests.systemtap) linux_default linux_latest; };
     inherit (systemtap-unwrapped) meta version pname;
+    nativeBuildInputs = [ makeWrapper ];
+    stapBuild = systemtap-unwrapped;
+    passthru.tests = { inherit (nixosTests.systemtap) linux_default linux_latest; };
   }
   (
     ''

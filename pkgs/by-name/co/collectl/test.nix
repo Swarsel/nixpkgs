@@ -1,7 +1,7 @@
 {
-  runCommand,
   collectl,
   coreutils,
+  runCommand,
 }:
 
 runCommand "collectl-test"
@@ -10,6 +10,7 @@ runCommand "collectl-test"
       collectl
       coreutils
     ];
+
     meta.timeout = 60;
   }
   ''

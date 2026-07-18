@@ -1,19 +1,16 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # build-system
-  setuptools,
-
+  buildPythonPackage,
   # dependencies
   cx-logging,
   distutils,
   filelock,
-
   # tests
   pytest-mock,
   pytestCheckHook,
+  # build-system
+  setuptools,
   versionCheckHook,
   writableTmpDirAsHomeHook,
 }:
@@ -21,7 +18,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "freeze-core";
   version = "0.6.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "marcelotduarte";
@@ -35,6 +31,10 @@ buildPythonPackage (finalAttrs: {
       --replace-fail "setuptools~=82.0" "setuptools"
   '';
 
+  nativeCheckInputs = [
+    pytestCheckHook
+  ];
+
   build-system = [
     setuptools
     cx-logging
@@ -45,12 +45,10 @@ buildPythonPackage (finalAttrs: {
     filelock
   ];
 
+  pyproject = true;
+
   pythonImportsCheck = [
     "freeze_core"
-  ];
-
-  nativeCheckInputs = [
-    pytestCheckHook
   ];
 
   meta = {

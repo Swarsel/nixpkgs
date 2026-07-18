@@ -1,30 +1,17 @@
 {
   lib,
-  mattermost,
+  curl,
   gotestsum,
-  which,
+  mattermost,
+  net-tools,
   postgresql,
   redis,
-  curl,
-  net-tools,
   runtimeShell,
+  which,
 }:
 
 mattermost.overrideAttrs (
   final: prev: {
-    doCheck = true;
-    checkTargets = [
-      "test-mmctl"
-    ];
-    nativeCheckInputs = [
-      which
-      postgresql
-      redis
-      curl
-      net-tools
-      gotestsum
-    ];
-
     postPatch = prev.postPatch or "" + ''
       # Just echo install/get/mod commands in the Makefile, since the dependencies are locked.
       substituteInPlace server/Makefile \
@@ -37,23 +24,15 @@ mattermost.overrideAttrs (
         --replace-fail '#!/bin/bash' '#!${runtimeShell}'
     '';
 
-    # Make sure we disable tests that are broken.
-    # Use: `nix log <drv> | grep FAIL: | awk '{print $3}' | sort`
-    # and then try to pick the most specific test set to disable, such as:
-    # X  TestFoo
-    # X  TestFoo/TestBar
-    # -> TestFoo/TestBar/baz_test
-    disabledTests = lib.lists.uniqueStrings [
-      # All these plugin tests for mmctl reach out to the marketplace, which is impossible in the sandbox
-      "TestMmctlE2ESuite/TestPluginDeleteCmd/Delete_Plugin/SystemAdminClient"
-      "TestMmctlE2ESuite/TestPluginDeleteCmd/Delete_Plugin/LocalClient"
-      "TestMmctlE2ESuite/TestPluginDeleteCmd/Delete_a_Plugin_without_permissions"
-      "TestMmctlE2ESuite/TestPluginDeleteCmd/Delete_Unknown_Plugin/SystemAdminClient"
-      "TestMmctlE2ESuite/TestPluginDeleteCmd/Delete_Unknown_Plugin/LocalClient"
-      "TestMmctlE2ESuite/TestPluginInstallURLCmd"
-      "TestMmctlE2ESuite/TestPluginMarketplaceInstallCmd"
-      "TestMmctlE2ESuite/TestPluginMarketplaceInstallCmd"
-      "TestMmctlE2ESuite/TestPluginMarketplaceListCmd"
+    doCheck = true;
+
+    nativeCheckInputs = [
+      which
+      postgresql
+      redis
+      curl
+      net-tools
+      gotestsum
     ];
 
     preCheck = ''
@@ -219,5 +198,28 @@ mattermost.overrideAttrs (
       # Delete the gotestsum link.
       rm -f bin/gotestsum
     '';
+
+    checkTargets = [
+      "test-mmctl"
+    ];
+
+    # Make sure we disable tests that are broken.
+    # Use: `nix log <drv> | grep FAIL: | awk '{print $3}' | sort`
+    # and then try to pick the most specific test set to disable, such as:
+    # X  TestFoo
+    # X  TestFoo/TestBar
+    # -> TestFoo/TestBar/baz_test
+    disabledTests = lib.lists.uniqueStrings [
+      # All these plugin tests for mmctl reach out to the marketplace, which is impossible in the sandbox
+      "TestMmctlE2ESuite/TestPluginDeleteCmd/Delete_Plugin/SystemAdminClient"
+      "TestMmctlE2ESuite/TestPluginDeleteCmd/Delete_Plugin/LocalClient"
+      "TestMmctlE2ESuite/TestPluginDeleteCmd/Delete_a_Plugin_without_permissions"
+      "TestMmctlE2ESuite/TestPluginDeleteCmd/Delete_Unknown_Plugin/SystemAdminClient"
+      "TestMmctlE2ESuite/TestPluginDeleteCmd/Delete_Unknown_Plugin/LocalClient"
+      "TestMmctlE2ESuite/TestPluginInstallURLCmd"
+      "TestMmctlE2ESuite/TestPluginMarketplaceInstallCmd"
+      "TestMmctlE2ESuite/TestPluginMarketplaceInstallCmd"
+      "TestMmctlE2ESuite/TestPluginMarketplaceListCmd"
+    ];
   }
 )

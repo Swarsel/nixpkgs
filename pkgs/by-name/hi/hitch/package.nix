@@ -4,30 +4,31 @@
   fetchurl,
   docutils,
   libev,
+  nixosTests,
   openssl,
   pkg-config,
-  nixosTests,
 }:
 stdenv.mkDerivation (finalAttrs: {
-  version = "1.8.0";
   pname = "hitch";
+  version = "1.8.0";
 
   src = fetchurl {
     url = "https://hitch-tls.org/source/hitch-${finalAttrs.version}.tar.gz";
     sha256 = "sha256-38mUhLx//qJ6MWnoTWwheYjtpHsgirLlUk3Cpd0Vj04=";
   };
 
-  nativeBuildInputs = [ pkg-config ];
-  buildInputs = [
-    docutils
-    libev
-    openssl
-  ];
-
   outputs = [
     "out"
     "doc"
     "man"
+  ];
+
+  nativeBuildInputs = [ pkg-config ];
+
+  buildInputs = [
+    docutils
+    libev
+    openssl
   ];
 
   passthru.tests.hitch = nixosTests.hitch;

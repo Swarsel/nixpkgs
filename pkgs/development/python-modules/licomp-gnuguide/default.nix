@@ -1,24 +1,19 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # build-system
-  setuptools,
-
+  buildPythonPackage,
+  jsonschema,
   # dependencies
   licomp,
-
   # tests
   pytestCheckHook,
-  jsonschema,
+  # build-system
+  setuptools,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "licomp-gnuguide";
   version = "0.5.2";
-  pyproject = true;
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "hesa";
@@ -26,6 +21,13 @@ buildPythonPackage (finalAttrs: {
     tag = finalAttrs.version;
     hash = "sha256-DfjrmEktlTFvKqHIlmM/XeWZ4s24cRtWqs65OLDYZNQ=";
   };
+
+  nativeCheckInputs = [
+    pytestCheckHook
+    jsonschema
+  ];
+
+  __structuredAttrs = true;
 
   build-system = [
     setuptools
@@ -35,10 +37,7 @@ buildPythonPackage (finalAttrs: {
     licomp
   ];
 
-  nativeCheckInputs = [
-    pytestCheckHook
-    jsonschema
-  ];
+  pyproject = true;
 
   pythonImportsCheck = [
     "licomp_gnuguide"
@@ -48,10 +47,12 @@ buildPythonPackage (finalAttrs: {
     description = "Implementation of Licomp using GNU resources";
     homepage = "https://github.com/hesa/licomp-gnuguide";
     changelog = "https://github.com/hesa/licomp-gnuguide/releases/tag/${finalAttrs.src.tag}";
+
     license = with lib.licenses; [
       cc-by-nd-40 # licomp-gnuguide.png & licomp_gnuguide/data/gnu-quick-guide-licenses.json
       gpl3Plus
     ];
+
     maintainers = with lib.maintainers; [ eljamm ];
     teams = with lib.teams; [ ngi ];
   };

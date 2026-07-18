@@ -1,21 +1,21 @@
 {
+  lib,
+  stdenv,
   autoreconfHook,
   bash,
   coreutils,
+  docbook-xsl-nons,
   docbook_xml_dtd_45,
   docbook_xsl,
-  docbook-xsl-nons,
   fetchgit,
   findutils,
   flex,
   getopt,
   gnugrep,
   gnused,
-  lib,
   libxml2,
   libxslt,
   makeWrapper,
-  stdenv,
   testers,
   w3m-batch,
 }:
@@ -79,18 +79,20 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   meta = {
-    changelog = "https://pagure.io/xmlto/blob/master/f/ChangeLog";
     description = "Front-end to an XSL toolchain";
-    homepage = "https://pagure.io/xmlto/";
-    license = lib.licenses.gpl2Plus;
+
     longDescription = ''
       xmlto is a front-end to an XSL toolchain.  It chooses an
       appropriate stylesheet for the conversion you want and applies
       it using an external XSL-T processor.  It also performs any
       necessary post-processing.
     '';
-    mainProgram = "xmlto";
+
+    homepage = "https://pagure.io/xmlto/";
+    changelog = "https://pagure.io/xmlto/blob/master/f/ChangeLog";
+    license = lib.licenses.gpl2Plus;
     maintainers = [ ];
     platforms = lib.platforms.unix;
+    mainProgram = "xmlto";
   };
 })

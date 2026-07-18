@@ -19,27 +19,28 @@ stdenv.mkDerivation (finalAttrs: {
 
   nativeBuildInputs = kernel.moduleBuildDependencies;
 
-  hardeningDisable = [ "pic" ];
-
   makeFlags = kernelModuleMakeFlags ++ [
     "KERNELDIR=${kernel.dev}/lib/modules/${kernel.modDirVersion}/build"
     "INSTALL_MOD_PATH=${placeholder "out"}"
   ];
 
-  installTargets = [ "modules_install" ];
-
   enableParallelBuilding = true;
+  hardeningDisable = [ "pic" ];
+  installTargets = [ "modules_install" ];
 
   meta = {
     description = "Linux kernel modules for LTTng tracing";
     homepage = "https://lttng.org/";
+
     license = with lib.licenses; [
       lgpl21Only
       gpl2Only
       mit
     ];
-    platforms = lib.platforms.linux;
+
     maintainers = [ lib.maintainers.bjornfor ];
+    platforms = lib.platforms.linux;
+
     broken =
       (lib.versions.majorMinor kernel.modDirVersion) == "5.10"
       || (lib.versions.majorMinor kernel.modDirVersion) == "5.4";

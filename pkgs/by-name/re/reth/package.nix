@@ -16,11 +16,11 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-zTSwRSSZDINHEkbtTiLP3mgod9lDzFrPxMXq88NTOAM=";
   };
 
-  cargoHash = "sha256-WDe75Sg7y4GfH3dSfY48aXrIBe89skj1VW0NcgtLEVU=";
-
   nativeBuildInputs = [
     rustPlatform.bindgenHook
   ];
+
+  cargoHash = "sha256-WDe75Sg7y4GfH3dSfY48aXrIBe89skj1VW0NcgtLEVU=";
 
   # Some tests fail due to I/O that is unfriendly with nix sandbox.
   checkFlags = [
@@ -36,12 +36,14 @@ rustPlatform.buildRustPackage (finalAttrs: {
   meta = {
     description = "Modular Ethereum execution client in Rust by Paradigm";
     homepage = "https://github.com/paradigmxyz/reth";
+
     license = with lib.licenses; [
       mit
       asl20
     ];
-    mainProgram = "reth";
+
     maintainers = with lib.maintainers; [ mitchmindtree ];
     platforms = lib.platforms.unix;
+    mainProgram = "reth";
   };
 })

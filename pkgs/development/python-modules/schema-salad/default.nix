@@ -1,12 +1,12 @@
 {
   lib,
+  fetchFromGitHub,
   black,
   buildPythonPackage,
   cachecontrol,
-  fetchFromGitHub,
   mistune,
-  mypy-extensions,
   mypy,
+  mypy-extensions,
   pytestCheckHook,
   rdflib,
   requests,
@@ -21,7 +21,6 @@
 buildPythonPackage rec {
   pname = "schema-salad";
   version = "8.9.20260327095315";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "common-workflow-language";
@@ -30,8 +29,6 @@ buildPythonPackage rec {
     hash = "sha256-j3jevOMsNHT9+HI/8MD4MUwj+IHUisKMs/OA5wpweao=";
   };
 
-  pythonRelaxDeps = [ "mistune" ];
-
   postPatch = ''
     substituteInPlace setup.py \
       --replace-fail 'pytest_runner + ["setuptools_scm>=8.0.4,<11"]' '["setuptools_scm"]'
@@ -39,6 +36,12 @@ buildPythonPackage rec {
       --replace-fail '"setuptools_scm[toml]>=8.0.4,<11"' '"setuptools_scm[toml]"' \
       --replace-fail "mypy[mypyc]==1.19.1" "mypy"
     sed -i "/black>=/d" pyproject.toml
+  '';
+
+  nativeCheckInputs = [ pytestCheckHook ] ++ optional-dependencies.pycodegen;
+
+  preCheck = ''
+    rm tox.ini
   '';
 
   build-system = [ setuptools-scm ];
@@ -58,12 +61,6 @@ buildPythonPackage rec {
   ]
   ++ cachecontrol.optional-dependencies.filecache;
 
-  nativeCheckInputs = [ pytestCheckHook ] ++ optional-dependencies.pycodegen;
-
-  preCheck = ''
-    rm tox.ini
-  '';
-
   disabledTests = [
     "test_load_by_yaml_metaschema"
     "test_detect_changes_in_html"
@@ -75,11 +72,13 @@ buildPythonPackage rec {
     "test_bad_schemas"
   ];
 
-  pythonImportsCheck = [ "schema_salad" ];
-
   optional-dependencies = {
     pycodegen = [ black ];
   };
+
+  pyproject = true;
+  pythonImportsCheck = [ "schema_salad" ];
+  pythonRelaxDeps = [ "mistune" ];
 
   meta = {
     description = "Semantic Annotations for Linked Avro Data";

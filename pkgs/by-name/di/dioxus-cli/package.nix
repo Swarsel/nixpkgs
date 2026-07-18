@@ -1,17 +1,17 @@
 {
   lib,
-  fetchCrate,
-  rustPlatform,
-  pkg-config,
   cacert,
-  openssl,
-  rustfmt,
+  dioxus-cli,
+  esbuild,
+  fetchCrate,
   installShellFiles,
   makeWrapper,
-  esbuild,
-  wasm-bindgen-cli_0_2_126,
+  openssl,
+  pkg-config,
+  rustPlatform,
+  rustfmt,
   testers,
-  dioxus-cli,
+  wasm-bindgen-cli_0_2_126,
   withTelemetry ? false,
 }:
 
@@ -20,19 +20,9 @@ rustPlatform.buildRustPackage (finalAttrs: {
   version = "0.7.9";
 
   src = fetchCrate {
+    hash = "sha256-tLMtUlohSJt3okdJh+ARweQNGmzj/vYiNl8iZhDbSAc=";
     pname = "dioxus-cli";
     version = finalAttrs.version;
-    hash = "sha256-tLMtUlohSJt3okdJh+ARweQNGmzj/vYiNl8iZhDbSAc=";
-  };
-
-  cargoHash = "sha256-h5wkxHP8ehZLHqcUsro08/dpqSPnPuBbZuUGG8i4nBc=";
-  buildFeatures = [
-    "no-downloads"
-  ]
-  ++ lib.optional (!withTelemetry) "disable-telemetry";
-
-  env = {
-    OPENSSL_NO_VENDOR = 1;
   };
 
   nativeBuildInputs = [
@@ -46,6 +36,12 @@ rustPlatform.buildRustPackage (finalAttrs: {
     openssl
   ];
 
+  cargoHash = "sha256-h5wkxHP8ehZLHqcUsro08/dpqSPnPuBbZuUGG8i4nBc=";
+
+  env = {
+    OPENSSL_NO_VENDOR = 1;
+  };
+
   nativeCheckInputs = [
     rustfmt
   ];
@@ -56,18 +52,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
     # requires monorepo structure and mobile toolchains
     "--skip=test_harnesses::run_harness"
   ];
-
-  passthru = {
-    tests = {
-      version = testers.testVersion {
-        package = dioxus-cli;
-      };
-
-      withTelemetry = dioxus-cli.override {
-        withTelemetry = true;
-      };
-    };
-  };
 
   postInstall = ''
     installShellCompletion --cmd dx \
@@ -86,18 +70,38 @@ rustPlatform.buildRustPackage (finalAttrs: {
       }
   '';
 
+  buildFeatures = [
+    "no-downloads"
+  ]
+  ++ lib.optional (!withTelemetry) "disable-telemetry";
+
+  passthru = {
+    tests = {
+      version = testers.testVersion {
+        package = dioxus-cli;
+      };
+
+      withTelemetry = dioxus-cli.override {
+        withTelemetry = true;
+      };
+    };
+  };
+
   meta = {
     description = "CLI for building fullstack web, desktop, and mobile apps with a single codebase.";
     homepage = "https://dioxus.dev";
     changelog = "https://github.com/DioxusLabs/dioxus/releases";
+
     license = with lib.licenses; [
       mit
       asl20
     ];
+
     maintainers = with lib.maintainers; [
       cathalmullan
       anish
     ];
+
     platforms = lib.platforms.all;
     mainProgram = "dx";
   };

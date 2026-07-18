@@ -1,9 +1,9 @@
 {
   lib,
+  fetchFromGitHub,
   buildPythonPackage,
   cerberus,
   events,
-  fetchFromGitHub,
   flask,
   pymongo,
   setuptools,
@@ -13,7 +13,6 @@
 buildPythonPackage rec {
   pname = "eve";
   version = "2.3.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "pyeve";
@@ -22,8 +21,8 @@ buildPythonPackage rec {
     hash = "sha256-y0QfxLDoTKNZuAKcPqrLjwkZ0mRseBVq7OyflwUd+Lk=";
   };
 
-  pythonRelaxDeps = [ "events" ];
-
+  # Tests call a running mongodb instance
+  doCheck = false;
   build-system = [ setuptools ];
 
   dependencies = [
@@ -34,10 +33,9 @@ buildPythonPackage rec {
     simplejson
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "eve" ];
-
-  # Tests call a running mongodb instance
-  doCheck = false;
+  pythonRelaxDeps = [ "events" ];
 
   meta = {
     description = "Open source Python REST API framework designed for human beings";

@@ -1,26 +1,26 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
   autoreconfHook,
-  pkg-config,
   expat,
   libproxy,
   neon,
+  pkg-config,
   zlib,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
-  version = "0.17";
   pname = "litmus";
+  version = "0.17";
 
   src = fetchFromGitHub {
     owner = "notroj";
     repo = "litmus";
     tag = finalAttrs.version;
+    hash = "sha256-JsFyZeaUTDCFZtlG8kyycTE14i4U4R6lTTVWLPjKGPU=";
     # Required for neon m4 macros, bundled neon not used
     fetchSubmodules = true;
-    hash = "sha256-JsFyZeaUTDCFZtlG8kyycTE14i4U4R6lTTVWLPjKGPU=";
   };
 
   postPatch = ''
@@ -51,8 +51,8 @@ stdenv.mkDerivation (finalAttrs: {
     description = "WebDAV server protocol compliance test suite";
     homepage = "http://www.webdav.org/neon/litmus/";
     license = lib.licenses.gpl2Plus;
-    platforms = lib.platforms.linux;
     maintainers = [ lib.maintainers.lorenz ];
+    platforms = lib.platforms.linux;
     mainProgram = "litmus";
   };
 })

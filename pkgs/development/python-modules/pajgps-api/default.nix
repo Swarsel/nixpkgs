@@ -1,9 +1,9 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  hatchling,
   aiohttp,
+  buildPythonPackage,
+  hatchling,
   pytestCheckHook,
   python-dotenv,
 }:
@@ -11,7 +11,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "pajgps-api";
   version = "0.4.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "skipperro";
@@ -20,15 +19,14 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-7NVr75ss9vUjyn0Yz+bpZVdN4gDx4gvpdDV1bWLKOIQ=";
   };
 
-  build-system = [ hatchling ];
-
-  dependencies = [ aiohttp ];
-
   nativeCheckInputs = [
     pytestCheckHook
     python-dotenv
   ];
 
+  build-system = [ hatchling ];
+  dependencies = [ aiohttp ];
+  pyproject = true;
   pythonImportsCheck = [ "pajgps_api" ];
 
   meta = {

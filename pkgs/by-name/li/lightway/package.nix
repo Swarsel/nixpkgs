@@ -19,24 +19,6 @@ rustPlatform.buildRustPackage {
     hash = "sha256-OFMAEw613aIGG7N5LBAGbVrpkqMUBi7lUy7jm5tZowc=";
   };
 
-  cargoHash = "sha256-gY8KokOtdBT7Vq+lGn2sk4/o3A0TypEqv09TVJqaZjc=";
-
-  cargoBuildFlags = lib.cli.toCommandLineGNU { } {
-    package = [
-      "lightway-client"
-      "lightway-server"
-    ];
-
-    features = lib.optionals stdenv.hostPlatform.isLinux [
-      "io-uring"
-    ];
-  };
-
-  # Enable ARM crypto extensions, overrides the default stdenv.hostPlatform.gcc.arch.
-  env.NIX_CFLAGS_COMPILE =
-    with stdenv.hostPlatform;
-    lib.optionalString (isAarch && isLinux) "-march=${gcc.arch}+crypto";
-
   # For wolfSSL.
   nativeBuildInputs = [
     autoconf
@@ -45,14 +27,34 @@ rustPlatform.buildRustPackage {
     rustPlatform.bindgenHook
   ];
 
+  cargoHash = "sha256-gY8KokOtdBT7Vq+lGn2sk4/o3A0TypEqv09TVJqaZjc=";
+
+  # Enable ARM crypto extensions, overrides the default stdenv.hostPlatform.gcc.arch.
+  env.NIX_CFLAGS_COMPILE =
+    with stdenv.hostPlatform;
+    lib.optionalString (isAarch && isLinux) "-march=${gcc.arch}+crypto";
+
+  cargoBuildFlags = lib.cli.toCommandLineGNU { } {
+    features = lib.optionals stdenv.hostPlatform.isLinux [
+      "io-uring"
+    ];
+
+    package = [
+      "lightway-client"
+      "lightway-server"
+    ];
+  };
+
   meta = {
     description = "A modern VPN protocol in Rust";
     homepage = "https://expressvpn.com/lightway";
     license = lib.licenses.agpl3Only;
+
     maintainers = with lib.maintainers; [
       dustyhorizon
       usertam
     ];
+
     platforms = with lib.platforms; darwin ++ linux;
     mainProgram = "lightway-client";
   };

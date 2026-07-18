@@ -3,8 +3,8 @@
   stdenv,
   fetchurl,
   gettext,
-  libgpg-error,
   libgcrypt,
+  libgpg-error,
   libksba,
   zlib,
 }:
@@ -37,10 +37,10 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Tiny TLS 1.2 only implementation";
-    mainProgram = "ntbtls-config";
     homepage = "https://www.gnupg.org/software/ntbtls/";
     license = lib.licenses.gpl3Plus;
-    platforms = lib.platforms.unix;
     maintainers = [ ];
+    platforms = lib.platforms.unix;
+    mainProgram = "ntbtls-config";
   };
 })

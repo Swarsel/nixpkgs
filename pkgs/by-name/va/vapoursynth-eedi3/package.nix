@@ -2,13 +2,13 @@
   lib,
   stdenv,
   fetchFromGitHub,
+  boost,
   meson,
   ninja,
-  pkg-config,
-  boost,
-  vapoursynth,
-  opencl-headers,
   ocl-icd,
+  opencl-headers,
+  pkg-config,
+  vapoursynth,
   openclSupport ? true,
 }:
 
@@ -22,6 +22,11 @@ stdenv.mkDerivation {
     rev = "d11bdb37c7a7118cd095b53d9f8fbbac02a06ac0";
     hash = "sha256-MIUf6sOnJ2uqGw3ixEHy1ijzlLFkQauwtm1vfgmYmcg=";
   };
+
+  postPatch = ''
+    substituteInPlace meson.build \
+      --replace-fail "vapoursynth_dep.get_pkgconfig_variable('libdir')" "get_option('libdir')"
+  '';
 
   nativeBuildInputs = [
     meson
@@ -37,11 +42,6 @@ stdenv.mkDerivation {
     ocl-icd
     opencl-headers
   ];
-
-  postPatch = ''
-    substituteInPlace meson.build \
-      --replace-fail "vapoursynth_dep.get_pkgconfig_variable('libdir')" "get_option('libdir')"
-  '';
 
   mesonFlags = [ (lib.mesonBool "opencl" openclSupport) ];
 

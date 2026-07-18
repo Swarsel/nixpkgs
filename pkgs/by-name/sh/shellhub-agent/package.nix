@@ -1,13 +1,13 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
-  nix-update-script,
-  makeWrapper,
-  openssh,
+  buildGoModule,
   libxcrypt,
-  testers,
+  makeWrapper,
+  nix-update-script,
+  openssh,
   shellhub-agent,
+  testers,
 }:
 
 buildGoModule (finalAttrs: {
@@ -21,9 +21,13 @@ buildGoModule (finalAttrs: {
     hash = "sha256-JN8taYPj8GOCeDw08c2fLZmQr4IACWum5whfycaG9go=";
   };
 
-  modRoot = "./agent";
-
+  nativeBuildInputs = [ makeWrapper ];
+  buildInputs = [ libxcrypt ];
   vendorHash = "sha256-iuXGBYvcNK91RmbfKfMyiMbW4LmBpVI5oE8EEyP7jps=";
+
+  postInstall = ''
+    wrapProgram $out/bin/agent --prefix PATH : ${lib.makeBinPath [ openssh ]}
+  '';
 
   ldflags = [
     "-s"
@@ -31,31 +35,28 @@ buildGoModule (finalAttrs: {
     "-X main.AgentVersion=v${finalAttrs.version}"
   ];
 
+  modRoot = "./agent";
+
   passthru = {
-    updateScript = nix-update-script { };
-
     tests.version = testers.testVersion {
-      package = shellhub-agent;
-      command = "agent --version";
       version = "v${finalAttrs.version}";
+      command = "agent --version";
+      package = shellhub-agent;
     };
+
+    updateScript = nix-update-script { };
   };
-
-  nativeBuildInputs = [ makeWrapper ];
-  buildInputs = [ libxcrypt ];
-
-  postInstall = ''
-    wrapProgram $out/bin/agent --prefix PATH : ${lib.makeBinPath [ openssh ]}
-  '';
 
   meta = {
     description = "Enables easy access any Linux device behind firewall and NAT";
+
     longDescription = ''
       ShellHub is a modern SSH server for remotely accessing Linux devices via
       command line (using any SSH client) or web-based user interface, designed
       as an alternative to _sshd_. Think ShellHub as centralized SSH for the the
       edge and cloud computing.
     '';
+
     homepage = "https://shellhub.io/";
     license = lib.licenses.asl20;
     maintainers = with lib.maintainers; [ otavio ];

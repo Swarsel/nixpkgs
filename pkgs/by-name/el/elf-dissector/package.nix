@@ -5,8 +5,8 @@
   cmake,
   elfutils,
   kdePackages,
-  libiberty,
   libdwarf,
+  libiberty,
   libopcodes,
   qt6,
   qt6Packages,
@@ -17,11 +17,11 @@ stdenv.mkDerivation {
   version = "0.0.1-unstable-2025-11-05";
 
   src = fetchFromGitLab {
-    domain = "invent.kde.org";
     owner = "sdk";
     repo = "elf-dissector";
     rev = "37aa18d16e0f1a4fca5a276473ae37b2b93f623d";
     hash = "sha256-O9b6lgJt5SwTwIEohkYpwWxnN0R0w7oEZGrDgj3aGOs=";
+    domain = "invent.kde.org";
   };
 
   nativeBuildInputs = [
@@ -40,8 +40,8 @@ stdenv.mkDerivation {
   ];
 
   meta = {
-    homepage = "https://invent.kde.org/sdk/elf-dissector";
     description = "Tools for inspecting, analyzing and optimizing ELF files";
+    homepage = "https://invent.kde.org/sdk/elf-dissector";
     license = lib.licenses.gpl2;
     maintainers = [ lib.maintainers.philiptaron ];
   };

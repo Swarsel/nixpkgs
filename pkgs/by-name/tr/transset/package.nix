@@ -2,10 +2,10 @@
   lib,
   stdenv,
   fetchurl,
-  pkg-config,
   libx11,
-  xorgproto,
+  pkg-config,
   writeScript,
+  xorgproto,
 }:
 stdenv.mkDerivation (finalAttrs: {
   pname = "transset";
@@ -17,7 +17,6 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   strictDeps = true;
-
   nativeBuildInputs = [ pkg-config ];
 
   buildInputs = [
@@ -39,13 +38,15 @@ stdenv.mkDerivation (finalAttrs: {
   meta = {
     description = "Utility for setting opacity/transparency property on a window";
     homepage = "https://gitlab.freedesktop.org/xorg/app/transset";
+
     license = with lib.licenses; [
       mit
       mitOpenGroup
       hpndSellVariant
     ];
-    mainProgram = "transset";
+
     maintainers = [ ];
     platforms = lib.platforms.unix;
+    mainProgram = "transset";
   };
 })

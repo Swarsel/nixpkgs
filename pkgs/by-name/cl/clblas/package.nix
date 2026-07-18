@@ -1,16 +1,16 @@
 {
   lib,
   stdenv,
-  llvmPackages_19,
   fetchFromGitHub,
-  fetchpatch,
-  cmake,
-  gfortran,
   blas,
   boost,
-  python3,
+  cmake,
+  fetchpatch,
+  gfortran,
+  llvmPackages_19,
   ocl-icd,
   opencl-headers,
+  python3,
 }:
 
 let
@@ -31,8 +31,8 @@ stdenv'.mkDerivation (finalAttrs: {
   patches = [
     ./platform.patch
     (fetchpatch {
-      url = "https://github.com/clMathLibraries/clBLAS/commit/68ce5f0b824d7cf9d71b09bb235cf219defcc7b4.patch";
       hash = "sha256-XoVcHgJ0kTPysZbM83mUX4/lvXVHKbl7s2Q8WWiUnMs=";
+      url = "https://github.com/clMathLibraries/clBLAS/commit/68ce5f0b824d7cf9d71b09bb235cf219defcc7b4.patch";
     })
   ];
 
@@ -45,19 +45,14 @@ stdenv'.mkDerivation (finalAttrs: {
       --replace-fail "cmake_minimum_required(VERSION 2.6)" "cmake_minimum_required(VERSION 3.10)"
   '';
 
-  preConfigure = ''
-    cd src
-  '';
-
-  cmakeFlags = [
-    "-DBUILD_TEST=OFF"
-  ];
+  strictDeps = true;
 
   nativeBuildInputs = [
     cmake
     gfortran
     python3
   ];
+
   buildInputs = [
     blas
     boost
@@ -67,14 +62,22 @@ stdenv'.mkDerivation (finalAttrs: {
     opencl-headers
   ];
 
-  strictDeps = true;
+  cmakeFlags = [
+    "-DBUILD_TEST=OFF"
+  ];
+
+  preConfigure = ''
+    cd src
+  '';
 
   meta = {
-    homepage = "https://github.com/clMathLibraries/clBLAS";
     description = "Software library containing BLAS functions written in OpenCL";
+
     longDescription = ''
       This package contains a library of BLAS functions on top of OpenCL.
     '';
+
+    homepage = "https://github.com/clMathLibraries/clBLAS";
     license = lib.licenses.asl20;
     maintainers = [ ];
     platforms = lib.platforms.unix;

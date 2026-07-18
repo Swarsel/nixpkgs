@@ -1,30 +1,30 @@
 {
+  lib,
+  stdenv,
+  fetchFromGitHub,
+  # Linux Dependencies
+  alsa-lib,
   asio,
   cmake,
   curl,
-  fetchFromGitHub,
   ffmpeg-headless,
+  game-music-emu,
   gnutls,
   lame,
-  lib,
   libev,
-  game-music-emu,
   libmicrohttpd,
   libopenmpt,
   mpg123,
   ncurses,
+  pipewire,
   pkg-config,
   portaudio,
-  stdenv,
-  taglib,
-  # Linux Dependencies
-  alsa-lib,
-  pipewireSupport ? !stdenv.hostPlatform.isDarwin,
-  pipewire,
   pulseaudio,
-  sndioSupport ? true,
   sndio,
   systemdLibs,
+  taglib,
+  pipewireSupport ? !stdenv.hostPlatform.isDarwin,
+  sndioSupport ? true,
   systemdSupport ? lib.meta.availableOn stdenv.hostPlatform systemdLibs,
 }:
 
@@ -85,12 +85,14 @@ stdenv.mkDerivation (finalAttrs: {
   meta = {
     description = "Terminal-based music player, library, and streaming audio server";
     homepage = "https://musikcube.com/";
+    license = lib.licenses.bsd3;
+
     maintainers = with lib.maintainers; [
       aanderse
       afh
     ];
-    mainProgram = "musikcube";
-    license = lib.licenses.bsd3;
+
     platforms = lib.platforms.all;
+    mainProgram = "musikcube";
   };
 })

@@ -3,8 +3,8 @@
   stdenv,
   fetchFromGitHub,
   autoreconfHook,
-  pkg-config,
   e2fsprogs,
+  pkg-config,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -24,12 +24,11 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   buildInputs = [ e2fsprogs ];
-
   enableParallelBuilding = true;
 
   meta = {
-    homepage = "https://e2tools.github.io/";
     description = "Utilities to read/write/manipulate files in an ext2/ext3 filesystem";
+    homepage = "https://e2tools.github.io/";
     license = lib.licenses.gpl2Only;
     platforms = lib.platforms.linux;
   };

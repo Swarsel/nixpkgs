@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   glibc,
   go-md2man,
   installShellFiles,
@@ -20,25 +20,16 @@ buildGoModule (finalAttrs: {
 
   patches = [ ./glibc.patch ];
 
-  vendorHash = "sha256-k79TcC9voQROpJnyZ0RsqxJnBT83W5Z+D+D3HnuQGsI=";
-
   postPatch = ''
     substituteInPlace src/cmd/create.go --subst-var-by glibc ${glibc}
   '';
-
-  modRoot = "src";
 
   nativeBuildInputs = [
     go-md2man
     installShellFiles
   ];
 
-  ldflags = [
-    "-s"
-    "-w"
-    "-X github.com/containers/toolbox/pkg/version.currentVersion=${finalAttrs.version}"
-  ];
-
+  vendorHash = "sha256-k79TcC9voQROpJnyZ0RsqxJnBT83W5Z+D+D3HnuQGsI=";
   preCheck = "export PATH=$GOPATH/bin:$PATH";
 
   postInstall = ''
@@ -51,10 +42,18 @@ buildGoModule (finalAttrs: {
     install profile.d/toolbox.sh -Dt $out/share/profile.d
   '';
 
+  ldflags = [
+    "-s"
+    "-w"
+    "-X github.com/containers/toolbox/pkg/version.currentVersion=${finalAttrs.version}"
+  ];
+
+  modRoot = "src";
+
   meta = {
+    description = "Tool for containerized command line environments on Linux";
     homepage = "https://containertoolbx.org";
     changelog = "https://github.com/containers/toolbox/releases/tag/${finalAttrs.version}";
-    description = "Tool for containerized command line environments on Linux";
     license = lib.licenses.asl20;
     maintainers = [ ];
     mainProgram = "toolbox";

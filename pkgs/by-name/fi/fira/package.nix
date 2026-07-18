@@ -1,13 +1,13 @@
 {
   lib,
-  symlinkJoin,
   fira-mono,
   fira-sans,
+  symlinkJoin,
 }:
 
 symlinkJoin {
-  pname = "fira";
   inherit (fira-sans) version;
+  pname = "fira";
 
   paths = [
     fira-mono

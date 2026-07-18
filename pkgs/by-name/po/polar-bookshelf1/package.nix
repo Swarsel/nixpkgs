@@ -18,8 +18,10 @@
   glibc,
   gsettings-desktop-schemas,
   gtk3,
+  libnghttp2,
+  libudev0-shim,
   libx11,
-  libxscrnsaver,
+  libxcb,
   libxcomposite,
   libxcursor,
   libxdamage,
@@ -28,10 +30,8 @@
   libxi,
   libxrandr,
   libxrender,
+  libxscrnsaver,
   libxtst,
-  libnghttp2,
-  libudev0-shim,
-  libxcb,
   makeWrapper,
   nspr,
   nss,
@@ -48,6 +48,13 @@ stdenv.mkDerivation (finalAttrs: {
     url = "mirror://sourceforge/polar-bookshelf.mirror/v${finalAttrs.version}/polar-bookshelf-${finalAttrs.version}-amd64.deb";
     hash = "sha256-TeegAq3x8LZ01KEPIlP4lTGC0a9ilnf1xX/Dqci1wEQ=";
   };
+
+  nativeBuildInputs = [
+    autoPatchelfHook
+    dpkg
+    makeWrapper
+    wrapGAppsHook3
+  ];
 
   buildInputs = [
     alsa-lib
@@ -79,21 +86,6 @@ stdenv.mkDerivation (finalAttrs: {
     pango
   ];
 
-  nativeBuildInputs = [
-    autoPatchelfHook
-    dpkg
-    makeWrapper
-    wrapGAppsHook3
-  ];
-
-  runtimeLibs = lib.makeLibraryPath [
-    libudev0-shim
-    glibc
-    curl
-    openssl
-    libnghttp2
-  ];
-
   installPhase = ''
     mkdir -p $out/share/polar-bookshelf $out/bin $out/lib
     mv opt/Polar\ Bookshelf/* $out/share/polar-bookshelf
@@ -109,13 +101,21 @@ stdenv.mkDerivation (finalAttrs: {
       --replace "/opt/Polar Bookshelf/polar-bookshelf" "$out/bin/polar-bookshelf"
   '';
 
+  runtimeLibs = lib.makeLibraryPath [
+    libudev0-shim
+    glibc
+    curl
+    openssl
+    libnghttp2
+  ];
+
   meta = {
-    homepage = "https://getpolarized.io/";
     description = "Personal knowledge repository for PDF and web content supporting incremental reading and document annotation";
-    mainProgram = "polar-bookshelf";
+    homepage = "https://getpolarized.io/";
     license = lib.licenses.gpl3Only;
+    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
     maintainers = [ lib.maintainers.dansbandit ];
     platforms = lib.platforms.linux;
-    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
+    mainProgram = "polar-bookshelf";
   };
 })

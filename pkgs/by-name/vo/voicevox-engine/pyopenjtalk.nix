@@ -1,33 +1,28 @@
 {
   lib,
-  python,
-  buildPythonPackage,
   fetchFromGitHub,
-  fetchzip,
-
-  setuptools,
-  setuptools-scm,
-  cython,
+  buildPythonPackage,
   cmake,
+  cython,
+  fetchzip,
   numpy,
   oldest-supported-numpy,
+  python,
+  setuptools,
+  setuptools-scm,
   tqdm,
 }:
 
 let
   dic-dirname = "open_jtalk_dic_utf_8-1.11";
   dic-src = fetchzip {
-    url = "https://github.com/r9y9/open_jtalk/releases/download/v1.11.1/${dic-dirname}.tar.gz";
     hash = "sha256-+6cHKujNEzmJbpN9Uan6kZKsPdwxRRzT3ZazDnCNi3s=";
+    url = "https://github.com/r9y9/open_jtalk/releases/download/v1.11.1/${dic-dirname}.tar.gz";
   };
 in
 buildPythonPackage {
   pname = "pyopenjtalk";
   version = "0-unstable-2025-04-23";
-  pyproject = true;
-
-  # needed because setuptools-scm doesn't like the 0-unstable format
-  env.SETUPTOOLS_SCM_PRETEND_VERSION = "0.0.1";
 
   src = fetchFromGitHub {
     owner = "VOICEVOX";
@@ -36,6 +31,13 @@ buildPythonPackage {
     hash = "sha256-UUUYoVEqENKux5N7ucbjcnrZ2+ewwxwP8S0WksaJEAQ=";
     fetchSubmodules = true;
   };
+
+  # needed because setuptools-scm doesn't like the 0-unstable format
+  env.SETUPTOOLS_SCM_PRETEND_VERSION = "0.0.1";
+
+  postInstall = ''
+    ln -s ${dic-src} $out/${python.sitePackages}/pyopenjtalk/${dic-dirname}
+  '';
 
   build-system = [
     setuptools
@@ -46,16 +48,13 @@ buildPythonPackage {
     oldest-supported-numpy
   ];
 
-  dontUseCmakeConfigure = true;
-
   dependencies = [
     numpy
     tqdm
   ];
 
-  postInstall = ''
-    ln -s ${dic-src} $out/${python.sitePackages}/pyopenjtalk/${dic-dirname}
-  '';
+  dontUseCmakeConfigure = true;
+  pyproject = true;
 
   meta = {
     description = "VOICEVOX's fork of the pyopenjtalk text-to-speech library";

@@ -2,18 +2,18 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  meson,
-  ninja,
   cairo,
-  pango,
-  pkg-config,
-  wayland-protocols,
+  fetchpatch,
   glib,
-  wayland,
   libxkbcommon,
   makeWrapper,
+  meson,
+  ninja,
+  pango,
+  pkg-config,
+  wayland,
+  wayland-protocols,
   wayland-scanner,
-  fetchpatch,
 }:
 
 stdenv.mkDerivation {
@@ -32,7 +32,15 @@ stdenv.mkDerivation {
     "man"
   ];
 
-  depsBuildBuild = [ pkg-config ];
+  patches = [
+    # can be removed when https://github.com/nyyManni/dmenu-wayland/pull/23 is included
+    (fetchpatch {
+      name = "support-cross-compilation.patch";
+      sha256 = "sha256-im16kU8RWrCY0btYOYjDp8XtfGEivemIPlhwPX0C77o=";
+      url = "https://github.com/nyyManni/dmenu-wayland/commit/3434410de5dcb007539495395f7dc5421923dd3a.patch";
+    })
+  ];
+
   nativeBuildInputs = [
     meson
     ninja
@@ -40,6 +48,7 @@ stdenv.mkDerivation {
     makeWrapper
     wayland-scanner
   ];
+
   buildInputs = [
     cairo
     pango
@@ -49,26 +58,19 @@ stdenv.mkDerivation {
     libxkbcommon
   ];
 
-  patches = [
-    # can be removed when https://github.com/nyyManni/dmenu-wayland/pull/23 is included
-    (fetchpatch {
-      name = "support-cross-compilation.patch";
-      url = "https://github.com/nyyManni/dmenu-wayland/commit/3434410de5dcb007539495395f7dc5421923dd3a.patch";
-      sha256 = "sha256-im16kU8RWrCY0btYOYjDp8XtfGEivemIPlhwPX0C77o=";
-    })
-  ];
-
   postInstall = ''
     wrapProgram $out/bin/dmenu-wl_run \
       --prefix PATH : $out/bin
   '';
 
+  depsBuildBuild = [ pkg-config ];
+
   meta = {
-    license = lib.licenses.mit;
-    platforms = lib.platforms.linux;
     description = "Efficient dynamic menu for wayland (wlroots)";
     homepage = "https://github.com/nyyManni/dmenu-wayland";
+    license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ wineee ];
+    platforms = lib.platforms.linux;
     mainProgram = "dmenu-wl";
   };
 }

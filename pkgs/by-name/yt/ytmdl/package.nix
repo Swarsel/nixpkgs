@@ -1,20 +1,19 @@
 {
   lib,
-  python3Packages,
   fetchPypi,
   ffmpeg,
+  python3Packages,
   writableTmpDirAsHomeHook,
 }:
 
 python3Packages.buildPythonApplication rec {
   pname = "ytmdl";
   version = "2023.11.26";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname;
-    version = builtins.replaceStrings [ ".0" ] [ "." ] version;
     hash = "sha256-Im3rQAs/TYookv6FeGpU6tJxUGBMb6/UW1ZMDg9FW4s=";
+    version = builtins.replaceStrings [ ".0" ] [ "." ] version;
   };
 
   postPatch = ''
@@ -22,6 +21,10 @@ python3Packages.buildPythonApplication rec {
       --replace-fail "/etc/bash_completion.d" "share/bash-completion/completions" \
       --replace-fail "/usr/share/zsh/functions/Completion/Unix" "share/zsh/site-functions"
   '';
+
+  nativeCheckInputs = [
+    writableTmpDirAsHomeHook # the app tries to log stuff into xdg_cache_home
+  ];
 
   build-system = with python3Packages; [ setuptools ];
 
@@ -51,15 +54,12 @@ python3Packages.buildPythonApplication rec {
     (lib.makeBinPath [ ffmpeg ])
   ];
 
-  nativeCheckInputs = [
-    writableTmpDirAsHomeHook # the app tries to log stuff into xdg_cache_home
-  ];
-
+  pyproject = true;
   pythonImportsCheck = [ "ytmdl" ];
 
   meta = {
-    homepage = "https://github.com/deepjyoti30/ytmdl";
     description = "YouTube Music Downloader";
+    homepage = "https://github.com/deepjyoti30/ytmdl";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ j0hax ];
     mainProgram = "ytmdl";

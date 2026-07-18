@@ -75,20 +75,16 @@ lib.checkListOfEnum "${pname} Valid theme accent(s)" validAccents accent lib.che
       hash = "sha256-W+NGyPnOEKoicJPwnftq26iP7jya1ZKq38lMjx/k9ss=";
     };
 
-    nativeBuildInputs = [
-      jdupes
-      sassc
-    ];
-
-    propagatedUserEnvPkgs = [ gtk-engine-murrine ];
-
     postPatch = ''
       find -name "*.sh" -print0 | while IFS= read -r -d ''' file; do
         patchShebangs "$file"
       done
     '';
 
-    dontBuild = true;
+    nativeBuildInputs = [
+      jdupes
+      sassc
+    ];
 
     installPhase = ''
       runHook preInstall
@@ -107,6 +103,9 @@ lib.checkListOfEnum "${pname} Valid theme accent(s)" validAccents accent lib.che
 
       runHook postInstall
     '';
+
+    dontBuild = true;
+    propagatedUserEnvPkgs = [ gtk-engine-murrine ];
 
     meta = {
       description = "GTK Theme with Catppuccin colour scheme";

@@ -2,8 +2,8 @@
   lib,
   stdenv,
   fetchurl,
-  dpkg,
   autoPatchelfHook,
+  dpkg,
 }:
 
 let
@@ -38,8 +38,8 @@ stdenv.mkDerivation (finalAttrs: {
     description = "AMD Encode Core Library";
     homepage = "https://www.amd.com/en/support/download/drivers.html";
     license = lib.licenses.unfree;
-    platforms = [ "x86_64-linux" ];
     sourceProvenance = [ lib.sourceTypes.binaryNativeCode ];
     maintainers = with lib.maintainers; [ jopejoe1 ];
+    platforms = [ "x86_64-linux" ];
   };
 })

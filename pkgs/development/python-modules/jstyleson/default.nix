@@ -1,14 +1,13 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   pytestCheckHook,
 }:
 
 buildPythonPackage {
   pname = "jstyleson";
   version = "0.0.2";
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "linjackson78";
@@ -19,7 +18,7 @@ buildPythonPackage {
   };
 
   nativeCheckInputs = [ pytestCheckHook ];
-
+  format = "setuptools";
   pythonImportsCheck = [ "jstyleson" ];
 
   meta = {

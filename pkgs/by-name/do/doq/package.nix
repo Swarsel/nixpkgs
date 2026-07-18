@@ -1,13 +1,12 @@
 {
   lib,
-  python3,
   fetchFromGitHub,
+  python3,
 }:
 
 python3.pkgs.buildPythonApplication (finalAttrs: {
   pname = "doq";
   version = "0.10.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "heavenshell";
@@ -32,6 +31,7 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     pytestCheckHook
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "doq" ];
 
   meta = {

@@ -2,8 +2,8 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  libusbp,
   cmake,
+  libusbp,
   pkg-config,
   qt5,
 }:
@@ -30,19 +30,19 @@ stdenv.mkDerivation (finalAttrs: {
     qt5.wrapQtAppsHook
   ];
 
-  propagatedBuildInputs = [
-    libusbp
-  ];
-
   buildInputs = [
     qt5.qtbase
   ];
 
+  propagatedBuildInputs = [
+    libusbp
+  ];
+
   meta = {
-    homepage = "https://github.com/pololu/pololu-tic-software";
     description = "Pololu Tic stepper motor controller software";
-    platforms = lib.platforms.all;
+    homepage = "https://github.com/pololu/pololu-tic-software";
     license = lib.licenses.cc-by-sa-30;
     maintainers = with lib.maintainers; [ bzizou ];
+    platforms = lib.platforms.all;
   };
 })

@@ -1,15 +1,13 @@
 {
   lib,
-  buildDunePackage,
   fetchFromGitHub,
+  buildDunePackage,
   menhir,
 }:
 
 buildDunePackage (finalAttrs: {
   pname = "odate";
   version = "0.7";
-
-  minimalOCamlVersion = "4.07";
 
   src = fetchFromGitHub {
     owner = "hhugo";
@@ -19,10 +17,11 @@ buildDunePackage (finalAttrs: {
   };
 
   nativeBuildInputs = [ menhir ];
+  minimalOCamlVersion = "4.07";
 
   meta = {
-    description = "Date and duration in OCaml";
     inherit (finalAttrs.src.meta) homepage;
+    description = "Date and duration in OCaml";
     license = lib.licenses.mit;
     maintainers = [ lib.maintainers.vbgl ];
   };

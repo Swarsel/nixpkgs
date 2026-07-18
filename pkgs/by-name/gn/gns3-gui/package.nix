@@ -1,9 +1,9 @@
 {
+  lib,
   fetchFromGitHub,
   fetchpatch,
   gns3-gui,
   gns3-server,
-  lib,
   python3Packages,
   qt6,
   testers,
@@ -13,7 +13,6 @@
 python3Packages.buildPythonApplication (finalAttrs: {
   pname = "gns3-gui";
   version = "2.2.56.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "GNS3";
@@ -25,20 +24,27 @@ python3Packages.buildPythonApplication (finalAttrs: {
   patches = [
     # Fix tests after PyQt6 migration
     (fetchpatch {
-      url = "https://github.com/GNS3/gns3-gui/commit/e6e2a1cafbc3ce4be9cca3428e60400f25806cde.patch";
       hash = "sha256-T15OCqm+Te9ZOCg/kFf/fd2DY75LfaLHskAAgGYMloI=";
+      url = "https://github.com/GNS3/gns3-gui/commit/e6e2a1cafbc3ce4be9cca3428e60400f25806cde.patch";
     })
   ];
 
-  pythonRelaxDeps = [
-    "jsonschema"
-    "psutil"
-    "sentry-sdk"
+  nativeBuildInputs = [ qt6.wrapQtAppsHook ];
+  buildInputs = [ qt6.qtwayland ];
+
+  nativeCheckInputs = with python3Packages; [
+    pytestCheckHook
+    writableTmpDirAsHomeHook
   ];
 
-  nativeBuildInputs = [ qt6.wrapQtAppsHook ];
+  preCheck = ''
+    export QT_PLUGIN_PATH="${lib.getBin qt6.qtbase}/${qt6.qtbase.qtPluginPrefix}"
+    export QT_QPA_PLATFORM=offscreen
+  '';
 
-  buildInputs = [ qt6.qtwayland ];
+  preFixup = ''
+    makeWrapperArgs+=("''${qtWrapperArgs[@]}")
+  '';
 
   build-system = with python3Packages; [ setuptools ];
 
@@ -54,41 +60,37 @@ python3Packages.buildPythonApplication (finalAttrs: {
   ];
 
   dontWrapQtApps = true;
+  pyproject = true;
 
-  preFixup = ''
-    makeWrapperArgs+=("''${qtWrapperArgs[@]}")
-  '';
-
-  nativeCheckInputs = with python3Packages; [
-    pytestCheckHook
-    writableTmpDirAsHomeHook
+  pythonRelaxDeps = [
+    "jsonschema"
+    "psutil"
+    "sentry-sdk"
   ];
 
-  preCheck = ''
-    export QT_PLUGIN_PATH="${lib.getBin qt6.qtbase}/${qt6.qtbase.qtPluginPrefix}"
-    export QT_QPA_PLATFORM=offscreen
-  '';
-
   passthru = {
-    tests.version = testers.testVersion {
-      package = gns3-gui;
-      command = "${lib.getExe gns3-gui} --version";
-    };
     inherit (gns3-server.passthru) updateScript;
+
+    tests.version = testers.testVersion {
+      command = "${lib.getExe gns3-gui} --version";
+      package = gns3-gui;
+    };
   };
 
   meta = {
     description = "Graphical Network Simulator 3 GUI";
+
     longDescription = ''
       Graphical user interface for controlling the GNS3 network simulator. This
       requires access to a local or remote GNS3 server (it's recommended to
       download the official GNS3 VM).
     '';
+
     homepage = "https://www.gns3.com/";
     changelog = "https://github.com/GNS3/gns3-gui/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.gpl3Plus;
-    platforms = lib.platforms.linux;
     maintainers = with lib.maintainers; [ anthonyroussel ];
+    platforms = lib.platforms.linux;
     mainProgram = "gns3";
   };
 })

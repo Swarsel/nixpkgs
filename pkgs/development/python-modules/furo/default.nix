@@ -1,16 +1,16 @@
 {
-  stdenv,
   lib,
-  nodejs,
-  buildNpmPackage,
-  buildPythonPackage,
-  runCommand,
+  stdenv,
   fetchFromGitHub,
-  fetchPypi,
-  flit-core,
   accessible-pygments,
   beautifulsoup4,
+  buildNpmPackage,
+  buildPythonPackage,
+  fetchPypi,
+  flit-core,
+  nodejs,
   pygments,
+  runCommand,
   sphinx,
   sphinx-basic-ng,
   unzip,
@@ -47,10 +47,10 @@ let
       web-bin-src = fetchPypi {
         inherit pname;
         version = pypiVersion;
-        format = "wheel";
         dist = "py3";
-        python = "py3";
+        format = "wheel";
         hash = "sha256-uw6tUwn5UAEwZlomvuh2k8Qc5Nvf+GTb+2sNrkZz0k8=";
+        python = "py3";
       };
     in
     runCommand "${pname}-web-bin"
@@ -64,9 +64,8 @@ let
       '';
 
   web-native = buildNpmPackage {
-    pname = "${pname}-web";
     inherit version src;
-
+    pname = "${pname}-web";
     npmDepsHash = "sha256-dcdHoyqF9zC/eKtEqMho7TK2E1KIvoXo0iwSPTzj+Kw=";
 
     installPhase = ''
@@ -82,7 +81,6 @@ in
 
 buildPythonPackage rec {
   inherit pname version src;
-  pyproject = true;
 
   postPatch = ''
     # build with boring backend that does not manage a node env
@@ -97,8 +95,6 @@ buildPythonPackage rec {
 
   build-system = [ flit-core ];
 
-  pythonRelaxDeps = [ "sphinx" ];
-
   dependencies = [
     accessible-pygments
     beautifulsoup4
@@ -107,7 +103,9 @@ buildPythonPackage rec {
     sphinx-basic-ng
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "furo" ];
+  pythonRelaxDeps = [ "sphinx" ];
 
   passthru = {
     inherit web;

@@ -14,9 +14,8 @@ buildDunePackage (finalAttrs: {
     hash = "sha256-RJARnuDrQPmxSLA0MobuKjNmltja8YBbHYmKMF8FKN8=";
   };
 
-  doCheck = true;
-
   propagatedBuildInputs = [ stdlib-shims ];
+  doCheck = true;
 
   meta = {
     description = "Integer set implementation using Patricia trees";

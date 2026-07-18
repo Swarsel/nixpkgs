@@ -3,8 +3,8 @@
   stdenv,
   fetchFromGitHub,
   bun,
-  nodejs-slim,
   nix-update-script,
+  nodejs-slim,
   writableTmpDirAsHomeHook,
 }:
 
@@ -19,16 +19,46 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-i8kVS09HAZwzhZKjfCGnuva0W8XedZ9M4kmGRHc1bFk=";
   };
 
+  nativeBuildInputs = [
+    bun
+    nodejs-slim
+  ];
+
+  buildPhase = ''
+    runHook preBuild
+
+    # Build the project using bun
+    NODE_ENV=production bun build src/navbar-card.ts --outfile=dist/navbar-card.js --target=browser
+
+    runHook postBuild
+  '';
+
+  installPhase = ''
+    runHook preInstall
+
+    mkdir $out
+    cp ./dist/navbar-card.js $out
+
+    runHook postInstall
+  '';
+
+  configurePhase = ''
+    runHook preConfigure
+
+    # Copy node_modules from the separate derivation
+    cp -R ${finalAttrs.node_modules}/node_modules .
+
+    runHook postConfigure
+  '';
+
   node_modules = stdenv.mkDerivation {
-    pname = "${finalAttrs.pname}-node_modules";
     inherit (finalAttrs) version src;
+    pname = "${finalAttrs.pname}-node_modules";
 
     nativeBuildInputs = [
       bun
       writableTmpDirAsHomeHook
     ];
-
-    dontConfigure = true;
 
     buildPhase = ''
       runHook preBuild
@@ -55,47 +85,16 @@ stdenv.mkDerivation (finalAttrs: {
       runHook postInstall
     '';
 
+    dontConfigure = true;
     # Required else we get errors that our fixed-output derivation references store paths
     dontFixup = true;
-
     outputHash = "sha256-By1ZTJ+cZO+vhs0BL8HSu36k+dvG0WPRnuUwIoaclnw=";
     outputHashMode = "recursive";
   };
 
-  nativeBuildInputs = [
-    bun
-    nodejs-slim
-  ];
-
-  configurePhase = ''
-    runHook preConfigure
-
-    # Copy node_modules from the separate derivation
-    cp -R ${finalAttrs.node_modules}/node_modules .
-
-    runHook postConfigure
-  '';
-
-  buildPhase = ''
-    runHook preBuild
-
-    # Build the project using bun
-    NODE_ENV=production bun build src/navbar-card.ts --outfile=dist/navbar-card.js --target=browser
-
-    runHook postBuild
-  '';
-
-  installPhase = ''
-    runHook preInstall
-
-    mkdir $out
-    cp ./dist/navbar-card.js $out
-
-    runHook postInstall
-  '';
-
   passthru = {
     entrypoint = "navbar-card.js";
+
     updateScript = nix-update-script {
       extraArgs = [
         "--subpackage"
@@ -109,10 +108,11 @@ stdenv.mkDerivation (finalAttrs: {
     homepage = "https://github.com/joseluis9595/lovelace-navbar-card";
     changelog = "https://github.com/joseluis9595/lovelace-navbar-card/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.mit;
+    maintainers = [ lib.maintainers.jamiemagee ];
+
     platforms = [
       "x86_64-linux"
       "aarch64-linux"
     ];
-    maintainers = [ lib.maintainers.jamiemagee ];
   };
 })

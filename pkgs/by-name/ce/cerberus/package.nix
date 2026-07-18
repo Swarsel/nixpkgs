@@ -1,13 +1,13 @@
 {
   lib,
-  fetchpatch,
   fetchFromGitHub,
-  ocamlPackages,
-  makeBinaryWrapper,
-  writableTmpDirAsHomeHook,
-  unstableGitUpdater,
-  testers,
   cerberus,
+  fetchpatch,
+  makeBinaryWrapper,
+  ocamlPackages,
+  testers,
+  unstableGitUpdater,
+  writableTmpDirAsHomeHook,
 }:
 ocamlPackages.buildDunePackage (finalAttrs: {
   pname = "cerberus";
@@ -23,9 +23,9 @@ ocamlPackages.buildDunePackage (finalAttrs: {
   patches = [
     # https://github.com/rems-project/cerberus/pull/980
     (fetchpatch {
+      hash = "sha256-yPhzswMDkpjvjYyobnqoF3900l4THe0kaGme1eZXLQc=";
       name = "fix-runtime-lookup";
       url = "https://github.com/rems-project/cerberus/commit/262c13331d4809dd3742069dbcd1deedee8227f2.patch";
-      hash = "sha256-yPhzswMDkpjvjYyobnqoF3900l4THe0kaGme1eZXLQc=";
     })
   ];
 
@@ -36,13 +36,6 @@ ocamlPackages.buildDunePackage (finalAttrs: {
     substituteInPlace tools/gen_version.ml \
       --replace-fail '"unknown"' '"${finalAttrs.version}"'
   '';
-
-  minimalOCamlVersion = "4.12";
-
-  depsBuildBuild = [
-    ocamlPackages.menhir
-    ocamlPackages.lem
-  ];
 
   nativeBuildInputs = [
     writableTmpDirAsHomeHook
@@ -91,6 +84,7 @@ ocamlPackages.buildDunePackage (finalAttrs: {
   '';
 
   doInstallCheck = true;
+
   installCheckPhase = ''
     runHook preInstallCheck
 
@@ -105,17 +99,25 @@ ocamlPackages.buildDunePackage (finalAttrs: {
     runHook postInstallCheck
   '';
 
-  passthru = {
-    updateScript = unstableGitUpdater { branch = "master"; };
+  depsBuildBuild = [
+    ocamlPackages.menhir
+    ocamlPackages.lem
+  ];
 
+  minimalOCamlVersion = "4.12";
+
+  passthru = {
     # Ensure it still runs after outside the container
     tests.version = testers.testVersion {
       package = cerberus;
     };
+
+    updateScript = unstableGitUpdater { branch = "master"; };
   };
 
   meta = {
     homepage = "https://www.cl.cam.ac.uk/~pes20/cerberus/";
+
     license = with lib.licenses; [
       # Most of Cerberus
       bsd2
@@ -131,10 +133,12 @@ ocamlPackages.buildDunePackage (finalAttrs: {
       # Slightly modified vendored SibylFS
       isc
     ];
-    mainProgram = "cerberus";
+
     maintainers = with lib.maintainers; [
       RossSmyth
     ];
+
     platforms = lib.platforms.unix;
+    mainProgram = "cerberus";
   };
 })

@@ -7,6 +7,7 @@
 stdenv.mkDerivation (finalAttrs: {
   pname = "pam-honeycreds";
   version = "1.9";
+
   src = fetchFromGitHub {
     owner = "ColumPaget";
     repo = "pam_honeycreds";
@@ -17,10 +18,10 @@ stdenv.mkDerivation (finalAttrs: {
   buildInputs = [ pam ];
 
   meta = {
-    homepage = "https://github.com/ColumPaget/pam_honeycreds";
     description = "PAM module that sends warnings when fake passwords are used";
+    homepage = "https://github.com/ColumPaget/pam_honeycreds";
     license = lib.licenses.gpl3Only;
-    platforms = lib.platforms.unix;
     maintainers = with lib.maintainers; [ h7x4 ];
+    platforms = lib.platforms.unix;
   };
 })

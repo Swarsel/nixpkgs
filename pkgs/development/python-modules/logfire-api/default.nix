@@ -1,21 +1,17 @@
 {
   buildPythonPackage,
-  logfire,
-
   # build system
   hatchling,
+  logfire,
 }:
 
 buildPythonPackage (finalAttrs: {
-  pname = "logfire-api";
   inherit (logfire) version src;
-  pyproject = true;
-
-  sourceRoot = "${finalAttrs.src.name}/logfire-api";
-
+  pname = "logfire-api";
   build-system = [ hatchling ];
-
+  pyproject = true;
   pythonImportsCheck = [ "logfire_api" ];
+  sourceRoot = "${finalAttrs.src.name}/logfire-api";
 
   meta = logfire.meta // {
     description = "Shim for the Logfire SDK which does nothing unless Logfire is installed";

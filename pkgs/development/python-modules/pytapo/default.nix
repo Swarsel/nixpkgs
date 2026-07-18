@@ -13,13 +13,14 @@
 buildPythonPackage (finalAttrs: {
   pname = "pytapo";
   version = "3.4.15";
-  pyproject = true;
 
   src = fetchPypi {
     inherit (finalAttrs) pname version;
     hash = "sha256-2hC/MccVar7Xce5TL26qwVMrFQ+bxngiCitNx08Sz3E=";
   };
 
+  # Tests require actual hardware
+  doCheck = false;
   build-system = [ setuptools ];
 
   dependencies = [
@@ -30,10 +31,8 @@ buildPythonPackage (finalAttrs: {
     urllib3
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "pytapo" ];
-
-  # Tests require actual hardware
-  doCheck = false;
 
   meta = {
     description = "Python library for communication with Tapo Cameras";

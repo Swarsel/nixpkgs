@@ -22,10 +22,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-J3VPPOvBKitgtCi5h8LcXkcfFNciMKX0q8cQ/ytXncg=";
   };
 
-  __structuredAttrs = true;
-
-  cargoHash = "sha256-ze5wLwwp2XdWQNEY+n+M6ZTYfw+QQZUR6V9/mgb32RI=";
-
   nativeBuildInputs = [ pkg-config ];
 
   buildInputs = [
@@ -35,6 +31,13 @@ rustPlatform.buildRustPackage (finalAttrs: {
     zstd
   ];
 
+  cargoHash = "sha256-ze5wLwwp2XdWQNEY+n+M6ZTYfw+QQZUR6V9/mgb32RI=";
+
+  env = {
+    OPENSSL_NO_VENDOR = true;
+    ZSTD_SYS_USE_PKG_CONFIG = true;
+  };
+
   nativeCheckInputs = [ writableTmpDirAsHomeHook ];
 
   nativeInstallCheckInputs = [
@@ -42,10 +45,7 @@ rustPlatform.buildRustPackage (finalAttrs: {
     writableTmpDirAsHomeHook
   ];
 
-  env = {
-    OPENSSL_NO_VENDOR = true;
-    ZSTD_SYS_USE_PKG_CONFIG = true;
-  };
+  __structuredAttrs = true;
 
   meta = {
     description = "Polyglot execution engine and CLI for vulnerability detection using real code";

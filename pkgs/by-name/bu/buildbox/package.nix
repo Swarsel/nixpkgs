@@ -2,24 +2,24 @@
   lib,
   stdenv,
   fetchFromGitLab,
-  bubblewrap,
-  makeBinaryWrapper,
-  cmake,
-  pkg-config,
-  ninja,
-  grpc,
-  gbenchmark,
-  gtest,
-  protobuf,
   abseil-cpp,
-  nlohmann_json,
-  zlib,
-  openssl,
-  libuuid,
-  tomlplusplus,
-  fuse3,
+  bubblewrap,
+  cmake,
   curl,
+  fuse3,
+  gbenchmark,
+  grpc,
+  gtest,
+  libuuid,
+  makeBinaryWrapper,
+  ninja,
   nix-update-script,
+  nlohmann_json,
+  openssl,
+  pkg-config,
+  protobuf,
+  tomlplusplus,
+  zlib,
 }:
 stdenv.mkDerivation (finalAttrs: {
   pname = "buildbox";
@@ -65,7 +65,7 @@ stdenv.mkDerivation (finalAttrs: {
     description = "Set of tools for remote worker build execution";
     homepage = "https://gitlab.com/BuildGrid/buildbox/";
     license = lib.licenses.asl20;
-    platforms = lib.platforms.linux;
     maintainers = with lib.maintainers; [ shymega ];
+    platforms = lib.platforms.linux;
   };
 })

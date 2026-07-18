@@ -1,21 +1,20 @@
 {
   lib,
   stdenv,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
   attrs,
-  twisted,
   autobahn,
-  treq,
+  buildPythonPackage,
   nixosTests,
   pytestCheckHook,
+  setuptools,
+  treq,
+  twisted,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "magic-wormhole-mailbox-server";
   version = "0.8.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "magic-wormhole";
@@ -23,6 +22,11 @@ buildPythonPackage (finalAttrs: {
     tag = finalAttrs.version;
     hash = "sha256-P1Pyz4uOoFeTc7Fd8DxeHW/Cig8i2QS3wh6vOSzaDKg=";
   };
+
+  nativeCheckInputs = [
+    pytestCheckHook
+    treq
+  ];
 
   build-system = [ setuptools ];
 
@@ -34,17 +38,13 @@ buildPythonPackage (finalAttrs: {
   ++ autobahn.optional-dependencies.twisted
   ++ twisted.optional-dependencies.tls;
 
-  pythonImportsCheck = [ "wormhole_mailbox_server" ];
-
-  nativeCheckInputs = [
-    pytestCheckHook
-    treq
-  ];
-
   disabledTestPaths = lib.optionals stdenv.hostPlatform.isDarwin [
     # these tests fail in Darwin's sandbox
     "src/wormhole_mailbox_server/test/test_web.py"
   ];
+
+  pyproject = true;
+  pythonImportsCheck = [ "wormhole_mailbox_server" ];
 
   passthru.tests = {
     inherit (nixosTests) magic-wormhole-mailbox-server;

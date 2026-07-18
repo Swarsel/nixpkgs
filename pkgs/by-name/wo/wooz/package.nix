@@ -1,17 +1,16 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
-  pkg-config,
   meson,
   ninja,
+  pkg-config,
   wayland,
   wayland-protocols,
   wayland-scanner,
 }:
 stdenv.mkDerivation {
   pname = "wooz";
-
   # Using latest master, until at least https://github.com/negrel/wooz/issues/11 is resolved in some release after 0.1.0
   version = "0-unstable-2025-10-08";
 

@@ -1,10 +1,10 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
-  pkg-config,
-  libpulseaudio,
   alsa-lib,
+  libpulseaudio,
+  pkg-config,
+  rustPlatform,
   withPulseaudio ? true,
 }:
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -18,25 +18,23 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-etiJmbLuzrKZXhi/BsEhipvmzEilJAfgfv7t9oYrltw=";
   };
 
-  cargoHash = "sha256-yAy3kk62HYe1/1EXGUhOg++sZua65iN3ZEmPoERcu0I=";
-
   nativeBuildInputs = [ pkg-config ];
-
   buildInputs = [ alsa-lib ] ++ lib.optionals withPulseaudio [ libpulseaudio ];
-
-  buildFeatures = lib.optionals withPulseaudio [ "pulseaudio" ];
-
+  cargoHash = "sha256-yAy3kk62HYe1/1EXGUhOg++sZua65iN3ZEmPoERcu0I=";
   doCheck = false; # no tests
+  buildFeatures = lib.optionals withPulseaudio [ "pulseaudio" ];
 
   meta = {
     description = "Simple oscilloscope/vectorscope/spectroscope for your terminal";
     homepage = "https://github.com/alemidev/scope-tui";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       iynaix
       aleksana
     ];
-    mainProgram = "scope-tui";
+
     platforms = lib.platforms.linux;
+    mainProgram = "scope-tui";
   };
 })

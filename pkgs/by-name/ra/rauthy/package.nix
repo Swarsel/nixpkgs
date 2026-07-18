@@ -1,17 +1,17 @@
 {
   lib,
   fetchFromGitHub,
-  fetchNpmDeps,
-  rustPlatform,
-  npmHooks,
-  nodejs,
-  nix-update-script,
-  perl,
-  wasm-pack,
-  wasm-bindgen-cli_0_2_126,
   binaryen,
+  fetchNpmDeps,
   lld,
+  nix-update-script,
+  nodejs,
+  npmHooks,
+  perl,
   rust-jemalloc-sys-unprefixed,
+  rustPlatform,
+  wasm-bindgen-cli_0_2_126,
+  wasm-pack,
 }:
 rustPlatform.buildRustPackage (finalAttrs: {
   pname = "rauthy";
@@ -35,14 +35,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
   ];
 
   buildInputs = [ rust-jemalloc-sys-unprefixed ];
-
-  npmRoot = "frontend";
-
-  npmDeps = fetchNpmDeps {
-    src = "${finalAttrs.src}/frontend";
-    hash = "sha256-3bLzlGbC1i8TOYNi/SAVqIb8bsK0IhDTGr65rVWU5XY=";
-  };
-
   cargoHash = "sha256-lkD2Yd15VuQT+OmMttea0KBWOnhwvRBN6aS1DVR0Heg=";
 
   preBuild = ''
@@ -58,19 +50,28 @@ rustPlatform.buildRustPackage (finalAttrs: {
   # Tests fail and appear unmaintained upstream.
   doCheck = false;
 
+  npmDeps = fetchNpmDeps {
+    src = "${finalAttrs.src}/frontend";
+    hash = "sha256-3bLzlGbC1i8TOYNi/SAVqIb8bsK0IhDTGr65rVWU5XY=";
+  };
+
+  npmRoot = "frontend";
+
   passthru = {
     updateScript = nix-update-script { };
   };
 
   meta = {
-    mainProgram = "rauthy";
     description = "Single Sign-On Identity & Access Management via OpenID Connect, OAuth 2.0 and PAM";
     homepage = "https://github.com/sebadob/rauthy";
     changelog = "https://github.com/sebadob/rauthy/blob/${finalAttrs.src.tag}/CHANGELOG.md";
     license = lib.licenses.asl20;
+
     maintainers = with lib.maintainers; [
       angelodlfrtr
       ungeskriptet
     ];
+
+    mainProgram = "rauthy";
   };
 })

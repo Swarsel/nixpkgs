@@ -1,7 +1,7 @@
 {
   config,
-  pkgs,
   lib,
+  pkgs,
   ...
 }:
 let
@@ -13,15 +13,14 @@ in
   options = {
     services.matrix-hookshot = {
       enable = lib.mkEnableOption "matrix-hookshot, a bridge between Matrix and project management services";
-
       package = lib.mkPackageOption pkgs "matrix-hookshot" { };
 
       registrationFile = lib.mkOption {
-        type = lib.types.path;
         description = ''
           Appservice registration file.
           As it contains secret tokens, you may not want to add this to the publicly readable Nix store.
         '';
+
         example = lib.literalExpression ''
           pkgs.writeText "matrix-hookshot-registration" \'\'
             id: matrix-hookshot
@@ -38,31 +37,53 @@ in
             rate_limited: false
             \'\'
         '';
+
+        type = lib.types.path;
+      };
+
+      serviceDependencies = lib.mkOption {
+        default = lib.optional config.services.matrix-synapse.enable config.services.matrix-synapse.serviceUnit;
+
+        defaultText = lib.literalExpression ''
+          lib.optional config.services.matrix-synapse.enable config.services.matrix-synapse.serviceUnit
+        '';
+
+        description = ''
+          List of Systemd services to require and wait for when starting the application service,
+          such as the Matrix homeserver if it's running on the same host.
+        '';
+
+        type = with lib.types; listOf str;
       };
 
       settings = lib.mkOption {
+        default = { };
+
         description = ''
           {file}`config.yml` configuration as a Nix attribute set.
 
           For details please see the [documentation](https://matrix-org.github.io/matrix-hookshot/latest/setup/sample-configuration.html).
         '';
+
         example = {
           bridge = {
+            bindAddress = "127.0.0.1";
             domain = "example.com";
-            url = "http://localhost:8008";
             mediaUrl = "https://example.com";
             port = 9993;
-            bindAddress = "127.0.0.1";
+            url = "http://localhost:8008";
           };
+
           listeners = [
             {
-              port = 9000;
               bindAddress = "0.0.0.0";
+              port = 9000;
               resources = [ "webhooks" ];
             }
             {
-              port = 9001;
               bindAddress = "localhost";
+              port = 9001;
+
               resources = [
                 "metrics"
                 "provisioning"
@@ -70,43 +91,31 @@ in
             }
           ];
         };
-        default = { };
+
         type = lib.types.submodule {
-          freeformType = settingsFormat.type;
           options = {
             passFile = lib.mkOption {
-              type = lib.types.path;
               default = "/var/lib/matrix-hookshot/passkey.pem";
+
               description = ''
                 A passkey used to encrypt tokens stored inside the bridge.
                 File will be generated if not found.
               '';
+
+              type = lib.types.path;
             };
           };
-        };
-      };
 
-      serviceDependencies = lib.mkOption {
-        type = with lib.types; listOf str;
-        default = lib.optional config.services.matrix-synapse.enable config.services.matrix-synapse.serviceUnit;
-        defaultText = lib.literalExpression ''
-          lib.optional config.services.matrix-synapse.enable config.services.matrix-synapse.serviceUnit
-        '';
-        description = ''
-          List of Systemd services to require and wait for when starting the application service,
-          such as the Matrix homeserver if it's running on the same host.
-        '';
+          freeformType = settingsFormat.type;
+        };
       };
     };
   };
 
   config = lib.mkIf cfg.enable {
     systemd.services.matrix-hookshot = {
-      description = "a bridge between Matrix and multiple project management services";
-
-      wantedBy = [ "multi-user.target" ];
-      wants = [ "network-online.target" ] ++ cfg.serviceDependencies;
       after = [ "network-online.target" ] ++ cfg.serviceDependencies;
+      description = "a bridge between Matrix and multiple project management services";
 
       preStart = ''
         if [ ! -f '${cfg.settings.passFile}' ]; then
@@ -116,10 +125,13 @@ in
       '';
 
       serviceConfig = {
-        Type = "simple";
-        Restart = "always";
         ExecStart = "${cfg.package}/bin/matrix-hookshot ${configFile} ${cfg.registrationFile}";
+        Restart = "always";
+        Type = "simple";
       };
+
+      wantedBy = [ "multi-user.target" ];
+      wants = [ "network-online.target" ] ++ cfg.serviceDependencies;
     };
   };
 

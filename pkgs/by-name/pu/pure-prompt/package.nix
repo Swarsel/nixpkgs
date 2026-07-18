@@ -16,6 +16,7 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   strictDeps = true;
+
   installPhase = ''
     OUTDIR="$out/share/zsh/site-functions"
     mkdir -p "$OUTDIR"
@@ -27,10 +28,12 @@ stdenv.mkDerivation (finalAttrs: {
     description = "Pretty, minimal and fast ZSH prompt";
     homepage = "https://github.com/sindresorhus/pure";
     license = lib.licenses.mit;
-    platforms = lib.platforms.all;
+
     maintainers = with lib.maintainers; [
       euxane
       pablovsky
     ];
+
+    platforms = lib.platforms.all;
   };
 })

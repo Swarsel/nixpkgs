@@ -1,7 +1,7 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitLab,
+  rustPlatform,
   versionCheckHook,
 }:
 
@@ -17,12 +17,9 @@ rustPlatform.buildRustPackage (finalAttrs: {
   };
 
   cargoHash = "sha256-cg8fCy2naqibuS5rGfgpFDBAr0EqOldQbejq4ctXJ/0=";
-
   # failed to execute sway: Os { code: 2, kind: NotFound, message: "No such file or directory" }
   doCheck = false;
-
   doInstallCheck = true;
-
   nativeInstallCheckInputs = [ versionCheckHook ];
 
   meta = {

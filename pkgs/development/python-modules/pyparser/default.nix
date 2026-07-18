@@ -1,6 +1,6 @@
 {
-  buildPythonPackage,
   lib,
+  buildPythonPackage,
   fetchhg,
   parse,
 }:
@@ -8,7 +8,6 @@
 buildPythonPackage rec {
   pname = "pyparser";
   version = "1.0";
-  format = "setuptools";
 
   # Missing tests on Pypi
   src = fetchhg {
@@ -18,8 +17,8 @@ buildPythonPackage rec {
   };
 
   postPatch = "sed -i 's/parse==/parse>=/' requirements.txt";
-
   propagatedBuildInputs = [ parse ];
+  format = "setuptools";
 
   meta = {
     description = "Simple library that makes it easier to parse files";

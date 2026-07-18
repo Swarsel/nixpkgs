@@ -2,10 +2,10 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  cmake,
-  pkg-config,
   blas,
+  cmake,
   lapack,
+  pkg-config,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -19,13 +19,6 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-GnFlvZCEzSCcBVLjFWLe+AKXVA6UMs/gycrOJ2TBqrE=";
   };
 
-  cmakeFlags = [
-    (lib.cmakeBool "HMAT_GIT_VERSION" false)
-    # Find BLAS/LAPACK via pkg-config to avoid linking against Accelerate on Darwin.
-    (lib.cmakeBool "BLA_PREFER_PKGCONFIG" true)
-    (lib.cmakeFeature "CBLAS_INCLUDE_DIR" "${lib.getDev blas}/include")
-  ];
-
   nativeBuildInputs = [
     cmake
     pkg-config
@@ -36,11 +29,18 @@ stdenv.mkDerivation (finalAttrs: {
     lapack
   ];
 
+  cmakeFlags = [
+    (lib.cmakeBool "HMAT_GIT_VERSION" false)
+    # Find BLAS/LAPACK via pkg-config to avoid linking against Accelerate on Darwin.
+    (lib.cmakeBool "BLA_PREFER_PKGCONFIG" true)
+    (lib.cmakeFeature "CBLAS_INCLUDE_DIR" "${lib.getDev blas}/include")
+  ];
+
   meta = {
     description = "Hierarchical matrix C/C++ library";
     homepage = "https://github.com/jeromerobert/hmat-oss";
     license = lib.licenses.gpl2;
-    platforms = lib.platforms.unix;
     maintainers = with lib.maintainers; [ gdinh ];
+    platforms = lib.platforms.unix;
   };
 })

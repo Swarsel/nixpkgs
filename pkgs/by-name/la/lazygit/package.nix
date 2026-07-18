@@ -1,10 +1,10 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   lazygit,
-  testers,
   nix-update-script,
+  testers,
 }:
 buildGoModule (finalAttrs: {
   pname = "lazygit";
@@ -18,12 +18,13 @@ buildGoModule (finalAttrs: {
   };
 
   vendorHash = null;
-  subPackages = [ "." ];
 
   ldflags = [
     "-X main.version=${finalAttrs.version}"
     "-X main.buildSource=nix"
   ];
+
+  subPackages = [ "." ];
 
   passthru = {
     tests.version = testers.testVersion { package = lazygit; };
@@ -41,12 +42,14 @@ buildGoModule (finalAttrs: {
     homepage = "https://github.com/jesseduffield/lazygit";
     changelog = "https://github.com/jesseduffield/lazygit/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       equirosa
       khaneliman
       starsep
       sigmasquadron
     ];
+
     mainProgram = "lazygit";
   };
 })

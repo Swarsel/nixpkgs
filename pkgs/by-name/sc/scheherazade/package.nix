@@ -1,7 +1,7 @@
 {
   lib,
-  stdenvNoCC,
   fetchzip,
+  stdenvNoCC,
   version ? "2.100",
 }:
 
@@ -22,8 +22,8 @@ stdenvNoCC.mkDerivation rec {
   inherit pname version;
 
   src = fetchzip {
-    url = "https://software.sil.org/downloads/r/scheherazade/Scheherazade${lib.optionalString new "New"}-${version}.zip";
     inherit hash;
+    url = "https://software.sil.org/downloads/r/scheherazade/Scheherazade${lib.optionalString new "New"}-${version}.zip";
   };
 
   installPhase = ''
@@ -37,8 +37,8 @@ stdenvNoCC.mkDerivation rec {
   '';
 
   meta = {
-    homepage = "https://software.sil.org/scheherazade/";
     description = "Font designed in a similar style to traditional Naskh typefaces";
+
     longDescription = ''
 
       Scheherazade${lib.optionalString new " New"}, named after the heroine of
@@ -56,8 +56,10 @@ stdenvNoCC.mkDerivation rec {
       This package contains the regular and bold styles for the Scheherazade
       font family, along with documentation.
     '';
-    downloadPage = "https://software.sil.org/scheherazade/download/";
+
+    homepage = "https://software.sil.org/scheherazade/";
     license = lib.licenses.ofl;
     platforms = lib.platforms.all;
+    downloadPage = "https://software.sil.org/scheherazade/download/";
   };
 }

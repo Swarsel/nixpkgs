@@ -2,27 +2,27 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  pkg-config,
+  alsa-utils,
   coreutils,
-  portaudio,
+  curlMinimal,
+  espeak-classic,
+  glew,
   libbsd,
+  libopus,
   libpng,
   libvorbis,
   libx11,
-  sdl2-compat,
-  makeWrapper,
+  libxcrypt-legacy,
   lua5_2,
-  glew,
+  makeWrapper,
+  nix-update-script,
+  openscad,
   openssl,
   picotts,
-  alsa-utils,
-  espeak-classic,
+  pkg-config,
+  portaudio,
+  sdl2-compat,
   sox,
-  libopus,
-  openscad,
-  libxcrypt-legacy,
-  curlMinimal,
-  nix-update-script,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -35,8 +35,6 @@ stdenv.mkDerivation (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-H6ZeZOeKy8Z5HGicQs9CmjR2tDzD8AGvLr75Xx0YkAg=";
   };
-
-  enableParallelBuilding = true;
 
   postPatch = ''
     substituteInPlace Makefile \
@@ -76,11 +74,13 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   makeFlags = [ "PREFIX=$(out)" ];
+
   buildFlags = [
     "all"
     "models"
   ];
 
+  enableParallelBuilding = true;
   passthru.updateScript = nix-update-script { };
 
   meta = {

@@ -1,18 +1,18 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
-  gitUpdater,
-  testers,
   cmake,
+  ctestCheckHook,
   doxygen,
-  kdePackages,
+  gitUpdater,
   graphviz,
+  kdePackages,
   libsForQt5,
   perl,
   pkg-config,
+  testers,
   tzdata,
-  ctestCheckHook,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -62,11 +62,6 @@ stdenv.mkDerivation (finalAttrs: {
     timed
   ];
 
-  nativeCheckInputs = [
-    tzdata
-    ctestCheckHook
-  ];
-
   cmakeFlags = [
     (lib.cmakeBool "BUILD_PLUGINS" false)
     (lib.cmakeBool "BUILD_TESTS" finalAttrs.finalPackage.doCheck)
@@ -75,6 +70,18 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   doCheck = stdenv.buildPlatform.canExecute stdenv.hostPlatform;
+
+  nativeCheckInputs = [
+    tzdata
+    ctestCheckHook
+  ];
+
+  preCheck = ''
+    export HOME=$TMP
+    export QT_QPA_PLATFORM=minimal
+    export QT_PLUGIN_PATH=${lib.getBin libsForQt5.qtbase}/${libsForQt5.qtbase.qtPluginPrefix}
+  '';
+
   disabledTests = [
     # Test expects to be passed a real, already existing database to test migrations. We don't have one
     "tst_perf"
@@ -87,18 +94,13 @@ stdenv.mkDerivation (finalAttrs: {
   # Parallelism breaks tests
   enableParallelChecking = false;
 
-  preCheck = ''
-    export HOME=$TMP
-    export QT_QPA_PLATFORM=minimal
-    export QT_PLUGIN_PATH=${lib.getBin libsForQt5.qtbase}/${libsForQt5.qtbase.qtPluginPrefix}
-  '';
-
   passthru = {
-    updateScript = gitUpdater { };
     tests.pkg-config = testers.hasPkgConfigModules {
       package = finalAttrs.finalPackage;
       # version field doesn't exactly match current version
     };
+
+    updateScript = gitUpdater { };
   };
 
   meta = {
@@ -106,11 +108,13 @@ stdenv.mkDerivation (finalAttrs: {
     homepage = "https://github.com/sailfishos/mkcal";
     changelog = "https://github.com/sailfishos/mkcal/releases/tag/${finalAttrs.version}";
     license = lib.licenses.lgpl2Plus;
-    mainProgram = "mkcaltool";
-    teams = [ lib.teams.lomiri ];
     platforms = lib.platforms.linux;
+    mainProgram = "mkcaltool";
+
     pkgConfigModules = [
       "libmkcal-qt5"
     ];
+
+    teams = [ lib.teams.lomiri ];
   };
 })

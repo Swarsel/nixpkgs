@@ -2,11 +2,11 @@
   lib,
   stdenv,
   fetchFromGitLab,
+  autoreconfHook,
+  gdk-pixbuf,
   gnome-common,
   intltool,
   libarchive,
-  gdk-pixbuf,
-  autoreconfHook,
   pkg-config,
 }:
 
@@ -15,11 +15,11 @@ stdenv.mkDerivation (finalAttrs: {
   version = "1.4";
 
   src = fetchFromGitLab {
-    domain = "gitlab.gnome.org";
     owner = "GNOME";
     repo = "gnome-kra-ora-thumbnailer";
     tag = finalAttrs.version;
     hash = "sha256-zyEX8vOn8Gdt3B8sx3oXcRUpm2h2use4CUKsWqaqbaw=";
+    domain = "gitlab.gnome.org";
   };
 
   strictDeps = true;

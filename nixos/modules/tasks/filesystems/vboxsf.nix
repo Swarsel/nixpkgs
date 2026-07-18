@@ -20,9 +20,8 @@ in
 {
   config = mkIf (config.boot.supportedFilesystems.vboxsf or false) {
 
-    system.fsPackages = [ package ];
-
     boot.initrd.kernelModules = mkIf inInitrd [ "vboxsf" ];
+    system.fsPackages = [ package ];
 
   };
 }

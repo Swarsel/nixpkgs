@@ -1,28 +1,20 @@
 {
   lib,
   buildPythonPackage,
+  distutils,
   fetchPypi,
   libcap,
   pytestCheckHook,
-  distutils,
 }:
 
 buildPythonPackage rec {
   pname = "python-prctl";
   version = "1.8.1";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
     sha256 = "b4ca9a25a7d4f1ace4fffd1f3a2e64ef5208fe05f929f3edd5e27081ca7e67ce";
   };
-
-  buildInputs = [ libcap ];
-
-  nativeCheckInputs = [
-    distutils
-    pytestCheckHook
-  ];
 
   postPatch = ''
     substituteInPlace test_prctl.py \
@@ -30,6 +22,13 @@ buildPythonPackage rec {
         'sys.version[0:3]' \
         '"cpython-%d%d" % (sys.version_info.major, sys.version_info.minor)'
   '';
+
+  buildInputs = [ libcap ];
+
+  nativeCheckInputs = [
+    distutils
+    pytestCheckHook
+  ];
 
   disabledTests = [
     # Intel MPX support was removed in GCC 9.1 & Linux kernel 5.6
@@ -45,6 +44,8 @@ buildPythonPackage rec {
     # has been set system-wide, even outside the sandbox
     "test_speculation_ctrl"
   ];
+
+  format = "setuptools";
 
   meta = {
     description = "Python(ic) interface to the linux prctl syscall";

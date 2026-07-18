@@ -2,15 +2,15 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  libck,
   cctools,
+  libck,
 }:
 
 let
   version = "0.36.0";
   bootstrap = stdenv.mkDerivation {
-    pname = "cyclone-bootstrap";
     inherit version;
+    pname = "cyclone-bootstrap";
 
     src = fetchFromGitHub {
       owner = "justinethier";
@@ -19,20 +19,16 @@ let
       sha256 = "sha256-8WK4rsLK3gi9a6PKFaT3KRK256rEDTTO6QvqYrOtYDs=";
     };
 
-    enableParallelBuilding = true;
-
-    env.NIX_CFLAGS_COMPILE = "-std=gnu17";
-
     nativeBuildInputs = lib.optionals stdenv.hostPlatform.isDarwin [ cctools ];
-
     buildInputs = [ libck ];
-
     makeFlags = [ "PREFIX=${placeholder "out"}" ];
+    env.NIX_CFLAGS_COMPILE = "-std=gnu17";
+    enableParallelBuilding = true;
   };
 in
 stdenv.mkDerivation {
-  pname = "cyclone";
   inherit version;
+  pname = "cyclone";
 
   src = fetchFromGitHub {
     owner = "justinethier";
@@ -41,19 +37,15 @@ stdenv.mkDerivation {
     sha256 = "sha256-5h8jZ8EBgiLLYH/j3p7CqsQGXHhjGtQfOnxPbFnT5WM=";
   };
 
+  nativeBuildInputs = [ bootstrap ] ++ lib.optionals stdenv.hostPlatform.isDarwin [ cctools ];
+  buildInputs = [ libck ];
+  makeFlags = [ "PREFIX=${placeholder "out"}" ];
+  env.NIX_CFLAGS_COMPILE = "-std=gnu17";
   enableParallelBuilding = true;
 
-  env.NIX_CFLAGS_COMPILE = "-std=gnu17";
-
-  nativeBuildInputs = [ bootstrap ] ++ lib.optionals stdenv.hostPlatform.isDarwin [ cctools ];
-
-  buildInputs = [ libck ];
-
-  makeFlags = [ "PREFIX=${placeholder "out"}" ];
-
   meta = {
-    homepage = "https://justinethier.github.io/cyclone/";
     description = "Brand-new compiler that allows practical application development using R7RS Scheme";
+    homepage = "https://justinethier.github.io/cyclone/";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ siraben ];
     platforms = lib.platforms.unix;

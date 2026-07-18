@@ -2,15 +2,14 @@
   lib,
   fetchFromGitHub,
   buildPythonPackage,
+  pytestCheckHook,
   setuptools,
   setuptools-scm,
-  pytestCheckHook,
 }:
 
 buildPythonPackage rec {
   pname = "pystache";
   version = "0.6.8";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "PennyDreadfulMTG";
@@ -19,13 +18,14 @@ buildPythonPackage rec {
     hash = "sha256-UVmDpg7wCPnY+1BZqujIYdgt/AT4gZ+RTYdD+ORQhzE=";
   };
 
+  nativeCheckInputs = [ pytestCheckHook ];
+
   build-system = [
     setuptools
     setuptools-scm
   ];
 
-  nativeCheckInputs = [ pytestCheckHook ];
-
+  pyproject = true;
   pythonImportsCheck = [ "pystache" ];
 
   meta = {

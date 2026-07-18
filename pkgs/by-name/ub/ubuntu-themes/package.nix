@@ -2,8 +2,8 @@
   lib,
   stdenv,
   fetchurl,
-  gnome-icon-theme,
   adwaita-icon-theme,
+  gnome-icon-theme,
   gtk-engine-murrine,
   gtk3,
   hicolor-icon-theme,
@@ -20,6 +20,10 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-/SMwwDaSUe86SXNe7U9Sh7SzzlC4yOXVA+urAIxeDxk=";
   };
 
+  postPatch = ''
+    patchShebangs .
+  '';
+
   nativeBuildInputs = [
     gtk3
     python3Packages.python
@@ -31,16 +35,6 @@ stdenv.mkDerivation (finalAttrs: {
     humanity-icon-theme
     hicolor-icon-theme
   ];
-
-  propagatedUserEnvPkgs = [
-    gtk-engine-murrine
-  ];
-
-  dontDropIconThemeCache = true;
-
-  postPatch = ''
-    patchShebangs .
-  '';
 
   installPhase = ''
     runHook preInstall
@@ -66,15 +60,22 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   dontCheckForBrokenSymlinks = true;
+  dontDropIconThemeCache = true;
+
+  propagatedUserEnvPkgs = [
+    gtk-engine-murrine
+  ];
 
   meta = {
     description = "Ubuntu monochrome and Suru icon themes, Ambiance and Radiance themes, and Ubuntu artwork";
     homepage = "https://launchpad.net/ubuntu-themes";
+
     license = with lib.licenses; [
       cc-by-sa-40
       gpl3
     ];
-    platforms = lib.platforms.linux;
+
     maintainers = [ lib.maintainers.romildo ];
+    platforms = lib.platforms.linux;
   };
 })

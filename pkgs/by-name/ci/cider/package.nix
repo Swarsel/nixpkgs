@@ -1,7 +1,7 @@
 {
-  appimageTools,
   lib,
   fetchurl,
+  appimageTools,
   makeWrapper,
 }:
 
@@ -34,9 +34,9 @@ appimageTools.wrapType2 rec {
     description = "New look into listening and enjoying Apple Music in style and performance";
     homepage = "https://github.com/ciderapp/Cider";
     license = lib.licenses.agpl3Only;
-    mainProgram = "cider";
     maintainers = [ lib.maintainers.cigrainger ];
     platforms = [ "x86_64-linux" ];
+    mainProgram = "cider";
     broken = true;
   };
 }

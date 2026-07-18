@@ -17,10 +17,12 @@ stdenv.mkDerivation (finalAttrs: {
 
   patches = [
     (fetchpatch2 {
-      url = "https://salsa.debian.org/debian/pngcrush/-/raw/b4856b56fbc28252103cc14d156baddd564ca880/debian/patches/ignore_PNG_IGNORE_ADLER32.patch";
       hash = "sha256-pFON/NUJiXMe9GETptgNltWa0izlby6P/fLsG1abz3g=";
+      url = "https://salsa.debian.org/debian/pngcrush/-/raw/b4856b56fbc28252103cc14d156baddd564ca880/debian/patches/ignore_PNG_IGNORE_ADLER32.patch";
     })
   ];
+
+  buildInputs = [ libpng ];
 
   makeFlags = [
     "CC=${stdenv.cc.targetPrefix}cc"
@@ -35,11 +37,9 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postConfigure
   '';
 
-  buildInputs = [ libpng ];
-
   meta = {
-    homepage = "http://pmt.sourceforge.net/pngcrush";
     description = "PNG optimizer";
+    homepage = "http://pmt.sourceforge.net/pngcrush";
     license = lib.licenses.free;
     platforms = with lib.platforms; linux ++ darwin;
     mainProgram = "pngcrush";

@@ -1,39 +1,33 @@
 {
   lib,
   stdenv,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # build-system
-  setuptools,
-  setuptools-scm,
-
+  buildPythonPackage,
   # dependencies
   gpytorch,
+  # tests
+  jax,
   linear-operator,
   multipledispatch,
   ninja,
+  numpyro,
+  # optional-dependencies
+  pymoo,
   pyre-extensions,
+  pytestCheckHook,
+  pythonAtLeast,
   scipy,
+  # build-system
+  setuptools,
+  setuptools-scm,
   threadpoolctl,
   torch,
   typing-extensions,
-
-  # optional-dependencies
-  pymoo,
-
-  # tests
-  jax,
-  numpyro,
-  pytestCheckHook,
-  pythonAtLeast,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "botorch";
   version = "0.18.1";
-  pyproject = true;
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "meta-pytorch";
@@ -41,6 +35,14 @@ buildPythonPackage (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-tUTtImqPlbS8g1oLoTTCCWQbeLwLop13qPjFrQeMtb8=";
   };
+
+  nativeCheckInputs = [
+    jax
+    numpyro
+    pytestCheckHook
+  ];
+
+  __structuredAttrs = true;
 
   build-system = [
     setuptools
@@ -57,18 +59,6 @@ buildPythonPackage (finalAttrs: {
     threadpoolctl
     torch
     typing-extensions
-  ];
-
-  optional-dependencies = {
-    pymoo = [
-      pymoo
-    ];
-  };
-
-  nativeCheckInputs = [
-    jax
-    numpyro
-    pytestCheckHook
   ];
 
   disabledTestPaths = [
@@ -110,15 +100,21 @@ buildPythonPackage (finalAttrs: {
     "test_model_list_gpytorch_model"
   ];
 
-  pythonImportsCheck = [ "botorch" ];
+  optional-dependencies = {
+    pymoo = [
+      pymoo
+    ];
+  };
 
+  pyproject = true;
+  pythonImportsCheck = [ "botorch" ];
   # needs lots of undisturbed CPU time or prone to getting stuck
   requiredSystemFeatures = [ "big-parallel" ];
 
   meta = {
-    changelog = "https://github.com/meta-pytorch/botorch/blob/${finalAttrs.src.tag}/CHANGELOG.md";
     description = "Bayesian Optimization in PyTorch";
     homepage = "https://botorch.org";
+    changelog = "https://github.com/meta-pytorch/botorch/blob/${finalAttrs.src.tag}/CHANGELOG.md";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ veprbl ];
   };

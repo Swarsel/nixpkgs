@@ -1,18 +1,16 @@
 {
   lib,
   fetchFromGitHub,
+  alcotest,
   buildDunePackage,
   re,
   uunf,
   uuseg,
-  alcotest,
 }:
 
 buildDunePackage rec {
   pname = "slug";
   version = "1.0.1";
-
-  duneVersion = "3";
 
   src = fetchFromGitHub {
     owner = "thangngoc89";
@@ -29,11 +27,12 @@ buildDunePackage rec {
 
   doCheck = true;
   checkInputs = [ alcotest ];
+  duneVersion = "3";
 
   meta = {
     description = "Url safe slug generator for OCaml";
+    homepage = "https://github.com/thangngoc89/ocaml-slug";
     license = lib.licenses.mit;
     maintainers = [ lib.maintainers.niols ];
-    homepage = "https://github.com/thangngoc89/ocaml-slug";
   };
 }

@@ -1,50 +1,45 @@
 {
   lib,
-  pkgs,
   stdenv,
-
+  fetchFromGitHub,
+  # Python dependencies:
+  absl-py,
   # Build-time dependencies:
   autoAddDriverRunpath,
   bazel_7,
   binutils,
+  build,
   buildBazelPackage,
   buildPythonPackage,
   cctools,
+  config,
+  cudaPackages,
   curl,
   cython,
-  fetchFromGitHub,
-  git,
-  jsoncpp,
-  nsync,
-  openssl,
-  pybind11,
-  setuptools,
-  symlinkJoin,
-  wheel,
-  build,
-  which,
-
-  # Python dependencies:
-  absl-py,
-  flatbuffers,
-  ml-dtypes,
-  numpy,
-  scipy,
-  six,
-
   # Runtime dependencies:
   double-conversion,
+  flatbuffers,
   giflib,
+  git,
+  jsoncpp,
   libjpeg_turbo,
+  ml-dtypes,
+  nsync,
+  numpy,
+  openssl,
+  pkgs,
+  pybind11,
   python,
+  scipy,
+  setuptools,
+  six,
   snappy-cpp,
+  symlinkJoin,
+  wheel,
+  which,
   zlib,
-
-  config,
   # CUDA flags:
   cudaSupport ? config.cudaSupport,
-  cudaPackages,
-
   # MKL:
   mklSupport ? true,
 }@inputs:
@@ -69,14 +64,12 @@ let
     homepage = "https://github.com/jax-ml/jax";
     license = lib.licenses.asl20;
     maintainers = with lib.maintainers; [ ndl ];
-
     # Make this platforms.unix once Darwin is supported.
     # The top-level jaxlib now falls back to jaxlib-bin on unsupported platforms.
     # aarch64-darwin is broken because of https://github.com/bazelbuild/rules_cc/pull/136
     # however even with that fix applied, it doesn't work for everyone:
     # https://github.com/NixOS/nixpkgs/pull/184395#issuecomment-1207287129
     platforms = lib.platforms.linux;
-
     # Needs update for Bazel 7.
     broken = true;
   };
@@ -84,6 +77,7 @@ let
   # Bazel wants a merged cudnn at configuration time
   cudnnMerged = symlinkJoin {
     name = "cudnn-merged";
+
     paths = with cudaPackages; [
       (lib.getDev cudnn)
       (lib.getLib cudnn)
@@ -93,6 +87,7 @@ let
   # These are necessary at build time and run time.
   cuda_libs_joined = symlinkJoin {
     name = "cuda-joined";
+
     paths = with cudaPackages; [
       (lib.getLib cuda_cudart) # libcudart.so
       (lib.getLib cuda_cupti) # libcupti.so
@@ -106,6 +101,7 @@ let
   # These are only necessary at build time.
   cuda_build_deps_joined = symlinkJoin {
     name = "cuda-build-deps-joined";
+
     paths = with cudaPackages; [
       cuda_libs_joined
 
@@ -132,6 +128,7 @@ let
 
   backend_cc_joined = symlinkJoin {
     name = "cuda-cc-joined";
+
     paths = [
       effectiveStdenv.cc
       binutils.bintools # for ar, dwp, nm, objcopy, objdump, strip
@@ -204,27 +201,23 @@ let
       hash = "sha256-ZhgMIVs3Z4dTrkRWDqaPC/i7yJz2dsYXrZbjzqvPX3E=";
     };
 
-    dontBuild = true;
-
-    # This is necessary for patchShebangs to know the right path to use.
-    nativeBuildInputs = [ python ];
-
     # Main culprits we're targeting are third_party/tsl/third_party/gpus/crosstool/clang/bin/*.tpl
     postPatch = ''
       patchShebangs .
     '';
 
+    # This is necessary for patchShebangs to know the right path to use.
+    nativeBuildInputs = [ python ];
+
     installPhase = ''
       cp -r . $out
     '';
+
+    dontBuild = true;
   };
 
   bazel-build = buildBazelPackage rec {
-    name = "bazel-build-${pname}-${version}";
-
-    # See https://github.com/google/jax/blob/main/.bazelversion for the latest.
-    #bazel = bazel_6;
-    bazel = bazel_7;
+    inherit meta;
 
     src = fetchFromGitHub {
       owner = "google";
@@ -233,6 +226,11 @@ let
       tag = "${pname}-v${version}";
       hash = "sha256-qSHPwi3is6Ts7pz5s4KzQHBMbcjGp+vAOsejW3o36Ek=";
     };
+
+    # We don't want to be quite so picky regarding bazel version
+    postPatch = ''
+      rm -f .bazelversion
+    '';
 
     nativeBuildInputs = [
       cython
@@ -262,28 +260,6 @@ let
       zlib
     ]
     ++ lib.optionals (!effectiveStdenv.hostPlatform.isDarwin) [ nsync ];
-
-    # We don't want to be quite so picky regarding bazel version
-    postPatch = ''
-      rm -f .bazelversion
-    '';
-
-    bazelRunTarget = "//jaxlib/tools:build_wheel";
-    runTargetFlags = [
-      "--output_path=$out"
-      "--cpu=${arch}"
-      # This has no impact whatsoever...
-      "--jaxlib_git_hash='12345678'"
-    ];
-
-    removeRulesCC = false;
-
-    GCC_HOST_COMPILER_PREFIX = lib.optionalString cudaSupport "${backend_cc_joined}/bin";
-    GCC_HOST_COMPILER_PATH = lib.optionalString cudaSupport "${backend_cc_joined}/bin/gcc";
-
-    # The version is automatically set to ".dev" if this variable is not set.
-    # https://github.com/google/jax/commit/e01f2617b85c5bdffc5ffb60b3d8d8ca9519a1f3
-    JAXLIB_RELEASE = "1";
 
     preConfigure =
       # Dummy ldconfig to work around "Can't open cache file /nix/store/<hash>-glibc-2.38-44/etc/ld.so.cache" error
@@ -342,6 +318,15 @@ let
         CFG
       '';
 
+    GCC_HOST_COMPILER_PATH = lib.optionalString cudaSupport "${backend_cc_joined}/bin/gcc";
+    GCC_HOST_COMPILER_PREFIX = lib.optionalString cudaSupport "${backend_cc_joined}/bin";
+    # The version is automatically set to ".dev" if this variable is not set.
+    # https://github.com/google/jax/commit/e01f2617b85c5bdffc5ffb60b3d8d8ca9519a1f3
+    JAXLIB_RELEASE = "1";
+    # See https://github.com/google/jax/blob/main/.bazelversion for the latest.
+    #bazel = bazel_6;
+    bazel = bazel_7;
+
     # Make sure Bazel knows about our configuration flags during fetching so that the
     # relevant dependencies can be downloaded.
     bazelFlags = [
@@ -360,14 +345,39 @@ let
       "--host_cxxopt=c++"
     ];
 
+    bazelRunTarget = "//jaxlib/tools:build_wheel";
+
+    buildAttrs = {
+      outputs = [ "out" ];
+
+      # Note: we cannot do most of this patching at `patch` phase as the deps
+      # are not available yet.
+      preBuild = lib.optionalString effectiveStdenv.hostPlatform.isDarwin ''
+        substituteInPlace ../output/external/rules_cc/cc/private/toolchain/osx_cc_wrapper.sh.tpl \
+          --replace "/usr/bin/install_name_tool" "${cctools}/bin/install_name_tool"
+        substituteInPlace ../output/external/rules_cc/cc/private/toolchain/unix_cc_configure.bzl \
+          --replace "/usr/bin/libtool" "${cctools}/bin/libtool"
+      '';
+
+      TF_SYSTEM_LIBS = lib.concatStringsSep "," (
+        tf_system_libs
+        ++ lib.optionals (!effectiveStdenv.hostPlatform.isDarwin) [
+          "nsync" # fails to build on darwin
+        ]
+      );
+    };
+
     # We intentionally overfetch so we can share the fetch derivation across all the different configurations
     fetchAttrs = {
+      # Non-reproducible fetch https://github.com/NixOS/nixpkgs/issues/321920#issuecomment-2184940546
+      preInstall = ''
+        cat << \EOF > "$bazelOut/external/go_sdk/versions.json"
+        []
+        EOF
+      '';
+
       TF_SYSTEM_LIBS = lib.concatStringsSep "," tf_system_libs;
-      # we have to force @mkl_dnn_v1 since it's not needed on darwin
-      bazelTargets = [
-        bazelRunTarget
-        "@mkl_dnn_v1//:mkl_dnn"
-      ];
+
       bazelFlags =
         bazelFlags
         ++ [
@@ -382,46 +392,33 @@ let
           "--config=cuda"
         ];
 
+      # we have to force @mkl_dnn_v1 since it's not needed on darwin
+      bazelTargets = [
+        bazelRunTarget
+        "@mkl_dnn_v1//:mkl_dnn"
+      ];
+
       sha256 =
         (
           if cudaSupport then
             { x86_64-linux = "sha256-Uf0VMRE0jgaWEYiuphWkWloZ5jMeqaWBl3lSvk2y1HI="; }
           else
             {
-              x86_64-linux = "sha256-NzJJg6NlrPGMiR8Fn8u4+fu0m+AulfmN5Xqk63Um6sw=";
               aarch64-linux = "sha256-Ro3qzrUxSR+3TH6ROoJTq+dLSufrDN/9oEo2MRkx7wM=";
+              x86_64-linux = "sha256-NzJJg6NlrPGMiR8Fn8u4+fu0m+AulfmN5Xqk63Um6sw=";
             }
         ).${effectiveStdenv.system} or (throw "jaxlib: unsupported system: ${effectiveStdenv.system}");
-
-      # Non-reproducible fetch https://github.com/NixOS/nixpkgs/issues/321920#issuecomment-2184940546
-      preInstall = ''
-        cat << \EOF > "$bazelOut/external/go_sdk/versions.json"
-        []
-        EOF
-      '';
     };
 
-    buildAttrs = {
-      outputs = [ "out" ];
+    name = "bazel-build-${pname}-${version}";
+    removeRulesCC = false;
 
-      TF_SYSTEM_LIBS = lib.concatStringsSep "," (
-        tf_system_libs
-        ++ lib.optionals (!effectiveStdenv.hostPlatform.isDarwin) [
-          "nsync" # fails to build on darwin
-        ]
-      );
-
-      # Note: we cannot do most of this patching at `patch` phase as the deps
-      # are not available yet.
-      preBuild = lib.optionalString effectiveStdenv.hostPlatform.isDarwin ''
-        substituteInPlace ../output/external/rules_cc/cc/private/toolchain/osx_cc_wrapper.sh.tpl \
-          --replace "/usr/bin/install_name_tool" "${cctools}/bin/install_name_tool"
-        substituteInPlace ../output/external/rules_cc/cc/private/toolchain/unix_cc_configure.bzl \
-          --replace "/usr/bin/libtool" "${cctools}/bin/libtool"
-      '';
-    };
-
-    inherit meta;
+    runTargetFlags = [
+      "--output_path=$out"
+      "--cpu=${arch}"
+      # This has no impact whatsoever...
+      "--jaxlib_git_hash='12345678'"
+    ];
   };
   platformTag =
     if effectiveStdenv.hostPlatform.isLinux then
@@ -435,13 +432,19 @@ let
 in
 buildPythonPackage {
   inherit pname version;
-  format = "wheel";
+  inherit meta;
 
   src =
     let
       cp = "cp${builtins.replaceStrings [ "." ] [ "" ] python.pythonVersion}";
     in
     "${bazel-build}/jaxlib-${version}-${cp}-${cp}-${platformTag}.whl";
+
+  nativeBuildInputs = lib.optionals cudaSupport [ autoAddDriverRunpath ];
+
+  buildInputs = [
+    snappy-cpp
+  ];
 
   # Note that jaxlib looks for "ptxas" in $PATH. See https://github.com/NixOS/nixpkgs/pull/164176#discussion_r828801621
   # for more info.
@@ -460,8 +463,6 @@ buildPythonPackage {
     done
   '';
 
-  nativeBuildInputs = lib.optionals cudaSupport [ autoAddDriverRunpath ];
-
   dependencies = [
     absl-py
     curl
@@ -476,9 +477,10 @@ buildPythonPackage {
     six
   ];
 
-  buildInputs = [
-    snappy-cpp
-  ];
+  # Without it there are complaints about libcudart.so.11.0 not being found
+  # because RPATH path entries added above are stripped.
+  dontPatchELF = cudaSupport;
+  format = "wheel";
 
   pythonImportsCheck = [
     "jaxlib"
@@ -487,14 +489,8 @@ buildPythonPackage {
     "jaxlib.xla_client"
   ];
 
-  # Without it there are complaints about libcudart.so.11.0 not being found
-  # because RPATH path entries added above are stripped.
-  dontPatchELF = cudaSupport;
-
   passthru = {
     # Note "bazel.*.tar.gz" can be accessed as `jaxlib.bazel-build.deps`
     inherit bazel-build;
   };
-
-  inherit meta;
 }

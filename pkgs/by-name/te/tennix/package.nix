@@ -1,16 +1,16 @@
 {
   lib,
   stdenv,
-  fetchgit,
-  which,
   SDL2,
   SDL2_gfx,
-  SDL2_mixer,
   SDL2_image,
-  SDL2_ttf,
+  SDL2_mixer,
   SDL2_net,
-  python3,
+  SDL2_ttf,
+  fetchgit,
   gitUpdater,
+  python3,
+  which,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -46,11 +46,11 @@ stdenv.mkDerivation (finalAttrs: {
   passthru.updateScript = gitUpdater { rev-prefix = "tennix-"; };
 
   meta = {
-    homepage = "https://icculus.org/tennix/";
     description = "Classic Championship Tour 2011";
-    mainProgram = "tennix";
+    homepage = "https://icculus.org/tennix/";
     license = lib.licenses.gpl2Plus;
-    platforms = lib.platforms.linux;
     maintainers = with lib.maintainers; [ pSub ];
+    platforms = lib.platforms.linux;
+    mainProgram = "tennix";
   };
 })

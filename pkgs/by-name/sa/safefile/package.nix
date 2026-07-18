@@ -14,9 +14,9 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "File open routines to safely open a file when in the presence of an attack";
+    homepage = "https://research.cs.wisc.edu/mist/safefile/";
     license = lib.licenses.asl20;
     maintainers = with lib.maintainers; [ raskin ];
     platforms = lib.platforms.all;
-    homepage = "https://research.cs.wisc.edu/mist/safefile/";
   };
 })

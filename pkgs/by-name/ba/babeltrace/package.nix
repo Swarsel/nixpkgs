@@ -2,16 +2,16 @@
   lib,
   stdenv,
   fetchurl,
-  gitUpdater,
   autoreconfHook,
-  pkg-config,
+  elfutils,
+  gitUpdater,
   glib,
   libuuid,
+  pkg-config,
   popt,
-  elfutils,
+  swig,
   enablePython ? false,
   pythonPackages ? null,
-  swig,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -36,6 +36,7 @@ stdenv.mkDerivation (finalAttrs: {
     swig
     pythonPackages.setuptools
   ];
+
   buildInputs = [
     glib
     libuuid
@@ -56,23 +57,26 @@ stdenv.mkDerivation (finalAttrs: {
     # solve this.
     "--enable-python-bindings"
   ];
+
   #
 
   passthru.updateScript = gitUpdater {
-    url = "https://git.efficios.com/babeltrace.git";
-    rev-prefix = "v";
     # Versions 2.x are packaged independently as babeltrace2
     allowedVersions = "^1\\.";
+    rev-prefix = "v";
+    url = "https://git.efficios.com/babeltrace.git";
   };
 
   meta = {
     description = "Command-line tool and library to read and convert LTTng tracefiles";
     homepage = "https://www.efficios.com/babeltrace";
     license = lib.licenses.mit;
-    platforms = lib.platforms.linux;
+
     maintainers = with lib.maintainers; [
       bjornfor
       wentasah
     ];
+
+    platforms = lib.platforms.linux;
   };
 })

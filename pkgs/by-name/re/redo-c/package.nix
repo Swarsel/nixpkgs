@@ -22,7 +22,7 @@ stdenv.mkDerivation (finalAttrs: {
     description = "Implementation of the redo build system in portable C with zero dependencies";
     homepage = "https://github.com/leahneukirchen/redo-c";
     license = lib.licenses.cc0;
-    platforms = lib.platforms.all;
     maintainers = with lib.maintainers; [ ck3d ];
+    platforms = lib.platforms.all;
   };
 })

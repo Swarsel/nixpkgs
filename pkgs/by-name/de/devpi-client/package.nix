@@ -1,17 +1,16 @@
 {
   lib,
+  fetchFromGitHub,
   devpi-server,
   git,
   glibcLocales,
-  python3,
-  fetchFromGitHub,
   nix-update-script,
+  python3,
 }:
 
 python3.pkgs.buildPythonApplication (finalAttrs: {
   pname = "devpi-client";
   version = "7.2.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "devpi";
@@ -20,25 +19,8 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     hash = "sha256-rAku3oHcmzFNA/MP/64382gCTgqopwjjy4S4HTEFZiY=";
   };
 
-  sourceRoot = "${finalAttrs.src.name}/client";
-
-  build-system = with python3.pkgs; [
-    setuptools
-    setuptools-changelog-shortener
-  ];
-
   buildInputs = [ glibcLocales ];
-
-  dependencies = with python3.pkgs; [
-    build
-    check-manifest
-    devpi-common
-    iniconfig
-    pkginfo
-    pluggy
-    platformdirs
-    requests
-  ];
+  env.LC_ALL = "en_US.UTF-8";
 
   nativeCheckInputs = [
     devpi-server
@@ -60,17 +42,33 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     export HOME=$(mktemp -d);
   '';
 
+  __darwinAllowLocalNetworking = true;
+
+  build-system = with python3.pkgs; [
+    setuptools
+    setuptools-changelog-shortener
+  ];
+
+  dependencies = with python3.pkgs; [
+    build
+    check-manifest
+    devpi-common
+    iniconfig
+    pkginfo
+    pluggy
+    platformdirs
+    requests
+  ];
+
+  pyproject = true;
+
   pytestFlags = [
     # --fast skips tests which try to start a devpi-server improperly
     "--fast"
   ];
 
-  env.LC_ALL = "en_US.UTF-8";
-
-  __darwinAllowLocalNetworking = true;
-
   pythonImportsCheck = [ "devpi" ];
-
+  sourceRoot = "${finalAttrs.src.name}/client";
   passthru.updateScript = nix-update-script { };
 
   meta = {
@@ -78,10 +76,12 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     homepage = "http://doc.devpi.net";
     changelog = "https://github.com/devpi/devpi/blob/client-${finalAttrs.version}/client/CHANGELOG";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       lewo
       makefu
     ];
+
     mainProgram = "devpi";
   };
 })

@@ -1,14 +1,13 @@
 {
   lib,
   fetchFromGitHub,
-  python3Packages,
   nix-update-script,
+  python3Packages,
 }:
 
 python3Packages.buildPythonApplication (finalAttrs: {
   pname = "pyprland";
   version = "3.4.3";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "hyprland-community";
@@ -16,8 +15,6 @@ python3Packages.buildPythonApplication (finalAttrs: {
     tag = finalAttrs.version;
     hash = "sha256-/CR07do2Ma9DYmQ3dNwaXYZmgIX4gQdVMdtEz+AM78E=";
   };
-
-  build-system = [ python3Packages.hatchling ];
 
   nativeBuildInputs = with python3Packages; [ poetry-core ];
 
@@ -27,17 +24,17 @@ python3Packages.buildPythonApplication (finalAttrs: {
     pillow
     questionary
   ];
-  pythonRelaxDeps = [
-    "aiofiles"
-  ];
+
+  # NOTE: this is required for the imports check below to work properly
+  env.HYPRLAND_INSTANCE_SIGNATURE = "dummy";
 
   postInstall = ''
     # file has shebang but cant be run due to a relative import, has proper entrypoint in /bin
     chmod -x $out/${python3Packages.python.sitePackages}/pyprland/command.py
   '';
 
-  # NOTE: this is required for the imports check below to work properly
-  env.HYPRLAND_INSTANCE_SIGNATURE = "dummy";
+  build-system = [ python3Packages.hatchling ];
+  pyproject = true;
 
   pythonImportsCheck = [
     "pyprland"
@@ -65,17 +62,23 @@ python3Packages.buildPythonApplication (finalAttrs: {
     "pyprland.plugins.workspaces_follow_focus"
   ];
 
+  pythonRelaxDeps = [
+    "aiofiles"
+  ];
+
   passthru.updateScript = nix-update-script { };
 
   meta = {
-    mainProgram = "pypr";
     description = "Hyperland plugin system";
     homepage = "https://github.com/hyprland-community/pyprland";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       iliayar
       johnrtitor
     ];
+
     platforms = lib.platforms.linux;
+    mainProgram = "pypr";
   };
 })

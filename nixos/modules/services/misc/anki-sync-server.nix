@@ -39,48 +39,47 @@ in
 {
   options.services.anki-sync-server = {
     enable = mkEnableOption "anki-sync-server";
-
     package = mkPackageOption pkgs "anki-sync-server" { };
 
     address = mkOption {
-      type = types.str;
       default = "::1";
+
       description = ''
         IP address anki-sync-server listens to.
         Note host names are not resolved.
       '';
-    };
 
-    port = mkOption {
-      type = types.port;
-      default = 27701;
-      description = "Port number anki-sync-server listens to.";
+      type = types.str;
     };
 
     baseDirectory = mkOption {
-      type = types.str;
       default = "%S/%N";
       description = "Base directory where user(s) synchronized data will be stored.";
+      type = types.str;
     };
 
     openFirewall = mkOption {
       default = false;
-      type = types.bool;
       description = "Whether to open the firewall for the specified port.";
+      type = types.bool;
+    };
+
+    port = mkOption {
+      default = 27701;
+      description = "Port number anki-sync-server listens to.";
+      type = types.port;
     };
 
     users = mkOption {
+      description = "List of user-password pairs to provide to the sync server.";
+
       type =
         with types;
         listOf (submodule {
           options = {
-            username = mkOption {
-              type = str;
-              description = "User name accepted by anki-sync-server.";
-            };
             password = mkOption {
-              type = nullOr str;
               default = null;
+
               description = ''
                 Password accepted by anki-sync-server for the associated username.
                 **WARNING**: This option is **not secure**. This password will
@@ -88,19 +87,28 @@ in
                 See {option}`services.anki-sync-server.users.passwordFile` for
                 a more secure option.
               '';
+
+              type = nullOr str;
             };
+
             passwordFile = mkOption {
-              type = nullOr path;
               default = null;
+
               description = ''
                 File containing the password accepted by anki-sync-server for
                 the associated username.  Make sure to make readable only by
                 root.
               '';
+
+              type = nullOr path;
+            };
+
+            username = mkOption {
+              description = "User name accepted by anki-sync-server.";
+              type = str;
             };
           };
         });
-      description = "List of user-password pairs to provide to the sync server.";
     };
   };
 
@@ -111,34 +119,40 @@ in
         message = "At least one username-password pair must be set.";
       }
     ];
+
     networking.firewall.allowedTCPPorts = mkIf cfg.openFirewall [ cfg.port ];
 
     systemd.services.anki-sync-server = {
-      description = "anki-sync-server: Anki sync server built into Anki";
       after = [ "network.target" ];
-      wantedBy = [ "multi-user.target" ];
-      path = [ cfg.package ];
+      description = "anki-sync-server: Anki sync server built into Anki";
+
       environment = {
         SYNC_BASE = cfg.baseDirectory;
         SYNC_HOST = specEscape cfg.address;
         SYNC_PORT = toString cfg.port;
       };
 
+      path = [ cfg.package ];
+
       serviceConfig = {
-        Type = "simple";
         DynamicUser = true;
-        StateDirectory = name;
         ExecStart = anki-sync-server-run;
-        Restart = "always";
+
         LoadCredential = map (
           x: "${specEscape x.user.username}:${specEscape (toString x.user.passwordFile)}"
         ) usersWithIndexesFile;
+
+        Restart = "always";
+        StateDirectory = name;
+        Type = "simple";
       };
+
+      wantedBy = [ "multi-user.target" ];
     };
   };
 
   meta = {
-    maintainers = with maintainers; [ telotortium ];
     doc = ./anki-sync-server.md;
+    maintainers = with maintainers; [ telotortium ];
   };
 }

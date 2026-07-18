@@ -22,6 +22,7 @@ let
   packageBuild = stdenv.mkDerivation {
     pname = "package-build";
     version = "4.0.0-unstable-2026-03-17";
+
     src = fetchFromGitHub {
       owner = "melpa";
       repo = "package-build";
@@ -29,24 +30,25 @@ let
       hash = "sha256-JkdKCfMi+D2ls/Aiz9OPdtLSv1+938BRBJqsIYJIfBM=";
     };
 
-    prePatch = ''
-      substituteInPlace package-build.el \
-        --replace-fail '(format "--mtime=@%d" time)' '"--mtime=@0"'
-    '';
-
-    dontConfigure = true;
-    dontBuild = true;
-
     installPhase = "
       mkdir -p $out
       cp -r * $out
     ";
+
+    dontBuild = true;
+    dontConfigure = true;
+
+    prePatch = ''
+      substituteInPlace package-build.el \
+        --replace-fail '(format "--mtime=@%d" time)' '"--mtime=@0"'
+    '';
   };
 
 in
 
 lib.extendMkDerivation {
   constructDrv = genericBuild;
+
   extendDrvArgs =
     finalAttrs:
 
@@ -56,11 +58,6 @@ lib.extendMkDerivation {
         "emacs-" prefix.
       */
       pname,
-      /*
-        ename: Original Emacs package name, possibly containing special symbols.
-        Default: pname
-      */
-      ename ? pname,
       /*
         version: Either a stable version such as "1.2" or an unstable version.
         An unstable version can use either Nix format (preferred) such as
@@ -75,11 +72,19 @@ lib.extendMkDerivation {
       */
       commit ? (finalAttrs.src.rev or "unknown"),
       /*
+        ename: Original Emacs package name, possibly containing special symbols.
+        Default: pname
+      */
+      ename ? pname,
+      /*
         files: Optional recipe property specifying the files used to build the package.
         If null, do not set it in recipe, keeping the default upstream behaviour.
         Default: null
       */
       files ? null,
+      meta ? { },
+      postUnpack ? "",
+      preUnpack ? "",
       /*
         recipe: Optional MELPA recipe.
         Default: a minimally functional recipe
@@ -87,16 +92,10 @@ lib.extendMkDerivation {
         The default value is used if it is an empty string.
       */
       recipe ? "",
-      preUnpack ? "",
-      postUnpack ? "",
-      meta ? { },
       ...
     }@args:
 
     {
-
-      elpa2nix = args.elpa2nix or ./elpa2nix.el;
-      melpa2nix = args.melpa2nix or ./melpa2nix.el;
 
       inherit
         commit
@@ -104,54 +103,6 @@ lib.extendMkDerivation {
         files
         recipe
         ;
-
-      packageBuild = args.packageBuild or packageBuild;
-
-      melpaVersion =
-        args.melpaVersion or (
-          let
-            parsed =
-              lib.flip builtins.match finalAttrs.version
-                # match <version>-unstable-YYYY-MM-DD format
-                "^.*-unstable-([[:digit:]]{4})-([[:digit:]]{2})-([[:digit:]]{2})$";
-            unstableVersionInNixFormat = parsed != null; # heuristics
-            date = builtins.concatStringsSep "" parsed;
-            time = "0"; # unstable version in nix format lacks this info
-          in
-          if unstableVersionInNixFormat then date + "." + time else finalAttrs.version
-        );
-
-      preUnpack = ''
-        mkdir -p "$NIX_BUILD_TOP/recipes"
-        recipeFile="$NIX_BUILD_TOP/recipes/$ename"
-        if [ -r "$recipe" ]; then
-          ln -s "$recipe" "$recipeFile"
-          nixInfoLog "link recipe"
-        elif [ -n "$recipe" ]; then
-          printf "%s" "$recipe" > "$recipeFile"
-          nixInfoLog "write recipe"
-        else
-          cat > "$recipeFile" <<'EOF'
-        (${finalAttrs.ename} :fetcher git :url "" ${
-          lib.optionalString (finalAttrs.files != null) ":files ${finalAttrs.files}"
-        })
-        EOF
-          nixInfoLog "use default recipe"
-        fi
-        nixInfoLog "recipe content:" "$(< $recipeFile)"
-        unset -v recipeFile
-
-        ln -s "$packageBuild" "$NIX_BUILD_TOP/package-build"
-
-        mkdir -p "$NIX_BUILD_TOP/packages"
-      ''
-      + preUnpack;
-
-      postUnpack = ''
-        mkdir -p "$NIX_BUILD_TOP/working"
-        ln -s "$NIX_BUILD_TOP/$sourceRoot" "$NIX_BUILD_TOP/working/$ename"
-      ''
-      + postUnpack;
 
       buildPhase =
         args.buildPhase or ''
@@ -193,6 +144,57 @@ lib.extendMkDerivation {
 
           runHook postInstall
         '';
+
+      elpa2nix = args.elpa2nix or ./elpa2nix.el;
+      melpa2nix = args.melpa2nix or ./melpa2nix.el;
+
+      melpaVersion =
+        args.melpaVersion or (
+          let
+            parsed =
+              lib.flip builtins.match finalAttrs.version
+                # match <version>-unstable-YYYY-MM-DD format
+                "^.*-unstable-([[:digit:]]{4})-([[:digit:]]{2})-([[:digit:]]{2})$";
+            unstableVersionInNixFormat = parsed != null; # heuristics
+            date = builtins.concatStringsSep "" parsed;
+            time = "0"; # unstable version in nix format lacks this info
+          in
+          if unstableVersionInNixFormat then date + "." + time else finalAttrs.version
+        );
+
+      packageBuild = args.packageBuild or packageBuild;
+
+      postUnpack = ''
+        mkdir -p "$NIX_BUILD_TOP/working"
+        ln -s "$NIX_BUILD_TOP/$sourceRoot" "$NIX_BUILD_TOP/working/$ename"
+      ''
+      + postUnpack;
+
+      preUnpack = ''
+        mkdir -p "$NIX_BUILD_TOP/recipes"
+        recipeFile="$NIX_BUILD_TOP/recipes/$ename"
+        if [ -r "$recipe" ]; then
+          ln -s "$recipe" "$recipeFile"
+          nixInfoLog "link recipe"
+        elif [ -n "$recipe" ]; then
+          printf "%s" "$recipe" > "$recipeFile"
+          nixInfoLog "write recipe"
+        else
+          cat > "$recipeFile" <<'EOF'
+        (${finalAttrs.ename} :fetcher git :url "" ${
+          lib.optionalString (finalAttrs.files != null) ":files ${finalAttrs.files}"
+        })
+        EOF
+          nixInfoLog "use default recipe"
+        fi
+        nixInfoLog "recipe content:" "$(< $recipeFile)"
+        unset -v recipeFile
+
+        ln -s "$packageBuild" "$NIX_BUILD_TOP/package-build"
+
+        mkdir -p "$NIX_BUILD_TOP/packages"
+      ''
+      + preUnpack;
 
       meta = {
         homepage = args.src.meta.homepage or "https://melpa.org/#/${pname}";

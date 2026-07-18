@@ -1,70 +1,65 @@
 {
   lib,
   stdenv,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # build-system
-  uv-build,
-
+  # dynamodb
+  aioboto3,
+  # filetree
+  aiofile,
+  aiohttp,
+  # types-hvac,
+  # memcached
+  aiomcache,
+  anyio,
   # dependencies
   beartype,
-  py-key-value-shared,
-
+  # tests
+  bson,
+  buildPythonPackage,
   # optional-dependencies
   # memory
   cachetools,
+  # wrappers-encryption
+  cryptography,
+  # keyring-linux
+  dbus-python,
+  dirty-equals,
   # disk
   diskcache,
-  pathvalidate,
-  # filetree
-  aiofile,
-  anyio,
-  # redis
-  redis,
-  # mongodb
-  pymongo,
+  docker,
+  # duckdb
+  duckdb,
+  # elasticsearch
+  elasticsearch,
   # valkey
   # valkey-glide,
   # vault
   hvac,
-  # types-hvac,
-  # memcached
-  aiomcache,
-  # elasticsearch
-  elasticsearch,
-  aiohttp,
-  # dynamodb
-  aioboto3,
-  types-aiobotocore-dynamodb,
+  inline-snapshot,
   # keyring
   keyring,
-  # keyring-linux
-  dbus-python,
+  pathvalidate,
+  py-key-value-shared,
+  py-key-value-shared-test,
   # pydantic
   pydantic,
-  # rocksdb
-  rocksdict,
-  # duckdb
-  duckdb,
-  pytz,
-  # wrappers-encryption
-  cryptography,
-
-  # tests
-  bson,
-  docker,
-  dirty-equals,
-  inline-snapshot,
-  py-key-value-shared-test,
+  # mongodb
+  pymongo,
   pytest-asyncio,
   pytestCheckHook,
+  pytz,
+  # redis
+  redis,
+  # rocksdb
+  rocksdict,
+  types-aiobotocore-dynamodb,
+  # build-system
+  uv-build,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "py-key-value-aio";
   version = "0.3.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "strawgate";
@@ -72,8 +67,6 @@ buildPythonPackage (finalAttrs: {
     tag = finalAttrs.version;
     hash = "sha256-4ji+GzJTv1QnC5n/OaL9vR65j8BQmJsVGGnjjuulDiU=";
   };
-
-  sourceRoot = "${finalAttrs.src.name}/key-value/key-value-aio";
 
   postPatch = ''
     substituteInPlace pyproject.toml \
@@ -93,75 +86,6 @@ buildPythonPackage (finalAttrs: {
         '"--dist=loadfile",' \
         ""
   '';
-
-  build-system = [
-    uv-build
-  ];
-
-  dependencies = [
-    beartype
-    py-key-value-shared
-  ];
-
-  optional-dependencies = {
-    memory = [
-      cachetools
-    ];
-    disk = [
-      diskcache
-      pathvalidate
-    ];
-    filetree = [
-      aiofile
-      anyio
-    ];
-    redis = [
-      redis
-    ];
-    mongodb = [
-      pymongo
-    ];
-    valkey = [
-      # valkey-glide (unpackaged)
-    ];
-    vault = [
-      hvac
-      # types-hvac (unpackaged)
-    ];
-    memcached = [
-      aiomcache
-    ];
-    elasticsearch = [
-      elasticsearch
-      aiohttp
-    ];
-    dynamodb = [
-      aioboto3
-      types-aiobotocore-dynamodb
-    ];
-    keyring = [
-      keyring
-    ];
-    keyring-linux = [
-      keyring
-      dbus-python
-    ];
-    pydantic = [
-      pydantic
-    ];
-    rocksdb = [
-      rocksdict
-    ];
-    duckdb = [
-      duckdb
-      pytz
-    ];
-    wrappers-encryption = [
-      cryptography
-    ];
-  };
-
-  pythonImportsCheck = [ "key_value.aio" ];
 
   nativeCheckInputs = [
     bson
@@ -186,6 +110,15 @@ buildPythonPackage (finalAttrs: {
   ++ finalAttrs.passthru.optional-dependencies.rocksdb
   ++ finalAttrs.passthru.optional-dependencies.wrappers-encryption;
 
+  build-system = [
+    uv-build
+  ];
+
+  dependencies = [
+    beartype
+    py-key-value-shared
+  ];
+
   disabledTestPaths = [
     # ModuleNotFoundError: No module named 'bson.codec_options'
     "tests/stores/mongodb/test_mongodb.py"
@@ -198,6 +131,83 @@ buildPythonPackage (finalAttrs: {
     # https://github.com/strawgate/py-key-value/issues/266
     "tests/stores/rocksdb/test_rocksdb.py"
   ];
+
+  optional-dependencies = {
+    disk = [
+      diskcache
+      pathvalidate
+    ];
+
+    duckdb = [
+      duckdb
+      pytz
+    ];
+
+    dynamodb = [
+      aioboto3
+      types-aiobotocore-dynamodb
+    ];
+
+    elasticsearch = [
+      elasticsearch
+      aiohttp
+    ];
+
+    filetree = [
+      aiofile
+      anyio
+    ];
+
+    keyring = [
+      keyring
+    ];
+
+    keyring-linux = [
+      keyring
+      dbus-python
+    ];
+
+    memcached = [
+      aiomcache
+    ];
+
+    memory = [
+      cachetools
+    ];
+
+    mongodb = [
+      pymongo
+    ];
+
+    pydantic = [
+      pydantic
+    ];
+
+    redis = [
+      redis
+    ];
+
+    rocksdb = [
+      rocksdict
+    ];
+
+    valkey = [
+      # valkey-glide (unpackaged)
+    ];
+
+    vault = [
+      hvac
+      # types-hvac (unpackaged)
+    ];
+
+    wrappers-encryption = [
+      cryptography
+    ];
+  };
+
+  pyproject = true;
+  pythonImportsCheck = [ "key_value.aio" ];
+  sourceRoot = "${finalAttrs.src.name}/key-value/key-value-aio";
 
   meta = {
     description = "Async Key-Value";

@@ -1,15 +1,15 @@
 {
+  lib,
+  fetchFromGitHub,
   aiohttp,
   aioresponses,
-  lib,
   buildPythonPackage,
-  fetchFromGitHub,
   mashumaro,
   orjson,
   poetry-core,
-  pytestCheckHook,
   pytest-aiohttp,
   pytest-cov-stub,
+  pytestCheckHook,
   syrupy,
   yarl,
 }:
@@ -17,7 +17,6 @@
 buildPythonPackage rec {
   pname = "knocki";
   version = "0.4.2";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "swan-solutions";
@@ -25,6 +24,14 @@ buildPythonPackage rec {
     tag = "v${version}";
     hash = "sha256-85w+fj00VW0miNt+xRMcU6szg/Z7QaeKLGw2BV7X0T4=";
   };
+
+  nativeCheckInputs = [
+    aioresponses
+    pytestCheckHook
+    pytest-aiohttp
+    pytest-cov-stub
+    syrupy
+  ];
 
   build-system = [ poetry-core ];
 
@@ -35,14 +42,7 @@ buildPythonPackage rec {
     yarl
   ];
 
-  nativeCheckInputs = [
-    aioresponses
-    pytestCheckHook
-    pytest-aiohttp
-    pytest-cov-stub
-    syrupy
-  ];
-
+  pyproject = true;
   pythonImportsCheck = [ "knocki" ];
 
   meta = {

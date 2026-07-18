@@ -1,8 +1,8 @@
 {
   lib,
   stdenv,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   cargo,
   hypothesmith,
   isPy313,
@@ -21,7 +21,6 @@
 buildPythonPackage rec {
   pname = "libcst";
   version = "1.8.6";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "Instagram";
@@ -30,23 +29,6 @@ buildPythonPackage rec {
     hash = "sha256-AJm3grS+I/NXZ8ame4rmHPOxRHGO0Ofo35RtSDO2tyI=";
   };
 
-  cargoDeps = rustPlatform.fetchCargoVendor {
-    inherit
-      pname
-      version
-      src
-      cargoRoot
-      ;
-    hash = "sha256-7/Yf2yn7wjW0CDG1Ha3SsvOIytbU1bJCpR9WFAFiPEA=";
-  };
-
-  cargoRoot = "native";
-
-  build-system = [
-    setuptools-rust
-    setuptools-scm
-  ];
-
   nativeBuildInputs = [
     rustPlatform.cargoSetupHook
     cargo
@@ -54,10 +36,8 @@ buildPythonPackage rec {
   ];
 
   buildInputs = lib.optionals stdenv.hostPlatform.isDarwin [ libiconv ];
-
-  dependencies = [
-    (if isPy313 then pyyaml-ft else pyyaml)
-  ];
+  # circular dependency on hypothesmith and ufmt
+  doCheck = false;
 
   nativeCheckInputs = [
     hypothesmith
@@ -70,6 +50,28 @@ buildPythonPackage rec {
     rm libcst/__init__.py
   '';
 
+  build-system = [
+    setuptools-rust
+    setuptools-scm
+  ];
+
+  cargoDeps = rustPlatform.fetchCargoVendor {
+    inherit
+      pname
+      version
+      src
+      cargoRoot
+      ;
+
+    hash = "sha256-7/Yf2yn7wjW0CDG1Ha3SsvOIytbU1bJCpR9WFAFiPEA=";
+  };
+
+  cargoRoot = "native";
+
+  dependencies = [
+    (if isPy313 then pyyaml-ft else pyyaml)
+  ];
+
   disabledTests = [
     # FIXME package pyre-test
     "TypeInferenceProviderTest"
@@ -79,24 +81,24 @@ buildPythonPackage rec {
     "test_codegen_clean_return_types"
   ];
 
-  # circular dependency on hypothesmith and ufmt
-  doCheck = false;
+  pyproject = true;
+  pythonImportsCheck = [ "libcst" ];
 
   passthru.tests = {
     pytest = libcst.overridePythonAttrs { doCheck = true; };
   };
 
-  pythonImportsCheck = [ "libcst" ];
-
   meta = {
     description = "Concrete Syntax Tree (CST) parser and serializer library for Python";
     homepage = "https://github.com/Instagram/LibCST";
     changelog = "https://github.com/Instagram/LibCST/blob/${src.tag}/CHANGELOG.md";
+
     license = with lib.licenses; [
       mit
       asl20
       psfl
     ];
+
     maintainers = with lib.maintainers; [ dotlambda ];
   };
 }

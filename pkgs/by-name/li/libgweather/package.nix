@@ -1,23 +1,23 @@
 {
   lib,
   stdenv,
-  buildPackages,
   fetchurl,
+  buildPackages,
+  geocode-glib_2,
+  gettext,
+  gi-docgen,
+  glib,
+  gnome,
+  gobject-introspection,
+  gweather-locations,
+  json-glib,
+  libsoup_3,
+  libxml2,
   meson,
   ninja,
   pkg-config,
-  libxml2,
-  json-glib,
-  glib,
-  gettext,
-  gweather-locations,
-  libsoup_3,
-  gi-docgen,
-  gobject-introspection,
   tzdata,
-  geocode-glib_2,
   vala,
-  gnome,
   withIntrospection ?
     lib.meta.availableOn stdenv.hostPlatform gobject-introspection
     && stdenv.hostPlatform.emulatorAvailable buildPackages,
@@ -27,16 +27,16 @@ stdenv.mkDerivation rec {
   pname = "libgweather";
   version = "4.6.0";
 
+  src = fetchurl {
+    url = "mirror://gnome/sources/libgweather/${lib.versions.majorMinor version}/libgweather-${version}.tar.xz";
+    hash = "sha256-f10OjJaF7y/0bC86V8rkjXvzVAstg5IfiJ7yjmqHZ4g=";
+  };
+
   outputs = [
     "out"
     "dev"
   ]
   ++ lib.optional withIntrospection "devdoc";
-
-  src = fetchurl {
-    url = "mirror://gnome/sources/libgweather/${lib.versions.majorMinor version}/libgweather-${version}.tar.xz";
-    hash = "sha256-f10OjJaF7y/0bC86V8rkjXvzVAstg5IfiJ7yjmqHZ4g=";
-  };
 
   patches = [
     # Headers depend on glib but it is only listed in Requires.private,
@@ -45,9 +45,25 @@ stdenv.mkDerivation rec {
     ./fix-pkgconfig.patch
   ];
 
-  depsBuildBuild = [
-    pkg-config
-  ];
+  postPatch = ''
+    # Run-time dependency gi-docgen found: NO (tried pkgconfig and cmake)
+    # it should be a build-time dep for build
+    # TODO: send upstream
+    substituteInPlace doc/meson.build \
+      --replace-fail "'gi-docgen', ver" "'gi-docgen', native:true, ver" \
+      --replace-fail "'gi-docgen', req" "'gi-docgen', native:true, req"
+
+    # gir works for us even when cross-compiling
+    # TODO: send upstream because downstream users can use the option to disable gir if they don't have it working
+    substituteInPlace meson.build \
+      --replace-fail "g_ir_scanner.found() and not meson.is_cross_build()" "g_ir_scanner.found()"
+
+    substituteInPlace libgweather/meson.build --replace-fail \
+      "dependency('vapigen', required: enable_vala == 'true')" \
+      "dependency('vapigen', native: true, required: enable_vala == 'true')"
+  '';
+
+  strictDeps = true;
 
   nativeBuildInputs = [
     meson
@@ -79,37 +95,21 @@ stdenv.mkDerivation rec {
     "-Dc_args=-D_DARWIN_C_SOURCE"
   ];
 
-  postPatch = ''
-    # Run-time dependency gi-docgen found: NO (tried pkgconfig and cmake)
-    # it should be a build-time dep for build
-    # TODO: send upstream
-    substituteInPlace doc/meson.build \
-      --replace-fail "'gi-docgen', ver" "'gi-docgen', native:true, ver" \
-      --replace-fail "'gi-docgen', req" "'gi-docgen', native:true, req"
-
-    # gir works for us even when cross-compiling
-    # TODO: send upstream because downstream users can use the option to disable gir if they don't have it working
-    substituteInPlace meson.build \
-      --replace-fail "g_ir_scanner.found() and not meson.is_cross_build()" "g_ir_scanner.found()"
-
-    substituteInPlace libgweather/meson.build --replace-fail \
-      "dependency('vapigen', required: enable_vala == 'true')" \
-      "dependency('vapigen', native: true, required: enable_vala == 'true')"
-  '';
-
   postFixup = ''
     # Cannot be in postInstall, otherwise _multioutDocs hook in preFixup will move right back.
     moveToOutput "share/doc" "$devdoc"
   '';
 
-  strictDeps = true;
+  depsBuildBuild = [
+    pkg-config
+  ];
 
   passthru = {
     updateScript = gnome.updateScript {
-      packageName = pname;
-      versionPolicy = "odd-unstable";
       # Version 40.alpha preceded version 4.0.
       freeze = "40.alpha";
+      packageName = pname;
+      versionPolicy = "odd-unstable";
     };
   };
 
@@ -117,7 +117,7 @@ stdenv.mkDerivation rec {
     description = "Library to access weather information from online services for numerous locations";
     homepage = "https://gitlab.gnome.org/GNOME/libgweather";
     license = lib.licenses.gpl2Plus;
-    teams = [ lib.teams.gnome ];
     platforms = lib.platforms.unix;
+    teams = [ lib.teams.gnome ];
   };
 }

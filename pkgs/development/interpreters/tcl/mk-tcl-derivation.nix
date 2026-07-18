@@ -1,8 +1,8 @@
 # Generic builder for tcl packages/applications
 {
-  tcl,
   lib,
   makeWrapper,
+  tcl,
 }:
 
 let
@@ -20,6 +20,7 @@ let
 in
 lib.extendMkDerivation {
   constructDrv = stdenv.mkDerivation;
+
   excludeDrvArgNames = [
     "addTclConfigureFlags"
     "checkPhase"
@@ -27,23 +28,20 @@ lib.extendMkDerivation {
     "nativeCheckInputs"
     "doCheck"
   ];
+
   extendDrvArgs =
     finalAttrs:
     args@{
-      # true if we should skip the configuration phase altogether
-      dontConfigure ? false,
-
-      # Extra flags passed to configure step
-      configureFlags ? [ ],
-
       # Whether or not we should add common Tcl-related configure flags
       addTclConfigureFlags ? true,
+      # Extra flags passed to configure step
+      configureFlags ? [ ],
+      # true if we should skip the configuration phase altogether
+      dontConfigure ? false,
       ...
     }:
     (
       {
-        buildInputs = args.buildInputs or [ ] ++ [ tcl.tclPackageHook ];
-
         nativeBuildInputs =
           args.nativeBuildInputs or [ ]
           ++ [
@@ -54,13 +52,8 @@ lib.extendMkDerivation {
             tcl.tclRequiresCheckHook
           ];
 
+        buildInputs = args.buildInputs or [ ] ++ [ tcl.tclPackageHook ];
         propagatedBuildInputs = args.propagatedBuildInputs or [ ] ++ [ tcl ];
-
-        # Run tests after install, at which point we've done all TCLLIBPATH setup
-        doCheck = false;
-        doInstallCheck = args.doCheck or (args.doInstallCheck or false);
-        installCheckInputs = args.checkInputs or [ ] ++ args.installCheckInputs or [ ];
-        nativeInstallCheckInputs = args.nativeCheckInputs or [ ] ++ args.nativeInstallCheckInputs or [ ];
 
         # Add typical values expected by TEA for configureFlags
         configureFlags =
@@ -73,6 +66,12 @@ lib.extendMkDerivation {
           TCLSH = "${getBin tcl}/bin/tclsh";
         }
         // args.env or { };
+
+        # Run tests after install, at which point we've done all TCLLIBPATH setup
+        doCheck = false;
+        doInstallCheck = args.doCheck or (args.doInstallCheck or false);
+        nativeInstallCheckInputs = args.nativeCheckInputs or [ ] ++ args.nativeInstallCheckInputs or [ ];
+        installCheckInputs = args.checkInputs or [ ] ++ args.installCheckInputs or [ ];
 
         meta = {
           platforms = tcl.meta.platforms;

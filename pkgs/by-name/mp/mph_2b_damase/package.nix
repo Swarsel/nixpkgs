@@ -1,7 +1,7 @@
 {
-  stdenvNoCC,
   fetchzip,
   installFonts,
+  stdenvNoCC,
 }:
 
 stdenvNoCC.mkDerivation {
@@ -14,6 +14,5 @@ stdenvNoCC.mkDerivation {
   };
 
   nativeBuildInputs = [ installFonts ];
-
   meta = { };
 }

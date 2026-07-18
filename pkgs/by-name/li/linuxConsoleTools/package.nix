@@ -2,8 +2,8 @@
   lib,
   stdenv,
   fetchurl,
-  pkg-config,
   SDL2,
+  pkg-config,
   udevCheckHook,
 }:
 
@@ -20,24 +20,17 @@ stdenv.mkDerivation (finalAttrs: {
     pkg-config
     udevCheckHook
   ];
+
   buildInputs = [
     SDL2
   ];
 
   makeFlags = [ "DESTDIR=$(out)" ];
-
+  doInstallCheck = true;
   installFlags = [ "PREFIX=\"\"" ];
 
-  doInstallCheck = true;
-
   meta = {
-    homepage = "https://sourceforge.net/projects/linuxconsole/";
     description = "Set of tools for joysticks and serial peripherals";
-    license = lib.licenses.gpl2Plus;
-    platforms = lib.platforms.linux;
-    maintainers = with lib.maintainers; [
-      pSub
-    ];
 
     longDescription = ''
       The included tools are:
@@ -50,5 +43,14 @@ stdenv.mkDerivation (finalAttrs: {
       jscal(1)       - joystick calibration tool
       inputattach(1) - connects legacy serial devices to the input layer
     '';
+
+    homepage = "https://sourceforge.net/projects/linuxconsole/";
+    license = lib.licenses.gpl2Plus;
+
+    maintainers = with lib.maintainers; [
+      pSub
+    ];
+
+    platforms = lib.platforms.linux;
   };
 })

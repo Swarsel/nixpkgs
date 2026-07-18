@@ -8,7 +8,6 @@
 python3.pkgs.buildPythonApplication (finalAttrs: {
   pname = "xnlinkfinder";
   version = "8.2";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "xnl-h4ck3r";
@@ -17,14 +16,10 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     hash = "sha256-xym8ruHPAseqmWLUtCPTlpr3REDrpbWor66aNvfASjA=";
   };
 
-  pythonRemoveDeps = [
-    # python already provides urllib.parse
-    "urlparse3"
-  ];
-
-  build-system = with python3.pkgs; [ setuptools ];
-
   nativeBuildInputs = [ writableTmpDirAsHomeHook ];
+  # Project has no test
+  doCheck = false;
+  build-system = with python3.pkgs; [ setuptools ];
 
   dependencies = with python3.pkgs; [
     beautifulsoup4
@@ -41,10 +36,13 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     urllib3
   ];
 
-  # Project has no test
-  doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "xnLinkFinder" ];
+
+  pythonRemoveDeps = [
+    # python already provides urllib.parse
+    "urlparse3"
+  ];
 
   meta = {
     description = "Tool to discover endpoints, potential parameters, and a target specific wordlist for a given target";

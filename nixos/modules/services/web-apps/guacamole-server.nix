@@ -18,35 +18,42 @@ in
       [ "services" "guacamole-client" "userMappingXml" ]
     )
   ];
+
   options = {
     services.guacamole-server = {
       enable = lib.mkEnableOption "Apache Guacamole Server (guacd)";
       package = lib.mkPackageOption pkgs "guacamole-server" { };
 
       extraEnvironment = lib.mkOption {
-        type = lib.types.attrsOf lib.types.str;
         default = { };
+        description = "Environment variables to pass to guacd.";
+
         example = lib.literalExpression ''
           {
             ENVIRONMENT = "production";
           }
         '';
-        description = "Environment variables to pass to guacd.";
+
+        type = lib.types.attrsOf lib.types.str;
       };
 
       host = lib.mkOption {
         default = "127.0.0.1";
+
         description = ''
           The host name or IP address the server should listen to.
         '';
+
         type = lib.types.str;
       };
 
       port = lib.mkOption {
         default = 4822;
+
         description = ''
           The port the guacd server should listen to.
         '';
+
         type = lib.types.port;
       };
     };
@@ -54,20 +61,23 @@ in
 
   config = lib.mkIf cfg.enable {
     systemd.services.guacamole-server = {
-      description = "Apache Guacamole server (guacd)";
-      wantedBy = [ "multi-user.target" ];
       after = [ "network.target" ];
+      description = "Apache Guacamole server (guacd)";
+
       environment = {
         HOME = "/run/guacamole-server";
       }
       // cfg.extraEnvironment;
+
       serviceConfig = {
-        ExecStart = "${lib.getExe cfg.package} -f -b ${cfg.host} -l ${toString cfg.port}";
-        RuntimeDirectory = "guacamole-server";
         DynamicUser = true;
+        ExecStart = "${lib.getExe cfg.package} -f -b ${cfg.host} -l ${toString cfg.port}";
         PrivateTmp = "yes";
         Restart = "on-failure";
+        RuntimeDirectory = "guacamole-server";
       };
+
+      wantedBy = [ "multi-user.target" ];
     };
   };
 }

@@ -1,6 +1,7 @@
 {
+  # You probably need to set it to true to express consent.
+  licenseAccepted ? pkgs.callPackage ../license.nix { },
   # To test your changes in androidEnv run `nix-shell android-sdk-with-emulator-shell.nix`
-
   # If you copy this example out of nixpkgs, use these lines instead of the next.
   # This example pins nixpkgs: https://nix.dev/tutorials/first-steps/towards-reproducibility-pinning-nixpkgs.html
   /*
@@ -13,14 +14,10 @@
       config.allowUnfree = true;
     },
   */
-
   # If you want to use the in-tree version of nixpkgs:
   pkgs ? import ../../../../.. {
     config.allowUnfree = true;
   },
-
-  # You probably need to set it to true to express consent.
-  licenseAccepted ? pkgs.callPackage ../license.nix { },
 }:
 
 # Copy this file to your Android project.
@@ -49,9 +46,6 @@ let
   emulatorSupported = pkgs.stdenv.hostPlatform.isx86_64 || pkgs.stdenv.hostPlatform.isDarwin;
 
   sdkArgs = {
-    includeSystemImages = true;
-    includeEmulator = "if-supported";
-
     # Accepting more licenses declaratively:
     extraLicenses = [
       # Already accepted for you with the global accept_license = true or
@@ -67,14 +61,18 @@ let
       "intel-android-sysimage-license"
       "mips-android-sysimage-license"
     ];
+
+    includeEmulator = "if-supported";
+    includeSystemImages = true;
   };
 
   androidComposition = androidEnv.composeAndroidPackages sdkArgs;
   androidEmulator = androidEnv.emulateApp {
-    name = "android-sdk-emulator-demo";
     configOptions = {
       "hw.keyboard" = "yes";
     };
+
+    name = "android-sdk-emulator-demo";
     sdkExtraArgs = sdkArgs;
   };
   androidSdk = androidComposition.androidsdk;
@@ -85,20 +83,19 @@ let
   jdk = pkgs.jdk;
 in
 pkgs.mkShell rec {
+  ANDROID_HOME = "${androidSdk}/libexec/android-sdk";
+  ANDROID_NDK_ROOT = "${ANDROID_HOME}/ndk-bundle";
+  JAVA_HOME = jdk.home;
+  LANG = "C.UTF-8";
+  LC_ALL = "C.UTF-8";
   name = "androidenv-demo";
+
   packages = [
     androidSdk
     platformTools
     androidEmulator
     jdk
   ];
-
-  LANG = "C.UTF-8";
-  LC_ALL = "C.UTF-8";
-  JAVA_HOME = jdk.home;
-
-  ANDROID_HOME = "${androidSdk}/libexec/android-sdk";
-  ANDROID_NDK_ROOT = "${ANDROID_HOME}/ndk-bundle";
 
   shellHook = ''
     # Write out local.properties for Android Studio.
@@ -111,35 +108,35 @@ pkgs.mkShell rec {
 
   passthru.tests = {
 
-    shell-with-emulator-sdkmanager-packages-test =
-      pkgs.runCommand "shell-with-emulator-sdkmanager-packages-test"
+    shell-with-emulator-avdmanager-create-avd-test =
+      pkgs.runCommand "shell-with-emulator-avdmanager-create-avd-test"
         {
           nativeBuildInputs = [
             androidSdk
+            androidEmulator
             jdk
           ];
         }
-        ''
-          output="$(sdkmanager --list)"
-          installed_packages_section=$(echo "''${output%%Available Packages*}" | awk 'NR>4 {print $1}')
-          echo "installed_packages_section: ''${installed_packages_section}"
+        (
+          lib.optionalString emulatorSupported ''
+            export ANDROID_USER_HOME=$PWD/.android
+            mkdir -p $ANDROID_USER_HOME
 
-          packages=(
-            "build-tools" "cmdline-tools" \
-            "platform-tools" "platforms;android-${toString latestSdkVersion}" \
-            "system-images;android-${toString latestSdkVersion};google_apis_ps16k;x86_64"
-          )
-          ${lib.optionalString emulatorSupported ''packages+=("emulator")''}
+            avdmanager delete avd -n testAVD || true
+            { echo "" | avdmanager create avd --force --name testAVD --package 'system-images;android-${toString latestSdkVersion};google_apis_ps16k;x86_64'; }
+            result=$(avdmanager list avd)
 
-          for package in "''${packages[@]}"; do
-            if [[ ! $installed_packages_section =~ "$package" ]]; then
-              echo "$package package was not installed."
+            if [[ ! $result =~ "Name: testAVD" ]]; then
+              echo "avdmanager couldn't create the avd! The output is :''${result}"
               exit 1
             fi
-          done
 
-          touch "$out"
-        '';
+            avdmanager delete avd -n testAVD || true
+          ''
+          + ''
+            touch $out
+          ''
+        );
 
     shell-with-emulator-sdkmanager-excluded-packages-test =
       pkgs.runCommand "shell-with-emulator-sdkmanager-excluded-packages-test"
@@ -171,34 +168,34 @@ pkgs.mkShell rec {
           touch "$out"
         '';
 
-    shell-with-emulator-avdmanager-create-avd-test =
-      pkgs.runCommand "shell-with-emulator-avdmanager-create-avd-test"
+    shell-with-emulator-sdkmanager-packages-test =
+      pkgs.runCommand "shell-with-emulator-sdkmanager-packages-test"
         {
           nativeBuildInputs = [
             androidSdk
-            androidEmulator
             jdk
           ];
         }
-        (
-          lib.optionalString emulatorSupported ''
-            export ANDROID_USER_HOME=$PWD/.android
-            mkdir -p $ANDROID_USER_HOME
+        ''
+          output="$(sdkmanager --list)"
+          installed_packages_section=$(echo "''${output%%Available Packages*}" | awk 'NR>4 {print $1}')
+          echo "installed_packages_section: ''${installed_packages_section}"
 
-            avdmanager delete avd -n testAVD || true
-            { echo "" | avdmanager create avd --force --name testAVD --package 'system-images;android-${toString latestSdkVersion};google_apis_ps16k;x86_64'; }
-            result=$(avdmanager list avd)
+          packages=(
+            "build-tools" "cmdline-tools" \
+            "platform-tools" "platforms;android-${toString latestSdkVersion}" \
+            "system-images;android-${toString latestSdkVersion};google_apis_ps16k;x86_64"
+          )
+          ${lib.optionalString emulatorSupported ''packages+=("emulator")''}
 
-            if [[ ! $result =~ "Name: testAVD" ]]; then
-              echo "avdmanager couldn't create the avd! The output is :''${result}"
+          for package in "''${packages[@]}"; do
+            if [[ ! $installed_packages_section =~ "$package" ]]; then
+              echo "$package package was not installed."
               exit 1
             fi
+          done
 
-            avdmanager delete avd -n testAVD || true
-          ''
-          + ''
-            touch $out
-          ''
-        );
+          touch "$out"
+        '';
   };
 }

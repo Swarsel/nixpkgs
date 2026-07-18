@@ -1,7 +1,7 @@
 {
   lib,
-  php82,
   fetchFromGitHub,
+  php82,
   versionCheckHook,
 }:
 
@@ -17,18 +17,18 @@ php82.buildComposerProject2 (finalAttrs: {
   };
 
   vendorHash = "sha256-rOFY9TymSw8MatAR/yCpKaj0LupuhaIkk7QAnaKQUZ4=";
+  doInstallCheck = true;
 
   nativeInstallCheckInputs = [
     versionCheckHook
   ];
-  doInstallCheck = true;
 
   meta = {
-    changelog = "https://github.com/consolidation/robo/blob/${finalAttrs.version}/CHANGELOG.md";
     description = "Modern task runner for PHP";
     homepage = "https://github.com/consolidation/robo";
+    changelog = "https://github.com/consolidation/robo/blob/${finalAttrs.version}/CHANGELOG.md";
     license = lib.licenses.mit;
-    mainProgram = "robo";
     maintainers = [ ];
+    mainProgram = "robo";
   };
 })

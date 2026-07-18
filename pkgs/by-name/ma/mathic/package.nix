@@ -1,8 +1,7 @@
 {
   lib,
-  fetchFromGitHub,
   stdenv,
-
+  fetchFromGitHub,
   autoreconfHook,
   gtest,
   memtailor,
@@ -18,32 +17,32 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-0/ws95MTrNXt6BhqyWjsOGyXvh2tTd48/pT6kWwQPd4=";
   };
 
-  buildInputs = [
-    memtailor
-  ];
+  strictDeps = true;
 
   nativeBuildInputs = [
     autoreconfHook
   ];
 
-  checkInputs = [
-    gtest
+  buildInputs = [
+    memtailor
   ];
 
   configureFlags = [
     (lib.withFeature finalAttrs.doCheck "gtest")
   ];
 
-  __structuredAttrs = true;
-
-  strictDeps = true;
-
-  enableParallelBuilding = true;
-
   doCheck = true;
+
+  checkInputs = [
+    gtest
+  ];
+
+  __structuredAttrs = true;
+  enableParallelBuilding = true;
 
   meta = {
     description = "C++ library of fast data structures designed for use in Groebner basis computation";
+
     longDescription = ''
       Mathic is a C++ library of fast data structures designed for use in
       Groebner basis computation. This includes data structures for ordering
@@ -58,6 +57,7 @@ stdenv.mkDerivation (finalAttrs: {
       of terms/monomials are suitable since Mathic will frequently ask "what is
       the exponent of variable number x in this term/monomial?".
     '';
+
     homepage = "https://github.com/Macaulay2/mathic";
     license = lib.licenses.lgpl2Plus;
     maintainers = with lib.maintainers; [ coolcuber ];

@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   nix-update-script,
   versionCheckHook,
 }:
@@ -17,6 +17,8 @@ buildGoModule (finalAttrs: {
   };
 
   vendorHash = "sha256-m5mBubfbXXqXKsygF5j7cHEY+bXhAMcXUts5KBKoLzM=";
+  doInstallCheck = true;
+  nativeInstallCheckInputs = [ versionCheckHook ];
 
   ldflags = [
     "-s -w"
@@ -25,20 +27,19 @@ buildGoModule (finalAttrs: {
     "-X github.com/dagimg-dot/gitsnip/internal/cli.builtBy=nixpkgs"
   ];
 
-  passthru.updateScript = nix-update-script { };
-
-  nativeInstallCheckInputs = [ versionCheckHook ];
   versionCheckProgramArg = "version";
-  doInstallCheck = true;
+  passthru.updateScript = nix-update-script { };
 
   meta = {
     description = "CLI tool to download specific folders from a git repository";
     homepage = "https://github.com/dagimg-dot/gitsnip/";
     changelog = "https://github.com/dagimg-dot/gitsnip/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       adda
     ];
+
     mainProgram = "gitsnip";
   };
 })

@@ -17,13 +17,11 @@ rustPlatform.buildRustPackage (finalAttrs: {
     fetchSubmodules = true;
   };
 
-  cargoHash = "sha256-1/FNMXzEQB4LM57+SccUjJ31rYB46DO8AQYQBn6B7zg=";
-
   buildInputs = [ wfa2-lib ];
-
+  cargoHash = "sha256-1/FNMXzEQB4LM57+SccUjJ31rYB46DO8AQYQBn6B7zg=";
+  buildFeatures = [ "wfa2" ];
   # default statically links wfa2
   buildNoDefaultFeatures = true;
-  buildFeatures = [ "wfa2" ];
 
   meta = {
     description = "Hex diff viewer using alignment algorithms from biology";

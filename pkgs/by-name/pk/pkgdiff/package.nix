@@ -8,8 +8,8 @@
 }:
 
 stdenv.mkDerivation (finalAttrs: {
-  version = "1.8";
   pname = "pkgdiff";
+  version = "1.8";
 
   src = fetchFromGitHub {
     owner = "lvc";
@@ -18,16 +18,15 @@ stdenv.mkDerivation (finalAttrs: {
     sha256 = "sha256-/xhORi/ZHC4B2z6UYPOvDzfgov1DcozRjX0K1WYrqXM=";
   };
 
-  buildInputs = [ perl ];
   nativeBuildInputs = [ makeWrapper ];
-
-  dontBuild = true;
-
+  buildInputs = [ perl ];
   makeFlags = [ "prefix=$(out)" ];
 
   postInstall = ''
     wrapProgram $out/bin/pkgdiff --prefix PATH : ${lib.makeBinPath [ wdiff ]}
   '';
+
+  dontBuild = true;
 
   meta = {
     description = "Tool for visualizing changes in Linux software packages";

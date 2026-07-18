@@ -7,7 +7,6 @@
 python3.pkgs.buildPythonApplication (finalAttrs: {
   pname = "world-wall-clock";
   version = "0.1.5";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "ddelabru";
@@ -16,6 +15,7 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     hash = "sha256-gwJvoXSq8H+sMTyBEA1N+KxnkGxyt5Ev+V3awCBiILg=";
   };
 
+  nativeCheckInputs = with python3.pkgs; [ pytestCheckHook ];
   build-system = with python3.pkgs; [ poetry-core ];
 
   dependencies = with python3.pkgs; [
@@ -24,17 +24,16 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     xdg-base-dirs
   ];
 
-  pythonRelaxDeps = [
-    "urwid"
-  ];
-
-  nativeCheckInputs = with python3.pkgs; [ pytestCheckHook ];
-
-  enabledTestPaths = [ "tests/*" ];
-
   disabledTests = [
     # requires real tty
     "test_run_app"
+  ];
+
+  enabledTestPaths = [ "tests/*" ];
+  pyproject = true;
+
+  pythonRelaxDeps = [
+    "urwid"
   ];
 
   meta = {
@@ -42,7 +41,7 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     homepage = "https://github.com/ddelabru/world-wall-clock";
     license = lib.licenses.gpl3Plus;
     maintainers = with lib.maintainers; [ ddelabru ];
-    mainProgram = "wwclock";
     platforms = lib.platforms.all;
+    mainProgram = "wwclock";
   };
 })

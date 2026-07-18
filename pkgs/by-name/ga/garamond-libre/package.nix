@@ -1,7 +1,7 @@
 {
   lib,
-  stdenvNoCC,
   fetchzip,
+  stdenvNoCC,
 }:
 
 stdenvNoCC.mkDerivation rec {
@@ -10,8 +10,8 @@ stdenvNoCC.mkDerivation rec {
 
   src = fetchzip {
     url = "https://github.com/dbenjaminmiller/garamond-libre/releases/download/${version}/garamond-libre_${version}.zip";
-    stripRoot = false;
     hash = "sha256-cD/JMICtb6MPIUcWs2VOTHnb/05ma0/KKtPyR4oJlIc=";
+    stripRoot = false;
   };
 
   installPhase = ''
@@ -23,10 +23,10 @@ stdenvNoCC.mkDerivation rec {
   '';
 
   meta = {
-    homepage = "https://github.com/dbenjaminmiller/garamond-libre";
     description = "Garamond Libre font family";
-    maintainers = [ ];
+    homepage = "https://github.com/dbenjaminmiller/garamond-libre";
     license = lib.licenses.x11;
+    maintainers = [ ];
     platforms = lib.platforms.all;
   };
 }

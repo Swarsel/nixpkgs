@@ -2,18 +2,18 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  fetchpatch,
-  pkg-config,
-  autoreconfHook,
   SDL2,
-  SDL2_ttf,
   SDL2_image,
+  SDL2_ttf,
+  autoreconfHook,
   boost,
-  libmpdclient,
-  libwtk-sdl2,
+  dejavu_fonts,
+  fetchpatch,
   icu,
   libconfig,
-  dejavu_fonts,
+  libmpdclient,
+  libwtk-sdl2,
+  pkg-config,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -26,23 +26,24 @@ stdenv.mkDerivation (finalAttrs: {
     rev = "156eaebede89da2b83a98d8f9dfa46af12282fb4";
     sha256 = "sha256-vr/St4BghrndjUQ0nZI/uJq+F/MjEj6ulc4DYwQ/pgU=";
   };
+
   patches = [
     # Fixes build with gcc15. See: https://github.com/muesli4/mpd-touch-screen-gui/pull/15
     (fetchpatch {
-      url = "https://github.com/muesli4/mpd-touch-screen-gui/pull/15/commits/ecbe6fe2d7e30b81584e1f15e3003e0dba013f24.patch";
       hash = "sha256-p4TywZl7SQrMsKGEZgcctTY5DgnIWddQSFadVpyCbTU=";
+      url = "https://github.com/muesli4/mpd-touch-screen-gui/pull/15/commits/ecbe6fe2d7e30b81584e1f15e3003e0dba013f24.patch";
     })
-  ];
-
-  nativeBuildInputs = [
-    pkg-config
-    autoreconfHook
   ];
 
   postPatch = ''
     substituteInPlace data/program.conf \
       --replace-fail /usr/share/fonts/TTF ${dejavu_fonts}/share/fonts/truetype
   '';
+
+  nativeBuildInputs = [
+    pkg-config
+    autoreconfHook
+  ];
 
   buildInputs = [
     SDL2

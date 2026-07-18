@@ -2,17 +2,17 @@
   lib,
   stdenv,
   fetchFromGitHub,
+  appstream,
+  desktop-file-utils,
+  glib,
+  gobject-introspection,
+  gtk4,
+  libadwaita,
   meson,
   ninja,
   pkg-config,
   python313,
-  gobject-introspection,
-  gtk4,
-  desktop-file-utils,
-  appstream,
-  glib,
   wrapGAppsHook4,
-  libadwaita,
 }:
 
 let
@@ -52,13 +52,15 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   meta = {
-    homepage = "https://github.com/gaheldev/Millisecond";
     description = "Optimize your Linux system for low latency audio";
-    mainProgram = "millisecond";
+    homepage = "https://github.com/gaheldev/Millisecond";
     license = lib.licenses.gpl3Plus;
+
     maintainers = with lib.maintainers; [
       backtail
     ];
+
     platforms = lib.platforms.linux;
+    mainProgram = "millisecond";
   };
 })

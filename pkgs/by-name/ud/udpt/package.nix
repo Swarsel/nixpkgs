@@ -1,7 +1,7 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -25,8 +25,8 @@ rustPlatform.buildRustPackage (finalAttrs: {
     description = "Lightweight UDP torrent tracker";
     homepage = "https://naim94a.github.io/udpt";
     license = lib.licenses.gpl3;
-    platforms = lib.platforms.all;
     maintainers = with lib.maintainers; [ makefu ];
+    platforms = lib.platforms.all;
     mainProgram = "udpt-rs";
   };
 })

@@ -2,13 +2,13 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  pkg-config,
+  bash,
+  clang,
+  gitMinimal,
   go,
   llvm,
-  clang,
-  bash,
+  pkg-config,
   writableTmpDirAsHomeHook,
-  gitMinimal,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -21,6 +21,11 @@ stdenv.mkDerivation (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-A6a7yjxenB/7sfdfoIaJAxdkw0ouNinZtahNMRAytwA=";
   };
+
+  postPatch = ''
+    substituteInPlace bpf/Makefile.defs --replace-fail '/bin/bash' '${lib.getExe bash}'
+    substituteInPlace pkg/defaults/defaults.go --replace-fail '/var/lib/tetragon/' $out/lib/tetragon/bpf/
+  '';
 
   nativeBuildInputs = [
     pkg-config
@@ -51,14 +56,6 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postBuild
   '';
 
-  # For BPF compilation
-  hardeningDisable = [ "zerocallusedregs" ];
-
-  postPatch = ''
-    substituteInPlace bpf/Makefile.defs --replace-fail '/bin/bash' '${lib.getExe bash}'
-    substituteInPlace pkg/defaults/defaults.go --replace-fail '/var/lib/tetragon/' $out/lib/tetragon/bpf/
-  '';
-
   installPhase = ''
     runHook preInstall
 
@@ -72,13 +69,16 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  # For BPF compilation
+  hardeningDisable = [ "zerocallusedregs" ];
+
   meta = {
     description = "Real-time, eBPF-based Security Observability and Runtime Enforcement tool";
     homepage = "https://github.com/cilium/tetragon";
     license = lib.licenses.asl20;
-    mainProgram = "tetragon";
+    sourceProvenance = with lib.sourceTypes; [ fromSource ];
     maintainers = with lib.maintainers; [ gangaram ];
     platforms = lib.platforms.linux;
-    sourceProvenance = with lib.sourceTypes; [ fromSource ];
+    mainProgram = "tetragon";
   };
 })

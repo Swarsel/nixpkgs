@@ -1,25 +1,23 @@
 {
   lib,
-  buildPythonPackage,
-
-  lang,
-  version,
-  src,
   build-system,
+  buildPythonPackage,
+  lang,
+  src,
+  version,
 }:
 
 buildPythonPackage rec {
-  pname = "gruut-lang-${lang}";
-  pyproject = true;
   inherit version src build-system;
+  pname = "gruut-lang-${lang}";
+  doCheck = false;
 
   prePatch = ''
     cd "${pname}"
   '';
 
+  pyproject = true;
   pythonImportsCheck = [ "gruut_lang_${lang}" ];
-
-  doCheck = false;
 
   meta = {
     description = "Language files for gruut tokenizer/phonemizer";

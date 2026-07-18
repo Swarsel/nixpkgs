@@ -1,11 +1,11 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
   buildGoModule,
   installShellFiles,
-  testers,
   kubelogin,
+  testers,
 }:
 
 buildGoModule (finalAttrs: {
@@ -23,13 +23,8 @@ buildGoModule (finalAttrs: {
     ./disable-nix-incompatible-test.patch
   ];
 
-  vendorHash = "sha256-CWgvbN8NnroSVqfKF8UG6kXqVWrQ0TmKwri1f218K+M=";
-
-  ldflags = [
-    "-X main.gitTag=v${finalAttrs.version}"
-  ];
-
   nativeBuildInputs = [ installShellFiles ];
+  vendorHash = "sha256-CWgvbN8NnroSVqfKF8UG6kXqVWrQ0TmKwri1f218K+M=";
 
   postInstall = lib.optionalString (stdenv.buildPlatform.canExecute stdenv.hostPlatform) ''
     $out/bin/kubelogin completion bash >kubelogin.bash
@@ -38,18 +33,22 @@ buildGoModule (finalAttrs: {
     installShellCompletion kubelogin.{bash,fish,zsh}
   '';
 
-  passthru.tests.version = testers.testVersion {
-    package = kubelogin;
-    version = "v${finalAttrs.version}";
-  };
-
   __darwinAllowLocalNetworking = true;
 
+  ldflags = [
+    "-X main.gitTag=v${finalAttrs.version}"
+  ];
+
+  passthru.tests.version = testers.testVersion {
+    version = "v${finalAttrs.version}";
+    package = kubelogin;
+  };
+
   meta = {
-    description = "Kubernetes credential plugin implementing Azure authentication";
-    mainProgram = "kubelogin";
     inherit (finalAttrs.src.meta) homepage;
+    description = "Kubernetes credential plugin implementing Azure authentication";
     license = lib.licenses.mit;
     maintainers = [ ];
+    mainProgram = "kubelogin";
   };
 })

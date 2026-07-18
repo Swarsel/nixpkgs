@@ -4,8 +4,8 @@
   fetchFromGitHub,
   cmake,
   ninja,
-  pkg-config,
   pandoc,
+  pkg-config,
   qt6,
 }:
 
@@ -38,8 +38,8 @@ stdenv.mkDerivation (finalAttrs: {
   meta = {
     description = "Video player with a focus on 3D and Virtual Reality";
     homepage = "https://bino3d.org/";
-    sourceProvenance = [ lib.sourceTypes.fromSource ];
     license = lib.licenses.gpl3Plus;
+    sourceProvenance = [ lib.sourceTypes.fromSource ];
     maintainers = [ ];
     platforms = lib.platforms.unix;
     mainProgram = "bino";

@@ -1,10 +1,10 @@
 {
   lib,
-  stdenvNoCC,
+  stdenv,
   fetchurl,
   autoPatchelfHook,
+  stdenvNoCC,
   zlib,
-  stdenv,
 }:
 
 # Used as a workaround for ucrtAarch64.
@@ -27,8 +27,8 @@ let
   };
 in
 stdenvNoCC.mkDerivation {
-  pname = "llvm-mingw-${hostArch}";
   inherit version;
+  pname = "llvm-mingw-${hostArch}";
 
   src = fetchurl {
     url = "https://github.com/mstorsjo/llvm-mingw/releases/download/${version}/llvm-mingw-${version}-ucrt-ubuntu-22.04-${hostArch}.tar.xz";
@@ -36,13 +36,11 @@ stdenvNoCC.mkDerivation {
   };
 
   nativeBuildInputs = [ autoPatchelfHook ];
+
   buildInputs = [
     (lib.getLib stdenv.cc.cc) # libstdc++
     zlib
   ];
-
-  dontConfigure = true;
-  dontBuild = true;
 
   installPhase = ''
     runHook preInstall
@@ -54,16 +52,19 @@ stdenvNoCC.mkDerivation {
   '';
 
   autoPatchelfIgnoreMissingDeps = [ "*.dll" ];
+  dontBuild = true;
+  dontConfigure = true;
   dontStrip = true;
 
   meta = {
     description = "LLVM/Clang/LLD-based mingw-w64 toolchain (prebuilt)";
     homepage = "https://github.com/mstorsjo/llvm-mingw";
     license = lib.licenses.zlib;
+    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
+
     platforms = [
       "aarch64-linux"
       "x86_64-linux"
     ];
-    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
   };
 }

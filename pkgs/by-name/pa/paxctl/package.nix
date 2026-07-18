@@ -1,7 +1,7 @@
 {
-  fetchurl,
   lib,
   stdenv,
+  fetchurl,
   elf-header,
 }:
 
@@ -16,23 +16,23 @@ stdenv.mkDerivation (finalAttrs: {
 
   buildInputs = [ elf-header ];
 
+  makeFlags = [
+    "DESTDIR=$(out)"
+    "MANDIR=share/man/man1"
+  ];
+
   preBuild = ''
     sed -i Makefile \
       -e 's|--owner 0 --group 0||g' \
       -e '/CC:=gcc/d'
   '';
 
-  makeFlags = [
-    "DESTDIR=$(out)"
-    "MANDIR=share/man/man1"
-  ];
-
   meta = {
     description = "Tool for controlling PaX flags on a per binary basis";
-    mainProgram = "paxctl";
     homepage = "https://pax.grsecurity.net";
     license = lib.licenses.gpl2Only;
-    platforms = lib.platforms.all;
     maintainers = with lib.maintainers; [ thoughtpolice ];
+    platforms = lib.platforms.all;
+    mainProgram = "paxctl";
   };
 })

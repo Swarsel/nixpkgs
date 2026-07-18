@@ -15,8 +15,6 @@ python3Packages.buildPythonApplication (finalAttrs: {
     hash = "sha256-8Bw+BI7EiW9UcHo6gaDthX4VH4kAlycm4EvAJEEAOWc=";
   };
 
-  pyproject = true;
-
   build-system = [
     python3Packages.setuptools
   ];
@@ -28,14 +26,18 @@ python3Packages.buildPythonApplication (finalAttrs: {
     colorama
   ];
 
+  pyproject = true;
+
   meta = {
     description = "Client component of timewarrior synchronization application";
-    mainProgram = "timew-sync-client";
     homepage = "https://github.com/timewarrior-synchronize/timew-sync-client";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       evris99
       errnoh
     ];
+
+    mainProgram = "timew-sync-client";
   };
 })

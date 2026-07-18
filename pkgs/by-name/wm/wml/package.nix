@@ -1,21 +1,21 @@
 {
-  cmake,
-  fetchFromGitHub,
   lib,
+  stdenv,
+  fetchFromGitHub,
+  cmake,
   lynx,
   makeBinaryWrapper,
   ncurses,
   pcre2,
   perl,
   perlPackages,
-  stdenv,
 }:
 let
   shlomif-cmake-modules = fetchFromGitHub {
+    hash = "sha256-MNGpegbZRwfD8A3VHVNYrDULauLST3Nt18/3Ht6mpZw=";
     owner = "shlomif";
     repo = "shlomif-cmake-modules";
     rev = "2fa3e9be1a1df74ad0e10f0264bfa60e1e3a755c";
-    hash = "sha256-MNGpegbZRwfD8A3VHVNYrDULauLST3Nt18/3Ht6mpZw=";
   };
   perlDeps = with perlPackages; [
     BitVector
@@ -39,8 +39,6 @@ stdenv.mkDerivation (finalAttrs: {
     rev = "673e78b37887f4d40c422759d634913c52e7334d";
     hash = "sha256-rAxVha2Y16tEF+rLqebbAgBVPNrxYhNhvXnQ6/Oq1bg=";
   };
-
-  sourceRoot = "${finalAttrs.src.name}/src";
 
   nativeBuildInputs = [
     cmake
@@ -67,14 +65,16 @@ stdenv.mkDerivation (finalAttrs: {
     done
   '';
 
+  sourceRoot = "${finalAttrs.src.name}/src";
+
   meta = {
     description = "Offline HTML preprocessor";
     homepage = "https://www.shlomifish.org/open-source/projects/website-meta-language/";
-    downloadPage = "https://github.com/thewml/website-meta-language/releases";
     changelog = "https://github.com/thewml/website-meta-language/blob/${finalAttrs.src.rev}/src/ChangeLog";
     license = lib.licenses.gpl2;
     maintainers = with lib.maintainers; [ prince213 ];
-    mainProgram = "wml";
     platforms = lib.platforms.linux;
+    mainProgram = "wml";
+    downloadPage = "https://github.com/thewml/website-meta-language/releases";
   };
 })

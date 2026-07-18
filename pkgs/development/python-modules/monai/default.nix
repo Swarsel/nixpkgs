@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   ninja,
   numpy,
   packaging,
@@ -13,29 +13,32 @@
 buildPythonPackage rec {
   pname = "monai";
   version = "1.5.2";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "Project-MONAI";
     repo = "MONAI";
     tag = version;
     hash = "sha256-tRHHldNQc8Rx/oXyAEMQwIYOVtzzNpwQo8V9TdWLtO8=";
+
     # fix source non-reproducibility due to versioneer + git-archive, as with Numba, Pytensor etc. derivations:
     postFetch = ''
       sed -i 's/git_refnames = "[^"]*"/git_refnames = " (tag: ${src.tag})"/' $out/monai/_version.py
     '';
   };
 
+  buildInputs = [ pybind11 ];
+  env.BUILD_MONAI = 1;
+
   preBuild = ''
     export MAX_JOBS=$NIX_BUILD_CORES;
   '';
+
+  doCheck = false; # takes too long; tries to download data
 
   build-system = [
     ninja
     which
   ];
-
-  buildInputs = [ pybind11 ];
 
   dependencies = [
     numpy
@@ -43,9 +46,7 @@ buildPythonPackage rec {
     torch
   ];
 
-  env.BUILD_MONAI = 1;
-
-  doCheck = false; # takes too long; tries to download data
+  pyproject = true;
 
   pythonImportsCheck = [
     "monai"

@@ -1,20 +1,17 @@
 {
-  buildPythonPackage,
-  fetchFromGitHub,
   lib,
-
+  fetchFromGitHub,
+  # dependencies
+  aiohttp,
+  # tests
+  aioresponses,
+  buildPythonPackage,
+  country-list,
+  freezegun,
   # build-system
   hatch-vcs,
   hatchling,
-
-  # dependencies
-  aiohttp,
   pydantic,
-
-  # tests
-  aioresponses,
-  country-list,
-  freezegun,
   pytest-asyncio,
   pytest-cov-stub,
   pytest-mock,
@@ -27,7 +24,6 @@
 buildPythonPackage rec {
   pname = "mypyllant";
   version = "0.9.16";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "signalkraft";
@@ -35,16 +31,6 @@ buildPythonPackage rec {
     tag = "v${version}";
     hash = "sha256-Uzy7W+ZwdBDKKayl0z6FIj/NK9uA/IsWFFJCeO0o4vQ=";
   };
-
-  build-system = [
-    hatch-vcs
-    hatchling
-  ];
-
-  dependencies = [
-    aiohttp
-    pydantic
-  ];
 
   nativeCheckInputs = [
     aioresponses
@@ -58,6 +44,18 @@ buildPythonPackage rec {
     pyyaml
     requests
   ];
+
+  build-system = [
+    hatch-vcs
+    hatchling
+  ];
+
+  dependencies = [
+    aiohttp
+    pydantic
+  ];
+
+  pyproject = true;
 
   pythonImportsCheck = [
     "myPyllant"

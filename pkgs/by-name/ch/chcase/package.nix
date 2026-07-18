@@ -2,11 +2,11 @@
   lib,
   stdenv,
   fetchFromGitHub,
+  blueprint-compiler,
   meson,
   ninja,
-  vala,
   pkg-config,
-  blueprint-compiler,
+  vala,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -29,10 +29,10 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   meta = {
-    homepage = "https://github.com/ryonakano/chcase";
     description = "Small library to convert case of a given string";
+    homepage = "https://github.com/ryonakano/chcase";
     license = lib.licenses.lgpl3Plus;
-    platforms = lib.platforms.linux;
     maintainers = [ ];
+    platforms = lib.platforms.linux;
   };
 })

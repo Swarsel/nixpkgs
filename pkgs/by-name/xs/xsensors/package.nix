@@ -3,8 +3,8 @@
   stdenv,
   fetchFromGitHub,
   gtk3,
-  pkg-config,
   lm_sensors,
+  pkg-config,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -28,7 +28,7 @@ stdenv.mkDerivation (finalAttrs: {
   meta = {
     homepage = "https://github.com/Mystro256/xsensors";
     license = lib.licenses.gpl2Plus;
-    platforms = lib.platforms.linux;
     maintainers = [ ];
+    platforms = lib.platforms.linux;
   };
 })

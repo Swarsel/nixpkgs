@@ -30,17 +30,7 @@ stdenv.mkDerivation (finalAttrs: {
     "barry"
   ];
 
-  installTargets = [
-    "install"
-    "install_smltojs"
-    "install_barry"
-  ];
-
   doCheck = true;
-
-  # MLKit intentionally has some of these in its test suite.
-  # Since the test suite is available in `$out/share/mlkit/test`, we must disable this check.
-  dontCheckForBrokenSymlinks = true;
 
   checkPhase = ''
     runHook preCheck
@@ -53,14 +43,25 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postCheck
   '';
 
+  # MLKit intentionally has some of these in its test suite.
+  # Since the test suite is available in `$out/share/mlkit/test`, we must disable this check.
+  dontCheckForBrokenSymlinks = true;
+
+  installTargets = [
+    "install"
+    "install_smltojs"
+    "install_barry"
+  ];
+
   meta = {
     description = "Standard ML Compiler and Toolkit";
     homepage = "https://elsman.com/mlkit/";
     changelog = "https://github.com/melsman/mlkit/blob/v${finalAttrs.version}/NEWS.md";
     license = lib.licenses.gpl2Plus;
+    maintainers = with lib.maintainers; [ athas ];
+
     platforms = [
       "x86_64-linux"
     ];
-    maintainers = with lib.maintainers; [ athas ];
   };
 })

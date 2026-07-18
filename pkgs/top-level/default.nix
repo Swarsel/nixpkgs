@@ -23,28 +23,21 @@
   # subtle division of labor between these two `*System`s and the three
   # `*Platform`s.
   localSystem,
-
-  # The system packages will ultimately be run on.
-  crossSystem ? null,
-
-  # Allow a configuration attribute set to be passed in as an argument.
-  config ? { },
-
   # Temporary hack to let Nixpkgs forbid internal use of `lib.fileset`
   # until <https://github.com/NixOS/nix/issues/11503> is fixed.
   __allowFileset ? true,
-
-  # List of overlays layers used to extend Nixpkgs.
-  overlays ? [ ],
-
+  # Allow a configuration attribute set to be passed in as an argument.
+  config ? { },
   # List of overlays to apply to target packages only.
   crossOverlays ? [ ],
-
+  # The system packages will ultimately be run on.
+  crossSystem ? null,
+  # List of overlays layers used to extend Nixpkgs.
+  overlays ? [ ],
   # A function booting the final package set for a specific standard
   # environment. See below for the arguments given to that function, the type of
   # list it returns.
   stdenvStages ? import ../stdenv,
-
   # Ignore unexpected args.
   ...
 }@args:
@@ -142,6 +135,8 @@ let
   config1 = if lib.isFunction config0 then config0 { inherit lib pkgs; } else config0;
 
   configEval = lib.evalModules {
+    class = "nixpkgsConfig";
+
     modules = [
       ./config.nix
       (
@@ -152,7 +147,6 @@ let
         }
       )
     ];
-    class = "nixpkgsConfig";
   };
 
   # take all the rest as-is

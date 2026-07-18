@@ -2,10 +2,10 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  pkg-config,
   imlib2,
   libx11,
   libxinerama,
+  pkg-config,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -19,16 +19,17 @@ stdenv.mkDerivation (finalAttrs: {
     sha256 = "1jbk5hlxm48zmjzkaq5946s58rqwg1v1ds2sdyd2ba029hmvr722";
   };
 
+  postPatch = lib.optionalString (!stdenv.cc.isGNU) ''
+    sed -i -e '/--no-as-needed/d' Makefile
+  '';
+
   nativeBuildInputs = [ pkg-config ];
+
   buildInputs = [
     imlib2
     libx11
     libxinerama
   ];
-
-  postPatch = lib.optionalString (!stdenv.cc.isGNU) ''
-    sed -i -e '/--no-as-needed/d' Makefile
-  '';
 
   makeFlags = [ "PREFIX=$(out)" ];
 

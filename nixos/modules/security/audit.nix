@@ -8,9 +8,9 @@ let
   cfg = config.security.audit;
 
   failureModes = {
-    silent = 0;
-    printk = 1;
     panic = 2;
+    printk = 1;
+    silent = 0;
   };
 
   # The order of the fixed rules is determined by augenrules(8)
@@ -27,59 +27,68 @@ in
   options = {
     security.audit = {
       enable = lib.mkOption {
-        type = lib.types.enum [
-          false
-          true
-          "lock"
-        ];
         default = false;
+
         description = ''
           Whether to enable the Linux audit system. The special `lock` value can be used to
           enable auditing and prevent disabling it until a restart. Be careful about locking
           this, as it will prevent you from changing your audit configuration until you
           restart. If possible, test your configuration using build-vm beforehand.
         '';
+
+        type = lib.types.enum [
+          false
+          true
+          "lock"
+        ];
       };
 
       package = lib.mkPackageOption pkgs "audit" { };
 
+      backlogLimit = lib.mkOption {
+        # Significantly increase from the kernel default of 64 because a
+        # normal systems generates way more logs.
+        default = 1024;
+
+        description = ''
+          The maximum number of outstanding audit buffers allowed; exceeding this is
+          considered a failure and handled in a manner specified by failureMode.
+        '';
+
+        type = lib.types.int;
+      };
+
       failureMode = lib.mkOption {
+        default = "printk";
+        description = "How to handle critical errors in the auditing system";
+
         type = lib.types.enum [
           "silent"
           "printk"
           "panic"
         ];
-        default = "printk";
-        description = "How to handle critical errors in the auditing system";
-      };
-
-      backlogLimit = lib.mkOption {
-        type = lib.types.int;
-        # Significantly increase from the kernel default of 64 because a
-        # normal systems generates way more logs.
-        default = 1024;
-        description = ''
-          The maximum number of outstanding audit buffers allowed; exceeding this is
-          considered a failure and handled in a manner specified by failureMode.
-        '';
       };
 
       rateLimit = lib.mkOption {
-        type = lib.types.int;
         default = 0;
+
         description = ''
           The maximum messages per second permitted before triggering a failure as
           specified by failureMode. Setting it to zero disables the limit.
         '';
+
+        type = lib.types.int;
       };
 
       rules = lib.mkOption {
-        type = lib.types.listOf lib.types.str; # (types.either types.str (types.submodule rule));
         default = [ ];
-        example = [ "-a exit,always -F arch=b64 -S execve" ];
+
         description = ''
           The ordered audit rules, with each string appearing as one line of the audit.rules file.
         '';
+
+        example = [ "-a exit,always -F arch=b64 -S execve" ];
+        type = lib.types.listOf lib.types.str; # (types.either types.str (types.submodule rule));
       };
     };
   };
@@ -101,34 +110,39 @@ in
     # That script does not handle cleanup correctly and insists on loading from /etc/audit.
     # So, instead we have our own service for loading rules.
     systemd.services.audit-rules-nixos = {
-      description = "Load Audit Rules";
-      wantedBy = [ "sysinit.target" ];
       before = [
         "sysinit.target"
         "shutdown.target"
       ];
-      conflicts = [ "shutdown.target" ];
 
-      unitConfig = {
-        DefaultDependencies = false;
-        ConditionVirtualization = "!container";
-        ConditionKernelCommandLine = [
-          "!audit=0"
-          "!audit=off"
-        ];
-      };
+      conflicts = [ "shutdown.target" ];
+      description = "Load Audit Rules";
 
       serviceConfig = {
-        Type = "oneshot";
-        RemainAfterExit = true;
         ExecStart = "${lib.getExe' cfg.package "auditctl"} -R ${rules}/audit.rules";
+
         ExecStopPost = [
           # Disable auditing
           "${lib.getExe' cfg.package "auditctl"} -e 0"
           # Delete all rules
           "${lib.getExe' cfg.package "auditctl"} -D"
         ];
+
+        RemainAfterExit = true;
+        Type = "oneshot";
       };
+
+      unitConfig = {
+        ConditionKernelCommandLine = [
+          "!audit=0"
+          "!audit=off"
+        ];
+
+        ConditionVirtualization = "!container";
+        DefaultDependencies = false;
+      };
+
+      wantedBy = [ "sysinit.target" ];
     };
   };
 }

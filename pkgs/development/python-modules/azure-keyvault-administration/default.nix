@@ -11,12 +11,11 @@
 buildPythonPackage rec {
   pname = "azure-keyvault-administration";
   version = "4.7.0";
-  pyproject = true;
 
   src = fetchPypi {
-    pname = "azure_keyvault_administration";
     inherit version;
     hash = "sha256-GSRWYnTEWWdf6qKbPojD2QspnDKMhNxcG4V85RCp7Zo=";
+    pname = "azure_keyvault_administration";
   };
 
   nativeBuildInputs = [ setuptools ];
@@ -29,10 +28,9 @@ buildPythonPackage rec {
 
   # Tests require checkout from mono-repo
   doCheck = false;
-
-  pythonNamespaces = [ "azure.keyvault" ];
-
+  pyproject = true;
   pythonImportsCheck = [ "azure.keyvault.administration" ];
+  pythonNamespaces = [ "azure.keyvault" ];
 
   meta = {
     description = "Microsoft Azure Key Vault Administration Client Library for Python";

@@ -1,11 +1,11 @@
 {
   lib,
-  stdenvNoCC,
   fetchFromGitHub,
-  gtk3,
   gnome-icon-theme,
+  gtk3,
   hicolor-icon-theme,
   kdePackages,
+  stdenvNoCC,
 }:
 
 stdenvNoCC.mkDerivation (finalAttrs: {
@@ -41,7 +41,7 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     description = "Gruvbox icons for GTK based desktop environments";
     homepage = "https://github.com/jmattheis/gruvbox-dark-gtk";
     license = lib.licenses.gpl3Only;
-    platforms = lib.platforms.unix;
     maintainers = with lib.maintainers; [ nomisiv ];
+    platforms = lib.platforms.unix;
   };
 })

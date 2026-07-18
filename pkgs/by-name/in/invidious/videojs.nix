@@ -1,19 +1,15 @@
 {
-  stdenvNoCC,
   cacert,
   crystal,
+  invidious,
   openssl,
   pkg-config,
-  invidious,
+  stdenvNoCC,
   versions,
 }:
 
 stdenvNoCC.mkDerivation {
-  name = "videojs";
-
   inherit (invidious) src;
-
-  builder = ./videojs.sh;
 
   nativeBuildInputs = [
     cacert
@@ -22,7 +18,9 @@ stdenvNoCC.mkDerivation {
     pkg-config
   ];
 
+  builder = ./videojs.sh;
+  name = "videojs";
+  outputHash = versions.videojs.hash;
   outputHashAlgo = "sha256";
   outputHashMode = "recursive";
-  outputHash = versions.videojs.hash;
 }

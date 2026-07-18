@@ -2,13 +2,13 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  meson,
-  ninja,
-  pkg-config,
+  bash-completion,
   glib,
   inih,
   lua,
-  bash-completion,
+  meson,
+  ninja,
+  pkg-config,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -24,6 +24,12 @@ stdenv.mkDerivation (finalAttrs: {
 
   strictDeps = true;
 
+  nativeBuildInputs = [
+    meson
+    ninja
+    pkg-config
+  ];
+
   buildInputs = [
     inih
     lua
@@ -31,18 +37,12 @@ stdenv.mkDerivation (finalAttrs: {
     bash-completion
   ];
 
-  nativeBuildInputs = [
-    meson
-    ninja
-    pkg-config
-  ];
-
   meta = {
     description = "Serial console TTY";
     homepage = "https://tio.github.io/";
     license = lib.licenses.gpl2Plus;
     maintainers = [ ];
-    mainProgram = "tio";
     platforms = lib.platforms.unix;
+    mainProgram = "tio";
   };
 })

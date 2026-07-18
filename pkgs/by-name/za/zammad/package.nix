@@ -1,22 +1,22 @@
 {
-  stdenvNoCC,
   lib,
-  nixosTests,
   fetchFromGitHub,
-  fetchpatch,
   applyPatches,
   bundlerEnv,
+  cacert,
   callPackage,
-  procps,
-  ruby,
-  postgresql,
+  fetchPnpmDeps,
+  fetchpatch,
   jq,
   moreutils,
+  nixosTests,
   nodejs,
-  pnpm_10,
-  fetchPnpmDeps,
   pnpmConfigHook,
-  cacert,
+  pnpm_10,
+  postgresql,
+  procps,
+  ruby,
+  stdenvNoCC,
   valkey,
   dataDir ? "/var/lib/zammad",
 }:
@@ -26,7 +26,6 @@ let
   version = "7.1.1";
 
   src = applyPatches {
-    src = fetchFromGitHub (lib.importJSON ./source.json);
     patches = [
       ./fix-sendmail-location.diff
     ];
@@ -37,18 +36,18 @@ let
       sed -i -e "s|3.4.[0-9]\+|${ruby.version}|" .ruby-version
       ${jq}/bin/jq '. += {name: "Zammad", version: "${version}"}' package.json | ${moreutils}/bin/sponge package.json
     '';
+
+    src = fetchFromGitHub (lib.importJSON ./source.json);
   };
 
   rubyEnv = bundlerEnv {
-    name = "zammad-gems-${version}";
     inherit version;
-
     # Which ruby version to select:
     #   https://docs.zammad.org/en/latest/prerequisites/software.html#ruby-programming-language
     inherit ruby;
-
     gemdir = src;
     gemset = ./gemset.nix;
+
     groups = [
       "assets"
       "unicorn" # server
@@ -58,17 +57,13 @@ let
       "development"
       "postgres" # database
     ];
+
+    name = "zammad-gems-${version}";
   };
 
 in
 stdenvNoCC.mkDerivation {
   inherit pname version src;
-
-  buildInputs = [
-    rubyEnv
-    rubyEnv.wrappedRuby
-    rubyEnv.bundler
-  ];
 
   nativeBuildInputs = [
     valkey
@@ -80,15 +75,13 @@ stdenvNoCC.mkDerivation {
     cacert
   ];
 
+  buildInputs = [
+    rubyEnv
+    rubyEnv.wrappedRuby
+    rubyEnv.bundler
+  ];
+
   env.RAILS_ENV = "production";
-
-  pnpmDeps = fetchPnpmDeps {
-    inherit pname src;
-    pnpm = pnpm_10;
-
-    fetcherVersion = 3;
-    hash = "sha256-JG1VhG56L1bDyrVOjP4MFB5h//dVchgnrHiqhGNIuw4=";
-  };
 
   buildPhase = ''
     mkdir redis-work
@@ -121,30 +114,41 @@ stdenvNoCC.mkDerivation {
     ln -s ${dataDir}/tmp $out/tmp
   '';
 
+  pnpmDeps = fetchPnpmDeps {
+    inherit pname src;
+    fetcherVersion = 3;
+    hash = "sha256-JG1VhG56L1bDyrVOjP4MFB5h//dVchgnrHiqhGNIuw4=";
+    pnpm = pnpm_10;
+  };
+
   passthru = {
     inherit rubyEnv;
+
+    tests = {
+      inherit (nixosTests) zammad;
+    };
+
     updateScript = [
       "${callPackage ./update.nix { }}/bin/update.sh"
       pname
       (toString ./.)
     ];
-    tests = {
-      inherit (nixosTests) zammad;
-    };
   };
 
   meta = {
     description = "Web-based, open source user support/ticketing solution";
     homepage = "https://zammad.org";
     license = lib.licenses.agpl3Plus;
-    platforms = [
-      "x86_64-linux"
-      "aarch64-linux"
-    ];
+
     maintainers = with lib.maintainers; [
       taeer
       netali
       meenzen
+    ];
+
+    platforms = [
+      "x86_64-linux"
+      "aarch64-linux"
     ];
   };
 }

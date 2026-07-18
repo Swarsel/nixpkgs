@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   poetry-core,
   pytest-mock,
   pytestCheckHook,
@@ -12,7 +12,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "zeversolar";
   version = "0.4.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "kvanzuijlen";
@@ -21,6 +20,11 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-6hAvZL4PbtuFnDXRrVeYuylR9SIZ9B46CA0Ms/w4Y24=";
   };
 
+  nativeCheckInputs = [
+    pytest-mock
+    pytestCheckHook
+  ];
+
   build-system = [ poetry-core ];
 
   dependencies = [
@@ -28,11 +32,7 @@ buildPythonPackage (finalAttrs: {
     retry2
   ];
 
-  nativeCheckInputs = [
-    pytest-mock
-    pytestCheckHook
-  ];
-
+  pyproject = true;
   pythonImportsCheck = [ "zeversolar" ];
 
   meta = {

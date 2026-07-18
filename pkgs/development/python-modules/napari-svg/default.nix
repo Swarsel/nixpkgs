@@ -1,19 +1,18 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
-  setuptools-scm,
+  buildPythonPackage,
   imageio,
   napari-plugin-engine,
   numpy,
+  setuptools,
+  setuptools-scm,
   vispy,
 }:
 
 buildPythonPackage rec {
   pname = "napari-svg";
   version = "0.2.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "napari";
@@ -21,6 +20,9 @@ buildPythonPackage rec {
     tag = "v${version}";
     hash = "sha256-m3lm+jXUuGr9WCxzo7VyZNcKadLPX2VrCC9obiSvreQ=";
   };
+
+  # Circular dependency: napari
+  doCheck = false;
 
   build-system = [
     setuptools
@@ -34,8 +36,7 @@ buildPythonPackage rec {
     vispy
   ];
 
-  # Circular dependency: napari
-  doCheck = false;
+  pyproject = true;
 
   meta = {
     description = "Plugin for writing svg files from napari";

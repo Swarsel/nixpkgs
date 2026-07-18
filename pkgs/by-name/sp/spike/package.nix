@@ -17,18 +17,16 @@ stdenv.mkDerivation {
     sha256 = "sha256-mAgR2VzDgeuIdmPEgrb+MaA89BnWfmNanOVidqn0cgc=";
   };
 
-  nativeBuildInputs = [ dtc ];
-  enableParallelBuilding = true;
-
   postPatch = ''
     patchShebangs scripts/*.sh
   '';
 
+  nativeBuildInputs = [ dtc ];
   doCheck = true;
-
   # To test whether spike is working, we run the RISC-V hello applications using the RISC-V proxy
   # kernel on the Spike emulator and see whether we get the expected output.
   doInstallCheck = true;
+
   installCheckPhase =
     let
       riscvPkgs = pkgsCross.riscv64-embedded;
@@ -43,14 +41,17 @@ stdenv.mkDerivation {
       runHook postInstallCheck
     '';
 
+  enableParallelBuilding = true;
+
   meta = {
     description = "RISC-V ISA Simulator";
     homepage = "https://github.com/riscv/riscv-isa-sim";
     license = lib.licenses.bsd3;
+    maintainers = with lib.maintainers; [ blitz ];
+
     platforms = [
       "x86_64-linux"
       "aarch64-linux"
     ];
-    maintainers = with lib.maintainers; [ blitz ];
   };
 }

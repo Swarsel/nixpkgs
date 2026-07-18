@@ -1,26 +1,32 @@
 {
   lib,
   buildPythonPackage,
-  fetchPypi,
   dataclasses-json,
+  fetchPypi,
   pycryptodome,
-  setuptools-scm,
   pytest-asyncio,
   pytest-cases,
   pytest-cov-stub,
   pytestCheckHook,
   pytz,
+  setuptools-scm,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "pysiaalarm";
   version = "3.2.2";
-  pyproject = true;
 
   src = fetchPypi {
     inherit (finalAttrs) pname version;
     hash = "sha256-9icZnEpSaezVj9EH5s1u2mB2h9jP/oZcpkVE0WFM4W8=";
   };
+
+  nativeCheckInputs = [
+    pytest-asyncio
+    pytest-cases
+    pytest-cov-stub
+    pytestCheckHook
+  ];
 
   build-system = [ setuptools-scm ];
 
@@ -30,12 +36,7 @@ buildPythonPackage (finalAttrs: {
     pytz
   ];
 
-  nativeCheckInputs = [
-    pytest-asyncio
-    pytest-cases
-    pytest-cov-stub
-    pytestCheckHook
-  ];
+  pyproject = true;
 
   pythonImportsCheck = [
     "pysiaalarm"

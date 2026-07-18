@@ -1,9 +1,9 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchurl,
-  undmg,
   nix-update-script,
+  undmg,
 }:
 
 let
@@ -18,13 +18,14 @@ stdenv.mkDerivation rec {
     hash = "sha256-QpGmpxDpdS+sJtsNtp0VSAd9WJXaZiKTH4yDsDK8FSk=";
   };
 
-  sourceRoot = "Hex Fiend.app";
   nativeBuildInputs = [ undmg ];
+
   installPhase = ''
     mkdir -p "$out/Applications/Hex Fiend.app"
     cp -R . "$out/Applications/Hex Fiend.app"
   '';
 
+  sourceRoot = "Hex Fiend.app";
   passthru.updateScript = nix-update-script { };
 
   meta = {

@@ -2,9 +2,9 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  runCommand,
-  inflow,
   diffutils,
+  inflow,
+  runCommand,
 }:
 
 stdenv.mkDerivation rec {
@@ -78,11 +78,13 @@ stdenv.mkDerivation rec {
     description = "Variance-optimal paragraph formatter";
     homepage = "https://github.com/stephen-huan/inflow";
     license = lib.licenses.unlicense;
-    mainProgram = "inflow";
+
     maintainers = with lib.maintainers; [
       fbrs
       stephen-huan
     ];
+
     platforms = lib.platforms.all;
+    mainProgram = "inflow";
   };
 }

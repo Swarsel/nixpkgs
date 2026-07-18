@@ -1,22 +1,22 @@
 {
   lib,
-  fetchFromGitHub,
   stdenv,
+  fetchFromGitHub,
+  SDL2,
+  boost,
+  bullet,
   callPackage,
   cmake,
-  boost,
-  SDL2,
-  libvorbis,
-  pkg-config,
-  makeWrapper,
   enet,
-  bullet,
-  openal,
-  tinyxml-2,
-  rapidjson,
-  ogre-next,
-  ninja,
+  libvorbis,
   libx11,
+  makeWrapper,
+  ninja,
+  ogre-next,
+  openal,
+  pkg-config,
+  rapidjson,
+  tinyxml-2,
 }:
 
 let
@@ -31,13 +31,6 @@ stdenv.mkDerivation (finalAttrs: {
     repo = "stuntrally3";
     tag = finalAttrs.version;
     hash = "sha256-BJMMsJ/ONZTpvXetaaHlgm6rih9oZmtJNBXv0IM855Y=";
-  };
-
-  tracks = fetchFromGitHub {
-    owner = "stuntrally";
-    repo = "tracks3";
-    tag = finalAttrs.version;
-    hash = "sha256-nvIN5hIfTfnuJdlLNlmpmYo3WQhUxYWz14OFra/55w4=";
   };
 
   patches = [
@@ -59,6 +52,7 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   strictDeps = true;
+
   nativeBuildInputs = [
     cmake
     pkg-config
@@ -108,6 +102,13 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  tracks = fetchFromGitHub {
+    hash = "sha256-nvIN5hIfTfnuJdlLNlmpmYo3WQhUxYWz14OFra/55w4=";
+    owner = "stuntrally";
+    repo = "tracks3";
+    tag = finalAttrs.version;
+  };
+
   passthru = {
     inherit mygui;
   };
@@ -115,9 +116,9 @@ stdenv.mkDerivation (finalAttrs: {
   meta = {
     description = "3D racing game with Sci-Fi elements and own Track Editor";
     homepage = "https://cryham.org/stuntrally/";
-    mainProgram = "stuntrally3";
     license = lib.licenses.gpl3Plus;
     maintainers = with lib.maintainers; [ pSub ];
     platforms = lib.platforms.linux;
+    mainProgram = "stuntrally3";
   };
 })

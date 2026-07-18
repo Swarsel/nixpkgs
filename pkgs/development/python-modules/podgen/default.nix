@@ -1,23 +1,22 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
+  buildPythonPackage,
   dateutils,
   future,
   lxml,
+  pytest-mock,
+  pytestCheckHook,
   python-dateutil,
   pytz,
   requests,
+  setuptools,
   tinytag,
-  pytest-mock,
-  pytestCheckHook,
 }:
 
 buildPythonPackage rec {
   pname = "podgen";
   version = "1.1.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "tobinus";
@@ -25,6 +24,11 @@ buildPythonPackage rec {
     tag = "v${version}";
     hash = "sha256-IlTbKWNdEHJmEPdslKphZLB5IVERxNL/wqCMbJDHkD4=";
   };
+
+  nativeCheckInputs = [
+    pytest-mock
+    pytestCheckHook
+  ];
 
   build-system = [
     setuptools
@@ -40,27 +44,25 @@ buildPythonPackage rec {
     tinytag
   ];
 
-  pythonImportsCheck = [ "podgen" ];
-
-  nativeCheckInputs = [
-    pytest-mock
-    pytestCheckHook
-  ];
-
   disabledTestPaths = [
     # test requires downloading content
     "podgen/tests/test_media.py"
   ];
 
+  pyproject = true;
+  pythonImportsCheck = [ "podgen" ];
+
   meta = {
     description = "Python module to generate Podcast feeds";
-    downloadPage = "https://github.com/tobinus/python-podgen";
-    changelog = "https://github.com/tobinus/python-podgen/blob/v${version}/CHANGELOG.md";
     homepage = "https://podgen.readthedocs.io/en/latest/";
+    changelog = "https://github.com/tobinus/python-podgen/blob/v${version}/CHANGELOG.md";
+
     license = with lib.licenses; [
       bsd2
       lgpl3
     ];
+
     maintainers = with lib.maintainers; [ ethancedwards8 ];
+    downloadPage = "https://github.com/tobinus/python-podgen";
   };
 }

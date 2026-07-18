@@ -1,8 +1,8 @@
 {
+  lib,
   fetchFromGitHub,
   buildDotnetModule,
   dotnetCorePackages,
-  lib,
 }:
 
 buildDotnetModule (finalAttrs: {
@@ -16,24 +16,21 @@ buildDotnetModule (finalAttrs: {
     hash = "sha256-APbfo2D/p733AwNNByu5MvC9LA8WW4mAzq6t2w/YNrs=";
   };
 
-  dotnet-sdk = dotnetCorePackages.sdk_8_0;
-  dotnet-runtime = dotnetCorePackages.runtime_8_0;
-
-  dotnetFlags = [ "-p:TargetFramework=net8.0" ];
-
   # Rename to something sensible
   postFixup = ''
     mv "$out/bin/Test" "$out/bin/WiseUnpacker"
   '';
 
+  dotnet-runtime = dotnetCorePackages.runtime_8_0;
+  dotnet-sdk = dotnetCorePackages.sdk_8_0;
+  dotnetFlags = [ "-p:TargetFramework=net8.0" ];
   nugetDeps = ./deps.json;
-
   projectFile = "Test/Test.csproj";
 
   meta = {
-    homepage = "https://github.com/mnadareski/WiseUnpacker/";
     description = "C# Wise installer unpacker based on HWUN and E_WISE ";
-    maintainers = [ lib.maintainers.gigahawk ];
+    homepage = "https://github.com/mnadareski/WiseUnpacker/";
     license = lib.licenses.mit;
+    maintainers = [ lib.maintainers.gigahawk ];
   };
 })

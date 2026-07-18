@@ -18,19 +18,19 @@ stdenv.mkDerivation (finalAttrs: {
     sha256 = "1h3jrygcjjbavdbkpx2hscsf0yf97gk487lzjdlvymd7dxdv9hy9";
   };
 
-  makeFlags = [ "PREFIX=$(out)" ];
-
   buildInputs = [
     libxcb
     libxcb-wm
     libxcb-util
   ];
 
+  makeFlags = [ "PREFIX=$(out)" ];
+
   meta = {
     description = "Small X utility to perform elementary actions on windows";
     homepage = "https://github.com/baskerville/xdo";
-    maintainers = with lib.maintainers; [ meisternu ];
     license = lib.licenses.bsd2;
+    maintainers = with lib.maintainers; [ meisternu ];
     platforms = lib.platforms.linux;
     mainProgram = "xdo";
   };

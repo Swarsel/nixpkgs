@@ -12,11 +12,13 @@ in
 {
   options.programs.digitalbitbox = {
     enable = lib.mkOption {
-      type = lib.types.bool;
       default = false;
+
       description = ''
         Installs the Digital Bitbox application and enables the complementary hardware module.
       '';
+
+      type = lib.types.bool;
     };
 
     package = lib.mkPackageOption pkgs "digitalbitbox" {
@@ -28,6 +30,7 @@ in
 
   config = lib.mkIf cfg.enable {
     environment.systemPackages = [ cfg.package ];
+
     hardware.digitalbitbox = {
       enable = true;
       package = cfg.package;

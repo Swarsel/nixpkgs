@@ -1,43 +1,30 @@
 {
   lib,
-  stdenvNoCC,
   fetchFromGitHub,
+  applyPatches,
   buildDotnetModule,
   dotnetCorePackages,
-  sqlite,
-  withFFmpeg ? true, # replace bundled ffprobe binary with symlink to ffmpeg package.
-  servarr-ffmpeg,
   fetchYarnDeps,
-  yarn,
+  fetchpatch,
   fixup-yarn-lock,
-  nodejs,
+  nix,
   nixosTests,
+  nodejs,
+  prefetch-yarn-deps,
+  python3Packages,
+  servarr-ffmpeg,
+  sqlite,
+  stdenvNoCC,
   # update script
   writers,
-  python3Packages,
-  nix,
-  prefetch-yarn-deps,
-  fetchpatch,
-  applyPatches,
+  yarn,
+  withFFmpeg ? true, # replace bundled ffprobe binary with symlink to ffmpeg package.
 }:
 let
   version = "4.0.18.2971";
   # The dotnet8 compatibility patches also change `yarn.lock`, so we must pass
   # the already patched lockfile to `fetchYarnDeps`.
   src = applyPatches {
-    src = fetchFromGitHub {
-      owner = "Sonarr";
-      repo = "Sonarr";
-      tag = "v${version}";
-      hash = "sha256-83qbbBNk42KjKZNvYaAINoWZa3uEgaV0eveGl9dKTd8=";
-    };
-    postPatch = ''
-      mv src/NuGet.Config NuGet.Config
-
-      # error CS0104: 'IPNetwork' is an ambiguous reference between 'Microsoft.AspNetCore.HttpOverrides.IPNetwork' and 'System.Net.IPNetwork'
-      substituteInPlace src/NzbDrone.Host/Startup.cs \
-        --replace-fail 'IPNetwork' 'Microsoft.AspNetCore.HttpOverrides.IPNetwork'
-    '';
     patches = lib.optionals (lib.versionOlder version "5.0") [
       # See https://github.com/Sonarr/Sonarr/issues/7442 and
       # https://github.com/Sonarr/Sonarr/pull/7443.
@@ -45,26 +32,39 @@ let
       # and it may take some time for that to become stable.
       # However, the patches cleanly apply to v4 as well.
       (fetchpatch {
+        hash = "sha256-e+/rKZrTf6lWq9bmCAwnZrbEPRkqVmI7qNavpLjfpUE=";
         name = "dotnet8-compatibility";
         url = "https://github.com/Sonarr/Sonarr/commit/518f1799dca96a7481004ceefe39be465de3d72d.patch";
-        hash = "sha256-e+/rKZrTf6lWq9bmCAwnZrbEPRkqVmI7qNavpLjfpUE=";
       })
       (fetchpatch {
+        hash = "sha256-6Lzo4ph1StA05+B1xYhWH+BBegLd6DxHiEiaRxGXn7k=";
         name = "dotnet8-darwin-compatibility";
         url = "https://github.com/Sonarr/Sonarr/commit/1a5fa185d11d2548f45fefb8a0facd3731a946d0.patch";
-        hash = "sha256-6Lzo4ph1StA05+B1xYhWH+BBegLd6DxHiEiaRxGXn7k=";
       })
     ];
+
+    postPatch = ''
+      mv src/NuGet.Config NuGet.Config
+
+      # error CS0104: 'IPNetwork' is an ambiguous reference between 'Microsoft.AspNetCore.HttpOverrides.IPNetwork' and 'System.Net.IPNetwork'
+      substituteInPlace src/NzbDrone.Host/Startup.cs \
+        --replace-fail 'IPNetwork' 'Microsoft.AspNetCore.HttpOverrides.IPNetwork'
+    '';
+
+    src = fetchFromGitHub {
+      owner = "Sonarr";
+      repo = "Sonarr";
+      tag = "v${version}";
+      hash = "sha256-83qbbBNk42KjKZNvYaAINoWZa3uEgaV0eveGl9dKTd8=";
+    };
   };
   rid = dotnetCorePackages.systemToDotnetRid stdenvNoCC.hostPlatform.system;
 in
 buildDotnetModule {
-  pname = "sonarr";
   inherit version src;
-
-  # Upstream expects to be ran from a "bin" directory
-  installPath = "${placeholder "out"}/lib/sonarr/bin";
+  pname = "sonarr";
   strictDeps = true;
+
   nativeBuildInputs = [
     nodejs
     yarn
@@ -72,22 +72,19 @@ buildDotnetModule {
     fixup-yarn-lock
   ];
 
-  yarnOfflineCache = fetchYarnDeps {
-    yarnLock = "${src}/yarn.lock";
-    hash = "sha256-YkBFvv+g4p22HdM/GQAHVGGW1yLYGWpNtRq7+QJiLIw=";
-  };
-
-  ffprobe = lib.optionalDrvAttr withFFmpeg (lib.getExe' servarr-ffmpeg "ffprobe");
-
   postConfigure = ''
     yarn config --offline set yarn-offline-mirror "$yarnOfflineCache"
     fixup-yarn-lock yarn.lock
     yarn install --offline --frozen-lockfile --ignore-platform --ignore-scripts --no-progress --non-interactive
     patchShebangs --build node_modules
   '';
+
   postBuild = ''
     yarn --offline run build --env production
   '';
+
+  doCheck = true;
+
   postInstall =
     let
       packageInfo = writers.writeText "package_info" ''
@@ -102,66 +99,14 @@ buildDotnetModule {
       cp -a -- _output/UI "$out/lib/sonarr/bin/UI"
       ln -s ${packageInfo} $out/lib/sonarr/package_info
     '';
+
   # Add an alias for compatibility with Sonarr v3 package.
   postFixup = ''
     ln -s -- Sonarr "$out/bin/NzbDrone"
   '';
 
-  nugetDeps = ./deps.json;
-
-  runtimeDeps = [ sqlite ];
-
-  dotnet-sdk = dotnetCorePackages.sdk_8_0;
-  dotnet-runtime = dotnetCorePackages.aspnetcore_8_0;
-
-  doCheck = true;
-
   __darwinAllowLocalNetworking = true; # for tests
-
   __structuredAttrs = true; # for Copyright property that contains spaces
-
-  executables = [ "Sonarr" ];
-
-  projectFile = [
-    "src/NzbDrone.Console/Sonarr.Console.csproj"
-    "src/NzbDrone.Mono/Sonarr.Mono.csproj"
-  ];
-
-  testProjectFile = [
-    "src/NzbDrone.Api.Test/Sonarr.Api.Test.csproj"
-    "src/NzbDrone.Common.Test/Sonarr.Common.Test.csproj"
-    "src/NzbDrone.Core.Test/Sonarr.Core.Test.csproj"
-    "src/NzbDrone.Host.Test/Sonarr.Host.Test.csproj"
-    "src/NzbDrone.Libraries.Test/Sonarr.Libraries.Test.csproj"
-    "src/NzbDrone.Mono.Test/Sonarr.Mono.Test.csproj"
-    "src/NzbDrone.Test.Common/Sonarr.Test.Common.csproj"
-  ];
-
-  dotnetFlags = [
-    "--property:TargetFramework=net8.0"
-    "--property:EnableAnalyzers=false"
-    "--property:SentryUploadSymbols=false" # Fix Sentry upload failed warnings
-    # Override defaults in src/Directory.Build.props that use current time.
-    "--property:Copyright=Copyright 2014-2025 sonarr.tv (GNU General Public v3)"
-    "--property:AssemblyVersion=${version}"
-    "--property:AssemblyConfiguration=main"
-    "--property:RuntimeIdentifier=${rid}"
-  ];
-
-  # Skip manual, integration, automation and platform-dependent tests.
-  testFilters = [
-    "TestCategory!=ManualTest"
-    "TestCategory!=IntegrationTest"
-    "TestCategory!=AutomationTest"
-
-    # makes real HTTP requests
-    "FullyQualifiedName!~NzbDrone.Core.Test.UpdateTests.UpdatePackageProviderFixture"
-    "FullyQualifiedName!~NzbDrone.Core.Test.TvTests.RefreshEpisodeServiceFixture"
-  ]
-  ++ lib.optionals stdenvNoCC.buildPlatform.isDarwin [
-    # fails on macOS
-    "FullyQualifiedName!~NzbDrone.Core.Test.Http.HttpProxySettingsProviderFixture"
-  ];
 
   disabledTests = [
     # setgid tests
@@ -180,6 +125,63 @@ buildDotnetModule {
     "NzbDrone.Common.Test.ProcessProviderFixture.kill_all_should_kill_all_process_with_name"
   ];
 
+  dotnet-runtime = dotnetCorePackages.aspnetcore_8_0;
+  dotnet-sdk = dotnetCorePackages.sdk_8_0;
+
+  dotnetFlags = [
+    "--property:TargetFramework=net8.0"
+    "--property:EnableAnalyzers=false"
+    "--property:SentryUploadSymbols=false" # Fix Sentry upload failed warnings
+    # Override defaults in src/Directory.Build.props that use current time.
+    "--property:Copyright=Copyright 2014-2025 sonarr.tv (GNU General Public v3)"
+    "--property:AssemblyVersion=${version}"
+    "--property:AssemblyConfiguration=main"
+    "--property:RuntimeIdentifier=${rid}"
+  ];
+
+  executables = [ "Sonarr" ];
+  ffprobe = lib.optionalDrvAttr withFFmpeg (lib.getExe' servarr-ffmpeg "ffprobe");
+  # Upstream expects to be ran from a "bin" directory
+  installPath = "${placeholder "out"}/lib/sonarr/bin";
+  nugetDeps = ./deps.json;
+
+  projectFile = [
+    "src/NzbDrone.Console/Sonarr.Console.csproj"
+    "src/NzbDrone.Mono/Sonarr.Mono.csproj"
+  ];
+
+  runtimeDeps = [ sqlite ];
+
+  # Skip manual, integration, automation and platform-dependent tests.
+  testFilters = [
+    "TestCategory!=ManualTest"
+    "TestCategory!=IntegrationTest"
+    "TestCategory!=AutomationTest"
+
+    # makes real HTTP requests
+    "FullyQualifiedName!~NzbDrone.Core.Test.UpdateTests.UpdatePackageProviderFixture"
+    "FullyQualifiedName!~NzbDrone.Core.Test.TvTests.RefreshEpisodeServiceFixture"
+  ]
+  ++ lib.optionals stdenvNoCC.buildPlatform.isDarwin [
+    # fails on macOS
+    "FullyQualifiedName!~NzbDrone.Core.Test.Http.HttpProxySettingsProviderFixture"
+  ];
+
+  testProjectFile = [
+    "src/NzbDrone.Api.Test/Sonarr.Api.Test.csproj"
+    "src/NzbDrone.Common.Test/Sonarr.Common.Test.csproj"
+    "src/NzbDrone.Core.Test/Sonarr.Core.Test.csproj"
+    "src/NzbDrone.Host.Test/Sonarr.Host.Test.csproj"
+    "src/NzbDrone.Libraries.Test/Sonarr.Libraries.Test.csproj"
+    "src/NzbDrone.Mono.Test/Sonarr.Mono.Test.csproj"
+    "src/NzbDrone.Test.Common/Sonarr.Test.Common.csproj"
+  ];
+
+  yarnOfflineCache = fetchYarnDeps {
+    hash = "sha256-YkBFvv+g4p22HdM/GQAHVGGW1yLYGWpNtRq7+QJiLIw=";
+    yarnLock = "${src}/yarn.lock";
+  };
+
   passthru = {
     tests = {
       inherit (nixosTests) sonarr;
@@ -187,6 +189,7 @@ buildDotnetModule {
 
     updateScript = writers.writePython3 "sonarr-updater" {
       libraries = with python3Packages; [ requests ];
+
       makeWrapperArgs = [
         "--prefix"
         "PATH"
@@ -203,6 +206,7 @@ buildDotnetModule {
     description = "Smart PVR for newsgroup and bittorrent users";
     homepage = "https://sonarr.tv";
     license = lib.licenses.gpl3Only;
+
     maintainers = with lib.maintainers; [
       purcell
       tie
@@ -210,6 +214,7 @@ buildDotnetModule {
       karaolidis
       nyanloutre
     ];
+
     mainProgram = "Sonarr";
     # platforms inherited from dotnet-sdk.
   };

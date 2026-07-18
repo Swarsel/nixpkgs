@@ -22,9 +22,15 @@ stdenv.mkDerivation {
     hash = "sha256-WwjuNxWoeR/ppJxJgqD20kzrn1kIfgDarkTOedX/W4k=";
   };
 
+  patches = [
+    # eliminate useless calls to git inside Makefile
+    ./0000-makefile-fix-install.diff
+  ];
+
   nativeBuildInputs = [
     pkg-config
   ];
+
   buildInputs = [
     fontconfig
     harfbuzz
@@ -32,11 +38,6 @@ stdenv.mkDerivation {
     libxext
     libxft
     ncurses
-  ];
-
-  patches = [
-    # eliminate useless calls to git inside Makefile
-    ./0000-makefile-fix-install.diff
   ];
 
   installPhase = ''
@@ -48,8 +49,8 @@ stdenv.mkDerivation {
   '';
 
   meta = {
-    homepage = "https://github.com/LukeSmithxyz/st";
     description = "Luke Smith's fork of st";
+    homepage = "https://github.com/LukeSmithxyz/st";
     license = lib.licenses.mit;
     maintainers = [ ];
     platforms = lib.platforms.linux;

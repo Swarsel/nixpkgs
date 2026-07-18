@@ -1,28 +1,28 @@
 {
   lib,
-  buildPythonPackage,
-  fetchPypi,
-  setuptools,
   azure-common,
+  azure-storage-nspkg,
+  buildPythonPackage,
   cryptography,
+  fetchPypi,
+  isPy3k,
   python-dateutil,
   requests,
-  isPy3k,
-  azure-storage-nspkg,
+  setuptools,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "azure-storage-common";
   version = "2.1.0";
-  pyproject = true;
-
-  __structuredAttrs = true;
 
   src = fetchPypi {
     inherit (finalAttrs) pname version;
     hash = "sha256-zO3vXGcie8TWZw/9N87Bj7UpobfDpeU+QJbrDPI9xz8=";
   };
 
+  # has no tests
+  doCheck = false;
+  __structuredAttrs = true;
   build-system = [ setuptools ];
 
   dependencies = [
@@ -33,9 +33,7 @@ buildPythonPackage (finalAttrs: {
   ]
   ++ lib.optional (!isPy3k) azure-storage-nspkg;
 
-  # has no tests
-  doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "azure.storage.common" ];
 
   meta = {

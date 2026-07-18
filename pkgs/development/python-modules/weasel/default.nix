@@ -1,32 +1,27 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # build-system
-  setuptools,
-
+  buildPythonPackage,
   # dependencies
   cloudpathlib,
   confection,
   httpx,
+  # passthru
+  nix-update-script,
   pydantic,
+  # tests
+  pytestCheckHook,
+  # build-system
+  setuptools,
   smart-open,
   srsly,
   typer,
   wasabi,
-
-  # tests
-  pytestCheckHook,
-
-  # passthru
-  nix-update-script,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "weasel";
   version = "1.0.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "explosion";
@@ -34,6 +29,10 @@ buildPythonPackage (finalAttrs: {
     tag = "release-v${finalAttrs.version}";
     hash = "sha256-yiLoLdnDfKby1Ez1hKGL9DxazQto57Zn0DlRmGLurOs=";
   };
+
+  nativeCheckInputs = [
+    pytestCheckHook
+  ];
 
   build-system = [ setuptools ];
 
@@ -48,12 +47,6 @@ buildPythonPackage (finalAttrs: {
     wasabi
   ];
 
-  pythonImportsCheck = [ "weasel" ];
-
-  nativeCheckInputs = [
-    pytestCheckHook
-  ];
-
   disabledTests = [
     # These tests require internet access
     "test_project_assets"
@@ -65,6 +58,9 @@ buildPythonPackage (finalAttrs: {
     # Raw value: '[{"name": "x", "script": ["hello ${vars.a} ${vars.b.e}"]}]'
     "test_project_config_interpolation"
   ];
+
+  pyproject = true;
+  pythonImportsCheck = [ "weasel" ];
 
   passthru = {
     updateScript = nix-update-script {

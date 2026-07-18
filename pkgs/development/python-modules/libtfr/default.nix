@@ -1,26 +1,22 @@
 {
   lib,
-  fetchPypi,
   buildPythonPackage,
-
-  # build-system
-  setuptools_80,
-  pkg-config,
   cython,
-  pkgconfig,
-
-  # Dependencies
-  numpy,
+  fetchPypi,
   fftw,
   lapack,
-
+  # Dependencies
+  numpy,
+  pkg-config,
+  pkgconfig,
   # Check
   pytestCheckHook,
+  # build-system
+  setuptools_80,
 }:
 buildPythonPackage rec {
   pname = "libtfr";
   version = "2.1.9";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
@@ -37,6 +33,10 @@ buildPythonPackage rec {
     lapack
   ];
 
+  nativeCheckInputs = [
+    pytestCheckHook
+  ];
+
   build-system = [
     setuptools_80
   ];
@@ -46,19 +46,18 @@ buildPythonPackage rec {
     pkgconfig
   ];
 
-  nativeCheckInputs = [
-    pytestCheckHook
-  ];
-
+  pyproject = true;
   pythonImportsCheck = [ "libtfr" ];
 
   meta = {
     description = "fast multitaper conventional and reassignment spectrograms";
     homepage = "https://melizalab.github.io/libtfr/";
-    downloadPage = "https://github.com/melizalab/libtfr";
     license = lib.licenses.gpl2Plus;
+
     maintainers = with lib.maintainers; [
       RossSmyth
     ];
+
+    downloadPage = "https://github.com/melizalab/libtfr";
   };
 }

@@ -2,13 +2,13 @@
   lib,
   stdenv,
   fetchurl,
-  makeShellWrapper,
-  updateAutotoolsGnuConfigScriptsHook,
-  runtimeShellPackage,
   # Tests
   gzip,
   less,
+  makeShellWrapper,
   perl,
+  runtimeShellPackage,
+  updateAutotoolsGnuConfigScriptsHook,
 }:
 
 # Note: this package is used for bootstrapping fetchurl, and thus
@@ -31,12 +31,11 @@ stdenv.mkDerivation (finalAttrs: {
     "info"
   ];
 
-  enableParallelBuilding = true;
-
   nativeBuildInputs = [
     updateAutotoolsGnuConfigScriptsHook
     makeShellWrapper
   ];
+
   buildInputs = [ runtimeShellPackage ];
 
   makeFlags = [
@@ -52,11 +51,12 @@ stdenv.mkDerivation (finalAttrs: {
     NIX_CFLAGS_LINK = "-no-pie";
   };
 
+  doCheck = false;
+
   nativeCheckInputs = [
     less
     perl
   ];
-  doCheck = false;
 
   # Many gzip executables are shell scripts that depend upon other gzip
   # executables being in $PATH.  Rather than try to re-write all the
@@ -80,11 +80,12 @@ stdenv.mkDerivation (finalAttrs: {
       --add-flags "\''${GZIP_NO_TIMESTAMPS:+-n}"
   '';
 
+  enableParallelBuilding = true;
   passthru.tests.makecheck = gzip.overrideAttrs { doCheck = true; };
 
   meta = {
-    homepage = "https://www.gnu.org/software/gzip/";
     description = "GNU zip compression program";
+
     longDescription = ''
       gzip (GNU zip) is a popular data compression program written by
       Jean-loup Gailly for the GNU project.  Mark Adler wrote the
@@ -96,9 +97,11 @@ stdenv.mkDerivation (finalAttrs: {
       and we needed a replacement.  The superior compression ratio of gzip
       is just a bonus.
     '';
-    platforms = lib.platforms.all;
+
+    homepage = "https://www.gnu.org/software/gzip/";
     license = lib.licenses.gpl3Plus;
-    mainProgram = "gzip";
     maintainers = [ lib.maintainers.mdaniels5757 ];
+    platforms = lib.platforms.all;
+    mainProgram = "gzip";
   };
 })

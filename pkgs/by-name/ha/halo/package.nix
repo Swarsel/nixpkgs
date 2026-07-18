@@ -9,6 +9,7 @@
 stdenv.mkDerivation (finalAttrs: {
   pname = "halo";
   version = "2.25.4";
+
   src = fetchurl {
     url = "https://github.com/halo-dev/halo/releases/download/v${finalAttrs.version}/halo-${finalAttrs.version}.jar";
     hash = "sha256-U3dWxAb/AT2zTUejdACT7SzRy97fWz2jTKgBfeYaoE4=";
@@ -18,16 +19,6 @@ stdenv.mkDerivation (finalAttrs: {
     makeWrapper
     temurin-jre-bin
   ];
-
-  dontBuild = true;
-  dontConfigure = true;
-
-  unpackPhase = ''
-    cp $src halo.jar
-    # Extract the jar file.
-    # Because jar vs extract, jar startup time is 4s slower than extract.
-    java -Djarmode=tools -jar halo.jar extract --layers --launcher
-  '';
 
   installPhase = ''
     runHook preInstall
@@ -61,16 +52,28 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  dontBuild = true;
+  dontConfigure = true;
+
+  unpackPhase = ''
+    cp $src halo.jar
+    # Extract the jar file.
+    # Because jar vs extract, jar startup time is 4s slower than extract.
+    java -Djarmode=tools -jar halo.jar extract --layers --launcher
+  '';
+
   meta = {
-    homepage = "https://www.halo.run";
     description = "Self-hosted dynamic blogging program";
-    maintainers = with lib.maintainers; [ yah ];
+    homepage = "https://www.halo.run";
     license = lib.licenses.gpl3Only;
+    sourceProvenance = with lib.sourceTypes; [ binaryBytecode ];
+    maintainers = with lib.maintainers; [ yah ];
+
     platforms = [
       "aarch64-linux"
       "x86_64-linux"
     ];
+
     mainProgram = "halo";
-    sourceProvenance = with lib.sourceTypes; [ binaryBytecode ];
   };
 })

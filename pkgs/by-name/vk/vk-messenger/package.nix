@@ -1,19 +1,19 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchurl,
-  rpmextract,
-  undmg,
+  alsa-lib,
   autoPatchelfHook,
-  libxtst,
-  libxscrnsaver,
+  gtk3,
+  libnotify,
   libxdamage,
   libxkbfile,
-  gtk3,
+  libxscrnsaver,
+  libxtst,
   nss,
-  alsa-lib,
+  rpmextract,
   udev,
-  libnotify,
+  undmg,
   wrapGAppsHook3,
 }:
 
@@ -24,12 +24,13 @@ let
   src =
     {
       i686-linux = fetchurl {
-        url = "https://desktop.userapi.com/rpm/master/vk-${version}.i686.rpm";
         sha256 = "L0nE0zW4LP8udcE8uPy+cH9lLuQsUSq7cF13Gv7w2rI=";
+        url = "https://desktop.userapi.com/rpm/master/vk-${version}.i686.rpm";
       };
+
       x86_64-linux = fetchurl {
-        url = "https://desktop.userapi.com/rpm/master/vk-${version}.x86_64.rpm";
         sha256 = "spDw9cfDSlIuCwOqREsqXC19tx62TiAz9fjIS9lYjSQ=";
+        url = "https://desktop.userapi.com/rpm/master/vk-${version}.x86_64.rpm";
       };
     }
     .${stdenv.system} or (throw "Unsupported system: ${stdenv.system}");
@@ -37,9 +38,10 @@ let
   meta = {
     description = "Simple and Convenient Messaging App for VK";
     homepage = "https://vk.com/messenger";
-    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
     license = lib.licenses.unfree;
+    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
     maintainers = [ ];
+
     platforms = [
       "i686-linux"
       "x86_64-linux"
@@ -59,6 +61,7 @@ let
       autoPatchelfHook
       wrapGAppsHook3
     ];
+
     buildInputs = [
       libxdamage
       libxtst
@@ -68,15 +71,6 @@ let
       nss
       alsa-lib
     ];
-
-    runtimeDependencies = [
-      (lib.getLib udev)
-      libnotify
-    ];
-
-    unpackPhase = ''
-      rpmextract $src
-    '';
 
     buildPhase = ''
       substituteInPlace usr/share/applications/vk.desktop \
@@ -91,6 +85,15 @@ let
       cp -r --parents share/applications $out
       cp -r --parents share/pixmaps $out
     '';
+
+    runtimeDependencies = [
+      (lib.getLib udev)
+      libnotify
+    ];
+
+    unpackPhase = ''
+      rpmextract $src
+    '';
   };
 
   darwin = stdenv.mkDerivation {
@@ -103,12 +106,12 @@ let
 
     nativeBuildInputs = [ undmg ];
 
-    sourceRoot = ".";
-
     installPhase = ''
       mkdir -p $out/Applications
       cp -r *.app $out/Applications
     '';
+
+    sourceRoot = ".";
   };
 in
 if stdenv.hostPlatform.isDarwin then darwin else linux

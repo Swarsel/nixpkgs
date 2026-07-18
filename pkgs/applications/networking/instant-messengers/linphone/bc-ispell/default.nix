@@ -1,9 +1,8 @@
 {
-  cmake,
-  fetchFromGitLab,
   lib,
   stdenv,
-
+  fetchFromGitLab,
+  cmake,
   # tests
   testers,
 }:
@@ -13,12 +12,12 @@ stdenv.mkDerivation (finalAttrs: {
   version = "3.4.02-unstable-2025-05-05";
 
   src = fetchFromGitLab {
-    domain = "gitlab.linphone.org";
-    group = "BC";
     owner = "public/external";
     repo = "ispell";
     rev = "05574fe160222c3d0b6283c1433c9b087271fad1";
     sha256 = "sha256-YoRLiMjk2BxoI27xc2nzucxfHV9UbouFRSECb3RdHGo=";
+    domain = "gitlab.linphone.org";
+    group = "BC";
   };
 
   patches = [
@@ -28,34 +27,37 @@ stdenv.mkDerivation (finalAttrs: {
     ./install-config-files.patch
   ];
 
+  nativeBuildInputs = [ cmake ];
+
   cmakeFlags = [
     "-DENABLE_STATIC=NO"
     "-DBUILD_SHARED_LIBS=ON"
   ];
 
-  nativeBuildInputs = [ cmake ];
+  env.NIX_CFLAGS_COMPILE = "-Wno-error=incompatible-pointer-types";
 
   passthru.tests = {
     cmake-config = testers.hasCmakeConfigModules {
-      package = finalAttrs.finalPackage;
       moduleNames = [
         "ISpell"
       ];
+
+      package = finalAttrs.finalPackage;
     };
   };
-
-  env.NIX_CFLAGS_COMPILE = "-Wno-error=incompatible-pointer-types";
 
   meta = {
     description = "Interactive spelling checker";
     homepage = "https://gitlab.linphone.org/BC/public/external/ispell";
-    platforms = lib.platforms.all;
     # NOTE: ISpell itself does not explicitly provide a license. From its
     # 'Contributors' file, it can be deduced that it is distributed under
     # "some" open source license, but the details are not clear.
     license = lib.licenses.free;
+
     maintainers = with lib.maintainers; [
       naxdy
     ];
+
+    platforms = lib.platforms.all;
   };
 })

@@ -2,32 +2,32 @@
   lib,
   buildPythonPackage,
   fetchPypi,
-
-  # build-system
-  setuptools,
-
+  # optional-dependencies
+  matplotlib,
   # dependencies
   numpy,
   pandas,
-
-  # optional-dependencies
-  matplotlib,
-
   # tests
   pytestCheckHook,
+  # build-system
+  setuptools,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "cutlass";
   version = "0.5.0";
-  pyproject = true;
-  __structuredAttrs = true;
 
   # No tags on GitHub
   src = fetchPypi {
     inherit (finalAttrs) pname version;
     hash = "sha256-dAxt/1EROwJix/Sz889XJ9MXfN1FBFQYSNeB3H43g7E=";
   };
+
+  nativeCheckInputs = [
+    pytestCheckHook
+  ];
+
+  __structuredAttrs = true;
 
   build-system = [
     setuptools
@@ -44,11 +44,8 @@ buildPythonPackage (finalAttrs: {
     ];
   };
 
+  pyproject = true;
   pythonImportsCheck = [ "cutlass" ];
-
-  nativeCheckInputs = [
-    pytestCheckHook
-  ];
 
   meta = {
     description = "Rectified L1 logistic regression with CUTLASS critical range encoding";

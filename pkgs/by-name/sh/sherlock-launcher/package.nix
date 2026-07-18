@@ -1,18 +1,18 @@
 {
   lib,
   fetchFromGitHub,
-  rustPlatform,
-  pkg-config,
+  dbus,
+  gdk-pixbuf,
+  glib,
   gtk4,
   gtk4-layer-shell,
-  dbus,
-  glib,
-  wayland,
-  openssl,
-  sqlite,
-  gdk-pixbuf,
   librsvg,
   nix-update-script,
+  openssl,
+  pkg-config,
+  rustPlatform,
+  sqlite,
+  wayland,
   wrapGAppsHook4,
 }:
 
@@ -46,14 +46,13 @@ rustPlatform.buildRustPackage (finalAttrs: {
   ];
 
   cargoHash = "sha256-wxYPpJql8uKndkXxbiizb7em2zxt3YNCC0aUq1LgNMo=";
-
   passthru.updateScript = nix-update-script { };
 
   meta = {
     description = "Lightweight and efficient application launcher for Wayland built with Rust and GTK4";
     homepage = "https://github.com/Skxxtz/sherlock";
     license = lib.licenses.gpl3Plus;
-    mainProgram = "sherlock";
     maintainers = with lib.maintainers; [ agvantibo ];
+    mainProgram = "sherlock";
   };
 })

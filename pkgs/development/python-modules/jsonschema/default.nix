@@ -3,25 +3,24 @@
   attrs,
   buildPythonPackage,
   fetchPypi,
+  # optionals
+  fqdn,
   hatch-fancy-pypi-readme,
   hatch-vcs,
   hatchling,
+  idna,
+  isoduration,
   jsonpath-ng,
+  jsonpointer,
   jsonschema-specifications,
   pip,
   pytestCheckHook,
   referencing,
-  rpds-py,
-
-  # optionals
-  fqdn,
-  idna,
-  isoduration,
-  jsonpointer,
   rfc3339-validator,
   rfc3986-validator,
   rfc3987,
   rfc3987-syntax,
+  rpds-py,
   uri-template,
   webcolors,
 }:
@@ -29,7 +28,6 @@
 buildPythonPackage rec {
   pname = "jsonschema";
   version = "4.26.0";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
@@ -39,6 +37,11 @@ buildPythonPackage rec {
   postPatch = ''
     patchShebangs json/bin/jsonschema_suite
   '';
+
+  nativeCheckInputs = [
+    pip
+    pytestCheckHook
+  ];
 
   build-system = [
     hatch-fancy-pypi-readme
@@ -65,6 +68,7 @@ buildPythonPackage rec {
       uri-template
       webcolors
     ];
+
     format-nongpl = [
       fqdn
       idna
@@ -78,11 +82,7 @@ buildPythonPackage rec {
     ];
   };
 
-  nativeCheckInputs = [
-    pip
-    pytestCheckHook
-  ];
-
+  pyproject = true;
   pythonImportsCheck = [ "jsonschema" ];
 
   meta = {

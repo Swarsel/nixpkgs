@@ -1,15 +1,15 @@
 {
   lib,
-  callPackage,
-  runCommand,
-  makeWrapper,
-  wrapGAppsHook3,
   buildDartApplication,
-  cacert,
-  glib,
-  flutter,
-  pkg-config,
   buildPackages,
+  cacert,
+  callPackage,
+  flutter,
+  glib,
+  makeWrapper,
+  pkg-config,
+  runCommand,
+  wrapGAppsHook3,
 }:
 
 # absolutely no mac support for now
@@ -46,11 +46,11 @@ lib.extendMkDerivation {
   extendDrvArgs =
     finalAttrs:
     args@{
-      pubGetScript ? null,
-      flutterBuildFlags ? [ ],
-      targetFlutterPlatform ? "linux",
       extraWrapProgramArgs ? "",
+      flutterBuildFlags ? [ ],
       flutterMode ? null,
+      pubGetScript ? null,
+      targetFlutterPlatform ? "linux",
       ...
     }:
     let
@@ -68,9 +68,30 @@ lib.extendMkDerivation {
       ++ flutterFlags;
 
       universal = args // {
-        flutterMode = flutterMode';
-        flutterFlags = flutterFlags;
+        # https://github.com/flutter/flutter/blob/edada7c56edf4a183c1735310e123c7f923584f1/packages/flutter_tools/lib/src/dart/pub.dart#L804
+        extraPackageConfigSetup = lib.optionalString (lib.versionOlder flutter.version "3.34.0") ''
+          if [ "$("${lib.getExe buildPackages.yq}" '.flutter.generate // false' pubspec.yaml)" = "true" ]; then
+            if ! "${lib.getExe buildPackages.jq}" -e '.packages[] | select(.name == "flutter_gen")' "$out" >/dev/null 2>&1; then
+              export TEMP_PACKAGES=$(mktemp)
+              "${lib.getExe buildPackages.jq}" '.packages |= . + [{
+                name: "flutter_gen",
+                rootUri: "flutter_gen",
+                languageVersion: "2.12"
+              }]' "$out" > "$TEMP_PACKAGES"
+              cp "$TEMP_PACKAGES" "$out"
+              rm "$TEMP_PACKAGES"
+              unset TEMP_PACKAGES
+            fi
+          fi
+        '';
+
         flutterBuildFlags = flutterBuildFlags';
+        flutterFlags = flutterFlags;
+        flutterMode = flutterMode';
+
+        pubGetScript =
+          args.pubGetScript
+            or "flutter${lib.optionalString hasEngine " --local-engine $flutterMode"} pub get";
 
         sdkSetupScript = ''
           # Pub needs SSL certificates. Dart normally looks in a hardcoded path.
@@ -100,27 +121,7 @@ lib.extendMkDerivation {
           flutter config $flutterFlags --enable-linux-desktop >/dev/null
         '';
 
-        pubGetScript =
-          args.pubGetScript
-            or "flutter${lib.optionalString hasEngine " --local-engine $flutterMode"} pub get";
-
         sdkSourceBuilders = {
-          # https://github.com/dart-lang/pub/blob/68dc2f547d0a264955c1fa551fa0a0e158046494/lib/src/sdk/flutter.dart#L81
-          "flutter" =
-            name:
-            runCommand "flutter-sdk-${name}" { passthru.packageRoot = "."; } ''
-              for path in '${flutter}/packages/${name}' '${flutter}/bin/cache/pkg/${name}'; do
-                if [ -d "$path" ]; then
-                  ln -s "$path" "$out"
-                  break
-                fi
-              done
-
-              if [ ! -e "$out" ]; then
-                echo 1>&2 'The Flutter SDK does not contain the requested package: ${name}!'
-                exit 1
-              fi
-            '';
           # https://github.com/dart-lang/pub/blob/e1fbda73d1ac597474b82882ee0bf6ecea5df108/lib/src/sdk/dart.dart#L80
           "dart" =
             name:
@@ -137,24 +138,24 @@ lib.extendMkDerivation {
                 exit 1
               fi
             '';
-        };
 
-        # https://github.com/flutter/flutter/blob/edada7c56edf4a183c1735310e123c7f923584f1/packages/flutter_tools/lib/src/dart/pub.dart#L804
-        extraPackageConfigSetup = lib.optionalString (lib.versionOlder flutter.version "3.34.0") ''
-          if [ "$("${lib.getExe buildPackages.yq}" '.flutter.generate // false' pubspec.yaml)" = "true" ]; then
-            if ! "${lib.getExe buildPackages.jq}" -e '.packages[] | select(.name == "flutter_gen")' "$out" >/dev/null 2>&1; then
-              export TEMP_PACKAGES=$(mktemp)
-              "${lib.getExe buildPackages.jq}" '.packages |= . + [{
-                name: "flutter_gen",
-                rootUri: "flutter_gen",
-                languageVersion: "2.12"
-              }]' "$out" > "$TEMP_PACKAGES"
-              cp "$TEMP_PACKAGES" "$out"
-              rm "$TEMP_PACKAGES"
-              unset TEMP_PACKAGES
-            fi
-          fi
-        '';
+          # https://github.com/dart-lang/pub/blob/68dc2f547d0a264955c1fa551fa0a0e158046494/lib/src/sdk/flutter.dart#L81
+          "flutter" =
+            name:
+            runCommand "flutter-sdk-${name}" { passthru.packageRoot = "."; } ''
+              for path in '${flutter}/packages/${name}' '${flutter}/bin/cache/pkg/${name}'; do
+                if [ -d "$path" ]; then
+                  ln -s "$path" "$out"
+                  break
+                fi
+              done
+
+              if [ ! -e "$out" ]; then
+                echo 1>&2 'The Flutter SDK does not contain the requested package: ${name}!'
+                exit 1
+              fi
+            '';
+        };
       };
     in
     {
@@ -175,7 +176,6 @@ lib.extendMkDerivation {
 
         buildInputs = (universal.buildInputs or [ ]) ++ [ glib ];
 
-        dontDartBuild = true;
         buildPhase =
           universal.buildPhase or ''
             runHook preBuild
@@ -187,7 +187,6 @@ lib.extendMkDerivation {
             runHook postBuild
           '';
 
-        dontDartInstall = true;
         installPhase =
           universal.installPhase or ''
             runHook preInstall
@@ -221,7 +220,10 @@ lib.extendMkDerivation {
             runHook postInstall
           '';
 
+        dontDartBuild = true;
+        dontDartInstall = true;
         dontWrapGApps = true;
+
         extraWrapProgramArgs = ''
           ''${gappsWrapperArgs[@]} \
           ${extraWrapProgramArgs}
@@ -229,7 +231,6 @@ lib.extendMkDerivation {
       };
 
       web = universal // {
-        dontDartBuild = true;
         buildPhase =
           universal.buildPhase or ''
             runHook preBuild
@@ -241,7 +242,6 @@ lib.extendMkDerivation {
             runHook postBuild
           '';
 
-        dontDartInstall = true;
         installPhase =
           universal.installPhase or ''
             runHook preInstall
@@ -250,6 +250,9 @@ lib.extendMkDerivation {
 
             runHook postInstall
           '';
+
+        dontDartBuild = true;
+        dontDartInstall = true;
       };
     }
     .${targetFlutterPlatform} or (throw "Unsupported Flutter host platform: ${targetFlutterPlatform}");

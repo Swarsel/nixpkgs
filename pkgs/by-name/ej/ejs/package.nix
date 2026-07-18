@@ -1,14 +1,14 @@
 {
   lib,
-  buildNpmPackage,
   fetchFromGitHub,
+  buildNpmPackage,
 }:
 let
   version = "3.1.10";
 in
 buildNpmPackage {
-  pname = "ejs";
   inherit version;
+  pname = "ejs";
 
   src = fetchFromGitHub {
     owner = "mde";
@@ -31,7 +31,7 @@ buildNpmPackage {
     description = "Embedded JavaScript templates";
     homepage = "https://ejs.co";
     license = lib.licenses.asl20;
-    mainProgram = "ejs";
     maintainers = [ ];
+    mainProgram = "ejs";
   };
 }

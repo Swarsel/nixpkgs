@@ -23,9 +23,9 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   meta = {
-    homepage = "http://point-at-infinity.org/seccure/";
     description = "Zero-configuration elliptic curve cryptography utility";
-    platforms = lib.platforms.unix;
+    homepage = "http://point-at-infinity.org/seccure/";
     license = lib.licenses.lgpl3;
+    platforms = lib.platforms.unix;
   };
 })

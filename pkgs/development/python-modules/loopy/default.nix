@@ -1,36 +1,32 @@
 {
   lib,
   stdenv,
-  buildPythonPackage,
   fetchFromGitHub,
-  writableTmpDirAsHomeHook,
-
-  # build-system
-  hatchling,
-
-  # dependencies
-  pytools,
-  pymbolic,
-  genpy,
-  numpy,
+  buildPythonPackage,
   cgen,
-  islpy,
   codepy,
   colorama,
-  mako,
   constantdict,
-  typing-extensions,
-
+  fparser,
+  genpy,
+  # build-system
+  hatchling,
+  islpy,
+  mako,
+  numpy,
+  ply,
+  pymbolic,
   # optional-dependencies
   pyopencl,
-  fparser,
-  ply,
+  # dependencies
+  pytools,
+  typing-extensions,
+  writableTmpDirAsHomeHook,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "loopy";
   version = "2025.2";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "inducer";
@@ -40,9 +36,10 @@ buildPythonPackage (finalAttrs: {
     fetchSubmodules = true; # submodule at `loopy/target/c/compyte`
   };
 
-  build-system = [ hatchling ];
-
   nativeBuildInputs = [ writableTmpDirAsHomeHook ];
+  # pyopencl._cl.LogicError: clGetPlatformIDs failed: PLATFORM_NOT_FOUND_KHR
+  doCheck = false;
+  build-system = [ hatchling ];
 
   dependencies = [
     pytools
@@ -59,19 +56,18 @@ buildPythonPackage (finalAttrs: {
   ];
 
   optional-dependencies = {
-    pyopencl = [
-      pyopencl
-    ];
     fortran = [
       fparser
       ply
     ];
+
+    pyopencl = [
+      pyopencl
+    ];
   };
 
+  pyproject = true;
   pythonImportsCheck = [ "loopy" ];
-
-  # pyopencl._cl.LogicError: clGetPlatformIDs failed: PLATFORM_NOT_FOUND_KHR
-  doCheck = false;
 
   meta = {
     description = "Code generator for array-based code on CPUs and GPUs";

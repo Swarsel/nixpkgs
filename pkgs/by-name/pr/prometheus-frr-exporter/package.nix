@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
 }:
 
 let
@@ -14,9 +14,9 @@ let
   };
 in
 buildGoModule {
+  inherit src version;
   pname = "prometheus-frr-exporter";
   vendorHash = "sha256-Z4miOR9gmZlYR/VAbMY6SLZJrzBEpuJbnrIJ3ObaZ/Y=";
-  inherit src version;
 
   ldflags = [
     "-X github.com/prometheus/common/version.Version=${version}"
@@ -26,11 +26,13 @@ buildGoModule {
 
   meta = {
     description = "Prometheus exporter for FRR version 3.0+";
+
     longDescription = ''
       Prometheus exporter for FRR version 3.0+ that collects metrics from the
       FRR Unix sockets and exposes them via HTTP, ready for collecting by
       Prometheus.
     '';
+
     homepage = "https://github.com/tynany/frr_exporter";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ javaes ];

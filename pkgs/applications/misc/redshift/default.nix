@@ -5,43 +5,41 @@
   fetchFromGitLab,
   autoconf,
   automake,
-  gettext,
-  intltool,
-  libtool,
-  pkg-config,
-  wrapGAppsHook3,
-  wrapPython,
-  gobject-introspection,
-  wayland-scanner,
-  gtk3,
-  python,
-  pygobject3,
-  pyxdg,
-
-  withQuartz ? stdenv.hostPlatform.isDarwin,
-  withRandr ? stdenv.hostPlatform.isLinux,
-  libxcb,
-  withDrm ? stdenv.hostPlatform.isLinux,
-  libdrm,
-  withVidmode ? stdenv.hostPlatform.isLinux,
-  libxxf86vm,
-
-  withGeolocation ? true,
-  withCoreLocation ? withGeolocation && stdenv.hostPlatform.isDarwin,
-  withGeoclue ? withGeolocation && stdenv.hostPlatform.isLinux,
   geoclue,
-  withAppIndicator ? stdenv.hostPlatform.isLinux,
+  gettext,
+  gobject-introspection,
+  gtk3,
+  intltool,
   libappindicator,
   libayatana-appindicator,
+  libdrm,
+  libtool,
+  libxcb,
+  libxxf86vm,
+  pkg-config,
+  pygobject3,
+  python,
+  pyxdg,
+  wayland-scanner,
+  wrapGAppsHook3,
+  wrapPython,
+  withAppIndicator ? stdenv.hostPlatform.isLinux,
+  withCoreLocation ? withGeolocation && stdenv.hostPlatform.isDarwin,
+  withDrm ? stdenv.hostPlatform.isLinux,
+  withGeoclue ? withGeolocation && stdenv.hostPlatform.isLinux,
+  withGeolocation ? true,
+  withQuartz ? stdenv.hostPlatform.isDarwin,
+  withRandr ? stdenv.hostPlatform.isLinux,
+  withVidmode ? stdenv.hostPlatform.isLinux,
 }:
 
 let
   mkRedshift =
     {
-      pname,
-      version,
-      src,
       meta,
+      pname,
+      src,
+      version,
     }:
     stdenv.mkDerivation rec {
       inherit
@@ -52,8 +50,6 @@ let
         ;
 
       strictDeps = true;
-
-      depsBuildBuild = [ pkg-config ];
 
       nativeBuildInputs = [
         autoconf
@@ -69,6 +65,17 @@ let
       ]
       ++ lib.optionals (pname == "gammastep") [ wayland-scanner ];
 
+      buildInputs = [
+        gtk3
+      ]
+      ++ lib.optional withRandr libxcb
+      ++ lib.optional withGeoclue geoclue
+      ++ lib.optional withDrm libdrm
+      ++ lib.optional withVidmode libxxf86vm
+      ++ lib.optional withAppIndicator (
+        if (pname != "gammastep") then libappindicator else libayatana-appindicator
+      );
+
       configureFlags = [
         "--enable-randr=${lib.boolToYesNo withRandr}"
         "--enable-geoclue2=${lib.boolToYesNo withGeoclue}"
@@ -82,34 +89,7 @@ let
         "--enable-apparmor"
       ];
 
-      buildInputs = [
-        gtk3
-      ]
-      ++ lib.optional withRandr libxcb
-      ++ lib.optional withGeoclue geoclue
-      ++ lib.optional withDrm libdrm
-      ++ lib.optional withVidmode libxxf86vm
-      ++ lib.optional withAppIndicator (
-        if (pname != "gammastep") then libappindicator else libayatana-appindicator
-      );
-
-      pythonPath = [
-        pygobject3
-        pyxdg
-      ];
-
       preConfigure = "./bootstrap";
-
-      dontWrapGApps = true;
-
-      preFixup = ''
-        makeWrapperArgs+=("''${gappsWrapperArgs[@]}")
-      '';
-
-      postFixup = ''
-        wrapPythonPrograms
-        wrapGApp $out/bin/${pname}
-      '';
 
       # the geoclue agent may inspect these paths and expect them to be
       # valid without having the correct $PATH set
@@ -129,39 +109,26 @@ let
               --replace 'Exec=redshift-gtk' "Exec=$out/bin/redshift-gtk"
           '';
 
+      preFixup = ''
+        makeWrapperArgs+=("''${gappsWrapperArgs[@]}")
+      '';
+
+      postFixup = ''
+        wrapPythonPrograms
+        wrapGApp $out/bin/${pname}
+      '';
+
+      depsBuildBuild = [ pkg-config ];
+      dontWrapGApps = true;
       enableParallelBuilding = true;
+
+      pythonPath = [
+        pygobject3
+        pyxdg
+      ];
     };
 in
 rec {
-  redshift = mkRedshift rec {
-    pname = "redshift";
-    version = "1.12";
-
-    src = fetchFromGitHub {
-      owner = "jonls";
-      repo = "redshift";
-      rev = "v${version}";
-      sha256 = "12cb4gaqkybp4bkkns8pam378izr2mwhr2iy04wkprs2v92j7bz6";
-    };
-
-    meta = {
-      description = "Screen color temperature manager";
-      longDescription = ''
-        Redshift adjusts the color temperature according to the position
-        of the sun. A different color temperature is set during night and
-        daytime. During twilight and early morning, the color temperature
-        transitions smoothly from night to daytime temperature to allow
-        your eyes to slowly adapt. At night the color temperature should
-        be set to match the lamps in your room.
-      '';
-      license = lib.licenses.gpl3Plus;
-      homepage = "http://jonls.dk/redshift";
-      platforms = lib.platforms.unix;
-      mainProgram = "redshift";
-      maintainers = [ ];
-    };
-  };
-
   gammastep = mkRedshift rec {
     pname = "gammastep";
     version = "2.0.11";
@@ -176,8 +143,39 @@ rec {
     meta = redshift.meta // {
       longDescription = "Gammastep" + lib.removePrefix "Redshift" redshift.meta.longDescription;
       homepage = "https://gitlab.com/chinstrap/gammastep";
-      mainProgram = "gammastep";
       maintainers = with lib.maintainers; [ acidbong ] ++ redshift.meta.maintainers;
+      mainProgram = "gammastep";
+    };
+  };
+
+  redshift = mkRedshift rec {
+    pname = "redshift";
+    version = "1.12";
+
+    src = fetchFromGitHub {
+      owner = "jonls";
+      repo = "redshift";
+      rev = "v${version}";
+      sha256 = "12cb4gaqkybp4bkkns8pam378izr2mwhr2iy04wkprs2v92j7bz6";
+    };
+
+    meta = {
+      description = "Screen color temperature manager";
+
+      longDescription = ''
+        Redshift adjusts the color temperature according to the position
+        of the sun. A different color temperature is set during night and
+        daytime. During twilight and early morning, the color temperature
+        transitions smoothly from night to daytime temperature to allow
+        your eyes to slowly adapt. At night the color temperature should
+        be set to match the lamps in your room.
+      '';
+
+      homepage = "http://jonls.dk/redshift";
+      license = lib.licenses.gpl3Plus;
+      maintainers = [ ];
+      platforms = lib.platforms.unix;
+      mainProgram = "redshift";
     };
   };
 }

@@ -11,15 +11,18 @@ let
   inherit (lib) mkOption types;
 in
 {
-  port = 9784;
   extraOpts = {
     metrics-file = mkOption {
-      type = types.path;
       description = ''
         Path to the JSON file with the metric definitions
       '';
+
+      type = types.path;
     };
   };
+
+  port = 9784;
+
   serviceOpts = {
     serviceConfig = {
       ExecStart = ''

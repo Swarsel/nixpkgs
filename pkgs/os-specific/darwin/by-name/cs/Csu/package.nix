@@ -1,13 +1,11 @@
 {
   lib,
+  stdenv,
   makeSetupHook,
   mkAppleDerivation,
-  stdenv,
 }:
 
 mkAppleDerivation {
-  releaseName = "Csu";
-
   makeFlags = [
     "CC=${stdenv.cc.targetPrefix}clang"
     "CHMOD=chmod"
@@ -17,6 +15,7 @@ mkAppleDerivation {
   ];
 
   installFlags = [ "DSTROOT=$(out)" ];
+  releaseName = "Csu";
 
   setupHooks = [
     # Vendored to avoid referencing files outside of the package.

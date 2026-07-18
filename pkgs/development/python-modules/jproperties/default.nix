@@ -1,19 +1,18 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  pytestCheckHook,
-  six,
+  buildPythonPackage,
   pytest-cov-stub,
   pytest-datadir,
+  pytestCheckHook,
   setuptools,
   setuptools-scm,
+  six,
 }:
 
 buildPythonPackage rec {
   pname = "jproperties";
   version = "2.1.2";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "Tblue";
@@ -27,6 +26,12 @@ buildPythonPackage rec {
       --replace "setuptools_scm ~= 3.3" "setuptools_scm"
   '';
 
+  nativeCheckInputs = [
+    pytest-cov-stub
+    pytest-datadir
+    pytestCheckHook
+  ];
+
   build-system = [
     setuptools
     setuptools-scm
@@ -34,17 +39,12 @@ buildPythonPackage rec {
 
   dependencies = [ six ];
 
-  nativeCheckInputs = [
-    pytest-cov-stub
-    pytest-datadir
-    pytestCheckHook
-  ];
-
   disabledTestPaths = [
     # TypeError: 'PosixPath' object...
     "tests/test_simple_utf8.py"
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "jproperties" ];
 
   meta = {

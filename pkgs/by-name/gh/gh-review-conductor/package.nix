@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   nix-update-script,
 }:
 
@@ -17,17 +17,15 @@ buildGoModule (finalAttrs: {
   };
 
   vendorHash = "sha256-xAOTSdyNRZDKDPnCrvaepBOTDrnHLEA53K5TBxkqbDM=";
+  # Tests require GitHub authentication and network access
+  doCheck = false;
+  __structuredAttrs = true;
 
   ldflags = [
     "-s"
     "-w"
     "-X github.com/gh-tui-tools/gh-review-conductor/cmd.version=${finalAttrs.version}"
   ];
-
-  # Tests require GitHub authentication and network access
-  doCheck = false;
-
-  __structuredAttrs = true;
 
   passthru.updateScript = nix-update-script { };
 
@@ -36,10 +34,12 @@ buildGoModule (finalAttrs: {
     homepage = "https://github.com/gh-tui-tools/gh-review-conductor";
     changelog = "https://github.com/gh-tui-tools/gh-review-conductor/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.asl20;
+
     maintainers = with lib.maintainers; [
       vdemeester
       chmouel
     ];
+
     mainProgram = "gh-prreview";
   };
 })

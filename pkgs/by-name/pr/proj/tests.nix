@@ -1,4 +1,4 @@
-{ runCommand, proj }:
+{ proj, runCommand }:
 
 let
   inherit (proj) pname;

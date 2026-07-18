@@ -1,32 +1,22 @@
 {
   lib,
   buildPythonPackage,
-  mock,
   fetchPypi,
+  mock,
   pytestCheckHook,
   python,
-  setuptools-scm,
   setuptools,
+  setuptools-scm,
 }:
 
 buildPythonPackage rec {
   pname = "pytest-console-scripts";
   version = "1.4.1";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
     hash = "sha256-WoJu2EzAr6IC655EOB19di973ajgwj+feafx9Ez0qJU=";
   };
-
-  nativeBuildInputs = [ setuptools-scm ];
-
-  propagatedBuildInputs = [ setuptools ];
-
-  nativeCheckInputs = [
-    mock
-    pytestCheckHook
-  ];
 
   postPatch = ''
     # Patch the shebang of a script generated during test.
@@ -34,14 +24,25 @@ buildPythonPackage rec {
       --replace "#!/usr/bin/env python" "#!${python.interpreter}"
   '';
 
+  nativeBuildInputs = [ setuptools-scm ];
+  propagatedBuildInputs = [ setuptools ];
+
+  nativeCheckInputs = [
+    mock
+    pytestCheckHook
+  ];
+
+  format = "setuptools";
   pythonImportsCheck = [ "pytest_console_scripts" ];
 
   meta = {
     description = "Pytest plugin for testing console scripts";
+
     longDescription = ''
       Pytest-console-scripts is a pytest plugin for running python scripts from within tests.
       It's quite similar to subprocess.run(), but it also has an in-process mode, where the scripts are executed by the interpreter that's running pytest (using some amount of sandboxing).
     '';
+
     homepage = "https://github.com/kvas-it/pytest-console-scripts";
     license = lib.licenses.mit;
     maintainers = [ ];

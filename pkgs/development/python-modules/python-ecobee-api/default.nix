@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   requests,
   setuptools,
 }:
@@ -9,7 +9,6 @@
 buildPythonPackage rec {
   pname = "python-ecobee-api";
   version = "0.4.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "nkgilley";
@@ -18,13 +17,11 @@ buildPythonPackage rec {
     hash = "sha256-Gr0aLAX5Qv8COMjwvoqyhc7yBNMu6nbMCSBVT5FcX1Q=";
   };
 
-  build-system = [ setuptools ];
-
-  dependencies = [ requests ];
-
   # no tests implemented
   doCheck = false;
-
+  build-system = [ setuptools ];
+  dependencies = [ requests ];
+  pyproject = true;
   pythonImportsCheck = [ "pyecobee" ];
 
   meta = {

@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule (finalAttrs: {
@@ -16,6 +16,8 @@ buildGoModule (finalAttrs: {
   };
 
   vendorHash = "sha256-Z0MSD+1/1VzrJ+pz5x0JvxrCxtJe59ckaTqHK/+TVN8=";
+  # Tests require a docker setup
+  doCheck = false;
 
   ldflags = [
     "-s"
@@ -24,9 +26,6 @@ buildGoModule (finalAttrs: {
     "-X=main.commit=${finalAttrs.src.rev}"
     "-X=main.date=1970-01-01T00:00:00Z"
   ];
-
-  # Tests require a docker setup
-  doCheck = false;
 
   meta = {
     description = "Fingerprinting CLI tool for various protocols";

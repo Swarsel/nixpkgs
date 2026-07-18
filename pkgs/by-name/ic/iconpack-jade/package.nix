@@ -1,10 +1,10 @@
 {
   lib,
-  stdenvNoCC,
   fetchFromGitHub,
-  gtk3,
   gnome-icon-theme,
+  gtk3,
   hicolor-icon-theme,
+  stdenvNoCC,
 }:
 
 stdenvNoCC.mkDerivation rec {
@@ -25,8 +25,6 @@ stdenvNoCC.mkDerivation rec {
     hicolor-icon-theme
   ];
 
-  dontDropIconThemeCache = true;
-
   installPhase = ''
     mkdir -p $out/share/icons
     cp -a Jade* $out/share/icons
@@ -36,11 +34,13 @@ stdenvNoCC.mkDerivation rec {
     done
   '';
 
+  dontDropIconThemeCache = true;
+
   meta = {
     description = "Icon pack based upon Faenza and Mint-X";
     homepage = "https://github.com/madmaxms/iconpack-jade";
     license = lib.licenses.gpl3Only;
-    platforms = lib.platforms.linux;
     maintainers = [ lib.maintainers.romildo ];
+    platforms = lib.platforms.linux;
   };
 }

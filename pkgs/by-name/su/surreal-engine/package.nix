@@ -1,20 +1,20 @@
 {
+  lib,
+  stdenv,
+  fetchFromGitHub,
+  SDL2,
   alsa-lib,
   cmake,
   dbus,
-  fetchFromGitHub,
-  lib,
   libffi,
+  libx11,
+  libxkbcommon,
   makeWrapper,
   openal,
   pkg-config,
-  SDL2,
-  libx11,
-  stdenv,
   vulkan-loader,
   wayland,
   waylandpp,
-  libxkbcommon,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -27,6 +27,10 @@ stdenv.mkDerivation (finalAttrs: {
     rev = "087fa2af7fd0ce51702dd4024b4ae15a88222678";
     hash = "sha256-AEIBhTkkRq4+L4ycx82GE29dM7zNgE0oHOkwEH9ezUg=";
   };
+
+  postPatch = ''
+    substituteInPlace SurrealEngine/UI/WidgetResourceData.cpp --replace-fail /usr/share $out/share
+  '';
 
   nativeBuildInputs = [
     cmake
@@ -47,10 +51,6 @@ stdenv.mkDerivation (finalAttrs: {
     libxkbcommon
   ];
 
-  postPatch = ''
-    substituteInPlace SurrealEngine/UI/WidgetResourceData.cpp --replace-fail /usr/share $out/share
-  '';
-
   installPhase = ''
     runHook preInstall
 
@@ -68,10 +68,10 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Reimplementation of the original Unreal Engine";
-    mainProgram = "SurrealEngine";
     homepage = "https://github.com/dpjudas/SurrealEngine";
     license = lib.licenses.zlib;
     maintainers = with lib.maintainers; [ hughobrien ];
     platforms = lib.platforms.linux;
+    mainProgram = "SurrealEngine";
   };
 })

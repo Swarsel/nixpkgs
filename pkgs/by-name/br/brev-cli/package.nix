@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule (finalAttrs: {
@@ -16,9 +16,11 @@ buildGoModule (finalAttrs: {
   };
 
   vendorHash = "sha256-CzGuEbq4I1ygYQsoyyXC6gDBMLg21dKQTKkrbwpAR2U=";
-
   env.CGO_ENABLED = 0;
-  subPackages = [ "." ];
+
+  postInstall = ''
+    mv $out/bin/brev-cli $out/bin/brev
+  '';
 
   ldflags = [
     "-s"
@@ -26,16 +28,14 @@ buildGoModule (finalAttrs: {
     "-X github.com/brevdev/brev-cli/pkg/cmd/version.Version=${finalAttrs.src.rev}"
   ];
 
-  postInstall = ''
-    mv $out/bin/brev-cli $out/bin/brev
-  '';
+  subPackages = [ "." ];
 
   meta = {
     description = "Connect your laptop to cloud computers";
-    mainProgram = "brev";
     homepage = "https://github.com/brevdev/brev-cli";
     changelog = "https://github.com/brevdev/brev-cli/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.mit;
     maintainers = [ ];
+    mainProgram = "brev";
   };
 })

@@ -1,8 +1,8 @@
 {
   lib,
+  fetchFromGitHub,
   buildPythonPackage,
   cairo,
-  fetchFromGitHub,
   fetchNpmDeps,
   giflib,
   hatchling,
@@ -17,7 +17,6 @@
 buildPythonPackage rec {
   pname = "bgutil-ytdlp-pot-provider";
   version = "1.3.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "Brainicism";
@@ -25,15 +24,6 @@ buildPythonPackage rec {
     tag = version;
     hash = "sha256-dhpataQ1HSCRPnm4k3K/NMaQPQdNrx8C4q855l7kbbQ=";
   };
-
-  npmDeps = fetchNpmDeps {
-    name = "${pname}-${version}-npm-deps";
-    src = src + "/server";
-    npmDepsFetcherVersion = 2;
-    hash = "sha256-Qwwi6W+Oeu6ZeLmZP5vEfAKOJyivbULR5mlk7tcVIE8=";
-  };
-
-  npmRoot = "server";
 
   nativeBuildInputs = [
     nodejs
@@ -48,18 +38,14 @@ buildPythonPackage rec {
     pixman
   ];
 
-  build-system = [ hatchling ];
-
-  dependencies = [ yt-dlp ];
-
-  doCheck = false; # no tests
-
   preBuild = ''
     cd server
     npx tsc
     npm prune --omit=dev
     cd ../plugin
   '';
+
+  doCheck = false; # no tests
 
   postInstall = ''
     cd ..
@@ -71,6 +57,19 @@ buildPythonPackage rec {
 
     cd plugin
   '';
+
+  build-system = [ hatchling ];
+  dependencies = [ yt-dlp ];
+
+  npmDeps = fetchNpmDeps {
+    src = src + "/server";
+    hash = "sha256-Qwwi6W+Oeu6ZeLmZP5vEfAKOJyivbULR5mlk7tcVIE8=";
+    name = "${pname}-${version}-npm-deps";
+    npmDepsFetcherVersion = 2;
+  };
+
+  npmRoot = "server";
+  pyproject = true;
 
   meta = {
     description = "Proof-of-origin token provider plugin for yt-dlp";

@@ -1,17 +1,16 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   hatchling,
   packaging,
-  pyyaml,
   pytestCheckHook,
+  pyyaml,
 }:
 
 buildPythonPackage rec {
   pname = "dparse";
   version = "0.6.4";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "pyupio";
@@ -20,26 +19,26 @@ buildPythonPackage rec {
     hash = "sha256-LnsmJtWLjV3xoSjacfR9sUwPlOjQTRBWirJVtIJSE8A=";
   };
 
-  build-system = [ hatchling ];
+  nativeCheckInputs = [
+    pytestCheckHook
+  ]
+  ++ lib.concatAttrValues optional-dependencies;
 
+  build-system = [ hatchling ];
   dependencies = [ packaging ];
+
+  disabledTests = [
+    # requires unpackaged dependency pipenv
+    "test_update_pipfile"
+  ];
 
   optional-dependencies = {
     # FIXME pipenv = [ pipenv ];
     conda = [ pyyaml ];
   };
 
-  nativeCheckInputs = [
-    pytestCheckHook
-  ]
-  ++ lib.concatAttrValues optional-dependencies;
-
+  pyproject = true;
   pythonImportsCheck = [ "dparse" ];
-
-  disabledTests = [
-    # requires unpackaged dependency pipenv
-    "test_update_pipfile"
-  ];
 
   meta = {
     description = "Parser for Python dependency files";

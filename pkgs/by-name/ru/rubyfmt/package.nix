@@ -1,20 +1,20 @@
 {
   lib,
   stdenv,
-  rustPlatform,
   fetchFromGitHub,
   autoconf,
   automake,
   bison,
-  ruby,
-  zlib,
-  readline,
   libiconv,
   libunwind,
   libxcrypt,
   libyaml,
-  rust-jemalloc-sys,
   nix-update-script,
+  readline,
+  ruby,
+  rust-jemalloc-sys,
+  rustPlatform,
+  zlib,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {

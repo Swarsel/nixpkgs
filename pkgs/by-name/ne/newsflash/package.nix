@@ -2,31 +2,31 @@
   lib,
   stdenv,
   fetchFromGitLab,
-  rustPlatform,
   blueprint-compiler,
   cargo,
-  desktop-file-utils,
-  meson,
-  ninja,
-  pkg-config,
-  rustc,
-  wrapGAppsHook4,
-  gdk-pixbuf,
   clapper-unwrapped,
+  desktop-file-utils,
+  gdk-pixbuf,
+  glib-networking,
   glycin-loaders,
+  gst_all_1,
   gtk4,
   gtksourceview5,
   libadwaita,
   libglycin,
+  librsvg,
   libseccomp,
   libxml2,
+  meson,
+  ninja,
+  nix-update-script,
   openssl,
+  pkg-config,
+  rustPlatform,
+  rustc,
   sqlite,
   webkitgtk_6_0,
-  glib-networking,
-  librsvg,
-  gst_all_1,
-  nix-update-script,
+  wrapGAppsHook4,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -38,11 +38,6 @@ stdenv.mkDerivation (finalAttrs: {
     repo = "news_flash_gtk";
     tag = "v.${finalAttrs.version}";
     hash = "sha256-BfzrnTyMLFiM+aHtrppvl/j/fjB4TbEkbl/yHYOnXa8=";
-  };
-
-  cargoDeps = rustPlatform.fetchCargoVendor {
-    inherit (finalAttrs) pname version src;
-    hash = "sha256-4z2RGelDhi4RmVQ/+Ba340Pm05x4ruaRYAtJ1HuRHqA=";
   };
 
   postPatch = ''
@@ -102,6 +97,11 @@ stdenv.mkDerivation (finalAttrs: {
   # For https://gitlab.com/news-flash/news_flash_gtk/-/blob/v.4.2.1/src/meson.build#L48
   env.CARGO_BUILD_TARGET = stdenv.hostPlatform.rust.rustcTargetSpec;
 
+  cargoDeps = rustPlatform.fetchCargoVendor {
+    inherit (finalAttrs) pname version src;
+    hash = "sha256-4z2RGelDhi4RmVQ/+Ba340Pm05x4ruaRYAtJ1HuRHqA=";
+  };
+
   passthru.updateScript = nix-update-script {
     extraArgs = [
       "--version-regex"
@@ -114,12 +114,14 @@ stdenv.mkDerivation (finalAttrs: {
     homepage = "https://gitlab.com/news-flash/news_flash_gtk";
     changelog = "https://gitlab.com/news-flash/news_flash_gtk/-/raw/${finalAttrs.src.tag}/data/io.gitlab.news_flash.NewsFlash.appdata.xml.in.in#:~:text=%3Crelease%20version=%22${finalAttrs.version}%22,%3C/release%3E";
     license = lib.licenses.gpl3Plus;
+
     maintainers = with lib.maintainers; [
       kira-bruneau
       stunkymonkey
     ];
-    teams = [ lib.teams.gnome-circle ];
+
     platforms = lib.platforms.unix;
     mainProgram = "io.gitlab.news_flash.NewsFlash";
+    teams = [ lib.teams.gnome-circle ];
   };
 })

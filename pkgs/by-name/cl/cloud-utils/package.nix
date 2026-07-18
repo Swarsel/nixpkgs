@@ -2,18 +2,18 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  gitUpdater,
-  makeWrapper,
-  gawk,
-  gnused,
-  util-linux,
+  cdrkit,
+  e2fsprogs,
   file,
-  wget,
+  gawk,
+  gitUpdater,
+  gnused,
+  gptfdisk,
+  makeWrapper,
   python3,
   qemu-utils,
-  e2fsprogs,
-  cdrkit,
-  gptfdisk,
+  util-linux,
+  wget,
 }:
 let
   # according to https://packages.debian.org/sid/cloud-image-utils + https://packages.debian.org/sid/admin/cloud-guest-utils
@@ -37,20 +37,13 @@ stdenv.mkDerivation (finalAttrs: {
   # growpart is needed in initrd in nixos/system/boot/grow-partition.nix
   pname = "cloud-utils";
   version = "0.33";
+
   src = fetchFromGitHub {
     owner = "canonical";
     repo = "cloud-utils";
     tag = finalAttrs.version;
     hash = "sha256-YqfkmYclPZu6Mc2bFYxtiuH7uvfa3V4YlD0aHuKn1hw=";
   };
-  nativeBuildInputs = [ makeWrapper ];
-  buildInputs = [ python3 ];
-  installFlags = [
-    "LIBDIR=$(out)/lib"
-    "BINDIR=$(out)/bin"
-    "MANDIR=$(out)/man/man1"
-    "DOCDIR=$(out)/doc"
-  ];
 
   # $guest output contains all executables needed for cloud-init and $out the rest + $guest
   # This is similar to debian's package split into cloud-image-utils and cloud-guest-utils
@@ -59,6 +52,9 @@ stdenv.mkDerivation (finalAttrs: {
     "out"
     "guest"
   ];
+
+  nativeBuildInputs = [ makeWrapper ];
+  buildInputs = [ python3 ];
 
   postFixup = ''
     moveToOutput bin/ec2metadata $guest
@@ -77,12 +73,19 @@ stdenv.mkDerivation (finalAttrs: {
 
   dontBuild = true;
 
+  installFlags = [
+    "LIBDIR=$(out)/lib"
+    "BINDIR=$(out)/bin"
+    "MANDIR=$(out)/man/man1"
+    "DOCDIR=$(out)/doc"
+  ];
+
   passthru.updateScript = gitUpdater { };
 
   meta = {
     description = "Useful set of utilities for interacting with a cloud";
     homepage = "https://github.com/canonical/cloud-utils";
-    platforms = lib.platforms.unix;
     license = lib.licenses.gpl3;
+    platforms = lib.platforms.unix;
   };
 })

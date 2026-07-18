@@ -1,6 +1,6 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
 }:
 
@@ -17,8 +17,6 @@ stdenv.mkDerivation rec {
 
   strictDeps = true;
 
-  dontBuild = true;
-
   installPhase = ''
     outdir=$out/share/zsh/${pname}
     install -D zsh-edit.plugin.zsh $outdir/zsh-edit.plugin.zsh
@@ -27,9 +25,11 @@ stdenv.mkDerivation rec {
     install -D functions/{,.edit}* $outdir/functions
   '';
 
+  dontBuild = true;
+
   meta = {
-    homepage = "https://github.com/marlonrichert/zsh-edit";
     description = "Set of powerful extensions to the Zsh command line editor";
+    homepage = "https://github.com/marlonrichert/zsh-edit";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ deejayem ];
     platforms = lib.platforms.all;

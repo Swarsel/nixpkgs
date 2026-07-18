@@ -2,22 +2,24 @@
   lib,
   stdenv,
   fetchurl,
+  libmagic,
+  pcre2,
+  perl,
   pkg-config,
   xapian,
-  perl,
-  pcre2,
   zlib,
-  libmagic,
 }:
 
 stdenv.mkDerivation rec {
-  pname = "xapian-omega";
   inherit (xapian) version;
+  pname = "xapian-omega";
 
   src = fetchurl {
     url = "https://oligarchy.co.uk/xapian/${version}/xapian-omega-${version}.tar.xz";
     hash = "sha256-p9+2CN2LPqU93oUjbUdXloJgacTRJhieozp5M0myMXo=";
   };
+
+  nativeBuildInputs = [ pkg-config ];
 
   buildInputs = [
     xapian
@@ -26,7 +28,6 @@ stdenv.mkDerivation rec {
     zlib
     libmagic
   ];
-  nativeBuildInputs = [ pkg-config ];
 
   postInstall = ''
     mkdir -p $out/share/omega

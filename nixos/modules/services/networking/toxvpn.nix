@@ -1,7 +1,7 @@
 {
   config,
-  pkgs,
   lib,
+  pkgs,
   ...
 }:
 
@@ -12,43 +12,46 @@ with lib;
     services.toxvpn = {
       enable = mkEnableOption "toxvpn running on startup";
 
-      localip = mkOption {
-        type = types.str;
-        default = "10.123.123.1";
-        description = "your ip on the vpn";
-      };
-
-      port = mkOption {
-        type = types.port;
-        default = 33445;
-        description = "udp port for toxcore, port-forward to help with connectivity if you run many nodes behind one NAT";
-      };
-
       auto_add_peers = mkOption {
-        type = types.listOf types.str;
         default = [ ];
+        description = "peers to automatically connect to on startup";
+
         example = [
           "toxid1"
           "toxid2"
         ];
-        description = "peers to automatically connect to on startup";
+
+        type = types.listOf types.str;
+      };
+
+      localip = mkOption {
+        default = "10.123.123.1";
+        description = "your ip on the vpn";
+        type = types.str;
+      };
+
+      port = mkOption {
+        default = 33445;
+        description = "udp port for toxcore, port-forward to help with connectivity if you run many nodes behind one NAT";
+        type = types.port;
       };
     };
   };
 
   config = mkIf config.services.toxvpn.enable {
-    systemd.services.toxvpn = {
-      description = "toxvpn daemon";
+    environment.systemPackages = [ pkgs.toxvpn ];
 
-      wantedBy = [ "multi-user.target" ];
+    systemd.services.toxvpn = {
       after = [ "network.target" ];
+      description = "toxvpn daemon";
+      path = [ pkgs.toxvpn ];
 
       preStart = ''
         mkdir -p /run/toxvpn || true
         chown toxvpn /run/toxvpn
       '';
 
-      path = [ pkgs.toxvpn ];
+      restartIfChanged = false; # Likely to be used for remote admin
 
       script = ''
         exec toxvpn -i ${config.services.toxvpn.localip} -l /run/toxvpn/control -u toxvpn -p ${toString config.services.toxvpn.port} ${
@@ -62,19 +65,18 @@ with lib;
         Type = "notify";
       };
 
-      restartIfChanged = false; # Likely to be used for remote admin
+      wantedBy = [ "multi-user.target" ];
     };
 
-    environment.systemPackages = [ pkgs.toxvpn ];
+    users.groups.toxvpn = { };
 
     users.users = {
       toxvpn = {
-        isSystemUser = true;
+        createHome = true;
         group = "toxvpn";
         home = "/var/lib/toxvpn";
-        createHome = true;
+        isSystemUser = true;
       };
     };
-    users.groups.toxvpn = { };
   };
 }

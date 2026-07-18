@@ -1,10 +1,10 @@
 {
   lib,
   stdenv,
-  makeWrapper,
-  haskellPackages,
-  fetchpatch,
   fetchFromGitHub,
+  fetchpatch,
+  haskellPackages,
+  makeWrapper,
   # dependencies
   slither-analyzer,
 }:
@@ -20,16 +20,29 @@ haskellPackages.mkDerivation rec {
     sha256 = "sha256-Zopkqc01uUccJzdjP+qmHHZzB2iXK0U0fQi6EhgCRKg=";
   };
 
-  isExecutable = true;
+  # tests depend on a specific version of solc
+  doCheck = false;
+
+  postInstall =
+    with haskellPackages;
+    # https://github.com/NixOS/nixpkgs/pull/304352
+    lib.optionalString (stdenv.hostPlatform.isDarwin && stdenv.hostPlatform.isAarch64) ''
+      remove-references-to -t ${warp.out} "$out/bin/echidna"
+      remove-references-to -t ${wreq.out} "$out/bin/echidna"
+    ''
+    # make slither-analyzer a runtime dependency
+    + ''
+      wrapProgram $out/bin/echidna \
+        --prefix PATH : ${lib.makeBinPath [ slither-analyzer ]}
+    '';
 
   buildTools = with haskellPackages; [
     hpack
     makeWrapper
   ];
 
-  prePatch = ''
-    hpack
-  '';
+  description = "Ethereum smart contract fuzzer";
+  doHaddock = false;
 
   executableHaskellDepends = with haskellPackages; [
     # package.yml/dependencies
@@ -94,31 +107,19 @@ haskellPackages.mkDerivation rec {
     with-utf8
   ];
 
-  postInstall =
-    with haskellPackages;
-    # https://github.com/NixOS/nixpkgs/pull/304352
-    lib.optionalString (stdenv.hostPlatform.isDarwin && stdenv.hostPlatform.isAarch64) ''
-      remove-references-to -t ${warp.out} "$out/bin/echidna"
-      remove-references-to -t ${wreq.out} "$out/bin/echidna"
-    ''
-    # make slither-analyzer a runtime dependency
-    + ''
-      wrapProgram $out/bin/echidna \
-        --prefix PATH : ${lib.makeBinPath [ slither-analyzer ]}
-    '';
-
-  doHaddock = false;
-
-  # tests depend on a specific version of solc
-  doCheck = false;
-
   homepage = "https://github.com/crytic/echidna";
-  description = "Ethereum smart contract fuzzer";
+  isExecutable = true;
   license = lib.licenses.agpl3Plus;
+  mainProgram = "echidna";
+
   maintainers = with lib.maintainers; [
     arturcygan
     hellwolf
   ];
+
   platforms = lib.platforms.unix;
-  mainProgram = "echidna";
+
+  prePatch = ''
+    hpack
+  '';
 }

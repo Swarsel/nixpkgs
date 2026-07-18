@@ -1,18 +1,17 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
-  pytestCheckHook,
-  rfc3339,
-  requests,
+  buildPythonPackage,
   freezegun,
+  pytestCheckHook,
+  requests,
+  rfc3339,
+  setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "python-logging-loki";
   version = "0.3.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "GreyZmeem";
@@ -21,6 +20,11 @@ buildPythonPackage rec {
     hash = "sha256-1qHuv+xzATo11au+QAhD1lHcLJtnVKZDdQDGohHUhiI=";
   };
 
+  nativeCheckInputs = [
+    pytestCheckHook
+    freezegun
+  ];
+
   build-system = [ setuptools ];
 
   dependencies = [
@@ -28,15 +32,10 @@ buildPythonPackage rec {
     requests
   ];
 
-  nativeCheckInputs = [
-    pytestCheckHook
-    freezegun
-  ];
-
   # ValueError
   # Considering that the package has not been updated since 2019, it is likely that this test is broken
   disabledTests = [ "test_can_build_tags_from_converting_dict" ];
-
+  pyproject = true;
   pythonImportsCheck = [ "logging_loki" ];
 
   meta = {

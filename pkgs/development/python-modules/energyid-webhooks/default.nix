@@ -1,9 +1,9 @@
 {
+  lib,
+  fetchFromGitHub,
   aiohttp,
   backoff,
   buildPythonPackage,
-  fetchFromGitHub,
-  lib,
   requests,
   setuptools,
   setuptools-scm,
@@ -12,7 +12,6 @@
 buildPythonPackage rec {
   pname = "energyid-webhooks";
   version = "0.0.14";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "EnergieID";
@@ -20,6 +19,9 @@ buildPythonPackage rec {
     tag = "v${version}";
     hash = "sha256-43JfRBtRoERHYkhXjslxjohm8ypzgObRBmzbEwuzu7M=";
   };
+
+  # upstream has no tests
+  doCheck = false;
 
   build-system = [
     setuptools
@@ -32,10 +34,8 @@ buildPythonPackage rec {
     requests
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "energyid_webhooks" ];
-
-  # upstream has no tests
-  doCheck = false;
 
   meta = {
     description = "Light weight Python package to interface with EnergyID Webhooks";

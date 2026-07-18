@@ -1,13 +1,12 @@
 {
   lib,
-  python3,
   fetchFromGitHub,
+  python3,
 }:
 
 python3.pkgs.buildPythonApplication (finalAttrs: {
   pname = "typstwriter";
   version = "0.3";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "Bzero";
@@ -33,14 +32,15 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     ];
   };
 
+  pyproject = true;
   pythonImportsCheck = [ "typstwriter" ];
 
   meta = {
-    changelog = "https://github.com/Bzero/typstwriter/releases/tag/V${finalAttrs.version}";
     description = "Integrated editor for the typst typesetting system";
     homepage = "https://github.com/Bzero/typstwriter";
+    changelog = "https://github.com/Bzero/typstwriter/releases/tag/V${finalAttrs.version}";
     license = lib.licenses.mit;
-    mainProgram = "typstwriter";
     maintainers = [ ];
+    mainProgram = "typstwriter";
   };
 })

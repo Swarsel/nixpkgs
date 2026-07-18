@@ -1,10 +1,10 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
-  versionCheckHook,
+  buildGoModule,
   nix-update-script,
   nixosTests,
+  versionCheckHook,
 }:
 
 buildGoModule (finalAttrs: {
@@ -19,6 +19,8 @@ buildGoModule (finalAttrs: {
   };
 
   vendorHash = "sha256-a92V/duqvrWEb8QSJLA5rHYYZCcJ4fBC962SEr4FJDA=";
+  doInstallCheck = true;
+  nativeInstallCheckInputs = [ versionCheckHook ];
 
   ldflags = [
     "-s"
@@ -26,25 +28,25 @@ buildGoModule (finalAttrs: {
     "-X github.com/glanceapp/glance/internal/glance.buildVersion=v${finalAttrs.version}"
   ];
 
-  nativeInstallCheckInputs = [ versionCheckHook ];
-  doInstallCheck = true;
-
   passthru = {
-    updateScript = nix-update-script { };
     tests = {
       service = nixosTests.glance;
     };
+
+    updateScript = nix-update-script { };
   };
 
   meta = {
+    description = "Self-hosted dashboard that puts all your feeds in one place";
     homepage = "https://github.com/glanceapp/glance";
     changelog = "https://github.com/glanceapp/glance/releases/tag/v${finalAttrs.version}";
-    description = "Self-hosted dashboard that puts all your feeds in one place";
-    mainProgram = "glance";
     license = lib.licenses.agpl3Only;
+
     maintainers = with lib.maintainers; [
       dvn0
       defelo
     ];
+
+    mainProgram = "glance";
   };
 })

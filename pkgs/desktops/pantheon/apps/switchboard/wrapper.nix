@@ -1,15 +1,15 @@
 {
-  wrapGAppsHook4,
-  glib,
   lib,
   stdenv,
+  glib,
   lndir,
+  plugs,
   switchboard,
   switchboardPlugs,
-  plugs,
+  wrapGAppsHook4,
+  testName ? null,
   # Only useful to disable for development testing.
   useDefaultPlugs ? true,
-  testName ? null,
 }:
 
 let
@@ -22,17 +22,11 @@ let
   testingName = lib.optionalString (testName != null) "${testName}-";
 in
 stdenv.mkDerivation {
-  pname = "${testingName}${switchboard.pname}-with-plugs";
   inherit (switchboard) version;
-
+  inherit (switchboard) meta;
+  pname = "${testingName}${switchboard.pname}-with-plugs";
   src = null;
-
-  paths = [
-    switchboard
-  ]
-  ++ selectedPlugs;
-
-  passAsFile = [ "paths" ];
+  strictDeps = true;
 
   nativeBuildInputs = [
     glib
@@ -41,14 +35,6 @@ stdenv.mkDerivation {
   ];
 
   buildInputs = lib.concatMap (x: x.buildInputs) selectedPlugs ++ selectedPlugs;
-
-  dontUnpack = true;
-  dontConfigure = true;
-  dontBuild = true;
-
-  preferLocalBuild = true;
-  allowSubstitutes = false;
-  strictDeps = true;
 
   installPhase = ''
     mkdir -p $out
@@ -68,5 +54,16 @@ stdenv.mkDerivation {
     )
   '';
 
-  inherit (switchboard) meta;
+  allowSubstitutes = false;
+  dontBuild = true;
+  dontConfigure = true;
+  dontUnpack = true;
+  passAsFile = [ "paths" ];
+
+  paths = [
+    switchboard
+  ]
+  ++ selectedPlugs;
+
+  preferLocalBuild = true;
 }

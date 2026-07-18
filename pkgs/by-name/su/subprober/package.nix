@@ -1,13 +1,12 @@
 {
   lib,
-  python3,
   fetchFromGitHub,
+  python3,
 }:
 
 python3.pkgs.buildPythonApplication (finalAttrs: {
   pname = "subprober";
   version = "1.0.9";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "RevoltSecurities";
@@ -16,6 +15,8 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     hash = "sha256-CxmePd1dw9H/XLQZ16JMF1pdFFOI59Qa2knTnKKzFvM=";
   };
 
+  # Project has no tests
+  doCheck = false;
   build-system = with python3.pkgs; [ setuptools ];
 
   dependencies = with python3.pkgs; [
@@ -37,9 +38,7 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     uvloop
   ];
 
-  # Project has no tests
-  doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "subprober" ];
 
   meta = {

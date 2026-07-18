@@ -28,10 +28,10 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   meta = {
-    homepage = "http://www.newbreedsoftware.com/vectoroids/";
-    description = "Clone of the classic arcade game Asteroids by Atari";
-    mainProgram = "vectoroids";
-    license = lib.licenses.gpl2Plus;
     inherit (SDL2.meta) platforms;
+    description = "Clone of the classic arcade game Asteroids by Atari";
+    homepage = "http://www.newbreedsoftware.com/vectoroids/";
+    license = lib.licenses.gpl2Plus;
+    mainProgram = "vectoroids";
   };
 })

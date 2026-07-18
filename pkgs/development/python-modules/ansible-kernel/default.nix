@@ -1,19 +1,19 @@
 {
   lib,
+  ansible,
+  ansible-runner,
   buildPythonPackage,
-  fetchPypi,
-  writeText,
-  setuptools,
-  ipywidgets,
-  six,
   docopt,
-  tqdm,
+  fetchPypi,
+  ipywidgets,
   jupyter,
   psutil,
-  pyyaml,
-  ansible-runner,
-  ansible,
   python,
+  pyyaml,
+  setuptools,
+  six,
+  tqdm,
+  writeText,
 }:
 
 let
@@ -26,6 +26,7 @@ let
         "-f"
         "{connection_file}"
       ];
+
       codemirror_mode = "yaml";
       display_name = "Ansible";
       language = "ansible";
@@ -35,26 +36,11 @@ in
 buildPythonPackage rec {
   pname = "ansible-kernel";
   version = "1.0.0";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
     hash = "sha256-UJjm9FpmXSznXtaIR2rVv5YJS/H83FvRkNz09vwoe0c=";
   };
-
-  build-system = [ setuptools ];
-
-  dependencies = [
-    ipywidgets
-    six
-    docopt
-    tqdm
-    jupyter
-    psutil
-    pyyaml
-    ansible-runner
-    ansible
-  ];
 
   postPatch = ''
     # remove when merged
@@ -73,6 +59,22 @@ buildPythonPackage rec {
     mkdir -p $out/share/jupyter/kernels/ansible/
     ln -s ${kernelSpecFile} $out/share/jupyter/kernels/ansible/kernel.json
   '';
+
+  build-system = [ setuptools ];
+
+  dependencies = [
+    ipywidgets
+    six
+    docopt
+    tqdm
+    jupyter
+    psutil
+    pyyaml
+    ansible-runner
+    ansible
+  ];
+
+  pyproject = true;
 
   meta = {
     description = "Ansible kernel for Jupyter";

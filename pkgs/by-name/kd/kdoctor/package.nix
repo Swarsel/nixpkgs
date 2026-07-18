@@ -16,29 +16,31 @@ stdenv.mkDerivation (finalAttrs: {
 
   nativeBuildInputs = [ unzip ];
 
-  unpackPhase = ''
-    runHook preUnpack
-    unzip $src -x META-INF/*
-    runHook postUnpack
-  '';
-
   installPhase = ''
     runHook preInstall
     install -Dm755 kdoctor -t $out/bin/
     runHook postInstall
   '';
 
+  unpackPhase = ''
+    runHook preUnpack
+    unzip $src -x META-INF/*
+    runHook postUnpack
+  '';
+
   meta = {
     description = "Environment analysis tool for Kotlin Multiplatform Mobile";
+
     longDescription = ''
       KDoctor is a command-line tool that helps to set up the environment for
       Kotlin Multiplatform Mobile app development.
     '';
+
     homepage = "https://github.com/Kotlin/kdoctor";
     license = lib.licenses.asl20;
-    mainProgram = "kdoctor";
+    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
     maintainers = with lib.maintainers; [ sironheart ];
     platforms = lib.platforms.darwin;
-    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
+    mainProgram = "kdoctor";
   };
 })

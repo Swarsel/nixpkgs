@@ -1,17 +1,16 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
+  buildPythonPackage,
   click,
   paho-mqtt,
   pytestCheckHook,
+  setuptools,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "arwn-client";
   version = "0.2.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "sdague";
@@ -20,6 +19,7 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-By4dZlzR3It4UkYss+RPsKt9Easkegv6VbLd0SSaC2U=";
   };
 
+  nativeCheckInputs = [ pytestCheckHook ];
   build-system = [ setuptools ];
 
   dependencies = [
@@ -27,8 +27,7 @@ buildPythonPackage (finalAttrs: {
     paho-mqtt
   ];
 
-  nativeCheckInputs = [ pytestCheckHook ];
-
+  pyproject = true;
   pythonImportsCheck = [ "arwn_client" ];
 
   meta = {
@@ -36,7 +35,7 @@ buildPythonPackage (finalAttrs: {
     homepage = "https://github.com/sdague/arwn-client";
     changelog = "https://github.com/sdague/arwn-client/releases/tag/${finalAttrs.src.tag}";
     license = lib.licenses.asl20;
-    mainProgram = "arwn-client";
     maintainers = [ lib.maintainers.jamiemagee ];
+    mainProgram = "arwn-client";
   };
 })

@@ -11,7 +11,6 @@
 buildPythonPackage rec {
   pname = "pytest-remotedata";
   version = "0.4.1";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
@@ -19,20 +18,17 @@ buildPythonPackage rec {
   };
 
   nativeBuildInputs = [ setuptools-scm ];
-
   buildInputs = [ pytest ];
-
   propagatedBuildInputs = [ six ];
-
-  __darwinAllowLocalNetworking = true;
-
   nativeCheckInputs = [ pytestCheckHook ];
+  __darwinAllowLocalNetworking = true;
 
   disabledTestPaths = [
     # These tests require a network connection
     "tests/test_strict_check.py"
   ];
 
+  format = "setuptools";
   pythonImportsCheck = [ "pytest_remotedata" ];
 
   meta = {

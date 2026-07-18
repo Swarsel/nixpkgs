@@ -31,12 +31,32 @@ in
   options.services.dnsproxy = {
 
     enable = mkEnableOption "dnsproxy";
-
     package = mkPackageOption pkgs "dnsproxy" { };
 
+    flags = mkOption {
+      default = [ ];
+
+      description = ''
+        A list of extra command-line flags to pass to dnsproxy. For details on the
+        available options, see <https://github.com/AdguardTeam/dnsproxy#usage>.
+        Keep in mind that options passed through command-line flags override
+        config options.
+      '';
+
+      example = [ "--upstream=1.1.1.1:53" ];
+      type = types.listOf types.str;
+    };
+
     settings = mkOption {
-      type = yaml.type;
       default = { };
+
+      description = ''
+        Contents of the {file}`config.yaml` config file.
+        The `--config-path` argument will only be passed if this set is not empty.
+
+        See <https://github.com/AdguardTeam/dnsproxy/blob/master/config.yaml.dist>.
+      '';
+
       example = literalExpression ''
         {
           bootstrap = [
@@ -53,43 +73,25 @@ in
           ];
         }
       '';
-      description = ''
-        Contents of the {file}`config.yaml` config file.
-        The `--config-path` argument will only be passed if this set is not empty.
 
-        See <https://github.com/AdguardTeam/dnsproxy/blob/master/config.yaml.dist>.
-      '';
-    };
-
-    flags = mkOption {
-      type = types.listOf types.str;
-      default = [ ];
-      example = [ "--upstream=1.1.1.1:53" ];
-      description = ''
-        A list of extra command-line flags to pass to dnsproxy. For details on the
-        available options, see <https://github.com/AdguardTeam/dnsproxy#usage>.
-        Keep in mind that options passed through command-line flags override
-        config options.
-      '';
+      type = yaml.type;
     };
 
   };
 
   config = mkIf cfg.enable {
     systemd.services.dnsproxy = {
-      description = "Simple DNS proxy with DoH, DoT, DoQ and DNSCrypt support";
       after = [
         "network.target"
         "nss-lookup.target"
       ];
-      wantedBy = [ "multi-user.target" ];
-      serviceConfig = {
-        ExecStart = "${getExe cfg.package} ${escapeShellArgs finalFlags}";
-        Restart = "always";
-        RestartSec = 10;
-        DynamicUser = true;
 
+      description = "Simple DNS proxy with DoH, DoT, DoQ and DNSCrypt support";
+
+      serviceConfig = {
         AmbientCapabilities = "CAP_NET_BIND_SERVICE";
+        DynamicUser = true;
+        ExecStart = "${getExe cfg.package} ${escapeShellArgs finalFlags}";
         LockPersonality = true;
         MemoryDenyWriteExecute = true;
         NoNewPrivileges = true;
@@ -98,20 +100,27 @@ in
         ProtectHostname = true;
         ProtectKernelLogs = true;
         RemoveIPC = true;
+        Restart = "always";
+        RestartSec = 10;
+
         RestrictAddressFamilies = [
           "AF_INET"
           "AF_INET6"
         ];
+
         RestrictNamespaces = true;
         RestrictRealtime = true;
         RestrictSUIDSGID = true;
         SystemCallArchitectures = "native";
         SystemCallErrorNumber = "EPERM";
+
         SystemCallFilter = [
           "@system-service"
           "~@privileged @resources"
         ];
       };
+
+      wantedBy = [ "multi-user.target" ];
     };
   };
 

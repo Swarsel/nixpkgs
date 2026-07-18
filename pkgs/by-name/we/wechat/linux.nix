@@ -1,14 +1,15 @@
 {
-  pname,
-  version,
-  src,
-  meta,
   appimageTools,
+  meta,
+  pname,
+  src,
+  version,
 }:
 
 let
   appimageContents = appimageTools.extract {
     inherit pname version src;
+
     postExtract = ''
       patchelf --replace-needed libtiff.so.5 libtiff.so $out/opt/wechat/wechat
     '';
@@ -16,7 +17,6 @@ let
 in
 appimageTools.wrapAppImage {
   inherit pname version meta;
-
   src = appimageContents;
 
   extraInstallCommands = ''

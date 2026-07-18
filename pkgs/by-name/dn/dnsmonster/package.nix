@@ -1,8 +1,8 @@
 {
   lib,
   stdenv,
-  buildGo125Module,
   fetchFromGitHub,
+  buildGo125Module,
   libpcap,
 }:
 
@@ -17,9 +17,8 @@ buildGo125Module (finalAttrs: {
     hash = "sha256-Ae7SzImNHOOpaaVLFHdfLrwGhaHkvZBt+s/sRoHYwzk=";
   };
 
-  vendorHash = "sha256-7rIBbaYr1dgC0ArcuwZelHKG5TLIQDV9JSBoYOcz+C0=";
-
   buildInputs = [ libpcap ];
+  vendorHash = "sha256-7rIBbaYr1dgC0ArcuwZelHKG5TLIQDV9JSBoYOcz+C0=";
 
   ldflags = [
     "-s"
@@ -33,7 +32,7 @@ buildGo125Module (finalAttrs: {
     changelog = "https://github.com/FenkoHQ/dnsmonster/releases/tag/${finalAttrs.src.tag}";
     license = lib.licenses.gpl2Only;
     maintainers = with lib.maintainers; [ fab ];
-    broken = stdenv.hostPlatform.isDarwin;
     mainProgram = "dnsmonster";
+    broken = stdenv.hostPlatform.isDarwin;
   };
 })

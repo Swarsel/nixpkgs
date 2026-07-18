@@ -17,6 +17,9 @@ stdenv.mkDerivation {
     sha256 = "0ah54nizb6iwcx277w104wsfnx05vrp4sh56d2pfxhf8xghg54m6";
   };
 
+  nativeBuildInputs = [ installShellFiles ];
+  buildInputs = [ fftw ];
+
   makeFlags = [
     "PREFIX=${placeholder "out"}"
     "CC=${stdenv.cc.targetPrefix}cc"
@@ -28,10 +31,6 @@ stdenv.mkDerivation {
     NIX_LDFLAGS = "-headerpad_max_install_names";
   };
 
-  nativeBuildInputs = [ installShellFiles ];
-
-  buildInputs = [ fftw ];
-
   postInstall = ''
     installManPage sonic.1
   ''
@@ -41,10 +40,10 @@ stdenv.mkDerivation {
 
   meta = {
     description = "Simple library to speed up or slow down speech";
-    mainProgram = "sonic";
     homepage = "https://github.com/waywardgeek/sonic";
     license = lib.licenses.asl20;
     maintainers = with lib.maintainers; [ aske ];
     platforms = lib.platforms.all;
+    mainProgram = "sonic";
   };
 }

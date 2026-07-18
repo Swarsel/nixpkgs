@@ -1,17 +1,16 @@
 {
   lib,
   buildPythonPackage,
-  fetchPypi,
-  setuptools,
   bundlewrap,
+  fetchPypi,
   passlib,
   requests,
+  setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "bundlewrap-teamvault";
   version = "3.1.5";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
@@ -28,12 +27,12 @@ buildPythonPackage rec {
 
   # upstream has no checks
   doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "bwtv" ];
 
   meta = {
-    homepage = "https://github.com/trehn/bundlewrap-teamvault";
     description = "Pull secrets from TeamVault into your BundleWrap repo";
+    homepage = "https://github.com/trehn/bundlewrap-teamvault";
     license = [ lib.licenses.gpl3 ];
     maintainers = [ ];
   };

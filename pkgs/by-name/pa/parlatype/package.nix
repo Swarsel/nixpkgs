@@ -33,6 +33,10 @@ stdenv.mkDerivation (finalAttrs: {
     sha256 = "1kjsbwr08k1kzaan555zjk37r3l5qhpgrvjb1p57dnygk2g3hsm2";
   };
 
+  postPatch = ''
+    patchShebangs libparlatype/tests/data/generate_config_data
+  '';
+
   nativeBuildInputs = [
     appstream-glib
     desktop-file-utils
@@ -62,10 +66,6 @@ stdenv.mkDerivation (finalAttrs: {
     pocketsphinx
   ];
 
-  postPatch = ''
-    patchShebangs libparlatype/tests/data/generate_config_data
-  '';
-
   mesonFlags = [
     "-Dgir=true"
     "-Dpocketsphinx=true"
@@ -75,7 +75,7 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "GNOME audio player for transcription";
-    mainProgram = "parlatype";
+
     longDescription = ''
       Parlatype is a minimal audio player for manual speech transcription,
       written for the GNOME desktop environment. It plays audio sources to
@@ -83,12 +83,16 @@ stdenv.mkDerivation (finalAttrs: {
       useful for journalists, students, scientists and whoever needs to
       transcribe audio files.
     '';
+
     homepage = "https://www.parlatype.xyz/";
     license = lib.licenses.gpl3Plus;
+
     maintainers = with lib.maintainers; [
       alexshpilkin
       melchips
     ];
+
     platforms = lib.platforms.linux;
+    mainProgram = "parlatype";
   };
 })

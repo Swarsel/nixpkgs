@@ -13,8 +13,6 @@ stdenv.mkDerivation rec {
     sha256 = "sha256-gba5hgxxO1PCN70x9tZQJRUXgYqD2T5emf3/JQol+NM=";
   };
 
-  dontUnpack = true;
-
   installPhase = ''
     runHook preInstall
 
@@ -23,6 +21,8 @@ stdenv.mkDerivation rec {
 
     runHook postInstall
   '';
+
+  dontUnpack = true;
 
   meta = {
     sourceProvenance = with lib.sourceTypes; [ binaryBytecode ];

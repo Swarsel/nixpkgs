@@ -1,20 +1,17 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
+  buildPythonPackage,
   isPy3k,
-  pexpect,
-  notebook,
   nix,
+  notebook,
+  pexpect,
+  setuptools,
 }:
 
 buildPythonPackage {
   pname = "nix-kernel";
   version = "unstable-2020-04-26";
-  pyproject = true;
-
-  disabled = !isPy3k;
 
   src = fetchFromGitHub {
     owner = "GTrunSec";
@@ -32,6 +29,8 @@ buildPythonPackage {
       --replace-fail "cmdclass={'install': install_with_kernelspec}," ""
   '';
 
+  # no tests in repo
+  doCheck = false;
   build-system = [ setuptools ];
 
   dependencies = [
@@ -39,9 +38,8 @@ buildPythonPackage {
     notebook
   ];
 
-  # no tests in repo
-  doCheck = false;
-
+  disabled = !isPy3k;
+  pyproject = true;
   pythonImportsCheck = [ "nix-kernel" ];
 
   meta = {

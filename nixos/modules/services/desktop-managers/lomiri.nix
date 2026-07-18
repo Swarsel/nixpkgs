@@ -1,7 +1,7 @@
 {
   config,
-  pkgs,
   lib,
+  pkgs,
   ...
 }:
 
@@ -15,12 +15,14 @@ in
     '';
 
     basics = lib.mkOption {
-      internal = true;
+      default = config.services.xserver.displayManager.lightdm.greeters.lomiri.enable || cfg.enable;
+
       description = ''
         Enable basic things for getting Lomiri working.
       '';
+
+      internal = true;
       type = lib.types.bool;
-      default = config.services.xserver.displayManager.lightdm.greeters.lomiri.enable || cfg.enable;
     };
   };
 
@@ -49,25 +51,27 @@ in
         ];
       };
 
-      # Override GSettings defaults
-      programs.dconf = {
-        enable = true;
-        profiles.user.databases = [
-          {
-            settings = {
-              "com/lomiri/shell/launcher" = {
-                logo-picture-uri = "file://${pkgs.nixos-icons}/share/icons/hicolor/scalable/apps/nix-snowflake-white.svg";
-                home-button-background-color = "#5277C3";
-              };
-            };
-            lockAll = true;
-          }
-        ];
-      };
-
       fonts.packages = with pkgs; [
         ubuntu-classic # Ubuntu is default font
       ];
+
+      # Override GSettings defaults
+      programs.dconf = {
+        enable = true;
+
+        profiles.user.databases = [
+          {
+            lockAll = true;
+
+            settings = {
+              "com/lomiri/shell/launcher" = {
+                home-button-background-color = "#5277C3";
+                logo-picture-uri = "file://${pkgs.nixos-icons}/share/icons/hicolor/scalable/apps/nix-snowflake-white.svg";
+              };
+            };
+          }
+        ];
+      };
 
       # Xwayland is partly hardcoded in Mir so it can't really be fully turned off, and it must be on PATH for X11 apps *and Lomiri's web browser* to work.
       # Until Mir/Lomiri can be properly used without it, force it on so everything behaves as expected.
@@ -75,6 +79,7 @@ in
 
       services.ayatana-indicators = {
         enable = true;
+
         packages = (
           with pkgs;
           [
@@ -89,9 +94,6 @@ in
 
     # Full Lomiri DE
     (lib.mkIf cfg.enable {
-      # We need the basic setup as well
-      services.desktopManager.lomiri.basics = true;
-
       environment = {
         systemPackages =
           (with pkgs; [
@@ -134,31 +136,31 @@ in
           ]);
       };
 
+      environment.pathsToLink = [
+        # Configs for inter-app data exchange system
+        "/share/lomiri-content-hub/peers"
+        # Configs for inter-app URL requests
+        "/share/lomiri-url-dispatcher/urls"
+        # Splash screens & other images for desktop apps launched via lomiri-app-launch
+        "/share/lomiri-app-launch"
+        # TODO Try to get maliit stuff working
+        "/share/maliit/plugins"
+        # At least the network indicator is still under the unity name, due to leftover Unity-isms
+        "/share/unity"
+        # Data
+        "/share/sounds"
+      ];
+
       hardware = {
         bluetooth.enable = lib.mkDefault true;
       };
 
       networking.networkmanager.enable = lib.mkDefault true;
-
-      systemd.packages = with pkgs.lomiri; [
-        hfd-service
-        lomiri-download-manager
-      ];
-
-      services.dbus.packages = with pkgs.lomiri; [
-        hfd-service
-        libusermetrics
-        lomiri-download-manager
-      ];
-
       services.accounts-daemon.enable = true;
-      services.udisks2.enable = true;
-      services.upower.enable = true;
-      services.geoclue2.enable = true;
-      services.telepathy.enable = true;
 
       services.ayatana-indicators = {
         enable = true;
+
         packages =
           (
             with pkgs;
@@ -179,40 +181,64 @@ in
           );
       };
 
-      services.gnome.evolution-data-server = {
-        enable = true;
-        plugins = [
-          # TODO: lomiri.address-book-service
-        ];
-      };
+      services.dbus.packages = with pkgs.lomiri; [
+        hfd-service
+        libusermetrics
+        lomiri-download-manager
+      ];
+
+      # We need the basic setup as well
+      services.desktopManager.lomiri.basics = true;
 
       services.displayManager = {
         defaultSession = lib.mkDefault "lomiri";
         sessionPackages = with pkgs.lomiri; [ lomiri-session ];
       };
 
+      services.geoclue2.enable = true;
+
+      services.gnome.evolution-data-server = {
+        enable = true;
+
+        plugins = [
+          # TODO: lomiri.address-book-service
+        ];
+      };
+
+      services.telepathy.enable = true;
+      services.udisks2.enable = true;
+      services.upower.enable = true;
+
       services.xserver = {
         enable = lib.mkDefault true;
+
         displayManager.lightdm = {
           enable = lib.mkDefault true;
           greeters.lomiri.enable = lib.mkDefault true;
         };
       };
 
-      environment.pathsToLink = [
-        # Configs for inter-app data exchange system
-        "/share/lomiri-content-hub/peers"
-        # Configs for inter-app URL requests
-        "/share/lomiri-url-dispatcher/urls"
-        # Splash screens & other images for desktop apps launched via lomiri-app-launch
-        "/share/lomiri-app-launch"
-        # TODO Try to get maliit stuff working
-        "/share/maliit/plugins"
-        # At least the network indicator is still under the unity name, due to leftover Unity-isms
-        "/share/unity"
-        # Data
-        "/share/sounds"
+      systemd.packages = with pkgs.lomiri; [
+        hfd-service
+        lomiri-download-manager
       ];
+
+      systemd.services = {
+        "dbus-com.lomiri.UserMetrics" = {
+          serviceConfig = {
+            BusName = "com.lomiri.UserMetrics";
+            ExecStart = "${pkgs.lomiri.libusermetrics}/libexec/libusermetrics/usermetricsservice";
+            StandardOutput = "syslog";
+            SyslogIdentifier = "com.lomiri.UserMetrics";
+            Type = "dbus";
+            User = "usermetrics";
+          }
+          // lib.optionalAttrs (!config.security.apparmor.enable) {
+            # Due to https://gitlab.com/ubports/development/core/libusermetrics/-/issues/8, auth must be disabled when not using AppArmor, lest the next database usage breaks
+            Environment = "USERMETRICS_NO_AUTH=1";
+          };
+        };
+      };
 
       systemd.user.services =
         let
@@ -226,69 +252,58 @@ in
           ];
         in
         {
+          "lomiri-polkit-agent" = {
+            after = [ lomiriService ];
+            description = "Lomiri Polkit agent";
+            partOf = [ lomiriService ];
+
+            serviceConfig = {
+              ExecStart = "${pkgs.lomiri.lomiri-polkit-agent}/libexec/lomiri-polkit-agent/policykit-agent";
+              Restart = "always";
+              Type = "simple";
+            };
+
+            wantedBy = [ lomiriService ];
+          };
+
           # Unconditionally run service that collects system-installed URL handlers before LUD
           # TODO also run user-installed one?
           "lomiri-url-dispatcher-update-system-dir" = {
-            description = "Lomiri URL dispatcher system directory updater";
-            wantedBy = [ "lomiri-url-dispatcher.service" ];
             before = [ "lomiri-url-dispatcher.service" ];
-            serviceConfig = {
-              Type = "oneshot";
-              ExecStart = "${pkgs.lomiri.lomiri-url-dispatcher}/libexec/lomiri-url-dispatcher/lomiri-update-directory /run/current-system/sw/share/lomiri-url-dispatcher/urls/";
-            };
-          };
+            description = "Lomiri URL dispatcher system directory updater";
 
-          "lomiri-polkit-agent" = {
-            description = "Lomiri Polkit agent";
-            wantedBy = [ lomiriService ];
-            after = [ lomiriService ];
-            partOf = [ lomiriService ];
             serviceConfig = {
-              Type = "simple";
-              Restart = "always";
-              ExecStart = "${pkgs.lomiri.lomiri-polkit-agent}/libexec/lomiri-polkit-agent/policykit-agent";
+              ExecStart = "${pkgs.lomiri.lomiri-url-dispatcher}/libexec/lomiri-url-dispatcher/lomiri-update-directory /run/current-system/sw/share/lomiri-url-dispatcher/urls/";
+              Type = "oneshot";
             };
+
+            wantedBy = [ "lomiri-url-dispatcher.service" ];
           };
 
           "mediascanner-2.0" = {
-            description = "Media Scanner";
-            wantedBy = lomiriServiceNames;
             before = lomiriServiceNames;
+            description = "Media Scanner";
             partOf = lomiriServiceNames;
+
             serviceConfig = {
-              Type = "dbus";
               BusName = "com.lomiri.MediaScanner2.Daemon";
-              Restart = "on-failure";
               ExecStart = "${lib.getExe pkgs.lomiri.mediascanner2}";
+              Restart = "on-failure";
+              Type = "dbus";
             };
+
+            wantedBy = lomiriServiceNames;
           };
         };
-
-      systemd.services = {
-        "dbus-com.lomiri.UserMetrics" = {
-          serviceConfig = {
-            Type = "dbus";
-            BusName = "com.lomiri.UserMetrics";
-            User = "usermetrics";
-            StandardOutput = "syslog";
-            SyslogIdentifier = "com.lomiri.UserMetrics";
-            ExecStart = "${pkgs.lomiri.libusermetrics}/libexec/libusermetrics/usermetricsservice";
-          }
-          // lib.optionalAttrs (!config.security.apparmor.enable) {
-            # Due to https://gitlab.com/ubports/development/core/libusermetrics/-/issues/8, auth must be disabled when not using AppArmor, lest the next database usage breaks
-            Environment = "USERMETRICS_NO_AUTH=1";
-          };
-        };
-      };
-
-      users.users.usermetrics = {
-        group = "usermetrics";
-        home = "/var/lib/usermetrics";
-        createHome = true;
-        isSystemUser = true;
-      };
 
       users.groups.usermetrics = { };
+
+      users.users.usermetrics = {
+        createHome = true;
+        group = "usermetrics";
+        home = "/var/lib/usermetrics";
+        isSystemUser = true;
+      };
     })
   ];
 

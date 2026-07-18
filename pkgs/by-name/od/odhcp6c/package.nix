@@ -1,8 +1,8 @@
 {
   lib,
   stdenv,
-  fetchgit,
   cmake,
+  fetchgit,
   libubox,
   unstableGitUpdater,
 }:

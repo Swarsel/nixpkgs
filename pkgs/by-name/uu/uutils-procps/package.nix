@@ -1,12 +1,12 @@
 {
   lib,
   stdenv,
-  rustPlatform,
   fetchFromGitHub,
-  pkg-config,
-  writableTmpDirAsHomeHook,
-  systemdLibs,
   nix-update-script,
+  pkg-config,
+  rustPlatform,
+  systemdLibs,
+  writableTmpDirAsHomeHook,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -20,16 +20,13 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-l47J/6M+15uzR/Vh3zHbnsSL5ZgrayqXDzHyjLQbIC8=";
   };
 
-  cargoHash = "sha256-GMKu/iTB8oWLMwmNdlGzf7WZsTg7TOdz+GacTB4kK80=";
-
-  cargoBuildFlags = [ "--workspace" ];
-
   nativeBuildInputs = [
     pkg-config
     writableTmpDirAsHomeHook
   ];
 
   buildInputs = lib.optionals (lib.meta.availableOn stdenv.hostPlatform systemdLibs) [ systemdLibs ];
+  cargoHash = "sha256-GMKu/iTB8oWLMwmNdlGzf7WZsTg7TOdz+GacTB4kK80=";
 
   checkFlags = [
     # can't run on sandbox
@@ -51,6 +48,8 @@ rustPlatform.buildRustPackage (finalAttrs: {
     # pgrep: pattern that searches for process name longer than 15 characters will result in zero matches
     "--skip=test_pgrep::test_pool_workqueue_release"
   ];
+
+  cargoBuildFlags = [ "--workspace" ];
 
   passthru.updateScript = nix-update-script {
     extraArgs = [ "--version=branch" ];

@@ -24,14 +24,13 @@ stdenv.mkDerivation (finalAttrs: {
 
   patches = [
     (fetchpatch {
-      url = "https://raw.githubusercontent.com/freebsd/freebsd-ports/21a6f0f5829384117dfc1ed11ad67954562ef7d6/devel/libev/files/patch-ev.c";
-      hash = "sha256-jaeJuCYM/U2ZNbbyA/7YOKvo0lj7Dc9L3LNJfZwcaw0=";
       extraPrefix = "";
+      hash = "sha256-jaeJuCYM/U2ZNbbyA/7YOKvo0lj7Dc9L3LNJfZwcaw0=";
+      url = "https://raw.githubusercontent.com/freebsd/freebsd-ports/21a6f0f5829384117dfc1ed11ad67954562ef7d6/devel/libev/files/patch-ev.c";
     })
   ];
 
   nativeBuildInputs = [ updateAutotoolsGnuConfigScriptsHook ];
-
   configureFlags = lib.optional static "LDFLAGS=-static";
 
   makeFlags =
@@ -45,8 +44,8 @@ stdenv.mkDerivation (finalAttrs: {
   meta = {
     description = "High-performance event loop/event model with lots of features";
     homepage = "https://software.schmorp.de/pkg/libev.html";
+    license = lib.licenses.bsd2; # or GPL2+
     maintainers = [ lib.maintainers.raskin ];
     platforms = lib.platforms.all;
-    license = lib.licenses.bsd2; # or GPL2+
   };
 })

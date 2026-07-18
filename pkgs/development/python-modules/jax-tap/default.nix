@@ -1,18 +1,14 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
+  buildPythonPackage,
   # build-system
   hatch-vcs,
   hatchling,
-
   # dependencies
   jax,
-
   # optional-dependencies
   pandas,
-
   # tests
   pytestCheckHook,
 }:
@@ -20,8 +16,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "jax-tap";
   version = "0.3.0";
-  pyproject = true;
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "arcueil";
@@ -29,6 +23,13 @@ buildPythonPackage (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-B6Y8+9FXLhHZwQ9ayomffP3P7Uz7zuL52oxzJwCE2hM=";
   };
+
+  nativeCheckInputs = [
+    pandas
+    pytestCheckHook
+  ];
+
+  __structuredAttrs = true;
 
   build-system = [
     hatch-vcs
@@ -45,12 +46,8 @@ buildPythonPackage (finalAttrs: {
     ];
   };
 
+  pyproject = true;
   pythonImportsCheck = [ "jaxtap" ];
-
-  nativeCheckInputs = [
-    pandas
-    pytestCheckHook
-  ];
 
   meta = {
     description = "Make print-debugging great again";

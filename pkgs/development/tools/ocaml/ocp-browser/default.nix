@@ -2,19 +2,17 @@
   lib,
   fetchFromGitHub,
   buildDunePackage,
-  cppo,
-  ocp-index,
   cmdliner,
-  re,
+  cppo,
   lambda-term,
+  ocp-index,
+  re,
   zed,
 }:
 
 buildDunePackage (finalAttrs: {
   pname = "ocp-browser";
   version = "1.4.1";
-
-  minimalOCamlVersion = "4.08";
 
   src = fetchFromGitHub {
     owner = "OCamlPro";
@@ -24,6 +22,7 @@ buildDunePackage (finalAttrs: {
   };
 
   nativeBuildInputs = [ cppo ];
+
   propagatedBuildInputs = [
     cmdliner
     lambda-term
@@ -32,9 +31,11 @@ buildDunePackage (finalAttrs: {
     zed
   ];
 
+  minimalOCamlVersion = "4.08";
+
   meta = {
-    homepage = "https://github.com/OCamlPro/ocp-index";
     description = "Console browser for the documentation of installed OCaml libraries";
+    homepage = "https://github.com/OCamlPro/ocp-index";
     changelog = "https://github.com/OCamlPro/ocp-index/raw/${finalAttrs.version}/CHANGES.md";
     license = lib.licenses.lgpl3;
     maintainers = with lib.maintainers; [ redianthus ];

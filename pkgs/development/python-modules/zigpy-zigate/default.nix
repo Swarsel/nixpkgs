@@ -1,12 +1,12 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   gpiozero,
   mock,
-  pyusb,
   pytest-asyncio,
   pytestCheckHook,
+  pyusb,
   setuptools,
   voluptuous,
   zigpy,
@@ -15,7 +15,6 @@
 buildPythonPackage rec {
   pname = "zigpy-zigate";
   version = "0.14.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "zigpy";
@@ -30,6 +29,11 @@ buildPythonPackage rec {
       --replace-fail 'dynamic = ["version"]' 'version = "${version}"'
   '';
 
+  nativeCheckInputs = [
+    pytest-asyncio
+    pytestCheckHook
+  ];
+
   build-system = [ setuptools ];
 
   dependencies = [
@@ -39,11 +43,7 @@ buildPythonPackage rec {
     zigpy
   ];
 
-  nativeCheckInputs = [
-    pytest-asyncio
-    pytestCheckHook
-  ];
-
+  pyproject = true;
   pythonImportsCheck = [ "zigpy_zigate" ];
 
   meta = {

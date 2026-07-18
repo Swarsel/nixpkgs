@@ -1,5 +1,4 @@
 {
-  mkDerivation,
   cmake,
   extra-cmake-modules,
   kconfig,
@@ -8,18 +7,26 @@
   kdbusaddons,
   kservice,
   kwindowsystem,
+  libxdmcp,
+  mkDerivation,
   qtbase,
   qttools,
   qtx11extras,
-  libxdmcp,
 }:
 
 mkDerivation {
   pname = "kglobalaccel";
+
+  outputs = [
+    "out"
+    "dev"
+  ];
+
   nativeBuildInputs = [
     cmake
     extra-cmake-modules
   ];
+
   buildInputs = [
     kconfig
     kcoreaddons
@@ -31,9 +38,6 @@ mkDerivation {
     qtx11extras
     libxdmcp
   ];
-  outputs = [
-    "out"
-    "dev"
-  ];
+
   propagatedBuildInputs = [ qtbase ];
 }

@@ -14,19 +14,6 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-4UOrVW15o17zHsHiQIl8m4qNC2aT5QorbkfX/UsgBRk=";
   };
 
-  env = {
-    RANLIB = "${stdenv.cc.targetPrefix}gcc-ranlib";
-    NIX_CFLAGS_COMPILE = toString (
-      [
-        "-Wno-error=implicit-int"
-        "-Wno-error=implicit-function-declaration"
-      ]
-      ++ lib.optional stdenv.cc.isGNU "-std=gnu17"
-    );
-  };
-
-  autoreconfFlags = "REGEX";
-
   strictDeps = true;
 
   nativeBuildInputs = [
@@ -34,6 +21,19 @@ stdenv.mkDerivation (finalAttrs: {
     bison
   ];
 
+  env = {
+    NIX_CFLAGS_COMPILE = toString (
+      [
+        "-Wno-error=implicit-int"
+        "-Wno-error=implicit-function-declaration"
+      ]
+      ++ lib.optional stdenv.cc.isGNU "-std=gnu17"
+    );
+
+    RANLIB = "${stdenv.cc.targetPrefix}gcc-ranlib";
+  };
+
+  autoreconfFlags = "REGEX";
   hardeningDisable = [ "format" ];
 
   meta = {

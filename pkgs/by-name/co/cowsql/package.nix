@@ -3,12 +3,12 @@
   stdenv,
   fetchFromGitHub,
   autoreconfHook,
-  pkg-config,
+  incus,
   libuv,
+  nix-update-script,
+  pkg-config,
   raft-cowsql,
   sqlite,
-  incus,
-  nix-update-script,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -22,6 +22,11 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-7djVcozWklI/0KhDC20df+H3YQbodUZaXBnQT4Ug8oI=";
   };
 
+  outputs = [
+    "dev"
+    "out"
+  ];
+
   nativeBuildInputs = [
     autoreconfHook
     pkg-config
@@ -33,27 +38,20 @@ stdenv.mkDerivation (finalAttrs: {
     sqlite
   ];
 
-  enableParallelBuilding = true;
-
   doCheck = true;
-
-  outputs = [
-    "dev"
-    "out"
-  ];
+  enableParallelBuilding = true;
 
   passthru = {
     inherit (incus) tests;
-
     updateScript = nix-update-script { };
   };
 
   meta = {
-    changelog = "https://github.com/cowsql/cowsql/releases/tag/v${finalAttrs.version}";
     description = "Embeddable, replicated and fault tolerant SQL engine";
     homepage = "https://github.com/cowsql/cowsql";
+    changelog = "https://github.com/cowsql/cowsql/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.lgpl3Only;
-    teams = with lib.teams; [ lxc ];
     platforms = lib.platforms.unix;
+    teams = with lib.teams; [ lxc ];
   };
 })

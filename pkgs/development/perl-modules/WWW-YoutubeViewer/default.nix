@@ -1,12 +1,12 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
-  buildPerlPackage,
-  LWP,
-  LWPProtocolHttps,
   DataDump,
   JSON,
+  LWP,
+  LWPProtocolHttps,
+  buildPerlPackage,
   gitUpdater,
 }:
 

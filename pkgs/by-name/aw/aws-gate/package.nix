@@ -9,7 +9,6 @@
 python3Packages.buildPythonApplication (finalAttrs: {
   pname = "aws-gate";
   version = "0.11.3";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "xen0l";
@@ -35,8 +34,6 @@ python3Packages.buildPythonApplication (finalAttrs: {
     python3Packages.wheel
   ];
 
-  pythonRelaxDeps = true;
-
   propagatedBuildInputs = [
     python3Packages.boto3
     python3Packages.cryptography
@@ -49,14 +46,17 @@ python3Packages.buildPythonApplication (finalAttrs: {
     ssm-session-manager-plugin
   ];
 
+  checkPhase = ''
+    $out/bin/aws-gate --version
+  '';
+
   postInstall = ''
     installShellCompletion --bash completions/bash/aws-gate
     installShellCompletion --zsh completions/zsh/_aws-gate
   '';
 
-  checkPhase = ''
-    $out/bin/aws-gate --version
-  '';
+  pyproject = true;
+  pythonRelaxDeps = true;
 
   meta = {
     description = "Better AWS SSM Session manager CLI client";

@@ -4,8 +4,8 @@
   fetchFromGitHub,
   autoreconfHook,
   gettext,
-  libdvdread,
   libdvdcss,
+  libdvdread,
 }:
 
 stdenv.mkDerivation {
@@ -27,6 +27,7 @@ stdenv.mkDerivation {
   nativeBuildInputs = [
     autoreconfHook
   ];
+
   buildInputs = [
     gettext # Fails on Darwin otherwise
     libdvdread

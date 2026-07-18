@@ -2,9 +2,9 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  pkg-config,
   gtk3,
   gtklock,
+  pkg-config,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -27,7 +27,6 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   makeFlags = [ "PREFIX=${placeholder "out"}" ];
-
   passthru.tests.testModule = gtklock.passthru.testModule finalAttrs.finalPackage;
 
   meta = {

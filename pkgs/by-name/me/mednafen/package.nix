@@ -1,21 +1,21 @@
 {
   lib,
+  stdenv,
+  fetchurl,
   SDL2,
   SDL2_net,
   alsa-lib,
-  fetchurl,
   flac,
-  libglut,
   libGL,
   libGLU,
-  libx11,
   libcdio,
+  libglut,
   libiconv,
   libjack2,
   libsamplerate,
   libsndfile,
+  libx11,
   pkg-config,
-  stdenv,
   zlib,
 }:
 
@@ -32,6 +32,8 @@ stdenv.mkDerivation (finalAttrs: {
     "out"
     "doc"
   ];
+
+  strictDeps = true;
 
   nativeBuildInputs = [
     SDL2
@@ -59,23 +61,21 @@ stdenv.mkDerivation (finalAttrs: {
     libiconv
   ];
 
-  hardeningDisable = [
-    "format"
-    "pic"
-  ];
-
-  enableParallelBuilding = true;
-
-  strictDeps = true;
-
   postInstall = ''
     mkdir -p $doc/share/doc
     mv Documentation $doc/share/doc/mednafen
   '';
 
+  enableParallelBuilding = true;
+
+  hardeningDisable = [
+    "format"
+    "pic"
+  ];
+
   meta = {
-    homepage = "https://mednafen.github.io/";
     description = "Portable, CLI-driven, SDL+OpenGL-based, multi-system emulator";
+
     longDescription = ''
       Mednafen is a portable, utilizing OpenGL and SDL,
       argument(command-line)-driven multi-system emulator. Mednafen has the
@@ -107,9 +107,11 @@ stdenv.mkDerivation (finalAttrs: {
       - Sega Saturn (experimental, x86_64 only)
       - Sony PlayStation
     '';
+
+    homepage = "https://mednafen.github.io/";
     license = lib.licenses.gpl2Plus;
-    mainProgram = "mednafen";
     maintainers = [ ];
     platforms = lib.platforms.unix;
+    mainProgram = "mednafen";
   };
 })

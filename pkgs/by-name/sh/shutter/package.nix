@@ -2,15 +2,15 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  perlPackages,
-  wrapGAppsHook3,
-  imagemagick,
   gdk-pixbuf,
-  librsvg,
   hicolor-icon-theme,
-  procps,
-  libwnck,
+  imagemagick,
   libappindicator-gtk3,
+  librsvg,
+  libwnck,
+  perlPackages,
+  procps,
+  wrapGAppsHook3,
   xdg-utils,
 }:
 
@@ -66,8 +66,6 @@ stdenv.mkDerivation (finalAttrs: {
   pname = "shutter";
   version = "0.99.7";
 
-  __structuredAttrs = true;
-
   src = fetchFromGitHub {
     owner = "shutter-project";
     repo = "shutter";
@@ -75,7 +73,12 @@ stdenv.mkDerivation (finalAttrs: {
     sha256 = "sha256-iri4yj2DujsEfpa6u4f5bpaOhWL0h/XbSlolkSJgKgE=";
   };
 
+  postPatch = ''
+    patchShebangs po2mo.sh
+  '';
+
   nativeBuildInputs = [ wrapGAppsHook3 ];
+
   buildInputs = [
     perlPackages.perl
     procps
@@ -91,10 +94,6 @@ stdenv.mkDerivation (finalAttrs: {
     "prefix=${placeholder "out"}"
   ];
 
-  postPatch = ''
-    patchShebangs po2mo.sh
-  '';
-
   preFixup = ''
     # make xdg-open overrideable at runtime
     gappsWrapperArgs+=(
@@ -104,12 +103,14 @@ stdenv.mkDerivation (finalAttrs: {
     )
   '';
 
+  __structuredAttrs = true;
+
   meta = {
     description = "Screenshot and annotation tool";
-    mainProgram = "shutter";
     homepage = "https://shutter-project.org/";
     license = lib.licenses.gpl3Plus;
-    platforms = lib.platforms.all;
     maintainers = [ lib.maintainers.bjornfor ];
+    platforms = lib.platforms.all;
+    mainProgram = "shutter";
   };
 })

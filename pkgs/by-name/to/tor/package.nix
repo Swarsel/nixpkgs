@@ -1,25 +1,25 @@
 {
   lib,
+  stdenv,
+  fetchurl,
   callPackage,
   coreutils,
   gnugrep,
-  stdenv,
-  fetchurl,
-  pkg-config,
-  libevent,
-  openssl,
-  zlib,
-  torsocks,
-  libseccomp,
-  systemd,
   libcap,
-  xz,
-  zstd,
-  scrypt,
-  nixosTests,
-  writeShellScript,
-  versionCheckHook,
+  libevent,
+  libseccomp,
   makeSetupHook,
+  nixosTests,
+  openssl,
+  pkg-config,
+  scrypt,
+  systemd,
+  torsocks,
+  versionCheckHook,
+  writeShellScript,
+  xz,
+  zlib,
+  zstd,
 }:
 
 let
@@ -58,6 +58,16 @@ stdenv.mkDerivation (finalAttrs: {
     "geoip"
   ];
 
+  patches = [ ./disable-monotonic-timer-tests.patch ];
+
+  postPatch = ''
+    substituteInPlace contrib/client-tools/torify \
+      --replace-fail 'command -v torsocks' 'true' \
+      --replace-fail 'exec torsocks' 'exec ${torsocks}/bin/torsocks'
+
+    patchShebangs ./scripts/maint/checkShellScripts.sh
+  '';
+
   nativeBuildInputs = [ pkg-config ];
 
   buildInputs = [
@@ -74,8 +84,6 @@ stdenv.mkDerivation (finalAttrs: {
     libcap
   ];
 
-  patches = [ ./disable-monotonic-timer-tests.patch ];
-
   configureFlags =
     # allow inclusion of GPL-licensed code (needed for Proof of Work defense for onion services)
     # for more details see
@@ -88,16 +96,6 @@ stdenv.mkDerivation (finalAttrs: {
   env = lib.optionalAttrs stdenv.cc.isGNU {
     NIX_CFLAGS_LINK = "-lgcc_s";
   };
-
-  postPatch = ''
-    substituteInPlace contrib/client-tools/torify \
-      --replace-fail 'command -v torsocks' 'true' \
-      --replace-fail 'exec torsocks' 'exec ${torsocks}/bin/torsocks'
-
-    patchShebangs ./scripts/maint/checkShellScripts.sh
-  '';
-
-  enableParallelBuilding = true;
 
   # disable tests on linux aarch32
   # https://gitlab.torproject.org/tpo/core/tor/-/issues/40912
@@ -112,30 +110,35 @@ stdenv.mkDerivation (finalAttrs: {
 
   doInstallCheck = true;
   nativeInstallCheckInputs = [ versionCheckHook ];
+  enableParallelBuilding = true;
 
   passthru = {
-    tests = {
-      inherit (nixosTests) tor;
-      proxyHook = callPackage ./proxy-hook-tests.nix {
-        tor = finalAttrs.finalPackage;
-      };
-    };
-    updateScript = callPackage ./update.nix { };
     proxyHook = makeSetupHook {
       name = "tor-proxy-hook";
+
       substitutions = {
         grep = lib.getExe gnugrep;
         tee = lib.getExe' coreutils "tee";
         tor = lib.getExe finalAttrs.finalPackage;
       };
+
       meta.license = lib.licenses.mit;
     } ./proxy-hook.sh;
+
+    tests = {
+      inherit (nixosTests) tor;
+
+      proxyHook = callPackage ./proxy-hook-tests.nix {
+        tor = finalAttrs.finalPackage;
+      };
+    };
+
+    updateScript = callPackage ./update.nix { };
   };
 
   meta = {
-    homepage = "https://www.torproject.org/";
-    donationPage = "https://donate.torproject.org/";
     description = "Anonymizing overlay network";
+
     longDescription = ''
       Tor helps improve your privacy by bouncing your communications around a
       network of relays run by volunteers all around the world: it makes it
@@ -145,15 +148,21 @@ stdenv.mkDerivation (finalAttrs: {
       instant messaging clients, remote login, and other applications based on
       the TCP protocol.
     '';
+
+    homepage = "https://www.torproject.org/";
+
     license = with lib.licenses; [
       bsd3
       gpl3Only
     ];
-    mainProgram = "tor";
+
     maintainers = with lib.maintainers; [
       thoughtpolice
       prusnak
     ];
+
     platforms = lib.platforms.unix;
+    mainProgram = "tor";
+    donationPage = "https://donate.torproject.org/";
   };
 })

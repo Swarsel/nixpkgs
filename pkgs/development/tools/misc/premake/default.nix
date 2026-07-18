@@ -32,7 +32,7 @@ stdenv.mkDerivation rec {
     homepage = "https://premake.github.io/";
     license = lib.licenses.bsd3;
     maintainers = [ lib.maintainers.bjornfor ];
-    mainProgram = "premake4";
     platforms = lib.platforms.unix;
+    mainProgram = "premake4";
   };
 }

@@ -1,34 +1,30 @@
 {
   lib,
   stdenv,
-  buildPythonPackage,
   fetchFromGitHub,
-  eigen,
-
+  buildPythonPackage,
   # build-system
   cython,
-  numpy,
-  packaging,
-  scikit-learn,
-  setuptools,
-  setuptools-scm,
-
   # dependencies
   ecos,
+  eigen,
   joblib,
   numexpr,
+  numpy,
   osqp,
+  packaging,
   pandas,
-  scipy,
-
   # tests
   pytestCheckHook,
+  scikit-learn,
+  scipy,
+  setuptools,
+  setuptools-scm,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "scikit-survival";
   version = "0.27.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "sebp";
@@ -42,6 +38,14 @@ buildPythonPackage (finalAttrs: {
       sksurv/linear_model/src/eigen
   '';
 
+  nativeCheckInputs = [ pytestCheckHook ];
+
+  # Hack needed to make pytest + cython work
+  # https://github.com/NixOS/nixpkgs/pull/82410#issuecomment-827186298
+  preCheck = ''
+    rm -rf sksurv
+  '';
+
   build-system = [
     cython
     numpy
@@ -51,9 +55,6 @@ buildPythonPackage (finalAttrs: {
     setuptools-scm
   ];
 
-  pythonRelaxDeps = [
-    "osqp"
-  ];
   dependencies = [
     ecos
     joblib
@@ -64,16 +65,6 @@ buildPythonPackage (finalAttrs: {
     scikit-learn
     scipy
   ];
-
-  pythonImportsCheck = [ "sksurv" ];
-
-  nativeCheckInputs = [ pytestCheckHook ];
-
-  # Hack needed to make pytest + cython work
-  # https://github.com/NixOS/nixpkgs/pull/82410#issuecomment-827186298
-  preCheck = ''
-    rm -rf sksurv
-  '';
 
   disabledTests = [
     # very long tests, unnecessary for a leaf package
@@ -93,6 +84,13 @@ buildPythonPackage (finalAttrs: {
     # floating point mismatch on aarch64
     # 27079905.88052468 to far from 27079905.880496684
     "test_coxnet"
+  ];
+
+  pyproject = true;
+  pythonImportsCheck = [ "sksurv" ];
+
+  pythonRelaxDeps = [
+    "osqp"
   ];
 
   meta = {

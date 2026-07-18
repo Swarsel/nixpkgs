@@ -1,15 +1,13 @@
 {
   lib,
-  python3Packages,
   fetchFromGitHub,
   python3,
+  python3Packages,
 }:
 
 python3Packages.buildPythonApplication rec {
-  __structuredAttrs = true;
   pname = "graphify";
   version = "0.4.23";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "safishamsi";
@@ -17,6 +15,8 @@ python3Packages.buildPythonApplication rec {
     tag = "v${version}";
     hash = "sha256-QEzB1tFBqGhpmI7oudMRC1Ia0CDcm+GYt6AgxMA5zDo=";
   };
+
+  __structuredAttrs = true;
 
   build-system = [
     python3.pkgs.setuptools
@@ -56,31 +56,40 @@ python3Packages.buildPythonApplication rec {
     leiden = [
       graspologic
     ];
+
     mcp = [
       mcp
     ];
+
     neo4j = [
       neo4j
     ];
+
     office = [
       openpyxl
       python-docx
     ];
+
     pdf = [
       html2text
       pypdf
     ];
+
     svg = [
       matplotlib
     ];
+
     video = [
       faster-whisper
       yt-dlp
     ];
+
     watch = [
       watchdog
     ];
   };
+
+  pyproject = true;
 
   meta = {
     description = "AI coding assistant skill. Turn any folder of code, docs, papers, images, or videos into a queryable knowledge graph.";

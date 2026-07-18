@@ -1,19 +1,19 @@
 {
   lib,
   stdenv,
-  fetchpatch2,
   fetchurl,
   cmake,
-  pkg-config,
+  fetchpatch2,
   gettext,
   gtk2,
+  harfbuzz,
   libcanberra,
   libnotify,
-  pcre,
-  sqlite,
-  libxdmcp,
   libpthread-stubs,
-  harfbuzz,
+  libxdmcp,
+  pcre,
+  pkg-config,
+  sqlite,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -25,17 +25,17 @@ stdenv.mkDerivation (finalAttrs: {
     sha256 = "0jf5i1iv8j842imgiixbhwcr6qcwa93m27lzr6gb01ri5v35kggz";
   };
 
-  patches = [
-    (fetchpatch2 {
-      url = "https://aur.archlinux.org/cgit/aur.git/plain/cmake_min_version.patch?h=libgaminggear&id=bfe7db62db76dbcefa8ba47640a35c80183f91d3";
-      hash = "sha256-loznfqxlucYlDUSYotMdUBmivKu+DD+OYhRIWpcrSgE=";
-    })
-  ];
-
   outputs = [
     "dev"
     "out"
     "bin"
+  ];
+
+  patches = [
+    (fetchpatch2 {
+      hash = "sha256-loznfqxlucYlDUSYotMdUBmivKu+DD+OYhRIWpcrSgE=";
+      url = "https://aur.archlinux.org/cgit/aur.git/plain/cmake_min_version.patch?h=libgaminggear&id=bfe7db62db76dbcefa8ba47640a35c80183f91d3";
+    })
   ];
 
   nativeBuildInputs = [
@@ -70,7 +70,7 @@ stdenv.mkDerivation (finalAttrs: {
   meta = {
     description = "Provides functionality for gaming input devices";
     homepage = "https://sourceforge.net/projects/libgaminggear/";
-    platforms = lib.platforms.linux;
     license = lib.licenses.gpl2Plus;
+    platforms = lib.platforms.linux;
   };
 })

@@ -1,14 +1,13 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   pytestCheckHook,
 }:
 
 buildPythonPackage rec {
   pname = "hsluv";
   version = "5.0.4";
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "hsluv";
@@ -18,7 +17,7 @@ buildPythonPackage rec {
   };
 
   nativeCheckInputs = [ pytestCheckHook ];
-
+  format = "setuptools";
   pythonImportsCheck = [ "hsluv" ];
 
   meta = {

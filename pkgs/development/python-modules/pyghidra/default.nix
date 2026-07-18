@@ -12,14 +12,16 @@
 buildPythonPackage (finalAttrs: {
   pname = "pyghidra";
   version = "3.1.0";
-  pyproject = true;
 
   src = fetchPypi {
     inherit (finalAttrs) pname version;
     hash = "sha256-IQasEx65pJkKee6E3C05p5LPey0N5eqvGw5tfS0pC7Y=";
   };
 
-  pythonRelaxDeps = [ "jpype1" ];
+  nativeCheckInputs = [
+    pytestCheckHook
+    pytest-datadir
+  ];
 
   build-system = [ setuptools ];
 
@@ -27,13 +29,6 @@ buildPythonPackage (finalAttrs: {
     jpype1
     packaging
   ];
-
-  nativeCheckInputs = [
-    pytestCheckHook
-    pytest-datadir
-  ];
-
-  pythonImportsCheck = [ "pyghidra" ];
 
   disabledTests = [
     # Tests require a Ghidra instance
@@ -50,6 +45,10 @@ buildPythonPackage (finalAttrs: {
     "test_open_program"
     "test_run_script"
   ];
+
+  pyproject = true;
+  pythonImportsCheck = [ "pyghidra" ];
+  pythonRelaxDeps = [ "jpype1" ];
 
   meta = {
     description = "Native CPython for Ghidra";

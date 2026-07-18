@@ -6,8 +6,8 @@
 
 {
   name,
-  description ? "",
   deps ? [ ],
+  description ? "",
   ...
 }@args:
 
@@ -15,7 +15,6 @@ stdenvNoCC.mkDerivation (
   lib.recursiveUpdate
     {
       inherit name;
-
       nativeBuildInputs = [ python3 ];
 
       buildCommand = ''

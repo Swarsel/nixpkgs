@@ -1,21 +1,21 @@
 {
+  hash,
   kafkaVersion,
   scalaVersion,
-  hash,
 }:
 
 {
   lib,
   stdenv,
   fetchurl,
-  jdk17_headless,
-  makeWrapper,
   bash,
   coreutils,
   gnugrep,
   gnused,
-  ps,
+  jdk17_headless,
+  makeWrapper,
   nixosTests,
+  ps,
 }:
 
 let
@@ -24,18 +24,17 @@ let
   seriesFile = ./. + "/${series}.nix";
 in
 stdenv.mkDerivation rec {
-  version = "${scalaVersion}-${kafkaVersion}";
   pname = "apache-kafka";
+  version = "${scalaVersion}-${kafkaVersion}";
 
   src = fetchurl {
-    url = "mirror://apache/kafka/${kafkaVersion}/kafka_${version}.tgz";
     inherit hash;
+    url = "mirror://apache/kafka/${kafkaVersion}/kafka_${version}.tgz";
   };
 
   strictDeps = true;
-  __structuredAttrs = true;
-
   nativeBuildInputs = [ makeWrapper ];
+
   buildInputs = [
     jre
     bash
@@ -69,9 +68,12 @@ stdenv.mkDerivation rec {
     chmod +x $out/bin\/*
   '';
 
+  __structuredAttrs = true;
+
   passthru = {
     inherit jre; # Used by the NixOS module to select the supported JRE
     tests.nixos = nixosTests.kafka.base.${"kafka_" + series};
+
     updateScript = [
       ./update.sh
       seriesFile
@@ -79,8 +81,8 @@ stdenv.mkDerivation rec {
   };
 
   meta = {
-    homepage = "https://kafka.apache.org";
     description = "High-throughput distributed messaging system";
+    homepage = "https://kafka.apache.org";
     license = lib.licenses.asl20;
     sourceProvenance = [ lib.sourceTypes.binaryBytecode ];
     maintainers = [ lib.maintainers.ragge ];

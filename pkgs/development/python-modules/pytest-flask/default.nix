@@ -1,27 +1,22 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # build-system
-  setuptools-scm,
-
-  # buildInputs
-  pytest,
-
+  buildPythonPackage,
   # dependencies
   flask,
-  werkzeug,
-
+  # buildInputs
+  pytest,
   # tests
   pytestCheckHook,
   pythonAtLeast,
+  # build-system
+  setuptools-scm,
+  werkzeug,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "pytest-flask";
   version = "1.3.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "pytest-dev";
@@ -30,18 +25,14 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-mcBHpP6A+ehqowDccfcn+wv6WXRrF0cY9ez7kqkb3Hc=";
   };
 
-  build-system = [ setuptools-scm ];
-
   buildInputs = [ pytest ];
+  nativeCheckInputs = [ pytestCheckHook ];
+  build-system = [ setuptools-scm ];
 
   dependencies = [
     flask
     werkzeug
   ];
-
-  pythonImportsCheck = [ "pytest_flask" ];
-
-  nativeCheckInputs = [ pytestCheckHook ];
 
   disabledTests = lib.optionals (pythonAtLeast "3.14") [
     # Failed: nomatch: '*PASSED*'
@@ -60,6 +51,9 @@ buildPythonPackage (finalAttrs: {
     "test_stop_cleanly_join_exception"
     "test_url_for"
   ];
+
+  pyproject = true;
+  pythonImportsCheck = [ "pytest_flask" ];
 
   meta = {
     description = "Set of pytest fixtures to test Flask applications";

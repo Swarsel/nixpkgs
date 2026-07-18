@@ -1,8 +1,7 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
-  makeWrapper,
   apk-tools,
   coreutils,
   dosfstools,
@@ -11,6 +10,7 @@
   gnugrep,
   gnused,
   kmod,
+  makeWrapper,
   qemu-utils,
   rsync,
   util-linux,
@@ -28,8 +28,6 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   nativeBuildInputs = [ makeWrapper ];
-
-  dontBuild = true;
   makeFlags = [ "PREFIX=$(out)" ];
 
   postInstall = ''
@@ -50,9 +48,11 @@ stdenv.mkDerivation (finalAttrs: {
     }
   '';
 
+  dontBuild = true;
+
   meta = {
-    homepage = "https://github.com/alpinelinux/alpine-make-vm-image";
     description = "Make customized Alpine Linux disk image for virtual machines";
+    homepage = "https://github.com/alpinelinux/alpine-make-vm-image";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ wegank ];
     platforms = lib.platforms.unix;

@@ -2,10 +2,10 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  udev,
   go-md2man,
-  linuxHeaders,
   installShellFiles,
+  linuxHeaders,
+  udev,
   versionCheckHook,
 }:
 
@@ -27,13 +27,12 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   strictDeps = true;
-  __structuredAttrs = true;
-  enableParallelBuilding = true;
 
   nativeBuildInputs = [
     go-md2man
     installShellFiles
   ];
+
   buildInputs = [ udev ];
 
   preBuild = ''
@@ -49,14 +48,16 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
-  nativeInstallCheckInputs = [ versionCheckHook ];
   doInstallCheck = true;
+  nativeInstallCheckInputs = [ versionCheckHook ];
+  __structuredAttrs = true;
+  enableParallelBuilding = true;
 
   meta = {
-    homepage = "https://github.com/jgeumlek/MoltenGamepad";
     description = "Flexible Linux input device translator, geared for gamepads";
-    mainProgram = "moltengamepad";
+    homepage = "https://github.com/jgeumlek/MoltenGamepad";
     license = lib.licenses.mit;
     platforms = lib.platforms.linux;
+    mainProgram = "moltengamepad";
   };
 })

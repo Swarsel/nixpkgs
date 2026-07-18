@@ -1,8 +1,8 @@
 {
-  cmake,
   lib,
   stdenv,
   fetchFromGitHub,
+  cmake,
   gitUpdater,
   mbedtls,
 }:
@@ -18,8 +18,6 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-9VqLl1pDmi8TauBA8uCyymzsYd3w4b5AKtqH7XW80N4=";
   };
 
-  sourceRoot = "${finalAttrs.src.name}/lib60870-C";
-
   postPatch = ''
     substituteInPlace CMakeLists.txt \
       --replace-fail "cmake_minimum_required(VERSION 3.0)" "cmake_minimum_required(VERSION 3.10)"
@@ -29,16 +27,12 @@ stdenv.mkDerivation (finalAttrs: {
       --replace-warn "-lrt" ""
   '';
 
-  separateDebugInfo = true;
-
   nativeBuildInputs = [ cmake ];
-
   buildInputs = [ mbedtls ];
-
   cmakeFlags = [ (lib.cmakeBool "WITH_MBEDTLS3" true) ];
-
   env.NIX_LDFLAGS = "-lmbedcrypto -lmbedx509 -lmbedtls";
-
+  separateDebugInfo = true;
+  sourceRoot = "${finalAttrs.src.name}/lib60870-C";
   passthru.updateScript = gitUpdater { rev-prefix = "v"; };
 
   meta = {

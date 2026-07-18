@@ -1,14 +1,13 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   python,
 }:
 
 buildPythonPackage rec {
   pname = "pylev";
   version = "1.4.0";
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "toastdriven";
@@ -21,6 +20,7 @@ buildPythonPackage rec {
     ${python.interpreter} -m unittest tests
   '';
 
+  format = "setuptools";
   pythonImportsCheck = [ "pylev" ];
 
   meta = {

@@ -5,20 +5,23 @@
   fetchPypi,
   numpy,
   pytestCheckHook,
+  scipy,
   setuptools,
   setuptools-scm,
-  scipy,
 }:
 
 buildPythonPackage rec {
   pname = "dmsuite";
   version = "0.3.0";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
     hash = "sha256-IqLsHkGNgPz2yZm0QMyMMo6Mr2RsU2DPGxYpoNwC3fs=";
   };
+
+  nativeCheckInputs = [
+    pytestCheckHook
+  ];
 
   build-system = [
     setuptools
@@ -30,15 +33,12 @@ buildPythonPackage rec {
     scipy
   ];
 
-  nativeCheckInputs = [
-    pytestCheckHook
-  ];
-
   # Slight precision error probably due to different BLAS backend on Darwin
   disabledTests = lib.optionals (stdenv.hostPlatform.isDarwin && stdenv.hostPlatform.isAarch64) [
     "test_cheb_scaled"
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "dmsuite" ];
 
   meta = {

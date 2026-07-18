@@ -9,21 +9,18 @@
 buildPythonPackage rec {
   pname = "textualeffects";
   version = "0.2.0";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
     hash = "sha256-5C84ZdvcgVgxroFZycOdHdB4my3qK8b4wVxD4kd+XfE=";
   };
 
-  build-system = [ hatchling ];
-
-  dependencies = [ terminaltexteffects ];
-
-  pythonImportsCheck = [ "textualeffects" ];
-
   # no tests implemented
   doCheck = false;
+  build-system = [ hatchling ];
+  dependencies = [ terminaltexteffects ];
+  pyproject = true;
+  pythonImportsCheck = [ "textualeffects" ];
 
   meta = {
     description = "Visual effects for Textual, a TerminalTextEffects wrapper";

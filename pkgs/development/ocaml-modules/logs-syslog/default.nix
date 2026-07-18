@@ -3,14 +3,15 @@
   fetchurl,
   buildDunePackage,
   logs,
-  syslog-message,
   ptime,
+  syslog-message,
   version ? "0.5.0",
 }:
 
 buildDunePackage {
-  pname = "logs-syslog";
   inherit version;
+  pname = "logs-syslog";
+
   src = fetchurl {
     url = "https://github.com/hannesm/logs-syslog/releases/download/v${version}/logs-syslog-${version}.tbz";
     hash = "sha256-rx7mksA8y1BCEisNTQwSsJaet42eR7tZ3gYzvCqrYNQ=";

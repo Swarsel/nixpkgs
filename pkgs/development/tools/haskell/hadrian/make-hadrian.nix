@@ -22,8 +22,8 @@
 # expose all possible compile time customization in a common interface and
 # take care of all differences between Hadrian versions.
 {
-  bootPkgs,
   lib,
+  bootPkgs,
 }:
 
 {

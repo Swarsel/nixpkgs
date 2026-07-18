@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   nix-update-script,
   replaceVars,
 }:
@@ -25,7 +25,6 @@ buildGoModule (finalAttrs: {
   ];
 
   vendorHash = "sha256-vXezNFEM/m5doVgt6T2+Q0PwP3lYALkhHD0cP4ul+JE=";
-
   subPackages = [ "cmd/flottbot" ];
 
   passthru = {
@@ -36,9 +35,9 @@ buildGoModule (finalAttrs: {
     description = "Chatbot framework written in Go";
     homepage = "https://github.com/target/flottbot";
     license = lib.licenses.asl20;
-    maintainers = with lib.maintainers; [ bryanhonof ];
     sourceProvenance = [ lib.sourceTypes.fromSource ];
-    mainProgram = "flottbot";
+    maintainers = with lib.maintainers; [ bryanhonof ];
     platforms = lib.platforms.unix;
+    mainProgram = "flottbot";
   };
 })

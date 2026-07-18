@@ -1,37 +1,36 @@
 {
   lib,
+  fetchFromGitLab,
+  appstream-glib,
+  desktop-file-utils,
+  gdk-pixbuf,
+  gettext,
+  glib,
+  gobject-introspection,
+  gtk4,
+  gtksourceview5,
+  libadwaita,
   meson,
   ninja,
-  pkg-config,
-  gettext,
-  fetchFromGitLab,
-  python3Packages,
-  wrapGAppsHook4,
-  opensc,
-  gtk4,
-  glib,
-  gdk-pixbuf,
-  gobject-introspection,
-  desktop-file-utils,
-  shared-mime-info,
-  appstream-glib,
-  libadwaita,
-  gtksourceview5,
-  xvfb-run,
   nix-update-script,
+  opensc,
+  pkg-config,
+  python3Packages,
+  shared-mime-info,
+  wrapGAppsHook4,
+  xvfb-run,
 }:
 
 python3Packages.buildPythonApplication (finalAttrs: {
   pname = "gnome-secrets";
   version = "12.3";
-  pyproject = false;
 
   src = fetchFromGitLab {
-    domain = "gitlab.gnome.org";
     owner = "World";
     repo = "secrets";
     tag = finalAttrs.version;
     hash = "sha256-ypkzswfX/qdVtMja2oky8Gein2BO1gzDvjbtcd3Javc=";
+    domain = "gitlab.gnome.org";
   };
 
   postPatch = ''
@@ -61,18 +60,6 @@ python3Packages.buildPythonApplication (finalAttrs: {
     gtksourceview5
   ];
 
-  dependencies = with python3Packages; [
-    pygobject3
-    construct
-    pyhibp
-    pykcs11
-    pykeepass
-    pyotp
-    validators
-    yubico
-    zxcvbn-rs-py
-  ];
-
   doCheck = true;
 
   nativeCheckInputs = [
@@ -90,10 +77,22 @@ python3Packages.buildPythonApplication (finalAttrs: {
     runHook postCheck
   '';
 
+  dependencies = with python3Packages; [
+    pygobject3
+    construct
+    pyhibp
+    pykcs11
+    pykeepass
+    pyotp
+    validators
+    yubico
+    zxcvbn-rs-py
+  ];
+
   # Prevent double wrapping, let the Python wrapper use the args in preFixup.
   dontWrapGApps = true;
-
   makeWrapperArgs = [ "\${gappsWrapperArgs[@]}" ];
+  pyproject = false;
 
   passthru = {
     updateScript = nix-update-script { };
@@ -104,9 +103,9 @@ python3Packages.buildPythonApplication (finalAttrs: {
     homepage = "https://gitlab.gnome.org/World/secrets";
     changelog = "https://gitlab.gnome.org/World/secrets/-/releases/${finalAttrs.version}";
     license = lib.licenses.gpl3Only;
-    platforms = lib.platforms.linux;
     maintainers = with lib.maintainers; [ mvnetbiz ];
-    teams = [ lib.teams.gnome-circle ];
+    platforms = lib.platforms.linux;
     mainProgram = "secrets";
+    teams = [ lib.teams.gnome-circle ];
   };
 })

@@ -2,15 +2,15 @@
   lib,
   stdenv,
   fetchurl,
-  fetchpatch,
-  xmlto,
-  docbook_xml_dtd_412,
-  docbook_xsl,
   autoconf,
   autoconf269,
   automake,
-  libtool,
   autoreconfHook,
+  docbook_xml_dtd_412,
+  docbook_xsl,
+  fetchpatch,
+  libtool,
+  xmlto,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -22,35 +22,23 @@ stdenv.mkDerivation (finalAttrs: {
     sha256 = "1khpasr6l0a8nfz6kcf3s81vgdab8fm2dj291n5r2s53k228kx2p";
   };
 
-  postPatch = ''
-    sed -i s,/usr/share/sgml/docbook/xml-dtd-4.1.2/,${docbook_xml_dtd_412}/xml/dtd/docbook/, \
-      docsrc/*.xml
-  '';
-
   patches = [
     (fetchpatch {
-      url = "https://gitweb.gentoo.org/repo/gentoo.git/plain/app-text/opensp/files/opensp-1.5.2-c11-using.patch?id=688d9675782dfc162d4e6cff04c668f7516118d0";
       sha256 = "04q14s8qsad0bkjmj067dn831i0r6v7742rafdlnbfm5y249m2q6";
+      url = "https://gitweb.gentoo.org/repo/gentoo.git/plain/app-text/opensp/files/opensp-1.5.2-c11-using.patch?id=688d9675782dfc162d4e6cff04c668f7516118d0";
     })
     (fetchpatch {
+      hash = "sha256-6pNsVh3BErAN4lyykhFJqCydplh4cVvxgwc5MuWFd+A=";
       name = "opensp-1.5.2-gcc15-musl.patch";
       url = "https://gitweb.gentoo.org/repo/gentoo.git/plain/app-text/opensp/files/opensp-1.5.2-gcc15-musl.patch?id=7143f4a01836f8991d6c90b61fa919e88bf9a0fd";
-      hash = "sha256-6pNsVh3BErAN4lyykhFJqCydplh4cVvxgwc5MuWFd+A=";
     })
     # Clang 16 defaults to C++17, which does not allow `register` as a storage class specifier.
     ./fix-register-storage-class.patch
   ];
 
-  setupHook = ./setup-hook.sh;
-
-  postFixup = ''
-    # Remove random ids in the release notes
-    sed -i -e 's/href="#idm.*"//g' $out/share/doc/OpenSP/releasenotes.html
-    sed -i -e 's/name="idm.*"//g' $out/share/doc/OpenSP/releasenotes.html
-  '';
-
-  preConfigure = lib.optionalString stdenv.hostPlatform.isCygwin ''
-    autoreconf -fi
+  postPatch = ''
+    sed -i s,/usr/share/sgml/docbook/xml-dtd-4.1.2/,${docbook_xml_dtd_412}/xml/dtd/docbook/, \
+      docsrc/*.xml
   '';
 
   strictDeps = true;
@@ -77,13 +65,25 @@ stdenv.mkDerivation (finalAttrs: {
     NIX_CFLAGS_COMPILE = "-fpermissive";
   };
 
+  preConfigure = lib.optionalString stdenv.hostPlatform.isCygwin ''
+    autoreconf -fi
+  '';
+
   doCheck = false; # fails
+
+  postFixup = ''
+    # Remove random ids in the release notes
+    sed -i -e 's/href="#idm.*"//g' $out/share/doc/OpenSP/releasenotes.html
+    sed -i -e 's/name="idm.*"//g' $out/share/doc/OpenSP/releasenotes.html
+  '';
+
+  setupHook = ./setup-hook.sh;
 
   meta = {
     description = "Suite of SGML/XML processing tools";
-    license = lib.licenses.mit;
     homepage = "https://openjade.sourceforge.net/";
-    platforms = lib.platforms.unix;
+    license = lib.licenses.mit;
     maintainers = [ ];
+    platforms = lib.platforms.unix;
   };
 })

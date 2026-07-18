@@ -4,9 +4,9 @@
   fetchFromGitHub,
   freetype,
   libx11,
+  libxft,
   libxi,
   libxt,
-  libxft,
 }:
 
 stdenv.mkDerivation {
@@ -27,16 +27,15 @@ stdenv.mkDerivation {
       --replace "RXPATH=/usr/bin/ssh" "RXPATH=ssh"
   '';
 
-  env.CFLAGS = "-D_DARWIN_C_SOURCE";
-  makeFlags = [ "DESTDIR=$(out)" ];
   buildInputs = [
     libx11
     libxi
     libxt
     libxft
   ];
-  # build fails when run in parallel
-  enableParallelBuilding = false;
+
+  makeFlags = [ "DESTDIR=$(out)" ];
+  env.CFLAGS = "-D_DARWIN_C_SOURCE";
 
   postInstall = ''
     substituteInPlace deadpixi-sam.desktop \
@@ -47,9 +46,12 @@ stdenv.mkDerivation {
     mv sam.svg $out/share/icons/hicolor/scalable/apps
   '';
 
+  # build fails when run in parallel
+  enableParallelBuilding = false;
+
   meta = {
-    homepage = "https://github.com/deadpixi/sam";
     description = "Updated version of the sam text editor";
+    homepage = "https://github.com/deadpixi/sam";
     license = lib.licenses.lpl-102;
     maintainers = with lib.maintainers; [ ramkromberg ];
     platforms = lib.platforms.unix;

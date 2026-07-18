@@ -1,14 +1,13 @@
 {
   lib,
   stdenv,
-  python3,
   fetchFromGitHub,
+  python3,
 }:
 
 python3.pkgs.buildPythonApplication (finalAttrs: {
   pname = "donpapi";
   version = "1.2.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "login-securite";
@@ -17,12 +16,8 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     hash = "sha256-60aGnsr36X3mf91nH9ud0xyLBqKgzZ4ALucrLGpAuzQ=";
   };
 
-  pythonRelaxDeps = [
-    "cryptography"
-    "impacket"
-    "pyasn1"
-  ];
-
+  # Project has no tests
+  doCheck = false;
   build-system = with python3.pkgs; [ poetry-core ];
 
   dependencies = with python3.pkgs; [
@@ -34,10 +29,14 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     setuptools
   ];
 
-  # Project has no tests
-  doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "donpapi" ];
+
+  pythonRelaxDeps = [
+    "cryptography"
+    "impacket"
+    "pyasn1"
+  ];
 
   meta = {
     description = "Tool for dumping DPAPI credentials remotely";

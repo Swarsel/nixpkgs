@@ -14,8 +14,8 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   meta = {
-    homepage = "https://libdbi.sourceforge.net/";
     description = "DB independent interface to DB";
+    homepage = "https://libdbi.sourceforge.net/";
     license = lib.licenses.lgpl21;
     platforms = lib.platforms.all;
   };

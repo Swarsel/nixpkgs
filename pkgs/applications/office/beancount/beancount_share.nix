@@ -1,9 +1,9 @@
 {
   lib,
-  python3,
   fetchFromGitHub,
   beancount,
   beancount-plugin-utils,
+  python3,
 }:
 
 python3.pkgs.buildPythonApplication rec {
@@ -17,20 +17,20 @@ python3.pkgs.buildPythonApplication rec {
     sha256 = "sha256-BW2KEC0pmervT71FBixPcQciEuGcElCd2wW7BZL1xUg=";
   };
 
-  pyproject = true;
+  buildInputs = [
+    python3.pkgs.setuptools
+  ];
 
   propagatedBuildInputs = [
     beancount
     beancount-plugin-utils
   ];
 
-  buildInputs = [
-    python3.pkgs.setuptools
-  ];
+  pyproject = true;
 
   meta = {
-    homepage = "https://github.com/akuukis/beancount_share";
     description = "Beancount plugin to share expenses with external partners within one ledger";
+    homepage = "https://github.com/akuukis/beancount_share";
     license = lib.licenses.agpl3Plus;
     maintainers = with lib.maintainers; [ matthiasbeyer ];
   };

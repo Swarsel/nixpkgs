@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule (finalAttrs: {
@@ -19,9 +19,9 @@ buildGoModule (finalAttrs: {
 
   meta = {
     description = "Generic gRPC command line client";
-    mainProgram = "grpc-client-cli";
-    maintainers = with lib.maintainers; [ Philipp-M ];
     homepage = "https://github.com/vadimi/grpc-client-cli";
     license = lib.licenses.mit;
+    maintainers = with lib.maintainers; [ Philipp-M ];
+    mainProgram = "grpc-client-cli";
   };
 })

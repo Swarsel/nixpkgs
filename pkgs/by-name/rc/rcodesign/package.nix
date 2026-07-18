@@ -1,11 +1,11 @@
 {
   lib,
   stdenv,
-  rustPlatform,
   fetchFromGitHub,
+  nix-update-script,
+  rustPlatform,
   uutils-coreutils,
   versionCheckHook,
-  nix-update-script,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -20,11 +20,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
   };
 
   cargoHash = "sha256-KJsTOviCFZ/1eNJLM4+QmK8h6laxN1POl7YMJyu9/g8=";
-
-  cargoBuildFlags = [
-    # Only build the binary we want
-    "--bin=rcodesign"
-  ];
 
   checkFlags = [
     # Does network IO
@@ -50,10 +45,16 @@ rustPlatform.buildRustPackage (finalAttrs: {
     ln -s '${lib.getExe' uutils-coreutils "uutils-coreutils"}' "$coreutils_dir/coreutils"
   '';
 
+  doInstallCheck = true;
+
   nativeInstallCheckInputs = [
     versionCheckHook
   ];
-  doInstallCheck = true;
+
+  cargoBuildFlags = [
+    # Only build the binary we want
+    "--bin=rcodesign"
+  ];
 
   passthru = {
     updateScript = nix-update-script { };
@@ -61,7 +62,7 @@ rustPlatform.buildRustPackage (finalAttrs: {
 
   meta = {
     description = "Cross-platform CLI interface to interact with Apple code signing";
-    mainProgram = "rcodesign";
+
     longDescription = ''
       rcodesign provides various commands to interact with Apple signing,
       including signing and notarizing binaries, generating signing
@@ -69,9 +70,11 @@ rustPlatform.buildRustPackage (finalAttrs: {
 
       For more information, refer to the [documentation](https://gregoryszorc.com/docs/apple-codesign/stable/apple_codesign_rcodesign.html).
     '';
+
     homepage = "https://github.com/indygreg/apple-platform-rs";
     changelog = "https://github.com/indygreg/apple-platform-rs/releases/tag/apple-codesign%2F${finalAttrs.version}";
     license = lib.licenses.mpl20;
     maintainers = with lib.maintainers; [ euank ];
+    mainProgram = "rcodesign";
   };
 })

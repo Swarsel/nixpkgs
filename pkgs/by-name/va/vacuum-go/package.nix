@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   testers,
 }:
 
@@ -17,8 +17,8 @@ buildGoModule (finalAttrs: {
   };
 
   vendorHash = "sha256-/0dAwcg3s5dTu97msrnwuOWjeCbmYJqxcldC2xLm3y0=";
-
   env.CGO_ENABLED = 0;
+
   ldflags = [
     "-s"
     "-w"
@@ -29,9 +29,9 @@ buildGoModule (finalAttrs: {
 
   passthru = {
     tests.version = testers.testVersion {
-      package = finalAttrs.finalPackage;
-      command = "vacuum version";
       version = "v${finalAttrs.version}";
+      command = "vacuum version";
+      package = finalAttrs.finalPackage;
     };
   };
 
@@ -40,7 +40,7 @@ buildGoModule (finalAttrs: {
     homepage = "https://quobix.com/vacuum";
     changelog = "https://github.com/daveshanley/vacuum/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.mit;
-    mainProgram = "vacuum";
     maintainers = with lib.maintainers; [ konradmalik ];
+    mainProgram = "vacuum";
   };
 })

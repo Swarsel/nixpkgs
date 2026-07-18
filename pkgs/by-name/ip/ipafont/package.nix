@@ -1,8 +1,8 @@
 {
   lib,
-  stdenvNoCC,
   fetchzip,
   installFonts,
+  stdenvNoCC,
 }:
 
 stdenvNoCC.mkDerivation {
@@ -18,11 +18,13 @@ stdenvNoCC.mkDerivation {
 
   meta = {
     description = "Japanese font package with Mincho and Gothic fonts";
+
     longDescription = ''
       IPAFont is a Japanese font developed by the Information-technology
       Promotion Agency of Japan. It provides both Mincho and Gothic fonts,
       suitable for both display and printing.
     '';
+
     homepage = "https://moji.or.jp/ipafont/";
     license = lib.licenses.ipa;
     maintainers = [ lib.maintainers.auntie ];

@@ -1,11 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # build-system
-  setuptools,
-
+  buildPythonPackage,
   # dependencies
   datasets,
   fastapi,
@@ -15,22 +11,22 @@
   numpy,
   opencv-python,
   pillow,
-  requests,
-  tqdm,
-  transformers,
-  uvicorn,
-
   # tests
   psutil,
   pytestCheckHook,
+  requests,
   rich,
   sentencepiece,
+  # build-system
+  setuptools,
+  tqdm,
+  transformers,
+  uvicorn,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "mlx-vlm";
   version = "0.4.4";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "Blaizzy";
@@ -38,6 +34,13 @@ buildPythonPackage (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-08cSwN8IkERxUaXyT9qAg9vmLw7FvU5qDygAkDsOxpU=";
   };
+
+  nativeCheckInputs = [
+    psutil
+    pytestCheckHook
+    rich
+    sentencepiece
+  ];
 
   build-system = [
     setuptools
@@ -58,13 +61,13 @@ buildPythonPackage (finalAttrs: {
     uvicorn
   ];
 
-  pythonImportsCheck = [ "mlx_vlm" ];
+  disabledTestPaths = [
+    # ImportError: cannot import name 'get_class_predicate' from 'mlx_vlm.utils'
+    # This function is indeed not exposed by `mlx_vlm.utils`
+    "mlx_vlm/tests/test_utils.py"
 
-  nativeCheckInputs = [
-    psutil
-    pytestCheckHook
-    rich
-    sentencepiece
+    # fixture 'model_path' not found
+    "mlx_vlm/tests/test_smoke.py"
   ];
 
   disabledTests = [
@@ -81,14 +84,8 @@ buildPythonPackage (finalAttrs: {
     "test_turboquant_prod_is_nearly_unbiased_across_seeds"
   ];
 
-  disabledTestPaths = [
-    # ImportError: cannot import name 'get_class_predicate' from 'mlx_vlm.utils'
-    # This function is indeed not exposed by `mlx_vlm.utils`
-    "mlx_vlm/tests/test_utils.py"
-
-    # fixture 'model_path' not found
-    "mlx_vlm/tests/test_smoke.py"
-  ];
+  pyproject = true;
+  pythonImportsCheck = [ "mlx_vlm" ];
 
   meta = {
     description = "Inference and fine-tuning of Vision Language Models (VLMs) on your Mac using MLX";

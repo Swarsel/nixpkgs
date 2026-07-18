@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule (finalAttrs: {
@@ -16,15 +16,6 @@ buildGoModule (finalAttrs: {
   };
 
   vendorHash = "sha256-GPnhE85mHg4KyPeB6+fUP4Y1MlpYTgidqawPddg5kyw=";
-
-  tags = [
-    "netgo"
-    "osusergo"
-    "sqlite_foreign_keys"
-    "sqlite_math_functions"
-    "sqlite_omit_load_extension"
-    "sqlite_unlock_notify"
-  ];
 
   # skip several tests that need network access
   checkFlags =
@@ -61,6 +52,15 @@ buildGoModule (finalAttrs: {
     # we don't need this binary and it messes with our real python
     rm $out/bin/python
   '';
+
+  tags = [
+    "netgo"
+    "osusergo"
+    "sqlite_foreign_keys"
+    "sqlite_math_functions"
+    "sqlite_omit_load_extension"
+    "sqlite_unlock_notify"
+  ];
 
   meta = {
     description = "API for logging parameters and metrics when running machine learning code";

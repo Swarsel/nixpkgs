@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   py,
   pytest-benchmark,
   pytest-mock,
@@ -12,7 +12,6 @@
 buildPythonPackage rec {
   pname = "getmac";
   version = "0.9.5";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "GhostofGoes";
@@ -21,14 +20,14 @@ buildPythonPackage rec {
     hash = "sha256-ZbTCbbASs7+ChmgcDePXSbiHOst6/eCkq9SiKgYhFyM=";
   };
 
-  build-system = [ setuptools ];
-
   nativeCheckInputs = [
     py
     pytest-benchmark
     pytest-mock
     pytestCheckHook
   ];
+
+  build-system = [ setuptools ];
 
   disabledTests = [
     # Disable CLI tests
@@ -42,8 +41,8 @@ buildPythonPackage rec {
     "test_initialize_method_cache_valid_types"
   ];
 
+  pyproject = true;
   pytestFlags = [ "--benchmark-disable" ];
-
   pythonImportsCheck = [ "getmac" ];
 
   meta = {

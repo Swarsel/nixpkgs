@@ -2,18 +2,18 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  writeText,
+  coreutils,
   glib,
+  gnome-desktop,
+  gnupg,
+  gtk3,
   meson,
   ninja,
   pkg-config,
   python3,
-  coreutils,
-  gnome-desktop,
-  gnupg,
-  gtk3,
   systemdMinimal,
   udisks,
+  writeText,
   xz,
 }:
 
@@ -30,6 +30,7 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   strictDeps = true;
+
   nativeBuildInputs = [
     glib
     gnupg
@@ -38,6 +39,7 @@ stdenv.mkDerivation (finalAttrs: {
     pkg-config
     python3
   ];
+
   buildInputs = [
     gnome-desktop
     gtk3
@@ -45,13 +47,6 @@ stdenv.mkDerivation (finalAttrs: {
     udisks
     xz
   ];
-
-  preConfigure = ''
-    patchShebangs tests
-    substituteInPlace tests/test-scribe.c \
-        --replace /bin/true ${coreutils}/bin/true \
-        --replace /bin/false ${coreutils}/bin/false
-  '';
 
   mesonFlags = [
     "--libexecdir=${placeholder "out"}/bin"
@@ -63,16 +58,22 @@ stdenv.mkDerivation (finalAttrs: {
 
   env.PKG_CONFIG_SYSTEMD_SYSTEMDSYSTEMUNITDIR = "${placeholder "out"}/lib/systemd/system";
 
-  doCheck = true;
+  preConfigure = ''
+    patchShebangs tests
+    substituteInPlace tests/test-scribe.c \
+        --replace /bin/true ${coreutils}/bin/true \
+        --replace /bin/false ${coreutils}/bin/false
+  '';
 
+  doCheck = true;
   enableParallelBuilding = true;
 
   meta = {
-    homepage = "https://github.com/endlessm/eos-installer";
     description = "Installer UI which writes images to disk";
+    homepage = "https://github.com/endlessm/eos-installer";
     license = lib.licenses.gpl2Plus;
     maintainers = with lib.maintainers; [ qyliss ];
-    mainProgram = "gnome-image-installer";
     platforms = lib.platforms.linux;
+    mainProgram = "gnome-image-installer";
   };
 })

@@ -1,13 +1,12 @@
 {
   lib,
-  python3,
   fetchFromGitHub,
+  python3,
 }:
 
 python3.pkgs.buildPythonApplication (finalAttrs: {
   pname = "sqlmc";
   version = "1.1.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "malvads";
@@ -32,6 +31,7 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     yarl
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "sqlmc" ];
 
   meta = {

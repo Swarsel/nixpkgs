@@ -1,16 +1,16 @@
 {
   lib,
-  fetchFromGitLab,
   stdenv,
-  rustPlatform,
+  fetchFromGitLab,
   cargo,
-  rustc,
   libadwaita,
   meson,
   ninja,
   nix-update-script,
   pkg-config,
   python3,
+  rustPlatform,
+  rustc,
   wrapGAppsHook4,
 }:
 stdenv.mkDerivation (finalAttrs: {
@@ -18,11 +18,11 @@ stdenv.mkDerivation (finalAttrs: {
   version = "0.4.0";
 
   src = fetchFromGitLab {
-    domain = "gitlab.gnome.org";
     owner = "sophie-h";
     repo = "key-rack";
     rev = finalAttrs.version;
     hash = "sha256-mthXtTlyrIChaKKwKosTsV1hK9OQ/zLScjrq6D3CRsg=";
+    domain = "gitlab.gnome.org";
   };
 
   patches = [ ./0001-fix-E0716.patch ];
@@ -30,11 +30,6 @@ stdenv.mkDerivation (finalAttrs: {
   postPatch = ''
     patchShebangs --build build-aux/{checks.sh,read-manifest.py}
   '';
-
-  cargoDeps = rustPlatform.fetchCargoVendor {
-    inherit (finalAttrs) src;
-    hash = "sha256-iV9ILi3/Uqi8lDHh1Uf2caz6Kc129CDThnqTN9VfUHc=";
-  };
 
   nativeBuildInputs = [
     cargo
@@ -55,6 +50,11 @@ stdenv.mkDerivation (finalAttrs: {
     stdenv.cc.isClang && lib.versionAtLeast stdenv.cc.version "16"
   ) "-Wno-error=incompatible-function-pointer-types";
 
+  cargoDeps = rustPlatform.fetchCargoVendor {
+    inherit (finalAttrs) src;
+    hash = "sha256-iV9ILi3/Uqi8lDHh1Uf2caz6Kc129CDThnqTN9VfUHc=";
+  };
+
   passthru = {
     updateScript = nix-update-script { };
   };
@@ -64,7 +64,7 @@ stdenv.mkDerivation (finalAttrs: {
     homepage = "https://gitlab.gnome.org/sophie-h/key-rack";
     license = lib.licenses.gpl3Plus;
     maintainers = with lib.maintainers; [ getchoo ];
-    mainProgram = "key-rack";
     platforms = lib.platforms.linux;
+    mainProgram = "key-rack";
   };
 })

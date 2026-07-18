@@ -1,9 +1,9 @@
 {
   lib,
   stdenv,
-  rustPlatform,
   fetchFromGitHub,
   installShellFiles,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -17,14 +17,13 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-Ny/BOgLe2fWC9LQp2g2DvYAArdEujl6Rf1bvrAkSt2A=";
   };
 
+  nativeBuildInputs = [ installShellFiles ];
   cargoHash = "sha256-WfiN0b6F4TcOHOu/deh86jIClnNKi+xhytjapqLwpaU=";
 
   # include_hidden test tries to use `chflags` on darwin
   checkFlags = lib.optionals stdenv.hostPlatform.isDarwin [
     "--skip=subcommand::torrent::create::tests::include_hidden"
   ];
-
-  nativeBuildInputs = [ installShellFiles ];
 
   postInstall = lib.optionalString (stdenv.buildPlatform.canExecute stdenv.hostPlatform) ''
     installShellCompletion --cmd imdl \
@@ -38,9 +37,11 @@ rustPlatform.buildRustPackage (finalAttrs: {
     homepage = "https://github.com/casey/intermodal";
     changelog = "https://github.com/casey/intermodal/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.cc0;
+
     maintainers = with lib.maintainers; [
       xrelkd
     ];
+
     mainProgram = "imdl";
   };
 })

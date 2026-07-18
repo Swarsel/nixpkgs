@@ -1,39 +1,39 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchurl,
-  fetchpatch,
-  desktop-file-utils,
-  gettext,
-  pkg-config,
-  meson,
-  ninja,
-  gnome,
-  glib,
-  gtk3,
-  gtk4,
-  gtkVersion ? "3",
-  gobject-introspection,
-  vala,
-  python3,
-  gi-docgen,
-  libxml2,
-  gnutls,
-  gperf,
-  pango,
-  pcre2,
+  blackbox-terminal,
   cairo,
+  darwinMinVersionHook,
+  desktop-file-utils,
+  fast-float,
+  fetchpatch,
   fmt_11,
   fribidi,
-  lz4,
+  gettext,
+  gi-docgen,
+  glib,
+  gnome,
+  gnutls,
+  gobject-introspection,
+  gperf,
+  gtk3,
+  gtk4,
   icu,
+  libxml2,
+  lz4,
+  meson,
+  ninja,
+  nixosTests,
+  pango,
+  pcre2,
+  pkg-config,
+  python3,
   simdutf,
   systemd,
+  vala,
+  gtkVersion ? "3",
   systemdSupport ? lib.meta.availableOn stdenv.hostPlatform systemd,
-  fast-float,
-  nixosTests,
-  blackbox-terminal,
-  darwinMinVersionHook,
   withApp ? true,
 }:
 
@@ -41,27 +41,35 @@ stdenv.mkDerivation (finalAttrs: {
   pname = "vte";
   version = "0.84.0";
 
+  src = fetchurl {
+    url = "mirror://gnome/sources/vte/${lib.versions.majorMinor finalAttrs.version}/vte-${finalAttrs.version}.tar.xz";
+    hash = "sha256-BBTjFYODaut4eNol9nxRX36IeZF+zDfJLia4Po2Pw+M=";
+  };
+
   outputs = [
     "out"
     "dev"
   ]
   ++ lib.optional (gtkVersion != null) "devdoc";
 
-  src = fetchurl {
-    url = "mirror://gnome/sources/vte/${lib.versions.majorMinor finalAttrs.version}/vte-${finalAttrs.version}.tar.xz";
-    hash = "sha256-BBTjFYODaut4eNol9nxRX36IeZF+zDfJLia4Po2Pw+M=";
-  };
-
   patches = [
     # VTE needs a small patch to work with musl:
     # https://gitlab.gnome.org/GNOME/vte/issues/72
     # Taken from https://git.alpinelinux.org/aports/tree/community/vte3
     (fetchpatch {
+      hash = "sha256-FkVyhsM0mRUzZmS2Gh172oqwcfXv6PyD6IEgjBhy2uU=";
       name = "0001-Add-W_EXITCODE-macro-for-non-glibc-systems.patch";
       url = "https://git.alpinelinux.org/aports/plain/community/vte3/fix-W_EXITCODE.patch?id=4d35c076ce77bfac7655f60c4c3e4c86933ab7dd";
-      hash = "sha256-FkVyhsM0mRUzZmS2Gh172oqwcfXv6PyD6IEgjBhy2uU=";
     })
   ];
+
+  postPatch = ''
+    patchShebangs perf/* \
+      src/app/meson_desktopfile.py \
+      src/parser-seq.py \
+      src/minifont-coverage.py \
+      src/modes.py
+  '';
 
   nativeBuildInputs = [
     desktop-file-utils # for desktop-file-validate
@@ -124,24 +132,12 @@ stdenv.mkDerivation (finalAttrs: {
     ++ lib.optional stdenv.cc.isClang "-Wno-cast-function-type-strict"
   );
 
-  postPatch = ''
-    patchShebangs perf/* \
-      src/app/meson_desktopfile.py \
-      src/parser-seq.py \
-      src/minifont-coverage.py \
-      src/modes.py
-  '';
-
   postFixup = ''
     # Cannot be in postInstall, otherwise _multioutDocs hook in preFixup will move right back.
     moveToOutput "share/doc" "$devdoc"
   '';
 
   passthru = {
-    updateScript = gnome.updateScript {
-      packageName = "vte";
-      versionPolicy = "odd-unstable";
-    };
     tests = {
       inherit (nixosTests.terminal-emulators)
         gnome-terminal
@@ -153,13 +149,19 @@ stdenv.mkDerivation (finalAttrs: {
         terminator
         xfce4-terminal
         ;
+
       inherit blackbox-terminal;
+    };
+
+    updateScript = gnome.updateScript {
+      packageName = "vte";
+      versionPolicy = "odd-unstable";
     };
   };
 
   meta = {
-    homepage = "https://www.gnome.org/";
     description = "Library implementing a terminal emulator widget for GTK";
+
     longDescription = ''
       VTE is a library (libvte) implementing a terminal emulator widget for
       GTK, and a minimal sample application (vte) using that.  Vte is
@@ -168,11 +170,15 @@ stdenv.mkDerivation (finalAttrs: {
       character set conversion, as well as emulating any terminal known to
       the system's terminfo database.
     '';
+
+    homepage = "https://www.gnome.org/";
     license = lib.licenses.lgpl3Plus;
+
     maintainers = with lib.maintainers; [
       antono
     ];
-    teams = [ lib.teams.gnome ];
+
     platforms = lib.platforms.unix;
+    teams = [ lib.teams.gnome ];
   };
 })

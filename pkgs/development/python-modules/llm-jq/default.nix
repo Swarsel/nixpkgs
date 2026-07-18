@@ -1,15 +1,14 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
+  buildPythonPackage,
   llm,
   llm-jq,
+  setuptools,
 }:
 buildPythonPackage rec {
   pname = "llm-jq";
   version = "0.1.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "simonw";
@@ -19,11 +18,9 @@ buildPythonPackage rec {
   };
 
   build-system = [ setuptools ];
-
   dependencies = [ llm ];
-
+  pyproject = true;
   pythonImportsCheck = [ "llm_jq" ];
-
   passthru.tests = llm.mkPluginTest llm-jq;
 
   meta = {
@@ -31,6 +28,7 @@ buildPythonPackage rec {
     homepage = "https://github.com/simonw/llm-jq";
     changelog = "https://github.com/simonw/llm-jq/releases/tag/${version}";
     license = lib.licenses.asl20;
+
     maintainers = with lib.maintainers; [
       erethon
       josh

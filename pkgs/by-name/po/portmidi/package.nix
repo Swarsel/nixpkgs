@@ -2,9 +2,9 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  unzip,
-  cmake,
   alsa-lib,
+  cmake,
+  unzip,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -17,6 +17,15 @@ stdenv.mkDerivation (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-j5m/ablSzsENVzE1ghvnu+uE4nB0V91SA/mrCx5gCNk=";
   };
+
+  nativeBuildInputs = [
+    unzip
+    cmake
+  ];
+
+  buildInputs = lib.optionals stdenv.hostPlatform.isLinux [
+    alsa-lib
+  ];
 
   cmakeFlags = [
     "-DCMAKE_ARCHIVE_OUTPUT_DIRECTORY=Release"
@@ -32,19 +41,11 @@ stdenv.mkDerivation (finalAttrs: {
       ln -s libportmidi${ext} "$out/lib/libporttime${ext}"
     '';
 
-  nativeBuildInputs = [
-    unzip
-    cmake
-  ];
-  buildInputs = lib.optionals stdenv.hostPlatform.isLinux [
-    alsa-lib
-  ];
-
   hardeningDisable = [ "format" ];
 
   meta = {
-    homepage = "https://github.com/PortMidi/portmidi";
     description = "Platform independent library for MIDI I/O";
+    homepage = "https://github.com/PortMidi/portmidi";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ emilytrau ];
     platforms = lib.platforms.unix;

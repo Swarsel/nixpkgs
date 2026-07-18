@@ -2,18 +2,18 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  pkg-config,
-  intltool,
+  autoreconfHook,
+  docbook_xml_dtd_412,
+  docbook_xsl,
   gtk2,
+  gtk3,
+  intltool,
   libx11,
+  libxml2,
+  libxslt,
+  pkg-config,
   xrandr,
   withGtk3 ? false,
-  gtk3,
-  autoreconfHook,
-  libxslt,
-  docbook_xsl,
-  docbook_xml_dtd_412,
-  libxml2,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -27,10 +27,7 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-EGUnvV1FqQUJkjGwxgVecXOohAu8Qa8Prgk6xZfJBe4=";
   };
 
-  configureFlags = [
-    "--enable-man"
-  ]
-  ++ lib.optional withGtk3 "--enable-gtk3";
+  patches = [ ./respect-xml-catalog-files-var.patch ];
 
   nativeBuildInputs = [
     autoreconfHook
@@ -42,20 +39,23 @@ stdenv.mkDerivation (finalAttrs: {
     docbook_xsl
   ];
 
-  patches = [ ./respect-xml-catalog-files-var.patch ];
-
   buildInputs = [
     libx11
     xrandr
     (if withGtk3 then gtk3 else gtk2)
   ];
 
+  configureFlags = [
+    "--enable-man"
+  ]
+  ++ lib.optional withGtk3 "--enable-gtk3";
+
   meta = {
     description = "Standard screen manager of LXDE";
-    mainProgram = "lxrandr";
     homepage = "https://lxde.org/";
     license = lib.licenses.gpl2Plus;
     maintainers = with lib.maintainers; [ rawkode ];
     platforms = lib.platforms.linux;
+    mainProgram = "lxrandr";
   };
 })

@@ -1,8 +1,8 @@
 {
   lib,
-  octave,
   makeSetupHook,
   makeWrapper,
+  octave,
 }:
 
 # Defined in trivial-builders
@@ -10,8 +10,8 @@
 # as nativeBuildInput
 # Each of the substitutions is available in the wrap.sh script as @thingSubstituted@
 makeSetupHook {
-  name = "${octave.name}-pkgs-setup-hook";
   propagatedBuildInputs = [ makeWrapper ];
+  name = "${octave.name}-pkgs-setup-hook";
   substitutions.executable = octave.interpreter;
   substitutions.octave = octave;
   meta.license = lib.licenses.mit;

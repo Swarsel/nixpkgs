@@ -1,7 +1,7 @@
 {
   lib,
-  buildDunePackage,
   fetchurl,
+  buildDunePackage,
   ptime,
   qcheck,
 }:
@@ -9,9 +9,6 @@
 buildDunePackage rec {
   pname = "syslog-message";
   version = "1.2.0";
-
-  minimalOCamlVersion = "4.08";
-  duneVersion = "3";
 
   src = fetchurl {
     url = "https://github.com/verbosemode/${pname}/releases/download/${version}/${pname}-${version}.tbz";
@@ -23,9 +20,13 @@ buildDunePackage rec {
   ];
 
   doCheck = true;
+
   checkInputs = [
     qcheck
   ];
+
+  duneVersion = "3";
+  minimalOCamlVersion = "4.08";
 
   meta = {
     description = "Syslog message parser";

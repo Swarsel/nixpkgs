@@ -1,24 +1,24 @@
 {
   lib,
   stdenv,
-  buildGoModule,
-  flutter338,
   fetchFromGitHub,
-  autoPatchelfHook,
-  desktop-file-utils,
+  _experimental-update-script-combinators,
   alsa-lib,
+  autoPatchelfHook,
+  buildGoModule,
+  dart,
+  desktop-file-utils,
+  flutter338,
+  imagemagick,
   libdrm,
   libepoxy,
   libgbm,
   libpulseaudio,
-  mpv-unwrapped,
   mimalloc,
-  imagemagick,
+  mpv-unwrapped,
+  nix-update-script,
   runCommand,
   yq-go,
-  _experimental-update-script-combinators,
-  nix-update-script,
-  dart,
 }:
 
 let
@@ -67,65 +67,13 @@ let
   };
 in
 flutter338.buildFlutterApplication {
-  pname = "oneanime";
   inherit version src;
+  pname = "oneanime";
 
   postPatch = ''
     substituteInPlace lib/pages/init_page.dart \
       --replace-fail "lib/opencc.so" "${libopencc}/lib/libopencc.so"
   '';
-
-  pubspecLock = lib.importJSON ./pubspec.lock.json;
-
-  gitHashes = lib.importJSON ./git-hashes.json;
-
-  customSourceBuilders = {
-    # unofficial media_kit_libs_linux
-    media_kit_libs_linux =
-      { version, src, ... }:
-      stdenv.mkDerivation rec {
-        pname = "media_kit_libs_linux";
-        inherit version src;
-        inherit (src) passthru;
-
-        postPatch = ''
-          sed -i '/set(MIMALLOC "mimalloc-/,/add_custom_target/d' libs/linux/media_kit_libs_linux/linux/CMakeLists.txt
-          sed -i '/set(PLUGIN_NAME "media_kit_libs_linux_plugin")/i add_custom_target("MIMALLOC_TARGET" ALL DEPENDS ${mimalloc}/lib/mimalloc.o)' libs/linux/media_kit_libs_linux/linux/CMakeLists.txt
-        '';
-
-        installPhase = ''
-          runHook preInstall
-
-          cp -r . $out
-
-          runHook postInstall
-        '';
-      };
-    # unofficial media_kit_video
-    media_kit_video =
-      { version, src, ... }:
-      stdenv.mkDerivation rec {
-        pname = "media_kit_video";
-        inherit version src;
-        inherit (src) passthru;
-
-        postPatch = ''
-          sed -i '/if(ARCH_NAME STREQUAL "x86_64")/,/if(MEDIA_KIT_LIBS_AVAILABLE)/{ /if(MEDIA_KIT_LIBS_AVAILABLE)/!d; /set(LIBMPV_ZIP_URL/d }' media_kit_video/linux/CMakeLists.txt
-          sed -i '/if(MEDIA_KIT_LIBS_AVAILABLE)/i \
-            set(LIBMPV_UNZIP_DIR "${mpv-unwrapped}/lib")\n\
-            set(LIBMPV_PATH "${mpv-unwrapped}/lib")\n\
-            set(LIBMPV_HEADER_UNZIP_DIR "${mpv-unwrapped.dev}/include/mpv")' media_kit_video/linux/CMakeLists.txt
-        '';
-
-        installPhase = ''
-          runHook preInstall
-
-          cp -r . $out
-
-          runHook postInstall
-        '';
-      };
-  };
 
   nativeBuildInputs = [
     autoPatchelfHook
@@ -151,6 +99,58 @@ flutter338.buildFlutterApplication {
     install -D --mode=0644 oneAnime.desktop --target-directory $out/share/applications
   '';
 
+  customSourceBuilders = {
+    # unofficial media_kit_libs_linux
+    media_kit_libs_linux =
+      { src, version, ... }:
+      stdenv.mkDerivation rec {
+        inherit version src;
+        inherit (src) passthru;
+        pname = "media_kit_libs_linux";
+
+        postPatch = ''
+          sed -i '/set(MIMALLOC "mimalloc-/,/add_custom_target/d' libs/linux/media_kit_libs_linux/linux/CMakeLists.txt
+          sed -i '/set(PLUGIN_NAME "media_kit_libs_linux_plugin")/i add_custom_target("MIMALLOC_TARGET" ALL DEPENDS ${mimalloc}/lib/mimalloc.o)' libs/linux/media_kit_libs_linux/linux/CMakeLists.txt
+        '';
+
+        installPhase = ''
+          runHook preInstall
+
+          cp -r . $out
+
+          runHook postInstall
+        '';
+      };
+
+    # unofficial media_kit_video
+    media_kit_video =
+      { src, version, ... }:
+      stdenv.mkDerivation rec {
+        inherit version src;
+        inherit (src) passthru;
+        pname = "media_kit_video";
+
+        postPatch = ''
+          sed -i '/if(ARCH_NAME STREQUAL "x86_64")/,/if(MEDIA_KIT_LIBS_AVAILABLE)/{ /if(MEDIA_KIT_LIBS_AVAILABLE)/!d; /set(LIBMPV_ZIP_URL/d }' media_kit_video/linux/CMakeLists.txt
+          sed -i '/if(MEDIA_KIT_LIBS_AVAILABLE)/i \
+            set(LIBMPV_UNZIP_DIR "${mpv-unwrapped}/lib")\n\
+            set(LIBMPV_PATH "${mpv-unwrapped}/lib")\n\
+            set(LIBMPV_HEADER_UNZIP_DIR "${mpv-unwrapped.dev}/include/mpv")' media_kit_video/linux/CMakeLists.txt
+        '';
+
+        installPhase = ''
+          runHook preInstall
+
+          cp -r . $out
+
+          runHook postInstall
+        '';
+      };
+  };
+
+  gitHashes = lib.importJSON ./git-hashes.json;
+  pubspecLock = lib.importJSON ./pubspec.lock.json;
+
   passthru = {
     pubspecSource =
       runCommand "pubspec.lock.json"
@@ -161,6 +161,7 @@ flutter338.buildFlutterApplication {
         ''
           yq eval --output-format=json --prettyPrint $src/pubspec.lock > "$out"
         '';
+
     updateScript = _experimental-update-script-combinators.sequence [
       (nix-update-script { })
       (
@@ -177,6 +178,7 @@ flutter338.buildFlutterApplication {
           "--output"
           ./git-hashes.json
         ];
+
         supportedFeatures = [ ];
       }
     ];
@@ -185,9 +187,9 @@ flutter338.buildFlutterApplication {
   meta = {
     description = "Anime1 third-party client with bullet screen";
     homepage = "https://github.com/Predidit/oneAnime";
-    mainProgram = "oneanime";
     license = lib.licenses.gpl3Plus;
     maintainers = [ ];
     platforms = lib.platforms.linux;
+    mainProgram = "oneanime";
   };
 }

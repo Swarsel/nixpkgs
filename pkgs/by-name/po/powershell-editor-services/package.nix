@@ -1,9 +1,9 @@
 {
-  stdenvNoCC,
-  fetchzip,
   lib,
+  fetchzip,
   powershell,
   runtimeShell,
+  stdenvNoCC,
 }:
 stdenvNoCC.mkDerivation rec {
   pname = "powershell-editor-services";
@@ -29,10 +29,10 @@ stdenvNoCC.mkDerivation rec {
     description = "Common platform for PowerShell development support in any editor or application";
     homepage = "https://github.com/PowerShell/PowerShellEditorServices";
     changelog = "https://github.com/PowerShell/PowerShellEditorServices/releases/tag/v${version}";
-    platforms = lib.platforms.unix;
     license = lib.licenses.mit;
-    maintainers = with lib.maintainers; [ sharpchen ];
-    mainProgram = "powershell-editor-services";
     sourceProvenance = with lib.sourceTypes; [ binaryBytecode ];
+    maintainers = with lib.maintainers; [ sharpchen ];
+    platforms = lib.platforms.unix;
+    mainProgram = "powershell-editor-services";
   };
 }

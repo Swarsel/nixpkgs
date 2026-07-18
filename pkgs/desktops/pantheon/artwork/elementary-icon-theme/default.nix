@@ -1,15 +1,15 @@
 {
   lib,
-  stdenvNoCC,
   fetchFromGitHub,
-  nix-update-script,
+  adwaita-icon-theme,
+  gtk3,
+  hicolor-icon-theme,
+  librsvg,
   meson,
   ninja,
-  adwaita-icon-theme,
-  hicolor-icon-theme,
-  gtk3,
+  nix-update-script,
+  stdenvNoCC,
   xcursorgen,
-  librsvg,
 }:
 
 stdenvNoCC.mkDerivation {
@@ -36,14 +36,13 @@ stdenvNoCC.mkDerivation {
     hicolor-icon-theme
   ];
 
-  dontDropIconThemeCache = true;
-
   mesonFlags = [
     "-Dvolume_icons=false" # Tries to install some icons to /
     "-Dpalettes=false" # Don't install gimp and inkscape palette files
   ];
 
   postFixup = "gtk-update-icon-cache $out/share/icons/elementary";
+  dontDropIconThemeCache = true;
 
   passthru = {
     updateScript = nix-update-script { };
@@ -51,9 +50,11 @@ stdenvNoCC.mkDerivation {
 
   meta = {
     description = "Named, vector icons for elementary OS";
+
     longDescription = ''
       An original set of vector icons designed specifically for elementary OS and its desktop environment: Pantheon.
     '';
+
     homepage = "https://github.com/elementary/icons";
     license = lib.licenses.gpl3Plus;
     platforms = lib.platforms.linux;

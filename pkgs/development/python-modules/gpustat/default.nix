@@ -13,14 +13,11 @@
 buildPythonPackage rec {
   pname = "gpustat";
   version = "1.1.1";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
     hash = "sha256-wY0+1VGPwWMAxC1pTevHCuuzvlXK6R8dtk1jtfqK+dg=";
   };
-
-  pythonRelaxDeps = [ "nvidia-ml-py" ];
 
   nativeBuildInputs = [
     setuptools-scm
@@ -37,14 +34,16 @@ buildPythonPackage rec {
     pytestCheckHook
   ];
 
+  format = "setuptools";
   pythonImportsCheck = [ "gpustat" ];
+  pythonRelaxDeps = [ "nvidia-ml-py" ];
 
   meta = {
     description = "Simple command-line utility for querying and monitoring GPU status";
-    mainProgram = "gpustat";
     homepage = "https://github.com/wookayin/gpustat";
     changelog = "https://github.com/wookayin/gpustat/releases/tag/v${version}";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ billhuang ];
+    mainProgram = "gpustat";
   };
 }

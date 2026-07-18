@@ -1,12 +1,10 @@
 {
   lib,
-  buildHomeAssistantComponent,
   fetchFromGitHub,
+  buildHomeAssistantComponent,
 }:
 
 buildHomeAssistantComponent rec {
-  owner = "lovelylain";
-  domain = "ingress";
   version = "1.3.0";
 
   src = fetchFromGitHub {
@@ -16,10 +14,13 @@ buildHomeAssistantComponent rec {
     hash = "sha256-TvKmWDYiO4HlRWdsoya2fJalbIQnMzDodQWB9o6yGAo=";
   };
 
+  domain = "ingress";
+  owner = "lovelylain";
+
   meta = {
-    changelog = "https://github.com/lovelylain/hass_ingress/releases/tag/${src.tag}";
     description = "Add additional ingress panels to your Home Assistant frontend";
     homepage = "https://github.com/lovelylain/hass_ingress";
+    changelog = "https://github.com/lovelylain/hass_ingress/releases/tag/${src.tag}";
     license = lib.licenses.asl20;
     maintainers = with lib.maintainers; [ David-Kopczynski ];
   };

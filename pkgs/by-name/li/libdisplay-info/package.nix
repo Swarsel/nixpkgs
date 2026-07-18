@@ -1,13 +1,13 @@
 {
   lib,
   stdenv,
-  buildPackages,
   fetchFromGitLab,
-  meson,
-  pkg-config,
-  ninja,
-  python3,
+  buildPackages,
   hwdata,
+  meson,
+  ninja,
+  pkg-config,
+  python3,
   v4l-utils,
 }:
 
@@ -16,14 +16,17 @@ stdenv.mkDerivation (finalAttrs: {
   version = "0.3.0";
 
   src = fetchFromGitLab {
-    domain = "gitlab.freedesktop.org";
     owner = "emersion";
     repo = "libdisplay-info";
     rev = finalAttrs.version;
     sha256 = "sha256-nXf2KGovNKvcchlHlzKBkAOeySMJXgxMpbi5z9gLrdc=";
+    domain = "gitlab.freedesktop.org";
   };
 
-  depsBuildBuild = [ pkg-config ];
+  postPatch = ''
+    patchShebangs tool/gen-search-table.py
+  '';
+
   nativeBuildInputs = [
     meson
     pkg-config
@@ -36,16 +39,14 @@ stdenv.mkDerivation (finalAttrs: {
     v4l-utils
   ];
 
-  postPatch = ''
-    patchShebangs tool/gen-search-table.py
-  '';
+  depsBuildBuild = [ pkg-config ];
 
   meta = {
     description = "EDID and DisplayID library";
-    mainProgram = "di-edid-decode";
     homepage = "https://gitlab.freedesktop.org/emersion/libdisplay-info";
     license = lib.licenses.mit;
-    platforms = lib.platforms.linux ++ lib.platforms.freebsd;
     maintainers = with lib.maintainers; [ pedrohlc ];
+    platforms = lib.platforms.linux ++ lib.platforms.freebsd;
+    mainProgram = "di-edid-decode";
   };
 })

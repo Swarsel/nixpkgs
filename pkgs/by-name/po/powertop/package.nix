@@ -1,9 +1,9 @@
 {
   lib,
   stdenv,
+  fetchFromGitHub,
   autoconf-archive,
   autoreconfHook,
-  fetchFromGitHub,
   gettext,
   libnl,
   ncurses,
@@ -32,6 +32,12 @@ stdenv.mkDerivation (finalAttrs: {
     "man"
   ];
 
+  postPatch = ''
+    substituteInPlace src/main.cpp --replace-fail "/sbin/modprobe" "modprobe"
+    substituteInPlace src/calibrate/calibrate.cpp --replace-fail "/usr/bin/xset" "${lib.getExe xset}"
+    substituteInPlace src/tuning/bluetooth.cpp --replace-fail "/usr/bin/hcitool" "hcitool"
+  '';
+
   nativeBuildInputs = [
     autoconf-archive
     autoreconfHook
@@ -46,31 +52,28 @@ stdenv.mkDerivation (finalAttrs: {
     zlib
   ];
 
-  postPatch = ''
-    substituteInPlace src/main.cpp --replace-fail "/sbin/modprobe" "modprobe"
-    substituteInPlace src/calibrate/calibrate.cpp --replace-fail "/usr/bin/xset" "${lib.getExe xset}"
-    substituteInPlace src/tuning/bluetooth.cpp --replace-fail "/usr/bin/hcitool" "hcitool"
-  '';
-
   passthru = {
-    updateScript = nix-update-script { };
     tests.version = testers.testVersion {
-      package = powertop;
-      command = "powertop --version";
       inherit (finalAttrs) version;
+      command = "powertop --version";
+      package = powertop;
     };
+
+    updateScript = nix-update-script { };
   };
 
   meta = {
     inherit (finalAttrs.src.meta) homepage;
-    changelog = "https://github.com/fenrus75/powertop/releases/tag/v${finalAttrs.version}";
     description = "Analyze power consumption on Intel-based laptops";
-    mainProgram = "powertop";
+    changelog = "https://github.com/fenrus75/powertop/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.gpl2Only;
+
     maintainers = with lib.maintainers; [
       fpletz
       anthonyroussel
     ];
+
     platforms = lib.platforms.linux;
+    mainProgram = "powertop";
   };
 })

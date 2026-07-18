@@ -1,21 +1,19 @@
 {
-  cmake,
-  fetchFromGitHub,
-  fetchpatch,
-  makeWrapper,
   lib,
   stdenv,
-  which,
-
+  fetchFromGitHub,
   # build dependencies
   boost,
+  cmake,
   curl,
   eigen,
+  fetchpatch,
   fftwFloat,
   gdal,
   itk,
-  libsvm,
   libgeotiff,
+  libsvm,
+  makeWrapper,
   muparser,
   muparserx,
   opencv,
@@ -24,7 +22,7 @@
   shark,
   swig,
   tinyxml,
-
+  which,
   # otb modules
   enableFFTW ? false,
   enableFeatureExtraction ? true,
@@ -33,13 +31,13 @@
   enableMiscellaneous ? true,
   enableOpenMP ? false,
   enablePython ? true,
-  extraPythonPackages ? ps: [ ],
   enableRemote ? true,
-  enableShark ? true,
   enableSAR ? true,
   enableSegmentation ? true,
+  enableShark ? true,
   enableStereoProcessing ? true,
   enableThirdParty ? true,
+  extraPythonPackages ? ps: [ ],
 }:
 let
   inherit (lib) optionals;
@@ -64,6 +62,7 @@ let
   # remove after https://gitlab.orfeo-toolbox.org/orfeotoolbox/otb/-/issues/2451
   otbSwig = swig.overrideAttrs (oldArgs: {
     version = "4.2.1";
+
     src = fetchFromGitHub {
       owner = "swig";
       repo = "swig";
@@ -76,6 +75,7 @@ let
   # https://gitlab.orfeo-toolbox.org/orfeotoolbox/otb/-/blob/develop/SuperBuild/CMake/External_itk.cmake?ref_type=heads#L145
   otb-itk = (itk.override { enableRtk = false; }).overrideAttrs (oldArgs: {
     version = itkVersion;
+
     src = fetchFromGitHub {
       owner = "InsightSoftwareConsortium";
       repo = "ITK";
@@ -89,9 +89,9 @@ let
       ./itk-2-totalprogress-all.diff
       # add gcc13 patch for itk 5.3.0 as well
       (fetchpatch {
+        hash = "sha256-dDyqYOzo91afR8W7k2N64X6l7t6Ws1C9iuRkWHUe0fg=";
         name = "fix-gcc13-build";
         url = "https://github.com/InsightSoftwareConsortium/ITK/commit/9a719a0d2f5f489eeb9351b0ef913c3693147a4f.patch";
-        hash = "sha256-dDyqYOzo91afR8W7k2N64X6l7t6Ws1C9iuRkWHUe0fg=";
       })
     ];
 
@@ -111,10 +111,17 @@ let
           #include <cstdint>'
     '';
 
-    # fix the CMake config files for ITK which contains double slashes
-    postInstall = (oldArgs.postInstall or "") + ''
-      sed -i 's|''${ITK_INSTALL_PREFIX}//nix/store|/nix/store|g' $out/lib/cmake/ITK-${itkMajorMinorVersion}/ITKConfig.cmake
-    '';
+    buildInputs = oldArgs.buildInputs or [ ] ++ [
+      # add eigen as well as itk nixpkgs doesn't add it for version lower than 5.4.0
+      eigen
+    ];
+
+    propagatedBuildInputs =
+      lib.lists.filter (pkg: !(itkIsInDepsToRemove pkg)) oldArgs.propagatedBuildInputs or [ ]
+      ++ lib.optionals enableFFTW [
+        # the only missing dependency for OTB from itk propagated list if FFTW option is enabled
+        fftwFloat
+      ];
 
     cmakeFlags = oldArgs.cmakeFlags or [ ] ++ [
       (lib.cmakeBool "ITK_USE_SYSTEM_EIGEN" true)
@@ -208,17 +215,10 @@ let
       (lib.cmakeBool "Module_ITKWatersheds" true)
     ];
 
-    buildInputs = oldArgs.buildInputs or [ ] ++ [
-      # add eigen as well as itk nixpkgs doesn't add it for version lower than 5.4.0
-      eigen
-    ];
-
-    propagatedBuildInputs =
-      lib.lists.filter (pkg: !(itkIsInDepsToRemove pkg)) oldArgs.propagatedBuildInputs or [ ]
-      ++ lib.optionals enableFFTW [
-        # the only missing dependency for OTB from itk propagated list if FFTW option is enabled
-        fftwFloat
-      ];
+    # fix the CMake config files for ITK which contains double slashes
+    postInstall = (oldArgs.postInstall or "") + ''
+      sed -i 's|''${ITK_INSTALL_PREFIX}//nix/store|/nix/store|g' $out/lib/cmake/ITK-${itkMajorMinorVersion}/ITKConfig.cmake
+    '';
 
   });
 
@@ -257,26 +257,6 @@ stdenv.mkDerivation (finalAttrs: {
     which
   ];
 
-  # https://www.orfeo-toolbox.org/CookBook/CompilingOTBFromSource.html#native-build-with-system-dependencies
-  # activates all modules and python by default
-  cmakeFlags = [
-    (lib.cmakeBool "OTBGroup_Core" true)
-    (lib.cmakeBool "OTB_BUILD_FeaturesExtraction" enableFeatureExtraction)
-    (lib.cmakeBool "OTB_BUILD_Hyperspectral" enableHyperspectral)
-    (lib.cmakeBool "OTB_BUILD_Learning" enableLearning)
-    (lib.cmakeBool "OTB_BUILD_Miscellaneous" enableMiscellaneous)
-    (lib.cmakeBool "OTB_USE_OPENMP" enableOpenMP)
-    (lib.cmakeBool "OTB_BUILD_RemoteModules" enableRemote)
-    (lib.cmakeBool "OTB_BUILD_SAR" enableSAR)
-    (lib.cmakeBool "OTB_USE_SHARK" enableShark)
-    (lib.cmakeBool "OTB_BUILD_Segmentation" enableSegmentation)
-    (lib.cmakeBool "OTB_BUILD_StereoProcessing" enableStereoProcessing)
-    (lib.cmakeBool "OTBGroup_ThirdParty" enableThirdParty)
-    (lib.cmakeBool "OTB_WRAP_PYTHON" enablePython)
-    (lib.cmakeBool "BUILD_TESTING" finalAttrs.doInstallCheck)
-    (lib.cmakeBool "OTB_USE_FFTW" enableFFTW)
-  ];
-
   propagatedBuildInputs = [
     boost
     curl
@@ -300,7 +280,25 @@ stdenv.mkDerivation (finalAttrs: {
   )
   ++ optionals enableShark [ otb-shark ];
 
-  doInstallCheck = true;
+  # https://www.orfeo-toolbox.org/CookBook/CompilingOTBFromSource.html#native-build-with-system-dependencies
+  # activates all modules and python by default
+  cmakeFlags = [
+    (lib.cmakeBool "OTBGroup_Core" true)
+    (lib.cmakeBool "OTB_BUILD_FeaturesExtraction" enableFeatureExtraction)
+    (lib.cmakeBool "OTB_BUILD_Hyperspectral" enableHyperspectral)
+    (lib.cmakeBool "OTB_BUILD_Learning" enableLearning)
+    (lib.cmakeBool "OTB_BUILD_Miscellaneous" enableMiscellaneous)
+    (lib.cmakeBool "OTB_USE_OPENMP" enableOpenMP)
+    (lib.cmakeBool "OTB_BUILD_RemoteModules" enableRemote)
+    (lib.cmakeBool "OTB_BUILD_SAR" enableSAR)
+    (lib.cmakeBool "OTB_USE_SHARK" enableShark)
+    (lib.cmakeBool "OTB_BUILD_Segmentation" enableSegmentation)
+    (lib.cmakeBool "OTB_BUILD_StereoProcessing" enableStereoProcessing)
+    (lib.cmakeBool "OTBGroup_ThirdParty" enableThirdParty)
+    (lib.cmakeBool "OTB_WRAP_PYTHON" enablePython)
+    (lib.cmakeBool "BUILD_TESTING" finalAttrs.doInstallCheck)
+    (lib.cmakeBool "OTB_USE_FFTW" enableFFTW)
+  ];
 
   postInstall = ''
     wrapProgram $out/bin/otbcli \
@@ -308,12 +306,14 @@ stdenv.mkDerivation (finalAttrs: {
       --set OTB_APPLICATION_PATH "$out/lib/otb/applications"
   '';
 
+  doInstallCheck = true;
+
   meta = {
     description = "Open Source processing of remote sensing images";
     homepage = "https://www.orfeo-toolbox.org/";
     license = lib.licenses.asl20;
     maintainers = with lib.maintainers; [ daspk04 ];
-    teams = [ lib.teams.geospatial ];
     platforms = lib.platforms.linux;
+    teams = [ lib.teams.geospatial ];
   };
 })

@@ -16,23 +16,24 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-YtshxSdVT9V9V0KcYF+9NtgW0kYUCQ4I9EbcWNajuxI=";
   };
 
-  nativeBuildInputs = [ cmake ];
-
   postPatch = ''
     substituteInPlace packaging/pkgconfig.pc.in \
       --replace "\''${prefix}/" ""
   '';
 
+  nativeBuildInputs = [ cmake ];
   dontBuild = true;
 
   meta = {
     description = "Fast compile-time regular expressions library";
+
     longDescription = ''
       Fast compile-time regular expressions with support for
       matching/searching/capturing during compile-time or runtime.
     '';
-    license = lib.licenses.asl20;
+
     homepage = "https://compile-time.re";
+    license = lib.licenses.asl20;
     maintainers = with lib.maintainers; [ azahi ];
     platforms = lib.platforms.all;
   };

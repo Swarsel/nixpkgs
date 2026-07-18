@@ -1,10 +1,10 @@
 {
   lib,
+  fetchFromGitHub,
   beautifulsoup4,
   buildPythonPackage,
   defusedxml,
   docutils,
-  fetchFromGitHub,
   flit-core,
   jinja2,
   markdown-it-py,
@@ -13,15 +13,14 @@
   pytest-regressions,
   pytestCheckHook,
   pyyaml,
-  sphinx-pytest,
   sphinx,
+  sphinx-pytest,
   typing-extensions,
 }:
 
 buildPythonPackage rec {
   pname = "myst-docutils";
   version = "5.0.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "executablebooks";
@@ -29,6 +28,15 @@ buildPythonPackage rec {
     tag = "v${version}";
     hash = "sha256-0lGejdGVVvZar3sPBbvThXzJML7PcR5+shyDHTTtVEY=";
   };
+
+  nativeCheckInputs = [
+    beautifulsoup4
+    defusedxml
+    pytest-param-files
+    pytest-regressions
+    pytestCheckHook
+    sphinx-pytest
+  ];
 
   build-system = [ flit-core ];
 
@@ -42,16 +50,10 @@ buildPythonPackage rec {
     typing-extensions
   ];
 
-  nativeCheckInputs = [
-    beautifulsoup4
-    defusedxml
-    pytest-param-files
-    pytest-regressions
-    pytestCheckHook
-    sphinx-pytest
+  disabledTestPaths = [
+    # Assertion errors
+    "tests/test_sphinx/"
   ];
-
-  pythonImportsCheck = [ "myst_parser" ];
 
   disabledTests = [
     # Tests require linkify
@@ -61,10 +63,8 @@ buildPythonPackage rec {
     "test_sphinx_directives"
   ];
 
-  disabledTestPaths = [
-    # Assertion errors
-    "tests/test_sphinx/"
-  ];
+  pyproject = true;
+  pythonImportsCheck = [ "myst_parser" ];
 
   meta = {
     description = "Extended commonmark compliant parser, with bridges to docutils/sphinx";

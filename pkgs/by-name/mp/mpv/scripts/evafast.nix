@@ -1,7 +1,7 @@
 {
+  lib,
   fetchFromGitHub,
   buildLua,
-  lib,
   unstableGitUpdater,
 }:
 

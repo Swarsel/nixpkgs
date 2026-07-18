@@ -7,8 +7,8 @@ let
   writeTest =
     name: path:
     writers.writePython3Bin name {
-      libraries = [ raylib-python-cffi ];
       doCheck = false;
+      libraries = [ raylib-python-cffi ];
     } (builtins.readFile (src + path));
 
 in

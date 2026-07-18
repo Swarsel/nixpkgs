@@ -1,26 +1,26 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
-  fetchpatch,
-  unstableGitUpdater,
-  cmake,
-  pkg-config,
-  makeWrapper,
-  zlib,
-  libx11,
-  libxrandr,
-  libxinerama,
-  libxcursor,
-  libxi,
-  libxext,
-  libGLU,
   alsa-lib,
+  cmake,
+  fetchpatch,
   fontconfig,
+  libGLU,
+  libdecor,
+  libx11,
+  libxcursor,
+  libxext,
+  libxi,
+  libxinerama,
+  libxkbcommon,
+  libxrandr,
+  makeWrapper,
+  pkg-config,
+  unstableGitUpdater,
   wayland,
   wayland-scanner,
-  libdecor,
-  libxkbcommon,
+  zlib,
 }:
 stdenv.mkDerivation (finalAttrs: {
   pname = "foxotron";
@@ -30,8 +30,8 @@ stdenv.mkDerivation (finalAttrs: {
     owner = "Gargaj";
     repo = "Foxotron";
     rev = "6edbf2e52e59a4206420bc667225a4e18778be76";
-    fetchSubmodules = true;
     hash = "sha256-bqqtBXufeAncOQktpKFLkmc15p2Z8yrrGFLH62aXfj0=";
+    fetchSubmodules = true;
   };
 
   postPatch = ''
@@ -79,9 +79,6 @@ stdenv.mkDerivation (finalAttrs: {
     "-Wno-error=array-bounds"
   ];
 
-  # error: writing 1 byte into a region of size 0
-  hardeningDisable = [ "fortify3" ];
-
   installPhase = ''
     runHook preInstall
 
@@ -95,16 +92,21 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  # error: writing 1 byte into a region of size 0
+  hardeningDisable = [ "fortify3" ];
+
   passthru = {
     updateScript = unstableGitUpdater { };
   };
 
   meta = {
     description = "General purpose model viewer";
+
     longDescription = ''
       ASSIMP based general purpose model viewer ("turntable") created for the
       Revision 2021 3D Graphics Competition.
     '';
+
     homepage = "https://github.com/Gargaj/Foxotron";
     license = lib.licenses.unlicense;
     maintainers = with lib.maintainers; [ OPNA2608 ];

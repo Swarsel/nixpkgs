@@ -1,14 +1,11 @@
 {
   lib,
-  stdenvNoCC,
   fetchFromGitHub,
+  stdenvNoCC,
 }:
 stdenvNoCC.mkDerivation (finalAttrs: {
   pname = "minimp3";
   version = "0-unstable-2026-03-12";
-
-  __structuredAttrs = true;
-  strictDeps = true;
 
   src = fetchFromGitHub {
     owner = "lieff";
@@ -17,8 +14,7 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     hash = "sha256-ZDYPan9f3Nx+JQpY44NmF9RkOa+MV7V0rOiPJ4pKyU0=";
   };
 
-  dontConfigure = true;
-  dontBuild = true;
+  strictDeps = true;
 
   installPhase = ''
     runHook preInstall
@@ -29,11 +25,16 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  __structuredAttrs = true;
+  dontBuild = true;
+  dontConfigure = true;
+
   meta = {
     description = "Minimalistic MP3 decoder single header library";
     homepage = "https://github.com/lieff/minimp3";
     license = lib.licenses.cc0;
     maintainers = [ lib.maintainers.ryand56 ];
+
     platforms = lib.intersectLists lib.platforms.linux (
       lib.platforms.x86 ++ lib.platforms.x86_64 ++ lib.platforms.aarch64
     );

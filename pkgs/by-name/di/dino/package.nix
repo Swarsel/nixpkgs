@@ -2,33 +2,33 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  vala,
-  ninja,
-  wrapGAppsHook4,
-  pkg-config,
-  gettext,
-  gobject-introspection,
-  glib,
   gdk-pixbuf,
-  gtk4,
+  gettext,
+  glib,
   glib-networking,
+  gnutls,
+  gobject-introspection,
+  gpgme,
+  gst_all_1,
+  gtk4,
+  icu,
   libadwaita,
   libcanberra,
-  libnotify,
-  libsoup_3,
-  libgee,
-  libomemo-c,
   libgcrypt,
-  meson,
-  sqlite,
-  gpgme,
-  qrencode,
-  icu,
-  srtp,
+  libgee,
   libnice,
-  gnutls,
-  gst_all_1,
+  libnotify,
+  libomemo-c,
+  libsoup_3,
+  meson,
+  ninja,
+  pkg-config,
+  qrencode,
+  sqlite,
+  srtp,
+  vala,
   webrtc-audio-processing,
+  wrapGAppsHook4,
 }:
 
 # Upstream is very deliberate about which features are enabled per default or are automatically enabled.
@@ -91,12 +91,12 @@ stdenv.mkDerivation (finalAttrs: {
     webrtc-audio-processing
   ];
 
-  doCheck = true;
-
   # Undefined symbols for architecture arm64: "_gpg_strerror"
   env = lib.optionalAttrs stdenv.hostPlatform.isDarwin {
     NIX_LDFLAGS = "-lgpg-error";
   };
+
+  doCheck = true;
 
   # Dino looks for plugins with a .so filename extension, even on macOS where
   # .dylib is appropriate, and despite the fact that it builds said plugins with
@@ -115,10 +115,10 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Modern Jabber/XMPP Client using GTK/Vala";
-    mainProgram = "dino";
     homepage = "https://github.com/dino/dino";
     license = lib.licenses.gpl3Plus;
-    platforms = lib.platforms.linux ++ lib.platforms.darwin;
     maintainers = with lib.maintainers; [ qyliss ];
+    platforms = lib.platforms.linux ++ lib.platforms.darwin;
+    mainProgram = "dino";
   };
 })

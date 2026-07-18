@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   poetry-core,
   pydantic,
   pytestCheckHook,
@@ -11,7 +11,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "hier-config";
   version = "3.6.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "netdevops";
@@ -20,15 +19,14 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-reOfBIl5+kEEqOT+ZS40FDsNA/xkhLGfcf1LEbIpVlI=";
   };
 
-  build-system = [ poetry-core ];
-
-  dependencies = [ pydantic ];
-
   nativeCheckInputs = [
     pytestCheckHook
     pyyaml
   ];
 
+  build-system = [ poetry-core ];
+  dependencies = [ pydantic ];
+  pyproject = true;
   pythonImportsCheck = [ "hier_config" ];
 
   meta = {

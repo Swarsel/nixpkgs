@@ -2,16 +2,15 @@
   lib,
   fetchFromGitHub,
   buildPythonPackage,
-  setuptools-scm,
-  setuptools,
-  typing-extensions,
   pytestCheckHook,
+  setuptools,
+  setuptools-scm,
+  typing-extensions,
 }:
 
 buildPythonPackage rec {
   pname = "pyvisa";
   version = "1.16.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "pyvisa";
@@ -26,11 +25,10 @@ buildPythonPackage rec {
   ];
 
   propagatedBuildInputs = [ typing-extensions ];
-
   nativeCheckInputs = [ pytestCheckHook ];
-
   # Test can't find cli tool bin path correctly
   disabledTests = [ "test_visa_info" ];
+  pyproject = true;
 
   meta = {
     description = "Python package for support of the Virtual Instrument Software Architecture (VISA)";

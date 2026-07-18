@@ -1,16 +1,15 @@
 {
+  lib,
+  fetchFromGitHub,
   aiohttp,
   buildPythonPackage,
-  fetchFromGitHub,
-  lib,
-  pytestCheckHook,
   hatchling,
+  pytestCheckHook,
 }:
 
 buildPythonPackage rec {
   pname = "librehardwaremonitor-api";
   version = "1.11.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "Sab44";
@@ -19,17 +18,18 @@ buildPythonPackage rec {
     hash = "sha256-GAJgLrfYhkdafk0DSgcNgXQ2vjtBf/kOEkkRw7i9rlE=";
   };
 
+  nativeCheckInputs = [
+    pytestCheckHook
+  ];
+
   build-system = [ hatchling ];
 
   dependencies = [
     aiohttp
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "librehardwaremonitor_api" ];
-
-  nativeCheckInputs = [
-    pytestCheckHook
-  ];
 
   meta = {
     description = "Python API client for LibreHardwareMonitor";

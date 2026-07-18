@@ -1,10 +1,10 @@
 {
   lib,
   stdenv,
-  buildGoModule,
   fetchFromGitHub,
-  kubectl,
+  buildGoModule,
   installShellFiles,
+  kubectl,
 }:
 
 buildGoModule (finalAttrs: {
@@ -18,19 +18,8 @@ buildGoModule (finalAttrs: {
     sha256 = "sha256-1eLt75w/l6AQDDUMhKIvWnaQox87r5M3c30AtpNyZFw=";
   };
 
-  vendorHash = "sha256-oTeDByJ81eWCCsIHyuScQS+lhE9cHqiATIlw2UdUZNo=";
-
-  ldflags = [
-    "-s"
-    "-w"
-    "-X main.Version=${finalAttrs.version}"
-  ];
-
-  subPackages = [
-    "."
-  ];
-
   nativeBuildInputs = [ installShellFiles ];
+  vendorHash = "sha256-oTeDByJ81eWCCsIHyuScQS+lhE9cHqiATIlw2UdUZNo=";
 
   postInstall = lib.optionalString (stdenv.buildPlatform.canExecute stdenv.hostPlatform) ''
     # kubecolor re-uses the completions of kubectl for its own executable
@@ -50,16 +39,28 @@ buildGoModule (finalAttrs: {
     echo 'compdef kubecolor=kubectl' >> $out/share/zsh/site-functions/_kubecolor
   '';
 
+  ldflags = [
+    "-s"
+    "-w"
+    "-X main.Version=${finalAttrs.version}"
+  ];
+
+  subPackages = [
+    "."
+  ];
+
   meta = {
     description = "Colorizes kubectl output";
-    mainProgram = "kubecolor";
     homepage = "https://github.com/kubecolor/kubecolor";
     changelog = "https://github.com/kubecolor/kubecolor/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       ivankovnatsky
       SuperSandro2000
       applejag
     ];
+
+    mainProgram = "kubecolor";
   };
 })

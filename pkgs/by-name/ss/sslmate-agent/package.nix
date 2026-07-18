@@ -2,8 +2,8 @@
   lib,
   stdenv,
   fetchurl,
-  dpkg,
   autoPatchelfHook,
+  dpkg,
 }:
 
 stdenv.mkDerivation rec {
@@ -36,8 +36,8 @@ stdenv.mkDerivation rec {
   meta = {
     description = "Daemon for managing SSL/TLS certificates on a server";
     homepage = "https://sslmate.com/";
-    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
     license = lib.licenses.unfree;
+    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
     maintainers = [ ];
   };
 }

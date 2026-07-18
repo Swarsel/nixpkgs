@@ -1,9 +1,9 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitea,
-  pkg-config,
   openssl,
+  pkg-config,
+  rustPlatform,
   versionCheckHook,
 }:
 
@@ -12,14 +12,12 @@ rustPlatform.buildRustPackage (finalAttrs: {
   version = "0.1.2";
 
   src = fetchFromGitea {
-    domain = "git.kittycloud.eu";
     owner = "mizule";
     repo = "sc2-smurf-detector";
     tag = "v${finalAttrs.version}";
     hash = "sha256-9vpbnp+q5QAOn+EpuwXG4LfruB999v2SEvYLhfMg8II=";
+    domain = "git.kittycloud.eu";
   };
-
-  cargoHash = "sha256-Wm4/KmuAz9lno9vAsSwVykL2kQNf88kE3+zao3keRWI=";
 
   nativeBuildInputs = [
     pkg-config
@@ -29,8 +27,9 @@ rustPlatform.buildRustPackage (finalAttrs: {
     openssl
   ];
 
-  nativeInstallCheckInputs = [ versionCheckHook ];
+  cargoHash = "sha256-Wm4/KmuAz9lno9vAsSwVykL2kQNf88kE3+zao3keRWI=";
   doInstallCheck = true;
+  nativeInstallCheckInputs = [ versionCheckHook ];
 
   meta = {
     description = "CLI tool to detect smurfs in StarCraft II by analyzing opponent match history via SC2 Pulse";

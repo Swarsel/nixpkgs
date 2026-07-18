@@ -13,12 +13,6 @@ stdenv.mkDerivation (finalAttrs: {
     sha256 = "1mxirnnqfqdwb9x8hfjjsscp6lx3468ph6ddx32l94ir46fbzqc3";
   };
 
-  srcManpages = fetchurl {
-    url = "mirror://ubuntu/pool/universe/s/stun/stun_0.97~dfsg-2.debian.tar.xz";
-    name = "stun-debian.tar.xz";
-    sha256 = "1pr6zrdhia0aafsvywl1hrhlgl00vahp63bw1z2mzvdxri7q88f0";
-  };
-
   outputs = [
     "out"
     "server"
@@ -38,13 +32,21 @@ stdenv.mkDerivation (finalAttrs: {
     cp -v debian/manpages/stund.8.gz $server/man/man8
   '';
 
+  srcManpages = fetchurl {
+    name = "stun-debian.tar.xz";
+    sha256 = "1pr6zrdhia0aafsvywl1hrhlgl00vahp63bw1z2mzvdxri7q88f0";
+    url = "mirror://ubuntu/pool/universe/s/stun/stun_0.97~dfsg-2.debian.tar.xz";
+  };
+
   meta = {
     description = "Stun server and test client";
     homepage = "https://sourceforge.net/projects/stun/";
     license = lib.licenses.vsl10;
+
     maintainers = with lib.maintainers; [
       obadz
     ];
+
     platforms = lib.platforms.linux;
     mainProgram = "stun";
   };

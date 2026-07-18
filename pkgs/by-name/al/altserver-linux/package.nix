@@ -1,7 +1,7 @@
 {
+  lib,
   stdenv,
   fetchurl,
-  lib,
   avahi-compat,
 }:
 
@@ -14,8 +14,6 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-C+fDrcaewRd6FQMrO443xdDk/vtHycQ5zWLCOLPqF/s=";
   };
 
-  dontUnpack = true;
-
   installPhase = ''
     runHook preInstall
 
@@ -26,13 +24,15 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  dontUnpack = true;
+
   meta = {
-    homepage = "https://github.com/NyaMisty/AltServer-Linux";
     description = "AltServer for AltStore, but on-device. Requires root privileges as well as running a custom anisette server currently";
+    homepage = "https://github.com/NyaMisty/AltServer-Linux";
     license = lib.licenses.agpl3Only;
-    mainProgram = "alt-server";
     sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
-    platforms = lib.platforms.linux;
     maintainers = with lib.maintainers; [ max-amb ];
+    platforms = lib.platforms.linux;
+    mainProgram = "alt-server";
   };
 })

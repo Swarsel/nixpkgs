@@ -2,9 +2,9 @@
   lib,
   stdenv,
   fetchurl,
-  pkg-config,
   glib,
   ncurses,
+  pkg-config,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -16,10 +16,6 @@ stdenv.mkDerivation (finalAttrs: {
     sha256 = "10gaqygmmwp0cwk3j8qflri5caf8vl3f7pwfl2svw5whv8wkn0k2";
   };
 
-  preInstall = ''
-    mkdir -p $out/include $out/lib
-  '';
-
   postPatch = ''
     substituteInPlace Makefile \
       --replace "gcc" "${stdenv.cc.targetPrefix}cc" \
@@ -29,17 +25,19 @@ stdenv.mkDerivation (finalAttrs: {
     makeFlagsArray+=("PKG_CFG=`${stdenv.cc.targetPrefix}pkg-config --cflags glib-2.0`")
   '';
 
+  strictDeps = true;
+  nativeBuildInputs = [ pkg-config ];
+  buildInputs = [ ncurses ];
   # For headers
   propagatedBuildInputs = [ glib ];
 
-  strictDeps = true;
-
-  nativeBuildInputs = [ pkg-config ];
-  buildInputs = [ ncurses ];
+  preInstall = ''
+    mkdir -p $out/include $out/lib
+  '';
 
   meta = {
-    homepage = "http://libvterm.sourceforge.net/";
     description = "Terminal emulator library to mimic both vt100 and rxvt";
+    homepage = "http://libvterm.sourceforge.net/";
     license = lib.licenses.gpl2Plus;
     platforms = lib.platforms.linux;
   };

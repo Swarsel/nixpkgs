@@ -1,10 +1,10 @@
 {
   lib,
-  fetchFromGitHub,
   stdenv,
+  fetchFromGitHub,
+  nix-update-script,
   openssl,
   pkg-config,
-  nix-update-script,
   versionCheckHook,
 }:
 let
@@ -20,8 +20,6 @@ stdenv.mkDerivation (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-NuwV8s+rzsXBha/vqnemvUo6Etm70ZVYL/CZKBJ1szA=";
   };
-
-  sourceRoot = "${finalAttrs.src.name}/build/${platformName}";
 
   nativeBuildInputs = [ pkg-config ];
   buildInputs = [ openssl ];
@@ -41,11 +39,10 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
-  enableParallelBuilding = true;
-
   doInstallCheck = true;
   nativeInstallCheckInputs = [ versionCheckHook ];
-
+  enableParallelBuilding = true;
+  sourceRoot = "${finalAttrs.src.name}/build/${platformName}";
   passthru.updateScript = nix-update-script { };
 
   meta = {
@@ -53,7 +50,7 @@ stdenv.mkDerivation (finalAttrs: {
     homepage = "https://github.com/zhlynn/zsign";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ pascalj ];
-    mainProgram = "zsign";
     platforms = with lib.platforms; darwin ++ linux;
+    mainProgram = "zsign";
   };
 })

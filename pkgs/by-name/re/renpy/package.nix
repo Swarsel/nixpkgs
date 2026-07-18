@@ -1,11 +1,13 @@
 {
   lib,
   stdenv,
+  fetchurl,
+  fetchFromGitHub,
+  SDL2,
+  SDL2_image,
   assimp,
   copyDesktopItems,
   desktopToDarwinBundle,
-  fetchFromGitHub,
-  fetchurl,
   fetchzip,
   ffmpeg,
   freetype,
@@ -21,24 +23,21 @@
   openssl,
   pkg-config,
   python312,
-  SDL2,
-  SDL2_image,
   versionCheckHook,
   zenity,
   zlib,
-
   # the minimal package contains only compiled python and cython files, and the example projects and the launcher are removed
   # one should use the minimal package in favor of the full package when packaging games, in which case only the game runtime is needed
   minimal ? false,
-  # with this, you can click "Documentation" in the launcher to open local doc (otherwise it opens web doc)
-  withDoc ? !minimal,
-  # set this to true if you want to use this package to distribute games
-  # (to windows, linux, and macos, outside of nix; android, ios, and web are not supported)
-  withDistributedLibs ? !minimal,
   # set this to true if you additionally want to distribute games for aarch64-linux
   # this implies withDistributedLibs = true because it also includes the libraries for other platforms
   withAarch64LinuxDistributedLibs ?
     withDistributedLibs && stdenv.targetPlatform.isAarch64 && stdenv.targetPlatform.isLinux,
+  # set this to true if you want to use this package to distribute games
+  # (to windows, linux, and macos, outside of nix; android, ios, and web are not supported)
+  withDistributedLibs ? !minimal,
+  # with this, you can click "Documentation" in the launcher to open local doc (otherwise it opens web doc)
+  withDoc ? !minimal,
 }:
 
 # technically we can support cross-compilation by first compiling a renpy for the build platform besides a renpy for the host platform
@@ -96,35 +95,6 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-gm+E5/fEgNFl+UU382QZpBAcOmUDhFbxj3XW/e21vxQ=";
   };
 
-  __structuredAttrs = true;
-  strictDeps = true;
-
-  nativeBuildInputs = [
-    makeBinaryWrapper
-    pkg-config
-    pythonBuildTime
-  ]
-  ++ lib.optional (!minimal) copyDesktopItems
-  ++ lib.optional (stdenv.hostPlatform.isDarwin && !minimal) desktopToDarwinBundle;
-
-  buildInputs = [
-    assimp
-    ffmpeg
-    freetype
-    fribidi
-    glew
-    harfbuzz
-    libGL
-    libGLU
-    libjpeg
-    openssl
-    SDL2
-    SDL2_image
-    pythonRunTime
-  ];
-
-  enableParallelBuilding = true;
-
   patches = [
     # do not try to compile renpy files installed in nix store because we already compiled them at build phase
     ./dont-compile-system.patch
@@ -152,6 +122,32 @@ stdenv.mkDerivation (finalAttrs: {
     version_name = "We Can Go to the Moon"
     EOF
   '';
+
+  strictDeps = true;
+
+  nativeBuildInputs = [
+    makeBinaryWrapper
+    pkg-config
+    pythonBuildTime
+  ]
+  ++ lib.optional (!minimal) copyDesktopItems
+  ++ lib.optional (stdenv.hostPlatform.isDarwin && !minimal) desktopToDarwinBundle;
+
+  buildInputs = [
+    assimp
+    ffmpeg
+    freetype
+    fribidi
+    glew
+    harfbuzz
+    libGL
+    libGLU
+    libjpeg
+    openssl
+    SDL2
+    SDL2_image
+    pythonRunTime
+  ];
 
   env.PYTHONDONTWRITEBYTECODE = "1";
 
@@ -228,38 +224,41 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
-  desktopItems = lib.optional (!minimal) (makeDesktopItem {
-    name = "renpy";
-    desktopName = "Ren'Py";
-    comment = finalAttrs.meta.description;
-    exec = "renpy-launcher %U";
-    icon = "renpy";
-    categories = [ "Development" ];
-  });
+  doInstallCheck = false; # set to true when the version is not unstable
+  nativeInstallCheckInputs = [ versionCheckHook ];
 
-  # keep the files in $out/share/renpy/{renpy-dist,lib,renpy.sh} redistributable
-  dontStrip = true;
-  dontPatchShebangs = true;
-  dontPatchELF = true;
   postFixup = lib.optionalString (!stdenv.hostPlatform.isDarwin) ''
     patchELF $out/share/renpy/renpy
   '';
 
-  nativeInstallCheckInputs = [ versionCheckHook ];
-  doInstallCheck = false; # set to true when the version is not unstable
+  __structuredAttrs = true;
+
+  desktopItems = lib.optional (!minimal) (makeDesktopItem {
+    categories = [ "Development" ];
+    comment = finalAttrs.meta.description;
+    desktopName = "Ren'Py";
+    exec = "renpy-launcher %U";
+    icon = "renpy";
+    name = "renpy";
+  });
+
+  dontPatchELF = true;
+  dontPatchShebangs = true;
+  # keep the files in $out/share/renpy/{renpy-dist,lib,renpy.sh} redistributable
+  dontStrip = true;
+  enableParallelBuilding = true;
 
   passthru = {
     appver = lib.head (builtins.match "([0-9]+\\.[0-9]+\\.[0-9]+\\.[0-9]+).*" finalAttrs.version);
-    semver = lib.head (builtins.match "([0-9]+\\.[0-9]+\\.[0-9]+).*" finalAttrs.version);
 
     binSrc = fetchzip {
-      url = "https://www.renpy.org/dl/${finalAttrs.passthru.semver}/renpy-${finalAttrs.passthru.semver}-sdk.tar.bz2";
       hash = "sha256-l91zD0n/c5E80YfgZ/m5AbIj/RKL5OFosfwz7RHu7aQ=";
+      url = "https://www.renpy.org/dl/${finalAttrs.passthru.semver}/renpy-${finalAttrs.passthru.semver}-sdk.tar.bz2";
     };
 
     binSrcArm = fetchzip {
-      url = "https://www.renpy.org/dl/${finalAttrs.passthru.semver}/renpy-${finalAttrs.passthru.semver}-sdkarm.tar.bz2";
       hash = "sha256-51+swtUfDK0on9wVVXOyzJKxHtV6m4u9X1wvpp85stI=";
+      url = "https://www.renpy.org/dl/${finalAttrs.passthru.semver}/renpy-${finalAttrs.passthru.semver}-sdkarm.tar.bz2";
     };
 
     distributedRenpy =
@@ -270,20 +269,16 @@ stdenv.mkDerivation (finalAttrs: {
       else
         null;
 
+    semver = lib.head (builtins.match "([0-9]+\\.[0-9]+\\.[0-9]+).*" finalAttrs.version);
     updateScript = ./update.sh;
   };
 
   meta = {
     description = "Visual Novel Engine";
-    mainProgram = "renpy";
     homepage = "https://renpy.org/";
     changelog = "https://renpy.org/doc/html/changelog.html";
     license = lib.licenses.mit;
-    platforms = lib.platforms.unix;
-    maintainers = with lib.maintainers; [
-      shadowrz
-      ulysseszhan
-    ];
+
     sourceProvenance =
       with lib.sourceTypes;
       [ fromSource ]
@@ -291,5 +286,13 @@ stdenv.mkDerivation (finalAttrs: {
         binaryNativeCode # bundled python for windows, linux, and macos in the bin distribution from upstream
         binaryBytecode # __pycache__ in the bin distribution from upstream
       ];
+
+    maintainers = with lib.maintainers; [
+      shadowrz
+      ulysseszhan
+    ];
+
+    platforms = lib.platforms.unix;
+    mainProgram = "renpy";
   };
 })

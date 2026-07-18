@@ -1,17 +1,14 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # build time
-  setuptools-scm,
-
   # propagates
   aiohttp,
-
+  buildPythonPackage,
   # tests
   pytest-asyncio,
   pytestCheckHook,
+  # build time
+  setuptools-scm,
 }:
 
 let
@@ -21,7 +18,6 @@ in
 
 buildPythonPackage {
   inherit pname version;
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "PaulAnnekov";
@@ -31,7 +27,6 @@ buildPythonPackage {
   };
 
   nativeBuildInputs = [ setuptools-scm ];
-
   propagatedBuildInputs = [ aiohttp ];
 
   nativeCheckInputs = [
@@ -39,15 +34,17 @@ buildPythonPackage {
     pytestCheckHook
   ];
 
+  format = "setuptools";
+
   pythonImportsCheck = [
     "uasiren"
     "uasiren.client"
   ];
 
   meta = {
-    changelog = "https://github.com/PaulAnnekov/uasiren/releases/tag/v${version}";
     description = "Implements siren.pp.ua API - public wrapper for api.ukrainealarm.com API that returns info about Ukraine air-raid alarms";
     homepage = "https://github.com/PaulAnnekov/uasiren";
+    changelog = "https://github.com/PaulAnnekov/uasiren/releases/tag/v${version}";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ hexa ];
   };

@@ -27,11 +27,24 @@ in
 {
 
   options.programs.htop = {
+    enable = lib.mkEnableOption "htop process monitor";
     package = lib.mkPackageOption pkgs "htop" { };
 
-    enable = lib.mkEnableOption "htop process monitor";
-
     settings = lib.mkOption {
+      default = { };
+
+      description = ''
+        Extra global default configuration for htop
+        which is read on first startup only.
+        Htop subsequently uses ~/.config/htop/htoprc
+        as configuration source.
+      '';
+
+      example = {
+        hide_kernel_threads = true;
+        hide_userland_threads = true;
+      };
+
       type =
         with lib.types;
         attrsOf (oneOf [
@@ -44,25 +57,10 @@ in
             bool
           ]))
         ]);
-      default = { };
-      example = {
-        hide_kernel_threads = true;
-        hide_userland_threads = true;
-      };
-      description = ''
-        Extra global default configuration for htop
-        which is read on first startup only.
-        Htop subsequently uses ~/.config/htop/htoprc
-        as configuration source.
-      '';
     };
   };
 
   config = lib.mkIf cfg.enable {
-    environment.systemPackages = [
-      cfg.package
-    ];
-
     environment.etc."htoprc".text = ''
       # Global htop configuration
       # To change set: programs.htop.settings.KEY = VALUE;
@@ -70,6 +68,10 @@ in
     + builtins.concatStringsSep "\n" (
       lib.mapAttrsToList (key: value: "${key}=${fmt value}") cfg.settings
     );
+
+    environment.systemPackages = [
+      cfg.package
+    ];
   };
 
 }

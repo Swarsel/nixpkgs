@@ -1,17 +1,17 @@
 {
   lib,
-  flutter344,
-  python3Packages,
   fetchFromGitHub,
-  pcre2,
-  libnotify,
-  libappindicator,
+  _experimental-update-script-combinators,
+  flutter344,
   gnome-screenshot,
+  libappindicator,
+  libnotify,
+  nix-update-script,
+  pcre2,
+  python3Packages,
   removeReferencesTo,
   runCommand,
   yq-go,
-  _experimental-update-script-combinators,
-  nix-update-script,
 }:
 
 flutter344.buildFlutterApplication rec {
@@ -24,10 +24,6 @@ flutter344.buildFlutterApplication rec {
     tag = version;
     hash = "sha256-7863P463ZOtYcrCN9KLQIj2YOTmKH62PFap5Ja7m5Ig=";
   };
-
-  pubspecLock = lib.importJSON ./pubspec.lock.json;
-
-  gitHashes.window_manager = "sha256-WKcNwEOthXj1S2lKlpdhy+r8JZslVqhwY2ywXeTSBEs=";
 
   postPatch = ''
     rm -f pubspec.lock
@@ -77,8 +73,12 @@ flutter344.buildFlutterApplication rec {
     --prefix PATH : ${lib.makeBinPath [ gnome-screenshot ]}
   '';
 
+  gitHashes.window_manager = "sha256-WKcNwEOthXj1S2lKlpdhy+r8JZslVqhwY2ywXeTSBEs=";
+  pubspecLock = lib.importJSON ./pubspec.lock.json;
+
   passthru = {
     helper = python3Packages.callPackage ./helper.nix { inherit src version meta; };
+
     pubspecSource =
       runCommand "pubspec.lock.json"
         {
@@ -88,6 +88,7 @@ flutter344.buildFlutterApplication rec {
         ''
           yq eval --output-format=json --prettyPrint $src/pubspec.lock > "$out"
         '';
+
     updateScript = _experimental-update-script-combinators.sequence [
       (nix-update-script { extraArgs = [ "--use-github-releases" ]; })
       (
@@ -101,16 +102,19 @@ flutter344.buildFlutterApplication rec {
 
   meta = {
     description = "Yubico Authenticator for Desktop";
-    mainProgram = "yubioath-flutter";
     homepage = "https://github.com/Yubico/yubioath-flutter";
     license = lib.licenses.asl20;
+
     maintainers = with lib.maintainers; [
       lukegb
       ryand56
     ];
+
     platforms = [
       "x86_64-linux"
       "aarch64-linux"
     ];
+
+    mainProgram = "yubioath-flutter";
   };
 }

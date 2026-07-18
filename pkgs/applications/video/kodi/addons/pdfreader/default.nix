@@ -1,11 +1,10 @@
 {
   lib,
-  buildKodiAddon,
   fetchFromGitHub,
+  buildKodiAddon,
 }:
 buildKodiAddon rec {
   pname = "pdfreader";
-  namespace = "plugin.image.pdf";
   version = "2.0.3";
 
   src = fetchFromGitHub {
@@ -15,11 +14,12 @@ buildKodiAddon rec {
     sha256 = "sha256-J93poR5VO9fAgNCEGftJVYnpXOsJSxnhHI6TAJZ2LeI=";
   };
 
+  namespace = "plugin.image.pdf";
   passthru.pythonPath = "lib/api";
 
   meta = {
-    homepage = "https://forum.kodi.tv/showthread.php?tid=187421";
     description = "Comic book reader";
+    homepage = "https://forum.kodi.tv/showthread.php?tid=187421";
     license = lib.licenses.gpl2Plus;
     teams = [ lib.teams.kodi ];
   };

@@ -1,19 +1,19 @@
 {
+  lib,
+  fetchFromGitHub,
   _cuda,
   backendStdenv,
   cccl,
-  cuda_cudart,
-  cuda_nvcc,
   cudaAtLeast,
   cudaNamePrefix,
-  fetchFromGitHub,
+  cuda_cudart,
+  cuda_nvcc,
   flags,
-  lib,
+  # passthru.updateScript
+  gitUpdater,
   python3,
   removeReferencesTo,
   which,
-  # passthru.updateScript
-  gitUpdater,
 }:
 let
   inherit (_cuda.lib) _mkMetaBadPlatforms;
@@ -34,11 +34,6 @@ let
     ;
 in
 backendStdenv.mkDerivation (finalAttrs: {
-  __structuredAttrs = true;
-  strictDeps = true;
-
-  # NOTE: Depends on the CUDA package set, so use cudaNamePrefix.
-  name = "${cudaNamePrefix}-${finalAttrs.pname}-${finalAttrs.version}";
   pname = "nccl";
 
   # NOTE:
@@ -59,11 +54,12 @@ backendStdenv.mkDerivation (finalAttrs: {
     owner = "NVIDIA";
     repo = "nccl";
     tag = "v${finalAttrs.version}";
+
     hash = getAttr finalAttrs.version {
-      "2.30.7-1" = "sha256-fdiQZweX0jYfGroP0bL5Sfv3+DkCzVBZZLEbPv8aqq8=";
-      "2.28.7-1" = "sha256-NM19OiBBGmv3cGoVoRLKSh9Y59hiDoei9NIrRnTqWeA=";
-      "2.26.6-1" = "sha256-vkWMGXCy+dIpYCecdafmOAGlnfRxIQ5Y2ZQuMjinraI=";
       "2.25.1-1" = "sha256-3snh0xdL9I5BYqdbqdl+noizJoI38mZRVOJChgEE1I8=";
+      "2.26.6-1" = "sha256-vkWMGXCy+dIpYCecdafmOAGlnfRxIQ5Y2ZQuMjinraI=";
+      "2.28.7-1" = "sha256-NM19OiBBGmv3cGoVoRLKSh9Y59hiDoei9NIrRnTqWeA=";
+      "2.30.7-1" = "sha256-fdiQZweX0jYfGroP0bL5Sfv3+DkCzVBZZLEbPv8aqq8=";
     };
   };
 
@@ -72,21 +68,6 @@ backendStdenv.mkDerivation (finalAttrs: {
     "dev"
     "static"
   ];
-
-  nativeBuildInputs = [
-    cuda_nvcc
-    python3
-    removeReferencesTo
-    which
-  ];
-
-  buildInputs = [
-    (getInclude cuda_nvcc)
-    cccl
-    cuda_cudart
-  ];
-
-  env.NIX_CFLAGS_COMPILE = toString [ "-Wno-unused-function" ];
 
   postPatch = ''
     patchShebangs ./src/device/generate.py
@@ -111,6 +92,21 @@ backendStdenv.mkDerivation (finalAttrs: {
     patchShebangs ./src/misc/generate_git_version.py
   '';
 
+  strictDeps = true;
+
+  nativeBuildInputs = [
+    cuda_nvcc
+    python3
+    removeReferencesTo
+    which
+  ];
+
+  buildInputs = [
+    (getInclude cuda_nvcc)
+    cccl
+    cuda_cudart
+  ];
+
   # TODO: This would likely break under cross; need to delineate between build and host packages.
   makeFlags = [
     "CXXSTD=-std=c++17"
@@ -121,7 +117,7 @@ backendStdenv.mkDerivation (finalAttrs: {
     "PREFIX=$(out)"
   ];
 
-  enableParallelBuilding = true;
+  env.NIX_CFLAGS_COMPILE = toString [ "-Wno-unused-function" ];
 
   postFixup = ''
     _overrideFirst outputStatic "static" "lib" "out"
@@ -139,15 +135,20 @@ backendStdenv.mkDerivation (finalAttrs: {
       ''${!outputStatic}/lib/*.a
   '';
 
+  __structuredAttrs = true;
   # C.f. remove-references-to above. Ensure *all* references to cuda_nvcc are removed
   disallowedRequisites = [ (lib.getBin cuda_nvcc) ];
+  enableParallelBuilding = true;
+  # NOTE: Depends on the CUDA package set, so use cudaNamePrefix.
+  name = "${cudaNamePrefix}-${finalAttrs.pname}-${finalAttrs.version}";
 
   passthru = {
     platformAssertions = [
       {
-        message = "Pre-Thor Jetson devices (CUDA capabilities < 10.1) are not supported by NCCL";
         assertion =
           !hasJetsonCudaCapability || all (flip versionAtLeast "10.1") requestedJetsonCudaCapabilities;
+
+        message = "Pre-Thor Jetson devices (CUDA capabilities < 10.1) are not supported by NCCL";
       }
     ];
 
@@ -161,16 +162,19 @@ backendStdenv.mkDerivation (finalAttrs: {
     description = "Multi-GPU and multi-node collective communication primitives for NVIDIA GPUs";
     homepage = "https://developer.nvidia.com/nccl";
     license = licenses.bsd3;
+
+    maintainers = with maintainers; [
+      mdaiter
+    ];
+
     platforms = [
       "aarch64-linux"
       "x86_64-linux"
     ];
+
     # NCCL is not supported on Pre-Thor Jetsons, because it does not use NVLink or PCI-e for inter-GPU communication.
     # https://forums.developer.nvidia.com/t/can-jetson-orin-support-nccl/232845/9
     badPlatforms = _mkMetaBadPlatforms finalAttrs;
-    maintainers = with maintainers; [
-      mdaiter
-    ];
     teams = [ teams.cuda ];
   };
 })

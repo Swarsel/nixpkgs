@@ -56,74 +56,78 @@ in
   options = {
     services.yggdrasil = {
       enable = lib.mkEnableOption "the yggdrasil system service";
+      package = lib.mkPackageOption pkgs "yggdrasil" { };
+
+      denyDhcpcdInterfaces = mkOption {
+        default = [ ];
+
+        description = ''
+          Disable the DHCP client for any interface whose name matches
+          any of the shell glob patterns in this list.  Use this
+          option to prevent the DHCP client from broadcasting requests
+          on the yggdrasil network.  It is only necessary to do so
+          when yggdrasil is running in TAP mode, because TUN
+          interfaces do not support broadcasting.
+        '';
+
+        example = [ "tap*" ];
+        type = listOf str;
+      };
+
+      extraArgs = mkOption {
+        default = [ ];
+        description = "Extra command line arguments.";
+
+        example = [
+          "-loglevel"
+          "info"
+        ];
+
+        type = listOf str;
+      };
+
+      group = mkOption {
+        default = null;
+        description = "Group to grant access to the Yggdrasil control socket. If `null`, only root can access the socket.";
+        example = "wheel";
+        type = nullOr str;
+      };
+
+      openMulticastPort = mkOption {
+        default = false;
+
+        description = ''
+          Whether to open the UDP port used for multicast peer discovery. The
+          NixOS firewall blocks link-local communication, so in order to make
+          incoming local peering work you will also need to configure
+          `MulticastInterfaces` in your Yggdrasil configuration
+          ({option}`settings`). You will then have to
+          add the ports that you configure there to your firewall configuration
+          ({option}`networking.firewall.allowedTCPPorts` or
+          {option}`networking.firewall.interfaces.<name>.allowedTCPPorts`).
+        '';
+
+        type = bool;
+      };
+
+      persistentKeys = lib.mkEnableOption ''
+        automatic generation and persistence of keys.
+        If enabled, a private key will be generated on first startup and stored
+        at ${persistentKeyPath}. This ensures the Yggdrasil node retains the same
+        IPv6 address across reboots.
+
+        If you have existing keys from a previous installation (in the old
+        keys.json format at ${legacyKeysPath}), they will be automatically
+        migrated to the new PEM format on first startup.
+
+        Note: This option is mutually exclusive with {option}`settings.PrivateKeyPath`.
+        If you want to use externally managed keys, use {option}`settings.PrivateKeyPath`
+        instead
+      '';
 
       settings = mkOption {
-        type = submodule {
-          freeformType = (pkgs.formats.json { }).type;
-          options = {
-            PrivateKeyPath = mkOption {
-              type = nullOr path;
-              default = null;
-              example = "/run/secrets/yggdrasil-private-key";
-              description = ''
-                Path to the private key file on the host system.
-                When specified, the key will be loaded via systemd credentials
-                for secure access by the yggdrasil service.
-
-                Warning: Do not put private keys directly in the Nix store
-                as they would be world-readable!
-              '';
-            };
-
-            Peers = mkOption {
-              type = listOf str;
-              default = [ ];
-              example = [
-                "tcp://aa.bb.cc.dd:eeeee"
-                "tcp://[aaaa:bbbb:cccc:dddd::eeee]:fffff"
-              ];
-              description = ''
-                List of outbound peer connection strings.
-                Connection strings can contain options, see the yggdrasil documentation.
-              '';
-            };
-
-            Listen = mkOption {
-              type = listOf str;
-              default = [ ];
-              example = [
-                "tcp://0.0.0.0:xxxxx"
-                "tls://[::]:yyyyy"
-              ];
-              description = ''
-                Listen addresses for incoming connections.
-                You need listeners to accept incoming peerings from non-local nodes.
-              '';
-            };
-
-            AllowedPublicKeys = mkOption {
-              type = listOf str;
-              default = [ ];
-              description = ''
-                List of peer public keys to allow incoming peering connections from.
-                If left empty, all connections are allowed by default.
-              '';
-            };
-          };
-        };
         default = { };
-        example = {
-          Peers = [
-            "tcp://aa.bb.cc.dd:eeeee"
-            "tcp://[aaaa:bbbb:cccc:dddd::eeee]:fffff"
-          ];
-          Listen = [
-            "tcp://0.0.0.0:xxxxx"
-          ];
-          PrivateKeyPath = "/run/secrets/yggdrasil-key";
-          IfName = "ygg0";
-          IfMTU = 65535;
-        };
+
         description = ''
           Configuration for yggdrasil, as a structured Nix attribute set.
 
@@ -147,69 +151,87 @@ in
           You can use the command `nix-shell -p yggdrasil --run "yggdrasil -genconf"`
           to generate default configuration values with documentation.
         '';
-      };
 
-      group = mkOption {
-        type = nullOr str;
-        default = null;
-        example = "wheel";
-        description = "Group to grant access to the Yggdrasil control socket. If `null`, only root can access the socket.";
-      };
+        example = {
+          IfMTU = 65535;
+          IfName = "ygg0";
 
-      openMulticastPort = mkOption {
-        type = bool;
-        default = false;
-        description = ''
-          Whether to open the UDP port used for multicast peer discovery. The
-          NixOS firewall blocks link-local communication, so in order to make
-          incoming local peering work you will also need to configure
-          `MulticastInterfaces` in your Yggdrasil configuration
-          ({option}`settings`). You will then have to
-          add the ports that you configure there to your firewall configuration
-          ({option}`networking.firewall.allowedTCPPorts` or
-          {option}`networking.firewall.interfaces.<name>.allowedTCPPorts`).
-        '';
-      };
+          Listen = [
+            "tcp://0.0.0.0:xxxxx"
+          ];
 
-      denyDhcpcdInterfaces = mkOption {
-        type = listOf str;
-        default = [ ];
-        example = [ "tap*" ];
-        description = ''
-          Disable the DHCP client for any interface whose name matches
-          any of the shell glob patterns in this list.  Use this
-          option to prevent the DHCP client from broadcasting requests
-          on the yggdrasil network.  It is only necessary to do so
-          when yggdrasil is running in TAP mode, because TUN
-          interfaces do not support broadcasting.
-        '';
-      };
+          Peers = [
+            "tcp://aa.bb.cc.dd:eeeee"
+            "tcp://[aaaa:bbbb:cccc:dddd::eeee]:fffff"
+          ];
 
-      package = lib.mkPackageOption pkgs "yggdrasil" { };
+          PrivateKeyPath = "/run/secrets/yggdrasil-key";
+        };
 
-      persistentKeys = lib.mkEnableOption ''
-        automatic generation and persistence of keys.
-        If enabled, a private key will be generated on first startup and stored
-        at ${persistentKeyPath}. This ensures the Yggdrasil node retains the same
-        IPv6 address across reboots.
+        type = submodule {
+          options = {
+            AllowedPublicKeys = mkOption {
+              default = [ ];
 
-        If you have existing keys from a previous installation (in the old
-        keys.json format at ${legacyKeysPath}), they will be automatically
-        migrated to the new PEM format on first startup.
+              description = ''
+                List of peer public keys to allow incoming peering connections from.
+                If left empty, all connections are allowed by default.
+              '';
 
-        Note: This option is mutually exclusive with {option}`settings.PrivateKeyPath`.
-        If you want to use externally managed keys, use {option}`settings.PrivateKeyPath`
-        instead
-      '';
+              type = listOf str;
+            };
 
-      extraArgs = mkOption {
-        type = listOf str;
-        default = [ ];
-        example = [
-          "-loglevel"
-          "info"
-        ];
-        description = "Extra command line arguments.";
+            Listen = mkOption {
+              default = [ ];
+
+              description = ''
+                Listen addresses for incoming connections.
+                You need listeners to accept incoming peerings from non-local nodes.
+              '';
+
+              example = [
+                "tcp://0.0.0.0:xxxxx"
+                "tls://[::]:yyyyy"
+              ];
+
+              type = listOf str;
+            };
+
+            Peers = mkOption {
+              default = [ ];
+
+              description = ''
+                List of outbound peer connection strings.
+                Connection strings can contain options, see the yggdrasil documentation.
+              '';
+
+              example = [
+                "tcp://aa.bb.cc.dd:eeeee"
+                "tcp://[aaaa:bbbb:cccc:dddd::eeee]:fffff"
+              ];
+
+              type = listOf str;
+            };
+
+            PrivateKeyPath = mkOption {
+              default = null;
+
+              description = ''
+                Path to the private key file on the host system.
+                When specified, the key will be loaded via systemd credentials
+                for secure access by the yggdrasil service.
+
+                Warning: Do not put private keys directly in the Nix store
+                as they would be world-readable!
+              '';
+
+              example = "/run/secrets/yggdrasil-private-key";
+              type = nullOr path;
+            };
+          };
+
+          freeformType = (pkgs.formats.json { }).type;
+        };
       };
 
     };
@@ -227,6 +249,7 @@ in
         }
         {
           assertion = !(cfg.settings ? PrivateKey);
+
           message = ''
             services.yggdrasil.settings.PrivateKey is not supported because it
             would be stored in the world-readable Nix store.
@@ -235,6 +258,7 @@ in
         }
         {
           assertion = !(cfg.persistentKeys && cfg.settings.PrivateKeyPath != null);
+
           message = ''
             services.yggdrasil.persistentKeys and services.yggdrasil.settings.PrivateKeyPath
             are mutually exclusive. Use only one of them.
@@ -242,19 +266,76 @@ in
         }
       ];
 
+      # Make yggdrasilctl available on the command line.
+      environment.systemPackages = [ cfg.package ];
+      networking.dhcpcd.denyInterfaces = cfg.denyDhcpcdInterfaces;
+      networking.firewall.allowedUDPPorts = mkIf cfg.openMulticastPort [ 9001 ];
+
+      systemd.services.yggdrasil = {
+        after = [
+          "network-pre.target"
+        ]
+        ++ lib.optional cfg.persistentKeys "yggdrasil-persistent-keys.service";
+
+        before = [ "network.target" ];
+        description = "Yggdrasil Network Service";
+
+        script =
+          if cfg.settings != { } || cfg.persistentKeys then
+            # Use user settings or persistent keys configuration
+            "exec ${binYggdrasil} -useconffile ${configFile} ${lib.strings.escapeShellArgs cfg.extraArgs}"
+          else
+            # Generate and use ephemeral config
+            "exec ${binYggdrasil} -genconf | ${binYggdrasil} -useconf ${lib.strings.escapeShellArgs cfg.extraArgs}";
+
+        serviceConfig = {
+          AmbientCapabilities = "CAP_NET_ADMIN CAP_NET_BIND_SERVICE";
+          CapabilityBoundingSet = "CAP_NET_ADMIN CAP_NET_BIND_SERVICE";
+          DynamicUser = true;
+          ExecReload = "${pkgs.coreutils}/bin/kill -HUP $MAINPID";
+          LoadCredential = lib.optional (effectiveKeyPath != null) "private-key:${effectiveKeyPath}";
+          MemoryDenyWriteExecute = true;
+          ProtectControlGroups = true;
+          ProtectHome = "tmpfs";
+          ProtectKernelModules = true;
+          ProtectKernelTunables = true;
+          Restart = "always";
+          RestrictAddressFamilies = "AF_UNIX AF_INET AF_INET6 AF_NETLINK";
+          RestrictNamespaces = true;
+          RestrictRealtime = true;
+          RuntimeDirectory = "yggdrasil";
+          RuntimeDirectoryMode = "0750";
+          StateDirectory = "yggdrasil";
+          SystemCallArchitectures = "native";
+
+          SystemCallFilter = [
+            "@system-service"
+            "~@privileged @keyring"
+          ];
+        }
+        // (
+          if (cfg.group != null) then
+            {
+              Group = cfg.group;
+            }
+          else
+            { }
+        );
+
+        wantedBy = [ "multi-user.target" ];
+        wants = [ "network.target" ];
+      };
+
       # One-shot service to generate or migrate persistent keys
       systemd.services.yggdrasil-persistent-keys = lib.mkIf cfg.persistentKeys {
-        description = "Generate or migrate Yggdrasil persistent keys";
-        wantedBy = [ "multi-user.target" ];
         before = [ "yggdrasil.service" ];
-        serviceConfig = {
-          Type = "oneshot";
-          RemainAfterExit = true;
-        };
+        description = "Generate or migrate Yggdrasil persistent keys";
+
         path = [
           cfg.package
           pkgs.jq
         ];
+
         script = ''
           set -euo pipefail
 
@@ -293,71 +374,20 @@ in
           chmod 600 ${persistentKeyPath}
           echo "Successfully generated new persistent key"
         '';
-      };
-
-      systemd.services.yggdrasil = {
-        description = "Yggdrasil Network Service";
-        after = [
-          "network-pre.target"
-        ]
-        ++ lib.optional cfg.persistentKeys "yggdrasil-persistent-keys.service";
-        wants = [ "network.target" ];
-        before = [ "network.target" ];
-        wantedBy = [ "multi-user.target" ];
-
-        script =
-          if cfg.settings != { } || cfg.persistentKeys then
-            # Use user settings or persistent keys configuration
-            "exec ${binYggdrasil} -useconffile ${configFile} ${lib.strings.escapeShellArgs cfg.extraArgs}"
-          else
-            # Generate and use ephemeral config
-            "exec ${binYggdrasil} -genconf | ${binYggdrasil} -useconf ${lib.strings.escapeShellArgs cfg.extraArgs}";
 
         serviceConfig = {
-          ExecReload = "${pkgs.coreutils}/bin/kill -HUP $MAINPID";
-          Restart = "always";
+          RemainAfterExit = true;
+          Type = "oneshot";
+        };
 
-          DynamicUser = true;
-          StateDirectory = "yggdrasil";
-          RuntimeDirectory = "yggdrasil";
-          RuntimeDirectoryMode = "0750";
-          LoadCredential = lib.optional (effectiveKeyPath != null) "private-key:${effectiveKeyPath}";
-
-          AmbientCapabilities = "CAP_NET_ADMIN CAP_NET_BIND_SERVICE";
-          CapabilityBoundingSet = "CAP_NET_ADMIN CAP_NET_BIND_SERVICE";
-          MemoryDenyWriteExecute = true;
-          ProtectControlGroups = true;
-          ProtectHome = "tmpfs";
-          ProtectKernelModules = true;
-          ProtectKernelTunables = true;
-          RestrictAddressFamilies = "AF_UNIX AF_INET AF_INET6 AF_NETLINK";
-          RestrictNamespaces = true;
-          RestrictRealtime = true;
-          SystemCallArchitectures = "native";
-          SystemCallFilter = [
-            "@system-service"
-            "~@privileged @keyring"
-          ];
-        }
-        // (
-          if (cfg.group != null) then
-            {
-              Group = cfg.group;
-            }
-          else
-            { }
-        );
+        wantedBy = [ "multi-user.target" ];
       };
-
-      networking.dhcpcd.denyInterfaces = cfg.denyDhcpcdInterfaces;
-      networking.firewall.allowedUDPPorts = mkIf cfg.openMulticastPort [ 9001 ];
-
-      # Make yggdrasilctl available on the command line.
-      environment.systemPackages = [ cfg.package ];
     }
   );
+
   meta = {
     doc = ./yggdrasil.md;
+
     maintainers = with lib.maintainers; [
       gazally
       nagy

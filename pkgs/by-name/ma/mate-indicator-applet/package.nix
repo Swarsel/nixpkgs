@@ -2,14 +2,14 @@
   lib,
   stdenv,
   fetchurl,
-  pkg-config,
   gettext,
+  gitUpdater,
   gtk3,
+  hicolor-icon-theme,
   libayatana-indicator,
   mate-panel,
-  hicolor-icon-theme,
+  pkg-config,
   wrapGAppsHook3,
-  gitUpdater,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -41,18 +41,17 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   configureFlags = [ "--with-ayatana-indicators" ];
-
   enableParallelBuilding = true;
 
   passthru.updateScript = gitUpdater {
-    url = "https://git.mate-desktop.org/mate-indicator-applet";
     odd-unstable = true;
     rev-prefix = "v";
+    url = "https://git.mate-desktop.org/mate-indicator-applet";
   };
 
   meta = {
-    homepage = "https://github.com/mate-desktop/mate-indicator-applet";
     description = "MATE panel indicator applet";
+
     longDescription = ''
       A small applet to display information from various applications
       consistently in the panel.
@@ -64,10 +63,14 @@ stdenv.mkDerivation (finalAttrs: {
       Existing indicators include the Message Menu, Battery Menu and Sound
       menu.
     '';
+
+    homepage = "https://github.com/mate-desktop/mate-indicator-applet";
+
     license = with lib.licenses; [
       gpl3Plus
       lgpl2Plus
     ];
+
     platforms = lib.platforms.unix;
     teams = [ lib.teams.mate ];
   };

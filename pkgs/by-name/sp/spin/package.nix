@@ -1,13 +1,13 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
-  makeWrapper,
   bison,
   gcc,
-  tk,
-  swarm,
   graphviz,
+  makeWrapper,
+  swarm,
+  tk,
 }:
 
 let
@@ -32,16 +32,12 @@ stdenv.mkDerivation (finalAttrs: {
 
   nativeBuildInputs = [ makeWrapper ];
   buildInputs = [ bison ];
-
-  sourceRoot = "${finalAttrs.src.name}/Src";
+  makeFlags = [ "DESTDIR=$(out)" ];
 
   preBuild = ''
     mkdir -p $out/bin
     mkdir -p $out/share/man/man1
   '';
-
-  enableParallelBuilding = true;
-  makeFlags = [ "DESTDIR=$(out)" ];
 
   postInstall = ''
     wrapProgram $out/bin/spin --prefix PATH : ${binPath}
@@ -52,14 +48,19 @@ stdenv.mkDerivation (finalAttrs: {
       --prefix PATH : $out/bin:${binPath}
   '';
 
+  enableParallelBuilding = true;
+  sourceRoot = "${finalAttrs.src.name}/Src";
+
   meta = {
     description = "Formal verification tool for distributed software systems";
     homepage = "https://spinroot.com/";
     license = lib.licenses.bsd3;
-    platforms = lib.platforms.unix;
+
     maintainers = with lib.maintainers; [
       pSub
       siraben
     ];
+
+    platforms = lib.platforms.unix;
   };
 })

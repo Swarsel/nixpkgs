@@ -1,7 +1,7 @@
 {
   lib,
-  fetchurl,
   stdenv,
+  fetchurl,
   undmg,
   versionCheckHook,
 }:
@@ -22,8 +22,6 @@ stdenv.mkDerivation {
 
   nativeBuildInputs = [ undmg ];
 
-  sourceRoot = "Suspicious Package.app";
-
   installPhase = ''
     runHook preInstall
 
@@ -34,19 +32,21 @@ stdenv.mkDerivation {
     runHook postInstall
   '';
 
+  doInstallCheck = true;
+
   nativeInstallCheckInputs = [
     versionCheckHook
   ];
 
-  doInstallCheck = true;
+  sourceRoot = "Suspicious Package.app";
 
   meta = {
     description = "Toolkit for analysing macOS packages";
     homepage = "https://www.mothersruin.com/software/SuspiciousPackage/";
     license = lib.licenses.unfreeRedistributable;
-    maintainers = with lib.maintainers; [ andre4ik3 ];
-    mainProgram = "spkg";
-    platforms = lib.platforms.darwin;
     sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
+    maintainers = with lib.maintainers; [ andre4ik3 ];
+    platforms = lib.platforms.darwin;
+    mainProgram = "spkg";
   };
 }

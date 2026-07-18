@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule (finalAttrs: {
@@ -17,12 +17,12 @@ buildGoModule (finalAttrs: {
 
   vendorHash = null;
 
-  subPackages = [ "." ];
-
   postInstall = ''
     ln -s $out/bin/gofu $out/bin/rtree
     ln -s $out/bin/gofu $out/bin/prettyprompt
   '';
+
+  subPackages = [ "." ];
 
   meta = {
     description = "Multibinary containing several utilities";

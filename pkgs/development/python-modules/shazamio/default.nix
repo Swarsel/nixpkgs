@@ -1,25 +1,24 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  fetchpatch,
-  poetry-core,
-  wheel,
   aiofiles,
   aiohttp,
+  buildPythonPackage,
   dataclass-factory,
+  fetchpatch,
+  ffmpeg,
   numpy,
+  poetry-core,
   pydantic,
   pydub,
-  ffmpeg,
   pytest-asyncio,
   pytestCheckHook,
+  wheel,
 }:
 
 buildPythonPackage rec {
   pname = "shazamio";
   version = "0.8.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "dotX12";
@@ -32,9 +31,9 @@ buildPythonPackage rec {
     # remove poetry and virtualenv from build dependencies as they are not used
     # https://github.com/dotX12/ShazamIO/pull/71
     (fetchpatch {
+      hash = "sha256-KiU5RVBPnSs5qrReFeTe9ePg1fR7y0NchIIHcQwlPaI=";
       name = "remove-unused-build-dependencies.patch";
       url = "https://github.com/dotX12/ShazamIO/commit/5c61e1efe51c2826852da5b6aa6ad8ce3d4012a9.patch";
-      hash = "sha256-KiU5RVBPnSs5qrReFeTe9ePg1fR7y0NchIIHcQwlPaI=";
     })
   ];
 
@@ -65,6 +64,7 @@ buildPythonPackage rec {
     "test_recognize_song_bytes"
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "shazamio" ];
 
   meta = {

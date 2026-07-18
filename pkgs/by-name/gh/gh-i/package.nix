@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule (finalAttrs: {
@@ -16,13 +16,12 @@ buildGoModule (finalAttrs: {
   };
 
   vendorHash = "sha256-eqSAwHFrvBxLl5zcZyp3+1wTf7+JmpogFBDuVgzNm+w=";
-
   ldflags = [ "-s" ];
 
   meta = {
     description = "Search github issues interactively";
-    changelog = "https://github.com/gennaro-tedesco/gh-i/releases/tag/v${finalAttrs.version}";
     homepage = "https://github.com/gennaro-tedesco/gh-i";
+    changelog = "https://github.com/gennaro-tedesco/gh-i/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.asl20;
     maintainers = with lib.maintainers; [ phanirithvij ];
     mainProgram = "gh-i";

@@ -2,41 +2,42 @@
   lib,
   stdenv,
   fetchurl,
-  python313,
   SDL2,
+  autoPatchelfHook,
   cairo,
-  pango,
-  libvorbis,
-  openal,
+  copyDesktopItems,
   curl,
+  genericUpdater,
   gnugrep,
   gnused,
   libgcc,
+  libvorbis,
   makeBinaryWrapper,
   makeDesktopItem,
-  autoPatchelfHook,
-  copyDesktopItems,
+  openal,
+  pango,
+  python313,
   writeShellApplication,
   commandLineArgs ? "",
-  genericUpdater,
 }:
 let
   archive =
     {
-      x86_64-linux = {
-        name = "BombSquad_Linux_x86_64";
-        hash = "sha256-zKZpRsyBCTYDJbTwjaP/HFXfYvD9zBhetUGzriB9754=";
-      };
       aarch64-linux = {
-        name = "BombSquad_Linux_Arm64";
         hash = "sha256-Q87KbQqwEOaMiJ4uSgZ3eD8AYKQCoJWPzq7rt9Nu9Co=";
+        name = "BombSquad_Linux_Arm64";
+      };
+
+      x86_64-linux = {
+        hash = "sha256-zKZpRsyBCTYDJbTwjaP/HFXfYvD9zBhetUGzriB9754=";
+        name = "BombSquad_Linux_x86_64";
       };
     }
     .${stdenv.targetPlatform.system} or (throw "${stdenv.targetPlatform.system} is unsupported.");
 
   bombsquadIcon = fetchurl {
-    url = "https://files.ballistica.net/bombsquad/promo/BombSquadIcon.png";
     hash = "sha256-MfOvjVmjhLejrJmdLo/goAM9DTGubnYGhlN6uF2GugA=";
+    url = "https://files.ballistica.net/bombsquad/promo/BombSquadIcon.png";
   };
 
 in
@@ -48,11 +49,15 @@ stdenv.mkDerivation (finalAttrs: {
   version = "1.7.63";
 
   src = fetchurl {
-    url = "https://files.ballistica.net/bombsquad/builds/old/${archive.name}_${finalAttrs.version}.tar.gz";
     inherit (archive) hash;
+    url = "https://files.ballistica.net/bombsquad/builds/old/${archive.name}_${finalAttrs.version}.tar.gz";
   };
 
-  sourceRoot = "${archive.name}_${finalAttrs.version}";
+  nativeBuildInputs = [
+    autoPatchelfHook
+    copyDesktopItems
+    makeBinaryWrapper
+  ];
 
   buildInputs = [
     SDL2
@@ -62,25 +67,6 @@ stdenv.mkDerivation (finalAttrs: {
     openal
     pango
     python313
-  ];
-
-  nativeBuildInputs = [
-    autoPatchelfHook
-    copyDesktopItems
-    makeBinaryWrapper
-  ];
-
-  desktopItems = [
-    (makeDesktopItem {
-      name = "bombsquad";
-      genericName = "bombsquad";
-      desktopName = "BombSquad";
-
-      icon = "bombsquad";
-      exec = "bombsquad";
-      comment = "An explosive arcade-style party game.";
-      categories = [ "Game" ];
-    })
   ];
 
   installPhase = ''
@@ -104,14 +90,30 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  desktopItems = [
+    (makeDesktopItem {
+      categories = [ "Game" ];
+      comment = "An explosive arcade-style party game.";
+      desktopName = "BombSquad";
+      exec = "bombsquad";
+      genericName = "bombsquad";
+      icon = "bombsquad";
+      name = "bombsquad";
+    })
+  ];
+
+  sourceRoot = "${archive.name}_${finalAttrs.version}";
+
   passthru.updateScript = genericUpdater {
     versionLister = lib.getExe (writeShellApplication {
       name = "bombsquad-versionLister";
+
       runtimeInputs = [
         curl
         gnugrep
         gnused
       ];
+
       text = ''
         curl -sL "https://files.ballistica.net/bombsquad/builds/CHANGELOG.md" \
             | grep -oP '^### \K\d+\.\d+\.\d+' \
@@ -124,15 +126,18 @@ stdenv.mkDerivation (finalAttrs: {
     description = "Free, multiplayer, arcade-style game for up to eight players that combines elements of fighting games and first-person shooters (FPS)";
     homepage = "https://ballistica.net";
     changelog = "https://ballistica.net/downloads?display=changelog";
+
     license = with lib.licenses; [
       mit
       unfree
     ];
+
     maintainers = with lib.maintainers; [
       syedahkam
       mrmaxmeier
     ];
-    mainProgram = "bombsquad";
+
     platforms = lib.platforms.linux;
+    mainProgram = "bombsquad";
   };
 })

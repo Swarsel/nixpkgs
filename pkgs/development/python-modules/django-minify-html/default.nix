@@ -1,25 +1,21 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # build-system
-  setuptools,
-
   # dependencies
   asgiref,
+  buildPythonPackage,
   django,
   minify-html,
-
   # tests
   pytest-django,
   pytestCheckHook,
+  # build-system
+  setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "django-minify-html";
   version = "1.14.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "adamchainz";
@@ -27,6 +23,15 @@ buildPythonPackage rec {
     tag = version;
     hash = "sha256-mTFHIZo1E9+d7bOfelFCUZRt5eEo6w+xKB5qf9jc8hY=";
   };
+
+  nativeCheckInputs = [
+    pytest-django
+    pytestCheckHook
+  ];
+
+  preCheck = ''
+    export DJANGO_SETTINGS_MODULE=tests.settings
+  '';
 
   build-system = [
     setuptools
@@ -38,14 +43,7 @@ buildPythonPackage rec {
     minify-html
   ];
 
-  nativeCheckInputs = [
-    pytest-django
-    pytestCheckHook
-  ];
-
-  preCheck = ''
-    export DJANGO_SETTINGS_MODULE=tests.settings
-  '';
+  pyproject = true;
 
   pythonImportsCheck = [
     "django_minify_html"

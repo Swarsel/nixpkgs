@@ -2,51 +2,61 @@
   lib,
   stdenv,
   buildPythonPackage,
-  fetchPypi,
-  pythonOlder,
-
-  # Build dependencies
-  setuptools,
-
   # Runtime dependencies
   decorator,
+  fetchPypi,
   ipython-pygments-lexers,
   jedi,
+  # Optional dependencies
+  matplotlib,
   matplotlib-inline,
   pexpect,
+  # Test dependencies
+  pickleshare,
   prompt-toolkit,
   psutil,
   pygments,
-  stack-data,
-  traitlets,
-  typing-extensions,
-
-  # Optional dependencies
-  matplotlib,
-
-  # Reverse dependency
-  sage,
-
-  # Test dependencies
-  pickleshare,
   pytest-asyncio,
   pytestCheckHook,
+  pythonOlder,
+  # Reverse dependency
+  sage,
+  # Build dependencies
+  setuptools,
+  stack-data,
   testpath,
+  traitlets,
+  typing-extensions,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "ipython";
   version = "9.14.0";
-  outputs = [
-    "out"
-    "man"
-  ];
-  pyproject = true;
 
   src = fetchPypi {
     inherit (finalAttrs) pname version;
     hash = "sha256-byf/Dx2eoFDgVR9xVovEs02KuleejxEcW0F19ErGtKo=";
   };
+
+  outputs = [
+    "out"
+    "man"
+  ];
+
+  nativeCheckInputs = [
+    pickleshare
+    pytest-asyncio
+    pytestCheckHook
+    testpath
+  ];
+
+  preCheck = ''
+    export HOME=$TMPDIR
+
+    # doctests try to fetch an image from the internet
+    substituteInPlace pyproject.toml \
+      --replace-fail '"--ipdoctest-modules",' '"--ipdoctest-modules", "--ignore=IPython/core/display.py",'
+  '';
 
   build-system = [ setuptools ];
 
@@ -64,31 +74,17 @@ buildPythonPackage (finalAttrs: {
   ]
   ++ lib.optionals (pythonOlder "3.12") [ typing-extensions ];
 
-  optional-dependencies = {
-    matplotlib = [ matplotlib ];
-  };
-
-  pythonImportsCheck = [ "IPython" ];
-
-  preCheck = ''
-    export HOME=$TMPDIR
-
-    # doctests try to fetch an image from the internet
-    substituteInPlace pyproject.toml \
-      --replace-fail '"--ipdoctest-modules",' '"--ipdoctest-modules", "--ignore=IPython/core/display.py",'
-  '';
-
-  nativeCheckInputs = [
-    pickleshare
-    pytest-asyncio
-    pytestCheckHook
-    testpath
-  ];
-
   disabledTests = lib.optionals (stdenv.hostPlatform.isDarwin) [
     # FileNotFoundError: [Errno 2] No such file or directory: 'pbpaste'
     "test_clipboard_get"
   ];
+
+  optional-dependencies = {
+    matplotlib = [ matplotlib ];
+  };
+
+  pyproject = true;
+  pythonImportsCheck = [ "IPython" ];
 
   passthru.tests = {
     inherit sage;
@@ -96,11 +92,11 @@ buildPythonPackage (finalAttrs: {
 
   meta = {
     description = "IPython: Productive Interactive Computing";
-    downloadPage = "https://github.com/ipython/ipython/";
     homepage = "https://ipython.readthedocs.io/en/stable/";
     changelog = "https://github.com/ipython/ipython/blob/${finalAttrs.version}/docs/source/whatsnew/version${lib.versions.major finalAttrs.version}.rst";
     license = lib.licenses.bsd3;
     maintainers = with lib.maintainers; [ bjornfor ];
+    downloadPage = "https://github.com/ipython/ipython/";
     teams = [ lib.teams.jupyter ];
   };
 })

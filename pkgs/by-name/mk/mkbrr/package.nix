@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   versionCheckHook,
 }:
 
@@ -17,20 +17,18 @@ buildGoModule (finalAttrs: {
   };
 
   vendorHash = "sha256-BNswyeGBhm0CY6D9HcJHTDKIGCJ5QotiwRnr22HltMo=";
+  doCheck = true;
+  doInstallCheck = true;
+
+  nativeInstallCheckInputs = [
+    versionCheckHook
+  ];
 
   ldflags = [
     "-s"
     "-w"
     "-X main.version=v${finalAttrs.version}"
     "-X main.buildTime=unknown"
-  ];
-
-  doCheck = true;
-
-  doInstallCheck = true;
-
-  nativeInstallCheckInputs = [
-    versionCheckHook
   ];
 
   versionCheckProgramArg = "version";

@@ -1,21 +1,20 @@
 {
   lib,
   fetchFromGitHub,
+  copyDesktopItems,
+  gobject-introspection,
   gtk4,
   libadwaita,
-  python3Packages,
-  gobject-introspection,
-  wrapGAppsHook4,
-  copyDesktopItems,
   makeDesktopItem,
   nix-update-script,
+  python3Packages,
   udevCheckHook,
+  wrapGAppsHook4,
 }:
 
 python3Packages.buildPythonPackage (finalAttrs: {
   pname = "boxflat";
   version = "1.35.5";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "Lawstorant";
@@ -24,7 +23,12 @@ python3Packages.buildPythonPackage (finalAttrs: {
     hash = "sha256-R03mQIsa6T1ApV8SMWvilBfiCGcAWvyZ5hDDgAuGd6s=";
   };
 
-  build-system = [ python3Packages.setuptools ];
+  nativeBuildInputs = [
+    copyDesktopItems
+    wrapGAppsHook4
+    gobject-introspection
+    udevCheckHook
+  ];
 
   propagatedBuildInputs = [
     gtk4
@@ -36,21 +40,6 @@ python3Packages.buildPythonPackage (finalAttrs: {
     python3Packages.pycairo
     python3Packages.pygobject3
     python3Packages.evdev
-  ];
-
-  nativeBuildInputs = [
-    copyDesktopItems
-    wrapGAppsHook4
-    gobject-introspection
-    udevCheckHook
-  ];
-
-  pythonRelaxDeps = [
-    "psutil"
-    "evdev"
-    "pycairo"
-    "pygobject"
-    "PyYAML"
   ];
 
   preBuild = ''
@@ -83,26 +72,26 @@ python3Packages.buildPythonPackage (finalAttrs: {
     cp udev/99-boxflat.rules "$out/lib/udev/rules.d/"
   '';
 
-  dontWrapGApps = true;
   preFixup = ''
     makeWrapperArgs+=("''${gappsWrapperArgs[@]}")
     makeWrapperArgs+=(--add-flags "--data-path $out/usr/share/boxflat/data")
   '';
 
+  build-system = [ python3Packages.setuptools ];
+
   desktopItems = [
     (makeDesktopItem rec {
-      name = "Boxflat";
-      desktopName = name;
-      genericName = "settings";
-      comment = "Moza Racing settings app";
-      exec = "boxflat";
-      icon = "io.github.lawstorant.boxflat";
-      startupWMClass = icon;
-      startupNotify = true;
       categories = [
         "Game"
         "Utility"
       ];
+
+      comment = "Moza Racing settings app";
+      desktopName = name;
+      exec = "boxflat";
+      genericName = "settings";
+      icon = "io.github.lawstorant.boxflat";
+
       keywords = [
         "game"
         "racing"
@@ -110,15 +99,30 @@ python3Packages.buildPythonPackage (finalAttrs: {
         "wheels"
         "moza"
       ];
+
+      name = "Boxflat";
+      startupNotify = true;
+      startupWMClass = icon;
     })
+  ];
+
+  dontWrapGApps = true;
+  pyproject = true;
+
+  pythonRelaxDeps = [
+    "psutil"
+    "evdev"
+    "pycairo"
+    "pygobject"
+    "PyYAML"
   ];
 
   passthru.updateScript = nix-update-script { };
 
   meta = {
+    description = "Control your Moza gear settings";
     homepage = "https://github.com/Lawstorant/boxflat";
     changelog = "https://github.com/Lawstorant/boxflat/releases/tag/v${finalAttrs.version}";
-    description = "Control your Moza gear settings";
     license = lib.licenses.gpl3Only;
     maintainers = with lib.maintainers; [ racci ];
     platforms = lib.platforms.linux;

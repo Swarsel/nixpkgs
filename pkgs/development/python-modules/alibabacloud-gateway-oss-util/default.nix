@@ -8,22 +8,19 @@
 buildPythonPackage (finalAttrs: {
   pname = "alibabacloud-gateway-oss-util";
   version = "0.0.13";
-  pyproject = true;
-
-  __structuredAttrs = true;
 
   src = fetchPypi {
-    pname = "alibabacloud_gateway_oss_util";
     inherit (finalAttrs) version;
     hash = "sha256-RlWx2oGOieifxcs0UHhapFVZT5XYJAR3EXPJuJXtMDc=";
+    pname = "alibabacloud_gateway_oss_util";
   };
-
-  build-system = [ setuptools ];
-
-  pythonImportsCheck = [ "alibabacloud_gateway_oss_util" ];
 
   # Module has no tests
   doCheck = false;
+  __structuredAttrs = true;
+  build-system = [ setuptools ];
+  pyproject = true;
+  pythonImportsCheck = [ "alibabacloud_gateway_oss_util" ];
 
   meta = {
     description = "Alibaba Cloud OSS Util Library for Python";

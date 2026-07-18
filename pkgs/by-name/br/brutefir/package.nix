@@ -18,6 +18,7 @@ stdenv.mkDerivation (finalAttrs: {
     sha256 = "caae4a933b53b55b29d6cb7e2803e20819f31def6d0e4e12f9a48351e6dbbe9f";
   };
 
+  postPatch = "substituteInPlace bfconf.c --replace /usr/local $out";
   nativeBuildInputs = [ flex ];
 
   buildInputs = [
@@ -27,19 +28,19 @@ stdenv.mkDerivation (finalAttrs: {
     libjack2
   ];
 
-  postPatch = "substituteInPlace bfconf.c --replace /usr/local $out";
-
   installFlags = [ "INSTALL_PREFIX=$(out)" ];
 
   meta = {
-    homepage = "https://torger.se/anders/brutefir.html";
     description = "Software convolution engine";
+    homepage = "https://torger.se/anders/brutefir.html";
     license = lib.licenses.gpl2Only;
     maintainers = with lib.maintainers; [ auchter ];
+
     platforms = [
       "x86_64-linux"
       "i686-linux"
     ];
+
     mainProgram = "brutefir";
   };
 })

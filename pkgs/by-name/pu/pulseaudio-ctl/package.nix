@@ -2,12 +2,12 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  makeWrapper,
   bc,
   dbus,
   gawk,
   gnused,
   libnotify,
+  makeWrapper,
   pulseaudio,
 }:
 
@@ -50,10 +50,10 @@ stdenv.mkDerivation {
 
   meta = {
     description = "Control pulseaudio volume from the shell or mapped to keyboard shortcuts. No need for alsa-utils";
-    mainProgram = "pulseaudio-ctl";
     homepage = "https://bbs.archlinux.org/viewtopic.php?id=124513";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ peterhoeg ];
     platforms = lib.platforms.linux;
+    mainProgram = "pulseaudio-ctl";
   };
 }

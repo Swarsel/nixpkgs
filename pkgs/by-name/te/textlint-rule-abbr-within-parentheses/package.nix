@@ -5,9 +5,9 @@
   fetchYarnDeps,
   fixup-yarn-lock,
   nodejs,
-  yarn,
   textlint,
   textlint-rule-abbr-within-parentheses,
+  yarn,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -21,28 +21,11 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-CBrf7WtvywDmtuSyxkDtAyjmrj7KS3TQLSsNfMxeWXw=";
   };
 
-  offlineCache = fetchYarnDeps {
-    yarnLock = "${finalAttrs.src}/yarn.lock";
-    hash = "sha256-N4tnja6qTo7jtn7Dh4TwBUCUKfbIbHvdZ7aeJcE+NlU=";
-  };
-
   nativeBuildInputs = [
     fixup-yarn-lock
     nodejs
     yarn
   ];
-
-  configurePhase = ''
-    runHook preConfigure
-
-    export HOME=$(mktemp -d)
-    yarn config --offline set yarn-offline-mirror "$offlineCache"
-    fixup-yarn-lock yarn.lock
-    yarn --offline --frozen-lockfile --ignore-platform --ignore-scripts --no-progress --non-interactive install
-    patchShebangs node_modules
-
-    runHook postConfigure
-  '';
 
   buildPhase = ''
     runHook preBuild
@@ -62,6 +45,23 @@ stdenv.mkDerivation (finalAttrs: {
 
     runHook postInstall
   '';
+
+  configurePhase = ''
+    runHook preConfigure
+
+    export HOME=$(mktemp -d)
+    yarn config --offline set yarn-offline-mirror "$offlineCache"
+    fixup-yarn-lock yarn.lock
+    yarn --offline --frozen-lockfile --ignore-platform --ignore-scripts --no-progress --non-interactive install
+    patchShebangs node_modules
+
+    runHook postConfigure
+  '';
+
+  offlineCache = fetchYarnDeps {
+    hash = "sha256-N4tnja6qTo7jtn7Dh4TwBUCUKfbIbHvdZ7aeJcE+NlU=";
+    yarnLock = "${finalAttrs.src}/yarn.lock";
+  };
 
   passthru.tests = textlint.testPackages {
     rule = textlint-rule-abbr-within-parentheses;

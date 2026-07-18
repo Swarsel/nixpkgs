@@ -2,25 +2,25 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  autoreconfHook,
   automake,
-  pkg-config,
+  autoreconfHook,
   cairo,
   ghostscript,
+  libice,
+  libsm,
+  libx11,
+  libxpm,
+  libxt,
   ngspice,
+  pkg-config,
   tcl,
   tk,
-  libxt,
-  libxpm,
-  libx11,
-  libsm,
-  libice,
   zlib,
 }:
 
 stdenv.mkDerivation {
-  version = "3.10.42";
   pname = "xcircuit";
+  version = "3.10.42";
 
   src = fetchFromGitHub {
     owner = "RTimothyEdwards";
@@ -33,13 +33,6 @@ stdenv.mkDerivation {
     autoreconfHook
     automake
     pkg-config
-  ];
-  hardeningDisable = [ "format" ];
-
-  configureFlags = [
-    "--with-tcl=${tcl}/lib"
-    "--with-tk=${tk}/lib"
-    "--with-ngspice=${lib.getBin ngspice}/bin/ngspice"
   ];
 
   buildInputs = [
@@ -55,16 +48,26 @@ stdenv.mkDerivation {
     zlib
   ];
 
+  configureFlags = [
+    "--with-tcl=${tcl}/lib"
+    "--with-tk=${tk}/lib"
+    "--with-ngspice=${lib.getBin ngspice}/bin/ngspice"
+  ];
+
+  hardeningDisable = [ "format" ];
+
   meta = {
     description = "Generic drawing program tailored to circuit diagrams";
-    mainProgram = "xcircuit";
     homepage = "http://opencircuitdesign.com/xcircuit";
     license = lib.licenses.gpl2;
-    platforms = lib.platforms.linux;
+
     maintainers = with lib.maintainers; [
       john-shaffer
       spacefrogg
       thoughtpolice
     ];
+
+    platforms = lib.platforms.linux;
+    mainProgram = "xcircuit";
   };
 }

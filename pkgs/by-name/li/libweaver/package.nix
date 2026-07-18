@@ -19,7 +19,6 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   strictDeps = true;
-  __structuredAttrs = true;
 
   nativeBuildInputs = [
     cmake
@@ -30,18 +29,22 @@ stdenv.mkDerivation (finalAttrs: {
     (lib.cmakeBool "LIBWEAVER_BUILD_APP" false)
   ];
 
+  __structuredAttrs = true;
+
   passthru = {
-    updateScript = unstableGitUpdater { hardcodeZeroVersion = true; };
     tests.cmake-config = testers.hasCmakeConfigModules {
-      package = finalAttrs.finalPackage;
       moduleNames = [ "libweaver" ];
+      package = finalAttrs.finalPackage;
     };
+
+    updateScript = unstableGitUpdater { hardcodeZeroVersion = true; };
   };
 
   meta = {
     description = "library for interacting with SI files";
     homepage = "https://github.com/isledecomp/SIEdit/tree/master/include/libweaver";
     license = lib.licenses.gpl3Only;
+
     maintainers = [
       lib.maintainers.RossSmyth
     ];

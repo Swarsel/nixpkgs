@@ -2,16 +2,16 @@
   lib,
   stdenv,
   fetchurl,
-  python3,
-  pkg-config,
-  readline,
-  libxslt,
-  libxcrypt,
+  buildPackages,
   docbook-xsl-nons,
   docbook_xml_dtd_42,
   fixDarwinDylibNames,
+  libxcrypt,
+  libxslt,
+  pkg-config,
+  python3,
+  readline,
   wafHook,
-  buildPackages,
 }:
 
 stdenv.mkDerivation rec {
@@ -41,25 +41,6 @@ stdenv.mkDerivation rec {
     libxcrypt
   ];
 
-  # otherwise the configure script fails with
-  # PYTHONHASHSEED=1 missing! Don't use waf directly, use ./configure and make!
-  preConfigure = ''
-    export PKGCONFIG="$PKG_CONFIG"
-    export PYTHONHASHSEED=1
-  '';
-
-  wafPath = "buildtools/bin/waf";
-
-  wafConfigureFlags = [
-    "--enable-talloc-compat1"
-    "--bundled-libraries=NONE"
-    "--builtin-libraries=replace"
-  ]
-  ++ lib.optionals (stdenv.hostPlatform != stdenv.buildPlatform) [
-    "--cross-compile"
-    "--cross-execute=${stdenv.hostPlatform.emulator buildPackages}"
-  ];
-
   env = {
     # python-config from build Python gives incorrect values when cross-compiling.
     # If python-config is not found, the build falls back to using the sysconfig
@@ -73,6 +54,13 @@ stdenv.mkDerivation rec {
         NIX_LDFLAGS = "--undefined-version";
       };
 
+  # otherwise the configure script fails with
+  # PYTHONHASHSEED=1 missing! Don't use waf directly, use ./configure and make!
+  preConfigure = ''
+    export PKGCONFIG="$PKG_CONFIG"
+    export PYTHONHASHSEED=1
+  '';
+
   # this must not be exported before the ConfigurePhase otherwise waf whines
   preBuild = lib.optionalString stdenv.hostPlatform.isMusl ''
     export NIX_CFLAGS_LINK="-no-pie -shared";
@@ -82,11 +70,23 @@ stdenv.mkDerivation rec {
     ${stdenv.cc.targetPrefix}ar q $out/lib/libtalloc.a bin/default/talloc.c.[0-9]*.o
   '';
 
+  wafConfigureFlags = [
+    "--enable-talloc-compat1"
+    "--bundled-libraries=NONE"
+    "--builtin-libraries=replace"
+  ]
+  ++ lib.optionals (stdenv.hostPlatform != stdenv.buildPlatform) [
+    "--cross-compile"
+    "--cross-execute=${stdenv.hostPlatform.emulator buildPackages}"
+  ];
+
+  wafPath = "buildtools/bin/waf";
+
   meta = {
     description = "Hierarchical pool based memory allocator with destructors";
     homepage = "https://tdb.samba.org/";
     license = lib.licenses.gpl3;
-    platforms = lib.platforms.all;
     maintainers = [ lib.maintainers.matthiasbeyer ];
+    platforms = lib.platforms.all;
   };
 }

@@ -3,17 +3,17 @@
   stdenv,
   fetchFromGitHub,
   cmake,
-  zlib,
   eigen,
-  libGL,
-  spglib,
-  mmtf-cpp,
   glew,
-  python3,
+  jkqtplotter,
+  libGL,
   libarchive,
   libmsym,
-  jkqtplotter,
+  mmtf-cpp,
+  python3,
   qt6,
+  spglib,
+  zlib,
 }:
 
 let
@@ -34,34 +34,6 @@ stdenv.mkDerivation (finalAttrs: {
     tag = finalAttrs.version;
     hash = "sha256-Un1TSXFucCFmHq8DoWQS7RaNgtXiD2JcXGueavugU64=";
   };
-
-  postUnpack =
-    let
-      # Pure data repositories
-      moleculesRepo = fetchFromGitHub {
-        owner = "OpenChemistry";
-        repo = "molecules";
-        tag = finalAttrs.version;
-        hash = "sha256-hMLf0gYYnQpjSGKcPy4tihNbmpRR7UxnXF/hyhforgI=";
-      };
-      crystalsRepo = fetchFromGitHub {
-        owner = "OpenChemistry";
-        repo = "crystals";
-        tag = finalAttrs.version;
-        hash = "sha256-WhzFldaOt/wJy1kk+ypOkw1OYFT3hqD7j5qGdq9g+IY=";
-      };
-      fragmentsRepo = fetchFromGitHub {
-        owner = "OpenChemistry";
-        repo = "fragments";
-        tag = finalAttrs.version;
-        hash = "sha256-OLLcQX3a9j9rEJtBziEU4fCZB2DiDDzql2mr2KfSp70=";
-      };
-    in
-    ''
-      cp -r ${moleculesRepo} molecules
-      cp -r ${crystalsRepo} crystals
-      cp -r ${fragmentsRepo} fragments
-    '';
 
   nativeBuildInputs = [
     cmake
@@ -91,11 +63,39 @@ stdenv.mkDerivation (finalAttrs: {
       --replace-fail "_IMPORT_PREFIX \"$out\"" '_IMPORT_PREFIX "/"'
   '';
 
+  postUnpack =
+    let
+      # Pure data repositories
+      moleculesRepo = fetchFromGitHub {
+        hash = "sha256-hMLf0gYYnQpjSGKcPy4tihNbmpRR7UxnXF/hyhforgI=";
+        owner = "OpenChemistry";
+        repo = "molecules";
+        tag = finalAttrs.version;
+      };
+      crystalsRepo = fetchFromGitHub {
+        hash = "sha256-WhzFldaOt/wJy1kk+ypOkw1OYFT3hqD7j5qGdq9g+IY=";
+        owner = "OpenChemistry";
+        repo = "crystals";
+        tag = finalAttrs.version;
+      };
+      fragmentsRepo = fetchFromGitHub {
+        hash = "sha256-OLLcQX3a9j9rEJtBziEU4fCZB2DiDDzql2mr2KfSp70=";
+        owner = "OpenChemistry";
+        repo = "fragments";
+        tag = finalAttrs.version;
+      };
+    in
+    ''
+      cp -r ${moleculesRepo} molecules
+      cp -r ${crystalsRepo} crystals
+      cp -r ${fragmentsRepo} fragments
+    '';
+
   meta = {
     description = "Molecule editor and visualizer";
-    maintainers = with lib.maintainers; [ sheepforce ];
     homepage = "https://github.com/OpenChemistry/avogadrolibs";
-    platforms = lib.platforms.linux;
     license = lib.licenses.gpl2Only;
+    maintainers = with lib.maintainers; [ sheepforce ];
+    platforms = lib.platforms.linux;
   };
 })

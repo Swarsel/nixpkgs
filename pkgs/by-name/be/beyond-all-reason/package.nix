@@ -17,8 +17,6 @@ in
 appimageTools.wrapType2 {
   inherit pname version src;
 
-  extraPkgs = pkgs: [ openal ];
-
   extraInstallCommands = ''
     install -m 444 -D ${appimageContents}/beyond-all-reason.desktop $out/share/applications/beyond-all-reason.desktop
     install -m 444 -D ${appimageContents}/beyond-all-reason.png \
@@ -27,15 +25,19 @@ appimageTools.wrapType2 {
       --replace-fail 'Exec=AppRun' 'Exec=beyond-all-reason'
   '';
 
+  extraPkgs = pkgs: [ openal ];
+
   meta = {
-    homepage = "https://www.beyondallreason.info/";
-    downloadPage = "https://www.beyondallreason.info/download";
-    changelog = "https://github.com/beyond-all-reason/BYAR-Chobby/releases/tag/v${version}";
     description = "Free Real Time Strategy Game with a grand scale and full physical simulation in a sci-fi setting";
+    homepage = "https://www.beyondallreason.info/";
+    changelog = "https://github.com/beyond-all-reason/BYAR-Chobby/releases/tag/v${version}";
     license = lib.licenses.gpl2Plus;
-    platforms = [ "x86_64-linux" ];
+
     maintainers = with lib.maintainers; [
       kiyotoko
     ];
+
+    platforms = [ "x86_64-linux" ];
+    downloadPage = "https://www.beyondallreason.info/download";
   };
 }

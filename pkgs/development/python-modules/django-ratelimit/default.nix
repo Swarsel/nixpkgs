@@ -1,9 +1,9 @@
 {
   lib,
+  fetchFromGitHub,
   buildPythonPackage,
   django,
   django-redis,
-  fetchFromGitHub,
   pymemcache,
   setuptools,
 }:
@@ -11,7 +11,6 @@
 buildPythonPackage rec {
   pname = "django-ratelimit";
   version = "4.1.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "jsocol";
@@ -30,10 +29,6 @@ buildPythonPackage rec {
     pymemcache
   ];
 
-  pythonImportsCheck = [
-    "django_ratelimit"
-  ];
-
   checkPhase = ''
     runHook preCheck
 
@@ -42,6 +37,12 @@ buildPythonPackage rec {
 
     runHook postCheck
   '';
+
+  pyproject = true;
+
+  pythonImportsCheck = [
+    "django_ratelimit"
+  ];
 
   meta = {
     description = "Cache-based rate-limiting for Django";

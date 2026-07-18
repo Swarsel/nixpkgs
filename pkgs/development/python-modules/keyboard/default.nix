@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   setuptools,
 }:
 
@@ -18,15 +18,13 @@ buildPythonPackage {
     hash = "sha256-Xk419Zvx9pDgMcaWZn52WD41cFaXXzJlvmPGxaWdR0k=";
   };
 
-  pyproject = true;
-  build-system = [ setuptools ];
-
-  pythonImportsCheck = [ "keyboard" ];
-
   # Specific OS tests are being run for other OS, like
   # winmouse on Linux, which provides the following error:
   # AttributeError: module 'ctypes' has no attribute 'WinDLL'
   doCheck = false;
+  build-system = [ setuptools ];
+  pyproject = true;
+  pythonImportsCheck = [ "keyboard" ];
 
   meta = {
     description = "Hook and simulate keyboard events on Windows and Linux";

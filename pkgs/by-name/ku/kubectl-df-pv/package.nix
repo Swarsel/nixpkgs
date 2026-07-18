@@ -1,7 +1,7 @@
 {
-  buildGoModule,
-  fetchFromGitHub,
   lib,
+  fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule (finalAttrs: {
@@ -19,10 +19,10 @@ buildGoModule (finalAttrs: {
 
   meta = {
     description = "df-like utility for persistent volumes on Kubernetes";
-    mainProgram = "df-pv";
     homepage = "https://github.com/yashbhutwala/kubectl-df-pv";
     changelog = "https://github.com/yashbhutwala/kubectl-df-pv/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.asl20;
     maintainers = with lib.maintainers; [ jemand771 ];
+    mainProgram = "df-pv";
   };
 })

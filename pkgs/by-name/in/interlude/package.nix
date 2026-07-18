@@ -1,49 +1,49 @@
 {
   lib,
-  buildDotnetModule,
   fetchFromGitHub,
-  fetchpatch,
-  dotnetCorePackages,
+  alsa-lib,
+  buildDotnetModule,
   copyDesktopItems,
-  makeDesktopItem,
-  nix-update-script,
+  dotnetCorePackages,
+  fetchpatch,
+  glfw,
   imagemagick,
   libbass,
   libbass_fx,
-  glfw,
-  alsa-lib,
+  makeDesktopItem,
+  nix-update-script,
 }:
 
 let
   version = "0.7.28.2";
 in
 buildDotnetModule {
-  pname = "interlude";
   inherit version;
+  pname = "interlude";
 
   src = fetchFromGitHub {
     owner = "YAVSRG";
     repo = "YAVSRG";
     tag = "interlude-v${version}";
-    fetchSubmodules = true;
     hash = "sha256-39GhnQcp5yaHC2fGnXkjny7e7QphBYih+PUuj3GR6qA=";
+    fetchSubmodules = true;
   };
 
   patches = [
     # Fallback game dir when the executable dir is not writable
     # https://github.com/YAVSRG/YAVSRG/pull/65
     (fetchpatch {
+      hash = "sha256-eyvq2GIAZuHYhtAdYLe0csJxHZCrw9soXmRl2eJA7Bg=";
       name = "log-path.patch";
       url = "https://github.com/YAVSRG/YAVSRG/commit/6e56a3d78caf4cbc8e17190fea3adb4d061d5284.patch";
-      hash = "sha256-eyvq2GIAZuHYhtAdYLe0csJxHZCrw9soXmRl2eJA7Bg=";
     })
 
     # Looking for bass and bass_fx in LD_LIBRARY_PATH
     # https://github.com/YAVSRG/YAVSRG/pull/66
     (fetchpatch {
+      hash = "sha256-WUbI38EMGvlVl8h7YLJLPsGczhX5PWMLTmy94IRxaBM=";
       name = "library-path.patch";
       url = "https://github.com/YAVSRG/YAVSRG/commit/911a8b7f3931823d9fee99f0cb679a3c03298286.patch";
-      hash = "sha256-WUbI38EMGvlVl8h7YLJLPsGczhX5PWMLTmy94IRxaBM=";
     })
   ];
 
@@ -51,23 +51,6 @@ buildDotnetModule {
     copyDesktopItems
     imagemagick
   ];
-
-  projectFile = "interlude/src/Interlude.fsproj";
-  nugetDeps = ./deps.json;
-  dotnet-sdk = dotnetCorePackages.sdk_9_0;
-  dotnet-runtime = dotnetCorePackages.runtime_9_0;
-
-  runtimeDeps = [
-    # replaced bundled ones in engine/lib/linux-x64
-    libbass
-    libbass_fx
-    # replace the bundled one by OpenTK
-    glfw
-    # not sure why this is needed but no audio devices can be found by libbass without this
-    alsa-lib
-  ];
-
-  executables = [ "Interlude" ];
 
   postInstall = ''
     # The icon is pixel art, so it may be converted to a scalable SVG.
@@ -86,17 +69,34 @@ buildDotnetModule {
 
   desktopItems = [
     (makeDesktopItem {
-      name = "Interlude";
-      exec = "Interlude %U";
-      comment = "A keyboard rhythm game, built for fun";
-      icon = "interlude";
-      desktopName = "Interlude";
-      genericName = "Interlude";
       categories = [
         "Game"
         "Music"
       ];
+
+      comment = "A keyboard rhythm game, built for fun";
+      desktopName = "Interlude";
+      exec = "Interlude %U";
+      genericName = "Interlude";
+      icon = "interlude";
+      name = "Interlude";
     })
+  ];
+
+  dotnet-runtime = dotnetCorePackages.runtime_9_0;
+  dotnet-sdk = dotnetCorePackages.sdk_9_0;
+  executables = [ "Interlude" ];
+  nugetDeps = ./deps.json;
+  projectFile = "interlude/src/Interlude.fsproj";
+
+  runtimeDeps = [
+    # replaced bundled ones in engine/lib/linux-x64
+    libbass
+    libbass_fx
+    # replace the bundled one by OpenTK
+    glfw
+    # not sure why this is needed but no audio devices can be found by libbass without this
+    alsa-lib
   ];
 
   passthru.updateScript = nix-update-script { };
@@ -105,10 +105,12 @@ buildDotnetModule {
     description = "Keyboard rhythm game built for fun, part of the YAVSRG project";
     homepage = "https://www.yavsrg.net";
     changelog = "https://www.yavsrg.net/interlude/changelog.html";
+
     license = with lib.licenses; [
       gpl3Only
       mit
     ];
+
     maintainers = with lib.maintainers; [ ulysseszhan ];
     platforms = lib.platforms.linux;
     mainProgram = "Interlude";

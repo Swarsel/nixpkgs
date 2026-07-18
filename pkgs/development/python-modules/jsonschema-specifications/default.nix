@@ -11,12 +11,11 @@
 buildPythonPackage rec {
   pname = "jsonschema-specifications";
   version = "2025.9.1";
-  pyproject = true;
 
   src = fetchPypi {
-    pname = "jsonschema_specifications";
     inherit version;
     hash = "sha256-tUCYfyOedFYTx6kXbz7bcrgypKxGXPAnEiiDl4MrXo0=";
+    pname = "jsonschema_specifications";
   };
 
   nativeBuildInputs = [
@@ -29,7 +28,7 @@ buildPythonPackage rec {
   ];
 
   nativeCheckInputs = [ pytestCheckHook ];
-
+  pyproject = true;
   pythonImportsCheck = [ "jsonschema_specifications" ];
 
   meta = {

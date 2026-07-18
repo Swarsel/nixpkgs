@@ -1,17 +1,17 @@
 {
-  symlinkJoin,
-  makeWrapper,
   lib,
-  rxvt-unicode-unwrapped,
-  rxvt-unicode-plugins,
-  perlPackages,
+  makeWrapper,
   nixosTests,
+  perlPackages,
+  rxvt-unicode-plugins,
+  rxvt-unicode-unwrapped,
+  symlinkJoin,
   configure ?
     { availablePlugins, ... }:
     {
-      plugins = builtins.attrValues availablePlugins;
       extraDeps = [ ];
       perlDeps = [ ];
+      plugins = builtins.attrValues availablePlugins;
     },
 }:
 
@@ -45,10 +45,8 @@ let
       perlDeps = (config.perlDeps or [ ]) ++ lib.concatMap mkPerlDeps plugins;
     in
     symlinkJoin {
+      inherit (rxvt-unicode-unwrapped) meta version;
       pname = "rxvt-unicode";
-
-      paths = [ rxvt-unicode-unwrapped ] ++ plugins ++ extraDeps;
-
       nativeBuildInputs = [ makeWrapper ];
 
       postBuild = ''
@@ -60,7 +58,7 @@ let
           --suffix-each URXVT_PERL_LIB ':' "$out/lib/urxvt/perl"
       '';
 
-      inherit (rxvt-unicode-unwrapped) meta version;
+      paths = [ rxvt-unicode-unwrapped ] ++ plugins ++ extraDeps;
 
       passthru = {
         plugins = plugins;

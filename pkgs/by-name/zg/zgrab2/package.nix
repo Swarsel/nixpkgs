@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule (finalAttrs: {
@@ -25,14 +25,17 @@ buildGoModule (finalAttrs: {
     description = "Fast Application Layer Scanner";
     homepage = "https://github.com/zmap/zgrab2";
     changelog = "https://github.com/zmap/zgrab2/releases/tag/v${finalAttrs.version}";
+
     license = with lib.licenses; [
       asl20
       isc
     ];
+
     maintainers = with lib.maintainers; [
       fab
       juliusrickert
     ];
+
     mainProgram = "zgrab2";
   };
 })

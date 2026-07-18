@@ -100,158 +100,31 @@ in
 
   options.services.syncoid = {
     enable = lib.mkEnableOption "Syncoid ZFS synchronization service";
-
     package = lib.mkPackageOption pkgs "sanoid" { };
 
-    interval = lib.mkOption {
-      type = with lib.types; either str (listOf str);
-      default = "hourly";
-      example = "*-*-* *:15:00";
-      description = ''
-        Run syncoid at this interval. The default is to run hourly.
-
-        Must be in the format described in {manpage}`systemd.time(7)`.  This is
-        equivalent to adding a corresponding timer unit with
-        {option}`OnCalendar` set to the value given here.
-
-        Set to an empty list to avoid starting syncoid automatically.
-      '';
-    };
-
-    user = lib.mkOption {
-      type = lib.types.str;
-      default = "syncoid";
-      example = "backup";
-      description = ''
-        The user for the service. ZFS privilege delegation will be
-        automatically configured for any local pools used by syncoid if this
-        option is set to a user other than root. The user will be given the
-        "hold" and "send" privileges on any pool that has datasets being sent
-        and the "create", "mount", "receive", and "rollback" privileges on
-        any pool that has datasets being received.
-      '';
-    };
-
-    group = lib.mkOption {
-      type = lib.types.str;
-      default = "syncoid";
-      example = "backup";
-      description = "The group for the service.";
-    };
-
-    sshKey = lib.mkOption {
-      type = with lib.types; nullOr (coercedTo path toString str);
-      default = null;
-      description = ''
-        SSH private key file to use to login to the remote system. Can be
-        overridden in individual commands.
-      '';
-    };
-
-    localSourceAllow = lib.mkOption {
-      type = lib.types.listOf lib.types.str;
-      # Permissions snapshot and destroy are in case --no-sync-snap is not used
-      default = [
-        "bookmark"
-        "hold"
-        "send"
-        "snapshot"
-        "destroy"
-        "mount"
-      ];
-      description = ''
-        Permissions granted for the {option}`services.syncoid.user` user
-        for local source datasets. See
-        <https://openzfs.github.io/openzfs-docs/man/8/zfs-allow.8.html>
-        for available permissions.
-      '';
-    };
-
-    localTargetAllow = lib.mkOption {
-      type = lib.types.listOf lib.types.str;
-      default = [
-        "change-key"
-        "compression"
-        "create"
-        "mount"
-        "mountpoint"
-        "receive"
-        "rollback"
-      ];
-      example = [
-        "create"
-        "mount"
-        "receive"
-        "rollback"
-      ];
-      description = ''
-        Permissions granted for the {option}`services.syncoid.user` user
-        for local target datasets. See
-        <https://openzfs.github.io/openzfs-docs/man/8/zfs-allow.8.html>
-        for available permissions.
-        Make sure to include the `change-key` permission if you send raw encrypted datasets,
-        the `compression` permission if you send raw compressed datasets, and so on.
-        For remote target datasets you'll have to set your remote user permissions by yourself.
-      '';
-    };
-
-    commonArgs = lib.mkOption {
-      type = lib.types.listOf lib.types.str;
-      default = [ ];
-      example = [ "--no-sync-snap" ];
-      description = ''
-        Arguments to add to every syncoid command, unless disabled for that
-        command. See
-        <https://github.com/jimsalterjrs/sanoid/#syncoid-command-line-options>
-        for available options.
-      '';
-    };
-
-    service = lib.mkOption {
-      type = lib.types.attrs;
-      default = { };
-      description = ''
-        Systemd configuration common to all syncoid services.
-      '';
-    };
-
     commands = lib.mkOption {
+      default = { };
+      description = "Syncoid commands to run.";
+
+      example = lib.literalExpression ''
+        {
+          "pool/test".target = "root@target:pool/test";
+        }
+      '';
+
       type = lib.types.attrsOf (
         lib.types.submodule (
           { name, ... }:
           {
             options = {
-              source = lib.mkOption {
-                type = lib.types.str;
-                example = "pool/dataset";
-                description = ''
-                  Source ZFS dataset. Can be either local or remote. Defaults to
-                  the attribute name.
-                '';
-              };
-
-              target = lib.mkOption {
-                type = lib.types.str;
-                example = "user@server:pool/dataset";
-                description = ''
-                  Target ZFS dataset. Can be either local
-                  («pool/dataset») or remote
-                  («user@server:pool/dataset»).
-                '';
-              };
-
-              recursive = lib.mkEnableOption "the transfer of child datasets";
-
-              sshKey = lib.mkOption {
-                type = with lib.types; nullOr (coercedTo path toString str);
-                description = ''
-                  SSH private key file to use to login to the remote system.
-                  Defaults to {option}`services.syncoid.sshKey` option.
-                '';
+              extraArgs = lib.mkOption {
+                default = [ ];
+                description = "Extra syncoid arguments for this command.";
+                example = [ "--sshport 2222" ];
+                type = lib.types.listOf lib.types.str;
               };
 
               localSourceAllow = lib.mkOption {
-                type = lib.types.listOf lib.types.str;
                 description = ''
                   Permissions granted for the {option}`services.syncoid.user` user
                   for local source datasets. See
@@ -259,10 +132,11 @@ in
                   for available permissions.
                   Defaults to {option}`services.syncoid.localSourceAllow` option.
                 '';
+
+                type = lib.types.listOf lib.types.str;
               };
 
               localTargetAllow = lib.mkOption {
-                type = lib.types.listOf lib.types.str;
                 description = ''
                   Permissions granted for the {option}`services.syncoid.user` user
                   for local target datasets. See
@@ -272,106 +146,255 @@ in
                   the `compression` permission if you send raw compressed datasets, and so on.
                   For remote target datasets you'll have to set your remote user permissions by yourself.
                 '';
+
+                type = lib.types.listOf lib.types.str;
               };
 
-              sendOptions = lib.mkOption {
-                type = lib.types.separatedString " ";
-                default = "";
-                example = "Lc e";
-                description = ''
-                  Advanced options to pass to zfs send. Options are specified
-                  without their leading dashes and separated by spaces.
-                '';
-              };
+              recursive = lib.mkEnableOption "the transfer of child datasets";
 
               recvOptions = lib.mkOption {
-                type = lib.types.separatedString " ";
                 default = "";
-                example = "ux recordsize o compression=lz4";
+
                 description = ''
                   Advanced options to pass to zfs recv. Options are specified
                   without their leading dashes and separated by spaces.
                 '';
+
+                example = "ux recordsize o compression=lz4";
+                type = lib.types.separatedString " ";
               };
 
-              useCommonArgs = lib.mkOption {
-                type = lib.types.bool;
-                default = true;
+              sendOptions = lib.mkOption {
+                default = "";
+
                 description = ''
-                  Whether to add the configured common arguments to this command.
+                  Advanced options to pass to zfs send. Options are specified
+                  without their leading dashes and separated by spaces.
                 '';
+
+                example = "Lc e";
+                type = lib.types.separatedString " ";
               };
 
               service = lib.mkOption {
-                type = lib.types.attrs;
                 default = { };
+
                 description = ''
                   Systemd configuration specific to this syncoid service.
                 '';
+
+                type = lib.types.attrs;
               };
 
-              extraArgs = lib.mkOption {
-                type = lib.types.listOf lib.types.str;
-                default = [ ];
-                example = [ "--sshport 2222" ];
-                description = "Extra syncoid arguments for this command.";
+              source = lib.mkOption {
+                description = ''
+                  Source ZFS dataset. Can be either local or remote. Defaults to
+                  the attribute name.
+                '';
+
+                example = "pool/dataset";
+                type = lib.types.str;
+              };
+
+              sshKey = lib.mkOption {
+                description = ''
+                  SSH private key file to use to login to the remote system.
+                  Defaults to {option}`services.syncoid.sshKey` option.
+                '';
+
+                type = with lib.types; nullOr (coercedTo path toString str);
+              };
+
+              target = lib.mkOption {
+                description = ''
+                  Target ZFS dataset. Can be either local
+                  («pool/dataset») or remote
+                  («user@server:pool/dataset»).
+                '';
+
+                example = "user@server:pool/dataset";
+                type = lib.types.str;
+              };
+
+              useCommonArgs = lib.mkOption {
+                default = true;
+
+                description = ''
+                  Whether to add the configured common arguments to this command.
+                '';
+
+                type = lib.types.bool;
               };
             };
+
             config = {
-              source = lib.mkDefault name;
-              sshKey = lib.mkDefault cfg.sshKey;
               localSourceAllow = lib.mkDefault cfg.localSourceAllow;
               localTargetAllow = lib.mkDefault cfg.localTargetAllow;
+              source = lib.mkDefault name;
+              sshKey = lib.mkDefault cfg.sshKey;
             };
           }
         )
       );
-      default = { };
-      example = lib.literalExpression ''
-        {
-          "pool/test".target = "root@target:pool/test";
-        }
+    };
+
+    commonArgs = lib.mkOption {
+      default = [ ];
+
+      description = ''
+        Arguments to add to every syncoid command, unless disabled for that
+        command. See
+        <https://github.com/jimsalterjrs/sanoid/#syncoid-command-line-options>
+        for available options.
       '';
-      description = "Syncoid commands to run.";
+
+      example = [ "--no-sync-snap" ];
+      type = lib.types.listOf lib.types.str;
+    };
+
+    group = lib.mkOption {
+      default = "syncoid";
+      description = "The group for the service.";
+      example = "backup";
+      type = lib.types.str;
+    };
+
+    interval = lib.mkOption {
+      default = "hourly";
+
+      description = ''
+        Run syncoid at this interval. The default is to run hourly.
+
+        Must be in the format described in {manpage}`systemd.time(7)`.  This is
+        equivalent to adding a corresponding timer unit with
+        {option}`OnCalendar` set to the value given here.
+
+        Set to an empty list to avoid starting syncoid automatically.
+      '';
+
+      example = "*-*-* *:15:00";
+      type = with lib.types; either str (listOf str);
+    };
+
+    localSourceAllow = lib.mkOption {
+      # Permissions snapshot and destroy are in case --no-sync-snap is not used
+      default = [
+        "bookmark"
+        "hold"
+        "send"
+        "snapshot"
+        "destroy"
+        "mount"
+      ];
+
+      description = ''
+        Permissions granted for the {option}`services.syncoid.user` user
+        for local source datasets. See
+        <https://openzfs.github.io/openzfs-docs/man/8/zfs-allow.8.html>
+        for available permissions.
+      '';
+
+      type = lib.types.listOf lib.types.str;
+    };
+
+    localTargetAllow = lib.mkOption {
+      default = [
+        "change-key"
+        "compression"
+        "create"
+        "mount"
+        "mountpoint"
+        "receive"
+        "rollback"
+      ];
+
+      description = ''
+        Permissions granted for the {option}`services.syncoid.user` user
+        for local target datasets. See
+        <https://openzfs.github.io/openzfs-docs/man/8/zfs-allow.8.html>
+        for available permissions.
+        Make sure to include the `change-key` permission if you send raw encrypted datasets,
+        the `compression` permission if you send raw compressed datasets, and so on.
+        For remote target datasets you'll have to set your remote user permissions by yourself.
+      '';
+
+      example = [
+        "create"
+        "mount"
+        "receive"
+        "rollback"
+      ];
+
+      type = lib.types.listOf lib.types.str;
+    };
+
+    service = lib.mkOption {
+      default = { };
+
+      description = ''
+        Systemd configuration common to all syncoid services.
+      '';
+
+      type = lib.types.attrs;
+    };
+
+    sshKey = lib.mkOption {
+      default = null;
+
+      description = ''
+        SSH private key file to use to login to the remote system. Can be
+        overridden in individual commands.
+      '';
+
+      type = with lib.types; nullOr (coercedTo path toString str);
+    };
+
+    user = lib.mkOption {
+      default = "syncoid";
+
+      description = ''
+        The user for the service. ZFS privilege delegation will be
+        automatically configured for any local pools used by syncoid if this
+        option is set to a user other than root. The user will be given the
+        "hold" and "send" privileges on any pool that has datasets being sent
+        and the "create", "mount", "receive", and "rollback" privileges on
+        any pool that has datasets being received.
+      '';
+
+      example = "backup";
+      type = lib.types.str;
     };
   };
 
   # Implementation
 
   config = lib.mkIf cfg.enable {
-    users = {
-      users = lib.mkIf (cfg.user == "syncoid") {
-        syncoid = {
-          group = cfg.group;
-          isSystemUser = true;
-          # For syncoid to be able to create /var/lib/syncoid/.ssh/
-          # and to use custom ssh_config or known_hosts.
-          home = "/var/lib/syncoid";
-          createHome = false;
-        };
-      };
-      groups = lib.mkIf (cfg.group == "syncoid") {
-        syncoid = { };
-      };
-    };
-
     systemd.services = lib.mapAttrs' (
       name: c:
       lib.nameValuePair "syncoid-${escapeUnitName name}" (
         lib.mkMerge [
           {
-            description = "Syncoid ZFS synchronization from ${c.source} to ${c.target}";
             after = [ "zfs.target" ];
-            startAt = cfg.interval;
+            description = "Syncoid ZFS synchronization from ${c.source} to ${c.target}";
             # syncoid may need zpool to get feature@extensible_dataset
             path = [ "/run/booted-system/sw/bin/" ];
+
             serviceConfig = {
-              ExecStartPre =
-                (map (buildAllowCommand c.localSourceAllow) (localDatasetName c.source))
-                ++ (map (buildAllowCommand c.localTargetAllow) (localDatasetName c.target));
-              ExecStopPost =
-                (map (buildUnallowCommand c.localSourceAllow) (localDatasetName c.source))
-                ++ (map (buildUnallowCommand c.localTargetAllow) (localDatasetName c.target));
+              # The following options are only for optimizing:
+              # systemd-analyze security | grep syncoid-'*'
+              AmbientCapabilities = "";
+              BindPaths = [ "/dev/zfs" ];
+
+              BindReadOnlyPaths = [
+                builtins.storeDir
+                "/etc"
+                "/run"
+                "/bin/sh"
+              ];
+
+              CapabilityBoundingSet = "";
+              DeviceAllow = [ "/dev/zfs" ];
+
               ExecStart = lib.escapeShellArgs (
                 [ "${cfg.package}/bin/syncoid" ]
                 ++ lib.optionals c.useCommonArgs cfg.commonArgs
@@ -391,29 +414,31 @@ in
                   c.target
                 ]
               );
-              User = cfg.user;
-              Group = cfg.group;
-              StateDirectory = [ "syncoid" ];
-              StateDirectoryMode = "700";
-              # Prevent SSH control sockets of different syncoid services from interfering
-              PrivateTmp = true;
-              # Permissive access to /proc because syncoid
-              # calls ps(1) to detect ongoing `zfs receive`.
-              ProcSubset = "all";
-              ProtectProc = "default";
 
-              # The following options are only for optimizing:
-              # systemd-analyze security | grep syncoid-'*'
-              AmbientCapabilities = "";
-              CapabilityBoundingSet = "";
-              DeviceAllow = [ "/dev/zfs" ];
+              ExecStartPre =
+                (map (buildAllowCommand c.localSourceAllow) (localDatasetName c.source))
+                ++ (map (buildAllowCommand c.localTargetAllow) (localDatasetName c.target));
+
+              ExecStopPost =
+                (map (buildUnallowCommand c.localSourceAllow) (localDatasetName c.source))
+                ++ (map (buildUnallowCommand c.localTargetAllow) (localDatasetName c.target));
+
+              Group = cfg.group;
+              # Avoid useless mounting of RootDirectory= in the own RootDirectory= of ExecStart='s mount namespace.
+              InaccessiblePaths = [ "-+/run/syncoid/${escapeUnitName name}" ];
               LockPersonality = true;
               MemoryDenyWriteExecute = true;
+              MountAPIVFS = true;
               NoNewPrivileges = true;
               PrivateDevices = true;
               PrivateMounts = true;
               PrivateNetwork = lib.mkDefault false;
+              # Prevent SSH control sockets of different syncoid services from interfering
+              PrivateTmp = true;
               PrivateUsers = false; # Enabling this breaks on zfs-2.2.0
+              # Permissive access to /proc because syncoid
+              # calls ps(1) to detect ongoing `zfs receive`.
+              ProcSubset = "all";
               ProtectClock = true;
               ProtectControlGroups = true;
               ProtectHome = true;
@@ -421,31 +446,28 @@ in
               ProtectKernelLogs = true;
               ProtectKernelModules = true;
               ProtectKernelTunables = true;
+              ProtectProc = "default";
               ProtectSystem = "strict";
               RemoveIPC = true;
+
               RestrictAddressFamilies = [
                 "AF_UNIX"
                 "AF_INET"
                 "AF_INET6"
               ];
+
               RestrictNamespaces = true;
               RestrictRealtime = true;
               RestrictSUIDSGID = true;
               RootDirectory = "/run/syncoid/${escapeUnitName name}";
               RootDirectoryStartOnly = true;
-              BindPaths = [ "/dev/zfs" ];
-              BindReadOnlyPaths = [
-                builtins.storeDir
-                "/etc"
-                "/run"
-                "/bin/sh"
-              ];
-              # Avoid useless mounting of RootDirectory= in the own RootDirectory= of ExecStart='s mount namespace.
-              InaccessiblePaths = [ "-+/run/syncoid/${escapeUnitName name}" ];
-              MountAPIVFS = true;
               # Create RootDirectory= in the host's mount namespace.
               RuntimeDirectory = [ "syncoid/${escapeUnitName name}" ];
               RuntimeDirectoryMode = "700";
+              StateDirectory = [ "syncoid" ];
+              StateDirectoryMode = "700";
+              SystemCallArchitectures = "native";
+
               SystemCallFilter = [
                 "@system-service"
                 # Groups in @system-service which do not contain a syscall listed by:
@@ -462,17 +484,37 @@ in
                 # NB: pv after 1.11.0 uses timer syscalls (specifically setitimer)
                 # "~@timer"
               ];
-              SystemCallArchitectures = "native";
+
               # This is for BindPaths= and BindReadOnlyPaths=
               # to allow traversal of directories they create in RootDirectory=.
               UMask = "0066";
+              User = cfg.user;
             };
+
+            startAt = cfg.interval;
           }
           cfg.service
           c.service
         ]
       )
     ) cfg.commands;
+
+    users = {
+      groups = lib.mkIf (cfg.group == "syncoid") {
+        syncoid = { };
+      };
+
+      users = lib.mkIf (cfg.user == "syncoid") {
+        syncoid = {
+          createHome = false;
+          group = cfg.group;
+          # For syncoid to be able to create /var/lib/syncoid/.ssh/
+          # and to use custom ssh_config or known_hosts.
+          home = "/var/lib/syncoid";
+          isSystemUser = true;
+        };
+      };
+    };
   };
 
   meta.maintainers = with lib.maintainers; [

@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   poetry-core,
   pytestCheckHook,
 }:
@@ -9,7 +9,6 @@
 buildPythonPackage rec {
   pname = "xmod";
   version = "1.8.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "rec";
@@ -18,12 +17,10 @@ buildPythonPackage rec {
     hash = "sha256-pfFxtDQ4kaBrx4XzYMQO1vE4dUr2zs8jgGUQUdXB798=";
   };
 
-  build-system = [ poetry-core ];
-
   nativeCheckInputs = [ pytestCheckHook ];
-
+  build-system = [ poetry-core ];
   disabledTests = [ "test_partial_function" ];
-
+  pyproject = true;
   pythonImportsCheck = [ "xmod" ];
 
   meta = {

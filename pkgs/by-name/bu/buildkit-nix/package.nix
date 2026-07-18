@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule (finalAttrs: {
@@ -16,7 +16,6 @@ buildGoModule (finalAttrs: {
   };
 
   vendorHash = "sha256-SFsf2QOIuUQY5Zzshb2190pQtOBGEsELBRihOvHYVGA=";
-
   env.CGO_ENABLED = 0;
 
   ldflags = [
@@ -28,8 +27,8 @@ buildGoModule (finalAttrs: {
     description = "Nix frontend for BuildKit";
     homepage = "https://github.com/reproducible-containers/buildkit-nix/";
     license = lib.licenses.asl20;
-    platforms = lib.platforms.linux;
     maintainers = with lib.maintainers; [ lesuisse ];
+    platforms = lib.platforms.linux;
     mainProgram = "buildkit-nix";
   };
 })

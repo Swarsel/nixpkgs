@@ -3,8 +3,8 @@
   stdenv,
   fetchFromGitHub,
   bison,
-  flex,
   cmake,
+  flex,
   libpcap,
 }:
 stdenv.mkDerivation {
@@ -18,16 +18,13 @@ stdenv.mkDerivation {
     hash = "sha256-+9qfNT2veOsShj9JvLiBm7i842zFhUiPmrt8QA/ZuKs=";
   };
 
-  setSourceRoot = ''
-    export sourceRoot=$(realpath */gtests/net/packetdrill)
-  '';
-
   nativeBuildInputs = [
     bison
     flex
     cmake
     libpcap
   ];
+
   buildInputs = [ libpcap ];
 
   installPhase = ''
@@ -40,14 +37,20 @@ stdenv.mkDerivation {
     cp -r ../tests $out/share/packetdrill-tests
   '';
 
+  setSourceRoot = ''
+    export sourceRoot=$(realpath */gtests/net/packetdrill)
+  '';
+
   meta = {
     description = "Quick, precise tests for entire TCP/UDP/IPv4/IPv6 network stacks";
     homepage = "https://github.com/google/packetdrill";
     license = lib.licenses.gpl2Plus;
-    platforms = lib.platforms.linux;
+
     maintainers = with lib.maintainers; [
       dmjio
       cleverca22
     ];
+
+    platforms = lib.platforms.linux;
   };
 }

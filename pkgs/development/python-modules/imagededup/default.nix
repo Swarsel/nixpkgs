@@ -1,9 +1,9 @@
 {
   lib,
+  fetchurl,
+  fetchFromGitHub,
   buildPythonPackage,
   cython,
-  fetchFromGitHub,
-  fetchurl,
   matplotlib,
   pillow,
   pytest-mock,
@@ -17,22 +17,21 @@
 }:
 let
   MobileNetV3 = fetchurl {
-    url = "https://download.pytorch.org/models/mobilenet_v3_small-047dcff4.pth";
     hash = "sha256-BH3P9K3e+G6lvC7/E8lhTcEfR6sRYNCnGiXn25lPTh8=";
+    url = "https://download.pytorch.org/models/mobilenet_v3_small-047dcff4.pth";
   };
   ViT = fetchurl {
-    url = "https://download.pytorch.org/models/vit_b_16_swag-9ac1b537.pth";
     hash = "sha256-msG1N42ZJ71sg3TODNVX74Dhs/j7wYWd8zLE3J0P2CU=";
+    url = "https://download.pytorch.org/models/vit_b_16_swag-9ac1b537.pth";
   };
   EfficientNet = fetchurl {
-    url = "https://download.pytorch.org/models/efficientnet_b4_rwightman-23ab8bcd.pth";
     hash = "sha256-I6uLzVvb72GnpDuRrcrYH2Iv1/NvtJNaVpgo13iIxE4=";
+    url = "https://download.pytorch.org/models/efficientnet_b4_rwightman-23ab8bcd.pth";
   };
 in
 buildPythonPackage rec {
   pname = "imagededup";
   version = "03.3";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "idealo";
@@ -71,12 +70,13 @@ buildPythonPackage rec {
     ln -s ${EfficientNet} $HOME/.cache/torch/hub/checkpoints/${EfficientNet.name}
   '';
 
+  pyproject = true;
   pythonImportsCheck = [ "imagededup" ];
 
   meta = {
+    description = "Finding duplicate images made easy";
     homepage = "https://idealo.github.io/imagededup/";
     changelog = "https://github.com/idealo/imagededup/releases/tag/${src.tag}";
-    description = "Finding duplicate images made easy";
     license = lib.licenses.asl20;
     maintainers = with lib.maintainers; [ stunkymonkey ];
   };

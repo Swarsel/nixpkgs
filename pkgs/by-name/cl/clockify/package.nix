@@ -1,7 +1,7 @@
 {
   lib,
-  appimageTools,
   fetchurl,
+  appimageTools,
 }:
 
 appimageTools.wrapType2 rec {
@@ -30,7 +30,7 @@ appimageTools.wrapType2 rec {
     homepage = "https://clockify.me";
     license = lib.licenses.unfree;
     maintainers = [ ];
-    mainProgram = "clockify";
     platforms = [ "x86_64-linux" ];
+    mainProgram = "clockify";
   };
 }

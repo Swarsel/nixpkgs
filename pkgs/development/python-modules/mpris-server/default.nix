@@ -1,23 +1,22 @@
 {
   lib,
   buildPythonPackage,
-  fetchPypi,
   emoji,
+  fetchPypi,
   pydbus,
   pygobject3,
-  unidecode,
   setuptools,
   strenum,
+  unidecode,
 }:
 buildPythonPackage (finalAttrs: {
   pname = "mpris-server";
   version = "0.9.6";
-  pyproject = true;
 
   src = fetchPypi {
-    pname = "mpris_server";
     inherit (finalAttrs) version;
     hash = "sha256-T0ZeDQiYIAhKR8aw3iv3rtwzc+R0PTQuIh6+Hi4rIHQ=";
+    pname = "mpris_server";
   };
 
   postPatch = ''
@@ -27,6 +26,8 @@ buildPythonPackage (finalAttrs: {
         "__version__: Final[str] = '${finalAttrs.version}'"
   '';
 
+  # upstream has no tests
+  doCheck = false;
   build-system = [ setuptools ];
 
   dependencies = [
@@ -37,10 +38,8 @@ buildPythonPackage (finalAttrs: {
     unidecode
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "mpris_server" ];
-
-  # upstream has no tests
-  doCheck = false;
 
   meta = {
     description = "Publish a MediaPlayer2 MPRIS device to D-Bus";

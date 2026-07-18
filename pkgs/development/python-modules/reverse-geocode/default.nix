@@ -2,22 +2,23 @@
   lib,
   buildPythonPackage,
   fetchPypi,
-  setuptools,
   numpy,
   scipy,
+  setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "reverse-geocode";
   version = "1.6.6";
-  pyproject = true;
 
   src = fetchPypi {
-    pname = "reverse_geocode";
     inherit version;
     hash = "sha256-FBZYFYFsxjnddOtmCnTkZK7rzR0IFN50qJfWIHHJnyo=";
+    pname = "reverse_geocode";
   };
 
+  #
+  doCheck = false;
   build-system = [ setuptools ];
 
   dependencies = [
@@ -25,9 +26,7 @@ buildPythonPackage rec {
     scipy
   ];
 
-  #
-  doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "reverse_geocode" ];
 
   meta = {

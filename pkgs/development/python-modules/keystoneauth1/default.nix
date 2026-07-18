@@ -1,8 +1,8 @@
 {
   lib,
+  betamax,
   buildPythonPackage,
   fetchPypi,
-  betamax,
   fixtures,
   hacking,
   iso8601,
@@ -27,33 +27,10 @@
 buildPythonPackage rec {
   pname = "keystoneauth1";
   version = "5.15.0";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
     hash = "sha256-ziys39Ao5lvSP/QD1lcuv6s7AG1tLd46qFwmNnWp+7U=";
-  };
-
-  build-system = [ setuptools ];
-
-  dependencies = [
-    iso8601
-    os-service-types
-    requests
-    stevedore
-    typing-extensions
-  ]
-  # TODO: remove this workaround and fix breakages
-  ++ lib.concatAttrValues optional-dependencies;
-
-  optional-dependencies = {
-    betamax = [
-      betamax
-      pyyaml
-    ];
-    kerberos = [ requests-kerberos ];
-    oauth1 = [ oauthlib ];
-    saml2 = [ lxml ];
   };
 
   nativeCheckInputs = [
@@ -76,6 +53,30 @@ buildPythonPackage rec {
       -E "keystoneauth1.tests.unit.test_betamax_fixture.TestBetamaxFixture.test_keystoneauth_betamax_fixture"
   '';
 
+  build-system = [ setuptools ];
+
+  dependencies = [
+    iso8601
+    os-service-types
+    requests
+    stevedore
+    typing-extensions
+  ]
+  # TODO: remove this workaround and fix breakages
+  ++ lib.concatAttrValues optional-dependencies;
+
+  optional-dependencies = {
+    betamax = [
+      betamax
+      pyyaml
+    ];
+
+    kerberos = [ requests-kerberos ];
+    oauth1 = [ oauthlib ];
+    saml2 = [ lxml ];
+  };
+
+  pyproject = true;
   pythonImportsCheck = [ "keystoneauth1" ];
 
   meta = {

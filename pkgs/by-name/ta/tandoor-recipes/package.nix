@@ -15,11 +15,8 @@ let
   frontend = callPackage ./frontend.nix { };
 in
 python.pkgs.buildPythonPackage {
-  pname = "tandoor-recipes";
-
   inherit (common) version src;
-
-  pyproject = false;
+  pname = "tandoor-recipes";
 
   patches = [
     ./pytest-xdist.patch # adapt pytest.ini the use $NIX_BUILD_CORES
@@ -100,14 +97,6 @@ python.pkgs.buildPythonPackage {
     thefuzz
   ];
 
-  configurePhase = ''
-    runHook preConfigure
-
-    ln -sf ${frontend}/ cookbook/static/vue3
-
-    runHook postConfigure
-  '';
-
   buildPhase = ''
     runHook preBuild
 
@@ -127,6 +116,17 @@ python.pkgs.buildPythonPackage {
     runHook postBuild
   '';
 
+  nativeCheckInputs = with python.pkgs; [
+    mock
+    pytestCheckHook
+    pytest-asyncio
+    pytest-cov-stub
+    pytest-django
+    pytest-factoryboy
+    pytest-html
+    pytest-xdist
+  ];
+
   installPhase = ''
     runHook preInstall
 
@@ -141,16 +141,13 @@ python.pkgs.buildPythonPackage {
     runHook postInstall
   '';
 
-  nativeCheckInputs = with python.pkgs; [
-    mock
-    pytestCheckHook
-    pytest-asyncio
-    pytest-cov-stub
-    pytest-django
-    pytest-factoryboy
-    pytest-html
-    pytest-xdist
-  ];
+  configurePhase = ''
+    runHook preConfigure
+
+    ln -sf ${frontend}/ cookbook/static/vue3
+
+    runHook postConfigure
+  '';
 
   # flaky
   disabledTests = [
@@ -162,14 +159,16 @@ python.pkgs.buildPythonPackage {
     "test_delete"
   ];
 
+  pyproject = false;
+
   passthru = {
     inherit frontend python;
-
-    updateScript = ./update.sh;
 
     tests = {
       inherit (nixosTests) tandoor-recipes tandoor-recipes-script-name tandoor-recipes-media;
     };
+
+    updateScript = ./update.sh;
   };
 
   meta = common.meta // {
@@ -177,6 +176,7 @@ python.pkgs.buildPythonPackage {
       Application for managing recipes, planning meals, building shopping lists
       and much much more!
     '';
+
     mainProgram = "tandoor-recipes";
   };
 }

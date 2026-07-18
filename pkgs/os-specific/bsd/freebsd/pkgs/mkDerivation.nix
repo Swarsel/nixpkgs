@@ -1,24 +1,24 @@
 {
   lib,
   stdenv,
+  bsdSetupHook,
+  buildPackages,
+  compatIfNeeded,
+  filterSource,
+  freebsd-lib,
+  freebsdSetupHook,
+  groff,
+  install,
+  lorder,
+  makeMinimal,
+  mandoc,
+  overrideCC,
+  patchesRoot,
   stdenvNoCC,
   stdenvNoLibs,
-  overrideCC,
-  buildPackages,
-  stdenvNoLibcxx ? overrideCC stdenv buildPackages.llvmPackages.clangNoLibcxx,
-  versionData,
-  patchesRoot,
-  compatIfNeeded,
-  freebsd-lib,
-  filterSource,
-  bsdSetupHook,
-  freebsdSetupHook,
-  makeMinimal,
-  install,
   tsort,
-  lorder,
-  mandoc,
-  groff,
+  versionData,
+  stdenvNoLibcxx ? overrideCC stdenv buildPackages.llvmPackages.clangNoLibcxx,
 }:
 
 lib.makeOverridable (
@@ -38,11 +38,14 @@ lib.makeOverridable (
     rec {
       inherit (freebsd-lib) version;
       pname = "${attrs.pname or (baseNameOf attrs.path)}";
+
       src = filterSource {
         inherit pname;
         inherit (attrs) path;
         extraPaths = attrs.extraPaths or [ ];
       };
+
+      strictDeps = true;
 
       nativeBuildInputs = [
         bsdSetupHook
@@ -55,7 +58,44 @@ lib.makeOverridable (
         groff
       ]
       ++ attrs.extraNativeBuildInputs or [ ];
+
       buildInputs = compatIfNeeded;
+
+      makeFlags = [
+        "STRIP=-s" # flag to install, not command
+      ]
+      ++ lib.optional (!stdenv'.hostPlatform.isFreeBSD) "MK_WERROR=no"
+      ++ lib.optional stdenv.hostPlatform.isStatic "SHLIB_NAME=";
+
+      env = {
+        COMPONENT_PATH = attrs.path or null;
+
+        HAVE_GCC = lib.optionalString stdenv'.cc.isGNU or false (
+          lib.versions.major (lib.getVersion stdenv'.cc.cc)
+        );
+
+        HAVE_LLVM = lib.optionalString stdenv'.cc.isClang or false (
+          lib.versions.major (lib.getVersion stdenv'.cc.cc)
+        );
+
+        HOST_SH = stdenv'.shell;
+        MACHINE = freebsd-lib.mkBsdMachine stdenv';
+        # amd64 not x86_64 for this on unlike NetBSD
+        MACHINE_ARCH = freebsd-lib.mkBsdArch stdenv';
+        MACHINE_CPUARCH = freebsd-lib.mkBsdCpuArch stdenv';
+        # don't set filesystem flags that require root
+        NO_FSCHG = "yes";
+      }
+      // lib.optionalAttrs stdenv'.hasCC {
+        # TODO should CC wrapper set this?
+        CPP = "${stdenv'.cc.targetPrefix}cpp";
+        # Since STRIP in `makeFlags` has to be a flag, not the binary itself
+        STRIPBIN = "${stdenv'.cc.bintools.targetPrefix}strip";
+      }
+      // lib.optionalAttrs (!stdenv.hostPlatform.isFreeBSD) { BOOTSTRAPPING = true; }
+      // lib.optionalAttrs stdenv'.hostPlatform.isDarwin { MKRELRO = "no"; }
+      // lib.optionalAttrs (stdenv'.hostPlatform.isx86_32) { USE_SSP = "no"; }
+      // (attrs.env or { });
 
       preBuild =
         lib.optionalString (stdenv'.hasCC && stdenv'.cc.isClang or false && attrs.clangFixup or true) ''
@@ -66,55 +106,15 @@ lib.makeOverridable (
         ''
         + (attrs.preBuild or "");
 
-      makeFlags = [
-        "STRIP=-s" # flag to install, not command
-      ]
-      ++ lib.optional (!stdenv'.hostPlatform.isFreeBSD) "MK_WERROR=no"
-      ++ lib.optional stdenv.hostPlatform.isStatic "SHLIB_NAME=";
-
-      env = {
-        HOST_SH = stdenv'.shell;
-
-        # amd64 not x86_64 for this on unlike NetBSD
-        MACHINE_ARCH = freebsd-lib.mkBsdArch stdenv';
-
-        MACHINE = freebsd-lib.mkBsdMachine stdenv';
-
-        MACHINE_CPUARCH = freebsd-lib.mkBsdCpuArch stdenv';
-
-        COMPONENT_PATH = attrs.path or null;
-
-        # don't set filesystem flags that require root
-        NO_FSCHG = "yes";
-
-        HAVE_LLVM = lib.optionalString stdenv'.cc.isClang or false (
-          lib.versions.major (lib.getVersion stdenv'.cc.cc)
-        );
-        HAVE_GCC = lib.optionalString stdenv'.cc.isGNU or false (
-          lib.versions.major (lib.getVersion stdenv'.cc.cc)
-        );
-      }
-      // lib.optionalAttrs stdenv'.hasCC {
-        # TODO should CC wrapper set this?
-        CPP = "${stdenv'.cc.targetPrefix}cpp";
-
-        # Since STRIP in `makeFlags` has to be a flag, not the binary itself
-        STRIPBIN = "${stdenv'.cc.bintools.targetPrefix}strip";
-      }
-      // lib.optionalAttrs (!stdenv.hostPlatform.isFreeBSD) { BOOTSTRAPPING = true; }
-      // lib.optionalAttrs stdenv'.hostPlatform.isDarwin { MKRELRO = "no"; }
-      // lib.optionalAttrs (stdenv'.hostPlatform.isx86_32) { USE_SSP = "no"; }
-      // (attrs.env or { });
-
-      strictDeps = true;
-
       meta = {
+        license = lib.licenses.bsd2;
+
         maintainers = with lib.maintainers; [
           rhelmot
           artemist
         ];
+
         platforms = lib.platforms.unix;
-        license = lib.licenses.bsd2;
       }
       // attrs.meta or { };
     }

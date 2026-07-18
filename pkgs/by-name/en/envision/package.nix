@@ -1,18 +1,29 @@
 {
   lib,
   buildFHSEnv,
-  envision-unwrapped,
   envision,
+  envision-unwrapped,
   testers,
 }:
 
 buildFHSEnv {
-  pname = "envision";
   inherit (envision-unwrapped) version;
+  pname = "envision";
+  strictDeps = true;
+
+  extraInstallCommands = ''
+    ln -s ${envision-unwrapped}/share $out/share
+  '';
 
   extraOutputsToInstall = [ "dev" ];
 
-  strictDeps = true;
+  profile = ''
+    export CMAKE_LIBRARY_PATH=/usr/lib
+    export CMAKE_INCLUDE_PATH=/usr/include
+    export PKG_CONFIG_PATH=/usr/lib/pkgconfig:/usr/share/pkgconfig
+  '';
+
+  runScript = "envision";
 
   # TODO: I'm pretty suspicious of this list of additional required dependencies. Are they all really needed?
   targetPkgs =
@@ -103,18 +114,6 @@ buildFHSEnv {
       ])
     );
 
-  profile = ''
-    export CMAKE_LIBRARY_PATH=/usr/lib
-    export CMAKE_INCLUDE_PATH=/usr/include
-    export PKG_CONFIG_PATH=/usr/lib/pkgconfig:/usr/share/pkgconfig
-  '';
-
-  extraInstallCommands = ''
-    ln -s ${envision-unwrapped}/share $out/share
-  '';
-
-  runScript = "envision";
-
   # TODO: When buildFHSEnv gets finalAttrs support, profiles should be moved into the derivation so it can be overrideAttrs'd
   passthru.tests =
     let
@@ -136,7 +135,9 @@ buildFHSEnv {
     in
     {
       allProfilesPresent = testers.runCommand {
+        nativeBuildInputs = [ envision ];
         name = "envision-all-profiles-present-test";
+
         # TODO: Is there a better way to escape ${}?
         script = ''
           export ALL_PROFILES=(${lib.concatStringsSep " " (profiles ++ [ "UUID" ])})
@@ -159,19 +160,20 @@ buildFHSEnv {
 
                     touch $out
         '';
-        nativeBuildInputs = [ envision ];
       };
     }
     // lib.listToAttrs (
       lib.map (profile: {
         name = "${kebabToCamel profile}DependenciesMet";
+
         value = testers.runCommand {
+          nativeBuildInputs = [ envision ];
           name = "envision-profile-${profile}-dependencies-met-test";
+
           script = ''
             envision -c ${profile}
             touch $out
           '';
-          nativeBuildInputs = [ envision ];
         };
       }) profiles
     );

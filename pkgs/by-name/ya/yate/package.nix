@@ -1,7 +1,7 @@
 {
+  lib,
   stdenv,
   fetchurl,
-  lib,
   openssl,
   pkg-config,
 }:
@@ -15,17 +15,15 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-jCPca/+/jUeNs6hZZLUBl3HI9sms9SIPNGVRanSKA7A=";
   };
 
-  # TODO zaptel ? postgres ?
-  nativeBuildInputs = [ pkg-config ];
-  buildInputs = [ openssl ];
-
   # /dev/null is used when linking which is a impure path for the wrapper
   postPatch = ''
     patchShebangs configure
     substituteInPlace configure --replace ",/dev/null" ""
   '';
 
-  enableParallelBuilding = false; # fails to build if true
+  # TODO zaptel ? postgres ?
+  nativeBuildInputs = [ pkg-config ];
+  buildInputs = [ openssl ];
 
   # --unresolved-symbols=ignore-in-shared-libs makes ld no longer find --library=yate? Why?
   preBuild = ''
@@ -35,6 +33,8 @@ stdenv.mkDerivation (finalAttrs: {
       -e 's@-Wl,--retain-symbols-file@@'
   '';
 
+  enableParallelBuilding = false; # fails to build if true
+
   meta = {
     description = "Yet another telephony engine";
     homepage = "https://yate.ro/";
@@ -42,6 +42,7 @@ stdenv.mkDerivation (finalAttrs: {
     # OpenH323 and PWlib (licensed under MPL).
     license = lib.licenses.gpl2Only;
     maintainers = [ ];
+
     platforms = [
       "i686-linux"
       "x86_64-linux"

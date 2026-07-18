@@ -1,16 +1,15 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
-  pytestCheckHook,
+  buildPythonPackage,
   pytest-asyncio,
+  pytestCheckHook,
+  setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "aiocontextvars";
   version = "0.2.2";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "fantix";
@@ -24,12 +23,13 @@ buildPythonPackage rec {
       --replace-fail "'pytest-runner'," ""
   '';
 
-  build-system = [ setuptools ];
-
   nativeCheckInputs = [
     pytestCheckHook
     pytest-asyncio
   ];
+
+  build-system = [ setuptools ];
+  pyproject = true;
 
   meta = {
     description = "Asyncio support for PEP-567 contextvars backport";

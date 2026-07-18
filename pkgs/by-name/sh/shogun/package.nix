@@ -1,39 +1,39 @@
 {
   lib,
   stdenv,
-  fetchFromGitHub,
-  fetchpatch,
   fetchurl,
+  fetchFromGitHub,
+  blas,
+  bzip2,
   # build
   cmake,
+  colpack,
   ctags,
-  python3Packages,
-  swig,
+  curl,
   # math
   eigen,
-  blas,
-  lapack,
+  fetchpatch,
   glpk,
-  # data
-  protobuf_21,
-  json_c,
-  libxml2,
   hdf5,
-  curl,
+  json_c,
+  lapack,
   # compression
   libarchive,
-  bzip2,
-  xz,
-  snappy,
+  libxml2,
+  lp_solve,
   lzo,
   # more math
   nlopt,
-  lp_solve,
-  colpack,
+  # data
+  protobuf_21,
+  python3Packages,
+  snappy,
+  swig,
+  xz,
+  opencv ? null,
+  opencvSupport ? false,
   # extra support
   pythonSupport ? false,
-  opencvSupport ? false,
-  opencv ? null,
   withSvmLight ? false,
 }:
 
@@ -50,29 +50,30 @@ let
   gtestVersion = "1.8.0";
 
   srcs = {
-    toolbox = fetchFromGitHub {
-      owner = "shogun-toolbox";
-      repo = "shogun";
-      rev = "shogun_${version}";
-      hash = "sha256-38aULxK50wQ2+/ERosSpRyBmssmYSGv5aaWfWSlrSRc=";
-      fetchSubmodules = true;
+    gtest = fetchurl {
+      sha256 = "sha256-WKb0J3yivIVlIis7vVihd2CenEiOinJkk1m6UUUNt9g=";
+      url = "https://github.com/google/googletest/archive/release-${gtestVersion}.tar.gz";
     };
 
     # The CMake external projects expect the packed archives
     rxcpp = fetchurl {
-      url = "https://github.com/Reactive-Extensions/RxCpp/archive/v${rxcppVersion}.tar.gz";
       sha256 = "sha256-UOc5WrG8KgAA3xJsaSCjbdPE7gSnFJay9MEK31DWUXg=";
+      url = "https://github.com/Reactive-Extensions/RxCpp/archive/v${rxcppVersion}.tar.gz";
     };
 
-    gtest = fetchurl {
-      url = "https://github.com/google/googletest/archive/release-${gtestVersion}.tar.gz";
-      sha256 = "sha256-WKb0J3yivIVlIis7vVihd2CenEiOinJkk1m6UUUNt9g=";
+    toolbox = fetchFromGitHub {
+      fetchSubmodules = true;
+      hash = "sha256-38aULxK50wQ2+/ERosSpRyBmssmYSGv5aaWfWSlrSRc=";
+      owner = "shogun-toolbox";
+      repo = "shogun";
+      rev = "shogun_${version}";
     };
   };
 in
 
 stdenv.mkDerivation (finalAttrs: {
   inherit pname version;
+  src = srcs.toolbox;
 
   outputs = [
     "out"
@@ -80,32 +81,30 @@ stdenv.mkDerivation (finalAttrs: {
     "doc"
   ];
 
-  src = srcs.toolbox;
-
   patches = [
     # Fix compile errors with GCC 9+
     # https://github.com/shogun-toolbox/shogun/pull/4811
     (fetchpatch {
-      url = "https://github.com/shogun-toolbox/shogun/commit/c8b670be4790e0f06804b048a6f3d77c17c3ee95.patch";
       sha256 = "sha256-MxsR3Y2noFQevfqWK3nmX5iK4OVWeKBl5tfeDNgjcXk=";
+      url = "https://github.com/shogun-toolbox/shogun/commit/c8b670be4790e0f06804b048a6f3d77c17c3ee95.patch";
     })
     (fetchpatch {
-      url = "https://github.com/shogun-toolbox/shogun/commit/5aceefd9fb0e2132c354b9a0c0ceb9160cc9b2f7.patch";
       sha256 = "sha256-AgJJKQA8vc5oKaTQDqMdwBR4hT4sn9+uW0jLe7GteJw=";
+      url = "https://github.com/shogun-toolbox/shogun/commit/5aceefd9fb0e2132c354b9a0c0ceb9160cc9b2f7.patch";
     })
 
     # Fix virtual destruction
     (fetchpatch {
-      url = "https://github.com/shogun-toolbox/shogun/commit/ef0e4dc1cc4a33c9e6b17a108fa38a436de2d7ee.patch";
       sha256 = "sha256-a9Rm0ytqkSAgC3dguv8m3SwOSipb+VByBHHdmV0d63w=";
+      url = "https://github.com/shogun-toolbox/shogun/commit/ef0e4dc1cc4a33c9e6b17a108fa38a436de2d7ee.patch";
     })
     ./fix-virtual-destruction.patch
 
     # Fix compile errors with json-c
     # https://github.com/shogun-toolbox/shogun/pull/4104
     (fetchpatch {
-      url = "https://github.com/shogun-toolbox/shogun/commit/365ce4c4c700736d2eec8ba6c975327a5ac2cd9b.patch";
       sha256 = "sha256-OhEWwrHtD/sOcjHmPY/C9zJ8ruww8yXrRcTw38nGEJU=";
+      url = "https://github.com/shogun-toolbox/shogun/commit/365ce4c4c700736d2eec8ba6c975327a5ac2cd9b.patch";
     })
 
     # Fix compile errors with Eigen 3.4
@@ -113,6 +112,51 @@ stdenv.mkDerivation (finalAttrs: {
 
   ]
   ++ lib.optional (!withSvmLight) ./svmlight-scrubber.patch;
+
+  postPatch = ''
+    # Fix preprocessing SVMlight code
+    sed -i \
+        -e 's@#ifdef SVMLIGHT@#ifdef USE_SVMLIGHT@' \
+        -e '/^#ifdef USE_SVMLIGHT/,/^#endif/ s@#endif@#endif //USE_SVMLIGHT@' \
+        src/shogun/kernel/string/CommUlongStringKernel.cpp
+    sed -i -e 's/#if USE_SVMLIGHT/#ifdef USE_SVMLIGHT/' src/interfaces/swig/Machine.i
+    sed -i -e 's@// USE_SVMLIGHT@//USE_SVMLIGHT@' src/interfaces/swig/Transfer.i
+    sed -i -e 's@/\* USE_SVMLIGHT \*/@//USE_SVMLIGHT@' src/interfaces/swig/Transfer_includes.i
+
+    # Fix build with CMake 4
+    substituteInPlace CMakeLists.txt \
+      --replace-fail "cmake_minimum_required(VERSION 3.1)" "cmake_minimum_required(VERSION 3.5)"
+
+    # Patch rxcpp to build with CMake 4 and GCC 14
+    rxcpp_tmpdir=$(mktemp -d)
+    tar -xzf third_party/rxcpp/v${rxcppVersion}.tar.gz -C "$rxcpp_tmpdir"
+    rm third_party/rxcpp/v${rxcppVersion}.tar.gz
+    find "$rxcpp_tmpdir/RxCpp-${rxcppVersion}" -type f -name "CMakeLists.txt" -exec \
+      sed -i -E 's/cmake_minimum_required\(VERSION.*\)/cmake_minimum_required\(VERSION 3.5\)/g' {} +
+    substituteInPlace "$rxcpp_tmpdir/RxCpp-${rxcppVersion}/Rx/v2/src/rxcpp/rx-notification.hpp" \
+      --replace-fail "{ ep = std::move(o.ep); return *this; }" "RXCPP_DELETE;"
+    tar -czf third_party/rxcpp/v${rxcppVersion}.tar.gz -C "$rxcpp_tmpdir" RxCpp-${rxcppVersion}
+    rxcpp_hash=$(md5sum third_party/rxcpp/v${rxcppVersion}.tar.gz | awk '{ print $1 }')
+    substituteInPlace cmake/external/rxcpp.cmake \
+      --replace-fail "feb89934f465bb5ac513c9adce8d3b1b" "$rxcpp_hash"
+
+    # Patch gtest to build with CMake 4
+    gtest_tmpdir=$(mktemp -d)
+    tar -xzf third_party/GoogleMock/release-${gtestVersion}.tar.gz -C "$gtest_tmpdir"
+    rm third_party/GoogleMock/release-${gtestVersion}.tar.gz
+    find "$gtest_tmpdir/googletest-release-${gtestVersion}" -type f -name "CMakeLists.txt" -exec \
+      sed -i -E 's/cmake_minimum_required\(VERSION.*\)/cmake_minimum_required\(VERSION 3.5\)/g' {} +
+    tar -czf third_party/GoogleMock/release-${gtestVersion}.tar.gz -C "$gtest_tmpdir" googletest-release-${gtestVersion}
+    gtest_hash=$(md5sum third_party/GoogleMock/release-${gtestVersion}.tar.gz | awk '{ print $1 }')
+    substituteInPlace cmake/external/GoogleTestNMock.cmake \
+      --replace-fail "16877098823401d1bf2ed7891d7dce36" "$gtest_hash"
+  ''
+  + lib.optionalString (!withSvmLight) ''
+    # Run SVMlight scrubber
+    patchShebangs scripts/light-scrubber.sh
+    echo "removing SVMlight code"
+    ./scripts/light-scrubber.sh
+  '';
 
   nativeBuildInputs = [
     cmake
@@ -192,59 +236,7 @@ stdenv.mkDerivation (finalAttrs: {
     ];
 
   env.CXXFLAGS = "-faligned-new";
-
   doCheck = true;
-
-  postUnpack = ''
-    mkdir -p $sourceRoot/third_party/{rxcpp,GoogleMock}
-    ln -s ${srcs.rxcpp} $sourceRoot/third_party/rxcpp/v${rxcppVersion}.tar.gz
-    ln -s ${srcs.gtest} $sourceRoot/third_party/GoogleMock/release-${gtestVersion}.tar.gz
-  '';
-
-  postPatch = ''
-    # Fix preprocessing SVMlight code
-    sed -i \
-        -e 's@#ifdef SVMLIGHT@#ifdef USE_SVMLIGHT@' \
-        -e '/^#ifdef USE_SVMLIGHT/,/^#endif/ s@#endif@#endif //USE_SVMLIGHT@' \
-        src/shogun/kernel/string/CommUlongStringKernel.cpp
-    sed -i -e 's/#if USE_SVMLIGHT/#ifdef USE_SVMLIGHT/' src/interfaces/swig/Machine.i
-    sed -i -e 's@// USE_SVMLIGHT@//USE_SVMLIGHT@' src/interfaces/swig/Transfer.i
-    sed -i -e 's@/\* USE_SVMLIGHT \*/@//USE_SVMLIGHT@' src/interfaces/swig/Transfer_includes.i
-
-    # Fix build with CMake 4
-    substituteInPlace CMakeLists.txt \
-      --replace-fail "cmake_minimum_required(VERSION 3.1)" "cmake_minimum_required(VERSION 3.5)"
-
-    # Patch rxcpp to build with CMake 4 and GCC 14
-    rxcpp_tmpdir=$(mktemp -d)
-    tar -xzf third_party/rxcpp/v${rxcppVersion}.tar.gz -C "$rxcpp_tmpdir"
-    rm third_party/rxcpp/v${rxcppVersion}.tar.gz
-    find "$rxcpp_tmpdir/RxCpp-${rxcppVersion}" -type f -name "CMakeLists.txt" -exec \
-      sed -i -E 's/cmake_minimum_required\(VERSION.*\)/cmake_minimum_required\(VERSION 3.5\)/g' {} +
-    substituteInPlace "$rxcpp_tmpdir/RxCpp-${rxcppVersion}/Rx/v2/src/rxcpp/rx-notification.hpp" \
-      --replace-fail "{ ep = std::move(o.ep); return *this; }" "RXCPP_DELETE;"
-    tar -czf third_party/rxcpp/v${rxcppVersion}.tar.gz -C "$rxcpp_tmpdir" RxCpp-${rxcppVersion}
-    rxcpp_hash=$(md5sum third_party/rxcpp/v${rxcppVersion}.tar.gz | awk '{ print $1 }')
-    substituteInPlace cmake/external/rxcpp.cmake \
-      --replace-fail "feb89934f465bb5ac513c9adce8d3b1b" "$rxcpp_hash"
-
-    # Patch gtest to build with CMake 4
-    gtest_tmpdir=$(mktemp -d)
-    tar -xzf third_party/GoogleMock/release-${gtestVersion}.tar.gz -C "$gtest_tmpdir"
-    rm third_party/GoogleMock/release-${gtestVersion}.tar.gz
-    find "$gtest_tmpdir/googletest-release-${gtestVersion}" -type f -name "CMakeLists.txt" -exec \
-      sed -i -E 's/cmake_minimum_required\(VERSION.*\)/cmake_minimum_required\(VERSION 3.5\)/g' {} +
-    tar -czf third_party/GoogleMock/release-${gtestVersion}.tar.gz -C "$gtest_tmpdir" googletest-release-${gtestVersion}
-    gtest_hash=$(md5sum third_party/GoogleMock/release-${gtestVersion}.tar.gz | awk '{ print $1 }')
-    substituteInPlace cmake/external/GoogleTestNMock.cmake \
-      --replace-fail "16877098823401d1bf2ed7891d7dce36" "$gtest_hash"
-  ''
-  + lib.optionalString (!withSvmLight) ''
-    # Run SVMlight scrubber
-    patchShebangs scripts/light-scrubber.sh
-    echo "removing SVMlight code"
-    ./scripts/light-scrubber.sh
-  '';
 
   postInstall = ''
     mkdir -p $doc/share/doc/shogun/examples
@@ -259,10 +251,17 @@ stdenv.mkDerivation (finalAttrs: {
       --replace-fail "\''${_IMPORT_PREFIX}/lib/" "$out/lib/"
   '';
 
+  postUnpack = ''
+    mkdir -p $sourceRoot/third_party/{rxcpp,GoogleMock}
+    ln -s ${srcs.rxcpp} $sourceRoot/third_party/rxcpp/v${rxcppVersion}.tar.gz
+    ln -s ${srcs.gtest} $sourceRoot/third_party/GoogleMock/release-${gtestVersion}.tar.gz
+  '';
+
   meta = {
     description = "Toolbox which offers a wide range of efficient and unified machine learning methods";
     homepage = "http://shogun-toolbox.org/";
     license = if withSvmLight then lib.licenses.unfree else lib.licenses.gpl3Plus;
+
     maintainers = with lib.maintainers; [
       edwtjo
       smancill

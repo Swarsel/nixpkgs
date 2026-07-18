@@ -1,22 +1,22 @@
 {
   lib,
-  writeText,
   fetchFromGitHub,
   nixosTests,
   python3,
+  writeText,
 }:
 let
   py = python3.override {
-    self = py;
     packageOverrides = final: prev: {
       django = prev.django_6;
     };
+
+    self = py;
   };
 in
 py.pkgs.buildPythonApplication rec {
   pname = "healthchecks";
   version = "4.1.1";
-  pyproject = false;
 
   src = fetchFromGitHub {
     owner = "healthchecks";
@@ -45,6 +45,30 @@ py.pkgs.buildPythonApplication rec {
     whitenoise
   ];
 
+  installPhase = ''
+    mkdir -p $out/opt/healthchecks
+    cp -r . $out/opt/healthchecks
+    chmod +x $out/opt/healthchecks/manage.py
+    cp ${localSettings} $out/opt/healthchecks/hc/local_settings.py
+  '';
+
+  localSettings = writeText "local_settings.py" ''
+    import os
+
+    STATIC_ROOT = os.getenv("STATIC_ROOT")
+
+    ${lib.concatLines (
+      map (secret: ''
+        ${secret}_FILE = os.getenv("${secret}_FILE")
+        if ${secret}_FILE:
+            with open(${secret}_FILE, "r") as file:
+                ${secret} = file.readline()
+      '') secrets
+    )}
+  '';
+
+  pyproject = false;
+
   secrets = [
     "DB_PASSWORD"
     "DISCORD_CLIENT_SECRET"
@@ -62,28 +86,6 @@ py.pkgs.buildPythonApplication rec {
     "TWILIO_AUTH"
   ];
 
-  localSettings = writeText "local_settings.py" ''
-    import os
-
-    STATIC_ROOT = os.getenv("STATIC_ROOT")
-
-    ${lib.concatLines (
-      map (secret: ''
-        ${secret}_FILE = os.getenv("${secret}_FILE")
-        if ${secret}_FILE:
-            with open(${secret}_FILE, "r") as file:
-                ${secret} = file.readline()
-      '') secrets
-    )}
-  '';
-
-  installPhase = ''
-    mkdir -p $out/opt/healthchecks
-    cp -r . $out/opt/healthchecks
-    chmod +x $out/opt/healthchecks/manage.py
-    cp ${localSettings} $out/opt/healthchecks/hc/local_settings.py
-  '';
-
   passthru = {
     # PYTHONPATH of all dependencies used by the package
     pythonPath = py.pkgs.makePythonPath propagatedBuildInputs;
@@ -94,8 +96,8 @@ py.pkgs.buildPythonApplication rec {
   };
 
   meta = {
-    homepage = "https://github.com/healthchecks/healthchecks";
     description = "Cron monitoring tool written in Python & Django";
+    homepage = "https://github.com/healthchecks/healthchecks";
     license = lib.licenses.bsd3;
     maintainers = [ ];
   };

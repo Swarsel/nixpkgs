@@ -1,6 +1,6 @@
 {
-  lib,
   config,
+  lib,
   systemdPackage,
   ...
 }:
@@ -52,12 +52,33 @@ let
 
 in
 {
-  _class = "service";
   imports = [
     (lib.mkAliasOptionModule [ "systemd" "service" ] [ "systemd" "services" "" ])
     (lib.mkAliasOptionModule [ "systemd" "socket" ] [ "systemd" "sockets" "" ])
   ];
+
   options = {
+    # Also import systemd logic into sub-services
+    # extends the portable `services` option
+    services = mkOption {
+      type = types.attrsOf (
+        types.submoduleWith {
+          class = "service";
+
+          modules = [
+            ./service.nix
+          ];
+
+          specialArgs = {
+            inherit systemdPackage;
+          };
+        }
+      );
+
+      # Rendered by the portable docs instead.
+      visible = false;
+    };
+
     systemd.lib = mkOption {
       description = ''
         Library functions for working with systemd services.
@@ -71,49 +92,20 @@ in
           Example: `escapeSystemdExecArgs [ "/bin/echo" "Unit %n" ]`
           produces `"/bin/echo" "Unit %%n"`
       '';
-      type = types.lazyAttrsOf types.raw;
+
       readOnly = true;
-    };
-
-    systemd.mainExecStart = mkOption {
-      description = ''
-        Main command line for systemd's ExecStart with systemd's specifier and
-        environment variable substitution enabled.
-
-        This option sets the primary ExecStart entry. Additional ExecStart entries
-        can be added via `systemd.service.serviceConfig.ExecStart` with `lib.mkBefore`
-        or `lib.mkAfter`.
-
-        This option allows you to use systemd specifiers like `%n` (unit name),
-        `%i` (instance), `%t` (runtime directory), and environment variables using
-        `''${VAR}` syntax in your command line.
-
-        By default, this is set to the escaped version of {option}`process.argv`
-        to prevent systemd substitution. Set this option explicitly to enable
-        systemd's substitution features.
-
-        To extend {option}`process.argv` with systemd specifiers, you can append
-        to the escaped arguments:
-
-        ```nix
-        systemd.mainExecStart =
-          config.systemd.lib.escapeSystemdExecArgs config.process.argv + " --systemd-unit %n";
-        ```
-
-        This pattern allows you to pass the unit name (or other systemd specifiers)
-        as additional arguments while keeping the base command from {option}`process.argv`
-        properly escaped.
-
-        See {manpage}`systemd.service(5)` (section "COMMAND LINES") for details on
-        variable substitution and {manpage}`systemd.unit(5)` (section "SPECIFIERS")
-        for available specifiers like `%n`, `%i`, `%t`.
-      '';
-      type = types.str;
-      default = config.systemd.lib.escapeSystemdExecArgs config.process.argv;
-      defaultText = lib.literalExpression "config.systemd.lib.escapeSystemdExecArgs config.process.argv";
+      type = types.lazyAttrsOf types.raw;
     };
 
     systemd.mainExecReload = mkOption {
+      default =
+        if config.process.reloadCommand then
+          config.systemd.lib.escapeSystemdExecArgs config.process.reloadCommand
+        else
+          "";
+
+      defaultText = lib.literalExpression "config.systemd.lib.escapeSystemdExecArgs config.process.reloadCommand";
+
       description = ''
         Main command line for systemd's ExecReload with systemd's specifier and
         environment variable substitution enabled.
@@ -146,16 +138,53 @@ in
         variable substitution and {manpage}`systemd.unit(5)` (section "SPECIFIERS")
         for available specifiers like `%n`, `%i`, `%t`.
       '';
+
       type = types.nullOr types.str;
-      default =
-        if config.process.reloadCommand then
-          config.systemd.lib.escapeSystemdExecArgs config.process.reloadCommand
-        else
-          "";
-      defaultText = lib.literalExpression "config.systemd.lib.escapeSystemdExecArgs config.process.reloadCommand";
+    };
+
+    systemd.mainExecStart = mkOption {
+      default = config.systemd.lib.escapeSystemdExecArgs config.process.argv;
+      defaultText = lib.literalExpression "config.systemd.lib.escapeSystemdExecArgs config.process.argv";
+
+      description = ''
+        Main command line for systemd's ExecStart with systemd's specifier and
+        environment variable substitution enabled.
+
+        This option sets the primary ExecStart entry. Additional ExecStart entries
+        can be added via `systemd.service.serviceConfig.ExecStart` with `lib.mkBefore`
+        or `lib.mkAfter`.
+
+        This option allows you to use systemd specifiers like `%n` (unit name),
+        `%i` (instance), `%t` (runtime directory), and environment variables using
+        `''${VAR}` syntax in your command line.
+
+        By default, this is set to the escaped version of {option}`process.argv`
+        to prevent systemd substitution. Set this option explicitly to enable
+        systemd's substitution features.
+
+        To extend {option}`process.argv` with systemd specifiers, you can append
+        to the escaped arguments:
+
+        ```nix
+        systemd.mainExecStart =
+          config.systemd.lib.escapeSystemdExecArgs config.process.argv + " --systemd-unit %n";
+        ```
+
+        This pattern allows you to pass the unit name (or other systemd specifiers)
+        as additional arguments while keeping the base command from {option}`process.argv`
+        properly escaped.
+
+        See {manpage}`systemd.service(5)` (section "COMMAND LINES") for details on
+        variable substitution and {manpage}`systemd.unit(5)` (section "SPECIFIERS")
+        for available specifiers like `%n`, `%i`, `%t`.
+      '';
+
+      type = types.str;
     };
 
     systemd.services = mkOption {
+      default = { };
+
       description = ''
         This module configures systemd services, with the notable difference that their unit names will be prefixed with the abstract service name.
 
@@ -165,6 +194,7 @@ in
         This means that the module has not been combined with the system configuration yet, no values can be read from this option.
         What you can do instead is define a module that reads from the module arguments (such as `config`) that are available when the module is merged into the system configuration.
       '';
+
       type = types.lazyAttrsOf (
         types.deferredModuleWith {
           staticModules = [
@@ -172,36 +202,21 @@ in
           ];
         }
       );
-      default = { };
     };
+
     systemd.sockets = mkOption {
+      default = { };
+
       description = ''
         Declares systemd socket units. Names will be prefixed by the service name / path.
 
         See {option}`systemd.services`.
       '';
-      type = types.lazyAttrsOf types.deferredModule;
-      default = { };
-    };
 
-    # Also import systemd logic into sub-services
-    # extends the portable `services` option
-    services = mkOption {
-      type = types.attrsOf (
-        types.submoduleWith {
-          class = "service";
-          modules = [
-            ./service.nix
-          ];
-          specialArgs = {
-            inherit systemdPackage;
-          };
-        }
-      );
-      # Rendered by the portable docs instead.
-      visible = false;
+      type = types.lazyAttrsOf types.deferredModule;
     };
   };
+
   config = {
     systemd.lib = {
       inherit escapeSystemdExecArgs;
@@ -209,19 +224,25 @@ in
 
     # Note that this is the systemd.services option above, not the system one.
     systemd.services."" = {
-      # TODO description;
-      wantedBy = lib.mkDefault [ "multi-user.target" ];
       serviceConfig = {
         ExecReload = config.systemd.mainExecReload;
-        Type = lib.mkDefault (
-          if (config.serviceManager.notificationProtocol == "systemd") then "notify" else "simple"
-        );
-        Restart = lib.mkDefault "always";
-        RestartSec = lib.mkDefault "5";
+
         ExecStart = [
           config.systemd.mainExecStart
         ];
+
+        Restart = lib.mkDefault "always";
+        RestartSec = lib.mkDefault "5";
+
+        Type = lib.mkDefault (
+          if (config.serviceManager.notificationProtocol == "systemd") then "notify" else "simple"
+        );
       };
+
+      # TODO description;
+      wantedBy = lib.mkDefault [ "multi-user.target" ];
     };
   };
+
+  _class = "service";
 }

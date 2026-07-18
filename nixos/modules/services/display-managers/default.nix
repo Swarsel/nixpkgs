@@ -1,8 +1,8 @@
 {
   config,
-  options,
   lib,
   pkgs,
+  options,
   ...
 }:
 
@@ -15,9 +15,9 @@ let
   installedSessions =
     pkgs.runCommand "desktops"
       {
+        allowSubstitutes = false;
         # trivial derivation
         preferLocalBuild = true;
-        allowSubstitutes = false;
       }
       ''
         mkdir -p "$out/share/"{xsessions,wayland-sessions}
@@ -42,105 +42,6 @@ let
       '';
 in
 {
-  options = {
-    services.displayManager = {
-      enable = lib.mkEnableOption "shared display manager integration";
-
-      hiddenUsers = lib.mkOption {
-        type = with lib.types; listOf str;
-        default = [ "nobody" ];
-        description = ''
-          A list of users which will not be shown in the display manager.
-        '';
-      };
-
-      logToFile = lib.mkOption {
-        type = lib.types.bool;
-        default = false;
-        description = ''
-          Whether the display manager redirects the output of the
-          session script to {file}`~/.xsession-errors`.
-        '';
-      };
-
-      logToJournal = lib.mkOption {
-        type = lib.types.bool;
-        default = true;
-        description = ''
-          Whether the display manager redirects the output of the
-          session script to the systemd journal.
-        '';
-      };
-
-      # Configuration for automatic login. Common for all DM.
-      autoLogin = lib.mkOption {
-        type = lib.types.submodule (
-          { config, options, ... }:
-          {
-            options = {
-              enable = lib.mkOption {
-                type = lib.types.bool;
-                default = config.user != null;
-                defaultText = lib.literalExpression "config.${options.user} != null";
-                description = ''
-                  Automatically log in as {option}`${options.user}`.
-                '';
-              };
-
-              user = lib.mkOption {
-                type = with lib.types; nullOr str;
-                default = null;
-                description = ''
-                  User to be used for the automatic login.
-                '';
-              };
-            };
-          }
-        );
-
-        default = { };
-        description = ''
-          Auto login configuration attrset.
-        '';
-      };
-
-      defaultSession = lib.mkOption {
-        type = lib.types.nullOr (lib.types.str // { description = "session name"; });
-        default = null;
-        example = "gnome";
-        description = ''
-          Graphical session to pre-select in the session chooser (only effective for GDM, LightDM and SDDM).
-
-          On GDM, LightDM and SDDM, it will also be used as a session for auto-login.
-
-          Set this option to empty string to get an error with a list of currently available sessions.
-        '';
-      };
-
-      sessionData = lib.mkOption {
-        description = "Data exported for display managers’ convenience";
-        internal = true;
-        default = { };
-      };
-
-      sessionPackages = lib.mkOption {
-        type = lib.types.listOf (
-          lib.types.addCheck lib.types.package (
-            p: p ? providedSessions && p.providedSessions != [ ] && lib.all lib.isString p.providedSessions
-          )
-          // {
-            description = "package with provided sessions";
-            descriptionClass = "composite";
-          }
-        );
-        default = [ ];
-        description = ''
-          A list of packages containing x11 or wayland session files to be passed to the display manager.
-        '';
-      };
-    };
-  };
-
   imports = [
     (lib.mkRenamedOptionModule
       [ "services" "xserver" "displayManager" "autoLogin" ]
@@ -184,16 +85,132 @@ in
     )
   ];
 
+  options = {
+    services.displayManager = {
+      enable = lib.mkEnableOption "shared display manager integration";
+
+      # Configuration for automatic login. Common for all DM.
+      autoLogin = lib.mkOption {
+        default = { };
+
+        description = ''
+          Auto login configuration attrset.
+        '';
+
+        type = lib.types.submodule (
+          { config, options, ... }:
+          {
+            options = {
+              enable = lib.mkOption {
+                default = config.user != null;
+                defaultText = lib.literalExpression "config.${options.user} != null";
+
+                description = ''
+                  Automatically log in as {option}`${options.user}`.
+                '';
+
+                type = lib.types.bool;
+              };
+
+              user = lib.mkOption {
+                default = null;
+
+                description = ''
+                  User to be used for the automatic login.
+                '';
+
+                type = with lib.types; nullOr str;
+              };
+            };
+          }
+        );
+      };
+
+      defaultSession = lib.mkOption {
+        default = null;
+
+        description = ''
+          Graphical session to pre-select in the session chooser (only effective for GDM, LightDM and SDDM).
+
+          On GDM, LightDM and SDDM, it will also be used as a session for auto-login.
+
+          Set this option to empty string to get an error with a list of currently available sessions.
+        '';
+
+        example = "gnome";
+        type = lib.types.nullOr (lib.types.str // { description = "session name"; });
+      };
+
+      hiddenUsers = lib.mkOption {
+        default = [ "nobody" ];
+
+        description = ''
+          A list of users which will not be shown in the display manager.
+        '';
+
+        type = with lib.types; listOf str;
+      };
+
+      logToFile = lib.mkOption {
+        default = false;
+
+        description = ''
+          Whether the display manager redirects the output of the
+          session script to {file}`~/.xsession-errors`.
+        '';
+
+        type = lib.types.bool;
+      };
+
+      logToJournal = lib.mkOption {
+        default = true;
+
+        description = ''
+          Whether the display manager redirects the output of the
+          session script to the systemd journal.
+        '';
+
+        type = lib.types.bool;
+      };
+
+      sessionData = lib.mkOption {
+        default = { };
+        description = "Data exported for display managers’ convenience";
+        internal = true;
+      };
+
+      sessionPackages = lib.mkOption {
+        default = [ ];
+
+        description = ''
+          A list of packages containing x11 or wayland session files to be passed to the display manager.
+        '';
+
+        type = lib.types.listOf (
+          lib.types.addCheck lib.types.package (
+            p: p ? providedSessions && p.providedSessions != [ ] && lib.all lib.isString p.providedSessions
+          )
+          // {
+            description = "package with provided sessions";
+            descriptionClass = "composite";
+          }
+        );
+      };
+    };
+  };
+
   config = lib.mkIf cfg.enable {
     assertions = [
       {
         assertion = cfg.autoLogin.enable -> cfg.autoLogin.user != null;
+
         message = ''
           `${opts.autoLogin}.enable` requires `${opts.autoLogin}.user` to be set
         '';
       }
       {
         assertion = cfg.defaultSession == null || lib.elem cfg.defaultSession cfg.sessionData.sessionNames;
+
         message = ''
           Default graphical session, ${toPretty cfg.defaultSession}, not found. Definitions:${lib.options.showDefs opts.defaultSession.definitionsWithLocations}.
           Valid names for `${opts.defaultSession}` are:
@@ -209,8 +226,6 @@ in
     ];
 
     services.displayManager.sessionData = {
-      desktops = installedSessions;
-      sessionNames = lib.concatMap (p: p.providedSessions) cfg.sessionPackages;
       # We do not want to force users to set defaultSession when they have only single DE.
       autologinSession =
         if cfg.defaultSession != null then
@@ -219,6 +234,9 @@ in
           lib.head cfg.sessionData.sessionNames
         else
           null;
+
+      desktops = installedSessions;
+      sessionNames = lib.concatMap (p: p.providedSessions) cfg.sessionPackages;
     };
   };
 }

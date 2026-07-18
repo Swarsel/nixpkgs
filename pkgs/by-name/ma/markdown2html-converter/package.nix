@@ -1,7 +1,7 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -15,18 +15,18 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-C35TCmcskhK3sHbkUp3kEaTA4P7Ls5Rn6ahUbzy7KXY=";
   };
 
-  cargoLock.lockFile = ./Cargo.lock;
-
   postPatch = ''
     ln -s ${./Cargo.lock} Cargo.lock
   '';
 
+  cargoLock.lockFile = ./Cargo.lock;
+
   meta = {
-    changelog = "https://github.com/magiclen/markdown2html-converter/releases/tag/v${finalAttrs.version}";
     description = "Tool for converting a Markdown file to a single HTML file with built-in CSS and JS";
     homepage = "https://github.com/magiclen/markdown2html-converter";
+    changelog = "https://github.com/magiclen/markdown2html-converter/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.mit;
-    mainProgram = "markdown2html-converter";
     maintainers = with lib.maintainers; [ tomasajt ];
+    mainProgram = "markdown2html-converter";
   };
 })

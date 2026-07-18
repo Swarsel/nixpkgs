@@ -6,8 +6,8 @@
 }:
 
 stdenv.mkDerivation (finalAttrs: {
-  version = "4.2.1";
   pname = "czmq";
+  version = "4.2.1";
 
   src = fetchurl {
     url = "https://github.com/zeromq/czmq/releases/download/v${finalAttrs.version}/czmq-${finalAttrs.version}.tar.gz";
@@ -18,10 +18,10 @@ stdenv.mkDerivation (finalAttrs: {
   propagatedBuildInputs = [ zeromq ];
 
   meta = {
-    homepage = "http://czmq.zeromq.org/";
     description = "High-level C Binding for ZeroMQ";
-    mainProgram = "zmakecert";
+    homepage = "http://czmq.zeromq.org/";
     license = lib.licenses.mpl20;
     platforms = lib.platforms.all;
+    mainProgram = "zmakecert";
   };
 })

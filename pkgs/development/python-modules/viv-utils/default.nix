@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   funcy,
   intervaltree,
   pefile,
@@ -16,7 +16,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "viv-utils";
   version = "0.8.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "williballenthin";
@@ -24,6 +23,11 @@ buildPythonPackage (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-YyD6CFA8lhc1XU7pckKv3th422ssYZkRJ/JfQD5e65c=";
   };
+
+  nativeCheckInputs = [
+    pytest-sugar
+    pytestCheckHook
+  ];
 
   build-system = [ setuptools-scm ];
 
@@ -35,18 +39,14 @@ buildPythonPackage (finalAttrs: {
     vivisect
   ];
 
-  nativeCheckInputs = [
-    pytest-sugar
-    pytestCheckHook
-  ];
+  pyproject = true;
+  pythonImportsCheck = [ "viv_utils" ];
 
   passthru = {
     optional-dependencies = {
       flirt = [ python-flirt ];
     };
   };
-
-  pythonImportsCheck = [ "viv_utils" ];
 
   meta = {
     description = "Utilities for working with vivisect";

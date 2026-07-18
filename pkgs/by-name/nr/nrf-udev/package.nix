@@ -1,8 +1,8 @@
 {
   lib,
-  stdenvNoCC,
   fetchFromGitHub,
   gitUpdater,
+  stdenvNoCC,
 }:
 
 stdenvNoCC.mkDerivation (finalAttrs: {
@@ -16,9 +16,6 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     hash = "sha256-bEIAsz9ZwX6RTzhv5/waFZ5a3KlnwX4kQs29+475zN0=";
   };
 
-  dontConfigure = true;
-  dontBuild = true;
-
   installPhase = ''
     runHook preInstall
 
@@ -28,6 +25,8 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  dontBuild = true;
+  dontConfigure = true;
   passthru.updateScript = gitUpdater { rev-prefix = "v"; };
 
   meta = {
@@ -35,7 +34,7 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     homepage = "https://github.com/NordicSemiconductor/nrf-udev";
     changelog = "https://github.com/NordicSemiconductor/nrf-udev/releases/tag/${finalAttrs.src.rev}";
     license = lib.licenses.unfree;
-    platforms = lib.platforms.all;
     maintainers = with lib.maintainers; [ h7x4 ];
+    platforms = lib.platforms.all;
   };
 })

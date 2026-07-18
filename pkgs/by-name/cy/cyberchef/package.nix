@@ -1,32 +1,32 @@
 {
   lib,
-  fetchzip,
-  fetchurl,
   stdenv,
+  fetchurl,
+  fetchzip,
   makeDesktopItem,
 }:
 
 let
   icon = fetchurl {
-    url = "https://raw.githubusercontent.com/gchq/CyberChef/c57556f49f723863b9be15668fd240672cd15b09/src/web/static/images/cyberchef-512x512.png";
     hash = "sha256-Lg9JbVHhdILdrRtxYFWSv9HNJUx98JOaTbs+IbS1eO0=";
+    url = "https://raw.githubusercontent.com/gchq/CyberChef/c57556f49f723863b9be15668fd240672cd15b09/src/web/static/images/cyberchef-512x512.png";
   };
   desktopItem = (
     makeDesktopItem {
-      name = "cyberchef";
+      categories = [ "Development" ];
+      comment = "Cyber Swiss Army Knife for encryption, encoding, compression and data analysis";
       desktopName = "Cyberchef";
       exec = "cyberchef";
       icon = "cyberchef";
-      comment = "Cyber Swiss Army Knife for encryption, encoding, compression and data analysis";
-      categories = [ "Development" ];
+      name = "cyberchef";
     }
   );
   version = "11.2.0";
   commit = "d358d82cbcb269d764a2deb598a37043bd054f45";
 in
 stdenv.mkDerivation {
-  pname = "cyberchef";
   inherit version;
+  pname = "cyberchef";
 
   src = fetchzip {
     url = "https://github.com/gchq/CyberChef/releases/download/v${version}/CyberChef_${commit}.zip";
@@ -58,11 +58,13 @@ stdenv.mkDerivation {
     description = "Cyber Swiss Army Knife for encryption, encoding, compression and data analysis";
     homepage = "https://gchq.github.io/CyberChef";
     changelog = "https://github.com/gchq/CyberChef/blob/v${version}/CHANGELOG.md";
+    license = lib.licenses.asl20;
+
     maintainers = with lib.maintainers; [
       sebastianblunt
       aldenparker
     ];
-    license = lib.licenses.asl20;
+
     platforms = lib.platforms.all;
   };
 }

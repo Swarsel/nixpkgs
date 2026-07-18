@@ -2,12 +2,12 @@
   lib,
   stdenv,
   fetchFromGitHub,
+  gdk-pixbuf,
+  gtk-engine-murrine,
+  gtk_engines,
+  librsvg,
   meson,
   ninja,
-  gdk-pixbuf,
-  gtk_engines,
-  gtk-engine-murrine,
-  librsvg,
   sassc,
 }:
 
@@ -42,7 +42,7 @@ stdenv.mkDerivation (finalAttrs: {
     description = "Flat theme for GNOME and Xfce";
     homepage = "https://github.com/lassekongo83/plano-theme";
     license = lib.licenses.gpl3Only;
-    platforms = lib.platforms.unix;
     maintainers = [ lib.maintainers.romildo ];
+    platforms = lib.platforms.unix;
   };
 })

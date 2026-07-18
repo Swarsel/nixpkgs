@@ -2,18 +2,18 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  pkg-config,
-  ninja,
-  meson,
-  scdoc,
-  wayland-protocols,
-  wayland-scanner,
+  cairo,
   freetype,
   harfbuzz,
-  cairo,
-  pango,
-  wayland,
   libxkbcommon,
+  meson,
+  ninja,
+  pango,
+  pkg-config,
+  scdoc,
+  wayland,
+  wayland-protocols,
+  wayland-scanner,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -27,7 +27,6 @@ stdenv.mkDerivation (finalAttrs: {
     sha256 = "sha256-lokp6Zmdt7WuAyuRnHBkKD4ydbNiQY7pEVY97Z62U90=";
   };
 
-  depsBuildBuild = [ pkg-config ];
   nativeBuildInputs = [
     meson
     ninja
@@ -36,6 +35,7 @@ stdenv.mkDerivation (finalAttrs: {
     wayland-protocols
     wayland-scanner
   ];
+
   buildInputs = [
     freetype
     harfbuzz
@@ -44,6 +44,8 @@ stdenv.mkDerivation (finalAttrs: {
     wayland
     libxkbcommon
   ];
+
+  depsBuildBuild = [ pkg-config ];
 
   meta = {
     description = "Tiny dynamic menu for Wayland";

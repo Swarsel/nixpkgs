@@ -1,7 +1,7 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
+  rustPlatform,
   versionCheckHook,
 }:
 
@@ -18,17 +18,16 @@ rustPlatform.buildRustPackage (finalAttrs: {
   };
 
   cargoHash = "sha256-nn7oT0TIBFxfFVOvLIvp9TswPIr6v+ttdw74CnaKqAQ=";
-
   doInstallCheck = true;
-  versionCheckProgramArg = "--version";
   nativeInstallCheckInputs = [ versionCheckHook ];
+  versionCheckProgramArg = "--version";
 
   meta = {
-    changelog = "https://github.com/abhixdd/ghgrab/releases/tag/v${finalAttrs.version}";
     description = "Simple, pretty terminal tool that lets you search and download files from GitHub without leaving your CLI";
     homepage = "https://github.com/abhixdd/ghgrab";
+    changelog = "https://github.com/abhixdd/ghgrab/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.mit;
-    mainProgram = "ghgrab";
     maintainers = with lib.maintainers; [ phanirithvij ];
+    mainProgram = "ghgrab";
   };
 })

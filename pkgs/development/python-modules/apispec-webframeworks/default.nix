@@ -1,12 +1,12 @@
 {
   lib,
+  fetchFromGitHub,
   aiohttp,
   apispec,
   bottle,
   buildPythonPackage,
-  fetchFromGitHub,
-  flit-core,
   flask,
+  flit-core,
   mock,
   pytestCheckHook,
   tornado,
@@ -15,7 +15,6 @@
 buildPythonPackage rec {
   pname = "apispec-webframeworks";
   version = "1.2.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "marshmallow-code";
@@ -23,10 +22,6 @@ buildPythonPackage rec {
     tag = version;
     hash = "sha256-V4tdqcHfYRh9VoXUTPXM3SIOogJDJB14SLj5dSd7LzU=";
   };
-
-  build-system = [ flit-core ];
-
-  dependencies = [ apispec ] ++ apispec.optional-dependencies.yaml;
 
   nativeCheckInputs = [
     aiohttp
@@ -37,6 +32,9 @@ buildPythonPackage rec {
     tornado
   ];
 
+  build-system = [ flit-core ];
+  dependencies = [ apispec ] ++ apispec.optional-dependencies.yaml;
+  pyproject = true;
   pythonImportsCheck = [ "apispec_webframeworks" ];
 
   meta = {

@@ -1,27 +1,27 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
-  gitUpdater,
-  nixosTests,
-  testers,
   accountsservice,
   cmake,
   dbus-test-runner,
-  withDocumentation ? true,
-  docbook_xsl,
   docbook_xml_dtd_45,
+  docbook_xsl,
+  gitUpdater,
   glib,
   gobject-introspection,
   gtest,
   gtk-doc,
   intltool,
   lomiri,
+  nixosTests,
   pkg-config,
   python3,
   systemd,
+  testers,
   vala,
   wrapGAppsHook3,
+  withDocumentation ? true,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -84,20 +84,6 @@ stdenv.mkDerivation (finalAttrs: {
     systemd
   ];
 
-  nativeCheckInputs = [
-    (python3.withPackages (
-      ps: with ps; [
-        pygobject3
-        python-dbusmock
-      ]
-    ))
-  ];
-
-  checkInputs = [
-    dbus-test-runner
-    gtest
-  ];
-
   cmakeFlags = [
     (lib.cmakeBool "ENABLE_TESTS" finalAttrs.finalPackage.doCheck)
     (lib.cmakeBool "GSETTINGS_LOCALINSTALL" true)
@@ -111,6 +97,20 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   doCheck = stdenv.buildPlatform.canExecute stdenv.hostPlatform;
+
+  nativeCheckInputs = [
+    (python3.withPackages (
+      ps: with ps; [
+        pygobject3
+        python-dbusmock
+      ]
+    ))
+  ];
+
+  checkInputs = [
+    dbus-test-runner
+    gtest
+  ];
 
   preCheck = ''
     # test-client imports gir, whose solib entry points to final store location
@@ -143,26 +143,32 @@ stdenv.mkDerivation (finalAttrs: {
         "lomiri"
       ];
     };
+
     tests = {
       pkg-config = testers.testMetaPkgConfig finalAttrs.finalPackage;
       vm = nixosTests.ayatana-indicators;
     };
+
     updateScript = gitUpdater { };
   };
 
   meta = {
     description = "Ayatana Indicator Messages Applet";
+
     longDescription = ''
       The -messages Ayatana System Indicator is the messages menu indicator for Unity7, MATE and Lomiri (optionally for
       others, e.g. XFCE, LXDE).
     '';
+
     homepage = "https://github.com/AyatanaIndicators/ayatana-indicator-messages";
+
     changelog = "https://github.com/AyatanaIndicators/ayatana-indicator-messages/blob/${
       if (!isNull finalAttrs.src.tag) then finalAttrs.src.tag else finalAttrs.src.rev
     }/ChangeLog";
+
     license = lib.licenses.gpl3Only;
-    platforms = lib.platforms.linux;
     maintainers = with lib.maintainers; [ OPNA2608 ];
+    platforms = lib.platforms.linux;
     pkgConfigModules = [ "messaging-menu" ];
   };
 })

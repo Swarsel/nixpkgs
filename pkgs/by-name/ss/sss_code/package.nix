@@ -1,14 +1,14 @@
 {
-  rustPlatform,
+  lib,
+  stdenv,
   fetchFromGitHub,
-  pkg-config,
   fontconfig,
   libiconv,
-  writableTmpDirAsHomeHook,
-  oniguruma,
-  stdenv,
   libxcb,
-  lib,
+  oniguruma,
+  pkg-config,
+  rustPlatform,
+  writableTmpDirAsHomeHook,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -21,13 +21,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
     rev = "sss_code/v${finalAttrs.version}";
     hash = "sha256-AmJFAwHfG4R2iRz9zNeZsVFLptVy499ozQ7jgwnevOo=";
   };
-
-  cargoHash = "sha256-qeDZgrGPSz+wXolZeVb2FFHjLzl1+vjzMN/3NCgaf/s=";
-
-  cargoBuildFlags = [
-    "-p"
-    "sss_code"
-  ];
 
   nativeBuildInputs = [
     pkg-config
@@ -45,20 +38,29 @@ rustPlatform.buildRustPackage (finalAttrs: {
     oniguruma
   ];
 
+  cargoHash = "sha256-qeDZgrGPSz+wXolZeVb2FFHjLzl1+vjzMN/3NCgaf/s=";
+
   env = {
     RUSTONIG_SYSTEM_LIBONIG = true;
   };
 
   doCheck = false;
 
+  cargoBuildFlags = [
+    "-p"
+    "sss_code"
+  ];
+
   meta = {
     description = "Libraries and tools for building screenshots in a high-performance image format";
-    mainProgram = "sss_code";
     homepage = "https://github.com/SergioRibera/sss";
+
     license = with lib.licenses; [
       asl20
       mit
     ];
+
     maintainers = with lib.maintainers; [ krovuxdev ];
+    mainProgram = "sss_code";
   };
 })

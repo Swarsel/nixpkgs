@@ -3,24 +3,26 @@
   stdenv,
   fetchurl,
   autoPatchelfHook,
-  udev,
   libusb1,
   segger-jlink,
+  udev,
 }:
 
 let
   supported = {
-    x86_64-linux = {
-      name = "linux-amd64";
-      hash = "sha256-zL9tXl2HsO8JZXEGsjg4+lDJJz30StOMH96rU7neDsg=";
-    };
     aarch64-linux = {
-      name = "linux-arm64";
       hash = "sha256-ACy3rXsvBZNVXdVkpP2AqrsoqKPliw6m9UUWrFOCBzs=";
+      name = "linux-arm64";
     };
+
     armv7l-linux = {
-      name = "linux-armhf";
       hash = "sha256-nD1pHL/SQqC7OlxuovWwvtnXKMmhfx5qFaF4ti8gh8g=";
+      name = "linux-armhf";
+    };
+
+    x86_64-linux = {
+      hash = "sha256-zL9tXl2HsO8JZXEGsjg4+lDJJz30StOMH96rU7neDsg=";
+      name = "linux-amd64";
     };
   };
 
@@ -36,17 +38,13 @@ let
 
 in
 stdenv.mkDerivation {
-  pname = "nrf-command-line-tools";
   inherit version;
+  pname = "nrf-command-line-tools";
 
   src = fetchurl {
     inherit url;
     inherit (platform) hash;
   };
-
-  runtimeDependencies = [
-    segger-jlink
-  ];
 
   nativeBuildInputs = [
     autoPatchelfHook
@@ -56,9 +54,6 @@ stdenv.mkDerivation {
     udev
     libusb1
   ];
-
-  dontConfigure = true;
-  dontBuild = true;
 
   installPhase = ''
     runHook preInstall
@@ -70,11 +65,18 @@ stdenv.mkDerivation {
     runHook postInstall
   '';
 
+  dontBuild = true;
+  dontConfigure = true;
+
+  runtimeDependencies = [
+    segger-jlink
+  ];
+
   meta = {
     description = "Nordic Semiconductor nRF Command Line Tools";
     homepage = "https://www.nordicsemi.com/Products/Development-tools/nRF-Command-Line-Tools";
     license = lib.licenses.unfree;
-    platforms = lib.attrNames supported;
     maintainers = with lib.maintainers; [ stargate01 ];
+    platforms = lib.attrNames supported;
   };
 }

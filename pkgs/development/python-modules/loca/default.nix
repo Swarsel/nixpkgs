@@ -8,7 +8,6 @@
 buildPythonPackage rec {
   pname = "loca";
   version = "2.0.1";
-  pyproject = true;
 
   src = fetchFromSourcehut {
     owner = "~cnx";
@@ -18,8 +17,8 @@ buildPythonPackage rec {
   };
 
   nativeBuildInputs = [ flit-core ];
-
   doCheck = false; # all checks are static analyses
+  pyproject = true;
   pythonImportsCheck = [ "loca" ];
 
   meta = {

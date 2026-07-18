@@ -1,6 +1,6 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
   go,
   writableTmpDirAsHomeHook,
@@ -33,10 +33,10 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Toolkit to automatically generate software components: abstract API, implementation stubs and language bindings";
-    mainProgram = "act";
     homepage = "https://github.com/Autodesk/AutomaticComponentToolkit";
     license = lib.licenses.bsd2;
     maintainers = [ ];
     platforms = lib.platforms.all;
+    mainProgram = "act";
   };
 })

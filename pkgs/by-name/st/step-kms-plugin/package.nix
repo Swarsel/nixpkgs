@@ -1,12 +1,12 @@
 {
-  stdenv,
   lib,
-  buildGoModule,
+  stdenv,
   fetchFromGitHub,
-  pkg-config,
-  pcsclite,
-  softhsm,
+  buildGoModule,
   opensc,
+  pcsclite,
+  pkg-config,
+  softhsm,
   yubihsm-shell,
 }:
 
@@ -21,10 +21,6 @@ buildGoModule rec {
     hash = "sha256-c9QRyrohktS/ZjG6DOeNXaFRiqxDCdst00m0xjcg9SQ=";
   };
 
-  vendorHash = "sha256-5bnYtj4Dda3PiU9NAP32tOC6hZxwIbAynNZuAmMOs+A=";
-
-  proxyVendor = true;
-
   nativeBuildInputs = [
     pkg-config
   ];
@@ -36,13 +32,16 @@ buildGoModule rec {
     yubihsm-shell
   ];
 
+  vendorHash = "sha256-5bnYtj4Dda3PiU9NAP32tOC6hZxwIbAynNZuAmMOs+A=";
+  env.CGO_CFLAGS = "-I${lib.getDev pcsclite}/include/PCSC/";
+
   ldflags = [
     "-w"
     "-s"
     "-X github.com/smallstep/step-kms-plugin/cmd.Version=${version}"
   ];
 
-  env.CGO_CFLAGS = "-I${lib.getDev pcsclite}/include/PCSC/";
+  proxyVendor = true;
 
   meta = {
     description = "Step plugin to manage keys and certificates on cloud KMSs and HSMs";

@@ -3,9 +3,9 @@
   stdenv,
   fetchFromGitHub,
   cmake,
-  pkg-config,
-  glib,
   gettext,
+  glib,
+  pkg-config,
   readline,
 }:
 
@@ -20,17 +20,6 @@ stdenv.mkDerivation (finalAttrs: {
     sha256 = "sha256-EyvljVXhOsdxIYOGTzD+T16nvW7/RNx3DuQ2OdhjXJ4=";
   };
 
-  hardeningDisable = [ "format" ];
-  nativeBuildInputs = [
-    cmake
-    pkg-config
-  ];
-  buildInputs = [
-    glib
-    gettext
-    readline
-  ];
-
   postPatch = ''
     # https://github.com/Dushistov/sdcv/pull/104
     substituteInPlace src/stardict_lib.cpp --replace-fail \
@@ -38,17 +27,30 @@ stdenv.mkDerivation (finalAttrs: {
       "gchar *nextchar = const_cast<gchar*>(g_utf8_next_char(sWord))"
   '';
 
+  nativeBuildInputs = [
+    cmake
+    pkg-config
+  ];
+
+  buildInputs = [
+    glib
+    gettext
+    readline
+  ];
+
+  env.NIX_CFLAGS_COMPILE = "-D__GNU_LIBRARY__";
+
   preInstall = ''
     mkdir locale
   '';
 
-  env.NIX_CFLAGS_COMPILE = "-D__GNU_LIBRARY__";
+  hardeningDisable = [ "format" ];
 
   meta = {
-    homepage = "https://dushistov.github.io/sdcv/";
     description = "Console version of StarDict";
-    maintainers = [ ];
+    homepage = "https://dushistov.github.io/sdcv/";
     license = lib.licenses.gpl2;
+    maintainers = [ ];
     platforms = lib.platforms.unix;
     mainProgram = "sdcv";
   };

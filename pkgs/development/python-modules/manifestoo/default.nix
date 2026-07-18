@@ -1,8 +1,8 @@
 {
+  lib,
   buildPythonPackage,
   fetchPypi,
   hatch-vcs,
-  lib,
   manifestoo-core,
   nix-update-script,
   pytestCheckHook,
@@ -13,7 +13,6 @@
 buildPythonPackage rec {
   pname = "manifestoo";
   version = "1.1";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
@@ -22,14 +21,14 @@ buildPythonPackage rec {
 
   nativeBuildInputs = [ hatch-vcs ];
 
-  nativeCheckInputs = [ pytestCheckHook ];
-
   propagatedBuildInputs = [
     manifestoo-core
     textual
     typer
   ];
 
+  nativeCheckInputs = [ pytestCheckHook ];
+  pyproject = true;
   passthru.updateScript = nix-update-script { };
 
   meta = {

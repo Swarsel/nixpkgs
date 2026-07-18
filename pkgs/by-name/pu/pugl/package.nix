@@ -1,23 +1,23 @@
 {
-  stdenv,
   lib,
-  meson,
+  stdenv,
   fetchFromGitHub,
-  pkg-config,
-  libxrandr,
-  libxext,
-  libxcursor,
-  libx11,
-  libGL,
   cairo,
-  glslang,
-  python3,
   doxygen,
-  vulkan-loader,
-  vulkan-headers,
+  glslang,
+  libGL,
+  libx11,
+  libxcursor,
+  libxext,
+  libxrandr,
+  meson,
+  ninja,
+  pkg-config,
+  python3,
   sphinx,
   sphinxygen,
-  ninja,
+  vulkan-headers,
+  vulkan-loader,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -59,10 +59,10 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   meta = {
+    description = "Minimal portable API for embeddable GUIs";
     homepage = "https://github.com/lv2/pugl";
+    license = lib.licenses.isc;
     maintainers = with lib.maintainers; [ bot-wxt1221 ];
     platforms = lib.platforms.unix;
-    license = lib.licenses.isc;
-    description = "Minimal portable API for embeddable GUIs";
   };
 })

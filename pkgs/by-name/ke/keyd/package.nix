@@ -1,10 +1,10 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
-  runtimeShell,
-  python3Packages,
   nixosTests,
+  python3Packages,
+  runtimeShell,
   versionCheckHook,
 }:
 let
@@ -18,9 +18,8 @@ let
   };
 
   appMap = python3Packages.buildPythonApplication (finalAttrs: {
-    pname = "keyd-application-mapper";
     inherit version src;
-    pyproject = false;
+    pname = "keyd-application-mapper";
 
     postPatch = ''
       substituteInPlace scripts/${finalAttrs.pname} \
@@ -33,19 +32,19 @@ let
       dbus-python.out
     ];
 
-    dontBuild = true;
-
     installPhase = ''
       install -Dm555 -t $out/bin scripts/${finalAttrs.pname}
     '';
 
+    dontBuild = true;
+    pyproject = false;
     meta.mainProgram = "keyd-application-mapper";
   });
 
 in
 stdenv.mkDerivation {
-  pname = "keyd";
   inherit version src;
+  pname = "keyd";
 
   postPatch = ''
     substituteInPlace Makefile \
@@ -55,26 +54,23 @@ stdenv.mkDerivation {
       --replace-fail @PREFIX@ $out
   '';
 
-  installFlags = [ "DESTDIR=${placeholder "out"}" ];
-
-  nativeInstallCheckInputs = [ versionCheckHook ];
-  doInstallCheck = true;
-
-  enableParallelBuilding = true;
-
   postInstall = ''
     ln -sf ${lib.getExe appMap} $out/bin/${appMap.pname}
     rm -rf $out/etc
   '';
 
+  doInstallCheck = true;
+  nativeInstallCheckInputs = [ versionCheckHook ];
+  enableParallelBuilding = true;
+  installFlags = [ "DESTDIR=${placeholder "out"}" ];
   passthru.tests.keyd = nixosTests.keyd;
 
   meta = {
     description = "Key remapping daemon for Linux";
     homepage = "https://github.com/rvaiya/keyd";
     license = lib.licenses.mit;
-    mainProgram = "keyd";
     maintainers = with lib.maintainers; [ alfarel ];
     platforms = lib.platforms.linux;
+    mainProgram = "keyd";
   };
 }

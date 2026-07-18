@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule (finalAttrs: {
@@ -17,14 +17,14 @@ buildGoModule (finalAttrs: {
 
   vendorHash = "sha256-8NPFohguMX/X1khEPF+noLBNe/MUoPpXS2PN6SiotL8=";
 
+  postInstall = ''
+    mv $out/bin/src $out/bin/$pname
+  '';
+
   ldflags = [
     "-s"
     "-w"
   ];
-
-  postInstall = ''
-    mv $out/bin/src $out/bin/$pname
-  '';
 
   meta = {
     description = "Automatically spawn a reverse shell fully interactive for Linux or Windows victim";

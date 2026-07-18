@@ -1,22 +1,22 @@
 {
-  stdenv,
   lib,
-  pandoc,
-  typst,
-  esbuild,
-  deno,
+  stdenv,
   fetchurl,
   dart-sass,
-  rWrapper,
-  rPackages,
-  extraRPackages ? [ ],
+  deno,
+  esbuild,
   makeWrapper,
-  runCommand,
+  pandoc,
   python3,
   quarto,
-  extraPythonPackages ? ps: [ ],
+  rPackages,
+  rWrapper,
+  runCommand,
   sysctl,
+  typst,
   which,
+  extraPythonPackages ? ps: [ ],
+  extraRPackages ? [ ],
 }:
 
 let
@@ -51,7 +51,18 @@ stdenv.mkDerivation (finalAttrs: {
     which
   ];
 
-  dontStrip = true;
+  installPhase = ''
+    runHook preInstall
+
+    mkdir -p $out/bin $out/share
+
+    rm -r bin/tools
+
+    mv bin/* $out/bin
+    mv share/* $out/share
+
+    runHook postInstall
+  '';
 
   preFixup = ''
     wrapProgram $out/bin/quarto \
@@ -69,18 +80,7 @@ stdenv.mkDerivation (finalAttrs: {
       ) "--set-default RETICULATE_PYTHON ${pythonWithPackages.interpreter}"}
   '';
 
-  installPhase = ''
-    runHook preInstall
-
-    mkdir -p $out/bin $out/share
-
-    rm -r bin/tools
-
-    mv bin/* $out/bin
-    mv share/* $out/share
-
-    runHook postInstall
-  '';
+  dontStrip = true;
 
   passthru.tests = {
     quarto-check =
@@ -97,22 +97,27 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Open-source scientific and technical publishing system built on Pandoc";
-    mainProgram = "quarto";
+
     longDescription = ''
       Quarto is an open-source scientific and technical publishing system built on Pandoc.
       Quarto documents are authored using markdown, an easy to write plain text format.
     '';
+
     homepage = "https://quarto.org/";
     changelog = "https://github.com/quarto-dev/quarto-cli/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.gpl2Plus;
-    maintainers = with lib.maintainers; [
-      minijackson
-      mrtarantoga
-    ];
-    platforms = lib.platforms.all;
+
     sourceProvenance = with lib.sourceTypes; [
       binaryNativeCode
       binaryBytecode
     ];
+
+    maintainers = with lib.maintainers; [
+      minijackson
+      mrtarantoga
+    ];
+
+    platforms = lib.platforms.all;
+    mainProgram = "quarto";
   };
 })

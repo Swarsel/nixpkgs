@@ -1,24 +1,17 @@
 {
-  rocq-core,
-  mkRocqDerivation,
-  mathcomp-boot,
   lib,
+  mathcomp-boot,
+  mkRocqDerivation,
+  rocq-core,
   version ? null,
 }:
 
 mkRocqDerivation {
 
-  namePrefix = [
-    "rocq-core"
-    "mathcomp"
-  ];
-  pname = "bigenough";
-  owner = "math-comp";
-
-  release = {
-    "1.0.4".sha256 = "sha256-cwfDCEFSXWnqV5aIrhTviUti0CXNwmFe6zVbqlD2iZw=";
-  };
   inherit version;
+  pname = "bigenough";
+  propagatedBuildInputs = [ mathcomp-boot ];
+
   defaultVersion =
     let
       case = case: out: { inherit case out; };
@@ -28,7 +21,16 @@ mkRocqDerivation {
       (case (range "9.0" "9.1") "1.0.4")
     ] null;
 
-  propagatedBuildInputs = [ mathcomp-boot ];
+  namePrefix = [
+    "rocq-core"
+    "mathcomp"
+  ];
+
+  owner = "math-comp";
+
+  release = {
+    "1.0.4".sha256 = "sha256-cwfDCEFSXWnqV5aIrhTviUti0CXNwmFe6zVbqlD2iZw=";
+  };
 
   meta = {
     description = "Small library to do epsilon - N reasonning";

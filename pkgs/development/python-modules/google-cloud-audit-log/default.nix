@@ -10,29 +10,28 @@
 buildPythonPackage rec {
   pname = "google-cloud-audit-log";
   version = "0.6.0";
-  pyproject = true;
 
   src = fetchPypi {
-    pname = "google_cloud_audit_log";
     inherit version;
     hash = "sha256-TdNDaDwLsxGH6+80JoA/ExWelQ++o/5gqGSFXP7ZWbg=";
+    pname = "google_cloud_audit_log";
   };
 
+  # Tests are a bit wonky to setup and are not very deep either
+  doCheck = false;
   build-system = [ setuptools ];
-
-  pythonRelaxDeps = [
-    "protobuf"
-  ];
 
   dependencies = [
     googleapis-common-protos
     protobuf
   ];
 
-  # Tests are a bit wonky to setup and are not very deep either
-  doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "google.cloud.audit" ];
+
+  pythonRelaxDeps = [
+    "protobuf"
+  ];
 
   meta = {
     description = "Google Cloud Audit Protos";

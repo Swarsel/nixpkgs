@@ -1,7 +1,7 @@
 {
   lib,
-  buildNpmPackage,
   fetchFromGitHub,
+  buildNpmPackage,
 }:
 
 buildNpmPackage rec {
@@ -23,11 +23,11 @@ buildNpmPackage rec {
   };
 
   meta = {
-    changelog = "https://github.com/FredrikNoren/ungit/blob/${src.rev}/CHANGELOG.md";
     description = "Git made easy";
     homepage = "https://github.com/FredrikNoren/ungit";
+    changelog = "https://github.com/FredrikNoren/ungit/blob/${src.rev}/CHANGELOG.md";
     license = lib.licenses.mit;
-    mainProgram = "ungit";
     maintainers = [ ];
+    mainProgram = "ungit";
   };
 }

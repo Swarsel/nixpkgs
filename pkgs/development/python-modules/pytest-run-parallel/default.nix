@@ -1,28 +1,23 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # build-system
-  setuptools,
-
-  # dependencies
-  pytest,
-
+  buildPythonPackage,
   # optional-dependencies
   psutil,
-
+  # dependencies
+  pytest,
   # tests
   pytest-cov-stub,
   pytest-order,
   pytest-xdist,
   pytestCheckHook,
+  # build-system
+  setuptools,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "pytest-run-parallel";
   version = "0.9.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "Quansight-Labs";
@@ -31,8 +26,14 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-8ndm/CKtWieNF3mx7Ni7nPO4psam3TAM9NJzdiiSpPQ=";
   };
 
-  build-system = [ setuptools ];
+  nativeCheckInputs = [
+    pytest-cov-stub
+    pytest-order
+    pytest-xdist
+    pytestCheckHook
+  ];
 
+  build-system = [ setuptools ];
   dependencies = [ pytest ];
 
   optional-dependencies = {
@@ -41,12 +42,7 @@ buildPythonPackage (finalAttrs: {
     ];
   };
 
-  nativeCheckInputs = [
-    pytest-cov-stub
-    pytest-order
-    pytest-xdist
-    pytestCheckHook
-  ];
+  pyproject = true;
 
   pythonImportsCheck = [
     "pytest_run_parallel"

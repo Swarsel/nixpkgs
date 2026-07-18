@@ -2,12 +2,12 @@
   lib,
   stdenv,
   fetchurl,
-  fetchpatch,
-  pkg-config,
-  desktop-file-utils,
   SDL,
-  gtk3,
+  desktop-file-utils,
+  fetchpatch,
   gsettings-desktop-schemas,
+  gtk3,
+  pkg-config,
   wrapGAppsHook3,
 }:
 
@@ -23,8 +23,8 @@ stdenv.mkDerivation (finalAttrs: {
   patches = [
     # Fix segfault
     (fetchpatch {
-      url = "https://src.fedoraproject.org/rpms/sfxr/raw/223e58e68857c2018ced635e8209bb44f3616bf8/f/sfxr-sdl-gcc8x.patch";
       hash = "sha256-etn4AutkNrhEDH9Ep8MhH9JSJEd7V/JXwjQua5uhAmg=";
+      url = "https://src.fedoraproject.org/rpms/sfxr/raw/223e58e68857c2018ced635e8209bb44f3616bf8/f/sfxr-sdl-gcc8x.patch";
     })
   ];
 
@@ -57,12 +57,12 @@ stdenv.mkDerivation (finalAttrs: {
   makeFlags = [ "DESTDIR=$(out)" ];
 
   meta = {
-    broken = stdenv.hostPlatform.isDarwin;
-    homepage = "http://www.drpetter.se/project_sfxr.html";
     description = "Videogame sound effect generator";
-    mainProgram = "sfxr";
+    homepage = "http://www.drpetter.se/project_sfxr.html";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ fgaz ];
     platforms = lib.platforms.unix;
+    mainProgram = "sfxr";
+    broken = stdenv.hostPlatform.isDarwin;
   };
 })

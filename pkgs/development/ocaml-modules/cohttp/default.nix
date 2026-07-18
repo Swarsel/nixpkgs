@@ -1,34 +1,33 @@
 {
   lib,
   fetchurl,
+  alcotest,
+  base64,
   buildDunePackage,
+  crowbar,
+  fmt,
+  http,
+  ipaddr,
+  jsonm,
+  logs,
   ocaml,
   ppx_sexp_conv,
-  base64,
-  jsonm,
-  http,
-  logs,
   re,
   stringext,
-  ipaddr,
   uri-sexp,
-  fmt,
-  alcotest,
-  crowbar,
 }:
 
 buildDunePackage (finalAttrs: {
   pname = "cohttp";
   version = if lib.versionAtLeast ocaml.version "4.13" then "6.2.1" else "5.3.1";
 
-  minimalOCamlVersion = "4.08";
-
   src = fetchurl {
     url = "https://github.com/mirage/ocaml-cohttp/releases/download/v${finalAttrs.version}/cohttp-${finalAttrs.version}.tbz";
+
     hash =
       {
-        "6.2.1" = "sha256-ZQgCR3Y0QtHcPNkGeLgjO3mHcvA2rIHNHqreH11mpl8=";
         "5.3.1" = "sha256-9eJz08Lyn/R71+Ftsj4fPWzQGkC+ACCJhbxDTIjUV2s=";
+        "6.2.1" = "sha256-ZQgCR3Y0QtHcPNkGeLgjO3mHcvA2rIHNHqreH11mpl8=";
       }
       ."${finalAttrs.version}";
   };
@@ -57,6 +56,7 @@ buildDunePackage (finalAttrs: {
   ];
 
   doCheck = true;
+
   checkInputs = [
     fmt
     alcotest
@@ -65,10 +65,12 @@ buildDunePackage (finalAttrs: {
     crowbar
   ];
 
+  minimalOCamlVersion = "4.08";
+
   meta = {
     description = "HTTP(S) library for Lwt, Async and Mirage";
+    homepage = "https://github.com/mirage/ocaml-cohttp";
     license = lib.licenses.isc;
     maintainers = [ lib.maintainers.vbgl ];
-    homepage = "https://github.com/mirage/ocaml-cohttp";
   };
 })

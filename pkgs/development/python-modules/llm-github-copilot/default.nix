@@ -1,20 +1,19 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
+  buildPythonPackage,
   llm,
   llm-github-copilot,
-  writableTmpDirAsHomeHook,
-  pytestCheckHook,
-  pytest-vcr,
   pytest-asyncio,
+  pytest-vcr,
+  pytestCheckHook,
+  setuptools,
+  writableTmpDirAsHomeHook,
 }:
 
 buildPythonPackage rec {
   pname = "llm-github-copilot";
   version = "0.3.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "jmdaly";
@@ -23,10 +22,6 @@ buildPythonPackage rec {
     hash = "sha256-BUVpt1Vv0+kxbTYHDdiYy3+ySJKWJ9b+dYexV7YS+NI=";
   };
 
-  build-system = [ setuptools ];
-
-  dependencies = [ llm ];
-
   nativeCheckInputs = [
     pytestCheckHook
     writableTmpDirAsHomeHook
@@ -34,8 +29,10 @@ buildPythonPackage rec {
     pytest-asyncio
   ];
 
+  build-system = [ setuptools ];
+  dependencies = [ llm ];
+  pyproject = true;
   pythonImportsCheck = [ "llm_github_copilot" ];
-
   passthru.tests = llm.mkPluginTest llm-github-copilot;
 
   meta = {

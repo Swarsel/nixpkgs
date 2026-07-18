@@ -9,14 +9,18 @@ buildGoModule (finalAttrs: {
   version = "1.3";
 
   src = fetchFromGitea {
-    domain = "git.lcomrade.su";
     owner = "root";
     repo = "lenpaste";
     rev = "v${finalAttrs.version}";
     sha256 = "sha256-d+FjfEbInlxUllWIoVLwQRdRWjxBLTpNHYn+oYU3fBc=";
+    domain = "git.lcomrade.su";
   };
 
   vendorHash = "sha256-PL0dysBn1+1BpZWFW/EUFJtqkabt+XN00YkAz8Yf2LQ=";
+
+  postInstall = ''
+    mv $out/bin/cmd $out/bin/lenpaste
+  '';
 
   ldflags = [
     "-w"
@@ -25,10 +29,6 @@ buildGoModule (finalAttrs: {
   ];
 
   subPackages = [ "cmd" ];
-
-  postInstall = ''
-    mv $out/bin/cmd $out/bin/lenpaste
-  '';
 
   meta = {
     description = "Web service that allows you to share notes anonymously, an alternative to pastebin.com";

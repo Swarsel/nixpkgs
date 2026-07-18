@@ -2,45 +2,45 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  fetchpatch,
-  lua,
+  asciidoctor,
   cairo,
-  librsvg,
   cmake,
-  imagemagick,
-  pkg-config,
-  gdk-pixbuf,
-  libxcb-util,
-  libxcb-wm,
-  libxcb-render-util,
-  libxcb-keysyms,
-  libxcb-image,
-  libxdmcp,
-  libxau,
-  libxshmfence,
-  libxcb,
-  libstartup_notification,
-  libxdg_basedir,
-  libpthread-stubs,
-  libxcb-cursor,
-  makeWrapper,
-  pango,
-  gobject-introspection,
-  which,
   dbus,
-  net-tools,
-  doxygen,
-  xmlto,
   docbook_xml_dtd_45,
   docbook_xsl,
+  doxygen,
+  fetchpatch,
   findXMLCatalogs,
-  libxkbcommon,
-  xcbutilxrm,
-  hicolor-icon-theme,
-  asciidoctor,
   fontsConf,
-  gtk3Support ? false,
+  gdk-pixbuf,
+  gobject-introspection,
+  hicolor-icon-theme,
+  imagemagick,
+  libpthread-stubs,
+  librsvg,
+  libstartup_notification,
+  libxau,
+  libxcb,
+  libxcb-cursor,
+  libxcb-image,
+  libxcb-keysyms,
+  libxcb-render-util,
+  libxcb-util,
+  libxcb-wm,
+  libxdg_basedir,
+  libxdmcp,
+  libxkbcommon,
+  libxshmfence,
+  lua,
+  makeWrapper,
+  net-tools,
+  pango,
+  pkg-config,
+  which,
+  xcbutilxrm,
+  xmlto,
   gtk3 ? null,
+  gtk3Support ? false,
 }:
 
 # needed for beautiful.gtk to work
@@ -64,26 +64,31 @@ stdenv.mkDerivation rec {
     sha256 = "1i7ajmgbsax4lzpgnmkyv35x8vxqi0j84a14k6zys4blx94m9yjf";
   };
 
+  outputs = [
+    "out"
+    "doc"
+  ];
+
   patches = [
     # Pull upstream fix for -fno-common toolchain support:
     #   https://github.com/awesomeWM/awesome/pull/3065
     (fetchpatch {
       name = "fno-common-prerequisite.patch";
-      url = "https://github.com/awesomeWM/awesome/commit/c5202a48708585cc33528065af8d1b1d28b1a6e0.patch";
       sha256 = "0sv36xf0ibjcm63gn9k3bl039sqavb2b5i6d65il4bdclkc0n08b";
+      url = "https://github.com/awesomeWM/awesome/commit/c5202a48708585cc33528065af8d1b1d28b1a6e0.patch";
     })
     (fetchpatch {
       name = "fno-common.patch";
-      url = "https://github.com/awesomeWM/awesome/commit/d256d9055095f27a33696e0aeda4ee20ed4fb1a0.patch";
       sha256 = "1n3y4wnjra8blss7642jgpxnm9n92zhhjj541bb9i60m4b7bgfzz";
+      url = "https://github.com/awesomeWM/awesome/commit/d256d9055095f27a33696e0aeda4ee20ed4fb1a0.patch";
     })
 
     # lib, tests: use GioUnix to use platform-specific Gio classes
     # https://github.com/awesomeWM/awesome/pull/4022
     (fetchpatch {
+      hash = "sha256-qVzD8O34sULcV6S4daDUBPnxVDd8T6ZyLOE+gYxCmf0=";
       name = "glib-2.86.0.patch";
       url = "https://github.com/void-linux/void-packages/raw/933b305b313a2c7d971d746835deb9f49b652204/srcpkgs/awesome/patches/glib-2.86.0.patch";
-      hash = "sha256-qVzD8O34sULcV6S4daDUBPnxVDd8T6ZyLOE+gYxCmf0=";
     })
   ];
 
@@ -109,12 +114,6 @@ stdenv.mkDerivation rec {
     gobject-introspection
   ];
 
-  outputs = [
-    "out"
-    "doc"
-  ];
-
-  propagatedUserEnvPkgs = [ hicolor-icon-theme ];
   buildInputs = [
     cairo
     librsvg
@@ -171,6 +170,8 @@ stdenv.mkDerivation rec {
       --prefix PATH : "${which}/bin"
   '';
 
+  propagatedUserEnvPkgs = [ hicolor-icon-theme ];
+
   passthru = {
     inherit lua;
   };
@@ -179,8 +180,10 @@ stdenv.mkDerivation rec {
     description = "Highly configurable, dynamic window manager for X";
     homepage = "https://awesomewm.org/";
     license = lib.licenses.gpl2Plus;
+
     maintainers = [
     ];
+
     platforms = lib.platforms.linux;
   };
 }

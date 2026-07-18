@@ -2,8 +2,8 @@
   lib,
   fetchFromGitHub,
   buildNpmPackage,
-  nodejs,
   nixosTests,
+  nodejs,
 }:
 
 buildNpmPackage (finalAttrs: {
@@ -17,11 +17,11 @@ buildNpmPackage (finalAttrs: {
     hash = "sha256-VfFahIyn2MIW4E0sMCpqdduP7F0U7t4a5c1fwpQl7Dc=";
   };
 
-  npmDepsHash = "sha256-VB4z7PCOUzhSbSbxLj/47oppMdTvd2lT7WZKDqd+jfo=";
-
   patches = [
     ./nix-compatibility.patch
   ];
+
+  npmDepsHash = "sha256-VB4z7PCOUzhSbSbxLj/47oppMdTvd2lT7WZKDqd+jfo=";
 
   postBuild = ''
     # Install runtime dependencies
@@ -60,8 +60,8 @@ buildNpmPackage (finalAttrs: {
     longDescription = "scanservjs is a simple web-based UI for SANE which allows you to share a scanner on a network without the need for drivers or complicated installation.";
     homepage = "https://github.com/sbs20/scanservjs";
     license = lib.licenses.gpl2Only;
-    mainProgram = "scanservjs";
     maintainers = with lib.maintainers; [ chayleaf ];
     platforms = lib.platforms.linux;
+    mainProgram = "scanservjs";
   };
 })

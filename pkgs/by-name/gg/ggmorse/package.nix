@@ -1,8 +1,8 @@
 {
   lib,
   stdenv,
-  cmake,
   fetchFromGitHub,
+  cmake,
   nix-update-script,
 }:
 stdenv.mkDerivation {
@@ -22,14 +22,14 @@ stdenv.mkDerivation {
                      "cmake_minimum_required (VERSION 3.5)"
   '';
 
-  __structuredAttrs = true;
   strictDeps = true;
-
   nativeBuildInputs = [ cmake ];
 
   cmakeFlags = [
     (lib.cmakeBool "GGMORSE_BUILD_EXAMPLES" false)
   ];
+
+  __structuredAttrs = true;
 
   passthru.updateScript = nix-update-script {
     extraArgs = [ "--version=branch" ];

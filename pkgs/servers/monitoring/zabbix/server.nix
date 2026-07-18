@@ -3,30 +3,30 @@
   stdenv,
   fetchurl,
   autoreconfHook,
-  pkg-config,
   curl,
+  iksemel,
   libevent,
   libiconv,
+  libmysqlclient,
+  libpq,
+  libssh2,
   libxml2,
+  net-snmp,
+  openipmi,
+  openldap,
   openssl,
   pcre2,
-  zlib,
-  jabberSupport ? true,
-  iksemel,
-  ldapSupport ? true,
-  openldap,
-  odbcSupport ? true,
+  pkg-config,
   unixodbc,
-  snmpSupport ? true,
-  net-snmp,
-  sshSupport ? true,
-  libssh2,
-  mysqlSupport ? false,
-  libmysqlclient,
-  postgresqlSupport ? false,
-  libpq,
+  zlib,
   ipmiSupport ? false,
-  openipmi,
+  jabberSupport ? true,
+  ldapSupport ? true,
+  mysqlSupport ? false,
+  odbcSupport ? true,
+  postgresqlSupport ? false,
+  snmpSupport ? true,
+  sshSupport ? true,
 }:
 
 # ensure exactly one primary database type is selected
@@ -37,23 +37,22 @@ let
   inherit (lib) optional optionalString;
 in
 import ./versions.nix (
-  { version, hash, ... }:
+  { hash, version, ... }:
   stdenv.mkDerivation {
-    pname = "zabbix-server";
     inherit version;
+    pname = "zabbix-server";
 
     src = fetchurl {
-      url = "https://cdn.zabbix.com/zabbix/sources/stable/${lib.versions.majorMinor version}/zabbix-${version}.tar.gz";
       inherit hash;
+      url = "https://cdn.zabbix.com/zabbix/sources/stable/${lib.versions.majorMinor version}/zabbix-${version}.tar.gz";
     };
-
-    enableParallelBuilding = true;
 
     nativeBuildInputs = [
       autoreconfHook
       pkg-config
     ]
     ++ optional postgresqlSupport libpq.pg_config;
+
     buildInputs = [
       curl
       libevent
@@ -92,17 +91,6 @@ import ./versions.nix (
     ++ optional postgresqlSupport "--with-postgresql"
     ++ optional ipmiSupport "--with-openipmi=${openipmi.dev}";
 
-    prePatch = ''
-      find database -name data.sql -exec sed -i 's|/usr/bin/||g' {} +
-    '';
-
-    preAutoreconf = ''
-      for i in $(find . -type f -name "*.m4"); do
-        substituteInPlace $i \
-          --replace 'test -x "$PKG_CONFIG"' 'type -P "$PKG_CONFIG" >/dev/null'
-      done
-    '';
-
     postInstall = ''
       mkdir -p $out/share/zabbix/database/
       cp -r include $out/
@@ -119,16 +107,32 @@ import ./versions.nix (
       cp -prvd database/postgresql/timescaledb/schema.sql $out/share/zabbix/database/postgresql/timescaledb/schema.sql
     '';
 
+    enableParallelBuilding = true;
+
+    preAutoreconf = ''
+      for i in $(find . -type f -name "*.m4"); do
+        substituteInPlace $i \
+          --replace 'test -x "$PKG_CONFIG"' 'type -P "$PKG_CONFIG" >/dev/null'
+      done
+    '';
+
+    prePatch = ''
+      find database -name data.sql -exec sed -i 's|/usr/bin/||g' {} +
+    '';
+
     meta = {
       description = "Enterprise-class open source distributed monitoring solution";
       homepage = "https://www.zabbix.com/";
+
       license =
         if (lib.versions.major version >= "7") then lib.licenses.agpl3Only else lib.licenses.gpl2Plus;
+
       maintainers = with lib.maintainers; [
         bstanderline
         mmahut
         psyanticy
       ];
+
       platforms = lib.platforms.linux;
     };
   }

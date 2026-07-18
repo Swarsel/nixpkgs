@@ -1,19 +1,18 @@
 {
   lib,
   fetchFromGitLab,
-  python3Packages,
-  wrapGAppsHook4,
+  glib-networking,
   gobject-introspection,
-  yt-dlp,
   gst_all_1,
   libadwaita,
-  glib-networking,
   nix-update-script,
+  python3Packages,
+  wrapGAppsHook4,
+  yt-dlp,
 }:
 python3Packages.buildPythonApplication (finalAttrs: {
   pname = "monophony";
   version = "4.4.6";
-  pyproject = true;
 
   src = fetchFromGitLab {
     owner = "zehkira";
@@ -21,20 +20,6 @@ python3Packages.buildPythonApplication (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-aDtz1VKOx+HvZxzXVEkFe2JMwMfdXmSJKq6ilI24TnI=";
   };
-
-  sourceRoot = "${finalAttrs.src.name}/source";
-
-  dependencies = with python3Packages; [
-    mprisify
-    requests
-    ytmusicapi
-    logboth
-  ];
-
-  build-system = with python3Packages; [
-    setuptools
-    pip
-  ];
 
   nativeBuildInputs = [
     gobject-introspection
@@ -56,8 +41,6 @@ python3Packages.buildPythonApplication (finalAttrs: {
     make install prefix=$out
   '';
 
-  dontWrapGApps = true;
-
   preFixup = ''
     makeWrapperArgs+=(
       --prefix PATH : "${lib.makeBinPath [ yt-dlp ]}"
@@ -65,6 +48,21 @@ python3Packages.buildPythonApplication (finalAttrs: {
     )
   '';
 
+  build-system = with python3Packages; [
+    setuptools
+    pip
+  ];
+
+  dependencies = with python3Packages; [
+    mprisify
+    requests
+    ytmusicapi
+    logboth
+  ];
+
+  dontWrapGApps = true;
+  pyproject = true;
+  sourceRoot = "${finalAttrs.src.name}/source";
   passthru.updateScript = nix-update-script { };
 
   meta = {
@@ -72,10 +70,12 @@ python3Packages.buildPythonApplication (finalAttrs: {
     longDescription = "Monophony allows you to stream and download music from YouTube Music without ads, as well as create and import playlists without signing in.";
     homepage = "https://gitlab.com/zehkira/monophony";
     license = lib.licenses.bsd0;
-    platforms = lib.platforms.linux;
+
     maintainers = with lib.maintainers; [
       aleksana
     ];
+
+    platforms = lib.platforms.linux;
     mainProgram = "monophony";
   };
 })

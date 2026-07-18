@@ -1,14 +1,13 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   requests,
 }:
 
 buildPythonPackage rec {
   pname = "pychannels";
   version = "1.2.3";
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "fancybits";
@@ -18,9 +17,9 @@ buildPythonPackage rec {
   };
 
   propagatedBuildInputs = [ requests ];
-
   # Project has not published tests yet
   doCheck = false;
+  format = "setuptools";
   pythonImportsCheck = [ "pychannels" ];
 
   meta = {

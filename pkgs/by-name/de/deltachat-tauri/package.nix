@@ -1,23 +1,23 @@
 {
+  lib,
+  stdenv,
+  fetchFromGitHub,
   apple-sdk_14,
   cargo-tauri,
   darwin,
   deltachat-desktop,
-  fetchFromGitHub,
   fetchPnpmDeps,
   gst_all_1,
-  lib,
   libayatana-appindicator,
   makeWrapper,
   nodejs,
   openssl,
   perl,
   pkg-config,
-  pnpm_10,
   pnpmConfigHook,
+  pnpm_10,
   python3,
   rustPlatform,
-  stdenv,
   versionCheckHook,
   webkitgtk_4_1,
   wrapGAppsHook4,
@@ -27,15 +27,13 @@ let
   pnpm = pnpm_10;
 in
 rustPlatform.buildRustPackage (finalAttrs: {
-  pname = "deltachat-tauri";
   inherit (deltachat-desktop)
     version
     src
     pnpmDeps
     ;
-  __structuredAttrs = true;
 
-  cargoHash = "sha256-iGgsG5V0cFzoudVASGqLakpuy2h4oD979LHuBclj+3o=";
+  pname = "deltachat-tauri";
 
   postPatch = lib.optionalString stdenv.hostPlatform.isLinux ''
     substituteInPlace $cargoDepsCopy/*/libappindicator-sys-*/src/lib.rs \
@@ -73,7 +71,7 @@ rustPlatform.buildRustPackage (finalAttrs: {
       apple-sdk_14
     ];
 
-  buildAndTestSubdir = "packages/target-tauri";
+  cargoHash = "sha256-iGgsG5V0cFzoudVASGqLakpuy2h4oD979LHuBclj+3o=";
 
   env = {
     VERSION_INFO_GIT_REF = finalAttrs.src.tag;
@@ -87,13 +85,16 @@ rustPlatform.buildRustPackage (finalAttrs: {
     versionCheckHook
   ];
 
+  __structuredAttrs = true;
+  buildAndTestSubdir = "packages/target-tauri";
+
   meta = {
-    changelog = "https://github.com/deltachat/deltachat-desktop/blob/${finalAttrs.src.tag}/CHANGELOG.md";
     description = "Email-based instant messaging for Desktop";
     homepage = "https://github.com/deltachat/deltachat-desktop";
+    changelog = "https://github.com/deltachat/deltachat-desktop/blob/${finalAttrs.src.tag}/CHANGELOG.md";
     license = lib.licenses.gpl3Plus;
-    mainProgram = "deltachat-tauri";
     maintainers = [ lib.maintainers.dotlambda ];
     platforms = lib.platforms.darwin ++ lib.platforms.linux;
+    mainProgram = "deltachat-tauri";
   };
 })

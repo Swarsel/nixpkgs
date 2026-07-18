@@ -2,8 +2,8 @@
   lib,
   stdenv,
   fetchurl,
-  pam,
   openssl,
+  pam,
   zlib,
 }:
 
@@ -21,6 +21,7 @@ stdenv.mkDerivation (finalAttrs: {
     openssl
     zlib
   ];
+
   configureFlags = [
     "--with-pam=$(out)/lib/security"
     "--prefix=$(out)"
@@ -33,7 +34,7 @@ stdenv.mkDerivation (finalAttrs: {
     description = "Duo Security Unix login integration";
     homepage = "https://duosecurity.com";
     license = lib.licenses.gpl2Only;
-    platforms = lib.platforms.unix;
     maintainers = [ lib.maintainers.thoughtpolice ];
+    platforms = lib.platforms.unix;
   };
 })

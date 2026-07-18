@@ -1,9 +1,9 @@
 {
   lib,
   stdenv,
+  fetchFromGitHub,
   buildGoModule,
   buildPackages,
-  fetchFromGitHub,
   installShellFiles,
 }:
 
@@ -18,17 +18,9 @@ buildGoModule (finalAttrs: {
     hash = "sha256-HsuYTgGe0cDRAG5FP77CGJG+xCDSWjBthPeAclmqd44=";
   };
 
-  vendorHash = "sha256-Ld59i91k1tyR9BhlRohHiRPB8Zt3rQWMtRw+J+13TFw=";
-
-  ldflags = [
-    "-s"
-    "-w"
-    "-X github.com/linuxsuren/cobra-extension/version.version=${finalAttrs.version}"
-  ];
-
-  doCheck = false;
-
   nativeBuildInputs = [ installShellFiles ];
+  vendorHash = "sha256-Ld59i91k1tyR9BhlRohHiRPB8Zt3rQWMtRw+J+13TFw=";
+  doCheck = false;
 
   postInstall =
     let
@@ -47,12 +39,18 @@ buildGoModule (finalAttrs: {
         --zsh <(${jcliBin}/bin/jcli completion --type zsh)
     '';
 
+  ldflags = [
+    "-s"
+    "-w"
+    "-X github.com/linuxsuren/cobra-extension/version.version=${finalAttrs.version}"
+  ];
+
   meta = {
     description = "Jenkins CLI allows you to manage your Jenkins in an easy way";
-    mainProgram = "jcli";
     homepage = "https://github.com/jenkins-zh/jenkins-cli";
     changelog = "https://github.com/jenkins-zh/jenkins-cli/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ sikmir ];
+    mainProgram = "jcli";
   };
 })

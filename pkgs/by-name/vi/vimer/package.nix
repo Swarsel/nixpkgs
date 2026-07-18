@@ -5,8 +5,8 @@
 }:
 
 stdenv.mkDerivation (finalAttrs: {
-  version = "0.2.0";
   pname = "vimer";
+  version = "0.2.0";
 
   src = fetchFromGitHub {
     owner = "susam";
@@ -22,11 +22,12 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   meta = {
-    homepage = "https://github.com/susam/vimer";
     description = ''
       A convenience wrapper for gvim/mvim --remote(-tab)-silent to open files
       in an existing instance of GVim or MacVim.
     '';
+
+    homepage = "https://github.com/susam/vimer";
     license = lib.licenses.mit;
     maintainers = [ lib.maintainers.matthiasbeyer ];
     platforms = lib.platforms.all;

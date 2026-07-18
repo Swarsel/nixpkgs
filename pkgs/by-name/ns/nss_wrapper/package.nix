@@ -22,10 +22,10 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Wrapper for the user, group and hosts NSS API";
-    mainProgram = "nss_wrapper.pl";
     homepage = "https://git.samba.org/?p=nss_wrapper.git;a=summary;";
     license = lib.licenses.bsd3;
     platforms = lib.platforms.unix;
+    mainProgram = "nss_wrapper.pl";
     broken = stdenv.hostPlatform.isDarwin;
   };
 })

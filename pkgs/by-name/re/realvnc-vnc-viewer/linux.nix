@@ -2,12 +2,12 @@
   stdenv,
   fetchurl,
   autoPatchelfHook,
-  rpmextract,
   libx11,
   libxext,
-  pname,
-  version,
   meta,
+  pname,
+  rpmextract,
+  version,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -16,26 +16,12 @@ stdenv.mkDerivation (finalAttrs: {
   src =
     {
       "x86_64-linux" = fetchurl rec {
+        hash = "sha256-rIOP7d8qrOeMgaQRYo+GRXT1fLnPegdpONT0p5aBCxM=";
         name = "VNC-Viewer-${finalAttrs.version}-Linux-x64.rpm";
         url = "https://downloads.realvnc.com/download/file/viewer.files/${name}";
-        hash = "sha256-rIOP7d8qrOeMgaQRYo+GRXT1fLnPegdpONT0p5aBCxM=";
       };
     }
     .${stdenv.system} or (throw "Unsupported system: ${stdenv.hostPlatform.system}");
-
-  nativeBuildInputs = [
-    autoPatchelfHook
-    rpmextract
-  ];
-  buildInputs = [
-    libx11
-    libxext
-    stdenv.cc.cc.libgcc or null
-  ];
-
-  unpackPhase = ''
-    rpmextract $src
-  '';
 
   postPatch = ''
     substituteInPlace ./usr/share/applications/realvnc-vncviewer.desktop \
@@ -44,12 +30,27 @@ stdenv.mkDerivation (finalAttrs: {
       --replace /usr/share/icons/hicolor/48x48/apps/vncviewer48x48.png vncviewer48x48.png
   '';
 
+  nativeBuildInputs = [
+    autoPatchelfHook
+    rpmextract
+  ];
+
+  buildInputs = [
+    libx11
+    libxext
+    stdenv.cc.cc.libgcc or null
+  ];
+
   installPhase = ''
     runHook preInstall
 
     mv usr $out
 
     runHook postInstall
+  '';
+
+  unpackPhase = ''
+    rpmextract $src
   '';
 
   meta = meta // {

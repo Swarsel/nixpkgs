@@ -1,11 +1,11 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
+  nixosTests,
   pkg-config,
+  rustPlatform,
   sqlite,
   zstd,
-  nixosTests,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -19,8 +19,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-uWr2xJjWcm0WmOB6eD2pdzUch7HSk9KdHV31FoYHr0E=";
   };
 
-  cargoHash = "sha256-m5cO3J4LryO+pS991DkS+4J6dw8ltP9sJR88FVGdsdw=";
-
   nativeBuildInputs = [
     pkg-config
   ];
@@ -29,6 +27,8 @@ rustPlatform.buildRustPackage (finalAttrs: {
     sqlite
     zstd
   ];
+
+  cargoHash = "sha256-m5cO3J4LryO+pS991DkS+4J6dw8ltP9sJR88FVGdsdw=";
 
   env = {
     ZSTD_SYS_USE_PKG_CONFIG = true;
@@ -43,10 +43,12 @@ rustPlatform.buildRustPackage (finalAttrs: {
     homepage = "https://github.com/matze/wastebin";
     changelog = "https://github.com/matze/wastebin/blob/${finalAttrs.src.rev}/CHANGELOG.md";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       pinpox
       matthiasbeyer
     ];
+
     mainProgram = "wastebin";
   };
 })

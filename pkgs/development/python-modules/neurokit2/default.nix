@@ -1,35 +1,31 @@
 {
   lib,
   stdenv,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # build-system
-  setuptools,
-
+  # tests
+  astropy,
+  buildPythonPackage,
+  coverage,
   # dependencies
   matplotlib,
+  mock,
   numpy,
   pandas,
+  plotly,
+  pytest-cov-stub,
+  pytestCheckHook,
   pywavelets,
   requests,
   scikit-learn,
   scipy,
-
-  # tests
-  astropy,
-  coverage,
-  mock,
-  plotly,
-  pytest-cov-stub,
-  pytestCheckHook,
+  # build-system
+  setuptools,
   writableTmpDirAsHomeHook,
 }:
 
 buildPythonPackage rec {
   pname = "neurokit2";
   version = "0.2.12";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "neuropsychology";
@@ -43,6 +39,16 @@ buildPythonPackage rec {
       --replace-fail '"pytest-runner", ' ""
   '';
 
+  nativeCheckInputs = [
+    pytest-cov-stub
+    mock
+    plotly
+    astropy
+    coverage
+    pytestCheckHook
+    writableTmpDirAsHomeHook
+  ];
+
   build-system = [
     setuptools
   ];
@@ -55,21 +61,6 @@ buildPythonPackage rec {
     requests
     scikit-learn
     scipy
-  ];
-
-  nativeCheckInputs = [
-    pytest-cov-stub
-    mock
-    plotly
-    astropy
-    coverage
-    pytestCheckHook
-    writableTmpDirAsHomeHook
-  ];
-
-  disabledTests = lib.optionals stdenv.hostPlatform.isDarwin [
-    # Crash in matplotlib (Fatal Python error: Aborted)
-    "test_events_plot"
   ];
 
   disabledTestPaths = [
@@ -93,6 +84,13 @@ buildPythonPackage rec {
     # Dependency is broken `mne-python`
     "tests/tests_microstates.py"
   ];
+
+  disabledTests = lib.optionals stdenv.hostPlatform.isDarwin [
+    # Crash in matplotlib (Fatal Python error: Aborted)
+    "test_events_plot"
+  ];
+
+  pyproject = true;
 
   pytestFlags = [
     # Otherwise, test collection fails with:

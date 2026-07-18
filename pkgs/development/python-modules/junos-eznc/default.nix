@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   jinja2,
   lxml,
   mock,
@@ -12,10 +12,10 @@
   paramiko,
   pyparsing,
   pyserial,
+  pytestCheckHook,
   pyyaml,
   scp,
   setuptools,
-  pytestCheckHook,
   six,
   transitions,
   yamlloader,
@@ -24,7 +24,6 @@
 buildPythonPackage rec {
   pname = "junos-eznc";
   version = "2.7.6";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "Juniper";
@@ -33,9 +32,13 @@ buildPythonPackage rec {
     hash = "sha256-+bheNSRcFnq/07Y6BaTqsUAVxEQcdQwtz39cX1nKOBs=";
   };
 
-  build-system = [ setuptools ];
+  nativeCheckInputs = [
+    mock
+    nose2
+    pytestCheckHook
+  ];
 
-  pythonRelaxDeps = [ "ncclient" ];
+  build-system = [ setuptools ];
 
   dependencies = [
     jinja2
@@ -53,14 +56,6 @@ buildPythonPackage rec {
     yamlloader
   ];
 
-  nativeCheckInputs = [
-    mock
-    nose2
-    pytestCheckHook
-  ];
-
-  enabledTestPaths = [ "tests/unit" ];
-
   disabledTests = [
     # jnpr.junos.exception.FactLoopError: A loop was detected while gathering the...
     "TestPersonality"
@@ -72,7 +67,10 @@ buildPythonPackage rec {
     "test_domain_fact_from_config"
   ];
 
+  enabledTestPaths = [ "tests/unit" ];
+  pyproject = true;
   pythonImportsCheck = [ "jnpr.junos" ];
+  pythonRelaxDeps = [ "ncclient" ];
 
   meta = {
     description = "Junos 'EZ' automation for non-programmers";

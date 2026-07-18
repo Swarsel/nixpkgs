@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   flit-core,
   pretend,
   pytestCheckHook,
@@ -11,7 +11,6 @@
 buildPythonPackage rec {
   pname = "id";
   version = "1.5.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "di";
@@ -20,15 +19,14 @@ buildPythonPackage rec {
     hash = "sha256-6Vkbs/i1roAtPGwLxdM+XKDrMTo0+NfVpAUpw6GPg9U=";
   };
 
-  build-system = [ flit-core ];
-
-  dependencies = [ requests ];
-
   nativeCheckInputs = [
     pretend
     pytestCheckHook
   ];
 
+  build-system = [ flit-core ];
+  dependencies = [ requests ];
+  pyproject = true;
   pythonImportsCheck = [ "id" ];
 
   meta = {

@@ -2,10 +2,9 @@
   lib,
   stdenv,
   fetchurl,
-  fetchpatch,
-  pkg-config,
   alsa-lib,
   audiofile,
+  fetchpatch,
   libjack2,
   liblo,
   liboil,
@@ -14,6 +13,7 @@
   lilv,
   lv2,
   ncurses,
+  pkg-config,
   readline,
 }:
 
@@ -33,10 +33,19 @@ stdenv.mkDerivation (finalAttrs: {
     #  https://sourceforge.net/p/ecasound/bugs/54/
     (fetchpatch {
       name = "ncursdes-6.3.patch";
-      url = "https://sourceforge.net/p/ecasound/bugs/54/attachment/0001-ecasignalview.cpp-always-use-s-style-format-for-prin.patch";
       sha256 = "1x1gsjzd43lh19mhpmwrbq269h56s8bxgyv0yfi5yf0sqjf9vaq0";
+      url = "https://sourceforge.net/p/ecasound/bugs/54/attachment/0001-ecasignalview.cpp-always-use-s-style-format-for-prin.patch";
     })
   ];
+
+  postPatch = ''
+    sed -i -e '
+      s@^#include <readline.h>@#include <readline/readline.h>@
+      s@^#include <history.h>@#include <readline/history.h>@
+      ' ecasound/eca-curses.cpp
+  '';
+
+  strictDeps = true;
 
   nativeBuildInputs = [
     pkg-config
@@ -56,26 +65,19 @@ stdenv.mkDerivation (finalAttrs: {
     readline
   ];
 
-  strictDeps = true;
-
-  env.CXXFLAGS = "-std=c++11";
   configureFlags = [
     "--enable-liblilv"
   ];
 
-  postPatch = ''
-    sed -i -e '
-      s@^#include <readline.h>@#include <readline/readline.h>@
-      s@^#include <history.h>@#include <readline/history.h>@
-      ' ecasound/eca-curses.cpp
-  '';
+  env.CXXFLAGS = "-std=c++11";
 
   meta = {
     description = "Software package designed for multitrack audio processing";
+    homepage = "http://nosignal.fi/ecasound/";
+
     license = with lib.licenses; [
       gpl2
       lgpl21
     ];
-    homepage = "http://nosignal.fi/ecasound/";
   };
 })

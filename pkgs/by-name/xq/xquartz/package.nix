@@ -1,79 +1,79 @@
 {
   lib,
   stdenv,
+  bashInteractive,
+  bdftopcf,
   buildEnv,
-  makeFontsConf,
-  gnused,
-  writeScript,
-  xorg-server,
-  tab-window-manager,
-  libxpm,
   font-alias,
-  font-util,
-  font-misc-misc,
-  font-cursor-misc,
-  font-bh-lucidatypewriter-75dpi,
-  font-bh-lucidatypewriter-100dpi,
   font-bh-100dpi,
+  font-bh-lucidatypewriter-100dpi,
+  font-bh-lucidatypewriter-75dpi,
+  font-cursor-misc,
   font-encodings,
-  xwud,
-  xwininfo,
-  xwd,
-  xvinfo,
-  xset,
-  xsetroot,
-  xrefresh,
-  xrdb,
-  xrandr,
+  font-misc-misc,
+  font-util,
+  fontconfig,
+  freefont_ttf,
+  gnused,
+  iceauth,
+  liberation_ttf,
+  libxpm,
+  lndir,
+  luit,
+  makeFontsConf,
+  makeWrapper,
+  makedepend,
+  mkfontscale,
+  quartz-wm,
+  sessreg,
+  setxkbmap,
+  smproxy,
+  tab-window-manager,
+  ttf_bitstream_vera,
+  writeScript,
+  x11perf,
+  xauth,
+  xbacklight,
+  xcbuild,
+  xclock,
+  xcmsdb,
+  xcursorgen,
+  xdm,
+  xdpyinfo,
+  xdriinfo,
+  xev,
+  xeyes,
+  xfontsel,
+  xfs,
+  xgamma,
+  xhost,
+  xinit,
+  xinput,
+  xkbcomp,
+  xkbevd,
+  xkbutils,
+  xkill,
+  xlsatoms,
+  xlsclients,
+  xlsfonts,
+  xmessage,
+  xmodmap,
+  xorg-server,
   xpr,
   xprop,
-  xmodmap,
-  xmessage,
-  xlsclients,
-  xlsatoms,
-  xkill,
-  xkbutils,
-  xkbevd,
-  xkbcomp,
-  xinput,
-  xinit,
-  xhost,
-  xgamma,
-  xfs,
-  xeyes,
-  xev,
-  xdriinfo,
-  xdpyinfo,
-  xdm,
-  xcursorgen,
-  xcmsdb,
-  xclock,
-  xbacklight,
-  xauth,
-  x11perf,
-  smproxy,
-  setxkbmap,
-  sessreg,
-  mkfontscale,
-  makedepend,
-  luit,
-  lndir,
-  iceauth,
-  bdftopcf,
-  bashInteractive,
+  xrandr,
+  xrdb,
+  xrefresh,
+  xset,
+  xsetroot,
   xterm,
-  xcbuild,
-  makeWrapper,
-  quartz-wm,
-  fontconfig,
-  xlsfonts,
-  xfontsel,
-  ttf_bitstream_vera,
-  freefont_ttf,
-  liberation_ttf,
+  xvinfo,
+  xwd,
+  xwininfo,
+  xwud,
+  extraFontDirs ? [ ],
   shell ? "${bashInteractive}/bin/bash",
   unfreeFonts ? false,
-  extraFontDirs ? [ ],
 }:
 
 # ------------
@@ -219,12 +219,7 @@ in
 stdenv.mkDerivation {
   pname = "xquartz";
   version = lib.getVersion xorg-server;
-
   nativeBuildInputs = [ makeWrapper ];
-
-  unpackPhase = "sourceRoot=.";
-
-  dontBuild = true;
 
   installPhase = ''
     cp -rT ${xinit} $out
@@ -294,13 +289,16 @@ stdenv.mkDerivation {
       --subst-var-by "FONTCONFIG_FILE" "$fontsConfPath"
   '';
 
+  dontBuild = true;
+  unpackPhase = "sourceRoot=.";
+
   passthru = {
     inherit pkgs;
   };
 
   meta = {
-    platforms = lib.platforms.darwin;
-    maintainers = [ ];
     license = lib.licenses.mit;
+    maintainers = [ ];
+    platforms = lib.platforms.darwin;
   };
 }

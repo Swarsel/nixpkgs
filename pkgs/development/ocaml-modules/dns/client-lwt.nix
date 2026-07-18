@@ -1,21 +1,21 @@
 {
+  alcotest,
   buildDunePackage,
+  ca-certs,
   dns,
   dns-client,
+  happy-eyeballs,
+  happy-eyeballs-lwt,
+  ipaddr,
   lwt,
   mirage-crypto-rng,
   mtime,
-  ipaddr,
-  alcotest,
-  ca-certs,
-  happy-eyeballs,
-  happy-eyeballs-lwt,
   tls-lwt,
 }:
 
 buildDunePackage {
-  pname = "dns-client-lwt";
   inherit (dns) src version;
+  pname = "dns-client-lwt";
 
   propagatedBuildInputs = [
     dns
@@ -29,8 +29,8 @@ buildDunePackage {
     mtime
     mirage-crypto-rng
   ];
-  checkInputs = [ alcotest ];
-  doCheck = true;
 
+  doCheck = true;
+  checkInputs = [ alcotest ];
   meta = dns-client.meta;
 }

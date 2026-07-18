@@ -4,25 +4,25 @@
   fetchFromGitHub,
   cmake,
   extra-cmake-modules,
-  pkg-config,
   fcitx5,
   fcitx5-qt,
-  qtbase,
-  qtsvg,
-  qtwayland,
-  qtdeclarative,
-  kitemviews,
-  kwidgetsaddons,
+  isocodes,
   kcmutils,
   kcoreaddons,
   kdeclarative,
-  kirigami ? null,
-  isocodes,
-  xkeyboard-config,
+  kitemviews,
+  kwidgetsaddons,
   libxkbfile,
-  libplasma ? null,
+  pkg-config,
+  qtbase,
+  qtdeclarative,
+  qtsvg,
+  qtwayland,
   wrapQtAppsHook,
+  xkeyboard-config,
   kcmSupport ? true,
+  kirigami ? null,
+  libplasma ? null,
 }:
 
 stdenv.mkDerivation rec {
@@ -35,11 +35,6 @@ stdenv.mkDerivation rec {
     rev = version;
     hash = "sha256-+lpJlGaVGTcZpoGvcHAsb5N5M4Y3McV4GSZpSwZxX3Y=";
   };
-
-  cmakeFlags = [
-    (lib.cmakeBool "KDE_INSTALL_USE_QT_SYS_PATHS" true)
-    (lib.cmakeBool "ENABLE_KCM" kcmSupport)
-  ];
 
   nativeBuildInputs = [
     cmake
@@ -67,6 +62,11 @@ stdenv.mkDerivation rec {
     kcmutils
     libplasma
     kirigami
+  ];
+
+  cmakeFlags = [
+    (lib.cmakeBool "KDE_INSTALL_USE_QT_SYS_PATHS" true)
+    (lib.cmakeBool "ENABLE_KCM" kcmSupport)
   ];
 
   meta = {

@@ -1,19 +1,19 @@
 {
   lib,
-  buildDotnetModule,
   fetchFromGitHub,
-  dotnetCorePackages,
-  makeDesktopItem,
+  buildDotnetModule,
   copyDesktopItems,
-  libx11,
+  dotnetCorePackages,
   glew,
   libGL,
   libice,
   libsm,
+  libx11,
   libxcursor,
   libxext,
   libxi,
   libxrandr,
+  makeDesktopItem,
 }:
 buildDotnetModule (finalAttrs: {
   pname = "Tkmm";
@@ -28,22 +28,46 @@ buildDotnetModule (finalAttrs: {
   };
 
   patches = [ ./patchTk.diff ];
+  nativeBuildInputs = [ copyDesktopItems ];
 
-  selfContainedBuild = true;
+  postInstall = ''
+    install -D distribution/appimage/tkmm.svg $out/share/icons/hicolor/scalable/apps/tkmm.svg
+  '';
 
-  dotnet-sdk = dotnetCorePackages.sdk_9_0;
-  dotnet-runtime = dotnetCorePackages.runtime_9_0;
-  projectFile = [
-    "src/Tkmm/Tkmm.csproj"
-    "src/Tkmm.CLI/Tkmm.CLI.csproj"
+  desktopItems = [
+    (makeDesktopItem {
+      categories = [
+        "Game"
+      ];
+
+      comment = "Tears of the Kingdom Mod Manager";
+      desktopName = "TKMM";
+      exec = "Tkmm";
+      icon = "tkmm";
+      name = "Tears of the Kingdom Mod Manager";
+    })
   ];
-  nugetDeps = ./deps.json;
+
+  dotnet-runtime = dotnetCorePackages.runtime_9_0;
+  dotnet-sdk = dotnetCorePackages.sdk_9_0;
+
+  dotnetFlags = [
+    ''-p:DefineConstants="READONLY_FS"''
+  ];
+
+  enableParallelBuilding = false;
+
   executables = [
     "Tkmm"
     "Tkmm.CLI"
   ];
 
-  nativeBuildInputs = [ copyDesktopItems ];
+  nugetDeps = ./deps.json;
+
+  projectFile = [
+    "src/Tkmm/Tkmm.csproj"
+    "src/Tkmm.CLI/Tkmm.CLI.csproj"
+  ];
 
   runtimeDeps = [
     # Avalonia UI
@@ -58,36 +82,18 @@ buildDotnetModule (finalAttrs: {
     libxrandr
   ];
 
-  enableParallelBuilding = false;
-  dotnetFlags = [
-    ''-p:DefineConstants="READONLY_FS"''
-  ];
-
-  postInstall = ''
-    install -D distribution/appimage/tkmm.svg $out/share/icons/hicolor/scalable/apps/tkmm.svg
-  '';
-
-  desktopItems = [
-    (makeDesktopItem {
-      name = "Tears of the Kingdom Mod Manager";
-      exec = "Tkmm";
-      icon = "tkmm";
-      desktopName = "TKMM";
-      categories = [
-        "Game"
-      ];
-      comment = "Tears of the Kingdom Mod Manager";
-    })
-  ];
+  selfContainedBuild = true;
 
   meta = {
     description = "Tears of the Kingdom Mod Manager, a mod merger and manager for TotK";
     homepage = "https://tkmm.org/";
     license = lib.licenses.mit;
-    mainProgram = "Tkmm";
+
     maintainers = with lib.maintainers; [
       rucadi
     ];
+
     platforms = lib.platforms.unix;
+    mainProgram = "Tkmm";
   };
 })

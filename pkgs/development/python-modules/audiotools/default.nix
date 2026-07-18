@@ -1,27 +1,32 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
-  pkg-config,
-  libmpg123,
+  buildPythonPackage,
   lame,
-  twolame,
-  libopus,
-  opusfile,
-  libvorbis,
   libcdio,
   libcdio-paranoia,
+  libmpg123,
+  libopus,
+  libvorbis,
+  opusfile,
+  pkg-config,
+  setuptools,
+  twolame,
 }:
 
 buildPythonPackage {
   pname = "audiotools";
   version = "3.1.1-unstable-2020-07-29";
-  pyproject = true;
 
-  build-system = [
-    setuptools
-  ];
+  # the python code contains #variant formats, PY_SSIZE_T_CLEAN must be defined
+  # before including Python.h for 3.10 or newer
+  # the last released version does not contain the required fix for python 3.10
+  src = fetchFromGitHub {
+    owner = "tuffy";
+    repo = "python-audio-tools";
+    rev = "de55488dc982e3f6375cde2d0c2ea6aad1b1c31c";
+    hash = "sha256-iRakeV4Sg4oU0JtiA0O3jnmLJt99d89Hg6v9onUaSnw=";
+  };
 
   nativeBuildInputs = [
     pkg-config
@@ -44,15 +49,11 @@ buildPythonPackage {
       --replace-fail "mp3lame:           probe" "mp3lame:           yes"
   '';
 
-  # the python code contains #variant formats, PY_SSIZE_T_CLEAN must be defined
-  # before including Python.h for 3.10 or newer
-  # the last released version does not contain the required fix for python 3.10
-  src = fetchFromGitHub {
-    owner = "tuffy";
-    repo = "python-audio-tools";
-    rev = "de55488dc982e3f6375cde2d0c2ea6aad1b1c31c";
-    hash = "sha256-iRakeV4Sg4oU0JtiA0O3jnmLJt99d89Hg6v9onUaSnw=";
-  };
+  build-system = [
+    setuptools
+  ];
+
+  pyproject = true;
 
   meta = {
     description = "Utilities and Python modules for handling audio";

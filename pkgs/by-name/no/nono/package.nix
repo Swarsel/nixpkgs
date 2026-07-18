@@ -1,13 +1,10 @@
 {
   lib,
   stdenv,
-  rustPlatform,
   fetchFromGitHub,
-
-  pkg-config,
-
   dbus,
-
+  pkg-config,
+  rustPlatform,
   writableTmpDirAsHomeHook,
 }:
 
@@ -15,15 +12,12 @@ rustPlatform.buildRustPackage (finalAttrs: {
   pname = "nono";
   version = "0.61.1";
 
-  __darwinAllowLocalNetworking = true; # required for tests
-
   src = fetchFromGitHub {
     owner = "always-further";
     repo = "nono";
     tag = "v${finalAttrs.version}";
     hash = "sha256-y5oMR5Vawf/1QUj3ACDdqAjKT+Q2gizRfKkal340EP8=";
   };
-  cargoHash = "sha256-Oy/IqAK5ml1vu0eee+pF5pRjzk0Na/Fb04e1Mx0d924=";
 
   nativeBuildInputs = [
     pkg-config
@@ -32,6 +26,8 @@ rustPlatform.buildRustPackage (finalAttrs: {
   buildInputs = [
     dbus
   ];
+
+  cargoHash = "sha256-Oy/IqAK5ml1vu0eee+pF5pRjzk0Na/Fb04e1Mx0d924=";
 
   nativeCheckInputs = [
     writableTmpDirAsHomeHook
@@ -112,16 +108,20 @@ rustPlatform.buildRustPackage (finalAttrs: {
     ]
   );
 
+  __darwinAllowLocalNetworking = true; # required for tests
+
   meta = {
     description = "Secure, kernel-enforced sandbox for AI agents, MCP and LLM workloads";
     homepage = "https://github.com/always-further/nono";
     changelog = "https://github.com/always-further/nono/blob/${finalAttrs.src.rev}/CHANGELOG.md";
     license = lib.licenses.asl20;
+
     maintainers = with lib.maintainers; [
       jk
     ];
-    mainProgram = "nono";
+
     # https://github.com/always-further/nono#platform-support
     platforms = lib.platforms.linux ++ lib.platforms.darwin;
+    mainProgram = "nono";
   };
 })

@@ -1,18 +1,18 @@
 {
   lib,
   stdenv,
+  bsdSetupHook,
+  install,
+  lorder,
+  makeMinimal,
+  openbsdSetupHook,
+  rsync,
+  runCommand,
+  source,
+  stdenvLibcMinimal,
   stdenvNoCC,
   stdenvNoLibc,
-  stdenvLibcMinimal,
-  runCommand,
-  rsync,
-  source,
-  bsdSetupHook,
-  openbsdSetupHook,
-  makeMinimal,
-  install,
   tsort,
-  lorder,
 }:
 
 lib.makeOverridable (
@@ -51,6 +51,7 @@ lib.makeOverridable (
     rec {
       pname = "${attrs.pname or (baseNameOf attrs.path)}-openbsd";
       version = "0";
+
       src = runCommand "${pname}-filtered-src" { nativeBuildInputs = [ rsync ]; } ''
         for p in ${lib.concatStringsSep " " ([ attrs.path ] ++ attrs.extraPaths or [ ])}; do
           set -x
@@ -63,7 +64,7 @@ lib.makeOverridable (
         done
       '';
 
-      extraPaths = [ ];
+      strictDeps = true;
 
       nativeBuildInputs = [
         bsdSetupHook
@@ -75,23 +76,19 @@ lib.makeOverridable (
       ]
       ++ (attrs.extraNativeBuildInputs or [ ]);
 
+      COMPONENT_PATH = attrs.path or null;
       HOST_SH = stdenv'.shell;
-
       MACHINE = machineMap.${stdenv'.hostPlatform.parsed.cpu.name};
       MACHINE_ARCH = archMap.${stdenv'.hostPlatform.parsed.cpu.name};
       MACHINE_CPU = MACHINE_ARCH;
-
       TARGET_MACHINE_ARCH = archMap.${stdenv'.targetPlatform.parsed.cpu.name};
       TARGET_MACHINE_CPU = TARGET_MACHINE_ARCH;
-
-      COMPONENT_PATH = attrs.path or null;
-
-      strictDeps = true;
+      extraPaths = [ ];
 
       meta = {
+        license = lib.licenses.bsd2;
         maintainers = with lib.maintainers; [ ericson2314 ];
         platforms = lib.platforms.openbsd;
-        license = lib.licenses.bsd2;
       };
     }
     // lib.optionalAttrs stdenv'.hasCC {

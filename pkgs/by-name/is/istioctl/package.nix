@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   installShellFiles,
 }:
 
@@ -15,9 +15,22 @@ buildGoModule (finalAttrs: {
     rev = finalAttrs.version;
     hash = "sha256-Ejt6MjBmkWnYWHp9TiWYO6e1VV/+TN6cVZXYK3+B5Fc=";
   };
-  vendorHash = "sha256-cHW8FSYuZpl1GuWKsJLnAxCMOLvuaRwN1oL+xjwYspI=";
 
   nativeBuildInputs = [ installShellFiles ];
+  vendorHash = "sha256-cHW8FSYuZpl1GuWKsJLnAxCMOLvuaRwN1oL+xjwYspI=";
+
+  postInstall = ''
+    $out/bin/istioctl collateral --man --bash --zsh
+    installManPage *.1
+    installShellCompletion istioctl.bash
+    installShellCompletion --zsh _istioctl
+  '';
+
+  doInstallCheck = true;
+
+  installCheckPhase = ''
+    $out/bin/istioctl version --remote=false | grep ${finalAttrs.version} > /dev/null
+  '';
 
   # Bundle release metadata
   ldflags =
@@ -37,26 +50,16 @@ buildGoModule (finalAttrs: {
 
   subPackages = [ "istioctl/cmd/istioctl" ];
 
-  doInstallCheck = true;
-  installCheckPhase = ''
-    $out/bin/istioctl version --remote=false | grep ${finalAttrs.version} > /dev/null
-  '';
-
-  postInstall = ''
-    $out/bin/istioctl collateral --man --bash --zsh
-    installManPage *.1
-    installShellCompletion istioctl.bash
-    installShellCompletion --zsh _istioctl
-  '';
-
   meta = {
     description = "Istio configuration command line utility for service operators to debug and diagnose their Istio mesh";
-    mainProgram = "istioctl";
     homepage = "https://istio.io/latest/docs/reference/commands/istioctl";
     license = lib.licenses.asl20;
+
     maintainers = with lib.maintainers; [
       veehaitch
       ryan4yin
     ];
+
+    mainProgram = "istioctl";
   };
 })

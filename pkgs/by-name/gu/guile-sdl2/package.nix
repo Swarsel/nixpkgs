@@ -24,6 +24,7 @@ stdenv.mkDerivation (finalAttrs: {
     pkg-config
     libtool
   ];
+
   buildInputs = [
     SDL2
     SDL2_image
@@ -44,12 +45,14 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   meta = {
-    homepage = "https://dthompson.us/projects/guile-sdl2.html";
     description = "Bindings to SDL2 for GNU Guile";
+    homepage = "https://dthompson.us/projects/guile-sdl2.html";
     license = lib.licenses.lgpl3Plus;
+
     maintainers = with lib.maintainers; [
       seppeljordan
     ];
+
     platforms = lib.platforms.all;
   };
 })

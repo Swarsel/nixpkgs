@@ -5,6 +5,9 @@ let
   '';
 in
 {
+  CFPropertyList = [ "cfpropertylist" ];
+  RubyInline = [ "inline" ];
+  ZenTest = [ "zentest" ];
   actioncable = [ "action_cable" ];
   actionmailer = [ "action_mailer" ];
   actionpack = [ "action_pack" ];
@@ -15,35 +18,40 @@ in
   activestorage = [ "active_storage" ];
   activesupport = [ "active_support" ];
   atk = [ "atk" ];
-  CFPropertyList = [ "cfpropertylist" ];
+
   cocoapods-acknowledgements = [
     "cocoapods"
     "cocoapods_acknowledgements"
   ];
+
   cocoapods-art = [ "cocoapods_art" ];
+
   cocoapods-browser = [
     "cocoapods"
     "cocoapods_plugin"
   ];
+
   cocoapods-bugsnag = cocoapod-plugin "cocoapods-bugsnag";
+  cocoapods-check = cocoapod-plugin "cocoapods-check";
   cocoapods-clean = [ "cocoapods_clean" ];
   cocoapods-coverage = [ "cocoapods_coverage" ];
   cocoapods-deintegrate = [ ]; # used by cocoapods
   cocoapods-dependencies = [ "cocoapods_dependencies" ];
   cocoapods-deploy = cocoapod-plugin "cocoapods-deploy";
+  cocoapods-disable-podfile-validations = cocoapod-plugin "cocoapods-disable-podfile-validations";
   cocoapods-generate = cocoapod-plugin "cocoapods-generate";
   cocoapods-git_url_rewriter = cocoapod-plugin "cocoapods-git_url_rewriter";
   cocoapods-keys = [ ]; # osx only cocoapod-plugin "cocoapods-keys";
+
   cocoapods-open = [
     "cocoapods"
     "cocoapods_plugin"
   ];
+
   cocoapods-packager = [ "cocoapods_packager" ];
   cocoapods-packager-pro = [ ]; # requires osx
   cocoapods-plugins = [ "cocoapods_plugins" ];
   cocoapods-sorted-search = [ ]; # requires osx
-  cocoapods-check = cocoapod-plugin "cocoapods-check";
-  cocoapods-disable-podfile-validations = cocoapod-plugin "cocoapods-disable-podfile-validations";
   cocoapods-stats = [ "cocoapods_stats" ];
   cocoapods-testing = [ "cocoapods_testing" ];
   cocoapods-trunk = [ "cocoapods_trunk" ];
@@ -63,7 +71,6 @@ in
   jekyll-sass-converter = [ ]; # tested through jekyll
   libxml-ruby = [ "libxml" ];
   multipart-post = [ "multipart_post" ];
-  unicode-display_width = [ "unicode/display_width" ];
   nap = [ "rest" ];
   net-scp = [ "net/scp" ];
   net-ssh = [ "net/ssh" ];
@@ -77,23 +84,24 @@ in
   rspec-expectations = [ "rspec/expectations" ];
   rspec-mocks = [ "rspec/mocks" ];
   rspec-support = [ "rspec/support" ];
-  RubyInline = [ "inline" ];
   ruby-libvirt = [ "libvirt" ];
   ruby-lxc = [ "lxc" ];
   ruby-macho = [ "macho" ];
   ruby-terminfo = [ "terminfo" ];
   rubyzip = [ "zip" ];
+
   sequel_pg = [
     "pg"
     "sequel"
     "sequel/adapters/postgresql"
     "sequel_pg"
   ];
+
   simplecov-html = [ ]; # tested through simplecov
   sinatra = [ "sinatra/base" ];
   sprockets-rails = [ "sprockets/rails" ];
   taglib-ruby = [ "taglib" ];
+  unicode-display_width = [ "unicode/display_width" ];
   websocket-driver = [ "websocket/driver" ];
   websocket-extensions = [ "websocket/extensions" ];
-  ZenTest = [ "zentest" ];
 }

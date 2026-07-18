@@ -1,9 +1,9 @@
 {
   lib,
-  stdenvNoCC,
   fetchzip,
   installFonts,
   nix-update-script,
+  stdenvNoCC,
 }:
 
 stdenvNoCC.mkDerivation (finalAttrs: {
@@ -18,9 +18,8 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     hash = "sha256-7PlIrQX1fnFHXm7mjfoOCVp3GSnLT2GlVZdSoZbh/s4=";
   };
 
-  sourceRoot = "${finalAttrs.src.name}/fonts";
-
   nativeBuildInputs = [ installFonts ];
+  sourceRoot = "${finalAttrs.src.name}/fonts";
 
   passthru = {
     updateScript = nix-update-script { };
@@ -30,9 +29,11 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     description = "Universal Design Japanese font";
     homepage = "https://github.com/googlefonts/morisawa-biz-ud-gothic";
     license = lib.licenses.ofl;
+
     maintainers = with lib.maintainers; [
       kachick
     ];
+
     platforms = lib.platforms.all;
   };
 })

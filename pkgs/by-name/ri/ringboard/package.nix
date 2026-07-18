@@ -1,19 +1,19 @@
 {
-  stdenv,
-  rustPlatform,
-  fetchFromGitHub,
   lib,
-  libxkbcommon,
+  stdenv,
+  fetchFromGitHub,
   libGL,
-  wayland,
-  libxrandr,
-  libxi,
-  libxcursor,
   libx11,
+  libxcursor,
+  libxi,
+  libxkbcommon,
+  libxrandr,
   makeWrapper,
-  displayServer ? "x11",
-  nixosTests,
   nix-update-script,
+  nixosTests,
+  rustPlatform,
+  wayland,
+  displayServer ? "x11",
 }:
 
 assert lib.assertOneOf "displayServer" displayServer [
@@ -23,9 +23,7 @@ assert lib.assertOneOf "displayServer" displayServer [
 
 rustPlatform.buildRustPackage (finalAttrs: {
   pname = "ringboard" + lib.optionalString (displayServer == "wayland") "-wayland";
-
   version = "0.17.0";
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "SUPERCILEX";
@@ -33,8 +31,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
     tag = finalAttrs.version;
     hash = "sha256-qLYQeZTrtUUn4JSzK3SX687xV4FO6h7GshVdQi8Qkbk=";
   };
-
-  cargoHash = "sha256-T65TxIes0171uDxDE72SnFeRVAgw5FR2z6yTcmH3Z6k=";
 
   nativeBuildInputs = [
     makeWrapper
@@ -53,6 +49,8 @@ rustPlatform.buildRustPackage (finalAttrs: {
   ++ lib.optionals (displayServer == "wayland") [
     wayland
   ];
+
+  cargoHash = "sha256-T65TxIes0171uDxDE72SnFeRVAgw5FR2z6yTcmH3Z6k=";
 
   buildPhase = ''
     runHook preBuild
@@ -100,6 +98,8 @@ rustPlatform.buildRustPackage (finalAttrs: {
     sed -i "s|Icon=ringboard|Icon=$out/share/icons/hicolor/1024x1024/ringboard.jpeg|g" $out/share/applications/ringboard-egui.desktop
   '';
 
+  __structuredAttrs = true;
+
   passthru = {
     tests.nixos = nixosTests.ringboard;
     updateScript = nix-update-script { };
@@ -110,7 +110,7 @@ rustPlatform.buildRustPackage (finalAttrs: {
     homepage = "https://github.com/SUPERCILEX/clipboard-history";
     changelog = "https://github.com/SUPERCILEX/clipboard-history/releases/tag/${finalAttrs.src.tag}";
     license = lib.licenses.asl20;
-    platforms = lib.platforms.linux;
     maintainers = [ lib.maintainers.magnetophon ];
+    platforms = lib.platforms.linux;
   };
 })

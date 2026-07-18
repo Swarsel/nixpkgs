@@ -7,10 +7,7 @@
 stdenv.mkDerivation (finalAttrs: {
   pname = "qrcodegencpp";
   version = qrcodegen.version;
-
   src = qrcodegen.src;
-
-  sourceRoot = "${finalAttrs.src.name}/cpp";
 
   nativeBuildInputs = lib.optionals stdenv.cc.isClang [
     stdenv.cc.cc.libllvm.out
@@ -26,6 +23,8 @@ stdenv.mkDerivation (finalAttrs: {
 
     runHook postInstall
   '';
+
+  sourceRoot = "${finalAttrs.src.name}/cpp";
 
   meta = {
     inherit (qrcodegen.meta)

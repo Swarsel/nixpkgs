@@ -1,18 +1,17 @@
 {
   lib,
-  python,
-  buildPythonPackage,
-  pytestCheckHook,
   fetchFromGitHub,
-  hatchling,
-  hatch-fancy-pypi-readme,
+  buildPythonPackage,
   gpiod,
+  hatch-fancy-pypi-readme,
+  hatchling,
   mock,
+  pytestCheckHook,
+  python,
 }:
 buildPythonPackage (finalAttrs: {
   pname = "gpiodevice";
   version = "0.0.5";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "pimoroni";
@@ -21,21 +20,10 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-alff1qWxxcG6ooSQdAZ/T+ALYvWC41vX0mMu/xBeGb4=";
   };
 
-  build-system = [
-    hatchling
-    hatch-fancy-pypi-readme
-  ];
-
-  dependencies = [
-    gpiod
-  ];
-
   nativeCheckInputs = [
     mock
     pytestCheckHook
   ];
-
-  pythonImportsCheck = [ "gpiodevice" ];
 
   # The build explicitly copies over these docs files, which cause collisions with other pimoroni repos.
   # Preserve the files (especially license), but move elsewhere.
@@ -47,6 +35,18 @@ buildPythonPackage (finalAttrs: {
     mv "$out/${python.sitePackages}/README.md" $out/share/doc/${finalAttrs.pname}/
     mv "$out/${python.sitePackages}/CHANGELOG.md" $out/share/doc/${finalAttrs.pname}/
   '';
+
+  build-system = [
+    hatchling
+    hatch-fancy-pypi-readme
+  ];
+
+  dependencies = [
+    gpiod
+  ];
+
+  pyproject = true;
+  pythonImportsCheck = [ "gpiodevice" ];
 
   meta = {
     description = "Helper library for working with Linux gpiochip devices";

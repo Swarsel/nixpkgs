@@ -1,15 +1,14 @@
 {
   lib,
-  python3Packages,
   fetchFromGitHub,
   hyprland,
   makeWrapper,
+  python3Packages,
 }:
 
 python3Packages.buildPythonPackage (finalAttrs: {
   pname = "hyprshade";
   version = "5.0.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "loqusion";
@@ -34,12 +33,14 @@ python3Packages.buildPythonPackage (finalAttrs: {
       --prefix PATH : ${lib.makeBinPath [ hyprland ]}
   '';
 
+  pyproject = true;
+
   meta = {
-    homepage = "https://github.com/loqusion/hyprshade";
     description = "Hyprland shade configuration tool";
-    mainProgram = "hyprshade";
+    homepage = "https://github.com/loqusion/hyprshade";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ willswats ];
     platforms = lib.platforms.linux;
+    mainProgram = "hyprshade";
   };
 })

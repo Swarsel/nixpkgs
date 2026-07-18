@@ -1,9 +1,9 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
-  versionCheckHook,
+  buildGoModule,
   nix-update-script,
+  versionCheckHook,
 }:
 
 buildGoModule (finalAttrs: {
@@ -23,19 +23,20 @@ buildGoModule (finalAttrs: {
     cp manifest.json src/
   '';
 
-  ldflags = [
-    "-s"
-    "-w"
-  ];
-
   postInstall = ''
     mv $out/bin/src $out/bin/nvrh
   '';
 
+  doInstallCheck = true;
+
   nativeInstallCheckInputs = [
     versionCheckHook
   ];
-  doInstallCheck = true;
+
+  ldflags = [
+    "-s"
+    "-w"
+  ];
 
   passthru = {
     updateScript = nix-update-script { };

@@ -1,7 +1,7 @@
 {
   lib,
-  stdenvNoCC,
   fetchurl,
+  stdenvNoCC,
 }:
 stdenvNoCC.mkDerivation (finalAttrs: {
   pname = "dbip-country-lite";
@@ -12,8 +12,6 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     hash = "sha256-JcpMtv9VTRLHVe6hj2KlbPsWRuVpKYMQ9zlXX7QxkWA=";
   };
 
-  dontUnpack = true;
-
   installPhase = ''
     runHook preInstall
 
@@ -23,16 +21,19 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  dontUnpack = true;
   passthru.mmdb = "${finalAttrs.finalPackage}/share/dbip/dbip-country-lite.mmdb";
 
   meta = {
     description = "Free IP to Country Lite database by DB-IP";
     homepage = "https://db-ip.com/db/download/ip-to-country-lite";
     license = lib.licenses.cc-by-40;
+
     maintainers = with lib.maintainers; [
       nickcao
       Guanran928
     ];
+
     platforms = lib.platforms.all;
   };
 })

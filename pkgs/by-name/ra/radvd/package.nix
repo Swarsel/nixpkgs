@@ -3,13 +3,13 @@
   stdenv,
   fetchFromGitHub,
   autoreconfHook,
-  pkg-config,
+  bison,
+  check,
+  flex,
   libbsd,
   libdaemon,
-  bison,
-  flex,
-  check,
   nixosTests,
+  pkg-config,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -41,17 +41,17 @@ stdenv.mkDerivation (finalAttrs: {
 
   passthru.tests = {
     inherit (nixosTests) connman ipv6 systemd-networkd-ipv6-prefix-delegation;
-    privacy_scripted = nixosTests.networking.scripted.privacy;
     privacy_networkd = nixosTests.networking.networkd.privacy;
+    privacy_scripted = nixosTests.networking.scripted.privacy;
   };
 
   meta = {
+    description = "IPv6 Router Advertisement Daemon";
     homepage = "http://www.litech.org/radvd/";
     changelog = "https://github.com/radvd-project/radvd/blob/${finalAttrs.src.rev}/CHANGES";
-    description = "IPv6 Router Advertisement Daemon";
-    downloadPage = "https://github.com/radvd-project/radvd";
-    platforms = lib.platforms.linux;
     license = lib.licenses.bsdOriginal;
     maintainers = with lib.maintainers; [ fpletz ];
+    platforms = lib.platforms.linux;
+    downloadPage = "https://github.com/radvd-project/radvd";
   };
 })

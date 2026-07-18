@@ -1,19 +1,18 @@
 {
-  buildPythonPackage,
-  fetchPypi,
   lib,
+  buildPythonPackage,
   dist-meta,
   dom-toml,
   domdf-python-tools,
-  hatchling,
+  fetchPypi,
   hatch-requirements-txt,
+  hatchling,
   packaging,
   typing-extensions,
 }:
 buildPythonPackage rec {
   pname = "shippinglabel";
   version = "2.3.0";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
@@ -32,6 +31,8 @@ buildPythonPackage rec {
     packaging
     typing-extensions
   ];
+
+  pyproject = true;
 
   meta = {
     description = "Utilities for handling packages";

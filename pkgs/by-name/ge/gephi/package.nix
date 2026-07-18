@@ -2,8 +2,8 @@
   lib,
   fetchFromGitHub,
   jdk11,
-  maven,
   jogl,
+  maven,
 }:
 
 maven.buildMavenPackage rec {
@@ -16,9 +16,6 @@ maven.buildMavenPackage rec {
     rev = "v${version}";
     hash = "sha256-ZNSEaiD32zFfF2ISKa1CmcT9Nq6r5i2rNHooQAcVbn4=";
   };
-
-  mvnJdk = jdk11;
-  mvnHash = "sha256-/2/Yb26Ry0NHQQ3j0LXnjwC0wQqJiztvTgWixyMJqvg=";
 
   nativeBuildInputs = [ jdk11 ];
 
@@ -37,15 +34,20 @@ maven.buildMavenPackage rec {
     printf "\n\njdkhome=${jdk11}\n" >> $out/etc/gephi.conf
   '';
 
+  mvnHash = "sha256-/2/Yb26Ry0NHQQ3j0LXnjwC0wQqJiztvTgWixyMJqvg=";
+  mvnJdk = jdk11;
+
   meta = {
     description = "Platform for visualizing and manipulating large graphs";
-    mainProgram = "gephi";
     homepage = "https://gephi.org";
+    license = lib.licenses.gpl3;
+
     sourceProvenance = with lib.sourceTypes; [
       fromSource
       binaryBytecode # deps
     ];
-    license = lib.licenses.gpl3;
+
     maintainers = [ lib.maintainers.taeer ];
+    mainProgram = "gephi";
   };
 }

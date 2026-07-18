@@ -1,29 +1,23 @@
 {
   lib,
   stdenv,
-  fetchFromGitHub,
   fetchurl,
-  runCommand,
-  biber,
-
-  # nativeBuildInputs
-  bison,
-  cmake,
-  curl,
-  flex,
-  fop,
-  libxslt,
-  pkg-config,
-  writableTmpDirAsHomeHook,
-
+  fetchFromGitHub,
   # buildInputs
   apr,
   aprutil,
+  biber,
+  # nativeBuildInputs
+  bison,
   boost,
   bzip2,
   cairo,
+  cmake,
+  curl,
   expat,
+  flex,
   fontconfig,
+  fop,
   freetype,
   fribidi,
   gd,
@@ -31,18 +25,22 @@
   graphite2,
   hunspell,
   libjpeg,
-  log4cxx,
-  xz,
-  mpfr,
-  mpfi,
   libmspack,
-  libressl,
-  pixman,
   libpng,
+  libressl,
+  libxslt,
+  log4cxx,
+  mpfi,
+  mpfr,
+  pixman,
+  pkg-config,
   popt,
-  uriparser,
-  zziplib,
   qt6Packages,
+  runCommand,
+  uriparser,
+  writableTmpDirAsHomeHook,
+  xz,
+  zziplib,
 }:
 let
   # This is needed for some bootstrap packages.
@@ -52,32 +50,38 @@ let
     runCommand "miktex-local-repository"
       {
         src1 = fetchurl {
-          url = "${webArchivePrefix}/${miktexRemoteRepository}/miktex-zzdb1-2.9.tar.lzma";
           hash = "sha256-XYhbKlxhVSOlCcm0IOs2ddFgAt/CWXJoY6IuLSw74y4=";
+          url = "${webArchivePrefix}/${miktexRemoteRepository}/miktex-zzdb1-2.9.tar.lzma";
         };
+
         src2 = fetchurl {
-          url = "${webArchivePrefix}/${miktexRemoteRepository}/miktex-zzdb3-2.9.tar.lzma";
           hash = "sha256-5vLuGwjddqtJ5F/DtVKuRVRqgGNbkGFxRF41cXwseIs=";
+          url = "${webArchivePrefix}/${miktexRemoteRepository}/miktex-zzdb3-2.9.tar.lzma";
         };
+
         src3 = fetchurl {
-          url = "${webArchivePrefix}/${miktexRemoteRepository}/miktex-config-2.9.tar.lzma";
           hash = "sha256-fkh5KL+BU+gl8Sih8xBLi1DOx2vMuSflXlSTchjlGWQ=";
+          url = "${webArchivePrefix}/${miktexRemoteRepository}/miktex-config-2.9.tar.lzma";
         };
+
         src4 = fetchurl {
-          url = "${webArchivePrefix}/${miktexRemoteRepository}/miktex-dvips.tar.lzma";
           hash = "sha256-eJQdLhYetNlXAyyiGD/JRDA3fv0BbALwXtNfRxkLM7o=";
+          url = "${webArchivePrefix}/${miktexRemoteRepository}/miktex-dvips.tar.lzma";
         };
+
         src5 = fetchurl {
-          url = "${webArchivePrefix}/${miktexRemoteRepository}/miktex-fontconfig.tar.lzma";
           hash = "sha256-dxH/0iIL3SnjCSXLGAcNTb5cGJb5AQmV/JbH5CcPHdk=";
+          url = "${webArchivePrefix}/${miktexRemoteRepository}/miktex-fontconfig.tar.lzma";
         };
+
         src6 = fetchurl {
-          url = "${webArchivePrefix}/${miktexRemoteRepository}/miktex-misc.tar.lzma";
           hash = "sha256-ysNREvnKWseqqN59cwNzlV21UmccbjSGFyno8lv2H+M=";
+          url = "${webArchivePrefix}/${miktexRemoteRepository}/miktex-misc.tar.lzma";
         };
+
         src7 = fetchurl {
-          url = "${webArchivePrefix}/${miktexRemoteRepository}/tetex.tar.lzma";
           hash = "sha256-DE1o66r2SFxxxuYeCRuFn6L1uBn26IFnje9b/qeVl6Q=";
+          url = "${webArchivePrefix}/${miktexRemoteRepository}/tetex.tar.lzma";
         };
       }
       ''
@@ -209,14 +213,7 @@ stdenv.mkDerivation (finalAttrs: {
     NIX_CFLAGS_COMPILE = "-funsigned-char";
   };
 
-  enableParallelBuilding = false;
-
-  enableParallelChecking = false;
-
   doCheck = true;
-
-  # Todo: figure out the exact binary to be Qt wrapped.
-  dontWrapQtApps = true;
 
   postFixup = ''
     wrapQtApp $out/bin/miktex-console
@@ -228,16 +225,23 @@ stdenv.mkDerivation (finalAttrs: {
     ln -sf ${biber}/bin/biber $out/bin/biber
   '';
 
+  # Todo: figure out the exact binary to be Qt wrapped.
+  dontWrapQtApps = true;
+  enableParallelBuilding = false;
+  enableParallelChecking = false;
+
   meta = {
     description = "Modern TeX distribution";
     homepage = "https://miktex.org";
-    platforms = lib.platforms.linux;
+
     license = with lib.licenses; [
       lppl13c
       gpl2Plus
       gpl3Plus
       publicDomain
     ];
+
     maintainers = with lib.maintainers; [ qbisi ];
+    platforms = lib.platforms.linux;
   };
 })

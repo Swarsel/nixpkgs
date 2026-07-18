@@ -2,12 +2,12 @@
   lib,
   stdenv,
   fetchurl,
-  libxext,
-  libxaw3d,
   ghostscriptX,
+  libiconv,
+  libxaw3d,
+  libxext,
   perl,
   pkg-config,
-  libiconv,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -19,11 +19,8 @@ stdenv.mkDerivation (finalAttrs: {
     sha256 = "0q8s43z14vxm41pfa8s5h9kyyzk1fkwjhkiwbf2x70alm6rv6qi1";
   };
 
-  configureFlags = lib.optionals stdenv.hostPlatform.isDarwin [
-    "--enable-SIGCHLD-fallback"
-  ];
-
   nativeBuildInputs = [ pkg-config ];
+
   buildInputs = [
     libxext
     libxaw3d
@@ -34,15 +31,18 @@ stdenv.mkDerivation (finalAttrs: {
     libiconv
   ];
 
+  configureFlags = lib.optionals stdenv.hostPlatform.isDarwin [
+    "--enable-SIGCHLD-fallback"
+  ];
+
+  doCheck = true;
+
   patchPhase = ''
     sed 's|\<gs\>|${ghostscriptX}/bin/gs|g' -i "src/"*.in
     sed 's|"gs"|"${ghostscriptX}/bin/gs"|g' -i "src/"*.c
   '';
 
-  doCheck = true;
-
   meta = {
-    homepage = "https://www.gnu.org/software/gv/";
     description = "PostScript/PDF document viewer";
 
     longDescription = ''
@@ -51,6 +51,7 @@ stdenv.mkDerivation (finalAttrs: {
       interface for the Ghostscript interpreter.
     '';
 
+    homepage = "https://www.gnu.org/software/gv/";
     license = lib.licenses.gpl3Plus;
     maintainers = [ ];
     platforms = lib.platforms.unix;

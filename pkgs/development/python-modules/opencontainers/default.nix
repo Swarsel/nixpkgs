@@ -9,7 +9,6 @@
 buildPythonPackage rec {
   pname = "opencontainers";
   version = "0.0.15";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
@@ -20,13 +19,11 @@ buildPythonPackage rec {
     sed -i "/pytest-runner/d" setup.py
   '';
 
-  optional-dependencies.reggie = [ requests ];
-
-  pythonImportsCheck = [ "opencontainers" ];
-
   nativeCheckInputs = [ pytestCheckHook ] ++ optional-dependencies.reggie;
-
   __darwinAllowLocalNetworking = true;
+  format = "setuptools";
+  optional-dependencies.reggie = [ requests ];
+  pythonImportsCheck = [ "opencontainers" ];
 
   meta = {
     description = "Python module for oci specifications";

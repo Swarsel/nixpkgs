@@ -2,10 +2,10 @@
   lib,
   buildPythonPackage,
   fetchPypi,
-  setuptools,
   ipython,
   ipython-genutils,
   prettytable,
+  setuptools,
   six,
   sqlalchemy,
   sqlparse,
@@ -13,13 +13,14 @@
 buildPythonPackage rec {
   pname = "ipython-sql";
   version = "0.5.0";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
     hash = "sha256-PbPOf5qV369Dh2+oCxa9u5oE3guhIELKsT6fWW/P/b4=";
   };
 
+  # pypi tarball has no tests
+  doCheck = false;
   build-system = [ setuptools ];
 
   dependencies = [
@@ -31,9 +32,7 @@ buildPythonPackage rec {
     sqlparse
   ];
 
-  # pypi tarball has no tests
-  doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "sql" ];
 
   meta = {

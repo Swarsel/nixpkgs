@@ -1,9 +1,8 @@
 {
   lib,
-  python3,
   fetchFromGitHub,
   nix-update-script,
-
+  python3,
   # support setting socks proxies in `ALL_PROXY` environment variable
   supportSocks ? true,
 }:
@@ -11,9 +10,8 @@ let
   version = "1.9.2";
 in
 python3.pkgs.buildPythonApplication {
-  pname = "fangfrisch";
   inherit version;
-  pyproject = true;
+  pname = "fangfrisch";
 
   src = fetchFromGitHub {
     owner = "rseichter";
@@ -35,8 +33,8 @@ python3.pkgs.buildPythonApplication {
     ]
     ++ lib.optional supportSocks pysocks;
 
+  pyproject = true;
   pythonImportsCheck = [ "fangfrisch" ];
-
   passthru.updateScript = nix-update-script { };
 
   meta = {

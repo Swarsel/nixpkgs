@@ -1,10 +1,10 @@
 {
   lib,
   stdenv,
-  cmake,
-  libsForQt5,
   fetchFromGitHub,
+  cmake,
   fetchpatch,
+  libsForQt5,
   unstableGitUpdater,
 }:
 
@@ -24,9 +24,9 @@ stdenv.mkDerivation {
     # Fix build against gcc-13:
     #   https://github.com/Grumbel/evtest-qt/pull/14
     (fetchpatch {
+      hash = "sha256-gR/9oVhO4G9i7dn+CjvDAQN0KLXoX/fatpE0W3gXDc0=";
       name = "gcc-13.patch";
       url = "https://github.com/Grumbel/evtest-qt/commit/975dedcfd60853bd329f34d48ce4740add8866eb.patch";
-      hash = "sha256-gR/9oVhO4G9i7dn+CjvDAQN0KLXoX/fatpE0W3gXDc0=";
     })
   ];
 
@@ -36,15 +36,14 @@ stdenv.mkDerivation {
   ];
 
   buildInputs = [ libsForQt5.qtbase ];
-
   passthru.updateScript = unstableGitUpdater { };
 
   meta = {
     description = "Simple input device tester for linux with Qt GUI";
-    mainProgram = "evtest-qt";
     homepage = "https://github.com/Grumbel/evtest-qt";
+    license = lib.licenses.gpl3Plus;
     maintainers = with lib.maintainers; [ alexarice ];
     platforms = lib.platforms.linux;
-    license = lib.licenses.gpl3Plus;
+    mainProgram = "evtest-qt";
   };
 }

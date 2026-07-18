@@ -1,17 +1,16 @@
 {
   lib,
   stdenv,
-  buildPythonPackage,
   fetchFromGitHub,
-  fetchpatch2,
+  buildPythonPackage,
   cython_0,
+  fetchpatch2,
   zfs_2_3,
 }:
 
 buildPythonPackage rec {
   pname = "py-libzfs";
   version = "25.10.1";
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "truenas";
@@ -24,13 +23,10 @@ buildPythonPackage rec {
     # Upstream has open PR. Debian uses the patch.
     # https://github.com/truenas/py-libzfs/pull/277
     (fetchpatch2 {
-      url = "https://salsa.debian.org/python-team/packages/py-libzfs/-/raw/debian/0.0+git20240510.5ae7d5e-1/debian/patches/fix-compilation-on-gcc-14.patch";
       hash = "sha256-KLxRx2k1LQGtmzMqJe9b84ApOnIXn8ZeBZun5BAxEjc=";
+      url = "https://salsa.debian.org/python-team/packages/py-libzfs/-/raw/debian/0.0+git20240510.5ae7d5e-1/debian/patches/fix-compilation-on-gcc-14.patch";
     })
   ];
-
-  build-system = [ cython_0 ];
-  buildInputs = [ zfs_2_3 ];
 
   # Passing CFLAGS in configureFlags does not work, see https://github.com/truenas/py-libzfs/issues/107
   postPatch = lib.optionalString stdenv.hostPlatform.isLinux ''
@@ -41,6 +37,9 @@ buildPythonPackage rec {
       --replace-fail 'zof=false' 'zof=true'
   '';
 
+  buildInputs = [ zfs_2_3 ];
+  build-system = [ cython_0 ];
+  format = "setuptools";
   pythonImportsCheck = [ "libzfs" ];
 
   meta = {

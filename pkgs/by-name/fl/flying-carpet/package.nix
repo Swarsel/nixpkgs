@@ -2,19 +2,19 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  rustPlatform,
-  fetchNpmDeps,
   cargo-tauri,
+  copyDesktopItems,
+  fetchNpmDeps,
   glib-networking,
+  makeDesktopItem,
+  nix-update-script,
   nodejs,
   npmHooks,
   openssl,
   pkg-config,
+  rustPlatform,
   webkitgtk_4_1,
   wrapGAppsHook4,
-  copyDesktopItems,
-  makeDesktopItem,
-  nix-update-script,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -27,8 +27,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-7yGU4HCuP8/6UC1J6fNA5CpppJGGhS/ywThXRToDTqo=";
   };
-
-  cargoHash = "sha256-/Z+0hdQ1H9R7FMLunGT5WgQKFY0b0b6gzrR2CNMe2II=";
 
   nativeBuildInputs = [
     cargo-tauri.hook
@@ -44,19 +42,11 @@ rustPlatform.buildRustPackage (finalAttrs: {
     webkitgtk_4_1
   ];
 
+  cargoHash = "sha256-/Z+0hdQ1H9R7FMLunGT5WgQKFY0b0b6gzrR2CNMe2II=";
+
   checkFlags = [
     "--skip"
     "network"
-  ];
-
-  desktopItems = [
-    (makeDesktopItem {
-      name = "FlyingCarpet";
-      desktopName = "FlyingCarpet";
-      exec = "FlyingCarpet";
-      icon = "FlyingCarpet";
-      categories = [ "Development" ];
-    })
   ];
 
   postInstall = ''
@@ -64,6 +54,16 @@ rustPlatform.buildRustPackage (finalAttrs: {
     install -Dm644 "Flying Carpet/src-tauri/icons/128x128.png" "$out/share/icons/hicolor/128x128/apps/FlyingCarpet.png"
     install -Dm644 "Flying Carpet/src-tauri/icons/128x128@2x.png" "$out/share/icons/hicolor/256x256@2/apps/FlyingCarpet.png"
   '';
+
+  desktopItems = [
+    (makeDesktopItem {
+      categories = [ "Development" ];
+      desktopName = "FlyingCarpet";
+      exec = "FlyingCarpet";
+      icon = "FlyingCarpet";
+      name = "FlyingCarpet";
+    })
+  ];
 
   passthru.updateScript = nix-update-script { };
 

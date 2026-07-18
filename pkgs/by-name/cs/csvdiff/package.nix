@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule (finalAttrs: {
@@ -18,10 +18,10 @@ buildGoModule (finalAttrs: {
   vendorHash = "sha256-rhOjBMCyfirEI/apL3ObHfKZeuNPGSt84R9lwCbRIpg=";
 
   meta = {
-    homepage = "https://aswinkarthik.github.io/csvdiff/";
     description = "Fast diff tool for comparing csv files";
-    mainProgram = "csvdiff";
+    homepage = "https://aswinkarthik.github.io/csvdiff/";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ turion ];
+    mainProgram = "csvdiff";
   };
 })

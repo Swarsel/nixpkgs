@@ -3,25 +3,20 @@
   stdenv,
   fetchFromGitHub,
   eglexternalplatform,
-  pkg-config,
-  meson,
-  ninja,
-  wayland-scanner,
   libGL,
   libdrm,
+  meson,
+  ninja,
+  nix-update-script,
+  pkg-config,
   wayland,
   wayland-protocols,
-  nix-update-script,
+  wayland-scanner,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
   pname = "egl-wayland";
   version = "1.1.21";
-
-  outputs = [
-    "out"
-    "dev"
-  ];
 
   src = fetchFromGitHub {
     owner = "NVIDIA";
@@ -30,15 +25,18 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-a98DzmzCG6DlLJ1HCl/LeD21Q7yyNbTce1poOoAnTjA=";
   };
 
+  outputs = [
+    "out"
+    "dev"
+  ];
+
   postPatch = ''
     # Declares an includedir but doesn't install any headers
     # CMake's `pkg_check_modules(NAME wayland-eglstream IMPORTED_TARGET)` considers this an error
     sed -i -e '/includedir/d' wayland-eglstream.pc.in
   '';
 
-  depsBuildBuild = [
-    pkg-config
-  ];
+  strictDeps = true;
 
   nativeBuildInputs = [
     meson
@@ -58,10 +56,12 @@ stdenv.mkDerivation (finalAttrs: {
     eglexternalplatform
   ];
 
+  __structuredAttrs = true;
   absolutizeEglExternalPlatformIcdJson = true;
 
-  strictDeps = true;
-  __structuredAttrs = true;
+  depsBuildBuild = [
+    pkg-config
+  ];
 
   passthru.updateScript = nix-update-script { extraArgs = [ "--use-github-releases" ]; };
 
@@ -69,7 +69,7 @@ stdenv.mkDerivation (finalAttrs: {
     description = "EGLStream-based Wayland external platform";
     homepage = "https://github.com/NVIDIA/egl-wayland/";
     license = lib.licenses.mit;
-    platforms = lib.platforms.linux ++ lib.platforms.freebsd;
     maintainers = with lib.maintainers; [ ccicnce113424 ];
+    platforms = lib.platforms.linux ++ lib.platforms.freebsd;
   };
 })

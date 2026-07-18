@@ -1,19 +1,19 @@
 {
   lib,
   stdenv,
-  writeScript,
   fetchFromGitHub,
+  glfw,
   libGL,
+  libpulseaudio,
   libx11,
+  libxcomposite,
   libxext,
-  python3,
   libxrandr,
   libxrender,
-  libpulseaudio,
-  libxcomposite,
-  enableGlfw ? false,
-  glfw,
+  python3,
   runtimeShell,
+  writeScript,
+  enableGlfw ? false,
 }:
 
 let
@@ -45,6 +45,10 @@ stdenv.mkDerivation (finalAttrs: {
     sha256 = "0kqkjxmpqkmgby05lsf6c6iwm45n33jk5qy6gi3zvjx4q4yzal1i";
   };
 
+  nativeBuildInputs = [
+    python3
+  ];
+
   buildInputs = [
     libx11
     libxext
@@ -55,9 +59,7 @@ stdenv.mkDerivation (finalAttrs: {
   ]
   ++ optional enableGlfw glfw;
 
-  nativeBuildInputs = [
-    python3
-  ];
+  makeFlags = optional (!enableGlfw) "DISABLE_GLFW=1";
 
   preConfigure = ''
     for f in $(find -type f);do
@@ -72,12 +74,6 @@ stdenv.mkDerivation (finalAttrs: {
       --replace 'unknown' 'v${finalAttrs.version}'
   '';
 
-  makeFlags = optional (!enableGlfw) "DISABLE_GLFW=1";
-
-  installFlags = [
-    "DESTDIR=$(out)"
-  ];
-
   fixupPhase = ''
     mkdir -p $out/bin
     mv $out/usr/bin/glava $out/bin/.glava-unwrapped
@@ -91,16 +87,23 @@ stdenv.mkDerivation (finalAttrs: {
     chmod +x $out/bin/glava
   '';
 
+  installFlags = [
+    "DESTDIR=$(out)"
+  ];
+
   meta = {
     description = ''
       OpenGL audio spectrum visualizer
     '';
-    mainProgram = "glava";
+
     homepage = "https://github.com/jarcode-foss/glava";
-    platforms = lib.platforms.linux;
     license = lib.licenses.gpl3;
+
     maintainers = with lib.maintainers; [
       eadwu
     ];
+
+    platforms = lib.platforms.linux;
+    mainProgram = "glava";
   };
 })

@@ -1,6 +1,6 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
   fetchpatch2,
   gnat,
@@ -21,33 +21,28 @@ let
 in
 
 stdenv.mkDerivation {
-  pname = "gprbuild-boot";
   inherit version;
+  pname = "gprbuild-boot";
 
   src = fetchFromGitHub {
-    name = "gprbuild-${version}";
     owner = "AdaCore";
     repo = "gprbuild";
     rev = "v${version}";
     sha256 = "1mqsmc0q5bzg8223ls18kbvaz6mhzjz7ik8d3sqhhn24c0j6wjaw";
+    name = "gprbuild-${version}";
   };
-
-  nativeBuildInputs = [
-    gnat
-    which
-  ];
 
   # Fix compilation with GNAT 16
   patches = lib.optionals (lib.versionAtLeast gnat.version "16") [
     # gpr-compilation-process.adb:44:29: error: operator for type "String" is not declared in "Env_Maps"
     (fetchpatch2 {
-      url = "https://github.com/AdaCore/gprbuild/commit/6421e350274b3018a26bd058b1c90d033b053f71.patch?full_index=1";
       hash = "sha256-u9bmr8abmthlyHoeqW5nS2CnaxXmbx6WVwhemxVtw+0=";
+      url = "https://github.com/AdaCore/gprbuild/commit/6421e350274b3018a26bd058b1c90d033b053f71.patch?full_index=1";
     })
     # gpr-compilation-protocol.adb:981:13: error: "time_t" is undefined
     (fetchpatch2 {
-      url = "https://github.com/AdaCore/gprbuild/commit/6b6be939d69d534beb7faca17664d7a1ffa9c81e.patch?full_index=1";
       hash = "sha256-YUjBvA4bBsrCB46o5WVHOZR6qOf2bkMg+A9qlystDbc=";
+      url = "https://github.com/AdaCore/gprbuild/commit/6b6be939d69d534beb7faca17664d7a1ffa9c81e.patch?full_index=1";
     })
   ];
 
@@ -61,22 +56,9 @@ stdenv.mkDerivation {
     patchShebangs --build bootstrap.sh
   '';
 
-  # This setupHook populates GPR_PROJECT_PATH which is used by
-  # gprbuild to find dependencies. It works quite similar to
-  # the pkg-config setupHook in the sense that it also splits
-  # dependencies into GPR_PROJECT_PATH and GPR_PROJECT_PATH_FOR_BUILD,
-  # but gprbuild itself doesn't support this, so we'll need to
-  # introducing a wrapper for it in the future remains TODO.
-  # For the moment this doesn't matter since we have no situation
-  # were gprbuild is used to build something used at build time.
-  setupHooks = [
-    ./gpr-project-path-hook.sh
-  ]
-  ++ lib.optionals stdenv.targetPlatform.isDarwin [
-    # This setupHook replaces the paths of shared libraries starting
-    # with @rpath with the absolute paths on Darwin, so that the
-    # binaries can be run without additional setup.
-    ./gpr-project-darwin-rpath-hook.sh
+  nativeBuildInputs = [
+    gnat
+    which
   ];
 
   installPhase = ''
@@ -103,6 +85,24 @@ stdenv.mkDerivation {
 
     runHook postInstall
   '';
+
+  # This setupHook populates GPR_PROJECT_PATH which is used by
+  # gprbuild to find dependencies. It works quite similar to
+  # the pkg-config setupHook in the sense that it also splits
+  # dependencies into GPR_PROJECT_PATH and GPR_PROJECT_PATH_FOR_BUILD,
+  # but gprbuild itself doesn't support this, so we'll need to
+  # introducing a wrapper for it in the future remains TODO.
+  # For the moment this doesn't matter since we have no situation
+  # were gprbuild is used to build something used at build time.
+  setupHooks = [
+    ./gpr-project-path-hook.sh
+  ]
+  ++ lib.optionals stdenv.targetPlatform.isDarwin [
+    # This setupHook replaces the paths of shared libraries starting
+    # with @rpath with the absolute paths on Darwin, so that the
+    # binaries can be run without additional setup.
+    ./gpr-project-darwin-rpath-hook.sh
+  ];
 
   meta = {
     description = "Multi-language extensible build tool";

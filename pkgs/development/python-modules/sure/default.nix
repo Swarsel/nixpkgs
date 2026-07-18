@@ -2,18 +2,17 @@
   lib,
   buildPythonPackage,
   fetchPypi,
-  setuptools,
-  pytestCheckHook,
-  pytest-cov-stub,
-  mock,
-  six,
   isPyPy,
+  mock,
+  pytest-cov-stub,
+  pytestCheckHook,
+  setuptools,
+  six,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "sure";
   version = "2.0.1";
-  pyproject = true;
 
   src = fetchPypi {
     inherit (finalAttrs) pname version;
@@ -25,17 +24,17 @@ buildPythonPackage (finalAttrs: {
       --replace "rednose = 1" ""
   '';
 
+  nativeCheckInputs = [
+    pytestCheckHook
+    pytest-cov-stub
+    mock
+  ];
+
   build-system = [ setuptools ];
 
   dependencies = [
     mock
     six
-  ];
-
-  nativeCheckInputs = [
-    pytestCheckHook
-    pytest-cov-stub
-    mock
   ];
 
   disabledTestPaths = [
@@ -48,14 +47,15 @@ buildPythonPackage (finalAttrs: {
     "test_should_compare_dict_with_enum_keys"
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "sure" ];
 
   meta = {
     description = "Utility belt for automated testing";
-    mainProgram = "sure";
     homepage = "https://sure.readthedocs.io/";
     changelog = "https://github.com/gabrielfalcao/sure/blob/v${finalAttrs.version}/CHANGELOG.md";
     license = lib.licenses.gpl3Plus;
     maintainers = with lib.maintainers; [ sigmanificient ];
+    mainProgram = "sure";
   };
 })

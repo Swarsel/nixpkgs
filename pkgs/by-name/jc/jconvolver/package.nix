@@ -2,13 +2,13 @@
   lib,
   stdenv,
   fetchurl,
-  flac,
-  unzip,
   fftwFloat,
+  flac,
   hybridreverb2,
   libclthreads,
   libjack2,
   libsndfile,
+  unzip,
   zita-convolver,
 }:
 
@@ -21,44 +21,11 @@ stdenv.mkDerivation rec {
     sha256 = "03fq1rk5wyn32w0aaa9vqijnw9x9i0i7sv4nhsf949bk5lvi2nmc";
   };
 
-  reverbs = fetchurl {
-    url = "http://kokkinizita.linuxaudio.org/linuxaudio/downloads/jconvolver-reverbs.tar.bz2";
-    sha256 = "127aj211xfqp37c94d9cn0mmwzbjkj3f6br5gr67ckqirvsdkndi";
-  };
-  weird = fetchurl {
-    url = "http://kokkinizita.linuxaudio.org/linuxaudio/downloads/weird.wav";
-    sha256 = "14xchdikx5k8zlgwglrqi168vki3n3rwhn73dkbj5qwh2ndrlyrc";
-  };
-
-  porihall-sf = fetchurl {
-    url = "http://legacy.spa.aalto.fi/projects/poririrs/wavs/sndfld.zip";
-    sha256 = "0z1kmdin3vcy6wmnym9jlfh8hwvci9404hff02cb98iw2slxid42";
-  };
-  porihall-bd = fetchurl {
-    url = "http://legacy.spa.aalto.fi/projects/poririrs/wavs/bin_dfeq.zip";
-    sha256 = "03m2brfxs851sag4z7kd71h6anv6hj34zcambwib0v1byg8vyplp";
-  };
-  porihall-c = fetchurl {
-    url = "http://legacy.spa.aalto.fi/projects/poririrs/wavs/cardioid.zip";
-    sha256 = "0ilbfvb2kvg5z6zi0mf2k4n0vgpir3iz5fa53xw92c07fs0cx36w";
-  };
-
-  spacenet-hm2 = fetchurl {
-    url = "https://webfiles.york.ac.uk/OPENAIR/IRs/hamilton-mausoleum/b-format/hm2_000_bformat_48k.wav";
-    sha256 = "1icnzfzq3mccbmnvmvh22mw8g8dci4i9h7lgrpmycj58v3gnb1p5";
-  };
-  spacenet-lyd3 = fetchurl {
-    url = "https://webfiles.york.ac.uk/OPENAIR/IRs/st-andrews-church/b-format/lyd3_000_bformat_48k.wav";
-    sha256 = "144cc0i91q5i72lwbxydx3nvxrd12j7clxjhwa2b8sf69ypz58wd";
-  };
-  spacenet-mh3 = fetchurl {
-    url = "https://webfiles.york.ac.uk/OPENAIR/IRs/maes-howe/b-format/mh3_000_bformat_48k.wav";
-    sha256 = "1c6v9jlm88l1sx2383yivycdrs9jqfsfx8cpbkjg19v2x1dfns0b";
-  };
-  spacenet-minster1 = fetchurl {
-    url = "https://webfiles.york.ac.uk/OPENAIR/IRs/york-minster/b-format/minster1_bformat_48k.wav";
-    sha256 = "1cs26pawjkv6qvwhfirfvzh21xvnmx8yh7f4xcr79cxv5c6hhnrw";
-  };
+  outputs = [
+    "bin"
+    "out"
+    "doc"
+  ];
 
   nativeBuildInputs = [
     flac
@@ -74,19 +41,13 @@ stdenv.mkDerivation rec {
     zita-convolver
   ];
 
-  outputs = [
-    "bin"
-    "out"
-    "doc"
+  makeFlags = [
+    "PREFIX=$(bin)"
   ];
 
   preConfigure = ''
     cd source
   '';
-
-  makeFlags = [
-    "PREFIX=$(bin)"
-  ];
 
   postInstall = ''
     mkdir -p $doc/share/doc/jconvolver
@@ -122,6 +83,51 @@ stdenv.mkDerivation rec {
   '';
 
   enableParallelBuilding = true;
+
+  porihall-bd = fetchurl {
+    sha256 = "03m2brfxs851sag4z7kd71h6anv6hj34zcambwib0v1byg8vyplp";
+    url = "http://legacy.spa.aalto.fi/projects/poririrs/wavs/bin_dfeq.zip";
+  };
+
+  porihall-c = fetchurl {
+    sha256 = "0ilbfvb2kvg5z6zi0mf2k4n0vgpir3iz5fa53xw92c07fs0cx36w";
+    url = "http://legacy.spa.aalto.fi/projects/poririrs/wavs/cardioid.zip";
+  };
+
+  porihall-sf = fetchurl {
+    sha256 = "0z1kmdin3vcy6wmnym9jlfh8hwvci9404hff02cb98iw2slxid42";
+    url = "http://legacy.spa.aalto.fi/projects/poririrs/wavs/sndfld.zip";
+  };
+
+  reverbs = fetchurl {
+    sha256 = "127aj211xfqp37c94d9cn0mmwzbjkj3f6br5gr67ckqirvsdkndi";
+    url = "http://kokkinizita.linuxaudio.org/linuxaudio/downloads/jconvolver-reverbs.tar.bz2";
+  };
+
+  spacenet-hm2 = fetchurl {
+    sha256 = "1icnzfzq3mccbmnvmvh22mw8g8dci4i9h7lgrpmycj58v3gnb1p5";
+    url = "https://webfiles.york.ac.uk/OPENAIR/IRs/hamilton-mausoleum/b-format/hm2_000_bformat_48k.wav";
+  };
+
+  spacenet-lyd3 = fetchurl {
+    sha256 = "144cc0i91q5i72lwbxydx3nvxrd12j7clxjhwa2b8sf69ypz58wd";
+    url = "https://webfiles.york.ac.uk/OPENAIR/IRs/st-andrews-church/b-format/lyd3_000_bformat_48k.wav";
+  };
+
+  spacenet-mh3 = fetchurl {
+    sha256 = "1c6v9jlm88l1sx2383yivycdrs9jqfsfx8cpbkjg19v2x1dfns0b";
+    url = "https://webfiles.york.ac.uk/OPENAIR/IRs/maes-howe/b-format/mh3_000_bformat_48k.wav";
+  };
+
+  spacenet-minster1 = fetchurl {
+    sha256 = "1cs26pawjkv6qvwhfirfvzh21xvnmx8yh7f4xcr79cxv5c6hhnrw";
+    url = "https://webfiles.york.ac.uk/OPENAIR/IRs/york-minster/b-format/minster1_bformat_48k.wav";
+  };
+
+  weird = fetchurl {
+    sha256 = "14xchdikx5k8zlgwglrqi168vki3n3rwhn73dkbj5qwh2ndrlyrc";
+    url = "http://kokkinizita.linuxaudio.org/linuxaudio/downloads/weird.wav";
+  };
 
   meta = {
     description = "JACK client and audio file convolver with reverb samples";

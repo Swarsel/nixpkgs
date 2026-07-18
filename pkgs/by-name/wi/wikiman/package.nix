@@ -1,17 +1,15 @@
 {
   lib,
-  stdenvNoCC,
   fetchFromGitHub,
-  makeWrapper,
-
-  fzf,
-  ripgrep,
-  gawk,
-  w3m,
   coreutils,
-  parallel,
-
+  fzf,
+  gawk,
+  makeWrapper,
   nix-update-script,
+  parallel,
+  ripgrep,
+  stdenvNoCC,
+  w3m,
 }:
 stdenvNoCC.mkDerivation (finalAttrs: {
   pname = "wikiman";
@@ -25,9 +23,7 @@ stdenvNoCC.mkDerivation (finalAttrs: {
   };
 
   patches = [ ./fix-paths.patch ];
-
   nativeBuildInputs = [ makeWrapper ];
-
   makeFlags = [ "prefix=${placeholder "out"}" ];
 
   postInstall = ''
@@ -61,8 +57,8 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     description = "Offline search engine for manual pages, Arch Wiki, Gentoo Wiki and other documentation";
     homepage = "https://github.com/filiparag/wikiman";
     license = with lib.licenses; [ mit ];
-    platforms = lib.platforms.unix;
     maintainers = with lib.maintainers; [ pluiedev ];
+    platforms = lib.platforms.unix;
     mainProgram = "wikiman";
   };
 })

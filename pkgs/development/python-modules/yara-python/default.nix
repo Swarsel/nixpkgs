@@ -1,16 +1,15 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
+  buildPythonPackage,
   pytestCheckHook,
+  setuptools,
   yara,
 }:
 
 buildPythonPackage rec {
   pname = "yara-python";
   version = "4.5.5";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "VirusTotal";
@@ -26,17 +25,13 @@ buildPythonPackage rec {
       --replace-fail "include_dirs=['yara/libyara/include', 'yara/libyara/', '.']" "libraries = ['yara']"
   '';
 
-  build-system = [ setuptools ];
-
   buildInputs = [ yara ];
-
   nativeCheckInputs = [ pytestCheckHook ];
-
-  setupPyBuildFlags = [ "--dynamic-linking" ];
-
+  build-system = [ setuptools ];
   enabledTestPaths = [ "tests.py" ];
-
+  pyproject = true;
   pythonImportsCheck = [ "yara" ];
+  setupPyBuildFlags = [ "--dynamic-linking" ];
 
   meta = {
     description = "Python interface for YARA";

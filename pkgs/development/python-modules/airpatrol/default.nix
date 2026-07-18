@@ -1,17 +1,16 @@
 {
   lib,
+  fetchFromGitHub,
   aiohttp,
   buildPythonPackage,
-  fetchFromGitHub,
-  pytestCheckHook,
   pytest-asyncio,
+  pytestCheckHook,
   setuptools,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "airpatrol";
   version = "0.1.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "antondalgren";
@@ -20,15 +19,14 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-KPch1GsJ5my43d9SVpwGA2EmrkmeBGJWAkY51rDofTk=";
   };
 
-  build-system = [ setuptools ];
-
-  dependencies = [ aiohttp ];
-
   nativeCheckInputs = [
     pytestCheckHook
     pytest-asyncio
   ];
 
+  build-system = [ setuptools ];
+  dependencies = [ aiohttp ];
+  pyproject = true;
   pythonImportsCheck = [ "airpatrol" ];
 
   meta = {

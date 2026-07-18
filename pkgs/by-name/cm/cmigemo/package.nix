@@ -5,8 +5,8 @@
   iconv,
   nkf,
   perl,
-  which,
   skkDictionaries,
+  which,
 }:
 
 stdenv.mkDerivation {
@@ -20,6 +20,8 @@ stdenv.mkDerivation {
     sha256 = "00a6kdmxp16b8x0p04ws050y39qspd1bqlfq74bkirc55b77a2m1";
   };
 
+  patches = [ ./no-http-tool-check.patch ];
+
   nativeBuildInputs = [
     iconv
     nkf
@@ -27,24 +29,20 @@ stdenv.mkDerivation {
     which
   ];
 
+  makeFlags = [ "INSTALL=install" ];
+  buildFlags = [ (if stdenv.hostPlatform.isDarwin then "osx-all" else "gcc-all") ];
+  installTargets = [ (if stdenv.hostPlatform.isDarwin then "osx-install" else "gcc-install") ];
+
   postUnpack = ''
     cp ${skkDictionaries.l}/share/skk/SKK-JISYO.L source/dict/
   '';
 
-  patches = [ ./no-http-tool-check.patch ];
-
-  makeFlags = [ "INSTALL=install" ];
-
-  buildFlags = [ (if stdenv.hostPlatform.isDarwin then "osx-all" else "gcc-all") ];
-
-  installTargets = [ (if stdenv.hostPlatform.isDarwin then "osx-install" else "gcc-install") ];
-
   meta = {
     description = "Tool that supports Japanese incremental search with Romaji";
-    mainProgram = "cmigemo";
     homepage = "https://www.kaoriya.net/software/cmigemo";
     license = lib.licenses.mit;
     maintainers = [ lib.maintainers.cohei ];
     platforms = lib.platforms.all;
+    mainProgram = "cmigemo";
   };
 }

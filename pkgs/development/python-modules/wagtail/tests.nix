@@ -8,8 +8,8 @@
   freezegun,
   jinja2,
   msrest,
-  python-dateutil,
   python,
+  python-dateutil,
   pytz,
   responses,
   wagtail,
@@ -17,12 +17,8 @@
 }:
 
 buildPythonPackage {
-  pname = "wagtail-tests";
   inherit (wagtail) src version;
-  pyproject = false;
-
-  dontBuild = true;
-  dontInstall = true;
+  pname = "wagtail-tests";
 
   checkInputs = [
     azure-mgmt-cdn
@@ -44,4 +40,8 @@ buildPythonPackage {
     export DJANGO_SETTINGS_MODULE=wagtail.test.settings
     ${python.interpreter} -m django test
   '';
+
+  dontBuild = true;
+  dontInstall = true;
+  pyproject = false;
 }

@@ -15,27 +15,17 @@ let
 in
 
 {
-  meta = {
-    teams = [ teams.lumina ];
-  };
-
   options = {
 
     services.xserver.desktopManager.lumina.enable = mkOption {
-      type = types.bool;
       default = false;
       description = "Enable the Lumina desktop manager";
+      type = types.bool;
     };
 
   };
 
   config = mkIf cfg.enable {
-
-    services.displayManager.sessionPackages = [
-      pkgs.lumina.lumina
-    ];
-
-    environment.systemPackages = pkgs.lumina.preRequisitePackages ++ pkgs.lumina.corePackages;
 
     # Link some extra directories in /run/current-system/software/share
     environment.pathsToLink = [
@@ -44,5 +34,15 @@ in
       "/share"
     ];
 
+    environment.systemPackages = pkgs.lumina.preRequisitePackages ++ pkgs.lumina.corePackages;
+
+    services.displayManager.sessionPackages = [
+      pkgs.lumina.lumina
+    ];
+
+  };
+
+  meta = {
+    teams = [ teams.lumina ];
   };
 }

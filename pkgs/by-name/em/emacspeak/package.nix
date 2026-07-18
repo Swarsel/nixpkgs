@@ -1,10 +1,10 @@
 {
   lib,
+  stdenv,
+  fetchFromGitHub,
   emacs,
   espeak-ng,
-  fetchFromGitHub,
   makeWrapper,
-  stdenv,
   tcl,
   tclPackages,
 }:
@@ -20,6 +20,8 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-npS/wlqI7nBde/2S/rzp79jdfYXIIhgsVs5VizxEDAQ=";
   };
 
+  strictDeps = true;
+
   nativeBuildInputs = [
     emacs
     makeWrapper
@@ -30,8 +32,6 @@ stdenv.mkDerivation (finalAttrs: {
     tcl
     tclPackages.tclx
   ];
-
-  strictDeps = true;
 
   preConfigure = ''
     make config
@@ -55,13 +55,13 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   meta = {
-    homepage = "https://github.com/tvraman/emacspeak/";
     description = "Emacs extension that provides spoken output";
+    homepage = "https://github.com/tvraman/emacspeak/";
     changelog = "https://github.com/tvraman/emacspeak/blob/${finalAttrs.src.rev}/etc/NEWS";
     license = with lib.licenses; [ gpl2Plus ];
-    mainProgram = "emacspeak";
     maintainers = [ ];
     platforms = lib.platforms.linux;
+    mainProgram = "emacspeak";
     # Emacspeak requires a minimal Emacs version; let's use the broken flag
     broken = lib.versionOlder (lib.getVersion emacs) "29.1";
   };

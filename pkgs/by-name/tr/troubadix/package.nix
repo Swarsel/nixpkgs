@@ -8,7 +8,6 @@
 python3.pkgs.buildPythonApplication (finalAttrs: {
   pname = "troubadix";
   version = "26.4.6";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "greenbone";
@@ -17,11 +16,14 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     hash = "sha256-wZpxwgIGvl4cVpPNrsYa5eGbAUgdf4lOxP2f537FYQI=";
   };
 
-  pythonRelaxDeps = [
-    "codespell"
-    "pontos"
-    "validators"
+  nativeCheckInputs = with python3.pkgs; [
+    git
+    pytestCheckHook
   ];
+
+  preCheck = ''
+    export HOME=$(mktemp -d)
+  '';
 
   build-system = with python3.pkgs; [ poetry-core ];
 
@@ -36,22 +38,20 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     validators
   ];
 
-  nativeCheckInputs = with python3.pkgs; [
-    git
-    pytestCheckHook
-  ];
-
-  preCheck = ''
-    export HOME=$(mktemp -d)
-  '';
-
-  pythonImportsCheck = [ "troubadix" ];
-
   disabledTests = [
     # AssertionError
     "test_ok"
     # TypeError
     "testgit"
+  ];
+
+  pyproject = true;
+  pythonImportsCheck = [ "troubadix" ];
+
+  pythonRelaxDeps = [
+    "codespell"
+    "pontos"
+    "validators"
   ];
 
   meta = {

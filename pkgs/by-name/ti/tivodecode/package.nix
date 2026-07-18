@@ -10,8 +10,8 @@ let
 in
 
 stdenv.mkDerivation {
-  pname = "tivodecode";
   inherit version;
+  pname = "tivodecode";
 
   src = fetchurl {
     url = "mirror://sourceforge/tivodecode/tivodecode/${version}/tivodecode-${version}.tar.gz";
@@ -21,7 +21,7 @@ stdenv.mkDerivation {
   meta = {
     description = "Converts a .TiVo file (produced by TiVoToGo) to a normal MPEG file";
     homepage = "https://tivodecode.sourceforge.net";
-    platforms = lib.platforms.unix;
     license = lib.licenses.bsd3;
+    platforms = lib.platforms.unix;
   };
 }

@@ -19,6 +19,7 @@ let
   blasIntSize = if blas64 then "64" else "32";
 in
 stdenv.mkDerivation (finalAttrs: {
+  inherit blas64;
   pname = "blis";
   version = "2.1";
 
@@ -29,16 +30,14 @@ stdenv.mkDerivation (finalAttrs: {
     sha256 = "sha256-eEwqM+3+Cfm0oKog+hg29bf5DUZqJ4YsCpjl4v/8Aw0=";
   };
 
-  inherit blas64;
+  postPatch = ''
+    patchShebangs configure build/flatten-headers.py
+  '';
 
   nativeBuildInputs = [
     perl
     python3
   ];
-
-  doCheck = true;
-
-  enableParallelBuilding = true;
 
   configureFlags = [
     "--enable-cblas"
@@ -47,9 +46,7 @@ stdenv.mkDerivation (finalAttrs: {
   ++ lib.optionals withOpenMP [ "--enable-threading=openmp" ]
   ++ [ withArchitecture ];
 
-  postPatch = ''
-    patchShebangs configure build/flatten-headers.py
-  '';
+  doCheck = true;
 
   postInstall = ''
     ln -s $out/lib/libblis.so.4 $out/lib/libblas.so.3
@@ -57,6 +54,8 @@ stdenv.mkDerivation (finalAttrs: {
     ln -s $out/lib/libblas.so.3 $out/lib/libblas.so
     ln -s $out/lib/libcblas.so.3 $out/lib/libcblas.so
   '';
+
+  enableParallelBuilding = true;
 
   meta = {
     description = "BLAS-compatible linear algebra library";

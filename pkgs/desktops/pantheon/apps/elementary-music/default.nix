@@ -2,12 +2,6 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  nix-update-script,
-  meson,
-  ninja,
-  pkg-config,
-  vala,
-  wrapGAppsHook4,
   elementary-gtk-theme,
   elementary-icon-theme,
   glib,
@@ -15,6 +9,12 @@
   gst_all_1,
   gtk4,
   libadwaita,
+  meson,
+  ninja,
+  nix-update-script,
+  pkg-config,
+  vala,
+  wrapGAppsHook4,
 }:
 
 stdenv.mkDerivation rec {
@@ -69,7 +69,7 @@ stdenv.mkDerivation rec {
     homepage = "https://github.com/elementary/music";
     license = lib.licenses.gpl3Plus;
     platforms = lib.platforms.linux;
-    teams = [ lib.teams.pantheon ];
     mainProgram = "io.elementary.music";
+    teams = [ lib.teams.pantheon ];
   };
 }

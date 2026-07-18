@@ -1,20 +1,20 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
-  openssl,
+  SDL2,
+  cmake,
   curl,
   ffmpeg,
-  vlc,
-  SDL2,
-  lame,
   json_c,
-  cmake,
-  pkg-config,
-  ncurses,
+  lame,
   libuuid,
+  ncurses,
+  openssl,
   pandoc,
   pipewire,
+  pkg-config,
+  vlc,
 }:
 stdenv.mkDerivation (finalAttrs: {
   pname = "ctune";
@@ -26,6 +26,8 @@ stdenv.mkDerivation (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-pC1xlcEX1f2kGewkq88iDAZwSlcRHmBpIw1aW74X6jw=";
   };
+
+  strictDeps = true;
 
   nativeBuildInputs = [
     cmake
@@ -46,8 +48,6 @@ stdenv.mkDerivation (finalAttrs: {
     pipewire
   ];
 
-  strictDeps = true;
-
   cmakeFlags = [
     # Avoid a wrong nested install path location
     # Set to "$out" instead of "$out/$out"
@@ -60,7 +60,7 @@ stdenv.mkDerivation (finalAttrs: {
     changelog = "https://github.com/An7ar35/ctune/blob/master/CHANGELOG.md";
     license = lib.licenses.agpl3Plus;
     maintainers = with lib.maintainers; [ theobori ];
-    mainProgram = "ctune";
     platforms = lib.platforms.linux;
+    mainProgram = "ctune";
   };
 })

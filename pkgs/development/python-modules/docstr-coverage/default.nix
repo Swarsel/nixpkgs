@@ -1,20 +1,19 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   click,
+  pytest-mock,
+  pytestCheckHook,
   pyyaml,
   tqdm,
-  pytestCheckHook,
-  pytest-mock,
 }:
 let
   version = "2.3.2";
 in
 buildPythonPackage {
-  pname = "docstr-coverage";
   inherit version;
-  format = "setuptools";
+  pname = "docstr-coverage";
 
   src = fetchFromGitHub {
     owner = "HunterMcGushion";
@@ -42,12 +41,14 @@ buildPythonPackage {
     "config_specifier_w_ignore"
   ];
 
+  format = "setuptools";
+
   meta = {
     description = "Docstring coverage analysis and rating for Python";
-    mainProgram = "docstr-coverage";
     homepage = "https://github.com/HunterMcGushion/docstr_coverage";
     changelog = "https://github.com/HunterMcGushion/docstr_coverage/blob/master/CHANGELOG.md";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ augustebaum ];
+    mainProgram = "docstr-coverage";
   };
 }

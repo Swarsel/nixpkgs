@@ -8,8 +8,6 @@ let
   xnu = sourceRelease "xnu";
 
   privateHeaders = stdenvNoCC.mkDerivation {
-    name = "copyfile-deps-private-headers";
-
     buildCommand = ''
       install -D -t "$out/include/Kernel/sys" \
         '${xnu}/bsd/sys/decmpfs.h'
@@ -57,20 +55,19 @@ let
       #define QTN_FLAG_DO_NOT_TRANSLOCATE 0x100
       EOF
     '';
+
+    name = "copyfile-deps-private-headers";
   };
 in
 mkAppleDerivation {
-  releaseName = "copyfile";
-
   outputs = [
     "out"
     "dev"
     "man"
   ];
 
-  xcodeHash = "sha256-SYW6pBlCQkcbkBqCq+W/mDYZZ7/co2HlPZwXzgh/LnI=";
-
   env.NIX_CFLAGS_COMPILE = "-I${privateHeaders}/include";
-
+  releaseName = "copyfile";
+  xcodeHash = "sha256-SYW6pBlCQkcbkBqCq+W/mDYZZ7/co2HlPZwXzgh/LnI=";
   meta.description = "Darwin file copying library";
 }

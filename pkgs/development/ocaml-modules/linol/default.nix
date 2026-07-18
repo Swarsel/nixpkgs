@@ -12,8 +12,6 @@ buildDunePackage (finalAttrs: {
   pname = "linol";
   version = "0.11";
 
-  minimalOCamlVersion = "4.14";
-
   src = fetchFromGitHub {
     owner = "c-cube";
     repo = "linol";
@@ -28,11 +26,14 @@ buildDunePackage (finalAttrs: {
     uutf
   ];
 
+  minimalOCamlVersion = "4.14";
+
   meta = {
     description = "LSP server library";
     homepage = "https://github.com/c-cube/linol";
     changelog = "https://raw.githubusercontent.com/c-cube/linol/refs/tags/v${finalAttrs.version}/CHANGES.md";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       stepbrobd
       ulrikstrid

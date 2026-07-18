@@ -1,4 +1,4 @@
-{ _cuda, lib }:
+{ lib, _cuda }:
 {
   /**
     Returns a list of bad platforms for a given package if assertsions in `finalAttrs.passthru.platformAssertions`

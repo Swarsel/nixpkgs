@@ -2,14 +2,14 @@
   lib,
   stdenv,
   fetchurl,
-  cmake,
-  pkg-config,
-  libffi,
   boehmgc,
+  cmake,
+  libffi,
+  libiodbc,
   openssl,
+  pkg-config,
   zlib,
   odbcSupport ? !stdenv.hostPlatform.isDarwin,
-  libiodbc,
 }:
 
 let
@@ -24,6 +24,7 @@ in
 stdenv.mkDerivation (finalAttrs: {
   pname = "sagittarius-scheme";
   version = "0.9.14";
+
   src = fetchurl {
     url = "https://github.com/ktakashi/sagittarius-scheme/releases/download/v${finalAttrs.version}/sagittarius-${finalAttrs.version}.tar.gz";
     hash = "sha256-L0ZKCiSbneWe1+czj83x+bCHPZw1uuYSdJwKHp4qTnk=";
@@ -32,13 +33,6 @@ stdenv.mkDerivation (finalAttrs: {
   patches = [
     ./fix-roundeven-declaration.patch
   ];
-
-  preBuild = ''
-    # since we lack rpath during build, need to explicitly add build path
-    # to LD_LIBRARY_PATH so we can load libsagittarius.so as required to
-    # build extensions
-    export ${platformLdLibraryPath}="$(pwd)/build"
-  '';
 
   nativeBuildInputs = [
     pkg-config
@@ -63,8 +57,16 @@ stdenv.mkDerivation (finalAttrs: {
     ]
   );
 
+  preBuild = ''
+    # since we lack rpath during build, need to explicitly add build path
+    # to LD_LIBRARY_PATH so we can load libsagittarius.so as required to
+    # build extensions
+    export ${platformLdLibraryPath}="$(pwd)/build"
+  '';
+
   meta = {
     description = "R6RS/R7RS Scheme system";
+
     longDescription = ''
       Sagittarius Scheme is a free Scheme implementation supporting
       R6RS/R7RS specification.
@@ -82,10 +84,11 @@ stdenv.mkDerivation (finalAttrs: {
       -  mostly works O(n)
       -  Replaceable reader
     '';
+
     homepage = "https://github.com/ktakashi/sagittarius-scheme";
     license = lib.licenses.bsd2;
-    platforms = lib.platforms.all;
     maintainers = with lib.maintainers; [ abbe ];
+    platforms = lib.platforms.all;
     broken = stdenv.hostPlatform.isDarwin;
   };
 })

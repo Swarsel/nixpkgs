@@ -1,7 +1,7 @@
 {
-  pkgs,
   config,
   lib,
+  pkgs,
   ...
 }:
 let
@@ -11,65 +11,21 @@ in
 {
   options.services.dump1090-fa = {
     enable = lib.mkEnableOption "dump1090-fa";
-
     package = lib.mkPackageOption pkgs "dump1090-fa" { };
 
     extraArgs = mkOption {
-      type = types.listOf types.str;
       default = [ ];
       description = "Additional passed arguments";
+      type = types.listOf types.str;
     };
   };
 
   config = lib.mkIf cfg.enable {
     systemd.services.dump1090-fa = {
-      description = "dump1090 ADS-B receiver (FlightAware customization)";
       after = [ "network.target" ];
-      wantedBy = [ "multi-user.target" ];
+      description = "dump1090 ADS-B receiver (FlightAware customization)";
 
       serviceConfig = {
-        ExecStart = lib.escapeShellArgs (
-          [
-            (lib.getExe cfg.package)
-            "--net"
-            "--write-json"
-            "%t/dump1090-fa"
-          ]
-          ++ cfg.extraArgs
-        );
-        DynamicUser = true;
-        SupplementaryGroups = "plugdev";
-        RuntimeDirectory = "dump1090-fa";
-        WorkingDirectory = "%t/dump1090-fa";
-        RuntimeDirectoryMode = 755;
-        PrivateNetwork = true;
-        LockPersonality = true;
-        MemoryDenyWriteExecute = true;
-        NoNewPrivileges = true;
-        PrivateMounts = true;
-        PrivateTmp = true;
-        PrivateUsers = true;
-        ProtectClock = true;
-        ProtectHome = true;
-        ProtectKernelLogs = true;
-        ProtectKernelModules = true;
-        ProtectKernelTunables = true;
-        ProtectProc = "invisible";
-        ProcSubset = "pid";
-        ProtectSystem = "strict";
-        ProtectHostname = true;
-        RestrictSUIDSGID = true;
-        RestrictNamespaces =
-          "~"
-          + (lib.concatStringsSep " " [
-            "cgroup"
-            "ipc"
-            "net"
-            "mnt"
-            "pid"
-            "user"
-            "uts"
-          ]);
         CapabilityBoundingSet = [
           "~CAP_AUDIT_CONTROL"
           "~CAP_AUDIT_READ"
@@ -107,6 +63,56 @@ in
           "~CAP_LEASE"
           "~CAP_SYS_PACCT"
         ];
+
+        DynamicUser = true;
+
+        ExecStart = lib.escapeShellArgs (
+          [
+            (lib.getExe cfg.package)
+            "--net"
+            "--write-json"
+            "%t/dump1090-fa"
+          ]
+          ++ cfg.extraArgs
+        );
+
+        LockPersonality = true;
+        MemoryDenyWriteExecute = true;
+        NoNewPrivileges = true;
+        PrivateMounts = true;
+        PrivateNetwork = true;
+        PrivateTmp = true;
+        PrivateUsers = true;
+        ProcSubset = "pid";
+        ProtectClock = true;
+        ProtectControlGroups = true;
+        ProtectHome = true;
+        ProtectHostname = true;
+        ProtectKernelLogs = true;
+        ProtectKernelModules = true;
+        ProtectKernelTunables = true;
+        ProtectProc = "invisible";
+        ProtectSystem = "strict";
+        RestrictAddressFamilies = [ "~AF_PACKET" ];
+
+        RestrictNamespaces =
+          "~"
+          + (lib.concatStringsSep " " [
+            "cgroup"
+            "ipc"
+            "net"
+            "mnt"
+            "pid"
+            "user"
+            "uts"
+          ]);
+
+        RestrictSUIDSGID = true;
+        RuntimeDirectory = "dump1090-fa";
+        RuntimeDirectoryMode = 755;
+        SupplementaryGroups = "plugdev";
+        SystemCallArchitectures = "native";
+
         SystemCallFilter = [
           "~@clock"
           "~@debug"
@@ -120,16 +126,17 @@ in
           "~@cpu-emulation"
           "~@obsolete"
         ];
-        RestrictAddressFamilies = [ "~AF_PACKET" ];
-        ProtectControlGroups = true;
+
         UMask = "0022";
-        SystemCallArchitectures = "native";
+        WorkingDirectory = "%t/dump1090-fa";
       };
+
+      wantedBy = [ "multi-user.target" ];
     };
   };
 
   meta = {
-    maintainers = with lib.maintainers; [ aciceri ];
     doc = ./dump1090-fa.md;
+    maintainers = with lib.maintainers; [ aciceri ];
   };
 }

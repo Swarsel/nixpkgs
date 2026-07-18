@@ -1,10 +1,10 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
-  sudachidict,
   runCommand,
+  rustPlatform,
   sudachi-rs,
+  sudachidict,
   writeScript,
 }:
 
@@ -33,6 +33,14 @@ rustPlatform.buildRustPackage (finalAttrs: {
   '';
 
   passthru = {
+    tests = {
+      # detects an error that sudachidict is not found
+      cli = runCommand "${finalAttrs.pname}-cli-test" { } ''
+        mkdir $out
+        echo "高輪ゲートウェイ駅" | ${lib.getExe sudachi-rs} > $out/result
+      '';
+    };
+
     updateScript = writeScript "update.sh" ''
       #!/usr/bin/env nix-shell
       #!nix-shell -i bash -p nix-update
@@ -41,13 +49,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
       nix-update sudachi-rs
       nix-update --version=skip python3Packages.sudachipy
     '';
-    tests = {
-      # detects an error that sudachidict is not found
-      cli = runCommand "${finalAttrs.pname}-cli-test" { } ''
-        mkdir $out
-        echo "高輪ゲートウェイ駅" | ${lib.getExe sudachi-rs} > $out/result
-      '';
-    };
   };
 
   meta = {

@@ -2,8 +2,8 @@
 
 {
   config,
-  pkgs,
   lib,
+  pkgs,
   ...
 }:
 
@@ -25,11 +25,11 @@
 
   config = lib.mkIf config.programs.seahorse.enable {
 
-    programs.ssh.askPassword = lib.mkDefault "${pkgs.seahorse}/libexec/seahorse/ssh-askpass";
-
     environment.systemPackages = [
       pkgs.seahorse
     ];
+
+    programs.ssh.askPassword = lib.mkDefault "${pkgs.seahorse}/libexec/seahorse/ssh-askpass";
 
     services.dbus.packages = [
       pkgs.seahorse

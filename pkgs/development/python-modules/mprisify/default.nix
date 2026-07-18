@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitLab,
+  buildPythonPackage,
   pydbus,
   pygobject3,
   setuptools,
@@ -10,7 +10,6 @@
 buildPythonPackage rec {
   pname = "mprisify";
   version = "1.0.1";
-  pyproject = true;
 
   src = fetchFromGitLab {
     owner = "zehkira";
@@ -27,6 +26,7 @@ buildPythonPackage rec {
     strenum
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "mprisify" ];
 
   meta = {

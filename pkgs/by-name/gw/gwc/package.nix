@@ -2,14 +2,14 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  autoreconfHook,
-  pkg-config,
   alsa-lib,
-  libpulseaudio,
+  autoreconfHook,
+  fftw,
   gtk2,
   hicolor-icon-theme,
+  libpulseaudio,
   libsndfile,
-  fftw,
+  pkg-config,
 }:
 
 stdenv.mkDerivation (finalAttrs: {

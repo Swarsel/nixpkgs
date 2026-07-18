@@ -2,9 +2,9 @@
   lib,
   stdenv,
   fetchurl,
-  makeWrapper,
-  jre,
   gcc,
+  jre,
+  makeWrapper,
   valgrind,
 }:
 # gcc and valgrind are not strict dependencies, they could be made
@@ -21,13 +21,12 @@ stdenv.mkDerivation rec {
   };
 
   nativeBuildInputs = [ makeWrapper ];
+
   buildInputs = [
     jre
     gcc
     valgrind
   ];
-
-  dontUnpack = true;
 
   installPhase = ''
     runHook preInstall
@@ -41,13 +40,15 @@ stdenv.mkDerivation rec {
     runHook postInstall
   '';
 
+  dontUnpack = true;
+
   meta = {
     description = "Free cross-platform programming exerciser";
-    mainProgram = "plm";
     homepage = "https://people.irisa.fr/Martin.Quinson/Teaching/PLM/";
     license = lib.licenses.gpl3;
     sourceProvenance = with lib.sourceTypes; [ binaryBytecode ];
     maintainers = [ ];
     platforms = lib.platforms.all;
+    mainProgram = "plm";
   };
 }

@@ -1,10 +1,10 @@
 {
   lib,
+  stdenv,
   fetchurl,
   fetchpatch,
   installShellFiles,
   ncurses,
-  stdenv,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -12,42 +12,41 @@ stdenv.mkDerivation (finalAttrs: {
   version = "2.2_0";
 
   src = fetchurl {
+    hash = "sha256-moRmsik3mEQQVrwnlzavOmFrqrovEZQDlsxg/3GSTqA=";
+
     urls = [
       "http://www.the-little-red-haired-girl.org/pub/elvis/elvis-${finalAttrs.version}.tar.gz"
       "http://www.the-little-red-haired-girl.org/pub/elvis/old/elvis-${finalAttrs.version}.tar.gz"
     ];
-    hash = "sha256-moRmsik3mEQQVrwnlzavOmFrqrovEZQDlsxg/3GSTqA=";
   };
-
-  patches = [
-    (fetchpatch {
-      name = "0000-resolve-stdio-getline-naming-conflict.patch";
-      url = "https://github.com/mbert/elvis/commit/076cf4ad5cc993be0c6195ec0d5d57e5ad8ac1eb.patch";
-      hash = "sha256-DCo2caiyE8zV5ss3O1AXy7oNlJ5AzFxdTeBx2Wtg83s=";
-    })
-  ];
 
   outputs = [
     "out"
     "man"
   ];
 
-  nativeBuildInputs = [ installShellFiles ];
-
-  buildInputs = [ ncurses ];
-
-  configureFlags = [
-    "--ioctl=termios"
-    "--libs=-lncurses"
+  patches = [
+    (fetchpatch {
+      hash = "sha256-DCo2caiyE8zV5ss3O1AXy7oNlJ5AzFxdTeBx2Wtg83s=";
+      name = "0000-resolve-stdio-getline-naming-conflict.patch";
+      url = "https://github.com/mbert/elvis/commit/076cf4ad5cc993be0c6195ec0d5d57e5ad8ac1eb.patch";
+    })
   ];
-
-  strictDeps = false;
 
   postPatch = ''
     substituteInPlace configure \
       --replace-fail '-lcurses' '-lncurses' \
       --replace-fail 'if [ -f /usr/include/sys/wait.h ]' 'if true'
   '';
+
+  strictDeps = false;
+  nativeBuildInputs = [ installShellFiles ];
+  buildInputs = [ ncurses ];
+
+  configureFlags = [
+    "--ioctl=termios"
+    "--libs=-lncurses"
+  ];
 
   postConfigure = ''
     echo >>config.h '#undef NEED_MEMMOVE'
@@ -74,11 +73,11 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   meta = {
-    homepage = "https://elvis.the-little-red-haired-girl.org/";
     description = "Vi clone for Unix and other operating systems";
+    homepage = "https://elvis.the-little-red-haired-girl.org/";
     license = lib.licenses.free;
-    mainProgram = "elvis";
     maintainers = [ ];
     platforms = lib.platforms.unix;
+    mainProgram = "elvis";
   };
 })

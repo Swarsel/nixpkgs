@@ -1,11 +1,11 @@
 {
+  lib,
+  fetchFromGitHub,
   beautifulsoup4,
   buildPythonPackage,
   comicon,
   feedparser,
-  fetchFromGitHub,
   filetype,
-  lib,
   lxml,
   natsort,
   nix-update-script,
@@ -20,7 +20,6 @@
 buildPythonPackage rec {
   pname = "mandown";
   version = "1.12.2";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "potatoeggy";
@@ -46,6 +45,13 @@ buildPythonPackage rec {
     typer
   ];
 
+  optional-dependencies = {
+    gui = [ pyside6 ];
+  };
+
+  pyproject = true;
+  pythonImportsCheck = [ "mandown" ];
+
   pythonRelaxDeps = [
     "beautifulsoup4"
     "lxml"
@@ -53,18 +59,12 @@ buildPythonPackage rec {
     "typer"
   ];
 
-  optional-dependencies = {
-    gui = [ pyside6 ];
-  };
-
-  pythonImportsCheck = [ "mandown" ];
-
   passthru.updateScript = nix-update-script { };
 
   meta = {
-    changelog = "https://github.com/potatoeggy/mandown/releases/tag/v${version}";
     description = "Comic/manga/webtoon downloader and CBZ/EPUB/MOBI/PDF converter";
     homepage = "https://github.com/potatoeggy/mandown";
+    changelog = "https://github.com/potatoeggy/mandown/releases/tag/v${version}";
     license = lib.licenses.agpl3Only;
     maintainers = with lib.maintainers; [ Scrumplex ];
   };

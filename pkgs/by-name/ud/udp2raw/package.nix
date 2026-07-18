@@ -2,10 +2,10 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  fetchpatch,
   cmake,
-  makeWrapper,
+  fetchpatch,
   iptables,
+  makeWrapper,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -23,8 +23,8 @@ stdenv.mkDerivation (finalAttrs: {
     # Add install target to CMakeLists.txt
     # https://github.com/wangyu-/udp2raw/pull/469
     (fetchpatch {
-      url = "https://github.com/wangyu-/udp2raw/commit/4559e6d47bb69fda0fbd3fb4b7d04ddb1cf5e2ae.patch";
       hash = "sha256-2csZdXmMW89tjXhN5QIK0rnMSXlFjLvwGnmieeKRX90=";
+      url = "https://github.com/wangyu-/udp2raw/commit/4559e6d47bb69fda0fbd3fb4b7d04ddb1cf5e2ae.patch";
     })
   ];
 
@@ -44,12 +44,12 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   meta = {
-    homepage = "https://github.com/wangyu-/udp2raw";
     description = "Tunnel which turns UDP traffic into encrypted UDP/FakeTCP/ICMP traffic by using a raw socket";
-    mainProgram = "udp2raw";
-    license = lib.licenses.mit;
+    homepage = "https://github.com/wangyu-/udp2raw";
     changelog = "https://github.com/wangyu-/udp2raw/releases/tag/${finalAttrs.version}";
+    license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ chvp ];
     platforms = lib.platforms.linux;
+    mainProgram = "udp2raw";
   };
 })

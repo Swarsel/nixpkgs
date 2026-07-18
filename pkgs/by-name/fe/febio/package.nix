@@ -2,13 +2,13 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  fetchpatch2,
-  replaceVars,
   cmake,
+  fetchpatch2,
+  mkl,
   ninja,
+  replaceVars,
   zlib,
   mklSupport ? true,
-  mkl,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -31,14 +31,9 @@ stdenv.mkDerivation (finalAttrs: {
     # Fixed missing header include for strcpy
     # https://github.com/febiosoftware/FEBio/pull/92
     (fetchpatch2 {
-      url = "https://github.com/febiosoftware/FEBio/commit/ad9e80e2aa8737828855458a703822f578db2fd3.patch?full_index=1";
       hash = "sha256-/uLnJB/oAwLQnsZtJnUlaAEpyZVLG6o2riRwwMCH8rI=";
+      url = "https://github.com/febiosoftware/FEBio/commit/ad9e80e2aa8737828855458a703822f578db2fd3.patch?full_index=1";
     })
-  ];
-
-  cmakeFlags = lib.optionals mklSupport [
-    (lib.cmakeBool "USE_MKL" true)
-    (lib.cmakeFeature "MKLROOT" "${mkl}")
   ];
 
   nativeBuildInputs = [
@@ -48,11 +43,16 @@ stdenv.mkDerivation (finalAttrs: {
 
   buildInputs = [ zlib ] ++ lib.optionals mklSupport [ mkl ];
 
+  cmakeFlags = lib.optionals mklSupport [
+    (lib.cmakeBool "USE_MKL" true)
+    (lib.cmakeFeature "MKLROOT" "${mkl}")
+  ];
+
   meta = {
     description = "Software tool for nonlinear finite element analysis in biomechanics and biophysics";
-    license = with lib.licenses; [ mit ];
     homepage = "https://febio.org/";
-    platforms = lib.platforms.unix;
+    license = with lib.licenses; [ mit ];
     maintainers = with lib.maintainers; [ Scriptkiddi ];
+    platforms = lib.platforms.unix;
   };
 })

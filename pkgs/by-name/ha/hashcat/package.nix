@@ -1,22 +1,22 @@
 {
   lib,
   stdenv,
+  fetchurl,
   addDriverRunpath,
   config,
   cudaPackages,
-  cudaSupport ? config.cudaSupport,
-  fetchurl,
+  libiconv,
   makeWrapper,
   minizip,
-  opencl-headers,
   ocl-icd,
+  opencl-headers,
   perl,
   python3,
-  rocmPackages ? { },
-  rocmSupport ? config.rocmSupport,
   xxhash,
   zlib,
-  libiconv,
+  cudaSupport ? config.cudaSupport,
+  rocmPackages ? { },
+  rocmSupport ? config.rocmSupport,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -81,8 +81,6 @@ stdenv.mkDerivation (finalAttrs: {
     "IS_AARCH64=1"
   ];
 
-  enableParallelBuilding = true;
-
   preFixup = ''
     for f in $out/share/hashcat/OpenCL/*.cl; do
       # Rewrite files to be included for compilation at runtime for opencl offload
@@ -116,15 +114,19 @@ stdenv.mkDerivation (finalAttrs: {
       done
     '';
 
+  enableParallelBuilding = true;
+
   meta = {
     description = "Fast password cracker";
-    mainProgram = "hashcat";
     homepage = "https://hashcat.net/hashcat/";
     license = lib.licenses.mit;
-    platforms = lib.platforms.unix;
+
     maintainers = with lib.maintainers; [
       felixalbrigtsen
       zimbatm
     ];
+
+    platforms = lib.platforms.unix;
+    mainProgram = "hashcat";
   };
 })

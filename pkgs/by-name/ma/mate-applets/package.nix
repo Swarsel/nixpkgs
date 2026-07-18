@@ -2,41 +2,42 @@
   lib,
   stdenv,
   fetchurl,
-  pkg-config,
-  gettext,
-  itstool,
   dbus-glib,
+  gettext,
+  gitUpdater,
   glib,
   gtk3,
   gucharmap,
+  hicolor-icon-theme,
+  itstool,
+  libgtop,
   libmateweather,
   libnl,
-  libwnck,
-  libgtop,
-  libxml2,
   libnotify,
+  libwnck,
+  libxml2,
   mate-desktop,
   mate-panel,
+  pkg-config,
   polkit,
   upower,
   wirelesstools,
-  hicolor-icon-theme,
   wrapGAppsHook3,
-  gitUpdater,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
   pname = "mate-applets";
   version = "1.28.1";
-  outputs = [
-    "out"
-    "man"
-  ];
 
   src = fetchurl {
     url = "https://pub.mate-desktop.org/releases/${lib.versions.majorMinor finalAttrs.version}/mate-applets-${finalAttrs.version}.tar.xz";
     sha256 = "pZZxQVJ9xbFy0yKmADwjruwlMWD2ULs2QwoG3a76fi4=";
   };
+
+  outputs = [
+    "out"
+    "man"
+  ];
 
   nativeBuildInputs = [
     gettext
@@ -69,24 +70,25 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   env.NIX_CFLAGS_COMPILE = "-I${glib.dev}/include/gio-unix-2.0";
-
   enableParallelBuilding = true;
 
   passthru.updateScript = gitUpdater {
-    url = "https://git.mate-desktop.org/mate-applets";
     odd-unstable = true;
     rev-prefix = "v";
+    url = "https://git.mate-desktop.org/mate-applets";
   };
 
   meta = {
     description = "Applets for use with the MATE panel";
-    mainProgram = "mate-cpufreq-selector";
     homepage = "https://mate-desktop.org";
+
     license = with lib.licenses; [
       gpl2Plus
       lgpl2Plus
     ];
+
     platforms = lib.platforms.linux;
+    mainProgram = "mate-cpufreq-selector";
     teams = [ lib.teams.mate ];
   };
 })

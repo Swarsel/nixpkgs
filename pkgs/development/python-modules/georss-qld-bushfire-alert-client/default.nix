@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   georss-client,
   pytestCheckHook,
   setuptools,
@@ -10,7 +10,6 @@
 buildPythonPackage rec {
   pname = "georss-qld-bushfire-alert-client";
   version = "0.8";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "exxamalte";
@@ -19,12 +18,10 @@ buildPythonPackage rec {
     hash = "sha256-/MyjYLu29PANe17KxJCkmHPjvjlPfswn7ZBAKFSwohc=";
   };
 
-  build-system = [ setuptools ];
-
-  dependencies = [ georss-client ];
-
   nativeCheckInputs = [ pytestCheckHook ];
-
+  build-system = [ setuptools ];
+  dependencies = [ georss-client ];
+  pyproject = true;
   pythonImportsCheck = [ "georss_qld_bushfire_alert_client" ];
 
   meta = {

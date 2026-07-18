@@ -2,11 +2,10 @@
   lib,
   stdenv,
   fetchurl,
-  autoPatchelfHook,
-  gtk3,
-  zlib,
   alsa-lib,
+  autoPatchelfHook,
   dbus,
+  gtk3,
   libGL,
   libxcursor,
   libxext,
@@ -16,10 +15,11 @@
   libxrandr,
   libxscrnsaver,
   libxxf86vm,
+  makeDesktopItem,
   udev,
   vulkan-loader, # (not used by default, enable in settings menu)
   wayland, # (not used by default, enable with SDL_VIDEODRIVER=wayland - doesn't support HiDPI)
-  makeDesktopItem,
+  zlib,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -55,15 +55,6 @@ stdenv.mkDerivation (finalAttrs: {
     vulkan-loader
     wayland
   ];
-
-  desktopItem = makeDesktopItem {
-    name = "clonehero";
-    desktopName = "Clone Hero";
-    comment = finalAttrs.meta.description;
-    icon = "clonehero";
-    exec = "clonehero";
-    categories = [ "Game" ];
-  };
 
   installPhase = ''
     runHook preInstall
@@ -115,15 +106,26 @@ stdenv.mkDerivation (finalAttrs: {
       "$out/lib/clonehero/UnityPlayer.so"
   '';
 
+  desktopItem = makeDesktopItem {
+    categories = [ "Game" ];
+    comment = finalAttrs.meta.description;
+    desktopName = "Clone Hero";
+    exec = "clonehero";
+    icon = "clonehero";
+    name = "clonehero";
+  };
+
   meta = {
     description = "Clone of Guitar Hero and Rockband-style games";
     homepage = "https://clonehero.net";
     license = lib.licenses.unfree;
+    sourceProvenance = [ lib.sourceTypes.binaryNativeCode ];
+
     maintainers = with lib.maintainers; [
       kira-bruneau
       syboxez
     ];
+
     platforms = [ "x86_64-linux" ];
-    sourceProvenance = [ lib.sourceTypes.binaryNativeCode ];
   };
 })

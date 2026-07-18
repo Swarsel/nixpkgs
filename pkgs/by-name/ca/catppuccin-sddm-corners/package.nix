@@ -1,9 +1,9 @@
 {
   lib,
-  stdenvNoCC,
   fetchFromGitHub,
   nix-update-script,
   qt6,
+  stdenvNoCC,
 }:
 
 stdenvNoCC.mkDerivation {
@@ -16,10 +16,6 @@ stdenvNoCC.mkDerivation {
     rev = "10831dea7298bd1c3262a7f48417b5af1b92ed99";
     hash = "sha256-nQImL5eDMENNDCXEqgrL2eszWXtBpbVlzjMxNdpxZlQ=";
   };
-
-  dontConfigure = true;
-  dontBuild = true;
-  dontWrapQtApps = true;
 
   propagatedBuildInputs = with qt6; [
     # avoid .dev outputs propagation
@@ -38,6 +34,9 @@ stdenvNoCC.mkDerivation {
     runHook postInstall
   '';
 
+  dontBuild = true;
+  dontConfigure = true;
+  dontWrapQtApps = true;
   passthru.updateScript = nix-update-script { extraArgs = [ "--version=branch" ]; };
 
   meta = {

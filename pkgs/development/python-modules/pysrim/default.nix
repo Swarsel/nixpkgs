@@ -2,15 +2,14 @@
   lib,
   buildPythonPackage,
   fetchPypi,
-  setuptools,
   numpy,
   pyyaml,
+  setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "pysrim";
   version = "0.5.10";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
@@ -22,6 +21,8 @@ buildPythonPackage rec {
       --replace-fail "'pytest-runner', " ""
   '';
 
+  # Tests require git lfs download of repository
+  doCheck = false;
   build-system = [ setuptools ];
 
   dependencies = [
@@ -29,12 +30,10 @@ buildPythonPackage rec {
     pyyaml
   ];
 
-  # Tests require git lfs download of repository
-  doCheck = false;
+  pyproject = true;
 
   # pythonImportsCheck does not work
   # TypeError: load() missing 1 required positional argument: 'Loader'
-
   meta = {
     description = "Srim Automation of Tasks via Python";
     homepage = "https://gitlab.com/costrouc/pysrim";

@@ -9,12 +9,11 @@
 buildPythonPackage rec {
   pname = "types-jinja2";
   version = "2.11.9";
-  pyproject = true;
 
   src = fetchPypi {
-    pname = "types-Jinja2";
     inherit version;
     hash = "sha256-29x0pAq6eu1SC35Niejw/kKGUYSUIIs1EjvPCE1LjIE=";
+    pname = "types-Jinja2";
   };
 
   build-system = [
@@ -24,6 +23,8 @@ buildPythonPackage rec {
   dependencies = [
     types-markupsafe
   ];
+
+  pyproject = true;
 
   meta = {
     description = "Typing stubs for Jinja2";

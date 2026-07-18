@@ -1,21 +1,20 @@
 {
   lib,
+  fetchFromGitHub,
   aiohttp,
   asyncio-throttle,
   awesomeversion,
   buildPythonPackage,
-  fetchFromGitHub,
-  pytestCheckHook,
   pytest-aiohttp,
   pytest-asyncio,
   pytest-cov-stub,
+  pytestCheckHook,
   setuptools,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "aiohue";
   version = "4.8.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "home-assistant-libs";
@@ -29,6 +28,13 @@ buildPythonPackage (finalAttrs: {
       --replace-fail 'version = "0.0.0"' 'version = "${finalAttrs.version}"'
   '';
 
+  nativeCheckInputs = [
+    pytestCheckHook
+    pytest-asyncio
+    pytest-aiohttp
+    pytest-cov-stub
+  ];
+
   build-system = [ setuptools ];
 
   dependencies = [
@@ -37,21 +43,16 @@ buildPythonPackage (finalAttrs: {
     asyncio-throttle
   ];
 
-  nativeCheckInputs = [
-    pytestCheckHook
-    pytest-asyncio
-    pytest-aiohttp
-    pytest-cov-stub
+  disabledTestPaths = [
+    # File are prefixed with test_
+    "examples/"
   ];
+
+  pyproject = true;
 
   pythonImportsCheck = [
     "aiohue"
     "aiohue.discovery"
-  ];
-
-  disabledTestPaths = [
-    # File are prefixed with test_
-    "examples/"
   ];
 
   meta = {

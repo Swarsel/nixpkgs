@@ -7,7 +7,6 @@
 buildPythonPackage rec {
   pname = "meld3";
   version = "2.0.1";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
@@ -15,6 +14,7 @@ buildPythonPackage rec {
   };
 
   doCheck = false;
+  format = "setuptools";
 
   meta = {
     description = "HTML/XML templating engine used by supervisor";

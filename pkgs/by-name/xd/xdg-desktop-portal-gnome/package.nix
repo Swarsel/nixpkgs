@@ -1,6 +1,6 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchurl,
   fontconfig,
   glib,
@@ -76,8 +76,8 @@ stdenv.mkDerivation (finalAttrs: {
   meta = {
     description = "Backend implementation for xdg-desktop-portal for the GNOME desktop environment";
     homepage = "https://gitlab.gnome.org/GNOME/xdg-desktop-portal-gnome";
-    teams = [ lib.teams.gnome ];
-    platforms = lib.platforms.linux;
     license = lib.licenses.lgpl21Plus;
+    platforms = lib.platforms.linux;
+    teams = [ lib.teams.gnome ];
   };
 })

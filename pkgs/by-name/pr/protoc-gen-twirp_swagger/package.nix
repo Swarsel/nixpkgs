@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule {
@@ -16,14 +16,13 @@ buildGoModule {
   };
 
   vendorHash = "sha256-g0+9l83Fc0XPzsZAKjLBrjD+tv2+Fot57hcilqAhOZk=";
-
   subPackages = [ "." ];
 
   meta = {
     description = "Swagger generator for twirp";
-    mainProgram = "protoc-gen-twirp_swagger";
     homepage = "https://github.com/elliots/protoc-gen-twirp_swagger";
     license = lib.licenses.bsd3;
     maintainers = with lib.maintainers; [ jojosch ];
+    mainProgram = "protoc-gen-twirp_swagger";
   };
 }

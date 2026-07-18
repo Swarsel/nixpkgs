@@ -1,15 +1,14 @@
 {
   lib,
-  python3Packages,
   fetchFromGitHub,
   nixosTests,
+  python3Packages,
   versionCheckHook,
 }:
 
 python3Packages.buildPythonApplication (finalAttrs: {
   pname = "kea-exporter";
   version = "0.7.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "mweinelt";
@@ -29,16 +28,18 @@ python3Packages.buildPythonApplication (finalAttrs: {
   ];
 
   nativeInstallCheckInputs = [ versionCheckHook ];
+  pyproject = true;
+
   passthru.tests = {
     inherit (nixosTests) kea;
   };
 
   meta = {
-    changelog = "https://github.com/mweinelt/kea-exporter/blob/v${finalAttrs.version}/HISTORY";
     description = "Export Kea Metrics in the Prometheus Exposition Format";
-    mainProgram = "kea-exporter";
     homepage = "https://github.com/mweinelt/kea-exporter";
+    changelog = "https://github.com/mweinelt/kea-exporter/blob/v${finalAttrs.version}/HISTORY";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ hexa ];
+    mainProgram = "kea-exporter";
   };
 })

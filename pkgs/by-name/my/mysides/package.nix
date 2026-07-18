@@ -15,16 +15,10 @@ stdenv.mkDerivation rec {
     sha256 = "sha256-dpRrj3xb9xQSXXXxragUDgNPBaniiMc6evRF12wqVRQ=";
   };
 
-  dontBuild = true;
   nativeBuildInputs = [
     libarchive
     p7zip
   ];
-
-  unpackPhase = ''
-    7z x $src
-    bsdtar -xf Payload~
-  '';
 
   installPhase = ''
     runHook preInstall
@@ -33,6 +27,13 @@ stdenv.mkDerivation rec {
     install -Dm755 usr/local/bin/mysides -t $out/bin
 
     runHook postInstall
+  '';
+
+  dontBuild = true;
+
+  unpackPhase = ''
+    7z x $src
+    bsdtar -xf Payload~
   '';
 
   meta = {

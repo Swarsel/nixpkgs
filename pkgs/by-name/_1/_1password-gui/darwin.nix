@@ -1,11 +1,11 @@
 {
   stdenv,
-  pname,
-  version,
-  src,
   meta,
-  unzip,
+  pname,
+  src,
   undmg,
+  unzip,
+  version,
 }:
 
 stdenv.mkDerivation {
@@ -21,8 +21,6 @@ stdenv.mkDerivation {
     undmg
   ];
 
-  sourceRoot = ".";
-
   installPhase = ''
     mkdir -p $out/Applications
     cp -r *.app $out/Applications
@@ -30,6 +28,6 @@ stdenv.mkDerivation {
 
   # 1Password is notarized.
   dontFixup = true;
-
+  sourceRoot = ".";
   passthru.updateScript = ./update.sh;
 }

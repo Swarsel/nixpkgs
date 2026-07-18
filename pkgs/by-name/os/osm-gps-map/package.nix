@@ -1,17 +1,17 @@
 {
+  lib,
+  stdenv,
+  autoreconfHook,
   cairo,
   fetchpatch2,
   fetchzip,
   glib,
-  libsoup_3,
   gnome-common,
-  gtk3,
   gobject-introspection,
-  autoreconfHook,
   gtk-doc,
+  gtk3,
+  libsoup_3,
   pkg-config,
-  lib,
-  stdenv,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -23,18 +23,24 @@ stdenv.mkDerivation (finalAttrs: {
     sha256 = "sha256-ciw28YXhR+GC6B2VPC+ZxjyhadOk3zYGuOssSgqjwH0=";
   };
 
+  outputs = [
+    "out"
+    "dev"
+    "doc"
+  ];
+
   patches = [
     # libsoup 2 is EOL
     # 1. 0001-Drop-support-for-libsoup-older-than-2.42.patch
     (fetchpatch2 {
-      url = "https://salsa.debian.org/debian-gis-team/osm-gps-map/-/raw/debian/1.2.0-4/debian/patches/0001-Drop-support-for-libsoup-older-than-2.42.patch";
       hash = "sha256-9KSqXV1ZO21nERlhp0/nZkMuGuMpsr1RfszKkTjyvSo=";
+      url = "https://salsa.debian.org/debian-gis-team/osm-gps-map/-/raw/debian/1.2.0-4/debian/patches/0001-Drop-support-for-libsoup-older-than-2.42.patch";
     })
     # 2. port-to-libsoup3.patch
     (fetchpatch2 {
-      url = "https://salsa.debian.org/debian-gis-team/osm-gps-map/-/raw/debian/1.2.0-4/debian/patches/0001-Port-to-libsoup3.patch";
-      hash = "sha256-/Ss/rGm08UXmSpDMNGlS79eQ35sOyU8vAMC9eEBOgKg=";
       excludes = [ ".github/*" ];
+      hash = "sha256-/Ss/rGm08UXmSpDMNGlS79eQ35sOyU8vAMC9eEBOgKg=";
+      url = "https://salsa.debian.org/debian-gis-team/osm-gps-map/-/raw/debian/1.2.0-4/debian/patches/0001-Port-to-libsoup3.patch";
     })
     # 3. fix autoconf checks
     ./port-configure-to-libsoup3.patch
@@ -43,16 +49,6 @@ stdenv.mkDerivation (finalAttrs: {
     # it should only be listed as private requirement
     # https://github.com/nzjrs/osm-gps-map/pull/108
     ./dont-require-libsoup.patch
-  ];
-
-  outputs = [
-    "out"
-    "dev"
-    "doc"
-  ];
-
-  configureFlags = [
-    "CFLAGS=-std=gnu17"
   ];
 
   nativeBuildInputs = [
@@ -71,6 +67,10 @@ stdenv.mkDerivation (finalAttrs: {
 
   propagatedBuildInputs = [
     gtk3
+  ];
+
+  configureFlags = [
+    "CFLAGS=-std=gnu17"
   ];
 
   meta = {

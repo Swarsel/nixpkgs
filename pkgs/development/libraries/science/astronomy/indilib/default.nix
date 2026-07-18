@@ -1,24 +1,24 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
   bash,
-  cmake,
-  cfitsio,
-  libusb1,
-  kmod,
-  zlib,
   boost,
-  libev,
-  libnova,
+  cfitsio,
+  cmake,
   curl,
-  libjpeg,
-  gsl,
   fftw,
+  gsl,
   gtest,
+  indi-full,
+  kmod,
+  libev,
+  libjpeg,
+  libnova,
+  libusb1,
   udevCheckHook,
   versionCheckHook,
-  indi-full,
+  zlib,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -34,11 +34,6 @@ stdenv.mkDerivation (finalAttrs: {
 
   nativeBuildInputs = [
     cmake
-  ];
-
-  nativeInstallCheckInputs = [
-    versionCheckHook
-    udevCheckHook
   ];
 
   buildInputs = [
@@ -63,14 +58,15 @@ stdenv.mkDerivation (finalAttrs: {
     "-DINDI_BUILD_INTEGTESTS=ON"
   ];
 
-  checkInputs = [ gtest ];
-
   # tests seem to be broken on darwin
   doCheck = !stdenv.hostPlatform.isDarwin;
+  checkInputs = [ gtest ];
   doInstallCheck = true;
 
-  # Socket address collisions between tests
-  enableParallelChecking = false;
+  nativeInstallCheckInputs = [
+    versionCheckHook
+    udevCheckHook
+  ];
 
   postFixup = lib.optionalString stdenv.hostPlatform.isLinux ''
     for f in $out/lib/udev/rules.d/*.rules
@@ -80,6 +76,9 @@ stdenv.mkDerivation (finalAttrs: {
     done
   '';
 
+  # Socket address collisions between tests
+  enableParallelChecking = false;
+
   passthru.tests = {
     # make sure 3rd party drivers compile with this indilib
     indi-full = indi-full.override {
@@ -88,15 +87,17 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   meta = {
-    homepage = "https://www.indilib.org/";
     description = "Implementation of the INDI protocol for POSIX operating systems";
+    homepage = "https://www.indilib.org/";
     changelog = "https://github.com/indilib/indi/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.lgpl2Plus;
-    mainProgram = "indiserver";
+
     maintainers = with lib.maintainers; [
       sheepforce
       returntoreality
     ];
+
     platforms = lib.platforms.unix;
+    mainProgram = "indiserver";
   };
 })

@@ -11,30 +11,36 @@ let
   inherit (lib) mkOption types concatStringsSep;
 in
 {
-  port = 9092;
   extraOpts = {
     lndHost = mkOption {
-      type = types.str;
       default = "localhost:10009";
+
       description = ''
         lnd instance gRPC address:port.
       '';
-    };
 
-    lndTlsPath = mkOption {
-      type = types.path;
-      description = ''
-        Path to lnd TLS certificate.
-      '';
+      type = types.str;
     };
 
     lndMacaroonDir = mkOption {
-      type = types.path;
       description = ''
         Path to lnd macaroons.
       '';
+
+      type = types.path;
+    };
+
+    lndTlsPath = mkOption {
+      description = ''
+        Path to lnd TLS certificate.
+      '';
+
+      type = types.path;
     };
   };
+
+  port = 9092;
+
   serviceOpts.serviceConfig = {
     ExecStart = ''
       ${pkgs.prometheus-lnd-exporter}/bin/lndmon \
@@ -45,7 +51,9 @@ in
         --lnd.macaroondir=${cfg.lndMacaroonDir} \
         ${concatStringsSep " \\\n  " cfg.extraFlags}
     '';
+
     LogsDirectory = "prometheus-lnd-exporter";
+
     ReadOnlyPaths = [
       cfg.lndTlsPath
       cfg.lndMacaroonDir

@@ -1,8 +1,8 @@
 {
   lib,
+  fetchFromGitHub,
   aiohttp,
   buildPythonPackage,
-  fetchFromGitHub,
   hatch-regex-commit,
   hatchling,
   mashumaro,
@@ -12,7 +12,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "pythonkuma";
   version = "0.5.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "tr4nt0r";
@@ -20,6 +19,9 @@ buildPythonPackage (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-jQapfwdDuHb5Ha25cUQycfRb/A07pRtm92Iy8bbYfqI=";
   };
+
+  # Tests are minimal and don't test functionality
+  doCheck = false;
 
   build-system = [
     hatch-regex-commit
@@ -32,9 +34,7 @@ buildPythonPackage (finalAttrs: {
     prometheus-client
   ];
 
-  # Tests are minimal and don't test functionality
-  doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "pythonkuma" ];
 
   meta = {

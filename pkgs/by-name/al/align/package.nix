@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule (finalAttrs: {
@@ -18,10 +18,10 @@ buildGoModule (finalAttrs: {
   vendorHash = null;
 
   meta = {
-    homepage = "https://github.com/Guitarbum722/align";
     description = "General purpose application and library for aligning text";
-    mainProgram = "align";
-    maintainers = with lib.maintainers; [ hrhino ];
+    homepage = "https://github.com/Guitarbum722/align";
     license = lib.licenses.mit;
+    maintainers = with lib.maintainers; [ hrhino ];
+    mainProgram = "align";
   };
 })

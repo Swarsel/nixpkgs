@@ -1,15 +1,14 @@
 {
   lib,
+  fetchFromGitHub,
   aiohttp,
   buildPythonPackage,
-  fetchFromGitHub,
   poetry-core,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "pynordpool";
   version = "0.4.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "gjohansson-ST";
@@ -18,13 +17,11 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-HDbYrwQ4v5cqej5aUat0gVzaRpJz5jaFHjWUC98gacg=";
   };
 
-  build-system = [ poetry-core ];
-
-  dependencies = [ aiohttp ];
-
   # Module has no tests
   doCheck = false;
-
+  build-system = [ poetry-core ];
+  dependencies = [ aiohttp ];
+  pyproject = true;
   pythonImportsCheck = [ "pynordpool" ];
 
   meta = {

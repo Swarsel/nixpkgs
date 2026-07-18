@@ -1,35 +1,35 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchurl,
+  buildPackages,
+  dbus,
+  docbook-xsl-nons,
+  docbook_xml_dtd_42,
+  gettext,
+  gi-docgen,
+  gjs,
   glib,
+  gnome,
+  gobject-introspection,
+  libgcrypt,
+  libintl,
+  libsecret,
+  libxslt,
   meson,
   ninja,
   pkg-config,
-  gettext,
-  libxslt,
   python3,
   python3Packages,
-  docbook-xsl-nons,
-  docbook_xml_dtd_42,
-  libgcrypt,
-  gobject-introspection,
-  buildPackages,
+  tpm2-abrmd,
+  tpm2-tss,
+  vala,
+  writeShellApplication,
+  abrmdSupport ? false,
   withIntrospection ?
     lib.meta.availableOn stdenv.hostPlatform gobject-introspection
     && stdenv.hostPlatform.emulatorAvailable buildPackages,
-  vala,
-  gi-docgen,
-  gnome,
-  gjs,
-  libintl,
-  dbus,
   withTpm2Tss ? false,
-  abrmdSupport ? false,
-  writeShellApplication,
-  tpm2-tss,
-  tpm2-abrmd,
-  libsecret,
 }:
 
 assert abrmdSupport -> withTpm2Tss;
@@ -37,6 +37,7 @@ assert abrmdSupport -> withTpm2Tss;
 let
   tpm-emu = writeShellApplication {
     name = "tpm-emu";
+
     runtimeInputs = [
       dbus
       tpm2-abrmd
@@ -73,20 +74,25 @@ stdenv.mkDerivation (finalAttrs: {
   pname = "libsecret";
   version = "0.21.7";
 
+  src = fetchurl {
+    url = "mirror://gnome/sources/libsecret/${lib.versions.majorMinor finalAttrs.version}/libsecret-${finalAttrs.version}.tar.xz";
+    hash = "sha256-a0UuR1BZCitWF63EACbyjS9JA94V8SUOHRxAv9aO1V4=";
+  };
+
   outputs = [
     "out"
     "dev"
   ]
   ++ lib.optional withIntrospection "devdoc";
 
-  src = fetchurl {
-    url = "mirror://gnome/sources/libsecret/${lib.versions.majorMinor finalAttrs.version}/libsecret-${finalAttrs.version}.tar.xz";
-    hash = "sha256-a0UuR1BZCitWF63EACbyjS9JA94V8SUOHRxAv9aO1V4=";
-  };
+  postPatch = ''
+    patchShebangs ./tool/test-*.sh
 
-  depsBuildBuild = [
-    pkg-config
-  ];
+    # dbus-run-session defaults to FHS path
+    substituteInPlace meson.build --replace-fail \
+      "exe_wrapper: dbus_run_session," \
+      "exe_wrapper: [dbus_run_session, '--config-file=${dbus}/share/dbus-1/session.conf'${lib.optionalString withTpm2Tss ", '${lib.getExe tpm-emu}'"}],"
+  '';
 
   nativeBuildInputs = [
     meson
@@ -115,14 +121,6 @@ stdenv.mkDerivation (finalAttrs: {
     glib
   ];
 
-  nativeCheckInputs = [
-    python3
-    python3Packages.dbus-python
-    python3Packages.pygobject3
-    dbus
-    gjs
-  ];
-
   mesonFlags = [
     (lib.mesonBool "introspection" withIntrospection)
     (lib.mesonBool "gtk_doc" withIntrospection)
@@ -130,23 +128,21 @@ stdenv.mkDerivation (finalAttrs: {
     (lib.mesonOption "bashcompdir" "share/bash-completion/completions")
   ];
 
-  doCheck = stdenv.hostPlatform.isLinux && withIntrospection;
-  separateDebugInfo = true;
-
-  postPatch = ''
-    patchShebangs ./tool/test-*.sh
-
-    # dbus-run-session defaults to FHS path
-    substituteInPlace meson.build --replace-fail \
-      "exe_wrapper: dbus_run_session," \
-      "exe_wrapper: [dbus_run_session, '--config-file=${dbus}/share/dbus-1/session.conf'${lib.optionalString withTpm2Tss ", '${lib.getExe tpm-emu}'"}],"
-  '';
-
   preConfigure = lib.optionalString abrmdSupport ''
     # Add dependencies on TCTI modules required for user‐space TPM resource
     # manager support so that they can be loaded at run time through dlopen().
     mesonFlagsArray+=("-Dc_link_args=-Wl,--push-state,--no-as-needed -ltss2-tcti-tabrmd -ltss2-tcti-device -Wl,--pop-state")
   '';
+
+  doCheck = stdenv.hostPlatform.isLinux && withIntrospection;
+
+  nativeCheckInputs = [
+    python3
+    python3Packages.dbus-python
+    python3Packages.pygobject3
+    dbus
+    gjs
+  ];
 
   preCheck = ''
     # Our gobject-introspection patches make the shared library paths absolute
@@ -189,36 +185,44 @@ stdenv.mkDerivation (finalAttrs: {
     moveToOutput "share/doc" "$devdoc"
   '';
 
+  depsBuildBuild = [
+    pkg-config
+  ];
+
+  separateDebugInfo = true;
+
   passthru = {
+    tests = {
+      libsecret-tpm2 = libsecret.override {
+        abrmdSupport = false;
+        withTpm2Tss = true;
+      };
+
+      libsecret-tpm2-abrmd = libsecret.override {
+        abrmdSupport = true;
+        withTpm2Tss = true;
+      };
+    };
+
     updateScript = gnome.updateScript {
       packageName = "libsecret";
       # Does not seem to use the odd-unstable policy: https://gitlab.gnome.org/GNOME/libsecret/issues/30
       versionPolicy = "none";
     };
-
-    tests = {
-      libsecret-tpm2 = libsecret.override {
-        withTpm2Tss = true;
-        abrmdSupport = false;
-      };
-
-      libsecret-tpm2-abrmd = libsecret.override {
-        withTpm2Tss = true;
-        abrmdSupport = true;
-      };
-    };
   };
 
   meta = {
+    inherit (glib.meta) maintainers teams;
     description = "Library for storing and retrieving passwords and other secrets";
     homepage = "https://gitlab.gnome.org/GNOME/libsecret";
     license = lib.licenses.lgpl21Plus;
-    mainProgram = "secret-tool";
+
     platforms =
       if withTpm2Tss then
         lib.intersectLists glib.meta.platforms tpm2-tss.meta.platforms
       else
         glib.meta.platforms;
-    inherit (glib.meta) maintainers teams;
+
+    mainProgram = "secret-tool";
   };
 })

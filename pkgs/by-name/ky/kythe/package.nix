@@ -1,14 +1,14 @@
 {
   lib,
   stdenv,
-  binutils,
   fetchurl,
+  binutils,
   ncurses5,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
-  version = "0.0.75";
   pname = "kythe";
+  version = "0.0.75";
 
   src = fetchurl {
     url = "https://github.com/kythe/kythe/releases/download/v${finalAttrs.version}/kythe-v${finalAttrs.version}.tar.gz";
@@ -16,10 +16,7 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   buildInputs = [ binutils ];
-
   doCheck = false;
-
-  dontBuild = true;
 
   installPhase = ''
     cd tools
@@ -40,8 +37,11 @@ stdenv.mkDerivation (finalAttrs: {
     ln -s $out/tools $out/bin
   '';
 
+  dontBuild = true;
+
   meta = {
     description = "Pluggable, (mostly) language-agnostic ecosystem for building tools that work with code";
+
     longDescription = ''
       The Kythe project was founded to provide and support tools and standards
         that encourage interoperability among programs that manipulate source
@@ -50,10 +50,11 @@ stdenv.mkDerivation (finalAttrs: {
         source code — including build systems, compilers, interpreters, static
         analyses, editors, code-review applications, and more — to share
         information with each other smoothly.  '';
+
     homepage = "https://kythe.io/";
-    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
     license = lib.licenses.asl20;
-    platforms = lib.platforms.linux;
+    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
     maintainers = [ lib.maintainers.mpickering ];
+    platforms = lib.platforms.linux;
   };
 })

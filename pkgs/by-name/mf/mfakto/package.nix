@@ -1,10 +1,10 @@
 {
-  fetchFromGitHub,
   lib,
+  stdenv,
+  fetchFromGitHub,
+  makeBinaryWrapper,
   ocl-icd,
   opencl-headers,
-  stdenv,
-  makeBinaryWrapper,
   runtimeShell,
 }:
 
@@ -19,7 +19,13 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-aQWFvdCWrab8Bz4lRWtdp2pS2Rswi5MS/1Ka5n/iJTU=";
   };
 
-  enableParallelBuilding = true;
+  # Patch the hardcoded kernel path
+  # Inject opencl-headers for GPU compilation
+  postPatch = ''
+    substituteInPlace src/mfakto.h \
+        --replace-fail '"mfakto_Kernels.cl"' '"'$out'/share/mfakto/mfakto_Kernels.cl"'
+    sed -i "/clBuildProgram/i \    strcat(program_options, \" -I $out/share/mfakto\");" src/mfakto.cpp
+  '';
 
   nativeBuildInputs = [
     makeBinaryWrapper
@@ -29,14 +35,6 @@ stdenv.mkDerivation (finalAttrs: {
     ocl-icd
     opencl-headers
   ];
-
-  # Patch the hardcoded kernel path
-  # Inject opencl-headers for GPU compilation
-  postPatch = ''
-    substituteInPlace src/mfakto.h \
-        --replace-fail '"mfakto_Kernels.cl"' '"'$out'/share/mfakto/mfakto_Kernels.cl"'
-    sed -i "/clBuildProgram/i \    strcat(program_options, \" -I $out/share/mfakto\");" src/mfakto.cpp
-  '';
 
   makeFlags = [
     "-C"
@@ -60,8 +58,11 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  enableParallelBuilding = true;
+
   meta = {
     description = "Trial Factoring program using OpenCL for GIMPS";
+
     longDescription = ''
       mfakto is an OpenCL port of mfaktc that aims to have the same features and
       functions. mfaktc is a program that trial factors Mersenne numbers. It stands
@@ -69,9 +70,10 @@ stdenv.mkDerivation (finalAttrs: {
       programs are used primarily in the Great Internet Mersenne Prime Search. mfakto
       can also run on CPUs, although this is not done in practice.
     '';
+
     homepage = "https://github.com/primesearch/mfakto";
-    maintainers = with lib.maintainers; [ dstremur ];
     license = lib.licenses.gpl3Only;
+    maintainers = with lib.maintainers; [ dstremur ];
     platforms = lib.platforms.linux;
     mainProgram = "mfakto";
   };

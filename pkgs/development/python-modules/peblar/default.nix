@@ -1,10 +1,10 @@
 {
   lib,
+  fetchFromGitHub,
   aiohttp,
   aioresponses,
   awesomeversion,
   buildPythonPackage,
-  fetchFromGitHub,
   mashumaro,
   orjson,
   poetry-core,
@@ -22,7 +22,6 @@
 buildPythonPackage rec {
   pname = "peblar";
   version = "0.5.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "frenck";
@@ -36,6 +35,15 @@ buildPythonPackage rec {
     substituteInPlace pyproject.toml \
       --replace-fail 'version = "0.0.0"' 'version = "${version}"'
   '';
+
+  nativeCheckInputs = [
+    aioresponses
+    pytest-asyncio
+    pytest-cov-stub
+    pytestCheckHook
+    syrupy
+  ]
+  ++ lib.concatAttrValues optional-dependencies;
 
   build-system = [ poetry-core ];
 
@@ -56,15 +64,7 @@ buildPythonPackage rec {
     ];
   };
 
-  nativeCheckInputs = [
-    aioresponses
-    pytest-asyncio
-    pytest-cov-stub
-    pytestCheckHook
-    syrupy
-  ]
-  ++ lib.concatAttrValues optional-dependencies;
-
+  pyproject = true;
   pythonImportsCheck = [ "peblar" ];
 
   meta = {
@@ -72,7 +72,7 @@ buildPythonPackage rec {
     homepage = "https://github.com/frenck/python-peblar";
     changelog = "https://github.com/frenck/python-peblar/releases/tag/v${version}";
     license = lib.licenses.mit;
-    mainProgram = "peblar";
     maintainers = with lib.maintainers; [ fab ];
+    mainProgram = "peblar";
   };
 }

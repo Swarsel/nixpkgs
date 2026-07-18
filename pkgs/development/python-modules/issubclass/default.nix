@@ -1,14 +1,13 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   poetry-core,
 }:
 
 buildPythonPackage rec {
   pname = "issubclass";
   version = "0.1.2";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "zmievsa";
@@ -18,7 +17,7 @@ buildPythonPackage rec {
   };
 
   build-system = [ poetry-core ];
-
+  pyproject = true;
   pythonImportsCheck = [ "issubclass" ];
 
   meta = {

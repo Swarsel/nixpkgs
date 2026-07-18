@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   installShellFiles,
 }:
 
@@ -16,13 +16,13 @@ buildGoModule rec {
     hash = "sha256-fgA6D849oS2eFCFey5K9W9ZtVVaPyElsPpgNXw7bhk4=";
   };
 
+  nativeBuildInputs = [ installShellFiles ];
   vendorHash = null;
 
   preCheck = ''
     export HOME=$TMPDIR
   '';
 
-  nativeBuildInputs = [ installShellFiles ];
   postInstall = ''
     rm $out/bin/dists
     installShellCompletion --cmd scalingo \
@@ -32,11 +32,11 @@ buildGoModule rec {
 
   meta = {
     description = "Command line client for the Scalingo PaaS";
-    mainProgram = "scalingo";
     homepage = "https://doc.scalingo.com/platform/cli/start";
     changelog = "https://github.com/Scalingo/cli/blob/master/CHANGELOG.md";
     license = lib.licenses.bsdOriginal;
     maintainers = with lib.maintainers; [ cimm ];
     platforms = with lib.platforms; unix;
+    mainProgram = "scalingo";
   };
 }

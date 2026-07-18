@@ -1,7 +1,7 @@
 {
   lib,
-  stdenvNoCC,
   fetchFromGitHub,
+  stdenvNoCC,
 }:
 
 stdenvNoCC.mkDerivation {
@@ -23,14 +23,16 @@ stdenvNoCC.mkDerivation {
   '';
 
   meta = {
-    homepage = "https://www.levien.com/type/myfonts/inconsolata.html";
     description = "Monospace font for both screen and print";
+    homepage = "https://www.levien.com/type/myfonts/inconsolata.html";
+    license = lib.licenses.ofl;
+
     maintainers = with lib.maintainers; [
       appsforartists
       mikoim
       raskin
     ];
-    license = lib.licenses.ofl;
+
     platforms = lib.platforms.all;
   };
 }

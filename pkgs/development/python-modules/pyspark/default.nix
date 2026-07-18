@@ -2,28 +2,24 @@
   lib,
   buildPythonPackage,
   fetchPypi,
-
-  # build-system
-  setuptools,
-
-  # dependencies
-  py4j,
-
   # optional-dependencies
   googleapis-common-protos,
   graphviz,
-  grpcio-status,
   grpcio,
+  grpcio-status,
   numpy,
   pandas,
+  # dependencies
+  py4j,
   pyarrow,
+  # build-system
+  setuptools,
   zstandard,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "pyspark";
   version = "4.1.2";
-  pyproject = true;
 
   src = fetchPypi {
     inherit (finalAttrs) pname version;
@@ -35,7 +31,8 @@ buildPythonPackage (finalAttrs: {
     sed -i "s/'pypandoc'//" setup.py
   '';
 
-  build-system = [ setuptools ];
+  # Tests assume running spark instance
+  doCheck = false;
 
   postFixup = ''
     # find_python_home.py has been wrapped as a shell script
@@ -48,6 +45,7 @@ buildPythonPackage (finalAttrs: {
                   'export PYTHONPATH="''${SPARK_HOME}/..:''${SPARK_HOME}/python/:$PYTHONPATH"'
   '';
 
+  build-system = [ setuptools ];
   dependencies = [ py4j ];
 
   optional-dependencies = {
@@ -60,33 +58,37 @@ buildPythonPackage (finalAttrs: {
       zstandard
       graphviz
     ];
+
     ml = [ numpy ];
     mllib = [ numpy ];
+
     pandas_on_spark = [
       pandas
       pyarrow
     ];
+
     pipelines =
       finalAttrs.passthru.optional-dependencies.connect ++ finalAttrs.passthru.optional-dependencies.sql;
+
     sql = [
       pandas
       pyarrow
     ];
   };
 
-  # Tests assume running spark instance
-  doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "pyspark" ];
 
   meta = {
     description = "Python bindings for Apache Spark";
     homepage = "https://github.com/apache/spark/tree/master/python";
+    license = lib.licenses.asl20;
+
     sourceProvenance = with lib.sourceTypes; [
       fromSource
       binaryBytecode
     ];
-    license = lib.licenses.asl20;
+
     maintainers = with lib.maintainers; [
       sarahec
       shlevy

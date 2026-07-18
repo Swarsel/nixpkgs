@@ -1,7 +1,7 @@
 {
   lib,
-  buildNpmPackage,
   fetchFromGitHub,
+  buildNpmPackage,
   fetchNpmDeps,
 }:
 
@@ -21,15 +21,15 @@ buildNpmPackage rec {
     ln -s ${./package-lock.json} ./package-lock.json
   '';
 
-  npmDeps = fetchNpmDeps {
-    inherit src postPatch;
-    hash = "sha256-OJF8N7vPLRX0ec5gaQKAxLR227uoeuAU5z+QVNyOeTY=";
-  };
-
   installPhase = ''
     mkdir $out
     cp -R dist/* $out/
   '';
+
+  npmDeps = fetchNpmDeps {
+    inherit src postPatch;
+    hash = "sha256-OJF8N7vPLRX0ec5gaQKAxLR227uoeuAU5z+QVNyOeTY=";
+  };
 
   meta = {
     description = "Custom weather card with charts";

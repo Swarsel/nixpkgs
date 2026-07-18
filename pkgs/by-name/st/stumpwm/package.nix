@@ -1,9 +1,9 @@
 {
-  stdenvNoCC,
   lib,
   fetchFromGitHub,
   autoreconfHook,
   sbcl,
+  stdenvNoCC,
   texinfo,
 }:
 
@@ -34,18 +34,18 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     texinfo
   ];
 
-  doCheck = true;
-
   postConfigure = ''
     export ASDF_OUTPUT_TRANSLATIONS=$(pwd):$(pwd)
   '';
+
+  doCheck = true;
 
   meta = {
     description = "Tiling, keyboard driven window manager";
     homepage = "https://stumpwm.github.io/";
     license = lib.licenses.gpl2Plus;
+    platforms = lib.platforms.unix;
     mainProgram = "stumpwm";
     teams = [ lib.teams.lisp ];
-    platforms = lib.platforms.unix;
   };
 })

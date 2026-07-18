@@ -13,8 +13,6 @@ stdenvNoCC.mkDerivation rec {
     hash = "sha256-WWXdmSKQhhxtYihQmNxcp/bGaZMHZf0R1dD9SRLYFuc=";
   };
 
-  dontUnpack = true;
-
   installPhase = ''
     runHook preInstall
 
@@ -23,11 +21,13 @@ stdenvNoCC.mkDerivation rec {
     runHook postInstall
   '';
 
+  dontUnpack = true;
+
   meta = {
     description = "Simplified Chinese sans-serif font derived from IPAex Gothic";
     homepage = "https://github.com/lxgw/LxgwNeoXiHei";
     license = lib.licenses.ipa;
-    platforms = lib.platforms.all;
     maintainers = with lib.maintainers; [ zendo ];
+    platforms = lib.platforms.all;
   };
 }

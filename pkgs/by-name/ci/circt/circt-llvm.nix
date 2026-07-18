@@ -1,20 +1,30 @@
 {
   lib,
   stdenv,
-  cmake,
-  ninja,
   circt,
+  cmake,
   llvm,
+  ninja,
   python3,
   zstd,
 }:
 stdenv.mkDerivation {
-  pname = circt.pname + "-llvm";
   inherit (circt) version src;
+  pname = circt.pname + "-llvm";
 
-  requiredSystemFeatures = [ "big-parallel" ];
+  outputs = [
+    "out"
+    "lib"
+    "dev"
+  ];
 
-  __structuredAttrs = true;
+  # Get rid of ${extra_libdir} (which ends up containing a path to circt-llvm.dev
+  # in circt) so that we only have to remove the one fixed rpath.
+  postPatch = lib.optionalString stdenv.hostPlatform.isDarwin ''
+    substituteInPlace llvm/llvm/cmake/modules/AddLLVM.cmake \
+      --replace-fail 'set(_install_rpath "@loader_path/../lib''${LLVM_LIBDIR_SUFFIX}" ''${extra_libdir})' \
+        'set(_install_rpath "@loader_path/../lib''${LLVM_LIBDIR_SUFFIX}")'
+  '';
 
   nativeBuildInputs = [
     cmake
@@ -26,10 +36,6 @@ stdenv.mkDerivation {
     # This is needed for darwin builds
     zstd
   ];
-
-  preConfigure = ''
-    cd llvm/llvm
-  '';
 
   cmakeFlags = [
     # Based on utils/build-llvm.sh
@@ -45,19 +51,13 @@ stdenv.mkDerivation {
     (lib.cmakeFeature "LLVM_TARGETS_TO_BUILD" "host")
   ];
 
-  outputs = [
-    "out"
-    "lib"
-    "dev"
-  ];
-
-  # Get rid of ${extra_libdir} (which ends up containing a path to circt-llvm.dev
-  # in circt) so that we only have to remove the one fixed rpath.
-  postPatch = lib.optionalString stdenv.hostPlatform.isDarwin ''
-    substituteInPlace llvm/llvm/cmake/modules/AddLLVM.cmake \
-      --replace-fail 'set(_install_rpath "@loader_path/../lib''${LLVM_LIBDIR_SUFFIX}" ''${extra_libdir})' \
-        'set(_install_rpath "@loader_path/../lib''${LLVM_LIBDIR_SUFFIX}")'
+  preConfigure = ''
+    cd llvm/llvm
   '';
+
+  # circt only use the mlir part of llvm, occasionally there are some unrelated failure from llvm,
+  # disable the llvm check, but keep the circt check enabled.
+  doCheck = false;
 
   postInstall = ''
     # move llvm-config to $dev to resolve a circular dependency
@@ -103,10 +103,9 @@ stdenv.mkDerivation {
     done
   '';
 
-  # circt only use the mlir part of llvm, occasionally there are some unrelated failure from llvm,
-  # disable the llvm check, but keep the circt check enabled.
-  doCheck = false;
+  __structuredAttrs = true;
   checkTarget = "check-mlir";
+  requiredSystemFeatures = [ "big-parallel" ];
 
   meta = llvm.meta // {
     inherit (circt.meta) maintainers;

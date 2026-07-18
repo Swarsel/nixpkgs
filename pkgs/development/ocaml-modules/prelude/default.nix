@@ -8,8 +8,6 @@ buildDunePackage (finalAttrs: {
   pname = "prelude";
   version = "0.5";
 
-  minimalOCamlVersion = "4.13";
-
   # upstream git repo is misconfigured and cannot be cloned
   src = fetchzip {
     url = "https://git.zapashcanon.fr/zapashcanon/prelude/archive/${finalAttrs.version}.tar.gz";
@@ -17,13 +15,14 @@ buildDunePackage (finalAttrs: {
   };
 
   doCheck = true;
+  minimalOCamlVersion = "4.13";
 
   meta = {
     description = "Library to enforce good stdlib practices";
     homepage = "https://ocaml.org/p/prelude/";
-    downloadPage = "https://git.zapashcanon.fr/zapashcanon/prelude";
     changelog = "https://git.zapashcanon.fr/zapashcanon/prelude/src/tag/${finalAttrs.version}/CHANGES.md";
     license = lib.licenses.agpl3Plus;
     maintainers = [ lib.maintainers.ethancedwards8 ];
+    downloadPage = "https://git.zapashcanon.fr/zapashcanon/prelude";
   };
 })

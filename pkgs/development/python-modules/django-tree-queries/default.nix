@@ -1,9 +1,9 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  hatchling,
+  buildPythonPackage,
   django,
+  hatchling,
   pytest-cov-stub,
   pytest-django,
   pytestCheckHook,
@@ -12,7 +12,6 @@
 buildPythonPackage rec {
   pname = "django-tree-queries";
   version = "0.24";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "feincms";
@@ -20,10 +19,6 @@ buildPythonPackage rec {
     tag = version;
     hash = "sha256-VPJU/0tnnLSayJhuOO0YOtqegULF6CB6ve8/1ytFydA=";
   };
-
-  build-system = [
-    hatchling
-  ];
 
   nativeCheckInputs = [
     django
@@ -40,6 +35,12 @@ buildPythonPackage rec {
   postCheck = ''
     popd
   '';
+
+  build-system = [
+    hatchling
+  ];
+
+  pyproject = true;
 
   pythonImportsCheck = [
     "tree_queries"

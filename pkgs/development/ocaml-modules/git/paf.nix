@@ -1,34 +1,31 @@
 {
+  bigstringaf,
   buildDunePackage,
-  git,
-  mimic,
-  paf,
   ca-certs-nss,
+  domain-name,
   fmt,
+  git,
+  h1,
   ipaddr,
   logs,
   lwt,
+  mimic,
+  mirage-flow,
+  paf,
   rresult,
   tls,
-  uri,
-  bigstringaf,
-  domain-name,
-  h1,
-  mirage-flow,
   tls-mirage,
+  uri,
 }:
 
 buildDunePackage {
-  pname = "git-paf";
-
   inherit (git) version src;
+  pname = "git-paf";
 
   postPatch = ''
     substituteInPlace src/git-paf/dune --replace-fail bigstringaf 'bigstringaf bstr'
     substituteInPlace src/git-paf/git_paf.ml --replace-fail Bigstringaf.t Bstr.t
   '';
-
-  minimalOCamlVersion = "4.08";
 
   propagatedBuildInputs = [
     git
@@ -48,6 +45,8 @@ buildDunePackage {
     mirage-flow
     tls-mirage
   ];
+
+  minimalOCamlVersion = "4.08";
 
   meta = git.meta // {
     description = "Package to use HTTP-based ocaml-git with MirageOS backend";

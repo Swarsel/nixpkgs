@@ -1,29 +1,25 @@
 {
   lib,
   stdenv,
-  callPackage,
-  rustPlatform,
   fetchFromGitLab,
-
-  versionCheckHook,
+  callPackage,
   installShellFiles,
   nix-update-script,
-
   nixosTests,
+  rustPlatform,
+  versionCheckHook,
 }:
 rustPlatform.buildRustPackage (finalAttrs: {
   pname = "reaction";
   version = "2.5.1";
 
   src = fetchFromGitLab {
-    domain = "framagit.org";
     owner = "ppom";
     repo = "reaction";
     tag = "v${finalAttrs.version}";
     hash = "sha256-a1ioQ+1CvC22tUeyVG8A7hciP+bXvX/UcRi0++To5Ik=";
+    domain = "framagit.org";
   };
-
-  cargoHash = "sha256-qbhNswQW6ExkMQ+KiAr50EOLiDScwm9hILiiN9GxGWU=";
 
   nativeBuildInputs = [ installShellFiles ];
 
@@ -35,6 +31,8 @@ rustPlatform.buildRustPackage (finalAttrs: {
         (stdenv.cc.libc.static or null)
       ];
 
+  cargoHash = "sha256-qbhNswQW6ExkMQ+KiAr50EOLiDScwm9hILiiN9GxGWU=";
+
   checkFlags = [
     # Those time-based tests behave poorly in low-resource environments (CI...)
     "--skip=daemon::filter::tests"
@@ -42,11 +40,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
     "--skip=ip_pattern_matches"
     # flaky and fails in hydra
     "--skip=concepts::config::tests::merge_config_distinct_concurrency"
-  ];
-
-  cargoTestFlags = [
-    # Skip integration tests for the same reason
-    "--lib"
   ];
 
   postInstall = ''
@@ -59,27 +52,35 @@ rustPlatform.buildRustPackage (finalAttrs: {
     install -Dm444 config/example* config/README.md $out/share/examples
   '';
 
-  nativeInstallCheckInputs = [ versionCheckHook ];
-  versionCheckProgramArg = "--version";
   doInstallCheck = true;
+  nativeInstallCheckInputs = [ versionCheckHook ];
+
+  cargoTestFlags = [
+    # Skip integration tests for the same reason
+    "--lib"
+  ];
+
+  versionCheckProgramArg = "--version";
 
   passthru = {
     inherit (callPackage ./plugins { }) mkReactionPlugin plugins;
-    updateScript = nix-update-script { };
+
     tests = {
       inherit (nixosTests) reaction;
     }
     // finalAttrs.passthru.plugins;
+
+    updateScript = nix-update-script { };
   };
 
   meta = {
-    changelog = "https://framagit.org/ppom/reaction/-/releases/v${finalAttrs.version}";
     description = "Scan logs and take action: an alternative to fail2ban";
     homepage = "https://framagit.org/ppom/reaction";
+    changelog = "https://framagit.org/ppom/reaction/-/releases/v${finalAttrs.version}";
     license = lib.licenses.agpl3Plus;
-    mainProgram = "reaction";
     maintainers = with lib.maintainers; [ ppom ];
     platforms = lib.platforms.unix;
+    mainProgram = "reaction";
     teams = [ lib.teams.ngi ];
   };
 })

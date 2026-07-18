@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitLab,
+  buildPythonPackage,
   flit-core,
   ifaddr,
   pytestCheckHook,
@@ -10,7 +10,6 @@
 buildPythonPackage rec {
   pname = "yeelight";
   version = "0.7.16";
-  pyproject = true;
 
   src = fetchFromGitLab {
     owner = "stavros";
@@ -19,14 +18,11 @@ buildPythonPackage rec {
     hash = "sha256-WLEXTDVcSpGCmfEI31cQXGf9+4EIUCkcaeaj25f4ERU=";
   };
 
-  build-system = [ flit-core ];
-
-  dependencies = [ ifaddr ];
-
   nativeCheckInputs = [ pytestCheckHook ];
-
+  build-system = [ flit-core ];
+  dependencies = [ ifaddr ];
   enabledTestPaths = [ "yeelight/tests.py" ];
-
+  pyproject = true;
   pythonImportsCheck = [ "yeelight" ];
 
   meta = {

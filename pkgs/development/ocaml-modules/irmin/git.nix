@@ -1,31 +1,30 @@
 {
-  buildDunePackage,
-  git,
-  irmin,
-  ppx_irmin,
-  git-unix,
-  irmin-watcher,
-  digestif,
-  cstruct,
-  fmt,
+  alcotest,
   astring,
+  buildDunePackage,
+  cacert,
+  cohttp-lwt-unix,
+  cstruct,
+  digestif,
+  fmt,
   fpath,
+  git,
+  git-unix,
+  irmin,
+  irmin-test,
+  irmin-watcher,
   logs,
   lwt,
-  uri,
-  cohttp-lwt-unix,
   mimic,
-  irmin-test,
   mtime,
-  alcotest,
-  cacert,
+  ppx_irmin,
+  uri,
 }:
 
 buildDunePackage {
 
-  pname = "irmin-git";
-
   inherit (irmin) version src;
+  pname = "irmin-git";
 
   propagatedBuildInputs = [
     git
@@ -45,14 +44,14 @@ buildDunePackage {
     cohttp-lwt-unix
   ];
 
+  doCheck = true;
+
   checkInputs = [
     mtime
     alcotest
     irmin-test
     cacert
   ];
-
-  doCheck = true;
 
   meta = irmin.meta // {
     description = "Git backend for Irmin";

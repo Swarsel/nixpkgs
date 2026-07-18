@@ -31,25 +31,18 @@ in
       '';
 
       interval = lib.mkOption {
-        type = lib.types.str;
         default = "weekly";
+
         description = ''
           Update the GeoIP databases at this time / interval.
           The format is described in
           {manpage}`systemd.time(7)`.
         '';
+
+        type = lib.types.str;
       };
 
       settings = lib.mkOption {
-        example = lib.literalExpression ''
-          {
-            AccountID = 200001;
-            DatabaseDirectory = "/var/lib/GeoIP";
-            LicenseKey = { _secret = "/run/keys/maxmind_license_key"; };
-            Proxy = "10.0.0.10:8888";
-            ProxyUserPassword = { _secret = "/run/keys/proxy_pass"; };
-          }
-        '';
         description = ''
           geoipupdate configuration options. See
           <https://github.com/maxmind/geoipupdate/blob/main/doc/GeoIP.conf.md>
@@ -65,7 +58,77 @@ in
           contents of the
           {file}`/run/keys/proxy_pass` file.
         '';
+
+        example = lib.literalExpression ''
+          {
+            AccountID = 200001;
+            DatabaseDirectory = "/var/lib/GeoIP";
+            LicenseKey = { _secret = "/run/keys/maxmind_license_key"; };
+            Proxy = "10.0.0.10:8888";
+            ProxyUserPassword = { _secret = "/run/keys/proxy_pass"; };
+          }
+        '';
+
         type = lib.types.submodule {
+          options = {
+
+            AccountID = lib.mkOption {
+              description = ''
+                Your MaxMind account ID.
+              '';
+
+              type = lib.types.int;
+            };
+
+            DatabaseDirectory = lib.mkOption {
+              default = "/var/lib/GeoIP";
+
+              description = ''
+                The directory to store the database files in. The
+                directory will be automatically created, the owner
+                changed to `geoip` and permissions
+                set to world readable. This applies if the directory
+                already exists as well, so don't use a directory with
+                sensitive contents.
+              '';
+
+              example = "/run/GeoIP";
+              type = lib.types.path;
+            };
+
+            EditionIDs = lib.mkOption {
+              description = ''
+                List of database edition IDs. This includes new string
+                IDs like `GeoIP2-City` and old
+                numeric IDs like `106`.
+              '';
+
+              example = [
+                "GeoLite2-ASN"
+                "GeoLite2-City"
+                "GeoLite2-Country"
+              ];
+
+              type = with lib.types; listOf (either str int);
+            };
+
+            LicenseKey = lib.mkOption {
+              apply = x: if isAttrs x then x else { _secret = x; };
+
+              description = ''
+                A file containing the MaxMind license key.
+
+                Always handled as a secret whether the value is
+                wrapped in a `{ _secret = ...; }`
+                attrset or not (refer to [](#opt-services.geoipupdate.settings) for
+                details).
+              '';
+
+              type = with lib.types; either path (attrsOf path);
+            };
+
+          };
+
           freeformType =
             with lib.types;
             let
@@ -76,58 +139,6 @@ in
               ];
             in
             attrsOf (either type (listOf type));
-
-          options = {
-
-            AccountID = lib.mkOption {
-              type = lib.types.int;
-              description = ''
-                Your MaxMind account ID.
-              '';
-            };
-
-            EditionIDs = lib.mkOption {
-              type = with lib.types; listOf (either str int);
-              example = [
-                "GeoLite2-ASN"
-                "GeoLite2-City"
-                "GeoLite2-Country"
-              ];
-              description = ''
-                List of database edition IDs. This includes new string
-                IDs like `GeoIP2-City` and old
-                numeric IDs like `106`.
-              '';
-            };
-
-            LicenseKey = lib.mkOption {
-              type = with lib.types; either path (attrsOf path);
-              description = ''
-                A file containing the MaxMind license key.
-
-                Always handled as a secret whether the value is
-                wrapped in a `{ _secret = ...; }`
-                attrset or not (refer to [](#opt-services.geoipupdate.settings) for
-                details).
-              '';
-              apply = x: if isAttrs x then x else { _secret = x; };
-            };
-
-            DatabaseDirectory = lib.mkOption {
-              type = lib.types.path;
-              default = "/var/lib/GeoIP";
-              example = "/run/GeoIP";
-              description = ''
-                The directory to store the database files in. The
-                directory will be automatically created, the owner
-                changed to `geoip` and permissions
-                set to world readable. This applies if the directory
-                already exists as well, so don't use a directory with
-                sensitive contents.
-              '';
-            };
-
-          };
         };
       };
     };
@@ -140,29 +151,22 @@ in
       LockFile = "/run/geoipupdate/.lock";
     };
 
-    systemd.services.geoipupdate-create-db-dir = {
-      serviceConfig.Type = "oneshot";
-      script = ''
-        set -o errexit -o pipefail -o nounset -o errtrace
-        shopt -s inherit_errexit
-
-        mkdir -p ${cfg.settings.DatabaseDirectory}
-        chmod 0755 ${cfg.settings.DatabaseDirectory}
-      '';
-    };
-
     systemd.services.geoipupdate = {
-      description = "GeoIP Updater";
-      requires = [ "geoipupdate-create-db-dir.service" ];
       after = [
         "geoipupdate-create-db-dir.service"
         "network-online.target"
         "nss-lookup.target"
       ];
+
+      description = "GeoIP Updater";
       path = [ pkgs.replace-secret ];
-      wants = [ "network-online.target" ];
-      startAt = cfg.interval;
+      requires = [ "geoipupdate-create-db-dir.service" ];
+
       serviceConfig = {
+        CapabilityBoundingSet = "";
+        DynamicUser = true;
+        ExecStart = "${pkgs.geoipupdate}/bin/geoipupdate -f /run/geoipupdate/GeoIP.conf";
+
         ExecStartPre =
           let
             isSecret = v: isAttrs v && v ? _secret && isString v._secret;
@@ -211,16 +215,13 @@ in
             '';
           in
           "+${pkgs.writeShellScript "start-pre-full-privileges" script}";
-        ExecStart = "${pkgs.geoipupdate}/bin/geoipupdate -f /run/geoipupdate/GeoIP.conf";
-        User = "geoip";
-        DynamicUser = true;
-        ReadWritePaths = cfg.settings.DatabaseDirectory;
-        RuntimeDirectory = "geoipupdate";
-        RuntimeDirectoryMode = "0700";
-        CapabilityBoundingSet = "";
+
+        LockPersonality = true;
+        MemoryDenyWriteExecute = true;
         PrivateDevices = true;
         PrivateMounts = true;
         PrivateUsers = true;
+        ProcSubset = "pid";
         ProtectClock = true;
         ProtectControlGroups = true;
         ProtectHome = true;
@@ -229,30 +230,51 @@ in
         ProtectKernelModules = true;
         ProtectKernelTunables = true;
         ProtectProc = "invisible";
-        ProcSubset = "pid";
-        SystemCallFilter = [
-          "@system-service"
-          "~@privileged"
-        ];
+        ReadWritePaths = cfg.settings.DatabaseDirectory;
+
         RestrictAddressFamilies = [
           "AF_INET"
           "AF_INET6"
         ];
-        RestrictRealtime = true;
+
         RestrictNamespaces = true;
-        MemoryDenyWriteExecute = true;
-        LockPersonality = true;
+        RestrictRealtime = true;
+        RuntimeDirectory = "geoipupdate";
+        RuntimeDirectoryMode = "0700";
         SystemCallArchitectures = "native";
+
+        SystemCallFilter = [
+          "@system-service"
+          "~@privileged"
+        ];
+
+        User = "geoip";
       };
+
+      startAt = cfg.interval;
+      wants = [ "network-online.target" ];
+    };
+
+    systemd.services.geoipupdate-create-db-dir = {
+      script = ''
+        set -o errexit -o pipefail -o nounset -o errtrace
+        shopt -s inherit_errexit
+
+        mkdir -p ${cfg.settings.DatabaseDirectory}
+        chmod 0755 ${cfg.settings.DatabaseDirectory}
+      '';
+
+      serviceConfig.Type = "oneshot";
     };
 
     systemd.timers.geoipupdate-initial-run = {
-      wantedBy = [ "timers.target" ];
-      unitConfig.ConditionPathExists = "!${cfg.settings.DatabaseDirectory}";
       timerConfig = {
-        Unit = "geoipupdate.service";
         OnActiveSec = 0;
+        Unit = "geoipupdate.service";
       };
+
+      unitConfig.ConditionPathExists = "!${cfg.settings.DatabaseDirectory}";
+      wantedBy = [ "timers.target" ];
     };
   };
 

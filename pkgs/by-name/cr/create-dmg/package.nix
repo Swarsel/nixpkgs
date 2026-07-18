@@ -1,7 +1,7 @@
 {
   lib,
-  stdenvNoCC,
   fetchFromGitHub,
+  stdenvNoCC,
 }:
 
 stdenvNoCC.mkDerivation (finalAttrs: {
@@ -16,16 +16,15 @@ stdenvNoCC.mkDerivation (finalAttrs: {
   };
 
   dontBuild = true;
-
   installFlags = [ "prefix=$(out)" ];
 
   meta = {
     description = "Shell script to build fancy DMGs";
     homepage = "https://github.com/create-dmg/create-dmg";
-    license = lib.licenses.mit;
-    platforms = lib.platforms.darwin;
-    maintainers = with lib.maintainers; [ heywoodlh ];
     changelog = "https://github.com/create-dmg/create-dmg/releases/tag/v${finalAttrs.version}";
+    license = lib.licenses.mit;
+    maintainers = with lib.maintainers; [ heywoodlh ];
+    platforms = lib.platforms.darwin;
     mainProgram = "create-dmg";
   };
 })

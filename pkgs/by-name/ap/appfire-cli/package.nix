@@ -1,12 +1,11 @@
 {
   lib,
   stdenv,
-  fetchzip,
-  makeBinaryWrapper,
   coreutils,
+  fetchzip,
   findutils,
   jre,
-
+  makeBinaryWrapper,
   testers,
 }:
 
@@ -45,19 +44,22 @@ stdenv.mkDerivation (finalAttrs: {
 
   passthru = {
     shellNames = {
-      "x86_64-linux" = "bin/shell-linux-amd64";
-      "aarch64-linux" = "bin/shell-linux-arm64";
       "aarch64-darwin" = "bin/shell-macos-arm64";
+      "aarch64-linux" = "bin/shell-linux-arm64";
+      "x86_64-linux" = "bin/shell-linux-amd64";
     };
+
     # versionCheckHook cannot be used because appfire-cli requires $HOME to be set
     tests.version = testers.testVersion {
-      package = finalAttrs.finalPackage;
       command = "acli -a getClientInfo";
+      package = finalAttrs.finalPackage;
     };
   };
 
   meta = {
+    inherit (jre.meta) platforms;
     description = "Integrated family of CLIs for Atlassian, Atlassian-related, and other applications";
+
     longDescription = ''
       Appfire CLI (ACLI) is an integrated family of CLIs for Atlassian,
       Atlassian-related, and other applications.
@@ -76,11 +78,11 @@ stdenv.mkDerivation (finalAttrs: {
       Since the /nix/store is not writable, you can instead place the file
       at {file}`$HOME/acli.properties` to achieve the same effect.
     '';
+
     homepage = "https://apps.appf.re/acli";
     license = lib.licenses.unfreeRedistributable;
     sourceProvenance = with lib.sourceTypes; [ binaryBytecode ];
     maintainers = with lib.maintainers; [ twey ];
     mainProgram = "acli";
-    inherit (jre.meta) platforms;
   };
 })

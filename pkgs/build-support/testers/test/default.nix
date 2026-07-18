@@ -1,12 +1,12 @@
 {
-  testers,
   lib,
-  pkgs,
-  hello,
-  runCommand,
-  emptyFile,
   emptyDirectory,
+  emptyFile,
+  hello,
+  pkgs,
+  runCommand,
   stdenvNoCC,
+  testers,
   ...
 }:
 let
@@ -17,32 +17,35 @@ let
   );
 
   dummyVersioning = {
+    label = "test";
     revision = "test";
     versionSuffix = "test";
-    label = "test";
   };
 
   overrideStructuredAttrs =
     enable: drv:
     drv.overrideAttrs (old: {
       failed = old.failed.overrideAttrs (oldFailed: {
-        name = oldFailed.name + "${lib.optionalString (!enable) "-no"}-structuredAttrs";
         __structuredAttrs = enable;
+        name = oldFailed.name + "${lib.optionalString (!enable) "-no"}-structuredAttrs";
       });
     });
   runNixOSTest-example = pkgs-with-overlay.testers.runNixOSTest (
     { lib, ... }:
     {
       name = "runNixOSTest-test";
+
       nodes.machine =
         { pkgs, ... }:
         {
-          system.nixos = dummyVersioning;
           environment.systemPackages = [
             pkgs.proof-of-overlay-hello
             pkgs.figlet
           ];
+
+          system.nixos = dummyVersioning;
         };
+
       testScript = ''
         machine.succeed("hello | figlet >/dev/console")
       '';
@@ -51,60 +54,10 @@ let
 
 in
 lib.recurseIntoAttrs {
-  lycheeLinkCheck = lib.recurseIntoAttrs pkgs.lychee.tests;
-
-  hasPkgConfigModules = pkgs.callPackage ../hasPkgConfigModules/tests.nix { };
-
-  hasCmakeConfigModules = pkgs.callPackage ../hasCmakeConfigModules/tests.nix { };
-
-  shellcheck = pkgs.callPackage ../shellcheck/tests.nix { };
-
-  shfmt = pkgs.callPackages ../shfmt/tests.nix { };
-
-  runCommand = lib.recurseIntoAttrs {
-    bork = pkgs.python3Packages.bork.tests.pytest-network;
-
-    dns-resolution = testers.runCommand {
-      name = "runCommand-dns-resolution-test";
-      nativeBuildInputs = [ pkgs.ldns ];
-      script = ''
-        drill example.com
-        touch $out
-      '';
-    };
-
-    nonDefault-hash = testers.runCommand {
-      name = "runCommand-nonDefaultHash-test";
-      script = ''
-        mkdir $out
-        touch $out/empty
-        echo aaaaaaaaaaicjnrkeflncmrlk > $out/keymash
-      '';
-      hash = "sha256-eMy+6bkG+KS75u7Zt4PM3APhtdVd60NxmBRN5GKJrHs=";
-    };
-  };
-
   inherit runNixOSTest-example;
-
-  runNixOSTest-extendNixOS =
-    let
-      t = runNixOSTest-example.extendNixOS {
-        module =
-          { hi, lib, ... }:
-          {
-            config = {
-              assertions = [ { assertion = hi; } ];
-            };
-            options = {
-              itsProofYay = lib.mkOption { };
-            };
-          };
-        specialArgs.hi = true;
-      };
-    in
-    assert lib.isDerivation t;
-    assert t.nodes.machine ? itsProofYay;
-    t;
+  hasCmakeConfigModules = pkgs.callPackage ../hasCmakeConfigModules/tests.nix { };
+  hasPkgConfigModules = pkgs.callPackage ../hasPkgConfigModules/tests.nix { };
+  lycheeLinkCheck = lib.recurseIntoAttrs pkgs.lychee.tests;
 
   # Check that the wiring of nixosTest is correct.
   # Correct operation of the NixOS test driver should be asserted elsewhere.
@@ -112,20 +65,73 @@ lib.recurseIntoAttrs {
     { lib, ... }:
     {
       name = "nixosTest-test";
+
       nodes.machine =
         { pkgs, ... }:
         {
-          system.nixos = dummyVersioning;
           environment.systemPackages = [
             pkgs.proof-of-overlay-hello
             pkgs.figlet
           ];
+
+          system.nixos = dummyVersioning;
         };
+
       testScript = ''
         machine.succeed("hello | figlet >/dev/console")
       '';
     }
   );
+
+  runCommand = lib.recurseIntoAttrs {
+    bork = pkgs.python3Packages.bork.tests.pytest-network;
+
+    dns-resolution = testers.runCommand {
+      nativeBuildInputs = [ pkgs.ldns ];
+      name = "runCommand-dns-resolution-test";
+
+      script = ''
+        drill example.com
+        touch $out
+      '';
+    };
+
+    nonDefault-hash = testers.runCommand {
+      hash = "sha256-eMy+6bkG+KS75u7Zt4PM3APhtdVd60NxmBRN5GKJrHs=";
+      name = "runCommand-nonDefaultHash-test";
+
+      script = ''
+        mkdir $out
+        touch $out/empty
+        echo aaaaaaaaaaicjnrkeflncmrlk > $out/keymash
+      '';
+    };
+  };
+
+  runNixOSTest-extendNixOS =
+    let
+      t = runNixOSTest-example.extendNixOS {
+        module =
+          { lib, hi, ... }:
+          {
+            config = {
+              assertions = [ { assertion = hi; } ];
+            };
+
+            options = {
+              itsProofYay = lib.mkOption { };
+            };
+          };
+
+        specialArgs.hi = true;
+      };
+    in
+    assert lib.isDerivation t;
+    assert t.nodes.machine ? itsProofYay;
+    t;
+
+  shellcheck = pkgs.callPackage ../shellcheck/tests.nix { };
+  shfmt = pkgs.callPackages ../shfmt/tests.nix { };
 
   testBuildFailure = lib.recurseIntoAttrs rec {
     happy =
@@ -162,11 +168,10 @@ lib.recurseIntoAttrs {
     helloDoesNotFail =
       runCommand "testBuildFailure-helloDoesNotFail"
         {
-          failed = testers.testBuildFailure (testers.testBuildFailure hello);
-
           # Add hello itself as a prerequisite, so we don't try to run this test if
           # there's an actual failure in hello.
           inherit hello;
+          failed = testers.testBuildFailure (testers.testBuildFailure hello);
         }
         ''
           echo "Checking $failed/testBuildFailure.log"
@@ -206,14 +211,21 @@ lib.recurseIntoAttrs {
         '';
 
     multiOutputStructuredAttrs = overrideStructuredAttrs true multiOutput;
+    sideEffectStructuredAttrs = overrideStructuredAttrs true sideEffects;
 
     sideEffects =
       runCommand "testBuildFailure-sideEffects"
         {
           failed = testers.testBuildFailure (
             stdenvNoCC.mkDerivation {
-              name = "fail-with-side-effects";
               src = emptyDirectory;
+
+              buildPhase = ''
+                echo i am failing
+                exit 1
+              '';
+
+              name = "fail-with-side-effects";
 
               postHook = ''
                 echo touching side-effect...
@@ -224,11 +236,6 @@ lib.recurseIntoAttrs {
                   exit 1
                 fi
                 touch side-effect
-              '';
-
-              buildPhase = ''
-                echo i am failing
-                exit 1
               '';
             }
           );
@@ -241,140 +248,75 @@ lib.recurseIntoAttrs {
 
           touch $out
         '';
-
-    sideEffectStructuredAttrs = overrideStructuredAttrs true sideEffects;
   };
 
   testBuildFailure' = lib.recurseIntoAttrs (
     pkgs.callPackages ../testBuildFailurePrime/tests.nix { inherit overrideStructuredAttrs; }
   );
 
+  testEqualArrayOrMap = pkgs.callPackages ../testEqualArrayOrMap/tests.nix { };
+
   testEqualContents = lib.recurseIntoAttrs {
-    equalDir = testers.testEqualContents {
-      assertion = "The same directory contents at different paths are recognized as equal";
-      expected = runCommand "expected" { } ''
-        mkdir -p -- "$out/c"
-        echo a >"$out/a"
-        echo b >"$out/b"
-        echo d >"$out/c/d"
-        echo e >"$out/e"
-        chmod a+x -- "$out/e"
-      '';
-      actual = runCommand "actual" { } ''
-        mkdir -p -- "$out/c"
-        echo a >"$out/a"
-        echo b >"$out/b"
-        echo d >"$out/c/d"
-        echo e >"$out/e"
-        chmod a+x -- "$out/e"
-      '';
-    };
-
-    # - Test whether a missing file triggers a failure as expected
-    # - Test the postFailureMessage
-    fileMissing =
-      let
-        log = testers.testBuildFailure (
-          testers.testEqualContents {
-            assertion = "Directories with different file list are not recognized as equal";
-            expected = runCommand "expected" { } ''
-              mkdir -p -- "$out/c"
-              echo a >"$out/a"
-              echo b >"$out/b"
-              echo d >"$out/c/d"
-            '';
-            actual = runCommand "actual" { } ''
-              mkdir -p -- "$out/c"
-              echo a >"$out/a"
-              echo d >"$out/c/d"
-            '';
-            inherit postFailureMessage;
-          }
-        );
-        postFailureMessage = ''
-          If after careful review, you find that the changes are acceptable, run `suchandsuch` to adopt the new behavior.
-        '';
-      in
-      runCommand "fileMissing-failure-and-log-check"
-        {
-          inherit log;
-          inherit postFailureMessage;
-        }
-        ''
-          grep -F "$postFailureMessage" "$log/testBuildFailure.log"
-          touch $out
-        '';
-
-    equalExe = testers.testEqualContents {
-      assertion = "The same executable file contents at different paths are recognized as equal";
-      expected = runCommand "expected" { } ''
-        echo test >"$out"
-        chmod a+x -- "$out"
-      '';
-      actual = runCommand "actual" { } ''
-        echo test >"$out"
-        chmod a+x -- "$out"
-      '';
-    };
-
-    unequalExe = testers.testBuildFailure (
-      testers.testEqualContents {
-        assertion = "Different file mode bits are not recognized as equal";
-        expected = runCommand "expected" { } ''
-          touch -- "$out"
-          chmod a+x -- "$out"
-        '';
-        actual = runCommand "actual" { } ''
-          touch -- "$out"
-        '';
-      }
-    );
-
-    unequalExeInDir = testers.testBuildFailure (
-      testers.testEqualContents {
-        assertion = "Different file mode bits are not recognized as equal in directory";
-        expected = runCommand "expected" { } ''
-          mkdir -p -- "$out/a"
-          echo b >"$out/b"
-          chmod a+x -- "$out/b"
-        '';
-        actual = runCommand "actual" { } ''
-          mkdir -p -- "$out/a"
-          echo b >"$out/b"
-        '';
-      }
-    );
-
-    nonExistentPath = testers.testBuildFailure (
-      testers.testEqualContents {
-        assertion = "Non existent paths are not recognized as equal";
-        expected = "${emptyDirectory}/foo";
-        actual = "${emptyDirectory}/bar";
-      }
-    );
-
     emptyFileAndDir = testers.testBuildFailure (
       testers.testEqualContents {
+        actual = emptyDirectory;
         assertion = "Empty file and directory are not recognized as equal";
         expected = emptyFile;
-        actual = emptyDirectory;
       }
     );
+
+    equalDir = testers.testEqualContents {
+      actual = runCommand "actual" { } ''
+        mkdir -p -- "$out/c"
+        echo a >"$out/a"
+        echo b >"$out/b"
+        echo d >"$out/c/d"
+        echo e >"$out/e"
+        chmod a+x -- "$out/e"
+      '';
+
+      assertion = "The same directory contents at different paths are recognized as equal";
+
+      expected = runCommand "expected" { } ''
+        mkdir -p -- "$out/c"
+        echo a >"$out/a"
+        echo b >"$out/b"
+        echo d >"$out/c/d"
+        echo e >"$out/e"
+        chmod a+x -- "$out/e"
+      '';
+    };
+
+    equalExe = testers.testEqualContents {
+      actual = runCommand "actual" { } ''
+        echo test >"$out"
+        chmod a+x -- "$out"
+      '';
+
+      assertion = "The same executable file contents at different paths are recognized as equal";
+
+      expected = runCommand "expected" { } ''
+        echo test >"$out"
+        chmod a+x -- "$out"
+      '';
+    };
 
     fileDiff =
       let
         log = testers.testBuildFailure (
           testers.testEqualContents {
-            assertion = "Different files are not recognized as equal in subdirectories";
-            expected = runCommand "expected" { } ''
-              mkdir -p -- "$out/b"
-              echo a >"$out/a"
-              echo EXPECTED >"$out/b/c"
-            '';
             actual = runCommand "actual" { } ''
               mkdir -p "$out/b"
               echo a >"$out/a"
               echo ACTUAL >"$out/b/c"
+            '';
+
+            assertion = "Different files are not recognized as equal in subdirectories";
+
+            expected = runCommand "expected" { } ''
+              mkdir -p -- "$out/b"
+              echo a >"$out/a"
+              echo EXPECTED >"$out/b/c"
             '';
           }
         );
@@ -398,7 +340,83 @@ lib.recurseIntoAttrs {
         echo 'All good.'
         touch -- "$out"
       '';
-  };
 
-  testEqualArrayOrMap = pkgs.callPackages ../testEqualArrayOrMap/tests.nix { };
+    # - Test whether a missing file triggers a failure as expected
+    # - Test the postFailureMessage
+    fileMissing =
+      let
+        log = testers.testBuildFailure (
+          testers.testEqualContents {
+            inherit postFailureMessage;
+
+            actual = runCommand "actual" { } ''
+              mkdir -p -- "$out/c"
+              echo a >"$out/a"
+              echo d >"$out/c/d"
+            '';
+
+            assertion = "Directories with different file list are not recognized as equal";
+
+            expected = runCommand "expected" { } ''
+              mkdir -p -- "$out/c"
+              echo a >"$out/a"
+              echo b >"$out/b"
+              echo d >"$out/c/d"
+            '';
+          }
+        );
+        postFailureMessage = ''
+          If after careful review, you find that the changes are acceptable, run `suchandsuch` to adopt the new behavior.
+        '';
+      in
+      runCommand "fileMissing-failure-and-log-check"
+        {
+          inherit log;
+          inherit postFailureMessage;
+        }
+        ''
+          grep -F "$postFailureMessage" "$log/testBuildFailure.log"
+          touch $out
+        '';
+
+    nonExistentPath = testers.testBuildFailure (
+      testers.testEqualContents {
+        actual = "${emptyDirectory}/bar";
+        assertion = "Non existent paths are not recognized as equal";
+        expected = "${emptyDirectory}/foo";
+      }
+    );
+
+    unequalExe = testers.testBuildFailure (
+      testers.testEqualContents {
+        actual = runCommand "actual" { } ''
+          touch -- "$out"
+        '';
+
+        assertion = "Different file mode bits are not recognized as equal";
+
+        expected = runCommand "expected" { } ''
+          touch -- "$out"
+          chmod a+x -- "$out"
+        '';
+      }
+    );
+
+    unequalExeInDir = testers.testBuildFailure (
+      testers.testEqualContents {
+        actual = runCommand "actual" { } ''
+          mkdir -p -- "$out/a"
+          echo b >"$out/b"
+        '';
+
+        assertion = "Different file mode bits are not recognized as equal in directory";
+
+        expected = runCommand "expected" { } ''
+          mkdir -p -- "$out/a"
+          echo b >"$out/b"
+          chmod a+x -- "$out/b"
+        '';
+      }
+    );
+  };
 }

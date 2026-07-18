@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   installShellFiles,
 }:
 
@@ -16,11 +16,11 @@ buildGoModule (finalAttrs: {
     hash = "sha256-KvOBvAIE9V2bj5prdcc8G5ifHsvybHBCYWrI4fWtdvE=";
   };
 
-  vendorHash = "sha256-aCL8hLcBnIs5BJM7opIwcOLvOS3uL9mYXs1vOAMlX/M=";
-
   nativeBuildInputs = [
     installShellFiles
   ];
+
+  vendorHash = "sha256-aCL8hLcBnIs5BJM7opIwcOLvOS3uL9mYXs1vOAMlX/M=";
 
   postInstall = ''
     mv $out/bin/cmd $out/bin/onmetal-image

@@ -1,12 +1,12 @@
 {
-  stdenv,
   lib,
-  gfortran,
+  stdenv,
+  fetchFromGitHub,
   blas,
+  fetchpatch,
+  gfortran,
   lapack,
   python3,
-  fetchFromGitHub,
-  fetchpatch,
 }:
 assert (!blas.isILP64);
 assert blas.isILP64 == lapack.isILP64;
@@ -14,12 +14,6 @@ assert blas.isILP64 == lapack.isILP64;
 stdenv.mkDerivation (finalAttrs: {
   pname = "wannier90";
   version = "3.1.0";
-
-  nativeBuildInputs = [ gfortran ];
-  buildInputs = [
-    blas
-    lapack
-  ];
 
   src = fetchFromGitHub {
     owner = "wannier-developers";
@@ -31,9 +25,9 @@ stdenv.mkDerivation (finalAttrs: {
   patches = [
     # upstream patch, fixes test runner.
     (fetchpatch {
+      hash = "sha256-6ZfHd8CVTzfaj99AA3dsJJ/EOeCZmzACAM5pe2wBo8g=";
       name = "replace-obsolete-pipes-module";
       url = "https://github.com/wannier-developers/wannier90/commit/8aef6edaa4f169d45b479dc5d5c5efb8b9385a49.patch";
-      hash = "sha256-6ZfHd8CVTzfaj99AA3dsJJ/EOeCZmzACAM5pe2wBo8g=";
     })
   ];
 
@@ -44,18 +38,20 @@ stdenv.mkDerivation (finalAttrs: {
     patchShebangs test-suite/run_tests test-suite/testcode/bin/testcode.py
   '';
 
-  configurePhase = ''
-    runHook preConfigure
+  nativeBuildInputs = [ gfortran ];
 
-    cp config/make.inc.gfort make.inc
-
-    runHook postConfigure
-  '';
+  buildInputs = [
+    blas
+    lapack
+  ];
 
   buildFlags = [
     "all"
     "dynlib"
   ];
+
+  doCheck = true;
+  checkInputs = [ python3 ];
 
   preInstall = ''
     installFlagsArray+=(
@@ -70,19 +66,24 @@ stdenv.mkDerivation (finalAttrs: {
     find ./src/obj/ -name "*.mod" -exec cp {} $out/include/. \;
   '';
 
-  doCheck = true;
-  checkInputs = [ python3 ];
   checkTarget = [ "test-serial" ];
 
-  enableParallelBuilding = true;
+  configurePhase = ''
+    runHook preConfigure
 
+    cp config/make.inc.gfort make.inc
+
+    runHook postConfigure
+  '';
+
+  enableParallelBuilding = true;
   hardeningDisable = [ "format" ];
 
   meta = {
     description = "Calculation of maximally localised Wannier functions";
     homepage = "https://github.com/wannier-developers/wannier90";
     license = lib.licenses.gpl2Plus;
-    platforms = [ "x86_64-linux" ];
     maintainers = [ lib.maintainers.sheepforce ];
+    platforms = [ "x86_64-linux" ];
   };
 })

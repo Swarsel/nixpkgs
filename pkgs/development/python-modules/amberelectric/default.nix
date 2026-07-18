@@ -1,8 +1,8 @@
 {
   lib,
+  fetchFromGitHub,
   aenum,
   buildPythonPackage,
-  fetchFromGitHub,
   poetry-core,
   pydantic,
   pytest-mock,
@@ -14,7 +14,6 @@
 buildPythonPackage rec {
   pname = "amberelectric";
   version = "2.0.12";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "madpilot";
@@ -22,6 +21,11 @@ buildPythonPackage rec {
     tag = "v${version}";
     hash = "sha256-HTelfgOucyQINz34hT3kGxhJf68pxKbiO3L54nt5New=";
   };
+
+  nativeCheckInputs = [
+    pytest-mock
+    pytestCheckHook
+  ];
 
   build-system = [ poetry-core ];
 
@@ -32,11 +36,7 @@ buildPythonPackage rec {
     python-dateutil
   ];
 
-  nativeCheckInputs = [
-    pytest-mock
-    pytestCheckHook
-  ];
-
+  pyproject = true;
   pythonImportsCheck = [ "amberelectric" ];
 
   meta = {

@@ -1,27 +1,25 @@
 {
   lib,
   fetchFromGitHub,
-  nix-update-script,
   adwaita-icon-theme,
+  appstream,
+  cmake,
+  desktop-file-utils,
+  glib,
+  gobject-introspection,
   gtk4,
   libadwaita,
-  desktop-file-utils,
-  wrapGAppsHook4,
   meson,
   ninja,
+  nix-update-script,
   pkg-config,
-  cmake,
   python3Packages,
-  appstream,
-  gobject-introspection,
-  glib,
+  wrapGAppsHook4,
 }:
 
 python3Packages.buildPythonApplication (finalAttrs: {
   pname = "hashes";
   version = "1.1.4";
-
-  pyproject = false;
 
   src = fetchFromGitHub {
     owner = "zefr0x";
@@ -48,24 +46,26 @@ python3Packages.buildPythonApplication (finalAttrs: {
     adwaita-icon-theme
   ];
 
+  preFixup = ''
+    makeWrapperArgs+=("''${gappsWrapperArgs[@]}")
+  '';
+
   dependencies = with python3Packages; [
     name-that-hash
     pygobject3
   ];
-  dontWrapGApps = true;
 
-  preFixup = ''
-    makeWrapperArgs+=("''${gappsWrapperArgs[@]}")
-  '';
+  dontWrapGApps = true;
+  pyproject = false;
   passthru.updateScript = nix-update-script { };
 
   meta = {
+    description = "Simple hash algorithm identification GUI";
     homepage = "https://github.com/zefr0x/hashes/tree/main";
     changelog = "https://github.com/zefr0x/hashes/releases/tag/v${finalAttrs.version}";
-    description = "Simple hash algorithm identification GUI";
-    maintainers = with lib.maintainers; [ bot-wxt1221 ];
     license = lib.licenses.gpl3Plus;
-    mainProgram = "hashes";
+    maintainers = with lib.maintainers; [ bot-wxt1221 ];
     platforms = lib.platforms.unix;
+    mainProgram = "hashes";
   };
 })

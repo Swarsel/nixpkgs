@@ -2,12 +2,10 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  makeWrapper,
-  makeDesktopItem,
-  copyDesktopItems,
   SDL2,
   bzip2,
   cmake,
+  copyDesktopItems,
   game-music-emu,
   gtk3,
   imagemagick,
@@ -15,6 +13,8 @@
   libjpeg,
   libvpx,
   libwebp,
+  makeDesktopItem,
+  makeWrapper,
   ninja,
   openal,
   pkg-config,
@@ -31,11 +31,19 @@ stdenv.mkDerivation (finalAttrs: {
     owner = "ZDoom";
     repo = "gzdoom";
     rev = "g${finalAttrs.version}";
-    fetchSubmodules = true;
     hash = "sha256-kYw+r08v/Q/hphJuvjn38Dj5mZRijE6pWKoEZBlN5P4=";
+    fetchSubmodules = true;
   };
 
   outputs = [ "out" ] ++ lib.optionals stdenv.hostPlatform.isLinux [ "doc" ];
+
+  postPatch = ''
+    substituteInPlace tools/updaterevision/UpdateRevision.cmake \
+      --replace-fail "ret_var(Tag)" "ret_var(\"${finalAttrs.src.rev}\")" \
+      --replace-fail "ret_var(Timestamp)" "ret_var(\"1970-00-00 00:00:00 +0000\")" \
+      --replace-fail "ret_var(Hash)" "ret_var(\"${finalAttrs.src.rev}\")" \
+      --replace-fail "<unknown version>" "${finalAttrs.src.rev}"
+  '';
 
   nativeBuildInputs = [
     cmake
@@ -65,14 +73,6 @@ stdenv.mkDerivation (finalAttrs: {
     zmusic
   ];
 
-  postPatch = ''
-    substituteInPlace tools/updaterevision/UpdateRevision.cmake \
-      --replace-fail "ret_var(Tag)" "ret_var(\"${finalAttrs.src.rev}\")" \
-      --replace-fail "ret_var(Timestamp)" "ret_var(\"1970-00-00 00:00:00 +0000\")" \
-      --replace-fail "ret_var(Hash)" "ret_var(\"${finalAttrs.src.rev}\")" \
-      --replace-fail "<unknown version>" "${finalAttrs.src.rev}"
-  '';
-
   # Apple dropped GL support
   # Shader's loading will throw an error while linking
   cmakeFlags = [
@@ -80,17 +80,6 @@ stdenv.mkDerivation (finalAttrs: {
     "-DDYN_OPENAL=OFF"
   ]
   ++ lib.optionals stdenv.hostPlatform.isDarwin [ "-DHAVE_GLES2=OFF" ];
-
-  desktopItems = lib.optionals stdenv.hostPlatform.isLinux [
-    (makeDesktopItem {
-      name = "gzdoom";
-      exec = "gzdoom";
-      desktopName = "GZDoom";
-      comment = finalAttrs.meta.description;
-      icon = "gzdoom";
-      categories = [ "Game" ];
-    })
-  ];
 
   installPhase = lib.optionalString stdenv.hostPlatform.isDarwin ''
     mkdir -p "$out/Applications"
@@ -109,20 +98,35 @@ stdenv.mkDerivation (finalAttrs: {
     done;
   '';
 
+  desktopItems = lib.optionals stdenv.hostPlatform.isLinux [
+    (makeDesktopItem {
+      categories = [ "Game" ];
+      comment = finalAttrs.meta.description;
+      desktopName = "GZDoom";
+      exec = "gzdoom";
+      icon = "gzdoom";
+      name = "gzdoom";
+    })
+  ];
+
   meta = {
-    homepage = "https://github.com/ZDoom/gzdoom";
     description = "Modder-friendly OpenGL and Vulkan source port based on the DOOM engine";
-    mainProgram = "gzdoom";
+
     longDescription = ''
       GZDoom is a feature centric port for all DOOM engine games, based on
       ZDoom, adding an OpenGL renderer and powerful scripting capabilities.
     '';
+
+    homepage = "https://github.com/ZDoom/gzdoom";
     license = lib.licenses.gpl3Plus;
-    platforms = with lib.platforms; linux ++ darwin;
+
     maintainers = with lib.maintainers; [
       lassulus
       Gliczy
       r4v3n6101
     ];
+
+    platforms = with lib.platforms; linux ++ darwin;
+    mainProgram = "gzdoom";
   };
 })

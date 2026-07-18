@@ -1,16 +1,16 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
-  meson,
-  ninja,
-  pkg-config,
-  wrapGAppsHook4,
   glib,
   glib-networking,
   gnome-online-accounts,
   gtk4,
   libadwaita,
+  meson,
+  ninja,
+  pkg-config,
+  wrapGAppsHook4,
   xapp-symbolic-icons,
 }:
 

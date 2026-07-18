@@ -1,13 +1,13 @@
 {
-  stdenv,
   lib,
-  fetchsvn,
-  readline,
-  ncurses,
+  stdenv,
   bison,
-  libtool,
+  fetchsvn,
   gmp,
+  libtool,
   mpfr,
+  ncurses,
+  readline,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -22,16 +22,16 @@ stdenv.mkDerivation (finalAttrs: {
 
   strictDeps = true;
 
+  nativeBuildInputs = [
+    bison
+  ];
+
   buildInputs = [
     gmp
     libtool
     mpfr
     ncurses
     readline
-  ];
-
-  nativeBuildInputs = [
-    bison
   ];
 
   preConfigure = ''

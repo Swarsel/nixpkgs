@@ -1,17 +1,16 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   poetry-core,
-  toml,
   pytest-mock,
   pytestCheckHook,
+  toml,
 }:
 
 buildPythonPackage rec {
   pname = "single-source";
   version = "0.4.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "rabbit72";
@@ -20,14 +19,14 @@ buildPythonPackage rec {
     hash = "sha256-4l9ochlscQoWJVkYN8Iq2DsiU7qoOf7nUFYgBOebK/g=";
   };
 
-  build-system = [ poetry-core ];
-
   nativeCheckInputs = [
     toml
     pytest-mock
     pytestCheckHook
   ];
 
+  build-system = [ poetry-core ];
+  pyproject = true;
   pythonImportsCheck = [ "single_source" ];
 
   meta = {

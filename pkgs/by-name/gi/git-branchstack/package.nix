@@ -8,12 +8,11 @@ let
   self = python3Packages.buildPythonApplication {
     pname = "git-branchstack";
     version = "0.2.0";
-    pyproject = true;
 
     src = fetchPypi {
-      pname = "git-branchstack";
       inherit (self) version;
       hash = "sha256-gja93LOcVCQ6l+Cygvsm+3uomvxtvUl6t23GIb/tKyQ=";
+      pname = "git-branchstack";
     };
 
     build-system = with python3Packages; [
@@ -24,9 +23,11 @@ let
       git-revise
     ];
 
+    pyproject = true;
+
     meta = {
-      homepage = "https://github.com/krobelus/git-branchstack";
       description = "Efficiently manage Git branches without leaving your local branch";
+      homepage = "https://github.com/krobelus/git-branchstack";
       license = lib.licenses.mit;
       maintainers = [ ];
     };

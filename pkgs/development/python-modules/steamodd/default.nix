@@ -1,14 +1,12 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
 }:
 
 buildPythonPackage rec {
   pname = "steamodd";
   version = "5.0";
-
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "Lagg";
@@ -19,6 +17,7 @@ buildPythonPackage rec {
 
   # tests require API key
   doCheck = false;
+  format = "setuptools";
 
   pythonImportsCheck = [
     "steam.api"

@@ -1,37 +1,37 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchurl,
-  perlPackages,
-  makeWrapper,
-  perl,
-  which,
-  nx-libs,
-  util-linux,
+  bash,
+  bc,
   coreutils,
-  glibc,
-  gawk,
-  gnused,
-  gnugrep,
   findutils,
   font-util,
-  xwininfo,
-  xrandr,
-  xmodmap,
-  xkbcomp,
-  xinit,
-  xauth,
-  setxkbmap,
-  net-tools,
+  gawk,
+  glibc,
+  gnugrep,
+  gnused,
   iproute2,
-  bc,
+  lsof,
+  makeWrapper,
+  net-tools,
+  nx-libs,
+  openssh,
+  perl,
+  perlPackages,
   procps,
   psmisc,
-  lsof,
   pwgen,
-  openssh,
+  setxkbmap,
   sshfs,
-  bash,
+  util-linux,
+  which,
+  xauth,
+  xinit,
+  xkbcomp,
+  xmodmap,
+  xrandr,
+  xwininfo,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -43,33 +43,12 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-Q1vbB84iQZ2eRWDf+Kyn+utrNgkdVayrwXZCm5Ia65Y=";
   };
 
+  nativeBuildInputs = [ makeWrapper ];
+
   buildInputs = [
     finalAttrs.passthru.perlEnv
     bash
   ];
-
-  nativeBuildInputs = [ makeWrapper ];
-
-  prePatch = ''
-    patchShebangs .
-    sed -i '/Makefile.PL\|Makefile.perl/d' Makefile
-    substituteInPlace */Makefile \
-      --replace-fail '-o root -g root ' ""
-    substituteInPlace libx2go-server-db-perl/Makefile \
-      --replace-fail 'chmod 2755' 'chmod 755'
-    # --replace without fail because not all x2go binaries use '/etc/x2go'
-    substituteInPlace x2goserver/{s,}bin/x2go* \
-      --replace '/etc/x2go' '/var/lib/x2go/conf'
-    substituteInPlace x2goserver/Makefile \
-      --replace-fail "\$(DESTDIR)/etc" "\$(DESTDIR)/\$(ETCDIR)"
-    substituteInPlace x2goserver/sbin/x2gocleansessions \
-      --replace-fail '/var/run/x2goserver.pid' '/var/run/x2go/x2goserver.pid'
-    substituteInPlace x2goserver/sbin/x2godbadmin \
-      --replace-fail 'user="x2gouser"' 'user="x2go"'
-    substituteInPlace x2goserver-xsession/etc/Xsession \
-      --replace-fail 'SSH_AGENT /bin/bash -c' 'SSH_AGENT ${bash}/bin/bash -c' \
-      --replace-fail '[ -f /etc/redhat-release ]' '[ -d /etc/nix ] || [ -f /etc/redhat-release ]'
-  '';
 
   makeFlags = [
     "PREFIX=${placeholder "out"}"
@@ -125,33 +104,28 @@ stdenv.mkDerivation (finalAttrs: {
 
   enableParallelBuilding = true;
 
+  prePatch = ''
+    patchShebangs .
+    sed -i '/Makefile.PL\|Makefile.perl/d' Makefile
+    substituteInPlace */Makefile \
+      --replace-fail '-o root -g root ' ""
+    substituteInPlace libx2go-server-db-perl/Makefile \
+      --replace-fail 'chmod 2755' 'chmod 755'
+    # --replace without fail because not all x2go binaries use '/etc/x2go'
+    substituteInPlace x2goserver/{s,}bin/x2go* \
+      --replace '/etc/x2go' '/var/lib/x2go/conf'
+    substituteInPlace x2goserver/Makefile \
+      --replace-fail "\$(DESTDIR)/etc" "\$(DESTDIR)/\$(ETCDIR)"
+    substituteInPlace x2goserver/sbin/x2gocleansessions \
+      --replace-fail '/var/run/x2goserver.pid' '/var/run/x2go/x2goserver.pid'
+    substituteInPlace x2goserver/sbin/x2godbadmin \
+      --replace-fail 'user="x2gouser"' 'user="x2go"'
+    substituteInPlace x2goserver-xsession/etc/Xsession \
+      --replace-fail 'SSH_AGENT /bin/bash -c' 'SSH_AGENT ${bash}/bin/bash -c' \
+      --replace-fail '[ -f /etc/redhat-release ]' '[ -d /etc/nix ] || [ -f /etc/redhat-release ]'
+  '';
+
   passthru = {
-    # x2go-perl in passthru, so it can depend on finalAttrs (thus overriding works)
-    x2go-perl = perlPackages.buildPerlPackage {
-      pname = "x2go-perl";
-      inherit (finalAttrs) version src;
-
-      patchPhase = ''
-        runHook prePatch
-
-        substituteInPlace X2Go/Config.pm \
-          --replace-fail '/etc/x2go' '/var/lib/x2go/conf'
-        substituteInPlace X2Go/Server/DB.pm \
-          --replace-fail '$x2go_lib_path/libx2go-server-db-sqlite3-wrapper' '/run/wrappers/bin/x2gosqliteWrapper'
-        substituteInPlace X2Go/Server/DB/SQLite3.pm \
-          --replace-fail "user='x2gouser'" "user='x2go'"
-
-        runHook postPatch
-      '';
-
-      makeFlags = [
-        "-f"
-        "Makefile.perl"
-      ];
-
-      inherit (finalAttrs) meta;
-    };
-
     perlEnv = perl.withPackages (
       p: with p; [
         finalAttrs.passthru.x2go-perl
@@ -165,13 +139,38 @@ stdenv.mkDerivation (finalAttrs: {
         FileWhich
       ]
     );
+
+    # x2go-perl in passthru, so it can depend on finalAttrs (thus overriding works)
+    x2go-perl = perlPackages.buildPerlPackage {
+      inherit (finalAttrs) version src;
+      inherit (finalAttrs) meta;
+      pname = "x2go-perl";
+
+      makeFlags = [
+        "-f"
+        "Makefile.perl"
+      ];
+
+      patchPhase = ''
+        runHook prePatch
+
+        substituteInPlace X2Go/Config.pm \
+          --replace-fail '/etc/x2go' '/var/lib/x2go/conf'
+        substituteInPlace X2Go/Server/DB.pm \
+          --replace-fail '$x2go_lib_path/libx2go-server-db-sqlite3-wrapper' '/run/wrappers/bin/x2gosqliteWrapper'
+        substituteInPlace X2Go/Server/DB/SQLite3.pm \
+          --replace-fail "user='x2gouser'" "user='x2go'"
+
+        runHook postPatch
+      '';
+    };
   };
 
   meta = {
     description = "Remote desktop application, server component";
     homepage = "http://x2go.org/";
-    platforms = lib.platforms.linux;
     license = lib.licenses.gpl2;
     maintainers = [ ];
+    platforms = lib.platforms.linux;
   };
 })

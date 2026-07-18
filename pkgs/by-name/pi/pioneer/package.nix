@@ -2,22 +2,22 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  cmake,
-  pkg-config,
+  SDL2,
+  SDL2_image,
   assimp,
+  cmake,
   curl,
   freetype,
   #, glew
   libGL,
   libGLU,
+  libgbm,
   libpng,
   libsigcxx,
   libvorbis,
   libx11,
   lua5_2,
-  libgbm,
-  SDL2,
-  SDL2_image,
+  pkg-config,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -72,10 +72,12 @@ stdenv.mkDerivation (finalAttrs: {
   meta = {
     description = "Space adventure game set in the Milky Way galaxy at the turn of the 31st century";
     homepage = "https://pioneerspacesim.net";
+
     license = with lib.licenses; [
       gpl3Only
       cc-by-sa-30
     ];
+
     platforms = [
       "x86_64-linux"
       "i686-linux"

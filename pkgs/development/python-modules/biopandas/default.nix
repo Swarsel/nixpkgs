@@ -1,19 +1,18 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
+  buildPythonPackage,
   looseversion,
   mmtf-python,
   numpy,
   pandas,
   pytestCheckHook,
+  setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "biopandas";
   version = "0.5.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "BioPandas";
@@ -28,8 +27,7 @@ buildPythonPackage rec {
       'int(np.argwhere(np.array(model_indices) > ch_idx)[0][0]) + 1'
   '';
 
-  pythonRelaxDeps = [ "looseversion" ];
-
+  nativeCheckInputs = [ pytestCheckHook ];
   build-system = [ setuptools ];
 
   dependencies = [
@@ -38,8 +36,6 @@ buildPythonPackage rec {
     mmtf-python
     looseversion
   ];
-
-  nativeCheckInputs = [ pytestCheckHook ];
 
   disabledTests = [
     # require network access
@@ -50,7 +46,9 @@ buildPythonPackage rec {
     "test_b_factor_shift"
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "biopandas" ];
+  pythonRelaxDeps = [ "looseversion" ];
 
   meta = {
     description = "Working with molecular structures in pandas DataFrames";

@@ -1,16 +1,15 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
+  pytestCheckHook,
   setuptools,
   typing-extensions,
-  pytestCheckHook,
 }:
 
 buildPythonPackage rec {
   pname = "housekeeping";
   version = "1.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "beanbaginc";
@@ -19,13 +18,11 @@ buildPythonPackage rec {
     hash = "sha256-hRWZSRoXscjkUm0NUpkM6pKEdoirN6ZmpjWlNgoyCVY=";
   };
 
-  build-system = [ setuptools ];
-
-  dependencies = [ typing-extensions ];
-
-  pythonImportsCheck = [ "housekeeping" ];
-
   nativeCheckInputs = [ pytestCheckHook ];
+  build-system = [ setuptools ];
+  dependencies = [ typing-extensions ];
+  pyproject = true;
+  pythonImportsCheck = [ "housekeeping" ];
 
   meta = {
     description = "Reusable deprecation helpers for Python projects";

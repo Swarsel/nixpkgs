@@ -1,16 +1,16 @@
 {
-  clang_20,
-  pkgsBuildBuild,
   lib,
-  fetchFromGitHub,
-  vscode-utils,
-  jq,
-  rust-analyzer,
-  buildNpmPackage,
-  moreutils,
-  esbuild,
-  pkg-config,
   stdenv,
+  fetchFromGitHub,
+  buildNpmPackage,
+  clang_20,
+  esbuild,
+  jq,
+  moreutils,
+  pkg-config,
+  pkgsBuildBuild,
+  rust-analyzer,
+  vscode-utils,
   setDefaultServerPath ? true,
 }:
 
@@ -32,13 +32,9 @@ let
 
   vsix = buildNpmPackage {
     inherit pname releaseTag;
-    name = "${pname}-${version}.vsix";
     version = lib.trim (lib.readFile ./version.txt);
     src = "${src}/editors/code";
-    npmDepsHash = "sha256-rg4ARGB9NzI8rxEOONWq+mwSG9hd3yyFRhOUomMLN6w=";
-    buildInputs = [
-      pkgsBuildBuild.libsecret
-    ];
+
     nativeBuildInputs = [
       jq
       moreutils
@@ -48,6 +44,12 @@ let
 
     ]
     ++ lib.optionals stdenv.hostPlatform.isDarwin [ clang_20 ]; # clang_21 breaks keytar
+
+    buildInputs = [
+      pkgsBuildBuild.libsecret
+    ];
+
+    npmDepsHash = "sha256-rg4ARGB9NzI8rxEOONWq+mwSG9hd3yyFRhOUomMLN6w=";
 
     # Follows https://github.com/rust-lang/rust-analyzer/blob/41949748a6123fd6061eb984a47f4fe780525e63/xtask/src/dist.rs#L39-L65
     installPhase = ''
@@ -60,15 +62,14 @@ let
 
       npm exec --package=@vscode/vsce -- vsce package --out $out
     '';
+
+    name = "${pname}-${version}.vsix";
   };
 
 in
 vscode-utils.buildVscodeExtension {
   inherit version vsix pname;
   src = vsix;
-  vscodeExtUniqueId = "${publisher}.${pname}";
-  vscodeExtPublisher = publisher;
-  vscodeExtName = pname;
 
   nativeBuildInputs = lib.optionals setDefaultServerPath [
     jq
@@ -87,13 +88,19 @@ vscode-utils.buildVscodeExtension {
     }
   '';
 
+  vscodeExtName = pname;
+  vscodeExtPublisher = publisher;
+  vscodeExtUniqueId = "${publisher}.${pname}";
+
   meta = {
     description = "Alternative rust language server to the RLS";
     homepage = "https://github.com/rust-lang/rust-analyzer";
+
     license = [
       lib.licenses.mit
       lib.licenses.asl20
     ];
+
     maintainers = [ ];
     platforms = lib.platforms.all;
   };

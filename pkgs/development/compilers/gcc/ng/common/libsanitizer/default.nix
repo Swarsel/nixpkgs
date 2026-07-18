@@ -1,16 +1,16 @@
 {
   lib,
   stdenv,
-  libstdcxx,
   gcc_meta,
+  libstdcxx,
   release_version,
+  runCommand,
   version,
   monorepoSrc ? null,
-  runCommand,
 }:
 stdenv.mkDerivation (finalAttrs: {
-  pname = "libsanitizer";
   inherit version;
+  pname = "libsanitizer";
 
   src = runCommand "libsanitizer-src-${version}" { src = monorepoSrc; } ''
     runPhase unpackPhase
@@ -32,13 +32,6 @@ stdenv.mkDerivation (finalAttrs: {
     [[ -f MD5SUMS ]]; cp MD5SUMS "$out"
   '';
 
-  sourceRoot = "${finalAttrs.src.name}/libsanitizer";
-
-  postUnpack = ''
-    mkdir -p libstdc++-v3/src/
-    ln -s ${libstdcxx}/lib/libstdc++.la libstdc++-v3/src/libstdc++.la
-  '';
-
   preConfigure = ''
     mkdir ../../build
     cd ../../build
@@ -46,6 +39,13 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   doCheck = true;
+
+  postUnpack = ''
+    mkdir -p libstdc++-v3/src/
+    ln -s ${libstdcxx}/lib/libstdc++.la libstdc++-v3/src/libstdc++.la
+  '';
+
+  sourceRoot = "${finalAttrs.src.name}/libsanitizer";
 
   passthru = {
     isGNU = true;

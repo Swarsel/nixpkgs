@@ -57,8 +57,8 @@ in
     services.xserver.displayManager.lightdm.greeters.mini = {
 
       enable = mkOption {
-        type = types.bool;
         default = false;
+
         description = ''
           Whether to enable lightdm-mini-greeter as the lightdm greeter.
 
@@ -66,23 +66,29 @@ in
           You can configure the default X session using
           [](#opt-services.displayManager.defaultSession).
         '';
-      };
 
-      user = mkOption {
-        type = types.str;
-        default = "root";
-        description = ''
-          The user to login as.
-        '';
+        type = types.bool;
       };
 
       extraConfig = mkOption {
-        type = types.lines;
         default = "";
+
         description = ''
           Extra configuration that should be put in the lightdm-mini-greeter.conf
           configuration file.
         '';
+
+        type = types.lines;
+      };
+
+      user = mkOption {
+        default = "root";
+
+        description = ''
+          The user to login as.
+        '';
+
+        type = types.str;
       };
 
     };
@@ -91,14 +97,14 @@ in
 
   config = mkIf (ldmcfg.enable && cfg.enable) {
 
-    services.xserver.displayManager.lightdm.greeters.gtk.enable = false;
+    environment.etc."lightdm/lightdm-mini-greeter.conf".source = miniGreeterConf;
 
     services.xserver.displayManager.lightdm.greeter = mkDefault {
       package = pkgs.lightdm-mini-greeter.xgreeters;
       name = "lightdm-mini-greeter";
     };
 
-    environment.etc."lightdm/lightdm-mini-greeter.conf".source = miniGreeterConf;
+    services.xserver.displayManager.lightdm.greeters.gtk.enable = false;
 
   };
 }

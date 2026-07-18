@@ -1,13 +1,12 @@
 {
   lib,
-  python3,
   fetchFromGitHub,
+  python3,
 }:
 
 python3.pkgs.buildPythonApplication (finalAttrs: {
   pname = "runoff";
   version = "3.1.0-unstable-2026-05-01";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "Real-Fruit-Snacks";
@@ -16,8 +15,15 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     hash = "sha256-E5mMI5f9FS4zqiQrMQ5A8OHjhV6vCmH2ZNgjpMr9Z18=";
   };
 
-  __structuredAttrs = true;
+  nativeCheckInputs = with python3.pkgs; [
+    pytest-cov-stub
+    pytest-mock
+    pytestCheckHook
+    types-pyyaml
+    types-requests
+  ];
 
+  __structuredAttrs = true;
   build-system = with python3.pkgs; [ setuptools ];
 
   dependencies = with python3.pkgs; [
@@ -28,20 +34,13 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     rich
   ];
 
-  nativeCheckInputs = with python3.pkgs; [
-    pytest-cov-stub
-    pytest-mock
-    pytestCheckHook
-    types-pyyaml
-    types-requests
-  ];
-
-  pythonImportsCheck = [ "runoff" ];
-
   disabledTests = [
     # rich.errors.MissingStyle: Failed to get style 'warn'...
     "test_with_results"
   ];
+
+  pyproject = true;
+  pythonImportsCheck = [ "runoff" ];
 
   meta = {
     description = "Active Directory security audit tool";

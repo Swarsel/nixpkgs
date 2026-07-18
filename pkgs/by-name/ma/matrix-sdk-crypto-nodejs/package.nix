@@ -3,11 +3,11 @@
   stdenv,
   fetchFromGitHub,
   cargo,
-  rustPlatform,
-  rustc,
+  libiconv,
   napi-rs-cli,
   nodejs,
-  libiconv,
+  rustPlatform,
+  rustc,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -19,11 +19,6 @@ stdenv.mkDerivation (finalAttrs: {
     repo = "matrix-rust-sdk-crypto-nodejs";
     rev = "v${finalAttrs.version}";
     hash = "sha256-Rl0xtaEj2RnW9HPN94hjETwiMInxT1XGa1BocldQAPs=";
-  };
-
-  cargoDeps = rustPlatform.fetchCargoVendor {
-    inherit (finalAttrs) pname version src;
-    hash = "sha256-4AC+l52I8Z3sXiViNPe6GLCl1Z+GpqjbwkcFX6BhxDA=";
   };
 
   nativeBuildInputs = [
@@ -54,16 +49,23 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  cargoDeps = rustPlatform.fetchCargoVendor {
+    inherit (finalAttrs) pname version src;
+    hash = "sha256-4AC+l52I8Z3sXiViNPe6GLCl1Z+GpqjbwkcFX6BhxDA=";
+  };
+
   meta = {
+    inherit (nodejs.meta) platforms;
     description = "No-network-IO implementation of a state machine that handles E2EE for Matrix clients";
     homepage = "https://github.com/matrix-org/matrix-rust-sdk-crypto-nodejs";
     changelog = "https://github.com/matrix-org/matrix-rust-sdk-crypto-nodejs/blob/main/CHANGELOG.md";
     license = lib.licenses.asl20;
+
     maintainers = with lib.maintainers; [
       winter
       dandellion
     ];
-    inherit (nodejs.meta) platforms;
+
     # napi_build doesn't handle most cross-compilation configurations
     broken = (!stdenv.buildPlatform.canExecute stdenv.hostPlatform) || stdenv.hostPlatform.isStatic;
   };

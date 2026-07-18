@@ -1,12 +1,12 @@
 {
   lib,
-  stdenvNoCC,
-  nodejs,
-  pnpm_9,
-  fetchPnpmDeps,
-  pnpmConfigHook,
-  pnpmBuildHook,
   fetchFromGitHub,
+  fetchPnpmDeps,
+  nodejs,
+  pnpmBuildHook,
+  pnpmConfigHook,
+  pnpm_9,
+  stdenvNoCC,
 }:
 stdenvNoCC.mkDerivation rec {
   pname = "ocis-web";
@@ -39,15 +39,16 @@ stdenvNoCC.mkDerivation rec {
       version
       src
       ;
-    pnpm = pnpm_9;
+
     fetcherVersion = 3;
     hash = "sha256-EsoGio2D8HZmbe+uuzsOhhwaLMSbJcfV4iUJUaqtA0M=";
+    pnpm = pnpm_9;
   };
 
   meta = {
-    homepage = "https://github.com/owncloud/ocis";
     description = "ownCloud Infinite Scale Stack";
-    maintainers = with lib.maintainers; [ xinyangli ];
+    homepage = "https://github.com/owncloud/ocis";
     license = lib.licenses.agpl3Only;
+    maintainers = with lib.maintainers; [ xinyangli ];
   };
 }

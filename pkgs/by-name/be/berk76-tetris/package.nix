@@ -17,8 +17,6 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   strictDeps = true;
-  __structuredAttrs = true;
-
   buildInputs = [ ncurses ];
 
   buildPhase = ''
@@ -37,12 +35,14 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  __structuredAttrs = true;
+
   meta = {
     description = "ASCII Art Tetris";
     homepage = "https://github.com/oldcompcz/tetris";
-    mainProgram = "tetris";
     license = lib.licenses.gpl3Only;
-    platforms = lib.platforms.unix;
     maintainers = with lib.maintainers; [ castorNova2 ];
+    platforms = lib.platforms.unix;
+    mainProgram = "tetris";
   };
 })

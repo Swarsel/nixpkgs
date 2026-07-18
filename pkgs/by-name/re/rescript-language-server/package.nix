@@ -1,8 +1,8 @@
 {
   lib,
   stdenv,
-  buildNpmPackage,
   fetchFromGitHub,
+  buildNpmPackage,
   esbuild,
   nix-update-script,
   versionCheckHook,
@@ -26,14 +26,9 @@ buildNpmPackage (finalAttrs: {
   # These have the same source, and must be the same version.
   inherit (rescript-editor-analysis) src version;
   pname = "rescript-language-server";
-
-  sourceRoot = "${finalAttrs.src.name}/server";
-
-  npmDepsFetcherVersion = 2;
-  npmDepsHash = "sha256-BUR/gln9yyKGa05FvxOF6vIcCz8BCQWGr/fzfmOPdj0=";
-
   strictDeps = true;
   nativeBuildInputs = [ esbuild ];
+  npmDepsHash = "sha256-BUR/gln9yyKGa05FvxOF6vIcCz8BCQWGr/fzfmOPdj0=";
 
   # Tries to do funny things (install all packages for the entire repo) if you don't override it. This is just a copy paste
   # from the package.json.
@@ -53,10 +48,14 @@ buildNpmPackage (finalAttrs: {
     ln -s ${lib.getExe rescript-editor-analysis} "$DIR"/rescript-editor-analysis
   '';
 
+  doInstallCheck = true;
+
   nativeInstallCheckInputs = [
     versionCheckHook
   ];
-  doInstallCheck = true;
+
+  npmDepsFetcherVersion = 2;
+  sourceRoot = "${finalAttrs.src.name}/server";
 
   passthru.updateScript = nix-update-script {
     extraArgs = [
@@ -69,10 +68,10 @@ buildNpmPackage (finalAttrs: {
     description = "ReScript Language Server";
     homepage = "https://github.com/rescript-lang/rescript-vscode/tree/${finalAttrs.version}/server";
     changelog = "https://github.com/rescript-lang/rescript-vscode/releases/tag/${finalAttrs.version}";
-    mainProgram = "rescript-language-server";
     license = lib.licenses.mit;
+    maintainers = [ ];
     # https://github.com/rescript-lang/rescript-vscode/blob/1.62.0/CONTRIBUTING.md?plain=1#L186
     platforms = with lib.platforms; linux ++ darwin ++ windows ++ freebsd;
-    maintainers = [ ];
+    mainProgram = "rescript-language-server";
   };
 })

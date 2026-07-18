@@ -1,9 +1,9 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchurl,
-  makeWrapper,
   jre,
+  makeWrapper,
 }:
 
 stdenv.mkDerivation {
@@ -15,12 +15,7 @@ stdenv.mkDerivation {
     hash = "sha256-7RAJLOZJ8/TXN7boS0w1t4r/wHu/RwN3/N6HGmTMfhM=";
   };
 
-  dontUnpack = true;
-  dontConfigure = true;
-  dontBuild = true;
-
   nativeBuildInputs = [ makeWrapper ];
-
   buildInputs = [ jre ];
 
   installPhase = ''
@@ -30,12 +25,16 @@ stdenv.mkDerivation {
     runHook postInstall
   '';
 
+  dontBuild = true;
+  dontConfigure = true;
+  dontUnpack = true;
+
   meta = {
     description = "Utility to extract and repack Android backups created with adb backup";
-    mainProgram = "abe";
     homepage = "https://github.com/nelenkov/android-backup-extractor";
-    sourceProvenance = with lib.sourceTypes; [ binaryBytecode ];
     license = lib.licenses.asl20;
+    sourceProvenance = with lib.sourceTypes; [ binaryBytecode ];
     maintainers = with lib.maintainers; [ prusnak ];
+    mainProgram = "abe";
   };
 }

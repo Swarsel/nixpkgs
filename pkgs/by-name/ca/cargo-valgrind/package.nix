@@ -1,9 +1,9 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
-  nix-update-script,
   makeWrapper,
+  nix-update-script,
+  rustPlatform,
   valgrind,
 }:
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -17,20 +17,12 @@ rustPlatform.buildRustPackage (finalAttrs: {
     sha256 = "sha256-ImZ0EHg/guPfx3vOfdi1nPz0MG0+61iZCFiVhNglZbs=";
   };
 
-  cargoHash = "sha256-tH1RF3Uw9KkykgbPtXNY88uTvQ0f++aCP95Sd6Zexc8=";
-
-  passthru = {
-    updateScript = nix-update-script { };
-  };
-
   nativeBuildInputs = [
     makeWrapper
     valgrind # for tests where the executable is not wrapped yet
   ];
 
-  postInstall = ''
-    wrapProgram $out/bin/cargo-valgrind --prefix PATH : ${lib.makeBinPath [ valgrind ]}
-  '';
+  cargoHash = "sha256-tH1RF3Uw9KkykgbPtXNY88uTvQ0f++aCP95Sd6Zexc8=";
 
   checkFlags = [
     "--skip=tests_are_runnable"
@@ -38,18 +30,29 @@ rustPlatform.buildRustPackage (finalAttrs: {
     "--skip=empty_tests_not_leak_in_release_mode"
   ];
 
+  postInstall = ''
+    wrapProgram $out/bin/cargo-valgrind --prefix PATH : ${lib.makeBinPath [ valgrind ]}
+  '';
+
+  passthru = {
+    updateScript = nix-update-script { };
+  };
+
   meta = {
     description = ''Cargo subcommand "valgrind": runs valgrind and collects its output in a helpful manner'';
-    mainProgram = "cargo-valgrind";
     homepage = "https://github.com/jfrimmel/cargo-valgrind";
+
     license = with lib.licenses; [
       asl20 # or
       mit
     ];
+
     maintainers = with lib.maintainers; [
       otavio
       matthiasbeyer
       chrjabs
     ];
+
+    mainProgram = "cargo-valgrind";
   };
 })

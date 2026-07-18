@@ -1,7 +1,7 @@
 {
   lib,
-  stdenvNoCC,
   fetchurl,
+  stdenvNoCC,
 }:
 
 stdenvNoCC.mkDerivation rec {
@@ -26,7 +26,7 @@ stdenvNoCC.mkDerivation rec {
     description = "Collection of beautiful free and open source fonts";
     homepage = "https://github.com/kiwi0fruit/open-fonts";
     license = lib.licenses.mit;
-    platforms = lib.platforms.all;
     maintainers = with lib.maintainers; [ moni ];
+    platforms = lib.platforms.all;
   };
 }

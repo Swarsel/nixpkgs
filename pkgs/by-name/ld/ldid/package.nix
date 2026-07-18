@@ -52,8 +52,8 @@ stdenv.mkDerivation (finalAttrs: {
     description = "Link Identity Editor";
     homepage = "https://cydia.saurik.com/info/ldid/";
     license = lib.licenses.agpl3Only;
-    mainProgram = "ldid";
     maintainers = with lib.maintainers; [ wegank ];
     platforms = lib.platforms.unix;
+    mainProgram = "ldid";
   };
 })

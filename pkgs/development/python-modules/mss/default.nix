@@ -1,32 +1,28 @@
 {
   lib,
+  stdenv,
   buildPythonPackage,
   fetchPypi,
-  stdenv,
-  replaceVars,
-
   # build-system
   hatchling,
-
+  libx11,
+  libxfixes,
   # native dependencies
   libxrandr,
-  libxfixes,
-  libx11,
-
   # tests
   lsof,
   pillow,
+  pytest,
   pytest-cov-stub,
   pytest-rerunfailures,
-  pytest,
   pyvirtualdisplay,
+  replaceVars,
   xvfb-run,
 }:
 
 buildPythonPackage rec {
   pname = "mss";
   version = "10.1.0";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
@@ -40,8 +36,6 @@ buildPythonPackage rec {
       xrandr = "${libxrandr}/lib/libXrandr.so";
     })
   ];
-
-  build-system = [ hatchling ];
 
   doCheck = stdenv.hostPlatform.isLinux;
 
@@ -61,14 +55,16 @@ buildPythonPackage rec {
     runHook postCheck
   '';
 
+  build-system = [ hatchling ];
+  pyproject = true;
   pythonImportsCheck = [ "mss" ];
 
   meta = {
     description = "Cross-platform multiple screenshots module";
-    mainProgram = "mss";
     homepage = "https://github.com/BoboTiG/python-mss";
     changelog = "https://github.com/BoboTiG/python-mss/blob/v${version}/CHANGELOG.md";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ austinbutler ];
+    mainProgram = "mss";
   };
 }

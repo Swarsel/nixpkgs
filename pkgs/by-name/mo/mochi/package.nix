@@ -1,12 +1,12 @@
 {
-  appimageTools,
-  fetchurl,
-  imagemagick,
   lib,
-  makeWrapper,
   stdenv,
-  stdenvNoCC,
+  fetchurl,
+  appimageTools,
+  imagemagick,
   libxshmfence,
+  makeWrapper,
+  stdenvNoCC,
   undmg,
 }:
 
@@ -24,8 +24,6 @@ let
 
     appimageContents = appimageTools.extractType2 { inherit pname version src; };
 
-    extraPkgs = pkgs: [ libxshmfence ];
-
     extraInstallCommands = ''
       install -Dm444 ${appimageContents}/${pname}.desktop -t $out/share/applications/
       ${lib.getExe imagemagick} ${appimageContents}/${pname}.png -resize 512x512 ${pname}_512.png
@@ -34,6 +32,7 @@ let
         --replace-fail 'Exec=AppRun --no-sandbox' 'Exec=${pname}'
     '';
 
+    extraPkgs = pkgs: [ libxshmfence ];
     passthru.updateScript = ./update.sh;
   };
 
@@ -42,14 +41,13 @@ let
 
     src = fetchurl {
       url = "https://download.mochi.cards/releases/Mochi-${version}${lib.optionalString stdenv.hostPlatform.isAarch64 "-arm64"}.dmg";
+
       hash =
         if stdenv.hostPlatform.isAarch64 then
           "sha256-2NADaVzkibWjxBymeF1McGEQH6xHaqDMBg080kCI0F8="
         else
           "sha256-XM4vQVQ9QtvqyDu2Wx/8/Z+8H2DetfCufJYrX/1JHFw=";
     };
-
-    sourceRoot = ".";
 
     nativeBuildInputs = [
       makeWrapper
@@ -65,6 +63,8 @@ let
 
       runHook postInstall
     '';
+
+    sourceRoot = ".";
   };
 
   meta = {
@@ -72,13 +72,15 @@ let
     homepage = "https://mochi.cards/";
     changelog = "https://mochi.cards/changelog.html";
     license = lib.licenses.unfree;
-    mainProgram = "mochi";
     sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
+
     maintainers = with lib.maintainers; [
       piotrkwiecinski
       poopsicles
     ];
+
     platforms = lib.platforms.linux ++ lib.platforms.darwin;
+    mainProgram = "mochi";
   };
 in
 if stdenvNoCC.hostPlatform.isDarwin then darwin else linux

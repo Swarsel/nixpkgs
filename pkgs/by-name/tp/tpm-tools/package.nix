@@ -3,10 +3,10 @@
   stdenv,
   fetchurl,
   autoreconfHook,
-  trousers,
-  openssl,
   opencryptoki,
+  openssl,
   perl,
+  trousers,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -41,11 +41,13 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Management tools for TPM hardware";
+
     longDescription = ''
       tpm-tools is an open-source package designed to enable user and
       application enablement of Trusted Computing using a Trusted Platform
       Module (TPM), similar to a smart card environment.
     '';
+
     homepage = "https://sourceforge.net/projects/trousers/files/tpm-tools/";
     license = lib.licenses.cpl10;
     maintainers = [ lib.maintainers.ak ];

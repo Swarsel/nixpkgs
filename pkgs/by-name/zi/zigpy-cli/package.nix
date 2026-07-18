@@ -7,7 +7,6 @@
 python3.pkgs.buildPythonApplication (finalAttrs: {
   pname = "zigpy-cli";
   version = "1.2.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "zigpy";
@@ -21,6 +20,13 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
       --replace-fail '"setuptools-git-versioning<2"' "" \
       --replace-fail 'dynamic = ["version"]' 'version = "${finalAttrs.version}"'
   '';
+
+  nativeCheckInputs = with python3.pkgs; [
+    freezegun
+    pytest-asyncio
+    pytest-timeout
+    pytestCheckHook
+  ];
 
   build-system = with python3.pkgs; [
     setuptools
@@ -39,12 +45,7 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     zigpy-znp
   ];
 
-  nativeCheckInputs = with python3.pkgs; [
-    freezegun
-    pytest-asyncio
-    pytest-timeout
-    pytestCheckHook
-  ];
+  pyproject = true;
 
   pythonImportsCheck = [
     "zigpy_cli"
@@ -52,11 +53,11 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
 
   meta = {
     description = "Command line interface for zigpy";
-    mainProgram = "zigpy";
     homepage = "https://github.com/zigpy/zigpy-cli";
     changelog = "https://github.com/zigpy/zigpy-cli/releases/tag/${finalAttrs.src.tag}";
     license = lib.licenses.gpl3Plus;
     maintainers = with lib.maintainers; [ SuperSandro2000 ];
     platforms = lib.platforms.linux;
+    mainProgram = "zigpy";
   };
 })

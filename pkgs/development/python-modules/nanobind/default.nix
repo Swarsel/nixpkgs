@@ -1,62 +1,41 @@
 {
   lib,
   stdenv,
-  buildPythonPackage,
   fetchFromGitHub,
-
+  buildPythonPackage,
   # build-system
   cmake,
-  ninja,
-  pathspec,
-  scikit-build-core,
-
   # dependencies
   eigen,
-
-  # tests
-  pytestCheckHook,
-  numpy,
-  scipy,
-  torch,
-  tensorflow-bin,
   jax,
   jaxlib,
-
   nanobind,
+  ninja,
+  numpy,
+  pathspec,
+  # tests
+  pytestCheckHook,
+  scikit-build-core,
+  scipy,
+  tensorflow-bin,
+  torch,
 }:
 buildPythonPackage (finalAttrs: {
   pname = "nanobind";
   version = "2.12.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "wjakob";
     repo = "nanobind";
     tag = "v${finalAttrs.version}";
-    fetchSubmodules = true;
     hash = "sha256-s9TshE3V50BtrnVv56j4BxZOloNsOVgi0PUT6xyF7yY=";
+    fetchSubmodules = true;
   };
-
-  build-system = [
-    cmake
-    ninja
-    pathspec
-    scikit-build-core
-  ];
-
-  dependencies = [ eigen ];
-
-  dontUseCmakeBuildDir = true;
 
   # nanobind check requires heavy dependencies such as tensorflow
   # which are less than ideal to be imported in children packages that
   # use it as build-system parameter.
   doCheck = false;
-
-  preCheck = ''
-    # build tests
-    make -j $NIX_BUILD_CORES
-  '';
 
   nativeCheckInputs = [
     pytestCheckHook
@@ -70,14 +49,29 @@ buildPythonPackage (finalAttrs: {
     jaxlib
   ];
 
+  preCheck = ''
+    # build tests
+    make -j $NIX_BUILD_CORES
+  '';
+
+  build-system = [
+    cmake
+    ninja
+    pathspec
+    scikit-build-core
+  ];
+
+  dependencies = [ eigen ];
+  dontUseCmakeBuildDir = true;
+  pyproject = true;
+
   passthru.tests = {
     pytest = nanobind.overridePythonAttrs { doCheck = true; };
   };
 
   meta = {
-    homepage = "https://github.com/wjakob/nanobind";
-    changelog = "https://github.com/wjakob/nanobind/blob/${finalAttrs.src.tag}/docs/changelog.rst";
     description = "Tiny and efficient C++/Python bindings";
+
     longDescription = ''
       nanobind is a small binding library that exposes C++ types in Python and
       vice versa. It is reminiscent of Boost.Python and pybind11 and uses
@@ -85,6 +79,9 @@ buildPythonPackage (finalAttrs: {
       more efficient: bindings compile in a shorter amount of time, produce
       smaller binaries, and have better runtime performance.
     '';
+
+    homepage = "https://github.com/wjakob/nanobind";
+    changelog = "https://github.com/wjakob/nanobind/blob/${finalAttrs.src.tag}/docs/changelog.rst";
     license = lib.licenses.bsd3;
     maintainers = with lib.maintainers; [ parras ];
   };

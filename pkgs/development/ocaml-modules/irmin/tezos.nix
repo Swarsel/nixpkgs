@@ -1,24 +1,28 @@
 {
   lib,
+  alcotest,
   buildDunePackage,
+  cmdliner,
+  digestif,
+  fmt,
+  fpath,
+  hex,
   irmin,
   irmin-pack,
-  ppx_irmin,
-  digestif,
-  cmdliner,
-  fmt,
-  yojson,
-  tezos-base58,
-  alcotest,
-  hex,
   irmin-test,
-  fpath,
+  ppx_irmin,
+  tezos-base58,
+  yojson,
 }:
 
 buildDunePackage {
+  inherit (irmin) version src;
   pname = "irmin-tezos";
 
-  inherit (irmin) version src;
+  buildInputs = [
+    cmdliner
+    yojson
+  ];
 
   propagatedBuildInputs = [
     irmin
@@ -29,10 +33,7 @@ buildDunePackage {
     tezos-base58
   ];
 
-  buildInputs = [
-    cmdliner
-    yojson
-  ];
+  doCheck = true;
 
   checkInputs = [
     alcotest
@@ -40,8 +41,6 @@ buildDunePackage {
     irmin-test
     fpath
   ];
-
-  doCheck = true;
 
   meta = irmin.meta // {
     description = "Irmin implementation of the Tezos context hash specification";

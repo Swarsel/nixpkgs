@@ -1,19 +1,11 @@
 {
-  mkDerivation,
   lib,
-  flex,
   byacc,
   compatHook,
+  flex,
+  mkDerivation,
 }:
 mkDerivation {
-  path = "usr.bin/ctags";
-
-  extraNativeBuildInputs = [
-    flex
-    byacc
-    compatHook
-  ];
-
   buildPhase = ''
     for f in *.l; do flex $f; done
     for f in *.y; do yacc -H ''${f%.y}.h $f; done
@@ -21,5 +13,12 @@ mkDerivation {
     $CC *.o -o ctags
   '';
 
+  extraNativeBuildInputs = [
+    flex
+    byacc
+    compatHook
+  ];
+
+  path = "usr.bin/ctags";
   meta.platforms = lib.platforms.linux;
 }

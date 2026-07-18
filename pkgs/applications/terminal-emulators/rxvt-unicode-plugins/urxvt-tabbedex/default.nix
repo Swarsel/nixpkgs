@@ -17,14 +17,13 @@ stdenv.mkDerivation rec {
   };
 
   nativeBuildInputs = [ perl ];
-
   installFlags = [ "PREFIX=$(out)" ];
 
   meta = {
     description = "Tabbed plugin for rxvt-unicode with many enhancements (mina86's fork)";
     homepage = "https://github.com/mina86/urxvt-tabbedex";
+    license = lib.licenses.gpl3Plus;
     maintainers = [ ];
     platforms = with lib.platforms; unix;
-    license = lib.licenses.gpl3Plus;
   };
 }

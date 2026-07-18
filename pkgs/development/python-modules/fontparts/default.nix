@@ -1,26 +1,22 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
+  booleanoperations,
+  buildPythonPackage,
+  defcon,
+  fontmath,
+  # dependencies
+  fonttools,
+  # tests
+  python,
   # build-system
   setuptools,
   setuptools-scm,
-
-  # dependencies
-  fonttools,
-  defcon,
-  fontmath,
-  booleanoperations,
-
-  # tests
-  python,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "fontparts";
   version = "1.0.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "robotools";
@@ -35,6 +31,12 @@ buildPythonPackage (finalAttrs: {
       --replace-fail "setuptools_scm[toml]>=3.4,<10" "setuptools_scm[toml]"
     substituteInPlace setup.cfg \
       --replace-fail "setuptools_scm==9.2.2" "setuptools_scm"
+  '';
+
+  checkPhase = ''
+    runHook preCheck
+    ${python.interpreter} Lib/fontParts/fontshell/test.py
+    runHook postCheck
   '';
 
   build-system = [
@@ -53,13 +55,8 @@ buildPythonPackage (finalAttrs: {
   ++ fonttools.optional-dependencies.lxml
   ++ fonttools.optional-dependencies.unicode;
 
+  pyproject = true;
   pythonImportsCheck = [ "fontParts" ];
-
-  checkPhase = ''
-    runHook preCheck
-    ${python.interpreter} Lib/fontParts/fontshell/test.py
-    runHook postCheck
-  '';
 
   meta = {
     description = "API for interacting with the parts of fonts during the font development process";

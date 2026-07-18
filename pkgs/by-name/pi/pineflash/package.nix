@@ -2,20 +2,20 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  rustPlatform,
-  pkg-config,
   autoPatchelfHook,
   blisp,
   dfu-util,
   fontconfig,
   glib,
   gtk3,
-  openssl,
-  systemd,
   imagemagick,
   libGL,
   libxkbcommon,
   nix-update-script,
+  openssl,
+  pkg-config,
+  rustPlatform,
+  systemd,
   wayland,
 }:
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -29,7 +29,20 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-4tcwEok36vuXbtlZNUkLNw1kHFQPBEJM/gWRhRWNLPg=";
   };
 
-  cargoHash = "sha256-OgUWOtqgGCRNYCrdMa8IAfxbbYqv+1WwubvfYybuAQU=";
+  postPatch = ''
+    substituteInPlace src/submodules/flash.rs \
+      --replace-fail 'let command = Command::new("pkexec")' 'let command = Command::new("/run/wrappers/bin/pkexec")'
+  ''
+  + lib.optionalString stdenv.hostPlatform.isLinux ''
+    substituteInPlace src/submodules/flash.rs \
+      --replace-fail 'let blisppath = "blisp";' 'let blisppath = "${lib.getExe blisp}";' \
+      --replace-fail 'let dfupath = "dfu-util";' 'let dfupath = "${lib.getExe' dfu-util "dfu-util"}";'
+  ''
+  + lib.optionalString stdenv.hostPlatform.isDarwin ''
+    substituteInPlace src/submodules/flash.rs \
+      --replace-fail 'Command::new("blisp")' 'Command::new("${lib.getExe blisp}")' \
+      --replace-fail 'Command::new("dfu-util")' 'Command::new("${lib.getExe' dfu-util "dfu-util"}")'
+  '';
 
   nativeBuildInputs = [
     pkg-config
@@ -47,32 +60,19 @@ rustPlatform.buildRustPackage (finalAttrs: {
     systemd
   ];
 
-  runtimeDependencies = [
-    libGL
-    libxkbcommon
-    wayland
-  ];
-
-  postPatch = ''
-    substituteInPlace src/submodules/flash.rs \
-      --replace-fail 'let command = Command::new("pkexec")' 'let command = Command::new("/run/wrappers/bin/pkexec")'
-  ''
-  + lib.optionalString stdenv.hostPlatform.isLinux ''
-    substituteInPlace src/submodules/flash.rs \
-      --replace-fail 'let blisppath = "blisp";' 'let blisppath = "${lib.getExe blisp}";' \
-      --replace-fail 'let dfupath = "dfu-util";' 'let dfupath = "${lib.getExe' dfu-util "dfu-util"}";'
-  ''
-  + lib.optionalString stdenv.hostPlatform.isDarwin ''
-    substituteInPlace src/submodules/flash.rs \
-      --replace-fail 'Command::new("blisp")' 'Command::new("${lib.getExe blisp}")' \
-      --replace-fail 'Command::new("dfu-util")' 'Command::new("${lib.getExe' dfu-util "dfu-util"}")'
-  '';
+  cargoHash = "sha256-OgUWOtqgGCRNYCrdMa8IAfxbbYqv+1WwubvfYybuAQU=";
 
   postInstall = ''
     mkdir -p $out/share/icons/hicolor/128x128/apps
     install -D ./assets/Pineflash.desktop -t $out/share/applications
     magick ./assets/pine64logo.png -resize 128x128 $out/share/icons/hicolor/128x128/apps/pine64logo.png
   '';
+
+  runtimeDependencies = [
+    libGL
+    libxkbcommon
+    wayland
+  ];
 
   passthru = {
     updateScript = nix-update-script { };
@@ -83,9 +83,11 @@ rustPlatform.buildRustPackage (finalAttrs: {
     homepage = "https://github.com/Spagett1/pineflash";
     changelog = "https://github.com/Spagett1/pineflash/releases/tag/${finalAttrs.version}";
     license = lib.licenses.gpl2Only;
+
     maintainers = with lib.maintainers; [
       acuteaangle
     ];
+
     mainProgram = "pineflash";
   };
 })

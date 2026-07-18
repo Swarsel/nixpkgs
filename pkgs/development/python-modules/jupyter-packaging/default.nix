@@ -1,13 +1,13 @@
 {
   lib,
   buildPythonPackage,
+  deprecation,
   fetchPypi,
   fetchpatch,
-  deprecation,
   hatchling,
   packaging,
-  pytestCheckHook,
   pytest-timeout,
+  pytestCheckHook,
   setuptools,
   tomlkit,
 }:
@@ -15,21 +15,29 @@
 buildPythonPackage rec {
   pname = "jupyter-packaging";
   version = "0.12.3";
-  pyproject = true;
 
   src = fetchPypi {
-    pname = "jupyter_packaging";
     inherit version;
     hash = "sha256-nZsrY7l//WeovFORwypCG8QVsmSjLJnk2NjdMdqunPQ=";
+    pname = "jupyter_packaging";
   };
 
   patches = [
     (fetchpatch {
+      hash = "sha256-NlO07wBCutAJ1DgoT+rQFkuC9Y+DyF1YFlTwWpwsJzo=";
       name = "setuptools-68-test-compatibility.patch";
       url = "https://github.com/jupyter/jupyter-packaging/commit/e963fb27aa3b58cd70c5ca61ebe68c222d803b7e.patch";
-      hash = "sha256-NlO07wBCutAJ1DgoT+rQFkuC9Y+DyF1YFlTwWpwsJzo=";
     })
   ];
+
+  nativeCheckInputs = [
+    pytestCheckHook
+    pytest-timeout
+  ];
+
+  preCheck = ''
+    export HOME=$(mktemp -d)
+  '';
 
   build-system = [ hatchling ];
 
@@ -40,21 +48,6 @@ buildPythonPackage rec {
     tomlkit
   ];
 
-  nativeCheckInputs = [
-    pytestCheckHook
-    pytest-timeout
-  ];
-
-  pytestFlags = [
-    "-Wignore::DeprecationWarning"
-    # The 'wheel' package is no longer the canonical location of the 'bdist_wheel' command, and will be removed in a future release. Please update to setuptools v70.1 or later which contains an integrated version of this command.
-    "-Wignore::FutureWarning"
-  ];
-
-  preCheck = ''
-    export HOME=$(mktemp -d)
-  '';
-
   disabledTests = [
     # disable tests depending on network connection
     "test_develop"
@@ -64,6 +57,14 @@ buildPythonPackage rec {
     "test_npm_build"
     "test_create_cmdclass"
     "test_ensure_with_skip_npm"
+  ];
+
+  pyproject = true;
+
+  pytestFlags = [
+    "-Wignore::DeprecationWarning"
+    # The 'wheel' package is no longer the canonical location of the 'bdist_wheel' command, and will be removed in a future release. Please update to setuptools v70.1 or later which contains an integrated version of this command.
+    "-Wignore::FutureWarning"
   ];
 
   pythonImportsCheck = [ "jupyter_packaging" ];

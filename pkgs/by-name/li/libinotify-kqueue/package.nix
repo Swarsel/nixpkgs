@@ -2,8 +2,8 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  fetchpatch,
   autoreconfHook,
+  fetchpatch,
 }:
 
 stdenv.mkDerivation rec {
@@ -20,9 +20,9 @@ stdenv.mkDerivation rec {
   patches = [
     # https://github.com/libinotify-kqueue/libinotify-kqueue/pull/23
     (fetchpatch {
+      hash = "sha256-imKS2DuQrHSMnJH1gOYrVSeWTe2nhcl8Gm9IX5B9ZqI=";
       name = "add-configure-caching.patch";
       url = "https://github.com/libinotify-kqueue/libinotify-kqueue/commit/81a8f05c1ce6df819dc898f3754c9c874ee24b10.patch";
-      hash = "sha256-imKS2DuQrHSMnJH1gOYrVSeWTe2nhcl8Gm9IX5B9ZqI=";
     })
   ];
 

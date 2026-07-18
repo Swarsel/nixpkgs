@@ -1,12 +1,11 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   nix-update-script,
-
+  openssl,
   # tests
   scion,
-  openssl,
 }:
 
 buildGoModule (finalAttrs: {
@@ -20,21 +19,16 @@ buildGoModule (finalAttrs: {
     hash = "sha256-rs8BVN+jqwpSIfdtUzi9X9zSRStHJZSWjr32m8vWQ8g=";
   };
 
-  vendorHash = "sha256-SITnZXQ76eVedNVYWVwtH1ezDoMBmE1Uh9FpHA5+T8c=";
-
   patches = [
     # https://github.com/netsec-ethz/bootstrapper/pull/31
     ./0001-Update-to-Go-1.24.patch
   ];
 
+  vendorHash = "sha256-SITnZXQ76eVedNVYWVwtH1ezDoMBmE1Uh9FpHA5+T8c=";
+
   nativeCheckInputs = [
     scion
     openssl
-  ];
-
-  ldflags = [
-    "-s"
-    "-w"
   ];
 
   checkFlags =
@@ -55,17 +49,24 @@ buildGoModule (finalAttrs: {
     mv $out/bin/bootstrapper $out/bin/scion-bootstrapper
   '';
 
+  ldflags = [
+    "-s"
+    "-w"
+  ];
+
   passthru.updateScript = nix-update-script { extraArgs = [ "--version=branch" ]; };
 
   meta = {
     description = "Bootstrapper for SCION network configuration";
     homepage = "https://github.com/netsec-ethz/bootstrapper";
     license = lib.licenses.asl20;
+
     maintainers = with lib.maintainers; [
       matthewcroughan
       sarcasticadmin
     ];
-    teams = with lib.teams; [ ngi ];
+
     mainProgram = "scion-bootstrapper";
+    teams = with lib.teams; [ ngi ];
   };
 })

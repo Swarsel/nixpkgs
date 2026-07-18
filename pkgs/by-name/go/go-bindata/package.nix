@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule (finalAttrs: {
@@ -17,19 +17,19 @@ buildGoModule (finalAttrs: {
 
   vendorHash = null;
 
-  subPackages = [ "go-bindata" ];
-
   ldflags = [
     "-s"
     "-w"
   ];
 
+  subPackages = [ "go-bindata" ];
+
   meta = {
+    description = "Small utility which generates Go code from any file, useful for embedding binary data in a Go program";
     homepage = "https://github.com/kevinburke/go-bindata";
     changelog = "https://github.com/kevinburke/go-bindata/blob/v${finalAttrs.version}/CHANGELOG.md";
-    description = "Small utility which generates Go code from any file, useful for embedding binary data in a Go program";
-    mainProgram = "go-bindata";
-    maintainers = [ ];
     license = lib.licenses.cc0;
+    maintainers = [ ];
+    mainProgram = "go-bindata";
   };
 })

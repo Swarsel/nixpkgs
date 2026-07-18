@@ -12,13 +12,14 @@ stdenv.mkDerivation rec {
     url = "mirror://sourceforge/multitran/libbtree-${version}.tar.bz2";
     sha256 = "34a584e45058950337ff9342693b6739b52c3ce17e66440526c4bd6f9575802c";
   };
+
   patchPhase = ''
     sed -i -e 's@\$(DESTDIR)/usr@'$out'@' src/Makefile;
   '';
 
   meta = {
-    homepage = "https://multitran.sourceforge.net/";
     description = "Multitran lib: library for reading Multitran's BTREE database format";
+    homepage = "https://multitran.sourceforge.net/";
     license = lib.licenses.gpl2Only;
     platforms = lib.platforms.linux;
   };

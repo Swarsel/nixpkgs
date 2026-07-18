@@ -1,12 +1,9 @@
 {
-  fetchFromGitHub,
-  fetchurl,
   lib,
-  makeWrapper,
-  runCommand,
   stdenv,
-  writableTmpDirAsHomeHook,
-
+  fetchurl,
+  fetchFromGitHub,
+  R,
   _4ti2,
   autoreconfHook,
   bison,
@@ -24,8 +21,8 @@
   frobby,
   gdbm,
   getconf,
-  gfortran,
   gfan,
+  gfortran,
   givaro,
   glpk,
   gtest,
@@ -34,32 +31,33 @@
   libffi,
   libxml2,
   libz,
+  llvmPackages,
   lrs,
+  makeWrapper,
   mathic,
   mathicgb,
   memtailor,
   mpfi,
   mpfr,
-  msolve,
   mpsolve,
+  msolve,
   nauty,
   normaliz,
   ntl,
   onetbb,
   openssl,
-  R,
-  rWrapper,
   pkg-config,
   python3,
+  rWrapper,
   readline,
+  runCommand,
+  runtimeShell,
   singular,
   texinfo,
-  runtimeShell,
   topcom,
   which,
+  writableTmpDirAsHomeHook,
   xz,
-  llvmPackages,
-
   downloadDocs ? true,
 }:
 stdenv.mkDerivation (finalAttrs: {
@@ -74,10 +72,40 @@ stdenv.mkDerivation (finalAttrs: {
     fetchSubmodules = true;
   };
 
-  docs = fetchurl {
-    url = "https://macaulay2.com/Downloads/OtherSourceCode/Macaulay2-docs-${finalAttrs.version}.tar.gz";
-    hash = "sha256-0+ilvDh87Gmwzx0bLhT6nnadcPwgU3uB6pKhP9VqW0Q=";
-  };
+  postPatch = ''
+    sed -i 's/AC_SUBST(REL,.*uname -r.*)/AC_SUBST(REL,"")/' configure.ac
+    substituteInPlace configure.ac \
+      --replace-fail "[\$gfan_version], [ge], [0.8]" "[\$gfan_version], [ge], [0.6]"
+    substituteInPlace Macaulay2/packages/gfanInterface.m2 \
+      --replace-fail 'MinimumVersion => ("0.8"' 'MinimumVersion => ("0.6"'
+  '';
+
+  strictDeps = true;
+
+  nativeBuildInputs = [
+    autoreconfHook
+    bison
+    emacs-nox
+    flex
+    gdbm
+    getconf
+    gfortran
+    makeWrapper
+    pkg-config
+    texinfo
+    which
+
+    # TODO the configure script looks for these in $PATH
+    _4ti2
+    cohomcalg
+    csdp
+    gfan
+    lrs
+    msolve
+    nauty
+    normaliz
+    topcom
+  ];
 
   buildInputs = [
     blas
@@ -119,51 +147,6 @@ stdenv.mkDerivation (finalAttrs: {
     llvmPackages.openmp
   ];
 
-  nativeBuildInputs = [
-    autoreconfHook
-    bison
-    emacs-nox
-    flex
-    gdbm
-    getconf
-    gfortran
-    makeWrapper
-    pkg-config
-    texinfo
-    which
-
-    # TODO the configure script looks for these in $PATH
-    _4ti2
-    cohomcalg
-    csdp
-    gfan
-    lrs
-    msolve
-    nauty
-    normaliz
-    topcom
-  ];
-
-  __structuredAttrs = true;
-
-  strictDeps = true;
-
-  sourceRoot = "${finalAttrs.src.name}/M2";
-
-  postPatch = ''
-    sed -i 's/AC_SUBST(REL,.*uname -r.*)/AC_SUBST(REL,"")/' configure.ac
-    substituteInPlace configure.ac \
-      --replace-fail "[\$gfan_version], [ge], [0.8]" "[\$gfan_version], [ge], [0.6]"
-    substituteInPlace Macaulay2/packages/gfanInterface.m2 \
-      --replace-fail 'MinimumVersion => ("0.8"' 'MinimumVersion => ("0.6"'
-  '';
-
-  preConfigure = ''
-    cd BUILD/build
-  '';
-
-  configureScript = "../../configure";
-
   configureFlags = [
     "--disable-download"
     "--enable-shared"
@@ -174,18 +157,6 @@ stdenv.mkDerivation (finalAttrs: {
     "PYTHON_BIN=${python3.interpreter}"
   ];
 
-  configurePlatforms = [
-    "build"
-    "host"
-  ];
-
-  enableParallelBuilding = true;
-
-  preBuild = lib.optionalString downloadDocs ''
-    ln -s ${finalAttrs.docs} ../tarfiles/${finalAttrs.docs.name}
-    make -C libraries all-in-Macaulay2-docs
-  '';
-
   buildFlags = lib.optionals downloadDocs [
     "MakeDocumentation=false"
   ];
@@ -195,6 +166,15 @@ stdenv.mkDerivation (finalAttrs: {
       "-lblas"
     ]
   );
+
+  preConfigure = ''
+    cd BUILD/build
+  '';
+
+  preBuild = lib.optionalString downloadDocs ''
+    ln -s ${finalAttrs.docs} ../tarfiles/${finalAttrs.docs.name}
+    make -C libraries all-in-Macaulay2-docs
+  '';
 
   postInstall = ''
     substituteInPlace "$out/bin/M2" \
@@ -233,27 +213,32 @@ stdenv.mkDerivation (finalAttrs: {
       --prefix R_LIBS_SITE : ${lib.makeSearchPath "library" rWrapper.recommendedPackages}
   '';
 
+  doInstallCheck = true;
+
   installCheckPhase = ''
     runHook preInstallCheck
     $out/bin/M2 --check 1
     runHook postInstallCheck
   '';
 
-  doInstallCheck = true;
+  __structuredAttrs = true;
+
+  configurePlatforms = [
+    "build"
+    "host"
+  ];
+
+  configureScript = "../../configure";
+
+  docs = fetchurl {
+    hash = "sha256-0+ilvDh87Gmwzx0bLhT6nnadcPwgU3uB6pKhP9VqW0Q=";
+    url = "https://macaulay2.com/Downloads/OtherSourceCode/Macaulay2-docs-${finalAttrs.version}.tar.gz";
+  };
+
+  enableParallelBuilding = true;
+  sourceRoot = "${finalAttrs.src.name}/M2";
 
   passthru.tests = {
-    core =
-      runCommand "macaulay2-core-tests"
-        {
-          nativeBuildInputs = [
-            finalAttrs.finalPackage
-            writableTmpDirAsHomeHook
-          ];
-        }
-        ''
-          M2 --check 2 && touch $out
-        '';
-
     all-packages =
       runCommand "macaulay2-all-packages-test"
         {
@@ -265,11 +250,23 @@ stdenv.mkDerivation (finalAttrs: {
         ''
           M2 --check 3 && touch $out
         '';
+
+    core =
+      runCommand "macaulay2-core-tests"
+        {
+          nativeBuildInputs = [
+            finalAttrs.finalPackage
+            writableTmpDirAsHomeHook
+          ];
+        }
+        ''
+          M2 --check 2 && touch $out
+        '';
   };
 
   meta = {
     description = "System for computing in commutative algebra, algebraic geometry and related fields";
-    mainProgram = "M2";
+
     longDescription = ''
       Macaulay2 is a software system devoted to supporting research in
       algebraic geometry and commutative algebra, whose creation has been
@@ -285,9 +282,11 @@ stdenv.mkDerivation (finalAttrs: {
       cohomology of coherent sheaves on projective varieties, primary
       decomposition of ideals, integral closure of rings, and more.
     '';
+
     homepage = "https://macaulay2.com/";
     license = lib.licenses.gpl2Plus;
     maintainers = with lib.maintainers; [ coolcuber ];
     platforms = lib.platforms.linux ++ lib.platforms.darwin;
+    mainProgram = "M2";
   };
 })

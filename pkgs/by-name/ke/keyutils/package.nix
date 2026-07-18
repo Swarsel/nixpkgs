@@ -18,6 +18,13 @@ stdenv.mkDerivation (finalAttrs: {
     sha256 = "sha256-ph1XBhNq5MBb1I+GGGvP29iN2L1RB+Phlckkz8Gzm7Q=";
   };
 
+  outputs = [
+    "out"
+    "lib"
+    "dev"
+    "man"
+  ];
+
   patches = [
     ./conf-symlink.patch
     # This patch solves a duplicate symbol error when building with a clang stdenv
@@ -29,18 +36,9 @@ stdenv.mkDerivation (finalAttrs: {
 
     # Fix build for s390-linux, where size_t is different from ptrdiff_t.
     (fetchurl {
-      url = "https://lore.kernel.org/keyrings/20230301134250.301819-1-hi@alyssa.is/raw";
       sha256 = "1cbgwxq28fw5ldh38ngcs7xiqvpnmrw0hw9zzhbhb1hdxkavrc1s";
+      url = "https://lore.kernel.org/keyrings/20230301134250.301819-1-hi@alyssa.is/raw";
     })
-  ];
-
-  makeFlags = lib.optionals stdenv.hostPlatform.isStatic "NO_SOLIB=1";
-
-  outputs = [
-    "out"
-    "lib"
-    "dev"
-    "man"
   ];
 
   postPatch = ''
@@ -51,11 +49,13 @@ stdenv.mkDerivation (finalAttrs: {
         'VCPPFLAGS	:= -DPKGBUILD="\"$(date -ud "@$SOURCE_DATE_EPOCH" +%F)\""'
   '';
 
-  enableParallelBuilding = true;
+  makeFlags = lib.optionals stdenv.hostPlatform.isStatic "NO_SOLIB=1";
 
   env = lib.optionalAttrs (stdenv.hostPlatform.useLLVM) {
     NIX_LDFLAGS = "--undefined-version";
   };
+
+  enableParallelBuilding = true;
 
   installFlags = [
     "ETCDIR=$(out)/etc"
@@ -69,8 +69,8 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   meta = {
-    homepage = "https://people.redhat.com/dhowells/keyutils/";
     description = "Tools used to control the Linux kernel key management system";
+    homepage = "https://people.redhat.com/dhowells/keyutils/";
     license = lib.licenses.gpl2Plus;
     platforms = lib.platforms.linux;
   };

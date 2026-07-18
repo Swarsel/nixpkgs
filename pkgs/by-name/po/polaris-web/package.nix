@@ -1,7 +1,7 @@
 {
   lib,
-  buildNpmPackage,
   fetchFromGitHub,
+  buildNpmPackage,
 }:
 
 buildNpmPackage (finalAttrs: {
@@ -16,10 +16,7 @@ buildNpmPackage (finalAttrs: {
   };
 
   npmDepsHash = "sha256-c11CWJB76gX+Bxmqac3VxWjJxQVzYCaaf+pmQQpnOds=";
-
   env.CYPRESS_INSTALL_BINARY = "0";
-
-  npmBuildScript = "production";
 
   installPhase = ''
     runHook preInstall
@@ -29,6 +26,8 @@ buildNpmPackage (finalAttrs: {
 
     runHook postInstall
   '';
+
+  npmBuildScript = "production";
 
   meta = {
     description = "Web client for Polaris";

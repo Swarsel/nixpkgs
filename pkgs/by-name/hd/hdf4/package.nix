@@ -3,18 +3,18 @@
   stdenv,
   fetchFromGitHub,
   cmake,
-  ninja,
-  libjpeg,
-  uselibtirpc ? stdenv.hostPlatform.isLinux,
-  libtirpc,
-  zlib,
-  szipSupport ? false,
-  szip,
-  javaSupport ? false,
-  jdk,
-  fortranSupport ? false,
   gfortran,
+  jdk,
+  libjpeg,
+  libtirpc,
+  ninja,
+  szip,
+  zlib,
+  fortranSupport ? false,
+  javaSupport ? false,
   netcdfSupport ? false,
+  szipSupport ? false,
+  uselibtirpc ? stdenv.hostPlatform.isLinux,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -27,6 +27,12 @@ stdenv.mkDerivation (finalAttrs: {
     tag = "hdf${finalAttrs.version}";
     hash = "sha256-Q2VKwkp/iroStrOnwHI8d/dtMWkMoJesBVBVChwNa30=";
   };
+
+  outputs = [
+    "bin"
+    "dev"
+    "out"
+  ];
 
   nativeBuildInputs = [
     cmake
@@ -72,12 +78,6 @@ stdenv.mkDerivation (finalAttrs: {
 
   doCheck = true;
 
-  outputs = [
-    "bin"
-    "dev"
-    "out"
-  ];
-
   postInstall = ''
     moveToOutput lib/libhdf4.settings "$dev"
     moveToOutput bin "$bin"
@@ -97,8 +97,8 @@ stdenv.mkDerivation (finalAttrs: {
   meta = {
     description = "Data model, library, and file format for storing and managing data";
     homepage = "https://support.hdfgroup.org/products/hdf4/";
+    license = lib.licenses.bsdOriginal;
     maintainers = [ ];
     platforms = lib.platforms.unix;
-    license = lib.licenses.bsdOriginal;
   };
 })

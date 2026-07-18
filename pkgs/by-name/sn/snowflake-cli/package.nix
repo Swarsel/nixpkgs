@@ -1,15 +1,14 @@
 {
   lib,
-  python3Packages,
+  stdenv,
   fetchFromGitHub,
   installShellFiles,
-  stdenv,
+  python3Packages,
 }:
 
 python3Packages.buildPythonApplication (finalAttrs: {
   pname = "snowflake-cli";
   version = "3.13.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "snowflakedb";
@@ -18,15 +17,52 @@ python3Packages.buildPythonApplication (finalAttrs: {
     hash = "sha256-2cZ9tRcQ/sWHkkSXMZ9pXP4zM3OsNbKr2kR/Ob/F9Hk=";
   };
 
-  build-system = with python3Packages; [
-    hatchling
-  ];
-
   patches = [
     ./generate-json-schema-kwargs.patch
   ];
 
   nativeBuildInputs = [ installShellFiles ];
+
+  nativeCheckInputs = with python3Packages; [
+    pytestCheckHook
+    syrupy
+    coverage
+    pytest-randomly
+    pytest-factoryboy
+    pytest-xdist
+    pytest-httpserver
+  ];
+
+  postInstall = lib.optionalString (stdenv.buildPlatform.canExecute stdenv.hostPlatform) ''
+
+    # Looks like the completion generation has some sort of a race
+    # Occasionally one of the completion generations would fail with
+    #
+    # An unexpected exception occurred. Use --debug option to see the traceback. Exception message:
+    # [Errno 17] File exists: '/build/tmp.W654FVhCPT/.config/snowflake/logs'
+    #
+    # This creates a fake config that prevents logging in the build sandbox.
+    export HOME=$(mktemp -d)
+    mkdir -p $HOME/.config/snowflake
+    cat <<EOF > $HOME/.config/snowflake/config.toml
+    [cli.logs]
+    save_logs = false
+    EOF
+    # snowcli checks the config permissions upon launch and exits with an error code if it's not 0600.
+    chmod 0600 $HOME/.config/snowflake/config.toml
+
+    # Typer tries to guess the current shell by default
+    export _TYPER_COMPLETE_TEST_DISABLE_SHELL_DETECTION=1
+
+    installShellCompletion --cmd snow \
+      --bash <($out/bin/snow --show-completion bash) \
+      --fish <($out/bin/snow --show-completion fish) \
+      --zsh <($out/bin/snow --show-completion zsh)
+  '';
+
+  build-system = with python3Packages; [
+    hatchling
+  ];
 
   dependencies = with python3Packages; [
     id
@@ -53,53 +89,6 @@ python3Packages.buildPythonApplication (finalAttrs: {
     # It's invoking `pip` as `python -m pip`, so `pip` needs to be in
     # dependencies.
     pip
-  ];
-
-  nativeCheckInputs = with python3Packages; [
-    pytestCheckHook
-    syrupy
-    coverage
-    pytest-randomly
-    pytest-factoryboy
-    pytest-xdist
-    pytest-httpserver
-  ];
-
-  pytestFlags = [
-    "--snapshot-warn-unused"
-  ];
-
-  disabledTests = [
-    "integration"
-    "spcs"
-    "loaded_modules"
-    "integration_experimental"
-    "test_snow_typer_help_sanitization" # Snapshot needs update?
-    "test_help_message" # Snapshot needs update?
-    "test_sql_help_if_no_query_file_or_stdin" # Snapshot needs update?
-    "test_multiple_streamlit_raise_error_if_multiple_entities" # Snapshot needs update?
-    "test_replace_and_not_exists_cannot_be_used_together" # Snapshot needs update?
-    "test_format" # Snapshot needs update?
-    "test_executing_command_sends_telemetry_usage_data" # Fails on mocked version
-    "test_internal_application_data_is_sent_if_feature_flag_is_set"
-    "test_if_bundling_dependencies_resolves_requirements" # impure?
-    "test_silent_output_help" # Snapshot needs update? Diff between received and snapshot is the word 'TABLE' moving down a line
-    "test_new_connection_can_be_added_as_default" # Snapshot needs update? Diff between received and snapshot is an empty line
-
-    # These snapshots seem to be broken
-    "test_command_with_global_options"
-    "test_command_without_any_options"
-    "test_command_with_connection_options"
-
-  ]
-  # Looks like these tests do not work with the sandbox on Darwin
-  ++ lib.optionals stdenv.hostPlatform.isDarwin [
-    "test_allow_comments_at_source_url"
-    "test_mixed_recursion"
-    "test_parse_source_invalid_url"
-    "test_parse_source_url"
-    "test_recursion_from_url"
-    "test_source_missing_url"
   ];
 
   disabledTestPaths = [
@@ -152,39 +141,51 @@ python3Packages.buildPythonApplication (finalAttrs: {
     "tests/test_init.py::test_variables_flags"
   ];
 
+  disabledTests = [
+    "integration"
+    "spcs"
+    "loaded_modules"
+    "integration_experimental"
+    "test_snow_typer_help_sanitization" # Snapshot needs update?
+    "test_help_message" # Snapshot needs update?
+    "test_sql_help_if_no_query_file_or_stdin" # Snapshot needs update?
+    "test_multiple_streamlit_raise_error_if_multiple_entities" # Snapshot needs update?
+    "test_replace_and_not_exists_cannot_be_used_together" # Snapshot needs update?
+    "test_format" # Snapshot needs update?
+    "test_executing_command_sends_telemetry_usage_data" # Fails on mocked version
+    "test_internal_application_data_is_sent_if_feature_flag_is_set"
+    "test_if_bundling_dependencies_resolves_requirements" # impure?
+    "test_silent_output_help" # Snapshot needs update? Diff between received and snapshot is the word 'TABLE' moving down a line
+    "test_new_connection_can_be_added_as_default" # Snapshot needs update? Diff between received and snapshot is an empty line
+
+    # These snapshots seem to be broken
+    "test_command_with_global_options"
+    "test_command_without_any_options"
+    "test_command_with_connection_options"
+
+  ]
+  # Looks like these tests do not work with the sandbox on Darwin
+  ++ lib.optionals stdenv.hostPlatform.isDarwin [
+    "test_allow_comments_at_source_url"
+    "test_mixed_recursion"
+    "test_parse_source_invalid_url"
+    "test_parse_source_url"
+    "test_recursion_from_url"
+    "test_source_missing_url"
+  ];
+
+  pyproject = true;
+
+  pytestFlags = [
+    "--snapshot-warn-unused"
+  ];
+
   pythonRelaxDeps = true;
 
-  postInstall = lib.optionalString (stdenv.buildPlatform.canExecute stdenv.hostPlatform) ''
-
-    # Looks like the completion generation has some sort of a race
-    # Occasionally one of the completion generations would fail with
-    #
-    # An unexpected exception occurred. Use --debug option to see the traceback. Exception message:
-    # [Errno 17] File exists: '/build/tmp.W654FVhCPT/.config/snowflake/logs'
-    #
-    # This creates a fake config that prevents logging in the build sandbox.
-    export HOME=$(mktemp -d)
-    mkdir -p $HOME/.config/snowflake
-    cat <<EOF > $HOME/.config/snowflake/config.toml
-    [cli.logs]
-    save_logs = false
-    EOF
-    # snowcli checks the config permissions upon launch and exits with an error code if it's not 0600.
-    chmod 0600 $HOME/.config/snowflake/config.toml
-
-    # Typer tries to guess the current shell by default
-    export _TYPER_COMPLETE_TEST_DISABLE_SHELL_DETECTION=1
-
-    installShellCompletion --cmd snow \
-      --bash <($out/bin/snow --show-completion bash) \
-      --fish <($out/bin/snow --show-completion fish) \
-      --zsh <($out/bin/snow --show-completion zsh)
-  '';
-
   meta = {
-    changelog = "https://github.com/snowflakedb/snowflake-cli/blob/${finalAttrs.src.tag}/RELEASE-NOTES.md";
-    homepage = "https://docs.snowflake.com/en/developer-guide/snowflake-cli-v2/index";
     description = "Command-line tool explicitly designed for developer-centric workloads in addition to SQL operations";
+    homepage = "https://docs.snowflake.com/en/developer-guide/snowflake-cli-v2/index";
+    changelog = "https://github.com/snowflakedb/snowflake-cli/blob/${finalAttrs.src.tag}/RELEASE-NOTES.md";
     license = lib.licenses.asl20;
     maintainers = with lib.maintainers; [ vtimofeenko ];
     mainProgram = "snow";

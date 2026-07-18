@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule (finalAttrs: {
@@ -17,8 +17,6 @@ buildGoModule (finalAttrs: {
 
   vendorHash = "sha256-5rI6z7fC7jKPxovWp7nlZrR25NuUEz5obCn2HA6Crpk=";
 
-  subPackages = [ "." ];
-
   checkFlags = [
     # Test fails with:
     # 'x509_test.go:201: server did not report bad certificate error;
@@ -26,9 +24,11 @@ buildGoModule (finalAttrs: {
     "-skip=^TestUntrustedClientCert$"
   ];
 
+  subPackages = [ "." ];
+
   meta = {
-    homepage = "https://decred.org";
     description = "Secure Decred wallet daemon written in Go (golang)";
+    homepage = "https://decred.org";
     license = with lib.licenses; [ isc ];
     maintainers = with lib.maintainers; [ juaningan ];
     mainProgram = "dcrwallet";

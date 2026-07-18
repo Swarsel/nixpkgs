@@ -3,10 +3,10 @@
   stdenv,
   fetchFromGitLab,
   autoreconfHook,
-  pkg-config,
   boost,
   libixion,
   mdds,
+  pkg-config,
   python3,
   zlib,
 }:
@@ -21,6 +21,8 @@ stdenv.mkDerivation (finalAttrs: {
     rev = finalAttrs.version;
     hash = "sha256-vR/TtfUOa2Fmc4APfqG+Xu+mTAILGV+/JJnnmNHNJdQ=";
   };
+
+  strictDeps = true;
 
   nativeBuildInputs = [
     autoreconfHook
@@ -40,6 +42,8 @@ stdenv.mkDerivation (finalAttrs: {
     "--with-boost=${boost.dev}"
   ];
 
+  doCheck = true;
+
   preCheck = ''
     patchShebangs test/python
   ''
@@ -54,8 +58,6 @@ stdenv.mkDerivation (finalAttrs: {
     }
   '';
 
-  strictDeps = true;
-  doCheck = true;
   enableParallelBuilding = true;
   enableParallelChecking = true;
 

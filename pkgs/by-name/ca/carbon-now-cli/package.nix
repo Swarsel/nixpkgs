@@ -1,7 +1,7 @@
 {
   lib,
-  buildNpmPackage,
   fetchFromGitHub,
+  buildNpmPackage,
 }:
 
 buildNpmPackage rec {
@@ -15,14 +15,14 @@ buildNpmPackage rec {
     hash = "sha256-J7H1oofgosFGxoHzcx+UxaRbqGwqrmk6MYmMISpNB6w=";
   };
 
-  npmDepsHash = "sha256-/YWsk+GNfudSG0Rof1eCXeoK6dfyzzQqvWBLkpfahE0=";
-
   postPatch = ''
     substituteInPlace package.json \
       --replace "bundle/cli.js" "dist/cli.js" \
       --replace "trash " "rm -rf " \
       --replace "npx playwright install --with-deps" "true"
   '';
+
+  npmDepsHash = "sha256-/YWsk+GNfudSG0Rof1eCXeoK6dfyzzQqvWBLkpfahE0=";
 
   env = {
     PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD = 1;
@@ -32,7 +32,7 @@ buildNpmPackage rec {
     description = "Beautiful images of your code — from right inside your terminal";
     homepage = "https://github.com/mixn/carbon-now-cli";
     license = lib.licenses.mit;
-    mainProgram = "carbon-now";
     maintainers = with lib.maintainers; [ rmcgibbo ];
+    mainProgram = "carbon-now";
   };
 }

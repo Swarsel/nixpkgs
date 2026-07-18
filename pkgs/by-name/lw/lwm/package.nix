@@ -3,10 +3,10 @@
   stdenv,
   fetchurl,
   imake,
-  libx11,
-  libsm,
-  libxext,
   libice,
+  libsm,
+  libx11,
+  libxext,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -27,8 +27,6 @@ stdenv.mkDerivation (finalAttrs: {
     libice
   ];
 
-  dontConfigure = true;
-
   preBuild = ''
     sed -i 's|^LOCAL_LIBRARIES.*|& $(ICELIB)|' Imakefile
     xmkmf
@@ -40,8 +38,11 @@ stdenv.mkDerivation (finalAttrs: {
     install -m644 lwm.man $out/share/man/man1/lwm.1
   '';
 
+  dontConfigure = true;
+
   meta = {
     description = "Lightweight Window Manager";
+
     longDescription = ''
       lwm is a window manager for X that tries to keep out of your face. There
       are no icons, no button bars, no icon docks, no root menus, no nothing: if
@@ -50,6 +51,7 @@ stdenv.mkDerivation (finalAttrs: {
       manager; one that helps your operating system in its evil conquest of your
       disc space and its annexation of your physical memory.
     '';
+
     homepage = "http://www.jfc.org.uk/software/lwm.html";
     license = lib.licenses.gpl2;
     maintainers = [ ];

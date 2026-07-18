@@ -2,15 +2,14 @@
   lib,
   buildPythonPackage,
   fetchPypi,
+  requests,
   setuptools,
   wheel,
-  requests,
 }:
 
 buildPythonPackage rec {
   pname = "oauth2-client";
   version = "1.4.2";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
@@ -25,6 +24,8 @@ buildPythonPackage rec {
   dependencies = [
     requests
   ];
+
+  pyproject = true;
 
   pythonImportsCheck = [
     "oauth2_client"

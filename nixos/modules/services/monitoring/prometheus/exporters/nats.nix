@@ -11,17 +11,19 @@ let
   inherit (lib) mkOption types concatStringsSep;
 in
 {
-  port = 7777;
-
   extraOpts = {
     url = mkOption {
-      type = types.str;
       default = "http://127.0.0.1:8222";
+
       description = ''
         NATS monitor endpoint to query.
       '';
+
+      type = types.str;
     };
   };
+
+  port = 7777;
 
   serviceOpts = {
     serviceConfig = {

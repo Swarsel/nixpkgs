@@ -1,7 +1,7 @@
 {
   lib,
-  rustPlatform,
   fetchCrate,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -17,13 +17,15 @@ rustPlatform.buildRustPackage (finalAttrs: {
 
   meta = {
     description = "Tools to handle vendor-supplied, often buggy SVD files";
-    mainProgram = "svdtools";
     homepage = "https://github.com/stm32-rs/svdtools";
     changelog = "https://github.com/stm32-rs/svdtools/blob/v${finalAttrs.version}/CHANGELOG-rust.md";
+
     license = with lib.licenses; [
       asl20 # or
       mit
     ];
+
     maintainers = with lib.maintainers; [ newam ];
+    mainProgram = "svdtools";
   };
 })

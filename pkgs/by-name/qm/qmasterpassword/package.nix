@@ -2,15 +2,15 @@
   lib,
   stdenv,
   fetchFromGitHub,
+  cmake,
+  libscrypt,
   libx11,
   libxtst,
-  cmake,
   openssl,
-  libscrypt,
-  testers,
   qt6,
-  x11Support ? true,
+  testers,
   waylandSupport ? false,
+  x11Support ? true,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -24,6 +24,12 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-kNVdE42JFzl6HO84b793gseMhcDyiGzQCmhh6zh2epc=";
   };
 
+  nativeBuildInputs = [
+    cmake
+    qt6.qttools
+    qt6.wrapQtAppsHook
+  ];
+
   buildInputs = [
     qt6.qtbase
     qt6.qtwayland
@@ -34,11 +40,7 @@ stdenv.mkDerivation (finalAttrs: {
     libx11
     libxtst
   ];
-  nativeBuildInputs = [
-    cmake
-    qt6.qttools
-    qt6.wrapQtAppsHook
-  ];
+
   cmakeFlags = lib.optionals waylandSupport [
     "-DDISABLE_FILL_FORM_SHORTCUTS=1"
   ];
@@ -67,14 +69,14 @@ stdenv.mkDerivation (finalAttrs: {
 
   passthru = {
     tests.version = testers.testVersion {
-      package = finalAttrs.finalPackage;
       version = "v${finalAttrs.version}";
+      package = finalAttrs.finalPackage;
     };
   };
 
   meta = {
     description = "Stateless Master Password Manager";
-    mainProgram = "qMasterPassword";
+
     longDescription = ''
       Access all your passwords using only a single master password. But in
       contrast to other managers it does not store any passwords: Unique
@@ -83,9 +85,11 @@ stdenv.mkDerivation (finalAttrs: {
       there is no password file that can be lost or get stolen. There is also
       no need to trust any online password service.
     '';
+
     homepage = "https://github.com/bkueng/qMasterPassword";
     license = lib.licenses.gpl3;
     maintainers = with lib.maintainers; [ teutat3s ];
     platforms = lib.platforms.all;
+    mainProgram = "qMasterPassword";
   };
 })

@@ -1,13 +1,13 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
-  qt6,
-  opencascade-occt,
-  libGLU,
-  cmake,
-  rustPlatform,
   cargo,
+  cmake,
+  libGLU,
+  opencascade-occt,
+  qt6,
+  rustPlatform,
   rustc,
 }:
 
@@ -21,30 +21,6 @@ stdenv.mkDerivation rec {
     rev = version;
     hash = "sha256-UcX4r2TxinL2S3tPIiYRsPpYmKzdAx3Al0irkbXf5/g=";
     fetchSubmodules = true;
-  };
-
-  nativeBuildInputs = [
-    cmake
-    qt6.qttools
-    qt6.qtsvg
-    qt6.wrapQtAppsHook
-    opencascade-occt
-    libGLU
-    cargo
-    rustc
-  ];
-  buildInputs = [ qt6.qtbase ];
-
-  cargoDeps1 = rustPlatform.fetchCargoVendor {
-    inherit src;
-    cargoRoot = "libs/librepcb/rust-core";
-    hash = "sha256-1wHk8ynP3VnkypwY/C7nikfMSF0qU0L+CbBKoVxjlEc=";
-  };
-
-  cargoDeps2 = rustPlatform.fetchCargoVendor {
-    inherit src;
-    cargoRoot = "libs/slint";
-    hash = "sha256-UX/7a0hzFBmPZKufcDKcICrXEM+rKcvqEq2pg1riBxo=";
   };
 
   postPatch = ''
@@ -67,14 +43,41 @@ stdenv.mkDerivation rec {
     EOF
   '';
 
+  nativeBuildInputs = [
+    cmake
+    qt6.qttools
+    qt6.qtsvg
+    qt6.wrapQtAppsHook
+    opencascade-occt
+    libGLU
+    cargo
+    rustc
+  ];
+
+  buildInputs = [ qt6.qtbase ];
+
+  cargoDeps1 = rustPlatform.fetchCargoVendor {
+    inherit src;
+    cargoRoot = "libs/librepcb/rust-core";
+    hash = "sha256-1wHk8ynP3VnkypwY/C7nikfMSF0qU0L+CbBKoVxjlEc=";
+  };
+
+  cargoDeps2 = rustPlatform.fetchCargoVendor {
+    inherit src;
+    cargoRoot = "libs/slint";
+    hash = "sha256-UX/7a0hzFBmPZKufcDKcICrXEM+rKcvqEq2pg1riBxo=";
+  };
+
   meta = {
     description = "Free EDA software to develop printed circuit boards";
     homepage = "https://librepcb.org/";
+    license = lib.licenses.gpl3Plus;
+
     maintainers = with lib.maintainers; [
       luz
       thoughtpolice
     ];
-    license = lib.licenses.gpl3Plus;
+
     platforms = lib.platforms.linux;
   };
 }

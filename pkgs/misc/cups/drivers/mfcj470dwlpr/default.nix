@@ -2,14 +2,14 @@
   lib,
   stdenv,
   fetchurl,
-  cups,
-  dpkg,
-  ghostscript,
   a2ps,
   coreutils,
-  gnused,
-  gawk,
+  cups,
+  dpkg,
   file,
+  gawk,
+  ghostscript,
+  gnused,
   makeWrapper,
 }:
 
@@ -23,14 +23,13 @@ stdenv.mkDerivation rec {
   };
 
   nativeBuildInputs = [ makeWrapper ];
+
   buildInputs = [
     cups
     ghostscript
     dpkg
     a2ps
   ];
-
-  dontUnpack = true;
 
   installPhase = ''
     dpkg-deb -x $src $out
@@ -66,13 +65,15 @@ stdenv.mkDerivation rec {
     }
   '';
 
+  dontUnpack = true;
+
   meta = {
-    homepage = "http://www.brother.com/";
     description = "Brother MFC-J470DW LPR driver";
-    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
+    homepage = "http://www.brother.com/";
     license = lib.licenses.unfree;
+    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
+    maintainers = [ lib.maintainers.yochai ];
     platforms = lib.platforms.linux;
     downloadPage = "http://support.brother.com/g/b/downloadlist.aspx?c=us&lang=en&prod=mfcj470dw_us_eu_as&os=128";
-    maintainers = [ lib.maintainers.yochai ];
   };
 }

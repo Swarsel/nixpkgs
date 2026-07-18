@@ -1,16 +1,16 @@
 {
   lib,
-  buildGoModule,
+  stdenv,
   fetchFromGitHub,
+  buildGoModule,
+  cacert,
+  git,
+  go,
   installShellFiles,
-  testers,
   nixosTests,
   opentelemetry-collector-builder,
   pkgs,
-  go,
-  git,
-  cacert,
-  stdenv,
+  testers,
 }:
 let
   # This is the tool OTEL uses to build their distributions.
@@ -35,32 +35,18 @@ let
   # The output depends on which release.
   mkDistributionSource =
     {
-      name,
       hash,
+      name,
     }:
     stdenv.mkDerivation {
       inherit name;
+      inherit src;
 
       nativeBuildInputs = [
         cacert
         git
         go
       ];
-
-      inherit src;
-
-      outputHash = hash;
-      outputHashMode = "recursive";
-      outputHashAlgo = if hash == "" then "sha256" else null;
-
-      patchPhase = ''
-        patchShebangs .
-      '';
-
-      configurePhase = ''
-        export HOME=$NIX_BUILD_TOP/home
-        export GIT_SSL_CAINFO=$NIX_SSL_CERT_FILE
-      '';
 
       buildPhase = ''
         # Only generate the go code, skip compilation
@@ -72,6 +58,19 @@ let
 
         # Make it reproducible
         rm $out/build.log
+      '';
+
+      configurePhase = ''
+        export HOME=$NIX_BUILD_TOP/home
+        export GIT_SSL_CAINFO=$NIX_SSL_CERT_FILE
+      '';
+
+      outputHash = hash;
+      outputHashAlgo = if hash == "" then "sha256" else null;
+      outputHashMode = "recursive";
+
+      patchPhase = ''
+        patchShebangs .
       '';
     };
 
@@ -85,27 +84,20 @@ let
     }:
     let
       package = buildGoModule {
-        pname = name;
         inherit version;
+        inherit proxyVendor vendorHash;
+        pname = name;
 
         src = mkDistributionSource {
           inherit name;
           hash = sourceHash;
         };
 
-        inherit proxyVendor vendorHash;
-
         nativeBuildInputs = [ installShellFiles ];
-
         # upstream strongly recommends disabling CGO
         # additionally dependencies have had issues when GCO was enabled that weren't caught upstream
         # https://github.com/open-telemetry/opentelemetry-collector/blob/main/CONTRIBUTING.md#using-cgo
         env.CGO_ENABLED = 0;
-
-        ldflags = [
-          "-s"
-          "-w"
-        ];
 
         postInstall = ''
           # Fix binary name
@@ -117,6 +109,11 @@ let
             --zsh <($out/bin/${name} completion zsh)
         '';
 
+        ldflags = [
+          "-s"
+          "-w"
+        ];
+
         passthru.tests = {
           version = testers.testVersion {
             inherit package version;
@@ -125,8 +122,8 @@ let
         };
 
         meta = {
-          homepage = "https://github.com/open-telemetry/opentelemetry-collector-releases";
           description = "OpenTelemetry Collector Official Releases";
+
           longDescription = ''
             The OpenTelemetry Collector offers a vendor-agnostic implementation on how
             to receive, process and export telemetry data. In addition, it removes the
@@ -134,11 +131,15 @@ let
             support open-source telemetry data formats (e.g. Jaeger, Prometheus, etc.)
             sending to multiple open-source or commercial back-ends.
           '';
+
+          homepage = "https://github.com/open-telemetry/opentelemetry-collector-releases";
           license = lib.licenses.asl20;
+
           maintainers = with lib.maintainers; [
             jk
             zimbatm
           ];
+
           mainProgram = name;
         };
       };
@@ -147,27 +148,27 @@ let
 in
 lib.recurseIntoAttrs {
   otelcol = mkDistribution {
+    vendorHash = "sha256-OoXz9rFIipM0tc6kvkkPdUtYXVIfo0L40V4SUfwSF6M=";
     name = "otelcol";
     sourceHash = "sha256-4PpZ6anKPkFyVcARJJSEpyy3duTCyrMnnAnh6CWwjUc=";
-    vendorHash = "sha256-OoXz9rFIipM0tc6kvkkPdUtYXVIfo0L40V4SUfwSF6M=";
   };
 
   otelcol-contrib = mkDistribution {
-    name = "otelcol-contrib";
-    sourceHash = "sha256-wUmpivqLSnRYGTJn3IIlpwFXORmK4FJrc8U472YPV2o=";
     vendorHash = "sha256-7Rb3Ku0q+5cBvgtd/oZaLaFa4chv0b/MzaHEpJvJ6rE=";
+    name = "otelcol-contrib";
     proxyVendor = true; # hash mismatch between linux and darwin
+    sourceHash = "sha256-wUmpivqLSnRYGTJn3IIlpwFXORmK4FJrc8U472YPV2o=";
   };
 
   otelcol-k8s = mkDistribution {
+    vendorHash = "sha256-2ZzLCMTafbpmSpkpwvYgkP/Myg/QD1LHgiMigbj3x9I=";
     name = "otelcol-k8s";
     sourceHash = "sha256-yNhE0CwMNus12QDSbP/x9irrIcOdez0e/RpXFFRQ2LE=";
-    vendorHash = "sha256-2ZzLCMTafbpmSpkpwvYgkP/Myg/QD1LHgiMigbj3x9I=";
   };
 
   otelcol-otlp = mkDistribution {
+    vendorHash = "sha256-WiP+TYj7VZBt3tP4C/ZvQwkDP8/b4F+Bc7Z95p0tBTI=";
     name = "otelcol-otlp";
     sourceHash = "sha256-+cffC4sOlyPWtydkPZz7M0NF2Q3heQ04/pEB8d+942c=";
-    vendorHash = "sha256-WiP+TYj7VZBt3tP4C/ZvQwkDP8/b4F+Bc7Z95p0tBTI=";
   };
 }

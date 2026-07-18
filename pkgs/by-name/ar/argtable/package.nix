@@ -16,12 +16,6 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-IW4pqOHKjwxQEmv/V40kIRLin+bQE6PAlfJemFgi5bQ=";
   };
 
-  nativeBuildInputs = [ cmake ];
-
-  cmakeFlags = [
-    (lib.cmakeBool "BUILD_SHARED_LIBS" true)
-  ];
-
   postPatch = ''
     patchShebangs tools/build
 
@@ -30,9 +24,15 @@ stdenv.mkDerivation (finalAttrs: {
       --replace-fail "\''${prefix}/@CMAKE_INSTALL_LIBDIR@" "@CMAKE_INSTALL_FULL_LIBDIR@"
   '';
 
+  nativeBuildInputs = [ cmake ];
+
+  cmakeFlags = [
+    (lib.cmakeBool "BUILD_SHARED_LIBS" true)
+  ];
+
   meta = {
-    homepage = "https://github.com/argtable/argtable3";
     description = "Single-file, ANSI C command-line parsing library";
+
     longDescription = ''
       Argtable is an open source ANSI C library that parses GNU-style
       command-line options. It simplifies command-line parsing by defining a
@@ -41,6 +41,8 @@ stdenv.mkDerivation (finalAttrs: {
       handling logic and textual descriptions of the command line syntax, which
       are essential but tedious to implement for a robust CLI program.
     '';
+
+    homepage = "https://github.com/argtable/argtable3";
     license = lib.licenses.bsd3;
     maintainers = [ ];
     platforms = lib.platforms.all;

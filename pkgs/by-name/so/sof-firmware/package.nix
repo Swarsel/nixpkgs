@@ -1,8 +1,8 @@
 {
   lib,
   fetchurl,
-  stdenvNoCC,
   nix-update-script,
+  stdenvNoCC,
 }:
 
 stdenvNoCC.mkDerivation (finalAttrs: {
@@ -14,8 +14,6 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     hash = "sha256-Uz9j46bZTAnOBaeCZXtnX6aD/yB4fAl5Imz1Y+x59Rc=";
   };
 
-  dontFixup = true; # binaries must not be stripped or patchelfed
-
   installPhase = ''
     runHook preInstall
 
@@ -26,22 +24,27 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  dontFixup = true; # binaries must not be stripped or patchelfed
   passthru.updateScript = nix-update-script { };
 
   meta = {
-    changelog = "https://github.com/thesofproject/sof-bin/releases/tag/v${finalAttrs.version}";
     description = "Sound Open Firmware";
     homepage = "https://www.sofproject.org/";
+    changelog = "https://github.com/thesofproject/sof-bin/releases/tag/v${finalAttrs.version}";
+
     license = with lib.licenses; [
       bsd3
       isc
     ];
+
+    sourceProvenance = with lib.sourceTypes; [ binaryFirmware ];
+
     maintainers = with lib.maintainers; [
       lblasc
       evenbrenden
       hmenke
     ];
+
     platforms = with lib.platforms; linux;
-    sourceProvenance = with lib.sourceTypes; [ binaryFirmware ];
   };
 })

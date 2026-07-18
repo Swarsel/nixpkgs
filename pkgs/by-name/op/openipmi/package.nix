@@ -1,13 +1,13 @@
 {
+  lib,
   stdenv,
-  buildPackages,
   fetchurl,
-  popt,
+  buildPackages,
   ncurses,
+  openssl,
+  popt,
   python3,
   readline,
-  lib,
-  openssl,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -19,10 +19,12 @@ stdenv.mkDerivation (finalAttrs: {
     sha256 = "sha256-xi049dp99Cmaw6ZSUI6VlTd1JEAYHjTHayrs69fzAbk=";
   };
 
-  postConfigure = lib.optionalString (!stdenv.buildPlatform.canExecute stdenv.hostPlatform) ''
-    substituteInPlace lanserv/Makefile \
-      --replace-fail "sdrcomp/sdrcomp_build -o" "${buildPackages.openipmi}/bin/sdrcomp -o"
-  '';
+  outputs = [
+    "out"
+    "lib"
+    "dev"
+    "man"
+  ];
 
   strictDeps = true;
 
@@ -42,21 +44,21 @@ stdenv.mkDerivation (finalAttrs: {
     "BUILD_CC=${stdenv.cc.targetPrefix}cc"
   ];
 
-  outputs = [
-    "out"
-    "lib"
-    "dev"
-    "man"
-  ];
+  postConfigure = lib.optionalString (!stdenv.buildPlatform.canExecute stdenv.hostPlatform) ''
+    substituteInPlace lanserv/Makefile \
+      --replace-fail "sdrcomp/sdrcomp_build -o" "${buildPackages.openipmi}/bin/sdrcomp -o"
+  '';
 
   meta = {
-    homepage = "https://openipmi.sourceforge.io/";
     description = "User-level library that provides a higher-level abstraction of IPMI and generic services";
+    homepage = "https://openipmi.sourceforge.io/";
+
     license = with lib.licenses; [
       gpl2Only
       lgpl2Only
     ];
-    platforms = lib.platforms.linux;
+
     maintainers = with lib.maintainers; [ arezvov ];
+    platforms = lib.platforms.linux;
   };
 })

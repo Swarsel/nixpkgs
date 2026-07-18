@@ -1,23 +1,22 @@
 {
   lib,
+  fetchFromGitHub,
   beancount,
   beautifulsoup4,
   buildPythonPackage,
   chardet,
   click,
-  fetchFromGitHub,
   fetchpatch2,
   lxml,
   petl,
-  python-magic,
   pytestCheckHook,
+  python-magic,
   setuptools,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "beangulp";
   version = "0.2.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "beancount";
@@ -28,9 +27,14 @@ buildPythonPackage (finalAttrs: {
 
   patches = [
     (fetchpatch2 {
-      url = "https://github.com/beancount/beangulp/commit/254bfb38ffed049ef8f3041bfaf01b3f5a8aa771.patch?full_index=1";
       hash = "sha256-ojysT23K0xmFafzTnRZiHkLS2ioDR/tVK02mfF7N9so=";
+      url = "https://github.com/beancount/beangulp/commit/254bfb38ffed049ef8f3041bfaf01b3f5a8aa771.patch?full_index=1";
     })
+  ];
+
+  nativeCheckInputs = [
+    petl
+    pytestCheckHook
   ];
 
   build-system = [ setuptools ];
@@ -44,22 +48,21 @@ buildPythonPackage (finalAttrs: {
     python-magic
   ];
 
-  nativeCheckInputs = [
-    petl
-    pytestCheckHook
-  ];
+  pyproject = true;
 
   pythonImportsCheck = [
     "beangulp"
   ];
 
   meta = {
-    homepage = "https://github.com/beancount/beangulp";
     description = "Importers framework for Beancount";
+
     longDescription = ''
       Beangulp provides a framework for importing transactions into a Beancoount
       ledger from account statements and other documents and for managing documents.
     '';
+
+    homepage = "https://github.com/beancount/beangulp";
     license = lib.licenses.gpl2Only;
     maintainers = with lib.maintainers; [ alapshin ];
   };

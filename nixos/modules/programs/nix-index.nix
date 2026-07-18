@@ -10,18 +10,17 @@ in
 {
   options.programs.nix-index = with lib; {
     enable = mkEnableOption "nix-index, a file database for nixpkgs";
-
     package = mkPackageOption pkgs "nix-index" { };
 
     enableBashIntegration = mkEnableOption "Bash integration" // {
       default = true;
     };
 
-    enableZshIntegration = mkEnableOption "Zsh integration" // {
+    enableFishIntegration = mkEnableOption "Fish integration" // {
       default = true;
     };
 
-    enableFishIntegration = mkEnableOption "Fish integration" // {
+    enableZshIntegration = mkEnableOption "Zsh integration" // {
       default = true;
     };
   };
@@ -31,6 +30,7 @@ in
       let
         checkOpt = name: {
           assertion = cfg.${name} -> !config.programs.command-not-found.enable;
+
           message = ''
             The 'programs.command-not-found.enable' option is mutually exclusive
             with the 'programs.nix-index.${name}' option.
@@ -48,10 +48,6 @@ in
       source ${cfg.package}/etc/profile.d/command-not-found.sh
     '';
 
-    programs.zsh.interactiveShellInit = lib.mkIf cfg.enableZshIntegration ''
-      source ${cfg.package}/etc/profile.d/command-not-found.sh
-    '';
-
     # See https://github.com/bennofs/nix-index/issues/126
     programs.fish.interactiveShellInit =
       let
@@ -66,5 +62,9 @@ in
             ${wrapper} $argv
         end
       '';
+
+    programs.zsh.interactiveShellInit = lib.mkIf cfg.enableZshIntegration ''
+      source ${cfg.package}/etc/profile.d/command-not-found.sh
+    '';
   };
 }

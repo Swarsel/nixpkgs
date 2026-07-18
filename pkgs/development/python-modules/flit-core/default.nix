@@ -5,16 +5,13 @@
 }:
 
 buildPythonPackage rec {
-  pname = "flit-core";
   inherit (flit) version;
-  pyproject = true;
-
   inherit (flit) src patches;
-
+  pname = "flit-core";
   postPatch = "cd flit_core";
-
   # Tests are run in the "flit" package.
   doCheck = false;
+  pyproject = true;
 
   passthru.tests = {
     inherit flit;

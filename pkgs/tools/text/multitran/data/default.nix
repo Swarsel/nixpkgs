@@ -23,8 +23,8 @@ stdenv.mkDerivation {
   '';
 
   meta = {
-    homepage = "https://multitran.sourceforge.net/";
     description = "Multitran data english-russian";
+    homepage = "https://multitran.sourceforge.net/";
     license = lib.licenses.gpl2Only;
     platforms = lib.platforms.unix;
   };

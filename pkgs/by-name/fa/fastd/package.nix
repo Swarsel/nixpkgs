@@ -3,15 +3,15 @@
   stdenv,
   fetchFromGitHub,
   bison,
+  json_c,
+  libcap,
+  libmnl,
+  libsodium,
+  libuecc,
   meson,
   ninja,
-  pkg-config,
-  libmnl,
-  libuecc,
-  libsodium,
-  libcap,
-  json_c,
   openssl,
+  pkg-config,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -53,15 +53,18 @@ stdenv.mkDerivation (finalAttrs: {
   meta = {
     description = "Fast and Secure Tunneling Daemon";
     homepage = "https://projects.universe-factory.net/projects/fastd/wiki";
+
     license = with lib.licenses; [
       bsd2
       bsd3
     ];
-    platforms = lib.platforms.linux;
+
     maintainers = with lib.maintainers; [
       fpletz
       herbetom
     ];
+
+    platforms = lib.platforms.linux;
     mainProgram = "fastd";
   };
 })

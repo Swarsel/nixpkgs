@@ -1,12 +1,12 @@
 {
-  stdenv,
   lib,
-  python3,
-  kernel,
-  makeWrapper,
-  writeText,
+  stdenv,
   gawk,
   iproute2,
+  kernel,
+  makeWrapper,
+  python3,
+  writeText,
 }:
 
 let
@@ -20,17 +20,17 @@ let
       (if stdenv.hostPlatform.isAarch64 then null else "fcopy_uio");
 
   daemons = stdenv.mkDerivation {
-    pname = "hyperv-daemons-bin";
     inherit (kernel) src version;
-
-    nativeBuildInputs = [ makeWrapper ];
-    buildInputs = [ python3 ];
+    pname = "hyperv-daemons-bin";
 
     postPatch = ''
       cd tools/hv
       substituteInPlace hv_kvp_daemon.c \
         --replace /usr/libexec/hypervkvpd/ $out/${libexec}/
     '';
+
+    nativeBuildInputs = [ makeWrapper ];
+    buildInputs = [ python3 ];
 
     makeFlags = [
       "ARCH=${stdenv.hostPlatform.parsed.cpu.name}"
@@ -71,8 +71,8 @@ let
 
 in
 stdenv.mkDerivation {
-  pname = "hyperv-daemons";
   inherit (kernel) version;
+  pname = "hyperv-daemons";
 
   # we just stick the bins into out as well as it requires "out"
   outputs = [
@@ -82,9 +82,6 @@ stdenv.mkDerivation {
   ];
 
   buildInputs = [ daemons ];
-  passthru = {
-    inherit daemons;
-  };
 
   buildCommand = ''
     system=$lib/lib/systemd/system
@@ -119,9 +116,13 @@ stdenv.mkDerivation {
     done
   '';
 
+  passthru = {
+    inherit daemons;
+  };
+
   meta = {
     description = "Integration Services for running NixOS under HyperV";
-    mainProgram = "lsvmbus";
+
     longDescription = ''
       This packages contains the daemons that are used by the Hyper-V hypervisor
       on the host.
@@ -129,8 +130,10 @@ stdenv.mkDerivation {
       Microsoft calls their guest agents "Integration Services" which is why
       we use that name here.
     '';
+
     homepage = "https://kernel.org";
     maintainers = with lib.maintainers; [ peterhoeg ];
     platforms = kernel.meta.platforms;
+    mainProgram = "lsvmbus";
   };
 }

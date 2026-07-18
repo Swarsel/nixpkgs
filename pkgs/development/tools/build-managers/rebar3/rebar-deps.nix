@@ -3,24 +3,26 @@ let
   fetchOnly = { src, ... }: src;
 in
 {
-  builder ? fetchOnly,
+  fetchFromGitHub,
   fetchHex,
   fetchgit,
-  fetchFromGitHub,
+  builder ? fetchOnly,
   overrides ? (x: y: { }),
 }:
 let
   self = packages // (overrides self packages);
   packages = {
     meck = builder {
-      name = "meck";
       version = "0.8.13";
+
       src = fetchHex {
+        sha256 = "sha256-008BPBVttRrVfMVWiRuXIOahwd9f4uFa+ZnITWzr6xo=";
         pkg = "meck";
         version = "0.8.13";
-        sha256 = "sha256-008BPBVttRrVfMVWiRuXIOahwd9f4uFa+ZnITWzr6xo=";
       };
+
       beamDeps = [ ];
+      name = "meck";
     };
   };
 in

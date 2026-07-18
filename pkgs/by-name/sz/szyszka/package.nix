@@ -1,14 +1,14 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
-  pkg-config,
-  glib,
-  cairo,
-  pango,
   atk,
+  cairo,
   gdk-pixbuf,
+  glib,
   gtk4,
+  pango,
+  pkg-config,
+  rustPlatform,
   wrapGAppsHook4,
 }:
 
@@ -23,8 +23,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-LkXGKDFKaY+mg53ZEO4h2br/4eRle/QbSQJTVEMpAoY=";
   };
 
-  cargoHash = "sha256-0VlhBd1GpmynNflssizg+Y9D8Hr40rT7OzOSP4AmhxY=";
-
   nativeBuildInputs = [
     pkg-config
     wrapGAppsHook4
@@ -38,6 +36,8 @@ rustPlatform.buildRustPackage (finalAttrs: {
     gdk-pixbuf
     gtk4
   ];
+
+  cargoHash = "sha256-0VlhBd1GpmynNflssizg+Y9D8Hr40rT7OzOSP4AmhxY=";
 
   postInstall = ''
     install -m 444 \

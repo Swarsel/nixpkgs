@@ -1,12 +1,12 @@
 {
   lib,
+  fetchFromGitHub,
   accelerate,
   buildPythonPackage,
   clean-fid,
   clip-anytorch,
   dctorch,
   einops,
-  fetchFromGitHub,
   jsonmerge,
   kornia,
   pillow,
@@ -25,7 +25,6 @@
 buildPythonPackage rec {
   pname = "k-diffusion";
   version = "0.1.1.post1";
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "crowsonkb";
@@ -55,10 +54,10 @@ buildPythonPackage rec {
     wandb
   ];
 
-  pythonImportsCheck = [ "k_diffusion" ];
-
   # no tests
   doCheck = false;
+  format = "setuptools";
+  pythonImportsCheck = [ "k_diffusion" ];
 
   meta = {
     description = "Karras et al. (2022) diffusion models for PyTorch";

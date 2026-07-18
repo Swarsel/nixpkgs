@@ -26,16 +26,16 @@ lib.extendMkDerivation {
       enableParallelBuilding ? true,
       extraBuildInputs ? [ ],
       extraNativeBuildInputs ? [ ],
+      ## Location of resulting RetroArch core on $out
+      libretroCore ? "/lib/retroarch/cores",
       makeFlags ? [ ],
       makefile ? "Makefile.libretro",
       meta ? { },
-      passthru ? { },
-      strictDeps ? true,
-      ## Location of resulting RetroArch core on $out
-      libretroCore ? "/lib/retroarch/cores",
       ## The core filename is derived from the core name
       ## Setting `normalizeCore` to `true` will convert `-` to `_` on the core filename
       normalizeCore ? true,
+      passthru ? { },
+      strictDeps ? true,
       ...
     }:
     let
@@ -45,27 +45,25 @@ lib.extendMkDerivation {
       mainProgram = "retroarch-${core}";
     in
     {
-      pname = "libretro-${core}";
-
-      buildInputs = [ zlib ] ++ extraBuildInputs;
-      nativeBuildInputs = [ makeWrapper ] ++ extraNativeBuildInputs;
-
       inherit enableParallelBuilding makefile strictDeps;
+      pname = "libretro-${core}";
+      nativeBuildInputs = [ makeWrapper ] ++ extraNativeBuildInputs;
+      buildInputs = [ zlib ] ++ extraBuildInputs;
 
       makeFlags = [
         "platform=${
           {
-            linux = "unix";
             darwin = "osx";
+            linux = "unix";
             windows = "win";
           }
           .${stdenv.hostPlatform.parsed.kernel.name} or stdenv.hostPlatform.parsed.kernel.name
         }"
         "ARCH=${
           {
-            armv7l = "arm";
-            armv6l = "arm";
             aarch64 = "arm64";
+            armv6l = "arm";
+            armv7l = "arm";
             i686 = "x86";
           }
           .${stdenv.hostPlatform.parsed.cpu.name} or stdenv.hostPlatform.parsed.cpu.name

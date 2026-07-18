@@ -1,7 +1,7 @@
 {
-  fetchurl,
   lib,
   stdenv,
+  fetchurl,
   cmake,
   kdePackages,
   qt6,
@@ -22,6 +22,7 @@ stdenv.mkDerivation rec {
     kdePackages.kdoctools
     qt6.wrapQtAppsHook
   ];
+
   propagatedBuildInputs = [
     kdePackages.knotifyconfig
     kdePackages.kidletime
@@ -33,9 +34,9 @@ stdenv.mkDerivation rec {
 
   meta = {
     description = "Takes care of your health and regularly breaks your work to avoid repetitive strain injury (RSI)";
-    mainProgram = "rsibreak";
-    license = lib.licenses.gpl2;
     homepage = "https://www.kde.org/applications/utilities/rsibreak/";
+    license = lib.licenses.gpl2;
     maintainers = with lib.maintainers; [ vandenoever ];
+    mainProgram = "rsibreak";
   };
 }

@@ -1,12 +1,10 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  nodejs,
-  yarn-berry_3,
+  async-lru,
+  buildPythonPackage,
   hatch-jupyter-builder,
   hatchling,
-  async-lru,
   httpx,
   ipykernel,
   jinja2,
@@ -14,18 +12,18 @@
   jupyter-lsp,
   jupyter-server,
   jupyterlab-server,
+  nodejs,
   notebook-shim,
   packaging,
   setuptools,
   tornado,
   traitlets,
+  yarn-berry_3,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "jupyterlab";
   version = "4.5.8";
-  pyproject = true;
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "jupyterlab";
@@ -43,15 +41,13 @@ buildPythonPackage (finalAttrs: {
     pushd jupyterlab/staging
   '';
 
-  offlineCache = yarn-berry_3.fetchYarnBerryDeps {
-    inherit (finalAttrs) src;
-    sourceRoot = "${finalAttrs.src.name}/jupyterlab/staging";
-    hash = "sha256-wgqwEl01VinYU5haL1X8Na1lNNcyqCfRaRBze4ypPPo=";
-  };
-
   preBuild = ''
     popd
   '';
+
+  # Depends on npm
+  doCheck = false;
+  __structuredAttrs = true;
 
   build-system = [
     hatch-jupyter-builder
@@ -80,17 +76,21 @@ buildPythonPackage (finalAttrs: {
     "$out/share/jupyter/lab"
   ];
 
-  # Depends on npm
-  doCheck = false;
+  offlineCache = yarn-berry_3.fetchYarnBerryDeps {
+    inherit (finalAttrs) src;
+    hash = "sha256-wgqwEl01VinYU5haL1X8Na1lNNcyqCfRaRBze4ypPPo=";
+    sourceRoot = "${finalAttrs.src.name}/jupyterlab/staging";
+  };
 
+  pyproject = true;
   pythonImportsCheck = [ "jupyterlab" ];
 
   meta = {
-    changelog = "https://github.com/jupyterlab/jupyterlab/blob/${finalAttrs.src.tag}/CHANGELOG.md";
     description = "Jupyter lab environment notebook server extension";
-    license = lib.licenses.bsd3;
     homepage = "https://jupyter.org/";
-    teams = [ lib.teams.jupyter ];
+    changelog = "https://github.com/jupyterlab/jupyterlab/blob/${finalAttrs.src.tag}/CHANGELOG.md";
+    license = lib.licenses.bsd3;
     mainProgram = "jupyter-lab";
+    teams = [ lib.teams.jupyter ];
   };
 })

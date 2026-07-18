@@ -13,17 +13,10 @@
   ];
 
   config = lib.modules.mkIf config.services.hylafax.enable {
-    environment.systemPackages = [ config.services.hylafax.package ];
-    users.users.uucp = {
-      uid = config.ids.uids.uucp;
-      group = "uucp";
-      description = "Unix-to-Unix CoPy system";
-      isSystemUser = true;
-      inherit (config.users.users.nobody) home;
-    };
     assertions = [
       {
         assertion = config.services.hylafax.modems != { };
+
         message = ''
           HylaFAX cannot be used without modems.
           Please define at least one modem with
@@ -31,6 +24,16 @@
         '';
       }
     ];
+
+    environment.systemPackages = [ config.services.hylafax.package ];
+
+    users.users.uucp = {
+      inherit (config.users.users.nobody) home;
+      description = "Unix-to-Unix CoPy system";
+      group = "uucp";
+      isSystemUser = true;
+      uid = config.ids.uids.uucp;
+    };
   };
 
   meta.maintainers = [ lib.maintainers.yarny ];

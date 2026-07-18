@@ -1,9 +1,9 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
-  versionCheckHook,
   nix-update-script,
+  rustPlatform,
+  versionCheckHook,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -18,20 +18,17 @@ rustPlatform.buildRustPackage (finalAttrs: {
   };
 
   cargoHash = "sha256-jO+LHoZKn0RORKRw5GIwO8kBoQMjvBrofRYN33OHm/I=";
-
-  buildAndTestSubdir = "util";
-
-  nativeInstallCheckInputs = [ versionCheckHook ];
   doInstallCheck = true;
-
+  nativeInstallCheckInputs = [ versionCheckHook ];
+  buildAndTestSubdir = "util";
   passthru.updateScript = nix-update-script { };
 
   meta = {
     description = "Port of DropBox Lepton compression to Rust";
-    changelog = "https://github.com/microsoft/lepton_jpeg_rust/releases/tag/v${finalAttrs.version}";
-    mainProgram = "lepton_jpeg_util";
     homepage = "https://github.com/microsoft/lepton_jpeg_rust";
+    changelog = "https://github.com/microsoft/lepton_jpeg_rust/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.asl20;
     maintainers = with lib.maintainers; [ skohtv ];
+    mainProgram = "lepton_jpeg_util";
   };
 })

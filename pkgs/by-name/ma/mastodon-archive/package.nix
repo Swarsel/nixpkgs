@@ -7,7 +7,6 @@
 python3.pkgs.buildPythonApplication (finalAttrs: {
   pname = "mastodon-archive";
   version = "1.4.8";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "kensanata";
@@ -15,6 +14,9 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     rev = "v${finalAttrs.version}";
     hash = "sha256-yz17ddcA0U9fq1aDlPmD3OkNL6Epzdp9C7L+31yNLBc=";
   };
+
+  # There is no test
+  doCheck = false;
 
   build-system = with python3.pkgs; [
     setuptools
@@ -26,16 +28,14 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     progress
   ];
 
-  # There is no test
-  doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "mastodon_archive" ];
 
   meta = {
     description = "Utility for backing up your Mastodon content";
-    mainProgram = "mastodon-archive";
     homepage = "https://alexschroeder.ch/software/Mastodon_Archive";
     license = lib.licenses.gpl3Plus;
     maintainers = with lib.maintainers; [ julm ];
+    mainProgram = "mastodon-archive";
   };
 })

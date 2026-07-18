@@ -1,17 +1,16 @@
 {
+  alcotest,
+  base64,
   buildDunePackage,
   camlp-streams,
   optint,
-  alcotest,
-  uri,
-  base64,
   seppo,
+  uri,
 }:
 
 buildDunePackage {
-  pname = "mcdb";
-
   inherit (seppo) version src;
+  pname = "mcdb";
 
   propagatedBuildInputs = [
     camlp-streams

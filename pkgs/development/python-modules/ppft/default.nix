@@ -10,7 +10,6 @@
 buildPythonPackage rec {
   pname = "ppft";
   version = "1.7.8";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
@@ -18,7 +17,6 @@ buildPythonPackage rec {
   };
 
   propagatedBuildInputs = [ six ];
-
   # darwin seems to hang
   doCheck = !stdenv.hostPlatform.isDarwin;
 
@@ -28,14 +26,15 @@ buildPythonPackage rec {
     runHook postCheck
   '';
 
+  format = "setuptools";
   pythonImportsCheck = [ "ppft" ];
 
   meta = {
     description = "Distributed and parallel Python";
-    mainProgram = "ppserver";
     homepage = "https://ppft.readthedocs.io/";
     changelog = "https://github.com/uqfoundation/ppft/releases/tag/${version}";
     license = lib.licenses.bsd3;
     maintainers = [ ];
+    mainProgram = "ppserver";
   };
 }

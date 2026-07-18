@@ -1,7 +1,7 @@
 {
+  config,
   lib,
   pkgs,
-  config,
   ...
 }:
 let
@@ -14,7 +14,7 @@ in
   };
 
   config = lib.mkIf cfg.enable {
-    services.dbus.packages = [ kclockPkg ];
     environment.systemPackages = [ kclockPkg ];
+    services.dbus.packages = [ kclockPkg ];
   };
 }

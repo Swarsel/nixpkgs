@@ -1,15 +1,14 @@
 {
+  lib,
   fetchFromGitHub,
   buildGoModule,
-  lib,
 }:
 let
   version = "0.17.17";
 in
 buildGoModule {
-  pname = "heimdall-proxy";
-
   inherit version;
+  pname = "heimdall-proxy";
 
   src = fetchFromGitHub {
     owner = "dadrus";
@@ -19,11 +18,6 @@ buildGoModule {
   };
 
   vendorHash = "sha256-efDG99grxfm+uIHVzYK0O/51NsaIk70E2LO2fjJ8Hxs=";
-
-  tags = [ "sqlite" ];
-
-  subPackages = [ "." ];
-
   env.CGO_ENABLED = 0;
 
   # Pass versioning information via ldflags
@@ -32,6 +26,9 @@ buildGoModule {
     "-w"
     "-X github.com/dadrus/heimdall/version.Version=${version}"
   ];
+
+  subPackages = [ "." ];
+  tags = [ "sqlite" ];
 
   meta = {
     description = "Cloud native Identity Aware Proxy and Access Control Decision service";

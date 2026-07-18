@@ -1,23 +1,17 @@
 {
   buildDunePackage,
-  mirage-crypto-rng,
-  miou,
-  logs,
-  duration,
-  mtime,
   digestif,
+  duration,
+  logs,
+  miou,
+  mirage-crypto-rng,
+  mtime,
   ohex,
 }:
 
 buildDunePackage {
-  pname = "mirage-crypto-rng-miou-unix";
-
   inherit (mirage-crypto-rng) version src;
-
-  doCheck = true;
-  checkInputs = [
-
-  ];
+  pname = "mirage-crypto-rng-miou-unix";
 
   propagatedBuildInputs = [
     miou
@@ -29,8 +23,15 @@ buildDunePackage {
     ohex
   ];
 
+  doCheck = true;
+
+  checkInputs = [
+
+  ];
+
   meta = mirage-crypto-rng.meta // {
     description = "Feed the entropy source in an miou.unix-friendly way";
+
     longDescription = ''
       Mirage-crypto-rng-miou-unix feeds the entropy source for Mirage_crypto_rng-based
       random number generator implementations, in an miou.unix-friendly way.

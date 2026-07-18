@@ -1,16 +1,15 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   hatchling,
-  pytestCheckHook,
   ps,
+  pytestCheckHook,
 }:
 
 buildPythonPackage rec {
   pname = "duct-py";
   version = "1.0.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "oconnor663";
@@ -19,14 +18,12 @@ buildPythonPackage rec {
     hash = "sha256-i811nQB8CVJPYPR0Jdzpk64EXxrTMDIBpdDoUs9Xu/k=";
   };
 
-  build-system = [ hatchling ];
-
-  pythonImportsCheck = [ "duct" ];
-
   nativeCheckInputs = [
     pytestCheckHook
     ps
   ];
+
+  build-system = [ hatchling ];
 
   disabledTests = [
     # This test completely empties the environment then tries to run a Python command.
@@ -34,6 +31,9 @@ buildPythonPackage rec {
     # how this test even passes _outside_ of Nix.
     "test_full_env"
   ];
+
+  pyproject = true;
+  pythonImportsCheck = [ "duct" ];
 
   meta = {
     description = "Python library for running child processes";

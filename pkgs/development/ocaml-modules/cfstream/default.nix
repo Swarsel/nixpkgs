@@ -1,18 +1,16 @@
 {
   lib,
-  buildDunePackage,
   fetchFromGitHub,
-  m4,
+  buildDunePackage,
   camlp-streams,
   core_kernel,
+  m4,
   ounit,
 }:
 
 buildDunePackage (finalAttrs: {
   pname = "cfstream";
   version = "1.3.2";
-
-  minimalOCamlVersion = "4.08";
 
   src = fetchFromGitHub {
     owner = "biocaml";
@@ -27,18 +25,20 @@ buildDunePackage (finalAttrs: {
   ];
 
   nativeBuildInputs = [ m4 ];
-  checkInputs = [ ounit ];
+
   propagatedBuildInputs = [
     camlp-streams
     core_kernel
   ];
 
   doCheck = true;
+  checkInputs = [ ounit ];
+  minimalOCamlVersion = "4.08";
 
   meta = {
     inherit (finalAttrs.src.meta) homepage;
     description = "Simple Core-inspired wrapper for standard library Stream module";
-    maintainers = [ lib.maintainers.bcdarwin ];
     license = lib.licenses.lgpl21;
+    maintainers = [ lib.maintainers.bcdarwin ];
   };
 })

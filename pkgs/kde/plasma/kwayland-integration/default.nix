@@ -1,22 +1,19 @@
 {
   stdenv,
-  sources,
-
   cmake,
-  pkg-config,
-  libsForQt5,
-  wayland-scanner,
-
   extra-cmake-modules,
+  libsForQt5,
+  pkg-config,
   plasma-wayland-protocols,
+  sources,
   wayland,
   wayland-protocols,
+  wayland-scanner,
 }:
 # not mkKdeDerivation because this is Qt5 land
 stdenv.mkDerivation rec {
-  pname = "kwayland-integration";
   inherit (sources.${pname}) version;
-
+  pname = "kwayland-integration";
   src = sources.${pname};
 
   nativeBuildInputs = [

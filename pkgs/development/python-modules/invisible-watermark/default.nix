@@ -1,24 +1,23 @@
 {
   lib,
   stdenv,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
-  opencv-python,
-  torch,
+  buildPythonPackage,
+  callPackage,
+  numpy,
   onnx,
   onnxruntime,
+  opencv-python,
   pillow,
   pywavelets,
-  numpy,
-  callPackage,
+  setuptools,
+  torch,
   withOnnx ? false, # Enables the rivaGan en- and decoding method
 }:
 
 buildPythonPackage rec {
   pname = "invisible-watermark";
   version = "0.2.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "ShieldMnt";
@@ -27,6 +26,12 @@ buildPythonPackage rec {
     rev = "e58e451cff7e092457cd915e445b1a20b64a7c8f"; # No git tag, see https://github.com/ShieldMnt/invisible-watermark/issues/22
     hash = "sha256-6SjVpKFtiiLLU7tZ3hBQr0KT/YEQyywJj0e21/dJRzk=";
   };
+
+  postPatch = ''
+    substituteInPlace imwatermark/rivaGan.py --replace \
+      'You can install it with pip: `pip install onnxruntime`.' \
+      'You can install it with an override: `python3Packages.invisible-watermark.override { withOnnx = true; };`.'
+  '';
 
   build-system = [ setuptools ];
 
@@ -42,11 +47,8 @@ buildPythonPackage rec {
     onnxruntime
   ];
 
-  postPatch = ''
-    substituteInPlace imwatermark/rivaGan.py --replace \
-      'You can install it with pip: `pip install onnxruntime`.' \
-      'You can install it with an override: `python3Packages.invisible-watermark.override { withOnnx = true; };`.'
-  '';
+  pyproject = true;
+  pythonImportsCheck = [ "imwatermark" ];
 
   passthru.tests =
     let
@@ -91,13 +93,11 @@ buildPythonPackage rec {
       python = callPackage ./tests/python { inherit image; };
     };
 
-  pythonImportsCheck = [ "imwatermark" ];
-
   meta = {
     description = "Library for creating and decoding invisible image watermarks";
-    mainProgram = "invisible-watermark";
     homepage = "https://github.com/ShieldMnt/invisible-watermark";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ Luflosi ];
+    mainProgram = "invisible-watermark";
   };
 }

@@ -1,15 +1,14 @@
 {
   lib,
-  rel,
-  buildKodiAddon,
-  fetchzip,
   addonUpdateScript,
+  buildKodiAddon,
   dateutil,
+  fetchzip,
+  rel,
   typing_extensions,
 }:
 buildKodiAddon rec {
   pname = "arrow";
-  namespace = "script.module.arrow";
   version = "1.2.3";
 
   src = fetchzip {
@@ -22,16 +21,19 @@ buildKodiAddon rec {
     typing_extensions
   ];
 
+  namespace = "script.module.arrow";
+
   passthru = {
     pythonPath = "lib";
+
     updateScript = addonUpdateScript {
       attrPath = "kodi.packages.arrow";
     };
   };
 
   meta = {
-    homepage = "https://github.com/razzeee/script.module.arrow";
     description = "Better dates & times for Python";
+    homepage = "https://github.com/razzeee/script.module.arrow";
     license = lib.licenses.asl20;
     teams = [ lib.teams.kodi ];
   };

@@ -1,27 +1,18 @@
 {
-  mkDerivation,
+  csu,
   include,
   libcompiler_rt,
-  csu,
+  mkDerivation,
 }:
 
 mkDerivation {
   pname = "libsys";
-  path = "lib/libsys";
-  extraPaths = [
-    "sys/sys"
-    "lib/libc/string"
-    "lib/libc/include"
-    "lib/libc/Versions.def"
-    "lib/libcompat"
-  ];
 
   outputs = [
     "out"
     "man"
     "debug"
   ];
-  noLibc = true;
 
   buildInputs = [
     include
@@ -34,4 +25,15 @@ mkDerivation {
   '';
 
   alwaysKeepStatic = true;
+
+  extraPaths = [
+    "sys/sys"
+    "lib/libc/string"
+    "lib/libc/include"
+    "lib/libc/Versions.def"
+    "lib/libcompat"
+  ];
+
+  noLibc = true;
+  path = "lib/libsys";
 }

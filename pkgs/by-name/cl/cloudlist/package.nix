@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   versionCheckHook,
 }:
 
@@ -17,17 +17,15 @@ buildGoModule (finalAttrs: {
   };
 
   vendorHash = "sha256-V+2ByID1/2yaxuy7OL21ZBzYgZchszMOblL0bNglcEY=";
-
-  subPackages = [ "cmd/cloudlist/" ];
+  doInstallCheck = true;
+  nativeInstallCheckInputs = [ versionCheckHook ];
 
   ldflags = [
     "-w"
     "-s"
   ];
 
-  nativeInstallCheckInputs = [ versionCheckHook ];
-
-  doInstallCheck = true;
+  subPackages = [ "cmd/cloudlist/" ];
 
   meta = {
     description = "Tool for listing assets from multiple cloud providers";

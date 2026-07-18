@@ -2,18 +2,16 @@
   lib,
   stdenv,
   fetchFromGitHub,
-
-  cmake,
-  pkg-config,
-
-  rsync,
-  lua5_2_compat,
   asciidoc,
-  libxml2,
+  cmake,
+  darwin,
   docbook_xml_dtd_45,
   docbook_xsl,
+  libxml2,
   libxslt,
-  darwin,
+  lua5_2_compat,
+  pkg-config,
+  rsync,
 }:
 
 let
@@ -35,16 +33,6 @@ stdenv.mkDerivation (finalAttrs: {
       --replace "/usr/bin/rsync" "${rsync}/bin/rsync"
   '';
 
-  # Special flags needed on Darwin:
-  # https://github.com/lsyncd/lsyncd/blob/42413cabbedca429d55a5378f6e830f191f3cc86/INSTALL#L51
-  cmakeFlags = lib.optionals stdenv.hostPlatform.isDarwin [
-    "-DWITH_INOTIFY=OFF"
-    "-DWITH_FSEVENTS=ON"
-    "-DXNU_DIR=${xnu}"
-  ];
-
-  dontUseCmakeBuildDir = true;
-
   nativeBuildInputs = [
     cmake
     pkg-config
@@ -60,12 +48,22 @@ stdenv.mkDerivation (finalAttrs: {
     libxslt
   ];
 
+  # Special flags needed on Darwin:
+  # https://github.com/lsyncd/lsyncd/blob/42413cabbedca429d55a5378f6e830f191f3cc86/INSTALL#L51
+  cmakeFlags = lib.optionals stdenv.hostPlatform.isDarwin [
+    "-DWITH_INOTIFY=OFF"
+    "-DWITH_FSEVENTS=ON"
+    "-DXNU_DIR=${xnu}"
+  ];
+
+  dontUseCmakeBuildDir = true;
+
   meta = {
-    homepage = "https://github.com/lsyncd/lsyncd";
     description = "Utility that synchronizes local directories with remote targets";
-    mainProgram = "lsyncd";
+    homepage = "https://github.com/lsyncd/lsyncd";
     license = lib.licenses.gpl2Plus;
-    platforms = lib.platforms.all;
     maintainers = with lib.maintainers; [ bobvanderlinden ];
+    platforms = lib.platforms.all;
+    mainProgram = "lsyncd";
   };
 })

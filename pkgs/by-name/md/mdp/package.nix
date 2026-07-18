@@ -6,8 +6,8 @@
 }:
 
 stdenv.mkDerivation (finalAttrs: {
-  version = "1.0.18";
   pname = "mdp";
+  version = "1.0.18";
 
   src = fetchFromGitHub {
     owner = "visit1985";
@@ -16,15 +16,14 @@ stdenv.mkDerivation (finalAttrs: {
     sha256 = "sha256-7ltqnvNzdr+sJiiiCQpp25dzhOrcUCOAgMTt1RIgVTw=";
   };
 
+  buildInputs = [ ncurses ];
   makeFlags = [ "PREFIX=$(out)" ];
 
-  buildInputs = [ ncurses ];
-
   meta = {
-    homepage = "https://github.com/visit1985/mdp";
     description = "Command-line based markdown presentation tool";
-    maintainers = with lib.maintainers; [ matthiasbeyer ];
+    homepage = "https://github.com/visit1985/mdp";
     license = lib.licenses.gpl3;
+    maintainers = with lib.maintainers; [ matthiasbeyer ];
     platforms = with lib.platforms; unix;
     mainProgram = "mdp";
   };

@@ -1,10 +1,10 @@
 {
   lib,
-  dotnetCorePackages,
-  buildDotnetModule,
   fetchFromGitHub,
-  runCommand,
+  buildDotnetModule,
+  dotnetCorePackages,
   expect,
+  runCommand,
 }:
 
 let
@@ -22,27 +22,6 @@ let
       hash = "sha256-yWrb+Ov1syKjeer7CxmGzkf9qUJxQ0IoIRfyIiO8eI8=";
     };
 
-    projectFile = "src/OmniSharp.Stdio.Driver/OmniSharp.Stdio.Driver.csproj";
-    nugetDeps = ./deps.json;
-
-    dotnet-sdk = sdk_8_0;
-    dotnet-runtime = sdk_8_0;
-
-    dotnetInstallFlags = [ "--framework net8.0" ];
-    dotnetBuildFlags = [
-      "--framework net8.0"
-      "--no-self-contained"
-    ];
-    dotnetFlags = [
-      # These flags are set by the cake build.
-      "-property:PackageVersion=${version}"
-      "-property:AssemblyVersion=${version}.0"
-      "-property:FileVersion=${version}.0"
-      "-property:InformationalVersion=${version}"
-      "-property:RuntimeFrameworkVersion=${runtime_8_0.version}"
-      "-property:RollForward=LatestMajor"
-    ];
-
     postPatch = ''
       # Relax the version requirement
       rm global.json
@@ -57,8 +36,29 @@ let
         --replace-fail '<RuntimeFrameworkVersion>6.0.0-preview.7.21317.1</RuntimeFrameworkVersion>' ""
     '';
 
-    useDotnetFromEnv = true;
+    dotnet-runtime = sdk_8_0;
+    dotnet-sdk = sdk_8_0;
+
+    dotnetBuildFlags = [
+      "--framework net8.0"
+      "--no-self-contained"
+    ];
+
+    dotnetFlags = [
+      # These flags are set by the cake build.
+      "-property:PackageVersion=${version}"
+      "-property:AssemblyVersion=${version}.0"
+      "-property:FileVersion=${version}.0"
+      "-property:InformationalVersion=${version}"
+      "-property:RuntimeFrameworkVersion=${runtime_8_0.version}"
+      "-property:RollForward=LatestMajor"
+    ];
+
+    dotnetInstallFlags = [ "--framework net8.0" ];
     executables = [ "OmniSharp" ];
+    nugetDeps = ./deps.json;
+    projectFile = "src/OmniSharp.Stdio.Driver/OmniSharp.Stdio.Driver.csproj";
+    useDotnetFromEnv = true;
 
     passthru = {
       tests =
@@ -72,6 +72,7 @@ let
                   sdk
                   expect
                 ];
+
                 meta.timeout = 60;
               }
               ''
@@ -93,10 +94,10 @@ let
               '';
         in
         {
+          no-sdk = with-sdk null;
           # Make sure we can run OmniSharp with any supported SDK version, as well as without
           with-net8-sdk = with-sdk sdk_8_0;
           with-net9-sdk = with-sdk sdk_9_0;
-          no-sdk = with-sdk null;
         };
 
       updateScript = ./update.sh;
@@ -106,11 +107,13 @@ let
       description = "OmniSharp based on roslyn workspaces";
       homepage = "https://github.com/OmniSharp/omnisharp-roslyn";
       changelog = "https://github.com/OmniSharp/omnisharp-roslyn/blob/v${version}/CHANGELOG.md";
+      license = lib.licenses.mit;
+
       sourceProvenance = with lib.sourceTypes; [
         fromSource
         binaryNativeCode # dependencies
       ];
-      license = lib.licenses.mit;
+
       maintainers = with lib.maintainers; [
         corngood
         ericdallo
@@ -118,6 +121,7 @@ let
         mdarocha
         tesq0
       ];
+
       mainProgram = "OmniSharp";
     };
   };

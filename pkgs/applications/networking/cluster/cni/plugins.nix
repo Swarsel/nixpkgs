@@ -17,7 +17,6 @@ buildGoModule rec {
   };
 
   vendorHash = null;
-
   doCheck = false;
 
   ldflags = [
@@ -48,9 +47,9 @@ buildGoModule rec {
   passthru.tests = { inherit (nixosTests) cri-o; };
 
   meta = {
-    changelog = "https://github.com/containernetworking/plugins/releases/tag/${src.rev}";
     description = "Some standard networking plugins, maintained by the CNI team";
     homepage = "https://www.cni.dev/plugins/";
+    changelog = "https://github.com/containernetworking/plugins/releases/tag/${src.rev}";
     license = lib.licenses.asl20;
     platforms = lib.platforms.linux;
     teams = [ lib.teams.podman ];

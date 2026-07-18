@@ -12,14 +12,15 @@
 buildPythonPackage rec {
   pname = "azure-mgmt-databoxedge";
   version = "2.0.0";
-  pyproject = true;
 
   src = fetchPypi {
-    pname = "azure_mgmt_databoxedge";
     inherit version;
     hash = "sha256-8Y8GbQJ8maIkmY08R0CBJoIVmr44z1joewl3DKssrMA=";
+    pname = "azure_mgmt_databoxedge";
   };
 
+  # no tests in pypi tarball
+  doCheck = false;
   build-system = [ setuptools ];
 
   dependencies = [
@@ -29,9 +30,7 @@ buildPythonPackage rec {
     typing-extensions
   ];
 
-  # no tests in pypi tarball
-  doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "azure.mgmt.databoxedge" ];
 
   meta = {

@@ -1,50 +1,50 @@
 {
-  stdenv,
   lib,
-  fetchFromCodeberg,
+  stdenv,
+  alsa-lib,
+  at-spi2-core,
   cmake,
-  ninja,
-  wxwidgets_3_2,
-  gtk3,
-  pkg-config,
-  python3,
+  dbus,
+  expat,
+  fetchFromCodeberg,
+  ffmpeg_7,
+  file,
+  flac,
   gettext,
   glib,
-  file,
+  gtk3,
   lame,
-  libvorbis,
-  libmad,
-  libjack2,
-  lv2,
-  lilv,
-  makeWrapper,
-  serd,
-  sord,
-  sqlite,
-  sratom,
-  suil,
-  alsa-lib,
-  libsndfile,
-  soxr,
-  flac,
-  twolame,
-  expat,
-  libid3tag,
-  libopus,
-  ffmpeg_7,
-  soundtouch,
-  portaudio,
-  linuxHeaders,
-  at-spi2-core,
-  dbus,
   libepoxy,
-  libxdmcp,
-  libxtst,
+  libid3tag,
+  libjack2,
+  libmad,
+  libopus,
   libpthread-stubs,
   libselinux,
   libsepol,
+  libsndfile,
+  libvorbis,
+  libxdmcp,
   libxkbcommon,
+  libxtst,
+  lilv,
+  linuxHeaders,
+  lv2,
+  makeWrapper,
+  ninja,
+  pkg-config,
+  portaudio,
+  python3,
+  serd,
+  sord,
+  soundtouch,
+  soxr,
+  sqlite,
+  sratom,
+  suil,
+  twolame,
   util-linux,
+  wxwidgets_3_2,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -54,9 +54,9 @@ stdenv.mkDerivation (finalAttrs: {
   src = fetchFromCodeberg {
     owner = "tenacityteam";
     repo = "tenacity";
-    fetchSubmodules = true;
     rev = "v${finalAttrs.version}";
     hash = "sha256-2gndOwgEJK2zDSbjcZigbhEpGv301/ygrf+EQhKp8PI=";
+    fetchSubmodules = true;
   };
 
   # https://codeberg.org/tenacityteam/tenacity/pulls/696
@@ -82,45 +82,6 @@ stdenv.mkDerivation (finalAttrs: {
     substituteInPlace libraries/lib-ffmpeg-support/FFmpegFunctions.cpp \
       --replace-fail /usr/local/lib/tenacity ${lib.getLib ffmpeg_7}/lib
   '';
-
-  postInstall = lib.optionalString stdenv.hostPlatform.isDarwin ''
-    mkdir $out/{bin,Applications}
-    mv $out/{,Applications/}Tenacity.app
-
-    # Symlinking the binary is insufficient as it would be unable to
-    # find the bundle resources
-    cat << EOF > "$out/bin/tenacity"
-    #!${stdenv.shell}
-    open -na "$out/Applications/Tenacity.app" --args "\$@"
-    EOF
-    chmod +x "$out/bin/tenacity"
-
-    # Only contains a static library that is already linked into the tenacity binary
-    rm -r $out/lib
-  '';
-
-  postFixup = lib.optionalString stdenv.hostPlatform.isLinux ''
-    wrapProgram "$out/bin/tenacity" \
-      --suffix AUDACITY_PATH : "$out/share/tenacity" \
-      --suffix AUDACITY_MODULES_PATH : "$out/lib/tenacity/modules" \
-      --prefix LD_LIBRARY_PATH : "$out/lib/tenacity" \
-      --prefix XDG_DATA_DIRS : "$out/share:$GSETTINGS_SCHEMAS_PATH"
-  '';
-
-  env = lib.optionalAttrs stdenv.hostPlatform.isLinux {
-    # Tenacity only looks for ffmpeg at runtime, so we need to link it in manually.
-    # On darwin, these are ignored by the ffmpeg search even when linked.
-    NIX_LDFLAGS = toString [
-      "-lavcodec"
-      "-lavdevice"
-      "-lavfilter"
-      "-lavformat"
-      "-lavutil"
-      "-lpostproc"
-      "-lswresample"
-      "-lswscale"
-    ];
-  };
 
   nativeBuildInputs = [
     cmake
@@ -183,15 +144,56 @@ stdenv.mkDerivation (finalAttrs: {
     "-DVCPKG=OFF"
   ];
 
+  env = lib.optionalAttrs stdenv.hostPlatform.isLinux {
+    # Tenacity only looks for ffmpeg at runtime, so we need to link it in manually.
+    # On darwin, these are ignored by the ffmpeg search even when linked.
+    NIX_LDFLAGS = toString [
+      "-lavcodec"
+      "-lavdevice"
+      "-lavfilter"
+      "-lavformat"
+      "-lavutil"
+      "-lpostproc"
+      "-lswresample"
+      "-lswscale"
+    ];
+  };
+
+  postInstall = lib.optionalString stdenv.hostPlatform.isDarwin ''
+    mkdir $out/{bin,Applications}
+    mv $out/{,Applications/}Tenacity.app
+
+    # Symlinking the binary is insufficient as it would be unable to
+    # find the bundle resources
+    cat << EOF > "$out/bin/tenacity"
+    #!${stdenv.shell}
+    open -na "$out/Applications/Tenacity.app" --args "\$@"
+    EOF
+    chmod +x "$out/bin/tenacity"
+
+    # Only contains a static library that is already linked into the tenacity binary
+    rm -r $out/lib
+  '';
+
+  postFixup = lib.optionalString stdenv.hostPlatform.isLinux ''
+    wrapProgram "$out/bin/tenacity" \
+      --suffix AUDACITY_PATH : "$out/share/tenacity" \
+      --suffix AUDACITY_MODULES_PATH : "$out/lib/tenacity/modules" \
+      --prefix LD_LIBRARY_PATH : "$out/lib/tenacity" \
+      --prefix XDG_DATA_DIRS : "$out/share:$GSETTINGS_SCHEMAS_PATH"
+  '';
+
   meta = {
     description = "Sound editor with graphical UI";
-    mainProgram = "tenacity";
     homepage = "https://tenacityaudio.org/";
     license = lib.licenses.gpl2Plus;
+
     maintainers = with lib.maintainers; [
       irenes
       niklaskorz
     ];
+
     platforms = lib.platforms.unix;
+    mainProgram = "tenacity";
   };
 })

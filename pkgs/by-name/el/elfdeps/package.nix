@@ -8,7 +8,6 @@
 python3Packages.buildPythonApplication (finalAttrs: {
   pname = "elfdeps";
   version = "0.2.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "python-wheel-build";
@@ -17,6 +16,14 @@ python3Packages.buildPythonApplication (finalAttrs: {
     hash = "sha256-5CrxVmtZcBYBMXw7o58CpFopYFgXD4W/S42aow1z1Xw=";
   };
 
+  # tests assume that sys.executable is an ELF object
+  doCheck = stdenv.hostPlatform.isElf;
+  nativeCheckInputs = [ python3Packages.pytestCheckHook ];
+
+  preCheck = ''
+    export PATH=$PATH:$out/bin
+  '';
+
   build-system = with python3Packages; [
     setuptools
     setuptools-scm
@@ -24,24 +31,17 @@ python3Packages.buildPythonApplication (finalAttrs: {
 
   dependencies = [ python3Packages.pyelftools ];
 
-  nativeCheckInputs = [ python3Packages.pytestCheckHook ];
-
-  pythonImportsCheck = [
-    "elfdeps"
-  ];
-
-  preCheck = ''
-    export PATH=$PATH:$out/bin
-  '';
-
-  # tests assume that sys.executable is an ELF object
-  doCheck = stdenv.hostPlatform.isElf;
-
   disabledTests = [
     # Attempts to zip sys.executable and fails with:
     # ValueError: ZIP does not support timestamps before 1980
     "test_main_zipfile"
     "test_zipmember_python"
+  ];
+
+  pyproject = true;
+
+  pythonImportsCheck = [
+    "elfdeps"
   ];
 
   meta = {

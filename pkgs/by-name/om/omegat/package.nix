@@ -2,14 +2,14 @@
   lib,
   stdenv,
   fetchurl,
-  unzip,
   jdk,
   makeWrapper,
+  unzip,
 }:
 
 stdenv.mkDerivation {
-  version = "6.0.1";
   pname = "omegat";
+  version = "6.0.1";
 
   src = fetchurl {
     # their zip has repeated files or something, so no fetchzip
@@ -21,8 +21,6 @@ stdenv.mkDerivation {
     makeWrapper
     unzip
   ];
-
-  unpackCmd = "unzip -o $curSrc"; # tries to go interactive without -o
 
   installPhase = ''
     mkdir -p $out/bin
@@ -36,21 +34,27 @@ stdenv.mkDerivation {
     chmod +x $out/bin/omegat
   '';
 
+  unpackCmd = "unzip -o $curSrc"; # tries to go interactive without -o
+
   meta = {
     description = "Free computer aided translation (CAT) tool for professionals";
-    mainProgram = "omegat";
+
     longDescription = ''
       OmegaT is a free and open source multiplatform Computer Assisted Translation
       tool with fuzzy matching, translation memory, keyword search, glossaries, and
       translation leveraging into updated projects.
     '';
+
     homepage = "http://www.omegat.org/";
-    sourceProvenance = with lib.sourceTypes; [ binaryBytecode ];
     license = lib.licenses.gpl3Plus;
+    sourceProvenance = with lib.sourceTypes; [ binaryBytecode ];
     maintainers = with lib.maintainers; [ t184256 ];
+
     platforms = [
       "i686-linux"
       "x86_64-linux"
     ];
+
+    mainProgram = "omegat";
   };
 }

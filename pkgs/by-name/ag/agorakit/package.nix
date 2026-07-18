@@ -1,8 +1,8 @@
 {
   lib,
   fetchFromGitHub,
-  php82,
   nix-update-script,
+  php82,
   dataDir ? "/var/lib/agorakit",
 }:
 
@@ -17,6 +17,8 @@ php82.buildComposerProject2 (finalAttrs: {
     sha256 = "sha256-YCHszRi+atEkaM9bHncpRtQsuiS6P22yKSqYzXq8flk=";
   };
 
+  vendorHash = "sha256-3Kxuvmb3eZN3ChW59b5rITgCe4NqPHIBHau1PBmxPis=";
+
   installPhase = ''
     runHook preInstall
     mkdir -p $out
@@ -27,9 +29,7 @@ php82.buildComposerProject2 (finalAttrs: {
     runHook postInstall
   '';
 
-  vendorHash = "sha256-3Kxuvmb3eZN3ChW59b5rITgCe4NqPHIBHau1PBmxPis=";
   composerStrictValidation = false;
-
   passthru.updateScript = nix-update-script { };
 
   meta = {
@@ -37,8 +37,8 @@ php82.buildComposerProject2 (finalAttrs: {
     longDescription = "AgoraKit is web-based, open-source groupware for citizens' initiatives. By creating collaborative groups, people can discuss topics, organize events, store files and keep everyone updated as needed. AgoraKit is a forum, calendar, file manager and email notifier.";
     homepage = "https://github.com/agorakit/agorakit";
     license = lib.licenses.agpl3Only;
-    platforms = lib.platforms.all;
     maintainers = with lib.maintainers; [ shogo ];
+    platforms = lib.platforms.all;
     teams = with lib.teams; [ ngi ];
   };
 })

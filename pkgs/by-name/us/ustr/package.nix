@@ -17,9 +17,6 @@ stdenv.mkDerivation (finalAttrs: {
   # Fixes bogus warnings that failed libsemanage
   patches = [ ./va_args.patch ];
 
-  # Work around gcc5 switch to gnu11
-  env.NIX_CFLAGS_COMPILE = "-std=gnu89";
-
   # Fix detection of stdint.h
   postPatch = ''
     substituteInPlace Makefile \
@@ -36,17 +33,20 @@ stdenv.mkDerivation (finalAttrs: {
     "HIDE="
   ];
 
+  # Work around gcc5 switch to gnu11
+  env.NIX_CFLAGS_COMPILE = "-std=gnu89";
+
   # Remove debug libraries
   postInstall = ''
     find $out/lib -name \*debug\* -delete
   '';
 
   meta = {
-    homepage = "http://www.and.org/ustr/";
     description = "Micro String API for C language";
-    mainProgram = "ustr-import";
+    homepage = "http://www.and.org/ustr/";
     license = lib.licenses.bsd2;
     maintainers = with lib.maintainers; [ sigmanificient ];
     platforms = lib.platforms.linux;
+    mainProgram = "ustr-import";
   };
 })

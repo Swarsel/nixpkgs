@@ -7,10 +7,9 @@
 }:
 
 stdenv.mkDerivation (finalAttrs: {
+  inherit jre8;
   pname = "galen";
   version = "2.4.4";
-
-  inherit jre8;
 
   src = fetchurl {
     url = "https://github.com/galenframework/galen/releases/download/galen-${finalAttrs.version}/galen-bin-${finalAttrs.version}.zip";
@@ -30,12 +29,12 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   meta = {
-    homepage = "https://galenframework.com";
     description = "Automated layout testing for websites";
-    mainProgram = "galen";
-    sourceProvenance = with lib.sourceTypes; [ binaryBytecode ];
+    homepage = "https://galenframework.com";
     license = lib.licenses.asl20;
+    sourceProvenance = with lib.sourceTypes; [ binaryBytecode ];
     maintainers = [ ];
     platforms = lib.platforms.linux ++ lib.platforms.darwin;
+    mainProgram = "galen";
   };
 })

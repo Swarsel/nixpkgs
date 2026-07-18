@@ -44,9 +44,14 @@ let
     ];
 in
 {
-  meta.teams = [ lib.teams.cosmic ];
-
   options = {
+    environment.cosmic.excludePackages = lib.mkOption {
+      default = [ ];
+      description = "List of packages to exclude from the COSMIC environment.";
+      example = lib.literalExpression "[ pkgs.cosmic-player ]";
+      type = lib.types.listOf lib.types.package;
+    };
+
     services.desktopManager.cosmic = {
       enable = lib.mkEnableOption "COSMIC desktop environment";
 
@@ -58,13 +63,6 @@ in
         default = true;
       };
     };
-
-    environment.cosmic.excludePackages = lib.mkOption {
-      description = "List of packages to exclude from the COSMIC environment.";
-      type = lib.types.listOf lib.types.package;
-      default = [ ];
-      example = lib.literalExpression "[ pkgs.cosmic-player ]";
-    };
   };
 
   config = lib.mkIf cfg.enable {
@@ -75,6 +73,11 @@ in
       "/share/cosmic-layouts"
       "/share/cosmic-themes"
     ];
+
+    # Required options for the COSMIC DE
+    environment.sessionVariables.X11_BASE_RULES_XML = "${config.services.xserver.xkb.dir}/rules/base.xml";
+    environment.sessionVariables.X11_EXTRA_RULES_XML = "${config.services.xserver.xkb.dir}/rules/base.extras.xml";
+
     environment.systemPackages = utils.removePackagesByName (
       corePkgs
       ++ (
@@ -107,49 +110,30 @@ in
       )
     ) config.environment.cosmic.excludePackages;
 
-    # Distro-wide defaults for graphical sessions
-    services.graphical-desktop.enable = true;
-
-    xdg = {
-      # Required for cosmic-osd
-      sounds.enable = true;
-      icons.fallbackCursorThemes = lib.mkDefault [ "Cosmic" ];
-
-      portal = {
-        enable = true;
-        extraPortals = with pkgs; [
-          xdg-desktop-portal-cosmic
-          xdg-desktop-portal-gtk
-        ];
-        configPackages = lib.mkDefault [ pkgs.xdg-desktop-portal-cosmic ];
-      };
-    };
-
-    systemd.packages = [ pkgs.cosmic-session ];
-
     fonts.packages = with pkgs; [
       fira
       noto-fonts
       open-sans
     ];
 
-    # Required options for the COSMIC DE
-    environment.sessionVariables.X11_BASE_RULES_XML = "${config.services.xserver.xkb.dir}/rules/base.xml";
-    environment.sessionVariables.X11_EXTRA_RULES_XML = "${config.services.xserver.xkb.dir}/rules/base.extras.xml";
+    # Good to have defaults
+    hardware.bluetooth.enable = lib.mkDefault true;
+    networking.networkmanager.enable = lib.mkDefault true;
     programs.dconf.enable = true;
     programs.dconf.packages = [ pkgs.cosmic-session ];
+    # Required for screen locker
+    security.pam.services.cosmic-greeter = { };
+
     security.polkit = {
       enable = true;
       enablePkexecWrapper = lib.mkDefault true;
     };
+
     security.rtkit.enable = true;
     services.accounts-daemon.enable = true;
+    services.acpid.enable = lib.mkDefault true;
+    services.avahi.enable = lib.mkDefault true;
     services.displayManager.sessionPackages = [ pkgs.cosmic-session ];
-    services.libinput.enable = true;
-    services.upower.enable = true;
-    # Required for screen locker
-    security.pam.services.cosmic-greeter = { };
-
     # geoclue2 stuff
     services.geoclue2.enable = true;
     # We _do_ use the demo agent in the `cosmic-settings-daemon` package,
@@ -159,18 +143,19 @@ in
     # As mentioned above, we do use the demo agent. And it needs to be
     # whitelisted, otherwise it doesn't run.
     services.geoclue2.whitelistedAgents = [ "geoclue-demo-agent" ]; # whitelist our own geoclue2 agent o
-
-    # Good to have defaults
-    hardware.bluetooth.enable = lib.mkDefault true;
-    networking.networkmanager.enable = lib.mkDefault true;
-    services.acpid.enable = lib.mkDefault true;
-    services.avahi.enable = lib.mkDefault true;
     services.gnome.gnome-keyring.enable = lib.mkDefault true;
+    # Distro-wide defaults for graphical sessions
+    services.graphical-desktop.enable = true;
     services.gvfs.enable = lib.mkDefault true;
+    services.libinput.enable = true;
     services.orca.enable = lib.mkDefault (notExcluded pkgs.orca);
+
     services.power-profiles-daemon.enable = lib.mkDefault (
       !config.hardware.system76.power-daemon.enable
     );
+
+    services.upower.enable = true;
+    systemd.packages = [ pkgs.cosmic-session ];
 
     warnings = lib.optionals (cfg.showExcludedPkgsWarning && excludedCorePkgs != [ ]) [
       ''
@@ -188,5 +173,24 @@ in
         `services.desktopManager.cosmic.showExcludedPkgsWarning` to `false`.
       ''
     ];
+
+    xdg = {
+      icons.fallbackCursorThemes = lib.mkDefault [ "Cosmic" ];
+
+      portal = {
+        enable = true;
+        configPackages = lib.mkDefault [ pkgs.xdg-desktop-portal-cosmic ];
+
+        extraPortals = with pkgs; [
+          xdg-desktop-portal-cosmic
+          xdg-desktop-portal-gtk
+        ];
+      };
+
+      # Required for cosmic-osd
+      sounds.enable = true;
+    };
   };
+
+  meta.teams = [ lib.teams.cosmic ];
 }

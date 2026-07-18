@@ -1,7 +1,7 @@
 {
   config,
-  pkgs,
   lib,
+  pkgs,
   ...
 }:
 
@@ -16,7 +16,6 @@ in
   options = {
     programs.throne = {
       enable = lib.mkEnableOption "Throne, a GUI proxy configuration manager";
-
       package = lib.mkPackageOption pkgs "throne" { };
 
       tunMode = {
@@ -35,17 +34,6 @@ in
   config = lib.mkIf cfg.enable {
 
     environment.systemPackages = [ cfg.package ];
-
-    security.wrappers."ThroneCore" = lib.mkIf cfg.tunMode.enable {
-      source = "${cfg.package}/share/throne/ThroneCore";
-      owner = "root";
-      group = "root";
-      setuid = lib.mkIf cfg.tunMode.setuid true;
-      # Taken from https://github.com/SagerNet/sing-box/blob/dev-next/release/config/sing-box.service
-      capabilities = lib.mkIf (
-        !cfg.tunMode.setuid
-      ) "cap_net_admin,cap_net_raw,cap_net_bind_service,cap_sys_ptrace,cap_dac_read_search+ep";
-    };
 
     # avoid resolvectl password prompt popping up three times
     # https://github.com/SagerNet/sing-tun/blob/0686f8c4f210f4e7039c352d42d762252f9d9cf5/tun_linux.go#L1062
@@ -67,6 +55,7 @@ in
     security.polkit = {
       enable = true;
       enablePkexecWrapper = lib.mkDefault true;
+
       extraConfig =
         lib.mkIf (cfg.tunMode.enable && (!cfg.tunMode.setuid) && config.services.resolved.enable)
           ''
@@ -93,6 +82,18 @@ in
               }
             })
           '';
+    };
+
+    security.wrappers."ThroneCore" = lib.mkIf cfg.tunMode.enable {
+      # Taken from https://github.com/SagerNet/sing-box/blob/dev-next/release/config/sing-box.service
+      capabilities = lib.mkIf (
+        !cfg.tunMode.setuid
+      ) "cap_net_admin,cap_net_raw,cap_net_bind_service,cap_sys_ptrace,cap_dac_read_search+ep";
+
+      group = "root";
+      owner = "root";
+      setuid = lib.mkIf cfg.tunMode.setuid true;
+      source = "${cfg.package}/share/throne/ThroneCore";
     };
   };
 

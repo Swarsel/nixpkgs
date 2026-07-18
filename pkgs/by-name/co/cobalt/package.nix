@@ -2,9 +2,9 @@
   lib,
   stdenv,
   fetchFromGitHub,
+  nix-update-script,
   rustPlatform,
   versionCheckHook,
-  nix-update-script,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -19,20 +19,18 @@ rustPlatform.buildRustPackage (finalAttrs: {
   };
 
   cargoHash = "sha256-vd+udalOsHMCWBI23v56N2yHRVlbKC0gjvFHJeCv0qw=";
-
-  nativeInstallCheckInputs = [ versionCheckHook ];
   doInstallCheck = true;
-
+  nativeInstallCheckInputs = [ versionCheckHook ];
   passthru.updateScript = nix-update-script { };
 
   meta = {
     description = "Static site generator written in Rust";
     homepage = "https://cobalt-org.github.io/";
-    downloadPage = "https://github.com/cobalt-org/cobalt.rs/";
     changelog = "https://github.com/cobalt-org/cobalt.rs/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ ethancedwards8 ];
     platforms = lib.platforms.unix;
     mainProgram = "cobalt";
+    downloadPage = "https://github.com/cobalt-org/cobalt.rs/";
   };
 })

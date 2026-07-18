@@ -3,33 +3,29 @@
   stdenv,
   fetchurl,
   buildPackages,
-  pkg-config,
-  xorgproto,
-  libx11,
   libsm,
-  writeScript,
+  libx11,
+  pkg-config,
   testers,
+  writeScript,
+  xorgproto,
 }:
 stdenv.mkDerivation (finalAttrs: {
   pname = "libxt";
   version = "1.3.1";
-
-  outputDoc = "devdoc";
-  outputs = [
-    "out"
-    "dev"
-    "devdoc"
-  ];
 
   src = fetchurl {
     url = "mirror://xorg/individual/lib/libXt-${finalAttrs.version}.tar.xz";
     hash = "sha256-4Kd0szMk9NTAWxmepFBQ+HIGWG2BZV+L7026Q02TEog=";
   };
 
+  outputs = [
+    "out"
+    "dev"
+    "devdoc"
+  ];
+
   strictDeps = true;
-
-  depsBuildBuild = [ buildPackages.stdenv.cc ];
-
   nativeBuildInputs = [ pkg-config ];
 
   buildInputs = [
@@ -53,7 +49,12 @@ stdenv.mkDerivation (finalAttrs: {
     CPP = if stdenv.hostPlatform.isDarwin then "clang -E -" else "${stdenv.cc.targetPrefix}cc -E -";
   };
 
+  depsBuildBuild = [ buildPackages.stdenv.cc ];
+  outputDoc = "devdoc";
+
   passthru = {
+    tests.pkg-config = testers.testMetaPkgConfig finalAttrs.finalPackage;
+
     updateScript = writeScript "update-${finalAttrs.pname}" ''
       #!/usr/bin/env nix-shell
       #!nix-shell -i bash -p common-updater-scripts
@@ -62,12 +63,12 @@ stdenv.mkDerivation (finalAttrs: {
         | sort -V | tail -n1)"
       update-source-version ${finalAttrs.pname} "$version"
     '';
-    tests.pkg-config = testers.testMetaPkgConfig finalAttrs.finalPackage;
   };
 
   meta = {
     description = "X Toolkit Intrinsics library";
     homepage = "https://gitlab.freedesktop.org/xorg/lib/libxt";
+
     license = with lib.licenses; [
       mit
       hpndSellVariant
@@ -75,8 +76,9 @@ stdenv.mkDerivation (finalAttrs: {
       mitOpenGroup
       x11
     ];
+
     maintainers = [ ];
-    pkgConfigModules = [ "xt" ];
     platforms = lib.platforms.unix;
+    pkgConfigModules = [ "xt" ];
   };
 })

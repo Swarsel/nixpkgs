@@ -2,10 +2,11 @@
   lib,
   stdenv,
   buildPythonPackage,
-  debugger,
-  fetchPypi,
   capstone,
   colored-traceback,
+  debugger,
+  fetchPypi,
+  installShellFiles,
   intervaltree,
   mako,
   packaging,
@@ -25,7 +26,6 @@
   unicorn,
   unix-ar,
   zstandard,
-  installShellFiles,
 }:
 
 let
@@ -34,7 +34,6 @@ in
 buildPythonPackage rec {
   pname = "pwntools";
   version = "4.15.0";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
@@ -52,13 +51,6 @@ buildPythonPackage rec {
   '';
 
   nativeBuildInputs = [ installShellFiles ];
-
-  build-system = [ setuptools ];
-
-  pythonRemoveDeps = [
-    "pip"
-    "unicorn"
-  ];
 
   propagatedBuildInputs = [
     capstone
@@ -96,13 +88,21 @@ buildPythonPackage rec {
     makeWrapper "${debugger}/bin/${debuggerName}" "$out/bin/pwntools-gdb"
   '';
 
+  build-system = [ setuptools ];
+  pyproject = true;
   pythonImportsCheck = [ "pwn" ];
+
+  pythonRemoveDeps = [
+    "pip"
+    "unicorn"
+  ];
 
   meta = {
     description = "CTF framework and exploit development library";
     homepage = "https://pwntools.com";
     changelog = "https://github.com/Gallopsled/pwntools/releases/tag/${version}";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       bennofs
       kristoff3r

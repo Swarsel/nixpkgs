@@ -1,9 +1,9 @@
 {
   lib,
-  stdenvNoCC,
   fetchFromGitHub,
-  rclone,
   makeWrapper,
+  rclone,
+  stdenvNoCC,
 }:
 
 stdenvNoCC.mkDerivation rec {
@@ -26,11 +26,11 @@ stdenvNoCC.mkDerivation rec {
   '';
 
   meta = {
-    homepage = "https://github.com/git-annex-remote-rclone/git-annex-remote-rclone";
     description = "Use rclone supported cloud storage providers with git-annex";
+    homepage = "https://github.com/git-annex-remote-rclone/git-annex-remote-rclone";
     license = lib.licenses.gpl3Only;
-    platforms = lib.platforms.all;
     maintainers = [ lib.maintainers.montag451 ];
+    platforms = lib.platforms.all;
     mainProgram = "git-annex-remote-rclone";
   };
 }

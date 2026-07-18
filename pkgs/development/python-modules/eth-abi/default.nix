@@ -1,24 +1,23 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
+  buildPythonPackage,
+  eth-hash,
   # dependencies
   eth-typing,
   eth-utils,
-  parsimonious,
   # nativeCheckInputs
   hypothesis,
-  pytestCheckHook,
-  pytest-xdist,
-  eth-hash,
+  parsimonious,
   pydantic,
+  pytest-xdist,
+  pytestCheckHook,
+  setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "eth-abi";
   version = "5.2.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "ethereum";
@@ -26,16 +25,6 @@ buildPythonPackage rec {
     tag = "v${version}";
     hash = "sha256-/tyGm/lH72oZEKfTd25t+k0y3TuAZQg+hUABT4YCP2g=";
   };
-
-  build-system = [ setuptools ];
-
-  dependencies = [
-    eth-typing
-    eth-utils
-    parsimonious
-  ];
-
-  pythonRelaxDeps = [ "parsimonious" ];
 
   nativeCheckInputs = [
     hypothesis
@@ -45,13 +34,23 @@ buildPythonPackage rec {
   ]
   ++ eth-hash.optional-dependencies.pycryptodome;
 
+  build-system = [ setuptools ];
+
+  dependencies = [
+    eth-typing
+    eth-utils
+    parsimonious
+  ];
+
   disabledTests = [
     # boolean list representation changed
     "test_get_abi_strategy_returns_certain_strategies_for_known_type_strings"
     "test_install_local_wheel"
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "eth_abi" ];
+  pythonRelaxDeps = [ "parsimonious" ];
 
   meta = {
     description = "Ethereum ABI utilities";

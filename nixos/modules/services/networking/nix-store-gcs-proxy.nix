@@ -9,25 +9,27 @@ with lib;
 
 let
   opts =
-    { name, config, ... }:
+    { config, name, ... }:
     {
       options = {
         enable = mkOption {
           default = true;
-          type = types.bool;
-          example = true;
           description = "Whether to enable proxy for this bucket";
+          example = true;
+          type = types.bool;
         };
-        bucketName = mkOption {
-          type = types.str;
-          default = name;
-          example = "my-bucket-name";
-          description = "Name of Google storage bucket";
-        };
+
         address = mkOption {
-          type = types.str;
-          example = "localhost:3000";
           description = "The address of the proxy.";
+          example = "localhost:3000";
+          type = types.str;
+        };
+
+        bucketName = mkOption {
+          default = name;
+          description = "Name of Google storage bucket";
+          example = "my-bucket-name";
+          type = types.str;
         };
       };
     };
@@ -36,46 +38,47 @@ let
 in
 {
   options.services.nix-store-gcs-proxy = mkOption {
-    type = types.attrsOf (types.submodule opts);
     default = { };
+
     description = ''
       An attribute set describing an HTTP to GCS proxy that allows us to use GCS
       bucket via HTTP protocol.
     '';
+
+    type = types.attrsOf (types.submodule opts);
   };
 
   config.systemd.services = mapProxies (
     name: cfg: {
       "nix-store-gcs-proxy-${name}" = {
         description = "A HTTP nix store that proxies requests to Google Storage";
-        wantedBy = [ "multi-user.target" ];
 
-        startLimitIntervalSec = 10;
         serviceConfig = {
-          RestartSec = 5;
+          DynamicUser = true;
+
           ExecStart = ''
             ${pkgs.nix-store-gcs-proxy}/bin/nix-store-gcs-proxy \
               --bucket-name ${cfg.bucketName} \
               --addr ${cfg.address}
           '';
 
-          DynamicUser = true;
-
-          ProtectSystem = "strict";
-          ProtectHome = true;
-          PrivateTmp = true;
+          LockPersonality = true;
+          NoNewPrivileges = true;
           PrivateDevices = true;
           PrivateMounts = true;
+          PrivateTmp = true;
           PrivateUsers = true;
-
-          ProtectKernelTunables = true;
-          ProtectKernelModules = true;
           ProtectControlGroups = true;
-
-          NoNewPrivileges = true;
-          LockPersonality = true;
+          ProtectHome = true;
+          ProtectKernelModules = true;
+          ProtectKernelTunables = true;
+          ProtectSystem = "strict";
+          RestartSec = 5;
           RestrictRealtime = true;
         };
+
+        startLimitIntervalSec = 10;
+        wantedBy = [ "multi-user.target" ];
       };
     }
   );

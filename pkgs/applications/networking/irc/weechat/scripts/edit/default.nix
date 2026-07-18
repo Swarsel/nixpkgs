@@ -16,15 +16,14 @@ stdenv.mkDerivation rec {
     sha256 = "1s42r0l0xkhlp6rbc23cm4vlda91il6cg53w33hqfhd2wz91s66w";
   };
 
-  dontBuild = true;
-
-  passthru.scripts = [ "edit.py" ];
-
   installPhase = ''
     runHook preInstall
     install -D edit.py $out/share/edit.py
     runHook postInstall
   '';
+
+  dontBuild = true;
+  passthru.scripts = [ "edit.py" ];
 
   meta = {
     inherit (weechat.meta) platforms;

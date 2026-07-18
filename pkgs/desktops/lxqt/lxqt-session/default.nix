@@ -3,12 +3,13 @@
   stdenv,
   fetchFromGitHub,
   cmake,
+  gitUpdater,
   kwindowsystem,
   layer-shell-qt,
-  libxdmcp,
   liblxqt,
   libpthread-stubs,
   libqtxdg,
+  libxdmcp,
   lxqt-build-tools,
   pkg-config,
   procps,
@@ -19,7 +20,6 @@
   qtxdg-tools,
   wrapQtAppsHook,
   xdg-user-dirs,
-  gitUpdater,
 }:
 
 stdenv.mkDerivation rec {
@@ -59,8 +59,8 @@ stdenv.mkDerivation rec {
   passthru.updateScript = gitUpdater { };
 
   meta = {
-    homepage = "https://github.com/lxqt/lxqt-session";
     description = "Alternative session manager ported from the original razor-session";
+    homepage = "https://github.com/lxqt/lxqt-session";
     license = lib.licenses.lgpl21Plus;
     platforms = lib.platforms.linux;
     teams = [ lib.teams.lxqt ];

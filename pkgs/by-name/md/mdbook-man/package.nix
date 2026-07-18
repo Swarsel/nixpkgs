@@ -1,7 +1,7 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage {
@@ -19,9 +19,9 @@ rustPlatform.buildRustPackage {
 
   meta = {
     description = "Generate manual pages from mdBooks";
-    mainProgram = "mdbook-man";
     homepage = "https://github.com/vv9k/mdbook-man";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ matthiasbeyer ];
+    mainProgram = "mdbook-man";
   };
 }

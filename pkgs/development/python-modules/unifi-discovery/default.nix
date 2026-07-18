@@ -1,9 +1,9 @@
 {
   lib,
+  fetchFromGitHub,
   aiohttp,
   aioresponses,
   buildPythonPackage,
-  fetchFromGitHub,
   poetry-core,
   pyroute2,
   pytest-asyncio,
@@ -14,7 +14,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "unifi-discovery";
   version = "1.5.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "bdraco";
@@ -23,13 +22,6 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-nL1liMg7qImY4AXdhvLbLXgZs/S3eypQCSJF5yZldmU=";
   };
 
-  build-system = [ poetry-core ];
-
-  dependencies = [
-    aiohttp
-    pyroute2
-  ];
-
   nativeCheckInputs = [
     aioresponses
     pytest-asyncio
@@ -37,8 +29,15 @@ buildPythonPackage (finalAttrs: {
     pytestCheckHook
   ];
 
-  pytestFlags = [ "--asyncio-mode=auto" ];
+  build-system = [ poetry-core ];
 
+  dependencies = [
+    aiohttp
+    pyroute2
+  ];
+
+  pyproject = true;
+  pytestFlags = [ "--asyncio-mode=auto" ];
   pythonImportsCheck = [ "unifi_discovery" ];
 
   meta = {

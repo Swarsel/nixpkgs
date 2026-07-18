@@ -8,21 +8,21 @@
 {
   lib,
   stdenv,
-  fetchzip,
-  autoPatchelfHook,
-  unzip,
-  makeDesktopItem,
-  copyDesktopItems,
-  makeWrapper,
   alsa-lib,
   at-spi2-atk,
+  autoPatchelfHook,
+  copyDesktopItems,
   cups,
   dbus,
+  fetchzip,
   glib,
   gtk3,
   libgbm,
   libglvnd,
+  makeDesktopItem,
+  makeWrapper,
   nss,
+  unzip,
   vivaldi-ffmpeg-codecs,
 }:
 
@@ -30,12 +30,12 @@ stdenv.mkDerivation (finalAttrs: {
   pname = "edhm-ui";
   version = "3.0.69";
 
-  strictDeps = true;
-
   src = fetchzip {
     url = "https://github.com/BlueMystical/EDHM_UI/releases/download/v${finalAttrs.version}/edhm-ui-v3-linux-x64.zip";
     hash = "sha256-t/K8VohJjjP/VgreHZWYtlsMXp1gp9Gme/joHywfeH4=";
   };
+
+  strictDeps = true;
 
   nativeBuildInputs = [
     autoPatchelfHook
@@ -54,25 +54,6 @@ stdenv.mkDerivation (finalAttrs: {
     libgbm
     nss
     vivaldi-ffmpeg-codecs
-  ];
-
-  runtimeDependencies = [
-    libglvnd
-  ];
-
-  desktopItems = [
-    (makeDesktopItem {
-      name = "edhm-ui";
-      exec = "edhm-ui";
-      icon = "edhm-ui";
-      desktopName = "EDHM UI";
-      comment = "Elite Dangerous HUD Mod Manager";
-      categories = [
-        "Game"
-        "Utility"
-      ];
-      startupWMClass = "edhm-ui-v3";
-    })
   ];
 
   installPhase = ''
@@ -109,25 +90,29 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  desktopItems = [
+    (makeDesktopItem {
+      categories = [
+        "Game"
+        "Utility"
+      ];
+
+      comment = "Elite Dangerous HUD Mod Manager";
+      desktopName = "EDHM UI";
+      exec = "edhm-ui";
+      icon = "edhm-ui";
+      name = "edhm-ui";
+      startupWMClass = "edhm-ui-v3";
+    })
+  ];
+
+  runtimeDependencies = [
+    libglvnd
+  ];
+
   meta = {
     description = "HUD modification manager for Elite Dangerous";
-    homepage = "https://github.com/BlueMystical/EDHM_UI";
-    license = [
-      lib.licenses.gpl3Only
-      {
-        shortName = "edhm-custom";
-        fullName = "EDHM Custom Restrictive License - Non-redistributable";
-        free = false;
-        redistributable = false;
-      }
-    ];
-    maintainers = with lib.maintainers; [
-      graysontinker
-      michael-k-williams
-    ];
-    platforms = [ "x86_64-linux" ];
-    sourceProvenance = [ lib.sourceTypes.binaryNativeCode ];
-    mainProgram = "edhm-ui";
+
     longDescription = ''
       EDHM UI is a GPL v3 licensed user interface for managing Elite Dangerous HUD modifications.
       It includes EDHM (Elite Dangerous HUD Mod) which has a custom restrictive license.
@@ -152,5 +137,27 @@ stdenv.mkDerivation (finalAttrs: {
       This is a fan-made modification for Elite Dangerous and is not affiliated with
       Frontier Developments plc.
     '';
+
+    homepage = "https://github.com/BlueMystical/EDHM_UI";
+
+    license = [
+      lib.licenses.gpl3Only
+      {
+        free = false;
+        fullName = "EDHM Custom Restrictive License - Non-redistributable";
+        redistributable = false;
+        shortName = "edhm-custom";
+      }
+    ];
+
+    sourceProvenance = [ lib.sourceTypes.binaryNativeCode ];
+
+    maintainers = with lib.maintainers; [
+      graysontinker
+      michael-k-williams
+    ];
+
+    platforms = [ "x86_64-linux" ];
+    mainProgram = "edhm-ui";
   };
 })

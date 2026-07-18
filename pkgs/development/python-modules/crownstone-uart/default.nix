@@ -1,15 +1,14 @@
 {
   lib,
-  crownstone-core,
-  buildPythonPackage,
-  pyserial,
   fetchFromGitHub,
+  buildPythonPackage,
+  crownstone-core,
+  pyserial,
 }:
 
 buildPythonPackage rec {
   pname = "crownstone-uart";
   version = "2.7.0";
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "crownstone";
@@ -25,7 +24,7 @@ buildPythonPackage rec {
 
   # Project has no tests
   doCheck = false;
-
+  format = "setuptools";
   pythonImportsCheck = [ "crownstone_uart" ];
 
   meta = {

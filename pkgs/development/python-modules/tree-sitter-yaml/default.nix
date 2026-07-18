@@ -1,19 +1,18 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  rustPlatform,
+  buildPythonPackage,
   cargo,
+  pytestCheckHook,
+  rustPlatform,
   rustc,
   setuptools,
   tree-sitter,
-  pytestCheckHook,
 }:
 
 buildPythonPackage rec {
   pname = "tree-sitter-yaml";
   version = "0.7.2";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "tree-sitter-grammars";
@@ -22,10 +21,10 @@ buildPythonPackage rec {
     hash = "sha256-BX6TOfAZLW+0h2TNsgsLC9K2lfirraCWlBN2vCKiXQ4=";
   };
 
-  cargoDeps = rustPlatform.fetchCargoVendor {
-    inherit src;
-    hash = "sha256-mrLuGmauboKHHk0zADPXpwgZfc83syXk0jmD93Y9Jq4=";
-  };
+  nativeCheckInputs = [
+    pytestCheckHook
+    tree-sitter
+  ];
 
   build-system = [
     cargo
@@ -34,18 +33,19 @@ buildPythonPackage rec {
     setuptools
   ];
 
+  cargoDeps = rustPlatform.fetchCargoVendor {
+    inherit src;
+    hash = "sha256-mrLuGmauboKHHk0zADPXpwgZfc83syXk0jmD93Y9Jq4=";
+  };
+
   optional-dependencies = {
     core = [
       tree-sitter
     ];
   };
 
+  pyproject = true;
   pythonImportsCheck = [ "tree_sitter_yaml" ];
-
-  nativeCheckInputs = [
-    pytestCheckHook
-    tree-sitter
-  ];
 
   meta = {
     description = "YAML grammar for tree-sitter";

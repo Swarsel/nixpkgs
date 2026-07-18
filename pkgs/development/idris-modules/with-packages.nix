@@ -3,8 +3,8 @@
 {
   lib,
   idris,
-  symlinkJoin,
   makeWrapper,
+  symlinkJoin,
 }:
 packages:
 
@@ -14,14 +14,13 @@ in
 lib.appendToName "with-packages" (symlinkJoin {
 
   inherit (idris) pname version;
-
-  paths = paths ++ [ idris ];
-
   nativeBuildInputs = [ makeWrapper ];
 
   postBuild = ''
     wrapProgram $out/bin/idris \
       --set IDRIS_LIBRARY_PATH $out/libs
   '';
+
+  paths = paths ++ [ idris ];
 
 })

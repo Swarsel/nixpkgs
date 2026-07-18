@@ -1,18 +1,18 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
   cmake,
-  imagemagick,
-  libicns,
-  kdePackages,
   grim,
-  makeBinaryWrapper,
+  imagemagick,
+  kdePackages,
   kdsingleapplication,
+  libicns,
+  makeBinaryWrapper,
   nix-update-script,
-  enableWlrSupport ? !stdenv.hostPlatform.isDarwin,
-  enableMonochromeIcon ? false,
   wrapGAppsHook3,
+  enableMonochromeIcon ? false,
+  enableWlrSupport ? !stdenv.hostPlatform.isDarwin,
 }:
 
 assert stdenv.hostPlatform.isDarwin -> (!enableWlrSupport);
@@ -28,19 +28,6 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-GnJ3nOJyyqQbCTMrTYhnQfEOXqCy0x3IapX/PsaZ3VI=";
   };
 
-  cmakeFlags = [
-    "-DCMAKE_CXX_FLAGS=-I${kdsingleapplication}/include/kdsingleapplication-qt6"
-    (lib.cmakeBool "USE_BUNDLED_KDSINGLEAPPLICATION" false)
-    (lib.cmakeBool "DISABLE_UPDATE_CHECKER" true)
-    (lib.cmakeBool "USE_MONOCHROME_ICON" enableMonochromeIcon)
-  ]
-  ++ lib.optionals stdenv.hostPlatform.isLinux [
-    (lib.cmakeBool "USE_WAYLAND_CLIPBOARD" true)
-  ]
-  ++ lib.optionals stdenv.hostPlatform.isDarwin [
-    (lib.cmakeFeature "Qt6_DIR" "${kdePackages.qtbase}/lib/cmake/Qt6")
-  ];
-
   # 1. "load-missing-deps" prevents from build inputs being fetched via GitHub.
   # 2. "macos-build" mainly patches out the use of codesigning + macdeployqt,
   #    which incorrectly fetches Qt libraries.
@@ -49,6 +36,14 @@ stdenv.mkDerivation (finalAttrs: {
     ./load-missing-deps.patch
     ./macos-build.patch
   ];
+
+  postPatch = lib.optionalString stdenv.hostPlatform.isDarwin ''
+    # Replace sips with imagemagick and iconutil with png2icns.
+    sed -i -E \
+      -e 's|sips -z ([0-9]+) ([0-9]+) +(.+) --out (.+)|magick \3 -resize \1x\2\\! \4|g' \
+      -e 's|iconutil -o \\?"([^"]+)" -c icns \\?"([^"]+)"|png2icns \1 \2/*\{16,32,128,256,512\}.png|' \
+      src/CMakeLists.txt
+  '';
 
   nativeBuildInputs = [
     cmake
@@ -76,13 +71,18 @@ stdenv.mkDerivation (finalAttrs: {
     kdePackages.qhotkey
   ];
 
-  postPatch = lib.optionalString stdenv.hostPlatform.isDarwin ''
-    # Replace sips with imagemagick and iconutil with png2icns.
-    sed -i -E \
-      -e 's|sips -z ([0-9]+) ([0-9]+) +(.+) --out (.+)|magick \3 -resize \1x\2\\! \4|g' \
-      -e 's|iconutil -o \\?"([^"]+)" -c icns \\?"([^"]+)"|png2icns \1 \2/*\{16,32,128,256,512\}.png|' \
-      src/CMakeLists.txt
-  '';
+  cmakeFlags = [
+    "-DCMAKE_CXX_FLAGS=-I${kdsingleapplication}/include/kdsingleapplication-qt6"
+    (lib.cmakeBool "USE_BUNDLED_KDSINGLEAPPLICATION" false)
+    (lib.cmakeBool "DISABLE_UPDATE_CHECKER" true)
+    (lib.cmakeBool "USE_MONOCHROME_ICON" enableMonochromeIcon)
+  ]
+  ++ lib.optionals stdenv.hostPlatform.isLinux [
+    (lib.cmakeBool "USE_WAYLAND_CLIPBOARD" true)
+  ]
+  ++ lib.optionals stdenv.hostPlatform.isDarwin [
+    (lib.cmakeFeature "Qt6_DIR" "${kdePackages.qtbase}/lib/cmake/Qt6")
+  ];
 
   postInstall = lib.optionalString stdenv.hostPlatform.isDarwin ''
     mkdir $out/Applications
@@ -95,9 +95,6 @@ stdenv.mkDerivation (finalAttrs: {
     rm -r $out/share/icons
     rm -r $out/share/metainfo
   '';
-
-  dontWrapGApps = true;
-  dontWrapQtApps = true;
 
   postFixup =
     let
@@ -114,19 +111,23 @@ stdenv.mkDerivation (finalAttrs: {
         ''${gappsWrapperArgs[@]}
     '';
 
+  dontWrapGApps = true;
+  dontWrapQtApps = true;
   passthru.updateScript = nix-update-script { };
 
   meta = {
     description = "Powerful yet simple to use screenshot software";
     homepage = "https://github.com/flameshot-org/flameshot";
     changelog = "https://github.com/flameshot-org/flameshot/releases";
-    mainProgram = "flameshot";
+    license = lib.licenses.gpl3Plus;
+
     maintainers = with lib.maintainers; [
       scode
       oxalica
       dmkhitaryan
     ];
-    license = lib.licenses.gpl3Plus;
+
     platforms = lib.platforms.linux ++ lib.platforms.darwin;
+    mainProgram = "flameshot";
   };
 })

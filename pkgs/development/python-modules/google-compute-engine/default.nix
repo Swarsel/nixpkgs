@@ -1,19 +1,18 @@
 {
   lib,
   fetchFromGitHub,
-  buildPythonPackage,
   bash,
   bashInteractive,
-  util-linux,
-  setuptools,
+  buildPythonPackage,
   distro,
+  setuptools,
   udevCheckHook,
+  util-linux,
 }:
 
 buildPythonPackage rec {
   pname = "google-compute-engine";
   version = "20190124";
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "GoogleCloudPlatform";
@@ -21,16 +20,6 @@ buildPythonPackage rec {
     rev = version;
     sha256 = "08cy0jd463kng6hwbd3nfldsp4dpd2lknlvdm88cq795wy0kh4wp";
   };
-
-  buildInputs = [ bash ];
-  propagatedBuildInputs = [
-    setuptools
-    distro
-  ];
-
-  nativeBuildInputs = [
-    udevCheckHook
-  ];
 
   postPatch = ''
     for file in $(find google_compute_engine -type f); do
@@ -47,6 +36,17 @@ buildPythonPackage rec {
       --replace /usr/bin/logger "${util-linux}/bin/logger"
   '';
 
+  nativeBuildInputs = [
+    udevCheckHook
+  ];
+
+  buildInputs = [ bash ];
+
+  propagatedBuildInputs = [
+    setuptools
+    distro
+  ];
+
   postInstall = ''
     # allows to install the package in `services.udev.packages` in NixOS
     mkdir -p $out/lib/udev/rules.d
@@ -59,6 +59,7 @@ buildPythonPackage rec {
     patchShebangs $out/bin/*
   '';
 
+  format = "setuptools";
   pythonImportsCheck = [ "google_compute_engine" ];
 
   meta = {

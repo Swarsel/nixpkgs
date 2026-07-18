@@ -1,10 +1,11 @@
 {
   lib,
+  stdenv,
+  fetchFromGitHub,
   SDL2,
   SDL2_image,
   SDL2_ttf,
   alsa-lib,
-  fetchFromGitHub,
   glibmm,
   gtk3,
   libGL,
@@ -14,7 +15,6 @@
   pkg-config,
   python3,
   sqlite,
-  stdenv,
   wrapGAppsHook3,
 }:
 
@@ -40,6 +40,7 @@ stdenv.mkDerivation (finalAttrs: {
     python3
     wrapGAppsHook3
   ];
+
   buildInputs = [
     libGL
     libGLU
@@ -53,11 +54,11 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   meta = {
-    description = "Game of playing music using a MIDI keyboard following a MIDI file";
-    mainProgram = "linthesia";
     inherit (finalAttrs.src.meta) homepage;
+    description = "Game of playing music using a MIDI keyboard following a MIDI file";
     license = lib.licenses.gpl2Plus;
-    platforms = lib.platforms.linux;
     maintainers = [ ];
+    platforms = lib.platforms.linux;
+    mainProgram = "linthesia";
   };
 })

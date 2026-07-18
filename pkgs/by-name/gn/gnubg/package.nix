@@ -2,14 +2,14 @@
   lib,
   stdenv,
   fetchurl,
-  pkg-config,
+  copyDesktopItems,
   flex,
   glib,
-  python3,
   gtk2,
-  readline,
-  copyDesktopItems,
   makeDesktopItem,
+  pkg-config,
+  python3,
+  readline,
 }:
 
 stdenv.mkDerivation rec {
@@ -20,6 +20,8 @@ stdenv.mkDerivation rec {
     url = "mirror://gnu/gnubg/gnubg-release-${version}-sources.tar.gz";
     hash = "sha256-b32WmxPP/3hvupD/jMXl1WS5f08Kppr+Tzg48YxEWXk=";
   };
+
+  strictDeps = true;
 
   nativeBuildInputs = [
     copyDesktopItems
@@ -34,8 +36,6 @@ stdenv.mkDerivation rec {
     readline
   ];
 
-  strictDeps = true;
-
   configureFlags = [
     "--with-gtk"
     "--with--board3d"
@@ -43,17 +43,18 @@ stdenv.mkDerivation rec {
 
   desktopItems = [
     (makeDesktopItem {
-      desktopName = "GNU Backgammon";
-      name = pname;
-      genericName = "Backgammon";
-      comment = meta.description;
-      exec = pname;
-      icon = pname;
       categories = [
         "Game"
         "GTK"
         "StrategyGame"
       ];
+
+      comment = meta.description;
+      desktopName = "GNU Backgammon";
+      exec = pname;
+      genericName = "Backgammon";
+      icon = pname;
+      name = pname;
     })
   ];
 

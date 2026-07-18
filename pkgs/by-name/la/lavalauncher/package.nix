@@ -1,5 +1,6 @@
 {
   lib,
+  stdenv,
   cairo,
   fetchFromSourcehut,
   librsvg,
@@ -8,7 +9,6 @@
   ninja,
   pkg-config,
   scdoc,
-  stdenv,
   wayland,
   wayland-protocols,
   wayland-scanner,
@@ -19,15 +19,15 @@ stdenv.mkDerivation (finalAttrs: {
   version = "2.1.1";
 
   src = fetchFromSourcehut {
-    pname = "lavalauncher-source";
     inherit (finalAttrs) version;
     owner = "~leon_plickat";
     repo = "lavalauncher";
     rev = "v${finalAttrs.version}";
     hash = "sha256-hobhZ6s9m2xCdAurdj0EF1BeS88j96133zu+2jb1FMM=";
+    pname = "lavalauncher-source";
   };
 
-  depsBuildBuild = [ pkg-config ];
+  strictDeps = true;
 
   nativeBuildInputs = [
     meson
@@ -45,11 +45,12 @@ stdenv.mkDerivation (finalAttrs: {
     wayland-protocols
   ];
 
-  strictDeps = true;
+  depsBuildBuild = [ pkg-config ];
 
   meta = {
-    homepage = "https://git.sr.ht/~leon_plickat/lavalauncher";
+    inherit (wayland.meta) platforms;
     description = "Simple launcher panel for Wayland desktops";
+
     longDescription = ''
       LavaLauncher is a simple launcher panel for Wayland desktops.
 
@@ -66,11 +67,12 @@ stdenv.mkDerivation (finalAttrs: {
       The Wayland compositor must implement the Layer-Shell and XDG-Output for
       LavaLauncher to work.
     '';
+
+    homepage = "https://git.sr.ht/~leon_plickat/lavalauncher";
     changelog = "https://git.sr.ht/~leon_plickat/lavalauncher/refs/${finalAttrs.src.rev}";
     license = lib.licenses.gpl3Plus;
-    mainProgram = "lavalauncher";
     maintainers = [ ];
-    inherit (wayland.meta) platforms;
+    mainProgram = "lavalauncher";
     # meson.build:52:23: ERROR: C shared or static library 'rt' not found
     # https://logs.ofborg.org/?key=nixos/nixpkgs.340239&attempt_id=1f05cada-67d2-4cfe-b6a8-4bf4571b9375
     broken = stdenv.hostPlatform.isDarwin;

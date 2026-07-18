@@ -1,30 +1,23 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchurl,
   asciidoc,
-  docbook-xsl-nons,
-  docbook_xml_dtd_45,
-  gettext,
-  itstool,
-  libxslt,
-  gexiv2_0_16,
-  tinysparql,
-  meson,
-  mesonEmulatorHook,
-  ninja,
-  pkg-config,
-  vala,
-  wrapGAppsNoGuiHook,
   bzip2,
   dbus,
+  docbook-xsl-nons,
+  docbook_xml_dtd_45,
+  e2fsprogs,
   exempi,
   ffmpeg,
+  gettext,
+  gexiv2_0_16,
   giflib,
   glib,
-  gobject-introspection,
   gnome,
+  gobject-introspection,
   icu,
+  itstool,
   json-glib,
   libcue,
   libgsf,
@@ -37,13 +30,20 @@
   libuuid,
   libwebp,
   libxml2,
+  libxslt,
   libzip,
+  meson,
+  mesonEmulatorHook,
+  ninja,
+  pkg-config,
   poppler,
   systemd,
   taglib,
-  upower,
+  tinysparql,
   totem-pl-parser,
-  e2fsprogs,
+  upower,
+  vala,
+  wrapGAppsNoGuiHook,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -132,11 +132,11 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   meta = {
-    homepage = "https://gitlab.gnome.org/GNOME/localsearch";
     description = "Desktop-neutral user information store, search tool and indexer";
-    teams = [ lib.teams.gnome ];
+    homepage = "https://gitlab.gnome.org/GNOME/localsearch";
     license = lib.licenses.gpl2Plus;
     platforms = lib.platforms.unix;
     mainProgram = "localsearch";
+    teams = [ lib.teams.gnome ];
   };
 })

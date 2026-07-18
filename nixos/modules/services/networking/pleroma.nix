@@ -11,30 +11,9 @@ in
   options = {
     services.pleroma = with lib; {
       enable = mkEnableOption "pleroma";
-
       package = mkPackageOption pkgs "pleroma" { };
 
-      user = mkOption {
-        type = types.str;
-        default = "pleroma";
-        description = "User account under which pleroma runs.";
-      };
-
-      group = mkOption {
-        type = types.str;
-        default = "pleroma";
-        description = "Group account under which pleroma runs.";
-      };
-
-      stateDir = mkOption {
-        type = types.str;
-        default = "/var/lib/pleroma";
-        readOnly = true;
-        description = "Directory where the pleroma service will save the uploads and static files.";
-      };
-
       configs = mkOption {
-        type = with types; listOf str;
         description = ''
           Pleroma public configuration.
 
@@ -55,11 +34,19 @@ in
           Have a look to Pleroma section in the NixOS manual for more
           information.
         '';
+
+        type = with types; listOf str;
+      };
+
+      group = mkOption {
+        default = "pleroma";
+        description = "Group account under which pleroma runs.";
+        type = types.str;
       };
 
       secretConfigFile = mkOption {
-        type = types.str;
         default = "/var/lib/pleroma/secrets.exs";
+
         description = ''
           Path to the file containing your secret pleroma configuration.
 
@@ -67,23 +54,26 @@ in
           STORE*, the store being world-readable, it'll
           compromise all your secrets.
         '';
+
+        type = types.str;
+      };
+
+      stateDir = mkOption {
+        default = "/var/lib/pleroma";
+        description = "Directory where the pleroma service will save the uploads and static files.";
+        readOnly = true;
+        type = types.str;
+      };
+
+      user = mkOption {
+        default = "pleroma";
+        description = "User account under which pleroma runs.";
+        type = types.str;
       };
     };
   };
 
   config = lib.mkIf cfg.enable {
-    users = {
-      users."${cfg.user}" = {
-        description = "Pleroma user";
-        home = cfg.stateDir;
-        group = cfg.group;
-        isSystemUser = true;
-      };
-      groups."${cfg.group}" = { };
-    };
-
-    environment.systemPackages = [ cfg.package ];
-
     environment.etc."/pleroma/config.exs".text = ''
       ${lib.concatMapStrings (x: "${x}") cfg.configs}
 
@@ -96,38 +86,60 @@ in
       import_config "${cfg.secretConfigFile}"
     '';
 
+    environment.systemPackages = [ cfg.package ];
+
     systemd.services =
       let
         commonSystemdServiceConfig = {
-          User = cfg.user;
+          CapabilityBoundingSet = "~CAP_SYS_ADMIN";
           Group = cfg.group;
-          WorkingDirectory = "~";
-          StateDirectory = "pleroma pleroma/static pleroma/uploads";
-          StateDirectoryMode = "700";
+          NoNewPrivileges = true;
+          PrivateDevices = false;
           # Systemd sandboxing directives.
           # Taken from the upstream contrib systemd service at
           # pleroma/installation/pleroma.service
           PrivateTmp = true;
           ProtectHome = true;
           ProtectSystem = "full";
-          PrivateDevices = false;
-          NoNewPrivileges = true;
-          CapabilityBoundingSet = "~CAP_SYS_ADMIN";
+          StateDirectory = "pleroma pleroma/static pleroma/uploads";
+          StateDirectoryMode = "700";
+          User = cfg.user;
+          WorkingDirectory = "~";
         };
 
       in
       {
+        pleroma = {
+          after = [ "pleroma-migrations.service" ];
+          description = "Pleroma social network";
+          environment.RELEASE_COOKIE = "/var/lib/pleroma/.cookie";
+          # disksup requires bash
+          path = [ pkgs.bash ];
+          restartTriggers = [ config.environment.etc."/pleroma/config.exs".source ];
+
+          serviceConfig = commonSystemdServiceConfig // {
+            ExecReload = "${pkgs.coreutils}/bin/kill -HUP $MAINPID";
+            ExecStart = "${cfg.package}/bin/pleroma start";
+            ExecStop = "${cfg.package}/bin/pleroma stop";
+            Type = "exec";
+          };
+
+          wantedBy = [ "multi-user.target" ];
+          wants = [ "pleroma-migrations.service" ];
+        };
+
         pleroma-migrations = {
-          description = "Pleroma social network migrations";
-          wants = [ "network-online.target" ];
           after = [
             "network-online.target"
             "postgresql.target"
           ];
-          wantedBy = [ "pleroma.service" ];
+
+          description = "Pleroma social network migrations";
           environment.RELEASE_COOKIE = "/var/lib/pleroma/.cookie";
+          # disksup requires bash
+          path = [ pkgs.bash ];
+
           serviceConfig = commonSystemdServiceConfig // {
-            Type = "oneshot";
             # Checking the conf file is there then running the database
             # migration before each service start, just in case there are
             # some pending ones.
@@ -147,29 +159,27 @@ in
                 '';
               in
               "${preScript}/bin/pleroma-migrations";
-          };
-          # disksup requires bash
-          path = [ pkgs.bash ];
-        };
 
-        pleroma = {
-          description = "Pleroma social network";
-          wants = [ "pleroma-migrations.service" ];
-          after = [ "pleroma-migrations.service" ];
-          wantedBy = [ "multi-user.target" ];
-          restartTriggers = [ config.environment.etc."/pleroma/config.exs".source ];
-          environment.RELEASE_COOKIE = "/var/lib/pleroma/.cookie";
-          serviceConfig = commonSystemdServiceConfig // {
-            Type = "exec";
-            ExecStart = "${cfg.package}/bin/pleroma start";
-            ExecStop = "${cfg.package}/bin/pleroma stop";
-            ExecReload = "${pkgs.coreutils}/bin/kill -HUP $MAINPID";
+            Type = "oneshot";
           };
-          # disksup requires bash
-          path = [ pkgs.bash ];
+
+          wantedBy = [ "pleroma.service" ];
+          wants = [ "network-online.target" ];
         };
       };
+
+    users = {
+      groups."${cfg.group}" = { };
+
+      users."${cfg.user}" = {
+        description = "Pleroma user";
+        group = cfg.group;
+        home = cfg.stateDir;
+        isSystemUser = true;
+      };
+    };
   };
-  meta.maintainers = with lib.maintainers; [ picnoir ];
+
   meta.doc = ./pleroma.md;
+  meta.maintainers = with lib.maintainers; [ picnoir ];
 }

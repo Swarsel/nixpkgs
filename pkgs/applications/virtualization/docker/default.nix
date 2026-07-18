@@ -3,79 +3,80 @@
 let
   dockerGen =
     {
-      version,
-      cliRev,
-      cliHash,
-      mobyRev,
-      mobyHash,
-      runcRev,
-      runcHash,
-      containerdRev,
-      containerdHash,
-      tiniRev,
-      tiniHash,
-      buildxSupport ? true,
-      composeSupport ? true,
-      sbomSupport ? false,
-      initSupport ? false,
       # package dependencies
       stdenv,
       fetchFromGitHub,
+      btrfs-progs,
       buildGoModule,
-      makeBinaryWrapper,
-      installShellFiles,
-      pkg-config,
-      glibc,
-      go-md2man,
-      go,
+      cliHash,
+      cliRev,
       containerd,
-      runc,
-      tini,
-      libtool,
-      sqlite,
-      iproute2,
+      containerdHash,
+      containerdRev,
       docker-buildx,
       docker-compose,
-      docker-sbom,
       docker-init,
-      iptables,
-      nftables,
+      docker-sbom,
       e2fsprogs,
-      xz,
-      util-linuxMinimal,
-      xfsprogs,
+      fuse-overlayfs,
       gitMinimal,
+      glibc,
+      go,
+      go-md2man,
+      installShellFiles,
+      iproute2,
+      iptables,
+      libseccomp,
+      libtool,
+      lvm2,
+      makeBinaryWrapper,
+      mobyHash,
+      mobyRev,
+      nftables,
+      nixosTests,
+      pkg-config,
       procps,
       rootlesskit,
+      runc,
+      runcHash,
+      runcRev,
       slirp4netns,
-      fuse-overlayfs,
-      nixosTests,
-      clientOnly ? !stdenv.hostPlatform.isLinux,
+      sqlite,
       symlinkJoin,
-      withSystemd ? lib.meta.availableOn stdenv.hostPlatform systemd,
       systemd,
-      withBtrfs ? stdenv.hostPlatform.isLinux,
-      btrfs-progs,
-      withLvm ? stdenv.hostPlatform.isLinux,
-      lvm2,
-      withSeccomp ? stdenv.hostPlatform.isLinux,
-      libseccomp,
-      knownVulnerabilities ? [ ],
+      tini,
+      tiniHash,
+      tiniRev,
+      util-linuxMinimal,
+      version,
       versionCheckHook,
+      xfsprogs,
+      xz,
+      buildxSupport ? true,
+      clientOnly ? !stdenv.hostPlatform.isLinux,
+      composeSupport ? true,
+      initSupport ? false,
+      knownVulnerabilities ? [ ],
+      sbomSupport ? false,
+      withBtrfs ? stdenv.hostPlatform.isLinux,
+      withLvm ? stdenv.hostPlatform.isLinux,
+      withSeccomp ? stdenv.hostPlatform.isLinux,
+      withSystemd ? lib.meta.availableOn stdenv.hostPlatform systemd,
     }:
     let
       docker-meta = {
+        identifiers.cpeParts = lib.meta.cpeFullVersionWithVendor "docker" version;
         license = lib.licenses.asl20;
+
         maintainers = with lib.maintainers; [
           vdemeester
           teutat3s
         ];
-        identifiers.cpeParts = lib.meta.cpeFullVersionWithVendor "docker" version;
       };
 
       docker-runc = runc.overrideAttrs {
-        pname = "docker-runc";
         inherit version;
+        pname = "docker-runc";
 
         src = fetchFromGitHub {
           owner = "opencontainers";
@@ -84,20 +85,17 @@ let
           hash = runcHash;
         };
 
+        # docker/runc already include these patches / are not applicable
+        patches = [ ];
+
         preBuild = ''
           substituteInPlace Makefile --replace-warn "/bin/bash" "${stdenv.shell}"
         '';
-
-        # docker/runc already include these patches / are not applicable
-        patches = [ ];
       };
 
       docker-containerd = containerd.overrideAttrs (oldAttrs: {
-        pname = "docker-containerd";
         inherit version;
-
-        # We only need binaries
-        outputs = [ "out" ];
+        pname = "docker-containerd";
 
         src = fetchFromGitHub {
           owner = "containerd";
@@ -106,15 +104,16 @@ let
           hash = containerdHash;
         };
 
+        # We only need binaries
+        outputs = [ "out" ];
         buildInputs = oldAttrs.buildInputs ++ lib.optionals withSeccomp [ libseccomp ];
-
         # See above
         installTargets = "install";
       });
 
       docker-tini = tini.overrideAttrs {
-        pname = "docker-tini";
         inherit version;
+        pname = "docker-tini";
 
         src = fetchFromGitHub {
           owner = "krallin";
@@ -124,7 +123,6 @@ let
         };
 
         patches = [ ];
-
         # Do not remove static from make files as we want a static binary
         postPatch = "";
 
@@ -137,20 +135,24 @@ let
       };
 
       moby-src = fetchFromGitHub {
+        hash = mobyHash;
         owner = "moby";
         repo = "moby";
         tag = mobyRev;
-        hash = mobyHash;
       };
 
       moby = buildGoModule (
         lib.optionalAttrs stdenv.hostPlatform.isLinux {
-          pname = "moby";
           inherit version;
-
+          pname = "moby";
           src = moby-src;
 
-          vendorHash = null;
+          postPatch = ''
+            patchShebangs hack/make.sh hack/make/
+          ''
+          + lib.optionalString (lib.versionOlder version "29.0.0") ''
+            patchShebangs hack/with-go-mod.sh
+          '';
 
           nativeBuildInputs = [
             makeBinaryWrapper
@@ -170,33 +172,14 @@ let
           ++ lib.optionals withSystemd [ systemd ]
           ++ lib.optionals withSeccomp [ libseccomp ];
 
-          extraPath = lib.optionals stdenv.hostPlatform.isLinux (
-            lib.makeBinPath [
-              iproute2
-              iptables
-              e2fsprogs
-              xz
-              xfsprogs
-              procps
-              util-linuxMinimal
-              gitMinimal
-            ]
-          );
+          vendorHash = null;
 
-          extraUserPath = lib.optionals (stdenv.hostPlatform.isLinux && !clientOnly) (
-            lib.makeBinPath [
-              rootlesskit
-              slirp4netns
-              fuse-overlayfs
-            ]
+          env.DOCKER_BUILDTAGS = toString (
+            lib.optionals withSystemd [ "journald" ]
+            ++ lib.optionals (!withBtrfs) [ "exclude_graphdriver_btrfs" ]
+            ++ lib.optionals (!withLvm) [ "exclude_graphdriver_devicemapper" ]
+            ++ lib.optionals withSeccomp [ "seccomp" ]
           );
-
-          postPatch = ''
-            patchShebangs hack/make.sh hack/make/
-          ''
-          + lib.optionalString (lib.versionOlder version "29.0.0") ''
-            patchShebangs hack/with-go-mod.sh
-          '';
 
           buildPhase = ''
             runHook preBuild
@@ -238,16 +221,30 @@ let
             runHook postInstall
           '';
 
-          env.DOCKER_BUILDTAGS = toString (
-            lib.optionals withSystemd [ "journald" ]
-            ++ lib.optionals (!withBtrfs) [ "exclude_graphdriver_btrfs" ]
-            ++ lib.optionals (!withLvm) [ "exclude_graphdriver_devicemapper" ]
-            ++ lib.optionals withSeccomp [ "seccomp" ]
+          extraPath = lib.optionals stdenv.hostPlatform.isLinux (
+            lib.makeBinPath [
+              iproute2
+              iptables
+              e2fsprogs
+              xz
+              xfsprogs
+              procps
+              util-linuxMinimal
+              gitMinimal
+            ]
+          );
+
+          extraUserPath = lib.optionals (stdenv.hostPlatform.isLinux && !clientOnly) (
+            lib.makeBinPath [
+              rootlesskit
+              slirp4netns
+              fuse-overlayfs
+            ]
           );
 
           meta = docker-meta // {
-            homepage = "https://mobyproject.org/";
             description = "Collaborative project for the container ecosystem to assemble container-based systems";
+            homepage = "https://mobyproject.org/";
             identifiers.cpeParts = lib.meta.cpeFullVersionWithVendor "mobyproject" version;
           };
         }
@@ -265,8 +262,8 @@ let
     in
     buildGoModule (
       {
-        pname = "docker";
         inherit version;
+        pname = "docker";
 
         src = fetchFromGitHub {
           owner = "docker";
@@ -277,6 +274,8 @@ let
           hash = cliHash;
         };
 
+        outputs = [ "out" ];
+
         patches = [
           (
             if lib.versionOlder version "26.0.0" then
@@ -286,7 +285,10 @@ let
           )
         ];
 
-        vendorHash = null;
+        postPatch = ''
+          patchShebangs man scripts/build/
+          substituteInPlace ./scripts/build/.variables --replace-fail "set -eu" ""
+        '';
 
         nativeBuildInputs = [
           makeBinaryWrapper
@@ -304,10 +306,7 @@ let
             glibc.static
           ];
 
-        postPatch = ''
-          patchShebangs man scripts/build/
-          substituteInPlace ./scripts/build/.variables --replace-fail "set -eu" ""
-        '';
+        vendorHash = null;
 
         # Keep eyes on BUILDTIME format - https://github.com/docker/cli/blob/${version}/scripts/build/.variables
         buildPhase = ''
@@ -326,8 +325,6 @@ let
 
           runHook postBuild
         '';
-
-        outputs = [ "out" ];
 
         installPhase = ''
           runHook preInstall
@@ -372,15 +369,17 @@ let
         };
 
         meta = docker-meta // {
-          homepage = "https://www.docker.com/";
+          inherit knownVulnerabilities;
           description = "Open source project to pack, ship and run any application as a lightweight container";
+
           longDescription = ''
             Docker is a platform designed to help developers build, share, and run modern applications.
 
             To enable the docker daemon on NixOS, set the `virtualisation.docker.enable` option to `true`.
           '';
+
+          homepage = "https://www.docker.com/";
           mainProgram = "docker";
-          inherit knownVulnerabilities;
         };
       }
       // lib.optionalAttrs (!clientOnly) {
@@ -404,18 +403,18 @@ in
     in
     callPackage dockerGen {
       inherit version;
+      cliHash = "sha256-OwufdfuUPbPtgqfPeiKrQVkOOacU2g4ommHb770gV40=";
       # Upstream forgot to tag release
       # https://github.com/docker/cli/issues/5789
       cliRev = "43987fca488a535d810c429f75743d8c7b63bf4f";
-      cliHash = "sha256-OwufdfuUPbPtgqfPeiKrQVkOOacU2g4ommHb770gV40=";
-      mobyRev = "v${version}";
-      mobyHash = "sha256-St5yLoxo8QUTu7PjNcblS/EzZm98T189RPl1y+pAyHA=";
-      runcRev = "v1.2.5";
-      runcHash = "sha256-J/QmOZxYnMPpzm87HhPTkYdt+fN+yeSUu2sv6aUeTY4=";
-      containerdRev = "v1.7.27";
       containerdHash = "sha256-H94EHnfW2Z59KcHcbfJn+BipyZiNUvHe50G5EXbrIps=";
-      tiniRev = "369448a167e8b3da4ca5bca0b3307500c3371828";
+      containerdRev = "v1.7.27";
+      mobyHash = "sha256-St5yLoxo8QUTu7PjNcblS/EzZm98T189RPl1y+pAyHA=";
+      mobyRev = "v${version}";
+      runcHash = "sha256-J/QmOZxYnMPpzm87HhPTkYdt+fN+yeSUu2sv6aUeTY4=";
+      runcRev = "v1.2.5";
       tiniHash = "sha256-jCBNfoJAjmcTJBx08kHs+FmbaU82CbQcf0IVjd56Nuw=";
+      tiniRev = "369448a167e8b3da4ca5bca0b3307500c3371828";
     };
 
   docker_29 =
@@ -424,16 +423,16 @@ in
     in
     callPackage dockerGen {
       inherit version;
-      cliRev = "v${version}";
       cliHash = "sha256-cpK2UMRP/WXHsehG9Sq5UJAjhMesmXTrhe00y4RMRZc=";
-      mobyRev = "docker-v${version}";
-      mobyHash = "sha256-gv+mea9X5TYDWN3IBRpmw0+R2waGxCiubdatNTeUQZI=";
-      runcRev = "v1.3.6";
-      runcHash = "sha256-cBMYZOElWHQ4OkF2NlYJSZrlW4833WD8CRJRkkXeKJc=";
-      containerdRev = "v2.2.5";
+      cliRev = "v${version}";
       containerdHash = "sha256-3ui+0AjEU6H4VHYwF3G85ggVMUdONCLJ5KfciFasmkk=";
-      tiniRev = "369448a167e8b3da4ca5bca0b3307500c3371828";
+      containerdRev = "v2.2.5";
+      mobyHash = "sha256-gv+mea9X5TYDWN3IBRpmw0+R2waGxCiubdatNTeUQZI=";
+      mobyRev = "docker-v${version}";
+      runcHash = "sha256-cBMYZOElWHQ4OkF2NlYJSZrlW4833WD8CRJRkkXeKJc=";
+      runcRev = "v1.3.6";
       tiniHash = "sha256-jCBNfoJAjmcTJBx08kHs+FmbaU82CbQcf0IVjd56Nuw=";
+      tiniRev = "369448a167e8b3da4ca5bca0b3307500c3371828";
     };
 
 }

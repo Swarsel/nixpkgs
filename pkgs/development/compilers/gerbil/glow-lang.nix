@@ -1,37 +1,15 @@
 {
   lib,
   fetchFromGitHub,
+  gerbil,
   gerbil-support,
   gerbilPackages,
-  gerbil,
   ...
 }:
 
 rec {
   pname = "glow-lang";
   version = "unstable-2023-12-04";
-  git-version = "0.3.2-237-g08d849ad";
-  softwareName = "Glow";
-  gerbil-package = "mukn/glow";
-  version-path = "version";
-
-  gerbilInputs = with gerbilPackages; [
-    gerbil-utils
-    gerbil-crypto
-    gerbil-poo
-    gerbil-persist
-    gerbil-ethereum
-    smug-gerbil
-    gerbil-leveldb # gerbil-libp2p ftw
-  ];
-
-  pre-src = {
-    fun = fetchFromGitHub;
-    owner = "Glow-Lang";
-    repo = "glow";
-    rev = "08d849adef94ae9deead34e6981e77d47806c6e3";
-    sha256 = "0dq0s8y3rgx0wa5wsgcdjs0zijnbgff3y4w2mkh5a04gz4lrhl50";
-  };
 
   postPatch = ''
     substituteInPlace "runtime/glow-path.ss" --replace \
@@ -58,12 +36,37 @@ rec {
     chmod a+x $out/bin/glow
   '';
 
+  gerbil-package = "mukn/glow";
+
+  gerbilInputs = with gerbilPackages; [
+    gerbil-utils
+    gerbil-crypto
+    gerbil-poo
+    gerbil-persist
+    gerbil-ethereum
+    smug-gerbil
+    gerbil-leveldb # gerbil-libp2p ftw
+  ];
+
+  git-version = "0.3.2-237-g08d849ad";
+
+  pre-src = {
+    fun = fetchFromGitHub;
+    owner = "Glow-Lang";
+    repo = "glow";
+    rev = "08d849adef94ae9deead34e6981e77d47806c6e3";
+    sha256 = "0dq0s8y3rgx0wa5wsgcdjs0zijnbgff3y4w2mkh5a04gz4lrhl50";
+  };
+
+  softwareName = "Glow";
+  version-path = "version";
+
   meta = {
     description = "Glow: language for safe Decentralized Applications (DApps)";
     homepage = "https://glow-lang.org";
     license = lib.licenses.asl20;
-    platforms = lib.platforms.unix;
     maintainers = with lib.maintainers; [ fare ];
+    platforms = lib.platforms.unix;
     broken = true; # Broken for all platforms since 2023-10-13
   };
 }

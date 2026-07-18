@@ -3,12 +3,6 @@
   stdenv,
   fetchFromGitHub,
   cmake,
-  ninja,
-  pkg-config,
-  validatePkgConfig,
-  nix-update-script,
-  testers,
-  sdl3,
   flac,
   fluidsynth,
   game-music-emu,
@@ -17,20 +11,20 @@
   libvorbis,
   libxmp,
   mpg123,
+  ninja,
+  nix-update-script,
   opusfile,
+  pkg-config,
+  sdl3,
+  testers,
   timidity,
+  validatePkgConfig,
   wavpack,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
   pname = "sdl3-mixer";
   version = "3.2.4";
-  __structuredAttrs = true;
-
-  outputs = [
-    "dev"
-    "out"
-  ];
 
   src = fetchFromGitHub {
     owner = "libsdl-org";
@@ -39,8 +33,18 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-mPk6xU1/GkBtWgF8S9ttha7/PNxcBEiSxpzo6ARLC9I=";
   };
 
+  outputs = [
+    "dev"
+    "out"
+  ];
+
+  # Prefer the packaged timidity config instead of relying on host /etc paths.
+  postPatch = ''
+    substituteInPlace src/decoder_timidity.c \
+      --replace-fail '"/etc/timidity.cfg"' '"${timidity}/share/timidity/timidity.cfg"'
+  '';
+
   strictDeps = true;
-  doCheck = true;
 
   nativeBuildInputs = [
     cmake
@@ -64,12 +68,6 @@ stdenv.mkDerivation (finalAttrs: {
     wavpack
   ];
 
-  # Prefer the packaged timidity config instead of relying on host /etc paths.
-  postPatch = ''
-    substituteInPlace src/decoder_timidity.c \
-      --replace-fail '"/etc/timidity.cfg"' '"${timidity}/share/timidity/timidity.cfg"'
-  '';
-
   cmakeFlags = [
     (lib.cmakeBool "SDLMIXER_STRICT" true)
     (lib.cmakeBool "SDLMIXER_DEPS_SHARED" false)
@@ -85,14 +83,18 @@ stdenv.mkDerivation (finalAttrs: {
     (lib.cmakeBool "SDLMIXER_VORBIS_STB" false)
   ];
 
+  doCheck = true;
+  __structuredAttrs = true;
+
   passthru = {
+    tests.pkg-config = testers.testMetaPkgConfig finalAttrs.finalPackage;
+
     updateScript = nix-update-script {
       extraArgs = [
         "--version-regex"
         "release-(3\\..*)"
       ];
     };
-    tests.pkg-config = testers.testMetaPkgConfig finalAttrs.finalPackage;
   };
 
   meta = {
@@ -101,8 +103,8 @@ stdenv.mkDerivation (finalAttrs: {
     changelog = "https://github.com/libsdl-org/SDL_mixer/releases/tag/release-${finalAttrs.version}";
     license = lib.licenses.zlib;
     maintainers = with lib.maintainers; [ jujb233 ];
-    teams = [ lib.teams.sdl ];
     platforms = lib.platforms.unix;
     pkgConfigModules = [ "sdl3-mixer" ];
+    teams = [ lib.teams.sdl ];
   };
 })

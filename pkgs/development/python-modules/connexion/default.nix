@@ -2,40 +2,35 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  buildPythonPackage,
-
-  # build-system
-  poetry-core,
-
+  # optional-dependencies
+  a2wsgi,
   # dependencies
   asgiref,
+  buildPythonPackage,
+  flask,
   httpx,
   inflection,
-  jsonschema,
   jinja2,
+  jsonschema,
+  # build-system
+  poetry-core,
+  # tests
+  pytest-aiohttp,
+  pytestCheckHook,
   python-multipart,
   pyyaml,
   requests,
   starlette,
-  typing-extensions,
-  werkzeug,
-
-  # optional-dependencies
-  a2wsgi,
-  flask,
   swagger-ui-bundle,
-  uvicorn,
-
-  # tests
-  pytest-aiohttp,
-  pytestCheckHook,
   testfixtures,
+  typing-extensions,
+  uvicorn,
+  werkzeug,
 }:
 
 buildPythonPackage rec {
   pname = "connexion";
   version = "3.3.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "spec-first";
@@ -43,6 +38,13 @@ buildPythonPackage rec {
     tag = version;
     hash = "sha256-mUnot9kdUgpxMXjKnkRzK9Dp2c7ibJzv4qX61ZPuJHM=";
   };
+
+  nativeCheckInputs = [
+    pytest-aiohttp
+    pytestCheckHook
+    testfixtures
+  ]
+  ++ lib.concatAttrValues optional-dependencies;
 
   build-system = [ poetry-core ];
 
@@ -60,24 +62,6 @@ buildPythonPackage rec {
     werkzeug
   ];
 
-  optional-dependencies = {
-    flask = [
-      a2wsgi
-      flask
-    ];
-    swagger-ui = [ swagger-ui-bundle ];
-    uvicorn = [ uvicorn ];
-  };
-
-  nativeCheckInputs = [
-    pytest-aiohttp
-    pytestCheckHook
-    testfixtures
-  ]
-  ++ lib.concatAttrValues optional-dependencies;
-
-  pythonImportsCheck = [ "connexion" ];
-
   disabledTests = [
     "test_build_example"
     "test_mock_resolver_no_example"
@@ -88,6 +72,19 @@ buildPythonPackage rec {
     # ImportError: Error while finding loader for '/private/tmp/nix-build-python3.12-connexion-3.1.0.drv-0/source' (<class 'ModuleNotFoundError'>: No module named '/private/tmp/nix-build-python3')
     "test_lifespan"
   ];
+
+  optional-dependencies = {
+    flask = [
+      a2wsgi
+      flask
+    ];
+
+    swagger-ui = [ swagger-ui-bundle ];
+    uvicorn = [ uvicorn ];
+  };
+
+  pyproject = true;
+  pythonImportsCheck = [ "connexion" ];
 
   meta = {
     description = "Swagger/OpenAPI First framework on top of Flask";

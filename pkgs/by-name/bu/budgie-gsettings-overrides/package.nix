@@ -1,16 +1,16 @@
 {
   lib,
-  runCommand,
   budgie-desktop,
   budgie-desktop-view,
   glib,
   gsettings-desktop-schemas,
   mutter,
   nixos-artwork,
-  nixos-background-light ? nixos-artwork.wallpapers.nineish,
-  nixos-background-dark ? nixos-artwork.wallpapers.nineish-dark-gray,
-  extraGSettingsOverrides ? "",
+  runCommand,
   extraGSettingsOverridePackages ? [ ],
+  extraGSettingsOverrides ? "",
+  nixos-background-dark ? nixos-artwork.wallpapers.nineish-dark-gray,
+  nixos-background-light ? nixos-artwork.wallpapers.nineish,
 }:
 
 let

@@ -1,8 +1,8 @@
 {
   lib,
   fetchFromGitHub,
-  stdenvNoCC,
   installFonts,
+  stdenvNoCC,
 }:
 
 stdenvNoCC.mkDerivation {
@@ -25,10 +25,12 @@ stdenvNoCC.mkDerivation {
 
   meta = {
     description = "Serif based on the work of a famous Czech-American type designer of yesteryear";
+
     longDescription = ''
       Based on work of a famous Czech-American type designer of yesteryear. The
       package includes roman and italic.
     '';
+
     homepage = "https://www.theleagueofmoveabletype.com/fanwood";
     license = lib.licenses.ofl;
     maintainers = with lib.maintainers; [ minijackson ];

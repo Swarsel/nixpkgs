@@ -16,29 +16,34 @@ let
     ;
 in
 {
-  port = 9134;
-
   extraOpts = {
-    telemetryPath = mkOption {
-      type = types.str;
-      default = "/metrics";
-      description = ''
-        Path under which to expose metrics.
-      '';
-    };
-
     pools = mkOption {
-      type = with types; nullOr (listOf str);
       default = [ ];
+
       description = ''
         Name of the pool(s) to collect, repeat for multiple pools (default: all pools).
       '';
+
+      type = with types; nullOr (listOf str);
+    };
+
+    telemetryPath = mkOption {
+      default = "/metrics";
+
+      description = ''
+        Path under which to expose metrics.
+      '';
+
+      type = types.str;
     };
   };
+
+  port = 9134;
 
   serviceOpts = {
     # needs zpool
     path = [ config.boot.zfs.package ];
+
     serviceConfig = {
       ExecStart = ''
         ${pkgs.prometheus-zfs-exporter}/bin/zfs_exporter \
@@ -47,8 +52,9 @@ in
           ${concatMapStringsSep " " (x: "--pool=${x}") cfg.pools} \
           ${concatStringsSep " \\\n  " cfg.extraFlags}
       '';
-      ProtectClock = false;
+
       PrivateDevices = false;
+      ProtectClock = false;
     };
   };
 }

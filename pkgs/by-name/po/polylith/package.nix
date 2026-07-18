@@ -15,6 +15,27 @@ stdenv.mkDerivation (finalAttrs: {
     sha256 = "sha256-bfF7YXGA6StGF1jZor/TZQ6tNU28Z8kcaiPdkmjljx4=";
   };
 
+  installPhase = ''
+    runHook preInstall
+
+    mkdir -p $out/bin
+    printf "%s" "$polyWrapper" > $out/bin/poly
+    chmod a+x $out/bin/poly
+
+    runHook postInstall
+  '';
+
+  doInstallCheck = true;
+
+  installCheckPhase = ''
+    runHook preInstallCheck
+
+    $out/bin/poly help | fgrep -q '${finalAttrs.version}'
+
+    runHook postInstallCheck
+  '';
+
+  __structuredAttrs = true;
   dontUnpack = true;
 
   polyWrapper = ''
@@ -27,37 +48,18 @@ stdenv.mkDerivation (finalAttrs: {
     exec "${jdk}/bin/java" "-jar" "${finalAttrs.src}" $ARGS
   '';
 
-  installPhase = ''
-    runHook preInstall
-
-    mkdir -p $out/bin
-    printf "%s" "$polyWrapper" > $out/bin/poly
-    chmod a+x $out/bin/poly
-
-    runHook postInstall
-  '';
-
-  doInstallCheck = true;
-  installCheckPhase = ''
-    runHook preInstallCheck
-
-    $out/bin/poly help | fgrep -q '${finalAttrs.version}'
-
-    runHook postInstallCheck
-  '';
-
-  __structuredAttrs = true;
-
   meta = {
     description = "Tool used to develop Polylith based architectures in Clojure";
-    mainProgram = "poly";
     homepage = "https://github.com/polyfy/polylith";
-    sourceProvenance = with lib.sourceTypes; [ binaryBytecode ];
     license = lib.licenses.epl10;
+    sourceProvenance = with lib.sourceTypes; [ binaryBytecode ];
+
     maintainers = with lib.maintainers; [
       ericdallo
       jlesquembre
     ];
+
     platforms = jdk.meta.platforms;
+    mainProgram = "poly";
   };
 })

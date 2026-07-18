@@ -1,19 +1,17 @@
 {
-  fetchurl,
-  stdenv,
-  autoPatchelfHook,
-  makeWrapper,
   lib,
-  makeDesktopItem,
-  copyDesktopItems,
-  dpkg,
+  stdenv,
+  fetchurl,
   # QQ Music dependencies
   alsa-lib,
   at-spi2-atk,
   at-spi2-core,
+  autoPatchelfHook,
   cairo,
+  copyDesktopItems,
   cups,
   dbus,
+  dpkg,
   expat,
   gdk-pixbuf,
   glib,
@@ -21,23 +19,25 @@
   libdbusmenu,
   libglvnd,
   libpulseaudio,
+  libx11,
+  libxcb,
+  libxcomposite,
+  libxcursor,
+  libxdamage,
+  libxext,
+  libxfixes,
+  libxi,
+  libxrandr,
+  libxrender,
+  libxscrnsaver,
+  libxtst,
+  makeDesktopItem,
+  makeWrapper,
   nspr,
   nss,
   pango,
   pciutils,
   udev,
-  libxtst,
-  libxscrnsaver,
-  libxrender,
-  libxrandr,
-  libxi,
-  libxfixes,
-  libxext,
-  libxdamage,
-  libxcursor,
-  libxcomposite,
-  libx11,
-  libxcb,
 }:
 ################################################################################
 # Mostly based on qqmusic-bin package from AUR:
@@ -46,10 +46,11 @@
 stdenv.mkDerivation (finalAttrs: {
   pname = "qqmusic";
   version = "1.1.8";
+
   src = fetchurl {
     url = "https://c.y.qq.com/cgi-bin/file_redirect.fcg?bid=dldir&file=ecosfile_plink%2Fmusic_clntupate%2Flinux%2Fother%2Fqqmusic_${finalAttrs.version}_amd64.deb&sign=1-d1ca4d5c5a8369b26af88e881ba3ac544066a899dcaea29778b35c9f648e6fee-68cb7c1c";
-    name = "qqmusic.deb";
     hash = "sha256-QtGNaow8F0FOW228DDrIk7slQMHFwJzpDSQYQ8xZN4g=";
+    name = "qqmusic.deb";
   };
 
   nativeBuildInputs = [
@@ -92,14 +93,6 @@ stdenv.mkDerivation (finalAttrs: {
     libxtst
   ];
 
-  unpackPhase = ''
-    runHook preUnpack
-
-    dpkg -x $src .
-
-    runHook postUnpack
-  '';
-
   installPhase = ''
     runHook preInstall
 
@@ -121,30 +114,40 @@ stdenv.mkDerivation (finalAttrs: {
 
   desktopItems = [
     (makeDesktopItem {
-      name = "qqmusic";
+      categories = [ "AudioVideo" ];
+      comment = "Tencent QQMusic";
       desktopName = "QQMusic";
       exec = "qqmusic %U";
-      terminal = false;
-      icon = "qqmusic";
-      startupWMClass = "qqmusic";
-      comment = "Tencent QQMusic";
-      categories = [ "AudioVideo" ];
+
       extraConfig = {
-        "Name[zh_CN]" = "QQ音乐";
-        "Name[zh_TW]" = "QQ音樂";
         "Comment[zh_CN]" = "腾讯QQ音乐";
         "Comment[zh_TW]" = "騰訊QQ音樂";
+        "Name[zh_CN]" = "QQ音乐";
+        "Name[zh_TW]" = "QQ音樂";
       };
+
+      icon = "qqmusic";
+      name = "qqmusic";
+      startupWMClass = "qqmusic";
+      terminal = false;
     })
   ];
 
+  unpackPhase = ''
+    runHook preUnpack
+
+    dpkg -x $src .
+
+    runHook postUnpack
+  '';
+
   meta = {
-    maintainers = with lib.maintainers; [ xddxdd ];
     description = "Tencent QQ Music";
     homepage = "https://y.qq.com/";
-    platforms = [ "x86_64-linux" ];
     license = lib.licenses.unfree;
     sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
+    maintainers = with lib.maintainers; [ xddxdd ];
+    platforms = [ "x86_64-linux" ];
     mainProgram = "qqmusic";
   };
 })

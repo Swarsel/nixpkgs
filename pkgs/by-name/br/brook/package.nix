@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule (finalAttrs: {
@@ -18,8 +18,8 @@ buildGoModule (finalAttrs: {
   vendorHash = "sha256-dYiifLUOq6RKAVSXuoGlok9Jp8jHmbXN/EjQeQpoqWw=";
 
   meta = {
-    homepage = "https://github.com/txthinking/brook";
     description = "Cross-platform Proxy/VPN software";
+    homepage = "https://github.com/txthinking/brook";
     license = with lib.licenses; [ gpl3Only ];
     maintainers = with lib.maintainers; [ xrelkd ];
     mainProgram = "brook";

@@ -2,9 +2,9 @@
   lib,
   stdenv,
   fetchurl,
-  xar,
-  pbzx,
   cpio,
+  pbzx,
+  xar,
 }:
 
 let
@@ -18,14 +18,16 @@ let
   meta = {
     description = "Microsoft Teams";
     homepage = "https://teams.microsoft.com";
-    downloadPage = "https://teams.microsoft.com/downloads";
-    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
     license = lib.licenses.unfree;
+    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
     maintainers = with lib.maintainers; [ tricktron ];
+
     platforms = [
       "aarch64-darwin"
     ];
+
     mainProgram = "teams";
+    downloadPage = "https://teams.microsoft.com/downloads";
   };
 in
 stdenv.mkDerivation {
@@ -43,14 +45,6 @@ stdenv.mkDerivation {
     cpio
   ];
 
-  unpackPhase = ''
-    xar -xf $src
-  '';
-
-  dontPatch = true;
-  dontConfigure = true;
-  dontBuild = true;
-
   installPhase = ''
     runHook preInstall
     workdir=$(pwd)
@@ -59,5 +53,13 @@ stdenv.mkDerivation {
     cd $APP_DIR
     pbzx -n "$workdir/MicrosoftTeams_app.pkg/Payload" | cpio -idm
     runHook postInstall
+  '';
+
+  dontBuild = true;
+  dontConfigure = true;
+  dontPatch = true;
+
+  unpackPhase = ''
+    xar -xf $src
   '';
 }

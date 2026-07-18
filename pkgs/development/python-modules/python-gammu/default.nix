@@ -1,16 +1,15 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
+  gammu,
   #, pytestCheckHook
   pkg-config,
-  gammu,
 }:
 
 buildPythonPackage rec {
   pname = "python-gammu";
   version = "3.2.4";
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "gammu";
@@ -20,14 +19,12 @@ buildPythonPackage rec {
   };
 
   nativeBuildInputs = [ pkg-config ];
-
   buildInputs = [ gammu ];
-
   # Check with the next release if tests could be run with pytest
   # nativeCheckInputs = [ pytestCheckHook ];
   # Don't run tests for now
   doCheck = false;
-
+  format = "setuptools";
   pythonImportsCheck = [ "gammu" ];
 
   meta = {

@@ -1,22 +1,19 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # build-system
-  flit-core,
-
   # dependencies
   absl-py,
+  buildPythonPackage,
   chex,
   distrax,
   dm-env,
+  # tests
+  dm-haiku,
+  # build-system
+  flit-core,
   jax,
   jaxlib,
   numpy,
-
-  # tests
-  dm-haiku,
   optax,
   pytest-xdist,
   pytestCheckHook,
@@ -25,8 +22,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "rlax";
   version = "0.1.8";
-  pyproject = true;
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "google-deepmind";
@@ -41,6 +36,15 @@ buildPythonPackage (finalAttrs: {
       --replace-fail "a_min=" "min="
   '';
 
+  nativeCheckInputs = [
+    dm-haiku
+    optax
+    pytest-xdist
+    pytestCheckHook
+  ];
+
+  __structuredAttrs = true;
+
   build-system = [
     flit-core
   ];
@@ -54,15 +58,6 @@ buildPythonPackage (finalAttrs: {
     jaxlib
     numpy
   ];
-
-  nativeCheckInputs = [
-    dm-haiku
-    optax
-    pytest-xdist
-    pytestCheckHook
-  ];
-
-  pythonImportsCheck = [ "rlax" ];
 
   disabledTests = [
     # AssertionError: Array(2, dtype=int32) != 0
@@ -85,6 +80,9 @@ buildPythonPackage (finalAttrs: {
     "test_slow_update"
     "test_unnormalize_linear"
   ];
+
+  pyproject = true;
+  pythonImportsCheck = [ "rlax" ];
 
   meta = {
     description = "Library of reinforcement learning building blocks in JAX";

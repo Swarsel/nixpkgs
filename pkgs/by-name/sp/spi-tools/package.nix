@@ -24,7 +24,7 @@ stdenv.mkDerivation (finalAttrs: {
     description = "Simple command line tools to help using Linux spidev devices";
     homepage = "https://github.com/cpb-/spi-tools";
     license = lib.licenses.gpl2Only;
-    platforms = lib.platforms.linux;
     maintainers = with lib.maintainers; [ maxmosk ];
+    platforms = lib.platforms.linux;
   };
 })

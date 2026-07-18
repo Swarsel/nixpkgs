@@ -1,12 +1,11 @@
 {
   lib,
-  mkDerivation,
   libxo,
+  mkDerivation,
 }:
 mkDerivation {
-  path = "usr.sbin/arp";
   buildInputs = [ libxo ];
-
-  meta.platforms = lib.platforms.freebsd;
+  path = "usr.sbin/arp";
   meta.mainProgram = "arp";
+  meta.platforms = lib.platforms.freebsd;
 }

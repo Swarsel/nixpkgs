@@ -1,15 +1,15 @@
 {
   lib,
-  buildPythonPackage,
-  fetchFromGitHub,
-  replaceVars,
   stdenv,
-  graphviz,
+  fetchFromGitHub,
+  buildPythonPackage,
   coreutils,
+  graphviz,
   pkg-config,
+  pytest,
+  replaceVars,
   setuptools,
   swig,
-  pytest,
 }:
 
 let
@@ -19,7 +19,6 @@ in
 buildPythonPackage (finalAttrs: {
   pname = "pygraphviz";
   version = "2.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "pygraphviz";
@@ -43,12 +42,6 @@ buildPythonPackage (finalAttrs: {
       --replace-fail ', "swig>4.1.0"' ""
   '';
 
-  env.GRAPHVIZ_PREFIX = graphviz';
-
-  build-system = [
-    setuptools
-  ];
-
   nativeBuildInputs = [
     graphviz' # for dot
     pkg-config
@@ -56,7 +49,7 @@ buildPythonPackage (finalAttrs: {
   ];
 
   buildInputs = [ graphviz' ];
-
+  env.GRAPHVIZ_PREFIX = graphviz';
   nativeCheckInputs = [ pytest ];
 
   checkPhase = ''
@@ -65,13 +58,19 @@ buildPythonPackage (finalAttrs: {
     runHook postCheck
   '';
 
+  build-system = [
+    setuptools
+  ];
+
+  pyproject = true;
   pythonImportsCheck = [ "pygraphviz" ];
 
   meta = {
-    changelog = "https://github.com/pygraphviz/pygraphviz/releases/tag/pygraphviz-${finalAttrs.version}";
     description = "Python interface to Graphviz graph drawing package";
     homepage = "https://github.com/pygraphviz/pygraphviz";
+    changelog = "https://github.com/pygraphviz/pygraphviz/releases/tag/pygraphviz-${finalAttrs.version}";
     license = lib.licenses.bsd3;
+
     maintainers = with lib.maintainers; [
       matthiasbeyer
       dotlambda

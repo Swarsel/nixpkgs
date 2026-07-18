@@ -3,8 +3,8 @@
   stdenv,
   fetchFromGitHub,
   bison,
-  libressl,
   libevent,
+  libressl,
 }:
 
 stdenv.mkDerivation (finalAttrs: {

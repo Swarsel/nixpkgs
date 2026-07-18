@@ -1,25 +1,25 @@
 {
+  lib,
   stdenv,
+  fetchurl,
+  SDL2,
   SDL2_image,
-  SDL2_ttf,
+  SDL2_mixer,
   SDL2_net,
+  SDL2_ttf,
+  cmake,
+  ffmpeg,
   fpc,
   haskell,
-  ffmpeg,
-  libglut,
-  lib,
-  fetchurl,
-  cmake,
-  pkg-config,
-  lua5_1,
-  SDL2,
-  SDL2_mixer,
-  zlib,
-  libpng,
   libGL,
   libGLU,
+  libglut,
+  libpng,
+  lua5_1,
   physfs,
+  pkg-config,
   qt5,
+  zlib,
   withServer ? true,
 }:
 
@@ -106,17 +106,7 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Funny turn-based artillery game, featuring fighting hedgehogs";
-    homepage = "https://hedgewars.org/";
-    license = with lib.licenses; [
-      gpl2Only
 
-      # Assets
-      fdl12Only
-
-      # Fonts
-      bitstreamVera
-      asl20
-    ];
     longDescription = ''
       Each player controls a team of several hedgehogs. During the course of
       the game, players take turns with one of their hedgehogs. They then use
@@ -140,10 +130,25 @@ stdenv.mkDerivation (finalAttrs: {
       contact with explosions, to zero (the damage dealt to the attacked
       hedgehog or hedgehogs after a player's or CPU turn is shown only when
       all movement on the battlefield has ceased).'';
+
+    homepage = "https://hedgewars.org/";
+
+    license = with lib.licenses; [
+      gpl2Only
+
+      # Assets
+      fdl12Only
+
+      # Fonts
+      bitstreamVera
+      asl20
+    ];
+
     maintainers = with lib.maintainers; [
       kragniz
       fpletz
     ];
+
     platforms = lib.platforms.linux;
   };
 })

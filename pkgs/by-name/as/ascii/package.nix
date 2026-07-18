@@ -2,8 +2,8 @@
   lib,
   stdenv,
   fetchFromGitLab,
-  gitUpdater,
   asciidoctor,
+  gitUpdater,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -29,11 +29,11 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Interactive ASCII name and synonym chart";
-    mainProgram = "ascii";
     homepage = "http://www.catb.org/~esr/ascii/";
     changelog = "https://gitlab.com/esr/ascii/-/blob/${finalAttrs.version}/NEWS.adoc";
     license = lib.licenses.bsd2;
-    platforms = lib.platforms.all;
     maintainers = [ lib.maintainers.bjornfor ];
+    platforms = lib.platforms.all;
+    mainProgram = "ascii";
   };
 })

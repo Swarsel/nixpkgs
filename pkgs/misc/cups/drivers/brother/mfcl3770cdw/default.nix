@@ -1,16 +1,16 @@
 {
-  pkgsi686Linux,
+  lib,
   stdenv,
   fetchurl,
-  dpkg,
-  makeWrapper,
   coreutils,
+  dpkg,
   ghostscript,
   gnugrep,
   gnused,
-  which,
+  makeWrapper,
   perl,
-  lib,
+  pkgsi686Linux,
+  which,
 }:
 
 let
@@ -24,51 +24,6 @@ let
 
 in
 rec {
-  driver = pkgsi686Linux.stdenv.mkDerivation {
-    inherit src version;
-    pname = "${model}drv";
-
-    nativeBuildInputs = [
-      dpkg
-      makeWrapper
-    ];
-
-    unpackPhase = "dpkg-deb -x $src $out";
-
-    installPhase = ''
-        dir="$out/${reldir}"
-        substituteInPlace $dir/lpd/filter_${model} \
-          --replace /usr/bin/perl ${perl}/bin/perl \
-          --replace "BR_PRT_PATH =~" "BR_PRT_PATH = \"$dir\"; #" \
-          --replace "PRINTER =~" "PRINTER = \"${model}\"; #"
-        wrapProgram $dir/lpd/filter_${model} \
-          --prefix PATH : ${
-            lib.makeBinPath [
-              coreutils
-              ghostscript
-              gnugrep
-              gnused
-              which
-            ]
-          }
-      # need to use i686 glibc here, these are 32bit proprietary binaries
-      patchelf --set-interpreter "$(cat $NIX_CC/nix-support/dynamic-linker)" \
-        $dir/lpd/brmfcl3770cdwfilter
-    '';
-
-    meta = {
-      description = "Brother ${lib.strings.toUpper model} driver";
-      homepage = "http://www.brother.com/";
-      sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
-      license = lib.licenses.unfree;
-      platforms = [
-        "x86_64-linux"
-        "i686-linux"
-      ];
-      maintainers = [ lib.maintainers.steveej ];
-    };
-  };
-
   cupswrapper = stdenv.mkDerivation {
     inherit version src;
     pname = "${model}cupswrapper";
@@ -77,8 +32,6 @@ rec {
       dpkg
       makeWrapper
     ];
-
-    unpackPhase = "dpkg-deb -x $src $out";
 
     installPhase = ''
       basedir=${driver}/${reldir}
@@ -101,16 +54,65 @@ rec {
       ln $dir/cupswrapper/brother_${model}_printer_en.ppd $out/share/cups/model
     '';
 
+    unpackPhase = "dpkg-deb -x $src $out";
+
     meta = {
       description = "Brother ${lib.strings.toUpper model} CUPS wrapper driver";
       homepage = "http://www.brother.com/";
-      sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
       license = lib.licenses.gpl2Plus;
+      sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
+      maintainers = [ lib.maintainers.steveej ];
+
       platforms = [
         "x86_64-linux"
         "i686-linux"
       ];
+    };
+  };
+
+  driver = pkgsi686Linux.stdenv.mkDerivation {
+    inherit src version;
+    pname = "${model}drv";
+
+    nativeBuildInputs = [
+      dpkg
+      makeWrapper
+    ];
+
+    installPhase = ''
+        dir="$out/${reldir}"
+        substituteInPlace $dir/lpd/filter_${model} \
+          --replace /usr/bin/perl ${perl}/bin/perl \
+          --replace "BR_PRT_PATH =~" "BR_PRT_PATH = \"$dir\"; #" \
+          --replace "PRINTER =~" "PRINTER = \"${model}\"; #"
+        wrapProgram $dir/lpd/filter_${model} \
+          --prefix PATH : ${
+            lib.makeBinPath [
+              coreutils
+              ghostscript
+              gnugrep
+              gnused
+              which
+            ]
+          }
+      # need to use i686 glibc here, these are 32bit proprietary binaries
+      patchelf --set-interpreter "$(cat $NIX_CC/nix-support/dynamic-linker)" \
+        $dir/lpd/brmfcl3770cdwfilter
+    '';
+
+    unpackPhase = "dpkg-deb -x $src $out";
+
+    meta = {
+      description = "Brother ${lib.strings.toUpper model} driver";
+      homepage = "http://www.brother.com/";
+      license = lib.licenses.unfree;
+      sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
       maintainers = [ lib.maintainers.steveej ];
+
+      platforms = [
+        "x86_64-linux"
+        "i686-linux"
+      ];
     };
   };
 }

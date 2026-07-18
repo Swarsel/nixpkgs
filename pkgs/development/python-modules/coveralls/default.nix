@@ -1,26 +1,23 @@
 {
-  buildPythonPackage,
   lib,
   fetchFromGitHub,
-
-  # build-system
-  poetry-core,
-
-  # checks
-  mock,
-  pytestCheckHook,
-  sh,
+  buildPythonPackage,
   coverage,
   docopt,
-  requests,
   git,
+  # checks
+  mock,
+  # build-system
+  poetry-core,
+  pytestCheckHook,
+  requests,
   responses,
+  sh,
 }:
 
 buildPythonPackage rec {
   pname = "coveralls";
   version = "4.0.2";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "TheKevJames";
@@ -28,14 +25,6 @@ buildPythonPackage rec {
     tag = version;
     hash = "sha256-c7YV1SAbxmqfVI/wGtfdr+S4T7G2q7tf0FhuyCJaPDg=";
   };
-
-  build-system = [ poetry-core ];
-
-  dependencies = [
-    coverage
-    docopt
-    requests
-  ];
 
   nativeCheckInputs = [
     mock
@@ -49,6 +38,14 @@ buildPythonPackage rec {
     export PATH=${coverage}/bin:$PATH
   '';
 
+  build-system = [ poetry-core ];
+
+  dependencies = [
+    coverage
+    docopt
+    requests
+  ];
+
   disabledTests = [
     # requires .git in checkout
     "test_git"
@@ -58,10 +55,12 @@ buildPythonPackage rec {
     "test_11"
   ];
 
+  pyproject = true;
+
   meta = {
     description = "Show coverage stats online via coveralls.io";
-    mainProgram = "coveralls";
     homepage = "https://github.com/coveralls-clients/coveralls-python";
     license = lib.licenses.mit;
+    mainProgram = "coveralls";
   };
 }

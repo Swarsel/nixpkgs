@@ -1,14 +1,14 @@
 {
   lib,
   stdenv,
-  flutter341,
-  rustPlatform,
   fetchFromGitHub,
-  copyDesktopItems,
   alsa-lib,
-  mpv-unwrapped,
-  webkitgtk_4_1,
+  copyDesktopItems,
+  flutter341,
   makeDesktopItem,
+  mpv-unwrapped,
+  rustPlatform,
+  webkitgtk_4_1,
   writeText,
 }:
 
@@ -34,67 +34,42 @@ let
 
   rustDep = rustPlatform.buildRustPackage {
     inherit pname version src;
-
-    sourceRoot = "${src.name}/rust";
-
     cargoHash = "sha256-lKEkTHLTX6RdTxC8bU3GQm0RD2RBy4rDHzBHIiks4eg=";
-
+    sourceRoot = "${src.name}/rust";
     passthru.libraryPath = "lib/librust_lib_mangayomi.so";
-
     meta = metaCommon;
   };
 in
 flutter341.buildFlutterApplication {
   inherit pname version src;
+  nativeBuildInputs = [ copyDesktopItems ];
 
-  pubspecLock = lib.importJSON ./pubspec.lock.json;
+  buildInputs = [
+    alsa-lib
+    mpv-unwrapped
+    webkitgtk_4_1
+  ];
+
+  postInstall = ''
+    install -Dm644 assets/app_icons/icon-red.png $out/share/icons/mangayomi.png
+  '';
 
   customSourceBuilders = {
-    rust_lib_mangayomi =
-      { version, src, ... }:
-      stdenv.mkDerivation {
-        pname = "rust_lib_mangayomi";
-        inherit version src;
-        inherit (src) passthru;
-
-        postPatch =
-          let
-            fakeCargokitCmake = writeText "FakeCargokit.cmake" ''
-              function(apply_cargokit target manifest_dir lib_name any_symbol_name)
-                set("''${target}_cargokit_lib" ${rustDep}/${rustDep.passthru.libraryPath} PARENT_SCOPE)
-              endfunction()
-            '';
-          in
-          ''
-            cp ${fakeCargokitCmake} rust_builder/cargokit/cmake/cargokit.cmake
-          '';
-
-        installPhase = ''
-          runHook preInstall
-
-          cp -r . "$out"
-
-          runHook postInstall
-        '';
-      };
     flutter_discord_rpc_fork =
-      { version, src, ... }:
+      { src, version, ... }:
       let
         flutter_discord_rpc_fork-rs = rustPlatform.buildRustPackage {
-          pname = "flutter_discord_rpc_fork-rs";
           inherit version src;
-
-          buildAndTestSubdir = "rust";
-
+          pname = "flutter_discord_rpc_fork-rs";
           cargoHash = "sha256-oJOM/Tb4QrezdtU8YTyr57JZp5FkDewgwXrBqwp6cp8=";
-
+          buildAndTestSubdir = "rust";
           passthru.libraryPath = "lib/libflutter_discord_rpc_fork.so";
         };
       in
       stdenv.mkDerivation {
-        pname = "flutter_discord_rpc_fork";
         inherit version src;
         inherit (src) passthru;
+        pname = "flutter_discord_rpc_fork";
 
         postPatch =
           let
@@ -116,43 +91,63 @@ flutter341.buildFlutterApplication {
           runHook postInstall
         '';
       };
+
+    rust_lib_mangayomi =
+      { src, version, ... }:
+      stdenv.mkDerivation {
+        inherit version src;
+        inherit (src) passthru;
+        pname = "rust_lib_mangayomi";
+
+        postPatch =
+          let
+            fakeCargokitCmake = writeText "FakeCargokit.cmake" ''
+              function(apply_cargokit target manifest_dir lib_name any_symbol_name)
+                set("''${target}_cargokit_lib" ${rustDep}/${rustDep.passthru.libraryPath} PARENT_SCOPE)
+              endfunction()
+            '';
+          in
+          ''
+            cp ${fakeCargokitCmake} rust_builder/cargokit/cmake/cargokit.cmake
+          '';
+
+        installPhase = ''
+          runHook preInstall
+
+          cp -r . "$out"
+
+          runHook postInstall
+        '';
+      };
   };
-
-  gitHashes = lib.importJSON ./git-hashes.json;
-
-  nativeBuildInputs = [ copyDesktopItems ];
-
-  buildInputs = [
-    alsa-lib
-    mpv-unwrapped
-    webkitgtk_4_1
-  ];
 
   desktopItems = [
     (makeDesktopItem {
-      name = "mangayomi";
-      exec = "mangayomi";
-      icon = "mangayomi";
-      genericName = "Mangayomi";
-      desktopName = "Mangayomi";
       categories = [
         "Utility"
       ];
+
+      desktopName = "Mangayomi";
+      exec = "mangayomi";
+      genericName = "Mangayomi";
+      icon = "mangayomi";
+
       keywords = [
         "Manga"
         "Anime"
         "BitTorrent"
       ];
+
+      name = "mangayomi";
     })
   ];
-
-  postInstall = ''
-    install -Dm644 assets/app_icons/icon-red.png $out/share/icons/mangayomi.png
-  '';
 
   extraWrapProgramArgs = ''
     --prefix LD_LIBRARY_PATH : $out/app/mangayomi/lib
   '';
+
+  gitHashes = lib.importJSON ./git-hashes.json;
+  pubspecLock = lib.importJSON ./pubspec.lock.json;
 
   passthru = {
     inherit rustDep;

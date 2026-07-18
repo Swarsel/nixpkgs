@@ -1,12 +1,12 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
   autoconf,
   automake,
-  libtool,
   gnutls,
   libmicrohttpd,
+  libtool,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -20,6 +20,10 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-Pc3Fvd8D4Ymp7dG9YgU58mDceOqNfhWE1JtnpVaNx/Y=";
   };
 
+  postPatch = ''
+    patchShebangs ./bootstrap
+  '';
+
   nativeBuildInputs = [
     autoconf
     automake
@@ -31,17 +35,13 @@ stdenv.mkDerivation (finalAttrs: {
     libmicrohttpd
   ];
 
-  enableParallelBuilding = true;
-
-  postPatch = ''
-    patchShebangs ./bootstrap
-  '';
+  configureFlags = [ "--enable-same-directory-build" ];
 
   preConfigure = ''
     ./bootstrap
   '';
 
-  configureFlags = [ "--enable-same-directory-build" ];
+  enableParallelBuilding = true;
 
   meta = {
     description = "C++ library for creating an embedded Rest HTTP server (and more)";

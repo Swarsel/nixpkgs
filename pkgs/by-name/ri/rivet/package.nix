@@ -10,13 +10,13 @@
   hepmc3,
   highfive,
   less,
+  makeWrapper,
   pkg-config,
   python3,
   rsync,
   texliveBasic,
-  yoda,
   which,
-  makeWrapper,
+  yoda,
 }:
 
 stdenv.mkDerivation rec {
@@ -28,29 +28,12 @@ stdenv.mkDerivation rec {
     hash = "sha256-t63JsIdAISFd8CbuFv5B5EgodMjNWx9a8zzWlnRZnZk=";
   };
 
-  latex = texliveBasic.withPackages (
-    ps: with ps; [
-      collection-pstricks
-      collection-fontsrecommended
-      l3kernel
-      l3packages
-      mathastext
-      pgf
-      relsize
-      sansmath
-      sfmath
-      siunitx
-      xcolor
-      xkeyval
-      xstring
-    ]
-  );
-
   nativeBuildInputs = [
     rsync
     makeWrapper
     pkg-config
   ];
+
   buildInputs = [
     graphicsmagick-imagemagick-compat
     hepmc3
@@ -59,10 +42,18 @@ stdenv.mkDerivation rec {
     latex
     python3.pkgs.yoda
   ];
+
   propagatedBuildInputs = [
     hdf5
     fastjet
     fastjet-contrib
+  ];
+
+  configureFlags = [
+    "--with-fastjet=${fastjet}"
+    "--with-yoda=${yoda}"
+    "--with-hepmc3=${hepmc3}"
+    "--with-highfive=${highfive}"
   ];
 
   preConfigure = ''
@@ -94,26 +85,37 @@ stdenv.mkDerivation rec {
       --replace-fail 'ch_cmd = [sys.executable, os.path.join(os.path.dirname(__file__),' 'ch_cmd = [('
   '';
 
-  configureFlags = [
-    "--with-fastjet=${fastjet}"
-    "--with-yoda=${yoda}"
-    "--with-hepmc3=${hepmc3}"
-    "--with-highfive=${highfive}"
-  ];
-
-  enableParallelBuilding = true;
-
   postInstall = ''
     for prog in "$out"/bin/*; do
       wrapProgram "$prog" --set PYTHONPATH $PYTHONPATH:$(toPythonPath "$out")
     done
   '';
 
+  enableParallelBuilding = true;
+
+  latex = texliveBasic.withPackages (
+    ps: with ps; [
+      collection-pstricks
+      collection-fontsrecommended
+      l3kernel
+      l3packages
+      mathastext
+      pgf
+      relsize
+      sansmath
+      sfmath
+      siunitx
+      xcolor
+      xkeyval
+      xstring
+    ]
+  );
+
   meta = {
     description = "Framework for comparison of experimental measurements from high-energy particle colliders to theory predictions";
-    license = lib.licenses.gpl3;
     homepage = "https://rivet.hepforge.org";
-    platforms = lib.platforms.unix;
+    license = lib.licenses.gpl3;
     maintainers = with lib.maintainers; [ veprbl ];
+    platforms = lib.platforms.unix;
   };
 }

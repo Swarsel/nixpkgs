@@ -2,11 +2,11 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  glib,
-  pkg-config,
-  libfm-extra,
   autoreconfHook,
+  glib,
   gtk-doc,
+  libfm-extra,
+  pkg-config,
 }:
 
 stdenv.mkDerivation (finalAttrs: {

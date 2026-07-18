@@ -11,16 +11,15 @@
 buildPythonPackage rec {
   pname = "llama-index-embeddings-ollama";
   version = "0.9.0";
-  pyproject = true;
 
   src = fetchPypi {
-    pname = "llama_index_embeddings_ollama";
     inherit version;
     hash = "sha256-GdLSoOPwk0SA6uMSQ6xfHOFxMZV4ucCtrSXPG2w1ZZ4=";
+    pname = "llama_index_embeddings_ollama";
   };
 
-  pythonRelaxDeps = [ "ollama" ];
-
+  # Tests are only available in the mono repo
+  doCheck = false;
   build-system = [ hatchling ];
 
   dependencies = [
@@ -29,10 +28,9 @@ buildPythonPackage rec {
     pytest-asyncio
   ];
 
-  # Tests are only available in the mono repo
-  doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "llama_index.embeddings.ollama" ];
+  pythonRelaxDeps = [ "ollama" ];
 
   meta = {
     description = "LlamaIndex Llms Integration for Ollama";

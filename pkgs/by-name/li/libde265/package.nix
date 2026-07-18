@@ -2,21 +2,19 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  cmake,
-  pkg-config,
-
   callPackage,
-
+  cmake,
+  gst_all_1,
   # for passthru.tests
   imagemagick,
-  libheif,
   imlib2Full,
-  gst_all_1,
+  libheif,
+  pkg-config,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
-  version = "1.1.1";
   pname = "libde265";
+  version = "1.1.1";
 
   src = fetchFromGitHub {
     owner = "strukturag";
@@ -42,12 +40,12 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   meta = {
+    description = "Open h.265 video codec implementation";
     homepage = "https://github.com/strukturag/libde265";
     changelog = "https://github.com/strukturag/libde265/releases/tag/${finalAttrs.src.tag}";
-    description = "Open h.265 video codec implementation";
-    mainProgram = "dec265";
     license = lib.licenses.lgpl3;
-    platforms = lib.platforms.unix;
     maintainers = [ ];
+    platforms = lib.platforms.unix;
+    mainProgram = "dec265";
   };
 })

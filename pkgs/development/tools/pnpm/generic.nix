@@ -1,23 +1,22 @@
 {
   lib,
-  stdenvNoCC,
-  writeScript,
-  fetchPnpmDeps,
-  pnpmConfigHook,
   fetchurl,
+  bashNonInteractive,
+  buildPackages,
+  fetchPnpmDeps,
+  hash,
   installShellFiles,
   #FIXME: remove this arg in a future version.
   nodejs, # Should be null, unless overridden.
   nodejs-slim,
+  pnpmConfigHook,
+  stdenvNoCC,
   testers,
-  buildPackages,
-  bashNonInteractive,
   tests,
-
-  withNode ? true,
   version,
-  hash,
+  writeScript,
   knownVulnerabilities ? [ ],
+  withNode ? true,
 }:
 let
   majorVersion = lib.versions.major version;
@@ -29,13 +28,15 @@ let
       lib.warn "pnpm: Override nodejs-slim instead of nodejs" nodejs;
 in
 stdenvNoCC.mkDerivation (finalAttrs: {
-  pname = "pnpm";
   inherit version;
+  pname = "pnpm";
 
   src = fetchurl {
-    url = "https://registry.npmjs.org/pnpm/-/pnpm-${finalAttrs.version}.tgz";
     inherit hash;
+    url = "https://registry.npmjs.org/pnpm/-/pnpm-${finalAttrs.version}.tgz";
   };
+
+  strictDeps = true;
 
   nativeBuildInputs = [
     installShellFiles
@@ -46,12 +47,6 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     bashNonInteractive # needed for node-gyp wrapper script
   ]
   ++ lib.optionals withNode [ nodejs-slim' ];
-
-  # Remove binary files from src, we don't need them, and this way we make sure
-  # our distribution is free of binaryNativeCode
-  postUnpack = ''
-    rm -r package/dist/reflink.*node package/dist/vendor
-  '';
 
   installPhase =
     let
@@ -91,11 +86,34 @@ stdenvNoCC.mkDerivation (finalAttrs: {
         installShellCompletion pnpm.{bash,fish,zsh}
       '';
 
+  __structuredAttrs = true;
+  dontBuild = true;
+  dontConfigure = true;
+
+  # Remove binary files from src, we don't need them, and this way we make sure
+  # our distribution is free of binaryNativeCode
+  postUnpack = ''
+    rm -r package/dist/reflink.*node package/dist/vendor
+  '';
+
   passthru =
     let
       pnpm' = buildPackages."pnpm_${lib.versions.major version}";
     in
     {
+      inherit majorVersion;
+
+      configHook =
+        lib.warn
+          "pnpm.configHook: The package attribute is deprecated. Use the top-level pnpmConfigHook attribute instead"
+          (
+            pnpmConfigHook.overrideAttrs (prevAttrs: {
+              propagatedBuildInputs = prevAttrs.propagatedBuildInputs or [ ] ++ [
+                pnpm'
+              ];
+            })
+          );
+
       fetchDeps =
         lib.warn
           "pnpm.fetchDeps: The package attribute is deprecated. Use the top-level fetchPnpmDeps attribute instead"
@@ -108,25 +126,16 @@ stdenvNoCC.mkDerivation (finalAttrs: {
               }
             )
           );
-      configHook =
-        lib.warn
-          "pnpm.configHook: The package attribute is deprecated. Use the top-level pnpmConfigHook attribute instead"
-          (
-            pnpmConfigHook.overrideAttrs (prevAttrs: {
-              propagatedBuildInputs = prevAttrs.propagatedBuildInputs or [ ] ++ [
-                pnpm'
-              ];
-            })
-          );
-      nodejs-slim = nodejs-slim';
+
       #FIXME: remove this in a future version.
       nodejs = lib.warn "pnpm.nodejs: Use pnpm.nodejs-slim instead of pnpm.nodejs" nodejs-slim';
-      inherit majorVersion;
+      nodejs-slim = nodejs-slim';
 
       tests = {
         inherit (tests) pnpm;
         version = lib.optionalAttrs withNode (testers.testVersion { package = finalAttrs.finalPackage; });
       };
+
       updateScript = writeScript "pnpm-update-script" ''
         #!/usr/bin/env nix-shell
         #!nix-shell -i bash -p curl jq common-updater-scripts
@@ -154,23 +163,19 @@ stdenvNoCC.mkDerivation (finalAttrs: {
       '';
     };
 
-  strictDeps = true;
-  __structuredAttrs = true;
-
-  dontBuild = true;
-  dontConfigure = true;
-
   meta = {
+    inherit knownVulnerabilities;
     description = "Fast, disk space efficient package manager for JavaScript";
     homepage = "https://pnpm.io/";
     changelog = "https://github.com/pnpm/pnpm/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       Scrumplex
       gepbird
     ];
+
     platforms = lib.platforms.all;
     mainProgram = "pnpm";
-    inherit knownVulnerabilities;
   };
 })

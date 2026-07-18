@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   pytestCheckHook,
   setuptools,
 }:
@@ -9,7 +9,6 @@
 buildPythonPackage rec {
   pname = "asn1";
   version = "3.3.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "andrivet";
@@ -18,15 +17,12 @@ buildPythonPackage rec {
     hash = "sha256-gqFW+akhWwvtqJQb4LqcgjyJb6bcInl0gT6f2CMTtA0=";
   };
 
-  build-system = [ setuptools ];
-
-  pythonRemoveDeps = [ "enum-compat" ];
-
   nativeCheckInputs = [ pytestCheckHook ];
-
+  build-system = [ setuptools ];
   enabledTestPaths = [ "tests/test_asn1.py" ];
-
+  pyproject = true;
   pythonImportsCheck = [ "asn1" ];
+  pythonRemoveDeps = [ "enum-compat" ];
 
   meta = {
     description = "Python ASN.1 encoder and decoder";

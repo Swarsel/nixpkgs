@@ -1,7 +1,7 @@
 {
   lib,
-  rustPlatform,
   fetchCrate,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -17,12 +17,14 @@ rustPlatform.buildRustPackage (finalAttrs: {
 
   meta = {
     description = "Preprocessor for mdbook, rendering LaTeX equations to HTML at build time";
-    mainProgram = "mdbook-katex";
     homepage = "https://github.com/lzanini/mdbook-katex";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       lovesegfault
       matthiasbeyer
     ];
+
+    mainProgram = "mdbook-katex";
   };
 })

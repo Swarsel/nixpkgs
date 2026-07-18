@@ -2,18 +2,18 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  nix-update-script,
-  meson,
-  ninja,
-  pkg-config,
   docopt_cpp,
   file,
-  gumbo,
-  mustache-hpp,
-  libzim,
-  icu,
-  zlib,
   gtest,
+  gumbo,
+  icu,
+  libzim,
+  meson,
+  mustache-hpp,
+  ninja,
+  nix-update-script,
+  pkg-config,
+  zlib,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -56,16 +56,15 @@ stdenv.mkDerivation (finalAttrs: {
     zlib
   ];
 
-  nativeCheckInputs = [ gtest ];
   doCheck = true;
-
+  nativeCheckInputs = [ gtest ];
   passthru.updateScript = nix-update-script { };
 
   meta = {
     description = "Various ZIM command line tools";
     homepage = "https://github.com/openzim/zim-tools";
-    maintainers = with lib.maintainers; [ robbinch ];
     license = lib.licenses.gpl3Plus;
+    maintainers = with lib.maintainers; [ robbinch ];
     platforms = lib.platforms.all;
   };
 })

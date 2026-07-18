@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   pytestCheckHook,
   setuptools,
   setuptools-scm,
@@ -10,7 +10,6 @@
 buildPythonPackage rec {
   pname = "find-libpython";
   version = "0.5.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "ktbarrett";
@@ -19,19 +18,20 @@ buildPythonPackage rec {
     hash = "sha256-g2Gl+usa1mJMvvumynnoy/ckFTSrFA57o339t2j9lWQ=";
   };
 
+  nativeCheckInputs = [ pytestCheckHook ];
+
   build-system = [
     setuptools
     setuptools-scm
   ];
 
-  nativeCheckInputs = [ pytestCheckHook ];
-
+  pyproject = true;
   pythonImportsCheck = [ "find_libpython" ];
 
   meta = {
     description = "Finds the libpython associated with your environment, wherever it may be hiding";
-    changelog = "https://github.com/ktbarrett/find_libpython/releases/tag/${src.tag}";
     homepage = "https://github.com/ktbarrett/find_libpython";
+    changelog = "https://github.com/ktbarrett/find_libpython/releases/tag/${src.tag}";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ jleightcap ];
     mainProgram = "find_libpython";

@@ -1,20 +1,13 @@
 {
   lib,
   fetchFromGitHub,
-  python3Packages,
   makeWrapper,
+  python3Packages,
 }:
 
 python3Packages.buildPythonApplication (finalAttrs: {
   pname = "tautulli";
   version = "2.17.2";
-  pyproject = false;
-
-  pythonPath = [ python3Packages.setuptools ];
-  nativeBuildInputs = [
-    python3Packages.wrapPython
-    makeWrapper
-  ];
 
   src = fetchFromGitHub {
     owner = "Tautulli";
@@ -26,6 +19,19 @@ python3Packages.buildPythonApplication (finalAttrs: {
   postPatch = ''
     substituteInPlace plexpy/config.py \
       --replace-fail "'CHECK_GITHUB': (int, 'General', 1)" "'CHECK_GITHUB': (int, 'General', 0)"
+  '';
+
+  nativeBuildInputs = [
+    python3Packages.wrapPython
+    makeWrapper
+  ];
+
+  checkPhase = ''
+    runHook preCheck
+
+    $out/bin/tautulli --help
+
+    runHook postCheck
   '';
 
   installPhase = ''
@@ -48,19 +54,14 @@ python3Packages.buildPythonApplication (finalAttrs: {
     runHook postInstall
   '';
 
-  checkPhase = ''
-    runHook preCheck
-
-    $out/bin/tautulli --help
-
-    runHook postCheck
-  '';
+  pyproject = false;
+  pythonPath = [ python3Packages.setuptools ];
 
   meta = {
     description = "Python based monitoring and tracking tool for Plex Media Server";
     homepage = "https://tautulli.com/";
     license = lib.licenses.gpl3Plus;
-    platforms = lib.platforms.linux;
     maintainers = with lib.maintainers; [ rhoriguchi ];
+    platforms = lib.platforms.linux;
   };
 })

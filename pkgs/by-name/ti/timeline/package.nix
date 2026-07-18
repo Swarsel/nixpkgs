@@ -1,17 +1,16 @@
 {
   lib,
   fetchurl,
-  python3,
+  copyDesktopItems,
   gettext,
   makeDesktopItem,
-  copyDesktopItems,
+  python3,
   wrapGAppsHook3,
 }:
 
 python3.pkgs.buildPythonApplication (finalAttrs: {
   pname = "timeline";
   version = "2.11.0";
-  pyproject = false;
 
   src = fetchurl {
     url = "mirror://sourceforge/thetimelineproj/timeline-${finalAttrs.version}.zip";
@@ -24,37 +23,19 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     wrapGAppsHook3
   ];
 
-  pythonPath = with python3.pkgs; [
-    wxpython
-    humblewx
-    icalendar
-    markdown
-  ];
+  doCheck = false;
 
   nativeCheckInputs = [
     gettext
     python3.pkgs.mock
   ];
 
-  desktopItems = [
-    (makeDesktopItem {
-      desktopName = "Timeline";
-      name = "timeline";
-      comment = "Display and navigate information on a timeline";
-      icon = "timeline";
-      exec = "timeline";
-      categories = [
-        "Office"
-        "Calendar"
-      ];
-    })
-  ];
-
-  dontBuild = true;
-  doCheck = false;
-
-  patchPhase = ''
-    sed -i "s|_ROOT =.*|_ROOT = \"$out/usr/share/timeline/\"|" source/timelinelib/config/paths.py
+  # tests fail because they need an x server
+  # Unable to access the X Display, is $DISPLAY set properly?
+  checkPhase = ''
+    runHook preCheck
+    ${python3.interpreter} tools/execute-specs.py
+    runHook postCheck
   '';
 
   installPhase = ''
@@ -77,30 +58,53 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     runHook postInstall
   '';
 
-  # tests fail because they need an x server
-  # Unable to access the X Display, is $DISPLAY set properly?
-  checkPhase = ''
-    runHook preCheck
-    ${python3.interpreter} tools/execute-specs.py
-    runHook postCheck
-  '';
-
-  dontWrapGApps = true;
-
   preFixup = ''
     makeWrapperArgs+=("''${gappsWrapperArgs[@]}")
   '';
 
+  desktopItems = [
+    (makeDesktopItem {
+      categories = [
+        "Office"
+        "Calendar"
+      ];
+
+      comment = "Display and navigate information on a timeline";
+      desktopName = "Timeline";
+      exec = "timeline";
+      icon = "timeline";
+      name = "timeline";
+    })
+  ];
+
+  dontBuild = true;
+  dontWrapGApps = true;
+
+  patchPhase = ''
+    sed -i "s|_ROOT =.*|_ROOT = \"$out/usr/share/timeline/\"|" source/timelinelib/config/paths.py
+  '';
+
+  pyproject = false;
+
+  pythonPath = with python3.pkgs; [
+    wxpython
+    humblewx
+    icalendar
+    markdown
+  ];
+
   meta = {
+    description = "Display and navigate information on a timeline";
     homepage = "https://thetimelineproj.sourceforge.net/";
     changelog = "https://thetimelineproj.sourceforge.net/changelog.html";
-    description = "Display and navigate information on a timeline";
-    mainProgram = "timeline";
+
     license = with lib.licenses; [
       gpl3Only
       cc-by-sa-30
     ];
-    platforms = lib.platforms.unix;
+
     maintainers = with lib.maintainers; [ davidak ];
+    platforms = lib.platforms.unix;
+    mainProgram = "timeline";
   };
 })

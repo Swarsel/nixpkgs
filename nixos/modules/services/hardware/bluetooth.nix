@@ -51,64 +51,72 @@ in
 
     hardware.bluetooth = {
       enable = mkEnableOption "support for Bluetooth";
-
-      hsphfpd.enable = mkEnableOption "support for hsphfpd[-prototype] implementation";
-
-      powerOnBoot = mkOption {
-        type = types.bool;
-        default = true;
-        description = "Whether to power up the default Bluetooth controller on boot.";
-      };
-
       package = mkPackageOption pkgs "bluez" { };
 
       disabledPlugins = mkOption {
-        type = types.listOf types.str;
         default = [ ];
         description = "Built-in plugins to disable";
+        type = types.listOf types.str;
       };
 
-      settings = mkOption {
-        type = cfgFmt.type;
-        default = { };
-        example = {
-          General = {
-            ControllerMode = "bredr";
-          };
-        };
-        description = ''
-          Set configuration for system-wide bluetooth (/etc/bluetooth/main.conf).
-          See <https://github.com/bluez/bluez/blob/master/src/main.conf> for full list of options.
-        '';
-      };
+      hsphfpd.enable = mkEnableOption "support for hsphfpd[-prototype] implementation";
 
       input = mkOption {
-        type = cfgFmt.type;
         default = { };
-        example = {
-          General = {
-            IdleTimeout = 30;
-            ClassicBondedOnly = true;
-          };
-        };
+
         description = ''
           Set configuration for the input service (/etc/bluetooth/input.conf).
           See <https://github.com/bluez/bluez/blob/master/profiles/input/input.conf> for full list of options.
         '';
+
+        example = {
+          General = {
+            ClassicBondedOnly = true;
+            IdleTimeout = 30;
+          };
+        };
+
+        type = cfgFmt.type;
       };
 
       network = mkOption {
-        type = cfgFmt.type;
         default = { };
+
+        description = ''
+          Set configuration for the network service (/etc/bluetooth/network.conf).
+          See <https://github.com/bluez/bluez/blob/master/profiles/network/network.conf> for full list of options.
+        '';
+
         example = {
           General = {
             DisableSecurity = true;
           };
         };
+
+        type = cfgFmt.type;
+      };
+
+      powerOnBoot = mkOption {
+        default = true;
+        description = "Whether to power up the default Bluetooth controller on boot.";
+        type = types.bool;
+      };
+
+      settings = mkOption {
+        default = { };
+
         description = ''
-          Set configuration for the network service (/etc/bluetooth/network.conf).
-          See <https://github.com/bluez/bluez/blob/master/profiles/network/network.conf> for full list of options.
+          Set configuration for system-wide bluetooth (/etc/bluetooth/main.conf).
+          See <https://github.com/bluez/bluez/blob/master/src/main.conf> for full list of options.
         '';
+
+        example = {
+          General = {
+            ControllerMode = "bredr";
+          };
+        };
+
+        type = cfgFmt.type;
       };
     };
   };
@@ -116,15 +124,16 @@ in
   ###### implementation
 
   config = mkIf cfg.enable {
-    environment.systemPackages = [ package ] ++ optional cfg.hsphfpd.enable pkgs.hsphfpd;
-
     environment.etc."bluetooth/input.conf".source = cfgFmt.generate "input.conf" cfg.input;
-    environment.etc."bluetooth/network.conf".source = cfgFmt.generate "network.conf" cfg.network;
+
     environment.etc."bluetooth/main.conf".source = cfgFmt.generate "main.conf" (
       recursiveUpdate defaults cfg.settings
     );
-    services.udev.packages = [ package ];
+
+    environment.etc."bluetooth/network.conf".source = cfgFmt.generate "network.conf" cfg.network;
+    environment.systemPackages = [ package ] ++ optional cfg.hsphfpd.enable pkgs.hsphfpd;
     services.dbus.packages = [ package ] ++ optional cfg.hsphfpd.enable pkgs.hsphfpd;
+    services.udev.packages = [ package ];
     systemd.packages = [ package ];
 
     systemd.services = {
@@ -141,49 +150,50 @@ in
           ++ optional hasDisabledPlugins "--noplugin=${concatStringsSep "," cfg.disabledPlugins}";
         in
         {
-          wantedBy = [ "bluetooth.target" ];
           aliases = [ "dbus-org.bluez.service" ];
           # restarting can leave people without a mouse/keyboard
           restartIfChanged = false;
+
           serviceConfig = {
+            CapabilityBoundingSet = [
+              "CAP_NET_BIND_SERVICE" # sockets and tethering
+            ];
+
+            ConfigurationDirectoryMode = "0755";
+
             ExecStart = [
               ""
               "${package}/libexec/bluetooth/bluetoothd ${utils.escapeSystemdExecArgs args}"
             ];
-            CapabilityBoundingSet = [
-              "CAP_NET_BIND_SERVICE" # sockets and tethering
-            ];
-            ConfigurationDirectoryMode = "0755";
-            NoNewPrivileges = true;
-            RestrictNamespaces = true;
-            ProtectControlGroups = true;
-            MemoryDenyWriteExecute = true;
-            RestrictSUIDSGID = true;
-            SystemCallArchitectures = "native";
-            SystemCallFilter = "@system-service";
+
             LockPersonality = true;
-            RestrictRealtime = true;
-            ProtectProc = "invisible";
+            MemoryDenyWriteExecute = true;
+            NoNewPrivileges = true;
+            PrivateNetwork = false; # tethering
             PrivateTmp = true;
-
             PrivateUsers = false;
-
+            ProtectControlGroups = true;
             # loading hardware modules
             ProtectKernelModules = false;
             ProtectKernelTunables = false;
-
-            PrivateNetwork = false; # tethering
+            ProtectProc = "invisible";
+            RestrictNamespaces = true;
+            RestrictRealtime = true;
+            RestrictSUIDSGID = true;
+            SystemCallArchitectures = "native";
+            SystemCallFilter = "@system-service";
           };
+
+          wantedBy = [ "bluetooth.target" ];
         };
     }
     // (optionalAttrs cfg.hsphfpd.enable {
       hsphfpd = {
         after = [ "bluetooth.service" ];
-        requires = [ "bluetooth.service" ];
-        wantedBy = [ "bluetooth.target" ];
-
         description = "A prototype implementation used for connecting HSP/HFP Bluetooth devices";
+        requires = [ "bluetooth.service" ];
         serviceConfig.ExecStart = "${pkgs.hsphfpd}/bin/hsphfpd.pl";
+        wantedBy = [ "bluetooth.target" ];
       };
     });
 
@@ -192,10 +202,9 @@ in
     }
     // optionalAttrs cfg.hsphfpd.enable {
       telephony_client = {
-        wantedBy = [ "default.target" ];
-
         description = "telephony_client for hsphfpd";
         serviceConfig.ExecStart = "${pkgs.hsphfpd}/bin/telephony_client.pl";
+        wantedBy = [ "default.target" ];
       };
     };
   };

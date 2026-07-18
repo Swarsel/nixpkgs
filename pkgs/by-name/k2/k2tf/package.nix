@@ -1,9 +1,9 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
-  versionCheckHook,
+  buildGoModule,
   nix-update-script,
+  versionCheckHook,
 }:
 
 buildGoModule (finalAttrs: {
@@ -17,10 +17,9 @@ buildGoModule (finalAttrs: {
     hash = "sha256-LoYlX2kAfzI0GMUbBtvuOinDzvoHABKEaGhipe16FeA=";
   };
 
-  proxyVendor = true;
   vendorHash = "sha256-h8ph8K/4luTUCkx5X1iakTubF651HblGDN4G1EtSKeE=";
-
-  subPackages = [ "." ];
+  doInstallCheck = true;
+  nativeInstallCheckInputs = [ versionCheckHook ];
 
   ldflags = [
     "-s"
@@ -29,16 +28,15 @@ buildGoModule (finalAttrs: {
     "-X main.commit=v${finalAttrs.version}"
   ];
 
-  nativeInstallCheckInputs = [ versionCheckHook ];
-  doInstallCheck = true;
-
+  proxyVendor = true;
+  subPackages = [ "." ];
   passthru.updateScript = nix-update-script { extraArgs = [ "--use-github-releases" ]; };
 
   meta = {
     description = "Kubernetes YAML to Terraform HCL converter";
-    mainProgram = "k2tf";
     homepage = "https://github.com/sl1pm4t/k2tf";
     license = lib.licenses.mpl20;
     maintainers = [ lib.maintainers.flokli ];
+    mainProgram = "k2tf";
   };
 })

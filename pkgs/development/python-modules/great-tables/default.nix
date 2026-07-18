@@ -1,42 +1,38 @@
 {
   lib,
   stdenv,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # build-system
-  setuptools,
-  setuptools-scm,
-
   # dependencies
   babel,
+  buildPythonPackage,
   commonmark,
   css-inline,
   faicons,
   htmltools,
   importlib-metadata,
   importlib-resources,
-  numpy,
-  typing-extensions,
-
   # tests
   ipykernel,
   ipython,
+  numpy,
   pandas,
   polars,
   pyarrow,
-  pytestCheckHook,
   pytest-cov-stub,
+  pytestCheckHook,
   requests,
   selenium,
+  # build-system
+  setuptools,
+  setuptools-scm,
   shiny,
   syrupy,
+  typing-extensions,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "great-tables";
   version = "0.21.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "posit-dev";
@@ -44,6 +40,22 @@ buildPythonPackage (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-d5LKKA6KCkkBGibalWkfOTRzf48YEjdtjCdbGpW2AjE=";
   };
+
+  nativeCheckInputs = [
+    ipykernel
+    ipython
+    pandas
+    polars
+    pyarrow
+    pytestCheckHook
+    pytest-cov-stub
+    requests
+    selenium
+    shiny
+    syrupy
+  ];
+
+  __darwinAllowLocalNetworking = true;
 
   build-system = [
     setuptools
@@ -62,22 +74,6 @@ buildPythonPackage (finalAttrs: {
     typing-extensions
   ];
 
-  pythonImportsCheck = [ "great_tables" ];
-
-  nativeCheckInputs = [
-    ipykernel
-    ipython
-    pandas
-    polars
-    pyarrow
-    pytestCheckHook
-    pytest-cov-stub
-    requests
-    selenium
-    shiny
-    syrupy
-  ];
-
   disabledTests = [
     # require selenium with chrome driver:
     "test_save_custom_webdriver"
@@ -94,7 +90,8 @@ buildPythonPackage (finalAttrs: {
     "test_html_string_generated_inline_css"
   ];
 
-  __darwinAllowLocalNetworking = true;
+  pyproject = true;
+  pythonImportsCheck = [ "great_tables" ];
 
   meta = {
     description = "Library for rendering and formatting dataframes";

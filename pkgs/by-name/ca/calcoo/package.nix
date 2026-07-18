@@ -1,11 +1,11 @@
 {
   lib,
   stdenv,
-  fetchzip,
   ant,
-  stripJavaArchivesHook,
+  fetchzip,
   jdk,
   makeWrapper,
+  stripJavaArchivesHook,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -23,8 +23,6 @@ stdenv.mkDerivation (finalAttrs: {
     jdk
     makeWrapper
   ];
-
-  dontConfigure = true;
 
   env.JAVA_TOOL_OPTIONS = "-Dfile.encoding=iso-8859-1";
 
@@ -45,13 +43,15 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  dontConfigure = true;
+
   meta = {
-    changelog = "https://calcoo.sourceforge.net/changelog.html";
+    inherit (jdk.meta) platforms;
     description = "RPN and algebraic scientific calculator";
     homepage = "https://calcoo.sourceforge.net/";
+    changelog = "https://calcoo.sourceforge.net/changelog.html";
     license = lib.licenses.gpl2Plus;
-    mainProgram = "calcoo";
     maintainers = [ ];
-    inherit (jdk.meta) platforms;
+    mainProgram = "calcoo";
   };
 })

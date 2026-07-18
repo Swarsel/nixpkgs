@@ -2,16 +2,16 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  fetchpatch2,
-  gitUpdater,
+  SDL2,
   alsa-lib,
   cmake,
-  libjack2,
+  fetchpatch2,
+  gitUpdater,
   lhasa,
+  libjack2,
   makeWrapper,
   pkg-config,
   rtmidi,
-  SDL2,
   zlib,
   zziplib,
 }:
@@ -31,9 +31,9 @@ stdenv.mkDerivation (finalAttrs: {
     # Fix compat with CMake 4
     # Remove when version > 1.06
     (fetchpatch2 {
+      hash = "sha256-/+Orf6BKZxhe90VT7p0gdJtHDHLrJy+rmPt03ma410s=";
       name = "0001-milkytracker-Build-SET-CMP0004-OLD-only-if-CMake-lt-4.0.patch";
       url = "https://github.com/milkytracker/MilkyTracker/commit/517b27faf6e1471c2ccb25c3c22f78eb862cd552.patch?full_index=1";
-      hash = "sha256-/+Orf6BKZxhe90VT7p0gdJtHDHLrJy+rmPt03ma410s=";
     })
   ];
 
@@ -71,10 +71,10 @@ stdenv.mkDerivation (finalAttrs: {
     description = "Music tracker application, similar to Fasttracker II";
     homepage = "https://milkytracker.org/";
     license = lib.licenses.gpl3Plus;
+    maintainers = with lib.maintainers; [ OPNA2608 ];
     platforms = lib.platforms.unix;
+    mainProgram = "milkytracker";
     # ibtool -> real Xcode -> I can't get that, and Ofborg can't test that
     broken = stdenv.hostPlatform.isDarwin;
-    maintainers = with lib.maintainers; [ OPNA2608 ];
-    mainProgram = "milkytracker";
   };
 })

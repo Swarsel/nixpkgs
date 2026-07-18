@@ -2,14 +2,13 @@
   lib,
   buildPythonPackage,
   fetchPypi,
-  setuptools,
   requests,
+  setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "jsonfeed";
   version = "0.0.1";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
@@ -22,13 +21,11 @@ buildPythonPackage rec {
       --replace-fail "install_requires=install_requires," "install_requires=[],"
   '';
 
-  build-system = [ setuptools ];
-
-  dependencies = [ requests ];
-
   # Module has no tests, only a placeholder
   doCheck = false;
-
+  build-system = [ setuptools ];
+  dependencies = [ requests ];
+  pyproject = true;
   pythonImportsCheck = [ "jsonfeed" ];
 
   meta = {

@@ -1,10 +1,10 @@
 {
   lib,
-  buildGoModule,
-  fetchFromGitHub,
   fetchurl,
-  nixosTests,
+  fetchFromGitHub,
+  buildGoModule,
   makeWrapper,
+  nixosTests,
 }:
 
 buildGoModule (finalAttrs: {
@@ -18,24 +18,16 @@ buildGoModule (finalAttrs: {
     hash = "sha256-WCtfkzlZnyzZDwNDBrW06bUbLYTL2C704Y7aXbiVi5c=";
   };
 
-  # TODO build webapp from source (how to hanndle npm and bower deps?)
-  src-webapp = fetchurl {
-    url = "https://github.com/root-gg/plik/releases/download/${finalAttrs.version}/plik-${finalAttrs.version}-linux-amd64.tar.gz";
-    hash = "sha256-taUFXZJeUHYjjhrVlLgKYPxNn6W5o8uoEVcu+f5flCA=";
-  };
-
-  subPackages = [ "server" ];
-
-  vendorHash = null;
+  postPatch = ''
+    substituteInPlace server/common/version.go \
+      --replace '"0.0.0"' '"${finalAttrs.version}"'
+  '';
 
   nativeBuildInputs = [
     makeWrapper
   ];
 
-  postPatch = ''
-    substituteInPlace server/common/version.go \
-      --replace '"0.0.0"' '"${finalAttrs.version}"'
-  '';
+  vendorHash = null;
 
   postInstall = ''
     # install the webapp
@@ -49,6 +41,14 @@ buildGoModule (finalAttrs: {
       --chdir "$out/libexec/plikd/bin"
   '';
 
+  # TODO build webapp from source (how to hanndle npm and bower deps?)
+  src-webapp = fetchurl {
+    hash = "sha256-taUFXZJeUHYjjhrVlLgKYPxNn6W5o8uoEVcu+f5flCA=";
+    url = "https://github.com/root-gg/plik/releases/download/${finalAttrs.version}/plik-${finalAttrs.version}-linux-amd64.tar.gz";
+  };
+
+  subPackages = [ "server" ];
+
   passthru.tests = {
     inherit (nixosTests) plikd;
   };
@@ -57,7 +57,7 @@ buildGoModule (finalAttrs: {
     description = "Scalable & friendly temporary file upload system";
     homepage = "https://plik.root.gg/";
     license = lib.licenses.mit;
-    mainProgram = "plikd";
     maintainers = [ ];
+    mainProgram = "plikd";
   };
 })

@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule (finalAttrs: {
@@ -18,11 +18,11 @@ buildGoModule (finalAttrs: {
   vendorHash = "sha256-Agc3hl+VDTNW7cnh/0g4G8BgzNAX11hKASYQKieBN4M=";
 
   meta = {
-    homepage = "https://github.com/1player/host-spawn";
     description = "Run commands on your host machine from inside your flatpak sandbox, toolbox or distrobox containers";
+    homepage = "https://github.com/1player/host-spawn";
     license = lib.licenses.mit0;
-    platforms = lib.platforms.linux;
     maintainers = with lib.maintainers; [ garrison ];
+    platforms = lib.platforms.linux;
     mainProgram = "host-spawn";
   };
 })

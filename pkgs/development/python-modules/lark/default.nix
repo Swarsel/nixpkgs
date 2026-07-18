@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   regex,
   setuptools,
   setuptools-scm,
@@ -10,7 +10,6 @@
 buildPythonPackage rec {
   pname = "lark";
   version = "1.3.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "lark-parser";
@@ -19,6 +18,9 @@ buildPythonPackage rec {
     hash = "sha256-JDtLSbVjypaHqamkknHDSql1GTMf1LA4TgJXqTn4Q20=";
   };
 
+  # Js2py is needed for tests but it's unmaintained and insecure
+  doCheck = false;
+
   build-system = [
     setuptools
     setuptools-scm
@@ -26,6 +28,7 @@ buildPythonPackage rec {
 
   # Optional import, but fixes some re known bugs & allows advanced regex features
   dependencies = [ regex ];
+  pyproject = true;
 
   pythonImportsCheck = [
     "lark"
@@ -33,9 +36,6 @@ buildPythonPackage rec {
     "lark.tools"
     "lark.grammars"
   ];
-
-  # Js2py is needed for tests but it's unmaintained and insecure
-  doCheck = false;
 
   meta = {
     description = "Modern parsing library for Python, implementing Earley & LALR(1) and an easy interface";

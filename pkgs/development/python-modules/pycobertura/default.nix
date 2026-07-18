@@ -1,22 +1,21 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
-  setuptools-git,
+  buildPythonPackage,
   click,
   jinja2,
   lxml,
-  tabulate,
-  ruamel-yaml,
-  pytestCheckHook,
   mock,
+  pytestCheckHook,
+  ruamel-yaml,
+  setuptools,
+  setuptools-git,
+  tabulate,
 }:
 
 buildPythonPackage rec {
   pname = "pycobertura";
   version = "4.1.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "aconrad";
@@ -29,6 +28,11 @@ buildPythonPackage rec {
     # Remove build-system requirements as we handle them through Nix
     sed -i '/\[build-system\]/,/build-backend/d' pyproject.toml
   '';
+
+  nativeCheckInputs = [
+    pytestCheckHook
+    mock
+  ];
 
   build-system = [
     setuptools
@@ -43,11 +47,6 @@ buildPythonPackage rec {
     ruamel-yaml
   ];
 
-  nativeCheckInputs = [
-    pytestCheckHook
-    mock
-  ];
-
   disabledTests = [
     # Tests require git and a git repository
     "test_filesystem_git_integration"
@@ -57,6 +56,7 @@ buildPythonPackage rec {
     "test_filesystem_factory"
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "pycobertura" ];
 
   meta = {

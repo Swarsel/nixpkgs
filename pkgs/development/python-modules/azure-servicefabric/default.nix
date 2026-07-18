@@ -1,8 +1,8 @@
 {
   lib,
+  azure-common,
   buildPythonPackage,
   fetchPypi,
-  azure-common,
   msrest,
   setuptools,
 }:
@@ -10,16 +10,16 @@
 buildPythonPackage (finalAttrs: {
   pname = "azure-servicefabric";
   version = "8.2.0.0";
-  pyproject = true;
-
-  __structuredAttrs = true;
 
   src = fetchPypi {
     inherit (finalAttrs) pname version;
-    extension = "zip";
     hash = "sha256-9JyHWUR5cIF7my09S5dDl2Xc91ugG2Bmzpa2BQUvuyM=";
+    extension = "zip";
   };
 
+  # has no tests
+  doCheck = false;
+  __structuredAttrs = true;
   build-system = [ setuptools ];
 
   dependencies = [
@@ -27,9 +27,7 @@ buildPythonPackage (finalAttrs: {
     msrest
   ];
 
-  # has no tests
-  doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "azure.servicefabric" ];
 
   meta = {

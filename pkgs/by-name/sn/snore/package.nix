@@ -5,8 +5,8 @@
 }:
 
 stdenv.mkDerivation (finalAttrs: {
-  version = "0.3.1";
   pname = "snore";
+  version = "0.3.1";
 
   src = fetchFromGitHub {
     owner = "clamiax";

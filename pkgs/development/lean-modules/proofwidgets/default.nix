@@ -1,10 +1,10 @@
 {
   lib,
-  buildLakePackage,
   fetchFromGitHub,
+  buildLakePackage,
   fetchNpmDeps,
-  npmHooks,
   nodejs,
+  npmHooks,
 }:
 
 buildLakePackage (finalAttrs: {
@@ -19,22 +19,10 @@ buildLakePackage (finalAttrs: {
     hash = "sha256-kGoEkKGrucNUWFYkHW2LsS1gI4C0J8bAHQL2MiE4Pzc=";
   };
 
-  leanPackageName = "proofwidgets";
-
-  lakeHash = null;
-
   nativeBuildInputs = [
     nodejs
     npmHooks.npmConfigHook
   ];
-
-  npmDeps = fetchNpmDeps {
-    name = "lean4-proofwidgets-npm-deps";
-    src = finalAttrs.src;
-    sourceRoot = "source/widget";
-    hash = "sha256-ssWSr2qfsIbX25DidiVPm0tsLGjrhQhQ6YKPL0rfc1k=";
-  };
-  npmRoot = "widget";
 
   postConfigure = ''
     local realNpm
@@ -48,6 +36,18 @@ buildLakePackage (finalAttrs: {
     chmod +x "$TMPDIR/npm-wrap/npm"
     export PATH="$TMPDIR/npm-wrap:$PATH"
   '';
+
+  lakeHash = null;
+  leanPackageName = "proofwidgets";
+
+  npmDeps = fetchNpmDeps {
+    src = finalAttrs.src;
+    hash = "sha256-ssWSr2qfsIbX25DidiVPm0tsLGjrhQhQ6YKPL0rfc1k=";
+    name = "lean4-proofwidgets-npm-deps";
+    sourceRoot = "source/widget";
+  };
+
+  npmRoot = "widget";
 
   meta = {
     description = "Interactive UI framework for Lean 4 proof assistants";

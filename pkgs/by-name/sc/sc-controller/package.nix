@@ -1,27 +1,26 @@
 {
   lib,
-  python3Packages,
   fetchFromGitHub,
-  wrapGAppsHook3,
-  gtk3,
+  bluez,
   gobject-introspection,
+  gtk-layer-shell,
+  gtk3,
   libappindicator-gtk3,
   librsvg,
-  bluez,
-  linuxHeaders,
+  libusb1,
   libx11,
   libxext,
   libxfixes,
-  libusb1,
+  linuxHeaders,
+  python3Packages,
   udev,
   udevCheckHook,
-  gtk-layer-shell,
+  wrapGAppsHook3,
 }:
 
 python3Packages.buildPythonApplication (finalAttrs: {
   pname = "sc-controller";
   version = "0.5.5";
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "C0rn3j";
@@ -29,6 +28,14 @@ python3Packages.buildPythonApplication (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-IQxHa0bR8FWad9v5DfvXHskwayCgzbJm5ekzf1sjfiQ=";
   };
+
+  patches = [ ./scc_osd_keyboard.patch ];
+
+  postPatch = ''
+    substituteInPlace scc/paths.py --replace sys.prefix "'$out'"
+    substituteInPlace scc/uinput.py --replace /usr/include ${linuxHeaders}/include
+    substituteInPlace scc/device_monitor.py --replace "find_library('bluetooth')" "'libbluetooth.so.3'"
+  '';
 
   nativeBuildInputs = [
     wrapGAppsHook3
@@ -41,6 +48,36 @@ python3Packages.buildPythonApplication (finalAttrs: {
     libappindicator-gtk3
     librsvg
   ];
+
+  env.LD_LIBRARY_PATH = lib.makeLibraryPath [
+    libx11
+    libxext
+    libxfixes
+    libusb1
+    udev
+    bluez
+  ];
+
+  nativeCheckInputs = [
+    python3Packages.pytestCheckHook
+    python3Packages.libusb1
+    python3Packages.toml
+  ];
+
+  doInstallCheck = true;
+
+  preFixup = ''
+    gappsWrapperArgs+=(--prefix LD_LIBRARY_PATH : "$LD_LIBRARY_PATH")
+  '';
+
+  postFixup = ''
+    (
+      # scc runs these scripts as programs. (See find_binary() in scc/tools.py.)
+      cd $out/lib/python*/site-packages/scc/x11
+      patchPythonScript scc-autoswitch-daemon.py
+      patchPythonScript scc-osd-daemon.py
+    )
+  '';
 
   dependencies =
     with python3Packages;
@@ -56,52 +93,18 @@ python3Packages.buildPythonApplication (finalAttrs: {
       python3Packages.libusb1
     ];
 
-  nativeCheckInputs = [
-    python3Packages.pytestCheckHook
-    python3Packages.libusb1
-    python3Packages.toml
-  ];
-
-  patches = [ ./scc_osd_keyboard.patch ];
-
-  postPatch = ''
-    substituteInPlace scc/paths.py --replace sys.prefix "'$out'"
-    substituteInPlace scc/uinput.py --replace /usr/include ${linuxHeaders}/include
-    substituteInPlace scc/device_monitor.py --replace "find_library('bluetooth')" "'libbluetooth.so.3'"
-  '';
-
-  env.LD_LIBRARY_PATH = lib.makeLibraryPath [
-    libx11
-    libxext
-    libxfixes
-    libusb1
-    udev
-    bluez
-  ];
-
-  preFixup = ''
-    gappsWrapperArgs+=(--prefix LD_LIBRARY_PATH : "$LD_LIBRARY_PATH")
-  '';
-
-  postFixup = ''
-    (
-      # scc runs these scripts as programs. (See find_binary() in scc/tools.py.)
-      cd $out/lib/python*/site-packages/scc/x11
-      patchPythonScript scc-autoswitch-daemon.py
-      patchPythonScript scc-osd-daemon.py
-    )
-  '';
-
-  doInstallCheck = true;
+  format = "setuptools";
 
   meta = {
-    homepage = "https://github.com/C0rn3j/sc-controller";
     # donations: https://www.patreon.com/kozec
     description = "User-mode driver and GUI for Steam Controller and other controllers";
+    homepage = "https://github.com/C0rn3j/sc-controller";
     license = lib.licenses.gpl2Only;
-    platforms = lib.platforms.linux;
+
     maintainers = with lib.maintainers; [
       rnhmjoj
     ];
+
+    platforms = lib.platforms.linux;
   };
 })

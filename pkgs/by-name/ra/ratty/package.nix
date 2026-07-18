@@ -1,7 +1,7 @@
 {
+  lib,
   fetchFromGitHub,
   fontconfig,
-  lib,
   libxcb,
   libxkbcommon,
   makeBinaryWrapper,
@@ -23,8 +23,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-Iim0aRy97ilzBE5FLNOD3rVscMeX+9h4tKyzrssM3wM=";
   };
 
-  cargoHash = "sha256-Ol2+aeNx4nX5ngj05EDYEPhB4qZbK/AKq+V3nQsbruc=";
-
   nativeBuildInputs = [
     pkg-config
     makeBinaryWrapper
@@ -40,6 +38,7 @@ rustPlatform.buildRustPackage (finalAttrs: {
     zlib
   ];
 
+  cargoHash = "sha256-Ol2+aeNx4nX5ngj05EDYEPhB4qZbK/AKq+V3nQsbruc=";
   # no tests currently, speeds up build time
   # will be changed when tests are introduced
   doCheck = false;
@@ -60,11 +59,11 @@ rustPlatform.buildRustPackage (finalAttrs: {
   meta = {
     description = "GPU-rendered terminal emulator with inline 3D graphics";
     homepage = "https://ratty-term.org/";
-    downloadPage = "https://github.com/orhun/ratty";
     changelog = "https://github.com/orhun/ratty/blob/main/CHANGELOG.md";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ poz ];
     platforms = lib.platforms.linux;
     mainProgram = "ratty";
+    downloadPage = "https://github.com/orhun/ratty";
   };
 })

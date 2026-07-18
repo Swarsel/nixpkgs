@@ -1,7 +1,7 @@
 {
+  config,
   lib,
   pkgs,
-  config,
   ...
 }:
 let
@@ -91,6 +91,12 @@ let
   commonServiceConfig = {
     AmbientCapabilities = [ ];
     CapabilityBoundingSet = [ ];
+    DynamicUser = true;
+
+    LoadCredential = mapAttrsToList (secretName: secretFile: "${secretName}:${secretFile}") (
+      filterAttrs (_: v: v != null) cfg.settingsSecret
+    );
+
     LockPersonality = true;
     MemoryDenyWriteExecute = true;
     NoNewPrivileges = true;
@@ -107,32 +113,27 @@ let
     ProtectKernelTunables = true;
     ProtectProc = "invisible";
     ProtectSystem = "strict";
+    Restart = "on-failure";
+    RestartSec = 10;
+
     RestrictAddressFamilies = [
       "AF_INET"
       "AF_INET6"
       "AF_NETLINK"
       "AF_UNIX"
     ];
+
     RestrictNamespaces = true;
     RestrictRealtime = true;
     RestrictSUIDSGID = true;
-    SystemCallArchitectures = "native";
-    SystemCallFilter = "@system-service";
-    UMask = "077";
-
-    DynamicUser = true;
-    User = "firezone";
-
     Slice = "system-firezone.slice";
     StateDirectory = "firezone";
-    WorkingDirectory = "/var/lib/firezone";
-
-    LoadCredential = mapAttrsToList (secretName: secretFile: "${secretName}:${secretFile}") (
-      filterAttrs (_: v: v != null) cfg.settingsSecret
-    );
+    SystemCallArchitectures = "native";
+    SystemCallFilter = "@system-service";
     Type = "exec";
-    Restart = "on-failure";
-    RestartSec = 10;
+    UMask = "077";
+    User = "firezone";
+    WorkingDirectory = "/var/lib/firezone";
   };
 
   componentOptions = component: {
@@ -140,6 +141,8 @@ let
     package = mkPackageOption pkgs "firezone-server-${component}" { };
 
     settings = mkOption {
+      default = { };
+
       description = ''
         Environment variables for this component of the Firezone server. For a
         list of available variables, please refer to the [upstream definitions](https://github.com/firezone/firezone/blob/main/elixir/apps/domain/lib/domain/config/definitions.ex).
@@ -151,7 +154,7 @@ let
         {option}`services.firezone.server.settingsSecret`, but which can be
         overwritten by this option.
       '';
-      default = { };
+
       type = types.submodule {
         freeformType = types.attrsOf (
           types.oneOf [
@@ -176,27 +179,45 @@ in
 
   options.services.firezone.server = {
     enable = mkEnableOption "all Firezone components";
-    enableLocalDB = mkEnableOption "a local postgresql database for Firezone";
-    nginx.enable = mkEnableOption "nginx virtualhost definition";
 
-    openClusterFirewall = mkOption {
-      type = types.bool;
-      default = false;
-      description = ''
-        Opens up the erlang distribution port of all enabled components to
-        allow reaching the server cluster from the internet. You only need to
-        set this if you are actually distributing your cluster across multiple
-        machines.
-      '';
+    api = componentOptions "api" // {
+      address = mkOption {
+        default = "127.0.0.1";
+        description = "The address to listen on";
+        type = types.str;
+      };
+
+      externalUrl = mkOption {
+        description = ''
+          The external URL under which you will serve the api. You need to
+          setup a reverse proxy for TLS termination, either with
+          {option}`services.firezone.server.nginx.enable` or manually.
+        '';
+
+        example = "https://firezone.example.com/api/";
+        type = types.strMatching "^https://.+/$";
+      };
+
+      port = mkOption {
+        default = 8081;
+        description = "The port under which the api will be served locally";
+        type = types.port;
+      };
+
+      trustedProxies = mkOption {
+        default = [ ];
+        description = "A list of trusted proxies";
+        type = types.listOf types.str;
+      };
     };
 
     clusterHosts = mkOption {
-      type = types.listOf types.str;
       default = [
         "api@localhost.localdomain"
         "web@localhost.localdomain"
         "domain@localhost.localdomain"
       ];
+
       description = ''
         A list of components and their hosts that are part of this cluster. For
         a single-machine setup, the default value will be sufficient. This
@@ -204,133 +225,30 @@ in
 
         The format is `<COMPONENT_NAME>@<HOSTNAME>`.
       '';
+
+      type = types.listOf types.str;
     };
 
-    settingsSecret = mkOption {
-      default = { };
+    domain = componentOptions "domain";
+    enableLocalDB = mkEnableOption "a local postgresql database for Firezone";
+    nginx.enable = mkEnableOption "nginx virtualhost definition";
+
+    openClusterFirewall = mkOption {
+      default = false;
+
       description = ''
-        This is a convenience option which allows you to set secret values for
-        environment variables by specifying a file which will contain the value
-        at runtime. Before starting the server, the content of each file will
-        be loaded into the respective environment variable.
-
-        Otherwise, this option is equivalent to
-        {option}`services.firezone.server.settings`. Refer to the settings
-        option for more information regarding the actual variables and how
-        filtering rules are applied for each component.
+        Opens up the erlang distribution port of all enabled components to
+        allow reaching the server cluster from the internet. You only need to
+        set this if you are actually distributing your cluster across multiple
+        machines.
       '';
-      type = types.submodule {
-        freeformType = types.attrsOf types.path;
-        options = {
-          RELEASE_COOKIE = mkOption {
-            type = types.nullOr types.path;
-            default = null;
-            description = ''
-              A file containing a unique secret identifier for the Erlang
-              cluster. All Firezone components in your cluster must use the
-              same value.
 
-              If this is `null`, a shared value will automatically be generated
-              on startup and used for all components on this machine. You do
-              not need to set this except when you spread your cluster over
-              multiple hosts.
-            '';
-          };
-
-          TOKENS_KEY_BASE = mkOption {
-            type = types.nullOr types.path;
-            default = null;
-            description = ''
-              A file containing a unique base64 encoded secret for the
-              `TOKENS_KEY_BASE`. All Firezone components in your cluster must
-              use the same value.
-
-              If this is `null`, a shared value will automatically be generated
-              on startup and used for all components on this machine. You do
-              not need to set this except when you spread your cluster over
-              multiple hosts.
-            '';
-          };
-
-          SECRET_KEY_BASE = mkOption {
-            type = types.nullOr types.path;
-            default = null;
-            description = ''
-              A file containing a unique base64 encoded secret for the
-              `SECRET_KEY_BASE`. All Firezone components in your cluster must
-              use the same value.
-
-              If this is `null`, a shared value will automatically be generated
-              on startup and used for all components on this machine. You do
-              not need to set this except when you spread your cluster over
-              multiple hosts.
-            '';
-          };
-
-          TOKENS_SALT = mkOption {
-            type = types.nullOr types.path;
-            default = null;
-            description = ''
-              A file containing a unique base64 encoded secret for the
-              `TOKENS_SALT`. All Firezone components in your cluster must
-              use the same value.
-
-              If this is `null`, a shared value will automatically be generated
-              on startup and used for all components on this machine. You do
-              not need to set this except when you spread your cluster over
-              multiple hosts.
-            '';
-          };
-
-          LIVE_VIEW_SIGNING_SALT = mkOption {
-            type = types.nullOr types.path;
-            default = null;
-            description = ''
-              A file containing a unique base64 encoded secret for the
-              `LIVE_VIEW_SIGNING_SALT`. All Firezone components in your cluster must
-              use the same value.
-
-              If this is `null`, a shared value will automatically be generated
-              on startup and used for all components on this machine. You do
-              not need to set this except when you spread your cluster over
-              multiple hosts.
-            '';
-          };
-
-          COOKIE_SIGNING_SALT = mkOption {
-            type = types.nullOr types.path;
-            default = null;
-            description = ''
-              A file containing a unique base64 encoded secret for the
-              `COOKIE_SIGNING_SALT`. All Firezone components in your cluster must
-              use the same value.
-
-              If this is `null`, a shared value will automatically be generated
-              on startup and used for all components on this machine. You do
-              not need to set this except when you spread your cluster over
-              multiple hosts.
-            '';
-          };
-
-          COOKIE_ENCRYPTION_SALT = mkOption {
-            type = types.nullOr types.path;
-            default = null;
-            description = ''
-              A file containing a unique base64 encoded secret for the
-              `COOKIE_ENCRYPTION_SALT`. All Firezone components in your cluster must
-              use the same value.
-
-              If this is `null`, a shared value will automatically be generated
-              on startup and used for all components on this machine. You do
-              not need to set this except when you spread your cluster over
-              multiple hosts.
-            '';
-          };
-        };
-      };
+      type = types.bool;
     };
 
     settings = mkOption {
+      default = { };
+
       description = ''
         Environment variables for the Firezone server. For a list of available
         variables, please refer to the [upstream definitions](https://github.com/firezone/firezone/blob/main/elixir/apps/domain/lib/domain/config/definitions.ex).
@@ -340,7 +258,7 @@ in
         Each component has an additional `settings` option which allows you to
         override specific variables passed to that component.
       '';
-      default = { };
+
       type = types.submodule {
         freeformType = types.attrsOf (
           types.oneOf [
@@ -355,10 +273,151 @@ in
       };
     };
 
+    settingsSecret = mkOption {
+      default = { };
+
+      description = ''
+        This is a convenience option which allows you to set secret values for
+        environment variables by specifying a file which will contain the value
+        at runtime. Before starting the server, the content of each file will
+        be loaded into the respective environment variable.
+
+        Otherwise, this option is equivalent to
+        {option}`services.firezone.server.settings`. Refer to the settings
+        option for more information regarding the actual variables and how
+        filtering rules are applied for each component.
+      '';
+
+      type = types.submodule {
+        options = {
+          COOKIE_ENCRYPTION_SALT = mkOption {
+            default = null;
+
+            description = ''
+              A file containing a unique base64 encoded secret for the
+              `COOKIE_ENCRYPTION_SALT`. All Firezone components in your cluster must
+              use the same value.
+
+              If this is `null`, a shared value will automatically be generated
+              on startup and used for all components on this machine. You do
+              not need to set this except when you spread your cluster over
+              multiple hosts.
+            '';
+
+            type = types.nullOr types.path;
+          };
+
+          COOKIE_SIGNING_SALT = mkOption {
+            default = null;
+
+            description = ''
+              A file containing a unique base64 encoded secret for the
+              `COOKIE_SIGNING_SALT`. All Firezone components in your cluster must
+              use the same value.
+
+              If this is `null`, a shared value will automatically be generated
+              on startup and used for all components on this machine. You do
+              not need to set this except when you spread your cluster over
+              multiple hosts.
+            '';
+
+            type = types.nullOr types.path;
+          };
+
+          LIVE_VIEW_SIGNING_SALT = mkOption {
+            default = null;
+
+            description = ''
+              A file containing a unique base64 encoded secret for the
+              `LIVE_VIEW_SIGNING_SALT`. All Firezone components in your cluster must
+              use the same value.
+
+              If this is `null`, a shared value will automatically be generated
+              on startup and used for all components on this machine. You do
+              not need to set this except when you spread your cluster over
+              multiple hosts.
+            '';
+
+            type = types.nullOr types.path;
+          };
+
+          RELEASE_COOKIE = mkOption {
+            default = null;
+
+            description = ''
+              A file containing a unique secret identifier for the Erlang
+              cluster. All Firezone components in your cluster must use the
+              same value.
+
+              If this is `null`, a shared value will automatically be generated
+              on startup and used for all components on this machine. You do
+              not need to set this except when you spread your cluster over
+              multiple hosts.
+            '';
+
+            type = types.nullOr types.path;
+          };
+
+          SECRET_KEY_BASE = mkOption {
+            default = null;
+
+            description = ''
+              A file containing a unique base64 encoded secret for the
+              `SECRET_KEY_BASE`. All Firezone components in your cluster must
+              use the same value.
+
+              If this is `null`, a shared value will automatically be generated
+              on startup and used for all components on this machine. You do
+              not need to set this except when you spread your cluster over
+              multiple hosts.
+            '';
+
+            type = types.nullOr types.path;
+          };
+
+          TOKENS_KEY_BASE = mkOption {
+            default = null;
+
+            description = ''
+              A file containing a unique base64 encoded secret for the
+              `TOKENS_KEY_BASE`. All Firezone components in your cluster must
+              use the same value.
+
+              If this is `null`, a shared value will automatically be generated
+              on startup and used for all components on this machine. You do
+              not need to set this except when you spread your cluster over
+              multiple hosts.
+            '';
+
+            type = types.nullOr types.path;
+          };
+
+          TOKENS_SALT = mkOption {
+            default = null;
+
+            description = ''
+              A file containing a unique base64 encoded secret for the
+              `TOKENS_SALT`. All Firezone components in your cluster must
+              use the same value.
+
+              If this is `null`, a shared value will automatically be generated
+              on startup and used for all components on this machine. You do
+              not need to set this except when you spread your cluster over
+              multiple hosts.
+            '';
+
+            type = types.nullOr types.path;
+          };
+        };
+
+        freeformType = types.attrsOf types.path;
+      };
+    };
+
     smtp = {
       configureManually = mkOption {
-        type = types.bool;
         default = false;
+
         description = ''
           Outbound email configuration is mandatory for Firezone and supports
           many different delivery adapters. Yet, most users will only need an
@@ -373,104 +432,75 @@ in
 
           The Firezone documentation holds [a list of supported Swoosh adapters](https://github.com/firezone/firezone/blob/main/website/src/app/docs/reference/env-vars/readme.mdx#outbound-emails).
         '';
+
+        type = types.bool;
       };
 
       from = mkOption {
-        type = types.str;
-        example = "firezone@example.com";
         description = "Outbound SMTP FROM address";
+        example = "firezone@example.com";
+        type = types.str;
       };
 
       host = mkOption {
-        type = types.str;
-        example = "mail.example.com";
         description = "Outbound SMTP host";
-      };
-
-      port = mkOption {
-        type = types.port;
-        example = 465;
-        description = "Outbound SMTP port";
+        example = "mail.example.com";
+        type = types.str;
       };
 
       implicitTls = mkOption {
-        type = types.bool;
         default = false;
         description = "Whether to use implicit TLS instead of STARTTLS (usually port 465)";
-      };
-
-      username = mkOption {
-        type = types.str;
-        example = "firezone@example.com";
-        description = "Username to authenticate against the SMTP relay";
+        type = types.bool;
       };
 
       passwordFile = mkOption {
-        type = types.path;
-        example = "/run/secrets/smtp-password";
         description = "File containing the password for the given username. Beware that a file in the nix store will be world readable.";
+        example = "/run/secrets/smtp-password";
+        type = types.path;
+      };
+
+      port = mkOption {
+        description = "Outbound SMTP port";
+        example = 465;
+        type = types.port;
+      };
+
+      username = mkOption {
+        description = "Username to authenticate against the SMTP relay";
+        example = "firezone@example.com";
+        type = types.str;
       };
     };
 
-    domain = componentOptions "domain";
-
     web = componentOptions "web" // {
+      address = mkOption {
+        default = "127.0.0.1";
+        description = "The address to listen on";
+        type = types.str;
+      };
+
       externalUrl = mkOption {
-        type = types.strMatching "^https://.+/$";
-        example = "https://firezone.example.com/";
         description = ''
           The external URL under which you will serve the web interface. You
           need to setup a reverse proxy for TLS termination, either with
           {option}`services.firezone.server.nginx.enable` or manually.
         '';
-      };
 
-      address = mkOption {
-        type = types.str;
-        default = "127.0.0.1";
-        description = "The address to listen on";
+        example = "https://firezone.example.com/";
+        type = types.strMatching "^https://.+/$";
       };
 
       port = mkOption {
-        type = types.port;
         default = 8080;
         description = "The port under which the web interface will be served locally";
-      };
-
-      trustedProxies = mkOption {
-        type = types.listOf types.str;
-        default = [ ];
-        description = "A list of trusted proxies";
-      };
-    };
-
-    api = componentOptions "api" // {
-      externalUrl = mkOption {
-        type = types.strMatching "^https://.+/$";
-        example = "https://firezone.example.com/api/";
-        description = ''
-          The external URL under which you will serve the api. You need to
-          setup a reverse proxy for TLS termination, either with
-          {option}`services.firezone.server.nginx.enable` or manually.
-        '';
-      };
-
-      address = mkOption {
-        type = types.str;
-        default = "127.0.0.1";
-        description = "The address to listen on";
-      };
-
-      port = mkOption {
         type = types.port;
-        default = 8081;
-        description = "The port under which the api will be served locally";
       };
 
       trustedProxies = mkOption {
-        type = types.listOf types.str;
         default = [ ];
         description = "A list of trusted proxies";
+        type = types.listOf types.str;
       };
     };
   };
@@ -478,33 +508,35 @@ in
   config = mkMerge [
     # Enable all components if the main server is enabled
     (mkIf cfg.enable {
+      services.firezone.server.api.enable = true;
       services.firezone.server.domain.enable = true;
       services.firezone.server.web.enable = true;
-      services.firezone.server.api.enable = true;
     })
     # Create (and configure) a local database if desired
     (mkIf cfg.enableLocalDB {
+      services.firezone.server.settings = {
+        DATABASE_NAME = "firezone";
+        DATABASE_PASSWORD = "firezone";
+        DATABASE_PORT = "5432";
+        DATABASE_SOCKET_DIR = "/run/postgresql";
+        DATABASE_USER = "firezone";
+      };
+
       services.postgresql = {
         enable = true;
+        ensureDatabases = [ "firezone" ];
+
         ensureUsers = [
           {
-            name = "firezone";
-            ensureDBOwnership = true;
             ensureClauses.superuser = true;
+            ensureDBOwnership = true;
+            name = "firezone";
           }
         ];
-        ensureDatabases = [ "firezone" ];
+
         # Firezone uses an internal replication strategy
         # that depends on a logical wal
         settings.wal_level = "logical";
-      };
-
-      services.firezone.server.settings = {
-        DATABASE_SOCKET_DIR = "/run/postgresql";
-        DATABASE_PORT = "5432";
-        DATABASE_NAME = "firezone";
-        DATABASE_USER = "firezone";
-        DATABASE_PASSWORD = "firezone";
       };
     })
     # Create a local nginx reverse proxy
@@ -522,6 +554,7 @@ in
           {
             virtualHosts.${domain} = {
               forceSSL = mkDefault true;
+
               locations.${location} = {
                 # The trailing slash is important to strip the location prefix from the request
                 proxyPass = "http://${cfg.web.address}:${toString cfg.web.port}/";
@@ -539,6 +572,7 @@ in
           {
             virtualHosts.${domain} = {
               forceSSL = mkDefault true;
+
               locations.${location} = {
                 # The trailing slash is important to strip the location prefix from the request
                 proxyPass = "http://${cfg.api.address}:${toString cfg.api.port}/";
@@ -552,70 +586,63 @@ in
     # Specify sensible defaults
     {
       services.firezone.server = {
-        settings = {
-          LOG_LEVEL = mkDefault "info";
-          RELEASE_HOSTNAME = mkDefault "localhost.localdomain";
+        api.settings = {
+          BACKGROUND_JOBS_ENABLED = mkDefault false;
+          ERLANG_DISTRIBUTION_PORT = mkDefault 9002;
+          HEALTHZ_PORT = mkDefault 4002;
+          PHOENIX_EXTERNAL_TRUSTED_PROXIES = mkDefault (builtins.toJSON cfg.api.trustedProxies);
+          PHOENIX_HTTP_API_PORT = mkDefault cfg.api.port;
+          PHOENIX_HTTP_WEB_PORT = mkDefault cfg.web.port;
+          PHOENIX_LISTEN_ADDRESS = mkDefault cfg.api.address;
+          PHOENIX_SECURE_COOKIES = mkDefault true; # enforce HTTPS on cookies
+        };
 
+        domain.settings = {
+          BACKGROUND_JOBS_ENABLED = mkDefault true;
+          ERLANG_DISTRIBUTION_PORT = mkDefault 9000;
+          HEALTHZ_PORT = mkDefault 4000;
+        };
+
+        settings = {
+          API_EXTERNAL_URL = mkDefault cfg.api.externalUrl;
+          AUTH_PROVIDER_ADAPTERS = mkDefault (concatStringsSep "," availableAuthAdapters);
+          # By default this will open nproc * 2 connections for each component,
+          # which can exceeds the (default) maximum of 100 connections for
+          # postgresql on a 12 core +SMT machine. 16 connections will be
+          # sufficient for small to medium deployments
+          DATABASE_POOL_SIZE = "16";
           ERLANG_CLUSTER_ADAPTER = mkDefault "Elixir.Cluster.Strategy.Epmd";
+
           ERLANG_CLUSTER_ADAPTER_CONFIG = mkDefault (
             builtins.toJSON {
               hosts = cfg.clusterHosts;
             }
           );
 
-          TZDATA_DIR = mkDefault "/var/lib/firezone/tzdata";
-          TELEMETRY_ENABLED = mkDefault false;
-
-          # By default this will open nproc * 2 connections for each component,
-          # which can exceeds the (default) maximum of 100 connections for
-          # postgresql on a 12 core +SMT machine. 16 connections will be
-          # sufficient for small to medium deployments
-          DATABASE_POOL_SIZE = "16";
-
-          AUTH_PROVIDER_ADAPTERS = mkDefault (concatStringsSep "," availableAuthAdapters);
-
           FEATURE_FLOW_ACTIVITIES_ENABLED = mkDefault true;
-          FEATURE_POLICY_CONDITIONS_ENABLED = mkDefault true;
-          FEATURE_MULTI_SITE_RESOURCES_ENABLED = mkDefault true;
-          FEATURE_SELF_HOSTED_RELAYS_ENABLED = mkDefault true;
           FEATURE_IDP_SYNC_ENABLED = mkDefault true;
-          FEATURE_REST_API_ENABLED = mkDefault true;
           FEATURE_INTERNET_RESOURCE_ENABLED = mkDefault true;
-          FEATURE_TRAFFIC_FILTERS_ENABLED = mkDefault true;
-
+          FEATURE_MULTI_SITE_RESOURCES_ENABLED = mkDefault true;
+          FEATURE_POLICY_CONDITIONS_ENABLED = mkDefault true;
+          FEATURE_REST_API_ENABLED = mkDefault true;
+          FEATURE_SELF_HOSTED_RELAYS_ENABLED = mkDefault true;
           FEATURE_SIGN_UP_ENABLED = mkDefault true;
-
+          FEATURE_TRAFFIC_FILTERS_ENABLED = mkDefault true;
+          LOG_LEVEL = mkDefault "info";
+          RELEASE_HOSTNAME = mkDefault "localhost.localdomain";
+          TELEMETRY_ENABLED = mkDefault false;
+          TZDATA_DIR = mkDefault "/var/lib/firezone/tzdata";
           WEB_EXTERNAL_URL = mkDefault cfg.web.externalUrl;
-          API_EXTERNAL_URL = mkDefault cfg.api.externalUrl;
-        };
-
-        domain.settings = {
-          ERLANG_DISTRIBUTION_PORT = mkDefault 9000;
-          HEALTHZ_PORT = mkDefault 4000;
-          BACKGROUND_JOBS_ENABLED = mkDefault true;
         };
 
         web.settings = {
+          BACKGROUND_JOBS_ENABLED = mkDefault false;
           ERLANG_DISTRIBUTION_PORT = mkDefault 9001;
           HEALTHZ_PORT = mkDefault 4001;
-          BACKGROUND_JOBS_ENABLED = mkDefault false;
-
-          PHOENIX_LISTEN_ADDRESS = mkDefault cfg.web.address;
           PHOENIX_EXTERNAL_TRUSTED_PROXIES = mkDefault (builtins.toJSON cfg.web.trustedProxies);
-          PHOENIX_HTTP_WEB_PORT = mkDefault cfg.web.port;
           PHOENIX_HTTP_API_PORT = mkDefault cfg.api.port;
-          PHOENIX_SECURE_COOKIES = mkDefault true; # enforce HTTPS on cookies
-        };
-
-        api.settings = {
-          ERLANG_DISTRIBUTION_PORT = mkDefault 9002;
-          HEALTHZ_PORT = mkDefault 4002;
-          BACKGROUND_JOBS_ENABLED = mkDefault false;
-
-          PHOENIX_LISTEN_ADDRESS = mkDefault cfg.api.address;
-          PHOENIX_EXTERNAL_TRUSTED_PROXIES = mkDefault (builtins.toJSON cfg.api.trustedProxies);
           PHOENIX_HTTP_WEB_PORT = mkDefault cfg.web.port;
-          PHOENIX_HTTP_API_PORT = mkDefault cfg.api.port;
+          PHOENIX_LISTEN_ADDRESS = mkDefault cfg.web.address;
           PHOENIX_SECURE_COOKIES = mkDefault true; # enforce HTTPS on cookies
         };
       };
@@ -630,6 +657,7 @@ in
         OUTBOUND_EMAIL_SMTP_PROTOCOL = if cfg.smtp.implicitTls then "ssl" else "tcp";
         OUTBOUND_EMAIL_SMTP_USERNAME = cfg.smtp.username;
       };
+
       services.firezone.server.settingsSecret = {
         OUTBOUND_EMAIL_SMTP_PASSWORD = cfg.smtp.passwordFile;
       };
@@ -650,22 +678,13 @@ in
       ];
     })
     (mkIf (cfg.domain.enable || cfg.web.enable || cfg.api.enable) {
-      systemd.slices.system-firezone = {
-        description = "Firezone Slice";
-      };
-
-      systemd.targets.firezone = {
-        description = "Common target for all Firezone services.";
-        wantedBy = [ "multi-user.target" ];
-      };
-
       systemd.services.firezone-initialize = {
-        description = "Backend initialization service for the Firezone zero-trust access platform";
-
         after = mkIf cfg.enableLocalDB [ "postgresql.target" ];
-        requires = mkIf cfg.enableLocalDB [ "postgresql.target" ];
-        wantedBy = [ "firezone.target" ];
+        description = "Backend initialization service for the Firezone zero-trust access platform";
+        # We use the domain environment to be able to run migrations
+        environment = collectEnvironment "domain";
         partOf = [ "firezone.target" ];
+        requires = mkIf cfg.enableLocalDB [ "postgresql.target" ];
 
         script = ''
           mkdir -p "$TZDATA_DIR"
@@ -678,27 +697,38 @@ in
           ${getExe cfg.domain.package} eval Domain.Release.migrate
         '';
 
-        # We use the domain environment to be able to run migrations
-        environment = collectEnvironment "domain";
         serviceConfig = commonServiceConfig // {
-          Type = "oneshot";
           RemainAfterExit = true;
+          Type = "oneshot";
         };
+
+        wantedBy = [ "firezone.target" ];
       };
 
-      systemd.services.firezone-server-domain = mkIf cfg.domain.enable {
-        description = "Backend domain server for the Firezone zero-trust access platform";
+      systemd.services.firezone-server-api = mkIf cfg.api.enable {
         after = [ "firezone-initialize.service" ];
         bindsTo = [ "firezone-initialize.service" ];
-        wantedBy = [ "firezone.target" ];
+        description = "Backend api server for the Firezone zero-trust access platform";
+        environment = collectEnvironment "api";
         partOf = [ "firezone.target" ];
 
         script = ''
-          ${loadSecretEnvironment "domain"}
-          exec ${getExe cfg.domain.package} start;
+          ${loadSecretEnvironment "api"}
+          exec ${getExe cfg.api.package} start;
         '';
 
+        serviceConfig = commonServiceConfig;
+        wantedBy = [ "firezone.target" ];
+      };
+
+      systemd.services.firezone-server-domain = mkIf cfg.domain.enable {
+        after = [ "firezone-initialize.service" ];
+        bindsTo = [ "firezone-initialize.service" ];
+        description = "Backend domain server for the Firezone zero-trust access platform";
+        environment = collectEnvironment "domain";
+        partOf = [ "firezone.target" ];
         path = [ pkgs.curl ];
+
         postStart = ''
           # Wait for the firezone server to come online
           count=0
@@ -713,15 +743,20 @@ in
           done
         '';
 
-        environment = collectEnvironment "domain";
+        script = ''
+          ${loadSecretEnvironment "domain"}
+          exec ${getExe cfg.domain.package} start;
+        '';
+
         serviceConfig = commonServiceConfig;
+        wantedBy = [ "firezone.target" ];
       };
 
       systemd.services.firezone-server-web = mkIf cfg.web.enable {
-        description = "Backend web server for the Firezone zero-trust access platform";
         after = [ "firezone-initialize.service" ];
         bindsTo = [ "firezone-initialize.service" ];
-        wantedBy = [ "firezone.target" ];
+        description = "Backend web server for the Firezone zero-trust access platform";
+        environment = collectEnvironment "web";
         partOf = [ "firezone.target" ];
 
         script = ''
@@ -729,24 +764,17 @@ in
           exec ${getExe cfg.web.package} start;
         '';
 
-        environment = collectEnvironment "web";
         serviceConfig = commonServiceConfig;
+        wantedBy = [ "firezone.target" ];
       };
 
-      systemd.services.firezone-server-api = mkIf cfg.api.enable {
-        description = "Backend api server for the Firezone zero-trust access platform";
-        after = [ "firezone-initialize.service" ];
-        bindsTo = [ "firezone-initialize.service" ];
-        wantedBy = [ "firezone.target" ];
-        partOf = [ "firezone.target" ];
+      systemd.slices.system-firezone = {
+        description = "Firezone Slice";
+      };
 
-        script = ''
-          ${loadSecretEnvironment "api"}
-          exec ${getExe cfg.api.package} start;
-        '';
-
-        environment = collectEnvironment "api";
-        serviceConfig = commonServiceConfig;
+      systemd.targets.firezone = {
+        description = "Common target for all Firezone services.";
+        wantedBy = [ "multi-user.target" ];
       };
     })
   ];

@@ -15,8 +15,6 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-Igj9u6TmV+nIuSg8gI8zD4hTb/Iiog/3aB3DDk0Lqkg=";
   };
 
-  dontUnpack = true;
-
   buildInputs = [
     python3
     python3.pkgs.lz4
@@ -32,16 +30,20 @@ stdenv.mkDerivation (finalAttrs: {
     chmod a+x "$out/bin/mozlz4a"
   '';
 
+  dontUnpack = true;
+
   meta = {
     description = "Compression/decompression utility";
+    homepage = "https://gist.github.com/Tblue/62ff47bef7f894e92ed5";
     license = lib.licenses.bsd2;
+
     maintainers = with lib.maintainers; [
       kira-bruneau
       pshirshov
       raskin
     ];
+
     platforms = python3.meta.platforms;
-    homepage = "https://gist.github.com/Tblue/62ff47bef7f894e92ed5";
     mainProgram = "mozlz4a";
   };
 })

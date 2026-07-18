@@ -1,9 +1,9 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
-  llvmPackages,
+  buildGoModule,
   getconf,
+  llvmPackages,
 }:
 
 buildGoModule {
@@ -28,8 +28,8 @@ buildGoModule {
     ++ lib.optionals stdenv.hostPlatform.isDarwin [ getconf ];
 
   meta = {
-    homepage = "https://github.com/SRI-CSL/gllvm";
     description = "Whole Program LLVM: wllvm ported to go";
+    homepage = "https://github.com/SRI-CSL/gllvm";
     license = lib.licenses.bsd3;
     maintainers = [ ];
   };

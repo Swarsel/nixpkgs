@@ -1,8 +1,8 @@
 {
+  lib,
   buildPythonPackage,
   click-odoo,
   fetchPypi,
-  lib,
   manifestoo-core,
   nix-update-script,
   setuptools-scm,
@@ -11,12 +11,11 @@
 buildPythonPackage rec {
   pname = "click-odoo-contrib";
   version = "1.23.1";
-  pyproject = true;
 
   src = fetchPypi {
-    pname = "click_odoo_contrib";
     inherit version;
     hash = "sha256-3xw3AstUtX99lT+rPOvBGSSqjAyxt752LibBMMbXSoU=";
+    pname = "click_odoo_contrib";
   };
 
   nativeBuildInputs = [ setuptools-scm ];
@@ -26,9 +25,9 @@ buildPythonPackage rec {
     manifestoo-core
   ];
 
-  passthru.updateScript = nix-update-script { };
-
+  pyproject = true;
   pythonImportsCheck = [ "click_odoo_contrib" ];
+  passthru.updateScript = nix-update-script { };
 
   meta = {
     description = "Collection of community-maintained scripts for Odoo maintenance";

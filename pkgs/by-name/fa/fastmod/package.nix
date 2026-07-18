@@ -2,8 +2,8 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  rustPlatform,
   libiconv,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -17,17 +17,17 @@ rustPlatform.buildRustPackage (finalAttrs: {
     sha256 = "sha256-A/3vzfwaStoQ9gdNM8yjmL2J/pQjj6yb68WThiTF+1E=";
   };
 
-  cargoHash = "sha256-GpV7F0TQyIRowY8LqLTVuwJcRYyyu055+g7BmxT4TMQ=";
-
   buildInputs = lib.optionals stdenv.hostPlatform.isDarwin [
     libiconv
   ];
 
+  cargoHash = "sha256-GpV7F0TQyIRowY8LqLTVuwJcRYyyu055+g7BmxT4TMQ=";
+
   meta = {
     description = "Utility that makes sweeping changes to large, shared code bases";
-    mainProgram = "fastmod";
     homepage = "https://github.com/facebookincubator/fastmod";
     license = lib.licenses.asl20;
     maintainers = with lib.maintainers; [ jduan ];
+    mainProgram = "fastmod";
   };
 })

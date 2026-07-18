@@ -1,8 +1,9 @@
 {
   lib,
+  stdenv,
+  fetchFromGitHub,
   buildPythonPackage,
   commonmark,
-  fetchFromGitHub,
   flit-core,
   ipykernel,
   jupyter-sphinx,
@@ -14,20 +15,18 @@
   mistune,
   myst-parser,
   panflute,
+  pytest-regressions,
+  pytestCheckHook,
   pyyaml,
   sphinx,
   sphinx-book-theme,
   sphinx-copybutton,
   sphinx-design,
-  stdenv,
-  pytest-regressions,
-  pytestCheckHook,
 }:
 
 buildPythonPackage rec {
   pname = "markdown-it-py";
   version = "4.0.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "executablebooks";
@@ -36,14 +35,7 @@ buildPythonPackage rec {
     hash = "sha256-92J9cMit2zwyjoE8G1YpwDxj+wiApQW2eUHxUOUt3as=";
   };
 
-  # fix downstrem usage of markdown-it-py[linkify]
-  pythonRelaxDeps = [ "linkify-it-py" ];
-
-  build-system = [
-    flit-core
-  ];
-
-  dependencies = [ mdurl ];
+  doCheck = !stdenv.hostPlatform.isi686;
 
   nativeCheckInputs = [
     pytest-regressions
@@ -55,9 +47,12 @@ buildPythonPackage rec {
   preCheck = ''
     rm -r benchmarking
   '';
-  doCheck = !stdenv.hostPlatform.isi686;
 
-  pythonImportsCheck = [ "markdown_it" ];
+  build-system = [
+    flit-core
+  ];
+
+  dependencies = [ mdurl ];
 
   optional-dependencies = {
     compare = [
@@ -68,8 +63,10 @@ buildPythonPackage rec {
       panflute
       # FIXME package markdown-it-pyrs
     ];
+
     linkify = [ linkify-it-py ];
     plugins = [ mdit-py-plugins ];
+
     rtd = [
       mdit-py-plugins
       myst-parser
@@ -82,6 +79,11 @@ buildPythonPackage rec {
       ipykernel
     ];
   };
+
+  pyproject = true;
+  pythonImportsCheck = [ "markdown_it" ];
+  # fix downstrem usage of markdown-it-py[linkify]
+  pythonRelaxDeps = [ "linkify-it-py" ];
 
   meta = {
     description = "Markdown parser in Python";

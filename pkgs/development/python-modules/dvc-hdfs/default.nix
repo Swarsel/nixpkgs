@@ -1,8 +1,8 @@
 {
   lib,
+  fetchFromGitHub,
   buildPythonPackage,
   dvc,
-  fetchFromGitHub,
   fsspec,
   setuptools,
   setuptools-scm,
@@ -11,7 +11,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "dvc-hdfs";
   version = "3.0.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "iterative";
@@ -19,6 +18,9 @@ buildPythonPackage (finalAttrs: {
     tag = finalAttrs.version;
     hash = "sha256-Bo8+El5GC7iyT8SxaJquWFG29BOeilmEMDtTG+RkDGI=";
   };
+
+  # Circular dependency with dvc
+  doCheck = false;
 
   build-system = [
     setuptools
@@ -31,9 +33,7 @@ buildPythonPackage (finalAttrs: {
   ]
   ++ fsspec.optional-dependencies.arrow;
 
-  # Circular dependency with dvc
-  doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "dvc_hdfs" ];
 
   meta = {

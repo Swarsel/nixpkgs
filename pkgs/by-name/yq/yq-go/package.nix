@@ -1,12 +1,12 @@
 {
   lib,
   stdenv,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   installShellFiles,
+  nix-update-script,
   pandoc,
   runCommand,
-  nix-update-script,
 }:
 
 buildGoModule (finalAttrs: {
@@ -20,12 +20,12 @@ buildGoModule (finalAttrs: {
     hash = "sha256-e4/Tu40Fe2DKzP7+ZLqkWty+VJ5eWGyKAwH0U07gQeg=";
   };
 
-  vendorHash = "sha256-B+FGknoNYfWXT8nx0teSCdT9i18VJMv8L1dv1w8gcF8=";
-
   nativeBuildInputs = lib.optionals (stdenv.buildPlatform.canExecute stdenv.hostPlatform) [
     installShellFiles
     pandoc
   ];
+
+  vendorHash = "sha256-B+FGknoNYfWXT8nx0teSCdT9i18VJMv8L1dv1w8gcF8=";
 
   postInstall = lib.optionalString (stdenv.buildPlatform.canExecute stdenv.hostPlatform) ''
     installShellCompletion --cmd yq \
@@ -47,6 +47,7 @@ buildGoModule (finalAttrs: {
         [ "$(cat $out | tr -d $'\n ')" = '{"test":1}' ]
       '';
     };
+
     updateScript = nix-update-script { };
   };
 
@@ -54,12 +55,14 @@ buildGoModule (finalAttrs: {
     description = "Portable command-line YAML processor";
     homepage = "https://mikefarah.gitbook.io/yq/";
     changelog = "https://github.com/mikefarah/yq/raw/${finalAttrs.src.tag}/release_notes.txt";
-    mainProgram = "yq";
     license = [ lib.licenses.mit ];
+
     maintainers = with lib.maintainers; [
       lewo
       prince213
       SuperSandro2000
     ];
+
+    mainProgram = "yq";
   };
 })

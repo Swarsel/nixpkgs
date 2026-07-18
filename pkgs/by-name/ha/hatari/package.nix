@@ -2,9 +2,9 @@
   lib,
   stdenv,
   fetchFromGitLab,
+  SDL2,
   cmake,
   zlib,
-  SDL2,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -12,15 +12,12 @@ stdenv.mkDerivation (finalAttrs: {
   version = "2.6.1";
 
   src = fetchFromGitLab {
-    domain = "framagit.org";
     owner = "hatari";
     repo = "hatari";
     tag = "v${finalAttrs.version}";
     hash = "sha256-hfSlpYwS6PcA4pqpYeFnOptN4hX7ZjLB8cu9cZ8pr7Y=";
+    domain = "framagit.org";
   };
-
-  # For pthread_cancel
-  cmakeFlags = [ "-DCMAKE_EXE_LINKER_FLAGS=-lgcc_s" ];
 
   nativeBuildInputs = [ cmake ];
 
@@ -29,11 +26,14 @@ stdenv.mkDerivation (finalAttrs: {
     SDL2
   ];
 
+  # For pthread_cancel
+  cmakeFlags = [ "-DCMAKE_EXE_LINKER_FLAGS=-lgcc_s" ];
+
   meta = {
-    homepage = "http://hatari.tuxfamily.org/";
     description = "Atari ST/STE/TT/Falcon emulator";
+    homepage = "http://hatari.tuxfamily.org/";
     license = lib.licenses.gpl2Plus;
-    platforms = lib.platforms.linux;
     maintainers = [ ];
+    platforms = lib.platforms.linux;
   };
 })

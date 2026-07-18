@@ -78,57 +78,217 @@ in
   options = {
     services.syncplay = {
       enable = mkOption {
-        type = types.bool;
         default = false;
+
         description = ''
           If enabled, start the Syncplay server.
         '';
+
+        type = types.bool;
       };
 
-      port = mkOption {
-        type = types.port;
-        default = 8999;
+      package = mkPackageOption pkgs "syncplay-nogui" { };
+
+      certDir = mkOption {
+        default = null;
+
         description = ''
-          TCP port to bind to.
+          TLS certificates directory to use for encryption. See
+          <https://github.com/Syncplay/syncplay/wiki/TLS-support>.
         '';
+
+        type = types.nullOr types.path;
+      };
+
+      chat = mkOption {
+        default = true;
+
+        description = ''
+          Chat with users in the same room.
+        '';
+
+        type = types.bool;
+      };
+
+      extraArgs = mkOption {
+        default = [ ];
+
+        description = ''
+          Additional arguments to be passed to the service.
+        '';
+
+        type = types.listOf types.str;
+      };
+
+      interfaceIpv4 = mkOption {
+        default = "";
+
+        description = ''
+          The IP address to bind to for IPv4. Leaving it empty defaults to using all.
+        '';
+
+        type = types.str;
+      };
+
+      interfaceIpv6 = mkOption {
+        default = "";
+
+        description = ''
+          The IP address to bind to for IPv6. Leaving it empty defaults to using all.
+        '';
+
+        type = types.str;
+      };
+
+      ipv4Only = mkOption {
+        default = false;
+
+        description = ''
+          Listen only on IPv4 when strting the server.
+        '';
+
+        type = types.bool;
+      };
+
+      ipv6Only = mkOption {
+        default = false;
+
+        description = ''
+          Listen only on IPv6 when strting the server.
+        '';
+
+        type = types.bool;
+      };
+
+      isolateRooms = mkOption {
+        default = false;
+
+        description = ''
+          Enable room isolation.
+        '';
+
+        type = types.bool;
+      };
+
+      maxChatMessageLength = mkOption {
+        default = 150;
+
+        description = ''
+          Maximum number of characters in a chat message.
+        '';
+
+        type = types.ints.unsigned;
+      };
+
+      maxUsernameLength = mkOption {
+        default = 16;
+
+        description = ''
+          Maximum number of characters in a username.
+        '';
+
+        type = types.ints.unsigned;
+      };
+
+      motd = mkOption {
+        default = null;
+
+        description = ''
+          Text to display when users join. The motd will be readable in the nix store
+          and the processlist.  If this is not intended use `motdFile` instead.
+          Will be overriden by {option}`services.syncplay.motdFile`.
+        '';
+
+        type = types.nullOr types.str;
+      };
+
+      motdFile = mkOption {
+        default = if cfg.motd != null then (builtins.toFile "motd" cfg.motd) else null;
+        defaultText = literalExpression ''if services.syncplay.motd != null then (builtins.toFile "motd" services.syncplay.motd) else null'';
+
+        description = ''
+          Path to text to display when users join.
+          Will override {option}`services.syncplay.motd`.
+        '';
+
+        type = types.nullOr types.str;
       };
 
       passwordFile = mkOption {
-        type = types.nullOr types.path;
         default = null;
+
         description = ''
           Path to the file that contains the server password. If
           `null`, the server doesn't require a password.
         '';
+
+        type = types.nullOr types.path;
       };
 
-      isolateRooms = mkOption {
-        type = types.bool;
-        default = false;
+      permanentRooms = mkOption {
+        default = [ ];
+
         description = ''
-          Enable room isolation.
+          List of rooms that will be listed even if the room is empty.
+          Will be overriden by {option}`services.syncplay.permanentRoomsFile`.
         '';
+
+        type = types.listOf types.str;
+      };
+
+      permanentRoomsFile = mkOption {
+        default =
+          if cfg.permanentRooms != [ ] then
+            (builtins.toFile "perm" (builtins.concatStringsSep "\n" cfg.permanentRooms))
+          else
+            null;
+
+        defaultText = literalExpression ''if services.syncplay.permanentRooms != [ ] then (builtins.toFile "perm" (builtins.concatStringsSep "\n" services.syncplay.permanentRooms)) else null'';
+
+        description = ''
+          File with list of rooms that will be listed even if the room is empty,
+          newline delimited.
+          Will override {option}`services.syncplay.permanentRooms`.
+        '';
+
+        type = types.nullOr types.str;
+      };
+
+      port = mkOption {
+        default = 8999;
+
+        description = ''
+          TCP port to bind to.
+        '';
+
+        type = types.port;
       };
 
       ready = mkOption {
-        type = types.bool;
         default = true;
+
         description = ''
           Check readiness of users.
         '';
+
+        type = types.bool;
       };
 
-      chat = mkOption {
-        type = types.bool;
-        default = true;
+      roomsDBFile = mkOption {
+        default = null;
+
         description = ''
-          Chat with users in the same room.
+          Path to SQLite database file to store room states.
+          Relative to the working directory provided by systemd.
         '';
+
+        example = "rooms.db";
+        type = types.nullOr types.str;
       };
 
       salt = mkOption {
-        type = types.nullOr types.str;
         default = null;
+
         description = ''
           Salt to allow room operator passwords generated by this server
           instance to still work when the server is restarted.  The salt will be
@@ -136,11 +296,13 @@ in
           intended use `saltFile` instead.  Mutually exclusive with
           {option}`services.syncplay.saltFile`.
         '';
+
+        type = types.nullOr types.str;
       };
 
       saltFile = mkOption {
-        type = types.nullOr types.path;
         default = null;
+
         description = ''
           Path to the file that contains the server salt.  This allows room
           operator passwords generated by this server instance to still work
@@ -148,149 +310,34 @@ in
           salt from a file.  Mutually exclusive with
           {option}`services.syncplay.salt`.
         '';
-      };
 
-      motd = mkOption {
-        type = types.nullOr types.str;
-        default = null;
-        description = ''
-          Text to display when users join. The motd will be readable in the nix store
-          and the processlist.  If this is not intended use `motdFile` instead.
-          Will be overriden by {option}`services.syncplay.motdFile`.
-        '';
-      };
-
-      motdFile = mkOption {
-        type = types.nullOr types.str;
-        default = if cfg.motd != null then (builtins.toFile "motd" cfg.motd) else null;
-        defaultText = literalExpression ''if services.syncplay.motd != null then (builtins.toFile "motd" services.syncplay.motd) else null'';
-        description = ''
-          Path to text to display when users join.
-          Will override {option}`services.syncplay.motd`.
-        '';
-      };
-
-      roomsDBFile = mkOption {
-        type = types.nullOr types.str;
-        default = null;
-        example = "rooms.db";
-        description = ''
-          Path to SQLite database file to store room states.
-          Relative to the working directory provided by systemd.
-        '';
-      };
-
-      permanentRooms = mkOption {
-        type = types.listOf types.str;
-        default = [ ];
-        description = ''
-          List of rooms that will be listed even if the room is empty.
-          Will be overriden by {option}`services.syncplay.permanentRoomsFile`.
-        '';
-      };
-
-      permanentRoomsFile = mkOption {
-        type = types.nullOr types.str;
-        default =
-          if cfg.permanentRooms != [ ] then
-            (builtins.toFile "perm" (builtins.concatStringsSep "\n" cfg.permanentRooms))
-          else
-            null;
-        defaultText = literalExpression ''if services.syncplay.permanentRooms != [ ] then (builtins.toFile "perm" (builtins.concatStringsSep "\n" services.syncplay.permanentRooms)) else null'';
-        description = ''
-          File with list of rooms that will be listed even if the room is empty,
-          newline delimited.
-          Will override {option}`services.syncplay.permanentRooms`.
-        '';
-      };
-
-      maxChatMessageLength = mkOption {
-        type = types.ints.unsigned;
-        default = 150;
-        description = ''
-          Maximum number of characters in a chat message.
-        '';
-      };
-
-      maxUsernameLength = mkOption {
-        type = types.ints.unsigned;
-        default = 16;
-        description = ''
-          Maximum number of characters in a username.
-        '';
+        type = types.nullOr types.path;
       };
 
       statsDBFile = mkOption {
-        type = types.nullOr types.str;
         default = null;
-        example = "stats.db";
+
         description = ''
           Path to SQLite database file to store stats.
           Relative to the working directory provided by systemd.
         '';
-      };
 
-      certDir = mkOption {
-        type = types.nullOr types.path;
-        default = null;
-        description = ''
-          TLS certificates directory to use for encryption. See
-          <https://github.com/Syncplay/syncplay/wiki/TLS-support>.
-        '';
+        example = "stats.db";
+        type = types.nullOr types.str;
       };
 
       useACMEHost = mkOption {
-        type = types.nullOr types.str;
         default = null;
-        example = "syncplay.example.com";
+
         description = ''
           If set, use NixOS-generated ACME certificate with the specified name for TLS.
 
           Note that it requires {option}`security.acme` to be setup, e.g., credentials provided if using DNS-01 validation.
         '';
-      };
 
-      ipv4Only = mkOption {
-        type = types.bool;
-        default = false;
-        description = ''
-          Listen only on IPv4 when strting the server.
-        '';
+        example = "syncplay.example.com";
+        type = types.nullOr types.str;
       };
-
-      ipv6Only = mkOption {
-        type = types.bool;
-        default = false;
-        description = ''
-          Listen only on IPv6 when strting the server.
-        '';
-      };
-
-      interfaceIpv4 = mkOption {
-        type = types.str;
-        default = "";
-        description = ''
-          The IP address to bind to for IPv4. Leaving it empty defaults to using all.
-        '';
-      };
-
-      interfaceIpv6 = mkOption {
-        type = types.str;
-        default = "";
-        description = ''
-          The IP address to bind to for IPv6. Leaving it empty defaults to using all.
-        '';
-      };
-
-      extraArgs = mkOption {
-        type = types.listOf types.str;
-        default = [ ];
-        description = ''
-          Additional arguments to be passed to the service.
-        '';
-      };
-
-      package = mkPackageOption pkgs "syncplay-nogui" { };
     };
   };
 
@@ -310,37 +357,15 @@ in
       }
     ];
 
-    warnings =
-      optional (cfg.interfaceIpv4 != "" && cfg.ipv6Only)
-        "You have specified services.syncplay.interfaceIpv4 but IPv4 is disabled by services.syncplay.ipv6Only."
-      ++
-        optional (cfg.interfaceIpv6 != "" && cfg.ipv4Only)
-          "You have specified services.syncplay.interfaceIpv6 but IPv6 is disabled by services.syncplay.ipv4Only.";
+    networking.firewall.allowedTCPPorts = [ cfg.port ];
 
     security.acme.certs = mkIf (cfg.useACMEHost != null) {
       "${cfg.useACMEHost}".reloadServices = [ "syncplay.service" ];
     };
 
-    networking.firewall.allowedTCPPorts = [ cfg.port ];
     systemd.services.syncplay = {
-      description = "Syncplay Service";
-      wantedBy = [ "multi-user.target" ];
-      wants = [ "network-online.target" ];
       after = [ "network-online.target" ];
-
-      serviceConfig = {
-        DynamicUser = true;
-        StateDirectory = "syncplay";
-        WorkingDirectory = "%S/syncplay";
-        LoadCredential =
-          optional (cfg.passwordFile != null) "password:${cfg.passwordFile}"
-          ++ optional (cfg.saltFile != null) "salt:${cfg.saltFile}"
-          ++ optionals (cfg.useACMEHost != null) [
-            "cert.pem:${useACMEHostDir}/cert.pem"
-            "privkey.pem:${useACMEHostDir}/key.pem"
-            "chain.pem:${useACMEHostDir}/chain.pem"
-          ];
-      };
+      description = "Syncplay Service";
 
       script = ''
         ${optionalString (cfg.passwordFile != null) ''
@@ -353,6 +378,32 @@ in
           optionalString (cfg.useACMEHost != null) "--tls $CREDENTIALS_DIRECTORY"
         }
       '';
+
+      serviceConfig = {
+        DynamicUser = true;
+
+        LoadCredential =
+          optional (cfg.passwordFile != null) "password:${cfg.passwordFile}"
+          ++ optional (cfg.saltFile != null) "salt:${cfg.saltFile}"
+          ++ optionals (cfg.useACMEHost != null) [
+            "cert.pem:${useACMEHostDir}/cert.pem"
+            "privkey.pem:${useACMEHostDir}/key.pem"
+            "chain.pem:${useACMEHostDir}/chain.pem"
+          ];
+
+        StateDirectory = "syncplay";
+        WorkingDirectory = "%S/syncplay";
+      };
+
+      wantedBy = [ "multi-user.target" ];
+      wants = [ "network-online.target" ];
     };
+
+    warnings =
+      optional (cfg.interfaceIpv4 != "" && cfg.ipv6Only)
+        "You have specified services.syncplay.interfaceIpv4 but IPv4 is disabled by services.syncplay.ipv6Only."
+      ++
+        optional (cfg.interfaceIpv6 != "" && cfg.ipv4Only)
+          "You have specified services.syncplay.interfaceIpv6 but IPv6 is disabled by services.syncplay.ipv4Only.";
   };
 }

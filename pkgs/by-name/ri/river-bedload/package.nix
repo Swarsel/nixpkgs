@@ -1,12 +1,12 @@
 {
+  lib,
+  stdenv,
   _experimental-update-script-combinators,
   callPackage,
   fetchFromSourcehut,
-  unstableGitUpdater,
-  lib,
   pkg-config,
-  stdenv,
   river-classic,
+  unstableGitUpdater,
   wayland,
   wayland-protocols,
   wayland-scanner,
@@ -27,8 +27,6 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-MOZju7mU/AtaSm9CJgb/UqYpCg697tefJC1yvQPK3S8=";
   };
 
-  deps = callPackage ./build.zig.zon.nix { };
-
   nativeBuildInputs = [
     pkg-config
     zig
@@ -39,6 +37,8 @@ stdenv.mkDerivation (finalAttrs: {
     wayland-protocols
     wayland-scanner
   ];
+
+  deps = callPackage ./build.zig.zon.nix { };
 
   zigBuildFlags = [
     "--system"
@@ -51,11 +51,11 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   meta = {
+    inherit (river-classic.meta) platforms;
     description = "Display information about river in json in the STDOUT";
     homepage = "https://git.sr.ht/~novakane/river-bedload";
     license = lib.licenses.gpl3Only;
     maintainers = with lib.maintainers; [ adamcstephens ];
     mainProgram = "river-bedload";
-    inherit (river-classic.meta) platforms;
   };
 })

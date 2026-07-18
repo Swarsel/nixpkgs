@@ -2,16 +2,15 @@
   lib,
   fetchFromGitHub,
   buildPythonPackage,
-  setuptools,
-  requests,
-  urllib3,
   google-auth,
+  requests,
+  setuptools,
+  urllib3,
 }:
 
 buildPythonPackage rec {
   pname = "pyfcm";
   version = "2.0.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "olucurious";
@@ -20,6 +19,8 @@ buildPythonPackage rec {
     hash = "sha256-lpSbb0DDXLHne062s7g27zRpvTuOHiqQkqGOtWvuWdI=";
   };
 
+  # pyfcm's unit testing suite requires network access
+  doCheck = false;
   build-system = [ setuptools ];
 
   dependencies = [
@@ -28,9 +29,7 @@ buildPythonPackage rec {
     google-auth
   ];
 
-  # pyfcm's unit testing suite requires network access
-  doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "pyfcm" ];
 
   meta = {

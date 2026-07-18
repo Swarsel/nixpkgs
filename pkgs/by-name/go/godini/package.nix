@@ -1,8 +1,8 @@
 {
-  buildGoModule,
-  fetchFromGitHub,
-  godini,
   lib,
+  fetchFromGitHub,
+  buildGoModule,
+  godini,
   nix-update-script,
   testers,
 }:
@@ -29,8 +29,8 @@ buildGoModule (finalAttrs: {
   passthru = {
     tests = {
       version = testers.testVersion {
-        package = godini;
         command = "godini --version";
+        package = godini;
       };
     };
 
@@ -38,12 +38,12 @@ buildGoModule (finalAttrs: {
   };
 
   meta = {
-    changelog = "https://github.com/bilbilak/godini/blob/main/CHANGELOG.md";
     description = "INI Configuration Management Tool";
     homepage = "https://github.com/bilbilak/godini";
+    changelog = "https://github.com/bilbilak/godini/blob/main/CHANGELOG.md";
     license = lib.licenses.gpl3Only;
-    mainProgram = "godini";
     maintainers = with lib.maintainers; [ _4r7if3x ];
     platforms = with lib.platforms; unix ++ windows;
+    mainProgram = "godini";
   };
 })

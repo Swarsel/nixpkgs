@@ -12,6 +12,7 @@ stdenv.mkDerivation (finalAttrs: {
     url = "https://citpsite.s3.amazonaws.com/memory-content/src/aesfix-${finalAttrs.version}.tar.gz";
     sha256 = "sha256-exd+h2yu5qrkjwEjEC8R32WUpzhIP5pH8sdv6BzARdQ=";
   };
+
   installPhase = ''
     runHook preInstall
     mkdir -p $out/bin
@@ -21,9 +22,9 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Correct bit errors in an AES key schedules";
-    mainProgram = "aesfix";
     homepage = "https://citp.princeton.edu/our-work/memory/";
-    maintainers = with lib.maintainers; [ fedx-sudo ];
     license = lib.licenses.bsd3;
+    maintainers = with lib.maintainers; [ fedx-sudo ];
+    mainProgram = "aesfix";
   };
 })

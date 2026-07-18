@@ -1,24 +1,24 @@
 {
   lib,
-  stdenvNoCC,
-  fetchFromGitHub,
   fetchurl,
+  fetchFromGitHub,
+  fetchPnpmDeps,
   inter,
   makeWrapper,
   nixosTests,
   nodejs,
-  fetchPnpmDeps,
-  pnpmConfigHook,
-  pnpmBuildHook,
-  pnpm_10,
-  prisma_7,
-  prisma-engines_7,
   openssl,
+  pnpmBuildHook,
+  pnpmConfigHook,
+  pnpm_10,
+  prisma-engines_7,
+  prisma_7,
   rustPlatform,
+  stdenvNoCC,
+  basePath ? "",
   # build variables
   collectApiEndpoint ? "",
   trackerScriptNames ? [ ],
-  basePath ? "",
 }:
 let
   pnpm = pnpm_10;
@@ -28,18 +28,18 @@ let
   geocities = stdenvNoCC.mkDerivation {
     pname = "umami-geocities";
     version = sources.geocities.date;
-    src = fetchurl {
-      url = "https://raw.githubusercontent.com/GitSquared/node-geolite2-redist/${sources.geocities.rev}/redist/GeoLite2-City.tar.gz";
-      inherit (sources.geocities) hash;
-    };
 
-    doBuild = false;
+    src = fetchurl {
+      inherit (sources.geocities) hash;
+      url = "https://raw.githubusercontent.com/GitSquared/node-geolite2-redist/${sources.geocities.rev}/redist/GeoLite2-City.tar.gz";
+    };
 
     installPhase = ''
       mkdir -p $out
       cp ./GeoLite2-City.mmdb $out/GeoLite2-City.mmdb
     '';
 
+    doBuild = false;
     meta.license = lib.licenses.cc-by-40;
   };
 
@@ -48,12 +48,14 @@ let
   prisma-engines' = prisma-engines_7.overrideAttrs (
     finalAttrs: prevAttrs: {
       version = "7.8.0";
+
       src = fetchFromGitHub {
         owner = "prisma";
         repo = "prisma-engines";
         tag = finalAttrs.version;
         hash = "sha256-nquIcOmFz+ikD0x/YEPZ5NVKCFPCdR5MSCHldn+b9jI=";
       };
+
       cargoHash = "sha256-uiFvzxwVJXCW9LUDFRC6ZkzSa7LQk+9ZJcaJw8mrBX4=";
 
       cargoDeps = rustPlatform.fetchCargoVendor {
@@ -67,12 +69,14 @@ let
   prisma' = (prisma_7.override { prisma-engines_7 = prisma-engines'; }).overrideAttrs (
     finalAttrs: prevAttrs: {
       version = "7.8.0";
+
       src = fetchFromGitHub {
         owner = "prisma";
         repo = "prisma";
         tag = finalAttrs.version;
         hash = "sha256-89q5433z54h3oGX+lEYDQykN2mNltGz4+LWlYSE75/E=";
       };
+
       pnpmDeps = prevAttrs.pnpmDeps.override {
         inherit (finalAttrs) src version;
         hash = "sha256-mrFU5SAF4QuTBJj5TP8tUkYDG4zchttjcQMLtx6OBnI=";
@@ -83,14 +87,6 @@ in
 stdenvNoCC.mkDerivation (finalAttrs: {
   pname = "umami";
   version = "3.2.0";
-
-  nativeBuildInputs = [
-    makeWrapper
-    nodejs
-    pnpmConfigHook
-    pnpmBuildHook
-    pnpm
-  ];
 
   src = fetchFromGitHub {
     owner = "umami-software";
@@ -109,36 +105,30 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     cp "${inter}/share/fonts/truetype/InterVariable.ttf" src/app/Inter.ttf
   '';
 
-  pnpmDeps = fetchPnpmDeps {
-    inherit (finalAttrs)
-      pname
-      version
-      src
-      ;
-    inherit pnpm;
-    fetcherVersion = 4;
-    hash = "sha256-6ho5xoVdqZdihThL5q8+RhVPfaSwu1y3+p9d8DnfO3o=";
-  };
+  nativeBuildInputs = [
+    makeWrapper
+    nodejs
+    pnpmConfigHook
+    pnpmBuildHook
+    pnpm
+  ];
 
-  env.NODE_ENV = "production";
-  env.NEXT_TELEMETRY_DISABLED = "1";
-
-  env.COLLECT_API_ENDPOINT = collectApiEndpoint;
-  env.TRACKER_SCRIPT_NAME = lib.concatStringsSep "," trackerScriptNames;
   env.BASE_PATH = basePath;
-
+  env.COLLECT_API_ENDPOINT = collectApiEndpoint;
   # Needs to be non-empty during build
   env.DATABASE_URL = "postgresql://";
-  # No DB is available during build
-  env.SKIP_DB_CHECK = "1";
-
-  # Geocities is handled manually
-  env.SKIP_BUILD_GEO = "1";
-
+  env.NEXT_TELEMETRY_DISABLED = "1";
+  env.NODE_ENV = "production";
   # Allow prisma-cli to find prisma-engines without having to download them
   # Only needed at build time for `prisma generate`.
   env.PRISMA_QUERY_ENGINE_LIBRARY = "${finalAttrs.passthru.prisma-engines}/lib/libquery_engine.node";
   env.PRISMA_SCHEMA_ENGINE_BINARY = "${finalAttrs.passthru.prisma-engines}/bin/schema-engine";
+  # Geocities is handled manually
+  env.SKIP_BUILD_GEO = "1";
+  # No DB is available during build
+  env.SKIP_DB_CHECK = "1";
+  env.TRACKER_SCRIPT_NAME = lib.concatStringsSep "," trackerScriptNames;
+  doCheck = true;
 
   checkPhase = ''
     runHook preCheck
@@ -148,8 +138,6 @@ stdenvNoCC.mkDerivation (finalAttrs: {
 
     runHook postCheck
   '';
-
-  doCheck = true;
 
   installPhase = ''
     runHook preInstall
@@ -185,29 +173,46 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  pnpmDeps = fetchPnpmDeps {
+    inherit (finalAttrs)
+      pname
+      version
+      src
+      ;
+
+    inherit pnpm;
+    fetcherVersion = 4;
+    hash = "sha256-6ho5xoVdqZdihThL5q8+RhVPfaSwu1y3+p9d8DnfO3o=";
+  };
+
   passthru = {
-    tests = {
-      inherit (nixosTests) umami;
-    };
     inherit
       sources
       geocities
       ;
+
     prisma = prisma';
     prisma-engines = prisma-engines';
+
+    tests = {
+      inherit (nixosTests) umami;
+    };
+
     updateScript = ./update.sh;
   };
 
   meta = {
-    changelog = "https://github.com/umami-software/umami/releases/tag/v${finalAttrs.version}";
     description = "Simple, easy to use, self-hosted web analytics solution";
     homepage = "https://umami.is/";
+    changelog = "https://github.com/umami-software/umami/releases/tag/v${finalAttrs.version}";
+
     license = with lib.licenses; [
       mit
       cc-by-40 # geocities
     ];
+
+    maintainers = with lib.maintainers; [ diogotcorreia ];
     platforms = lib.platforms.linux;
     mainProgram = "umami-server";
-    maintainers = with lib.maintainers; [ diogotcorreia ];
   };
 })

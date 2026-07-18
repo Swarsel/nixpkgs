@@ -1,22 +1,22 @@
 {
   lib,
-  rustPlatform,
+  stdenv,
   fetchFromGitHub,
-  makeDesktopItem,
-  versionCheckHook,
-  pkg-config,
-  git,
-  makeWrapper,
   copyDesktopItems,
-  libx11,
+  dbus,
+  git,
   libGL,
+  libx11,
   libxcb,
   libxkbcommon,
-  dbus,
-  udev,
+  makeDesktopItem,
+  makeWrapper,
   openssl,
+  pkg-config,
+  rustPlatform,
+  udev,
+  versionCheckHook,
   wayland,
-  stdenv,
 }:
 rustPlatform.buildRustPackage (finalAttrs: {
   pname = "buttplug-lite";
@@ -28,17 +28,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
     tag = finalAttrs.version;
     hash = "sha256-Z7xf+507rTWWygPV4p0+Q3e2rFIVgn1Ktu/W1P0FOfw=";
   };
-
-  cargoHash = "sha256-XGfHJAlv1B+tFKhLqMWiUaVyCUnyuyVZmYz3wvwITQI=";
-
-  desktopItems = [
-    (makeDesktopItem {
-      name = "buttplug-lite";
-      exec = "buttplug-lite";
-      desktopName = "Buttplug Lite";
-      comment = "Simplified buttplug.io API for when JSON is infeasible";
-    })
-  ];
 
   nativeBuildInputs = [
     pkg-config
@@ -60,6 +49,8 @@ rustPlatform.buildRustPackage (finalAttrs: {
     wayland
   ];
 
+  cargoHash = "sha256-XGfHJAlv1B+tFKhLqMWiUaVyCUnyuyVZmYz3wvwITQI=";
+
   postInstall = ''
     wrapProgram $out/bin/buttplug-lite --suffix LD_LIBRARY_PATH : ${
       lib.makeLibraryPath (
@@ -74,8 +65,17 @@ rustPlatform.buildRustPackage (finalAttrs: {
     }
   '';
 
-  nativeInstallCheckInputs = [ versionCheckHook ];
   doInstallCheck = true;
+  nativeInstallCheckInputs = [ versionCheckHook ];
+
+  desktopItems = [
+    (makeDesktopItem {
+      comment = "Simplified buttplug.io API for when JSON is infeasible";
+      desktopName = "Buttplug Lite";
+      exec = "buttplug-lite";
+      name = "buttplug-lite";
+    })
+  ];
 
   meta = {
     description = "Simplified buttplug.io API for when JSON is infeasible";

@@ -1,23 +1,25 @@
 {
-  buildEnv,
   lib,
+  binlore,
+  buildEnv,
   man,
   nixos,
+  nixos-enter,
+  nixos-install,
   # TODO: replace indirect self-reference by proper self-reference
   #       https://github.com/NixOS/nixpkgs/pull/119942
   nixos-install-tools,
-  nixos-install,
-  nixos-enter,
-  runCommand,
   nixosTests,
-  binlore,
+  runCommand,
 }:
 let
   inherit (nixos { }) config;
   version = config.system.nixos.version;
 in
 (buildEnv {
+  extraOutputsToInstall = [ "man" ];
   name = "nixos-install-tools-${version}";
+
   paths = lib.attrValues {
     # See nixos/modules/installer/tools/tools.nix
     inherit (config.system.build) nixos-generate-config;
@@ -25,24 +27,13 @@ in
     inherit (config.system.build.manual) nixos-configuration-reference-manpage;
   };
 
-  extraOutputsToInstall = [ "man" ];
-
-  meta = {
-    description = "Essential commands from the NixOS installer as a package";
-    longDescription = ''
-      With this package, you get the commands like nixos-generate-config and
-      nixos-install that you would otherwise only find on a NixOS system, such
-      as an installer image.
-
-      This way, you can install NixOS using a machine that only has Nix.
-    '';
-    license = lib.licenses.mit;
-    homepage = "https://nixos.org";
-    platforms = lib.platforms.linux;
-  };
+  # no documented flags show signs of exec; skim of source suggests
+  # it's just --help execing man
+  passthru.binlore.out = binlore.synthesize nixos-install-tools ''
+    execer cannot bin/nixos-generate-config
+  '';
 
   passthru.tests = {
-    nixos-tests = lib.recurseIntoAttrs nixosTests.installer;
     nixos-install-help =
       runCommand "test-nixos-install-help"
         {
@@ -50,6 +41,7 @@ in
             man
             nixos-install-tools
           ];
+
           meta.description = ''
             Make sure that --help works. It's somewhat non-trivial because it
             requires man.
@@ -66,13 +58,25 @@ in
 
           touch $out
         '';
+
+    nixos-tests = lib.recurseIntoAttrs nixosTests.installer;
   };
 
-  # no documented flags show signs of exec; skim of source suggests
-  # it's just --help execing man
-  passthru.binlore.out = binlore.synthesize nixos-install-tools ''
-    execer cannot bin/nixos-generate-config
-  '';
+  meta = {
+    description = "Essential commands from the NixOS installer as a package";
+
+    longDescription = ''
+      With this package, you get the commands like nixos-generate-config and
+      nixos-install that you would otherwise only find on a NixOS system, such
+      as an installer image.
+
+      This way, you can install NixOS using a machine that only has Nix.
+    '';
+
+    homepage = "https://nixos.org";
+    license = lib.licenses.mit;
+    platforms = lib.platforms.linux;
+  };
 }).overrideAttrs
   {
     inherit version;

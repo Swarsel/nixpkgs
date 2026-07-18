@@ -1,10 +1,10 @@
 {
   lib,
+  fetchFromGitHub,
   aio-geojson-client,
   aiohttp,
   aioresponses,
   buildPythonPackage,
-  fetchFromGitHub,
   pytest-asyncio,
   pytestCheckHook,
   pytz,
@@ -14,7 +14,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "aio-geojson-usgs-earthquakes";
   version = "2026.6.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "exxamalte";
@@ -23,6 +22,13 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-UzLnctft/D38bqClqyyJ4b5GvVXM4CFSd6TypuLo0Y4=";
   };
 
+  nativeCheckInputs = [
+    aioresponses
+    pytest-asyncio
+    pytestCheckHook
+  ];
+
+  __darwinAllowLocalNetworking = true;
   build-system = [ setuptools ];
 
   dependencies = [
@@ -31,15 +37,8 @@ buildPythonPackage (finalAttrs: {
     pytz
   ];
 
-  nativeCheckInputs = [
-    aioresponses
-    pytest-asyncio
-    pytestCheckHook
-  ];
-
+  pyproject = true;
   pythonImportsCheck = [ "aio_geojson_usgs_earthquakes" ];
-
-  __darwinAllowLocalNetworking = true;
 
   meta = {
     description = "Module for accessing the U.S. Geological Survey Earthquake Hazards Program feeds";

@@ -35,9 +35,9 @@ stdenv.mkDerivation (finalAttrs: {
     description = "Tool designed for parsing and converting SPIR-V to other shader languages";
     homepage = "https://github.com/KhronosGroup/SPIRV-Cross";
     changelog = "https://github.com/KhronosGroup/SPIRV-Cross/releases/tag/vulkan-sdk-${finalAttrs.version}";
-    platforms = lib.platforms.all;
     license = lib.licenses.asl20;
     maintainers = with lib.maintainers; [ Flakebi ];
+    platforms = lib.platforms.all;
     mainProgram = "spirv-cross";
   };
 })

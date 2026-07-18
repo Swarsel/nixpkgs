@@ -1,7 +1,7 @@
 {
-  buildGoModule,
-  fetchFromGitHub,
   lib,
+  fetchFromGitHub,
+  buildGoModule,
   nix-update-script,
 }:
 
@@ -29,10 +29,10 @@ buildGoModule rec {
 
   meta = {
     description = "Prometheus Cloudflare Exporter";
-    mainProgram = "cloudflare-exporter";
     homepage = "https://github.com/lablabs/cloudflare-exporter";
     license = lib.licenses.asl20;
     maintainers = with lib.maintainers; [ bbigras ];
     platforms = lib.platforms.linux;
+    mainProgram = "cloudflare-exporter";
   };
 }

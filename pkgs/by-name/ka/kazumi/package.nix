@@ -1,20 +1,20 @@
 {
   lib,
   stdenv,
-  flutter,
   fetchFromGitHub,
-  autoPatchelfHook,
+  _experimental-update-script-combinators,
   alsa-lib,
+  autoPatchelfHook,
+  dart,
+  flutter,
   gst_all_1,
   libayatana-appindicator,
   mimalloc,
   mpv-unwrapped,
-  webkitgtk_4_1,
-  _experimental-update-script-combinators,
   nix-update-script,
   runCommand,
+  webkitgtk_4_1,
   yq-go,
-  dart,
 }:
 
 let
@@ -28,21 +28,44 @@ let
   };
 in
 flutter.buildFlutterApplication {
-  pname = "kazumi";
   inherit version src;
+  pname = "kazumi";
 
-  pubspecLock = lib.importJSON ./pubspec.lock.json;
+  # patch onReorderItem to onReorder for nixpkgs Flutter compatibility
+  postPatch = ''
+    substituteInPlace \
+      lib/pages/plugin_editor/plugin_view_page.dart \
+      --replace-fail "onReorderItem:" "onReorder:"
+  '';
 
-  gitHashes = lib.importJSON ./git-hashes.json;
+  nativeBuildInputs = [ autoPatchelfHook ];
+
+  buildInputs = [
+    alsa-lib
+    gst_all_1.gst-libav
+    gst_all_1.gst-plugins-bad
+    gst_all_1.gst-plugins-base
+    gst_all_1.gst-plugins-good
+    gst_all_1.gstreamer
+    libayatana-appindicator
+    mpv-unwrapped
+    webkitgtk_4_1
+  ];
+
+  postInstall = ''
+    ln -snf ${mpv-unwrapped}/lib/libmpv.so.2 $out/app/$pname/lib/libmpv.so.2
+    install -Dm 0644 assets/linux/io.github.Predidit.Kazumi.desktop -t $out/share/applications/
+    install -Dm 0644 assets/images/logo/logo_linux.png $out/share/icons/hicolor/512x512/apps/io.github.Predidit.Kazumi.png
+  '';
 
   customSourceBuilders = {
     # unofficial media_kit_libs_linux
     media_kit_libs_linux =
-      { version, src, ... }:
+      { src, version, ... }:
       stdenv.mkDerivation rec {
-        pname = "media_kit_libs_linux";
         inherit version src;
         inherit (src) passthru;
+        pname = "media_kit_libs_linux";
 
         postPatch = ''
           sed -i '/set(MIMALLOC "mimalloc-/,/add_custom_target/d' libs/linux/media_kit_libs_linux/linux/CMakeLists.txt
@@ -57,13 +80,14 @@ flutter.buildFlutterApplication {
           runHook postInstall
         '';
       };
+
     # unofficial media_kit_video
     media_kit_video =
-      { version, src, ... }:
+      { src, version, ... }:
       stdenv.mkDerivation rec {
-        pname = "media_kit_video";
         inherit version src;
         inherit (src) passthru;
+        pname = "media_kit_video";
 
         postPatch = ''
           sed -i '/if(ARCH_NAME STREQUAL "x86_64")/,/if(MEDIA_KIT_LIBS_AVAILABLE)/{ /if(MEDIA_KIT_LIBS_AVAILABLE)/!d; /set(LIBMPV_ZIP_URL/d }' media_kit_video/linux/CMakeLists.txt
@@ -83,32 +107,8 @@ flutter.buildFlutterApplication {
       };
   };
 
-  nativeBuildInputs = [ autoPatchelfHook ];
-
-  buildInputs = [
-    alsa-lib
-    gst_all_1.gst-libav
-    gst_all_1.gst-plugins-bad
-    gst_all_1.gst-plugins-base
-    gst_all_1.gst-plugins-good
-    gst_all_1.gstreamer
-    libayatana-appindicator
-    mpv-unwrapped
-    webkitgtk_4_1
-  ];
-
-  # patch onReorderItem to onReorder for nixpkgs Flutter compatibility
-  postPatch = ''
-    substituteInPlace \
-      lib/pages/plugin_editor/plugin_view_page.dart \
-      --replace-fail "onReorderItem:" "onReorder:"
-  '';
-
-  postInstall = ''
-    ln -snf ${mpv-unwrapped}/lib/libmpv.so.2 $out/app/$pname/lib/libmpv.so.2
-    install -Dm 0644 assets/linux/io.github.Predidit.Kazumi.desktop -t $out/share/applications/
-    install -Dm 0644 assets/images/logo/logo_linux.png $out/share/icons/hicolor/512x512/apps/io.github.Predidit.Kazumi.png
-  '';
+  gitHashes = lib.importJSON ./git-hashes.json;
+  pubspecLock = lib.importJSON ./pubspec.lock.json;
 
   passthru = {
     pubspecSource =
@@ -120,6 +120,7 @@ flutter.buildFlutterApplication {
         ''
           yq eval --output-format=json --prettyPrint $src/pubspec.lock > "$out"
         '';
+
     updateScript = _experimental-update-script-combinators.sequence [
       (nix-update-script { })
       (
@@ -136,6 +137,7 @@ flutter.buildFlutterApplication {
           "--output"
           ./git-hashes.json
         ];
+
         supportedFeatures = [ ];
       }
     ];
@@ -144,9 +146,9 @@ flutter.buildFlutterApplication {
   meta = {
     description = "Watch Animes online with danmaku support";
     homepage = "https://github.com/Predidit/Kazumi";
-    mainProgram = "kazumi";
     license = lib.licenses.gpl3Plus;
     maintainers = with lib.maintainers; [ lonerOrz ];
     platforms = lib.platforms.linux;
+    mainProgram = "kazumi";
   };
 }

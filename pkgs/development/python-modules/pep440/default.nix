@@ -9,7 +9,6 @@
 buildPythonPackage rec {
   pname = "pep440";
   version = "0.1.2";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
@@ -17,7 +16,6 @@ buildPythonPackage rec {
   };
 
   nativeBuildInputs = [ flit-core ];
-
   nativeCheckInputs = [ pytestCheckHook ];
 
   disabledTestPaths = [
@@ -25,13 +23,14 @@ buildPythonPackage rec {
     "tests/test_cli.py"
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "pep440" ];
 
   meta = {
     description = "Python module to check whether versions number match PEP 440";
-    mainProgram = "pep440";
     homepage = "https://github.com/Carreau/pep440";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ fab ];
+    mainProgram = "pep440";
   };
 }

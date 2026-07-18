@@ -2,9 +2,9 @@
   lib,
   stdenv,
   fetchurl,
-  unzip,
-  cups,
   autoPatchelfHook,
+  cups,
+  unzip,
 }:
 
 let
@@ -20,10 +20,6 @@ stdenv.mkDerivation (finalAttrs: {
   pname = "labelife-label-printer";
   version = "2.3.1.001";
 
-  arch =
-    archAttrset.${stdenv.hostPlatform.system}
-      or (throw "Unsupported system: ${stdenv.hostPlatform.system}");
-
   src = fetchurl {
     url = "https://web.archive.org/web/20260607010653/https://oss.qu-in.ltd/Labelife/Label_Printer_Driver_Linux.zip";
     hash = "sha256-qpsyOuTrOTcXEQeCNNRV0QeV0s0RD2eqy/tGTA7qMWA=";
@@ -33,19 +29,8 @@ stdenv.mkDerivation (finalAttrs: {
     unzip
     autoPatchelfHook
   ];
+
   buildInputs = [ cups ];
-
-  unpackPhase = ''
-    runHook preUnpack
-
-    # Extract outer ZIP file
-    unzip -q ${finalAttrs.src}
-
-    # Extract inner tar.gz with --strip-components=1 to remove the `LabelPrinter-${finalAttrs.version}/` prefix
-    tar -xzf LabelPrinter-${finalAttrs.version}.tar.gz --strip-components=1
-
-    runHook postUnpack
-  '';
 
   installPhase = ''
     runHook preInstall
@@ -60,11 +45,25 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  arch =
+    archAttrset.${stdenv.hostPlatform.system}
+      or (throw "Unsupported system: ${stdenv.hostPlatform.system}");
+
+  unpackPhase = ''
+    runHook preUnpack
+
+    # Extract outer ZIP file
+    unzip -q ${finalAttrs.src}
+
+    # Extract inner tar.gz with --strip-components=1 to remove the `LabelPrinter-${finalAttrs.version}/` prefix
+    tar -xzf LabelPrinter-${finalAttrs.version}.tar.gz --strip-components=1
+
+    runHook postUnpack
+  '';
+
   meta = {
     description = "CUPS driver for several Labelife-compatible thermal label printers";
-    downloadPage = "https://labelife.net/#/chart";
-    homepage = "https://labelife.net";
-    license = lib.licenses.unfree;
+
     longDescription = ''
       CUPS driver for Labelife-compatible thermal label printers.
       Supported printer families include D-series (D420D, D520, D530,
@@ -81,8 +80,12 @@ stdenv.mkDerivation (finalAttrs: {
       - Omezizy
       - Aimo
     '';
+
+    homepage = "https://labelife.net";
+    license = lib.licenses.unfree;
+    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
     maintainers = with lib.maintainers; [ daniel-fahey ];
     platforms = lib.attrNames archAttrset;
-    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
+    downloadPage = "https://labelife.net/#/chart";
   };
 })

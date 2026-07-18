@@ -1,20 +1,20 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
-  zlib,
-  openssl,
-  ncurses,
+  gtk2,
   libidn,
-  pcre2,
-  libssh,
   libmysqlclient,
   libpq,
-  samba,
-  withGUI ? false,
+  libssh,
   makeWrapper,
+  ncurses,
+  openssl,
+  pcre2,
   pkg-config,
-  gtk2,
+  samba,
+  zlib,
+  withGUI ? false,
 }:
 
 stdenv.mkDerivation rec {
@@ -61,14 +61,14 @@ stdenv.mkDerivation rec {
   ]
   ++ lib.optional withGUI gtk2;
 
-  enableParallelBuilding = true;
-
   env.DATADIR = "/share/${pname}";
 
   postInstall = lib.optionalString withGUI ''
     wrapProgram $out/bin/xhydra \
       --add-flags --hydra-path --add-flags "$out/bin/hydra"
   '';
+
+  enableParallelBuilding = true;
 
   meta = {
     description = "Very fast network logon cracker which support many different services";

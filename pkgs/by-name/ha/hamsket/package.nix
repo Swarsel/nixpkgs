@@ -1,7 +1,7 @@
 {
   lib,
-  appimageTools,
   fetchurl,
+  appimageTools,
   makeDesktopItem,
 }:
 
@@ -16,11 +16,11 @@ let
 
   desktopItem = (
     makeDesktopItem {
+      categories = [ "Network" ];
       desktopName = "Hamsket";
-      name = pname;
       exec = pname;
       icon = pname;
-      categories = [ "Network" ];
+      name = pname;
     }
   );
 
@@ -42,8 +42,8 @@ appimageTools.wrapType2 {
     description = "Free and open source messaging and emailing app that combines common web applications into one";
     homepage = "https://github.com/TheGoddessInari/hamsket";
     license = lib.licenses.gpl3Only;
+    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
     maintainers = with lib.maintainers; [ nova-madeline ];
     platforms = [ "x86_64-linux" ];
-    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
   };
 }

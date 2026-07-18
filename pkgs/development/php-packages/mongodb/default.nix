@@ -1,14 +1,14 @@
 {
-  stdenv,
-  buildPecl,
-  fetchFromGitHub,
   lib,
-  libiconv,
-  pcre2,
-  pkg-config,
+  stdenv,
+  fetchFromGitHub,
+  buildPecl,
   cyrus_sasl,
   icu64,
+  libiconv,
   openssl,
+  pcre2,
+  pkg-config,
   snappy,
   zlib,
 }:
@@ -26,6 +26,7 @@ buildPecl rec {
   };
 
   nativeBuildInputs = [ pkg-config ];
+
   buildInputs = [
     cyrus_sasl
     icu64

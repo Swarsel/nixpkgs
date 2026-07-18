@@ -1,13 +1,12 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
 }:
 
 buildPythonPackage rec {
   pname = "py-expression-eval";
   version = "0.3.14";
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "axiacore";
@@ -16,11 +15,13 @@ buildPythonPackage rec {
     sha256 = "YxhZd8V6ofphcNdcbBbrT5mc37O9c6W1mfhsvFVC+KM=";
   };
 
+  format = "setuptools";
+
   meta = {
-    homepage = "https://github.com/AxiaCore/py-expression-eval/";
     description = "Python Mathematical Expression Evaluator";
-    platforms = lib.platforms.linux;
+    homepage = "https://github.com/AxiaCore/py-expression-eval/";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ cynerd ];
+    platforms = lib.platforms.linux;
   };
 }

@@ -1,12 +1,12 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromSourcehut,
   meson,
   ninja,
+  nix-update-script,
   pkg-config,
   wayland,
-  nix-update-script,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -25,13 +25,13 @@ stdenv.mkDerivation (finalAttrs: {
     ninja
     pkg-config
   ];
-  buildInputs = [ wayland ];
 
+  buildInputs = [ wayland ];
   passthru.updateScript = nix-update-script { };
 
   meta = {
-    homepage = "https://sr.ht/~emersion/libscfg";
     description = "Simple configuration file format";
+    homepage = "https://sr.ht/~emersion/libscfg";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ michaeladler ];
     platforms = lib.platforms.linux;

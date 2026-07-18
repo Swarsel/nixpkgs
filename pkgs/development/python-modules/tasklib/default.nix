@@ -1,18 +1,17 @@
 {
   lib,
   buildPythonPackage,
-  six,
-  pytz,
-  tzlocal,
   fetchPypi,
+  pytz,
+  six,
   taskwarrior2,
+  tzlocal,
   writeShellScriptBin,
 }:
 
 buildPythonPackage rec {
   pname = "tasklib";
   version = "2.5.1";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
@@ -31,12 +30,14 @@ buildPythonPackage rec {
     (writeShellScriptBin "wsl" "true")
   ];
 
+  format = "setuptools";
+
   meta = {
-    homepage = "https://github.com/robgolding/tasklib";
     description = "Library for interacting with taskwarrior databases";
+    homepage = "https://github.com/robgolding/tasklib";
     changelog = "https://github.com/GothenburgBitFactory/tasklib/releases/tag/${version}";
+    license = lib.licenses.bsd3;
     maintainers = with lib.maintainers; [ arcnmx ];
     platforms = lib.platforms.all;
-    license = lib.licenses.bsd3;
   };
 }

@@ -1,22 +1,19 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   hatchling,
-  platformdirs,
-  traitlets,
   pip,
+  platformdirs,
   pytestCheckHook,
-
   # Reverse dependency
   sage,
+  traitlets,
 }:
 
 buildPythonPackage rec {
   pname = "jupyter-core";
   version = "5.9.1";
-
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "jupyter";
@@ -26,7 +23,6 @@ buildPythonPackage rec {
   };
 
   patches = [ ./tests_respect_pythonpath.patch ];
-
   nativeBuildInputs = [ hatchling ];
 
   propagatedBuildInputs = [
@@ -43,19 +39,21 @@ buildPythonPackage rec {
     export HOME=$TMPDIR
   '';
 
-  pytestFlags = [
-    # suppress pytest.PytestUnraisableExceptionWarning: Exception ignored in: <socket.socket fd=-1, family=AddressFamily.AF_UNIX, type=SocketKind.SOCK_STREAM, proto=0>
-    "-Wignore::pytest.PytestUnraisableExceptionWarning"
-  ];
+  postCheck = ''
+    $out/bin/jupyter --help > /dev/null
+  '';
 
   disabledTests = [
     # creates a temporary script, which isn't aware of PYTHONPATH
     "test_argv0"
   ];
 
-  postCheck = ''
-    $out/bin/jupyter --help > /dev/null
-  '';
+  pyproject = true;
+
+  pytestFlags = [
+    # suppress pytest.PytestUnraisableExceptionWarning: Exception ignored in: <socket.socket fd=-1, family=AddressFamily.AF_UNIX, type=SocketKind.SOCK_STREAM, proto=0>
+    "-Wignore::pytest.PytestUnraisableExceptionWarning"
+  ];
 
   pythonImportsCheck = [ "jupyter_core" ];
 

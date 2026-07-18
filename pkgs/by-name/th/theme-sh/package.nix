@@ -2,9 +2,9 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  makeWrapper,
   coreutils,
   gawk,
+  makeWrapper,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -19,8 +19,6 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   nativeBuildInputs = [ makeWrapper ];
-
-  dontBuild = true;
 
   installPhase = ''
     runHook preInstall
@@ -38,12 +36,14 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  dontBuild = true;
+
   meta = {
     description = "Script which lets you set your $terminal theme";
     homepage = "https://github.com/lemnos/theme.sh";
     license = lib.licenses.mit;
-    platforms = lib.platforms.all;
     maintainers = [ ];
+    platforms = lib.platforms.all;
     mainProgram = "theme.sh";
   };
 })

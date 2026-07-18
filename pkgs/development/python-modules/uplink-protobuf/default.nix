@@ -1,18 +1,17 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
+  protobuf,
+  pytest-mock,
+  pytestCheckHook,
   setuptools,
   uplink,
-  protobuf,
-  pytestCheckHook,
-  pytest-mock,
 }:
 
 buildPythonPackage rec {
   pname = "uplink-protobuf";
   version = "0.1.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "prkumar";
@@ -21,6 +20,11 @@ buildPythonPackage rec {
     hash = "sha256-HeA5bGmYSysidhz8YbST0uTqZ9BKFYQENrWuhcUZ7qY=";
   };
 
+  nativeCheckInputs = [
+    pytestCheckHook
+    pytest-mock
+  ];
+
   build-system = [ setuptools ];
 
   dependencies = [
@@ -28,11 +32,7 @@ buildPythonPackage rec {
     protobuf
   ];
 
-  nativeCheckInputs = [
-    pytestCheckHook
-    pytest-mock
-  ];
-
+  pyproject = true;
   pythonImportsCheck = [ "uplink_protobuf" ];
 
   meta = {

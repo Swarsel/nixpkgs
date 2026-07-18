@@ -1,12 +1,12 @@
 {
-  stdenvNoCC,
+  lib,
   fetchFromGitHub,
-  makeWrapper,
-  gnugrep,
-  gnused,
   curl,
   fzf,
-  lib,
+  gnugrep,
+  gnused,
+  makeWrapper,
+  stdenvNoCC,
 }:
 stdenvNoCC.mkDerivation (finalAttrs: {
   pname = "ani-skip";
@@ -20,12 +20,6 @@ stdenvNoCC.mkDerivation (finalAttrs: {
   };
 
   nativeBuildInputs = [ makeWrapper ];
-  runtimeInputs = [
-    gnugrep
-    gnused
-    curl
-    fzf
-  ];
 
   installPhase = ''
     runHook preInstall
@@ -44,12 +38,19 @@ stdenvNoCC.mkDerivation (finalAttrs: {
       --prefix PATH : ${lib.makeBinPath finalAttrs.runtimeInputs}
   '';
 
+  runtimeInputs = [
+    gnugrep
+    gnused
+    curl
+    fzf
+  ];
+
   meta = {
-    homepage = "https://github.com/synacktraa/ani-skip";
     description = "Automated solution to bypassing anime opening and ending sequences";
-    mainProgram = "ani-skip";
+    homepage = "https://github.com/synacktraa/ani-skip";
     license = lib.licenses.gpl3;
     maintainers = [ ];
     platforms = lib.platforms.unix;
+    mainProgram = "ani-skip";
   };
 })

@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   nix-update-script,
 }:
 
@@ -17,7 +17,6 @@ buildGoModule (finalAttrs: {
   };
 
   vendorHash = "sha256-RRjEFZLbfeiFUWjGZI4HSZ8PhVj1IMlU5D4Nb1sexoQ=";
-
   passthru.updateScript = nix-update-script { };
 
   meta = {
@@ -26,7 +25,7 @@ buildGoModule (finalAttrs: {
     changelog = "https://github.com/blampe/goat/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ katexochen ];
-    mainProgram = "goat";
     platforms = lib.platforms.unix;
+    mainProgram = "goat";
   };
 })

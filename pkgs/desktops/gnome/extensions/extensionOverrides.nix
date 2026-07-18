@@ -4,34 +4,34 @@
   cpio,
   cups,
   ddcutil,
+  desktop-file-utils,
   easyeffects,
   gjs,
   glib,
   gnome-menus,
-  gtk3,
-  nautilus,
   gobject-introspection,
   gsound,
+  gtk3,
+  gtk4,
   hddtemp,
   libgda6,
   libgtop,
   libhandy,
   liquidctl,
   lm_sensors,
+  nautilus,
   netcat-gnu,
   nvme-cli,
   procps,
-  smartmontools,
   replaceVars,
+  smartmontools,
   stdenvNoCC,
   touchegg,
   util-linux,
   vte,
   wrapGAppsHook3,
-  xdg-utils,
-  gtk4,
-  desktop-file-utils,
   xdg-user-dirs,
+  xdg-utils,
 }:
 let
   # Helper method to reduce redundancy
@@ -72,6 +72,7 @@ lib.trivial.pipe super [
       libgda6
       gsound
     ];
+
     preInstall = ''
       sed -i "1i import GIRepository from 'gi://GIRepository';\nGIRepository.Repository.dup_default().prepend_search_path('${libgda6}/lib/girepository-1.0');\nGIRepository.Repository.dup_default().prepend_search_path('${gsound}/lib/girepository-1.0');\n" lib/preferences/dependencies/dependencies.js
       sed -i "1i import GIRepository from 'gi://GIRepository';\nGIRepository.Repository.dup_default().prepend_search_path('${libgda6}/lib/girepository-1.0');\n" lib/database/entryTracker.js
@@ -89,11 +90,13 @@ lib.trivial.pipe super [
       gobject-introspection
       wrapGAppsHook3
     ];
+
     buildInputs = [
       vte
       libhandy
       gjs
     ];
+
     postFixup = ''
       patchShebangs "$out/share/gnome-shell/extensions/ddterm@amezin.github.com/bin/com.github.amezin.ddterm"
       wrapGApp "$out/share/gnome-shell/extensions/ddterm@amezin.github.com/bin/com.github.amezin.ddterm"
@@ -101,28 +104,31 @@ lib.trivial.pipe super [
   }))
 
   (patchExtension "ding@rastersoft.com" (old: {
-    nativeBuildInputs = [ wrapGAppsHook3 ];
     patches = [
       (replaceVars ./extensionOverridesPatches/ding_at_rastersoft.com.patch {
         inherit gjs;
-        util_linux = util-linux;
-        xdg_utils = xdg-utils;
         gtk3_gsettings_path = glib.getSchemaPath gtk3;
         nautilus_gsettings_path = glib.getSchemaPath nautilus;
         typelib_path = "${gtk3}/lib/girepository-1.0";
+        util_linux = util-linux;
+        xdg_utils = xdg-utils;
       })
     ];
+
+    nativeBuildInputs = [ wrapGAppsHook3 ];
   }))
 
   (patchExtension "display-brightness-ddcutil@themightydeity.github.com" (old: {
-    # Make glib-compile-schemas available
-    nativeBuildInputs = [ glib ];
     # Has a hard-coded path to a run-time dependency
     # https://github.com/NixOS/nixpkgs/issues/136111
     postPatch = ''
       substituteInPlace "schemas/org.gnome.shell.extensions.display-brightness-ddcutil.gschema.xml" \
         --replace-fail "/usr/bin/ddcutil" ${lib.getExe ddcutil}
     '';
+
+    # Make glib-compile-schemas available
+    nativeBuildInputs = [ glib ];
+
     postFixup = ''
       rm "$out/share/gnome-shell/extensions/display-brightness-ddcutil@themightydeity.github.com/schemas/gschemas.compiled"
       glib-compile-schemas "$out/share/gnome-shell/extensions/display-brightness-ddcutil@themightydeity.github.com/schemas"
@@ -148,6 +154,7 @@ lib.trivial.pipe super [
           procps
           smartmontools
           ;
+
         netcat = netcat-gnu;
         nvmecli = nvme-cli;
       })
@@ -155,17 +162,18 @@ lib.trivial.pipe super [
   }))
 
   (patchExtension "gtk4-ding@smedius.gitlab.com" (old: {
-    nativeBuildInputs = [ wrapGAppsHook3 ];
     patches = [
       (replaceVars ./extensionOverridesPatches/gtk4-ding_at_smedius.gitlab.com.patch {
         inherit gjs;
+        gtk_update_icon_cache = "${gtk4.out}/bin/gtk4-update-icon-cache";
+        nautilus_gsettings_path = glib.getSchemaPath nautilus;
+        update_desktop_database = "${desktop-file-utils.out}/bin/update-desktop-database";
         util_linux = util-linux;
         xdg_utils = xdg-utils;
-        gtk_update_icon_cache = "${gtk4.out}/bin/gtk4-update-icon-cache";
-        update_desktop_database = "${desktop-file-utils.out}/bin/update-desktop-database";
-        nautilus_gsettings_path = glib.getSchemaPath nautilus;
       })
     ];
+
+    nativeBuildInputs = [ wrapGAppsHook3 ];
   }))
 
   (patchExtension "lunarcal@ailin.nemui" (
@@ -174,16 +182,19 @@ lib.trivial.pipe super [
       chinese-calendar = stdenvNoCC.mkDerivation (finalAttrs: {
         pname = "chinese-calendar";
         version = "20240107";
-        nativeBuildInputs = [
-          cpio # used in install.sh
-        ];
+
         src = fetchFromGitLab {
-          domain = "gitlab.gnome.org";
           owner = "Nei";
           repo = "ChineseCalendar";
           tag = finalAttrs.version;
           hash = "sha256-z8Af9e70bn3ztUZteIEt/b3nJIFosbnoy8mwKMM6Dmc=";
+          domain = "gitlab.gnome.org";
         };
+
+        nativeBuildInputs = [
+          cpio # used in install.sh
+        ];
+
         installPhase = ''
           runHook preInstall
           HOME=$out ./install.sh
@@ -225,6 +236,7 @@ lib.trivial.pipe super [
         gtop_path = "${libgtop}/lib/girepository-1.0";
       })
     ];
+
     meta.maintainers = with lib.maintainers; [ andersk ];
   }))
 

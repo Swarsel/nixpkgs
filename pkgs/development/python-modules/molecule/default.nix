@@ -8,6 +8,7 @@
   fetchPypi,
   jsonschema,
   molecule,
+  molecule-plugins,
   packaging,
   pluggy,
   rich,
@@ -15,16 +16,14 @@
   setuptools-scm,
   testers,
   wcmatch,
-  withPlugins ? true,
   writableTmpDirAsHomeHook,
-  molecule-plugins,
   yamllint,
+  withPlugins ? true,
 }:
 
 buildPythonPackage rec {
   pname = "molecule";
   version = "26.6.0";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
@@ -50,15 +49,15 @@ buildPythonPackage rec {
   ]
   ++ lib.optional withPlugins molecule-plugins;
 
-  pythonImportsCheck = [ "molecule" ];
-
   # tests can't be easily run without installing things from ansible-galaxy
   doCheck = false;
+  pyproject = true;
+  pythonImportsCheck = [ "molecule" ];
 
   passthru.tests.version =
     (testers.testVersion {
-      package = molecule;
       command = "PY_COLORS=0 ${pname} --version";
+      package = molecule;
     }).overrideAttrs
       (old: {
         # workaround the error: Permission denied: '/homeless-shelter'

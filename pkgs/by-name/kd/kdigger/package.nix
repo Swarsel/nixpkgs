@@ -1,8 +1,8 @@
 {
   lib,
   stdenv,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   installShellFiles,
 }:
 
@@ -18,25 +18,18 @@ buildGoModule (finalAttrs: {
     # populate values that require us to use git. By doing this in postFetch we
     # can delete .git afterwards and maintain better reproducibility of the src.
     leaveDotGit = true;
+
     postFetch = ''
       cd "$out"
       git rev-parse HEAD > $out/COMMIT
       find "$out" -name .git -print0 | xargs -0 rm -rf
     '';
   };
-  vendorHash = "sha256-kMoTkrDuAJmgWAj7+V3a8VEYpPbTv3UdLscTdkpzud0=";
 
   nativeBuildInputs = [ installShellFiles ];
-
+  vendorHash = "sha256-kMoTkrDuAJmgWAj7+V3a8VEYpPbTv3UdLscTdkpzud0=";
   # static to be easily copied into containers since it's an in-pod pen-testing tool
   env.CGO_ENABLED = 0;
-
-  ldflags = [
-    "-s"
-    "-w"
-    "-X github.com/quarkslab/kdigger/commands.VERSION=v${finalAttrs.version}"
-    "-X github.com/quarkslab/kdigger/commands.BUILDERARCH=${stdenv.hostPlatform.linuxArch}"
-  ];
 
   preBuild = ''
     ldflags+=" -X github.com/quarkslab/kdigger/commands.GITCOMMIT=$(cat COMMIT)"
@@ -50,6 +43,7 @@ buildGoModule (finalAttrs: {
   '';
 
   doInstallCheck = true;
+
   installCheckPhase = ''
     runHook preInstallCheck
 
@@ -58,22 +52,33 @@ buildGoModule (finalAttrs: {
     runHook postInstallCheck
   '';
 
+  ldflags = [
+    "-s"
+    "-w"
+    "-X github.com/quarkslab/kdigger/commands.VERSION=v${finalAttrs.version}"
+    "-X github.com/quarkslab/kdigger/commands.BUILDERARCH=${stdenv.hostPlatform.linuxArch}"
+  ];
+
   meta = {
-    homepage = "https://github.com/quarkslab/kdigger";
-    changelog = "https://github.com/quarkslab/kdigger/releases/tag/v${finalAttrs.version}";
     description = "In-pod context discovery tool for Kubernetes penetration testing";
-    mainProgram = "kdigger";
+
     longDescription = ''
       kdigger, short for "Kubernetes digger", is a context discovery tool for
       Kubernetes penetration testing. This tool is a compilation of various
       plugins called buckets to facilitate pentesting Kubernetes from inside a
       pod.
     '';
+
+    homepage = "https://github.com/quarkslab/kdigger";
+    changelog = "https://github.com/quarkslab/kdigger/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.asl20;
     maintainers = with lib.maintainers; [ jk ];
+
     platforms = [
       "x86_64-linux"
       "aarch64-linux"
     ];
+
+    mainProgram = "kdigger";
   };
 })

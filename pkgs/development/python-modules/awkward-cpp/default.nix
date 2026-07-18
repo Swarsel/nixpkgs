@@ -1,29 +1,27 @@
 {
   lib,
   buildPythonPackage,
-  fetchPypi,
-
   # build-system
   cmake,
+  fetchPypi,
   ninja,
-  pybind11,
-  scikit-build-core,
-
   # dependencies
   numpy,
+  pybind11,
+  scikit-build-core,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "awkward-cpp";
   version = "54";
-  pyproject = true;
-  __structuredAttrs = true;
 
   src = fetchPypi {
-    pname = "awkward_cpp";
     inherit (finalAttrs) version;
     hash = "sha256-yVeygEvmp7oouZbEywC3RGJNS3jehGHvd4j4+OUCgo4=";
+    pname = "awkward_cpp";
   };
+
+  __structuredAttrs = true;
 
   build-system = [
     cmake
@@ -33,9 +31,8 @@ buildPythonPackage (finalAttrs: {
   ];
 
   dependencies = [ numpy ];
-
   dontUseCmakeConfigure = true;
-
+  pyproject = true;
   pythonImportsCheck = [ "awkward_cpp" ];
 
   meta = {

@@ -1,18 +1,16 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
+  buildPythonPackage,
   netbox,
-  python,
   pycryptodome,
+  python,
+  setuptools,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "netbox-secrets";
   version = "3.0.2";
-  pyproject = true;
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "Onemind-Services-LLC";
@@ -21,18 +19,17 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-4qUbzQTfSCXT7b8DfrsP9y3tatJZa5F40kl9tuMKed4=";
   };
 
-  build-system = [ setuptools ];
-
-  dependencies = [ pycryptodome ];
-
   nativeCheckInputs = [ netbox ];
 
   preFixup = ''
     export PYTHONPATH=${netbox}/opt/netbox/netbox:$PYTHONPATH
   '';
 
+  __structuredAttrs = true;
+  build-system = [ setuptools ];
+  dependencies = [ pycryptodome ];
   dontUsePythonImportsCheck = python.pythonVersion != netbox.python.pythonVersion;
-
+  pyproject = true;
   pythonImportsCheck = [ "netbox_secrets" ];
 
   meta = {

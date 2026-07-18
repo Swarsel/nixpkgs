@@ -3,28 +3,25 @@
   stdenv,
   fetchFromGitLab,
   autoreconfHook,
-  po4a,
-  libcap,
+  coreutils,
   getopt,
   gnused,
-  coreutils,
-  versionCheckHook,
+  libcap,
   nixosTests,
+  po4a,
+  versionCheckHook,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
-  version = "1.38.1";
   pname = "fakeroot";
-
-  strictDeps = true;
-  __structuredAttrs = true;
+  version = "1.38.1";
 
   src = fetchFromGitLab {
-    domain = "salsa.debian.org";
     owner = "clint";
     repo = "fakeroot";
     tag = "upstream/${finalAttrs.version}";
     hash = "sha256-sAzXeONjDT753lbu7amQY6yXpaTNCa4wFOzB01SRbCs=";
+    domain = "salsa.debian.org";
   };
 
   patches = lib.optionals stdenv.hostPlatform.isLinux [
@@ -32,11 +29,24 @@ stdenv.mkDerivation (finalAttrs: {
     ./einval.patch
   ];
 
+  strictDeps = true;
+
   nativeBuildInputs = [
     autoreconfHook
     po4a
   ];
+
   buildInputs = lib.optionals stdenv.hostPlatform.isLinux [ libcap ];
+
+  postConfigure = ''
+    pushd doc
+    po4a -k 0 --variable "srcdir=../doc/" po4a/po4a.cfg
+    popd
+  '';
+
+  doInstallCheck = true;
+  nativeInstallCheckInputs = [ versionCheckHook ];
+  __structuredAttrs = true;
 
   postUnpack = ''
     sed -i \
@@ -48,15 +58,6 @@ stdenv.mkDerivation (finalAttrs: {
       source/scripts/fakeroot.in
   '';
 
-  postConfigure = ''
-    pushd doc
-    po4a -k 0 --variable "srcdir=../doc/" po4a/po4a.cfg
-    popd
-  '';
-
-  nativeInstallCheckInputs = [ versionCheckHook ];
-  doInstallCheck = true;
-
   passthru = {
     tests = {
       # A lightweight *unit* test that exercises fakeroot and fakechroot together:
@@ -65,11 +66,11 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   meta = {
-    homepage = "https://salsa.debian.org/clint/fakeroot";
     description = "Give a fake root environment through LD_PRELOAD";
-    mainProgram = "fakeroot";
+    homepage = "https://salsa.debian.org/clint/fakeroot";
     license = lib.licenses.gpl2Plus;
     maintainers = [ ];
     platforms = lib.platforms.unix;
+    mainProgram = "fakeroot";
   };
 })

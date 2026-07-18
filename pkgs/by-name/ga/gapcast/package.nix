@@ -1,8 +1,8 @@
 {
   lib,
   stdenv,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   libpcap,
   libx11,
 }:
@@ -18,12 +18,12 @@ buildGoModule (finalAttrs: {
     hash = "sha256-Ei5XfcnbUoegB8lNEEQ3PrCzNJGaVeVd2lfrMWYoODw=";
   };
 
-  vendorHash = "sha256-jn0zTorp/rkd91+ZGDbsNVcTxEndFMMrsb+/dGrZcy4=";
-
   buildInputs = [
     libpcap
     libx11
   ];
+
+  vendorHash = "sha256-jn0zTorp/rkd91+ZGDbsNVcTxEndFMMrsb+/dGrZcy4=";
 
   ldflags = [
     "-s"

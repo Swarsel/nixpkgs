@@ -11,8 +11,6 @@ python3Packages.buildPythonApplication (finalAttrs: {
   pname = "syncplay";
   version = "1.7.5";
 
-  pyproject = false;
-
   src = fetchFromGitHub {
     owner = "Syncplay";
     repo = "syncplay";
@@ -24,20 +22,11 @@ python3Packages.buildPythonApplication (finalAttrs: {
     ./trusted_certificates.patch
   ];
 
+  nativeBuildInputs = lib.optionals enableGUI [ qt6.wrapQtAppsHook ];
+
   buildInputs = lib.optionals enableGUI [
     (if stdenv.hostPlatform.isLinux then qt6.qtwayland else qt6.qtbase)
   ];
-  dependencies =
-    with python3Packages;
-    [
-      certifi
-      pem
-      twisted
-    ]
-    ++ twisted.optional-dependencies.tls
-    ++ lib.optional enableGUI pyside6
-    ++ lib.optional (stdenv.hostPlatform.isDarwin && enableGUI) appnope;
-  nativeBuildInputs = lib.optionals enableGUI [ qt6.wrapQtAppsHook ];
 
   makeFlags = [
     "DESTDIR="
@@ -48,11 +37,24 @@ python3Packages.buildPythonApplication (finalAttrs: {
     wrapQtApp $out/bin/syncplay
   '';
 
+  dependencies =
+    with python3Packages;
+    [
+      certifi
+      pem
+      twisted
+    ]
+    ++ twisted.optional-dependencies.tls
+    ++ lib.optional enableGUI pyside6
+    ++ lib.optional (stdenv.hostPlatform.isDarwin && enableGUI) appnope;
+
+  pyproject = false;
+
   meta = {
-    homepage = "https://syncplay.pl/";
     description = "Free software that synchronises media players";
+    homepage = "https://syncplay.pl/";
     license = lib.licenses.asl20;
-    platforms = lib.platforms.linux ++ lib.platforms.darwin;
     maintainers = with lib.maintainers; [ assistant ];
+    platforms = lib.platforms.linux ++ lib.platforms.darwin;
   };
 })

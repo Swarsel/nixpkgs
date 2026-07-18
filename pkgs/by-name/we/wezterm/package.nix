@@ -7,6 +7,10 @@
   libGL,
   libx11,
   libxcb,
+  libxcb-image,
+  libxcb-keysyms,
+  libxcb-util,
+  libxcb-wm,
   libxkbcommon,
   ncurses,
   nixosTests,
@@ -19,10 +23,6 @@
   vulkan-loader,
   wayland,
   wezterm,
-  libxcb-util,
-  libxcb-image,
-  libxcb-keysyms,
-  libxcb-wm,
   zlib,
 }:
 
@@ -34,8 +34,8 @@ rustPlatform.buildRustPackage (finalAttrs: {
     owner = "wezterm";
     repo = "wezterm";
     rev = "fff02ca501c3b457f99b467a86061d2b150c51f2";
-    fetchSubmodules = true;
     hash = "sha256-q351PUvUy9jbqcAgQfkZqgrEuc4X/Y/H9N8b9+60mjY=";
+    fetchSubmodules = true;
   };
 
   postPatch = ''
@@ -52,13 +52,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
     # many tests fail with: No such file or directory
     rm -r wezterm-ssh/tests
   '';
-
-  # dep: syntax causes build failures in rare cases
-  # https://github.com/rust-secure-code/cargo-auditable/issues/124
-  # https://github.com/wezterm/wezterm/blob/main/nix/flake.nix#L134
-  auditable = false;
-
-  cargoHash = "sha256-jY7lTOfbT74tAZ7he1xudCN7BUxZBzY+8+e1d2g2v4I=";
 
   nativeBuildInputs = [
     installShellFiles
@@ -84,7 +77,7 @@ rustPlatform.buildRustPackage (finalAttrs: {
     libxcb-wm # contains xcb-ewmh among others
   ];
 
-  buildFeatures = [ "distro-defaults" ];
+  cargoHash = "sha256-jY7lTOfbT74tAZ7he1xudCN7BUxZBzY+8+e1d2g2v4I=";
 
   postInstall = ''
     mkdir -p $out/nix-support
@@ -124,6 +117,12 @@ rustPlatform.buildRustPackage (finalAttrs: {
       ln -s "$OUT_APP"/{wezterm,wezterm-mux-server,wezterm-gui,strip-ansi-escapes} "$out/bin"
     '';
 
+  # dep: syntax causes build failures in rare cases
+  # https://github.com/rust-secure-code/cargo-auditable/issues/124
+  # https://github.com/wezterm/wezterm/blob/main/nix/flake.nix#L134
+  auditable = false;
+  buildFeatures = [ "distro-defaults" ];
+
   passthru = {
     # the headless variant is useful when deploying wezterm's mux server on remote severs
     headless = import ./headless.nix {
@@ -158,10 +157,12 @@ rustPlatform.buildRustPackage (finalAttrs: {
     description = "GPU-accelerated cross-platform terminal emulator and multiplexer written by @wez and implemented in Rust";
     homepage = "https://wezterm.org";
     license = lib.licenses.mit;
-    mainProgram = "wezterm";
+
     maintainers = with lib.maintainers; [
       SuperSandro2000
       yvnth
     ];
+
+    mainProgram = "wezterm";
   };
 })

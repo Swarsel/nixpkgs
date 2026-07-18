@@ -10,13 +10,13 @@
   fltk,
   libGLU,
   libjack2,
+  libpthread-stubs,
   libsndfile,
   libxdmcp,
   lv2,
   minixml,
   pkg-config,
   readline,
-  libpthread-stubs,
   zlib,
 }:
 
@@ -30,8 +30,6 @@ stdenv.mkDerivation (finalAttrs: {
     tag = finalAttrs.version;
     hash = "sha256-zFEbrACwJxfohcHTrJFxw6fHSJT/vYGuIlGyTcqo6Hk=";
   };
-
-  sourceRoot = "${finalAttrs.src.name}/src";
 
   postPatch = ''
     substituteInPlace Misc/Config.cpp --replace /usr $out
@@ -61,18 +59,21 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   cmakeFlags = [ "-DFLTK_MATH_LIBRARY=${stdenv.cc.libc}/lib/libm.so" ];
+  sourceRoot = "${finalAttrs.src.name}/src";
 
   meta = {
     description = "High quality software synthesizer based on ZynAddSubFX";
+
     longDescription = ''
       Yoshimi delivers the same synthesizer capabilities as
       ZynAddSubFX along with very good Jack and Alsa midi/audio
       functionality on Linux
     '';
+
     homepage = "https://yoshimi.github.io/";
     license = lib.licenses.gpl2Plus;
-    platforms = lib.platforms.linux;
     maintainers = [ ];
+    platforms = lib.platforms.linux;
     mainProgram = "yoshimi";
   };
 })

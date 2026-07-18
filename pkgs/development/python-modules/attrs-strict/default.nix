@@ -1,23 +1,19 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
+  # dependencies
+  attrs,
+  buildPythonPackage,
+  # tests
+  pytestCheckHook,
   # build-system
   setuptools,
   setuptools-scm,
-
-  # dependencies
-  attrs,
-
-  # tests
-  pytestCheckHook,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "attrs-strict";
   version = "1.0.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "bloomberg";
@@ -31,6 +27,10 @@ buildPythonPackage (finalAttrs: {
     ./fix-tests.patch
   ];
 
+  nativeCheckInputs = [
+    pytestCheckHook
+  ];
+
   build-system = [
     setuptools
     setuptools-scm
@@ -40,11 +40,8 @@ buildPythonPackage (finalAttrs: {
     attrs
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "attrs_strict" ];
-
-  nativeCheckInputs = [
-    pytestCheckHook
-  ];
 
   meta = {
     description = "Python package which contains runtime validation for attrs data classes based on the types existing in the typing module";

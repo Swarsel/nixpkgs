@@ -19,15 +19,12 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   nativeBuildInputs = [ mpi ];
-
   buildInputs = [ mpi ];
 
   configureFlags = [
     "CC=${mpiDev}/bin/mpicc"
     "CXX=${mpiDev}/bin/mpicxx"
   ];
-
-  enableParallelBuilding = true;
 
   postInstall = ''
     mkdir -p $out/bin
@@ -36,8 +33,11 @@ stdenv.mkDerivation (finalAttrs: {
     done
   '';
 
+  enableParallelBuilding = true;
+
   meta = {
     description = "OSU Micro-Benchmarks for MPI";
+
     longDescription = ''
       The OSU microbenchmark suite is a collection of independent message passing interface (MPI) performance
       benchmarks. It includes performance measures such as latency, bandwidth, and host overhead.
@@ -49,10 +49,11 @@ stdenv.mkDerivation (finalAttrs: {
        - osu_allreduce: Collective allreduce
        - osu_alltoall: Collective all-to-all
     '';
+
     homepage = "https://mvapich.cse.ohio-state.edu/benchmarks/";
     license = lib.licenses.bsd3;
-    platforms = lib.platforms.linux;
     maintainers = with lib.maintainers; [ spaghetti-stack ];
+    platforms = lib.platforms.linux;
     mainProgram = "osu_latency";
   };
 })

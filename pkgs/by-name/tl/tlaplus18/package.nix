@@ -2,8 +2,8 @@
   lib,
   stdenv,
   fetchurl,
-  makeWrapper,
   jre,
+  makeWrapper,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -17,7 +17,6 @@ stdenv.mkDerivation (finalAttrs: {
 
   nativeBuildInputs = [ makeWrapper ];
 
-  dontUnpack = true;
   installPhase = ''
     mkdir -p $out/share/java $out/bin
     cp $src $out/share/java/tla2tools.jar
@@ -34,16 +33,20 @@ stdenv.mkDerivation (finalAttrs: {
       --add-flags "-XX:+UseParallelGC -cp $out/share/java/tla2tools.jar tlc2.REPL"
   '';
 
+  dontUnpack = true;
+
   meta = {
     description = "Algorithm specification language with model checking tools";
     homepage = "https://lamport.azurewebsites.net/tla/tla.html";
-    sourceProvenance = with lib.sourceTypes; [ binaryBytecode ];
     license = lib.licenses.mit;
-    platforms = lib.platforms.unix;
+    sourceProvenance = with lib.sourceTypes; [ binaryBytecode ];
+
     maintainers = with lib.maintainers; [
       florentc
       thoughtpolice
       mgregson
     ];
+
+    platforms = lib.platforms.unix;
   };
 })

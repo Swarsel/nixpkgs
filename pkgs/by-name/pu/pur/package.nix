@@ -1,13 +1,12 @@
 {
   lib,
-  python3,
   fetchFromGitHub,
+  python3,
 }:
 
 python3.pkgs.buildPythonApplication (finalAttrs: {
   pname = "pur";
   version = "7.4.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "alanhamlett";
@@ -16,13 +15,9 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     hash = "sha256-BxUR4yyT6ipvBozWgat709rNPHELE/PNPVJ4LtfOdfQ=";
   };
 
-  build-system = with python3.pkgs; [ setuptools ];
-
-  dependencies = with python3.pkgs; [ click ];
-
   nativeCheckInputs = with python3.pkgs; [ pytestCheckHook ];
-
-  pythonImportsCheck = [ "pur" ];
+  build-system = with python3.pkgs; [ setuptools ];
+  dependencies = with python3.pkgs; [ click ];
 
   disabledTests = [
     # Tests are failing after the last mass update
@@ -30,6 +25,9 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     "test_no_arguments_and_no_requirements_file"
     "test_interactive_choice_default"
   ];
+
+  pyproject = true;
+  pythonImportsCheck = [ "pur" ];
 
   meta = {
     description = "Python library for update and track the requirements";

@@ -1,11 +1,11 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
+  buildPythonPackage,
   hypothesis,
   pytest-xdist,
   pytestCheckHook,
+  setuptools,
   typing-extensions,
   wheel,
 }:
@@ -13,7 +13,6 @@
 buildPythonPackage rec {
   pname = "bidict";
   version = "0.23.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "jab";
@@ -21,11 +20,6 @@ buildPythonPackage rec {
     tag = "v${version}";
     hash = "sha256-WE0YaRT4a/byvU2pzcByuf1DfMlOpYA9i0PPrKXsS+M=";
   };
-
-  build-system = [
-    setuptools
-    wheel
-  ];
 
   nativeCheckInputs = [
     hypothesis
@@ -40,13 +34,20 @@ buildPythonPackage rec {
     rm pytest.ini
   '';
 
+  build-system = [
+    setuptools
+    wheel
+  ];
+
+  pyproject = true;
   pythonImportsCheck = [ "bidict" ];
 
   meta = {
+    description = "Bidirectional mapping library for Python";
     homepage = "https://bidict.readthedocs.io";
     changelog = "https://bidict.readthedocs.io/changelog.html";
-    description = "Bidirectional mapping library for Python";
     license = lib.licenses.mpl20;
+
     maintainers = with lib.maintainers; [
       jab
       jakewaksbaum

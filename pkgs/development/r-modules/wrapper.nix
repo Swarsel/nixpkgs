@@ -1,25 +1,19 @@
 {
   lib,
-  symlinkJoin,
   R,
   makeBinaryWrapper,
-  recommendedPackages,
   packages,
+  recommendedPackages,
+  symlinkJoin,
 }:
 symlinkJoin {
-  name = R.name + "-wrapper";
-  preferLocalBuild = true;
-  allowSubstitutes = false;
-
   outputs = [
     "out"
     "man"
   ];
 
-  buildInputs = [ R ] ++ recommendedPackages ++ packages;
-  paths = [ R ];
-
   nativeBuildInputs = [ makeBinaryWrapper ];
+  buildInputs = [ R ] ++ recommendedPackages ++ packages;
 
   postBuild = ''
     cd ${R}/bin
@@ -33,6 +27,10 @@ symlinkJoin {
     ln -s ${R.man} $man
   '';
 
+  allowSubstitutes = false;
+  name = R.name + "-wrapper";
+  paths = [ R ];
+  preferLocalBuild = true;
   # Make the list of recommended R packages accessible to other packages such as rpy2
   passthru = { inherit recommendedPackages; };
 

@@ -1,23 +1,11 @@
 {
   lib,
-  vscode-utils,
   jq,
   moreutils,
+  vscode-utils,
 }:
 
 vscode-utils.buildVscodeMarketplaceExtension {
-  mktplcRef = {
-    name = "jupyter";
-    publisher = "ms-toolsai";
-    version = "2025.9.1";
-    hash = "sha256-RZMQAeBHW4sY7lZlxo6YbMoFyzcsW6jOOHLCgtzczzQ=";
-  };
-
-  nativeBuildInputs = [
-    jq
-    moreutils
-  ];
-
   postPatch = ''
     # Patch 'packages.json' so that the expected '__metadata' field exists.
     # This works around observed extension load failure on vscode's attempt
@@ -37,6 +25,18 @@ vscode-utils.buildVscodeMarketplaceExtension {
     # directory to write to.
     ln -s /tmp temp
   '';
+
+  nativeBuildInputs = [
+    jq
+    moreutils
+  ];
+
+  mktplcRef = {
+    version = "2025.9.1";
+    hash = "sha256-RZMQAeBHW4sY7lZlxo6YbMoFyzcsW6jOOHLCgtzczzQ=";
+    name = "jupyter";
+    publisher = "ms-toolsai";
+  };
 
   meta = {
     description = "Jupyter extension for vscode";

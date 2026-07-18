@@ -1,18 +1,17 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   meson-python,
-  versioningit,
-  pkg-config,
   nix-update-script,
+  pkg-config,
   pytestCheckHook,
+  versioningit,
 }:
 
 buildPythonPackage rec {
   pname = "uarray";
   version = "0.9.5";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "Quansight-Labs";
@@ -21,22 +20,24 @@ buildPythonPackage rec {
     hash = "sha256-Jut/V0/na+dcVpD7buW0DIS+KpA+dGRRb6QpPDt2/hY=";
   };
 
+  nativeBuildInputs = [
+    pkg-config
+  ];
+
   preBuild = ''
     echo "__version__ = '$version'" > src/uarray/_version.py
   '';
+
+  nativeCheckInputs = [
+    pytestCheckHook
+  ];
 
   build-system = [
     meson-python
     versioningit
   ];
 
-  nativeBuildInputs = [
-    pkg-config
-  ];
-
-  nativeCheckInputs = [
-    pytestCheckHook
-  ];
+  pyproject = true;
 
   pytestFlags = [
     "--pyargs"
@@ -44,7 +45,6 @@ buildPythonPackage rec {
   ];
 
   pythonImportsCheck = [ "uarray" ];
-
   passthru.updateScript = nix-update-script { };
 
   meta = {

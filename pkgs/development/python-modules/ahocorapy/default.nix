@@ -1,7 +1,7 @@
 {
-  buildPythonPackage,
-  fetchFromGitHub,
   lib,
+  fetchFromGitHub,
+  buildPythonPackage,
   pytestCheckHook,
   setuptools,
 }:
@@ -9,7 +9,6 @@
 buildPythonPackage rec {
   pname = "ahocorapy";
   version = "1.6.2";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "abusix";
@@ -18,24 +17,24 @@ buildPythonPackage rec {
     hash = "sha256-ynVkDnrZ12dpNPoKfUdw0/X06aORFkmXFMVH9u0Payo=";
   };
 
-  build-system = [ setuptools ];
-
-  pythonRemoveDeps = [ "future" ];
-
-  pythonImportsCheck = [ "ahocorapy" ];
-
   nativeCheckInputs = [
     pytestCheckHook
   ];
+
+  build-system = [ setuptools ];
 
   enabledTestPaths = [
     "tests/ahocorapy_test.py"
   ];
 
+  pyproject = true;
+  pythonImportsCheck = [ "ahocorapy" ];
+  pythonRemoveDeps = [ "future" ];
+
   meta = {
-    changelog = "https://github.com/abusix/ahocorapy/blob/${src.tag}/CHANGELOG";
     description = "Pure python Aho-Corasick library";
     homepage = "https://github.com/abusix/ahocorapy";
+    changelog = "https://github.com/abusix/ahocorapy/blob/${src.tag}/CHANGELOG";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ dotlambda ];
   };

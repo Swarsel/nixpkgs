@@ -1,10 +1,10 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
-  unstableGitUpdater,
-  pkg-config,
   libjack2,
+  pkg-config,
+  unstableGitUpdater,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -30,11 +30,11 @@ stdenv.mkDerivation (finalAttrs: {
   makeFlags = [ "PREFIX=$(out)" ];
 
   meta = {
-    homepage = "https://github.com/rncbc/jack_link";
     description = "jack_link bridges JACK transport with Ableton Link";
+    homepage = "https://github.com/rncbc/jack_link";
     license = lib.licenses.gpl2Plus;
-    mainProgram = "jack_link";
     maintainers = with lib.maintainers; [ magnetophon ];
     platforms = lib.platforms.linux;
+    mainProgram = "jack_link";
   };
 })

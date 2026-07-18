@@ -16,6 +16,8 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   passthru = {
+    tests.pkg-config = testers.testMetaPkgConfig finalAttrs.finalPackage;
+
     updateScript = writeScript "update-${finalAttrs.pname}" ''
       #!/usr/bin/env nix-shell
       #!nix-shell -i bash -p common-updater-scripts
@@ -26,7 +28,6 @@ stdenv.mkDerivation (finalAttrs: {
 
       update-source-version ${finalAttrs.pname} "$version"
     '';
-    tests.pkg-config = testers.testMetaPkgConfig finalAttrs.finalPackage;
   };
 
   meta = {
@@ -36,7 +37,7 @@ stdenv.mkDerivation (finalAttrs: {
     # maybe due to https://github.com/spdx/spdx-online-tools/issues/540
     license = lib.licenses.x11;
     maintainers = [ ];
-    pkgConfigModules = [ "pthread-stubs" ];
     platforms = lib.platforms.unix;
+    pkgConfigModules = [ "pthread-stubs" ];
   };
 })

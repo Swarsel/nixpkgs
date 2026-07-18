@@ -1,8 +1,8 @@
 {
+  lib,
+  fetchFromGitHub,
   buildDartApplication,
   dart,
-  fetchFromGitHub,
-  lib,
   runCommand,
   testers,
   unsure,
@@ -20,9 +20,8 @@ buildDartApplication rec {
     hash = "sha256-rn10vy6l12ToiqO4vGVT4N7WNlj6PY/r+xVzjmYqILw=";
   };
 
-  pubspecLock = lib.importJSON ./pubspec.lock.json;
-
   doInstallCheck = true;
+
   installCheckPhase = ''
     runHook preInstallCheck
 
@@ -31,18 +30,21 @@ buildDartApplication rec {
     runHook postInstallCheck
   '';
 
+  pubspecLock = lib.importJSON ./pubspec.lock.json;
   passthru.updateScript = ./update.sh;
 
   meta = {
-    changelog = "https://github.com/filiph/unsure/blob/${src.rev}/CHANGELOG.md";
     description = "Calculate with numbers you’re not sure about";
-    downloadPage = "https://github.com/filiph/unsure";
     homepage = "https://filiph.github.io/unsure";
+    changelog = "https://github.com/filiph/unsure/blob/${src.rev}/CHANGELOG.md";
     license = lib.licenses.mit;
-    mainProgram = "unsure";
+
     maintainers = [
       lib.maintainers.l0b0
       lib.maintainers.rksm
     ];
+
+    mainProgram = "unsure";
+    downloadPage = "https://github.com/filiph/unsure";
   };
 }

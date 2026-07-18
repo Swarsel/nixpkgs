@@ -1,10 +1,10 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
-  nixosTests,
-  makeWrapper,
+  buildGoModule,
   freeipmi,
+  makeWrapper,
+  nixosTests,
 }:
 
 buildGoModule rec {
@@ -18,15 +18,12 @@ buildGoModule rec {
     hash = "sha256-U4vkOKxHKJyfsngn2JqZncq71BohBnGM7Z1hA79YhKA=";
   };
 
-  vendorHash = "sha256-8ebarbsaHiufPEghgOlaRMouGdI1c1Yo8pjqG2bPdK8=";
-
   nativeBuildInputs = [ makeWrapper ];
+  vendorHash = "sha256-8ebarbsaHiufPEghgOlaRMouGdI1c1Yo8pjqG2bPdK8=";
 
   postInstall = ''
     wrapProgram $out/bin/ipmi_exporter --prefix PATH : ${lib.makeBinPath [ freeipmi ]}
   '';
-
-  passthru.tests = { inherit (nixosTests.prometheus-exporters) ipmi; };
 
   ldflags = [
     "-s"
@@ -38,12 +35,14 @@ buildGoModule rec {
     "-X github.com/prometheus/common/version.BuildDate=unknown"
   ];
 
+  passthru.tests = { inherit (nixosTests.prometheus-exporters) ipmi; };
+
   meta = {
     description = "IPMI exporter for Prometheus";
-    mainProgram = "ipmi_exporter";
     homepage = "https://github.com/prometheus-community/ipmi_exporter";
     changelog = "https://github.com/prometheus-community/ipmi_exporter/blob/${src.rev}/CHANGELOG.md";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ snaar ];
+    mainProgram = "ipmi_exporter";
   };
 }

@@ -1,31 +1,31 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchurl,
   fetchFromGitHub,
-  cmake,
-  python3,
-  rustPlatform,
-  cargo,
-  rustc,
   SDL2,
+  cargo,
+  cmake,
   fltk,
+  gtest,
   lua5_3,
   miniaudio,
+  python3,
   rapidjson,
+  rustPlatform,
+  rustc,
   sol2,
-  gtest,
 }:
 
 let
   stringTheory = fetchurl {
-    url = "https://github.com/zrax/string_theory/archive/3.8.tar.gz";
     hash = "sha256-mq7pW3qRZs03/SijzbTl1txJHCSW/TO+gvRLWZh/11M=";
+    url = "https://github.com/zrax/string_theory/archive/3.8.tar.gz";
   };
 
   magicEnum = fetchurl {
-    url = "https://github.com/Neargye/magic_enum/archive/v0.8.2.zip";
     hash = "sha256-oQ+mUDB8YJULcSploz+0bprJbqclhc+p/Pmsn1AsAes=";
+    url = "https://github.com/Neargye/magic_enum/archive/v0.8.2.zip";
   };
 in
 stdenv.mkDerivation rec {
@@ -71,18 +71,6 @@ stdenv.mkDerivation rec {
     gtest
   ];
 
-  cargoRoot = "rust";
-
-  cargoDeps = rustPlatform.fetchCargoVendor {
-    inherit
-      pname
-      version
-      src
-      cargoRoot
-      ;
-    hash = "sha256-5KZa5ocn6Q4qUeRmm7Tymgg09dr6aZoAuJvtF32CXNg=";
-  };
-
   cmakeFlags = [
     (lib.cmakeBool "FLTK_SKIP_FLUID" true) # otherwise `find_package(FLTK)` fails
     (lib.cmakeBool "LOCAL_LUA_LIB" false)
@@ -100,16 +88,31 @@ stdenv.mkDerivation rec {
     HOME=$(mktemp -d) $out/bin/ja2 -unittests
   '';
 
+  cargoDeps = rustPlatform.fetchCargoVendor {
+    inherit
+      pname
+      version
+      src
+      cargoRoot
+      ;
+
+    hash = "sha256-5KZa5ocn6Q4qUeRmm7Tymgg09dr6aZoAuJvtF32CXNg=";
+  };
+
+  cargoRoot = "rust";
+
   meta = {
-    # Fails to build on x86_64-linux as of 2025-03-16 and potentially earlier
-    broken = true;
     description = "Jagged Alliance 2, with community fixes";
+    homepage = "https://ja2-stracciatella.github.io/";
+
     license = {
+      free = false;
       fullName = "Strategy First Inc. Source Code License Agreement";
       url = "https://github.com/ja2-stracciatella/ja2-stracciatella/blob/master/SFI%20Source%20Code%20license%20agreement.txt";
-      free = false;
     };
-    homepage = "https://ja2-stracciatella.github.io/";
+
     maintainers = [ ];
+    # Fails to build on x86_64-linux as of 2025-03-16 and potentially earlier
+    broken = true;
   };
 }

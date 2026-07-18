@@ -1,7 +1,7 @@
 {
   config,
-  pkgs,
   lib,
+  pkgs,
   ...
 }:
 
@@ -19,15 +19,6 @@ in
     programs._1password-gui = {
       enable = lib.mkEnableOption "the 1Password GUI application";
 
-      polkitPolicyOwners = lib.mkOption {
-        type = lib.types.listOf lib.types.str;
-        default = [ ];
-        example = lib.literalExpression ''["user1" "user2" "user3"]'';
-        description = ''
-          A list of users who should be able to integrate 1Password with polkit-based authentication mechanisms.
-        '';
-      };
-
       package =
         lib.mkPackageOption pkgs "1Password GUI" {
           default = [ "_1password-gui" ];
@@ -39,21 +30,33 @@ in
               inherit (cfg) polkitPolicyOwners;
             };
         };
+
+      polkitPolicyOwners = lib.mkOption {
+        default = [ ];
+
+        description = ''
+          A list of users who should be able to integrate 1Password with polkit-based authentication mechanisms.
+        '';
+
+        example = lib.literalExpression ''["user1" "user2" "user3"]'';
+        type = lib.types.listOf lib.types.str;
+      };
     };
   };
 
   config = lib.mkIf cfg.enable {
     environment.systemPackages = [ cfg.package ];
-    users.groups.onepassword.gid = config.ids.gids.onepassword;
 
     security.wrappers = {
       "1Password-BrowserSupport" = {
-        source = "${cfg.package}/share/1password/1Password-BrowserSupport";
-        owner = "root";
         group = "onepassword";
-        setuid = false;
+        owner = "root";
         setgid = true;
+        setuid = false;
+        source = "${cfg.package}/share/1password/1Password-BrowserSupport";
       };
     };
+
+    users.groups.onepassword.gid = config.ids.gids.onepassword;
   };
 }

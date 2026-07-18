@@ -1,17 +1,16 @@
 {
   lib,
-  rel,
-  buildKodiBinaryAddon,
   fetchFromGitHub,
-  pkg-config,
+  buildKodiBinaryAddon,
   glm,
-  libGL,
   jsoncpp,
+  libGL,
+  pkg-config,
+  rel,
 }:
 
 buildKodiBinaryAddon rec {
   pname = "visualization-shadertoy";
-  namespace = "visualization.shadertoy";
   version = "21.0.2";
 
   src = fetchFromGitHub {
@@ -21,18 +20,21 @@ buildKodiBinaryAddon rec {
     hash = "sha256-M70WQL4BqFI4LMFLBXlupuXxRkbTqA0OocYlCbY28VQ=";
   };
 
+  propagatedBuildInputs = [ glm ];
+
   extraBuildInputs = [
     pkg-config
     libGL
     jsoncpp
   ];
 
-  propagatedBuildInputs = [ glm ];
+  namespace = "visualization.shadertoy";
+
   meta = {
-    homepage = "https://github.com/xbmc/visualization.shadertoy";
     description = "Shadertoy visualization for kodi";
-    platforms = lib.platforms.all;
+    homepage = "https://github.com/xbmc/visualization.shadertoy";
     license = lib.licenses.gpl2Only;
+    platforms = lib.platforms.all;
     teams = [ lib.teams.kodi ];
   };
 }

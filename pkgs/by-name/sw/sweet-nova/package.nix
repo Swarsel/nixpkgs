@@ -1,7 +1,7 @@
 {
+  lib,
   fetchFromGitHub,
   gitUpdater,
-  lib,
   stdenvNoCC,
 }:
 

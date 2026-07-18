@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   keystoneauth1,
   openstackdocstheme,
   osc-lib,
@@ -17,7 +17,6 @@
 buildPythonPackage rec {
   pname = "osc-placement";
   version = "4.8.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "openstack";
@@ -26,26 +25,12 @@ buildPythonPackage rec {
     hash = "sha256-txxLtg3fDrkPqU0k/PlwvpJJBzVLtJXz82mhPWo+rKc=";
   };
 
-  env.PBR_VERSION = version;
-
-  build-system = [
-    pbr
-    setuptools
-  ];
-
   nativeBuildInputs = [
     openstackdocstheme
     sphinxHook
   ];
 
-  sphinxBuilders = [ "man" ];
-
-  dependencies = [
-    keystoneauth1
-    osc-lib
-    oslo-utils
-    pbr
-  ];
+  env.PBR_VERSION = version;
 
   nativeCheckInputs = [
     oslo-serialization
@@ -59,11 +44,25 @@ buildPythonPackage rec {
     runHook postCheck
   '';
 
+  build-system = [
+    pbr
+    setuptools
+  ];
+
+  dependencies = [
+    keystoneauth1
+    osc-lib
+    oslo-utils
+    pbr
+  ];
+
+  pyproject = true;
   pythonImportsCheck = [ "osc_placement" ];
+  sphinxBuilders = [ "man" ];
 
   meta = {
-    homepage = "https://github.com/openstack/osc-placement";
     description = "OpenStackClient plugin for the Placement service";
+    homepage = "https://github.com/openstack/osc-placement";
     license = lib.licenses.asl20;
     teams = [ lib.teams.openstack ];
   };

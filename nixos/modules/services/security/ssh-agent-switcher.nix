@@ -8,8 +8,6 @@ let
   cfg = config.services.ssh-agent-switcher;
 in
 {
-  meta.maintainers = [ lib.maintainers.jmmv ];
-
   options = {
     services.ssh-agent-switcher = {
       enable = lib.mkEnableOption "ssh-agent-switcher daemon" // {
@@ -30,8 +28,6 @@ in
   };
 
   config = lib.mkIf cfg.enable {
-    environment.systemPackages = [ cfg.package ];
-
     environment.loginShellInit = ''
       if [ -n "$SSH_CONNECTION" ]; then
         mkdir -p "''${XDG_RUNTIME_DIR:-/run/user/$(id -u)}"
@@ -39,5 +35,9 @@ in
         ${lib.getExe cfg.package} --daemon --socket-path="$SSH_AUTH_SOCK" 2>/dev/null || true
       fi
     '';
+
+    environment.systemPackages = [ cfg.package ];
   };
+
+  meta.maintainers = [ lib.maintainers.jmmv ];
 }

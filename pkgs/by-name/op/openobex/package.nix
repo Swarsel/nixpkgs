@@ -2,10 +2,10 @@
   lib,
   stdenv,
   fetchurl,
-  pkg-config,
   bluez,
-  libusb-compat-0_1,
   cmake,
+  libusb-compat-0_1,
+  pkg-config,
   udevCheckHook,
 }:
 
@@ -23,6 +23,7 @@ stdenv.mkDerivation (finalAttrs: {
     cmake
     udevCheckHook
   ];
+
   buildInputs = [
     bluez
     libusb-compat-0_1
@@ -45,10 +46,10 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   meta = {
-    homepage = "http://dev.zuckschwerdt.org/openobex/";
     description = "Open source implementation of the Object Exchange (OBEX) protocol";
-    platforms = lib.platforms.linux;
+    homepage = "http://dev.zuckschwerdt.org/openobex/";
     license = lib.licenses.lgpl2Plus;
+    platforms = lib.platforms.linux;
     mainProgram = "obex-check-device";
   };
 })

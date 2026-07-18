@@ -1,13 +1,12 @@
 {
   lib,
-  python3Packages,
   fetchFromGitHub,
+  python3Packages,
 }:
 
 python3Packages.buildPythonApplication (finalAttrs: {
   pname = "gigawork";
   version = "1.4.3";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "sgl-umons";
@@ -27,11 +26,13 @@ python3Packages.buildPythonApplication (finalAttrs: {
     ruamel-yaml
   ];
 
-  pythonRelaxDeps = true;
+  pyproject = true;
 
   pythonImportsCheck = [
     "gigawork"
   ];
+
+  pythonRelaxDeps = true;
 
   meta = {
     description = "An automated tool for extracting GitHub Actions' workflows from Git repositories written in Python";

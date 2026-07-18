@@ -1,17 +1,16 @@
 {
   lib,
   fetchFromGitHub,
-  rustPlatform,
-  pkg-config,
-  openssl,
   installShellFiles,
   makeWrapper,
   nix-update-script,
+  openssl,
+  pkg-config,
+  rustPlatform,
 }:
 rustPlatform.buildRustPackage (finalAttrs: {
   pname = "dnst";
   version = "0.2.0-alpha3";
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "NLnetLabs";
@@ -25,8 +24,8 @@ rustPlatform.buildRustPackage (finalAttrs: {
     installShellFiles
     makeWrapper
   ];
-  buildInputs = [ openssl ];
 
+  buildInputs = [ openssl ];
   cargoHash = "sha256-8pzf4GeBJbqIZf6KAqROEAvFAqtf6XLODWhS3RVfpAQ=";
 
   postInstall = ''
@@ -39,15 +38,17 @@ rustPlatform.buildRustPackage (finalAttrs: {
     installManPage doc/manual/build/man/*.1
   '';
 
+  __structuredAttrs = true;
+
   passthru.updateScript = nix-update-script {
     extraArgs = [ "--version=unstable" ];
   };
 
   meta = {
     description = "Toolset to assist DNS operators with zone and nameserver maintenance";
-    mainProgram = "dnst";
     homepage = "https://nlnetlabs.nl/projects/domain/dnst/";
     license = lib.licenses.bsd3;
     maintainers = [ lib.maintainers.skyesoss ];
+    mainProgram = "dnst";
   };
 })

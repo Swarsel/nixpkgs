@@ -1,8 +1,8 @@
 {
   lib,
   stdenv,
-  fetchgit,
   cwebbin,
+  fetchgit,
   libx11,
   libxft,
   ncurses,

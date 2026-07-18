@@ -1,22 +1,22 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
-  cmake,
-  pkg-config,
-  libpng,
-  libjpeg,
-  libwebp,
   blas,
-  lapack,
+  cmake,
   config,
-  guiSupport ? false,
+  cudaPackages,
+  lapack,
+  libjpeg,
+  libpng,
+  libwebp,
   libx11,
-  enableShared ? !stdenv.hostPlatform.isStatic, # dlib has a build system that forces the user to choose between either shared or static libraries. See https://github.com/davisking/dlib/issues/923#issuecomment-2175865174
-  sse4Support ? stdenv.hostPlatform.sse4_1Support,
+  pkg-config,
   avxSupport ? stdenv.hostPlatform.avxSupport,
   cudaSupport ? config.cudaSupport,
-  cudaPackages,
+  enableShared ? !stdenv.hostPlatform.isStatic, # dlib has a build system that forces the user to choose between either shared or static libraries. See https://github.com/davisking/dlib/issues/923#issuecomment-2175865174
+  guiSupport ? false,
+  sse4Support ? stdenv.hostPlatform.sse4_1Support,
 }@inputs:
 (if cudaSupport then cudaPackages.backendStdenv else inputs.stdenv).mkDerivation rec {
   pname = "dlib";
@@ -32,21 +32,6 @@
   postPatch = ''
     rm -rf dlib/external
   '';
-
-  cmakeFlags = [
-    (lib.cmakeBool "BUILD_SHARED_LIBS" enableShared)
-    (lib.cmakeBool "USE_SSE4_INSTRUCTIONS" sse4Support)
-    (lib.cmakeBool "USE_AVX_INSTRUCTIONS" avxSupport)
-    (lib.cmakeBool "DLIB_USE_CUDA" cudaSupport)
-  ]
-  ++ lib.optionals (stdenv.hostPlatform.isDarwin && stdenv.hostPlatform.isAarch64) [
-    (lib.cmakeBool "USE_NEON_INSTRUCTIONS" false)
-  ]
-  ++ lib.optionals cudaSupport [
-    (lib.cmakeFeature "DLIB_USE_CUDA_COMPUTE_CAPABILITIES" (
-      builtins.concatStringsSep "," (with cudaPackages.flags; map dropDots cudaCapabilities)
-    ))
-  ];
 
   nativeBuildInputs = [
     cmake
@@ -79,6 +64,21 @@
       cccl
     ]
   );
+
+  cmakeFlags = [
+    (lib.cmakeBool "BUILD_SHARED_LIBS" enableShared)
+    (lib.cmakeBool "USE_SSE4_INSTRUCTIONS" sse4Support)
+    (lib.cmakeBool "USE_AVX_INSTRUCTIONS" avxSupport)
+    (lib.cmakeBool "DLIB_USE_CUDA" cudaSupport)
+  ]
+  ++ lib.optionals (stdenv.hostPlatform.isDarwin && stdenv.hostPlatform.isAarch64) [
+    (lib.cmakeBool "USE_NEON_INSTRUCTIONS" false)
+  ]
+  ++ lib.optionals cudaSupport [
+    (lib.cmakeFeature "DLIB_USE_CUDA_COMPUTE_CAPABILITIES" (
+      builtins.concatStringsSep "," (with cudaPackages.flags; map dropDots cudaCapabilities)
+    ))
+  ];
 
   passthru = {
     inherit

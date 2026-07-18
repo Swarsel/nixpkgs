@@ -1,8 +1,8 @@
 {
   lib,
+  stdenv,
   dotnet-sdk,
   dotnetCorePackages,
-  stdenv,
   writeText,
 }:
 
@@ -38,8 +38,6 @@ let
     in
 
     stdenv.mkDerivation {
-      name = "dotnet-cross-target-${runtime.version}-from-${dotnet-sdk.version}-test";
-
       nativeBuildInputs = [
         (dotnetCorePackages.combinePackages [
           dotnet-sdk
@@ -48,6 +46,15 @@ let
       ]
       ++ dotnet-sdk_target.packages;
 
+      installPhase = ''
+        runHook preInstall
+        dotnet run
+        touch "$out"
+        runHook postInstall
+      '';
+
+      name = "dotnet-cross-target-${runtime.version}-from-${dotnet-sdk.version}-test";
+
       unpackPhase = ''
         runHook preUnpack
         mkdir test
@@ -55,13 +62,6 @@ let
         cp ${props} Directory.Build.props
         ${dotnet-sdk_target}/bin/dotnet new console --no-restore
         runHook postUnpack
-      '';
-
-      installPhase = ''
-        runHook preInstall
-        dotnet run
-        touch "$out"
-        runHook postInstall
       '';
     };
 

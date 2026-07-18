@@ -1,14 +1,13 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   urllib3,
 }:
 
 buildPythonPackage rec {
   pname = "downloader-cli";
   version = "0.3.4";
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "deepjyoti30";
@@ -18,18 +17,17 @@ buildPythonPackage rec {
   };
 
   propagatedBuildInputs = [ urllib3 ];
-
   # Disable checks due to networking (Errno 101)
   doCheck = false;
-
+  format = "setuptools";
   pythonImportsCheck = [ "downloader_cli" ];
 
   meta = {
     description = "Downloader with an awesome customizable progressbar";
-    mainProgram = "dw";
     homepage = "https://github.com/deepjyoti30/downloader-cli";
     changelog = "https://github.com/deepjyoti30/downloader-cli/releases/tag/${version}";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ j0hax ];
+    mainProgram = "dw";
   };
 }

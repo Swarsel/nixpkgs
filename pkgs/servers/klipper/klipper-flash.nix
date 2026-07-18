@@ -1,16 +1,16 @@
 {
   lib,
-  writeShellApplication,
-  klipper,
-  klipper-firmware,
   avrdude,
   dfu-util,
+  klipper,
+  klipper-firmware,
   stm32flash,
-  mcu ? "mcu",
-  flashDevice ? null,
-  canbusNetwork ? null,
+  writeShellApplication,
   canbusDevice ? null,
+  canbusNetwork ? null,
   firmwareConfig ? ./simulator.cfg,
+  flashDevice ? null,
+  mcu ? "mcu",
 }:
 let
   getConfigField =
@@ -49,6 +49,7 @@ assert lib.assertMsg (
 ) "Either set flashDevice or both canbusNetwork and canbusDevice";
 writeShellApplication {
   name = "klipper-flash-${mcu}";
+
   runtimeInputs =
     [ ]
     ++ lib.optionals (flashDevice != null) (
@@ -60,6 +61,7 @@ writeShellApplication {
       ++ lib.optionals (matchPlatform == "lpc176x") [ dfu-util ]
       # bossac, hid-flash and RP2040 flash binaries are built by klipper-firmware
     );
+
   text =
     # generic USB script for most things with serial and bootloader (see MCU_TYPES in scripts/flash_usb.py)
     if flashDevice != null then

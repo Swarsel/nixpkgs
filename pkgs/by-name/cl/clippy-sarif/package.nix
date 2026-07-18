@@ -1,9 +1,9 @@
 {
   lib,
-  fetchCrate,
-  rustPlatform,
   clippy,
+  fetchCrate,
   nix-update-script,
+  rustPlatform,
   versionCheckHook,
 }:
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -16,20 +16,19 @@ rustPlatform.buildRustPackage (finalAttrs: {
   };
 
   cargoHash = "sha256-wdJTQjDCmbJVPEUV6DENb2UegAc1ET4iSw3SzmlGPnA=";
-
-  nativeInstallCheckInputs = [ versionCheckHook ];
   doInstallCheck = true;
+  nativeInstallCheckInputs = [ versionCheckHook ];
 
   passthru = {
     updateScript = nix-update-script { };
   };
 
   meta = {
+    inherit (clippy.meta) platforms;
     description = "CLI tool to convert clippy diagnostics into SARIF";
     homepage = "https://psastras.github.io/sarif-rs";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ getchoo ];
     mainProgram = "clippy-sarif";
-    inherit (clippy.meta) platforms;
   };
 })

@@ -1,25 +1,25 @@
 {
-  stdenv,
   lib,
+  stdenv,
   autoPatchelfHook,
-  fetchzip,
-  xz,
-  ncurses5,
-  ncurses,
-  readline,
-  gmp,
-  mpfr,
-  expat,
-  libipt,
-  zlib,
   dejagnu,
-  sourceHighlight,
-  python3,
   elfutils,
-  guile,
+  expat,
+  fetchzip,
   glibc,
-  zstd,
+  gmp,
+  guile,
+  libipt,
   majorVersion,
+  mpfr,
+  ncurses,
+  ncurses5,
+  python3,
+  readline,
+  sourceHighlight,
+  xz,
+  zlib,
+  zstd,
 }:
 
 let
@@ -34,87 +34,97 @@ stdenv.mkDerivation (
       in
       {
         "13" = {
-          gccVersion = "13.2.0";
           alireRevision = "2";
+          gccVersion = "13.2.0";
         }
         // {
-          x86_64-linux = {
-            inherit url;
-            hash = "sha256-DC95udGSzRDE22ON4UpekxTYWOSBeUdJvILbSFj6MFQ=";
-            upstreamTriplet = "x86_64-pc-linux-gnu";
-          };
           aarch64-darwin = {
             inherit url;
             hash = "sha256-Bjl6iuM2xLknezR92j/kpDYpxqTcxK1v8rffmivOAVw=";
             upstreamTriplet = "aarch64-apple-darwin23.2.0";
           };
-        }
-        .${stdenv.hostPlatform.system} or throwUnsupportedSystem;
-        "14" = {
-          gccVersion = "14.2.0";
-          alireRevision = "1";
-        }
-        // {
+
           x86_64-linux = {
             inherit url;
-            hash = "sha256-pH3IuOpCM9sY/ppTYcxBmgpsUiMrisIjmAa/rmmZXb4=";
+            hash = "sha256-DC95udGSzRDE22ON4UpekxTYWOSBeUdJvILbSFj6MFQ=";
             upstreamTriplet = "x86_64-pc-linux-gnu";
           };
-          aarch64-linux = {
-            inherit url;
-            hash = "sha256-SVW/0yyj6ZH1GAjvD+unII+zSLGd3KGFt1bjjQ3SEFU=";
-            upstreamTriplet = "aarch64-linux-gnu";
-          };
+        }
+        .${stdenv.hostPlatform.system} or throwUnsupportedSystem;
+
+        "14" = {
+          alireRevision = "1";
+          gccVersion = "14.2.0";
+        }
+        // {
           aarch64-darwin = {
             inherit url;
             hash = "sha256-/nARwdQzAMd41fslUbrgloxn0hVZp9PokfQ9yPmL1g8=";
             upstreamTriplet = "aarch64-apple-darwin23.6.0";
           };
+
+          aarch64-linux = {
+            inherit url;
+            hash = "sha256-SVW/0yyj6ZH1GAjvD+unII+zSLGd3KGFt1bjjQ3SEFU=";
+            upstreamTriplet = "aarch64-linux-gnu";
+          };
+
+          x86_64-linux = {
+            inherit url;
+            hash = "sha256-pH3IuOpCM9sY/ppTYcxBmgpsUiMrisIjmAa/rmmZXb4=";
+            upstreamTriplet = "x86_64-pc-linux-gnu";
+          };
         }
         .${stdenv.hostPlatform.system} or throwUnsupportedSystem;
+
         "15" = {
           gccVersion = "15.2.0";
         }
         // {
-          x86_64-linux = {
-            alireRevision = "1";
-            inherit url;
-            hash = "sha256-b4hAg3ifoBRqgPxpfMYuOdunw7wzRTL/G5YGBO+im24=";
-            upstreamTriplet = "x86_64-pc-linux-gnu";
+          aarch64-darwin = {
+            alireRevision = "2-pre0";
+            hash = "sha256-4bFtsjixfXYc8wYOc+5iAbp1MmiIS1h1NcdKno2IdJg=";
+            upstreamTriplet = "aarch64-apple-darwin24.6.0";
+            url = "https://github.com/alire-project/GNAT-FSF-builds/releases/download/gnat-15.2.0-2-macos-pre0/gnat-${stdenv.hostPlatform.system}-${finalAttrs.version}.tar.gz";
           };
+
           aarch64-linux = {
-            alireRevision = "1";
             inherit url;
+            alireRevision = "1";
             hash = "sha256-0V/VHqOSYQI6LmvpUIHy3zB6hI3dG0njOcDsrg8oZq8=";
             upstreamTriplet = "aarch64-linux-gnu";
           };
-          aarch64-darwin = {
-            alireRevision = "2-pre0";
-            url = "https://github.com/alire-project/GNAT-FSF-builds/releases/download/gnat-15.2.0-2-macos-pre0/gnat-${stdenv.hostPlatform.system}-${finalAttrs.version}.tar.gz";
-            hash = "sha256-4bFtsjixfXYc8wYOc+5iAbp1MmiIS1h1NcdKno2IdJg=";
-            upstreamTriplet = "aarch64-apple-darwin24.6.0";
+
+          x86_64-linux = {
+            inherit url;
+            alireRevision = "1";
+            hash = "sha256-b4hAg3ifoBRqgPxpfMYuOdunw7wzRTL/G5YGBO+im24=";
+            upstreamTriplet = "x86_64-pc-linux-gnu";
           };
         }
         .${stdenv.hostPlatform.system} or throwUnsupportedSystem;
+
         "16" = {
-          gccVersion = "16.1.0";
           alireRevision = "1";
+          gccVersion = "16.1.0";
         }
         // {
-          x86_64-linux = {
+          aarch64-darwin = {
             inherit url;
-            hash = "sha256-5bKYPJnXDGa80BtAogLE82X0zTuYKdN2cKh503oMeic=";
-            upstreamTriplet = "x86_64-pc-linux-gnu";
+            hash = "sha256-TJlV/Ngq6SwpIgGkwamTN3aRGP2BnEzJyBGovtWb6Y0=";
+            upstreamTriplet = "aarch64-apple-darwin24.6.0";
           };
+
           aarch64-linux = {
             inherit url;
             hash = "sha256-jJnqDJGBOjqbT4hDW0nRpV0oA3RXxJhvI7BuvQkPDQI=";
             upstreamTriplet = "aarch64-linux-gnu";
           };
-          aarch64-darwin = {
+
+          x86_64-linux = {
             inherit url;
-            hash = "sha256-TJlV/Ngq6SwpIgGkwamTN3aRGP2BnEzJyBGovtWb6Y0=";
-            upstreamTriplet = "aarch64-apple-darwin24.6.0";
+            hash = "sha256-5bKYPJnXDGa80BtAogLE82X0zTuYKdN2cKh503oMeic=";
+            upstreamTriplet = "x86_64-pc-linux-gnu";
           };
         }
         .${stdenv.hostPlatform.system} or throwUnsupportedSystem;
@@ -122,14 +132,34 @@ stdenv.mkDerivation (
     inherit (versionMap.${majorVersion}) gccVersion alireRevision upstreamTriplet;
   in
   {
-    pname = "gnat-bootstrap";
     inherit (versionMap.${majorVersion}) gccVersion alireRevision;
-
+    pname = "gnat-bootstrap";
     version = "${gccVersion}${lib.optionalString (alireRevision != "") "-"}${alireRevision}";
 
     src = fetchzip {
       inherit (versionMap.${majorVersion}) url hash;
     };
+
+    postPatch =
+      lib.optionalString (stdenv.hostPlatform.isDarwin) ''
+        substituteInPlace lib/gcc/${upstreamTriplet}/${gccVersion}/install-tools/mkheaders.conf \
+          --replace "SYSTEM_HEADER_DIR=\"/usr/include\"" "SYSTEM_HEADER_DIR=\"/include\""
+      ''
+      # The included fixincl binary that is called during header fixup has a
+      # hardcoded execvp("/usr/bin/sed", ...) call, but /usr/bin/sed isn't
+      # available in the Nix Darwin stdenv.  Fortunately, execvp() will search the
+      # PATH environment variable for the executable if its first argument does not
+      # contain a slash, so we can just change the string to "sed" and zero the
+      # other bytes.
+      + ''
+        sed -i "s,/usr/bin/sed,sed\x00\x00\x00\x00\x00\x00\x00\x00\x00," libexec/gcc/${upstreamTriplet}/${gccVersion}/install-tools/fixincl
+      ''
+      # Make sure that collect2 finds binutils-wrapper instead of the included ld binary.
+      + ''
+        rm -f bin/ld ${upstreamTriplet}/bin/ld
+      '';
+
+    strictDeps = true;
 
     nativeBuildInputs = [
       dejagnu
@@ -172,32 +202,6 @@ stdenv.mkDerivation (
           # not sure why the bootstrap binaries link to zstd only on this architecture but they do
           zstd
         ];
-
-    __structuredAttrs = true;
-    strictDeps = true;
-
-    # https://github.com/alire-project/GNAT-FSF-builds/issues/51
-    autoPatchelfIgnoreMissingDeps =
-      if (stdenv.buildPlatform.isLinux && majorVersion == "13") then true else null;
-
-    postPatch =
-      lib.optionalString (stdenv.hostPlatform.isDarwin) ''
-        substituteInPlace lib/gcc/${upstreamTriplet}/${gccVersion}/install-tools/mkheaders.conf \
-          --replace "SYSTEM_HEADER_DIR=\"/usr/include\"" "SYSTEM_HEADER_DIR=\"/include\""
-      ''
-      # The included fixincl binary that is called during header fixup has a
-      # hardcoded execvp("/usr/bin/sed", ...) call, but /usr/bin/sed isn't
-      # available in the Nix Darwin stdenv.  Fortunately, execvp() will search the
-      # PATH environment variable for the executable if its first argument does not
-      # contain a slash, so we can just change the string to "sed" and zero the
-      # other bytes.
-      + ''
-        sed -i "s,/usr/bin/sed,sed\x00\x00\x00\x00\x00\x00\x00\x00\x00," libexec/gcc/${upstreamTriplet}/${gccVersion}/install-tools/fixincl
-      ''
-      # Make sure that collect2 finds binutils-wrapper instead of the included ld binary.
-      + ''
-        rm -f bin/ld ${upstreamTriplet}/bin/ld
-      '';
 
     installPhase = ''
       mkdir -p $out
@@ -250,22 +254,31 @@ stdenv.mkDerivation (
         "$out" "${stdenv.cc.libc}"
     '';
 
+    __structuredAttrs = true;
+
+    # https://github.com/alire-project/GNAT-FSF-builds/issues/51
+    autoPatchelfIgnoreMissingDeps =
+      if (stdenv.buildPlatform.isLinux && majorVersion == "13") then true else null;
+
     passthru = {
+      isGNU = true;
+      langAda = true;
       langC = true; # TRICK for gcc-wrapper to wrap it
       langCC = false;
       langFortran = false;
-      langAda = true;
-      isGNU = true;
     };
 
     meta = {
       description = "GNAT, the GNU Ada Translator";
       homepage = "https://www.gnu.org/software/gnat";
       license = lib.licenses.gpl3;
+      sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
+
       maintainers = with lib.maintainers; [
         ethindp
         sempiternal-aurora
       ];
+
       platforms = [
         "x86_64-linux"
         "aarch64-darwin"
@@ -273,7 +286,6 @@ stdenv.mkDerivation (
       ++ lib.optionals (lib.versionAtLeast majorVersion "14") [
         "aarch64-linux"
       ];
-      sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
     };
   }
 )

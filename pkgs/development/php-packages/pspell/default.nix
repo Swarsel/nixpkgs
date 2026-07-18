@@ -1,8 +1,8 @@
 {
+  lib,
+  fetchFromGitHub,
   aspell,
   buildPecl,
-  fetchFromGitHub,
-  lib,
 }:
 
 let
@@ -20,7 +20,6 @@ buildPecl {
   };
 
   configureFlags = [ "--with-pspell=${aspell}" ];
-
   doCheck = true;
 
   meta = {

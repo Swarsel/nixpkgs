@@ -1,32 +1,26 @@
 {
   lib,
-  buildPythonPackage,
-  buildbot,
   stdenv,
-
-  # patch
-  coreutils,
-
-  # build system
-  setuptools,
-
   # propagates
   autobahn,
+  buildPythonPackage,
+  buildbot,
+  # patch
+  coreutils,
   msgpack,
-  twisted,
-
+  # passthru
+  nixosTests,
   # tests
   parameterized,
   psutil,
-
-  # passthru
-  nixosTests,
+  # build system
+  setuptools,
+  twisted,
 }:
 
 buildPythonPackage {
-  pname = "buildbot_worker";
   inherit (buildbot) src version;
-  pyproject = true;
+  pname = "buildbot_worker";
 
   postPatch = ''
     cd worker
@@ -34,6 +28,11 @@ buildPythonPackage {
     substituteInPlace buildbot_worker/scripts/logwatcher.py \
       --replace /usr/bin/tail "${coreutils}/bin/tail"
   '';
+
+  nativeCheckInputs = [
+    parameterized
+    psutil
+  ];
 
   build-system = [ setuptools ];
 
@@ -43,19 +42,16 @@ buildPythonPackage {
     twisted
   ];
 
-  nativeCheckInputs = [
-    parameterized
-    psutil
-  ];
+  pyproject = true;
 
   passthru.tests = {
     smoke-test = nixosTests.buildbot;
   };
 
   meta = {
-    homepage = "https://buildbot.net/";
     description = "Buildbot Worker Daemon";
-    teams = [ lib.teams.buildbot ];
+    homepage = "https://buildbot.net/";
     license = lib.licenses.gpl2;
+    teams = [ lib.teams.buildbot ];
   };
 }

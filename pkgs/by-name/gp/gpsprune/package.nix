@@ -1,12 +1,12 @@
 {
-  fetchurl,
   lib,
   stdenv,
+  fetchurl,
+  copyDesktopItems,
+  jre,
   makeDesktopItem,
   makeWrapper,
   unzip,
-  jre,
-  copyDesktopItems,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -18,33 +18,12 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-8FGOigjHIvj+CZwq0Lht7UZjtmrE5l2Aqx92gZjau44=";
   };
 
-  dontUnpack = true;
-
   nativeBuildInputs = [
     makeWrapper
     copyDesktopItems
   ];
-  buildInputs = [ jre ];
 
-  desktopItems = [
-    (makeDesktopItem {
-      name = "gpsprune";
-      exec = "gpsprune %F";
-      icon = "gpsprune";
-      desktopName = "GpsPrune";
-      genericName = "GPS Data Editor";
-      comment = finalAttrs.meta.description;
-      categories = [
-        "Education"
-        "Geoscience"
-      ];
-      mimeTypes = [
-        "application/gpx+xml"
-        "application/vnd.google-earth.kml+xml"
-        "application/vnd.google-earth.kmz"
-      ];
-    })
-  ];
+  buildInputs = [ jre ];
 
   installPhase = ''
     runHook preInstall
@@ -58,12 +37,37 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  desktopItems = [
+    (makeDesktopItem {
+      categories = [
+        "Education"
+        "Geoscience"
+      ];
+
+      comment = finalAttrs.meta.description;
+      desktopName = "GpsPrune";
+      exec = "gpsprune %F";
+      genericName = "GPS Data Editor";
+      icon = "gpsprune";
+
+      mimeTypes = [
+        "application/gpx+xml"
+        "application/vnd.google-earth.kml+xml"
+        "application/vnd.google-earth.kmz"
+      ];
+
+      name = "gpsprune";
+    })
+  ];
+
+  dontUnpack = true;
+
   meta = {
     description = "Application for viewing, editing and converting GPS coordinate data";
     homepage = "https://activityworkshop.net/software/gpsprune/";
     changelog = "https://activityworkshop.net/software/gpsprune/whats_new.html";
-    sourceProvenance = with lib.sourceTypes; [ binaryBytecode ];
     license = lib.licenses.gpl2Plus;
+    sourceProvenance = with lib.sourceTypes; [ binaryBytecode ];
     maintainers = with lib.maintainers; [ rycee ];
     platforms = lib.platforms.all;
     mainProgram = "gpsprune";

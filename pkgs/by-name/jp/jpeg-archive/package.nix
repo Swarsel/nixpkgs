@@ -2,11 +2,11 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  mozjpeg,
-  makeWrapper,
   coreutils,
-  parallel,
   findutils,
+  makeWrapper,
+  mozjpeg,
+  parallel,
 }:
 
 stdenv.mkDerivation {
@@ -25,17 +25,6 @@ stdenv.mkDerivation {
   nativeBuildInputs = [ makeWrapper ];
   buildInputs = [ mozjpeg ];
 
-  prePatch = ''
-    # allow override LIBJPEG
-    substituteInPlace Makefile --replace 'LIBJPEG =' 'LIBJPEG ?='
-  '';
-
-  # Workaround build failure on -fno-common toolchains like upstream
-  # gcc-10. Otherwise build fails as:
-  #   ld: src/util.o:(.bss+0x0): multiple definition of `progname'; /build/ccBZT2Za.o:(.bss+0x20): first defined here
-  # https://github.com/danielgtaylor/jpeg-archive/issues/119
-  env.NIX_CFLAGS_COMPILE = "-fcommon";
-
   makeFlags = [
     "CC=${stdenv.cc.targetPrefix}cc"
     "PREFIX=$(out)"
@@ -43,9 +32,20 @@ stdenv.mkDerivation {
     "LIBJPEG=${mozjpeg}/lib/libjpeg${stdenv.hostPlatform.extensions.sharedLibrary}"
   ];
 
+  # Workaround build failure on -fno-common toolchains like upstream
+  # gcc-10. Otherwise build fails as:
+  #   ld: src/util.o:(.bss+0x0): multiple definition of `progname'; /build/ccBZT2Za.o:(.bss+0x20): first defined here
+  # https://github.com/danielgtaylor/jpeg-archive/issues/119
+  env.NIX_CFLAGS_COMPILE = "-fcommon";
+
   postInstall = ''
     wrapProgram $out/bin/jpeg-archive \
       --set PATH "$out/bin:${coreutils}/bin:${parallel}/bin:${findutils}/bin"
+  '';
+
+  prePatch = ''
+    # allow override LIBJPEG
+    substituteInPlace Makefile --replace 'LIBJPEG =' 'LIBJPEG ?='
   '';
 
   meta = {

@@ -1,7 +1,7 @@
 {
   lib,
-  buildDunePackage,
   fetchurl,
+  buildDunePackage,
   domain-name,
   duration,
   fmt,
@@ -12,8 +12,6 @@
 buildDunePackage (finalAttrs: {
   pname = "happy-eyeballs";
   version = "2.0.1";
-
-  minimalOCamlVersion = "4.08";
 
   src = fetchurl {
     url = "https://github.com/roburio/happy-eyeballs/releases/download/v${finalAttrs.version}/happy-eyeballs-${finalAttrs.version}.tbz";
@@ -28,10 +26,13 @@ buildDunePackage (finalAttrs: {
     logs
   ];
 
+  minimalOCamlVersion = "4.08";
+
   meta = {
     description = "Connecting to a remote host via IP version 4 or 6";
     homepage = "https://github.com/roburio/happy-eyeballs";
     license = lib.licenses.isc;
+
     maintainers = with lib.maintainers; [
       vbgl
       ulrikstrid

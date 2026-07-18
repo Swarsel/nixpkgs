@@ -1,15 +1,12 @@
 {
   buildDunePackage,
-  ipaddr,
   cstruct,
+  ipaddr,
 }:
 
 buildDunePackage {
-  pname = "ipaddr-cstruct";
-
   inherit (ipaddr) version src;
-
-  duneVersion = "3";
+  pname = "ipaddr-cstruct";
 
   propagatedBuildInputs = [
     ipaddr
@@ -17,6 +14,7 @@ buildDunePackage {
   ];
 
   doCheck = true;
+  duneVersion = "3";
 
   meta = ipaddr.meta // {
     description = "Library for manipulation of IP address representations using Cstructs";

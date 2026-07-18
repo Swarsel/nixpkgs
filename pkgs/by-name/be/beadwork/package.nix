@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   gitMinimal,
   nix-update-script,
   versionCheckHook,
@@ -19,16 +19,12 @@ buildGoModule (finalAttrs: {
   };
 
   vendorHash = "sha256-LjqZSI7F3C8GyNrPK/BwG9QTmNg89hFAvhUuBjmbHTU=";
-
-  subPackages = [ "cmd/bw" ];
+  doCheck = true;
 
   nativeCheckInputs = [
     gitMinimal
     versionCheckHook
   ];
-
-  doCheck = true;
-  doInstallCheck = true;
 
   preCheck = ''
     export HOME="$TMPDIR"
@@ -37,15 +33,16 @@ buildGoModule (finalAttrs: {
     git config --global init.defaultBranch main
   '';
 
+  doInstallCheck = true;
+  __structuredAttrs = true;
+  subPackages = [ "cmd/bw" ];
   passthru.updateScript = nix-update-script { };
 
   meta = with lib; {
     description = "Git-native work management for AI coding agents";
     homepage = "https://github.com/jallum/beadwork";
     license = licenses.mit;
-    mainProgram = "bw";
     maintainers = with lib.maintainers; [ munksgaard ];
+    mainProgram = "bw";
   };
-
-  __structuredAttrs = true;
 })

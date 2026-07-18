@@ -1,18 +1,17 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
+  ffmpeg-headless,
   poetry-core,
+  pytestCheckHook,
   standard-aifc,
   standard-sunau,
-  ffmpeg-headless,
-  pytestCheckHook,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "audioread";
   version = "3.1.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "sampsyo";
@@ -21,6 +20,11 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-QvgwjUGuzeHH69YAdZdImjMT+9t4YxAukbuZKk0lBro=";
   };
 
+  nativeCheckInputs = [
+    ffmpeg-headless
+    pytestCheckHook
+  ];
+
   build-system = [ poetry-core ];
 
   dependencies = [
@@ -28,10 +32,7 @@ buildPythonPackage (finalAttrs: {
     standard-sunau
   ];
 
-  nativeCheckInputs = [
-    ffmpeg-headless
-    pytestCheckHook
-  ];
+  pyproject = true;
 
   meta = {
     description = "Cross-platform audio decoding";

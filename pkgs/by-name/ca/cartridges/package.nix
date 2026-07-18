@@ -1,9 +1,9 @@
 {
   lib,
+  fetchFromGitHub,
   appstream,
   blueprint-compiler,
   desktop-file-utils,
-  fetchFromGitHub,
   glib,
   glib-networking,
   gobject-introspection,
@@ -20,7 +20,6 @@
 python3Packages.buildPythonApplication (finalAttrs: {
   pname = "cartridges";
   version = "2.12.1";
-  pyproject = false;
 
   src = fetchFromGitHub {
     owner = "kra-mo";
@@ -49,6 +48,10 @@ python3Packages.buildPythonApplication (finalAttrs: {
     libadwaita
   ];
 
+  postFixup = ''
+    wrapPythonProgramsIn $out/libexec "$out ''${pythonPath[*]}"
+  '';
+
   dependencies = with python3Packages; [
     pillow
     pygobject3
@@ -59,10 +62,6 @@ python3Packages.buildPythonApplication (finalAttrs: {
   dontWrapGApps = true;
   makeWrapperArgs = [ "\${gappsWrapperArgs[@]}" ];
 
-  postFixup = ''
-    wrapPythonProgramsIn $out/libexec "$out ''${pythonPath[*]}"
-  '';
-
   # NOTE: `postCheck` is intentionally not used here, as the entire checkPhase
   # is skipped by `buildPythonApplication`
   # https://github.com/NixOS/nixpkgs/blob/9d4343b7b27a3e6f08fc22ead568233ff24bbbde/pkgs/development/interpreters/python/mk-python-derivation.nix#L296
@@ -70,23 +69,27 @@ python3Packages.buildPythonApplication (finalAttrs: {
     mesonCheckPhase
   '';
 
+  pyproject = false;
+
   passthru = {
     updateScript = nix-update-script { };
   };
 
   meta = {
     description = "GTK4 + Libadwaita game launcher";
+
     longDescription = ''
       A simple game launcher for all of your games.
       It has support for importing games from Steam, Lutris, Heroic
       and more with no login necessary.
       You can sort and hide games or download cover art from SteamGridDB.
     '';
+
     homepage = "https://apps.gnome.org/Cartridges/";
     changelog = "https://github.com/kra-mo/cartridges/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.gpl3Plus;
-    teams = [ lib.teams.gnome-circle ];
-    mainProgram = "cartridges";
     platforms = lib.platforms.linux;
+    mainProgram = "cartridges";
+    teams = [ lib.teams.gnome-circle ];
   };
 })

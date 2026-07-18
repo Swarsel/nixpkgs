@@ -11,35 +11,17 @@ let
   inherit (lib) mkOption types concatStringsSep;
 in
 {
-  port = 9119;
   extraOpts = {
-    bindURI = mkOption {
-      type = types.str;
-      default = "http://localhost:8053/";
-      description = ''
-        HTTP API address of a BIND server.
-      '';
-    };
-    bindTimeout = mkOption {
-      type = types.str;
-      default = "10s";
-      description = ''
-        Timeout for trying to get stats from Bind.
-      '';
-    };
-    bindVersion = mkOption {
-      type = types.enum [
-        "json"
-        "xml"
-        "xml.v3"
-        "auto"
-      ];
-      default = "json";
-      description = ''
-        BIND statistics version. Defaults to JSON.
-      '';
-    };
     bindGroups = mkOption {
+      default = [
+        "server"
+        "view"
+      ];
+
+      description = ''
+        List of statistics to collect. Available: [server, view, tasks]
+      '';
+
       type = types.listOf (
         types.enum [
           "server"
@@ -47,15 +29,46 @@ in
           "tasks"
         ]
       );
-      default = [
-        "server"
-        "view"
-      ];
+    };
+
+    bindTimeout = mkOption {
+      default = "10s";
+
       description = ''
-        List of statistics to collect. Available: [server, view, tasks]
+        Timeout for trying to get stats from Bind.
       '';
+
+      type = types.str;
+    };
+
+    bindURI = mkOption {
+      default = "http://localhost:8053/";
+
+      description = ''
+        HTTP API address of a BIND server.
+      '';
+
+      type = types.str;
+    };
+
+    bindVersion = mkOption {
+      default = "json";
+
+      description = ''
+        BIND statistics version. Defaults to JSON.
+      '';
+
+      type = types.enum [
+        "json"
+        "xml"
+        "xml.v3"
+        "auto"
+      ];
     };
   };
+
+  port = 9119;
+
   serviceOpts = {
     serviceConfig = {
       ExecStart = ''

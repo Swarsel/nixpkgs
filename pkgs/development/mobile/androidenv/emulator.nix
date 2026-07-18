@@ -1,21 +1,23 @@
 {
-  deployAndroidPackage,
   lib,
   stdenv,
-  package,
-  os,
   arch,
   autoPatchelfHook,
+  deployAndroidPackage,
   makeWrapper,
+  meta,
+  os,
+  package,
   pkgs,
   pkgsi686Linux,
   postInstall,
-  meta,
 }:
 
 deployAndroidPackage {
   inherit package os arch;
+  inherit meta;
   nativeBuildInputs = [ makeWrapper ] ++ lib.optionals (os == "linux") [ autoPatchelfHook ];
+
   buildInputs =
     lib.optionals (os == "linux") (
       with pkgs;
@@ -56,6 +58,9 @@ deployAndroidPackage {
       libxshmfence
     ])
     ++ lib.optional (os == "linux" && stdenv.hostPlatform.isx86_64) pkgsi686Linux.glibc;
+
+  dontMoveLib64 = true;
+
   patchInstructions =
     (lib.optionalString (os == "linux") ''
       addAutoPatchelfSearchPath $packageBaseDir/lib
@@ -94,7 +99,4 @@ deployAndroidPackage {
       cd $out/libexec/android-sdk
       ${postInstall}
     '';
-  dontMoveLib64 = true;
-
-  inherit meta;
 }

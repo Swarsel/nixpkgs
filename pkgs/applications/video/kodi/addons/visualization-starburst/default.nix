@@ -1,16 +1,15 @@
 {
   lib,
-  rel,
-  buildKodiBinaryAddon,
   fetchFromGitHub,
-  pkg-config,
+  buildKodiBinaryAddon,
   glm,
   libGL,
+  pkg-config,
+  rel,
 }:
 
 buildKodiBinaryAddon rec {
   pname = "visualization-starburst";
-  namespace = "visualization.starburst";
   version = "20.2.0";
 
   src = fetchFromGitHub {
@@ -20,17 +19,20 @@ buildKodiBinaryAddon rec {
     hash = "sha256-FTGyQqzRywKjywtckkP56Fc8KwF07A8WUAe0LackxSM=";
   };
 
+  propagatedBuildInputs = [ glm ];
+
   extraBuildInputs = [
     pkg-config
     libGL
   ];
 
-  propagatedBuildInputs = [ glm ];
+  namespace = "visualization.starburst";
+
   meta = {
-    homepage = "https://github.com/xbmc/visualization.starburst";
     description = "Starburst visualization for kodi";
-    platforms = lib.platforms.all;
+    homepage = "https://github.com/xbmc/visualization.starburst";
     license = lib.licenses.gpl2Only;
+    platforms = lib.platforms.all;
     teams = [ lib.teams.kodi ];
   };
 }

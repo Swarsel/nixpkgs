@@ -1,15 +1,15 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
   cmake,
-  sqlite,
-  httpSupport ? true,
   curl,
-  cliSupport ? true,
-  linenoiseSupport ? cliSupport,
   linenoise,
+  sqlite,
+  cliSupport ? true,
   enableLTO ? stdenv.cc.isGNU,
+  httpSupport ? true,
+  linenoiseSupport ? cliSupport,
 }:
 
 assert enableLTO -> stdenv.cc.isGNU;
@@ -25,14 +25,6 @@ stdenv.mkDerivation (finalAttrs: {
     sha256 = "sha256-Tahi2K8Q/KPc9MN7yWhkqp/MzXfzJzrGSsvnTCyI03U=";
   };
 
-  nativeBuildInputs = [ cmake ];
-
-  buildInputs = [
-    sqlite
-  ]
-  ++ lib.optional httpSupport curl
-  ++ lib.optional linenoiseSupport linenoise;
-
   patches = [
     ./0001-force-sqlite-to-be-found.patch
   ];
@@ -42,8 +34,13 @@ stdenv.mkDerivation (finalAttrs: {
         -e 's/-flto/${lib.optionalString stdenv.cc.isGNU "-Wno-error=format-truncation"}/'
   '';
 
-  # bcrypt magic value triggers gcc 15 -Wunterminated-string-initialization.
-  env.NIX_CFLAGS_COMPILE = "-Wno-error=unterminated-string-initialization";
+  nativeBuildInputs = [ cmake ];
+
+  buildInputs = [
+    sqlite
+  ]
+  ++ lib.optional httpSupport curl
+  ++ lib.optional linenoiseSupport linenoise;
 
   cmakeFlags = [
     "-DBUILD_CLI=${if cliSupport then "ON" else "OFF"}"
@@ -55,6 +52,9 @@ stdenv.mkDerivation (finalAttrs: {
     "-DCMAKE_AR=${stdenv.cc.cc}/bin/gcc-ar"
     "-DCMAKE_RANLIB=${stdenv.cc.cc}/bin/gcc-ranlib"
   ];
+
+  # bcrypt magic value triggers gcc 15 -Wunterminated-string-initialization.
+  env.NIX_CFLAGS_COMPILE = "-Wno-error=unterminated-string-initialization";
 
   postBuild = ''
     cd .. # move out of cmakeBuildDir
@@ -89,11 +89,11 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "High-level dynamically typed, multi-paradigm, interpreted programming language";
-    mainProgram = "dictu";
     homepage = "https://dictu-lang.com";
     license = lib.licenses.mit;
     maintainers = [ ];
     platforms = lib.platforms.all;
+    mainProgram = "dictu";
     broken = stdenv.hostPlatform.isDarwin; # never built on Hydra https://hydra.nixos.org/job/nixpkgs/staging-next/dictu.x86_64-darwin
   };
 })

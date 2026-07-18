@@ -2,12 +2,12 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  makeWrapper,
-  maim,
-  slop,
-  ffmpeg,
   byzanz,
+  ffmpeg,
   libnotify,
+  maim,
+  makeWrapper,
+  slop,
   xdpyinfo,
 }:
 
@@ -23,6 +23,7 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   nativeBuildInputs = [ makeWrapper ];
+
   buildInputs = [
     maim
     slop
@@ -51,14 +52,16 @@ stdenv.mkDerivation (finalAttrs: {
   meta = {
     inherit (finalAttrs.src.meta) homepage;
     description = "Yet Another X Grabber script";
+
     longDescription = ''
       Capture and record your screen with callbacks. Wraps maim, slop, ffmpeg,
       and byzanz to enable still image, video, or gif recording of part or all
       of your screen. Similar command-line interface to scrot but is overall
       more flexible and less buggy.
     '';
-    platforms = lib.platforms.all;
+
     license = lib.licenses.gpl3Plus;
+    platforms = lib.platforms.all;
     mainProgram = "yaxg";
   };
 })

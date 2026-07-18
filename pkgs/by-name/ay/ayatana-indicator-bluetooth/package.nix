@@ -1,16 +1,16 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
-  gitUpdater,
-  nixosTests,
   cmake,
   gettext,
+  gitUpdater,
   glib,
   gobject-introspection,
   intltool,
   libayatana-common,
   lomiri,
+  nixosTests,
   pkg-config,
   systemd,
   vala,
@@ -65,19 +65,23 @@ stdenv.mkDerivation (finalAttrs: {
         "lomiri"
       ];
     };
+
     tests = {
-      startup = nixosTests.ayatana-indicators;
       lomiri = nixosTests.lomiri.desktop-ayatana-indicator-bluetooth;
+      startup = nixosTests.ayatana-indicators;
     };
+
     updateScript = gitUpdater { };
   };
 
   meta = {
     description = "Ayatana System Indicator for Bluetooth Management";
+
     longDescription = ''
       This Ayatana Indicator exposes bluetooth functionality via the system
       indicator API and provides fast user controls for Bluetooth devices.
     '';
+
     homepage = "https://github.com/AyatanaIndicators/ayatana-indicator-bluetooth";
     changelog = "https://github.com/AyatanaIndicators/ayatana-indicator-bluetooth/blob/${finalAttrs.version}/ChangeLog";
     license = lib.licenses.gpl3Only;

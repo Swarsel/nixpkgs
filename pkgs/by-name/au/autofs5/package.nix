@@ -2,52 +2,74 @@
   lib,
   stdenv,
   fetchurl,
-  flex,
   bison,
-  linuxHeaders,
-  libtirpc,
-  mount,
-  umount,
-  nfs-utils,
-  e2fsprogs,
-  libxml2,
-  libkrb5,
-  kmod,
-  openldap,
-  sssd,
   cyrus_sasl,
-  openssl,
-  rpcsvc-proto,
-  pkgconf,
+  e2fsprogs,
   fetchpatch,
+  flex,
+  kmod,
+  libkrb5,
   libnsl,
+  libtirpc,
+  libxml2,
+  linuxHeaders,
+  mount,
+  nfs-utils,
+  openldap,
+  openssl,
+  pkgconf,
+  rpcsvc-proto,
+  sssd,
+  umount,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
-  version = "5.1.9";
   pname = "autofs";
+  version = "5.1.9";
 
   src = fetchurl {
     url = "mirror://kernel/linux/daemons/autofs/v5/autofs-${finalAttrs.version}.tar.xz";
     sha256 = "sha256-h+avagN5S5Ri6lGXgeUOfSO198ks1Z4RQshdJJOzwks=";
   };
+
   patches = [
     (fetchpatch {
-      url = "mirror://kernel/linux/daemons/autofs/v5/patches-5.2.0/autofs-5.1.9-update-configure.patch";
       hash = "sha256-BomhNw+lMHcgs5gQlzapZ6p/Ji3gJUVkrLpZssBmwbg=";
+      url = "mirror://kernel/linux/daemons/autofs/v5/patches-5.2.0/autofs-5.1.9-update-configure.patch";
     })
     (fetchpatch {
-      url = "mirror://kernel/linux/daemons/autofs/v5/patches-5.2.0/autofs-5.1.9-fix-ldap_parse_page_control-check.patch";
       hash = "sha256-W757LU9r9kuzLeThif2a1olRtxNrJy5suemLS7yfbIU=";
+      url = "mirror://kernel/linux/daemons/autofs/v5/patches-5.2.0/autofs-5.1.9-fix-ldap_parse_page_control-check.patch";
     })
     (fetchpatch {
-      url = "mirror://kernel/linux/daemons/autofs/v5/patches-5.2.0/autofs-5.1.9-fix-crash-in-make_options_string.patch";
       hash = "sha256-YjTdJ50iNhJ2UjFdrKYEFNt04z0PfmElbFa4GuSskLA=";
+      url = "mirror://kernel/linux/daemons/autofs/v5/patches-5.2.0/autofs-5.1.9-fix-crash-in-make_options_string.patch";
     })
     (fetchpatch {
-      url = "mirror://kernel/linux/daemons/autofs/v5/patches-5.2.0/autofs-5.1.9-Fix-incompatible-function-pointer-types-in-cyrus-sasl-module.patch";
       hash = "sha256-erLlqZtVmYqUOsk3S7S50yA0VB8Gzibsv+X50+gcA58=";
+      url = "mirror://kernel/linux/daemons/autofs/v5/patches-5.2.0/autofs-5.1.9-Fix-incompatible-function-pointer-types-in-cyrus-sasl-module.patch";
     })
+  ];
+
+  nativeBuildInputs = [
+    flex
+    bison
+    pkgconf
+    libnsl.dev
+  ];
+
+  buildInputs = [
+    linuxHeaders
+    libtirpc
+    libxml2
+    libkrb5
+    kmod
+    openldap
+    sssd
+    openssl
+    cyrus_sasl
+    rpcsvc-proto
+    libnsl
   ];
 
   preConfigure = ''
@@ -71,33 +93,12 @@ stdenv.mkDerivation (finalAttrs: {
     #make install SUBDIRS="samples" # impure!
   '';
 
-  buildInputs = [
-    linuxHeaders
-    libtirpc
-    libxml2
-    libkrb5
-    kmod
-    openldap
-    sssd
-    openssl
-    cyrus_sasl
-    rpcsvc-proto
-    libnsl
-  ];
-
-  nativeBuildInputs = [
-    flex
-    bison
-    pkgconf
-    libnsl.dev
-  ];
-
   meta = {
     description = "Kernel-based automounter";
-    mainProgram = "automount";
     homepage = "https://www.kernel.org/pub/linux/daemons/autofs/";
     license = lib.licenses.gpl2Plus;
-    executables = [ "automount" ];
     platforms = lib.platforms.linux;
+    mainProgram = "automount";
+    executables = [ "automount" ];
   };
 })

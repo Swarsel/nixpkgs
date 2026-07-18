@@ -1,20 +1,19 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
-  dnspython,
+  buildPythonPackage,
   chardet,
-  python-daemon,
-  jinja2,
   click,
+  dnspython,
+  jinja2,
+  python-daemon,
+  setuptools,
   unittestCheckHook,
 }:
 
 buildPythonPackage rec {
   pname = "salmon-mail";
   version = "3.3.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "moggers87";
@@ -33,6 +32,15 @@ buildPythonPackage rec {
     unittestCheckHook
   ];
 
+  # The tests use salmon executable installed by salmon itself so we need to add
+  # that to PATH
+  preCheck = ''
+    export PATH=$out/bin:$PATH
+  '';
+
+  # Darwin tests fail without this. See:
+  # https://github.com/NixOS/nixpkgs/pull/82166#discussion_r399909846
+  __darwinAllowLocalNetworking = true;
   build-system = [ setuptools ];
 
   dependencies = [
@@ -42,27 +50,19 @@ buildPythonPackage rec {
     python-daemon
   ];
 
+  pyproject = true;
+
   pythonImportsCheck = [
     "salmon"
     "salmon.handlers"
   ];
 
-  # Darwin tests fail without this. See:
-  # https://github.com/NixOS/nixpkgs/pull/82166#discussion_r399909846
-  __darwinAllowLocalNetworking = true;
-
-  # The tests use salmon executable installed by salmon itself so we need to add
-  # that to PATH
-  preCheck = ''
-    export PATH=$out/bin:$PATH
-  '';
-
   meta = {
+    description = "Pythonic mail application server";
     homepage = "https://salmon-mail.readthedocs.org/";
     changelog = "https://github.com/moggers87/salmon/blob/${src.rev}/CHANGELOG.rst";
-    description = "Pythonic mail application server";
-    mainProgram = "salmon";
     license = lib.licenses.gpl3Only;
     maintainers = with lib.maintainers; [ jluttine ];
+    mainProgram = "salmon";
   };
 }

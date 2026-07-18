@@ -1,8 +1,8 @@
 {
   lib,
+  fetchFromGitHub,
   bash,
   dbus,
-  fetchFromGitHub,
   installShellFiles,
   libgit2,
   libssh2,
@@ -25,8 +25,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-oKYPhevy0o5IxxqMneWAamRyZr7yForbsuhszWDUaQk=";
   };
 
-  cargoHash = "sha256-hrjZKowkTQaNDrwOYM6pvUomcBrMrvlgvLl0UreeW8U=";
-
   nativeBuildInputs = [
     pkg-config
     installShellFiles
@@ -45,6 +43,8 @@ rustPlatform.buildRustPackage (finalAttrs: {
     zlib
   ];
 
+  cargoHash = "sha256-hrjZKowkTQaNDrwOYM6pvUomcBrMrvlgvLl0UreeW8U=";
+
   postInstall = ''
     mv -v "$out/bin/ciel-rs" "$out/bin/ciel"
 
@@ -62,11 +62,13 @@ rustPlatform.buildRustPackage (finalAttrs: {
     description = "Tool for controlling AOSC OS packaging environments using multi-layer filesystems and containers";
     homepage = "https://github.com/AOSC-Dev/ciel-rs";
     license = lib.licenses.mit;
-    platforms = lib.platforms.linux;
+
     maintainers = with lib.maintainers; [
       A1ca7raz
       yisuidenghua
     ];
+
+    platforms = lib.platforms.linux;
     mainProgram = "ciel";
   };
 })

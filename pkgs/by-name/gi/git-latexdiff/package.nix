@@ -2,21 +2,21 @@
   lib,
   stdenv,
   fetchFromGitLab,
-  installShellFiles,
   asciidoc,
-  makeBinaryWrapper,
   coreutils,
   gnused,
+  installShellFiles,
+  makeBinaryWrapper,
   versionCheckHook,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
-  version = "1.7.1";
   pname = "git-latexdiff";
+  version = "1.7.1";
 
   src = fetchFromGitLab {
-    repo = "git-latexdiff";
     owner = "git-latexdiff";
+    repo = "git-latexdiff";
     tag = finalAttrs.version;
     hash = "sha256-ocEDds1vAnaj84YiAez150OZV82w3NlsgXoxNbUGW/Q=";
   };
@@ -33,13 +33,6 @@ stdenv.mkDerivation (finalAttrs: {
     makeBinaryWrapper
   ];
 
-  nativeInstallCheckInputs = [
-    versionCheckHook
-  ];
-  doInstallCheck = true;
-
-  dontBuild = true;
-
   installPhase = ''
     installBin git-latexdiff
     wrapProgram ''${!outputBin}/bin/git-latexdiff \
@@ -53,11 +46,19 @@ stdenv.mkDerivation (finalAttrs: {
     installManPage git-latexdiff.1
   '';
 
+  doInstallCheck = true;
+
+  nativeInstallCheckInputs = [
+    versionCheckHook
+  ];
+
+  dontBuild = true;
+
   meta = {
     description = "View diff on LaTeX source files on the generated PDF files";
     homepage = "https://gitlab.com/git-latexdiff/git-latexdiff";
-    maintainers = with lib.maintainers; [ doronbehar ];
     license = lib.licenses.bsd3; # https://gitlab.com/git-latexdiff/git-latexdiff/issues/9
+    maintainers = with lib.maintainers; [ doronbehar ];
     platforms = lib.platforms.unix;
     mainProgram = "git-latexdiff";
   };

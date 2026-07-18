@@ -1,19 +1,19 @@
 {
-  autoPatchelfHook,
+  lib,
+  stdenv,
   fetchurl,
+  autoPatchelfHook,
+  copyDesktopItems,
   gcc-unwrapped,
   gsettings-desktop-schemas,
   gtk3,
-  lib,
   libGL,
   makeDesktopItem,
   makeWrapper,
   nwjs,
-  stdenv,
-  unzip,
   udev,
+  unzip,
   wrapGAppsHook3,
-  copyDesktopItems,
 }:
 
 stdenv.mkDerivation rec {
@@ -41,37 +41,6 @@ stdenv.mkDerivation rec {
     udev
   ];
 
-  sourceRoot = ".";
-
-  dontWrapGApps = true;
-  dontUnpack = true;
-
-  makeWrapperArgs = [
-    "--prefix LD_LIBRARY_PATH : ${
-      lib.makeLibraryPath [
-        gcc-unwrapped.lib
-        gtk3
-        udev
-        libGL
-      ]
-    }"
-    "--prefix PATH : ${lib.makeBinPath [ stdenv.cc ]}"
-  ];
-
-  desktopItem = makeDesktopItem {
-    name = pname;
-    exec = pname;
-    icon = pname;
-    comment = meta.description;
-    genericName = meta.description;
-    type = "Application";
-    desktopName = "Popcorn-Time";
-    categories = [
-      "Video"
-      "AudioVideo"
-    ];
-  };
-
   # Extract and copy executable in $out/bin
   installPhase = ''
     mkdir -p $out/share/applications $out/bin $out/opt/bin $out/share/icons/hicolor/scalable/apps/
@@ -94,13 +63,45 @@ stdenv.mkDerivation rec {
       ''${gappsWrapperArgs[@]}
   '';
 
+  desktopItem = makeDesktopItem {
+    categories = [
+      "Video"
+      "AudioVideo"
+    ];
+
+    comment = meta.description;
+    desktopName = "Popcorn-Time";
+    exec = pname;
+    genericName = meta.description;
+    icon = pname;
+    name = pname;
+    type = "Application";
+  };
+
+  dontUnpack = true;
+  dontWrapGApps = true;
+
+  makeWrapperArgs = [
+    "--prefix LD_LIBRARY_PATH : ${
+      lib.makeLibraryPath [
+        gcc-unwrapped.lib
+        gtk3
+        udev
+        libGL
+      ]
+    }"
+    "--prefix PATH : ${lib.makeBinPath [ stdenv.cc ]}"
+  ];
+
+  sourceRoot = ".";
+
   meta = {
-    homepage = "https://github.com/popcorn-official/popcorn-desktop";
     description = "Application that streams movies and TV shows from torrents";
-    platforms = [ "x86_64-linux" ];
-    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
+    homepage = "https://github.com/popcorn-official/popcorn-desktop";
     license = lib.licenses.gpl3;
+    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
     maintainers = with lib.maintainers; [ onny ];
+    platforms = [ "x86_64-linux" ];
     mainProgram = "popcorntime";
   };
 }

@@ -18,13 +18,15 @@ in
 
   ###### implementation
   config = mkIf cfg.enable {
+    environment.systemPackages = [ pkgs.fluxbox ];
+
     services.xserver.windowManager.session = singleton {
       name = "fluxbox";
+
       start = ''
         ${pkgs.fluxbox}/bin/startfluxbox &
         waitPID=$!
       '';
     };
-    environment.systemPackages = [ pkgs.fluxbox ];
   };
 }

@@ -4,8 +4,8 @@
   fetchFromGitHub,
   autoconf,
   automake,
-  pkg-config,
   cairo,
+  pkg-config,
   poppler,
   wxwidgets_3_2,
 }:
@@ -26,6 +26,7 @@ stdenv.mkDerivation rec {
     automake
     pkg-config
   ];
+
   buildInputs = [
     cairo
     poppler
@@ -35,11 +36,11 @@ stdenv.mkDerivation rec {
   preConfigure = "./bootstrap";
 
   meta = {
-    homepage = "https://vslavik.github.io/diff-pdf/";
     description = "Simple tool for visually comparing two PDF files";
+    homepage = "https://vslavik.github.io/diff-pdf/";
     license = lib.licenses.gpl2;
-    platforms = lib.platforms.all;
     maintainers = [ ];
+    platforms = lib.platforms.all;
     mainProgram = "diff-pdf";
   };
 }

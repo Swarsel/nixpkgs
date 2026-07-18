@@ -2,13 +2,13 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  cmake,
-  pkg-config,
   bzip2,
+  cmake,
   installShellFiles,
   libusb1,
   libzip,
   openssl,
+  pkg-config,
   tinyxml-2,
   zstd,
 }:
@@ -39,8 +39,6 @@ stdenv.mkDerivation (finalAttrs: {
     zstd
   ];
 
-  doInstallCheck = true;
-
   preConfigure = "echo ${finalAttrs.version} > .tarball-version";
 
   postInstall = ''
@@ -53,8 +51,11 @@ stdenv.mkDerivation (finalAttrs: {
       --bash ../snap/local/bash-completion/universal-update-utility
   '';
 
+  doInstallCheck = true;
+
   meta = {
     description = "Freescale/NXP I.MX chip image deploy tools";
+
     longDescription = ''
       UUU (Universal Update Utility) is a command line tool, evolved out of
       MFGTools (aka MFGTools v3).
@@ -66,13 +67,16 @@ stdenv.mkDerivation (finalAttrs: {
       increased. UUU has the same usage on both Windows and Linux. It means the same
       script works on both OS.
     '';
+
     homepage = "https://github.com/NXPmicro/mfgtools";
     license = lib.licenses.bsd3;
+
     maintainers = with lib.maintainers; [
       bmilanov
       jraygauthier
     ];
-    mainProgram = "uuu";
+
     platforms = lib.platforms.all;
+    mainProgram = "uuu";
   };
 })

@@ -1,15 +1,15 @@
 {
   lib,
   stdenv,
-  rustPlatform,
   fetchFromGitHub,
   gitMinimal,
-  python3,
   makeWrapper,
-  writeScriptBin,
-  versionCheckHook,
   nix-update-script,
+  python3,
+  rustPlatform,
+  versionCheckHook,
   writableTmpDirAsHomeHook,
+  writeScriptBin,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -23,8 +23,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-cSMHd3j3xslSR/v4KZ5LUwxPPR/b+okwrT54gUyLXXw=";
   };
 
-  cargoHash = "sha256-JrDj88JjQon2rtywa/PqnS1pTxTLigPHNnqQS/tO9RA=";
-
   nativeBuildInputs = [
     gitMinimal
     python3
@@ -37,19 +35,22 @@ rustPlatform.buildRustPackage (finalAttrs: {
     python3
   ];
 
+  cargoHash = "sha256-JrDj88JjQon2rtywa/PqnS1pTxTLigPHNnqQS/tO9RA=";
+
   postInstall = ''
     mkdir -p $out/lib
     cp -r $HOME/.erg/ $out/lib/erg
   '';
 
-  postFixup = ''
-    wrapProgram $out/bin/pylyzer --set ERG_PATH $out/lib/erg
-  '';
+  doInstallCheck = true;
 
   nativeInstallCheckInputs = [
     versionCheckHook
   ];
-  doInstallCheck = true;
+
+  postFixup = ''
+    wrapProgram $out/bin/pylyzer --set ERG_PATH $out/lib/erg
+  '';
 
   passthru = {
     updateScript = nix-update-script { };

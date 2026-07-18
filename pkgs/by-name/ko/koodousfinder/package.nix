@@ -1,13 +1,12 @@
 {
   lib,
-  python3,
   fetchFromGitHub,
+  python3,
 }:
 
 python3.pkgs.buildPythonApplication {
   pname = "koodousfinder";
   version = "0.1.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "HuntDownProject";
@@ -18,8 +17,8 @@ python3.pkgs.buildPythonApplication {
     hash = "sha256-skCbt2lDKgSyZdHY3WImbr6CF0icrDPTIXNV1736gKk=";
   };
 
-  pythonRelaxDeps = [ "keyring" ];
-
+  # Project has no tests, re-check with next release
+  doCheck = false;
   build-system = with python3.pkgs; [ poetry-core ];
 
   dependencies = with python3.pkgs; [
@@ -27,10 +26,9 @@ python3.pkgs.buildPythonApplication {
     requests
   ];
 
-  # Project has no tests, re-check with next release
-  doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "koodousfinder" ];
+  pythonRelaxDeps = [ "keyring" ];
 
   meta = {
     description = "Tool to allows users to search for and analyze Android apps";

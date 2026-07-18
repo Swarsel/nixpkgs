@@ -1,54 +1,47 @@
 {
   lib,
   stdenv,
+  adios2,
   buildPythonPackage,
-
-  # build-system
-  scikit-build-core,
-  nanobind,
-
+  cffi,
   # nativeBuildInputs
   cmake,
-  ninja,
-  pkg-config,
-
   # buildInputs
   dolfinx,
-
-  # dependency
-  numpy,
-  cffi,
-  mpi4py,
-  petsc4py,
-  slepc4py,
-  adios2,
-  kahip,
-  fenics-ffcx,
   fenics-basix,
-  fenics-ufl,
-
-  # nativeCheckInputs
-  scipy,
-  matplotlib,
-  pytestCheckHook,
-  writableTmpDirAsHomeHook,
-  mpiCheckPhaseHook,
-
-  # custom options
-  withParmetis ? false,
-
   # passthru.tests
   fenics-dolfinx,
+  fenics-ffcx,
+  fenics-ufl,
+  kahip,
+  matplotlib,
+  mpi4py,
+  mpiCheckPhaseHook,
   mpich,
+  nanobind,
+  ninja,
+  # dependency
+  numpy,
+  petsc4py,
+  pkg-config,
+  pytestCheckHook,
+  # build-system
+  scikit-build-core,
+  # nativeCheckInputs
+  scipy,
+  slepc4py,
+  writableTmpDirAsHomeHook,
+  # custom options
+  withParmetis ? false,
 }:
 
 let
   fenicsPackages = petsc4py.petscPackages.overrideScope (
     final: prev: {
-      slepc = final.callPackage slepc4py.override { };
       adios2 = final.callPackage adios2.override { };
-      kahip = final.callPackage kahip.override { };
       dolfinx = final.callPackage dolfinx.override { inherit withParmetis; };
+      kahip = final.callPackage kahip.override { };
+      slepc = final.callPackage slepc4py.override { };
     }
   );
 in
@@ -57,23 +50,8 @@ buildPythonPackage (finalAttrs: {
     version
     src
     ;
+
   pname = "fenics-dolfinx";
-  pyproject = true;
-
-  pythonRelaxDeps = [
-    "fenics-ufl"
-  ];
-
-  preConfigure = ''
-    cd python
-  '';
-
-  dontUseCmakeConfigure = true;
-
-  build-system = [
-    scikit-build-core
-    nanobind
-  ];
 
   nativeBuildInputs = [
     cmake
@@ -84,6 +62,27 @@ buildPythonPackage (finalAttrs: {
 
   buildInputs = [
     fenicsPackages.dolfinx
+  ];
+
+  preConfigure = ''
+    cd python
+  '';
+
+  nativeCheckInputs = [
+    scipy
+    matplotlib
+    pytestCheckHook
+    writableTmpDirAsHomeHook
+    mpiCheckPhaseHook
+  ];
+
+  preCheck = ''
+    cd test
+  '';
+
+  build-system = [
+    scikit-build-core
+    nanobind
   ];
 
   dependencies = [
@@ -99,20 +98,15 @@ buildPythonPackage (finalAttrs: {
     (mpi4py.override { inherit (fenicsPackages) mpi; })
   ];
 
-  nativeCheckInputs = [
-    scipy
-    matplotlib
-    pytestCheckHook
-    writableTmpDirAsHomeHook
-    mpiCheckPhaseHook
-  ];
-
-  preCheck = ''
-    cd test
-  '';
+  dontUseCmakeConfigure = true;
+  pyproject = true;
 
   pythonImportsCheck = [
     "dolfinx"
+  ];
+
+  pythonRelaxDeps = [
+    "fenics-ufl"
   ];
 
   passthru = {
@@ -129,15 +123,17 @@ buildPythonPackage (finalAttrs: {
   };
 
   meta = {
-    homepage = "https://fenicsproject.org";
-    downloadPage = "https://github.com/fenics/dolfinx";
     description = "Computational environment of FEniCSx and implements the FEniCS Problem Solving Environment in C++ and Python";
+    homepage = "https://fenicsproject.org";
     changelog = "https://github.com/fenics/dolfinx/releases/tag/v${finalAttrs.version}";
+
     license = with lib.licenses; [
       bsd2
       lgpl3Plus
     ];
-    platforms = lib.platforms.unix;
+
     maintainers = with lib.maintainers; [ qbisi ];
+    platforms = lib.platforms.unix;
+    downloadPage = "https://github.com/fenics/dolfinx";
   };
 })

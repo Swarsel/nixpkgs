@@ -7,15 +7,15 @@
 }:
 
 stdenv.mkDerivation (finalAttrs: {
-  pname = "glycin-thumbnailer-test";
   inherit (glycin-thumbnailer) version;
+  pname = "glycin-thumbnailer-test";
 
   src = fetchFromGitLab {
-    domain = "gitlab.gnome.org";
     owner = "sophie-h";
     repo = "test-images";
     rev = "f7a06d9131a5686c1b58c56f42f9fda9ea5e620d";
     hash = "sha256-qoteYmliUha3lY21PRM0FaeYu9aD5MsygBTsTYog9SE=";
+    domain = "gitlab.gnome.org";
   };
 
   # Fix incorrectly detected MIME types

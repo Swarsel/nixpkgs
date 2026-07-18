@@ -1,17 +1,16 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   grpc,
+  nix-update-script,
   protobuf,
   setuptools,
-  nix-update-script,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "googleapis-common-protos";
   version = "1.73.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "googleapis";
@@ -20,28 +19,16 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-LrsmLySAOTsECwxa1NaFuyZAjar0Jbg9DHNi6uqYaxk=";
   };
 
-  sourceRoot = "${finalAttrs.src.name}/packages/googleapis-common-protos";
-
+  # does not contain tests
+  doCheck = false;
   build-system = [ setuptools ];
-
-  pythonRelaxDeps = [
-    "protobuf"
-  ];
 
   dependencies = [
     grpc
     protobuf
   ];
 
-  passthru.updateScript = nix-update-script {
-    extraArgs = [
-      "--version-regex"
-      "googleapis-common-protos-v([0-9.]+)"
-    ];
-  };
-
-  # does not contain tests
-  doCheck = false;
+  pyproject = true;
 
   pythonImportsCheck = [
     "google.api"
@@ -50,6 +37,19 @@ buildPythonPackage (finalAttrs: {
     "google.rpc"
     "google.type"
   ];
+
+  pythonRelaxDeps = [
+    "protobuf"
+  ];
+
+  sourceRoot = "${finalAttrs.src.name}/packages/googleapis-common-protos";
+
+  passthru.updateScript = nix-update-script {
+    extraArgs = [
+      "--version-regex"
+      "googleapis-common-protos-v([0-9.]+)"
+    ];
+  };
 
   meta = {
     description = "Common protobufs used in Google APIs";

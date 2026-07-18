@@ -1,23 +1,22 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
+  buildPythonPackage,
   click,
   jinja2,
-  python-dotenv,
-  pyyaml,
-  rich,
   pytest-cov-stub,
   pytestCheckHook,
-  scikit-learn,
+  python-dotenv,
+  pyyaml,
   requests,
+  rich,
+  scikit-learn,
+  setuptools,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "agentic-threat-hunting-framework";
   version = "0.13.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "Nebulock-Inc";
@@ -25,6 +24,12 @@ buildPythonPackage (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-5E9nUSGwEuGdt04M0rRoHES8Klco6j5X1TLa/E7KdgM=";
   };
+
+  nativeCheckInputs = [
+    pytest-cov-stub
+    pytestCheckHook
+    requests
+  ];
 
   build-system = [ setuptools ];
 
@@ -40,12 +45,7 @@ buildPythonPackage (finalAttrs: {
     similarity = [ scikit-learn ];
   };
 
-  nativeCheckInputs = [
-    pytest-cov-stub
-    pytestCheckHook
-    requests
-  ];
-
+  pyproject = true;
   pythonImportsCheck = [ "athf" ];
 
   meta = {

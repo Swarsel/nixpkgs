@@ -1,19 +1,18 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   django,
-  pydantic,
-  hatchling,
   djangorestframework,
-  pytestCheckHook,
+  hatchling,
+  pydantic,
   pytest-cov-stub,
+  pytestCheckHook,
 }:
 
 buildPythonPackage rec {
   pname = "drf-pydantic";
   version = "2.9.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "georgebv";
@@ -21,6 +20,12 @@ buildPythonPackage rec {
     tag = "v${version}";
     hash = "sha256-/dMhKlAMAh63JlhanfSfe15ECMZvtnd1huD8L3Xo2AQ=";
   };
+
+  nativeCheckInputs = [
+    pytestCheckHook
+    pytest-cov-stub
+  ]
+  ++ pydantic.optional-dependencies.email;
 
   build-system = [
     hatchling
@@ -32,17 +37,13 @@ buildPythonPackage rec {
     djangorestframework
   ];
 
-  nativeCheckInputs = [
-    pytestCheckHook
-    pytest-cov-stub
-  ]
-  ++ pydantic.optional-dependencies.email;
+  pyproject = true;
 
   meta = {
-    changelog = "https://github.com/georgebv/drf-pydantic/releases/tag/${src.tag}";
     description = "Use pydantic with the Django REST framework";
     homepage = "https://github.com/georgebv/drf-pydantic";
-    maintainers = [ lib.maintainers.kiara ];
+    changelog = "https://github.com/georgebv/drf-pydantic/releases/tag/${src.tag}";
     license = lib.licenses.mit;
+    maintainers = [ lib.maintainers.kiara ];
   };
 }

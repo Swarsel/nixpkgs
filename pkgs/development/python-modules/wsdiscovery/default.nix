@@ -1,8 +1,8 @@
 {
   lib,
+  fetchFromGitHub,
   buildPythonPackage,
   click,
-  fetchFromGitHub,
   ifaddr,
   mock,
   pytestCheckHook,
@@ -12,7 +12,6 @@
 buildPythonPackage rec {
   pname = "wsdiscovery";
   version = "2.1.2";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "andreikop";
@@ -21,6 +20,11 @@ buildPythonPackage rec {
     hash = "sha256-c9ExGiNo0j+h1U9yKU3OtInawJXivBxdzAGvrSfi7VE=";
   };
 
+  nativeCheckInputs = [
+    mock
+    pytestCheckHook
+  ];
+
   build-system = [ setuptools ];
 
   dependencies = [
@@ -28,11 +32,7 @@ buildPythonPackage rec {
     ifaddr
   ];
 
-  nativeCheckInputs = [
-    mock
-    pytestCheckHook
-  ];
-
+  pyproject = true;
   pythonImportsCheck = [ "wsdiscovery" ];
 
   meta = {

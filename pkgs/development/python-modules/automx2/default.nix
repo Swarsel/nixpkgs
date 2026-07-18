@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   flask,
   flask-migrate,
   flask-sqlalchemy,
@@ -13,7 +13,6 @@
 buildPythonPackage rec {
   pname = "automx2";
   version = "2026.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "rseichter";
@@ -22,6 +21,7 @@ buildPythonPackage rec {
     hash = "sha256-7tMcX4BZ6yxlYGy2/3Ffr0X7xtPgcC9YtKcoz1i32sM=";
   };
 
+  nativeCheckInputs = [ pytestCheckHook ];
   build-system = [ setuptools ];
 
   dependencies = [
@@ -31,8 +31,7 @@ buildPythonPackage rec {
     ldap3
   ];
 
-  nativeCheckInputs = [ pytestCheckHook ];
-
+  pyproject = true;
   pythonImportsCheck = [ "automx2" ];
 
   meta = {

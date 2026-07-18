@@ -2,9 +2,9 @@
   lib,
   buildPythonPackage,
   fetchPypi,
-  hatchling,
   hatch-jupyter-builder,
   hatch-nodejs-version,
+  hatchling,
   ipywidgets,
   jupyterlab,
 }:
@@ -12,7 +12,6 @@
 buildPythonPackage rec {
   pname = "ipylab";
   version = "1.1.0";
-  pyproject = true;
 
   # This needs to be fetched from Pypi, as we rely on the nodejs build to be skipped,
   # which only happens if ipylab/labextension/style.js is present.
@@ -20,6 +19,9 @@ buildPythonPackage rec {
     inherit pname version;
     hash = "sha256-85hYpNnvbsuC+O/uufa1oBo6ZNTzxPKl/i1YrllN4hI=";
   };
+
+  # There are no tests
+  doCheck = false;
 
   build-system = [
     hatchling
@@ -32,10 +34,8 @@ buildPythonPackage rec {
     ipywidgets
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "ipylab" ];
-
-  # There are no tests
-  doCheck = false;
 
   meta = {
     description = "Control JupyterLab from Python notebooks";

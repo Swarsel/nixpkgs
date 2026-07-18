@@ -1,8 +1,8 @@
 {
   lib,
+  fetchFromGitHub,
   buildPythonPackage,
   dataclasses-json,
-  fetchFromGitHub,
   fetchpatch,
   limiter,
   requests,
@@ -13,7 +13,6 @@
 buildPythonPackage rec {
   pname = "spyse-python";
   version = "2.2.3";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "spyse-com";
@@ -25,13 +24,11 @@ buildPythonPackage rec {
   patches = [
     # Update limiter import and rate limit, https://github.com/spyse-com/spyse-python/pull/11
     (fetchpatch {
+      hash = "sha256-PoWPJCK/Scsh4P7lr97u4JpVHXNlY0C9rJgY4TDYmv0=";
       name = "support-later-limiter.patch";
       url = "https://github.com/spyse-com/spyse-python/commit/ff68164c514dfb28ab77d8690b3a5153962dbe8c.patch";
-      hash = "sha256-PoWPJCK/Scsh4P7lr97u4JpVHXNlY0C9rJgY4TDYmv0=";
     })
   ];
-
-  pythonRemoveDeps = [ "dataclasses" ];
 
   postPatch = ''
     substituteInPlace setup.py \
@@ -41,6 +38,8 @@ buildPythonPackage rec {
       --replace-fail "requests~=2.26.0" "requests>=2.26.0"
   '';
 
+  # Tests requires an API token
+  doCheck = false;
   build-system = [ setuptools ];
 
   dependencies = [
@@ -50,10 +49,9 @@ buildPythonPackage rec {
     limiter
   ];
 
-  # Tests requires an API token
-  doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "spyse" ];
+  pythonRemoveDeps = [ "dataclasses" ];
 
   meta = {
     description = "Python module for spyse.com API";

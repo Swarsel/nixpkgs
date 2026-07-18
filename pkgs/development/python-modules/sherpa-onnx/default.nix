@@ -1,18 +1,14 @@
 {
   buildPythonPackage,
-  sherpa-onnx,
   numpy,
   python,
+  sherpa-onnx,
 }:
 
 buildPythonPackage {
-  pname = "sherpa-onnx";
   inherit (sherpa-onnx) version;
-  pyproject = false;
-
+  pname = "sherpa-onnx";
   src = sherpa-onnx.python;
-
-  dependencies = [ numpy ];
 
   installPhase = ''
     runHook preInstall
@@ -23,6 +19,8 @@ buildPythonPackage {
     runHook postInstall
   '';
 
+  dependencies = [ numpy ];
+  pyproject = false;
   pythonImportsCheck = [ "sherpa_onnx" ];
 
   meta = removeAttrs sherpa-onnx.meta [ "mainProgram" ] // {

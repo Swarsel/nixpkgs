@@ -1,25 +1,25 @@
 {
   lib,
-  rustPlatform,
-  fetchFromGitHub,
-  makeWrapper,
-  pkg-config,
   stdenv,
-  openssl,
-  withALSA ? stdenv.hostPlatform.isLinux,
+  fetchFromGitHub,
   alsa-lib,
   alsa-plugins,
-  withPortAudio ? stdenv.hostPlatform.isDarwin,
-  portaudio,
-  withPulseAudio ? config.pulseaudio or stdenv.hostPlatform.isLinux,
-  libpulseaudio,
-  config,
-  withRodio ? true,
-  withAvahi ? false,
-  withMDNS ? true,
-  withDNS-SD ? false,
   avahi-compat,
+  config,
+  libpulseaudio,
+  makeWrapper,
+  openssl,
+  pkg-config,
+  portaudio,
+  rustPlatform,
   tlsBackend ? "native-tls", # "native-tls" "rustls-tls-native-roots" "rustls-tls-webpki-roots"
+  withALSA ? stdenv.hostPlatform.isLinux,
+  withAvahi ? false,
+  withDNS-SD ? false,
+  withMDNS ? true,
+  withPortAudio ? stdenv.hostPlatform.isDarwin,
+  withPulseAudio ? config.pulseaudio or stdenv.hostPlatform.isLinux,
+  withRodio ? true,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -32,8 +32,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
     rev = "v${finalAttrs.version}";
     hash = "sha256-twWndV6z5Cdivz7pfAJzdlIjddEiZPEFnTzipMczmJo=";
   };
-
-  cargoHash = "sha256-Kf3w6tD/MQaXXegtiCkFbUcYwr4OMw6ipLxNLxJ2NTQ=";
 
   nativeBuildInputs = [
     pkg-config
@@ -51,7 +49,13 @@ rustPlatform.buildRustPackage (finalAttrs: {
   ++ lib.optional withPortAudio portaudio
   ++ lib.optional withPulseAudio libpulseaudio;
 
-  buildNoDefaultFeatures = true;
+  cargoHash = "sha256-Kf3w6tD/MQaXXegtiCkFbUcYwr4OMw6ipLxNLxJ2NTQ=";
+
+  postFixup = lib.optionalString withALSA ''
+    wrapProgram "$out/bin/librespot" \
+      --set ALSA_PLUGIN_DIR '${alsa-plugins}/lib/alsa-lib'
+  '';
+
   buildFeatures = [
     tlsBackend
   ]
@@ -63,17 +67,14 @@ rustPlatform.buildRustPackage (finalAttrs: {
   ++ lib.optional withPortAudio "portaudio-backend"
   ++ lib.optional withPulseAudio "pulseaudio-backend";
 
-  postFixup = lib.optionalString withALSA ''
-    wrapProgram "$out/bin/librespot" \
-      --set ALSA_PLUGIN_DIR '${alsa-plugins}/lib/alsa-lib'
-  '';
+  buildNoDefaultFeatures = true;
 
   meta = {
     description = "Open Source Spotify client library and playback daemon";
-    mainProgram = "librespot";
     homepage = "https://github.com/librespot-org/librespot";
     changelog = "https://github.com/librespot-org/librespot/blob/v${finalAttrs.version}/CHANGELOG.md";
     license = with lib.licenses; [ mit ];
     maintainers = with lib.maintainers; [ bennofs ];
+    mainProgram = "librespot";
   };
 })

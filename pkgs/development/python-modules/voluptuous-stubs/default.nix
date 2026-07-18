@@ -9,20 +9,17 @@
 buildPythonPackage (finalAttrs: {
   pname = "voluptuous-stubs";
   version = "0.1.1";
-  pyproject = true;
 
   src = fetchPypi {
     inherit (finalAttrs) pname version;
     hash = "sha256-cPscCIJC8g4RAjJStWSM13+DH2ks2RDI+XE8wTXPjMg=";
   };
 
-  build-system = [ setuptools ];
-
   nativeBuildInputs = [ mypy ];
-
-  pythonImportsCheck = [ "voluptuous-stubs" ];
-
   doCheck = false;
+  build-system = [ setuptools ];
+  pyproject = true;
+  pythonImportsCheck = [ "voluptuous-stubs" ];
 
   meta = {
     description = "Typing stubs for voluptuous";

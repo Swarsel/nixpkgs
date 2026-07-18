@@ -1,26 +1,26 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchurl,
+  _experimental-update-script-combinators,
   cargo,
+  common-updater-scripts,
   desktop-file-utils,
+  glycin-loaders,
+  gnome,
+  gtk4,
   itstool,
+  lcms2,
+  libadwaita,
+  libglycin,
+  libgweather,
+  libseccomp,
   meson,
   ninja,
   pkg-config,
+  rustPlatform,
   rustc,
   wrapGAppsHook4,
-  gtk4,
-  lcms2,
-  libadwaita,
-  libgweather,
-  libseccomp,
-  libglycin,
-  glycin-loaders,
-  gnome,
-  common-updater-scripts,
-  _experimental-update-script-combinators,
-  rustPlatform,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -30,12 +30,6 @@ stdenv.mkDerivation (finalAttrs: {
   src = fetchurl {
     url = "mirror://gnome/sources/loupe/${lib.versions.major finalAttrs.version}/loupe-${finalAttrs.version}.tar.xz";
     hash = "sha256-euT7rl4ZMWqmQMVvgNxaeRRIpi3Y8P8G4ppYutgTqZQ=";
-  };
-
-  cargoDeps = rustPlatform.fetchCargoVendor {
-    inherit (finalAttrs) src;
-    name = "loupe-deps-${finalAttrs.version}";
-    hash = "sha256-I4z5qjX10AUuwk+JdX/1ZU0uCAVPQj8HkEc+n9aMczE=";
   };
 
   postPatch = ''
@@ -70,6 +64,12 @@ stdenv.mkDerivation (finalAttrs: {
   # For https://gitlab.gnome.org/GNOME/loupe/-/blob/0e6ddb0227ac4f1c55907f8b43eaef4bb1d3ce70/src/meson.build#L34-35
   env.CARGO_BUILD_TARGET = stdenv.hostPlatform.rust.rustcTargetSpec;
 
+  cargoDeps = rustPlatform.fetchCargoVendor {
+    inherit (finalAttrs) src;
+    hash = "sha256-I4z5qjX10AUuwk+JdX/1ZU0uCAVPQj8HkEc+n9aMczE=";
+    name = "loupe-deps-${finalAttrs.version}";
+  };
+
   passthru = {
     updateScript =
       let
@@ -90,6 +90,7 @@ stdenv.mkDerivation (finalAttrs: {
               update-source-version loupe --ignore-same-version --source-key=cargoDeps.vendorStaging > /dev/null
             ''
           ];
+
           # Experimental feature: do not copy!
           supportedFeatures = [ "silent" ];
         };
@@ -101,13 +102,13 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   meta = {
+    description = "Simple image viewer application written with GTK4 and Rust";
     homepage = "https://gitlab.gnome.org/GNOME/loupe";
     changelog = "https://gitlab.gnome.org/GNOME/loupe/-/blob/${finalAttrs.version}/NEWS?ref_type=tags";
-    description = "Simple image viewer application written with GTK4 and Rust";
     license = lib.licenses.gpl3Plus;
     maintainers = with lib.maintainers; [ jk ];
-    teams = [ lib.teams.gnome ];
     platforms = lib.platforms.unix;
     mainProgram = "loupe";
+    teams = [ lib.teams.gnome ];
   };
 })

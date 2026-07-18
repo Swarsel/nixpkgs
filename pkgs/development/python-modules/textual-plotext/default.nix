@@ -1,7 +1,7 @@
 {
+  lib,
   buildPythonPackage,
   fetchPypi,
-  lib,
   plotext,
   poetry-core,
   textual,
@@ -10,13 +10,12 @@
 buildPythonPackage rec {
   pname = "textual-plotext";
   version = "1.0.1";
-  pyproject = true;
 
   # GitHub is missing tags: https://github.com/Textualize/textual-plotext/issues/18
   src = fetchPypi {
-    pname = "textual_plotext";
     inherit version;
     hash = "sha256-g29TozFnVmCeGUEpo1wodWOOeVjCYfVB4KeU98mAEb4=";
+    pname = "textual_plotext";
   };
 
   build-system = [ poetry-core ];
@@ -26,6 +25,7 @@ buildPythonPackage rec {
     textual
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "textual_plotext" ];
 
   meta = {

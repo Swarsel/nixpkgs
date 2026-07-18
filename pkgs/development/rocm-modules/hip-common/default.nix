@@ -13,16 +13,13 @@ stdenv.mkDerivation (finalAttrs: {
     owner = "ROCm";
     repo = "rocm-systems";
     rev = "rocm-${finalAttrs.version}";
+    hash = "sha256-orfTXKjcZJ5E73cmXEyltZVYhCQo8FLExVHM3J/rqUM=";
+
     sparseCheckout = [
       "projects/hip"
       "shared"
     ];
-    hash = "sha256-orfTXKjcZJ5E73cmXEyltZVYhCQo8FLExVHM3J/rqUM=";
   };
-  sourceRoot = "${finalAttrs.src.name}/projects/hip";
-
-  dontConfigure = true;
-  dontBuild = true;
 
   installPhase = ''
     runHook preInstall
@@ -33,6 +30,9 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  dontBuild = true;
+  dontConfigure = true;
+  sourceRoot = "${finalAttrs.src.name}/projects/hip";
   passthru.updateScript = rocmUpdateScript { inherit finalAttrs; };
 
   meta = {
@@ -40,7 +40,7 @@ stdenv.mkDerivation (finalAttrs: {
     homepage = "https://github.com/ROCm/rocm-systems/tree/develop/projects/hip";
     license = with lib.licenses; [ mit ];
     maintainers = with lib.maintainers; [ lovesegfault ];
-    teams = [ lib.teams.rocm ];
     platforms = lib.platforms.linux;
+    teams = [ lib.teams.rocm ];
   };
 })

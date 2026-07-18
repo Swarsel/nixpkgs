@@ -9,7 +9,6 @@
 buildPythonPackage rec {
   pname = "stashy";
   version = "0.7";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
@@ -23,6 +22,7 @@ buildPythonPackage rec {
 
   # Tests require internet connection
   doCheck = false;
+  format = "setuptools";
   pythonImportsCheck = [ "stashy" ];
 
   meta = {

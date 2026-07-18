@@ -4,13 +4,13 @@
   fetchFromGitHub,
   autoconf,
   automake,
-  libtool,
-  pkg-config,
   gnome-common,
+  gobject-introspection,
   gtk-doc,
   gtk2,
+  libtool,
   lua5_1,
-  gobject-introspection,
+  pkg-config,
 }:
 let
   lua = lua5_1;
@@ -49,6 +49,7 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Library for registering global key bindings";
+
     longDescription = ''
       keybinder is a library for registering global keyboard shortcuts.
       Keybinder works with GTK-based applications using the X Window System.
@@ -59,9 +60,10 @@ stdenv.mkDerivation (finalAttrs: {
       * Gobject-Introspection (gir)  generated bindings
       * Lua bindings, ``lua-keybinder``
     '';
+
     homepage = "https://github.com/kupferlauncher/keybinder/";
     license = lib.licenses.gpl2Plus;
-    platforms = lib.platforms.linux;
     maintainers = [ lib.maintainers.bjornfor ];
+    platforms = lib.platforms.linux;
   };
 })

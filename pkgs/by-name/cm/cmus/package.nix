@@ -1,71 +1,66 @@
 {
-  config,
   lib,
   stdenv,
   fetchFromGitHub,
+  config,
+  libiconv,
   ncurses,
   pkg-config,
-  libiconv,
-
-  alsaSupport ? stdenv.hostPlatform.isLinux,
+  aacSupport ? false,
   alsa-lib ? null,
+  alsa-oss ? null,
+  alsaSupport ? stdenv.hostPlatform.isLinux,
   # simple fallback for everyone else
   aoSupport ? !stdenv.hostPlatform.isLinux,
-  libao ? null,
-  jackSupport ? false,
-  libjack2 ? null,
-  samplerateSupport ? jackSupport,
-  libsamplerate ? null,
-  ossSupport ? false,
-  alsa-oss ? null,
-  pulseaudioSupport ? config.pulseaudio or false,
-  libpulseaudio ? null,
-  sndioSupport ? false,
-  sndio ? null,
-  mprisSupport ? stdenv.hostPlatform.isLinux,
-  systemd ? null,
-
   # TODO: add these
   #, artsSupport
   #, roarSupport
   #, sunSupport
   #, waveoutSupport
-
   cddbSupport ? true,
-  libcddb ? null,
   cdioSupport ? true,
-  libcdio ? null,
-  libcdio-paranoia ? null,
   cueSupport ? true,
-  libcue ? null,
   discidSupport ? false,
-  libdiscid ? null,
+  faad2 ? null, # already handled by ffmpeg
   ffmpegSupport ? true,
   ffmpeg_7 ? null,
-  flacSupport ? true,
   flac ? null,
-  madSupport ? true,
+  flacSupport ? true,
+  jackSupport ? false,
+  libao ? null,
+  libcddb ? null,
+  libcdio ? null,
+  libcdio-paranoia ? null,
+  libcue ? null,
+  libdiscid ? null,
+  libjack2 ? null,
   libmad ? null,
-  mikmodSupport ? true,
   libmikmod ? null,
-  modplugSupport ? true,
   libmodplug ? null,
-  mpcSupport ? true,
   libmpcdec ? null,
-  tremorSupport ? false,
-  tremor ? null,
-  vorbisSupport ? true,
+  libpulseaudio ? null,
+  libsamplerate ? null,
   libvorbis ? null,
-  wavpackSupport ? true,
-  wavpack ? null,
-  opusSupport ? true,
-  opusfile ? null,
-
-  aacSupport ? false,
-  faad2 ? null, # already handled by ffmpeg
+  madSupport ? true,
+  mikmodSupport ? true,
+  modplugSupport ? true,
   mp4Support ? false,
   mp4v2 ? null, # ffmpeg does support mp4 better
-
+  mpcSupport ? true,
+  mprisSupport ? stdenv.hostPlatform.isLinux,
+  opusSupport ? true,
+  opusfile ? null,
+  ossSupport ? false,
+  pulseaudioSupport ? config.pulseaudio or false,
+  samplerateSupport ? jackSupport,
+  sndio ? null,
+  sndioSupport ? false,
+  systemd ? null,
+  tremor ? null,
+  tremorSupport ? false,
+  vorbisSupport ? true,
+  wavpack ? null,
+  wavpackSupport ? true,
   # not in nixpkgs
   #, vtxSupport ? true, libayemu ? null
 }:
@@ -84,13 +79,13 @@ let
     b: f: dep:
     if b then
       {
-        flags = [ f ];
         deps = [ dep ];
+        flags = [ f ];
       }
     else
       {
-        flags = [ ];
         deps = [ ];
+        flags = [ ];
       };
 
   opts = [
@@ -147,6 +142,7 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   nativeBuildInputs = [ pkg-config ];
+
   buildInputs = [
     ncurses
   ]
@@ -155,8 +151,6 @@ stdenv.mkDerivation (finalAttrs: {
   ]
   ++ lib.flatten (lib.concatMap (a: a.deps) opts);
 
-  prefixKey = "prefix=";
-
   configureFlags = [
     "CONFIG_WAV=y"
     "HOSTCC=${stdenv.cc.targetPrefix}cc"
@@ -164,6 +158,7 @@ stdenv.mkDerivation (finalAttrs: {
   ++ lib.concatMap (a: a.flags) opts;
 
   makeFlags = [ "LD=$(CC)" ];
+  prefixKey = "prefix=";
 
   meta = {
     description = "Small, fast and powerful console music player for Linux and *BSD";

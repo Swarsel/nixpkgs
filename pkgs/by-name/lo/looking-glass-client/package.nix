@@ -1,43 +1,39 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
-  pkg-config,
   cmake,
-  freefont_ttf,
-  spice-protocol,
-  nettle,
-  libbfd,
-  fontconfig,
-  libffi,
   expat,
+  fontconfig,
+  freefont_ttf,
   libGL,
-  nanosvg,
-
+  libbfd,
+  libffi,
+  libsamplerate,
   libx11,
-  libxkbcommon,
-  libxext,
-  libxrandr,
-  libxi,
-  libxscrnsaver,
-  libxinerama,
   libxcursor,
-  libxpresent,
   libxdmcp,
-
+  libxext,
+  libxi,
+  libxinerama,
+  libxkbcommon,
+  libxpresent,
+  libxrandr,
+  libxscrnsaver,
+  nanosvg,
+  nettle,
+  pipewire,
+  pkg-config,
+  pulseaudio,
+  spice-protocol,
   wayland,
   wayland-protocols,
   wayland-scanner,
-
-  pipewire,
-  pulseaudio,
-  libsamplerate,
-
   openGLSupport ? true,
-  xorgSupport ? true,
-  waylandSupport ? true,
   pipewireSupport ? true,
   pulseSupport ? true,
+  waylandSupport ? true,
+  xorgSupport ? true,
 }:
 stdenv.mkDerivation (finalAttrs: {
   pname = "looking-glass-client";
@@ -107,18 +103,19 @@ stdenv.mkDerivation (finalAttrs: {
   ++ lib.optionals (!pulseSupport) [ "-DENABLE_PULSEAUDIO=no" ]
   ++ lib.optionals (!pipewireSupport) [ "-DENABLE_PIPEWIRE=no" ];
 
-  postUnpack = ''
-    echo ${finalAttrs.src.rev} > source/VERSION
-    export sourceRoot="source/client"
-  '';
-
   postInstall = ''
     mkdir -p $out/share/pixmaps
     cp $src/resources/lg-logo.png $out/share/pixmaps
   '';
 
+  postUnpack = ''
+    echo ${finalAttrs.src.rev} > source/VERSION
+    export sourceRoot="source/client"
+  '';
+
   meta = {
     description = "KVM Frame Relay (KVMFR) implementation";
+
     longDescription = ''
       Looking Glass is an open source application that allows the use of a KVM
       (Kernel-based Virtual Machine) configured for VGA PCI Pass-through
@@ -126,14 +123,17 @@ stdenv.mkDerivation (finalAttrs: {
       step required to move away from dual booting with other operating systems
       for legacy programs that require high performance graphics.
     '';
+
     homepage = "https://looking-glass.io/";
     license = lib.licenses.gpl2Plus;
-    mainProgram = "looking-glass-client";
+
     maintainers = with lib.maintainers; [
       alexbakker
       babbaj
       j-brn
     ];
+
     platforms = [ "x86_64-linux" ];
+    mainProgram = "looking-glass-client";
   };
 })

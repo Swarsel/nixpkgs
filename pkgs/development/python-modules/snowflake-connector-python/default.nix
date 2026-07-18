@@ -1,16 +1,16 @@
 {
   lib,
+  fetchFromGitHub,
   aioboto3,
   aiohttp,
   asn1crypto,
-  buildPythonPackage,
   boto3,
   botocore,
+  buildPythonPackage,
   certifi,
   charset-normalizer,
   cryptography,
   cython,
-  fetchFromGitHub,
   filelock,
   idna,
   keyring,
@@ -36,7 +36,6 @@
 buildPythonPackage rec {
   pname = "snowflake-connector-python";
   version = "4.3.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "snowflakedb";
@@ -44,6 +43,23 @@ buildPythonPackage rec {
     tag = "v${version}";
     hash = "sha256-bJK6U5lomcPMGeKEmv+9m+uM5+3GJKKUA3dEwP/ynVo=";
   };
+
+  nativeCheckInputs = [
+    aioboto3
+    aiohttp
+    numpy
+    pytest-asyncio
+    pytest-xdist
+    pytestCheckHook
+    responses
+  ]
+  ++ lib.concatAttrValues optional-dependencies;
+
+  preCheck = ''
+    export HOME=$(mktemp -d)
+  '';
+
+  __darwinAllowLocalNetworking = true;
 
   build-system = [
     cython
@@ -67,37 +83,6 @@ buildPythonPackage rec {
     tomlkit
     typing-extensions
   ];
-
-  pythonRelaxDeps = [
-    "pyopenssl"
-  ];
-
-  optional-dependencies = {
-    boto = [
-      boto3
-      botocore
-    ];
-    pandas = [
-      pandas
-      pyarrow
-    ];
-    secure-local-storage = [ keyring ];
-  };
-
-  preCheck = ''
-    export HOME=$(mktemp -d)
-  '';
-
-  nativeCheckInputs = [
-    aioboto3
-    aiohttp
-    numpy
-    pytest-asyncio
-    pytest-xdist
-    pytestCheckHook
-    responses
-  ]
-  ++ lib.concatAttrValues optional-dependencies;
 
   disabledTestPaths = [
     # Tests require encrypted secrets, see
@@ -140,11 +125,29 @@ buildPythonPackage rec {
     "test_wiremock"
   ];
 
-  __darwinAllowLocalNetworking = true;
+  optional-dependencies = {
+    boto = [
+      boto3
+      botocore
+    ];
+
+    pandas = [
+      pandas
+      pyarrow
+    ];
+
+    secure-local-storage = [ keyring ];
+  };
+
+  pyproject = true;
 
   pythonImportsCheck = [
     "snowflake"
     "snowflake.connector"
+  ];
+
+  pythonRelaxDeps = [
+    "pyopenssl"
   ];
 
   meta = {

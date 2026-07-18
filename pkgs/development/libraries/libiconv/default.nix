@@ -1,11 +1,11 @@
 {
-  fetchurl,
-  stdenv,
   lib,
+  stdenv,
+  fetchurl,
   updateAutotoolsGnuConfigScriptsHook,
-  enableStatic ? stdenv.hostPlatform.isStatic,
-  enableShared ? !stdenv.hostPlatform.isStatic,
   enableDarwinABICompat ? false,
+  enableShared ? !stdenv.hostPlatform.isStatic,
+  enableStatic ? stdenv.hostPlatform.isStatic,
 }:
 
 # assert !stdenv.hostPlatform.isLinux || stdenv.hostPlatform != stdenv.buildPlatform; # TODO: improve on cross
@@ -18,20 +18,6 @@ stdenv.mkDerivation rec {
     url = "mirror://gnu/libiconv/${pname}-${version}.tar.gz";
     sha256 = "sha256-iN2WqMBGTsoUT8eRrmDNMc2O54Mh5nOX4l/AlcShmqY=";
   };
-
-  enableParallelBuilding = true;
-
-  # necessary to build on FreeBSD native pending inclusion of
-  # https://git.savannah.gnu.org/cgit/config.git/commit/?id=e4786449e1c26716e3f9ea182caf472e4dbc96e0
-  nativeBuildInputs = [ updateAutotoolsGnuConfigScriptsHook ];
-
-  # https://github.com/NixOS/nixpkgs/pull/192630#discussion_r978985593
-  hardeningDisable = lib.optional (stdenv.hostPlatform.libc == "bionic") "fortify";
-
-  setupHooks = [
-    ../../../build-support/setup-hooks/role.bash
-    ./setup-hook.sh
-  ];
 
   postPatch =
     lib.optionalString
@@ -60,6 +46,20 @@ stdenv.mkDerivation rec {
       done
     '';
 
+  # necessary to build on FreeBSD native pending inclusion of
+  # https://git.savannah.gnu.org/cgit/config.git/commit/?id=e4786449e1c26716e3f9ea182caf472e4dbc96e0
+  nativeBuildInputs = [ updateAutotoolsGnuConfigScriptsHook ];
+
+  configureFlags = [
+    (lib.enableFeature enableStatic "static")
+    (lib.enableFeature enableShared "shared")
+  ]
+  ++ lib.optional stdenv.hostPlatform.isFreeBSD "--with-pic"
+  # Work around build failure caused by the gnulib workaround for
+  # https://gcc.gnu.org/bugzilla/show_bug.cgi?id=114870.
+  # remove after gnulib is updated
+  ++ lib.optional stdenv.hostPlatform.isCygwin "gl_cv_clean_version_stddef=yes";
+
   # This is hacky, but `libiconv.dylib` needs to reexport `libcharset.dylib` to match the behavior
   # of the system libiconv on Darwin. Trying to do this by modifying the `Makefile` results in an
   # error linking `iconv` because `libcharset.dylib` is not at its final path yet. Avoid the error
@@ -72,15 +72,14 @@ stdenv.mkDerivation rec {
     NIX_CFLAGS_COMPILE+=" -Wl,-reexport-lcharset -L. " make -C lib -j$NIX_BUILD_CORES SHELL=$SHELL
   '';
 
-  configureFlags = [
-    (lib.enableFeature enableStatic "static")
-    (lib.enableFeature enableShared "shared")
-  ]
-  ++ lib.optional stdenv.hostPlatform.isFreeBSD "--with-pic"
-  # Work around build failure caused by the gnulib workaround for
-  # https://gcc.gnu.org/bugzilla/show_bug.cgi?id=114870.
-  # remove after gnulib is updated
-  ++ lib.optional stdenv.hostPlatform.isCygwin "gl_cv_clean_version_stddef=yes";
+  enableParallelBuilding = true;
+  # https://github.com/NixOS/nixpkgs/pull/192630#discussion_r978985593
+  hardeningDisable = lib.optional (stdenv.hostPlatform.libc == "bionic") "fortify";
+
+  setupHooks = [
+    ../../../build-support/setup-hooks/role.bash
+    ./setup-hook.sh
+  ];
 
   passthru = { inherit setupHooks; };
 
@@ -99,10 +98,8 @@ stdenv.mkDerivation rec {
 
     homepage = "https://www.gnu.org/software/libiconv/";
     license = lib.licenses.lgpl2Plus;
-
     maintainers = [ ];
     mainProgram = "iconv";
-
     # This library is not needed on GNU platforms.
     hydraPlatforms = with lib.platforms; cygwin ++ darwin ++ freebsd;
   };

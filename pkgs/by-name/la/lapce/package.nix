@@ -2,27 +2,27 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  nix-update-script,
-  rustPlatform,
   cmake,
-  pkg-config,
-  perl,
-  python3,
   fontconfig,
   glib,
-  gtk3,
-  openssl,
-  libGL,
-  libxkbcommon,
-  wrapGAppsHook3,
-  wayland,
   gobject-introspection,
-  libxxf86vm,
-  libxrandr,
-  libxi,
-  libxcursor,
+  gtk3,
+  libGL,
   libx11,
   libxcb,
+  libxcursor,
+  libxi,
+  libxkbcommon,
+  libxrandr,
+  libxxf86vm,
+  nix-update-script,
+  openssl,
+  perl,
+  pkg-config,
+  python3,
+  rustPlatform,
+  wayland,
+  wrapGAppsHook3,
 }:
 let
   rpathLibs = lib.optionals stdenv.hostPlatform.isLinux [
@@ -46,16 +46,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
     repo = "lapce";
     tag = "v${finalAttrs.version}";
     sha256 = "sha256-D5DEmMkCAkMiMMzYP8FoVIUeT2CDOepUWUlUqWSaUnM=";
-  };
-
-  cargoHash = "sha256-BFaR8jWdET2nInBkKZhnoqLCB1dnXH3pywkD1Cv5SuE=";
-
-  env = {
-    # Get openssl-sys to use pkg-config
-    OPENSSL_NO_VENDOR = 1;
-
-    # This variable is read by build script, so that Lapce editor knows its version
-    RELEASE_TAG_NAME = "v${finalAttrs.version}";
   };
 
   postPatch = ''
@@ -82,6 +72,15 @@ rustPlatform.buildRustPackage (finalAttrs: {
       fontconfig
     ];
 
+  cargoHash = "sha256-BFaR8jWdET2nInBkKZhnoqLCB1dnXH3pywkD1Cv5SuE=";
+
+  env = {
+    # Get openssl-sys to use pkg-config
+    OPENSSL_NO_VENDOR = 1;
+    # This variable is read by build script, so that Lapce editor knows its version
+    RELEASE_TAG_NAME = "v${finalAttrs.version}";
+  };
+
   postInstall =
     if stdenv.hostPlatform.isLinux then
       ''
@@ -100,7 +99,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
       '';
 
   dontPatchELF = true;
-
   passthru.updateScript = nix-update-script { };
 
   meta = {

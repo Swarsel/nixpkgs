@@ -12,24 +12,40 @@ in
   options = {
     services.webdav = {
       enable = lib.mkEnableOption "WebDAV server";
-
       package = lib.mkPackageOption pkgs "webdav" { };
 
-      user = lib.mkOption {
-        type = lib.types.str;
-        default = "webdav";
-        description = "User account under which WebDAV runs.";
+      configFile = lib.mkOption {
+        default = format.generate "webdav.yaml" cfg.settings;
+        defaultText = "Config file generated from services.webdav.settings";
+
+        description = ''
+          Path to config file. If this option is set, it will override any
+          configuration done in options.services.webdav.settings.
+        '';
+
+        example = "/etc/webdav/config.yaml";
+        type = lib.types.path;
+      };
+
+      environmentFile = lib.mkOption {
+        default = null;
+
+        description = ''
+          Environment file as defined in {manpage}`systemd.exec(5)`.
+        '';
+
+        type = lib.types.nullOr lib.types.path;
       };
 
       group = lib.mkOption {
-        type = lib.types.str;
         default = "webdav";
         description = "Group under which WebDAV runs.";
+        type = lib.types.str;
       };
 
       settings = lib.mkOption {
-        type = format.type;
         default = { };
+
         description = ''
           Attrset that is converted and passed as config file. Available options
           can be found at
@@ -41,6 +57,7 @@ in
           [EnvironmentFile](https://www.freedesktop.org/software/systemd/man/systemd.exec.html#EnvironmentFile=).
           This prevents adding secrets to the world-readable Nix store.
         '';
+
         example = lib.literalExpression ''
           {
               address = "0.0.0.0";
@@ -55,52 +72,43 @@ in
               ];
           }
         '';
+
+        type = format.type;
       };
 
-      configFile = lib.mkOption {
-        type = lib.types.path;
-        default = format.generate "webdav.yaml" cfg.settings;
-        defaultText = "Config file generated from services.webdav.settings";
-        description = ''
-          Path to config file. If this option is set, it will override any
-          configuration done in options.services.webdav.settings.
-        '';
-        example = "/etc/webdav/config.yaml";
-      };
-
-      environmentFile = lib.mkOption {
-        type = lib.types.nullOr lib.types.path;
-        default = null;
-        description = ''
-          Environment file as defined in {manpage}`systemd.exec(5)`.
-        '';
+      user = lib.mkOption {
+        default = "webdav";
+        description = "User account under which WebDAV runs.";
+        type = lib.types.str;
       };
     };
   };
 
   config = lib.mkIf cfg.enable {
-    users.users = lib.mkIf (cfg.user == "webdav") {
-      webdav = {
-        description = "WebDAV daemon user";
-        group = cfg.group;
-        uid = config.ids.uids.webdav;
+    systemd.services.webdav = {
+      after = [ "network.target" ];
+      description = "WebDAV server";
+
+      serviceConfig = {
+        EnvironmentFile = lib.mkIf (cfg.environmentFile != null) [ cfg.environmentFile ];
+        ExecStart = "${lib.getExe cfg.package} -c ${cfg.configFile}";
+        Group = cfg.group;
+        Restart = "on-failure";
+        User = cfg.user;
       };
+
+      wantedBy = [ "multi-user.target" ];
     };
 
     users.groups = lib.mkIf (cfg.group == "webdav") {
       webdav.gid = config.ids.gids.webdav;
     };
 
-    systemd.services.webdav = {
-      description = "WebDAV server";
-      after = [ "network.target" ];
-      wantedBy = [ "multi-user.target" ];
-      serviceConfig = {
-        ExecStart = "${lib.getExe cfg.package} -c ${cfg.configFile}";
-        Restart = "on-failure";
-        User = cfg.user;
-        Group = cfg.group;
-        EnvironmentFile = lib.mkIf (cfg.environmentFile != null) [ cfg.environmentFile ];
+    users.users = lib.mkIf (cfg.user == "webdav") {
+      webdav = {
+        description = "WebDAV daemon user";
+        group = cfg.group;
+        uid = config.ids.uids.webdav;
       };
     };
   };

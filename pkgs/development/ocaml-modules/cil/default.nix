@@ -2,10 +2,10 @@
   lib,
   stdenv,
   fetchurl,
-  perl,
-  ocaml,
   findlib,
+  ocaml,
   ocamlbuild,
+  perl,
 }:
 
 stdenv.mkDerivation rec {
@@ -17,6 +17,8 @@ stdenv.mkDerivation rec {
     sha256 = "05739da0b0msx6kmdavr3y2bwi92jbh3szc35d7d8pdisa8g5dv9";
   };
 
+  strictDeps = true;
+
   nativeBuildInputs = [
     perl
     ocaml
@@ -24,22 +26,20 @@ stdenv.mkDerivation rec {
     ocamlbuild
   ];
 
-  strictDeps = true;
-
-  createFindlibDestdir = true;
-
   preConfigure = ''
     substituteInPlace Makefile.in --replace 'MACHDEPCC=gcc' 'MACHDEPCC=$(CC)'
     export FORCE_PERL_PREFIX=1
   '';
+
+  createFindlibDestdir = true;
   prefixKey = "-prefix=";
 
   meta = {
-    homepage = "https://sourceforge.net/projects/cil/";
     description = "Front-end for the C programming language that facilitates program analysis and transformation";
+    homepage = "https://sourceforge.net/projects/cil/";
     license = lib.licenses.bsd3;
     maintainers = [ lib.maintainers.vbgl ];
-    broken = lib.versionAtLeast ocaml.version "4.06";
     platforms = ocaml.meta.platforms or [ ];
+    broken = lib.versionAtLeast ocaml.version "4.06";
   };
 }

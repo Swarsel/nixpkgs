@@ -1,14 +1,13 @@
 {
   fetchurl,
   buildDunePackage,
-  testo,
   ppx_deriving,
+  testo,
 }:
 
 buildDunePackage {
-  pname = "testo-diff";
   inherit (testo) version src;
-
+  pname = "testo-diff";
   propagatedBuildInputs = [ ppx_deriving ];
 
   meta = testo.meta // {

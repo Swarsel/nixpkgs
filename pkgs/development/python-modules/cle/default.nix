@@ -1,17 +1,17 @@
 {
   lib,
+  fetchFromGitHub,
   archinfo,
   buildPythonPackage,
   cart,
   cffi,
-  fetchFromGitHub,
+  nix-update-script,
   pefile,
   pyelftools,
   pytestCheckHook,
   pyvex,
   setuptools,
   sortedcontainers,
-  nix-update-script,
 }:
 
 let
@@ -20,16 +20,15 @@ let
 
   # Binary files from https://github.com/angr/binaries (only used for testing and only here)
   binaries = fetchFromGitHub {
+    hash = "sha256-XXJBySIT3ylK1nd3suP2bq4bVSVah/1XhOmkEONbCoY=";
     owner = "angr";
     repo = "binaries";
     tag = "v${version}";
-    hash = "sha256-XXJBySIT3ylK1nd3suP2bq4bVSVah/1XhOmkEONbCoY=";
   };
 in
 buildPythonPackage rec {
-  pname = "cle";
   inherit version;
-  pyproject = true;
+  pname = "cle";
 
   src = fetchFromGitHub {
     owner = "angr";
@@ -37,6 +36,14 @@ buildPythonPackage rec {
     tag = "v${version}";
     hash = "sha256-rWbZzm5hWi/C+te8zeQChxqYHO0S795tJ6Znocq9TTs=";
   };
+
+  nativeCheckInputs = [ pytestCheckHook ];
+
+  # Place test binaries in the right location (location is hard-coded in the tests)
+  preCheck = ''
+    export HOME=$TMPDIR
+    cp -r ${binaries} $HOME/binaries
+  '';
 
   build-system = [ setuptools ];
 
@@ -49,14 +56,6 @@ buildPythonPackage rec {
     pyvex
     sortedcontainers
   ];
-
-  nativeCheckInputs = [ pytestCheckHook ];
-
-  # Place test binaries in the right location (location is hard-coded in the tests)
-  preCheck = ''
-    export HOME=$TMPDIR
-    cp -r ${binaries} $HOME/binaries
-  '';
 
   disabledTests = [
     # PPC tests seems to fails
@@ -72,8 +71,8 @@ buildPythonPackage rec {
     "test_remote_file_map"
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "cle" ];
-
   passthru.updateScript = nix-update-script { };
 
   meta = {

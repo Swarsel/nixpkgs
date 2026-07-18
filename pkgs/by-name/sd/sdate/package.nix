@@ -19,8 +19,8 @@ stdenv.mkDerivation (finalAttrs: {
   nativeBuildInputs = [ autoreconfHook ];
 
   meta = {
-    homepage = "https://www.df7cb.de/projects/sdate";
     description = "Eternal september version of the date program";
+    homepage = "https://www.df7cb.de/projects/sdate";
     license = lib.licenses.gpl2Plus;
     maintainers = with lib.maintainers; [ edef ];
     platforms = lib.platforms.all;

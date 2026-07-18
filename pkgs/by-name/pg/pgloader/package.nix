@@ -3,37 +3,21 @@
   stdenv,
   fetchurl,
   fetchFromGitHub,
-  installShellFiles,
-  makeWrapper,
-  sbcl_2_4_6,
-  sqlite,
-  freetds,
-  libzip,
-  curl,
-  git,
   cacert,
+  curl,
+  freetds,
+  git,
+  installShellFiles,
+  libzip,
+  makeWrapper,
   openssl,
+  sbcl_2_4_6,
   sphinx,
+  sqlite,
 }:
 stdenv.mkDerivation (finalAttrs: {
   pname = "pgloader";
   version = "3.6.9";
-
-  srcs = [
-    (fetchurl {
-      url = "https://github.com/dimitri/pgloader/releases/download/v3.6.9/pgloader-bundle-3.6.9.tgz";
-      sha256 = "sha256-pdCcRmoJnrfVnkhbT0WqLrRbCtOEmRgGRsXK+3uByeA=";
-    })
-    # needed because bundle does not contain docs / man pages
-    (fetchFromGitHub {
-      owner = "dimitri";
-      repo = "pgloader";
-      rev = "v${finalAttrs.version}";
-      hash = "sha256-lqvfWayaJbZ9xx4CgFfY1g0TKwFEd5IWf+RLLXQddw4=";
-    })
-  ];
-
-  sourceRoot = ".";
 
   nativeBuildInputs = [
     git
@@ -74,9 +58,6 @@ stdenv.mkDerivation (finalAttrs: {
     popd
   '';
 
-  dontStrip = true;
-  enableParallelBuilding = false;
-
   installPhase = ''
     install -Dm755 pgloader-bundle-${finalAttrs.version}/bin/pgloader "$out/bin/pgloader"
     wrapProgram $out/bin/pgloader --prefix LD_LIBRARY_PATH : "${finalAttrs.env.LD_LIBRARY_PATH}"
@@ -84,12 +65,30 @@ stdenv.mkDerivation (finalAttrs: {
     installManPage source/docs/_build/man/*.1
   '';
 
+  dontStrip = true;
+  enableParallelBuilding = false;
+  sourceRoot = ".";
+
+  srcs = [
+    (fetchurl {
+      sha256 = "sha256-pdCcRmoJnrfVnkhbT0WqLrRbCtOEmRgGRsXK+3uByeA=";
+      url = "https://github.com/dimitri/pgloader/releases/download/v3.6.9/pgloader-bundle-3.6.9.tgz";
+    })
+    # needed because bundle does not contain docs / man pages
+    (fetchFromGitHub {
+      hash = "sha256-lqvfWayaJbZ9xx4CgFfY1g0TKwFEd5IWf+RLLXQddw4=";
+      owner = "dimitri";
+      repo = "pgloader";
+      rev = "v${finalAttrs.version}";
+    })
+  ];
+
   meta = {
-    homepage = "https://pgloader.io/";
     description = "Loads data into PostgreSQL and allows you to implement Continuous Migration from your current database to PostgreSQL";
-    mainProgram = "pgloader";
-    maintainers = with lib.maintainers; [ mguentner ];
+    homepage = "https://pgloader.io/";
     license = lib.licenses.postgresql;
+    maintainers = with lib.maintainers; [ mguentner ];
     platforms = lib.platforms.all;
+    mainProgram = "pgloader";
   };
 })

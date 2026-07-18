@@ -1,16 +1,16 @@
 {
-  mkDerivation,
   byacc,
+  mkDerivation,
 }:
 mkDerivation {
-  path = "sbin/pfctl";
-  extraPaths = [
-    "sys/net"
-  ];
-
   extraNativeBuildInputs = [
     byacc
   ];
 
+  extraPaths = [
+    "sys/net"
+  ];
+
+  path = "sbin/pfctl";
   meta.mainProgram = "pfctl";
 }

@@ -1,28 +1,24 @@
 {
-  config,
   lib,
-  rustPlatform,
-  fetchFromGitHub,
-  nix-update-script,
   stdenv,
-
+  fetchFromGitHub,
+  apple-sdk_15,
+  autoAddDriverRunpath,
+  cmake,
+  config,
   git,
+  llama-cpp,
+  nix-update-script,
   openssl,
   pkg-config,
   protobuf,
-  cmake,
-
-  llama-cpp,
-
-  apple-sdk_15,
-  autoAddDriverRunpath,
+  rustPlatform,
   versionCheckHook,
-
-  cudaSupport ? config.cudaSupport,
-  rocmSupport ? config.rocmSupport,
-  metalSupport ? stdenv.hostPlatform.isDarwin && stdenv.hostPlatform.isAarch64,
   # one of [ null "cpu" "rocm" "cuda" "metal" ];
   acceleration ? null,
+  cudaSupport ? config.cudaSupport,
+  metalSupport ? stdenv.hostPlatform.isDarwin && stdenv.hostPlatform.isAarch64,
+  rocmSupport ? config.rocmSupport,
 }:
 
 let
@@ -97,9 +93,9 @@ let
   # See: https://github.com/TabbyML/tabby/blob/v0.11.1/crates/llama-cpp-bindings/include/engine.h#L20
   #
   llamaccpPackage = llama-cpp.override {
-    rocmSupport = enableRocm;
     cudaSupport = enableCuda;
     metalSupport = enableMetal;
+    rocmSupport = enableRocm;
   };
 
   # TODO(ghthor): some of this can be removed
@@ -126,23 +122,6 @@ rustPlatform.buildRustPackage {
     fetchSubmodules = true;
   };
 
-  cargoHash = "sha256-yEns0QAARmuV697/na08K8uwJWZihY3pMyCZcERDlFM=";
-
-  # Don't need to build llama-cpp-server (included in default build)
-  # We also don't add CUDA features here since we're using the overridden llama-cpp package
-  cargoBuildFlags = [
-    "--no-default-features"
-    "--features"
-    "ee"
-    "--package"
-    "tabby"
-  ];
-
-  nativeInstallCheckInputs = [
-    versionCheckHook
-  ];
-  doInstallCheck = true;
-
   nativeBuildInputs = [
     git
     pkg-config
@@ -160,11 +139,7 @@ rustPlatform.buildRustPackage {
   ++ optionals enableCuda cudaBuildInputs
   ++ optionals enableRocm rocmBuildInputs;
 
-  postInstall = ''
-    # NOTE: Project contains a subproject for building llama-server
-    # But, we already have a derivation for this
-    ln -s ${lib.getExe' llama-cpp "llama-server"} $out/bin/llama-server
-  '';
+  cargoHash = "sha256-yEns0QAARmuV697/na08K8uwJWZihY3pMyCZcERDlFM=";
 
   env = {
     OPENSSL_NO_VENDOR = 1;
@@ -174,6 +149,28 @@ rustPlatform.buildRustPackage {
   # file cannot create directory: /var/empty/local/lib64/cmake/Llama
   doCheck = false;
 
+  postInstall = ''
+    # NOTE: Project contains a subproject for building llama-server
+    # But, we already have a derivation for this
+    ln -s ${lib.getExe' llama-cpp "llama-server"} $out/bin/llama-server
+  '';
+
+  doInstallCheck = true;
+
+  nativeInstallCheckInputs = [
+    versionCheckHook
+  ];
+
+  # Don't need to build llama-cpp-server (included in default build)
+  # We also don't add CUDA features here since we're using the overridden llama-cpp package
+  cargoBuildFlags = [
+    "--no-default-features"
+    "--features"
+    "ee"
+    "--package"
+    "tabby"
+  ];
+
   passthru.updateScript = nix-update-script {
     extraArgs = [
       "--version-regex"
@@ -182,12 +179,12 @@ rustPlatform.buildRustPackage {
   };
 
   meta = {
+    description = "Self-hosted AI coding assistant";
     homepage = "https://github.com/TabbyML/tabby";
     changelog = "https://github.com/TabbyML/tabby/releases/tag/v${version}";
-    description = "Self-hosted AI coding assistant";
-    mainProgram = "tabby";
     license = lib.licenses.asl20;
     maintainers = [ lib.maintainers.ghthor ];
+    mainProgram = "tabby";
     broken = stdenv.hostPlatform.isDarwin && !stdenv.hostPlatform.isAarch64;
   };
 }

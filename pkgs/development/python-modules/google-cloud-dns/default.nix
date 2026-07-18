@@ -12,20 +12,12 @@
 buildPythonPackage rec {
   pname = "google-cloud-dns";
   version = "0.36.1";
-  pyproject = true;
 
   src = fetchPypi {
-    pname = "google_cloud_dns";
     inherit version;
     hash = "sha256-Uf4riBDfgTadviwIe6KUSypgIZBeMQSOTe6cmP8fEkk=";
+    pname = "google_cloud_dns";
   };
-
-  build-system = [ setuptools ];
-
-  dependencies = [
-    google-api-core
-    google-cloud-core
-  ];
 
   nativeCheckInputs = [
     mock
@@ -37,11 +29,19 @@ buildPythonPackage rec {
     rm -r google
   '';
 
+  build-system = [ setuptools ];
+
+  dependencies = [
+    google-api-core
+    google-cloud-core
+  ];
+
   disabledTests = [
     # Test requires credentials
     "test_quota"
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "google.cloud.dns" ];
 
   meta = {

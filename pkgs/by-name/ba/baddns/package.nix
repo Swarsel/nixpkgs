@@ -8,7 +8,6 @@
 python3.pkgs.buildPythonApplication (finalAttrs: {
   pname = "baddns";
   version = "2.4.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "blacklanternsecurity";
@@ -16,6 +15,15 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     tag = finalAttrs.version;
     hash = "sha256-3SKR94/KBjTxk7swPKaIn2zzAjYMSEqqLALeCBjwMFg=";
   };
+
+  nativeCheckInputs = with python3.pkgs; [
+    mock
+    pyfakefs
+    pytest-asyncio
+    pytest-httpx
+    pytest-mock
+    pytestCheckHook
+  ];
 
   build-system = with python3.pkgs; [ hatchling ];
 
@@ -32,17 +40,6 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     setuptools
     tldextract
   ];
-
-  nativeCheckInputs = with python3.pkgs; [
-    mock
-    pyfakefs
-    pytest-asyncio
-    pytest-httpx
-    pytest-mock
-    pytestCheckHook
-  ];
-
-  pythonImportsCheck = [ "baddns" ];
 
   disabledTests = [
     # Tests require network access
@@ -68,6 +65,9 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     "test_silent_mode"
     "test_spf"
   ];
+
+  pyproject = true;
+  pythonImportsCheck = [ "baddns" ];
 
   meta = {
     description = "Tool to check subdomains for subdomain takeovers and other DNS issues";

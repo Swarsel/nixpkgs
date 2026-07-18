@@ -1,12 +1,12 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   graphviz,
+  hatchling,
   imagemagick,
   inkscape,
   jinja2,
-  hatchling,
   pytestCheckHook,
   round,
 }:
@@ -14,7 +14,6 @@
 buildPythonPackage rec {
   pname = "diagrams";
   version = "0.25.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "mingrammer";
@@ -27,17 +26,6 @@ buildPythonPackage rec {
     ./remove-black-requirement.patch
   ];
 
-  pythonRemoveDeps = [ "pre-commit" ];
-
-  pythonRelaxDeps = [ "graphviz" ];
-
-  preConfigure = ''
-    patchShebangs autogen.sh
-    ./autogen.sh
-  '';
-
-  build-system = [ hatchling ];
-
   # Despite living in 'tool.poetry.dependencies',
   # these are only used at build time to process the image resource files
   nativeBuildInputs = [
@@ -47,11 +35,18 @@ buildPythonPackage rec {
     round
   ];
 
-  dependencies = [ graphviz ];
+  preConfigure = ''
+    patchShebangs autogen.sh
+    ./autogen.sh
+  '';
 
   nativeCheckInputs = [ pytestCheckHook ];
-
+  build-system = [ hatchling ];
+  dependencies = [ graphviz ];
+  pyproject = true;
   pythonImportsCheck = [ "diagrams" ];
+  pythonRelaxDeps = [ "graphviz" ];
+  pythonRemoveDeps = [ "pre-commit" ];
 
   meta = {
     description = "Diagram as Code";

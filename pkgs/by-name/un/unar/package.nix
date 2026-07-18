@@ -1,15 +1,15 @@
 {
   lib,
-  clangStdenv,
   fetchFromGitHub,
-  installShellFiles,
-  gnustep-base,
   bzip2,
-  zlib,
+  clangStdenv,
+  gnustep-base,
   icu,
+  installShellFiles,
   openssl,
   wavpack,
   xcbuildHook,
+  zlib,
 }:
 let
   stdenv = clangStdenv;
@@ -17,23 +17,6 @@ in
 stdenv.mkDerivation (finalAttrs: {
   pname = "unar";
   version = "1.10.8";
-
-  srcs = [
-    (fetchFromGitHub rec {
-      owner = "MacPaw";
-      repo = "XADMaster";
-      name = repo;
-      rev = "v${finalAttrs.version}";
-      hash = "sha256-dmIyxpa3pq4ls4Grp0gy/6ZjcaA7rmobMn4h1inVgns=";
-    })
-    (fetchFromGitHub {
-      owner = "MacPaw";
-      repo = "universal-detector";
-      name = "UniversalDetector";
-      rev = "1.1";
-      hash = "sha256-6X1HtXhRuRwBOq5TAtL1I/vBBZokZOXIQ+oaRFigtv8=";
-    })
-  ];
 
   postPatch = ''
     substituteInPlace unar.m lsar.m \
@@ -60,6 +43,11 @@ stdenv.mkDerivation (finalAttrs: {
       ''
   );
 
+  nativeBuildInputs = [
+    installShellFiles
+  ]
+  ++ lib.optionals stdenv.hostPlatform.isDarwin [ xcbuildHook ];
+
   buildInputs = [
     bzip2
     icu
@@ -68,26 +56,6 @@ stdenv.mkDerivation (finalAttrs: {
     zlib
   ]
   ++ lib.optionals stdenv.hostPlatform.isLinux [ gnustep-base ];
-
-  nativeBuildInputs = [
-    installShellFiles
-  ]
-  ++ lib.optionals stdenv.hostPlatform.isDarwin [ xcbuildHook ];
-
-  xcbuildFlags = lib.optionals stdenv.hostPlatform.isDarwin [
-    "-target unar"
-    "-target lsar"
-    "-configuration Release"
-    "MACOSX_DEPLOYMENT_TARGET=${stdenv.hostPlatform.darwinMinVersion}"
-  ];
-
-  makefile = lib.optionalString (!stdenv.hostPlatform.isDarwin) "Makefile.linux";
-
-  enableParallelBuilding = true;
-
-  dontConfigure = true;
-
-  sourceRoot = "XADMaster";
 
   installPhase = ''
     runHook preInstall
@@ -101,9 +69,38 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  dontConfigure = true;
+  enableParallelBuilding = true;
+  makefile = lib.optionalString (!stdenv.hostPlatform.isDarwin) "Makefile.linux";
+  sourceRoot = "XADMaster";
+
+  srcs = [
+    (fetchFromGitHub rec {
+      hash = "sha256-dmIyxpa3pq4ls4Grp0gy/6ZjcaA7rmobMn4h1inVgns=";
+      name = repo;
+      owner = "MacPaw";
+      repo = "XADMaster";
+      rev = "v${finalAttrs.version}";
+    })
+    (fetchFromGitHub {
+      hash = "sha256-6X1HtXhRuRwBOq5TAtL1I/vBBZokZOXIQ+oaRFigtv8=";
+      name = "UniversalDetector";
+      owner = "MacPaw";
+      repo = "universal-detector";
+      rev = "1.1";
+    })
+  ];
+
+  xcbuildFlags = lib.optionals stdenv.hostPlatform.isDarwin [
+    "-target unar"
+    "-target lsar"
+    "-configuration Release"
+    "MACOSX_DEPLOYMENT_TARGET=${stdenv.hostPlatform.darwinMinVersion}"
+  ];
+
   meta = {
-    homepage = "https://theunarchiver.com";
     description = "Archive unpacker program";
+
     longDescription = ''
       The Unarchiver is an archive unpacker program with support for the popular
       zip, RAR, 7z, tar, gzip, bzip2, LZMA, XZ, CAB, MSI, NSIS, EXE, ISO, BIN,
@@ -111,9 +108,11 @@ stdenv.mkDerivation (finalAttrs: {
       Compact Pro, Packit, cpio, compress (.Z), ARJ, ARC, PAK, ACE, ZOO, LZH,
       ADF, DMS, LZX, PowerPacker, LBR, Squeeze, Crunch, and other old formats.
     '';
+
+    homepage = "https://theunarchiver.com";
     license = lib.licenses.lgpl21Plus;
     maintainers = with lib.maintainers; [ peterhoeg ];
-    mainProgram = "unar";
     platforms = lib.platforms.unix;
+    mainProgram = "unar";
   };
 })

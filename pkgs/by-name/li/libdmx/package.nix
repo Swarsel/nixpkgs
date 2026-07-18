@@ -2,11 +2,11 @@
   lib,
   stdenv,
   fetchurl,
-  pkg-config,
-  xorgproto,
   libx11,
   libxext,
+  pkg-config,
   testers,
+  xorgproto,
 }:
 stdenv.mkDerivation (finalAttrs: {
   pname = "libdmx";
@@ -18,7 +18,6 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   strictDeps = true;
-
   nativeBuildInputs = [ pkg-config ];
 
   buildInputs = [
@@ -38,6 +37,7 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Xlib-based library for the DMX (Distributed Multihead X) extension";
+
     longDescription = ''
       This library allows X11 clients to use the Distributed Multihead X (DMX) Extension,
       as previously implemented in the Xdmx server.
@@ -45,10 +45,11 @@ stdenv.mkDerivation (finalAttrs: {
       release in 2021. This library is thus now considered deprecated and the version 1.1.5 release
       is the last release X.Org plans to make of libdmx.
     '';
+
     homepage = "https://gitlab.freedesktop.org/xorg/lib/libdmx";
     license = lib.licenses.mit;
     maintainers = [ ];
-    pkgConfigModules = [ "dmx" ];
     platforms = lib.platforms.unix;
+    pkgConfigModules = [ "dmx" ];
   };
 })

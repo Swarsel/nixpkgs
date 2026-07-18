@@ -1,20 +1,20 @@
 {
+  lib,
+  stdenv,
+  fetchFromGitHub,
   autoPatchelfHook,
   cairo,
-  fetchFromGitHub,
   gdk-pixbuf,
   glib,
   gobject-introspection,
   gsettings-desktop-schemas,
   gtk3,
-  lib,
   libgee,
   libnotify,
   nix-update-script,
   pkg-config,
   python3,
   sqlite,
-  stdenv,
   vala,
   webkitgtk_4_1,
   wrapGAppsHook3,
@@ -32,6 +32,13 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-7xVjY/yH7pMlUBpQc5Gb4t4My24Mx5KkARVp2KSr+Iw=";
   };
 
+  postPatch = ''
+    substituteInPlace install.py \
+      --replace-fail 'platform.version()' '"Nix"'
+
+    patchShebangs .
+  '';
+
   nativeBuildInputs = [
     autoPatchelfHook
     gobject-introspection
@@ -40,6 +47,7 @@ stdenv.mkDerivation (finalAttrs: {
     vala
     wrapGAppsHook3
   ];
+
   buildInputs = [
     cairo
     gdk-pixbuf
@@ -53,27 +61,17 @@ stdenv.mkDerivation (finalAttrs: {
     xmlbird
   ];
 
-  postPatch = ''
-    substituteInPlace install.py \
-      --replace-fail 'platform.version()' '"Nix"'
-
-    patchShebangs .
-  '';
-
   # workaround gcc >= 14 incompatibilities
   env.NIX_CFLAGS_COMPILE = "-std=gnu17 -Wno-error=incompatible-pointer-types";
-
   buildPhase = "./build.py";
-
   installPhase = "./install.py";
-
   passthru.updateScript = nix-update-script { };
 
   meta = {
     description = "Font editor which can generate fonts in TTF, EOT, SVG and BIRDFONT format";
     homepage = "https://birdfont.org";
     license = lib.licenses.gpl3Plus;
-    mainProgram = "birdfont";
     maintainers = with lib.maintainers; [ drawbu ];
+    mainProgram = "birdfont";
   };
 })

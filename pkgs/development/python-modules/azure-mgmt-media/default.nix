@@ -1,22 +1,21 @@
 {
   lib,
+  azure-common,
+  azure-mgmt-core,
   buildPythonPackage,
   fetchPypi,
   msrest,
   msrestazure,
-  azure-common,
-  azure-mgmt-core,
 }:
 
 buildPythonPackage rec {
   pname = "azure-mgmt-media";
   version = "10.2.0";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
-    extension = "zip";
     hash = "sha256-TVq/6dHttDGIUFzn8KTVeDTwcBMmphz3zrsGK7ux4aU=";
+    extension = "zip";
   };
 
   propagatedBuildInputs = [
@@ -28,7 +27,7 @@ buildPythonPackage rec {
 
   # has no tests
   doCheck = false;
-
+  format = "setuptools";
   pythonImportsCheck = [ "azure.mgmt.media" ];
 
   meta = {

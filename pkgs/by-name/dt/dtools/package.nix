@@ -2,8 +2,8 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  ldc,
   curl,
+  ldc,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -34,10 +34,9 @@ stdenv.mkDerivation (finalAttrs: {
     "INSTALL_DIR=$(out)"
   ];
 
-  enableParallelBuilding = true;
-
   doCheck = true;
   checkTarget = "test_rdmd";
+  enableParallelBuilding = true;
 
   meta = {
     description = "Ancillary tools for the D programming language";

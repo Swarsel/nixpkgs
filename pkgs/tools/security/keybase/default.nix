@@ -1,22 +1,14 @@
 {
-  replaceVars,
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   gnupg,
+  replaceVars,
 }:
 
 buildGoModule rec {
   pname = "keybase";
   version = "6.5.1";
-
-  modRoot = "go";
-  subPackages = [
-    "kbnm"
-    "keybase"
-  ];
-
-  dontRenameImports = true;
 
   src = fetchFromGitHub {
     owner = "keybase";
@@ -24,7 +16,6 @@ buildGoModule rec {
     rev = "v${version}";
     hash = "sha256-B3vedsxQM4FDZVpkMKR67DF7FtaTPhGIJ1e2lViKYzg=";
   };
-  vendorHash = "sha256-uw1tiaYoMpMXCYt5bPL5OBbK09PJmAQYQDrDwuPShxU=";
 
   patches = [
     (replaceVars ./fix-paths-keybase.patch {
@@ -32,17 +23,29 @@ buildGoModule rec {
       gpg2 = "${gnupg}/bin/gpg2";
     })
   ];
-  tags = [ "production" ];
+
+  vendorHash = "sha256-uw1tiaYoMpMXCYt5bPL5OBbK09PJmAQYQDrDwuPShxU=";
+  dontRenameImports = true;
+
   ldflags = [
     "-s"
     "-w"
   ];
 
+  modRoot = "go";
+
+  subPackages = [
+    "kbnm"
+    "keybase"
+  ];
+
+  tags = [ "production" ];
+
   meta = {
-    homepage = "https://www.keybase.io/";
     description = "Keybase official command-line utility and service";
-    mainProgram = "keybase";
-    platforms = lib.platforms.linux ++ lib.platforms.darwin;
+    homepage = "https://www.keybase.io/";
+    license = lib.licenses.bsd3;
+
     maintainers = with lib.maintainers; [
       avaq
       np
@@ -50,6 +53,8 @@ buildGoModule rec {
       shofius
       ryand56
     ];
-    license = lib.licenses.bsd3;
+
+    platforms = lib.platforms.linux ++ lib.platforms.darwin;
+    mainProgram = "keybase";
   };
 }

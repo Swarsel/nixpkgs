@@ -1,8 +1,8 @@
 {
   lib,
+  fetchFromGitHub,
   buildPythonPackage,
   dvc,
-  fetchFromGitHub,
   pydrive2,
   setuptools,
   setuptools-scm,
@@ -11,7 +11,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "dvc-gdrive";
   version = "3.0.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "iterative";
@@ -19,6 +18,9 @@ buildPythonPackage (finalAttrs: {
     tag = finalAttrs.version;
     hash = "sha256-oqHSMmwfR24ydJlpXGI3cCxIlF0BwNdgje5zKa0c7FA=";
   };
+
+  # Circular dependency with dvc
+  doCheck = false;
 
   build-system = [
     setuptools
@@ -30,9 +32,7 @@ buildPythonPackage (finalAttrs: {
     pydrive2
   ];
 
-  # Circular dependency with dvc
-  doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "dvc_gdrive" ];
 
   meta = {

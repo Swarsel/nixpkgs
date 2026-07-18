@@ -1,7 +1,7 @@
 {
-  buildPythonPackage,
-  fetchFromGitHub,
   lib,
+  fetchFromGitHub,
+  buildPythonPackage,
   pytestCheckHook,
   pyusb,
   setuptools,
@@ -11,7 +11,6 @@
 buildPythonPackage rec {
   pname = "pyegps";
   version = "0.2.5";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "gnumpi";
@@ -20,21 +19,21 @@ buildPythonPackage rec {
     hash = "sha256-iixk2sFa4KAayKFmQKtPjvoIYgxCMXnfkliKhyO2ba4=";
   };
 
+  nativeCheckInputs = [ pytestCheckHook ];
+
   build-system = [
     setuptools
     setuptools-scm
   ];
 
   dependencies = [ pyusb ];
-
+  pyproject = true;
   pythonImportsCheck = [ "pyegps" ];
 
-  nativeCheckInputs = [ pytestCheckHook ];
-
   meta = {
-    changelog = "https://github.com/gnumpi/pyEGPS/releases/tag/v${version}";
     description = "Controlling Energenie Power Strips with python";
     homepage = "https://github.com/gnumpi/pyegps";
+    changelog = "https://github.com/gnumpi/pyEGPS/releases/tag/v${version}";
     license = lib.licenses.asl20;
     maintainers = with lib.maintainers; [ dotlambda ];
   };

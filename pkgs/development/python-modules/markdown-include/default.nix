@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   markdown,
   setuptools-scm,
 }:
@@ -9,7 +9,6 @@
 buildPythonPackage rec {
   pname = "markdown-include";
   version = "0.8.1";
-  format = "setuptools";
 
   # only wheel on pypi
   src = fetchFromGitHub {
@@ -20,12 +19,10 @@ buildPythonPackage rec {
   };
 
   nativeBuildInputs = [ setuptools-scm ];
-
   propagatedBuildInputs = [ markdown ];
-
-  pythonImportsCheck = [ "markdown_include" ];
-
   doCheck = false; # no tests
+  format = "setuptools";
+  pythonImportsCheck = [ "markdown_include" ];
 
   meta = {
     description = "Extension to Python-Markdown which provides an include function";

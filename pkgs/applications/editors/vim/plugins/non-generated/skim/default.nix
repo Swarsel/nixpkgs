@@ -1,9 +1,9 @@
 {
-  vimUtils,
   skim,
+  vimUtils,
 }:
 vimUtils.buildVimPlugin {
-  pname = "skim";
   inherit (skim) version;
+  pname = "skim";
   src = skim.vim;
 }

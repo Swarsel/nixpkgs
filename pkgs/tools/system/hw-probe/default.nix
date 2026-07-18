@@ -2,59 +2,54 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  makeWrapper,
-  makePerlPath,
-
+  HTTPDate,
+  HTTPMessage,
   # Perl libraries
   LWP,
   LWPProtocolHttps,
-  HTTPMessage,
-  HTTPDate,
-  URI,
   TryTiny,
-
+  URI,
+  acpica-tools,
   # Required
   coreutils,
+  cpuid,
   curl, # Preferred to using the Perl HTTP libs - according to hw-probe.
   dmidecode,
+  drm_info,
   gnugrep,
   gnutar,
+  hdparm,
+  hplip,
   hwinfo,
+  i2c-tools,
+  inxi,
   iproute2,
   kmod,
+  libva-utils,
+  makePerlPath,
+  makeWrapper,
+  mcelog,
+  memtester,
+  mesa-demos,
+  opensc,
   pciutils,
   perl,
+  sane-backends,
   smartmontools,
+  sysstat,
+  systemd,
   usbutils,
+  util-linuxMinimal,
   v4l-utils,
+  vulkan-tools,
+  xinput,
   xz,
-
   # Conditionally recommended
   systemdSupport ? lib.meta.availableOn stdenv.hostPlatform systemd,
-  systemd,
-
   # Recommended
   withRecommended ? true, # Install recommended tools
-  mcelog,
-  hdparm,
-  acpica-tools,
-  drm_info,
-  mesa-demos,
-  memtester,
-  sysstat,
-  cpuid,
-  util-linuxMinimal,
-  xinput,
-  libva-utils,
-  inxi,
-  vulkan-tools,
-  i2c-tools,
-  opensc,
-
   # Suggested
   withSuggested ? false, # Install (most) suggested tools
-  hplip,
-  sane-backends,
   # , pnputils # pnputils (lspnp) isn't currently in nixpkgs and appears to be poorly maintained
 }:
 
@@ -69,11 +64,14 @@ stdenv.mkDerivation rec {
     sha256 = "sha256-8dLfk2k7xG2CXMHfMPrpgq43j3ttj5a0bgNPEahl2rQ=";
   };
 
+  nativeBuildInputs = [ makeWrapper ];
+  buildInputs = [ perl ];
   makeFlags = [ "prefix=$(out)" ];
 
-  nativeBuildInputs = [ makeWrapper ];
-
-  buildInputs = [ perl ];
+  postInstall = ''
+    wrapProgram $out/bin/hw-probe \
+      $makeWrapperArgs
+  '';
 
   makeWrapperArgs =
     let
@@ -139,20 +137,17 @@ stdenv.mkDerivation rec {
       "${lib.makeBinPath programs}"
     ];
 
-  postInstall = ''
-    wrapProgram $out/bin/hw-probe \
-      $makeWrapperArgs
-  '';
-
   meta = {
     description = "Probe for hardware, check operability and find drivers";
     homepage = "https://github.com/linuxhw/hw-probe";
-    platforms = with lib.platforms; (linux ++ freebsd ++ netbsd ++ openbsd);
+
     license = with lib.licenses; [
       lgpl21
       bsdOriginal
     ];
+
     maintainers = with lib.maintainers; [ rehno-lindeque ];
+    platforms = with lib.platforms; (linux ++ freebsd ++ netbsd ++ openbsd);
     mainProgram = "hw-probe";
   };
 }

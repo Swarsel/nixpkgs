@@ -1,12 +1,12 @@
 {
   lib,
+  fetchFromGitHub,
   azure-storage-blob,
   boto3,
   buildPythonPackage,
   cryptography,
   django,
   dropbox,
-  fetchFromGitHub,
   fetchpatch,
   google-cloud-storage,
   libcloud,
@@ -21,7 +21,6 @@
 buildPythonPackage rec {
   pname = "django-storages";
   version = "1.14.6";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "jschneier";
@@ -34,14 +33,24 @@ buildPythonPackage rec {
     # Add Moto 5 support
     # https://github.com/jschneier/django-storages/pull/1464
     (fetchpatch {
-      url = "https://github.com/jschneier/django-storages/commit/e1aedcf2d137f164101d31f2f430f1594eedd78c.patch";
       hash = "sha256-jSb/uJ0RXvPsXl+WUAzAgDvJl9Y3ad2F30X1SbsCc04=";
       name = "add_moto_5_support.patch";
+      url = "https://github.com/jschneier/django-storages/commit/e1aedcf2d137f164101d31f2f430f1594eedd78c.patch";
     })
   ];
 
-  build-system = [ setuptools ];
+  env.DJANGO_SETTINGS_MODULE = "tests.settings";
 
+  nativeCheckInputs = [
+    cryptography
+    moto
+    pytestCheckHook
+    rsa
+  ]
+  ++ lib.concatAttrValues optional-dependencies;
+
+  checkInputs = [ pynacl ];
+  build-system = [ setuptools ];
   dependencies = [ django ];
 
   optional-dependencies = {
@@ -54,26 +63,15 @@ buildPythonPackage rec {
     sftp = [ paramiko ];
   };
 
-  nativeCheckInputs = [
-    cryptography
-    moto
-    pytestCheckHook
-    rsa
-  ]
-  ++ lib.concatAttrValues optional-dependencies;
-
-  checkInputs = [ pynacl ];
-
+  pyproject = true;
   pythonImportsCheck = [ "storages" ];
-
-  env.DJANGO_SETTINGS_MODULE = "tests.settings";
 
   meta = {
     description = "Collection of custom storage backends for Django";
-    changelog = "https://github.com/jschneier/django-storages/blob/${version}/CHANGELOG.rst";
-    downloadPage = "https://github.com/jschneier/django-storages/";
     homepage = "https://django-storages.readthedocs.io";
+    changelog = "https://github.com/jschneier/django-storages/blob/${version}/CHANGELOG.rst";
     license = lib.licenses.bsd3;
     maintainers = [ ];
+    downloadPage = "https://github.com/jschneier/django-storages/";
   };
 }

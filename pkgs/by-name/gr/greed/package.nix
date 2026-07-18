@@ -2,9 +2,9 @@
   lib,
   stdenv,
   fetchFromGitLab,
-  ncurses,
   asciidoctor,
   gitUpdater,
+  ncurses,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -24,28 +24,28 @@ stdenv.mkDerivation (finalAttrs: {
       --replace-fail "/usr/games/lib/greed.hs" "/var/lib/greed/greed.hs"
   '';
 
-  env.NIX_CFLAGS_COMPILE = "-Wno-error=incompatible-pointer-types";
-  makeFlags = [ "PREFIX=$(out)" ];
+  nativeBuildInputs = [
+    asciidoctor
+  ];
 
   buildInputs = [
     ncurses
   ];
 
-  nativeBuildInputs = [
-    asciidoctor
-  ];
+  makeFlags = [ "PREFIX=$(out)" ];
+  env.NIX_CFLAGS_COMPILE = "-Wno-error=incompatible-pointer-types";
 
   passthru = {
     updateScript = gitUpdater { };
   };
 
   meta = {
+    description = "Game of Consumption";
     homepage = "http://www.catb.org/~esr/";
-    platforms = lib.platforms.unix;
+    changelog = "https://gitlab.com/esr/greed/-/blob/${finalAttrs.version}/NEWS.adoc?ref_type=tags";
     license = lib.licenses.bsd2;
     maintainers = with lib.maintainers; [ bot-wxt1221 ];
-    description = "Game of Consumption";
-    changelog = "https://gitlab.com/esr/greed/-/blob/${finalAttrs.version}/NEWS.adoc?ref_type=tags";
+    platforms = lib.platforms.unix;
     mainProgram = "greed";
   };
 })

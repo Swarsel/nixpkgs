@@ -1,9 +1,9 @@
 {
   lib,
+  stdenv,
   fetchurl,
   python3,
   readline,
-  stdenv,
   enableCurrenciesUpdater ? true,
 }:
 
@@ -21,9 +21,6 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-4bvbCWcufAju6YZ0nnoWKeuEpr30H1oqedaARESrvhA=";
   };
 
-  # Until upstream updates their code to work with GCC 15.
-  env.NIX_CFLAGS_COMPILE = "-std=gnu17";
-
   outputs = [
     "out"
     "info"
@@ -37,15 +34,17 @@ stdenv.mkDerivation (finalAttrs: {
     pythonEnv
   ];
 
+  # Until upstream updates their code to work with GCC 15.
+  env.NIX_CFLAGS_COMPILE = "-std=gnu17";
+  doCheck = true;
+
   postInstall = lib.optionalString enableCurrenciesUpdater ''
     cp units_cur ${placeholder "out"}/bin/
   '';
 
-  doCheck = true;
-
   meta = {
-    homepage = "https://www.gnu.org/software/units/";
     description = "Unit conversion tool";
+
     longDescription = ''
       GNU Units converts quantities expressed in various systems of measurement
       to their equivalents in other systems of measurement. Like many similar
@@ -67,9 +66,11 @@ stdenv.mkDerivation (finalAttrs: {
       file to suit your needs. You can also use your own data file to supplement
       the standard data file.
     '';
+
+    homepage = "https://www.gnu.org/software/units/";
     license = with lib.licenses; [ gpl3Plus ];
-    mainProgram = "units";
     maintainers = with lib.maintainers; [ galen ];
     platforms = lib.platforms.all;
+    mainProgram = "units";
   };
 })

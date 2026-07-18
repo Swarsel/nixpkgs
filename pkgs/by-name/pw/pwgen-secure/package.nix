@@ -1,7 +1,7 @@
 {
   lib,
-  python3Packages,
   fetchFromGitHub,
+  python3Packages,
 }:
 
 let
@@ -11,10 +11,8 @@ in
 buildPythonApplication rec {
   pname = "pwgen-secure";
   version = "0.9.1";
-  pyproject = true;
 
   # it needs `secrets` which was introduced in 3.6
-
   # GH is newer than Pypi and contains both library *and* the actual program
   # whereas Pypi only has the library
   src = fetchFromGitHub {
@@ -34,18 +32,17 @@ buildPythonApplication rec {
       --replace-fail "os.path.join(path, 'words.txt')" "os.path.join('$shareDir', 'words.txt')"
   '';
 
-  build-system = with python3Packages; [ setuptools ];
-
-  dependencies = with python3Packages; [ docopt ];
+  # there are no checks
+  doCheck = false;
 
   postInstall = ''
     install -Dm555 spwgen.py $out/bin/spwgen
     install -Dm444 pwgen_secure/words.txt -t $shareDir
   '';
 
-  # there are no checks
-  doCheck = false;
-
+  build-system = with python3Packages; [ setuptools ];
+  dependencies = with python3Packages; [ docopt ];
+  pyproject = true;
   pythonImportsCheck = [ "pwgen_secure" ];
 
   meta = {

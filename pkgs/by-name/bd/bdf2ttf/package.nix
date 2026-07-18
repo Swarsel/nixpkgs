@@ -20,8 +20,6 @@ stdenv.mkDerivation {
     ./gcc-15.patch
   ];
 
-  dontConfigure = true;
-
   makeFlags = [ "gcc" ];
 
   installPhase = ''
@@ -29,6 +27,8 @@ stdenv.mkDerivation {
     install -Dm755 bdf2ttf $out/bin/bdf2ttf
     runHook postInstall
   '';
+
+  dontConfigure = true;
 
   meta = {
     description = "Convert BDF font file to TTF (embed bitmap as is, not convert to vector)";

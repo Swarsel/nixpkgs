@@ -1,16 +1,14 @@
 {
   lib,
-  python3Packages,
   fetchFromGitHub,
   nix-update-script,
+  python3Packages,
   testers,
 }:
 
 python3Packages.buildPythonApplication (finalAttrs: {
   pname = "vimhjkl";
   version = "0.6.0";
-  pyproject = true;
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "S-Sigdel";
@@ -19,24 +17,29 @@ python3Packages.buildPythonApplication (finalAttrs: {
     hash = "sha256-uBXz2O2PwtnmibaR4e/l+lKIUh7WN2Hvh6nUfpUuEeA=";
   };
 
-  build-system = [
-    python3Packages.uv-build
-  ];
-
-  pythonImportsCheck = [
-    "vimhjkl"
-  ];
-
   postPatch = ''
     substituteInPlace pyproject.toml \
       --replace-fail "uv_build>=0.11,<0.12" "uv_build"
   '';
 
+  __structuredAttrs = true;
+
+  build-system = [
+    python3Packages.uv-build
+  ];
+
+  pyproject = true;
+
+  pythonImportsCheck = [
+    "vimhjkl"
+  ];
+
   passthru = {
-    updateScript = nix-update-script { };
     tests.version = testers.testVersion {
       package = finalAttrs.finalPackage;
     };
+
+    updateScript = nix-update-script { };
   };
 
   meta = {

@@ -1,17 +1,17 @@
 {
+  lib,
+  stdenv,
+  fetchFromGitHub,
+  SDL_gfx,
+  SDL_image,
+  SDL_mixer,
   boost,
   cmake,
-  fetchFromGitHub,
-  lib,
-  libGLU,
   libGL,
+  libGLU,
   openssl,
   pkg-config,
   sdl12-compat,
-  SDL_image,
-  SDL_mixer,
-  SDL_gfx,
-  stdenv,
   yaml-cpp,
   zlib,
 }:
@@ -47,10 +47,10 @@ stdenv.mkDerivation {
 
   meta = {
     description = "Open source clone of UFO: Enemy Unknown";
-    mainProgram = "openxcom";
     homepage = "https://openxcom.org";
     license = lib.licenses.gpl3;
     maintainers = [ ];
     platforms = lib.platforms.linux;
+    mainProgram = "openxcom";
   };
 }

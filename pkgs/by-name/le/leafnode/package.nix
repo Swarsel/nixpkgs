@@ -2,8 +2,8 @@
   lib,
   stdenv,
   fetchurl,
-  pcre,
   libxcrypt,
+  pcre,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -15,11 +15,12 @@ stdenv.mkDerivation (finalAttrs: {
     sha256 = "sha256-NOuiy7uHG3JMjV3UAtHDWK6yG6QmvrVljhVe0NdGEHU=";
   };
 
-  configureFlags = [ "--enable-runas-user=nobody" ];
+  buildInputs = [
+    pcre
+    libxcrypt
+  ];
 
-  prePatch = ''
-    substituteInPlace Makefile.in --replace 02770 0770
-  '';
+  configureFlags = [ "--enable-runas-user=nobody" ];
 
   # configure uses id to check environment; we don't want this check
   preConfigure = ''
@@ -33,16 +34,15 @@ stdenv.mkDerivation (finalAttrs: {
     sed -i validatefqdn.c -e 's/int is_validfqdn(const char \*f) {/int is_validfqdn(const char *f) { return 1;/;'
   '';
 
-  buildInputs = [
-    pcre
-    libxcrypt
-  ];
+  prePatch = ''
+    substituteInPlace Makefile.in --replace 02770 0770
+  '';
 
   meta = {
-    homepage = "https://leafnode.sourceforge.io/index.shtml";
     description = "Implementation of a store & forward NNTP proxy, under development";
+    homepage = "https://leafnode.sourceforge.io/index.shtml";
     license = lib.licenses.mit;
-    platforms = lib.platforms.unix;
     maintainers = [ ];
+    platforms = lib.platforms.unix;
   };
 })

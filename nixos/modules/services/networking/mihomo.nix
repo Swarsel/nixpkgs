@@ -3,8 +3,8 @@
 # we dont want plaintext secrets in world-readable `/nix/store`.
 
 {
-  lib,
   config,
+  lib,
   pkgs,
   ...
 }:
@@ -22,18 +22,32 @@ in
 {
   options.services.mihomo = {
     enable = lib.mkEnableOption "Mihomo, A rule-based proxy in Go";
-
     package = lib.mkPackageOption pkgs "mihomo" { };
 
     configFile = lib.mkOption {
-      type = lib.types.path;
       description = "Configuration file to use.";
+      type = lib.types.path;
     };
+
+    extraOpts = lib.mkOption {
+      default = null;
+      description = "Extra command line options to use.";
+      type = lib.types.nullOr lib.types.str;
+    };
+
+    processesInfo = lib.mkEnableOption ''
+      necessary capabilities for rules about process information such as `process-name`
+    '';
+
+    tunMode = lib.mkEnableOption ''
+      necessary capabilities for Mihomo's systemd service for TUN mode to function properly.
+
+      Keep in mind, that you still need to enable TUN mode manually in Mihomo's configuration
+    '';
 
     webui = lib.mkOption {
       default = null;
-      type = lib.types.nullOr lib.types.path;
-      example = lib.literalExpression "pkgs.metacubexd";
+
       description = ''
         Local web interface to use.
 
@@ -47,34 +61,26 @@ in
         - clash-dashboard:
           - <https://clash.razord.top>
       '';
+
+      example = lib.literalExpression "pkgs.metacubexd";
+      type = lib.types.nullOr lib.types.path;
     };
-
-    extraOpts = lib.mkOption {
-      default = null;
-      type = lib.types.nullOr lib.types.str;
-      description = "Extra command line options to use.";
-    };
-
-    tunMode = lib.mkEnableOption ''
-      necessary capabilities for Mihomo's systemd service for TUN mode to function properly.
-
-      Keep in mind, that you still need to enable TUN mode manually in Mihomo's configuration
-    '';
-
-    processesInfo = lib.mkEnableOption ''
-      necessary capabilities for rules about process information such as `process-name`
-    '';
   };
 
   config = lib.mkIf cfg.enable {
     ### systemd service
     systemd.services."mihomo" = {
+      after = [ "network-online.target" ];
       description = "Mihomo daemon, A rule-based proxy in Go.";
       documentation = [ "https://wiki.metacubex.one/" ];
       requires = [ "network-online.target" ];
-      after = [ "network-online.target" ];
-      wantedBy = [ "multi-user.target" ];
+
       serviceConfig = {
+        ### Hardening
+        inherit AmbientCapabilities CapabilityBoundingSet;
+        DeviceAllow = "";
+        DynamicUser = true;
+
         ExecStart = lib.concatStringsSep " " [
           (lib.getExe cfg.package)
           "-d /var/lib/private/mihomo"
@@ -83,13 +89,7 @@ in
           (lib.optionalString (cfg.extraOpts != null) cfg.extraOpts)
         ];
 
-        DynamicUser = true;
-        StateDirectory = "mihomo";
         LoadCredential = "config.yaml:${cfg.configFile}";
-
-        ### Hardening
-        inherit AmbientCapabilities CapabilityBoundingSet;
-        DeviceAllow = "";
         LockPersonality = true;
         MemoryDenyWriteExecute = true;
         NoNewPrivileges = true;
@@ -107,10 +107,11 @@ in
         ProtectKernelTunables = true;
         ProtectProc = "invisible";
         ProtectSystem = "strict";
+        RestrictAddressFamilies = "AF_INET AF_INET6";
+        RestrictNamespaces = true;
         RestrictRealtime = true;
         RestrictSUIDSGID = true;
-        RestrictNamespaces = true;
-        RestrictAddressFamilies = "AF_INET AF_INET6";
+        StateDirectory = "mihomo";
         SystemCallArchitectures = "native";
         SystemCallFilter = "@system-service bpf";
         UMask = "0077";
@@ -120,6 +121,8 @@ in
         PrivateUsers = false;
         RestrictAddressFamilies = "AF_INET AF_INET6 AF_NETLINK";
       };
+
+      wantedBy = [ "multi-user.target" ];
     };
   };
 

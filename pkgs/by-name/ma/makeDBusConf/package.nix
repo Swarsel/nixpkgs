@@ -1,11 +1,11 @@
 {
-  runCommand,
-  libxslt,
   dbus,
   findXMLCatalogs,
+  libxslt,
+  runCommand,
+  apparmor ? "disabled", # one of enabled, disabled, required
   serviceDirectories ? [ ],
   suidHelper ? "/var/setuid-wrappers/dbus-daemon-launch-helper",
-  apparmor ? "disabled", # one of enabled, disabled, required
 }:
 
 /*
@@ -17,8 +17,6 @@
 runCommand "dbus-1"
   {
     inherit serviceDirectories suidHelper apparmor;
-    preferLocalBuild = true;
-    allowSubstitutes = false;
 
     nativeBuildInputs = [
       libxslt.bin
@@ -28,6 +26,9 @@ runCommand "dbus-1"
     buildInputs = [
       dbus.out
     ];
+
+    allowSubstitutes = false;
+    preferLocalBuild = true;
   }
   ''
     mkdir -p $out

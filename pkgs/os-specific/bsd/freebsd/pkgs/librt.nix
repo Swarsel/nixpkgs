@@ -1,26 +1,18 @@
 {
-  mkDerivation,
+  csu,
   include,
   libcMinimal,
-  libsys,
   libgcc,
+  libsys,
   libthr,
-  csu,
+  mkDerivation,
 }:
 
 mkDerivation {
-  path = "lib/librt";
-  extraPaths = [
-    "lib/libc/include" # private headers
-    "lib/libc/Versions.def"
-  ];
-
   outputs = [
     "out"
     "debug"
   ];
-
-  noLibc = true;
 
   buildInputs = [
     include
@@ -30,9 +22,17 @@ mkDerivation {
     libsys
   ];
 
+  env.MK_TESTS = "no";
+
   preBuild = ''
     export NIX_CFLAGS_COMPILE="$NIX_CFLAGS_COMPILE -B${csu}/lib"
   '';
 
-  env.MK_TESTS = "no";
+  extraPaths = [
+    "lib/libc/include" # private headers
+    "lib/libc/Versions.def"
+  ];
+
+  noLibc = true;
+  path = "lib/librt";
 }

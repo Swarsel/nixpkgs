@@ -3,13 +3,13 @@
   stdenv,
   fetchFromGitHub,
   autoreconfHook,
-  pkg-config,
   boehmgc,
+  pkg-config,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
-  version = "1.04";
   pname = "libhomfly";
+  version = "1.04";
 
   src = fetchFromGitHub {
     owner = "miguelmarco";
@@ -18,22 +18,22 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-ND2ZBKwHlRYTqxC+ltkCQ2lolNAkhZZm5hriIaOLqC4=";
   };
 
-  buildInputs = [
-    boehmgc
-  ];
-
   nativeBuildInputs = [
     autoreconfHook
     pkg-config
   ];
 
+  buildInputs = [
+    boehmgc
+  ];
+
   doCheck = true;
 
   meta = {
-    homepage = "https://github.com/miguelmarco/libhomfly/";
     description = "Library to compute the homfly polynomial of knots and links";
+    homepage = "https://github.com/miguelmarco/libhomfly/";
     license = lib.licenses.unlicense;
-    teams = [ lib.teams.sage ];
     platforms = lib.platforms.all;
+    teams = [ lib.teams.sage ];
   };
 })

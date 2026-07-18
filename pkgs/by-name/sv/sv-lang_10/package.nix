@@ -2,13 +2,13 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  fetchpatch,
   boost,
   catch2_3,
   cmake,
-  ninja,
+  fetchpatch,
   fmt,
   mimalloc,
+  ninja,
   python3,
 }:
 
@@ -25,8 +25,8 @@ stdenv.mkDerivation (finalAttrs: {
 
   patches = [
     (fetchpatch {
-      url = "https://github.com/MikePopoloski/slang/commit/0e2094e3570f399c4bedff8c7cf342812b50d909.patch";
       hash = "sha256-Evx5HJk8fH3QoBXM5BE3tmdJVnblVTkxLMTNIRLOt/c=";
+      url = "https://github.com/MikePopoloski/slang/commit/0e2094e3570f399c4bedff8c7cf342812b50d909.patch";
     })
   ];
 
@@ -35,6 +35,21 @@ stdenv.mkDerivation (finalAttrs: {
       'set(mimalloc_min_version "2.2")' \
       'set(mimalloc_min_version "${lib.versions.majorMinor mimalloc.version}")'
   '';
+
+  strictDeps = true;
+
+  nativeBuildInputs = [
+    cmake
+    python3
+    ninja
+  ];
+
+  buildInputs = [
+    boost
+    fmt
+    mimalloc
+    catch2_3
+  ];
 
   cmakeFlags = [
     "-DCMAKE_INSTALL_INCLUDEDIR=include"
@@ -46,32 +61,16 @@ stdenv.mkDerivation (finalAttrs: {
     "-DSLANG_USE_THREADS=OFF"
   ];
 
-  __structuredAttrs = true;
-
-  nativeBuildInputs = [
-    cmake
-    python3
-    ninja
-  ];
-
-  strictDeps = true;
-
-  buildInputs = [
-    boost
-    fmt
-    mimalloc
-    catch2_3
-  ];
-
   doCheck = !stdenv.hostPlatform.isDarwin;
+  __structuredAttrs = true;
 
   meta = {
     description = "SystemVerilog compiler and language services";
     homepage = "https://github.com/MikePopoloski/slang";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ sharzy ];
-    mainProgram = "slang";
     platforms = lib.platforms.all;
+    mainProgram = "slang";
     broken = stdenv.hostPlatform.isDarwin;
   };
 })

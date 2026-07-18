@@ -1,25 +1,21 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   fetchNpmDeps,
-
   # build-system
   hatch-deps-selector,
   hatch-jupyter-builder,
   hatch-nodejs-version,
   hatchling,
-
-  # nativeBuildInputs
-  nodejs,
-  npmHooks,
-
+  ipykernel,
   # dependencies
   jupyter-core,
   jupyter-server,
-  ipykernel,
   nodeenv,
-
+  # nativeBuildInputs
+  nodejs,
+  npmHooks,
   # tests
   versionCheckHook,
 }:
@@ -27,7 +23,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "jupyter-book";
   version = "2.1.5";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "jupyter-book";
@@ -35,18 +30,6 @@ buildPythonPackage (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-0osykGqNr16il67ubfglTchTl3anQWrjlaySxBWh/yk=";
   };
-
-  npmDeps = fetchNpmDeps {
-    inherit (finalAttrs) src;
-    hash = "sha256-H7ZsDMNXU9u0jvmbrcWzUoFjD+y1OlmNVLK9WEfDJyU=";
-  };
-
-  build-system = [
-    hatch-deps-selector
-    hatch-jupyter-builder
-    hatch-nodejs-version
-    hatchling
-  ];
 
   nativeBuildInputs = [
     nodejs
@@ -58,6 +41,18 @@ buildPythonPackage (finalAttrs: {
     nodejs
   ];
 
+  # No python tests
+  nativeCheckInputs = [
+    versionCheckHook
+  ];
+
+  build-system = [
+    hatch-deps-selector
+    hatch-jupyter-builder
+    hatch-nodejs-version
+    hatchling
+  ];
+
   dependencies = [
     ipykernel
     jupyter-core
@@ -65,12 +60,13 @@ buildPythonPackage (finalAttrs: {
     nodeenv
   ];
 
-  pythonImportsCheck = [ "jupyter_book" ];
+  npmDeps = fetchNpmDeps {
+    inherit (finalAttrs) src;
+    hash = "sha256-H7ZsDMNXU9u0jvmbrcWzUoFjD+y1OlmNVLK9WEfDJyU=";
+  };
 
-  # No python tests
-  nativeCheckInputs = [
-    versionCheckHook
-  ];
+  pyproject = true;
+  pythonImportsCheck = [ "jupyter_book" ];
   versionCheckProgramArg = "--version";
 
   meta = {
@@ -78,7 +74,7 @@ buildPythonPackage (finalAttrs: {
     homepage = "https://jupyterbook.org/";
     changelog = "https://github.com/jupyter-book/jupyter-book/blob/${finalAttrs.src.tag}/CHANGELOG.md";
     license = lib.licenses.bsd3;
-    teams = [ lib.teams.jupyter ];
     mainProgram = "jupyter-book";
+    teams = [ lib.teams.jupyter ];
   };
 })

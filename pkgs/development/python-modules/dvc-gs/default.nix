@@ -10,17 +10,15 @@
 buildPythonPackage (finalAttrs: {
   pname = "dvc-gs";
   version = "3.1.0";
-  pyproject = true;
 
   src = fetchPypi {
-    pname = "dvc_gs";
     inherit (finalAttrs) version;
     hash = "sha256-QhhWD/HVGW/Qx5FiZVzXnFE0+mHr40o6UH+vB0kibu4=";
+    pname = "dvc_gs";
   };
 
-  # Prevent circular dependency
-  pythonRemoveDeps = [ "dvc" ];
-
+  # Network access is needed for tests
+  doCheck = false;
   build-system = [ setuptools-scm ];
 
   dependencies = [
@@ -28,14 +26,14 @@ buildPythonPackage (finalAttrs: {
     dvc-objects
   ];
 
-  # Network access is needed for tests
-  doCheck = false;
+  pyproject = true;
+  # Prevent circular dependency
+  pythonRemoveDeps = [ "dvc" ];
 
   # Circular dependency
   # pythonImportsCheck = [
   #   "dvc_gs"
   # ];
-
   meta = {
     description = "gs plugin for dvc";
     homepage = "https://pypi.org/project/dvc-gs/version";

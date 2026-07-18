@@ -27,45 +27,30 @@ in
       See the deployment docs for [building from source](https://dashy.to/docs/deployment#build-from-source), [hosting with a CDN](https://dashy.to/docs/deployment#hosting-with-cdn) and [CDN cloud deploy](https://dashy.to/docs/deployment#cdn--cloud-deploy) for more information.
     '';
 
-    virtualHost = {
-      enableNginx = mkEnableOption "a virtualhost to serve dashy through nginx";
-
-      domain = mkOption {
-        description = ''
-          Domain to use for the virtual host.
-
-          This can be used to change nginx options like
-          ```nix
-          services.nginx.virtualHosts."$\{config.services.dashy.virtualHost.domain}".listen = [ ... ]
-          ```
-          or
-          ```nix
-          services.nginx.virtualHosts."example.com".listen = [ ... ]
-          ```
-        '';
-        type = str;
-      };
-    };
-
     package = mkPackageOption pkgs "dashy-ui" { };
 
     finalDrv = mkOption {
-      readOnly = true;
       default =
         if cfg.settings != { } then cfg.package.override { inherit (cfg) settings; } else cfg.package;
+
       defaultText = ''
         if cfg.settings != {}
         then cfg.package.override {inherit (cfg) settings;}
         else cfg.package;
       '';
-      type = package;
+
       description = ''
         Final derivation containing the fully built static files
       '';
+
+      readOnly = true;
+      type = package;
     };
 
     settings = mkOption {
+      inherit (pkgs.formats.json { }) type;
       default = { };
+
       description = ''
         Settings serialized into `user-data/conf.yml` before build.
         If left empty, the default configuration shipped with the package will be used instead.
@@ -78,6 +63,7 @@ in
         ```
         This will add the file to the nix store upon build, referencing it by file path as expected by Dashy.
       '';
+
       example = ''
         {
           appConfig = {
@@ -151,13 +137,34 @@ in
           ];
         }
       '';
-      inherit (pkgs.formats.json { }) type;
+    };
+
+    virtualHost = {
+      domain = mkOption {
+        description = ''
+          Domain to use for the virtual host.
+
+          This can be used to change nginx options like
+          ```nix
+          services.nginx.virtualHosts."$\{config.services.dashy.virtualHost.domain}".listen = [ ... ]
+          ```
+          or
+          ```nix
+          services.nginx.virtualHosts."example.com".listen = [ ... ]
+          ```
+        '';
+
+        type = str;
+      };
+
+      enableNginx = mkEnableOption "a virtualhost to serve dashy through nginx";
     };
   };
 
   config = mkIf cfg.enable {
     services.nginx = mkIf cfg.virtualHost.enableNginx {
       enable = true;
+
       virtualHosts."${cfg.virtualHost.domain}" = {
         locations."/" = {
           root = cfg.finalDrv;

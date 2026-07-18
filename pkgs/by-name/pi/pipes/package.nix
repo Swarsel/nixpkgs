@@ -2,8 +2,8 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  makeWrapper,
   coreutils,
+  makeWrapper,
   ncurses,
 }:
 
@@ -38,7 +38,7 @@ stdenv.mkDerivation (finalAttrs: {
     homepage = "https://github.com/pipeseroni/pipes.sh";
     license = lib.licenses.mit;
     maintainers = [ lib.maintainers.matthiasbeyer ];
-    mainProgram = "pipes.sh";
     platforms = lib.platforms.unix;
+    mainProgram = "pipes.sh";
   };
 })

@@ -1,8 +1,8 @@
 {
   lib,
   stdenv,
-  fetchsvn,
   autoreconfHook,
+  fetchsvn,
 }:
 
 stdenv.mkDerivation {
@@ -21,12 +21,14 @@ stdenv.mkDerivation {
 
   meta = {
     description = "Delete files securely";
+
     longDescription = ''
       srm (secure rm) is a command-line compatible rm(1) which
       overwrites file contents before unlinking. The goal is to
       provide drop in security for users who wish to prevent recovery
       of deleted information, even if the machine is compromised.
     '';
+
     homepage = "https://srm.sourceforge.net";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ edwtjo ];

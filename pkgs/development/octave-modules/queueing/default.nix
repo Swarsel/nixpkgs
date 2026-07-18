@@ -1,7 +1,7 @@
 {
-  buildOctavePackage,
   lib,
   fetchurl,
+  buildOctavePackage,
 }:
 
 buildOctavePackage rec {
@@ -14,10 +14,8 @@ buildOctavePackage rec {
   };
 
   meta = {
-    homepage = "https://gnu-octave.github.io/packages/queueing/";
-    license = lib.licenses.gpl3Plus;
-    maintainers = with lib.maintainers; [ ravenjoad ];
     description = "Provides functions for queueing networks and Markov chains analysis";
+
     longDescription = ''
       The queueing package provides functions for queueing networks and Markov
       chains analysis. This package can be used to compute steady-state
@@ -29,5 +27,9 @@ buildOctavePackage rec {
       sojourn times and so forth. Discrete- and continuous-time Markov chains
       are supported.
     '';
+
+    homepage = "https://gnu-octave.github.io/packages/queueing/";
+    license = lib.licenses.gpl3Plus;
+    maintainers = with lib.maintainers; [ ravenjoad ];
   };
 }

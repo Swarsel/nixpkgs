@@ -1,8 +1,8 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
   nix-update-script,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -17,18 +17,16 @@ rustPlatform.buildRustPackage (finalAttrs: {
   };
 
   cargoHash = "sha256-cSxPt4TQULewx9UdbDHP8YS+EY2C+pRBP8k3AmfcueM=";
-
   # will true when tests is fixed from source.
   doCheck = false;
-
   passthru.updateScript = nix-update-script { };
 
   meta = {
     description = "SOPS alternative in pure rust";
     homepage = "https://gibbz00.github.io/rops";
     changelog = "https://github.com/gibbz00/rops/blob/${finalAttrs.version}/CHANGELOG.md";
-    mainProgram = "rops";
-    maintainers = with lib.maintainers; [ r17x ];
     license = lib.licenses.mpl20;
+    maintainers = with lib.maintainers; [ r17x ];
+    mainProgram = "rops";
   };
 })

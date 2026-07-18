@@ -1,7 +1,7 @@
 {
   lib,
-  stdenvNoCC,
   fetchFromGitHub,
+  stdenvNoCC,
 }:
 
 stdenvNoCC.mkDerivation (finalAttrs: {
@@ -15,10 +15,6 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     hash = "sha256-Idv/duEYmDk/rO+TI8n+FY3VFDtUEh8C292jh12BJuM=";
   };
 
-  dontConfigure = true;
-
-  dontBuild = true;
-
   installPhase = ''
     runHook preInstall
 
@@ -28,9 +24,12 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  dontBuild = true;
+  dontConfigure = true;
+
   meta = {
-    homepage = "https://github.com/letoram/prio";
     description = "Plan9- Rio like Window Manager for Arcan";
+    homepage = "https://github.com/letoram/prio";
     license = with lib.licenses; [ bsd3 ];
     maintainers = [ ];
     platforms = lib.platforms.all;

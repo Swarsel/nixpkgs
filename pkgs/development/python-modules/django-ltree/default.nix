@@ -1,15 +1,14 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
+  buildPythonPackage,
   django,
+  setuptools,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "django-ltree";
   version = "0.6.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "mariocesar";
@@ -25,6 +24,8 @@ buildPythonPackage (finalAttrs: {
   dependencies = [
     django
   ];
+
+  pyproject = true;
 
   pythonImportsCheck = [
     "django_ltree"

@@ -1,16 +1,15 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   isPyPy,
-  setuptools,
   pytestCheckHook,
+  setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "zope-testing";
   version = "6.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "zopefoundation";
@@ -24,16 +23,12 @@ buildPythonPackage rec {
       --replace-fail "setuptools >= 78.1.1,< 81" setuptools
   '';
 
-  build-system = [ setuptools ];
-
   doCheck = !isPyPy;
-
   nativeCheckInputs = [ pytestCheckHook ];
-
+  build-system = [ setuptools ];
   enabledTestPaths = [ "src/zope/testing/tests.py" ];
-
+  pyproject = true;
   pythonImportsCheck = [ "zope.testing" ];
-
   pythonNamespaces = [ "zope" ];
 
   meta = {

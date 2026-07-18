@@ -1,6 +1,6 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchurl,
   libusb-compat-0_1,
 }:
@@ -11,12 +11,12 @@ let
   g15src =
     {
       pname,
-      version,
       sha256,
+      version,
     }:
     fetchurl {
-      url = "mirror://sourceforge/g15tools/${pname}/${version}/${pname}-${version}.tar.bz2";
       inherit sha256;
+      url = "mirror://sourceforge/g15tools/${pname}/${version}/${pname}-${version}.tar.bz2";
     };
 
   libg15 = stdenv.mkDerivation rec {
@@ -29,12 +29,11 @@ let
     };
 
     buildInputs = [ libusb-compat-0_1 ];
-
     enableParallelBuilding = true;
 
     meta = {
-      description = "Provides low-level access to Logitech G11/G15 keyboards and Z10 speakers";
       inherit license maintainers;
+      description = "Provides low-level access to Logitech G11/G15 keyboards and Z10 speakers";
     };
   };
 
@@ -52,12 +51,11 @@ let
     ];
 
     buildInputs = [ libg15 ];
-
     enableParallelBuilding = true;
 
     meta = {
-      description = "Small graphics library optimised for drawing on an LCD";
       inherit license maintainers;
+      description = "Small graphics library optimised for drawing on an LCD";
     };
   };
 in
@@ -75,9 +73,9 @@ stdenv.mkDerivation rec {
       patch =
         fname: sha256:
         fetchurl {
-          url = "https://raw.githubusercontent.com/archlinux/svntogit-community/c0b0b6d4d6d7b79eca68123b20e0c9fb82e1c6e1/g15daemon/trunk/${pname}-${version}-${fname}.patch";
-          name = "${fname}.patch";
           inherit sha256;
+          name = "${fname}.patch";
+          url = "https://raw.githubusercontent.com/archlinux/svntogit-community/c0b0b6d4d6d7b79eca68123b20e0c9fb82e1c6e1/g15daemon/trunk/${pname}-${version}-${fname}.patch";
         };
     in
     [
@@ -96,12 +94,11 @@ stdenv.mkDerivation rec {
   #  ld: g15_plugins.o:/build/g15daemon-1.9.5.3/g15daemon/./g15daemon.h:218:
   #   multiple definition of `lcdlist_mutex'; utility_funcs.o:g15daemon.h:218: first defined here
   env.NIX_CFLAGS_COMPILE = "-fcommon";
-
   enableParallelBuilding = true;
 
   meta = {
+    inherit license maintainers;
     description = "Daemon that makes it possible to use the Logitech keyboard G-Buttons and draw on various Logitech LCDs";
     mainProgram = "g15daemon";
-    inherit license maintainers;
   };
 }

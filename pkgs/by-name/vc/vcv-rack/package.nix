@@ -1,21 +1,21 @@
 {
+  lib,
+  stdenv,
+  fetchFromGitHub,
   alsa-lib,
   apple-sdk_14,
   cmake,
   copyDesktopItems,
   curl,
   fetchFromBitbucket,
-  fetchFromGitHub,
   fetchpatch,
   ghc_filesystem,
   glew,
   glfw,
-  zenity,
   gtk3-x11,
   imagemagick,
   jansson,
   jq,
-  lib,
   libarchive,
   libicns,
   libjack2,
@@ -25,13 +25,13 @@
   makeWrapper,
   openssl,
   pkg-config,
-  rtmidi,
   rsync,
+  rtmidi,
   speexdsp,
-  stdenv,
-  wrapGAppsHook3,
-  zstd,
   versionCheckHook,
+  wrapGAppsHook3,
+  zenity,
+  zstd,
 }:
 
 let
@@ -41,64 +41,64 @@ let
   # we'll have to fetch them separately ourselves.
   # The revs used here have been determined using git submodule status.
   filesystem-source = fetchFromGitHub {
+    hash = "sha256-dHwNsuuFkhd9Y24KRzGV9Z9UZolNtOtxyA1AEVG7uMU=";
     owner = "gulrak";
     repo = "filesystem";
     rev = "7e37433f318488ae4bc80f80e12df12a01579874";
-    hash = "sha256-dHwNsuuFkhd9Y24KRzGV9Z9UZolNtOtxyA1AEVG7uMU=";
   };
   fuzzysearchdatabase-source = fetchFromBitbucket {
+    hash = "sha256-f+ed6zZGfEuYILXQcUoQ+1Qf4ASvWLQqU1nYHDpdCOk=";
     owner = "j_norberg";
     repo = "fuzzysearchdatabase";
     rev = "23122d1ff60d936fd766361a30210c954e0c5449";
-    hash = "sha256-f+ed6zZGfEuYILXQcUoQ+1Qf4ASvWLQqU1nYHDpdCOk=";
   };
   nanosvg-source = fetchFromGitHub {
+    hash = "sha256-b/aBmvuvKScF8zSkyF1tuqL9hov4XVLzKLTpr6p7mIQ=";
     owner = "memononen";
     repo = "nanosvg";
     rev = "25241c5a8f8451d41ab1b02ab2d865b01600d949";
-    hash = "sha256-b/aBmvuvKScF8zSkyF1tuqL9hov4XVLzKLTpr6p7mIQ=";
   };
   nanovg-source = fetchFromGitHub {
+    hash = "sha256-HmQhCE/zIKc3f+Zld229s5i5MWzRrBMF9gYrn8JVQzg=";
     owner = "VCVRack";
     repo = "nanovg";
     rev = "0bebdb314aff9cfa28fde4744bcb037a2b3fd756";
-    hash = "sha256-HmQhCE/zIKc3f+Zld229s5i5MWzRrBMF9gYrn8JVQzg=";
   };
   osdialog-source = fetchFromGitHub {
+    hash = "sha256-FiejDeZkLoyS7BBwPYBfdOCLxBV8hAFzJAFeTz80tH0=";
     owner = "AndrewBelt";
     repo = "osdialog";
     rev = "64482bde25a8e19cc38342ed21aa0e38c2751f6c";
-    hash = "sha256-FiejDeZkLoyS7BBwPYBfdOCLxBV8hAFzJAFeTz80tH0=";
   };
   oui-blendish-source = fetchFromGitHub {
+    hash = "sha256-/QZFZuI5kSsEvSfMJlcqB1HiZ9Vcf3vqLqWIMEgxQK8=";
     owner = "VCVRack";
     repo = "oui-blendish";
     rev = "2fc6405883f8451944ed080547d073c8f9f31898";
-    hash = "sha256-/QZFZuI5kSsEvSfMJlcqB1HiZ9Vcf3vqLqWIMEgxQK8=";
   };
   pffft-source = fetchFromBitbucket {
+    hash = "sha256-gYaumUeXYf3axAexGqWI/tYBs1dyebjAESo4o/DTjCA=";
     owner = "jpommier";
     repo = "pffft";
     rev = "74d7261be17cf659d5930d4830609406bd7553e3";
-    hash = "sha256-gYaumUeXYf3axAexGqWI/tYBs1dyebjAESo4o/DTjCA=";
   };
   simde-source = fetchFromGitHub {
+    hash = "sha256-21YBpP7jwFqNiOu5Ilu8t9nt+AZmLc3PVEwHAWn7vM8=";
     owner = "simd-everywhere";
     repo = "simde";
     rev = "dd0b662fd8cf4b1617dbbb4d08aa053e512b08e4";
-    hash = "sha256-21YBpP7jwFqNiOu5Ilu8t9nt+AZmLc3PVEwHAWn7vM8=";
   };
   tinyexpr-source = fetchFromGitHub {
+    hash = "sha256-jYC0kSmYdzJsEaH9gres/NOcfsh+2ymqZAGxNbjus/s=";
     owner = "codeplea";
     repo = "tinyexpr";
     rev = "4e8cc0067a1e2378faae23eb2dfdd21e9e9907c2";
-    hash = "sha256-jYC0kSmYdzJsEaH9gres/NOcfsh+2ymqZAGxNbjus/s=";
   };
   fundamental-source = fetchFromGitHub {
+    hash = "sha256-rpOIMFO17ixgJZDRRg6RdLKorN/XKCUXkapsxN1pmQ4=";
     owner = "VCVRack";
     repo = "Fundamental";
     rev = "v2.6.4";
-    hash = "sha256-rpOIMFO17ixgJZDRRg6RdLKorN/XKCUXkapsxN1pmQ4=";
   };
   vcv-rtaudio = stdenv.mkDerivation {
     pname = "vcv-rtaudio";
@@ -138,24 +138,6 @@ stdenv.mkDerivation (finalAttrs: {
   pname = "vcv-rack";
   version = "2.6.6";
 
-  desktopItems = [
-    (makeDesktopItem {
-      type = "Application";
-      name = "vcv-rack";
-      desktopName = "VCV Rack";
-      genericName = "Eurorack simulator";
-      comment = "Create music by patching together virtual synthesizer modules";
-      exec = "Rack";
-      icon = "Rack";
-      categories = [
-        "AudioVideo"
-        "AudioVideoEditing"
-        "Audio"
-      ];
-      keywords = [ "music" ];
-    })
-  ];
-
   src = fetchFromGitHub {
     owner = "VCVRack";
     repo = "Rack";
@@ -174,6 +156,133 @@ stdenv.mkDerivation (finalAttrs: {
     # https://github.com/VCVRack/Rack/commit/9f0eb9a0da8e9d6f1729f823555fdac2135214f0
     ./fix-segfault-on-linux.patch
   ];
+
+  nativeBuildInputs = [
+    jq
+    makeWrapper
+    pkg-config
+    zstd
+  ]
+  ++ lib.optionals stdenv.hostPlatform.isLinux [
+    copyDesktopItems
+    imagemagick
+    libicns
+    wrapGAppsHook3
+  ]
+  ++ lib.optionals stdenv.hostPlatform.isDarwin [ rsync ];
+
+  buildInputs = [
+    curl
+    ghc_filesystem
+    glew
+    glfw
+    jansson
+    libarchive
+    libsamplerate
+    rtmidi
+    speexdsp
+    vcv-rtaudio
+    zstd
+  ]
+  ++ lib.optionals stdenv.hostPlatform.isLinux [
+    alsa-lib
+    gtk3-x11
+    libjack2
+    libpulseaudio
+    zenity
+  ]
+  ++ lib.optionals stdenv.hostPlatform.isDarwin [ apple-sdk_14 ];
+
+  makeFlags =
+    lib.optionals (stdenv.buildPlatform != stdenv.hostPlatform) [
+      "CROSS_COMPILE=${stdenv.cc.targetPrefix}"
+    ]
+    ++ [
+      "all"
+      "plugins"
+    ];
+
+  # To be able to use enableParallelBuilding = true
+  # the dist target needs run after the buildPhase as
+  # it depends on the all and plugin targets.
+  postBuild = lib.optionalString stdenv.hostPlatform.isDarwin ''
+    make "SED=sed -i" dist
+  '';
+
+  installPhase = ''
+    runHook preInstall
+  ''
+  + lib.optionalString stdenv.hostPlatform.isLinux ''
+
+    install -D -m755 -t $out/bin Rack
+    install -D -m755 -t $out/lib libRack.so
+
+    mkdir -p $out/share/vcv-rack
+    cp -r res translations cacert.pem Core.json template.vcv LICENSE-GPLv3.txt $out/share/vcv-rack
+    cp -r plugins/Fundamental/dist/Fundamental-*.vcvplugin $out/share/vcv-rack/Fundamental.vcvplugin
+
+    # Extract pngs from the Apple icon image and create
+    # the missing ones from the 1024x1024 image.
+    icns2png --extract icon.icns
+    for size in 16 24 32 48 64 128 256 512 1024; do
+      mkdir -pv $out/share/icons/hicolor/"$size"x"$size"/apps
+      if [ ! -e icon_"$size"x"$size"x32.png ] ; then
+        convert -resize "$size"x"$size" icon_1024x1024x32.png icon_"$size"x"$size"x32.png
+      fi
+      install -Dm644 icon_"$size"x"$size"x32.png $out/share/icons/hicolor/"$size"x"$size"/apps/Rack.png
+    done;
+  ''
+  + lib.optionalString stdenv.hostPlatform.isDarwin ''
+    mkdir -p $out/{bin,Applications}
+    mv dist/'VCV Rack ${lib.versions.major finalAttrs.version} Free.app' \
+      $out/Applications
+
+    # plugins/Fundamental/dist/Fundamental-*.vcvplugin
+    cp -r res cacert.pem Core.json template.vcv LICENSE-GPLv3.txt \
+      $out/Applications/'VCV Rack ${lib.versions.major finalAttrs.version} Free.app'/Contents/Resources
+  ''
+  + ''
+    runHook postInstall
+  '';
+
+  doInstallCheck = true;
+  nativeInstallCheckInputs = [ versionCheckHook ];
+
+  postFixup =
+    lib.optionalString stdenv.hostPlatform.isLinux ''
+      # Wrap gApp and override the default global resource file directory
+      wrapProgram $out/bin/Rack \
+          "''${gappsWrapperArgs[@]}" \
+          --add-flags "-s $out/share/vcv-rack"
+    ''
+    + lib.optionalString stdenv.hostPlatform.isDarwin ''
+      makeWrapper \
+        $out/Applications/'VCV Rack ${lib.versions.major finalAttrs.version} Free.app'/Contents/MacOS/Rack \
+        $out/bin/${finalAttrs.meta.mainProgram} \
+        --add-flags "-s $out/Applications/'VCV Rack ${lib.versions.major finalAttrs.version} Free.app'/Contents/Resources"
+    '';
+
+  desktopItems = [
+    (makeDesktopItem {
+      categories = [
+        "AudioVideo"
+        "AudioVideoEditing"
+        "Audio"
+      ];
+
+      comment = "Create music by patching together virtual synthesizer modules";
+      desktopName = "VCV Rack";
+      exec = "Rack";
+      genericName = "Eurorack simulator";
+      icon = "Rack";
+      keywords = [ "music" ];
+      name = "vcv-rack";
+      type = "Application";
+    })
+  ];
+
+  dontWrapGApps = true;
+  enableParallelBuilding = true;
 
   prePatch = ''
     # As we can't use `make dep` to set up the dependencies (as explained
@@ -244,117 +353,10 @@ stdenv.mkDerivation (finalAttrs: {
       --replace-fail 'glfwGetOpenedFilenames()' 'NULL'
   '';
 
-  nativeBuildInputs = [
-    jq
-    makeWrapper
-    pkg-config
-    zstd
-  ]
-  ++ lib.optionals stdenv.hostPlatform.isLinux [
-    copyDesktopItems
-    imagemagick
-    libicns
-    wrapGAppsHook3
-  ]
-  ++ lib.optionals stdenv.hostPlatform.isDarwin [ rsync ];
-
-  buildInputs = [
-    curl
-    ghc_filesystem
-    glew
-    glfw
-    jansson
-    libarchive
-    libsamplerate
-    rtmidi
-    speexdsp
-    vcv-rtaudio
-    zstd
-  ]
-  ++ lib.optionals stdenv.hostPlatform.isLinux [
-    alsa-lib
-    gtk3-x11
-    libjack2
-    libpulseaudio
-    zenity
-  ]
-  ++ lib.optionals stdenv.hostPlatform.isDarwin [ apple-sdk_14 ];
-
-  enableParallelBuilding = true;
-
-  makeFlags =
-    lib.optionals (stdenv.buildPlatform != stdenv.hostPlatform) [
-      "CROSS_COMPILE=${stdenv.cc.targetPrefix}"
-    ]
-    ++ [
-      "all"
-      "plugins"
-    ];
-
-  # To be able to use enableParallelBuilding = true
-  # the dist target needs run after the buildPhase as
-  # it depends on the all and plugin targets.
-  postBuild = lib.optionalString stdenv.hostPlatform.isDarwin ''
-    make "SED=sed -i" dist
-  '';
-
-  installPhase = ''
-    runHook preInstall
-  ''
-  + lib.optionalString stdenv.hostPlatform.isLinux ''
-
-    install -D -m755 -t $out/bin Rack
-    install -D -m755 -t $out/lib libRack.so
-
-    mkdir -p $out/share/vcv-rack
-    cp -r res translations cacert.pem Core.json template.vcv LICENSE-GPLv3.txt $out/share/vcv-rack
-    cp -r plugins/Fundamental/dist/Fundamental-*.vcvplugin $out/share/vcv-rack/Fundamental.vcvplugin
-
-    # Extract pngs from the Apple icon image and create
-    # the missing ones from the 1024x1024 image.
-    icns2png --extract icon.icns
-    for size in 16 24 32 48 64 128 256 512 1024; do
-      mkdir -pv $out/share/icons/hicolor/"$size"x"$size"/apps
-      if [ ! -e icon_"$size"x"$size"x32.png ] ; then
-        convert -resize "$size"x"$size" icon_1024x1024x32.png icon_"$size"x"$size"x32.png
-      fi
-      install -Dm644 icon_"$size"x"$size"x32.png $out/share/icons/hicolor/"$size"x"$size"/apps/Rack.png
-    done;
-  ''
-  + lib.optionalString stdenv.hostPlatform.isDarwin ''
-    mkdir -p $out/{bin,Applications}
-    mv dist/'VCV Rack ${lib.versions.major finalAttrs.version} Free.app' \
-      $out/Applications
-
-    # plugins/Fundamental/dist/Fundamental-*.vcvplugin
-    cp -r res cacert.pem Core.json template.vcv LICENSE-GPLv3.txt \
-      $out/Applications/'VCV Rack ${lib.versions.major finalAttrs.version} Free.app'/Contents/Resources
-  ''
-  + ''
-    runHook postInstall
-  '';
-
-  dontWrapGApps = true;
-  postFixup =
-    lib.optionalString stdenv.hostPlatform.isLinux ''
-      # Wrap gApp and override the default global resource file directory
-      wrapProgram $out/bin/Rack \
-          "''${gappsWrapperArgs[@]}" \
-          --add-flags "-s $out/share/vcv-rack"
-    ''
-    + lib.optionalString stdenv.hostPlatform.isDarwin ''
-      makeWrapper \
-        $out/Applications/'VCV Rack ${lib.versions.major finalAttrs.version} Free.app'/Contents/MacOS/Rack \
-        $out/bin/${finalAttrs.meta.mainProgram} \
-        --add-flags "-s $out/Applications/'VCV Rack ${lib.versions.major finalAttrs.version} Free.app'/Contents/Resources"
-    '';
-
-  nativeInstallCheckInputs = [ versionCheckHook ];
-  doInstallCheck = true;
-
   meta = {
     description = "Open-source virtual modular synthesizer";
     homepage = "https://vcvrack.com/";
+
     # The source is GPL3+ licensed, some of the art is CC-BY-NC 4.0 or under a
     # no-derivatives clause
     license = with lib.licenses; [
@@ -362,12 +364,14 @@ stdenv.mkDerivation (finalAttrs: {
       cc-by-nc-40
       unfreeRedistributable
     ];
+
     maintainers = with lib.maintainers; [
       nathyong
       jpotier
       ddelabru
     ];
-    mainProgram = "Rack";
+
     platforms = lib.platforms.linux ++ lib.platforms.darwin;
+    mainProgram = "Rack";
   };
 })

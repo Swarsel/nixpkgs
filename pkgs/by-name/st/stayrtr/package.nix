@@ -16,6 +16,7 @@ buildGoModule (finalAttrs: {
     rev = "v${finalAttrs.version}";
     hash = "sha256-7/n1rflDgJy2X/PTBTnxuxHMi1Kq/vwQQUepFb11EC0=";
   };
+
   vendorHash = "sha256-ACfCBbW42tic/m86/pAUquqzK1k05VUtH61mRD4Hu+4=";
 
   ldflags = [
@@ -29,11 +30,11 @@ buildGoModule (finalAttrs: {
   };
 
   meta = {
-    changelog = "https://github.com/bgp/stayrtr/releases/tag/v${finalAttrs.version}";
     description = "RPKI-To-Router server implementation in Go";
     homepage = "https://github.com/bgp/stayrtr/";
+    changelog = "https://github.com/bgp/stayrtr/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.bsd3;
-    mainProgram = "stayrtr";
     maintainers = with lib.maintainers; [ _0x4A6F ];
+    mainProgram = "stayrtr";
   };
 })

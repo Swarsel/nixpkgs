@@ -18,8 +18,8 @@ stdenv.mkDerivation (finalAttrs: {
   env.CFLAGS = "-std=c89";
 
   meta = {
-    homepage = "http://www.oberhumer.com/opensource/ucl/";
     description = "Portable lossless data compression library";
+    homepage = "http://www.oberhumer.com/opensource/ucl/";
     license = lib.licenses.gpl2;
     platforms = lib.platforms.unix;
   };

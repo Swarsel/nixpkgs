@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   versionCheckHook,
 }:
 
@@ -17,8 +17,10 @@ buildGoModule (finalAttrs: {
   };
 
   vendorHash = "sha256-Wg4JzA2aEwNBsDrkauFUb9AS38ITLBGex9QHzDcdpoM=";
-
-  sourceRoot = "${finalAttrs.src.name}/ddosify_engine";
+  # TestCreateHammerMultipartPayload error occurred - Get "https://upload.wikimedia.org/wikipedia/commons/b/bd/Test.svg"
+  doCheck = false;
+  doInstallCheck = true;
+  nativeInstallCheckInputs = [ versionCheckHook ];
 
   ldflags = [
     "-s"
@@ -28,21 +30,15 @@ buildGoModule (finalAttrs: {
     "-X=main.BuildDate=unknown"
   ];
 
-  # TestCreateHammerMultipartPayload error occurred - Get "https://upload.wikimedia.org/wikipedia/commons/b/bd/Test.svg"
-  doCheck = false;
-
-  doInstallCheck = true;
-
-  nativeInstallCheckInputs = [ versionCheckHook ];
-
+  sourceRoot = "${finalAttrs.src.name}/ddosify_engine";
   versionCheckProgramArg = "-version";
 
   meta = {
     description = "High-performance load testing tool, written in Golang";
-    mainProgram = "ddosify";
     homepage = "https://ddosify.com/";
     changelog = "https://github.com/getanteon/anteon/releases/tag/selfhosted-${finalAttrs.version}";
     license = lib.licenses.agpl3Plus;
     maintainers = [ ];
+    mainProgram = "ddosify";
   };
 })

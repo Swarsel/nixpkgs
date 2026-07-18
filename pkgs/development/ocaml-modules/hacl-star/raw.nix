@@ -1,13 +1,13 @@
 {
   lib,
-  which,
   stdenv,
-  fetchzip,
   cmake,
-  ocaml,
-  findlib,
-  ctypes,
   cppo,
+  ctypes,
+  fetchzip,
+  findlib,
+  ocaml,
+  which,
 }:
 stdenv.mkDerivation rec {
   pname = "ocaml${ocaml.version}-hacl-star-raw";
@@ -19,12 +19,22 @@ stdenv.mkDerivation rec {
     stripRoot = false;
   };
 
-  # strictoverflow is disabled because it breaks aarch64-darwin
-  hardeningDisable = [ "strictoverflow" ];
-
   postPatch = ''
     patchShebangs ./
   '';
+
+  strictDeps = true;
+
+  nativeBuildInputs = [
+    which
+    cmake
+    ocaml
+    findlib
+  ];
+
+  propagatedBuildInputs = [
+    ctypes
+  ];
 
   buildPhase = ''
     runHook preBuild
@@ -34,6 +44,12 @@ stdenv.mkDerivation rec {
 
     runHook postBuild
   '';
+
+  doCheck = true;
+
+  checkInputs = [
+    cppo
+  ];
 
   preInstall = ''
     mkdir $out
@@ -48,29 +64,12 @@ stdenv.mkDerivation rec {
     runHook postInstall
   '';
 
-  dontUseCmakeConfigure = true;
+  createFindlibDestdir = true;
   dontAddPrefix = true;
   dontAddStaticConfigureFlags = true;
-  createFindlibDestdir = true;
-
-  nativeBuildInputs = [
-    which
-    cmake
-    ocaml
-    findlib
-  ];
-
-  propagatedBuildInputs = [
-    ctypes
-  ];
-
-  checkInputs = [
-    cppo
-  ];
-
-  strictDeps = true;
-
-  doCheck = true;
+  dontUseCmakeConfigure = true;
+  # strictoverflow is disabled because it breaks aarch64-darwin
+  hardeningDisable = [ "strictoverflow" ];
 
   meta = {
     inherit (ocaml.meta) platforms;

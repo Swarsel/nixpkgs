@@ -1,10 +1,10 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
   aiodns,
   aiohttp,
   aresponses,
+  buildPythonPackage,
   poetry-core,
   pytest-asyncio,
   pytest-cov-stub,
@@ -17,7 +17,6 @@
 buildPythonPackage rec {
   pname = "forecast-solar";
   version = "5.0.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "home-assistant-libs";
@@ -26,17 +25,7 @@ buildPythonPackage rec {
     hash = "sha256-fvmi5kwVAScVlGpxutjH8nl0lJx/VnQEVoj9a1UY7r4=";
   };
 
-  build-system = [ poetry-core ];
-
   env.PACKAGE_VERSION = version;
-
-  dependencies = [
-    aiodns
-    aiohttp
-    yarl
-  ];
-
-  pythonImportsCheck = [ "forecast_solar" ];
 
   nativeCheckInputs = [
     aresponses
@@ -45,6 +34,14 @@ buildPythonPackage rec {
     pytest-freezer
     pytestCheckHook
     syrupy
+  ];
+
+  build-system = [ poetry-core ];
+
+  dependencies = [
+    aiodns
+    aiohttp
+    yarl
   ];
 
   disabledTests = [
@@ -60,10 +57,13 @@ buildPythonPackage rec {
     "test_status_429"
   ];
 
+  pyproject = true;
+  pythonImportsCheck = [ "forecast_solar" ];
+
   meta = {
-    changelog = "https://github.com/home-assistant-libs/forecast_solar/releases/tag/v${version}";
     description = "Asynchronous Python client for getting forecast solar information";
     homepage = "https://github.com/home-assistant-libs/forecast_solar";
+    changelog = "https://github.com/home-assistant-libs/forecast_solar/releases/tag/v${version}";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ dotlambda ];
   };

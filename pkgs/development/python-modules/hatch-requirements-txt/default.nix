@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   hatchling,
   packaging,
   pytestCheckHook,
@@ -10,7 +10,6 @@
 buildPythonPackage rec {
   pname = "hatch-requirements-txt";
   version = "0.4.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "repo-helper";
@@ -27,13 +26,13 @@ buildPythonPackage rec {
   ];
 
   doCheck = false; # missing coincidence dependency
-
   nativeCheckInputs = [ pytestCheckHook ];
+  pyproject = true;
 
   meta = {
-    changelog = "https://github.com/repo-helper/hatch-requirements-txt/releases/tag/${version}";
     description = "Hatchling plugin to read project dependencies from requirements.txt";
     homepage = "https://github.com/repo-helper/hatch-requirements-txt";
+    changelog = "https://github.com/repo-helper/hatch-requirements-txt/releases/tag/${version}";
     license = lib.licenses.mit;
     maintainers = [ ];
   };

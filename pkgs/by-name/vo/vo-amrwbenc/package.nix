@@ -19,8 +19,8 @@ stdenv.mkDerivation (finalAttrs: {
   nativeBuildInputs = [ autoreconfHook ];
 
   meta = {
-    homepage = "https://sourceforge.net/projects/opencore-amr/";
     description = "VisualOn Adaptive Multi Rate Wideband (AMR-WB) encoder";
+    homepage = "https://sourceforge.net/projects/opencore-amr/";
     license = lib.licenses.asl20;
     maintainers = [ ];
     platforms = lib.platforms.unix;

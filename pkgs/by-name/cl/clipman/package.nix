@@ -1,10 +1,10 @@
 {
-  buildGoModule,
-  fetchFromGitHub,
   lib,
-  wl-clipboard,
-  makeWrapper,
+  fetchFromGitHub,
+  buildGoModule,
   installShellFiles,
+  makeWrapper,
+  wl-clipboard,
 }:
 
 buildGoModule (finalAttrs: {
@@ -18,19 +18,18 @@ buildGoModule (finalAttrs: {
     sha256 = "sha256-fAiXivLXpxezvMUKv0HfDvzSN60G4RFfgi6/fO0C1p8=";
   };
 
-  vendorHash = "sha256-QD/ucnIqPHgKaYRmBO4fwDVqC7kKlYmBaZp3XBWudy0=";
-
   outputs = [
     "out"
     "man"
   ];
 
-  doCheck = false;
-
   nativeBuildInputs = [
     makeWrapper
     installShellFiles
   ];
+
+  vendorHash = "sha256-QD/ucnIqPHgKaYRmBO4fwDVqC7kKlYmBaZp3XBWudy0=";
+  doCheck = false;
 
   postInstall = ''
     wrapProgram $out/bin/clipman \
@@ -39,8 +38,8 @@ buildGoModule (finalAttrs: {
   '';
 
   meta = {
-    homepage = "https://github.com/chmouel/clipman";
     description = "Simple clipboard manager for Wayland";
+    homepage = "https://github.com/chmouel/clipman";
     license = lib.licenses.gpl3Only;
     maintainers = with lib.maintainers; [ ma27 ];
     platforms = lib.platforms.linux;

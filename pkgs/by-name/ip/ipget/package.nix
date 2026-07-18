@@ -1,9 +1,9 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
-  nixosTests,
+  buildGoModule,
   nix-update-script,
+  nixosTests,
 }:
 
 buildGoModule (finalAttrs: {
@@ -17,13 +17,12 @@ buildGoModule (finalAttrs: {
     hash = "sha256-dG7nb9v+gKotRPVtO8tKqkOQ089zKBk39HxXkSXoW/U=";
   };
 
-  vendorHash = "sha256-+BOo/xSdB0xR8Rtumh+sjEL025PVxmNTmSCR1HjfW3w=";
-
   postPatch = ''
     # main module (github.com/ipfs/ipget) does not contain package github.com/ipfs/ipget/sharness/dependencies
     rm -r sharness/dependencies/
   '';
 
+  vendorHash = "sha256-+BOo/xSdB0xR8Rtumh+sjEL025PVxmNTmSCR1HjfW3w=";
   doCheck = false;
 
   passthru.tests = {

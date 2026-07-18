@@ -1,9 +1,9 @@
 {
   lib,
+  fetchFromGitHub,
   aiohttp,
   buildPythonPackage,
   certifi,
-  fetchFromGitHub,
   fetchpatch,
   mock,
   opentelemetry-api,
@@ -23,7 +23,6 @@
 buildPythonPackage rec {
   pname = "elastic-transport";
   version = "8.17.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "elastic";
@@ -35,16 +34,9 @@ buildPythonPackage rec {
   # FIXME: backport fix for pytest-asyncio 1.2.0, as updating this entire ecosystem is painful
   patches = [
     (fetchpatch {
-      url = "https://github.com/elastic/elastic-transport-python/commit/d749d0be54821e81979888ff34b1451354548863.patch";
       hash = "sha256-FrabqeLn3Sr1sg/lWWYsMPd0CZS/6BZYLnaK66T93BQ=";
+      url = "https://github.com/elastic/elastic-transport-python/commit/d749d0be54821e81979888ff34b1451354548863.patch";
     })
-  ];
-
-  build-system = [ setuptools ];
-
-  dependencies = [
-    urllib3
-    certifi
   ];
 
   nativeCheckInputs = [
@@ -62,10 +54,11 @@ buildPythonPackage rec {
     trustme
   ];
 
-  pythonImportsCheck = [ "elastic_transport" ];
+  build-system = [ setuptools ];
 
-  pytestFlags = [
-    "-Wignore::DeprecationWarning"
+  dependencies = [
+    urllib3
+    certifi
   ];
 
   disabledTests = [
@@ -86,6 +79,14 @@ buildPythonPackage rec {
     "test_sniffed_nodes_added_to_pool"
     "test_async_transport_httpbin"
   ];
+
+  pyproject = true;
+
+  pytestFlags = [
+    "-Wignore::DeprecationWarning"
+  ];
+
+  pythonImportsCheck = [ "elastic_transport" ];
 
   meta = {
     description = "Transport classes and utilities shared among Python Elastic client libraries";

@@ -8,7 +8,6 @@
 python3.pkgs.buildPythonApplication (finalAttrs: {
   pname = "vunnel";
   version = "0.62.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "anchore";
@@ -18,14 +17,15 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     leaveDotGit = true;
   };
 
-  pythonRelaxDeps = [
-    "defusedxml"
-    "ijson"
-    "importlib-metadata"
-    "sqlalchemy"
-    "websockets"
-    "xsdata"
-  ];
+  nativeCheckInputs = [
+    git
+  ]
+  ++ (with python3.pkgs; [
+    jsonschema
+    pytest-mock
+    pytest-unordered
+    pytestCheckHook
+  ]);
 
   build-system = with python3.pkgs; [
     hatchling
@@ -62,18 +62,6 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     ++ xsdata.optional-dependencies.lxml
     ++ xsdata.optional-dependencies.soap;
 
-  nativeCheckInputs = [
-    git
-  ]
-  ++ (with python3.pkgs; [
-    jsonschema
-    pytest-mock
-    pytest-unordered
-    pytestCheckHook
-  ]);
-
-  pythonImportsCheck = [ "vunnel" ];
-
   disabledTests = [
     # Compare output
     "test_status"
@@ -81,6 +69,18 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     "test_parser"
     # Test require network access
     "test_rhel_provider_supports_ignore_hydra_errors"
+  ];
+
+  pyproject = true;
+  pythonImportsCheck = [ "vunnel" ];
+
+  pythonRelaxDeps = [
+    "defusedxml"
+    "ijson"
+    "importlib-metadata"
+    "sqlalchemy"
+    "websockets"
+    "xsdata"
   ];
 
   meta = {

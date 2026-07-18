@@ -1,19 +1,19 @@
 {
+  lib,
   stdenv,
   fetchFromGitHub,
-  openssh,
-  gitMinimal,
-  nix,
   coreutils,
   curl,
-  gnugrep,
-  gawk,
   findutils,
+  gawk,
+  gitMinimal,
+  gnugrep,
   gnused,
-  lib,
-  makeWrapper,
-  sshpass,
   gnutar,
+  makeWrapper,
+  nix,
+  openssh,
+  sshpass,
 }:
 let
   runtimeDeps = [
@@ -32,13 +32,16 @@ in
 stdenv.mkDerivation (finalAttrs: {
   pname = "nixos-anywhere";
   version = "1.13.0";
+
   src = fetchFromGitHub {
     owner = "nix-community";
     repo = "nixos-anywhere";
     rev = finalAttrs.version;
     hash = "sha256-61zO8zsFE8C104hCTv04z6a4H8U03OEMrRAXtGsszkE=";
   };
+
   nativeBuildInputs = [ makeWrapper ];
+
   installPhase = ''
     install -D -m 0755 src/nixos-anywhere.sh $out/bin/nixos-anywhere
     install -D -m 0755 src/get-facts.sh $out/bin/get-facts.sh
@@ -52,14 +55,16 @@ stdenv.mkDerivation (finalAttrs: {
   meta = {
     description = "Install nixos everywhere via ssh";
     homepage = "https://github.com/nix-community/nixos-anywhere";
-    mainProgram = "nixos-anywhere";
     license = lib.licenses.mit;
-    platforms = lib.platforms.all;
+
     maintainers = [
       lib.maintainers.mic92
       lib.maintainers.lassulus
       lib.maintainers.phaer
       lib.maintainers.Enzime
     ];
+
+    platforms = lib.platforms.all;
+    mainProgram = "nixos-anywhere";
   };
 })

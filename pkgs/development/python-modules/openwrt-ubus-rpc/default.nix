@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   requests,
   setuptools,
   urllib3,
@@ -10,7 +10,6 @@
 buildPythonPackage rec {
   pname = "openwrt-ubus-rpc";
   version = "0.0.3";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "Noltari";
@@ -19,6 +18,8 @@ buildPythonPackage rec {
     hash = "sha256-M4hbnGrAjBjohwgMf6qw5NQnpyKCZ0/4HVklHhizTKc=";
   };
 
+  # Project has no tests
+  doCheck = false;
   build-system = [ setuptools ];
 
   dependencies = [
@@ -26,9 +27,7 @@ buildPythonPackage rec {
     urllib3
   ];
 
-  # Project has no tests
-  doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "openwrt.ubus" ];
 
   meta = {

@@ -1,16 +1,15 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  poetry-core,
+  buildPythonPackage,
   django,
   django-pgactivity,
+  poetry-core,
 }:
 
 buildPythonPackage rec {
   pname = "django-pglock";
   version = "1.8.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "AmbitionEng";
@@ -26,6 +25,7 @@ buildPythonPackage rec {
     django-pgactivity
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "pglock" ];
 
   meta = {

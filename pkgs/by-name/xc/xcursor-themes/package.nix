@@ -2,11 +2,11 @@
   lib,
   stdenv,
   fetchurl,
+  libxcursor,
   pkg-config,
+  writeScript,
   xcursorgen,
   xorgproto,
-  libxcursor,
-  writeScript,
 }:
 stdenv.mkDerivation (finalAttrs: {
   pname = "xcursor-themes";
@@ -18,16 +18,19 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   strictDeps = true;
+
   nativeBuildInputs = [
     pkg-config
     xcursorgen
   ];
+
   buildInputs = [
     xorgproto
     libxcursor
   ];
 
   configureFlags = [ "--with-cursordir=$(out)/share/icons" ];
+
   passthru = {
     updateScript = writeScript "update-${finalAttrs.pname}" ''
       #!/usr/bin/env nix-shell

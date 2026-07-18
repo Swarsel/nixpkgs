@@ -1,38 +1,22 @@
 {
   lib,
   stdenv,
-  jre,
-  setJavaClassPath,
   coursier,
+  jre,
   makeWrapper,
+  setJavaClassPath,
 }:
 
 stdenv.mkDerivation rec {
   pname = "firrtl";
   version = "1.5.3";
-  scalaVersion = "2.13"; # pin, for determinism
-
-  deps = stdenv.mkDerivation {
-    pname = "${pname}-deps";
-    inherit version;
-    nativeBuildInputs = [ coursier ];
-    buildCommand = ''
-      export COURSIER_CACHE=$(pwd)
-      cs fetch edu.berkeley.cs:${pname}_${scalaVersion}:${version} > deps
-      mkdir -p $out/share/java
-      cp $(< deps) $out/share/java
-    '';
-    outputHashMode = "recursive";
-    outputHash = "sha256-xy3zdJZk6Q2HbEn5tRQ9Z0AjyXEteXepoWDaATjiUUw=";
-  };
 
   nativeBuildInputs = [
     makeWrapper
     setJavaClassPath
   ];
-  buildInputs = [ deps ];
 
-  dontUnpack = true;
+  buildInputs = [ deps ];
 
   installPhase = ''
     runHook preInstall
@@ -44,6 +28,7 @@ stdenv.mkDerivation rec {
   '';
 
   doInstallCheck = true;
+
   installCheckPhase = ''
     $out/bin/firrtl --firrtl-source "${''
       circuit test:
@@ -57,15 +42,36 @@ stdenv.mkDerivation rec {
     grep -qFe "module test" -e "endmodule" test.v
   '';
 
+  deps = stdenv.mkDerivation {
+    inherit version;
+    pname = "${pname}-deps";
+    nativeBuildInputs = [ coursier ];
+
+    buildCommand = ''
+      export COURSIER_CACHE=$(pwd)
+      cs fetch edu.berkeley.cs:${pname}_${scalaVersion}:${version} > deps
+      mkdir -p $out/share/java
+      cp $(< deps) $out/share/java
+    '';
+
+    outputHash = "sha256-xy3zdJZk6Q2HbEn5tRQ9Z0AjyXEteXepoWDaATjiUUw=";
+    outputHashMode = "recursive";
+  };
+
+  dontUnpack = true;
+  scalaVersion = "2.13"; # pin, for determinism
+
   meta = {
     description = "Flexible Intermediate Representation for RTL";
-    mainProgram = "firrtl";
+
     longDescription = ''
       Firrtl is an intermediate representation (IR) for digital circuits
       designed as a platform for writing circuit-level transformations.
     '';
+
     homepage = "https://www.chisel-lang.org/firrtl/";
     license = lib.licenses.asl20;
     maintainers = [ ];
+    mainProgram = "firrtl";
   };
 }

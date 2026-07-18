@@ -4,19 +4,19 @@
   fetchFromGitHub,
   autoconf-archive,
   autoreconfHook,
-  makeBinaryWrapper,
-  pkg-config,
-  replaceVarsWith,
   curl,
   gtk3,
   libassuan,
   libbsd,
   libproxy,
   libxml2,
+  makeBinaryWrapper,
   nssTools,
   openssl,
   p11-kit,
   pcsclite,
+  pkg-config,
+  replaceVarsWith,
   wrapGAppsHook3,
 }:
 
@@ -60,6 +60,9 @@ stdenv.mkDerivation (finalAttrs: {
     pcsclite
   ];
 
+  # pinentry uses hardcoded `/usr/bin/pinentry`, so use the built-in (uglier) dialogs for pinentry.
+  configureFlags = [ "--disable-pinentry" ];
+
   preConfigure = ''
     mkdir openssl
     ln -s ${lib.getLib openssl}/lib openssl
@@ -68,14 +71,14 @@ stdenv.mkDerivation (finalAttrs: {
     export SSL_PREFIX=$(realpath openssl)
   '';
 
-  # pinentry uses hardcoded `/usr/bin/pinentry`, so use the built-in (uglier) dialogs for pinentry.
-  configureFlags = [ "--disable-pinentry" ];
+  doCheck = true;
 
   postInstall =
     let
       eid-nssdb-in = replaceVarsWith {
-        isExecutable = true;
         src = ./eid-nssdb.in;
+        isExecutable = true;
+
         replacements = {
           inherit (stdenv) shell;
         };
@@ -93,12 +96,9 @@ stdenv.mkDerivation (finalAttrs: {
 
   enableParallelBuilding = true;
 
-  doCheck = true;
-
   meta = {
     description = "Belgian electronic identity card (eID) middleware";
-    homepage = "https://eid.belgium.be/en";
-    license = lib.licenses.lgpl3Only;
+
     longDescription = ''
       Allows user authentication and digital signatures with Belgian ID cards.
       Also requires a running pcscd service and compatible card reader.
@@ -121,10 +121,15 @@ stdenv.mkDerivation (finalAttrs: {
 
           firefox.override { pkcs11Modules = [ pkgs.eid-mw ]; }
     '';
-    platforms = lib.platforms.linux;
+
+    homepage = "https://eid.belgium.be/en";
+    license = lib.licenses.lgpl3Only;
+
     maintainers = with lib.maintainers; [
       bfortz
       chvp
     ];
+
+    platforms = lib.platforms.linux;
   };
 })

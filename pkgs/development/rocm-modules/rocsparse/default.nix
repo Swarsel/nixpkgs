@@ -2,25 +2,37 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  fetchzip,
-  rocmUpdateScript,
-  cmake,
-  rocm-cmake,
-  rocprim,
-  rocblas,
+  boost,
   clr,
+  cmake,
+  fetchzip,
   gfortran,
   gtest,
-  boost,
   python3Packages,
-  buildTests ? false,
+  rocblas,
+  rocm-cmake,
+  rocmUpdateScript,
+  rocprim,
   buildBenchmarks ? false, # Seems to depend on tests
+  buildTests ? false,
   gpuTargets ? clr.localGpuTargets or clr.gpuTargets,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
   pname = "rocsparse${clr.gpuArchSuffix}";
   version = "7.2.3";
+
+  src = fetchFromGitHub {
+    owner = "ROCm";
+    repo = "rocm-libraries";
+    rev = "rocm-${finalAttrs.version}";
+    hash = "sha256-hkfBTcLig39al2w8zFTSQQnouaou9wlD6VlvIyFTNMg=";
+
+    sparseCheckout = [
+      "projects/rocsparse"
+      "shared"
+    ];
+  };
 
   outputs = [
     "out"
@@ -30,57 +42,6 @@ stdenv.mkDerivation (finalAttrs: {
   ]
   ++ lib.optionals buildBenchmarks [
     "benchmark"
-  ];
-
-  src = fetchFromGitHub {
-    owner = "ROCm";
-    repo = "rocm-libraries";
-    rev = "rocm-${finalAttrs.version}";
-    sparseCheckout = [
-      "projects/rocsparse"
-      "shared"
-    ];
-    hash = "sha256-hkfBTcLig39al2w8zFTSQQnouaou9wlD6VlvIyFTNMg=";
-  };
-  sourceRoot = "${finalAttrs.src.name}/projects/rocsparse";
-
-  nativeBuildInputs = [
-    cmake
-    # no ninja, it buffers console output and nix times out long periods of no output
-    rocm-cmake
-    clr
-    gfortran
-  ];
-
-  buildInputs = [
-    rocprim
-    rocblas
-  ]
-  ++ lib.optionals (buildTests || buildBenchmarks) [
-    gtest
-    boost
-    python3Packages.python
-    python3Packages.pyyaml
-  ];
-
-  cmakeFlags = [
-    "-DCMAKE_CXX_COMPILER=amdclang++"
-    # Manually define CMAKE_INSTALL_<DIR>
-    # See: https://github.com/NixOS/nixpkgs/pull/197838
-    "-DCMAKE_INSTALL_BINDIR=bin"
-    "-DCMAKE_INSTALL_LIBDIR=lib"
-    "-DCMAKE_INSTALL_INCLUDEDIR=include"
-  ]
-  ++ lib.optionals (gpuTargets != [ ]) [
-    "-DAMDGPU_TARGETS=${lib.concatStringsSep ";" gpuTargets}"
-  ]
-  ++ lib.optionals (buildTests || buildBenchmarks) [
-    "-DBUILD_CLIENTS_TESTS=ON"
-    "-DCMAKE_MATRICES_DIR=/build/source/matrices"
-    "-Dpython=python3"
-  ]
-  ++ lib.optionals buildBenchmarks [
-    "-DBUILD_CLIENTS_BENCHMARKS=ON"
   ];
 
   # We have to manually generate the matrices
@@ -125,6 +86,45 @@ stdenv.mkDerivation (finalAttrs: {
     done
   '';
 
+  nativeBuildInputs = [
+    cmake
+    # no ninja, it buffers console output and nix times out long periods of no output
+    rocm-cmake
+    clr
+    gfortran
+  ];
+
+  buildInputs = [
+    rocprim
+    rocblas
+  ]
+  ++ lib.optionals (buildTests || buildBenchmarks) [
+    gtest
+    boost
+    python3Packages.python
+    python3Packages.pyyaml
+  ];
+
+  cmakeFlags = [
+    "-DCMAKE_CXX_COMPILER=amdclang++"
+    # Manually define CMAKE_INSTALL_<DIR>
+    # See: https://github.com/NixOS/nixpkgs/pull/197838
+    "-DCMAKE_INSTALL_BINDIR=bin"
+    "-DCMAKE_INSTALL_LIBDIR=lib"
+    "-DCMAKE_INSTALL_INCLUDEDIR=include"
+  ]
+  ++ lib.optionals (gpuTargets != [ ]) [
+    "-DAMDGPU_TARGETS=${lib.concatStringsSep ";" gpuTargets}"
+  ]
+  ++ lib.optionals (buildTests || buildBenchmarks) [
+    "-DBUILD_CLIENTS_TESTS=ON"
+    "-DCMAKE_MATRICES_DIR=/build/source/matrices"
+    "-Dpython=python3"
+  ]
+  ++ lib.optionals buildBenchmarks [
+    "-DBUILD_CLIENTS_BENCHMARKS=ON"
+  ];
+
   postInstall =
     lib.optionalString buildBenchmarks ''
       mkdir -p $benchmark/bin
@@ -138,6 +138,8 @@ stdenv.mkDerivation (finalAttrs: {
       mv /build/source/matrices $test
       rmdir $out/bin
     '';
+
+  sourceRoot = "${finalAttrs.src.name}/projects/rocsparse";
 
   passthru = {
     matrices = import ./deps.nix {
@@ -153,7 +155,7 @@ stdenv.mkDerivation (finalAttrs: {
     description = "ROCm SPARSE implementation";
     homepage = "https://github.com/ROCm/rocm-libraries/tree/develop/projects/rocsparse";
     license = with lib.licenses; [ mit ];
-    teams = [ lib.teams.rocm ];
     platforms = lib.platforms.linux;
+    teams = [ lib.teams.rocm ];
   };
 })

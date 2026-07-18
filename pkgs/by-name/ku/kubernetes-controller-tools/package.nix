@@ -1,7 +1,7 @@
 {
-  buildGoModule,
   lib,
   fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule (finalAttrs: {
@@ -16,14 +16,13 @@ buildGoModule (finalAttrs: {
   };
 
   vendorHash = "sha256-LNjd0PDVa4GMY1rFJ5PFiWAEeA5MMraIIzZmYgkdgJc=";
+  doCheck = false;
 
   ldflags = [
     "-s"
     "-w"
     "-X sigs.k8s.io/controller-tools/pkg/version.version=v${finalAttrs.version}"
   ];
-
-  doCheck = false;
 
   subPackages = [
     "cmd/controller-gen"

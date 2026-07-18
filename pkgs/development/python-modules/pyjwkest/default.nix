@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   pycryptodomex,
   pytestCheckHook,
   requests,
@@ -12,7 +12,6 @@
 buildPythonPackage rec {
   pname = "pyjwkest";
   version = "1.4.4";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "IdentityPython";
@@ -21,8 +20,6 @@ buildPythonPackage rec {
     hash = "sha256-G4/qLOOQHsNSMVndUdYBhrrk8uEufbI8Od3ziQiY0XI=";
   };
 
-  build-system = [ setuptools ];
-
   # Remove unused future import, see pending PR:
   # https://github.com/IdentityPython/pyjwkest/pull/107
   postPatch = ''
@@ -30,14 +27,16 @@ buildPythonPackage rec {
       --replace-fail '"future"' ""
   '';
 
+  nativeCheckInputs = [ pytestCheckHook ];
+  build-system = [ setuptools ];
+
   dependencies = [
     pycryptodomex
     requests
     six
   ];
 
-  nativeCheckInputs = [ pytestCheckHook ];
-
+  pyproject = true;
   pythonImportsCheck = [ "jwkest" ];
 
   meta = {

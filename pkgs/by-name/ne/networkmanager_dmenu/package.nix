@@ -1,12 +1,12 @@
 {
   lib,
   stdenv,
-  glib,
   fetchFromGitHub,
-  networkmanager,
-  python3Packages,
+  glib,
   gobject-introspection,
+  networkmanager,
   procps,
+  python3Packages,
 }:
 
 let
@@ -24,6 +24,7 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   nativeBuildInputs = [ gobject-introspection ];
+
   buildInputs = [
     glib
     python
@@ -32,8 +33,6 @@ stdenv.mkDerivation (finalAttrs: {
     python3Packages.wrapPython
     procps
   ];
-
-  dontBuild = true;
 
   installPhase = ''
     mkdir -p $out/bin $out/share/applications $out/share/doc/$pname
@@ -50,12 +49,14 @@ stdenv.mkDerivation (finalAttrs: {
     wrapPythonPrograms
   '';
 
+  dontBuild = true;
+
   meta = {
     description = "Small script to manage NetworkManager connections with dmenu instead of nm-applet";
-    mainProgram = "networkmanager_dmenu";
     homepage = "https://github.com/firecat53/networkmanager-dmenu";
     license = lib.licenses.mit;
     maintainers = [ lib.maintainers.jensbin ];
     platforms = lib.platforms.all;
+    mainProgram = "networkmanager_dmenu";
   };
 })

@@ -1,16 +1,16 @@
 {
-  stdenv,
   lib,
-  pkgs,
-  pkgsHostHost,
-  makeWrapper,
+  stdenv,
+  arch,
   autoPatchelfHook,
   deployAndroidPackage,
-  package,
-  os,
-  arch,
-  platform-tools,
+  makeWrapper,
   meta,
+  os,
+  package,
+  pkgs,
+  pkgsHostHost,
+  platform-tools,
 }:
 
 let
@@ -33,16 +33,21 @@ let
 in
 deployAndroidPackage rec {
   inherit package os arch;
+  inherit meta;
+
   nativeBuildInputs = [
     makeWrapper
   ]
   ++ lib.optionals stdenv.hostPlatform.isLinux [ autoPatchelfHook ];
-  autoPatchelfIgnoreMissingDeps = [ "*" ];
+
   buildInputs = lib.optionals (os == "linux") [
     pkgs.zlib
     pkgs.libcxx
     (lib.getLib stdenv.cc.cc)
   ];
+
+  autoPatchelfIgnoreMissingDeps = [ "*" ];
+  noAuditTmpdir = true; # Audit script gets invoked by the build/ component in the path for the make standalone script
 
   patchElfBnaries = ''
     # Patch the executables of the toolchains, but not the libraries -- they are needed for crosscompiling
@@ -67,6 +72,9 @@ deployAndroidPackage rec {
       autoPatchelf prebuilt/linux-x86_64
     fi
   '';
+
+  patchInstructions =
+    patchOsAgnostic + lib.optionalString stdenv.hostPlatform.isLinux patchElfBnaries;
 
   patchOsAgnostic = ''
     patchShebangs .
@@ -99,11 +107,4 @@ deployAndroidPackage rec {
       ln -sf ../libexec/android-sdk/ndk-bundle/$progname $out/bin/$progname
     done
   '';
-
-  patchInstructions =
-    patchOsAgnostic + lib.optionalString stdenv.hostPlatform.isLinux patchElfBnaries;
-
-  noAuditTmpdir = true; # Audit script gets invoked by the build/ component in the path for the make standalone script
-
-  inherit meta;
 }

@@ -30,7 +30,7 @@ stdenv.mkDerivation (finalAttrs: {
     description = "Loudspeaker enclosure designer";
     homepage = "https://github.com/be1/qspeakers";
     license = lib.licenses.gpl3Plus;
-    mainProgram = "qspeakers";
     maintainers = with lib.maintainers; [ tomasajt ];
+    mainProgram = "qspeakers";
   };
 })

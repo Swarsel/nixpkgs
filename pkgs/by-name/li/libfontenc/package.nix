@@ -3,10 +3,10 @@
   stdenv,
   fetchurl,
   pkg-config,
+  testers,
+  writeScript,
   xorgproto,
   zlib,
-  writeScript,
-  testers,
 }:
 stdenv.mkDerivation (finalAttrs: {
   pname = "libfontenc";
@@ -18,7 +18,6 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   strictDeps = true;
-
   nativeBuildInputs = [ pkg-config ];
 
   buildInputs = [
@@ -27,6 +26,8 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   passthru = {
+    tests.pkg-config = testers.testMetaPkgConfig finalAttrs.finalPackage;
+
     updateScript = writeScript "update-${finalAttrs.pname}" ''
       #!/usr/bin/env nix-shell
       #!nix-shell -i bash -p common-updater-scripts
@@ -35,7 +36,6 @@ stdenv.mkDerivation (finalAttrs: {
         | sort -V | tail -n1)"
       update-source-version ${finalAttrs.pname} "$version"
     '';
-    tests.pkg-config = testers.testMetaPkgConfig finalAttrs.finalPackage;
   };
 
   meta = {
@@ -43,7 +43,7 @@ stdenv.mkDerivation (finalAttrs: {
     homepage = "https://gitlab.freedesktop.org/xorg/lib/libfontenc";
     license = lib.licenses.mit;
     maintainers = [ ];
-    pkgConfigModules = [ "fontenc" ];
     platforms = lib.platforms.unix;
+    pkgConfigModules = [ "fontenc" ];
   };
 })

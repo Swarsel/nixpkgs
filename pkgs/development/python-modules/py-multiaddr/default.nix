@@ -1,25 +1,24 @@
 {
   lib,
+  fetchFromGitHub,
   base58,
   buildPythonPackage,
-  fetchFromGitHub,
+  dnspython,
   idna,
   netaddr,
+  psutil,
   py-cid,
   py-multicodec,
-  trio,
   pytestCheckHook,
   setuptools,
-  psutil,
-  varint,
-  dnspython,
+  trio,
   trio-typing,
+  varint,
 }:
 
 buildPythonPackage rec {
   pname = "py-multiaddr";
   version = "0.0.11";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "multiformats";
@@ -28,6 +27,7 @@ buildPythonPackage rec {
     hash = "sha256-mlHcuLVtczp3APXJFkWbjeY7xU39eFERa8hhiOEwBSU=";
   };
 
+  nativeCheckInputs = [ pytestCheckHook ];
   build-system = [ setuptools ];
 
   dependencies = [
@@ -43,9 +43,10 @@ buildPythonPackage rec {
     py-multicodec
   ];
 
-  nativeCheckInputs = [ pytestCheckHook ];
-
-  pythonImportsCheck = [ "multiaddr" ];
+  disabledTestPaths = [
+    # Tests require network access
+    "tests/test_resolvers.py"
+  ];
 
   disabledTests = [
     # Test is outdated
@@ -54,19 +55,19 @@ buildPythonPackage rec {
     "test_ipv4_wildcard"
   ];
 
-  disabledTestPaths = [
-    # Tests require network access
-    "tests/test_resolvers.py"
-  ];
+  pyproject = true;
+  pythonImportsCheck = [ "multiaddr" ];
 
   meta = {
     description = "Composable and future-proof network addresses";
     homepage = "https://github.com/multiformats/py-multiaddr";
     changelog = "https://github.com/multiformats/py-multiaddr/releases/tag/${src.tag}";
+
     license = with lib.licenses; [
       mit
       asl20
     ];
+
     maintainers = with lib.maintainers; [ Luflosi ];
   };
 }

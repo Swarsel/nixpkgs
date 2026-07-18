@@ -1,8 +1,8 @@
 {
   lib,
   fetchFromGitHub,
-  stdenvNoCC,
   installFonts,
+  stdenvNoCC,
 }:
 
 stdenvNoCC.mkDerivation rec {
@@ -19,10 +19,10 @@ stdenvNoCC.mkDerivation rec {
   nativeBuildInputs = [ installFonts ];
 
   meta = {
-    homepage = "https://github.com/lxgw/FusionKai";
     description = "Simplified Chinese font derived from LXGW WenKai GB, iansui and Klee One";
+    homepage = "https://github.com/lxgw/FusionKai";
     license = lib.licenses.ofl;
-    platforms = lib.platforms.all;
     maintainers = with lib.maintainers; [ hellodword ];
+    platforms = lib.platforms.all;
   };
 }

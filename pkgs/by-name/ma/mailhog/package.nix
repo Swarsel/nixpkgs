@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   nixosTests,
 }:
 
@@ -22,7 +22,6 @@ buildGoModule (finalAttrs: {
   ];
 
   vendorHash = "sha256-YfqC8MEdiLcucOaXOsLI9H4NDQ/4T0newb6q7v0uDbw=";
-
   deleteVendor = true;
 
   ldflags = [
@@ -36,12 +35,14 @@ buildGoModule (finalAttrs: {
 
   meta = {
     description = "Web and API based SMTP testing";
-    mainProgram = "MailHog";
     homepage = "https://github.com/mailhog/MailHog";
     changelog = "https://github.com/mailhog/MailHog/releases/tag/v${finalAttrs.version}";
+    license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       jojosch
     ];
-    license = lib.licenses.mit;
+
+    mainProgram = "MailHog";
   };
 })

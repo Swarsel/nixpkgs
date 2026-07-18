@@ -3,10 +3,10 @@
   beautifulsoup4,
   buildPythonPackage,
   fetchPypi,
-  setuptools,
   pastedeploy,
   pyquery,
   pytestCheckHook,
+  setuptools,
   six,
   waitress,
   webob,
@@ -16,21 +16,11 @@
 buildPythonPackage rec {
   pname = "webtest";
   version = "3.0.7";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
     hash = "sha256-euq1D5cNRsBo56Nt0WLLJCWR7fcqHQTv0hN0dyuTF0E=";
   };
-
-  build-system = [ setuptools ];
-
-  dependencies = [
-    beautifulsoup4
-    six
-    waitress
-    webob
-  ];
 
   nativeCheckInputs = [
     pastedeploy
@@ -40,7 +30,16 @@ buildPythonPackage rec {
   ];
 
   __darwinAllowLocalNetworking = true;
+  build-system = [ setuptools ];
 
+  dependencies = [
+    beautifulsoup4
+    six
+    waitress
+    webob
+  ];
+
+  pyproject = true;
   pythonImportsCheck = [ "webtest" ];
 
   meta = {

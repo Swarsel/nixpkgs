@@ -1,38 +1,33 @@
 {
   lib,
   stdenv,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # build-system
-  hatchling,
-  poetry-core,
-
+  boto3,
+  buildPythonPackage,
   # dependencies
   docling,
-  pydantic-settings,
-  typer,
-  boto3,
-  pandas,
   fastparquet,
-  pyarrow,
+  # build-system
+  hatchling,
   httpx,
-
+  msgpack,
+  pandas,
+  poetry-core,
+  pyarrow,
+  pydantic-settings,
+  pytest-asyncio,
+  # tests
+  pytestCheckHook,
   # optional dependencies
   ray,
   rq,
-  msgpack,
-
-  # tests
-  pytestCheckHook,
-  pytest-asyncio,
+  typer,
   writableTmpDirAsHomeHook,
 }:
 
 buildPythonPackage rec {
   pname = "docling-jobkit";
   version = "1.8.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "docling-project";
@@ -40,6 +35,13 @@ buildPythonPackage rec {
     tag = "v${version}";
     hash = "sha256-9DzQY/XMmx/8XP1bMYZYl+Bp7AVcYfuv3MtO6lvQ/24=";
   };
+
+  nativeCheckInputs = [
+    pytestCheckHook
+    pytest-asyncio
+    writableTmpDirAsHomeHook
+  ]
+  ++ optional-dependencies.rq;
 
   build-system = [
     hatchling
@@ -57,32 +59,6 @@ buildPythonPackage rec {
     httpx
   ];
 
-  optional-dependencies = {
-    ray = [ ray ];
-    rq = [
-      rq
-      msgpack
-    ];
-  };
-
-  pythonRelaxDeps = [
-    "boto3"
-    "pandas"
-    "pyarrow"
-  ];
-
-  pythonImportsCheck = [
-    "docling"
-    "docling_jobkit"
-  ];
-
-  nativeCheckInputs = [
-    pytestCheckHook
-    pytest-asyncio
-    writableTmpDirAsHomeHook
-  ]
-  ++ optional-dependencies.rq;
-
   disabledTests = [
     # requires network access
     "test_chunk_file"
@@ -97,10 +73,32 @@ buildPythonPackage rec {
     "test_options_validator"
   ];
 
+  optional-dependencies = {
+    ray = [ ray ];
+
+    rq = [
+      rq
+      msgpack
+    ];
+  };
+
+  pyproject = true;
+
+  pythonImportsCheck = [
+    "docling"
+    "docling_jobkit"
+  ];
+
+  pythonRelaxDeps = [
+    "boto3"
+    "pandas"
+    "pyarrow"
+  ];
+
   meta = {
-    changelog = "https://github.com/docling-project/docling-jobkit/blob/${src.tag}/CHANGELOG.md";
     description = "Running a distributed job processing documents with Docling";
     homepage = "https://github.com/docling-project/docling-jobkit";
+    changelog = "https://github.com/docling-project/docling-jobkit/blob/${src.tag}/CHANGELOG.md";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ codgician ];
   };

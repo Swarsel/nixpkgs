@@ -1,9 +1,9 @@
 {
   stdenv,
-  usbrelay,
-  python3,
   installShellFiles,
+  python3,
   udevCheckHook,
+  usbrelay,
 }:
 let
   python = python3.withPackages (
@@ -17,9 +17,8 @@ in
 # usbrelay, because otherwise, we have a cyclic dependency between
 # usbrelay (default.nix) and the python module (python.nix).
 stdenv.mkDerivation {
-  pname = "usbrelayd";
-
   inherit (usbrelay) src version;
+  pname = "usbrelayd";
 
   postPatch = ''
     substituteInPlace 'usbrelayd.service' \
@@ -34,10 +33,6 @@ stdenv.mkDerivation {
 
   buildInputs = [ python ];
 
-  dontBuild = true;
-
-  doInstallCheck = true;
-
   installPhase = ''
     runHook preInstall;
     install -m 644 -D usbrelayd $out/bin/usbrelayd
@@ -48,13 +43,17 @@ stdenv.mkDerivation {
     runHook postInstall
   '';
 
+  doInstallCheck = true;
+  dontBuild = true;
+
   meta = {
-    description = "USB Relay MQTT service";
     inherit (usbrelay.meta)
       homepage
       license
       maintainers
       platforms
       ;
+
+    description = "USB Relay MQTT service";
   };
 }

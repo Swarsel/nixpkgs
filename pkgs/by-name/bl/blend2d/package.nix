@@ -2,8 +2,8 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  cmake,
   asmjit,
+  cmake,
   nix-update-script,
 }:
 
@@ -24,9 +24,7 @@ stdenv.mkDerivation {
   ];
 
   nativeBuildInputs = [ cmake ];
-
   cmakeFlags = [ (lib.cmakeFeature "ASMJIT_DIR" (toString asmjit.src)) ];
-
   passthru.updateScript = nix-update-script { extraArgs = [ "--version=branch" ]; };
 
   meta = {

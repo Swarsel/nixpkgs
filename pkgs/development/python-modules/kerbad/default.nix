@@ -1,18 +1,16 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # build-system
-  setuptools,
-
   # dependencies
   asn1crypto,
   asysocks,
+  buildPythonPackage,
   cryptography,
   dnspython,
   minikerberos,
   oscrypto,
+  # build-system
+  setuptools,
   six,
   tqdm,
   unicrypto,
@@ -21,7 +19,6 @@
 buildPythonPackage {
   pname = "kerbad";
   version = "0.5.6-unstable-2025-10-07";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "CravateRouge";
@@ -30,6 +27,8 @@ buildPythonPackage {
     hash = "sha256-V4KaF6lsECoLVpGZTZ4p7q9drHSsrsLPI/9zEQpqm3I=";
   };
 
+  # Module has no tests
+  doCheck = false;
   build-system = [ setuptools ];
 
   dependencies = [
@@ -44,9 +43,7 @@ buildPythonPackage {
     unicrypto
   ];
 
-  # Module has no tests
-  doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "minikerberos" ];
 
   meta = {

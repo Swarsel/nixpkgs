@@ -18,7 +18,6 @@
 buildPythonPackage rec {
   pname = "msprime";
   version = "1.4.2";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
@@ -53,18 +52,6 @@ buildPythonPackage rec {
     scipy
   ];
 
-  disabledTests = [
-    "tests/test_ancestry.py::TestSimulator::test_debug_logging"
-    "tests/test_ancestry.py::TestSimulator::test_debug_logging_dtw"
-  ];
-
-  disabledTestPaths = [
-    "tests/test_demography.py"
-    "tests/test_algorithms.py"
-    "tests/test_provenance.py"
-    "tests/test_dict_encoding.py"
-  ];
-
   # `python -m pytest` puts $PWD in sys.path, which causes the extension
   # modules imported as `msprime._msprime` to be unavailable, failing the
   # tests. This deletes the `msprime` folder such that only what's installed in
@@ -73,6 +60,20 @@ buildPythonPackage rec {
   preCheck = ''
     rm -r msprime
   '';
+
+  disabledTestPaths = [
+    "tests/test_demography.py"
+    "tests/test_algorithms.py"
+    "tests/test_provenance.py"
+    "tests/test_dict_encoding.py"
+  ];
+
+  disabledTests = [
+    "tests/test_ancestry.py::TestSimulator::test_debug_logging"
+    "tests/test_ancestry.py::TestSimulator::test_debug_logging_dtw"
+  ];
+
+  pyproject = true;
   pythonImportsCheck = [ "msprime" ];
 
   meta = {

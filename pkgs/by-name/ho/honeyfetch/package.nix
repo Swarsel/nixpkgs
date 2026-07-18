@@ -1,7 +1,7 @@
 {
   lib,
-  libdrm,
   fetchFromGitLab,
+  libdrm,
   rustPlatform,
 }:
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -15,9 +15,8 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-lFp7L3tcqZ1jAL7V7tfUJDPKO2WCvMekUx+p12fNlcM=";
   };
 
-  cargoHash = "sha256-u+OF4ali7GoHktY8jihgqUQ+4kFuKQNbiaRUdOJrQfA=";
-
   buildInputs = [ libdrm ];
+  cargoHash = "sha256-u+OF4ali7GoHktY8jihgqUQ+4kFuKQNbiaRUdOJrQfA=";
 
   meta = {
     description = "Classy neofetch but in Rust";

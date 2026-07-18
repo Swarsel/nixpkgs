@@ -16,12 +16,12 @@ stdenv.mkDerivation rec {
     sha256 = "sha256-YiE7yaH0ZrF1/Cp+3bcJYm2cExQjFcat6JLMJPjhops=";
   };
 
-  dontBuild = true;
-
   installPhase = ''
     mkdir -p $out/share/fonts/truetype/redacted-elementary
     cp -a redacted/*.ttf $out/share/fonts/truetype/redacted-elementary
   '';
+
+  dontBuild = true;
 
   passthru = {
     updateScript = nix-update-script { };
@@ -31,7 +31,7 @@ stdenv.mkDerivation rec {
     description = "Font for concealing text";
     homepage = "https://github.com/elementary/fonts";
     license = lib.licenses.ofl;
-    teams = [ lib.teams.pantheon ];
     platforms = lib.platforms.linux;
+    teams = [ lib.teams.pantheon ];
   };
 }

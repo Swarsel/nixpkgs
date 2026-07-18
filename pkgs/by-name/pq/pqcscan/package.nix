@@ -17,10 +17,8 @@ rustPlatform.buildRustPackage (finalAttrs: {
   };
 
   cargoHash = "sha256-ZZm1I4fsw4PDCVZYuyhy4fC5ocfz1Snrv9vMltF26x8=";
-
-  nativeInstallCheckInputs = [ versionCheckHook ];
-
   doInstallCheck = true;
+  nativeInstallCheckInputs = [ versionCheckHook ];
 
   meta = {
     description = "Post-Quantum Cryptography Scanner";

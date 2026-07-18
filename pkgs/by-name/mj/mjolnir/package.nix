@@ -1,15 +1,15 @@
 {
   lib,
   stdenv,
-  yarnConfigHook,
-  yarnBuildHook,
-  yarnInstallHook,
-  nodejs,
   fetchFromGitHub,
   fetchYarnDeps,
-  matrix-sdk-crypto-nodejs,
   makeWrapper,
+  matrix-sdk-crypto-nodejs,
   nixosTests,
+  nodejs,
+  yarnBuildHook,
+  yarnConfigHook,
+  yarnInstallHook,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -27,11 +27,6 @@ stdenv.mkDerivation (finalAttrs: {
     # TODO: Fix tfjs-node dependency
     ./001-disable-nsfwprotection.patch
   ];
-
-  offlineCache = fetchYarnDeps {
-    yarnLock = "${finalAttrs.src}/yarn.lock";
-    hash = "sha256-1V7ooONt9j+4hk/3w6Dsv/SdWwa1xsLk97EwhuPegNo=";
-  };
 
   nativeBuildInputs = [
     yarnConfigHook
@@ -51,6 +46,11 @@ stdenv.mkDerivation (finalAttrs: {
       --add-flags "$out/lib/node_modules/mjolnir/lib/index.js"
   '';
 
+  offlineCache = fetchYarnDeps {
+    hash = "sha256-1V7ooONt9j+4hk/3w6Dsv/SdWwa1xsLk97EwhuPegNo=";
+    yarnLock = "${finalAttrs.src}/yarn.lock";
+  };
+
   passthru = {
     tests = {
       inherit (nixosTests) mjolnir;
@@ -59,7 +59,7 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Moderation tool for Matrix";
-    homepage = "https://github.com/matrix-org/mjolnir";
+
     longDescription = ''
       As an all-in-one moderation tool, it can protect your server from
       malicious invites, spam messages, and whatever else you don't want.
@@ -74,6 +74,8 @@ stdenv.mkDerivation (finalAttrs: {
       A Synapse module is also available to apply the same rulesets the bot
       uses across an entire homeserver.
     '';
+
+    homepage = "https://github.com/matrix-org/mjolnir";
     license = lib.licenses.asl20;
     maintainers = with lib.maintainers; [ jojosch ];
     mainProgram = "mjolnir";

@@ -2,10 +2,10 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  cmake,
   calceph,
-  withCalceph ? true,
+  cmake,
   cppSupport ? true,
+  withCalceph ? true,
 }:
 stdenv.mkDerivation (finalAttrs: {
   pname = "supernovas";

@@ -1,10 +1,10 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
-  pkg-config,
-  openssl,
   nix-update-script,
+  openssl,
+  pkg-config,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -18,14 +18,10 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-311divpV+c/3/7pP9R7wr+dKabVb1zu4QWDEPGHKZrE=";
   };
 
-  cargoHash = "sha256-Vzb7gIKvEF0a3a/0O+osawigrRF5+QXkKxV75+FX1hE=";
-
   nativeBuildInputs = [ pkg-config ];
-
   buildInputs = [ openssl ];
-
+  cargoHash = "sha256-Vzb7gIKvEF0a3a/0O+osawigrRF5+QXkKxV75+FX1hE=";
   env.OPENSSL_NO_VENDOR = true;
-
   passthru.updateScript = nix-update-script { };
 
   meta = {
@@ -33,11 +29,13 @@ rustPlatform.buildRustPackage (finalAttrs: {
     homepage = "https://github.com/virtee/snpguest";
     changelog = "https://github.com/virtee/snpguest/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.asl20;
+
     maintainers = with lib.maintainers; [
       katexochen
       charludo
     ];
-    mainProgram = "snpguest";
+
     platforms = [ "x86_64-linux" ];
+    mainProgram = "snpguest";
   };
 })

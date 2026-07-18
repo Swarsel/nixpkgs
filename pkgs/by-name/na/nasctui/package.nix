@@ -2,8 +2,8 @@
   lib,
   fetchFromGitHub,
   buildGoModule,
-  pkg-config,
   libqalculate,
+  pkg-config,
 }:
 
 buildGoModule (finalAttrs: {
@@ -17,10 +17,6 @@ buildGoModule (finalAttrs: {
     hash = "sha256-h9tdoQv/Uj9r3RSvmUBGa+aFHxAlhpy4yIrKhrg/aAE=";
   };
 
-  sourceRoot = "${finalAttrs.src.name}/src";
-
-  vendorHash = "sha256-ys9VEv8PisvO9UCD6M3aLrJeF88ZNAUATxyTVV02z44=";
-
   nativeBuildInputs = [
     pkg-config
   ];
@@ -29,17 +25,21 @@ buildGoModule (finalAttrs: {
     libqalculate
   ];
 
+  vendorHash = "sha256-ys9VEv8PisvO9UCD6M3aLrJeF88ZNAUATxyTVV02z44=";
+
   ldflags = [
     "-s"
     "-w"
   ];
+
+  sourceRoot = "${finalAttrs.src.name}/src";
 
   meta = {
     description = "Do maths like a normal person - A terminal calculator";
     homepage = "https://github.com/parnoldx/nascTUI";
     license = lib.licenses.gpl2Only;
     maintainers = with lib.maintainers; [ matthewcroughan ];
-    mainProgram = "nasc";
     platforms = lib.platforms.linux;
+    mainProgram = "nasc";
   };
 })

@@ -2,16 +2,16 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  makeDesktopItem,
-  makeWrapper,
-  wrapGAppsHook3,
-  stripJavaArchivesHook,
   ant,
+  glib,
+  gtk3,
   jdk,
   jre,
-  gtk3,
-  glib,
   libxtst,
+  makeDesktopItem,
+  makeWrapper,
+  stripJavaArchivesHook,
+  wrapGAppsHook3,
 }:
 
 let
@@ -30,13 +30,13 @@ let
       throw "Unsupported system: ${stdenv.hostPlatform.system}";
 
   desktopItem = makeDesktopItem {
-    name = "jameica";
-    exec = "jameica";
+    categories = [ "Office" ];
     comment = "Free Runtime Environment for Java Applications.";
     desktopName = "Jameica";
+    exec = "jameica";
     genericName = "Jameica";
     icon = "jameica";
-    categories = [ "Office" ];
+    name = "jameica";
   };
 in
 stdenv.mkDerivation rec {
@@ -63,8 +63,6 @@ stdenv.mkDerivation rec {
     glib
     libxtst
   ];
-
-  dontWrapGApps = true;
 
   # there is also a build.gradle, but it only seems to be used to vendor 3rd party libraries
   # and is not able to build the application itself
@@ -109,22 +107,29 @@ stdenv.mkDerivation rec {
       "''${gappsWrapperArgs[@]}"
   '';
 
+  dontWrapGApps = true;
+
   meta = {
-    homepage = "https://www.willuhn.de/products/jameica/";
     description = "Free Runtime Environment for Java Applications";
+
     longDescription = ''
       Runtime Environment for plugins like Hibiscus (HBCI Online Banking),
       SynTAX (accounting) and JVerein (club management).
     '';
+
+    homepage = "https://www.willuhn.de/products/jameica/";
+    license = lib.licenses.gpl2Plus;
+
     sourceProvenance = with lib.sourceTypes; [
       fromSource
       binaryBytecode # source bundles dependencies as jars
     ];
-    license = lib.licenses.gpl2Plus;
-    platforms = lib.platforms.unix;
+
     maintainers = with lib.maintainers; [
       r3dl3g
     ];
+
+    platforms = lib.platforms.unix;
     mainProgram = "jameica";
   };
 }

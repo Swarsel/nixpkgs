@@ -13,11 +13,9 @@
     ./sd-image.nix
   ];
 
-  boot.loader.grub.enable = false;
-  boot.loader.generic-extlinux-compatible.enable = true;
-
   boot.consoleLogLevel = lib.mkDefault 7;
   boot.kernelPackages = pkgs.linuxPackages_latest;
+
   # The serial ports listed here are:
   # - ttyS0: for Tegra (Jetson TK1)
   # - ttymxc0: for i.MX6 (Wandboard)
@@ -32,6 +30,9 @@
     "console=ttySAC2,115200n8"
     "console=tty0"
   ];
+
+  boot.loader.generic-extlinux-compatible.enable = true;
+  boot.loader.grub.enable = false;
 
   sdImage = {
     populateFirmwareCommands =
@@ -58,6 +59,7 @@
         cp ${pkgs.ubootRaspberryPi3_32bit}/u-boot.bin firmware/u-boot-rpi3.bin
         cp ${configTxt} firmware/config.txt
       '';
+
     populateRootCommands = ''
       mkdir -p ./files/boot
       ${config.boot.loader.generic-extlinux-compatible.populateCmd} -c ${config.system.build.toplevel} -d ./files/boot

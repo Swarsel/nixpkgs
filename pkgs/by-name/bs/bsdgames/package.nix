@@ -2,13 +2,13 @@
   lib,
   stdenv,
   fetchurl,
-  ncurses,
-  openssl,
-  flex,
   bison,
+  fetchpatch,
+  flex,
   less,
   miscfiles,
-  fetchpatch,
+  ncurses,
+  openssl,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -20,43 +20,41 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-Bm+SSu9sHF6pRvWI428wMCH138CTlEc48CXY7bxv/2A=";
   };
 
+  patches = [
+    # Follow All patches from http://t2sde.org/packages/bsd-games.html
+    # May be removed in the next version
+    (fetchpatch {
+      hash = "sha256-qbtp2cJVmEuxbTgpXM2gRHSNLE25OCmNxK+aeBBPRBw=";
+      url = "http://svn.exactcode.de/t2/trunk/package/games/bsd-games/delay_output-sym.patch";
+    })
+    (fetchpatch {
+      hash = "sha256-oioJ5M7DAUVzX8k998p2h/APn8azw9Z8txmBuly2ouw=";
+      url = "http://svn.exactcode.de/t2/trunk/package/games/bsd-games/dm-noutmpx.patch";
+    })
+    (fetchpatch {
+      hash = "sha256-9pkJmEOmM5vd/5nm3AlsbJNX0oX1kCtFrmciGpStvlA=";
+      url = "http://svn.exactcode.de/t2/trunk/package/games/bsd-games/hotfix-gcc43.patch";
+    })
+    (fetchpatch {
+      hash = "sha256-yNL88XORTXl2qSYTlYCYDN2G++TzBxywBpYdK+ufwrA=";
+      url = "http://svn.exactcode.de/t2/trunk/package/games/bsd-games/hotfix-glibc.patch";
+    })
+    (fetchpatch {
+      hash = "sha256-UFXvtfVzJLRWvzbv0gaoVdt0vZOUj4UWWqoCZL/BDqE=";
+      url = "http://svn.exactcode.de/t2/trunk/package/games/bsd-games/hotfix.patch";
+    })
+    (fetchpatch {
+      hash = "sha256-Noqq+FpSJb3heejGGHyLYYkHB3fC4qCv/p1XMfEGdx8=";
+      url = "http://svn.exactcode.de/t2/trunk/package/games/bsd-games/postfix-bsd.patch";
+    })
+  ];
+
   buildInputs = [
     ncurses
     openssl
     flex
     bison
   ];
-
-  patches = [
-    # Follow All patches from http://t2sde.org/packages/bsd-games.html
-    # May be removed in the next version
-    (fetchpatch {
-      url = "http://svn.exactcode.de/t2/trunk/package/games/bsd-games/delay_output-sym.patch";
-      hash = "sha256-qbtp2cJVmEuxbTgpXM2gRHSNLE25OCmNxK+aeBBPRBw=";
-    })
-    (fetchpatch {
-      url = "http://svn.exactcode.de/t2/trunk/package/games/bsd-games/dm-noutmpx.patch";
-      hash = "sha256-oioJ5M7DAUVzX8k998p2h/APn8azw9Z8txmBuly2ouw=";
-    })
-    (fetchpatch {
-      url = "http://svn.exactcode.de/t2/trunk/package/games/bsd-games/hotfix-gcc43.patch";
-      hash = "sha256-9pkJmEOmM5vd/5nm3AlsbJNX0oX1kCtFrmciGpStvlA=";
-    })
-    (fetchpatch {
-      url = "http://svn.exactcode.de/t2/trunk/package/games/bsd-games/hotfix-glibc.patch";
-      hash = "sha256-yNL88XORTXl2qSYTlYCYDN2G++TzBxywBpYdK+ufwrA=";
-    })
-    (fetchpatch {
-      url = "http://svn.exactcode.de/t2/trunk/package/games/bsd-games/hotfix.patch";
-      hash = "sha256-UFXvtfVzJLRWvzbv0gaoVdt0vZOUj4UWWqoCZL/BDqE=";
-    })
-    (fetchpatch {
-      url = "http://svn.exactcode.de/t2/trunk/package/games/bsd-games/postfix-bsd.patch";
-      hash = "sha256-Noqq+FpSJb3heejGGHyLYYkHB3fC4qCv/p1XMfEGdx8=";
-    })
-  ];
-
-  hardeningDisable = [ "format" ];
 
   makeFlags = [ "STRIP=" ];
 
@@ -101,9 +99,11 @@ stdenv.mkDerivation (finalAttrs: {
     mkdir -p $out/bin
   '';
 
+  hardeningDisable = [ "format" ];
+
   meta = {
-    homepage = "http://www.t2-project.org/packages/bsd-games.html";
     description = "Ports of all the games from NetBSD-current that are free";
+    homepage = "http://www.t2-project.org/packages/bsd-games.html";
     license = lib.licenses.free;
     maintainers = with lib.maintainers; [ viric ];
     platforms = with lib.platforms; linux;

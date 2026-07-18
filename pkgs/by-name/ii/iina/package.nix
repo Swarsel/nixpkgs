@@ -1,9 +1,9 @@
 {
   lib,
   fetchurl,
+  nix-update-script,
   stdenvNoCC,
   undmg,
-  nix-update-script,
 }:
 
 stdenvNoCC.mkDerivation (finalAttrs: {
@@ -17,29 +17,30 @@ stdenvNoCC.mkDerivation (finalAttrs: {
 
   nativeBuildInputs = [ undmg ];
 
-  sourceRoot = "IINA.app";
-
   installPhase = ''
     mkdir -p $out/{bin,Applications/IINA.app}
     cp -R . "$out/Applications/IINA.app"
     ln -s "$out/Applications/IINA.app/Contents/MacOS/iina-cli" "$out/bin/iina"
   '';
 
+  sourceRoot = "IINA.app";
   passthru.updateScript = nix-update-script { };
 
   meta = {
-    changelog = "https://github.com/iina/iina/releases/tag/v${finalAttrs.version}";
     description = "Modern media player for macOS";
     homepage = "https://iina.io/";
+    changelog = "https://github.com/iina/iina/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.gpl3;
+    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
+
     maintainers = with lib.maintainers; [
       arkivm
       _4evy
       kinnrai
       stepbrobd
     ];
-    mainProgram = "iina";
+
     platforms = lib.platforms.darwin;
-    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
+    mainProgram = "iina";
   };
 })

@@ -5,8 +5,8 @@
   SDL,
   SDL_image,
   SDL_ttf,
-  installShellFiles,
   fontconfig,
+  installShellFiles,
   libpng,
   libtiff,
   lua5,
@@ -18,21 +18,23 @@ stdenv.mkDerivation (finalAttrs: {
   pname = "grafx2";
   version = "2.8.3091";
 
+  src = fetchurl {
+    url = "https://pulkomandy.tk/projects/GrafX2/downloads/65";
+    hash = "sha256-KdY7GUhQp/Q7t/ktLPGxI66ZHy2gDAffn2yB5pmcJCM=";
+    name = "grafx2-${finalAttrs.version}.tar.gz";
+  };
+
   outputs = [
     "out"
     "man"
   ];
 
-  src = fetchurl {
-    name = "grafx2-${finalAttrs.version}.tar.gz";
-    url = "https://pulkomandy.tk/projects/GrafX2/downloads/65";
-    hash = "sha256-KdY7GUhQp/Q7t/ktLPGxI66ZHy2gDAffn2yB5pmcJCM=";
-  };
-
   postPatch = ''
     substituteInPlace misc/unix/grafx2.desktop \
       --replace "Exec=grafx2" "Exec=grafx2-sdl"
   '';
+
+  strictDeps = false; # Why??
 
   nativeBuildInputs = [
     installShellFiles
@@ -50,21 +52,20 @@ stdenv.mkDerivation (finalAttrs: {
     zlib
   ];
 
-  strictDeps = false; # Why??
-
   makeFlags = [ "--directory=src" ];
-  installFlags = [
-    "--directory=src"
-    "PREFIX=$(out)"
-  ];
 
   postInstall = ''
     installManPage misc/unix/grafx2.1
   '';
 
+  installFlags = [
+    "--directory=src"
+    "PREFIX=$(out)"
+  ];
+
   meta = {
-    homepage = "http://grafx2.eu/";
     description = "Ultimate 256-color painting program";
+
     longDescription = ''
       GrafX2 is a bitmap paint program inspired by the Amiga programs ​Deluxe
       Paint and Brilliance. Specialized in 256-color drawing, it includes a very
@@ -75,9 +76,11 @@ stdenv.mkDerivation (finalAttrs: {
       The program is mostly developed on Haiku, Linux and Windows, but is also
       portable on many other platforms.
     '';
+
+    homepage = "http://grafx2.eu/";
     license = with lib.licenses; [ gpl2Plus ];
-    mainProgram = "grafx2-sdl";
     maintainers = [ ];
     platforms = lib.platforms.unix;
+    mainProgram = "grafx2-sdl";
   };
 })

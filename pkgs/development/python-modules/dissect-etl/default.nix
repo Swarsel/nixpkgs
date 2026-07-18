@@ -1,19 +1,18 @@
 {
   lib,
+  fetchFromGitHub,
   buildPythonPackage,
   defusedxml,
   dissect-cstruct,
   dissect-util,
-  fetchFromGitHub,
+  pytestCheckHook,
   setuptools,
   setuptools-scm,
-  pytestCheckHook,
 }:
 
 buildPythonPackage rec {
   pname = "dissect-etl";
   version = "3.14";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "fox-it";
@@ -21,6 +20,8 @@ buildPythonPackage rec {
     tag = version;
     hash = "sha256-QmtFkzO57jLTQg16MawAgU7Vq8vgo7DkEDq+FEjnObs=";
   };
+
+  nativeCheckInputs = [ pytestCheckHook ];
 
   build-system = [
     setuptools
@@ -33,15 +34,14 @@ buildPythonPackage rec {
     dissect-util
   ];
 
-  nativeCheckInputs = [ pytestCheckHook ];
-
-  pythonImportsCheck = [ "dissect.etl" ];
-
   disabledTests = [
     # Invalid header magic
     "test_sqlite"
     "test_empty"
   ];
+
+  pyproject = true;
+  pythonImportsCheck = [ "dissect.etl" ];
 
   meta = {
     description = "Dissect module implementing a parser for Event Trace Log (ETL) files";

@@ -1,7 +1,7 @@
 {
   lib,
-  buildKodiAddon,
   fetchFromGitHub,
+  buildKodiAddon,
   inputstream-adaptive,
   inputstreamhelper,
   routing,
@@ -9,7 +9,6 @@
 
 buildKodiAddon rec {
   pname = "orftvthek";
-  namespace = "plugin.video.orftvthek";
   version = "1.0.3+matrix.1";
 
   src = fetchFromGitHub {
@@ -26,9 +25,11 @@ buildKodiAddon rec {
     routing
   ];
 
+  namespace = "plugin.video.orftvthek";
+
   meta = {
-    homepage = "https://github.com/s0faking/plugin.video.orftvthek";
     description = "Addon for accessing the Austrian ORF ON streaming service";
+    homepage = "https://github.com/s0faking/plugin.video.orftvthek";
     license = lib.licenses.gpl2Only;
     teams = [ lib.teams.kodi ];
   };

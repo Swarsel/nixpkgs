@@ -1,8 +1,8 @@
 {
   lib,
   stdenv,
-  fetchFromGitHub,
   fetchurl,
+  fetchFromGitHub,
   aqbanking,
   boost,
   cmake,
@@ -23,10 +23,10 @@
   makeWrapper,
   perlPackages,
   pkg-config,
+  python3,
   swig,
   webkitgtk_4_1,
   wrapGAppsHook3,
-  python3,
 }:
 let
   py = python3.withPackages (
@@ -45,6 +45,27 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-u5tsZ+u2o+Btn/T04EF6l77wFZ0mkSvpsOdaMpAf1JM=";
   };
 
+  patches = [
+    # this patch disables test-gnc-timezone and test-gnc-datetime which fail due to nix datetime challenges
+    ./0001-disable-date-and-time-tests.patch
+    # this patch prevents the building of gnc-fq-update, a utility which updates the GnuCash cli utils
+    ./0002-disable-gnc-fq-update.patch
+    # this patch prevents the building of gnucash-valgrind
+    ./0003-remove-valgrind.patch
+    # this patch makes gnucash exec the Finance::Quote wrapper directly
+    ./0004-exec-fq-wrapper.patch
+    # this patch adds in env vars to the Python lib that makes it able to find required resource files
+    ./0005-python-env.patch
+  ];
+
+  postPatch = ''
+    find . -name '._*' -type f -delete
+
+    substituteInPlace bindings/python/__init__.py \
+      --subst-var-by gnc_dbd_dir "${libdbi-drivers}/lib/dbd" \
+      --subst-var-by gsettings_schema_dir ${glib.makeSchemaPath "$out" "gnucash-${finalAttrs.version}"};
+  '';
+
   nativeBuildInputs = [
     cmake
     gettext
@@ -53,27 +74,6 @@ stdenv.mkDerivation (finalAttrs: {
     wrapGAppsHook3
     pkg-config
   ];
-
-  cmakeFlags = [
-    "-DWITH_PYTHON=\"ON\""
-    "-DPYTHON_SYSCONFIG_BUILD=\"$out\""
-  ];
-
-  env = {
-    # https://github.com/Gnucash/gnucash/commit/e680a87a66b8ec17132f186e222cbc94ad52b3d0
-    GNC_DBD_DIR = "${libdbi-drivers}/lib/dbd";
-
-    # this needs to be an environment variable and not a cmake flag to suppress
-    # guile warning
-    GUILE_AUTO_COMPILE = "0";
-
-    NIX_CFLAGS_COMPILE = toString (
-      lib.optionals (stdenv.cc.isGNU && lib.versionAtLeast stdenv.cc.version "12") [
-        # Needed with GCC 12 but breaks on darwin (with clang) or older gcc
-        "-Wno-error=use-after-free"
-      ]
-    );
-  };
 
   buildInputs = [
     aqbanking
@@ -100,52 +100,27 @@ stdenv.mkDerivation (finalAttrs: {
     perl
   ]);
 
-  patches = [
-    # this patch disables test-gnc-timezone and test-gnc-datetime which fail due to nix datetime challenges
-    ./0001-disable-date-and-time-tests.patch
-    # this patch prevents the building of gnc-fq-update, a utility which updates the GnuCash cli utils
-    ./0002-disable-gnc-fq-update.patch
-    # this patch prevents the building of gnucash-valgrind
-    ./0003-remove-valgrind.patch
-    # this patch makes gnucash exec the Finance::Quote wrapper directly
-    ./0004-exec-fq-wrapper.patch
-    # this patch adds in env vars to the Python lib that makes it able to find required resource files
-    ./0005-python-env.patch
+  cmakeFlags = [
+    "-DWITH_PYTHON=\"ON\""
+    "-DPYTHON_SYSCONFIG_BUILD=\"$out\""
   ];
 
-  postPatch = ''
-    find . -name '._*' -type f -delete
+  env = {
+    # https://github.com/Gnucash/gnucash/commit/e680a87a66b8ec17132f186e222cbc94ad52b3d0
+    GNC_DBD_DIR = "${libdbi-drivers}/lib/dbd";
+    # this needs to be an environment variable and not a cmake flag to suppress
+    # guile warning
+    GUILE_AUTO_COMPILE = "0";
 
-    substituteInPlace bindings/python/__init__.py \
-      --subst-var-by gnc_dbd_dir "${libdbi-drivers}/lib/dbd" \
-      --subst-var-by gsettings_schema_dir ${glib.makeSchemaPath "$out" "gnucash-${finalAttrs.version}"};
-  '';
+    NIX_CFLAGS_COMPILE = toString (
+      lib.optionals (stdenv.cc.isGNU && lib.versionAtLeast stdenv.cc.version "12") [
+        # Needed with GCC 12 but breaks on darwin (with clang) or older gcc
+        "-Wno-error=use-after-free"
+      ]
+    );
+  };
 
   doCheck = true;
-  enableParallelChecking = true;
-  checkTarget = "check";
-
-  passthru = {
-    docs = stdenv.mkDerivation {
-      pname = "gnucash-docs";
-      inherit (finalAttrs) version;
-
-      src = fetchFromGitHub {
-        owner = "Gnucash";
-        repo = "gnucash-docs";
-        tag = finalAttrs.version;
-        hash = "sha256-KC2POdwKma2CWpom3kN4X4MAItJFeWHl4SIV7sb+KCo=";
-      };
-
-      nativeBuildInputs = [ cmake ];
-      buildInputs = [
-        libxml2
-        libxslt
-      ];
-    };
-
-    updateScript = ./update.sh;
-  };
 
   preFixup = ''
     gappsWrapperArgs+=(
@@ -157,10 +132,6 @@ stdenv.mkDerivation (finalAttrs: {
       --set GSETTINGS_SCHEMA_DIR ${glib.makeSchemaPath "$out" "gnucash-${finalAttrs.version}"}
     )
   '';
-
-  # wrapGAppsHook3 would wrap all binaries including the cli utils which need
-  # Perl wrapping
-  dontWrapGApps = true;
 
   # We could not find the python entrypoint and somehow it is used from PATH,
   # so force to use the one with all dependencies
@@ -186,9 +157,38 @@ stdenv.mkDerivation (finalAttrs: {
     patchShebangs $out/share/gnucash/python/pycons/*.py
   '';
 
+  checkTarget = "check";
+  # wrapGAppsHook3 would wrap all binaries including the cli utils which need
+  # Perl wrapping
+  dontWrapGApps = true;
+  enableParallelChecking = true;
+
+  passthru = {
+    docs = stdenv.mkDerivation {
+      inherit (finalAttrs) version;
+      pname = "gnucash-docs";
+
+      src = fetchFromGitHub {
+        owner = "Gnucash";
+        repo = "gnucash-docs";
+        tag = finalAttrs.version;
+        hash = "sha256-KC2POdwKma2CWpom3kN4X4MAItJFeWHl4SIV7sb+KCo=";
+      };
+
+      nativeBuildInputs = [ cmake ];
+
+      buildInputs = [
+        libxml2
+        libxslt
+      ];
+    };
+
+    updateScript = ./update.sh;
+  };
+
   meta = {
-    homepage = "https://www.gnucash.org/";
     description = "Free software for double entry accounting";
+
     longDescription = ''
       GnuCash is personal and small-business financial-accounting software,
       freely licensed under the GNU GPL and available for GNU/Linux, BSD,
@@ -209,11 +209,15 @@ stdenv.mkDerivation (finalAttrs: {
       - Scheduled Transactions
       - Financial Calculations
     '';
+
+    homepage = "https://www.gnucash.org/";
     license = lib.licenses.gpl2Plus;
+
     maintainers = with lib.maintainers; [
       nevivurn
       ryand56
     ];
+
     platforms = lib.platforms.unix;
     mainProgram = "gnucash";
   };

@@ -8,89 +8,109 @@
 # requires invoking the Xcode build system, which is non-trivial for now.
 
 {
-  stdenv,
   lib,
-  applyPatches,
+  stdenv,
+  fetchurl,
   fetchFromGitHub,
   fetchFromGitLab,
-  fetchpatch2,
-  # For tests
-  testers,
-  runCommand,
-  fetchurl,
-  # Main build tools
-  pkg-config,
+  a52dec,
+  applyPatches,
+  appstream,
   autoconf,
   automake,
-  libtool,
-  m4,
-  xz,
-  python3,
-  numactl,
-  writeText,
+  dav1d,
+  dbus-glib,
+  desktop-file-utils,
+  fdk_aac,
+  fetchpatch2,
   # Processing, video codecs, containers
   ffmpeg_8-full,
-  nv-codec-headers,
-  libogg,
-  x264,
-  x265,
-  libvpx,
-  libtheora,
-  dav1d,
-  zimg,
-  svt-av1,
-  # Codecs, audio
-  libopus,
-  lame,
-  libvorbis,
-  a52dec,
-  speex,
-  libsamplerate,
-  # Text processing
-  libiconv,
-  fribidi,
   fontconfig,
   freetype,
-  libass,
-  jansson,
-  libxml2,
+  fribidi,
+  glib,
+  gst_all_1,
+  gtk4,
   harfbuzz,
-  libjpeg_turbo,
+  hicolor-icon-theme,
+  intltool,
+  jansson,
+  lame,
+  libappindicator-gtk3,
+  libass,
+  libbluray,
+  libdvdcss,
+  libdvdnav,
   # Optical media
   libdvdread,
-  libdvdnav,
-  libdvdcss,
-  libbluray,
+  libgudev,
+  # Text processing
+  libiconv,
+  libjpeg_turbo,
+  libnotify,
+  libogg,
+  # Codecs, audio
+  libopus,
+  libsamplerate,
+  libtheora,
+  libtool,
+  libvorbis,
+  libvpx,
+  libxml2,
+  m4,
+  meson,
+  ninja,
+  numactl,
+  nv-codec-headers,
+  # Main build tools
+  pkg-config,
+  python3,
+  runCommand,
+  speex,
+  svt-av1,
+  # For tests
+  testers,
+  udev,
+  wrapGAppsHook4,
+  writeText,
+  x264,
+  x265,
+  xz,
+  zimg,
+  # FDK
+  useFdk ? false,
   # GTK
   # NOTE: 2019-07-19: The gtk3 package has a transitive dependency on dbus,
   # which in turn depends on systemd. systemd is not supported on Darwin, so
   # for now we disable GTK GUI support on Darwin. (It may be possible to remove
   # this restriction later.)
   useGtk ? !stdenv.hostPlatform.isDarwin,
-  appstream,
-  desktop-file-utils,
-  meson,
-  ninja,
-  wrapGAppsHook4,
-  intltool,
-  glib,
-  gtk4,
-  libappindicator-gtk3,
-  libnotify,
-  gst_all_1,
-  dbus-glib,
-  udev,
-  libgudev,
-  hicolor-icon-theme,
-  # FDK
-  useFdk ? false,
-  fdk_aac,
 }:
 
 let
   version = "1.11.1";
 
   src = applyPatches {
+    patches = [
+      # Only needed so the subsequent patch applies
+      (fetchpatch2 {
+        hash = "sha256-i3/X9opDzsZIO7bjLHHZltuQH93uENRF0t7FP7DDdBM=";
+        url = "https://github.com/HandBrake/HandBrake/commit/c8e16778a330881af36fa32004f887bd73874d15.patch";
+      })
+      # Update x265 submodule to v4.2, drop in next release
+      (fetchpatch2 {
+        excludes = [
+          "contrib/x265/module.defs"
+          "contrib/x265_8bit/module.defs"
+          "contrib/x265_10bit/module.defs"
+          "contrib/x265_12bit/module.defs"
+        ];
+
+        hash = "sha256-xwIY1pO9mKbrQFjQCENuvntIoiZTHeUVg8axrl3zxxo=";
+        url = "https://github.com/HandBrake/HandBrake/commit/432514bf839e7280511e4a7afc35fb4868ef4d0b.patch";
+      })
+    ];
+
     src = fetchFromGitHub {
       owner = "HandBrake";
       repo = "HandBrake";
@@ -98,25 +118,6 @@ let
       rev = "4ce99a885cde39b3511016efdb5124726819defb";
       hash = "sha256-oWXNiRK0wbmINnjM3GrOIawcSULTuy3yANfgW8li9F0=";
     };
-
-    patches = [
-      # Only needed so the subsequent patch applies
-      (fetchpatch2 {
-        url = "https://github.com/HandBrake/HandBrake/commit/c8e16778a330881af36fa32004f887bd73874d15.patch";
-        hash = "sha256-i3/X9opDzsZIO7bjLHHZltuQH93uENRF0t7FP7DDdBM=";
-      })
-      # Update x265 submodule to v4.2, drop in next release
-      (fetchpatch2 {
-        url = "https://github.com/HandBrake/HandBrake/commit/432514bf839e7280511e4a7afc35fb4868ef4d0b.patch";
-        excludes = [
-          "contrib/x265/module.defs"
-          "contrib/x265_8bit/module.defs"
-          "contrib/x265_10bit/module.defs"
-          "contrib/x265_12bit/module.defs"
-        ];
-        hash = "sha256-xwIY1pO9mKbrQFjQCENuvntIoiZTHeUVg8axrl3zxxo=";
-      })
-    ];
   };
 
   # Handbrake maintains a set of ffmpeg patches. In particular, these
@@ -155,11 +156,12 @@ let
 
   x265-hb = x265.overrideAttrs (old: {
     version = "4.2";
-    sourceRoot = "x265_4.2/source";
+
     src = fetchurl {
       url = "https://bitbucket.org/multicoreware/x265_git/downloads/x265_4.2.tar.gz";
       hash = "sha256-QLHqBFPgMJ8OupNODd9TP49ilZZmeeiJTo8cHI1eEhA=";
     };
+
     # nixpkgs' x265 sourceRoot is x265-.../source whereas handbrake's x265 patches
     # are written with respect to the parent directory instead of that source directory.
     # patches which don't cleanly apply are commented out.
@@ -170,16 +172,20 @@ let
         done
       popd
     '';
+
+    sourceRoot = "x265_4.2/source";
   });
 
   svt-av1-hb = svt-av1.overrideAttrs (old: rec {
     version = "4.0.1";
+
     src = fetchFromGitLab {
       owner = "AOMediaCodec";
       repo = "SVT-AV1";
       rev = "v${version}";
       hash = "sha256-7krVkLZxgolqPTkuyKAx07BekAPacftcGZ44lQTQFZQ=";
     };
+
     postPatch = (old.postPatch or "") + ''
       pushd ..
         for p in ${src}/contrib/svt-av1/*.patch; do
@@ -208,8 +214,8 @@ let
     ;
 
   self = stdenv.mkDerivation rec {
-    pname = "handbrake";
     inherit version src;
+    pname = "handbrake";
 
     postPatch = ''
       install -Dm444 ${versionFile} ${versionFile.name}
@@ -325,6 +331,8 @@ let
     ++ optional stdenv.hostPlatform.isDarwin "--disable-xcode"
     ++ optional stdenv.hostPlatform.isx86 "--harden";
 
+    makeFlags = [ "--directory=build" ];
+
     # NOTE: 2018-12-27: Check NixOS HandBrake test if changing
     env.NIX_LDFLAGS = toString [
       "-lx265"
@@ -336,8 +344,6 @@ let
     dontUseNinjaBuild = true;
     dontUseNinjaInstall = true;
 
-    makeFlags = [ "--directory=build" ];
-
     passthru = {
       # for convenience
       inherit ffmpeg-hb x265-hb;
@@ -346,8 +352,8 @@ let
         let
           # Big Buck Bunny example, licensed under CC Attribution 3.0.
           testMkv = fetchurl {
-            url = "https://github.com/Matroska-Org/matroska-test-files/blob/cf0792be144ac470c4b8052cfe19bb691993e3a2/test_files/test1.mkv?raw=true";
             hash = "sha256-CZajCf8glZELnTDVJTsETWNxVCl9330L2n863t9a3cE=";
+            url = "https://github.com/Matroska-Org/matroska-test-files/blob/cf0792be144ac470c4b8052cfe19bb691993e3a2/test_files/test1.mkv?raw=true";
           };
         in
         runCommand "${pname}-${version}-basic-conversion" { nativeBuildInputs = [ self ]; } ''
@@ -360,14 +366,14 @@ let
         '';
 
       tests.version = testers.testVersion {
-        package = self;
         command = "HandBrakeCLI --version";
+        package = self;
       };
     };
 
     meta = {
-      homepage = "https://handbrake.fr/";
       description = "Tool for converting video files and ripping DVDs";
+
       longDescription = ''
         Tool for converting and remuxing video files
         into selection of modern and widely supported codecs
@@ -376,13 +382,17 @@ let
         CLI - `HandbrakeCLI`
         GTK GUI - `ghb`
       '';
+
+      homepage = "https://handbrake.fr/";
       license = lib.licenses.gpl2Only;
+
       maintainers = with lib.maintainers; [
         Anton-Latukha
         wmertens
       ];
-      mainProgram = "HandBrakeCLI";
+
       platforms = with lib.platforms; unix;
+      mainProgram = "HandBrakeCLI";
       broken = stdenv.hostPlatform.isDarwin; # https://github.com/NixOS/nixpkgs/pull/297984#issuecomment-2016503434
     };
   };

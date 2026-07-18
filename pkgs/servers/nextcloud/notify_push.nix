@@ -1,14 +1,13 @@
 {
   lib,
   fetchFromGitHub,
+  fetchNextcloudApp,
   nixosTests,
   rustPlatform,
-  fetchNextcloudApp,
 }:
 
 rustPlatform.buildRustPackage rec {
   pname = "notify_push";
-
   # NOTE: make sure this is compatible with all Nextcloud versions
   # in nixpkgs!
   # For that, check the `<dependencies>` section of `appinfo/info.xml`
@@ -28,25 +27,24 @@ rustPlatform.buildRustPackage rec {
     app = fetchNextcloudApp {
       appName = "notify_push";
       appVersion = version;
-      hash = "sha256-gHRegrl1VtJOiB6xLUHtG3sxkCDv7/zhrhQ9B+9i8YI=";
-      license = "agpl3Plus";
-      homepage = "https://github.com/nextcloud/notify_push";
-      url = "https://github.com/nextcloud-releases/notify_push/releases/download/v${version}/notify_push-v${version}.tar.gz";
       description = "Push update support for desktop app";
+      hash = "sha256-gHRegrl1VtJOiB6xLUHtG3sxkCDv7/zhrhQ9B+9i8YI=";
+      homepage = "https://github.com/nextcloud/notify_push";
+      license = "agpl3Plus";
+      url = "https://github.com/nextcloud-releases/notify_push/releases/download/v${version}/notify_push-v${version}.tar.gz";
     };
 
     test_client = rustPlatform.buildRustPackage {
-      pname = "${pname}-test_client";
       inherit src version;
-
-      buildAndTestSubdir = "test_client";
-
+      pname = "${pname}-test_client";
       cargoHash = "sha256-fdf7AvT511WRjsOyM4+3vieuQMh24C+mF49pWtfS41Y=";
+      buildAndTestSubdir = "test_client";
 
       meta = meta // {
         mainProgram = "test_client";
       };
     };
+
     tests =
       lib.filterAttrs (
         key: lib.const (lib.hasPrefix "with-postgresql-and-redis" key)
@@ -57,15 +55,17 @@ rustPlatform.buildRustPackage rec {
   };
 
   meta = {
-    changelog = "https://github.com/nextcloud/notify_push/releases/tag/v${version}";
     description = "Update notifications for nextcloud clients";
-    mainProgram = "notify_push";
     homepage = "https://github.com/nextcloud/notify_push";
+    changelog = "https://github.com/nextcloud/notify_push/releases/tag/v${version}";
     license = lib.licenses.agpl3Plus;
-    platforms = lib.platforms.linux;
+
     maintainers = with lib.maintainers; [
       das_j
       helsinki-Jo
     ];
+
+    platforms = lib.platforms.linux;
+    mainProgram = "notify_push";
   };
 }

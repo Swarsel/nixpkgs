@@ -20,10 +20,10 @@ stdenv.mkDerivation (finalAttrs: {
   patches = [
     ./fix-paths.patch
     (fetchpatch {
+      hash = "sha256-jB9y3xPwlcQYRQTnqcePjAZGycC1BpWhkT1GhgVJims=";
       # fix X > Y > Z comparison logic (which causes a compile error on darwin)
       name = "fix-comparison.patch";
       url = "https://github.com/parisolab/mathmod/commit/ddf9239f10fb0e07603297c06a23b7adeae8e323.patch";
-      hash = "sha256-jB9y3xPwlcQYRQTnqcePjAZGycC1BpWhkT1GhgVJims=";
     })
   ];
 
@@ -38,12 +38,12 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   meta = {
-    changelog = "https://github.com/parisolab/mathmod/releases/tag/${finalAttrs.version}";
     description = "Mathematical modelling software";
     homepage = "https://github.com/parisolab/mathmod";
+    changelog = "https://github.com/parisolab/mathmod/releases/tag/${finalAttrs.version}";
     license = lib.licenses.gpl2Plus;
-    mainProgram = "MathMod";
     maintainers = with lib.maintainers; [ tomasajt ];
     platforms = lib.platforms.unix;
+    mainProgram = "MathMod";
   };
 })

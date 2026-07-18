@@ -1,17 +1,17 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
+  blas,
   cmake,
-  mpiCheckPhaseHook,
-  pkg-config,
   fypp,
   gfortran,
-  blas,
   lapack,
-  python3,
   libxsmm,
   mpi,
+  mpiCheckPhaseHook,
+  pkg-config,
+  python3,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -25,6 +25,11 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-BgZmc81TzgU3ifv4RHh2pfjbkUyxMIIpBrHCtnLF3p0=";
   };
 
+  outputs = [
+    "out"
+    "dev"
+  ];
+
   postPatch = ''
     patchShebangs .
 
@@ -37,11 +42,6 @@ stdenv.mkDerivation (finalAttrs: {
     substituteInPlace cmake/fypp-sources.cmake \
       --replace 'COMMAND ''${Python_EXECUTABLE} ''${FYPP_EXECUTABLE}' 'COMMAND ''${FYPP_EXECUTABLE}'
   '';
-
-  outputs = [
-    "out"
-    "dev"
-  ];
 
   nativeBuildInputs = [
     gfortran
@@ -70,16 +70,16 @@ stdenv.mkDerivation (finalAttrs: {
     "-DUSE_MPI=ON"
   ];
 
+  doCheck = true;
+
   checkInputs = [
     mpiCheckPhaseHook
   ];
 
-  doCheck = true;
-
   meta = {
     description = "Distributed Block Compressed Sparse Row matrix library";
-    license = lib.licenses.gpl2Only;
     homepage = "https://github.com/cp2k/dbcsr";
+    license = lib.licenses.gpl2Only;
     maintainers = [ lib.maintainers.sheepforce ];
   };
 })

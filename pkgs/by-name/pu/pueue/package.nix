@@ -18,8 +18,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-6/Q0+ME1wwHZI5MwMULzS+2iWK2R3JiTM5I+spSjd30=";
   };
 
-  cargoHash = "sha256-l2i57DU8NVg7DtQqOkS/DDBJpfn7NSkgI5Wik+sKhfM=";
-
   nativeBuildInputs = [
     installShellFiles
   ]
@@ -30,6 +28,8 @@ rustPlatform.buildRustPackage (finalAttrs: {
   buildInputs = lib.optionals stdenv.hostPlatform.isDarwin [
     libiconv
   ];
+
+  cargoHash = "sha256-l2i57DU8NVg7DtQqOkS/DDBJpfn7NSkgI5Wik+sKhfM=";
 
   checkFlags = [
     "--test client_tests"
@@ -45,8 +45,8 @@ rustPlatform.buildRustPackage (finalAttrs: {
   '';
 
   meta = {
-    homepage = "https://github.com/Nukesor/pueue";
     description = "Daemon for managing long running shell commands";
+
     longDescription = ''
       Pueue is a command-line task management tool for sequential and parallel
       execution of long-running tasks.
@@ -58,6 +58,8 @@ rustPlatform.buildRustPackage (finalAttrs: {
       any terminal on the same machine. The queue will be continuously
       processed, even if you no longer have any active ssh sessions.
     '';
+
+    homepage = "https://github.com/Nukesor/pueue";
     changelog = "https://github.com/Nukesor/pueue/blob/v${finalAttrs.version}/CHANGELOG.md";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ sarcasticadmin ];

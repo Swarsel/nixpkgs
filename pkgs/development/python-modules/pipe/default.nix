@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   pytestCheckHook,
   setuptools,
 }:
@@ -9,7 +9,6 @@
 buildPythonPackage rec {
   pname = "pipe";
   version = "2.2";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "JulienPalard";
@@ -18,16 +17,16 @@ buildPythonPackage rec {
     hash = "sha256-/xMhh70g2KPOOivTjpAuyfu+Z44tBE5zAwpSIEKhK6M=";
   };
 
-  build-system = [ setuptools ];
-
   nativeCheckInputs = [ pytestCheckHook ];
-
-  pythonImportsCheck = [ "pipe" ];
+  build-system = [ setuptools ];
 
   disabledTests = [
     # Test require network access
     "test_netcat"
   ];
+
+  pyproject = true;
+  pythonImportsCheck = [ "pipe" ];
 
   meta = {
     description = "Module to use infix notation";

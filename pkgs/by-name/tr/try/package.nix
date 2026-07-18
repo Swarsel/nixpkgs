@@ -1,15 +1,15 @@
 {
-  stdenv,
-  autoreconfHook,
   lib,
+  stdenv,
   fetchFromGitHub,
-  util-linux,
-  mergerfs,
   attr,
-  makeWrapper,
-  pandoc,
+  autoreconfHook,
   coreutils,
   installShellFiles,
+  makeWrapper,
+  mergerfs,
+  pandoc,
+  util-linux,
   versionCheckHook,
 }:
 stdenv.mkDerivation {
@@ -54,23 +54,28 @@ stdenv.mkDerivation {
   '';
 
   doInstallCheck = true;
+
   nativeInstallCheckInputs = [
     versionCheckHook
   ];
+
   preVersionCheck = ''
     export version=0.2.0
   '';
+
   versionCheckProgramArg = "-v";
 
   meta = {
-    homepage = "https://github.com/binpash/try";
     description = "Lets you run a command and inspect its effects before changing your live system";
-    mainProgram = "try";
+    homepage = "https://github.com/binpash/try";
+    license = with lib.licenses; [ mit ];
+
     maintainers = with lib.maintainers; [
       pasqui23
       ezrizhu
     ];
-    license = with lib.licenses; [ mit ];
+
     platforms = lib.platforms.linux;
+    mainProgram = "try";
   };
 }

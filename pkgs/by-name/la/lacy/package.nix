@@ -1,8 +1,8 @@
 {
   lib,
   fetchFromGitHub,
-  rustPlatform,
   nix-update-script,
+  rustPlatform,
 }:
 rustPlatform.buildRustPackage (finalAttrs: {
   pname = "lacy";
@@ -15,16 +15,15 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-yPq9iW/Qm28frvpCByE5sM8+VBtM1k/GBeHVAhb6XOc=";
   };
 
-  passthru.updateScript = nix-update-script { };
-
   cargoHash = "sha256-EPoVN3S+vQ1hwxWHUbYy1XSpEkswLDbl29lXV8IVCxA=";
+  passthru.updateScript = nix-update-script { };
 
   meta = {
     description = "Fast magical cd alternative for lacy terminal navigators";
     homepage = "https://github.com/timothebot/lacy";
-    platforms = lib.platforms.all;
     license = lib.licenses.mit;
-    mainProgram = "lacy";
     maintainers = with lib.maintainers; [ Srylax ];
+    platforms = lib.platforms.all;
+    mainProgram = "lacy";
   };
 })

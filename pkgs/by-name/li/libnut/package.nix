@@ -1,6 +1,6 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchgit,
 }:
 stdenv.mkDerivation (finalAttrs: {
@@ -13,12 +13,14 @@ stdenv.mkDerivation (finalAttrs: {
     sha256 = "1wgl2mb9482c1j3yac0v2ilfjs7gb9mhw9kjnrmlj9kp0whm4l1j";
   };
 
-  sourceRoot = "${finalAttrs.src.name}/src/trunk";
   makeFlags = [ "prefix=$(out)" ];
+
   installTargets = [
     "install-libnut"
     "install-nututils"
   ];
+
+  sourceRoot = "${finalAttrs.src.name}/src/trunk";
 
   meta = {
     description = "Library to read/write the NUT video container format";

@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   mock,
   pytestCheckHook,
   six,
@@ -10,7 +10,6 @@
 buildPythonPackage rec {
   pname = "configobj";
   version = "5.0.9";
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "DiffSK";
@@ -20,11 +19,9 @@ buildPythonPackage rec {
   };
 
   propagatedBuildInputs = [ six ];
-
   nativeCheckInputs = [ pytestCheckHook ];
-
   checkInputs = [ mock ];
-
+  format = "setuptools";
   pythonImportsCheck = [ "configobj" ];
 
   meta = {

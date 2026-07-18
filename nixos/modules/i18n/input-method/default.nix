@@ -1,7 +1,7 @@
 {
   config,
-  pkgs,
   lib,
+  pkgs,
   ...
 }:
 let
@@ -19,11 +19,13 @@ let
   gtk2_cache =
     pkgs.runCommand "gtk2-immodule.cache"
       {
-        preferLocalBuild = true;
         allowSubstitutes = false;
+
         buildInputs = [
           cfg.package
         ];
+
+        preferLocalBuild = true;
       }
       ''
         mkdir -p $out/etc/gtk-2.0/
@@ -33,11 +35,13 @@ let
   gtk3_cache =
     pkgs.runCommand "gtk3-immodule.cache"
       {
-        preferLocalBuild = true;
         allowSubstitutes = false;
+
         buildInputs = [
           cfg.package
         ];
+
+        preferLocalBuild = true;
       }
       ''
         mkdir -p $out/etc/gtk-3.0/
@@ -53,18 +57,34 @@ in
         defaultText = lib.literalMD "`true` if the deprecated option `enabled` is set, false otherwise";
       };
 
-      enabled = lib.mkOption {
-        type = lib.types.nullOr allowedTypes;
+      package = lib.mkOption {
         default = null;
-        example = "fcitx5";
+
+        description = ''
+          The input method method package.
+        '';
+
+        internal = true;
+        type = lib.types.nullOr lib.types.path;
+      };
+
+      enableGtk2 = lib.mkEnableOption "Gtk2 support";
+
+      enableGtk3 = lib.mkEnableOption "Gtk3 support" // {
+        default = true;
+      };
+
+      enabled = lib.mkOption {
+        default = null;
         description = "Deprecated - use `type` and `enable = true` instead";
+        example = "fcitx5";
+        type = lib.types.nullOr allowedTypes;
       };
 
       type = lib.mkOption {
-        type = lib.types.nullOr allowedTypes;
         default = cfg.enabled;
         defaultText = lib.literalMD "The value of the deprecated option `enabled`, defaulting to null";
-        example = "fcitx5";
+
         description = ''
           Select the enabled input method. Input methods is a software to input symbols that are not available on standard input devices.
 
@@ -79,29 +99,14 @@ in
           - hime: An extremely easy-to-use input method framework.
           - kime: Koream IME.
         '';
-      };
 
-      package = lib.mkOption {
-        internal = true;
-        type = lib.types.nullOr lib.types.path;
-        default = null;
-        description = ''
-          The input method method package.
-        '';
-      };
-
-      enableGtk2 = lib.mkEnableOption "Gtk2 support";
-
-      enableGtk3 = lib.mkEnableOption "Gtk3 support" // {
-        default = true;
+        example = "fcitx5";
+        type = lib.types.nullOr allowedTypes;
       };
     };
   };
 
   config = lib.mkIf cfg.enable {
-    warnings =
-      lib.optional (cfg.enabled != null)
-        "i18n.inputMethod.enabled will be removed in a future release. Please use .type, and .enable = true instead";
     environment.systemPackages = [
       cfg.package
     ]
@@ -111,11 +116,15 @@ in
     ++ lib.optional (
       cfg.enableGtk3 && (pkgs.stdenv.hostPlatform.emulatorAvailable pkgs.buildPackages)
     ) gtk3_cache;
+
+    warnings =
+      lib.optional (cfg.enabled != null)
+        "i18n.inputMethod.enabled will be removed in a future release. Please use .type, and .enable = true instead";
   };
 
   meta = {
-    maintainers = [ ];
     doc = ./default.md;
+    maintainers = [ ];
   };
 
 }

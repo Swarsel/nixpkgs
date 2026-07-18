@@ -1,15 +1,15 @@
 {
   lib,
-  callPackage,
   fetchFromGitHub,
-  rustPlatform,
+  callPackage,
   cmake,
-  pkg-config,
-  protobuf,
   elfutils,
   nix-update-script,
-  testers,
+  pkg-config,
+  protobuf,
   router,
+  rustPlatform,
+  testers,
 }:
 
 rustPlatform.buildRustPackage rec {
@@ -23,8 +23,6 @@ rustPlatform.buildRustPackage rec {
     hash = "sha256-4l9nTbtF8hy2x1fdRhmMKcYxTD6wWKXIfihLTWdtm7U=";
   };
 
-  cargoHash = "sha256-1AKYOv7kT60H8x1qmtPqR4Wxq1DxSCDzt+Uv7MRUeaw=";
-
   nativeBuildInputs = [
     cmake
     pkg-config
@@ -35,6 +33,7 @@ rustPlatform.buildRustPackage rec {
     elfutils
   ];
 
+  cargoHash = "sha256-1AKYOv7kT60H8x1qmtPqR4Wxq1DxSCDzt+Uv7MRUeaw=";
   # The v8 package will try to download a `librusty_v8.a` release at build time to our read-only filesystem
   # To avoid this we pre-download the file and export it via RUSTY_V8_ARCHIVE
   env.RUSTY_V8_ARCHIVE = callPackage ./librusty_v8.nix { };
@@ -45,8 +44,8 @@ rustPlatform.buildRustPackage rec {
   ];
 
   passthru = {
-    updateScript = nix-update-script { };
     tests.version = testers.testVersion { package = router; };
+    updateScript = nix-update-script { };
   };
 
   meta = {

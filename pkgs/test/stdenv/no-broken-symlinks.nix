@@ -1,7 +1,7 @@
 {
   lib,
-  pkgs,
   stdenv,
+  pkgs,
 }:
 
 let
@@ -48,110 +48,51 @@ let
       {
         inherit name;
         strictDeps = true;
-        dontUnpack = true;
-        dontPatch = true;
-        dontConfigure = true;
-        dontBuild = true;
+
         installPhase = ''
           mkdir -p "$out"
 
         ''
         + concatStringsSep "\n" commands;
+
+        dontBuild = true;
+        dontConfigure = true;
+        dontPatch = true;
+        dontUnpack = true;
       }
       // derivationArgs
     );
 in
 {
-  fail-dangling-symlink-relative =
-    runCommand "fail-dangling-symlink-relative"
+  fail-broken-symlinks-absolute =
+    runCommand "fail-broken-symlinks-absolute"
       {
         failed = testBuildFailure (testBuilder {
-          name = "fail-dangling-symlink-relative-inner";
-          commands = [ (mkDanglingSymlink false) ];
+          commands = [
+            (mkDanglingSymlink true)
+            (mkReflexiveSymlink true)
+          ];
+
+          name = "fail-broken-symlinks-absolute-inner";
         });
       }
       ''
         (( 1 == "$(cat "$failed/testBuildFailure.exit")" ))
-        grep -F 'found 1 dangling symlinks, 0 reflexive symlinks and 0 unreadable symlinks' "$failed/testBuildFailure.log"
+        grep -F 'found 1 dangling symlinks, 1 reflexive symlinks and 0 unreadable symlinks' "$failed/testBuildFailure.log"
         touch $out
       '';
-
-  pass-dangling-symlink-relative-allowed = testBuilder {
-    name = "pass-dangling-symlink-relative-allowed";
-    commands = [ (mkDanglingSymlink false) ];
-    derivationArgs.dontCheckForBrokenSymlinks = true;
-  };
-
-  fail-dangling-symlink-absolute =
-    runCommand "fail-dangling-symlink-absolute"
-      {
-        failed = testBuildFailure (testBuilder {
-          name = "fail-dangling-symlink-absolute-inner";
-          commands = [ (mkDanglingSymlink true) ];
-        });
-      }
-      ''
-        (( 1 == "$(cat "$failed/testBuildFailure.exit")" ))
-        grep -F 'found 1 dangling symlinks, 0 reflexive symlinks and 0 unreadable symlinks' "$failed/testBuildFailure.log"
-        touch $out
-      '';
-
-  pass-dangling-symlink-absolute-allowed = testBuilder {
-    name = "pass-dangling-symlink-absolute-allowed";
-    commands = [ (mkDanglingSymlink true) ];
-    derivationArgs.dontCheckForBrokenSymlinks = true;
-  };
-
-  fail-reflexive-symlink-relative =
-    runCommand "fail-reflexive-symlink-relative"
-      {
-        failed = testBuildFailure (testBuilder {
-          name = "fail-reflexive-symlink-relative-inner";
-          commands = [ (mkReflexiveSymlink false) ];
-        });
-      }
-      ''
-        (( 1 == "$(cat "$failed/testBuildFailure.exit")" ))
-        grep -F 'found 0 dangling symlinks, 1 reflexive symlinks and 0 unreadable symlinks' "$failed/testBuildFailure.log"
-        touch $out
-      '';
-
-  pass-reflexive-symlink-relative-allowed = testBuilder {
-    name = "pass-reflexive-symlink-relative-allowed";
-    commands = [ (mkReflexiveSymlink false) ];
-    derivationArgs.dontCheckForBrokenSymlinks = true;
-  };
-
-  fail-reflexive-symlink-absolute =
-    runCommand "fail-reflexive-symlink-absolute"
-      {
-        failed = testBuildFailure (testBuilder {
-          name = "fail-reflexive-symlink-absolute-inner";
-          commands = [ (mkReflexiveSymlink true) ];
-        });
-      }
-      ''
-        (( 1 == "$(cat "$failed/testBuildFailure.exit")" ))
-        grep -F 'found 0 dangling symlinks, 1 reflexive symlinks and 0 unreadable symlinks' "$failed/testBuildFailure.log"
-        touch $out
-      '';
-
-  pass-reflexive-symlink-absolute-allowed = testBuilder {
-    name = "pass-reflexive-symlink-absolute-allowed";
-    commands = [ (mkReflexiveSymlink true) ];
-    derivationArgs.dontCheckForBrokenSymlinks = true;
-  };
 
   # Leave the unreadable symlink out of the combined 'broken' test since it doesn't work on all platforms.
   fail-broken-symlinks-relative =
     runCommand "fail-broken-symlinks-relative"
       {
         failed = testBuildFailure (testBuilder {
-          name = "fail-broken-symlinks-relative-inner";
           commands = [
             (mkDanglingSymlink false)
             (mkReflexiveSymlink false)
           ];
+
+          name = "fail-broken-symlinks-relative-inner";
         });
       }
       ''
@@ -160,92 +101,150 @@ in
         touch $out
       '';
 
-  pass-broken-symlinks-relative-allowed = testBuilder {
-    name = "pass-broken-symlinks-relative-allowed";
-    commands = [
-      (mkDanglingSymlink false)
-      (mkReflexiveSymlink false)
-    ];
-    derivationArgs.dontCheckForBrokenSymlinks = true;
-  };
-
-  fail-broken-symlinks-absolute =
-    runCommand "fail-broken-symlinks-absolute"
+  fail-dangling-symlink-absolute =
+    runCommand "fail-dangling-symlink-absolute"
       {
         failed = testBuildFailure (testBuilder {
-          name = "fail-broken-symlinks-absolute-inner";
-          commands = [
-            (mkDanglingSymlink true)
-            (mkReflexiveSymlink true)
-          ];
+          commands = [ (mkDanglingSymlink true) ];
+          name = "fail-dangling-symlink-absolute-inner";
         });
       }
       ''
         (( 1 == "$(cat "$failed/testBuildFailure.exit")" ))
-        grep -F 'found 1 dangling symlinks, 1 reflexive symlinks and 0 unreadable symlinks' "$failed/testBuildFailure.log"
+        grep -F 'found 1 dangling symlinks, 0 reflexive symlinks and 0 unreadable symlinks' "$failed/testBuildFailure.log"
+        touch $out
+      '';
+
+  fail-dangling-symlink-relative =
+    runCommand "fail-dangling-symlink-relative"
+      {
+        failed = testBuildFailure (testBuilder {
+          commands = [ (mkDanglingSymlink false) ];
+          name = "fail-dangling-symlink-relative-inner";
+        });
+      }
+      ''
+        (( 1 == "$(cat "$failed/testBuildFailure.exit")" ))
+        grep -F 'found 1 dangling symlinks, 0 reflexive symlinks and 0 unreadable symlinks' "$failed/testBuildFailure.log"
+        touch $out
+      '';
+
+  fail-reflexive-symlink-absolute =
+    runCommand "fail-reflexive-symlink-absolute"
+      {
+        failed = testBuildFailure (testBuilder {
+          commands = [ (mkReflexiveSymlink true) ];
+          name = "fail-reflexive-symlink-absolute-inner";
+        });
+      }
+      ''
+        (( 1 == "$(cat "$failed/testBuildFailure.exit")" ))
+        grep -F 'found 0 dangling symlinks, 1 reflexive symlinks and 0 unreadable symlinks' "$failed/testBuildFailure.log"
+        touch $out
+      '';
+
+  fail-reflexive-symlink-relative =
+    runCommand "fail-reflexive-symlink-relative"
+      {
+        failed = testBuildFailure (testBuilder {
+          commands = [ (mkReflexiveSymlink false) ];
+          name = "fail-reflexive-symlink-relative-inner";
+        });
+      }
+      ''
+        (( 1 == "$(cat "$failed/testBuildFailure.exit")" ))
+        grep -F 'found 0 dangling symlinks, 1 reflexive symlinks and 0 unreadable symlinks' "$failed/testBuildFailure.log"
         touch $out
       '';
 
   pass-broken-symlinks-absolute-allowed = testBuilder {
-    name = "pass-broken-symlinks-absolute-allowed";
     commands = [
       (mkDanglingSymlink true)
       (mkReflexiveSymlink true)
     ];
+
     derivationArgs.dontCheckForBrokenSymlinks = true;
+    name = "pass-broken-symlinks-absolute-allowed";
+  };
+
+  pass-broken-symlinks-relative-allowed = testBuilder {
+    commands = [
+      (mkDanglingSymlink false)
+      (mkReflexiveSymlink false)
+    ];
+
+    derivationArgs.dontCheckForBrokenSymlinks = true;
+    name = "pass-broken-symlinks-relative-allowed";
+  };
+
+  pass-dangling-symlink-absolute-allowed = testBuilder {
+    commands = [ (mkDanglingSymlink true) ];
+    derivationArgs.dontCheckForBrokenSymlinks = true;
+    name = "pass-dangling-symlink-absolute-allowed";
+  };
+
+  pass-dangling-symlink-relative-allowed = testBuilder {
+    commands = [ (mkDanglingSymlink false) ];
+    derivationArgs.dontCheckForBrokenSymlinks = true;
+    name = "pass-dangling-symlink-relative-allowed";
+  };
+
+  pass-reflexive-symlink-absolute-allowed = testBuilder {
+    commands = [ (mkReflexiveSymlink true) ];
+    derivationArgs.dontCheckForBrokenSymlinks = true;
+    name = "pass-reflexive-symlink-absolute-allowed";
+  };
+
+  pass-reflexive-symlink-relative-allowed = testBuilder {
+    commands = [ (mkReflexiveSymlink false) ];
+    derivationArgs.dontCheckForBrokenSymlinks = true;
+    name = "pass-reflexive-symlink-relative-allowed";
+  };
+
+  pass-valid-symlink-absolute = testBuilder {
+    commands = [ (mkValidSymlink true) ];
+    name = "pass-valid-symlink-absolute";
+  };
+
+  pass-valid-symlink-outside-nix-store-absolute = testBuilder {
+    commands = [ (mkValidSymlinkOutsideNixStore true) ];
+    name = "pass-valid-symlink-outside-nix-store-absolute";
+  };
+
+  pass-valid-symlink-outside-nix-store-relative = testBuilder {
+    commands = [ (mkValidSymlinkOutsideNixStore false) ];
+    name = "pass-valid-symlink-outside-nix-store-relative";
   };
 
   # The `all-broken` tests include unreadable symlinks along with the other kinds of broken links.
   # They should be run/skipped on the same sets platforms as the corresponding `unreadable` tests.
   # See below.
-
   pass-valid-symlink-relative = testBuilder {
-    name = "pass-valid-symlink-relative";
     commands = [ (mkValidSymlink false) ];
-  };
-
-  pass-valid-symlink-absolute = testBuilder {
-    name = "pass-valid-symlink-absolute";
-    commands = [ (mkValidSymlink true) ];
-  };
-
-  pass-valid-symlink-outside-nix-store-relative = testBuilder {
-    name = "pass-valid-symlink-outside-nix-store-relative";
-    commands = [ (mkValidSymlinkOutsideNixStore false) ];
-  };
-
-  pass-valid-symlink-outside-nix-store-absolute = testBuilder {
-    name = "pass-valid-symlink-outside-nix-store-absolute";
-    commands = [ (mkValidSymlinkOutsideNixStore true) ];
+    name = "pass-valid-symlink-relative";
   };
 }
 # Skip these tests if symlink permissions are not supported, since the hook won't have anything to report.
 // lib.optionalAttrs hasSymlinkPermissions {
-  fail-unreadable-symlink-relative =
-    runCommand "fail-unreadable-symlink-relative"
+  fail-all-broken-symlinks-absolute =
+    runCommand "fail-all-broken-symlinks-absolute"
       {
         failed = testBuildFailure (testBuilder {
-          name = "fail-unreadable-symlink-relative-inner";
-          commands = [ (mkUnreadableSymlink false) ];
-        });
-      }
-      ''
-        (( 1 == "$(cat "$failed/testBuildFailure.exit")" ))
-        grep -F 'found 0 dangling symlinks, 0 reflexive symlinks and 1 unreadable symlinks' "$failed/testBuildFailure.log"
-        touch $out
-      '';
+          commands = [
+            (mkDanglingSymlink true)
+            (mkReflexiveSymlink true)
+            (mkUnreadableSymlink true)
+          ];
 
-  fail-unreadable-symlink-absolute =
-    runCommand "fail-unreadable-symlink-absolute"
-      {
-        failed = testBuildFailure (testBuilder {
-          name = "fail-unreadable-symlink-absolute-inner";
-          commands = [ (mkUnreadableSymlink true) ];
+          name = "fail-all-broken-symlinks-absolute-inner";
         });
       }
       ''
         (( 1 == "$(cat "$failed/testBuildFailure.exit")" ))
-        grep -F 'found 0 dangling symlinks, 0 reflexive symlinks and 1 unreadable symlinks' "$failed/testBuildFailure.log"
+        if ! grep -F 'found 1 dangling symlinks, 1 reflexive symlinks and 1 unreadable symlinks' "$failed/testBuildFailure.log"; then
+          grep -F 'symlink permissions not supported' "$failed/testBuildFailure.log"
+          grep -F 'found 1 dangling symlinks, 1 reflexive symlinks and 0 unreadable symlinks' "$failed/testBuildFailure.log"
+        fi
         touch $out
       '';
 
@@ -253,12 +252,13 @@ in
     runCommand "fail-all-broken-symlinks-relative"
       {
         failed = testBuildFailure (testBuilder {
-          name = "fail-all-broken-symlinks-relative-inner";
           commands = [
             (mkDanglingSymlink false)
             (mkReflexiveSymlink false)
             (mkUnreadableSymlink false)
           ];
+
+          name = "fail-all-broken-symlinks-relative-inner";
         });
       }
       ''
@@ -270,24 +270,31 @@ in
         touch $out
       '';
 
-  fail-all-broken-symlinks-absolute =
-    runCommand "fail-all-broken-symlinks-absolute"
+  fail-unreadable-symlink-absolute =
+    runCommand "fail-unreadable-symlink-absolute"
       {
         failed = testBuildFailure (testBuilder {
-          name = "fail-all-broken-symlinks-absolute-inner";
-          commands = [
-            (mkDanglingSymlink true)
-            (mkReflexiveSymlink true)
-            (mkUnreadableSymlink true)
-          ];
+          commands = [ (mkUnreadableSymlink true) ];
+          name = "fail-unreadable-symlink-absolute-inner";
         });
       }
       ''
         (( 1 == "$(cat "$failed/testBuildFailure.exit")" ))
-        if ! grep -F 'found 1 dangling symlinks, 1 reflexive symlinks and 1 unreadable symlinks' "$failed/testBuildFailure.log"; then
-          grep -F 'symlink permissions not supported' "$failed/testBuildFailure.log"
-          grep -F 'found 1 dangling symlinks, 1 reflexive symlinks and 0 unreadable symlinks' "$failed/testBuildFailure.log"
-        fi
+        grep -F 'found 0 dangling symlinks, 0 reflexive symlinks and 1 unreadable symlinks' "$failed/testBuildFailure.log"
+        touch $out
+      '';
+
+  fail-unreadable-symlink-relative =
+    runCommand "fail-unreadable-symlink-relative"
+      {
+        failed = testBuildFailure (testBuilder {
+          commands = [ (mkUnreadableSymlink false) ];
+          name = "fail-unreadable-symlink-relative-inner";
+        });
+      }
+      ''
+        (( 1 == "$(cat "$failed/testBuildFailure.exit")" ))
+        grep -F 'found 0 dangling symlinks, 0 reflexive symlinks and 1 unreadable symlinks' "$failed/testBuildFailure.log"
         touch $out
       '';
 
@@ -295,35 +302,37 @@ in
 # These tests will break on platforms that do use symlink permissions, because even though this hook will be okay, later ones will error out.
 # They should be safe to run on other platforms, just to make sure the hook isn't completely broken. It won't have anything to report, though.
 // lib.optionalAttrs (!hasSymlinkPermissions) {
-  pass-unreadable-symlink-relative-allowed = testBuilder {
-    name = "pass-unreadable-symlink-relative-allowed";
-    commands = [ (mkUnreadableSymlink false) ];
-    derivationArgs.dontCheckForBrokenSymlinks = true;
-  };
-
-  pass-unreadable-symlink-absolute-allowed = testBuilder {
-    name = "pass-unreadable-symlink-absolute-allowed";
-    commands = [ (mkUnreadableSymlink true) ];
-    derivationArgs.dontCheckForBrokenSymlinks = true;
-  };
-
-  pass-all-broken-symlinks-relative-allowed = testBuilder {
-    name = "pass-all-broken-symlinks-relative-allowed";
-    commands = [
-      (mkDanglingSymlink false)
-      (mkReflexiveSymlink false)
-      (mkUnreadableSymlink false)
-    ];
-    derivationArgs.dontCheckForBrokenSymlinks = true;
-  };
-
   pass-all-broken-symlinks-absolute-allowed = testBuilder {
-    name = "pass-all-broken-symlinks-absolute-allowed";
     commands = [
       (mkDanglingSymlink true)
       (mkReflexiveSymlink true)
       (mkUnreadableSymlink true)
     ];
+
     derivationArgs.dontCheckForBrokenSymlinks = true;
+    name = "pass-all-broken-symlinks-absolute-allowed";
+  };
+
+  pass-all-broken-symlinks-relative-allowed = testBuilder {
+    commands = [
+      (mkDanglingSymlink false)
+      (mkReflexiveSymlink false)
+      (mkUnreadableSymlink false)
+    ];
+
+    derivationArgs.dontCheckForBrokenSymlinks = true;
+    name = "pass-all-broken-symlinks-relative-allowed";
+  };
+
+  pass-unreadable-symlink-absolute-allowed = testBuilder {
+    commands = [ (mkUnreadableSymlink true) ];
+    derivationArgs.dontCheckForBrokenSymlinks = true;
+    name = "pass-unreadable-symlink-absolute-allowed";
+  };
+
+  pass-unreadable-symlink-relative-allowed = testBuilder {
+    commands = [ (mkUnreadableSymlink false) ];
+    derivationArgs.dontCheckForBrokenSymlinks = true;
+    name = "pass-unreadable-symlink-relative-allowed";
   };
 }

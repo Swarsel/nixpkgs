@@ -3,8 +3,8 @@
   stdenv,
   fetchFromGitHub,
   libx11,
-  xsetroot,
   makeWrapper,
+  xsetroot,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -18,9 +18,8 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-oRbZ8r9EOPcLuuX8VyCBNt6ljdnko/EV8C8aeR85xYU=";
   };
 
-  buildInputs = [ libx11 ];
   nativeBuildInputs = [ makeWrapper ];
-
+  buildInputs = [ libx11 ];
   makeFlags = [ "CC=${stdenv.cc.targetPrefix}cc" ];
 
   installPhase = ''
@@ -38,7 +37,7 @@ stdenv.mkDerivation (finalAttrs: {
     description = "Simple screen ruler using xlib";
     homepage = "https://github.com/julian-hoch/xscreenruler";
     license = lib.licenses.mit;
-    platforms = lib.platforms.linux;
     maintainers = [ lib.maintainers.julian-hoch ];
+    platforms = lib.platforms.linux;
   };
 })

@@ -1,9 +1,9 @@
 {
   lib,
-  buildPythonPackage,
-  fetchFromGitHub,
   stdenv,
+  fetchFromGitHub,
   beanquery,
+  buildPythonPackage,
   fava,
   hatch-vcs,
   hatchling,
@@ -12,7 +12,6 @@
 buildPythonPackage rec {
   pname = "fava-dashboards";
   version = "2.0.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "andreasgerstmayr";
@@ -32,6 +31,7 @@ buildPythonPackage rec {
     pyyaml
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "fava_dashboards" ];
 
   meta = {

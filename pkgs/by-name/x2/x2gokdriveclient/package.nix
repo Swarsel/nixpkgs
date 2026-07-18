@@ -1,6 +1,6 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchgit,
   qt5,
   zlib,
@@ -22,17 +22,6 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-hWPM0bye4I34T7y2ipZOULY2+ehVanmTj4V80+lc+iw=";
   };
 
-  buildInputs = [
-    qt5.qtbase
-    qt5.qtx11extras
-    qt5.qttools
-    zlib
-  ];
-
-  nativeBuildInputs = [
-    qt5.wrapQtAppsHook
-  ];
-
   postPatch = ''
     substituteInPlace Makefile \
       --replace-fail "SHELL=/bin/bash" "SHELL=$SHELL" \
@@ -46,6 +35,17 @@ stdenv.mkDerivation (finalAttrs: {
       man/man1/x2gokdriveclient.1 \
       --replace-fail "0.0.0.2" "${finalAttrs.version}"
   '';
+
+  nativeBuildInputs = [
+    qt5.wrapQtAppsHook
+  ];
+
+  buildInputs = [
+    qt5.qtbase
+    qt5.qtx11extras
+    qt5.qttools
+    zlib
+  ];
 
   makeFlags = [
     "PREFIX=$(out)"
@@ -65,10 +65,10 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Graphical NoMachine NX3 remote desktop client (KDrive client)";
-    mainProgram = "x2gokdriveclient";
     homepage = "https://x2go.org/";
-    maintainers = with lib.maintainers; [ juliabru ];
     license = lib.licenses.gpl3;
+    maintainers = with lib.maintainers; [ juliabru ];
     platforms = lib.platforms.linux;
+    mainProgram = "x2gokdriveclient";
   };
 })

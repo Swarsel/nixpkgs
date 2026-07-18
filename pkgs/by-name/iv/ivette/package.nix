@@ -1,25 +1,22 @@
 {
   lib,
   stdenv,
-  fetchzip,
-  fetchYarnDeps,
-  yarn,
-  fixup-yarn-lock,
-  yarnConfigHook,
-  nodejs_22,
   electron,
+  fetchYarnDeps,
+  fetchzip,
+  fixup-yarn-lock,
   frama-c,
-  makeWrapper,
   makeBinaryWrapper,
   makeDesktopItem,
+  makeWrapper,
+  nodejs_22,
+  yarn,
+  yarnConfigHook,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
   pname = "ivette";
   version = "32.1";
-  slang = "Germanium";
-
-  __structuredAttrs = true;
 
   # Not fetchurl, because we need it unzipped before fetchYarnDeps
   src = fetchzip {
@@ -27,14 +24,11 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-D+OJy/pcOqSSexqHVsyCSLSHcMg8zbjKDfmqBZ8xvbk=";
   };
 
-  sourceRoot = "${finalAttrs.src.name}/ivette";
-
-  yarnOfflineCache = fetchYarnDeps {
-    yarnLock = "${finalAttrs.src}/ivette/yarn.lock";
-    hash = "sha256-1NRSTJkXZ1jvkB/7xI0+u4PmrEzKc3VVBdwM50PtznI=";
-  };
-
-  env.ELECTRON_SKIP_BINARY_DOWNLOAD = "1";
+  postPatch = ''
+    substituteInPlace src/frama-c/server.ts \
+      --replace-fail "command = 'frama-c'" \
+      "command = '${lib.getExe frama-c}'"
+  '';
 
   strictDeps = true;
 
@@ -50,11 +44,7 @@ stdenv.mkDerivation (finalAttrs: {
     makeBinaryWrapper
   ];
 
-  postPatch = ''
-    substituteInPlace src/frama-c/server.ts \
-      --replace-fail "command = 'frama-c'" \
-      "command = '${lib.getExe frama-c}'"
-  '';
+  env.ELECTRON_SKIP_BINARY_DOWNLOAD = "1";
 
   buildPhase = ''
     runHook preBuild
@@ -106,19 +96,30 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  __structuredAttrs = true;
+
   desktopItems = lib.optional stdenv.hostPlatform.isLinux (makeDesktopItem {
-    name = "ivette";
-    exec = "ivette";
-    icon = "ivette";
-    desktopName = "Ivette";
-    genericName = "Frama-C's GUI";
-    comment = finalAttrs.meta.description;
     categories = [ "Development" ];
+    comment = finalAttrs.meta.description;
+    desktopName = "Ivette";
+    exec = "ivette";
+    genericName = "Frama-C's GUI";
+    icon = "ivette";
+    name = "ivette";
     startupWMClass = "Ivette";
   });
 
+  slang = "Germanium";
+  sourceRoot = "${finalAttrs.src.name}/ivette";
+
+  yarnOfflineCache = fetchYarnDeps {
+    hash = "sha256-1NRSTJkXZ1jvkB/7xI0+u4PmrEzKc3VVBdwM50PtznI=";
+    yarnLock = "${finalAttrs.src}/ivette/yarn.lock";
+  };
+
   meta = {
     description = "Graphical User Interface for Frama-C";
+
     longDescription = ''
       Ivette is the Graphical User Interface (GUI) of Frama-C. It
       enables exploring code, augmented with several navigation tools
@@ -126,11 +127,14 @@ stdenv.mkDerivation (finalAttrs: {
       visualizing analyses; and it allows combining them seamlessly,
       taking full advantage of the multi-paradigm approach.
     '';
+
     homepage = "https://www.frama-c.com/html/ivette.html";
     license = lib.licenses.lgpl21;
+
     maintainers = with lib.maintainers; [
       luc65r
     ];
+
     platforms = lib.platforms.unix;
     mainProgram = "ivette";
   };

@@ -1,8 +1,8 @@
 { lmms }:
 
 lmms.override {
-  withSoundio = true;
   withPortAudio = true;
   withSndio = true;
+  withSoundio = true;
   withWine = true;
 }

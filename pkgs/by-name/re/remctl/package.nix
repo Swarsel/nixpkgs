@@ -3,8 +3,8 @@
   stdenv,
   fetchFromGitHub,
   autoreconfHook,
-  libevent,
   krb5,
+  libevent,
   openssl,
   perl,
   pkg-config,
@@ -42,27 +42,29 @@ stdenv.mkDerivation (finalAttrs: {
     openssl
   ];
 
-  # Invokes pod2man to create man pages required by Makefile.
-  preConfigure = ''
-    ./bootstrap
-  '';
-
   makeFlags = [
     "LD=$(CC)"
     "REMCTL_PERL_FLAGS='--prefix=$(out)'"
     "REMCTL_PYTHON_INSTALL='--prefix=$(out)'"
   ];
 
+  # Invokes pod2man to create man pages required by Makefile.
+  preConfigure = ''
+    ./bootstrap
+  '';
+
   checkTarget = "check-local";
 
   meta = {
     description = "Remote execution tool";
     homepage = "https://www.eyrie.org/~eagle/software/remctl";
-    mainProgram = "remctl";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       de11n
       despsyched
     ];
+
+    mainProgram = "remctl";
   };
 })

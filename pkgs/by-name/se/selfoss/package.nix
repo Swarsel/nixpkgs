@@ -1,7 +1,7 @@
 {
   lib,
-  stdenvNoCC,
   fetchurl,
+  stdenvNoCC,
   unzip,
 }:
 
@@ -35,10 +35,12 @@ stdenvNoCC.mkDerivation rec {
     description = "Web-based news feed (RSS/Atom) aggregator";
     homepage = "https://selfoss.aditu.de";
     license = lib.licenses.gpl3Only;
+
     maintainers = with lib.maintainers; [
       jtojnar
       regnat
     ];
+
     platforms = lib.platforms.all;
   };
 }

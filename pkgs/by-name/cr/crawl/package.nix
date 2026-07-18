@@ -1,28 +1,28 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
-  which,
-  sqlite,
-  lua5_4,
-  perl,
-  python3,
-  zlib,
-  pkg-config,
-  ncurses,
-  dejavu_fonts,
-  libpng,
   SDL2,
   SDL2_image,
   SDL2_mixer,
-  libGLU,
-  libGL,
-  freetype,
-  pngcrush,
   advancecomp,
-  tileMode ? false,
-  enableSound ? tileMode,
   buildPackages,
+  dejavu_fonts,
+  freetype,
+  libGL,
+  libGLU,
+  libpng,
+  lua5_4,
+  ncurses,
+  perl,
+  pkg-config,
+  pngcrush,
+  python3,
+  sqlite,
+  which,
+  zlib,
+  enableSound ? tileMode,
+  tileMode ? false,
 }:
 
 stdenv.mkDerivation rec {
@@ -70,19 +70,6 @@ stdenv.mkDerivation rec {
   ]
   ++ lib.optional enableSound SDL2_mixer;
 
-  preBuild = ''
-    cd crawl-ref/source
-    echo "${version}" > util/release_ver
-    patchShebangs 'util'
-    patchShebangs util/gen-mi-enum
-    rm -rf contrib
-    mkdir -p $out/xdg-data
-  ''
-  + lib.optionalString tileMode "mv xdg-data/*_tiles.* $out/xdg-data"
-  + lib.optionalString (!tileMode) "mv xdg-data/*_console.* $out/xdg-data";
-
-  fontsPath = lib.optionalString tileMode dejavu_fonts;
-
   makeFlags = [
     "prefix=${placeholder "out"}"
     "FORCE_CC=${stdenv.cc.targetPrefix}cc"
@@ -95,6 +82,17 @@ stdenv.mkDerivation rec {
   ]
   ++ lib.optional tileMode "TILES=y"
   ++ lib.optional enableSound "SOUND=y";
+
+  preBuild = ''
+    cd crawl-ref/source
+    echo "${version}" > util/release_ver
+    patchShebangs 'util'
+    patchShebangs util/gen-mi-enum
+    rm -rf contrib
+    mkdir -p $out/xdg-data
+  ''
+  + lib.optionalString tileMode "mv xdg-data/*_tiles.* $out/xdg-data"
+  + lib.optionalString (!tileMode) "mv xdg-data/*_console.* $out/xdg-data";
 
   postInstall =
     lib.optionalString tileMode ''
@@ -113,17 +111,20 @@ stdenv.mkDerivation rec {
     + "install -Dm444 dat/tiles/stone_soup_icon-512x512.png $out/share/icons/hicolor/512x512/apps/crawl.png";
 
   enableParallelBuilding = true;
+  fontsPath = lib.optionalString tileMode dejavu_fonts;
 
   meta = {
     description = "Open-source, single-player, role-playing roguelike game";
-    homepage = "http://crawl.develz.org/";
+
     longDescription = ''
       Dungeon Crawl: Stone Soup, an open-source, single-player, role-playing
       roguelike game of exploration and treasure-hunting in dungeons filled
       with dangerous and unfriendly monsters in a quest to rescue the
       mystifyingly fabulous Orb of Zot.
     '';
-    platforms = lib.platforms.linux ++ lib.platforms.darwin;
+
+    homepage = "http://crawl.develz.org/";
+
     license = with lib.licenses; [
       gpl2Plus
       bsd2
@@ -132,6 +133,8 @@ stdenv.mkDerivation rec {
       lib.licenses.zlib
       cc0
     ];
+
     maintainers = [ ];
+    platforms = lib.platforms.linux ++ lib.platforms.darwin;
   };
 }

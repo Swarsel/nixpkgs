@@ -1,32 +1,28 @@
 {
   lib,
   stdenv,
-  buildPythonPackage,
   fetchFromGitHub,
-  pythonAtLeast,
-
+  buildPythonPackage,
+  # native dependencies
+  c-blosc2,
   # build-system
   cmake,
   cython,
-  ninja,
-  pkg-config,
-  scikit-build-core,
-
-  # native dependencies
-  c-blosc2,
-
   # dependencies
   msgpack,
   ndindex,
+  ninja,
   numexpr,
   numpy,
+  pkg-config,
   platformdirs,
-  py-cpuinfo,
-  requests,
-
   # tests
   psutil,
+  py-cpuinfo,
   pytestCheckHook,
+  pythonAtLeast,
+  requests,
+  scikit-build-core,
   torch,
   runTorchTests ? lib.meta.availableOn stdenv.hostPlatform torch,
 }:
@@ -39,38 +35,6 @@ in
 buildPythonPackage rec {
   pname = "blosc2";
   version = "4.1.2";
-  pyproject = true;
-
-  srcs = [
-    (fetchFromGitHub {
-      owner = "Blosc";
-      repo = "python-blosc2";
-      tag = "v${version}";
-      hash = "sha256-z5g3OXSKKR/2yQ5n1hb+br009xaX8C7HxbDDLVfSYNw=";
-    })
-    (fetchFromGitHub {
-      name = "miniexpr";
-      owner = "Blosc";
-      repo = "miniexpr";
-      rev = miniexprRev;
-      hash = "sha256-3YLdAZFYEtmENuQgDiitU3kw8JmW+V03zFSGXV3FwqE=";
-    })
-    (fetchFromGitHub {
-      name = "sleef";
-      owner = "shibatch";
-      repo = "sleef";
-      rev = sleefRev;
-      hash = "sha256-a0OB2gQI8RlR7liXdlOZo4xDl3f2p9thrCm8CwD2jRM=";
-    })
-    (fetchFromGitHub {
-      name = "tinycc";
-      owner = "Blosc";
-      repo = "minicc";
-      rev = tinyccRev;
-      hash = "sha256-lj0BC/A+Kv/VloLhFe3hmrdZ6QWv6mSrMn8HdHS9PfI=";
-    })
-  ];
-  sourceRoot = "source";
 
   nativeBuildInputs = [
     cmake
@@ -78,19 +42,55 @@ buildPythonPackage rec {
     pkg-config
   ];
 
-  # perform parameter expansion for CMAKE_ARGS
-  preUnpack =
-    let
-      cmakeArgs = toString [
-        (lib.cmakeBool "USE_SYSTEM_BLOSC2" true)
-        (lib.cmakeFeature "FETCHCONTENT_SOURCE_DIR_MINIEXPR" "$PWD/miniexpr")
-        (lib.cmakeFeature "FETCHCONTENT_SOURCE_DIR_SLEEF" "$PWD/sleef")
-        (lib.cmakeFeature "FETCHCONTENT_SOURCE_DIR_TINYCC" "$PWD/tinycc")
-      ];
-    in
-    ''
-      export CMAKE_ARGS="${cmakeArgs}"
-    '';
+  buildInputs = [ c-blosc2 ];
+
+  nativeCheckInputs = [
+    psutil
+    pytestCheckHook
+  ]
+  ++ lib.optionals runTorchTests [ torch ];
+
+  build-system = [
+    cython
+    numpy
+    scikit-build-core
+  ];
+
+  dependencies = [
+    msgpack
+    ndindex
+    numexpr
+    numpy
+    platformdirs
+    py-cpuinfo
+    requests
+  ];
+
+  disabledTestMarks = [
+    "network"
+  ];
+
+  disabledTestPaths = [
+    # Threads grow without limit
+    # https://github.com/Blosc/python-blosc2/issues/556
+    "tests/ndarray/test_lazyexpr.py"
+    "tests/ndarray/test_lazyexpr_fields.py"
+    "tests/ndarray/test_reductions.py"
+  ];
+
+  disabledTests = [
+    # attempts external network requests
+    "test_with_remote"
+    # segfaults, but only under nix sandbox
+    "test_dsl_save_clamp"
+  ]
+  ++ lib.optionals (pythonAtLeast "3.14") [
+    # https://github.com/Blosc/python-blosc2/issues/551
+    "test_expand_dims"
+  ];
+
+  dontUseCmakeConfigure = true;
+
   postUnpack = ''
     # ensure our separately pinned versions correspond to those in source
     if ! grep -F '${miniexprRev}' source/CMakeLists.txt ; then
@@ -110,53 +110,51 @@ buildPythonPackage rec {
     fi
   '';
 
-  dontUseCmakeConfigure = true;
+  # perform parameter expansion for CMAKE_ARGS
+  preUnpack =
+    let
+      cmakeArgs = toString [
+        (lib.cmakeBool "USE_SYSTEM_BLOSC2" true)
+        (lib.cmakeFeature "FETCHCONTENT_SOURCE_DIR_MINIEXPR" "$PWD/miniexpr")
+        (lib.cmakeFeature "FETCHCONTENT_SOURCE_DIR_SLEEF" "$PWD/sleef")
+        (lib.cmakeFeature "FETCHCONTENT_SOURCE_DIR_TINYCC" "$PWD/tinycc")
+      ];
+    in
+    ''
+      export CMAKE_ARGS="${cmakeArgs}"
+    '';
 
-  build-system = [
-    cython
-    numpy
-    scikit-build-core
-  ];
+  pyproject = true;
+  sourceRoot = "source";
 
-  buildInputs = [ c-blosc2 ];
-
-  dependencies = [
-    msgpack
-    ndindex
-    numexpr
-    numpy
-    platformdirs
-    py-cpuinfo
-    requests
-  ];
-
-  nativeCheckInputs = [
-    psutil
-    pytestCheckHook
-  ]
-  ++ lib.optionals runTorchTests [ torch ];
-
-  disabledTestMarks = [
-    "network"
-  ];
-
-  disabledTests = [
-    # attempts external network requests
-    "test_with_remote"
-    # segfaults, but only under nix sandbox
-    "test_dsl_save_clamp"
-  ]
-  ++ lib.optionals (pythonAtLeast "3.14") [
-    # https://github.com/Blosc/python-blosc2/issues/551
-    "test_expand_dims"
-  ];
-
-  disabledTestPaths = [
-    # Threads grow without limit
-    # https://github.com/Blosc/python-blosc2/issues/556
-    "tests/ndarray/test_lazyexpr.py"
-    "tests/ndarray/test_lazyexpr_fields.py"
-    "tests/ndarray/test_reductions.py"
+  srcs = [
+    (fetchFromGitHub {
+      hash = "sha256-z5g3OXSKKR/2yQ5n1hb+br009xaX8C7HxbDDLVfSYNw=";
+      owner = "Blosc";
+      repo = "python-blosc2";
+      tag = "v${version}";
+    })
+    (fetchFromGitHub {
+      hash = "sha256-3YLdAZFYEtmENuQgDiitU3kw8JmW+V03zFSGXV3FwqE=";
+      name = "miniexpr";
+      owner = "Blosc";
+      repo = "miniexpr";
+      rev = miniexprRev;
+    })
+    (fetchFromGitHub {
+      hash = "sha256-a0OB2gQI8RlR7liXdlOZo4xDl3f2p9thrCm8CwD2jRM=";
+      name = "sleef";
+      owner = "shibatch";
+      repo = "sleef";
+      rev = sleefRev;
+    })
+    (fetchFromGitHub {
+      hash = "sha256-lj0BC/A+Kv/VloLhFe3hmrdZ6QWv6mSrMn8HdHS9PfI=";
+      name = "tinycc";
+      owner = "Blosc";
+      repo = "minicc";
+      rev = tinyccRev;
+    })
   ];
 
   passthru.c-blosc2 = c-blosc2;

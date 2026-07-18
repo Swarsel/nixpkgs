@@ -1,21 +1,20 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
-  six,
-  pytestCheckHook,
-  pyopenssl,
-  pyspnego,
+  buildPythonPackage,
+  cryptography,
   namedlist,
   pydes,
-  cryptography,
+  pyopenssl,
+  pyspnego,
+  pytestCheckHook,
+  setuptools,
+  six,
 }:
 
 buildPythonPackage rec {
   pname = "python-tds";
   version = "1.17.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "denisenkom";
@@ -29,15 +28,6 @@ buildPythonPackage rec {
       --replace-fail "version.get_git_version()" '"${version}"'
   '';
 
-  preCheck = ''
-    # upstream conftest.py crashes without pytest-mypy installed
-    rm conftest.py
-  '';
-
-  build-system = [ setuptools ];
-
-  dependencies = [ six ];
-
   nativeCheckInputs = [
     pytestCheckHook
     pyopenssl
@@ -46,6 +36,15 @@ buildPythonPackage rec {
     pydes
     cryptography
   ];
+
+  preCheck = ''
+    # upstream conftest.py crashes without pytest-mypy installed
+    rm conftest.py
+  '';
+
+  __darwinAllowLocalNetworking = true;
+  build-system = [ setuptools ];
+  dependencies = [ six ];
 
   disabledTestPaths = [
     # requires live SQL Server / sqlalchemy fixtures
@@ -74,8 +73,7 @@ buildPythonPackage rec {
     "test_encrypted_socket"
   ];
 
-  __darwinAllowLocalNetworking = true;
-
+  pyproject = true;
   pythonImportsCheck = [ "pytds" ];
 
   meta = {

@@ -18,42 +18,36 @@ let
   };
 
   sg-nvim-rust = rustPlatform.buildRustPackage {
-    pname = "sg-nvim-rust";
     inherit version src;
-
-    cargoHash = "sha256-yY/5w2ztmTKJAYDxBJND8itCOwRNi1negiFq3PyFaSM=";
-
+    pname = "sg-nvim-rust";
     nativeBuildInputs = [ pkg-config ];
-
     buildInputs = [ openssl ];
+    cargoHash = "sha256-yY/5w2ztmTKJAYDxBJND8itCOwRNi1negiFq3PyFaSM=";
+    env.OPENSSL_NO_VENDOR = true;
+    # tests are broken
+    doCheck = false;
+    cargoBuildFlags = [ "--workspace" ];
 
     prePatch = ''
       rm .cargo/config.toml
     '';
-
-    env.OPENSSL_NO_VENDOR = true;
-
-    cargoBuildFlags = [ "--workspace" ];
-
-    # tests are broken
-    doCheck = false;
   };
 in
 vimUtils.buildVimPlugin {
-  pname = "sg.nvim";
   inherit version src;
+  pname = "sg.nvim";
 
   checkInputs = with vimPlugins; [
     telescope-nvim
     nvim-cmp
   ];
 
-  dependencies = [ vimPlugins.plenary-nvim ];
-
   postInstall = ''
     mkdir -p $out/target/debug
     ln -s ${sg-nvim-rust}/{bin,lib}/* $out/target/debug
   '';
+
+  dependencies = [ vimPlugins.plenary-nvim ];
 
   nvimSkipModules = [
     # Dependent on active fuzzy search state
@@ -64,13 +58,13 @@ vimUtils.buildVimPlugin {
   ];
 
   passthru = {
-    updateScript = nix-update-script {
-      extraArgs = [ "--version=branch" ];
-      attrPath = "vimPlugins.sg-nvim.sg-nvim-rust";
-    };
-
     # needed for the update script
     inherit sg-nvim-rust;
+
+    updateScript = nix-update-script {
+      attrPath = "vimPlugins.sg-nvim.sg-nvim-rust";
+      extraArgs = [ "--version=branch" ];
+    };
   };
 
   meta = {

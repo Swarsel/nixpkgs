@@ -3,11 +3,11 @@
   stdenv,
   fetchFromGitHub,
   cmake,
-  pkg-config,
-  kdePackages,
-  gettext,
   fcitx5,
+  gettext,
+  kdePackages,
   libchewing,
+  pkg-config,
 }:
 
 stdenv.mkDerivation rec {

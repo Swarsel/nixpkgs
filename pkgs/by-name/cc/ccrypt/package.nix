@@ -14,18 +14,17 @@ stdenv.mkDerivation (finalAttrs: {
     sha256 = "0kx4a5mhmp73ljknl2lcccmw9z3f5y8lqw0ghaymzvln1984g75i";
   };
 
-  nativeBuildInputs = [ perl ];
-
-  hardeningDisable = [ "format" ];
-
   outputs = [
     "out"
     "man"
   ];
 
+  nativeBuildInputs = [ perl ];
+  hardeningDisable = [ "format" ];
+
   meta = {
-    homepage = "https://ccrypt.sourceforge.net/";
     description = "Utility for encrypting and decrypting files and streams with AES-256";
+    homepage = "https://ccrypt.sourceforge.net/";
     license = lib.licenses.gpl2Plus;
     maintainers = [ ];
     platforms = with lib.platforms; all;

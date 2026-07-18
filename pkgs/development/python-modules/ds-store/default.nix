@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   mac-alias,
   pytestCheckHook,
   setuptools,
@@ -10,7 +10,6 @@
 buildPythonPackage rec {
   pname = "ds-store";
   version = "1.3.2";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "al45tair";
@@ -24,19 +23,17 @@ buildPythonPackage rec {
       --replace-fail "setuptools==80.9.0" "setuptools"
   '';
 
-  build-system = [ setuptools ];
-
-  dependencies = [ mac-alias ];
-
   nativeCheckInputs = [ pytestCheckHook ];
-
+  build-system = [ setuptools ];
+  dependencies = [ mac-alias ];
+  pyproject = true;
   pythonImportsCheck = [ "ds_store" ];
 
   meta = {
-    homepage = "https://github.com/al45tair/ds_store";
     description = "Manipulate Finder .DS_Store files from Python";
-    mainProgram = "ds_store";
+    homepage = "https://github.com/al45tair/ds_store";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ prusnak ];
+    mainProgram = "ds_store";
   };
 }

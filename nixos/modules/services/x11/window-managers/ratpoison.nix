@@ -18,13 +18,15 @@ in
 
   ###### implementation
   config = mkIf cfg.enable {
+    environment.systemPackages = [ pkgs.ratpoison ];
+
     services.xserver.windowManager.session = singleton {
       name = "ratpoison";
+
       start = ''
         ${pkgs.ratpoison}/bin/ratpoison &
         waitPID=$!
       '';
     };
-    environment.systemPackages = [ pkgs.ratpoison ];
   };
 }

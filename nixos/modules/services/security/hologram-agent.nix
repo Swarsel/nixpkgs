@@ -1,7 +1,7 @@
 {
-  pkgs,
   config,
   lib,
+  pkgs,
   ...
 }:
 let
@@ -17,21 +17,21 @@ in
   options = {
     services.hologram-agent = {
       enable = lib.mkOption {
-        type = lib.types.bool;
         default = false;
         description = "Whether to enable the Hologram agent for AWS instance credentials";
+        type = lib.types.bool;
       };
 
       dialAddress = lib.mkOption {
-        type = lib.types.str;
         default = "localhost:3100";
         description = "Hologram server and port.";
+        type = lib.types.str;
       };
 
       httpPort = lib.mkOption {
-        type = lib.types.str;
         default = "80";
         description = "Port for metadata service to listen on.";
+        type = lib.types.str;
       };
 
     };
@@ -48,19 +48,23 @@ in
     ];
 
     systemd.services.hologram-agent = {
-      description = "Provide EC2 instance credentials to machines outside of EC2";
       after = [ "network.target" ];
-      wantedBy = [ "multi-user.target" ];
+      description = "Provide EC2 instance credentials to machines outside of EC2";
+
+      preStart = ''
+        /run/current-system/sw/bin/rm -fv /run/hologram.sock
+      '';
+
       requires = [
         "network-link-dummy0.service"
         "network-addresses-dummy0.service"
       ];
-      preStart = ''
-        /run/current-system/sw/bin/rm -fv /run/hologram.sock
-      '';
+
       serviceConfig = {
         ExecStart = "${pkgs.hologram}/bin/hologram-agent -debug -conf ${cfgFile} -port ${cfg.httpPort}";
       };
+
+      wantedBy = [ "multi-user.target" ];
     };
 
   };

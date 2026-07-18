@@ -1,9 +1,9 @@
 {
-  stdenv,
   lib,
-  fetchzip,
+  stdenv,
   cmake,
   cups,
+  fetchzip,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -16,13 +16,14 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-1k2Twn1JBizw/tzQ0xF1uJIecblRd6VurB7FAUop5F0=";
   };
 
-  src_v1_3_4 = fetchzip {
-    url = "https://techs.magicard.com/linux/v1.3.4/magicard_ltd-linux_driver-1.3.4.tar.gz";
-    hash = "sha256-6UIL2wyFOjOJeyGjYScfjbpURycN469raye6DnP19jg=";
-  };
-
+  patches = [ ./CMakeLists.patch ];
   nativeBuildInputs = [ cmake ];
   buildInputs = [ cups ];
+
+  cmakeFlags = [
+    "-DCUPS_SERVER_BIN=lib/cups"
+    "-DCUPS_DATA_DIR=share/cups"
+  ];
 
   # Replace the supplied cmake generated makefile (which is useless on a different machine)
   # with the CMakeLists.txt taken from v1.3.4 of the driver and patch it to make it compatible with v1.4.0
@@ -31,15 +32,14 @@ stdenv.mkDerivation (finalAttrs: {
     rm makefile
   '';
 
-  patches = [ ./CMakeLists.patch ];
-
-  cmakeFlags = [
-    "-DCUPS_SERVER_BIN=lib/cups"
-    "-DCUPS_DATA_DIR=share/cups"
-  ];
+  src_v1_3_4 = fetchzip {
+    hash = "sha256-6UIL2wyFOjOJeyGjYScfjbpURycN469raye6DnP19jg=";
+    url = "https://techs.magicard.com/linux/v1.3.4/magicard_ltd-linux_driver-1.3.4.tar.gz";
+  };
 
   meta = {
     description = "CUPS driver for Magicard Printers";
+
     longDescription = ''
       This driver supports Magicard printers and rebrands sold at least under the following brands:
 
@@ -70,9 +70,10 @@ stdenv.mkDerivation (finalAttrs: {
       - Titan
       - Ying
     '';
+
     homepage = "https://support.magicard.com/solution/linux-driver/";
     license = lib.licenses.gpl2Plus;
-    platforms = lib.platforms.linux;
     maintainers = with lib.maintainers; [ _0x3f ];
+    platforms = lib.platforms.linux;
   };
 })

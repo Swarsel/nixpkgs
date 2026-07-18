@@ -1,15 +1,15 @@
 {
+  lib,
+  stdenv,
   crun,
   git,
   gnutar,
   gzip,
   haskell,
   haskellPackages,
-  lib,
   makeBinaryWrapper,
   nixos,
   openssh,
-  stdenv,
   testers,
 }:
 let
@@ -40,17 +40,45 @@ let
 in
 pkg.overrideAttrs (
   finalAttrs: o: {
-    meta = o.meta // {
-      position = toString ./package.nix + ":1";
-    };
     passthru = o.passthru // {
       tests = {
         version = testers.testVersion {
-          package = finalAttrs.finalPackage;
           command = "hercules-ci-agent --help";
+          package = finalAttrs.finalPackage;
         };
       }
       // lib.optionalAttrs (stdenv.hostPlatform.isLinux) {
+        nixos-many-options-config =
+          (nixos (
+            { pkgs, ... }:
+            {
+              boot.loader.grub.enable = false;
+              fileSystems."/".device = "bogus";
+
+              services.hercules-ci-agent = {
+                enable = true;
+                package = pkgs.hercules-ci-agent;
+
+                settings = {
+                  apiBaseUrl = "https://hci.dev.biz.example.com";
+                  binaryCachesPath = "/var/keys/binary-caches.json";
+                  concurrentTasks = 42;
+                  labels.foo.bar.baz = "qux";
+
+                  labels.qux = [
+                    "q"
+                    "u"
+                  ];
+
+                  workDirectory = "/var/tmp/hci";
+                };
+              };
+
+              # Dummy value for testing only.
+              system.stateVersion = lib.trivial.release; # TEST ONLY
+            }
+          )).config.system.build.toplevel;
+
         # Does not test the package, but evaluation of the related NixOS module.
         nixos-simple-config =
           (nixos {
@@ -60,33 +88,11 @@ pkg.overrideAttrs (
             # Dummy value for testing only.
             system.stateVersion = lib.trivial.release; # TEST ONLY
           }).config.system.build.toplevel;
-
-        nixos-many-options-config =
-          (nixos (
-            { pkgs, ... }:
-            {
-              boot.loader.grub.enable = false;
-              fileSystems."/".device = "bogus";
-              services.hercules-ci-agent = {
-                enable = true;
-                package = pkgs.hercules-ci-agent;
-                settings = {
-                  workDirectory = "/var/tmp/hci";
-                  binaryCachesPath = "/var/keys/binary-caches.json";
-                  labels.foo.bar.baz = "qux";
-                  labels.qux = [
-                    "q"
-                    "u"
-                  ];
-                  apiBaseUrl = "https://hci.dev.biz.example.com";
-                  concurrentTasks = 42;
-                };
-              };
-              # Dummy value for testing only.
-              system.stateVersion = lib.trivial.release; # TEST ONLY
-            }
-          )).config.system.build.toplevel;
       };
+    };
+
+    meta = o.meta // {
+      position = toString ./package.nix + ":1";
     };
   }
 )

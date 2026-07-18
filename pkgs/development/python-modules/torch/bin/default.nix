@@ -1,37 +1,33 @@
 {
   lib,
   stdenv,
-  python,
-  buildPythonPackage,
-  isPyPy,
   fetchurl,
-
   # nativeBuildInputs
   addDriverRunpath,
   autoAddDriverRunpath,
   autoPatchelfHook,
-
+  buildPythonPackage,
+  callPackage,
+  config,
+  # linux-only
+  cuda-bindings,
   # buildInputs
   cudaPackages,
-
   # dependencies
   filelock,
   fsspec,
+  isPyPy,
   jinja2,
   networkx,
   numpy,
+  python,
   pyyaml,
   requests,
   setuptools,
   sympy,
-  typing-extensions,
-  # linux-only
-  cuda-bindings,
   # x86_64-linux only
   triton,
-
-  config,
-  callPackage,
+  typing-extensions,
 }:
 
 let
@@ -42,16 +38,7 @@ let
 in
 buildPythonPackage {
   inherit version;
-  __structuredAttrs = true;
-
   pname = "torch";
-  # Don't forget to update torch to the same version.
-
-  format = "wheel";
-
-  # determine supported interpreters by the ones we have x86_64-linux wheels for
-  disabled = isPyPy || !(srcs ? "x86_64-linux-${pyVerNoDot}");
-
   src = fetchurl srcs."${stdenv.system}-${pyVerNoDot}" or unsupported;
 
   nativeBuildInputs = lib.optionals stdenv.hostPlatform.isLinux [
@@ -83,6 +70,17 @@ buildPythonPackage {
     ]
   );
 
+  postInstall = ''
+    # ONNX conversion
+    rm -rf $out/bin
+  '';
+
+  postFixup = lib.optionalString stdenv.hostPlatform.isLinux ''
+    addAutoPatchelfSearchPath "$out/${python.sitePackages}/torch/lib"
+  '';
+
+  __structuredAttrs = true;
+
   autoPatchelfIgnoreMissingDeps = lib.optionals stdenv.hostPlatform.isLinux [
     # This is the hardware-dependent userspace driver that comes from
     # nvidia_x11 package. It must be deployed at runtime in
@@ -91,14 +89,6 @@ buildPythonPackage {
     "libcuda.so.1"
   ];
 
-  pythonRemoveDeps = [
-    "cuda-toolkit"
-    "nvidia-cublas"
-    "nvidia-cudnn-cu13"
-    "nvidia-cusparselt-cu13"
-    "nvidia-nccl-cu13"
-    "nvidia-nvshmem-cu13"
-  ];
   dependencies = [
     filelock
     fsspec
@@ -118,14 +108,10 @@ buildPythonPackage {
     triton
   ];
 
-  postInstall = ''
-    # ONNX conversion
-    rm -rf $out/bin
-  '';
-
-  postFixup = lib.optionalString stdenv.hostPlatform.isLinux ''
-    addAutoPatchelfSearchPath "$out/${python.sitePackages}/torch/lib"
-  '';
+  # determine supported interpreters by the ones we have x86_64-linux wheels for
+  disabled = isPyPy || !(srcs ? "x86_64-linux-${pyVerNoDot}");
+  # The wheel-binary is not stripped to avoid the error of `ImportError: libtorch_cuda_cpp.so: ELF load command address/offset not properly aligned.`.
+  dontStrip = true;
 
   # See https://github.com/NixOS/nixpkgs/issues/296179
   #
@@ -134,7 +120,10 @@ buildPythonPackage {
   extraRunpaths = lib.optionals stdenv.hostPlatform.isLinux [
     "${lib.getLib cudaPackages.cuda_nvrtc}/lib"
   ];
-  postPhases = lib.optionals stdenv.hostPlatform.isLinux [ "postPatchelfPhase" ];
+
+  # Don't forget to update torch to the same version.
+  format = "wheel";
+
   postPatchelfPhase = ''
     while IFS= read -r -d $'\0' elf ; do
       for extra in $extraRunpaths ; do
@@ -146,10 +135,17 @@ buildPythonPackage {
     )
   '';
 
-  # The wheel-binary is not stripped to avoid the error of `ImportError: libtorch_cuda_cpp.so: ELF load command address/offset not properly aligned.`.
-  dontStrip = true;
-
+  postPhases = lib.optionals stdenv.hostPlatform.isLinux [ "postPatchelfPhase" ];
   pythonImportsCheck = [ "torch" ];
+
+  pythonRemoveDeps = [
+    "cuda-toolkit"
+    "nvidia-cublas"
+    "nvidia-cudnn-cu13"
+    "nvidia-cusparselt-cu13"
+    "nvidia-nccl-cu13"
+    "nvidia-nvshmem-cu13"
+  ];
 
   passthru.tests = callPackage ../tests {
     inherit (config) rocmSupport cudaSupport;
@@ -159,6 +155,7 @@ buildPythonPackage {
     description = "PyTorch: Tensors and Dynamic neural networks in Python with strong GPU acceleration";
     homepage = "https://pytorch.org/";
     changelog = "https://github.com/pytorch/pytorch/releases/tag/v${version}";
+
     # Includes CUDA and Intel MKL, but redistributions of the binary are not limited.
     # https://docs.nvidia.com/cuda/eula/index.html
     # https://www.intel.com/content/www/us/en/developer/articles/license/onemkl-license-faq.html
@@ -169,26 +166,32 @@ buildPythonPackage {
       issl
       unfreeRedistributable
     ];
+
     sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
+
+    maintainers = with lib.maintainers; [
+      GaetanLepage
+      junjihashimoto
+    ];
+
     platforms = [
       "aarch64-darwin"
       "aarch64-linux"
       "x86_64-linux"
     ];
+
     hydraPlatforms = [ ]; # output size 3.2G on 1.11.0
-    maintainers = with lib.maintainers; [
-      GaetanLepage
-      junjihashimoto
-    ];
+
     # cuda-bindings<14,>=13.0.3 not satisfied by version 12.9.7
     problems = lib.optionalAttrs (lib.versionOlder cuda-bindings.version "13.0.3") {
       unsupported-cuda-version = {
+        kind = "broken";
+
         message = ''
           cudaPackages is too old (${cudaPackages.cudaMajorMinorVersion}).
           PyTorch expects cuda-bindings>=13.0.3, current is ${cuda-bindings.version}.
           Please override cudaPackages with a more recent version.
         '';
-        kind = "broken";
       };
     };
   };

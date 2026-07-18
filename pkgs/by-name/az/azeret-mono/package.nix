@@ -1,7 +1,7 @@
 {
   lib,
-  stdenvNoCC,
   fetchFromGitHub,
+  stdenvNoCC,
 }:
 
 stdenvNoCC.mkDerivation {
@@ -25,6 +25,7 @@ stdenvNoCC.mkDerivation {
 
   meta = {
     description = "Azeret Mono";
+
     longDescription = ''
       The story of the typeface began with a draft that was driven by an exploration of OCR fonts, past and futuristic operating systems, various interfaces and the nineties. The final result is more based on a desire to achieve an appearance of the typeface that could serve in operating systems. Thus the overall character is a conjunction of everything described with details that evoke a specific personality.
 
@@ -35,9 +36,10 @@ stdenvNoCC.mkDerivation {
       Designer: Martin Vácha, Daniel Quisek
       Production: Renegade Fonts (Jan Charvát, Zuzana Konečná)
     '';
+
     homepage = "https://displaay.net/typeface/azeret/azeret-mono/";
     license = lib.licenses.ofl;
-    platforms = lib.platforms.all;
     maintainers = with lib.maintainers; [ _21eleven ];
+    platforms = lib.platforms.all;
   };
 }

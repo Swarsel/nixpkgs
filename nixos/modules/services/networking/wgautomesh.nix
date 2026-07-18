@@ -1,6 +1,6 @@
 {
-  lib,
   config,
+  lib,
   pkgs,
   ...
 }:
@@ -22,7 +22,34 @@ in
 {
   options.services.wgautomesh = {
     enable = mkEnableOption "the wgautomesh daemon";
+
+    enableGossipEncryption = mkOption {
+      default = true;
+      description = "Enable encryption of gossip traffic.";
+      type = types.bool;
+    };
+
+    enablePersistence = mkOption {
+      default = true;
+      description = "Enable persistence of Wireguard peer info between restarts.";
+      type = types.bool;
+    };
+
+    gossipSecretFile = mkOption {
+      description = ''
+        File containing the gossip secret, a shared secret key to use for gossip
+        encryption.  Required if `enableGossipEncryption` is set.  This file
+        may contain any arbitrary-length utf8 string.  To generate a new gossip
+        secret, use a command such as `openssl rand -base64 32`.
+      '';
+
+      type = types.path;
+    };
+
     logLevel = mkOption {
+      default = "info";
+      description = "wgautomesh log level.";
+
       type = types.enum [
         "trace"
         "debug"
@@ -30,126 +57,127 @@ in
         "warn"
         "error"
       ];
-      default = "info";
-      description = "wgautomesh log level.";
     };
-    enableGossipEncryption = mkOption {
-      type = types.bool;
-      default = true;
-      description = "Enable encryption of gossip traffic.";
-    };
-    gossipSecretFile = mkOption {
-      type = types.path;
-      description = ''
-        File containing the gossip secret, a shared secret key to use for gossip
-        encryption.  Required if `enableGossipEncryption` is set.  This file
-        may contain any arbitrary-length utf8 string.  To generate a new gossip
-        secret, use a command such as `openssl rand -base64 32`.
-      '';
-    };
-    enablePersistence = mkOption {
-      type = types.bool;
-      default = true;
-      description = "Enable persistence of Wireguard peer info between restarts.";
-    };
+
     openFirewall = mkOption {
-      type = types.bool;
       default = true;
       description = "Automatically open gossip port in firewall (recommended).";
+      type = types.bool;
     };
+
     settings = mkOption {
+      default = { };
+      description = "Configuration for wgautomesh.";
+
       type = types.submodule {
-        freeformType = settingsFormat.type;
         options = {
 
+          gossip_port = mkOption {
+            default = 1666;
+
+            description = ''
+              wgautomesh gossip port, this MUST be the same number on all nodes in
+              the wgautomesh network.
+            '';
+
+            type = types.port;
+          };
+
           interface = mkOption {
-            type = types.str;
             description = ''
               Wireguard interface to manage (it is NOT created by wgautomesh, you
               should use another NixOS option to create it such as
               `networking.wireguard.interfaces.wg0 = {...};`).
             '';
+
             example = "wg0";
+            type = types.str;
           };
-          gossip_port = mkOption {
-            type = types.port;
-            description = ''
-              wgautomesh gossip port, this MUST be the same number on all nodes in
-              the wgautomesh network.
-            '';
-            default = 1666;
-          };
+
           lan_discovery = mkOption {
-            type = types.bool;
             default = true;
             description = "Enable discovery of peers on the same LAN using UDP broadcast.";
+            type = types.bool;
           };
-          upnp_forward_external_port = mkOption {
-            type = types.nullOr types.port;
-            default = null;
-            description = ''
-              Public port number to try to redirect to this machine's Wireguard
-              daemon using UPnP IGD.
-            '';
-          };
+
           peers = mkOption {
+            default = [ ];
+            description = "wgautomesh peer list.";
+
             type = types.listOf (
               types.submodule {
                 options = {
-                  pubkey = mkOption {
-                    type = types.str;
-                    description = "Wireguard public key of this peer.";
-                  };
                   address = mkOption {
-                    type = types.str;
                     description = ''
                       Wireguard address of this peer (a single IP address, multiple
                       addresses or address ranges are not supported).
                     '';
+
                     example = "10.0.0.42";
+                    type = types.str;
                   };
+
                   endpoint = mkOption {
-                    type = types.nullOr types.str;
+                    default = null;
+
                     description = ''
                       Bootstrap endpoint for connecting to this Wireguard peer if no
                       other address is known or none are working.
                     '';
-                    default = null;
+
                     example = "wgnode.mydomain.example:51820";
+                    type = types.nullOr types.str;
+                  };
+
+                  pubkey = mkOption {
+                    description = "Wireguard public key of this peer.";
+                    type = types.str;
                   };
                 };
               }
             );
-            default = [ ];
-            description = "wgautomesh peer list.";
+          };
+
+          upnp_forward_external_port = mkOption {
+            default = null;
+
+            description = ''
+              Public port number to try to redirect to this machine's Wireguard
+              daemon using UPnP IGD.
+            '';
+
+            type = types.nullOr types.port;
           };
         };
 
+        freeformType = settingsFormat.type;
+
       };
-      default = { };
-      description = "Configuration for wgautomesh.";
     };
   };
 
   config = mkIf cfg.enable {
+    networking.firewall.allowedUDPPorts = mkIf cfg.openFirewall [ cfg.settings.gossip_port ];
+
     services.wgautomesh.settings = {
       gossip_secret_file = mkIf cfg.enableGossipEncryption "$CREDENTIALS_DIRECTORY/gossip_secret";
       persist_file = mkIf cfg.enablePersistence "/var/lib/wgautomesh/state";
     };
 
     systemd.services.wgautomesh = {
-      path = [ pkgs.wireguard-tools ];
+      description = "wgautomesh";
+
       environment = {
         RUST_LOG = "wgautomesh=${cfg.logLevel}";
       };
-      description = "wgautomesh";
-      serviceConfig = {
-        Type = "simple";
 
+      path = [ pkgs.wireguard-tools ];
+
+      serviceConfig = {
+        AmbientCapabilities = "CAP_NET_ADMIN";
+        CapabilityBoundingSet = "CAP_NET_ADMIN";
+        DynamicUser = true;
         ExecStart = "${getExe pkgs.wgautomesh} ${runtimeConfigFile}";
-        Restart = "always";
-        RestartSec = "30";
-        LoadCredential = mkIf cfg.enableGossipEncryption [ "gossip_secret:${cfg.gossipSecretFile}" ];
 
         ExecStartPre = mkIf cfg.enableGossipEncryption [
           ''
@@ -158,15 +186,16 @@ in
                           -o ${runtimeConfigFile}''
         ];
 
-        DynamicUser = true;
+        LoadCredential = mkIf cfg.enableGossipEncryption [ "gossip_secret:${cfg.gossipSecretFile}" ];
+        Restart = "always";
+        RestartSec = "30";
+        RuntimeDirectory = "wgautomesh";
         StateDirectory = "wgautomesh";
         StateDirectoryMode = "0700";
-        RuntimeDirectory = "wgautomesh";
-        AmbientCapabilities = "CAP_NET_ADMIN";
-        CapabilityBoundingSet = "CAP_NET_ADMIN";
+        Type = "simple";
       };
+
       wantedBy = [ "multi-user.target" ];
     };
-    networking.firewall.allowedUDPPorts = mkIf cfg.openFirewall [ cfg.settings.gossip_port ];
   };
 }

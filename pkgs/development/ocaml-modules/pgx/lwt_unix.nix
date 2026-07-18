@@ -7,16 +7,15 @@
 }:
 
 buildDunePackage (finalAttrs: {
-  pname = "pgx_lwt_unix";
   inherit (pgx) version src;
-
+  pname = "pgx_lwt_unix";
   propagatedBuildInputs = [ pgx_lwt ];
+  doCheck = true;
 
   checkInputs = [
     alcotest-lwt
     base64
   ];
-  doCheck = true;
 
   meta = pgx.meta // {
     description = "Pgx using Lwt and Unix libraries for IO";

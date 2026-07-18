@@ -18,12 +18,11 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   nativeBuildInputs = [ cmake ];
-
   propagatedBuildInputs = [ eigen ];
 
   meta = {
-    homepage = "https://spectralib.org/";
     description = "C++ library for large scale eigenvalue problems, built on top of Eigen";
+    homepage = "https://spectralib.org/";
     license = lib.licenses.mpl20;
     maintainers = with lib.maintainers; [ vonfry ];
     platforms = lib.platforms.unix;

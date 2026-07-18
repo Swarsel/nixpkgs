@@ -1,13 +1,13 @@
 {
   lib,
   stdenv,
-  buildGoModule,
   fetchFromGitHub,
-  pkg-config,
-  installShellFiles,
   btrfs-progs,
+  buildGoModule,
   gpgme,
+  installShellFiles,
   lvm2,
+  pkg-config,
 }:
 buildGoModule (finalAttrs: {
   pname = "dive";
@@ -20,8 +20,6 @@ buildGoModule (finalAttrs: {
     hash = "sha256-PXimdEgcPS1QQbhkaI2a55EIyWMIZTwRWj0Wx81nqcQ=";
   };
 
-  vendorHash = "sha256-egsFnnHZMPRTJeFw6uByE9OJH06zqKRTvQi9XhegbDI=";
-
   nativeBuildInputs = [
     pkg-config
     installShellFiles
@@ -33,11 +31,7 @@ buildGoModule (finalAttrs: {
     lvm2
   ];
 
-  ldflags = [
-    "-s"
-    "-w"
-    "-X main.version=${finalAttrs.version}"
-  ];
+  vendorHash = "sha256-egsFnnHZMPRTJeFw6uByE9OJH06zqKRTvQi9XhegbDI=";
 
   postInstall = lib.optionalString (stdenv.buildPlatform.canExecute stdenv.hostPlatform) ''
     installShellCompletion --cmd dive \
@@ -46,15 +40,23 @@ buildGoModule (finalAttrs: {
       --zsh <($out/bin/dive completion zsh)
   '';
 
+  ldflags = [
+    "-s"
+    "-w"
+    "-X main.version=${finalAttrs.version}"
+  ];
+
   meta = {
     description = "Tool for exploring each layer in a docker image";
-    mainProgram = "dive";
     homepage = "https://github.com/wagoodman/dive";
     changelog = "https://github.com/wagoodman/dive/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       SuperSandro2000
       ryan4yin
     ];
+
+    mainProgram = "dive";
   };
 })

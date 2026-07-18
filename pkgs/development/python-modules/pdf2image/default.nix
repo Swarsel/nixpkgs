@@ -9,7 +9,6 @@
 buildPythonPackage rec {
   pname = "pdf2image";
   version = "1.17.0";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
@@ -24,7 +23,7 @@ buildPythonPackage rec {
   '';
 
   propagatedBuildInputs = [ pillow ];
-
+  format = "setuptools";
   pythonImportsCheck = [ "pdf2image" ];
 
   meta = {

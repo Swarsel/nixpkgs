@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   requests,
   six,
 }:
@@ -9,7 +9,6 @@
 buildPythonPackage rec {
   pname = "f5-icontrol-rest";
   version = "1.3.16";
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "F5Networks";
@@ -25,9 +24,8 @@ buildPythonPackage rec {
 
   # needs to be updated to newer pytest version and requires physical device
   doCheck = false;
-
   enabledTestPaths = [ "icontrol/test" ];
-
+  format = "setuptools";
   pythonImportsCheck = [ "icontrol" ];
 
   meta = {

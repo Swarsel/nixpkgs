@@ -1,14 +1,12 @@
 {
   buildDunePackage,
-  zelus,
   lablgtk,
+  zelus,
 }:
 
 buildDunePackage {
-  pname = "zelus-gtk";
   inherit (zelus) version src postPatch;
-
-  minimalOCamlVersion = "4.10";
+  pname = "zelus-gtk";
 
   nativeBuildInputs = [
     zelus
@@ -18,8 +16,10 @@ buildDunePackage {
     lablgtk
   ];
 
+  minimalOCamlVersion = "4.10";
+
   meta = {
-    description = "Zelus GTK library";
     inherit (zelus.meta) homepage license maintainers;
+    description = "Zelus GTK library";
   };
 }

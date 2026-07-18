@@ -1,10 +1,10 @@
 {
   lib,
-  stdenvNoCC,
   fetchFromGitHub,
   makeWrapper,
-  zsh,
   sqlite,
+  stdenvNoCC,
+  zsh,
 }:
 
 stdenvNoCC.mkDerivation {
@@ -40,10 +40,12 @@ stdenvNoCC.mkDerivation {
     description = "History database for Zsh, based on SQLite";
     homepage = "https://github.com/larkery/zsh-histdb";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       fliegendewurst
       luochen1990
     ];
+
     platforms = lib.platforms.unix;
   };
 }

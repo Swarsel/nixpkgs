@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   nix-update-script,
 }:
 
@@ -17,14 +17,13 @@ buildGoModule (finalAttrs: {
   };
 
   vendorHash = "sha256-Rx2TmYubU+EqvfyWjX5A3EC+7Pt/k68I6PmQdCwYlfE=";
-  proxyVendor = true;
+  doInstallCheck = true;
 
   ldflags = [
     "-s"
   ];
 
-  doInstallCheck = true;
-
+  proxyVendor = true;
   passthru.updateScript = nix-update-script { };
 
   meta = {

@@ -1,11 +1,11 @@
 {
   lib,
   stdenv,
+  fetchurl,
   autoreconfHook,
   bison,
   cyrus_sasl,
   db,
-  fetchurl,
   flex,
   gdbm,
   liblockfile,
@@ -59,21 +59,19 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   doCheck = true;
-  enableParallelBuilding = true;
+  doInstallCheck = true;
 
   nativeInstallCheckInputs = [
     versionCheckHook
   ];
-  doInstallCheck = true;
+
+  enableParallelBuilding = true;
   versionCheckProgram = "${placeholder "out"}/bin/install-mh";
   versionCheckProgramArg = "-version";
 
   meta = {
     description = "New MH Mail Handling System";
-    homepage = "https://nmh.nongnu.org/";
-    downloadPage = "https://download.savannah.nongnu.org/releases/nmh/";
-    changelog = "https://savannah.nongnu.org/news/?group=nmh";
-    license = [ lib.licenses.bsd3 ];
+
     longDescription = ''
       This is the nmh mail user agent (reader/sender), a command-line based
       mail reader that is powerful and extensible.  nmh is an excellent choice
@@ -92,7 +90,12 @@ stdenv.mkDerivation (finalAttrs: {
       claws-mail's mail folders.  Most other mail clients have migrated to
       maildir.
     '';
+
+    homepage = "https://nmh.nongnu.org/";
+    changelog = "https://savannah.nongnu.org/news/?group=nmh";
+    license = [ lib.licenses.bsd3 ];
     maintainers = [ ];
+    downloadPage = "https://download.savannah.nongnu.org/releases/nmh/";
   };
 
 })

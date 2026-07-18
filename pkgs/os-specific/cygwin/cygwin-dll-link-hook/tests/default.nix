@@ -1,126 +1,138 @@
 {
-  dieHook,
   lib,
   stdenv,
-  testers,
+  dieHook,
   runCommand,
+  testers,
 }:
 
 rec {
+  copy-dll = user32-exe.overrideAttrs {
+    preFixup = ''
+      cp ${lib.getLib user32-dll}/bin/cygpeek.dll "$out"/bin/
+      linkDLLs "$out"/bin/cygpeek.dll
+    '';
+
+    allowedImpureDLLs = [ "USER32.dll" ];
+    name = "copy-dll";
+  };
+
+  copy-dll-impure = testers.testBuildFailure (
+    user32-exe.overrideAttrs {
+      preFixup = ''
+        cp ${lib.getLib user32-dll}/bin/cygpeek.dll "$out"/bin/
+      '';
+
+      name = "copy-dll-impure";
+    }
+  );
+
   dll = stdenv.mkDerivation {
-    name = "dll";
     src = ./dll;
+
     outputs = [
       "out"
       "dev"
     ];
-    buildInputs = [ dll2 ];
+
     strictDeps = true;
+    buildInputs = [ dll2 ];
+    name = "dll";
   };
 
   dll2 = stdenv.mkDerivation {
-    name = "dll2";
     src = ./dll2;
+
     outputs = [
       "out"
       "dev"
     ];
+
+    name = "dll2";
+  };
+
+  double-link = user32-exe.overrideAttrs {
+    preFixup = ''linkDLLs "$out"'';
+    name = "double-link";
   };
 
   exe = stdenv.mkDerivation {
-    name = "exe";
     src = ./exe;
-    buildInputs = [ dll ];
-    nativeBuildInputs = [ dieHook ];
     strictDeps = true;
+    nativeBuildInputs = [ dieHook ];
+    buildInputs = [ dll ];
     doCheck = true;
     postFixup = ''[[ -e "$out"/bin/cyghello2.dll ]] || die missing indirect dependency'';
-  };
-
-  link-dll = exe.overrideAttrs {
-    name = "link-dll";
-    preFixup = ''
-      ln -s ${lib.getLib dll}/bin/cyghello.dll "$out"/bin/
-    '';
-  };
-
-  user32 = stdenv.mkDerivation {
-    name = "user32";
-    src = ./user32;
-    allowedImpureDLLs = [ "USER32.dll" ];
+    name = "exe";
   };
 
   impure-dll = testers.testBuildFailure (
     user32.overrideAttrs {
-      name = "impure-dll";
       allowedImpureDLLs = [ ];
+      name = "impure-dll";
     }
   );
 
-  user32-dll = stdenv.mkDerivation {
-    name = "user32-dll";
-    src = ./user32-dll;
-    outputs = [
-      "out"
-      "dev"
-    ];
-    allowedImpureDLLs = [ "USER32.dll" ];
-  };
-
-  user32-exe = stdenv.mkDerivation {
-    name = "user32-exe";
-    src = ./user32-exe;
-    buildInputs = [ user32-dll ];
-    strictDeps = true;
-    doCheck = true;
-  };
-
   link-dir-dll = exe.overrideAttrs {
-    name = "link-dir-dll";
     preFixup = ''
       mkdir "$out"/libexec
       ln -s ${lib.getLib user32-dll}/bin/cygpeek.dll "$out"/libexec/
       linkDLLsDir="$out"/bin linkDLLs "$out"/libexec/cygpeek.dll
     '';
+
+    name = "link-dir-dll";
   };
 
   link-dir-exe = exe.overrideAttrs {
-    name = "link-dir-exe";
     preFixup = ''
       mkdir "$out"/libexec
       ln -s ${lib.getLib user32-exe}/bin/{peek.exe,cygpeek.dll} "$out"/libexec/
       linkDLLsDir="$out"/bin linkDLLs "$out"/libexec/peek.exe
     '';
+
+    name = "link-dir-exe";
+  };
+
+  link-dll = exe.overrideAttrs {
+    preFixup = ''
+      ln -s ${lib.getLib dll}/bin/cyghello.dll "$out"/bin/
+    '';
+
+    name = "link-dll";
   };
 
   link-user32-dll = exe.overrideAttrs {
-    name = "link-user32-dll";
     preFixup = ''
       ln -s ${lib.getLib user32-dll}/bin/cygpeek.dll "$out"/bin/
     '';
+
+    name = "link-user32-dll";
   };
 
-  copy-dll-impure = testers.testBuildFailure (
-    user32-exe.overrideAttrs {
-      name = "copy-dll-impure";
-      preFixup = ''
-        cp ${lib.getLib user32-dll}/bin/cygpeek.dll "$out"/bin/
-      '';
-    }
-  );
-
-  copy-dll = user32-exe.overrideAttrs {
-    name = "copy-dll";
-    preFixup = ''
-      cp ${lib.getLib user32-dll}/bin/cygpeek.dll "$out"/bin/
-      linkDLLs "$out"/bin/cygpeek.dll
-    '';
+  user32 = stdenv.mkDerivation {
+    src = ./user32;
     allowedImpureDLLs = [ "USER32.dll" ];
+    name = "user32";
   };
 
-  double-link = user32-exe.overrideAttrs {
-    name = "double-link";
-    preFixup = ''linkDLLs "$out"'';
+  user32-dll = stdenv.mkDerivation {
+    src = ./user32-dll;
+
+    outputs = [
+      "out"
+      "dev"
+    ];
+
+    allowedImpureDLLs = [ "USER32.dll" ];
+    name = "user32-dll";
+  };
+
+  user32-exe = stdenv.mkDerivation {
+    src = ./user32-exe;
+    strictDeps = true;
+    buildInputs = [ user32-dll ];
+    doCheck = true;
+    name = "user32-exe";
   };
 
   utf8-glob = runCommand "utf8-glob" { } ''

@@ -2,15 +2,14 @@
   lib,
   buildPythonPackage,
   fetchPypi,
-  setuptools,
   numpy,
   pillow,
   pytestCheckHook,
+  setuptools,
 }:
 buildPythonPackage rec {
   pname = "daltonlens";
   version = "0.1.5";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
@@ -22,6 +21,10 @@ buildPythonPackage rec {
       --replace-fail "setup_requires = setuptools_git" ""
   '';
 
+  nativeCheckInputs = [
+    pytestCheckHook
+  ];
+
   build-system = [
     setuptools
   ];
@@ -31,20 +34,18 @@ buildPythonPackage rec {
     pillow
   ];
 
-  pythonImportsCheck = [
-    "daltonlens"
-  ];
-
-  nativeCheckInputs = [
-    pytestCheckHook
+  disabledTestPaths = [
+    "tests/test_generate.py"
   ];
 
   enabledTestPaths = [
     "tests/"
   ];
 
-  disabledTestPaths = [
-    "tests/test_generate.py"
+  pyproject = true;
+
+  pythonImportsCheck = [
+    "daltonlens"
   ];
 
   meta = {

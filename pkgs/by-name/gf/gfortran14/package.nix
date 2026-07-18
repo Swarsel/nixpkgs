@@ -1,10 +1,10 @@
-{ wrapCC, gcc14 }:
+{ gcc14, wrapCC }:
 wrapCC (
   gcc14.cc.override {
-    name = "gfortran";
-    langFortran = true;
-    langCC = false;
     langC = false;
+    langCC = false;
+    langFortran = true;
+    name = "gfortran";
     profiledCompiler = false;
   }
 )

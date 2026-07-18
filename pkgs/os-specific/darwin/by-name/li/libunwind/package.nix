@@ -5,8 +5,8 @@
 }:
 
 stdenvNoCC.mkDerivation (finalAttrs: {
-  pname = "libunwind";
   inherit (apple-sdk) version;
+  pname = "libunwind";
 
   # No `-lunwind` is provided because you get it automatically from linking with libSystem.
   # It’s also not possible to link libunwind directly, otherwise. Darwin requires going through libSystem.
@@ -21,8 +21,8 @@ stdenvNoCC.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Compatibility package for libunwind on Darwin";
-    teams = [ lib.teams.darwin ];
     platforms = lib.platforms.darwin;
     pkgConfigModules = [ "libunwind" ];
+    teams = [ lib.teams.darwin ];
   };
 })

@@ -1,13 +1,13 @@
 {
   lib,
   stdenv,
-  fetchgit,
-  ocamlPackages,
   autoreconfHook,
-  libxml2,
-  pkg-config,
+  fetchgit,
   getopt,
   gettext,
+  libxml2,
+  ocamlPackages,
+  pkg-config,
 }:
 
 stdenv.mkDerivation rec {
@@ -24,6 +24,12 @@ stdenv.mkDerivation rec {
     ./gettext-0.25.patch
   ];
 
+  postPatch = ''
+    substituteInPlace ocaml-dep.sh.in --replace-fail '#!/bin/bash' '#!${stdenv.shell}'
+    substituteInPlace ocaml-link.sh.in --replace-fail '#!/bin/bash' '#!${stdenv.shell}'
+    substituteInPlace configure.ac --replace-fail 'AC_CONFIG_MACRO_DIR([m4])' 'AC_CONFIG_MACRO_DIRS([m4 ${gettext}/share/gettext/m4])'
+  '';
+
   strictDeps = true;
 
   nativeBuildInputs = [
@@ -33,6 +39,7 @@ stdenv.mkDerivation rec {
     ocamlPackages.ocaml
     ocamlPackages.findlib
   ];
+
   buildInputs =
     with ocamlPackages;
     [
@@ -43,12 +50,6 @@ stdenv.mkDerivation rec {
       ocaml_libvirt
     ]
     ++ [ libxml2 ];
-
-  postPatch = ''
-    substituteInPlace ocaml-dep.sh.in --replace-fail '#!/bin/bash' '#!${stdenv.shell}'
-    substituteInPlace ocaml-link.sh.in --replace-fail '#!/bin/bash' '#!${stdenv.shell}'
-    substituteInPlace configure.ac --replace-fail 'AC_CONFIG_MACRO_DIR([m4])' 'AC_CONFIG_MACRO_DIRS([m4 ${gettext}/share/gettext/m4])'
-  '';
 
   meta = {
     description = "Top-like utility for showing stats of virtualized domains";

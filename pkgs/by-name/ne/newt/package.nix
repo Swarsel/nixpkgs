@@ -1,11 +1,11 @@
 {
   lib,
-  fetchurl,
   stdenv,
-  slang,
+  fetchurl,
+  gettext,
   popt,
   python3,
-  gettext,
+  slang,
 }:
 
 let
@@ -34,12 +34,17 @@ stdenv.mkDerivation rec {
 
   strictDeps = true;
   nativeBuildInputs = [ python3 ];
+
   buildInputs = [
     slang
     popt
   ]
   ++ lib.optionals stdenv.hostPlatform.isDarwin [
     gettext # for darwin with clang
+  ];
+
+  makeFlags = lib.optionals (stdenv.buildPlatform != stdenv.hostPlatform) [
+    "CROSS_COMPILE=${stdenv.cc.targetPrefix}"
   ];
 
   env.NIX_LDFLAGS = toString (
@@ -58,10 +63,6 @@ stdenv.mkDerivation rec {
     unset CPP
   '';
 
-  makeFlags = lib.optionals (stdenv.buildPlatform != stdenv.hostPlatform) [
-    "CROSS_COMPILE=${stdenv.cc.targetPrefix}"
-  ];
-
   postFixup = lib.optionalString stdenv.hostPlatform.isDarwin ''
     set -xe
     install_name_tool -id $out/lib/libnewt.so.${version} $out/lib/libnewt.so.${version}
@@ -75,7 +76,7 @@ stdenv.mkDerivation rec {
     { nativeBuildInputs, postBuild, ... }@_prevAttrs:
     {
       nativeBuildInputs = nativeBuildInputs ++ [ python3.pkgs.pythonImportsCheckHook ];
-      pythonImportsCheck = [ "snack" ];
+
       /**
         Call pythonImportsCheckPhase manually. This is necessary because:
         - pythonImportsCheckHook adds the check to $preDistPhases
@@ -86,16 +87,18 @@ stdenv.mkDerivation rec {
       postBuild = postBuild + ''
         runPhase pythonImportsCheckPhase
       '';
+
+      pythonImportsCheck = [ "snack" ];
     }
   );
 
   meta = {
     description = "Library for color text mode, widget based user interfaces";
-    mainProgram = "whiptail";
     homepage = "https://pagure.io/newt";
     changelog = "https://pagure.io/newt/blob/master/f/CHANGES";
     license = lib.licenses.lgpl2;
-    platforms = lib.platforms.unix;
     maintainers = with lib.maintainers; [ bryango ];
+    platforms = lib.platforms.unix;
+    mainProgram = "whiptail";
   };
 }

@@ -1,6 +1,6 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
   qt5,
 }:
@@ -16,17 +16,17 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-Du6Pc0JePdJNwBaWKKjTMWOmKCnk6Azojh8IJ7I+ngY=";
   };
 
+  nativeBuildInputs = [
+    qt5.qmake
+    qt5.wrapQtAppsHook
+  ];
+
   buildInputs = [
     qt5.qtbase
     qt5.qttools
     qt5.qtserialbus
     qt5.qtserialport
     qt5.qtdeclarative
-  ];
-
-  nativeBuildInputs = [
-    qt5.qmake
-    qt5.wrapQtAppsHook
   ];
 
   postInstall = lib.optionalString stdenv.hostPlatform.isDarwin ''
@@ -37,12 +37,7 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "QT based cross platform canbus tool";
-    homepage = "https://savvycan.com/";
-    changelog = "https://github.com/collin80/SavvyCAN/releases/tag/${finalAttrs.version}";
-    maintainers = with lib.maintainers; [ simoneruffini ];
-    platforms = lib.platforms.all;
-    license = lib.licenses.mit;
-    mainProgram = "SavvyCAN";
+
     longDescription = ''
       SavvyCAN is a cross platform QT based C++ program. It is a CAN bus reverse
       engineering and capture tool. It was originally written to utilize EVTV
@@ -68,5 +63,12 @@ stdenv.mkDerivation (finalAttrs: {
       - Best of all, it's free and open source. Don't like something about it? Change
         it!
     '';
+
+    homepage = "https://savvycan.com/";
+    changelog = "https://github.com/collin80/SavvyCAN/releases/tag/${finalAttrs.version}";
+    license = lib.licenses.mit;
+    maintainers = with lib.maintainers; [ simoneruffini ];
+    platforms = lib.platforms.all;
+    mainProgram = "SavvyCAN";
   };
 })

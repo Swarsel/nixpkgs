@@ -2,8 +2,8 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  fetchpatch,
   cmake,
+  fetchpatch,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -22,9 +22,9 @@ stdenv.mkDerivation (finalAttrs: {
     # Fix gcc-13 build failure:
     #   https://github.com/jarulraj/sqlcheck/pull/62
     (fetchpatch {
+      hash = "sha256-uoF7rYvjdIUu82JCLXq/UGswgwM6JCpmABP4ItWjDe4=";
       name = "gcc-13.patch";
       url = "https://github.com/jarulraj/sqlcheck/commit/ca131db13b860cf1d9194a1c7f7112f28f49acca.patch";
-      hash = "sha256-uoF7rYvjdIUu82JCLXq/UGswgwM6JCpmABP4ItWjDe4=";
     })
   ];
 
@@ -36,16 +36,15 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   nativeBuildInputs = [ cmake ];
-
   doCheck = true;
 
   meta = {
     inherit (finalAttrs.src.meta) homepage;
     description = "Automatically identify anti-patterns in SQL queries";
-    mainProgram = "sqlcheck";
     license = lib.licenses.asl20;
-    platforms = with lib.platforms; unix ++ windows;
-    broken = stdenv.hostPlatform.isDarwin;
     maintainers = with lib.maintainers; [ h7x4 ];
+    platforms = with lib.platforms; unix ++ windows;
+    mainProgram = "sqlcheck";
+    broken = stdenv.hostPlatform.isDarwin;
   };
 })

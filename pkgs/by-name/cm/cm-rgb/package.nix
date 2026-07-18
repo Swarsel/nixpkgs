@@ -1,17 +1,16 @@
 {
   lib,
-  python3Packages,
   fetchFromGitHub,
   atk,
   gobject-introspection,
-  wrapGAppsHook3,
+  python3Packages,
   udevCheckHook,
+  wrapGAppsHook3,
 }:
 
 python3Packages.buildPythonApplication rec {
   pname = "cm-rgb";
   version = "0.3.6";
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "gfduszynski";
@@ -42,8 +41,11 @@ python3Packages.buildPythonApplication rec {
       > $out/etc/udev/rules.d/60-cm-rgb.rules
   '';
 
+  format = "setuptools";
+
   meta = {
     description = "Control AMD Wraith Prism RGB LEDs";
+
     longDescription = ''
       cm-rgb controls AMD Wraith Prism RGB LEDS.
 
@@ -51,9 +53,10 @@ python3Packages.buildPythonApplication rec {
       NixOS, add this package to <literal>services.udev.packages</literal>
       in <filename>configuration.nix</filename>.
     '';
+
     homepage = "https://github.com/gfduszynski/cm-rgb";
     license = lib.licenses.mit;
-    platforms = lib.platforms.all;
     maintainers = [ ];
+    platforms = lib.platforms.all;
   };
 }

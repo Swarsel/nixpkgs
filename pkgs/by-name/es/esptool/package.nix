@@ -1,16 +1,15 @@
 {
   lib,
-  addBinToPathHook,
   fetchFromGitHub,
+  addBinToPathHook,
+  installShellFiles,
   python3Packages,
   softhsm,
-  installShellFiles,
 }:
 
 python3Packages.buildPythonApplication (finalAttrs: {
   pname = "esptool";
   version = "5.3.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "espressif";
@@ -26,28 +25,26 @@ python3Packages.buildPythonApplication (finalAttrs: {
       --replace-fail "/usr/lib/softhsm" "${lib.getLib softhsm}/lib/softhsm"
   '';
 
-  build-system = with python3Packages; [
-    setuptools
-  ];
-
-  dependencies = with python3Packages; [
-    bitstring
-    click
-    cryptography
-    intelhex
-    pyserial
-    pyyaml
-    reedsolo
-    rich-click
-  ];
-
-  optional-dependencies = with python3Packages; {
-    hsm = [ python-pkcs11 ];
-  };
-
   nativeBuildInputs = [
     installShellFiles
   ];
+
+  nativeCheckInputs =
+    with python3Packages;
+    [
+      addBinToPathHook
+      pyelftools
+      pytestCheckHook
+      requests
+      softhsm
+    ]
+    ++ lib.concatAttrValues finalAttrs.passthru.optional-dependencies;
+
+  preCheck = ''
+    export SOFTHSM2_CONF=$(mktemp)
+    echo "directories.tokendir = $(mktemp -d)" > "$SOFTHSM2_CONF"
+    ./ci/setup_softhsm2.sh
+  '';
 
   postInstall = ''
     rm -v $out/bin/*.py
@@ -75,20 +72,19 @@ python3Packages.buildPythonApplication (finalAttrs: {
         "espefuse"
       ];
 
-  nativeCheckInputs =
-    with python3Packages;
-    [
-      addBinToPathHook
-      pyelftools
-      pytestCheckHook
-      requests
-      softhsm
-    ]
-    ++ lib.concatAttrValues finalAttrs.passthru.optional-dependencies;
+  build-system = with python3Packages; [
+    setuptools
+  ];
 
-  pytestFlags = [
-    "-m"
-    "host_test"
+  dependencies = with python3Packages; [
+    bitstring
+    click
+    cryptography
+    intelhex
+    pyserial
+    pyyaml
+    reedsolo
+    rich-click
   ];
 
   disabledTests = [
@@ -100,20 +96,27 @@ python3Packages.buildPythonApplication (finalAttrs: {
     "test_esp_rfc2217_server_py"
   ];
 
-  preCheck = ''
-    export SOFTHSM2_CONF=$(mktemp)
-    echo "directories.tokendir = $(mktemp -d)" > "$SOFTHSM2_CONF"
-    ./ci/setup_softhsm2.sh
-  '';
+  optional-dependencies = with python3Packages; {
+    hsm = [ python-pkcs11 ];
+  };
+
+  pyproject = true;
+
+  pytestFlags = [
+    "-m"
+    "host_test"
+  ];
 
   meta = {
-    changelog = "https://github.com/espressif/esptool/blob/${finalAttrs.src.tag}/CHANGELOG.md";
     description = "ESP8266 and ESP32 serial bootloader utility";
     homepage = "https://github.com/espressif/esptool";
+    changelog = "https://github.com/espressif/esptool/blob/${finalAttrs.src.tag}/CHANGELOG.md";
     license = lib.licenses.gpl2Plus;
+
     maintainers = with lib.maintainers; [
       dotlambda
     ];
+
     platforms = with lib.platforms; linux ++ darwin;
     mainProgram = "esptool";
   };

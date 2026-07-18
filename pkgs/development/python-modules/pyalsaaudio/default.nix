@@ -1,14 +1,13 @@
 {
+  lib,
   alsa-lib,
   buildPythonPackage,
   fetchPypi,
-  lib,
 }:
 
 buildPythonPackage rec {
   pname = "pyalsaaudio";
   version = "0.11.0";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
@@ -19,10 +18,10 @@ buildPythonPackage rec {
     alsa-lib
   ];
 
-  pythonImportsCheck = [ "alsaaudio" ];
-
   # Unit tests exist in test.py, but they require hardware (and therefore /dev) access.
   doCheck = false;
+  format = "setuptools";
+  pythonImportsCheck = [ "alsaaudio" ];
 
   meta = {
     description = "ALSA wrappers for Python";

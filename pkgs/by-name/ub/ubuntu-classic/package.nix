@@ -1,8 +1,8 @@
 {
   lib,
-  stdenvNoCC,
   fetchgit,
   gitUpdater,
+  stdenvNoCC,
 }:
 
 stdenvNoCC.mkDerivation (finalAttrs: {
@@ -27,14 +27,16 @@ stdenvNoCC.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Ubuntu Classic font";
+
     longDescription = "The Ubuntu typeface has been specially
     created to complement the Ubuntu tone of voice. It has a
     contemporary style and contains characteristics unique to
     the Ubuntu brand that convey a precise, reliable and free attitude.";
+
     homepage = "https://design.ubuntu.com/font";
     changelog = "https://git.launchpad.net/ubuntu/+source/fonts-ubuntu-classic/tree/FONTLOG.txt?h=${finalAttrs.src.rev}";
     license = lib.licenses.ufl;
-    platforms = lib.platforms.all;
     maintainers = with lib.maintainers; [ bobby285271 ];
+    platforms = lib.platforms.all;
   };
 })

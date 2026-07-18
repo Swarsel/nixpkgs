@@ -1,38 +1,36 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
   gcc-arm-embedded-13,
-  pkg-config,
-  meson,
-  ninja,
   hidapi,
   libftdi1,
-  libusb1,
   libgpiod_1,
-  versionCheckHook,
+  libusb1,
+  meson,
+  ninja,
+  pkg-config,
   udevCheckHook,
+  versionCheckHook,
 }:
 let
   libopencm3Src = fetchFromGitHub {
+    hash = "sha256-PylP95hpPeg3rqfelHW9qz+pi/qOP60RfvkurxbkWDs=";
     owner = "libopencm3";
     repo = "libopencm3";
     rev = "8a96a9d95a8e5c187a53652540b25a8f4d73a432";
-    hash = "sha256-PylP95hpPeg3rqfelHW9qz+pi/qOP60RfvkurxbkWDs=";
   };
 
   ctxlinkWinc1500Src = fetchFromGitHub {
+    hash = "sha256-IWLIJu2XuwsnP8/2C9uj09EBU2VtwTke3XXbc3NyZt4=";
     owner = "sidprice";
     repo = "ctxlink_winc1500";
     rev = "debeab9516e33622439f727a68bddabcdf52c528";
-    hash = "sha256-IWLIJu2XuwsnP8/2C9uj09EBU2VtwTke3XXbc3NyZt4=";
   };
 in
 stdenv.mkDerivation rec {
   pname = "blackmagic";
   version = "2.0.0";
-  # `git describe --always`
-  firmwareVersion = "v${version}";
 
   src = fetchFromGitHub {
     owner = "blackmagic-debug";
@@ -40,6 +38,8 @@ stdenv.mkDerivation rec {
     rev = firmwareVersion;
     hash = "sha256-JbPeN0seSkxV2uZ8BvsvjDUBMOyJu2BxqMgNkhLOiFI=";
   };
+
+  strictDeps = true;
 
   nativeBuildInputs = [
     gcc-arm-embedded-13 # fails to build with 14
@@ -55,16 +55,6 @@ stdenv.mkDerivation rec {
     libusb1
   ]
   ++ lib.optional stdenv.hostPlatform.isLinux libgpiod_1;
-
-  strictDeps = true;
-
-  postUnpack = ''
-    mkdir -p $sourceRoot/deps/libopencm3
-    cp -r ${libopencm3Src}/* $sourceRoot/deps/libopencm3/
-
-    mkdir -p $sourceRoot/deps/winc1500
-    cp -r ${ctxlinkWinc1500Src}/* $sourceRoot/deps/winc1500/
-  '';
 
   buildPhase = ''
     runHook preBuild
@@ -113,13 +103,24 @@ stdenv.mkDerivation rec {
     runHook postInstall
   '';
 
-  nativeInstallCheckInputs = [ versionCheckHook ];
-  versionCheckProgramArg = "--help";
   doInstallCheck = true;
+  nativeInstallCheckInputs = [ versionCheckHook ];
+  # `git describe --always`
+  firmwareVersion = "v${version}";
+
+  postUnpack = ''
+    mkdir -p $sourceRoot/deps/libopencm3
+    cp -r ${libopencm3Src}/* $sourceRoot/deps/libopencm3/
+
+    mkdir -p $sourceRoot/deps/winc1500
+    cp -r ${ctxlinkWinc1500Src}/* $sourceRoot/deps/winc1500/
+  '';
+
+  versionCheckProgramArg = "--help";
 
   meta = {
     description = "In-application debugger for ARM Cortex microcontrollers";
-    mainProgram = "blackmagic";
+
     longDescription = ''
       The Black Magic Probe is a modern, in-application debugging tool
       for embedded microprocessors. It allows you to see what is going
@@ -131,13 +132,17 @@ stdenv.mkDerivation rec {
       directory.  It also places the FTDI version of the blackmagic
       executable in the bin directory.
     '';
+
     homepage = "https://github.com/blacksphere/blackmagic";
     license = lib.licenses.gpl3Plus;
+
     maintainers = with lib.maintainers; [
       pjones
       sorki
       carlossless
     ];
+
     platforms = lib.platforms.unix;
+    mainProgram = "blackmagic";
   };
 }

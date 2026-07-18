@@ -1,16 +1,16 @@
 {
   lib,
   stdenv,
-  fetchgit,
   buildPackages,
+  fetchgit,
+  gitUpdater,
+  libkrb5,
+  libxcrypt,
   ncurses,
-  tcl,
+  openldap,
   openssl,
   pam,
-  libkrb5,
-  openldap,
-  libxcrypt,
-  gitUpdater,
+  tcl,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -23,8 +23,6 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-uAPQlF2IQPSZ0QoK9bwh6RBGsb1X0ktP1eVhs3RO44I=";
   };
 
-  depsBuildBuild = [ buildPackages.stdenv.cc ];
-
   buildInputs = [
     ncurses
     tcl
@@ -34,8 +32,6 @@ stdenv.mkDerivation (finalAttrs: {
     openldap
     libxcrypt
   ];
-
-  hardeningDisable = [ "format" ];
 
   configureFlags = [
     "--with-ssl-include-dir=${openssl.dev}/include/openssl"
@@ -51,16 +47,20 @@ stdenv.mkDerivation (finalAttrs: {
     "-std=gnu17"
   ];
 
+  depsBuildBuild = [ buildPackages.stdenv.cc ];
+  hardeningDisable = [ "format" ];
   passthru.updateScript = gitUpdater { rev-prefix = "v"; };
 
   meta = {
     description = "Console mail reader";
+    homepage = "https://alpineapp.email/";
     license = lib.licenses.asl20;
+
     maintainers = with lib.maintainers; [
       raskin
       rhendric
     ];
+
     platforms = lib.platforms.linux;
-    homepage = "https://alpineapp.email/";
   };
 })

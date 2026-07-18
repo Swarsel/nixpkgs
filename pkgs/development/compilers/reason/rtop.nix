@@ -1,14 +1,14 @@
 {
   buildDunePackage,
-  reason,
   cppo,
-  utop,
   makeWrapper,
+  reason,
+  utop,
 }:
 
 buildDunePackage {
-  pname = "rtop";
   inherit (reason) version src;
+  pname = "rtop";
 
   nativeBuildInputs = [
     makeWrapper

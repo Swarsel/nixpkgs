@@ -1,8 +1,8 @@
 {
   lib,
+  fetchFromGitHub,
   apksigner,
   bash,
-  fetchFromGitHub,
   installShellFiles,
   pandoc,
   python3,
@@ -11,7 +11,6 @@
 python3.pkgs.buildPythonApplication rec {
   pname = "apksigcopier";
   version = "1.1.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "obfusk";
@@ -20,30 +19,15 @@ python3.pkgs.buildPythonApplication rec {
     sha256 = "sha256-VuwSaoTv5qq1jKwgBTKd1y9RKUzz89n86Z4UBv7Q51o=";
   };
 
-  nativeBuildInputs = [
-    installShellFiles
-    pandoc
-  ];
-
-  build-system = with python3.pkgs; [
-    setuptools
-  ];
-
-  dependencies = with python3.pkgs; [
-    click
-  ];
-
-  makeWrapperArgs = [
-    "--prefix"
-    "PATH"
-    ":"
-    "${lib.makeBinPath [ apksigner ]}"
-  ];
-
   postPatch = ''
     substituteInPlace Makefile \
       --replace-fail /bin/bash ${bash}/bin/bash
   '';
+
+  nativeBuildInputs = [
+    installShellFiles
+    pandoc
+  ];
 
   postBuild = ''
     make ${pname}.1
@@ -61,9 +45,26 @@ python3.pkgs.buildPythonApplication rec {
     runHook postInstallCheck
   '';
 
+  build-system = with python3.pkgs; [
+    setuptools
+  ];
+
+  dependencies = with python3.pkgs; [
+    click
+  ];
+
+  makeWrapperArgs = [
+    "--prefix"
+    "PATH"
+    ":"
+    "${lib.makeBinPath [ apksigner ]}"
+  ];
+
+  pyproject = true;
+
   meta = {
     description = "Copy/extract/patch android apk signatures & compare APKs";
-    mainProgram = "apksigcopier";
+
     longDescription = ''
       apksigcopier is a tool for copying android APK signatures from a signed
       APK to an unsigned one (in order to verify reproducible builds).
@@ -75,8 +76,10 @@ python3.pkgs.buildPythonApplication rec {
       * patch previously extracted signatures onto an unsigned APK
       * compare two APKs with different signatures (requires apksigner)
     '';
+
     homepage = "https://github.com/obfusk/apksigcopier";
     license = with lib.licenses; [ gpl3Plus ];
     maintainers = with lib.maintainers; [ obfusk ];
+    mainProgram = "apksigcopier";
   };
 }

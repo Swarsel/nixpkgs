@@ -1,25 +1,25 @@
 {
   lib,
   stdenv,
-  perlPackages,
   fetchFromGitHub,
-  fetchpatch,
-  makeWrapper,
   coreutils,
   dmidecode,
+  fetchpatch,
   findutils,
   inetutils,
   ipmitool,
   iproute2,
   lvm2,
+  makeWrapper,
+  nix-update-script,
+  nixosTests,
   nmap,
+  ocsinventory-agent,
   pciutils,
+  perlPackages,
+  testers,
   usbutils,
   util-linux,
-  nixosTests,
-  testers,
-  ocsinventory-agent,
-  nix-update-script,
 }:
 
 perlPackages.buildPerlPackage rec {
@@ -37,8 +37,8 @@ perlPackages.buildPerlPackage rec {
     # Fix Getopt-Long warnings
     # See https://github.com/OCSInventory-NG/UnixAgent/pull/490
     (fetchpatch {
-      url = "https://github.com/OCSInventory-NG/UnixAgent/commit/c4899cef6b797df471ddf41c427970de47302f80.patch";
       hash = "sha256-HxcWb9jmHiL0r6VWlsvmKUuybnM9W5471FLBBe3Zrfs=";
+      url = "https://github.com/OCSInventory-NG/UnixAgent/commit/c4899cef6b797df471ddf41c427970de47302f80.patch";
     })
   ];
 
@@ -100,30 +100,36 @@ perlPackages.buildPerlPackage rec {
   passthru = {
     tests = {
       inherit (nixosTests) ocsinventory-agent;
+
       version = testers.testVersion {
-        package = ocsinventory-agent;
         command = "ocsinventory-agent --version";
+        package = ocsinventory-agent;
       };
     };
+
     updateScript = nix-update-script { };
   };
 
   meta = {
     description = "OCS Inventory unified agent for Unix operating systems";
+
     longDescription = ''
       Open Computers and Software Inventory (OCS) is an application designed
       to help a network or system administrator to keep track of the hardware and
       software configurations of computers that are installed on the network.
     '';
+
     homepage = "https://ocsinventory-ng.org";
     changelog = "https://github.com/OCSInventory-NG/UnixAgent/releases/tag/v${version}";
-    downloadPage = "https://github.com/OCSInventory-NG/UnixAgent/releases";
     license = lib.licenses.gpl2Only;
-    mainProgram = "ocsinventory-agent";
+
     maintainers = with lib.maintainers; [
       totoroot
       anthonyroussel
     ];
+
     platforms = lib.platforms.unix;
+    mainProgram = "ocsinventory-agent";
+    downloadPage = "https://github.com/OCSInventory-NG/UnixAgent/releases";
   };
 }

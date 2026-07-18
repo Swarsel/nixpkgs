@@ -6,22 +6,32 @@
 
 {
   pkg,
-  version,
   sha256,
+  version,
   meta ? { },
 }:
 
 stdenv.mkDerivation {
-  pname = pkg;
   inherit version;
+  inherit meta;
+  pname = pkg;
+
+  src = fetchurl {
+    inherit sha256;
+    url = "https://repo.hex.pm/tarballs/${pkg}-${version}.tar";
+  };
+
+  installPhase = ''
+    runHook preInstall
+    mkdir "$out"
+    cp -Hrt "$out" .
+    success=1
+    runHook postInstall
+  '';
+
   dontBuild = true;
   dontConfigure = true;
   dontFixup = true;
-
-  src = fetchurl {
-    url = "https://repo.hex.pm/tarballs/${pkg}-${version}.tar";
-    inherit sha256;
-  };
 
   unpackCmd = ''
     tar -xf $curSrc contents.tar.gz CHECKSUM metadata.config
@@ -37,14 +47,4 @@ stdenv.mkDerivation {
     # See: https://github.com/hexpm/hex/blob/main/test/hex/mix_task_test.exs#L410
     echo -n "${pkg},${version},$(cat CHECKSUM | tr '[:upper:]' '[:lower:]'),hexpm" > contents/.hex
   '';
-
-  installPhase = ''
-    runHook preInstall
-    mkdir "$out"
-    cp -Hrt "$out" .
-    success=1
-    runHook postInstall
-  '';
-
-  inherit meta;
 }

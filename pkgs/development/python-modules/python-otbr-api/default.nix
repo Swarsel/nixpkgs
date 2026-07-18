@@ -1,10 +1,10 @@
 {
   lib,
+  fetchFromGitHub,
   aiohttp,
   bitstruct,
   buildPythonPackage,
   cryptography,
-  fetchFromGitHub,
   pytest-asyncio,
   pytestCheckHook,
   setuptools,
@@ -15,7 +15,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "python-otbr-api";
   version = "2.10.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "home-assistant-libs";
@@ -23,6 +22,11 @@ buildPythonPackage (finalAttrs: {
     tag = finalAttrs.version;
     hash = "sha256-WBL6R4yw/4yuF/T94NtaapGspn4L2H0glVatW6+hoRk=";
   };
+
+  nativeCheckInputs = [
+    pytest-asyncio
+    pytestCheckHook
+  ];
 
   build-system = [ setuptools ];
 
@@ -34,11 +38,7 @@ buildPythonPackage (finalAttrs: {
     voluptuous
   ];
 
-  nativeCheckInputs = [
-    pytest-asyncio
-    pytestCheckHook
-  ];
-
+  pyproject = true;
   pythonImportsCheck = [ "python_otbr_api" ];
 
   meta = {

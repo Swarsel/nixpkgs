@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
 }:
 buildGoModule (finalAttrs: {
   pname = "gptscript";
@@ -15,6 +15,8 @@ buildGoModule (finalAttrs: {
   };
 
   vendorHash = "sha256-C9dksQ7Js3omL8RWdQt6cEEGbGHnkXdgpYou2oKNm0Y=";
+  # Requires network access
+  doCheck = false;
 
   ldflags = [
     "-s"
@@ -22,13 +24,10 @@ buildGoModule (finalAttrs: {
     "-X github.com/gptscript-ai/gptscript/pkg/version.Tag=v${finalAttrs.version}"
   ];
 
-  # Requires network access
-  doCheck = false;
-
   meta = {
+    description = "Build AI assistants that interact with your systems";
     homepage = "https://github.com/gptscript-ai/gptscript";
     changelog = "https://github.com/gptscript-ai/gptscript/releases/tag/v${finalAttrs.version}";
-    description = "Build AI assistants that interact with your systems";
     license = with lib.licenses; [ asl20 ];
     maintainers = with lib.maintainers; [ jamiemagee ];
     mainProgram = "gptscript";

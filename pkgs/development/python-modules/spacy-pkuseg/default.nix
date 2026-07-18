@@ -1,22 +1,21 @@
 {
   lib,
   buildPythonPackage,
-  fetchPypi,
   cython,
-  setuptools,
+  fetchPypi,
   numpy,
+  setuptools,
   srsly,
 }:
 
 buildPythonPackage rec {
   pname = "spacy-pkuseg";
   version = "1.0.1";
-  pyproject = true;
 
   src = fetchPypi {
     inherit version;
-    pname = "spacy_pkuseg";
     hash = "sha256-tIB4d1r/80kUN1NE1W9wo37ARBiMyuzj9wgG/TIqR+s=";
+    pname = "spacy_pkuseg";
   };
 
   # Does not seem to have actual tests, but unittest discover
@@ -34,6 +33,7 @@ buildPythonPackage rec {
     srsly
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "spacy_pkuseg" ];
 
   meta = {

@@ -3,14 +3,14 @@
   stdenv,
   fetchFromGitHub,
   cmake,
-  pkg-config,
-  qt6Packages,
-  openal,
-  libvorbis,
-  libogg,
   libGL,
   libGLU,
+  libogg,
+  libvorbis,
   nix-update-script,
+  openal,
+  pkg-config,
+  qt6Packages,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -24,7 +24,6 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-1+oKSO0pjUBgnlM9J2BB7Xyqbk8liebzUqxKY5M82qg=";
   };
 
-  __structuredAttrs = true;
   strictDeps = true;
 
   nativeBuildInputs = [
@@ -49,16 +48,17 @@ stdenv.mkDerivation (finalAttrs: {
     "-DReleaseBuild=ON"
   ];
 
+  __structuredAttrs = true;
   passthru.updateScript = nix-update-script { };
 
   meta = {
     description = "Top-down 2D racing game with split-screen multiplayer";
     homepage = "https://juzzlin.github.io/DustRacing2D/index.html";
-    downloadPage = "https://github.com/juzzlin/DustRacing2D";
     changelog = "https://github.com/juzzlin/DustRacing2D/releases/tag/${finalAttrs.version}";
-    mainProgram = "dustrac-game";
     license = lib.licenses.gpl3Only;
-    platforms = lib.platforms.unix;
     maintainers = with lib.maintainers; [ castorNova2 ];
+    platforms = lib.platforms.unix;
+    mainProgram = "dustrac-game";
+    downloadPage = "https://github.com/juzzlin/DustRacing2D";
   };
 })

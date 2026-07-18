@@ -1,7 +1,7 @@
 {
-  buildGoModule,
-  fetchFromGitHub,
   lib,
+  fetchFromGitHub,
+  buildGoModule,
   nix-update-script,
   versionCheckHook,
 }:
@@ -18,6 +18,8 @@ buildGoModule (finalAttrs: {
   };
 
   vendorHash = "sha256-FsNa9qp2MnPk1onv/O13mFi+82yP7D4LdILZsNzHs+4=";
+  doInstallCheck = true;
+  nativeInstallCheckInputs = [ versionCheckHook ];
 
   ldflags = [
     "-s"
@@ -26,14 +28,12 @@ buildGoModule (finalAttrs: {
     "-X=main.date=1970-01-01T00:00:00Z"
   ];
 
-  doInstallCheck = true;
-  nativeInstallCheckInputs = [ versionCheckHook ];
   versionCheckProgramArg = "version";
-
   passthru.updateScript = nix-update-script { };
 
   meta = {
     description = "Terminal screensaver that turns idle time into ambient art";
+
     longDescription = ''
       Constellations, rain, particles & braille waves.  Press any key
       to resume.
@@ -41,13 +41,16 @@ buildGoModule (finalAttrs: {
       Every OS has a screensaver.  The terminal had nothing — until
       now.
     '';
+
     homepage = "https://github.com/phlx0/drift";
     changelog = "https://github.com/phlx0/drift/blob/${finalAttrs.src.tag}/CHANGELOG.md";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       mana-byte
       yiyu
     ];
+
     mainProgram = "drift";
   };
 })

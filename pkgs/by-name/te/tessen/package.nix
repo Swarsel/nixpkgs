@@ -1,14 +1,14 @@
 {
   lib,
-  stdenvNoCC,
-  fetchFromSourcehut,
-  makeWrapper,
-  installShellFiles,
-  wtype,
-  wl-clipboard,
-  pass,
   bemenu,
+  fetchFromSourcehut,
+  installShellFiles,
+  makeWrapper,
+  pass,
   scdoc,
+  stdenvNoCC,
+  wl-clipboard,
+  wtype,
 }:
 
 stdenvNoCC.mkDerivation rec {
@@ -27,8 +27,6 @@ stdenvNoCC.mkDerivation rec {
     installShellFiles
     scdoc
   ];
-
-  dontBuild = true;
 
   installPhase = ''
     runHook preInstall
@@ -54,12 +52,14 @@ stdenvNoCC.mkDerivation rec {
     install -Dm644 config $out/share/tessen/config
   '';
 
+  dontBuild = true;
+
   meta = {
-    homepage = "https://git.sr.ht/~ayushnix/tessen";
     description = "Interactive menu to autotype and copy Pass and GoPass data";
+    homepage = "https://git.sr.ht/~ayushnix/tessen";
     license = lib.licenses.gpl2Plus;
-    platforms = lib.platforms.linux;
     maintainers = with lib.maintainers; [ monaaraj ];
+    platforms = lib.platforms.linux;
     mainProgram = "tessen";
   };
 }

@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
 }:
 buildGoModule (finalAttrs: {
   pname = "go-i18n";
@@ -15,23 +15,23 @@ buildGoModule (finalAttrs: {
   };
 
   vendorHash = "sha256-HhSzcK5FdOL2itnO/9kPTExbq0ZvVbvkl+aFtbv//4c=";
+  env.CGO_ENABLED = 0;
+  doCheck = true;
 
   subPackages = [
     "goi18n"
   ];
 
-  env.CGO_ENABLED = 0;
-
-  doCheck = true;
-
   meta = {
-    changelog = "https://github.com/nicksnyder/go-i18n/releases/tag/${finalAttrs.src.tag}";
     description = "Translate your Go program into multiple languages";
+
     longDescription = ''
       goi18n is a tool that lets you extract messages from all your Go source files,
       generates new language files.
     '';
+
     homepage = "https://github.com/nicksnyder/go-i18n";
+    changelog = "https://github.com/nicksnyder/go-i18n/releases/tag/${finalAttrs.src.tag}";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ videl ];
     mainProgram = "goi18n";

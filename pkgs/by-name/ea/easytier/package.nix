@@ -2,12 +2,12 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  rustPlatform,
-  protobuf,
-  nixosTests,
-  nix-update-script,
   installShellFiles,
   mold,
+  nix-update-script,
+  nixosTests,
+  protobuf,
+  rustPlatform,
   withQuic ? false, # with QUIC protocol support
 }:
 
@@ -22,8 +22,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-lwqpOVKFm85AiBb7NWLAkjSrWSe5pzF0AuEmmDo+v0k=";
   };
 
-  cargoHash = "sha256-c+rOjokrL0U63s1CMfy6KlGI7VoSmtxuQjBNDAagSdg=";
-
   nativeBuildInputs = [
     protobuf
     rustPlatform.bindgenHook
@@ -31,8 +29,8 @@ rustPlatform.buildRustPackage (finalAttrs: {
     mold
   ];
 
-  buildNoDefaultFeatures = stdenv.hostPlatform.isMips;
-  buildFeatures = lib.optional stdenv.hostPlatform.isMips "mips" ++ lib.optional withQuic "quic";
+  cargoHash = "sha256-c+rOjokrL0U63s1CMfy6KlGI7VoSmtxuQjBNDAagSdg=";
+  doCheck = false; # tests failed due to heavy rely on network
 
   postInstall = lib.optionalString (stdenv.buildPlatform.canExecute stdenv.hostPlatform) ''
     installShellCompletion --cmd easytier-cli \
@@ -45,7 +43,8 @@ rustPlatform.buildRustPackage (finalAttrs: {
       --zsh <($out/bin/easytier-core --gen-autocomplete zsh)
   '';
 
-  doCheck = false; # tests failed due to heavy rely on network
+  buildFeatures = lib.optional stdenv.hostPlatform.isMips "mips" ++ lib.optional withQuic "quic";
+  buildNoDefaultFeatures = stdenv.hostPlatform.isMips;
 
   passthru = {
     tests = { inherit (nixosTests) easytier; };
@@ -53,16 +52,18 @@ rustPlatform.buildRustPackage (finalAttrs: {
   };
 
   meta = {
-    homepage = "https://github.com/EasyTier/EasyTier";
-    changelog = "https://github.com/EasyTier/EasyTier/releases/tag/v${finalAttrs.version}";
     description = "Simple, decentralized mesh VPN with WireGuard support";
+
     longDescription = ''
       EasyTier is a simple, safe and decentralized VPN networking solution implemented
       with the Rust language and Tokio framework.
     '';
-    mainProgram = "easytier-core";
+
+    homepage = "https://github.com/EasyTier/EasyTier";
+    changelog = "https://github.com/EasyTier/EasyTier/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.asl20;
-    platforms = with lib.platforms; unix ++ windows;
     maintainers = with lib.maintainers; [ ltrump ];
+    platforms = with lib.platforms; unix ++ windows;
+    mainProgram = "easytier-core";
   };
 })

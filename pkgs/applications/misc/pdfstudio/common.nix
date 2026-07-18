@@ -1,33 +1,34 @@
 {
+  lib,
+  stdenv,
+  autoPatchelfHook,
+  buildFHSEnv,
+  copyDesktopItems,
+  cups,
+  desktopName,
+  dpkg,
+  jdk,
+  longDescription,
+  makeDesktopItem,
   pname,
   program,
-  src,
-  year,
-  version,
-  desktopName,
-  longDescription,
-  broken ? false,
-  buildFHSEnv,
-  extraBuildInputs ? [ ],
-  jdk,
-  stdenv,
-  lib,
-  dpkg,
-  makeDesktopItem,
-  copyDesktopItems,
-  autoPatchelfHook,
   sane-backends,
-  cups,
+  src,
+  version,
+  year,
+  broken ? false,
+  extraBuildInputs ? [ ],
 }:
 let
   thisPackage = stdenv.mkDerivation rec {
     inherit pname src version;
-    strictDeps = true;
 
-    buildInputs = [
-      sane-backends # for libsane.so.1
-    ]
-    ++ extraBuildInputs;
+    postPatch = ''
+      substituteInPlace opt/${program}${year}/${program}${year} --replace "# INSTALL4J_JAVA_HOME_OVERRIDE=" "INSTALL4J_JAVA_HOME_OVERRIDE=${jdk.out}"
+      substituteInPlace opt/${program}${year}/updater --replace "# INSTALL4J_JAVA_HOME_OVERRIDE=" "INSTALL4J_JAVA_HOME_OVERRIDE=${jdk.out}"
+    '';
+
+    strictDeps = true;
 
     nativeBuildInputs = [
       autoPatchelfHook
@@ -35,25 +36,10 @@ let
       copyDesktopItems
     ];
 
-    desktopItems = [
-      (makeDesktopItem {
-        name = "${pname}";
-        desktopName = desktopName;
-        genericName = "View and edit PDF files";
-        exec = "${pname} %f";
-        icon = "${pname}";
-        comment = "Views and edits PDF files";
-        mimeTypes = [ "application/pdf" ];
-        categories = [ "Office" ];
-      })
-    ];
-
-    dontBuild = true;
-
-    postPatch = ''
-      substituteInPlace opt/${program}${year}/${program}${year} --replace "# INSTALL4J_JAVA_HOME_OVERRIDE=" "INSTALL4J_JAVA_HOME_OVERRIDE=${jdk.out}"
-      substituteInPlace opt/${program}${year}/updater --replace "# INSTALL4J_JAVA_HOME_OVERRIDE=" "INSTALL4J_JAVA_HOME_OVERRIDE=${jdk.out}"
-    '';
+    buildInputs = [
+      sane-backends # for libsane.so.1
+    ]
+    ++ extraBuildInputs;
 
     installPhase = ''
       runHook preInstall
@@ -66,19 +52,27 @@ let
 
       runHook postInstall
     '';
+
+    desktopItems = [
+      (makeDesktopItem {
+        categories = [ "Office" ];
+        comment = "Views and edits PDF files";
+        desktopName = desktopName;
+        exec = "${pname} %f";
+        genericName = "View and edit PDF files";
+        icon = "${pname}";
+        mimeTypes = [ "application/pdf" ];
+        name = "${pname}";
+      })
+    ];
+
+    dontBuild = true;
   };
 
 in
 # Package with cups in FHS sandbox, because JAVA bin expects "/usr/bin/lpr" for printing.
 buildFHSEnv {
   inherit pname version;
-
-  targetPkgs = pkgs: [
-    cups
-    thisPackage
-  ];
-
-  runScript = "${program}${year}";
 
   # link desktop item and icon into FHS user environment
   extraInstallCommands = ''
@@ -88,18 +82,27 @@ buildFHSEnv {
     ln -s ${thisPackage}/share/pixmaps/*.png "$out/share/pixmaps/"
   '';
 
+  runScript = "${program}${year}";
+
+  targetPkgs = pkgs: [
+    cups
+    thisPackage
+  ];
+
   meta = {
     inherit broken;
-    homepage = "https://www.qoppa.com/${pname}/";
     description = "Easy to use, full-featured PDF editing software";
     longDescription = longDescription;
+    homepage = "https://www.qoppa.com/${pname}/";
+    license = lib.licenses.unfree;
+
     sourceProvenance = with lib.sourceTypes; [
       binaryBytecode
       binaryNativeCode
     ];
-    license = lib.licenses.unfree;
+
+    maintainers = with lib.maintainers; [ pwoelfel ];
     platforms = lib.platforms.linux;
     mainProgram = pname;
-    maintainers = with lib.maintainers; [ pwoelfel ];
   };
 }

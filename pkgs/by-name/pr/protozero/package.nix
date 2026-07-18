@@ -21,14 +21,17 @@ stdenv.mkDerivation (finalAttrs: {
   meta = {
     description = "Minimalistic protocol buffer decoder and encoder in C++";
     homepage = "https://github.com/mapbox/protozero";
-    license = with lib.licenses; [
-      bsd2
-      asl20
-    ];
+
     changelog = [
       "https://github.com/mapbox/protozero/releases/tag/v${finalAttrs.version}"
       "https://github.com/mapbox/protozero/blob/v${finalAttrs.version}/CHANGELOG.md"
     ];
+
+    license = with lib.licenses; [
+      bsd2
+      asl20
+    ];
+
     maintainers = with lib.maintainers; [ das-g ];
     teams = [ lib.teams.geospatial ];
   };

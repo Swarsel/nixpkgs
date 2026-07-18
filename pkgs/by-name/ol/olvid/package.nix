@@ -1,20 +1,20 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchurl,
-  zlib,
-  libxext,
+  alsa-lib,
+  autoPatchelfHook,
+  freetype,
+  jdk21,
   libx11,
+  libxext,
+  libxi,
   libxrender,
   libxtst,
-  libxi,
-  freetype,
-  alsa-lib,
-  jdk21,
-  openjfx21,
-  autoPatchelfHook,
   makeBinaryWrapper,
+  openjfx21,
   wrapGAppsHook3,
+  zlib,
 }:
 
 let
@@ -64,9 +64,6 @@ stdenv.mkDerivation (finalAttrs: {
   pname = "olvid";
   version = "2.7.0";
 
-  dontUnpack = true;
-  dontWrapGApps = true;
-
   src = fetchurl {
     url = "https://static.olvid.io/linux/${repo}-${finalAttrs.version}.tar.gz";
     hash = "sha256-5qpsi31Z2aDIlEZ/lhsj8VjxSwfVvAOiwPbSWcRdby0=";
@@ -106,12 +103,15 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  dontUnpack = true;
+  dontWrapGApps = true;
+
   meta = {
     description = "Secure french messenger";
     homepage = "https://www.olvid.io";
     license = lib.licenses.agpl3Only;
-    mainProgram = "olvid";
     maintainers = with lib.maintainers; [ rookeur ];
     platforms = lib.platforms.linux;
+    mainProgram = "olvid";
   };
 })

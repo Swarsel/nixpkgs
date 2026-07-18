@@ -2,22 +2,27 @@
   lib,
   stdenv,
   fetchurl,
-  pkg-config,
   autoreconfHook,
-  libxml2,
   findXMLCatalogs,
   gettext,
-  python3,
-  ncurses,
+  gnome,
   libgcrypt,
+  libxml2,
+  ncurses,
+  pkg-config,
+  python3,
   cryptoSupport ? false,
   pythonSupport ? libxml2.pythonSupport,
-  gnome,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
   pname = "libxslt";
   version = "1.1.45";
+
+  src = fetchurl {
+    url = "mirror://gnome/sources/libxslt/${lib.versions.majorMinor finalAttrs.version}/libxslt-${finalAttrs.version}.tar.xz";
+    hash = "sha256-ms/mhBnE0GpFxVAyGzISdi2S9BRlBiyk6hnmMu5dIW4=";
+  };
 
   outputs = [
     "bin"
@@ -27,12 +32,6 @@ stdenv.mkDerivation (finalAttrs: {
     "devdoc"
   ]
   ++ lib.optional pythonSupport "py";
-  outputMan = "bin";
-
-  src = fetchurl {
-    url = "mirror://gnome/sources/libxslt/${lib.versions.majorMinor finalAttrs.version}/libxslt-${finalAttrs.version}.tar.xz";
-    hash = "sha256-ms/mhBnE0GpFxVAyGzISdi2S9BRlBiyk6hnmMu5dIW4=";
-  };
 
   patches = [
     # Fix use-after-free with key data stored cross-RVT
@@ -73,8 +72,6 @@ stdenv.mkDerivation (finalAttrs: {
     (lib.withFeature cryptoSupport "crypto")
   ];
 
-  enableParallelBuilding = true;
-
   postFixup = ''
     moveToOutput bin/xslt-config "$dev"
     moveToOutput lib/xsltConf.sh "$dev"
@@ -88,6 +85,9 @@ stdenv.mkDerivation (finalAttrs: {
     moveToOutput ${python3.sitePackages} "$py"
   '';
 
+  enableParallelBuilding = true;
+  outputMan = "bin";
+
   passthru = {
     inherit pythonSupport;
 
@@ -98,11 +98,11 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   meta = {
-    homepage = "https://gitlab.gnome.org/GNOME/libxslt";
     description = "C library and tools to do XSL transformations";
+    homepage = "https://gitlab.gnome.org/GNOME/libxslt";
     license = lib.licenses.mit;
-    platforms = lib.platforms.all;
     maintainers = with lib.maintainers; [ jtojnar ];
+    platforms = lib.platforms.all;
     broken = pythonSupport && !libxml2.pythonSupport; # see #73102 for why this is not an assert
     identifiers.cpeParts = lib.meta.cpeFullVersionWithVendor "xmlsoft" finalAttrs.version;
   };

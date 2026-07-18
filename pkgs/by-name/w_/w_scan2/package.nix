@@ -18,9 +18,9 @@ stdenv.mkDerivation (finalAttrs: {
   meta = {
     description = "Small channel scan tool which generates ATSC, DVB-C, DVB-S/S2 and DVB-T/T2 channels.conf files";
     homepage = "https://github.com/stefantalpalaru/w_scan2";
-    platforms = lib.platforms.linux;
-    maintainers = with lib.maintainers; [ _0x4A6F ];
     license = lib.licenses.gpl2Only;
+    maintainers = with lib.maintainers; [ _0x4A6F ];
+    platforms = lib.platforms.linux;
     mainProgram = "w_scan2";
   };
 })

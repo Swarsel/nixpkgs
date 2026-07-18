@@ -10,7 +10,6 @@
 buildPythonPackage rec {
   pname = "tinycss";
   version = "0.4";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
@@ -22,10 +21,9 @@ buildPythonPackage rec {
   '';
 
   nativeBuildInputs = [ cython ];
-
   propagatedBuildInputs = [ cssutils ];
-
-  nativeCheckInputs = [ pytestCheckHook ];
+  # Disable Cython tests
+  env.TINYCSS_SKIP_SPEEDUPS_TESTS = true;
 
   preBuild = ''
     # Force Cython to re-generate this file. If it is present, Cython will
@@ -35,9 +33,8 @@ buildPythonPackage rec {
     rm tinycss/speedups.c
   '';
 
-  # Disable Cython tests
-  env.TINYCSS_SKIP_SPEEDUPS_TESTS = true;
-
+  nativeCheckInputs = [ pytestCheckHook ];
+  format = "setuptools";
   pythonImportsCheck = [ "tinycss" ];
 
   meta = {

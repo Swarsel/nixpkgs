@@ -1,10 +1,10 @@
 {
   lib,
-  rustPlatform,
-  fetchFromGitHub,
-  installShellFiles,
   stdenv,
+  fetchFromGitHub,
   cacert,
+  installShellFiles,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -18,20 +18,17 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-Be7aJ5Bo5JSMcyyWsZ3ZamQ691TSIO4Ylxzil7UNJxk=";
   };
 
-  cargoHash = "sha256-H2ew+sb60UnXe3Dls9MSKwAk4hT/yLSbgZz6pVOkHQQ=";
-
   nativeBuildInputs = [ installShellFiles ];
-
-  __darwinAllowLocalNetworking = true;
-
-  preCheck = ''
-    export SSL_CERT_FILE=${cacert}/etc/ssl/certs/ca-bundle.crt
-  '';
+  cargoHash = "sha256-H2ew+sb60UnXe3Dls9MSKwAk4hT/yLSbgZz6pVOkHQQ=";
 
   checkFlags = [
     # tests depend on network interface, may fail with virtual IPs.
     "--skip=validate_printed_urls"
   ];
+
+  preCheck = ''
+    export SSL_CERT_FILE=${cacert}/etc/ssl/certs/ca-bundle.crt
+  '';
 
   postInstall = lib.optionalString (stdenv.buildPlatform.canExecute stdenv.hostPlatform) ''
     installShellCompletion --cmd dufs \
@@ -40,17 +37,22 @@ rustPlatform.buildRustPackage (finalAttrs: {
       --zsh <($out/bin/dufs --completions zsh)
   '';
 
+  __darwinAllowLocalNetworking = true;
+
   meta = {
     description = "File server that supports static serving, uploading, searching, accessing control, webdav";
-    mainProgram = "dufs";
     homepage = "https://github.com/sigoden/dufs";
     changelog = "https://github.com/sigoden/dufs/blob/${finalAttrs.src.rev}/CHANGELOG.md";
+
     license = with lib.licenses; [
       asl20 # or
       mit
     ];
+
     maintainers = with lib.maintainers; [
       holymonson
     ];
+
+    mainProgram = "dufs";
   };
 })

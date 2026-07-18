@@ -1,9 +1,9 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
   openssl,
   pkg-config,
+  rustPlatform,
   versionCheckHook,
 }:
 
@@ -18,8 +18,8 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-qGcEhoytkCkcaA5eHc8GVgWvbOIyrO6BCp+EHva6wTw=";
   };
 
-  cargoPatches = [ ./update-wasm-bindgen.patch ];
-
+  nativeBuildInputs = [ pkg-config ];
+  buildInputs = [ openssl ];
   cargoHash = "sha256-d6PLrs/n9riQ9oQTWn+6Ec1E5JhJZ7akDg8/UB21GzI=";
 
   checkFlags = [
@@ -27,12 +27,9 @@ rustPlatform.buildRustPackage (finalAttrs: {
     "--skip=pretty_print_search_results::tests::display_pretty_search_results_given_output"
   ];
 
-  nativeBuildInputs = [ pkg-config ];
-
-  buildInputs = [ openssl ];
-
   doInstallCheck = true;
   nativeInstallCheckInputs = [ versionCheckHook ];
+  cargoPatches = [ ./update-wasm-bindgen.patch ];
 
   meta = {
     description = "Impossibly fast web search, made for static sites";

@@ -2,9 +2,9 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  pkg-config,
   ocamlPackages,
   opaline,
+  pkg-config,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -28,9 +28,8 @@ stdenv.mkDerivation (finalAttrs: {
     findlib
     ocaml
   ]);
-  buildInputs = with ocamlPackages; [ ocamlgraph ];
 
-  installTargets = "ott.install";
+  buildInputs = with ocamlPackages; [ ocamlgraph ];
 
   postInstall = ''
     opaline -prefix $out
@@ -40,9 +39,11 @@ stdenv.mkDerivation (finalAttrs: {
     rm -r $out/share/emacs
   '';
 
+  installTargets = "ott.install";
+
   meta = {
     description = "Tool for the working semanticist";
-    mainProgram = "ott";
+
     longDescription = ''
       Ott is a tool for writing definitions of programming languages and
       calculi. It takes as input a definition of a language syntax and
@@ -54,9 +55,11 @@ stdenv.mkDerivation (finalAttrs: {
       terms of the defined language, parsing them and replacing them by
       target-system terms.
     '';
+
     homepage = "http://www.cl.cam.ac.uk/~pes20/ott";
     license = lib.licenses.bsd3;
     maintainers = with lib.maintainers; [ jwiegley ];
     platforms = lib.platforms.unix;
+    mainProgram = "ott";
   };
 })

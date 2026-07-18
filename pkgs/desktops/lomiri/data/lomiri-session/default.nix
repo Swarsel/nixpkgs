@@ -1,19 +1,19 @@
 {
-  stdenvNoCC,
   lib,
   fetchFromGitLab,
-  gitUpdater,
-  nixosTests,
   bash,
   cmake,
   dbus,
   deviceinfo,
+  gitUpdater,
   glib,
   inotify-tools,
   lomiri,
   lomiri-schemas,
   makeWrapper,
+  nixosTests,
   pkg-config,
+  stdenvNoCC,
   systemd,
   wrapGAppsHook4,
   xdg-user-dirs,
@@ -47,8 +47,6 @@ stdenvNoCC.mkDerivation (finalAttrs: {
   # Checks for run-time tools at configure-time
   strictDeps = false;
 
-  __structuredAttrs = true;
-
   nativeBuildInputs = [
     cmake
     glib # hook for wrapper arguments
@@ -66,8 +64,6 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     lomiri-schemas # for hook to pick up schemas
     systemd
   ];
-
-  dontWrapGApps = true;
 
   cmakeFlags = [
     # Requires lomiri-system-compositor -> not ported to Mir 2.x yet
@@ -96,12 +92,16 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     wrapGApp $out/bin/lomiri-session
   '';
 
+  __structuredAttrs = true;
+  dontWrapGApps = true;
+
   passthru = {
     providedSessions = [
       "lomiri"
       # not packaged/working yet
       # "lomiri-touch"
     ];
+
     tests = nixosTests.lomiri;
     updateScript = gitUpdater { };
   };
@@ -111,8 +111,8 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     homepage = "https://gitlab.com/ubports/development/core/lomiri-session";
     changelog = "https://gitlab.com/ubports/development/core/lomiri-session/-/blob/${finalAttrs.version}/ChangeLog";
     license = lib.licenses.gpl3Only;
+    platforms = lib.platforms.linux;
     mainProgram = "lomiri-session";
     teams = [ lib.teams.lomiri ];
-    platforms = lib.platforms.linux;
   };
 })

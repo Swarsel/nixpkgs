@@ -14,18 +14,18 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-xJxdOb6eEr8suf3u/vouYCGzTFugJpLtoKyCMeuoJv4=";
   };
 
-  buildInputs = [ libx11 ];
-
   outputs = [
     "out"
     "man"
   ];
 
   strictDeps = true;
+  buildInputs = [ libx11 ];
 
   meta = {
-    homepage = "http://www.boomerangsworld.de/cms/worker/index.html";
+    inherit (libx11.meta) platforms;
     description = "Advanced orthodox file manager";
+
     longDescription = ''
       Worker is a two-pane file manager for the X Window System on UN*X. The
       directories and files are shown in two independent panels supporting a lot
@@ -34,9 +34,10 @@ stdenv.mkDerivation (finalAttrs: {
       directories by using history of accessed directories, live filtering, and
       access to commands by using the keyboard.
     '';
+
+    homepage = "http://www.boomerangsworld.de/cms/worker/index.html";
     license = with lib.licenses; [ gpl2Plus ];
-    mainProgram = "worker";
     maintainers = [ ];
-    inherit (libx11.meta) platforms;
+    mainProgram = "worker";
   };
 })

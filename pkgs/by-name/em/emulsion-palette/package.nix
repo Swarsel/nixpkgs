@@ -1,17 +1,17 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
+  desktop-file-utils,
+  gtk3,
+  json-glib,
+  libadwaita,
+  libgee,
   meson,
   ninja,
+  pkg-config,
   vala,
   wrapGAppsHook4,
-  libadwaita,
-  json-glib,
-  libgee,
-  pkg-config,
-  gtk3,
-  desktop-file-utils,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -49,7 +49,7 @@ stdenv.mkDerivation (finalAttrs: {
     description = "Store your color palettes in an easy way";
     homepage = "https://github.com/lainsce/emulsion";
     license = lib.licenses.gpl3Only;
-    platforms = lib.platforms.linux;
     maintainers = [ ];
+    platforms = lib.platforms.linux;
   };
 })

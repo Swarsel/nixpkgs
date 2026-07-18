@@ -2,29 +2,29 @@
   lib,
   stdenv,
   fetchFromGitHub,
+  alsa-lib,
   # Native Build Inputs
   cmake,
-  pkg-config,
-  makeWrapper,
-  # Dependencies
-  yajl,
-  alsa-lib,
-  libpulseaudio,
+  docutils,
   glib,
   libnl,
-  udev,
-  libxau,
-  libxdmcp,
-  pcre2,
-  util-linux,
+  libpulseaudio,
   libselinux,
   libsepol,
-  lua5,
-  docutils,
-  libxcb,
   libx11,
+  libxau,
+  libxcb,
   libxcb-util,
   libxcb-wm,
+  libxdmcp,
+  lua5,
+  makeWrapper,
+  pcre2,
+  pkg-config,
+  udev,
+  util-linux,
+  # Dependencies
+  yajl,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -37,6 +37,11 @@ stdenv.mkDerivation (finalAttrs: {
     rev = "v${finalAttrs.version}";
     hash = "sha256-whO5pjUPaCwEb2GDCIPnTk39MejSQOoRRQ5kdYEQ0Pc=";
   };
+
+  postPatch = ''
+    substituteInPlace CMakeLists.txt \
+      --replace-fail "cmake_minimum_required (VERSION 3.1.3)" "cmake_minimum_required(VERSION 3.10)"
+  '';
 
   nativeBuildInputs = [
     cmake
@@ -64,11 +69,6 @@ stdenv.mkDerivation (finalAttrs: {
     lua5
     docutils
   ];
-
-  postPatch = ''
-    substituteInPlace CMakeLists.txt \
-      --replace-fail "cmake_minimum_required (VERSION 3.1.3)" "cmake_minimum_required(VERSION 3.10)"
-  '';
 
   postInstall = ''
     wrapProgram $out/bin/luastatus-stdout-wrapper \

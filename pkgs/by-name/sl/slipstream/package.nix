@@ -1,9 +1,9 @@
 {
   lib,
   fetchFromGitHub,
+  jdk8,
   makeWrapper,
   maven,
-  jdk8,
 }:
 let
   jdk = jdk8;
@@ -18,9 +18,6 @@ maven.buildMavenPackage rec {
     rev = "v${version}";
     hash = "sha256-F+o94Oh9qxVdfgwdmyOv+WZl1BjQuzhQWaVrAgScgIU=";
   };
-
-  mvnJdk = jdk;
-  mvnHash = "sha256-PRgzlXEa5PWf2jwpLYKLMxY6RECKvdsGWBPKVNz/bnc=";
 
   nativeBuildInputs = [ makeWrapper ];
 
@@ -45,6 +42,9 @@ maven.buildMavenPackage rec {
 
     runHook postInstall
   '';
+
+  mvnHash = "sha256-PRgzlXEa5PWf2jwpLYKLMxY6RECKvdsGWBPKVNz/bnc=";
+  mvnJdk = jdk;
 
   meta = {
     description = "Mod manager for FTL: Faster Than Light";

@@ -1,15 +1,15 @@
 # Builder for Agda packages.
 
 {
-  stdenv,
   lib,
-  self,
+  stdenv,
   Agda,
-  runCommand,
-  makeWrapper,
-  writeText,
   ghcWithPackages,
+  makeWrapper,
   nixosTests,
+  runCommand,
+  self,
+  writeText,
 }:
 
 let
@@ -52,17 +52,21 @@ let
       {
         inherit pname version;
         nativeBuildInputs = [ makeWrapper ];
+
         passthru = {
-          unwrapped = Agda;
           inherit
             withPackages
             libraryFile
             ;
+
           tests = {
             inherit (nixosTests) agda;
             allPackages = withPackages (filter self.lib.isUnbrokenAgdaPackage (attrValues self));
           };
+
+          unwrapped = Agda;
         };
+
         # Agda is a split package with multiple outputs; do not inherit them here.
         meta = removeAttrs Agda.meta [ "outputsToInstall" ];
       }
@@ -92,15 +96,15 @@ let
 
   defaults =
     {
-      pname,
       meta,
-      passthru ? { },
+      pname,
       buildInputs ? [ ],
-      libraryName ? pname,
-      libraryFile ? "${libraryName}.agda-lib",
       buildPhase ? null,
-      installPhase ? null,
       extraExtensions ? [ ],
+      installPhase ? null,
+      libraryFile ? "${libraryName}.agda-lib",
+      libraryName ? pname,
+      passthru ? { },
       ...
     }@args:
     let
@@ -108,10 +112,16 @@ let
     in
     {
       inherit libraryName libraryFile;
-
-      isAgdaDerivation = true;
-
       buildInputs = buildInputs ++ [ agdaWithPkgs ];
+
+      env = args.env or { } // {
+        # As documented at https://github.com/NixOS/nixpkgs/issues/172752,
+        # we need to set LC_ALL to an UTF-8-supporting locale. However, on
+        # darwin, it seems that there is no standard such locale; luckily,
+        # the referenced issue doesn't seem to surface on darwin. Hence let's
+        # set this only on non-darwin.
+        LC_ALL = optionalString (!stdenv.hostPlatform.isDarwin) "C.UTF-8";
+      };
 
       buildPhase =
         if buildPhase != null then
@@ -136,16 +146,7 @@ let
             runHook postInstall
           '';
 
-      env = args.env or { } // {
-        # As documented at https://github.com/NixOS/nixpkgs/issues/172752,
-        # we need to set LC_ALL to an UTF-8-supporting locale. However, on
-        # darwin, it seems that there is no standard such locale; luckily,
-        # the referenced issue doesn't seem to surface on darwin. Hence let's
-        # set this only on non-darwin.
-        LC_ALL = optionalString (!stdenv.hostPlatform.isDarwin) "C.UTF-8";
-      };
-
-      meta = if meta.broken or false then meta // { hydraPlatforms = platforms.none; } else meta;
+      isAgdaDerivation = true;
 
       # Retrieve all packages from the finished package set that have the current package as a dependency and build them
       passthru = passthru // {
@@ -155,10 +156,11 @@ let
             name: pkg: self.lib.isUnbrokenAgdaPackage pkg && elem pname (map (pkg: pkg.pname) pkg.buildInputs)
           ) self;
       };
+
+      meta = if meta.broken or false then meta // { hydraPlatforms = platforms.none; } else meta;
     };
 in
 {
-  mkDerivation = args: stdenv.mkDerivation (args // defaults args);
-
   inherit mkLibraryFile withPackages withPackages';
+  mkDerivation = args: stdenv.mkDerivation (args // defaults args);
 }

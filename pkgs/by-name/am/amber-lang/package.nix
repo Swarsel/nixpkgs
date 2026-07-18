@@ -1,16 +1,16 @@
 {
   lib,
-  fetchFromGitHub,
-  rustPlatform,
-  bc,
-  util-linux,
-  gnused,
-  makeWrapper,
-  installShellFiles,
   stdenv,
-  runCommand,
+  fetchFromGitHub,
   amber-lang,
+  bc,
+  gnused,
+  installShellFiles,
+  makeWrapper,
   nix-update-script,
+  runCommand,
+  rustPlatform,
+  util-linux,
 }:
 
 rustPlatform.buildRustPackage rec {
@@ -30,17 +30,17 @@ rustPlatform.buildRustPackage rec {
     ./fix_word_boundaries.patch
   ];
 
+  nativeBuildInputs = [
+    makeWrapper
+    installShellFiles
+  ];
+
   cargoHash = "sha256-aXcxlmmDYLFbyRJYyGE1gbQMbdysHx4iWXsrUj10Eco=";
 
   preConfigure = ''
     substituteInPlace src/compiler.rs \
       --replace-fail 'Command::new("/usr/bin/env")' 'Command::new("env")'
   '';
-
-  nativeBuildInputs = [
-    makeWrapper
-    installShellFiles
-  ];
 
   nativeCheckInputs = [
     bc
@@ -63,22 +63,25 @@ rustPlatform.buildRustPackage rec {
   '';
 
   passthru = {
-    updateScript = nix-update-script { };
     tests.run = runCommand "amber-lang-eval-test" { nativeBuildInputs = [ amber-lang ]; } ''
       diff -U3 --color=auto <(amber eval 'echo "Hello, World"') <(echo 'Hello, World')
       touch $out
     '';
+
+    updateScript = nix-update-script { };
   };
 
   meta = {
     description = "Programming language compiled to bash";
     homepage = "https://amber-lang.com";
     license = lib.licenses.gpl3Plus;
-    mainProgram = "amber";
+
     maintainers = with lib.maintainers; [
       cafkafk
       aleksana
     ];
+
     platforms = lib.platforms.unix;
+    mainProgram = "amber";
   };
 }

@@ -1,7 +1,7 @@
 {
   config,
-  pkgs,
   lib,
+  pkgs,
   ...
 }:
 let
@@ -24,14 +24,17 @@ in
   options = {
     services.salt.minion = {
       enable = lib.mkEnableOption "Salt configuration management system minion service";
+
       configuration = lib.mkOption {
-        type = lib.types.attrs;
         default = { };
+
         description = ''
           Salt minion configuration as Nix attribute set.
           See <https://docs.saltstack.com/en/latest/ref/configuration/minion.html>
           for details.
         '';
+
+        type = lib.types.attrs;
       };
     };
   };
@@ -45,22 +48,27 @@ in
       etc."salt/minion".source = pkgs.writeText "minion" (builtins.toJSON fullConfig);
       systemPackages = with pkgs; [ salt ];
     };
+
     systemd.services.salt-minion = {
-      description = "Salt Minion";
-      wantedBy = [ "multi-user.target" ];
       after = [ "network.target" ];
+      description = "Salt Minion";
+
       path = with pkgs; [
         util-linux
       ];
-      serviceConfig = {
-        ExecStart = "${pkgs.salt}/bin/salt-minion";
-        LimitNOFILE = 8192;
-        Type = "notify";
-        NotifyAccess = "all";
-      };
+
       restartTriggers = [
         config.environment.etc."salt/minion".source
       ];
+
+      serviceConfig = {
+        ExecStart = "${pkgs.salt}/bin/salt-minion";
+        LimitNOFILE = 8192;
+        NotifyAccess = "all";
+        Type = "notify";
+      };
+
+      wantedBy = [ "multi-user.target" ];
     };
   };
 }

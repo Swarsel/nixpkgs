@@ -1,9 +1,9 @@
 {
   lib,
-  rustPlatform,
+  stdenv,
   fetchFromGitHub,
   installShellFiles,
-  stdenv,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -17,9 +17,8 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-2dNzxZnvnw8TsKnnIlHGpuixrqe4z0a4faOBPv2N+ws=";
   };
 
-  cargoHash = "sha256-QPJ1kVk/TftAROiBVBN6J4PZ1pwjtjldtgmJxSTC1Ao=";
-
   nativeBuildInputs = [ installShellFiles ];
+  cargoHash = "sha256-QPJ1kVk/TftAROiBVBN6J4PZ1pwjtjldtgmJxSTC1Ao=";
 
   postInstall = ''
     ln -s $out/bin/jrsonnet $out/bin/jsonnet
@@ -37,6 +36,7 @@ rustPlatform.buildRustPackage (finalAttrs: {
     description = "Purely-functional configuration language that helps you define JSON data";
     homepage = "https://github.com/deltarocks/jrsonnet";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       lach
     ];

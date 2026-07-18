@@ -7,7 +7,6 @@
 python3.pkgs.buildPythonApplication (finalAttrs: {
   pname = "apkid";
   version = "3.1.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "rednaga";
@@ -22,17 +21,15 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
       --replace "yara-python-dex>=1.0.1" "yara-python"
   '';
 
-  build-system = with python3.pkgs; [ setuptools ];
-
-  dependencies = with python3.pkgs; [ yara-python ];
-
-  nativeCheckInputs = with python3.pkgs; [ pytestCheckHook ];
-
   preBuild = ''
     # Prepare the YARA rules
     ${python3.interpreter} prep-release.py
   '';
 
+  nativeCheckInputs = with python3.pkgs; [ pytestCheckHook ];
+  build-system = with python3.pkgs; [ setuptools ];
+  dependencies = with python3.pkgs; [ yara-python ];
+  pyproject = true;
   pythonImportsCheck = [ "apkid" ];
 
   meta = {

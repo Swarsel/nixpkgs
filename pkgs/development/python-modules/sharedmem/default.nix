@@ -1,17 +1,14 @@
 {
-  buildPythonPackage,
-  fetchFromGitHub,
   lib,
-  setuptools,
+  fetchFromGitHub,
+  buildPythonPackage,
   numpy,
+  setuptools,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "sharedmem";
   version = "0.3.8";
-  pyproject = true;
-
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "rainwoodman";
@@ -20,16 +17,16 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-sQYSIMLXhChBDKlb8x7kRo1ZKKXEdWSjvxp0SZGKems=";
   };
 
+  __structuredAttrs = true;
   build-system = [ setuptools ];
-
   dependencies = [ numpy ];
-
+  pyproject = true;
   pythonImportsCheck = [ "sharedmem" ];
 
   meta = {
-    homepage = "http://rainwoodman.github.io/sharedmem/";
     description = "Easier parallel programming on shared memory computers";
-    maintainers = with lib.maintainers; [ edwtjo ];
+    homepage = "http://rainwoodman.github.io/sharedmem/";
     license = lib.licenses.gpl3Only;
+    maintainers = with lib.maintainers; [ edwtjo ];
   };
 })

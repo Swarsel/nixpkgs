@@ -1,8 +1,8 @@
 {
   lib,
+  fetchFromGitHub,
   buildPythonPackage,
   colorful,
-  fetchFromGitHub,
   git,
   httpx,
   lxml,
@@ -10,16 +10,15 @@
   poetry-core,
   pytestCheckHook,
   python-dateutil,
+  rich,
   semver,
   shtab,
-  rich,
   tomlkit,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "pontos";
   version = "26.6.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "greenbone";
@@ -27,6 +26,11 @@ buildPythonPackage (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-NKe5kM4YPxsGge1UG7DjE3SDXlfZIVazOVmF5RBCbSo=";
   };
+
+  nativeCheckInputs = [
+    git
+    pytestCheckHook
+  ];
 
   build-system = [ poetry-core ];
 
@@ -42,11 +46,6 @@ buildPythonPackage (finalAttrs: {
     tomlkit
   ]
   ++ httpx.optional-dependencies.http2;
-
-  nativeCheckInputs = [
-    git
-    pytestCheckHook
-  ];
 
   disabledTests = [
     "PrepareTestCase"
@@ -70,6 +69,7 @@ buildPythonPackage (finalAttrs: {
     "test_verify_version_does_not_match"
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "pontos" ];
 
   meta = {

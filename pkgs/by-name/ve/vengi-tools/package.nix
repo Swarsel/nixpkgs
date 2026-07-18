@@ -2,14 +2,11 @@
   lib,
   stdenv,
   fetchFromGitHub,
-
-  cmake,
-  pkg-config,
-  ninja,
-  python3,
-  makeWrapper,
-
+  SDL2,
+  SDL2_mixer,
   backward-cpp,
+  callPackage,
+  cmake,
   curl,
   enet,
   freetype,
@@ -23,13 +20,13 @@
   libx11,
   lua5_4,
   lzfse,
-  opencl-headers,
-  SDL2,
-  SDL2_mixer,
-  wayland-protocols,
-
-  callPackage,
+  makeWrapper,
+  ninja,
   nixosTests,
+  opencl-headers,
+  pkg-config,
+  python3,
+  wayland-protocols,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -42,15 +39,6 @@ stdenv.mkDerivation (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-2ZiRN+59oJL0Bgd0D78w8FLoBCwzVTlo0SgsMJY8Jxk=";
   };
-
-  prePatch = lib.optionalString stdenv.hostPlatform.isDarwin ''
-    # Disable code signing on macOS
-    substituteInPlace cmake/macros.cmake --replace-fail "codesign" "true"
-    substituteInPlace cmake/system/apple.cmake --replace-fail "if(APPLE)" "if(false)"
-
-    # calls otool -L on /usr/lib/libSystem.B.dylib and fails because it doesn't exist
-    substituteInPlace cmake/applebundle.cmake --replace-fail 'fixup_bundle("''${TARGET_BUNDLE_DIR}" "" "")' ""
-  '';
 
   nativeBuildInputs = [
     cmake
@@ -109,14 +97,24 @@ stdenv.mkDerivation (finalAttrs: {
         done
       '';
 
+  prePatch = lib.optionalString stdenv.hostPlatform.isDarwin ''
+    # Disable code signing on macOS
+    substituteInPlace cmake/macros.cmake --replace-fail "codesign" "true"
+    substituteInPlace cmake/system/apple.cmake --replace-fail "if(APPLE)" "if(false)"
+
+    # calls otool -L on /usr/lib/libSystem.B.dylib and fails because it doesn't exist
+    substituteInPlace cmake/applebundle.cmake --replace-fail 'fixup_bundle("''${TARGET_BUNDLE_DIR}" "" "")' ""
+  '';
+
   passthru.tests = {
-    voxconvert-roundtrip = callPackage ./test-voxconvert-roundtrip.nix { };
-    voxconvert-all-formats = callPackage ./test-voxconvert-all-formats.nix { };
     run-voxedit = nixosTests.vengi-tools;
+    voxconvert-all-formats = callPackage ./test-voxconvert-all-formats.nix { };
+    voxconvert-roundtrip = callPackage ./test-voxconvert-roundtrip.nix { };
   };
 
   meta = {
     description = "Tools from the vengi voxel engine, including a thumbnailer, a converter, and the VoxEdit voxel editor";
+
     longDescription = ''
       Tools from the vengi C++ voxel game engine. It includes a voxel editor
       with character animation support and loading/saving into a lot of voxel
@@ -124,15 +122,18 @@ stdenv.mkDerivation (finalAttrs: {
       filemanager and a command line tool to convert between several voxel
       formats.
     '';
+
     homepage = "https://vengi-voxel.github.io/vengi/";
-    downloadPage = "https://github.com/vengi-voxel/vengi/releases";
+
     license = [
       lib.licenses.mit
       lib.licenses.cc-by-sa-30
     ];
+
     maintainers = with lib.maintainers; [ fgaz ];
     platforms = lib.platforms.all;
     # Segfaults when building shaders
     broken = stdenv.hostPlatform.isLinux;
+    downloadPage = "https://github.com/vengi-voxel/vengi/releases";
   };
 })

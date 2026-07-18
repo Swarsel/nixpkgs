@@ -12,33 +12,24 @@ let
   downloadVersion = lib.replaceStrings [ "." ] [ "" ] version;
   # Use `./update.sh` to generate the entries below
   srcs = {
-    x86_64-linux = {
-      url = "https://www.rarlab.com/rar/rarlinux-x64-${downloadVersion}.tar.gz";
-      hash = "sha256-dZtLaqDZ93ExiCFilRGT86DlS/YOHY3EJVqjCKzKtYg=";
-    };
     aarch64-darwin = {
-      url = "https://www.rarlab.com/rar/rarmacos-arm-${downloadVersion}.tar.gz";
       hash = "sha256-aLOTwAB1jUd/3kPJVf91QvEvdvP16HzdqSMVL8eRvU0=";
+      url = "https://www.rarlab.com/rar/rarmacos-arm-${downloadVersion}.tar.gz";
+    };
+
+    x86_64-linux = {
+      hash = "sha256-dZtLaqDZ93ExiCFilRGT86DlS/YOHY3EJVqjCKzKtYg=";
+      url = "https://www.rarlab.com/rar/rarlinux-x64-${downloadVersion}.tar.gz";
     };
   };
 in
 stdenv.mkDerivation {
-  pname = "rar";
   inherit version;
+  pname = "rar";
 
   src = fetchurl (
     srcs.${stdenv.hostPlatform.system} or (throw "unsupported system ${stdenv.hostPlatform.system}")
   );
-
-  dontBuild = true;
-
-  buildInputs = lib.optionals stdenv.hostPlatform.isLinux [ (lib.getLib stdenv.cc.cc) ];
-
-  nativeBuildInputs = [
-    installShellFiles
-    perl
-  ]
-  ++ lib.optionals stdenv.hostPlatform.isLinux [ autoPatchelfHook ];
 
   postPatch = ''
     perl -0777 -i -pe 's/ ([\w .-]+\n) ~+\n/=head1 \U$1/g' rar.txt
@@ -46,6 +37,14 @@ stdenv.mkDerivation {
     mv rar.txt rar.1.pod
     pod2man -c "RAR User's Manual" -n "RAR" -r "rar ${version}" -s 1 rar.1.pod > rar.1
   '';
+
+  nativeBuildInputs = [
+    installShellFiles
+    perl
+  ]
+  ++ lib.optionals stdenv.hostPlatform.isLinux [ autoPatchelfHook ];
+
+  buildInputs = lib.optionals stdenv.hostPlatform.isLinux [ (lib.getLib stdenv.cc.cc) ];
 
   installPhase = ''
     runHook preInstall
@@ -59,15 +58,16 @@ stdenv.mkDerivation {
     runHook postInstall
   '';
 
+  dontBuild = true;
   passthru.updateScript = ./update.sh;
 
   meta = {
     description = "Utility for RAR archives";
     homepage = "https://www.rarlab.com/";
     license = lib.licenses.unfree;
-    mainProgram = "rar";
+    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
     maintainers = with lib.maintainers; [ thiagokokada ];
     platforms = lib.attrNames srcs;
-    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
+    mainProgram = "rar";
   };
 }

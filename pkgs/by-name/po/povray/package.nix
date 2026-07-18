@@ -2,18 +2,18 @@
   lib,
   stdenv,
   fetchFromGitHub,
+  SDL2,
   autoconf,
   automake,
   boost,
-  zlib,
-  libx11,
   libice,
-  libsm,
-  libpng,
   libjpeg,
+  libpng,
+  libsm,
   libtiff,
+  libx11,
   pkg-config,
-  SDL2,
+  zlib,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -26,6 +26,17 @@ stdenv.mkDerivation (finalAttrs: {
     rev = "v${finalAttrs.version}";
     sha256 = "sha256-BsWalXzEnymiRbBfE/gsNyWgAqzbxEzO/EQiJpbwoKs=";
   };
+
+  # the installPhase wants to put files into $HOME. I let it put the files
+  # to $TMPDIR, so they don't get into the $out
+  postPatch = ''
+    cd unix
+    ./prebuild.sh
+    cd ..
+    export HOME=$TMPDIR
+    sed -i -e 's/^povconfuser.*/povconfuser=$(TMPDIR)\/povray/' Makefile.{am,in}
+    sed -i -e 's/^povuser.*/povuser=$(TMPDIR)\/.povray/' Makefile.{am,in}
+  '';
 
   nativeBuildInputs = [
     automake
@@ -45,30 +56,17 @@ stdenv.mkDerivation (finalAttrs: {
     zlib
   ];
 
-  # the installPhase wants to put files into $HOME. I let it put the files
-  # to $TMPDIR, so they don't get into the $out
-  postPatch = ''
-    cd unix
-    ./prebuild.sh
-    cd ..
-    export HOME=$TMPDIR
-    sed -i -e 's/^povconfuser.*/povconfuser=$(TMPDIR)\/povray/' Makefile.{am,in}
-    sed -i -e 's/^povuser.*/povuser=$(TMPDIR)\/.povray/' Makefile.{am,in}
-  '';
-
-  # https://github.com/POV-Ray/povray/issues/460
-  env.NIX_CFLAGS_COMPILE = toString [
-    "-fno-finite-math-only"
-    "-DBOOST_BIND_GLOBAL_PLACEHOLDERS"
-  ];
-
   configureFlags = [
     "COMPILED_BY=NixOS"
     "--with-boost-thread=boost_thread"
     "--with-x"
   ];
 
-  enableParallelBuilding = true;
+  # https://github.com/POV-Ray/povray/issues/460
+  env.NIX_CFLAGS_COMPILE = toString [
+    "-fno-finite-math-only"
+    "-DBOOST_BIND_GLOBAL_PLACEHOLDERS"
+  ];
 
   preInstall = ''
     mkdir "$TMP/bin"
@@ -79,12 +77,14 @@ stdenv.mkDerivation (finalAttrs: {
     done
   '';
 
+  enableParallelBuilding = true;
+
   meta = {
-    homepage = "http://www.povray.org/";
     description = "Persistence of Vision Raytracer";
+    homepage = "http://www.povray.org/";
     license = lib.licenses.free;
+    maintainers = with lib.maintainers; [ fgaz ];
     platforms = lib.platforms.linux;
     mainProgram = "povray";
-    maintainers = with lib.maintainers; [ fgaz ];
   };
 })

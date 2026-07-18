@@ -2,14 +2,13 @@
   lib,
   stdenv,
   fetchFromGitHub,
+  fetchPnpmDeps,
   makeWrapper,
   nix-update-script,
-  versionCheckHook,
-
   nodejs,
-  pnpm_10,
   pnpmConfigHook,
-  fetchPnpmDeps,
+  pnpm_10,
+  versionCheckHook,
 }:
 let
   tag-prefix = "@upstash/context7-mcp";
@@ -33,13 +32,6 @@ stdenv.mkDerivation (finalAttrs: {
     pnpmConfigHook
     makeWrapper
   ];
-
-  pnpmDeps = fetchPnpmDeps {
-    inherit (finalAttrs) pname version src;
-    inherit pnpm;
-    fetcherVersion = 3;
-    hash = "sha256-S+TCwe4FJHjSLTUL/cPh+eRtWx/z7REUyfMNT0BgK7k=";
-  };
 
   buildPhase = ''
     runHook preBuild
@@ -66,8 +58,15 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
-  nativeInstallCheckInputs = [ versionCheckHook ];
   doInstallCheck = true;
+  nativeInstallCheckInputs = [ versionCheckHook ];
+
+  pnpmDeps = fetchPnpmDeps {
+    inherit (finalAttrs) pname version src;
+    inherit pnpm;
+    fetcherVersion = 3;
+    hash = "sha256-S+TCwe4FJHjSLTUL/cPh+eRtWx/z7REUyfMNT0BgK7k=";
+  };
 
   passthru.updateScript = nix-update-script {
     extraArgs = [
@@ -81,7 +80,7 @@ stdenv.mkDerivation (finalAttrs: {
     homepage = "https://context7.com/";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ arunoruto ];
-    mainProgram = "context7-mcp";
     platforms = with lib.platforms; linux ++ darwin;
+    mainProgram = "context7-mcp";
   };
 })

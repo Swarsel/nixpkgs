@@ -2,29 +2,28 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  pkg-config,
+  adwaita-icon-theme,
   autoreconfHook,
-  wrapGAppsHook3,
-
   boost,
   cairo,
+  fftw,
+  freetype,
+  fribidi,
   gettext,
   glibmm,
   gtk3,
   gtkmm3,
+  harfbuzz,
+  imagemagick,
+  intltool,
   libjack2,
   libsigcxx,
   libxmlxx,
   mlt,
-  pango,
-  imagemagick,
-  intltool,
-  adwaita-icon-theme,
-  harfbuzz,
-  freetype,
-  fribidi,
   openexr,
-  fftw,
+  pango,
+  pkg-config,
+  wrapGAppsHook3,
 }:
 
 let
@@ -37,37 +36,24 @@ let
   };
 
   ETL = stdenv.mkDerivation {
-    pname = "ETL";
     inherit version src;
-
-    sourceRoot = "${src.name}/ETL";
+    pname = "ETL";
 
     nativeBuildInputs = [
       pkg-config
       autoreconfHook
     ];
+
     buildInputs = [
       glibmm
     ];
+
+    sourceRoot = "${src.name}/ETL";
   };
 
   synfig = stdenv.mkDerivation {
-    pname = "synfig";
     inherit version src;
-
-    sourceRoot = "${src.name}/synfig-core";
-
-    configureFlags = [
-      "--with-boost=${boost.dev}"
-      "--with-boost-libdir=${boost.out}/lib"
-    ]
-    ++ lib.optionals stdenv.cc.isClang [
-      # Newer versions of clang default to C++17, but synfig and some of its dependencies use deprecated APIs that
-      # are removed in C++17. Setting the language version to C++14 allows it to build.
-      "CXXFLAGS=-std=c++14"
-    ];
-
-    enableParallelBuilding = true;
+    pname = "synfig";
 
     nativeBuildInputs = [
       pkg-config
@@ -75,6 +61,7 @@ let
       gettext
       intltool
     ];
+
     buildInputs = [
       ETL
       boost
@@ -91,27 +78,28 @@ let
       openexr
       fftw
     ];
+
+    configureFlags = [
+      "--with-boost=${boost.dev}"
+      "--with-boost-libdir=${boost.out}/lib"
+    ]
+    ++ lib.optionals stdenv.cc.isClang [
+      # Newer versions of clang default to C++17, but synfig and some of its dependencies use deprecated APIs that
+      # are removed in C++17. Setting the language version to C++14 allows it to build.
+      "CXXFLAGS=-std=c++14"
+    ];
+
+    enableParallelBuilding = true;
+    sourceRoot = "${src.name}/synfig-core";
   };
 in
 stdenv.mkDerivation {
-  pname = "synfigstudio";
   inherit version src;
-
-  sourceRoot = "${src.name}/synfig-studio";
+  pname = "synfigstudio";
 
   postPatch = ''
     patchShebangs images/splash_screen_development.sh
   '';
-
-  preConfigure = ''
-    ./bootstrap.sh
-  '';
-
-  configureFlags = lib.optionals stdenv.cc.isClang [
-    # Newer versions of clang default to C++17, but synfig and some of its dependencies use deprecated APIs that
-    # are removed in C++17. Setting the language version to C++14 allows it to build.
-    "CXXFLAGS=-std=c++14"
-  ];
 
   nativeBuildInputs = [
     pkg-config
@@ -120,6 +108,7 @@ stdenv.mkDerivation {
     intltool
     wrapGAppsHook3
   ];
+
   buildInputs = [
     ETL
     synfig
@@ -138,7 +127,18 @@ stdenv.mkDerivation {
     fftw
   ];
 
+  configureFlags = lib.optionals stdenv.cc.isClang [
+    # Newer versions of clang default to C++17, but synfig and some of its dependencies use deprecated APIs that
+    # are removed in C++17. Setting the language version to C++14 allows it to build.
+    "CXXFLAGS=-std=c++14"
+  ];
+
+  preConfigure = ''
+    ./bootstrap.sh
+  '';
+
   enableParallelBuilding = true;
+  sourceRoot = "${src.name}/synfig-studio";
 
   passthru = {
     # Expose libraries and cli tools

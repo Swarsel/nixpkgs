@@ -2,31 +2,34 @@
   lib,
   stdenv,
   fetchurl,
-  ocaml,
+  cmdliner,
   findlib,
+  ocaml,
   ocamlbuild,
   topkg,
   uucp,
   uutf,
-  cmdliner,
-  version ? if lib.versionAtLeast ocaml.version "4.14" then "17.0.0" else "15.0.0",
   cmdlinerSupport ? lib.versionAtLeast cmdliner.version "1.1",
+  version ? if lib.versionAtLeast ocaml.version "4.14" then "17.0.0" else "15.0.0",
 }:
 
 stdenv.mkDerivation (finalAttrs: {
-  name = "ocaml${ocaml.version}-${finalAttrs.pname}-${finalAttrs.version}";
-  pname = "uuseg";
   inherit version;
+  inherit (topkg) installPhase;
+  pname = "uuseg";
 
   src = fetchurl {
     url = "https://erratique.ch/software/uuseg/releases/uuseg-${finalAttrs.version}.tbz";
+
     hash =
       {
-        "17.0.0" = "sha256-Fn41ajEFbMv3LLkD+zqy76217/kWFS7q9jm9ubc6TI4=";
         "15.0.0" = "sha256-q8x3bia1QaKpzrWFxUmLWIraKqby7TuPNGvbSjkY4eM=";
+        "17.0.0" = "sha256-Fn41ajEFbMv3LLkD+zqy76217/kWFS7q9jm9ubc6TI4=";
       }
       ."${finalAttrs.version}";
   };
+
+  strictDeps = true;
 
   nativeBuildInputs = [
     ocaml
@@ -34,14 +37,14 @@ stdenv.mkDerivation (finalAttrs: {
     ocamlbuild
     topkg
   ];
+
   buildInputs = [
     topkg
     uutf
   ]
   ++ lib.optional cmdlinerSupport cmdliner;
-  propagatedBuildInputs = [ uucp ];
 
-  strictDeps = true;
+  propagatedBuildInputs = [ uucp ];
 
   buildPhase = ''
     runHook preBuild
@@ -51,14 +54,14 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postBuild
   '';
 
-  inherit (topkg) installPhase;
+  name = "ocaml${ocaml.version}-${finalAttrs.pname}-${finalAttrs.version}";
 
   meta = {
+    inherit (ocaml.meta) platforms;
     description = "OCaml library for segmenting Unicode text";
     homepage = "https://erratique.ch/software/uuseg";
     license = lib.licenses.bsd3;
     maintainers = [ lib.maintainers.vbgl ];
     mainProgram = "usegtrip";
-    inherit (ocaml.meta) platforms;
   };
 })

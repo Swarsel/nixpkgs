@@ -10,12 +10,11 @@
 buildPythonPackage rec {
   pname = "llama-index-vector-stores-chroma";
   version = "0.5.5";
-  pyproject = true;
 
   src = fetchPypi {
-    pname = "llama_index_vector_stores_chroma";
     inherit version;
     hash = "sha256-gjhlBpvOpNnekVECca4DzW6o6wEGpbXqQ//OwD7Cpwg=";
+    pname = "llama_index_vector_stores_chroma";
   };
 
   build-system = [ hatchling ];
@@ -25,6 +24,7 @@ buildPythonPackage rec {
     llama-index-core
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "llama_index.vector_stores.chroma" ];
 
   meta = {

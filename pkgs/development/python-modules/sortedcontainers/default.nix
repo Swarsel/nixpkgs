@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   pytestCheckHook,
 }:
 
@@ -9,7 +9,6 @@ let
   sortedcontainers = buildPythonPackage rec {
     pname = "sortedcontainers";
     version = "2.4.0";
-    format = "setuptools";
 
     src = fetchFromGitHub {
       owner = "grantjenks";
@@ -19,9 +18,8 @@ let
     };
 
     doCheck = false;
-
     nativeCheckInputs = [ pytestCheckHook ];
-
+    format = "setuptools";
     pythonImportsCheck = [ "sortedcontainers" ];
 
     passthru.tests = {

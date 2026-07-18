@@ -1,29 +1,29 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
-  cmake,
-  pkg-config,
-  qt6Packages,
-  libGL,
-  fontconfig,
-  openssl,
-  poppler,
-  ffmpeg,
-  libva,
-  alsa-lib,
   SDL,
-  x264,
-  libvpx,
-  libvorbis,
-  libtheora,
+  alsa-lib,
+  cmake,
+  fdk_aac,
+  ffmpeg,
+  fontconfig,
+  lame,
+  libGL,
+  libass,
   libogg,
   libopus,
-  lame,
-  fdk_aac,
-  libass,
+  libtheora,
+  libva,
+  libvorbis,
+  libvpx,
   libxext,
   libxfixes,
+  openssl,
+  pkg-config,
+  poppler,
+  qt6Packages,
+  x264,
 }:
 
 let
@@ -59,11 +59,6 @@ stdenv.mkDerivation (finalAttrs: {
       --replace-fail 'HideCheckForSoftwareUpdate=false' 'HideCheckForSoftwareUpdate=true'
   '';
 
-  # Required by Poppler
-  cmakeFlags = [
-    "-DCMAKE_CXX_STANDARD=20"
-  ];
-
   nativeBuildInputs = [
     cmake
     pkg-config
@@ -97,13 +92,20 @@ stdenv.mkDerivation (finalAttrs: {
     libxfixes
   ];
 
+  # Required by Poppler
+  cmakeFlags = [
+    "-DCMAKE_CXX_STANDARD=20"
+  ];
+
   meta = {
     description = "Interactive whiteboard application";
     homepage = "https://openboard.ch/";
     license = lib.licenses.gpl3Plus;
+
     maintainers = with lib.maintainers; [
       fufexan
     ];
+
     platforms = lib.platforms.linux;
     mainProgram = "openboard";
   };

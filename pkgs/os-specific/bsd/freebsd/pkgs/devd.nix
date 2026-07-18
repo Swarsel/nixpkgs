@@ -1,13 +1,11 @@
 {
   lib,
-  mkDerivation,
-  libutil,
-  flex,
   byacc,
+  flex,
+  libutil,
+  mkDerivation,
 }:
 mkDerivation {
-  path = "sbin/devd";
-
   outputs = [
     "out"
     "etc"
@@ -15,39 +13,40 @@ mkDerivation {
     "debug"
   ];
 
-  buildInputs = [
-    libutil
-  ];
-
-  extraNativeBuildInputs = [
-    flex
-    byacc
-  ];
-
-  clangFixup = false;
-
-  MK_TESTS = "no";
-  MK_AUTOFS = "yes";
-  MK_ACPI = "yes";
-  MK_SOUND = "yes";
-  MK_BLUETOOTH = "yes";
-  MK_HYPERV = "yes";
-  MK_USB = "yes";
-  MK_ZFS = "yes";
-
   postPatch = ''
     substituteInPlace $BSDSRCDIR/sbin/devd/Makefile --replace-fail /etc $etc/etc
   '';
 
-  NIX_CFLAGS_COMPILE = [
-    "-Wno-c++20-extensions"
-    "-Wno-nullability-completeness"
+  buildInputs = [
+    libutil
   ];
 
   postInstall = ''
     make $makeFlags installconfig
   '';
 
-  meta.platforms = lib.platforms.freebsd;
+  MK_ACPI = "yes";
+  MK_AUTOFS = "yes";
+  MK_BLUETOOTH = "yes";
+  MK_HYPERV = "yes";
+  MK_SOUND = "yes";
+  MK_TESTS = "no";
+  MK_USB = "yes";
+  MK_ZFS = "yes";
+
+  NIX_CFLAGS_COMPILE = [
+    "-Wno-c++20-extensions"
+    "-Wno-nullability-completeness"
+  ];
+
+  clangFixup = false;
+
+  extraNativeBuildInputs = [
+    flex
+    byacc
+  ];
+
+  path = "sbin/devd";
   meta.mainProgram = "devd";
+  meta.platforms = lib.platforms.freebsd;
 }

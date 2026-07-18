@@ -1,17 +1,17 @@
 {
   lib,
   stdenv,
-  callPackage,
   fetchFromGitHub,
-  rustPlatform,
-  pkg-config,
-  perl,
+  callPackage,
+  nix-update-script,
   openssl,
+  perl,
+  pkg-config,
+  rustPlatform,
   versionCheckHook,
   librusty_v8 ? callPackage ./librusty_v8.nix {
     inherit (callPackage ./fetchers.nix { }) fetchLibrustyV8;
   },
-  nix-update-script,
 }:
 rustPlatform.buildRustPackage (finalAttrs: {
   pname = "spacetimedb";
@@ -24,8 +24,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-71/pt3OmjtGJboGIqACDQ6GwELHnS2Zs+8kD7IrIcmg=";
   };
 
-  cargoHash = "sha256-KfgSYXHQprIX5BVvHWpTKaJg+h8TQkiW0HVjCXttIeQ=";
-
   nativeBuildInputs = [
     pkg-config
     perl
@@ -36,12 +34,15 @@ rustPlatform.buildRustPackage (finalAttrs: {
     openssl
   ];
 
-  cargoBuildFlags = [ "-p spacetimedb-standalone -p spacetimedb-cli" ];
+  cargoHash = "sha256-KfgSYXHQprIX5BVvHWpTKaJg+h8TQkiW0HVjCXttIeQ=";
 
-  preCheck = ''
-    # server tests require home dir
-    export HOME=$(mktemp -d)
-  '';
+  env = {
+    # required to make jemalloc_tikv_sys build
+    CFLAGS = "-O";
+    RUSTY_V8_ARCHIVE = librusty_v8;
+    # used by crates/cli/build.rs to set GIT_HASH at compile time
+    SPACETIMEDB_NIX_BUILD_GIT_COMMIT = finalAttrs.src.rev;
+  };
 
   checkFlags = [
     # require wasm32-unknown-unknown target
@@ -66,30 +67,26 @@ rustPlatform.buildRustPackage (finalAttrs: {
     "--skip=cli_can_publish_breaking_change_with_on_conflict_flag"
   ];
 
-  doInstallCheck = true;
-
-  env = {
-    RUSTY_V8_ARCHIVE = librusty_v8;
-    # used by crates/cli/build.rs to set GIT_HASH at compile time
-    SPACETIMEDB_NIX_BUILD_GIT_COMMIT = finalAttrs.src.rev;
-    # required to make jemalloc_tikv_sys build
-    CFLAGS = "-O";
-  };
-
-  nativeInstallCheckInputs = [ versionCheckHook ];
-  versionCheckProgram = "${placeholder "out"}/bin/spacetime";
+  preCheck = ''
+    # server tests require home dir
+    export HOME=$(mktemp -d)
+  '';
 
   postInstall = ''
     mv $out/bin/spacetimedb-cli $out/bin/spacetime
   '';
 
+  doInstallCheck = true;
+  nativeInstallCheckInputs = [ versionCheckHook ];
+  cargoBuildFlags = [ "-p spacetimedb-standalone -p spacetimedb-cli" ];
+  versionCheckProgram = "${placeholder "out"}/bin/spacetime";
   passthru.updateScript = nix-update-script { };
 
   meta = {
     description = "Full-featured relational database system that lets you run your application logic inside the database";
     homepage = "https://github.com/clockworklabs/SpacetimeDB";
     license = lib.licenses.bsl11;
-    mainProgram = "spacetime";
     maintainers = with lib.maintainers; [ akotro ];
+    mainProgram = "spacetime";
   };
 })

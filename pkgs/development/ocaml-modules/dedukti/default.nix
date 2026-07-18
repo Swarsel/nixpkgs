@@ -10,8 +10,6 @@ buildDunePackage (finalAttrs: {
   pname = "dedukti";
   version = "2.7";
 
-  minimalOCamlVersion = "4.08";
-
   src = fetchFromGitHub {
     owner = "Deducteam";
     repo = "dedukti";
@@ -21,14 +19,14 @@ buildDunePackage (finalAttrs: {
 
   nativeBuildInputs = [ menhir ];
   buildInputs = [ cmdliner ];
-
   doCheck = false; # requires `tezt`
+  minimalOCamlVersion = "4.08";
 
   meta = {
-    homepage = "https://deducteam.github.io";
     description = "Logical framework based on the λΠ-calculus modulo rewriting";
-    license = lib.licenses.cecill-b;
+    homepage = "https://deducteam.github.io";
     changelog = "https://github.com/Deducteam/Dedukti/raw/${finalAttrs.version}/CHANGELOG.md";
+    license = lib.licenses.cecill-b;
     maintainers = with lib.maintainers; [ bcdarwin ];
   };
 })

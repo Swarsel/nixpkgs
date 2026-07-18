@@ -1,17 +1,17 @@
 {
+  lib,
   stdenv,
   buildEnv,
-  lib,
-  libGL,
   ioquake3,
+  libGL,
   makeWrapper,
 }:
 
 {
   paks,
+  description ? "",
   pname ? (lib.head paks).pname,
   version ? (lib.head paks).version,
-  description ? "",
 }:
 
 let
@@ -26,9 +26,8 @@ let
 
 in
 stdenv.mkDerivation {
-  pname = "${pname}-${ioquake3.name}";
   inherit version;
-
+  pname = "${pname}-${ioquake3.name}";
   nativeBuildInputs = [ makeWrapper ];
 
   buildCommand =
@@ -65,13 +64,14 @@ stdenv.mkDerivation {
     '';
 
   meta = {
-    mainProgram = "${pname}";
     inherit ((lib.head paks).meta)
       description
       longDescription
       homepage
       license
       ;
+
     inherit (ioquake3.meta) platforms;
+    mainProgram = "${pname}";
   };
 }

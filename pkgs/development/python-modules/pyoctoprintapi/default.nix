@@ -1,15 +1,13 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
-
   # propagated
   aiohttp,
-
+  buildPythonPackage,
   # tests
   pytest-asyncio,
   pytestCheckHook,
+  setuptools,
 }:
 
 let
@@ -18,7 +16,6 @@ let
 in
 buildPythonPackage {
   inherit pname version;
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "rfleming71";
@@ -28,15 +25,15 @@ buildPythonPackage {
   };
 
   nativeBuildInputs = [ setuptools ];
-
   propagatedBuildInputs = [ aiohttp ];
-
-  pythonImportsCheck = [ "pyoctoprintapi" ];
 
   nativeCheckInputs = [
     pytest-asyncio
     pytestCheckHook
   ];
+
+  pyproject = true;
+  pythonImportsCheck = [ "pyoctoprintapi" ];
 
   meta = {
     description = "Simple async wrapper around the Octoprint API";

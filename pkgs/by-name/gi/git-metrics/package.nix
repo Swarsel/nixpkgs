@@ -1,10 +1,10 @@
 {
   lib,
   fetchFromGitHub,
-  pkg-config,
   gitMinimal,
-  rustPlatform,
   openssl,
+  pkg-config,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -18,11 +18,11 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-SdA/FpdrbC36Ny7aBpTUvFldbYXyajSqWGheaDPHYoE=";
   };
 
-  cargoHash = "sha256-e4CdpwoFl8leV5HJWkWBpvPrVrk+7vq49yTPkpeQ2Ng=";
-
   buildInputs = [
     openssl
   ];
+
+  cargoHash = "sha256-e4CdpwoFl8leV5HJWkWBpvPrVrk+7vq49yTPkpeQ2Ng=";
 
   nativeCheckInputs = [
     pkg-config
@@ -41,12 +41,14 @@ rustPlatform.buildRustPackage (finalAttrs: {
   ];
 
   meta = {
-    homepage = "https://github.com/jdrouet/git-metrics";
     description = "Git extension to be able to track metrics about your project, within the git repository";
+    homepage = "https://github.com/jdrouet/git-metrics";
     license = [ lib.licenses.mit ];
+
     maintainers = with lib.maintainers; [
       matthiasbeyer
     ];
+
     mainProgram = "git-metrics";
   };
 })

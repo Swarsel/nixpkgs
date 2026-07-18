@@ -2,9 +2,9 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  replaceVars,
-  gitstatus,
   bash,
+  gitstatus,
+  replaceVars,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -19,15 +19,14 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-BRJyGn+gTGUWifpJ1ziBKVHACcWw+R5N/HdUi8HzSvY=";
   };
 
-  strictDeps = true;
-
-  buildInputs = [ bash ];
-
   patches = [
     (replaceVars ./gitstatusd.patch {
       gitstatusdPath = "${gitstatus}/bin/gitstatusd";
     })
   ];
+
+  strictDeps = true;
+  buildInputs = [ bash ];
 
   installPhase = ''
     runHook preInstall
@@ -44,13 +43,15 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Fast reimplementation of Powerlevel9k ZSH theme";
+
     longDescription = ''
       To make use of this derivation, use
       `programs.zsh.promptInit = "source ''${pkgs.zsh-powerlevel10k}/share/zsh-powerlevel10k/powerlevel10k.zsh-theme";`
     '';
+
     homepage = "https://github.com/romkatv/powerlevel10k";
     license = lib.licenses.mit;
-    platforms = lib.platforms.unix;
     maintainers = [ ];
+    platforms = lib.platforms.unix;
   };
 })

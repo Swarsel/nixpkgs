@@ -17,12 +17,11 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   nativeBuildInputs = [ cmake ];
-
   cmakeFlags = [ "-DCISTA_INSTALL=ON" ];
 
   meta = {
-    homepage = "https://cista.rocks";
     description = "Simple, high-performance, zero-copy C++ serialization & reflection library";
+    homepage = "https://cista.rocks";
     license = lib.licenses.mit;
     maintainers = [ lib.maintainers.sigmanificient ];
     platforms = lib.platforms.all;

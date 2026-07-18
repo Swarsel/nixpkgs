@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   setuptools,
 }:
 
@@ -11,7 +11,6 @@ buildPythonPackage (finalAttrs: {
   # - https://pypi.org/project/rgbxy/
   # - https://github.com/benknight/hue-python-rgb-converter/tags
   version = "0.5-unstable-2025-12-16";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "benknight";
@@ -23,6 +22,8 @@ buildPythonPackage (finalAttrs: {
   build-system = [
     setuptools
   ];
+
+  pyproject = true;
 
   pythonImportsCheck = [
     "rgbxy"

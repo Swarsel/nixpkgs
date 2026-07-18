@@ -7,14 +7,11 @@
 stdenv.mkDerivation (finalAttrs: {
   pname = "getopt";
   version = "1.1.6";
+
   src = fetchurl {
     url = "https://frodo.looijaard.name/system/files/software/getopt/getopt-${finalAttrs.version}.tar.gz";
     sha256 = "1zn5kp8ar853rin0ay2j3p17blxy16agpp8wi8wfg4x98b31vgyh";
   };
-
-  # This should be fine on Linux and Darwin. Clang 16 requires it because otherwise getopt will
-  # attempt to use C library functions without declaring them, which is raised as an error.
-  env.NIX_CFLAGS_COMPILE = "-D__GNU_LIBRARY__";
 
   makeFlags = [
     "WITHOUT_GETTEXT=1"
@@ -23,10 +20,14 @@ stdenv.mkDerivation (finalAttrs: {
     "CC:=$(CC)"
   ];
 
+  # This should be fine on Linux and Darwin. Clang 16 requires it because otherwise getopt will
+  # attempt to use C library functions without declaring them, which is raised as an error.
+  env.NIX_CFLAGS_COMPILE = "-D__GNU_LIBRARY__";
+
   meta = {
-    platforms = lib.platforms.unix;
-    homepage = "http://frodo.looijaard.name/project/getopt";
     description = "Parses command-line arguments from shell scripts";
+    homepage = "http://frodo.looijaard.name/project/getopt";
+    platforms = lib.platforms.unix;
     mainProgram = "getopt";
   };
 })

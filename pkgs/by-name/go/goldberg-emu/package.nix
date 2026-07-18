@@ -45,17 +45,19 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   meta = {
-    broken = stdenv.hostPlatform.isDarwin;
-    homepage = "https://gitlab.com/Mr_Goldberg/goldberg_emulator";
-    changelog = "https://gitlab.com/Mr_Goldberg/goldberg_emulator/-/releases";
     description = "Program that emulates steam online features";
+
     longDescription = ''
       Steam emulator that emulates steam online features. Lets you play games that
       use the steam multiplayer apis on a LAN without steam or an internet connection.
     '';
-    mainProgram = "lobby_connect";
+
+    homepage = "https://gitlab.com/Mr_Goldberg/goldberg_emulator";
+    changelog = "https://gitlab.com/Mr_Goldberg/goldberg_emulator/-/releases";
     license = lib.licenses.lgpl3Only;
-    platforms = lib.platforms.unix;
     maintainers = [ ];
+    platforms = lib.platforms.unix;
+    mainProgram = "lobby_connect";
+    broken = stdenv.hostPlatform.isDarwin;
   };
 })

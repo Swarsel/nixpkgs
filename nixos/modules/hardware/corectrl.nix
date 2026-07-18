@@ -1,7 +1,7 @@
 {
   config,
-  pkgs,
   lib,
+  pkgs,
   ...
 }:
 let
@@ -39,10 +39,6 @@ in
   config = mkIf cfg.enable {
     environment.systemPackages = [ cfg.package ];
 
-    services.dbus.packages = [ cfg.package ];
-
-    users.groups.corectrl = { };
-
     security.polkit.extraConfig = ''
       polkit.addRule(function(action, subject) {
           if ((action.id == "org.corectrl.helper.init" ||
@@ -54,6 +50,9 @@ in
           }
       });
     '';
+
+    services.dbus.packages = [ cfg.package ];
+    users.groups.corectrl = { };
   };
 
   meta.maintainers = with lib.maintainers; [

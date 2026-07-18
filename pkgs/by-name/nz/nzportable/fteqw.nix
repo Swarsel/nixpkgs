@@ -2,49 +2,44 @@
   lib,
   stdenv,
   fetchFromGitHub,
-
-  cmake,
-  ninja,
-  pkg-config,
-  makeWrapper,
-  zip,
-  gettext,
-
-  libpng,
-  zlib,
-  gnutls,
-  libGL,
-  libxxf86vm,
-  libxxf86dga,
-  libxscrnsaver,
-  libxrandr,
-  libxi,
-  libxcursor,
-  libx11,
-  libxcb,
+  SDL2,
+  addDriverRunpath,
   alsa-lib,
-  libjpeg,
-  libogg,
-  libvorbis,
-  libopus,
+  bullet,
+  cmake,
   dbus,
   fontconfig,
-  SDL2,
-  bullet,
-  openexr,
-  sqlite,
-  addDriverRunpath,
-
-  enableEGL ? true,
+  gettext,
+  gnutls,
+  libGL,
   libglvnd,
-
-  enableVulkan ? true,
+  libjpeg,
+  libogg,
+  libopus,
+  libpng,
+  libvorbis,
+  libx11,
+  libxcb,
+  libxcursor,
+  libxi,
+  libxkbcommon,
+  libxrandr,
+  libxscrnsaver,
+  libxxf86dga,
+  libxxf86vm,
+  makeWrapper,
+  ninja,
+  openexr,
+  pkg-config,
+  sqlite,
   vulkan-headers,
   vulkan-loader,
-
-  enableWayland ? true,
   wayland,
-  libxkbcommon,
+  zip,
+  zlib,
+  enableEGL ? true,
+  enableVulkan ? true,
+  enableWayland ? true,
 }:
 stdenv.mkDerivation (finalAttrs: {
   pname = "nzp-fteqw";
@@ -149,6 +144,7 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Nazi Zombies: Portable's fork of Spike's FTEQW engine/client";
+
     longDescription = ''
       This package contains only the FTEQW engine, and none of the assets used in NZ:P.
       Please use the `nzportable` package for an out-of-the-box NZ:P experience.
@@ -169,8 +165,11 @@ stdenv.mkDerivation (finalAttrs: {
         Adds up to two renderers, based on whether EGL and Vulkan are installed: `wlgl` and `wlvk`.
         Seems to be currently broken and currently not enabled by default.
     '';
+
     homepage = "https://github.com/nzp-team/fteqw";
     license = lib.licenses.gpl2Plus;
+    maintainers = with lib.maintainers; [ pluiedev ];
+
     # See README
     platforms = [
       "x86_64-linux"
@@ -180,7 +179,7 @@ stdenv.mkDerivation (finalAttrs: {
       "x86_64-windows"
       "i686-windows"
     ];
-    maintainers = with lib.maintainers; [ pluiedev ];
+
     mainProgram = "fteqw";
   };
 })

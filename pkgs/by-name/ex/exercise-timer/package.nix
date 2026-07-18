@@ -1,10 +1,10 @@
 {
   lib,
   stdenv,
+  fetchFromGitHub,
   appstream-glib,
   blueprint-compiler,
   desktop-file-utils,
-  fetchFromGitHub,
   glib,
   gst_all_1,
   gtk4,
@@ -62,8 +62,8 @@ stdenv.mkDerivation (finalAttrs: {
     homepage = "https://apps.gnome.org/Hiit/";
     changelog = "https://github.com/mfep/exercise-timer/blob/v${finalAttrs.version}/CHANGELOG.md";
     license = lib.licenses.gpl3Only;
-    teams = [ lib.teams.gnome-circle ];
-    mainProgram = "hiit";
     platforms = lib.platforms.linux;
+    mainProgram = "hiit";
+    teams = [ lib.teams.gnome-circle ];
   };
 })

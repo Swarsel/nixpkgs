@@ -3,7 +3,7 @@
   json-glib,
 }:
 buildAstalModule {
-  name = "apps";
   buildInputs = [ json-glib ];
+  name = "apps";
   meta.description = "Astal module for application query";
 }

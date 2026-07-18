@@ -1,27 +1,23 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # build-system
-  pdm-backend,
-
   # dependencies
   anyio,
+  buildPythonPackage,
   httpx,
   httpx-ws,
   msgspec,
-  typing-extensions,
-
+  # build-system
+  pdm-backend,
   # tests
   pytest-asyncio,
   pytestCheckHook,
+  typing-extensions,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "lmstudio";
   version = "1.6.0b1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "lmstudio-ai";
@@ -29,6 +25,13 @@ buildPythonPackage (finalAttrs: {
     tag = finalAttrs.version;
     hash = "sha256-QJNVlkSmwinoJ/cMCDpYzYDmd6Q8AGiLHHdk36Fqtk8=";
   };
+
+  nativeCheckInputs = [
+    pytest-asyncio
+    pytestCheckHook
+  ];
+
+  __darwinAllowLocalNetworking = true;
 
   build-system = [
     pdm-backend
@@ -40,18 +43,6 @@ buildPythonPackage (finalAttrs: {
     httpx-ws
     msgspec
     typing-extensions
-  ];
-
-  pythonImportsCheck = [ "lmstudio" ];
-
-  nativeCheckInputs = [
-    pytest-asyncio
-    pytestCheckHook
-  ];
-
-  disabledTests = [
-    # lmstudio.LMStudioRuntimeError: Local API host port is not yet resolved.
-    "test_session_disconnected_async"
   ];
 
   disabledTestPaths = [
@@ -82,7 +73,13 @@ buildPythonPackage (finalAttrs: {
     "tests/test_timeouts.py"
   ];
 
-  __darwinAllowLocalNetworking = true;
+  disabledTests = [
+    # lmstudio.LMStudioRuntimeError: Local API host port is not yet resolved.
+    "test_session_disconnected_async"
+  ];
+
+  pyproject = true;
+  pythonImportsCheck = [ "lmstudio" ];
 
   meta = {
     description = "LM Studio Python SDK";

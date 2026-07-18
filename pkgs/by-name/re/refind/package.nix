@@ -2,30 +2,32 @@
   lib,
   stdenv,
   fetchurl,
+  efibootmgr,
   fetchpatch,
   gnu-efi,
-  nixosTests,
-  efibootmgr,
-  openssl,
-  withSbsigntool ? false, # currently, cross compiling sbsigntool is broken, so default to false
-  sbsigntool,
-  makeWrapper,
   installShellFiles,
+  makeWrapper,
+  nixosTests,
+  openssl,
+  sbsigntool,
+  withSbsigntool ? false, # currently, cross compiling sbsigntool is broken, so default to false
 }:
 
 let
   archids = {
-    x86_64-linux = {
-      hostarch = "x86_64";
-      efiPlatform = "x64";
-    };
-    i686-linux = rec {
-      hostarch = "ia32";
-      efiPlatform = hostarch;
-    };
     aarch64-linux = {
-      hostarch = "aarch64";
       efiPlatform = "aa64";
+      hostarch = "aarch64";
+    };
+
+    i686-linux = rec {
+      efiPlatform = hostarch;
+      hostarch = "ia32";
+    };
+
+    x86_64-linux = {
+      efiPlatform = "x64";
+      hostarch = "x86_64";
     };
   };
 
@@ -61,12 +63,12 @@ stdenv.mkDerivation (finalAttrs: {
 
     # gnu-efi 4 compatibility
     (fetchpatch {
-      url = "https://gitlab.archlinux.org/archlinux/packaging/packages/refind/-/raw/0.14.2-2/fix-target-option.patch";
       hash = "sha256-8JxTlgbbgZnXxRrqbPMIBcuT5KEbwXQ8eURKZXeVLU0=";
+      url = "https://gitlab.archlinux.org/archlinux/packaging/packages/refind/-/raw/0.14.2-2/fix-target-option.patch";
     })
     (fetchpatch {
-      url = "https://gitlab.archlinux.org/archlinux/packaging/packages/refind/-/raw/0.14.2-2/gnu-efi-4-compat.patch";
       hash = "sha256-F37fCfVhLJBQB8HnNYMN4lSA/+wfuRKUgkT8PBSdkOs=";
+      url = "https://gitlab.archlinux.org/archlinux/packaging/packages/refind/-/raw/0.14.2-2/gnu-efi-4-compat.patch";
     })
   ];
 
@@ -76,8 +78,6 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   buildInputs = [ gnu-efi ];
-
-  hardeningDisable = [ "stackprotector" ];
 
   makeFlags = [
     "prefix="
@@ -172,13 +172,16 @@ stdenv.mkDerivation (finalAttrs: {
       --prefix PATH : ${lib.makeBinPath [ efibootmgr ]}
   '';
 
+  hardeningDisable = [ "stackprotector" ];
+
   passthru.tests = {
-    uefiCdrom = nixosTests.boot.uefiCdrom;
     inherit (nixosTests) refind;
+    uefiCdrom = nixosTests.boot.uefiCdrom;
   };
 
   meta = {
     description = "Graphical {,U}EFI boot manager";
+
     longDescription = ''
       rEFInd is a graphical boot manager for EFI- and UEFI-based
       computers, such as all Intel-based Macs and recent (most 2011
@@ -194,17 +197,20 @@ stdenv.mkDerivation (finalAttrs: {
       runtime makes it very easy to use, particularly when paired with
       Linux kernels that provide EFI stub support.
     '';
+
     homepage = "http://refind.sourceforge.net/";
+    license = lib.licenses.gpl3Plus;
+
     maintainers = with lib.maintainers; [
       johnrtitor
       RossComputerGuy
     ];
+
     platforms = [
       "i686-linux"
       "x86_64-linux"
       "aarch64-linux"
     ];
-    license = lib.licenses.gpl3Plus;
   };
 
 })

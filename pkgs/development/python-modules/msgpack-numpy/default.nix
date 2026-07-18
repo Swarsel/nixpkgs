@@ -1,8 +1,8 @@
 {
   lib,
   buildPythonPackage,
-  fetchPypi,
   cython,
+  fetchPypi,
   msgpack,
   numpy,
   python,
@@ -11,7 +11,6 @@
 buildPythonPackage rec {
   pname = "msgpack-numpy";
   version = "0.4.8";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
@@ -28,6 +27,8 @@ buildPythonPackage rec {
   checkPhase = ''
     ${python.interpreter} msgpack_numpy.py
   '';
+
+  format = "setuptools";
 
   meta = {
     description = "Numpy data type serialization using msgpack";

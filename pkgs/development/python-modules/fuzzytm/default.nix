@@ -6,21 +6,22 @@
   numpy,
   pandas,
   pyfume,
-  setuptools,
   scipy,
+  setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "fuzzytm";
   version = "2.0.9";
-  pyproject = true;
 
   src = fetchPypi {
-    pname = "FuzzyTM";
     inherit version;
     hash = "sha256-z0ESYtB7BqssxIHlrd0F+/qapOM1nrDi3Zih5SvgDGY=";
+    pname = "FuzzyTM";
   };
 
+  # Module has no tests
+  doCheck = false;
   build-system = [ setuptools ];
 
   dependencies = [
@@ -31,9 +32,7 @@ buildPythonPackage rec {
     scipy
   ];
 
-  # Module has no tests
-  doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "FuzzyTM" ];
 
   meta = {

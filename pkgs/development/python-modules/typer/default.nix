@@ -1,31 +1,26 @@
 {
   lib,
   stdenv,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # build-system
-  pdm-backend,
-
   # dependencies
   annotated-doc,
+  buildPythonPackage,
   click,
-
-  # optional-dependencies
-  rich,
-  shellingham,
-
+  # build-system
+  pdm-backend,
+  procps,
   # tests
   pytest-xdist,
   pytestCheckHook,
+  # optional-dependencies
+  rich,
+  shellingham,
   writableTmpDirAsHomeHook,
-  procps,
 }:
 
 buildPythonPackage rec {
   pname = "typer";
   version = "0.25.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "fastapi";
@@ -43,15 +38,6 @@ buildPythonPackage rec {
 
   env.TIANGOLO_BUILD_PACKAGE = "typer";
 
-  build-system = [ pdm-backend ];
-
-  dependencies = [
-    annotated-doc
-    click
-    rich
-    shellingham
-  ];
-
   nativeCheckInputs = [
     pytest-xdist
     pytestCheckHook
@@ -59,6 +45,15 @@ buildPythonPackage rec {
   ]
   ++ lib.optionals stdenv.hostPlatform.isDarwin [
     procps
+  ];
+
+  build-system = [ pdm-backend ];
+
+  dependencies = [
+    annotated-doc
+    click
+    rich
+    shellingham
   ];
 
   disabledTests = [
@@ -72,6 +67,7 @@ buildPythonPackage rec {
     "test_install_completion"
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "typer" ];
 
   meta = {

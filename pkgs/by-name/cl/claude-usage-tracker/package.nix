@@ -1,8 +1,8 @@
 {
   lib,
-  stdenvNoCC,
   fetchzip,
   nix-update-script,
+  stdenvNoCC,
 }:
 
 stdenvNoCC.mkDerivation (finalAttrs: {
@@ -26,16 +26,15 @@ stdenvNoCC.mkDerivation (finalAttrs: {
 
   dontBuild = true;
   dontFixup = true;
-
   passthru.updateScript = nix-update-script { };
 
   meta = {
     description = "Native macOS menu bar app for tracking Claude AI usage limits in real-time. Built with Swift/SwiftUI.";
     homepage = "https://github.com/hamed-elfayome/Claude-Usage-Tracker";
     changelog = "https://github.com/hamed-elfayome/Claude-Usage-Tracker/releases/tag/v${finalAttrs.version}";
-    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
-    platforms = [ "aarch64-darwin" ];
     license = lib.licenses.mit;
+    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
     maintainers = with lib.maintainers; [ myzel394 ];
+    platforms = [ "aarch64-darwin" ];
   };
 })

@@ -1,24 +1,22 @@
 {
   lib,
   buildPythonPackage,
-  setuptools,
   fetchPypi,
   pytest7CheckHook,
+  setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "avro";
   version = "1.12.1";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
     hash = "sha256-xbjdLdTBCBbw3BJ8wpz9Q7XkBc9+aEDolGCgJL89CY0=";
   };
 
-  build-system = [ setuptools ];
-
   nativeCheckInputs = [ pytest7CheckHook ];
+  build-system = [ setuptools ];
 
   disabledTests = [
     # Requires network access
@@ -27,6 +25,7 @@ buildPythonPackage rec {
     "test_schema_compatibility_type_mismatch"
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "avro" ];
 
   meta = {

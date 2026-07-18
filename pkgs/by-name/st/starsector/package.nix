@@ -1,16 +1,16 @@
 {
   lib,
+  stdenv,
+  copyDesktopItems,
   fetchzip,
   libGL,
+  libxxf86vm,
+  makeDesktopItem,
   makeWrapper,
   openal,
   openjdk17,
-  stdenv,
-  libxxf86vm,
-  xrandr,
-  copyDesktopItems,
-  makeDesktopItem,
   writeScript,
+  xrandr,
 }:
 let
   openjdk = openjdk17;
@@ -24,6 +24,20 @@ stdenv.mkDerivation rec {
     sha256 = "sha256-W/6QpgKbUJC+jWOlAOEEGStee5KJuLi020kRtPQXK3U=";
   };
 
+  # it tries to run everything with relative paths, which makes it CWD dependent
+  # also point mod, screenshot, and save directory to $XDG_DATA_HOME
+  # additionally, add some GC options to improve performance of the game,
+  # remove flags "PermSize" and "MaxPermSize" that were removed with Java 8 and
+  # pass-through CLI args ($@) to the JVM.
+  postPatch = ''
+    substituteInPlace starsector.sh \
+      --replace-fail "./jre_linux/bin/java" "${lib.getExe openjdk}" \
+      --replace-fail "./native/linux" "$out/share/starsector/native/linux" \
+      --replace-fail "./compiler_directives.txt" "$out/share/starsector/compiler_directives.txt" \
+      --replace-fail "=." "=\''${XDG_DATA_HOME:-\$HOME/.local/share}/starsector" \
+      --replace-fail "com.fs.starfarer.StarfarerLauncher" "\"\$@\" com.fs.starfarer.StarfarerLauncher"
+  '';
+
   nativeBuildInputs = [
     copyDesktopItems
     makeWrapper
@@ -33,20 +47,6 @@ stdenv.mkDerivation rec {
     libxxf86vm
     openal
     libGL
-  ];
-
-  dontBuild = true;
-
-  desktopItems = [
-    (makeDesktopItem {
-      name = "starsector";
-      exec = "starsector";
-      icon = "starsector";
-      comment = meta.description;
-      genericName = "starsector";
-      desktopName = "Starsector";
-      categories = [ "Game" ];
-    })
   ];
 
   # need to cd into $out in order for classpath to pick up correct jar files
@@ -77,19 +77,19 @@ stdenv.mkDerivation rec {
     runHook postInstall
   '';
 
-  # it tries to run everything with relative paths, which makes it CWD dependent
-  # also point mod, screenshot, and save directory to $XDG_DATA_HOME
-  # additionally, add some GC options to improve performance of the game,
-  # remove flags "PermSize" and "MaxPermSize" that were removed with Java 8 and
-  # pass-through CLI args ($@) to the JVM.
-  postPatch = ''
-    substituteInPlace starsector.sh \
-      --replace-fail "./jre_linux/bin/java" "${lib.getExe openjdk}" \
-      --replace-fail "./native/linux" "$out/share/starsector/native/linux" \
-      --replace-fail "./compiler_directives.txt" "$out/share/starsector/compiler_directives.txt" \
-      --replace-fail "=." "=\''${XDG_DATA_HOME:-\$HOME/.local/share}/starsector" \
-      --replace-fail "com.fs.starfarer.StarfarerLauncher" "\"\$@\" com.fs.starfarer.StarfarerLauncher"
-  '';
+  desktopItems = [
+    (makeDesktopItem {
+      categories = [ "Game" ];
+      comment = meta.description;
+      desktopName = "Starsector";
+      exec = "starsector";
+      genericName = "starsector";
+      icon = "starsector";
+      name = "starsector";
+    })
+  ];
+
+  dontBuild = true;
 
   passthru.updateScript = writeScript "starsector-update-script" ''
     #!/usr/bin/env nix-shell
@@ -102,8 +102,9 @@ stdenv.mkDerivation rec {
   meta = {
     description = "Open-world single-player space-combat, roleplaying, exploration, and economic game";
     homepage = "https://fractalsoftworks.com";
-    sourceProvenance = with lib.sourceTypes; [ binaryBytecode ];
     license = lib.licenses.unfree;
+    sourceProvenance = with lib.sourceTypes; [ binaryBytecode ];
+
     maintainers = with lib.maintainers; [
       bbigras
       rafaelrc

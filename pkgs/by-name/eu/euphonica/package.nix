@@ -2,27 +2,27 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  nix-update-script,
-  cargo,
-  meson,
-  ninja,
-  pkg-config,
-  rustPlatform,
-  rustc,
-  wrapGAppsHook4,
   cairo,
+  cargo,
   dbus,
+  desktop-file-utils,
   gdk-pixbuf,
   glib,
   gtk4,
   libadwaita,
+  libsecret,
+  libxml2,
+  meson,
+  ninja,
+  nix-update-script,
   openssl,
   pango,
   pipewire,
+  pkg-config,
+  rustPlatform,
+  rustc,
   sqlite,
-  desktop-file-utils,
-  libxml2,
-  libsecret,
+  wrapGAppsHook4,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -36,20 +36,6 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-/U0ugG6refcMliHO1Eouk+yQyzXWh7Y/mzSTskU6/co=";
     fetchSubmodules = true;
   };
-
-  passthru.updateScript = nix-update-script {
-    # to be dropped once there are stable releases
-    extraArgs = [
-      "--version=unstable"
-    ];
-  };
-
-  cargoDeps = rustPlatform.fetchCargoVendor {
-    inherit (finalAttrs) pname version src;
-    hash = "sha256-eB5m2wa61k3m3uKzo7sgKxJZ3hZqvNqP8fs15e6tiZA=";
-  };
-
-  mesonBuildType = "release";
 
   nativeBuildInputs = [
     cargo
@@ -78,16 +64,32 @@ stdenv.mkDerivation (finalAttrs: {
     libsecret
   ];
 
+  cargoDeps = rustPlatform.fetchCargoVendor {
+    inherit (finalAttrs) pname version src;
+    hash = "sha256-eB5m2wa61k3m3uKzo7sgKxJZ3hZqvNqP8fs15e6tiZA=";
+  };
+
+  mesonBuildType = "release";
+
+  passthru.updateScript = nix-update-script {
+    # to be dropped once there are stable releases
+    extraArgs = [
+      "--version=unstable"
+    ];
+  };
+
   meta = {
     description = "MPD client with delusions of grandeur, made with Rust, GTK and Libadwaita";
     homepage = "https://github.com/htkhiem/euphonica";
     license = lib.licenses.gpl3Plus;
+
     maintainers = with lib.maintainers; [
       paperdigits
       aaravrav
       doronbehar
     ];
-    mainProgram = "euphonica";
+
     platforms = with lib.platforms; linux;
+    mainProgram = "euphonica";
   };
 })

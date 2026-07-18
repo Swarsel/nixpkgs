@@ -1,17 +1,17 @@
 {
-  appimageTools,
   fetchurl,
+  appimageTools,
+  hash,
   makeWrapper,
   pname,
   version,
-  hash,
   metaCommon ? { },
 }:
 
 let
   src = fetchurl {
-    url = "https://github.com/mifi/lossless-cut/releases/download/v${version}/LosslessCut-linux-x86_64.AppImage";
     inherit hash;
+    url = "https://github.com/mifi/lossless-cut/releases/download/v${version}/LosslessCut-linux-x86_64.AppImage";
   };
 
   extracted = appimageTools.extractType2 {
@@ -20,12 +20,7 @@ let
 in
 appimageTools.wrapType2 {
   inherit pname version src;
-
   nativeBuildInputs = [ makeWrapper ];
-
-  profile = ''
-    export LC_ALL=C.UTF-8
-  '';
 
   extraInstallCommands = ''
     (
@@ -41,6 +36,10 @@ appimageTools.wrapType2 {
       --replace AppRun losslesscut
     wrapProgram "$out/bin/losslesscut" \
       --add-flags "--disable-seccomp-filter-sandbox"
+  '';
+
+  profile = ''
+    export LC_ALL=C.UTF-8
   '';
 
   meta = metaCommon // {

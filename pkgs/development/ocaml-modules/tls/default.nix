@@ -1,20 +1,20 @@
 {
   lib,
   fetchurl,
+  alcotest,
   buildDunePackage,
   domain-name,
   fmt,
-  logs,
+  ipaddr,
   kdf,
+  logs,
   mirage-crypto,
   mirage-crypto-ec,
   mirage-crypto-pk,
   mirage-crypto-rng,
+  ounit2,
   ptime,
   x509,
-  ipaddr,
-  alcotest,
-  ounit2,
 }:
 
 buildDunePackage (finalAttrs: {
@@ -41,14 +41,15 @@ buildDunePackage (finalAttrs: {
   ];
 
   doCheck = true;
+
   checkInputs = [
     alcotest
     ounit2
   ];
 
   meta = {
-    homepage = "https://github.com/mirleft/ocaml-tls";
     description = "TLS in pure OCaml";
+    homepage = "https://github.com/mirleft/ocaml-tls";
     license = lib.licenses.bsd2;
     maintainers = with lib.maintainers; [ sternenseemann ];
   };

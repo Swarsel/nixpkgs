@@ -3,31 +3,27 @@
   stdenv,
   fetchFromGitHub,
   autoreconfHook,
+  bison,
+  cjson,
+  curl,
+  db,
+  flex,
+  jdk_headless,
+  libcap_ng,
+  libedit,
+  libmicrohttpd,
+  nixosTests,
+  openldap,
+  openssl,
+  pam,
+  perl,
+  perlPackages,
   pkg-config,
   python3,
-  perl,
-  bison,
-  flex,
-  texinfo,
-  perlPackages,
-
-  openldap,
-  libcap_ng,
   sqlite,
-  openssl,
-  db,
-  libedit,
-  pam,
-  libmicrohttpd,
-  cjson,
-
-  curl,
-  jdk_headless,
+  texinfo,
   unzip,
   which,
-
-  nixosTests,
-
   withCJSON ? true,
   withCapNG ? stdenv.hostPlatform.isLinux,
   # libmicrohttpd should theoretically work for darwin as well, but something is broken.
@@ -61,64 +57,6 @@ stdenv.mkDerivation {
     "info"
   ];
 
-  nativeBuildInputs = [
-    autoreconfHook
-    pkg-config
-    python3
-    perl
-    bison
-    flex
-    perlPackages.JSON
-    texinfo
-  ];
-
-  buildInputs = [
-    db
-    libedit
-    pam
-  ]
-  ++ lib.optionals withCJSON [ cjson ]
-  ++ lib.optionals withCapNG [ libcap_ng ]
-  ++ lib.optionals withMicroHTTPD [ libmicrohttpd ]
-  ++ lib.optionals withOpenLDAP [ openldap ]
-  ++ lib.optionals withOpenSSL [ openssl ]
-  ++ lib.optionals withSQLite3 [ sqlite ];
-
-  doCheck = true;
-  nativeCheckInputs = [
-    curl
-    jdk_headless
-    unzip
-    which
-  ];
-
-  configureFlags = [
-    "--with-hdbdir=/var/lib/heimdal"
-
-    "--with-libedit-include=${libedit.dev}/include"
-    "--with-libedit-lib=${libedit}/lib"
-    "--with-berkeley-db-include=${db.dev}/include"
-    "--with-berkeley-db"
-
-    "--without-x"
-    "--disable-afs-string-to-key"
-  ]
-  ++ lib.optionals withCapNG [
-    "--with-capng"
-  ]
-  ++ lib.optionals withCJSON [
-    "--with-cjson=${cjson}"
-  ]
-  ++ lib.optionals withOpenLDAP [
-    "--with-openldap=${openldap.dev}"
-  ]
-  ++ lib.optionals withOpenLDAPAsHDBModule [
-    "--enable-hdb-openldap-module"
-  ]
-  ++ lib.optionals withSQLite3 [
-    "--with-sqlite3=${sqlite.dev}"
-  ];
-
   patches = [
     # Proposed @ https://github.com/heimdal/heimdal/pull/1262
     ./0001-Include-db.h-for-nbdb-compat-mode.patch
@@ -147,16 +85,75 @@ stdenv.mkDerivation {
       --replace-fail '/bin/pwd' 'pwd'
   '';
 
-  # (test_cc) heimdal uses librokens implementation of `secure_getenv` on darwin,
-  #           which expects either USER or LOGNAME to be set.
-  preCheck = lib.optionalString (stdenv.hostPlatform.isDarwin) ''
-    export USER=nix-builder
-  '';
+  nativeBuildInputs = [
+    autoreconfHook
+    pkg-config
+    python3
+    perl
+    bison
+    flex
+    perlPackages.JSON
+    texinfo
+  ];
+
+  buildInputs = [
+    db
+    libedit
+    pam
+  ]
+  ++ lib.optionals withCJSON [ cjson ]
+  ++ lib.optionals withCapNG [ libcap_ng ]
+  ++ lib.optionals withMicroHTTPD [ libmicrohttpd ]
+  ++ lib.optionals withOpenLDAP [ openldap ]
+  ++ lib.optionals withOpenSSL [ openssl ]
+  ++ lib.optionals withSQLite3 [ sqlite ];
+
+  configureFlags = [
+    "--with-hdbdir=/var/lib/heimdal"
+
+    "--with-libedit-include=${libedit.dev}/include"
+    "--with-libedit-lib=${libedit}/lib"
+    "--with-berkeley-db-include=${db.dev}/include"
+    "--with-berkeley-db"
+
+    "--without-x"
+    "--disable-afs-string-to-key"
+  ]
+  ++ lib.optionals withCapNG [
+    "--with-capng"
+  ]
+  ++ lib.optionals withCJSON [
+    "--with-cjson=${cjson}"
+  ]
+  ++ lib.optionals withOpenLDAP [
+    "--with-openldap=${openldap.dev}"
+  ]
+  ++ lib.optionals withOpenLDAPAsHDBModule [
+    "--enable-hdb-openldap-module"
+  ]
+  ++ lib.optionals withSQLite3 [
+    "--with-sqlite3=${sqlite.dev}"
+  ];
 
   # We need to build hcrypt for applications like samba
   postBuild = ''
     (cd include/hcrypto; make -j $NIX_BUILD_CORES)
     (cd lib/hcrypto; make -j $NIX_BUILD_CORES)
+  '';
+
+  doCheck = true;
+
+  nativeCheckInputs = [
+    curl
+    jdk_headless
+    unzip
+    which
+  ];
+
+  # (test_cc) heimdal uses librokens implementation of `secure_getenv` on darwin,
+  #           which expects either USER or LOGNAME to be set.
+  preCheck = lib.optionalString (stdenv.hostPlatform.isDarwin) ''
+    export USER=nix-builder
   '';
 
   postInstall = ''
@@ -179,21 +176,22 @@ stdenv.mkDerivation {
   #  In file included from hxtool.c:34:0:
   #  hx_locl.h:67:25: fatal error: pkcs10_asn1.h: No such file or directory
   #enableParallelBuilding = true;
-
   passthru = {
     implementation = "heimdal";
     tests.nixos = nixosTests.kerberos.heimdal;
   };
 
   meta = {
+    description = "Implementation of Kerberos 5 (and some more stuff)";
     homepage = "https://www.heimdal.software";
     changelog = "https://github.com/heimdal/heimdal/releases";
-    description = "Implementation of Kerberos 5 (and some more stuff)";
     license = lib.licenses.bsd3;
-    platforms = lib.platforms.unix;
+
     maintainers = with lib.maintainers; [
       h7x4
       dblsaiko
     ];
+
+    platforms = lib.platforms.unix;
   };
 }

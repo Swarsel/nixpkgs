@@ -1,8 +1,8 @@
 {
   lib,
   stdenv,
-  fetchgit,
   cargo,
+  fetchgit,
   perl,
   rustPlatform,
 }:
@@ -17,10 +17,11 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-j6s+O3s6xSIZ+6aWI3itVwL4OU4qhoXos1R2NMBrJdo=";
   };
 
-  cargoDeps = rustPlatform.fetchCargoVendor {
-    inherit (finalAttrs) pname version src;
-    hash = "sha256-RyZGR6VxWH98ujydPFbuzKZil+1pxk4qD6EuaCnN1Y8=";
-  };
+  nativeBuildInputs = [
+    cargo
+    perl
+    rustPlatform.cargoSetupHook
+  ];
 
   makeFlags = [
     "-C"
@@ -28,11 +29,10 @@ stdenv.mkDerivation (finalAttrs: {
     "PREFIX=${placeholder "out"}"
   ];
 
-  nativeBuildInputs = [
-    cargo
-    perl
-    rustPlatform.cargoSetupHook
-  ];
+  cargoDeps = rustPlatform.fetchCargoVendor {
+    inherit (finalAttrs) pname version src;
+    hash = "sha256-RyZGR6VxWH98ujydPFbuzKZil+1pxk4qD6EuaCnN1Y8=";
+  };
 
   meta = {
     description = "C++ bindings for the vodozemac cryptographic library.";

@@ -20,18 +20,18 @@ stdenv.mkDerivation (finalAttrs: {
     gfortran
   ];
 
-  enableParallelBuilding = true;
-
   preConfigure = ''
     patchShebangs .
   '';
 
+  enableParallelBuilding = true;
+
   meta = {
     description = "Higher Order Perturbative Parton Evolution Toolkit";
-    mainProgram = "hoppet-config";
-    license = lib.licenses.gpl2;
     homepage = "https://hoppet.hepforge.org";
-    platforms = lib.platforms.unix;
+    license = lib.licenses.gpl2;
     maintainers = with lib.maintainers; [ veprbl ];
+    platforms = lib.platforms.unix;
+    mainProgram = "hoppet-config";
   };
 })

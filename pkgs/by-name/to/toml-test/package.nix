@@ -1,9 +1,9 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
-  versionCheckHook,
+  buildGoModule,
   nix-update-script,
+  versionCheckHook,
 }:
 
 buildGoModule (finalAttrs: {
@@ -18,6 +18,8 @@ buildGoModule (finalAttrs: {
   };
 
   vendorHash = "sha256-JcTW21Zva/7Uvc5AvW9H1IxAcaw3AU0FAdtI3IOtZAc=";
+  doInstallCheck = true;
+  nativeInstallCheckInputs = [ versionCheckHook ];
 
   ldflags = [
     "-s"
@@ -25,10 +27,7 @@ buildGoModule (finalAttrs: {
     "-X zgo.at/zli.version=${finalAttrs.version}"
   ];
 
-  nativeInstallCheckInputs = [ versionCheckHook ];
   versionCheckProgramArg = "version";
-  doInstallCheck = true;
-
   passthru.updateScript = nix-update-script { };
 
   meta = {
@@ -36,10 +35,12 @@ buildGoModule (finalAttrs: {
     homepage = "https://github.com/toml-lang/toml-test";
     changelog = "https://github.com/toml-lang/toml-test/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       yzx9
       defelo
     ];
+
     mainProgram = "toml-test";
   };
 })

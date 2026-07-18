@@ -2,8 +2,8 @@
   lib,
   fetchFromGitHub,
   buildGoModule,
-  testers,
   oneshot,
+  testers,
 }:
 
 buildGoModule (finalAttrs: {
@@ -18,20 +18,7 @@ buildGoModule (finalAttrs: {
   };
 
   vendorHash = "sha256-TktSQMIHYXF9eyY6jyfE31WLXEq7VZU3qnVIMGjMMcA=";
-
-  subPackages = [ "cmd" ];
-
   env.GOWORK = "off";
-
-  modRoot = "v2";
-
-  ldflags = [
-    "-s"
-    "-w"
-    "-extldflags=-static"
-    "-X github.com/forestnode-io/oneshot/v2/pkg/version.Version=${finalAttrs.version}"
-    "-X github.com/forestnode-io/oneshot/v2/pkg/version.APIVersion=v1.0.0"
-  ];
 
   installPhase = ''
     runHook preInstall
@@ -41,9 +28,20 @@ buildGoModule (finalAttrs: {
     runHook postInstall
   '';
 
+  ldflags = [
+    "-s"
+    "-w"
+    "-extldflags=-static"
+    "-X github.com/forestnode-io/oneshot/v2/pkg/version.Version=${finalAttrs.version}"
+    "-X github.com/forestnode-io/oneshot/v2/pkg/version.APIVersion=v1.0.0"
+  ];
+
+  modRoot = "v2";
+  subPackages = [ "cmd" ];
+
   passthru.tests.version = testers.testVersion {
-    package = oneshot;
     command = "oneshot version";
+    package = oneshot;
   };
 
   meta = {

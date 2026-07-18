@@ -1,6 +1,6 @@
 {
-  lib,
   config,
+  lib,
   pkgs,
   ...
 }:
@@ -11,40 +11,59 @@ in
 {
   options.services.rsshub = {
     enable = lib.mkEnableOption "RSSHub service";
-
     package = lib.mkPackageOption pkgs "rsshub" { };
 
     openFirewall = lib.mkOption {
-      type = lib.types.bool;
       default = false;
       description = "Whether to open the firewall for the specified port.";
+      type = lib.types.bool;
+    };
+
+    redis = {
+      enable = lib.mkEnableOption "Redis for RSSHub";
+
+      createLocally = lib.mkOption {
+        default = true;
+        description = "Create and use a local Redis instance. Sets `services.redis.servers.rsshub`.";
+        type = lib.types.bool;
+      };
+
+      host = lib.mkOption {
+        default = "localhost";
+        description = "The Redis host.";
+        type = lib.types.str;
+      };
+
+      port = lib.mkOption {
+        default = 6379;
+        description = "The Redis port.";
+        type = lib.types.port;
+      };
+    };
+
+    secretFiles = lib.mkOption {
+      default = [ ];
+
+      description = ''
+        Environment variables stored in files for secrets.
+        See <https://docs.rsshub.app/deploy/config> for available options.
+      '';
+
+      example = lib.literalExpression ''
+        [ config.sops.secrets.rsshub.path ]
+      '';
+
+      type = lib.types.listOf lib.types.path;
     };
 
     settings = lib.mkOption {
-      type = lib.types.submodule {
-        freeformType = lib.types.attrsOf lib.types.str;
-        options = {
-          LISTEN_INADDR_ANY = lib.mkOption {
-            type = lib.types.bool;
-            default = false;
-            description = "Listen to any address";
-            apply = x: if x then "1" else "0";
-          };
-          PORT = lib.mkOption {
-            type = lib.types.port;
-            default = 1200;
-            description = "Listen on port.";
-            apply = toString;
-          };
-          NO_LOGFILES = lib.mkOption {
-            type = lib.types.bool;
-            default = true;
-            description = "Print logs into stderr.";
-            apply = x: if x then "1" else "0";
-          };
-        };
-      };
       default = { };
+
+      description = ''
+        Environment variables for RSSHub.
+        See <https://docs.rsshub.app/deploy/config> for available options.
+      '';
+
       example = lib.literalExpression ''
         {
           REQUEST_TIMEOUT = "3000";
@@ -52,45 +71,39 @@ in
           CHROMIUM_EXECUTABLE_PATH = lib.getExe pkgs.chromium;
         }
       '';
-      description = ''
-        Environment variables for RSSHub.
-        See <https://docs.rsshub.app/deploy/config> for available options.
-      '';
-    };
 
-    secretFiles = lib.mkOption {
-      type = lib.types.listOf lib.types.path;
-      default = [ ];
-      example = lib.literalExpression ''
-        [ config.sops.secrets.rsshub.path ]
-      '';
-      description = ''
-        Environment variables stored in files for secrets.
-        See <https://docs.rsshub.app/deploy/config> for available options.
-      '';
-    };
+      type = lib.types.submodule {
+        options = {
+          LISTEN_INADDR_ANY = lib.mkOption {
+            apply = x: if x then "1" else "0";
+            default = false;
+            description = "Listen to any address";
+            type = lib.types.bool;
+          };
 
-    redis = {
-      enable = lib.mkEnableOption "Redis for RSSHub";
-      createLocally = lib.mkOption {
-        type = lib.types.bool;
-        default = true;
-        description = "Create and use a local Redis instance. Sets `services.redis.servers.rsshub`.";
-      };
-      host = lib.mkOption {
-        type = lib.types.str;
-        default = "localhost";
-        description = "The Redis host.";
-      };
-      port = lib.mkOption {
-        type = lib.types.port;
-        default = 6379;
-        description = "The Redis port.";
+          NO_LOGFILES = lib.mkOption {
+            apply = x: if x then "1" else "0";
+            default = true;
+            description = "Print logs into stderr.";
+            type = lib.types.bool;
+          };
+
+          PORT = lib.mkOption {
+            apply = toString;
+            default = 1200;
+            description = "Listen on port.";
+            type = lib.types.port;
+          };
+        };
+
+        freeformType = lib.types.attrsOf lib.types.str;
       };
     };
   };
 
   config = lib.mkIf cfg.enable {
+    networking.firewall.allowedTCPPorts = lib.mkIf cfg.openFirewall [ (lib.toInt cfg.settings.PORT) ];
+
     services.redis.servers.rsshub = lib.mkIf (cfg.redis.enable && cfg.redis.createLocally) {
       enable = true;
       port = cfg.redis.port;
@@ -102,36 +115,33 @@ in
     };
 
     systemd.services.rsshub = {
-      description = "RSSHub - Everything is RSSible";
-      wantedBy = [ "multi-user.target" ];
       after = lib.optional (cfg.redis.enable && cfg.redis.createLocally) "redis-rsshub.service";
+      description = "RSSHub - Everything is RSSible";
+      environment = cfg.settings;
       requires = lib.optional (cfg.redis.enable && cfg.redis.createLocally) "redis-rsshub.service";
 
-      environment = cfg.settings;
-
       serviceConfig = {
-        Type = "simple";
-        User = "rsshub";
-        Group = "rsshub";
         DynamicUser = true;
-        StateDirectory = "rsshub";
         EnvironmentFile = cfg.secretFiles;
         ExecStart = lib.getExe cfg.package;
-        Restart = "on-failure";
-        RestartSec = "10s";
-
+        Group = "rsshub";
         # Hardening
         NoNewPrivileges = true;
         PrivateTmp = true;
-        ProtectSystem = "strict";
-        ProtectHome = true;
-        ProtectKernelTunables = true;
-        ProtectKernelModules = true;
         ProtectControlGroups = true;
+        ProtectHome = true;
+        ProtectKernelModules = true;
+        ProtectKernelTunables = true;
+        ProtectSystem = "strict";
+        Restart = "on-failure";
+        RestartSec = "10s";
+        StateDirectory = "rsshub";
+        Type = "simple";
+        User = "rsshub";
       };
-    };
 
-    networking.firewall.allowedTCPPorts = lib.mkIf cfg.openFirewall [ (lib.toInt cfg.settings.PORT) ];
+      wantedBy = [ "multi-user.target" ];
+    };
   };
 
   meta.maintainers = with lib.maintainers; [ vonfry ];

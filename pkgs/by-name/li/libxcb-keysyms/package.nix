@@ -2,28 +2,27 @@
   lib,
   stdenv,
   fetchurl,
-  pkg-config,
   libxcb,
-  xorgproto,
-  writeScript,
+  pkg-config,
   testers,
+  writeScript,
+  xorgproto,
 }:
 stdenv.mkDerivation (finalAttrs: {
   pname = "libxcb-keysyms";
   version = "0.4.1";
-
-  outputs = [
-    "out"
-    "dev"
-  ];
 
   src = fetchurl {
     url = "mirror://xorg/individual/xcb/xcb-util-keysyms-${finalAttrs.version}.tar.xz";
     hash = "sha256-fCYKUpRBKu1CnfHaL4r9O9B7fLo/7HcvuhWmE6bVxjg=";
   };
 
-  strictDeps = true;
+  outputs = [
+    "out"
+    "dev"
+  ];
 
+  strictDeps = true;
   nativeBuildInputs = [ pkg-config ];
 
   buildInputs = [
@@ -34,6 +33,8 @@ stdenv.mkDerivation (finalAttrs: {
   propagatedBuildInputs = [ libxcb ];
 
   passthru = {
+    tests.pkg-config = testers.testMetaPkgConfig finalAttrs.finalPackage;
+
     updateScript = writeScript "update-${finalAttrs.pname}" ''
       #!/usr/bin/env nix-shell
       #!nix-shell -i bash -p common-updater-scripts
@@ -42,7 +43,6 @@ stdenv.mkDerivation (finalAttrs: {
         | sort -V | tail -n1)"
       update-source-version ${finalAttrs.pname} "$version"
     '';
-    tests.pkg-config = testers.testMetaPkgConfig finalAttrs.finalPackage;
   };
 
   meta = {
@@ -50,7 +50,7 @@ stdenv.mkDerivation (finalAttrs: {
     homepage = "https://gitlab.freedesktop.org/xorg/lib/libxcb-keysyms";
     license = lib.licenses.x11;
     maintainers = [ ];
-    pkgConfigModules = [ "xcb-keysyms" ];
     platforms = lib.platforms.unix;
+    pkgConfigModules = [ "xcb-keysyms" ];
   };
 })

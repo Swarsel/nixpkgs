@@ -5,9 +5,8 @@
 }:
 
 buildPythonPackage rec {
-  version = "1.0.4";
-  format = "setuptools";
   pname = "pyfiglet";
+  version = "1.0.4";
 
   src = fetchPypi {
     inherit pname version;
@@ -15,11 +14,12 @@ buildPythonPackage rec {
   };
 
   doCheck = false;
+  format = "setuptools";
 
   meta = {
     description = "FIGlet in pure Python";
-    mainProgram = "pyfiglet";
     license = lib.licenses.gpl2Plus;
     maintainers = with lib.maintainers; [ thoughtpolice ];
+    mainProgram = "pyfiglet";
   };
 }

@@ -1,12 +1,12 @@
 {
   lib,
   fetchFromGitHub,
-  maven,
-  makeWrapper,
-  stripJavaArchivesHook,
-  makeDesktopItem,
   copyDesktopItems,
   jre,
+  makeDesktopItem,
+  makeWrapper,
+  maven,
+  stripJavaArchivesHook,
   versionCheckHook,
   withCli ? true,
   withGui ? false,
@@ -14,19 +14,6 @@
 maven.buildMavenPackage rec {
   pname = "verapdf" + lib.optionalString (withGui && !withCli) "-gui";
   version = "1.30.1";
-  __structuredAttrs = true;
-
-  mvnParameters =
-    "-pl '!installer' -Dverapdf.timestamp=1980-01-01T00:00:02Z -Dproject.build.outputTimestamp=1980-01-01T00:00:02Z "
-    +
-      # By default, veraPDF uses version ranges for some components.
-      # These versions are pinned to the package version in order to avoid
-      # non-reproducibility of the maven dependencies.
-      lib.concatMapStringsSep " " (id: "-Dverapdf.${id}.version=${version}") [
-        "library"
-        "pdfbox.validation"
-        "validation"
-      ];
 
   src = fetchFromGitHub {
     owner = "veraPDF";
@@ -36,9 +23,6 @@ maven.buildMavenPackage rec {
   };
 
   patches = [ ./stable-maven-plugins.patch ];
-
-  mvnHash = "sha256-hY+zPuSujMr3RntuLOZVEN8GN4n8201+S5OYvwB1+j4=";
-
   strictDeps = true;
 
   nativeBuildInputs = [
@@ -66,23 +50,6 @@ maven.buildMavenPackage rec {
     runHook postInstall
   '';
 
-  desktopItems = lib.optionals withGui [
-    (makeDesktopItem {
-      name = "veraPDF";
-      comment = meta.description;
-      desktopName = "veraPDF";
-      genericName = "PDF/A Conformance Checker";
-      exec = "verapdf-gui";
-      icon = "verapdf";
-      categories = [
-        "Development"
-        "Utility"
-      ];
-      keywords = [ "PDF" ];
-      mimeTypes = [ "application/pdf" ];
-    })
-  ];
-
   # GUI has no --version flag
   doInstallCheck = withCli;
 
@@ -90,21 +57,57 @@ maven.buildMavenPackage rec {
     versionCheckHook
   ];
 
-  versionCheckProgram = "${placeholder "out"}/bin/verapdf";
+  __structuredAttrs = true;
+
+  desktopItems = lib.optionals withGui [
+    (makeDesktopItem {
+      categories = [
+        "Development"
+        "Utility"
+      ];
+
+      comment = meta.description;
+      desktopName = "veraPDF";
+      exec = "verapdf-gui";
+      genericName = "PDF/A Conformance Checker";
+      icon = "verapdf";
+      keywords = [ "PDF" ];
+      mimeTypes = [ "application/pdf" ];
+      name = "veraPDF";
+    })
+  ];
+
+  mvnHash = "sha256-hY+zPuSujMr3RntuLOZVEN8GN4n8201+S5OYvwB1+j4=";
+
+  mvnParameters =
+    "-pl '!installer' -Dverapdf.timestamp=1980-01-01T00:00:02Z -Dproject.build.outputTimestamp=1980-01-01T00:00:02Z "
+    +
+      # By default, veraPDF uses version ranges for some components.
+      # These versions are pinned to the package version in order to avoid
+      # non-reproducibility of the maven dependencies.
+      lib.concatMapStringsSep " " (id: "-Dverapdf.${id}.version=${version}") [
+        "library"
+        "pdfbox.validation"
+        "validation"
+      ];
 
   preVersionCheck = ''
     version=${lib.versions.majorMinor version}.0
   '';
 
+  versionCheckProgram = "${placeholder "out"}/bin/verapdf";
+
   meta = {
-    changelog = "https://github.com/veraPDF/veraPDF-library/blob/${src.tag}/RELEASENOTES.md";
     description = "Command line and GUI industry supported PDF/A and PDF/UA Validation";
     homepage = "https://github.com/veraPDF/veraPDF-apps";
+    changelog = "https://github.com/veraPDF/veraPDF-library/blob/${src.tag}/RELEASENOTES.md";
+
     license = [
       lib.licenses.gpl3Plus
       # or
       lib.licenses.mpl20
     ];
+
     maintainers = [
       lib.maintainers.mohe2015
       lib.maintainers.kilianar

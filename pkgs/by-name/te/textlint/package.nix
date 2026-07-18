@@ -2,12 +2,11 @@
   lib,
   stdenv,
   fetchFromGitHub,
+  fetchPnpmDeps,
   makeWrapper,
   nodejs-slim,
-  pnpm_10,
-  fetchPnpmDeps,
   pnpmConfigHook,
-  versionCheckHook,
+  pnpm_10,
   runCommand,
   textlint,
   textlint-plugin-latex2e,
@@ -26,6 +25,7 @@
   textlint-rule-terminology,
   textlint-rule-unexpanded-acronym,
   textlint-rule-write-good,
+  versionCheckHook,
 }:
 stdenv.mkDerivation (finalAttrs: {
   pname = "textlint";
@@ -49,18 +49,6 @@ stdenv.mkDerivation (finalAttrs: {
     # ERROR: pnpm failed to install dependencies
     ./remove-overrides.patch
   ];
-
-  pnpmDeps = fetchPnpmDeps {
-    inherit (finalAttrs)
-      pname
-      version
-      src
-      patches
-      ;
-    pnpm = pnpm_10;
-    fetcherVersion = 4;
-    hash = "sha256-dWcLm8cTo8LC6IqMEe1zDxVJ7ioytKigEwYna6hiO8A=";
-  };
 
   nativeBuildInputs = [
     makeWrapper
@@ -102,24 +90,29 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  doInstallCheck = true;
   nativeInstallCheckInputs = [ versionCheckHook ];
 
-  doInstallCheck = true;
+  pnpmDeps = fetchPnpmDeps {
+    inherit (finalAttrs)
+      pname
+      version
+      src
+      patches
+      ;
+
+    fetcherVersion = 4;
+    hash = "sha256-dWcLm8cTo8LC6IqMEe1zDxVJ7ioytKigEwYna6hiO8A=";
+    pnpm = pnpm_10;
+  };
 
   passthru = {
-    withPackages =
-      ps:
-      runCommand "textlint-with-packages" { nativeBuildInputs = [ makeWrapper ]; } ''
-        makeWrapper ${textlint}/bin/textlint $out/bin/textlint \
-          --set NODE_PATH ${lib.makeSearchPath "lib/node_modules" ps}
-      '';
-
     testPackages =
       {
         rule,
         testFile,
-        pname ? rule.pname,
         plugin ? null,
+        pname ? rule.pname,
       }:
       let
         ruleName = lib.removePrefix "textlint-rule-" rule.pname;
@@ -166,6 +159,13 @@ stdenv.mkDerivation (finalAttrs: {
         textlint-rule-write-good
       ]
     );
+
+    withPackages =
+      ps:
+      runCommand "textlint-with-packages" { nativeBuildInputs = [ makeWrapper ]; } ''
+        makeWrapper ${textlint}/bin/textlint $out/bin/textlint \
+          --set NODE_PATH ${lib.makeSearchPath "lib/node_modules" ps}
+      '';
   };
 
   meta = {
@@ -174,7 +174,7 @@ stdenv.mkDerivation (finalAttrs: {
     changelog = "https://github.com/textlint/textlint/blob/${finalAttrs.src.tag}/CHANGELOG.md";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ natsukium ];
-    mainProgram = "textlint";
     platforms = nodejs-slim.meta.platforms;
+    mainProgram = "textlint";
   };
 })

@@ -1,30 +1,27 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  pythonOlder,
-
+  # tests
+  anywidget,
+  buildPythonPackage,
   # build-system
   hatchling,
-
+  ipython,
+  ipywidgets,
   # dependencies
   jinja2,
   jsonschema,
+  mistune,
   narwhals,
   numpy,
   packaging,
   pandas,
-  toolz,
-  typing-extensions,
-
-  # tests
-  anywidget,
-  ipython,
-  ipywidgets,
-  mistune,
   polars,
   pytest-xdist,
   pytestCheckHook,
+  pythonOlder,
+  toolz,
+  typing-extensions,
   vega-datasets,
   vl-convert-python,
   writableTmpDirAsHomeHook,
@@ -33,7 +30,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "altair";
   version = "6.1.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "altair-viz";
@@ -41,6 +37,19 @@ buildPythonPackage (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-6507I+4ItjZezbprKn4r/oeaS1U7CF8+JKkHRmDC8js=";
   };
+
+  nativeCheckInputs = [
+    anywidget
+    ipython
+    ipywidgets
+    mistune
+    polars
+    pytest-xdist
+    pytestCheckHook
+    vega-datasets
+    vl-convert-python
+    writableTmpDirAsHomeHook
+  ];
 
   build-system = [ hatchling ];
 
@@ -57,23 +66,13 @@ buildPythonPackage (finalAttrs: {
     typing-extensions
   ];
 
-  nativeCheckInputs = [
-    anywidget
-    ipython
-    ipywidgets
-    mistune
-    polars
-    pytest-xdist
-    pytestCheckHook
-    vega-datasets
-    vl-convert-python
-    writableTmpDirAsHomeHook
-  ];
+  disabledTestPaths = [
+    # Network access
+    "altair/datasets/_data.py"
+    "tests/test_examples.py"
 
-  pythonImportsCheck = [ "altair" ];
-
-  enabledTestPaths = [
-    "tests/"
+    # avoid updating files and dependency on black
+    "tests/test_toplevel.py"
   ];
 
   disabledTests = [
@@ -102,24 +101,24 @@ buildPythonPackage (finalAttrs: {
     "test_tsv"
   ];
 
-  disabledTestPaths = [
-    # Network access
-    "altair/datasets/_data.py"
-    "tests/test_examples.py"
-
-    # avoid updating files and dependency on black
-    "tests/test_toplevel.py"
+  enabledTestPaths = [
+    "tests/"
   ];
+
+  pyproject = true;
+  pythonImportsCheck = [ "altair" ];
 
   meta = {
     description = "Declarative statistical visualization library for Python";
     homepage = "https://altair-viz.github.io";
-    downloadPage = "https://github.com/altair-viz/altair";
     changelog = "https://altair-viz.github.io/releases/changes.html";
     license = lib.licenses.bsd3;
+
     maintainers = with lib.maintainers; [
       teh
       vinetos
     ];
+
+    downloadPage = "https://github.com/altair-viz/altair";
   };
 })

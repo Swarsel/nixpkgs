@@ -15,18 +15,65 @@ in
 
   options.services.snapraid = with lib.types; {
     enable = lib.mkEnableOption "SnapRAID";
+
+    contentFiles = lib.mkOption {
+      default = [ ];
+      description = "SnapRAID content list files.";
+
+      example = [
+        "/var/snapraid.content"
+        "/mnt/disk1/snapraid.content"
+        "/mnt/disk2/snapraid.content"
+      ];
+
+      type = listOf str;
+    };
+
     dataDisks = lib.mkOption {
       default = { };
+      description = "SnapRAID data disks.";
+
       example = {
         d1 = "/mnt/disk1/";
         d2 = "/mnt/disk2/";
         d3 = "/mnt/disk3/";
       };
-      description = "SnapRAID data disks.";
+
       type = attrsOf str;
     };
+
+    exclude = lib.mkOption {
+      default = [ ];
+      description = "SnapRAID exclude directives.";
+
+      example = [
+        "*.unrecoverable"
+        "/tmp/"
+        "/lost+found/"
+      ];
+
+      type = listOf str;
+    };
+
+    extraConfig = lib.mkOption {
+      default = "";
+      description = "Extra config options for SnapRAID.";
+
+      example = ''
+        nohidden
+        blocksize 256
+        hashsize 16
+        autosave 500
+        pool /pool
+      '';
+
+      type = lines;
+    };
+
     parityFiles = lib.mkOption {
       default = [ ];
+      description = "SnapRAID parity files.";
+
       example = [
         "/mnt/diskp/snapraid.parity"
         "/mnt/diskq/snapraid.2-parity"
@@ -35,72 +82,45 @@ in
         "/mnt/diskt/snapraid.5-parity"
         "/mnt/disku/snapraid.6-parity"
       ];
-      description = "SnapRAID parity files.";
+
       type = listOf str;
     };
-    contentFiles = lib.mkOption {
-      default = [ ];
-      example = [
-        "/var/snapraid.content"
-        "/mnt/disk1/snapraid.content"
-        "/mnt/disk2/snapraid.content"
-      ];
-      description = "SnapRAID content list files.";
-      type = listOf str;
-    };
-    exclude = lib.mkOption {
-      default = [ ];
-      example = [
-        "*.unrecoverable"
-        "/tmp/"
-        "/lost+found/"
-      ];
-      description = "SnapRAID exclude directives.";
-      type = listOf str;
-    };
-    touchBeforeSync = lib.mkOption {
-      default = true;
-      example = false;
-      description = "Whether {command}`snapraid touch` should be run before {command}`snapraid sync`.";
-      type = bool;
-    };
-    sync.interval = lib.mkOption {
-      default = "01:00";
-      example = "daily";
-      description = "How often to run {command}`snapraid sync`.";
-      type = str;
-    };
+
     scrub = {
       interval = lib.mkOption {
         default = "Mon *-*-* 02:00:00";
-        example = "weekly";
         description = "How often to run {command}`snapraid scrub`.";
+        example = "weekly";
         type = str;
       };
-      plan = lib.mkOption {
-        default = 8;
-        example = 5;
-        description = "Percent of the array that should be checked by {command}`snapraid scrub`.";
-        type = int;
-      };
+
       olderThan = lib.mkOption {
         default = 10;
-        example = 20;
         description = "Number of days since data was last scrubbed before it can be scrubbed again.";
+        example = 20;
+        type = int;
+      };
+
+      plan = lib.mkOption {
+        default = 8;
+        description = "Percent of the array that should be checked by {command}`snapraid scrub`.";
+        example = 5;
         type = int;
       };
     };
-    extraConfig = lib.mkOption {
-      default = "";
-      example = ''
-        nohidden
-        blocksize 256
-        hashsize 16
-        autosave 500
-        pool /pool
-      '';
-      description = "Extra config options for SnapRAID.";
-      type = lines;
+
+    sync.interval = lib.mkOption {
+      default = "01:00";
+      description = "How often to run {command}`snapraid sync`.";
+      example = "daily";
+      type = str;
+    };
+
+    touchBeforeSync = lib.mkOption {
+      default = true;
+      description = "Whether {command}`snapraid touch` should be run before {command}`snapraid sync`.";
+      example = false;
+      type = bool;
     };
   };
 
@@ -122,8 +142,6 @@ in
       ];
 
       environment = {
-        systemPackages = with pkgs; [ snapraid ];
-
         etc."snapraid.conf" = {
           text =
             with cfg;
@@ -143,41 +161,34 @@ in
             + "\n"
             + extraConfig;
         };
+
+        systemPackages = with pkgs; [ snapraid ];
       };
 
       systemd.services = with cfg; {
         snapraid-scrub = {
           description = "Scrub the SnapRAID array";
-          startAt = scrub.interval;
-          serviceConfig = {
-            Type = "oneshot";
-            ExecStart = "${pkgs.snapraid}/bin/snapraid scrub -p ${toString scrub.plan} -o ${toString scrub.olderThan}";
-            Nice = 19;
-            IOSchedulingPriority = 7;
-            CPUSchedulingPolicy = "batch";
 
+          serviceConfig = {
+            CPUSchedulingPolicy = "batch";
+            CapabilityBoundingSet = "CAP_DAC_OVERRIDE";
+            ExecStart = "${pkgs.snapraid}/bin/snapraid scrub -p ${toString scrub.plan} -o ${toString scrub.olderThan}";
+            IOSchedulingPriority = 7;
             LockPersonality = true;
             MemoryDenyWriteExecute = true;
+            Nice = 19;
             NoNewPrivileges = true;
             PrivateDevices = true;
             PrivateTmp = true;
             ProtectClock = true;
             ProtectControlGroups = true;
+            ProtectHome = "read-only";
             ProtectHostname = true;
             ProtectKernelLogs = true;
             ProtectKernelModules = true;
             ProtectKernelTunables = true;
-            RestrictAddressFamilies = "none";
-            RestrictNamespaces = true;
-            RestrictRealtime = true;
-            RestrictSUIDSGID = true;
-            SystemCallArchitectures = "native";
-            SystemCallFilter = "@system-service";
-            SystemCallErrorNumber = "EPERM";
-            CapabilityBoundingSet = "CAP_DAC_OVERRIDE";
-
             ProtectSystem = "strict";
-            ProtectHome = "read-only";
+
             ReadWritePaths =
               # scrub requires access to directories containing content files
               # to remove them if they are stale
@@ -185,40 +196,43 @@ in
                 contentDirs = map dirOf contentFiles;
               in
               lib.unique (lib.attrValues dataDisks ++ contentDirs);
-          };
-          unitConfig.After = "snapraid-sync.service";
-        };
-        snapraid-sync = {
-          description = "Synchronize the state of the SnapRAID array";
-          startAt = sync.interval;
-          serviceConfig = {
-            Type = "oneshot";
-            ExecStart = "${pkgs.snapraid}/bin/snapraid sync";
-            Nice = 19;
-            IOSchedulingPriority = 7;
-            CPUSchedulingPolicy = "batch";
 
-            LockPersonality = true;
-            MemoryDenyWriteExecute = true;
-            NoNewPrivileges = true;
-            PrivateTmp = true;
-            ProtectClock = true;
-            ProtectControlGroups = true;
-            ProtectHostname = true;
-            ProtectKernelLogs = true;
-            ProtectKernelModules = true;
-            ProtectKernelTunables = true;
             RestrictAddressFamilies = "none";
             RestrictNamespaces = true;
             RestrictRealtime = true;
             RestrictSUIDSGID = true;
             SystemCallArchitectures = "native";
-            SystemCallFilter = "@system-service";
             SystemCallErrorNumber = "EPERM";
-            CapabilityBoundingSet = "CAP_DAC_OVERRIDE" + lib.optionalString cfg.touchBeforeSync " CAP_FOWNER";
+            SystemCallFilter = "@system-service";
+            Type = "oneshot";
+          };
 
-            ProtectSystem = "strict";
+          startAt = scrub.interval;
+          unitConfig.After = "snapraid-sync.service";
+        };
+
+        snapraid-sync = {
+          description = "Synchronize the state of the SnapRAID array";
+
+          serviceConfig = {
+            CPUSchedulingPolicy = "batch";
+            CapabilityBoundingSet = "CAP_DAC_OVERRIDE" + lib.optionalString cfg.touchBeforeSync " CAP_FOWNER";
+            ExecStart = "${pkgs.snapraid}/bin/snapraid sync";
+            IOSchedulingPriority = 7;
+            LockPersonality = true;
+            MemoryDenyWriteExecute = true;
+            Nice = 19;
+            NoNewPrivileges = true;
+            PrivateTmp = true;
+            ProtectClock = true;
+            ProtectControlGroups = true;
             ProtectHome = "read-only";
+            ProtectHostname = true;
+            ProtectKernelLogs = true;
+            ProtectKernelModules = true;
+            ProtectKernelTunables = true;
+            ProtectSystem = "strict";
+
             ReadWritePaths =
               # sync requires access to directories containing content files
               # to remove them if they are stale
@@ -230,10 +244,21 @@ in
                 splitParityFiles = map (s: lib.splitString "," s) parityFiles;
               in
               lib.unique (lib.attrValues dataDisks ++ splitParityFiles ++ contentDirs);
+
+            RestrictAddressFamilies = "none";
+            RestrictNamespaces = true;
+            RestrictRealtime = true;
+            RestrictSUIDSGID = true;
+            SystemCallArchitectures = "native";
+            SystemCallErrorNumber = "EPERM";
+            SystemCallFilter = "@system-service";
+            Type = "oneshot";
           }
           // lib.optionalAttrs touchBeforeSync {
             ExecStartPre = "${pkgs.snapraid}/bin/snapraid touch";
           };
+
+          startAt = sync.interval;
         };
       };
     };

@@ -1,11 +1,11 @@
 {
   lib,
   stdenv,
-  rustPlatform,
   fetchFromGitHub,
   boost,
   nix,
   pkg-config,
+  rustPlatform,
   # Whether to build the nix-doc plugin for Nix
   withPlugin ? false, # no longer needed for nix 2.24
 }:
@@ -25,30 +25,23 @@ rustPlatform.buildRustPackage (finalAttrs: {
   version = "0.6.5";
 
   src = fetchFromGitHub {
-    rev = "v${finalAttrs.version}";
     owner = "lf-";
     repo = "nix-doc";
+    rev = "v${finalAttrs.version}";
     sha256 = "sha256-9cuNzq+CBA2jz0LkZb7lh/WISIlKklfovGBAbSo1Mgk=";
   };
-
-  doCheck = true;
-  buildInputs = lib.optionals withPlugin [
-    boost
-    nix
-  ];
 
   nativeBuildInputs = lib.optionals withPlugin [
     pkg-config
     nix
   ];
 
-  cargoBuildFlags = packageFlags;
-  cargoTestFlags = packageFlags;
+  buildInputs = lib.optionals withPlugin [
+    boost
+    nix
+  ];
 
-  # Packaging support for making the nix-doc plugin load cleanly as a no-op on
-  # the wrong Nix version (disabling bindnow permits loading libraries
-  # requiring unavailable symbols if they are unreached)
-  hardeningDisable = lib.optionals withPlugin [ "bindnow" ];
+  cargoHash = "sha256-EC+Wps6u1qXpv7ByM3NkRVCKRKCaBtC1o2vK8cKqzyU=";
 
   # Due to a Rust bug, setting -C relro-level to anything including "off" on
   # macOS will cause link errors
@@ -56,7 +49,13 @@ rustPlatform.buildRustPackage (finalAttrs: {
     RUSTFLAGS = "-C relro-level=partial";
   };
 
-  cargoHash = "sha256-EC+Wps6u1qXpv7ByM3NkRVCKRKCaBtC1o2vK8cKqzyU=";
+  doCheck = true;
+  cargoBuildFlags = packageFlags;
+  cargoTestFlags = packageFlags;
+  # Packaging support for making the nix-doc plugin load cleanly as a no-op on
+  # the wrong Nix version (disabling bindnow permits loading libraries
+  # requiring unavailable symbols if they are unreached)
+  hardeningDisable = lib.optionals withPlugin [ "bindnow" ];
 
   meta = {
     description = "Interactive Nix documentation tool";

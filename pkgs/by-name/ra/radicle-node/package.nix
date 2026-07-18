@@ -1,68 +1,70 @@
 {
+  lib,
+  stdenv,
   asciidoctor,
   fetchFromRadicle,
   gitMinimal,
   installShellFiles,
   jq,
-  lib,
   makeBinaryWrapper,
   man-db,
   nixosTests,
   openssh,
   runCommand,
   rustPlatform,
-  stdenv,
-  xdg-utils,
   versionCheckHook,
-
-  version ? "1.9.1",
-  srcHash ? "sha256-8wLVNHF9qkKBK2s6RdH0/2To2zamx8RON5iBjkQoQY4=",
+  xdg-utils,
   cargoHash ? "sha256-holYrCL0FApbnFRj0+bVnjkiNL14jclaM8xIqRHfEkc=",
+  srcHash ? "sha256-8wLVNHF9qkKBK2s6RdH0/2To2zamx8RON5iBjkQoQY4=",
   updateScript ? ./update.sh,
+  version ? "1.9.1",
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
   inherit version cargoHash;
-
   pname = "radicle-node";
 
   src = fetchFromRadicle {
-    seed = "seed.radicle.dev";
     repo = "z3gqcJUoA1n9HaHKufZs5FCSGazv5";
     tag = "releases/${finalAttrs.version}";
     hash = srcHash;
     leaveDotGit = true;
+
     postFetch = ''
       git -C $out rev-parse HEAD > $out/.git_head
       git -C $out log -1 --pretty=%ct HEAD > $out/.git_time
       rm -rf $out/.git
     '';
-  };
 
-  env.RADICLE_VERSION = finalAttrs.version;
+    seed = "seed.radicle.dev";
+  };
 
   nativeBuildInputs = [
     asciidoctor
     installShellFiles
     makeBinaryWrapper
   ];
-  nativeCheckInputs = [ gitMinimal ];
+
+  env.RADICLE_VERSION = finalAttrs.version;
 
   preBuild = ''
     export GIT_HEAD=$(<$src/.git_head)
     export SOURCE_DATE_EPOCH=$(<$src/.git_time)
   '';
 
-  cargoBuildFlags = [
-    "--package=radicle-node"
-    "--package=radicle-cli"
-    "--package=radicle-remote-helper"
-  ];
-
-  cargoTestFlags = finalAttrs.cargoBuildFlags;
-
   # tests regularly time out on aarch64
   doCheck = stdenv.hostPlatform.isLinux && stdenv.hostPlatform.isx86;
+  nativeCheckInputs = [ gitMinimal ];
+
+  checkFlags = [
+    "--skip=service::message::tests::test_node_announcement_validate"
+    "--skip=tests::test_announcement_relay"
+    "--skip=tests::commands::rad_remote"
+    # https://radicle.zulipchat.com/#narrow/stream/369277-heartwood/topic/Flaky.20tests/near/438352360
+    "--skip=tests::e2e::test_connection_crossing"
+    # https://radicle.zulipchat.com/#narrow/stream/369277-heartwood/topic/Clone.20Partial.20Fail.20Flake
+    "--skip=rad_clone_partial_fail"
+  ];
 
   preCheck = ''
     export PATH=$PATH:$PWD/target/${stdenv.hostPlatform.rust.rustcTargetSpec}/release
@@ -75,15 +77,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
     fi
     export RUST_TEST_THREADS=$max_threads
   '';
-  checkFlags = [
-    "--skip=service::message::tests::test_node_announcement_validate"
-    "--skip=tests::test_announcement_relay"
-    "--skip=tests::commands::rad_remote"
-    # https://radicle.zulipchat.com/#narrow/stream/369277-heartwood/topic/Flaky.20tests/near/438352360
-    "--skip=tests::e2e::test_connection_crossing"
-    # https://radicle.zulipchat.com/#narrow/stream/369277-heartwood/topic/Clone.20Partial.20Fail.20Flake
-    "--skip=rad_clone_partial_fail"
-  ];
 
   postInstall = ''
     for page in $(find -name '*.adoc'); do
@@ -98,8 +91,8 @@ rustPlatform.buildRustPackage (finalAttrs: {
       --zsh <($out/bin/rad completion zsh)
   '';
 
-  nativeInstallCheckInputs = [ versionCheckHook ];
   doInstallCheck = true;
+  nativeInstallCheckInputs = [ versionCheckHook ];
 
   postFixup = ''
     for program in $out/bin/* ;
@@ -116,8 +109,17 @@ rustPlatform.buildRustPackage (finalAttrs: {
     done
   '';
 
+  cargoBuildFlags = [
+    "--package=radicle-node"
+    "--package=radicle-cli"
+    "--package=radicle-remote-helper"
+  ];
+
+  cargoTestFlags = finalAttrs.cargoBuildFlags;
+
   passthru = {
     inherit updateScript;
+
     tests = {
       basic =
         runCommand "radicle-node-basic-test"
@@ -144,12 +146,14 @@ rustPlatform.buildRustPackage (finalAttrs: {
 
             touch $out
           '';
-      nixos-run = nixosTests.radicle.extendNixOS {
+
+      ci-broker = nixosTests.radicle-ci-broker.extendNixOS {
         module = {
           services.radicle.package = finalAttrs.finalPackage;
         };
       };
-      ci-broker = nixosTests.radicle-ci-broker.extendNixOS {
+
+      nixos-run = nixosTests.radicle.extendNixOS {
         module = {
           services.radicle.package = finalAttrs.finalPackage;
         };
@@ -159,19 +163,23 @@ rustPlatform.buildRustPackage (finalAttrs: {
 
   meta = {
     description = "Radicle node and CLI for decentralized code collaboration";
+
     longDescription = ''
       Radicle is an open source, peer-to-peer code collaboration stack built on Git.
       Unlike centralized code hosting platforms, there is no single entity controlling the network.
       Repositories are replicated across peers in a decentralized manner, and users are in full control of their data and workflow.
     '';
+
     homepage = "https://radicle.dev";
     changelog = "https://radicle.network/nodes/seed.radicle.dev/rad:z3gqcJUoA1n9HaHKufZs5FCSGazv5/tree/CHANGELOG.md";
+
     license = with lib.licenses; [
       asl20
       mit
     ];
+
     platforms = lib.platforms.unix;
-    teams = [ lib.teams.radicle ];
     mainProgram = "rad";
+    teams = [ lib.teams.radicle ];
   };
 })

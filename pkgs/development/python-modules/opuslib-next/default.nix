@@ -1,19 +1,17 @@
 {
   lib,
-  buildPythonPackage,
+  stdenv,
   fetchFromGitHub,
+  buildPythonPackage,
   hatchling,
   libopus,
   pytestCheckHook,
   replaceVars,
-  stdenv,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "opuslib-next";
   version = "1.3.0";
-  pyproject = true;
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "kalicyh";
@@ -28,10 +26,6 @@ buildPythonPackage (finalAttrs: {
     })
   ];
 
-  build-system = [
-    hatchling
-  ];
-
   buildInputs = [
     libopus
   ];
@@ -39,6 +33,14 @@ buildPythonPackage (finalAttrs: {
   nativeCheckInputs = [
     pytestCheckHook
   ];
+
+  __structuredAttrs = true;
+
+  build-system = [
+    hatchling
+  ];
+
+  pyproject = true;
 
   pythonImportsCheck = [
     "opuslib_next"

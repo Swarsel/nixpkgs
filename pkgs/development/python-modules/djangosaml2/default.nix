@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   defusedxml,
   django,
   pysaml2,
@@ -11,7 +11,6 @@
 buildPythonPackage rec {
   pname = "djangosaml2";
   version = "1.11.1-1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "IdentityPython";
@@ -19,6 +18,14 @@ buildPythonPackage rec {
     tag = "v${version}";
     hash = "sha256-f7VgysfGpwt4opmXXaigRsOBS506XB/jZV1zRiYwZig=";
   };
+
+  checkPhase = ''
+    runHook preCheck
+
+    python tests/run_tests.py
+
+    runHook postCheck
+  '';
 
   build-system = [ setuptools ];
 
@@ -28,18 +35,10 @@ buildPythonPackage rec {
     pysaml2
   ];
 
+  pyproject = true;
+  pythonImportsCheck = [ "djangosaml2" ];
   # Falsely complains that 'defusedxml>=0.4.1 not satisfied by version 0.8.0rc2'
   pythonRelaxDeps = [ "defusedxml" ];
-
-  pythonImportsCheck = [ "djangosaml2" ];
-
-  checkPhase = ''
-    runHook preCheck
-
-    python tests/run_tests.py
-
-    runHook postCheck
-  '';
 
   meta = {
     description = "Django SAML2 Service Provider based on pySAML2";

@@ -1,10 +1,10 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
+  coreutils,
   makeWrapper,
   openresolv,
-  coreutils,
   systemd,
 }:
 
@@ -41,8 +41,8 @@ stdenv.mkDerivation {
   meta = {
     description = "Script to update your /etc/resolv.conf with DNS settings that come from the received push dhcp-options";
     homepage = "https://github.com/masterkorp/openvpn-update-resolv-conf/";
-    maintainers = [ ];
     license = lib.licenses.gpl2Only;
+    maintainers = [ ];
     platforms = lib.platforms.unix;
   };
 }

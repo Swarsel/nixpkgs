@@ -1,12 +1,12 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
-  libcosmicAppHook,
-  pkg-config,
   fontconfig,
-  versionCheckHook,
+  libcosmicAppHook,
   nix-update-script,
+  pkg-config,
+  rustPlatform,
+  versionCheckHook,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -20,8 +20,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-uHg2RUn0k8POlV5Hod5hwLDLgjAOG6JxWsmdI4Mvx50=";
   };
 
-  cargoHash = "sha256-YoLRw/HVMEKIGmAqyffEyKJ9MTkAJhr2gWWW7TXZ4Io=";
-
   nativeBuildInputs = [
     rustPlatform.bindgenHook
     libcosmicAppHook
@@ -32,9 +30,9 @@ rustPlatform.buildRustPackage (finalAttrs: {
     fontconfig
   ];
 
+  cargoHash = "sha256-YoLRw/HVMEKIGmAqyffEyKJ9MTkAJhr2gWWW7TXZ4Io=";
   doInstallCheck = true;
   nativeInstallCheckInputs = [ versionCheckHook ];
-
   passthru.updateScript = nix-update-script { };
 
   meta = {

@@ -1,12 +1,12 @@
 {
+  lib,
+  stdenv,
+  fetchFromGitHub,
   bash,
   coreutils,
-  fetchFromGitHub,
   git,
-  lib,
   makeWrapper,
   ncurses,
-  stdenv,
 }:
 
 stdenv.mkDerivation {
@@ -19,8 +19,6 @@ stdenv.mkDerivation {
     rev = "a1b6b6e29aa135c2a61ea67ca05e9e034856ca08";
     hash = "sha256-G26DFme6YaizdE5oHBo/IqV+1quu07Bp+IykXtO/GgA=";
   };
-
-  dontBuild = false;
 
   nativeBuildInputs = [ makeWrapper ];
 
@@ -35,6 +33,8 @@ stdenv.mkDerivation {
       ]
     }
   '';
+
+  dontBuild = false;
 
   meta = {
     description = "Make it quick and easy to get up and running with Docker";

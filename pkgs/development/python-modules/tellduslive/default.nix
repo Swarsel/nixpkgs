@@ -1,8 +1,8 @@
 {
   lib,
+  fetchFromGitHub,
   buildPythonPackage,
   docopt,
-  fetchFromGitHub,
   requests,
   requests-oauthlib,
   setuptools,
@@ -11,7 +11,6 @@
 buildPythonPackage rec {
   pname = "tellduslive";
   version = "0.10.12";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "molobrakos";
@@ -20,6 +19,8 @@ buildPythonPackage rec {
     sha256 = "sha256-fWL+VSvoT+dT0jzD8DZEMxzTlqj4TYGCJPLpeui5q64=";
   };
 
+  # Module has no tests
+  doCheck = false;
   build-system = [ setuptools ];
 
   dependencies = [
@@ -28,9 +29,7 @@ buildPythonPackage rec {
     requests-oauthlib
   ];
 
-  # Module has no tests
-  doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "tellduslive" ];
 
   meta = {

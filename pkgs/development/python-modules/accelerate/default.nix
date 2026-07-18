@@ -1,41 +1,36 @@
 {
-  stdenv,
   lib,
-  buildPythonPackage,
+  stdenv,
   fetchFromGitHub,
-  pythonAtLeast,
-
-  # buildInputs
-  llvmPackages,
-
-  # build-system
-  setuptools,
-
-  # dependencies
-  huggingface-hub,
-  numpy,
-  packaging,
-  psutil,
-  pyyaml,
-  safetensors,
-  torch,
-
   # tests
   addBinToPathHook,
-  evaluate,
-  parameterized,
-  pytestCheckHook,
-  torchvision,
-  transformers,
+  buildPythonPackage,
   config,
   cudatoolkit,
+  evaluate,
+  # dependencies
+  huggingface-hub,
+  # buildInputs
+  llvmPackages,
+  numpy,
+  packaging,
+  parameterized,
+  psutil,
+  pytestCheckHook,
+  pythonAtLeast,
+  pyyaml,
+  safetensors,
+  # build-system
+  setuptools,
+  torch,
+  torchvision,
+  transformers,
   writableTmpDirAsHomeHook,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "accelerate";
   version = "1.13.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "huggingface";
@@ -43,18 +38,6 @@ buildPythonPackage (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-IfKePiU38fUd5HefaS7J1s8Mb6hVmldINemxAJY+83o=";
   };
-
-  build-system = [ setuptools ];
-
-  dependencies = [
-    huggingface-hub
-    numpy
-    packaging
-    psutil
-    pyyaml
-    safetensors
-    torch
-  ];
 
   nativeCheckInputs = [
     addBinToPathHook
@@ -69,7 +52,28 @@ buildPythonPackage (finalAttrs: {
   preCheck = lib.optionalString config.cudaSupport ''
     export TRITON_PTXAS_PATH="${lib.getExe' cudatoolkit "ptxas"}"
   '';
-  enabledTestPaths = [ "tests" ];
+
+  __darwinAllowLocalNetworking = true;
+  build-system = [ setuptools ];
+
+  dependencies = [
+    huggingface-hub
+    numpy
+    packaging
+    psutil
+    pyyaml
+    safetensors
+    torch
+  ];
+
+  disabledTestPaths = lib.optionals (!(stdenv.hostPlatform.isLinux && stdenv.hostPlatform.isx86_64)) [
+    # numerous instances of torch.multiprocessing.spawn.ProcessRaisedException:
+    "tests/test_cpu.py"
+    "tests/test_grad_sync.py"
+    "tests/test_metrics.py"
+    "tests/test_scheduler.py"
+  ];
+
   disabledTests = [
     # try to download data:
     "FeatureExamplesTests"
@@ -185,21 +189,13 @@ buildPythonPackage (finalAttrs: {
     "CheckpointTest"
   ];
 
-  disabledTestPaths = lib.optionals (!(stdenv.hostPlatform.isLinux && stdenv.hostPlatform.isx86_64)) [
-    # numerous instances of torch.multiprocessing.spawn.ProcessRaisedException:
-    "tests/test_cpu.py"
-    "tests/test_grad_sync.py"
-    "tests/test_metrics.py"
-    "tests/test_scheduler.py"
-  ];
-
+  enabledTestPaths = [ "tests" ];
+  pyproject = true;
   pythonImportsCheck = [ "accelerate" ];
 
-  __darwinAllowLocalNetworking = true;
-
   meta = {
-    homepage = "https://huggingface.co/docs/accelerate";
     description = "Simple way to train and use PyTorch models with multi-GPU, TPU, mixed-precision";
+    homepage = "https://huggingface.co/docs/accelerate";
     changelog = "https://github.com/huggingface/accelerate/releases/tag/${finalAttrs.src.tag}";
     license = lib.licenses.asl20;
     maintainers = with lib.maintainers; [ bcdarwin ];

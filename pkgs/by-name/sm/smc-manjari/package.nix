@@ -1,9 +1,9 @@
 {
   lib,
-  stdenvNoCC,
   fetchFromGitLab,
-  python3Packages,
   gnumake,
+  python3Packages,
+  stdenvNoCC,
   truetype ? false,
 }:
 
@@ -12,11 +12,11 @@ stdenvNoCC.mkDerivation rec {
   version = "2.200";
 
   src = fetchFromGitLab {
-    group = "smc";
     owner = "fonts";
     repo = "manjari";
     rev = "Version${version}";
     hash = "sha256-B3EI6rrZyhc3xJuVIDVIjLrjJmFoFzHIwVV/4EBQv1s=";
+    group = "smc";
   };
 
   nativeBuildInputs = [
@@ -40,10 +40,10 @@ stdenvNoCC.mkDerivation rec {
   '';
 
   meta = {
-    homepage = "https://smc.org.in/fonts/manjari";
     description = "Manjari Malayalam Typeface";
+    homepage = "https://smc.org.in/fonts/manjari";
     license = lib.licenses.ofl;
-    platforms = lib.platforms.all;
     maintainers = [ ];
+    platforms = lib.platforms.all;
   };
 }

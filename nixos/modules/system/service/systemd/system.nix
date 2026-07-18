@@ -1,8 +1,8 @@
 {
-  lib,
   config,
-  options,
+  lib,
   pkgs,
+  options,
   ...
 }:
 
@@ -35,6 +35,7 @@ let
           # cfg.path is read only and prefixed with unique service name; see ./config-data-path.nix
           assert lib.hasPrefix "/etc/system-services" cfg.path;
           lib.removePrefix "/etc/" cfg.path;
+
         value = {
           inherit (cfg) enable source;
         };
@@ -61,27 +62,29 @@ let
     ) service.services;
 
   modularServiceConfiguration = portable-lib.configure {
-    serviceManagerPkgs = pkgs;
     extraRootModules = [
       ./service.nix
       ./config-data-path.nix
     ];
+
     extraRootSpecialArgs = {
       systemdPackage = config.systemd.package;
     };
+
+    serviceManagerPkgs = pkgs;
   };
 in
 {
-  _class = "nixos";
-
   # First half of the magic: mix systemd logic into the otherwise abstract services
   options = {
     system.services = mkOption {
+      default = { };
+
       description = ''
         A collection of NixOS [modular services](https://nixos.org/manual/nixos/unstable/#modular-services) that are configured as systemd services.
       '';
+
       type = types.attrsOf modularServiceConfiguration.serviceSubmodule;
-      default = { };
       visible = "shallow";
     };
   };
@@ -95,11 +98,9 @@ in
       ) config.system.services
     );
 
-    warnings = concatLists (
-      mapAttrsToList (
-        name: cfg: portable-lib.getWarnings (options.system.services.loc ++ [ name ]) cfg
-      ) config.system.services
-    );
+    environment.etc = concatMapAttrs (
+      serviceName: topLevelService: makeNixosEtcFiles serviceName topLevelService
+    ) config.system.services;
 
     systemd.services = concatMapAttrs (
       serviceName: topLevelService: makeUnits "services" serviceName topLevelService
@@ -109,8 +110,12 @@ in
       serviceName: topLevelService: makeUnits "sockets" serviceName topLevelService
     ) config.system.services;
 
-    environment.etc = concatMapAttrs (
-      serviceName: topLevelService: makeNixosEtcFiles serviceName topLevelService
-    ) config.system.services;
+    warnings = concatLists (
+      mapAttrsToList (
+        name: cfg: portable-lib.getWarnings (options.system.services.loc ++ [ name ]) cfg
+      ) config.system.services
+    );
   };
+
+  _class = "nixos";
 }

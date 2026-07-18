@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   poetry-core,
   pytest-asyncio,
   pytest-cov-stub,
@@ -11,7 +11,6 @@
 buildPythonPackage rec {
   pname = "uart-devices";
   version = "0.1.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "bdraco";
@@ -20,14 +19,14 @@ buildPythonPackage rec {
     hash = "sha256-vBwQXeXw9y7eETtlC4dcqGytIgrAm7iomnvoaxhl6JI=";
   };
 
-  build-system = [ poetry-core ];
-
   nativeCheckInputs = [
     pytest-asyncio
     pytest-cov-stub
     pytestCheckHook
   ];
 
+  build-system = [ poetry-core ];
+  pyproject = true;
   pythonImportsCheck = [ "uart_devices" ];
 
   meta = {

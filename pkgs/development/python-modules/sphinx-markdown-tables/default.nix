@@ -2,14 +2,13 @@
   lib,
   buildPythonPackage,
   fetchPypi,
-  sphinx,
   markdown,
+  sphinx,
 }:
 
 buildPythonPackage rec {
   pname = "sphinx-markdown-tables";
   version = "0.0.17";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
@@ -21,6 +20,7 @@ buildPythonPackage rec {
     markdown
   ];
 
+  format = "setuptools";
   pythonImportsCheck = [ "sphinx_markdown_tables" ];
 
   meta = {

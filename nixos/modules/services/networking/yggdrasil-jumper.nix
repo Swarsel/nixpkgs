@@ -35,20 +35,11 @@ in
     {
       services.yggdrasil-jumper = {
         enable = mkEnableOption "the Yggdrasil Jumper system service";
-
-        retrieveListenAddresses = mkOption {
-          type = bool;
-          default = true;
-          description = ''
-            Automatically retrieve listen addresses from the Yggdrasil router configuration.
-
-            See `yggdrasil_listen` option in Yggdrasil Jumper configuration.
-          '';
-        };
+        package = mkPackageOption pkgs "yggdrasil-jumper" { };
 
         appendListenAddresses = mkOption {
-          type = bool;
           default = true;
+
           description = ''
             Append Yggdrasil router configuration with listeners on loopback
             addresses (`127.0.0.1`) and preselected ports to support peering
@@ -56,48 +47,56 @@ in
 
             See `Listen` option in Yggdrasil router configuration.
           '';
+
+          type = bool;
         };
 
         detectWireguard = mkOption {
-          type = bool;
           default = true;
+
           description = ''
             Control whether `settings.wireguard = true` should automatically
             provide CAP_NET_ADMIN capability and make the necessary packages
             available to Yggdrasil Jumper service.
           '';
+
+          type = bool;
         };
 
-        settings = mkOption {
-          type = format.type;
-          default = { };
-          example = {
-            listen_port = 9999;
-            whitelist = [ "<IPv6 address of a remote node>" ];
-            wireguard = true;
-          };
+        extraArgs = mkOption {
+          default = [ ];
+
           description = ''
-            Configuration for Yggdrasil Jumper as a Nix attribute set.
+            Extra command line arguments for Yggdrasil Jumper.
           '';
+
+          type = listOf str;
         };
 
         extraConfig = mkOption {
-          type = lines;
           default = "";
+
+          description = ''
+            Configuration for Yggdrasil Jumper in plaintext.
+          '';
+
           example = ''
             listen_port = 9999;
             whitelist = [
               "<IPv6 address of a remote node>"
             ];
           '';
-          description = ''
-            Configuration for Yggdrasil Jumper in plaintext.
-          '';
+
+          type = lines;
         };
 
-        package = mkPackageOption pkgs "yggdrasil-jumper" { };
-
         logLevel = mkOption {
+          default = "info";
+
+          description = ''
+            Set logging verbosity for Yggdrasil Jumper.
+          '';
+
           type = enum [
             "off"
             "error"
@@ -106,18 +105,34 @@ in
             "debug"
             "trace"
           ];
-          default = "info";
-          description = ''
-            Set logging verbosity for Yggdrasil Jumper.
-          '';
         };
 
-        extraArgs = mkOption {
-          type = listOf str;
-          default = [ ];
+        retrieveListenAddresses = mkOption {
+          default = true;
+
           description = ''
-            Extra command line arguments for Yggdrasil Jumper.
+            Automatically retrieve listen addresses from the Yggdrasil router configuration.
+
+            See `yggdrasil_listen` option in Yggdrasil Jumper configuration.
           '';
+
+          type = bool;
+        };
+
+        settings = mkOption {
+          default = { };
+
+          description = ''
+            Configuration for Yggdrasil Jumper as a Nix attribute set.
+          '';
+
+          example = {
+            listen_port = 9999;
+            whitelist = [ "<IPv6 address of a remote node>" ];
+            wireguard = true;
+          };
+
+          type = format.type;
         };
       };
     };
@@ -155,14 +170,16 @@ in
         }
       ];
 
+      environment.systemPackages = [ cfg.package ];
+
       services.yggdrasil.settings.Listen =
         let
           # By default linux dynamically allocates ports in range 32768..60999
           # `sysctl net.ipv4.ip_local_port_range`
           # See: https://xkcd.com/221/
           prot_port = {
-            "tls" = 11814;
             "quic" = 11814;
+            "tls" = 11814;
           };
         in
         mkIf (cfg.retrieveListenAddresses && cfg.appendListenAddresses) (
@@ -171,24 +188,22 @@ in
 
       services.yggdrasil-jumper.settings = {
         yggdrasil_admin_listen = [ "unix:///run/yggdrasil/yggdrasil.sock" ];
+
         yggdrasil_listen = mkIf cfg.retrieveListenAddresses (
           filter (a: !hasPrefix "tcp://" a) config.services.yggdrasil.settings.Listen
         );
       };
 
       systemd.services.yggdrasil-jumper = {
-        description = "Yggdrasil Jumper Service";
         after = [ "yggdrasil.service" ];
-        unitConfig.BindsTo = [ "yggdrasil.service" ];
-        wantedBy = [ "multi-user.target" ];
-
+        description = "Yggdrasil Jumper Service";
         path = wgExtraPkgs;
+
         serviceConfig = {
-          User = "yggdrasil";
+          AmbientCapabilities = optional wg "CAP_NET_ADMIN";
+          CapabilityBoundingSet = optional wg "CAP_NET_ADMIN";
           DynamicUser = true;
 
-          # TODO: Remove this delay after support for proper startup notification lands in `yggdrasil-go`
-          ExecStartPre = "${pkgs.coreutils}/bin/sleep 5";
           ExecStart = escapeShellArgs (
             [
               "${cfg.package}/bin/yggdrasil-jumper"
@@ -199,30 +214,36 @@ in
             ]
             ++ cfg.extraArgs
           );
-          KillSignal = "SIGINT";
 
+          # TODO: Remove this delay after support for proper startup notification lands in `yggdrasil-go`
+          ExecStartPre = "${pkgs.coreutils}/bin/sleep 5";
+          KillSignal = "SIGINT";
           MemoryDenyWriteExecute = true;
           ProtectControlGroups = true;
           ProtectHome = "tmpfs";
+
           RestrictAddressFamilies = [
             "AF_UNIX"
             "AF_INET"
             "AF_INET6"
           ]
           ++ optional wg "AF_NETLINK";
+
           RestrictNamespaces = true;
           RestrictRealtime = true;
-          AmbientCapabilities = optional wg "CAP_NET_ADMIN";
-          CapabilityBoundingSet = optional wg "CAP_NET_ADMIN";
           SystemCallArchitectures = "native";
+
           SystemCallFilter = [
             "@system-service"
             "~@privileged"
           ];
-        };
-      };
 
-      environment.systemPackages = [ cfg.package ];
+          User = "yggdrasil";
+        };
+
+        unitConfig.BindsTo = [ "yggdrasil.service" ];
+        wantedBy = [ "multi-user.target" ];
+      };
     };
 
   meta.maintainers = with lib.maintainers; [ one-d-wide ];

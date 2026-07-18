@@ -25,10 +25,10 @@ stdenv.mkDerivation (finalAttrs: {
   __structuredAttrs = true;
 
   meta = {
-    homepage = "https://www.openpam.org";
     description = "Open source PAM library that focuses on simplicity, correctness, and cleanliness";
-    platforms = lib.platforms.unix;
-    maintainers = [ ];
+    homepage = "https://www.openpam.org";
     license = lib.licenses.bsd3;
+    maintainers = [ ];
+    platforms = lib.platforms.unix;
   };
 })

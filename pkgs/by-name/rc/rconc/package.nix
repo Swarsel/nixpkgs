@@ -1,12 +1,12 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage {
-  version = "0.1.4";
   pname = "rconc";
+  version = "0.1.4";
 
   src = fetchFromGitHub {
     owner = "klemens";

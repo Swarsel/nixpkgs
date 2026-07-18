@@ -1,8 +1,8 @@
 {
   lib,
   fetchFromGitHub,
-  stdenvNoCC,
   python3Packages,
+  stdenvNoCC,
 }:
 let
   inherit (python3Packages) mkdocs mkdocs-material;
@@ -18,16 +18,16 @@ stdenvNoCC.mkDerivation {
     hash = "sha256-NaQeRmO1JtKYZyTAhKXovDi7pZ9Zbu7Yi4iHORCU67A=";
   };
 
+  outputs = [
+    "out"
+    "doc"
+  ];
+
   patches = [ ./mkdocs.patch ];
 
   nativeBuildInputs = [
     mkdocs
     mkdocs-material
-  ];
-
-  outputs = [
-    "out"
-    "doc"
   ];
 
   buildPhase = ''
@@ -46,11 +46,11 @@ stdenvNoCC.mkDerivation {
   '';
 
   meta = {
-    homepage = "https://github.com/swisskyrepo/InternalAllTheThings";
     description = "Active Directory and Internal Pentest Cheatsheets";
+    homepage = "https://github.com/swisskyrepo/InternalAllTheThings";
     license = with lib.licenses; [ mit ];
+    sourceProvenance = with lib.sourceTypes; [ fromSource ];
     maintainers = with lib.maintainers; [ felbinger ];
     platforms = mkdocs.meta.platforms;
-    sourceProvenance = with lib.sourceTypes; [ fromSource ];
   };
 }

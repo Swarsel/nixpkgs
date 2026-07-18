@@ -2,11 +2,11 @@
   lib,
   stdenv,
   fetchFromGitHub,
+  boost,
   cmake,
   darwin,
   makeWrapper,
   shared-mime-info,
-  boost,
   wxwidgets_3_2,
 }:
 
@@ -18,15 +18,16 @@ stdenv.mkDerivation (finalAttrs: {
     owner = "wxFormBuilder";
     repo = "wxFormBuilder";
     tag = "v${finalAttrs.version}";
+    hash = "sha256-e0oYyUv8EjGDVj/TWx2jGaj22YyFJf1xa6lredV1J0Y=";
     fetchSubmodules = true;
     leaveDotGit = true;
+
     postFetch = ''
       substituteInPlace $out/.git-properties \
         --replace-fail "\$Format:%h\$" "$(git -C $out rev-parse --short HEAD)" \
         --replace-fail "\$Format:%(describe)\$" "$(git -C $out rev-parse --short HEAD)"
       rm -rf $out/.git
     '';
-    hash = "sha256-e0oYyUv8EjGDVj/TWx2jGaj22YyFJf1xa6lredV1J0Y=";
   };
 
   postPatch = ''
@@ -62,11 +63,13 @@ stdenv.mkDerivation (finalAttrs: {
     description = "RAD tool for wxWidgets GUI design";
     homepage = "https://github.com/wxFormBuilder/wxFormBuilder";
     license = lib.licenses.gpl2Only;
-    mainProgram = "wxformbuilder";
+
     maintainers = with lib.maintainers; [
       matthuszagh
       wegank
     ];
+
     platforms = lib.platforms.unix;
+    mainProgram = "wxformbuilder";
   };
 })

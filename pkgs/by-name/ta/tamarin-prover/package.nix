@@ -1,15 +1,15 @@
 {
-  haskell,
-  fetchFromGitHub,
   lib,
   stdenv,
+  fetchFromGitHub,
+  buildNpmPackage,
+  glibcLocales,
+  graphviz-nox,
+  haskell,
   # the following are non-haskell dependencies
   makeWrapper,
-  which,
-  buildNpmPackage,
   maude,
-  graphviz-nox,
-  glibcLocales,
+  which,
 }:
 
 let
@@ -31,12 +31,11 @@ let
   # no submodules. this factors out the common metadata among all derivations
   common = pname: src: {
     inherit pname version src;
-
-    license = lib.licenses.gpl3;
-    homepage = "https://tamarin-prover.github.io";
     description = "Security protocol verification in the symbolic model";
-    maintainers = [ lib.maintainers.thoughtpolice ];
+    homepage = "https://tamarin-prover.github.io";
     hydraPlatforms = lib.platforms.linux; # maude is broken on darwin
+    license = lib.licenses.gpl3;
+    maintainers = [ lib.maintainers.thoughtpolice ];
   };
 
   # tamarin use symlinks to the LICENSE and Setup.hs files, so for these sublibraries
@@ -50,6 +49,7 @@ let
     common "tamarin-prover-utils" (src + "/lib/utils")
     // {
       postPatch = replaceSymlinks;
+
       libraryHaskellDepends = with haskellPackages; [
         base64-bytestring
         blaze-builder
@@ -70,6 +70,7 @@ let
     common "tamarin-prover-term" (src + "/lib/term")
     // {
       postPatch = replaceSymlinks;
+
       libraryHaskellDepends =
         (with haskellPackages; [
           attoparsec
@@ -84,6 +85,7 @@ let
     // {
       postPatch = replaceSymlinks;
       doHaddock = false; # broken
+
       libraryHaskellDepends =
         (with haskellPackages; [
           aeson
@@ -106,6 +108,7 @@ let
     // {
       postPatch = "cp --remove-destination ${src}/LICENSE .";
       doHaddock = false; # broken
+
       libraryHaskellDepends =
         (with haskellPackages; [
           raw-strings-qq
@@ -119,6 +122,7 @@ let
     // {
       postPatch = "cp --remove-destination ${src}/LICENSE .";
       doHaddock = false; # broken
+
       libraryHaskellDepends =
         (with haskellPackages; [
           raw-strings-qq
@@ -136,6 +140,7 @@ let
     // {
       postPatch = "cp --remove-destination ${src}/LICENSE .";
       doHaddock = false; # broken
+
       libraryHaskellDepends = [
         tamarin-prover-utils
         tamarin-prover-term
@@ -146,43 +151,29 @@ let
   );
 
   tamarin-frontend = buildNpmPackage {
-    pname = "tamarin-frontend";
     inherit version src;
-
-    sourceRoot = "source/frontend";
-
+    pname = "tamarin-frontend";
     npmDepsHash = "sha256-GJiOCyTUfseZXd5WU018MKjxvrc+UOr7l7ZZSpzCS54=";
 
     installPhase = ''
       mkdir -p $out
       cp dist/* $out/
     '';
+
+    sourceRoot = "source/frontend";
   };
 
 in
 mkDerivation (
   common "tamarin-prover" src
   // {
-    isLibrary = false;
-    isExecutable = true;
-
-    # strip out unneeded deps manually
-    doHaddock = false;
-    enableSharedExecutables = false;
-    postFixup = "rm -rf $out/lib $out/nix-support $out/share/doc";
-
     preBuild = ''
       cp ${tamarin-frontend}/*.js data/js/
       cp ${tamarin-frontend}/*.css data/css/
     '';
 
-    # wrap the prover to be sure it can find maude, sapic, etc
-    executableToolDepends = [
-      makeWrapper
-      which
-      maude
-      graphviz-nox
-    ];
+    checkPhase = "./dist/build/tamarin-prover/tamarin-prover test";
+
     postInstall = ''
       wrapProgram $out/bin/tamarin-prover \
     ''
@@ -206,7 +197,10 @@ mkDerivation (
       install -Dt $out/share/emacs/site-lisp etc/spthy-mode.el
     '';
 
-    checkPhase = "./dist/build/tamarin-prover/tamarin-prover test";
+    postFixup = "rm -rf $out/lib $out/nix-support $out/share/doc";
+    # strip out unneeded deps manually
+    doHaddock = false;
+    enableSharedExecutables = false;
 
     executableHaskellDepends =
       (with haskellPackages; [
@@ -233,5 +227,16 @@ mkDerivation (
         tamarin-prover-term
         tamarin-prover-theory
       ];
+
+    # wrap the prover to be sure it can find maude, sapic, etc
+    executableToolDepends = [
+      makeWrapper
+      which
+      maude
+      graphviz-nox
+    ];
+
+    isExecutable = true;
+    isLibrary = false;
   }
 )

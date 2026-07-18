@@ -1,16 +1,15 @@
 {
   lib,
-  python3,
   fetchFromGitHub,
+  python3,
 }:
 
 let
   version = "2.4.1";
 in
 python3.pkgs.buildPythonApplication {
-  pname = "deluge-exporter";
   inherit version;
-  pyproject = true;
+  pname = "deluge-exporter";
 
   src = fetchFromGitHub {
     owner = "ibizaman";
@@ -26,6 +25,8 @@ python3.pkgs.buildPythonApplication {
     loguru
     prometheus-client
   ];
+
+  pyproject = true;
 
   pythonImportsCheck = [
     "deluge_exporter"

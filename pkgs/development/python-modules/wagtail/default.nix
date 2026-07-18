@@ -1,19 +1,12 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # frontend
-  fetchNpmDeps,
-  nodejs,
-  npmHooks,
-
-  # build-system
-  setuptools,
-
   # dependencies
   anyascii,
   beautifulsoup4,
+  buildPythonPackage,
+  # tests
+  callPackage,
   django,
   django-filter,
   django-modelcluster,
@@ -22,23 +15,25 @@
   django-treebeard,
   djangorestframework,
   draftjs-exporter,
+  # frontend
+  fetchNpmDeps,
   laces,
   modelsearch,
+  nodejs,
+  npmHooks,
   openpyxl,
   permissionedforms,
   pillow,
   requests,
+  # build-system
+  setuptools,
   telepath,
   willow,
-
-  # tests
-  callPackage,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "wagtail";
   version = "7.4.2";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "wagtail";
@@ -52,24 +47,18 @@ buildPythonPackage (finalAttrs: {
     nodejs
   ];
 
-  npmDeps = fetchNpmDeps {
-    inherit (finalAttrs) src;
-    hash = "sha256-Z2VOMqsNIBybJpfYxAq2dkmS2vwd8Yuhu7MCFyqNxdI=";
-  };
-
   preBuild = ''
     # upstream only provides a hook for sdists, not wheels
     # https://github.com/wagtail/wagtail/blob/v7.3/setup.py#L22
     npm run build
   '';
 
+  # Tests are in separate derivation because they require a package that depends
+  # on wagtail (wagtail-factories)
+  doCheck = false;
+
   build-system = [
     setuptools
-  ];
-
-  pythonRelaxDeps = [
-    "django-tasks"
-    "modelsearch"
   ];
 
   dependencies = [
@@ -94,20 +83,27 @@ buildPythonPackage (finalAttrs: {
   ]
   ++ willow.optional-dependencies.heif;
 
-  # Tests are in separate derivation because they require a package that depends
-  # on wagtail (wagtail-factories)
-  doCheck = false;
+  npmDeps = fetchNpmDeps {
+    inherit (finalAttrs) src;
+    hash = "sha256-Z2VOMqsNIBybJpfYxAq2dkmS2vwd8Yuhu7MCFyqNxdI=";
+  };
+
+  pyproject = true;
+  pythonImportsCheck = [ "wagtail" ];
+
+  pythonRelaxDeps = [
+    "django-tasks"
+    "modelsearch"
+  ];
 
   passthru.tests.wagtail = callPackage ./tests.nix { };
 
-  pythonImportsCheck = [ "wagtail" ];
-
   meta = {
     description = "Django content management system focused on flexibility and user experience";
-    mainProgram = "wagtail";
     homepage = "https://github.com/wagtail/wagtail";
     changelog = "https://github.com/wagtail/wagtail/blob/${finalAttrs.src.tag}/CHANGELOG.txt";
     license = lib.licenses.bsd3;
     maintainers = with lib.maintainers; [ sephi ];
+    mainProgram = "wagtail";
   };
 })

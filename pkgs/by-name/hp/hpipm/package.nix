@@ -1,10 +1,10 @@
 {
+  lib,
+  stdenv,
+  fetchFromGitHub,
   blas,
   blasfeo,
   cmake,
-  fetchFromGitHub,
-  lib,
-  stdenv,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -20,6 +20,7 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   nativeBuildInputs = [ cmake ];
+
   buildInputs = [
     blas
     blasfeo

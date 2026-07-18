@@ -4,9 +4,9 @@
   fetchFromGitHub,
   cmake,
   fuse3,
-  readline,
   pkg-config,
   qt6,
+  readline,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -32,6 +32,7 @@ stdenv.mkDerivation (finalAttrs: {
     pkg-config
     qt6.wrapQtAppsHook
   ];
+
   buildInputs = [
     fuse3
     qt6.qtbase

@@ -5,8 +5,6 @@
 
 let
   privateHeaders = stdenvNoCC.mkDerivation {
-    name = "removefile-deps-private-headers";
-
     buildCommand = ''
       mkdir -p "$out/include/apfs"
       # APFS group is 'J' per https://github.com/apple-oss-distributions/xnu/blob/94d3b452840153a99b38a3a9659680b2a006908e/bsd/vfs/vfs_fsevents.c#L1054
@@ -23,20 +21,19 @@ let
       #define APFSIOC_XDSTREAM_OBJ_ID _IOR('J', 35, struct xdstream_obj_id)
       EOF
     '';
+
+    name = "removefile-deps-private-headers";
   };
 in
 mkAppleDerivation {
-  releaseName = "removefile";
-
   outputs = [
     "out"
     "dev"
     "man"
   ];
 
-  xcodeHash = "sha256-7dNq0nE2MmFM9U+epTrkCoM1lrswm98m3RWuLDsAuDk=";
-
   env.NIX_CFLAGS_COMPILE = "-I${privateHeaders}/include";
-
+  releaseName = "removefile";
+  xcodeHash = "sha256-7dNq0nE2MmFM9U+epTrkCoM1lrswm98m3RWuLDsAuDk=";
   meta.description = "Darwin file removing library";
 }

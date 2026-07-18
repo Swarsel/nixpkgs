@@ -2,8 +2,8 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  kernel,
   bc,
+  kernel,
 }:
 
 stdenv.mkDerivation {
@@ -17,21 +17,20 @@ stdenv.mkDerivation {
     hash = "sha256-wiWG0ndtQML/h88alNyQOX64krpJOf56HyB8LW5dYbA=";
   };
 
+  nativeBuildInputs = [ bc ] ++ kernel.moduleBuildDependencies;
+
+  preInstall = ''
+    mkdir -p "$out/lib/modules/${kernel.modDirVersion}/kernel/net/wireless/"
+  '';
+
+  enableParallelBuilding = true;
+  hardeningDisable = [ "pic" ];
+
   prePatch = ''
     substituteInPlace ./Makefile \
       --replace-fail /lib/modules/ "${kernel.dev}/lib/modules/" \
       --replace-fail /sbin/depmod \# \
       --replace-fail '$(MODDESTDIR)' "$out/lib/modules/${kernel.modDirVersion}/kernel/net/wireless/"
-  '';
-
-  hardeningDisable = [ "pic" ];
-
-  enableParallelBuilding = true;
-
-  nativeBuildInputs = [ bc ] ++ kernel.moduleBuildDependencies;
-
-  preInstall = ''
-    mkdir -p "$out/lib/modules/${kernel.modDirVersion}/kernel/net/wireless/"
   '';
 
   meta = {

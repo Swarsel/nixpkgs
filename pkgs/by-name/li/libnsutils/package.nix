@@ -2,8 +2,8 @@
   lib,
   stdenv,
   fetchurl,
-  pkg-config,
   netsurf-buildsystem,
+  pkg-config,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -16,7 +16,6 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   nativeBuildInputs = [ pkg-config ];
-
   buildInputs = [ netsurf-buildsystem ];
 
   makeFlags = [
@@ -25,9 +24,9 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   meta = {
-    homepage = "https://www.netsurf-browser.org/";
-    description = "Generalised utility library for netsurf browser";
-    license = lib.licenses.mit;
     inherit (netsurf-buildsystem.meta) maintainers platforms;
+    description = "Generalised utility library for netsurf browser";
+    homepage = "https://www.netsurf-browser.org/";
+    license = lib.licenses.mit;
   };
 })

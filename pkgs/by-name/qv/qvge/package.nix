@@ -2,9 +2,9 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  replaceVars,
-  libsForQt5,
   graphviz,
+  libsForQt5,
+  replaceVars,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -17,8 +17,6 @@ stdenv.mkDerivation (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-011gJobDqNnXFTr/XSXcONxvPlzU7UEwS7CHkz1YMtY=";
   };
-
-  sourceRoot = "${finalAttrs.src.name}/src";
 
   patches = (
     replaceVars ./set-graphviz-path.patch {
@@ -45,13 +43,15 @@ stdenv.mkDerivation (finalAttrs: {
     ln -s $out/Applications/qvge.app/Contents/MacOS/qvge $out/bin/qvge
   '';
 
+  sourceRoot = "${finalAttrs.src.name}/src";
+
   meta = {
     description = "Qt Visual Graph Editor";
     homepage = "https://github.com/ArsMasiuk/qvge";
     changelog = "https://github.com/ArsMasiuk/qvge/blob/v${finalAttrs.version}/CHANGES";
     license = lib.licenses.mit;
-    mainProgram = "qvge";
     maintainers = with lib.maintainers; [ sikmir ];
     platforms = lib.platforms.unix;
+    mainProgram = "qvge";
   };
 })

@@ -32,10 +32,10 @@ let
     (iniFmt.generate "Vendor.conf" (
       recursiveUpdate {
         PackagesNotFound = rec {
-          DefaultUrl = "https://github.com/NixOS/nixpkgs";
           CodecUrl = DefaultUrl;
-          HardwareUrl = DefaultUrl;
+          DefaultUrl = "https://github.com/NixOS/nixpkgs";
           FontUrl = DefaultUrl;
+          HardwareUrl = DefaultUrl;
           MimeUrl = DefaultUrl;
         };
       } cfg.vendorSettings
@@ -60,28 +60,26 @@ in
     '';
 
     settings = mkOption {
-      type = iniFmt.type;
       default = { };
       description = "Additional settings passed straight through to PackageKit.conf";
+      type = iniFmt.type;
     };
 
     vendorSettings = mkOption {
-      type = iniFmt.type;
       default = { };
       description = "Additional settings passed straight through to Vendor.conf";
+      type = iniFmt.type;
     };
   };
 
   config = mkIf cfg.enable {
 
-    services.dbus.packages = with pkgs; [ packagekit ];
-
-    environment.systemPackages = with pkgs; [ packagekit ];
-
-    systemd.packages = with pkgs; [ packagekit ];
-
     environment.etc = listToAttrs (
       map (e: lib.nameValuePair "PackageKit/${e.name}" { source = e; }) confFiles
     );
+
+    environment.systemPackages = with pkgs; [ packagekit ];
+    services.dbus.packages = with pkgs; [ packagekit ];
+    systemd.packages = with pkgs; [ packagekit ];
   };
 }

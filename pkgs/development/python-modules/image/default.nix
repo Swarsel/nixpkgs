@@ -1,10 +1,10 @@
 {
   lib,
   buildPythonPackage,
-  fetchPypi,
-  setuptools,
-  pillow,
   django,
+  fetchPypi,
+  pillow,
+  setuptools,
   six,
 }:
 
@@ -20,7 +20,6 @@ buildPythonPackage rec {
     hash = "sha256-uqLgkXgnfapQ8i/W0dUex48ZwSaIkhy5q1gIdD8JcSY=";
   };
 
-  pyproject = true;
   build-system = [ setuptools ];
 
   dependencies = [
@@ -29,6 +28,7 @@ buildPythonPackage rec {
     six
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "image" ];
 
   meta = {

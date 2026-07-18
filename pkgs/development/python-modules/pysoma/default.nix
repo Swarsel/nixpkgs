@@ -7,7 +7,6 @@
 buildPythonPackage rec {
   pname = "pysoma";
   version = "0.0.14";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
@@ -16,7 +15,7 @@ buildPythonPackage rec {
 
   # Project has no test
   doCheck = false;
-
+  format = "setuptools";
   pythonImportsCheck = [ "api" ];
 
   meta = {

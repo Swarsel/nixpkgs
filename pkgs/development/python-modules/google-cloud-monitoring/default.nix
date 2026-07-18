@@ -16,27 +16,11 @@
 buildPythonPackage (finalAttrs: {
   pname = "google-cloud-monitoring";
   version = "2.31.0";
-  pyproject = true;
 
   src = fetchPypi {
-    pname = "google_cloud_monitoring";
     inherit (finalAttrs) version;
     hash = "sha256-tMnTUoyGQ9TrS51ojLs8WRS8X2mzFP98XhtHvcBzqa4=";
-  };
-
-  build-system = [ setuptools ];
-
-  dependencies = [
-    google-api-core
-    proto-plus
-    protobuf
-  ]
-  ++ google-api-core.optional-dependencies.grpc;
-
-  pythonRelaxDeps = [ "protobuf" ];
-
-  optional-dependencies = {
-    pandas = [ pandas ];
+    pname = "google_cloud_monitoring";
   };
 
   nativeCheckInputs = [
@@ -47,6 +31,15 @@ buildPythonPackage (finalAttrs: {
   ]
   ++ lib.flatten (builtins.attrValues finalAttrs.passthru.optional-dependencies);
 
+  build-system = [ setuptools ];
+
+  dependencies = [
+    google-api-core
+    proto-plus
+    protobuf
+  ]
+  ++ google-api-core.optional-dependencies.grpc;
+
   disabledTests = [
     # Test requires credentials
     "test_list_monitored_resource_descriptors"
@@ -54,10 +47,18 @@ buildPythonPackage (finalAttrs: {
     "test_list_alert_policies"
   ];
 
+  optional-dependencies = {
+    pandas = [ pandas ];
+  };
+
+  pyproject = true;
+
   pythonImportsCheck = [
     "google.cloud.monitoring"
     "google.cloud.monitoring_v3"
   ];
+
+  pythonRelaxDeps = [ "protobuf" ];
 
   meta = {
     description = "Stackdriver Monitoring API client library";

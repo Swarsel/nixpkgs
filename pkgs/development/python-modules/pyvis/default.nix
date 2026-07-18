@@ -2,19 +2,18 @@
   lib,
   fetchFromGitHub,
   buildPythonPackage,
-  setuptools,
-  networkx,
-  jinja2,
   ipython,
+  jinja2,
   jsonpickle,
-  pytestCheckHook,
+  networkx,
   numpy,
+  pytestCheckHook,
+  setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "pyvis";
   version = "0.3.2";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "WestHealth";
@@ -25,6 +24,11 @@ buildPythonPackage rec {
 
   nativeBuildInputs = [ setuptools ];
 
+  nativeCheckInputs = [
+    pytestCheckHook
+    numpy
+  ];
+
   dependencies = [
     jinja2
     networkx
@@ -32,21 +36,17 @@ buildPythonPackage rec {
     jsonpickle
   ];
 
-  nativeCheckInputs = [
-    pytestCheckHook
-    numpy
-  ];
-
   disabledTestPaths = [
     # jupyter integration test with selenium and webdriver_manager
     "pyvis/tests/test_html.py"
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "pyvis" ];
 
   meta = {
-    homepage = "https://github.com/WestHealth/pyvis";
     description = "Python package for creating and visualizing interactive network graphs";
+    homepage = "https://github.com/WestHealth/pyvis";
     license = lib.licenses.bsd3;
     maintainers = with lib.maintainers; [ pbsds ];
   };

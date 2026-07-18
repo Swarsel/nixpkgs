@@ -1,11 +1,11 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
-  nodejs,
+  buildGoModule,
   fetchNpmDeps,
-  npmHooks,
   go-task,
+  nodejs,
+  npmHooks,
 }:
 
 buildGoModule rec {
@@ -25,16 +25,6 @@ buildGoModule rec {
     # immich-kiosk bumps go at a faster cadence than nixpkgs
     sed 's/^go 1\.26\.\d+$/go 1.26/' go.mod
   '';
-  vendorHash = "sha256-y6Xl00G+mkhRKVGwMS0WCXZhQqqGGX5qY8PhMxtw7z8=";
-  proxyVendor = true;
-
-  npmDeps = fetchNpmDeps {
-    inherit src;
-    sourceRoot = "${src.name}/frontend";
-    hash = "sha256-lNON0/lxix2aczC0+m7Er5Te1+4fsSoLkk6Z2pYzQYQ=";
-  };
-  # Frontend is in a subdirectory
-  npmRoot = "frontend";
 
   nativeBuildInputs = [
     nodejs
@@ -42,16 +32,7 @@ buildGoModule rec {
     npmHooks.npmConfigHook
   ];
 
-  # Generate templ templates during vendor hash calculation
-  # Don't run npm in this phase - filter out npmConfigHook
-  overrideModAttrs = oldAttrs: {
-    nativeBuildInputs = builtins.filter (drv: drv != npmHooks.npmConfigHook) (
-      oldAttrs.nativeBuildInputs or [ ]
-    );
-    preBuild = ''
-      go tool templ generate
-    '';
-  };
+  vendorHash = "sha256-y6Xl00G+mkhRKVGwMS0WCXZhQqqGGX5qY8PhMxtw7z8=";
 
   # Generate templ templates and build frontend assets before Go build
   # Frontend assets are embedded into the binary via go:embed
@@ -60,17 +41,41 @@ buildGoModule rec {
     task frontend
   '';
 
+  # Tests require network access to an Immich server
+  doCheck = false;
+
   ldflags = [
     "-s"
     "-w"
     "-X main.version=${version}"
   ];
 
-  # Tests require network access to an Immich server
-  doCheck = false;
+  npmDeps = fetchNpmDeps {
+    inherit src;
+    hash = "sha256-lNON0/lxix2aczC0+m7Er5Te1+4fsSoLkk6Z2pYzQYQ=";
+    sourceRoot = "${src.name}/frontend";
+  };
+
+  # Frontend is in a subdirectory
+  npmRoot = "frontend";
+
+  # Generate templ templates during vendor hash calculation
+  # Don't run npm in this phase - filter out npmConfigHook
+  overrideModAttrs = oldAttrs: {
+    nativeBuildInputs = builtins.filter (drv: drv != npmHooks.npmConfigHook) (
+      oldAttrs.nativeBuildInputs or [ ]
+    );
+
+    preBuild = ''
+      go tool templ generate
+    '';
+  };
+
+  proxyVendor = true;
 
   meta = {
     description = "Lightweight slideshow for running on kiosk devices and browsers that uses Immich as a data source";
+
     longDescription = ''
       Immich Kiosk is a lightweight slideshow for running on kiosk devices and
       browsers that uses Immich as a data source. It displays photos and videos
@@ -79,6 +84,7 @@ buildGoModule rec {
 
       This is not an official Immich project and is not affiliated with Immich.
     '';
+
     homepage = "https://github.com/damongolding/immich-kiosk";
     changelog = "https://github.com/damongolding/immich-kiosk/releases/tag/v${version}";
     license = lib.licenses.agpl3Only;

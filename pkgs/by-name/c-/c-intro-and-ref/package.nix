@@ -21,15 +21,15 @@ stdenv.mkDerivation (finalAttrs: {
     texliveBasic
   ];
 
-  # Remove pre-built documentaton artifacts
-  postConfigure = ''
-    make clean
-  '';
-
   buildFlags = [
     "c.dvi"
     "c.html"
   ];
+
+  # Remove pre-built documentaton artifacts
+  postConfigure = ''
+    make clean
+  '';
 
   # Build missing targets
   postBuild = ''
@@ -40,7 +40,6 @@ stdenv.mkDerivation (finalAttrs: {
   # FIXME: Not a HASH reference at (texinfo)/share/texinfo/Texinfo/Convert/DocBook.pm
   # Occurs when building "c.doc"
   # makeinfo --docbook c.texi -o c.doc
-
   # Install missing targets
   postInstall = ''
     install -Dm644 c.htm $out/share/doc/c-intro-and-ref/c.html
@@ -51,17 +50,21 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "GNU C Language Intro and Reference Manual";
+
     longDescription = ''
       This manual explains the C language for use with the GNU Compiler
       Collection (GCC) on the GNU/Linux operating system and other systems. We
       refer to this dialect as GNU C. If you already know C, you can use this as
       a reference manual.
     '';
+
     homepage = "https://www.gnu.org/software/c-intro-and-ref/";
     license = lib.licenses.fdl13Plus;
+
     maintainers = with lib.maintainers; [
       rc-zb
     ];
+
     platforms = lib.platforms.all;
   };
 })

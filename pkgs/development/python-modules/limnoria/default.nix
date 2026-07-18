@@ -1,7 +1,6 @@
 {
   lib,
   buildPythonPackage,
-  setuptools,
   chardet,
   cryptography,
   feedparser,
@@ -12,12 +11,12 @@
   python-dateutil,
   python-gnupg,
   pytz,
+  setuptools,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "limnoria";
   version = "2026.3.21";
-  pyproject = true;
 
   src = fetchPypi {
     inherit (finalAttrs) pname version;
@@ -27,6 +26,15 @@ buildPythonPackage (finalAttrs: {
   postPatch = ''
     substituteInPlace setup.py \
       --replace-fail "version=version" 'version="${finalAttrs.version}"'
+  '';
+
+  nativeCheckInputs = [ pytestCheckHook ];
+
+  checkPhase = ''
+    runHook preCheck
+    export PATH="$PATH:$out/bin";
+    supybot-test test -v --no-network
+    runHook postCheck
   '';
 
   build-system = [ setuptools ];
@@ -41,14 +49,7 @@ buildPythonPackage (finalAttrs: {
     python-gnupg
   ];
 
-  nativeCheckInputs = [ pytestCheckHook ];
-
-  checkPhase = ''
-    runHook preCheck
-    export PATH="$PATH:$out/bin";
-    supybot-test test -v --no-network
-    runHook postCheck
-  '';
+  pyproject = true;
 
   pythonImportsCheck = [
     # Uses the same names as Supybot

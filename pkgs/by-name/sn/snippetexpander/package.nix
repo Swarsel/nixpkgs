@@ -1,23 +1,16 @@
 {
   lib,
   buildGoModule,
+  installShellFiles,
   makeWrapper,
   scdoc,
-  installShellFiles,
   snippetexpanderd,
   snippetexpanderx,
 }:
 
 buildGoModule (finalAttrs: {
   inherit (snippetexpanderd) src version;
-
   pname = "snippetexpander";
-
-  vendorHash = "sha256-2nLO/b6XQC88VXE+SewhgKpkRtIHsva+fDudgKpvZiY=";
-
-  proxyVendor = true;
-
-  modRoot = "cmd/snippetexpander";
 
   nativeBuildInputs = [
     makeWrapper
@@ -30,11 +23,7 @@ buildGoModule (finalAttrs: {
     snippetexpanderx
   ];
 
-  ldflags = [
-    "-s"
-    "-w"
-    "-X 'main.version=${finalAttrs.src.rev}'"
-  ];
+  vendorHash = "sha256-2nLO/b6XQC88VXE+SewhgKpkRtIHsva+fDudgKpvZiY=";
 
   postInstall = ''
     make man
@@ -51,6 +40,15 @@ buildGoModule (finalAttrs: {
         ]
       }
   '';
+
+  ldflags = [
+    "-s"
+    "-w"
+    "-X 'main.version=${finalAttrs.src.rev}'"
+  ];
+
+  modRoot = "cmd/snippetexpander";
+  proxyVendor = true;
 
   meta = {
     description = "Your little expandable text snippet helper CLI";

@@ -16,6 +16,7 @@ stdenv.mkDerivation (finalAttrs: {
     tag = finalAttrs.version;
     hash = "sha256-eUfy3m0r/sLrGLbp3en1ofcVVWZ+t2rZ4knjwfrorhw=";
   };
+
   strictDeps = true;
   nativeBuildInputs = [ cmake ];
   buildInputs = [ obs-studio ];
@@ -23,8 +24,8 @@ stdenv.mkDerivation (finalAttrs: {
   meta = {
     description = "DVD screen saver for OBS Studio";
     homepage = "https://github.com/wimpysworld/obs-dvd-screensaver";
-    maintainers = with lib.maintainers; [ flexiondotorg ];
     license = lib.licenses.gpl2Only;
+    maintainers = with lib.maintainers; [ flexiondotorg ];
     platforms = lib.platforms.linux;
   };
 })

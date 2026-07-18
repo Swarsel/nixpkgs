@@ -1,17 +1,17 @@
 {
+  lib,
+  stdenv,
+  fetchurl,
   autoreconfHook,
   cups,
   libjpeg,
   rpmextract,
-  fetchurl,
-  lib,
-  stdenv,
 }:
 
 let
   srcdirs = {
-    filter = "epson-inkjet-printer-filter-1.0.0";
     driver = "epson-inkjet-printer-workforce-840-series-1.0.0";
+    filter = "epson-inkjet-printer-filter-1.0.0";
   };
 in
 stdenv.mkDerivation (finalAttrs: {
@@ -26,34 +26,14 @@ stdenv.mkDerivation (finalAttrs: {
   # Therefore, an archive.org link has been added as a fallback
   # option just in case.
   src = fetchurl {
+    hash = "sha256-rTYnEmgzqR/wOZYYIe2rO9x2cX8s2qDyTuRaTjzJjbg=";
+
     # NOTE: Don't forget to update the webarchive link too!
     urls = [
       "https://download.ebz.epson.net/dsc/op/stable/SRPMS/epson-inkjet-printer-workforce-840-series-${finalAttrs.version}-1lsb3.2.src.rpm"
       "https://web.archive.org/web/https://download.ebz.epson.net/dsc/op/stable/SRPMS/epson-inkjet-printer-workforce-840-series-${finalAttrs.version}-1lsb3.2.src.rpm"
     ];
-    hash = "sha256-rTYnEmgzqR/wOZYYIe2rO9x2cX8s2qDyTuRaTjzJjbg=";
   };
-  sourceRoot = srcdirs.filter;
-
-  nativeBuildInputs = [
-    autoreconfHook
-    rpmextract
-  ];
-  buildInputs = [
-    cups
-    libjpeg
-  ];
-
-  unpackPhase = ''
-    runHook preUnpack
-
-    rpmextract "$src"
-    for i in ${lib.concatStringsSep " " (builtins.attrValues srcdirs)}; do
-        tar xvf "$i".tar.gz
-    done
-
-    runHook postUnpack
-  '';
 
   # Both patches fix errors that occur when building with GCC 14.
   #
@@ -66,6 +46,16 @@ stdenv.mkDerivation (finalAttrs: {
   patches = [
     ./eps_raster_print-cast.patch
     ./include-raster-helper.patch
+  ];
+
+  nativeBuildInputs = [
+    autoreconfHook
+    rpmextract
+  ];
+
+  buildInputs = [
+    cups
+    libjpeg
   ];
 
   installPhase =
@@ -98,8 +88,22 @@ stdenv.mkDerivation (finalAttrs: {
       runHook postInstall
     '';
 
+  sourceRoot = srcdirs.filter;
+
+  unpackPhase = ''
+    runHook preUnpack
+
+    rpmextract "$src"
+    for i in ${lib.concatStringsSep " " (builtins.attrValues srcdirs)}; do
+        tar xvf "$i".tar.gz
+    done
+
+    runHook postUnpack
+  '';
+
   meta = {
     description = "Proprietary CUPS drivers for Epson inkjet printers";
+
     longDescription = ''
       This software is a filter program used with the Common UNIX Printing
       System (CUPS) under Linux. It supplies high quality printing with
@@ -120,12 +124,14 @@ stdenv.mkDerivation (finalAttrs: {
       }
       ```
     '';
-    downloadPage = "http://download.ebz.epson.net/dsc/du/02/DriverDownloadInfo.do?LG2=EN&CN2=&DSCMI=16839&DSCCHK=3d7bc6bdfca08006abfb859fb1967183156a7252";
+
     license = with lib.licenses; [
       lgpl21
       epson
     ];
+
     maintainers = with lib.maintainers; [ heichro ];
     platforms = [ "x86_64-linux" ];
+    downloadPage = "http://download.ebz.epson.net/dsc/du/02/DriverDownloadInfo.do?LG2=EN&CN2=&DSCMI=16839&DSCCHK=3d7bc6bdfca08006abfb859fb1967183156a7252";
   };
 })

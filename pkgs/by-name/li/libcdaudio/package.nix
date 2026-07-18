@@ -15,9 +15,9 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Portable library for controlling audio CDs";
-    mainProgram = "libcdaudio-config";
     homepage = "https://libcdaudio.sourceforge.net";
-    platforms = lib.platforms.linux;
     license = lib.licenses.lgpl2;
+    platforms = lib.platforms.linux;
+    mainProgram = "libcdaudio-config";
   };
 })

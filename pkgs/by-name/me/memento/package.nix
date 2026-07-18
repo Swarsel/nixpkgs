@@ -3,16 +3,15 @@
   stdenv,
   fetchFromGitHub,
   cmake,
-  qt6Packages,
-
-  sqlite,
   json_c,
   libzip,
-  mpv,
-  yt-dlp,
   makeWrapper,
-  withOcr ? false,
+  mpv,
   python3,
+  qt6Packages,
+  sqlite,
+  yt-dlp,
+  withOcr ? false,
 }:
 let
   libmocr = stdenv.mkDerivation {
@@ -27,11 +26,14 @@ let
     };
 
     nativeBuildInputs = [ cmake ];
+
     buildInputs = [
       qt6Packages.qtbase
       python3
     ];
+
     dontWrapQtApps = true;
+
     meta = {
       description = "A library for Manga OCR";
       homepage = "https://github.com/ripose-jp/libmocr";
@@ -56,14 +58,6 @@ stdenv.mkDerivation (finalAttrs: {
       --replace-fail $'\tQml\n' $'\tQml\n\tQmlPrivate\n'
   '';
 
-  cmakeFlags = [
-    (lib.cmakeBool "MEMENTO_SYSTEM_QCORO" true)
-    (lib.cmakeBool "MEMENTO_SYSTEM_MOCR" true)
-  ]
-  ++ lib.optionals withOcr [
-    (lib.cmakeBool "MEMENTO_OCR_SUPPORT" true)
-  ];
-
   nativeBuildInputs = [
     cmake
     makeWrapper
@@ -85,6 +79,14 @@ stdenv.mkDerivation (finalAttrs: {
   ++ lib.optionals withOcr [ libmocr ];
 
   propagatedBuildInputs = [ mpv ];
+
+  cmakeFlags = [
+    (lib.cmakeBool "MEMENTO_SYSTEM_QCORO" true)
+    (lib.cmakeBool "MEMENTO_SYSTEM_MOCR" true)
+  ]
+  ++ lib.optionals withOcr [
+    (lib.cmakeBool "MEMENTO_OCR_SUPPORT" true)
+  ];
 
   preFixup =
     let

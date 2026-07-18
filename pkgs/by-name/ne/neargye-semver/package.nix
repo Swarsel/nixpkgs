@@ -34,7 +34,7 @@ stdenv.mkDerivation (finalAttrs: {
     description = "C++17 header-only dependency-free versioning library complying with Semantic Versioning 2.0.0";
     homepage = "https://github.com/Neargye/semver";
     license = lib.licenses.mit;
-    platforms = lib.platforms.all;
     maintainers = with lib.maintainers; [ phodina ];
+    platforms = lib.platforms.all;
   };
 })

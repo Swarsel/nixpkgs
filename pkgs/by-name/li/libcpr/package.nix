@@ -12,13 +12,8 @@ let
   version = "1.14.2";
 in
 stdenv.mkDerivation {
-  pname = "libcpr";
   inherit version;
-
-  outputs = [
-    "out"
-    "dev"
-  ];
+  pname = "libcpr";
 
   src = fetchFromGitHub {
     owner = "libcpr";
@@ -26,6 +21,16 @@ stdenv.mkDerivation {
     rev = version;
     hash = "sha256-fglJNQzf+5c5nJysxqTxE4EWSQO0GVauLV8yLypQMPs=";
   };
+
+  outputs = [
+    "out"
+    "dev"
+  ];
+
+  postPatch = ''
+    # Linking with stdc++fs is no longer necessary.
+    sed -i '/stdc++fs/d' include/CMakeLists.txt
+  '';
 
   nativeBuildInputs = [
     cmake
@@ -39,11 +44,6 @@ stdenv.mkDerivation {
     (lib.cmakeBool "CPR_USE_SYSTEM_CURL" true)
   ];
 
-  postPatch = ''
-    # Linking with stdc++fs is no longer necessary.
-    sed -i '/stdc++fs/d' include/CMakeLists.txt
-  '';
-
   postInstall = ''
     substituteInPlace "$out/lib/cmake/cpr/cprTargets.cmake" \
       --replace-fail "_IMPORT_PREFIX \"$out\"" \
@@ -54,10 +54,12 @@ stdenv.mkDerivation {
     description = "C++ wrapper around libcurl";
     homepage = "https://docs.libcpr.org/";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       phodina
       rycee
     ];
+
     platforms = lib.platforms.all;
   };
 }

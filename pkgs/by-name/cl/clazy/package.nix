@@ -1,11 +1,11 @@
 {
   lib,
   fetchFromGitHub,
-  llvmPackages,
   cmake,
+  gitUpdater,
+  llvmPackages,
   makeWrapper,
   versionCheckHook,
-  gitUpdater,
 }:
 
 llvmPackages.stdenv.mkDerivation (finalAttrs: {
@@ -19,14 +19,14 @@ llvmPackages.stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-i/tqH2RHU+LwvMFI8ft92j0i04mQxLVIyrGXlqzMGWs=";
   };
 
-  buildInputs = [
-    llvmPackages.llvm
-    llvmPackages.libclang
-  ];
-
   nativeBuildInputs = [
     cmake
     makeWrapper
+  ];
+
+  buildInputs = [
+    llvmPackages.llvm
+    llvmPackages.libclang
   ];
 
   postInstall = ''
@@ -46,10 +46,11 @@ llvmPackages.stdenv.mkDerivation (finalAttrs: {
       --suffix CPLUS_INCLUDE_PATH : "${llvmPackages.clang}/resource-root/include"
   '';
 
+  doInstallCheck = true;
+
   nativeInstallCheckInputs = [
     versionCheckHook
   ];
-  doInstallCheck = true;
 
   passthru = {
     updateScript = gitUpdater { };

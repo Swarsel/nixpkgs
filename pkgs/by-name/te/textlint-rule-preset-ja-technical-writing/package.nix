@@ -5,9 +5,9 @@
   fetchYarnDeps,
   fixup-yarn-lock,
   nodejs,
-  yarn,
   textlint,
   textlint-rule-preset-ja-technical-writing,
+  yarn,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -21,16 +21,21 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-8KoP/JagMf2kFxz8hr9e0hJH7yPukRURb48v0nPkC/8=";
   };
 
-  offlineCache = fetchYarnDeps {
-    yarnLock = "${finalAttrs.src}/yarn.lock";
-    hash = "sha256-jm+8XK1E60D1AgYBnlKL0fkAWnn68z2PhCK7T/XbUgk=";
-  };
-
   nativeBuildInputs = [
     nodejs
     fixup-yarn-lock
     yarn
   ];
+
+  installPhase = ''
+    runHook preInstall
+
+    yarn --offline --production install
+    mkdir -p $out/lib/node_modules/textlint-rule-preset-ja-technical-writing
+    cp -r . $out/lib/node_modules/textlint-rule-preset-ja-technical-writing
+
+    runHook postInstall
+  '';
 
   configurePhase = ''
     runHook preConfigure
@@ -46,15 +51,10 @@ stdenv.mkDerivation (finalAttrs: {
 
   dontBuild = true;
 
-  installPhase = ''
-    runHook preInstall
-
-    yarn --offline --production install
-    mkdir -p $out/lib/node_modules/textlint-rule-preset-ja-technical-writing
-    cp -r . $out/lib/node_modules/textlint-rule-preset-ja-technical-writing
-
-    runHook postInstall
-  '';
+  offlineCache = fetchYarnDeps {
+    hash = "sha256-jm+8XK1E60D1AgYBnlKL0fkAWnn68z2PhCK7T/XbUgk=";
+    yarnLock = "${finalAttrs.src}/yarn.lock";
+  };
 
   passthru.tests = textlint.testPackages {
     rule = textlint-rule-preset-ja-technical-writing;

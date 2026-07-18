@@ -1,16 +1,15 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   pytestCheckHook,
-  six,
   setuptools,
+  six,
 }:
 
 buildPythonPackage rec {
   pname = "ush";
   version = "4.1.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "tarruda";
@@ -19,19 +18,20 @@ buildPythonPackage rec {
     hash = "sha256-a6ICbd8647DRtuHl2vs64bsChUjlpuWHV1ipBdFA600=";
   };
 
-  build-system = [ setuptools ];
-
-  pythonImportsCheck = [ "ush" ];
-
   nativeCheckInputs = [
     pytestCheckHook
     six
   ];
 
+  build-system = [ setuptools ];
+
   disabledTestPaths = [
     # seems to be outdated?
     "tests/test_glob.py"
   ];
+
+  pyproject = true;
+  pythonImportsCheck = [ "ush" ];
 
   meta = {
     description = "Powerful API for invoking with external commands";

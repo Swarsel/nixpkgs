@@ -1,26 +1,27 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   cython,
   pkgconfig,
+  pytestCheckHook,
   setuptools,
   setuptools-scm,
-  pytestCheckHook,
 }:
 
 buildPythonPackage rec {
   pname = "uharfbuzz";
   version = "0.53.2";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "harfbuzz";
     repo = "uharfbuzz";
     tag = "v${version}";
-    fetchSubmodules = true;
     hash = "sha256-EY5jAzcAHY4lmGsitVFtFMijEfAaSCifCjkdJhU2N1g=";
+    fetchSubmodules = true;
   };
+
+  nativeCheckInputs = [ pytestCheckHook ];
 
   build-system = [
     cython
@@ -29,8 +30,7 @@ buildPythonPackage rec {
     setuptools-scm
   ];
 
-  nativeCheckInputs = [ pytestCheckHook ];
-
+  pyproject = true;
   pythonImportsCheck = [ "uharfbuzz" ];
 
   meta = {

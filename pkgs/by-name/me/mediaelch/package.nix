@@ -2,17 +2,14 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  fetchpatch,
-
   cmake,
-
   curl,
+  fetchpatch,
   ffmpeg,
   libmediainfo,
-  libzen,
   libsForQt5,
+  libzen,
   qt6Packages,
-
   qtVersion ? 6,
 }:
 
@@ -35,17 +32,17 @@ stdenv.mkDerivation (finalAttrs: {
   patches = [
     # fix from: https://github.com/Komet/MediaElch/pull/1878
     (fetchpatch {
-      url = "https://github.com/Komet/MediaElch/commit/dbea12fbf2c1fe603819392aa2a181cffa168548.patch";
       hash = "sha256-Lv6rvjKbRNr5XrdZhPyw4S4RRCOnfAGhWgcSLo0gqS8=";
+      url = "https://github.com/Komet/MediaElch/commit/dbea12fbf2c1fe603819392aa2a181cffa168548.patch";
     })
 
     # fix from: https://github.com/Komet/MediaElch/pull/1995
     # TMDb rejects a duplicate include_adult query param with HTTP 400 (issue #1992).
     # Remove once MediaElch > 2.12.0 is released.
     (fetchpatch {
+      hash = "sha256-u+ScJDFX2IIpjXV58MCp1uJGx9QU+7cbq+e1qZPMWns=";
       name = "fix-tmdb-duplicate-include-adult.patch";
       url = "https://github.com/Komet/MediaElch/commit/f68419e746455d3c7eb6d95a4a1da7a6f7a5c505.patch";
-      hash = "sha256-u+ScJDFX2IIpjXV58MCp1uJGx9QU+7cbq+e1qZPMWns=";
     })
   ];
 
@@ -78,11 +75,6 @@ stdenv.mkDerivation (finalAttrs: {
     (lib.cmakeBool "USE_EXTERN_QUAZIP" true)
   ];
 
-  # libmediainfo.so.0 is loaded dynamically
-  qtWrapperArgs = [
-    "--prefix LD_LIBRARY_PATH : ${libmediainfo}/lib"
-  ];
-
   env = {
     HOME = "/tmp"; # for the font cache
     LANG = "C.UTF-8";
@@ -91,15 +83,19 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   doCheck = true;
-
   checkTarget = "unit_test"; # the other tests require network connectivity
 
+  # libmediainfo.so.0 is loaded dynamically
+  qtWrapperArgs = [
+    "--prefix LD_LIBRARY_PATH : ${libmediainfo}/lib"
+  ];
+
   meta = {
-    homepage = "https://mediaelch.de/mediaelch/";
     description = "Media Manager for Kodi";
-    mainProgram = "MediaElch";
+    homepage = "https://mediaelch.de/mediaelch/";
     license = lib.licenses.lgpl3Only;
     maintainers = with lib.maintainers; [ stunkymonkey ];
     platforms = lib.platforms.linux;
+    mainProgram = "MediaElch";
   };
 })

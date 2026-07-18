@@ -1,11 +1,11 @@
 {
   lib,
+  fetchFromGitHub,
   attrs,
   buildPythonPackage,
   cbor2,
-  fetchFromGitHub,
-  hatchling,
   hatch-vcs,
+  hatchling,
   hypothesis,
   immutables,
   motor,
@@ -24,7 +24,6 @@
 buildPythonPackage rec {
   pname = "cattrs";
   version = "25.3.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "python-attrs";
@@ -33,15 +32,13 @@ buildPythonPackage rec {
     hash = "sha256-6oQblSanvSZOMD5ossCP7fNjyxF54SRbU1cQrW1I5Ps=";
   };
 
-  build-system = [
-    hatchling
-    hatch-vcs
-  ];
-
-  dependencies = [
-    attrs
-    typing-extensions
-  ];
+  postPatch = ''
+    substituteInPlace pyproject.toml \
+      --replace-fail "-l --benchmark-sort=fullname --benchmark-warmup=true --benchmark-warmup-iterations=5  --benchmark-group-by=fullname" ""
+    substituteInPlace tests/test_preconf.py \
+      --replace-fail "from orjson import dumps as orjson_dumps" "" \
+      --replace-fail "from orjson import loads as orjson_loads" ""
+  '';
 
   nativeCheckInputs = [
     cbor2
@@ -58,17 +55,19 @@ buildPythonPackage rec {
     ujson
   ];
 
-  postPatch = ''
-    substituteInPlace pyproject.toml \
-      --replace-fail "-l --benchmark-sort=fullname --benchmark-warmup=true --benchmark-warmup-iterations=5  --benchmark-group-by=fullname" ""
-    substituteInPlace tests/test_preconf.py \
-      --replace-fail "from orjson import dumps as orjson_dumps" "" \
-      --replace-fail "from orjson import loads as orjson_loads" ""
-  '';
-
   preCheck = ''
     export HOME=$(mktemp -d);
   '';
+
+  build-system = [
+    hatchling
+    hatch-vcs
+  ];
+
+  dependencies = [
+    attrs
+    typing-extensions
+  ];
 
   disabledTestPaths = [
     # Don't run benchmarking tests
@@ -87,6 +86,7 @@ buildPythonPackage rec {
     "test_unstructure_deeply_nested_generics_list"
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "cattr" ];
 
   meta = {

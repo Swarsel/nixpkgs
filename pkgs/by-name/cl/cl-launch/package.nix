@@ -12,13 +12,13 @@ stdenv.mkDerivation (finalAttrs: {
     sha256 = "sha256-v5aURs2Verhn2HmGiijvY9br20OTPFrOGBWsb6cHhSQ=";
   };
 
-  preConfigure = ''
-    mkdir -p "$out/bin"
-  '';
-
   makeFlags = [
     "PREFIX=${placeholder "out"}"
   ];
+
+  preConfigure = ''
+    mkdir -p "$out/bin"
+  '';
 
   preBuild = ''
     sed -e 's/\t\t@/\t\t/g' -i Makefile

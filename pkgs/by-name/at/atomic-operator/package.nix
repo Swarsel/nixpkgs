@@ -7,7 +7,6 @@
 python3.pkgs.buildPythonApplication (finalAttrs: {
   pname = "atomic-operator";
   version = "0.8.5";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "swimlane";
@@ -16,13 +15,12 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     hash = "sha256-DyNqu3vndyLkmfybCfTbgxk3t/ALg7IAkAMg4kBkH7Q=";
   };
 
-  build-system = with python3.pkgs; [
-    setuptools
+  nativeCheckInputs = with python3.pkgs; [
+    pytestCheckHook
   ];
 
-  pythonRelaxDeps = [
-    "charset_normalizer"
-    "urllib3"
+  build-system = with python3.pkgs; [
+    setuptools
   ];
 
   dependencies = with python3.pkgs; [
@@ -40,14 +38,6 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     urllib3
   ];
 
-  nativeCheckInputs = with python3.pkgs; [
-    pytestCheckHook
-  ];
-
-  pythonImportsCheck = [
-    "atomic_operator"
-  ];
-
   disabledTests = [
     # Tests require network access
     "test_download_of_atomic_red_team_repo"
@@ -55,11 +45,22 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     "test_config_parser"
   ];
 
+  pyproject = true;
+
+  pythonImportsCheck = [
+    "atomic_operator"
+  ];
+
+  pythonRelaxDeps = [
+    "charset_normalizer"
+    "urllib3"
+  ];
+
   meta = {
     description = "Tool to execute Atomic Red Team tests (Atomics)";
-    mainProgram = "atomic-operator";
     homepage = "https://www.atomic-operator.com/";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ fab ];
+    mainProgram = "atomic-operator";
   };
 })

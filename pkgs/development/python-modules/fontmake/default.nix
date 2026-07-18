@@ -1,12 +1,12 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   fetchpatch2,
-  pytestCheckHook,
   fontmath,
   fonttools,
   glyphslib,
+  pytestCheckHook,
   setuptools,
   setuptools-scm,
   skia-pathops,
@@ -18,7 +18,6 @@
 buildPythonPackage rec {
   pname = "fontmake";
   version = "3.12.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "googlefonts";
@@ -26,6 +25,8 @@ buildPythonPackage rec {
     tag = "v${version}";
     hash = "sha256-dgforezrilmD2d6MFY3Z5X/82yPRfSW/I/OxXcZ+xJw=";
   };
+
+  nativeCheckInputs = [ pytestCheckHook ] ++ optional-dependencies.autohint;
 
   build-system = [
     setuptools
@@ -44,14 +45,13 @@ buildPythonPackage rec {
   ++ fonttools.optional-dependencies.unicode;
 
   optional-dependencies = {
-    pathops = [ skia-pathops ];
     autohint = [ ttfautohint-py ];
     json = ufolib2.optional-dependencies.json;
+    pathops = [ skia-pathops ];
     repacker = fonttools.optional-dependencies.repacker;
   };
 
-  nativeCheckInputs = [ pytestCheckHook ] ++ optional-dependencies.autohint;
-
+  pyproject = true;
   pythonImportsCheck = [ "fontmake" ];
 
   meta = {

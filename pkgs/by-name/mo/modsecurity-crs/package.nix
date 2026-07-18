@@ -5,8 +5,8 @@
 }:
 
 stdenv.mkDerivation (finalAttrs: {
-  version = "3.3.4";
   pname = "modsecurity-crs";
+  version = "3.3.4";
 
   src = fetchFromGitHub {
     owner = "coreruleset";
@@ -34,13 +34,14 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   meta = {
-    homepage = "https://coreruleset.org";
     description = ''
       The OWASP ModSecurity Core Rule Set is a set of generic attack detection
       rules for use with ModSecurity or compatible web application firewalls.
     '';
+
+    homepage = "https://coreruleset.org";
     license = lib.licenses.asl20;
-    platforms = lib.platforms.all;
     maintainers = with lib.maintainers; [ izorkin ];
+    platforms = lib.platforms.all;
   };
 })

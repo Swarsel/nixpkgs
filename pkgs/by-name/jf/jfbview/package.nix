@@ -2,18 +2,18 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  versionCheckHook,
-  nix-update-script,
-  pkg-config,
+  cmake,
   freetype,
   harfbuzz,
   imlib2,
   libjpeg,
-  ncurses,
-  openjpeg,
-  zlib,
   libx11,
-  cmake,
+  ncurses,
+  nix-update-script,
+  openjpeg,
+  pkg-config,
+  versionCheckHook,
+  zlib,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -24,11 +24,10 @@ stdenv.mkDerivation (finalAttrs: {
     owner = "jichu4n";
     repo = "jfbview";
     tag = finalAttrs.version;
-    fetchSubmodules = true;
     hash = "sha256-X52FBg4Jgb80OETu29p4lcWpT+OSRz1xfhw+IkFZr+I=";
+    fetchSubmodules = true;
   };
 
-  __structuredAttrs = true;
   strictDeps = true;
 
   nativeBuildInputs = [
@@ -47,8 +46,6 @@ stdenv.mkDerivation (finalAttrs: {
     zlib
   ];
 
-  env.LDFLAGS = "-lImlib2";
-
   cmakeFlags = [
     (lib.cmakeBool "BUILD_TESTING" false)
     (lib.cmakeFeature "CMAKE_BUILD_TYPE" "Release")
@@ -56,10 +53,10 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   makeFlags = [ "DESTDIR=${placeholder "out"}" ];
-
-  nativeInstallCheckInputs = [ versionCheckHook ];
+  env.LDFLAGS = "-lImlib2";
   doInstallCheck = true;
-
+  nativeInstallCheckInputs = [ versionCheckHook ];
+  __structuredAttrs = true;
   passthru.updateScript = nix-update-script { };
 
   meta = {

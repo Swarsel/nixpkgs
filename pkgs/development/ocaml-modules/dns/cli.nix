@@ -1,35 +1,34 @@
 {
-  buildDunePackage,
-  dns,
-  dns-tsig,
-  dns-client-lwt,
-  dns-server,
-  dns-certify,
-  dns-resolver,
-  dnssec,
+  alcotest,
   bos,
+  buildDunePackage,
   cmdliner,
+  dns,
+  dns-certify,
+  dns-client-lwt,
+  dns-resolver,
+  dns-server,
+  dns-tsig,
+  dnssec,
+  fmt,
   fpath,
-  x509,
+  ipaddr,
+  logs,
+  lwt,
   mirage-crypto,
   mirage-crypto-pk,
   mirage-crypto-rng,
   mirage-mtime,
+  mtime,
   ohex,
   ptime,
-  mtime,
-  logs,
-  fmt,
-  ipaddr,
-  lwt,
   randomconv,
-  alcotest,
+  x509,
 }:
 
 buildDunePackage {
-  pname = "dns-cli";
-
   inherit (dns) version src;
+  pname = "dns-cli";
 
   # no need to propagate as this is primarily
   # an executable package
@@ -60,6 +59,7 @@ buildDunePackage {
   ];
 
   doCheck = true;
+
   checkInputs = [
     alcotest
   ];

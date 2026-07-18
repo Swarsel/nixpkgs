@@ -1,7 +1,7 @@
 {
   lib,
-  stdenvNoCC,
   fetchFromGitHub,
+  stdenvNoCC,
 }:
 
 stdenvNoCC.mkDerivation {
@@ -15,9 +15,6 @@ stdenvNoCC.mkDerivation {
     hash = "sha256-c4NHJM1qeXXBz8oyGUzS9QiAzRYiNKjmArM1K0Q2Xo0=";
   };
 
-  dontBuild = true;
-  dontCheck = true;
-
   installPhase = ''
     runHook preInstall
 
@@ -27,6 +24,8 @@ stdenvNoCC.mkDerivation {
     runHook postInstall
   '';
 
+  dontBuild = true;
+  dontCheck = true;
   passthru.scriptName = "cut.lua";
 
   meta = {

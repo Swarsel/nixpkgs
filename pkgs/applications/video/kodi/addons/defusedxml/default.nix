@@ -1,14 +1,13 @@
 {
   lib,
-  rel,
+  addonUpdateScript,
   buildKodiAddon,
   fetchzip,
-  addonUpdateScript,
+  rel,
 }:
 
 buildKodiAddon rec {
   pname = "defusedxml";
-  namespace = "script.module.defusedxml";
   version = "0.6.0+matrix.1";
 
   src = fetchzip {
@@ -16,16 +15,19 @@ buildKodiAddon rec {
     sha256 = "sha256-jSl7lbFqR6hjZhHzxY69hDbs84LY3B5RYKzXnHou0Qg=";
   };
 
+  namespace = "script.module.defusedxml";
+
   passthru = {
     pythonPath = "lib";
+
     updateScript = addonUpdateScript {
       attrPath = "kodi.packages.defusedxml";
     };
   };
 
   meta = {
-    homepage = "https://github.com/tiran/defusedxml";
     description = "Defusing XML bombs and other exploits";
+    homepage = "https://github.com/tiran/defusedxml";
     license = lib.licenses.psfl;
     teams = [ lib.teams.kodi ];
   };

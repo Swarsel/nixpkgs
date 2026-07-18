@@ -15,15 +15,14 @@ buildGoModule (finalAttrs: {
     hash = "sha256-VB7bMbMzBl5ulrTNZIHdNYKx0vHeEYIJi4L50M8BY4M=";
   };
 
-  subPackages = [ "." ];
-
   vendorHash = "sha256-Z9RAPIdCM5u30mpe5ozafse7ebUYiR8b0X6tqenXNvA=";
-
   doCheck = false;
 
   postInstall = ''
     ln -rs "$out/bin/azure-storage-azcopy" "$out/bin/azcopy"
   '';
+
+  subPackages = [ "." ];
 
   meta = {
     description = "New Azure Storage data transfer utility - AzCopy v10";

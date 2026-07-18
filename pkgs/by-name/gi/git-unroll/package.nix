@@ -1,15 +1,13 @@
 {
   lib,
   stdenv,
-  fetchFromCodeberg,
-  makeWrapper,
   bash,
-
+  fetchFromCodeberg,
   gitMinimal,
+  makeWrapper,
   nix-prefetch-git,
-  rWrapper,
   rPackages,
-
+  rWrapper,
   unstableGitUpdater,
 }:
 
@@ -74,7 +72,7 @@ stdenv.mkDerivation (finalAttrs: {
     homepage = "https://codeberg.org/gm6k/git-unroll";
     license = lib.licenses.gpl3Only;
     maintainers = with lib.maintainers; [ GaetanLepage ];
-    mainProgram = "unroll";
     platforms = lib.platforms.all;
+    mainProgram = "unroll";
   };
 })

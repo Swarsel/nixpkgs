@@ -1,33 +1,35 @@
 {
   buildPythonPackage,
-  opentelemetry-instrumentation,
-
   # build-system
   hatchling,
-
-  # dependencies
-  opentelemetry-api,
-  opentelemetry-semantic-conventions,
-  opentelemetry-util-http,
-  wrapt,
-
-  # optional-dependencies
-  urllib3,
-
   # tests
   httpretty,
+  # dependencies
+  opentelemetry-api,
+  opentelemetry-instrumentation,
+  opentelemetry-semantic-conventions,
   opentelemetry-test-utils,
+  opentelemetry-util-http,
   pytestCheckHook,
   respx,
+  # optional-dependencies
+  urllib3,
+  wrapt,
 }:
 
 buildPythonPackage {
   inherit (opentelemetry-instrumentation) version src;
   pname = "opentelemetry-instrumentation-urllib3";
-  pyproject = true;
 
-  sourceRoot = "${opentelemetry-instrumentation.src.name}/instrumentation/opentelemetry-instrumentation-urllib3";
+  nativeCheckInputs = [
+    httpretty
+    opentelemetry-test-utils
+    pytestCheckHook
+    respx
+    urllib3
+  ];
 
+  __darwinAllowLocalNetworking = true;
   build-system = [ hatchling ];
 
   dependencies = [
@@ -44,17 +46,9 @@ buildPythonPackage {
     ];
   };
 
+  pyproject = true;
   pythonImportsCheck = [ "opentelemetry.instrumentation.urllib3" ];
-
-  nativeCheckInputs = [
-    httpretty
-    opentelemetry-test-utils
-    pytestCheckHook
-    respx
-    urllib3
-  ];
-
-  __darwinAllowLocalNetworking = true;
+  sourceRoot = "${opentelemetry-instrumentation.src.name}/instrumentation/opentelemetry-instrumentation-urllib3";
 
   meta = opentelemetry-instrumentation.meta // {
     description = "OpenTelemetry urllib3 instrumentation";

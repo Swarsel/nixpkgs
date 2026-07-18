@@ -1,24 +1,23 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  anywidget,
+  buildPythonPackage,
   fetchNpmDeps,
+  hatch-jupyter-builder,
+  hatch-vcs,
+  hatchling,
+  nix-update-script,
   nodejs,
   npmHooks,
-  hatchling,
-  hatch-vcs,
-  hatch-jupyter-builder,
-  anywidget,
   numpy,
-  requests,
   pytestCheckHook,
-  nix-update-script,
+  requests,
 }:
 
 buildPythonPackage rec {
   pname = "ipyniivue";
   version = "2.4.4";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "niivue";
@@ -27,30 +26,24 @@ buildPythonPackage rec {
     hash = "sha256-Jk8Os8g2W5IRqLQSLQeH59ffGgWK/gjuUZgUl+HflVA=";
   };
 
-  npmDeps = fetchNpmDeps {
-    name = "${pname}-${version}-npm-deps";
-    inherit src;
-    hash = "sha256-6TbwAC175mkyR8EThMalWn7qEyaIFDxtKmC/RIuy1dk=";
-    postPatch = ''
-      cp ${./package-lock.json} ./package-lock.json
-    '';
-  };
   postPatch = ''
     cp ${./package-lock.json} ./package-lock.json
   '';
-
-  # We do not need the build hooks, because we do not need to
-  # build any JS components; these are present already in the PyPI artifact.
-  env.HATCH_BUILD_NO_HOOKS = true;
 
   nativeBuildInputs = [
     nodejs
     npmHooks.npmConfigHook
   ];
 
+  # We do not need the build hooks, because we do not need to
+  # build any JS components; these are present already in the PyPI artifact.
+  env.HATCH_BUILD_NO_HOOKS = true;
+
   preBuild = ''
     npm run build
   '';
+
+  nativeCheckInputs = [ pytestCheckHook ];
 
   build-system = [
     hatchling
@@ -64,7 +57,18 @@ buildPythonPackage rec {
     requests
   ];
 
-  nativeCheckInputs = [ pytestCheckHook ];
+  npmDeps = fetchNpmDeps {
+    inherit src;
+
+    postPatch = ''
+      cp ${./package-lock.json} ./package-lock.json
+    '';
+
+    hash = "sha256-6TbwAC175mkyR8EThMalWn7qEyaIFDxtKmC/RIuy1dk=";
+    name = "${pname}-${version}-npm-deps";
+  };
+
+  pyproject = true;
   pythonImportsCheck = [ "ipyniivue" ];
 
   passthru = {

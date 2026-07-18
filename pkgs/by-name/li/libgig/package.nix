@@ -6,8 +6,8 @@
   automake,
   libsndfile,
   libtool,
-  pkg-config,
   libuuid,
+  pkg-config,
 }:
 
 stdenv.mkDerivation rec {
@@ -32,12 +32,11 @@ stdenv.mkDerivation rec {
   ];
 
   preConfigure = "make -f Makefile.svn";
-
   enableParallelBuilding = true;
 
   meta = {
-    homepage = "http://www.linuxsampler.org";
     description = "Gigasampler file access library";
+    homepage = "http://www.linuxsampler.org";
     license = lib.licenses.gpl2;
     maintainers = [ ];
     platforms = lib.platforms.linux;

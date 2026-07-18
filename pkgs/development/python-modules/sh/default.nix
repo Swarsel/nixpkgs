@@ -1,8 +1,8 @@
 {
   lib,
   stdenv,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   poetry-core,
   pytestCheckHook,
 }:
@@ -10,7 +10,6 @@
 buildPythonPackage rec {
   pname = "sh";
   version = "2.2.2";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "amoffat";
@@ -20,10 +19,7 @@ buildPythonPackage rec {
   };
 
   nativeBuildInputs = [ poetry-core ];
-
   nativeCheckInputs = [ pytestCheckHook ];
-
-  enabledTestPaths = [ "tests" ];
 
   # A test needs the HOME directory to be different from $TMPDIR.
   preCheck = ''
@@ -48,6 +44,9 @@ buildPythonPackage rec {
     "test_cwd"
     "test_ok_code"
   ];
+
+  enabledTestPaths = [ "tests" ];
+  pyproject = true;
 
   meta = {
     description = "Python subprocess interface";

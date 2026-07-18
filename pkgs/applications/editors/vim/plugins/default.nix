@@ -1,12 +1,12 @@
 # TODO check that no license information gets lost
 {
+  lib,
   callPackage,
   config,
-  lib,
-  vimUtils,
-  vim,
   llvmPackages,
   neovimUtils,
+  vim,
+  vimUtils,
 }:
 
 let

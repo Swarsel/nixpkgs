@@ -2,9 +2,9 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  qt6,
-  nix-update-script,
   kdePackages,
+  nix-update-script,
+  qt6,
   x11Support ? true,
 }:
 
@@ -42,11 +42,11 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Practical and minimal image viewer";
-    mainProgram = "qview";
-    changelog = "https://github.com/jurplel/qView/releases/tag/${finalAttrs.version}";
     homepage = "https://interversehq.com/qview/";
+    changelog = "https://github.com/jurplel/qView/releases/tag/${finalAttrs.version}";
     license = lib.licenses.gpl3Plus;
     maintainers = with lib.maintainers; [ acowley ];
     platforms = lib.platforms.all;
+    mainProgram = "qview";
   };
 })

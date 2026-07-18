@@ -2,32 +2,32 @@
   lib,
   stdenv,
   fetchurl,
-  dpkg,
-  autoPatchelfHook,
-  glib,
+  alsa-lib,
   at-spi2-atk,
+  autoPatchelfHook,
   cairo,
-  pango,
-  gtk3,
-  nss,
-  nspr,
   cups,
   dbus,
-  libdrm,
-  libxkbcommon,
-  alsa-lib,
+  dpkg,
   expat,
-  libxrandr,
-  libxfixes,
-  libxext,
-  libxdamage,
-  libxcomposite,
-  libx11,
-  libxkbfile,
-  libxcb,
-  libgbm,
-  systemd,
+  glib,
+  gtk3,
   libGL,
+  libdrm,
+  libgbm,
+  libx11,
+  libxcb,
+  libxcomposite,
+  libxdamage,
+  libxext,
+  libxfixes,
+  libxkbcommon,
+  libxkbfile,
+  libxrandr,
+  nspr,
+  nss,
+  pango,
+  systemd,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -70,10 +70,6 @@ stdenv.mkDerivation (finalAttrs: {
     libgbm
   ];
 
-  runtimeDependencies = map lib.getLib [
-    systemd
-  ];
-
   installPhase = ''
     runHook preInstall
 
@@ -96,13 +92,17 @@ stdenv.mkDerivation (finalAttrs: {
       } $out/opt/xmind/xmind
   '';
 
+  runtimeDependencies = map lib.getLib [
+    systemd
+  ];
+
   meta = {
     description = "All-in-one thinking tool featuring mind mapping, AI generation, and real-time collaboration";
     homepage = "https://xmind.app";
-    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
-    mainProgram = "xmind";
     license = lib.licenses.unfree;
-    platforms = [ "x86_64-linux" ];
+    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
     maintainers = with lib.maintainers; [ michalrus ];
+    platforms = [ "x86_64-linux" ];
+    mainProgram = "xmind";
   };
 })

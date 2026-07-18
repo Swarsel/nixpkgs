@@ -1,13 +1,12 @@
 {
   lib,
-  python3Packages,
   fetchFromGitHub,
+  python3Packages,
 }:
 
 python3Packages.buildPythonPackage (finalAttrs: {
   pname = "acltoolkit";
   version = "0.2.2-unstable-2023-02-03";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "zblurx";
@@ -22,6 +21,8 @@ python3Packages.buildPythonPackage (finalAttrs: {
     sed -i -e "s/==[0-9.]*//" setup.py
   '';
 
+  # Project has no tests
+  doCheck = false;
   build-system = with python3Packages; [ setuptools ];
 
   dependencies = with python3Packages; [
@@ -33,9 +34,7 @@ python3Packages.buildPythonPackage (finalAttrs: {
     pycryptodome
   ];
 
-  # Project has no tests
-  doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "acltoolkit" ];
 
   meta = {

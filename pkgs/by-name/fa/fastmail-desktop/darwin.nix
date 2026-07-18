@@ -1,11 +1,11 @@
 {
-  pname,
-  version,
-  src,
-  passthru,
   meta,
+  passthru,
+  pname,
+  src,
   stdenvNoCC,
   unzip,
+  version,
 }:
 stdenvNoCC.mkDerivation {
   inherit
@@ -16,7 +16,6 @@ stdenvNoCC.mkDerivation {
     meta
     ;
 
-  sourceRoot = ".";
   nativeBuildInputs = [ unzip ];
 
   installPhase = ''
@@ -25,7 +24,7 @@ stdenvNoCC.mkDerivation {
   '';
 
   dontBuild = true;
-
   # Fastmail is notarized
   dontFixup = true;
+  sourceRoot = ".";
 }

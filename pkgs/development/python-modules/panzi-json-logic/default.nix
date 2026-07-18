@@ -1,16 +1,15 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   gitUpdater,
-  unittestCheckHook,
   setuptools,
+  unittestCheckHook,
 }:
 
 buildPythonPackage rec {
   pname = "panzi-json-logic";
   version = "1.0.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "panzi";
@@ -19,12 +18,10 @@ buildPythonPackage rec {
     hash = "sha256-P34+7SckMtiCTZbdKsjztNam+/HWtcVQEnGPMoPBw3g=";
   };
 
-  build-system = [ setuptools ];
-
   nativeCheckInputs = [ unittestCheckHook ];
-
+  build-system = [ setuptools ];
+  pyproject = true;
   pythonImportsCheck = [ "json_logic" ];
-
   passthru.updateScript = gitUpdater { };
 
   meta = {

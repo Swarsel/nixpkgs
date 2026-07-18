@@ -1,19 +1,20 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
-  perl,
-  ocaml,
-  findlib,
+  bigarray-compat,
   camlidl,
+  findlib,
   gmp,
   mpfr,
-  bigarray-compat,
+  ocaml,
+  perl,
 }:
 
 stdenv.mkDerivation rec {
   pname = "ocaml${ocaml.version}-mlgmpidl";
   version = "1.3.0";
+
   src = fetchFromGitHub {
     owner = "nberth";
     repo = "mlgmpidl";
@@ -21,31 +22,33 @@ stdenv.mkDerivation rec {
     hash = "sha256-ZmSDKZiHko8MCeIuZL53HjupfwO6PAm8QOCc9O3xJOk=";
   };
 
+  strictDeps = true;
+
   nativeBuildInputs = [
     perl
     ocaml
     findlib
     camlidl
   ];
+
   buildInputs = [
     gmp
     mpfr
   ];
+
   propagatedBuildInputs = [ bigarray-compat ];
-
-  strictDeps = true;
-
-  prefixKey = "-prefix ";
 
   postConfigure = ''
     mkdir -p $out/lib/ocaml/${ocaml.version}/site-lib/stublibs
   '';
 
+  prefixKey = "-prefix ";
+
   meta = {
+    inherit (ocaml.meta) platforms;
     description = "OCaml interface to the GMP library";
     homepage = "https://www.inrialpes.fr/pop-art/people/bjeannet/mlxxxidl-forge/mlgmpidl/";
     license = lib.licenses.lgpl21;
-    inherit (ocaml.meta) platforms;
     maintainers = [ lib.maintainers.vbgl ];
   };
 }

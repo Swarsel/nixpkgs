@@ -1,14 +1,13 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "rectpack";
   version = "0.2.2";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "secnot";
@@ -17,11 +16,10 @@ buildPythonPackage rec {
     hash = "sha256-kU0TT3wiudcLXrT+lYPYHYRtf7aNj/IKpnYKb/H91ng=";
   };
 
-  build-system = [ setuptools ];
-
   # tests are base on nose
   doCheck = false;
-
+  build-system = [ setuptools ];
+  pyproject = true;
   pythonImportsCheck = [ "rectpack" ];
 
   meta = {

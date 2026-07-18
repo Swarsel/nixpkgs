@@ -15,6 +15,8 @@ buildGoModule (finalAttrs: {
     sha256 = "sha256-KSKPTbF1hhzLyD+iL4+hW9EuV+xFYzSzHu1DSGXWm90=";
   };
 
+  vendorHash = "sha256-sC9JA6VRmHGuO3anaZW2Ih5QnRrUom9IIOE7yi3TTG8=";
+
   ldflags = [
     "-s"
     "-w"
@@ -25,13 +27,11 @@ buildGoModule (finalAttrs: {
     "-X main.Version=${finalAttrs.version}"
   ];
 
-  vendorHash = "sha256-sC9JA6VRmHGuO3anaZW2Ih5QnRrUom9IIOE7yi3TTG8=";
-
   meta = {
-    homepage = "https://github.com/devture/matrix-corporal";
     description = "Reconciliator and gateway for a managed Matrix server";
+    homepage = "https://github.com/devture/matrix-corporal";
+    license = lib.licenses.agpl3Only;
     maintainers = with lib.maintainers; [ dandellion ];
     mainProgram = "devture-matrix-corporal";
-    license = lib.licenses.agpl3Only;
   };
 })

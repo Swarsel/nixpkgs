@@ -2,11 +2,11 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  pkg-config,
-  gettext,
   autoreconfHook,
+  gettext,
   gmp,
   mpfr,
+  pkg-config,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -34,6 +34,7 @@ stdenv.mkDerivation (finalAttrs: {
   meta = {
     description = "Lattice algorithms using floating-point arithmetic";
     homepage = "https://github.com/fplll/fplll";
+
     changelog = [
       # Some release notes are added to the github tags, though they are not
       # always complete.
@@ -43,8 +44,9 @@ stdenv.mkDerivation (finalAttrs: {
       # this search should find it.
       "https://groups.google.com/forum/#!searchin/fplll-devel/FPLLL$20${finalAttrs.version}"
     ];
+
     license = lib.licenses.lgpl21Plus;
-    teams = [ lib.teams.sage ];
     platforms = lib.platforms.unix;
+    teams = [ lib.teams.sage ];
   };
 })

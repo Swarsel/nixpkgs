@@ -1,7 +1,7 @@
 {
-  fetchgit,
   lib,
   stdenv,
+  fetchgit,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -18,10 +18,10 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Tool which generate def files from DLLs";
-    mainProgram = "gendef";
     homepage = "https://sourceforge.net/p/mingw-w64/wiki2/gendef/";
     license = lib.licenses.gpl3Plus;
     maintainers = with lib.maintainers; [ hughobrien ];
     platforms = lib.platforms.linux;
+    mainProgram = "gendef";
   };
 })

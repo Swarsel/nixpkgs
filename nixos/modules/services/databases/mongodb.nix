@@ -47,74 +47,80 @@ in
         example = "pkgs.mongodb-ce";
       };
 
-      mongoshPackage = lib.mkPackageOption pkgs "mongosh" { };
-
-      user = lib.mkOption {
-        type = lib.types.str;
-        default = "mongodb";
-        description = "User account under which MongoDB runs";
-      };
-
       bind_ip = lib.mkOption {
-        type = lib.types.str;
         default = "127.0.0.1";
         description = "IP to bind to";
-      };
-
-      quiet = lib.mkOption {
-        type = lib.types.bool;
-        default = false;
-        description = "quieter output";
-      };
-
-      enableAuth = lib.mkOption {
-        type = lib.types.bool;
-        default = false;
-        description = "Enable client authentication. Creates a default superuser with username root!";
-      };
-
-      initialRootPasswordFile = lib.mkOption {
-        type = lib.types.nullOr lib.types.path;
-        default = null;
-        description = "Path to the file containing the password for the root user if auth is enabled.";
+        type = lib.types.str;
       };
 
       dbpath = lib.mkOption {
-        type = lib.types.str;
         default = "/var/db/mongodb";
         description = "Location where MongoDB stores its files";
+        type = lib.types.str;
       };
 
+      enableAuth = lib.mkOption {
+        default = false;
+        description = "Enable client authentication. Creates a default superuser with username root!";
+        type = lib.types.bool;
+      };
+
+      extraConfig = lib.mkOption {
+        default = "";
+        description = "MongoDB extra configuration in YAML format";
+
+        example = ''
+          storage.journal.enabled: false
+        '';
+
+        type = lib.types.lines;
+      };
+
+      initialRootPasswordFile = lib.mkOption {
+        default = null;
+        description = "Path to the file containing the password for the root user if auth is enabled.";
+        type = lib.types.nullOr lib.types.path;
+      };
+
+      initialScript = lib.mkOption {
+        default = null;
+
+        description = ''
+          A file containing MongoDB statements to execute on first startup.
+        '';
+
+        type = lib.types.nullOr lib.types.path;
+      };
+
+      mongoshPackage = lib.mkPackageOption pkgs "mongosh" { };
+
       pidFile = lib.mkOption {
-        type = lib.types.str;
         default = "/run/mongodb.pid";
         description = "Location of MongoDB pid file";
+        type = lib.types.str;
+      };
+
+      quiet = lib.mkOption {
+        default = false;
+        description = "quieter output";
+        type = lib.types.bool;
       };
 
       replSetName = lib.mkOption {
-        type = lib.types.str;
         default = "";
+
         description = ''
           If this instance is part of a replica set, set its name here.
           Otherwise, leave empty to run as single node.
         '';
+
+        type = lib.types.str;
       };
 
-      extraConfig = lib.mkOption {
-        type = lib.types.lines;
-        default = "";
-        example = ''
-          storage.journal.enabled: false
-        '';
-        description = "MongoDB extra configuration in YAML format";
-      };
-
-      initialScript = lib.mkOption {
-        type = lib.types.nullOr lib.types.path;
-        default = null;
-        description = ''
-          A file containing MongoDB statements to execute on first startup.
-        '';
+      user = lib.mkOption {
+        default = "mongodb";
+        description = "User account under which MongoDB runs";
+        type = lib.types.str;
       };
     };
 
@@ -130,34 +136,25 @@ in
       }
     ];
 
-    users.users.mongodb = lib.mkIf (cfg.user == "mongodb") {
-      name = "mongodb";
-      isSystemUser = true;
-      group = "mongodb";
-      description = "MongoDB server user";
-    };
-    users.groups.mongodb = lib.mkIf (cfg.user == "mongodb") { };
-
     systemd.services.mongodb = {
+      after = [ "network.target" ];
       description = "MongoDB server";
 
-      wantedBy = [ "multi-user.target" ];
-      after = [ "network.target" ];
-
-      serviceConfig = {
-        ExecStart = "${mongodb}/bin/mongod --config ${mongoCnf cfg} --fork --pidfilepath ${cfg.pidFile}";
-        User = cfg.user;
-        PIDFile = cfg.pidFile;
-        Type = "forking";
-        TimeoutStartSec = 120; # initial creating of journal can take some time
-        PermissionsStartOnly = true;
-      };
+      postStart = ''
+        if test -e "${cfg.dbpath}/.first_startup"; then
+          ${lib.optionalString (cfg.initialScript != null) ''
+            ${lib.optionalString (cfg.enableAuth) "initialRootPassword=$(<${cfg.initialRootPasswordFile})"}
+            ${mongoshExe} ${lib.optionalString (cfg.enableAuth) "-u root -p $initialRootPassword"} admin "${cfg.initialScript}"
+          ''}
+          rm -f "${cfg.dbpath}/.first_startup"
+        fi
+      '';
 
       preStart =
         let
           cfg_ = cfg // {
-            enableAuth = false;
             bind_ip = "127.0.0.1";
+            enableAuth = false;
           };
         in
         ''
@@ -198,15 +195,26 @@ in
             systemctl stop mongodb-for-setup
           fi
         '';
-      postStart = ''
-        if test -e "${cfg.dbpath}/.first_startup"; then
-          ${lib.optionalString (cfg.initialScript != null) ''
-            ${lib.optionalString (cfg.enableAuth) "initialRootPassword=$(<${cfg.initialRootPasswordFile})"}
-            ${mongoshExe} ${lib.optionalString (cfg.enableAuth) "-u root -p $initialRootPassword"} admin "${cfg.initialScript}"
-          ''}
-          rm -f "${cfg.dbpath}/.first_startup"
-        fi
-      '';
+
+      serviceConfig = {
+        ExecStart = "${mongodb}/bin/mongod --config ${mongoCnf cfg} --fork --pidfilepath ${cfg.pidFile}";
+        PIDFile = cfg.pidFile;
+        PermissionsStartOnly = true;
+        TimeoutStartSec = 120; # initial creating of journal can take some time
+        Type = "forking";
+        User = cfg.user;
+      };
+
+      wantedBy = [ "multi-user.target" ];
+    };
+
+    users.groups.mongodb = lib.mkIf (cfg.user == "mongodb") { };
+
+    users.users.mongodb = lib.mkIf (cfg.user == "mongodb") {
+      description = "MongoDB server user";
+      group = "mongodb";
+      isSystemUser = true;
+      name = "mongodb";
     };
 
   };

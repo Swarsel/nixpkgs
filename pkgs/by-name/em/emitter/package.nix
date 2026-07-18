@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   writableTmpDirAsHomeHook,
 }:
 
@@ -17,15 +17,8 @@ buildGoModule (finalAttrs: {
   };
 
   vendorHash = "sha256-6K9KAvb+05nn2pFuVDiQ9IHZWpm+q01su6pl7CxXxBY=";
-
-  nativeCheckInputs = [ writableTmpDirAsHomeHook ];
-
-  ldflags = [
-    "-X github.com/emitter-io/emitter/internal/command/version.version=${finalAttrs.version}"
-    "-X github.com/emitter-io/emitter/internal/command/version.commit=${finalAttrs.src.rev}"
-  ];
-
   doCheck = true;
+  nativeCheckInputs = [ writableTmpDirAsHomeHook ];
 
   checkFlags = [
     # Tests require network access
@@ -33,6 +26,11 @@ buildGoModule (finalAttrs: {
   ];
 
   __darwinAllowLocalNetworking = true;
+
+  ldflags = [
+    "-X github.com/emitter-io/emitter/internal/command/version.version=${finalAttrs.version}"
+    "-X github.com/emitter-io/emitter/internal/command/version.commit=${finalAttrs.src.rev}"
+  ];
 
   meta = {
     description = "High performance, distributed and low latency publish-subscribe platform";

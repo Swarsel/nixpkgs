@@ -1,20 +1,19 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
-  requests,
+  buildPythonPackage,
   greenlet,
-  pytestCheckHook,
   pytest-cov-stub,
   pytest-httpbin,
+  pytestCheckHook,
+  requests,
+  setuptools,
   werkzeug,
 }:
 
 buildPythonPackage rec {
   pname = "requests-futures";
   version = "1.0.2";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "ross";
@@ -22,10 +21,6 @@ buildPythonPackage rec {
     tag = "v${version}";
     hash = "sha256-eUu+M9rPyvc7OaOCCnUvGliK4gicYh6hfB0Jo19Yy1g=";
   };
-
-  build-system = [ setuptools ];
-
-  dependencies = [ requests ];
 
   nativeCheckInputs = [
     greenlet
@@ -35,6 +30,9 @@ buildPythonPackage rec {
     werkzeug
   ];
 
+  build-system = [ setuptools ];
+  dependencies = [ requests ];
+  pyproject = true;
   pythonImportsCheck = [ "requests_futures" ];
 
   meta = {

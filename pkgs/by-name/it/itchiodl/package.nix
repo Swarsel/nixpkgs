@@ -1,7 +1,7 @@
 {
   lib,
-  python3Packages,
   fetchFromGitHub,
+  python3Packages,
 }:
 
 python3Packages.buildPythonApplication (finalAttrs: {
@@ -15,8 +15,6 @@ python3Packages.buildPythonApplication (finalAttrs: {
     hash = "sha256-XuNkqTAT9LlSwruchGQbombAKHZvKhpnqLfvJdDcrj0=";
   };
 
-  pyproject = true;
-
   nativeBuildInputs = with python3Packages; [
     poetry-core
   ];
@@ -27,9 +25,11 @@ python3Packages.buildPythonApplication (finalAttrs: {
     requests
   ];
 
+  pyproject = true;
+
   meta = {
-    homepage = "https://github.com/Emersont1/itchio";
     description = "itch.io download tool";
+    homepage = "https://github.com/Emersont1/itchio";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ fgaz ];
   };

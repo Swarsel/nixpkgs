@@ -2,14 +2,14 @@
   lib,
   stdenv,
   fetchurl,
+  cmake,
   cryptopp,
   libusb1,
   makeWrapper,
   pkg-config,
   qt5,
-  cmake,
-  withEspeak ? false,
   espeak ? null,
+  withEspeak ? false,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -20,6 +20,10 @@ stdenv.mkDerivation (finalAttrs: {
     url = "https://download.rockbox.org/rbutil/source/RockboxUtility-v${finalAttrs.version}-src.tar.bz2";
     hash = "sha256-guNO11a0d30RexPEAAQGIgV9W17zgTjZ/LNz/oUn4HM=";
   };
+
+  patches = [
+    ./rockbox-utility-fix-cmake.patch
+  ];
 
   nativeBuildInputs = [
     makeWrapper
@@ -37,12 +41,6 @@ stdenv.mkDerivation (finalAttrs: {
   ]
   ++ lib.optional withEspeak espeak;
 
-  cmakeDir = "../utils";
-
-  patches = [
-    ./rockbox-utility-fix-cmake.patch
-  ];
-
   installPhase = ''
     runHook preInstall
 
@@ -56,12 +54,14 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  cmakeDir = "../utils";
+
   meta = {
-    homepage = "https://www.rockbox.org";
     description = "Open source firmware for digital music players";
+    homepage = "https://www.rockbox.org";
     license = lib.licenses.gpl2Plus;
     maintainers = with lib.maintainers; [ ozkutuk ];
-    mainProgram = "RockboxUtility";
     platforms = lib.platforms.linux;
+    mainProgram = "RockboxUtility";
   };
 })

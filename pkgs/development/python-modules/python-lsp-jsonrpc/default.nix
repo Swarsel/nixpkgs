@@ -1,9 +1,9 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  pytestCheckHook,
+  buildPythonPackage,
   pytest-cov-stub,
+  pytestCheckHook,
   setuptools,
   setuptools-scm,
   ujson,
@@ -12,7 +12,6 @@
 buildPythonPackage rec {
   pname = "python-lsp-jsonrpc";
   version = "1.1.2";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "python-lsp";
@@ -33,6 +32,7 @@ buildPythonPackage rec {
     pytest-cov-stub
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "pylsp_jsonrpc" ];
 
   meta = {

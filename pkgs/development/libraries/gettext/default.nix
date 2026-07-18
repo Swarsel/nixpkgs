@@ -1,9 +1,9 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchurl,
-  libiconv,
   bashNonInteractive,
+  libiconv,
   updateAutotoolsGnuConfigScriptsHook,
 }:
 
@@ -20,12 +20,6 @@ stdenv.mkDerivation rec {
     url = "mirror://gnu/gettext/${pname}-${version}.tar.gz";
     hash = "sha256-hdmbecmBpASHTALgNCF2z3XHaY4rUf5BAxz2Um2XTxo=";
   };
-  patches = [
-    ./absolute-paths.diff
-    # fix reproducibile output, in particular in the grub2 build
-    # https://savannah.gnu.org/bugs/index.php?59658
-    ./0001-msginit-Do-not-use-POT-Creation-Date.patch
-  ];
 
   outputs = [
     "out"
@@ -34,15 +28,11 @@ stdenv.mkDerivation rec {
     "info"
   ];
 
-  configureFlags = [
-    "--disable-csharp"
-  ]
-  ++ lib.optionals (stdenv.hostPlatform != stdenv.buildPlatform) [
-    # On cross building, gettext supposes that the wchar.h from libc
-    # does not fulfill gettext needs, so it tries to work with its
-    # own wchar.h file, which does not cope well with the system's
-    # wchar.h and stddef.h (gcc-4.3 - glibc-2.9)
-    "gl_cv_func_wcwidth_works=yes"
+  patches = [
+    ./absolute-paths.diff
+    # fix reproducibile output, in particular in the grub2 build
+    # https://savannah.gnu.org/bugs/index.php?59658
+    ./0001-msginit-Do-not-use-POT-Creation-Date.patch
   ];
 
   postPatch = ''
@@ -71,9 +61,11 @@ stdenv.mkDerivation rec {
   '';
 
   strictDeps = true;
+
   nativeBuildInputs = [
     updateAutotoolsGnuConfigScriptsHook
   ];
+
   buildInputs =
     lib.optionals (!stdenv.hostPlatform.isMinGW) [
       bashNonInteractive
@@ -83,10 +75,17 @@ stdenv.mkDerivation rec {
       libiconv
     ];
 
-  setupHooks = [
-    ../../../build-support/setup-hooks/role.bash
-    ./gettext-setup-hook.sh
+  configureFlags = [
+    "--disable-csharp"
+  ]
+  ++ lib.optionals (stdenv.hostPlatform != stdenv.buildPlatform) [
+    # On cross building, gettext supposes that the wchar.h from libc
+    # does not fulfill gettext needs, so it tries to work with its
+    # own wchar.h file, which does not cope well with the system's
+    # wchar.h and stddef.h (gcc-4.3 - glibc-2.9)
+    "gl_cv_func_wcwidth_works=yes"
   ];
+
   env = {
     gettextNeedsLdflags = stdenv.hostPlatform.libc != "glibc" && !stdenv.hostPlatform.isMusl;
   }
@@ -102,6 +101,11 @@ stdenv.mkDerivation rec {
 
   enableParallelBuilding = true;
   enableParallelChecking = false; # fails sometimes
+
+  setupHooks = [
+    ../../../build-support/setup-hooks/role.bash
+    ./gettext-setup-hook.sh
+  ];
 
   meta = {
     description = "Well integrated set of translation tools and documentation";
@@ -126,9 +130,8 @@ stdenv.mkDerivation rec {
     '';
 
     homepage = "https://www.gnu.org/software/gettext/";
-
-    maintainers = with lib.maintainers; [ zimbatm ];
     license = lib.licenses.gpl2Plus;
+    maintainers = with lib.maintainers; [ zimbatm ];
     platforms = lib.platforms.all;
   };
 }

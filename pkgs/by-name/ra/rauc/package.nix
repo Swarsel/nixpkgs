@@ -1,21 +1,21 @@
 {
+  lib,
+  stdenv,
+  fetchFromGitHub,
   composefs,
   curl,
   dbus,
-  fetchFromGitHub,
   glib,
   json-glib,
-  lib,
-  nix-update-script,
-  openssl,
-  pkg-config,
-  stdenv,
+  libnl,
   meson,
   ninja,
-  util-linux,
-  libnl,
-  systemdLibs,
+  nix-update-script,
   nixosTests,
+  openssl,
+  pkg-config,
+  systemdLibs,
+  util-linux,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -28,8 +28,6 @@ stdenv.mkDerivation (finalAttrs: {
     rev = "v${finalAttrs.version}";
     sha256 = "sha256-wWj4tOUFVn+dgt4741YPF0+x85wRb46DM9lGLNon03Q=";
   };
-
-  enableParallelBuilding = true;
 
   nativeBuildInputs = [
     pkg-config
@@ -60,19 +58,23 @@ stdenv.mkDerivation (finalAttrs: {
     (lib.mesonOption "systemdcatalogdir" "${placeholder "out"}/lib/systemd/catalog")
   ];
 
+  enableParallelBuilding = true;
+
   passthru = {
-    updateScript = nix-update-script { };
     tests.rauc = nixosTests.rauc;
+    updateScript = nix-update-script { };
   };
 
   meta = {
     description = "Safe and secure software updates for embedded Linux";
     homepage = "https://rauc.io";
     license = lib.licenses.lgpl21Only;
+
     maintainers = with lib.maintainers; [
       emantor
       numinit
     ];
+
     platforms = with lib.platforms; linux;
     mainProgram = "rauc";
   };

@@ -1,13 +1,12 @@
 {
   lib,
-  python3Packages,
   fetchPypi,
+  python3Packages,
 }:
 
 python3Packages.buildPythonApplication (finalAttrs: {
   pname = "pyznap";
   version = "1.6.0";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit (finalAttrs) pname version;
@@ -20,12 +19,13 @@ python3Packages.buildPythonApplication (finalAttrs: {
 
   # tests aren't included in the PyPI packages
   doCheck = false;
+  format = "setuptools";
 
   meta = {
-    homepage = "https://github.com/yboetz/pyznap";
     description = "ZFS snapshot tool written in python";
-    mainProgram = "pyznap";
+    homepage = "https://github.com/yboetz/pyznap";
     license = with lib.licenses; [ gpl3 ];
     maintainers = with lib.maintainers; [ rbrewer ];
+    mainProgram = "pyznap";
   };
 })

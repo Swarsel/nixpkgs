@@ -1,14 +1,15 @@
 {
-  mkPrelude,
-  prelude,
   base,
   contrib,
+  mkPrelude,
+  prelude,
 }:
 mkPrelude {
-  name = "test";
   dependencies = [
     prelude
     base
     contrib
   ];
+
+  name = "test";
 }

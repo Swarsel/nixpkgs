@@ -1,8 +1,8 @@
 {
   lib,
+  fetchFromGitHub,
   aiohttp,
   buildPythonPackage,
-  fetchFromGitHub,
   pytest-asyncio,
   pytestCheckHook,
   setuptools,
@@ -11,7 +11,6 @@
 buildPythonPackage rec {
   pname = "pysqueezebox";
   version = "0.14.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "rajlaud";
@@ -20,28 +19,29 @@ buildPythonPackage rec {
     hash = "sha256-aJKUgFTAfBZzzhtzklzOCgknk4Yk2i8YPqeVR6/444Q=";
   };
 
+  nativeCheckInputs = [
+    pytest-asyncio
+    pytestCheckHook
+  ];
+
   build-system = [ setuptools ];
 
   dependencies = [
     aiohttp
   ];
 
-  nativeCheckInputs = [
-    pytest-asyncio
-    pytestCheckHook
+  disabledTestPaths = [
+    # Tests require network access
+    "tests/test_integration.py"
   ];
-
-  pythonImportsCheck = [ "pysqueezebox" ];
 
   disabledTests = [
     # Test contacts 192.168.1.1
     "test_bad_response"
   ];
 
-  disabledTestPaths = [
-    # Tests require network access
-    "tests/test_integration.py"
-  ];
+  pyproject = true;
+  pythonImportsCheck = [ "pysqueezebox" ];
 
   meta = {
     description = "Asynchronous library to control Logitech Media Server";

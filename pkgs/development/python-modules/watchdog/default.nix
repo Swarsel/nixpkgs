@@ -16,16 +16,11 @@
 buildPythonPackage rec {
   pname = "watchdog";
   version = "6.0.0";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
     hash = "sha256-nd98gv2jro4k3s2hM47eZuHJmIPbk3Edj7lB6qLYwoI=";
   };
-
-  build-system = [ setuptools ];
-
-  optional-dependencies.watchmedo = [ pyyaml ];
 
   nativeCheckInputs = [
     flaky
@@ -35,6 +30,8 @@ buildPythonPackage rec {
   ]
   ++ optional-dependencies.watchmedo
   ++ lib.optionals (pythonOlder "3.13") [ eventlet ];
+
+  build-system = [ setuptools ];
 
   disabledTestPaths = [
     "tests/test_emitter.py::test_create_wrong_encoding"
@@ -78,14 +75,16 @@ buildPythonPackage rec {
     "tests/test_fsevents.py::test_converting_cfstring_to_pyunicode"
   ];
 
+  optional-dependencies.watchmedo = [ pyyaml ];
+  pyproject = true;
   pythonImportsCheck = [ "watchdog" ];
 
   meta = {
     description = "Python API and shell utilities to monitor file system events";
-    mainProgram = "watchmedo";
     homepage = "https://github.com/gorakhargosh/watchdog";
     changelog = "https://github.com/gorakhargosh/watchdog/blob/v${version}/changelog.rst";
     license = lib.licenses.asl20;
     maintainers = [ ];
+    mainProgram = "watchmedo";
   };
 }

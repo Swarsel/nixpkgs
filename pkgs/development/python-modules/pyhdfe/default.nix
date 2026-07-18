@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   numpy,
   pytestCheckHook,
   scipy,
@@ -11,7 +11,6 @@
 buildPythonPackage rec {
   pname = "pyhdfe";
   version = "0.2.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "jeffgortmaker";
@@ -20,6 +19,7 @@ buildPythonPackage rec {
     hash = "sha256-UXVQHf4Nmq/zQZtPaLba4TShhpgPUBwPM+zCEa8qaKs=";
   };
 
+  nativeCheckInputs = [ pytestCheckHook ];
   build-system = [ setuptools ];
 
   dependencies = [
@@ -27,8 +27,7 @@ buildPythonPackage rec {
     scipy
   ];
 
-  nativeCheckInputs = [ pytestCheckHook ];
-
+  pyproject = true;
   pythonImportsCheck = [ "pyhdfe" ];
 
   meta = {

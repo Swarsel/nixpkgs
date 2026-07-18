@@ -1,8 +1,8 @@
 {
   lib,
   stdenv,
-  perl,
   fetchurl,
+  perl,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -37,9 +37,9 @@ stdenv.mkDerivation (finalAttrs: {
   meta = {
     description = "Tests WebDAV servers by uploading test files, and then optionally testing for command execution or other actions directly on the target";
     homepage = "https://code.google.com/p/davtest/";
-    mainProgram = "davtest.pl";
     license = lib.licenses.gpl3Only;
     maintainers = with lib.maintainers; [ emilytrau ];
     platforms = lib.platforms.unix;
+    mainProgram = "davtest.pl";
   };
 })

@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   pylatexenc,
   pytestCheckHook,
   setuptools,
@@ -10,7 +10,6 @@
 buildPythonPackage rec {
   pname = "bibtexparser";
   version = "2.0.0b9";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "sciunto-org";
@@ -19,12 +18,10 @@ buildPythonPackage rec {
     hash = "sha256-viBY2hZXsXsfjpi7zMFh3CwQFOKL41F3x0IKULelo/o=";
   };
 
-  build-system = [ setuptools ];
-
-  dependencies = [ pylatexenc ];
-
   nativeCheckInputs = [ pytestCheckHook ];
-
+  build-system = [ setuptools ];
+  dependencies = [ pylatexenc ];
+  pyproject = true;
   pythonImportsCheck = [ "bibtexparser" ];
 
   meta = {

@@ -1,16 +1,16 @@
 {
+  baseUrl,
+  coreutils,
+  curl,
+  gnugrep,
+  gnupg,
+  gnused,
   pname,
+  runtimeShell,
   writeScript,
   xidel,
-  coreutils,
-  gnused,
-  gnugrep,
-  curl,
-  gnupg,
-  runtimeShell,
   baseName ? "firefox",
   basePath ? "pkgs/applications/networking/browsers/firefox-bin",
-  baseUrl,
   versionSuffix ? "",
 }:
 

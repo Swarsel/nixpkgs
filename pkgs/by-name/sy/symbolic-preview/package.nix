@@ -2,17 +2,17 @@
   lib,
   stdenv,
   fetchurl,
-  wrapGAppsHook4,
   cargo,
   desktop-file-utils,
-  meson,
-  ninja,
-  pkg-config,
-  rustc,
   glib,
   gtk4,
   libadwaita,
   libxml2,
+  meson,
+  ninja,
+  pkg-config,
+  rustc,
+  wrapGAppsHook4,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -33,6 +33,7 @@ stdenv.mkDerivation (finalAttrs: {
     rustc
     wrapGAppsHook4
   ];
+
   buildInputs = [
     glib
     gtk4
@@ -41,12 +42,12 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   meta = {
-    homepage = "https://gitlab.gnome.org/World/design/symbolic-preview";
     description = "Symbolics made easy";
-    mainProgram = "symbolic-preview";
-    maintainers = with lib.maintainers; [ qyliss ];
+    homepage = "https://gitlab.gnome.org/World/design/symbolic-preview";
     license = lib.licenses.gpl3Plus;
+    maintainers = with lib.maintainers; [ qyliss ];
     platforms = lib.platforms.unix;
+    mainProgram = "symbolic-preview";
     # never built on aarch64-darwin, x86_64-darwin since first introduction in nixpkgs
     broken = stdenv.hostPlatform.isDarwin;
   };

@@ -17,14 +17,16 @@ in
     systemd.packages = [ pkgs.do-agent ];
 
     systemd.services.do-agent = {
-      wantedBy = [ "multi-user.target" ];
       serviceConfig = {
+        DynamicUser = true;
+
         ExecStart = [
           ""
           "${pkgs.do-agent}/bin/do-agent --syslog"
         ];
-        DynamicUser = true;
       };
+
+      wantedBy = [ "multi-user.target" ];
     };
   };
 }

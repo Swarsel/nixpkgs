@@ -2,68 +2,68 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  cmake,
-  doxygen,
-  libwebp,
-  curl,
-  cli11,
-  python3,
-  pkg-config,
-  cairo,
-  gtk3,
-  catch2_3,
   backward-cpp,
+  cairo,
+  catch2_3,
+  cli11,
+  cmake,
+  curl,
+  doxygen,
+  gtk3,
+  libwebp,
+  pkg-config,
+  python3,
 }:
 
 let
   dlib = fetchFromGitHub {
+    hash = "sha256-VTX7s0p2AzlvPUsSMXwZiij+UY9g2y+a1YIge9bi0sw=";
     owner = "davisking";
     repo = "dlib";
     tag = "v20.0";
-    hash = "sha256-VTX7s0p2AzlvPUsSMXwZiij+UY9g2y+a1YIge9bi0sw=";
   };
 
   thread-pool = fetchFromGitHub {
+    hash = "sha256-1TTpt6u3NVIMSExl0ttuwH2owQCetujolnR/t8hDMh0=";
     owner = "bshoshany";
     repo = "thread-pool";
     tag = "v5.0.0";
-    hash = "sha256-1TTpt6u3NVIMSExl0ttuwH2owQCetujolnR/t8hDMh0=";
   };
 
   gcem = fetchFromGitHub {
+    hash = "sha256-bnWakLHl/afpeFm6S32ku0IkniyIs8X+LE1NmV6p0ho=";
     owner = "klytje";
     repo = "gcem";
     rev = "c5464969d373ed0a763c3562656798d1cc00687f";
-    hash = "sha256-bnWakLHl/afpeFm6S32ku0IkniyIs8X+LE1NmV6p0ho=";
   };
 
   elements = fetchFromGitHub {
+    hash = "sha256-F3Dv+QboXfOSaXpbdOeWPtOC8orWGZc8ZBFho/X8Ky8=";
     owner = "cycfi";
     repo = "elements";
     rev = "71ecd1f4ebc76967c6812b1872db639784e40a2d";
-    hash = "sha256-F3Dv+QboXfOSaXpbdOeWPtOC8orWGZc8ZBFho/X8Ky8=";
   };
 
   nfd = fetchFromGitHub {
+    hash = "sha256-GwT42lMZAAKSJpUJE6MYOpSLKUD5o9nSe9lcsoeXgJY=";
     owner = "btzy";
     repo = "nativefiledialog-extended";
     tag = "v1.2.1";
-    hash = "sha256-GwT42lMZAAKSJpUJE6MYOpSLKUD5o9nSe9lcsoeXgJY=";
   };
 
   asio = fetchFromGitHub {
+    hash = "sha256-5WSrMe9n+8i/ZyvCsa4MMBguYbSz+7FwH0Z5JfHtRGM=";
     owner = "chriskohlhoff";
     repo = "asio";
     tag = "asio-1-29-0";
-    hash = "sha256-5WSrMe9n+8i/ZyvCsa4MMBguYbSz+7FwH0Z5JfHtRGM=";
   };
 
   cycfi_infra = fetchFromGitHub {
+    fetchSubmodules = true;
+    hash = "sha256-NmoPYhfsrC5oWFjJ9Ol83sR8aIkyQr6UpaCeZpW58PI=";
     owner = "cycfi";
     repo = "infra";
     rev = "2dff97a4b107eced78e426152f5001a2331cb1cf";
-    hash = "sha256-NmoPYhfsrC5oWFjJ9Ol83sR8aIkyQr6UpaCeZpW58PI=";
-    fetchSubmodules = true;
   };
 in
 stdenv.mkDerivation (finalAttrs: {

@@ -3,11 +3,11 @@
   stdenv,
   fetchFromGitLab,
   cmake,
+  kdePackages,
+  nix-update-script,
   pkg-config,
   qt6,
   shared-mime-info,
-  kdePackages,
-  nix-update-script,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -15,14 +15,13 @@ stdenv.mkDerivation (finalAttrs: {
   version = "1.0.1";
 
   src = fetchFromGitLab {
-    domain = "invent.kde.org";
     owner = "graphics";
     repo = "drawy";
     rev = "v${finalAttrs.version}";
     hash = "sha256-Y6CAdHgcCK9lIae+CwqSGml+FAvVzLzyIAKdw85dKmQ=";
+    domain = "invent.kde.org";
   };
 
-  __structuredAttrs = true;
   strictDeps = true;
 
   nativeBuildInputs = [
@@ -51,12 +50,14 @@ stdenv.mkDerivation (finalAttrs: {
       syntax-highlighting
     ]);
 
+  __structuredAttrs = true;
   passthru.updateScript = nix-update-script { };
 
   meta = {
     description = "Handy and infinite brainstorming tool";
     homepage = "https://apps.kde.org/drawy/";
     changelog = "https://invent.kde.org/graphics/drawy/-/blob/v${finalAttrs.version}/CHANGELOG.md";
+
     license = with lib.licenses; [
       bsd2
       bsd3
@@ -68,12 +69,14 @@ stdenv.mkDerivation (finalAttrs: {
       mit
       ofl
     ];
+
     maintainers = with lib.maintainers; [
       quarterstar
       sigmasquadron
       yiyu
     ];
-    mainProgram = "drawy";
+
     platforms = lib.platforms.all;
+    mainProgram = "drawy";
   };
 })

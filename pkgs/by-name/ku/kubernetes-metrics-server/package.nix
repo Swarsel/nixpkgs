@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule (finalAttrs: {
@@ -23,10 +23,10 @@ buildGoModule (finalAttrs: {
   '';
 
   meta = {
-    homepage = "https://github.com/kubernetes-sigs/metrics-server";
     description = "Kubernetes container resource metrics collector";
-    mainProgram = "metrics-server";
+    homepage = "https://github.com/kubernetes-sigs/metrics-server";
     license = lib.licenses.asl20;
     maintainers = with lib.maintainers; [ eskytthe ];
+    mainProgram = "metrics-server";
   };
 })

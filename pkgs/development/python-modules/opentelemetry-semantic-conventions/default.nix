@@ -12,20 +12,15 @@ buildPythonPackage {
   # This package is in the same repository as `opentelemetry-api`,
   # but its version is synchronized with `opentelemetry-instrumentation` in another repository.
   version = opentelemetry-instrumentation.version;
+  nativeCheckInputs = [ pytestCheckHook ];
+  build-system = [ hatchling ];
+  dependencies = [ opentelemetry-api ];
   pyproject = true;
-
+  pythonImportsCheck = [ "opentelemetry.semconv" ];
   sourceRoot = "${opentelemetry-api.src.name}/opentelemetry-semantic-conventions";
 
-  build-system = [ hatchling ];
-
-  dependencies = [ opentelemetry-api ];
-
-  nativeCheckInputs = [ pytestCheckHook ];
-
-  pythonImportsCheck = [ "opentelemetry.semconv" ];
-
   meta = opentelemetry-api.meta // {
-    homepage = "https://github.com/open-telemetry/opentelemetry-python/tree/main/opentelemetry-semantic-conventions";
     description = "OpenTelemetry Semantic Conventions";
+    homepage = "https://github.com/open-telemetry/opentelemetry-python/tree/main/opentelemetry-semantic-conventions";
   };
 }

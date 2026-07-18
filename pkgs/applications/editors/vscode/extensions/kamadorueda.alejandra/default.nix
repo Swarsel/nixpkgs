@@ -1,22 +1,17 @@
 {
+  lib,
   alejandra,
   jq,
-  lib,
   moreutils,
   vscode-utils,
 }:
 
 vscode-utils.buildVscodeMarketplaceExtension {
-  mktplcRef = {
-    name = "alejandra";
-    publisher = "kamadorueda";
-    version = "1.0.0";
-    hash = "sha256-COlEjKhm8tK5XfOjrpVUDQ7x3JaOLiYoZ4MdwTL8ktk=";
-  };
   nativeBuildInputs = [
     jq
     moreutils
   ];
+
   postInstall = ''
     cd "$out/$installPrefix"
 
@@ -29,6 +24,14 @@ vscode-utils.buildVscodeMarketplaceExtension {
     < package.json \
     | sponge package.json
   '';
+
+  mktplcRef = {
+    version = "1.0.0";
+    hash = "sha256-COlEjKhm8tK5XfOjrpVUDQ7x3JaOLiYoZ4MdwTL8ktk=";
+    name = "alejandra";
+    publisher = "kamadorueda";
+  };
+
   meta = {
     description = "Uncompromising Nix Code Formatter";
     homepage = "https://github.com/kamadorueda/alejandra";

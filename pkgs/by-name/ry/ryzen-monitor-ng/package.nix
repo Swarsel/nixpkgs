@@ -17,6 +17,7 @@ stdenv.mkDerivation {
     repo = "ryzen_monitor_ng";
     rev = "d62a4304b2f1727de3970b81d81875133b5f8a68";
     hash = "sha256-irX+Y3H16mNVOfh7Hi8jZ0+DbG7un7MvKaMqp+isjoo=";
+
     # Upstream repo contains pre-compiled binaries and object files
     # that are out of date.
     # These need to be removed before build stage.
@@ -27,7 +28,6 @@ stdenv.mkDerivation {
   };
 
   makeFlags = [ "PREFIX=${placeholder "out"}" ];
-
   passthru.updateScript = unstableGitUpdater { };
 
   meta = {
@@ -35,8 +35,8 @@ stdenv.mkDerivation {
     homepage = "https://github.com/plasmin/ryzen_monitor_ng";
     changelog = "https://github.com/plasmin/ryzen_monitor_ng/blob/master/CHANGELOG.md";
     license = lib.licenses.agpl3Only;
-    platforms = [ "x86_64-linux" ];
     maintainers = with lib.maintainers; [ phdyellow ];
+    platforms = [ "x86_64-linux" ];
     mainProgram = "ryzen_monitor";
   };
 }

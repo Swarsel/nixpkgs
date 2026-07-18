@@ -2,13 +2,13 @@
   lib,
   stdenv,
   fetchFromGitHub,
+  catch2,
   cmake,
   gflags,
   libsodium,
   openssl,
   protobuf,
   zlib,
-  catch2,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -34,11 +34,6 @@ stdenv.mkDerivation (finalAttrs: {
     zlib
   ];
 
-  preBuild = ''
-    mkdir -p ../external_imported/Catch2/single_include/catch2
-    cp ${catch2}/include/catch2/catch.hpp ../external_imported/Catch2/single_include/catch2/catch.hpp
-  '';
-
   cmakeFlags = [
     "-DDISABLE_VCPKG=TRUE"
     "-DDISABLE_SENTRY=TRUE"
@@ -49,6 +44,11 @@ stdenv.mkDerivation (finalAttrs: {
     CXXFLAGS = toString [ "-std=c++17" ];
   };
 
+  preBuild = ''
+    mkdir -p ../external_imported/Catch2/single_include/catch2
+    cp ${catch2}/include/catch2/catch.hpp ../external_imported/Catch2/single_include/catch2/catch.hpp
+  '';
+
   doCheck = true;
 
   meta = {
@@ -56,9 +56,11 @@ stdenv.mkDerivation (finalAttrs: {
     homepage = "https://eternalterminal.dev/";
     changelog = "https://github.com/MisterTea/EternalTerminal/releases/tag/et-v${finalAttrs.version}";
     license = lib.licenses.asl20;
+
     maintainers = with lib.maintainers; [
       jshort
     ];
+
     platforms = lib.platforms.linux ++ lib.platforms.darwin;
   };
 })

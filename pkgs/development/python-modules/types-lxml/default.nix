@@ -1,9 +1,9 @@
 {
   lib,
+  fetchFromGitHub,
   beautifulsoup4,
   buildPythonPackage,
   cssselect,
-  fetchFromGitHub,
   html5lib,
   hypothesis,
   lxml,
@@ -21,29 +21,12 @@
 buildPythonPackage (finalAttrs: {
   pname = "types-lxml";
   version = "2026.01.01";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "abelcheung";
     repo = "types-lxml";
     tag = finalAttrs.version;
     hash = "sha256-odkIwuh2VxDliRd6cPTCBSz19zxIBOBlVN0Sisngkn0=";
-  };
-
-  pythonRelaxDeps = [ "beautifulsoup4" ];
-
-  build-system = [ pdm-backend ];
-
-  dependencies = [
-    cssselect
-    beautifulsoup4
-    types-html5lib
-    typing-extensions
-  ];
-
-  optional-dependencies = {
-    mypy = [ mypy ];
-    pyright = [ pyright ];
   };
 
   nativeCheckInputs = [
@@ -58,8 +41,6 @@ buildPythonPackage (finalAttrs: {
   ]
   ++ lib.flatten (builtins.attrValues finalAttrs.passthru.optional-dependencies);
 
-  pythonImportsCheck = [ "lxml-stubs" ];
-
   # there may only be one conftest.py
   preCheck = ''
     rm -r tests/static
@@ -69,6 +50,15 @@ buildPythonPackage (finalAttrs: {
       --replace-fail '"pytest-revealtype-injector",' "" \
       --replace-fail 'runtime.register_strategy' 'tests.register_strategy'
   '';
+
+  build-system = [ pdm-backend ];
+
+  dependencies = [
+    cssselect
+    beautifulsoup4
+    types-html5lib
+    typing-extensions
+  ];
 
   disabledTests = [
     "test_single_ns_all_tag_2"
@@ -83,6 +73,15 @@ buildPythonPackage (finalAttrs: {
     "test_stop_arg_bad_1"
     "test_index_arg_bad_1"
   ];
+
+  optional-dependencies = {
+    mypy = [ mypy ];
+    pyright = [ pyright ];
+  };
+
+  pyproject = true;
+  pythonImportsCheck = [ "lxml-stubs" ];
+  pythonRelaxDeps = [ "beautifulsoup4" ];
 
   meta = {
     description = "Complete lxml external type annotation";

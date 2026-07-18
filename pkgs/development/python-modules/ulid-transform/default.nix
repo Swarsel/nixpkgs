@@ -1,8 +1,8 @@
 {
   lib,
-  cython,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
+  cython,
   poetry-core,
   pytest-benchmark,
   pytest-codspeed,
@@ -14,7 +14,6 @@
 buildPythonPackage rec {
   pname = "ulid-transform";
   version = "1.5.2";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "bdraco";
@@ -23,12 +22,6 @@ buildPythonPackage rec {
     hash = "sha256-S9+vP0frNvA4wWZMyLPYq6L/5PmLcyFNdN8NY+IrlzQ=";
   };
 
-  build-system = [
-    cython
-    poetry-core
-    setuptools
-  ];
-
   nativeCheckInputs = [
     pytest-benchmark
     pytest-codspeed
@@ -36,8 +29,14 @@ buildPythonPackage rec {
     pytestCheckHook
   ];
 
-  pytestFlags = [ "--benchmark-disable" ];
+  build-system = [
+    cython
+    poetry-core
+    setuptools
+  ];
 
+  pyproject = true;
+  pytestFlags = [ "--benchmark-disable" ];
   pythonImportsCheck = [ "ulid_transform" ];
 
   meta = {

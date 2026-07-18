@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule (finalAttrs: {
@@ -28,7 +28,7 @@ buildGoModule (finalAttrs: {
     changelog = "https://github.com/nray-scanner/nray/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.gpl3Only;
     maintainers = with lib.maintainers; [ fab ];
-    mainProgram = "nray";
     platforms = lib.platforms.linux;
+    mainProgram = "nray";
   };
 })

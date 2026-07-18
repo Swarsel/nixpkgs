@@ -1,12 +1,12 @@
 {
-  stdenv,
   lib,
-  python3,
+  stdenv,
   cmake,
+  ctypes,
+  findlib,
   libllvm,
   ocaml,
-  findlib,
-  ctypes,
+  python3,
 }:
 
 let
@@ -14,10 +14,10 @@ let
 in
 
 stdenv.mkDerivation {
-  pname = "ocaml-llvm";
   inherit version;
-
   inherit (libllvm) src;
+  pname = "ocaml-llvm";
+  strictDeps = true;
 
   nativeBuildInputs = [
     cmake
@@ -25,14 +25,9 @@ stdenv.mkDerivation {
     ocaml
     findlib
   ];
+
   buildInputs = [ ctypes ];
   propagatedBuildInputs = [ libllvm ];
-
-  strictDeps = true;
-
-  preConfigure = lib.optionalString (lib.versionAtLeast version "13.0.0") ''
-    cd llvm
-  '';
 
   cmakeFlags = [
     "-DBUILD_SHARED_LIBS=YES" # fixes bytecode builds
@@ -43,10 +38,9 @@ stdenv.mkDerivation {
 
   buildFlags = [ "ocaml_all" ];
 
-  installFlags = [
-    "-C"
-    "bindings/ocaml"
-  ];
+  preConfigure = lib.optionalString (lib.versionAtLeast version "13.0.0") ''
+    cd llvm
+  '';
 
   postInstall = ''
     mkdir -p $OCAMLFIND_DESTDIR/
@@ -54,6 +48,11 @@ stdenv.mkDerivation {
     mv $OCAMLFIND_DESTDIR/llvm/META{.llvm,}
     mv $OCAMLFIND_DESTDIR/llvm/stublibs $OCAMLFIND_DESTDIR/stublibs
   '';
+
+  installFlags = [
+    "-C"
+    "bindings/ocaml"
+  ];
 
   passthru = {
     inherit libllvm;

@@ -4,7 +4,6 @@
   mkLibretroCore,
 }:
 mkLibretroCore {
-  core = "stella2014";
   version = "0-unstable-2026-07-06";
 
   src = fetchFromGitHub {
@@ -14,6 +13,7 @@ mkLibretroCore {
     hash = "sha256-uwtYNo6hUR6u2OicFYcbfgCGNlpDfIOF7Q5bNuJ/uMM=";
   };
 
+  core = "stella2014";
   makefile = "Makefile";
 
   meta = {

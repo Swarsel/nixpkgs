@@ -1,10 +1,9 @@
 {
   lib,
   fetchFromGitHub,
-  rustPlatform,
-
   earthlyls,
   nix-update-script,
+  rustPlatform,
   testers,
 }:
 
@@ -22,8 +21,8 @@ rustPlatform.buildRustPackage (finalAttrs: {
   cargoHash = "sha256-sWbYN92Jfr/Pr3qoHWkew/ASIdq8DQg0WHpdyklGBLo=";
 
   passthru = {
-    updateScript = nix-update-script { };
     tests.version = testers.testVersion { package = earthlyls; };
+    updateScript = nix-update-script { };
   };
 
   meta = {
@@ -31,8 +30,8 @@ rustPlatform.buildRustPackage (finalAttrs: {
     homepage = "https://github.com/glehmann/earthlyls";
     changelog = "https://github.com/glehmann/earthlyls/releases/tag/${finalAttrs.version}";
     license = lib.licenses.mit;
-    mainProgram = "earthlyls";
     maintainers = [ ];
     platforms = lib.platforms.linux ++ lib.platforms.darwin;
+    mainProgram = "earthlyls";
   };
 })

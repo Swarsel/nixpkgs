@@ -2,26 +2,18 @@
   lib,
   stdenv,
   fetchFromGitHub,
-
-  # Native build inputs
-  docbook-xsl-nons,
-  gi-docgen,
-  gobject-introspection,
-  meson,
-  ninja,
-  pkg-config,
   buildPackages,
-
-  # Build inputs
-  expat,
-  glib,
-  libxml2,
-  python3,
-
   # Optional dependencies
   cfitsio,
   cgif,
+  # Native build inputs
+  docbook-xsl-nons,
+  # Build inputs
+  expat,
   fftw,
+  gi-docgen,
+  glib,
+  gobject-introspection,
   imagemagick,
   lcms2,
   libarchive,
@@ -31,34 +23,51 @@
   libimagequant,
   libjpeg,
   libjxl,
+  libpng,
   libraw,
   librsvg,
-  libpng,
   libtiff,
   libultrahdr,
   libwebp,
+  libxml2,
   matio,
+  meson,
+  ninja,
+  nix-update-script,
   openexr,
   openjpeg,
   openslide,
   pango,
+  pkg-config,
   poppler,
-  withIntrospection ?
-    lib.meta.availableOn stdenv.hostPlatform gobject-introspection
-    && stdenv.hostPlatform.emulatorAvailable buildPackages,
+  python3,
+  # passthru
+  testers,
   withDevDoc ?
     !stdenv.hostPlatform.isDarwin
     && !stdenv.hostPlatform.isFreeBSD
     && !(stdenv.hostPlatform.isRiscV && stdenv.hostPlatform.isLinux),
-
-  # passthru
-  testers,
-  nix-update-script,
+  withIntrospection ?
+    lib.meta.availableOn stdenv.hostPlatform gobject-introspection
+    && stdenv.hostPlatform.emulatorAvailable buildPackages,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
   pname = "vips";
   version = "8.18.3";
+
+  src = fetchFromGitHub {
+    owner = "libvips";
+    repo = "libvips";
+    tag = "v${finalAttrs.version}";
+    hash = "sha256-P8qjbCcpWNgKthZrXd+GykfPoU2x6avMNoYX1I+YE+k=";
+
+    # Remove unicode file names which leads to different checksums on HFS+
+    # vs. other filesystems because of unicode normalisation.
+    postFetch = ''
+      rm -r $out/test/test-suite/images/
+    '';
+  };
 
   outputs = [
     "bin"
@@ -67,18 +76,6 @@ stdenv.mkDerivation (finalAttrs: {
     "dev"
   ]
   ++ lib.optionals withDevDoc [ "devdoc" ];
-
-  src = fetchFromGitHub {
-    owner = "libvips";
-    repo = "libvips";
-    tag = "v${finalAttrs.version}";
-    hash = "sha256-P8qjbCcpWNgKthZrXd+GykfPoU2x6avMNoYX1I+YE+k=";
-    # Remove unicode file names which leads to different checksums on HFS+
-    # vs. other filesystems because of unicode normalisation.
-    postFetch = ''
-      rm -r $out/test/test-suite/images/
-    '';
-  };
 
   postPatch = ''
     patchShebangs .
@@ -148,14 +145,16 @@ stdenv.mkDerivation (finalAttrs: {
 
   passthru = {
     tests = {
+      version = testers.testVersion {
+        command = "vips --version";
+        package = finalAttrs.finalPackage;
+      };
+
       pkg-config = testers.hasPkgConfigModules {
         package = finalAttrs.finalPackage;
       };
-      version = testers.testVersion {
-        package = finalAttrs.finalPackage;
-        command = "vips --version";
-      };
     };
+
     updateScript = nix-update-script {
       extraArgs = [
         "--version-regex"
@@ -165,19 +164,22 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   meta = {
-    changelog = "https://github.com/libvips/libvips/blob/${finalAttrs.src.rev}/ChangeLog";
-    homepage = "https://www.libvips.org/";
     description = "Image processing system for large images";
+    homepage = "https://www.libvips.org/";
+    changelog = "https://github.com/libvips/libvips/blob/${finalAttrs.src.rev}/ChangeLog";
     license = lib.licenses.lgpl2Plus;
+
     maintainers = with lib.maintainers; [
       kovirobi
       anthonyroussel
     ];
+
+    platforms = lib.platforms.unix;
+    mainProgram = "vips";
+
     pkgConfigModules = [
       "vips"
       "vips-cpp"
     ];
-    platforms = lib.platforms.unix;
-    mainProgram = "vips";
   };
 })

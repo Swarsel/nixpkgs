@@ -1,17 +1,16 @@
 {
   lib,
   buildPythonPackage,
-  fetchPypi,
   colorama,
   coverage,
-  unidecode,
+  fetchPypi,
   lxml,
+  unidecode,
 }:
 
 buildPythonPackage rec {
   pname = "green";
   version = "4.0.2";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
@@ -39,6 +38,7 @@ buildPythonPackage rec {
       green.test.test_cmdline
   '';
 
+  format = "setuptools";
   pythonImportsCheck = [ "green" ];
 
   meta = {

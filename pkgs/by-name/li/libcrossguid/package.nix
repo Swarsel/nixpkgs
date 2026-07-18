@@ -6,7 +6,6 @@
 }:
 
 stdenv.mkDerivation (finalAttrs: {
-  name = "lib" + "crossguid" + "-" + finalAttrs.version;
   pname = "crossguid";
   version = "2016-02-21";
 
@@ -23,17 +22,20 @@ stdenv.mkDerivation (finalAttrs: {
     $CXX -c guid.cpp -o guid.o $CXXFLAGS -std=c++11 -DGUID_LIBUUID
     $AR rvs libcrossguid.a guid.o
   '';
+
   installPhase = ''
     mkdir -p $out/{lib,include}
     install -D -m644 libcrossguid.a "$out/lib/libcrossguid.a"
     install -D -m644 guid.h "$out/include/guid.h"
   '';
 
+  name = "lib" + "crossguid" + "-" + finalAttrs.version;
+
   meta = {
     description = "Lightweight cross platform C++ GUID/UUID library";
+    homepage = "https://github.com/graeme-hill/crossguid";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ edwtjo ];
-    homepage = "https://github.com/graeme-hill/crossguid";
     platforms = with lib.platforms; linux;
   };
 

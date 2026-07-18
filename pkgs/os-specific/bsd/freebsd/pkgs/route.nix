@@ -1,10 +1,10 @@
 {
-  mkDerivation,
   compatIfNeeded,
   libjail,
+  mkDerivation,
 }:
 mkDerivation {
-  path = "sbin/route";
   buildInputs = compatIfNeeded ++ [ libjail ];
   MK_TESTS = "no";
+  path = "sbin/route";
 }

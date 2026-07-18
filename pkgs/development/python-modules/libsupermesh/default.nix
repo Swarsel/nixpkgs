@@ -1,15 +1,15 @@
 {
   lib,
-  pkgs,
-  buildPythonPackage,
   fetchFromGitHub,
-  scikit-build-core,
-  gfortran,
+  buildPythonPackage,
   cmake,
-  ninja,
-  mpi,
+  gfortran,
   libspatialindex,
+  mpi,
+  ninja,
+  pkgs,
   rtree,
+  scikit-build-core,
 }:
 
 buildPythonPackage {
@@ -19,11 +19,6 @@ buildPythonPackage {
     src
     meta
     ;
-  pyproject = true;
-
-  build-system = [
-    scikit-build-core
-  ];
 
   nativeBuildInputs = [
     gfortran
@@ -32,17 +27,22 @@ buildPythonPackage {
     mpi
   ];
 
-  dontUseCmakeConfigure = true;
-
   buildInputs = [
     libspatialindex
     gfortran.cc.lib
+  ];
+
+  # Only build tests if not built by scikit-build-core
+  doCheck = false;
+
+  build-system = [
+    scikit-build-core
   ];
 
   dependencies = [
     rtree
   ];
 
-  # Only build tests if not built by scikit-build-core
-  doCheck = false;
+  dontUseCmakeConfigure = true;
+  pyproject = true;
 }

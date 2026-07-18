@@ -1,14 +1,13 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   nix-update-script,
 }:
 
 buildGoModule (finalAttrs: {
   pname = "gitlab-ci-validate";
   version = "0.6.0";
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "Code0x58";
@@ -18,6 +17,7 @@ buildGoModule (finalAttrs: {
   };
 
   vendorHash = "sha256-/+iu9SIaLtE51xcEzgA8dCp0eTAoPskp4xGlm1bsXTs=";
+  __structuredAttrs = true;
 
   ldflags = [
     "-s"

@@ -1,27 +1,26 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchurl,
+  gitUpdater,
   meson,
   ninja,
-
   pipewire,
-  gitUpdater,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
   pname = "lv2";
   version = "1.18.10";
 
-  outputs = [
-    "out"
-    "dev"
-  ];
-
   src = fetchurl {
     url = "https://lv2plug.in/spec/lv2-${finalAttrs.version}.tar.xz";
     hash = "sha256-eMUbzyG1Tli7Yymsy7Ta4Dsu15tSD5oB5zS9neUwlT8=";
   };
+
+  outputs = [
+    "out"
+    "dev"
+  ];
 
   strictDeps = true;
 
@@ -52,19 +51,20 @@ stdenv.mkDerivation (finalAttrs: {
     tests = {
       inherit pipewire;
     };
+
     updateScript = gitUpdater {
+      rev-prefix = "v";
       # No nicer place to find latest release.
       url = "https://gitlab.com/lv2/lv2.git";
-      rev-prefix = "v";
     };
   };
 
   meta = {
-    homepage = "https://lv2plug.in";
     description = "Plugin standard for audio systems";
-    mainProgram = "lv2_validate";
+    homepage = "https://lv2plug.in";
     license = lib.licenses.mit;
     maintainers = [ ];
     platforms = lib.platforms.unix;
+    mainProgram = "lv2_validate";
   };
 })

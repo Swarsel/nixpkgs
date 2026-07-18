@@ -1,28 +1,20 @@
 {
   lib,
   stdenv,
-  kernel,
   fetchFromGitHub,
   autoreconfHook,
   bison,
+  fetchpatch2,
   flex,
+  kernel,
+  nix-update-script,
   p7zip,
   rsync,
-  nix-update-script,
-  fetchpatch2,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
   pname = "ply";
   version = "2.4.0";
-
-  nativeBuildInputs = [
-    autoreconfHook
-    flex
-    bison
-    p7zip
-    rsync
-  ];
 
   src = fetchFromGitHub {
     owner = "iovisor";
@@ -34,9 +26,17 @@ stdenv.mkDerivation (finalAttrs: {
   patches = [
     # Fix union member initialization for GCC 15.
     (fetchpatch2 {
-      url = "https://github.com/iovisor/ply/commit/5e78db85a625cff64e5714afcf3163c882a0435a.patch?full_index=1";
       hash = "sha256-mKPHPIZy0KztyVgHuM/kzyLytKghv8c8XvKt3pYUYDU=";
+      url = "https://github.com/iovisor/ply/commit/5e78db85a625cff64e5714afcf3163c882a0435a.patch?full_index=1";
     })
+  ];
+
+  nativeBuildInputs = [
+    autoreconfHook
+    flex
+    bison
+    p7zip
+    rsync
   ];
 
   preAutoreconf = ''
@@ -60,13 +60,15 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Dynamic tracing in Linux";
-    mainProgram = "ply";
     homepage = "https://wkz.github.io/ply/";
     license = [ lib.licenses.gpl2Only ];
+
     maintainers = with lib.maintainers; [
       mic92
       snu
     ];
+
     platforms = lib.platforms.linux;
+    mainProgram = "ply";
   };
 })

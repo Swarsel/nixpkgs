@@ -2,8 +2,8 @@
   lib,
   stdenv,
   fetchzip,
-  makeWrapper,
   jdk11,
+  makeWrapper,
   nixosTests,
 }:
 
@@ -40,14 +40,16 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Easy to use, powerful, and reliable system to process and distribute data";
+
     longDescription = ''
       Apache NiFi supports powerful and scalable directed graphs of data routing,
       transformation, and system mediation logic.
     '';
-    license = lib.licenses.asl20;
+
     homepage = "https://nifi.apache.org";
-    platforms = [ "x86_64-linux" ];
+    license = lib.licenses.asl20;
     sourceProvenance = with lib.sourceTypes; [ binaryBytecode ];
     maintainers = with lib.maintainers; [ izorkin ];
+    platforms = [ "x86_64-linux" ];
   };
 })

@@ -2,14 +2,14 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  replaceVars,
   dbus,
+  libxcb,
   meson,
   ninja,
-  pkg-config,
-  wineWow64Packages,
-  libxcb,
   nix-update-script,
+  pkg-config,
+  replaceVars,
+  wineWow64Packages,
 }:
 
 let
@@ -17,59 +17,59 @@ let
 
   # Derived from subprojects/asio.wrap
   asio = fetchFromGitHub {
+    hash = "sha256-8Sw0LuAqZFw+dxlsTstlwz5oaz3+ZnKBuvSdLW6/DKQ=";
     owner = "chriskohlhoff";
     repo = "asio";
     tag = "asio-1-28-2";
-    hash = "sha256-8Sw0LuAqZFw+dxlsTstlwz5oaz3+ZnKBuvSdLW6/DKQ=";
   };
 
   # Derived from subprojects/bitsery.wrap
   bitsery = fetchFromGitHub {
+    hash = "sha256-rmfcIYCrANycFuLtibQ5wOPwpMVhpTMpdGsUfpR3YsM=";
     owner = "fraillt";
     repo = "bitsery";
     tag = "v5.2.3";
-    hash = "sha256-rmfcIYCrANycFuLtibQ5wOPwpMVhpTMpdGsUfpR3YsM=";
   };
 
   # Derived from subprojects/clap.wrap
   clap = fetchFromGitHub {
+    hash = "sha256-z2P0U2NkDK1/5oDV35jn/pTXCcspuM1y2RgZyYVVO3w=";
     owner = "free-audio";
     repo = "clap";
     tag = "1.1.9";
-    hash = "sha256-z2P0U2NkDK1/5oDV35jn/pTXCcspuM1y2RgZyYVVO3w=";
   };
 
   # Derived from subprojects/function2.wrap
   function2 = fetchFromGitHub {
+    hash = "sha256-+fzntJn1fRifOgJhh5yiv+sWR9pyaeeEi2c1+lqX3X8=";
     owner = "Naios";
     repo = "function2";
     tag = "4.2.3";
-    hash = "sha256-+fzntJn1fRifOgJhh5yiv+sWR9pyaeeEi2c1+lqX3X8=";
   };
 
   # Derived from subprojects/ghc_filesystem.wrap
   ghc_filesystem = fetchFromGitHub {
+    hash = "sha256-XZ0IxyNIAs2tegktOGQevkLPbWHam/AOFT+M6wAWPFg=";
     owner = "gulrak";
     repo = "filesystem";
     tag = "v1.5.14";
-    hash = "sha256-XZ0IxyNIAs2tegktOGQevkLPbWHam/AOFT+M6wAWPFg=";
   };
 
   # Derived from subprojects/tomlplusplus.wrap
   tomlplusplus = fetchFromGitHub {
+    hash = "sha256-h5tbO0Rv2tZezY58yUbyRVpsfRjY3i+5TPkkxr6La8M=";
     owner = "marzer";
     repo = "tomlplusplus";
     tag = "v3.4.0";
-    hash = "sha256-h5tbO0Rv2tZezY58yUbyRVpsfRjY3i+5TPkkxr6La8M=";
   };
 
   # Derived from vst3.wrap
   vst3 = fetchFromGitHub {
+    fetchSubmodules = true;
+    hash = "sha256-LsPHPoAL21XOKmF1Wl/tvLJGzjaCLjaDAcUtDvXdXSU=";
     owner = "robbert-vdh";
     repo = "vst3sdk";
     tag = "v3.7.7_build_19-patched";
-    fetchSubmodules = true;
-    hash = "sha256-LsPHPoAL21XOKmF1Wl/tvLJGzjaCLjaDAcUtDvXdXSU=";
   };
 in
 stdenv.mkDerivation (finalAttrs: {
@@ -84,27 +84,13 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-4eA3vQFklIWkhtbd3Nw39bnJT6gPcni79ZyQVqU4+GQ=";
   };
 
-  # Unpack subproject sources
-  postUnpack = ''
-    (
-      cd "$sourceRoot/subprojects"
-      cp -R --no-preserve=mode,ownership ${asio} asio
-      cp -R --no-preserve=mode,ownership ${bitsery} bitsery
-      cp -R --no-preserve=mode,ownership ${clap} clap
-      cp -R --no-preserve=mode,ownership ${function2} function2
-      cp -R --no-preserve=mode,ownership ${ghc_filesystem} ghc_filesystem
-      cp -R --no-preserve=mode,ownership ${tomlplusplus} tomlplusplus
-      cp -R --no-preserve=mode,ownership ${vst3} vst3
-    )
-  '';
-
   patches = [
     ./libyabridge-drop-32-bit-support.patch
 
     # Hard code bitbridge & runtime dependencies
     (replaceVars ./hardcode-dependencies.patch {
-      libdbus = dbus.lib;
       inherit wine;
+      libdbus = dbus.lib;
     })
 
     # Patch the chainloader to search for libyabridge through NIX_PROFILES
@@ -158,6 +144,20 @@ stdenv.mkDerivation (finalAttrs: {
       substituteInPlace "$exe" \
         --replace-fail 'WINELOADER="wine"' 'WINELOADER="${wine}/bin/wine"'
     done
+  '';
+
+  # Unpack subproject sources
+  postUnpack = ''
+    (
+      cd "$sourceRoot/subprojects"
+      cp -R --no-preserve=mode,ownership ${asio} asio
+      cp -R --no-preserve=mode,ownership ${bitsery} bitsery
+      cp -R --no-preserve=mode,ownership ${clap} clap
+      cp -R --no-preserve=mode,ownership ${function2} function2
+      cp -R --no-preserve=mode,ownership ${ghc_filesystem} ghc_filesystem
+      cp -R --no-preserve=mode,ownership ${tomlplusplus} tomlplusplus
+      cp -R --no-preserve=mode,ownership ${vst3} vst3
+    )
   '';
 
   passthru.updateScript = nix-update-script { };

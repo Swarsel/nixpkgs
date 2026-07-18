@@ -1,29 +1,25 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # build-system
-  setuptools,
-
+  buildPythonPackage,
   # dependencies
   google-api-core,
   google-auth,
-  grpcio,
-  proto-plus,
-  protobuf,
-
   # tests
   google-cloud-testutils,
+  grpcio,
   mock,
+  proto-plus,
+  protobuf,
   pytest-asyncio,
   pytestCheckHook,
+  # build-system
+  setuptools,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "google-ai-generativelanguage";
   version = "0.12.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "googleapis";
@@ -32,13 +28,15 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-M/7uDWWz4YCfxa4gyM9BaAo10iyTMvtR2MhNpdFYnis=";
   };
 
-  sourceRoot = "${finalAttrs.src.name}/packages/google-ai-generativelanguage";
+  nativeCheckInputs = [
+    google-cloud-testutils
+    mock
+    pytest-asyncio
+    pytestCheckHook
+  ];
 
   build-system = [ setuptools ];
 
-  pythonRelaxDeps = [
-    "protobuf"
-  ];
   dependencies = [
     google-api-core
     google-auth
@@ -48,17 +46,18 @@ buildPythonPackage (finalAttrs: {
   ]
   ++ google-api-core.optional-dependencies.grpc;
 
-  nativeCheckInputs = [
-    google-cloud-testutils
-    mock
-    pytest-asyncio
-    pytestCheckHook
-  ];
+  pyproject = true;
 
   pythonImportsCheck = [
     "google.ai.generativelanguage"
     "google.ai.generativelanguage_v1beta2"
   ];
+
+  pythonRelaxDeps = [
+    "protobuf"
+  ];
+
+  sourceRoot = "${finalAttrs.src.name}/packages/google-ai-generativelanguage";
 
   meta = {
     description = "Google Ai Generativelanguage API client library";

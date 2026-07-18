@@ -1,14 +1,14 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
   makeWrapper,
-  replaceVars,
+  pandoc,
   perlPackages,
+  replaceVars,
   # Flags to enable processors
   # Currently, Markdown.pl does not work
   usePandoc ? true,
-  pandoc,
 }:
 
 let
@@ -30,10 +30,6 @@ stdenv.mkDerivation {
     sha256 = "sha256-THlP/JuaZzDq9QctidwLRiUVFxRhGNhRKleWbQiqsgg=";
   };
 
-  nativeBuildInputs = [ makeWrapper ];
-
-  buildInputs = [ TextMarkdown ] ++ lib.optionals usePandoc [ pandoc ];
-
   patches = [
     (replaceVars ./0001-Setting-markdown_bin.patch {
       markdown_path = if usePandoc then pandoc_path else markdownpl_path;
@@ -43,6 +39,9 @@ stdenv.mkDerivation {
   postPatch = ''
     patchShebangs bb.sh
   '';
+
+  nativeBuildInputs = [ makeWrapper ];
+  buildInputs = [ TextMarkdown ] ++ lib.optionals usePandoc [ pandoc ];
 
   installPhase = ''
     runHook preInstall
@@ -55,10 +54,10 @@ stdenv.mkDerivation {
 
   meta = {
     description = "Single Bash script to create blogs";
-    mainProgram = "bashblog";
     homepage = "https://github.com/cfenollosa/bashblog";
     license = lib.licenses.gpl3Only;
-    platforms = lib.platforms.unix;
     maintainers = [ ];
+    platforms = lib.platforms.unix;
+    mainProgram = "bashblog";
   };
 }

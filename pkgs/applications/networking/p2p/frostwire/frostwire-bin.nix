@@ -7,8 +7,8 @@
 }:
 
 stdenv.mkDerivation rec {
-  version = "6.13.3";
   pname = "frostwire";
+  version = "6.13.3";
 
   src = fetchurl {
     url = "https://github.com/frostwire/frostwire/releases/download/frostwire-desktop-${version}-build-322/frostwire-${version}.amd64.tar.gz";
@@ -39,15 +39,17 @@ stdenv.mkDerivation rec {
   '';
 
   meta = {
-    homepage = "https://www.frostwire.com/";
     description = "BitTorrent Client and Cloud File Downloader";
-    mainProgram = "frostwire";
+    homepage = "https://www.frostwire.com/";
+    license = lib.licenses.gpl3Plus;
+
     sourceProvenance = with lib.sourceTypes; [
       binaryBytecode
       binaryNativeCode
     ];
-    license = lib.licenses.gpl3Plus;
+
     maintainers = with lib.maintainers; [ gavin ];
     platforms = [ "x86_64-linux" ];
+    mainProgram = "frostwire";
   };
 }

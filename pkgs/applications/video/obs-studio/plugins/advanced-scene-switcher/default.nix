@@ -1,25 +1,23 @@
 {
   lib,
+  stdenv,
   fetchFromGitHub,
-  nix-update-script,
-
-  cmake,
-  ninja,
-
   alsa-lib,
   asio,
+  cmake,
   curl,
   libremidi,
+  libusb1,
+  libxscrnsaver,
+  ninja,
+  nix-update-script,
   nlohmann_json,
   obs-studio,
   opencv,
+  pkg-config,
   procps,
   qtbase,
-  stdenv,
   websocketpp,
-  libxscrnsaver,
-  libusb1,
-  pkg-config,
   # #FIXME: Could not get cmake to pick up on these dependencies
   # Ommiting them prevents cmake from building the OCR video capabilities
   # Everything else should work it's just missing this one plugin
@@ -28,10 +26,10 @@
 }:
 let
   httplib-src = fetchFromGitHub {
+    hash = "sha256-ESaH0+n7ycpOKM+Mnv/UgT16UEx86eFMQDHB3RVmgBw=";
     owner = "yhirose";
     repo = "cpp-httplib";
     rev = "v0.13.3";
-    hash = "sha256-ESaH0+n7ycpOKM+Mnv/UgT16UEx86eFMQDHB3RVmgBw=";
   };
 in
 stdenv.mkDerivation rec {
@@ -68,6 +66,10 @@ stdenv.mkDerivation rec {
     libusb1
   ];
 
+  # PipeWire support currently disabled in libremidi dependency.
+  # see https://github.com/NixOS/nixpkgs/pull/374469
+  cmakeFlags = [ (lib.cmakeBool "LIBREMIDI_NO_PIPEWIRE" true) ];
+  env.NIX_CFLAGS_COMPILE = "-Wno-error=stringop-overflow -Wno-error=deprecated-declarations";
   dontWrapQtApps = true;
 
   postUnpack = ''
@@ -77,18 +79,13 @@ stdenv.mkDerivation rec {
     chmod -R +w $sourceRoot/deps/libremidi
   '';
 
-  # PipeWire support currently disabled in libremidi dependency.
-  # see https://github.com/NixOS/nixpkgs/pull/374469
-  cmakeFlags = [ (lib.cmakeBool "LIBREMIDI_NO_PIPEWIRE" true) ];
-
-  env.NIX_CFLAGS_COMPILE = "-Wno-error=stringop-overflow -Wno-error=deprecated-declarations";
-
   passthru.updateScript = nix-update-script { };
+
   meta = {
     description = "Automated scene switcher for OBS Studio";
     homepage = "https://github.com/WarmUpTill/SceneSwitcher";
     license = lib.licenses.gpl2Plus;
-    platforms = lib.platforms.linux;
     maintainers = with lib.maintainers; [ patrickdag ];
+    platforms = lib.platforms.linux;
   };
 }

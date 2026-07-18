@@ -18,17 +18,12 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-C/K4AG+qQwgo58EwN+k3Bys9qgV59xfRNVCtZmjtcRM=";
   };
 
-  cargoHash = "sha256-0WS8+6wFpWWz6jqPdr5F4CURA3sHrKa2vnbDCnBF0Lo=";
-
   nativeBuildInputs = [ pkg-config ];
-
-  nativeInstallCheckInputs = [ versionCheckHook ];
-
   buildInputs = [ openssl ];
-
+  cargoHash = "sha256-0WS8+6wFpWWz6jqPdr5F4CURA3sHrKa2vnbDCnBF0Lo=";
   env.OPENSSL_NO_VENDOR = 1;
-
   doInstallCheck = true;
+  nativeInstallCheckInputs = [ versionCheckHook ];
 
   meta = {
     description = "JSON Web Token Hack Toolkit";

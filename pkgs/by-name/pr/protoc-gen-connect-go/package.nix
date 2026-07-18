@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule (finalAttrs: {
@@ -17,15 +17,6 @@ buildGoModule (finalAttrs: {
 
   vendorHash = "sha256-0XmH9V7Bbuzj//87Ev6KRy6ijsgh7K6JRhhM5WY7K38=";
 
-  subPackages = [
-    "cmd/protoc-gen-connect-go"
-  ];
-
-  preCheck = ''
-    # test all paths
-    unset subPackages
-  '';
-
   checkFlags =
     let
       skippedTests = [
@@ -38,15 +29,26 @@ buildGoModule (finalAttrs: {
     in
     [ "-skip=^${builtins.concatStringsSep "$|^" skippedTests}$" ];
 
+  preCheck = ''
+    # test all paths
+    unset subPackages
+  '';
+
+  subPackages = [
+    "cmd/protoc-gen-connect-go"
+  ];
+
   meta = {
     description = "Simple, reliable, interoperable, better gRPC";
-    mainProgram = "protoc-gen-connect-go";
     homepage = "https://github.com/connectrpc/connect-go";
     changelog = "https://github.com/connectrpc/connect-go/releases/tag/${finalAttrs.src.tag}";
     license = lib.licenses.asl20;
+
     maintainers = with lib.maintainers; [
       kilimnik
       jk
     ];
+
+    mainProgram = "protoc-gen-connect-go";
   };
 })

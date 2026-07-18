@@ -2,10 +2,10 @@
   lib,
   stdenv,
   fetchurl,
+  bdftopcf,
+  fonttosfnt,
   libfaketime,
   mkfontscale,
-  fonttosfnt,
-  bdftopcf,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -16,6 +16,11 @@ stdenv.mkDerivation (finalAttrs: {
     url = "http://openlab.ring.gr.jp/efont/dist/unicode-bdf/efont-unicode-bdf-${finalAttrs.version}.tar.bz2";
     sha256 = "sha256-fT7SsYlV3dCQrf0IZfiNI1grj3ngDgr8IkWdg+f9m3M=";
   };
+
+  outputs = [
+    "out"
+    "bdf"
+  ];
 
   nativeBuildInputs = [
     libfaketime
@@ -54,16 +59,11 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
-  outputs = [
-    "out"
-    "bdf"
-  ];
-
   meta = {
     description = "/efont/ Unicode bitmap font";
     homepage = "http://openlab.ring.gr.jp/efont/unicode/";
     license = lib.licenses.bsd3;
-    platforms = lib.platforms.all;
     maintainers = [ lib.maintainers.ncfavier ];
+    platforms = lib.platforms.all;
   };
 })

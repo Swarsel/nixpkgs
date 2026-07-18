@@ -1,55 +1,28 @@
 {
+  lib,
+  stdenv,
   autoPatchelfHook,
   cacert,
   common-updater-scripts,
   curl,
   gcc,
   jq,
-  lib,
   libGL,
   libcxx,
   runCommandLocal,
-  stdenv,
   writeShellApplication,
 }:
 stdenv.mkDerivation (finalAttrs: {
   pname = "blackmagic-desktop-video";
   version = "16.0";
 
-  buildInputs = [
-    autoPatchelfHook
-    libcxx
-    libGL
-    gcc.cc.lib
-  ];
-
   # yes, the below download function is an absolute mess.
   # blame blackmagicdesign.
   src =
     runCommandLocal "${finalAttrs.pname}-${lib.versions.majorMinor finalAttrs.version}-src.tar.gz"
       {
-        outputHashMode = "recursive";
-        outputHashAlgo = "sha256";
-        outputHash = "sha256-AdJiPG0kJBk3SH633kwLbS36LjFeFAwzYTrfEjkvup4=";
-
-        impureEnvVars = lib.fetchers.proxyImpureEnvVars;
-
-        nativeBuildInputs = [
-          curl
-          jq
-        ];
-
-        # ENV VARS
-        SSL_CERT_FILE = "${cacert}/etc/ssl/certs/ca-bundle.crt";
-
         DOWNLOADSURL = "https://www.blackmagicdesign.com/api/support/us/downloads.json";
-
-        USERAGENT = builtins.concatStringsSep " " [
-          "User-Agent: Mozilla/5.0 (X11; Linux ${stdenv.hostPlatform.linuxArch})"
-          "AppleWebKit/537.36 (KHTML, like Gecko)"
-          "Chrome/77.0.3865.75"
-          "Safari/537.36"
-        ];
+        PRODUCT = "Desktop Video";
 
         REQJSON = builtins.toJSON {
           "country" = "nl";
@@ -58,8 +31,27 @@ stdenv.mkDerivation (finalAttrs: {
           "policy" = true;
         };
 
-        PRODUCT = "Desktop Video";
+        # ENV VARS
+        SSL_CERT_FILE = "${cacert}/etc/ssl/certs/ca-bundle.crt";
+
+        USERAGENT = builtins.concatStringsSep " " [
+          "User-Agent: Mozilla/5.0 (X11; Linux ${stdenv.hostPlatform.linuxArch})"
+          "AppleWebKit/537.36 (KHTML, like Gecko)"
+          "Chrome/77.0.3865.75"
+          "Safari/537.36"
+        ];
+
         VERSION = finalAttrs.version;
+        impureEnvVars = lib.fetchers.proxyImpureEnvVars;
+
+        nativeBuildInputs = [
+          curl
+          jq
+        ];
+
+        outputHash = "sha256-AdJiPG0kJBk3SH633kwLbS36LjFeFAwzYTrfEjkvup4=";
+        outputHashAlgo = "sha256";
+        outputHashMode = "recursive";
       }
       ''
         DOWNLOADID=$(
@@ -90,31 +82,12 @@ stdenv.mkDerivation (finalAttrs: {
           > $out
       '';
 
-  passthru.updateScript = lib.getExe (writeShellApplication {
-    # mostly stolen from pkgs/by-name/da/davinci-resolve/package.nix :)
-    name = "update-blackmagic-desktop-video";
-    runtimeInputs = [
-      common-updater-scripts
-      curl
-      jq
-    ];
-    text = ''
-      set -o errexit
-      downloadsJSON="$(curl --fail --silent https://www.blackmagicdesign.com/api/support/us/downloads.json)"
-      latestLinuxVersion="$(echo "$downloadsJSON" | jq '[.downloads[] | select(.urls.Linux) | .urls.Linux[] | select(.downloadTitle | test("Desktop Video")) | .downloadTitle]' | grep -oP 'Desktop Video \K\d\d\.\d+(\.\d+)?' | sort | tail -n 1)"
-
-      update-source-version blackmagic-desktop-video "$latestLinuxVersion"
-    '';
-  });
-
-  postUnpack =
-    let
-      arch = stdenv.hostPlatform.uname.processor;
-    in
-    ''
-      tar xf Blackmagic_Desktop_Video_Linux_${finalAttrs.version}/other/${arch}/desktopvideo-${finalAttrs.version}*-${arch}.tar.gz
-      unpacked=$NIX_BUILD_TOP/desktopvideo-${finalAttrs.version}*-${stdenv.hostPlatform.uname.processor}
-    '';
+  buildInputs = [
+    autoPatchelfHook
+    libcxx
+    libGL
+    gcc.cc.lib
+  ];
 
   installPhase = ''
     runHook preInstall
@@ -131,11 +104,39 @@ stdenv.mkDerivation (finalAttrs: {
   # need to tell the DesktopVideoHelper where to find its own library
   appendRunpaths = [ "${placeholder "out"}/lib" ];
 
+  postUnpack =
+    let
+      arch = stdenv.hostPlatform.uname.processor;
+    in
+    ''
+      tar xf Blackmagic_Desktop_Video_Linux_${finalAttrs.version}/other/${arch}/desktopvideo-${finalAttrs.version}*-${arch}.tar.gz
+      unpacked=$NIX_BUILD_TOP/desktopvideo-${finalAttrs.version}*-${stdenv.hostPlatform.uname.processor}
+    '';
+
+  passthru.updateScript = lib.getExe (writeShellApplication {
+    # mostly stolen from pkgs/by-name/da/davinci-resolve/package.nix :)
+    name = "update-blackmagic-desktop-video";
+
+    runtimeInputs = [
+      common-updater-scripts
+      curl
+      jq
+    ];
+
+    text = ''
+      set -o errexit
+      downloadsJSON="$(curl --fail --silent https://www.blackmagicdesign.com/api/support/us/downloads.json)"
+      latestLinuxVersion="$(echo "$downloadsJSON" | jq '[.downloads[] | select(.urls.Linux) | .urls.Linux[] | select(.downloadTitle | test("Desktop Video")) | .downloadTitle]' | grep -oP 'Desktop Video \K\d\d\.\d+(\.\d+)?' | sort | tail -n 1)"
+
+      update-source-version blackmagic-desktop-video "$latestLinuxVersion"
+    '';
+  });
+
   meta = {
-    homepage = "https://www.blackmagicdesign.com/support/family/capture-and-playback";
-    maintainers = [ lib.maintainers.naxdy ];
-    license = lib.licenses.unfree;
     description = "Supporting applications for Blackmagic Decklink. Doesn't include the desktop applications, only the helper required to make the driver work";
+    homepage = "https://www.blackmagicdesign.com/support/family/capture-and-playback";
+    license = lib.licenses.unfree;
+    maintainers = [ lib.maintainers.naxdy ];
     platforms = lib.platforms.linux;
   };
 })

@@ -1,29 +1,28 @@
 {
-  symlinkJoin,
-  fetchurl,
-  stdenvNoCC,
   lib,
-  unzip,
-  patchNupkgs,
-  nugetPackageHook,
+  fetchurl,
   callPackage,
+  nugetPackageHook,
+  patchNupkgs,
+  stdenvNoCC,
+  symlinkJoin,
+  unzip,
   overrides ? callPackage ./overrides.nix { },
 }:
 lib.makeOverridable (
   {
     pname,
     version,
-    sha256 ? "",
     hash ? "",
-    url ? "https://www.nuget.org/api/v2/package/${pname}/${version}",
     installable ? false,
+    sha256 ? "",
+    url ? "https://www.nuget.org/api/v2/package/${pname}/${version}",
   }:
   let
     package = stdenvNoCC.mkDerivation rec {
       inherit pname version;
 
       src = fetchurl {
-        name = "${pname}.${version}.nupkg";
         # There is no need to verify whether both sha256 and hash are
         # valid here, because nuget-to-json does not generate a deps.nix
         # containing both.
@@ -33,6 +32,8 @@ lib.makeOverridable (
           hash
           version
           ;
+
+        name = "${pname}.${version}.nupkg";
       };
 
       nativeBuildInputs = [
@@ -40,24 +41,6 @@ lib.makeOverridable (
         patchNupkgs
         nugetPackageHook
       ];
-
-      unpackPhase = ''
-        runHook preUnpack
-
-        unpackNupkg "$src" source
-        cd source
-
-        runHook postUnpack
-      '';
-
-      prePatch = ''
-        shopt -s nullglob
-        local dir
-        for dir in tools runtimes/*/native; do
-          [[ ! -d "$dir" ]] || chmod -R +x "$dir"
-        done
-        rm -rf .signature.p7s
-      '';
 
       installPhase = ''
         runHook preInstall
@@ -75,6 +58,24 @@ lib.makeOverridable (
       '';
 
       createInstallableNugetSource = installable;
+
+      prePatch = ''
+        shopt -s nullglob
+        local dir
+        for dir in tools runtimes/*/native; do
+          [[ ! -d "$dir" ]] || chmod -R +x "$dir"
+        done
+        rm -rf .signature.p7s
+      '';
+
+      unpackPhase = ''
+        runHook preUnpack
+
+        unpackNupkg "$src" source
+        cd source
+
+        runHook postUnpack
+      '';
 
       meta = {
         sourceProvenance = with lib.sourceTypes; [

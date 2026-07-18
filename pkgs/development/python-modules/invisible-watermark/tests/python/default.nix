@@ -20,19 +20,19 @@ let
   pythonInterpreter = pythonWithPackages.interpreter;
 
   encode = stdenvNoCC.mkDerivation {
+    inherit image message method;
+    args = [ ./encode.py ];
     name = "encode";
     realBuilder = pythonInterpreter;
-    args = [ ./encode.py ];
-    inherit image message method;
   };
 
   decode = stdenvNoCC.mkDerivation {
-    name = "decode";
-    realBuilder = pythonInterpreter;
-    args = [ ./decode.py ];
     inherit method;
+    args = [ ./decode.py ];
     image = "${encode}/test_wm.png";
+    name = "decode";
     num_bits = (builtins.stringLength message) * 8;
+    realBuilder = pythonInterpreter;
   };
 in
 runCommand "invisible-watermark-test-python" { } ''

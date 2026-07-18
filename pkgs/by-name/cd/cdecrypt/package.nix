@@ -21,11 +21,11 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Utility that decrypts Wii U NUS content files";
-    mainProgram = "cdecrypt";
     homepage = "https://github.com/VitaSmith/cdecrypt";
     changelog = "https://github.com/VitaSmith/cdecrypt/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.gpl3Plus;
     maintainers = with lib.maintainers; [ hughobrien ];
     platforms = lib.platforms.linux ++ lib.platforms.darwin;
+    mainProgram = "cdecrypt";
   };
 })

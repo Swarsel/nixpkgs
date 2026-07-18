@@ -13,30 +13,35 @@ in
   options.services.sshwifty = {
     enable = lib.mkEnableOption "Sshwifty";
     package = lib.mkPackageOption pkgs "sshwifty" { };
+
     settings = lib.mkOption {
-      type = format.type;
       description = ''
         Configuration for Sshwifty. See
         [the Sshwifty documentation](https://github.com/nirui/sshwifty/tree/master?tab=readme-ov-file#configuration)
         for possible options.
       '';
+
+      type = format.type;
     };
+
     sharedKeyFile = lib.mkOption {
-      type = lib.types.nullOr lib.types.path;
       default = null;
       description = "Path to a file containing the shared key.";
-    };
-    socks5PasswordFile = lib.mkOption {
       type = lib.types.nullOr lib.types.path;
+    };
+
+    socks5PasswordFile = lib.mkOption {
       default = null;
       description = "Path to a file containing the SOCKS5 password.";
+      type = lib.types.nullOr lib.types.path;
     };
   };
+
   config = lib.mkIf cfg.enable {
     systemd.services.sshwifty = {
-      description = "Sshwifty";
       after = [ "network.target" ];
-      wantedBy = [ "multi-user.target" ];
+      description = "Sshwifty";
+
       script = ''
         ${lib.optionalString (cfg.sharedKeyFile != null || cfg.socks5PasswordFile != null) (
           lib.concatStringsSep " " [
@@ -63,20 +68,25 @@ in
         ) "export SSHWIFTY_CONFIG=${settings}"}
         exec ${lib.getExe cfg.package}
       '';
+
       serviceConfig = {
+        AmbientCapabilities = "CAP_NET_BIND_SERVICE";
+        CapabilityBoundingSet = "CAP_NET_BIND_SERVICE";
         DynamicUser = true;
-        RuntimeDirectory = "sshwifty";
-        RuntimeDirectoryMode = "0750";
+
         LoadCredential =
           [ ]
           ++ lib.optionals (cfg.sharedKeyFile != null) [ "sharedkey:${cfg.sharedKeyFile}" ]
           ++ lib.optionals (cfg.socks5PasswordFile != null) [ "socks5pass:${cfg.socks5PasswordFile}" ];
+
         # Hardening
         LockPersonality = true;
         MemoryDenyWriteExecute = true;
         NoNewPrivileges = true;
         PrivateDevices = true;
         PrivateMounts = true;
+        PrivateTmp = "disconnected";
+        ProcSubset = "pid";
         ProtectClock = true;
         ProtectControlGroups = true;
         ProtectHome = true;
@@ -84,19 +94,15 @@ in
         ProtectKernelLogs = true;
         ProtectKernelModules = true;
         ProtectKernelTunables = true;
-        RemoveIPC = true;
-        RestrictRealtime = true;
-        RestrictSUIDSGID = true;
-        CapabilityBoundingSet = "CAP_NET_BIND_SERVICE";
-        AmbientCapabilities = "CAP_NET_BIND_SERVICE";
-        PrivateTmp = "disconnected";
-        ProcSubset = "pid";
         ProtectProc = "invisible";
         ProtectSystem = "strict";
+        RemoveIPC = true;
+
         RestrictAddressFamilies = [
           "AF_INET"
           "AF_INET6"
         ];
+
         RestrictNamespaces = [
           "~cgroup"
           "~ipc"
@@ -106,7 +112,13 @@ in
           "~user"
           "~uts"
         ];
+
+        RestrictRealtime = true;
+        RestrictSUIDSGID = true;
+        RuntimeDirectory = "sshwifty";
+        RuntimeDirectoryMode = "0750";
         SystemCallArchitectures = "native";
+
         SystemCallFilter = [
           "~@clock"
           "~@cpu-emulation"
@@ -120,9 +132,13 @@ in
           "~@resources"
           "~@swap"
         ];
+
         UMask = "0077";
       };
+
+      wantedBy = [ "multi-user.target" ];
     };
   };
+
   meta.maintainers = [ lib.maintainers.ungeskriptet ];
 }

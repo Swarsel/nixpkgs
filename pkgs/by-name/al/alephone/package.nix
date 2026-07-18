@@ -2,7 +2,12 @@
   lib,
   stdenv,
   fetchurl,
+  SDL2,
+  SDL2_image,
+  SDL2_net,
+  SDL2_ttf,
   alsa-lib,
+  asio,
   boost,
   curl,
   ffmpeg_6,
@@ -19,23 +24,14 @@
   miniupnpc,
   openal,
   pkg-config,
-  SDL2,
-  SDL2_image,
-  SDL2_net,
-  SDL2_ttf,
   speex,
+  testers,
   unzip,
   zlib,
   zziplib,
-  testers,
-  asio,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
-  outputs = [
-    "out"
-    "icons"
-  ];
   pname = "alephone";
   version = "1.11";
 
@@ -45,8 +41,14 @@ stdenv.mkDerivation (finalAttrs: {
         date = "20250829";
       in
       "https://github.com/Aleph-One-Marathon/alephone/releases/download/release-${date}/AlephOne-${date}.tar.bz2";
+
     hash = "sha256-58RHA0qjXdhcpoNt2DZwNMT0USqg0U6XgdcDOUYJiAY=";
   };
+
+  outputs = [
+    "out"
+    "icons"
+  ];
 
   nativeBuildInputs = [
     pkg-config
@@ -80,8 +82,6 @@ stdenv.mkDerivation (finalAttrs: {
   configureFlags = [ "--with-boost-libdir=${boost.out}/lib" ];
   makeFlags = [ "AR:=$(AR)" ];
 
-  enableParallelBuilding = true;
-
   postInstall = ''
     mkdir $icons
     icotool -x -i 5 -o $icons Resources/Windows/*.ico
@@ -92,49 +92,26 @@ stdenv.mkDerivation (finalAttrs: {
     popd
   '';
 
-  passthru.tests.version =
-    # test that the version is correct
-    testers.testVersion { package = finalAttrs.finalPackage; };
-
-  meta = {
-    description = "Aleph One is the open source continuation of Bungie’s Marathon 2 game engine";
-    mainProgram = "alephone";
-    homepage = "https://alephone.lhowon.org/";
-    license = [ lib.licenses.gpl3 ];
-    platforms = lib.platforms.linux;
-  };
+  enableParallelBuilding = true;
 
   passthru.makeWrapper =
     {
       desktopName,
+      meta,
       version,
       zip,
-      meta,
       icon ? finalAttrs.finalPackage.icons + "/alephone.png",
       ...
     }@extraArgs:
     stdenv.mkDerivation (
       {
         inherit version;
-
-        desktopItem = makeDesktopItem {
-          name = desktopName;
-          exec = "alephone";
-          genericName = "alephone";
-          categories = [ "Game" ];
-          comment = meta.description;
-          inherit desktopName icon;
-        };
-
         src = zip;
 
         nativeBuildInputs = [
           makeWrapper
           unzip
         ];
-
-        dontConfigure = true;
-        dontBuild = true;
 
         installPhase = ''
           mkdir -p $out/bin $out/data/alephone $out/share/applications
@@ -143,6 +120,18 @@ stdenv.mkDerivation (finalAttrs: {
           makeWrapper ${finalAttrs.finalPackage}/bin/alephone $out/bin/alephone \
             --add-flags $out/data/alephone
         '';
+
+        desktopItem = makeDesktopItem {
+          inherit desktopName icon;
+          categories = [ "Game" ];
+          comment = meta.description;
+          exec = "alephone";
+          genericName = "alephone";
+          name = desktopName;
+        };
+
+        dontBuild = true;
+        dontConfigure = true;
       }
       // extraArgs
       // {
@@ -156,4 +145,16 @@ stdenv.mkDerivation (finalAttrs: {
           // meta;
       }
     );
+
+  passthru.tests.version =
+    # test that the version is correct
+    testers.testVersion { package = finalAttrs.finalPackage; };
+
+  meta = {
+    description = "Aleph One is the open source continuation of Bungie’s Marathon 2 game engine";
+    homepage = "https://alephone.lhowon.org/";
+    license = [ lib.licenses.gpl3 ];
+    platforms = lib.platforms.linux;
+    mainProgram = "alephone";
+  };
 })

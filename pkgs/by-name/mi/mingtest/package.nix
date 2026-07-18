@@ -1,13 +1,14 @@
 {
-  stdenv,
-  cmake,
-  fetchFromGitHub,
   lib,
+  stdenv,
+  fetchFromGitHub,
+  cmake,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
   pname = "mingtest";
   version = "0.2.1";
+
   src = fetchFromGitHub {
     owner = "craflin";
     repo = "mingtest";

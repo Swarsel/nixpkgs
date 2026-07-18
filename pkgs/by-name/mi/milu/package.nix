@@ -2,11 +2,11 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  unzip,
-  pkg-config,
   glib,
   llvm,
   llvmPackages,
+  pkg-config,
+  unzip,
 }:
 
 stdenv.mkDerivation {
@@ -20,14 +20,6 @@ stdenv.mkDerivation {
     hash = "sha256-0w7SOZONj2eLX/E0VIrCZutSXTY648P3pTxSRgCnj5E=";
   };
 
-  hardeningDisable = [ "format" ];
-
-  preConfigure = ''
-    substituteInPlace Makefile \
-      --replace-fail /usr/bin/ "" \
-      --replace-fail bin/milu $out/bin/milu
-  '';
-
   nativeBuildInputs = [
     pkg-config
     unzip
@@ -39,25 +31,32 @@ stdenv.mkDerivation {
     llvmPackages.libclang
   ];
 
-  preBuild = ''
-    mkdir -p $out/bin
-  '';
-
   env.NIX_CFLAGS_COMPILE = toString [
     "-Wno-incompatible-pointer-types"
     "-Wno-implicit-function-declaration"
     "-Wno-error=int-conversion"
   ];
 
+  preConfigure = ''
+    substituteInPlace Makefile \
+      --replace-fail /usr/bin/ "" \
+      --replace-fail bin/milu $out/bin/milu
+  '';
+
+  preBuild = ''
+    mkdir -p $out/bin
+  '';
+
   # `make all` already installs the binaries
   dontInstall = true;
+  hardeningDisable = [ "format" ];
 
   meta = {
     description = "Higher Order Mutation Testing Tool for C and C++ programs";
     homepage = "https://github.com/yuejia/Milu";
     license = lib.licenses.bsd2;
-    platforms = lib.platforms.linux;
     maintainers = [ ];
+    platforms = lib.platforms.linux;
     mainProgram = "milu";
   };
 }

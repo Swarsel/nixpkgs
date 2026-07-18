@@ -1,12 +1,10 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
+  buildPythonPackage,
   # build-system
   hatch-vcs,
   hatchling,
-
   # tests
   pytest-asyncio,
   pytest-cov-stub,
@@ -17,9 +15,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "uncalled-for";
   version = "0.3.2";
-  pyproject = true;
-
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "chrisguidry";
@@ -28,19 +23,22 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-5jFMlynYaxd83SQiZ1uPs1whWFgKP4y6s473TplH4iI=";
   };
 
-  build-system = [
-    hatch-vcs
-    hatchling
-  ];
-
-  pythonImportsCheck = [ "uncalled_for" ];
-
   nativeCheckInputs = [
     pytest-asyncio
     pytest-cov-stub
     pytest-timeout
     pytestCheckHook
   ];
+
+  __structuredAttrs = true;
+
+  build-system = [
+    hatch-vcs
+    hatchling
+  ];
+
+  pyproject = true;
+  pythonImportsCheck = [ "uncalled_for" ];
 
   meta = {
     description = "Async dependency injection for Python functions";

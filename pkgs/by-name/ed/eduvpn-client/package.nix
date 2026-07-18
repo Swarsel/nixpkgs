@@ -14,7 +14,6 @@
 python3Packages.buildPythonApplication (finalAttrs: {
   pname = "eduvpn-client";
   version = "4.6.0";
-  pyproject = true;
 
   src = fetchFromCodeberg {
     owner = "eduVPN";
@@ -42,24 +41,28 @@ python3Packages.buildPythonApplication (finalAttrs: {
     setuptools
   ];
 
-  postInstall = ''
-    ln -s $out/${python3Packages.python.sitePackages}/eduvpn/data/share/ $out/share
-  '';
-
   checkInputs = with python3Packages; [
     pytestCheckHook
   ];
 
+  postInstall = ''
+    ln -s $out/${python3Packages.python.sitePackages}/eduvpn/data/share/ $out/share
+  '';
+
+  pyproject = true;
+
   meta = {
-    changelog = "https://codeberg.org/eduVPN/linux-app/raw/tag/${finalAttrs.version}/CHANGES.md";
     description = "Linux client for eduVPN";
     homepage = "https://codeberg.org/eduVPN/linux-app";
+    changelog = "https://codeberg.org/eduVPN/linux-app/raw/tag/${finalAttrs.version}/CHANGES.md";
     license = lib.licenses.gpl3Plus;
-    mainProgram = "eduvpn-gui";
+
     maintainers = with lib.maintainers; [
       benneti
       jwijenbergh
     ];
+
     platforms = lib.platforms.linux;
+    mainProgram = "eduvpn-gui";
   };
 })

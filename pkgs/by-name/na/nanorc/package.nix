@@ -2,12 +2,12 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  writeScript,
   common-updater-scripts,
   coreutils,
   git,
   gnused,
   nix,
+  writeScript,
 }:
 
 let
@@ -24,13 +24,13 @@ stdenv.mkDerivation rec {
     sha256 = "3B2nNFYkwYHCX6pQz/hMO/rnVqlCiw1BSNmGmJ6KCqE=";
   };
 
-  dontBuild = true;
-
   installPhase = ''
     mkdir -p $out/share
 
     install *.nanorc $out/share/
   '';
+
+  dontBuild = true;
 
   passthru.updateScript = writeScript "update.sh" ''
     #!${stdenv.shell}

@@ -1,11 +1,11 @@
 {
+  lib,
   autoconf,
   autogen,
   automake,
   clangStdenv,
   fetchFromGitea,
   gitUpdater,
-  lib,
   objfw,
   writeTextDir,
 }:
@@ -15,11 +15,11 @@ clangStdenv.mkDerivation (finalAttrs: {
   version = "1.5.7";
 
   src = fetchFromGitea {
-    domain = "git.nil.im";
     owner = "ObjFW";
     repo = "ObjFW";
     rev = "${finalAttrs.version}-release";
     hash = "sha256-3MdQG2pVjlBdbmBzTrrKdkbSzsvjZWZRoSPsN+MURCQ=";
+    domain = "git.nil.im";
   };
 
   nativeBuildInputs = [
@@ -28,11 +28,11 @@ clangStdenv.mkDerivation (finalAttrs: {
     autoconf
   ];
 
-  preConfigure = "./autogen.sh";
   configureFlags = [
     "--without-tls"
   ];
 
+  preConfigure = "./autogen.sh";
   doCheck = true;
 
   passthru.tests = {

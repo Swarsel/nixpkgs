@@ -1,15 +1,16 @@
 {
   pnpm-fixup-state-db,
-  testers,
   sqlite,
+  testers,
 }:
 testers.runCommand {
-  name = "pnpm-fixup-state-db-test";
-
   nativeBuildInputs = [
     pnpm-fixup-state-db
     sqlite
   ];
+
+  hash = "sha256-P3PDQAziwUxl2pfYV+QyPVwNpq90Jg46bawTvrT0NOQ=";
+  name = "pnpm-fixup-state-db-test";
 
   script = ''
     install -Dm644 ${./index.db} ./store/index.db
@@ -18,6 +19,4 @@ testers.runCommand {
 
     cp ./store/index.db $out
   '';
-
-  hash = "sha256-P3PDQAziwUxl2pfYV+QyPVwNpq90Jg46bawTvrT0NOQ=";
 }

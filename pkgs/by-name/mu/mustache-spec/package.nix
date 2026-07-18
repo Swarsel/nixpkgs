@@ -1,6 +1,6 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
 }:
 
@@ -15,17 +15,18 @@ stdenv.mkDerivation (finalAttrs: {
     sha256 = "03xrfyjzm5ss6zkdlpl9ypwzcglspcdcnr3f94vj1rjfqm2rxcjw";
   };
 
-  configurePhase = "";
-  dontBuild = true;
-
   installPhase = ''
     mkdir -p $out/{man/man5,doc/html}
     cp man/mustache.5 $out/man/man5
     cp man/mustache.5.html $out/doc/html
   '';
 
+  configurePhase = "";
+  dontBuild = true;
+
   meta = rec {
     description = "Logic-less templates, specification package";
+
     longDescription = ''
       Inspired by ctemplate and et, Mustache is a framework-agnostic way to
       render logic-free views.

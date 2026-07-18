@@ -1,6 +1,6 @@
 {
-  _cuda,
   lib,
+  _cuda,
 }:
 {
   # See ./assertions.nix for documentation.
@@ -17,9 +17,6 @@
     _mkCudaVariant
     allowUnfreeCudaPredicate
     ;
-
-  # See ./licenses.nix for documentation.
-  licenses = import ./licenses.nix;
 
   # See ./meta.nix for documentation.
   inherit (import ./meta.nix { inherit _cuda lib; })
@@ -54,4 +51,7 @@
     majorMinorPatch
     trimComponents
     ;
+
+  # See ./licenses.nix for documentation.
+  licenses = import ./licenses.nix;
 }

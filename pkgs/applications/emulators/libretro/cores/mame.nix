@@ -1,14 +1,13 @@
 {
   lib,
   fetchFromGitHub,
+  alsa-lib,
+  libGL,
+  libGLU,
   mkLibretroCore,
   python3,
-  alsa-lib,
-  libGLU,
-  libGL,
 }:
 mkLibretroCore {
-  core = "mame";
   version = "0-unstable-2026-06-16";
 
   src = fetchFromGitHub {
@@ -19,18 +18,22 @@ mkLibretroCore {
     fetchSubmodules = true;
   };
 
-  extraNativeBuildInputs = [ python3 ];
+  # Setting this is breaking compilation of src/3rdparty/genie for some reason
+  makeFlags = [ "ARCH=" ];
+  core = "mame";
+
   extraBuildInputs = [
     alsa-lib
     libGLU
     libGL
   ];
-  # Setting this is breaking compilation of src/3rdparty/genie for some reason
-  makeFlags = [ "ARCH=" ];
+
+  extraNativeBuildInputs = [ python3 ];
 
   meta = {
     description = "Port of MAME to libretro";
     homepage = "https://github.com/libretro/mame";
+
     license = with lib.licenses; [
       bsd3
       gpl2Plus

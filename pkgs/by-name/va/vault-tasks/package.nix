@@ -1,18 +1,19 @@
 {
   lib,
-  fetchFromGitHub,
-  rustPlatform,
   stdenv,
+  fetchFromGitHub,
   buildPackages,
   installShellFiles,
   nix-update-script,
+  rustPlatform,
 }:
 let
   version = "0.13.0";
 in
 rustPlatform.buildRustPackage {
-  pname = "vault-tasks";
   inherit version;
+  pname = "vault-tasks";
+
   src = fetchFromGitHub {
     owner = "louis-thevenet";
     repo = "vault-tasks";
@@ -20,11 +21,11 @@ rustPlatform.buildRustPackage {
     hash = "sha256-XWeY2l82n51O4/LKPOJZOXf7PCRPOUshFg832iDvmuA=";
   };
 
-  cargoHash = "sha256-znc2oKpovsXyrUhKvBVMorv7yWM39xNgaNDiq/5I6Dg=";
-
   nativeBuildInputs = [
     installShellFiles
   ];
+
+  cargoHash = "sha256-znc2oKpovsXyrUhKvBVMorv7yWM39xNgaNDiq/5I6Dg=";
 
   postInstall = ''
     install -Dm444 desktop/vault-tasks.desktop -t $out/share/applications
@@ -52,13 +53,15 @@ rustPlatform.buildRustPackage {
 
   meta = {
     description = "TUI Markdown Task Manager";
+
     longDescription = ''
       vault-tasks is a TUI Markdown task manager.
       It will parse any Markdown file or vault and display the tasks it contains.
     '';
+
     homepage = "https://github.com/louis-thevenet/vault-tasks";
     license = lib.licenses.mit;
-    mainProgram = "vault-tasks";
     maintainers = with lib.maintainers; [ louis-thevenet ];
+    mainProgram = "vault-tasks";
   };
 }

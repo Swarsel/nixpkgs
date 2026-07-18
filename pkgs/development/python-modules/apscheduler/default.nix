@@ -1,16 +1,16 @@
 {
   lib,
   stdenv,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   gevent,
   pytest-asyncio,
   pytest-cov-stub,
   pytest-tornado,
   pytest8_3CheckHook,
   pytz,
-  setuptools_80,
   setuptools-scm,
+  setuptools_80,
   tornado,
   twisted,
   tzlocal,
@@ -19,7 +19,6 @@
 buildPythonPackage rec {
   pname = "apscheduler";
   version = "3.11.2";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "agronholm";
@@ -32,15 +31,6 @@ buildPythonPackage rec {
     sed -i "/addopts/d" pyproject.toml
   '';
 
-  build-system = [
-    setuptools_80
-    setuptools-scm
-  ];
-
-  dependencies = [
-    tzlocal
-  ];
-
   nativeCheckInputs = [
     gevent
     pytest-asyncio
@@ -50,6 +40,15 @@ buildPythonPackage rec {
     pytz
     tornado
     twisted
+  ];
+
+  build-system = [
+    setuptools_80
+    setuptools-scm
+  ];
+
+  dependencies = [
+    tzlocal
   ];
 
   disabledTests = [
@@ -64,12 +63,13 @@ buildPythonPackage rec {
     "test_max_instances"
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "apscheduler" ];
 
   meta = {
-    changelog = "https://github.com/agronholm/apscheduler/releases/tag/${src.tag}";
     description = "Library that lets you schedule your Python code to be executed";
     homepage = "https://github.com/agronholm/apscheduler";
+    changelog = "https://github.com/agronholm/apscheduler/releases/tag/${src.tag}";
     license = lib.licenses.mit;
     maintainers = [ ];
   };

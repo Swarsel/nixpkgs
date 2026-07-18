@@ -1,21 +1,21 @@
 {
+  lib,
+  fetchFromGitHub,
   buildPythonPackage,
   colorama,
   decorator,
   dunamai,
-  fetchFromGitHub,
   funcy,
   git,
-  hatchling,
   hatch-vcs,
+  hatchling,
   iteration-utilities,
   jinja2,
   jinja2-ansible-filters,
-  lib,
   mkdocs-material,
   mkdocs-mermaid2-plugin,
-  nix-update-script,
   mkdocstrings,
+  nix-update-script,
   packaging,
   pathspec,
   plumbum,
@@ -29,17 +29,17 @@
 buildPythonPackage rec {
   pname = "copier";
   version = "9.17.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "copier-org";
     repo = "copier";
     tag = "v${version}";
+    hash = "sha256-I98GGrFSKgDlFQU3dAYsu7Z2mtO8NWPT0CoMtdw/EI8=";
+
     # Conflict on APFS on darwin
     postFetch = ''
       rm $out/tests/demo/doc/ma*ana.txt
     '';
-    hash = "sha256-I98GGrFSKgDlFQU3dAYsu7Z2mtO8NWPT0CoMtdw/EI8=";
   };
 
   env.POETRY_DYNAMIC_VERSIONING_BYPASS = version;
@@ -71,7 +71,7 @@ buildPythonPackage rec {
   ];
 
   makeWrapperArgs = [ "--suffix PATH : ${lib.makeBinPath [ git ]}" ];
-
+  pyproject = true;
   passthru.updateScript = nix-update-script { };
 
   meta = {
@@ -79,10 +79,12 @@ buildPythonPackage rec {
     homepage = "https://copier.readthedocs.io";
     changelog = "https://github.com/copier-org/copier/blob/${src.tag}/CHANGELOG.md";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       greg
       savtrip
     ];
+
     mainProgram = "copier";
   };
 }

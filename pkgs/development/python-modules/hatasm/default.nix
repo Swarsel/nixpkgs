@@ -1,9 +1,9 @@
 {
   lib,
+  fetchFromGitHub,
   badges,
   buildPythonPackage,
   capstone,
-  fetchFromGitHub,
   keystone-engine,
   lief,
   pyelftools,
@@ -13,7 +13,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "hatasm";
   version = "1.0.0-unstable-2026-01-05";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "EntySec";
@@ -23,6 +22,8 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-PqQRe01cZMEOBjkbBqnb9jXcdSQ3LSSJtwwaP0ITgKg=";
   };
 
+  # Module has no tests
+  doCheck = false;
   build-system = [ setuptools ];
 
   dependencies = [
@@ -33,10 +34,8 @@ buildPythonPackage (finalAttrs: {
     pyelftools
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "hatasm" ];
-
-  # Module has no tests
-  doCheck = false;
 
   meta = {
     description = "Assembler and disassembler that provides support for all common architectures";

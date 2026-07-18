@@ -1,9 +1,9 @@
 {
   lib,
+  fetchFromGitHub,
   base58,
   blake3,
   buildPythonPackage,
-  fetchFromGitHub,
   mmh3,
   morphys,
   pytestCheckHook,
@@ -15,7 +15,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "py-multihash";
   version = "3.0.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "multiformats";
@@ -24,6 +23,7 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-hdjJJh77P4dJQAIGTlPGolz1qDumvNOaIMyfxmWMzUk=";
   };
 
+  nativeCheckInputs = [ pytestCheckHook ];
   build-system = [ setuptools ];
 
   dependencies = [
@@ -35,8 +35,7 @@ buildPythonPackage (finalAttrs: {
     varint
   ];
 
-  nativeCheckInputs = [ pytestCheckHook ];
-
+  pyproject = true;
   pythonImportsCheck = [ "multihash" ];
 
   meta = {

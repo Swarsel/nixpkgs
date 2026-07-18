@@ -1,7 +1,7 @@
 {
   lib,
-  clangStdenv,
   fetchurl,
+  clangStdenv,
   gnustep-back,
   wrapGNUstepAppsHook,
 }:
@@ -16,18 +16,19 @@ clangStdenv.mkDerivation (finalAttrs: {
   };
 
   nativeBuildInputs = [ wrapGNUstepAppsHook ];
-
   buildInputs = [ gnustep-back ];
 
   meta = {
     description = "Settings manager for the GNUstep environment and its applications";
     homepage = "https://gnustep.github.io/";
     license = lib.licenses.lgpl2Plus;
-    mainProgram = "SystemPreferences";
+
     maintainers = with lib.maintainers; [
       ashalkhakov
       dblsaiko
     ];
+
     platforms = lib.platforms.linux;
+    mainProgram = "SystemPreferences";
   };
 })

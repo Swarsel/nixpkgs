@@ -1,36 +1,24 @@
 {
+  lib,
   fetchFromGitHub,
   buildPythonPackage,
-  setuptools,
-  lib,
-  py-moneyed,
-  django,
   certifi,
-  pytestCheckHook,
-  pytest-django,
+  django,
+  py-moneyed,
   pytest-cov-stub,
+  pytest-django,
+  pytestCheckHook,
+  setuptools,
 }:
 buildPythonPackage (finalAttrs: {
   pname = "django-money";
   version = "3.6.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "django-money";
     repo = "django-money";
     tag = finalAttrs.version;
     hash = "sha256-UHqtKav/tot+fSA5ey2R4WdheUWuDBXdOXDgFDXgjLM=";
-  };
-
-  build-system = [ setuptools ];
-
-  dependencies = [
-    django
-    py-moneyed
-  ];
-
-  optional-dependencies = {
-    exchange = [ certifi ];
   };
 
   nativeCheckInputs = [
@@ -40,12 +28,24 @@ buildPythonPackage (finalAttrs: {
   ]
   ++ lib.concatAttrValues finalAttrs.passthru.optional-dependencies;
 
-  pythonImportsCheck = [ "djmoney" ];
+  build-system = [ setuptools ];
+
+  dependencies = [
+    django
+    py-moneyed
+  ];
 
   disabledTests = [
     # avoid tests which import mixer, an abandoned library
     "test_mixer_blend"
   ];
+
+  optional-dependencies = {
+    exchange = [ certifi ];
+  };
+
+  pyproject = true;
+  pythonImportsCheck = [ "djmoney" ];
 
   meta = {
     description = "Money fields for Django forms and models";

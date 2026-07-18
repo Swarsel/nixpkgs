@@ -1,16 +1,15 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
-  precisely,
+  buildPythonPackage,
   gitUpdater,
+  precisely,
+  setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "funk";
   version = "0.5.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "mwilliamson";
@@ -19,15 +18,12 @@ buildPythonPackage rec {
     hash = "sha256-dEq3zyA8rtNt0sui2TfQ3OUSCZ0XDMOdthcqt/QrCsU=";
   };
 
-  build-system = [ setuptools ];
-
-  dependencies = [ precisely ];
-
-  pythonImportsCheck = [ "funk" ];
-
   # Disabling tests, they rely on Nose which is outdated and not supported
   doCheck = false;
-
+  build-system = [ setuptools ];
+  dependencies = [ precisely ];
+  pyproject = true;
+  pythonImportsCheck = [ "funk" ];
   passthru.updateScript = gitUpdater { };
 
   meta = {

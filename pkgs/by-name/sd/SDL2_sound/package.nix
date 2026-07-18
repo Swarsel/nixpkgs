@@ -1,9 +1,9 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
-  cmake,
   SDL2,
+  cmake,
   nix-update-script,
 }:
 
@@ -27,6 +27,7 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   nativeBuildInputs = [ cmake ];
+  buildInputs = [ SDL2 ];
 
   cmakeFlags = [
     (lib.cmakeBool "SDLSOUND_DECODER_MIDI" true)
@@ -34,14 +35,12 @@ stdenv.mkDerivation (finalAttrs: {
     (lib.cmakeBool "SDLSOUND_BUILD_STATIC" stdenv.hostPlatform.isStatic)
   ];
 
-  buildInputs = [ SDL2 ];
-
   passthru.updateScript = nix-update-script { };
 
   meta = {
     description = "SDL2 sound library";
-    mainProgram = "playsound";
-    platforms = lib.platforms.all;
+    homepage = "https://www.icculus.org/SDL_sound/";
+
     license = with lib.licenses; [
       zlib
 
@@ -52,7 +51,9 @@ stdenv.mkDerivation (finalAttrs: {
       artistic1
       lgpl21Only
     ];
+
+    platforms = lib.platforms.all;
+    mainProgram = "playsound";
     teams = [ lib.teams.sdl ];
-    homepage = "https://www.icculus.org/SDL_sound/";
   };
 })

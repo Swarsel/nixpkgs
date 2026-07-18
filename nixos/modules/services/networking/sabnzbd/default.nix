@@ -41,8 +41,8 @@ let
   );
 
   mandatoryGlobalSettings = {
-    "__version__" = 19;
     "__encoding__" = "utf-8";
+    "__version__" = 19;
   };
   allSettings = fixupSettings (mandatoryGlobalSettings // cfg.settings);
 
@@ -62,47 +62,53 @@ in
   options = {
     services.sabnzbd = {
       enable = mkEnableOption "the sabnzbd server";
-
       package = mkPackageOption pkgs "sabnzbd" { };
 
+      allowConfigWrite = mkOption {
+        default = lib.versionOlder config.system.stateVersion "26.05";
+
+        description = ''
+          By default we create the sabnzbd configuration read-only,
+          which keeps the nixos configuration as the single source
+          of truth. If you want to enable configuration of
+          sabnzbd via the web interface or use options that require
+          a writeable configuration, such as quota tracking, enable
+          this option.
+        '';
+
+        type = types.bool;
+      };
+
       configFile = mkOption {
-        type = types.nullOr types.path;
         default =
           if lib.versionOlder config.system.stateVersion "26.05" then
             "/var/lib/sabnzbd/sabnzbd.ini"
           else
             null;
+
         description = "Path to config file (deprecated, use `settings` instead and set this value to null)";
-      };
-
-      stateDir = mkOption {
-        type = types.str;
-        default = "sabnzbd";
-        description = "State directory of the service under /var/lib/";
-      };
-
-      user = mkOption {
-        default = "sabnzbd";
-        type = types.str;
-        description = "User to run the service as";
+        type = types.nullOr types.path;
       };
 
       group = mkOption {
-        type = types.str;
         default = "sabnzbd";
         description = "Group to run the service as";
+        type = types.str;
       };
 
       openFirewall = mkOption {
-        type = types.bool;
         default = false;
+
         description = ''
           Open ports in the firewall for the sabnzbd web interface
         '';
+
+        type = types.bool;
       };
 
       secretFiles = mkOption {
-        type = with types; listOf path;
+        default = [ ];
+
         description = ''
           Path to a list of ini file containing confidential settings such as credentials.
           Settings here will be merged with the rest of the configuration (with
@@ -114,11 +120,13 @@ in
           - misc.email_account, misc.email_pwd if email alerts are enabled
           - servers.<name>.username, servers.<name>.password
         '';
-        default = [ ];
+
+        type = with types; listOf path;
       };
 
       secretValues = mkOption {
-        type = with types; attrsOf path;
+        default = { };
+
         description = ''
           Attrset of patterns in the settings that should be replaced at
           runtime, just before the service starts, with values read from the
@@ -128,7 +136,7 @@ in
           full settings structure in Nix, and only externalizing the secret
           values themselves.
         '';
-        default = { };
+
         example = lib.literalExpression ''
           {
             "@my_server_password@" = "/run/secrets/my_server_password";
@@ -137,139 +145,168 @@ in
             "@sabnzbd_nzb_key@" = "/run/secrets/sabnzbd_nzb_key";
           }
         '';
-      };
 
-      allowConfigWrite = mkOption {
-        type = types.bool;
-        description = ''
-          By default we create the sabnzbd configuration read-only,
-          which keeps the nixos configuration as the single source
-          of truth. If you want to enable configuration of
-          sabnzbd via the web interface or use options that require
-          a writeable configuration, such as quota tracking, enable
-          this option.
-        '';
-        default = lib.versionOlder config.system.stateVersion "26.05";
+        type = with types; attrsOf path;
       };
 
       settings = mkOption {
+        default = { };
+
         description = ''
           The sabnzbd configuration (see also
           [sabnzbd's wiki](https://sabnzbd.org/wiki/configuration/4.5/configure)
           for extra documentation)
         '';
-        default = { };
+
         type = types.submodule {
-          freeformType = (configObjIni { }).type;
-          config = {
-            misc = {
-              config_conversion_version = mkOptionDefault 4;
-              # config_lock = 1 turns the alert that the config is read-only from an error
-              # into a warning. But the warnings still come, and additionally read access
-              # to the config from the web ui is blocked as well, so better keep it at 0
-              # and live with the error
-              # optionally, misc.helpful_warnings = 0 will silence the warnings (but not the error)
-              # at the cost of also silencing other, potentially useful warnings
-              # config_lock = mkOptionDefault (if !cfg.allowConfigWrite then 1 else 0);
-              config_lock = mkOptionDefault false;
-              notified_new_skin = mkOptionDefault true;
-              # don't open the browser on a daemonized service
-              auto_browser = mkOptionDefault false;
-              # don't check for new updates since we're using the distro version
-              check_new_rel = mkOptionDefault false;
-            };
-          };
           options = {
             misc = {
               bandwidth_max = mkOption {
-                type = types.str;
+                default = "";
+
                 description = ''
                   Maximum bandwidth in bytes(!)/sec (supports prefixes). Use
                   in conjunction with `bandwidth_perc` to set a bandwidth
                   limit. Empty string disables limit.
                 '';
-                default = "";
+
                 example = "50MB/s";
+                type = types.str;
               };
+
               bandwidth_perc = mkOption {
-                type = types.int;
+                default = 0;
+
                 description = ''
                   Percentage of `bandwidth_max` that sabnzbd is allowed to use.
                   0 means no limit.
                 '';
-                default = 0;
+
                 example = 50;
+                type = types.int;
               };
-              host = mkOption {
-                type = types.str;
-                description = ''
-                  Address for the Web UI to listen on for incoming connections.
-                '';
-                default = "127.0.0.1";
-                example = "0.0.0.0";
-              };
-              port = mkOption {
-                type = types.port;
-                description = ''
-                  Port for the Web UI to listen on for incoming connections.
-                '';
-                default = 8080;
-                example = 12345;
-              };
-              https_cert = mkOption {
-                type = types.nullOr types.path;
-                description = ''
-                  Path to the TLS certificate for the web UI. If not set
-                  and https is enabled, a self-signed certificate will
-                  be generated.
-                '';
-                default = null;
-                example = literalExpression "\${config.acme.certs.\${domain}.directory}/fullchain.pem";
-              };
-              https_key = mkOption {
-                type = types.nullOr types.path;
-                description = ''
-                  Path to the TLS key for the web UI. If not set and
-                  https is enabled, a self-signed certificate will be
-                  generated
-                '';
-                default = null;
-                example = literalExpression "\${config.acme.certs.\${domain}.directory}/key.pem";
-              };
-              enable_https = mkOption {
-                type = types.bool;
-                description = "Whether to enable HTTPS for the web UI";
-                default = cfg.settings.misc.https_cert != null;
-                defaultText = "cfg.settings.misc.https_cert != null";
-                example = true;
-              };
+
               cache_limit = mkOption {
-                type = types.str;
+                default = "";
+
                 description = ''
                   Size of the RAM cache, in bytes (prefixes supported).
                   Sabnzbd recommends 25% of available RAM. Empty means
                   no cache.
                 '';
-                default = "";
+
                 example = "500M";
+                type = types.str;
               };
-              html_login = mkOption {
+
+              email_endjob = mkOption {
+                default = if cfg.settings.misc.email_server != "" then "on error" else "never";
+                defaultText = ''if cfg.settings.misc.email_server != "" then "on error" else "never"'';
+
+                description = ''
+                  Whether to send emails on job completion. Values are:
+                  0, 'never'    -- Never
+                  1, 'always'   -- Always
+                  2, 'on error' -- On error
+                '';
+
+                type = enumFromAttrs {
+                  "always" = 1;
+                  "never" = 0;
+                  "on error" = 2;
+                };
+              };
+
+              email_from = mkOption {
+                default = "";
+                description = "'From:' field for emails (needs to be an address)";
+                type = types.str;
+              };
+
+              email_full = mkOption {
+                default = cfg.settings.misc.email_server != "";
+                defaultText = ''cfg.settings.misc.email_server != ""'';
+                description = "Whether to send alerts for full disks";
                 type = types.bool;
+              };
+
+              email_rss = mkOption {
+                default = false;
+                description = "Whether to send alerts for jobs added by RSS feeds";
+                type = types.bool;
+              };
+
+              email_server = mkOption {
+                default = "";
+                description = "SMTP server for email alerts (server:host)";
+                type = types.str;
+              };
+
+              email_to = mkOption {
+                default = "";
+                description = "Receiving address for email alerts";
+                type = types.str;
+              };
+
+              enable_https = mkOption {
+                default = cfg.settings.misc.https_cert != null;
+                defaultText = "cfg.settings.misc.https_cert != null";
+                description = "Whether to enable HTTPS for the web UI";
+                example = true;
+                type = types.bool;
+              };
+
+              host = mkOption {
+                default = "127.0.0.1";
+
+                description = ''
+                  Address for the Web UI to listen on for incoming connections.
+                '';
+
+                example = "0.0.0.0";
+                type = types.str;
+              };
+
+              html_login = mkOption {
+                default = true;
+
                 description = ''
                   Prompt for login with an html login mask if enabled,
                   otherwise prompt for basic auth (useful for SSO)
                 '';
-                default = true;
+
+                type = types.bool;
               };
+
+              https_cert = mkOption {
+                default = null;
+
+                description = ''
+                  Path to the TLS certificate for the web UI. If not set
+                  and https is enabled, a self-signed certificate will
+                  be generated.
+                '';
+
+                example = literalExpression "\${config.acme.certs.\${domain}.directory}/fullchain.pem";
+                type = types.nullOr types.path;
+              };
+
+              https_key = mkOption {
+                default = null;
+
+                description = ''
+                  Path to the TLS key for the web UI. If not set and
+                  https is enabled, a self-signed certificate will be
+                  generated
+                '';
+
+                example = literalExpression "\${config.acme.certs.\${domain}.directory}/key.pem";
+                type = types.nullOr types.path;
+              };
+
               inet_exposure = mkOption {
-                type = enumFromAttrs {
-                  "none" = 0;
-                  "api (add nzbs)" = 1;
-                  "api (no config)" = 2;
-                  "api (full)" = 3;
-                  "api+web (auth needed)" = 4;
-                  "api+web (locally no auth)" = 5;
-                };
+                default = "none";
+
                 description = ''
                   Restrictions for access from non-local IP addresses.
                   Values are:
@@ -280,210 +317,247 @@ in
                   4, 'api+web (auth needed)'     -- api and web ui, login required always
                   5, 'api+web (locally no auth)' -- api and web ui, login required from non-local IPs only
                 '';
-                default = "none";
-              };
-              email_endjob = mkOption {
+
                 type = enumFromAttrs {
-                  "never" = 0;
-                  "always" = 1;
-                  "on error" = 2;
+                  "api (add nzbs)" = 1;
+                  "api (full)" = 3;
+                  "api (no config)" = 2;
+                  "api+web (auth needed)" = 4;
+                  "api+web (locally no auth)" = 5;
+                  "none" = 0;
                 };
+              };
+
+              port = mkOption {
+                default = 8080;
+
                 description = ''
-                  Whether to send emails on job completion. Values are:
-                  0, 'never'    -- Never
-                  1, 'always'   -- Always
-                  2, 'on error' -- On error
+                  Port for the Web UI to listen on for incoming connections.
                 '';
-                default = if cfg.settings.misc.email_server != "" then "on error" else "never";
-                defaultText = ''if cfg.settings.misc.email_server != "" then "on error" else "never"'';
-              };
-              email_full = mkOption {
-                type = types.bool;
-                description = "Whether to send alerts for full disks";
-                default = cfg.settings.misc.email_server != "";
-                defaultText = ''cfg.settings.misc.email_server != ""'';
-              };
-              email_rss = mkOption {
-                type = types.bool;
-                description = "Whether to send alerts for jobs added by RSS feeds";
-                default = false;
-              };
-              email_server = mkOption {
-                type = types.str;
-                description = "SMTP server for email alerts (server:host)";
-                default = "";
-              };
-              email_to = mkOption {
-                type = types.str;
-                description = "Receiving address for email alerts";
-                default = "";
-              };
-              email_from = mkOption {
-                type = types.str;
-                description = "'From:' field for emails (needs to be an address)";
-                default = "";
+
+                example = 12345;
+                type = types.port;
               };
             };
+
             ntfosd = mkOption {
               default = { };
               description = "NotifyOSD settings";
+
               type = types.submodule {
-                freeformType = (configObjIni { }).type;
                 options = {
                   ntfosd_enable = mkOption {
-                    type = types.bool;
+                    default = false;
+
                     description = ''
                       Whether to enable NotifyOSD alerts. Does not really make sense
                       in a server environment, hence we default to false despite
                       upstream's default true.
                     '';
-                    default = false;
+
+                    type = types.bool;
                   };
                 };
+
+                freeformType = (configObjIni { }).type;
               };
             };
+
             servers = mkOption {
               default = { };
               description = "Usenet provider specification";
+
               type = types.attrsOf (
                 types.submodule {
-                  freeformType = (configObjIni { }).type;
                   options = {
                     enable = mkOption {
-                      type = types.bool;
-                      description = "Enable this server by default";
                       default = true;
+                      description = "Enable this server by default";
                       example = false;
-                    };
-                    required = mkOption {
                       type = types.bool;
-                      description = ''
-                        In case of connection failures, wait for the
-                        server to come back online instead of skipping
-                        it.
-                      '';
-                      default = false;
-                      example = true;
                     };
-                    optional = mkOption {
-                      type = types.bool;
-                      description = ''
-                        In case of connection failures, temporarily
-                        disable this server. (See sabnzbd's documentation
-                        for usage guides).
-                      '';
-                      default = false;
-                      example = true;
-                    };
-                    priority = mkOption {
-                      type = types.int;
-                      description = ''
-                        Priority of this servers. Servers are queried in
-                        order of priority, from highest (0) to lowest (100).
-                      '';
-                      default = 0;
-                    };
-                    name = mkOption {
-                      type = types.str;
-                      description = ''
-                        The name of the server
-                      '';
-                      example = "Example News Provider";
-                    };
-                    displayname = mkOption {
-                      type = types.str;
-                      description = ''
-                        Human-friendly description of the server
-                      '';
-                      example = "Example News Provider";
-                    };
-                    host = mkOption {
-                      type = types.str;
-                      description = ''
-                        Hostname of the server
-                      '';
-                      example = "news.example.com";
-                    };
-                    port = mkOption {
-                      type = types.port;
-                      description = "Port of the server";
-                      example = 443;
-                      default = 563;
-                    };
+
                     connections = mkOption {
-                      type = types.int;
+                      default = 8;
+
                       description = ''
                         Number of parallel connections permitted by
                         the server.
                       '';
+
                       example = 50;
-                      default = 8;
-                    };
-                    timeout = mkOption {
                       type = types.int;
-                      description = ''
-                        Time, in seconds, to wait for a response before
-                        attempting error recovery.
-                      '';
-                      default = 60;
                     };
-                    ssl = mkOption {
-                      type = types.bool;
+
+                    displayname = mkOption {
                       description = ''
-                        Whether the server supports TLS
+                        Human-friendly description of the server
                       '';
-                      default = true;
+
+                      example = "Example News Provider";
+                      type = types.str;
                     };
-                    ssl_verify = mkOption {
-                      type = enumFromAttrs {
-                        "strict" = 3;
-                        "allow injection" = 2;
-                        "none" = 0;
-                      };
-                      description = ''
-                        Level of TLS verification. Supported values:
-                        3, 'strict'          -- strict (normal) verification
-                        2, 'allow injection' -- allow locally injected certificates
-                        0, 'none'            -- no verification
-                      '';
-                      default = "strict";
-                    };
+
                     expire_date = mkOption {
-                      type = types.nullOr types.str;
+                      default = null;
+
                       description = ''
                         If Notifications are enabled and an expiry date is
                         set, warn 5 days before expiry. This setting
                         does not automatically disable the server.
                         Expected format: yyyy-mm-dd
                       '';
-                      default = null;
+
+                      type = types.nullOr types.str;
+                    };
+
+                    host = mkOption {
+                      description = ''
+                        Hostname of the server
+                      '';
+
+                      example = "news.example.com";
+                      type = types.str;
+                    };
+
+                    name = mkOption {
+                      description = ''
+                        The name of the server
+                      '';
+
+                      example = "Example News Provider";
+                      type = types.str;
+                    };
+
+                    optional = mkOption {
+                      default = false;
+
+                      description = ''
+                        In case of connection failures, temporarily
+                        disable this server. (See sabnzbd's documentation
+                        for usage guides).
+                      '';
+
+                      example = true;
+                      type = types.bool;
+                    };
+
+                    port = mkOption {
+                      default = 563;
+                      description = "Port of the server";
+                      example = 443;
+                      type = types.port;
+                    };
+
+                    priority = mkOption {
+                      default = 0;
+
+                      description = ''
+                        Priority of this servers. Servers are queried in
+                        order of priority, from highest (0) to lowest (100).
+                      '';
+
+                      type = types.int;
+                    };
+
+                    required = mkOption {
+                      default = false;
+
+                      description = ''
+                        In case of connection failures, wait for the
+                        server to come back online instead of skipping
+                        it.
+                      '';
+
+                      example = true;
+                      type = types.bool;
+                    };
+
+                    ssl = mkOption {
+                      default = true;
+
+                      description = ''
+                        Whether the server supports TLS
+                      '';
+
+                      type = types.bool;
+                    };
+
+                    ssl_verify = mkOption {
+                      default = "strict";
+
+                      description = ''
+                        Level of TLS verification. Supported values:
+                        3, 'strict'          -- strict (normal) verification
+                        2, 'allow injection' -- allow locally injected certificates
+                        0, 'none'            -- no verification
+                      '';
+
+                      type = enumFromAttrs {
+                        "allow injection" = 2;
+                        "none" = 0;
+                        "strict" = 3;
+                      };
+                    };
+
+                    timeout = mkOption {
+                      default = 60;
+
+                      description = ''
+                        Time, in seconds, to wait for a response before
+                        attempting error recovery.
+                      '';
+
+                      type = types.int;
                     };
                   };
+
+                  freeformType = (configObjIni { }).type;
                 }
               );
             };
           };
+
+          config = {
+            misc = {
+              # don't open the browser on a daemonized service
+              auto_browser = mkOptionDefault false;
+              # don't check for new updates since we're using the distro version
+              check_new_rel = mkOptionDefault false;
+              config_conversion_version = mkOptionDefault 4;
+              # config_lock = 1 turns the alert that the config is read-only from an error
+              # into a warning. But the warnings still come, and additionally read access
+              # to the config from the web ui is blocked as well, so better keep it at 0
+              # and live with the error
+              # optionally, misc.helpful_warnings = 0 will silence the warnings (but not the error)
+              # at the cost of also silencing other, potentially useful warnings
+              # config_lock = mkOptionDefault (if !cfg.allowConfigWrite then 1 else 0);
+              config_lock = mkOptionDefault false;
+              notified_new_skin = mkOptionDefault true;
+            };
+          };
+
+          freeformType = (configObjIni { }).type;
         };
+      };
+
+      stateDir = mkOption {
+        default = "sabnzbd";
+        description = "State directory of the service under /var/lib/";
+        type = types.str;
+      };
+
+      user = mkOption {
+        default = "sabnzbd";
+        description = "User to run the service as";
+        type = types.str;
       };
     };
   };
 
   config = mkIf cfg.enable {
-    warnings = lib.optional (cfg.configFile != null) ''
-      `sabnzbd.configFile` is deprecated, consider using `sabnzbd.settings` instead.
-      If you have values set in `sabnzbd.settings` set, they will be ignored.
-    '';
-
-    users.users = mkIf (cfg.user == "sabnzbd") {
-      sabnzbd = {
-        isSystemUser = true;
-        group = cfg.group;
-        description = "sabnzbd user";
-      };
-    };
-
-    users.groups = mkIf (cfg.group == "sabnzbd") {
-      sabnzbd = { };
+    networking.firewall = mkIf cfg.openFirewall {
+      allowedTCPPorts = [ cfg.settings.misc.port ];
     };
 
     systemd.services.sabnzbd =
@@ -493,17 +567,19 @@ in
         iniPathQuoted = lib.escapeShellArg sabnzbdIniPath;
       in
       {
-        description = "sabnzbd server";
-        wantedBy = [ "multi-user.target" ];
         after = [ "network.target" ];
+        description = "sabnzbd server";
+
         serviceConfig = {
-          Type = "forking";
-          GuessMainPID = "no";
-          User = cfg.user;
-          Group = cfg.group;
-          StateDirectory = cfg.stateDir;
           ExecStart = "${lib.getExe cfg.package} -d -f ${iniPathQuoted}";
+          Group = cfg.group;
+          GuessMainPID = "no";
+          StateDirectory = cfg.stateDir;
+          Type = "forking";
+          User = cfg.user;
         };
+
+        wantedBy = [ "multi-user.target" ];
       }
       // lib.optionalAttrs (cfg.configFile == null) {
         preStart = ''
@@ -539,8 +615,21 @@ in
         '';
       };
 
-    networking.firewall = mkIf cfg.openFirewall {
-      allowedTCPPorts = [ cfg.settings.misc.port ];
+    users.groups = mkIf (cfg.group == "sabnzbd") {
+      sabnzbd = { };
     };
+
+    users.users = mkIf (cfg.user == "sabnzbd") {
+      sabnzbd = {
+        description = "sabnzbd user";
+        group = cfg.group;
+        isSystemUser = true;
+      };
+    };
+
+    warnings = lib.optional (cfg.configFile != null) ''
+      `sabnzbd.configFile` is deprecated, consider using `sabnzbd.settings` instead.
+      If you have values set in `sabnzbd.settings` set, they will be ignored.
+    '';
   };
 }

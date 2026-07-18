@@ -1,15 +1,15 @@
 {
-  buildDunePackage,
   fetchFromGitHub,
-  hpack,
-  angstrom,
-  faraday,
-  base64,
-  psq,
-  httpun-types,
   alcotest,
-  yojson,
+  angstrom,
+  base64,
+  buildDunePackage,
+  faraday,
   hex,
+  hpack,
+  httpun-types,
+  psq,
+  yojson,
 }:
 
 let
@@ -22,12 +22,12 @@ let
 in
 
 buildDunePackage {
-  pname = "h2";
-
   inherit (hpack)
     version
     src
     ;
+
+  pname = "h2";
 
   propagatedBuildInputs = [
     angstrom
@@ -39,14 +39,16 @@ buildDunePackage {
   ];
 
   doCheck = true;
-  preCheck = ''
-    ln -s "${http2-frame-test-case}" lib_test/http2-frame-test-case
-  '';
+
   checkInputs = [
     alcotest
     yojson
     hex
   ];
+
+  preCheck = ''
+    ln -s "${http2-frame-test-case}" lib_test/http2-frame-test-case
+  '';
 
   meta = hpack.meta // {
     description = "High-performance, memory-efficient, and scalable HTTP/2 library for OCaml";

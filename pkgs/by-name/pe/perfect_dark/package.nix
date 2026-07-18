@@ -2,13 +2,13 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  sdl2-compat,
   cmake,
   libGL,
   pkg-config,
   python3,
-  zlib,
+  sdl2-compat,
   unstableGitUpdater,
+  zlib,
   romID ? "ntsc-final",
 }:
 let
@@ -38,27 +38,6 @@ stdenv.mkDerivation (finalAttrs: {
     '';
   };
 
-  enableParallelBuilding = true;
-
-  # Fails to build if not set:
-  hardeningDisable = [ "format" ];
-
-  cmakeFlags = [
-    (lib.cmakeFeature "ROMID" romID)
-  ];
-
-  nativeBuildInputs = [
-    cmake
-    pkg-config
-    python3
-  ];
-
-  buildInputs = [
-    sdl2-compat
-    libGL
-    zlib
-  ];
-
   postPatch =
     # The project uses Git to retrieve version informations but our
     # fetcher deletes the .git directory, so we replace the commands
@@ -77,6 +56,22 @@ stdenv.mkDerivation (finalAttrs: {
         --replace-fail "Exec=io.github.perfect_dark_pc_port.perfect_dark.sh" \
                        "Exec=io.github.perfect_dark_pc_port.perfect_dark"
     '';
+
+  nativeBuildInputs = [
+    cmake
+    pkg-config
+    python3
+  ];
+
+  buildInputs = [
+    sdl2-compat
+    libGL
+    zlib
+  ];
+
+  cmakeFlags = [
+    (lib.cmakeFeature "ROMID" romID)
+  ];
 
   preConfigure = ''
     patchShebangs --build tools/assetmgr
@@ -98,12 +93,17 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  enableParallelBuilding = true;
+  # Fails to build if not set:
+  hardeningDisable = [ "format" ];
+
   passthru = {
     updateScript = unstableGitUpdater { hardcodeZeroVersion = true; };
   };
 
   meta = {
     description = "Modern cross-platform port of Perfect Dark";
+
     longDescription = ''
       This is a port of Ryan Dywer's decompilation of classic N64
       shooter Perfect Dark to modern systems.
@@ -121,18 +121,22 @@ stdenv.mkDerivation (finalAttrs: {
 
       Supported romIDs are `${lib.generators.toPretty { } roms}`.
     '';
+
     homepage = "https://github.com/perfect-dark-pc-port/perfect_dark/";
+
     license = with lib.licenses; [
       # perfect_dark, khrplatform.h, port/fast3d
       mit
       # Derivative work of "Perfect Dark" © 2000 Rare Ltd.
       unfree
     ];
+
     maintainers = with lib.maintainers; [
       PaulGrandperrin
       sigmasquadron
     ];
-    mainProgram = "io.github.perfect_dark_pc_port.perfect_dark";
+
     platforms = lib.platforms.linux;
+    mainProgram = "io.github.perfect_dark_pc_port.perfect_dark";
   };
 })

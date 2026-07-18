@@ -1,15 +1,15 @@
 {
   lib,
-  buildPlatform,
-  hostPlatform,
   fetchurl,
   bash,
-  tinycc,
-  gnumake,
-  gnugrep,
-  gnused,
+  buildPlatform,
   gawk,
+  gnugrep,
+  gnumake,
+  gnused,
   gnutar,
+  hostPlatform,
+  tinycc,
   xz,
 }:
 let
@@ -47,8 +47,8 @@ bash.runCommand "${pname}-${version}"
       description = "Commands for showing the differences between files (diff, cmp, etc.)";
       homepage = "https://www.gnu.org/software/diffutils/diffutils.html";
       license = lib.licenses.gpl3Only;
-      teams = [ lib.teams.minimal-bootstrap ];
       platforms = lib.platforms.unix;
+      teams = [ lib.teams.minimal-bootstrap ];
     };
   }
   ''

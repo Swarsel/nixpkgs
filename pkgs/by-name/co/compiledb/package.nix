@@ -8,7 +8,6 @@
 python3Packages.buildPythonApplication (finalAttrs: {
   pname = "compiledb";
   version = "0.10.7";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "nickdiego";
@@ -16,6 +15,9 @@ python3Packages.buildPythonApplication (finalAttrs: {
     tag = finalAttrs.version;
     hash = "sha256-toqBf5q1EfZVhZN5DAtxkyFF7UlyNbqxWAIWFMwacxw=";
   };
+
+  doCheck = true;
+  nativeCheckInputs = [ python3Packages.pytestCheckHook ];
 
   build-system = with python3Packages; [
     setuptools
@@ -33,15 +35,13 @@ python3Packages.buildPythonApplication (finalAttrs: {
         --replace-fail "/bin/echo" "${coreutils}/bin/echo"
   '';
 
-  nativeCheckInputs = [ python3Packages.pytestCheckHook ];
-
-  doCheck = true;
+  pyproject = true;
 
   meta = {
     description = "Tool for generating Clang's JSON Compilation Database files";
-    mainProgram = "compiledb";
-    license = lib.licenses.gpl3Plus;
     homepage = "https://github.com/nickdiego/compiledb";
+    license = lib.licenses.gpl3Plus;
     maintainers = with lib.maintainers; [ sigmanificient ];
+    mainProgram = "compiledb";
   };
 })

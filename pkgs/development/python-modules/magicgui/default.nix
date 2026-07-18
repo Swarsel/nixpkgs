@@ -1,16 +1,16 @@
 {
   lib,
+  fetchFromGitHub,
   buildPythonPackage,
   docstring-parser,
-  fetchFromGitHub,
   hatch-vcs,
   hatchling,
   napari, # a reverse-dependency, for tests
   psygnal,
+  pyqt5,
+  pyqt6,
   pyside2,
   pyside6,
-  pyqt6,
-  pyqt5,
   pytestCheckHook,
   superqt,
   typing-extensions,
@@ -19,7 +19,6 @@
 buildPythonPackage rec {
   pname = "magicgui";
   version = "0.10.2";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "pyapp-kit";
@@ -27,6 +26,9 @@ buildPythonPackage rec {
     tag = "v${version}";
     hash = "sha256-5etnug947C+Ewk1QLxsxEeaSa9djIlM/PGdNnJZiND8=";
   };
+
+  doCheck = false; # Reports "Fatal Python error"
+  nativeCheckInputs = [ pytestCheckHook ];
 
   build-system = [
     hatch-vcs
@@ -41,15 +43,13 @@ buildPythonPackage rec {
   ];
 
   optional-dependencies = {
+    pyqt5 = [ pyqt5 ];
+    pyqt6 = [ pyqt6 ];
     pyside2 = [ pyside2 ];
     pyside6 = [ pyside6 ];
-    pyqt6 = [ pyqt6 ];
-    pyqt5 = [ pyqt5 ];
   };
 
-  nativeCheckInputs = [ pytestCheckHook ];
-
-  doCheck = false; # Reports "Fatal Python error"
+  pyproject = true;
 
   passthru.tests = {
     inherit napari;

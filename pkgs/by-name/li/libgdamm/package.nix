@@ -2,11 +2,11 @@
   lib,
   stdenv,
   fetchurl,
-  pkg-config,
   glibmm,
+  gnome,
   libgda5,
   libxml2,
-  gnome,
+  pkg-config,
   mysqlSupport ? false,
   postgresSupport ? false,
 }:
@@ -20,23 +20,24 @@ stdenv.mkDerivation rec {
   pname = "libgdamm";
   version = "4.99.11";
 
-  outputs = [
-    "out"
-    "dev"
-  ];
-
   src = fetchurl {
     url = "mirror://gnome/sources/libgdamm/${lib.versions.majorMinor version}/libgdamm-${version}.tar.xz";
     sha256 = "1fyh15b3f8hmwbswalxk1g4l04yvvybksn5nm7gznn5jl5q010p9";
   };
 
+  outputs = [
+    "out"
+    "dev"
+  ];
+
   nativeBuildInputs = [ pkg-config ];
+
   buildInputs = [
     glibmm
     libxml2
   ];
-  propagatedBuildInputs = [ gda ];
 
+  propagatedBuildInputs = [ gda ];
   enableParallelBuilding = true;
 
   passthru = {

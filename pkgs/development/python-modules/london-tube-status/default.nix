@@ -1,17 +1,16 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
   aiohttp,
+  buildPythonPackage,
   pytestCheckHook,
   requests-mock,
+  setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "london-tube-status";
   version = "0.7";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "robmarkcole";
@@ -19,6 +18,15 @@ buildPythonPackage rec {
     tag = version;
     hash = "sha256-0uDCrF3abx94X47LQxgALirSF/spJPVD91G2WqXaDVs=";
   };
+
+  # Tests are currently broken
+  # https://github.com/robmarkcole/London-tube-status/issues/7
+  doCheck = false;
+
+  nativeCheckInputs = [
+    pytestCheckHook
+    requests-mock
+  ];
 
   build-system = [
     setuptools
@@ -28,14 +36,7 @@ buildPythonPackage rec {
     aiohttp
   ];
 
-  nativeCheckInputs = [
-    pytestCheckHook
-    requests-mock
-  ];
-
-  # Tests are currently broken
-  # https://github.com/robmarkcole/London-tube-status/issues/7
-  doCheck = false;
+  pyproject = true;
 
   pythonImportsCheck = [
     "london_tube_status"

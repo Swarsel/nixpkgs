@@ -1,7 +1,7 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -19,13 +19,15 @@ rustPlatform.buildRustPackage (finalAttrs: {
 
   meta = {
     description = "Helps you to find/fix obsolete nerd font icons in your project";
-    mainProgram = "nerdfix";
     homepage = "https://github.com/loichyan/nerdfix";
     changelog = "https://github.com/loichyan/nerdfix/blob/${finalAttrs.src.rev}/CHANGELOG.md";
+
     license = with lib.licenses; [
       asl20
       mit
     ];
+
     maintainers = [ ];
+    mainProgram = "nerdfix";
   };
 })

@@ -4,7 +4,6 @@
   mkLibretroCore,
 }:
 mkLibretroCore {
-  core = "stella";
   version = "0-unstable-2026-06-28";
 
   src = fetchFromGitHub {
@@ -14,9 +13,10 @@ mkLibretroCore {
     hash = "sha256-YALzsYJwZDtVkVx9yvkkEZ1AHxT4fAc+epoFDwStmSI=";
   };
 
-  makefile = "Makefile";
   preBuild = "cd src/os/libretro";
+  core = "stella";
   dontConfigure = true;
+  makefile = "Makefile";
 
   meta = {
     description = "Port of Stella to libretro";

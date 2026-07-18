@@ -1,13 +1,12 @@
 {
   lib,
-  python3,
   fetchFromGitHub,
+  python3,
 }:
 
 python3.pkgs.buildPythonApplication (finalAttrs: {
   pname = "dhcpig";
   version = "1.6";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "kamorin";
@@ -15,6 +14,10 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     tag = finalAttrs.version;
     hash = "sha256-MquLChDuJe3DdkxxKV4W0o49IIt7Am+yuhdOqUqexS8=";
   };
+
+  installPhase = ''
+    install -Dm755 pig.py $out/bin/dhcpig
+  '';
 
   build-system = with python3.pkgs; [
     setuptools
@@ -24,9 +27,7 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     scapy
   ];
 
-  installPhase = ''
-    install -Dm755 pig.py $out/bin/dhcpig
-  '';
+  pyproject = true;
 
   meta = {
     description = "Tool to perform advanced DHCP exhaustion attack";

@@ -1,7 +1,7 @@
 {
+  lib,
   fetchurl,
   appimageTools,
-  lib,
 }:
 
 let
@@ -17,7 +17,6 @@ let
 in
 appimageTools.wrapType2 rec {
   inherit pname version src;
-
   extraBwrapArgs = [ "--setenv QT_QPA_PLATFORM xcb" ];
 
   extraInstallCommands = ''
@@ -31,9 +30,9 @@ appimageTools.wrapType2 rec {
   meta = {
     description = "The Virtual Trucker Companion";
     homepage = "https://truckyapp.com/";
-    downloadPage = "https://truckyapp.com/client-download-linux";
     license = lib.licenses.unfree;
     maintainers = [ lib.maintainers.liamthexpl0rer ];
     platforms = lib.platforms.all;
+    downloadPage = "https://truckyapp.com/client-download-linux";
   };
 }

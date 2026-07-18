@@ -16,9 +16,9 @@ in
   };
 
   config = lib.mkIf cfg.enable {
-    hardware.sensor.iio.enable = lib.mkDefault true;
-
     environment.systemPackages = [ cfg.package ];
+    hardware.sensor.iio.enable = lib.mkDefault true;
   };
+
   meta.maintainers = with lib.maintainers; [ yusuf-duran ];
 }

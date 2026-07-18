@@ -1,53 +1,48 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchurl,
-  mkJetBrainsProduct,
-  libdbm,
-  fsnotifier,
-  patchSharedLibs,
   dotnetCorePackages,
-  python3,
-  openssl,
-  libxcrypt-legacy,
-  lttng-ust_2_12,
-  musl,
   expat,
+  fsnotifier,
+  libdbm,
+  libxcrypt-legacy,
   libxml2,
+  lttng-ust_2_12,
+  mkJetBrainsProduct,
+  musl,
+  openssl,
+  patchSharedLibs,
+  python3,
   xz,
 }:
 let
   system = stdenv.hostPlatform.system;
   # update-script-start: urls
   urls = {
-    x86_64-linux = {
-      url = "https://download.jetbrains.com/cpp/CLion-2026.1.4.tar.gz";
-      hash = "sha256-uOhFuDqVw3pxtqBvOQH+FpJTFrneaD/R0VcpJZRYD2o=";
-    };
-    aarch64-linux = {
-      url = "https://download.jetbrains.com/cpp/CLion-2026.1.4-aarch64.tar.gz";
-      hash = "sha256-I6IKQng4lNtRlQIq08K5bueqgKI/q1awX4EuRnyAnOk=";
-    };
     aarch64-darwin = {
-      url = "https://download.jetbrains.com/cpp/CLion-2026.1.4-aarch64.dmg";
       hash = "sha256-i3stX7dyRgSOJkFTMD9/hkw6e2mGNqn13S7X/vJ66RQ=";
+      url = "https://download.jetbrains.com/cpp/CLion-2026.1.4-aarch64.dmg";
+    };
+
+    aarch64-linux = {
+      hash = "sha256-I6IKQng4lNtRlQIq08K5bueqgKI/q1awX4EuRnyAnOk=";
+      url = "https://download.jetbrains.com/cpp/CLion-2026.1.4-aarch64.tar.gz";
+    };
+
+    x86_64-linux = {
+      hash = "sha256-uOhFuDqVw3pxtqBvOQH+FpJTFrneaD/R0VcpJZRYD2o=";
+      url = "https://download.jetbrains.com/cpp/CLion-2026.1.4.tar.gz";
     };
   };
   # update-script-end: urls
 in
 (mkJetBrainsProduct {
   inherit libdbm fsnotifier;
-
   pname = "clion";
-
-  wmClass = "jetbrains-clion";
-  product = "CLion";
-
   # update-script-start: version
   version = "2026.1.4";
-  buildNumber = "261.26222.59";
   # update-script-end: version
-
   src = fetchurl (urls.${system} or (throw "Unsupported system: ${system}"));
 
   buildInputs =
@@ -64,21 +59,27 @@ in
       xz
     ];
 
+  buildNumber = "261.26222.59";
+  product = "CLion";
+  wmClass = "jetbrains-clion";
+
   # NOTE: meta attrs are used for the Linux desktop entries and may cause rebuilds when changed
   meta = {
-    homepage = "https://www.jetbrains.com/clion/";
     description = "C/C++ IDE from JetBrains";
     longDescription = "Enhancing productivity for every C and C++ developer on Linux, macOS and Windows.";
-    maintainers = with lib.maintainers; [
-      mic92
-      tymscar
-    ];
+    homepage = "https://www.jetbrains.com/clion/";
     license = lib.licenses.unfree;
+
     sourceProvenance =
       if stdenv.hostPlatform.isDarwin then
         [ lib.sourceTypes.binaryNativeCode ]
       else
         [ lib.sourceTypes.binaryBytecode ];
+
+    maintainers = with lib.maintainers; [
+      mic92
+      tymscar
+    ];
   };
 }).overrideAttrs
   (attrs: {

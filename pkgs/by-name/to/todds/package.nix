@@ -1,44 +1,40 @@
 {
   lib,
-  config,
   stdenv,
   fetchFromGitHub,
-
-  # nativeBuildInputs
-  cmake,
-  ispc,
-  ninja,
-  pkg-config,
-  cudaPackages,
-
   # buildInputs
   boost,
+  # nativeBuildInputs
+  cmake,
+  config,
+  cudaPackages,
   fmt,
-  onetbb,
-  opencv,
-  vectorscan,
-
-  # tests
-  versionCheckHook,
-
+  ispc,
+  ninja,
   # passthru
   nix-update-script,
-
+  onetbb,
+  opencv,
+  pkg-config,
+  vectorscan,
+  # tests
+  versionCheckHook,
   cudaSupport ? config.cudaSupport,
 }:
 stdenv.mkDerivation (finalAttrs: {
   pname = "todds";
   version = "0.4.1";
 
-  patches = [ ./TBB-version.patch ];
-
   src = fetchFromGitHub {
     owner = "todds-encoder";
     repo = "todds";
     tag = finalAttrs.version;
-    fetchSubmodules = true;
     hash = "sha256-nyYFYym9ZZskkaTPV30+QavdqpvVopnIXXZC6zkeu7c=";
+    fetchSubmodules = true;
   };
+
+  patches = [ ./TBB-version.patch ];
+  strictDeps = true;
 
   nativeBuildInputs = [
     cmake
@@ -61,12 +57,11 @@ stdenv.mkDerivation (finalAttrs: {
     cudaPackages.cuda_cudart
   ];
 
-  strictDeps = true;
+  doInstallCheck = true;
 
   nativeInstallCheckInputs = [
     versionCheckHook
   ];
-  doInstallCheck = true;
 
   passthru.updateScript = nix-update-script { };
 
@@ -76,7 +71,7 @@ stdenv.mkDerivation (finalAttrs: {
     changelog = "https://github.com/todds-encoder/todds/releases/tag/${finalAttrs.version}";
     license = lib.licenses.mpl20;
     maintainers = with lib.maintainers; [ weirdrock ];
-    mainProgram = "todds";
     platforms = lib.platforms.linux;
+    mainProgram = "todds";
   };
 })

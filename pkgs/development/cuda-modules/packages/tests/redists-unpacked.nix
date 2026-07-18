@@ -1,7 +1,7 @@
 {
+  lib,
   cudaNamePrefix,
   cudaPackages,
-  lib,
   linkFarm,
 }:
 # NOTE: Because Nixpkgs, by default, allows aliases, this derivation may contain multiple entries for a single redistributable.

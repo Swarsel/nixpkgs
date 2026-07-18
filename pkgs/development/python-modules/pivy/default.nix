@@ -1,20 +1,19 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  python,
-  pythonRecompileBytecodeHook,
-  swig,
+  buildPythonPackage,
   cmake,
   coin3d,
-  soqt,
   libGLU,
+  python,
+  pythonRecompileBytecodeHook,
+  soqt,
+  swig,
 }:
 
 buildPythonPackage rec {
   pname = "pivy";
   version = "0.6.11";
-  pyproject = false;
 
   src = fetchFromGitHub {
     owner = "coin3d";
@@ -41,12 +40,12 @@ buildPythonPackage rec {
   ];
 
   dontWrapQtApps = true;
-
+  pyproject = false;
   pythonImportsCheck = [ "pivy" ];
 
   meta = {
-    homepage = "https://github.com/coin3d/pivy/";
     description = "Python binding for Coin";
+    homepage = "https://github.com/coin3d/pivy/";
     license = lib.licenses.bsd0;
     maintainers = [ ];
   };

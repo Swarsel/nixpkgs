@@ -2,36 +2,37 @@
   lib,
   stdenv,
   fetchurl,
+  binlore,
   buildPackages,
-  updateAutotoolsGnuConfigScriptsHook,
+  gpm,
   ncurses,
   pkg-config,
+  testers,
+  updateAutotoolsGnuConfigScriptsHook,
   abiVersion ? "6",
   enableStatic ? stdenv.hostPlatform.isStatic,
+  mouseSupport ? false,
+  unicodeSupport ? true,
   # Disabled for static FreeBSD: libc++ headers come after C library headers,
   # breaking C++ compilation. No current consumers need the C++ bindings.
   withCxx ?
     !stdenv.hostPlatform.useAndroidPrebuilt
     && !(stdenv.hostPlatform.isFreeBSD && stdenv.hostPlatform.isStatic),
-  mouseSupport ? false,
-  gpm,
   withTermlib ? false,
-  unicodeSupport ? true,
-  testers,
-  binlore,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
-  version = "6.6";
   pname = "ncurses" + lib.optionalString (abiVersion == "5") "-abi5-compat";
+  version = "6.6";
 
   src = fetchurl {
+    hash = "sha256-NVtMu+2ICwOBoExGYXt2VuNiWF1S6c+Epn4gCbdJ/xE=";
+
     urls = [
       "https://invisible-island.net/archives/ncurses/ncurses-${finalAttrs.version}.tar.gz"
       # invisible-island.net may be firewall blocked on some networks
       "https://invisible-mirror.net/archives/ncurses/ncurses-${finalAttrs.version}.tar.gz"
     ];
-    hash = "sha256-NVtMu+2ICwOBoExGYXt2VuNiWF1S6c+Epn4gCbdJ/xE=";
   };
 
   outputs = [
@@ -39,22 +40,23 @@ stdenv.mkDerivation (finalAttrs: {
     "dev"
     "man"
   ];
-  setOutputFlags = false; # some aren't supported
-  separateDebugInfo = false;
 
   postPatch = ''
     sed -i '1i #include <stdbool.h>' include/curses.h.in
   '';
 
-  # see other isOpenBSD clause below
-  configurePlatforms =
-    if stdenv.hostPlatform.isOpenBSD then
-      [ "build" ]
-    else
-      [
-        "build"
-        "host"
-      ];
+  strictDeps = true;
+
+  nativeBuildInputs = [
+    updateAutotoolsGnuConfigScriptsHook
+    pkg-config
+  ]
+  ++ lib.optionals (stdenv.buildPlatform != stdenv.hostPlatform) [
+    # for `tic`, build already depends on for build `cc` so it's weird the build doesn't just build `tic`.
+    ncurses
+  ];
+
+  buildInputs = lib.optional (mouseSupport && stdenv.hostPlatform.isLinux) gpm;
 
   configureFlags = [
     (lib.withFeature (!enableStatic) "shared")
@@ -131,19 +133,6 @@ stdenv.mkDerivation (finalAttrs: {
     CFLAGS = "-D_XOPEN_SOURCE_EXTENDED";
   };
 
-  strictDeps = true;
-
-  nativeBuildInputs = [
-    updateAutotoolsGnuConfigScriptsHook
-    pkg-config
-  ]
-  ++ lib.optionals (stdenv.buildPlatform != stdenv.hostPlatform) [
-    # for `tic`, build already depends on for build `cc` so it's weird the build doesn't just build `tic`.
-    ncurses
-  ];
-
-  buildInputs = lib.optional (mouseSupport && stdenv.hostPlatform.isLinux) gpm;
-
   preConfigure = ''
     export PKG_CONFIG_LIBDIR="$dev/lib/pkgconfig"
     mkdir -p "$PKG_CONFIG_LIBDIR"
@@ -161,8 +150,6 @@ stdenv.mkDerivation (finalAttrs: {
         configure
     CFLAGS=-D_XOPEN_SOURCE_EXTENDED
   '';
-
-  enableParallelBuilding = true;
 
   doCheck = false;
 
@@ -248,6 +235,26 @@ stdenv.mkDerivation (finalAttrs: {
       moveToOutput "bin/infocmp" "$out"
     '';
 
+  # see other isOpenBSD clause below
+  configurePlatforms =
+    if stdenv.hostPlatform.isOpenBSD then
+      [ "build" ]
+    else
+      [
+        "build"
+        "host"
+      ];
+
+  enableParallelBuilding = true;
+  separateDebugInfo = false;
+  setOutputFlags = false; # some aren't supported
+
+  passthru = {
+    inherit unicodeSupport abiVersion;
+    ldflags = "-lncurses";
+    tests.pkg-config = testers.testMetaPkgConfig finalAttrs.finalPackage;
+  };
+
   # I'm not very familiar with ncurses, but it looks like most of the
   # exec here will run hard-coded executables. There's one that is
   # dynamic, but it looks like it only comes from executing a terminfo
@@ -260,8 +267,8 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   meta = {
-    homepage = "https://www.gnu.org/software/ncurses/";
     description = "Free software emulation of curses in SVR4 and more";
+
     longDescription = ''
       The Ncurses (new curses) library is a free software emulation of curses in
       System V Release 4.0, and more. It uses Terminfo format, supports pads and
@@ -273,7 +280,12 @@ stdenv.mkDerivation (finalAttrs: {
       NetBSD as an external package. It should port easily to any
       ANSI/POSIX-conforming UNIX. It has even been ported to OS/2 Warp!
     '';
+
+    homepage = "https://www.gnu.org/software/ncurses/";
     license = lib.licenses.mit;
+    platforms = lib.platforms.all;
+    identifiers.cpeParts = lib.meta.cpeFullVersionWithVendor "ncurses_project" finalAttrs.version;
+
     pkgConfigModules =
       let
         base = [
@@ -285,13 +297,5 @@ stdenv.mkDerivation (finalAttrs: {
         ++ lib.optional withCxx "ncurses++";
       in
       base ++ lib.optionals unicodeSupport (map (p: p + "w") base);
-    platforms = lib.platforms.all;
-    identifiers.cpeParts = lib.meta.cpeFullVersionWithVendor "ncurses_project" finalAttrs.version;
-  };
-
-  passthru = {
-    ldflags = "-lncurses";
-    inherit unicodeSupport abiVersion;
-    tests.pkg-config = testers.testMetaPkgConfig finalAttrs.finalPackage;
   };
 })

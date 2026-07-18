@@ -1,51 +1,54 @@
 {
   lib,
-  stdenvNoCC,
   fetchurl,
   gitUpdater,
+  stdenvNoCC,
 }:
 
 let
   common =
-    { version, hash }:
+    { hash, version }:
     stdenvNoCC.mkDerivation rec {
+      inherit version;
       pname = "jetty";
 
-      inherit version;
-
       src = fetchurl {
-        url = "mirror://maven/org/eclipse/jetty/jetty-home/${version}/jetty-home-${version}.tar.gz";
         inherit hash;
+        url = "mirror://maven/org/eclipse/jetty/jetty-home/${version}/jetty-home-${version}.tar.gz";
       };
-
-      dontBuild = true;
 
       installPhase = ''
         mkdir -p $out
         mv etc lib modules start.jar $out
       '';
 
+      dontBuild = true;
+
       passthru.updateScript = gitUpdater {
-        url = "https://github.com/jetty/jetty.project.git";
         allowedVersions = "^${lib.versions.major version}\\.";
         ignoredVersions = "(alpha|beta).*";
         rev-prefix = "jetty-";
+        url = "https://github.com/jetty/jetty.project.git";
       };
 
       meta = {
-        changelog = "https://github.com/jetty/jetty.project/releases/tag/jetty-${version}";
         description = "Web server and javax.servlet container";
         homepage = "https://jetty.org/";
-        platforms = lib.platforms.all;
-        sourceProvenance = with lib.sourceTypes; [ binaryBytecode ];
+        changelog = "https://github.com/jetty/jetty.project/releases/tag/jetty-${version}";
+
         license = with lib.licenses; [
           asl20
           epl10
         ];
+
+        sourceProvenance = with lib.sourceTypes; [ binaryBytecode ];
+
         maintainers = with lib.maintainers; [
           emmanuelrosa
           anthonyroussel
         ];
+
+        platforms = lib.platforms.all;
       };
     };
 

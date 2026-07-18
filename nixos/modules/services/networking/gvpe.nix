@@ -2,8 +2,8 @@
 
 {
   config,
-  pkgs,
   lib,
+  pkgs,
   ...
 }:
 
@@ -30,7 +30,9 @@ let
       throw "You must set node name for GVPE"
     else
       (pkgs.writeTextFile {
+        executable = true;
         name = "gvpe-if-up";
+
         text = ''
           #! /bin/sh
 
@@ -42,7 +44,6 @@ let
 
           ${cfg.customIFSetup}
         '';
-        executable = true;
       });
 in
 
@@ -51,16 +52,24 @@ in
     services.gvpe = {
       enable = lib.mkEnableOption "gvpe";
 
-      nodename = mkOption {
+      configFile = mkOption {
         default = null;
-        type = types.nullOr types.str;
+
         description = ''
-          GVPE node name
+          GVPE config file, if already present
         '';
+
+        example = "/root/my-gvpe-conf";
+        type = types.nullOr types.path;
       };
+
       configText = mkOption {
         default = null;
-        type = types.nullOr types.lines;
+
+        description = ''
+          GVPE config contents
+        '';
+
         example = ''
           tcp-port = 655
           udp-port = 655
@@ -75,51 +84,62 @@ in
           on alpha if-up = if-up-0
           on alpha pid-file = /var/gvpe/gvpe.pid
         '';
-        description = ''
-          GVPE config contents
-        '';
+
+        type = types.nullOr types.lines;
       };
-      configFile = mkOption {
-        default = null;
-        type = types.nullOr types.path;
-        example = "/root/my-gvpe-conf";
-        description = ''
-          GVPE config file, if already present
-        '';
-      };
-      ipAddress = mkOption {
-        default = null;
-        type = types.nullOr types.str;
-        description = ''
-          IP address to assign to GVPE interface
-        '';
-      };
-      subnet = mkOption {
-        default = null;
-        type = types.nullOr types.str;
-        example = "10.0.0.0/8";
-        description = ''
-          IP subnet assigned to GVPE network
-        '';
-      };
+
       customIFSetup = mkOption {
         default = "";
-        type = types.lines;
+
         description = ''
           Additional commands to apply in ifup script
         '';
+
+        type = types.lines;
+      };
+
+      ipAddress = mkOption {
+        default = null;
+
+        description = ''
+          IP address to assign to GVPE interface
+        '';
+
+        type = types.nullOr types.str;
+      };
+
+      nodename = mkOption {
+        default = null;
+
+        description = ''
+          GVPE node name
+        '';
+
+        type = types.nullOr types.str;
+      };
+
+      subnet = mkOption {
+        default = null;
+
+        description = ''
+          IP subnet assigned to GVPE network
+        '';
+
+        example = "10.0.0.0/8";
+        type = types.nullOr types.str;
       };
     };
   };
+
   config = mkIf cfg.enable {
     systemd.services.gvpe = {
+      after = [ "network.target" ];
       description = "GNU Virtual Private Ethernet node";
+
       documentation = [
         "info:gvpe"
         "man:gvpe(8)"
       ];
-      after = [ "network.target" ];
-      wantedBy = [ "multi-user.target" ];
 
       preStart = ''
         mkdir -p /var/gvpe
@@ -137,6 +157,7 @@ in
         + " &> /var/log/gvpe";
 
       serviceConfig.Restart = "always";
+      wantedBy = [ "multi-user.target" ];
     };
   };
 }

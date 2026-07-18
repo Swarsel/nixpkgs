@@ -1,15 +1,15 @@
 {
-  stdenv,
   lib,
+  stdenv,
   name,
   src,
+  doCheckstyle ? false,
+  doJavadoc ? false,
+  doRelease ? false,
   doTest ? true,
   doTestCompile ? true,
-  doJavadoc ? false,
-  doCheckstyle ? false,
-  doRelease ? false,
-  includeTestClasses ? true,
   extraMvnFlags ? "",
+  includeTestClasses ? true,
   ...
 }@args:
 
@@ -24,47 +24,16 @@ in
 stdenv.mkDerivation (
   {
     inherit name src;
-    phases = "setupPhase unpackPhase patchPhase mvnCompile ${lib.optionalString doTestCompile "mvnTestCompile mvnTestJar"} ${lib.optionalString doTest "mvnTest"} ${lib.optionalString doJavadoc "mvnJavadoc"} ${lib.optionalString doCheckstyle "mvnCheckstyle"} mvnJar mvnAssembly mvnRelease finalPhase";
 
-    setupPhase = ''
-      runHook preSetupPhase
-
-      mkdir -p $out/nix-support
-      export LANG="en_US.UTF-8"
-      export LOCALE_ARCHIVE=$glibcLocales/lib/locale/locale-archive
-      export M2_REPO=$TMPDIR/repository
-
-      runHook postSetupPhase
-    '';
-
-    mvnCompile = ''
-      mvn compile ${mvnFlags}
-    '';
-
-    mvnTestCompile = ''
-      mvn test-compile ${mvnFlags}
-    '';
-
-    mvnTestJar = ''
-      mvn jar:test-jar ${mvnFlags}
-    '';
-
-    mvnTest = ''
-      mvn test ${mvnFlags}
-
-      if [ -d target/site/cobertura ] ; then
-        echo "report coverage $out/site/cobertura" >> $out/nix-support/hydra-build-products
-      fi
-
-      if [ -d target/surefire-reports ] ; then
-        mvn surefire-report:report-only
-        echo "report coverage $out/site/surefire-report.html" >> $out/nix-support/hydra-build-products
+    finalPhase = ''
+      if [ -d target/site ] ; then
+        cp -R target/site $out/
+        echo "report site $out/site" >> $out/nix-support/hydra-build-products
       fi
     '';
 
-    mvnJavadoc = ''
-      mvn javadoc:javadoc ${mvnFlags}
-      echo "report javadoc $out/site/apidocs" >> $out/nix-support/hydra-build-products
+    mvnAssembly = ''
+      mvn assembly:assembly -Dmaven.test.skip=true ${mvnFlags}
     '';
 
     mvnCheckstyle = ''
@@ -72,12 +41,17 @@ stdenv.mkDerivation (
       echo "report checkstyle $out/site/checkstyle.html" >> $out/nix-support/hydra-build-products
     '';
 
+    mvnCompile = ''
+      mvn compile ${mvnFlags}
+    '';
+
     mvnJar = ''
       mvn jar:jar ${mvnFlags}
     '';
 
-    mvnAssembly = ''
-      mvn assembly:assembly -Dmaven.test.skip=true ${mvnFlags}
+    mvnJavadoc = ''
+      mvn javadoc:javadoc ${mvnFlags}
+      echo "report javadoc $out/site/apidocs" >> $out/nix-support/hydra-build-products
     '';
 
     mvnRelease = ''
@@ -95,11 +69,38 @@ stdenv.mkDerivation (
       ''}
     '';
 
-    finalPhase = ''
-      if [ -d target/site ] ; then
-        cp -R target/site $out/
-        echo "report site $out/site" >> $out/nix-support/hydra-build-products
+    mvnTest = ''
+      mvn test ${mvnFlags}
+
+      if [ -d target/site/cobertura ] ; then
+        echo "report coverage $out/site/cobertura" >> $out/nix-support/hydra-build-products
       fi
+
+      if [ -d target/surefire-reports ] ; then
+        mvn surefire-report:report-only
+        echo "report coverage $out/site/surefire-report.html" >> $out/nix-support/hydra-build-products
+      fi
+    '';
+
+    mvnTestCompile = ''
+      mvn test-compile ${mvnFlags}
+    '';
+
+    mvnTestJar = ''
+      mvn jar:test-jar ${mvnFlags}
+    '';
+
+    phases = "setupPhase unpackPhase patchPhase mvnCompile ${lib.optionalString doTestCompile "mvnTestCompile mvnTestJar"} ${lib.optionalString doTest "mvnTest"} ${lib.optionalString doJavadoc "mvnJavadoc"} ${lib.optionalString doCheckstyle "mvnCheckstyle"} mvnJar mvnAssembly mvnRelease finalPhase";
+
+    setupPhase = ''
+      runHook preSetupPhase
+
+      mkdir -p $out/nix-support
+      export LANG="en_US.UTF-8"
+      export LOCALE_ARCHIVE=$glibcLocales/lib/locale/locale-archive
+      export M2_REPO=$TMPDIR/repository
+
+      runHook postSetupPhase
     '';
   }
   // args

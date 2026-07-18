@@ -17,18 +17,10 @@ let
   };
 in
 buildDartApplication {
-  pname = "vscode-runner";
   inherit version src;
-
-  vendorHash = "sha256-jS4jH00uxZIX81sZQIi+s42ofmXpD4/tPMRV2heaM2U=";
-
-  pubspecLock = lib.importJSON ./pubspec.lock.json;
-
-  dartEntryPoints = {
-    "bin/vscode_runner" = "bin/vscode_runner.dart";
-  };
-
+  pname = "vscode-runner";
   buildInputs = [ sqlite ];
+  vendorHash = "sha256-jS4jH00uxZIX81sZQIi+s42ofmXpD4/tPMRV2heaM2U=";
 
   postInstall = ''
     substituteInPlace ./package/codes.merritt.vscode_runner.service \
@@ -42,9 +34,15 @@ buildDartApplication {
       $out/share/krunner/dbusplugins/plasma-runner-vscode_runner.desktop
   '';
 
+  dartEntryPoints = {
+    "bin/vscode_runner" = "bin/vscode_runner.dart";
+  };
+
+  pubspecLock = lib.importJSON ./pubspec.lock.json;
   passthru.updateScript = ./update.sh;
 
   meta = {
+    inherit (kdePackages.krunner.meta) platforms;
     description = "KRunner plugin for quickly opening recent VSCode workspaces";
     homepage = "https://github.com/Merrit/vscode-runner";
     changelog = "https://github.com/Merrit/vscode-runner/blob/${src.rev}/CHANGELOG.md";
@@ -52,6 +50,5 @@ buildDartApplication {
     sourceProvenance = [ lib.sourceTypes.fromSource ];
     maintainers = [ lib.maintainers.pinage404 ];
     mainProgram = "vscode_runner";
-    inherit (kdePackages.krunner.meta) platforms;
   };
 }

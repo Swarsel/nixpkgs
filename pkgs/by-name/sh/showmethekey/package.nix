@@ -2,16 +2,16 @@
   lib,
   stdenv,
   fetchFromGitHub,
+  gtk4,
+  json-glib,
+  libadwaita,
+  libevdev,
+  libinput,
+  libxkbcommon,
   meson,
   ninja,
-  libevdev,
-  json-glib,
-  libinput,
-  gtk4,
-  libadwaita,
-  wrapGAppsHook4,
-  libxkbcommon,
   pkg-config,
+  wrapGAppsHook4,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -46,7 +46,7 @@ stdenv.mkDerivation (finalAttrs: {
     homepage = "https://showmethekey.alynx.one/";
     changelog = "https://github.com/AlynxZhou/showmethekey/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.asl20;
-    platforms = lib.platforms.linux;
     maintainers = with lib.maintainers; [ ocfox ];
+    platforms = lib.platforms.linux;
   };
 })

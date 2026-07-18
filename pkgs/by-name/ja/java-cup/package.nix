@@ -19,8 +19,6 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-4OdzYG5FzhqorROD5jk9U+2dzyhh5D76gZT1Z+kdv/o=";
   };
 
-  sourceRoot = ".";
-
   patches = [ ./javacup-0.11b_beta20160615-build-xml-git.patch ];
 
   nativeBuildInputs = [
@@ -48,12 +46,14 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  sourceRoot = ".";
+
   meta = {
     description = "LALR parser generator for Java";
     homepage = "http://www2.cs.tum.edu/projects/cup/";
     license = lib.licenses.mit;
-    mainProgram = "javacup";
     maintainers = [ lib.maintainers.romildo ];
     platforms = lib.platforms.all;
+    mainProgram = "javacup";
   };
 })

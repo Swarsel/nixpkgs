@@ -2,13 +2,13 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  pnpm_11,
-  nodejs-slim_22,
   fetchPnpmDeps,
-  pnpmConfigHook,
-  nodejs,
-  nix-update-script,
   fetchpatch2,
+  nix-update-script,
+  nodejs,
+  nodejs-slim_22,
+  pnpmConfigHook,
+  pnpm_11,
 }:
 let
   # pnpm 11's bundled Node.js 24 has a libuv/kqueue bug on macOS, workaround copied from openclaw package
@@ -29,32 +29,12 @@ stdenv.mkDerivation (finalAttrs: {
   patches = [
     # remove on next release
     (fetchpatch2 {
+      hash = "sha256-jPYFiyBlIoqpbIcT/hPa+VlF1IX+QCP8CVFQGarzlEs=";
+      includes = [ "pnpm-workspace.yaml" ];
       name = "fix-supply-chain-verification-fail.patch";
       url = "https://github.com/withastro/astro/commit/272ca6173b40cfa37299c27b513f495f386d4009.patch?full_index=1";
-      includes = [ "pnpm-workspace.yaml" ];
-      hash = "sha256-jPYFiyBlIoqpbIcT/hPa+VlF1IX+QCP8CVFQGarzlEs=";
     })
   ];
-
-  # https://pnpm.io/filtering#--filter-package_name-1
-  pnpmWorkspaces = [
-    "@astrojs/language-server..."
-    "@astrojs/ts-plugin"
-  ];
-
-  pnpmDeps = fetchPnpmDeps {
-    inherit (finalAttrs)
-      pname
-      version
-      src
-      pnpmWorkspaces
-      patches
-      ;
-    inherit pnpm;
-    # pnpm 11 stores state in a SQLite binary, fetcherVersion = 4 dumps it to a deterministic SQL text file
-    fetcherVersion = 4;
-    hash = "sha256-dqqvN8FMLjEbTtgQRkkURD7clMJ/OL9Mbk6icc4KU60=";
-  };
 
   nativeBuildInputs = [
     nodejs
@@ -63,6 +43,7 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   buildInputs = [ nodejs ];
+  env.CI = true;
 
   buildPhase = ''
     runHook preBuild
@@ -71,8 +52,6 @@ stdenv.mkDerivation (finalAttrs: {
 
     runHook postBuild
   '';
-
-  env.CI = true;
 
   installPhase = ''
     runHook preInstall
@@ -92,6 +71,27 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  pnpmDeps = fetchPnpmDeps {
+    inherit (finalAttrs)
+      pname
+      version
+      src
+      pnpmWorkspaces
+      patches
+      ;
+
+    inherit pnpm;
+    # pnpm 11 stores state in a SQLite binary, fetcherVersion = 4 dumps it to a deterministic SQL text file
+    fetcherVersion = 4;
+    hash = "sha256-dqqvN8FMLjEbTtgQRkkURD7clMJ/OL9Mbk6icc4KU60=";
+  };
+
+  # https://pnpm.io/filtering#--filter-package_name-1
+  pnpmWorkspaces = [
+    "@astrojs/language-server..."
+    "@astrojs/ts-plugin"
+  ];
+
   passthru.updateScript = nix-update-script {
     extraArgs = [
       "--use-github-releases"
@@ -105,11 +105,13 @@ stdenv.mkDerivation (finalAttrs: {
     homepage = "https://github.com/withastro/astro/tree/main/packages/language-tools";
     changelog = "https://github.com/withastro/astro/blob/%40astrojs/language-server%40${finalAttrs.version}/packages/language-tools/language-server/CHANGELOG.md";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       miniharinn
       god464
     ];
-    mainProgram = "astro-ls";
+
     platforms = lib.platforms.unix;
+    mainProgram = "astro-ls";
   };
 })

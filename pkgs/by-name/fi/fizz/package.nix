@@ -1,38 +1,26 @@
 {
   lib,
   stdenv,
-
   fetchFromGitHub,
-
   cmake,
-  ninja,
-
-  openssl,
-  glog,
-  double-conversion,
-  zstd,
-  gflags,
-  libevent,
   darwinMinVersionHook,
-
+  double-conversion,
   folly,
-  libsodium,
-  zlib,
-
+  gflags,
+  glog,
   gtest,
-
+  libevent,
+  libsodium,
+  ninja,
   nix-update-script,
+  openssl,
+  zlib,
+  zstd,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
   pname = "fizz";
   version = "2026.01.19.00";
-
-  outputs = [
-    "bin"
-    "out"
-    "dev"
-  ];
 
   src = fetchFromGitHub {
     owner = "facebookincubator";
@@ -40,6 +28,12 @@ stdenv.mkDerivation (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-fO0lKi8MJe0+RX8Y5shkO0C7NVAFOsXyx+OyoHeMy4c=";
   };
+
+  outputs = [
+    "bin"
+    "out"
+    "dev"
+  ];
 
   patches = [
     ./glog-0.7.patch
@@ -68,12 +62,6 @@ stdenv.mkDerivation (finalAttrs: {
     zlib
   ];
 
-  checkInputs = [
-    gtest
-  ];
-
-  cmakeDir = "../fizz";
-
   cmakeFlags = [
     (lib.cmakeBool "BUILD_SHARED_LIBS" (!stdenv.hostPlatform.isStatic))
 
@@ -88,9 +76,11 @@ stdenv.mkDerivation (finalAttrs: {
     (lib.cmakeFeature "CMAKE_INSTALL_PREFIX" (placeholder "dev"))
   ];
 
-  __darwinAllowLocalNetworking = true;
-
   doCheck = true;
+
+  checkInputs = [
+    gtest
+  ];
 
   preCheck =
     let
@@ -103,6 +93,8 @@ stdenv.mkDerivation (finalAttrs: {
       export GTEST_FILTER="-${lib.concatStringsSep ":" disabledTests}"
     '';
 
+  __darwinAllowLocalNetworking = true;
+  cmakeDir = "../fizz";
   passthru.updateScript = nix-update-script { };
 
   meta = {
@@ -110,7 +102,7 @@ stdenv.mkDerivation (finalAttrs: {
     homepage = "https://github.com/facebookincubator/fizz";
     changelog = "https://github.com/facebookincubator/fizz/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.bsd3;
-    platforms = lib.platforms.unix;
+
     maintainers = with lib.maintainers; [
       pierreis
       kylesferrazza
@@ -118,5 +110,7 @@ stdenv.mkDerivation (finalAttrs: {
       techknowlogick
       lf-
     ];
+
+    platforms = lib.platforms.unix;
   };
 })

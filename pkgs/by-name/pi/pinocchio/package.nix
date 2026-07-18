@@ -1,30 +1,24 @@
 {
   lib,
-
-  fetchFromGitHub,
-  nix-update-script,
   stdenv,
-
-  # nativeBuildInputs
-  cmake,
-  doxygen,
-  pkg-config,
-
+  fetchFromGitHub,
   # propagatedBuildInputs
   boost,
   casadi,
+  # nativeBuildInputs
+  cmake,
   coal,
   console-bridge,
-  eigen,
-  jrl-cmakemodules,
-  urdfdom,
-
   # nativeCheckInputs
   ctestCheckHook,
-
+  doxygen,
+  eigen,
   # checkInputs = [
   example-robot-data,
-
+  jrl-cmakemodules,
+  nix-update-script,
+  pkg-config,
+  urdfdom,
   casadiSupport ? true,
   collisionSupport ? true,
 }:
@@ -69,6 +63,15 @@ stdenv.mkDerivation (finalAttrs: {
   ++ lib.optionals collisionSupport [ coal ]
   ++ lib.optionals casadiSupport [ casadi ];
 
+  cmakeFlags = [
+    (lib.cmakeBool "BUILD_PYTHON_INTERFACE" false)
+    (lib.cmakeBool "BUILD_WITH_CASADI_SUPPORT" casadiSupport)
+    (lib.cmakeBool "BUILD_WITH_COLLISION_SUPPORT" collisionSupport)
+    (lib.cmakeBool "INSTALL_DOCUMENTATION" true)
+  ];
+
+  doCheck = true;
+
   nativeCheckInputs = [
     ctestCheckHook
   ];
@@ -88,15 +91,6 @@ stdenv.mkDerivation (finalAttrs: {
       "test-cpp-algorithm-utils-force"
     ];
 
-  cmakeFlags = [
-    (lib.cmakeBool "BUILD_PYTHON_INTERFACE" false)
-    (lib.cmakeBool "BUILD_WITH_CASADI_SUPPORT" casadiSupport)
-    (lib.cmakeBool "BUILD_WITH_COLLISION_SUPPORT" collisionSupport)
-    (lib.cmakeBool "INSTALL_DOCUMENTATION" true)
-  ];
-
-  doCheck = true;
-
   passthru.updateScript = nix-update-script { };
 
   meta = {
@@ -104,10 +98,12 @@ stdenv.mkDerivation (finalAttrs: {
     homepage = "https://github.com/stack-of-tasks/pinocchio";
     changelog = "https://github.com/stack-of-tasks/pinocchio/blob/devel/CHANGELOG.md";
     license = lib.licenses.bsd2;
+
     maintainers = with lib.maintainers; [
       nim65s
       wegank
     ];
+
     platforms = lib.platforms.unix;
   };
 })

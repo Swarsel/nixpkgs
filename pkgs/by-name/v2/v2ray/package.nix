@@ -1,13 +1,13 @@
 {
   lib,
   fetchFromGitHub,
-  symlinkJoin,
   buildGoModule,
   makeWrapper,
-  nixosTests,
   nix-update-script,
-  v2ray-geoip,
+  nixosTests,
+  symlinkJoin,
   v2ray-domain-list-community,
+  v2ray-geoip,
   assets ? [
     v2ray-geoip
     v2ray-domain-list-community
@@ -25,18 +25,10 @@ buildGoModule (finalAttrs: {
     hash = "sha256-a1q/QJpXt3XJZwSteOf3+cQ2W7+KmMfknv1qaByg4Hc=";
   };
 
+  nativeBuildInputs = [ makeWrapper ];
   # `nix-update` doesn't support `vendorHash` yet.
   # https://github.com/Mic92/nix-update/pull/95
   vendorHash = "sha256-A45fCy9Ytm/zVLQEn1QbUumBYZVG+jbmSFWkS/yAJn4=";
-
-  ldflags = [
-    "-s"
-    "-w"
-  ];
-
-  subPackages = [ "main" ];
-
-  nativeBuildInputs = [ makeWrapper ];
 
   installPhase = ''
     runHook preInstall
@@ -45,11 +37,6 @@ buildGoModule (finalAttrs: {
     install -Dm444 release/config/*.json -t $out/etc/v2ray
     runHook postInstall
   '';
-
-  assetsDrv = symlinkJoin {
-    name = "v2ray-assets";
-    paths = assets;
-  };
 
   postFixup = ''
     wrapProgram $out/bin/v2ray \
@@ -60,19 +47,33 @@ buildGoModule (finalAttrs: {
       --replace /usr/local/etc/ /etc/
   '';
 
+  assetsDrv = symlinkJoin {
+    name = "v2ray-assets";
+    paths = assets;
+  };
+
+  ldflags = [
+    "-s"
+    "-w"
+  ];
+
+  subPackages = [ "main" ];
+
   passthru = {
-    updateScript = nix-update-script { };
     tests.simple-vmess-proxy-test = nixosTests.v2ray;
+    updateScript = nix-update-script { };
   };
 
   meta = {
-    homepage = "https://www.v2fly.org/en_US/";
     description = "Platform for building proxies to bypass network restrictions";
-    mainProgram = "v2ray";
+    homepage = "https://www.v2fly.org/en_US/";
     license = with lib.licenses; [ mit ];
+
     maintainers = with lib.maintainers; [
       servalcatty
       ryan4yin
     ];
+
+    mainProgram = "v2ray";
   };
 })

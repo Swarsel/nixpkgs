@@ -1,18 +1,17 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
-  setuptools-scm,
+  buildPythonPackage,
+  hypothesis,
   numpy,
   pytestCheckHook,
-  hypothesis,
+  setuptools,
+  setuptools-scm,
 }:
 
 buildPythonPackage rec {
   pname = "array-api-strict";
   version = "2.5";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "data-apis";
@@ -26,6 +25,11 @@ buildPythonPackage rec {
       --replace-fail "setuptools >= 61.0,<=75" "setuptools"
   '';
 
+  nativeCheckInputs = [
+    pytestCheckHook
+    hypothesis
+  ];
+
   build-system = [
     setuptools
     setuptools-scm
@@ -33,10 +37,12 @@ buildPythonPackage rec {
 
   dependencies = [ numpy ];
 
-  nativeCheckInputs = [
-    pytestCheckHook
-    hypothesis
+  disabledTests = [
+    "test_disabled_extensions"
+    "test_environment_variables"
   ];
+
+  pyproject = true;
 
   pytestFlags = [
     # NumPy warning suppression and assertion utilities are deprecated.
@@ -45,15 +51,10 @@ buildPythonPackage rec {
 
   pythonImportsCheck = [ "array_api_strict" ];
 
-  disabledTests = [
-    "test_disabled_extensions"
-    "test_environment_variables"
-  ];
-
   meta = {
+    description = "Strict, minimal implementation of the Python array API";
     homepage = "https://data-apis.org/array-api-strict";
     changelog = "https://github.com/data-apis/array-api-strict/releases/tag/${src.tag}";
-    description = "Strict, minimal implementation of the Python array API";
     license = lib.licenses.bsd3;
     maintainers = with lib.maintainers; [ berquist ];
   };

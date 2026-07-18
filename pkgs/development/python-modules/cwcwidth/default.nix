@@ -1,17 +1,16 @@
 {
   lib,
   stdenv,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   cython,
-  setuptools,
   pytestCheckHook,
+  setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "cwcwidth";
   version = "0.1.12";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "sebastinas";
@@ -19,11 +18,6 @@ buildPythonPackage rec {
     tag = "v${version}";
     hash = "sha256-mkyBtqAFqu7dxpb46qMOnXmXpUV3qtpknfIgVQQt5nY=";
   };
-
-  build-system = [
-    cython
-    setuptools
-  ];
 
   nativeCheckInputs = [
     pytestCheckHook
@@ -38,12 +32,18 @@ buildPythonPackage rec {
     export LANG='C.UTF-8'
   '';
 
+  build-system = [
+    cython
+    setuptools
+  ];
+
   disabledTests = lib.optionals stdenv.hostPlatform.isDarwin [
     # Despite setting the locales above, this test fails with:
     # AssertionError: Tuples differ: (1, 1, 1, 1) != (1, 1, 1, 0)
     "test_combining_spacing"
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "cwcwidth" ];
 
   meta = {

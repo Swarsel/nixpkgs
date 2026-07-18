@@ -5,19 +5,16 @@
 
 stdenvNoCC.mkDerivation {
   pname = "dn42-cacert";
-
   # check it on its homepage
   version = "0-unstable-2016-01-16";
-
   src = ./root-ca.crt;
-
-  dontUnpack = true;
-
-  dontBuild = true;
 
   installPhase = ''
     install -Dm644 $src $out/etc/ssl/certs/dn42-ca.crt
   '';
+
+  dontBuild = true;
+  dontUnpack = true;
 
   meta = {
     description = "DN42 Root CA certificate";

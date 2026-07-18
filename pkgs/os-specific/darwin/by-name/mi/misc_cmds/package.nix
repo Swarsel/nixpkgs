@@ -8,14 +8,10 @@
 }:
 
 mkAppleDerivation {
-  releaseName = "misc_cmds";
-
   outputs = [
     "out"
     "man"
   ];
-
-  xcodeHash = "sha256-xuEHBlgys/xI9lm/wtiVAKi+AWWvRluW2I4rWOmS1kw=";
 
   postPatch = ''
     substituteInPlace calendar/pathnames.h \
@@ -34,5 +30,7 @@ mkAppleDerivation {
     ncurses
   ];
 
+  releaseName = "misc_cmds";
+  xcodeHash = "sha256-xuEHBlgys/xI9lm/wtiVAKi+AWWvRluW2I4rWOmS1kw=";
   meta.description = "Miscellaneous commands for Darwin";
 }

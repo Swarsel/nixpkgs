@@ -1,12 +1,12 @@
 {
   lib,
   stdenv,
-  fetchzip,
-  upx,
   autoPatchelfHook,
+  fetchzip,
+  nix-update,
+  upx,
   versionCheckHook,
   writeShellScript,
-  nix-update,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -17,15 +17,16 @@ stdenv.mkDerivation (finalAttrs: {
     let
       selectSystem = attrs: attrs.${stdenv.hostPlatform.system};
       arch = selectSystem {
-        x86_64-linux = "amd64";
         aarch64-linux = "aarch64";
+        x86_64-linux = "amd64";
       };
     in
     fetchzip {
       url = "https://dl.nssurge.com/snell/snell-server-v${finalAttrs.version}-linux-${arch}.zip";
+
       hash = selectSystem {
-        x86_64-linux = "sha256-J2kRVJRC0GhxLMarg7Ucdk8uvzTsKbFHePEflPjwsHU=";
         aarch64-linux = "sha256-UT+Rd6TEMYL/+xfqGxGN/tiSBvN8ntDrkCBj4PuMRwg=";
+        x86_64-linux = "sha256-J2kRVJRC0GhxLMarg7Ucdk8uvzTsKbFHePEflPjwsHU=";
       };
     };
 
@@ -60,13 +61,16 @@ stdenv.mkDerivation (finalAttrs: {
     homepage = "https://kb.nssurge.com/surge-knowledge-base/release-notes/snell";
     license = lib.licenses.unfree;
     sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
+
+    maintainers = with lib.maintainers; [
+      mlyxshi
+    ];
+
     platforms = [
       "x86_64-linux"
       "aarch64-linux"
     ];
-    maintainers = with lib.maintainers; [
-      mlyxshi
-    ];
+
     mainProgram = "snell-server";
   };
 })

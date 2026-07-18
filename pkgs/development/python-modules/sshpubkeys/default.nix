@@ -1,15 +1,14 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
+  buildPythonPackage,
   cryptography,
+  setuptools,
 }:
 
 buildPythonPackage rec {
-  version = "3.3.1";
   pname = "sshpubkeys";
-  pyproject = true;
+  version = "3.3.1";
 
   src = fetchFromGitHub {
     owner = "ojarva";
@@ -25,12 +24,13 @@ buildPythonPackage rec {
     cryptography
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "sshpubkeys" ];
 
   meta = {
-    changelog = "https://github.com/ojarva/python-sshpubkeys/releases/tag/${src.tag}";
     description = "OpenSSH Public Key Parser for Python";
     homepage = "https://github.com/ojarva/python-sshpubkeys";
+    changelog = "https://github.com/ojarva/python-sshpubkeys/releases/tag/${src.tag}";
     license = lib.licenses.bsd3;
     maintainers = [ ];
   };

@@ -1,37 +1,34 @@
 {
   lib,
   stdenv,
-
   fetchFromGitHub,
-
-  buildEnv,
-  linkFarm,
-  writers,
-
-  cmake,
-  ninja,
-  pkg-config,
-
+  R,
   boost,
+  buildEnv,
+  cmake,
   freexl,
   libarchive,
   librdata,
   libsodium,
+  linkFarm,
+  ninja,
+  pkg-config,
   qt6,
-  R,
-  readstat,
   rPackages,
+  readstat,
+  writers,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
   pname = "jasp-desktop";
   version = "0.97.1";
+
   src = fetchFromGitHub {
     owner = "jasp-stats";
     repo = "jasp-desktop";
     tag = "v${finalAttrs.version}";
-    fetchSubmodules = true;
     hash = "sha256-4K6ReOJJF8Pt/RdNSp2ZVH/d64ZMCFlX1RIXDAWWWBE=";
+    fetchSubmodules = true;
   };
 
   patches = [
@@ -39,14 +36,6 @@ stdenv.mkDerivation (finalAttrs: {
     ./disable-module-install-logic.patch # don't try to install modules via cmake
     ./disable-renv-logic.patch
     ./dont-check-for-module-deps.patch # dont't check for dependencies required for building modules
-  ];
-
-  cmakeFlags = [
-    (lib.cmakeFeature "GITHUB_PAT" "dummy")
-    (lib.cmakeFeature "GITHUB_PAT_DEF" "dummy")
-    (lib.cmakeBool "LINUX_LOCAL_BUILD" false)
-    (lib.cmakeBool "INSTALL_R_MODULES" false)
-    (lib.cmakeFeature "CUSTOM_R_PATH" "${finalAttrs.passthru.customREnv}")
   ];
 
   nativeBuildInputs = [
@@ -70,6 +59,14 @@ stdenv.mkDerivation (finalAttrs: {
     qt6.qtwebengine
     qt6.qtsvg
     qt6.qt5compat
+  ];
+
+  cmakeFlags = [
+    (lib.cmakeFeature "GITHUB_PAT" "dummy")
+    (lib.cmakeFeature "GITHUB_PAT_DEF" "dummy")
+    (lib.cmakeBool "LINUX_LOCAL_BUILD" false)
+    (lib.cmakeBool "INSTALL_R_MODULES" false)
+    (lib.cmakeFeature "CUSTOM_R_PATH" "${finalAttrs.passthru.customREnv}")
   ];
 
   # needed so that the linker can find libRInside.so
@@ -100,6 +97,7 @@ stdenv.mkDerivation (finalAttrs: {
     # Merges ${R}/lib/R with all used R packages (even propagated ones)
     customREnv = buildEnv {
       name = "jasp-desktop-${finalAttrs.version}-env";
+
       paths = [
         "${R}/lib/R"
         rPackages.RInside
@@ -118,9 +116,10 @@ stdenv.mkDerivation (finalAttrs: {
     moduleManifests = linkFarm "jasp-desktop-${finalAttrs.version}-module-manifests" (
       lib.mapAttrsToList (name: drv: {
         name = "${name}_manifest.json";
+
         path = writers.writeJSON "${name}_manifest.json" {
-          name = name;
           version = drv.version;
+          name = name;
         };
       }) finalAttrs.passthru.jaspModules
     );
@@ -129,14 +128,14 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   meta = {
-    changelog = "https://jasp-stats.org/release-notes";
     description = "Complete statistical package for both Bayesian and Frequentist statistical methods";
     homepage = "https://github.com/jasp-stats/jasp-desktop";
+    changelog = "https://jasp-stats.org/release-notes";
     license = lib.licenses.agpl3Plus;
-    mainProgram = "JASP";
     maintainers = with lib.maintainers; [ tomasajt ];
     # JASP's cmake build steps are really different on Darwin
     # Perhaps the Darwin-specific things could be changed to be the same as Linux
     platforms = lib.platforms.linux;
+    mainProgram = "JASP";
   };
 })

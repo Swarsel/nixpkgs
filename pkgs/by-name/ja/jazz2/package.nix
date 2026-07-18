@@ -1,16 +1,16 @@
 {
+  lib,
+  stdenv,
+  fetchFromGitHub,
+  SDL2,
   cmake,
   curl,
-  fetchFromGitHub,
   gitUpdater,
   jazz2-content,
-  lib,
   libGL,
   libopenmpt,
   libvorbis,
   openal,
-  SDL2,
-  stdenv,
   versionCheckHook,
   zlib,
 }:
@@ -27,9 +27,9 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   patches = [ ./nocontent.patch ];
-
   strictDeps = true;
   nativeBuildInputs = [ cmake ];
+
   buildInputs = [
     curl
     libGL
@@ -46,10 +46,11 @@ stdenv.mkDerivation (finalAttrs: {
     (lib.cmakeFeature "NCINE_OVERRIDE_CONTENT_PATH" "${jazz2-content}")
   ];
 
+  doInstallCheck = true;
+
   nativeInstallCheckInputs = [
     versionCheckHook
   ];
-  doInstallCheck = true;
 
   passthru = {
     updateScript = gitUpdater { };
@@ -59,8 +60,8 @@ stdenv.mkDerivation (finalAttrs: {
     description = "Open-source Jazz Jackrabbit 2 reimplementation";
     homepage = "https://github.com/deathkiller/jazz2-native";
     license = lib.licenses.gpl3Only;
-    mainProgram = "jazz2";
     maintainers = with lib.maintainers; [ surfaceflinger ];
     platforms = lib.platforms.linux;
+    mainProgram = "jazz2";
   };
 })

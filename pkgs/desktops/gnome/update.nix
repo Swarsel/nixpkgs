@@ -1,16 +1,16 @@
 {
-  stdenv,
-  pkgs,
   lib,
-  writeScript,
-  python3,
+  stdenv,
   common-updater-scripts,
+  pkgs,
+  python3,
+  writeScript,
 }:
 {
   packageName,
   attrPath ? packageName,
-  versionPolicy ? "tagged",
   freeze ? false,
+  versionPolicy ? "tagged",
 }:
 
 let
@@ -97,7 +97,8 @@ let
   '';
 in
 {
-  name = "gnome-update-script";
+  inherit attrPath;
+
   command = [
     updateScript
     attrPath
@@ -106,8 +107,10 @@ in
     versionPolicy
   ]
   ++ upperBound;
+
+  name = "gnome-update-script";
+
   supportedFeatures = [
     "commit"
   ];
-  inherit attrPath;
 }

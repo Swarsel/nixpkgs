@@ -1,7 +1,7 @@
 {
   lib,
-  aircrack-ng,
   fetchFromGitHub,
+  aircrack-ng,
   iproute2,
   networkmanager,
   python3,
@@ -12,7 +12,6 @@
 python3.pkgs.buildPythonApplication {
   pname = "dbmonster";
   version = "0-unstable-2022-09-17";
-  pyproject = false;
 
   src = fetchFromGitHub {
     owner = "90N45-d3v";
@@ -32,7 +31,8 @@ python3.pkgs.buildPythonApplication {
     matplotlib
   ]);
 
-  dontBuild = true;
+  # Only script available
+  doCheck = false;
 
   installPhase = ''
     runHook preInstall
@@ -46,8 +46,8 @@ python3.pkgs.buildPythonApplication {
     runHook postInstall
   '';
 
-  # Only script available
-  doCheck = false;
+  dontBuild = true;
+  pyproject = false;
 
   meta = {
     description = "Tool to track WiFi devices by signal strength";

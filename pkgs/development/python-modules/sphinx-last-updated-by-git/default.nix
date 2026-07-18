@@ -1,19 +1,18 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
+  gitMinimal,
+  gitpython,
+  pytest-cov-stub,
+  pytestCheckHook,
   setuptools,
   sphinx,
-  gitpython,
-  gitMinimal,
-  pytestCheckHook,
   sphinx-pytest,
-  pytest-cov-stub,
 }:
 buildPythonPackage (finalAttrs: {
   pname = "sphinx-last-updated-by-git";
   version = "0.3.8-unstable-2026-03-22";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "mgeier";
@@ -23,13 +22,6 @@ buildPythonPackage (finalAttrs: {
     fetchSubmodules = true;
     leaveDotGit = true;
   };
-
-  build-system = [ setuptools ];
-
-  dependencies = [
-    sphinx
-    gitpython
-  ];
 
   postPatch = ''
     # we cant just substitute by matching `'git'` due to collisons
@@ -47,12 +39,21 @@ buildPythonPackage (finalAttrs: {
     pytest-cov-stub
   ];
 
+  build-system = [ setuptools ];
+
+  dependencies = [
+    sphinx
+    gitpython
+  ];
+
   disabledTests = [
     "test_no_git" # we hardcoded the git path
 
     "test_repo_shallow"
     "test_repo_shallow_without_warning"
   ];
+
+  pyproject = true;
 
   meta = {
     description = "Get the last updated time for each Sphinx page from Git";

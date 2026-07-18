@@ -1,13 +1,13 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
-  versionCheckHook,
-  testers,
-  runCommand,
-  writeText,
-  nix-update-script,
   brush,
+  nix-update-script,
+  runCommand,
+  rustPlatform,
+  testers,
+  versionCheckHook,
+  writeText,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -22,27 +22,21 @@ rustPlatform.buildRustPackage (finalAttrs: {
   };
 
   cargoHash = "sha256-NSvlLiLp0kdnWNUSIateGkscL5as+b00d54CP3sEakI=";
+  # Found argument '--test-threads' which wasn't expected, or isn't valid in this context
+  doCheck = false;
+  doInstallCheck = true;
 
   nativeInstallCheckInputs = [
     versionCheckHook
   ];
-  doInstallCheck = true;
-  versionCheckProgram = "${placeholder "out"}/bin/${finalAttrs.meta.mainProgram}";
 
-  # Found argument '--test-threads' which wasn't expected, or isn't valid in this context
-  doCheck = false;
+  versionCheckProgram = "${placeholder "out"}/bin/${finalAttrs.meta.mainProgram}";
 
   passthru = {
     shellPath = "/bin/brush";
 
     tests = {
       complete = testers.testEqualContents {
-        assertion = "brushinfo performs to inspect completions";
-        expected = writeText "expected" ''
-          brush
-          brushctl
-          brushinfo
-        '';
         actual =
           runCommand "actual"
             {
@@ -51,6 +45,14 @@ rustPlatform.buildRustPackage (finalAttrs: {
             ''
               brush -c 'brushinfo complete line bru' >$out
             '';
+
+        assertion = "brushinfo performs to inspect completions";
+
+        expected = writeText "expected" ''
+          brush
+          brushctl
+          brushinfo
+        '';
       };
     };
 

@@ -2,18 +2,16 @@
   lib,
   fetchurl,
   buildDunePackage,
-  js_of_ocaml,
-  ppxlib,
-  js_of_ocaml-ppx,
   gen_js_api,
+  js_of_ocaml,
+  js_of_ocaml-ppx,
   ojs,
+  ppxlib,
 }:
 
 buildDunePackage (finalAttrs: {
   pname = "promise_jsoo";
   version = "0.3.1";
-  minimalOCamlVersion = "4.08";
-  duneVersion = "3";
 
   src = fetchurl {
     url = "https://github.com/mnxn/promise_jsoo/releases/download/v${finalAttrs.version}/promise_jsoo-v${finalAttrs.version}.tbz";
@@ -31,9 +29,12 @@ buildDunePackage (finalAttrs: {
     ojs
   ];
 
+  duneVersion = "3";
+  minimalOCamlVersion = "4.08";
+
   meta = {
-    homepage = "https://github.com/mnxn/promise_jsoo";
     description = "Js_of_ocaml bindings to JS Promises with supplemental functions";
+    homepage = "https://github.com/mnxn/promise_jsoo";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ jayesh-bhoot ];
   };

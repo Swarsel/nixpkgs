@@ -1,11 +1,11 @@
 {
+  lib,
+  stdenv,
+  fetchFromGitHub,
   abseil-cpp_202407,
   cmake,
-  fetchFromGitHub,
-  stdenv,
-  lib,
-  pkg-config,
   openssl,
+  pkg-config,
 }:
 
 let
@@ -27,12 +27,6 @@ stdenv.mkDerivation (finalAttrs: {
     pkg-config
   ];
 
-  cmakeFlags = [
-    (lib.cmakeFeature "CMAKE_CXX_STANDARD" cxxStandard)
-    # incompatible with our version of gtest
-    (lib.cmakeBool "BUILD_TESTS" false)
-  ];
-
   buildInputs = [
     openssl
   ];
@@ -41,10 +35,16 @@ stdenv.mkDerivation (finalAttrs: {
     (abseil-cpp_202407.override { inherit cxxStandard; })
   ];
 
+  cmakeFlags = [
+    (lib.cmakeFeature "CMAKE_CXX_STANDARD" cxxStandard)
+    # incompatible with our version of gtest
+    (lib.cmakeBool "BUILD_TESTS" false)
+  ];
+
   meta = {
-    changelog = "https://github.com/google/s2geometry/releases/tag/v${finalAttrs.version}";
     description = "Computational geometry and spatial indexing on the sphere";
     homepage = "http://s2geometry.io/";
+    changelog = "https://github.com/google/s2geometry/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.asl20;
     maintainers = [ lib.maintainers.Thra11 ];
     platforms = lib.platforms.unix;

@@ -1,7 +1,7 @@
 {
-  buildNpmPackage,
-  fetchFromGitHub,
   lib,
+  fetchFromGitHub,
+  buildNpmPackage,
   nix-update-script,
   versionCheckHook,
 }:
@@ -17,19 +17,16 @@ buildNpmPackage (finalAttrs: {
     hash = "sha256-X3spl/myhcfmnJ1pN7RAoR0rc4kEM9s0DLtrN9RqyhU=";
   };
 
-  npmDepsHash = "sha256-jVLCR6gIgK5OhH/KQPn3lYdTuNpMAEAQS1EtqIq8jTM=";
-
   postPatch = ''
     substituteInPlace rollup.config.js \
       --replace-fail "git rev-parse HEAD" "echo ${finalAttrs.version}"
   '';
 
+  npmDepsHash = "sha256-jVLCR6gIgK5OhH/KQPn3lYdTuNpMAEAQS1EtqIq8jTM=";
   env.PUPPETEER_SKIP_DOWNLOAD = true;
-
   doInstallCheck = true;
   nativeInstallCheckInputs = [ versionCheckHook ];
   versionCheckProgramArg = "--version";
-
   passthru.updateScript = nix-update-script { };
 
   meta = {

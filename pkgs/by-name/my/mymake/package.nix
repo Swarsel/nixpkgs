@@ -1,6 +1,6 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
   nix-update-script,
 }:
@@ -37,8 +37,8 @@ stdenv.mkDerivation (finalAttrs: {
   meta = {
     description = "Tool for compiling and running programs with minimal configuration";
     homepage = "https://github.com/fstromback/mymake";
-    maintainers = [ lib.maintainers.nobbele ];
     license = lib.licenses.mit;
+    maintainers = [ lib.maintainers.nobbele ];
     platforms = lib.platforms.linux;
     mainProgram = "mm";
   };

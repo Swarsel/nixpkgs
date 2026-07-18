@@ -1,18 +1,18 @@
 {
   config,
-  pkgs,
   lib,
+  pkgs,
   ...
 }:
 let
   cfg = config.services.photoprism;
 
   env = {
-    PHOTOPRISM_ORIGINALS_PATH = cfg.originalsPath;
-    PHOTOPRISM_STORAGE_PATH = cfg.storagePath;
-    PHOTOPRISM_IMPORT_PATH = cfg.importPath;
     PHOTOPRISM_HTTP_HOST = cfg.address;
     PHOTOPRISM_HTTP_PORT = toString cfg.port;
+    PHOTOPRISM_IMPORT_PATH = cfg.importPath;
+    PHOTOPRISM_ORIGINALS_PATH = cfg.originalsPath;
+    PHOTOPRISM_STORAGE_PATH = cfg.storagePath;
   }
   // (lib.mapAttrs (_: toString) cfg.settings);
 
@@ -26,147 +26,113 @@ let
   '';
 in
 {
-  meta.maintainers = with lib.maintainers; [ stunkymonkey ];
-
   options.services.photoprism = {
 
     enable = lib.mkEnableOption "Photoprism web server";
-
-    passwordFile = lib.mkOption {
-      type = lib.types.nullOr lib.types.externalPath;
-      default = null;
-      description = ''
-        Admin password file.
-      '';
-    };
-
-    databasePasswordFile = lib.mkOption {
-      type = lib.types.nullOr lib.types.externalPath;
-      default = null;
-      description = ''
-        Database password file.
-      '';
-    };
+    package = lib.mkPackageOption pkgs "photoprism" { };
 
     address = lib.mkOption {
-      type = lib.types.str;
       default = "localhost";
+
       description = ''
         Web interface address.
       '';
+
+      type = lib.types.str;
     };
 
-    port = lib.mkOption {
-      type = lib.types.port;
-      default = 2342;
-      description = ''
-        Web interface port.
-      '';
-    };
-
-    originalsPath = lib.mkOption {
-      type = lib.types.path;
+    databasePasswordFile = lib.mkOption {
       default = null;
-      example = "/data/photos";
-      description = ''
-        Storage path of your original media files (photos and videos).
-      '';
-    };
 
-    importPath = lib.mkOption {
-      type = lib.types.str;
-      default = "import";
       description = ''
-        Relative or absolute to the `originalsPath` from where the files should be imported.
+        Database password file.
       '';
-    };
 
-    storagePath = lib.mkOption {
-      type = lib.types.path;
-      default = "/var/lib/photoprism";
-      description = ''
-        Location for sidecar, cache, and database files.
-      '';
-    };
-
-    user = lib.mkOption {
-      type = lib.types.str;
-      default = "photoprism";
-      description = "User under which photoprism runs.";
+      type = lib.types.nullOr lib.types.externalPath;
     };
 
     group = lib.mkOption {
-      type = lib.types.str;
       default = "photoprism";
       description = "Group under which photoprism runs.";
+      type = lib.types.str;
     };
 
-    package = lib.mkPackageOption pkgs "photoprism" { };
+    importPath = lib.mkOption {
+      default = "import";
+
+      description = ''
+        Relative or absolute to the `originalsPath` from where the files should be imported.
+      '';
+
+      type = lib.types.str;
+    };
+
+    originalsPath = lib.mkOption {
+      default = null;
+
+      description = ''
+        Storage path of your original media files (photos and videos).
+      '';
+
+      example = "/data/photos";
+      type = lib.types.path;
+    };
+
+    passwordFile = lib.mkOption {
+      default = null;
+
+      description = ''
+        Admin password file.
+      '';
+
+      type = lib.types.nullOr lib.types.externalPath;
+    };
+
+    port = lib.mkOption {
+      default = 2342;
+
+      description = ''
+        Web interface port.
+      '';
+
+      type = lib.types.port;
+    };
 
     settings = lib.mkOption {
-      type = lib.types.attrsOf lib.types.str;
       default = { };
+
       description = ''
         See [the getting-started guide](https://docs.photoprism.app/getting-started/config-options/) for available options.
       '';
+
       example = {
-        PHOTOPRISM_DEFAULT_LOCALE = "de";
         PHOTOPRISM_ADMIN_USER = "root";
+        PHOTOPRISM_DEFAULT_LOCALE = "de";
       };
+
+      type = lib.types.attrsOf lib.types.str;
+    };
+
+    storagePath = lib.mkOption {
+      default = "/var/lib/photoprism";
+
+      description = ''
+        Location for sidecar, cache, and database files.
+      '';
+
+      type = lib.types.path;
+    };
+
+    user = lib.mkOption {
+      default = "photoprism";
+      description = "User under which photoprism runs.";
+      type = lib.types.str;
     };
   };
 
   config = lib.mkIf cfg.enable {
     systemd.services.photoprism = {
       description = "Photoprism server";
-
-      serviceConfig = {
-        Restart = "on-failure";
-        User = cfg.user;
-        Group = cfg.group;
-        DynamicUser = true;
-        StateDirectory = "photoprism";
-        WorkingDirectory = cfg.storagePath;
-        RuntimeDirectory = "photoprism";
-        ReadWritePaths = [
-          cfg.originalsPath
-          cfg.importPath
-          cfg.storagePath
-        ];
-
-        LoadCredential = [
-          (lib.optionalString (cfg.passwordFile != null) "PHOTOPRISM_ADMIN_PASSWORD_FILE:${cfg.passwordFile}")
-          (lib.optionalString (
-            cfg.databasePasswordFile != null
-          ) "PHOTOPRISM_DATABASE_PASSWORD:${cfg.databasePasswordFile}")
-        ];
-
-        LockPersonality = true;
-        PrivateDevices = true;
-        PrivateUsers = true;
-        ProtectClock = true;
-        ProtectControlGroups = true;
-        ProtectHome = true;
-        ProtectHostname = true;
-        ProtectKernelLogs = true;
-        ProtectKernelModules = true;
-        ProtectKernelTunables = true;
-        RestrictAddressFamilies = [
-          "AF_UNIX"
-          "AF_INET"
-          "AF_INET6"
-        ];
-        RestrictNamespaces = true;
-        RestrictRealtime = true;
-        SystemCallArchitectures = "native";
-        SystemCallFilter = [
-          "@system-service"
-          "~@setuid @keyring"
-        ];
-        UMask = "0066";
-      };
-
-      wantedBy = [ "multi-user.target" ];
       environment = env;
 
       preStart = ''
@@ -189,6 +155,62 @@ in
         ''}
         exec ${cfg.package}/bin/photoprism start
       '';
+
+      serviceConfig = {
+        DynamicUser = true;
+        Group = cfg.group;
+
+        LoadCredential = [
+          (lib.optionalString (cfg.passwordFile != null) "PHOTOPRISM_ADMIN_PASSWORD_FILE:${cfg.passwordFile}")
+          (lib.optionalString (
+            cfg.databasePasswordFile != null
+          ) "PHOTOPRISM_DATABASE_PASSWORD:${cfg.databasePasswordFile}")
+        ];
+
+        LockPersonality = true;
+        PrivateDevices = true;
+        PrivateUsers = true;
+        ProtectClock = true;
+        ProtectControlGroups = true;
+        ProtectHome = true;
+        ProtectHostname = true;
+        ProtectKernelLogs = true;
+        ProtectKernelModules = true;
+        ProtectKernelTunables = true;
+
+        ReadWritePaths = [
+          cfg.originalsPath
+          cfg.importPath
+          cfg.storagePath
+        ];
+
+        Restart = "on-failure";
+
+        RestrictAddressFamilies = [
+          "AF_UNIX"
+          "AF_INET"
+          "AF_INET6"
+        ];
+
+        RestrictNamespaces = true;
+        RestrictRealtime = true;
+        RuntimeDirectory = "photoprism";
+        StateDirectory = "photoprism";
+        SystemCallArchitectures = "native";
+
+        SystemCallFilter = [
+          "@system-service"
+          "~@setuid @keyring"
+        ];
+
+        UMask = "0066";
+        User = cfg.user;
+        WorkingDirectory = cfg.storagePath;
+      };
+
+      wantedBy = [ "multi-user.target" ];
     };
   };
+
+  meta.maintainers = with lib.maintainers; [ stunkymonkey ];
 }

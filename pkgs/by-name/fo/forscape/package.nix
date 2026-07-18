@@ -2,15 +2,13 @@
   lib,
   stdenv,
   fetchFromGitHub,
-
   # nativeBuildInputs
   cmake,
-  qt6,
-  python3,
-
   # buildInputs
   eigen,
   parallel-hashmap,
+  python3,
+  qt6,
   readerwriterqueue,
 }:
 
@@ -24,11 +22,6 @@ stdenv.mkDerivation (finalAttrs: {
     rev = "1b6d82cdee7ed1ffeee8adffa56ca2b0a866cb34";
     hash = "sha256-Ee3SAFZG8I0ZEbggLVViqTYu4SFjNJ62xLcpfLgFlR0=";
   };
-  cmakeFlags = [
-    "-DUSE_CONAN=OFF"
-  ];
-  # Relative to build directory
-  cmakeDir = "../app";
 
   nativeBuildInputs = [
     cmake
@@ -44,12 +37,19 @@ stdenv.mkDerivation (finalAttrs: {
     qt6.qtsvg
   ];
 
+  cmakeFlags = [
+    "-DUSE_CONAN=OFF"
+  ];
+
+  # Relative to build directory
+  cmakeDir = "../app";
+
   meta = {
     description = "Scientific computing language";
     homepage = "https://github.com/JohnDTill/Forscape";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ doronbehar ];
-    mainProgram = "Forscape";
     platforms = lib.platforms.all;
+    mainProgram = "Forscape";
   };
 })

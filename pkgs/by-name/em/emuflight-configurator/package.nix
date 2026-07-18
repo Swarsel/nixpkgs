@@ -2,13 +2,13 @@
   lib,
   stdenv,
   fetchurl,
-  unzip,
-  makeDesktopItem,
   copyDesktopItems,
-  nwjs,
-  wrapGAppsHook3,
   gsettings-desktop-schemas,
   gtk3,
+  makeDesktopItem,
+  nwjs,
+  unzip,
+  wrapGAppsHook3,
 }:
 
 stdenv.mkDerivation rec {
@@ -42,27 +42,29 @@ stdenv.mkDerivation rec {
 
   desktopItems = [
     (makeDesktopItem {
-      name = pname;
-      exec = pname;
-      icon = pname;
       comment = "Emuflight configuration tool";
       desktopName = "Emuflight Configurator";
+      exec = pname;
       genericName = "Flight controller configuration tool";
+      icon = pname;
+      name = pname;
     })
   ];
 
   meta = {
     description = "Emuflight flight control system configuration tool";
-    mainProgram = "emuflight-configurator";
+
     longDescription = ''
       A crossplatform configuration tool for the Emuflight flight control system.
       Various types of aircraft are supported by the tool and by Emuflight, e.g.
       quadcopters, hexacopters, octocopters and fixed-wing aircraft.
       The application allows you to configure the Emuflight software running on any supported Emuflight target.
     '';
+
     homepage = "https://github.com/emuflight/EmuConfigurator";
-    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
     license = lib.licenses.gpl3Only;
+    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
     platforms = lib.platforms.linux;
+    mainProgram = "emuflight-configurator";
   };
 }

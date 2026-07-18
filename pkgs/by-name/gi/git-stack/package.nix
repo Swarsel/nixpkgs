@@ -1,10 +1,10 @@
 {
   lib,
+  stdenv,
   fetchFromGitHub,
+  git-stack,
   rustPlatform,
   testers,
-  git-stack,
-  stdenv,
   zlib,
 }:
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -18,14 +18,13 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-PULWvJ1sfLbTVOICl/ENPG76tOw+98Whgtc9obO+W6w=";
   };
 
-  cargoHash = "sha256-n+kU6OLwsAjUVc1LPZpcn54FJroU09LNWmrar2oNyXI=";
-
   buildInputs =
     [ ]
     ++ lib.optionals stdenv.hostPlatform.isDarwin [
       zlib
     ];
 
+  cargoHash = "sha256-n+kU6OLwsAjUVc1LPZpcn54FJroU09LNWmrar2oNyXI=";
   # Many tests try to access the file system.
   doCheck = false;
 

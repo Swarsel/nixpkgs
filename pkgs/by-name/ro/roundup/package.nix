@@ -17,27 +17,27 @@ stdenv.mkDerivation (finalAttrs: {
     sha256 = "0nxaqmbv8mdvq9wcaqxk6k5mr31i68jzxf1wxa6pp7xp4prwdc9z";
   };
 
-  prePatch = ''
-    # Don't change $PATH
-    substituteInPlace configure --replace PATH= NIRVANA=
-    # There are only man pages in sections 1 and 5 \
-    substituteInPlace Makefile --replace "{1..9}" "1 5"
-  '';
-
   nativeBuildInputs = [
     ronn
     shocco
-  ];
-
-  installTargets = [
-    "install"
-    "install-man"
   ];
 
   preInstall = ''
     for i in 1 5; do
       mkdir -p $out/share/man/man$i
     done
+  '';
+
+  installTargets = [
+    "install"
+    "install-man"
+  ];
+
+  prePatch = ''
+    # Don't change $PATH
+    substituteInPlace configure --replace PATH= NIRVANA=
+    # There are only man pages in sections 1 and 5 \
+    substituteInPlace Makefile --replace "{1..9}" "1 5"
   '';
 
   meta = {

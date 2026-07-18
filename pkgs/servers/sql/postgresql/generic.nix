@@ -1,123 +1,103 @@
 {
+  lib,
   # utils
   stdenv,
-  fetchFromGitHub,
   fetchurl,
-  lib,
-  replaceVars,
-
-  # source specification
-  hash,
-  muslPatches ? { },
-  rev,
-  version,
-
-  # runtime dependencies
-  darwin,
-  freebsd,
-  glibc,
-  libuuid,
-  libxml2,
-  lz4,
-  openssl,
-  readline,
-  tzdata,
-  zlib,
-  zstd,
-
+  fetchFromGitHub,
   # build dependencies
   bison,
+  # passthru
+  buildPackages,
+  curl,
+  # runtime dependencies
+  darwin,
   docbook-xsl-nons,
   docbook_xml_dtd_45,
   flex,
+  freebsd,
+  gettext,
+  glibc,
+  # source specification
+  hash,
+  icu,
+  libkrb5,
+  libselinux,
+  liburing,
+  libuuid,
+  libxml2,
   libxslt,
+  linux-pam,
+  llvmPackages,
+  lz4,
   makeBinaryWrapper,
-  pkg-config,
-  removeReferencesTo,
-
-  # passthru
-  buildPackages,
   newScope,
   nixosTests,
+  nukeReferences,
+  numactl,
+  openldap,
+  openssl,
+  overrideCC,
+  perl,
+  pkg-config,
+  python3,
+  readline,
+  removeReferencesTo,
+  replaceVars,
+  rev,
   self,
+  systemdLibs,
+  tcl,
   testers,
-
-  # Block size
-  # Changing the block size will break on-disk database compatibility. See:
-  # https://www.postgresql.org/docs/current/install-make.html#CONFIGURE-OPTION-WITH-BLOCKSIZE
-  withBlocksize ? null,
-  withWalBlocksize ? null,
-
+  tzdata,
+  version,
+  zlib,
+  zstd,
   # bonjour
   bonjourSupport ? false,
-
   # Curl
   curlSupport ? lib.versionAtLeast version "18" && lib.meta.availableOn stdenv.hostPlatform curl,
-  curl,
-
   # GSSAPI
   gssSupport ? with stdenv.hostPlatform; !isWindows,
-  libkrb5,
-
   # icu
   icuSupport ? true,
-  icu,
-
   # JIT
   jitSupport ? stdenv.hostPlatform.canExecute stdenv.buildPlatform,
-  llvmPackages,
-  nukeReferences,
-  overrideCC,
-
   # LDAP
   ldapSupport ? false,
-  openldap,
-
+  muslPatches ? { },
   # NLS
   nlsSupport ? false,
-  gettext,
-
   # NUMA
   numaSupport ? lib.versionAtLeast version "18" && lib.meta.availableOn stdenv.hostPlatform numactl,
-  numactl,
-
   # PAM
   pamSupport ? lib.meta.availableOn stdenv.hostPlatform linux-pam,
-  linux-pam,
-
   # PL/Perl
   perlSupport ?
     lib.meta.availableOn stdenv.hostPlatform perl
     # configure tries to call the perl executable for the version
     && stdenv.buildPlatform.canExecute stdenv.hostPlatform,
-  perl,
-
   # PL/Python
   pythonSupport ?
     lib.meta.availableOn stdenv.hostPlatform python3
     # configure tries to call the python executable
     && stdenv.buildPlatform.canExecute stdenv.hostPlatform,
-  python3,
-
+  # SELinux
+  selinuxSupport ? false,
+  # Systemd
+  systemdSupport ? lib.meta.availableOn stdenv.hostPlatform systemdLibs,
   # PL/Tcl
   tclSupport ?
     lib.meta.availableOn stdenv.hostPlatform tcl
     # configure fails with:
     #   configure: error: file 'tclConfig.sh' is required for Tcl
     && stdenv.buildPlatform.canExecute stdenv.hostPlatform,
-  tcl,
-
-  # SELinux
-  selinuxSupport ? false,
-  libselinux,
-
-  # Systemd
-  systemdSupport ? lib.meta.availableOn stdenv.hostPlatform systemdLibs,
-  systemdLibs,
-
   # Uring
   uringSupport ? lib.versionAtLeast version "18" && lib.meta.availableOn stdenv.hostPlatform liburing,
-  liburing,
+  # Block size
+  # Changing the block size will break on-disk database compatibility. See:
+  # https://www.postgresql.org/docs/current/install-make.html#CONFIGURE-OPTION-WITH-BLOCKSIZE
+  withBlocksize ? null,
+  withWalBlocksize ? null,
 }@args:
 let
   atLeast = lib.versionAtLeast version;
@@ -143,14 +123,12 @@ stdenv'.mkDerivation (finalAttrs: {
   pname = "postgresql";
 
   src = fetchFromGitHub {
-    owner = "postgres";
-    repo = "postgres";
     # rev, not tag, on purpose: allows updating when new versions
     # are "stamped" a few days before release (tag).
     inherit hash rev;
+    owner = "postgres";
+    repo = "postgres";
   };
-
-  __structuredAttrs = true;
 
   outputs = [
     "out"
@@ -164,72 +142,81 @@ stdenv'.mkDerivation (finalAttrs: {
   ++ lib.optionals pythonSupport [ "plpython3" ]
   ++ lib.optionals tclSupport [ "pltcl" ];
 
-  outputChecks = {
-    out = {
-      disallowedReferences = [
-        "dev"
-        "doc"
-        "man"
-      ]
-      ++ lib.optionals jitSupport [ "jit" ];
-      disallowedRequisites = [
-        stdenv'.cc
-        llvmPackages.llvm.out
-        llvmPackages.llvm.lib
-      ]
-      ++ (map lib.getDev (builtins.filter (drv: drv ? "dev") finalAttrs.buildInputs));
-    };
+  patches = [
+    (
+      if atLeast "16" then
+        ./patches/relative-to-symlinks-16+.patch
+      else
+        ./patches/relative-to-symlinks.patch
+    )
+    (
+      if atLeast "15" then
+        ./patches/empty-pg-config-view-15+.patch
+      else
+        ./patches/empty-pg-config-view.patch
+    )
+    ./patches/less-is-more.patch
+    ./patches/paths-for-split-outputs.patch
+    ./patches/paths-with-postgresql-suffix.patch
 
-    lib = {
-      disallowedReferences = [
-        "out"
-        "dev"
-        "doc"
-        "man"
-      ]
-      ++ lib.optionals jitSupport [ "jit" ];
-      disallowedRequisites = [
-        stdenv'.cc
-        llvmPackages.llvm.out
-        llvmPackages.llvm.lib
-      ]
-      ++ (map lib.getDev (builtins.filter (drv: drv ? "dev") finalAttrs.buildInputs));
-    };
+    (replaceVars ./patches/locale-binary-path.patch {
+      locale = "${
+        if stdenv.hostPlatform.isDarwin then
+          darwin.adv_cmds
+        else if stdenv.hostPlatform.isFreeBSD then
+          freebsd.locale
+        else
+          lib.getBin stdenv.cc.libc
+      }/bin/locale";
+    })
+  ]
+  ++ lib.optionals stdenv'.hostPlatform.isMusl (
+    # Using fetchurl instead of fetchpatch on purpose: https://github.com/NixOS/nixpkgs/issues/240141
+    map fetchurl (lib.attrValues muslPatches)
+  )
+  ++ lib.optionals stdenv'.hostPlatform.isLinux [
+    ./patches/socketdir-in-run-13+.patch
+  ]
+  ++ lib.optionals (stdenv'.hostPlatform.isDarwin && olderThan "16") [
+    ./patches/export-dynamic-darwin-15-.patch
+  ];
 
-    doc = {
-      disallowedReferences = [
-        "out"
-        "dev"
-        "man"
-      ]
-      ++ lib.optionals jitSupport [ "jit" ];
-    };
-
-    man = {
-      disallowedReferences = [
-        "out"
-        "dev"
-        "doc"
-      ]
-      ++ lib.optionals jitSupport [ "jit" ];
-    };
-  }
-  // lib.optionalAttrs jitSupport {
-    jit = {
-      disallowedReferences = [
-        "dev"
-        "doc"
-        "man"
-      ];
-      disallowedRequisites = [
-        stdenv'.cc
-        llvmPackages.llvm.out
-      ]
-      ++ (map lib.getDev (builtins.filter (drv: drv ? "dev") finalAttrs.buildInputs));
-    };
-  };
+  postPatch = ''
+    substituteInPlace "src/Makefile.global.in" --subst-var out
+    substituteInPlace "src/common/config_info.c" --subst-var dev
+    cat ${./pg_config.env.mk} >> src/common/Makefile
+  ''
+  # This test always fails on hardware with >1 NUMA node: the sysfs
+  # dirs providing information about the topology are hidden in the sandbox,
+  # so postgres assumes there's only a single node `0`. However,
+  # the test checks on which NUMA nodes the allocated pages are which is >1
+  # on such hardware. This in turn triggers a safeguard in the view
+  # which breaks the test.
+  # Manual tests confirm that the testcase behaves properly outside of the
+  # Nix sandbox.
+  + lib.optionalString (atLeast "18") ''
+    substituteInPlace src/test/regress/parallel_schedule \
+      --replace-fail numa ""
+  '';
 
   strictDeps = true;
+
+  nativeBuildInputs = [
+    bison
+    docbook-xsl-nons
+    docbook_xml_dtd_45
+    flex
+    libxml2
+    libxslt
+    makeBinaryWrapper
+    perl
+    pkg-config
+    removeReferencesTo
+  ]
+  ++ lib.optionals jitSupport [
+    llvmPackages.llvm.dev
+    nukeReferences
+  ];
 
   buildInputs = [
     zlib
@@ -252,50 +239,6 @@ stdenv'.mkDerivation (finalAttrs: {
   ++ lib.optionals ldapSupport [ openldap ]
   ++ lib.optionals selinuxSupport [ libselinux ]
   ++ lib.optionals nlsSupport [ gettext ];
-
-  nativeBuildInputs = [
-    bison
-    docbook-xsl-nons
-    docbook_xml_dtd_45
-    flex
-    libxml2
-    libxslt
-    makeBinaryWrapper
-    perl
-    pkg-config
-    removeReferencesTo
-  ]
-  ++ lib.optionals jitSupport [
-    llvmPackages.llvm.dev
-    nukeReferences
-  ];
-
-  enableParallelBuilding = true;
-
-  separateDebugInfo = true;
-
-  buildFlags = [ "world" ];
-
-  env = {
-    # libpgcommon.a and libpgport.a contain all paths returned by pg_config and are linked
-    # into all binaries. However, almost no binaries actually use those paths. The following
-    # flags will remove unused sections from all shared libraries and binaries - including
-    # those paths. This avoids a lot of circular dependency problems with different outputs,
-    # and allows splitting them cleanly.
-    CFLAGS = "-fdata-sections -ffunction-sections -flto";
-
-    # This flag was introduced upstream in:
-    # https://github.com/postgres/postgres/commit/b6c7cfac88c47a9194d76f3d074129da3c46545a
-    # It causes errors when linking against libpq.a in pkgsStatic:
-    #   undefined reference to `pg_encoding_to_char'
-    # Unsetting the flag fixes it. The upstream reasoning to introduce it is about the risk
-    # to have initdb load a libpq.so from a different major version and how to avoid that.
-    # This doesn't apply to us with Nix.
-    NIX_CFLAGS_COMPILE = "-UUSE_PRIVATE_ENCODING_FUNCS";
-  }
-  // lib.optionalAttrs perlSupport { PERL = lib.getExe perl; }
-  // lib.optionalAttrs pythonSupport { PYTHON = lib.getExe python3; }
-  // lib.optionalAttrs tclSupport { TCLSH = "${lib.getBin tcl}/bin/tclsh"; };
 
   configureFlags =
     let
@@ -347,64 +290,32 @@ stdenv'.mkDerivation (finalAttrs: {
     # Configure needs a little help to find `nm` when cross-compiling.
     ++ lib.optionals (atLeast "19") [ "NM=${stdenv'.cc}/bin/${stdenv'.cc.targetPrefix}nm" ];
 
-  patches = [
-    (
-      if atLeast "16" then
-        ./patches/relative-to-symlinks-16+.patch
-      else
-        ./patches/relative-to-symlinks.patch
-    )
-    (
-      if atLeast "15" then
-        ./patches/empty-pg-config-view-15+.patch
-      else
-        ./patches/empty-pg-config-view.patch
-    )
-    ./patches/less-is-more.patch
-    ./patches/paths-for-split-outputs.patch
-    ./patches/paths-with-postgresql-suffix.patch
+  buildFlags = [ "world" ];
 
-    (replaceVars ./patches/locale-binary-path.patch {
-      locale = "${
-        if stdenv.hostPlatform.isDarwin then
-          darwin.adv_cmds
-        else if stdenv.hostPlatform.isFreeBSD then
-          freebsd.locale
-        else
-          lib.getBin stdenv.cc.libc
-      }/bin/locale";
-    })
-  ]
-  ++ lib.optionals stdenv'.hostPlatform.isMusl (
-    # Using fetchurl instead of fetchpatch on purpose: https://github.com/NixOS/nixpkgs/issues/240141
-    map fetchurl (lib.attrValues muslPatches)
-  )
-  ++ lib.optionals stdenv'.hostPlatform.isLinux [
-    ./patches/socketdir-in-run-13+.patch
-  ]
-  ++ lib.optionals (stdenv'.hostPlatform.isDarwin && olderThan "16") [
-    ./patches/export-dynamic-darwin-15-.patch
-  ];
+  env = {
+    # libpgcommon.a and libpgport.a contain all paths returned by pg_config and are linked
+    # into all binaries. However, almost no binaries actually use those paths. The following
+    # flags will remove unused sections from all shared libraries and binaries - including
+    # those paths. This avoids a lot of circular dependency problems with different outputs,
+    # and allows splitting them cleanly.
+    CFLAGS = "-fdata-sections -ffunction-sections -flto";
+    # This flag was introduced upstream in:
+    # https://github.com/postgres/postgres/commit/b6c7cfac88c47a9194d76f3d074129da3c46545a
+    # It causes errors when linking against libpq.a in pkgsStatic:
+    #   undefined reference to `pg_encoding_to_char'
+    # Unsetting the flag fixes it. The upstream reasoning to introduce it is about the risk
+    # to have initdb load a libpq.so from a different major version and how to avoid that.
+    # This doesn't apply to us with Nix.
+    NIX_CFLAGS_COMPILE = "-UUSE_PRIVATE_ENCODING_FUNCS";
+  }
+  // lib.optionalAttrs perlSupport { PERL = lib.getExe perl; }
+  // lib.optionalAttrs pythonSupport { PYTHON = lib.getExe python3; }
+  // lib.optionalAttrs tclSupport { TCLSH = "${lib.getBin tcl}/bin/tclsh"; };
 
-  installTargets = [ "install-world" ];
-
-  postPatch = ''
-    substituteInPlace "src/Makefile.global.in" --subst-var out
-    substituteInPlace "src/common/config_info.c" --subst-var dev
-    cat ${./pg_config.env.mk} >> src/common/Makefile
-  ''
-  # This test always fails on hardware with >1 NUMA node: the sysfs
-  # dirs providing information about the topology are hidden in the sandbox,
-  # so postgres assumes there's only a single node `0`. However,
-  # the test checks on which NUMA nodes the allocated pages are which is >1
-  # on such hardware. This in turn triggers a safeguard in the view
-  # which breaks the test.
-  # Manual tests confirm that the testcase behaves properly outside of the
-  # Nix sandbox.
-  + lib.optionalString (atLeast "18") ''
-    substituteInPlace src/test/regress/parallel_schedule \
-      --replace-fail numa ""
-  '';
+  # Running tests as "install check" to work around SIP issue on macOS:
+  # https://www.postgresql.org/message-id/flat/4D8E1BC5-BBCF-4B19-8226-359201EA8305%40gmail.com
+  # Also see <nixpkgs>/doc/stdenv/platform-notes.chapter.md
+  doCheck = false;
 
   postInstall = ''
     moveToOutput "bin/ecpg" "$dev"
@@ -475,15 +386,6 @@ stdenv'.mkDerivation (finalAttrs: {
     moveToOutput "share/postgresql/extension/*pltcl*" "$pltcl"
   '';
 
-  postFixup = lib.optionalString stdenv'.hostPlatform.isGnu ''
-    # initdb needs access to "locale" command from glibc.
-    wrapProgram $out/bin/initdb --prefix PATH ":" ${glibc.bin}/bin
-  '';
-
-  # Running tests as "install check" to work around SIP issue on macOS:
-  # https://www.postgresql.org/message-id/flat/4D8E1BC5-BBCF-4B19-8226-359201EA8305%40gmail.com
-  # Also see <nixpkgs>/doc/stdenv/platform-notes.chapter.md
-  doCheck = false;
   doInstallCheck =
     # Tests currently can't be run on darwin, because of a Nix bug:
     # https://github.com/NixOS/nix/issues/12548
@@ -502,19 +404,98 @@ stdenv'.mkDerivation (finalAttrs: {
       # Modifying block sizes is expected to break regression tests.
       # https://www.postgresql.org/message-id/E1TJOeZ-000717-Lg%40wrigleys.postgresql.org
       (withBlocksize == null && withWalBlocksize == null);
+
+  postFixup = lib.optionalString stdenv'.hostPlatform.isGnu ''
+    # initdb needs access to "locale" command from glibc.
+    wrapProgram $out/bin/initdb --prefix PATH ":" ${glibc.bin}/bin
+  '';
+
+  __structuredAttrs = true;
+  enableParallelBuilding = true;
   installCheckTarget = "check-world";
+  installTargets = [ "install-world" ];
+
+  outputChecks = {
+    doc = {
+      disallowedReferences = [
+        "out"
+        "dev"
+        "man"
+      ]
+      ++ lib.optionals jitSupport [ "jit" ];
+    };
+
+    lib = {
+      disallowedReferences = [
+        "out"
+        "dev"
+        "doc"
+        "man"
+      ]
+      ++ lib.optionals jitSupport [ "jit" ];
+
+      disallowedRequisites = [
+        stdenv'.cc
+        llvmPackages.llvm.out
+        llvmPackages.llvm.lib
+      ]
+      ++ (map lib.getDev (builtins.filter (drv: drv ? "dev") finalAttrs.buildInputs));
+    };
+
+    man = {
+      disallowedReferences = [
+        "out"
+        "dev"
+        "doc"
+      ]
+      ++ lib.optionals jitSupport [ "jit" ];
+    };
+
+    out = {
+      disallowedReferences = [
+        "dev"
+        "doc"
+        "man"
+      ]
+      ++ lib.optionals jitSupport [ "jit" ];
+
+      disallowedRequisites = [
+        stdenv'.cc
+        llvmPackages.llvm.out
+        llvmPackages.llvm.lib
+      ]
+      ++ (map lib.getDev (builtins.filter (drv: drv ? "dev") finalAttrs.buildInputs));
+    };
+  }
+  // lib.optionalAttrs jitSupport {
+    jit = {
+      disallowedReferences = [
+        "dev"
+        "doc"
+        "man"
+      ];
+
+      disallowedRequisites = [
+        stdenv'.cc
+        llvmPackages.llvm.out
+      ]
+      ++ (map lib.getDev (builtins.filter (drv: drv ? "dev") finalAttrs.buildInputs));
+    };
+  };
+
+  separateDebugInfo = true;
 
   passthru = {
     inherit dlSuffix;
 
-    psqlSchema = lib.versions.major version;
+    pg_config = buildPackages.callPackage ./pg_config.nix {
+      inherit (finalAttrs) finalPackage;
 
-    withJIT =
-      if jitSupport then
-        finalAttrs.finalPackage.withPackages (_: [ finalAttrs.finalPackage.jit ])
-      else
-        null;
-    withoutJIT = finalAttrs.finalPackage.withPackages (_: [ ]);
+      outputs = {
+        man = lib.getOutput "man" finalAttrs.finalPackage;
+        out = lib.getOutput "out" finalAttrs.finalPackage;
+      };
+    };
 
     pkgs =
       let
@@ -525,11 +506,12 @@ stdenv'.mkDerivation (finalAttrs: {
             perlSupport
             tclSupport
             ;
+
           inherit (llvmPackages) llvm;
           postgresql = finalAttrs.finalPackage;
-          stdenv = stdenv';
-          postgresqlTestExtension = newSuper.callPackage ./postgresqlTestExtension.nix { };
           postgresqlBuildExtension = newSuper.callPackage ./postgresqlBuildExtension.nix { };
+          postgresqlTestExtension = newSuper.callPackage ./postgresqlTestExtension.nix { };
+          stdenv = stdenv';
         };
         newSelf = self // scope;
         newSuper = {
@@ -538,40 +520,34 @@ stdenv'.mkDerivation (finalAttrs: {
       in
       import ./ext.nix newSelf newSuper;
 
-    withPackages = self.callPackage ./wrapper.nix { postgresql = finalAttrs.finalPackage; };
-
-    pg_config = buildPackages.callPackage ./pg_config.nix {
-      inherit (finalAttrs) finalPackage;
-      outputs = {
-        out = lib.getOutput "out" finalAttrs.finalPackage;
-        man = lib.getOutput "man" finalAttrs.finalPackage;
-      };
-    };
+    psqlSchema = lib.versions.major version;
 
     tests = {
+      pkg-config = testers.testMetaPkgConfig finalAttrs.finalPackage;
       postgresql = nixosTests.postgresql.postgresql.passthru.override finalAttrs.finalPackage;
       postgresql-replication = nixosTests.postgresql.postgresql-replication.passthru.override finalAttrs.finalPackage;
       postgresql-tls-client-cert = nixosTests.postgresql.postgresql-tls-client-cert.passthru.override finalAttrs.finalPackage;
       postgresql-wal-receiver = nixosTests.postgresql.postgresql-wal-receiver.passthru.override finalAttrs.finalPackage;
-      pkg-config = testers.testMetaPkgConfig finalAttrs.finalPackage;
     }
     // lib.optionalAttrs jitSupport {
       postgresql-jit = nixosTests.postgresql.postgresql-jit.passthru.override finalAttrs.finalPackage;
     };
+
+    withJIT =
+      if jitSupport then
+        finalAttrs.finalPackage.withPackages (_: [ finalAttrs.finalPackage.jit ])
+      else
+        null;
+
+    withPackages = self.callPackage ./wrapper.nix { postgresql = finalAttrs.finalPackage; };
+    withoutJIT = finalAttrs.finalPackage.withPackages (_: [ ]);
   };
 
   meta = {
-    homepage = "https://www.postgresql.org";
     description = "Powerful, open source object-relational database system";
-    license = lib.licenses.postgresql;
+    homepage = "https://www.postgresql.org";
     changelog = "https://www.postgresql.org/docs/release/${finalAttrs.version}/";
-    teams = [ lib.teams.postgres ];
-    pkgConfigModules = [
-      "libecpg"
-      "libecpg_compat"
-      "libpgtypes"
-      "libpq"
-    ];
+    license = lib.licenses.postgresql;
     platforms = lib.platforms.unix;
 
     broken =
@@ -594,5 +570,14 @@ stdenv'.mkDerivation (finalAttrs: {
       # the ability to load shared modules at runtime, but dlopen() is stubbed out in static
       # musl builds. The important part is, that the separate libpq package builds in pkgsStatic.
       || stdenv.hostPlatform.isStatic;
+
+    pkgConfigModules = [
+      "libecpg"
+      "libecpg_compat"
+      "libpgtypes"
+      "libpq"
+    ];
+
+    teams = [ lib.teams.postgres ];
   };
 })

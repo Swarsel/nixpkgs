@@ -6,8 +6,6 @@
 }:
 
 buildHomeAssistantComponent rec {
-  owner = "mletenay";
-  domain = "goodwe";
   version = "0.9.9.31";
 
   src = fetchFromGitHub {
@@ -21,12 +19,14 @@ buildHomeAssistantComponent rec {
     goodwe
   ];
 
+  domain = "goodwe";
   ignoreVersionRequirement = [ "goodwe" ];
+  owner = "mletenay";
 
   meta = {
-    changelog = "https://github.com/mletenay/home-assistant-goodwe-inverter/releases/tag/${src.tag}";
     description = "Experimental version of Home Assistant integration for Goodwe solar inverters";
     homepage = "https://github.com/mletenay/home-assistant-goodwe-inverter";
+    changelog = "https://github.com/mletenay/home-assistant-goodwe-inverter/releases/tag/${src.tag}";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ netpleb ];
   };

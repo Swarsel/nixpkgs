@@ -2,6 +2,6 @@
 
 libtool.overrideAttrs {
   pname = "glibtool";
-  meta.mainProgram = "glibtool";
   configureFlags = [ "--program-prefix=g" ];
+  meta.mainProgram = "glibtool";
 }

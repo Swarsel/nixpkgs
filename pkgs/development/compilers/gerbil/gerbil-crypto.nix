@@ -1,24 +1,24 @@
 {
-  pkgs,
   lib,
   fetchFromGitHub,
   gerbilPackages,
+  pkgs,
   ...
 }:
 
 {
   pname = "gerbil-crypto";
   version = "unstable-2023-11-29";
-  git-version = "0.1-1-g4197bfa";
+  nativeBuildInputs = [ pkgs.pkg-config ];
+  buildInputs = [ pkgs.secp256k1 ];
   gerbil-package = "clan/crypto";
+
   gerbilInputs = with gerbilPackages; [
     gerbil-utils
     gerbil-poo
   ];
-  nativeBuildInputs = [ pkgs.pkg-config ];
-  buildInputs = [ pkgs.secp256k1 ];
-  version-path = "version";
-  softwareName = "Gerbil-crypto";
+
+  git-version = "0.1-1-g4197bfa";
 
   pre-src = {
     fun = fetchFromGitHub;
@@ -28,11 +28,14 @@
     sha256 = "1jdfz5x24dfvpwyfxalkhv83gf9ylyaqii1kg8rjl8dzickawrix";
   };
 
+  softwareName = "Gerbil-crypto";
+  version-path = "version";
+
   meta = {
     description = "Gerbil Crypto: Extra Cryptographic Primitives for Gerbil";
     homepage = "https://github.com/fare/gerbil-crypto";
     license = lib.licenses.asl20;
-    platforms = lib.platforms.unix;
     maintainers = with lib.maintainers; [ fare ];
+    platforms = lib.platforms.unix;
   };
 }

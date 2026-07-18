@@ -1,18 +1,24 @@
 {
   lib,
-  python3,
   fetchPypi,
+  python3,
 }:
 
 python3.pkgs.buildPythonApplication (finalAttrs: {
   pname = "alerta";
   version = "8.5.3";
-  pyproject = true;
 
   src = fetchPypi {
     inherit (finalAttrs) pname version;
     hash = "sha256-ePvT2icsgv+io5aDDUr1Zhfodm4wlqh/iqXtNkFhS10=";
   };
+
+  doCheck = true;
+
+  nativeCheckInputs = with python3.pkgs; [
+    pytestCheckHook
+    requests-mock
+  ];
 
   build-system = with python3.pkgs; [ setuptools ];
 
@@ -24,22 +30,15 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     tabulate
   ];
 
-  doCheck = true;
-
-  pythonImportsCheck = [ "alertaclient" ];
-
-  nativeCheckInputs = with python3.pkgs; [
-    pytestCheckHook
-    requests-mock
-  ];
-
   # AlertTestCases attempt to connect to alerta api
   disabledTests = [ "AlertTestCase" ];
+  pyproject = true;
+  pythonImportsCheck = [ "alertaclient" ];
 
   meta = {
-    homepage = "https://alerta.io";
     description = "Alerta Monitoring System command-line interface";
-    mainProgram = "alerta";
+    homepage = "https://alerta.io";
     license = lib.licenses.asl20;
+    mainProgram = "alerta";
   };
 })

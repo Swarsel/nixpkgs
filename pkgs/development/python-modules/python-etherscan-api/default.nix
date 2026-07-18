@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   requests,
   setuptools,
 }:
@@ -9,7 +9,6 @@
 buildPythonPackage rec {
   pname = "python-etherscan-api";
   version = "2.1.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "pcko1";
@@ -18,13 +17,11 @@ buildPythonPackage rec {
     hash = "sha256-HnMhWUKwVQq5RMXwSZo9q20JEnl7YN13ju01L18YAzU=";
   };
 
-  build-system = [ setuptools ];
-
-  dependencies = [ requests ];
-
   # Tests require an API key
   doCheck = false;
-
+  build-system = [ setuptools ];
+  dependencies = [ requests ];
+  pyproject = true;
   pythonImportsCheck = [ "etherscan" ];
 
   meta = {

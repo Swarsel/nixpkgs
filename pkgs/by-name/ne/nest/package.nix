@@ -2,20 +2,20 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  testers,
+  boost,
   cmake,
+  findutils,
   gsl,
   libtool,
-  findutils,
   llvmPackages,
   mpi,
   nest,
   pkg-config,
-  boost,
   python3,
   readline,
-  withPython ? false,
+  testers,
   withMpi ? false,
+  withPython ? false,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -73,8 +73,8 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   passthru.tests.version = testers.testVersion {
-    package = nest;
     command = "nest --version";
+    package = nest;
   };
 
   meta = {
@@ -82,10 +82,12 @@ stdenv.mkDerivation (finalAttrs: {
     homepage = "https://www.nest-simulator.org/";
     changelog = "https://github.com/nest/nest-simulator/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.gpl2Plus;
+
     maintainers = with lib.maintainers; [
       jiegec
       davidcromp
     ];
+
     platforms = lib.platforms.unix;
   };
 })

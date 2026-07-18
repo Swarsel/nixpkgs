@@ -1,24 +1,32 @@
 {
   lib,
+  stdenv,
+  fetchFromGitHub,
   cmake,
   kdePackages,
-  fetchFromGitHub,
-  libre-graph-api-cpp-qt-client,
   kdsingleapplication,
+  libre-graph-api-cpp-qt-client,
   nix-update-script,
   qt6,
   versionCheckHook,
-  stdenv,
 }:
 stdenv.mkDerivation (finalAttrs: {
   pname = "opencloud-desktop";
   version = "3.0.3";
+
   src = fetchFromGitHub {
     owner = "opencloud-eu";
     repo = "desktop";
     tag = "v${finalAttrs.version}";
     hash = "sha256-b6KaWrthL2z/Ep+O7wFIXxjd+H8+sBqZz8nmoQijTQU=";
   };
+
+  strictDeps = true;
+
+  nativeBuildInputs = [
+    cmake
+    qt6.wrapQtAppsHook
+  ];
 
   buildInputs = [
     qt6.qtbase
@@ -30,25 +38,17 @@ stdenv.mkDerivation (finalAttrs: {
     kdsingleapplication
   ];
 
-  nativeBuildInputs = [
-    cmake
-    qt6.wrapQtAppsHook
-  ];
-
-  strictDeps = true;
-
   doInstallCheck = true;
   nativeInstallCheckInputs = [ versionCheckHook ];
   versionCheckProgram = "${placeholder "out"}/bin/opencloudcmd";
-
   passthru.updateScript = nix-update-script { };
 
   meta = {
-    changelog = "https://github.com/opencloud-eu/desktop/releases/tag/v${finalAttrs.version}";
     description = "Desktop Application for OpenCloud";
-    downloadPage = "https://github.com/opencloud-eu/desktop";
     homepage = "https://opencloud.eu/en";
+    changelog = "https://github.com/opencloud-eu/desktop/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.gpl2Only;
     maintainers = [ lib.maintainers.FKouhai ];
+    downloadPage = "https://github.com/opencloud-eu/desktop";
   };
 })

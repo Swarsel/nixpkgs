@@ -1,14 +1,14 @@
 {
+  lib,
   stdenv,
   fetchFromGitHub,
   cmake,
   copyPkgconfigItems,
-  makePkgconfigItem,
-  lib,
-  testers,
   ctestCheckHook,
-  ninja,
   double-conversion,
+  makePkgconfigItem,
+  ninja,
+  testers,
 }:
 stdenv.mkDerivation (finalAttrs: {
   pname = "json.cpp";
@@ -21,12 +21,9 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-kUFtyFPoHGCFWTGRD8SoBsqHYCplGPw/AcpMR9T0Ffk=";
   };
 
-  doCheck = true;
-
-  cmakeFlags = [
-    (lib.cmakeBool "JSON_CPP_BUILD_TESTS" true)
-    (lib.cmakeBool "DOUBLE_CONVERSION_VENDORED" false)
-    (lib.cmakeBool "BUILD_SHARED_LIBS" stdenv.hostPlatform.hasSharedLibraries)
+  outputs = [
+    "out"
+    "dev"
   ];
 
   nativeBuildInputs = [
@@ -40,43 +37,50 @@ stdenv.mkDerivation (finalAttrs: {
     double-conversion
   ];
 
-  outputs = [
-    "out"
-    "dev"
+  cmakeFlags = [
+    (lib.cmakeBool "JSON_CPP_BUILD_TESTS" true)
+    (lib.cmakeBool "DOUBLE_CONVERSION_VENDORED" false)
+    (lib.cmakeBool "BUILD_SHARED_LIBS" stdenv.hostPlatform.hasSharedLibraries)
+  ];
+
+  doCheck = true;
+
+  # https://github.com/jart/json.cpp/issues/17
+  pkgconfigItems = [
+    (makePkgconfigItem rec {
+      inherit (finalAttrs) version;
+      inherit (finalAttrs.meta) description;
+      cflags = [ "-I${variables.includedir}" ];
+
+      libs = [
+        "-L${variables.libdir}"
+        "-ljson"
+      ];
+
+      libsPrivate = [
+        # nixpkgs double-conversion does not support pkg-config
+        # as of yet.
+        "-ldouble-conversion"
+      ];
+
+      name = "json.cpp";
+
+      variables = {
+        includedir = "${placeholder "dev"}/include";
+        libdir = "${placeholder "out"}/lib";
+      };
+    })
   ];
 
   passthru = {
     tests.pkg-config = testers.testMetaPkgConfig finalAttrs.finalPackage;
   };
 
-  # https://github.com/jart/json.cpp/issues/17
-  pkgconfigItems = [
-    (makePkgconfigItem rec {
-      name = "json.cpp";
-      inherit (finalAttrs) version;
-      cflags = [ "-I${variables.includedir}" ];
-      libs = [
-        "-L${variables.libdir}"
-        "-ljson"
-      ];
-      libsPrivate = [
-        # nixpkgs double-conversion does not support pkg-config
-        # as of yet.
-        "-ldouble-conversion"
-      ];
-      variables = {
-        includedir = "${placeholder "dev"}/include";
-        libdir = "${placeholder "out"}/lib";
-      };
-      inherit (finalAttrs.meta) description;
-    })
-  ];
-
   meta = {
-    pkgConfigModules = [ "json.cpp" ];
     description = "JSON for Classic C++";
     homepage = "https://github.com/jart/json.cpp";
     license = lib.licenses.asl20;
     maintainers = with lib.maintainers; [ fzakaria ];
+    pkgConfigModules = [ "json.cpp" ];
   };
 })

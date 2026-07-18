@@ -1,5 +1,4 @@
 {
-  mkDerivation,
   cmake,
   extra-cmake-modules,
   kconfig,
@@ -7,21 +6,24 @@
   ki18n,
   kio,
   kservice,
+  kwindowsystem,
+  mkDerivation,
   plasma-framework,
   qtbase,
   qtdeclarative,
   solid,
   threadweaver,
-  kwindowsystem,
 }:
 
 let
   self = mkDerivation {
     pname = "krunner";
+
     nativeBuildInputs = [
       cmake
       extra-cmake-modules
     ];
+
     buildInputs = [
       kconfig
       kcoreaddons
@@ -32,6 +34,7 @@ let
       solid
       threadweaver
     ];
+
     propagatedBuildInputs = [
       plasma-framework
       qtbase

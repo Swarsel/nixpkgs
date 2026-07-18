@@ -1,7 +1,7 @@
 {
+  lib,
   fetchFromGitHub,
   rustPlatform,
-  lib,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -18,11 +18,11 @@ rustPlatform.buildRustPackage (finalAttrs: {
   cargoHash = "sha256-hub64iZNVw/BJjibtDnJ3boIU27DEbYSlMLhFFVJ9ps=";
 
   meta = {
+    description = "Perfect Impersonation of TLS";
     homepage = "https://github.com/3andne/restls";
     changelog = "https://github.com/3andne/restls/releases/tag/${finalAttrs.src.rev}";
-    description = "Perfect Impersonation of TLS";
     license = lib.licenses.bsd3;
-    mainProgram = "restls";
     maintainers = with lib.maintainers; [ oluceps ];
+    mainProgram = "restls";
   };
 })

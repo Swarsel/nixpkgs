@@ -33,8 +33,8 @@ stdenv.mkDerivation {
   '';
 
   meta = {
-    homepage = "https://github.com/systemed/mod_mbtiles";
     description = "Serve tiles with Apache directly from an .mbtiles file";
+    homepage = "https://github.com/systemed/mod_mbtiles";
     license = lib.licenses.free;
     maintainers = with lib.maintainers; [ sikmir ];
     platforms = lib.platforms.unix;

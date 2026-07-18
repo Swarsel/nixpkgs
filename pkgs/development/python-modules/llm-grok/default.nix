@@ -1,22 +1,21 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
-  llm,
-  llm-grok,
+  buildPythonPackage,
   httpx,
   httpx-sse,
-  rich,
-  pytestCheckHook,
+  llm,
+  llm-grok,
   pytest-httpx,
+  pytestCheckHook,
+  rich,
+  setuptools,
   writableTmpDirAsHomeHook,
 }:
 
 buildPythonPackage rec {
   pname = "llm-grok";
   version = "1.4.2";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "Hiepler";
@@ -24,6 +23,12 @@ buildPythonPackage rec {
     tag = "v${version}";
     hash = "sha256-bvJKQZka/2Vkk66gARIwv3XwIs+gb5KNyCHNWH9doXA=";
   };
+
+  nativeCheckInputs = [
+    pytestCheckHook
+    pytest-httpx
+    writableTmpDirAsHomeHook
+  ];
 
   build-system = [ setuptools ];
 
@@ -34,14 +39,8 @@ buildPythonPackage rec {
     rich
   ];
 
-  nativeCheckInputs = [
-    pytestCheckHook
-    pytest-httpx
-    writableTmpDirAsHomeHook
-  ];
-
+  pyproject = true;
   pythonImportsCheck = [ "llm_grok" ];
-
   passthru.tests = llm.mkPluginTest llm-grok;
 
   meta = {

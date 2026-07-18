@@ -12,14 +12,15 @@
 buildPythonPackage rec {
   pname = "azure-mgmt-privatedns";
   version = "1.2.0";
-  pyproject = true;
 
   src = fetchPypi {
-    pname = "azure_mgmt_privatedns";
     inherit version;
     hash = "sha256-NCMYcvAblPYZXY7lQo4XRpJS7QTqCCjVIyXr578KEgs=";
+    pname = "azure_mgmt_privatedns";
   };
 
+  # no tests included
+  doCheck = false;
   build-system = [ setuptools ];
 
   dependencies = [
@@ -29,8 +30,7 @@ buildPythonPackage rec {
     typing-extensions
   ];
 
-  # no tests included
-  doCheck = false;
+  pyproject = true;
 
   pythonImportsCheck = [
     "azure.common"

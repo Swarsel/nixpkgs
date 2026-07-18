@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule (finalAttrs: {
@@ -14,18 +14,18 @@ buildGoModule (finalAttrs: {
     rev = finalAttrs.version;
     hash = "sha256-AhSomz4YrDuIMupMTvFwpye8BDGGrU/IlRUtE+RIUC0=";
   };
-  vendorHash = "sha256-5eI41EKgi61dVFAvsgxI2Vk1zrxtVinxYKquKlaSOyQ=";
 
-  subPackages = [ "." ];
+  vendorHash = "sha256-5eI41EKgi61dVFAvsgxI2Vk1zrxtVinxYKquKlaSOyQ=";
+  # Tests require a large variety of tools and resources to run including
+  # Kubernetes, Docker, and GCC.
+  doCheck = false;
 
   ldflags = [
     "-s"
     "-X main.version=${finalAttrs.version}"
   ];
 
-  # Tests require a large variety of tools and resources to run including
-  # Kubernetes, Docker, and GCC.
-  doCheck = false;
+  subPackages = [ "." ];
 
   meta = {
     description = "Tool for building modern cloud native development environments";

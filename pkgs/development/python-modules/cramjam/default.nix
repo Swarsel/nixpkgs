@@ -1,20 +1,18 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  rustPlatform,
-
+  buildPythonPackage,
   # tests
   hypothesis,
   numpy,
   pytest-xdist,
   pytestCheckHook,
+  rustPlatform,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "cramjam";
   version = "2.12.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "milesgranger";
@@ -23,21 +21,9 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-vGT57ou9nnCVCw8LR+w+5MV54EqwT2R+ww9acRQk8Lc=";
   };
 
-  cargoDeps = rustPlatform.fetchCargoVendor {
-    inherit (finalAttrs) pname src version;
-    hash = "sha256-evXYLbv+GwSBUJBb0upjQTFtMPdQbKka8KfJltMUmDs=";
-  };
-
   nativeBuildInputs = with rustPlatform; [
     cargoSetupHook
     maturinBuildHook
-  ];
-
-  nativeCheckInputs = [
-    hypothesis
-    numpy
-    pytest-xdist
-    pytestCheckHook
   ];
 
   env = {
@@ -46,16 +32,29 @@ buildPythonPackage (finalAttrs: {
     CI = true;
   };
 
+  nativeCheckInputs = [
+    hypothesis
+    numpy
+    pytest-xdist
+    pytestCheckHook
+  ];
+
+  cargoDeps = rustPlatform.fetchCargoVendor {
+    inherit (finalAttrs) pname src version;
+    hash = "sha256-evXYLbv+GwSBUJBb0upjQTFtMPdQbKka8KfJltMUmDs=";
+  };
+
+  disabledTestPaths = [
+    "benchmarks/test_bench.py"
+  ];
+
   disabledTests = [
     # I (@GaetanLepage) cannot reproduce the failure, but it fails consistently on Ofborg with:
     # SyntaxError: could not convert string to float: 'V' - Consider hexadecimal for huge integer literals to avoid decimal conversion limits.
     "test_variants_decompress_into"
   ];
 
-  disabledTestPaths = [
-    "benchmarks/test_bench.py"
-  ];
-
+  pyproject = true;
   pythonImportsCheck = [ "cramjam" ];
 
   meta = {

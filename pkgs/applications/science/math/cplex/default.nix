@@ -1,22 +1,22 @@
 {
   lib,
   stdenv,
-  autoPatchelfHook,
-  makeDesktopItem,
-  copyDesktopItems,
-  makeWrapper,
   alsa-lib,
+  autoPatchelfHook,
+  copyDesktopItems,
   glib,
   glib-networking,
+  glibcLocales,
   gsettings-desktop-schemas,
+  gtk2,
   gtk3,
   libsecret,
+  libxtst,
+  makeDesktopItem,
+  makeWrapper,
   openjdk,
   sqlite,
   unixodbc,
-  gtk2,
-  libxtst,
-  glibcLocales,
   releasePath ? null,
 }:
 
@@ -46,12 +46,17 @@ stdenv.mkDerivation rec {
     else
       releasePath;
 
+  postPatch = ''
+    sed -i -e 's|/usr/bin/tr"|tr"         |' $name
+  '';
+
   nativeBuildInputs = [
     autoPatchelfHook
     copyDesktopItems
     makeWrapper
     openjdk
   ];
+
   buildInputs = [
     alsa-lib
     gsettings-desktop-schemas
@@ -61,12 +66,6 @@ stdenv.mkDerivation rec {
     libxtst
     glibcLocales
   ];
-
-  unpackPhase = "cp $src $name";
-
-  postPatch = ''
-    sed -i -e 's|/usr/bin/tr"|tr"         |' $name
-  '';
 
   buildPhase = ''
     runHook preBuild
@@ -129,17 +128,18 @@ stdenv.mkDerivation rec {
 
   desktopItems = [
     (makeDesktopItem {
-      name = "oplide";
-      desktopName = "IBM ILOG CPLEX Optimization Studio";
-      genericName = "Optimization Software";
-      icon = "oplide";
-      exec = "oplide";
       categories = [
         "Development"
         "IDE"
         "Math"
         "Science"
       ];
+
+      desktopName = "IBM ILOG CPLEX Optimization Studio";
+      exec = "oplide";
+      genericName = "Optimization Software";
+      icon = "oplide";
+      name = "oplide";
     })
   ];
 
@@ -166,6 +166,8 @@ stdenv.mkDerivation rec {
     runHook postFixup
   '';
 
+  unpackPhase = "cp $src $name";
+
   passthru = {
     libArch = "x86-64_linux";
     libSuffix = "${version}0";
@@ -174,10 +176,10 @@ stdenv.mkDerivation rec {
   meta = {
     description = "Optimization solver for mathematical programming";
     homepage = "https://www.ibm.com/be-en/marketplace/ibm-ilog-cplex";
-    mainProgram = "cplex";
-    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
     license = lib.licenses.unfree;
-    platforms = [ "x86_64-linux" ];
+    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
     maintainers = with lib.maintainers; [ bfortz ];
+    platforms = [ "x86_64-linux" ];
+    mainProgram = "cplex";
   };
 }

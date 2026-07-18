@@ -1,12 +1,12 @@
 {
   lib,
-  fetchFromGitHub,
-  curl,
-  xclip,
-  wl-clipboard,
   stdenv,
+  fetchFromGitHub,
   buildLua,
+  curl,
   unstableGitUpdater,
+  wl-clipboard,
+  xclip,
 }:
 buildLua {
   pname = "videoclip";
@@ -30,6 +30,7 @@ buildLua {
 
   scriptPath = ".";
   passthru.scriptName = "videoclip";
+
   passthru.updateScript = unstableGitUpdater {
     tagPrefix = "v";
   };
@@ -38,7 +39,7 @@ buildLua {
     description = "Easily create videoclips with mpv";
     homepage = "https://github.com/Ajatt-Tools/videoclip";
     license = lib.licenses.gpl3Plus;
-    platforms = lib.platforms.all;
     maintainers = with lib.maintainers; [ BatteredBunny ];
+    platforms = lib.platforms.all;
   };
 }

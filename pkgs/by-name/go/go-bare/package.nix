@@ -1,7 +1,7 @@
 {
+  lib,
   buildGoModule,
   fetchFromSourcehut,
-  lib,
 }:
 
 buildGoModule {
@@ -16,14 +16,13 @@ buildGoModule {
   };
 
   vendorHash = "sha256-OhJb/q1XJ/U/AvCcCXw2Ll86UKlkHGuURHS5J6aXNTs=";
-
   subPackages = [ "cmd/gen" ];
 
   meta = {
     description = "Implementation of the BARE message format for Go";
-    mainProgram = "gen";
     homepage = "https://git.sr.ht/~sircmpwn/go-bare";
     license = lib.licenses.asl20;
     maintainers = with lib.maintainers; [ poptart ];
+    mainProgram = "gen";
   };
 }

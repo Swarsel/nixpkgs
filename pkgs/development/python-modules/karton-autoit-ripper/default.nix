@@ -1,18 +1,17 @@
 {
   lib,
+  fetchFromGitHub,
   autoit-ripper,
   buildPythonPackage,
-  fetchFromGitHub,
-  setuptools,
   karton-core,
   malduck,
   regex,
+  setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "karton-autoit-ripper";
   version = "1.2.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "CERT-Polska";
@@ -21,13 +20,9 @@ buildPythonPackage rec {
     hash = "sha256-D+M3JsIN8LUWg8GVweEzySHI7KaBb6cNHHn4pXoq55M=";
   };
 
+  # Module has no tests
+  doCheck = false;
   build-system = [ setuptools ];
-
-  pythonRelaxDeps = [
-    "autoit-ripper"
-    "malduck"
-    "regex"
-  ];
 
   dependencies = [
     autoit-ripper
@@ -36,17 +31,21 @@ buildPythonPackage rec {
     regex
   ];
 
-  # Module has no tests
-  doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "karton.autoit_ripper" ];
+
+  pythonRelaxDeps = [
+    "autoit-ripper"
+    "malduck"
+    "regex"
+  ];
 
   meta = {
     description = "AutoIt script ripper for Karton framework";
-    mainProgram = "karton-autoit-ripper";
     homepage = "https://github.com/CERT-Polska/karton-autoit-ripper";
     changelog = "https://github.com/CERT-Polska/karton-autoit-ripper/releases/tag/v${version}";
     license = with lib.licenses; [ bsd3 ];
     maintainers = with lib.maintainers; [ fab ];
+    mainProgram = "karton-autoit-ripper";
   };
 }

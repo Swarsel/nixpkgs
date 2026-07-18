@@ -15,6 +15,7 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-7i76JPg6MAk4/sO8/JI4ody4iYFJPeLkD2SWncFhT4o=";
   };
 
+  cargoHash = "sha256-X5VeL9oWjqoWmXQTCINvvFLdXqCyhO01ckDU7x42Teo=";
   env.GIT_HASH = "000000000000000000000000000000000000000000000000000";
 
   checkFlags = [
@@ -22,11 +23,9 @@ rustPlatform.buildRustPackage (finalAttrs: {
     "--skip=widgets::text_note::tests::test_created_at"
   ];
 
-  cargoHash = "sha256-X5VeL9oWjqoWmXQTCINvvFLdXqCyhO01ckDU7x42Teo=";
-
   meta = {
-    homepage = "https://github.com/akiomik/nostui";
     description = "TUI client for Nostr";
+    homepage = "https://github.com/akiomik/nostui";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ heywoodlh ];
     platforms = lib.platforms.unix;

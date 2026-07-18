@@ -1,14 +1,14 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchurl,
+  bzip2,
   doxygen,
   graphviz,
-  perl,
-  pkg-config,
-  bzip2,
   lz4,
   lzo,
+  perl,
+  pkg-config,
   xz,
   zlib,
   zstd,
@@ -29,6 +29,7 @@ stdenv.mkDerivation (finalAttrs: {
     pkg-config
     perl
   ];
+
   buildInputs = [
     bzip2
     zlib

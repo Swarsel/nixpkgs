@@ -1,16 +1,16 @@
 {
   lib,
   stdenv,
-  makeWrapper,
   fetchurl,
   djvulibre,
   ghostscript,
+  makeWrapper,
   which,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
-  version = "0.9.2";
   pname = "djvu2pdf";
+  version = "0.9.2";
 
   src = fetchurl {
     url = "https://0x2a.at/site/projects/djvu2pdf/djvu2pdf-${finalAttrs.version}.tar.gz";

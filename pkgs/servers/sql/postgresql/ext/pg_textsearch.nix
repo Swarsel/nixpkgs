@@ -1,6 +1,6 @@
 {
-  fetchFromGitHub,
   lib,
+  fetchFromGitHub,
   postgresql,
   postgresqlBuildExtension,
   postgresqlTestExtension,
@@ -19,9 +19,19 @@ postgresqlBuildExtension (finalAttrs: {
 
   passthru.tests.extension = postgresqlTestExtension {
     inherit (finalAttrs) finalPackage;
+
+    asserts = [
+      {
+        description = "BM25 index can be queried successfully.";
+        expected = "'NixOS provides declarative configuration and reproducible system builds with the Nix package manager'";
+        query = "SELECT content FROM documents ORDER BY content <@> 'NixOS' LIMIT 1";
+      }
+    ];
+
     postgresqlExtraSettings = ''
       shared_preload_libraries='pg_textsearch'
     '';
+
     sql = ''
       CREATE EXTENSION IF NOT EXISTS pg_textsearch;
       CREATE TABLE documents (content text);
@@ -31,22 +41,14 @@ postgresqlBuildExtension (finalAttrs: {
         ('PostgreSQL is a powerful, open source object-relational database system');
       CREATE INDEX documents_content_bm25_idx ON documents USING bm25(content) WITH (text_config='english');
     '';
-
-    asserts = [
-      {
-        query = "SELECT content FROM documents ORDER BY content <@> 'NixOS' LIMIT 1";
-        expected = "'NixOS provides declarative configuration and reproducible system builds with the Nix package manager'";
-        description = "BM25 index can be queried successfully.";
-      }
-    ];
   };
 
   meta = {
     description = "BM25 relevance-ranked full-text search";
     homepage = "https://github.com/timescale/pg_textsearch";
     license = lib.licenses.postgresql;
-    platforms = postgresql.meta.platforms;
     maintainers = with lib.maintainers; [ dbe ];
+    platforms = postgresql.meta.platforms;
     broken = lib.versionOlder postgresql.version "17";
   };
 })

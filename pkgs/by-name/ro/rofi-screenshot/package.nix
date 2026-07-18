@@ -2,16 +2,16 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  makeWrapper,
-  libnotify,
-  slop,
+  coreutils,
   ffcast,
   ffmpeg,
-  xclip,
-  rofi,
-  coreutils,
   gnused,
+  libnotify,
+  makeWrapper,
   procps,
+  rofi,
+  slop,
+  xclip,
 }:
 
 stdenv.mkDerivation {
@@ -26,6 +26,10 @@ stdenv.mkDerivation {
   };
 
   nativeBuildInputs = [ makeWrapper ];
+
+  installPhase = ''
+    install -Dm755 rofi-screenshot $out/bin/rofi-screenshot
+  '';
 
   postFixup = ''
     wrapProgram $out/bin/rofi-screenshot \
@@ -44,16 +48,12 @@ stdenv.mkDerivation {
       }
   '';
 
-  installPhase = ''
-    install -Dm755 rofi-screenshot $out/bin/rofi-screenshot
-  '';
-
   meta = {
     description = "Use rofi to perform various types of screenshots and screen captures";
-    mainProgram = "rofi-screenshot";
     homepage = "https://github.com/ceuk/rofi-screenshot";
+    license = lib.licenses.wtfpl;
     maintainers = with lib.maintainers; [ zopieux ];
     platforms = lib.platforms.all;
-    license = lib.licenses.wtfpl;
+    mainProgram = "rofi-screenshot";
   };
 }

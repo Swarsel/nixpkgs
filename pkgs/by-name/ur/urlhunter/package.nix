@@ -1,7 +1,7 @@
 {
-  buildGoModule,
-  fetchFromGitHub,
   lib,
+  fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule (finalAttrs: {
@@ -19,13 +19,15 @@ buildGoModule (finalAttrs: {
 
   meta = {
     description = "Recon tool that allows searching shortened URLs";
-    mainProgram = "urlhunter";
+
     longDescription = ''
       urlhunter is a recon tool that allows searching on URLs that are
       exposed via shortener services such as bit.ly and goo.gl.
     '';
+
     homepage = "https://github.com/utkusen/urlhunter";
     license = with lib.licenses; [ mit ];
     maintainers = with lib.maintainers; [ fab ];
+    mainProgram = "urlhunter";
   };
 })

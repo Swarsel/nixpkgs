@@ -1,9 +1,9 @@
 {
-  stdenvNoCC,
   lib,
   fetchurl,
-  unzip,
   dfVersion,
+  stdenvNoCC,
+  unzip,
 }:
 
 let
@@ -17,15 +17,16 @@ let
 
   twbt-releases = {
     "0.44.12" = {
-      twbtRelease = "6.54";
       hash = "sha256-cKomZmTLHab9K8k0pZsB2uMf3D5/SVhy2GRusLdp7oE=";
       prerelease = false;
+      twbtRelease = "6.54";
     };
+
     "0.47.05" = {
-      twbtRelease = "6.xx";
       dfhackRelease = "0.47.05-r8";
       hash = "sha256-qiNs6iMAUNGiq0kpXqEs4u4Wcrjf6/qA/dzBe947Trc=";
       prerelease = false;
+      twbtRelease = "6.xx";
     };
   };
 
@@ -41,15 +42,14 @@ stdenvNoCC.mkDerivation rec {
   version = release.twbtRelease;
 
   src = fetchurl {
+    inherit (release) hash;
+
     url =
       if version == "6.xx" then
         "https://github.com/thurin/df-twbt/releases/download/${release.dfhackRelease}/twbt-${version}-linux64-${release.dfhackRelease}.zip"
       else
         "https://github.com/mifki/df-twbt/releases/download/v${version}/twbt-${version}-linux.zip";
-    inherit (release) hash;
   };
-
-  sourceRoot = ".";
 
   outputs = [
     "lib"
@@ -66,18 +66,22 @@ stdenvNoCC.mkDerivation rec {
     cp -a *.png $art/data/art/
   '';
 
+  sourceRoot = ".";
+
   passthru = {
     inherit dfVersion;
   };
 
   meta = {
     description = "Plugin for Dwarf Fortress / DFHack that improves various aspects of the game interface";
+    homepage = "https://github.com/mifki/df-twbt";
+    license = licenses.mit;
+
     maintainers = with maintainers; [
       Baughn
       numinit
     ];
-    license = licenses.mit;
+
     platforms = platforms.linux;
-    homepage = "https://github.com/mifki/df-twbt";
   };
 }

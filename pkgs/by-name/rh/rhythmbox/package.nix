@@ -1,40 +1,40 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchurl,
-  pkg-config,
-  meson,
-  ninja,
-  python3,
-  vala,
+  brasero-unwrapped, # libdvdcss is not needed for rhythmbox
+  check,
+  desktop-file-utils,
   glib,
-  gtk3,
-  libpeas,
-  libsoup_3,
-  libxml2,
-  libsecret,
-  libnotify,
-  libdmapsharing,
   gnome,
   gobject-introspection,
-  totem-pl-parser,
-  libgudev,
-  libgpod,
-  libmtp,
-  lirc,
-  brasero-unwrapped, # libdvdcss is not needed for rhythmbox
   grilo,
-  tdb,
-  json-glib,
-  itstool,
-  wrapGAppsHook3,
-  desktop-file-utils,
   gst_all_1,
+  gtk3,
+  itstool,
+  json-glib,
+  libdmapsharing,
+  libgpod,
+  libgudev,
+  libmtp,
+  libnotify,
+  libpeas,
+  libsecret,
+  libsoup_3,
+  libxml2,
+  lirc,
+  meson,
+  ninja,
+  pkg-config,
+  python3,
+  tdb,
+  totem-pl-parser,
+  vala,
+  wrapGAppsHook3,
   gst_plugins ? with gst_all_1; [
     gst-plugins-good
     gst-plugins-ugly
   ],
-  check,
 }:
 
 stdenv.mkDerivation rec {
@@ -91,10 +91,6 @@ stdenv.mkDerivation rec {
   ]
   ++ gst_plugins;
 
-  nativeCheckInputs = [
-    check
-  ];
-
   mesonFlags = [
     "-Ddaap=enabled"
     "-Dtests=disabled"
@@ -102,6 +98,10 @@ stdenv.mkDerivation rec {
 
   # Requires DISPLAY
   doCheck = false;
+
+  nativeCheckInputs = [
+    check
+  ];
 
   preFixup = ''
     gappsWrapperArgs+=(
@@ -117,10 +117,10 @@ stdenv.mkDerivation rec {
   };
 
   meta = {
-    homepage = "https://gitlab.gnome.org/GNOME/rhythmbox";
     description = "Music playing application for GNOME";
+    homepage = "https://gitlab.gnome.org/GNOME/rhythmbox";
     license = lib.licenses.gpl2Plus;
-    platforms = lib.platforms.linux;
     maintainers = [ ];
+    platforms = lib.platforms.linux;
   };
 }

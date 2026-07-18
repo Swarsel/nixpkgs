@@ -1,9 +1,9 @@
 {
-  buildGoModule,
-  fetchFromGitHub,
-  installShellFiles,
   lib,
   stdenv,
+  fetchFromGitHub,
+  buildGoModule,
+  installShellFiles,
 }:
 
 buildGoModule (finalAttrs: {
@@ -17,15 +17,8 @@ buildGoModule (finalAttrs: {
     hash = "sha256-VrKLi92fCkAL6C5dvydXuwOCp3dYXsDJSGk9rkHv1t8=";
   };
 
-  vendorHash = "sha256-1mJ4HdDCsZl/g8F+L+NrW2ACuiHe2aSheJO/1XfKAb4=";
-  proxyVendor = true;
-
-  ldflags = [
-    "-s"
-    "-w"
-  ];
-
   nativeBuildInputs = [ installShellFiles ];
+  vendorHash = "sha256-1mJ4HdDCsZl/g8F+L+NrW2ACuiHe2aSheJO/1XfKAb4=";
 
   postInstall = ''
     mv $out/bin/cmd $out/bin/dexter
@@ -38,6 +31,13 @@ buildGoModule (finalAttrs: {
   '';
 
   __structuredAttrs = true;
+
+  ldflags = [
+    "-s"
+    "-w"
+  ];
+
+  proxyVendor = true;
 
   meta = {
     description = "A fast, full-featured Elixir LSP optimized for large codebases";

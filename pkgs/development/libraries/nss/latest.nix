@@ -6,7 +6,7 @@
 
 import ./generic.nix {
   version = "3.125";
-  hash = "sha256-pIRoFJYsQZzI+hJcNzTX+WT91tfXDygWE0RrirfyBPc=";
   filename = "latest.nix";
+  hash = "sha256-pIRoFJYsQZzI+hJcNzTX+WT91tfXDygWE0RrirfyBPc=";
   versionRegex = "NSS_(\\d+)_(\\d+)(?:_(\\d+))?_RTM";
 }

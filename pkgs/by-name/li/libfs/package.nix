@@ -3,10 +3,10 @@
   stdenv,
   fetchurl,
   pkg-config,
+  testers,
+  writeScript,
   xorgproto,
   xtrans,
-  writeScript,
-  testers,
 }:
 stdenv.mkDerivation (finalAttrs: {
   pname = "libfs";
@@ -18,7 +18,6 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   strictDeps = true;
-
   nativeBuildInputs = [ pkg-config ];
 
   buildInputs = [
@@ -31,6 +30,8 @@ stdenv.mkDerivation (finalAttrs: {
   ) "--enable-malloc0returnsnull";
 
   passthru = {
+    tests.pkg-config = testers.testMetaPkgConfig finalAttrs.finalPackage;
+
     updateScript = writeScript "update-${finalAttrs.pname}" ''
       #!/usr/bin/env nix-shell
       #!nix-shell -i bash -p common-updater-scripts
@@ -39,18 +40,19 @@ stdenv.mkDerivation (finalAttrs: {
         | sort -V | tail -n1)"
       update-source-version ${finalAttrs.pname} "$version"
     '';
-    tests.pkg-config = testers.testMetaPkgConfig finalAttrs.finalPackage;
   };
 
   meta = {
     description = "X Font Service client library";
     homepage = "https://gitlab.freedesktop.org/xorg/lib/libfs";
+
     license = with lib.licenses; [
       mitOpenGroup
       hpndSellVariant
     ];
+
     maintainers = [ ];
-    pkgConfigModules = [ "libfs" ];
     platforms = lib.platforms.unix;
+    pkgConfigModules = [ "libfs" ];
   };
 })

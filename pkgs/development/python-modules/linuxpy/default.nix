@@ -11,25 +11,25 @@ buildPythonPackage rec {
   pname = "linuxpy";
   version = "0.23.0";
 
-  pyproject = true;
-
   src = fetchPypi {
     inherit pname version;
     sha256 = "sha256-q3gPUJL8M1krSjcPZokmMNxE+g1WLWFJYP4g6Q5/APc=";
   };
 
-  pythonImportsCheck = [ "linuxpy" ];
+  nativeBuildInputs = [
+    setuptools
+  ];
 
   # Checks depend on WARD testing framework which is broken
   doCheck = false;
+
   nativeCheckInputs = [
     pytestCheckHook
     ward
   ];
 
-  nativeBuildInputs = [
-    setuptools
-  ];
+  pyproject = true;
+  pythonImportsCheck = [ "linuxpy" ];
 
   meta = {
     description = "Human friendly interface to Linux subsystems using Python";

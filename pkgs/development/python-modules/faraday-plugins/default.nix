@@ -1,10 +1,10 @@
 {
   lib,
+  fetchFromGitHub,
   beautifulsoup4,
   buildPythonPackage,
   click,
   colorama,
-  fetchFromGitHub,
   html2text,
   lxml,
   markdown,
@@ -22,7 +22,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "faraday-plugins";
   version = "1.28.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "infobyte";
@@ -36,6 +35,7 @@ buildPythonPackage (finalAttrs: {
       --replace-fail "version=version," "version='${finalAttrs.version}',"
   '';
 
+  nativeCheckInputs = [ pytestCheckHook ];
   build-system = [ setuptools ];
 
   dependencies = [
@@ -54,8 +54,6 @@ buildPythonPackage (finalAttrs: {
     tldextract
   ];
 
-  nativeCheckInputs = [ pytestCheckHook ];
-
   disabledTestPaths = [
     # faraday itself is currently not available
     "tests/test_report_collection.py"
@@ -71,6 +69,7 @@ buildPythonPackage (finalAttrs: {
     "test_process_report_tags"
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "faraday_plugins" ];
 
   meta = {

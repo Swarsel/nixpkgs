@@ -1,7 +1,7 @@
 {
   lib,
-  buildDunePackage,
   fetchurl,
+  buildDunePackage,
   cppo,
 }:
 
@@ -17,8 +17,8 @@ buildDunePackage (finalAttrs: {
   nativeBuildInputs = [ cppo ];
 
   meta = {
-    homepage = "https://github.com/let-def/merlin-extend";
     description = "SDK to extend Merlin";
+    homepage = "https://github.com/let-def/merlin-extend";
     license = lib.licenses.mit;
     maintainers = [ ];
   };

@@ -1,13 +1,12 @@
 {
   lib,
-  python3,
   fetchFromGitHub,
+  python3,
 }:
 
 python3.pkgs.buildPythonApplication (finalAttrs: {
   pname = "embedxpl";
   version = "3.8.8";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "mrhenrike";
@@ -16,8 +15,9 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     hash = "sha256-L3gY2wna1V7nF/vGwr1hzq8WeQxTTsvgKMAatVUKZ9E=";
   };
 
+  # Project has no tests
+  doCheck = false;
   __structuredAttrs = true;
-
   build-system = with python3.pkgs; [ setuptools ];
 
   dependencies = with python3.pkgs; [
@@ -42,26 +42,28 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
       python-nmap
       scikit-learn
     ];
+
     at = [ python-can ];
     hvac = [ pymodbus ];
     iiot = [ pymodbus ];
+
     ml = [
       numpy
       scikit-learn
     ];
+
     ml-gpu = [
       numpy
       torch
     ];
+
     nse = [ python-nmap ];
     ot = [ pymodbus ];
     specialized = [ python-can ];
     vehicles = [ python-can ];
   };
 
-  # Project has no tests
-  doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "embedxpl" ];
 
   meta = {

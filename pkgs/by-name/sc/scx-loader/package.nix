@@ -1,15 +1,13 @@
 {
-  fetchFromGitHub,
-  rustPlatform,
   lib,
+  fetchFromGitHub,
   nix-update-script,
   nixosTests,
+  rustPlatform,
 }:
 rustPlatform.buildRustPackage (finalAttrs: {
   pname = "scx-loader";
   version = "1.1.2";
-
-  cargoHash = "sha256-jzp1Z64p35Ap6TYuN977up8Ls8Jakfz9CeM5+brgtuQ=";
 
   src = fetchFromGitHub {
     owner = "sched-ext";
@@ -18,11 +16,11 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-SFolb2S7HGSsUPxXtiVCv/6N4XNqOU62c3GZX9axk9k=";
   };
 
-  __structuredAttrs = true;
+  cargoHash = "sha256-jzp1Z64p35Ap6TYuN977up8Ls8Jakfz9CeM5+brgtuQ=";
 
   env = {
-    VENDOR_PREFIX = "";
     VENDOR_DATADIR = "/share";
+    VENDOR_PREFIX = "";
   };
 
   postInstall = ''
@@ -37,21 +35,25 @@ rustPlatform.buildRustPackage (finalAttrs: {
       --replace-fail "/usr/bin/scx_loader" "$out/bin/scx_loader"
   '';
 
+  __structuredAttrs = true;
+
   passthru = {
-    updateScript = nix-update-script { };
     tests = { inherit (nixosTests) scx-loader; };
+    updateScript = nix-update-script { };
   };
 
   meta = {
-    mainProgram = "scxctl";
     homepage = "https://github.com/sched-ext/scx-loader";
     changelog = "https://github.com/sched-ext/scx-loader/releases/tag/${finalAttrs.src.tag}";
     license = lib.licenses.gpl2Only;
-    platforms = lib.platforms.linux;
+
     maintainers = with lib.maintainers; [
       Gliczy
       michaelBelsanti
       ccicnce113424
     ];
+
+    platforms = lib.platforms.linux;
+    mainProgram = "scxctl";
   };
 })

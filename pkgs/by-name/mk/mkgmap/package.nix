@@ -2,10 +2,10 @@
   lib,
   stdenv,
   fetchurl,
+  ant,
   fetchsvn,
   jdk,
   jre,
-  ant,
   makeWrapper,
   stripJavaArchivesHook,
   doCheck ? true,
@@ -17,6 +17,7 @@ let
   testInputs = import ./testinputs.nix { inherit fetchurl; };
 in
 stdenv.mkDerivation (finalAttrs: {
+  inherit doCheck;
   pname = "mkgmap";
   version = "4924";
 
@@ -74,8 +75,6 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postBuild
   '';
 
-  inherit doCheck;
-
   checkPhase = ''
     runHook preCheck
     ant test
@@ -101,6 +100,7 @@ stdenv.mkDerivation (finalAttrs: {
 
   passthru = {
     inherit deps;
+
     updateScript = [
       ./update.sh
       "mkgmap"
@@ -110,15 +110,17 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Create maps for Garmin GPS devices from OpenStreetMap (OSM) data";
-    downloadPage = "https://www.mkgmap.org.uk/download/mkgmap.html";
     homepage = "https://www.mkgmap.org.uk/";
     license = lib.licenses.gpl2Only;
-    mainProgram = "mkgmap";
-    maintainers = with lib.maintainers; [ sikmir ];
-    platforms = lib.platforms.all;
+
     sourceProvenance = with lib.sourceTypes; [
       fromSource
       binaryBytecode # deps
     ];
+
+    maintainers = with lib.maintainers; [ sikmir ];
+    platforms = lib.platforms.all;
+    mainProgram = "mkgmap";
+    downloadPage = "https://www.mkgmap.org.uk/download/mkgmap.html";
   };
 })

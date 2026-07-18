@@ -1,8 +1,8 @@
 {
   lib,
-  writeText,
   runCommand,
   tsm-client,
+  writeText,
 }:
 
 # Let the client try to connect to a server.

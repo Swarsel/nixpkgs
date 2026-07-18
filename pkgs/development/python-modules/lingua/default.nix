@@ -1,16 +1,15 @@
 {
   lib,
-  fetchPypi,
   buildPythonPackage,
+  click,
+  fetchPypi,
   flit-core,
   polib,
-  click,
 }:
 
 buildPythonPackage rec {
   pname = "lingua";
   version = "4.15.0";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
@@ -29,6 +28,7 @@ buildPythonPackage rec {
     polib
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "lingua" ];
 
   meta = {

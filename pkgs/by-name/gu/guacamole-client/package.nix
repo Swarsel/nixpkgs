@@ -1,7 +1,7 @@
 {
   lib,
-  stdenvNoCC,
   fetchurl,
+  stdenvNoCC,
 }:
 
 stdenvNoCC.mkDerivation (finalAttrs: {
@@ -13,9 +13,6 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     hash = "sha256-tBzrHi3wELVNtWPgsA7bjV/p8HPGFoRi5Ml43w/G5xY=";
   };
 
-  dontUnpack = true;
-  dontBuild = true;
-
   installPhase = ''
     runHook preInstall
 
@@ -25,17 +22,23 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  dontBuild = true;
+  dontUnpack = true;
+
   meta = {
     description = "Clientless remote desktop gateway";
     homepage = "https://guacamole.apache.org/";
     license = lib.licenses.asl20;
+
+    sourceProvenance = [
+      lib.sourceTypes.binaryBytecode
+    ];
+
     maintainers = [ ];
+
     platforms = [
       "x86_64-linux"
       "i686-linux"
-    ];
-    sourceProvenance = [
-      lib.sourceTypes.binaryBytecode
     ];
   };
 })

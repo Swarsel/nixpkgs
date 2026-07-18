@@ -9,21 +9,21 @@
 buildPythonPackage rec {
   pname = "iniparse";
   version = "0.5";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
     sha256 = "932e5239d526e7acb504017bb707be67019ac428a6932368e6851691093aa842";
   };
 
+  propagatedBuildInputs = [ six ];
+  # Does not install tests
+  doCheck = false;
+
   checkPhase = ''
     ${python.interpreter} runtests.py
   '';
 
-  propagatedBuildInputs = [ six ];
-
-  # Does not install tests
-  doCheck = false;
+  format = "setuptools";
 
   meta = {
     description = "Accessing and Modifying INI files";

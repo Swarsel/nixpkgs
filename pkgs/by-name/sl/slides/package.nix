@@ -1,8 +1,8 @@
 {
   lib,
+  fetchFromGitHub,
   bash,
   buildGoModule,
-  fetchFromGitHub,
   go,
 }:
 
@@ -17,12 +17,12 @@ buildGoModule (finalAttrs: {
     sha256 = "sha256-K8VsqaNUPxh3/Yddy6DFiOyjRuZ6r6bU456Pm31A1og=";
   };
 
+  vendorHash = "sha256-c3YCf22L5+rTmH5ePeJ0/goRj5rKY6v+Zon3183MhMY=";
+
   nativeCheckInputs = [
     bash
     go
   ];
-
-  vendorHash = "sha256-c3YCf22L5+rTmH5ePeJ0/goRj5rKY6v+Zon3183MhMY=";
 
   ldflags = [
     "-s"

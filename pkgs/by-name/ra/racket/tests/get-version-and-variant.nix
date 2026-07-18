@@ -1,7 +1,7 @@
 {
   lib,
-  runCommandLocal,
   racket,
+  runCommandLocal,
 }:
 
 runCommandLocal "racket-test-get-version-and-variant"

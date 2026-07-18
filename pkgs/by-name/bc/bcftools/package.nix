@@ -3,14 +3,14 @@
   stdenv,
   fetchFromGitHub,
   autoreconfHook,
-  htslib,
-  zlib,
+  bash,
   bzip2,
-  xz,
   curl,
+  htslib,
   perl,
   python3,
-  bash,
+  xz,
+  zlib,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -23,6 +23,8 @@ stdenv.mkDerivation (finalAttrs: {
     tag = finalAttrs.version;
     hash = "sha256-S+FuqjiOf38sAQKWYOixv/MlXGnuDmkx9z4Co/pk/eM=";
   };
+
+  strictDeps = true;
 
   nativeBuildInputs = [
     autoreconfHook
@@ -38,16 +40,16 @@ stdenv.mkDerivation (finalAttrs: {
     curl
   ];
 
-  nativeCheckInputs = [
-    htslib
-  ];
-
-  strictDeps = true;
-
   makeFlags = [
     "HSTDIR=${htslib}"
     "prefix=$(out)"
     "CC=${stdenv.cc.targetPrefix}cc"
+  ];
+
+  doCheck = true;
+
+  nativeCheckInputs = [
+    htslib
   ];
 
   preCheck = ''
@@ -58,13 +60,11 @@ stdenv.mkDerivation (finalAttrs: {
 
   enableParallelBuilding = true;
 
-  doCheck = true;
-
   meta = {
     description = "Tools for manipulating BCF2/VCF/gVCF format, SNP and short indel sequence variants";
-    license = lib.licenses.mit;
     homepage = "http://www.htslib.org/";
-    platforms = lib.platforms.unix;
+    license = lib.licenses.mit;
     maintainers = [ lib.maintainers.mimame ];
+    platforms = lib.platforms.unix;
   };
 })

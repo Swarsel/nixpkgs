@@ -1,13 +1,12 @@
 {
   lib,
-  python3Packages,
   fetchFromGitHub,
+  python3Packages,
 }:
 
 python3Packages.buildPythonApplication rec {
   pname = "s3cmd";
   version = "2.4.0";
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "s3tools";
@@ -21,11 +20,13 @@ python3Packages.buildPythonApplication rec {
     python-dateutil
   ];
 
+  format = "setuptools";
+
   meta = {
-    homepage = "https://s3tools.org/s3cmd";
     description = "Command line tool for managing Amazon S3 and CloudFront services";
-    mainProgram = "s3cmd";
+    homepage = "https://s3tools.org/s3cmd";
     license = lib.licenses.gpl2Plus;
     maintainers = [ ];
+    mainProgram = "s3cmd";
   };
 }

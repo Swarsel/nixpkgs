@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   poetry-core,
   pysigma,
   pysigma-pipeline-sysmon,
@@ -11,7 +11,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "pysigma-backend-qradar";
   version = "0.3.3";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "nNipsx-Sec";
@@ -20,23 +19,22 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-VymaxX+iqrRlf+WEt4xqEvNt5kg8xI5O/MoYahayu0o=";
   };
 
-  pythonRelaxDeps = [ "pysigma" ];
-
-  build-system = [ poetry-core ];
-
-  dependencies = [ pysigma ];
-
   nativeCheckInputs = [
     pysigma-pipeline-sysmon
     pytestCheckHook
   ];
 
-  pythonImportsCheck = [ "sigma.backends.qradar" ];
+  build-system = [ poetry-core ];
+  dependencies = [ pysigma ];
 
   disabledTests = [
     # Output format unknown
     "test_qradar_extension_output"
   ];
+
+  pyproject = true;
+  pythonImportsCheck = [ "sigma.backends.qradar" ];
+  pythonRelaxDeps = [ "pysigma" ];
 
   meta = {
     description = "Library to support Qradar for pySigma";

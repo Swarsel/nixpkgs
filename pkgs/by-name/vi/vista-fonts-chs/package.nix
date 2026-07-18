@@ -1,8 +1,8 @@
 {
   lib,
-  stdenvNoCC,
   fetchurl,
   cabextract,
+  stdenvNoCC,
 }:
 
 stdenvNoCC.mkDerivation {
@@ -17,14 +17,6 @@ stdenvNoCC.mkDerivation {
   };
 
   nativeBuildInputs = [ cabextract ];
-
-  unpackPhase = ''
-    runHook preUnpack
-
-    cabextract --lowercase --filter '*.TTF' $src
-
-    runHook postUnpack
-  '';
 
   installPhase = ''
     runHook preInstall
@@ -41,15 +33,22 @@ stdenvNoCC.mkDerivation {
     runHook postInstall
   '';
 
+  unpackPhase = ''
+    runHook preUnpack
+
+    cabextract --lowercase --filter '*.TTF' $src
+
+    runHook postUnpack
+  '';
+
   meta = {
     description = "TrueType fonts from Microsoft Windows Vista For Simplified Chinese (Microsoft YaHei)";
     homepage = "https://www.microsoft.com/typography/fonts/family.aspx?FID=350";
     license = lib.licenses.unfree;
     maintainers = [ lib.maintainers.ChengCat ];
-
+    platforms = lib.platforms.all;
     # Set a non-zero priority to allow easy overriding of the
     # fontconfig configuration files.
     priority = 5;
-    platforms = lib.platforms.all;
   };
 }

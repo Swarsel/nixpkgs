@@ -1,61 +1,57 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # build-system
-  setuptools,
-  setuptools-scm,
-
   # dependencies
   aenum,
+  buildPythonPackage,
   cachetools,
   klayout,
   loguru,
+  pydantic,
   pydantic-extra-types,
   pydantic-settings,
-  pydantic,
   pygit2,
+  # tests
+  pytest-regressions,
+  pytestCheckHook,
   rapidfuzz,
   rectangle-packer,
   requests,
   ruamel-yaml-string,
   scipy,
   semver,
+  # build-system
+  setuptools,
+  setuptools-scm,
   toolz,
   typer,
-
-  # tests
-  pytest-regressions,
-  pytestCheckHook,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "kfactory";
   version = "2.5.3";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "gdsfactory";
     repo = "kfactory";
     tag = "v${finalAttrs.version}";
+    hash = "sha256-leFd1+w7lYrvoxVMgtmc/EyBgmTZna05TJx5WffUMZo=";
     # kfactory uses `.git` to infer the project directory.
     # https://github.com/gdsfactory/kfactory/blob/v2.0.0/src/kfactory/conf.py#L318-L327
     # Otherwise, tests fail with:
     # assert kf.config.project_dir is not None
     # E   AssertionError: assert None is not None
     leaveDotGit = true;
-    hash = "sha256-leFd1+w7lYrvoxVMgtmc/EyBgmTZna05TJx5WffUMZo=";
   };
+
+  nativeCheckInputs = [
+    pytest-regressions
+    pytestCheckHook
+  ];
 
   build-system = [
     setuptools
     setuptools-scm
-  ];
-
-  pythonRelaxDeps = [
-    "pydantic"
-    "klayout"
   ];
 
   dependencies = [
@@ -77,11 +73,22 @@ buildPythonPackage (finalAttrs: {
     typer
   ];
 
-  pythonImportsCheck = [ "kfactory" ];
+  disabledTestPaths = [
+    # https://github.com/gdsfactory/kfactory/issues/511
+    "tests/test_pdk.py"
+    # NameError
+    "tests/test_session.py"
 
-  nativeCheckInputs = [
-    pytest-regressions
-    pytestCheckHook
+    # AssertionError: Binary files ... and ... differ
+    "tests/test_all_angle.py"
+    "tests/test_cells.py"
+    "tests/test_grid.py"
+    "tests/test_l2n.py"
+    "tests/test_packing.py"
+    "tests/test_pins.py"
+    "tests/test_rename.py"
+    "tests/test_routing.py"
+    "tests/test_spiral.py"
   ];
 
   disabledTests = [
@@ -124,22 +131,12 @@ buildPythonPackage (finalAttrs: {
     "test_to_dtype"
   ];
 
-  disabledTestPaths = [
-    # https://github.com/gdsfactory/kfactory/issues/511
-    "tests/test_pdk.py"
-    # NameError
-    "tests/test_session.py"
+  pyproject = true;
+  pythonImportsCheck = [ "kfactory" ];
 
-    # AssertionError: Binary files ... and ... differ
-    "tests/test_all_angle.py"
-    "tests/test_cells.py"
-    "tests/test_grid.py"
-    "tests/test_l2n.py"
-    "tests/test_packing.py"
-    "tests/test_pins.py"
-    "tests/test_rename.py"
-    "tests/test_routing.py"
-    "tests/test_spiral.py"
+  pythonRelaxDeps = [
+    "pydantic"
+    "klayout"
   ];
 
   meta = {

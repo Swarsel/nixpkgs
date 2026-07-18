@@ -2,10 +2,10 @@
   lib,
   stdenv,
   fetchurl,
-  perl,
   bash,
-  makeDesktopItem,
   copyDesktopItems,
+  makeDesktopItem,
+  perl,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -17,17 +17,15 @@ stdenv.mkDerivation (finalAttrs: {
     sha256 = "aaf60095884abb872e25f8e919a8a63d0dabaeca46faeba87d12812d6efc703b";
   };
 
-  buildInputs = [ perl ];
   nativeBuildInputs = [ copyDesktopItems ];
+  buildInputs = [ perl ];
   configureScript = "${bash}/bin/bash configure";
 
   desktopItems = [
     (makeDesktopItem {
-      name = "aunpack";
       desktopName = "Aunpack";
       exec = "atool -x %f";
-      terminal = true;
-      noDisplay = true;
+
       mimeTypes = [
         "application/gzip"
         "application/x-7z-compressed"
@@ -42,14 +40,18 @@ stdenv.mkDerivation (finalAttrs: {
         "application/zip"
         "application/x-rar"
       ];
+
+      name = "aunpack";
+      noDisplay = true;
+      terminal = true;
     })
   ];
 
   meta = {
-    homepage = "https://www.nongnu.org/atool";
     description = "Archive command line helper";
-    platforms = lib.platforms.unix;
+    homepage = "https://www.nongnu.org/atool";
     license = lib.licenses.gpl3;
+    platforms = lib.platforms.unix;
     mainProgram = "atool";
   };
 })

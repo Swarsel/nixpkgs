@@ -1,7 +1,7 @@
 {
   lib,
-  stdenvNoCC,
   fetchzip,
+  stdenvNoCC,
 }:
 
 stdenvNoCC.mkDerivation rec {
@@ -14,11 +14,7 @@ stdenvNoCC.mkDerivation rec {
     stripRoot = false;
   };
 
-  dontPatch = true;
-  dontConfigure = true;
-  dontBuild = true;
   doCheck = false;
-  dontFixup = true;
 
   installPhase = ''
     runHook preInstall
@@ -29,14 +25,21 @@ stdenvNoCC.mkDerivation rec {
     runHook postInstall
   '';
 
+  dontBuild = true;
+  dontConfigure = true;
+  dontFixup = true;
+  dontPatch = true;
+
   meta = {
     description = "Monospaced font based on IBM 3270 terminals";
     homepage = "https://github.com/rbanffy/3270font";
     changelog = "https://github.com/rbanffy/3270font/blob/v${version}/CHANGELOG.md";
+
     license = [
       lib.licenses.bsd3
       lib.licenses.ofl
     ];
+
     maintainers = [ ];
     platforms = lib.platforms.all;
   };

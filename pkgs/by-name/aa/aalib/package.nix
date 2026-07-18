@@ -21,7 +21,6 @@ stdenv.mkDerivation (finalAttrs: {
     "man"
     "info"
   ];
-  setOutputFlags = false; # Doesn't support all the flags
 
   patches = [
     # Fix implicit `int` on `main` error with newer versions of clang
@@ -30,6 +29,17 @@ stdenv.mkDerivation (finalAttrs: {
     ./ncurses-6.5.patch
   ]
   ++ lib.optionals stdenv.hostPlatform.isDarwin [ ./darwin.patch ];
+
+  buildInputs = [ ncurses ];
+
+  configureFlags = [
+    "--without-x"
+    "--with-ncurses=${ncurses.dev}"
+  ];
+
+  env = lib.optionalAttrs stdenv.cc.isGNU {
+    NIX_CFLAGS_COMPILE = "-Wno-error=implicit-function-declaration";
+  };
 
   preConfigure =
     # The configure script does the correct thing when 'system' is already set
@@ -50,26 +60,17 @@ stdenv.mkDerivation (finalAttrs: {
         --replace-fail 'powerpc*) dynamic_linker=no ;;' ""
     '';
 
-  buildInputs = [ ncurses ];
-
-  configureFlags = [
-    "--without-x"
-    "--with-ncurses=${ncurses.dev}"
-  ];
-
-  env = lib.optionalAttrs stdenv.cc.isGNU {
-    NIX_CFLAGS_COMPILE = "-Wno-error=implicit-function-declaration";
-  };
-
   postInstall = ''
     mkdir -p $dev/bin
     mv $bin/bin/aalib-config $dev/bin/aalib-config
     substituteInPlace $out/lib/libaa.la --replace-fail "${ncurses.dev}/lib" "${ncurses.out}/lib"
   '';
 
+  setOutputFlags = false; # Doesn't support all the flags
+
   meta = {
     description = "ASCII art graphics library";
-    platforms = lib.platforms.unix;
     license = lib.licenses.lgpl2;
+    platforms = lib.platforms.unix;
   };
 })

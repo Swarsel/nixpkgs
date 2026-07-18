@@ -1,28 +1,26 @@
 {
+  lib,
   buildPythonPackage,
   colorama,
   fetchPypi,
-  lib,
   setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "log-symbols";
   version = "0.0.14";
-  pyproject = true;
 
   src = fetchPypi {
-    pname = "log_symbols";
     inherit version;
     hash = "sha256-zwu8b+Go5T8NF0pxa8YlxPhwQ8wh61XdinQM/iJoBVY=";
+    pname = "log_symbols";
   };
-
-  build-system = [ setuptools ];
-
-  dependencies = [ colorama ];
 
   # Tests are not included in the PyPI distribution and the git repo does not have tagged releases
   doCheck = false;
+  build-system = [ setuptools ];
+  dependencies = [ colorama ];
+  pyproject = true;
   pythonImportsCheck = [ "log_symbols" ];
 
   meta = {

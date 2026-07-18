@@ -1,9 +1,9 @@
 {
+  lib,
+  fetchFromGitHub,
   buildPythonPackage,
   case-converter,
-  fetchFromGitHub,
   jinja2,
-  lib,
   systemrdl-compiler,
   uv-build,
 }:
@@ -11,8 +11,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "peakrdl-rust";
   version = "0.7.3";
-
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "darsor";
@@ -28,6 +26,8 @@ buildPythonPackage (finalAttrs: {
     jinja2
     systemrdl-compiler
   ];
+
+  pyproject = true;
 
   meta = {
     description = "Generate a Rust crate from SystemRDL for accessing control/status registers";

@@ -32,7 +32,7 @@ stdenv.mkDerivation (finalAttrs: {
     homepage = "https://github.com/versality/keylight-cli";
     license = lib.licenses.gpl2Only;
     maintainers = with lib.maintainers; [ versality ];
-    mainProgram = "keylight";
     platforms = lib.platforms.all;
+    mainProgram = "keylight";
   };
 })

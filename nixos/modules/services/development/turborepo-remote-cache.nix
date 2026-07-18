@@ -31,16 +31,8 @@ in
     package = mkPackageOption pkgs "turborepo-remote-cache" { };
 
     environment = mkOption {
-      type = types.attrsOf (
-        types.nullOr (
-          types.oneOf [
-            types.bool
-            types.int
-            types.str
-          ]
-        )
-      );
       default = { };
+
       description = ''
         Environment variables to set.
 
@@ -67,11 +59,21 @@ in
           PORT = 8080;
         }
       '';
+
+      type = types.attrsOf (
+        types.nullOr (
+          types.oneOf [
+            types.bool
+            types.int
+            types.str
+          ]
+        )
+      );
     };
 
     environmentFile = mkOption {
-      type = types.nullOr types.path;
       default = null;
+
       description = ''
         Additional environment file as defined in {manpage}`systemd.exec(5)`.
 
@@ -88,38 +90,23 @@ in
 
         [envvars]: https://ducktors.github.io/turborepo-remote-cache/environment-variables.html
       '';
+
       example = "/run/secrets/turborepo-remote-cache.env";
+      type = types.nullOr types.path;
     };
 
     openFirewall = mkOption {
-      type = types.bool;
       default = false;
+
       description = ''
         Open ports in the firewall for turborepo-remote-cache daemon.
       '';
+
+      type = types.bool;
     };
   };
 
   config = mkIf cfg.enable {
-    systemd.services.turborepo-remote-cache = {
-      serviceConfig = {
-        Restart = "always";
-        EnvironmentFile = cfg.environmentFile;
-        ExecStart = "${cfg.package}/bin/turborepo-remote-cache";
-
-        DynamicUser = true;
-        ProtectSystem = "strict";
-        ProtectHome = true;
-        NoNewPrivileges = true;
-        PrivateDevices = true;
-        PrivateTmp = true;
-      };
-      environment = mapAttrs (
-        name: value: if isBool value then boolToString value else toString value
-      ) cfg.environment;
-      wantedBy = [ "default.target" ];
-    };
-
     networking.firewall.allowedTCPPorts =
       let
         # 3000 is the default port as specified in
@@ -127,5 +114,25 @@ in
         port = cfg.environment.PORT or 3000;
       in
       mkIf cfg.openFirewall [ port ];
+
+    systemd.services.turborepo-remote-cache = {
+      environment = mapAttrs (
+        name: value: if isBool value then boolToString value else toString value
+      ) cfg.environment;
+
+      serviceConfig = {
+        DynamicUser = true;
+        EnvironmentFile = cfg.environmentFile;
+        ExecStart = "${cfg.package}/bin/turborepo-remote-cache";
+        NoNewPrivileges = true;
+        PrivateDevices = true;
+        PrivateTmp = true;
+        ProtectHome = true;
+        ProtectSystem = "strict";
+        Restart = "always";
+      };
+
+      wantedBy = [ "default.target" ];
+    };
   };
 }

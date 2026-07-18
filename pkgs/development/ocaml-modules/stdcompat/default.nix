@@ -1,15 +1,13 @@
 {
-  buildDunePackage,
-  ocaml,
   lib,
   fetchurl,
+  buildDunePackage,
+  ocaml,
 }:
 
 buildDunePackage rec {
   pname = "stdcompat";
   version = "21.1";
-
-  minimalOCamlVersion = "4.11";
 
   src = fetchurl {
     url = "https://github.com/ocamllibs/stdcompat/archive/refs/tags/${version}.tar.gz";
@@ -17,9 +15,9 @@ buildDunePackage rec {
   };
 
   patches = [ ./ocaml-4_14_3.patch ];
-
   # Otherwise ./configure script will run and create files conflicting with dune.
   dontConfigure = true;
+  minimalOCamlVersion = "4.11";
 
   meta = {
     homepage = "https://github.com/ocamllibs/stdcompat";

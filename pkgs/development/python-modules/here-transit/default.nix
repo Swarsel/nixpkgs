@@ -1,21 +1,19 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  hatchling,
   aiohttp,
-  async-timeout,
-  yarl,
   aresponses,
+  async-timeout,
+  buildPythonPackage,
+  hatchling,
   pytest-asyncio,
   pytestCheckHook,
+  yarl,
 }:
 
 buildPythonPackage rec {
   pname = "here-transit";
   version = "1.2.1";
-
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "eifinger";
@@ -28,6 +26,12 @@ buildPythonPackage rec {
     sed -i "/^addopts/d" pyproject.toml
   '';
 
+  nativeCheckInputs = [
+    aresponses
+    pytest-asyncio
+    pytestCheckHook
+  ];
+
   build-system = [ hatchling ];
 
   dependencies = [
@@ -36,18 +40,13 @@ buildPythonPackage rec {
     yarl
   ];
 
-  nativeCheckInputs = [
-    aresponses
-    pytest-asyncio
-    pytestCheckHook
-  ];
-
+  pyproject = true;
   pythonImportsCheck = [ "here_transit" ];
 
   meta = {
-    changelog = "https://github.com/eifinger/here_transit/releases/tag/v${version}";
     description = "Asynchronous Python client for the HERE Routing V8 API";
     homepage = "https://github.com/eifinger/here_transit";
+    changelog = "https://github.com/eifinger/here_transit/releases/tag/v${version}";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ dotlambda ];
   };

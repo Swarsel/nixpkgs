@@ -1,30 +1,30 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
-  fetchzip,
-  libarchive,
-  pkg-config,
-  jq,
-  platformio-core,
-  writableTmpDirAsHomeHook,
   bluez,
+  fetchzip,
   i2c-tools,
-  libx11,
+  jq,
+  libarchive,
   libgpiod_1,
   libinput,
   libusb1,
   libuv,
+  libx11,
   libxkbcommon,
-  ulfius,
-  yaml-cpp,
-  udevCheckHook,
-  versionCheckHook,
   makeBinaryWrapper,
-  python3Packages,
-  enableDefaultConfig ? false,
   meshtastic-web, # Only used when `enableDefaultConfig` is set to `true`.
   nixosTests,
+  pkg-config,
+  platformio-core,
+  python3Packages,
+  udevCheckHook,
+  ulfius,
+  versionCheckHook,
+  writableTmpDirAsHomeHook,
+  yaml-cpp,
+  enableDefaultConfig ? false,
 }:
 
 assert builtins.isBool enableDefaultConfig;
@@ -33,19 +33,19 @@ let
   version = "2.7.23.b246bcd";
 
   platformio-deps-native = fetchzip {
-    url = "https://github.com/meshtastic/firmware/releases/download/v${version}/platformio-deps-native-tft-${version}.zip";
     hash = "sha256-Jr8/KnzNedGvMfMEjrqBv5HwKZS0jZpHFfp/saQEnng=";
+    url = "https://github.com/meshtastic/firmware/releases/download/v${version}/platformio-deps-native-tft-${version}.zip";
   };
 in
 stdenv.mkDerivation (finalAttrs: {
-  pname = "meshtasticd";
   inherit version;
+  pname = "meshtasticd";
 
   src = fetchFromGitHub {
     owner = "meshtastic";
     repo = "firmware";
-    hash = "sha256-oNV6ZP5aSAFBcn9Y+yEzVTtMKg40eXcvDw5LlyZAft4=";
     tag = "v${finalAttrs.version}";
+    hash = "sha256-oNV6ZP5aSAFBcn9Y+yEzVTtMKg40eXcvDw5LlyZAft4=";
     fetchSubmodules = true;
   };
 
@@ -134,14 +134,17 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   doInstallCheck = true;
+
   nativeInstallCheckInputs = [
     udevCheckHook
     versionCheckHook
   ];
-  versionCheckProgramArg = "--version";
+
   preVersionCheck = ''
     version="${lib.versions.major finalAttrs.version}.${lib.versions.minor finalAttrs.version}.${lib.versions.patch finalAttrs.version}"
   '';
+
+  versionCheckProgramArg = "--version";
 
   passthru.tests = {
     inherit (nixosTests) meshtasticd;
@@ -149,6 +152,7 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Meshtastic daemon for communicating with Meshtastic devices";
+
     longDescription = ''
       This package has `udev` rules installed as part of the package.
       Add `services.udev.packages = [ pkgs.meshtasticd ]` into your NixOS
@@ -156,10 +160,11 @@ stdenv.mkDerivation (finalAttrs: {
 
       To enable the default configuration, set the `enableDefaultConfig` parameter to true.
     '';
+
     homepage = "https://github.com/meshtastic/firmware";
-    mainProgram = "meshtasticd";
     license = lib.licenses.gpl3Plus;
-    platforms = lib.platforms.linux;
     maintainers = with lib.maintainers; [ drupol ];
+    platforms = lib.platforms.linux;
+    mainProgram = "meshtasticd";
   };
 })

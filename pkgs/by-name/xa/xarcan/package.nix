@@ -1,27 +1,30 @@
 {
   lib,
   stdenv,
-  fetchFromCodeberg,
   arcan,
   audit,
   dbus,
   dri-pkgconfig-stub,
-  libepoxy,
+  fetchFromCodeberg,
   font-util,
   libGL,
-  libx11,
-  libxau,
-  libxdmcp,
-  libxfont_2,
   libdrm,
+  libepoxy,
+  libgbm,
   libgcrypt,
   libmd,
   libselinux,
   libtirpc,
+  libx11,
+  libxau,
   libxcb,
+  libxcb-image,
+  libxcb-util,
+  libxcb-wm,
+  libxdmcp,
+  libxfont_2,
   libxkbfile,
   libxshmfence,
-  libgbm,
   mesa-gl-headers,
   meson,
   nettle,
@@ -30,14 +33,11 @@
   pixman,
   pkg-config,
   systemd,
-  libxcb-util,
-  libxcb-wm,
-  libxcb-image,
+  unstableGitUpdater,
   xkbcomp,
   xkeyboard_config,
   xorgproto,
   xtrans,
-  unstableGitUpdater,
 }:
 
 stdenv.mkDerivation (finalPackages: rec {
@@ -114,16 +114,18 @@ stdenv.mkDerivation (finalPackages: rec {
   passthru.updateScript = unstableGitUpdater { };
 
   meta = {
-    homepage = "https://codeberg.org/letoram/xarcan";
     description = "Patched Xserver that bridges connections to Arcan";
-    mainProgram = "Xarcan";
+
     longDescription = ''
       xarcan is a patched X server with a KDrive backend that uses the
       arcan-shmif to map Xlib/Xcb/X clients to a running arcan instance. It
       allows running an X session as a window under Arcan.
     '';
+
+    homepage = "https://codeberg.org/letoram/xarcan";
     license = with lib.licenses; [ mit ];
     maintainers = [ ];
     platforms = lib.platforms.unix;
+    mainProgram = "Xarcan";
   };
 })

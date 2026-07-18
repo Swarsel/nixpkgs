@@ -1,24 +1,23 @@
 {
+  alcotest,
+  base64,
   buildDunePackage,
   dns,
   dns-mirage,
-  randomconv,
+  dns-tsig,
   duration,
   lwt,
-  mirage-sleep,
+  metrics,
+  mirage-crypto-rng,
   mirage-mtime,
   mirage-ptime,
-  metrics,
-  alcotest,
-  mirage-crypto-rng,
-  dns-tsig,
-  base64,
+  mirage-sleep,
+  randomconv,
 }:
 
 buildDunePackage {
-  pname = "dns-server";
-
   inherit (dns) version src;
+  pname = "dns-server";
 
   propagatedBuildInputs = [
     dns
@@ -33,6 +32,7 @@ buildDunePackage {
   ];
 
   doCheck = true;
+
   checkInputs = [
     alcotest
     mirage-crypto-rng

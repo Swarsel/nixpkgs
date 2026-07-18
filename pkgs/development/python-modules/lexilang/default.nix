@@ -1,15 +1,14 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
+  buildPythonPackage,
   python,
+  setuptools,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "lexilang";
   version = "1.0.7";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "LibreTranslate";
@@ -18,7 +17,11 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-5/P9u2naTTyG5l3uhrinRIAekyOYn8OKLwb/VEON2Vc=";
   };
 
-  build-system = [ setuptools ];
+  checkPhase = ''
+    runHook preCheck
+    ${python.interpreter} test.py
+    runHook postCheck
+  '';
 
   # Upstream builds in CI:
   # https://github.com/LibreTranslate/LexiLang/blob/ba49108a736b9c077ea45cbe61d54fa635fe25d5/.github/workflows/publish.yml#L30-L31
@@ -28,13 +31,9 @@ buildPythonPackage (finalAttrs: {
     cp -r lexilang/data $out/${python.sitePackages}/lexilang/data
   '';
 
+  build-system = [ setuptools ];
+  pyproject = true;
   pythonImportsCheck = [ "lexilang" ];
-
-  checkPhase = ''
-    runHook preCheck
-    ${python.interpreter} test.py
-    runHook postCheck
-  '';
 
   meta = {
     description = "Simple, fast dictionary-based language detector for short texts";

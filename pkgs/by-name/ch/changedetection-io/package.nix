@@ -1,14 +1,13 @@
 {
   lib,
   fetchFromGitHub,
-  python3,
   gitUpdater,
+  python3,
 }:
 
 python3.pkgs.buildPythonApplication rec {
   pname = "changedetection-io";
   version = "0.53.6";
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "dgtlmoon";
@@ -16,8 +15,6 @@ python3.pkgs.buildPythonApplication rec {
     tag = version;
     hash = "sha256-j7Dw6PLGt955wfQNriRHGtsJzCd50xpHJK0fqVvzIY4=";
   };
-
-  pythonRelaxDeps = true;
 
   propagatedBuildInputs =
     with python3.pkgs;
@@ -84,9 +81,9 @@ python3.pkgs.buildPythonApplication rec {
 
   # tests can currently not be run in one pytest invocation and without docker
   doCheck = false;
-
+  format = "setuptools";
   pythonImportsCheck = [ "changedetectionio" ];
-
+  pythonRelaxDeps = true;
   passthru.updateScript = gitUpdater { };
 
   meta = {
@@ -94,10 +91,12 @@ python3.pkgs.buildPythonApplication rec {
     homepage = "https://github.com/dgtlmoon/changedetection.io";
     changelog = "https://github.com/dgtlmoon/changedetection.io/releases/tag/${src.tag}";
     license = lib.licenses.unfree;
+
     maintainers = with lib.maintainers; [
       mikaelfangel
       thanegill
     ];
+
     mainProgram = "changedetection.io";
   };
 }

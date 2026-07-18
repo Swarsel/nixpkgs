@@ -1,12 +1,12 @@
 {
   lib,
   stdenv,
-  fetchgit,
-  pkg-config,
-  gettext,
   boost,
   cpio,
   elfutils,
+  fetchgit,
+  gettext,
+  pkg-config,
   python3,
 }:
 
@@ -33,17 +33,19 @@ stdenv.mkDerivation (finalAttrs: {
     python3
     python3.pkgs.setuptools
   ];
+
   buildInputs = [
     boost
     elfutils
     gettext
     python3
   ];
+
   enableParallelBuilding = true;
 
   meta = {
-    homepage = "https://sourceware.org/systemtap/";
     description = "Provides a scripting language for instrumentation on a live kernel plus user-space";
+    homepage = "https://sourceware.org/systemtap/";
     license = lib.licenses.gpl2;
     platforms = lib.systems.inspect.patterns.isGnu;
   };

@@ -2,16 +2,16 @@
   lib,
   stdenv,
   fetchFromGitHub,
+  gocryptfs,
+  gtk3,
+  json-glib,
+  libgee,
   makeBinaryWrapper,
   meson,
   ninja,
   pkg-config,
   vala,
   wrapGAppsHook3,
-  gocryptfs,
-  gtk3,
-  json-glib,
-  libgee,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -53,8 +53,8 @@ stdenv.mkDerivation (finalAttrs: {
     description = "Simple gocryptfs GUI";
     homepage = "https://github.com/moson-mo/cryptor";
     license = lib.licenses.bsd3;
-    mainProgram = "cryptor";
     maintainers = with lib.maintainers; [ fgaz ];
     platforms = lib.platforms.all;
+    mainProgram = "cryptor";
   };
 })

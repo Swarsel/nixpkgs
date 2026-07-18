@@ -1,23 +1,20 @@
 {
   lib,
-  buildDunePackage,
   fetchFromGitHub,
-
+  buildDunePackage,
   # propagatedBuildInputs,
   easy_logging,
   name_matcher_parser,
+  nix-update-script,
   ppx_deriving,
   unionFind,
   visitors,
   yojson,
-
-  nix-update-script,
 }:
 
 buildDunePackage (finalAttrs: {
   pname = "charon";
   version = "2026.07.01";
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "AeneasVerif";
@@ -39,6 +36,7 @@ buildDunePackage (finalAttrs: {
   # running the (Rust) charon binary, which are not part of the OCaml source
   # distribution, so the tests cannot run here.
   doCheck = false;
+  __structuredAttrs = true;
 
   passthru.updateScript = nix-update-script {
     extraArgs = [ "--version=unstable" ];

@@ -1,9 +1,9 @@
 {
-  mitm-cache,
   lib,
-  pkgs,
   stdenv,
   callPackage,
+  mitm-cache,
+  pkgs,
 }:
 
 let
@@ -11,14 +11,14 @@ let
 in
 # the derivation to fetch/update deps for
 {
-  pkg ? getPkg attrPath,
-  pname ? null,
+  # deps path (relative to the package directory, or absolute)
+  data,
   attrPath ? pname,
   # bwrap flags for the update script (this will be put in bash as-is)
   # this is relevant for downstream users
   bwrapFlags ? "--ro-bind \"$PWD\" \"$PWD\"",
-  # deps path (relative to the package directory, or absolute)
-  data,
+  pkg ? getPkg attrPath,
+  pname ? null,
   # redirect stdout to stderr to allow the update script to be used with update script combinators
   silent ? true,
   useBwrap ? stdenv.hostPlatform.isLinux,
@@ -58,16 +58,18 @@ let
         filename
         extension
         ;
-      isSnapshot = lib.hasSuffix "-SNAPSHOT" baseVer;
+
       version =
         if isSnapshot && !lib.hasPrefix "SNAPSHOT" verCls then
           builtins.concatStringsSep "-" (lib.take 3 (lib.splitString "-" verCls))
         else
           baseVer;
+
+      buildNum = builtins.elemAt (lib.splitString "-" version) 2;
       classifier = if verCls == version then null else lib.removePrefix "${version}-" verCls;
+      isSnapshot = lib.hasSuffix "-SNAPSHOT" baseVer;
       # for snapshots
       timestamp = builtins.elemAt (lib.splitString "-" version) 1;
-      buildNum = builtins.elemAt (lib.splitString "-" version) 2;
     };
 
   parseMetadataUrl =
@@ -79,15 +81,15 @@ let
     in
     if vMeta then
       {
-        vMeta = true;
-        baseVer = builtins.elemAt splitBase (builtins.length splitBase - 1);
         artifactId = builtins.elemAt splitBase (builtins.length splitBase - 2);
+        baseVer = builtins.elemAt splitBase (builtins.length splitBase - 1);
+        vMeta = true;
       }
     else
       {
-        vMeta = false;
-        baseVer = null;
         artifactId = builtins.elemAt splitBase (builtins.length splitBase - 1);
+        baseVer = null;
+        vMeta = false;
       };
 
   extractHashArtifact =
@@ -101,11 +103,13 @@ let
     in
     rec {
       inherit artifactId version isSnapshot;
+
       baseVer =
         if !isSnapshot then
           version
         else
           builtins.head (builtins.match "(.*)-([^-]*)-([^-]*)" version) + "-SNAPSHOT";
+
       classifier = if cls == null then null else lib.removePrefix "/" cls;
       clsSuf = if classifier == null then "" else "-${classifier}";
     };
@@ -257,10 +261,12 @@ let
   finalData = visitAttrs { } [ ] data';
 in
 mitm-cache.fetch {
-  name = "${pkg.pname or pkg.name}-deps";
   data = finalData // {
     "!version" = 1;
   };
+
+  name = "${pkg.pname or pkg.name}-deps";
+
   passthru = lib.optionalAttrs (!builtins.isAttrs data) {
     updateScript = callPackage ./update-deps.nix { } {
       inherit

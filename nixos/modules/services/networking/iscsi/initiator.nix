@@ -11,39 +11,47 @@ in
 {
   options.services.openiscsi = with types; {
     enable = mkEnableOption "the openiscsi iscsi daemon";
+    package = mkPackageOption pkgs "openiscsi" { };
+
+    discoverPortal = mkOption {
+      default = null;
+      description = "Portal to discover targets on";
+      type = nullOr str;
+    };
+
     enableAutoLoginOut = mkEnableOption ''
       automatic login and logout of all automatic targets.
       You probably do not want this
     '';
-    discoverPortal = mkOption {
-      type = nullOr str;
-      default = null;
-      description = "Portal to discover targets on";
-    };
-    name = mkOption {
-      type = str;
-      description = "Name of this iscsi initiator";
-      example = "iqn.2020-08.org.linux-iscsi.initiatorhost:example";
-    };
-    package = mkPackageOption pkgs "openiscsi" { };
 
     extraConfig = mkOption {
-      type = str;
       default = "";
       description = "Lines to append to default iscsid.conf";
+      type = str;
     };
 
     extraConfigFile = mkOption {
+      default = null;
+
       description = ''
         Append an additional file's contents to /etc/iscsid.conf. Use a non-store path
         and store passwords in this file.
       '';
-      default = null;
+
       type = nullOr str;
+    };
+
+    name = mkOption {
+      description = "Name of this iscsi initiator";
+      example = "iqn.2020-08.org.linux-iscsi.initiatorhost:example";
+      type = str;
     };
   };
 
   config = mkIf cfg.enable {
+    boot.kernelModules = [ "iscsi_tcp" ];
+    environment.etc."iscsi/initiatorname.iscsi".text = "InitiatorName=${cfg.name}";
+
     environment.etc."iscsi/iscsid.conf.fragment".source = pkgs.runCommand "iscsid.conf" { } ''
       cat "${cfg.package}/etc/iscsi/iscsid.conf" > $out
       cat << 'EOF' >> $out
@@ -51,12 +59,19 @@ in
       ${optionalString cfg.enableAutoLoginOut "node.startup = automatic"}
       EOF
     '';
-    environment.etc."iscsi/initiatorname.iscsi".text = "InitiatorName=${cfg.name}";
 
+    environment.systemPackages = [ cfg.package ];
     systemd.packages = [ cfg.package ];
 
+    systemd.services."iscsi" = mkIf cfg.enableAutoLoginOut {
+      serviceConfig.ExecStartPre =
+        mkIf (cfg.discoverPortal != null)
+          "${cfg.package}/bin/iscsiadm --mode discoverydb --type sendtargets --portal ${escapeShellArg cfg.discoverPortal} --discover";
+
+      wantedBy = [ "remote-fs.target" ];
+    };
+
     systemd.services."iscsid" = {
-      wantedBy = [ "multi-user.target" ];
       preStart =
         let
           extraCfgDumper = optionalString (cfg.extraConfigFile != null) ''
@@ -74,17 +89,10 @@ in
             ${extraCfgDumper}
           ) > /etc/iscsi/iscsid.conf
         '';
+
+      wantedBy = [ "multi-user.target" ];
     };
+
     systemd.sockets."iscsid".wantedBy = [ "sockets.target" ];
-
-    systemd.services."iscsi" = mkIf cfg.enableAutoLoginOut {
-      wantedBy = [ "remote-fs.target" ];
-      serviceConfig.ExecStartPre =
-        mkIf (cfg.discoverPortal != null)
-          "${cfg.package}/bin/iscsiadm --mode discoverydb --type sendtargets --portal ${escapeShellArg cfg.discoverPortal} --discover";
-    };
-
-    environment.systemPackages = [ cfg.package ];
-    boot.kernelModules = [ "iscsi_tcp" ];
   };
 }

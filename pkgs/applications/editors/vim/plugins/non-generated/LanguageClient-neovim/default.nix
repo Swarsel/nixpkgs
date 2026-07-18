@@ -14,20 +14,18 @@ let
     hash = "sha256-Z9S2ie9RxJCIbmjSV/Tto4lK04cZfWmK3IAy8YaySVI=";
   };
   LanguageClient-neovim-bin = rustPlatform.buildRustPackage {
-    pname = "LanguageClient-neovim-bin";
     inherit version src;
+    pname = "LanguageClient-neovim-bin";
+    cargoHash = "sha256-43alR84MktYTmsKeUMm4gK8AjUIkGqcsuFeQPusBKD0=";
 
     cargoPatches = [
       ./traitobject.patch
     ];
-
-    cargoHash = "sha256-43alR84MktYTmsKeUMm4gK8AjUIkGqcsuFeQPusBKD0=";
   };
 in
 vimUtils.buildVimPlugin {
-  pname = "LanguageClient-neovim";
   inherit version src;
-
+  pname = "LanguageClient-neovim";
   propagatedBuildInputs = [ LanguageClient-neovim-bin ];
 
   preFixup = ''
@@ -38,13 +36,13 @@ vimUtils.buildVimPlugin {
   '';
 
   passthru = {
-    updateScript = nix-update-script {
-      extraArgs = [ "--version-regex=(\\d+\\.\\d+\\.\\d+)" ];
-      attrPath = "vimPlugins.LanguageClient-neovim.LanguageClient-neovim-bin";
-    };
-
     # needed for the update script
     inherit LanguageClient-neovim-bin;
+
+    updateScript = nix-update-script {
+      attrPath = "vimPlugins.LanguageClient-neovim.LanguageClient-neovim-bin";
+      extraArgs = [ "--version-regex=(\\d+\\.\\d+\\.\\d+)" ];
+    };
   };
 
   meta = {

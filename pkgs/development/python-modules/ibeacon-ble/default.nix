@@ -1,9 +1,9 @@
 {
   lib,
+  fetchFromGitHub,
   aiohttp,
   aiooui,
   buildPythonPackage,
-  fetchFromGitHub,
   home-assistant-bluetooth,
   mac-vendor-lookup,
   poetry-core,
@@ -15,7 +15,6 @@
 buildPythonPackage rec {
   pname = "ibeacon-ble";
   version = "1.2.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "Bluetooth-Devices";
@@ -23,6 +22,12 @@ buildPythonPackage rec {
     tag = "v${version}";
     hash = "sha256-1liSWxduYpjIMu7226EH4bsc7gca5g/fyL79W4ZMdU4=";
   };
+
+  nativeCheckInputs = [
+    pytest-asyncio
+    pytest-cov-stub
+    pytestCheckHook
+  ];
 
   build-system = [ poetry-core ];
 
@@ -33,12 +38,7 @@ buildPythonPackage rec {
     mac-vendor-lookup
   ];
 
-  nativeCheckInputs = [
-    pytest-asyncio
-    pytest-cov-stub
-    pytestCheckHook
-  ];
-
+  pyproject = true;
   pythonImportsCheck = [ "ibeacon_ble" ];
 
   meta = {

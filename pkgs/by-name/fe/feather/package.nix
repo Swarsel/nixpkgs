@@ -1,10 +1,11 @@
 {
+  lib,
+  stdenv,
+  fetchFromGitHub,
   bc-ur,
   boost186,
   cmake,
-  fetchFromGitHub,
   hidapi,
-  lib,
   libsodium,
   libusb1,
   openssl,
@@ -14,7 +15,6 @@
   qrencode,
   qt6,
   readline,
-  stdenv,
   testers,
   tor,
   unbound,
@@ -72,19 +72,20 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   passthru.tests.version = testers.testVersion {
-    package = finalAttrs.finalPackage;
     command = ''
       QT_QPA_PLATFORM=minimal ${finalAttrs.finalPackage.meta.mainProgram} --version
     '';
+
+    package = finalAttrs.finalPackage;
   };
 
   meta = {
     description = "Free Monero desktop wallet";
     homepage = "https://featherwallet.org/";
     changelog = "https://featherwallet.org/changelog/#${finalAttrs.version}%20changelog";
-    platforms = lib.platforms.linux;
     license = lib.licenses.bsd3;
-    mainProgram = "feather";
     maintainers = with lib.maintainers; [ surfaceflinger ];
+    platforms = lib.platforms.linux;
+    mainProgram = "feather";
   };
 })

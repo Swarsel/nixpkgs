@@ -2,10 +2,10 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  rustPlatform,
   libtirpc,
   pam,
   rpcsvc-proto,
+  rustPlatform,
   enablePAM ? stdenv.hostPlatform.isLinux,
 }:
 
@@ -21,26 +21,26 @@ rustPlatform.buildRustPackage {
     sha256 = "sha256-nTygUEjAUXD0mRTmjt8/UPVfZA4rP6oop1s/fI5mYeg=";
   };
 
-  cargoHash = "sha256-0Ee0L3gKNP1O3SFkImBzQrT1fgnWFrrW8owxEM1dUYQ=";
-
-  buildInputs = [ libtirpc ] ++ lib.optional enablePAM pam;
-  nativeBuildInputs = [ rpcsvc-proto ];
-
-  buildNoDefaultFeatures = true;
-  buildFeatures = [ "quota" ] ++ lib.optional enablePAM "pam";
-
   postPatch = ''
     substituteInPlace fs_quota/build.rs \
        --replace '/usr/include/tirpc' '${libtirpc.dev}/include/tirpc'
   '';
 
+  nativeBuildInputs = [ rpcsvc-proto ];
+  buildInputs = [ libtirpc ] ++ lib.optional enablePAM pam;
+  cargoHash = "sha256-0Ee0L3gKNP1O3SFkImBzQrT1fgnWFrrW8owxEM1dUYQ=";
+  buildFeatures = [ "quota" ] ++ lib.optional enablePAM "pam";
+  buildNoDefaultFeatures = true;
+
   meta = {
     description = "Implementation of WebDAV server in Rust";
+
     longDescription = ''
       webdav-server-rs is an implementation of WebDAV with full support for
       RFC4918.  It also supports local unix accounts, PAM authentication, and
       quota.
     '';
+
     homepage = "https://github.com/miquels/webdav-server-rs";
     license = lib.licenses.asl20;
     maintainers = with lib.maintainers; [ pmy ];

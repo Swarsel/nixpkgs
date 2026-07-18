@@ -29,12 +29,11 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   buildPhase = "make";
-
   installPhase = "mkdir -p $out/bin && mv mid2key $out/bin";
 
   meta = {
-    homepage = "http://code.google.com/p/mid2key/";
     description = "Simple tool which maps midi notes to simulated keystrokes";
+    homepage = "http://code.google.com/p/mid2key/";
     license = lib.licenses.gpl3;
     maintainers = [ ];
     platforms = lib.platforms.linux;

@@ -1,51 +1,51 @@
 {
-  fetchurl,
   lib,
   stdenv,
-  squashfsTools,
-  libxtst,
-  libxscrnsaver,
-  libxrender,
-  libxrandr,
-  libxi,
-  libxfixes,
-  libxext,
-  libxdamage,
-  libxcursor,
-  libxcomposite,
-  libx11,
-  libsm,
-  libice,
-  libxshmfence,
-  libxcb,
+  fetchurl,
   alsa-lib,
-  freetype,
-  glib,
-  pango,
-  cairo,
-  atk,
-  gdk-pixbuf,
-  gtk3,
-  cups,
-  nspr,
-  nss_latest,
-  libpng,
-  libnotify,
-  libgcrypt,
-  systemd,
-  fontconfig,
-  dbus,
-  expat,
-  curlWithGnuTls,
-  zlib,
   at-spi2-atk,
   at-spi2-core,
+  atk,
+  buildFHSEnv,
+  cairo,
+  cups,
+  curlWithGnuTls,
+  dbus,
+  expat,
+  fontconfig,
+  freetype,
+  gdk-pixbuf,
+  glib,
+  gtk3,
+  harfbuzz,
   libdrm,
   libgbm,
-  libxkbcommon,
-  harfbuzz,
+  libgcrypt,
+  libice,
+  libnotify,
+  libpng,
   libsecret,
-  buildFHSEnv,
+  libsm,
+  libx11,
+  libxcb,
+  libxcomposite,
+  libxcursor,
+  libxdamage,
+  libxext,
+  libxfixes,
+  libxi,
+  libxkbcommon,
+  libxrandr,
+  libxrender,
+  libxscrnsaver,
+  libxshmfence,
+  libxtst,
+  nspr,
+  nss_latest,
+  pango,
+  squashfsTools,
+  systemd,
+  zlib,
 }:
 
 let
@@ -103,9 +103,8 @@ let
   ];
 
   thisPackage = stdenv.mkDerivation {
-    pname = "nordpass";
-
     inherit version;
+    pname = "nordpass";
 
     src = fetchurl {
       url = "${snapBaseUrl}${snapId}_${snapVersion}.snap";
@@ -113,19 +112,6 @@ let
     };
 
     nativeBuildInputs = [ squashfsTools ];
-
-    dontStrip = true;
-    dontPatchELF = true;
-
-    unpackPhase = ''
-      runHook preUnpack
-      unsquashfs "$src"
-      cd squashfs-root
-      runHook postUnpack
-    '';
-
-    # Prevent double wrapping
-    dontWrapGApps = true;
 
     installPhase = ''
       runHook preInstall
@@ -150,27 +136,39 @@ let
       runHook postInstall
     '';
 
+    dontPatchELF = true;
+    dontStrip = true;
+    # Prevent double wrapping
+    dontWrapGApps = true;
+
+    unpackPhase = ''
+      runHook preUnpack
+      unsquashfs "$src"
+      cd squashfs-root
+      runHook postUnpack
+    '';
+
     meta = {
-      homepage = "https://nordpass.com/";
       description = "Secure and simple password manager for a stress-free online experience";
+      homepage = "https://nordpass.com/";
       license = lib.licenses.unfree;
-      mainProgram = "nordpass";
+      sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
       maintainers = with lib.maintainers; [ coconnor ];
       platforms = [ "x86_64-linux" ];
-      sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
+      mainProgram = "nordpass";
     };
   };
 in
 
 buildFHSEnv {
   inherit (thisPackage) pname version;
-  targetPkgs = _: deps ++ [ thisPackage ];
-  runScript = "nordpass";
+  inherit (thisPackage) meta;
 
   extraInstallCommands = ''
     mkdir -p "$out/share"
     cp -r ${thisPackage}/share/* "$out/share/"
   '';
 
-  inherit (thisPackage) meta;
+  runScript = "nordpass";
+  targetPkgs = _: deps ++ [ thisPackage ];
 }

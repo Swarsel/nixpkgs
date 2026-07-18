@@ -1,6 +1,6 @@
 {
-  bundlerEnv,
   lib,
+  bundlerEnv,
   ruby,
 }:
 

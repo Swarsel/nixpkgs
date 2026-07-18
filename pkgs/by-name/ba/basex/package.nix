@@ -2,11 +2,11 @@
   lib,
   stdenv,
   fetchurl,
-  unzip,
-  jre,
-  coreutils,
-  makeDesktopItem,
   copyDesktopItems,
+  coreutils,
+  jre,
+  makeDesktopItem,
+  unzip,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -17,6 +17,7 @@ stdenv.mkDerivation (finalAttrs: {
     url = "http://files.basex.org/releases/${finalAttrs.version}/BaseX${
       builtins.replaceStrings [ "." ] [ "" ] finalAttrs.version
     }.zip";
+
     hash = "sha256-qIaAy05V5JUZ+YuuesFecCvdpCYoZm0/dWFnInpHvKE=";
   };
 
@@ -24,24 +25,8 @@ stdenv.mkDerivation (finalAttrs: {
     unzip
     copyDesktopItems
   ];
+
   buildInputs = [ jre ];
-
-  desktopItems = lib.optional (!stdenv.hostPlatform.isDarwin) (makeDesktopItem {
-    name = "basex";
-    exec = "basexgui %f";
-    icon = "${./basex.svg}"; # icon copied from Ubuntu basex package
-    comment = "Visually query and analyse your XML data";
-    desktopName = "BaseX XML Database";
-    genericName = "XML database tool";
-    categories = [
-      "Development"
-      "Utility"
-      "Database"
-    ];
-    mimeTypes = [ "text/xml" ];
-  });
-
-  dontBuild = true;
 
   installPhase = ''
     runHook preInstall
@@ -68,8 +53,27 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  desktopItems = lib.optional (!stdenv.hostPlatform.isDarwin) (makeDesktopItem {
+    categories = [
+      "Development"
+      "Utility"
+      "Database"
+    ];
+
+    comment = "Visually query and analyse your XML data";
+    desktopName = "BaseX XML Database";
+    exec = "basexgui %f";
+    genericName = "XML database tool";
+    icon = "${./basex.svg}"; # icon copied from Ubuntu basex package
+    mimeTypes = [ "text/xml" ];
+    name = "basex";
+  });
+
+  dontBuild = true;
+
   meta = {
     description = "XML database and XPath/XQuery processor";
+
     longDescription = ''
       BaseX is a very fast and light-weight, yet powerful XML database and
       XPath/XQuery processor, including support for the latest W3C Full Text
@@ -77,10 +81,11 @@ stdenv.mkDerivation (finalAttrs: {
       highly interactive front-end (basexgui). Apart from two local standalone
       modes, BaseX offers a client/server architecture.
     '';
+
     homepage = "https://basex.org/";
-    sourceProvenance = with lib.sourceTypes; [ binaryBytecode ];
     license = lib.licenses.bsd3;
-    platforms = lib.platforms.unix;
+    sourceProvenance = with lib.sourceTypes; [ binaryBytecode ];
     maintainers = [ lib.maintainers.bjornfor ];
+    platforms = lib.platforms.unix;
   };
 })

@@ -1,56 +1,50 @@
 {
-  stdenv,
   lib,
-  buildPythonPackage,
+  stdenv,
   fetchFromGitHub,
-
-  # nativeBuildInputs
-  ninja,
-  which,
-
-  # buildInputs
-  pybind11,
-
+  # tests
+  av,
   # dependencies
   black,
+  buildPythonPackage,
   cloudpickle,
+  # optional-dependencies
+  fairscale,
   fvcore,
   hydra-core,
   iopath,
   matplotlib,
+  # nativeBuildInputs
+  ninja,
   omegaconf,
+  opencv4,
   packaging,
   pillow,
+  psutil,
+  # buildInputs
+  pybind11,
   pycocotools,
   pydot,
+  pygments,
+  pytest-mock,
+  pytestCheckHook,
+  pythonAtLeast,
+  scipy,
+  shapely,
   tabulate,
   tensorboard,
   termcolor,
-  torch,
-  tqdm,
-  yacs,
-
-  # optional-dependencies
-  fairscale,
-  psutil,
-  pygments,
-  scipy,
-  shapely,
   timm,
-
-  # tests
-  av,
-  opencv4,
-  pytest-mock,
-  pytestCheckHook,
+  torch,
   torchvision,
-  pythonAtLeast,
+  tqdm,
+  which,
+  yacs,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "detectron2";
   version = "0.6";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "facebookresearch";
@@ -73,14 +67,19 @@ buildPythonPackage (finalAttrs: {
 
   buildInputs = [ pybind11 ];
 
-  pythonRelaxDeps = [
-    "black"
-    "iopath"
+  nativeCheckInputs = [
+    av
+    opencv4
+    pytest-mock
+    pytestCheckHook
+    torchvision
   ];
 
-  pythonRemoveDeps = [
-    "future"
-  ];
+  preCheck =
+    # prevent import errors for C extension modules
+    ''
+      rm -r detectron2
+    '';
 
   dependencies = [
     black
@@ -100,36 +99,6 @@ buildPythonPackage (finalAttrs: {
     torch # not explicitly declared in setup.py because they expect you to install it yourself
     tqdm
     yacs
-  ];
-
-  optional-dependencies = {
-    all = [
-      fairscale
-      timm
-      scipy
-      shapely
-      pygments
-      psutil
-    ];
-  };
-
-  nativeCheckInputs = [
-    av
-    opencv4
-    pytest-mock
-    pytestCheckHook
-    torchvision
-  ];
-
-  preCheck =
-    # prevent import errors for C extension modules
-    ''
-      rm -r detectron2
-    '';
-
-  enabledTestPaths = [
-    # prevent include $sourceRoot/projects/*/tests
-    "tests"
   ];
 
   disabledTestPaths = [
@@ -194,7 +163,33 @@ buildPythonPackage (finalAttrs: {
     "test_scriptable_cpu"
   ];
 
+  enabledTestPaths = [
+    # prevent include $sourceRoot/projects/*/tests
+    "tests"
+  ];
+
+  optional-dependencies = {
+    all = [
+      fairscale
+      timm
+      scipy
+      shapely
+      pygments
+      psutil
+    ];
+  };
+
+  pyproject = true;
   pythonImportsCheck = [ "detectron2" ];
+
+  pythonRelaxDeps = [
+    "black"
+    "iopath"
+  ];
+
+  pythonRemoveDeps = [
+    "future"
+  ];
 
   meta = {
     description = "Facebooks's next-generation platform for object detection, segmentation and other visual recognition tasks";

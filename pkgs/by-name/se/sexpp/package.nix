@@ -1,9 +1,9 @@
 {
   lib,
   stdenv,
+  fetchFromGitHub,
   bzip2,
   cmake,
-  fetchFromGitHub,
   gtest,
   pkg-config,
   zlib,
@@ -20,6 +20,18 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-T1qhwMBbz43URzdKPYMAbLSNrg4EaeKj4f9nqZsXls4=";
   };
 
+  outputs = [
+    "out"
+    "lib"
+    "dev"
+  ];
+
+  nativeBuildInputs = [
+    cmake
+    gtest
+    pkg-config
+  ];
+
   buildInputs = [
     zlib
     bzip2
@@ -34,28 +46,16 @@ stdenv.mkDerivation (finalAttrs: {
     "-DWITH_SANITIZERS=off"
   ];
 
-  nativeBuildInputs = [
-    cmake
-    gtest
-    pkg-config
-  ];
-
-  outputs = [
-    "out"
-    "lib"
-    "dev"
-  ];
-
   preConfigure = ''
     echo "v${finalAttrs.version}" > version.txt
   '';
 
   meta = {
-    homepage = "https://github.com/rnpgp/sexp";
     description = "S-expressions parser and generator C++ library, fully compliant to [https://people.csail.mit.edu/rivest/Sexp.txt]";
-    mainProgram = "sexpp";
+    homepage = "https://github.com/rnpgp/sexp";
     license = lib.licenses.mit;
-    platforms = lib.platforms.all;
     maintainers = with lib.maintainers; [ ribose-jeffreylau ];
+    platforms = lib.platforms.all;
+    mainProgram = "sexpp";
   };
 })

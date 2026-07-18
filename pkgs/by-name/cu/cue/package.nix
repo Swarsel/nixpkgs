@@ -1,13 +1,13 @@
 {
-  buildGoModule,
-  fetchFromGitHub,
   lib,
   stdenv,
+  fetchFromGitHub,
+  buildGoModule,
+  callPackage,
   installShellFiles,
+  pkgs,
   testers,
   tests,
-  callPackage,
-  pkgs,
 }:
 
 buildGoModule (finalAttrs: {
@@ -21,17 +21,8 @@ buildGoModule (finalAttrs: {
     hash = "sha256-+mfGN2IX83JMwLsduBfj2h7Eeve6mmLpmXGFRxz/UfI=";
   };
 
-  vendorHash = "sha256-dTUg6EnU6xKCGve9ksxqBF3BaoBdVlXFU8pTyZtV+RA=";
-
-  subPackages = [ "cmd/*" ];
-
   nativeBuildInputs = [ installShellFiles ];
-
-  ldflags = [
-    "-s"
-    "-w"
-    "-X cuelang.org/go/cmd/cue/cmd.version=v${finalAttrs.version}"
-  ];
+  vendorHash = "sha256-dTUg6EnU6xKCGve9ksxqBF3BaoBdVlXFU8pTyZtV+RA=";
 
   postInstall = lib.optionalString (stdenv.buildPlatform.canExecute stdenv.hostPlatform) ''
     installShellCompletion --cmd cue \
@@ -39,6 +30,14 @@ buildGoModule (finalAttrs: {
       --fish <($out/bin/cue completion fish) \
       --zsh <($out/bin/cue completion zsh)
   '';
+
+  ldflags = [
+    "-s"
+    "-w"
+    "-X cuelang.org/go/cmd/cue/cmd.version=v${finalAttrs.version}"
+  ];
+
+  subPackages = [ "cmd/*" ];
 
   passthru =
     let
@@ -49,15 +48,16 @@ buildGoModule (finalAttrs: {
       inherit writeCueValidator;
 
       tests = {
-        validation = tests.cue-validation.override {
-          pkgs = pkgs.extend (_: _: { inherit writeCueValidator; });
+        version = testers.testVersion {
+          version = "v${finalAttrs.version}";
+          command = "cue version";
+          package = cue;
         };
 
         test-001-all-good = callPackage ./tests/001-all-good.nix { inherit cue; };
-        version = testers.testVersion {
-          package = cue;
-          command = "cue version";
-          version = "v${finalAttrs.version}";
+
+        validation = tests.cue-validation.override {
+          pkgs = pkgs.extend (_: _: { inherit writeCueValidator; });
         };
       };
     };

@@ -11,26 +11,25 @@
 buildPythonPackage rec {
   pname = "sievelib";
   version = "1.5.0";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
     hash = "sha256-Kvuq8lA6/pEt4IgeTFdzg+b5D4dikx+00y8rVBI85FA=";
   };
 
-  build-system = [ setuptools-scm ];
-
-  dependencies = [ typing-extensions ];
-
   nativeCheckInputs = [
     mock
     pytestCheckHook
   ];
 
+  build-system = [ setuptools-scm ];
+  dependencies = [ typing-extensions ];
+  pyproject = true;
   pythonImportsCheck = [ "sievelib" ];
 
   meta = {
     description = "Client-side Sieve and Managesieve library";
+
     longDescription = ''
       A library written in Python that implements RFC 5228 (Sieve: An Email
       Filtering Language) and RFC 5804 (ManageSieve: A Protocol for
@@ -42,6 +41,7 @@ buildPythonPackage rec {
        * Vacation (RFC 5230)
        * Imap4flags (RFC 5232)
     '';
+
     homepage = "https://github.com/tonioo/sievelib";
     changelog = "https://github.com/tonioo/sievelib/releases/tag/${version}";
     license = lib.licenses.mit;

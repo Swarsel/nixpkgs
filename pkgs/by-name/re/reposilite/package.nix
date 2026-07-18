@@ -25,8 +25,6 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-sKbwO5Lk/DeRQhO3c2zHuHe/CPdb4wRLzG55tP7DVVE=";
   };
 
-  dontUnpack = true;
-
   nativeBuildInputs = [ makeWrapper ];
 
   installPhase = ''
@@ -42,21 +40,25 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  dontUnpack = true;
+
   passthru = {
     tests = nixosTests.reposilite;
     updateScript = ./update.sh;
   };
 
   meta = {
+    inherit (jre_headless.meta) platforms;
     description = "Lightweight and easy-to-use repository management software dedicated for the Maven based artifacts in the JVM ecosystem";
     homepage = "https://github.com/dzikoysk/reposilite";
-    sourceProvenance = with lib.sourceTypes; [ binaryBytecode ];
     license = lib.licenses.asl20;
+    sourceProvenance = with lib.sourceTypes; [ binaryBytecode ];
+
     maintainers = with lib.maintainers; [
       jamalam
       uku3lig
     ];
-    inherit (jre_headless.meta) platforms;
+
     mainProgram = "reposilite";
   };
 })

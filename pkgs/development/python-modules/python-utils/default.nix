@@ -1,18 +1,17 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
+  buildPythonPackage,
   loguru,
   pytest-asyncio,
   pytestCheckHook,
+  setuptools,
   typing-extensions,
 }:
 
 buildPythonPackage rec {
   pname = "python-utils";
   version = "3.9.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "WoLpH";
@@ -27,28 +26,28 @@ buildPythonPackage rec {
       -e '/--mypy/d'
   '';
 
-  build-system = [ setuptools ];
-
-  dependencies = [ typing-extensions ];
-
-  optional-dependencies = {
-    loguru = [ loguru ];
-  };
-
   nativeCheckInputs = [
     pytest-asyncio
     pytestCheckHook
   ]
   ++ optional-dependencies.loguru;
 
-  pythonImportsCheck = [ "python_utils" ];
-
-  enabledTestPaths = [ "_python_utils_tests" ];
+  build-system = [ setuptools ];
+  dependencies = [ typing-extensions ];
 
   disabledTests = [
     # Flaky tests
     "test_timeout_generator"
   ];
+
+  enabledTestPaths = [ "_python_utils_tests" ];
+
+  optional-dependencies = {
+    loguru = [ loguru ];
+  };
+
+  pyproject = true;
+  pythonImportsCheck = [ "python_utils" ];
 
   meta = {
     description = "Module with some convenient utilities";

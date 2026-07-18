@@ -1,10 +1,10 @@
 {
   lib,
   stdenv,
+  fetchFromGitHub,
   calf,
   cmake,
   deepfilternet,
-  fetchFromGitHub,
   fftw,
   fftwFloat,
   glib,
@@ -24,6 +24,7 @@
   ninja,
   nix-update-script,
   nlohmann_json,
+  onetbb,
   pipewire,
   pkg-config,
   qt6,
@@ -31,12 +32,11 @@
   rubberband,
   soundtouch,
   speexdsp,
-  onetbb,
   webrtc-audio-processing,
+  wrapGAppsHook3,
   x42-plugins,
   zam-plugins,
   zita-convolver,
-  wrapGAppsHook3,
 }:
 
 let
@@ -79,8 +79,6 @@ stdenv.mkDerivation (finalAttrs: {
     wrapGAppsHook3
     wrapQtAppsHook
   ];
-
-  dontWrapGApps = true;
 
   buildInputs = [
     breeze
@@ -145,6 +143,7 @@ stdenv.mkDerivation (finalAttrs: {
       )
     '';
 
+  dontWrapGApps = true;
   separateDebugInfo = true;
 
   passthru = {
@@ -156,12 +155,14 @@ stdenv.mkDerivation (finalAttrs: {
     homepage = "https://github.com/wwmm/easyeffects";
     changelog = "https://github.com/wwmm/easyeffects/blob/v${finalAttrs.version}/src/contents/docs/community/CHANGELOG.md";
     license = lib.licenses.gpl3Plus;
+
     maintainers = with lib.maintainers; [
       getchoo
       aleksana
       Gliczy
     ];
-    mainProgram = "easyeffects";
+
     platforms = lib.platforms.linux;
+    mainProgram = "easyeffects";
   };
 })

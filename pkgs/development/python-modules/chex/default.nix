@@ -1,30 +1,25 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # build-system
-  flit-core,
-
   # dependencies
   absl-py,
-  jax,
-  jaxlib,
-  numpy,
-  toolz,
-  typing-extensions,
-
+  buildPythonPackage,
   # tests
   cloudpickle,
   dm-tree,
+  # build-system
+  flit-core,
+  jax,
+  jaxlib,
+  numpy,
   pytestCheckHook,
+  toolz,
+  typing-extensions,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "chex";
   version = "0.1.92";
-  pyproject = true;
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "google-deepmind";
@@ -32,6 +27,14 @@ buildPythonPackage (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-PM76Q72Bgyms7dROJkmlpPuDvtqjHLPTDkUYqo08T74=";
   };
+
+  nativeCheckInputs = [
+    cloudpickle
+    dm-tree
+    pytestCheckHook
+  ];
+
+  __structuredAttrs = true;
 
   build-system = [
     flit-core
@@ -46,13 +49,8 @@ buildPythonPackage (finalAttrs: {
     typing-extensions
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "chex" ];
-
-  nativeCheckInputs = [
-    cloudpickle
-    dm-tree
-    pytestCheckHook
-  ];
 
   meta = {
     description = "Library of utilities for helping to write reliable JAX code";

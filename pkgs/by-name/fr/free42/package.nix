@@ -4,10 +4,10 @@
   fetchurl,
   alsa-lib,
   copyDesktopItems,
-  wrapGAppsHook3,
   makeDesktopItem,
-  pkg-config,
   nix-update-script,
+  pkg-config,
+  wrapGAppsHook3,
 }:
 stdenv.mkDerivation (finalAttrs: {
   pname = "free42";
@@ -18,6 +18,11 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-Ybr5IwqYBIXGWcLBM2drKuN2NDBta299X/3hvzvGPeU=";
   };
 
+  postPatch = ''
+    substituteInPlace gtk/Makefile \
+      --replace-fail /bin/ls ls
+  '';
+
   nativeBuildInputs = [
     copyDesktopItems
     pkg-config
@@ -25,42 +30,6 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   buildInputs = [ alsa-lib ];
-
-  postPatch = ''
-    substituteInPlace gtk/Makefile \
-      --replace-fail /bin/ls ls
-  '';
-
-  dontConfigure = true;
-
-  desktopItems = [
-    (makeDesktopItem {
-      name = "free42bin";
-      desktopName = "Free42Bin";
-      genericName = "Calculator";
-      exec = "free42bin";
-      type = "Application";
-      comment = "Software clone of the HP-42S calculator";
-      icon = "free42";
-      categories = [
-        "Utility"
-        "Calculator"
-      ];
-    })
-    (makeDesktopItem {
-      name = "free42dec";
-      desktopName = "Free42Dec";
-      genericName = "Calculator";
-      exec = "free42dec";
-      type = "Application";
-      comment = "Software clone of the HP-42S calculator";
-      icon = "free42";
-      categories = [
-        "Utility"
-        "Calculator"
-      ];
-    })
-  ];
 
   buildPhase = ''
     runHook preBuild
@@ -92,8 +61,6 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
-  dontWrapGApps = true;
-
   postFixup = ''
     wrapProgram $out/bin/free42dec \
       --prefix LD_LIBRARY_PATH : ${lib.makeLibraryPath [ alsa-lib ]} \
@@ -104,17 +71,51 @@ stdenv.mkDerivation (finalAttrs: {
       "''${gappsWrapperArgs[@]}"
   '';
 
+  desktopItems = [
+    (makeDesktopItem {
+      categories = [
+        "Utility"
+        "Calculator"
+      ];
+
+      comment = "Software clone of the HP-42S calculator";
+      desktopName = "Free42Bin";
+      exec = "free42bin";
+      genericName = "Calculator";
+      icon = "free42";
+      name = "free42bin";
+      type = "Application";
+    })
+    (makeDesktopItem {
+      categories = [
+        "Utility"
+        "Calculator"
+      ];
+
+      comment = "Software clone of the HP-42S calculator";
+      desktopName = "Free42Dec";
+      exec = "free42dec";
+      genericName = "Calculator";
+      icon = "free42";
+      name = "free42dec";
+      type = "Application";
+    })
+  ];
+
+  dontConfigure = true;
+  dontWrapGApps = true;
+
   passthru.updateScript = nix-update-script {
     extraArgs = [ "--url=https://codeberg.org/thomasokken/free42" ];
   };
 
   meta = {
+    description = "Software clone of the HP-42S calculator";
     homepage = "https://thomasokken.com/free42/";
     changelog = "https://thomasokken.com/free42/history.html";
-    description = "Software clone of the HP-42S calculator";
     license = with lib.licenses; [ gpl2Only ];
     maintainers = with lib.maintainers; [ elfenermarcell ];
-    mainProgram = "free42dec";
     platforms = with lib.platforms; unix;
+    mainProgram = "free42dec";
   };
 })

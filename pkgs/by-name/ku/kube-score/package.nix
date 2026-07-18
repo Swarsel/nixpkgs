@@ -1,9 +1,9 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
-  testers,
+  buildGoModule,
   kube-score,
+  testers,
 }:
 
 buildGoModule (finalAttrs: {
@@ -28,17 +28,17 @@ buildGoModule (finalAttrs: {
 
   passthru.tests = {
     version = testers.testVersion {
-      package = kube-score;
       command = "kube-score version";
+      package = kube-score;
     };
   };
 
   meta = {
     description = "Kubernetes object analysis with recommendations for improved reliability and security";
-    mainProgram = "kube-score";
     homepage = "https://github.com/zegl/kube-score";
     changelog = "https://github.com/zegl/kube-score/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ j4m3s ];
+    mainProgram = "kube-score";
   };
 })

@@ -7,7 +7,6 @@
 python3Packages.buildPythonApplication rec {
   pname = "check-esxi-hardware";
   version = "20250716";
-  pyproject = false;
 
   src = fetchFromGitHub {
     owner = "Napsty";
@@ -15,15 +14,6 @@ python3Packages.buildPythonApplication rec {
     tag = version;
     hash = "sha256-tw1b2ZmkEIdlqov4JoEDc8cR2AmAiZWocKjir4AFIv0=";
   };
-
-  dontBuild = true;
-
-  dependencies = with python3Packages; [
-    packaging
-    pywbem
-    requests
-    setuptools
-  ];
 
   doCheck = false;
 
@@ -36,11 +26,21 @@ python3Packages.buildPythonApplication rec {
     runHook postInstall
   '';
 
+  dependencies = with python3Packages; [
+    packaging
+    pywbem
+    requests
+    setuptools
+  ];
+
+  dontBuild = true;
+  pyproject = false;
+
   meta = {
     homepage = "https://github.com/Napsty/check_esxi_hardware";
     changelog = "https://github.com/Napsty/check_esxi_hardware/releases/tag/${src.tag}";
     license = lib.licenses.gpl2Plus;
-    mainProgram = "check_esxi_hardware";
     maintainers = with lib.maintainers; [ peterhoeg ];
+    mainProgram = "check_esxi_hardware";
   };
 }

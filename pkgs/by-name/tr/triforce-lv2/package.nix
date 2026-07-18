@@ -1,9 +1,9 @@
 {
   lib,
-  rustPlatform,
-  fetchFromGitHub,
   stdenv,
+  fetchFromGitHub,
   nix-update-script,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -24,7 +24,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
   '';
 
   cargoHash = "sha256-2FC6wlFJkQryA/bcjF0GjrMQVb8hlUY+muFqPqShWss=";
-
   dontCargoInstall = true;
 
   installFlags = [
@@ -37,8 +36,8 @@ rustPlatform.buildRustPackage (finalAttrs: {
   };
 
   meta = {
-    homepage = "https://github.com/chadmed/triforce";
     description = "Beamformer for Apple Silicon laptops";
+
     longDescription = ''
       Triforce implements a Minimum Variance Distortionless Response
       adaptive beamformer for the microphone array found in the
@@ -50,10 +49,14 @@ rustPlatform.buildRustPackage (finalAttrs: {
       - MacBook Pro 16" (M1 Pro/Max, M2 Pro/Max)
       - MacBook Air 15" (M2)
     '';
+
+    homepage = "https://github.com/chadmed/triforce";
     license = lib.licenses.gpl2Plus;
+
     maintainers = with lib.maintainers; [
       yuka
     ];
+
     platforms = lib.platforms.linux;
   };
 })

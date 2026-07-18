@@ -1,14 +1,13 @@
 {
   buildDunePackage,
-  h2,
   eio,
   gluten-eio,
+  h2,
 }:
 
 buildDunePackage {
-  pname = "h2-eio";
-
   inherit (h2) src version;
+  pname = "h2-eio";
 
   propagatedBuildInputs = [
     eio

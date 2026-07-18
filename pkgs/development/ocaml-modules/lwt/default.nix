@@ -1,23 +1,24 @@
 {
   lib,
   fetchFromGitHub,
-  libev,
   buildDunePackage,
   cppo,
   dune-configurator,
+  libev,
   ocplib-endian,
   ppxlib,
   version ? if lib.versionAtLeast ppxlib.version "0.36" then "6.1.2" else "5.9.1",
 }:
 
 buildDunePackage {
-  pname = "lwt";
   inherit version;
+  pname = "lwt";
 
   src = fetchFromGitHub {
     owner = "ocsigen";
     repo = "lwt";
     tag = version;
+
     hash =
       {
         "5.9.1" = "sha256-oPYLFugMTI3a+hmnwgUcoMgn5l88NP1Roq0agLhH/vI=";
@@ -29,15 +30,16 @@ buildDunePackage {
 
   nativeBuildInputs = [ cppo ];
   buildInputs = [ dune-configurator ];
+
   propagatedBuildInputs = [
     libev
     ocplib-endian
   ];
 
   meta = {
-    homepage = "https://ocsigen.org/lwt/";
     description = "Cooperative threads library for OCaml";
-    maintainers = [ lib.maintainers.vbgl ];
+    homepage = "https://ocsigen.org/lwt/";
     license = lib.licenses.mit;
+    maintainers = [ lib.maintainers.vbgl ];
   };
 }

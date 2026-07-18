@@ -2,15 +2,15 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  nodejs,
-  yarn-berry_4,
   diffutils,
-  zip,
   jq,
-  python3,
-  unzip,
-  testers,
   nix-update-script,
+  nodejs,
+  python3,
+  testers,
+  unzip,
+  yarn-berry_4,
+  zip,
 }:
 
 let
@@ -26,36 +26,6 @@ stdenv.mkDerivation (finalAttrs: {
     tag = "cdk@v${finalAttrs.version}";
     hash = "sha256-KXbNrzylyY+RSp4Da9rMSEn7UdPTHU9iDID/qXGL+io=";
   };
-
-  missingHashes = ./missing-hashes.json;
-  offlineCache = yarn-berry.fetchYarnBerryDeps {
-    inherit (finalAttrs) src missingHashes;
-    hash = "sha256-jh/EW+scTCJ698jKr1eRYeckRhgE+SmOjfUUgJ7GbFU=";
-  };
-
-  nativeBuildInputs = [
-    yarn-berry
-    yarn-berry.yarnBerryConfigHook
-    nodejs
-    python3
-    zip
-    jq
-    # tests
-    diffutils
-    unzip
-  ];
-
-  env = {
-    NX_DISABLE_REMOTE_CACHE = "true";
-    NX_TASKS_RUNNER_DYNAMIC_OUTPUT = "false";
-    NX_VERBOSE_LOGGING = "true";
-    # Needed to properly embed version info
-    CODEBUILD_RESOLVED_SOURCE_VERSION = finalAttrs.version;
-    YARN_LOCKFILE_VERSION_OVERRIDE = "8";
-  };
-
-  # Regular "build" is very heavy and does things we don't need.
-  yarnBuildScript = "compile";
 
   postPatch =
     let
@@ -73,6 +43,27 @@ stdenv.mkDerivation (finalAttrs: {
       enableHardenedMode: false
       EOF
     '';
+
+  nativeBuildInputs = [
+    yarn-berry
+    yarn-berry.yarnBerryConfigHook
+    nodejs
+    python3
+    zip
+    jq
+    # tests
+    diffutils
+    unzip
+  ];
+
+  env = {
+    # Needed to properly embed version info
+    CODEBUILD_RESOLVED_SOURCE_VERSION = finalAttrs.version;
+    NX_DISABLE_REMOTE_CACHE = "true";
+    NX_TASKS_RUNNER_DYNAMIC_OUTPUT = "false";
+    NX_VERBOSE_LOGGING = "true";
+    YARN_LOCKFILE_VERSION_OVERRIDE = "8";
+  };
 
   preBuild = ''
     export NX_PARALLEL="$NIX_BUILD_CORES"
@@ -126,9 +117,19 @@ stdenv.mkDerivation (finalAttrs: {
 
   # Fixup takes an absurdly long time, so disable it
   dontFixup = true;
+  missingHashes = ./missing-hashes.json;
+
+  offlineCache = yarn-berry.fetchYarnBerryDeps {
+    inherit (finalAttrs) src missingHashes;
+    hash = "sha256-jh/EW+scTCJ698jKr1eRYeckRhgE+SmOjfUUgJ7GbFU=";
+  };
+
+  # Regular "build" is very heavy and does things we don't need.
+  yarnBuildScript = "compile";
 
   passthru = {
     tests.version = testers.testVersion { package = finalAttrs.finalPackage; };
+
     updateScript = nix-update-script {
       extraArgs = [
         "--version-regex"
@@ -142,7 +143,7 @@ stdenv.mkDerivation (finalAttrs: {
     homepage = "https://docs.aws.amazon.com/cdk/v2/guide/cli.html";
     license = lib.licenses.asl20;
     maintainers = [ ];
-    mainProgram = "cdk";
     platforms = lib.platforms.all;
+    mainProgram = "cdk";
   };
 })

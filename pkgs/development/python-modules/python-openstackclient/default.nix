@@ -1,7 +1,8 @@
 {
   lib,
-  buildPythonPackage,
+  stdenv,
   fetchFromGitHub,
+  buildPythonPackage,
   ddt,
   hacking,
   installShellFiles,
@@ -24,12 +25,11 @@
   python-watcherclient,
   python-zaqarclient,
   python-zunclient,
-  requests-mock,
   requests,
+  requests-mock,
   setuptools,
   sphinxHook,
   sphinxcontrib-apidoc,
-  stdenv,
   stestrCheckHook,
   versionCheckHook,
 }:
@@ -37,7 +37,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "python-openstackclient";
   version = "10.0.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "openstack";
@@ -50,7 +49,29 @@ buildPythonPackage (finalAttrs: {
     ./fix-pyproject.patch
   ];
 
+  nativeBuildInputs = [
+    installShellFiles
+  ];
+
   env.PBR_VERSION = finalAttrs.version;
+
+  nativeCheckInputs = [
+    ddt
+    hacking
+    requests-mock
+    stestrCheckHook
+  ];
+
+  postInstall = lib.optionalString (stdenv.buildPlatform.canExecute stdenv.hostPlatform) ''
+    installShellCompletion --cmd openstack \
+      --bash <($out/bin/openstack complete)
+  '';
+
+  doInstallCheck = true;
+
+  nativeInstallCheckInputs = [
+    versionCheckHook
+  ];
 
   build-system = [
     openstackdocstheme
@@ -58,8 +79,6 @@ buildPythonPackage (finalAttrs: {
     sphinxHook
     sphinxcontrib-apidoc
   ];
-
-  sphinxBuilders = [ "man" ];
 
   dependencies = [
     osc-lib
@@ -70,30 +89,6 @@ buildPythonPackage (finalAttrs: {
   ]
   # to support proxy envs like ALL_PROXY in requests
   ++ requests.optional-dependencies.socks;
-
-  nativeBuildInputs = [
-    installShellFiles
-  ];
-
-  nativeCheckInputs = [
-    ddt
-    hacking
-    requests-mock
-    stestrCheckHook
-  ];
-
-  pythonImportsCheck = [
-    "openstackclient"
-    "openstackclient.api"
-    "openstackclient.common"
-    "openstackclient.compute"
-    "openstackclient.identity"
-    "openstackclient.image"
-    "openstackclient.network"
-    "openstackclient.object"
-    "openstackclient.volume"
-    "openstackclient.tests"
-  ];
 
   optional-dependencies = {
     # See https://github.com/openstack/python-openstackclient/blob/master/doc/source/contributor/plugins.rst
@@ -115,22 +110,29 @@ buildPythonPackage (finalAttrs: {
     ];
   };
 
-  nativeInstallCheckInputs = [
-    versionCheckHook
-  ];
-  doInstallCheck = true;
+  pyproject = true;
 
-  postInstall = lib.optionalString (stdenv.buildPlatform.canExecute stdenv.hostPlatform) ''
-    installShellCompletion --cmd openstack \
-      --bash <($out/bin/openstack complete)
-  '';
+  pythonImportsCheck = [
+    "openstackclient"
+    "openstackclient.api"
+    "openstackclient.common"
+    "openstackclient.compute"
+    "openstackclient.identity"
+    "openstackclient.image"
+    "openstackclient.network"
+    "openstackclient.object"
+    "openstackclient.volume"
+    "openstackclient.tests"
+  ];
+
+  sphinxBuilders = [ "man" ];
 
   meta = {
     description = "OpenStack Command-line Client";
-    mainProgram = "openstack";
     homepage = "https://docs.openstack.org/python-openstackclient/latest/";
-    downloadPage = "https://github.com/openstack/python-openstackclient/releases/tag/${finalAttrs.src.tag}";
     license = lib.licenses.asl20;
+    mainProgram = "openstack";
+    downloadPage = "https://github.com/openstack/python-openstackclient/releases/tag/${finalAttrs.src.tag}";
     teams = [ lib.teams.openstack ];
   };
 })

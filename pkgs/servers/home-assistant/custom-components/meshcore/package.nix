@@ -12,8 +12,6 @@
 }:
 
 buildHomeAssistantComponent (finalAttrs: {
-  owner = "meshcore-dev";
-  domain = "meshcore";
   version = "2.8.0";
 
   src = fetchFromGitHub {
@@ -23,6 +21,11 @@ buildHomeAssistantComponent (finalAttrs: {
     hash = "sha256-K1DYBcuAilcKBzQVSUQvoA9OoxUbtfISYNY8IwgUdZk=";
   };
 
+  nativeCheckInputs = [
+    pytest-asyncio
+    pytestCheckHook
+  ];
+
   dependencies = [
     cachetools
     meshcore
@@ -31,19 +34,18 @@ buildHomeAssistantComponent (finalAttrs: {
     pynacl
   ];
 
+  domain = "meshcore";
+
   ignoreVersionRequirement = [
     "meshcore"
   ];
 
-  nativeCheckInputs = [
-    pytest-asyncio
-    pytestCheckHook
-  ];
+  owner = "meshcore-dev";
 
   meta = {
-    changelog = "https://github.com/meshcore-dev/meshcore-ha/releases/tag/${finalAttrs.src.tag}";
     description = "Home Assistant integration for MeshCore";
     homepage = "https://github.com/meshcore-dev/meshcore-ha/";
+    changelog = "https://github.com/meshcore-dev/meshcore-ha/releases/tag/${finalAttrs.src.tag}";
     license = lib.licenses.mit;
     maintainers = [ lib.maintainers.haylin ];
   };

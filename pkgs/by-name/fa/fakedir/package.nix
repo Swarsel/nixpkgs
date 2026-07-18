@@ -37,7 +37,7 @@ stdenv.mkDerivation (finalAttrs: {
     homepage = "https://github.com/nixie-dev/fakedir";
     license = lib.licenses.unfree;
     maintainers = with lib.maintainers; [ eveeifyeve ];
-    mainProgram = "fakedir";
     platforms = lib.platforms.darwin;
+    mainProgram = "fakedir";
   };
 })

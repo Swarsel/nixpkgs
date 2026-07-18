@@ -12,8 +12,8 @@
 }:
 let
   python = python3.override {
-    self = python;
     packageOverrides = lib.composeManyExtensions [ packageOverrides ];
+    self = python;
   };
 
   version = "0.3.5";
@@ -21,9 +21,8 @@ in
 
 with python.pkgs;
 buildPythonApplication {
-  pname = "git-sim";
   inherit version;
-  pyproject = true;
+  pname = "git-sim";
 
   src = fetchFromGitHub {
     owner = "initialcommit-com";
@@ -33,10 +32,29 @@ buildPythonApplication {
   };
 
   patches = [ ./tests.patch ];
+  nativeBuildInputs = [ installShellFiles ];
+  doCheck = false;
+
+  nativeCheckInputs = [
+    pytestCheckHook
+    git-dummy
+  ];
+
+  preCheck = ''
+    PATH=$PATH:$out/bin
+  '';
+
+  postInstall =
+    # https://github.com/NixOS/nixpkgs/issues/308283
+    lib.optionalString (stdenv.buildPlatform.canExecute stdenv.hostPlatform) ''
+      installShellCompletion --cmd git-sim \
+        --bash <($out/bin/git-sim --show-completion bash) \
+        --fish <($out/bin/git-sim --show-completion fish) \
+        --zsh <($out/bin/git-sim --show-completion zsh)
+    ''
+    + "ln -s ${git-dummy}/bin/git-dummy $out/bin/";
 
   build-system = [ setuptools ];
-
-  pythonRemoveDeps = [ "opencv-python-headless" ];
 
   dependencies = [
     gitpython
@@ -50,29 +68,8 @@ buildPythonApplication {
 
   # https://github.com/NixOS/nixpkgs/commit/8033561015355dd3c3cf419d81ead31e534d2138
   makeWrapperArgs = [ "--prefix PYTHONWARNINGS , ignore:::pydub.utils:" ];
-
-  nativeBuildInputs = [ installShellFiles ];
-
-  postInstall =
-    # https://github.com/NixOS/nixpkgs/issues/308283
-    lib.optionalString (stdenv.buildPlatform.canExecute stdenv.hostPlatform) ''
-      installShellCompletion --cmd git-sim \
-        --bash <($out/bin/git-sim --show-completion bash) \
-        --fish <($out/bin/git-sim --show-completion fish) \
-        --zsh <($out/bin/git-sim --show-completion zsh)
-    ''
-    + "ln -s ${git-dummy}/bin/git-dummy $out/bin/";
-
-  preCheck = ''
-    PATH=$PATH:$out/bin
-  '';
-
-  nativeCheckInputs = [
-    pytestCheckHook
-    git-dummy
-  ];
-
-  doCheck = false;
+  pyproject = true;
+  pythonRemoveDeps = [ "opencv-python-headless" ];
 
   meta = {
     description = "Visually simulate Git operations in your own repos with a single terminal command";

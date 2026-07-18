@@ -4,21 +4,22 @@
   fetchPypi,
   nulltype,
   python-dateutil,
-  urllib3,
   setuptools,
+  urllib3,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "plaid-python";
   version = "40.1.0";
-  pyproject = true;
 
   src = fetchPypi {
-    pname = "plaid_python";
     inherit (finalAttrs) version;
     hash = "sha256-y5EmVNyPLQGBPGF45Yny1fIT92daC9tlOhTBcnxFkqY=";
+    pname = "plaid_python";
   };
 
+  # Tests require a Client IP
+  doCheck = false;
   build-system = [ setuptools ];
 
   dependencies = [
@@ -27,9 +28,7 @@ buildPythonPackage (finalAttrs: {
     urllib3
   ];
 
-  # Tests require a Client IP
-  doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "plaid" ];
 
   meta = {

@@ -1,19 +1,17 @@
 {
-  callPackage,
-  stdenv,
-  fetchzip,
   lib,
-  llvmPackages,
-  config,
-
+  stdenv,
   autoAddDriverRunpath,
   autoPatchelfHook,
-  patchelf,
-  fixDarwinDylibNames,
-
-  cudaSupport ? config.cudaSupport,
+  callPackage,
+  config,
   cudaPackages_13,
+  fetchzip,
+  fixDarwinDylibNames,
   libz,
+  llvmPackages,
+  patchelf,
+  cudaSupport ? config.cudaSupport,
 }:
 
 let
@@ -30,8 +28,12 @@ in
 stdenv.mkDerivation {
   inherit version;
   pname = "libtorch";
-
   src = fetchzip srcs."${stdenv.hostPlatform.system}-${device}" or unavailable;
+
+  outputs = [
+    "out"
+    "dev"
+  ];
 
   nativeBuildInputs =
     if stdenv.hostPlatform.isDarwin then
@@ -42,10 +44,6 @@ stdenv.mkDerivation {
         autoPatchelfHook
       ]
       ++ lib.optionals cudaSupport [ autoAddDriverRunpath ];
-
-  dontBuild = true;
-  dontConfigure = true;
-  dontStrip = true;
 
   installPhase = ''
     # Copy headers and CMake files.
@@ -108,10 +106,9 @@ stdenv.mkDerivation {
       done
     '';
 
-  outputs = [
-    "out"
-    "dev"
-  ];
+  dontBuild = true;
+  dontConfigure = true;
+  dontStrip = true;
 
   passthru.tests.cmake = callPackage ./test {
     inherit cudaSupport;
@@ -120,12 +117,13 @@ stdenv.mkDerivation {
   meta = {
     description = "C++ API of the PyTorch machine learning framework";
     homepage = "https://pytorch.org/";
-    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
     # Includes CUDA and Intel MKL, but redistributions of the binary are not limited.
     # https://docs.nvidia.com/cuda/eula/index.html
     # https://www.intel.com/content/www/us/en/developer/articles/license/onemkl-license-faq.html
     license = lib.licenses.bsd3;
+    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
     maintainers = with lib.maintainers; [ junjihashimoto ];
+
     platforms = [
       "aarch64-darwin"
       "x86_64-linux"

@@ -9,18 +9,16 @@
 buildPythonPackage rec {
   pname = "pytimeparse";
   version = "1.1.8";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
     hash = "sha256-6GE2R3vpJNfmcGRqmFYZV+jKcwjUSEHiH13ep1dVago=";
   };
 
-  build-system = [ setuptools ];
-
   nativeCheckInputs = [ pytestCheckHook ];
+  build-system = [ setuptools ];
   enabledTestPaths = [ "pytimeparse/tests/testtimeparse.py" ];
-
+  pyproject = true;
   pythonImportsCheck = [ "pytimeparse" ];
 
   meta = {

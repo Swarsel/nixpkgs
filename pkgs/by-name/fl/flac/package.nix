@@ -1,14 +1,14 @@
 {
+  lib,
+  stdenv,
+  fetchurl,
+  buildPackages,
   cmake,
   doxygen,
-  fetchurl,
   graphviz,
-  lib,
   libogg,
   nix-update-script,
-  buildPackages,
   pkg-config,
-  stdenv,
   versionCheckHook,
 }:
 stdenv.mkDerivation (finalAttrs: {
@@ -23,7 +23,15 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-8sHHZZKoL//4QTujxKEpm2x6sGxzTe4D/YhjBIXCuSA=";
   };
 
-  hardeningDisable = [ "trivialautovarinit" ];
+  outputs = [
+    "bin"
+    "dev"
+    "doc"
+    "out"
+    "man"
+  ];
+
+  patches = [ ./package.patch ];
 
   nativeBuildInputs = [
     cmake
@@ -43,37 +51,30 @@ stdenv.mkDerivation (finalAttrs: {
       "-O3"
       "-funroll-loops"
     ];
+
     CXXFLAGS = toString [ "-O3" ];
   };
 
-  patches = [ ./package.patch ];
   doCheck = true;
-
-  outputs = [
-    "bin"
-    "dev"
-    "doc"
-    "out"
-    "man"
-  ];
-
-  nativeInstallCheckInputs = [ versionCheckHook ];
   doInstallCheck = true;
-
+  nativeInstallCheckInputs = [ versionCheckHook ];
+  hardeningDisable = [ "trivialautovarinit" ];
   passthru.updateScript = nix-update-script { };
 
   meta = {
-    homepage = "https://xiph.org/flac/";
     description = "Library and tools for encoding and decoding the FLAC lossless audio file format";
+    homepage = "https://xiph.org/flac/";
     changelog = "https://github.com/xiph/flac/releases/tag/${finalAttrs.version}";
-    mainProgram = "flac";
-    platforms = lib.platforms.all;
+
     license = with lib.licenses; [
       bsd3
       fdl13Plus
       gpl2Plus
       lgpl21Plus
     ];
+
     maintainers = with lib.maintainers; [ ruuda ];
+    platforms = lib.platforms.all;
+    mainProgram = "flac";
   };
 })

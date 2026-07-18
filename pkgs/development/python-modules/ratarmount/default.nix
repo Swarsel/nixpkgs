@@ -16,14 +16,19 @@
 buildPythonPackage rec {
   pname = "ratarmount";
   version = "1.2.2";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
     hash = "sha256-TwZ11KxFYqQTrk04GCk2igLI9bUYqFJU8f8I2vvnq38=";
   };
 
-  pythonRelaxDeps = [ "python-xz" ];
+  checkPhase = ''
+    runHook preCheck
+
+    python tests/tests.py
+
+    runHook postCheck
+  '';
 
   build-system = [ setuptools ];
 
@@ -38,13 +43,8 @@ buildPythonPackage rec {
     ratarmountcore
   ];
 
-  checkPhase = ''
-    runHook preCheck
-
-    python tests/tests.py
-
-    runHook postCheck
-  '';
+  pyproject = true;
+  pythonRelaxDeps = [ "python-xz" ];
 
   meta = {
     description = "Mounts archives as read-only file systems by way of indexing";

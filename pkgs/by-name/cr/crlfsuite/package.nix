@@ -7,7 +7,6 @@
 python3.pkgs.buildPythonApplication (finalAttrs: {
   pname = "crlfsuite";
   version = "2.5.2";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "Raghavd3v";
@@ -15,6 +14,9 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     tag = "v${finalAttrs.version}";
     sha256 = "sha256-mK20PbVGhTEjhY5L6coCzSMIrG/PHHmNq30ZoJEs6uI=";
   };
+
+  # No tests present
+  doCheck = false;
 
   build-system = with python3.pkgs; [
     setuptools
@@ -25,8 +27,7 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     requests
   ];
 
-  # No tests present
-  doCheck = false;
+  pyproject = true;
 
   pythonImportsCheck = [
     "crlfsuite"
@@ -34,11 +35,13 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
 
   meta = {
     description = "CRLF injection (HTTP Response Splitting) scanner";
-    mainProgram = "crlfsuite";
     homepage = "https://github.com/Raghavd3v/CRLFsuite";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       fab
     ];
+
+    mainProgram = "crlfsuite";
   };
 })

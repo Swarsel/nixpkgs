@@ -2,15 +2,15 @@
   lib,
   stdenv,
   fetchurl,
-  dpkg,
   autoPatchelfHook,
+  coreutils,
+  dpkg,
+  file,
+  ghostscript,
+  gnugrep,
+  gnused,
   makeWrapper,
   perl,
-  gnused,
-  ghostscript,
-  file,
-  coreutils,
-  gnugrep,
   which,
 }:
 
@@ -47,8 +47,6 @@ stdenv.mkDerivation rec {
   ];
 
   buildInputs = [ perl ];
-
-  dontUnpack = true;
 
   installPhase = ''
     runHook preInstall
@@ -95,13 +93,15 @@ stdenv.mkDerivation rec {
     runHook postInstall
   '';
 
+  dontUnpack = true;
+
   meta = {
-    homepage = "http://www.brother.com/";
     description = "Brother DCP-L2550DW printer driver";
-    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
+    homepage = "http://www.brother.com/";
     license = lib.licenses.unfree;
+    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
+    maintainers = with lib.maintainers; [ typedrat ];
     platforms = map (arch: "${arch}-linux") arches;
     downloadPage = "https://support.brother.com/g/b/downloadlist.aspx?c=us&lang=en&prod=dcpl2550dw_us_as&os=128";
-    maintainers = with lib.maintainers; [ typedrat ];
   };
 }

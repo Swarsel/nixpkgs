@@ -3,9 +3,9 @@
   stdenv,
   fetchurl,
   fetchpatch,
+  libdnet,
   libnet,
   libpcap,
-  libdnet,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -19,8 +19,8 @@ stdenv.mkDerivation (finalAttrs: {
 
   patches = [
     (fetchpatch {
-      url = "https://sources.debian.org/data/main/f/firewalk/5.0-6/debian/patches/060_fix-ftbfs-gcc-15.patch";
       hash = "sha256-KEYHTSnUtNIGqm/uE2ZLV79KIWmofHeKVYdfTkpm4rI=";
+      url = "https://sources.debian.org/data/main/f/firewalk/5.0-6/debian/patches/060_fix-ftbfs-gcc-15.patch";
     })
   ];
 
@@ -32,10 +32,10 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Gateway ACL scanner";
-    mainProgram = "firewalk";
     homepage = "http://packetfactory.openwall.net/projects/firewalk/";
     license = lib.licenses.bsd2;
     maintainers = with lib.maintainers; [ tochiaha ];
     platforms = lib.platforms.linux;
+    mainProgram = "firewalk";
   };
 })

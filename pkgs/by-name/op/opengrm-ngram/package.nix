@@ -1,8 +1,8 @@
 {
   lib,
   stdenv,
-  autoreconfHook,
   fetchurl,
+  autoreconfHook,
   openfst,
 }:
 
@@ -16,9 +16,7 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   nativeBuildInputs = [ autoreconfHook ];
-
   buildInputs = [ openfst ];
-
   enableParallelBuilding = true;
 
   meta = {

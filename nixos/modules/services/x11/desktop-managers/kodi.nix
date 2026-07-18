@@ -15,9 +15,9 @@ in
   options = {
     services.xserver.desktopManager.kodi = {
       enable = mkOption {
-        type = types.bool;
         default = false;
         description = "Enable the kodi multimedia center.";
+        type = types.bool;
       };
 
       package = mkPackageOption pkgs "kodi" {
@@ -27,18 +27,18 @@ in
   };
 
   config = mkIf cfg.enable {
+    environment.systemPackages = [ cfg.package ];
+    services.firewalld.packages = [ cfg.package ];
+
     services.xserver.desktopManager.session = [
       {
         name = "kodi";
+
         start = ''
           LIRC_SOCKET_PATH=/run/lirc/lircd ${cfg.package}/bin/kodi --standalone &
           waitPID=$!
         '';
       }
     ];
-
-    environment.systemPackages = [ cfg.package ];
-
-    services.firewalld.packages = [ cfg.package ];
   };
 }

@@ -1,36 +1,37 @@
 {
-  stdenv,
   lib,
-  fetchzip,
-  ghostscript,
-  texinfo,
-  imagemagick,
-  texi2html,
+  stdenv,
+  autoreconfHook,
+  bison,
+  boehmgc,
+  coreutils,
+  dblatex,
   extractpdfmark,
-  guile,
-  python3,
+  fetchzip,
+  flex,
+  fontconfig,
+  fontforge,
+  freefont_ttf,
+  freetype,
   gettext,
+  ghostscript,
   glib,
   gmp,
-  flex,
-  perl,
-  bison,
-  pkg-config,
-  autoreconfHook,
-  dblatex,
-  fontconfig,
-  freetype,
-  pango,
-  fontforge,
+  guile,
   help2man,
-  freefont_ttf,
+  imagemagick,
   makeFontsConf,
   makeWrapper,
-  t1utils,
-  boehmgc,
+  pango,
+  perl,
+  pkg-config,
+  python3,
   rsync,
-  coreutils,
+  t1utils,
+  texi2html,
+  texinfo,
   texliveSmall,
+  writeScript,
   tex ? texliveSmall.withPackages (
     ps: with ps; [
       epsf
@@ -40,49 +41,23 @@
       metafont
     ]
   ),
-  writeScript,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
   pname = "lilypond";
   version = "2.26.0";
-  outputs = [
-    "out"
-    "man"
-  ];
 
   src = fetchzip {
     url = "https://lilypond.org/download/sources/v${lib.versions.majorMinor finalAttrs.version}/lilypond-${finalAttrs.version}.tar.gz";
     hash = "sha256-HUkPhaWNZ4UKbmlEyLXepHCFcgrdoRSDtjZMriO68RM=";
   };
 
-  postInstall = ''
-    for f in "$out/bin/"*; do
-        # Override default argv[0] setting so LilyPond can find
-        # its Scheme libraries.
-        wrapProgram "$f" \
-          --set GUILE_AUTO_COMPILE 0 \
-          --prefix PATH : "${
-            lib.makeBinPath [
-              ghostscript
-              coreutils
-              (placeholder "out")
-            ]
-          }" \
-          --argv0 "$f"
-    done
-  '';
-
-  preConfigure = ''
-    substituteInPlace scripts/build/mf2pt1.pl \
-      --replace-fail "mem=mf2pt1" "mem=$PWD/mf/mf2pt1"
-  '';
+  outputs = [
+    "out"
+    "man"
+  ];
 
   strictDeps = true;
-
-  depsBuildBuild = [
-    pkg-config
-  ];
 
   nativeBuildInputs = [
     autoreconfHook
@@ -117,7 +92,44 @@ stdenv.mkDerivation (finalAttrs: {
     pango
   ];
 
+  # documentation makefile uses "out" for different purposes, hence we explicitly set it to an empty string
+  makeFlags = [ "out=" ];
+
+  env = lib.optionalAttrs stdenv.hostPlatform.isDarwin {
+    FONTCONFIG_FILE = (
+      makeFontsConf {
+        fontDirectories = [ freefont_ttf ];
+      }
+    );
+  };
+
+  preConfigure = ''
+    substituteInPlace scripts/build/mf2pt1.pl \
+      --replace-fail "mem=mf2pt1" "mem=$PWD/mf/mf2pt1"
+  '';
+
+  postInstall = ''
+    for f in "$out/bin/"*; do
+        # Override default argv[0] setting so LilyPond can find
+        # its Scheme libraries.
+        wrapProgram "$f" \
+          --set GUILE_AUTO_COMPILE 0 \
+          --prefix PATH : "${
+            lib.makeBinPath [
+              ghostscript
+              coreutils
+              (placeholder "out")
+            ]
+          }" \
+          --argv0 "$f"
+    done
+  '';
+
   autoreconfPhase = "NOCONFIGURE=1 sh autogen.sh";
+
+  depsBuildBuild = [
+    pkg-config
+  ];
 
   enableParallelBuilding = true;
 
@@ -128,30 +140,22 @@ stdenv.mkDerivation (finalAttrs: {
     update-source-version lilypond "$version"
   '';
 
-  # documentation makefile uses "out" for different purposes, hence we explicitly set it to an empty string
-  makeFlags = [ "out=" ];
-
   meta = {
     description = "Music typesetting system";
     homepage = "https://lilypond.org/";
+
     license = with lib.licenses; [
       gpl3Plus # most code
       gpl3Only # ly/articulate.ly
       fdl13Plus # docs
       ofl # mf/
     ];
+
     maintainers = with lib.maintainers; [
       eclairevoyant
       yurrriq
     ];
-    platforms = lib.platforms.all;
-  };
 
-  env = lib.optionalAttrs stdenv.hostPlatform.isDarwin {
-    FONTCONFIG_FILE = (
-      makeFontsConf {
-        fontDirectories = [ freefont_ttf ];
-      }
-    );
+    platforms = lib.platforms.all;
   };
 })

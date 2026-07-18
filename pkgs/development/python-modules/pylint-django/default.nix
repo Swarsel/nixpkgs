@@ -1,11 +1,11 @@
 {
   lib,
+  fetchFromGitHub,
   buildPythonPackage,
   django,
   django-tables2,
   django-tastypie,
   factory-boy,
-  fetchFromGitHub,
   poetry-core,
   pylint-plugin-utils,
   pytestCheckHook,
@@ -14,21 +14,12 @@
 buildPythonPackage (finalAttrs: {
   pname = "pylint-django";
   version = "2.8.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "PyCQA";
     repo = "pylint-django";
     tag = "v${finalAttrs.version}";
     hash = "sha256-W3BPCK6fj4poZ1EaBUGyVyfRo/0sZa+2ktk96Ic6+q0=";
-  };
-
-  build-system = [ poetry-core ];
-
-  dependencies = [ pylint-plugin-utils ];
-
-  optional-dependencies = {
-    with_django = [ django ];
   };
 
   nativeCheckInputs = [
@@ -38,6 +29,14 @@ buildPythonPackage (finalAttrs: {
     pytestCheckHook
   ];
 
+  build-system = [ poetry-core ];
+  dependencies = [ pylint-plugin-utils ];
+
+  optional-dependencies = {
+    with_django = [ django ];
+  };
+
+  pyproject = true;
   pythonImportsCheck = [ "pylint_django" ];
 
   meta = {

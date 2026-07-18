@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   idna,
   pefile,
   pytestCheckHook,
@@ -12,7 +12,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "iocx";
   version = "0.7.5";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "iocx-dev";
@@ -20,6 +19,12 @@ buildPythonPackage (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-j7GApoKh0LBTWMLnapqzRncDFLu+89wLeNmSHxflcks=";
   };
+
+  nativeCheckInputs = [ pytestCheckHook ];
+
+  preCheck = ''
+    export PATH="$PATH:$out/bin";
+  '';
 
   build-system = [ setuptools ];
 
@@ -29,14 +34,6 @@ buildPythonPackage (finalAttrs: {
     python-magic
   ];
 
-  nativeCheckInputs = [ pytestCheckHook ];
-
-  pythonImportsCheck = [ "iocx" ];
-
-  preCheck = ''
-    export PATH="$PATH:$out/bin";
-  '';
-
   disabledTests = [
     # Test requires go to be available
     "test_cli_with_real_go_binary"
@@ -45,6 +42,9 @@ buildPythonPackage (finalAttrs: {
     "test_crypto_scaling_behavior"
     "test_scaling_behavior"
   ];
+
+  pyproject = true;
+  pythonImportsCheck = [ "iocx" ];
 
   meta = {
     description = "IOC extraction engine for PE binaries and text";

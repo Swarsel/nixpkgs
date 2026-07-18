@@ -1,19 +1,19 @@
 {
+  lib,
+  stdenv,
+  fetchFromGitHub,
   cargo,
   desktop-file-utils,
-  fetchFromGitHub,
   glib,
   gtk4,
-  lib,
   libadwaita,
   meson,
   ninja,
   nix-update-script,
   pkg-config,
-  rustc,
   rustPlatform,
+  rustc,
   sqlite,
-  stdenv,
   wrapGAppsHook4,
 }:
 
@@ -28,23 +28,13 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-/N7CmzPwUdGkHIZujCGW3LvsGM6DdXrcm2kH6XlVGDA=";
   };
 
-  cargoDeps = rustPlatform.fetchCargoVendor {
-    inherit (finalAttrs) pname version src;
-    hash = "sha256-TT3ceAy44sfyKZ7wmH3C4nj5TyfiJlu4vBWAaGs+pGg=";
-  };
-
-  buildInputs = [
-    glib
-    gtk4
-    libadwaita
-    sqlite
-  ];
-
   # favor sqlite from nixpkgs instead of a vendored variant in rusqlite
   postPatch = ''
     substituteInPlace Cargo.toml \
       --replace-fail ', features = ["bundled"]' ""
   '';
+
+  strictDeps = true;
 
   nativeBuildInputs = [
     cargo
@@ -58,27 +48,39 @@ stdenv.mkDerivation (finalAttrs: {
     wrapGAppsHook4 # fix error: GLib-GIO-ERROR **: No GSettings schemas are installed on the system
   ];
 
+  buildInputs = [
+    glib
+    gtk4
+    libadwaita
+    sqlite
+  ];
+
+  doCheck = true;
+  __structuredAttrs = true;
+
+  cargoDeps = rustPlatform.fetchCargoVendor {
+    inherit (finalAttrs) pname version src;
+    hash = "sha256-TT3ceAy44sfyKZ7wmH3C4nj5TyfiJlu4vBWAaGs+pGg=";
+  };
+
   mesonCheckFlags = [
     "--print-errorlogs"
   ];
 
-  doCheck = true;
-
   passthru.updateScript = nix-update-script { };
 
-  __structuredAttrs = true;
-  strictDeps = true;
-
   meta = {
-    changelog = "https://github.com/hbons/Bobby/blob/${finalAttrs.src.tag}/data/studio.planetpeanut.Bobby.metainfo.xml";
     description = "Browse SQLite files";
-    donationPage = "https://planetpeanut.studio/sponsors";
     homepage = "https://apps.gnome.org/Bobby/";
+    changelog = "https://github.com/hbons/Bobby/blob/${finalAttrs.src.tag}/data/studio.planetpeanut.Bobby.metainfo.xml";
     license = lib.licenses.gpl3Plus;
+
     maintainers = with lib.maintainers; [
       aiyion
     ];
-    teams = [ lib.teams.gnome-circle ];
+
     mainProgram = "bobby";
+    donationPage = "https://planetpeanut.studio/sponsors";
+    teams = [ lib.teams.gnome-circle ];
   };
 })

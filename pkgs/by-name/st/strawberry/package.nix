@@ -1,16 +1,18 @@
 {
+  lib,
+  stdenv,
+  fetchFromGitHub,
   alsa-lib,
   boost,
   chromaprint,
   cmake,
-  fetchFromGitHub,
   fftw,
   glib-networking,
   gnutls,
   gst_all_1,
+  # tests
+  gtest,
   kdsingleapplication,
-  lib,
-  libxdmcp,
   libcdio,
   libebur128,
   libidn2,
@@ -20,20 +22,17 @@
   libselinux,
   libsepol,
   libtasn1,
+  libxdmcp,
   ninja,
   nix-update-script,
   p11-kit,
   pkg-config,
   qt6,
+  rapidjson,
+  sparsehash,
   sqlite,
-  stdenv,
   taglib,
   util-linux,
-  sparsehash,
-  rapidjson,
-
-  # tests
-  gtest,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -52,6 +51,17 @@ stdenv.mkDerivation (finalAttrs: {
     substituteInPlace src/context/contextalbum.cpp \
       --replace-fail pictures/strawberry.png pictures/strawberry-grey.png
   '';
+
+  nativeBuildInputs = [
+    cmake
+    ninja
+    pkg-config
+    qt6.qttools
+    qt6.wrapQtAppsHook
+  ]
+  ++ lib.optionals stdenv.hostPlatform.isLinux [
+    util-linux
+  ];
 
   buildInputs = [
     alsa-lib
@@ -90,26 +100,14 @@ stdenv.mkDerivation (finalAttrs: {
     gstreamer
   ]);
 
-  nativeBuildInputs = [
-    cmake
-    ninja
-    pkg-config
-    qt6.qttools
-    qt6.wrapQtAppsHook
-  ]
-  ++ lib.optionals stdenv.hostPlatform.isLinux [
-    util-linux
-  ];
-
   cmakeFlags = [ (lib.cmakeBool "ENABLE_GPOD" false) ];
-
+  doCheck = true;
   checkInputs = [ gtest ];
-  checkTarget = "strawberry_tests";
+
   preCheck = ''
     # defaults to "xcb" otherwise, which requires a display
     export QT_QPA_PLATFORM=offscreen
   '';
-  doCheck = true;
 
   postInstall = ''
     qtWrapperArgs+=(
@@ -118,6 +116,7 @@ stdenv.mkDerivation (finalAttrs: {
     )
   '';
 
+  checkTarget = "strawberry_tests";
   passthru.updateScript = nix-update-script { };
 
   meta = {

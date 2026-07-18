@@ -1,8 +1,8 @@
 {
   lib,
-  python3,
   fetchFromGitHub,
   mopidy,
+  python3,
 }:
 
 let
@@ -11,7 +11,6 @@ in
 python.pkgs.buildPythonApplication (finalAttrs: {
   pname = "mopidy-ytmusic";
   version = "0.3.9";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "jmcdo29";
@@ -35,15 +34,15 @@ python.pkgs.buildPythonApplication (finalAttrs: {
     python.pkgs.pytube
   ];
 
-  pythonImportsCheck = [ "mopidy_ytmusic" ];
-
   # has no tests
   doCheck = false;
+  pyproject = true;
+  pythonImportsCheck = [ "mopidy_ytmusic" ];
 
   meta = {
-    changelog = "https://github.com/jmcdo29/mopidy-ytmusic/releases/tag/${finalAttrs.src.rev}";
     description = "Mopidy extension for playing music from YouTube Music";
     homepage = "https://github.com/jmcdo29/mopidy-ytmusic";
+    changelog = "https://github.com/jmcdo29/mopidy-ytmusic/releases/tag/${finalAttrs.src.rev}";
     license = lib.licenses.asl20;
     maintainers = [ lib.maintainers.nickhu ];
   };

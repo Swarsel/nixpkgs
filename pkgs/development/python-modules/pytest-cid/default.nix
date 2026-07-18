@@ -4,14 +4,13 @@
   buildPythonPackage,
   flit-core,
   py-cid,
-  pytestCheckHook,
   pytest-cov-stub,
+  pytestCheckHook,
 }:
 
 buildPythonPackage rec {
   pname = "pytest-cid";
   version = "1.1.2";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "ntninja";
@@ -26,7 +25,6 @@ buildPythonPackage rec {
   '';
 
   nativeBuildInputs = [ flit-core ];
-
   propagatedBuildInputs = [ py-cid ];
 
   nativeCheckInputs = [
@@ -34,11 +32,12 @@ buildPythonPackage rec {
     pytest-cov-stub
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "pytest_cid" ];
 
   meta = {
-    homepage = "https://github.com/ntninja/pytest-cid";
     description = "Simple wrapper around py-cid for easily writing tests involving CIDs in datastructures";
+    homepage = "https://github.com/ntninja/pytest-cid";
     license = lib.licenses.mpl20;
     maintainers = with lib.maintainers; [ Luflosi ];
   };

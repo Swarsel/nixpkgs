@@ -1,7 +1,6 @@
 {
-  callPackage,
   fetchurl,
-
+  callPackage,
   # This is a bit unusual, but makes version and hash easily
   # overridable. This is useful when the upstream archive was replaced
   # and nixpkgs is not in sync yet.
@@ -10,7 +9,6 @@
     edition = "";
     hash = "sha256-00bscKt+4aE94x6wKGqXh6tE2GiDll6F4gWZZBEl2JE=";
   },
-
   ...
 }@args:
 
@@ -18,9 +16,7 @@ callPackage ./generic.nix (
   args
   // rec {
     inherit (officeVersion) version edition;
-
     pname = "softmaker-office-nx";
-    suiteName = "SoftMaker Office NX";
 
     src = fetchurl {
       inherit (officeVersion) hash;
@@ -28,5 +24,6 @@ callPackage ./generic.nix (
     };
 
     archive = "officenx.tar.lzma";
+    suiteName = "SoftMaker Office NX";
   }
 )

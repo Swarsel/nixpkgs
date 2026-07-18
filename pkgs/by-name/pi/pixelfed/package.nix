@@ -1,14 +1,14 @@
 {
   lib,
   fetchFromGitHub,
-  php,
-  nixosTests,
   nix-update-script,
+  nixosTests,
+  php,
   dataDir ? "/var/lib/pixelfed",
   runtimeDir ? "/run/pixelfed",
 }:
 let
-  php' = php.withExtensions ({ enabled, all }: enabled ++ (with all; [ ffi ]));
+  php' = php.withExtensions ({ all, enabled }: enabled ++ (with all; [ ffi ]));
 in
 php'.buildComposerProject2 (finalAttrs: {
   pname = "pixelfed";
@@ -44,9 +44,9 @@ php'.buildComposerProject2 (finalAttrs: {
 
   meta = {
     description = "Federated image sharing platform";
-    license = lib.licenses.agpl3Only;
     homepage = "https://pixelfed.org/";
-    teams = with lib.teams; [ ngi ];
+    license = lib.licenses.agpl3Only;
     platforms = php.meta.platforms;
+    teams = with lib.teams; [ ngi ];
   };
 })

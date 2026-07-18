@@ -20,24 +20,27 @@ stdenv.mkDerivation {
   };
 
   nativeBuildInputs = [ cmake ];
+
   buildInputs = [
     libminc
     netpbm
   ];
 
   cmakeFlags = [ "-DLIBMINC_DIR=${libminc}/lib/cmake" ];
-
   doCheck = false;
+
   # internal_volume_io.h: No such file or directory
 
   meta = {
-    homepage = "https://github.com/BIC-MNI/bicpl";
     description = "Brain Imaging Centre programming library";
-    maintainers = with lib.maintainers; [ bcdarwin ];
-    platforms = lib.platforms.unix;
+    homepage = "https://github.com/BIC-MNI/bicpl";
+
     license = with lib.licenses; [
       hpndUc
       gpl3Plus
     ];
+
+    maintainers = with lib.maintainers; [ bcdarwin ];
+    platforms = lib.platforms.unix;
   };
 }

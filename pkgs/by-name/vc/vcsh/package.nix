@@ -4,11 +4,11 @@
   fetchurl,
   autoconf,
   automake116x,
+  git,
   makeWrapper,
+  perlPackages,
   pkg-config,
   unzip,
-  git,
-  perlPackages,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -19,6 +19,12 @@ stdenv.mkDerivation (finalAttrs: {
     url = "https://github.com/RichiH/vcsh/releases/download/v${finalAttrs.version}/vcsh-${finalAttrs.version}.zip";
     hash = "sha256-M/UME2kNCxwzngKXMYp0cdps7LWVwoS2I/mTrvPts7g=";
   };
+
+  outputs = [
+    "out"
+    "doc"
+    "man"
+  ];
 
   nativeBuildInputs = [
     autoconf
@@ -38,20 +44,16 @@ stdenv.mkDerivation (finalAttrs: {
       TestMost
     ]);
 
-  outputs = [
-    "out"
-    "doc"
-    "man"
-  ];
-
   meta = {
     description = "Version Control System for $HOME";
     homepage = "https://github.com/RichiH/vcsh";
     changelog = "https://github.com/RichiH/vcsh/blob/v${finalAttrs.version}/changelog";
     license = lib.licenses.gpl2Plus;
+
     maintainers = with lib.maintainers; [
       alerque
     ];
+
     platforms = lib.platforms.unix;
     mainProgram = "vcsh";
   };

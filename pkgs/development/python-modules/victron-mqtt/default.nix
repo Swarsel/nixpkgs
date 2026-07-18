@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   hatchling,
   paho-mqtt,
   pytest-asyncio,
@@ -13,7 +13,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "victron-mqtt";
   version = "2026.7.2";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "tomer-w";
@@ -22,18 +21,18 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-ZU5qz+21rxHnpHlV0Vn+iiBDqW110hy/4+Emblj6gWo=";
   };
 
+  nativeCheckInputs = [
+    pytest-asyncio
+    pytest-mock
+    pytestCheckHook
+  ];
+
   build-system = [
     hatchling
   ];
 
   dependencies = [
     paho-mqtt
-  ];
-
-  nativeCheckInputs = [
-    pytest-asyncio
-    pytest-mock
-    pytestCheckHook
   ];
 
   disabledTests = [
@@ -46,15 +45,17 @@ buildPythonPackage (finalAttrs: {
     "test_connect_auth_failure"
   ];
 
+  pyproject = true;
+
   pythonImportsCheck = [
     "victron_mqtt"
   ];
 
   meta = {
-    changelog = "https://github.com/tomer-w/victron_mqtt/releases/tag/${finalAttrs.src.tag}";
+    inherit (victron-vrm.meta) maintainers;
     description = "Victron Venus MQTT client library documentation";
     homepage = "https://github.com/tomer-w/victron_mqtt";
+    changelog = "https://github.com/tomer-w/victron_mqtt/releases/tag/${finalAttrs.src.tag}";
     license = lib.licenses.mit;
-    inherit (victron-vrm.meta) maintainers;
   };
 })

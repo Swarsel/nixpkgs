@@ -1,27 +1,26 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
+  bids-validator,
+  buildPythonPackage,
+  click,
   formulaic,
   frozendict,
-  click,
+  nibabel,
   num2words,
   numpy,
-  scipy,
   pandas,
-  nibabel,
-  bids-validator,
+  pytestCheckHook,
+  scipy,
+  setuptools,
   sqlalchemy,
   universal-pathlib,
-  pytestCheckHook,
   versioneer,
 }:
 
 buildPythonPackage rec {
   pname = "pybids";
   version = "0.21.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "bids-standard";
@@ -35,10 +34,7 @@ buildPythonPackage rec {
       --replace-fail 'dynamic = ["version"]' 'version = "${version}"'
   '';
 
-  pythonRelaxDeps = [
-    "formulaic"
-    "sqlalchemy"
-  ];
+  nativeCheckInputs = [ pytestCheckHook ];
 
   build-system = [
     setuptools
@@ -59,10 +55,6 @@ buildPythonPackage rec {
     universal-pathlib
   ];
 
-  pythonImportsCheck = [ "bids" ];
-
-  nativeCheckInputs = [ pytestCheckHook ];
-
   disabledTestPaths = [
     # Could not connect to the endpoint URL
     "src/bids/layout/tests/test_remote_bids.py"
@@ -72,6 +64,14 @@ buildPythonPackage rec {
     # Regression associated with formulaic >= 0.6.0
     # (see https://github.com/bids-standard/pybids/issues/1000)
     "test_split"
+  ];
+
+  pyproject = true;
+  pythonImportsCheck = [ "bids" ];
+
+  pythonRelaxDeps = [
+    "formulaic"
+    "sqlalchemy"
   ];
 
   meta = {

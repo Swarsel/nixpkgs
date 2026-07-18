@@ -1,10 +1,10 @@
 {
   lib,
-  kubectl,
-  rustPlatform,
   fetchFromGitHub,
   installShellFiles,
+  kubectl,
   makeWrapper,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -12,20 +12,18 @@ rustPlatform.buildRustPackage (finalAttrs: {
   version = "0.26.1";
 
   src = fetchFromGitHub {
-    rev = "v${finalAttrs.version}";
     owner = "kubie-org";
     repo = "kubie";
+    rev = "v${finalAttrs.version}";
     sha256 = "sha256-eSzNCH0MiGvLKHrSXFSXQq4lN5tfmr0NcuGaN96Invs=";
   };
-
-  buildNoDefaultFeatures = true;
-
-  cargoHash = "sha256-nXzIXMpCtibTN4rsPQFtSSjCQzylWWQZixwbH680ue0=";
 
   nativeBuildInputs = [
     installShellFiles
     makeWrapper
   ];
+
+  cargoHash = "sha256-nXzIXMpCtibTN4rsPQFtSSjCQzylWWQZixwbH680ue0=";
 
   postInstall = ''
     installShellCompletion completion/kubie.{bash,fish}
@@ -38,11 +36,13 @@ rustPlatform.buildRustPackage (finalAttrs: {
       }"
   '';
 
+  buildNoDefaultFeatures = true;
+
   meta = {
     description = "Shell independent context and namespace switcher for kubectl";
-    mainProgram = "kubie";
     homepage = "https://github.com/kubie-org/kubie";
     license = with lib.licenses; [ zlib ];
     maintainers = with lib.maintainers; [ illiusdope ];
+    mainProgram = "kubie";
   };
 })

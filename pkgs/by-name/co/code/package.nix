@@ -1,6 +1,6 @@
 {
-  fetchFromGitHub,
   lib,
+  fetchFromGitHub,
   nix-update-script,
   openssl,
   pkg-config,
@@ -20,10 +20,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-I/QdFRo6FeNtwlwwZXkCkeknJlkTo9wWrhJTZ5fdv7A=";
   };
 
-  sourceRoot = "${finalAttrs.src.name}/code-rs";
-
-  cargoHash = "sha256-ig90sWozfLZQJ/F6BuhRbLbR4GiyygqAaumO6WOItpw=";
-
   nativeBuildInputs = lib.optionals stdenvNoCC.hostPlatform.isLinux [
     pkg-config
   ];
@@ -32,17 +28,8 @@ rustPlatform.buildRustPackage (finalAttrs: {
     openssl
   ];
 
+  cargoHash = "sha256-ig90sWozfLZQJ/F6BuhRbLbR4GiyygqAaumO6WOItpw=";
   env.CODE_VERSION = finalAttrs.version;
-
-  cargoBuildFlags = [
-    "--bin"
-    "code"
-    "--bin"
-    "code-tui"
-    "--bin"
-    "code-exec"
-  ];
-
   # Takes too much time
   doCheck = false;
 
@@ -53,19 +40,31 @@ rustPlatform.buildRustPackage (finalAttrs: {
   doInstallCheck = true;
   nativeInstallCheckInputs = [ versionCheckHook ];
 
+  cargoBuildFlags = [
+    "--bin"
+    "code"
+    "--bin"
+    "code-tui"
+    "--bin"
+    "code-exec"
+  ];
+
+  sourceRoot = "${finalAttrs.src.name}/code-rs";
   passthru.updateScript = nix-update-script { };
 
   meta = {
     description = "Fast, effective, mind-blowing, coding CLI";
     homepage = "https://github.com/just-every/code";
-    downloadPage = "https://github.com/just-every/code/releases";
     changelog = "https://github.com/just-every/code/releases/tag/${finalAttrs.src.tag}";
+
     license = with lib.licenses; [
       asl20
       mit
     ];
+
     maintainers = with lib.maintainers; [ prince213 ];
     mainProgram = "coder";
+    downloadPage = "https://github.com/just-every/code/releases";
     priority = 10;
   };
 })

@@ -1,13 +1,12 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  pytestCheckHook,
-
+  buildPythonPackage,
   libpysal,
   mapclassify,
   matplotlib,
   numpy,
+  pytestCheckHook,
   scipy,
   seaborn,
   setuptools-scm,
@@ -16,7 +15,6 @@
 buildPythonPackage rec {
   pname = "inequality";
   version = "1.1.2";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "pysal";
@@ -24,6 +22,12 @@ buildPythonPackage rec {
     tag = "v${version}";
     hash = "sha256-GMl/hHwaHPozdLhV9/CPYIMY5lFYeo0X0SPDg4RT1zo=";
   };
+
+  nativeCheckInputs = [
+    mapclassify
+    pytestCheckHook
+    seaborn
+  ];
 
   build-system = [ setuptools-scm ];
 
@@ -34,12 +38,7 @@ buildPythonPackage rec {
     scipy
   ];
 
-  nativeCheckInputs = [
-    mapclassify
-    pytestCheckHook
-    seaborn
-  ];
-
+  pyproject = true;
   pythonImportsCheck = [ "inequality" ];
 
   meta = {

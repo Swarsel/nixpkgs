@@ -2,29 +2,29 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  cmake,
-  sfml,
-  libx11,
-  glew,
-  python3,
-  glm_1_0_1,
-  meshoptimizer,
   SDL2,
+  cmake,
+  glew,
+  glm_1_0_1,
+  libx11,
+  meshoptimizer,
   ninja,
+  python3,
+  sfml,
 }:
 
 let
   versions = {
-    seriousproton = "2024.12.08";
-    emptyepsilon = "2024.12.08";
     basis-universal = "1.15_final";
+    emptyepsilon = "2024.12.08";
+    seriousproton = "2024.12.08";
   };
 
   basis-universal = fetchFromGitHub {
+    hash = "sha256-pKvfVvdbPIdzdSOklicThS7xwt4i3/21bE6wg9f8kHY=";
     owner = "BinomialLLC";
     repo = "basis_universal";
     tag = versions.basis-universal;
-    hash = "sha256-pKvfVvdbPIdzdSOklicThS7xwt4i3/21bE6wg9f8kHY=";
   };
 
   serious-proton = stdenv.mkDerivation {
@@ -39,6 +39,7 @@ let
     };
 
     nativeBuildInputs = [ cmake ];
+
     buildInputs = [
       sfml
       libx11
@@ -74,6 +75,7 @@ stdenv.mkDerivation {
   };
 
   nativeBuildInputs = [ cmake ];
+
   buildInputs = [
     serious-proton
     sfml
@@ -101,12 +103,14 @@ stdenv.mkDerivation {
 
   meta = {
     description = "Open source bridge simulator based on Artemis";
-    mainProgram = "EmptyEpsilon";
     homepage = "https://daid.github.io/EmptyEpsilon/";
     license = lib.licenses.gpl2Plus;
+
     maintainers = with lib.maintainers; [
       fpletz
     ];
+
     platforms = lib.platforms.linux;
+    mainProgram = "EmptyEpsilon";
   };
 }

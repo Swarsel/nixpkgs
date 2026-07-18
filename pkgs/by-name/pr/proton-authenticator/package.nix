@@ -2,16 +2,16 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  rustPlatform,
   cargo-tauri,
-  nodejs_24,
-  yarn-berry_4,
-  pkg-config,
-  wrapGAppsHook4,
   glib-networking,
   libsoup_3,
-  webkitgtk_4_1,
+  nodejs_24,
+  pkg-config,
   python3,
+  rustPlatform,
+  webkitgtk_4_1,
+  wrapGAppsHook4,
+  yarn-berry_4,
 }:
 
 let
@@ -29,16 +29,15 @@ let
 
 in
 rustPlatform.buildRustPackage (finalAttrs: {
-  strictDeps = true;
-  __structuredAttrs = true;
-
   inherit pname version src;
 
-  sourceRoot = "${src.name}";
+  patches = [
+    # It disables scripts (not needed for proton-authenticator workspace).
+    ./disable-scripts.patch
+    ./package.json.patch
+  ];
 
-  cargoHash = "sha256-bkjjwwSizj/ltY3ISPKEL6rvg37RaDf/Ou7a7jYS47I=";
-  cargoRoot = "applications/authenticator/src-tauri";
-  buildAndTestSubdir = finalAttrs.cargoRoot;
+  strictDeps = true;
 
   nativeBuildInputs = [
     cargo-tauri.hook
@@ -56,10 +55,25 @@ rustPlatform.buildRustPackage (finalAttrs: {
     webkitgtk_4_1
   ];
 
-  patches = [
-    # It disables scripts (not needed for proton-authenticator workspace).
-    ./disable-scripts.patch
-    ./package.json.patch
+  cargoHash = "sha256-bkjjwwSizj/ltY3ISPKEL6rvg37RaDf/Ou7a7jYS47I=";
+  __structuredAttrs = true;
+  buildAndTestSubdir = finalAttrs.cargoRoot;
+  cargoRoot = "applications/authenticator/src-tauri";
+  missingHashes = ./missing-hashes.json;
+
+  offlineCache = yarn-berry.fetchYarnBerryDeps {
+    inherit (finalAttrs) src missingHashes yarnLock;
+    hash = "sha256-FiDuAwEj/AIH/lJRLyuNPvthcoynsFGcUYZyx7DMnFA=";
+  };
+
+  postUnpack = ''
+    cp --no-preserve=all ${./yarn.lock} $sourceRoot/yarn.lock
+  '';
+
+  sourceRoot = "${src.name}";
+
+  tauriBuildFlags = [
+    "--no-sign"
   ];
 
   # The original yarn.lock contains references to private registries.
@@ -70,35 +84,25 @@ rustPlatform.buildRustPackage (finalAttrs: {
   # 4. Generate a new `missing-hashes.json` file by running `nix run nixpkgs#yarn-berry_4.yarn-berry-fetcher -- missing-hashes yarn.lock > missing-hashes.json`.
   # 5. Move the generated `yarn.lock` and `missing-hashes.json` files into this directory.
   yarnLock = ./yarn.lock;
-  missingHashes = ./missing-hashes.json;
-  offlineCache = yarn-berry.fetchYarnBerryDeps {
-    inherit (finalAttrs) src missingHashes yarnLock;
-
-    hash = "sha256-FiDuAwEj/AIH/lJRLyuNPvthcoynsFGcUYZyx7DMnFA=";
-  };
-
-  postUnpack = ''
-    cp --no-preserve=all ${./yarn.lock} $sourceRoot/yarn.lock
-  '';
-
-  tauriBuildFlags = [
-    "--no-sign"
-  ];
 
   meta = {
     description = "Two-factor authentication manager with optional sync (built from source)";
+
     longDescription = ''
       This package builds proton-authenticator from source.
 
       Changed: proton-authenticator is now source-compiled by default.
       For the pre-built binary version, use proton-authenticator-bin instead.
     '';
+
     homepage = "https://proton.me/authenticator";
     license = lib.licenses.gpl3;
+
     maintainers = with lib.maintainers; [
       demic-dev
       pbek
     ];
+
     platforms = lib.platforms.darwin ++ lib.platforms.linux;
     mainProgram = "proton-authenticator";
   };

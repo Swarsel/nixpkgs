@@ -1,7 +1,7 @@
 {
+  lib,
   config,
   hostPkgs,
-  lib,
   ...
 }:
 let
@@ -15,33 +15,39 @@ let
     site = sitePkg;
   };
   checkJson = config.node.pkgs.testers.lycheeLinkCheck {
-    site = sitePkg;
     extraArgs = [
       "--format"
       "json"
     ];
+
+    site = sitePkg;
   };
 in
 {
   name = "testers-lychee-link-check-run";
+
   nodes.client =
     { pkgs, ... }:
     {
       environment.systemPackages = [ pkgs.jq ];
     };
+
   nodes.example = {
     networking.firewall.allowedTCPPorts = [ 80 ];
+
     services.nginx = {
       enable = true;
+
       virtualHosts."example" = {
         locations."/" = {
-          root = "/var/www/example";
           index = "index.html";
+          root = "/var/www/example";
         };
       };
     };
 
   };
+
   testScript = ''
     start_all()
 

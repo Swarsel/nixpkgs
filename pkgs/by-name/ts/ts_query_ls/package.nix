@@ -1,8 +1,8 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
   cmake,
+  rustPlatform,
 }:
 rustPlatform.buildRustPackage (finalAttrs: {
   pname = "ts_query_ls";
@@ -16,7 +16,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
   };
 
   nativeBuildInputs = [ cmake ];
-
   cargoHash = "sha256-NSaqxLVl3zsSMSRss//gwI3gvRt1xT9LD7m4BmfKz4U=";
 
   meta = {

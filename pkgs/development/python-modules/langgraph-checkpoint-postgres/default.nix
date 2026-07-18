@@ -1,34 +1,28 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  stdenvNoCC,
-
+  buildPythonPackage,
+  # passthru
+  gitUpdater,
   # build system
   hatchling,
-
   # dependencies
   langgraph-checkpoint,
   ormsgpack,
-  psycopg,
-  psycopg-pool,
-
   # testing
   pgvector,
   postgresql,
   postgresqlTestHook,
-  pytestCheckHook,
+  psycopg,
+  psycopg-pool,
   pytest-asyncio,
-
-  # passthru
-  gitUpdater,
+  pytestCheckHook,
+  stdenvNoCC,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "langgraph-checkpoint-postgres";
   version = "3.1.0";
-  pyproject = true;
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "langchain-ai";
@@ -36,28 +30,6 @@ buildPythonPackage (finalAttrs: {
     tag = "checkpointpostgres==${finalAttrs.version}";
     hash = "sha256-xSYJ9D86GuaJEgQYk+pkJ4O7HK6HXfAOGBv4f1CBY5g=";
   };
-
-  postgresqlTestSetupPost = ''
-    substituteInPlace tests/conftest.py \
-      --replace-fail "DEFAULT_URI = \"postgres://postgres:postgres@localhost:5441/postgres?sslmode=disable\"" "DEFAULT_URI = \"postgres:///$PGDATABASE\"" \
-      --replace-fail "DEFAULT_POSTGRES_URI = \"postgres://postgres:postgres@localhost:5441/\"" "DEFAULT_POSTGRES_URI = \"postgres:///\""
-  '';
-
-  sourceRoot = "${finalAttrs.src.name}/libs/checkpoint-postgres";
-
-  build-system = [ hatchling ];
-
-  dependencies = [
-    langgraph-checkpoint
-    ormsgpack
-    psycopg
-    psycopg-pool
-  ];
-
-  pythonRelaxDeps = [
-    "langgraph-checkpoint"
-    "psycopg-pool"
-  ];
 
   doCheck = !(stdenvNoCC.hostPlatform.isDarwin);
 
@@ -71,6 +43,16 @@ buildPythonPackage (finalAttrs: {
   preCheck = ''
     export postgresqlTestUserOptions="LOGIN SUPERUSER"
   '';
+
+  __structuredAttrs = true;
+  build-system = [ hatchling ];
+
+  dependencies = [
+    langgraph-checkpoint
+    ormsgpack
+    psycopg
+    psycopg-pool
+  ];
 
   disabledTests = [
     # psycopg.errors.FeatureNotSupported: extension "vector" is not available
@@ -90,14 +72,29 @@ buildPythonPackage (finalAttrs: {
     "test_store_ttl"
   ];
 
+  postgresqlTestSetupPost = ''
+    substituteInPlace tests/conftest.py \
+      --replace-fail "DEFAULT_URI = \"postgres://postgres:postgres@localhost:5441/postgres?sslmode=disable\"" "DEFAULT_URI = \"postgres:///$PGDATABASE\"" \
+      --replace-fail "DEFAULT_POSTGRES_URI = \"postgres://postgres:postgres@localhost:5441/\"" "DEFAULT_POSTGRES_URI = \"postgres:///\""
+  '';
+
+  pyproject = true;
   pythonImportsCheck = [ "langgraph.checkpoint.postgres" ];
+
+  pythonRelaxDeps = [
+    "langgraph-checkpoint"
+    "psycopg-pool"
+  ];
+
+  sourceRoot = "${finalAttrs.src.name}/libs/checkpoint-postgres";
 
   passthru = {
     # python updater script sets the wrong tag
     skipBulkUpdate = true;
+
     updateScript = gitUpdater {
-      rev-prefix = "checkpointpostgres==";
       ignoredVersions = "a|b|dev|rc";
+      rev-prefix = "checkpointpostgres==";
     };
   };
 
@@ -106,6 +103,7 @@ buildPythonPackage (finalAttrs: {
     homepage = "https://github.com/langchain-ai/langgraph/tree/main/libs/checkpoint-postgres";
     changelog = "https://github.com/langchain-ai/langgraph/releases/tag/${finalAttrs.src.tag}";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       sarahec
     ];

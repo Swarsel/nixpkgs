@@ -1,15 +1,13 @@
 {
   lib,
   buildPythonPackage,
+  certifi,
   fetchPypi,
   setuptools,
-  certifi,
 }:
 buildPythonPackage (finalAttrs: {
   pname = "casaconfig";
   version = "1.5.0";
-
-  pyproject = true;
 
   src = fetchPypi {
     inherit (finalAttrs) pname version;
@@ -17,8 +15,8 @@ buildPythonPackage (finalAttrs: {
   };
 
   build-system = [ setuptools ];
-
   dependencies = [ certifi ];
+  pyproject = true;
 
   meta = {
     description = "Reference data and converters for CASA operation";

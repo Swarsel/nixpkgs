@@ -24,18 +24,6 @@ stdenv.mkDerivation (finalAttrs: {
     cudnn
   ];
 
-  sourceRoot = ".";
-
-  # Unpack tarball to subdir, preventing copying `env-vars` to $out in `installPhase`
-  preUnpack = ''
-    mkdir source
-    cd source
-  '';
-
-  dontPatch = true;
-  dontConfigure = true;
-  dontBuild = true;
-
   installPhase = ''
     runHook preInstall
 
@@ -45,12 +33,24 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  dontBuild = true;
+  dontConfigure = true;
+  dontPatch = true;
+
+  # Unpack tarball to subdir, preventing copying `env-vars` to $out in `installPhase`
+  preUnpack = ''
+    mkdir source
+    cd source
+  '';
+
+  sourceRoot = ".";
+
   meta = {
     description = "Computation using data flow graphs for scalable machine learning";
     homepage = "http://tensorflow.org";
     license = lib.licenses.asl20;
+    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
     maintainers = with lib.maintainers; [ kulczwoj ];
     platforms = [ "x86_64-linux" ];
-    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
   };
 })

@@ -1,4 +1,4 @@
-{ lib, config, ... }:
+{ config, lib, ... }:
 
 with lib;
 let
@@ -13,39 +13,47 @@ let
 
   kernelItem = types.submodule {
     options = {
+      freeform = mkOption {
+        default = null;
+
+        description = ''
+          Freeform description of a kernel configuration item value.
+        '';
+
+        example = ''MMC_BLOCK_MINORS.freeform = "32";'';
+        type = types.nullOr types.str;
+      };
+
+      optional = mkOption {
+        default = false;
+
+        description = ''
+          Whether option should generate a failure when unused.
+          Upon merging values, mandatory wins over optional.
+        '';
+
+        type = types.bool // {
+          merge = mergeFalseByDefault;
+        };
+      };
+
       tristate = mkOption {
+        default = null;
+
+        description = ''
+          Use this field for tristate kernel options expecting a "y" or "m" or "n".
+        '';
+
+        internal = true;
+
         type = types.enum [
           "y"
           "m"
           "n"
           null
         ];
-        default = null;
-        internal = true;
+
         visible = true;
-        description = ''
-          Use this field for tristate kernel options expecting a "y" or "m" or "n".
-        '';
-      };
-
-      freeform = mkOption {
-        type = types.nullOr types.str;
-        default = null;
-        example = ''MMC_BLOCK_MINORS.freeform = "32";'';
-        description = ''
-          Freeform description of a kernel configuration item value.
-        '';
-      };
-
-      optional = mkOption {
-        type = types.bool // {
-          merge = mergeFalseByDefault;
-        };
-        default = false;
-        description = ''
-          Whether option should generate a failure when unused.
-          Upon merging values, mandatory wins over optional.
-        '';
       };
     };
   };
@@ -114,30 +122,34 @@ in
   options = {
 
     intermediateNixConfig = mkOption {
-      readOnly = true;
-      type = types.lines;
-      example = ''
-        USB? y
-        DEBUG n
-      '';
       description = ''
         The result of converting the structured kernel configuration in settings
         to an intermediate string that can be parsed by generate-config.pl to
         answer the kernel `make defconfig`.
       '';
+
+      example = ''
+        USB? y
+        DEBUG n
+      '';
+
+      readOnly = true;
+      type = types.lines;
     };
 
     settings = mkOption {
-      type = types.attrsOf kernelItem;
+      description = ''
+        Structured kernel configuration.
+      '';
+
       example = literalExpression ''
         with lib.kernel; {
                "9P_NET" = yes;
                USB = option yes;
                MMC_BLOCK_MINORS = freeform "32";
              }'';
-      description = ''
-        Structured kernel configuration.
-      '';
+
+      type = types.attrsOf kernelItem;
     };
   };
 

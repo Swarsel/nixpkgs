@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   hatch-vcs,
   hatchling,
   pcpp,
@@ -11,7 +11,6 @@
 buildPythonPackage rec {
   pname = "cxxheaderparser";
   version = "1.8.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "robotpy";
@@ -25,15 +24,15 @@ buildPythonPackage rec {
     echo "__version__ = '${version}'" > cxxheaderparser/version.py
   '';
 
+  nativeCheckInputs = [ pytestCheckHook ];
+  checkInputs = [ pcpp ];
+
   build-system = [
     hatch-vcs
     hatchling
   ];
 
-  checkInputs = [ pcpp ];
-
-  nativeCheckInputs = [ pytestCheckHook ];
-
+  pyproject = true;
   pythonImportsCheck = [ "cxxheaderparser" ];
 
   meta = {

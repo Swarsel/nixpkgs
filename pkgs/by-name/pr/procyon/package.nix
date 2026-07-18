@@ -2,10 +2,10 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  makeShellWrapper,
+  gradle,
   jdk_headless,
   jre_minimal,
-  gradle,
+  makeShellWrapper,
 }:
 
 let
@@ -17,10 +17,10 @@ let
     ];
   };
   jcommander-src = fetchFromGitHub {
+    hash = "sha256-zoPymohdU8HhVmw7ACoPbgNGgzdsIDVD3bl7Fh3qf2g=";
     owner = "cbeust";
     repo = "jcommander";
     tag = "1.78";
-    hash = "sha256-zoPymohdU8HhVmw7ACoPbgNGgzdsIDVD3bl7Fh3qf2g=";
   };
 in
 

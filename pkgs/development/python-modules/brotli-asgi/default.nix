@@ -1,23 +1,20 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  brotli,
+  brotlipy,
+  buildPythonPackage,
+  # check inputs
+  httpx,
+  mypy,
+  requests,
   setuptools,
   # build inputs
   starlette,
-  brotli,
-  # check inputs
-  httpx,
-  requests,
-  mypy,
-  brotlipy,
 }:
 buildPythonPackage (finalAttrs: {
   pname = "brotli-asgi";
   version = "1.6.0";
-  pyproject = true;
-
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "fullonic";
@@ -26,6 +23,14 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-cF7A3mnkQmvtc9DgHiwqYEQQ6QagjoBGTmcBzUm6vvs=";
   };
 
+  nativeCheckInputs = [
+    httpx
+    requests
+    mypy
+    brotlipy
+  ];
+
+  __structuredAttrs = true;
   build-system = [ setuptools ];
 
   dependencies = [
@@ -33,14 +38,8 @@ buildPythonPackage (finalAttrs: {
     brotli
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "brotli_asgi" ];
-
-  nativeCheckInputs = [
-    httpx
-    requests
-    mypy
-    brotlipy
-  ];
 
   meta = {
     description = "Compression AGSI middleware using brotli";

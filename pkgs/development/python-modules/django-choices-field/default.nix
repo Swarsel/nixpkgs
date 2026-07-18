@@ -1,20 +1,19 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  poetry-core,
+  buildPythonPackage,
   django,
-  typing-extensions,
   inline-snapshot,
-  pytestCheckHook,
+  poetry-core,
   pytest-cov-stub,
   pytest-django,
+  pytestCheckHook,
+  typing-extensions,
 }:
 
 buildPythonPackage rec {
   pname = "django-choices-field";
   version = "4.0.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "bellini666";
@@ -23,13 +22,6 @@ buildPythonPackage rec {
     hash = "sha256-EnJMn6tAjhylY8qsT/T/N9v/w/vD+d93U2RMxwEcc84=";
   };
 
-  build-system = [ poetry-core ];
-
-  dependencies = [
-    django
-    typing-extensions
-  ];
-
   nativeCheckInputs = [
     inline-snapshot
     pytestCheckHook
@@ -37,6 +29,14 @@ buildPythonPackage rec {
     pytest-django
   ];
 
+  build-system = [ poetry-core ];
+
+  dependencies = [
+    django
+    typing-extensions
+  ];
+
+  pyproject = true;
   pythonImportsCheck = [ "django_choices_field" ];
 
   meta = {

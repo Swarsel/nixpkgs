@@ -1,19 +1,25 @@
 {
   lib,
   stdenv,
-  fetchgit,
   autoconf,
   automake,
+  fetchgit,
 }:
 
 stdenv.mkDerivation {
   pname = "tftp-hpa";
   version = "5.2-unstable-2024-06-10";
+
   src = fetchgit {
     url = "git://git.kernel.org/pub/scm/network/tftp/tftp-hpa.git";
-    hash = "sha256-lTMldYO/cZdLj0UjOPPBHfYf2GBG0O+5lhP9ikqn3tY=";
     rev = "2c86ff58dcc003107b47f2d35aa0fdc4a3fd95e1";
+    hash = "sha256-lTMldYO/cZdLj0UjOPPBHfYf2GBG0O+5lhP9ikqn3tY=";
   };
+
+  nativeBuildInputs = [
+    autoconf
+    automake
+  ];
 
   # Workaround build failure on -fno-common toolchains like upstream
   # gcc-10. Otherwise build fails as:
@@ -25,22 +31,17 @@ stdenv.mkDerivation {
     ./autogen.sh
   '';
 
-  nativeBuildInputs = [
-    autoconf
-    automake
-  ];
-
-  meta = {
-    description = "TFTP tools - a lot of fixes on top of BSD TFTP";
-    maintainers = with lib.maintainers; [ raskin ];
-    platforms = lib.platforms.linux;
-    license = lib.licenses.bsd3;
-    homepage = "https://www.kernel.org/pub/software/network/tftp/";
-  };
-
   passthru = {
     updateInfo = {
       downloadPage = "https://www.kernel.org/pub/software/network/tftp/";
     };
+  };
+
+  meta = {
+    description = "TFTP tools - a lot of fixes on top of BSD TFTP";
+    homepage = "https://www.kernel.org/pub/software/network/tftp/";
+    license = lib.licenses.bsd3;
+    maintainers = with lib.maintainers; [ raskin ];
+    platforms = lib.platforms.linux;
   };
 }

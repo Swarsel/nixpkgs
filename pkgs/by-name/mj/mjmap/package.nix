@@ -2,10 +2,10 @@
   lib,
   buildGoModule,
   fetchFromSourcehut,
-  scdoc,
   installShellFiles,
-  versionCheckHook,
   nix-update-script,
+  scdoc,
+  versionCheckHook,
 }:
 
 let
@@ -13,8 +13,8 @@ let
 in
 
 buildGoModule {
-  pname = "mjmap";
   inherit version;
+  pname = "mjmap";
 
   src = fetchFromSourcehut {
     owner = "~rockorager";
@@ -23,16 +23,12 @@ buildGoModule {
     hash = "sha256-VV+bZ01l+uEe3wqdYyVwpzsZJNzoTCD38F6a58dozbg=";
   };
 
-  vendorHash = "sha256-sZsS8q/hkA2T/8QmtKzNof0mzCuWYin227+/7k3XTM0=";
-
   nativeBuildInputs = [
     scdoc
     installShellFiles
   ];
 
-  nativeInstallCheckInputs = [ versionCheckHook ];
-
-  versionCheckProgram = "mjmap";
+  vendorHash = "sha256-sZsS8q/hkA2T/8QmtKzNof0mzCuWYin227+/7k3XTM0=";
 
   postBuild = ''
     make mjmap.1
@@ -42,6 +38,8 @@ buildGoModule {
     installManPage mjmap.1
   '';
 
+  nativeInstallCheckInputs = [ versionCheckHook ];
+  versionCheckProgram = "mjmap";
   passthru.updateScript = nix-update-script { };
 
   meta = {
@@ -50,7 +48,7 @@ buildGoModule {
     license = lib.licenses.mpl20;
     sourceProvenance = [ lib.sourceTypes.fromSource ];
     maintainers = [ lib.maintainers.emily ];
-    mainProgram = "mjmap";
     platforms = lib.platforms.unix;
+    mainProgram = "mjmap";
   };
 }

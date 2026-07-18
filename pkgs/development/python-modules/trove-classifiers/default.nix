@@ -1,8 +1,8 @@
 {
   lib,
   buildPythonPackage,
-  fetchPypi,
   calver,
+  fetchPypi,
   pytestCheckHook,
   setuptools,
 }:
@@ -11,12 +11,11 @@ let
   self = buildPythonPackage rec {
     pname = "trove-classifiers";
     version = "2026.5.20.19";
-    pyproject = true;
 
     src = fetchPypi {
-      pname = "trove_classifiers";
       inherit version;
       hash = "sha256-bmEZk5h8qTJpaK1wRScz2t0xRxWZ05iWBFsolwqbuB4=";
+      pname = "trove_classifiers";
     };
 
     postPatch = ''
@@ -24,17 +23,16 @@ let
         --replace-fail "BINDIR = Path(sys.executable).parent" "BINDIR = '$out/bin'"
     '';
 
+    doCheck = false; # avoid infinite recursion with hatchling
+    nativeCheckInputs = [ pytestCheckHook ];
+
     build-system = [
       calver
       setuptools
     ];
 
-    doCheck = false; # avoid infinite recursion with hatchling
-
-    nativeCheckInputs = [ pytestCheckHook ];
-
+    pyproject = true;
     pythonImportsCheck = [ "trove_classifiers" ];
-
     passthru.tests.trove-classifiers = self.overridePythonAttrs { doCheck = true; };
 
     meta = {
@@ -42,8 +40,8 @@ let
       homepage = "https://github.com/pypa/trove-classifiers";
       changelog = "https://github.com/pypa/trove-classifiers/releases/tag/${version}";
       license = lib.licenses.asl20;
-      mainProgram = "trove-classifiers";
       maintainers = with lib.maintainers; [ dotlambda ];
+      mainProgram = "trove-classifiers";
     };
   };
 in

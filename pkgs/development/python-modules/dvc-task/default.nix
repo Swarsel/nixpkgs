@@ -1,8 +1,8 @@
 {
   lib,
+  fetchFromGitHub,
   buildPythonPackage,
   celery,
-  fetchFromGitHub,
   funcy,
   kombu,
   pytest-celery,
@@ -17,7 +17,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "dvc-task";
   version = "0.40.2";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "iterative";
@@ -25,6 +24,13 @@ buildPythonPackage (finalAttrs: {
     tag = finalAttrs.version;
     hash = "sha256-bRQJLncxCigYPEtlvKjUtKqhcBkB7erEtoJQ30yGamE=";
   };
+
+  nativeCheckInputs = [
+    pytest-celery
+    pytest-mock
+    pytest-test-utils
+    pytestCheckHook
+  ];
 
   build-system = [
     setuptools
@@ -38,21 +44,15 @@ buildPythonPackage (finalAttrs: {
     shortuuid
   ];
 
-  nativeCheckInputs = [
-    pytest-celery
-    pytest-mock
-    pytest-test-utils
-    pytestCheckHook
-  ];
-
-  pythonImportsCheck = [ "dvc_task" ];
-
   disabledTests = [
     # Test is flaky
     "test_start_already_exists"
     # Tests require a Docker setup
     "celery_setup_worker"
   ];
+
+  pyproject = true;
+  pythonImportsCheck = [ "dvc_task" ];
 
   meta = {
     description = "Celery task queue used in DVC";

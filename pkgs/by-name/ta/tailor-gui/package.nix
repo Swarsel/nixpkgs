@@ -1,18 +1,18 @@
 {
-  stdenv,
   lib,
-  rustPlatform,
-  cargo,
-  rustc,
-  pkg-config,
-  desktop-file-utils,
+  stdenv,
   appstream-glib,
-  wrapGAppsHook4,
+  cargo,
+  desktop-file-utils,
+  gtk4,
+  libadwaita,
   meson,
   ninja,
-  libadwaita,
-  gtk4,
+  pkg-config,
+  rustPlatform,
+  rustc,
   tuxedo-rs,
+  wrapGAppsHook4,
 }:
 let
   src = tuxedo-rs.src;
@@ -28,16 +28,6 @@ stdenv.mkDerivation {
     pname
     version
     ;
-
-  cargoDeps = rustPlatform.fetchCargoVendor {
-    inherit
-      pname
-      version
-      src
-      sourceRoot
-      ;
-    hash = "sha256-9jMy23VD+C87hg/TMXGbzAoqx76dhVOkWcQNudSwsYA=";
-  };
 
   nativeBuildInputs = [
     rustPlatform.cargoSetupHook
@@ -56,18 +46,33 @@ stdenv.mkDerivation {
     gtk4
   ];
 
+  cargoDeps = rustPlatform.fetchCargoVendor {
+    inherit
+      pname
+      version
+      src
+      sourceRoot
+      ;
+
+    hash = "sha256-9jMy23VD+C87hg/TMXGbzAoqx76dhVOkWcQNudSwsYA=";
+  };
+
   meta = {
     description = "Rust GUI for interacting with hardware from TUXEDO Computers";
-    mainProgram = "tailor_gui";
+
     longDescription = ''
       An alternative to the TUXEDO Control Center (https://www.tuxedocomputers.com/en/TUXEDO-Control-Center.tuxedo),
       written in Rust.
     '';
+
     homepage = "https://github.com/AaronErhardt/tuxedo-rs";
     license = lib.licenses.gpl2Plus;
+
     maintainers = with lib.maintainers; [
       xaverdh
     ];
+
     platforms = lib.platforms.linux;
+    mainProgram = "tailor_gui";
   };
 }

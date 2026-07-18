@@ -1,12 +1,14 @@
 {
   lib,
-  buildPythonPackage,
   acpi,
   alsa-utils,
+  buildPythonPackage,
   coreutils,
   dbus-python,
   fetchPypi,
   file,
+  glib,
+  gobject-introspection,
   hatchling,
   i3,
   i3ipc,
@@ -18,18 +20,15 @@
   pytz,
   requests,
   setuptools,
+  setxkbmap,
   tzlocal,
   wrapGAppsHook3,
   xset,
-  setxkbmap,
-  glib,
-  gobject-introspection,
 }:
 
 buildPythonPackage rec {
   pname = "py3status";
   version = "3.63";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
@@ -56,6 +55,14 @@ buildPythonPackage rec {
     file
   ];
 
+  doCheck = false;
+
+  preFixup = ''
+    makeWrapperArgs+=("''${gappsWrapperArgs[@]}")
+  '';
+
+  dontWrapGApps = true;
+
   prePatch = ''
     sed -i -e "s|'file|'${file}/bin/file|" py3status/parse_config.py
     sed -i -e "s|\[\"acpi\"|\[\"${acpi}/bin/acpi\"|" py3status/modules/battery_level.py
@@ -69,13 +76,7 @@ buildPythonPackage rec {
     sed -i -e "s|'xset|'${xset}/bin/xset|" py3status/modules/keyboard_layout.py
   '';
 
-  dontWrapGApps = true;
-
-  preFixup = ''
-    makeWrapperArgs+=("''${gappsWrapperArgs[@]}")
-  '';
-
-  doCheck = false;
+  pyproject = true;
 
   meta = {
     description = "Extensible i3status wrapper";

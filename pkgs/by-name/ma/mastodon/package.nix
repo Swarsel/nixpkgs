@@ -1,23 +1,22 @@
 {
   lib,
   stdenv,
-  nodejs-slim_22,
+  brotli,
   bundlerEnv,
-  nixosTests,
-  yarn-berry_4,
   callPackage,
+  nixosTests,
+  nodejs-slim_22,
+  python3,
   ruby_3_3,
   writeShellScript,
-  brotli,
-  python3,
-
+  yarn-berry_4,
+  gemset ? ./. + "/gemset.nix",
+  patches ? [ ],
   # Allow building a fork or custom version of Mastodon:
   pname ? "mastodon",
-  version ? srcOverride.version,
-  patches ? [ ],
   # src is a package
   srcOverride ? callPackage ./source.nix { inherit patches; },
-  gemset ? ./. + "/gemset.nix",
+  version ? srcOverride.version,
   yarnHash ? srcOverride.yarnHash,
   yarnMissingHashes ? srcOverride.yarnMissingHashes,
 }:
@@ -29,89 +28,15 @@ in
 
 stdenv.mkDerivation rec {
   inherit pname version;
-
   src = srcOverride;
-
-  mastodonGems = bundlerEnv {
-    name = "${pname}-gems-${version}";
-    inherit version gemset ruby;
-    gemdir = src;
-  };
-
-  mastodonModules = stdenv.mkDerivation (finalAttrs: {
-    pname = "${pname}-modules";
-    inherit src version;
-
-    missingHashes = yarnMissingHashes;
-    yarnOfflineCache = yarn-berry.fetchYarnBerryDeps {
-      inherit src;
-      hash = yarnHash;
-      missingHashes = yarnMissingHashes;
-    };
-
-    nativeBuildInputs = [
-      nodejs-slim
-      yarn-berry
-      yarn-berry.yarnBerryConfigHook
-      mastodonGems
-      mastodonGems.wrappedRuby
-      brotli
-      python3
-    ];
-
-    RAILS_ENV = "production";
-    NODE_ENV = "production";
-
-    buildPhase = ''
-      runHook preBuild
-
-      export SECRET_KEY_BASE_DUMMY=1
-
-      patchShebangs bin
-
-      bundle exec rails assets:precompile
-
-      # Install packages for streaming server while remove others
-      rm -rf node_modules/*
-      yarn workspaces focus --production @mastodon/streaming
-      rm -rf node_modules/.cache
-
-      # Remove workspace "package" as it contains broken symlinks
-      # See https://github.com/NixOS/nixpkgs/issues/380366
-      rm -rf node_modules/@mastodon
-
-      # Remove execute permissions
-      find public/assets -type f ! -perm 0555 \
-        -exec chmod 0444 {} ';'
-
-      # Create missing static gzip and brotli files
-      find public/assets -type f -regextype posix-extended -iregex '.*\.(css|html|js|json|svg)' \
-        -exec gzip --best --keep --force {} ';' \
-        -exec brotli --best --keep {} ';'
-      find public/packs -type f -regextype posix-extended -iregex '.*\.(css|js|json|svg)' \
-        -exec brotli --best --keep {} ';'
-
-      runHook postBuild
-    '';
-
-    installPhase = ''
-      runHook preInstall
-
-      mkdir -p $out/public
-      cp -r node_modules $out/node_modules
-      cp -r public/assets $out/public
-      cp -r public/packs $out/public
-
-      runHook postInstall
-    '';
-  });
-
-  propagatedBuildInputs = [ mastodonGems.wrappedRuby ];
   nativeBuildInputs = [ brotli ];
+
   buildInputs = [
     mastodonGems
     nodejs-slim
   ];
+
+  propagatedBuildInputs = [ mastodonGems.wrappedRuby ];
 
   buildPhase = ''
     runHook preBuild
@@ -171,6 +96,80 @@ stdenv.mkDerivation rec {
       runHook postInstall
     '';
 
+  mastodonGems = bundlerEnv {
+    inherit version gemset ruby;
+    gemdir = src;
+    name = "${pname}-gems-${version}";
+  };
+
+  mastodonModules = stdenv.mkDerivation (finalAttrs: {
+    inherit src version;
+    pname = "${pname}-modules";
+
+    nativeBuildInputs = [
+      nodejs-slim
+      yarn-berry
+      yarn-berry.yarnBerryConfigHook
+      mastodonGems
+      mastodonGems.wrappedRuby
+      brotli
+      python3
+    ];
+
+    buildPhase = ''
+      runHook preBuild
+
+      export SECRET_KEY_BASE_DUMMY=1
+
+      patchShebangs bin
+
+      bundle exec rails assets:precompile
+
+      # Install packages for streaming server while remove others
+      rm -rf node_modules/*
+      yarn workspaces focus --production @mastodon/streaming
+      rm -rf node_modules/.cache
+
+      # Remove workspace "package" as it contains broken symlinks
+      # See https://github.com/NixOS/nixpkgs/issues/380366
+      rm -rf node_modules/@mastodon
+
+      # Remove execute permissions
+      find public/assets -type f ! -perm 0555 \
+        -exec chmod 0444 {} ';'
+
+      # Create missing static gzip and brotli files
+      find public/assets -type f -regextype posix-extended -iregex '.*\.(css|html|js|json|svg)' \
+        -exec gzip --best --keep --force {} ';' \
+        -exec brotli --best --keep {} ';'
+      find public/packs -type f -regextype posix-extended -iregex '.*\.(css|js|json|svg)' \
+        -exec brotli --best --keep {} ';'
+
+      runHook postBuild
+    '';
+
+    installPhase = ''
+      runHook preInstall
+
+      mkdir -p $out/public
+      cp -r node_modules $out/node_modules
+      cp -r public/assets $out/public
+      cp -r public/packs $out/public
+
+      runHook postInstall
+    '';
+
+    NODE_ENV = "production";
+    RAILS_ENV = "production";
+    missingHashes = yarnMissingHashes;
+
+    yarnOfflineCache = yarn-berry.fetchYarnBerryDeps {
+      inherit src;
+      hash = yarnHash;
+      missingHashes = yarnMissingHashes;
+    };
+  });
+
   passthru = {
     tests.mastodon = nixosTests.mastodon;
     # run with: nix-shell ./maintainers/scripts/update.nix --argstr package mastodon
@@ -181,15 +180,17 @@ stdenv.mkDerivation rec {
     description = "Self-hosted, globally interconnected microblogging software based on ActivityPub";
     homepage = "https://joinmastodon.org";
     license = lib.licenses.agpl3Plus;
-    platforms = [
-      "x86_64-linux"
-      "i686-linux"
-      "aarch64-linux"
-    ];
+
     maintainers = with lib.maintainers; [
       happy-river
       erictapen
       izorkin
+    ];
+
+    platforms = [
+      "x86_64-linux"
+      "i686-linux"
+      "aarch64-linux"
     ];
   };
 }

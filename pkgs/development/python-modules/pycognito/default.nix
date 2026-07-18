@@ -1,9 +1,9 @@
 {
   lib,
+  fetchFromGitHub,
   boto3,
   buildPythonPackage,
   envs,
-  fetchFromGitHub,
   freezegun,
   mock,
   moto,
@@ -17,7 +17,6 @@
 buildPythonPackage rec {
   pname = "pycognito";
   version = "2024.5.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "pvizeli";
@@ -25,6 +24,15 @@ buildPythonPackage rec {
     tag = version;
     hash = "sha256-U23fFLru4j6GnWMcYtsCW9BVJkVcCoefPH6oMijYGew=";
   };
+
+  nativeCheckInputs = [
+    freezegun
+    mock
+    moto
+    pytestCheckHook
+    requests-mock
+  ]
+  ++ moto.optional-dependencies.cognitoidp;
 
   build-system = [ setuptools ];
 
@@ -36,22 +44,13 @@ buildPythonPackage rec {
   ]
   ++ pyjwt.optional-dependencies.crypto;
 
-  nativeCheckInputs = [
-    freezegun
-    mock
-    moto
-    pytestCheckHook
-    requests-mock
-  ]
-  ++ moto.optional-dependencies.cognitoidp;
-
-  enabledTestPaths = [ "tests.py" ];
-
   disabledTests = [
     # Test requires network access
     "test_srp_requests_http_auth"
   ];
 
+  enabledTestPaths = [ "tests.py" ];
+  pyproject = true;
   pythonImportsCheck = [ "pycognito" ];
 
   meta = {

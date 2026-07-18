@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule (finalAttrs: {
@@ -16,7 +16,6 @@ buildGoModule (finalAttrs: {
   };
 
   vendorHash = "sha256-LXSCOAX3EwDBJ37mkS/BZCllgEai8tC7WFy6pebNAyo=";
-
   # Tests have additional requirements
   doCheck = false;
 

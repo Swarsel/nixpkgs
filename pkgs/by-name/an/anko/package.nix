@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule (finalAttrs: {
@@ -16,13 +16,12 @@ buildGoModule (finalAttrs: {
   };
 
   vendorHash = null;
+  __darwinAllowLocalNetworking = true;
 
   ldflags = [
     "-s"
     "-w"
   ];
-
-  __darwinAllowLocalNetworking = true;
 
   meta = {
     description = "Scriptable interpreter written in golang";

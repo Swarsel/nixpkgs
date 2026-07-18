@@ -1,10 +1,10 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
   doxx,
-  versionCheckHook,
   nix-update-script,
+  rustPlatform,
+  versionCheckHook,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -19,14 +19,13 @@ rustPlatform.buildRustPackage (finalAttrs: {
   };
 
   cargoHash = "sha256-ct03BgNozJUERq9pqOw/igVk8wWmqSV4JQ2ysNyH7mk=";
-
   doInstallCheck = true;
   nativeInstallCheckInputs = [ versionCheckHook ];
-
   passthru.updateScript = nix-update-script { };
 
   meta = {
     description = "Terminal Excel viewer with an interactive TUI";
+
     longDescription = ''
       Inspired by [`doxx`](${doxx.meta.homepage}), `xleak` brings
       Excel spreadsheets to your command line with beautiful
@@ -35,6 +34,7 @@ rustPlatform.buildRustPackage (finalAttrs: {
       lazy loading for large files, clipboard support, and export to
       CSV/JSON.
     '';
+
     homepage = "https://github.com/bgreenwell/xleak";
     changelog = "https://github.com/bgreenwell/xleak/blob/${finalAttrs.src.tag}/CHANGELOG.md";
     license = lib.licenses.mit;

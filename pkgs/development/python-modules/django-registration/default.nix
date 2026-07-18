@@ -1,17 +1,16 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  pdm-backend,
+  buildPythonPackage,
   confusable-homoglyphs,
   coverage,
   django,
+  pdm-backend,
 }:
 
 buildPythonPackage rec {
   pname = "django-registration";
   version = "5.2.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "ubernostrum";
@@ -19,12 +18,6 @@ buildPythonPackage rec {
     tag = version;
     hash = "sha256-k7r4g+iCdAwAUNQdbtxzS5kqgAavEBAJERSWgXvbXqg=";
   };
-
-  build-system = [ pdm-backend ];
-
-  dependencies = [
-    confusable-homoglyphs
-  ];
 
   nativeCheckInputs = [
     coverage
@@ -39,14 +32,21 @@ buildPythonPackage rec {
     runHook postInstallCheck
   '';
 
+  build-system = [ pdm-backend ];
+
+  dependencies = [
+    confusable-homoglyphs
+  ];
+
+  pyproject = true;
   pythonImportsCheck = [ "django_registration" ];
 
   meta = {
-    changelog = "https://github.com/ubernostrum/django-registration/blob/${version}/docs/changelog.rst";
     description = "User registration app for Django";
     homepage = "https://django-registration.readthedocs.io/en/${version}/";
-    downloadPage = "https://github.com/ubernostrum/django-registration";
+    changelog = "https://github.com/ubernostrum/django-registration/blob/${version}/docs/changelog.rst";
     license = lib.licenses.bsd3;
     maintainers = [ lib.maintainers.l0b0 ];
+    downloadPage = "https://github.com/ubernostrum/django-registration";
   };
 }

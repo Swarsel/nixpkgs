@@ -1,15 +1,14 @@
 {
   lib,
-  rel,
-  buildKodiBinaryAddon,
   fetchFromGitHub,
-  libretro,
+  buildKodiBinaryAddon,
   gw,
+  libretro,
+  rel,
 }:
 
 buildKodiBinaryAddon rec {
   pname = "libretro-gw";
-  namespace = "game.libretro.gw";
   version = "1.6.3.34";
 
   src = fetchFromGitHub {
@@ -19,20 +18,23 @@ buildKodiBinaryAddon rec {
     hash = "sha256-HYXR3cEjbdKgKy42nq36Ii3UyxRVuQVROQjyaxSp5Ro=";
   };
 
-  extraCMakeFlags = [
-    "-DGW_LIB=${gw}/lib/retroarch/cores/gw_libretro.so"
-  ];
-
-  extraBuildInputs = [ gw ];
   propagatedBuildInputs = [
     libretro
   ];
 
+  extraBuildInputs = [ gw ];
+
+  extraCMakeFlags = [
+    "-DGW_LIB=${gw}/lib/retroarch/cores/gw_libretro.so"
+  ];
+
+  namespace = "game.libretro.gw";
+
   meta = {
-    homepage = "https://github.com/kodi-game/game.libretro.gw";
     description = "Game and Watch for Kodi";
-    platforms = lib.platforms.all;
+    homepage = "https://github.com/kodi-game/game.libretro.gw";
     license = lib.licenses.gpl2Only;
+    platforms = lib.platforms.all;
     teams = [ lib.teams.kodi ];
   };
 }

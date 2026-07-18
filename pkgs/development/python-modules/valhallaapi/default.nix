@@ -1,8 +1,8 @@
 {
   lib,
+  fetchFromGitHub,
   buildPythonPackage,
   configparser,
-  fetchFromGitHub,
   nix-update-script,
   packaging,
   requests,
@@ -12,9 +12,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "valhallaapi";
   version = "0.5.2";
-  pyproject = true;
-
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "NextronSystems";
@@ -23,6 +20,9 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-B4nF1t+d6J7XXu51NjbvIUercBn/pQaXWkWpX99ok/M=";
   };
 
+  # Tests require network access
+  doCheck = false;
+  __structuredAttrs = true;
   build-system = [ setuptools ];
 
   dependencies = [
@@ -31,11 +31,8 @@ buildPythonPackage (finalAttrs: {
     requests
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "valhallaAPI" ];
-
-  # Tests require network access
-  doCheck = false;
-
   passthru.updateScript = nix-update-script { };
 
   meta = {

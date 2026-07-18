@@ -1,34 +1,34 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitLab,
-  gitUpdater,
-  nixosTests,
-  testers,
   cmake,
   cmake-extras,
   coreutils,
   dbus,
   doxygen,
   gettext,
+  gitUpdater,
   glib,
-  gmenuharness ? null, # not ported to Qt6 yet
   gtest,
   intltool,
-  libsecret,
-  libqofono ? null, # not ported to Qt6 yet
   libqtdbusmock,
   libqtdbustest,
+  libsecret,
   lomiri-api,
   lomiri-url-dispatcher,
   networkmanager,
+  nixosTests,
   ofono,
   pkg-config,
   python3,
   qtbase,
   qtdeclarative,
   qttools,
+  testers,
   validatePkgConfig,
+  gmenuharness ? null, # not ported to Qt6 yet
+  libqofono ? null, # not ported to Qt6 yet
 }:
 
 let
@@ -93,17 +93,6 @@ stdenv.mkDerivation (finalAttrs: {
     ofono
   ];
 
-  nativeCheckInputs = [ (python3.withPackages (ps: with ps; [ python-dbusmock ])) ];
-
-  checkInputs = [
-    gmenuharness
-    gtest
-    libqtdbusmock
-    libqtdbustest
-  ];
-
-  dontWrapQtApps = true;
-
   cmakeFlags = [
     (lib.cmakeBool "BUILD_DOC" (!withQt6))
     # Indicator is not ported to Qt6 yet
@@ -122,22 +111,33 @@ stdenv.mkDerivation (finalAttrs: {
     # Indicator is not ported to Qt6 yet, tests only cover indicator
     && !withQt6;
 
-  # Multiple tests spin up & speak to D-Bus, avoid cross-talk causing failures
-  enableParallelChecking = false;
+  nativeCheckInputs = [ (python3.withPackages (ps: with ps; [ python-dbusmock ])) ];
+
+  checkInputs = [
+    gmenuharness
+    gtest
+    libqtdbusmock
+    libqtdbustest
+  ];
 
   postInstall = lib.optionalString (!withQt6) ''
     substituteInPlace $out/etc/dbus-1/services/com.lomiri.connectivity1.service \
       --replace-fail '/bin/false' '${lib.getExe' coreutils "false"}'
   '';
 
+  dontWrapQtApps = true;
+  # Multiple tests spin up & speak to D-Bus, avoid cross-talk causing failures
+  enableParallelChecking = false;
+
   passthru = {
     tests = {
       pkg-config = testers.testMetaPkgConfig finalAttrs.finalPackage;
     }
     // lib.optionalAttrs (!withQt6) {
-      startup = nixosTests.ayatana-indicators;
       lomiri = nixosTests.lomiri.desktop-ayatana-indicator-network;
+      startup = nixosTests.ayatana-indicators;
     };
+
     updateScript = gitUpdater { };
   }
   // lib.optionalAttrs (!withQt6) {
@@ -149,12 +149,14 @@ stdenv.mkDerivation (finalAttrs: {
   meta = {
     description = "Ayatana indiator exporting the network settings menu through D-Bus";
     homepage = "https://gitlab.com/ubports/development/core/lomiri-indicator-network";
+
     changelog = "https://gitlab.com/ubports/development/core/lomiri-indicator-network/-/blob/${
       if (!isNull finalAttrs.src.tag) then finalAttrs.src.tag else finalAttrs.src.rev
     }/ChangeLog";
+
     license = lib.licenses.gpl3Only;
-    teams = [ lib.teams.lomiri ];
     platforms = lib.platforms.linux;
     pkgConfigModules = [ "lomiri-connectivity-qt${if withQt6 then "6" else "1"}" ];
+    teams = [ lib.teams.lomiri ];
   };
 })

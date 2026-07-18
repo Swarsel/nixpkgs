@@ -1,12 +1,12 @@
 {
   lib,
   stdenv,
+  fetchFromGitHub,
+  SDL2,
   autoconf,
   automake,
-  fetchFromGitHub,
   makeWrapper,
   pkg-config,
-  SDL2,
 }:
 
 stdenv.mkDerivation {
@@ -20,6 +20,12 @@ stdenv.mkDerivation {
     sha256 = "sha256-Z0u83K1GIXd0jUYo5ZyWUH2Zt7Hn8z+yr06DAtAEukw=";
   };
 
+  outputs = [
+    "out"
+    "dev"
+    "man"
+  ];
+
   nativeBuildInputs = [
     autoconf
     automake
@@ -28,12 +34,6 @@ stdenv.mkDerivation {
   ];
 
   buildInputs = [ SDL2 ];
-
-  outputs = [
-    "out"
-    "dev"
-    "man"
-  ];
 
   preConfigure = ''
     sh autogen.sh
@@ -49,10 +49,10 @@ stdenv.mkDerivation {
   enableParallelBuilding = true;
 
   meta = {
-    homepage = "https://icculus.org/smpeg/";
     description = "SDL2 MPEG Player Library";
+    homepage = "https://icculus.org/smpeg/";
     license = lib.licenses.lgpl2;
-    platforms = lib.platforms.unix;
     maintainers = [ ];
+    platforms = lib.platforms.unix;
   };
 }

@@ -2,9 +2,9 @@
   lib,
   stdenv,
   fetchurl,
-  pkg-config,
-  libraw1394,
   argp-standalone,
+  libraw1394,
+  pkg-config,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -16,8 +16,8 @@ stdenv.mkDerivation (finalAttrs: {
     sha256 = "0lsv46jdqvdx5hx92v0z2cz3yh6212pz9gk0k3513sbaa04zzcbw";
   };
 
-  buildInputs = lib.optional stdenv.hostPlatform.isMusl argp-standalone;
   nativeBuildInputs = [ pkg-config ];
+  buildInputs = lib.optional stdenv.hostPlatform.isMusl argp-standalone;
   propagatedBuildInputs = [ libraw1394 ];
 
   env = lib.optionalAttrs stdenv.hostPlatform.isMusl {

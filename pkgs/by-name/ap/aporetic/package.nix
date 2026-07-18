@@ -1,8 +1,8 @@
 {
   lib,
-  iosevka,
   fetchFromGitHub,
   buildNpmPackage,
+  iosevka,
   symlinkJoin,
 }:
 
@@ -29,13 +29,14 @@ let
     in
     (iosevka.override {
       inherit set privateBuildPlan;
+
       buildNpmPackage =
         args:
         superBuildNpmPackage (
           args
           // {
-            pname = "aporetic-${set}";
             inherit version;
+            pname = "aporetic-${set}";
 
             src = fetchFromGitHub {
               owner = "be5invis";
@@ -51,16 +52,17 @@ let
 in
 symlinkJoin {
   inherit pname version;
-
   paths = (map makeIosevkaFont sets);
 
   meta = {
     inherit (src.meta) homepage;
+
     description = ''
       Custom build of Iosevka with different style and metrics than the default, successor to my "Iosevka Comfy" fonts
     '';
+
     license = lib.licenses.ofl;
-    platforms = iosevka.meta.platforms;
     maintainers = [ lib.maintainers.DamienCassou ];
+    platforms = iosevka.meta.platforms;
   };
 }

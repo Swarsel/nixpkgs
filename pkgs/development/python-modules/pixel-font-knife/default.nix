@@ -1,22 +1,19 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  pythonOlder,
-  pytestCheckHook,
+  buildPythonPackage,
   nix-update-script,
-  uv-build,
   pypng,
-  unidata-blocks,
+  pytestCheckHook,
+  pythonOlder,
   pyyaml,
+  unidata-blocks,
+  uv-build,
 }:
 
 buildPythonPackage rec {
   pname = "pixel-font-knife";
   version = "0.0.21";
-  pyproject = true;
-
-  disabled = pythonOlder "3.12";
 
   src = fetchFromGitHub {
     owner = "TakWolf";
@@ -25,6 +22,7 @@ buildPythonPackage rec {
     hash = "sha256-f4jaLEPXl8oo1olWBeymMn5a8Tyl07h1TW4pZ5OItZU=";
   };
 
+  nativeCheckInputs = [ pytestCheckHook ];
   build-system = [ uv-build ];
 
   dependencies = [
@@ -33,18 +31,20 @@ buildPythonPackage rec {
     pyyaml
   ];
 
-  nativeCheckInputs = [ pytestCheckHook ];
-
+  disabled = pythonOlder "3.12";
+  pyproject = true;
   pythonImportsCheck = [ "pixel_font_knife" ];
 
   meta = {
-    homepage = "https://github.com/TakWolf/pixel-font-knife";
     description = "Set of pixel font utilities";
-    platforms = lib.platforms.all;
+    homepage = "https://github.com/TakWolf/pixel-font-knife";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       TakWolf
       h7x4
     ];
+
+    platforms = lib.platforms.all;
   };
 }

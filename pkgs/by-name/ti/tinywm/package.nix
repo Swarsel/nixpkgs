@@ -16,11 +16,8 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-q2DEMTxIp/nwTBTGEZMHEAqQs99iJwQgimHS0YQj+eg=";
   };
 
-  buildInputs = [ libx11 ];
-
   strictDeps = true;
-
-  dontConfigure = true;
+  buildInputs = [ libx11 ];
 
   buildPhase = ''
     runHook preBuild
@@ -41,9 +38,12 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  dontConfigure = true;
+
   meta = {
-    homepage = "http://incise.org/tinywm.html";
+    inherit (libx11.meta) platforms;
     description = "Tiny window manager for X11";
+
     longDescription = ''
       TinyWM is a tiny window manager that I created as an exercise in
       minimalism. It is also maybe helpful in learning some of the very basics
@@ -58,9 +58,10 @@ stdenv.mkDerivation (finalAttrs: {
         keybinding in there somewhere)
       - Focus windows with the mouse pointer (X does this on its own)
     '';
+
+    homepage = "http://incise.org/tinywm.html";
     license = lib.licenses.publicDomain;
-    mainProgram = "tinywm";
     maintainers = [ ];
-    inherit (libx11.meta) platforms;
+    mainProgram = "tinywm";
   };
 })

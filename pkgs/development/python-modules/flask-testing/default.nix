@@ -2,21 +2,20 @@
   lib,
   stdenv,
   blinker,
-  pytestCheckHook,
   buildPythonPackage,
   fetchPypi,
   flask,
+  pytestCheckHook,
 }:
 
 buildPythonPackage rec {
   pname = "flask-testing";
   version = "0.8.1";
-  format = "setuptools";
 
   src = fetchPypi {
-    pname = "Flask-Testing";
     inherit version;
     hash = "sha256-CnNNe2jmOpQQtBPNex+WRW+ahYvQmmIi1GVlDMeC6wE=";
+    pname = "Flask-Testing";
   };
 
   propagatedBuildInputs = [ flask ];
@@ -28,6 +27,11 @@ buildPythonPackage rec {
 
   __darwinAllowLocalNetworking = true;
 
+  disabledTestPaths = [
+    # twill is only used by Python 2 according setup.py
+    "tests/test_twill.py"
+  ];
+
   disabledTests = [
     # RuntimeError and NotImplementedError
     "test_assert_redirects"
@@ -37,11 +41,7 @@ buildPythonPackage rec {
     "test_assert_template_rendered_signal_sent"
   ];
 
-  disabledTestPaths = [
-    # twill is only used by Python 2 according setup.py
-    "tests/test_twill.py"
-  ];
-
+  format = "setuptools";
   pythonImportsCheck = [ "flask_testing" ];
 
   meta = {

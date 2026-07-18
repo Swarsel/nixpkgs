@@ -1,22 +1,21 @@
 {
   lib,
   stdenv,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
-  numpy,
-  scipy,
-  matplotlib,
-  plotly,
-  pandas,
+  buildPythonPackage,
   hypothesis,
+  matplotlib,
+  numpy,
+  pandas,
+  plotly,
   pytestCheckHook,
+  scipy,
+  setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "synergy";
   version = "1.0.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "djwooten";
@@ -24,6 +23,11 @@ buildPythonPackage rec {
     tag = "v${version}";
     hash = "sha256-df5CBEcRx55/rSMc6ygMVrHbbEcnU1ISJheO+WoBSCI=";
   };
+
+  nativeCheckInputs = [
+    hypothesis
+    pytestCheckHook
+  ];
 
   build-system = [ setuptools ];
 
@@ -33,11 +37,6 @@ buildPythonPackage rec {
     matplotlib
     plotly
     pandas
-  ];
-
-  nativeCheckInputs = [
-    hypothesis
-    pytestCheckHook
   ];
 
   disabledTests = [
@@ -53,12 +52,13 @@ buildPythonPackage rec {
     "test_fit_loewe_antagonism"
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "synergy" ];
 
   meta = {
     description = "Python library for calculating, analyzing, and visualizing drug combination synergy";
     homepage = "https://github.com/djwooten/synergy";
-    maintainers = [ ];
     license = lib.licenses.gpl3Plus;
+    maintainers = [ ];
   };
 }

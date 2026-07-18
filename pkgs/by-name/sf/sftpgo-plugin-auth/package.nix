@@ -1,7 +1,7 @@
 {
-  buildGoModule,
-  fetchFromGitHub,
   lib,
+  fetchFromGitHub,
+  buildGoModule,
   nix-update-script,
 }:
 buildGoModule (finalAttrs: {
@@ -16,7 +16,6 @@ buildGoModule (finalAttrs: {
   };
 
   vendorHash = "sha256-AZWwPwumSNwMUEixm+aarJZlUaT647haVM87qm6oE4U=";
-
   env.CGO_ENABLED = "0";
 
   ldflags = [
@@ -25,16 +24,15 @@ buildGoModule (finalAttrs: {
   ];
 
   subPackages = [ "." ];
-
   passthru.updateScript = nix-update-script { };
 
   meta = {
+    description = "LDAP/Active Directory authentication for SFTPGo";
     homepage = "https://github.com/sftpgo/sftpgo-plugin-auth";
     changelog = "https://github.com/sftpgo/sftpgo-plugin-auth/releases/tag/${finalAttrs.src.tag}";
-    description = "LDAP/Active Directory authentication for SFTPGo";
     license = lib.licenses.agpl3Only;
     maintainers = with lib.maintainers; [ connor-grady ];
-    mainProgram = "sftpgo-plugin-auth";
     platforms = lib.platforms.unix;
+    mainProgram = "sftpgo-plugin-auth";
   };
 })

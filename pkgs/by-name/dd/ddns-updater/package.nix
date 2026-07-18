@@ -1,10 +1,10 @@
 {
-  buildGoModule,
-  fetchFromGitHub,
   lib,
+  fetchFromGitHub,
+  buildGoModule,
   makeWrapper,
-  nixosTests,
   nix-update-script,
+  nixosTests,
 }:
 buildGoModule (finalAttrs: {
   pname = "ddns-updater";
@@ -17,7 +17,13 @@ buildGoModule (finalAttrs: {
     hash = "sha256-E/ToeY5O6GaMl0ItLbNNF5Uur0Gx87FdT0T4kekae88=";
   };
 
+  nativeBuildInputs = [ makeWrapper ];
   vendorHash = "sha256-osrRxiifxYgcxShso6HnxBCDQPMUiwfbt6fVipjkmdE=";
+
+  postInstall = ''
+    wrapProgram $out/bin/ddns-updater \
+      --set GODEBUG "netdns=go"
+  '';
 
   ldflags = [
     "-s"
@@ -26,17 +32,11 @@ buildGoModule (finalAttrs: {
 
   subPackages = [ "cmd/ddns-updater" ];
 
-  nativeBuildInputs = [ makeWrapper ];
-
-  postInstall = ''
-    wrapProgram $out/bin/ddns-updater \
-      --set GODEBUG "netdns=go"
-  '';
-
   passthru = {
     tests = {
       inherit (nixosTests) ddns-updater;
     };
+
     updateScript = nix-update-script { };
   };
 

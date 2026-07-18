@@ -2,8 +2,8 @@
   lib,
   stdenv,
   fetchurl,
-  makeWrapper,
   coreutils,
+  makeWrapper,
 }:
 
 stdenv.mkDerivation {
@@ -16,8 +16,6 @@ stdenv.mkDerivation {
   };
 
   nativeBuildInputs = [ makeWrapper ];
-
-  sourceRoot = ".";
 
   installPhase = ''
     runHook preInstall
@@ -32,11 +30,13 @@ stdenv.mkDerivation {
     runHook postInstall
   '';
 
+  sourceRoot = ".";
+
   meta = {
     description = "Redo implementation in Bourne Shell";
     homepage = "http://news.dieweltistgarnichtso.net/bin/redo-sh.html";
     license = lib.licenses.agpl3Plus;
-    platforms = lib.platforms.unix;
     maintainers = with lib.maintainers; [ sternenseemann ];
+    platforms = lib.platforms.unix;
   };
 }

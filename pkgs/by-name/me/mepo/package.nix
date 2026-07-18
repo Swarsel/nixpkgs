@@ -1,13 +1,13 @@
 {
   lib,
   stdenv,
-  fetchFromSourcehut,
   SDL2,
   SDL2_gfx,
   SDL2_image,
   SDL2_ttf,
   busybox,
   curl,
+  fetchFromSourcehut,
   geoclue2-with-demo-agent,
   gpsd,
   jq,
@@ -80,8 +80,8 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   meta = {
-    homepage = "https://mepo.lrdu.org";
     description = "Fast, simple, and hackable OSM map viewer";
+
     longDescription = ''
       Mepo is a fast, simple, and hackable OSM map viewer for desktop & mobile
       Linux devices (like the PinePhone, Librem 5, postmarketOS devices etc.)
@@ -94,12 +94,16 @@ stdenv.mkDerivation (finalAttrs: {
       such as adding their own search & routing scripts,
       add arbitrary buttons/keybindings to the UI, and more.
     '';
+
+    homepage = "https://mepo.lrdu.org";
     license = lib.licenses.gpl3Plus;
+
     maintainers = with lib.maintainers; [
       sikmir
       McSinyx
       laalsaas
     ];
+
     platforms = lib.platforms.linux;
   };
 })

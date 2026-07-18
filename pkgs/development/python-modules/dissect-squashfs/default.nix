@@ -1,9 +1,9 @@
 {
   lib,
+  fetchFromGitHub,
   buildPythonPackage,
   dissect-cstruct,
   dissect-util,
-  fetchFromGitHub,
   lz4,
   python-lzo,
   setuptools,
@@ -14,7 +14,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "dissect-squashfs";
   version = "1.12";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "fox-it";
@@ -41,6 +40,7 @@ buildPythonPackage (finalAttrs: {
     ];
   };
 
+  pyproject = true;
   pythonImportsCheck = [ "dissect.squashfs" ];
 
   meta = {

@@ -1,21 +1,17 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # build-system
-  ninja,
-  setuptools,
-  torch,
-
+  buildPythonPackage,
+  config,
   # env
   cudaPackages,
-
+  # build-system
+  ninja,
   # buildInputs
   pybind11,
   rdma-core,
-
-  config,
+  setuptools,
+  torch,
   cudaCapabilities ? torch.cudaCapabilities,
   cudaSupport ? config.cudaSupport,
 }:
@@ -41,7 +37,6 @@ in
 buildPythonPackage.override { inherit (torch) stdenv; } (finalAttrs: {
   pname = "deep-ep";
   version = "1.2.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "deepseek-ai";
@@ -49,28 +44,6 @@ buildPythonPackage.override { inherit (torch) stdenv; } (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-xURR3uBAwKjDTNEG9p/vRRhH4Ldiz/u6kD/a+DPn5/Q=";
   };
-
-  build-system = [
-    ninja
-    setuptools
-    torch
-  ];
-
-  env = lib.optionalAttrs cudaSupport (
-    {
-      TORCH_CUDA_ARCH_LIST = "${lib.concatStringsSep " " cudaCapabilities'}";
-
-      DISABLE_SM90_FEATURES = if disableSm90Features then "1" else "0";
-
-      CUDA_HOME = (lib.getBin cudaPackages.cuda_nvcc).outPath;
-    }
-
-    # nvshmem must be disabled (unsetting NVSHMEM_DIR) when supporting <9.0 capabilities
-    # https://github.com/deepseek-ai/DeepEP/blob/v1.2.1/setup.py#L65
-    // lib.optionalAttrs (!disableSm90Features) {
-      NVSHMEM_DIR = (lib.getInclude cudaPackages.libnvshmem).outPath;
-    }
-  );
 
   buildInputs = [
     pybind11
@@ -91,10 +64,31 @@ buildPythonPackage.override { inherit (torch) stdenv; } (finalAttrs: {
     ]
   );
 
-  pythonImportsCheck = [ "deep_ep" ];
+  env = lib.optionalAttrs cudaSupport (
+    {
+      CUDA_HOME = (lib.getBin cudaPackages.cuda_nvcc).outPath;
+      DISABLE_SM90_FEATURES = if disableSm90Features then "1" else "0";
+      TORCH_CUDA_ARCH_LIST = "${lib.concatStringsSep " " cudaCapabilities'}";
+    }
+
+    # nvshmem must be disabled (unsetting NVSHMEM_DIR) when supporting <9.0 capabilities
+    # https://github.com/deepseek-ai/DeepEP/blob/v1.2.1/setup.py#L65
+    // lib.optionalAttrs (!disableSm90Features) {
+      NVSHMEM_DIR = (lib.getInclude cudaPackages.libnvshmem).outPath;
+    }
+  );
 
   # Tests check internode communications which is not possible in the sandbox
   doCheck = false;
+
+  build-system = [
+    ninja
+    setuptools
+    torch
+  ];
+
+  pyproject = true;
+  pythonImportsCheck = [ "deep_ep" ];
 
   meta = {
     description = "Efficient expert-parallel communication library";

@@ -1,11 +1,11 @@
 {
   lib,
   fetchFromGitHub,
-  stdenvNoCC,
-  pandoc,
-  vim,
-  neovim-unwrapped,
   makeWrapper,
+  neovim-unwrapped,
+  pandoc,
+  stdenvNoCC,
+  vim,
 }:
 
 stdenvNoCC.mkDerivation (finalAttrs: {
@@ -43,8 +43,8 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     description = "Write documentation in pandoc markdown. Generate documentation in vimdoc";
     homepage = "https://github.com/kdheepak/panvimdoc";
     license = lib.licenses.mit;
-    platforms = lib.platforms.unix;
     maintainers = with lib.maintainers; [ mrcjkb ];
+    platforms = lib.platforms.unix;
     mainProgram = "panvimdoc";
   };
 })

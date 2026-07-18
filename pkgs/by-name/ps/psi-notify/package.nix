@@ -2,9 +2,9 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  systemd,
   libnotify,
   pkg-config,
+  systemd,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -18,11 +18,12 @@ stdenv.mkDerivation (finalAttrs: {
     sha256 = "sha256-GhGiSI5r0Ki6+MYNa5jCDyYZEW5R9LDNZ/S8K+6L0jo=";
   };
 
+  nativeBuildInputs = [ pkg-config ];
+
   buildInputs = [
     systemd
     libnotify
   ];
-  nativeBuildInputs = [ pkg-config ];
 
   installPhase = ''
     runHook preInstall
@@ -36,15 +37,17 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Alert on system resource saturation";
+
     longDescription = ''
       psi-notify can alert you when resources on your machine are becoming
       oversaturated, and allow you to take action before your system slows to a
       crawl.
     '';
-    license = lib.licenses.mit;
+
     homepage = "https://github.com/cdown/psi-notify";
-    platforms = lib.platforms.linux;
+    license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ eduarrrd ];
+    platforms = lib.platforms.linux;
     mainProgram = "psi-notify";
   };
 })

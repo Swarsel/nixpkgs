@@ -1,5 +1,6 @@
 {
   lib,
+  fetchFromGitHub,
   aiohttp,
   aioresponses,
   aiosqlite,
@@ -7,7 +8,6 @@
   buildPythonPackage,
   crccheck,
   cryptography,
-  fetchFromGitHub,
   filelock,
   freezegun,
   frozendict,
@@ -24,7 +24,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "zigpy";
   version = "2.0.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "zigpy";
@@ -42,6 +41,15 @@ buildPythonPackage (finalAttrs: {
     rm -r tools
   '';
 
+  nativeCheckInputs = [
+    aioresponses
+    filelock
+    freezegun
+    pytest-asyncio
+    pytest-timeout
+    pytestCheckHook
+  ];
+
   build-system = [ setuptools ];
 
   dependencies = [
@@ -57,13 +65,12 @@ buildPythonPackage (finalAttrs: {
     voluptuous
   ];
 
-  nativeCheckInputs = [
-    aioresponses
-    filelock
-    freezegun
-    pytest-asyncio
-    pytest-timeout
-    pytestCheckHook
+  disabledTestPaths = [
+    # Tests require network access
+    "tests/ota/test_ota_image.py"
+    "tests/ota/test_ota_providers.py"
+    # All tests fail to shutdown thread during teardown
+    "tests/ota/test_ota_matching.py"
   ];
 
   disabledTests = [
@@ -73,13 +80,7 @@ buildPythonPackage (finalAttrs: {
     "test_periodic_scan_priority"
   ];
 
-  disabledTestPaths = [
-    # Tests require network access
-    "tests/ota/test_ota_image.py"
-    "tests/ota/test_ota_providers.py"
-    # All tests fail to shutdown thread during teardown
-    "tests/ota/test_ota_matching.py"
-  ];
+  pyproject = true;
 
   pythonImportsCheck = [
     "zigpy.application"

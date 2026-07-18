@@ -1,123 +1,75 @@
 {
   lib,
   fetchFromGitHub,
-  rustPlatform,
+  buildNpmPackage,
   makeWrapper,
-  pkg-config,
-  perl,
+  nodejs_22,
   openssl,
-  rust-jemalloc-sys,
+  perl,
+  pkg-config,
   python3,
   python3Packages,
-  wrapQtAppsHook,
   qtbase,
   qtsvg,
-  xdg-utils,
   replaceVars,
-  nodejs_22,
-  buildNpmPackage,
+  rust-jemalloc-sys,
+  rustPlatform,
+  wrapQtAppsHook,
+  xdg-utils,
 }:
 
 let
   version = "0.13.2";
   sources = fetchFromGitHub {
+    fetchSubmodules = true;
     owner = "ActivityWatch";
     repo = "activitywatch";
     rev = "v${version}";
     sha256 = "sha256-Z3WAg3b1zN0nS00u0zIose55JXRzQ7X7qy39XMY7Snk=";
-    fetchSubmodules = true;
   };
 in
 rec {
-  aw-watcher-afk = python3Packages.buildPythonApplication {
-    pname = "aw-watcher-afk";
+  aw-notify = python3Packages.buildPythonApplication {
     inherit version;
+    pname = "aw-notify";
+    src = "${sources}/aw-notify";
 
-    src = "${sources}/aw-watcher-afk";
+    patches = [
+      # Backport desktop-notifier 6 / rubicon-objc 0.5 support.
+      # https://github.com/ActivityWatch/aw-notify/pull/10
+      ./aw-notify-desktop-notifier-6.patch
+    ];
 
-    pyproject = true;
     build-system = [ python3Packages.poetry-core ];
 
     dependencies = with python3Packages; [
       aw-client
-      python-xlib
-      pynput
+      desktop-notifier
     ];
-
-    pythonRelaxDeps = [
-      "python-xlib"
-    ];
-
-    pythonImportsCheck = [ "aw_watcher_afk" ];
-
-    meta = {
-      description = "Watches keyboard and mouse activity to determine if you are AFK or not (for use with ActivityWatch)";
-      homepage = "https://github.com/ActivityWatch/aw-watcher-afk";
-      maintainers = with lib.maintainers; [ huantian ];
-      mainProgram = "aw-watcher-afk";
-      license = lib.licenses.mpl20;
-    };
-  };
-
-  aw-watcher-window = python3Packages.buildPythonApplication {
-    pname = "aw-watcher-window";
-    inherit version;
-
-    src = "${sources}/aw-watcher-window";
 
     pyproject = true;
-    build-system = [ python3Packages.poetry-core ];
-
-    dependencies = with python3Packages; [
-      aw-client
-      python-xlib
-    ];
+    pythonImportsCheck = [ "aw_notify" ];
 
     pythonRelaxDeps = [
-      "python-xlib"
+      "desktop-notifier"
     ];
 
-    pythonImportsCheck = [ "aw_watcher_window" ];
-
     meta = {
-      description = "Cross-platform window watcher (for use with ActivityWatch)";
-      homepage = "https://github.com/ActivityWatch/aw-watcher-window";
-      maintainers = with lib.maintainers; [ huantian ];
-      mainProgram = "aw-watcher-window";
+      description = "Desktop notification service for ActivityWatch";
+      homepage = "https://github.com/ActivityWatch/aw-notify";
       license = lib.licenses.mpl20;
-      badPlatforms = lib.platforms.darwin; # requires pyobjc-framework
+      maintainers = with lib.maintainers; [ huantian ];
+      mainProgram = "aw-notify";
     };
   };
 
   aw-qt = python3Packages.buildPythonApplication {
-    pname = "aw-qt";
     inherit version;
-
+    pname = "aw-qt";
     src = "${sources}/aw-qt";
-
-    pyproject = true;
-    build-system = [
-      python3Packages.poetry-core
-      python3Packages.setuptools
-    ];
-
-    dependencies = with python3Packages; [
-      aw-core
-      qtbase
-      qtsvg # Rendering icons in the trayicon menu
-      pyqt6
-      click
-    ];
 
     nativeBuildInputs = [
       wrapQtAppsHook
-    ];
-
-    # Prevent double wrapping
-    dontWrapQtApps = true;
-
-    makeWrapperArgs = [
-      "--suffix PATH : ${lib.makeBinPath [ xdg-utils ]}"
     ];
 
     postInstall = ''
@@ -139,60 +91,43 @@ rec {
       )
     '';
 
+    build-system = [
+      python3Packages.poetry-core
+      python3Packages.setuptools
+    ];
+
+    dependencies = with python3Packages; [
+      aw-core
+      qtbase
+      qtsvg # Rendering icons in the trayicon menu
+      pyqt6
+      click
+    ];
+
+    # Prevent double wrapping
+    dontWrapQtApps = true;
+
+    makeWrapperArgs = [
+      "--suffix PATH : ${lib.makeBinPath [ xdg-utils ]}"
+    ];
+
+    pyproject = true;
     pythonImportsCheck = [ "aw_qt" ];
 
     meta = {
       description = "Tray icon that manages ActivityWatch processes, built with Qt";
       homepage = "https://github.com/ActivityWatch/aw-qt";
-      maintainers = with lib.maintainers; [ huantian ];
-      mainProgram = "aw-qt";
       license = lib.licenses.mpl20;
+      maintainers = with lib.maintainers; [ huantian ];
       badPlatforms = lib.platforms.darwin; # requires pyobjc-framework
-    };
-  };
-
-  aw-notify = python3Packages.buildPythonApplication {
-    pname = "aw-notify";
-    inherit version;
-
-    src = "${sources}/aw-notify";
-
-    pyproject = true;
-    build-system = [ python3Packages.poetry-core ];
-
-    patches = [
-      # Backport desktop-notifier 6 / rubicon-objc 0.5 support.
-      # https://github.com/ActivityWatch/aw-notify/pull/10
-      ./aw-notify-desktop-notifier-6.patch
-    ];
-
-    dependencies = with python3Packages; [
-      aw-client
-      desktop-notifier
-    ];
-
-    pythonRelaxDeps = [
-      "desktop-notifier"
-    ];
-
-    pythonImportsCheck = [ "aw_notify" ];
-
-    meta = {
-      description = "Desktop notification service for ActivityWatch";
-      homepage = "https://github.com/ActivityWatch/aw-notify";
-      maintainers = with lib.maintainers; [ huantian ];
-      mainProgram = "aw-notify";
-      license = lib.licenses.mpl20;
+      mainProgram = "aw-qt";
     };
   };
 
   aw-server-rust = rustPlatform.buildRustPackage {
-    pname = "aw-server-rust";
     inherit version;
-
+    pname = "aw-server-rust";
     src = "${sources}/aw-server-rust";
-
-    cargoHash = "sha256-E89E/LWBPHtb6vX94swodmE+UrWMrzQnm8AO5GeyuoA=";
 
     patches = [
       # Override version string with hardcoded value as it may be outdated upstream.
@@ -212,6 +147,7 @@ rec {
       rust-jemalloc-sys
     ];
 
+    cargoHash = "sha256-E89E/LWBPHtb6vX94swodmE+UrWMrzQnm8AO5GeyuoA=";
     env.AW_WEBUI_DIR = aw-webui;
 
     preCheck = ''
@@ -222,24 +158,73 @@ rec {
     meta = {
       description = "High-performance implementation of the ActivityWatch server, written in Rust";
       homepage = "https://github.com/ActivityWatch/aw-server-rust";
-      maintainers = with lib.maintainers; [ huantian ];
-      mainProgram = "aw-server";
-      platforms = lib.platforms.linux;
       license = lib.licenses.mpl20;
+      maintainers = with lib.maintainers; [ huantian ];
+      platforms = lib.platforms.linux;
+      mainProgram = "aw-server";
+    };
+  };
+
+  aw-watcher-afk = python3Packages.buildPythonApplication {
+    inherit version;
+    pname = "aw-watcher-afk";
+    src = "${sources}/aw-watcher-afk";
+    build-system = [ python3Packages.poetry-core ];
+
+    dependencies = with python3Packages; [
+      aw-client
+      python-xlib
+      pynput
+    ];
+
+    pyproject = true;
+    pythonImportsCheck = [ "aw_watcher_afk" ];
+
+    pythonRelaxDeps = [
+      "python-xlib"
+    ];
+
+    meta = {
+      description = "Watches keyboard and mouse activity to determine if you are AFK or not (for use with ActivityWatch)";
+      homepage = "https://github.com/ActivityWatch/aw-watcher-afk";
+      license = lib.licenses.mpl20;
+      maintainers = with lib.maintainers; [ huantian ];
+      mainProgram = "aw-watcher-afk";
+    };
+  };
+
+  aw-watcher-window = python3Packages.buildPythonApplication {
+    inherit version;
+    pname = "aw-watcher-window";
+    src = "${sources}/aw-watcher-window";
+    build-system = [ python3Packages.poetry-core ];
+
+    dependencies = with python3Packages; [
+      aw-client
+      python-xlib
+    ];
+
+    pyproject = true;
+    pythonImportsCheck = [ "aw_watcher_window" ];
+
+    pythonRelaxDeps = [
+      "python-xlib"
+    ];
+
+    meta = {
+      description = "Cross-platform window watcher (for use with ActivityWatch)";
+      homepage = "https://github.com/ActivityWatch/aw-watcher-window";
+      license = lib.licenses.mpl20;
+      maintainers = with lib.maintainers; [ huantian ];
+      badPlatforms = lib.platforms.darwin; # requires pyobjc-framework
+      mainProgram = "aw-watcher-window";
     };
   };
 
   aw-webui = buildNpmPackage {
-    pname = "aw-webui";
     inherit version;
-
+    pname = "aw-webui";
     src = "${sources}/aw-server-rust/aw-webui";
-
-    nodejs = nodejs_22;
-    npmDepsHash = "sha256-fPk7UpKuO3nEN1w+cf9DIZIG1+XRUk6PJfVmtpC30XE=";
-
-    makeCacheWritable = true;
-    npmFlags = [ "--legacy-peer-deps" ];
 
     patches = [
       # Hardcode version to avoid the need to have the Git repo available at build time.
@@ -248,6 +233,15 @@ rec {
       })
     ];
 
+    npmDepsHash = "sha256-fPk7UpKuO3nEN1w+cf9DIZIG1+XRUk6PJfVmtpC30XE=";
+    doCheck = true;
+
+    checkPhase = ''
+      runHook preCheck
+      npm test
+      runHook postCheck
+    '';
+
     installPhase = ''
       runHook preInstall
       mv dist $out
@@ -255,18 +249,15 @@ rec {
       runHook postInstall
     '';
 
-    doCheck = true;
-    checkPhase = ''
-      runHook preCheck
-      npm test
-      runHook postCheck
-    '';
+    makeCacheWritable = true;
+    nodejs = nodejs_22;
+    npmFlags = [ "--legacy-peer-deps" ];
 
     meta = {
       description = "Web-based UI for ActivityWatch, built with Vue.js";
       homepage = "https://github.com/ActivityWatch/aw-webui/";
-      maintainers = with lib.maintainers; [ huantian ];
       license = lib.licenses.mpl20;
+      maintainers = with lib.maintainers; [ huantian ];
     };
   };
 }

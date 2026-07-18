@@ -1,10 +1,10 @@
 {
   lib,
   stdenv,
-  buildNpmPackage,
   fetchFromGitHub,
-  writers,
+  buildNpmPackage,
   makeWrapper,
+  writers,
 }:
 
 buildNpmPackage rec {
@@ -17,11 +17,6 @@ buildNpmPackage rec {
     rev = "v${version}";
     hash = "sha256-rX8WTaQQbVWlabMEvv5SCalxy0XmB5jFpCk1uQCbunM=";
   };
-
-  npmDepsHash = "sha256-R95ljHvKPGyJh3tlWI1feo9HVE7abPLVLzScqReJBPw=";
-
-  env.ELECTRON_SKIP_BINARY_DOWNLOAD = "1";
-  env.CYPRESS_INSTALL_BINARY = "0";
 
   patches = [
     # The release's package-lock.json file is not universal. It misses
@@ -43,9 +38,9 @@ buildNpmPackage rec {
   postPatch =
     let
       versionJson = {
+        date = version;
         hash = version;
         timestamp = 1;
-        date = version;
         zapVersion = version;
       };
     in
@@ -55,6 +50,9 @@ buildNpmPackage rec {
     '';
 
   nativeBuildInputs = [ makeWrapper ];
+  npmDepsHash = "sha256-R95ljHvKPGyJh3tlWI1feo9HVE7abPLVLzScqReJBPw=";
+  env.CYPRESS_INSTALL_BINARY = "0";
+  env.ELECTRON_SKIP_BINARY_DOWNLOAD = "1";
 
   postInstall = ''
     # this file is also used at runtime
@@ -65,8 +63,8 @@ buildNpmPackage rec {
 
   meta = {
     description = "Generic generation engine and user interface for applications and libraries based on Zigbee Cluster Library (ZCL)";
-    changelog = "https://github.com/project-chip/zap/releases/tag/v${version}";
     homepage = "https://github.com/project-chip/zap";
+    changelog = "https://github.com/project-chip/zap/releases/tag/v${version}";
     license = lib.licenses.asl20;
     maintainers = with lib.maintainers; [ symphorien ];
     mainProgram = "zap-cli";

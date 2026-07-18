@@ -3,10 +3,10 @@
   stdenv,
   fetchFromGitHub,
   jasper,
-  libpng,
   libjpeg,
-  zlib,
+  libpng,
   llvmPackages,
+  zlib,
 }:
 
 stdenv.mkDerivation {
@@ -36,8 +36,8 @@ stdenv.mkDerivation {
   '';
 
   meta = {
-    homepage = "https://github.com/log69/aaphoto";
     description = "Free and open source automatic photo adjusting software";
+
     longDescription = ''
       Auto Adjust Photo tries to give a solution for the automatic color
       correction of photos. This means setting the contrast, color balance,
@@ -48,6 +48,8 @@ stdenv.mkDerivation {
       don't intend to spend a lot of time with manually correcting the images
       one-by-one.
     '';
+
+    homepage = "https://github.com/log69/aaphoto";
     license = lib.licenses.gpl3Plus;
     maintainers = [ ];
     platforms = lib.platforms.unix;

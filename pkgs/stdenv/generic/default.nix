@@ -35,40 +35,6 @@ let
   stdenv-overridable = lib.makeOverridable (
 
     argsStdenv@{
-      name ? "stdenv",
-      pname ? name,
-      version ? "26.05pre-git",
-      preHook ? "",
-      initialPath,
-
-      # If we don't have a C compiler, we might either have `cc = null` or `cc =
-      # throw ...`, but if we do have a C compiler we should definitely have `cc !=
-      # null`.
-      #
-      # TODO(@Ericson2314): Add assert without creating infinite recursion
-      hasCC ? cc != null,
-      cc,
-
-      shell,
-      allowedRequisites ? null,
-      extraAttrs ? { },
-      overrides ? (self: super: { }),
-      config ? args.defaultConfig,
-      disallowedRequisites ? [ ],
-
-      # The `fetchurl' to use for downloading curl and its dependencies
-      # (see all-packages.nix).
-      fetchurlBoot,
-
-      setupScript ? ./setup.sh,
-
-      extraNativeBuildInputs ? [ ],
-      extraBuildInputs ? [ ],
-      __stdenvImpureHostDeps ? [ ],
-      __extraImpureHostDeps ? [ ],
-      stdenvSandboxProfile ? "",
-      extraSandboxProfile ? "",
-
       ## Platform parameters
       ##
       ## The "build" "host" "target" terminology below comes from GNU Autotools. See
@@ -81,18 +47,35 @@ let
       ## target platform of the previous stage becomes the host platform of the
       ## current one.
       ##
-
       # The platform on which packages are built. Consists of `system`, a
       # string (e.g.,`i686-linux') identifying the most import attributes of the
       # build platform, and `platform` a set of other details.
       buildPlatform,
-
+      cc,
+      # The `fetchurl' to use for downloading curl and its dependencies
+      # (see all-packages.nix).
+      fetchurlBoot,
       # The platform on which packages run.
       hostPlatform,
-
+      initialPath,
+      shell,
       # The platform which build tools (especially compilers) build for in this stage,
       targetPlatform,
-
+      __extraImpureHostDeps ? [ ],
+      __stdenvImpureHostDeps ? [ ],
+      allowedRequisites ? null,
+      config ? args.defaultConfig,
+      disallowedRequisites ? [ ],
+      extraAttrs ? { },
+      extraBuildInputs ? [ ],
+      extraNativeBuildInputs ? [ ],
+      extraSandboxProfile ? "",
+      # If we don't have a C compiler, we might either have `cc = null` or `cc =
+      # throw ...`, but if we do have a C compiler we should definitely have `cc !=
+      # null`.
+      #
+      # TODO(@Ericson2314): Add assert without creating infinite recursion
+      hasCC ? cc != null,
       # The implementation of `mkDerivation`, parameterized with the final stdenv so we can tie the knot.
       # This is convenient to have as a parameter so the stdenv "adapters" work better
       mkDerivationFromStdenv ?
@@ -101,6 +84,13 @@ let
             if argsStdenv ? config then makeDerivationFile config else makeDerivationFileWithConfig;
         in
         stdenv: (makeDerivationWithConfig' stdenv).mkDerivation,
+      name ? "stdenv",
+      overrides ? (self: super: { }),
+      pname ? name,
+      preHook ? "",
+      setupScript ? ./setup.sh,
+      stdenvSandboxProfile ? "",
+      version ? "26.05pre-git",
     }:
 
     let
@@ -114,26 +104,34 @@ let
     in
     # The stdenv that we are producing.
     derivation {
-      ${if allowedRequisites != null then "allowedRequisites" else null} =
-        allowedRequisites ++ defaultNativeBuildInputs ++ defaultBuildInputs;
-      ${if config.contentAddressedByDefault then "__contentAddressed" else null} = true;
-      ${if config.contentAddressedByDefault then "outputHashAlgo" else null} = "sha256";
-      ${if config.contentAddressedByDefault then "outputHashMode" else null} = "recursive";
       inherit name pname version;
       inherit disallowedRequisites;
-
       # Nix itself uses the `system` field of a derivation to decide where to
       # build it. This is a bit confusing for cross compilation.
       inherit (buildPlatform) system;
 
-      builder = shell;
+      inherit
+        initialPath
+        shell
+        defaultNativeBuildInputs
+        defaultBuildInputs
+        ;
+
+      ${if allowedRequisites != null then "allowedRequisites" else null} =
+        allowedRequisites ++ defaultNativeBuildInputs ++ defaultBuildInputs;
+
+      ${if buildPlatform.isDarwin then "__impureHostDeps" else null} = __stdenvImpureHostDeps;
+      ${if buildPlatform.isDarwin then "__sandboxProfile" else null} = stdenvSandboxProfile;
+      ${if config.contentAddressedByDefault then "__contentAddressed" else null} = true;
+      ${if config.contentAddressedByDefault then "outputHashAlgo" else null} = "sha256";
+      ${if config.contentAddressedByDefault then "outputHashMode" else null} = "recursive";
 
       args = [
         "-e"
         ./builder.sh
       ];
 
-      setup = setupScript;
+      builder = shell;
 
       # We pretty much never need rpaths on Darwin, since all library path references
       # are absolute unless we go out of our way to make them relative (like with CF)
@@ -162,35 +160,10 @@ let
       # ''
       ;
 
-      inherit
-        initialPath
-        shell
-        defaultNativeBuildInputs
-        defaultBuildInputs
-        ;
-      ${if buildPlatform.isDarwin then "__sandboxProfile" else null} = stdenvSandboxProfile;
-      ${if buildPlatform.isDarwin then "__impureHostDeps" else null} = __stdenvImpureHostDeps;
+      setup = setupScript;
     }
 
     // {
-
-      meta =
-        let
-          pos = builtins.unsafeGetAttrPos "name" argsStdenv;
-        in
-        {
-          description = "The default build environment for Unix packages in Nixpkgs";
-          platforms = lib.platforms.all;
-          position = "${pos.file}:${toString pos.line}";
-          teams = [ lib.teams.stdenv ];
-          license = lib.licenses.mit;
-          identifiers.cpeParts = {
-            part = "a";
-            vendor = "nixos";
-            product = argsStdenv.name;
-            inherit version;
-          };
-        };
 
       inherit buildPlatform hostPlatform targetPlatform;
 
@@ -226,15 +199,10 @@ let
       # build platform within the derivation above so that Nix directs the build
       # to correct type of machine.
       inherit (hostPlatform) system;
-
-      mkDerivation = mkDerivationFromStdenv stdenv;
-
       inherit fetchurlBoot;
-
       inherit overrides;
-
       inherit cc hasCC;
-
+      mkDerivation = mkDerivationFromStdenv stdenv;
       # Convenience for doing some very basic shell syntax checking by parsing a script
       # without running any commands. Because this will also skip `shopt -s extglob`
       # commands and extglob affects the Bash parser, we enable extglob always.
@@ -244,9 +212,31 @@ let
         inputDerivationRequiredSystemFeatures = import ../tests/inputDerivationRequiredSystemFeatures.nix {
           inherit lib stdenv;
         };
+
         succeedOnFailure = import ../tests/succeedOnFailure.nix { inherit stdenv; };
       };
+
       passthru.tests = lib.warn "Use `stdenv.tests` instead. `passthru` is a `mkDerivation` detail." stdenv.tests;
+
+      meta =
+        let
+          pos = builtins.unsafeGetAttrPos "name" argsStdenv;
+        in
+        {
+          description = "The default build environment for Unix packages in Nixpkgs";
+          license = lib.licenses.mit;
+          platforms = lib.platforms.all;
+
+          identifiers.cpeParts = {
+            inherit version;
+            part = "a";
+            product = argsStdenv.name;
+            vendor = "nixos";
+          };
+
+          position = "${pos.file}:${toString pos.line}";
+          teams = [ lib.teams.stdenv ];
+        };
     }
 
     # Propagate any extra attributes.  For instance, we use this to

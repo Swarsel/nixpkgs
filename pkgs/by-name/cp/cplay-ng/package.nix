@@ -1,16 +1,15 @@
 {
   lib,
-  python3Packages,
   fetchFromGitHub,
   makeWrapper,
   mpv,
   pulseaudio,
+  python3Packages,
 }:
 
 python3Packages.buildPythonApplication (finalAttrs: {
   pname = "cplay-ng";
   version = "5.5.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "xi";
@@ -20,8 +19,6 @@ python3Packages.buildPythonApplication (finalAttrs: {
   };
 
   nativeBuildInputs = [ makeWrapper ];
-
-  build-system = [ python3Packages.setuptools ];
 
   postInstall = ''
     wrapProgram $out/bin/cplay-ng \
@@ -33,10 +30,12 @@ python3Packages.buildPythonApplication (finalAttrs: {
       }
   '';
 
+  build-system = [ python3Packages.setuptools ];
+  pyproject = true;
+
   meta = {
-    homepage = "https://github.com/xi/cplay-ng";
     description = "Simple curses audio player";
-    mainProgram = "cplay-ng";
+
     longDescription = ''
       cplay is a minimalist music player with a textual user interface written
       in Python. It aims to provide a power-user-friendly interface with simple
@@ -50,7 +49,10 @@ python3Packages.buildPythonApplication (finalAttrs: {
       maintained. This is a rewrite that aims to stay true to the original
       design while evolving with a shifting environment.
     '';
+
+    homepage = "https://github.com/xi/cplay-ng";
     license = lib.licenses.gpl2Plus;
     maintainers = with lib.maintainers; [ fgaz ];
+    mainProgram = "cplay-ng";
   };
 })

@@ -1,7 +1,7 @@
 {
   lib,
-  stdenvNoCC,
   fetchzip,
+  stdenvNoCC,
 }:
 
 stdenvNoCC.mkDerivation (finalAttrs: {
@@ -12,6 +12,7 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     url = "https://coconut-flavour.com/downloads/coconutBattery_${
       lib.replaceStrings [ "." "," ] [ "" "_" ] finalAttrs.version
     }.zip";
+
     hash = "sha256-pzfg+RAlCbEaBHiU/ZQcBf0Tg0BCfs0UHh62dFQVbz0=";
   };
 
@@ -26,14 +27,17 @@ stdenvNoCC.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Standard for battery reading since 2005";
+
     longDescription = ''
       With coconutBattery you are always aware of your current battery health.
       It shows you live information about the battery quality in your Mac, iPhone and iPad.
     '';
+
     homepage = "https://www.coconut-flavour.com/coconutbattery";
     license = with lib.licenses; [ unfree ];
     sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
     maintainers = with lib.maintainers; [ stepbrobd ];
+
     platforms = [
       "aarch64-darwin"
     ];

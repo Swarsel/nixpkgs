@@ -1,6 +1,5 @@
 {
   lib,
-  ocaml,
   buildDunePackage,
   crowbar,
   eio,
@@ -8,28 +7,14 @@
   logs,
   mdx,
   mirage-crypto-rng,
+  ocaml,
   ptime,
   tls,
 }:
 
 buildDunePackage {
-  pname = "tls-eio";
-
   inherit (tls) src meta version;
-
-  minimalOCamlVersion = "5.0";
-
-  __darwinAllowLocalNetworking = true;
-
-  doCheck = lib.versionAtLeast ocaml.version "5.1";
-  nativeCheckInputs = [
-    mdx.bin
-  ];
-  checkInputs = [
-    crowbar
-    eio_main
-    (mdx.override { inherit logs; })
-  ];
+  pname = "tls-eio";
 
   propagatedBuildInputs = [
     ptime
@@ -37,4 +22,19 @@ buildDunePackage {
     mirage-crypto-rng
     tls
   ];
+
+  doCheck = lib.versionAtLeast ocaml.version "5.1";
+
+  nativeCheckInputs = [
+    mdx.bin
+  ];
+
+  checkInputs = [
+    crowbar
+    eio_main
+    (mdx.override { inherit logs; })
+  ];
+
+  __darwinAllowLocalNetworking = true;
+  minimalOCamlVersion = "5.0";
 }

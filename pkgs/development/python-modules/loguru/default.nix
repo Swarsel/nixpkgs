@@ -1,9 +1,9 @@
 {
   lib,
   stdenv,
+  fetchFromGitHub,
   buildPythonPackage,
   colorama,
-  fetchFromGitHub,
   fetchpatch,
   flit-core,
   freezegun,
@@ -15,7 +15,6 @@
 buildPythonPackage rec {
   pname = "loguru";
   version = "0.7.3";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "Delgan";
@@ -26,13 +25,11 @@ buildPythonPackage rec {
 
   patches = [
     (fetchpatch {
+      hash = "sha256-yXRSwI7Yjm1myL20EoU/jVuEdadmbMlCpP19YKn1MAU=";
       # python 3.14 compat
       url = "https://github.com/Delgan/loguru/commit/84023e2bd8339de95250470f422f096edcb8f7b7.patch";
-      hash = "sha256-yXRSwI7Yjm1myL20EoU/jVuEdadmbMlCpP19YKn1MAU=";
     })
   ];
-
-  build-system = [ flit-core ];
 
   nativeCheckInputs = [
     pytestCheckHook
@@ -42,6 +39,7 @@ buildPythonPackage rec {
     pytest-mypy-plugins
   ];
 
+  build-system = [ flit-core ];
   disabledTestPaths = lib.optionals stdenv.hostPlatform.isDarwin [ "tests/test_multiprocessing.py" ];
 
   disabledTests = [
@@ -62,6 +60,7 @@ buildPythonPackage rec {
     "test_await_complete_inheritance"
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "loguru" ];
 
   meta = {
@@ -69,6 +68,7 @@ buildPythonPackage rec {
     homepage = "https://github.com/Delgan/loguru";
     changelog = "https://github.com/delgan/loguru/releases/tag/${version}";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       jakewaksbaum
       rmcgibbo

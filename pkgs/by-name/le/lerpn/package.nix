@@ -1,23 +1,20 @@
 {
-  python3,
   lib,
   fetchFromGitea,
+  python3,
 }:
 
 python3.pkgs.buildPythonApplication {
   pname = "lerpn";
   version = "unstable-2023-06-09";
-  pyproject = true;
 
   src = fetchFromGitea {
-    domain = "gitea.alexisvl.rocks";
     owner = "alexisvl";
     repo = "lerpn";
     rev = "b65e56cfbbb38f8200e7b0c18b3a585ae768c6e2";
     hash = "sha256-4xqBHcOWHAvQtXS9CJWTGTdE4SGHxjghZY+/KPUgX70=";
+    domain = "gitea.alexisvl.rocks";
   };
-
-  build-system = with python3.pkgs; [ setuptools ];
 
   checkPhase = ''
     runHook preCheck
@@ -28,13 +25,15 @@ python3.pkgs.buildPythonApplication {
     runHook postCheck
   '';
 
+  build-system = with python3.pkgs; [ setuptools ];
+  pyproject = true;
   pythonImportsCheck = [ "LerpnApp" ];
 
   meta = {
-    homepage = "https://gitea.alexisvl.rocks/alexisvl/lerpn";
     description = "Curses RPN calculator written in straight Python";
-    maintainers = [ ];
+    homepage = "https://gitea.alexisvl.rocks/alexisvl/lerpn";
     license = lib.licenses.gpl3Plus;
+    maintainers = [ ];
     mainProgram = "lerpn";
   };
 }

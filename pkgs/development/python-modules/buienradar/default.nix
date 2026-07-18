@@ -1,22 +1,21 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   docopt,
+  pytestCheckHook,
   pytz,
   requests,
+  requests-mock,
   setuptools,
+  syrupy,
   vincenty,
   xmltodict,
-  pytestCheckHook,
-  requests-mock,
-  syrupy,
 }:
 
 buildPythonPackage rec {
   pname = "buienradar";
   version = "1.0.9";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "mjj4791";
@@ -30,6 +29,12 @@ buildPythonPackage rec {
     ./setuptools-82-compat.patch
   ];
 
+  nativeCheckInputs = [
+    pytestCheckHook
+    requests-mock
+    syrupy
+  ];
+
   build-system = [ setuptools ];
 
   dependencies = [
@@ -39,12 +44,6 @@ buildPythonPackage rec {
     setuptools
     vincenty
     xmltodict
-  ];
-
-  nativeCheckInputs = [
-    pytestCheckHook
-    requests-mock
-    syrupy
   ];
 
   disabledTests = [
@@ -63,6 +62,8 @@ buildPythonPackage rec {
     "test_readdata3"
   ];
 
+  pyproject = true;
+
   pytestFlags = [
     "--snapshot-warn-unused"
   ];
@@ -73,11 +74,11 @@ buildPythonPackage rec {
   ];
 
   meta = {
-    changelog = "https://github.com/mjj4791/python-buienradar/blob/${src.tag}/CHANGLOG.rst";
     description = "Library and CLI tools for interacting with buienradar";
-    mainProgram = "buienradar";
     homepage = "https://github.com/mjj4791/python-buienradar";
+    changelog = "https://github.com/mjj4791/python-buienradar/blob/${src.tag}/CHANGLOG.rst";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ dotlambda ];
+    mainProgram = "buienradar";
   };
 }

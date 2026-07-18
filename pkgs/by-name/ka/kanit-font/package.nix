@@ -29,8 +29,8 @@ stdenv.mkDerivation {
   '';
 
   meta = {
-    homepage = "https://cadsondemak.github.io/kanit/";
     description = "Loopless Thai and sans serif Latin typeface for contemporary and futuristic uses";
+
     longDescription = ''
       Kanit means mathematics in Thai, and the Kanit typeface family is a formal
       Loopless Thai and Sans Latin design. It is a combination of concepts,
@@ -40,8 +40,10 @@ stdenv.mkDerivation {
       which allows the design to enjoy decreased spacing between letters while
       preserving readability and legibility at smaller point sizes.
     '';
+
+    homepage = "https://cadsondemak.github.io/kanit/";
     license = lib.licenses.ofl;
-    platforms = lib.platforms.all;
     maintainers = [ lib.maintainers.toastal ];
+    platforms = lib.platforms.all;
   };
 }

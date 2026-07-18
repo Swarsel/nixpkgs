@@ -1,16 +1,21 @@
 {
   lib,
   stdenv,
-  fetchpatch,
   fetchurl,
   boost,
-  updateAutotoolsGnuConfigScriptsHook,
+  fetchpatch,
   llvmPackages,
+  updateAutotoolsGnuConfigScriptsHook,
 }:
 
 stdenv.mkDerivation rec {
   pname = "source-highlight";
   version = "3.1.9";
+
+  src = fetchurl {
+    url = "mirror://gnu/src-highlite/source-highlight-${version}.tar.gz";
+    sha256 = "148w47k3zswbxvhg83z38ifi85f9dqcpg7icvvw1cm6bg21x4zrs";
+  };
 
   outputs = [
     "out"
@@ -18,33 +23,28 @@ stdenv.mkDerivation rec {
     "dev"
   ];
 
-  src = fetchurl {
-    url = "mirror://gnu/src-highlite/source-highlight-${version}.tar.gz";
-    sha256 = "148w47k3zswbxvhg83z38ifi85f9dqcpg7icvvw1cm6bg21x4zrs";
-  };
-
   patches = [
     # gcc-11 compat upstream patch
     (fetchpatch {
-      url = "https://git.savannah.gnu.org/cgit/src-highlite.git/patch/?id=904949c9026cb772dc93fbe0947a252ef47127f4";
-      hash = "sha256-h9DyD+pmlQT5dmKjWI9t0gCIYHe7pYkP55LnOqsE0vI=";
       excludes = [ "ChangeLog" ];
+      hash = "sha256-h9DyD+pmlQT5dmKjWI9t0gCIYHe7pYkP55LnOqsE0vI=";
+      url = "https://git.savannah.gnu.org/cgit/src-highlite.git/patch/?id=904949c9026cb772dc93fbe0947a252ef47127f4";
     })
 
     # Upstream fix for clang-13 and gcc-12 test support
     (fetchpatch {
+      hash = "sha256-wmSLgLnLuFE+IC6AjxzZp/HEnaOCS1VfY2cac0T7Y+w=";
       name = "gcc-12.patch";
       url = "https://git.savannah.gnu.org/cgit/src-highlite.git/patch/?id=ab9fe5cb9b85c5afab94f2a7f4b6d7d473c14ee9";
-      hash = "sha256-wmSLgLnLuFE+IC6AjxzZp/HEnaOCS1VfY2cac0T7Y+w=";
     })
   ]
   ++ lib.optionals stdenv.cc.isClang [
     # Adds compatibility with C++17 by removing the `register` storage class specifier.
     (fetchpatch {
-      name = "remove-register-keyword";
-      url = "https://git.savannah.gnu.org/cgit/src-highlite.git/patch/?id=416b39758dba2c74515584514a959ad1b0ad50d1";
       hash = "sha256-R5A7IGHhU82EqceMCsuNBanhRz4dFVqiaH8637dr7jw=";
       includes = [ "lib/*" ];
+      name = "remove-register-keyword";
+      url = "https://git.savannah.gnu.org/cgit/src-highlite.git/patch/?id=416b39758dba2c74515584514a959ad1b0ad50d1";
     })
   ];
 
@@ -59,6 +59,7 @@ stdenv.mkDerivation rec {
   # necessary to build on FreeBSD native pending inclusion of
   # https://git.savannah.gnu.org/cgit/config.git/commit/?id=e4786449e1c26716e3f9ea182caf472e4dbc96e0
   nativeBuildInputs = [ updateAutotoolsGnuConfigScriptsHook ];
+
   buildInputs = [
     boost
   ]
@@ -74,7 +75,6 @@ stdenv.mkDerivation rec {
   ];
 
   doCheck = true;
-
   enableParallelBuilding = true;
   # Upstream uses the same intermediate files in multiple tests, running
   # them in parallel by make will eventually break one or more tests.
@@ -82,14 +82,16 @@ stdenv.mkDerivation rec {
 
   meta = {
     description = "Source code renderer with syntax highlighting";
+
     longDescription = ''
       GNU Source-highlight, given a source file, produces a document
       with syntax highlighting.
     '';
+
     homepage = "https://www.gnu.org/software/src-highlite/";
     license = lib.licenses.gpl3Plus;
-    platforms = lib.platforms.unix;
     maintainers = with lib.maintainers; [ SuperSandro2000 ];
+    platforms = lib.platforms.unix;
   };
 }
 // lib.optionalAttrs (stdenv.targetPlatform.useLLVM or false) {

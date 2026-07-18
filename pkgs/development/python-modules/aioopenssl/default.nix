@@ -1,24 +1,20 @@
 {
   lib,
   stdenv,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   fetchpatch,
-
-  # build-system
-  setuptools,
-
   # dependencies
   pyopenssl,
-
   # test
   pytestCheckHook,
+  # build-system
+  setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "aioopenssl";
   version = "0.6.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "horazont";
@@ -27,22 +23,18 @@ buildPythonPackage rec {
     hash = "sha256-7Q+4/DlP+kUnC3YNk7woJaxLEEiuVmolUOajepM003Q=";
   };
 
-  build-system = [ setuptools ];
-
-  dependencies = [ pyopenssl ];
-
-  pythonImportsCheck = [ "aioopenssl" ];
-
-  nativeCheckInputs = [ pytestCheckHook ];
-
   patches = [
     # compatibility with python3.14: set a asyncio event loop for the unit tetsts
     (fetchpatch {
+      hash = "sha256-XdoeWS5wqmGDWRObVpjcRLyN7SF2IdVmSAUBD7U4dfI=";
       name = "fix-asyncio-event-loop.patch";
       url = "https://github.com/theobori/aioopenssl/commit/47b1a1e5593fd8c3f4dedcdbc68c17e83d5c88ec.patch";
-      hash = "sha256-XdoeWS5wqmGDWRObVpjcRLyN7SF2IdVmSAUBD7U4dfI=";
     })
   ];
+
+  nativeCheckInputs = [ pytestCheckHook ];
+  build-system = [ setuptools ];
+  dependencies = [ pyopenssl ];
 
   # Tests that fail in when built in the Darwin sandbox.
   disabledTests = lib.optionals stdenv.hostPlatform.isDarwin [
@@ -65,6 +57,9 @@ buildPythonPackage rec {
     "test_send_recv_large_data"
     "test_starttls"
   ];
+
+  pyproject = true;
+  pythonImportsCheck = [ "aioopenssl" ];
 
   meta = {
     description = "TLS-capable transport using OpenSSL for asyncio";

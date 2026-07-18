@@ -1,21 +1,22 @@
 {
   lib,
   fetchFromGitHub,
-  fetchYarnDeps,
-  beamPackages,
-  sqlite,
-  yarn,
-  nodejs,
-  esbuild,
-  tailwindcss,
-  fixup-yarn-lock,
   apprise,
+  beamPackages,
+  esbuild,
+  fetchYarnDeps,
+  fixup-yarn-lock,
   nix-update-script,
+  nodejs,
+  sqlite,
+  tailwindcss,
+  yarn,
   yt-dlp,
 }:
 beamPackages.mixRelease rec {
   pname = "pinchflat";
   version = "2025.9.26";
+
   src = fetchFromGitHub {
     owner = "kieraneglin";
     repo = "pinchflat";
@@ -24,31 +25,20 @@ beamPackages.mixRelease rec {
 
   };
 
-  # force compile exqlite using our version
-  env = {
-    EXQLITE_USE_SYSTEM = "1";
-    EXQLITE_SYSTEM_CFLAGS = "-I${sqlite.dev}/include";
-    EXQLITE_SYSTEM_LDFLAGS = "-L${sqlite.out}/lib -lsqlite3";
-  };
-
-  mixFodDeps = beamPackages.fetchMixDeps {
-    pname = "mix-deps-${pname}";
-    inherit src version;
-    hash = "sha256-7zLlOzBJcvookYX/4SNC0O1Yr62LIKH9R8rONl3diSs=";
-  };
-  removeCookie = false;
-
-  yarnOfflineCache = fetchYarnDeps {
-    yarnLock = "${src}/assets/yarn.lock";
-    sha256 = "sha256-xJL+qcohtu+OmZ31E1QU9uqBWAFGejKIO3XRd+R6z/4=";
-  };
-
   nativeBuildInputs = [
     fixup-yarn-lock
     tailwindcss
     yarn
   ];
+
   buildInputs = [ nodejs ];
+
+  # force compile exqlite using our version
+  env = {
+    EXQLITE_SYSTEM_CFLAGS = "-I${sqlite.dev}/include";
+    EXQLITE_SYSTEM_LDFLAGS = "-L${sqlite.out}/lib -lsqlite3";
+    EXQLITE_USE_SYSTEM = "1";
+  };
 
   postBuild = ''
     export HOME=$PWD
@@ -70,6 +60,7 @@ beamPackages.mixRelease rec {
 
     mix do deps.loadpaths --no-deps-check, tailwind default --minify + esbuild default --minify + phx.digest
   '';
+
   postInstall = ''
     wrapProgram $out/bin/pinchflat --prefix PATH : ${
       lib.makeBinPath [
@@ -78,6 +69,19 @@ beamPackages.mixRelease rec {
       ]
     }
   '';
+
+  mixFodDeps = beamPackages.fetchMixDeps {
+    inherit src version;
+    pname = "mix-deps-${pname}";
+    hash = "sha256-7zLlOzBJcvookYX/4SNC0O1Yr62LIKH9R8rONl3diSs=";
+  };
+
+  removeCookie = false;
+
+  yarnOfflineCache = fetchYarnDeps {
+    sha256 = "sha256-xJL+qcohtu+OmZ31E1QU9uqBWAFGejKIO3XRd+R6z/4=";
+    yarnLock = "${src}/assets/yarn.lock";
+  };
 
   passthru.updateScript = nix-update-script { };
 

@@ -1,9 +1,9 @@
 {
   lib,
   fetchFromGitHub,
-  rustPlatform,
-  pkg-config,
   openssl,
+  pkg-config,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -17,8 +17,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-LDiKAQmzEgzFJH2NAR3FYsO4SmH5uAEOa6I4A0FnwJk=";
   };
 
-  cargoHash = "sha256-t4Vnww49CnkBSRsAWKxSpJffuUuqFAxqUN0GtoxnKLY=";
-
   nativeBuildInputs = [
     pkg-config
   ];
@@ -27,6 +25,8 @@ rustPlatform.buildRustPackage (finalAttrs: {
     openssl
   ];
 
+  cargoHash = "sha256-t4Vnww49CnkBSRsAWKxSpJffuUuqFAxqUN0GtoxnKLY=";
+
   env = {
     OPENSSL_NO_VENDOR = true; # From the typst package
   };
@@ -34,8 +34,8 @@ rustPlatform.buildRustPackage (finalAttrs: {
   meta = {
     description = "Typst package CLI tool";
     homepage = "https://github.com/sjfhsjfh/typship";
-    license = lib.licenses.mit;
     changelog = "https://github.com/sjfhsjfh/typship/releases/tag/v${finalAttrs.version}";
+    license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ heijligen ];
   };
 })

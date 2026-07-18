@@ -2,10 +2,10 @@
   lib,
   stdenv,
   fetchurl,
-  pkg-config,
   libx11,
-  xorgproto,
+  pkg-config,
   writeScript,
+  xorgproto,
 }:
 stdenv.mkDerivation (finalAttrs: {
   pname = "xmodmap";
@@ -17,7 +17,6 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   strictDeps = true;
-
   nativeBuildInputs = [ pkg-config ];
 
   buildInputs = [
@@ -38,18 +37,22 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Utility for modifying keymaps and pointer button mappings in X";
+
     longDescription = ''
       The xmodmap program is used to edit and display the keyboard modifier map and keymap table
       that are used by client applications to convert event keycodes into keysyms. It is usually run
       from the user's session startup script to configure the keyboard according to personal tastes.
     '';
+
     homepage = "https://gitlab.freedesktop.org/xorg/app/xmodmap";
+
     license = with lib.licenses; [
       mit
       mitOpenGroup
     ];
-    mainProgram = "xmodmap";
+
     maintainers = [ ];
     platforms = lib.platforms.unix;
+    mainProgram = "xmodmap";
   };
 })

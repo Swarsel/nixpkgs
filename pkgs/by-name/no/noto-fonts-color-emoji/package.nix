@@ -1,16 +1,16 @@
 {
   lib,
-  stdenvNoCC,
   fetchFromGitHub,
   buildPackages,
-  python3Packages,
-  pkg-config,
   cairo,
   imagemagick,
-  zopfli,
   nototools,
+  pkg-config,
   pngquant,
+  python3Packages,
+  stdenvNoCC,
   which,
+  zopfli,
 }:
 
 stdenvNoCC.mkDerivation rec {
@@ -24,23 +24,6 @@ stdenvNoCC.mkDerivation rec {
     hash = "sha256-qngf8t5fLYAOtO2GMhbMv7I34RO/eYfNawW+Th/uaYQ=";
   };
 
-  strictDeps = true;
-
-  depsBuildBuild = [
-    buildPackages.stdenv.cc
-    pkg-config
-    cairo
-  ];
-
-  nativeBuildInputs = [
-    imagemagick
-    zopfli
-    nototools
-    pngquant
-    which
-    python3Packages.fonttools
-  ];
-
   postPatch = ''
     patchShebangs *.py
     patchShebangs third_party/color_emoji/*.py
@@ -52,9 +35,18 @@ stdenvNoCC.mkDerivation rec {
     sed -i 's;\t@;\t;' Makefile
   '';
 
-  buildFlags = [ "BYPASS_SEQUENCE_CHECK=True" ];
+  strictDeps = true;
 
-  enableParallelBuilding = true;
+  nativeBuildInputs = [
+    imagemagick
+    zopfli
+    nototools
+    pngquant
+    which
+    python3Packages.fonttools
+  ];
+
+  buildFlags = [ "BYPASS_SEQUENCE_CHECK=True" ];
 
   installPhase = ''
     runHook preInstall
@@ -63,17 +55,28 @@ stdenvNoCC.mkDerivation rec {
     runHook postInstall
   '';
 
+  depsBuildBuild = [
+    buildPackages.stdenv.cc
+    pkg-config
+    cairo
+  ];
+
+  enableParallelBuilding = true;
+
   meta = {
     description = "Color emoji font";
     homepage = "https://github.com/googlefonts/noto-emoji";
+
     license = with lib.licenses; [
       ofl
       asl20
     ];
-    platforms = lib.platforms.all;
+
     maintainers = with lib.maintainers; [
       mathnerd314
       sternenseemann
     ];
+
+    platforms = lib.platforms.all;
   };
 }

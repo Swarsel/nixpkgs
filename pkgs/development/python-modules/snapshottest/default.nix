@@ -1,19 +1,18 @@
 {
   lib,
   buildPythonPackage,
-  fetchPypi,
+  django,
   fastdiff,
+  fetchPypi,
+  pytest-cov-stub,
+  pytestCheckHook,
   six,
   termcolor,
-  pytestCheckHook,
-  pytest-cov-stub,
-  django,
 }:
 
 buildPythonPackage rec {
   pname = "snapshottest";
   version = "0.6.0";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
@@ -32,6 +31,7 @@ buildPythonPackage rec {
     pytest-cov-stub
   ];
 
+  format = "setuptools";
   pythonImportsCheck = [ "snapshottest" ];
 
   meta = {

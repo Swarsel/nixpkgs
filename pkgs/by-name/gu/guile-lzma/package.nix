@@ -1,11 +1,11 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchurl,
-  xz,
-  pkg-config,
   guile,
+  pkg-config,
   scheme-bytestructures,
+  xz,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -18,22 +18,22 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   strictDeps = true;
+
   nativeBuildInputs = [
     guile
     pkg-config
   ];
+
   buildInputs = [ guile ];
   propagatedBuildInputs = [ xz ];
-  propagatedNativeBuildInputs = [ scheme-bytestructures ];
-
   doCheck = true;
-
   # In procedure bytevector-u8-ref: Argument 2 out of range
   dontStrip = stdenv.hostPlatform.isDarwin;
+  propagatedNativeBuildInputs = [ scheme-bytestructures ];
 
   meta = {
-    homepage = "https://ngyro.com/software/guile-lzma.html";
     description = "Guile wrapper for lzma library";
+    homepage = "https://ngyro.com/software/guile-lzma.html";
     license = lib.licenses.gpl3Plus;
     maintainers = [ ];
     platforms = guile.meta.platforms;

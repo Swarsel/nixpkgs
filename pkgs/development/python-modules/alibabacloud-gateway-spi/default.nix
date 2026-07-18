@@ -9,24 +9,20 @@
 buildPythonPackage (finalAttrs: {
   pname = "alibabacloud-gateway-spi";
   version = "0.0.4";
-  pyproject = true;
-
-  __structuredAttrs = true;
 
   src = fetchPypi {
-    pname = "alibabacloud_gateway_spi";
     inherit (finalAttrs) version;
     hash = "sha256-c9biDWW1Tu0m2JwZZA06dXLhjEXsraYn+Ab12+jtITA=";
+    pname = "alibabacloud_gateway_spi";
   };
-
-  build-system = [ setuptools ];
-
-  dependencies = [ alibabacloud-credentials ];
-
-  pythonImportsCheck = [ "alibabacloud_gateway_spi" ];
 
   # Module has only tests in the untagged upstream repo
   doCheck = false;
+  __structuredAttrs = true;
+  build-system = [ setuptools ];
+  dependencies = [ alibabacloud-credentials ];
+  pyproject = true;
+  pythonImportsCheck = [ "alibabacloud_gateway_spi" ];
 
   meta = {
     description = "Aliyun Gateway SPI Library for Python";

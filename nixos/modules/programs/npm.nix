@@ -15,18 +15,18 @@ in
   options = {
     programs.npm = {
       enable = lib.mkEnableOption "{command}`npm` global config";
-
       package = lib.mkPackageOption pkgs "nodejs" { };
 
       npmrc = lib.mkOption {
-        type = lib.types.lines;
+        default = ''
+          prefix = ''${HOME}/.npm
+        '';
+
         description = ''
           The system-wide npm configuration.
           See <https://docs.npmjs.com/misc/config>.
         '';
-        default = ''
-          prefix = ''${HOME}/.npm
-        '';
+
         example = ''
           prefix = ''${HOME}/.npm
           https-proxy=proxy.example.com
@@ -34,6 +34,8 @@ in
           init-author-url=https://www.npmjs.com/
           color=true
         '';
+
+        type = lib.types.lines;
       };
     };
   };
@@ -42,10 +44,8 @@ in
 
   config = lib.mkIf cfg.enable {
     environment.etc.npmrc.text = cfg.npmrc;
-
-    environment.variables.NPM_CONFIG_GLOBALCONFIG = "/etc/npmrc";
-
     environment.systemPackages = [ cfg.package ];
+    environment.variables.NPM_CONFIG_GLOBALCONFIG = "/etc/npmrc";
   };
 
 }

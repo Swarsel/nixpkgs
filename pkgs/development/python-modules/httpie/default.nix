@@ -1,10 +1,10 @@
 {
   lib,
   stdenv,
+  fetchFromGitHub,
   buildPythonPackage,
   charset-normalizer,
   defusedxml,
-  fetchFromGitHub,
   installShellFiles,
   multidict,
   pandoc,
@@ -15,8 +15,8 @@
   pytest-mock,
   pytestCheckHook,
   pythonAtLeast,
-  requests-toolbelt,
   requests,
+  requests-toolbelt,
   responses,
   rich,
   setuptools,
@@ -26,7 +26,6 @@
 buildPythonPackage rec {
   pname = "httpie";
   version = "3.2.4";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "httpie";
@@ -35,31 +34,10 @@ buildPythonPackage rec {
     hash = "sha256-uZKkUUrPPnLHPHL8YrZgfsyCsSOR0oZ2eFytiV0PIUY=";
   };
 
-  pythonRelaxDeps = [
-    "defusedxml"
-    "requests"
-  ];
-
-  build-system = [ setuptools ];
-
   nativeBuildInputs = [
     installShellFiles
     pandoc
   ];
-
-  dependencies = [
-    charset-normalizer
-    defusedxml
-    multidict
-    pygments
-    requests
-    requests-toolbelt
-    setuptools
-    rich
-  ]
-  ++ requests.optional-dependencies.socks;
-
-  __darwinAllowLocalNetworking = true;
 
   nativeCheckInputs = [
     pip
@@ -82,12 +60,20 @@ buildPythonPackage rec {
     installManPage docs/http.1
   '';
 
-  enabledTestPaths = [
-    "httpie"
-    "tests"
-  ];
+  __darwinAllowLocalNetworking = true;
+  build-system = [ setuptools ];
 
-  pythonImportsCheck = [ "httpie" ];
+  dependencies = [
+    charset-normalizer
+    defusedxml
+    multidict
+    pygments
+    requests
+    requests-toolbelt
+    setuptools
+    rich
+  ]
+  ++ requests.optional-dependencies.socks;
 
   disabledTestPaths = [
     # Tests are flaky
@@ -122,15 +108,30 @@ buildPythonPackage rec {
     "test_saved_session_cookie_pool"
   ];
 
+  enabledTestPaths = [
+    "httpie"
+    "tests"
+  ];
+
+  pyproject = true;
+  pythonImportsCheck = [ "httpie" ];
+
+  pythonRelaxDeps = [
+    "defusedxml"
+    "requests"
+  ];
+
   meta = {
     description = "Command line HTTP client whose goal is to make CLI human-friendly";
     homepage = "https://httpie.org/";
     changelog = "https://github.com/httpie/cli/blob/${version}/CHANGELOG.md";
     license = lib.licenses.bsd3;
+
     maintainers = with lib.maintainers; [
       antono
       relrod
     ];
+
     mainProgram = "http";
   };
 }

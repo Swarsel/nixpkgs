@@ -21,8 +21,8 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   meta = {
-    homepage = "https://github.com/sophec/cfm";
     description = "Simple and fast TUI file manager with no dependencies";
+    homepage = "https://github.com/sophec/cfm";
     license = lib.licenses.mpl20;
     maintainers = [ ];
     platforms = lib.platforms.all;

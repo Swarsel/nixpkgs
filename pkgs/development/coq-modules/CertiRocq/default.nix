@@ -1,49 +1,21 @@
 {
   lib,
-  pkgs,
-  pkg-config,
-  mkCoqDerivation,
-  coq,
-  wasmcert,
+  ExtLib,
   compcert,
+  coq,
   metarocq-erasure-plugin,
   metarocq-safechecker-plugin,
-  ExtLib,
+  mkCoqDerivation,
+  pkg-config,
+  pkgs,
+  wasmcert,
   version ? null,
 }:
 
 with lib;
 mkCoqDerivation {
-  pname = "CertiRocq";
-  owner = "CertiRocq";
-  repo = "certirocq";
-  opam-name = "rocq-certirocq";
-  mlPlugin = true;
-
   inherit version;
-  defaultVersion =
-    let
-      case = coq: mr: out: {
-        cases = [
-          coq
-          mr
-        ];
-        inherit out;
-      };
-    in
-    lib.switch
-      [
-        coq.coq-version
-        metarocq-erasure-plugin.version
-      ]
-      [
-        (case "9.1" "1.5.1-9.1" "0.9.1+9.1")
-      ]
-      null;
-  release = {
-    "0.9.1+9.1".hash = "sha256-YsweBaoq8+QG63e7Llp/4bHldAFnSQSyMumJkb+Bsp0=";
-  };
-  releaseRev = v: "v${v}";
+  pname = "CertiRocq";
 
   buildInputs = [
     pkgs.clang
@@ -56,16 +28,6 @@ mkCoqDerivation {
     metarocq-erasure-plugin
     metarocq-safechecker-plugin
   ];
-
-  patchPhase = ''
-    patchShebangs ./configure.sh
-    patchShebangs ./clean_extraction.sh
-    patchShebangs ./make_plugin.sh
-  '';
-
-  configurePhase = ''
-    ./configure.sh local
-  '';
 
   buildPhase = ''
     runHook preBuild
@@ -90,12 +52,55 @@ mkCoqDerivation {
     runHook postInstall
   '';
 
+  configurePhase = ''
+    ./configure.sh local
+  '';
+
+  defaultVersion =
+    let
+      case = coq: mr: out: {
+        inherit out;
+
+        cases = [
+          coq
+          mr
+        ];
+      };
+    in
+    lib.switch
+      [
+        coq.coq-version
+        metarocq-erasure-plugin.version
+      ]
+      [
+        (case "9.1" "1.5.1-9.1" "0.9.1+9.1")
+      ]
+      null;
+
+  mlPlugin = true;
+  opam-name = "rocq-certirocq";
+  owner = "CertiRocq";
+
+  patchPhase = ''
+    patchShebangs ./configure.sh
+    patchShebangs ./clean_extraction.sh
+    patchShebangs ./make_plugin.sh
+  '';
+
+  release = {
+    "0.9.1+9.1".hash = "sha256-YsweBaoq8+QG63e7Llp/4bHldAFnSQSyMumJkb+Bsp0=";
+  };
+
+  releaseRev = v: "v${v}";
+  repo = "certirocq";
+
   meta = {
     description = "CertiRocq";
+    license = licenses.mit;
+
     maintainers = with maintainers; [
       womeier
       _4ever2
     ];
-    license = licenses.mit;
   };
 }

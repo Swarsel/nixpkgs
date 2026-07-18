@@ -1,10 +1,10 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
   autoreconfHook,
-  systemd,
   pkg-config,
+  systemd,
 }:
 
 stdenv.mkDerivation (finalAttrs: {

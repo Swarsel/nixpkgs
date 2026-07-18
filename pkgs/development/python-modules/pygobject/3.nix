@@ -3,15 +3,15 @@
   stdenv,
   fetchurl,
   buildPythonPackage,
-  pkg-config,
-  glib,
-  gobject-introspection,
-  pycairo,
   cairo,
-  ncurses,
-  meson,
-  ninja,
+  glib,
   gnome,
+  gobject-introspection,
+  meson,
+  ncurses,
+  ninja,
+  pkg-config,
+  pycairo,
   python,
 }:
 
@@ -19,19 +19,15 @@ buildPythonPackage rec {
   pname = "pygobject";
   version = "3.56.3";
 
-  outputs = [
-    "out"
-    "dev"
-  ];
-
-  pyproject = false;
-
   src = fetchurl {
     url = "mirror://gnome/sources/pygobject/${lib.versions.majorMinor version}/pygobject-${version}.tar.gz";
     hash = "sha256-EnYOSg49BLbrleBveifjYsgm1WfqYTNzqSwAO2xw0tY=";
   };
 
-  depsBuildBuild = [ pkg-config ];
+  outputs = [
+    "out"
+    "dev"
+  ];
 
   nativeBuildInputs = [
     pkg-config
@@ -51,12 +47,6 @@ buildPythonPackage rec {
     gobject-introspection # e.g. try building: python3Packages.urwid python3Packages.pydbus
   ];
 
-  # Fixes https://github.com/NixOS/nixpkgs/issues/378447
-  preConfigure = lib.optionalString (stdenv.hostPlatform != stdenv.targetPlatform) ''
-    export PKG_CONFIG_PATH=${lib.getDev python}/lib/pkgconfig:$PKG_CONFIG_PATH
-    export PKG_CONFIG_PATH_FOR_BUILD=${lib.getDev python}/lib/pkgconfig:$PKG_CONFIG_PATH_FOR_BUILD
-  '';
-
   mesonFlags = [
     # This is only used for figuring out what version of Python is in
     # use, and related stuff like figuring out what the install prefix
@@ -64,19 +54,28 @@ buildPythonPackage rec {
     "-Dpython=${python.pythonOnBuildForHost.interpreter}"
   ];
 
+  # Fixes https://github.com/NixOS/nixpkgs/issues/378447
+  preConfigure = lib.optionalString (stdenv.hostPlatform != stdenv.targetPlatform) ''
+    export PKG_CONFIG_PATH=${lib.getDev python}/lib/pkgconfig:$PKG_CONFIG_PATH
+    export PKG_CONFIG_PATH_FOR_BUILD=${lib.getDev python}/lib/pkgconfig:$PKG_CONFIG_PATH_FOR_BUILD
+  '';
+
+  depsBuildBuild = [ pkg-config ];
+  pyproject = false;
+
   passthru = {
     updateScript = gnome.updateScript {
-      packageName = "pygobject";
       attrPath = "python3.pkgs.pygobject3";
+      packageName = "pygobject";
       versionPolicy = "odd-unstable";
     };
   };
 
   meta = {
-    homepage = "https://pygobject.readthedocs.io/";
     description = "Python bindings for Glib";
+    homepage = "https://pygobject.readthedocs.io/";
     license = lib.licenses.lgpl21Plus;
-    teams = [ lib.teams.gnome ];
     platforms = lib.platforms.unix;
+    teams = [ lib.teams.gnome ];
   };
 }

@@ -2,14 +2,13 @@
   lib,
   stdenv,
   fetchFromGitiles,
-  pkg-config,
-  makeBinaryWrapper,
-  libuuid,
-  openssl,
-  libyaml,
-  xz,
   flashrom,
-
+  libuuid,
+  libyaml,
+  makeBinaryWrapper,
+  openssl,
+  pkg-config,
+  xz,
   withFlashrom ? true,
 }:
 
@@ -23,6 +22,16 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-8a49xD+EYXDouFuBmLyAtPxThYET6DtKImBPzXVhpxE=";
   };
 
+  postPatch = ''
+    substituteInPlace Makefile \
+      --replace-fail "ar qc" '${stdenv.cc.bintools.targetPrefix}ar qc'
+    # Drop flag unrecognized by GCC 9 (for e.g. aarch64-linux)
+    substituteInPlace Makefile \
+      --replace-fail "-Wno-unknown-warning" ""
+
+    patchShebangs scripts
+  '';
+
   nativeBuildInputs = [
     pkg-config
     makeBinaryWrapper
@@ -35,18 +44,6 @@ stdenv.mkDerivation (finalAttrs: {
     xz
   ]
   ++ lib.optional withFlashrom finalAttrs.passthru.flashromChromeos;
-
-  enableParallelBuilding = true;
-
-  postPatch = ''
-    substituteInPlace Makefile \
-      --replace-fail "ar qc" '${stdenv.cc.bintools.targetPrefix}ar qc'
-    # Drop flag unrecognized by GCC 9 (for e.g. aarch64-linux)
-    substituteInPlace Makefile \
-      --replace-fail "-Wno-unknown-warning" ""
-
-    patchShebangs scripts
-  '';
 
   makeFlags = [
     "DESTDIR=$(out)"
@@ -69,8 +66,9 @@ stdenv.mkDerivation (finalAttrs: {
       --prefix PATH : ${lib.makeBinPath [ finalAttrs.passthru.flashromChromeos ]}
   '';
 
+  enableParallelBuilding = true;
+
   passthru = {
-    versionFormatted = lib.concatStringsSep "-" (lib.versions.splitVersion finalAttrs.version);
     flashromChromeos = flashrom.overrideAttrs (_prev: {
       src = fetchFromGitiles {
         url = "https://chromium.googlesource.com/chromiumos/third_party/flashrom";
@@ -80,16 +78,17 @@ stdenv.mkDerivation (finalAttrs: {
 
       # requires git
       mesonFlags = _prev.mesonFlags ++ [ (lib.mesonEnable "documentation" false) ];
-
       # requires specific hardware
       doCheck = false;
     });
+
+    versionFormatted = lib.concatStringsSep "-" (lib.versions.splitVersion finalAttrs.version);
   };
 
   meta = {
     description = "Chrome OS partitioning and kernel signing tools";
     license = lib.licenses.bsd3;
-    platforms = lib.platforms.linux;
     maintainers = [ lib.maintainers.jmbaur ];
+    platforms = lib.platforms.linux;
   };
 })

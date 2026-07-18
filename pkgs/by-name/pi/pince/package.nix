@@ -1,21 +1,18 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
-  replaceVars,
-  nix-update-script,
-
-  rustPlatform,
-
   cmake,
-  makeWrapper,
-
-  python3Packages,
-  python3,
   gdb,
-  qt6,
-  gtk3,
   gobject-introspection,
+  gtk3,
+  makeWrapper,
+  nix-update-script,
+  python3,
+  python3Packages,
+  qt6,
+  replaceVars,
+  rustPlatform,
 }:
 
 let
@@ -30,18 +27,18 @@ let
       hash = "sha256-skOM2dx+u7dYbWywaC8dtUuJuXzc4Mm6skBbMfaTwfY=";
     };
 
-    cargoLock.lockFile = ./libptrscan/Cargo.lock;
-
     postPatch = ''
       cp ${./libptrscan/Cargo.lock} Cargo.lock
       chmod +w Cargo.lock
     '';
 
-    cargoBuildFlags = [ "-p libptrscan" ];
+    cargoLock.lockFile = ./libptrscan/Cargo.lock;
 
     postInstall = ''
       install -Dm644 libptrscan/ptrscan.py -t "$out"/lib/
     '';
+
+    cargoBuildFlags = [ "-p libptrscan" ];
   };
 
   pythonEnv = python3.withPackages (
@@ -77,7 +74,6 @@ in
 python3Packages.buildPythonApplication (finalAttrs: {
   pname = "pince";
   version = "0.4.5";
-  pyproject = false;
 
   src = fetchFromGitHub {
     owner = "korcankaraokcu";
@@ -91,10 +87,6 @@ python3Packages.buildPythonApplication (finalAttrs: {
     (replaceVars ./set-gdb-path.patch {
       gdb_exe_path = lib.getExe gdb';
     })
-  ];
-
-  build-system = with python3Packages; [
-    setuptools
   ];
 
   nativeBuildInputs = [
@@ -113,8 +105,6 @@ python3Packages.buildPythonApplication (finalAttrs: {
     qt6.qtwayland
     gtk3
   ];
-
-  dontUseCmakeConfigure = true;
 
   buildPhase = ''
     runHook preBuild
@@ -141,16 +131,6 @@ python3Packages.buildPythonApplication (finalAttrs: {
     runHook postBuild
   '';
 
-  makeWrapperArgs = [
-    ''--chdir "$out/lib/pince"''
-    ''--prefix LD_LIBRARY_PATH : "${LDPath}"''
-    ''--prefix GI_TYPELIB_PATH : "${GIPath}"''
-    ''--set PYTHONPATH "$out/lib/pince"''
-    ''--set PYTHONDONTWRITEBYTECODE "1"''
-    ''--add-flags "$out/lib/pince/PINCE.py"''
-    ''--prefix PATH : "${lib.makeBinPath [ pythonEnv ]}"''
-  ];
-
   installPhase = ''
     runHook preInstall
 
@@ -167,6 +147,24 @@ python3Packages.buildPythonApplication (finalAttrs: {
     wrapPythonProgramsIn "$out/lib/pince" "$out ''${pythonPath[*]}"
   '';
 
+  build-system = with python3Packages; [
+    setuptools
+  ];
+
+  dontUseCmakeConfigure = true;
+
+  makeWrapperArgs = [
+    ''--chdir "$out/lib/pince"''
+    ''--prefix LD_LIBRARY_PATH : "${LDPath}"''
+    ''--prefix GI_TYPELIB_PATH : "${GIPath}"''
+    ''--set PYTHONPATH "$out/lib/pince"''
+    ''--set PYTHONDONTWRITEBYTECODE "1"''
+    ''--add-flags "$out/lib/pince/PINCE.py"''
+    ''--prefix PATH : "${lib.makeBinPath [ pythonEnv ]}"''
+  ];
+
+  pyproject = false;
+
   passthru = {
     inherit libptrscan;
     updateScript = nix-update-script { };
@@ -175,12 +173,14 @@ python3Packages.buildPythonApplication (finalAttrs: {
   meta = {
     description = "Reverse engineering tool for games (Linux alternative to Cheat Engine)";
     homepage = "https://github.com/korcankaraokcu/PINCE";
-    mainProgram = "pince";
+
     license = with lib.licenses; [
       gpl3Plus
       cc-by-30
     ];
-    platforms = lib.platforms.linux;
+
     maintainers = with lib.maintainers; [ yuannan ];
+    platforms = lib.platforms.linux;
+    mainProgram = "pince";
   };
 })

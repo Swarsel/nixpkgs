@@ -2,11 +2,11 @@
   lib,
   stdenv,
   fetchurl,
-  pkg-config,
   libxfont_2,
+  pkg-config,
+  writeScript,
   xorgproto,
   xtrans,
-  writeScript,
 }:
 stdenv.mkDerivation (finalAttrs: {
   pname = "xfs";
@@ -18,7 +18,6 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   strictDeps = true;
-
   nativeBuildInputs = [ pkg-config ];
 
   buildInputs = [
@@ -41,15 +40,17 @@ stdenv.mkDerivation (finalAttrs: {
   meta = {
     description = "X Font Server, for X11 core protocol fonts";
     homepage = "https://gitlab.freedesktop.org/xorg/app/xfs";
+
     license = with lib.licenses; [
       mitOpenGroup
       hpndSellVariant
       x11
       hpnd
     ];
-    mainProgram = "xfs";
+
     maintainers = [ ];
     platforms = lib.platforms.unix;
+    mainProgram = "xfs";
     broken = stdenv.hostPlatform.isStatic;
   };
 })

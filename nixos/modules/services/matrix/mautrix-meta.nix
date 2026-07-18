@@ -1,7 +1,7 @@
 {
   config,
-  pkgs,
   lib,
+  pkgs,
   ...
 }:
 
@@ -33,6 +33,46 @@ in
       package = lib.mkPackageOption pkgs "mautrix-meta" { };
 
       instances = lib.mkOption {
+        description = ''
+          Configuration of multiple `mautrix-meta` instances.
+          `services.mautrix-meta.instances.facebook` and `services.mautrix-meta.instances.instagram`
+          come preconfigured with network.mode, appservice.id, bot username, display name and avatar.
+        '';
+
+        example = ''
+          {
+            facebook = {
+              enable = true;
+              settings = {
+                homeserver.domain = "example.com";
+              };
+            };
+
+            instagram = {
+              enable = true;
+              settings = {
+                homeserver.domain = "example.com";
+              };
+            };
+
+            messenger = {
+              enable = true;
+              settings = {
+                network.mode = "messenger";
+                homeserver.domain = "example.com";
+                appservice = {
+                  id = "messenger";
+                  bot = {
+                    username = "messengerbot";
+                    displayname = "Messenger bridge bot";
+                    avatar = "mxc://maunium.net/ygtkteZsXnGJLJHRchUwYWak";
+                  };
+                };
+              };
+            };
+          }
+        '';
+
         type = lib.types.attrsOf (
           lib.types.submodule (
             { config, name, ... }:
@@ -43,52 +83,118 @@ in
                 enable = lib.mkEnableOption "Mautrix-Meta, a Matrix <-> Facebook and Matrix <-> Instagram hybrid puppeting/relaybot bridge";
 
                 dataDir = lib.mkOption {
-                  type = lib.types.str;
                   default = metaName name;
+
                   description = ''
                     Path to the directory with database, registration, and other data for the bridge service.
                     This path is relative to `/var/lib`, it cannot start with `../` (it cannot be outside of `/var/lib`).
                   '';
+
+                  type = lib.types.str;
                 };
 
-                registrationFile = lib.mkOption {
-                  type = lib.types.path;
-                  readOnly = true;
+                environmentFile = lib.mkOption {
+                  default = null;
+
                   description = ''
-                    Path to the yaml registration file of the appservice.
+                    File containing environment variables to substitute when copying the configuration
+                    out of Nix store to the `services.mautrix-meta.dataDir`.
+
+                    Can be used for storing the secrets without making them available in the Nix store.
+
+                    For example, you can set `services.mautrix-meta.settings.appservice.as_token = "$MAUTRIX_META_APPSERVICE_AS_TOKEN"`
+                    and then specify `MAUTRIX_META_APPSERVICE_AS_TOKEN="{token}"` in the environment file.
+                    This value will get substituted into the configuration file as as token.
                   '';
+
+                  type = lib.types.nullOr lib.types.path;
                 };
 
                 registerToSynapse = lib.mkOption {
-                  type = lib.types.bool;
                   default = true;
+
                   description = ''
                     Whether to add registration file to `services.matrix-synapse.settings.app_service_config_files` and
                     make Synapse wait for registration service.
                   '';
+
+                  type = lib.types.bool;
+                };
+
+                registrationFile = lib.mkOption {
+                  description = ''
+                    Path to the yaml registration file of the appservice.
+                  '';
+
+                  readOnly = true;
+                  type = lib.types.path;
+                };
+
+                registrationServiceUnit = lib.mkOption {
+                  description = ''
+                    The registration service that generates the registration file.
+
+                    Systemd unit (a service or a target) for other services to depend on if they
+                    need to be started after mautrix-meta registration service.
+
+                    This option is useful as the actual parent unit for all matrix-synapse processes
+                    changes when configuring workers.
+                  '';
+
+                  readOnly = true;
+                  type = lib.types.str;
+                };
+
+                serviceDependencies = lib.mkOption {
+                  default = [
+                    config.registrationServiceUnit
+                  ]
+                  ++ (lib.lists.optional upperConfig.services.matrix-synapse.enable upperConfig.services.matrix-synapse.serviceUnit)
+                  ++ (lib.lists.optional upperConfig.services.matrix-conduit.enable "matrix-conduit.service")
+                  ++ (lib.lists.optional upperConfig.services.dendrite.enable "dendrite.service");
+
+                  defaultText = ''
+                    [ config.registrationServiceUnit ] ++
+                    (lib.lists.optional upperConfig.services.matrix-synapse.enable upperConfig.services.matrix-synapse.serviceUnit) ++
+                    (lib.lists.optional upperConfig.services.matrix-conduit.enable "matrix-conduit.service") ++
+                    (lib.lists.optional upperConfig.services.dendrite.enable "dendrite.service");
+                  '';
+
+                  description = ''
+                    List of Systemd services to require and wait for when starting the application service.
+                  '';
+
+                  type = lib.types.listOf lib.types.str;
+                };
+
+                serviceUnit = lib.mkOption {
+                  description = ''
+                    The systemd unit (a service or a target) for other services to depend on if they
+                    need to be started after matrix-synapse.
+
+                    This option is useful as the actual parent unit for all matrix-synapse processes
+                    changes when configuring workers.
+                  '';
+
+                  readOnly = true;
+                  type = lib.types.str;
                 };
 
                 settings = lib.mkOption rec {
-                  apply = lib.recursiveUpdate default;
                   inherit (settingsFormat) type;
+                  apply = lib.recursiveUpdate default;
+
                   default = {
-                    homeserver = {
-                      software = "standard";
-
-                      domain = "";
-                      address = "";
-                    };
-
                     appservice = {
-                      id = "";
+                      address = "http://${config.settings.appservice.hostname}:${toString config.settings.appservice.port}";
 
                       bot = {
                         username = "";
                       };
 
                       hostname = "localhost";
+                      id = "";
                       port = 29319;
-                      address = "http://${config.settings.appservice.hostname}:${toString config.settings.appservice.port}";
                     };
 
                     bridge = {
@@ -104,24 +210,24 @@ in
                     encryption = {
                       allow = true;
                       default = true;
-                      require = true;
 
                       # Recommended options from mautrix documentation
                       # for additional security.
                       delete_keys = {
-                        dont_store_outbound = true;
-                        ratchet_on_decrypt = true;
                         delete_fully_used_on_decrypt = true;
-                        delete_prev_on_new_session = true;
                         delete_on_device_delete = true;
-                        periodically_delete_expired = true;
                         delete_outdated_inbound = true;
+                        delete_prev_on_new_session = true;
+                        dont_store_outbound = true;
+                        periodically_delete_expired = true;
+                        ratchet_on_decrypt = true;
                       };
 
                       # TODO: This effectively disables encryption. But this is the value provided when a <0.4 config is migrated. Changing it will corrupt the database.
                       # https://github.com/mautrix/meta/blob/f5440b05aac125b4c95b1af85635a717cbc6dd0e/cmd/mautrix-meta/legacymigrate.go#L24
                       # If you wish to encrypt the local database you should set this to an environment variable substitution and reset the bridge or somehow migrate the DB.
                       pickle_key = "mautrix.bridge.e2ee";
+                      require = true;
 
                       verification_levels = {
                         receive = "cross-signed-tofu";
@@ -130,12 +236,19 @@ in
                       };
                     };
 
+                    homeserver = {
+                      address = "";
+                      domain = "";
+                      software = "standard";
+                    };
+
                     logging = {
                       min_level = "info";
+
                       writers = lib.singleton {
-                        type = "stdout";
                         format = "pretty-colored";
                         time_format = " ";
+                        type = "stdout";
                       };
                     };
 
@@ -143,6 +256,7 @@ in
                       mode = "";
                     };
                   };
+
                   defaultText = ''
                     {
                       homeserver = {
@@ -198,6 +312,7 @@ in
                       };
                     };
                   '';
+
                   description = ''
                     {file}`config.yaml` configuration as a Nix attribute set.
                     Configuration options should match those described in
@@ -207,117 +322,16 @@ in
                     instead
                   '';
                 };
-
-                environmentFile = lib.mkOption {
-                  type = lib.types.nullOr lib.types.path;
-                  default = null;
-                  description = ''
-                    File containing environment variables to substitute when copying the configuration
-                    out of Nix store to the `services.mautrix-meta.dataDir`.
-
-                    Can be used for storing the secrets without making them available in the Nix store.
-
-                    For example, you can set `services.mautrix-meta.settings.appservice.as_token = "$MAUTRIX_META_APPSERVICE_AS_TOKEN"`
-                    and then specify `MAUTRIX_META_APPSERVICE_AS_TOKEN="{token}"` in the environment file.
-                    This value will get substituted into the configuration file as as token.
-                  '';
-                };
-
-                serviceDependencies = lib.mkOption {
-                  type = lib.types.listOf lib.types.str;
-                  default = [
-                    config.registrationServiceUnit
-                  ]
-                  ++ (lib.lists.optional upperConfig.services.matrix-synapse.enable upperConfig.services.matrix-synapse.serviceUnit)
-                  ++ (lib.lists.optional upperConfig.services.matrix-conduit.enable "matrix-conduit.service")
-                  ++ (lib.lists.optional upperConfig.services.dendrite.enable "dendrite.service");
-
-                  defaultText = ''
-                    [ config.registrationServiceUnit ] ++
-                    (lib.lists.optional upperConfig.services.matrix-synapse.enable upperConfig.services.matrix-synapse.serviceUnit) ++
-                    (lib.lists.optional upperConfig.services.matrix-conduit.enable "matrix-conduit.service") ++
-                    (lib.lists.optional upperConfig.services.dendrite.enable "dendrite.service");
-                  '';
-                  description = ''
-                    List of Systemd services to require and wait for when starting the application service.
-                  '';
-                };
-
-                serviceUnit = lib.mkOption {
-                  type = lib.types.str;
-                  readOnly = true;
-                  description = ''
-                    The systemd unit (a service or a target) for other services to depend on if they
-                    need to be started after matrix-synapse.
-
-                    This option is useful as the actual parent unit for all matrix-synapse processes
-                    changes when configuring workers.
-                  '';
-                };
-
-                registrationServiceUnit = lib.mkOption {
-                  type = lib.types.str;
-                  readOnly = true;
-                  description = ''
-                    The registration service that generates the registration file.
-
-                    Systemd unit (a service or a target) for other services to depend on if they
-                    need to be started after mautrix-meta registration service.
-
-                    This option is useful as the actual parent unit for all matrix-synapse processes
-                    changes when configuring workers.
-                  '';
-                };
               };
 
               config = {
-                serviceUnit = (metaName name) + ".service";
-                registrationServiceUnit = (metaName name) + "-registration.service";
                 registrationFile = (fullDataDir config) + "/meta-registration.yaml";
+                registrationServiceUnit = (metaName name) + "-registration.service";
+                serviceUnit = (metaName name) + ".service";
               };
             }
           )
         );
-
-        description = ''
-          Configuration of multiple `mautrix-meta` instances.
-          `services.mautrix-meta.instances.facebook` and `services.mautrix-meta.instances.instagram`
-          come preconfigured with network.mode, appservice.id, bot username, display name and avatar.
-        '';
-
-        example = ''
-          {
-            facebook = {
-              enable = true;
-              settings = {
-                homeserver.domain = "example.com";
-              };
-            };
-
-            instagram = {
-              enable = true;
-              settings = {
-                homeserver.domain = "example.com";
-              };
-            };
-
-            messenger = {
-              enable = true;
-              settings = {
-                network.mode = "messenger";
-                homeserver.domain = "example.com";
-                appservice = {
-                  id = "messenger";
-                  bot = {
-                    username = "messengerbot";
-                    displayname = "Messenger bridge bot";
-                    avatar = "mxc://maunium.net/ygtkteZsXnGJLJHRchUwYWak";
-                  };
-                };
-              };
-            };
-          }
-        '';
       };
     };
   };
@@ -329,6 +343,7 @@ in
           lib.mapAttrs (name: cfg: [
             {
               assertion = cfg.settings.homeserver.domain != "" && cfg.settings.homeserver.address != "";
+
               message = ''
                 The options with information about the homeserver:
                 `services.mautrix-meta.instances.${name}.settings.homeserver.domain` and
@@ -342,6 +357,7 @@ in
                 "messenger"
                 "instagram"
               ];
+
               message = ''
                 The option `services.mautrix-meta.instances.${name}.settings.network.mode` has to be set
                 to one of: facebook, facebook-tor, messenger, instagram.
@@ -350,36 +366,42 @@ in
             }
             {
               assertion = cfg.settings.bridge.permissions != { };
+
               message = ''
                 The option `services.mautrix-meta.instances.${name}.settings.bridge.permissions` has to be set.
               '';
             }
             {
               assertion = cfg.settings.appservice.id != "";
+
               message = ''
                 The option `services.mautrix-meta.instances.${name}.settings.appservice.id` has to be set.
               '';
             }
             {
               assertion = cfg.settings.appservice.bot.username != "";
+
               message = ''
                 The option `services.mautrix-meta.instances.${name}.settings.appservice.bot.username` has to be set.
               '';
             }
             {
               assertion = !(cfg.settings ? bridge.disable_xma);
+
               message = ''
                 The option `bridge.disable_xma` has been moved to `network.disable_xma_always`. Please [migrate your configuration](https://github.com/mautrix/meta/releases/tag/v0.4.0). You may wish to use [the auto-migration code](https://github.com/mautrix/meta/blob/f5440b05aac125b4c95b1af85635a717cbc6dd0e/cmd/mautrix-meta/legacymigrate.go#L23) for reference.
               '';
             }
             {
               assertion = !(cfg.settings ? bridge.displayname_template);
+
               message = ''
                 The option `bridge.displayname_template` has been moved to `network.displayname_template`. Please [migrate your configuration](https://github.com/mautrix/meta/releases/tag/v0.4.0). You may wish to use [the auto-migration code](https://github.com/mautrix/meta/blob/f5440b05aac125b4c95b1af85635a717cbc6dd0e/cmd/mautrix-meta/legacymigrate.go#L23) for reference.
               '';
             }
             {
               assertion = !(cfg.settings ? meta);
+
               message = ''
                 The options in `meta` have been moved to `network`. Please [migrate your configuration](https://github.com/mautrix/meta/releases/tag/v0.4.0). You may wish to use [the auto-migration code](https://github.com/mautrix/meta/blob/f5440b05aac125b4c95b1af85635a717cbc6dd0e/cmd/mautrix-meta/legacymigrate.go#L23) for reference.
               '';
@@ -387,21 +409,6 @@ in
           ]) enabledInstances
         )
       );
-
-      users.users = lib.mapAttrs' (
-        name: cfg:
-        lib.nameValuePair "mautrix-meta-${name}" {
-          isSystemUser = true;
-          group = "mautrix-meta";
-          extraGroups = [ "mautrix-meta-registration" ];
-          description = "Mautrix-Meta-${name} bridge user";
-        }
-      ) enabledInstances;
-
-      users.groups.mautrix-meta = { };
-      users.groups.mautrix-meta-registration = {
-        members = lib.lists.optional config.services.matrix-synapse.enable "matrix-synapse";
-      };
 
       services.matrix-synapse = lib.mkIf (config.services.matrix-synapse.enable) (
         let
@@ -423,8 +430,8 @@ in
               );
             in
             {
-              wants = registrationServices;
               after = registrationServices;
+              wants = registrationServices;
             }
           );
         }
@@ -439,6 +446,8 @@ in
               pkgs.envsubst
               upperCfg.package
             ];
+
+            restartTriggers = [ (settingsFileUnsubstituted cfg) ];
 
             script = ''
               # substitute the settings file by environment variables
@@ -505,46 +514,42 @@ in
             '';
 
             serviceConfig = {
-              Type = "oneshot";
-              UMask = 27;
-
-              User = "mautrix-meta-${name}";
+              EnvironmentFile = cfg.environmentFile;
               Group = "mautrix-meta";
-
-              SystemCallFilter = [ "@system-service" ];
-
-              ProtectSystem = "strict";
               ProtectHome = true;
-
+              ProtectSystem = "strict";
               ReadWritePaths = fullDataDir cfg;
               StateDirectory = cfg.dataDir;
-              EnvironmentFile = cfg.environmentFile;
+              SystemCallFilter = [ "@system-service" ];
+              Type = "oneshot";
+              UMask = 27;
+              User = "mautrix-meta-${name}";
             };
-
-            restartTriggers = [ (settingsFileUnsubstituted cfg) ];
           }
         ) enabledInstances)
 
         (lib.mapAttrs' (
           name: cfg:
           lib.nameValuePair "${metaName name}" {
-            description = "Mautrix-Meta bridge - ${metaName name}";
-            wantedBy = [ "multi-user.target" ];
-            wants = [ "network-online.target" ] ++ cfg.serviceDependencies;
             after = [ "network-online.target" ] ++ cfg.serviceDependencies;
+            description = "Mautrix-Meta bridge - ${metaName name}";
+            restartTriggers = [ (settingsFileUnsubstituted cfg) ];
 
             serviceConfig = {
-              Type = "simple";
+              EnvironmentFile = cfg.environmentFile;
 
-              User = "mautrix-meta-${name}";
+              ExecStart = lib.escapeShellArgs [
+                (lib.getExe upperCfg.package)
+                "--config=${settingsFile cfg}"
+              ];
+
               Group = "mautrix-meta";
-              PrivateUsers = true;
-
               LockPersonality = true;
               MemoryDenyWriteExecute = true;
               NoNewPrivileges = true;
               PrivateDevices = true;
               PrivateTmp = true;
+              PrivateUsers = true;
               ProtectClock = true;
               ProtectControlGroups = true;
               ProtectHome = true;
@@ -553,29 +558,42 @@ in
               ProtectKernelModules = true;
               ProtectKernelTunables = true;
               ProtectSystem = "strict";
+              ReadWritePaths = fullDataDir cfg;
               Restart = "on-failure";
               RestartSec = "30s";
               RestrictRealtime = true;
               RestrictSUIDSGID = true;
+              StateDirectory = cfg.dataDir;
               SystemCallArchitectures = "native";
               SystemCallErrorNumber = "EPERM";
               SystemCallFilter = [ "@system-service" ];
+              Type = "simple";
               UMask = 27;
-
+              User = "mautrix-meta-${name}";
               WorkingDirectory = fullDataDir cfg;
-              ReadWritePaths = fullDataDir cfg;
-              StateDirectory = cfg.dataDir;
-              EnvironmentFile = cfg.environmentFile;
-
-              ExecStart = lib.escapeShellArgs [
-                (lib.getExe upperCfg.package)
-                "--config=${settingsFile cfg}"
-              ];
             };
-            restartTriggers = [ (settingsFileUnsubstituted cfg) ];
+
+            wantedBy = [ "multi-user.target" ];
+            wants = [ "network-online.target" ] ++ cfg.serviceDependencies;
           }
         ) enabledInstances)
       ];
+
+      users.groups.mautrix-meta = { };
+
+      users.groups.mautrix-meta-registration = {
+        members = lib.lists.optional config.services.matrix-synapse.enable "matrix-synapse";
+      };
+
+      users.users = lib.mapAttrs' (
+        name: cfg:
+        lib.nameValuePair "mautrix-meta-${name}" {
+          description = "Mautrix-Meta-${name} bridge user";
+          extraGroups = [ "mautrix-meta-registration" ];
+          group = "mautrix-meta";
+          isSystemUser = true;
+        }
+      ) enabledInstances;
     })
     {
       services.mautrix-meta.instances =
@@ -583,36 +601,39 @@ in
           inherit (lib.modules) mkDefault;
         in
         {
-          instagram = {
-            settings = {
-              network.mode = mkDefault "instagram";
-
-              appservice = {
-                id = mkDefault "instagram";
-                port = mkDefault 29320;
-                bot = {
-                  username = mkDefault "instagrambot";
-                  displayname = mkDefault "Instagram bridge bot";
-                  avatar = mkDefault "mxc://maunium.net/JxjlbZUlCPULEeHZSwleUXQv";
-                };
-                username_template = mkDefault "instagram_{{.}}";
-              };
-            };
-          };
           facebook = {
             settings = {
-              network.mode = mkDefault "facebook";
-
               appservice = {
+                bot = {
+                  avatar = mkDefault "mxc://maunium.net/ygtkteZsXnGJLJHRchUwYWak";
+                  displayname = mkDefault "Facebook bridge bot";
+                  username = mkDefault "facebookbot";
+                };
+
                 id = mkDefault "facebook";
                 port = mkDefault 29321;
-                bot = {
-                  username = mkDefault "facebookbot";
-                  displayname = mkDefault "Facebook bridge bot";
-                  avatar = mkDefault "mxc://maunium.net/ygtkteZsXnGJLJHRchUwYWak";
-                };
                 username_template = mkDefault "facebook_{{.}}";
               };
+
+              network.mode = mkDefault "facebook";
+            };
+          };
+
+          instagram = {
+            settings = {
+              appservice = {
+                bot = {
+                  avatar = mkDefault "mxc://maunium.net/JxjlbZUlCPULEeHZSwleUXQv";
+                  displayname = mkDefault "Instagram bridge bot";
+                  username = mkDefault "instagrambot";
+                };
+
+                id = mkDefault "instagram";
+                port = mkDefault 29320;
+                username_template = mkDefault "instagram_{{.}}";
+              };
+
+              network.mode = mkDefault "instagram";
             };
           };
         };

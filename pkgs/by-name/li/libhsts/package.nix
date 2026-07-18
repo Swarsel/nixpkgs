@@ -2,9 +2,9 @@
   lib,
   stdenv,
   fetchFromGitLab,
-  chromium-hsts-preload-list,
   autoconf-archive,
   autoreconfHook,
+  chromium-hsts-preload-list,
   pkg-config,
   python3,
 }:
@@ -12,17 +12,17 @@ stdenv.mkDerivation rec {
   pname = "libhsts";
   version = "0.1.0";
 
-  outputs = [
-    "out"
-    "dev"
-  ];
-
   src = fetchFromGitLab {
     owner = "rockdaboot";
     repo = "libhsts";
     tag = "libhsts-${version}";
     hash = "sha256-pM9ZFk8W73Sx3ru/mqN/rWYMyZnNFCa/Wb8TB9yHbD0=";
   };
+
+  outputs = [
+    "out"
+    "dev"
+  ];
 
   patches = [
     ./gettext-0.25.patch
@@ -46,12 +46,14 @@ stdenv.mkDerivation rec {
 
   meta = {
     description = "Library to easily check a domain against the Chromium HSTS Preload list";
-    mainProgram = "hsts";
     homepage = "https://gitlab.com/rockdaboot/libhsts";
+
     license = with lib.licenses; [
       mit
       bsd3
     ];
+
     maintainers = with lib.maintainers; [ SuperSandro2000 ];
+    mainProgram = "hsts";
   };
 }

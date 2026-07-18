@@ -1,21 +1,19 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
+  buildPythonPackage,
+  nix-update-script,
+  pytest-subprocess,
+  pytestCheckHook,
   setuptools,
   virtualenv,
   writableTmpDirAsHomeHook,
-  pytestCheckHook,
-  pytest-subprocess,
   xonsh,
-  nix-update-script,
 }:
 
 buildPythonPackage rec {
   pname = "xontrib-vox";
   version = "0.0.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "xonsh";
@@ -24,10 +22,12 @@ buildPythonPackage rec {
     hash = "sha256-OB1O5GZYkg7Ucaqak3MncnQWXhMD4BM4wXsYCDD0mhk=";
   };
 
-  prePatch = ''
-    substituteInPlace pyproject.toml \
-      --replace-fail '"xonsh>=0.12.5"' ""
-  '';
+  nativeCheckInputs = [
+    writableTmpDirAsHomeHook
+    pytestCheckHook
+    pytest-subprocess
+    xonsh
+  ];
 
   build-system = [
     setuptools
@@ -37,18 +37,17 @@ buildPythonPackage rec {
     virtualenv
   ];
 
-  nativeCheckInputs = [
-    writableTmpDirAsHomeHook
-    pytestCheckHook
-    pytest-subprocess
-    xonsh
-  ];
-
   disabledTests = [
     # Monkeypatch in test fails, preventing test from running
     "test_interpreter"
   ];
 
+  prePatch = ''
+    substituteInPlace pyproject.toml \
+      --replace-fail '"xonsh>=0.12.5"' ""
+  '';
+
+  pyproject = true;
   passthru.updateScript = nix-update-script { };
 
   meta = {

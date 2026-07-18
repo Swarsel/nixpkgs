@@ -1,8 +1,8 @@
 {
-  coreutils,
-  fetchurl,
-  gnugrep,
   lib,
+  fetchurl,
+  coreutils,
+  gnugrep,
   makeWrapper,
   moreutils,
   stdenvNoCC,

@@ -1,11 +1,11 @@
 {
   lib,
   fetchFromGitHub,
+  gitUpdater,
   linkFarm,
   makeWrapper,
   rustPlatform,
   tree-sitter-grammars,
-  gitUpdater,
   versionCheckHook,
 }:
 
@@ -30,21 +30,12 @@ rustPlatform.buildRustPackage rec {
     fetchSubmodules = false;
   };
 
-  cargoHash = "sha256-YgVsWiINzEsmUMAi6ttEtXutwNDJA2viXnV5rGdSSxU=";
-
-  buildNoDefaultFeatures = true;
-  buildFeatures = [
-    "dynamic-grammar-libs"
-  ];
-
   nativeBuildInputs = [
     makeWrapper
   ];
 
-  nativeInstallCheckInputs = [
-    versionCheckHook
-  ];
-  doInstallCheck = true;
+  cargoHash = "sha256-YgVsWiINzEsmUMAi6ttEtXutwNDJA2viXnV5rGdSSxU=";
+  doCheck = false;
 
   postInstall = ''
     # completions are not yet implemented
@@ -55,7 +46,17 @@ rustPlatform.buildRustPackage rec {
       --prefix LD_LIBRARY_PATH : "${libPath}"
   '';
 
-  doCheck = false;
+  doInstallCheck = true;
+
+  nativeInstallCheckInputs = [
+    versionCheckHook
+  ];
+
+  buildFeatures = [
+    "dynamic-grammar-libs"
+  ];
+
+  buildNoDefaultFeatures = true;
   # failures:
   #     tests::diff_hunks_snapshot::_medium_cpp_cpp_false_expects
   #     tests::diff_hunks_snapshot::_medium_cpp_cpp_true_expects
@@ -63,12 +64,11 @@ rustPlatform.buildRustPackage rec {
   #     tests::diff_hunks_snapshot::_medium_rust_rs_true_expects
   #     tests::diff_hunks_snapshot::_short_python_py_true_expects
   #     tests::diff_hunks_snapshot::_short_rust_rs_true_expects
-
   passthru.updateScript = gitUpdater { rev-prefix = "v"; };
 
   meta = {
-    homepage = "https://github.com/afnanenayet/diffsitter";
     description = "Tree-sitter based AST difftool to get meaningful semantic diffs";
+    homepage = "https://github.com/afnanenayet/diffsitter";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ bbigras ];
   };

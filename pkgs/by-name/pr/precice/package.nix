@@ -2,16 +2,16 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  cmake,
-  pkg-config,
   boost,
+  cmake,
+  ctestCheckHook,
   eigen,
   libxml2,
   mpi,
-  python3Packages,
-  petsc,
-  ctestCheckHook,
   mpiCheckPhaseHook,
+  petsc,
+  pkg-config,
+  python3Packages,
 }:
 
 assert petsc.mpiSupport;
@@ -26,10 +26,6 @@ stdenv.mkDerivation (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-/pMJd2ONEFi1Eo4RAL7viXGJf1i1b0Ccb/1y8m/ir0M=";
   };
-
-  cmakeFlags = [
-    (lib.cmakeBool "BUILD_SHARED_LIBS" (!stdenv.hostPlatform.isStatic))
-  ];
 
   nativeBuildInputs = [
     cmake
@@ -46,7 +42,9 @@ stdenv.mkDerivation (finalAttrs: {
     python3Packages.numpy
   ];
 
-  __darwinAllowLocalNetworking = true;
+  cmakeFlags = [
+    (lib.cmakeBool "BUILD_SHARED_LIBS" (!stdenv.hostPlatform.isStatic))
+  ];
 
   doCheck = true;
 
@@ -54,6 +52,8 @@ stdenv.mkDerivation (finalAttrs: {
     ctestCheckHook
     mpiCheckPhaseHook
   ];
+
+  __darwinAllowLocalNetworking = true;
 
   disabledTests = [
     # Because preciceDt becomes very small. Test is likely to fail on other platform.
@@ -65,7 +65,7 @@ stdenv.mkDerivation (finalAttrs: {
     homepage = "https://precice.org/";
     license = with lib.licenses; [ lgpl3Only ];
     maintainers = with lib.maintainers; [ Scriptkiddi ];
-    mainProgram = "precice-tools";
     platforms = lib.platforms.unix;
+    mainProgram = "precice-tools";
   };
 })

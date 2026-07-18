@@ -3,11 +3,7 @@
 }:
 
 rec {
-  name = "stage0-posix-${version}-source";
   version = "1.9.1";
-  rev = "Release_${version}";
-  outputHashAlgo = "sha256";
-  outputHash = "sha256-UNoyb2teqH26VM7YoOcazyqZ0AlDae045aWc31ZHFdw=";
 
   /*
     Since `make-minimal-bootstrap-sources` requires nixpkgs and nix it
@@ -65,8 +61,6 @@ rec {
   */
   minimal-bootstrap-sources = derivation {
     inherit name;
-    system = hostPlatform.system;
-    outputHashMode = "recursive";
     inherit outputHashAlgo outputHash;
 
     # This builder always fails, but fortunately Nix will print the
@@ -93,5 +87,13 @@ rec {
       #
       # to add it to your store.
     '';
+
+    outputHashMode = "recursive";
+    system = hostPlatform.system;
   };
+
+  name = "stage0-posix-${version}-source";
+  outputHash = "sha256-UNoyb2teqH26VM7YoOcazyqZ0AlDae045aWc31ZHFdw=";
+  outputHashAlgo = "sha256";
+  rev = "Release_${version}";
 }

@@ -1,17 +1,17 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchurl,
-  pkg-config,
+  docutils,
+  gitUpdater,
+  libpciaccess,
+  libpthread-stubs,
   meson,
   ninja,
-  docutils,
-  libpthread-stubs,
-  withIntel ? lib.meta.availableOn stdenv.hostPlatform libpciaccess,
-  libpciaccess,
-  withValgrind ? lib.meta.availableOn stdenv.hostPlatform valgrind-light && !stdenv.cc.isClang,
+  pkg-config,
   valgrind-light,
-  gitUpdater,
+  withIntel ? lib.meta.availableOn stdenv.hostPlatform libpciaccess,
+  withValgrind ? lib.meta.availableOn stdenv.hostPlatform valgrind-light && !stdenv.cc.isClang,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -35,6 +35,7 @@ stdenv.mkDerivation (finalAttrs: {
     ninja
     docutils
   ];
+
   buildInputs = [
     libpthread-stubs
   ]
@@ -55,18 +56,17 @@ stdenv.mkDerivation (finalAttrs: {
 
   passthru = {
     updateScript = gitUpdater {
-      url = "https://gitlab.freedesktop.org/mesa/drm.git";
-      rev-prefix = "libdrm-";
       # Skip versions like libdrm-2_0_2 that happen to go last when
       # sorted.
       ignoredVersions = "_";
+      rev-prefix = "libdrm-";
+      url = "https://gitlab.freedesktop.org/mesa/drm.git";
     };
   };
 
   meta = {
-    homepage = "https://gitlab.freedesktop.org/mesa/drm";
-    downloadPage = "https://dri.freedesktop.org/libdrm/";
     description = "Direct Rendering Manager library and headers";
+
     longDescription = ''
       A userspace library for accessing the DRM (Direct Rendering Manager) on
       Linux, BSD and other operating systems that support the ioctl interface.
@@ -79,8 +79,11 @@ stdenv.mkDerivation (finalAttrs: {
       libdrm is a low-level library, typically used by graphics drivers such as
       the Mesa drivers, the X drivers, libva and similar projects.
     '';
+
+    homepage = "https://gitlab.freedesktop.org/mesa/drm";
     license = lib.licenses.mit;
-    platforms = lib.subtractLists lib.platforms.darwin lib.platforms.unix;
     maintainers = [ ];
+    platforms = lib.subtractLists lib.platforms.darwin lib.platforms.unix;
+    downloadPage = "https://dri.freedesktop.org/libdrm/";
   };
 })

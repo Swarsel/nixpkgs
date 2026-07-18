@@ -2,21 +2,19 @@
   lib,
   buildPythonPackage,
   fetchPypi,
-  hatchling,
   hatch-jupyter-builder,
+  hatchling,
   jupyter-collaboration,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "jupyter-collaboration-ui";
   version = "2.4.1";
-  pyproject = true;
-  __structuredAttrs = true;
 
   src = fetchPypi {
-    pname = "jupyter_collaboration_ui";
     inherit (finalAttrs) version;
     hash = "sha256-DEoBl0qGRch6VDzubqIQ4480/G2Nz0G4pG/RMpr5fr4=";
+    pname = "jupyter_collaboration_ui";
   };
 
   postPatch = ''
@@ -24,16 +22,17 @@ buildPythonPackage (finalAttrs: {
       --replace-fail ', "jupyterlab>=4.0.0"' ""
   '';
 
+  # no tests
+  doCheck = false;
+  __structuredAttrs = true;
+
   build-system = [
     hatchling
     hatch-jupyter-builder
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "jupyter_collaboration_ui" ];
-
-  # no tests
-  doCheck = false;
-
   passthru.tests = jupyter-collaboration;
 
   meta = {

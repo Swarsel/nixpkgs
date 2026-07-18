@@ -1,10 +1,10 @@
 {
-  stdenv,
   lib,
-  buildGoModule,
+  stdenv,
   fetchFromGitHub,
-  nix-update-script,
+  buildGoModule,
   installShellFiles,
+  nix-update-script,
   writableTmpDirAsHomeHook,
 }:
 
@@ -19,14 +19,12 @@ buildGoModule (finalAttrs: {
     hash = "sha256-gwhQG8H1OnGQmawPQ3m6VKVooBh8rZaNr6FDl6fgZXc=";
   };
 
-  vendorHash = "sha256-zqQtuyFrsDB1xRdl4cbaTsCawMrBvcu78zXgU2jUwHI=";
-
-  passthru.updateScript = nix-update-script { };
-
   nativeBuildInputs = [
     installShellFiles
     writableTmpDirAsHomeHook
   ];
+
+  vendorHash = "sha256-zqQtuyFrsDB1xRdl4cbaTsCawMrBvcu78zXgU2jUwHI=";
 
   postInstall = lib.optionalString (stdenv.buildPlatform.canExecute stdenv.hostPlatform) ''
     # Will otherwise panic if it can't open $HOME/{Library/Caches,.cache}/neonmodem.log
@@ -39,13 +37,15 @@ buildGoModule (finalAttrs: {
       --zsh <($out/bin/neonmodem completion zsh)
   '';
 
+  passthru.updateScript = nix-update-script { };
+
   meta = {
     description = "BBS-style TUI client for Discourse, Lemmy, Lobsters, and Hacker News";
     homepage = "https://neonmodem.com";
-    downloadPage = "https://github.com/mrusme/neonmodem/releases";
     changelog = "https://github.com/mrusme/neonmodem/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.gpl3Only;
     maintainers = with lib.maintainers; [ acuteaangle ];
     mainProgram = "neonmodem";
+    downloadPage = "https://github.com/mrusme/neonmodem/releases";
   };
 })

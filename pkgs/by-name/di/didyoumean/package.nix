@@ -1,12 +1,12 @@
 {
   lib,
   stdenv,
-  rustPlatform,
   fetchFromGitHub,
   installShellFiles,
-  pkg-config,
   libxcb,
   openssl,
+  pkg-config,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -20,8 +20,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
     sha256 = "sha256-PSEoh1OMElFJ8m4er1vBMkQak3JvLjd+oWNWA46cows=";
   };
 
-  cargoHash = "sha256-BASM0gBQFuJY2ze9X9HJUkiP4WrOP/inD87bVFraeAY=";
-
   nativeBuildInputs = [
     installShellFiles
   ]
@@ -34,23 +32,26 @@ rustPlatform.buildRustPackage (finalAttrs: {
     openssl
   ];
 
+  cargoHash = "sha256-BASM0gBQFuJY2ze9X9HJUkiP4WrOP/inD87bVFraeAY=";
+  # Clipboard doesn't exist in test environment
+  doCheck = false;
+
   postInstall = ''
     installManPage man/dym.1
     installShellCompletion completions/dym.{bash,fish}
     installShellCompletion --zsh completions/_dym
   '';
 
-  # Clipboard doesn't exist in test environment
-  doCheck = false;
-
   meta = {
     description = "CLI spelling corrector for when you're unsure";
     homepage = "https://github.com/hisbaan/didyoumean";
     license = lib.licenses.gpl3Plus;
+
     maintainers = with lib.maintainers; [
       evanjs
       wegank
     ];
+
     mainProgram = "dym";
   };
 })

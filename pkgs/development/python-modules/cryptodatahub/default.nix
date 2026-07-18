@@ -1,10 +1,10 @@
 {
   lib,
+  fetchFromGitLab,
   asn1crypto,
   attrs,
   beautifulsoup4,
   buildPythonPackage,
-  fetchFromGitLab,
   pyfakefs,
   pytestCheckHook,
   python-dateutil,
@@ -16,7 +16,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "cryptodatahub";
   version = "1.2.1";
-  pyproject = true;
 
   src = fetchFromGitLab {
     owner = "coroner";
@@ -24,6 +23,12 @@ buildPythonPackage (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-Zu8E3k6jHFK+IIHWOalmdv/mPGhT7JjgjFkGiLxA4iI=";
   };
+
+  nativeCheckInputs = [
+    beautifulsoup4
+    pyfakefs
+    pytestCheckHook
+  ];
 
   build-system = [
     setuptools
@@ -37,13 +42,12 @@ buildPythonPackage (finalAttrs: {
     urllib3
   ];
 
-  nativeCheckInputs = [
-    beautifulsoup4
-    pyfakefs
-    pytestCheckHook
+  disabledTestPaths = [
+    # failing tests
+    "test/updaters/test_common.py"
+    # Tests require network access
+    "test/common/test_utils.py"
   ];
-
-  pythonImportsCheck = [ "cryptodatahub" ];
 
   disabledTests = [
     # fails due to certificate expiry
@@ -53,12 +57,8 @@ buildPythonPackage (finalAttrs: {
     "TestClasses"
   ];
 
-  disabledTestPaths = [
-    # failing tests
-    "test/updaters/test_common.py"
-    # Tests require network access
-    "test/common/test_utils.py"
-  ];
+  pyproject = true;
+  pythonImportsCheck = [ "cryptodatahub" ];
 
   meta = {
     description = "Repository of cryptography-related data";

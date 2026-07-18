@@ -1,45 +1,40 @@
 {
   lib,
   stdenv,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # build-system
-  setuptools,
-
-  # dependencies
-  dill,
-  numpy,
-  pandas,
-  sortedcontainers,
-  typing-extensions,
-
   # optional-dependencies
   autograd,
   botorch,
+  buildPythonPackage,
+  # dependencies
+  dill,
   # configspace,
   fastparquet,
   h5py,
   huggingface-hub,
   matplotlib,
+  numpy,
+  pandas,
   pymoo,
-  scikit-learn,
-  scipy,
-  # smac,
-  statsmodels,
-  xgboost,
+  pytest-timeout,
   # yahpo-gym,
-
   # tests
   pytestCheckHook,
-  pytest-timeout,
   ray,
+  scikit-learn,
+  scipy,
+  # build-system
+  setuptools,
+  sortedcontainers,
+  # smac,
+  statsmodels,
+  typing-extensions,
   writableTmpDirAsHomeHook,
+  xgboost,
 }:
 buildPythonPackage (finalAttrs: {
   pname = "syne-tune";
   version = "0.15.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "syne-tune";
@@ -47,52 +42,6 @@ buildPythonPackage (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-UNBpfC+aLXhkbyvCG2K00yedJnpYpfldqisZ/wDPtuA=";
   };
-
-  build-system = [
-    setuptools
-  ];
-
-  pythonRelaxDeps = [
-    "numpy"
-  ];
-
-  dependencies = [
-    dill
-    numpy
-    pandas
-    sortedcontainers
-    typing-extensions
-  ];
-
-  optional-dependencies = lib.fix (self: {
-    blackbox-repository = [
-      fastparquet
-      h5py
-      huggingface-hub
-      numpy
-      pandas
-      scikit-learn
-      xgboost
-    ];
-    bore = [
-      scikit-learn
-      xgboost
-    ];
-    botorch = [ botorch ];
-    gpsearchers = [
-      autograd
-      scipy
-    ];
-    kde = [ statsmodels ];
-    moo = [
-      pymoo
-      scipy
-    ];
-    sklearn = [ scikit-learn ];
-    # smac = [ smac swig ]; # smac unavailable on nixpkgs
-    visual = [ matplotlib ];
-    # yahpo = [ configspace onnxruntime pandas pyyaml yahpo-gym ]; # yahpo-gym unavailable on nixpkgs
-  });
 
   nativeCheckInputs = [
     pytestCheckHook
@@ -108,6 +57,18 @@ buildPythonPackage (finalAttrs: {
   ++ finalAttrs.passthru.optional-dependencies.kde
   ++ finalAttrs.passthru.optional-dependencies.sklearn;
 
+  build-system = [
+    setuptools
+  ];
+
+  dependencies = [
+    dill
+    numpy
+    pandas
+    sortedcontainers
+    typing-extensions
+  ];
+
   disabledTests = [
     # NameError: name 'HV' is not defined
     # these require pkg `pymoo` and adding `pymoo` raises:
@@ -122,8 +83,50 @@ buildPythonPackage (finalAttrs: {
     "test_cholesky_factorization"
   ];
 
+  optional-dependencies = lib.fix (self: {
+    blackbox-repository = [
+      fastparquet
+      h5py
+      huggingface-hub
+      numpy
+      pandas
+      scikit-learn
+      xgboost
+    ];
+
+    bore = [
+      scikit-learn
+      xgboost
+    ];
+
+    botorch = [ botorch ];
+
+    gpsearchers = [
+      autograd
+      scipy
+    ];
+
+    kde = [ statsmodels ];
+
+    moo = [
+      pymoo
+      scipy
+    ];
+
+    sklearn = [ scikit-learn ];
+    # smac = [ smac swig ]; # smac unavailable on nixpkgs
+    visual = [ matplotlib ];
+    # yahpo = [ configspace onnxruntime pandas pyyaml yahpo-gym ]; # yahpo-gym unavailable on nixpkgs
+  });
+
+  pyproject = true;
+
   pythonImportsCheck = [
     "syne_tune"
+  ];
+
+  pythonRelaxDeps = [
+    "numpy"
   ];
 
   meta = {

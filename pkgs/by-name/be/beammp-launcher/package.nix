@@ -1,14 +1,13 @@
 {
+  lib,
   stdenv,
   fetchFromGitHub,
-  lib,
-  copyDesktopItems,
-  installShellFiles,
-  makeDesktopItem,
-
   cmake,
+  copyDesktopItems,
   curl,
   httplib,
+  installShellFiles,
+  makeDesktopItem,
   nlohmann_json,
   openssl,
 }:
@@ -40,6 +39,13 @@ stdenv.mkDerivation (finalAttrs: {
     openssl
   ];
 
+  installPhase = ''
+    runHook preInstall
+    installBin "BeamMP-Launcher"
+    copyDesktopItems
+    runHook postInstall
+  '';
+
   desktopItems = [
     (makeDesktopItem {
       categories = [ "Game" ];
@@ -51,22 +57,17 @@ stdenv.mkDerivation (finalAttrs: {
     })
   ];
 
-  installPhase = ''
-    runHook preInstall
-    installBin "BeamMP-Launcher"
-    copyDesktopItems
-    runHook postInstall
-  '';
-
   meta = {
     description = "Launcher for the BeamMP mod for BeamNG.drive";
     homepage = "https://github.com/BeamMP/BeamMP-Launcher";
     license = lib.licenses.agpl3Only;
-    mainProgram = "BeamMP-Launcher";
+
     maintainers = with lib.maintainers; [
       Andy3153
       mochienya
     ];
+
     platforms = lib.platforms.linux;
+    mainProgram = "BeamMP-Launcher";
   };
 })

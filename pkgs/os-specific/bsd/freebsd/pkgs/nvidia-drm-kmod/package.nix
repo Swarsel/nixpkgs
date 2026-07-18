@@ -1,18 +1,17 @@
 {
   lib,
   stdenv,
-  mkDerivation,
   fetchurl,
-  fetchpatch,
-  sys,
   drm-kmod,
-  xargs-j,
+  fetchpatch,
+  mkDerivation,
   nvidia-driver,
+  sys,
+  xargs-j,
 }:
 mkDerivation rec {
-  path = "...";
-  pname = "nvidia-drm-kmod";
   inherit (nvidia-driver) version src;
+  pname = "nvidia-drm-kmod";
 
   outputs = [
     "out"
@@ -22,16 +21,16 @@ mkDerivation rec {
   patches =
     lib.optionals (lib.versionOlder version "565") [
       (fetchpatch {
-        url = "https://raw.githubusercontent.com/freebsd/freebsd-ports/d07cdab9108a8cf6ab66aa1ff834339f8695f457/graphics/nvidia-drm-61-kmod/files/extra-patch-nvidia-drm-conftest.h";
         extraPrefix = "a/src/nvidia-drm";
         hash = "sha256-EgzEx1VxQyoNpnY0MnNVa08A0ENSyU/rdRM2hOwUE2g=";
+        url = "https://raw.githubusercontent.com/freebsd/freebsd-ports/d07cdab9108a8cf6ab66aa1ff834339f8695f457/graphics/nvidia-drm-61-kmod/files/extra-patch-nvidia-drm-conftest.h";
       })
     ]
     ++ lib.optionals (lib.versionOlder version "555") [
       (fetchpatch {
-        url = "https://raw.githubusercontent.com/freebsd/freebsd-ports/d07cdab9108a8cf6ab66aa1ff834339f8695f457/graphics/nvidia-drm-61-kmod/files/extra-patch-nvidia-drm-freebsd-lkpi.c";
         extraPrefix = "a/src/nvidia-drm";
         hash = "sha256-aFOs811J5e9Nu8Kwd6dImiSefEOlKlnRp3kg7DTIccg=";
+        url = "https://raw.githubusercontent.com/freebsd/freebsd-ports/d07cdab9108a8cf6ab66aa1ff834339f8695f457/graphics/nvidia-drm-61-kmod/files/extra-patch-nvidia-drm-freebsd-lkpi.c";
       })
     ];
 
@@ -48,17 +47,6 @@ mkDerivation rec {
       export PATH=$PATH:$TMP/bin
     '';
 
-  env.NIX_CFLAGS_COMPILE = "-Wno-error=implicit-function-declaration"; # conftests rely on this
-  env.CONFTEST_BSD_KMODPATHS = "${sys}/kernel ${drm-kmod}/kernel";
-
-  extraNativeBuildInputs = [
-    xargs-j
-  ];
-
-  preConfigure = ''
-    cd src/nvidia-drm
-  '';
-
   makeFlags = [
     "BSDSRCTOP=${sys.src}"
     "SYSDIR=${sys.src}/sys"
@@ -67,15 +55,27 @@ mkDerivation rec {
     "DEBUG_FLAGS=-g"
   ];
 
-  KMODDIR = "${builtins.placeholder "out"}/kernel";
+  env.CONFTEST_BSD_KMODPATHS = "${sys}/kernel ${drm-kmod}/kernel";
+  env.NIX_CFLAGS_COMPILE = "-Wno-error=implicit-function-declaration"; # conftests rely on this
+
+  preConfigure = ''
+    cd src/nvidia-drm
+  '';
+
   KERN_DEBUGDIR = "${builtins.placeholder "debug"}/lib/debug";
-  KERN_DEBUGDIR_KODIR = "${KERN_DEBUGDIR}/kernel";
   KERN_DEBUGDIR_KMODDIR = "${KERN_DEBUGDIR}/kernel";
+  KERN_DEBUGDIR_KODIR = "${KERN_DEBUGDIR}/kernel";
+  KMODDIR = "${builtins.placeholder "out"}/kernel";
+
+  extraNativeBuildInputs = [
+    xargs-j
+  ];
 
   hardeningDisable = [
     "pic" # generates relocations the linker can't handle
   ];
 
-  meta.platforms = [ "x86_64-freebsd" ];
+  path = "...";
   meta.license = lib.licenses.unfree;
+  meta.platforms = [ "x86_64-freebsd" ];
 }

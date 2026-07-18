@@ -1,19 +1,18 @@
 {
   lib,
   buildPythonPackage,
-  fetchpatch,
-  python-dateutil,
   docopt,
   fetchPypi,
+  fetchpatch,
   pytestCheckHook,
+  python-dateutil,
   ruamel-yaml,
   testfixtures,
 }:
 
 buildPythonPackage rec {
-  version = "1.8.0";
-  format = "setuptools";
   pname = "pykwalify";
+  version = "1.8.0";
 
   src = fetchPypi {
     inherit pname version;
@@ -23,9 +22,9 @@ buildPythonPackage rec {
   patches = [
     # fix test failures with ruamel.yaml 0.18+
     (fetchpatch {
+      hash = "sha256-XUiebDzFSvNrPpRMoc2lv9m+30cfFh0N0rznMiSdQ/0=";
       name = "pykwalify-fix-tests-ruamel-yaml-0.18.patch";
       url = "https://github.com/Grokzen/pykwalify/commit/57bb2ba5c28b6928edb3f07ef581a5a807524baf.diff";
-      hash = "sha256-XUiebDzFSvNrPpRMoc2lv9m+30cfFh0N0rznMiSdQ/0=";
     })
   ];
 
@@ -40,12 +39,12 @@ buildPythonPackage rec {
     testfixtures
   ];
 
+  format = "setuptools";
   pythonImportsCheck = [ "pykwalify" ];
 
   meta = {
-    homepage = "https://github.com/Grokzen/pykwalify";
     description = "YAML/JSON validation library";
-    mainProgram = "pykwalify";
+
     longDescription = ''
       This framework is a port with a lot of added functionality
       of the Java version of the framework kwalify that can be found at
@@ -62,7 +61,10 @@ buildPythonPackage rec {
       The schema this library is based on and extended from:
       http://www.kuwata-lab.com/kwalify/ruby/users-guide.01.html#schema
     '';
+
+    homepage = "https://github.com/Grokzen/pykwalify";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ siriobalmelli ];
+    mainProgram = "pykwalify";
   };
 }

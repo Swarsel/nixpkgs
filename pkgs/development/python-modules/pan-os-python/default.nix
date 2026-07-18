@@ -10,12 +10,11 @@
 buildPythonPackage rec {
   pname = "pan-os-python";
   version = "1.12.5";
-  pyproject = true;
 
   src = fetchPypi {
-    pname = "pan_os_python";
     inherit version;
     hash = "sha256-Zea0WMdFkZLEZi2aqU9woXFA3aAQBEYhf+D7s5ZaOro=";
+    pname = "pan_os_python";
   };
 
   postPatch = ''
@@ -28,13 +27,14 @@ buildPythonPackage rec {
       --replace-fail "from distutils.version import LooseVersion" "from packaging.version import Version as LooseVersion"
   '';
 
+  build-system = [ poetry-core ];
+
   dependencies = [
     packaging
     pan-python
   ];
 
-  build-system = [ poetry-core ];
-
+  pyproject = true;
   pythonImportsCheck = [ "panos" ];
 
   meta = {

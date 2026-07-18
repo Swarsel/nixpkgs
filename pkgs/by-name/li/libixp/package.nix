@@ -2,8 +2,8 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  unzip,
   txt2tags,
+  unzip,
 }:
 
 stdenv.mkDerivation {
@@ -22,19 +22,19 @@ stdenv.mkDerivation {
       --replace "©" "C "
   '';
 
+  nativeBuildInputs = [ unzip ];
+  buildInputs = [ txt2tags ];
+
   postConfigure = ''
     sed -i -e "s|^PREFIX.*=.*$|PREFIX = $out|" config.mk
   '';
 
-  nativeBuildInputs = [ unzip ];
-  buildInputs = [ txt2tags ];
-
   meta = {
-    homepage = "https://github.com/0intro/libixp";
     description = "Portable, simple C-language 9P client and server library";
-    mainProgram = "ixpc";
-    maintainers = with lib.maintainers; [ kovirobi ];
+    homepage = "https://github.com/0intro/libixp";
     license = lib.licenses.mit;
+    maintainers = with lib.maintainers; [ kovirobi ];
     platforms = with lib.platforms; unix;
+    mainProgram = "ixpc";
   };
 }

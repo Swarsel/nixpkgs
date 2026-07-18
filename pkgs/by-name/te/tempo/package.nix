@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   nix-update-script,
 }:
 
@@ -13,18 +13,13 @@ buildGoModule (finalAttrs: {
     owner = "grafana";
     repo = "tempo";
     tag = "v${finalAttrs.version}";
-    fetchSubmodules = true;
     hash = "sha256-VMgHKeCk82CxbOi6rnt2U25su611wjeZJsRjEZffpiU=";
+    fetchSubmodules = true;
   };
 
   vendorHash = null;
-
-  subPackages = [
-    "cmd/tempo-cli"
-    "cmd/tempo-query"
-    "cmd/tempo-vulture"
-    "cmd/tempo"
-  ];
+  # tests use docker
+  doCheck = false;
 
   ldflags = [
     "-s"
@@ -34,16 +29,20 @@ buildGoModule (finalAttrs: {
     "-X=main.Revision=${finalAttrs.version}"
   ];
 
-  # tests use docker
-  doCheck = false;
+  subPackages = [
+    "cmd/tempo-cli"
+    "cmd/tempo-query"
+    "cmd/tempo-vulture"
+    "cmd/tempo"
+  ];
 
   passthru.updateScript = nix-update-script { };
 
   meta = {
     description = "High volume, minimal dependency trace storage";
+    homepage = "https://grafana.com/oss/tempo/";
     changelog = "https://github.com/grafana/tempo/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.asl20;
-    homepage = "https://grafana.com/oss/tempo/";
     maintainers = [ lib.maintainers.kashw2 ];
   };
 })

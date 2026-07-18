@@ -2,10 +2,10 @@
   lib,
   stdenv,
   fetchFromGitHub,
+  libhighscore,
   meson,
   ninja,
   pkg-config,
-  libhighscore,
   unstableGitUpdater,
 }:
 
@@ -26,8 +26,6 @@ stdenv.mkDerivation (finalAttrs: {
         "'${finalAttrs.src.rev}'"
   '';
 
-  sourceRoot = "${finalAttrs.src.name}/platforms/highscore";
-
   nativeBuildInputs = [
     meson
     ninja
@@ -38,14 +36,16 @@ stdenv.mkDerivation (finalAttrs: {
     libhighscore
   ];
 
+  sourceRoot = "${finalAttrs.src.name}/platforms/highscore";
+
   passthru.updateScript = unstableGitUpdater {
     hardcodeZeroVersion = true;
   };
 
   meta = {
+    inherit (libhighscore.meta) maintainers platforms;
     description = "Port of Gearsystem to Highscore";
     homepage = "https://github.com/highscore-emu/Gearsystem";
     license = lib.licenses.gpl3Plus;
-    inherit (libhighscore.meta) maintainers platforms;
   };
 })

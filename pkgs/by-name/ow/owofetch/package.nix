@@ -1,13 +1,12 @@
 {
   lib,
-  stdenvNoCC,
-  rustPlatform,
   fetchFromGitHub,
+  rustPlatform,
+  stdenvNoCC,
 }:
 
 rustPlatform.buildRustPackage rec {
   pname = "owofetch";
-
   version = "0.3.1";
 
   src = fetchFromGitHub {
@@ -23,8 +22,8 @@ rustPlatform.buildRustPackage rec {
     description = "Alternative to *fetch, uwuifies all stats";
     homepage = "https://github.com/netthier/owofetch-rs";
     license = lib.licenses.gpl3Only;
-    platforms = lib.platforms.x86_64;
     maintainers = with lib.maintainers; [ nullishamy ];
+    platforms = lib.platforms.x86_64;
     mainProgram = "owofetch";
   };
 }

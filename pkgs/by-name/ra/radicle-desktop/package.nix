@@ -1,26 +1,26 @@
 {
+  lib,
   stdenv,
   fetchFromGitHub,
   cargo-tauri,
+  clippy,
   fetchFromRadicle,
+  fetchNpmDeps,
   git,
   glib,
   gtk3,
-  fetchNpmDeps,
-  npmHooks,
-  lib,
   libsoup_3,
   nodejs,
+  npmHooks,
   openssh,
   openssl,
   pkg-config,
   playwright-driver,
   radicle-node,
   rustPlatform,
+  rustfmt,
   webkitgtk_4_1,
   wrapGAppsHook4,
-  rustfmt,
-  clippy,
   writableTmpDirAsHomeHook,
 }:
 
@@ -29,15 +29,17 @@ rustPlatform.buildRustPackage (finalAttrs: {
   version = "0.13.0";
 
   src = fetchFromRadicle {
-    seed = "seed.radicle.dev";
     repo = "z4D5UCArafTzTQpDZNQRuqswh3ury";
     tag = "releases/${finalAttrs.version}";
     hash = "sha256-XpzOzyUwAGLF/klXXbBFX5oLRSURB+AsL8n9WWv5x7s=";
     leaveDotGit = true;
+
     postFetch = ''
       git -C $out rev-parse --short HEAD > $out/.git_head
       rm -rf $out/.git
     '';
+
+    seed = "seed.radicle.dev";
   };
 
   postPatch = ''
@@ -50,27 +52,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
     substituteInPlace scripts/check-rs \
       --replace-fail "-Dwarnings" ""
   '';
-
-  npmDeps = fetchNpmDeps {
-    inherit (finalAttrs) src;
-    hash = "sha256-EigvRDUmiuz/wt5vZ3NSxovxjvxHVGrHdA9HIod/fO8=";
-  };
-
-  cargoHash = "sha256-HInTwQYuLVFnRCbQq2hNRPGJP1I9gBRQZQ9ul3DWtBQ=";
-
-  twemojiAssets = fetchFromGitHub {
-    owner = "twitter";
-    repo = "twemoji";
-    tag = "v14.0.2";
-    hash = "sha256-YoOnZ5uVukzi/6bLi22Y8U5TpplPzB7ji42l+/ys5xI=";
-  };
-
-  env = {
-    HW_RELEASE = "nixpkgs";
-    PLAYWRIGHT_BROWSERS_PATH = playwright-driver.browsers;
-    PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD = true;
-    PLAYWRIGHT_SKIP_VALIDATE_HOST_REQUIREMENTS = true;
-  };
 
   nativeBuildInputs = [
     cargo-tauri.hook
@@ -87,6 +68,15 @@ rustPlatform.buildRustPackage (finalAttrs: {
     openssl
   ]
   ++ lib.optionals stdenv.hostPlatform.isLinux [ webkitgtk_4_1 ];
+
+  cargoHash = "sha256-HInTwQYuLVFnRCbQq2hNRPGJP1I9gBRQZQ9ul3DWtBQ=";
+
+  env = {
+    HW_RELEASE = "nixpkgs";
+    PLAYWRIGHT_BROWSERS_PATH = playwright-driver.browsers;
+    PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD = true;
+    PLAYWRIGHT_SKIP_VALIDATE_HOST_REQUIREMENTS = true;
+  };
 
   preBuild = ''
     export GIT_HEAD=$(<$src/.git_head)
@@ -119,6 +109,18 @@ rustPlatform.buildRustPackage (finalAttrs: {
     runHook postCheck
   '';
 
+  npmDeps = fetchNpmDeps {
+    inherit (finalAttrs) src;
+    hash = "sha256-EigvRDUmiuz/wt5vZ3NSxovxjvxHVGrHdA9HIod/fO8=";
+  };
+
+  twemojiAssets = fetchFromGitHub {
+    hash = "sha256-YoOnZ5uVukzi/6bLi22Y8U5TpplPzB7ji42l+/ys5xI=";
+    owner = "twitter";
+    repo = "twemoji";
+    tag = "v14.0.2";
+  };
+
   passthru = {
     inherit (finalAttrs) env;
     updateScript = ./update.sh;
@@ -129,9 +131,9 @@ rustPlatform.buildRustPackage (finalAttrs: {
     homepage = "https://radicle.network/nodes/seed.radicle.dev/rad:z4D5UCArafTzTQpDZNQRuqswh3ury";
     changelog = "https://radicle.network/nodes/seed.radicle.dev/rad:z4D5UCArafTzTQpDZNQRuqswh3ury/tree/CHANGELOG.md";
     license = lib.licenses.gpl3Only;
-    platforms = lib.platforms.unix;
-    teams = [ lib.teams.radicle ];
     maintainers = with lib.maintainers; [ faukah ];
+    platforms = lib.platforms.unix;
     mainProgram = "radicle-desktop";
+    teams = [ lib.teams.radicle ];
   };
 })

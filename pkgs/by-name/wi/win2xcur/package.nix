@@ -1,13 +1,12 @@
 {
   lib,
-  python3Packages,
   fetchFromGitHub,
+  python3Packages,
 }:
 
 python3Packages.buildPythonPackage (finalAttrs: {
   pname = "win2xcur";
   version = "0.2.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "quantum5";
@@ -22,6 +21,8 @@ python3Packages.buildPythonPackage (finalAttrs: {
     numpy
     wand
   ];
+
+  pyproject = true;
 
   pythonImportsCheck = [
     "win2xcur.main.inspectcur"

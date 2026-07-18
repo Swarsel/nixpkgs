@@ -2,8 +2,8 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  cmake,
   bison,
+  cmake,
   flex,
   gmp,
   zlib,
@@ -34,6 +34,7 @@ stdenv.mkDerivation (finalAttrs: {
     gmp
     zlib
   ];
+
   doCheck = true;
 
   checkPhase = ''
@@ -43,12 +44,10 @@ stdenv.mkDerivation (finalAttrs: {
     popd
     runHook postCheck
   '';
+
   meta = {
-    maintainers = with lib.maintainers; [ pmeinhold ];
-    platforms = lib.platforms.linux;
-    broken = stdenv.hostPlatform.isDarwin;
-    changelog = "https://zimpl.zib.de/download/CHANGELOG.txt";
     description = "Zuse Institute Mathematical Programming Language";
+
     longDescription = ''
       ZIMPL is a little language to translate the mathematical model of a
       problem into a linear or (mixed-)integer mathematical program
@@ -67,8 +66,13 @@ stdenv.mkDerivation (finalAttrs: {
          note        = "ZIB-Report 04-58",
       }
     '';
-    license = lib.licenses.lgpl3Plus;
+
     homepage = "https://zimpl.zib.de";
+    changelog = "https://zimpl.zib.de/download/CHANGELOG.txt";
+    license = lib.licenses.lgpl3Plus;
+    maintainers = with lib.maintainers; [ pmeinhold ];
+    platforms = lib.platforms.linux;
     mainProgram = "zimpl";
+    broken = stdenv.hostPlatform.isDarwin;
   };
 })

@@ -1,7 +1,7 @@
 {
   lib,
-  stdenvNoCC,
   fetchurl,
+  stdenvNoCC,
 }:
 stdenvNoCC.mkDerivation (finalAttrs: {
   pname = "softnet";
@@ -11,7 +11,6 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     url = "https://github.com/cirruslabs/softnet/releases/download/${finalAttrs.version}/softnet.tar.gz";
     sha256 = "1g274x524xc85hfzxi3vb4xp720bjgk740bp6hc92d1ikmp0b664";
   };
-  sourceRoot = ".";
 
   installPhase = ''
     runHook preInstall
@@ -22,14 +21,16 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  sourceRoot = ".";
+
   meta = {
     description = "Software networking with isolation for Tart";
     homepage = "https://github.com/cirruslabs/softnet";
     license = lib.licenses.agpl3Plus;
-    maintainers = with lib.maintainers; [ emilytrau ];
-    platforms = [ "aarch64-darwin" ];
     # Source build will be possible after darwin SDK 12.0 bump
     # https://github.com/NixOS/nixpkgs/pull/229210
     sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
+    maintainers = with lib.maintainers; [ emilytrau ];
+    platforms = [ "aarch64-darwin" ];
   };
 })

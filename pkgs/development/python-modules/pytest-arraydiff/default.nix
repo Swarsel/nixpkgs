@@ -10,7 +10,6 @@
 buildPythonPackage rec {
   pname = "pytest-arraydiff";
   version = "0.6.1";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
@@ -18,14 +17,11 @@ buildPythonPackage rec {
   };
 
   nativeBuildInputs = [ setuptools-scm ];
-
   buildInputs = [ pytest ];
-
   propagatedBuildInputs = [ numpy ];
-
   # The tests requires astropy, which itself requires pytest-arraydiff
   doCheck = false;
-
+  format = "setuptools";
   pythonImportsCheck = [ "pytest_arraydiff" ];
 
   meta = {

@@ -1,10 +1,10 @@
 {
   lib,
   stdenv,
-  bun,
   fetchFromGitHub,
-  versionCheckHook,
+  bun,
   makeWrapper,
+  versionCheckHook,
   writableTmpDirAsHomeHook,
 }:
 let
@@ -19,15 +19,13 @@ let
   };
 
   node_modules = stdenv.mkDerivation {
-    pname = "${pname}-node_modules";
     inherit version src;
+    pname = "${pname}-node_modules";
 
     nativeBuildInputs = [
       bun
       writableTmpDirAsHomeHook
     ];
-
-    dontConfigure = true;
 
     buildPhase = ''
       runHook preBuild
@@ -53,6 +51,7 @@ let
       runHook postInstall
     '';
 
+    dontConfigure = true;
     dontFixup = true;
 
     outputHash =
@@ -75,14 +74,6 @@ stdenv.mkDerivation {
     bun
     makeWrapper
   ];
-
-  configurePhase = ''
-    runHook preConfigure
-
-    cp -R ${node_modules}/node_modules .
-
-    runHook postConfigure
-  '';
 
   buildPhase = ''
     runHook preBuild
@@ -111,15 +102,23 @@ stdenv.mkDerivation {
     runHook postInstall
   '';
 
-  # strip removes the JS bundle from the binary
-  dontStrip = true;
+  doInstallCheck = true;
 
   nativeInstallCheckInputs = [
     versionCheckHook
     writableTmpDirAsHomeHook
   ];
 
-  versionCheckKeepEnvironment = [ "HOME" ];
+  configurePhase = ''
+    runHook preConfigure
+
+    cp -R ${node_modules}/node_modules .
+
+    runHook postConfigure
+  '';
+
+  # strip removes the JS bundle from the binary
+  dontStrip = true;
 
   preVersionCheck = ''
     cat > filen-version << EOF
@@ -130,7 +129,7 @@ stdenv.mkDerivation {
     versionCheckProgram="$(pwd)/filen-version"
   '';
 
-  doInstallCheck = true;
+  versionCheckKeepEnvironment = [ "HOME" ];
 
   meta = {
     description = "CLI tool for interacting with the Filen cloud";
@@ -138,11 +137,13 @@ stdenv.mkDerivation {
     changelog = "https://github.com/FilenCloudDienste/filen-cli/releases/tag/v${version}";
     license = lib.licenses.agpl3Only;
     maintainers = with lib.maintainers; [ eilvelia ];
-    mainProgram = "filen";
+
     platforms = [
       "aarch64-darwin"
       "aarch64-linux"
       "x86_64-linux"
     ];
+
+    mainProgram = "filen";
   };
 }

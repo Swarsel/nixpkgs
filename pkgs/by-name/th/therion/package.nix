@@ -2,30 +2,30 @@
   lib,
   stdenv,
   fetchFromGitHub,
+  catch2,
   cmake,
-  pkg-config,
-  perl,
-  tcl,
-  tclPackages,
-  tk,
+  curl,
   expat,
-  python3,
-  texliveTeTeX,
-  survex,
-  makeWrapper,
   fmt,
-  proj,
-  wxwidgets_3_2,
-  vtk,
   freetype,
-  libjpeg,
   gettext,
   libGL,
   libGLU,
-  sqlite,
+  libjpeg,
   libtiff,
-  curl,
-  catch2,
+  makeWrapper,
+  perl,
+  pkg-config,
+  proj,
+  python3,
+  sqlite,
+  survex,
+  tcl,
+  tclPackages,
+  texliveTeTeX,
+  tk,
+  vtk,
+  wxwidgets_3_2,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -49,14 +49,6 @@ stdenv.mkDerivation (finalAttrs: {
     tcl.tclPackageHook
   ];
 
-  preConfigure = ''
-    export OUTDIR=$out
-  '';
-
-  cmakeFlags = [
-    "-DBUILD_THBOOK=OFF"
-  ];
-
   buildInputs = [
     expat
     tclPackages.tkimg
@@ -78,6 +70,14 @@ stdenv.mkDerivation (finalAttrs: {
     tclPackages.bwidget
     catch2
   ];
+
+  cmakeFlags = [
+    "-DBUILD_THBOOK=OFF"
+  ];
+
+  preConfigure = ''
+    export OUTDIR=$out
+  '';
 
   fixupPhase = ''
     runHook preFixup

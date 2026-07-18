@@ -1,9 +1,9 @@
 {
   lib,
+  fetchFromGitHub,
   aiohttp,
   aioresponses,
   buildPythonPackage,
-  fetchFromGitHub,
   mashumaro,
   orjson,
   poetry-core,
@@ -19,7 +19,6 @@
 buildPythonPackage rec {
   pname = "tailscale";
   version = "0.8.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "frenck";
@@ -33,6 +32,15 @@ buildPythonPackage rec {
     substituteInPlace pyproject.toml \
       --replace 'version = "0.0.0"' 'version = "${version}"'
   '';
+
+  nativeCheckInputs = [
+    aioresponses
+    pytest-asyncio
+    pytest-cov-stub
+    pytestCheckHook
+    syrupy
+  ]
+  ++ lib.concatAttrValues optional-dependencies;
 
   build-system = [ poetry-core ];
 
@@ -50,15 +58,7 @@ buildPythonPackage rec {
     ];
   };
 
-  nativeCheckInputs = [
-    aioresponses
-    pytest-asyncio
-    pytest-cov-stub
-    pytestCheckHook
-    syrupy
-  ]
-  ++ lib.concatAttrValues optional-dependencies;
-
+  pyproject = true;
   pythonImportsCheck = [ "tailscale" ];
 
   meta = {
@@ -66,7 +66,7 @@ buildPythonPackage rec {
     homepage = "https://github.com/frenck/python-tailscale";
     changelog = "https://github.com/frenck/python-tailscale/releases/tag/v${version}";
     license = lib.licenses.mit;
-    mainProgram = "tailscale";
     maintainers = with lib.maintainers; [ fab ];
+    mainProgram = "tailscale";
   };
 }

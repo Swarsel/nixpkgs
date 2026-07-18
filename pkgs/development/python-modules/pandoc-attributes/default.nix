@@ -1,14 +1,13 @@
 {
+  lib,
   buildPythonPackage,
   fetchPypi,
-  lib,
   pandocfilters,
 }:
 
 buildPythonPackage rec {
   pname = "pandoc-attributes";
   version = "0.1.7";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
@@ -16,13 +15,13 @@ buildPythonPackage rec {
   };
 
   propagatedBuildInputs = [ pandocfilters ];
-
   # No tests in pypi source
   doCheck = false;
+  format = "setuptools";
 
   meta = {
-    homepage = "https://github.com/aaren/pandoc-attributes";
     description = "Attribute class to be used with pandocfilters";
+    homepage = "https://github.com/aaren/pandoc-attributes";
     license = lib.licenses.bsd2;
     maintainers = with lib.maintainers; [ vcanadi ];
   };

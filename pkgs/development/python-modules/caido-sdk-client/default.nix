@@ -12,14 +12,11 @@
 buildPythonPackage (finalAttrs: {
   pname = "caido-sdk-client";
   version = "0.2.0";
-  pyproject = true;
-
-  __structuredAttrs = true;
 
   src = fetchPypi {
-    pname = "caido_sdk_client";
     inherit (finalAttrs) version;
     hash = "sha256-OZiP4Hs/qcaa29SWYttmDXcH1g2SRRCbFiPe+Xs5usg=";
+    pname = "caido_sdk_client";
   };
 
   postPatch = ''
@@ -27,6 +24,9 @@ buildPythonPackage (finalAttrs: {
       --replace-fail "uv_build>=0.9.8,<0.10.0" "uv_build"
   '';
 
+  # Module has no tests
+  doCheck = false;
+  __structuredAttrs = true;
   build-system = [ uv-build ];
 
   dependencies = [
@@ -37,11 +37,8 @@ buildPythonPackage (finalAttrs: {
   ++ gql.optional-dependencies.aiohttp
   ++ gql.optional-dependencies.websockets;
 
+  pyproject = true;
   pythonImportsCheck = [ "caido_sdk_client" ];
-
-  # Module has no tests
-  doCheck = false;
-
   passthru.updateScript = nix-update-script { };
 
   meta = {

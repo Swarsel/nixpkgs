@@ -1,14 +1,13 @@
 {
+  lib,
   buildPythonPackage,
   fetchPypi,
-  lib,
   numpy,
 }:
 
 buildPythonPackage rec {
   pname = "javaobj-py3";
   version = "0.4.4";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
@@ -16,10 +15,9 @@ buildPythonPackage rec {
   };
 
   propagatedBuildInputs = [ numpy ];
-
   # Tests assume network connectivity
   doCheck = false;
-
+  format = "setuptools";
   pythonImportsCheck = [ "javaobj" ];
 
   meta = {

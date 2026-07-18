@@ -18,8 +18,6 @@ stdenv.mkDerivation rec {
     hash = "sha256-ynFuCD+tp8E/DDdB/HU9BCmwKcmQy6NBx26MKnP4W0o=";
   };
 
-  sourceRoot = "${src.name}/${pname}";
-
   buildInputs = [
     meson
     ninja
@@ -32,12 +30,14 @@ stdenv.mkDerivation rec {
     install -Dm644 ../LICENSE.TXT $out/usr/share/licenses/${pname}/LICENSE.TXT
   '';
 
+  sourceRoot = "${src.name}/${pname}";
+
   meta = {
     description = "PS3 Net Server (mod by aldostools)";
     homepage = "https://github.com/aldostools/webMAN-MOD/";
     license = lib.licenses.gpl3;
-    platforms = lib.platforms.unix;
     maintainers = with lib.maintainers; [ makefu ];
+    platforms = lib.platforms.unix;
     mainProgram = "ps3netsrv";
   };
 }

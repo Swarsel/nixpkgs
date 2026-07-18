@@ -2,19 +2,18 @@
   lib,
   fetchFromGitHub,
   buildPythonPackage,
-  setuptools,
   cython,
+  setuptools,
   slurm,
 }:
 
 buildPythonPackage rec {
   pname = "pyslurm";
   version = "25.11.2";
-  pyproject = true;
 
   src = fetchFromGitHub {
-    repo = "pyslurm";
     owner = "PySlurm";
+    repo = "pyslurm";
     tag = "v${version}";
     hash = "sha256-hPAX2udntxpjibUK//Ec06EKNgUFU5AiBN15IZvgo3Q=";
   };
@@ -27,16 +26,17 @@ buildPythonPackage rec {
   ];
 
   env = {
-    SLURM_LIB_DIR = "${lib.getLib slurm}/lib";
     SLURM_INCLUDE_DIR = "${lib.getDev slurm}/include";
+    SLURM_LIB_DIR = "${lib.getLib slurm}/lib";
   };
 
   # Test cases need /etc/slurm/slurm.conf and require a working slurm installation
   doCheck = false;
+  pyproject = true;
 
   meta = {
-    homepage = "https://github.com/PySlurm/pyslurm";
     description = "Python bindings to Slurm";
+    homepage = "https://github.com/PySlurm/pyslurm";
     license = lib.licenses.gpl2;
     platforms = lib.platforms.linux;
   };

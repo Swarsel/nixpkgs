@@ -34,15 +34,14 @@
   wrapGAppsHook3,
   zita-convolver,
   zita-resampler,
-
   enableFaust ? false, # Transpiles Faust DSP code to C++
   enableGperf ? false, # Regenerates gperf files
+  enableNSM ? true, # Enables NSM support
   enableOptimization ? # Enables support for native CPU extensions
     if optimizationSupport != null then
       lib.warn "`optimizationSupport` is deprecated in guitarix; use `enableOptimization` instead." optimizationSupport
     else
       false,
-  enableNSM ? true, # Enables NSM support
   enableSse ? stdenv.hostPlatform.isx86, # Enables support for SSE CPU extensions
   optimizationSupport ? null,
   withAvahi ? true,
@@ -62,11 +61,31 @@ stdenv.mkDerivation (finalAttrs: {
     owner = "brummer10";
     repo = "guitarix";
     tag = "V${finalAttrs.version}";
-    fetchSubmodules = true;
     hash = "sha256-YQqcpdehfC9UE1OowC1/YUw2eWgbLWMbAJ3V5tVmtiU=";
+    fetchSubmodules = true;
   };
 
-  sourceRoot = "${finalAttrs.src.name}/trunk";
+  patches = [
+    # Remove the mandatory check for `boost_system` which was removed in boost 1.89
+    (fetchpatch2 {
+      hash = "sha256-9Z0sAM/oTm3ejv9chDbXEpkjNvlX/SN+k48XaJTqdy0=";
+
+      includes = [
+        "trunk/waf"
+        "*/wscript"
+        "trunk/waftools/*.py"
+      ];
+
+      name = "make-boost-system-stub-optional.patch";
+      url = "https://github.com/brummer10/guitarix/compare/v0.47.0..187670358ffc47a0fa09e140586b2e88dfdcf043.patch?full_index=1";
+    })
+  ];
+
+  # There are many bad shebangs which can fail builds.
+  # See `https://github.com/brummer10/guitarix/issues/246`.
+  postPatch = ''
+    patchShebangs --build tools/**
+  '';
 
   strictDeps = true;
 
@@ -111,25 +130,7 @@ stdenv.mkDerivation (finalAttrs: {
   ++ lib.optional withZitaResampler zita-resampler;
 
   patchFlags = [ "-p2" ];
-  patches = [
-    # Remove the mandatory check for `boost_system` which was removed in boost 1.89
-    (fetchpatch2 {
-      name = "make-boost-system-stub-optional.patch";
-      url = "https://github.com/brummer10/guitarix/compare/v0.47.0..187670358ffc47a0fa09e140586b2e88dfdcf043.patch?full_index=1";
-      hash = "sha256-9Z0sAM/oTm3ejv9chDbXEpkjNvlX/SN+k48XaJTqdy0=";
-      includes = [
-        "trunk/waf"
-        "*/wscript"
-        "trunk/waftools/*.py"
-      ];
-    })
-  ];
-
-  # There are many bad shebangs which can fail builds.
-  # See `https://github.com/brummer10/guitarix/issues/246`.
-  postPatch = ''
-    patchShebangs --build tools/**
-  '';
+  sourceRoot = "${finalAttrs.src.name}/trunk";
 
   wafConfigureFlags = [
     "--no-font-cache-update"
@@ -151,7 +152,7 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Virtual guitar amplifier for Linux running with JACK";
-    mainProgram = "guitarix";
+
     longDescription = ''
       Guitarix takes the signal from your guitar as any real amp would do: as a
       mono-signal from your sound card. Your tone is processed by a main amp and
@@ -167,13 +168,17 @@ stdenv.mkDerivation (finalAttrs: {
       universal guitar-amp. You can get crisp clean-sounds, nice overdrive, fat
       distortion and a diversity of crazy sounds never heard before.
     '';
+
     homepage = "https://github.com/brummer10/guitarix";
     license = lib.licenses.gpl3Plus;
+
     maintainers = with lib.maintainers; [
       lord-valen
       anderscs
     ];
+
     # TODO: This potentially also works on darwin and BSD.
     platforms = lib.platforms.linux;
+    mainProgram = "guitarix";
   };
 })

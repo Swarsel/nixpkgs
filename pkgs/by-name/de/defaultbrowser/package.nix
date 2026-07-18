@@ -20,11 +20,11 @@ stdenv.mkDerivation {
   ];
 
   meta = {
-    mainProgram = "defaultbrowser";
     description = "Command line tool for getting and setting a default browser (HTTP handler) in Mac OS X";
     homepage = "https://github.com/kerma/defaultbrowser";
-    platforms = lib.platforms.darwin;
-    maintainers = [ ];
     license = lib.licenses.mit;
+    maintainers = [ ];
+    platforms = lib.platforms.darwin;
+    mainProgram = "defaultbrowser";
   };
 }

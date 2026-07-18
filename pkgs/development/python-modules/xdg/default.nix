@@ -1,15 +1,14 @@
 {
   lib,
   buildPythonPackage,
-  fetchPypi,
   clikit,
+  fetchPypi,
   poetry-core,
 }:
 
 buildPythonPackage rec {
-  version = "6.0.0";
   pname = "xdg";
-  pyproject = true;
+  version = "6.0.0";
 
   # the github source uses `xdg_base_dirs`, but pypi's sdist maintains `xdg` for compatibility.
   # there are actually breaking changes in xdg_base_dirs,
@@ -20,12 +19,10 @@ buildPythonPackage rec {
   };
 
   nativeBuildInputs = [ poetry-core ];
-
   propagatedBuildInputs = [ clikit ];
-
   # sdist has no tests
   doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "xdg" ];
 
   meta = {

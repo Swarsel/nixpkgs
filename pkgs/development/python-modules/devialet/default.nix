@@ -1,16 +1,15 @@
 {
   lib,
+  fetchFromGitHub,
   aiohttp,
   async-upnp-client,
   buildPythonPackage,
-  fetchFromGitHub,
   setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "devialet";
   version = "1.5.7";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "fwestenberg";
@@ -19,6 +18,8 @@ buildPythonPackage rec {
     hash = "sha256-HmTiHa7DEmjARaYn7/OoGotnTirE7S7zXLK/TfHdEAg=";
   };
 
+  # Module has no tests
+  doCheck = false;
   build-system = [ setuptools ];
 
   dependencies = [
@@ -26,9 +27,7 @@ buildPythonPackage rec {
     async-upnp-client
   ];
 
-  # Module has no tests
-  doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "devialet" ];
 
   meta = {

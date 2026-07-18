@@ -1,14 +1,14 @@
 {
   lib,
-  stdenvNoCC,
   fetchFromGitHub,
+  bashNonInteractive,
   makeBinaryWrapper,
   ncurses,
-  bashNonInteractive,
+  nix-update-script,
+  ps,
   python3,
   rustpython,
-  ps,
-  nix-update-script,
+  stdenvNoCC,
 }:
 
 let
@@ -49,15 +49,7 @@ stdenvNoCC.mkDerivation (finalAttrs: {
   '';
 
   strictDeps = true;
-
   nativeBuildInputs = [ makeBinaryWrapper ];
-
-  propagatedUserEnvPkgs = [
-    bashNonInteractive
-    rustpython
-    ncurses
-    ps
-  ];
 
   installPhase = ''
     runHook preInstall
@@ -77,10 +69,18 @@ stdenvNoCC.mkDerivation (finalAttrs: {
       --prefix PYTHONPATH : "${pythonEnv}/${pythonEnv.sitePackages}"
   '';
 
+  propagatedUserEnvPkgs = [
+    bashNonInteractive
+    rustpython
+    ncurses
+    ps
+  ];
+
   passthru.updateScript = nix-update-script { };
 
   meta = {
     description = "Collection of color schemes for terminal emulators";
+
     longDescription = ''
       Gogh is a collection of color schemes for various terminal
       emulators, including Gnome Terminal, Pantheon Terminal, Tilix
@@ -96,11 +96,12 @@ stdenvNoCC.mkDerivation (finalAttrs: {
       on macOS, providing a consistent and visually appealing
       experience across platforms.
     '';
+
     homepage = "https://github.com/Gogh-Co/Gogh";
     changelog = "https://github.com/Gogh-Co/Gogh/releases/tag/${finalAttrs.src.tag}";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ yiyu ];
-    mainProgram = "gogh";
     platforms = lib.platforms.all;
+    mainProgram = "gogh";
   };
 })

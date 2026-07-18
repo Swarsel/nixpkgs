@@ -1,10 +1,10 @@
 {
   lib,
-  llvmPackages_18,
   fetchFromGitHub,
+  llvmPackages_18,
   makeBinaryWrapper,
-  which,
   nix-update-script,
+  which,
 }:
 
 let
@@ -44,16 +44,13 @@ stdenv.mkDerivation (finalAttrs: {
     patchShebangs --build build_odin.sh
   '';
 
-  env.LLVM_CONFIG = lib.getExe' llvmPackages.llvm.dev "llvm-config";
-
-  dontConfigure = true;
-
-  buildFlags = [ "release" ];
-
   nativeBuildInputs = [
     makeBinaryWrapper
     which
   ];
+
+  buildFlags = [ "release" ];
+  env.LLVM_CONFIG = lib.getExe' llvmPackages.llvm.dev "llvm-config";
 
   installPhase = ''
     runHook preInstall
@@ -85,20 +82,23 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  dontConfigure = true;
   passthru.updateScript = nix-update-script { };
 
   meta = {
     description = "Fast, concise, readable, pragmatic and open sourced programming language";
-    downloadPage = "https://github.com/odin-lang/Odin";
     homepage = "https://odin-lang.org/";
     changelog = "https://github.com/odin-lang/Odin/releases/tag/${finalAttrs.version}";
     license = lib.licenses.bsd3;
-    mainProgram = "odin";
+
     maintainers = with lib.maintainers; [
       astavie
       atomicptr
     ];
+
     platforms = lib.platforms.unix;
+    mainProgram = "odin";
     broken = stdenv.hostPlatform.isMusl;
+    downloadPage = "https://github.com/odin-lang/Odin";
   };
 })

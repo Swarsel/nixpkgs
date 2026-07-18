@@ -2,19 +2,19 @@
   lib,
   stdenv,
   fetchurl,
-  callPackage,
   autoPatchelfHook,
+  callPackage,
+  config,
+  copyDesktopItems,
   cpio,
   gzip,
+  makeDesktopItem,
   makeWrapper,
   rsync,
-  xar,
   udev,
-  config,
+  xar,
   acceptLicense ? config.segger-jlink.acceptLicense or false,
   headless ? false,
-  makeDesktopItem,
-  copyDesktopItems,
 }:
 
 let
@@ -72,43 +72,6 @@ let
       qt4-bundled
     ];
 
-    # Udev is loaded late at runtime
-    appendRunpaths = [
-      "${udev}/lib"
-    ];
-
-    desktopItems = lib.optionals (!headless) (
-      map
-        (
-          entry:
-          (makeDesktopItem {
-            name = entry;
-            exec = entry;
-            icon = "applications-utilities";
-            desktopName = entry;
-            genericName = "SEGGER ${entry}";
-            categories = [ "Development" ];
-            type = "Application";
-            terminal = false;
-            startupNotify = false;
-          })
-        )
-        [
-          "JFlash"
-          "JFlashLite"
-          "JFlashSPI"
-          "JLinkConfig"
-          "JLinkGDBServer"
-          "JLinkLicenseManager"
-          "JLinkRTTViewer"
-          "JLinkRegistration"
-          "JLinkRemoteServer"
-          "JLinkSWOViewer"
-          "JLinkUSBWebServer"
-          "JMem"
-        ]
-    );
-
     installPhase = ''
       runHook preInstall
 
@@ -151,6 +114,43 @@ let
 
       runHook postInstall
     '';
+
+    # Udev is loaded late at runtime
+    appendRunpaths = [
+      "${udev}/lib"
+    ];
+
+    desktopItems = lib.optionals (!headless) (
+      map
+        (
+          entry:
+          (makeDesktopItem {
+            categories = [ "Development" ];
+            desktopName = entry;
+            exec = entry;
+            genericName = "SEGGER ${entry}";
+            icon = "applications-utilities";
+            name = entry;
+            startupNotify = false;
+            terminal = false;
+            type = "Application";
+          })
+        )
+        [
+          "JFlash"
+          "JFlashLite"
+          "JFlashSPI"
+          "JLinkConfig"
+          "JLinkGDBServer"
+          "JLinkLicenseManager"
+          "JLinkRTTViewer"
+          "JLinkRegistration"
+          "JLinkRemoteServer"
+          "JLinkSWOViewer"
+          "JLinkUSBWebServer"
+          "JMem"
+        ]
+    );
   };
 
   buildAttrsDarwin = {
@@ -161,14 +161,6 @@ let
       rsync
       xar
     ];
-
-    unpackPhase = ''
-      runHook preUnpack
-
-      xar -xf $src
-
-      runHook postUnpack
-    '';
 
     installPhase = ''
       runHook preInstall
@@ -196,6 +188,14 @@ let
       runHook postInstall
     '';
 
+    unpackPhase = ''
+      runHook preUnpack
+
+      xar -xf $src
+
+      runHook postUnpack
+    '';
+
   };
 
   buildAttrs =
@@ -211,12 +211,10 @@ stdenv.mkDerivation (
   finalAttrs:
   buildAttrs
   // {
-    pname = "segger-jlink";
     inherit src version;
-
-    dontConfigure = true;
+    pname = "segger-jlink";
     dontBuild = true;
-
+    dontConfigure = true;
     passthru.updateScript = ./update.py;
 
     meta = {
@@ -224,12 +222,14 @@ stdenv.mkDerivation (
       homepage = "https://www.segger.com/downloads/jlink/#J-LinkSoftwareAndDocumentationPack";
       changelog = "https://www.segger.com/downloads/jlink/ReleaseNotes_JLink.html";
       license = lib.licenses.unfree;
-      platforms = lib.attrNames supported;
+
       maintainers = with lib.maintainers; [
         FlorianFranzen
         h7x4
         stargate01
       ];
+
+      platforms = lib.attrNames supported;
     };
   }
 )

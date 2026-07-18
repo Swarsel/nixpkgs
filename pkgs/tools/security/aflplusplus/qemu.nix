@@ -1,27 +1,25 @@
 {
   lib,
   stdenv,
-  python3,
-  zlib,
-  pkg-config,
-  glib,
-  perl,
-  texinfo,
-  libuuid,
-  flex,
-  bison,
-  pixman,
-  meson,
   fetchFromGitHub,
+  bison,
+  flex,
+  glib,
+  libuuid,
+  meson,
   ninja,
+  perl,
+  pixman,
+  pkg-config,
+  python3,
+  texinfo,
+  zlib,
 }:
 
 let
   qemuName = "qemu-5.2.50";
 in
 stdenv.mkDerivation {
-  name = "aflplusplus-${qemuName}";
-
   src = fetchFromGitHub {
     owner = "AFLplusplus";
     repo = "qemuafl";
@@ -47,16 +45,6 @@ stdenv.mkDerivation {
     pixman
     libuuid
   ];
-
-  enableParallelBuilding = true;
-
-  dontUseMesonConfigure = true; # meson's configurePhase isn't compatible with qemu build
-  preBuild = "cd build";
-  preConfigure = ''
-    # this script isn't marked as executable b/c it's indirectly used by meson. Needed to patch its shebang
-    chmod +x ./scripts/shaderinclude.pl
-    patchShebangs .
-  '';
 
   configureFlags = [
     "--target-list=${stdenv.hostPlatform.uname.processor}-linux-user"
@@ -134,14 +122,27 @@ stdenv.mkDerivation {
     "--without-default-devices"
   ];
 
+  preConfigure = ''
+    # this script isn't marked as executable b/c it's indirectly used by meson. Needed to patch its shebang
+    chmod +x ./scripts/shaderinclude.pl
+    patchShebangs .
+  '';
+
+  preBuild = "cd build";
+  dontUseMesonConfigure = true; # meson's configurePhase isn't compatible with qemu build
+  enableParallelBuilding = true;
+  name = "aflplusplus-${qemuName}";
+
   meta = {
-    homepage = "https://github.com/AFLplusplus/qemuafl";
     description = "Fork of QEMU with AFL++ instrumentation support";
+    homepage = "https://github.com/AFLplusplus/qemuafl";
     license = lib.licenses.gpl2Plus;
+
     maintainers = with lib.maintainers; [
       ris
       msanft
     ];
+
     platforms = lib.platforms.linux;
   };
 }

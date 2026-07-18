@@ -1,18 +1,18 @@
 {
+  lib,
   stdenv,
+  jq,
   nodejs,
   tree-sitter,
-  jq,
-  lib,
 }:
 
 {
   language,
-  version,
   src,
-  meta ? { },
-  generate ? false,
+  version,
   excludeBrokenTreeSitterJson ? false,
+  generate ? false,
+  meta ? { },
   ...
 }@args:
 
@@ -23,37 +23,8 @@ let
 in
 stdenv.mkDerivation (
   {
-    pname = "tree-sitter-${language}";
-
     inherit version src;
-
-    __structuredAttrs = true;
-
-    nativeBuildInputs = [
-      jq
-    ]
-    ++ lib.optionals generate [
-      nodejs
-      tree-sitter
-    ];
-
-    CFLAGS = [
-      "-Isrc"
-      # Match upstream `tree-sitter build --wasm`
-      (if isWasi then "-Os" else "-O2")
-    ]
-    ++ lib.optionals isWasi [
-      "-fvisibility=hidden"
-    ];
-    CXXFLAGS = [
-      "-Isrc"
-      (if isWasi then "-Os" else "-O2")
-    ]
-    ++ lib.optionals isWasi [
-      "-fvisibility=hidden"
-    ];
-
-    stripDebugList = [ "parser" ];
+    pname = "tree-sitter-${language}";
 
     # Not all tree-sitter.json files follow the schema. If they're invalid,
     # remove them. Note: these tree-sitter.json files are not validated here,
@@ -62,40 +33,13 @@ stdenv.mkDerivation (
       rm tree-sitter.json
     '';
 
-    # Tree-sitter grammar packages contain a `tree-sitter.json` file at their
-    # root. This provides package metadata that can be used to infer build
-    # details.
-    #
-    # See https://tree-sitter.github.io/tree-sitter/cli/init.html for spec.
-    configurePhase = ''
-      runHook preConfigure
-      if [[ -e tree-sitter.json ]]; then
-        # Check nix package version matches grammar source
-        NIX_VERSION=${lib.head (lib.splitString "+" version)}
-        SRC_VERSION=$(jq -r '.metadata.version' tree-sitter.json)
-        if [[ "$NIX_VERSION" != "$SRC_VERSION" ]]; then
-          nixErrorLog "grammar version ($NIX_VERSION) differs from source ($SRC_VERSION)"
-        fi
-
-        # Check language name matches source
-        GRAMMAR=$(jq -c 'first(.grammars[] | select(.name == env.language))' tree-sitter.json)
-        if [[ -z "$GRAMMAR" ]]; then
-          GRAMMAR=$(jq -c 'first(.grammars[]) // {}' tree-sitter.json)
-          NAME=$(jq -r '.name' <<< "$GRAMMAR")
-          SRC_LANGS=$(jq -r '[.grammars[].name] | join(", ")' tree-sitter.json)
-          nixErrorLog "grammar name ($language) not found in source grammars ($SRC_LANGS), continuing with $NAME"
-        fi
-
-        # Move to the appropriate working directory for build
-        cd -- $(jq -r '.path // "."' <<< $GRAMMAR)
-      else
-        # Older grammars may not contain this file. The tree-sitter CLI provides
-        # a warning rather than fail unless ABI > 14. Mirror that behaviour
-        # while older grammars age out.
-        nixWarnLog "grammar source is missing tree-sitter.json"
-      fi
-      runHook postConfigure
-    '';
+    nativeBuildInputs = [
+      jq
+    ]
+    ++ lib.optionals generate [
+      nodejs
+      tree-sitter
+    ];
 
     # Optionally regenerate the parser source from the defined grammar. In most
     # cases this should not be required as convention is to have this checked
@@ -150,6 +94,62 @@ stdenv.mkDerivation (
       fi
       runHook postInstall
     '';
+
+    CFLAGS = [
+      "-Isrc"
+      # Match upstream `tree-sitter build --wasm`
+      (if isWasi then "-Os" else "-O2")
+    ]
+    ++ lib.optionals isWasi [
+      "-fvisibility=hidden"
+    ];
+
+    CXXFLAGS = [
+      "-Isrc"
+      (if isWasi then "-Os" else "-O2")
+    ]
+    ++ lib.optionals isWasi [
+      "-fvisibility=hidden"
+    ];
+
+    __structuredAttrs = true;
+
+    # Tree-sitter grammar packages contain a `tree-sitter.json` file at their
+    # root. This provides package metadata that can be used to infer build
+    # details.
+    #
+    # See https://tree-sitter.github.io/tree-sitter/cli/init.html for spec.
+    configurePhase = ''
+      runHook preConfigure
+      if [[ -e tree-sitter.json ]]; then
+        # Check nix package version matches grammar source
+        NIX_VERSION=${lib.head (lib.splitString "+" version)}
+        SRC_VERSION=$(jq -r '.metadata.version' tree-sitter.json)
+        if [[ "$NIX_VERSION" != "$SRC_VERSION" ]]; then
+          nixErrorLog "grammar version ($NIX_VERSION) differs from source ($SRC_VERSION)"
+        fi
+
+        # Check language name matches source
+        GRAMMAR=$(jq -c 'first(.grammars[] | select(.name == env.language))' tree-sitter.json)
+        if [[ -z "$GRAMMAR" ]]; then
+          GRAMMAR=$(jq -c 'first(.grammars[]) // {}' tree-sitter.json)
+          NAME=$(jq -r '.name' <<< "$GRAMMAR")
+          SRC_LANGS=$(jq -r '[.grammars[].name] | join(", ")' tree-sitter.json)
+          nixErrorLog "grammar name ($language) not found in source grammars ($SRC_LANGS), continuing with $NAME"
+        fi
+
+        # Move to the appropriate working directory for build
+        cd -- $(jq -r '.path // "."' <<< $GRAMMAR)
+      else
+        # Older grammars may not contain this file. The tree-sitter CLI provides
+        # a warning rather than fail unless ABI > 14. Mirror that behaviour
+        # while older grammars age out.
+        nixWarnLog "grammar source is missing tree-sitter.json"
+      fi
+      runHook postConfigure
+    '';
+
+    stripDebugList = [ "parser" ];
 
     # Merge default meta attrs with any explicitly defined on the source.
     meta = {

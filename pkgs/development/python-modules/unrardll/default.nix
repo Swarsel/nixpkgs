@@ -9,7 +9,6 @@
 buildPythonPackage rec {
   pname = "unrardll";
   version = "0.1.7";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
@@ -27,6 +26,7 @@ buildPythonPackage rec {
     install_name_tool -change libunrar.so ${unrar}/lib/libunrar.so build/lib.*/unrardll/unrar.*-darwin.so
   '';
 
+  format = "setuptools";
   pythonImportsCheck = [ "unrardll" ];
 
   meta = {

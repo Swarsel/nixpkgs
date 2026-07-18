@@ -20,15 +20,14 @@ buildDunePackage rec {
     substituteInPlace src/ramdisk.ml --replace 'Cstruct.len' 'Cstruct.length'
   '';
 
-  minimalOCamlVersion = "4.06";
-  duneVersion = "3";
-
   propagatedBuildInputs = [
     io-page
     mirage-block
   ];
 
   doCheck = false;
+  duneVersion = "3";
+  minimalOCamlVersion = "4.06";
 
   meta = {
     description = "In-memory BLOCK device for MirageOS";

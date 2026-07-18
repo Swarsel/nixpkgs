@@ -1,30 +1,30 @@
 {
   lib,
-  buildPythonPackage,
-  dep-scan,
-
-  # build
-  setuptools,
-
   # deps
   appthreat-vulnerability-db,
+  buildPythonPackage,
   custom-json-diff,
   cvss,
+  dep-scan,
+  pytest-cov-stub,
+  pytestCheckHook,
   rich,
+  # build
+  setuptools,
   toml,
-
   # test
   writableTmpDirAsHomeHook,
-  pytestCheckHook,
-  pytest-cov-stub,
 }:
 
 buildPythonPackage rec {
-  pname = "ds-analysis-lib";
   inherit (dep-scan) version src;
-  pyproject = true;
+  pname = "ds-analysis-lib";
 
-  sourceRoot = "${src.name}/packages/analysis-lib";
+  nativeCheckInputs = [
+    writableTmpDirAsHomeHook
+    pytestCheckHook
+    pytest-cov-stub
+  ];
 
   build-system = [
     setuptools
@@ -38,21 +38,18 @@ buildPythonPackage rec {
     toml
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "analysis_lib" ];
-
-  nativeCheckInputs = [
-    writableTmpDirAsHomeHook
-    pytestCheckHook
-    pytest-cov-stub
-  ];
+  sourceRoot = "${src.name}/packages/analysis-lib";
 
   meta = {
-    description = "Analysis library for owasp depscan";
     inherit (dep-scan.meta)
       homepage
       license
       maintainers
       teams
       ;
+
+    description = "Analysis library for owasp depscan";
   };
 }

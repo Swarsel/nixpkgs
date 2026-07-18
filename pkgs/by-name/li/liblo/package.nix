@@ -21,9 +21,9 @@ stdenv.mkDerivation (finalAttrs: {
   doCheck = false; # fails 1 out of 3 tests
 
   meta = {
-    changelog = "https://liblo.sourceforge.net/NEWS.html";
     description = "Lightweight library to handle the sending and receiving of messages according to the Open Sound Control (OSC) protocol";
     homepage = "https://sourceforge.net/projects/liblo";
+    changelog = "https://liblo.sourceforge.net/NEWS.html";
     license = lib.licenses.gpl2;
     maintainers = [ ];
     platforms = with lib.platforms; linux ++ darwin;

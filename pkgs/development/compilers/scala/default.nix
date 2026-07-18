@@ -1,9 +1,9 @@
 {
   stdenv,
   fetchurl,
-  makeWrapper,
-  jre,
   callPackage,
+  jre,
+  makeWrapper,
 }:
 
 let
@@ -18,10 +18,9 @@ let
 in
 
 stdenv.mkDerivation {
-  pname = "scala";
   inherit (bare) version;
-
-  dontUnpack = true;
+  inherit (bare) meta;
+  pname = "scala";
 
   installPhase = ''
     mkdir -p $out/bin
@@ -31,7 +30,6 @@ stdenv.mkDerivation {
     ln -s ${bare}/bin/common $out/bin/common
   '';
 
-  inherit (bare) meta;
-
+  dontUnpack = true;
   passthru = { inherit bare; };
 }

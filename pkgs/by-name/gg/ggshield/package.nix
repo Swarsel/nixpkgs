@@ -8,7 +8,6 @@
 python3.pkgs.buildPythonApplication (finalAttrs: {
   pname = "ggshield";
   version = "1.52.2";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "GitGuardian";
@@ -17,7 +16,19 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     hash = "sha256-bz3R1ylmkaYF3Wt/ylzeE2IsWKvZ8bmoF39Xu4tVzFU=";
   };
 
-  pythonRelaxDeps = true;
+  nativeCheckInputs = [
+    git
+  ]
+  ++ (with python3.pkgs; [
+    jsonschema
+    pyfakefs
+    pytest-factoryboy
+    pytest-mock
+    pytest-voluptuous
+    pytestCheckHook
+    syrupy
+    vcrpy
+  ]);
 
   build-system = with python3.pkgs; [ hatchling ];
 
@@ -47,22 +58,6 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     urllib3
   ];
 
-  nativeCheckInputs = [
-    git
-  ]
-  ++ (with python3.pkgs; [
-    jsonschema
-    pyfakefs
-    pytest-factoryboy
-    pytest-mock
-    pytest-voluptuous
-    pytestCheckHook
-    syrupy
-    vcrpy
-  ]);
-
-  pythonImportsCheck = [ "ggshield" ];
-
   disabledTestPaths = [
     # Don't run functional tests
     "tests/functional/"
@@ -89,6 +84,10 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     # Generated hooks config references pytest binary, instead of ggshield CLI. Odd!
     "test_install_cursor_local_fresh"
   ];
+
+  pyproject = true;
+  pythonImportsCheck = [ "ggshield" ];
+  pythonRelaxDeps = true;
 
   meta = {
     description = "Tool to find and fix various types of hardcoded secrets and infrastructure-as-code misconfigurations";

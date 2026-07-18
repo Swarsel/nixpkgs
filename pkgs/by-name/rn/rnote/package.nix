@@ -35,10 +35,10 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-uuLoc1nWlb3Xm/WSrvjCit1G8kUZA3+HIW8akFXPGi4=";
   };
 
-  cargoDeps = rustPlatform.fetchCargoVendor {
-    inherit (finalAttrs) pname version src;
-    hash = "sha256-eDKyA8LaH+nvDcCG74ucWYSJc8qLmps1xz3WPHoOJ0w=";
-  };
+  postPatch = ''
+    chmod +x build-aux/*.py
+    patchShebangs build-aux
+  '';
 
   nativeBuildInputs = [
     appstream-glib # For appstream-util
@@ -57,12 +57,6 @@ stdenv.mkDerivation (finalAttrs: {
     wrapGAppsHook4
   ];
 
-  dontUseCmakeConfigure = true;
-
-  mesonFlags = [
-    (lib.mesonBool "cli" true)
-  ];
-
   buildInputs = [
     appstream
     glib
@@ -75,10 +69,13 @@ stdenv.mkDerivation (finalAttrs: {
     alsa-lib
   ];
 
-  postPatch = ''
-    chmod +x build-aux/*.py
-    patchShebangs build-aux
-  '';
+  mesonFlags = [
+    (lib.mesonBool "cli" true)
+  ];
+
+  env = lib.optionalAttrs stdenv.cc.isClang {
+    NIX_CFLAGS_COMPILE = "-Wno-error=incompatible-function-pointer-types";
+  };
 
   postInstall = ''
     substituteInPlace $out/share/thumbnailers/rnote.thumbnailer \
@@ -86,20 +83,25 @@ stdenv.mkDerivation (finalAttrs: {
       --replace-fail "Exec=rnote-cli" "Exec=$out/bin/rnote-cli"
   '';
 
-  env = lib.optionalAttrs stdenv.cc.isClang {
-    NIX_CFLAGS_COMPILE = "-Wno-error=incompatible-function-pointer-types";
+  cargoDeps = rustPlatform.fetchCargoVendor {
+    inherit (finalAttrs) pname version src;
+    hash = "sha256-eDKyA8LaH+nvDcCG74ucWYSJc8qLmps1xz3WPHoOJ0w=";
   };
 
+  dontUseCmakeConfigure = true;
+
   meta = {
+    description = "Simple drawing application to create handwritten notes";
     homepage = "https://github.com/flxzt/rnote";
     changelog = "https://github.com/flxzt/rnote/releases/tag/${finalAttrs.src.tag}";
-    description = "Simple drawing application to create handwritten notes";
     license = lib.licenses.gpl3Plus;
+
     maintainers = with lib.maintainers; [
       dotlambda
       gepbird
       yrd
     ];
+
     platforms = lib.platforms.unix;
   };
 })

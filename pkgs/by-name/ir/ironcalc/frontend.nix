@@ -1,20 +1,19 @@
 {
-  rustPlatform,
-  buildNpmPackage,
-  python3,
-  pkg-config,
   binaryen,
+  buildNpmPackage,
   bzip2,
-  zstd,
   esbuild,
+  ironcalc,
+  lld,
+  nodejs,
+  pkg-config,
+  python3,
+  rustPlatform,
+  typescript,
   wasm-bindgen-cli_0_2_108,
   wasm-pack,
-  nodejs,
-  typescript,
-  lld,
   writableTmpDirAsHomeHook,
-
-  ironcalc,
+  zstd,
 }:
 let
   inherit (ironcalc)
@@ -24,12 +23,14 @@ let
     ;
 
   wasm = rustPlatform.buildRustPackage {
-    pname = "ironcalc-wasm";
     inherit
       version
       src
       cargoHash
       ;
+
+    pname = "ironcalc-wasm";
+    strictDeps = true;
 
     nativeBuildInputs = [
       binaryen
@@ -90,7 +91,6 @@ let
     '';
 
     __structuredAttrs = true;
-    strictDeps = true;
 
     meta = ironcalc.meta // {
       description = "Ironcalc wasm bindings";
@@ -98,9 +98,8 @@ let
   };
 
   widget = buildNpmPackage {
-    pname = "ironcalc-widget";
     inherit version src;
-    sourceRoot = "source";
+    pname = "ironcalc-widget";
 
     postPatch = ''
       cd webapp/IronCalc
@@ -109,6 +108,7 @@ let
       echo '{"name": "@ironcalc/wasm", "version": "${ironcalc.version}"}' > ../../bindings/wasm/pkg/package.json
     '';
 
+    strictDeps = true;
     npmDepsHash = "sha256-jPnUUEOjW9WHVjpBH/qKB4P5RuMI0uvjog8C41cPQdY=";
 
     preConfigure = ''
@@ -125,7 +125,7 @@ let
     '';
 
     __structuredAttrs = true;
-    strictDeps = true;
+    sourceRoot = "source";
 
     meta = ironcalc.meta // {
       description = "Ironcalc frontend widget package";
@@ -133,9 +133,8 @@ let
   };
 
   frontend = buildNpmPackage {
-    pname = "ironcalc-frontend";
     inherit version src;
-    sourceRoot = "source";
+    pname = "ironcalc-frontend";
 
     postPatch = ''
       cd webapp/app.ironcalc.com/frontend
@@ -153,6 +152,7 @@ let
         --replace-warn 'onInput={handleChange}' 'onChange={handleChange}'
     '';
 
+    strictDeps = true;
     npmDepsHash = "sha256-QVpUV3dxaqiWCF8RC1MR2ylYC500Lbp5pJgzzOrF20c=";
 
     preBuild = ''
@@ -167,7 +167,7 @@ let
     '';
 
     __structuredAttrs = true;
-    strictDeps = true;
+    sourceRoot = "source";
 
     meta = ironcalc.meta // {
       description = "Ironcalc frontend package";

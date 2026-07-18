@@ -16,10 +16,6 @@ buildGoModule (finalAttrs: {
     sha256 = "sha256-RDfOdyQL9QICXZmgYCmz532iTuPdCW8GixajvEXmaUQ=";
   };
 
-  subPackages = [ "cmd/cheat" ];
-
-  nativeBuildInputs = [ installShellFiles ];
-
   patches = [
     (builtins.toFile "fix-zsh-completion.patch" ''
       diff --git a/scripts/cheat.zsh b/scripts/cheat.zsh
@@ -35,23 +31,27 @@ buildGoModule (finalAttrs: {
     '')
   ];
 
+  nativeBuildInputs = [ installShellFiles ];
+  vendorHash = null;
+  doCheck = false;
+
   postInstall = ''
     installManPage doc/cheat.1
     installShellCompletion scripts/cheat.{bash,fish,zsh}
   '';
 
-  vendorHash = null;
-
-  doCheck = false;
+  subPackages = [ "cmd/cheat" ];
 
   meta = {
+    inherit (finalAttrs.src.meta) homepage;
     description = "Create and view interactive cheatsheets on the command-line";
-    maintainers = with lib.maintainers; [ mic92 ];
+
     license = with lib.licenses; [
       gpl3
       mit
     ];
-    inherit (finalAttrs.src.meta) homepage;
+
+    maintainers = with lib.maintainers; [ mic92 ];
     mainProgram = "cheat";
   };
 })

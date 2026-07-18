@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   garminconnect,
   importlib-resources,
   lxml,
@@ -13,7 +13,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "withings-sync";
   version = "6.0.2";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "jaroslawhartman";
@@ -27,8 +26,6 @@ buildPythonPackage (finalAttrs: {
       --replace-fail "1.0.0.dev1" "${finalAttrs.version}"
   '';
 
-  pythonRelaxDeps = [ "garminconnect" ];
-
   build-system = [ poetry-core ];
 
   dependencies = [
@@ -39,7 +36,9 @@ buildPythonPackage (finalAttrs: {
     requests
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "withings_sync" ];
+  pythonRelaxDeps = [ "garminconnect" ];
 
   meta = {
     description = "Synchronisation of Withings weight";

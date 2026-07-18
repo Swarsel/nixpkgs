@@ -1,32 +1,32 @@
 {
   lib,
-  mkDerivation,
-  writeText,
   stdenv,
-  buildPackages,
-  freebsd-lib,
-  patchesRoot,
-  filterSource,
   applyPatches,
-  baseConfig ? "GENERIC",
-  extraConfig ? null,
-  extraFlags ? { },
-  bsdSetupHook,
-  mandoc,
-  groff,
-  gawk,
-  freebsdSetupHook,
-  makeMinimal,
-  install,
-  config,
-  rpcgen,
-  file2c,
   bintrans,
-  xargs-j,
-  kldxref,
+  bsdSetupHook,
+  buildPackages,
+  config,
   ctfconvert,
   ctfmerge,
   dtc,
+  file2c,
+  filterSource,
+  freebsd-lib,
+  freebsdSetupHook,
+  gawk,
+  groff,
+  install,
+  kldxref,
+  makeMinimal,
+  mandoc,
+  mkDerivation,
+  patchesRoot,
+  rpcgen,
+  writeText,
+  xargs-j,
+  baseConfig ? "GENERIC",
+  extraConfig ? null,
+  extraFlags ? { },
 }:
 let
   baseConfigFile =
@@ -39,15 +39,17 @@ let
   hostMachineBsd = freebsd-lib.mkBsdMachine stdenv;
   filteredSource = filterSource {
     pname = "sys";
-    path = "sys";
     extraPaths = [ "include" ];
+    path = "sys";
   };
   patchedSource = applyPatches {
     src = filteredSource;
+
     patches = freebsd-lib.filterPatches patchesRoot [
       "sys"
       "include"
     ];
+
     postPatch = ''
       for f in sys/contrib/dev/acpica/acpica_prep.sh; do
         substituteInPlace "$f" --replace-warn 'xargs -J' 'xargs-j '
@@ -71,12 +73,15 @@ let
   );
 in
 mkDerivation rec {
+  inherit env;
   pname = "sys";
-
   # Patch source outside of this derivation so out-of-tree modules can use it
   src = patchedSource;
-  path = "sys";
-  autoPickPatches = false;
+
+  outputs = [
+    "out"
+    "debug"
+  ];
 
   nativeBuildInputs = [
     bsdSetupHook
@@ -98,17 +103,21 @@ mkDerivation rec {
   # Device trees are built in the same sys package
   ++ lib.optional (stdenv.hostPlatform.isAarch32 || stdenv.hostPlatform.isAarch64) dtc;
 
-  # --dynamic-linker /red/herring is used when building the kernel.
-  NIX_ENFORCE_PURITY = 0;
+  makeFlags = [ "XARGS_J=xargs-j" ];
+
+  preBuild = ''
+    cd ../compile/${baseConfig}
+  '';
 
   AWK = "${buildPackages.gawk}/bin/awk";
-
   CWARNEXTRA = "-Wno-error=shift-negative-value -Wno-address-of-packed-member";
-
-  hardeningDisable = [
-    "pic" # generates relocations the linker can't handle
-    "stackprotector" # generates stack protection for the function generating the stack canary
-  ];
+  DTBDIR = "${placeholder "out"}/dtb";
+  DTBODIR = "${placeholder "out"}/dtb/overlays";
+  KERN_DEBUGDIR = "${placeholder "debug"}/lib/debug";
+  KERN_DEBUGDIR_KMODDIR = "${KERN_DEBUGDIR}/kernel";
+  KERN_DEBUGDIR_KODIR = "${KERN_DEBUGDIR}/kernel";
+  KMODDIR = "${placeholder "out"}/kernel";
+  KODIR = "${placeholder "out"}/kernel";
 
   # hardeningDisable = stackprotector doesn't seem to be enough, put it in cflags too
   NIX_CFLAGS_COMPILE = [
@@ -121,21 +130,9 @@ mkDerivation rec {
     "-Wno-unused-function"
   ];
 
-  inherit env;
-  passthru.env = env;
-
-  makeFlags = [ "XARGS_J=xargs-j" ];
-
-  KODIR = "${placeholder "out"}/kernel";
-  KMODDIR = "${placeholder "out"}/kernel";
-  DTBDIR = "${placeholder "out"}/dtb";
-  DTBODIR = "${placeholder "out"}/dtb/overlays";
-
-  KERN_DEBUGDIR = "${placeholder "debug"}/lib/debug";
-  KERN_DEBUGDIR_KODIR = "${KERN_DEBUGDIR}/kernel";
-  KERN_DEBUGDIR_KMODDIR = "${KERN_DEBUGDIR}/kernel";
-
-  skipIncludesPhase = true;
+  # --dynamic-linker /red/herring is used when building the kernel.
+  NIX_ENFORCE_PURITY = 0;
+  autoPickPatches = false;
 
   configurePhase = ''
     runHook preConfigure
@@ -145,14 +142,15 @@ mkDerivation rec {
 
     runHook postConfigure
   '';
-  preBuild = ''
-    cd ../compile/${baseConfig}
-  '';
 
-  outputs = [
-    "out"
-    "debug"
+  hardeningDisable = [
+    "pic" # generates relocations the linker can't handle
+    "stackprotector" # generates stack protection for the function generating the stack canary
   ];
+
+  path = "sys";
+  skipIncludesPhase = true;
+  passthru.env = env;
 
   meta = {
     description = "FreeBSD kernel and modules";

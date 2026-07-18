@@ -1,7 +1,7 @@
 {
   lib,
-  buildDunePackage,
   fetchFromGitLab,
+  buildDunePackage,
   iri,
   logs,
   re,
@@ -12,12 +12,13 @@
 buildDunePackage rec {
   pname = "xtmpl";
   version = "1.1.0";
+
   src = fetchFromGitLab {
-    domain = "framagit.org";
     owner = "zoggy";
     repo = "xtmpl";
     tag = version;
     hash = "sha256-CgVbSjHuRp+5IZdfkxGzaBP8p7pQdXu6S/MMgiPMw3E=";
+    domain = "framagit.org";
   };
 
   propagatedBuildInputs = [

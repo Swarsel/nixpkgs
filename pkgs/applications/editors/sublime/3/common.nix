@@ -6,24 +6,24 @@
 }:
 
 {
-  fetchurl,
   lib,
   stdenv,
-  libx11,
+  fetchurl,
+  bash,
+  bzip2,
+  cairo,
   glib,
   glibcLocales,
   gtk3,
-  cairo,
-  pango,
   libredirect,
+  libx11,
   makeWrapper,
-  wrapGAppsHook3,
-  pkexecPath ? "/run/wrappers/bin/pkexec",
   openssl,
-  bzip2,
-  bash,
+  pango,
   unzip,
+  wrapGAppsHook3,
   zip,
+  pkexecPath ? "/run/wrappers/bin/pkexec",
 }:
 
 let
@@ -64,12 +64,6 @@ let
       sha256 = archSha256;
     };
 
-    dontStrip = true;
-    dontPatchELF = true;
-    buildInputs = [
-      glib
-      gtk3
-    ]; # for GSETTINGS_SCHEMAS_PATH
     nativeBuildInputs = [
       zip
       unzip
@@ -77,22 +71,10 @@ let
       wrapGAppsHook3
     ];
 
-    # make exec.py in Default.sublime-package use own bash with an LD_PRELOAD instead of "/bin/bash"
-    patchPhase = ''
-      runHook prePatch
-
-      mkdir Default.sublime-package-fix
-      ( cd Default.sublime-package-fix
-        unzip -q ../Packages/Default.sublime-package
-        substituteInPlace "exec.py" --replace \
-          "[\"/bin/bash\"" \
-          "[\"$out/sublime_bash\""
-        zip -q ../Packages/Default.sublime-package **/*
-      )
-      rm -r Default.sublime-package-fix
-
-      runHook postPatch
-    '';
+    buildInputs = [
+      glib
+      gtk3
+    ]; # for GSETTINGS_SCHEMAS_PATH
 
     buildPhase = ''
       runHook preBuild
@@ -123,8 +105,6 @@ let
       runHook postInstall
     '';
 
-    dontWrapGApps = true; # non-standard location, need to wrap the executables manually
-
     postFixup = ''
       wrapProgram $out/sublime_bash \
         --set LD_PRELOAD "${lib.getLib stdenv.cc.cc}/lib${lib.optionalString stdenv.hostPlatform.is64bit "64"}/libgcc_s.so.1"
@@ -138,16 +118,32 @@ let
       # Without this, plugin_host crashes, even though it has the rpath
       wrapProgram $out/plugin_host --prefix LD_PRELOAD : ${lib.getLib stdenv.cc.cc}/lib${lib.optionalString stdenv.hostPlatform.is64bit "64"}/libgcc_s.so.1:${lib.getLib openssl}/lib/libssl.so:${bzip2.out}/lib/libbz2.so
     '';
+
+    dontPatchELF = true;
+    dontStrip = true;
+    dontWrapGApps = true; # non-standard location, need to wrap the executables manually
+
+    # make exec.py in Default.sublime-package use own bash with an LD_PRELOAD instead of "/bin/bash"
+    patchPhase = ''
+      runHook prePatch
+
+      mkdir Default.sublime-package-fix
+      ( cd Default.sublime-package-fix
+        unzip -q ../Packages/Default.sublime-package
+        substituteInPlace "exec.py" --replace \
+          "[\"/bin/bash\"" \
+          "[\"$out/sublime_bash\""
+        zip -q ../Packages/Default.sublime-package **/*
+      )
+      rm -r Default.sublime-package-fix
+
+      runHook postPatch
+    '';
   };
 in
 stdenv.mkDerivation {
   inherit pname;
   version = buildVersion;
-
-  dontUnpack = true;
-
-  ${primaryBinary} = binaryPackage;
-
   nativeBuildInputs = [ makeWrapper ];
 
   installPhase = ''
@@ -167,16 +163,21 @@ stdenv.mkDerivation {
     done
   '';
 
+  ${primaryBinary} = binaryPackage;
+  dontUnpack = true;
+
   meta = {
     description = "Sophisticated text editor for code, markup and prose";
     homepage = "https://www.sublimetext.com/";
+    license = lib.licenses.unfree;
+    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
+
     maintainers = with lib.maintainers; [
       wmertens
       demin-dmitriy
       zimbatm
     ];
-    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
-    license = lib.licenses.unfree;
+
     platforms = [
       "x86_64-linux"
       "i686-linux"

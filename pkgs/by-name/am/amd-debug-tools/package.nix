@@ -1,8 +1,8 @@
 {
+  lib,
   acpica-tools,
   ethtool,
   fetchgit,
-  lib,
   libdisplay-info,
   python3Packages,
 }:
@@ -10,13 +10,15 @@
 python3Packages.buildPythonApplication (finalAttrs: {
   pname = "amd-debug-tools";
   version = "0.2.18";
-  pyproject = true;
 
   src = fetchgit {
     url = "https://git.kernel.org/pub/scm/linux/kernel/git/superm1/amd-debug-tools.git";
     tag = finalAttrs.version;
     hash = "sha256-qBgQFjiWFRKVTsIx0aLZC9AQWsVzgbJGOPGG6ojKoDE=";
   };
+
+  # Tests require hardware-specific features
+  doCheck = false;
 
   build-system = with python3Packages; [
     setuptools
@@ -34,11 +36,6 @@ python3Packages.buildPythonApplication (finalAttrs: {
     tabulate
   ];
 
-  # Not available in nixpkgs as of 2025-11-15.
-  pythonRemoveDeps = [
-    "cysystemd"
-  ];
-
   makeWrapperArgs = [
     "--prefix PATH : ${
       lib.makeBinPath [
@@ -49,8 +46,12 @@ python3Packages.buildPythonApplication (finalAttrs: {
     }"
   ];
 
-  # Tests require hardware-specific features
-  doCheck = false;
+  pyproject = true;
+
+  # Not available in nixpkgs as of 2025-11-15.
+  pythonRemoveDeps = [
+    "cysystemd"
+  ];
 
   meta = {
     description = "Debug tools for AMD systems";

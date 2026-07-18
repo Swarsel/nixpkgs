@@ -2,9 +2,9 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  pkg-config,
-  libssh,
   libsForQt5,
+  libssh,
+  pkg-config,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -35,10 +35,10 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Qt-based graphical user interface for systemd's journalctl command";
-    mainProgram = "qjournalctl";
     homepage = "https://github.com/pentix/qjournalctl";
     license = lib.licenses.gpl3Only;
-    platforms = lib.platforms.all;
     maintainers = with lib.maintainers; [ romildo ];
+    platforms = lib.platforms.all;
+    mainProgram = "qjournalctl";
   };
 })

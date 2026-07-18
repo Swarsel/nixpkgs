@@ -1,6 +1,6 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
   cmake,
 }:
@@ -15,12 +15,6 @@ stdenv.mkDerivation (finalAttrs: {
     rev = "v${finalAttrs.version}";
     sha256 = "sha256-WjgzokT9aHJ7dB40BtmhS7ur1slTuXmemgDimZHLVQM=";
   };
-
-  nativeBuildInputs = [ cmake ];
-
-  cmakeFlags = lib.optional (stdenv.cc.isClang && !stdenv.hostPlatform.isDarwin) (
-    lib.cmakeBool "ENABLE_CUSTOM_COMPILER_FLAGS" false
-  );
 
   postPatch =
     # cJSON actually uses C99 standard, not C89
@@ -41,9 +35,15 @@ stdenv.mkDerivation (finalAttrs: {
           'cmake_minimum_required(VERSION 3.10)'
     '';
 
+  nativeBuildInputs = [ cmake ];
+
+  cmakeFlags = lib.optional (stdenv.cc.isClang && !stdenv.hostPlatform.isDarwin) (
+    lib.cmakeBool "ENABLE_CUSTOM_COMPILER_FLAGS" false
+  );
+
   meta = {
-    homepage = "https://github.com/DaveGamble/cJSON";
     description = "Ultralightweight JSON parser in ANSI C";
+    homepage = "https://github.com/DaveGamble/cJSON";
     license = lib.licenses.mit;
     maintainers = [ lib.maintainers.matthiasbeyer ];
     platforms = lib.platforms.unix;

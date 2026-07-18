@@ -1,14 +1,14 @@
 {
   lib,
-  derivationWithMeta,
   fetchurl,
-  kaem,
-  tinycc,
+  bash_2_05,
+  coreutils,
+  derivationWithMeta,
   gnumake,
   gnupatch,
-  coreutils,
+  kaem,
   mescc-tools-extra,
-  bash_2_05,
+  tinycc,
 }:
 let
   inherit (import ./common.nix { inherit lib; }) meta;
@@ -25,46 +25,46 @@ let
   liveBootstrap = "https://github.com/fosslinux/live-bootstrap/raw/c0494d9af84b9e8c3e76e34c6e898978013a3b39/steps/bash-2.05b";
 
   main_mk = fetchurl {
-    url = "${liveBootstrap}/mk/main.mk";
     sha256 = "0hj29q3pq3370p18sxkpvv9flb7yvx2fs96xxlxqlwa8lkimd0j4";
+    url = "${liveBootstrap}/mk/main.mk";
   };
 
   common_mk = fetchurl {
-    url = "${liveBootstrap}/mk/common.mk";
     sha256 = "sha256-9BzUJPz6Vx+r69i2SQlqRTH9ihgLaUp1JSYGlTbWWu8=";
+    url = "${liveBootstrap}/mk/common.mk";
   };
 
   builtins_mk = fetchurl {
-    url = "${liveBootstrap}/mk/builtins.mk";
     sha256 = "0939dy5by1xhfmsjj6w63nlgk509fjrhpb2crics3dpcv7prl8lj";
+    url = "${liveBootstrap}/mk/builtins.mk";
   };
 
   patches = [
     # mes libc does not have locale support
     (fetchurl {
-      url = "${liveBootstrap}/patches/mes-libc.patch";
       sha256 = "0zksdjf6zbb3p4hqg6plq631y76hhhgab7kdvf7cnpk8bcykn12z";
+      url = "${liveBootstrap}/patches/mes-libc.patch";
     })
     # int name, namelen; is wrong for mes libc, it is char* name, so we modify tinycc
     # to reflect this.
     (fetchurl {
-      url = "${liveBootstrap}/patches/tinycc.patch";
       sha256 = "042d2kr4a8klazk1hlvphxr6frn4mr53k957aq3apf6lbvrjgcj2";
+      url = "${liveBootstrap}/patches/tinycc.patch";
     })
     # add ifdef's for features we don't want
     (fetchurl {
-      url = "${liveBootstrap}/patches/missing-defines.patch";
       sha256 = "1q0k1kj5mrvjkqqly7ki5575a5b3hy1ywnmvhrln318yh67qnkj4";
+      url = "${liveBootstrap}/patches/missing-defines.patch";
     })
     # mes libc + setting locale = not worky
     (fetchurl {
-      url = "${liveBootstrap}/patches/locale.patch";
       sha256 = "1p1q1slhafsgj8x4k0dpn9h6ryq5fwfx7dicbbxhldbw7zvnnbx9";
+      url = "${liveBootstrap}/patches/locale.patch";
     })
     # We do not have /dev at this stage of the bootstrap, including /dev/tty
     (fetchurl {
-      url = "${liveBootstrap}/patches/dev-tty.patch";
       sha256 = "1315slv5f7ziajqyxg4jlyanf1xwd06xw14y6pq7xpm3jzjk55j9";
+      url = "${liveBootstrap}/patches/dev-tty.patch";
     })
   ];
 in
@@ -84,7 +84,19 @@ kaem.runCommand "${pname}-${version}"
       derivationWithMeta (
         {
           inherit name buildCommand;
-          builder = "${bash_2_05}/bin/bash";
+
+          PATH = lib.makeBinPath (
+            (env.nativeBuildInputs or [ ])
+            ++ [
+              bash_2_05
+              coreutils
+              # provides untar, ungz, and unbz2
+              mescc-tools-extra
+            ]
+          );
+
+          SHELL = "${bash_2_05}/bin/bash";
+
           args = [
             "-e"
             (builtins.toFile "bash-builder.sh" ''
@@ -103,18 +115,9 @@ kaem.runCommand "${pname}-${version}"
               bash -eux $buildCommandPath
             '')
           ];
-          passAsFile = [ "buildCommand" ];
 
-          SHELL = "${bash_2_05}/bin/bash";
-          PATH = lib.makeBinPath (
-            (env.nativeBuildInputs or [ ])
-            ++ [
-              bash_2_05
-              coreutils
-              # provides untar, ungz, and unbz2
-              mescc-tools-extra
-            ]
-          );
+          builder = "${bash_2_05}/bin/bash";
+          passAsFile = [ "buildCommand" ];
         }
         // (removeAttrs env [ "nativeBuildInputs" ])
       );

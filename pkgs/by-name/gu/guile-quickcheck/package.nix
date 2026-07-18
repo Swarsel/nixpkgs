@@ -1,9 +1,9 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchurl,
-  pkg-config,
   guile,
+  pkg-config,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -16,17 +16,18 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   strictDeps = true;
+
   nativeBuildInputs = [
     guile
     pkg-config
   ];
-  buildInputs = [ guile ];
 
+  buildInputs = [ guile ];
   doCheck = !stdenv.hostPlatform.isDarwin;
 
   meta = {
-    homepage = "https://ngyro.com/software/guile-quickcheck.html";
     description = "Guile library providing tools for randomized, property-based testing";
+    homepage = "https://ngyro.com/software/guile-quickcheck.html";
     license = lib.licenses.gpl3Plus;
     maintainers = [ ];
     platforms = guile.meta.platforms;

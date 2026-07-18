@@ -1,7 +1,7 @@
 {
-  buildPythonPackage,
-  fetchFromGitHub,
   lib,
+  fetchFromGitHub,
+  buildPythonPackage,
   python,
   requests-mock,
   setuptools,
@@ -11,7 +11,6 @@
 buildPythonPackage rec {
   pname = "remotezip2";
   version = "0.0.2";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "doronz88";
@@ -19,13 +18,6 @@ buildPythonPackage rec {
     tag = "v${version}";
     hash = "sha256-UyfAoe9pXCGLGPIE2LSLvnIaju+nXt3s7ddGlpmJGUg=";
   };
-
-  build-system = [
-    setuptools
-    setuptools-scm
-  ];
-
-  pythonImportsCheck = [ "remotezip2" ];
 
   nativeCheckInputs = [
     requests-mock
@@ -39,10 +31,18 @@ buildPythonPackage rec {
     runHook postCheck
   '';
 
+  build-system = [
+    setuptools
+    setuptools-scm
+  ];
+
+  pyproject = true;
+  pythonImportsCheck = [ "remotezip2" ];
+
   meta = {
-    changelog = "https://github.com/doronz88/python-remotezip2/releases/tag/${src.tag}";
     description = "Access zip file content hosted remotely without downloading the full file";
     homepage = "https://github.com/doronz88/python-remotezip2";
+    changelog = "https://github.com/doronz88/python-remotezip2/releases/tag/${src.tag}";
     license = lib.licenses.mit;
     maintainers = [ lib.maintainers.dotlambda ];
   };

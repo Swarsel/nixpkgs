@@ -1,7 +1,7 @@
 {
   lib,
-  stdenvNoCC,
   fetchFromGitHub,
+  stdenvNoCC,
   unstableGitUpdater,
 }:
 
@@ -16,9 +16,6 @@ stdenvNoCC.mkDerivation {
     hash = "sha256-+hDuzZtsKkoP5mD0VmzO/mXNjP0RPLz+hzK2XFUBvpc=";
   };
 
-  dontConfigure = true;
-  dontBuild = true;
-
   installPhase = ''
     runHook preInstall
     mkdir -p $out/etc/ananicy.d
@@ -27,18 +24,23 @@ stdenvNoCC.mkDerivation {
     runHook postInstall
   '';
 
+  dontBuild = true;
+  dontConfigure = true;
+
   passthru.updateScript = unstableGitUpdater {
     hardcodeZeroVersion = true;
   };
 
   meta = {
-    homepage = "https://github.com/CachyOS/ananicy-rules";
     description = "CachyOS' ananicy-rules meant to be used with ananicy-cpp";
+    homepage = "https://github.com/CachyOS/ananicy-rules";
     license = lib.licenses.gpl3Only;
-    platforms = lib.platforms.linux;
+
     maintainers = with lib.maintainers; [
       artturin
       johnrtitor
     ];
+
+    platforms = lib.platforms.linux;
   };
 }

@@ -1,10 +1,10 @@
 {
   lib,
+  fetchFromGitHub,
   aiohttp,
   beautifulsoup4,
   buildPythonPackage,
   cryptography,
-  fetchFromGitHub,
   orjson,
   pycryptodome,
   pytest-cov-stub,
@@ -16,7 +16,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "aiovodafone";
   version = "3.3.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "chemelli74";
@@ -24,6 +23,11 @@ buildPythonPackage (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-KKd8dOabm/6YksBG6+51zYUsgiA4wFW6dGe2tiX3fQA=";
   };
+
+  nativeCheckInputs = [
+    pytest-cov-stub
+    pytestCheckHook
+  ];
 
   build-system = [ setuptools ];
 
@@ -36,11 +40,7 @@ buildPythonPackage (finalAttrs: {
     segno
   ];
 
-  nativeCheckInputs = [
-    pytest-cov-stub
-    pytestCheckHook
-  ];
-
+  pyproject = true;
   pythonImportsCheck = [ "aiovodafone" ];
 
   meta = {

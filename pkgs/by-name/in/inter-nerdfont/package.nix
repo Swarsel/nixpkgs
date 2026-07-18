@@ -1,9 +1,9 @@
 {
   lib,
+  fetchzip,
   fontforge,
   nerd-font-patcher,
   stdenvNoCC,
-  fetchzip,
 }:
 
 stdenvNoCC.mkDerivation (finalAttrs: {
@@ -12,8 +12,8 @@ stdenvNoCC.mkDerivation (finalAttrs: {
 
   src = fetchzip {
     url = "https://github.com/rsms/inter/releases/download/v${finalAttrs.version}/Inter-${finalAttrs.version}.zip";
-    stripRoot = false;
     hash = "sha256-5vdKKvHAeZi6igrfpbOdhZlDX2/5+UvzlnCQV6DdqoQ=";
+    stripRoot = false;
   };
 
   nativeBuildInputs = [
@@ -35,10 +35,10 @@ stdenvNoCC.mkDerivation (finalAttrs: {
   '';
 
   meta = {
-    homepage = "https://gitlab.com/mid_os/inter-nerdfont";
     description = "NerdFont patch of the Inter font";
+    homepage = "https://gitlab.com/mid_os/inter-nerdfont";
     license = lib.licenses.ofl;
-    platforms = lib.platforms.all;
     maintainers = [ lib.maintainers.midischwarz12 ];
+    platforms = lib.platforms.all;
   };
 })

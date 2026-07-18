@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule (finalAttrs: {
@@ -16,6 +16,8 @@ buildGoModule (finalAttrs: {
   };
 
   vendorHash = "sha256-fgtDP6X84iPO2Tcwq5jl8700PDKixJlIihgNaPX/n9k=";
+  # Test data is missing in the repo
+  doCheck = false;
 
   ldflags = [
     "-s"
@@ -25,19 +27,18 @@ buildGoModule (finalAttrs: {
 
   subPackages = [ "./cmd/kiterunner" ];
 
-  # Test data is missing in the repo
-  doCheck = false;
-
   meta = {
     description = "Contextual content discovery tool";
-    mainProgram = "kiterunner";
+
     longDescription = ''
       Kiterunner is a tool that is capable of not only performing traditional
       content discovery at lightning fast speeds, but also bruteforcing routes
       and endpoints in modern applications.
     '';
+
     homepage = "https://github.com/assetnote/kiterunner";
     license = with lib.licenses; [ agpl3Only ];
     maintainers = with lib.maintainers; [ fab ];
+    mainProgram = "kiterunner";
   };
 })

@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule (finalAttrs: {
@@ -21,10 +21,7 @@ buildGoModule (finalAttrs: {
     rm -r warn/docs
   '';
 
-  proxyVendor = true;
-
   doCheck = false;
-
   excludedPackages = [ "generatetables" ];
 
   ldflags = [
@@ -33,6 +30,8 @@ buildGoModule (finalAttrs: {
     "-X main.buildVersion=${finalAttrs.version}"
     "-X main.buildScmRevision=${finalAttrs.src.rev}"
   ];
+
+  proxyVendor = true;
 
   meta = {
     description = "Tools for working with Google's bazel buildtool. Includes buildifier, buildozer, and unused_deps";

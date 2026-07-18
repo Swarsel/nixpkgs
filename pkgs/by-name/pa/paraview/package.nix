@@ -4,22 +4,22 @@
   fetchurl,
   cmake,
   ninja,
-  qt6Packages,
   protobuf,
-  vtk-full,
+  qt6Packages,
   testers,
+  vtk-full,
 }:
 let
   paraviewFilesUrl = "https://www.paraview.org/files";
   doc = fetchurl {
-    url = "${paraviewFilesUrl}/v6.0/ParaViewGettingStarted-6.0.1.pdf";
-    name = "GettingStarted.pdf";
     hash = "sha256-2ghvb0UXa0Z/YGWzCchB1NKowRdlC/ZQCI3y0tZUdbo=";
+    name = "GettingStarted.pdf";
+    url = "${paraviewFilesUrl}/v6.0/ParaViewGettingStarted-6.0.1.pdf";
   };
   examples = fetchurl {
+    hash = "sha256-OCLvWlwhBL9R981zXWZueMyXVeiqbxsmUYcwIu1doQ4=";
     # see https://gitlab.kitware.com/paraview/paraview-superbuild/-/blob/v6.0.0/versions.cmake?ref_type=tags#L21
     url = "${paraviewFilesUrl}/data/ParaViewTutorialData-20220629.tar.gz";
-    hash = "sha256-OCLvWlwhBL9R981zXWZueMyXVeiqbxsmUYcwIu1doQ4=";
   };
 in
 stdenv.mkDerivation (finalAttrs: {
@@ -101,13 +101,12 @@ stdenv.mkDerivation (finalAttrs: {
 
   passthru.tests = {
     cmake-config = testers.hasCmakeConfigModules {
-      moduleNames = [ "ParaView" ];
-
-      package = finalAttrs.finalPackage;
-
       nativeBuildInputs = [
         qt6Packages.wrapQtAppsHook
       ];
+
+      moduleNames = [ "ParaView" ];
+      package = finalAttrs.finalPackage;
     };
   };
 
@@ -115,12 +114,14 @@ stdenv.mkDerivation (finalAttrs: {
     description = "3D Data analysis and visualization application";
     homepage = "https://www.paraview.org";
     changelog = "https://www.kitware.com/paraview-${lib.concatStringsSep "-" (lib.versions.splitVersion finalAttrs.version)}-release-notes";
-    mainProgram = "paraview";
     license = lib.licenses.bsd3;
-    platforms = lib.platforms.unix;
+
     maintainers = with lib.maintainers; [
       guibert
       qbisi
     ];
+
+    platforms = lib.platforms.unix;
+    mainProgram = "paraview";
   };
 })

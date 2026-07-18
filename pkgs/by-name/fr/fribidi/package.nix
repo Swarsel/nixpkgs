@@ -1,12 +1,12 @@
 {
   lib,
   stdenv,
-  buildPackages,
   fetchurl,
+  buildPackages,
+  fixDarwinDylibNames,
   meson,
   ninja,
   pkg-config,
-  fixDarwinDylibNames,
   python3,
   testers,
 }:
@@ -15,19 +15,20 @@ stdenv.mkDerivation (finalAttrs: {
   pname = "fribidi";
   version = "1.0.16";
 
-  outputs = [
-    "out"
-    "dev"
-    "devdoc"
-  ];
-
   # NOTE: Only URL tarball has "Have pre-generated man pages: true", which works-around upstream usage of some rare ancient `c2man` fossil application.
   src = fetchurl {
     url =
       with finalAttrs;
       "https://github.com/fribidi/fribidi/releases/download/v${version}/${pname}-${version}.tar.xz";
+
     sha256 = "sha256-GxzeWyNdQEeekb4vDoijCeMhTIq0cOyKJ0TYKlqeoFw=";
   };
+
+  outputs = [
+    "out"
+    "dev"
+    "devdoc"
+  ];
 
   postPatch = ''
     patchShebangs test
@@ -40,10 +41,9 @@ stdenv.mkDerivation (finalAttrs: {
   ]
   ++ lib.optional stdenv.hostPlatform.isDarwin fixDarwinDylibNames;
 
-  depsBuildBuild = [ buildPackages.stdenv.cc ];
-
   doCheck = true;
   nativeCheckInputs = [ python3 ];
+  depsBuildBuild = [ buildPackages.stdenv.cc ];
 
   passthru.tests = {
     pkg-config = testers.hasPkgConfigModules {
@@ -52,11 +52,11 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   meta = {
-    homepage = "https://github.com/fribidi/fribidi";
     description = "GNU implementation of the Unicode Bidirectional Algorithm (bidi)";
-    mainProgram = "fribidi";
+    homepage = "https://github.com/fribidi/fribidi";
     license = lib.licenses.lgpl21;
     platforms = lib.platforms.unix;
+    mainProgram = "fribidi";
     pkgConfigModules = [ "fribidi" ];
   };
 })

@@ -16,22 +16,22 @@ buildGoModule rec {
     hash = "sha256-CmNBE3SJhDyY77mjC56pl0aiyt4ZW6pEYTtOK3FXGhE=";
   };
 
+  vendorHash = "sha256-q0p9+74qUSY2AAnagtM6d6PPEhM1HHF019QWxTemiIo=";
+
   subPackages = [
     "internal/play"
     "internal/badging"
   ];
 
-  vendorHash = "sha256-q0p9+74qUSY2AAnagtM6d6PPEhM1HHF019QWxTemiIo=";
-
   passthru.updateScript = nix-update-script { };
 
   meta = {
     description = "CLI app to download APK from Google Play or send API requests";
-    maintainers = with lib.maintainers; [ ulysseszhan ];
+    homepage = "https://github.com/UlyssesZh/google-play";
     # https://polyformproject.org/licenses/noncommercial/1.0.0
     license = lib.licenses.unfree;
-    homepage = "https://github.com/UlyssesZh/google-play";
-    mainProgram = "play";
+    maintainers = with lib.maintainers; [ ulysseszhan ];
     platforms = lib.platforms.unix;
+    mainProgram = "play";
   };
 }

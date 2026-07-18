@@ -1,8 +1,8 @@
 {
   lib,
-  stdenvNoCC,
   fetchFromGitHub,
   inkscape,
+  stdenvNoCC,
   xcursorgen,
   accentColor ? null,
   baseColor ? null,
@@ -46,8 +46,8 @@ stdenvNoCC.mkDerivation {
   ];
 
   meta = {
-    homepage = "https://github.com/clayrisser/breeze-hacked-cursor-theme";
     description = "Breeze Hacked cursor theme";
+    homepage = "https://github.com/clayrisser/breeze-hacked-cursor-theme";
     license = lib.licenses.gpl2Only;
     maintainers = with lib.maintainers; [ anomalocaris ];
     platforms = lib.platforms.linux;

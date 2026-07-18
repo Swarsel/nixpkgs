@@ -1,15 +1,14 @@
 {
   lib,
   fetchFromGitHub,
-  python3Packages,
   gobject-introspection,
+  python3Packages,
   wrapGAppsNoGuiHook,
 }:
 
 python3Packages.buildPythonPackage rec {
   pname = "open-fprintd";
   version = "0.7";
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "uunicorn";
@@ -45,12 +44,13 @@ python3Packages.buildPythonPackage rec {
       --replace /usr/lib/open-fprintd "$out/lib/open-fprintd"
   '';
 
-  dontWrapGApps = true;
-  makeWrapperArgs = [ "\${gappsWrapperArgs[@]}" ];
-
   postFixup = ''
     wrapPythonProgramsIn "$out/lib/open-fprintd" "$out ''${pythonPath[*]}"
   '';
+
+  dontWrapGApps = true;
+  format = "setuptools";
+  makeWrapperArgs = [ "\${gappsWrapperArgs[@]}" ];
 
   meta = {
     description = "Fprintd replacement which allows you to have your own backend as a standalone service";

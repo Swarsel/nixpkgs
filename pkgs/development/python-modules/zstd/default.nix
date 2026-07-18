@@ -1,17 +1,16 @@
 {
   lib,
-  pkg-config,
-  fetchPypi,
-  buildPythonPackage,
   buildPackages,
-  zstd,
+  buildPythonPackage,
+  fetchPypi,
+  pkg-config,
   pytest,
+  zstd,
 }:
 
 buildPythonPackage rec {
   pname = "zstd";
   version = "1.5.7.3";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
@@ -26,24 +25,27 @@ buildPythonPackage rec {
   nativeBuildInputs = [ pkg-config ];
   buildInputs = [ zstd ];
 
+  env = {
+    PKG_VERSION = version;
+    VERSION = zstd.version;
+    # Running tests via setup.py triggers an attempt to recompile with the vendored zstd
+    ZSTD_EXTERNAL = 1;
+  };
+
+  nativeCheckInputs = [ pytest ];
+
+  checkPhase = ''
+    pytest
+  '';
+
+  format = "setuptools";
+
   setupPyBuildFlags = [
     "--external"
     "--include-dirs=${zstd}/include"
     "--libraries=zstd"
     "--library-dirs=${zstd}/lib"
   ];
-
-  env = {
-    # Running tests via setup.py triggers an attempt to recompile with the vendored zstd
-    ZSTD_EXTERNAL = 1;
-    VERSION = zstd.version;
-    PKG_VERSION = version;
-  };
-
-  nativeCheckInputs = [ pytest ];
-  checkPhase = ''
-    pytest
-  '';
 
   meta = {
     description = "Simple python bindings to Yann Collet ZSTD compression library";

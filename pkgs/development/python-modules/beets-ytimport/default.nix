@@ -1,19 +1,18 @@
 {
   lib,
   fetchFromGitHub,
-  buildPythonPackage,
-  setuptools,
-  ytmusicapi,
-  yt-dlp,
   beets-minimal,
-  pytestCheckHook,
-  writableTmpDirAsHomeHook,
+  buildPythonPackage,
   nix-update-script,
+  pytestCheckHook,
+  setuptools,
+  writableTmpDirAsHomeHook,
+  yt-dlp,
+  ytmusicapi,
 }:
 buildPythonPackage rec {
   pname = "beets-ytimport";
   version = "1.13.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "mgoltzsche";
@@ -21,13 +20,6 @@ buildPythonPackage rec {
     tag = "v${version}";
     hash = "sha256-EwSL1rBEPTcMfrlTkQcqRuhR8OtibBZqA0qQz4+qLEw=";
   };
-
-  build-system = [ setuptools ];
-
-  dependencies = [
-    ytmusicapi
-    yt-dlp
-  ];
 
   nativeBuildInputs = [
     beets-minimal
@@ -38,14 +30,22 @@ buildPythonPackage rec {
     pytestCheckHook
   ];
 
+  build-system = [ setuptools ];
+
+  dependencies = [
+    ytmusicapi
+    yt-dlp
+  ];
+
+  pyproject = true;
   passthru.updateScript = nix-update-script { };
 
   meta = {
-    changelog = "https://github.com/mgoltzsche/beets-ytimport/releases/tag/v${version}";
     description = "Beets plugin to import music from Youtube and SoundCloud";
     homepage = "https://github.com/mgoltzsche/beets-ytimport";
-    maintainers = with lib.maintainers; [ pyrox0 ];
+    changelog = "https://github.com/mgoltzsche/beets-ytimport/releases/tag/v${version}";
     license = [ lib.licenses.asl20 ];
+    maintainers = with lib.maintainers; [ pyrox0 ];
     platforms = lib.platforms.linux ++ lib.platforms.darwin;
   };
 }

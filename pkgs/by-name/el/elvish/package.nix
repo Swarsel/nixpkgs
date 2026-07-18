@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   callPackage,
 }:
 
@@ -16,9 +16,9 @@ buildGoModule (finalAttrs: {
     hash = "sha256-+qkr0ziHWs3MVhBoqAxrwwbsQVvmGHRKrlqiujqBKvs=";
   };
 
+  strictDeps = true;
   vendorHash = "sha256-UjX1P8v97Mi5cLWv3n7pmxgnw+wCr4aRTHDHHd/9+Lo=";
-
-  subPackages = [ "cmd/elvish" ];
+  doCheck = false;
 
   ldflags = [
     "-s"
@@ -26,27 +26,28 @@ buildGoModule (finalAttrs: {
     "-X src.elv.sh/pkg/buildinfo.Version==${finalAttrs.version}"
   ];
 
-  strictDeps = true;
-
-  doCheck = false;
+  subPackages = [ "cmd/elvish" ];
 
   passthru = {
     shellPath = "/bin/elvish";
+
     tests = {
       expectVersion = callPackage ./tests/expect-version.nix { };
     };
   };
 
   meta = {
-    homepage = "https://elv.sh/";
     description = "Friendly and expressive command shell";
-    mainProgram = "elvish";
+
     longDescription = ''
       Elvish is a friendly interactive shell and an expressive programming
       language. It runs on Linux, BSDs, macOS and Windows. Despite its pre-1.0
       status, it is already suitable for most daily interactive use.
     '';
+
+    homepage = "https://elv.sh/";
     license = lib.licenses.bsd2;
     maintainers = [ ];
+    mainProgram = "elvish";
   };
 })

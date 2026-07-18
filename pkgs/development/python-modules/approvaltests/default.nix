@@ -1,11 +1,11 @@
 {
   lib,
+  fetchFromGitHub,
   allpairspy,
   approval-utilities,
   beautifulsoup4,
   buildPythonPackage,
   empty-files,
-  fetchFromGitHub,
   mock,
   numpy,
   pyperclip,
@@ -21,7 +21,6 @@
 buildPythonPackage rec {
   pname = "approvaltests";
   version = "18.0.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "approvals";
@@ -35,6 +34,13 @@ buildPythonPackage rec {
 
     patchShebangs internal_documentation/scripts
   '';
+
+  nativeCheckInputs = [
+    numpy
+    pytest-asyncio
+    pytestCheckHook
+    pyyaml
+  ];
 
   build-system = [ setuptools ];
 
@@ -50,18 +56,13 @@ buildPythonPackage rec {
     typing-extensions
   ];
 
-  nativeCheckInputs = [
-    numpy
-    pytest-asyncio
-    pytestCheckHook
-    pyyaml
-  ];
-
   disabledTests = [
     "test_warnings"
     # test runs another python interpreter, ignoring $PYTHONPATH
     "test_command_line_verify"
   ];
+
+  pyproject = true;
 
   pythonImportsCheck = [
     "approvaltests.approvals"

@@ -2,14 +2,14 @@
   lib,
   stdenv,
   fetchFromGitHub,
+  connman,
   fetchpatch,
+  gtk3,
   meson,
   ninja,
+  openconnect,
   pkg-config,
   python3,
-  gtk3,
-  connman,
-  openconnect,
   wrapGAppsHook3,
 }:
 
@@ -23,6 +23,13 @@ stdenv.mkDerivation {
     rev = "b72c6ab3bb19c07325c8e659902b046daa23c506";
     hash = "sha256-6lX6FYERDgLj9G6nwnP35kF5x8dpRJqfJB/quZFtFzM=";
   };
+
+  patches = [
+    (fetchpatch {
+      hash = "sha256-T+N9FfDyROBA4/HLK+l/fpnju2imDU4y6nGSbF+JDiA=";
+      url = "https://salsa.debian.org/nickm/connman-gtk/-/raw/ef01b52fa02c5cca199b2e47c0cf360691266fd8/debian/patches/incompatible-pointer-type";
+    })
+  ];
 
   postPatch = ''
     patchShebangs --build data/meson_post_install.py
@@ -42,21 +49,14 @@ stdenv.mkDerivation {
     connman
   ];
 
-  patches = [
-    (fetchpatch {
-      url = "https://salsa.debian.org/nickm/connman-gtk/-/raw/ef01b52fa02c5cca199b2e47c0cf360691266fd8/debian/patches/incompatible-pointer-type";
-      hash = "sha256-T+N9FfDyROBA4/HLK+l/fpnju2imDU4y6nGSbF+JDiA=";
-    })
-  ];
-
   env.MESON_INSTALL_PREFIX = placeholder "out";
 
   meta = {
     description = "GTK GUI for Connman";
-    mainProgram = "connman-gtk";
     homepage = "https://github.com/jgke/connman-gtk";
     license = lib.licenses.gpl2Plus;
-    platforms = lib.platforms.linux;
     maintainers = [ lib.maintainers.romildo ];
+    platforms = lib.platforms.linux;
+    mainProgram = "connman-gtk";
   };
 }

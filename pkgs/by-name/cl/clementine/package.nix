@@ -2,36 +2,36 @@
   lib,
   stdenv,
   fetchFromGitHub,
+  alsa-lib,
   boost,
-  cmake,
   chromaprint,
-  gettext,
-  gst_all_1,
-  qt5,
-  libsForQt5,
-  taglib_1,
+  cmake,
+  config,
+  elfutils,
   fftw,
+  gettext,
   glew,
-  sqlite,
-  libgpod,
-  libplist,
-  usbmuxd,
-  libmtp,
-  libpulseaudio,
+  gst_all_1,
   gvfs,
   libcdio,
+  libgpod,
+  libmtp,
+  libplist,
+  libpulseaudio,
+  libsForQt5,
+  libselinux,
+  libsepol,
+  libunwind,
+  orc,
+  pkg-config,
   projectm_3,
   protobuf,
-  pkg-config,
+  qt5,
   sparsehash,
-  config,
+  sqlite,
+  taglib_1,
+  usbmuxd,
   util-linuxMinimal,
-  libunwind,
-  libselinux,
-  elfutils,
-  libsepol,
-  orc,
-  alsa-lib,
 }:
 
 let
@@ -57,6 +57,30 @@ stdenv.mkDerivation (finalAttrs: {
     tag = finalAttrs.version;
     hash = "sha256-FRgTi1Qxzp0vJASNpyANqh4rJX4caxEr0CZOnTHA3Kw=";
   };
+
+  postPatch = ''
+    sed -i src/CMakeLists.txt \
+      -e 's,-Werror,,g' \
+      -e 's,-Wno-unknown-warning-option,,g' \
+      -e 's,-Wno-unused-private-field,,g'
+    sed -i CMakeLists.txt \
+      -e 's,libprotobuf.a,protobuf,g'
+
+    # CMake 3.0.0 is deprecated and no longer supported by CMake > 4
+    # https://github.com/NixOS/nixpkgs/issues/445447
+    substituteInPlace 3rdparty/{qsqlite,qtsingleapplication,qtiocompressor,qxt}/CMakeLists.txt \
+      cmake/{ParseArguments.cmake,Translations.cmake}                                          \
+      tests/CMakeLists.txt gst/moodbar/CMakeLists.txt                                          \
+      --replace-fail                                                                           \
+        "cmake_minimum_required(VERSION 3.0.0)" \
+        "cmake_minimum_required(VERSION 3.10)"
+    substituteInPlace 3rdparty/libmygpo-qt5/CMakeLists.txt --replace-fail \
+      "cmake_minimum_required( VERSION 3.0.0 FATAL_ERROR )" \
+      "cmake_minimum_required(VERSION 3.10)"
+    substituteInPlace CMakeLists.txt --replace-fail \
+        "cmake_policy(SET CMP0053 OLD)" \
+        ""
+  '';
 
   nativeBuildInputs = [
     cmake
@@ -104,53 +128,29 @@ stdenv.mkDerivation (finalAttrs: {
   ++ lib.optionals withCD [ libcdio ]
   ++ lib.optionals withCloud [ sparsehash ];
 
-  postPatch = ''
-    sed -i src/CMakeLists.txt \
-      -e 's,-Werror,,g' \
-      -e 's,-Wno-unknown-warning-option,,g' \
-      -e 's,-Wno-unused-private-field,,g'
-    sed -i CMakeLists.txt \
-      -e 's,libprotobuf.a,protobuf,g'
-
-    # CMake 3.0.0 is deprecated and no longer supported by CMake > 4
-    # https://github.com/NixOS/nixpkgs/issues/445447
-    substituteInPlace 3rdparty/{qsqlite,qtsingleapplication,qtiocompressor,qxt}/CMakeLists.txt \
-      cmake/{ParseArguments.cmake,Translations.cmake}                                          \
-      tests/CMakeLists.txt gst/moodbar/CMakeLists.txt                                          \
-      --replace-fail                                                                           \
-        "cmake_minimum_required(VERSION 3.0.0)" \
-        "cmake_minimum_required(VERSION 3.10)"
-    substituteInPlace 3rdparty/libmygpo-qt5/CMakeLists.txt --replace-fail \
-      "cmake_minimum_required( VERSION 3.0.0 FATAL_ERROR )" \
-      "cmake_minimum_required(VERSION 3.10)"
-    substituteInPlace CMakeLists.txt --replace-fail \
-        "cmake_policy(SET CMP0053 OLD)" \
-        ""
-  '';
-
-  preConfigure = ''
-    rm -rf ext/{,lib}clementine-spotifyblob
-  '';
-
   cmakeFlags = [
     (lib.cmakeFeature "FORCE_GIT_REVISION" "1.3.1")
     (lib.cmakeBool "USE_SYSTEM_PROJECTM" true)
     (lib.cmakeBool "SPOTIFY_BLOB" false)
   ];
 
-  dontWrapQtApps = true;
+  preConfigure = ''
+    rm -rf ext/{,lib}clementine-spotifyblob
+  '';
 
   postInstall = ''
     wrapQtApp $out/bin/clementine \
       --prefix GST_PLUGIN_SYSTEM_PATH_1_0 : "$GST_PLUGIN_SYSTEM_PATH_1_0"
   '';
 
+  dontWrapQtApps = true;
+
   meta = {
-    homepage = "https://www.clementine-player.org";
     description = "Multiplatform music player";
+    homepage = "https://www.clementine-player.org";
     license = lib.licenses.gpl3Plus;
+    maintainers = [ ];
     platforms = lib.platforms.linux;
     mainProgram = "clementine";
-    maintainers = [ ];
   };
 })

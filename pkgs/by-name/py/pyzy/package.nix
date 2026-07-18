@@ -3,12 +3,12 @@
   stdenv,
   fetchFromGitHub,
   autoreconfHook,
-  pkg-config,
-  python3,
   glib,
   libuuid,
-  sqlite,
   nix-update-script,
+  pkg-config,
+  python3,
+  sqlite,
 }:
 
 stdenv.mkDerivation {
@@ -22,6 +22,10 @@ stdenv.mkDerivation {
     hash = "sha256-OiFdog34kjmgF2DCnA8LjlZseZPQ8iCYQD4HZKNnCVU=";
   };
 
+  postPatch = ''
+    patchShebangs ./data/db/android/create_db.py
+  '';
+
   nativeBuildInputs = [
     autoreconfHook
     pkg-config
@@ -33,10 +37,6 @@ stdenv.mkDerivation {
     libuuid
     sqlite
   ];
-
-  postPatch = ''
-    patchShebangs ./data/db/android/create_db.py
-  '';
 
   passthru.updateScript = nix-update-script {
     extraArgs = [

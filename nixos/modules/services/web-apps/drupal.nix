@@ -42,10 +42,6 @@ let
   pkg =
     hostName: cfg:
     stdenv.mkDerivation (finalAttrs: {
-      pname = "drupal-${hostName}";
-      name = "drupal-${hostName}";
-      src = cfg.package;
-
       buildInputs = [ pkgs.rsync ];
 
       installPhase = ''
@@ -63,19 +59,21 @@ let
         runHook postInstall
       '';
 
+      name = "drupal-${hostName}";
+      pname = "drupal-${hostName}";
+
       postInstall = ''
         ln -s ${cfg.stateDir}/sites $out/share/php/${cfg.package.pname}${cfg.webRoot}
         ln -s ${cfg.modulesDir} $out/share/php/${cfg.package.pname}${cfg.webRoot}/modules/nixos-modules
         ln -s ${cfg.themesDir} $out/share/php/${cfg.package.pname}${cfg.webRoot}/themes/nixos-themes
       '';
+
+      src = cfg.package;
     });
 
   sites =
     hostName: cfg:
     stdenv.mkDerivation (finalAttrs: {
-      pname = "drupal-sites-${hostName}";
-      name = "drupal-sites-${hostName}";
-      src = cfg.package;
       buildInputs = with pkgs; [ rsync ];
 
       installPhase = ''
@@ -86,15 +84,16 @@ let
 
         runHook postInstall
       '';
+
+      name = "drupal-sites-${hostName}";
+      pname = "drupal-sites-${hostName}";
+      src = cfg.package;
     });
 
   configSync =
     hostName: cfg:
     optionalString (cfg.configRoot != "") (
       stdenv.mkDerivation (finalAttrs: {
-        pname = "drupal-config-${hostName}";
-        name = "drupal-config-${hostName}";
-        src = cfg.package;
         buildInputs = with pkgs; [ rsync ];
 
         installPhase = ''
@@ -105,13 +104,19 @@ let
 
           runHook postInstall
         '';
+
+        name = "drupal-config-${hostName}";
+        pname = "drupal-config-${hostName}";
+        src = cfg.package;
       })
     );
 
   drupalSettings =
     hostName: cfg:
     pkgs.writeTextFile {
+      checkPhase = "${pkgs.php}/bin/php --syntax-check $target";
       name = "settings.nixos-${hostName}.php";
+
       text = ''
         <?php
 
@@ -122,13 +127,13 @@ let
           // Extra config
           ${cfg.extraConfig}
       '';
-      checkPhase = "${pkgs.php}/bin/php --syntax-check $target";
     };
 
   appendSettings =
     hostName:
     pkgs.writeTextFile {
       name = "append-drupal-settings-${hostName}";
+
       text = ''
 
         // NixOS settings file import.
@@ -141,6 +146,7 @@ let
   # See: https://www.drupal.org/docs/getting-started/installing-drupal/securing-drupal-file-directories
   privateFilesHtAccess = pkgs.writeTextFile {
     name = "private-files-htaccess";
+
     text = ''
       # Turn off all options we don't need.
       Options -Indexes -ExecCGI -Includes -MultiViews
@@ -162,12 +168,14 @@ let
   stateDirManage =
     hostName: cfg:
     pkgs.writeShellApplication {
-      name = "drupal-state-init-${hostName}";
       excludeShellChecks = [
         "SC2194"
         "SC2157"
       ];
+
+      name = "drupal-state-init-${hostName}";
       runtimeInputs = with pkgs; [ rsync ];
+
       text = ''
         echo "Updating the sites directory for ${hostName}..."
         rsync -auq "${sites hostName cfg}/sites/" "${cfg.stateDir}/sites/" \
@@ -219,9 +227,9 @@ let
 
   siteOpts =
     {
-      options,
       config,
       lib,
+      options,
       name,
       ...
     }:
@@ -230,56 +238,9 @@ let
         enable = mkEnableOption "Drupal web application";
         package = mkPackageOption pkgs "drupal" { };
 
-        filesDir = mkOption {
-          type = types.path;
-          default = "/var/lib/drupal/${name}/sites/default/files";
-          defaultText = "/var/lib/drupal/<name>/sites/default/files";
-          description = ''
-            The location of the Drupal files directory.
-
-            Many of the files in this directory are variable, so they must be located
-            in a location writeable by users of the webgroup.
-          '';
-        };
-
-        privateFilesDir = mkOption {
-          type = types.path;
-          default = "/var/lib/drupal/${name}/private";
-          defaultText = "/var/lib/drupal/<name>/private";
-          description = "The location of the Drupal private files directory.";
-        };
-
-        configSyncDir = mkOption {
-          type = types.path;
-          default = "/var/lib/drupal/${name}/config/sync";
-          defaultText = "/var/lib/drupal/<name>/config/sync";
-          description = ''
-            The location of the user-managed Drupal config sync directory.
-            Drupal will both read from and write to this directory when executing
-            configuration management operations.
-
-            This option differs from the `configRoot` option,
-            which this service uses to discover
-            the location of the config sync directory in the package's source code.
-          '';
-        };
-
-        webRoot = mkOption {
-          type = types.str;
-          default = "";
-          description = ''
-            An optional path string with a leading slash
-            indicating the location of the Drupal webroot
-            in your package's source code.
-
-            The path relative to the project root directory.
-          '';
-          example = "/web";
-        };
-
         configRoot = mkOption {
-          type = types.str;
           default = "";
+
           description = ''
             An optional path string with a leading slash
             indicating the location of the config sync directory on
@@ -292,41 +253,126 @@ let
             tells this service where to create a user-writeable config directory
             on NixOS.
           '';
+
           example = "/config";
+          type = types.str;
+        };
+
+        configSyncDir = mkOption {
+          default = "/var/lib/drupal/${name}/config/sync";
+          defaultText = "/var/lib/drupal/<name>/config/sync";
+
+          description = ''
+            The location of the user-managed Drupal config sync directory.
+            Drupal will both read from and write to this directory when executing
+            configuration management operations.
+
+            This option differs from the `configRoot` option,
+            which this service uses to discover
+            the location of the config sync directory in the package's source code.
+          '';
+
+          type = types.path;
+        };
+
+        database = {
+          createLocally = mkOption {
+            default = true;
+            description = "Create the database and database user locally.";
+            type = types.bool;
+          };
+
+          host = mkOption {
+            default = "localhost";
+            description = "Database host address.";
+            type = types.str;
+          };
+
+          name = mkOption {
+            default = "drupal";
+            description = "Database name.";
+            type = types.str;
+          };
+
+          passwordFile = mkOption {
+            default = null;
+
+            description = ''
+              A file containing the password corresponding to
+              {option}`database.user`.
+            '';
+
+            example = "/run/keys/database-dbpassword";
+            type = types.nullOr types.path;
+          };
+
+          port = mkOption {
+            default = 3306;
+            description = "Database host port.";
+            type = types.port;
+          };
+
+          socket = mkOption {
+            default = null;
+            defaultText = literalExpression "/run/mysqld/mysqld.sock";
+            description = "Path to the unix socket file to use for authentication.";
+            type = types.nullOr types.path;
+          };
+
+          tablePrefix = mkOption {
+            default = "dp_";
+
+            description = ''
+              The $table_prefix is the value placed in the front of your database tables.
+              Change the value if you want to use something other than dp_ for your database
+              prefix. Typically this is changed if you are installing multiple Drupal sites
+              in the same database.
+            '';
+
+            type = types.str;
+          };
+
+          user = mkOption {
+            default = "drupal";
+            description = "Database user.";
+            type = types.str;
+          };
         };
 
         extraConfig = mkOption {
-          type = types.lines;
           default = "";
+
           description = ''
             Extra configuration values that you want to insert into settings.php.
             All configuration must be written as PHP script.
           '';
+
           example = ''
             $config['user.settings']['anonymous'] = 'Visitor';
             $settings['entity_update_backup'] = TRUE;
           '';
+
+          type = types.lines;
         };
 
-        stateDir = mkOption {
-          type = types.path;
-          default = "/var/lib/drupal/${name}";
-          defaultText = "/var/lib/drupal/<name>";
+        filesDir = mkOption {
+          default = "/var/lib/drupal/${name}/sites/default/files";
+          defaultText = "/var/lib/drupal/<name>/sites/default/files";
+
           description = ''
-            The location of the user-managed Drupal site state directory.
-            This directory will contain the settings and configuration files for
-            your Drupal instance. It may also contain your files directory if the
-            `filesDir` option remains unchanged.
+            The location of the Drupal files directory.
 
             Many of the files in this directory are variable, so they must be located
             in a location writeable by users of the webgroup.
           '';
+
+          type = types.path;
         };
 
         modulesDir = mkOption {
-          type = types.path;
           default = "/var/lib/drupal/${name}/modules";
           defaultText = "/var/lib/drupal/<name>/modules";
+
           description = ''
             The location for users to manually install Drupal modules.
 
@@ -334,27 +380,17 @@ let
             composer, or to package them with your source code repository, if
             you are using a custom Drupal.
           '';
-        };
 
-        themesDir = mkOption {
           type = types.path;
-          default = "/var/lib/drupal/${name}/themes";
-          defaultText = "/var/lib/drupal/<name>/themes";
-          description = ''
-            The location for users to manually install Drupal themes.
-
-            Note: in most instances, it is preferable to install themes using
-            composer, or to package them with your source code repository, if
-            you are using a custom Drupal.
-          '';
         };
 
         phpOptions = mkOption {
-          type = types.attrsOf types.str;
           default = { };
+
           description = ''
             Options for PHP's php.ini file for this Drupal site.
           '';
+
           example = literalExpression ''
             {
               "opcache.interned_strings_buffer" = "8";
@@ -364,83 +400,25 @@ let
               "opcache.fast_shutdown" = "1";
             }
           '';
-        };
 
-        database = {
-          host = mkOption {
-            type = types.str;
-            default = "localhost";
-            description = "Database host address.";
-          };
-
-          port = mkOption {
-            type = types.port;
-            default = 3306;
-            description = "Database host port.";
-          };
-
-          name = mkOption {
-            type = types.str;
-            default = "drupal";
-            description = "Database name.";
-          };
-
-          user = mkOption {
-            type = types.str;
-            default = "drupal";
-            description = "Database user.";
-          };
-
-          passwordFile = mkOption {
-            type = types.nullOr types.path;
-            default = null;
-            example = "/run/keys/database-dbpassword";
-            description = ''
-              A file containing the password corresponding to
-              {option}`database.user`.
-            '';
-          };
-
-          tablePrefix = mkOption {
-            type = types.str;
-            default = "dp_";
-            description = ''
-              The $table_prefix is the value placed in the front of your database tables.
-              Change the value if you want to use something other than dp_ for your database
-              prefix. Typically this is changed if you are installing multiple Drupal sites
-              in the same database.
-            '';
-          };
-
-          socket = mkOption {
-            type = types.nullOr types.path;
-            default = null;
-            defaultText = literalExpression "/run/mysqld/mysqld.sock";
-            description = "Path to the unix socket file to use for authentication.";
-          };
-
-          createLocally = mkOption {
-            type = types.bool;
-            default = true;
-            description = "Create the database and database user locally.";
-          };
-        };
-
-        virtualHost = mkOption {
-          type = types.submodule (import ../web-servers/apache-httpd/vhost-options.nix);
-          example = literalExpression ''
-            {
-              adminAddr = "webmaster@example.org";
-              forceSSL = true;
-              enableACME = true;
-            }
-          '';
-          description = ''
-            Apache configuration can be done by adapting {option}`services.httpd.virtualHosts`.
-          '';
+          type = types.attrsOf types.str;
         };
 
         poolConfig = mkOption {
+          default = {
+            "pm" = "dynamic";
+            "pm.max_children" = 32;
+            "pm.max_requests" = 500;
+            "pm.max_spare_servers" = 4;
+            "pm.min_spare_servers" = 2;
+            "pm.start_servers" = 2;
+          };
+
+          description = ''
+            Options for the Drupal PHP pool. See the documentation on `php-fpm.conf`
+            for details on configuration directives.
+          '';
+
           type =
             with types;
             attrsOf (oneOf [
@@ -448,18 +426,76 @@ let
               int
               bool
             ]);
-          default = {
-            "pm" = "dynamic";
-            "pm.max_children" = 32;
-            "pm.start_servers" = 2;
-            "pm.min_spare_servers" = 2;
-            "pm.max_spare_servers" = 4;
-            "pm.max_requests" = 500;
-          };
+        };
+
+        privateFilesDir = mkOption {
+          default = "/var/lib/drupal/${name}/private";
+          defaultText = "/var/lib/drupal/<name>/private";
+          description = "The location of the Drupal private files directory.";
+          type = types.path;
+        };
+
+        stateDir = mkOption {
+          default = "/var/lib/drupal/${name}";
+          defaultText = "/var/lib/drupal/<name>";
+
           description = ''
-            Options for the Drupal PHP pool. See the documentation on `php-fpm.conf`
-            for details on configuration directives.
+            The location of the user-managed Drupal site state directory.
+            This directory will contain the settings and configuration files for
+            your Drupal instance. It may also contain your files directory if the
+            `filesDir` option remains unchanged.
+
+            Many of the files in this directory are variable, so they must be located
+            in a location writeable by users of the webgroup.
           '';
+
+          type = types.path;
+        };
+
+        themesDir = mkOption {
+          default = "/var/lib/drupal/${name}/themes";
+          defaultText = "/var/lib/drupal/<name>/themes";
+
+          description = ''
+            The location for users to manually install Drupal themes.
+
+            Note: in most instances, it is preferable to install themes using
+            composer, or to package them with your source code repository, if
+            you are using a custom Drupal.
+          '';
+
+          type = types.path;
+        };
+
+        virtualHost = mkOption {
+          description = ''
+            Apache configuration can be done by adapting {option}`services.httpd.virtualHosts`.
+          '';
+
+          example = literalExpression ''
+            {
+              adminAddr = "webmaster@example.org";
+              forceSSL = true;
+              enableACME = true;
+            }
+          '';
+
+          type = types.submodule (import ../web-servers/apache-httpd/vhost-options.nix);
+        };
+
+        webRoot = mkOption {
+          default = "";
+
+          description = ''
+            An optional path string with a leading slash
+            indicating the location of the Drupal webroot
+            in your package's source code.
+
+            The path relative to the project root directory.
+          '';
+
+          example = "/web";
+          type = types.str;
         };
       };
 
@@ -473,21 +509,19 @@ in
       package = mkPackageOption pkgs "drupal" { };
 
       sites = mkOption {
-        type = types.attrsOf (types.submodule siteOpts);
         default = {
           "localhost" = {
             enable = true;
           };
         };
+
         description = "Specification of one or more Drupal sites to serve";
+        type = types.attrsOf (types.submodule siteOpts);
       };
 
       webserver = mkOption {
-        type = types.enum [
-          "nginx"
-          "caddy"
-        ];
         default = "nginx";
+
         description = ''
           Whether to use nginx or caddy for virtual host management.
 
@@ -497,6 +531,11 @@ in
           Further caddy configuration can be done by adapting `services.caddy.virtualHosts.<name>`.
           See [](#opt-services.caddy.virtualHosts) for further information.
         '';
+
+        type = types.enum [
+          "nginx"
+          "caddy"
+        ];
       };
     };
   };
@@ -518,11 +557,13 @@ in
         enable = true;
         package = mkDefault mariadb;
         ensureDatabases = mapAttrsToList (hostName: cfg: cfg.database.name) eachSite;
+
         ensureUsers = mapAttrsToList (hostName: cfg: {
-          name = cfg.database.user;
           ensurePermissions = {
             "${cfg.database.name}.*" = "ALL PRIVILEGES";
           };
+
+          name = cfg.database.user;
         }) eachSite;
       };
 
@@ -531,9 +572,10 @@ in
         (nameValuePair "drupal-${hostName}" {
           inherit user;
           group = webserver.group;
+
           settings = {
-            "listen.owner" = webserver.user;
             "listen.group" = webserver.group;
+            "listen.owner" = webserver.user;
           }
           // cfg.poolConfig;
         })
@@ -567,17 +609,8 @@ in
         (mapAttrs' (
           hostName: cfg:
           (nameValuePair "drupal-state-init-${hostName}" {
-            wantedBy = [ "multi-user.target" ];
-            before = [ "nginx.service" ];
             after = [ "local-fs.target" ];
-
-            serviceConfig = {
-              Type = "oneshot";
-              User = "root";
-              RemainAfterExit = true;
-
-              ExecStart = getExe (stateDirManage hostName cfg);
-            };
+            before = [ "nginx.service" ];
 
             # Rerun this service if certain settings were updated
             reloadTriggers = [
@@ -587,6 +620,15 @@ in
               cfg.stateDir
               cfg.configSyncDir
             ];
+
+            serviceConfig = {
+              ExecStart = getExe (stateDirManage hostName cfg);
+              RemainAfterExit = true;
+              Type = "oneshot";
+              User = "root";
+            };
+
+            wantedBy = [ "multi-user.target" ];
           })
         ) eachSite)
 
@@ -599,13 +641,47 @@ in
     (mkIf (cfg.webserver == "nginx") {
       services.nginx = {
         enable = true;
+
         virtualHosts = mapAttrs (hostName: cfg: {
-          serverName = mkDefault hostName;
-          root = "${pkg hostName cfg}/share/php/${cfg.package.pname}${cfg.webRoot}";
           extraConfig = ''
             index index.php index.htm index.html;
           '';
+
           locations = {
+            "/" = {
+              extraConfig = ''
+                try_files $uri /index.php?$query_string;
+              '';
+            };
+
+            "= /favicon.ico" = {
+              extraConfig = ''
+                log_not_found off;
+                access_log off;
+              '';
+            };
+
+            "= /robots.txt" = {
+              extraConfig = ''
+                allow all;
+                log_not_found off;
+                access_log off;
+              '';
+            };
+
+            "@rewrite" = {
+              extraConfig = ''
+                rewrite ^ /index.php;
+              '';
+            };
+
+            "^~ /sites/.*/files/" = {
+              extraConfig = ''
+                alias ${cfg.filesDir}/;
+                try_files $uri @rewrite;
+              '';
+            };
+
             "~ '\\.php$|^/update\\.php'" = {
               extraConfig = ''
                 fastcgi_split_path_info ^(.+\.php)(/.+)$;
@@ -624,55 +700,46 @@ in
                 fastcgi_read_timeout 300;
               '';
             };
-            "= /favicon.ico" = {
-              extraConfig = ''
-                log_not_found off;
-                access_log off;
-              '';
-            };
-            "= /robots.txt" = {
-              extraConfig = ''
-                allow all;
-                log_not_found off;
-                access_log off;
-              '';
-            };
-            "~ \\..*/.*\\.php$" = {
-              extraConfig = ''
-                return 403;
-              '';
-            };
-            "~ ^/sites/.*/private/" = {
-              extraConfig = ''
-                return 403;
-              '';
-            };
-            "~ ^/sites/[^/]+/files/.*\\.php$" = {
-              extraConfig = ''
-                deny all;
-              '';
-            };
-            "~* ^/.well-known/" = {
-              extraConfig = ''
-                allow all;
-              '';
-            };
-            "/" = {
-              extraConfig = ''
-                try_files $uri /index.php?$query_string;
-              '';
-            };
-            "@rewrite" = {
-              extraConfig = ''
-                rewrite ^ /index.php;
-              '';
-            };
+
             "~ /vendor/.*\\.php$" = {
               extraConfig = ''
                 deny all;
                 return 404;
               '';
             };
+
+            "~ \\..*/.*\\.php$" = {
+              extraConfig = ''
+                return 403;
+              '';
+            };
+
+            "~ ^(/[a-z\\-]+)?/system/files/" = {
+              extraConfig = ''
+                alias ${cfg.privateFilesDir}/;
+                try_files $uri /index.php?$query_string;
+              '';
+            };
+
+            "~ ^/sites/.*/files/styles/" = {
+              extraConfig = ''
+                alias ${cfg.filesDir}/;
+                try_files $uri @rewrite;
+              '';
+            };
+
+            "~ ^/sites/.*/private/" = {
+              extraConfig = ''
+                return 403;
+              '';
+            };
+
+            "~ ^/sites/[^/]+/files/.*\\.php$" = {
+              extraConfig = ''
+                deny all;
+              '';
+            };
+
             "~* \\.(js|css|png|jpg|jpeg|gif|ico|svg)$" = {
               extraConfig = ''
                 try_files $uri @rewrite;
@@ -680,25 +747,16 @@ in
                 log_not_found off;
               '';
             };
-            "~ ^/sites/.*/files/styles/" = {
+
+            "~* ^/.well-known/" = {
               extraConfig = ''
-                alias ${cfg.filesDir}/;
-                try_files $uri @rewrite;
-              '';
-            };
-            "^~ /sites/.*/files/" = {
-              extraConfig = ''
-                alias ${cfg.filesDir}/;
-                try_files $uri @rewrite;
-              '';
-            };
-            "~ ^(/[a-z\\-]+)?/system/files/" = {
-              extraConfig = ''
-                alias ${cfg.privateFilesDir}/;
-                try_files $uri /index.php?$query_string;
+                allow all;
               '';
             };
           };
+
+          root = "${pkg hostName cfg}/share/php/${cfg.package.pname}${cfg.webRoot}";
+          serverName = mkDefault hostName;
         }) eachSite;
       };
     })
@@ -706,6 +764,7 @@ in
     (mkIf (cfg.webserver == "caddy") {
       services.caddy = {
         enable = true;
+
         virtualHosts = mapAttrs' (
           hostName: cfg:
           (nameValuePair hostName {

@@ -1,34 +1,29 @@
 {
   lib,
   stdenv,
-  buildPythonPackage,
   fetchFromGitHub,
-
+  buildPythonPackage,
   # build-system
   cmake,
-  nasm,
-  pkg-config,
-  setuptools,
-
-  # native dependencies
-  libheif,
   libaom,
   libde265,
-  x265,
-
-  # dependencies
-  pillow,
-
+  # native dependencies
+  libheif,
+  nasm,
+  numpy,
   # tests
   opencv4,
-  numpy,
+  # dependencies
+  pillow,
+  pkg-config,
   pytestCheckHook,
+  setuptools,
+  x265,
 }:
 
 buildPythonPackage rec {
   pname = "pillow-heif";
   version = "1.4.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "bigcat88";
@@ -49,10 +44,6 @@ buildPythonPackage rec {
     pkg-config
   ];
 
-  build-system = [ setuptools ];
-
-  dontUseCmakeConfigure = true;
-
   buildInputs = [
     libaom
     libde265
@@ -64,15 +55,14 @@ buildPythonPackage rec {
     RELEASE_FULL_FLAG = 1;
   };
 
-  dependencies = [ pillow ];
-
-  pythonImportsCheck = [ "pillow_heif" ];
-
   nativeCheckInputs = [
     opencv4
     numpy
     pytestCheckHook
   ];
+
+  build-system = [ setuptools ];
+  dependencies = [ pillow ];
 
   disabledTests = [
     # Time sensitive speed test, not reproducible
@@ -94,14 +84,20 @@ buildPythonPackage rec {
     "test_I_color_modes_to_10_12_bit"
   ];
 
+  dontUseCmakeConfigure = true;
+  pyproject = true;
+  pythonImportsCheck = [ "pillow_heif" ];
+
   meta = {
-    changelog = "https://github.com/bigcat88/pillow_heif/releases/tag/${src.tag}";
     description = "Python library for working with HEIF images and plugin for Pillow";
     homepage = "https://github.com/bigcat88/pillow_heif";
+    changelog = "https://github.com/bigcat88/pillow_heif/releases/tag/${src.tag}";
+
     license = with lib.licenses; [
       bsd3
       lgpl3
     ];
+
     maintainers = with lib.maintainers; [
       dandellion
       kuflierl

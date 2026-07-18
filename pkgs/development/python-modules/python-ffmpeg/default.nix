@@ -1,18 +1,17 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   ffmpeg-headless,
-  setuptools,
   pyee,
-  pytestCheckHook,
   pytest-asyncio,
+  pytestCheckHook,
+  setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "python-ffmpeg";
   version = "2.0.12";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "jonghwanhyeon";
@@ -32,20 +31,19 @@ buildPythonPackage rec {
       --replace-fail 'ffmpeg.execute(timeout=0.1)' 'ffmpeg.execute(timeout=0.01)'
   '';
 
-  build-system = [ setuptools ];
-
-  dependencies = [ pyee ];
-
   nativeCheckInputs = [
     pytestCheckHook
     pytest-asyncio
   ];
 
+  build-system = [ setuptools ];
+  dependencies = [ pyee ];
+  pyproject = true;
   pythonImportsCheck = [ "ffmpeg" ];
 
   meta = {
-    homepage = "https://github.com/jonghwanhyeon/python-ffmpeg";
     description = "Python binding for FFmpeg which provides sync and async APIs";
+    homepage = "https://github.com/jonghwanhyeon/python-ffmpeg";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ youhaveme9 ];
   };

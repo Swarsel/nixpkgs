@@ -2,17 +2,17 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  fetchpatch,
-  makeDesktopItem,
-  copyDesktopItems,
-  cmake,
   boost,
+  cmake,
+  copyDesktopItems,
   cups,
+  fetchpatch,
   fmt,
-  libvorbis,
-  libsndfile,
-  minizip,
   gtest,
+  libsndfile,
+  libvorbis,
+  makeDesktopItem,
+  minizip,
   qt6,
 }:
 
@@ -29,8 +29,8 @@ stdenv.mkDerivation (finalAttrs: {
 
   patches = [
     (fetchpatch {
-      url = "https://github.com/nongeneric/lsd2dsl/commit/bbda5be1b76a4a44804483d00c07d79783eceb6b.patch";
       hash = "sha256-7is83D1cMBArXVLe5TP7D7lUcwnTMeXjkJ+cbaH5JQk=";
+      url = "https://github.com/nongeneric/lsd2dsl/commit/bbda5be1b76a4a44804483d00c07d79783eceb6b.patch";
     })
   ];
 
@@ -62,29 +62,32 @@ stdenv.mkDerivation (finalAttrs: {
 
   env.NIX_CFLAGS_COMPILE = "-Wno-int-conversion";
 
+  installPhase = ''
+    install -Dm755 console/lsd2dsl gui/lsd2dsl-qtgui -t $out/bin
+  '';
+
   desktopItems = lib.singleton (makeDesktopItem {
-    name = "lsd2dsl";
-    exec = "lsd2dsl-qtgui";
-    desktopName = "lsd2dsl";
-    genericName = "lsd2dsl";
-    comment = finalAttrs.meta.description;
     categories = [
       "Dictionary"
       "FileTools"
       "Qt"
     ];
+
+    comment = finalAttrs.meta.description;
+    desktopName = "lsd2dsl";
+    exec = "lsd2dsl-qtgui";
+    genericName = "lsd2dsl";
+    name = "lsd2dsl";
   });
 
-  installPhase = ''
-    install -Dm755 console/lsd2dsl gui/lsd2dsl-qtgui -t $out/bin
-  '';
-
   meta = {
-    homepage = "https://rcebits.com/lsd2dsl/";
     description = "Lingvo dictionaries decompiler";
+
     longDescription = ''
       A decompiler for ABBYY Lingvo’s proprietary dictionaries.
     '';
+
+    homepage = "https://rcebits.com/lsd2dsl/";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ sikmir ];
     platforms = lib.platforms.unix;

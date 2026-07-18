@@ -1,26 +1,22 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
+  buildPythonPackage,
   # build-system
   hatch-vcs,
   hatchling,
-
   # dependencies
   pandas,
   pyannote-core,
-  pyyaml,
-  typer,
-
   # tests
   pytestCheckHook,
+  pyyaml,
+  typer,
 }:
 
 buildPythonPackage rec {
   pname = "pyannote-database";
   version = "6.1.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "pyannote";
@@ -28,6 +24,14 @@ buildPythonPackage rec {
     tag = version;
     hash = "sha256-72H1tVLtDSYHAgjHWmI7pPQhKGchHz5VP0eRU6NRj2g=";
   };
+
+  nativeCheckInputs = [
+    pytestCheckHook
+  ];
+
+  preCheck = ''
+    $out/bin/pyannote-database --help
+  '';
 
   build-system = [
     hatch-vcs
@@ -42,15 +46,8 @@ buildPythonPackage rec {
     typer
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "pyannote.database" ];
-
-  nativeCheckInputs = [
-    pytestCheckHook
-  ];
-
-  preCheck = ''
-    $out/bin/pyannote-database --help
-  '';
 
   meta = {
     description = "Reproducible experimental protocols for multimedia (audio, video, text) database";

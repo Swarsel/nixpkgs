@@ -1,6 +1,6 @@
 {
-  fetchFromGitHub,
   lib,
+  fetchFromGitHub,
   postgresql,
   postgresqlBuildExtension,
 }:
@@ -20,8 +20,8 @@ postgresqlBuildExtension (finalAttrs: {
     description = "Tiny Postgres extension to create version 7 UUIDs";
     homepage = "https://github.com/fboulnois/pg_uuidv7";
     changelog = "https://github.com/fboulnois/pg_uuidv7/blob/main/CHANGELOG.md";
+    license = lib.licenses.mpl20;
     maintainers = [ ];
     platforms = postgresql.meta.platforms;
-    license = lib.licenses.mpl20;
   };
 })

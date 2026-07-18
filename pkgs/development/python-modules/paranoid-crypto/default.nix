@@ -1,9 +1,9 @@
 {
   lib,
+  fetchFromGitHub,
   absl-py,
   buildPythonPackage,
   cryptography,
-  fetchFromGitHub,
   fpylll,
   gmpy,
   protobuf,
@@ -16,7 +16,6 @@
 buildPythonPackage {
   pname = "paranoid-crypto";
   version = "unstable-20220819";
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "google";
@@ -25,6 +24,11 @@ buildPythonPackage {
     rev = "8abccc1619748b93979d1c26234b90d26e88a12e";
     hash = "sha256-4yF7WAFAGGhvWTV/y5dGVA/+9r1dqrXU/0/6Edgw3ow=";
   };
+
+  postPatch = ''
+    substituteInPlace requirements.txt \
+      --replace "protobuf==3.20.*" "protobuf"
+  '';
 
   nativeBuildInputs = [
     protobuf
@@ -45,16 +49,12 @@ buildPythonPackage {
     pytestCheckHook
   ];
 
-  postPatch = ''
-    substituteInPlace requirements.txt \
-      --replace "protobuf==3.20.*" "protobuf"
-  '';
-
   disabledTestPaths = [
     # Import issue
     "paranoid_crypto/lib/randomness_tests/"
   ];
 
+  format = "setuptools";
   pythonImportsCheck = [ "paranoid_crypto" ];
 
   meta = {

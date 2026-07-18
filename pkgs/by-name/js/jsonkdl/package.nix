@@ -1,7 +1,7 @@
 {
   lib,
-  rustPlatform,
   fetchCrate,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -20,10 +20,12 @@ rustPlatform.buildRustPackage (finalAttrs: {
     homepage = "https://github.com/joshprk/jsonkdl";
     changelog = "https://github.com/joshprk/jsonkdl/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       joshprk
       kiara
     ];
+
     mainProgram = "jsonkdl";
   };
 })

@@ -1,16 +1,15 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   hatchling,
-  pytestCheckHook,
   pytest-cov-stub,
+  pytestCheckHook,
 }:
 
 buildPythonPackage rec {
   pname = "tiered-debug";
   version = "1.4.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "untergeek";
@@ -19,20 +18,21 @@ buildPythonPackage rec {
     hash = "sha256-lGt2cnT5Pjb87msgnDawn2gg2VtWXwniHM1wTjHU/x4=";
   };
 
-  build-system = [ hatchling ];
-
   nativeCheckInputs = [
     pytest-cov-stub
     pytestCheckHook
   ];
 
-  pythonImportsCheck = [ "tiered_debug" ];
+  build-system = [ hatchling ];
 
   disabledTests = [
     # AssertionError
     "test_add_handler"
     "test_log_with_default_stacklevel"
   ];
+
+  pyproject = true;
+  pythonImportsCheck = [ "tiered_debug" ];
 
   meta = {
     description = "Python logging helper module that allows for multiple tiers of debug logging";

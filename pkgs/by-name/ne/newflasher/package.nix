@@ -32,7 +32,7 @@ stdenv.mkDerivation (finalAttrs: {
     description = "Flash tool for new Sony flash tool protocol (Xperia XZ Premium and newer)";
     homepage = "https://github.com/munjeni/newflasher";
     license = lib.licenses.mit;
-    platforms = lib.platforms.linux;
     maintainers = with lib.maintainers; [ toastal ];
+    platforms = lib.platforms.linux;
   };
 })

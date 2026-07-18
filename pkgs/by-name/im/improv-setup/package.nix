@@ -1,6 +1,6 @@
 {
-  fetchFromGitea,
   lib,
+  fetchFromGitea,
   nix-update-script,
   rustPlatform,
 }:
@@ -10,15 +10,14 @@ rustPlatform.buildRustPackage (finalAttrs: {
   version = "1.1.0";
 
   src = fetchFromGitea {
-    domain = "git.clerie.de";
     owner = "clerie";
     repo = "improv-setup";
     tag = "v${finalAttrs.version}";
     hash = "sha256-N/HMvyZfWuxzNg0IDvyNVJiNBh7gb+v38mjVYmt2vw4=";
+    domain = "git.clerie.de";
   };
 
   cargoHash = "sha256-vv7i+RsOjYaVWLmyBcvYNdiKsPOP4GyKyWAYB718Liw=";
-
   passthru.updateScript = nix-update-script { };
 
   meta = {

@@ -10,7 +10,6 @@
 buildPythonPackage rec {
   pname = "django-pghistory";
   version = "3.9.2";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "Opus10";
@@ -28,13 +27,14 @@ buildPythonPackage rec {
     django-pgtrigger
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "pghistory" ];
 
   meta = {
-    changelog = "https://github.com/Opus10/django-pghistory/releases/tag/${src.tag}";
     description = "History tracking for Django and Postgres";
     homepage = "https://django-pghistory.readthedocs.io";
-    maintainers = with lib.maintainers; [ pyrox0 ];
+    changelog = "https://github.com/Opus10/django-pghistory/releases/tag/${src.tag}";
     license = lib.licenses.bsd3;
+    maintainers = with lib.maintainers; [ pyrox0 ];
   };
 }

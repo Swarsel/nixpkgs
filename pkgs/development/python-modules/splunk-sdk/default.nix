@@ -1,15 +1,14 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
+  buildPythonPackage,
   deprecation,
+  setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "splunk-sdk";
   version = "2.1.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "splunk";
@@ -19,9 +18,8 @@ buildPythonPackage rec {
   };
 
   build-system = [ setuptools ];
-
   dependencies = [ deprecation ];
-
+  pyproject = true;
   pythonImportsCheck = [ "splunklib" ];
 
   meta = {

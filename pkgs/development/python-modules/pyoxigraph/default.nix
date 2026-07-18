@@ -1,39 +1,42 @@
 {
+  lib,
   stdenv,
+  fetchFromGitHub,
   apple-sdk_15,
   buildPythonPackage,
-  fetchFromGitHub,
-  lib,
   pkg-config,
   pytestCheckHook,
   rustPlatform,
 }:
 buildPythonPackage rec {
   pname = "pyoxigraph";
-  pyproject = true;
   version = "0.5.5";
 
   src = fetchFromGitHub {
     owner = "oxigraph";
     repo = "oxigraph";
     tag = "v${version}";
-    fetchSubmodules = true;
     hash = "sha256-Sg4C9NW2grrlLFY2mDGOdsucX7cdT2028erJL8xaqLE=";
+    fetchSubmodules = true;
   };
+
+  nativeBuildInputs = [
+    pkg-config
+    rustPlatform.bindgenHook
+    rustPlatform.cargoSetupHook
+    rustPlatform.maturinBuildHook
+  ];
+
+  nativeCheckInputs = [ pytestCheckHook ];
+  buildAndTestSubdir = "python";
 
   cargoDeps = rustPlatform.fetchCargoVendor {
     inherit pname version src;
     hash = "sha256-fR3s3RSYlpUVqsPOyPwZaCjTSNWoOYwFDBzcYxTE8kY=";
   };
 
-  buildAndTestSubdir = "python";
-
   dependencies = lib.optionals stdenv.hostPlatform.isDarwin [
     apple-sdk_15
-  ];
-
-  disabledTests = [
-    "test_update_load"
   ];
 
   disabledTestPaths = [
@@ -44,24 +47,23 @@ buildPythonPackage rec {
     "oxrocksdb-sys/rocksdb/tools"
   ];
 
-  nativeBuildInputs = [
-    pkg-config
-    rustPlatform.bindgenHook
-    rustPlatform.cargoSetupHook
-    rustPlatform.maturinBuildHook
+  disabledTests = [
+    "test_update_load"
   ];
 
-  nativeCheckInputs = [ pytestCheckHook ];
+  pyproject = true;
   pythonImportsCheck = [ "pyoxigraph" ];
 
   meta = {
-    homepage = "https://github.com/oxigraph/oxigraph";
     description = "SPARQL graph database";
-    maintainers = with lib.maintainers; [ dadada ];
+    homepage = "https://github.com/oxigraph/oxigraph";
+
     license = with lib.licenses; [
       asl20
       mit
     ];
+
+    maintainers = with lib.maintainers; [ dadada ];
     platforms = lib.platforms.unix;
   };
 }

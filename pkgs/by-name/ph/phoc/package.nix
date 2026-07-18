@@ -1,43 +1,43 @@
 {
   lib,
   stdenv,
-  stdenvNoCC,
   fetchFromGitLab,
   callPackage,
-  meson,
-  ninja,
-  pkg-config,
-  python3,
-  wayland-scanner,
-  wrapGAppsHook3,
-  libinput,
-  gobject-introspection,
-  mutter,
-  gnome-desktop,
   glib,
+  gmobile,
+  gnome-desktop,
+  gobject-introspection,
   gtk3,
   json-glib,
-  wayland,
   libdrm,
-  libxkbcommon,
-  wlroots_0_19,
+  libinput,
   libxcb-wm,
+  libxkbcommon,
+  meson,
+  mutter,
+  ninja,
   nix-update-script,
   nixosTests,
+  pkg-config,
+  python3,
+  stdenvNoCC,
   testers,
-  gmobile,
+  wayland,
+  wayland-scanner,
+  wlroots_0_19,
+  wrapGAppsHook3,
 }:
 
 let
   # Derived from subprojects/gvdb.wrap
   gvdb = fetchFromGitLab {
     domain = "gitlab.gnome.org";
+    # Workaround for https://github.com/NixOS/nixpkgs/issues/485701
+    forceFetchGit = true;
+    hash = "sha256-4mqoHPlrMPenoGPwDqbtv4/rJ/uq9Skcm82pRvOxNIk=";
     owner = "GNOME";
     repo = "gvdb";
     rev = "4758f6fb7f889e074e13df3f914328f3eecb1fd3";
-    hash = "sha256-4mqoHPlrMPenoGPwDqbtv4/rJ/uq9Skcm82pRvOxNIk=";
-    # Workaround for https://github.com/NixOS/nixpkgs/issues/485701
-    forceFetchGit = true;
   };
 in
 stdenv.mkDerivation (finalAttrs: {
@@ -45,15 +45,19 @@ stdenv.mkDerivation (finalAttrs: {
   version = "0.54.0";
 
   src = fetchFromGitLab {
-    domain = "gitlab.gnome.org";
-    group = "World";
     owner = "Phosh";
     repo = "phoc";
     tag = "v${finalAttrs.version}";
     hash = "sha256-P81D3gCC4Q1JQPUlAtLbMZdlVOPpJJ1/rLX7zijFcc0=";
+    domain = "gitlab.gnome.org";
     # Workaround for https://github.com/NixOS/nixpkgs/issues/485701
     forceFetchGit = true;
+    group = "World";
   };
+
+  postPatch = ''
+    ln -s ${gvdb} subprojects/gvdb
+  '';
 
   nativeBuildInputs = [
     gobject-introspection
@@ -81,10 +85,6 @@ stdenv.mkDerivation (finalAttrs: {
     gmobile
   ];
 
-  postPatch = ''
-    ln -s ${gvdb} subprojects/gvdb
-  '';
-
   mesonFlags = [ "-Dembed-wlroots=disabled" ];
 
   # Patch wlroots to remove a check which crashes Phosh.
@@ -92,33 +92,37 @@ stdenv.mkDerivation (finalAttrs: {
   wlroots = wlroots_0_19.overrideAttrs (old: {
     patches = (old.patches or [ ]) ++ [
       (stdenvNoCC.mkDerivation {
-        name = "0001-Revert-layer-shell-error-on-0-dimension-without-anch.patch";
         inherit (finalAttrs) src;
-        preferLocalBuild = true;
-        allowSubstitutes = false;
         installPhase = "cp subprojects/packagefiles/wlroots/$name $out";
+        allowSubstitutes = false;
+        name = "0001-Revert-layer-shell-error-on-0-dimension-without-anch.patch";
+        preferLocalBuild = true;
       })
     ];
   });
 
   passthru = {
+    tests.dependency-versions = callPackage ./test-dependency-versions.nix { inherit gvdb; };
     tests.phosh = nixosTests.phosh;
+
     tests.version = testers.testVersion {
       package = finalAttrs.finalPackage;
     };
-    tests.dependency-versions = callPackage ./test-dependency-versions.nix { inherit gvdb; };
+
     updateScript = nix-update-script { };
   };
 
   meta = {
     description = "Wayland compositor for mobile phones like the Librem 5";
-    mainProgram = "phoc";
     homepage = "https://gitlab.gnome.org/World/Phosh/phoc";
     license = lib.licenses.gpl3Plus;
+
     maintainers = with lib.maintainers; [
       zhaofengli
       armelclo
     ];
+
     platforms = lib.platforms.linux;
+    mainProgram = "phoc";
   };
 })

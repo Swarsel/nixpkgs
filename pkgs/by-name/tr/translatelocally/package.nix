@@ -2,13 +2,13 @@
   lib,
   stdenv,
   fetchFromGitHub,
+  blas,
   cmake,
-  qt6,
+  gperftools,
   libarchive,
   pcre2,
   protobuf,
-  gperftools,
-  blas,
+  qt6,
   runCommand,
   translatelocally,
   translatelocally-models,
@@ -24,9 +24,9 @@ stdenv.mkDerivation (finalAttrs: {
   version = "0-unstable-2024-05-12";
 
   src = fetchFromGitHub {
+    inherit rev;
     owner = "XapaJIaMnu";
     repo = "translateLocally";
-    inherit rev;
     hash = "sha256-oPtiyONqkZ5xOIhDezk8mkmi9O8gNYwHo0gcqSa89qI=";
     fetchSubmodules = true;
   };
@@ -45,11 +45,6 @@ stdenv.mkDerivation (finalAttrs: {
 
     substituteInPlace 3rd_party/bergamot-translator/3rd_party/marian-dev/src/3rd_party/ruy/third_party/cpuinfo/deps/clog/CMakeLists.txt \
       --replace-fail "CMAKE_MINIMUM_REQUIRED(VERSION 3.1 FATAL_ERROR)" "cmake_minimum_required(VERSION 3.10)"
-  '';
-
-  # https://github.com/XapaJIaMnu/translateLocally/blob/81ed8b9/.github/workflows/build.yml#L330
-  postConfigure = lib.optionalString stdenv.hostPlatform.isAarch64 ''
-    bash ../cmake/fix_ruy_build.sh .. .
   '';
 
   nativeBuildInputs = [
@@ -79,6 +74,11 @@ stdenv.mkDerivation (finalAttrs: {
     (lib.optionalString stdenv.hostPlatform.isx86_64 "-DBUILD_ARCH=${buildArch}")
   ];
 
+  # https://github.com/XapaJIaMnu/translateLocally/blob/81ed8b9/.github/workflows/build.yml#L330
+  postConfigure = lib.optionalString stdenv.hostPlatform.isAarch64 ''
+    bash ../cmake/fix_ruy_build.sh .. .
+  '';
+
   passthru.tests = {
     cli-translate =
       runCommand "${finalAttrs.pname}-test-cli-translate"
@@ -96,11 +96,11 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   meta = {
-    mainProgram = "translateLocally";
-    homepage = "https://translatelocally.com/";
     description = "Fast and secure translation on your local machine, powered by marian and Bergamot";
+    homepage = "https://translatelocally.com/";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ euxane ];
     platforms = lib.platforms.linux;
+    mainProgram = "translateLocally";
   };
 })

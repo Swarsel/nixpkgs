@@ -2,11 +2,11 @@
   lib,
   stdenv,
   fetchFromGitHub,
+  SDL2,
+  cmake,
+  dxvk_2,
   writeScript,
   writeShellScriptBin,
-  cmake,
-  SDL2,
-  dxvk_2,
 }:
 
 let
@@ -29,20 +29,16 @@ stdenv.mkDerivation (finalAttrs: {
     owner = "icculus";
     repo = "mojoshader";
     rev = "6333f74dbd5644789a63e903816441b16c1e8b60";
-    postCheckout = "git -C $out rev-parse HEAD > $out/.gitrev";
     hash = "sha256-32gRoYFGzQksOccpM9qvhd4Q6PyyH3EpQ2rcOI7qfp4=";
+    postCheckout = "git -C $out rev-parse HEAD > $out/.gitrev";
   };
-
-  buildInputs = [ SDL2 ];
 
   nativeBuildInputs = [
     cmake
     fakeGit # https://github.com/icculus/mojoshader/blob/abdc80360c1d4560ab8f356035dcd53ae6e9b87f/CMakeLists.txt#L41-L68
   ];
 
-  env = lib.optionalAttrs (!stdenv.hostPlatform.isDarwin) {
-    NIX_CFLAGS_COMPILE = "-I${dxvk_2}/include/dxvk";
-  };
+  buildInputs = [ SDL2 ];
 
   cmakeFlags = [
     (lib.cmakeBool "BUILD_SHARED_LIBS" (!stdenv.hostPlatform.isStatic))
@@ -50,6 +46,10 @@ stdenv.mkDerivation (finalAttrs: {
     (lib.cmakeBool "DEPTH_CLIPPING" true)
     (lib.cmakeBool "XNA4_VERTEXTEXTURE" true)
   ];
+
+  env = lib.optionalAttrs (!stdenv.hostPlatform.isDarwin) {
+    NIX_CFLAGS_COMPILE = "-I${dxvk_2}/include/dxvk";
+  };
 
   installPhase = ''
     runHook preInstall

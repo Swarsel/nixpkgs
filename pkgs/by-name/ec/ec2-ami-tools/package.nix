@@ -2,21 +2,15 @@
   lib,
   stdenv,
   fetchurl,
-  unzip,
-  ruby,
-  openssl,
   makeWrapper,
+  openssl,
+  ruby,
+  unzip,
 }:
 
 stdenv.mkDerivation rec {
   pname = "ec2-ami-tools";
-
   version = "1.5.19";
-
-  nativeBuildInputs = [
-    makeWrapper
-    unzip
-  ];
 
   src = fetchurl {
     url = "https://s3.amazonaws.com/ec2-downloads/${pname}-${version}.zip";
@@ -30,6 +24,11 @@ stdenv.mkDerivation rec {
   # tarball uploaded to Amazon S3.  So add a `--mode=0755' flag to the
   # tar invocation.
   patches = [ ./writable.patch ];
+
+  nativeBuildInputs = [
+    makeWrapper
+    unzip
+  ];
 
   installPhase = ''
     mkdir -p $out
@@ -51,8 +50,8 @@ stdenv.mkDerivation rec {
   ''; # */
 
   meta = {
-    homepage = "https://aws.amazon.com/developertools/Amazon-EC2/368";
     description = "Command-line tools to create and manage Amazon EC2 virtual machine images";
+    homepage = "https://aws.amazon.com/developertools/Amazon-EC2/368";
     license = lib.licenses.amazonsl;
   };
 

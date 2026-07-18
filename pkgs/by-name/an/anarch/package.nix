@@ -3,12 +3,12 @@
   stdenv,
   fetchFromGitLab,
   SDL2,
-  libxscrnsaver,
-  libxrandr,
-  libxi,
-  libxfixes,
-  libxext,
   libxcursor,
+  libxext,
+  libxfixes,
+  libxi,
+  libxrandr,
+  libxscrnsaver,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -50,10 +50,10 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   meta = {
-    homepage = "https://drummyfish.gitlab.io/anarch/";
     description = "Suckless FPS game";
-    maintainers = with lib.maintainers; [ ethancedwards8 ];
+    homepage = "https://drummyfish.gitlab.io/anarch/";
     license = lib.licenses.cc0;
+    maintainers = with lib.maintainers; [ ethancedwards8 ];
     platforms = lib.platforms.unix;
     mainProgram = "anarch";
   };

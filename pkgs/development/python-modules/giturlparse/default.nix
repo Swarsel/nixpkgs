@@ -1,14 +1,13 @@
 {
-  buildPythonPackage,
-  fetchFromGitHub,
   lib,
+  fetchFromGitHub,
+  buildPythonPackage,
   setuptools,
   unittestCheckHook,
 }:
 buildPythonPackage rec {
   pname = "giturlparse";
   version = "0.15.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "nephila";
@@ -17,13 +16,15 @@ buildPythonPackage rec {
     hash = "sha256-EGhmWudQjzqw8xK/pIj5nZqosBX2lnYEgNRNQ/ePEmo=";
   };
 
-  build-system = [
-    setuptools
-  ];
   nativeCheckInputs = [
     unittestCheckHook
   ];
 
+  build-system = [
+    setuptools
+  ];
+
+  pyproject = true;
   pythonImportsCheck = [ "giturlparse" ];
 
   meta = {

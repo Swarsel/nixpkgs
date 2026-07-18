@@ -26,7 +26,6 @@ stdenv.mkDerivation (finalAttrs: {
   # Just let the installPhase build stuff, because there's no
   # non-install target that builds everything anyway.
   dontBuild = true;
-
   installTargets = lib.optionals stdenv.hostPlatform.isStatic "install-static";
 
   passthru.tests = {
@@ -34,14 +33,16 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   meta = {
-    homepage = "https://github.com/illiliti/libudev-zero";
     description = "Daemonless replacement for libudev";
+    homepage = "https://github.com/illiliti/libudev-zero";
     changelog = "https://github.com/illiliti/libudev-zero/releases/tag/${finalAttrs.version}";
+    license = lib.licenses.isc;
+
     maintainers = with lib.maintainers; [
       qyliss
     ];
-    license = lib.licenses.isc;
-    pkgConfigModules = [ "libudev" ];
+
     platforms = lib.platforms.linux;
+    pkgConfigModules = [ "libudev" ];
   };
 })

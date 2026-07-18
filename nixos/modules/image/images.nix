@@ -15,6 +15,10 @@ let
     digital-ocean = ../virtualisation/digital-ocean-image.nix;
     google-compute = ../virtualisation/google-compute-image.nix;
     hyperv = ../virtualisation/hyperv-image.nix;
+    iso = ../installer/cd-dvd/iso-image.nix;
+    iso-installer = ../installer/cd-dvd/installation-cd-base.nix;
+    kexec = ../installer/netboot/netboot-minimal.nix;
+    kubevirt = ../virtualisation/kubevirt.nix;
     linode = ../virtualisation/linode-image.nix;
     lxc = ../virtualisation/lxc-container.nix;
     lxc-metadata = ../virtualisation/lxc-image-metadata.nix;
@@ -23,26 +27,25 @@ let
     openstack-zfs = ../../maintainers/scripts/openstack/openstack-image-zfs.nix;
     proxmox = ../virtualisation/proxmox-image.nix;
     proxmox-lxc = ../virtualisation/proxmox-lxc.nix;
-    qemu-efi = ../virtualisation/disk-image.nix;
+
     qemu = {
       imports = [ ../virtualisation/disk-image.nix ];
       image.efiSupport = false;
     };
+
+    qemu-efi = ../virtualisation/disk-image.nix;
+
+    raw = {
+      imports = [ ../virtualisation/disk-image.nix ];
+      image.efiSupport = false;
+      image.format = "raw";
+    };
+
     raw-efi = {
       imports = [ ../virtualisation/disk-image.nix ];
       image.format = "raw";
     };
-    raw = {
-      imports = [ ../virtualisation/disk-image.nix ];
-      image.format = "raw";
-      image.efiSupport = false;
-    };
-    kubevirt = ../virtualisation/kubevirt.nix;
-    vagrant-virtualbox = ../virtualisation/vagrant-virtualbox-image.nix;
-    virtualbox = ../virtualisation/virtualbox-image.nix;
-    vmware = ../virtualisation/vmware-image.nix;
-    iso = ../installer/cd-dvd/iso-image.nix;
-    iso-installer = ../installer/cd-dvd/installation-cd-base.nix;
+
     sd-card = {
       imports =
         let
@@ -53,7 +56,10 @@ let
         else
           throw "The module ${toString module} does not exist.";
     };
-    kexec = ../installer/netboot/netboot-minimal.nix;
+
+    vagrant-virtualbox = ../virtualisation/vagrant-virtualbox-image.nix;
+    virtualbox = ../virtualisation/virtualbox-image.nix;
+    vmware = ../virtualisation/vmware-image.nix;
   };
   imageConfigs = lib.mapAttrs (
     name: module:
@@ -64,24 +70,28 @@ let
 in
 {
   options = {
-    system.build = {
-      images = lib.mkOption {
-        type = types.lazyAttrsOf types.raw;
-        readOnly = true;
-        description = ''
-          Different target images generated for this NixOS configuration.
-        '';
-      };
-    };
     image.modules = lib.mkOption {
-      type = types.attrsOf types.deferredModule;
       description = ''
         image-specific NixOS Modules used for `system.build.images`.
       '';
+
+      type = types.attrsOf types.deferredModule;
+    };
+
+    system.build = {
+      images = lib.mkOption {
+        description = ''
+          Different target images generated for this NixOS configuration.
+        '';
+
+        readOnly = true;
+        type = types.lazyAttrsOf types.raw;
+      };
     };
   };
 
   config.image.modules = imageModules;
+
   config.system.build.images =
     lib.warnIf (config.system.build ? image)
       ''

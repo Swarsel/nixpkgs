@@ -1,11 +1,10 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage {
-  name = "tuxvdmtool";
   version = "0.2.0-unstable-2026-03-15";
 
   src = fetchFromGitHub {
@@ -16,15 +15,15 @@ rustPlatform.buildRustPackage {
   };
 
   cargoHash = "sha256-bnBtchG87ya7nlf20Zv3htnZDN5jv29DKY+8nx5CK5o=";
-
   __structuredAttrs = true;
+  name = "tuxvdmtool";
 
   meta = {
     description = "Linux Apple Silicon to Apple Silicon VDM utility";
     homepage = "https://github.com/AsahiLinux/tuxvdmtool#readme";
     license = lib.licenses.asl20;
     maintainers = with lib.maintainers; [ mjm ];
-    mainProgram = "tuxvdmtool";
     platforms = lib.platforms.linux;
+    mainProgram = "tuxvdmtool";
   };
 }

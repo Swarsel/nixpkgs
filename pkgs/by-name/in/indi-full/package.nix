@@ -17,7 +17,7 @@ let
   ) (builtins.attrValues indi-3rdparty);
 in
 indi-with-drivers.override {
-  pname = "indi-full";
   inherit (indilib) version;
+  pname = "indi-full";
   extraDrivers = drivers;
 }

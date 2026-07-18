@@ -2,14 +2,14 @@
   lib,
   stdenv,
   fetchFromCodeberg,
+  libxcrypt,
+  libxkbcommon,
+  nix-update-script,
   pkg-config,
-  wayland-scanner,
+  versionCheckHook,
   wayland,
   wayland-protocols,
-  libxkbcommon,
-  libxcrypt,
-  versionCheckHook,
-  nix-update-script,
+  wayland-scanner,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -49,18 +49,19 @@ stdenv.mkDerivation (finalAttrs: {
   doInstallCheck = true;
   nativeInstallCheckInputs = [ versionCheckHook ];
   versionCheckProgramArg = "-v";
-
   passthru.updateScript = nix-update-script { };
 
   meta = {
     description = "Sessionlocker for Wayland compositors that support the ext-session-lock-v1 protocol";
-    license = lib.licenses.gpl3Only;
     homepage = "https://codeberg.org/sewn/wlock";
-    platforms = lib.platforms.linux;
+    license = lib.licenses.gpl3Only;
+
     maintainers = with lib.maintainers; [
       fliegendewurst
       yiyu
     ];
+
+    platforms = lib.platforms.linux;
     mainProgram = "wlock";
   };
 })

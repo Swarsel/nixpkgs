@@ -2,13 +2,13 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  fetchpatch,
   cmake,
-  libuuid,
+  fetchpatch,
   gnutls,
+  installShellFiles,
+  libuuid,
   python3,
   xdg-utils,
-  installShellFiles,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -25,10 +25,10 @@ stdenv.mkDerivation (finalAttrs: {
 
   patches = [
     (fetchpatch {
-      url = "https://github.com/GothenburgBitFactory/libshared/commit/bde76fb717c8e56e5859472ba1e890abc5b94e63.patch";
+      extraPrefix = "src/libshared/";
       sha256 = "sha256-6esIya9VATtDbL3jOpXZtvMoIJ8ztznqUju4d4lE49w=";
       stripLen = 1;
-      extraPrefix = "src/libshared/";
+      url = "https://github.com/GothenburgBitFactory/libshared/commit/bde76fb717c8e56e5859472ba1e890abc5b94e63.patch";
     })
   ];
 
@@ -51,10 +51,10 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   doCheck = true;
+
   preCheck = ''
     patchShebangs --build test
   '';
-  checkTarget = "test";
 
   postInstall = ''
     # ZSH is installed automatically from some reason, only bash and fish need
@@ -71,15 +71,19 @@ stdenv.mkDerivation (finalAttrs: {
     ln -s $out/share/vim-plugins/task $out/share/nvim/site
   '';
 
+  checkTarget = "test";
+
   meta = {
     description = "Highly flexible command-line tool to manage TODO lists";
     homepage = "https://taskwarrior.org";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       oxalica
       Necior
     ];
-    mainProgram = "task";
+
     platforms = lib.platforms.unix;
+    mainProgram = "task";
   };
 })

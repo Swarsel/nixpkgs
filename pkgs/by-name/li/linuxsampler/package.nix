@@ -2,18 +2,18 @@
   lib,
   stdenv,
   fetchurl,
+  alsa-lib,
+  asio,
   autoconf,
   automake,
   bison,
+  libgig,
+  libjack2,
+  libsndfile,
   libtool,
+  lv2,
   pkg-config,
   which,
-  alsa-lib,
-  asio,
-  libjack2,
-  libgig,
-  libsndfile,
-  lv2,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -24,12 +24,6 @@ stdenv.mkDerivation (finalAttrs: {
     url = "https://download.linuxsampler.org/packages/linuxsampler-${finalAttrs.version}.tar.bz2";
     hash = "sha256-T7quk5N5JBiPqIziQd0vaCr8tLDbwS6otz6egY01OTE=";
   };
-
-  env.HAVE_UNIX98 = "1";
-
-  preConfigure = ''
-    make -f Makefile.svn
-  '';
 
   nativeBuildInputs = [
     autoconf
@@ -49,11 +43,17 @@ stdenv.mkDerivation (finalAttrs: {
     lv2
   ];
 
+  env.HAVE_UNIX98 = "1";
+
+  preConfigure = ''
+    make -f Makefile.svn
+  '';
+
   enableParallelBuilding = true;
 
   meta = {
-    homepage = "http://www.linuxsampler.org";
     description = "Sampler backend";
+
     longDescription = ''
       Includes sampler engine, audio and MIDI drivers, network layer
       (LSCP) API and native C++ API.
@@ -65,6 +65,8 @@ stdenv.mkDerivation (finalAttrs: {
       have questions on the subject, that are not yet covered by the
       FAQ, please contact us.
     '';
+
+    homepage = "http://www.linuxsampler.org";
     license = lib.licenses.unfree;
     maintainers = [ ];
     platforms = lib.platforms.linux;

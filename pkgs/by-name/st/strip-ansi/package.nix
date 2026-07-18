@@ -1,11 +1,11 @@
 {
-  stdenv,
-  buildPackages,
   lib,
+  stdenv,
   fetchFromGitHub,
-  rustPlatform,
-  nix-update-script,
+  buildPackages,
   installShellFiles,
+  nix-update-script,
+  rustPlatform,
 }:
 let
   canRunStripAnsi = stdenv.hostPlatform.emulatorAvailable buildPackages;
@@ -22,9 +22,8 @@ rustPlatform.buildRustPackage {
     hash = "sha256-FvozEjNWXE1XEIq/06JehES7LVKoWmzIoaB4fD1kUsY=";
   };
 
-  cargoHash = "sha256-kebx9OrAeh4c01VDUmlfTVn0EgFfzewiXjaQ3qtJrPY=";
-
   nativeBuildInputs = [ installShellFiles ];
+  cargoHash = "sha256-kebx9OrAeh4c01VDUmlfTVn0EgFfzewiXjaQ3qtJrPY=";
 
   postInstall = lib.optionalString canRunStripAnsi ''
     installShellCompletion --cmd strip-ansi \
@@ -36,8 +35,8 @@ rustPlatform.buildRustPackage {
   passthru.updateScript = nix-update-script { };
 
   meta = {
-    homepage = "https://github.com/KSXGitHub/strip-ansi-cli";
     description = "Strip ANSI escape sequences from text";
+    homepage = "https://github.com/KSXGitHub/strip-ansi-cli";
     license = [ lib.licenses.mit ];
     maintainers = [ lib.maintainers._9999years ];
     mainProgram = "strip-ansi";

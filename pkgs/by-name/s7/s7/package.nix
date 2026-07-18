@@ -1,26 +1,22 @@
 {
   lib,
-  fetchFromGitLab,
   stdenv,
-
+  fetchFromGitLab,
   flint,
   gmp,
+  gsl,
   libmpc,
+  man,
   mpfr,
   notcurses,
-  windows,
-
-  gsl,
-  man,
   pkg-config,
-  writableTmpDirAsHomeHook,
-
   unstableGitUpdater,
+  windows,
+  writableTmpDirAsHomeHook,
   writeScript,
-
   static ? false,
-  withGMP ? !static,
   withArb ? !static,
+  withGMP ? !static,
   withNrepl ? if stdenv.hostPlatform.isMinGW then false else true,
 }:
 
@@ -29,12 +25,18 @@ stdenv.mkDerivation (finalAttrs: {
   version = "11.9-unstable-2026-07-10";
 
   src = fetchFromGitLab {
-    domain = "cm-gitlab.stanford.edu";
     owner = "bil";
     repo = "s7";
     rev = "2a631b545cbe66d9cf3f5343fbaab1449e3d8957";
     hash = "sha256-gYgwQDcWgugZemM2kNu09hwNtJqT49AmvXPlxj+/Ink=";
+    domain = "cm-gitlab.stanford.edu";
   };
+
+  # The following scripts are modified from [Guix's](https://packages.guix.gnu.org/packages/s7/).
+  postPatch = ''
+    substituteInPlace s7.c \
+        --replace-fail libc_s7.so $out/lib/libc_s7.so
+  '';
 
   buildInputs =
     lib.optional withArb flint
@@ -46,12 +48,6 @@ stdenv.mkDerivation (finalAttrs: {
     ++ lib.optional withNrepl notcurses
     ++ lib.optional stdenv.hostPlatform.isMinGW windows.pthreads;
 
-  # The following scripts are modified from [Guix's](https://packages.guix.gnu.org/packages/s7/).
-
-  postPatch = ''
-    substituteInPlace s7.c \
-        --replace-fail libc_s7.so $out/lib/libc_s7.so
-  '';
   env.NIX_CFLAGS_COMPILE = toString (
     [
       "-I."
@@ -62,6 +58,7 @@ stdenv.mkDerivation (finalAttrs: {
     ]
     ++ lib.optional static "-static"
   );
+
   env.NIX_LDFLAGS = toString (
     [
       "-lm"
@@ -187,10 +184,6 @@ stdenv.mkDerivation (finalAttrs: {
     writableTmpDirAsHomeHook
   ];
 
-  installCheckInputs = [
-    gsl
-  ];
-
   /*
     The test suite assumes that "there are two subdirectories of the home directory referred to: cl and test",
     where `cl` is "the s7 source directory" and `test` is "a safe place to write temp files".
@@ -220,8 +213,13 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstallCheck
   '';
 
+  installCheckInputs = [
+    gsl
+  ];
+
   passthru.updateScript = unstableGitUpdater rec {
     branch = "master";
+
     tagConverter = writeScript "update-s7-version-number" ''
       #! /usr/bin/env nix-shell
       #! nix-shell -p curl -i bash
@@ -235,6 +233,7 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Scheme interpreter intended as an extension language for other applications";
+
     longDescription = ''
       s7 is a Scheme interpreter intended as an extension language for other
       applications.
@@ -250,13 +249,16 @@ stdenv.mkDerivation (finalAttrs: {
       (commonmusic at sourceforge), Kjetil Matheussen's Radium music editor, and
       Iain Duncan's Scheme for Max (or Pd).
     '';
+
     homepage = "https://ccrma.stanford.edu/software/s7/";
     license = lib.licenses.bsd0;
+
     maintainers = with lib.maintainers; [
       rc-zb
       jinser
     ];
-    mainProgram = "s7";
+
     platforms = lib.platforms.linux ++ lib.platforms.windows;
+    mainProgram = "s7";
   };
 })

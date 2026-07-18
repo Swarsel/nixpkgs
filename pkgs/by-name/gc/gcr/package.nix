@@ -1,34 +1,39 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchurl,
-  pkg-config,
+  gettext,
+  gi-docgen,
+  glib,
+  gnome,
+  gnupg,
+  gobject-introspection,
+  gtk3,
+  libgcrypt,
+  libsecret,
+  libtasn1,
   meson,
   ninja,
-  gettext,
-  gnupg,
-  p11-kit,
-  glib,
-  libgcrypt,
-  libtasn1,
-  gtk3,
-  pango,
-  libsecret,
   openssh,
-  systemdSupport ? lib.meta.availableOn stdenv.hostPlatform systemd,
-  systemd,
-  gobject-introspection,
-  wrapGAppsHook3,
-  gi-docgen,
-  vala,
-  gnome,
+  p11-kit,
+  pango,
+  pkg-config,
   python3,
   shared-mime-info,
+  systemd,
+  vala,
+  wrapGAppsHook3,
+  systemdSupport ? lib.meta.availableOn stdenv.hostPlatform systemd,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
   pname = "gcr";
   version = "3.41.2";
+
+  src = fetchurl {
+    url = "mirror://gnome/sources/gcr/${lib.versions.majorMinor finalAttrs.version}/gcr-${finalAttrs.version}.tar.xz";
+    sha256 = "utEPPFU6DhhUZJq1nFskNNoiyhpUrmE48fU5YVZ+Grc=";
+  };
 
   outputs = [
     "out"
@@ -36,10 +41,13 @@ stdenv.mkDerivation (finalAttrs: {
     "devdoc"
   ];
 
-  src = fetchurl {
-    url = "mirror://gnome/sources/gcr/${lib.versions.majorMinor finalAttrs.version}/gcr-${finalAttrs.version}.tar.xz";
-    sha256 = "utEPPFU6DhhUZJq1nFskNNoiyhpUrmE48fU5YVZ+Grc=";
-  };
+  postPatch = ''
+    patchShebangs gcr/fixtures/
+
+    chmod +x meson_post_install.py
+    patchShebangs meson_post_install.py
+    substituteInPlace meson_post_install.py --replace ".so" "${stdenv.hostPlatform.extensions.sharedLibrary}"
+  '';
 
   strictDeps = true;
 
@@ -74,10 +82,6 @@ stdenv.mkDerivation (finalAttrs: {
     p11-kit
   ];
 
-  nativeCheckInputs = [
-    python3
-  ];
-
   mesonFlags = [
     # We are still using ssh-agent from gnome-keyring.
     # https://github.com/NixOS/nixpkgs/issues/140824
@@ -88,17 +92,12 @@ stdenv.mkDerivation (finalAttrs: {
     "-Dsystemd=disabled"
   ];
 
+  env.PKG_CONFIG_SYSTEMD_SYSTEMDUSERUNITDIR = "${placeholder "out"}/lib/systemd/user";
   doCheck = false; # fails 21 out of 603 tests, needs dbus daemon
 
-  env.PKG_CONFIG_SYSTEMD_SYSTEMDUSERUNITDIR = "${placeholder "out"}/lib/systemd/user";
-
-  postPatch = ''
-    patchShebangs gcr/fixtures/
-
-    chmod +x meson_post_install.py
-    patchShebangs meson_post_install.py
-    substituteInPlace meson_post_install.py --replace ".so" "${stdenv.hostPlatform.extensions.sharedLibrary}"
-  '';
+  nativeCheckInputs = [
+    python3
+  ];
 
   postFixup = ''
     # Cannot be in postInstall, otherwise _multioutDocs hook in preFixup will move right back.
@@ -107,18 +106,13 @@ stdenv.mkDerivation (finalAttrs: {
 
   passthru = {
     updateScript = gnome.updateScript {
-      packageName = "gcr";
       freeze = true;
+      packageName = "gcr";
     };
   };
 
   meta = {
-    platforms = lib.platforms.unix;
-    teams = [ lib.teams.gnome ];
     description = "GNOME crypto services (daemon and tools)";
-    mainProgram = "gcr-viewer";
-    homepage = "https://gitlab.gnome.org/GNOME/gcr";
-    license = lib.licenses.lgpl2Plus;
 
     longDescription = ''
       GCR is a library for displaying certificates, and crypto UI, accessing
@@ -128,5 +122,11 @@ stdenv.mkDerivation (finalAttrs: {
       GCK is a library for accessing PKCS#11 modules like smart cards, in a
       (G)object oriented way.
     '';
+
+    homepage = "https://gitlab.gnome.org/GNOME/gcr";
+    license = lib.licenses.lgpl2Plus;
+    platforms = lib.platforms.unix;
+    mainProgram = "gcr-viewer";
+    teams = [ lib.teams.gnome ];
   };
 })

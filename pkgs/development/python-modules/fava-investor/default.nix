@@ -1,9 +1,9 @@
 {
   lib,
-  buildPythonPackage,
-  fetchFromGitHub,
   stdenv,
+  fetchFromGitHub,
   beancount,
+  buildPythonPackage,
   click,
   click-aliases,
   fava,
@@ -18,7 +18,6 @@
 buildPythonPackage rec {
   pname = "fava-investor";
   version = "1.0.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "redstreet";
@@ -26,6 +25,8 @@ buildPythonPackage rec {
     tag = version;
     hash = "sha256-WuXbZcia0n9SoiCSB2SkMUjBHsMOA0gCIf9ZEU9pTPA=";
   };
+
+  nativeCheckInputs = [ pytestCheckHook ];
 
   build-system = [
     setuptools
@@ -43,8 +44,6 @@ buildPythonPackage rec {
     yfinance
   ];
 
-  nativeCheckInputs = [ pytestCheckHook ];
-
   disabledTestPaths = [
     # First differing element 1:
     # '-----------------  --------  ------------'
@@ -59,6 +58,7 @@ buildPythonPackage rec {
     "fava_investor/modules/assetalloc_class/test_asset_allocation.py::TestScriptCheck::test_tree_empty_parent"
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "fava_investor" ];
 
   meta = {

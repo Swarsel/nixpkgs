@@ -5,10 +5,10 @@
   boost,
   doxygen,
   gperf,
-  pkg-config,
   librevenge,
   libxml2,
   perl,
+  pkg-config,
   zlib,
 }:
 
@@ -33,6 +33,7 @@ stdenv.mkDerivation (finalAttrs: {
     perl
     pkg-config
   ];
+
   buildInputs = [
     boost
     librevenge
@@ -41,9 +42,9 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   meta = {
-    homepage = "https://wiki.documentfoundation.org/DLP/Libraries/libabw";
     description = "Library parsing abiword documents";
-    platforms = lib.platforms.unix;
+    homepage = "https://wiki.documentfoundation.org/DLP/Libraries/libabw";
     license = lib.licenses.mpl20;
+    platforms = lib.platforms.unix;
   };
 })

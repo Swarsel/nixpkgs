@@ -19,9 +19,9 @@ stdenv.mkDerivation {
   patches = [
     # gcc-14 build fix: https://github.com/marijnheule/drat-trim/pull/40
     (fetchpatch {
+      hash = "sha256-jgsOYcRYD2VGdOrXW9D8Jh80Nqd+Kp3d2IU+bNK1yGg=";
       name = "gcc-14-fix.patch";
       url = "https://github.com/marijnheule/drat-trim/commit/8186a7dc083a3951ba87e5ff35d36f1ea2c03f0d.patch";
-      hash = "sha256-jgsOYcRYD2VGdOrXW9D8Jh80Nqd+Kp3d2IU+bNK1yGg=";
     })
   ];
 
@@ -39,6 +39,7 @@ stdenv.mkDerivation {
 
   meta = {
     description = "Proof checker for unSAT proofs";
+
     longDescription = ''
       DRAT-trim is a satisfiability proof checking and trimming
       utility designed to validate proofs for all known satisfiability
@@ -55,6 +56,7 @@ stdenv.mkDerivation {
       proof format called LRAT which extends DRAT with hint statements to speed
       up the checking process.
     '';
+
     homepage = "https://www.cs.utexas.edu/~marijn/drat-trim/";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ kini ];

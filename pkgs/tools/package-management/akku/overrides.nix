@@ -1,10 +1,9 @@
 {
-  stdenv,
   lib,
+  stdenv,
   akku,
   curl,
   git,
-
   lrzsz,
 }:
 let
@@ -26,27 +25,8 @@ let
   brokenOnDarwin = lib.addMetaAttrs { broken = stdenv.hostPlatform.isDarwin; };
 in
 {
-  chez-srfi = joinOverrides [
-    (pkg: old: {
-      preCheck = ''
-        SKIP='
-        multi-dimensional-arrays.sps
-        time.sps
-        tables-test.ikarus.sps
-        lazy.sps
-        pipeline-operators.sps
-        os-environment-variables.sps
-        '
-      '';
-    })
-  ];
-
-  akku-r7rs = pkg: old: {
-    preBuild = ''
-      # tests aren't exported modules
-      rm -rf tests
-    '';
-  };
+  ac-d-bus = broken;
+  agave = broken;
 
   akku = joinOverrides [
     # uses chez
@@ -64,6 +44,54 @@ in
     })
   ];
 
+  akku-r7rs = pkg: old: {
+    preBuild = ''
+      # tests aren't exported modules
+      rm -rf tests
+    '';
+  };
+
+  box2d-lite = broken;
+  chez-soop = broken;
+
+  chez-srfi = joinOverrides [
+    (pkg: old: {
+      preCheck = ''
+        SKIP='
+        multi-dimensional-arrays.sps
+        time.sps
+        tables-test.ikarus.sps
+        lazy.sps
+        pipeline-operators.sps
+        os-environment-variables.sps
+        '
+      '';
+    })
+  ];
+
+  chez-stats = broken;
+  # broken everywhere:
+  chibi-math-linalg = broken;
+  chibi-mecab = broken;
+  chibi-ssl = broken;
+  chibi-voting = broken;
+  chibi-xgboost = broken;
+  dataframe = broken;
+  dharmalab = broken;
+  dockerfile = broken;
+  dorodango = broken;
+  fectors = broken;
+  fs-fatfs = broken;
+  fs-partitions = broken;
+  gnuplot-pipe = broken;
+  http-pixiu = broken;
+  in-progress-hash-bimaps = broken;
+  in-progress-hash-tables = broken;
+  influx-client = broken;
+  linenoise = broken;
+  # unsupported schemes, it seems.
+  loko-srfi = broken;
+
   machine-code = pkg: old: {
     # fails on hydra with 'Log limit exceeded'
     postPatch = ''
@@ -71,8 +99,25 @@ in
     '';
   };
 
-  # circular dependency on wak-trc-testing !?
-  wak-foof-loop = skipTests;
+  mpl = broken;
+  mummel = broken;
+  ocelotl = broken;
+  r6lint = broken;
+  r6rs-clos = broken;
+  r6rs-coap = broken;
+  r6rs-msgpack = broken;
+  rapid-analyze-library = broken;
+  rapid-args-fold = broken;
+  rapid-eliminate-mutable-variables = broken;
+  rapid-fix-letrec = broken;
+  rapid-graph = broken;
+  rapid-library-definition = broken;
+  rapid-mapping = broken;
+  rapid-read = broken;
+  rapid-set = broken;
+  rapid-syntax = broken;
+  read-char-if = broken;
+  scheme-bytestructures = broken;
 
   scheme-langserver = joinOverrides [
     (pkg: old: {
@@ -87,6 +132,33 @@ in
     (pkg: old: { meta.mainProgram = "scheme-langserver"; })
   ];
 
+  shell-quote = broken;
+  srfi-179 = broken;
+  srfi-19 = broken;
+  srfi-64 = broken;
+  string-inflection = broken;
+  surfage = broken;
+  swish = broken;
+  tex-parser = broken;
+  text-mode = broken;
+  thunderchez = broken;
+  trivial-tar-writer = broken;
+  # todo:
+  # system-specific:
+  # scheme-langserver doesn't work because of this
+  ufo-thread-pool = brokenOnDarwin;
+  ufo-threaded-function = skipTests;
+  ufo-timer = skipTests;
+  ufo-try = skipTests;
+  unpack-assoc = broken;
+  # circular dependency on wak-trc-testing !?
+  wak-foof-loop = skipTests;
+  wak-htmlprag = brokenOnAarch64;
+  wak-ssax = broken;
+  wak-sxml-tools = broken;
+  # broken tests
+  xitomatl = skipTests;
+
   xyz-modem = joinOverrides [
     (pkg: old: {
       postPatch = ''
@@ -99,79 +171,5 @@ in
     })
   ];
 
-  # broken tests
-  xitomatl = skipTests;
-  ufo-threaded-function = skipTests;
-  ufo-timer = skipTests;
-  ufo-try = skipTests;
-
-  # unsupported schemes, it seems.
-  loko-srfi = broken;
-  ac-d-bus = broken;
-
-  # todo:
-  # system-specific:
-
-  # scheme-langserver doesn't work because of this
-  ufo-thread-pool = brokenOnDarwin;
-
-  wak-htmlprag = brokenOnAarch64;
-
-  # broken everywhere:
-  chibi-math-linalg = broken;
-  chibi-mecab = broken;
-  chibi-ssl = broken;
-  chibi-voting = broken;
-  chibi-xgboost = broken;
-  dockerfile = broken;
-  in-progress-hash-bimaps = broken;
-  in-progress-hash-tables = broken;
-  rapid-analyze-library = broken;
-  rapid-args-fold = broken;
-  rapid-eliminate-mutable-variables = broken;
-  rapid-fix-letrec = broken;
-  rapid-graph = broken;
-  rapid-library-definition = broken;
-  rapid-mapping = broken;
-  rapid-read = broken;
-  rapid-set = broken;
-  rapid-syntax = broken;
-  read-char-if = broken;
-  shell-quote = broken;
-  srfi-19 = broken;
-  srfi-64 = broken;
-  srfi-179 = broken;
-  string-inflection = broken;
-  tex-parser = broken;
-  trivial-tar-writer = broken;
-  unpack-assoc = broken;
-  agave = broken;
-  box2d-lite = broken;
-  chez-soop = broken;
-  chez-stats = broken;
-  dataframe = broken;
-  dharmalab = broken;
-  dorodango = broken;
-  fectors = broken;
-  fs-fatfs = broken;
-  fs-partitions = broken;
-  gnuplot-pipe = broken;
-  http-pixiu = broken;
-  influx-client = broken;
-  linenoise = broken;
-  mpl = broken;
-  mummel = broken;
-  ocelotl = broken;
-  r6lint = broken;
-  r6rs-clos = broken;
-  r6rs-coap = broken;
-  r6rs-msgpack = broken;
-  scheme-bytestructures = broken;
-  surfage = broken;
-  swish = broken;
-  text-mode = broken;
-  thunderchez = broken;
-  wak-ssax = broken;
-  wak-sxml-tools = broken;
   yxskaft = broken;
 }

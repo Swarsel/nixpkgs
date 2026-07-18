@@ -1,10 +1,10 @@
 {
   lib,
   stdenv,
+  fetchFromGitHub,
   buildPythonPackage,
   defusedxml,
   dnspython,
-  fetchFromGitHub,
   iana-etc,
   libredirect,
   pytestCheckHook,
@@ -14,7 +14,6 @@
 buildPythonPackage rec {
   pname = "ipwhois";
   version = "1.3.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "secynic";
@@ -23,28 +22,23 @@ buildPythonPackage rec {
     hash = "sha256-PY3SUPELcCvS/o5kfko4OD1BlTc9DnyqfkSFuzcAOSY=";
   };
 
+  nativeCheckInputs = [
+    libredirect.hook
+    pytestCheckHook
+  ];
+
+  preCheck = lib.optionalString stdenv.hostPlatform.isLinux ''
+    echo "nameserver 127.0.0.1" > resolv.conf
+    export NIX_REDIRECTS=/etc/protocols=${iana-etc}/etc/protocols:/etc/resolv.conf=$(realpath resolv.conf)
+  '';
+
   __darwinAllowLocalNetworking = true;
-
-  pythonRelaxDeps = [ "dnspython" ];
-
   build-system = [ setuptools ];
 
   dependencies = [
     defusedxml
     dnspython
   ];
-
-  nativeCheckInputs = [
-    libredirect.hook
-    pytestCheckHook
-  ];
-
-  pythonImportsCheck = [ "ipwhois" ];
-
-  preCheck = lib.optionalString stdenv.hostPlatform.isLinux ''
-    echo "nameserver 127.0.0.1" > resolv.conf
-    export NIX_REDIRECTS=/etc/protocols=${iana-etc}/etc/protocols:/etc/resolv.conf=$(realpath resolv.conf)
-  '';
 
   disabledTestPaths = [
     # Tests require network access
@@ -58,6 +52,10 @@ buildPythonPackage rec {
     "test_unique_addresses"
     "test_get_http_json"
   ];
+
+  pyproject = true;
+  pythonImportsCheck = [ "ipwhois" ];
+  pythonRelaxDeps = [ "dnspython" ];
 
   meta = {
     description = "Library to retrieve and parse whois data";

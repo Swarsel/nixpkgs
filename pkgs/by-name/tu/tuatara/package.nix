@@ -1,9 +1,9 @@
 {
   lib,
-  stdenvNoCC,
   fetchFromGitHub,
-  zig_0_13,
   nix-update-script,
+  stdenvNoCC,
+  zig_0_13,
 }:
 
 stdenvNoCC.mkDerivation (finalAttrs: {
@@ -18,7 +18,6 @@ stdenvNoCC.mkDerivation (finalAttrs: {
   };
 
   strictDeps = true;
-
   nativeBuildInputs = [ zig_0_13 ];
 
   preBuild = ''
@@ -30,6 +29,7 @@ stdenvNoCC.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Ziggidy *nix system info fetcher";
+
     longDescription = ''
       tuatara is a ziggidy *nix system info fetcher. WIP. It is
       descendant of disfetch. Although sharing some common concepts
@@ -42,10 +42,11 @@ stdenvNoCC.mkDerivation (finalAttrs: {
       being fast and reliable and sharing the same handmade logos with
       the principle of not-more-or-less-than 8 rows.
     '';
+
     homepage = "https://github.com/q60/tuatara";
     license = lib.licenses.unlicense;
     maintainers = with lib.maintainers; [ yiyu ];
-    mainProgram = "tuatara";
     platforms = lib.platforms.all;
+    mainProgram = "tuatara";
   };
 })

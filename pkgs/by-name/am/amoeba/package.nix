@@ -2,38 +2,22 @@
   lib,
   stdenv,
   fetchurl,
-  amoeba-data,
   alsa-lib,
+  amoeba-data,
   expat,
   freetype,
   gtk3,
-  libvorbis,
+  installShellFiles,
   libGLU,
+  libvorbis,
   libxxf86vm,
   pkg-config,
-  installShellFiles,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
   pname = "amoeba";
   version = "1.1";
-  debver = "31";
 
-  srcs = [
-    (fetchurl {
-      url = "http://http.debian.net/debian/pool/contrib/a/amoeba/amoeba_${finalAttrs.version}.orig.tar.gz";
-      hash = "sha256-NT6oMuAlTcVZEnYjMCF+BD+k3/w7LfWEmj6bkQln3sM=";
-    })
-    (fetchurl {
-      url = "http://http.debian.net/debian/pool/contrib/a/amoeba/amoeba_${finalAttrs.version}-${finalAttrs.debver}.debian.tar.xz";
-      hash = "sha256-Ga/YeXbPXjkG/6qd9Z201d14Hlj/Je6DxgzeIQOqrWc=";
-    })
-  ];
-  sourceRoot = "amoeba-1.1.orig";
-
-  prePatch = ''
-    patches="${./include-string-h.patch} $(echo ../debian/patches/*.diff)"
-  '';
   postPatch = ''
     sed -i packer/pakfile.cpp -e 's|/usr/share/amoeba|${amoeba-data}/share/amoeba|'
     sed -i main/linux-config/linux-config.cpp -e 's|libgdk-x11-2.0.so.0|${gtk3}/lib/&|'
@@ -44,6 +28,7 @@ stdenv.mkDerivation (finalAttrs: {
     pkg-config
     installShellFiles
   ];
+
   buildInputs = [
     alsa-lib
     expat
@@ -59,6 +44,25 @@ stdenv.mkDerivation (finalAttrs: {
     cp amoeba $out/bin/
     installManPage ../debian/amoeba.1
   '';
+
+  debver = "31";
+
+  prePatch = ''
+    patches="${./include-string-h.patch} $(echo ../debian/patches/*.diff)"
+  '';
+
+  sourceRoot = "amoeba-1.1.orig";
+
+  srcs = [
+    (fetchurl {
+      hash = "sha256-NT6oMuAlTcVZEnYjMCF+BD+k3/w7LfWEmj6bkQln3sM=";
+      url = "http://http.debian.net/debian/pool/contrib/a/amoeba/amoeba_${finalAttrs.version}.orig.tar.gz";
+    })
+    (fetchurl {
+      hash = "sha256-Ga/YeXbPXjkG/6qd9Z201d14Hlj/Je6DxgzeIQOqrWc=";
+      url = "http://http.debian.net/debian/pool/contrib/a/amoeba/amoeba_${finalAttrs.version}-${finalAttrs.debver}.debian.tar.xz";
+    })
+  ];
 
   meta = {
     description = "Fast-paced, polished OpenGL demonstration by Excess";

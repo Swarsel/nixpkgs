@@ -1,33 +1,27 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # build-system
-  poetry-core,
-
+  buildPythonPackage,
   # dependencies
   humanfriendly,
+  # build-system
+  poetry-core,
+  # tests
+  pytestCheckHook,
   reretry,
+  snakemake,
   snakemake-interface-common,
+  # passthru
+  snakemake-interface-storage-plugins,
+  snakemake-storage-plugin-http,
   tenacity,
   throttler,
   wrapt,
-
-  # tests
-  pytestCheckHook,
-  snakemake,
-  snakemake-storage-plugin-http,
-
-  # passthru
-  snakemake-interface-storage-plugins,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "snakemake-interface-storage-plugins";
   version = "4.4.1";
-  pyproject = true;
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "snakemake";
@@ -36,6 +30,16 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-tqSIJnU1+DPx/GI5/wzMkoxpLyM/k/SO8FtejRv9Zls=";
   };
 
+  # Circular dependency with snakemake
+  doCheck = false;
+
+  nativeCheckInputs = [
+    pytestCheckHook
+    snakemake
+    snakemake-storage-plugin-http
+  ];
+
+  __structuredAttrs = true;
   build-system = [ poetry-core ];
 
   dependencies = [
@@ -47,31 +51,23 @@ buildPythonPackage (finalAttrs: {
     wrapt
   ];
 
-  pythonImportsCheck = [ "snakemake_interface_storage_plugins" ];
-
-  nativeCheckInputs = [
-    pytestCheckHook
-    snakemake
-    snakemake-storage-plugin-http
-  ];
-
-  enabledTestPaths = [ "tests/tests.py" ];
-
   disabledTests = [
     # Requires internet access
     "test_storage"
   ];
 
-  # Circular dependency with snakemake
-  doCheck = false;
+  enabledTestPaths = [ "tests/tests.py" ];
+  pyproject = true;
+  pythonImportsCheck = [ "snakemake_interface_storage_plugins" ];
+
   passthru.tests.pytest = snakemake-interface-storage-plugins.overridePythonAttrs {
     doCheck = true;
   };
 
   meta = {
     description = "Stable interface for interactions between Snakemake and its storage plugins";
-    changelog = "https://github.com/snakemake/snakemake-interface-storage-plugins/releases/tag/${finalAttrs.src.tag}";
     homepage = "https://github.com/snakemake/snakemake-interface-storage-plugins";
+    changelog = "https://github.com/snakemake/snakemake-interface-storage-plugins/releases/tag/${finalAttrs.src.tag}";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ veprbl ];
   };

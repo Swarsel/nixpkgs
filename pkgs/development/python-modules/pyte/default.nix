@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   pytestCheckHook,
   wcwidth,
 }:
@@ -9,7 +9,6 @@
 buildPythonPackage rec {
   pname = "pyte";
   version = "0.8.2";
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "selectel";
@@ -25,9 +24,8 @@ buildPythonPackage rec {
   '';
 
   propagatedBuildInputs = [ wcwidth ];
-
   nativeCheckInputs = [ pytestCheckHook ];
-
+  format = "setuptools";
   pythonImportsCheck = [ "pyte" ];
 
   meta = {

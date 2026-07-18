@@ -7,9 +7,8 @@
 }:
 
 buildDunePackage {
-  pname = "mirage-mtime";
-
   inherit version;
+  pname = "mirage-mtime";
 
   src = fetchurl {
     url = "https://github.com/mirage/mirage-mtime/releases/download/v${version}/mirage-mtime-${version}.tbz";
@@ -22,8 +21,8 @@ buildDunePackage {
 
   meta = {
     description = "Monotonic time for MirageOS";
+    homepage = "https://github.com/mirage/mirage-mtime";
     license = lib.licenses.isc;
     maintainers = [ lib.maintainers.vbgl ];
-    homepage = "https://github.com/mirage/mirage-mtime";
   };
 }

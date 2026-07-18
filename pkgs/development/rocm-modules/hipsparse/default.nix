@@ -2,17 +2,17 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  rocmUpdateScript,
-  cmake,
-  rocm-cmake,
-  rocsparse,
   clr,
+  cmake,
   gfortran,
   gtest,
   openmp,
-  buildTests ? false,
+  rocm-cmake,
+  rocmUpdateScript,
+  rocsparse,
   buildBenchmarks ? false,
   buildSamples ? false,
+  buildTests ? false,
   gpuTargets ? clr.localGpuTargets or [ ],
 }:
 
@@ -20,6 +20,18 @@
 stdenv.mkDerivation (finalAttrs: {
   pname = "hipsparse";
   version = "7.2.3";
+
+  src = fetchFromGitHub {
+    owner = "ROCm";
+    repo = "rocm-libraries";
+    rev = "rocm-${finalAttrs.version}";
+    hash = "sha256-E1chG+giFtf02fjutoV4yM2XvrQKjgXRSvxs0NBBkvI=";
+
+    sparseCheckout = [
+      "projects/hipsparse"
+      "shared"
+    ];
+  };
 
   outputs = [
     "out"
@@ -29,49 +41,6 @@ stdenv.mkDerivation (finalAttrs: {
   ]
   ++ lib.optionals buildSamples [
     "sample"
-  ];
-
-  src = fetchFromGitHub {
-    owner = "ROCm";
-    repo = "rocm-libraries";
-    rev = "rocm-${finalAttrs.version}";
-    sparseCheckout = [
-      "projects/hipsparse"
-      "shared"
-    ];
-    hash = "sha256-E1chG+giFtf02fjutoV4yM2XvrQKjgXRSvxs0NBBkvI=";
-  };
-  sourceRoot = "${finalAttrs.src.name}/projects/hipsparse";
-
-  nativeBuildInputs = [
-    cmake
-    rocm-cmake
-    clr
-    gfortran
-  ];
-
-  buildInputs = [
-    rocsparse
-  ]
-  ++ lib.optionals (buildTests || buildBenchmarks) [
-    gtest
-  ]
-  ++ lib.optionals (buildTests || buildSamples) [
-    openmp
-  ];
-
-  cmakeFlags = [
-    # Manually define CMAKE_INSTALL_<DIR>
-    # See: https://github.com/NixOS/nixpkgs/pull/197838
-    "-DCMAKE_INSTALL_BINDIR=bin"
-    "-DCMAKE_INSTALL_LIBDIR=lib"
-    "-DCMAKE_INSTALL_INCLUDEDIR=include"
-    (lib.cmakeBool "BUILD_CLIENTS_TESTS" buildTests)
-    (lib.cmakeBool "BUILD_CLIENTS_BENCHMARKS" buildBenchmarks)
-    (lib.cmakeBool "BUILD_CLIENTS_SAMPLES" buildSamples)
-  ]
-  ++ lib.optionals (gpuTargets != [ ]) [
-    "-DAMDGPU_TARGETS=${lib.concatStringsSep ";" gpuTargets}"
   ];
 
   # We have to manually generate the matrices
@@ -115,6 +84,37 @@ stdenv.mkDerivation (finalAttrs: {
       --replace "\''${PROJECT_BINARY_DIR}/matrices" "/build/source/matrices"
   '';
 
+  nativeBuildInputs = [
+    cmake
+    rocm-cmake
+    clr
+    gfortran
+  ];
+
+  buildInputs = [
+    rocsparse
+  ]
+  ++ lib.optionals (buildTests || buildBenchmarks) [
+    gtest
+  ]
+  ++ lib.optionals (buildTests || buildSamples) [
+    openmp
+  ];
+
+  cmakeFlags = [
+    # Manually define CMAKE_INSTALL_<DIR>
+    # See: https://github.com/NixOS/nixpkgs/pull/197838
+    "-DCMAKE_INSTALL_BINDIR=bin"
+    "-DCMAKE_INSTALL_LIBDIR=lib"
+    "-DCMAKE_INSTALL_INCLUDEDIR=include"
+    (lib.cmakeBool "BUILD_CLIENTS_TESTS" buildTests)
+    (lib.cmakeBool "BUILD_CLIENTS_BENCHMARKS" buildBenchmarks)
+    (lib.cmakeBool "BUILD_CLIENTS_SAMPLES" buildSamples)
+  ]
+  ++ lib.optionals (gpuTargets != [ ]) [
+    "-DAMDGPU_TARGETS=${lib.concatStringsSep ";" gpuTargets}"
+  ];
+
   postInstall =
     lib.optionalString buildTests ''
       mkdir -p $test/bin
@@ -136,13 +136,14 @@ stdenv.mkDerivation (finalAttrs: {
       } $sample/bin/example_*
     '';
 
+  sourceRoot = "${finalAttrs.src.name}/projects/hipsparse";
   passthru.updateScript = rocmUpdateScript { inherit finalAttrs; };
 
   meta = {
     description = "ROCm SPARSE marshalling library";
     homepage = "https://github.com/ROCm/rocm-libraries/tree/develop/projects/hipsparse";
     license = with lib.licenses; [ mit ];
-    teams = [ lib.teams.rocm ];
     platforms = lib.platforms.linux;
+    teams = [ lib.teams.rocm ];
   };
 })

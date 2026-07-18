@@ -2,14 +2,14 @@
 # added in nixos/nixpkgs#119642
 {
   lib,
+  stdenv,
+  fetchFromGitHub,
+  alsa-lib,
   autoPatchelfHook,
   copyDesktopItems,
-  fetchFromGitHub,
-  makeDesktopItem,
-  stdenv,
-  alsa-lib,
   godot3-export-templates,
   godot3-headless,
+  libglvnd,
   libx11,
   libxcursor,
   libxext,
@@ -17,7 +17,7 @@
   libxinerama,
   libxrandr,
   libxrender,
-  libglvnd,
+  makeDesktopItem,
   writableTmpDirAsHomeHook,
 }:
 stdenv.mkDerivation (finalAttrs: {
@@ -50,16 +50,6 @@ stdenv.mkDerivation (finalAttrs: {
     libxrender
     libglvnd
   ];
-
-  desktopItem = makeDesktopItem {
-    name = "a-keys-path";
-    exec = "a-keys-path";
-    icon = "a-keys-path";
-    desktopName = "a-keys-path";
-    comment = "A game where you build your way with your keys";
-    genericName = "A Key's Path";
-    categories = [ "Game" ];
-  };
 
   buildPhase = ''
     runHook preBuild
@@ -101,20 +91,32 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  desktopItem = makeDesktopItem {
+    categories = [ "Game" ];
+    comment = "A game where you build your way with your keys";
+    desktopName = "a-keys-path";
+    exec = "a-keys-path";
+    genericName = "A Key's Path";
+    icon = "a-keys-path";
+    name = "a-keys-path";
+  };
+
   runtimeDependencies = map lib.getLib [
     alsa-lib
   ];
 
   meta = {
-    homepage = "https://geegaz.itch.io/out-of-controls";
     description = "Short puzzle-platformer game made with Godot, running on GLES 2.0";
-    mainProgram = "a-keys-path";
+    homepage = "https://geegaz.itch.io/out-of-controls";
+
     license = with lib.licenses; [
       gpl3Only
       cc-by-sa-40
       cc0
     ];
-    platforms = [ "x86_64-linux" ];
+
     maintainers = with lib.maintainers; [ phanirithvij ];
+    platforms = [ "x86_64-linux" ];
+    mainProgram = "a-keys-path";
   };
 })

@@ -1,10 +1,10 @@
 {
   lib,
   stdenv,
-  replaceVars,
   fetchFromGitHub,
   libpulseaudio,
   python3,
+  replaceVars,
 }:
 
 stdenv.mkDerivation {
@@ -27,13 +27,6 @@ stdenv.mkDerivation {
     })
   ];
 
-  dontBuild = true;
-
-  passthru = {
-    extensionUuid = "sound-output-device-chooser@kgshank.net";
-    extensionPortalSlug = "sound-output-device-chooser";
-  };
-
   makeFlags = [
     "INSTALL_DIR=${placeholder "out"}/share/gnome-shell/extensions"
   ];
@@ -42,10 +35,17 @@ stdenv.mkDerivation {
     mkdir -p ${placeholder "out"}/share/gnome-shell/extensions
   '';
 
+  dontBuild = true;
+
+  passthru = {
+    extensionPortalSlug = "sound-output-device-chooser";
+    extensionUuid = "sound-output-device-chooser@kgshank.net";
+  };
+
   meta = {
     description = "GNOME Shell extension adding audio device chooser to panel";
+    homepage = "https://github.com/kgshank/gse-sound-output-device-chooser";
     license = lib.licenses.gpl3Plus;
     maintainers = [ ];
-    homepage = "https://github.com/kgshank/gse-sound-output-device-chooser";
   };
 }

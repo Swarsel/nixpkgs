@@ -1,8 +1,8 @@
 {
   lib,
+  fetchFromGitHub,
   buildPythonPackage,
   click,
-  fetchFromGitHub,
   loguru,
   pytestCheckHook,
   rich,
@@ -12,7 +12,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "logurich";
   version = "0.9.2";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "PakitoSec";
@@ -26,8 +25,7 @@ buildPythonPackage (finalAttrs: {
       --replace-fail "uv_build>=0.9.20,<0.10.0" "uv_build"
   '';
 
-  pythonRelaxDeps = [ "rich" ];
-
+  nativeCheckInputs = [ pytestCheckHook ];
   build-system = [ uv-build ];
 
   dependencies = [
@@ -41,9 +39,9 @@ buildPythonPackage (finalAttrs: {
     ];
   };
 
-  nativeCheckInputs = [ pytestCheckHook ];
-
+  pyproject = true;
   pythonImportsCheck = [ "logurich" ];
+  pythonRelaxDeps = [ "rich" ];
 
   meta = {
     description = "Logger that combine loguru and rich";

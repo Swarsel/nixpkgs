@@ -39,8 +39,8 @@ let
 
   userUnitConfig = name: cfg': {
     serviceConfig = {
-      User = if cfg'.user == null then "vdirsyncer" else cfg'.user;
       Group = if cfg'.group == null then "vdirsyncer" else cfg'.group;
+      User = if cfg'.user == null then "vdirsyncer" else cfg'.user;
     }
     // (optionalAttrs (cfg'.user == null) {
       DynamicUser = true;
@@ -57,21 +57,22 @@ let
 
   commonUnitConfig = {
     after = [ "network.target" ];
+
     serviceConfig = {
-      Type = "oneshot";
+      LockPersonality = true;
+      MemoryDenyWriteExecute = true;
+      NoNewPrivileges = true;
       # Sandboxing
       PrivateTmp = true;
-      NoNewPrivileges = true;
-      ProtectSystem = "strict";
-      ProtectKernelTunables = true;
-      ProtectKernelModules = true;
       ProtectControlGroups = true;
+      ProtectKernelModules = true;
+      ProtectKernelTunables = true;
+      ProtectSystem = "strict";
+      RestrictAddressFamilies = "AF_INET AF_INET6";
       RestrictNamespaces = true;
-      MemoryDenyWriteExecute = true;
       RestrictRealtime = true;
       RestrictSUIDSGID = true;
-      RestrictAddressFamilies = "AF_INET AF_INET6";
-      LockPersonality = true;
+      Type = "oneshot";
     };
   };
 
@@ -80,81 +81,25 @@ in
   options = {
     services.vdirsyncer = {
       enable = mkEnableOption "vdirsyncer";
-
       package = mkPackageOption pkgs "vdirsyncer" { };
 
       jobs = mkOption {
         description = "vdirsyncer job configurations";
+
         type = types.attrsOf (
           types.submodule {
             options = {
-              enable = (mkEnableOption "this vdirsyncer job") // {
-                default = true;
-                example = false;
-              };
-
-              user = mkOption {
-                type = types.nullOr types.str;
-                default = null;
-                description = ''
-                  User account to run vdirsyncer as, otherwise as a systemd
-                  dynamic user
-                '';
-              };
-
-              group = mkOption {
-                type = types.nullOr types.str;
-                default = null;
-                description = "group to run vdirsyncer as";
-              };
-
-              additionalGroups = mkOption {
-                type = types.listOf types.str;
-                default = [ ];
-                description = "additional groups to add the dynamic user to";
-              };
-
-              forceDiscover = mkOption {
-                type = types.bool;
-                default = false;
-                description = ''
-                  Run `yes | vdirsyncer discover` prior to `vdirsyncer sync`
-                '';
-              };
-
-              timerConfig = mkOption {
-                type = types.attrs;
-                default = {
-                  OnBootSec = "1h";
-                  OnUnitActiveSec = "6h";
-                };
-                description = "systemd timer configuration";
-              };
-
-              configFile = mkOption {
-                type = types.nullOr types.path;
-                default = null;
-                description = "existing configuration file";
-              };
-
               config = {
-                statusPath = mkOption {
-                  type = types.nullOr types.str;
-                  default = null;
-                  defaultText = literalExpression "/var/lib/vdirsyncer/\${attrName}";
-                  description = "vdirsyncer's status path";
-                };
-
                 general = mkOption {
-                  type = types.attrs;
                   default = { };
                   description = "general configuration";
+                  type = types.attrs;
                 };
 
                 pairs = mkOption {
-                  type = types.attrsOf types.attrs;
                   default = { };
                   description = "vdirsyncer pair configurations";
+
                   example = literalExpression ''
                     {
                       my_contacts = {
@@ -166,12 +111,21 @@ in
                       };
                     };
                   '';
+
+                  type = types.attrsOf types.attrs;
+                };
+
+                statusPath = mkOption {
+                  default = null;
+                  defaultText = literalExpression "/var/lib/vdirsyncer/\${attrName}";
+                  description = "vdirsyncer's status path";
+                  type = types.nullOr types.str;
                 };
 
                 storages = mkOption {
-                  type = types.attrsOf types.attrs;
                   default = { };
                   description = "vdirsyncer storage configurations";
+
                   example = literalExpression ''
                     {
                       my_cloud_contacts = {
@@ -189,7 +143,63 @@ in
                       };
                     }
                   '';
+
+                  type = types.attrsOf types.attrs;
                 };
+              };
+
+              enable = (mkEnableOption "this vdirsyncer job") // {
+                default = true;
+                example = false;
+              };
+
+              additionalGroups = mkOption {
+                default = [ ];
+                description = "additional groups to add the dynamic user to";
+                type = types.listOf types.str;
+              };
+
+              configFile = mkOption {
+                default = null;
+                description = "existing configuration file";
+                type = types.nullOr types.path;
+              };
+
+              forceDiscover = mkOption {
+                default = false;
+
+                description = ''
+                  Run `yes | vdirsyncer discover` prior to `vdirsyncer sync`
+                '';
+
+                type = types.bool;
+              };
+
+              group = mkOption {
+                default = null;
+                description = "group to run vdirsyncer as";
+                type = types.nullOr types.str;
+              };
+
+              timerConfig = mkOption {
+                default = {
+                  OnBootSec = "1h";
+                  OnUnitActiveSec = "6h";
+                };
+
+                description = "systemd timer configuration";
+                type = types.attrs;
+              };
+
+              user = mkOption {
+                default = null;
+
+                description = ''
+                  User account to run vdirsyncer as, otherwise as a systemd
+                  dynamic user
+                '';
+
+                type = types.nullOr types.str;
               };
             };
           }
@@ -208,6 +218,7 @@ in
           {
             description = "synchronize calendars and contacts (${name})";
             environment.VDIRSYNCER_CONFIG = toConfigFile name cfg';
+
             serviceConfig.ExecStart =
               (optional cfg'.forceDiscover (
                 pkgs.writeShellScript "vdirsyncer-discover-yes" ''
@@ -224,9 +235,9 @@ in
     systemd.timers = mapAttrs' (
       name: cfg':
       nameValuePair "vdirsyncer@${name}" {
-        wantedBy = [ "timers.target" ];
-        description = "synchronize calendars and contacts (${name})";
         inherit (cfg') timerConfig;
+        description = "synchronize calendars and contacts (${name})";
+        wantedBy = [ "timers.target" ];
       }
     ) cfg.jobs;
   };

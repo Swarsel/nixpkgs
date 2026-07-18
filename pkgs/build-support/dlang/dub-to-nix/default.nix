@@ -1,10 +1,10 @@
 {
   lib,
-  runCommand,
   makeWrapper,
-  python3,
   nix,
   nix-prefetch-git,
+  python3,
+  runCommand,
 }:
 
 let

@@ -1,40 +1,39 @@
 {
   lib,
-  rustPlatform,
-  fetchFromGitHub,
-  cmake,
-  pkg-config,
-  protobuf,
-  fontconfig,
-  libgit2,
-  openssl,
-  sqlite,
-  zlib,
-  zstd,
-  glib,
-  alsa-lib,
-  libxkbcommon,
-  wayland,
-  libxcb,
   stdenv,
-  vulkan-loader,
-  envsubst,
-  nix-update-script,
-  cargo-about,
-  versionCheckHook,
+  fetchFromGitHub,
+  alsa-lib,
   buildFHSEnv,
+  cargo-about,
   cargo-bundle,
+  cmake,
+  envsubst,
+  fontconfig,
   git,
-  makeBinaryWrapper,
-  nodejs,
+  glib,
   libGL,
+  libgit2,
   libx11,
+  libxcb,
   libxext,
+  libxkbcommon,
   livekit-libwebrtc,
   lld,
+  makeBinaryWrapper,
+  nix-update-script,
+  nodejs,
+  openssl,
+  pkg-config,
+  protobuf,
+  rustPlatform,
+  sqlite,
   testers,
+  versionCheckHook,
+  vulkan-loader,
+  wayland,
   writableTmpDirAsHomeHook,
-
+  zlib,
+  zstd,
   buildRemoteServer ? true,
 }:
 
@@ -54,8 +53,19 @@ let
       additionalPkgs ? pkgs: [ ],
     }:
     buildFHSEnv {
+      extraBwrapArgs = [
+        "--bind-try /etc/nixos/ /etc/nixos/"
+        "--ro-bind-try /etc/xdg/ /etc/xdg/"
+      ];
+
+      # symlink shared assets, including icons and desktop entries
+      extraInstallCommands = ''
+        ln -s "${zed-editor}/share" "$out/"
+      '';
+
       # also determines the name of the wrapped command
       name = executableName;
+      runScript = "${zed-editor}/bin/${executableName}";
 
       # additional libraries which are commonly needed for extensions
       targetPkgs =
@@ -70,18 +80,6 @@ let
           zlib
         ])
         ++ additionalPkgs pkgs;
-
-      extraBwrapArgs = [
-        "--bind-try /etc/nixos/ /etc/nixos/"
-        "--ro-bind-try /etc/xdg/ /etc/xdg/"
-      ];
-
-      # symlink shared assets, including icons and desktop entries
-      extraInstallCommands = ''
-        ln -s "${zed-editor}/share" "$out/"
-      '';
-
-      runScript = "${zed-editor}/bin/${executableName}";
 
       passthru = {
         inherit executableName;
@@ -100,19 +98,19 @@ rustPlatform.buildRustPackage (finalAttrs: {
   pname = "zed-editor";
   version = "1.10.0";
 
-  outputs = [
-    "out"
-  ]
-  ++ lib.optionals buildRemoteServer [
-    "remote_server"
-  ];
-
   src = fetchFromGitHub {
     owner = "zed-industries";
     repo = "zed";
     tag = "v${finalAttrs.version}";
     hash = "sha256-KLoowntT7rrUWJdZ+uA2qvKih+Ygo58RIxd5jR7fFYE=";
   };
+
+  outputs = [
+    "out"
+  ]
+  ++ lib.optionals buildRemoteServer [
+    "remote_server"
+  ];
 
   postPatch = ''
     # Disable upstream's rustflags overrides to avoid linker issues
@@ -134,10 +132,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
       --replace-fail 'builder.include(&glib_path_config);' 'builder.include("${lib.getLib glib}/lib/glib-2.0/include");'
   '';
 
-  cargoHash = "sha256-HzDxvX72H3nLmfI0nIGZISpoF5vTiPj+hT/pz/6MUF4=";
-
-  __structuredAttrs = true;
-
   nativeBuildInputs = [
     cmake
     pkg-config
@@ -150,8 +144,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
     lld
     rustPlatform.bindgenHook
   ];
-
-  dontUseCmakeConfigure = true;
 
   buildInputs = [
     libgit2
@@ -177,37 +169,20 @@ rustPlatform.buildRustPackage (finalAttrs: {
     git
   ];
 
-  cargoBuildFlags = [
-    "--package=zed"
-    "--package=cli"
-  ]
-  ++ lib.optionals buildRemoteServer [ "--package=remote_server" ];
-
-  # Required on darwin because we don't have access to the
-  # proprietary Metal shader compiler.
-  buildFeatures = lib.optionals stdenv.hostPlatform.isDarwin [ "gpui_platform/runtime_shaders" ];
-
-  # Some crates define extra types or enum values in test configuration which then lead
-  # to type checking errors in other crates unless this feature is enabled.
-  # gpui_platform/runtime_shaders is required on darwin for the same reason as buildFeatures above:
-  # without it, build.rs invokes the proprietary Metal shader compiler.
-  checkFeatures = [
-    "visual-tests"
-  ]
-  ++ finalAttrs.buildFeatures;
+  cargoHash = "sha256-HzDxvX72H3nLmfI0nIGZISpoF5vTiPj+hT/pz/6MUF4=";
 
   env = {
     ALLOW_MISSING_LICENSES = true;
-    OPENSSL_NO_VENDOR = true;
     LIBGIT2_NO_VENDOR = true;
     LIBSQLITE3_SYS_USE_PKG_CONFIG = true;
-    ZSTD_SYS_USE_PKG_CONFIG = true;
+    LK_CUSTOM_WEBRTC = livekit-libwebrtc;
+    OPENSSL_NO_VENDOR = true;
+    # Used by `zed --version`
+    RELEASE_VERSION = finalAttrs.version;
     # Setting this environment variable allows to disable auto-updates
     # https://zed.dev/docs/development/linux#notes-for-packaging-zed
     ZED_UPDATE_EXPLANATION = "Zed has been installed using Nix. Auto-updates have thus been disabled.";
-    # Used by `zed --version`
-    RELEASE_VERSION = finalAttrs.version;
-    LK_CUSTOM_WEBRTC = livekit-libwebrtc;
+    ZSTD_SYS_USE_PKG_CONFIG = true;
   }
   // lib.optionalAttrs stdenv.hostPlatform.isDarwin {
     # Link with lld on Darwin. nixpkgs' classic open-source ld64 fails to insert
@@ -219,24 +194,10 @@ rustPlatform.buildRustPackage (finalAttrs: {
     bash script/generate-licenses
   '';
 
-  postFixup = lib.optionalString stdenv.hostPlatform.isLinux ''
-    patchelf $out/libexec/zed-editor --add-rpath ${
-      lib.makeLibraryPath [
-        libGL
-        vulkan-loader
-        wayland
-      ]
-    }
-    wrapProgram $out/libexec/zed-editor --suffix PATH : ${lib.makeBinPath [ nodejs ]}
-  '';
-
   nativeCheckInputs = [
     writableTmpDirAsHomeHook
   ];
 
-  useNextest = true;
-
-  remoteServerExecutableName = "zed-remote-server-${channel}-${finalAttrs.version}+${channel}";
   installPhase = ''
     runHook preInstall
 
@@ -289,13 +250,65 @@ rustPlatform.buildRustPackage (finalAttrs: {
     runHook postInstall
   '';
 
+  doInstallCheck = true;
+
   nativeInstallCheckInputs = [
     versionCheckHook
   ];
+
+  postFixup = lib.optionalString stdenv.hostPlatform.isLinux ''
+    patchelf $out/libexec/zed-editor --add-rpath ${
+      lib.makeLibraryPath [
+        libGL
+        vulkan-loader
+        wayland
+      ]
+    }
+    wrapProgram $out/libexec/zed-editor --suffix PATH : ${lib.makeBinPath [ nodejs ]}
+  '';
+
+  __structuredAttrs = true;
+  # Required on darwin because we don't have access to the
+  # proprietary Metal shader compiler.
+  buildFeatures = lib.optionals stdenv.hostPlatform.isDarwin [ "gpui_platform/runtime_shaders" ];
+
+  cargoBuildFlags = [
+    "--package=zed"
+    "--package=cli"
+  ]
+  ++ lib.optionals buildRemoteServer [ "--package=remote_server" ];
+
+  # Some crates define extra types or enum values in test configuration which then lead
+  # to type checking errors in other crates unless this feature is enabled.
+  # gpui_platform/runtime_shaders is required on darwin for the same reason as buildFeatures above:
+  # without it, build.rs invokes the proprietary Metal shader compiler.
+  checkFeatures = [
+    "visual-tests"
+  ]
+  ++ finalAttrs.buildFeatures;
+
+  dontUseCmakeConfigure = true;
+  remoteServerExecutableName = "zed-remote-server-${channel}-${finalAttrs.version}+${channel}";
+  useNextest = true;
   versionCheckProgram = "${placeholder "out"}/bin/zeditor";
-  doInstallCheck = true;
 
   passthru = {
+    fhs = fhs { zed-editor = finalAttrs.finalPackage; };
+
+    fhsWithPackages =
+      f:
+      fhs {
+        additionalPkgs = f;
+        zed-editor = finalAttrs.finalPackage;
+      };
+
+    tests = {
+      remoteServerVersion = testers.testVersion {
+        command = "${finalAttrs.remoteServerExecutableName} version";
+        package = finalAttrs.finalPackage.remote_server;
+      };
+    };
+
     updateScript = nix-update-script {
       extraArgs = [
         "--version-regex"
@@ -307,19 +320,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
         "--use-github-releases"
       ];
     };
-    fhs = fhs { zed-editor = finalAttrs.finalPackage; };
-    fhsWithPackages =
-      f:
-      fhs {
-        zed-editor = finalAttrs.finalPackage;
-        additionalPkgs = f;
-      };
-    tests = {
-      remoteServerVersion = testers.testVersion {
-        package = finalAttrs.finalPackage.remote_server;
-        command = "${finalAttrs.remoteServerExecutableName} version";
-      };
-    };
   };
 
   meta = {
@@ -327,13 +327,15 @@ rustPlatform.buildRustPackage (finalAttrs: {
     homepage = "https://zed.dev";
     changelog = "https://github.com/zed-industries/zed/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.gpl3Only;
+
     maintainers = with lib.maintainers; [
       GaetanLepage
       niklaskorz
       mjm
       schembriaiden
     ];
-    mainProgram = "zeditor";
+
     platforms = lib.platforms.linux ++ lib.platforms.darwin;
+    mainProgram = "zeditor";
   };
 })

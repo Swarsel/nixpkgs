@@ -2,33 +2,30 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  which,
-  curl,
-  makeWrapper,
-  jdk,
-  writeScript,
-  common-updater-scripts,
   cacert,
-  git,
-  nix,
-  jq,
+  common-updater-scripts,
   coreutils,
+  curl,
+  git,
   gnused,
+  jdk,
+  jq,
+  makeWrapper,
+  nix,
+  which,
+  writeScript,
 }:
 
 stdenv.mkDerivation rec {
   pname = "sbt-extras";
-  rev = "103ab5905df0d7be505e258fc600935bbb511ec9";
   version = "2025-08-25";
 
   src = fetchFromGitHub {
+    inherit rev;
     owner = "paulp";
     repo = "sbt-extras";
-    inherit rev;
     sha256 = "UlxZsCi4EdcHvGwatQm1sPyamfcqJs9o8qo2HWLedQw=";
   };
-
-  dontBuild = true;
 
   nativeBuildInputs = [ makeWrapper ];
 
@@ -52,9 +49,13 @@ stdenv.mkDerivation rec {
   '';
 
   doInstallCheck = true;
+
   installCheckPhase = ''
     $out/bin/sbt -h >/dev/null
   '';
+
+  dontBuild = true;
+  rev = "103ab5905df0d7be505e258fc600935bbb511ec9";
 
   passthru.updateScript = writeScript "update.sh" ''
      #!${stdenv.shell}
@@ -86,10 +87,12 @@ stdenv.mkDerivation rec {
     description = "More featureful runner for sbt, the simple/scala/standard build tool";
     homepage = "https://github.com/paulp/sbt-extras";
     license = lib.licenses.bsd3;
+
     maintainers = with lib.maintainers; [
       puffnfresh
     ];
-    mainProgram = "sbt";
+
     platforms = lib.platforms.unix;
+    mainProgram = "sbt";
   };
 }

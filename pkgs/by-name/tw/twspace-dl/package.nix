@@ -1,20 +1,18 @@
 {
   lib,
-  python3Packages,
   fetchPypi,
   ffmpeg-headless,
+  python3Packages,
 }:
 
 python3Packages.buildPythonApplication (finalAttrs: {
   pname = "twspace-dl";
   version = "2024.7.2.1";
 
-  pyproject = true;
-
   src = fetchPypi {
     inherit (finalAttrs) version;
-    pname = "twspace_dl";
     hash = "sha256-GLs+UGEOsdGcp/mEh+12Vs+XlY1goEql7UOAvVVi1pg=";
+    pname = "twspace_dl";
   };
 
   nativeBuildInputs = with python3Packages; [ poetry-core ];
@@ -25,7 +23,7 @@ python3Packages.buildPythonApplication (finalAttrs: {
   ];
 
   makeWrapperArgs = [ "--prefix PATH : ${lib.makeBinPath [ ffmpeg-headless ]}" ];
-
+  pyproject = true;
   pythonImportsCheck = [ "twspace_dl" ];
 
   meta = {

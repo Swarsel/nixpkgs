@@ -18,7 +18,6 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   nativeBuildInputs = [ cmake ];
-
   buildInputs = [ libx11 ];
 
   installPhase = ''
@@ -28,10 +27,10 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   meta = {
+    inherit (libx11.meta) platforms;
     description = "Medley Interlisp virtual machine";
     homepage = "https://interlisp.org/";
     changelog = "https://github.com/Interlisp/maiko/releases";
     license = lib.licenses.mit;
-    inherit (libx11.meta) platforms;
   };
 })

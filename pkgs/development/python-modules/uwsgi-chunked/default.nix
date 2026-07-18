@@ -1,14 +1,13 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "uwsgi-chunked";
   version = "0.1.8";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "btimby";
@@ -17,11 +16,10 @@ buildPythonPackage rec {
     hash = "sha256-5TNCnQhnT1gAblgs+AAW62HoNDPM54hpxgCnYl07j3I=";
   };
 
-  build-system = [ setuptools ];
-
   # requires running containers via docker
   doCheck = false;
-
+  build-system = [ setuptools ];
+  pyproject = true;
   pythonImportsCheck = [ "uwsgi_chunked" ];
 
   meta = {

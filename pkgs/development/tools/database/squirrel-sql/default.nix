@@ -4,10 +4,10 @@
   lib,
   stdenv,
   fetchurl,
+  jre,
   makeDesktopItem,
   makeWrapper,
   unzip,
-  jre,
   drivers ? [ ],
 }:
 stdenv.mkDerivation rec {
@@ -23,13 +23,8 @@ stdenv.mkDerivation rec {
     makeWrapper
     unzip
   ];
-  buildInputs = [ jre ];
 
-  unpackPhase = ''
-    runHook preUnpack
-    unzip ${src}
-    runHook postUnpack
-  '';
+  buildInputs = [ jre ];
 
   buildPhase = ''
     runHook preBuild
@@ -67,21 +62,27 @@ stdenv.mkDerivation rec {
   '';
 
   desktopItem = makeDesktopItem {
-    name = "squirrel-sql";
-    exec = "squirrel-sql";
+    categories = [ "Development" ];
     comment = meta.description;
     desktopName = "SQuirreL SQL";
+    exec = "squirrel-sql";
     genericName = "SQL Client";
-    categories = [ "Development" ];
     icon = "squirrel-sql";
+    name = "squirrel-sql";
   };
+
+  unpackPhase = ''
+    runHook preUnpack
+    unzip ${src}
+    runHook postUnpack
+  '';
 
   meta = {
     description = "Universal SQL Client";
-    mainProgram = "squirrel-sql";
     homepage = "http://squirrel-sql.sourceforge.net/";
-    sourceProvenance = with lib.sourceTypes; [ binaryBytecode ];
     license = lib.licenses.lgpl21Plus;
+    sourceProvenance = with lib.sourceTypes; [ binaryBytecode ];
     platforms = lib.platforms.linux;
+    mainProgram = "squirrel-sql";
   };
 }

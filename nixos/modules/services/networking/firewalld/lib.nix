@@ -14,6 +14,11 @@ let
       optional ? false,
     }:
     mkOption {
+      apply =
+        value: if builtins.isAttrs value then "${toString value.from}-${toString value.to}" else value;
+
+      description = "";
+
       type =
         let
           type = either port (submodule {
@@ -24,27 +29,23 @@ let
           });
         in
         if optional then (nullOr type) else type;
-      description = "";
-      apply =
-        value: if builtins.isAttrs value then "${toString value.from}-${toString value.to}" else value;
     };
   protocolOption = mkOption {
+    description = "";
+
     type = enum [
       "tcp"
       "udp"
       "sctp"
       "dccp"
     ];
-    description = "";
   };
 in
 {
   inherit mkPortOption;
   inherit protocolOption;
-
-  toXmlAttrs = lib.mapAttrs' (name: lib.nameValuePair ("@" + name));
-  mkXmlAttr = name: value: { "@${name}" = value; };
   filterNullAttrs = lib.filterAttrsRecursive (_: value: value != null);
+  mkXmlAttr = name: value: { "@${name}" = value; };
 
   portProtocolOptions = {
     options = {
@@ -52,4 +53,6 @@ in
       protocol = protocolOption;
     };
   };
+
+  toXmlAttrs = lib.mapAttrs' (name: lib.nameValuePair ("@" + name));
 }

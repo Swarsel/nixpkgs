@@ -1,24 +1,23 @@
 {
   lib,
+  fetchFromGitHub,
   buildPythonPackage,
   dateparser,
   defusedxml,
-  fetchFromGitHub,
   geomet,
   geopandas,
   kml2geojson,
   pyshp,
   pyyaml,
   requests,
+  scikit-learn,
   setuptools-scm,
   shapely,
-  scikit-learn,
 }:
 
 buildPythonPackage rec {
   pname = "wktutils";
   version = "2.0.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "asfadmin";
@@ -32,6 +31,8 @@ buildPythonPackage rec {
       --replace-fail '"twine",' ""
   '';
 
+  # Module doesn't have tests
+  doCheck = false;
   build-system = [ setuptools-scm ];
 
   dependencies = [
@@ -52,9 +53,7 @@ buildPythonPackage rec {
     ];
   };
 
-  # Module doesn't have tests
-  doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "WKTUtils" ];
 
   meta = {

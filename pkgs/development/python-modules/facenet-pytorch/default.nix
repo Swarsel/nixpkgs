@@ -1,22 +1,18 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # build-system
-  setuptools,
-
+  buildPythonPackage,
   # dependencies
   pillow,
   requests,
+  # build-system
+  setuptools,
   torchvision,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "facenet-pytorch";
   version = "2.5.3";
-  pyproject = true;
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "timesler";
@@ -24,6 +20,10 @@ buildPythonPackage (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-3YVyqKgVLD5aePwyVQA8kOiqx32kqg9lxU2uwPWGkCU=";
   };
+
+  # The only tests require internet access
+  doCheck = false;
+  __structuredAttrs = true;
 
   build-system = [
     setuptools
@@ -35,10 +35,8 @@ buildPythonPackage (finalAttrs: {
     torchvision
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "facenet_pytorch" ];
-
-  # The only tests require internet access
-  doCheck = false;
 
   meta = {
     description = "Pretrained Pytorch face detection (MTCNN) and facial recognition (InceptionResnet) models";

@@ -17,21 +17,11 @@
 buildPythonPackage rec {
   pname = "cmd2";
   version = "3.2.1";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
     hash = "sha256-bGNyobJs0Uu2IJZTyJ1zAP58FDno3KMPW2tv/bXyFPo=";
   };
-
-  build-system = [ setuptools-scm ];
-
-  dependencies = [
-    pyperclip
-    rich-argparse
-    wcwidth
-  ]
-  ++ lib.optional stdenv.hostPlatform.isDarwin gnureadline;
 
   doCheck = true;
 
@@ -42,6 +32,15 @@ buildPythonPackage rec {
     pytest-mock
   ];
 
+  build-system = [ setuptools-scm ];
+
+  dependencies = [
+    pyperclip
+    rich-argparse
+    wcwidth
+  ]
+  ++ lib.optional stdenv.hostPlatform.isDarwin gnureadline;
+
   disabledTests = [
     # Don't require vim for tests, it causes lots of rebuilds
     "test_find_editor_not_specified"
@@ -50,6 +49,7 @@ buildPythonPackage rec {
     "test_from_ansi_wrapper"
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "cmd2" ];
 
   meta = {

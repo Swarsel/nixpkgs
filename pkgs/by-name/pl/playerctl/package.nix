@@ -1,9 +1,9 @@
 {
   lib,
   stdenv,
+  fetchFromGitHub,
   buildPackages,
   docbook_xsl,
-  fetchFromGitHub,
   glib,
   gobject-introspection,
   gtk-doc,
@@ -44,6 +44,7 @@ stdenv.mkDerivation (finalAttrs: {
   ++ lib.optionals (withDocs && !stdenv.buildPlatform.canExecute stdenv.hostPlatform) [
     mesonEmulatorHook
   ];
+
   buildInputs = [ glib ];
 
   mesonFlags = [
@@ -56,11 +57,13 @@ stdenv.mkDerivation (finalAttrs: {
     description = "Command-line utility and library for controlling media players that implement MPRIS";
     homepage = "https://github.com/acrisci/playerctl";
     license = lib.licenses.lgpl3;
-    platforms = lib.platforms.unix;
+
     maintainers = with lib.maintainers; [
       puffnfresh
       anish
     ];
+
+    platforms = lib.platforms.unix;
     mainProgram = "playerctl";
   };
 })

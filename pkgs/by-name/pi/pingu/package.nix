@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule (finalAttrs: {
@@ -15,6 +15,7 @@ buildGoModule (finalAttrs: {
     sha256 = "sha256-KiJRr06N5zOq2vov+iKf5omrzxORxIUaEjM+rXfaoR0=";
     # Get values that require us to use git, then delete .git
     leaveDotGit = true;
+
     postFetch = ''
       cd $out
       git rev-parse --short HEAD > ldflags_revision
@@ -23,14 +24,16 @@ buildGoModule (finalAttrs: {
   };
 
   vendorHash = "sha256-+2YyJo4RFJXTt7foDrEoLeCcbkRqQ+boFaKioUtcZsM=";
+
+  preBuild = ''
+    ldflags+=" -X main.appRevision=$(cat ldflags_revision)"
+  '';
+
   ldflags = [
     "-w"
     "-s"
     "-X main.appVersion=${finalAttrs.version}"
   ];
-  preBuild = ''
-    ldflags+=" -X main.appRevision=$(cat ldflags_revision)"
-  '';
 
   meta = {
     description = "Ping command implementation in Go but with colorful output and pingu ascii art";

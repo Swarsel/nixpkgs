@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   setuptools,
   zope-interface,
 }:
@@ -9,7 +9,6 @@
 buildPythonPackage rec {
   pname = "zope-exceptions";
   version = "6.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "zopefoundation";
@@ -23,6 +22,9 @@ buildPythonPackage rec {
       --replace-fail "setuptools ==" "setuptools >="
   '';
 
+  # circular deps
+  doCheck = false;
+
   build-system = [
     setuptools
   ];
@@ -31,9 +33,7 @@ buildPythonPackage rec {
     zope-interface
   ];
 
-  # circular deps
-  doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "zope.exceptions" ];
 
   meta = {

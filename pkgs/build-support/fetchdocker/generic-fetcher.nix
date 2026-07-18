@@ -1,9 +1,9 @@
 {
-  stdenv,
   lib,
+  stdenv,
+  gawk,
   haskellPackages,
   writeText,
-  gawk,
 }:
 let
   awk = "${gawk}/bin/awk";
@@ -11,13 +11,13 @@ let
 in
 {
   fetcher,
+  imageName,
   name,
+  sha256,
+  layerDigest ? "",
   registry ? "https://registry-1.docker.io/v2/",
   repository ? "library",
-  imageName,
-  sha256,
   tag ? "",
-  layerDigest ? "",
 }:
 
 # There must be no slashes in the repository or container names since
@@ -42,6 +42,9 @@ let
 in
 stdenv.mkDerivation {
   inherit name;
+  inherit registry dockerCredentialsFile;
+  buildInputs = [ haskellPackages.hocker ];
+
   builder = writeText "${fetcher}-builder.sh" ''
     echo "${fetcher} exporting to $out"
 
@@ -86,19 +89,14 @@ stdenv.mkDerivation {
       "${tag}"
   '';
 
-  buildInputs = [ haskellPackages.hocker ];
-
-  outputHashAlgo = "sha256";
-  outputHashMode = "flat";
-  outputHash = sha256;
-
-  preferLocalBuild = true;
-
   impureEnvVars = [
     "DOCKER_USER"
     "DOCKER_PASS"
     "DOCKER_TOKEN"
   ];
 
-  inherit registry dockerCredentialsFile;
+  outputHash = sha256;
+  outputHashAlgo = "sha256";
+  outputHashMode = "flat";
+  preferLocalBuild = true;
 }

@@ -3,14 +3,14 @@
   stdenv,
   fetchurl,
   autoPatchelfHook,
-  zlib,
+  cairo,
   dbus,
+  dbus-glib,
+  gdk-pixbuf,
   glib,
   gtk3,
   pango,
-  gdk-pixbuf,
-  dbus-glib,
-  cairo,
+  zlib,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -35,8 +35,6 @@ stdenv.mkDerivation (finalAttrs: {
     cairo
   ];
 
-  sourceRoot = "tixati-${finalAttrs.version}-1.x86_64.manualinstall";
-
   installPhase = ''
     runHook preInstall
 
@@ -47,15 +45,17 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  sourceRoot = "tixati-${finalAttrs.version}-1.x86_64.manualinstall";
+
   meta = {
     description = "Simple and Easy to Use Bittorrent Client";
     homepage = "https://www.tixati.com/";
-    downloadPage = "https://tixati.com/linux";
     changelog = "https://tixati.com/news";
     license = lib.licenses.unfree;
     sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
-    platforms = [ "x86_64-linux" ];
     maintainers = with lib.maintainers; [ FlorisMenninga ];
+    platforms = [ "x86_64-linux" ];
     mainProgram = "tixati";
+    downloadPage = "https://tixati.com/linux";
   };
 })

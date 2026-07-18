@@ -2,16 +2,14 @@
   lib,
   buildPythonPackage,
   fetchPypi,
-
-  # build-system
-  setuptools,
-
   # dependencies
   fsspec,
   numpy,
   packaging,
   psutil,
   pyre-extensions,
+  # build-system
+  setuptools,
   tabulate,
   tensorboard,
   torch,
@@ -22,7 +20,6 @@
 buildPythonPackage rec {
   pname = "torchtnt";
   version = "0.2.4";
-  pyproject = true;
 
   # no tag / releases on github
   src = fetchPypi {
@@ -36,6 +33,9 @@ buildPythonPackage rec {
       --replace-fail 'read_requirements("requirements.txt")' "[]" \
       --replace-fail 'read_requirements("dev-requirements.txt")' "[]"
   '';
+
+  # Tests are not included in Pypi archive
+  doCheck = false;
 
   build-system = [
     setuptools
@@ -55,12 +55,11 @@ buildPythonPackage rec {
     typing-extensions
   ];
 
+  pyproject = true;
+
   pythonImportsCheck = [
     "torchtnt"
   ];
-
-  # Tests are not included in Pypi archive
-  doCheck = false;
 
   meta = {
     description = "Lightweight library for PyTorch training tools and utilities";

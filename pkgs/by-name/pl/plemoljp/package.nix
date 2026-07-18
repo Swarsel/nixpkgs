@@ -1,8 +1,8 @@
 {
   lib,
-  stdenvNoCC,
   fetchzip,
   nix-update-script,
+  stdenvNoCC,
 }:
 
 stdenvNoCC.mkDerivation (finalAttrs: {
@@ -35,7 +35,7 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     description = "Composite font of IBM Plex Mono and IBM Plex Sans JP";
     homepage = "https://github.com/yuru7/PlemolJP";
     license = lib.licenses.ofl;
-    platforms = lib.platforms.all;
     maintainers = with lib.maintainers; [ kachick ];
+    platforms = lib.platforms.all;
   };
 })

@@ -1,9 +1,9 @@
 {
-  buildGoModule,
   lib,
   fetchFromGitHub,
-  versionCheckHook,
+  buildGoModule,
   nix-update-script,
+  versionCheckHook,
 }:
 
 buildGoModule (finalAttrs: {
@@ -18,12 +18,10 @@ buildGoModule (finalAttrs: {
   };
 
   vendorHash = "sha256-UGWfrnpTgzR09T5jDL24d/Bs8+HBWi4g1YzZyy7ULWY=";
-  proxyVendor = true;
-
-  subPackages = [
-    "cmd/pyroscope"
-    "cmd/profilecli"
-  ];
+  doInstallCheck = true;
+  # We're overriding the version in 'ldFlags', so we should check that the
+  # derivation 'version' string is found in 'pyroscope --version'.
+  nativeInstallCheckInputs = [ versionCheckHook ];
 
   ldflags = [
     "-X=github.com/grafana/pyroscope/v2/pkg/util/build.Branch=${finalAttrs.src.rev}"
@@ -32,12 +30,14 @@ buildGoModule (finalAttrs: {
     "-X=github.com/grafana/pyroscope/v2/pkg/util/build.BuildDate=1970-01-01T00:00:00Z"
   ];
 
-  # We're overriding the version in 'ldFlags', so we should check that the
-  # derivation 'version' string is found in 'pyroscope --version'.
-  nativeInstallCheckInputs = [ versionCheckHook ];
-  doInstallCheck = true;
-  versionCheckProgram = "${placeholder "out"}/bin/${finalAttrs.meta.mainProgram}";
+  proxyVendor = true;
 
+  subPackages = [
+    "cmd/pyroscope"
+    "cmd/profilecli"
+  ];
+
+  versionCheckProgram = "${placeholder "out"}/bin/${finalAttrs.meta.mainProgram}";
   passthru.updateScript = nix-update-script { };
 
   meta = {
@@ -45,10 +45,12 @@ buildGoModule (finalAttrs: {
     homepage = "https://github.com/grafana/pyroscope";
     changelog = "https://github.com/grafana/pyroscope/blob/${finalAttrs.src.rev}/CHANGELOG.md";
     license = lib.licenses.agpl3Only;
+
     maintainers = with lib.maintainers; [
       jkachmar
       lf-
     ];
+
     mainProgram = "pyroscope";
   };
 })

@@ -1,7 +1,7 @@
 {
   lib,
-  rustPlatform,
   fetchCrate,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -17,9 +17,9 @@ rustPlatform.buildRustPackage (finalAttrs: {
 
   meta = {
     description = "Very small CLI for converting TOML to JSON";
-    mainProgram = "toml2json";
     homepage = "https://github.com/woodruffw/toml2json";
     license = with lib.licenses; [ mit ];
     maintainers = with lib.maintainers; [ rvarago ];
+    mainProgram = "toml2json";
   };
 })

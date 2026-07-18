@@ -1,14 +1,14 @@
 {
   lib,
   stdenv,
-  rustPlatform,
   fetchFromGitHub,
+  cmake,
   libiconv,
+  nix-update-script,
   openssl,
   pkg-config,
-  cmake,
+  rustPlatform,
   xclip,
-  nix-update-script,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -22,7 +22,16 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-IyDms4ke5evtSjFZrWEy0AascA0g9rG/a9RjbBNzZwg=";
   };
 
-  cargoHash = "sha256-LMw5TRNe9OK6ygOOMBpniMsmrK8K3qdkQ+SmaLJa+w0=";
+  postPatch = ''
+    # The cargo config overrides linkers for some targets, breaking the build
+    # on e.g. `aarch64-linux`. These overrides are not required in the Nix
+    # environment: delete them.
+    rm .cargo/config.toml
+
+    # build script tries to get version information from git
+    rm build.rs
+    substituteInPlace Cargo.toml --replace-fail 'build = "build.rs"' ""
+  '';
 
   nativeBuildInputs = [
     pkg-config
@@ -37,16 +46,7 @@ rustPlatform.buildRustPackage (finalAttrs: {
     libiconv
   ];
 
-  postPatch = ''
-    # The cargo config overrides linkers for some targets, breaking the build
-    # on e.g. `aarch64-linux`. These overrides are not required in the Nix
-    # environment: delete them.
-    rm .cargo/config.toml
-
-    # build script tries to get version information from git
-    rm build.rs
-    substituteInPlace Cargo.toml --replace-fail 'build = "build.rs"' ""
-  '';
+  cargoHash = "sha256-LMw5TRNe9OK6ygOOMBpniMsmrK8K3qdkQ+SmaLJa+w0=";
 
   env = {
     GITUI_BUILD_NAME = finalAttrs.version;
@@ -62,14 +62,16 @@ rustPlatform.buildRustPackage (finalAttrs: {
   passthru.updateScript = nix-update-script { };
 
   meta = {
-    changelog = "https://github.com/gitui-org/gitui/blob/v${finalAttrs.version}/CHANGELOG.md";
     description = "Blazing fast terminal-ui for Git written in Rust";
     homepage = "https://github.com/gitui-org/gitui";
+    changelog = "https://github.com/gitui-org/gitui/blob/v${finalAttrs.version}/CHANGELOG.md";
     license = lib.licenses.mit;
-    mainProgram = "gitui";
+
     maintainers = with lib.maintainers; [
       yanganto
       mfrw
     ];
+
+    mainProgram = "gitui";
   };
 })

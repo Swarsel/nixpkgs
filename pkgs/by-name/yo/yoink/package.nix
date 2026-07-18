@@ -8,8 +8,8 @@ let
   version = "1.0.1";
 in
 buildGoModule {
-  pname = "yoink";
   inherit version;
+  pname = "yoink";
 
   src = fetchFromGitHub {
     owner = "MrMarble";
@@ -21,8 +21,8 @@ buildGoModule {
   vendorHash = "sha256-P1bkugMaVKCvVx7y8g/elsEublHPA0SgeKzWiQCi4vs=";
 
   meta = {
-    homepage = "https://github.com/MrMarble/yoink";
     description = "Automatically download freeleech torrents";
+    homepage = "https://github.com/MrMarble/yoink";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ hogcycle ];
   };

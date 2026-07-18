@@ -2,12 +2,12 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  meson,
-  pkg-config,
-  ninja,
-  liblo,
-  libjack2,
   fltk,
+  libjack2,
+  liblo,
+  meson,
+  ninja,
+  pkg-config,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -36,10 +36,10 @@ stdenv.mkDerivation (finalAttrs: {
   hardeningDisable = [ "format" ];
 
   meta = {
-    homepage = "https://new-session-manager.jackaudio.org/";
     description = "Session manager designed for audio applications";
-    maintainers = [ lib.maintainers._6AA4FD ];
+    homepage = "https://new-session-manager.jackaudio.org/";
     license = lib.licenses.gpl3Plus;
+    maintainers = [ lib.maintainers._6AA4FD ];
     platforms = [ "x86_64-linux" ];
   };
 })

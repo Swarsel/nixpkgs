@@ -23,40 +23,35 @@ in
 {
   options.services.ananicy = {
     enable = lib.mkEnableOption "Ananicy, an auto nice daemon";
-
     package = lib.mkPackageOption pkgs "ananicy" { example = "ananicy-cpp"; };
 
-    rulesProvider = lib.mkPackageOption pkgs "ananicy" { example = "ananicy-cpp"; } // {
-      description = ''
-        Which package to copy default rules,types,cgroups from.
-      '';
-    };
+    extraCgroups = lib.mkOption {
+      default = [ ];
 
-    settings = lib.mkOption {
-      type =
-        with lib.types;
-        attrsOf (oneOf [
-          int
-          bool
-          str
-        ]);
-      default = { };
-      example = {
-        apply_nice = false;
-      };
       description = ''
-        See <https://github.com/Nefelim4ag/Ananicy/blob/master/ananicy.d/ananicy.conf>
+        Cgroups to write in 'nixCgroups.cgroups'. See:
+        <https://gitlab.com/ananicy-cpp/ananicy-cpp/#cgroups>
       '';
+
+      example = [
+        {
+          CPUQuota = 80;
+          cgroup = "cpu80";
+        }
+      ];
+
+      type = with lib.types; listOf attrs;
     };
 
     extraRules = lib.mkOption {
-      type = with lib.types; listOf attrs;
       default = [ ];
+
       description = ''
         Rules to write in 'nixRules.rules'. See:
         <https://github.com/Nefelim4ag/Ananicy#configuration>
         <https://gitlab.com/ananicy-cpp/ananicy-cpp/#global-configuration>
       '';
+
       example = [
         {
           name = "eog";
@@ -67,47 +62,64 @@ in
           type = "BG_CPUIO";
         }
       ];
-    };
-    extraTypes = lib.mkOption {
+
       type = with lib.types; listOf attrs;
+    };
+
+    extraTypes = lib.mkOption {
       default = [ ];
+
       description = ''
         Types to write in 'nixTypes.types'. See:
         <https://gitlab.com/ananicy-cpp/ananicy-cpp/#types>
       '';
+
       example = [
         {
-          type = "my_type";
           nice = 19;
           other_parameter = "value";
+          type = "my_type";
         }
         {
-          type = "compiler";
+          ioclass = "idle";
           nice = 19;
           sched = "batch";
-          ioclass = "idle";
+          type = "compiler";
         }
       ];
-    };
-    extraCgroups = lib.mkOption {
+
       type = with lib.types; listOf attrs;
-      default = [ ];
+    };
+
+    rulesProvider = lib.mkPackageOption pkgs "ananicy" { example = "ananicy-cpp"; } // {
       description = ''
-        Cgroups to write in 'nixCgroups.cgroups'. See:
-        <https://gitlab.com/ananicy-cpp/ananicy-cpp/#cgroups>
+        Which package to copy default rules,types,cgroups from.
       '';
-      example = [
-        {
-          cgroup = "cpu80";
-          CPUQuota = 80;
-        }
-      ];
+    };
+
+    settings = lib.mkOption {
+      default = { };
+
+      description = ''
+        See <https://github.com/Nefelim4ag/Ananicy/blob/master/ananicy.d/ananicy.conf>
+      '';
+
+      example = {
+        apply_nice = false;
+      };
+
+      type =
+        with lib.types;
+        attrsOf (oneOf [
+          int
+          bool
+          str
+        ]);
     };
   };
 
   config = lib.mkIf cfg.enable {
     environment = {
-      systemPackages = [ cfg.package ];
       etc."ananicy.d".source =
         pkgs.runCommand "ananicyfiles"
           {
@@ -129,6 +141,8 @@ in
             ${lib.optionalString (cfg.extraTypes != [ ]) "cp ${extraTypes} $out/nixTypes.types"}
             ${lib.optionalString (cfg.extraCgroups != [ ]) "cp ${extraCgroups} $out/nixCgroups.cgroups"}
           '';
+
+      systemPackages = [ cfg.package ];
     };
 
     # ananicy and ananicy-cpp have different default settings
@@ -137,23 +151,23 @@ in
         mkOD = lib.mkOptionDefault;
       in
       {
-        cgroup_load = mkOD true;
-        type_load = mkOD true;
-        rule_load = mkOD true;
-        apply_nice = mkOD true;
+        apply_cgroup = mkOD true;
         apply_ioclass = mkOD true;
         apply_ionice = mkOD true;
-        apply_sched = mkOD true;
+        apply_nice = mkOD true;
         apply_oom_score_adj = mkOD true;
-        apply_cgroup = mkOD true;
+        apply_sched = mkOD true;
+        cgroup_load = mkOD true;
+        rule_load = mkOD true;
+        type_load = mkOD true;
       }
       // (
         if servicename == "ananicy-cpp" then
           {
-            # https://gitlab.com/ananicy-cpp/ananicy-cpp/-/blob/master/src/config.cpp#L12
-            loglevel = mkOD "warn"; # default is info but its spammy
             cgroup_realtime_workaround = true;
             log_applied_rule = mkOD false;
+            # https://gitlab.com/ananicy-cpp/ananicy-cpp/-/blob/master/src/config.cpp#L12
+            loglevel = mkOD "warn"; # default is info but its spammy
           }
         else
           {
@@ -165,6 +179,7 @@ in
 
     systemd = {
       packages = [ cfg.package ];
+
       services."${servicename}" = {
         wantedBy = [ "default.target" ];
       };

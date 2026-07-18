@@ -1,19 +1,19 @@
 {
-  buildPythonPackage,
   lib,
   stdenv,
+  buildPythonPackage,
   cmake,
   cppe,
   eigen,
-  pybind11,
-  numpy,
   h5py,
+  llvmPackages,
   numba,
-  scipy,
+  numpy,
   pandas,
   polarizationsolver,
+  pybind11,
   pytest,
-  llvmPackages,
+  scipy,
 }:
 
 buildPythonPackage {
@@ -36,17 +36,11 @@ buildPythonPackage {
     eigen
   ];
 
-  dontUseCmakeConfigure = true;
-
-  format = "setuptools";
-
   buildInputs = [ pybind11 ] ++ lib.optional stdenv.cc.isClang llvmPackages.openmp;
 
   env = lib.optionalAttrs stdenv.cc.isClang {
     NIX_CFLAGS_LINK = "-lomp";
   };
-
-  hardeningDisable = lib.optional stdenv.cc.isClang "strictoverflow";
 
   nativeCheckInputs = [
     pytest
@@ -58,5 +52,8 @@ buildPythonPackage {
     scipy
   ];
 
+  dontUseCmakeConfigure = true;
+  format = "setuptools";
+  hardeningDisable = lib.optional stdenv.cc.isClang "strictoverflow";
   pythonImportsCheck = [ "cppe" ];
 }

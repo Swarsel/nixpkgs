@@ -1,10 +1,10 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   llvmPackages,
-  versionCheckHook,
   nix-update-script,
+  versionCheckHook,
 }:
 
 buildGoModule rec {
@@ -18,11 +18,8 @@ buildGoModule rec {
     hash = "sha256-rWALbjy7s6X3hegcUxoR0XUXKFZGnWRWV5OeXtN3BjU=";
   };
 
-  vendorHash = "sha256-TF66wg8nyAb/kZ80XLaD7H39EehZQ896DS6Ce3+P8Lk=";
-
-  proxyVendor = true;
-
   nativeBuildInputs = [ llvmPackages.lld ];
+  vendorHash = "sha256-TF66wg8nyAb/kZ80XLaD7H39EehZQ896DS6Ce3+P8Lk=";
 
   env = {
     # Work around ld64's libc++ hardening issue.
@@ -30,17 +27,18 @@ buildGoModule rec {
     NIX_CFLAGS_LINK = "-fuse-ld=lld";
   };
 
+  doCheck = false;
+  doInstallCheck = true;
+  nativeInstallCheckInputs = [ versionCheckHook ];
+
   ldflags = [
     "-s"
     "-w"
   ];
 
-  doInstallCheck = true;
-  doCheck = false;
-  nativeInstallCheckInputs = [ versionCheckHook ];
-
-  passthru.updateScript = nix-update-script { };
+  proxyVendor = true;
   versionCheckProgramArg = "--version";
+  passthru.updateScript = nix-update-script { };
 
   meta = {
     description = "Terminal-based monitoring tool 'top' designed to display real-time metrics for Apple Silicon chips";
@@ -48,7 +46,7 @@ buildGoModule rec {
     changelog = "https://github.com/metaspartan/mactop/releases/tag/${src.tag}";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ natsukium ];
-    mainProgram = "mactop";
     platforms = [ "aarch64-darwin" ];
+    mainProgram = "mactop";
   };
 }

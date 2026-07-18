@@ -2,11 +2,11 @@
   lib,
   stdenv,
   cmake,
-  libSrc,
   compressStep,
-  stepreduce,
+  libSrc,
   parallel,
   python3,
+  stepreduce,
   zip,
 }:
 let
@@ -15,7 +15,6 @@ let
     stdenv.mkDerivation {
       pname = "kicad-${name}";
       version = builtins.substring 0 10 (libSrc name).rev;
-
       src = libSrc name;
 
       nativeBuildInputs = [
@@ -45,8 +44,8 @@ let
     };
 in
 {
-  symbols = mkLib "symbols";
-  templates = mkLib "templates";
   footprints = mkLib "footprints";
   packages3d = mkLib "packages3d";
+  symbols = mkLib "symbols";
+  templates = mkLib "templates";
 }

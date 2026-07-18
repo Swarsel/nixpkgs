@@ -1,4 +1,4 @@
-{ stdenv, lib }:
+{ lib, stdenv }:
 
 let
   inherit (lib)

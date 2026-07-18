@@ -1,16 +1,14 @@
 {
   buildDunePackage,
-  github,
   cohttp,
   cohttp-lwt-jsoo,
+  github,
   js_of_ocaml-lwt,
 }:
 
 buildDunePackage {
-  pname = "github-jsoo";
   inherit (github) version src;
-
-  duneVersion = "3";
+  pname = "github-jsoo";
 
   propagatedBuildInputs = [
     github
@@ -18,6 +16,8 @@ buildDunePackage {
     cohttp-lwt-jsoo
     js_of_ocaml-lwt
   ];
+
+  duneVersion = "3";
 
   meta = github.meta // {
     description = "GitHub APIv3 JavaScript library";

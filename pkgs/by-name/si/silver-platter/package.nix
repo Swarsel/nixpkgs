@@ -1,13 +1,13 @@
 {
   lib,
   stdenv,
-  rustPlatform,
   fetchFromGitHub,
-  python3,
-  makeBinaryWrapper,
-  pkg-config,
   libiconv,
+  makeBinaryWrapper,
   openssl,
+  pkg-config,
+  python3,
+  rustPlatform,
   versionCheckHook,
 }:
 
@@ -22,14 +22,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-KafDAd457Kp2SK9ZCmslaTMd6Wx45fszQ0tzuqInT+o=";
   };
 
-  cargoHash = "sha256-j+zKH4ZLYdaJnHp2vU1yZXEx0k17dwb7iZmC2najFPk=";
-
-  buildInputs = [
-    python3
-  ]
-  ++ lib.optionals stdenv.hostPlatform.isLinux [ openssl ]
-  ++ lib.optionals stdenv.hostPlatform.isDarwin [ libiconv ];
-
   nativeBuildInputs = [
     python3
     pkg-config
@@ -38,13 +30,20 @@ rustPlatform.buildRustPackage (finalAttrs: {
     makeBinaryWrapper
   ];
 
+  buildInputs = [
+    python3
+  ]
+  ++ lib.optionals stdenv.hostPlatform.isLinux [ openssl ]
+  ++ lib.optionals stdenv.hostPlatform.isDarwin [ libiconv ];
+
+  cargoHash = "sha256-j+zKH4ZLYdaJnHp2vU1yZXEx0k17dwb7iZmC2najFPk=";
+
   nativeCheckInputs = [
     python3.pkgs.breezy
   ];
 
-  pythonPath = [
-    python3.pkgs.breezy
-  ];
+  doInstallCheck = true;
+  nativeInstallCheckInputs = [ versionCheckHook ];
 
   postFixup = ''
     wrapPythonPrograms
@@ -55,8 +54,9 @@ rustPlatform.buildRustPackage (finalAttrs: {
     done
   '';
 
-  doInstallCheck = true;
-  nativeInstallCheckInputs = [ versionCheckHook ];
+  pythonPath = [
+    python3.pkgs.breezy
+  ];
 
   passthru.tests = {
     python3-bindings = python3.pkgs.silver-platter;

@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule (finalAttrs: {
@@ -17,8 +17,6 @@ buildGoModule (finalAttrs: {
 
   vendorHash = "sha256-IdfrBD0N9zEreUzwMmT84d/UP6KnGETzvwyUfJVpNXo=";
 
-  ldflags = [ "-s" ];
-
   preCheck = ''
     # We don't care about Benchmarks
     rm -r benchmarks
@@ -28,6 +26,8 @@ buildGoModule (finalAttrs: {
     # Tests require network access
     rm  internal/generators/bedrock/bedrock_test.go
   '';
+
+  ldflags = [ "-s" ];
 
   meta = {
     description = "LLM security testing framework for detecting prompt injection, jailbreaks and adversarial attacks";

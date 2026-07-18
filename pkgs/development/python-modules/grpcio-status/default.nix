@@ -13,12 +13,11 @@
 buildPythonPackage rec {
   pname = "grpcio-status";
   version = "1.81.0";
-  format = "setuptools";
 
   src = fetchPypi {
-    pname = "grpcio_status";
     inherit version;
     hash = "sha256-tv6XiM/dHw9jwFKKHgv9tB6P8Fg+kg0tjoiIWYwBu2k=";
+    pname = "grpcio_status";
   };
 
   postPatch = ''
@@ -34,7 +33,7 @@ buildPythonPackage rec {
 
   # Project thas no tests
   doCheck = false;
-
+  format = "setuptools";
   pythonImportsCheck = [ "grpc_status" ];
 
   meta = {

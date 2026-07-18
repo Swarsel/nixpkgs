@@ -8,30 +8,41 @@ let
   cfg = config.services.awstats;
   package = pkgs.awstats;
   configOpts =
-    { name, config, ... }:
+    { config, name, ... }:
     {
       options = {
-        type = lib.mkOption {
-          type = lib.types.enum [
-            "mail"
-            "web"
-          ];
-          default = "web";
-          example = "mail";
-          description = ''
-            The type of log being collected.
-          '';
-        };
         domain = lib.mkOption {
-          type = lib.types.str;
           default = name;
           description = "The domain name to collect stats for.";
           example = "example.com";
+          type = lib.types.str;
+        };
+
+        extraConfig = lib.mkOption {
+          default = { };
+          description = "Extra configuration to be appended to awstats.\${name}.conf.";
+
+          example = lib.literalExpression ''
+            {
+              "ValidHTTPCodes" = "404";
+            }
+          '';
+
+          type = lib.types.attrsOf lib.types.str;
+        };
+
+        hostAliases = lib.mkOption {
+          default = [ ];
+
+          description = ''
+            List of aliases the site has.
+          '';
+
+          example = [ "www.example.org" ];
+          type = lib.types.listOf lib.types.str;
         };
 
         logFile = lib.mkOption {
-          type = lib.types.str;
-          example = "/var/log/nginx/access.log";
           description = ''
             The log file to be scanned.
 
@@ -40,11 +51,14 @@ let
             journalctl $OLD_CURSOR -u postfix.service | ''${pkgs.perl}/bin/perl ''${pkgs.awstats.out}/share/awstats/tools/maillogconvert.pl standard |
             ```
           '';
+
+          example = "/var/log/nginx/access.log";
+          type = lib.types.str;
         };
 
         logFormat = lib.mkOption {
-          type = lib.types.str;
           default = "1";
+
           description = ''
             The log format being used.
 
@@ -53,41 +67,38 @@ let
             %time2 %email %email_r %host %host_r %method %url %code %bytesd
             ```
           '';
+
+          type = lib.types.str;
         };
 
-        hostAliases = lib.mkOption {
-          type = lib.types.listOf lib.types.str;
-          default = [ ];
-          example = [ "www.example.org" ];
+        type = lib.mkOption {
+          default = "web";
+
           description = ''
-            List of aliases the site has.
+            The type of log being collected.
           '';
-        };
 
-        extraConfig = lib.mkOption {
-          type = lib.types.attrsOf lib.types.str;
-          default = { };
-          example = lib.literalExpression ''
-            {
-              "ValidHTTPCodes" = "404";
-            }
-          '';
-          description = "Extra configuration to be appended to awstats.\${name}.conf.";
+          example = "mail";
+
+          type = lib.types.enum [
+            "mail"
+            "web"
+          ];
         };
 
         webService = {
           enable = lib.mkEnableOption "awstats web service";
 
           hostname = lib.mkOption {
-            type = lib.types.str;
             default = config.domain;
             description = "The hostname the web service appears under.";
+            type = lib.types.str;
           };
 
           urlPrefix = lib.mkOption {
-            type = lib.types.str;
             default = "/awstats";
             description = "The URL prefix under which the awstats pages appear.";
+            type = lib.types.str;
           };
         };
       };
@@ -114,15 +125,10 @@ in
   options.services.awstats = {
     enable = lib.mkEnableOption "awstats, a real-time logfile analyzer";
 
-    dataDir = lib.mkOption {
-      type = lib.types.path;
-      default = "/var/lib/awstats";
-      description = "The directory where awstats data will be stored.";
-    };
-
     configs = lib.mkOption {
-      type = lib.types.attrsOf (lib.types.submodule configOpts);
       default = { };
+      description = "Attribute set of domains to collect stats for.";
+
       example = lib.literalExpression ''
         {
           "mysite" = {
@@ -131,23 +137,30 @@ in
           };
         }
       '';
-      description = "Attribute set of domains to collect stats for.";
+
+      type = lib.types.attrsOf (lib.types.submodule configOpts);
+    };
+
+    dataDir = lib.mkOption {
+      default = "/var/lib/awstats";
+      description = "The directory where awstats data will be stored.";
+      type = lib.types.path;
     };
 
     updateAt = lib.mkOption {
-      type = lib.types.nullOr lib.types.str;
       default = null;
-      example = "hourly";
+
       description = ''
         Specification of the time at which awstats will get updated.
         (in the format described by {manpage}`systemd.time(7)`)
       '';
+
+      example = "hourly";
+      type = lib.types.nullOr lib.types.str;
     };
   };
 
   config = lib.mkIf cfg.enable {
-    environment.systemPackages = [ package.bin ];
-
     environment.etc = lib.mapAttrs' (
       name: opts:
       lib.nameValuePair "awstats/awstats.${name}.conf" {
@@ -214,29 +227,28 @@ in
       }
     ) cfg.configs;
 
-    # create data directory with the correct permissions
-    systemd.tmpfiles.rules = [
-      "d '${cfg.dataDir}' 755 root root - -"
-    ]
-    ++ lib.mapAttrsToList (name: opts: "d '${cfg.dataDir}/${name}' 755 root root - -") cfg.configs
-    ++ [ "Z '${cfg.dataDir}' 755 root root - -" ];
+    environment.systemPackages = [ package.bin ];
 
     # nginx options
     services.nginx.virtualHosts = lib.mapAttrs' (name: opts: {
       name = opts.webService.hostname;
+
       value = {
         locations = {
-          "${opts.webService.urlPrefix}/css/" = {
-            alias = "${package.out}/wwwroot/css/";
-          };
-          "${opts.webService.urlPrefix}/icons/" = {
-            alias = "${package.out}/wwwroot/icon/";
-          };
           "${opts.webService.urlPrefix}/" = {
             alias = "${cfg.dataDir}/${name}/";
+
             extraConfig = ''
               autoindex on;
             '';
+          };
+
+          "${opts.webService.urlPrefix}/css/" = {
+            alias = "${package.out}/wwwroot/css/";
+          };
+
+          "${opts.webService.urlPrefix}/icons/" = {
+            alias = "${package.out}/wwwroot/icon/";
           };
         };
       };
@@ -248,6 +260,7 @@ in
         name: opts:
         lib.nameValuePair "awstats-${name}-update" {
           description = "update awstats for ${name}";
+
           script =
             lib.optionalString (opts.type == "mail") ''
               if [[ -f "${cfg.dataDir}/${name}-cursor" ]]; then
@@ -269,10 +282,18 @@ in
                 -config=${name} -update -dir=${cfg.dataDir}/${name} \
                 -awstatsprog=${package.bin}/bin/awstats
             '';
+
           startAt = cfg.updateAt;
         }
       ) cfg.configs
     );
+
+    # create data directory with the correct permissions
+    systemd.tmpfiles.rules = [
+      "d '${cfg.dataDir}' 755 root root - -"
+    ]
+    ++ lib.mapAttrsToList (name: opts: "d '${cfg.dataDir}/${name}' 755 root root - -") cfg.configs
+    ++ [ "Z '${cfg.dataDir}' 755 root root - -" ];
   };
 
 }

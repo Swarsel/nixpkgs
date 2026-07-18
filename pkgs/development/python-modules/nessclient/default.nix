@@ -1,8 +1,8 @@
 {
   lib,
+  fetchFromGitHub,
   buildPythonPackage,
   click,
-  fetchFromGitHub,
   justbackoff,
   pyserial-asyncio-fast,
   pytest-asyncio,
@@ -14,7 +14,6 @@
 buildPythonPackage rec {
   pname = "nessclient";
   version = "1.3.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "nickw444";
@@ -22,6 +21,11 @@ buildPythonPackage rec {
     tag = version;
     hash = "sha256-E4gkrhQzA1TDmjM+NPWl1Fyoagn/pLm7BRjGSpw6LXY=";
   };
+
+  nativeCheckInputs = [
+    pytest-asyncio
+    pytestCheckHook
+  ];
 
   build-system = [
     setuptools
@@ -37,11 +41,7 @@ buildPythonPackage rec {
     cli = [ click ];
   };
 
-  nativeCheckInputs = [
-    pytest-asyncio
-    pytestCheckHook
-  ];
-
+  pyproject = true;
   pythonImportsCheck = [ "nessclient" ];
 
   meta = {

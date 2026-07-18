@@ -2,20 +2,20 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  fetchpatch,
   autoreconfHook,
-  pkg-config,
-  zlib,
-  readline,
-  openssl,
-  libiconv,
-  pcsclite,
-  libassuan,
-  libxt,
-  docbook_xsl,
-  libxslt,
   docbook_xml_dtd_412,
+  docbook_xsl,
+  fetchpatch,
+  libassuan,
+  libiconv,
+  libxslt,
+  libxt,
   nix-update-script,
+  openssl,
+  pcsclite,
+  pkg-config,
+  readline,
+  zlib,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -31,9 +31,9 @@ stdenv.mkDerivation (finalAttrs: {
 
   patches = [
     (fetchpatch {
+      hash = "sha256-S8PeXCRAUlkKUPYOl/n5+4QIqWOZtHX3yEDnpFhJO8k=";
       name = "CVE-2026-10275.patch";
       url = "https://github.com/OpenSC/OpenSC/commit/814f745b3b6d100295f65f1935edd33d520d33ab.patch";
-      hash = "sha256-S8PeXCRAUlkKUPYOl/n5+4QIqWOZtHX3yEDnpFhJO8k=";
     })
   ];
 
@@ -42,6 +42,7 @@ stdenv.mkDerivation (finalAttrs: {
     autoreconfHook
     libxslt # xsltproc
   ];
+
   buildInputs = [
     zlib
     readline
@@ -52,8 +53,6 @@ stdenv.mkDerivation (finalAttrs: {
     docbook_xml_dtd_412
   ]
   ++ lib.optional (!stdenv.hostPlatform.isDarwin) pcsclite;
-
-  env.NIX_CFLAGS_COMPILE = "-Wno-error";
 
   configureFlags = [
     "--enable-zlib"
@@ -71,6 +70,8 @@ stdenv.mkDerivation (finalAttrs: {
     lib.optional (!stdenv.hostPlatform.isDarwin)
       "--with-pcsc-provider=${lib.getLib pcsclite}/lib/libpcsclite${stdenv.hostPlatform.extensions.sharedLibrary}";
 
+  env.NIX_CFLAGS_COMPILE = "-Wno-error";
+
   installFlags = [
     "sysconfdir=$(out)/etc"
     "completiondir=$(out)/etc"
@@ -82,7 +83,7 @@ stdenv.mkDerivation (finalAttrs: {
     description = "Set of libraries and utilities to access smart cards";
     homepage = "https://github.com/OpenSC/OpenSC/wiki";
     license = lib.licenses.lgpl21Plus;
-    platforms = lib.platforms.all;
     maintainers = [ lib.maintainers.michaeladler ];
+    platforms = lib.platforms.all;
   };
 })

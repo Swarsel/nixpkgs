@@ -1,8 +1,8 @@
 {
   lib,
+  fetchFromGitHub,
   buildPythonPackage,
   cryptography,
-  fetchFromGitHub,
   paho-mqtt,
   requests,
   setuptools,
@@ -11,7 +11,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "tuya-device-sharing-sdk";
   version = "0.2.13";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "tuya";
@@ -20,6 +19,7 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-eeAm223Qt9/TYE0BSLJKFdeZY9egq23kIiiYb0F1Rh0=";
   };
 
+  doCheck = false; # no tests
   build-system = [ setuptools ];
 
   dependencies = [
@@ -28,8 +28,7 @@ buildPythonPackage (finalAttrs: {
     requests
   ];
 
-  doCheck = false; # no tests
-
+  pyproject = true;
   pythonImportsCheck = [ "tuya_sharing" ];
 
   meta = {

@@ -11,8 +11,8 @@ let
   wrappedBins =
     pkgs.runCommand "firejail-wrapped-binaries"
       {
-        preferLocalBuild = true;
         allowSubstitutes = false;
+        preferLocalBuild = true;
         # take precedence over non-firejailed versions
         meta.priority = -1;
       }
@@ -28,10 +28,10 @@ let
                   value
                 else
                   {
-                    executable = value;
                     desktop = null;
-                    profile = null;
+                    executable = value;
                     extraArgs = [ ];
+                    profile = null;
                   };
               args = lib.escapeShellArgs (
                 opts.extraArgs ++ (lib.optional (opts.profile != null) "--profile=${toString opts.profile}")
@@ -59,38 +59,12 @@ in
     enable = lib.mkEnableOption "firejail, a sandboxing tool for Linux";
 
     wrappedBinaries = lib.mkOption {
-      type = lib.types.attrsOf (
-        lib.types.either lib.types.path (
-          lib.types.submodule {
-            options = {
-              executable = lib.mkOption {
-                type = lib.types.path;
-                description = "Executable to run sandboxed";
-                example = lib.literalExpression ''"''${lib.getBin pkgs.firefox}/bin/firefox"'';
-              };
-              desktop = lib.mkOption {
-                type = lib.types.nullOr lib.types.path;
-                default = null;
-                description = ".desktop file to modify. Only necessary if it uses the absolute path to the executable.";
-                example = lib.literalExpression ''"''${pkgs.firefox}/share/applications/firefox.desktop"'';
-              };
-              profile = lib.mkOption {
-                type = lib.types.nullOr lib.types.path;
-                default = null;
-                description = "Profile to use";
-                example = lib.literalExpression ''"''${pkgs.firejail}/etc/firejail/firefox.profile"'';
-              };
-              extraArgs = lib.mkOption {
-                type = lib.types.listOf lib.types.str;
-                default = [ ];
-                description = "Extra arguments to pass to firejail";
-                example = [ "--private=~/.firejail_home" ];
-              };
-            };
-          }
-        )
-      );
       default = { };
+
+      description = ''
+        Wrap the binaries in firejail and place them in the global path.
+      '';
+
       example = lib.literalExpression ''
         {
           firefox = {
@@ -103,21 +77,53 @@ in
           };
         }
       '';
-      description = ''
-        Wrap the binaries in firejail and place them in the global path.
-      '';
+
+      type = lib.types.attrsOf (
+        lib.types.either lib.types.path (
+          lib.types.submodule {
+            options = {
+              desktop = lib.mkOption {
+                default = null;
+                description = ".desktop file to modify. Only necessary if it uses the absolute path to the executable.";
+                example = lib.literalExpression ''"''${pkgs.firefox}/share/applications/firefox.desktop"'';
+                type = lib.types.nullOr lib.types.path;
+              };
+
+              executable = lib.mkOption {
+                description = "Executable to run sandboxed";
+                example = lib.literalExpression ''"''${lib.getBin pkgs.firefox}/bin/firefox"'';
+                type = lib.types.path;
+              };
+
+              extraArgs = lib.mkOption {
+                default = [ ];
+                description = "Extra arguments to pass to firejail";
+                example = [ "--private=~/.firejail_home" ];
+                type = lib.types.listOf lib.types.str;
+              };
+
+              profile = lib.mkOption {
+                default = null;
+                description = "Profile to use";
+                example = lib.literalExpression ''"''${pkgs.firejail}/etc/firejail/firefox.profile"'';
+                type = lib.types.nullOr lib.types.path;
+              };
+            };
+          }
+        )
+      );
     };
   };
 
   config = lib.mkIf cfg.enable {
+    environment.systemPackages = [ pkgs.firejail ] ++ [ wrappedBins ];
+
     security.wrappers.firejail = {
-      setuid = true;
-      owner = "root";
       group = "root";
+      owner = "root";
+      setuid = true;
       source = "${lib.getBin pkgs.firejail}/bin/firejail";
     };
-
-    environment.systemPackages = [ pkgs.firejail ] ++ [ wrappedBins ];
   };
 
   meta.maintainers = with lib.maintainers; [ peterhoeg ];

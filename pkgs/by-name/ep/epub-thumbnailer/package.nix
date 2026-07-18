@@ -1,14 +1,13 @@
 {
   lib,
-  python3,
   fetchFromGitHub,
+  python3,
   unstableGitUpdater,
 }:
 
 python3.pkgs.buildPythonApplication {
   pname = "epub-thumbnailer";
   version = "0-unstable-2024-03-26";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "marianosimone";
@@ -29,6 +28,7 @@ python3.pkgs.buildPythonApplication {
     mv $out/bin/epub-thumbnailer.py $out/bin/epub-thumbnailer
   '';
 
+  pyproject = true;
   passthru.updateScript = unstableGitUpdater { };
 
   meta = {

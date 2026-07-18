@@ -1,21 +1,19 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchurl,
   SDL,
   SDL2,
   SDL2_image,
   SDL2_mixer,
-  fmodex,
-  dwarf-fortress-unfuck,
   autoPatchelfHook,
-
-  # Our own "unfuck" libs for macOS
-  ncurses,
-  gcc,
-
   dfVersion,
   dfVersions,
+  dwarf-fortress-unfuck,
+  fmodex,
+  gcc,
+  # Our own "unfuck" libs for macOS
+  ncurses,
 }:
 
 let
@@ -85,23 +83,8 @@ stdenv.mkDerivation {
     hash = url.outputHash;
   };
 
-  sourceRoot = ".";
-
-  postUnpack = ''
-    directory=${
-      if stdenv.hostPlatform.isLinux then
-        "df_linux"
-      else if stdenv.hostPlatform.isDarwin then
-        "df_osx"
-      else
-        throw "Unsupported system"
-    }
-    if [ -d "$directory" ]; then
-      mv "$directory/"* .
-    fi
-  '';
-
   nativeBuildInputs = optional stdenv.hostPlatform.isLinux autoPatchelfHook;
+
   buildInputs =
     optionals isAtLeast50 [
       SDL2
@@ -170,6 +153,22 @@ stdenv.mkDerivation {
     trap recompute_hash EXIT
   '';
 
+  postUnpack = ''
+    directory=${
+      if stdenv.hostPlatform.isLinux then
+        "df_linux"
+      else if stdenv.hostPlatform.isDarwin then
+        "df_osx"
+      else
+        throw "Unsupported system"
+    }
+    if [ -d "$directory" ]; then
+      mv "$directory/"* .
+    fi
+  '';
+
+  sourceRoot = ".";
+
   passthru = {
     inherit
       baseVersion
@@ -177,9 +176,10 @@ stdenv.mkDerivation {
       dfVersion
       exe
       ;
+
     updateScript = {
-      command = [ ./update.rb ];
       attrPath = "dwarf-fortress-packages";
+      command = [ ./update.rb ];
       supportedFeatures = [ "commit" ];
     };
   };
@@ -188,7 +188,8 @@ stdenv.mkDerivation {
     description = "Single-player fantasy game with a randomly generated adventure world";
     homepage = "https://www.bay12games.com/dwarves/";
     license = licenses.unfreeRedistributable;
-    platforms = attrNames platforms;
+    sourceProvenance = [ lib.sourceTypes.binaryNativeCode ];
+
     maintainers = with maintainers; [
       a1russell
       robbinch
@@ -196,6 +197,7 @@ stdenv.mkDerivation {
       numinit
       shazow
     ];
-    sourceProvenance = [ lib.sourceTypes.binaryNativeCode ];
+
+    platforms = attrNames platforms;
   };
 }

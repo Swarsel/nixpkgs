@@ -1,18 +1,18 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitLab,
   gettext,
-  meson,
-  ninja,
-  pkg-config,
+  gitUpdater,
   glib,
   gtk3,
   libx11,
   libxfce4ui,
   libxfce4util,
+  meson,
+  ninja,
+  pkg-config,
   xfce4-panel,
-  gitUpdater,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -20,11 +20,11 @@ stdenv.mkDerivation (finalAttrs: {
   version = "1.2.0";
 
   src = fetchFromGitLab {
-    domain = "gitlab.xfce.org";
     owner = "panel-plugins";
     repo = "xfce4-time-out-plugin";
     tag = "xfce4-time-out-plugin-${finalAttrs.version}";
     hash = "sha256-hyeqSnynsjAeD67oPjQs0ZeLKreXFMZXmvu38zweqrE=";
+    domain = "gitlab.xfce.org";
   };
 
   strictDeps = true;
@@ -51,7 +51,7 @@ stdenv.mkDerivation (finalAttrs: {
     description = "Panel plug-in to take periodical breaks from the computer";
     homepage = "https://gitlab.xfce.org/panel-plugins/xfce4-time-out-plugin";
     license = lib.licenses.gpl2Plus;
-    teams = [ lib.teams.xfce ];
     platforms = lib.platforms.linux;
+    teams = [ lib.teams.xfce ];
   };
 })

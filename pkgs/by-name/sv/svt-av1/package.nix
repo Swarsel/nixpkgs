@@ -2,12 +2,11 @@
   lib,
   stdenv,
   fetchFromGitLab,
-  gitUpdater,
   cmake,
-  nasm,
-
   # for passthru.tests
   ffmpeg,
+  gitUpdater,
+  nasm,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -33,16 +32,16 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   passthru = {
-    updateScript = gitUpdater {
-      rev-prefix = "v";
-    };
     tests = {
       ffmpeg = ffmpeg.override { withSvtav1 = true; };
+    };
+
+    updateScript = gitUpdater {
+      rev-prefix = "v";
     };
   };
 
   meta = {
-    homepage = "https://gitlab.com/AOMediaCodec/SVT-AV1";
     description = "AV1-compliant encoder/decoder library core";
 
     longDescription = ''
@@ -54,12 +53,15 @@ stdenv.mkDerivation (finalAttrs: {
       activities.
     '';
 
+    homepage = "https://gitlab.com/AOMediaCodec/SVT-AV1";
     changelog = "https://gitlab.com/AOMediaCodec/SVT-AV1/-/blob/v${finalAttrs.version}/CHANGELOG.md";
+
     license = with lib.licenses; [
       aom
       bsd3
     ];
-    mainProgram = "SvtAv1EncApp";
+
     platforms = lib.platforms.unix;
+    mainProgram = "SvtAv1EncApp";
   };
 })

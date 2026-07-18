@@ -1,7 +1,7 @@
 {
   lib,
-  buildDunePackage,
   fetchurl,
+  buildDunePackage,
   ppx_deriving,
   testo,
 }:
@@ -16,16 +16,14 @@ buildDunePackage (finalAttrs: {
   };
 
   propagatedBuildInputs = [ ppx_deriving ];
-
   doCheck = true;
   checkInputs = [ testo ];
-
   minimalOCamlVersion = "4.14";
 
   meta = {
     description = "Pure-OCaml YAML 1.2 parser with a lossless, comment-preserving AST";
-    maintainers = [ lib.maintainers.vbgl ];
-    license = lib.licenses.agpl3Only;
     homepage = "https://github.com/mjambon/yamlx";
+    license = lib.licenses.agpl3Only;
+    maintainers = [ lib.maintainers.vbgl ];
   };
 })

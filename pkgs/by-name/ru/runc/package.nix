@@ -1,17 +1,17 @@
 {
   lib,
+  stdenv,
   fetchFromGitHub,
   buildGoModule,
   go-md2man,
   installShellFiles,
-  pkg-config,
-  which,
   libapparmor,
   libseccomp,
   libselinux,
-  stdenv,
   makeBinaryWrapper,
   nixosTests,
+  pkg-config,
+  which,
 }:
 
 buildGoModule (finalAttrs: {
@@ -25,7 +25,6 @@ buildGoModule (finalAttrs: {
     hash = "sha256-I9DruagoSWjrEBB4n+w5rzali5wvD/q3tVQFWPDnLAI=";
   };
 
-  vendorHash = null;
   outputs = [
     "out"
     "man"
@@ -44,6 +43,8 @@ buildGoModule (finalAttrs: {
     libseccomp
     libapparmor
   ];
+
+  vendorHash = null;
 
   makeFlags = [
     "BUILDTAGS+=seccomp"
@@ -69,12 +70,12 @@ buildGoModule (finalAttrs: {
   passthru.tests = { inherit (nixosTests) cri-o docker podman; };
 
   meta = {
-    homepage = "https://github.com/opencontainers/runc";
     description = "CLI tool for spawning and running containers according to the OCI specification";
+    homepage = "https://github.com/opencontainers/runc";
     license = lib.licenses.asl20;
     maintainers = [ ];
-    teams = [ lib.teams.podman ];
     platforms = lib.platforms.linux;
     mainProgram = "runc";
+    teams = [ lib.teams.podman ];
   };
 })

@@ -1,20 +1,20 @@
 {
+  lib,
+  stdenv,
+  fetchFromGitHub,
   alsa-lib,
   atk,
   cairo,
   dbus,
-  fetchFromGitHub,
   gdk-pixbuf,
   glib,
   gtk3,
-  lib,
   libclang,
   makeDesktopItem,
   nix-update-script,
   pango,
   pkg-config,
   rustPlatform,
-  stdenv,
 }:
 
 let
@@ -23,6 +23,7 @@ let
       "Audio"
       "AudioVideo"
     ];
+
     comment = "Spotify client with native GUI written in Rust, without Electron";
     desktopName = "Psst";
     exec = "psst-gui %U";
@@ -42,14 +43,10 @@ rustPlatform.buildRustPackage {
     hash = "sha256-iCm5lvZq64Dmbe/stkZO0XvX0mWfmzFgl3MeCTI6/hM=";
   };
 
-  cargoHash = "sha256-Q4xMsX6lJK3Or+oKuPOTCec2pe+oBWC33peCE1x7QRg=";
-
-  # specify the subdirectory of the binary crate to build from the workspace
-  buildAndTestSubdir = "psst-gui";
-
-  env = {
-    LIBCLANG_PATH = "${lib.getLib libclang}/lib";
-  };
+  patches = [
+    # Use a fixed build time, hard-code upstream URL instead of trying to read `.git`
+    ./make-build-reproducible.patch
+  ];
 
   nativeBuildInputs = [ pkg-config ];
 
@@ -66,27 +63,32 @@ rustPlatform.buildRustPackage {
     dbus
   ];
 
-  patches = [
-    # Use a fixed build time, hard-code upstream URL instead of trying to read `.git`
-    ./make-build-reproducible.patch
-  ];
+  cargoHash = "sha256-Q4xMsX6lJK3Or+oKuPOTCec2pe+oBWC33peCE1x7QRg=";
+
+  env = {
+    LIBCLANG_PATH = "${lib.getLib libclang}/lib";
+  };
 
   postInstall = ''
     install -Dm644 psst-gui/assets/logo_512.png -t $out/share/icons/hicolor/512x512/apps/psst.png
     install -Dm644 ${desktopItem}/share/applications/* -t $out/share/applications
   '';
 
+  # specify the subdirectory of the binary crate to build from the workspace
+  buildAndTestSubdir = "psst-gui";
   passthru.updateScript = nix-update-script { extraArgs = [ "--version=branch" ]; };
 
   meta = {
     description = "Spotify client with native GUI written in Rust, without Electron";
     homepage = "https://github.com/jpochyla/psst";
     license = lib.licenses.mit;
-    platforms = lib.platforms.unix;
+
     maintainers = with lib.maintainers; [
       vbrandl
       peterhoeg
     ];
+
+    platforms = lib.platforms.unix;
     mainProgram = "psst-gui";
   };
 }

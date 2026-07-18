@@ -2,13 +2,13 @@
   lib,
   stdenv,
   fetchurl,
-  jre,
-  writeScript,
   common-updater-scripts,
-  git,
-  nix,
   coreutils,
+  git,
   gnused,
+  jre,
+  nix,
+  writeScript,
   disableRemoteLogging ? true,
 }:
 
@@ -22,11 +22,9 @@ let
       version = "3.0.9";
 
       src = fetchurl {
-        url = "https://github.com/com-lihaoyi/Ammonite/releases/download/${version}/${scalaVersion}-${version}";
         inherit sha256;
+        url = "https://github.com/com-lihaoyi/Ammonite/releases/download/${version}/${scalaVersion}-${version}";
       };
-
-      dontUnpack = true;
 
       installPhase = ''
         install -Dm755 $src $out/bin/amm
@@ -36,6 +34,18 @@ let
         sed -i "0,/ammonite.Main/{s|ammonite.Main'|ammonite.Main' --no-remote-logging|}" $out/bin/amm
         sed -i '1i #!/bin/sh' $out/bin/amm
       '';
+
+      doInstallCheck = true;
+
+      installCheckPhase = ''
+        runHook preInstallCheck
+
+        $out/bin/amm -h "$PWD" -c 'val foo = 21; println(foo * 2)' | grep 42
+
+        runHook postInstallCheck
+      '';
+
+      dontUnpack = true;
 
       passthru = {
 
@@ -63,28 +73,21 @@ let
         '';
       };
 
-      doInstallCheck = true;
-      installCheckPhase = ''
-        runHook preInstallCheck
-
-        $out/bin/amm -h "$PWD" -c 'val foo = 21; println(foo * 2)' | grep 42
-
-        runHook postInstallCheck
-      '';
-
       meta = {
         description = "Improved Scala REPL";
+
         longDescription = ''
           The Ammonite-REPL is an improved Scala REPL, re-implemented from first principles.
           It is much more featureful than the default REPL and comes
           with a lot of ergonomic improvements and configurability
           that may be familiar to people coming from IDEs or other REPLs such as IPython or Zsh.
         '';
+
         homepage = "https://github.com/com-lihaoyi/Ammonite";
         license = lib.licenses.mit;
-        mainProgram = "amm";
         maintainers = with lib.maintainers; [ tbutter ];
         platforms = lib.platforms.all;
+        mainProgram = "amm";
       };
     };
 in
@@ -93,10 +96,12 @@ in
     scalaVersion = "2.12";
     sha256 = "sha256-gMyTQDPmHsl6b3CBCsIHb/8z2FwL3+Txuz0siFgvSws=";
   };
+
   ammonite_2_13 = common {
     scalaVersion = "2.13";
     sha256 = "sha256-NCB5ZuW+CqxFlYY10mF6TUHdZl1E8QFygPdyW2FtCe4=";
   };
+
   ammonite_3_3 = common {
     scalaVersion = "3.3";
     sha256 = "sha256-H3/wjBDA8b+a+4FISohLQ10eB7VOMUqj+M39bZOefbw=";

@@ -1,15 +1,13 @@
 {
   lib,
-  python3Packages,
   fetchFromGitHub,
   nix-update-script,
+  python3Packages,
 }:
 
 python3Packages.buildPythonApplication (finalAttrs: {
   pname = "rnsapi";
   version = "0-unstable-2026-07-09";
-  pyproject = true;
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "attermann";
@@ -17,6 +15,16 @@ python3Packages.buildPythonApplication (finalAttrs: {
     rev = "1f20cf5d2f00894389c864d1e018d771191a9809";
     hash = "sha256-IB67sLjOlaiAI8089ODAUNZRahvhLuiOxdGZ+4B24IE=";
   };
+
+  nativeCheckInputs = with python3Packages; [
+    pytestCheckHook
+    pytest-aiohttp
+    pytest-asyncio
+    pytest-timeout
+  ];
+
+  __darwinAllowLocalNetworking = true;
+  __structuredAttrs = true;
 
   build-system = [
     python3Packages.setuptools
@@ -28,14 +36,7 @@ python3Packages.buildPythonApplication (finalAttrs: {
     rns
   ];
 
-  __darwinAllowLocalNetworking = true;
-
-  nativeCheckInputs = with python3Packages; [
-    pytestCheckHook
-    pytest-aiohttp
-    pytest-asyncio
-    pytest-timeout
-  ];
+  pyproject = true;
 
   pythonImportsCheck = [
     "rnsapi"

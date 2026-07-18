@@ -1,18 +1,17 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
-  pkg-config,
-  yosys,
-  readline,
-  zlib,
   bluespec,
+  pkg-config,
+  readline,
+  yosys,
+  zlib,
 }:
 
 stdenv.mkDerivation {
   pname = "yosys-bluespec";
   version = "2021.09.08";
-  plugin = "bluespec";
 
   src = fetchFromGitHub {
     owner = "thoughtpolice";
@@ -21,26 +20,29 @@ stdenv.mkDerivation {
     sha256 = "sha256-3cNFP/k4JsgLyUQHWU10Htl2Rh0staAcA3R4piD6hDE=";
   };
 
+  nativeBuildInputs = [ pkg-config ];
+
   buildInputs = [
     yosys
     readline
     zlib
     bluespec
   ];
-  nativeBuildInputs = [ pkg-config ];
 
-  doCheck = true;
   makeFlags = [
     "PREFIX=$(out)/share/yosys/plugins"
     "STATIC_BSC_PATH=${bluespec}/bin/bsc"
     "STATIC_BSC_LIBDIR=${bluespec}/lib"
   ];
 
+  doCheck = true;
+  plugin = "bluespec";
+
   meta = {
     description = "Bluespec plugin for Yosys";
     homepage = "https://github.com/thoughtpolice/yosys-bluespec";
     license = lib.licenses.isc;
-    platforms = lib.platforms.all;
     maintainers = with lib.maintainers; [ thoughtpolice ];
+    platforms = lib.platforms.all;
   };
 }

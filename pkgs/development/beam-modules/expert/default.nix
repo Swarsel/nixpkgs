@@ -1,10 +1,10 @@
 {
+  lib,
+  fetchFromGitHub,
   _experimental-update-script-combinators,
   erlang,
-  fetchFromGitHub,
   fetchMixDeps,
   gnused,
-  lib,
   mixRelease,
   nix-update-script,
   nurl,
@@ -21,31 +21,19 @@ let
   };
 
   engineDeps = fetchMixDeps {
-    pname = "mix-deps-expert-engine";
-
     inherit src version;
-    hash = "sha256-evYg/yRk6ymV75kuWpY0pFODWWopozjnFHUa9MOFN/A=";
+    pname = "mix-deps-expert-engine";
 
     preConfigure = ''
       cd apps/engine
     '';
+
+    hash = "sha256-evYg/yRk6ymV75kuWpY0pFODWWopozjnFHUa9MOFN/A=";
   };
 in
 mixRelease rec {
-  pname = "expert";
   inherit src version;
-
-  mixFodDeps = fetchMixDeps {
-    pname = "mix-deps-${pname}";
-    inherit src version;
-    hash = "sha256-N2krs4NNWytrN3K8lR5IGGroXVNuBzjks6IoD9D1rPM=";
-
-    preConfigure = ''
-      cd apps/expert
-    '';
-  };
-
-  mixReleaseName = "plain";
+  pname = "expert";
 
   preConfigure = ''
     ln -sv ${engineDeps} apps/engine/deps
@@ -59,6 +47,18 @@ mixRelease rec {
     wrapProgram $out/bin/expert --add-flag "eval" --add-flag "System.no_halt(true); Application.ensure_all_started(:xp_expert)"
   '';
 
+  mixFodDeps = fetchMixDeps {
+    inherit src version;
+    pname = "mix-deps-${pname}";
+
+    preConfigure = ''
+      cd apps/expert
+    '';
+
+    hash = "sha256-N2krs4NNWytrN3K8lR5IGGroXVNuBzjks6IoD9D1rPM=";
+  };
+
+  mixReleaseName = "plain";
   removeCookie = false;
 
   passthru = {
@@ -68,10 +68,12 @@ mixRelease rec {
       (nix-update-script { })
       (lib.getExe (writeShellApplication {
         name = "expert-update-engine";
+
         runtimeInputs = [
           gnused
           nurl
         ];
+
         text = ''
           nixpkgs="$(git rev-parse --show-toplevel)"
           engineHashOld=${engineDeps.hash}
@@ -84,14 +86,16 @@ mixRelease rec {
   };
 
   meta = {
-    homepage = "https://github.com/expert-lsp/expert";
-    changelog = "https://github.com/expert-lsp/expert/blob/v0.1.1/CHANGELOG.md";
+    inherit (erlang.meta) platforms;
     description = "Official Elixir Language Server Protocol implementation";
+
     longDescription = ''
       Expert is the official language server implementation for the Elixir programming language.
     '';
+
+    homepage = "https://github.com/expert-lsp/expert";
+    changelog = "https://github.com/expert-lsp/expert/blob/v0.1.1/CHANGELOG.md";
     license = lib.licenses.asl20;
-    inherit (erlang.meta) platforms;
     mainProgram = "expert";
     teams = [ lib.teams.beam ];
   };

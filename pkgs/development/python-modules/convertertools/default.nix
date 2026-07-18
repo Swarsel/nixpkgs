@@ -1,23 +1,20 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
+  buildPythonPackage,
   # build-system
   cython,
   poetry-core,
-  setuptools,
-
-  # checks
-  pytestCheckHook,
   pytest-codspeed,
   pytest-cov-stub,
+  # checks
+  pytestCheckHook,
+  setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "convertertools";
   version = "1.1.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "bluetooth-devices";
@@ -26,18 +23,19 @@ buildPythonPackage rec {
     hash = "sha256-YLEZGTq3wtiLsqQkdxcdM4moUEYPN29Uai5o81FUtVc=";
   };
 
-  build-system = [
-    cython
-    poetry-core
-    setuptools
-  ];
-
   nativeCheckInputs = [
     pytestCheckHook
     pytest-codspeed
     pytest-cov-stub
   ];
 
+  build-system = [
+    cython
+    poetry-core
+    setuptools
+  ];
+
+  pyproject = true;
   pythonImportsCheck = [ "convertertools" ];
 
   meta = {

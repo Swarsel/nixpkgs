@@ -1,7 +1,7 @@
 {
-  pkgs,
   lib,
   emscripten,
+  pkgs,
   python3,
 }:
 
@@ -13,11 +13,9 @@ in
 wrapDerivation (
   {
     buildInputs ? [ ],
-    nativeBuildInputs ? [ ],
-
     enableParallelBuilding ? true,
-
     meta ? { },
+    nativeBuildInputs ? [ ],
     ...
   }@args:
 
@@ -26,38 +24,23 @@ wrapDerivation (
 
     pname = "emscripten-${lib.getName args}";
     version = lib.getVersion args;
-    buildInputs = [
-      emscripten
-      python3
-    ]
-    ++ buildInputs;
+
     nativeBuildInputs = [
       emscripten
       python3
     ]
     ++ nativeBuildInputs;
 
+    buildInputs = [
+      emscripten
+      python3
+    ]
+    ++ buildInputs;
+
     env = args.env or { } // {
       # fake conftest results with emscripten's python magic
       EMCONFIGURE_JS = 2;
     };
-
-    # removes archive indices
-    dontStrip = args.dontStrip or true;
-
-    configurePhase =
-      args.configurePhase or ''
-        # FIXME: Some tests require writing at $HOME
-        HOME=$TMPDIR
-        runHook preConfigure
-
-        emconfigure ./configure --prefix=$out
-
-        mkdir -p .emscriptencache
-        export EM_CACHE=$(pwd)/.emscriptencache
-
-        runHook postConfigure
-      '';
 
     buildPhase =
       args.buildPhase or ''
@@ -86,6 +69,22 @@ wrapDerivation (
         runHook postCheck
       '';
 
+    configurePhase =
+      args.configurePhase or ''
+        # FIXME: Some tests require writing at $HOME
+        HOME=$TMPDIR
+        runHook preConfigure
+
+        emconfigure ./configure --prefix=$out
+
+        mkdir -p .emscriptencache
+        export EM_CACHE=$(pwd)/.emscriptencache
+
+        runHook postConfigure
+      '';
+
+    # removes archive indices
+    dontStrip = args.dontStrip or true;
     enableParallelBuilding = args.enableParallelBuilding or true;
 
     meta = {

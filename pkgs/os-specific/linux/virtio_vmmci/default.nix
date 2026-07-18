@@ -1,13 +1,12 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
   kernel,
   kernelModuleMakeFlags,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
-  name = "${finalAttrs.pname}-${finalAttrs.version}-${kernel.version}";
   pname = "virtio_vmmci";
   version = "0.6.2";
 
@@ -18,15 +17,7 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-h8yu4+vTgpAD+sKa1KnVD+qubiIlkYtG2nmQnXOi/sk=";
   };
 
-  hardeningDisable = [
-    "pic"
-    "format"
-  ];
   nativeBuildInputs = kernel.moduleBuildDependencies;
-
-  extraConfig = ''
-    CONFIG_RTC_HCTOSYS yes
-  '';
 
   makeFlags = kernelModuleMakeFlags ++ [
     "DEPMOD=echo"
@@ -35,6 +26,19 @@ stdenv.mkDerivation (finalAttrs: {
     "KERNELDIR=${kernel.dev}/lib/modules/${kernel.modDirVersion}/build"
   ];
 
+  enableParallelBuilding = true;
+
+  extraConfig = ''
+    CONFIG_RTC_HCTOSYS yes
+  '';
+
+  hardeningDisable = [
+    "pic"
+    "format"
+  ];
+
+  name = "${finalAttrs.pname}-${finalAttrs.version}-${kernel.version}";
+
   meta = {
     description = "OpenBSD VMM Control Interface (vmmci) for Linux";
     homepage = "https://github.com/voutilad/virtio_vmmci";
@@ -42,6 +46,4 @@ stdenv.mkDerivation (finalAttrs: {
     maintainers = with lib.maintainers; [ qbit ];
     platforms = lib.platforms.linux;
   };
-
-  enableParallelBuilding = true;
 })

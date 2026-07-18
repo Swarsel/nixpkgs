@@ -1,35 +1,29 @@
 {
-  buildPythonPackage,
   lib,
   fetchFromGitHub,
-
-  # build-sysetm
-  cmake,
-  setuptools,
-  wheel,
-
   # build inputs
   blas,
-  libcint,
-  libxc,
-  xcfun,
-
-  # dependencies
-  h5py,
-  numpy,
-  scipy,
-
+  buildPythonPackage,
+  # build-sysetm
+  cmake,
   # optional-dependencies
   cppe,
-
+  # dependencies
+  h5py,
+  libcint,
+  libxc,
+  numpy,
   # tests
   pytestCheckHook,
+  scipy,
+  setuptools,
+  wheel,
+  xcfun,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "pyscf";
   version = "2.13.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "pyscf";
@@ -38,21 +32,9 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-IEgbm7sZqxKxI+VPE9IoH+BAHkNgasGmRsdDykUFCeM=";
   };
 
-  # setup.py calls Cmake and passes the arguments in CMAKE_CONFIGURE_ARGS to cmake.
-  build-system = [
-    setuptools
-    wheel
-    cmake
-  ];
-
   postPatch = ''
     substituteInPlace pyproject.toml \
       --replace-fail "cmake<4.0" "cmake"
-  '';
-  dontUseCmakeConfigure = true;
-  preConfigure = ''
-    export CMAKE_CONFIGURE_ARGS="-DBUILD_LIBCINT=0 -DBUILD_LIBXC=0 -DBUILD_XCFUN=0"
-    PYSCF_INC_DIR="${libcint}:${libxc}:${xcfun}";
   '';
 
   buildInputs = [
@@ -62,27 +44,42 @@ buildPythonPackage (finalAttrs: {
     xcfun
   ];
 
-  dependencies = [
-    h5py
-    numpy
-    scipy
-  ];
-
-  optional-dependencies = {
-    cppe = [ cppe ];
-  };
+  preConfigure = ''
+    export CMAKE_CONFIGURE_ARGS="-DBUILD_LIBCINT=0 -DBUILD_LIBXC=0 -DBUILD_XCFUN=0"
+    PYSCF_INC_DIR="${libcint}:${libxc}:${xcfun}";
+  '';
 
   nativeCheckInputs = [
     pytestCheckHook
   ]
   ++ finalAttrs.passthru.optional-dependencies.cppe;
-  pythonImportsCheck = [ "pyscf" ];
+
   preCheck = ''
     # Set config used by tests to ensure reproducibility
     echo 'pbc_tools_pbc_fft_engine = "NUMPY"' > pyscf/pyscf_config.py
     ulimit -s 20000
     export PYSCF_CONFIG_FILE=$(pwd)/pyscf/pyscf_config.py
   '';
+
+  # setup.py calls Cmake and passes the arguments in CMAKE_CONFIGURE_ARGS to cmake.
+  build-system = [
+    setuptools
+    wheel
+    cmake
+  ];
+
+  dependencies = [
+    h5py
+    numpy
+    scipy
+  ];
+
+  disabledTestPaths = [
+    "pyscf/pbc/tdscf"
+    "pyscf/pbc/gw"
+    "pyscf/nac/test/test_sacasscf.py"
+    "pyscf/grad/test/test_casscf.py"
+  ];
 
   # Numerically slightly off tests
   disabledTests = [
@@ -118,21 +115,24 @@ buildPythonPackage (finalAttrs: {
     "test_sparse_dot"
   ];
 
-  disabledTestPaths = [
-    "pyscf/pbc/tdscf"
-    "pyscf/pbc/gw"
-    "pyscf/nac/test/test_sacasscf.py"
-    "pyscf/grad/test/test_casscf.py"
-  ];
+  dontUseCmakeConfigure = true;
+
+  optional-dependencies = {
+    cppe = [ cppe ];
+  };
+
+  pyproject = true;
+  pythonImportsCheck = [ "pyscf" ];
 
   meta = {
     description = "Python-based simulations of chemistry framework";
     homepage = "https://github.com/pyscf/pyscf";
     license = lib.licenses.asl20;
+    maintainers = [ lib.maintainers.sheepforce ];
+
     platforms = [
       "x86_64-linux"
       "aarch64-darwin"
     ];
-    maintainers = [ lib.maintainers.sheepforce ];
   };
 })

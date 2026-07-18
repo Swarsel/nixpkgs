@@ -1,12 +1,12 @@
 {
   lib,
   stdenv,
-  darwin,
   fetchFromGitHub,
-  ocamlPackages,
+  darwin,
   dune,
-  why3,
+  ocamlPackages,
   python3,
+  why3,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -19,6 +19,12 @@ stdenv.mkDerivation (finalAttrs: {
     tag = "r${finalAttrs.version}";
     hash = "sha256-+exP4UWfNGZauznLZTA/NkMOHJNstz4oaTqI0bSnkH8=";
   };
+
+  postPatch = ''
+    substituteInPlace dune-project --replace-fail '(name easycrypt)' '(name easycrypt)(version ${finalAttrs.version})'
+  '';
+
+  strictDeps = true;
 
   nativeBuildInputs =
     with ocamlPackages;
@@ -44,14 +50,6 @@ stdenv.mkDerivation (finalAttrs: {
 
   propagatedBuildInputs = [ why3.out ];
 
-  strictDeps = true;
-
-  postPatch = ''
-    substituteInPlace dune-project --replace-fail '(name easycrypt)' '(name easycrypt)(version ${finalAttrs.version})'
-  '';
-
-  pythonPath = with python3.pkgs; [ pyyaml ];
-
   installPhase = ''
     runHook preInstall
     dune install --prefix $out easycrypt
@@ -60,12 +58,14 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  pythonPath = with python3.pkgs; [ pyyaml ];
+
   meta = {
+    description = "Computer-Aided Cryptographic Proofs";
+    homepage = "https://easycrypt.info/";
     license = lib.licenses.mit;
     maintainers = [ lib.maintainers.vbgl ];
     platforms = lib.platforms.all;
-    homepage = "https://easycrypt.info/";
-    description = "Computer-Aided Cryptographic Proofs";
     mainProgram = "easycrypt";
   };
 })

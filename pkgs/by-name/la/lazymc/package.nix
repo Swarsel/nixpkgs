@@ -1,8 +1,8 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
   nix-update-script,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -17,17 +17,18 @@ rustPlatform.buildRustPackage (finalAttrs: {
   };
 
   cargoHash = "sha256-jqqqWZKO1HgwxLBGMz9rlFQ5xmZTycfUZjqHf+uVTBQ=";
-
   passthru.updateScript = nix-update-script { };
 
   meta = {
     description = "Remote wake-up daemon for minecraft servers";
     homepage = "https://github.com/timvisee/lazymc";
     license = lib.licenses.gpl3Only;
+
     maintainers = with lib.maintainers; [
       h7x4
       dandellion
     ];
+
     platforms = lib.platforms.unix;
     mainProgram = "lazymc";
   };

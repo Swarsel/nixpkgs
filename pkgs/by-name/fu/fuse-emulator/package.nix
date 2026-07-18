@@ -2,9 +2,6 @@
   lib,
   stdenv,
   fetchurl,
-  perl,
-  pkg-config,
-  wrapGAppsHook3,
   SDL,
   bzip2,
   glib,
@@ -13,6 +10,9 @@
   libpng,
   libspectrum,
   libxml2,
+  perl,
+  pkg-config,
+  wrapGAppsHook3,
   zlib,
 }:
 
@@ -44,15 +44,14 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   configureFlags = [ "--enable-desktop-integration" ];
-
   enableParallelBuilding = true;
 
   meta = {
-    homepage = "https://fuse-emulator.sourceforge.net/";
     description = "ZX Spectrum emulator";
-    mainProgram = "fuse";
+    homepage = "https://fuse-emulator.sourceforge.net/";
     license = lib.licenses.gpl2Plus;
-    platforms = lib.platforms.linux;
     maintainers = [ ];
+    platforms = lib.platforms.linux;
+    mainProgram = "fuse";
   };
 })

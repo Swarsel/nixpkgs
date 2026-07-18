@@ -2,8 +2,8 @@
   lib,
   stdenv,
   fetchurl,
-  unzip,
   puredata,
+  unzip,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -12,20 +12,20 @@ stdenv.mkDerivation (finalAttrs: {
 
   src = fetchurl {
     url = "https://www.chnry.net/data/puremapping-${finalAttrs.version}-generic.zip";
-    name = "puremapping";
     sha256 = "1h7qgqd8srrxw2y1rkdw5js4k6f5vc8x6nlm2mq9mq9vjck7n1j7";
+    name = "puremapping";
   };
 
   nativeBuildInputs = [ unzip ];
   buildInputs = [ puredata ];
 
-  unpackPhase = ''
-    unzip $src
-  '';
-
   installPhase = ''
     mkdir -p $out/puremapping
     mv puremapping/ $out
+  '';
+
+  unpackPhase = ''
+    unzip $src
   '';
 
   meta = {

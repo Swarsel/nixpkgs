@@ -2,9 +2,9 @@
 # nix-build -A tests.hooks
 
 {
+  lib,
   stdenv,
   tests,
-  lib,
 }:
 
 {

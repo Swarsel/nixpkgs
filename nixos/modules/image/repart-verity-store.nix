@@ -2,8 +2,8 @@
 # a dm-verity protected nix store
 {
   config,
-  pkgs,
   lib,
+  pkgs,
   ...
 }:
 let
@@ -15,15 +15,15 @@ let
   partitionTypes = {
     usr =
       {
-        "x86_64" = "usr-x86-64";
         "arm64" = "usr-arm64";
+        "x86_64" = "usr-x86-64";
       }
       ."${pkgs.stdenv.hostPlatform.linuxArch}";
 
     usr-verity =
       {
-        "x86_64" = "usr-x86-64-verity";
         "arm64" = "usr-arm64-verity";
+        "x86_64" = "usr-x86-64-verity";
       }
       ."${pkgs.stdenv.hostPlatform.linuxArch}";
   };
@@ -46,133 +46,94 @@ in
   options.image.repart.verityStore = {
     enable = lib.mkEnableOption "building images with a dm-verity protected nix store";
 
-    ukiPath = lib.mkOption {
-      type = lib.types.str;
-      default = "/EFI/Linux/${config.system.boot.loader.ukiFile}";
-      defaultText = "/EFI/Linux/\${config.system.boot.loader.ukiFile}";
-      description = ''
-        Specify the location on the ESP where the UKI is placed.
-      '';
-    };
-
     partitionIds = {
       esp = lib.mkOption {
-        type = lib.types.str;
         default = "00-esp";
+
         description = ''
           Specify the attribute name of the ESP.
         '';
-      };
-      store-verity = lib.mkOption {
+
         type = lib.types.str;
-        default = "10-store-verity";
-        description = ''
-          Specify the attribute name of the store's dm-verity hash partition.
-        '';
       };
+
       store = lib.mkOption {
-        type = lib.types.str;
         default = "20-store";
+
         description = ''
           Specify the attribute name of the store partition.
         '';
+
+        type = lib.types.str;
       };
+
+      store-verity = lib.mkOption {
+        default = "10-store-verity";
+
+        description = ''
+          Specify the attribute name of the store's dm-verity hash partition.
+        '';
+
+        type = lib.types.str;
+      };
+    };
+
+    ukiPath = lib.mkOption {
+      default = "/EFI/Linux/${config.system.boot.loader.ukiFile}";
+      defaultText = "/EFI/Linux/\${config.system.boot.loader.ukiFile}";
+
+      description = ''
+        Specify the location on the ESP where the UKI is placed.
+      '';
+
+      type = lib.types.str;
     };
   };
 
   config = lib.mkIf cfg.enable {
     boot.initrd = {
-      systemd.dmVerity.enable = true;
       supportedFilesystems = {
         ${config.image.repart.partitions.${cfg.partitionIds.store}.repartConfig.Format} =
           lib.mkDefault true;
       };
+
+      systemd.dmVerity.enable = true;
     };
 
     fileSystems."/nix/store" = lib.mkDefault {
+      options = [ "bind" ];
       device = "/usr/nix/store";
       fsType = "none";
-      options = [ "bind" ];
     };
 
     image.repart.partitions = {
       # dm-verity hash partition
       ${cfg.partitionIds.store-verity}.repartConfig = {
+        Label = lib.mkDefault "store-verity";
+        Minimize = lib.mkDefault "best";
         Type = lib.mkDefault partitionTypes.usr-verity;
         Verity = "hash";
         VerityMatchKey = lib.mkDefault verityMatchKey;
-        Label = lib.mkDefault "store-verity";
-        Minimize = lib.mkDefault "best";
       };
+
       # dm-verity data partition that contains the nix store
       ${cfg.partitionIds.store} = {
-        storePaths = [ config.system.build.toplevel ];
         repartConfig = {
-          Type = lib.mkDefault partitionTypes.usr;
-          Verity = "data";
           Format = lib.mkDefault "erofs";
-          VerityMatchKey = lib.mkDefault verityMatchKey;
           Label = lib.mkDefault "store";
           Minimize = lib.mkDefault "best";
+          Type = lib.mkDefault partitionTypes.usr;
+          Verity = "data";
+          VerityMatchKey = lib.mkDefault verityMatchKey;
         };
+
+        storePaths = [ config.system.build.toplevel ];
       };
 
     };
 
     system.build = {
       finalImage = lib.warn "system.build.finalImage has been renamed to system.build.image" config.system.build.image;
-
-      # intermediate system image without ESP
-      intermediateImage =
-        (config.image.repart.image.override {
-          # always disable compression for the intermediate image
-          compression.enable = false;
-        }).overrideAttrs
-          (
-            _: previousAttrs: {
-              # make it easier to identify the intermediate image in build logs
-              name =
-                if previousAttrs ? pname then
-                  "${previousAttrs.pname}-${previousAttrs.version}-intermediate"
-                else
-                  "${previousAttrs.name}-intermediate";
-
-              # do not prepare the ESP, this is done in the final image
-              systemdRepartFlags = previousAttrs.systemdRepartFlags ++ [ "--defer-partitions=esp" ];
-            }
-          );
-
-      # UKI with embedded usrhash from intermediateImage
-      uki =
-        let
-          inherit (config.system.boot.loader) ukiFile;
-          cmdline = "init=${config.system.build.toplevel}/init ${toString config.boot.kernelParams}";
-        in
-        # override the default UKI
-        lib.mkOverride 99 (
-          pkgs.runCommand ukiFile
-            {
-              nativeBuildInputs = [
-                pkgs.buildPackages.jq
-                pkgs.buildPackages.systemdUkify
-              ];
-            }
-            ''
-              mkdir -p $out
-
-              # Extract the usrhash from the output of the systemd-repart invocation for the intermediate image.
-              usrhash=$(jq -r \
-                '.[] | select(.type=="${partitionTypes.usr-verity}") | .roothash' \
-                ${config.system.build.intermediateImage}/repart-output.json
-              )
-
-              # Build UKI with the embedded usrhash.
-              ukify build \
-                  --config=${config.boot.uki.configFile} \
-                  --cmdline="${cmdline} usrhash=$usrhash" \
-                  --output="$out/${ukiFile}"
-            ''
-        );
 
       # final system image that is created from the intermediate image by injecting the UKI from above
       image = lib.mkOverride 99 (
@@ -231,6 +192,58 @@ in
             }
           )
       );
+
+      # intermediate system image without ESP
+      intermediateImage =
+        (config.image.repart.image.override {
+          # always disable compression for the intermediate image
+          compression.enable = false;
+        }).overrideAttrs
+          (
+            _: previousAttrs: {
+              # make it easier to identify the intermediate image in build logs
+              name =
+                if previousAttrs ? pname then
+                  "${previousAttrs.pname}-${previousAttrs.version}-intermediate"
+                else
+                  "${previousAttrs.name}-intermediate";
+
+              # do not prepare the ESP, this is done in the final image
+              systemdRepartFlags = previousAttrs.systemdRepartFlags ++ [ "--defer-partitions=esp" ];
+            }
+          );
+
+      # UKI with embedded usrhash from intermediateImage
+      uki =
+        let
+          inherit (config.system.boot.loader) ukiFile;
+          cmdline = "init=${config.system.build.toplevel}/init ${toString config.boot.kernelParams}";
+        in
+        # override the default UKI
+        lib.mkOverride 99 (
+          pkgs.runCommand ukiFile
+            {
+              nativeBuildInputs = [
+                pkgs.buildPackages.jq
+                pkgs.buildPackages.systemdUkify
+              ];
+            }
+            ''
+              mkdir -p $out
+
+              # Extract the usrhash from the output of the systemd-repart invocation for the intermediate image.
+              usrhash=$(jq -r \
+                '.[] | select(.type=="${partitionTypes.usr-verity}") | .roothash' \
+                ${config.system.build.intermediateImage}/repart-output.json
+              )
+
+              # Build UKI with the embedded usrhash.
+              ukify build \
+                  --config=${config.boot.uki.configFile} \
+                  --cmdline="${cmdline} usrhash=$usrhash" \
+                  --output="$out/${ukiFile}"
+            ''
+        );
     };
   };
 

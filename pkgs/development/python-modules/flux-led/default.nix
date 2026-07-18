@@ -1,18 +1,17 @@
 {
   lib,
+  fetchFromGitHub,
   async-timeout,
   buildPythonPackage,
-  fetchFromGitHub,
-  webcolors,
   pytest-asyncio,
   pytestCheckHook,
   setuptools,
+  webcolors,
 }:
 
 buildPythonPackage rec {
   pname = "flux-led";
   version = "1.2.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "Danielhiversen";
@@ -26,6 +25,12 @@ buildPythonPackage rec {
       --replace-fail '"pytest-runner>=5.2",' ""
   '';
 
+  nativeCheckInputs = [
+    pytest-asyncio
+    pytestCheckHook
+  ];
+
+  __darwinAllowLocalNetworking = true;
   build-system = [ setuptools ];
 
   dependencies = [
@@ -33,13 +38,7 @@ buildPythonPackage rec {
     webcolors
   ];
 
-  __darwinAllowLocalNetworking = true;
-
-  nativeCheckInputs = [
-    pytest-asyncio
-    pytestCheckHook
-  ];
-
+  pyproject = true;
   pythonImportsCheck = [ "flux_led" ];
 
   meta = {

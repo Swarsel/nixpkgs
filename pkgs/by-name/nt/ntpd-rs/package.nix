@@ -1,13 +1,13 @@
 {
   lib,
   stdenv,
-  rustPlatform,
   fetchFromGitHub,
-  ntpd-rs,
   installShellFiles,
-  pandoc,
-  nixosTests,
   nix-update-script,
+  nixosTests,
+  ntpd-rs,
+  pandoc,
+  rustPlatform,
   testers,
 }:
 
@@ -22,14 +22,26 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-LGjG2wO6/CXgpYnGzWY4r0KWs/rXKxZfxmWeGHdNbVI=";
   };
 
-  cargoHash = "sha256-aA8gRfYuor6vVGDn1UO2a6nJgoq1caP0CDUNVH/1XmU=";
+  outputs = [
+    "out"
+    "man"
+  ];
+
+  postPatch = ''
+    substituteInPlace utils/generate-man.sh \
+      --replace-fail 'utils/pandoc.sh' 'pandoc'
+  '';
 
   nativeBuildInputs = [
     pandoc
     installShellFiles
   ];
 
-  __darwinAllowLocalNetworking = true;
+  cargoHash = "sha256-aA8gRfYuor6vVGDn1UO2a6nJgoq1caP0CDUNVH/1XmU=";
+
+  postBuild = ''
+    source utils/generate-man.sh
+  '';
 
   # These fail based on timestamp issues with bundled certificates
   # See https://github.com/NixOS/nixpkgs/issues/497682 & https://github.com/pendulum-project/ntpd-rs/pull/2133
@@ -55,32 +67,21 @@ rustPlatform.buildRustPackage (finalAttrs: {
     "nts::tests::test_keyexchange_supports_no_permission"
   ];
 
-  postPatch = ''
-    substituteInPlace utils/generate-man.sh \
-      --replace-fail 'utils/pandoc.sh' 'pandoc'
-  '';
-
-  postBuild = ''
-    source utils/generate-man.sh
-  '';
-
   postInstall = ''
     install -Dm444 -t $out/lib/systemd/system docs/examples/conf/{ntpd-rs,ntpd-rs-metrics}.service
     installManPage docs/precompiled/man/{ntp.toml.5,ntp-ctl.8,ntp-daemon.8,ntp-metrics-exporter.8}
   '';
 
-  outputs = [
-    "out"
-    "man"
-  ];
+  __darwinAllowLocalNetworking = true;
 
   passthru = {
     tests = {
-      nixos = lib.optionalAttrs stdenv.hostPlatform.isLinux nixosTests.ntpd-rs;
       version = testers.testVersion {
-        package = ntpd-rs;
         inherit (finalAttrs) version;
+        package = ntpd-rs;
       };
+
+      nixos = lib.optionalAttrs stdenv.hostPlatform.isLinux nixosTests.ntpd-rs;
     };
 
     updateScript = nix-update-script { };
@@ -90,14 +91,17 @@ rustPlatform.buildRustPackage (finalAttrs: {
     description = "Full-featured implementation of the Network Time Protocol";
     homepage = "https://tweedegolf.nl/en/pendulum";
     changelog = "https://github.com/pendulum-project/ntpd-rs/blob/v${finalAttrs.version}/CHANGELOG.md";
+
     license = with lib.licenses; [
       mit # or
       asl20
     ];
+
     maintainers = with lib.maintainers; [
       fpletz
       getchoo
     ];
+
     mainProgram = "ntp-ctl";
     # note: Undefined symbols for architecture x86_64: "_ntp_adjtime"
     broken = stdenv.hostPlatform.isDarwin && stdenv.hostPlatform.isx86_64;

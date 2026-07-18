@@ -1,6 +1,6 @@
 {
-  fetchFromGitHub,
   lib,
+  fetchFromGitHub,
   nixosTests,
   python3,
 }:
@@ -8,7 +8,6 @@
 python3.pkgs.buildPythonApplication (finalAttrs: {
   pname = "radicale";
   version = "3.7.6";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "Kozea";
@@ -16,6 +15,13 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-uHxYGN7qp0Tur13RrJ7Xu+IpJ2vC2iiyzOfG578Q+18=";
   };
+
+  nativeCheckInputs = with python3.pkgs; [
+    pytestCheckHook
+    waitress
+  ];
+
+  __darwinAllowLocalNetworking = true;
 
   build-system = with python3.pkgs; [
     setuptools
@@ -34,22 +40,18 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     ++ libpass.optional-dependencies.argon2
     ++ libpass.optional-dependencies.bcrypt;
 
-  __darwinAllowLocalNetworking = true;
-
-  nativeCheckInputs = with python3.pkgs; [
-    pytestCheckHook
-    waitress
-  ];
+  pyproject = true;
 
   passthru.tests = {
     inherit (nixosTests) radicale;
   };
 
   meta = {
+    description = "CalDAV and CardDAV server";
     homepage = "https://radicale.org/v3.html";
     changelog = "https://github.com/Kozea/Radicale/blob/${finalAttrs.src.tag}/CHANGELOG.md";
-    description = "CalDAV and CardDAV server";
     license = lib.licenses.gpl3Plus;
+
     maintainers = with lib.maintainers; [
       dotlambda
       erictapen

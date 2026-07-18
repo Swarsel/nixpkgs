@@ -2,9 +2,9 @@
   lib,
   buildPythonPackage,
   fetchPypi,
+  openssl,
   setuptools,
   sqlcipher,
-  openssl,
 }:
 let
   pname = "sqlcipher3";
@@ -12,7 +12,6 @@ let
 in
 buildPythonPackage {
   inherit pname version;
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
@@ -27,24 +26,26 @@ buildPythonPackage {
       --replace-fail '"conan>=2.0",' ""
   '';
 
-  build-system = [
-    setuptools
-  ];
-
   buildInputs = [
     sqlcipher
     openssl
   ];
+
+  build-system = [
+    setuptools
+  ];
+
+  pyproject = true;
 
   pythonImportsCheck = [
     "sqlcipher3"
   ];
 
   meta = {
-    mainProgram = "sqlcipher3";
-    homepage = "https://github.com/coleifer/sqlcipher3";
     description = "Python 3 bindings for SQLCipher";
+    homepage = "https://github.com/coleifer/sqlcipher3";
     license = lib.licenses.zlib;
     maintainers = with lib.maintainers; [ phaer ];
+    mainProgram = "sqlcipher3";
   };
 }

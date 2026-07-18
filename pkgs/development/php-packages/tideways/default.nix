@@ -1,13 +1,13 @@
 {
-  stdenvNoCC,
   lib,
   fetchurl,
   autoPatchelfHook,
-  php,
-  writeShellApplication,
+  common-updater-scripts,
   curl,
   gnugrep,
-  common-updater-scripts,
+  php,
+  stdenvNoCC,
+  writeShellApplication,
 }:
 
 let
@@ -22,7 +22,6 @@ let
 in
 stdenvNoCC.mkDerivation (finalAttrs: {
   pname = "tideways-php";
-  extensionName = "tideways";
   version = "5.20.0";
 
   src =
@@ -39,30 +38,36 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  extensionName = "tideways";
+
   passthru = {
     sources = {
-      "x86_64-linux" = fetchurl {
-        url = "https://s3-eu-west-1.amazonaws.com/tideways/extension/${finalAttrs.version}/tideways-php-${finalAttrs.version}-x86_64.tar.gz";
-        hash = "sha256-uAmsmz+4tsCGw4jlzyZbUNjuzBU/HcIDWrHCC+0t4Xw=";
-      };
-      "aarch64-linux" = fetchurl {
-        url = "https://s3-eu-west-1.amazonaws.com/tideways/extension/${finalAttrs.version}/tideways-php-${finalAttrs.version}-arm64.tar.gz";
-        hash = "sha256-gPhr32G6h/U1uR/aaeIWpOaDV9HF8EbQF7p1kJ5SDis=";
-      };
       "aarch64-darwin" = fetchurl {
-        url = "https://s3-eu-west-1.amazonaws.com/tideways/extension/${finalAttrs.version}/tideways-php-${finalAttrs.version}-macos-arm.tar.gz";
         hash = "sha256-VfgX1SNYKoFR290gRoRXfD5CoLhDPkK+3+4o13P1kiM=";
+        url = "https://s3-eu-west-1.amazonaws.com/tideways/extension/${finalAttrs.version}/tideways-php-${finalAttrs.version}-macos-arm.tar.gz";
+      };
+
+      "aarch64-linux" = fetchurl {
+        hash = "sha256-gPhr32G6h/U1uR/aaeIWpOaDV9HF8EbQF7p1kJ5SDis=";
+        url = "https://s3-eu-west-1.amazonaws.com/tideways/extension/${finalAttrs.version}/tideways-php-${finalAttrs.version}-arm64.tar.gz";
+      };
+
+      "x86_64-linux" = fetchurl {
+        hash = "sha256-uAmsmz+4tsCGw4jlzyZbUNjuzBU/HcIDWrHCC+0t4Xw=";
+        url = "https://s3-eu-west-1.amazonaws.com/tideways/extension/${finalAttrs.version}/tideways-php-${finalAttrs.version}-x86_64.tar.gz";
       };
     };
 
     updateScript = "${
       writeShellApplication {
         name = "update-tideways-probe";
+
         runtimeInputs = [
           curl
           gnugrep
           common-updater-scripts
         ];
+
         text = ''
           NEW_VERSION=$(curl --fail -L https://tideways.com/profiler/downloads | grep -E 'https://tideways.s3.amazonaws.com/extension/[0-9]+\.[0-9]+\.[0-9]+/tideways-php-[0-9]+\.[0-9]+\.[0-9]+-x86_64.tar.gz' | grep -oP 'extension/\K[0-9]+\.[0-9]+\.[0-9]+')
 
@@ -82,8 +87,8 @@ stdenvNoCC.mkDerivation (finalAttrs: {
   meta = {
     description = "Tideways PHP Probe";
     homepage = "https://tideways.com/";
-    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
     license = lib.licenses.unfree;
+    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
     maintainers = with lib.maintainers; [ shyim ];
     platforms = lib.attrNames finalAttrs.passthru.sources;
   };

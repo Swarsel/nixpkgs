@@ -1,17 +1,16 @@
 {
   lib,
   stdenv,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
-  pytestCheckHook,
+  buildPythonPackage,
   pytest-mock,
+  pytestCheckHook,
+  setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "ssdpy";
   version = "0.4.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "MoshiBin";
@@ -27,8 +26,6 @@ buildPythonPackage rec {
     pytest-mock
   ];
 
-  pythonImportsCheck = [ "ssdpy" ];
-
   disabledTests = [
     # They all require network access
     "test_client_json_output"
@@ -40,10 +37,13 @@ buildPythonPackage rec {
     "test_server_extra_fields"
   ];
 
+  pyproject = true;
+  pythonImportsCheck = [ "ssdpy" ];
+
   meta = {
-    changelog = "https://github.com/MoshiBin/ssdpy/releases/tag/${version}";
     description = "Lightweight, compatible SSDP library for Python";
     homepage = "https://github.com/MoshiBin/ssdpy";
+    changelog = "https://github.com/MoshiBin/ssdpy/releases/tag/${version}";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ mjm ];
     # Darwin's network interface names have changed since the package was last updated

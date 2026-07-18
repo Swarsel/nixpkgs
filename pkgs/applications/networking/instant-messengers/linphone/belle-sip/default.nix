@@ -1,18 +1,25 @@
 {
+  lib,
+  stdenv,
   bctoolbox,
   belr,
-  lib,
   libantlr3c,
-  stdenv,
-  zlib,
-  python3,
   mkLinphoneDerivation,
+  python3,
+  zlib,
 }:
 mkLinphoneDerivation {
   pname = "belle-sip";
 
   nativeBuildInputs = [
     python3
+  ];
+
+  propagatedBuildInputs = [
+    libantlr3c
+    bctoolbox
+    belr
+    zlib
   ];
 
   env.NIX_CFLAGS_COMPILE = toString (
@@ -28,16 +35,9 @@ mkLinphoneDerivation {
     ]
   );
 
-  propagatedBuildInputs = [
-    libantlr3c
-    bctoolbox
-    belr
-    zlib
-  ];
-
   meta = {
     description = "Modern library implementing SIP (RFC 3261) transport, transaction and dialog layers. Part of the Linphone project";
-    mainProgram = "belle_sip_tester";
     license = lib.licenses.gpl3Only;
+    mainProgram = "belle_sip_tester";
   };
 }

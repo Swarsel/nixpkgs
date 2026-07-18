@@ -10,7 +10,6 @@
 buildPythonPackage rec {
   pname = "nagiosplugin";
   version = "1.4.0";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
@@ -29,6 +28,7 @@ buildPythonPackage rec {
     "test_check_users"
   ];
 
+  format = "setuptools";
   pythonImportsCheck = [ "nagiosplugin" ];
 
   meta = {

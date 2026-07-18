@@ -1,7 +1,7 @@
 {
-  buildGhidraExtension,
-  fetchFromGitHub,
   lib,
+  fetchFromGitHub,
+  buildGhidraExtension,
 }:
 buildGhidraExtension (finalAttrs: {
   pname = "ghidra-firmware-utils";
@@ -17,8 +17,8 @@ buildGhidraExtension (finalAttrs: {
   meta = {
     description = "Ghidra utilities for analyzing PC firmware";
     homepage = "https://github.com/al3xtjames/ghidra-firmware-utils";
-    downloadPage = "https://github.com/al3xtjames/ghidra-firmware-utils/releases/tag/${finalAttrs.version}";
     license = lib.licenses.asl20;
     maintainers = with lib.maintainers; [ timschumi ];
+    downloadPage = "https://github.com/al3xtjames/ghidra-firmware-utils/releases/tag/${finalAttrs.version}";
   };
 })

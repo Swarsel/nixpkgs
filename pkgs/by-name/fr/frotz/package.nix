@@ -2,20 +2,20 @@
   lib,
   stdenv,
   fetchFromGitLab,
+  SDL2,
+  SDL2_mixer,
+  freetype,
   libao,
+  libjpeg,
   libmodplug,
+  libpng,
   libsamplerate,
   libsndfile,
   libvorbis,
   ncurses,
-  which,
   pkg-config,
-  SDL2,
-  SDL2_mixer,
+  which,
   zlib,
-  libjpeg,
-  libpng,
-  freetype,
   frontend ? "ncurses",
 }:
 
@@ -44,11 +44,12 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   strictDeps = true;
-  enableParallelBuilding = true;
+
   nativeBuildInputs = [
     which
     pkg-config
   ];
+
   buildInputs = [
     libao
     libmodplug
@@ -74,23 +75,28 @@ stdenv.mkDerivation (finalAttrs: {
     "PREFIX=${placeholder "out"}"
     "HOMEBREW_PREFIX=/var/empty"
   ];
+
+  buildFlags = [ frontend ];
+
   preConfigure = ''
     makeFlagsArray+=(CURSES_CONFIG="$PKG_CONFIG ncurses")
   '';
 
-  buildFlags = [ frontend ];
+  enableParallelBuilding = true;
   installTargets = if frontend == "ncurses" then "install-frotz" else "install-${frontend}";
 
   meta = {
+    description = "Z-machine interpreter for Infocom games and other interactive fiction (${frontend})";
     homepage = "https://davidgriffith.gitlab.io/frotz/";
     changelog = "https://gitlab.com/DavidGriffith/frotz/-/raw/${finalAttrs.version}/ChangeLog";
-    description = "Z-machine interpreter for Infocom games and other interactive fiction (${frontend})";
-    mainProgram = progName;
-    platforms = lib.platforms.unix;
+    license = lib.licenses.gpl2Plus;
+
     maintainers = with lib.maintainers; [
       nicknovitski
       ddelabru
     ];
-    license = lib.licenses.gpl2Plus;
+
+    platforms = lib.platforms.unix;
+    mainProgram = progName;
   };
 })

@@ -1,12 +1,12 @@
 {
-  fetchFromGitHub,
   lib,
-  makeWrapper,
-  pkg-config,
   stdenv,
+  fetchFromGitHub,
   alsa-lib,
   flrig,
   hamlib,
+  makeWrapper,
+  pkg-config,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -19,8 +19,6 @@ stdenv.mkDerivation (finalAttrs: {
     tag = "20210828";
     hash = "sha256-OUw9spFTsQLnsXksbfl3wD2NyY40JTyvlvONEIeZyWo=";
   };
-
-  sourceRoot = "${finalAttrs.src.name}/ARDOPC";
 
   postPatch = ''
     substituteInPlace pktSession.c \
@@ -55,12 +53,14 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  sourceRoot = "${finalAttrs.src.name}/ARDOPC";
+
   meta = {
     description = "ARDOP (Amateur Radio Digital Open Protocol) TNC implementation by John Wiseman (GM8BPQ)";
     homepage = "https://github.com/hamarituc/ardop/ARDOPC";
     license = lib.licenses.gpl3Only;
     maintainers = with lib.maintainers; [ oliver-koss ];
-    mainProgram = "ardopc";
     platforms = lib.platforms.all;
+    mainProgram = "ardopc";
   };
 })

@@ -32,15 +32,15 @@ in
 {
   options = {
     isSpecialisation = mkOption {
-      type = lib.types.bool;
-      internal = true;
       default = false;
       description = "Whether this system is a specialisation of another.";
+      internal = true;
+      type = lib.types.bool;
     };
 
     specialisation = mkOption {
       default = { };
-      example = lib.literalExpression "{ fewJobsManyCores.configuration = { nix.settings = { core = 0; max-jobs = 1; }; }; }";
+
       description = ''
         Additional configurations to build. If
         `inheritParentConfig` is true, the system
@@ -53,6 +53,9 @@ in
         sudo /run/current-system/specialisation/fewJobsManyCores/bin/switch-to-configuration test
         ```
       '';
+
+      example = lib.literalExpression "{ fewJobsManyCores.configuration = { nix.settings = { core = 0; max-jobs = 1; }; }; }";
+
       type = types.attrsOf (
         types.submodule (
           local@{ ... }:
@@ -60,14 +63,10 @@ in
             extend = if local.config.inheritParentConfig then extendModules else noUserModules.extendModules;
           in
           {
-            options.inheritParentConfig = mkOption {
-              type = types.bool;
-              default = true;
-              description = "Include the entire system's configuration. Set to false to make a completely differently configured system.";
-            };
-
             options.configuration = mkOption {
+              inherit (extend { modules = [ ./no-clone.nix ]; }) type;
               default = { };
+
               description = ''
                 Arbitrary NixOS configuration.
 
@@ -75,8 +74,14 @@ in
                 here, including imports and config values, although nested
                 specialisations will be ignored.
               '';
+
               visible = "shallow";
-              inherit (extend { modules = [ ./no-clone.nix ]; }) type;
+            };
+
+            options.inheritParentConfig = mkOption {
+              default = true;
+              description = "Include the entire system's configuration. Set to false to make a completely differently configured system.";
+              type = types.bool;
             };
           }
         )
@@ -88,6 +93,7 @@ in
   config = {
     assertions = mapAttrsToList (name: _: {
       assertion = !hasInfix "/" name;
+
       message = ''
         Specialisation names must not contain forward slashes.
         Invalid specialisation name: ${name}

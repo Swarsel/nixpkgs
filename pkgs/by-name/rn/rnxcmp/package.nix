@@ -2,12 +2,12 @@
   lib,
   stdenv,
   fetchurl,
-  tcsh,
-  coreutils,
-  gzip,
-  gnused,
-  ncompress,
   callPackage,
+  coreutils,
+  gnused,
+  gzip,
+  ncompress,
+  tcsh,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -111,9 +111,11 @@ stdenv.mkDerivation (finalAttrs: {
     # The full PDL 1.0 license text also says that it is compatible
     # with the Creative Commons Attribution License 4.0.
     license = lib.licenses.free;
-    platforms = lib.platforms.unix;
+
     maintainers = with lib.maintainers; [
       Luflosi
     ];
+
+    platforms = lib.platforms.unix;
   };
 })

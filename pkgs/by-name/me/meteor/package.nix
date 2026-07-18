@@ -1,13 +1,13 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchurl,
-  zlib,
   curl,
-  xz,
   openssl,
   patchelf,
   runtimeShell,
+  xz,
+  zlib,
 }:
 
 let
@@ -16,13 +16,14 @@ let
   inherit (stdenv.hostPlatform) system;
 
   srcs = {
-    x86_64-linux = fetchurl {
-      url = "https://static.meteor.com/packages-bootstrap/${version}/meteor-bootstrap-os.linux.x86_64.tar.gz";
-      hash = "sha256-tzzRN9UAH7+BM3fs76U5H20vD0LGMpdrMDDiJtchgEg=";
-    };
     aarch64-darwin = fetchurl {
-      url = "https://static.meteor.com/packages-bootstrap/${version}/meteor-bootstrap-os.osx.arm64.tar.gz";
       hash = "sha256-AT7njZTgf/WTHlvLEbF3dXKNoqyqHy8KloBQ4gsbPuM=";
+      url = "https://static.meteor.com/packages-bootstrap/${version}/meteor-bootstrap-os.osx.arm64.tar.gz";
+    };
+
+    x86_64-linux = fetchurl {
+      hash = "sha256-tzzRN9UAH7+BM3fs76U5H20vD0LGMpdrMDDiJtchgEg=";
+      url = "https://static.meteor.com/packages-bootstrap/${version}/meteor-bootstrap-os.linux.x86_64.tar.gz";
     };
   };
 in
@@ -31,10 +32,6 @@ stdenv.mkDerivation {
   inherit version;
   pname = "meteor";
   src = srcs.${system} or (throw "unsupported system ${system}");
-
-  #dontStrip = true;
-
-  sourceRoot = ".meteor";
 
   installPhase = ''
     mkdir $out
@@ -120,15 +117,17 @@ stdenv.mkDerivation {
     done
   '';
 
+  #dontStrip = true;
+  sourceRoot = ".meteor";
   passthru.updateScript = ./update.sh;
 
   meta = {
     description = "Complete open source platform for building web and mobile apps in pure JavaScript";
     homepage = "https://www.meteor.com/";
-    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
     license = lib.licenses.mit;
-    platforms = builtins.attrNames srcs;
+    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
     maintainers = with lib.maintainers; [ hythera ];
+    platforms = builtins.attrNames srcs;
     mainProgram = "meteor";
   };
 }

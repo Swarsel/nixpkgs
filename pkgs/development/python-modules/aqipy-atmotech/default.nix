@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   pytestCheckHook,
   setuptools,
 }:
@@ -9,7 +9,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "aqipy-atmotech";
   version = "0.1.5";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "atmotube";
@@ -18,15 +17,14 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-tqHhfJmtVFUSO57Cid9y3LK4pOoG7ROtwDT2hY5IE1Y=";
   };
 
-  build-system = [ setuptools ];
-
-  nativeCheckInputs = [ pytestCheckHook ];
-
   postPatch = ''
     substituteInPlace setup.py \
       --replace-fail "'pytest-runner'" ""
   '';
 
+  nativeCheckInputs = [ pytestCheckHook ];
+  build-system = [ setuptools ];
+  pyproject = true;
   pythonImportsCheck = [ "aqipy" ];
 
   meta = {

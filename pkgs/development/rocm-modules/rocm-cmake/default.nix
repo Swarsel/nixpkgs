@@ -2,9 +2,9 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  rocmUpdateScript,
-  rocm-core,
   cmake,
+  rocm-core,
+  rocmUpdateScript,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -19,16 +19,14 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   nativeBuildInputs = [ cmake ];
-
   buildInputs = [ rocm-core ];
-
   passthru.updateScript = rocmUpdateScript { inherit finalAttrs; };
 
   meta = {
     description = "CMake modules for common build tasks for the ROCm stack";
     homepage = "https://github.com/ROCm/rocm-cmake";
     license = lib.licenses.mit;
-    teams = [ lib.teams.rocm ];
     platforms = lib.platforms.unix;
+    teams = [ lib.teams.rocm ];
   };
 })

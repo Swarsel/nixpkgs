@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   nix-update-script,
 }:
 buildGoModule (finalAttrs: {
@@ -14,8 +14,8 @@ buildGoModule (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-YaIKtbdjqtmHGZgk3AlHrSJrWGMGJTIv1t/LYoB4vmw=";
   };
-  vendorHash = null;
 
+  vendorHash = null;
   passthru.updateScript = nix-update-script { };
 
   meta = {

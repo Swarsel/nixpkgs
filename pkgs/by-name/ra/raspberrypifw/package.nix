@@ -1,7 +1,7 @@
 {
   lib,
-  stdenvNoCC,
   fetchFromGitHub,
+  stdenvNoCC,
 }:
 
 stdenvNoCC.mkDerivation rec {
@@ -21,8 +21,8 @@ stdenvNoCC.mkDerivation rec {
     mv boot "$out/share/raspberrypi/"
   '';
 
-  dontConfigure = true;
   dontBuild = true;
+  dontConfigure = true;
   dontFixup = true;
 
   meta = {

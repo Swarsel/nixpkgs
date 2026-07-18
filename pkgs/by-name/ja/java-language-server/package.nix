@@ -3,8 +3,8 @@
   stdenv,
   fetchFromGitHub,
   jdk_headless,
-  maven,
   makeWrapper,
+  maven,
 }:
 
 let
@@ -30,16 +30,11 @@ maven.buildMavenPackage {
     sha256 = "sha256-BIcfwz+pLQarnK8XBPwDN2nrdvK8xqUo0XFXk8ZV/h0=";
   };
 
-  mvnFetchExtraArgs.dontConfigure = true;
-  mvnJdk = jdk_headless;
-  mvnHash = "sha256-xxTR+2E+4nIkGwxCk0B+f0//rLdlqO/nwRaArxt3u8U=";
-
   nativeBuildInputs = [
     jdk_headless
     makeWrapper
   ];
 
-  dontConfigure = true;
   preBuild = ''
     jlink \
       ${
@@ -66,11 +61,16 @@ maven.buildMavenPackage {
     runHook postInstall
   '';
 
+  dontConfigure = true;
+  mvnFetchExtraArgs.dontConfigure = true;
+  mvnHash = "sha256-xxTR+2E+4nIkGwxCk0B+f0//rLdlqO/nwRaArxt3u8U=";
+  mvnJdk = jdk_headless;
+
   meta = {
     description = "Java language server based on v3.0 of the protocol and implemented using the Java compiler API";
-    mainProgram = "java-language-server";
     homepage = "https://github.com/georgewfraser/java-language-server";
     license = lib.licenses.mit;
     maintainers = [ ];
+    mainProgram = "java-language-server";
   };
 }

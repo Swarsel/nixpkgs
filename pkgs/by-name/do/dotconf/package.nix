@@ -1,7 +1,7 @@
 {
-  fetchFromGitHub,
   lib,
   stdenv,
+  fetchFromGitHub,
   autoreconfHook,
 }:
 
@@ -20,9 +20,9 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Configuration parser library";
-    maintainers = with lib.maintainers; [ pSub ];
     homepage = "https://github.com/williamh/dotconf";
     license = lib.licenses.lgpl21Plus;
+    maintainers = with lib.maintainers; [ pSub ];
     platforms = with lib.platforms; unix;
   };
 })

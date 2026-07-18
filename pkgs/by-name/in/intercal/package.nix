@@ -2,9 +2,9 @@
   lib,
   stdenv,
   fetchurl,
-  fetchpatch,
   autoreconfHook,
   bison,
+  fetchpatch,
   flex,
   makeWrapper,
   pkg-config,
@@ -40,6 +40,7 @@ stdenv.mkDerivation rec {
 
   meta = {
     description = "Original esoteric programming language";
+
     longDescription = ''
       INTERCAL, an abbreviation for "Compiler Language With No
       Pronounceable Acronym", is a famously esoterical programming
@@ -49,6 +50,7 @@ stdenv.mkDerivation rec {
       languages. The language largely succeeds in this goal, apart
       from its use of an assignment statement.
     '';
+
     homepage = "http://www.catb.org/~esr/intercal/";
     license = lib.licenses.gpl2Plus;
     maintainers = [ ];

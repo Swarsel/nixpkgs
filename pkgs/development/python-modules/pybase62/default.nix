@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   nix-update-script,
   pytestCheckHook,
   setuptools,
@@ -10,9 +10,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "pybase62";
   version = "1.0.0";
-  pyproject = true;
-
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "suminb";
@@ -21,12 +18,11 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-7N/SGJAVwJOy1ObijA2s9XMrqMMb2SUMJaN72ITUrOM=";
   };
 
-  build-system = [ setuptools ];
-
   nativeCheckInputs = [ pytestCheckHook ];
-
+  __structuredAttrs = true;
+  build-system = [ setuptools ];
+  pyproject = true;
   pythonImportsCheck = [ "base62" ];
-
   passthru.updateScript = nix-update-script { };
 
   meta = {

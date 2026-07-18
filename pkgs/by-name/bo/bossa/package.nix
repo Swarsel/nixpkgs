@@ -2,10 +2,10 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  wxwidgets_3_2,
+  fetchpatch,
   libx11,
   readline,
-  fetchpatch,
+  wxwidgets_3_2,
 }:
 
 let
@@ -13,11 +13,11 @@ let
   # Source taken from:
   # http://wiki.wxwidgets.org/Embedding_PNG_Images-Bin2c_In_C
   bin2c = stdenv.mkDerivation {
-    name = "bossa-bin2c";
     src = ./bin2c.c;
-    dontUnpack = true;
     buildPhase = "cc $src -o bin2c";
     installPhase = "mkdir -p $out/bin; cp bin2c $out/bin/";
+    dontUnpack = true;
+    name = "bossa-bin2c";
   };
 
 in
@@ -34,10 +34,10 @@ stdenv.mkDerivation (finalAttrs: {
 
   patches = [
     (fetchpatch {
+      hash = "sha256-2lp6Ej3IfofztC1n/yHLjabn0MH4BA/CM3dsnAw8klA=";
       # Required for building on Darwin with clang >=15.
       name = "pr-172-fix.patch";
       url = "https://github.com/shumatech/BOSSA/commit/6e54973c3c758674c3d04b5e2cf12e097006f6a3.patch";
-      hash = "sha256-2lp6Ej3IfofztC1n/yHLjabn0MH4BA/CM3dsnAw8klA=";
     })
   ];
 
@@ -47,6 +47,7 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   nativeBuildInputs = [ bin2c ];
+
   buildInputs = [
     wxwidgets_3_2
     libx11
@@ -77,6 +78,7 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Flash programming utility for Atmel's SAM family of flash-based ARM microcontrollers";
+
     longDescription = ''
       BOSSA is a flash programming utility for Atmel's SAM family of
       flash-based ARM microcontrollers. The motivation behind BOSSA is
@@ -84,6 +86,7 @@ stdenv.mkDerivation (finalAttrs: {
       Atmel's SAM-BA software. BOSSA is an acronym for Basic Open
       Source SAM-BA Application to reflect that goal.
     '';
+
     homepage = "http://www.shumatech.com/web/products/bossa";
     license = lib.licenses.bsd3;
     platforms = lib.platforms.unix;

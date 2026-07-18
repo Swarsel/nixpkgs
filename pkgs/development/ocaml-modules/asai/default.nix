@@ -1,16 +1,14 @@
 {
   lib,
   fetchFromGitHub,
-  buildDunePackage,
   algaeff,
+  buildDunePackage,
   bwd,
 }:
 
 buildDunePackage (finalAttrs: {
   pname = "asai";
   version = "0.3.1";
-
-  minimalOCamlVersion = "5.2";
 
   src = fetchFromGitHub {
     owner = "RedPRL";
@@ -23,6 +21,8 @@ buildDunePackage (finalAttrs: {
     algaeff
     bwd
   ];
+
+  minimalOCamlVersion = "5.2";
 
   meta = {
     description = "Library for constructing and printing compiler diagnostics";

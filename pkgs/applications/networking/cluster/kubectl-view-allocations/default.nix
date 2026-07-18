@@ -1,8 +1,8 @@
 {
   lib,
   stdenv,
-  rustPlatform,
   fetchFromGitHub,
+  rustPlatform,
   versionCheckHook,
 }:
 
@@ -18,7 +18,6 @@ rustPlatform.buildRustPackage rec {
   };
 
   cargoHash = "sha256-7sGw3gK330QsbWEHEkJhegv9TF1tbQyJqPYdYe1PQ7k=";
-
   doInstallCheck = true;
   nativeInstallCheckInputs = [ versionCheckHook ];
 

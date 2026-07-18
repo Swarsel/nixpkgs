@@ -1,7 +1,7 @@
 {
-  buildGoModule,
-  fetchFromGitHub,
   lib,
+  fetchFromGitHub,
+  buildGoModule,
   nix-update-script,
 }:
 buildGoModule (finalAttrs: {
@@ -16,7 +16,6 @@ buildGoModule (finalAttrs: {
   };
 
   vendorHash = "sha256-YnqpP+JkbdkCtmuhqHnKqRfKogl+tGdCG11uIbyHtlI=";
-
   # Need to disable some tests that require Windows to pass
   checkFlags = [ "-skip=^Test(RepeaterNormal|ServerNormal|ServerMultipleAccess|ServerRestart)$" ];
 
@@ -28,8 +27,8 @@ buildGoModule (finalAttrs: {
     description = "Bridge from WSL2 ssh client to Windows ssh-agent.exe service";
     homepage = "https://github.com/mame/wsl2-ssh-agent";
     license = lib.licenses.mit;
+    maintainers = with lib.maintainers; [ eymeric ];
     platforms = lib.platforms.linux;
     mainProgram = "wsl2-ssh-agent";
-    maintainers = with lib.maintainers; [ eymeric ];
   };
 })

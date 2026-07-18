@@ -1,7 +1,7 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -16,18 +16,16 @@ rustPlatform.buildRustPackage (finalAttrs: {
   };
 
   cargoHash = "sha256-KpPPapS2iavhC/EP+qyeojo0nngfpjvyboSYzhGdI/0=";
-
   # The tests relies on the presence of network connection
   doCheck = false;
-
   cargoBuildFlags = "--bin minijinja-cli";
 
   meta = {
     description = "Command Line Utility to render MiniJinja/Jinja2 templates";
     homepage = "https://github.com/mitsuhiko/minijinja";
+    changelog = "https://github.com/mitsuhiko/minijinja/blob/${finalAttrs.version}/CHANGELOG.md";
     license = with lib.licenses; [ asl20 ];
     maintainers = with lib.maintainers; [ psibi ];
-    changelog = "https://github.com/mitsuhiko/minijinja/blob/${finalAttrs.version}/CHANGELOG.md";
     mainProgram = "minijinja-cli";
   };
 })

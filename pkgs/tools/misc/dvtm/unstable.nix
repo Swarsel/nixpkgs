@@ -12,11 +12,12 @@ callPackage ./dvtm.nix {
   version = "unstable-2021-03-09";
 
   src = fetchzip {
+    hash = "sha256-UtkNsW0mvLfbPSAIIZ1yvX9xzIDtiBeXCjhN2R8JhDc=";
+
     urls = [
       "https://github.com/martanne/dvtm/archive/${rev}.tar.gz"
       "https://git.sr.ht/~martanne/dvtm/archive/${rev}.tar.gz"
     ];
-    hash = "sha256-UtkNsW0mvLfbPSAIIZ1yvX9xzIDtiBeXCjhN2R8JhDc=";
   };
 
   patches = [
@@ -24,8 +25,8 @@ callPackage ./dvtm.nix {
     # Use self-pipe instead of signal blocking fixes issues on darwin.
     (fetchpatch {
       name = "use-self-pipe-fix-darwin";
-      url = "https://github.com/martanne/dvtm/commit/1f1ed664d64603f3f1ce1388571227dc723901b2.patch";
       sha256 = "14j3kks7b1v6qq12442v1da3h7khp02rp0vi0qrz0rfgkg1zilpb";
+      url = "https://github.com/martanne/dvtm/commit/1f1ed664d64603f3f1ce1388571227dc723901b2.patch";
     })
   ];
 }

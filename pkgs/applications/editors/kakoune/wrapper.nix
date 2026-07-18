@@ -1,10 +1,10 @@
 {
   lib,
-  symlinkJoin,
-  makeWrapper,
   kakoune,
-  plugins ? [ ],
+  makeWrapper,
+  symlinkJoin,
   configure ? { },
+  plugins ? [ ],
 }:
 
 let
@@ -14,11 +14,7 @@ let
 
 in
 symlinkJoin {
-  name = "kakoune-${kakoune.version}";
-
   nativeBuildInputs = [ makeWrapper ];
-
-  paths = [ kakoune ] ++ requestedPlugins;
 
   postBuild = ''
     # create a directory for bins that kakoune needs
@@ -40,6 +36,9 @@ symlinkJoin {
     cp -r --dereference "$out/DELETE_ME/doc" "$out/share/kak"
     rm -Rf "$out/DELETE_ME"
   '';
+
+  name = "kakoune-${kakoune.version}";
+  paths = [ kakoune ] ++ requestedPlugins;
 
   meta = kakoune.meta // {
     priority = (kakoune.meta.priority or lib.meta.defaultPriority) - 1;

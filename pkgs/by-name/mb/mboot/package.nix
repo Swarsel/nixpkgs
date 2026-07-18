@@ -25,11 +25,11 @@ stdenv.mkDerivation {
   '';
 
   meta = {
-    homepage = "https://github.com/osm0sis/mboot";
     description = "Tool to pack and unpack Intel Android boot files";
+    homepage = "https://github.com/osm0sis/mboot";
     license = lib.licenses.gpl2;
     maintainers = with lib.maintainers; [ ungeskriptet ];
-    teams = [ lib.teams.android ];
     mainProgram = "mboot";
+    teams = [ lib.teams.android ];
   };
 }

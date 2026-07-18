@@ -1,18 +1,18 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
-  nix-update-script,
-  cmake,
-  pkg-config,
   adwaita-qt,
   adwaita-qt6,
+  cmake,
   glib,
+  gsettings-desktop-schemas,
   gtk3,
+  nix-update-script,
+  pkg-config,
   qtbase,
   qtwayland,
   replaceVars,
-  gsettings-desktop-schemas,
   useQt6 ? false,
 }:
 
@@ -59,9 +59,6 @@ stdenv.mkDerivation rec {
     adwaita-qt6
   ];
 
-  # Qt setup hook complains about missing `wrapQtAppsHook` otherwise.
-  dontWrapQtApps = true;
-
   cmakeFlags = [
     "-DGLIB_SCHEMAS_DIR=${glib.getSchemaPath gsettings-desktop-schemas}"
     "-DQT_PLUGINS_DIR=${placeholder "out"}/${qtbase.qtPluginPrefix}"
@@ -72,6 +69,9 @@ stdenv.mkDerivation rec {
   ++ lib.optionals useQt6 [
     "-DUSE_QT6=true"
   ];
+
+  # Qt setup hook complains about missing `wrapQtAppsHook` otherwise.
+  dontWrapQtApps = true;
 
   passthru = {
     updateScript = nix-update-script { };

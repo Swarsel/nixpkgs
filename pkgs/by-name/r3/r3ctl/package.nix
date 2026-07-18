@@ -1,8 +1,8 @@
 {
-  stdenv,
   lib,
-  qt5,
+  stdenv,
   fetchFromGitHub,
+  qt5,
 }:
 
 stdenv.mkDerivation {
@@ -16,15 +16,6 @@ stdenv.mkDerivation {
     sha256 = "5/L8jvEDJGJzsuAxPrctSDS3d8lbFX/+f52OVyGQ/RY=";
   };
 
-  buildPhase = ''
-    qmake .
-    make
-  '';
-
-  postInstall = ''
-    mv bin $out
-  '';
-
   nativeBuildInputs = [
     qt5.wrapQtAppsHook
   ];
@@ -36,12 +27,21 @@ stdenv.mkDerivation {
     qt5.qtwebsockets
   ];
 
+  buildPhase = ''
+    qmake .
+    make
+  '';
+
+  postInstall = ''
+    mv bin $out
+  '';
+
   meta = {
     description = "Cmdline tool to control the r3 hackerspace lights";
-    mainProgram = "r3ctl";
     homepage = "https://github.com/0xfeedc0de64/r3ctl";
-    maintainers = with lib.maintainers; [ mkg20001 ];
     license = lib.licenses.gpl3Only;
+    maintainers = with lib.maintainers; [ mkg20001 ];
     platforms = lib.platforms.linux;
+    mainProgram = "r3ctl";
   };
 }

@@ -1,12 +1,12 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
-  makeWrapper,
+  gawk,
   git,
   gnupg,
-  gawk,
   installShellFiles,
+  makeWrapper,
 }:
 
 stdenv.mkDerivation {
@@ -14,8 +14,8 @@ stdenv.mkDerivation {
   version = "0.5.0-unstable-2024-12-09";
 
   src = fetchFromGitHub {
-    repo = "git-secret";
     owner = "sobolevn";
+    repo = "git-secret";
     rev = "fdc5e755b34569b0ad3d84a85e611afbb86c4db5";
     hash = "sha256-SN6Xpkc8bd1yuvUMlKaXb5M1ts1JxZynVa5GHBKyOjw=";
   };

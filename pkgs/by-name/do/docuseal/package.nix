@@ -1,16 +1,16 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
   bundlerEnv,
-  nixosTests,
-  ruby_4_0,
-  pdfium-binaries,
-  makeWrapper,
   fetchYarnDeps,
+  makeWrapper,
+  nixosTests,
+  nodejs,
+  pdfium-binaries,
+  ruby_4_0,
   yarn,
   yarnConfigHook,
-  nodejs,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -26,65 +26,16 @@ stdenv.mkDerivation (finalAttrs: {
     postFetch = "rm $out/db/schema.rb";
   };
 
-  rubyEnv = bundlerEnv {
-    name = "docuseal-gems";
-    ruby = ruby_4_0;
-    gemdir = ./.;
-  };
-
-  docusealWeb = stdenv.mkDerivation {
-    pname = "docuseal-web";
-    inherit (finalAttrs)
-      version
-      src
-      meta
-      ;
-
-    offlineCache = fetchYarnDeps {
-      inherit (finalAttrs) src;
-      hash = "sha256-62nI/QUzlpI1VyZ6PWPz2kSp4S2GUIQDaf4jUwzyj24=";
-    };
-
-    nativeBuildInputs = [
-      yarn
-      yarnConfigHook
-      nodejs
-      finalAttrs.rubyEnv
-    ];
-
-    RAILS_ENV = "production";
-    NODE_ENV = "production";
-
-    # no idea how to patch ./bin/shakapacker. instead we execute the two bundle exec commands manually
-    buildPhase = ''
-      runHook preBuild
-
-      export HOME=$(mktemp -d)
-
-      bundle exec rails assets:precompile
-      bundle exec rails shakapacker:compile
-
-      runHook postBuild
-    '';
-
-    installPhase = ''
-      runHook preInstall
-
-      cp -r public/packs $out
-
-      runHook postInstall
-    '';
-  };
-
-  buildInputs = [ finalAttrs.rubyEnv ];
-  propagatedBuildInputs = [ finalAttrs.rubyEnv.wrappedRuby ];
   nativeBuildInputs = [
     makeWrapper
   ];
 
+  buildInputs = [ finalAttrs.rubyEnv ];
+  propagatedBuildInputs = [ finalAttrs.rubyEnv.wrappedRuby ];
+
   env = {
-    RAILS_ENV = "production";
     BUNDLE_WITHOUT = "development:test";
+    RAILS_ENV = "production";
   };
 
   installPhase = ''
@@ -110,10 +61,62 @@ stdenv.mkDerivation (finalAttrs: {
       --prefix LD_LIBRARY_PATH : "${lib.makeLibraryPath [ pdfium-binaries ]}"
   '';
 
+  docusealWeb = stdenv.mkDerivation {
+    inherit (finalAttrs)
+      version
+      src
+      meta
+      ;
+
+    pname = "docuseal-web";
+
+    nativeBuildInputs = [
+      yarn
+      yarnConfigHook
+      nodejs
+      finalAttrs.rubyEnv
+    ];
+
+    # no idea how to patch ./bin/shakapacker. instead we execute the two bundle exec commands manually
+    buildPhase = ''
+      runHook preBuild
+
+      export HOME=$(mktemp -d)
+
+      bundle exec rails assets:precompile
+      bundle exec rails shakapacker:compile
+
+      runHook postBuild
+    '';
+
+    installPhase = ''
+      runHook preInstall
+
+      cp -r public/packs $out
+
+      runHook postInstall
+    '';
+
+    NODE_ENV = "production";
+    RAILS_ENV = "production";
+
+    offlineCache = fetchYarnDeps {
+      inherit (finalAttrs) src;
+      hash = "sha256-62nI/QUzlpI1VyZ6PWPz2kSp4S2GUIQDaf4jUwzyj24=";
+    };
+  };
+
+  rubyEnv = bundlerEnv {
+    gemdir = ./.;
+    name = "docuseal-gems";
+    ruby = ruby_4_0;
+  };
+
   passthru = {
     tests = {
       inherit (nixosTests) docuseal-psql docuseal-sqlite;
     };
+
     updateScript = ./update.sh;
   };
 

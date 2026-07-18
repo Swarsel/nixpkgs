@@ -1,49 +1,43 @@
 {
   lib,
   stdenv,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # build-system
-  hatchling,
-
-  # dependencies
-  langchain-core,
-  langgraph-checkpoint,
-  langgraph-prebuilt,
-  langgraph-sdk,
-  pydantic,
-  xxhash,
-
   # tests
   aiosqlite,
+  buildPythonPackage,
   dataclasses-json,
   fakeredis,
   grandalf,
+  # build-system
+  hatchling,
   httpx,
+  # dependencies
+  langchain-core,
+  langgraph-checkpoint,
   langgraph-checkpoint-postgres,
   langgraph-checkpoint-sqlite,
+  langgraph-prebuilt,
+  langgraph-sdk,
   langsmith,
+  # passthru
+  nix-update-script,
+  postgresql,
+  postgresqlTestHook,
   psycopg,
   pycryptodome,
+  pydantic,
   pytest-asyncio,
   pytest-mock,
   pytest-repeat,
   pytest-xdist,
   pytestCheckHook,
-  syrupy,
-  postgresql,
-  postgresqlTestHook,
   redisTestHook,
-
-  # passthru
-  nix-update-script,
+  syrupy,
+  xxhash,
 }:
 buildPythonPackage (finalAttrs: {
   pname = "langgraph";
   version = "1.2.7";
-  pyproject = true;
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "langchain-ai";
@@ -51,28 +45,6 @@ buildPythonPackage (finalAttrs: {
     tag = finalAttrs.version;
     hash = "sha256-Ws84VIh+IkL1oV4PmZacu56TW+S1JppCgDtK5datLY4=";
   };
-
-  postgresqlTestSetupPost = ''
-    substituteInPlace tests/conftest_store.py \
-      --replace-fail "DEFAULT_POSTGRES_URI = \"postgres://postgres:postgres@localhost:5442/\"" "DEFAULT_POSTGRES_URI = \"postgres:///$PGDATABASE\""
-    substituteInPlace tests/conftest_checkpointer.py \
-      --replace-fail "DEFAULT_POSTGRES_URI = \"postgres://postgres:postgres@localhost:5442/\"" "DEFAULT_POSTGRES_URI = \"postgres:///$PGDATABASE\""
-  '';
-
-  sourceRoot = "${finalAttrs.src.name}/libs/langgraph";
-
-  build-system = [ hatchling ];
-
-  dependencies = [
-    langchain-core
-    langgraph-checkpoint
-    langgraph-prebuilt
-    langgraph-sdk
-    pydantic
-    xxhash
-  ];
-
-  pythonImportsCheck = [ "langgraph" ];
 
   # postgresql doesn't play nicely with the darwin sandbox:
   # FATAL:  could not create shared memory segment: Operation not permitted
@@ -106,6 +78,34 @@ buildPythonPackage (finalAttrs: {
     syrupy
   ];
 
+  __structuredAttrs = true;
+  build-system = [ hatchling ];
+
+  dependencies = [
+    langchain-core
+    langgraph-checkpoint
+    langgraph-prebuilt
+    langgraph-sdk
+    pydantic
+    xxhash
+  ];
+
+  disabledTestPaths = [
+    # psycopg.errors.InsufficientPrivilege: permission denied to create database
+    "tests/test_checkpoint_migration.py"
+    "tests/test_large_cases.py"
+    "tests/test_large_cases_async.py"
+    "tests/test_pregel.py"
+    "tests/test_pregel_async.py"
+    "tests/test_subgraph_persistence.py"
+    "tests/test_subgraph_persistence_async.py"
+    "tests/test_time_travel.py"
+    "tests/test_time_travel_async.py"
+
+    # Race condition
+    "tests/test_retry.py::test_error_handler_resumes_after_crash_multiple_nodes"
+  ];
+
   disabledTests = [
     # Requires `langgraph dev` to be running
     "test_remote_graph_basic_invoke"
@@ -127,25 +127,21 @@ buildPythonPackage (finalAttrs: {
     "test_interrupt_functional_pydantic"
   ];
 
-  disabledTestPaths = [
-    # psycopg.errors.InsufficientPrivilege: permission denied to create database
-    "tests/test_checkpoint_migration.py"
-    "tests/test_large_cases.py"
-    "tests/test_large_cases_async.py"
-    "tests/test_pregel.py"
-    "tests/test_pregel_async.py"
-    "tests/test_subgraph_persistence.py"
-    "tests/test_subgraph_persistence_async.py"
-    "tests/test_time_travel.py"
-    "tests/test_time_travel_async.py"
+  postgresqlTestSetupPost = ''
+    substituteInPlace tests/conftest_store.py \
+      --replace-fail "DEFAULT_POSTGRES_URI = \"postgres://postgres:postgres@localhost:5442/\"" "DEFAULT_POSTGRES_URI = \"postgres:///$PGDATABASE\""
+    substituteInPlace tests/conftest_checkpointer.py \
+      --replace-fail "DEFAULT_POSTGRES_URI = \"postgres://postgres:postgres@localhost:5442/\"" "DEFAULT_POSTGRES_URI = \"postgres:///$PGDATABASE\""
+  '';
 
-    # Race condition
-    "tests/test_retry.py::test_error_handler_resumes_after_crash_multiple_nodes"
-  ];
+  pyproject = true;
+  pythonImportsCheck = [ "langgraph" ];
+  sourceRoot = "${finalAttrs.src.name}/libs/langgraph";
 
   # Since `langgraph` is the only unprefixed package, we have to use an explicit match
   passthru = {
     skipBulkUpdate = true;
+
     updateScript = nix-update-script {
       extraArgs = [
         "--version-regex"

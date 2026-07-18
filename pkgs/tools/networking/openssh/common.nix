@@ -1,51 +1,51 @@
 {
   pname,
-  version,
-  extraDesc ? "",
   src,
-  extraPatches ? [ ],
-  extraNativeBuildInputs ? [ ],
+  version,
   extraConfigureFlags ? [ ],
+  extraDesc ? "",
   extraMeta ? { },
+  extraNativeBuildInputs ? [ ],
+  extraPatches ? [ ],
 }:
 
 {
   lib,
   stdenv,
+  fetchurl,
+  audit,
+  autoreconfHook,
+  fetchpatch,
+  hostname,
+  krb5,
+  ldns,
+  libcap_ng,
+  libedit,
+  libfido2,
+  libredirect,
+  libxcrypt,
+  nixosTests,
+  openssl,
+  pam,
+  pkg-config,
   # This *is* correct, though unusual. as a way of getting krb5-config from the
   # package without splicing See: https://github.com/NixOS/nixpkgs/pull/107606
   pkgs,
-  fetchurl,
-  fetchpatch,
-  autoreconfHook,
-  withAudit ? false,
-  audit,
-  libcap_ng,
-  zlib,
-  openssl,
   softhsm,
-  libedit,
-  ldns,
-  pkg-config,
-  pam,
-  libredirect,
+  zlib,
   etcDir ? null,
+  isNixos ? stdenv.hostPlatform.isLinux,
+  linkOpenssl ? true,
+  withAudit ? false,
+  withFIDO ? stdenv.hostPlatform.isUnix && !stdenv.hostPlatform.isMusl && withSecurityKey,
   withKerberos ? false,
   withLdns ? true,
-  krb5,
-  libfido2,
-  libxcrypt,
-  hostname,
-  nixosTests,
-  withSecurityKey ? !stdenv.hostPlatform.isStatic,
-  withFIDO ? stdenv.hostPlatform.isUnix && !stdenv.hostPlatform.isMusl && withSecurityKey,
-  withPAM ? stdenv.hostPlatform.isLinux && !stdenv.hostPlatform.isStatic,
   # Attempts to mlock the entire sshd process on startup to prevent swapping.
   # Currently disabled when PAM support is enabled due to crashes
   # See https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=1103418
   withLinuxMemlock ? (stdenv.hostPlatform.isLinux && !withPAM),
-  linkOpenssl ? true,
-  isNixos ? stdenv.hostPlatform.isLinux,
+  withPAM ? stdenv.hostPlatform.isLinux && !stdenv.hostPlatform.isStatic,
+  withSecurityKey ? !stdenv.hostPlatform.isStatic,
 }:
 
 # libaudit support requires Linux
@@ -76,31 +76,31 @@ stdenv.mkDerivation (finalAttrs: {
     # See discussion in https://github.com/NixOS/nixpkgs/issues/466049 and
     # https://gitlab.archlinux.org/archlinux/packaging/packages/openssh/-/issues/23
     (fetchpatch {
+      hash = "sha256-rdvKL6/rwrdhGKlcmdy6fxVgJgaaRsmngX0KkShXAhQ=";
+      hunks = [ "2-" ];
       name = "pkcs11-fetchkey-error-to-debug.patch";
       url = "https://github.com/openssh/openssh-portable/commit/607f337637f2077b34a9f6f96fc24237255fe175.patch";
-      hunks = [ "2-" ];
-      hash = "sha256-rdvKL6/rwrdhGKlcmdy6fxVgJgaaRsmngX0KkShXAhQ=";
     })
     (fetchpatch {
-      name = "pkcs11-fix-pinentry.patch";
-      url = "https://github.com/openssh/openssh-portable/commit/434ba7684054c0637ce8f2486aaacafe65d9b8aa.patch";
       # only applies to Makefile.in (which doesn't have a date header) so no hunks= needed
       hash = "sha256-3JQ3IJurngXclORrfC2Bx7xvmGA6w2nIh+eZ0zd0bLY=";
+      name = "pkcs11-fix-pinentry.patch";
+      url = "https://github.com/openssh/openssh-portable/commit/434ba7684054c0637ce8f2486aaacafe65d9b8aa.patch";
     })
 
     # See discussion in https://github.com/NixOS/nixpkgs/issues/453782 and
     # https://github.com/openssh/openssh-portable/pull/602
     (fetchpatch {
+      hash = "sha256-mGpRGXurg8K9Wp8qoojG5MQ+3sZW2XKy2z0RDXLHaEc=";
+      hunks = [ "2-" ];
       name = "pkcs11-tests-allow-module-path.patch";
       url = "https://github.com/openssh/openssh-portable/commit/5e7c3f33b2693b668ecfbac84b85f2c0c84410c2.patch";
-      hunks = [ "2-" ];
-      hash = "sha256-mGpRGXurg8K9Wp8qoojG5MQ+3sZW2XKy2z0RDXLHaEc=";
     })
     (fetchpatch {
+      hash = "sha256-b9YCOav32kY5VEvIG3W1fyD87HaQxof6Zwq9Oo+/Lac=";
+      hunks = [ "2-" ];
       name = "ssh-agent-tests-increase-timeout.patch";
       url = "https://github.com/openssh/openssh-portable/commit/1fdc3c61194819c16063dc430eeb84b81bf42dcf.patch";
-      hunks = [ "2-" ];
-      hash = "sha256-b9YCOav32kY5VEvIG3W1fyD87HaQxof6Zwq9Oo+/Lac=";
     })
   ]
   ++ extraPatches;
@@ -113,6 +113,7 @@ stdenv.mkDerivation (finalAttrs: {
     '';
 
   strictDeps = true;
+
   nativeBuildInputs = [
     autoreconfHook
     pkg-config
@@ -122,6 +123,7 @@ stdenv.mkDerivation (finalAttrs: {
   # https://github.com/NixOS/nixpkgs/pull/107606
   ++ lib.optional withKerberos pkgs.krb5
   ++ extraNativeBuildInputs;
+
   buildInputs = [
     zlib
     libedit
@@ -135,29 +137,6 @@ stdenv.mkDerivation (finalAttrs: {
     audit
     libcap_ng
   ];
-
-  preConfigure = ''
-    # Setting LD causes `configure' and `make' to disagree about which linker
-    # to use: `configure' wants `gcc', but `make' wants `ld'.
-    unset LD
-  '';
-
-  env =
-    lib.optionalAttrs isNixos {
-      # openssh calls passwd to allow the user to reset an expired password, but nixos
-      # doesn't ship it at /usr/bin/passwd.
-      PATH_PASSWD_PROG = "/run/wrappers/bin/passwd";
-    }
-    // lib.optionalAttrs stdenv.hostPlatform.isStatic {
-      NIX_LDFLAGS = lib.concatStringsSep " " (
-        lib.optional withKerberos "-lkeyutils"
-        ++ lib.optional withLdns "-lcrypto"
-        ++ lib.optionals withAudit [
-          "-laudit"
-          "-lcap-ng"
-        ]
-      );
-    };
 
   # I set --disable-strip because later we strip anyway. And it fails to strip
   # properly when cross building.
@@ -187,10 +166,31 @@ stdenv.mkDerivation (finalAttrs: {
 
   buildFlags = [ "SSH_KEYSIGN=ssh-keysign" ];
 
-  enableParallelBuilding = true;
+  env =
+    lib.optionalAttrs isNixos {
+      # openssh calls passwd to allow the user to reset an expired password, but nixos
+      # doesn't ship it at /usr/bin/passwd.
+      PATH_PASSWD_PROG = "/run/wrappers/bin/passwd";
+    }
+    // lib.optionalAttrs stdenv.hostPlatform.isStatic {
+      NIX_LDFLAGS = lib.concatStringsSep " " (
+        lib.optional withKerberos "-lkeyutils"
+        ++ lib.optional withLdns "-lcrypto"
+        ++ lib.optionals withAudit [
+          "-laudit"
+          "-lcap-ng"
+        ]
+      );
+    };
+
+  preConfigure = ''
+    # Setting LD causes `configure' and `make' to disagree about which linker
+    # to use: `configure' wants `gcc', but `make' wants `ld'.
+    unset LD
+  '';
 
   doCheck = false;
-  enableParallelChecking = false;
+
   nativeCheckInputs = [
     openssl
   ]
@@ -248,6 +248,22 @@ stdenv.mkDerivation (finalAttrs: {
         --replace-fail /usr/local/lib/softhsm/libsofthsm2.so ${lib.getLib softhsm}/lib/softhsm/libsofthsm2.so
     ''
   );
+
+  postInstall = ''
+    # Install ssh-copy-id, it's very useful.
+    cp contrib/ssh-copy-id $out/bin/
+    chmod +x $out/bin/ssh-copy-id
+    cp contrib/ssh-copy-id.1 $man/share/man/man1/
+  '';
+
+  doInstallCheck = true;
+
+  installCheckPhase = ''
+    for binary in ssh sshd; do
+      $out/bin/$binary -V 2>&1 | grep -P "$(printf '^OpenSSH_\\Q%s\\E,' "$version")"
+    done
+  '';
+
   # integration tests hard to get working on darwin with its shaky
   # sandbox
   # t-exec tests fail on musl
@@ -263,27 +279,18 @@ stdenv.mkDerivation (finalAttrs: {
       "interop-tests"
     ];
 
-  postInstall = ''
-    # Install ssh-copy-id, it's very useful.
-    cp contrib/ssh-copy-id $out/bin/
-    chmod +x $out/bin/ssh-copy-id
-    cp contrib/ssh-copy-id.1 $man/share/man/man1/
-  '';
+  enableParallelBuilding = true;
+  enableParallelChecking = false;
 
-  installTargets = [ "install-nokeys" ];
   installFlags = [
     "sysconfdir=\${out}/etc/ssh"
   ];
 
-  doInstallCheck = true;
-  installCheckPhase = ''
-    for binary in ssh sshd; do
-      $out/bin/$binary -V 2>&1 | grep -P "$(printf '^OpenSSH_\\Q%s\\E,' "$version")"
-    done
-  '';
+  installTargets = [ "install-nokeys" ];
 
   passthru = {
     inherit withKerberos;
+
     tests =
       let
         withThisSsh =
@@ -296,8 +303,9 @@ stdenv.mkDerivation (finalAttrs: {
       in
       {
         borgbackup-integration = withThisSsh nixosTests.borgbackup;
-        nixosTest = withThisSsh nixosTests.openssh;
         initrd-network-openssh = withThisSsh nixosTests.initrd-network-ssh;
+        nixosTest = withThisSsh nixosTests.openssh;
+
         openssh = finalAttrs.finalPackage.overrideAttrs (previousAttrs: {
           pname = previousAttrs.pname + "-test";
           doCheck = true;
@@ -310,11 +318,11 @@ stdenv.mkDerivation (finalAttrs: {
     homepage = "https://www.openssh.com/";
     changelog = "https://www.openssh.com/releasenotes.html";
     license = lib.licenses.bsd2;
-    platforms = lib.platforms.unix ++ lib.platforms.windows;
     maintainers = extraMeta.maintainers or [ ];
-    teams = [ lib.teams.security-review ];
+    platforms = lib.platforms.unix ++ lib.platforms.windows;
     mainProgram = "ssh";
     identifiers.cpeParts = lib.meta.cpeFullVersionWithVendor "openbsd" finalAttrs.version;
+    teams = [ lib.teams.security-review ];
   }
   // extraMeta;
 })

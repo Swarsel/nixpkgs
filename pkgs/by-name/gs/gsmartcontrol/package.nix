@@ -2,12 +2,12 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  smartmontools,
   adwaita-icon-theme,
   cmake,
   gtkmm3,
   makeWrapper,
   pkg-config,
+  smartmontools,
   # xterm,
 }:
 
@@ -42,8 +42,6 @@ stdenv.mkDerivation (finalAttrs: {
     adwaita-icon-theme
   ];
 
-  enableParallelBuilding = true;
-
   postFixup = ''
     wrapProgram $out/bin/gsmartcontrol \
       --prefix PATH : ${
@@ -54,8 +52,11 @@ stdenv.mkDerivation (finalAttrs: {
       }
   '';
 
+  enableParallelBuilding = true;
+
   meta = {
     description = "Hard disk drive health inspection tool";
+
     longDescription = ''
       GSmartControl is a graphical user interface for smartctl (from
       smartmontools package), which is a tool for querying and controlling
@@ -65,10 +66,11 @@ stdenv.mkDerivation (finalAttrs: {
       It allows you to inspect the drive's SMART data to determine its health,
       as well as run various tests on it.
     '';
+
     homepage = "https://gsmartcontrol.shaduri.dev";
-    mainProgram = "gsmartcontrol";
     license = lib.licenses.gpl2Plus;
     maintainers = with lib.maintainers; [ qknight ];
     platforms = lib.platforms.linux;
+    mainProgram = "gsmartcontrol";
   };
 })

@@ -15,9 +15,8 @@ buildGoModule (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-CKDtILZMWFeSU5nTSguM2fi0BCFdvR2LqELIZ6LYOMk=";
   };
-  vendorHash = "sha256-Q2Ipj9yZ+/GUBEmDvgwFLLww7EXnbvdvj/shGQnh1G8=";
 
-  subPackages = [ "cmd" ];
+  vendorHash = "sha256-Q2Ipj9yZ+/GUBEmDvgwFLLww7EXnbvdvj/shGQnh1G8=";
 
   postInstall = ''
     mv $out/bin/cmd $out/bin/dsnet
@@ -34,13 +33,15 @@ buildGoModule (finalAttrs: {
     "-X github.com/naggie/dsnet.GIT_COMMIT=${finalAttrs.src.tag}"
   ];
 
+  subPackages = [ "cmd" ];
+
   meta = {
     description = "Fast command to manage a centralised Wireguard VPN";
     homepage = "https://github.com/naggie/dsnet";
     changelog = "https://github.com/naggie/dsnet/releases/tag/${finalAttrs.src.tag}";
     license = lib.licenses.mit;
-    platforms = lib.platforms.linux;
     maintainers = [ lib.maintainers.naggie ];
+    platforms = lib.platforms.linux;
     mainProgram = "dsnet";
   };
 

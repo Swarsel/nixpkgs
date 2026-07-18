@@ -1,9 +1,9 @@
 {
   lib,
   fetchFromGitHub,
-  versionCheckHook,
   buildGoModule,
   libpcap,
+  versionCheckHook,
 }:
 
 buildGoModule (finalAttrs: {
@@ -17,17 +17,8 @@ buildGoModule (finalAttrs: {
     hash = "sha256-ouH7VFWSCOElbmbSWAkmM4dtNVp545mC/FnoNAFtaEw=";
   };
 
-  vendorHash = null;
-
   buildInputs = [ libpcap ];
-
-  tags = [ "dynamic" ];
-
-  ldflags = [
-    "-X github.com/mozillazg/ptcpdump/internal.Version=v${finalAttrs.version}"
-  ];
-  nativeInstallCheckInputs = [ versionCheckHook ];
-  doInstallCheck = true;
+  vendorHash = null;
 
   checkFlags =
     let
@@ -39,12 +30,21 @@ buildGoModule (finalAttrs: {
     in
     [ "-skip=^${builtins.concatStringsSep "$|^" skippedTests}$" ];
 
+  doInstallCheck = true;
+  nativeInstallCheckInputs = [ versionCheckHook ];
+
+  ldflags = [
+    "-X github.com/mozillazg/ptcpdump/internal.Version=v${finalAttrs.version}"
+  ];
+
+  tags = [ "dynamic" ];
+
   meta = {
-    homepage = "https://github.com/mozillazg/ptcpdump/";
     description = "Process-aware, eBPF-based tcpdump";
-    mainProgram = "ptcpdump";
+    homepage = "https://github.com/mozillazg/ptcpdump/";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ neilmayhew ];
     platforms = lib.platforms.linux;
+    mainProgram = "ptcpdump";
   };
 })

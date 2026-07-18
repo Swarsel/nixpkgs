@@ -1,8 +1,8 @@
 {
   lib,
-  stdenvNoCC,
   fetchFromGitHub,
   gitUpdater,
+  stdenvNoCC,
 }:
 
 # NOTE:
@@ -72,7 +72,7 @@ stdenvNoCC.mkDerivation rec {
     description = "MacOS big sur like theme for KDE Plasma desktop";
     homepage = "https://github.com/vinceliuice/WhiteSur-kde";
     license = lib.licenses.gpl3Only;
-    platforms = lib.platforms.all;
     maintainers = [ lib.maintainers.romildo ];
+    platforms = lib.platforms.all;
   };
 }

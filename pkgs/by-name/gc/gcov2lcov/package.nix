@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule (finalAttrs: {
@@ -16,21 +16,20 @@ buildGoModule (finalAttrs: {
   };
 
   vendorHash = "sha256-/2OIBWXbNch6lmw0C1jkyJfNefJXOVG9/jNW8CYHTsc=";
+  # Some checks depend on looking up vcs root
+  checkPhase = false;
 
   ldflags = [
     "-s"
     "-w"
   ];
 
-  # Some checks depend on looking up vcs root
-  checkPhase = false;
-
   meta = {
     description = "Convert go coverage files to lcov format";
-    mainProgram = "gcov2lcov";
     homepage = "https://github.com/jandelgado/gcov2lcov";
     changelog = "https://github.com/jandelgado/gcov2lcov/blob/${finalAttrs.src.rev}/CHANGELOG.md";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ meain ];
+    mainProgram = "gcov2lcov";
   };
 })

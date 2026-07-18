@@ -2,16 +2,15 @@
   lib,
   fetchFromGitHub,
   buildPythonPackage,
+  pyaml,
+  pytest,
   pyyaml,
   six,
-  pytest,
-  pyaml,
 }:
 
 buildPythonPackage rec {
   pname = "python-frontmatter";
   version = "1.1.0";
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "eyeseast";
@@ -30,12 +29,12 @@ buildPythonPackage rec {
   # exported by python interpreter
   doCheck = false;
   nativeCheckInputs = [ pytest ];
-
+  format = "setuptools";
   pythonImportsCheck = [ "frontmatter" ];
 
   meta = {
-    homepage = "https://github.com/eyeseast/python-frontmatter";
     description = "Parse and manage posts with YAML (or other) frontmatter";
+    homepage = "https://github.com/eyeseast/python-frontmatter";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ siraben ];
     platforms = lib.platforms.unix;

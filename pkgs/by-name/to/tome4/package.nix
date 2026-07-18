@@ -2,21 +2,21 @@
   lib,
   stdenv,
   fetchFromGitLab,
-  fetchpatch2,
-  copyDesktopItems,
-  makeDesktopItem,
-  makeWrapper,
-  premake4,
-  openal,
-  libpng,
-  libvorbis,
-  libGLU,
   SDL2,
   SDL2_image,
   SDL2_ttf,
+  copyDesktopItems,
+  fetchpatch2,
+  libGLU,
+  libpng,
+  libvorbis,
   libx11,
-  xorgproto,
+  makeDesktopItem,
+  makeWrapper,
   nix-update-script,
+  openal,
+  premake4,
+  xorgproto,
 }:
 
 let
@@ -33,24 +33,18 @@ stdenv.mkDerivation (finalAttrs: {
 
   # Official source according to https://te4.org/wiki/How_to_compile
   src = fetchFromGitLab {
-    domain = "git.net-core.org";
     owner = "tome";
     repo = "t-engine4";
     tag = "tome-${finalAttrs.version}";
     hash = "sha256-v0YPbmaOqKYgFkOe/X0FCirucrMo2UGAyhZ7MFj+nsU=";
+    domain = "git.net-core.org";
   };
-
-  prePatch = ''
-    # http://forums.te4.org/viewtopic.php?f=42&t=49478&view=next#p234354
-    substituteInPlace src/tgl.h \
-      --replace-fail "#include <GL/glext.h>" ""
-  '';
 
   patches = [
     # https://forums.te4.org/viewtopic.php?f=69&t=39859&p=168681&hilit=luaopen_shaders#p168681
     (fetchpatch2 {
-      url = "https://gist.githubusercontent.com/hasufell/cb3b10f834e891d90f83/raw/cb4adda13868f6b94585575db4f8df70877ae45a/tome4-1.1.3-fix-implicit-declaration.patch";
       hash = "sha256-g47N/bi2/DDKqaEkfTaGp9ItS57QVnObzMDWXqrCjWE=";
+      url = "https://gist.githubusercontent.com/hasufell/cb3b10f834e891d90f83/raw/cb4adda13868f6b94585575db4f8df70877ae45a/tome4-1.1.3-fix-implicit-declaration.patch";
     })
     # unistd required for execv
     ./0001-web-missing-include.patch
@@ -79,8 +73,7 @@ stdenv.mkDerivation (finalAttrs: {
   ]
   ++ sdlInputs;
 
-  # disable parallel building as it caused sporadic build failures
-  enableParallelBuilding = false;
+  makeFlags = [ "config=release" ];
 
   env = {
     NIX_CFLAGS_COMPILE =
@@ -91,27 +84,8 @@ stdenv.mkDerivation (finalAttrs: {
     NIX_CFLAGS_LINK = lib.concatMapStringsSep " " (i: "-L${lib.getLib i}/lib") finalAttrs.buildInputs;
   };
 
-  makeFlags = [ "config=release" ];
-
-  desktopItems = [
-    (makeDesktopItem {
-      desktopName = "Tales of Maj'Eyal";
-      name = "tome4";
-      exec = "tome4";
-      icon = "te4-icon";
-      comment = "An open-source, single-player, role-playing roguelike game set in the world of Eyal.";
-      type = "Application";
-      categories = [
-        "Game"
-        "RolePlaying"
-      ];
-      genericName = "2D roguelike RPG";
-    })
-  ];
-
   # The wrapper needs to cd into the correct directory as tome4's detection of
   # the game asset root directory is faulty.
-
   installPhase = ''
     runHook preInstall
 
@@ -129,6 +103,32 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  desktopItems = [
+    (makeDesktopItem {
+      categories = [
+        "Game"
+        "RolePlaying"
+      ];
+
+      comment = "An open-source, single-player, role-playing roguelike game set in the world of Eyal.";
+      desktopName = "Tales of Maj'Eyal";
+      exec = "tome4";
+      genericName = "2D roguelike RPG";
+      icon = "te4-icon";
+      name = "tome4";
+      type = "Application";
+    })
+  ];
+
+  # disable parallel building as it caused sporadic build failures
+  enableParallelBuilding = false;
+
+  prePatch = ''
+    # http://forums.te4.org/viewtopic.php?f=42&t=49478&view=next#p234354
+    substituteInPlace src/tgl.h \
+      --replace-fail "#include <GL/glext.h>" ""
+  '';
+
   passthru.updateScript = nix-update-script {
     extraArgs = [
       "--version-regex"
@@ -138,13 +138,15 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Tales of Maj'eyal (rogue-like game)";
-    mainProgram = "tome4";
     homepage = "https://te4.org/";
     license = lib.licenses.gpl3;
     maintainers = with lib.maintainers; [ peterhoeg ];
+
     platforms = [
       "i686-linux"
       "x86_64-linux"
     ];
+
+    mainProgram = "tome4";
   };
 })

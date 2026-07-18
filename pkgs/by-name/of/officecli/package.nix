@@ -1,17 +1,14 @@
 {
   lib,
+  fetchFromGitHub,
   buildDotnetModule,
   dotnetCorePackages,
-  fetchFromGitHub,
   versionCheckHook,
 }:
 
 buildDotnetModule (finalAttrs: {
   pname = "officecli";
   version = "1.0.129";
-
-  strictDeps = true;
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "iOfficeAI";
@@ -20,13 +17,12 @@ buildDotnetModule (finalAttrs: {
     hash = "sha256-r7hGIK6tp/Z5Nt2SASkvuXsjjq3apP7CuhHNi6FAc0k=";
   };
 
-  projectFile = "src/officecli/officecli.csproj";
-  nugetDeps = ./deps.json;
-
-  dotnet-sdk = dotnetCorePackages.sdk_10_0;
+  strictDeps = true;
+  doInstallCheck = true;
+  nativeInstallCheckInputs = [ versionCheckHook ];
+  __structuredAttrs = true;
   dotnet-runtime = dotnetCorePackages.runtime_10_0;
-
-  selfContainedBuild = true;
+  dotnet-sdk = dotnetCorePackages.sdk_10_0;
   executables = [ "officecli" ];
 
   makeWrapperArgs = [
@@ -35,20 +31,23 @@ buildDotnetModule (finalAttrs: {
     "1"
   ];
 
-  nativeInstallCheckInputs = [ versionCheckHook ];
-  doInstallCheck = true;
+  nugetDeps = ./deps.json;
+  projectFile = "src/officecli/officecli.csproj";
+  selfContainedBuild = true;
 
   meta = {
     description = "Command-line tool for creating, reading and editing Office documents";
     homepage = "https://github.com/iOfficeAI/OfficeCLI";
     changelog = "https://github.com/iOfficeAI/OfficeCLI/releases/tag/${finalAttrs.src.tag}";
     license = lib.licenses.asl20;
-    mainProgram = "officecli";
-    maintainers = with lib.maintainers; [ qrzbing ];
-    platforms = finalAttrs.dotnet-sdk.meta.platforms;
+
     sourceProvenance = with lib.sourceTypes; [
       fromSource
       binaryBytecode
     ];
+
+    maintainers = with lib.maintainers; [ qrzbing ];
+    platforms = finalAttrs.dotnet-sdk.meta.platforms;
+    mainProgram = "officecli";
   };
 })

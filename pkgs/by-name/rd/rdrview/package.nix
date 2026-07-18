@@ -2,10 +2,10 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  libxml2,
   curl,
-  libseccomp,
   installShellFiles,
+  libseccomp,
+  libxml2,
   nix-update-script,
 }:
 
@@ -20,12 +20,13 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-5BtXwtVvenzTm6JEGh4oSlQQrcwLCWXnlykhfPFhuIQ=";
   };
 
+  nativeBuildInputs = [ installShellFiles ];
+
   buildInputs = [
     libxml2
     curl
     libseccomp
   ];
-  nativeBuildInputs = [ installShellFiles ];
 
   installPhase = ''
     runHook preInstall
@@ -35,6 +36,7 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   enableParallelBuilding = true;
+  passthru.updateScript = nix-update-script { };
 
   meta = {
     description = "Command line tool to extract main content from a webpage";
@@ -43,6 +45,4 @@ stdenv.mkDerivation (finalAttrs: {
     maintainers = with lib.maintainers; [ djanatyn ];
     mainProgram = "rdrview";
   };
-
-  passthru.updateScript = nix-update-script { };
 })

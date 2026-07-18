@@ -1,38 +1,31 @@
 {
   lib,
   fetchgit,
-  rustPlatform,
-  pkg-config,
-  openssl,
-  libxcrypt,
   libisoburn,
+  libxcrypt,
+  openssl,
+  pkg-config,
+  rustPlatform,
   versionCheckHook,
 }:
 
 let
   installer_src = fetchgit {
-    url = "git://git.proxmox.com/git/pve-installer.git";
-    rev = "32afcd4cd534d8e2f99ae76aa0234a0a5c697ba9";
     hash = "sha256-mlTSkBr5glkCr21l2Z1GFICLOn02IOWjMKBy8BvkSzc=";
+    rev = "32afcd4cd534d8e2f99ae76aa0234a0a5c697ba9";
+    url = "git://git.proxmox.com/git/pve-installer.git";
   };
 
   proxmox_crates_src = fetchgit {
-    url = "git://git.proxmox.com/git/proxmox.git";
-    rev = "b9bc28082f820dbf88f8dcc02ba2250fc999f9d0";
-    name = "proxmox";
     hash = "sha256-NPJi2BzANBfQx995lzIcgCKthWSv+8NeD8zrYnoMye8=";
+    name = "proxmox";
+    rev = "b9bc28082f820dbf88f8dcc02ba2250fc999f9d0";
+    url = "git://git.proxmox.com/git/proxmox.git";
   };
 in
 rustPlatform.buildRustPackage {
   pname = "proxmox-auto-install-assistant";
   version = "9.2.5";
-
-  srcs = [
-    installer_src
-    proxmox_crates_src
-  ];
-
-  sourceRoot = installer_src.name;
 
   postPatch = ''
     rm -v .cargo/config.toml
@@ -50,17 +43,17 @@ rustPlatform.buildRustPackage {
     EOF
   '';
 
-  buildAndTestSubdir = "proxmox-auto-install-assistant";
-
-  cargoLock.lockFile = ./Cargo.lock;
-
   nativeBuildInputs = [ pkg-config ];
+
   buildInputs = [
     libxcrypt
     openssl.dev
   ];
 
   propagatedBuildInputs = [ libisoburn ];
+  cargoLock.lockFile = ./Cargo.lock;
+  doInstallCheck = true;
+  nativeInstallCheckInputs = [ versionCheckHook ];
 
   postFixup = ''
     # these libraries are not actually necessary, only linked in by cargo
@@ -71,16 +64,23 @@ rustPlatform.buildRustPackage {
     patchelf --shrink-rpath $out/bin/proxmox-auto-install-assistant
   '';
 
-  doInstallCheck = true;
-  nativeInstallCheckInputs = [ versionCheckHook ];
+  buildAndTestSubdir = "proxmox-auto-install-assistant";
+  sourceRoot = installer_src.name;
+
+  srcs = [
+    installer_src
+    proxmox_crates_src
+  ];
 
   meta = {
     description = "Tool to prepare a Proxmox installation ISO for automated installations";
+
     longDescription = ''
       This tool can be used to prepare a Proxmox installation ISO for automated installations.
       Additional uses are to validate the format of an answer file or to test match filters and
       print information on the properties to match against for the current hardware.
     '';
+
     homepage = "https://pve.proxmox.com/wiki/Automated_Installation";
     changelog = "https://git.proxmox.com/?p=pve-installer.git;a=blob;f=debian/changelog";
     license = lib.licenses.agpl3Only;

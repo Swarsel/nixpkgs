@@ -27,69 +27,81 @@ let
 in
 {
   options.services.firewalld.services = mkOption {
+    default = { };
+
     description = ''
       firewalld service configuration files. See {manpage}`firewalld.service(5)`.
     '';
-    default = { };
+
     type = attrsOf (submodule {
       options = {
-        version = mkOption {
-          type = nullOr nonEmptyStr;
-          description = "Version of the service.";
-          default = null;
-        };
-        short = mkOption {
-          type = nullOr nonEmptyStr;
-          description = "Short description for the service.";
-          default = null;
-        };
         description = mkOption {
-          type = nullOr nonEmptyStr;
-          description = "Description for the service.";
           default = null;
+          description = "Description for the service.";
+          type = nullOr nonEmptyStr;
         };
-        ports = mkOption {
-          type = listOf (submodule portProtocolOptions);
-          description = "Ports of the service.";
-          default = [ ];
-        };
-        protocols = mkOption {
-          type = listOf nonEmptyStr;
-          description = "Protocols for the service.";
-          default = [ ];
-        };
-        sourcePorts = mkOption {
-          type = listOf (submodule portProtocolOptions);
-          description = "Source ports for the service.";
-          default = [ ];
-        };
+
         destination = mkOption {
+          default = { };
+          description = "Destinations for the service.";
+
           type = submodule {
             options = {
               ipv4 = mkOption {
-                type = nullOr (strMatching "([0-9]{1,3}\\.){3}[0-9]{1,3}(/[0-9]{1,2})?");
+                default = null;
                 description = "IPv4 destination.";
-                default = null;
+                type = nullOr (strMatching "([0-9]{1,3}\\.){3}[0-9]{1,3}(/[0-9]{1,2})?");
               };
+
               ipv6 = mkOption {
-                type = nullOr (strMatching "[0-9A-Fa-f:]{3,39}(/[0-9]{1,3})?");
-                description = "IPv6 destination.";
                 default = null;
+                description = "IPv6 destination.";
+                type = nullOr (strMatching "[0-9A-Fa-f:]{3,39}(/[0-9]{1,3})?");
               };
             };
           };
-          description = "Destinations for the service.";
-          default = { };
         };
-        includes = mkOption {
-          type = listOf nonEmptyStr;
-          description = "Services to include for the service.";
-          default = [ ];
-        };
+
         helpers = mkOption {
-          type = listOf nonEmptyStr;
-          description = "Helpers for the service.";
           default = [ ];
+          description = "Helpers for the service.";
+          type = listOf nonEmptyStr;
+        };
+
+        includes = mkOption {
+          default = [ ];
+          description = "Services to include for the service.";
+          type = listOf nonEmptyStr;
+        };
+
+        ports = mkOption {
+          default = [ ];
+          description = "Ports of the service.";
+          type = listOf (submodule portProtocolOptions);
+        };
+
+        protocols = mkOption {
+          default = [ ];
+          description = "Protocols for the service.";
+          type = listOf nonEmptyStr;
+        };
+
+        short = mkOption {
+          default = null;
+          description = "Short description for the service.";
+          type = nullOr nonEmptyStr;
+        };
+
+        sourcePorts = mkOption {
+          default = [ ];
+          description = "Source ports for the service.";
+          type = listOf (submodule portProtocolOptions);
+        };
+
+        version = mkOption {
+          default = null;
+          description = "Version of the service.";
+          type = nullOr nonEmptyStr;
         };
       };
     });
@@ -105,12 +117,12 @@ in
               (toXmlAttrs { inherit (value) version; })
               {
                 inherit (value) short description;
+                destination = toXmlAttrs value.destination;
+                helper = map (mkXmlAttr "name") value.helpers;
+                include = map (mkXmlAttr "service") value.includes;
                 port = map toXmlAttrs value.ports;
                 protocol = map (mkXmlAttr "value") value.protocols;
                 source-port = map toXmlAttrs value.sourcePorts;
-                destination = toXmlAttrs value.destination;
-                include = map (mkXmlAttr "service") value.includes;
-                helper = map (mkXmlAttr "name") value.helpers;
               }
             ]
           );

@@ -1,17 +1,14 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
-
-  # nativeBuildInputs
-  installShellFiles,
-
   # nativeCheckInputs
   gitMinimal,
-  writableTmpDirAsHomeHook,
-
+  # nativeBuildInputs
+  installShellFiles,
+  rustPlatform,
   # nativeInstallCheckInputs
   versionCheckHook,
+  writableTmpDirAsHomeHook,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -25,9 +22,8 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-ub06sn3CUlbU9LkDCbZJmoZ7CQef97HeXhRdW6ESw1U=";
   };
 
-  cargoHash = "sha256-9AhTTvSv0HGQxglifmcEU0ApZuCIng7gFgfCMQLXpLo=";
-
   nativeBuildInputs = [ installShellFiles ];
+  cargoHash = "sha256-9AhTTvSv0HGQxglifmcEU0ApZuCIng7gFgfCMQLXpLo=";
 
   nativeCheckInputs = [
     gitMinimal
@@ -49,7 +45,7 @@ rustPlatform.buildRustPackage (finalAttrs: {
     description = "Clean up stale git branches safely";
     homepage = "https://github.com/armgabrielyan/deadbranch";
     license = lib.licenses.mit;
-    mainProgram = "deadbranch";
     maintainers = with lib.maintainers; [ mahyarmirrashed ];
+    mainProgram = "deadbranch";
   };
 })

@@ -1,22 +1,21 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
-  pytestCheckHook,
   beautifulsoup4,
+  buildPythonPackage,
   markdown,
   mkdocs,
   pandas,
+  pytestCheckHook,
   pyyaml,
   rich,
+  setuptools,
   super-collections,
 }:
 
 buildPythonPackage rec {
   pname = "mkdocs-test";
   version = "0.6.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "fralau";
@@ -24,6 +23,12 @@ buildPythonPackage rec {
     tag = "v${version}";
     hash = "sha256-IP6qL+qR8uYSV5eG7/spiiNtdNghApdiuHBF+8OjPPg=";
   };
+
+  nativeCheckInputs = [
+    pytestCheckHook
+    mkdocs
+  ]
+  ++ pandas.optional-dependencies.html;
 
   build-system = [
     setuptools
@@ -39,20 +44,16 @@ buildPythonPackage rec {
     super-collections
   ];
 
+  pyproject = true;
+
   pythonImportsCheck = [
     "mkdocs_test"
   ];
 
-  nativeCheckInputs = [
-    pytestCheckHook
-    mkdocs
-  ]
-  ++ pandas.optional-dependencies.html;
-
   meta = {
-    changelog = "https://github.com/fralau/mkdocs-test/releases/tag/${src.tag}";
     description = "Framework for testing MkDocs projects";
     homepage = "https://github.com/fralau/mkdocs-test";
+    changelog = "https://github.com/fralau/mkdocs-test/releases/tag/${src.tag}";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ marcel ];
   };

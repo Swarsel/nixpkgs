@@ -1,24 +1,24 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchurl,
+  coreutils,
+  gawk,
+  gnugrep,
+  gnused,
+  iproute2,
   iptables-legacy,
+  libmnl,
+  libnftnl,
   libuuid,
   linuxHeaders,
+  makeWrapper,
+  nftables,
+  nixosTests,
   openssl,
   pkg-config,
   which,
-  iproute2,
-  gnused,
-  coreutils,
-  gnugrep,
-  gawk,
-  makeWrapper,
-  nixosTests,
   firewall ? "iptables",
-  nftables,
-  libmnl,
-  libnftnl,
 }:
 
 let
@@ -36,6 +36,7 @@ let
           gnugrep
           gawk
         ];
+
         nftables = [
           # needed for dirname in nft_*.sh & cat in nft_init.sh
           coreutils
@@ -55,6 +56,11 @@ stdenv.mkDerivation rec {
     sha256 = "sha256-Zss8PWl6srs6YdPEhigWbWujKNfC2+uViY/fKjICr3s=";
   };
 
+  nativeBuildInputs = [
+    pkg-config
+    makeWrapper
+  ];
+
   buildInputs = [
     iptables-legacy
     libuuid
@@ -64,16 +70,7 @@ stdenv.mkDerivation rec {
     libmnl
     libnftnl
   ];
-  nativeBuildInputs = [
-    pkg-config
-    makeWrapper
-  ];
 
-  # ./configure is not a standard configure file, errors with:
-  # Option not recognized : --prefix=
-  dontAddPrefix = true;
-  # Similar for cross flags --host/--build
-  configurePlatforms = [ ];
   configureFlags = [
     "--host-os=${stdenv.hostPlatform.uname.system}"
     "--host-os-version=${linuxHeaders.version}"
@@ -89,11 +86,6 @@ stdenv.mkDerivation rec {
     "--portinuse"
   ];
 
-  installFlags = [
-    "PREFIX=$(out)"
-    "INSTALLPREFIX=$(out)"
-  ];
-
   postFixup =
     {
       # Ideally we'd prefer using system's config.firewall.package here for iptables,
@@ -104,6 +96,7 @@ stdenv.mkDerivation rec {
           wrapProgram $script --prefix PATH : '${scriptBinEnv}:$PATH'
         done
       '';
+
       nftables = ''
         for script in $out/etc/miniupnpd/nft_{delete_chain,flush,init,removeall}.sh
         do
@@ -113,16 +106,27 @@ stdenv.mkDerivation rec {
     }
     .${firewall};
 
+  # Similar for cross flags --host/--build
+  configurePlatforms = [ ];
+  # ./configure is not a standard configure file, errors with:
+  # Option not recognized : --prefix=
+  dontAddPrefix = true;
+
+  installFlags = [
+    "PREFIX=$(out)"
+    "INSTALLPREFIX=$(out)"
+  ];
+
   passthru.tests = {
-    bittorrent-integration = nixosTests.bittorrent;
     inherit (nixosTests) upnp;
+    bittorrent-integration = nixosTests.bittorrent;
   };
 
   meta = {
-    homepage = "https://miniupnp.tuxfamily.org/";
     description = "Daemon that implements the UPnP Internet Gateway Device (IGD) specification";
-    platforms = lib.platforms.linux;
+    homepage = "https://miniupnp.tuxfamily.org/";
     license = lib.licenses.bsd3;
+    platforms = lib.platforms.linux;
     mainProgram = "miniupnpd";
   };
 }

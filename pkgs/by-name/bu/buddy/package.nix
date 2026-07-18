@@ -14,12 +14,14 @@ stdenv.mkDerivation (finalAttrs: {
     sha256 = "0dl86l9xkl33wnkz684xa9axhcxx2zzi4q5lii0axnb9lsk81pyk";
   };
 
-  buildInputs = [ bison ];
   patches = [ ./gcc-4.3.3-fixes.patch ];
+  buildInputs = [ bison ];
+
   configureFlags = [
     "CFLAGS=-O3"
     "CXXFLAGS=-O3"
   ];
+
   env = {
     NIX_LDFLAGS = "-lm";
   }
@@ -30,10 +32,9 @@ stdenv.mkDerivation (finalAttrs: {
   doCheck = true;
 
   meta = {
-    homepage = "https://sourceforge.net/projects/buddy/";
     description = "Binary decision diagram package";
+    homepage = "https://sourceforge.net/projects/buddy/";
     license = lib.licenses.buddy;
-
     platforms = lib.platforms.unix; # Once had cygwin problems
   };
 })

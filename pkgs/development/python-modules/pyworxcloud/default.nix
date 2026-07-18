@@ -1,20 +1,19 @@
 {
   lib,
+  fetchFromGitHub,
   aiohttp,
   awsiotsdk,
   buildPythonPackage,
-  fetchFromGitHub,
-  poetry-core,
   paho-mqtt,
+  poetry-core,
   requests,
-  urllib3,
   tzdata,
+  urllib3,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "pyworxcloud";
   version = "6.4.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "MTrab";
@@ -23,8 +22,8 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-ouyR0BNUqu8ywSfzfjd3oIXPxVHcyXumFYthsPk+4i4=";
   };
 
-  pythonRelaxDeps = [ "awsiotsdk" ];
-
+  # Module has no tests
+  doCheck = false;
   build-system = [ poetry-core ];
 
   dependencies = [
@@ -36,19 +35,20 @@ buildPythonPackage (finalAttrs: {
     tzdata
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "pyworxcloud" ];
-
-  # Module has no tests
-  doCheck = false;
+  pythonRelaxDeps = [ "awsiotsdk" ];
 
   meta = {
     description = "Module for integrating with Worx Cloud devices";
     homepage = "https://github.com/MTrab/pyworxcloud";
     changelog = "https://github.com/MTrab/pyworxcloud/releases/tag/${finalAttrs.src.tag}";
+
     license = with lib.licenses; [
       gpl3Only
       mit
     ];
+
     maintainers = with lib.maintainers; [ fab ];
   };
 })

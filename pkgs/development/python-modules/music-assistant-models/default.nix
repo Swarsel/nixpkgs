@@ -1,22 +1,18 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # build-system
-  setuptools,
-
+  buildPythonPackage,
   # dependencies
   mashumaro,
-  orjson,
-
-  # tests
-  pytestCheckHook,
-  pytest-cov-stub,
-
   # reverse dependencies
   music-assistant,
   music-assistant-client,
+  orjson,
+  pytest-cov-stub,
+  # tests
+  pytestCheckHook,
+  # build-system
+  setuptools,
 }:
 
 buildPythonPackage (finalAttrs: {
@@ -24,7 +20,6 @@ buildPythonPackage (finalAttrs: {
   # Must be compatible with music-assistant-client package
   # nixpkgs-update: no auto update
   version = "1.1.139";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "music-assistant";
@@ -38,6 +33,11 @@ buildPythonPackage (finalAttrs: {
       --replace-fail "0.0.0" "${finalAttrs.version}"
   '';
 
+  nativeCheckInputs = [
+    pytest-cov-stub
+    pytestCheckHook
+  ];
+
   build-system = [ setuptools ];
 
   dependencies = [
@@ -45,10 +45,7 @@ buildPythonPackage (finalAttrs: {
     orjson
   ];
 
-  nativeCheckInputs = [
-    pytest-cov-stub
-    pytestCheckHook
-  ];
+  pyproject = true;
 
   pythonImportsCheck = [
     "music_assistant_models"

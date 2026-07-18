@@ -3,8 +3,8 @@
   stdenv,
   fetchFromGitHub,
   callPackage,
-  zig_0_16,
   versionCheckHook,
+  zig_0_16,
 }:
 
 let
@@ -15,29 +15,18 @@ stdenv.mkDerivation (finalAttrs: {
   version = "0.9.0";
 
   src = fetchFromGitHub {
-    name = "zlint"; # tests expect this
     owner = "DonIsaac";
     repo = "zlint";
     tag = "v${finalAttrs.version}";
     hash = "sha256-z5HYJbt4VAOI/o9TqFdZ4Q1BhgIin/NR29gFIZCX/i0=";
+    name = "zlint"; # tests expect this
   };
 
   nativeBuildInputs = [
     zig
   ];
 
-  zigBuildFlags = [
-    "-Dversion=v${finalAttrs.version}"
-    "--system"
-    (callPackage ./build.zig.zon.nix { })
-  ];
-
   doCheck = true;
-  zigCheckFlags = finalAttrs.zigBuildFlags;
-
-  doInstallCheck = true;
-  nativeInstallCheckInputs = [ versionCheckHook ];
-  versionCheckProgram = "${placeholder "out"}/bin/zlint";
 
   # `zig build` produces a lot more artifacts, just copy over the ones we want
   installPhase = ''
@@ -46,13 +35,25 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  doInstallCheck = true;
+  nativeInstallCheckInputs = [ versionCheckHook ];
+  versionCheckProgram = "${placeholder "out"}/bin/zlint";
+
+  zigBuildFlags = [
+    "-Dversion=v${finalAttrs.version}"
+    "--system"
+    (callPackage ./build.zig.zon.nix { })
+  ];
+
+  zigCheckFlags = finalAttrs.zigBuildFlags;
+
   meta = {
+    inherit (zig.meta) platforms;
     description = "Linter for the Zig programming language";
     homepage = "https://github.com/DonIsaac/zlint";
     changelog = "https://github.com/DonIsaac/zlint/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ christoph-heiss ];
     mainProgram = "zlint";
-    inherit (zig.meta) platforms;
   };
 })

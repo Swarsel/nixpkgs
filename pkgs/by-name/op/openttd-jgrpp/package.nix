@@ -15,15 +15,15 @@ openttd.overrideAttrs (oldAttrs: rec {
     rev = "jgrpp-${version}";
     hash = "sha256-qiTKoaCUdcm7dJKfxwTtYU8f5C8RYxj7XZL/TtOygtg=";
   };
-  patches = [ ];
 
+  patches = [ ];
   buildInputs = oldAttrs.buildInputs ++ [ zstd ];
 
   meta = {
     homepage = "https://github.com/JGRennison/OpenTTD-patches";
     changelog = "https://github.com/JGRennison/OpenTTD-patches/blob/jgrpp-${version}/jgrpp-changelog.md";
-    mainProgram = "openttd";
     maintainers = with lib.maintainers; [ artifycz ];
+    mainProgram = "openttd";
   };
 
 })

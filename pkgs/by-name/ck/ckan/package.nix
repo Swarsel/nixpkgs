@@ -2,13 +2,13 @@
   lib,
   stdenv,
   fetchurl,
+  copyDesktopItems,
+  curl,
+  gtk2,
+  imagemagick,
+  makeDesktopItem,
   makeWrapper,
   mono,
-  gtk2,
-  curl,
-  imagemagick,
-  copyDesktopItems,
-  makeDesktopItem,
   nix-update-script,
 }:
 
@@ -21,13 +21,6 @@ stdenv.mkDerivation rec {
     hash = "sha256-d0gILN/PLbtfUCJhsYr8hQAxk4lMYEJ9BLCseo3+994=";
   };
 
-  icon = fetchurl {
-    url = "https://raw.githubusercontent.com/KSP-CKAN/CKAN/450e2f960e1a3fee4ab7cf74ad56bddc5296fc7e/assets/ckan-256.png";
-    hash = "sha256-BJvuOz8NWmzpYzzhveeq6rcuqXIxQqxtBIcRvobx+TY=";
-  };
-
-  dontUnpack = true;
-
   nativeBuildInputs = [
     copyDesktopItems
     imagemagick
@@ -35,13 +28,6 @@ stdenv.mkDerivation rec {
   ];
 
   buildInputs = [ mono ];
-
-  libraries = lib.makeLibraryPath [
-    gtk2
-    curl
-  ];
-
-  dontBuild = true;
 
   installPhase = ''
     runHook preInstall
@@ -58,35 +44,53 @@ stdenv.mkDerivation rec {
 
   desktopItems = [
     (makeDesktopItem {
-      name = "ckan";
-      comment = "The Comprehensive Kerbal Archive Network Client";
-      desktopName = "CKAN";
       categories = [
         "Game"
         "PackageManager"
       ];
+
+      comment = "The Comprehensive Kerbal Archive Network Client";
+      desktopName = "CKAN";
       exec = "ckan";
+      extraConfig.X-GNOME-SingleWindow = "true";
       icon = "ckan";
+
       keywords = [
         "Kerbal Space Program"
         "KSP"
         "Mod"
       ];
-      extraConfig.X-GNOME-SingleWindow = "true";
+
+      name = "ckan";
     })
+  ];
+
+  dontBuild = true;
+  dontUnpack = true;
+
+  icon = fetchurl {
+    hash = "sha256-BJvuOz8NWmzpYzzhveeq6rcuqXIxQqxtBIcRvobx+TY=";
+    url = "https://raw.githubusercontent.com/KSP-CKAN/CKAN/450e2f960e1a3fee4ab7cf74ad56bddc5296fc7e/assets/ckan-256.png";
+  };
+
+  libraries = lib.makeLibraryPath [
+    gtk2
+    curl
   ];
 
   passthru.updateScript = nix-update-script { };
 
   meta = {
     description = "Mod manager for Kerbal Space Program";
-    mainProgram = "ckan";
     homepage = "https://github.com/KSP-CKAN/CKAN";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       Baughn
       nullcube
     ];
+
     platforms = lib.platforms.all;
+    mainProgram = "ckan";
   };
 }

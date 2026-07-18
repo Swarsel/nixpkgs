@@ -2,16 +2,16 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  cmake,
-  pkg-config,
-  enet,
-  yaml-cpp,
   SDL2,
   SDL2_image,
   SDL2_mixer,
-  zlib,
-  unstableGitUpdater,
+  cmake,
+  enet,
   makeWrapper,
+  pkg-config,
+  unstableGitUpdater,
+  yaml-cpp,
+  zlib,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -62,7 +62,7 @@ stdenv.mkDerivation (finalAttrs: {
     changelog = "https://github.com/mmatyas/supermariowar/blob/${finalAttrs.src.rev}/CHANGELOG";
     license = lib.licenses.gpl2Plus;
     maintainers = with lib.maintainers; [ theobori ];
-    mainProgram = "smw";
     platforms = lib.platforms.linux;
+    mainProgram = "smw";
   };
 })

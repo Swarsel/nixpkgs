@@ -3,8 +3,8 @@
   stdenv,
   fetchFromGitHub,
   cmake,
-  which,
   testers,
+  which,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -18,38 +18,39 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-vY0tqCkz6PN00Qbip5ViO64L3C06fJ4JjFuIk0TWgCo=";
   };
 
-  patches = [
-    ./yajl-cmake4-compat.patch
-  ];
-
-  nativeBuildInputs = [ cmake ];
-
-  doCheck = true;
-  nativeCheckInputs = [ which ];
-
-  passthru = {
-    tests.pkg-config = testers.testMetaPkgConfig finalAttrs.finalPackage;
-  };
-
   outputs = [
     "out"
     "bin"
     "dev"
   ];
 
+  patches = [
+    ./yajl-cmake4-compat.patch
+  ];
+
+  nativeBuildInputs = [ cmake ];
+  doCheck = true;
+  nativeCheckInputs = [ which ];
+
   postFixup = ''
     moveToOutput bin "''${!outputBin}"
   '';
 
+  passthru = {
+    tests.pkg-config = testers.testMetaPkgConfig finalAttrs.finalPackage;
+  };
+
   meta = {
     description = "Yet Another JSON Library";
+
     longDescription = ''
       YAJL is a small event-driven (SAX-style) JSON parser written in ANSI
       C, and a small validating JSON generator.
     '';
+
     homepage = "http://lloyd.github.com/yajl/";
     license = lib.licenses.isc;
-    pkgConfigModules = [ "yajl" ];
     platforms = with lib.platforms; linux ++ darwin;
+    pkgConfigModules = [ "yajl" ];
   };
 })

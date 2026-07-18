@@ -1,13 +1,17 @@
 {
   lib,
   stdenv,
-  fetchFromCodeberg,
   alsa-lib,
   bison,
   fcft,
+  fetchFromCodeberg,
   flex,
   json_c,
   libmpdclient,
+  libxcb-cursor,
+  libxcb-errors,
+  libxcb-util,
+  libxcb-wm,
   libyaml,
   meson,
   ninja,
@@ -21,10 +25,6 @@
   wayland,
   wayland-protocols,
   wayland-scanner,
-  libxcb-util,
-  libxcb-cursor,
-  libxcb-errors,
-  libxcb-wm,
   waylandSupport ? true,
   x11Support ? true,
 }:
@@ -46,7 +46,7 @@ stdenv.mkDerivation (finalAttrs: {
     "man"
   ];
 
-  depsBuildBuild = [ pkg-config ];
+  strictDeps = true;
 
   nativeBuildInputs = [
     bison
@@ -81,19 +81,18 @@ stdenv.mkDerivation (finalAttrs: {
     libxcb-wm
   ];
 
-  strictDeps = true;
-
-  mesonBuildType = "release";
-
   mesonFlags = [
     (lib.mesonBool "werror" false)
     (lib.mesonEnable "backend-x11" x11Support)
     (lib.mesonEnable "backend-wayland" waylandSupport)
   ];
 
+  depsBuildBuild = [ pkg-config ];
+  mesonBuildType = "release";
+
   meta = {
-    homepage = "https://codeberg.org/dnkl/yambar";
     description = "Modular status panel for X11 and Wayland";
+
     longDescription = ''
       yambar is a lightweight and configurable status panel (bar, for short) for
       X11 and Wayland, that goes to great lengths to be both CPU and battery
@@ -119,6 +118,8 @@ stdenv.mkDerivation (finalAttrs: {
       To summarize: a bar displays information provided by modules, using
       particles and decorations. How is configured by you.
     '';
+
+    homepage = "https://codeberg.org/dnkl/yambar";
     changelog = "https://codeberg.org/dnkl/yambar/releases/tag/${finalAttrs.version}";
     license = lib.licenses.mit;
     maintainers = [ ];

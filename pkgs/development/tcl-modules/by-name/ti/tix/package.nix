@@ -7,17 +7,19 @@
 }:
 
 tcl.mkTclDerivation {
-  version = "8.4.3";
   pname = "tix";
+  version = "8.4.3";
+
   src = fetchurl {
     url = "mirror://sourceforge/tix/tix/8.4.3/Tix8.4.3-src.tar.gz";
     hash = "sha256-Vi8ED/dlfhC1z/wsQZNfGlPGQC6z1fMYkRPXNP1sA8s=";
   };
+
   patches = [
     (fetchpatch {
+      hash = "sha256-cpsvacSWedHZRRBsTu3zDnqR+NUg/P6kvTgD3Dur+HM=";
       name = "tix-8.4.3-tcl8.5.patch";
       url = "https://gitweb.gentoo.org/repo/gentoo.git/plain/dev-tcltk/tix/files/tix-8.4.3-tcl8.5.patch?id=56bd759df1d0c750a065b8c845e93d5dfa6b549d";
-      hash = "sha256-cpsvacSWedHZRRBsTu3zDnqR+NUg/P6kvTgD3Dur+HM=";
     })
     # Remove duplicated definition of XLowerWindow
     ./duplicated-xlowerwindow.patch
@@ -26,11 +28,20 @@ tcl.mkTclDerivation {
     ./fix-clang16.patch
   ]
   ++ lib.optional (tcl.release == "8.6") (fetchpatch {
+    hash = "sha256-ZuSzljvvHeW3ewQ/ui6ZfFl9QzQqppXJDP3ILgQFX8k=";
     name = "tix-8.4.3-tcl8.6.patch";
     url = "https://gitweb.gentoo.org/repo/gentoo.git/plain/dev-tcltk/tix/files/tix-8.4.3-tcl8.6.patch?id=56bd759df1d0c750a065b8c845e93d5dfa6b549d";
-    hash = "sha256-ZuSzljvvHeW3ewQ/ui6ZfFl9QzQqppXJDP3ILgQFX8k=";
   });
+
   buildInputs = [ tk ];
+
+  configureFlags = [
+    "--with-tclconfig=."
+    "--with-tkinclude=${tk.dev}/include"
+    "--with-tkconfig=."
+    "--libdir=\${prefix}/lib"
+  ];
+
   # the configure script expects to find the location of the sources of
   # tcl and tk in {tcl,tk}Config.sh
   # In fact, it only needs some private headers. We copy them in
@@ -44,22 +55,19 @@ tcl.mkTclDerivation {
       ln -s $i private_headers/generic;
     done;
   '';
+
   addTclConfigureFlags = false;
-  configureFlags = [
-    "--with-tclconfig=."
-    "--with-tkinclude=${tk.dev}/include"
-    "--with-tkconfig=."
-    "--libdir=\${prefix}/lib"
-  ];
 
   meta = {
     description = "Widget library for Tcl/Tk";
     homepage = "https://tix.sourceforge.net/";
-    platforms = lib.platforms.all;
+
     license = with lib.licenses; [
       bsd2 # tix
       gpl2 # patches from portage
     ];
+
+    platforms = lib.platforms.all;
     broken = tcl.isTcl9;
   };
 }

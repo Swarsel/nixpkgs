@@ -6,8 +6,6 @@
 }:
 
 buildHomeAssistantComponent rec {
-  owner = "vinteo";
-  domain = "opensprinkler";
   version = "1.5.5";
 
   src = fetchFromGitHub {
@@ -21,11 +19,14 @@ buildHomeAssistantComponent rec {
     pyopensprinkler
   ];
 
+  domain = "opensprinkler";
+  owner = "vinteo";
+
   meta = {
-    changelog = "https://github.com/vinteo/hass-opensprinkler/releases/tag/${src.tag}";
     description = "OpenSprinkler Integration for Home Assistant";
     homepage = "https://github.com/vinteo/hass-opensprinkler";
-    maintainers = with lib.maintainers; [ jfly ];
+    changelog = "https://github.com/vinteo/hass-opensprinkler/releases/tag/${src.tag}";
     license = lib.licenses.mit;
+    maintainers = with lib.maintainers; [ jfly ];
   };
 }

@@ -1,24 +1,23 @@
 {
   lib,
+  azure-cli,
+  azure-core,
   buildPythonPackage,
   fetchPypi,
-  setuptools,
-  wheel,
-  azure-core,
   isodate,
+  setuptools,
   typing-extensions,
-  azure-cli,
+  wheel,
 }:
 
 buildPythonPackage rec {
   pname = "azure-ai-agents";
   version = "1.1.0";
-  pyproject = true;
 
   src = fetchPypi {
-    pname = "azure_ai_agents";
     inherit version;
     hash = "sha256-651yJigtAyBsP6s/PuCi/HHgrTjlLS9PGaksVu2VGuo=";
+    pname = "azure_ai_agents";
   };
 
   build-system = [
@@ -31,6 +30,8 @@ buildPythonPackage rec {
     isodate
     typing-extensions
   ];
+
+  pyproject = true;
 
   pythonImportsCheck = [
     "azure.ai.agents"

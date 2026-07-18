@@ -1,32 +1,27 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # build-system
-  setuptools,
-
+  buildPythonPackage,
   # dependencies
   fsspec,
   lightning-utilities,
   numpy,
   packaging,
+  # tests
+  psutil,
+  pytestCheckHook,
   pyyaml,
+  # build-system
+  setuptools,
   torch,
   torchmetrics,
   tqdm,
   traitlets,
-
-  # tests
-  psutil,
-  pytestCheckHook,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "pytorch-lightning";
   version = "2.6.5";
-  pyproject = true;
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "Lightning-AI";
@@ -36,7 +31,16 @@ buildPythonPackage (finalAttrs: {
   };
 
   env.PACKAGE_NAME = "pytorch";
+  # Some packages are not in NixPkgs; other tests try to build distributed
+  # models, which doesn't work in the sandbox.
+  doCheck = false;
 
+  nativeCheckInputs = [
+    psutil
+    pytestCheckHook
+  ];
+
+  __structuredAttrs = true;
   build-system = [ setuptools ];
 
   dependencies = [
@@ -52,15 +56,7 @@ buildPythonPackage (finalAttrs: {
   ]
   ++ fsspec.optional-dependencies.http;
 
-  nativeCheckInputs = [
-    psutil
-    pytestCheckHook
-  ];
-
-  # Some packages are not in NixPkgs; other tests try to build distributed
-  # models, which doesn't work in the sandbox.
-  doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "pytorch_lightning" ];
 
   meta = {

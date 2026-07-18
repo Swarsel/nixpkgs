@@ -1,8 +1,8 @@
 {
   lib,
-  runCommand,
   emptyFile,
   nix-diff,
+  runCommand,
 }:
 
 assertion: a: b:

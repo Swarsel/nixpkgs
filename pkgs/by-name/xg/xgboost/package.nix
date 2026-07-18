@@ -1,19 +1,19 @@
 {
-  config,
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
-  cmake,
-  gtest,
-  doCheck ? true,
+  R,
   autoAddDriverRunpath,
+  cmake,
+  config,
+  cudaPackages,
+  gtest,
+  llvmPackages,
+  rPackages,
   cudaSupport ? config.cudaSupport,
+  doCheck ? true,
   ncclSupport ? false,
   rLibrary ? false,
-  cudaPackages,
-  llvmPackages,
-  R,
-  rPackages,
 }@inputs:
 
 assert ncclSupport -> (cudaSupport && cudaPackages.nccl.meta.available);
@@ -34,7 +34,7 @@ let
 in
 
 effectiveStdenv.mkDerivation rec {
-  pnameBase = "xgboost";
+  inherit doCheck;
   # prefix with r when building the R library
   # The R package build results in a special xgboost.so file
   # that contains a subset of the .so file use for the CLI
@@ -54,8 +54,8 @@ effectiveStdenv.mkDerivation rec {
     owner = "dmlc";
     repo = "xgboost";
     tag = "v${version}";
-    fetchSubmodules = true;
     hash = "sha256-khaD9gvKfUyWhkrIZXzGzKw/nfgeTcp9akCi5X3IORo=";
+    fetchSubmodules = true;
   };
 
   nativeBuildInputs = [
@@ -90,23 +90,7 @@ effectiveStdenv.mkDerivation rec {
     ++ lib.optionals ncclSupport [ "-DUSE_NCCL=ON" ]
     ++ lib.optionals rLibrary [ "-DR_LIB=ON" ];
 
-  preConfigure = lib.optionals rLibrary ''
-    substituteInPlace cmake/RPackageInstall.cmake.in --replace "CMD INSTALL" "CMD INSTALL -l $out/library"
-    export R_LIBS_SITE="$R_LIBS_SITE''${R_LIBS_SITE:+:}$out/library"
-  '';
-
-  inherit doCheck;
-
-  # By default, cmake build will run ctests with all checks enabled
-  # If we're building with cuda, we run ctest manually so that we can skip the GPU tests
-  checkPhase = lib.optionalString cudaSupport ''
-    ctest --force-new-ctest-process ${lib.optionalString cudaSupport "-E TestXGBoostLib"}
-  '';
-
   env = {
-    # on Darwin, cmake uses find_library to locate R instead of using the PATH
-    NIX_LDFLAGS = lib.optionalString rLibrary "-L${R}/lib/R/lib";
-
     # Disable finicky tests from dmlc core that fail in Hydra. XGboost team
     # confirmed xgboost itself does not use this part of the dmlc code.
     GTEST_FILTER =
@@ -171,7 +155,21 @@ effectiveStdenv.mkDerivation rec {
         excludedTests = xsimdTests ++ networkingTest;
       in
       "-${builtins.concatStringsSep ":" excludedTests}";
+
+    # on Darwin, cmake uses find_library to locate R instead of using the PATH
+    NIX_LDFLAGS = lib.optionalString rLibrary "-L${R}/lib/R/lib";
   };
+
+  preConfigure = lib.optionals rLibrary ''
+    substituteInPlace cmake/RPackageInstall.cmake.in --replace "CMD INSTALL" "CMD INSTALL -l $out/library"
+    export R_LIBS_SITE="$R_LIBS_SITE''${R_LIBS_SITE:+:}$out/library"
+  '';
+
+  # By default, cmake build will run ctests with all checks enabled
+  # If we're building with cuda, we run ctest manually so that we can skip the GPU tests
+  checkPhase = lib.optionalString cudaSupport ''
+    ctest --force-new-ctest-process ${lib.optionalString cudaSupport "-E TestXGBoostLib"}
+  '';
 
   installPhase = ''
     runHook preInstall
@@ -193,14 +191,18 @@ effectiveStdenv.mkDerivation rec {
     fi
   '';
 
+  pnameBase = "xgboost";
+
   meta = {
     description = "Scalable, Portable and Distributed Gradient Boosting (GBDT, GBRT or GBM) Library";
     homepage = "https://github.com/dmlc/xgboost";
     license = lib.licenses.asl20;
-    mainProgram = "xgboost";
-    platforms = lib.platforms.unix;
+
     maintainers = with lib.maintainers; [
       nviets
     ];
+
+    platforms = lib.platforms.unix;
+    mainProgram = "xgboost";
   };
 }

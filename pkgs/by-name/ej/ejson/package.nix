@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule (finalAttrs: {
@@ -24,8 +24,8 @@ buildGoModule (finalAttrs: {
 
   meta = {
     description = "Small library to manage encrypted secrets using asymmetric encryption";
-    mainProgram = "ejson";
-    license = lib.licenses.mit;
     homepage = "https://github.com/Shopify/ejson";
+    license = lib.licenses.mit;
+    mainProgram = "ejson";
   };
 })

@@ -1,9 +1,9 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitLab,
-  fetchpatch,
   cmake,
+  fetchpatch,
 }:
 stdenv.mkDerivation (finalAttrs: {
   pname = "tango-idl";
@@ -19,8 +19,8 @@ stdenv.mkDerivation (finalAttrs: {
   patches = [
     # corresponds to PR https://gitlab.com/tango-controls/tango-idl/-/merge_requests/31/
     (fetchpatch {
-      url = "https://gitlab.com/tango-controls/tango-idl/-/commit/8fd75a4079bf96544697f7783c2de0027d030b8e.patch";
       hash = "sha256-2NMfHakoHzxnYqxVDvH2LnEtLe8S8K88prT9AAs95MA=";
+      url = "https://gitlab.com/tango-controls/tango-idl/-/commit/8fd75a4079bf96544697f7783c2de0027d030b8e.patch";
     })
   ];
 
@@ -30,7 +30,7 @@ stdenv.mkDerivation (finalAttrs: {
     description = "Tango CORBA IDL file";
     homepage = "https://gitlab.com/tango-controls/tango-idl";
     license = lib.licenses.lgpl3;
-    platforms = lib.platforms.unix;
     maintainers = [ lib.maintainers.gilice ];
+    platforms = lib.platforms.unix;
   };
 })

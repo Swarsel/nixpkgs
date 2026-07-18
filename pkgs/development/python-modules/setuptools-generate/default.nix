@@ -1,19 +1,18 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools-scm,
+  buildPythonPackage,
   click,
   help2man,
   markdown-it-py,
-  shtab,
   pytestCheckHook,
+  setuptools-scm,
+  shtab,
 }:
 
 buildPythonPackage rec {
   pname = "setuptools-generate";
   version = "0.0.6";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "Freed-Wu";
@@ -32,7 +31,7 @@ buildPythonPackage rec {
   ];
 
   nativeCheckInputs = [ pytestCheckHook ];
-
+  pyproject = true;
   pythonImportsCheck = [ "setuptools_generate" ];
 
   meta = {

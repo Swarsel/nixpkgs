@@ -2,30 +2,30 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  fetchpatch,
-  pkg-config, # needed to find minizip
   SDL2,
   SDL2_image,
   SDL2_mixer,
   SDL2_net,
   SDL2_ttf,
+  asio,
   cmake,
   curl,
   doxygen,
+  fetchpatch,
   gettext,
   glew,
   graphviz,
   icu,
   installShellFiles,
+  libice,
   libpng,
+  libsm,
+  libxext,
   lua,
+  minizip,
+  pkg-config, # needed to find minizip
   python3,
   zlib,
-  minizip,
-  asio,
-  libsm,
-  libice,
-  libxext,
 }:
 
 stdenv.mkDerivation rec {
@@ -44,13 +44,6 @@ stdenv.mkDerivation rec {
       --replace 'Exec=widelands' "Exec=$out/bin/widelands"
   '';
 
-  cmakeFlags = [
-    "-Wno-dev" # dev warnings are only needed for upstream development
-    "-DWL_INSTALL_BASEDIR=${placeholder "out"}/share/widelands" # for COPYING, Changelog, etc.
-    "-DWL_INSTALL_DATADIR=${placeholder "out"}/share/widelands" # for game data
-    "-DWL_INSTALL_BINDIR=${placeholder "out"}/bin"
-  ];
-
   nativeBuildInputs = [
     cmake
     doxygen
@@ -59,8 +52,6 @@ stdenv.mkDerivation rec {
     installShellFiles
     pkg-config
   ];
-
-  enableParallelBuilding = true;
 
   buildInputs = [
     SDL2
@@ -82,6 +73,13 @@ stdenv.mkDerivation rec {
   ]
   ++ lib.optional stdenv.hostPlatform.isLinux libxext;
 
+  cmakeFlags = [
+    "-Wno-dev" # dev warnings are only needed for upstream development
+    "-DWL_INSTALL_BASEDIR=${placeholder "out"}/share/widelands" # for COPYING, Changelog, etc.
+    "-DWL_INSTALL_DATADIR=${placeholder "out"}/share/widelands" # for game data
+    "-DWL_INSTALL_BINDIR=${placeholder "out"}/bin"
+  ];
+
   postInstall =
     lib.optionalString stdenv.hostPlatform.isLinux ''
       install -Dm444 -t $out/share/applications ../xdg/org.widelands.Widelands.desktop
@@ -94,22 +92,28 @@ stdenv.mkDerivation rec {
       installManPage ../xdg/widelands.6
     '';
 
+  enableParallelBuilding = true;
+
   meta = {
     description = "RTS with multiple-goods economy";
-    homepage = "https://widelands.org/";
+
     longDescription = ''
       Widelands is a real time strategy game based on "The Settlers" and "The
       Settlers II". It has a single player campaign mode, as well as a networked
       multiplayer mode.
     '';
+
+    homepage = "https://widelands.org/";
     changelog = "https://github.com/widelands/widelands/releases/tag/v${version}";
-    mainProgram = "widelands";
     license = lib.licenses.gpl2Plus;
+
     maintainers = with lib.maintainers; [
       raskin
       jcumming
     ];
+
     platforms = lib.platforms.linux ++ lib.platforms.darwin;
+    mainProgram = "widelands";
     hydraPlatforms = [ ];
   };
 }

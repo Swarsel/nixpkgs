@@ -1,15 +1,12 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
   pname = "thokr";
   version = "0.5.0";
-
-  __structuredAttrs = true;
-  strictDeps = true;
 
   src = fetchFromGitHub {
     owner = "jrnxf";
@@ -18,7 +15,9 @@ rustPlatform.buildRustPackage (finalAttrs: {
     sha256 = "sha256-Ms90Eo2Bk9+QTOZv9fc73gQ1xwDntTbiwXsifF79ELE=";
   };
 
+  strictDeps = true;
   cargoHash = "sha256-U0nClfSQnliQEVX/PrG4B+TLqHNbL0xvttLukEGFKeI=";
+  __structuredAttrs = true;
 
   meta = {
     description = "Typing tui with visualized results and historical logging";

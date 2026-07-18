@@ -1,10 +1,10 @@
 {
   lib,
   fetchurl,
+  blas,
   buildDunePackage,
   dune-configurator,
   lapack,
-  blas,
 }:
 
 assert (!blas.isILP64) && (!lapack.isILP64);
@@ -19,14 +19,15 @@ buildDunePackage (finalAttrs: {
   };
 
   buildInputs = [ dune-configurator ];
+
   propagatedBuildInputs = [
     lapack
     blas
   ];
 
   meta = {
-    homepage = "https://mmottl.github.io/lacaml";
     description = "OCaml bindings for BLAS and LAPACK";
+    homepage = "https://mmottl.github.io/lacaml";
     license = lib.licenses.lgpl21Plus;
     maintainers = [ lib.maintainers.vbgl ];
   };

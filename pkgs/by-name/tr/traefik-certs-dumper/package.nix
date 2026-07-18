@@ -1,7 +1,7 @@
 {
+  lib,
   fetchFromGitHub,
   buildGoModule,
-  lib,
 }:
 
 buildGoModule (finalAttrs: {

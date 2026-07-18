@@ -1,12 +1,13 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
-  # Build and Runtime
-  pbr,
+  buildPythonPackage,
   cliff,
   debtcollector,
+  # Tests
+  fixtures,
+  hacking,
+  keystoneauth1,
   netaddr,
   openstacksdk,
   osc-lib,
@@ -14,26 +15,24 @@
   oslo-log,
   oslo-serialization,
   oslo-utils,
-  keystoneauth1,
-  python-keystoneclient,
-  requests,
-  hacking,
-  # Tests
-  fixtures,
   oslotest,
   osprofiler,
+  # Build and Runtime
+  pbr,
+  python-keystoneclient,
   python-openstackclient,
+  requests,
   requests-mock,
+  setuptools,
   stestr,
-  testtools,
-  testscenarios,
   tempest,
+  testscenarios,
+  testtools,
 }:
 
 buildPythonPackage rec {
   pname = "python-neutronclient";
   version = "11.8.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "openstack";
@@ -43,26 +42,6 @@ buildPythonPackage rec {
   };
 
   env.PBR_VERSION = version;
-
-  build-system = [
-    setuptools
-    pbr
-  ];
-
-  dependencies = [
-    cliff
-    debtcollector
-    netaddr
-    openstacksdk
-    osc-lib
-    oslo-i18n
-    oslo-log
-    oslo-serialization
-    oslo-utils
-    keystoneauth1
-    python-keystoneclient
-    requests
-  ];
 
   nativeCheckInputs = [
     hacking
@@ -85,6 +64,27 @@ buildPythonPackage rec {
     runHook postCheck
   '';
 
+  build-system = [
+    setuptools
+    pbr
+  ];
+
+  dependencies = [
+    cliff
+    debtcollector
+    netaddr
+    openstacksdk
+    osc-lib
+    oslo-i18n
+    oslo-log
+    oslo-serialization
+    oslo-utils
+    keystoneauth1
+    python-keystoneclient
+    requests
+  ];
+
+  pyproject = true;
   pythonImportsCheck = [ "neutronclient" ];
 
   meta = {

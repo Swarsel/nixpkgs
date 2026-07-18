@@ -1,21 +1,20 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  transifex-cli,
   babel,
+  buildPythonPackage,
   click,
+  mock,
+  pytestCheckHook,
   setuptools,
   setuptools-scm,
   sphinx,
-  pytestCheckHook,
-  mock,
+  transifex-cli,
 }:
 
 buildPythonPackage rec {
   pname = "sphinx-intl";
   version = "2.3.2";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "sphinx-doc";
@@ -23,6 +22,12 @@ buildPythonPackage rec {
     tag = version;
     hash = "sha256-5Ro+UG9pwwp656fYyCsna6P4s9Gb86Tu3Qm2WUI7tsE=";
   };
+
+  nativeCheckInputs = [
+    pytestCheckHook
+    mock
+    transifex-cli
+  ];
 
   build-system = [
     setuptools
@@ -36,12 +41,7 @@ buildPythonPackage rec {
     sphinx
   ];
 
-  nativeCheckInputs = [
-    pytestCheckHook
-    mock
-    transifex-cli
-  ];
-
+  pyproject = true;
   pythonImportsCheck = [ "sphinx_intl" ];
 
   meta = {

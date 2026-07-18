@@ -45,8 +45,36 @@ in
 
       enable = mkEnableOption "Stubby DNS resolver";
 
+      logLevel =
+        let
+          logLevels = {
+            alert = 1;
+            crit = 2;
+            debug = 7;
+            emerg = 0;
+            error = 3;
+            info = 6;
+            notice = 5;
+            warning = 4;
+          };
+        in
+        mkOption {
+          apply = v: if isString v then logLevels.${v} else v;
+          default = null;
+          description = "Log verbosity (syslog keyword or level).";
+          type = types.nullOr (types.enum (attrNames logLevels ++ attrValues logLevels));
+        };
+
       settings = mkOption {
-        type = types.attrsOf settingsFormat.type;
+        description = ''
+          Content of the Stubby configuration file. All Stubby settings may be set or queried
+          here. The default settings are available at
+          `pkgs.stubby.passthru.settingsExample`. See
+          <https://dnsprivacy.org/wiki/display/DP/Configuring+Stubby>.
+          A list of the public recursive servers can be found here:
+          <https://dnsprivacy.org/wiki/display/DP/DNS+Privacy+Test+Servers>.
+        '';
+
         example = lib.literalExpression ''
           pkgs.stubby.passthru.settingsExample // {
             upstream_recursive_servers = [{
@@ -59,35 +87,9 @@ in
             }];
           };
         '';
-        description = ''
-          Content of the Stubby configuration file. All Stubby settings may be set or queried
-          here. The default settings are available at
-          `pkgs.stubby.passthru.settingsExample`. See
-          <https://dnsprivacy.org/wiki/display/DP/Configuring+Stubby>.
-          A list of the public recursive servers can be found here:
-          <https://dnsprivacy.org/wiki/display/DP/DNS+Privacy+Test+Servers>.
-        '';
-      };
 
-      logLevel =
-        let
-          logLevels = {
-            emerg = 0;
-            alert = 1;
-            crit = 2;
-            error = 3;
-            warning = 4;
-            notice = 5;
-            info = 6;
-            debug = 7;
-          };
-        in
-        mkOption {
-          default = null;
-          type = types.nullOr (types.enum (attrNames logLevels ++ attrValues logLevels));
-          apply = v: if isString v then logLevels.${v} else v;
-          description = "Log verbosity (syslog keyword or level).";
-        };
+        type = types.attrsOf settingsFormat.type;
+      };
 
     };
   };
@@ -96,6 +98,7 @@ in
     assertions = [
       {
         assertion = (cfg.settings.resolution_type or "") == "GETDNS_RESOLUTION_STUB";
+
         message = ''
           services.stubby.settings.resolution_type must be set to "GETDNS_RESOLUTION_STUB".
           Is services.stubby.settings unset?
@@ -106,21 +109,24 @@ in
     services.stubby.settings.appdata_dir = "/var/cache/stubby";
 
     systemd.services.stubby = {
-      description = "Stubby local DNS resolver";
       after = [ "network.target" ];
       before = [ "nss-lookup.target" ];
-      wantedBy = [ "multi-user.target" ];
+      description = "Stubby local DNS resolver";
 
       serviceConfig = {
-        Type = "notify";
         AmbientCapabilities = "CAP_NET_BIND_SERVICE";
+        CacheDirectory = "stubby";
         CapabilityBoundingSet = "CAP_NET_BIND_SERVICE";
+        DynamicUser = true;
+
         ExecStart = "${pkgs.stubby}/bin/stubby -C ${confFile} ${
           optionalString (cfg.logLevel != null) "-v ${toString cfg.logLevel}"
         }";
-        DynamicUser = true;
-        CacheDirectory = "stubby";
+
+        Type = "notify";
       };
+
+      wantedBy = [ "multi-user.target" ];
     };
   };
 }

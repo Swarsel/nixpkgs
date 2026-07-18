@@ -1,17 +1,16 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
+  pytestCheckHook,
+  pythonAtLeast,
   setuptools,
   wsproto,
-  pythonAtLeast,
-  pytestCheckHook,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "simple-websocket";
   version = "1.1.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "miguelgrinberg";
@@ -20,13 +19,9 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-dwL6GUyygNGBXqkkTnsHwFFpa1JAaeWc9ycQNRgTN4I=";
   };
 
-  build-system = [ setuptools ];
-
-  dependencies = [ wsproto ];
-
   nativeCheckInputs = [ pytestCheckHook ];
-
-  pythonImportsCheck = [ "simple_websocket" ];
+  build-system = [ setuptools ];
+  dependencies = [ wsproto ];
 
   disabledTests = [
     # Tests require network access
@@ -36,6 +31,9 @@ buildPythonPackage (finalAttrs: {
     # RuntimeError: There is no current event loop in thread 'MainThread'
     "AioSimpleWebSocketServerTestCase"
   ];
+
+  pyproject = true;
+  pythonImportsCheck = [ "simple_websocket" ];
 
   meta = {
     description = "Simple WebSocket server and client for Python";

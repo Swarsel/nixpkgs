@@ -1,8 +1,8 @@
 {
   lib,
   fetchurl,
-  buildDunePackage,
   alcotest,
+  buildDunePackage,
 }:
 
 buildDunePackage (finalAttrs: {
@@ -14,12 +14,10 @@ buildDunePackage (finalAttrs: {
     hash = "sha256-+NqijIAmedHTU9/5ZfZojwr0vQZ0onS6lBWIrnBqPAc=";
   };
 
-  checkInputs = [ alcotest ];
-
   doCheck = true;
-
-  minimalOCamlVersion = "4.07";
+  checkInputs = [ alcotest ];
   duneVersion = "3";
+  minimalOCamlVersion = "4.07";
 
   meta = {
     description = "Manipulate, parse and generate OCaml compiler version strings";

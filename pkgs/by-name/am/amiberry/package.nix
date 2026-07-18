@@ -54,11 +54,11 @@ stdenv.mkDerivation (finalAttrs: {
   enableParallelBuilding = true;
 
   meta = {
-    homepage = "https://github.com/BlitterStudio/amiberry";
     description = "Optimized Amiga emulator for Linux/macOS";
+    homepage = "https://github.com/BlitterStudio/amiberry";
     license = lib.licenses.gpl3;
-    platforms = lib.platforms.linux;
     maintainers = [ ];
+    platforms = lib.platforms.linux;
     mainProgram = "amiberry";
   };
 })

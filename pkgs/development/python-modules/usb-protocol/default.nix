@@ -2,21 +2,17 @@
   lib,
   fetchFromGitHub,
   buildPythonPackage,
-
-  # build-system
-  setuptools,
-
   # dependencies
   construct,
-
   # tests
   pytestCheckHook,
+  # build-system
+  setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "usb-protocol";
   version = "0.9.2";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "greatscottgadgets";
@@ -31,24 +27,25 @@ buildPythonPackage rec {
       --replace-fail 'dynamic = ["version"]' 'version = "${version}"'
   '';
 
+  nativeCheckInputs = [
+    pytestCheckHook
+  ];
+
   build-system = [
     setuptools
   ];
 
   dependencies = [ construct ];
-
-  nativeCheckInputs = [
-    pytestCheckHook
-  ];
+  pyproject = true;
 
   pythonImportsCheck = [
     "usb_protocol"
   ];
 
   meta = {
-    changelog = "https://github.com/greatscottgadgets/python-usb-protocol/releases/tag/${src.tag}";
     description = "Python library providing utilities, data structures, constants, parsers, and tools for working with the USB protocol";
     homepage = "https://github.com/greatscottgadgets/python-usb-protocol";
+    changelog = "https://github.com/greatscottgadgets/python-usb-protocol/releases/tag/${src.tag}";
     license = lib.licenses.bsd3;
     maintainers = with lib.maintainers; [ carlossless ];
   };

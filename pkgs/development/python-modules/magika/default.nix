@@ -2,22 +2,19 @@
   lib,
   stdenv,
   buildPythonPackage,
-  fetchPypi,
-
-  # build-system
-  hatchling,
-
   # dependencies
   click,
+  dacite,
+  fetchPypi,
+  # build-system
+  hatchling,
   numpy,
   onnxruntime,
+  # tests
+  pytestCheckHook,
   python-dotenv,
   tabulate,
   tqdm,
-
-  # tests
-  pytestCheckHook,
-  dacite,
   versionCheckHook,
 }:
 
@@ -27,7 +24,6 @@ in
 buildPythonPackage (finalAttrs: {
   pname = "magika";
   version = "1.0.3";
-  pyproject = true;
 
   # Use pypi tarball instead of GitHub source
   # Pypi tarball contains a pure python implementation of magika
@@ -43,6 +39,14 @@ buildPythonPackage (finalAttrs: {
         "Path('$out/bin/magika-python-client')"
   '';
 
+  doCheck = isNotAarch64Linux;
+
+  nativeCheckInputs = [
+    pytestCheckHook
+    dacite
+    versionCheckHook
+  ];
+
   build-system = [ hatchling ];
 
   dependencies = [
@@ -52,12 +56,6 @@ buildPythonPackage (finalAttrs: {
     python-dotenv
     tabulate
     tqdm
-  ];
-
-  nativeCheckInputs = [
-    pytestCheckHook
-    dacite
-    versionCheckHook
   ];
 
   disabledTests = [
@@ -73,12 +71,12 @@ buildPythonPackage (finalAttrs: {
     "test_magika_module_with_previously_missdetected_samples"
   ];
 
+  pyproject = true;
   # aarch64-linux fails cpuinfo test, because /sys/devices/system/cpu/ does not exist in the sandbox:
   # terminate called after throwing an instance of 'onnxruntime::OnnxRuntimeException'
   #
   # -> Skip all tests that require importing magika
   pythonImportsCheck = lib.optionals isNotAarch64Linux [ "magika" ];
-  doCheck = isNotAarch64Linux;
 
   meta = {
     description = "Detect file content types with deep learning";

@@ -1,12 +1,12 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
-  rustPlatform,
-  installShellFiles,
-  versionCheckHook,
-  nix-update-script,
   cacert,
+  installShellFiles,
+  nix-update-script,
+  rustPlatform,
+  versionCheckHook,
 }:
 rustPlatform.buildRustPackage (finalAttrs: {
   pname = "openstack-rs";
@@ -19,10 +19,14 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-cpx35OT/x/2XJD4RzaWX/yKM4nwBgl6/gVrEtgyljEI=";
   };
 
-  cargoHash = "sha256-LwN+7LkE/nFbiUlcSjQRxIg0BtO4XLuf/wPS1Vdvx+M=";
-
   nativeBuildInputs = [
     installShellFiles
+  ];
+
+  cargoHash = "sha256-LwN+7LkE/nFbiUlcSjQRxIg0BtO4XLuf/wPS1Vdvx+M=";
+
+  nativeCheckInputs = [
+    cacert
   ];
 
   postInstall = lib.optionalString (stdenv.buildPlatform.canExecute stdenv.hostPlatform) ''
@@ -32,14 +36,9 @@ rustPlatform.buildRustPackage (finalAttrs: {
       --zsh <($out/bin/osc completion zsh)
   '';
 
-  nativeCheckInputs = [
-    cacert
-  ];
-
   doInstallCheck = true;
-  versionCheckProgram = "${placeholder "out"}/bin/${finalAttrs.meta.mainProgram}";
   nativeInstallCheckInputs = [ versionCheckHook ];
-
+  versionCheckProgram = "${placeholder "out"}/bin/${finalAttrs.meta.mainProgram}";
   passthru.updateScript = nix-update-script { };
 
   meta = {

@@ -23,8 +23,8 @@ rustPlatform.buildRustPackage {
     homepage = "https://github.com/SanderJSA/Pomodoro";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ annaaurora ];
+    mainProgram = "pomodoro";
     # error: redefinition of module 'ObjectiveC'
     broken = stdenv.hostPlatform.isDarwin;
-    mainProgram = "pomodoro";
   };
 }

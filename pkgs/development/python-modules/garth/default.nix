@@ -5,25 +5,28 @@
   freezegun,
   hatchling,
   logfire,
-  pydantic-settings,
   pydantic,
+  pydantic-settings,
   pytest-vcr,
   pytestCheckHook,
-  requests-oauthlib,
   requests,
+  requests-oauthlib,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "garth";
   version = "0.8.0";
-  pyproject = true;
 
   src = fetchPypi {
     inherit (finalAttrs) pname version;
     hash = "sha256-9y7fvv4YwQgeWJjKj8FlSKc6CfyrQ2S4SSIXzjP3SeM=";
   };
 
-  pythonRelaxDeps = [ "requests-oauthlib" ];
+  nativeCheckInputs = [
+    freezegun
+    pytest-vcr
+    pytestCheckHook
+  ];
 
   build-system = [ hatchling ];
 
@@ -34,14 +37,6 @@ buildPythonPackage (finalAttrs: {
     requests
     requests-oauthlib
   ];
-
-  nativeCheckInputs = [
-    freezegun
-    pytest-vcr
-    pytestCheckHook
-  ];
-
-  pythonImportsCheck = [ "garth" ];
 
   disabledTests = [
     # Tests require network access
@@ -60,6 +55,10 @@ buildPythonPackage (finalAttrs: {
     "test_telemetry_env_enabled_with_mock"
     "test_default_callback_calls_logfire"
   ];
+
+  pyproject = true;
+  pythonImportsCheck = [ "garth" ];
+  pythonRelaxDeps = [ "requests-oauthlib" ];
 
   meta = {
     description = "Garmin SSO auth and connect client";

@@ -1,20 +1,18 @@
 {
   lib,
   fetchurl,
-  runCommand,
-  writeShellScript,
-
   # script interpreters
   bash,
   jre_headless,
   perl,
   python3,
   ruby,
+  runCommand,
   snobol4,
-  tk,
-
   # TeX Live prerequisites
   texliveBinaries,
+  tk,
+  writeShellScript,
 }:
 
 /*
@@ -36,27 +34,27 @@
 # TODO stabilise a generic interface decoupled from the finer details of the
 # translation from texlive.tlpdb to tlpdb.nix
 {
+  mirrors,
   pname,
   revision,
-  version ? toString revision,
+  catalogue ? pname,
+  extraNativeBuildInputs ? [ ],
   extraRevision ? "",
   extraVersion ? "",
-  sha512 ? { },
-  mirrors,
   fixedHashes ? { },
-  postUnpack ? "",
-  postFixup ? "",
-  stripPrefix ? 1,
-  license ? [ ],
+  hasCatalogue ? true,
   hasHyphens ? false,
   hasInfo ? false,
+  hasJar ? false,
   hasManpages ? false,
   hasRunfiles ? (sha512 ? run),
   hasTlpkg ? false,
-  hasCatalogue ? true,
-  hasJar ? false,
-  catalogue ? pname,
-  extraNativeBuildInputs ? [ ],
+  license ? [ ],
+  postFixup ? "",
+  postUnpack ? "",
+  sha512 ? { },
+  stripPrefix ? 1,
+  version ? toString revision,
   ...
 }@args:
 
@@ -64,20 +62,21 @@ let
   # common metadata
   name = "${pname}-${version}${extraVersion}";
   meta = {
-    license = map (x: lib.licenses.${x}) license;
-    # TeX Live packages should not be installed directly into the user profile
-    outputsToInstall = [ ];
     longDescription = ''
       This package cannot be installed or used directly. Please use `texlive.withPackages (ps: [ ps.${lib.strings.escapeNixIdentifier pname} ])`.
     '';
-    # discourage nix-env from matching this package
-    priority = 10;
+
+    license = map (x: lib.licenses.${x}) license;
+    maintainers = with lib.maintainers; [ xworld21 ];
     platforms = lib.platforms.all;
     # These create a large number of jobs, which puts load on Hydra
     # without any appreciable benefit (as the combined packages already
     # cause them all to be built and cached anyway).
     hydraPlatforms = [ ];
-    maintainers = with lib.maintainers; [ xworld21 ];
+    # TeX Live packages should not be installed directly into the user profile
+    outputsToInstall = [ ];
+    # discourage nix-env from matching this package
+    priority = 10;
   }
   // lib.optionalAttrs (args ? shortdesc) {
     description = args.shortdesc;
@@ -115,10 +114,10 @@ let
   passthru = {
     # metadata
     inherit pname;
-    revision = toString revision + extraRevision;
     version = version + extraVersion;
     # containers behave like specified outputs
     outputSpecified = true;
+    revision = toString revision + extraRevision;
   }
   // lib.optionalAttrs (args ? deps) { tlDeps = args.deps; }
   // lib.optionalAttrs (args ? fontMaps) { inherit (args) fontMaps; }
@@ -141,10 +140,10 @@ let
         runCommand "${name}-${tlOutputName}"
           (
             {
-              src = fetchurl { inherit urls sha512; };
               inherit passthru;
               # save outputName, since fixed output derivations cannot change nor override outputName
               inherit meta stripPrefix tlOutputName;
+              src = fetchurl { inherit urls sha512; };
             }
             // lib.optionalAttrs (fixedHash != null) {
               outputHash = fixedHash;
@@ -189,25 +188,54 @@ let
     passthru
     // {
       inherit meta;
-      tlOutputName = "tex";
       inherit build;
+      tlOutputName = "tex";
     }
     // outputDrvs;
 
   containers = rec {
-    tex = mkContainer "run" "tex" sha512.run;
-    texdoc = mkContainer "doc" "texdoc" sha512.doc;
-    texsource = mkContainer "source" "texsource" sha512.source;
-    tlpkg = mkContainer "tlpkg" "tlpkg" sha512.run;
+    info =
+      removeAttrs (runCommand "${name}-info"
+        {
+          inherit meta texdoc;
+
+          passthru = passthru // {
+            tlOutputName = "info";
+          };
+        }
+        ''
+          mkdir -p "$out"/share
+          ln -s {"$texdoc"/doc,"$out"/share}/info
+        ''
+      ) [ "out" ]
+      // outputDrvs;
+
+    # build man, info containers
+    man =
+      removeAttrs (runCommand "${name}-man"
+        {
+          inherit meta texdoc;
+
+          passthru = passthru // {
+            tlOutputName = "man";
+          };
+        }
+        ''
+          mkdir -p "$out"/share
+          ln -s {"$texdoc"/doc,"$out"/share}/man
+        ''
+      ) [ "out" ]
+      // outputDrvs;
 
     # bin container
     out =
       runCommand "${name}"
         {
           inherit meta;
-          passthru = passthru // {
-            tlOutputName = "out";
-          };
+          # binaries info
+          inherit (args) binfiles;
+          nativeBuildInputs = extraNativeBuildInputs;
+
           # shebang interpreters
           buildInputs =
             let
@@ -224,18 +252,21 @@ let
               perl
             ]
             ++ (lib.attrVals (args.scriptExts or [ ]) extToInput);
-          nativeBuildInputs = extraNativeBuildInputs;
+
+          binlinks = builtins.attrNames (args.binlinks or { });
+          bintargets = builtins.attrValues (args.binlinks or { });
+          makeBinContainers = ./make-bin-containers.sh;
+          # build scripts
+          patchScripts = ./patch-scripts.sed;
+
           # absolute scripts folder
           scriptsFolder = lib.optionals (hasRunfiles && tex ? outPath) (
             map (f: tex.outPath + "/scripts/" + f) (lib.toList args.scriptsFolder or pname)
           );
-          # binaries info
-          inherit (args) binfiles;
-          binlinks = builtins.attrNames (args.binlinks or { });
-          bintargets = builtins.attrValues (args.binlinks or { });
-          # build scripts
-          patchScripts = ./patch-scripts.sed;
-          makeBinContainers = ./make-bin-containers.sh;
+
+          passthru = passthru // {
+            tlOutputName = "out";
+          };
         }
         ''
           . "$makeBinContainers"
@@ -243,36 +274,10 @@ let
         ''
       // outputDrvs;
 
-    # build man, info containers
-    man =
-      removeAttrs (runCommand "${name}-man"
-        {
-          inherit meta texdoc;
-          passthru = passthru // {
-            tlOutputName = "man";
-          };
-        }
-        ''
-          mkdir -p "$out"/share
-          ln -s {"$texdoc"/doc,"$out"/share}/man
-        ''
-      ) [ "out" ]
-      // outputDrvs;
-
-    info =
-      removeAttrs (runCommand "${name}-info"
-        {
-          inherit meta texdoc;
-          passthru = passthru // {
-            tlOutputName = "info";
-          };
-        }
-        ''
-          mkdir -p "$out"/share
-          ln -s {"$texdoc"/doc,"$out"/share}/info
-        ''
-      ) [ "out" ]
-      // outputDrvs;
+    tex = mkContainer "run" "tex" sha512.run;
+    texdoc = mkContainer "doc" "texdoc" sha512.doc;
+    texsource = mkContainer "source" "texsource" sha512.source;
+    tlpkg = mkContainer "tlpkg" "tlpkg" sha512.run;
   };
 
   # multioutput derivation to be exported under texlivePackages
@@ -280,17 +285,18 @@ let
   build =
     runCommand name
       {
-        __structuredAttrs = true;
         inherit meta outputDrvs;
         outputs = if outputs != [ ] then outputs else [ "out" ];
-        passthru = removeAttrs passthru [ "outputSpecified" ] // {
-          inherit build;
-        };
+        __structuredAttrs = true;
 
         # force output name in case "out" is missing
         preHook = lib.optionalString (!hasBinfiles && outputs != [ ]) ''
           export out="''${${builtins.head outputs}-}"
         '';
+
+        passthru = removeAttrs passthru [ "outputSpecified" ] // {
+          inherit build;
+        };
       }
       # each output is just a symlink to the corresponding container
       # if the container is missing (that is, outputs == [ ]), create a file, to prevent passing the package to .withPackages

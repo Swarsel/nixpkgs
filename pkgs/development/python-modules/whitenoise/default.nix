@@ -1,9 +1,9 @@
 {
   lib,
+  fetchFromGitHub,
   brotli,
   buildPythonPackage,
   django,
-  fetchFromGitHub,
   pytestCheckHook,
   requests,
   setuptools,
@@ -12,7 +12,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "whitenoise";
   version = "6.12.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "evansd";
@@ -21,12 +20,6 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-qNya/3oI9413VUGaLPq4vtuLvq9mIGhaYBt+4OhrkOw=";
   };
 
-  __darwinAllowLocalNetworking = true;
-
-  build-system = [ setuptools ];
-
-  optional-dependencies.brotli = [ brotli ];
-
   nativeCheckInputs = [
     django
     pytestCheckHook
@@ -34,11 +27,16 @@ buildPythonPackage (finalAttrs: {
   ]
   ++ finalAttrs.passthru.optional-dependencies.brotli;
 
+  __darwinAllowLocalNetworking = true;
+  build-system = [ setuptools ];
+
   disabledTests = [
     # Test fails with AssertionError
     "test_modified"
   ];
 
+  optional-dependencies.brotli = [ brotli ];
+  pyproject = true;
   pythonImportsCheck = [ "whitenoise" ];
 
   meta = {

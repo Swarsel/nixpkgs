@@ -2,9 +2,9 @@
   lib,
   stdenv,
   fetchurl,
+  alsa-lib,
   fetchpatch,
   ncurses,
-  alsa-lib,
   perl,
 }:
 
@@ -20,8 +20,8 @@ stdenv.mkDerivation (finalAttrs: {
   patches = [
     # Fix build on Apple Silicon. Remove in the next release.
     (fetchpatch {
-      url = "https://github.com/festvox/speech_tools/commit/06141f69d21bf507a9becb5405265dc362edb0df.patch";
       hash = "sha256-tRestCBuRhak+2ccsB6mvDxGm/TIYX4eZ3oppCOEP9s=";
+      url = "https://github.com/festvox/speech_tools/commit/06141f69d21bf507a9becb5405265dc362edb0df.patch";
     })
     # Fix C23 compatibility: https://github.com/festvox/speech_tools/pull/58
     ./fix-c23.patch
@@ -63,6 +63,8 @@ stdenv.mkDerivation (finalAttrs: {
       --replace-fail "est" "\"$out\""
   '';
 
+  doCheck = true;
+
   installPhase = ''
     mkdir -p "$out"/{bin,include,lib}
     for d in bin include lib; do
@@ -73,20 +75,18 @@ stdenv.mkDerivation (finalAttrs: {
     done
   '';
 
-  doCheck = true;
-
   checkTarget = "test";
-
-  meta = {
-    description = "Text-to-speech engine";
-    maintainers = with lib.maintainers; [ raskin ];
-    platforms = lib.platforms.unix;
-    license = lib.licenses.free;
-  };
 
   passthru = {
     updateInfo = {
       downloadPage = "http://www.festvox.org/packed/festival/";
     };
+  };
+
+  meta = {
+    description = "Text-to-speech engine";
+    license = lib.licenses.free;
+    maintainers = with lib.maintainers; [ raskin ];
+    platforms = lib.platforms.unix;
   };
 })

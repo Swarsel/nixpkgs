@@ -1,13 +1,13 @@
 {
   lib,
-  stdenvNoCC,
   fetchFromGitHub,
   fetchYarnDeps,
-  yarnConfigHook,
-  yarnBuildHook,
+  nix-update-script,
   nodejs,
   npmHooks,
-  nix-update-script,
+  stdenvNoCC,
+  yarnBuildHook,
+  yarnConfigHook,
 }:
 stdenvNoCC.mkDerivation (finalAttrs: {
   pname = "coc-diagnostic";
@@ -18,11 +18,6 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     repo = "coc-diagnostic";
     rev = "1515cae0c7f8e7e4284d046b6aaad7ba665489e4";
     hash = "sha256-t5hB9lzbyHu0s7m/mYtohF/FW0Ymat9PM9zjdXwKiIM=";
-  };
-
-  yarnOfflineCache = fetchYarnDeps {
-    yarnLock = "${finalAttrs.src}/yarn.lock";
-    hash = "sha256-/WBOZKIIE2ERKuGwG+unXyam2JavPOuUeSIwZQ9RiHY=";
   };
 
   nativeBuildInputs = [
@@ -36,6 +31,11 @@ stdenvNoCC.mkDerivation (finalAttrs: {
   postFixup = ''
     unlink $out/lib/node_modules/coc-diagnostic/node_modules/.bin/node-which
   '';
+
+  yarnOfflineCache = fetchYarnDeps {
+    hash = "sha256-/WBOZKIIE2ERKuGwG+unXyam2JavPOuUeSIwZQ9RiHY=";
+    yarnLock = "${finalAttrs.src}/yarn.lock";
+  };
 
   passthru.updateScript = nix-update-script { extraArgs = [ "--version=branch" ]; };
 

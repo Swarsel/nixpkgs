@@ -1,13 +1,11 @@
 {
+  _7zz,
   mkKdeDerivation,
   qtsvg,
-  _7zz,
 }:
 mkKdeDerivation {
   pname = "picmi";
-
-  extraNativeBuildInputs = [ _7zz ];
   extraBuildInputs = [ qtsvg ];
-
+  extraNativeBuildInputs = [ _7zz ];
   meta.mainProgram = "picmi";
 }

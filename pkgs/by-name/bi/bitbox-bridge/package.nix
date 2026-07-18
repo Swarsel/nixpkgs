@@ -2,11 +2,11 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  rustPlatform,
-  pkg-config,
   libudev-zero,
-  nixosTests,
   nix-update-script,
+  nixosTests,
+  pkg-config,
+  rustPlatform,
   udevCheckHook,
 }:
 
@@ -18,11 +18,9 @@ rustPlatform.buildRustPackage (finalAttrs: {
     owner = "BitBoxSwiss";
     repo = "bitbox-bridge";
     tag = "v${finalAttrs.version}";
-    fetchSubmodules = true;
     hash = "sha256-+pMXWXGHyyBx3N0kiro9NS0mPmSQzzBmp+pkoBLH7z0=";
+    fetchSubmodules = true;
   };
-
-  cargoHash = "sha256-6vD0XjGH1PXjiRjgnHWSZSixXOc2Yecui8U5FAGefBU=";
 
   postPatch = ''
     rm .cargo/config.toml
@@ -36,6 +34,8 @@ rustPlatform.buildRustPackage (finalAttrs: {
   buildInputs = lib.optionals stdenv.hostPlatform.isLinux [
     libudev-zero
   ];
+
+  cargoHash = "sha256-6vD0XjGH1PXjiRjgnHWSZSixXOc2Yecui8U5FAGefBU=";
 
   postInstall = lib.optionalString stdenv.hostPlatform.isLinux ''
     mkdir -p $out/lib/systemd/user
@@ -54,14 +54,16 @@ rustPlatform.buildRustPackage (finalAttrs: {
   meta = {
     description = "Bridge service that connects web wallets like Rabby to BitBox02";
     homepage = "https://github.com/BitBoxSwiss/bitbox-bridge";
-    downloadPage = "https://bitbox.swiss/download/";
     changelog = "https://github.com/BitBoxSwiss/bitbox-bridge/blob/v${finalAttrs.version}/CHANGELOG.md";
     license = lib.licenses.asl20;
+
     maintainers = with lib.maintainers; [
       izelnakri
       tensor5
     ];
-    mainProgram = "bitbox-bridge";
+
     platforms = lib.platforms.unix;
+    mainProgram = "bitbox-bridge";
+    downloadPage = "https://bitbox.swiss/download/";
   };
 })

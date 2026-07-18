@@ -24,7 +24,6 @@ stdenv.mkDerivation {
   ];
 
   buildInputs = [ qt5.qtbase ];
-
   passthru.updateScript = unstableGitUpdater { };
 
   meta = {
@@ -32,7 +31,7 @@ stdenv.mkDerivation {
     homepage = "https://github.com/drizt/xcursor-viewer/";
     license = lib.licenses.gpl3Only;
     maintainers = with lib.maintainers; [ atemu ];
-    mainProgram = "xcursor-viewer";
     platforms = lib.platforms.all;
+    mainProgram = "xcursor-viewer";
   };
 }

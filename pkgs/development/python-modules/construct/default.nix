@@ -1,11 +1,11 @@
 {
   lib,
   stdenv,
+  fetchFromGitHub,
   arrow,
   buildPythonPackage,
   cloudpickle,
   cryptography,
-  fetchFromGitHub,
   lz4,
   numpy,
   pytestCheckHook,
@@ -16,7 +16,6 @@
 buildPythonPackage rec {
   pname = "construct";
   version = "2.10.70";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "construct";
@@ -32,6 +31,16 @@ buildPythonPackage rec {
     lz4
   ];
 
+  nativeCheckInputs = [
+    pytestCheckHook
+  ]
+  ++ lib.concatAttrValues optional-dependencies;
+
+  disabledTests = [
+    "test_benchmarks"
+  ]
+  ++ lib.optionals stdenv.hostPlatform.isDarwin [ "test_multiprocessing" ];
+
   optional-dependencies = {
     extras = [
       arrow
@@ -42,17 +51,8 @@ buildPythonPackage rec {
     ];
   };
 
-  nativeCheckInputs = [
-    pytestCheckHook
-  ]
-  ++ lib.concatAttrValues optional-dependencies;
-
+  pyproject = true;
   pythonImportsCheck = [ "construct" ];
-
-  disabledTests = [
-    "test_benchmarks"
-  ]
-  ++ lib.optionals stdenv.hostPlatform.isDarwin [ "test_multiprocessing" ];
 
   meta = {
     description = "Powerful declarative parser (and builder) for binary data";

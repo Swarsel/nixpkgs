@@ -1,6 +1,6 @@
 {
-  lib,
   config,
+  lib,
   pkgs,
   ...
 }:
@@ -21,6 +21,7 @@ in
       "programs.direnv.finalPackage has been removed now, as its value is identical to programs.direnv.package."
     )
   ];
+
   options.programs.direnv = {
 
     enable = lib.mkEnableOption ''
@@ -31,33 +32,35 @@ in
 
     package = lib.mkPackageOption pkgs "direnv" { };
 
-    enableBashIntegration = enabledOption ''
-      Bash integration
-    '';
-    enableZshIntegration = enabledOption ''
-      Zsh integration
-    '';
-    enableFishIntegration = enabledOption ''
-      Fish integration
-    '';
-    enableXonshIntegration = enabledOption ''
-      Xonsh integration
-    '';
-
     direnvrcExtra = lib.mkOption {
-      type = lib.types.lines;
       default = "";
+
+      description = ''
+        Extra lines to append to the sourced direnvrc
+      '';
+
       example = ''
         export FOO="foo"
         echo "loaded direnv!"
       '';
-      description = ''
-        Extra lines to append to the sourced direnvrc
-      '';
+
+      type = lib.types.lines;
     };
 
-    silent = lib.mkEnableOption ''
-      the hiding of direnv logging
+    enableBashIntegration = enabledOption ''
+      Bash integration
+    '';
+
+    enableFishIntegration = enabledOption ''
+      Fish integration
+    '';
+
+    enableXonshIntegration = enabledOption ''
+      Xonsh integration
+    '';
+
+    enableZshIntegration = enabledOption ''
+      Zsh integration
     '';
 
     loadInNixShell = enabledOption ''
@@ -72,16 +75,23 @@ in
       package = lib.mkOption {
         default = pkgs.nix-direnv.override { nix = config.nix.package; };
         defaultText = "pkgs.nix-direnv";
-        type = lib.types.package;
+
         description = ''
           The nix-direnv package to use
         '';
+
+        type = lib.types.package;
       };
     };
 
     settings = lib.mkOption {
       inherit (format) type;
       default = { };
+
+      description = ''
+        Direnv configuration. Refer to {manpage}`direnv.toml(1)`.
+      '';
+
       example = lib.literalExpression ''
         {
           global = {
@@ -90,68 +100,20 @@ in
           };
         }
       '';
-      description = ''
-        Direnv configuration. Refer to {manpage}`direnv.toml(1)`.
-      '';
     };
+
+    silent = lib.mkEnableOption ''
+      the hiding of direnv logging
+    '';
   };
 
   config = lib.mkIf cfg.enable {
-    programs = {
-      direnv = {
-        settings = lib.mkIf cfg.silent {
-          global = {
-            log_format = lib.mkDefault "-";
-            log_filter = lib.mkDefault "^$";
-          };
-        };
-      };
-
-      zsh.interactiveShellInit = lib.mkIf cfg.enableZshIntegration ''
-        if ${lib.boolToString cfg.loadInNixShell} || printenv PATH | grep -vqc '/nix/store'; then
-          eval "$(${lib.getExe cfg.package} hook zsh)"
-        fi
-      '';
-
-      #$NIX_GCROOT for "nix develop" https://github.com/NixOS/nix/blob/6db66ebfc55769edd0c6bc70fcbd76246d4d26e0/src/nix/develop.cc#L530
-      #$IN_NIX_SHELL for "nix-shell"
-      bash.interactiveShellInit = lib.mkIf cfg.enableBashIntegration ''
-        if ${lib.boolToString cfg.loadInNixShell} || [ -z "$IN_NIX_SHELL$NIX_GCROOT$(printenv PATH | grep '/nix/store')" ] ; then
-          eval "$(${lib.getExe cfg.package} hook bash)"
-        fi
-      '';
-
-      fish.interactiveShellInit = lib.mkIf cfg.enableFishIntegration ''
-        if ${lib.boolToString cfg.loadInNixShell}; or printenv PATH | grep -vqc '/nix/store';
-          ${lib.getExe cfg.package} hook fish | source
-        end
-      '';
-
-      xonsh = lib.mkIf cfg.enableXonshIntegration {
-        extraPackages = ps: [ ps.xonsh.xontribs.xonsh-direnv ];
-        config = ''
-          if ${
-            if cfg.loadInNixShell then
-              "True"
-            else
-              "not any(map(lambda s: s.startswith('/nix/store'), __xonsh__.env.get('PATH')))"
-          }:
-              xontrib load direnv
-        '';
-      };
-    };
-
     environment = {
-      systemPackages = [
-        cfg.package
-      ];
-
-      variables.DIRENV_CONFIG = "/etc/direnv";
-
       etc = {
         "direnv/direnv.toml" = lib.mkIf (cfg.settings != { }) {
           source = format.generate "direnv.toml" cfg.settings;
         };
+
         "direnv/direnvrc".text = ''
           ${lib.optionalString cfg.nix-direnv.enable ''
             #Load nix-direnv
@@ -182,7 +144,59 @@ in
           unset direnv_config_dir_home
         '';
       };
+
+      systemPackages = [
+        cfg.package
+      ];
+
+      variables.DIRENV_CONFIG = "/etc/direnv";
+    };
+
+    programs = {
+      #$NIX_GCROOT for "nix develop" https://github.com/NixOS/nix/blob/6db66ebfc55769edd0c6bc70fcbd76246d4d26e0/src/nix/develop.cc#L530
+      #$IN_NIX_SHELL for "nix-shell"
+      bash.interactiveShellInit = lib.mkIf cfg.enableBashIntegration ''
+        if ${lib.boolToString cfg.loadInNixShell} || [ -z "$IN_NIX_SHELL$NIX_GCROOT$(printenv PATH | grep '/nix/store')" ] ; then
+          eval "$(${lib.getExe cfg.package} hook bash)"
+        fi
+      '';
+
+      direnv = {
+        settings = lib.mkIf cfg.silent {
+          global = {
+            log_filter = lib.mkDefault "^$";
+            log_format = lib.mkDefault "-";
+          };
+        };
+      };
+
+      fish.interactiveShellInit = lib.mkIf cfg.enableFishIntegration ''
+        if ${lib.boolToString cfg.loadInNixShell}; or printenv PATH | grep -vqc '/nix/store';
+          ${lib.getExe cfg.package} hook fish | source
+        end
+      '';
+
+      xonsh = lib.mkIf cfg.enableXonshIntegration {
+        config = ''
+          if ${
+            if cfg.loadInNixShell then
+              "True"
+            else
+              "not any(map(lambda s: s.startswith('/nix/store'), __xonsh__.env.get('PATH')))"
+          }:
+              xontrib load direnv
+        '';
+
+        extraPackages = ps: [ ps.xonsh.xontribs.xonsh-direnv ];
+      };
+
+      zsh.interactiveShellInit = lib.mkIf cfg.enableZshIntegration ''
+        if ${lib.boolToString cfg.loadInNixShell} || printenv PATH | grep -vqc '/nix/store'; then
+          eval "$(${lib.getExe cfg.package} hook zsh)"
+        fi
+      '';
     };
   };
+
   meta.maintainers = with lib.maintainers; [ gerg-l ];
 }

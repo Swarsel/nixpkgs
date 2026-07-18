@@ -3,10 +3,10 @@
   stdenv,
   fetchFromGitHub,
   cmake,
-  pkg-config,
-  python3,
   curl,
   openssl,
+  pkg-config,
+  python3,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -32,14 +32,16 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   meta = {
-    homepage = "https://github.com/mtrojnar/osslsigncode";
     description = "OpenSSL based Authenticode signing for PE/MSI/Java CAB files";
-    mainProgram = "osslsigncode";
+    homepage = "https://github.com/mtrojnar/osslsigncode";
     license = lib.licenses.gpl3Plus;
+
     maintainers = with lib.maintainers; [
       mmahut
       prusnak
     ];
+
     platforms = lib.platforms.all;
+    mainProgram = "osslsigncode";
   };
 })

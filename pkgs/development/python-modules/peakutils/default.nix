@@ -12,12 +12,16 @@
 buildPythonPackage rec {
   pname = "peakutils";
   version = "1.3.5";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
     hash = "sha256-T/Ln8zMLkwJP6Noe4E4AOJ4mvLLveb0vnPhszUli4RQ=";
   };
+
+  nativeCheckInputs = [
+    pandas
+    pytestCheckHook
+  ];
 
   build-system = [ setuptools ];
 
@@ -26,11 +30,7 @@ buildPythonPackage rec {
     scipy
   ];
 
-  nativeCheckInputs = [
-    pandas
-    pytestCheckHook
-  ];
-
+  pyproject = true;
   pythonImportsCheck = [ "peakutils" ];
 
   meta = {

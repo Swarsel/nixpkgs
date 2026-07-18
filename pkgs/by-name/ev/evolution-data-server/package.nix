@@ -1,66 +1,66 @@
 {
-  stdenv,
   lib,
-  buildPackages,
+  stdenv,
   fetchurl,
-  pkg-config,
-  gnome,
   _experimental-update-script-combinators,
-  python3,
-  gobject-introspection,
-  gettext,
-  libsoup_3,
-  libxml2,
-  libsecret,
-  icu,
-  sqlite,
-  libcanberra-gtk3,
-  p11-kit,
-  db,
-  nspr,
-  nss,
-  libical,
-  gperf,
-  wrapGAppsHook3,
-  glib-networking,
-  gsettings-desktop-schemas,
-  vala,
+  boost,
+  buildPackages,
   cmake,
-  ninja,
-  libkrb5,
-  openldap,
-  enableOAuth2 ? stdenv.hostPlatform.isLinux,
-  webkitgtk_4_1,
-  webkitgtk_6_0,
-  json-glib,
+  db,
+  gettext,
   glib,
+  glib-networking,
+  gnome,
+  gnome-online-accounts,
+  gobject-introspection,
+  gperf,
+  gsettings-desktop-schemas,
   gtk3,
   gtk4,
+  icu,
+  json-glib,
+  libcanberra-gtk3,
+  libgweather,
+  libical,
+  libiconv,
+  libkrb5,
+  libphonenumber,
+  libsecret,
+  libsoup_3,
+  libuuid,
+  libxml2,
+  makeHardcodeGsettingsPatch,
+  ninja,
+  nspr,
+  nss,
+  openldap,
+  p11-kit,
+  pkg-config,
+  protobuf,
+  python3,
+  sqlite,
+  vala,
+  webkitgtk_4_1,
+  webkitgtk_6_0,
+  wrapGAppsHook3,
+  enableOAuth2 ? stdenv.hostPlatform.isLinux,
   withGtk3 ? true,
   withGtk4 ? false,
-  libphonenumber,
-  libuuid,
-  gnome-online-accounts,
-  libgweather,
-  boost,
-  protobuf,
-  libiconv,
-  makeHardcodeGsettingsPatch,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
   pname = "evolution-data-server";
   version = "3.60.2";
 
-  outputs = [
-    "out"
-    "dev"
-  ];
-
   src = fetchurl {
     url = "mirror://gnome/sources/evolution-data-server/${lib.versions.majorMinor finalAttrs.version}/evolution-data-server-${finalAttrs.version}.tar.xz";
     hash = "sha256-IITb2sOWNxs2XVBMH/RYZrqNyi8SUuXaHT2cM6vcEoY=";
   };
+
+  outputs = [
+    "out"
+    "dev"
+  ];
 
   patches = [
     # Avoid using wrapper function, which the hardcode gsettings
@@ -68,12 +68,23 @@ stdenv.mkDerivation (finalAttrs: {
     ./drop-tentative-settings-constructor.patch
   ];
 
-  prePatch = ''
-    substitute ${./hardcode-gsettings.patch} hardcode-gsettings.patch \
-      --subst-var-by EDS ${glib.makeSchemaPath "$out" "evolution-data-server-${finalAttrs.version}"} \
-      --subst-var-by GDS ${glib.getSchemaPath gsettings-desktop-schemas}
-    patches="$patches $PWD/hardcode-gsettings.patch"
-  '';
+  postPatch =
+    lib.optionalString stdenv.hostPlatform.isDarwin ''
+      substituteInPlace cmake/modules/SetupBuildFlags.cmake \
+        --replace "-Wl,--no-undefined" ""
+      substituteInPlace src/services/evolution-alarm-notify/e-alarm-notify.c \
+        --replace "G_OS_WIN32" "__APPLE__"
+    ''
+    + lib.optionalString (!stdenv.buildPlatform.canExecute stdenv.hostPlatform) ''
+      substituteInPlace src/addressbook/libebook-contacts/CMakeLists.txt --replace-fail \
+        'COMMAND ''${CMAKE_CURRENT_BINARY_DIR}/gen-western-table' \
+        'COMMAND ${stdenv.hostPlatform.emulator buildPackages} ''${CMAKE_CURRENT_BINARY_DIR}/gen-western-table'
+      substituteInPlace src/camel/CMakeLists.txt --replace-fail \
+        'COMMAND ''${CMAKE_CURRENT_BINARY_DIR}/camel-gen-tables' \
+        'COMMAND ${stdenv.hostPlatform.emulator buildPackages} ''${CMAKE_CURRENT_BINARY_DIR}/camel-gen-tables'
+    '';
+
+  strictDeps = true;
 
   nativeBuildInputs = [
     cmake
@@ -147,40 +158,31 @@ stdenv.mkDerivation (finalAttrs: {
     (lib.cmakeFeature "CMAKE_CROSSCOMPILING_EMULATOR" (stdenv.hostPlatform.emulator buildPackages))
   ];
 
-  strictDeps = true;
-
-  postPatch =
-    lib.optionalString stdenv.hostPlatform.isDarwin ''
-      substituteInPlace cmake/modules/SetupBuildFlags.cmake \
-        --replace "-Wl,--no-undefined" ""
-      substituteInPlace src/services/evolution-alarm-notify/e-alarm-notify.c \
-        --replace "G_OS_WIN32" "__APPLE__"
-    ''
-    + lib.optionalString (!stdenv.buildPlatform.canExecute stdenv.hostPlatform) ''
-      substituteInPlace src/addressbook/libebook-contacts/CMakeLists.txt --replace-fail \
-        'COMMAND ''${CMAKE_CURRENT_BINARY_DIR}/gen-western-table' \
-        'COMMAND ${stdenv.hostPlatform.emulator buildPackages} ''${CMAKE_CURRENT_BINARY_DIR}/gen-western-table'
-      substituteInPlace src/camel/CMakeLists.txt --replace-fail \
-        'COMMAND ''${CMAKE_CURRENT_BINARY_DIR}/camel-gen-tables' \
-        'COMMAND ${stdenv.hostPlatform.emulator buildPackages} ''${CMAKE_CURRENT_BINARY_DIR}/camel-gen-tables'
-    '';
-
   postInstall = lib.optionalString stdenv.hostPlatform.isDarwin ''
     ln -s $out/lib/evolution-data-server/*.dylib $out/lib/
   '';
 
+  prePatch = ''
+    substitute ${./hardcode-gsettings.patch} hardcode-gsettings.patch \
+      --subst-var-by EDS ${glib.makeSchemaPath "$out" "evolution-data-server-${finalAttrs.version}"} \
+      --subst-var-by GDS ${glib.getSchemaPath gsettings-desktop-schemas}
+    patches="$patches $PWD/hardcode-gsettings.patch"
+  '';
+
   passthru = {
     hardcodeGsettingsPatch = makeHardcodeGsettingsPatch {
+      inherit (finalAttrs) src patches;
+
       schemaIdToVariableMapping = {
         "org.gnome.Evolution.DefaultSources" = "EDS";
-        "org.gnome.evolution.shell.network-config" = "EDS";
+        "org.gnome.desktop.interface" = "GDS";
+        "org.gnome.evolution-data-server" = "EDS";
         "org.gnome.evolution-data-server.addressbook" = "EDS";
         "org.gnome.evolution-data-server.calendar" = "EDS";
-        "org.gnome.evolution-data-server" = "EDS";
-        "org.gnome.desktop.interface" = "GDS";
+        "org.gnome.evolution.shell.network-config" = "EDS";
       };
-      inherit (finalAttrs) src patches;
     };
+
     updateScript =
       let
         updateSource = gnome.updateScript {
@@ -200,7 +202,7 @@ stdenv.mkDerivation (finalAttrs: {
     homepage = "https://gitlab.gnome.org/GNOME/evolution-data-server";
     changelog = "https://gitlab.gnome.org/GNOME/evolution-data-server/-/blob/${finalAttrs.version}/NEWS?ref_type=tags";
     license = lib.licenses.lgpl2Plus;
-    teams = [ lib.teams.gnome ];
     platforms = lib.platforms.linux; # requires libuuid
+    teams = [ lib.teams.gnome ];
   };
 })

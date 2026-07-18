@@ -1,18 +1,17 @@
 {
   lib,
-  buildPythonPackage,
-  fetchFromGitHub,
-  setuptools,
-  mypy-extensions,
-  python,
-  pytest,
   stdenv,
+  fetchFromGitHub,
+  buildPythonPackage,
+  mypy-extensions,
+  pytest,
+  python,
+  setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "librt";
   version = "0.11.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "mypyc";
@@ -38,10 +37,6 @@ buildPythonPackage rec {
         'X86_64 = ${if stdenv.hostPlatform.isx86_64 then "True" else "False"}'
   '';
 
-  build-system = [
-    setuptools
-  ];
-
   nativeCheckInputs = [
     mypy-extensions
     pytest
@@ -52,6 +47,12 @@ buildPythonPackage rec {
     ${python.interpreter} smoke_tests.py
     runHook postCheck
   '';
+
+  build-system = [
+    setuptools
+  ];
+
+  pyproject = true;
 
   pythonImportsCheck = [
     "librt"

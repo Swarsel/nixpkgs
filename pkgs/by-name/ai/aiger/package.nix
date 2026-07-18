@@ -18,32 +18,31 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-ggkxITuD8phq3VF6tGc/JWQGBhTfPxBdnRobKswYVa4=";
   };
 
-  enableParallelBuilding = true;
+  outputs = [
+    "out"
+    "dev"
+    "lib"
+  ];
 
   nativeBuildInputs = [ copyPkgconfigItems ];
-
-  pkgconfigItems = [
-    (makePkgconfigItem {
-      name = "aiger";
-      inherit (finalAttrs) version;
-      cflags = [ "-I\${includedir}" ];
-      libs = [
-        "-L\${libdir}"
-        "-laiger"
-      ];
-      variables = {
-        includedir = "@includedir@";
-        libdir = "@libdir@";
-      };
-      inherit (finalAttrs.meta) description;
-    })
-  ];
 
   env = {
     # copyPkgconfigItems will substitute these in the pkg-config file
     includedir = "${placeholder "dev"}/include";
     libdir = "${placeholder "lib"}/lib";
   };
+
+  postBuild = ''
+    $AR rcs libaiger.a aiger.o
+  '';
+
+  postInstall = ''
+    # test that installing picosat in configurePhase suceeded
+    test -f $out/bin/aigbmc
+
+    install -m 444 -Dt $lib/lib libaiger.a
+    install -m 444 -Dt $dev/include aiger.h
+  '';
 
   configurePhase = ''
     runHook preConfigure
@@ -58,23 +57,27 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postConfigure
   '';
 
-  postBuild = ''
-    $AR rcs libaiger.a aiger.o
-  '';
-
+  enableParallelBuilding = true;
   installFlags = [ "PREFIX=${placeholder "out"}" ];
-  postInstall = ''
-    # test that installing picosat in configurePhase suceeded
-    test -f $out/bin/aigbmc
 
-    install -m 444 -Dt $lib/lib libaiger.a
-    install -m 444 -Dt $dev/include aiger.h
-  '';
+  pkgconfigItems = [
+    (makePkgconfigItem {
+      inherit (finalAttrs) version;
+      inherit (finalAttrs.meta) description;
+      cflags = [ "-I\${includedir}" ];
 
-  outputs = [
-    "out"
-    "dev"
-    "lib"
+      libs = [
+        "-L\${libdir}"
+        "-laiger"
+      ];
+
+      name = "aiger";
+
+      variables = {
+        includedir = "@includedir@";
+        libdir = "@libdir@";
+      };
+    })
   ];
 
   meta = {

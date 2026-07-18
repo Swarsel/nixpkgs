@@ -3,8 +3,8 @@
   ansible-core,
   buildPythonPackage,
   fetchPypi,
-  hatchling,
   hatch-vcs,
+  hatchling,
   paramiko,
   pytest-xdist,
   pytestCheckHook,
@@ -15,18 +15,12 @@
 buildPythonPackage rec {
   pname = "pytest-testinfra";
   version = "10.2.2";
-  pyproject = true;
 
   src = fetchPypi {
-    pname = "pytest_testinfra";
     inherit version;
     hash = "sha256-U3/V64jaYYwfRhJIqiBZTPjURRLoUZsjmDfoOHXh6c0=";
+    pname = "pytest_testinfra";
   };
-
-  build-system = [
-    hatchling
-    hatch-vcs
-  ];
 
   nativeCheckInputs = [
     ansible-core
@@ -41,6 +35,13 @@ buildPythonPackage rec {
     export HOME=$(mktemp -d)
   '';
 
+  build-system = [
+    hatchling
+    hatch-vcs
+  ];
+
+  disabledTestPaths = [ "test/test_modules.py" ];
+
   disabledTests = [
     # docker is required for all disabled tests
     # test/test_backends.py
@@ -54,7 +55,7 @@ buildPythonPackage rec {
     "test_backend_importables"
   ];
 
-  disabledTestPaths = [ "test/test_modules.py" ];
+  pyproject = true;
 
   meta = {
     description = "Pytest plugin for testing your infrastructure";

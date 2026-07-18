@@ -1,25 +1,26 @@
 {
-  buildDunePackage,
-  prometheus,
+  alcotest,
+  alcotest-lwt,
   asetmap,
   astring,
+  buildDunePackage,
+  cmdliner,
   cohttp-lwt,
   cohttp-lwt-unix,
-  cmdliner,
   fmt,
   logs,
   lwt,
+  prometheus,
   re,
-  alcotest,
-  alcotest-lwt,
 }:
 
 buildDunePackage {
-  pname = "prometheus-app";
   inherit (prometheus)
     version
     src
     ;
+
+  pname = "prometheus-app";
 
   propagatedBuildInputs = [
     asetmap

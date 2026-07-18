@@ -2,12 +2,12 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  rustPlatform,
   just,
   libcosmicAppHook,
-  which,
-  nixosTests,
   nix-update-script,
+  nixosTests,
+  rustPlatform,
+  which,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -22,17 +22,14 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-84e+idGKYDBerS84Cl9jPc/Z9RzuVvND7nHzmApsrgA=";
   };
 
-  cargoHash = "sha256-EIwYabYWSHTMnNFcammidn3bI4fc6JFdcVkGj7RmWqA=";
-
-  separateDebugInfo = true;
-  __structuredAttrs = true;
-
   nativeBuildInputs = [
     just
     which
     libcosmicAppHook
   ];
 
+  cargoHash = "sha256-EIwYabYWSHTMnNFcammidn3bI4fc6JFdcVkGj7RmWqA=";
+  __structuredAttrs = true;
   dontUseJustBuild = true;
   # Runs the default checkPhase instead
   dontUseJustCheck = true;
@@ -45,6 +42,8 @@ rustPlatform.buildRustPackage (finalAttrs: {
     "cargo-target-dir"
     "target/${stdenv.hostPlatform.rust.cargoShortTarget}"
   ];
+
+  separateDebugInfo = true;
 
   passthru = {
     tests = {
@@ -65,11 +64,11 @@ rustPlatform.buildRustPackage (finalAttrs: {
   };
 
   meta = {
-    homepage = "https://github.com/pop-os/cosmic-notifications";
     description = "Notifications for the COSMIC Desktop Environment";
-    mainProgram = "cosmic-notifications";
+    homepage = "https://github.com/pop-os/cosmic-notifications";
     license = lib.licenses.gpl3Only;
-    teams = [ lib.teams.cosmic ];
     platforms = lib.platforms.linux;
+    mainProgram = "cosmic-notifications";
+    teams = [ lib.teams.cosmic ];
   };
 })

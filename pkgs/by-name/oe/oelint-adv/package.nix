@@ -1,14 +1,13 @@
 {
   lib,
+  fetchFromGitHub,
   nix-update-script,
   python3Packages,
-  fetchFromGitHub,
 }:
 
 python3Packages.buildPythonApplication (finalAttrs: {
   pname = "oelint-adv";
   version = "9.9.2";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "priv-kweihmann";
@@ -25,6 +24,13 @@ python3Packages.buildPythonApplication (finalAttrs: {
       --replace-fail "--old-summary"                ""
   '';
 
+  nativeCheckInputs = with python3Packages; [
+    pytest-cov-stub
+    pytest-forked
+    pytest-xdist
+    pytestCheckHook
+  ];
+
   build-system = with python3Packages; [
     setuptools
   ];
@@ -38,33 +44,27 @@ python3Packages.buildPythonApplication (finalAttrs: {
     urllib3
   ];
 
-  nativeCheckInputs = with python3Packages; [
-    pytest-cov-stub
-    pytest-forked
-    pytest-xdist
-    pytestCheckHook
-  ];
-
   disabledTests = [
     # requires network access
     "TestClassOelintVarsHomepagePing"
   ];
+
+  pyproject = true;
+  pythonImportsCheck = [ "oelint_adv" ];
 
   pythonRelaxDeps = [
     "argcomplete"
     "urllib3"
   ];
 
-  pythonImportsCheck = [ "oelint_adv" ];
-
   passthru.updateScript = nix-update-script { };
 
   meta = {
     description = "Advanced bitbake-recipe linter";
-    mainProgram = "oelint-adv";
     homepage = "https://github.com/priv-kweihmann/oelint-adv";
     changelog = "https://github.com/priv-kweihmann/oelint-adv/releases/tag/${finalAttrs.version}";
     license = lib.licenses.bsd2;
     maintainers = with lib.maintainers; [ otavio ];
+    mainProgram = "oelint-adv";
   };
 })

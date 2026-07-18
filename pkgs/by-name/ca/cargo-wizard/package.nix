@@ -1,8 +1,8 @@
 {
   lib,
-  rustPlatform,
-  fetchFromGitHub,
   stdenv,
+  fetchFromGitHub,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -16,8 +16,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-WLGE2ZuytjSridZwfUTtNQF5woeBbx5ZoHfB9eyvedI=";
   };
 
-  cargoHash = "sha256-vRakgwZRyYkk3xFfZzl197tgRmx+/g2b8eaDunwrCzM=";
-
   # cargo-wizard still suggests lld for aarch64-linux on Rust 1.90+, so the
   # nightly integration test must expect both rustflags there.
   postPatch = ''
@@ -25,6 +23,8 @@ rustPlatform.buildRustPackage (finalAttrs: {
       --replace-fail 'if rustversion::cfg!(before(1.90.0)) {' \
         'if rustversion::cfg!(before(1.90.0)) || cfg!(all(target_os = "linux", target_arch = "aarch64")) {'
   '';
+
+  cargoHash = "sha256-vRakgwZRyYkk3xFfZzl197tgRmx+/g2b8eaDunwrCzM=";
 
   preCheck = ''
     export PATH=$PATH:$PWD/target/${stdenv.hostPlatform.rust.rustcTarget}/$cargoBuildType

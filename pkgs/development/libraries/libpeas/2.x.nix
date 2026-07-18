@@ -1,22 +1,22 @@
 {
-  stdenv,
   lib,
-  buildPackages,
+  stdenv,
   fetchurl,
-  pkgsCross,
-  replaceVars,
-  pkg-config,
+  buildPackages,
   gi-docgen,
-  gobject-introspection,
-  meson,
-  ninja,
-  vala,
   gjs,
   glib,
-  lua5_1,
-  python3,
-  spidermonkey_140,
   gnome,
+  gobject-introspection,
+  lua5_1,
+  meson,
+  ninja,
+  pkg-config,
+  pkgsCross,
+  python3,
+  replaceVars,
+  spidermonkey_140,
+  vala,
 }:
 
 let
@@ -26,16 +26,16 @@ stdenv.mkDerivation rec {
   pname = "libpeas";
   version = "2.2.1";
 
+  src = fetchurl {
+    url = "mirror://gnome/sources/${pname}/${lib.versions.majorMinor version}/${pname}-${version}.tar.xz";
+    hash = "sha256-WJ7KibQ3AG7fN1VHjfA3x0CiqEz6XSAtutYJXoKOJIg=";
+  };
+
   outputs = [
     "out"
     "dev"
     "devdoc"
   ];
-
-  src = fetchurl {
-    url = "mirror://gnome/sources/${pname}/${lib.versions.majorMinor version}/${pname}-${version}.tar.xz";
-    hash = "sha256-WJ7KibQ3AG7fN1VHjfA3x0CiqEz6XSAtutYJXoKOJIg=";
-  };
 
   patches = [
     # Make PyGObject’s gi library available.
@@ -46,9 +46,19 @@ stdenv.mkDerivation rec {
     })
   ];
 
-  depsBuildBuild = [
-    pkg-config
-  ];
+  postPatch = ''
+    # Checks lua51 and lua5.1 executable but we have none of them.
+    # Then it tries to invoke lua to check for LGI, which requires emulation for cross.
+    substituteInPlace meson.build \
+      --replace-fail \
+        "find_program('lua51', required: false)" \
+        "find_program('${lib.getExe' lua5_1 "lua"}', required: false)" \
+      --replace-fail \
+        "run_command(lua_prg, [" \
+        "run_command('${stdenv.hostPlatform.emulator buildPackages}', [lua_prg, "
+  '';
+
+  strictDeps = true;
 
   nativeBuildInputs = [
     gi-docgen
@@ -82,33 +92,23 @@ stdenv.mkDerivation rec {
   env.LUA_CPATH = "${luaEnv}/lib/lua/${luaEnv.luaversion}/?.so";
   env.LUA_PATH = "${luaEnv}/share/lua/${luaEnv.luaversion}/?.lua";
 
-  strictDeps = true;
-
-  postPatch = ''
-    # Checks lua51 and lua5.1 executable but we have none of them.
-    # Then it tries to invoke lua to check for LGI, which requires emulation for cross.
-    substituteInPlace meson.build \
-      --replace-fail \
-        "find_program('lua51', required: false)" \
-        "find_program('${lib.getExe' lua5_1 "lua"}', required: false)" \
-      --replace-fail \
-        "run_command(lua_prg, [" \
-        "run_command('${stdenv.hostPlatform.emulator buildPackages}', [lua_prg, "
-  '';
-
   postFixup = ''
     # Cannot be in postInstall, otherwise _multioutDocs hook in preFixup will move right back.
     moveToOutput "share/doc" "$devdoc"
   '';
 
+  depsBuildBuild = [
+    pkg-config
+  ];
+
   passthru = {
+    tests.cross = pkgsCross.aarch64-multiplatform.libpeas2;
+
     updateScript = gnome.updateScript {
       attrPath = "libpeas2";
       packageName = "libpeas";
       versionPolicy = "odd-unstable";
     };
-
-    tests.cross = pkgsCross.aarch64-multiplatform.libpeas2;
   };
 
   meta = {

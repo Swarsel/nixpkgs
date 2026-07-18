@@ -4,15 +4,15 @@
   fetchFromGitHub,
   fontconfig,
   gpgme,
-  libx11,
-  libxinerama,
-  libxft,
-  pkg-config,
-  zlib,
-  writeText,
   libassuan,
   libconfig,
   libgpg-error,
+  libx11,
+  libxft,
+  libxinerama,
+  pkg-config,
+  writeText,
+  zlib,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -27,6 +27,7 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   nativeBuildInputs = [ pkg-config ];
+
   buildInputs = [
     fontconfig
     gpgme
@@ -54,7 +55,7 @@ stdenv.mkDerivation (finalAttrs: {
     changelog = "https://github.com/ritze/pinentry-dmenu/releases/tag/${finalAttrs.version}";
     license = lib.licenses.gpl2Only;
     maintainers = with lib.maintainers; [ sweiglbosker ];
-    mainProgram = "pinentry-dmenu";
     platforms = lib.platforms.linux;
+    mainProgram = "pinentry-dmenu";
   };
 })

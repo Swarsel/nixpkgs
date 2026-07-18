@@ -17,17 +17,16 @@ buildGoModule (finalAttrs: {
     # rev = "6de04af6e353e38c030539c5678e5918f64be37e";
   };
 
-  sourceRoot = "${finalAttrs.src.name}/server";
-
   vendorHash = "sha256-249LWguTHIF0HNIo8CsE/HWpAtBw4P46VPvlTARLTpw=";
   doCheck = false;
+  sourceRoot = "${finalAttrs.src.name}/server";
 
   meta = {
     description = "User-friendly Lightweight TPM Remote Attestation over Bluetooth";
-    mainProgram = "ultrablue-server";
     homepage = "https://github.com/ANSSI-FR/ultrablue";
     license = lib.licenses.asl20;
-    platforms = lib.platforms.linux;
     maintainers = with lib.maintainers; [ raitobezarius ];
+    platforms = lib.platforms.linux;
+    mainProgram = "ultrablue-server";
   };
 })

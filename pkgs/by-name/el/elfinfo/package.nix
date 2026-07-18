@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule (finalAttrs: {
@@ -19,10 +19,10 @@ buildGoModule (finalAttrs: {
 
   meta = {
     description = "Small utility for showing information about ELF files";
-    mainProgram = "elfinfo";
     homepage = "https://elfinfo.roboticoverlords.org/";
     changelog = "https://github.com/xyproto/elfinfo/releases/tag/${finalAttrs.version}";
     license = lib.licenses.bsd3;
     maintainers = [ ];
+    mainProgram = "elfinfo";
   };
 })

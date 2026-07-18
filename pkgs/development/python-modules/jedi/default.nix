@@ -1,24 +1,20 @@
 {
   lib,
   stdenv,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # build-system
-  setuptools,
-
-  # dependencies
-  parso,
-
   # tests
   attrs,
+  buildPythonPackage,
+  # dependencies
+  parso,
   pytestCheckHook,
+  # build-system
+  setuptools,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "jedi";
   version = "0.20.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "davidhalter";
@@ -28,10 +24,6 @@ buildPythonPackage (finalAttrs: {
     fetchSubmodules = true;
   };
 
-  build-system = [ setuptools ];
-
-  dependencies = [ parso ];
-
   nativeCheckInputs = [
     attrs
     pytestCheckHook
@@ -40,6 +32,9 @@ buildPythonPackage (finalAttrs: {
   preCheck = ''
     export HOME=$TMPDIR
   '';
+
+  build-system = [ setuptools ];
+  dependencies = [ parso ];
 
   disabledTests =
     lib.optionals stdenv.hostPlatform.isDarwin [
@@ -55,10 +50,12 @@ buildPythonPackage (finalAttrs: {
       "test_dict_completion"
     ];
 
+  pyproject = true;
+
   meta = {
-    changelog = "https://github.com/davidhalter/jedi/blob/${finalAttrs.src.tag}/CHANGELOG.rst";
     description = "Autocompletion tool for Python that can be used for text editors";
     homepage = "https://github.com/davidhalter/jedi";
+    changelog = "https://github.com/davidhalter/jedi/blob/${finalAttrs.src.tag}/CHANGELOG.rst";
     license = lib.licenses.mit;
     maintainers = [ ];
   };

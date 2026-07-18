@@ -10,16 +10,12 @@ let
   configFile = settingsFormat.generate "config.yml" cfg.settings;
   defaultSettings = {
     application-name = "gotosocial";
-
-    protocol = "https";
-
     bind-address = "127.0.0.1";
-    port = 8080;
-
-    storage-local-base-path = "/var/lib/gotosocial/storage";
-
-    db-type = "sqlite";
     db-address = "/var/lib/gotosocial/database.sqlite";
+    db-type = "sqlite";
+    port = 8080;
+    protocol = "https";
+    storage-local-base-path = "/var/lib/gotosocial/storage";
   };
   gotosocial-admin = pkgs.writeShellScriptBin "gotosocial-admin" ''
     exec systemd-run \
@@ -31,39 +27,41 @@ let
   '';
 in
 {
-  meta.doc = ./gotosocial.md;
-  meta.maintainers = with lib.maintainers; [ blakesmith ];
-
   options.services.gotosocial = {
     enable = lib.mkEnableOption "ActivityPub social network server";
-
     package = lib.mkPackageOption pkgs "gotosocial" { };
 
+    environmentFile = lib.mkOption {
+      default = null;
+
+      description = ''
+        File path containing environment variables for configuring the GoToSocial service
+        in the format of an EnvironmentFile as described by {manpage}`systemd.exec(5)`.
+
+        This option could be used to pass sensitive configuration to the GoToSocial daemon.
+
+        Please refer to the Environment Variables section in the
+        [documentation](https://docs.gotosocial.org/en/latest/configuration/).
+      '';
+
+      example = "/root/nixos/secrets/gotosocial.env";
+      type = lib.types.nullOr lib.types.path;
+    };
+
     openFirewall = lib.mkOption {
-      type = lib.types.bool;
       default = false;
+
       description = ''
         Open the configured port in the firewall.
         Using a reverse proxy instead is highly recommended.
       '';
-    };
 
-    setupPostgresqlDB = lib.mkOption {
       type = lib.types.bool;
-      default = false;
-      description = ''
-        Whether to setup a local postgres database and populate the
-        `db-type` fields in `services.gotosocial.settings`.
-      '';
     };
 
     settings = lib.mkOption {
-      type = settingsFormat.type;
       default = defaultSettings;
-      example = {
-        application-name = "My GoToSocial";
-        host = "gotosocial.example.com";
-      };
+
       description = ''
         Contents of the GoToSocial YAML config.
 
@@ -74,21 +72,24 @@ in
 
         Please note that the `host` option cannot be changed later so it is important to configure this correctly before you start GoToSocial.
       '';
+
+      example = {
+        application-name = "My GoToSocial";
+        host = "gotosocial.example.com";
+      };
+
+      type = settingsFormat.type;
     };
 
-    environmentFile = lib.mkOption {
-      type = lib.types.nullOr lib.types.path;
+    setupPostgresqlDB = lib.mkOption {
+      default = false;
+
       description = ''
-        File path containing environment variables for configuring the GoToSocial service
-        in the format of an EnvironmentFile as described by {manpage}`systemd.exec(5)`.
-
-        This option could be used to pass sensitive configuration to the GoToSocial daemon.
-
-        Please refer to the Environment Variables section in the
-        [documentation](https://docs.gotosocial.org/en/latest/configuration/).
+        Whether to setup a local postgres database and populate the
+        `db-type` fields in `services.gotosocial.settings`.
       '';
-      default = null;
-      example = "/root/nixos/secrets/gotosocial.env";
+
+      type = lib.types.bool;
     };
 
   };
@@ -97,11 +98,18 @@ in
     assertions = [
       {
         assertion = cfg.settings.host or null != null;
+
         message = ''
           You have to define a hostname for GoToSocial (`services.gotosocial.settings.host`), it cannot be changed later without starting over!
         '';
       }
     ];
+
+    environment.systemPackages = [ gotosocial-admin ];
+
+    networking.firewall = lib.mkIf cfg.openFirewall {
+      allowedTCPPorts = [ cfg.settings.port ];
+    };
 
     services.gotosocial.settings =
       (lib.mapAttrs (name: lib.mkDefault) (
@@ -112,67 +120,66 @@ in
         }
       ))
       // (lib.optionalAttrs cfg.setupPostgresqlDB {
-        db-type = "postgres";
         db-address = "/run/postgresql";
         db-database = "gotosocial";
+        db-type = "postgres";
         db-user = "gotosocial";
       });
-
-    environment.systemPackages = [ gotosocial-admin ];
-
-    users.groups.gotosocial = { };
-    users.users.gotosocial = {
-      group = "gotosocial";
-      isSystemUser = true;
-    };
-
-    networking.firewall = lib.mkIf cfg.openFirewall {
-      allowedTCPPorts = [ cfg.settings.port ];
-    };
 
     services.postgresql = lib.mkIf cfg.setupPostgresqlDB {
       enable = true;
       ensureDatabases = [ "gotosocial" ];
+
       ensureUsers = [
         {
-          name = "gotosocial";
           ensureDBOwnership = true;
+          name = "gotosocial";
         }
       ];
     };
 
     systemd.services.gotosocial = {
-      description = "ActivityPub social network server";
-      wantedBy = [ "multi-user.target" ];
       after = [ "network.target" ] ++ lib.optional cfg.setupPostgresqlDB "postgresql.target";
+      description = "ActivityPub social network server";
       requires = lib.optional cfg.setupPostgresqlDB "postgresql.target";
       restartTriggers = [ configFile ];
 
       serviceConfig = {
-        EnvironmentFile = lib.mkIf (cfg.environmentFile != null) cfg.environmentFile;
-        ExecStart = "${cfg.package}/bin/gotosocial --config-path ${configFile} server start";
-        Restart = "on-failure";
-        Group = "gotosocial";
-        User = "gotosocial";
-        StateDirectory = "gotosocial";
-        WorkingDirectory = "/var/lib/gotosocial";
-
         # Security options:
         # Based on https://github.com/superseriousbusiness/gotosocial/blob/v0.8.1/example/gotosocial.service
         AmbientCapabilities = lib.optional (cfg.settings.port < 1024) "CAP_NET_BIND_SERVICE";
-        NoNewPrivileges = true;
-        PrivateTmp = true;
-        PrivateDevices = true;
-        RestrictAddressFamilies = "AF_UNIX AF_INET AF_INET6";
-        RestrictNamespaces = true;
-        RestrictRealtime = true;
         DevicePolicy = "closed";
-        ProtectSystem = "full";
+        EnvironmentFile = lib.mkIf (cfg.environmentFile != null) cfg.environmentFile;
+        ExecStart = "${cfg.package}/bin/gotosocial --config-path ${configFile} server start";
+        Group = "gotosocial";
+        LockPersonality = true;
+        NoNewPrivileges = true;
+        PrivateDevices = true;
+        PrivateTmp = true;
         ProtectControlGroups = true;
         ProtectKernelModules = true;
         ProtectKernelTunables = true;
-        LockPersonality = true;
+        ProtectSystem = "full";
+        Restart = "on-failure";
+        RestrictAddressFamilies = "AF_UNIX AF_INET AF_INET6";
+        RestrictNamespaces = true;
+        RestrictRealtime = true;
+        StateDirectory = "gotosocial";
+        User = "gotosocial";
+        WorkingDirectory = "/var/lib/gotosocial";
       };
+
+      wantedBy = [ "multi-user.target" ];
+    };
+
+    users.groups.gotosocial = { };
+
+    users.users.gotosocial = {
+      group = "gotosocial";
+      isSystemUser = true;
     };
   };
+
+  meta.doc = ./gotosocial.md;
+  meta.maintainers = with lib.maintainers; [ blakesmith ];
 }

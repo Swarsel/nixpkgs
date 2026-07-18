@@ -2,30 +2,30 @@
   lib,
   stdenv,
   fetchurl,
-  vulkan-headers,
-  vulkan-tools,
-  vulkan-loader,
-  glslang,
-  glfw,
-  libjpeg,
-  pkg-config,
-  rsync,
-  cmake,
-  clang,
-  llvm,
-  llvmPackages,
-  pugixml,
-  freetype,
-  exiv2,
-  ffmpeg,
-  libvorbis,
-  libmad,
-  testers,
-  vkdt,
-  xxd,
   alsa-lib,
   cargo,
+  clang,
+  cmake,
+  exiv2,
+  ffmpeg,
+  freetype,
+  glfw,
+  glslang,
+  libjpeg,
+  libmad,
+  libvorbis,
+  llvm,
+  llvmPackages,
+  pkg-config,
+  pugixml,
+  rsync,
   rustPlatform,
+  testers,
+  vkdt,
+  vulkan-headers,
+  vulkan-loader,
+  vulkan-tools,
+  xxd,
 }:
 
 stdenv.mkDerivation rec {
@@ -35,14 +35,6 @@ stdenv.mkDerivation rec {
   src = fetchurl {
     url = "https://github.com/hanatos/vkdt/releases/download/${version}/vkdt-${version}.tar.xz";
     hash = "sha256-oLJ5IlWOJoe2vUBaI9nyAhfjuw/lF63ZCdhMSF5D0pE=";
-  };
-
-  cargoRoot = "src/pipe/modules/i-raw/rawloader-c";
-
-  cargoDeps = rustPlatform.fetchCargoVendor {
-    inherit pname version;
-    inherit src cargoRoot;
-    hash = "sha256-8+gJVe9A1w9VlQpKjVnO/ZX44GKvh4yXKlGf4HqyW2M=";
   };
 
   strictDeps = true;
@@ -76,14 +68,21 @@ stdenv.mkDerivation rec {
     vulkan-tools
   ];
 
-  dontUseCmakeConfigure = true;
-
   makeFlags = [
     "DESTDIR=$(out)"
     "prefix="
     "VKDT_USE_RAWINPUT=2"
     "VKDT_USE_MCRAW=false" # TODO: support mcraw
   ];
+
+  cargoDeps = rustPlatform.fetchCargoVendor {
+    inherit pname version;
+    inherit src cargoRoot;
+    hash = "sha256-8+gJVe9A1w9VlQpKjVnO/ZX44GKvh4yXKlGf4HqyW2M=";
+  };
+
+  cargoRoot = "src/pipe/modules/i-raw/rawloader-c";
+  dontUseCmakeConfigure = true;
 
   passthru.tests.version = testers.testVersion {
     package = vkdt;

@@ -1,58 +1,60 @@
 {
   lib,
   stdenv,
-  buildPythonPackage,
   fetchFromGitHub,
-  pythonAtLeast,
-
-  # build-system
-  pybind11,
-  setuptools,
-
+  buildPythonPackage,
   # dependencies
   einops,
+  # optional-dependencies
+  ipywidgets,
+  jupyter,
   matplotlib,
   numpy,
   pandas,
+  # tests
+  plotly,
+  # build-system
+  pybind11,
+  pytestCheckHook,
+  pythonAtLeast,
   pytorch-msssim,
   scipy,
+  setuptools,
   tomli,
   torch,
   torch-geometric,
   torchvision,
   tqdm,
   typing-extensions,
-
-  # optional-dependencies
-  ipywidgets,
-  jupyter,
-
-  # tests
-  plotly,
-  pytestCheckHook,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "compressai";
   version = "1.2.8";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "InterDigitalInc";
     repo = "CompressAI";
     tag = "v${finalAttrs.version}";
-    fetchSubmodules = true;
     hash = "sha256-Fgobh7Q1rKomcqAT4kJl2RsM1W13ErO8sFB2urCqrCk=";
+    fetchSubmodules = true;
   };
+
+  nativeCheckInputs = [
+    plotly
+    pytestCheckHook
+  ];
+
+  # We have to delete the source because otherwise it is used intead the installed package.
+  preCheck = ''
+    rm -rf compressai
+  '';
 
   build-system = [
     pybind11
     setuptools
   ];
 
-  pythonRelaxDeps = [
-    "numpy"
-  ];
   dependencies = [
     einops
     matplotlib
@@ -68,26 +70,13 @@ buildPythonPackage (finalAttrs: {
     typing-extensions
   ];
 
-  optional-dependencies = {
-    tutorials = [
-      ipywidgets
-      jupyter
-    ];
-  };
+  disabledTestPaths = lib.optionals stdenv.hostPlatform.isDarwin [
+    # Cause pytest to hang on Darwin after the tests are done
+    "tests/test_eval_model.py"
+    "tests/test_train.py"
 
-  pythonImportsCheck = [
-    "compressai"
-    "compressai._CXX"
-  ];
-
-  # We have to delete the source because otherwise it is used intead the installed package.
-  preCheck = ''
-    rm -rf compressai
-  '';
-
-  nativeCheckInputs = [
-    plotly
-    pytestCheckHook
+    # fails in sandbox as it tries to launch a web browser (which fails due to missing `osascript`)
+    "tests/test_plot.py::test_plot[plotly-ms-ssim-rgb]"
   ];
 
   disabledTests = [
@@ -109,13 +98,22 @@ buildPythonPackage (finalAttrs: {
     "test_lower_bound_script"
   ];
 
-  disabledTestPaths = lib.optionals stdenv.hostPlatform.isDarwin [
-    # Cause pytest to hang on Darwin after the tests are done
-    "tests/test_eval_model.py"
-    "tests/test_train.py"
+  optional-dependencies = {
+    tutorials = [
+      ipywidgets
+      jupyter
+    ];
+  };
 
-    # fails in sandbox as it tries to launch a web browser (which fails due to missing `osascript`)
-    "tests/test_plot.py::test_plot[plotly-ms-ssim-rgb]"
+  pyproject = true;
+
+  pythonImportsCheck = [
+    "compressai"
+    "compressai._CXX"
+  ];
+
+  pythonRelaxDeps = [
+    "numpy"
   ];
 
   meta = {

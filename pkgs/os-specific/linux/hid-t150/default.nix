@@ -1,6 +1,6 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
   kernel,
   kernelModuleMakeFlags,
@@ -20,8 +20,6 @@ stdenv.mkDerivation rec {
 
   nativeBuildInputs = kernel.moduleBuildDependencies;
 
-  sourceRoot = "${src.name}/hid-t150";
-
   makeFlags = kernelModuleMakeFlags ++ [
     "KDIR=${kernel.dev}/lib/modules/${kernel.modDirVersion}/build"
     "INSTALL_MOD_PATH=${placeholder "out"}"
@@ -30,6 +28,8 @@ stdenv.mkDerivation rec {
   installPhase = ''
     make -C ${kernel.dev}/lib/modules/${kernel.modDirVersion}/build M=$(pwd) modules_install $makeFlags
   '';
+
+  sourceRoot = "${src.name}/hid-t150";
 
   meta = {
     description = "Linux kernel driver for Thrustmaster T150 and TMX Force Feedback wheel";

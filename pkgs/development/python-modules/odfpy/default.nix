@@ -1,15 +1,14 @@
 {
   lib,
   buildPythonPackage,
-  fetchPypi,
   defusedxml,
+  fetchPypi,
   pytest,
 }:
 
 buildPythonPackage rec {
   pname = "odfpy";
   version = "1.4.1";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
@@ -17,12 +16,13 @@ buildPythonPackage rec {
   };
 
   propagatedBuildInputs = [ defusedxml ];
-
   nativeCheckInputs = [ pytest ];
 
   checkPhase = ''
     pytest
   '';
+
+  format = "setuptools";
 
   meta = {
     description = "Python API and tools to manipulate OpenDocument files";

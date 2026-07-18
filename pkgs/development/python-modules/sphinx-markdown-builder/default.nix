@@ -1,26 +1,22 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  nix-update-script,
-
-  # build system
-  setuptools,
-
+  buildPythonPackage,
   # deps
   docutils,
-  sphinx,
-  tabulate,
-
+  nix-update-script,
   # tests
   pytestCheckHook,
+  # build system
+  setuptools,
+  sphinx,
   sphinxcontrib-httpdomain,
+  tabulate,
 }:
 
 buildPythonPackage rec {
   pname = "sphinx-markdown-builder";
   version = "0.6.10";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "liran-funaro";
@@ -28,6 +24,11 @@ buildPythonPackage rec {
     tag = version;
     hash = "sha256-97mlVD1MCtSw8AYyGc38auOrHU/vKH2aQJa4YIRQcBk=";
   };
+
+  nativeCheckInputs = [
+    pytestCheckHook
+    sphinxcontrib-httpdomain
+  ];
 
   build-system = [
     setuptools
@@ -39,13 +40,10 @@ buildPythonPackage rec {
     tabulate
   ];
 
+  pyproject = true;
+
   pythonImportsCheck = [
     "sphinx_markdown_builder"
-  ];
-
-  nativeCheckInputs = [
-    pytestCheckHook
-    sphinxcontrib-httpdomain
   ];
 
   passthru.updateScript = nix-update-script { };

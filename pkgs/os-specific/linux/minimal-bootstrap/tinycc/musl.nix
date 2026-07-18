@@ -2,12 +2,12 @@
   lib,
   fetchurl,
   bash,
-  tinycc,
-  musl,
+  buildPlatform,
   gnupatch,
   gnutar,
   gzip,
-  buildPlatform,
+  musl,
+  tinycc,
 }:
 let
   pname = "tinycc-musl";
@@ -34,11 +34,13 @@ let
     description = "Small, fast, and embeddable C compiler and interpreter";
     homepage = "https://repo.or.cz/w/tinycc.git";
     license = lib.licenses.lgpl21Only;
-    teams = [ lib.teams.minimal-bootstrap ];
+
     platforms = [
       "i686-linux"
       "x86_64-linux"
     ];
+
+    teams = [ lib.teams.minimal-bootstrap ];
   };
 
   tinycc-musl =
@@ -145,6 +147,7 @@ in
 {
   compiler = bash.runCommand "${pname}-${version}-compiler" {
     inherit pname version meta;
+
     passthru.tests.hello-world =
       result:
       bash.runCommand "${pname}-simple-program-${version}" { } ''
@@ -159,6 +162,7 @@ in
         ./test
         mkdir $out
       '';
+
     passthru.tinycc-musl = tinycc-musl;
   } "install -D ${tinycc-musl}/bin/tcc $out/bin/tcc";
 

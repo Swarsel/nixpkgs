@@ -1,14 +1,14 @@
 {
   stdenv,
-  python,
   flit-core,
   installer,
   packaging,
+  python,
 }:
 
 stdenv.mkDerivation {
-  pname = "${python.libPrefix}-bootstrap-${packaging.pname}";
   inherit (packaging) version src meta;
+  pname = "${python.libPrefix}-bootstrap-${packaging.pname}";
 
   buildPhase = ''
     runHook preBuild

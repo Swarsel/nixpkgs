@@ -1,7 +1,7 @@
 {
   lib,
-  rustPlatform,
   fetchCrate,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -10,8 +10,8 @@ rustPlatform.buildRustPackage (finalAttrs: {
 
   src = fetchCrate {
     inherit (finalAttrs) version;
-    pname = "hxn";
     hash = "sha256-L1Xd6u4B8DR9jR//FNloiOzzXiLnWP+580izP2NVvoY=";
+    pname = "hxn";
   };
 
   cargoHash = "sha256-aQSn3LT0gNQWXrPWVe/ulP446Dk9o1N0OGka3gGhNYg=";

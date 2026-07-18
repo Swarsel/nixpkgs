@@ -2,8 +2,8 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  fetchpatch,
   dbus,
+  fetchpatch,
   fltk_1_3,
   gtk2,
   libice,
@@ -23,18 +23,23 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-j1ADTRZ3Mxv9VNZWhWCFMnM/CJfkphdrgbw9Ca3bBw0=";
   };
 
+  outputs = [
+    "out"
+    "man"
+  ];
+
   patches = [
     (fetchpatch {
-      url = "https://salsa.debian.org/debian/afterstep/raw/master/debian/patches/44-Fix-build-with-gcc-5.patch";
       hash = "sha256-RNLB6PuFVA1PsYt2VwLyLyvY2OO3oIl1xk+0/6nwN+4=";
+      url = "https://salsa.debian.org/debian/afterstep/raw/master/debian/patches/44-Fix-build-with-gcc-5.patch";
     })
 
     # Fix pending upstream inclusion for binutils-2.36 support:
     #  https://github.com/afterstep/afterstep/pull/7
     (fetchpatch {
+      hash = "sha256-aGMTyojzXEHGjO9lMT6dwLl01Fd333BUuCIX0FU9ac4=";
       name = "binutils-2.36.patch";
       url = "https://github.com/afterstep/afterstep/commit/5e9e897cf8c455390dd6f5b27fec49707f6b9088.patch";
-      hash = "sha256-aGMTyojzXEHGjO9lMT6dwLl01Fd333BUuCIX0FU9ac4=";
     })
 
     # fix build with c23
@@ -52,6 +57,8 @@ stdenv.mkDerivation (finalAttrs: {
     done
   '';
 
+  strictDeps = true;
+
   nativeBuildInputs = [
     pkg-config
   ];
@@ -65,13 +72,6 @@ stdenv.mkDerivation (finalAttrs: {
     libtiff
   ];
 
-  outputs = [
-    "out"
-    "man"
-  ];
-
-  strictDeps = true;
-
   preConfigure = ''
     # A strange type of bug: dbus is not immediately found by pkg-config
     export NIX_CFLAGS_COMPILE="$NIX_CFLAGS_COMPILE $(pkg-config dbus-1 --cflags)"
@@ -84,8 +84,8 @@ stdenv.mkDerivation (finalAttrs: {
   enableParallelBuilding = false;
 
   meta = {
-    homepage = "http://www.afterstep.org/";
     description = "NEXTStep-inspired window manager";
+
     longDescription = ''
       AfterStep is a window manager for the Unix X Window System. Originally
       based on the look and feel of the NeXTStep interface, it provides end
@@ -93,9 +93,11 @@ stdenv.mkDerivation (finalAttrs: {
       development is to provide for flexibility of desktop configuration,
       improving aestetics, and efficient use of system resources.
     '';
+
+    homepage = "http://www.afterstep.org/";
     license = lib.licenses.gpl2Plus;
     maintainers = [ ];
-    mainProgram = "afterstep";
     platforms = lib.platforms.linux;
+    mainProgram = "afterstep";
   };
 })

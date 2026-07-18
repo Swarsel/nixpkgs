@@ -7,7 +7,6 @@
 python3Packages.buildPythonApplication (finalAttrs: {
   pname = "cyclonedx-python";
   version = "7.3.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "CycloneDX";
@@ -30,6 +29,7 @@ python3Packages.buildPythonApplication (finalAttrs: {
     ]
     ++ cyclonedx-python-lib.optional-dependencies.validation;
 
+  pyproject = true;
   pythonImportsCheck = [ "cyclonedx" ];
 
   meta = {
@@ -37,9 +37,11 @@ python3Packages.buildPythonApplication (finalAttrs: {
     homepage = "https://github.com/CycloneDX/cyclonedx-python";
     changelog = "https://github.com/CycloneDX/cyclonedx-python/releases/tag/${finalAttrs.src.tag}";
     license = lib.licenses.asl20;
+
     maintainers = with lib.maintainers; [
       blitz
     ];
+
     mainProgram = "cyclonedx-py";
   };
 })

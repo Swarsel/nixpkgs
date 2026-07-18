@@ -1,12 +1,11 @@
 {
   lib,
   stdenv,
-  fetchgit,
   cmake,
+  fetchgit,
+  gitUpdater,
   ninja,
   perl,
-  gitUpdater,
-
   withShared ? !stdenv.hostPlatform.isStatic,
 }:
 
@@ -20,6 +19,12 @@ stdenv.mkDerivation (finalAttrs: {
     tag = finalAttrs.version;
     hash = "sha256-SmyImyzGn7v2b5qGJbMmQZX5bODA9i6+8jy3uGwOawA=";
   };
+
+  outputs = [
+    "out"
+    "bin"
+    "dev"
+  ];
 
   patches = [
     # Add SECP224R1 for backward compatibility
@@ -47,31 +52,28 @@ stdenv.mkDerivation (finalAttrs: {
     ]
   );
 
-  outputs = [
-    "out"
-    "bin"
-    "dev"
-  ];
-
   passthru = {
-    updateScript = gitUpdater { };
     isShared = withShared;
+    updateScript = gitUpdater { };
   };
 
   meta = {
     description = "Free TLS/SSL implementation";
-    mainProgram = "bssl";
     homepage = "https://boringssl.googlesource.com";
-    maintainers = with lib.maintainers; [
-      thoughtpolice
-      theoparis
-      niklaskorz
-    ];
+
     license = with lib.licenses; [
       asl20
       isc
       mit
       bsd3
     ];
+
+    maintainers = with lib.maintainers; [
+      thoughtpolice
+      theoparis
+      niklaskorz
+    ];
+
+    mainProgram = "bssl";
   };
 })

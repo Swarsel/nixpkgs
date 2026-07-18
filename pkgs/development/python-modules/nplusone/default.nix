@@ -1,16 +1,16 @@
 {
   lib,
+  fetchFromGitHub,
   blinker,
   buildPythonPackage,
   django,
-  fetchFromGitHub,
   flake8,
   flask-sqlalchemy,
   mock,
   peewee,
+  pytest-cov-stub,
   pytest-django,
   pytestCheckHook,
-  pytest-cov-stub,
   six,
   sqlalchemy,
   webtest,
@@ -19,7 +19,6 @@
 buildPythonPackage rec {
   pname = "nplusone";
   version = "1.0.0";
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "jmcarp";
@@ -27,6 +26,11 @@ buildPythonPackage rec {
     rev = "v${version}";
     sha256 = "0qdwpvvg7dzmksz3vqkvb27n52lq5sa8i06m7idnj5xk2dgjkdxg";
   };
+
+  postPatch = ''
+    substituteInPlace pytest.ini \
+      --replace "python_paths" "pythonpath"
+  '';
 
   propagatedBuildInputs = [
     blinker
@@ -45,19 +49,6 @@ buildPythonPackage rec {
     webtest
   ];
 
-  # The tests assume the source code is in an nplusone/ directory. When using
-  # the Nix sandbox, it will be in a source/ directory instead, making the
-  # tests fail.
-  prePatch = ''
-    substituteInPlace tests/conftest.py \
-      --replace nplusone/tests/conftest source/tests/conftest
-  '';
-
-  postPatch = ''
-    substituteInPlace pytest.ini \
-      --replace "python_paths" "pythonpath"
-  '';
-
   disabledTests = [
     # Tests are out-dated
     "test_many_to_one"
@@ -74,13 +65,23 @@ buildPythonPackage rec {
     "test_profile"
   ];
 
+  format = "setuptools";
+
+  # The tests assume the source code is in an nplusone/ directory. When using
+  # the Nix sandbox, it will be in a source/ directory instead, making the
+  # tests fail.
+  prePatch = ''
+    substituteInPlace tests/conftest.py \
+      --replace nplusone/tests/conftest source/tests/conftest
+  '';
+
   pythonImportsCheck = [ "nplusone" ];
 
   meta = {
     description = "Detecting the n+1 queries problem in Python";
     homepage = "https://github.com/jmcarp/nplusone";
-    maintainers = with lib.maintainers; [ cript0nauta ];
     license = lib.licenses.mit;
+    maintainers = with lib.maintainers; [ cript0nauta ];
     broken = lib.versionAtLeast django.version "4";
   };
 }

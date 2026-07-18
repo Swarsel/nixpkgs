@@ -1,17 +1,16 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
-  nix-update-script,
   boringssl,
   cacert,
+  nix-update-script,
   python3,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
   pname = "trusttunnel-endpoint";
   version = "1.0.41";
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "TrustTunnel";
@@ -20,18 +19,11 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-ZFlHX17n0GQ+HVbJD9NQ5Jeg93G9A7dkjSkRD84ZNFQ=";
   };
 
-  cargoHash = "sha256-2ivFP6JjFFlScO6jcaHOTzcmntKlmOmJQE0q/81NOxc=";
-
   postPatch = ''
     substituteInPlace $cargoDepsCopy/*/boring-sys-*/build/main.rs $cargoDepsCopy/*/quiche-*/src/build.rs \
       --replace-fail "cargo:rustc-link-lib=static=crypto" "cargo:rustc-link-lib=dylib=crypto" \
       --replace-fail "cargo:rustc-link-lib=static=ssl" "cargo:rustc-link-lib=dylib=ssl"
   '';
-
-  env = {
-    BORING_BSSL_PATH = boringssl;
-    BORING_BSSL_INCLUDE_PATH = "${boringssl.dev}/include";
-  };
 
   nativeBuildInputs = [
     rustPlatform.bindgenHook
@@ -41,11 +33,19 @@ rustPlatform.buildRustPackage (finalAttrs: {
     boringssl
   ];
 
+  cargoHash = "sha256-2ivFP6JjFFlScO6jcaHOTzcmntKlmOmJQE0q/81NOxc=";
+
+  env = {
+    BORING_BSSL_INCLUDE_PATH = "${boringssl.dev}/include";
+    BORING_BSSL_PATH = boringssl;
+  };
+
   nativeCheckInputs = [
     cacert
     python3
   ];
 
+  __structuredAttrs = true;
   passthru.updateScript = nix-update-script { };
 
   meta = {

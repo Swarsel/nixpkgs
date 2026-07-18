@@ -1,18 +1,16 @@
 {
   lib,
-  python3Packages,
   fetchFromGitHub,
-
-  # patches
-  replaceVars,
   ffmpeg,
   imagemagick,
+  python3Packages,
+  # patches
+  replaceVars,
 }:
 
 python3Packages.buildPythonApplication (finalAttrs: {
   pname = "compress-pptx";
   version = "1.3.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "slhck";
@@ -28,6 +26,10 @@ python3Packages.buildPythonApplication (finalAttrs: {
     })
   ];
 
+  nativeCheckInputs = [
+    python3Packages.pytestCheckHook
+  ];
+
   build-system = with python3Packages; [ uv-build ];
 
   dependencies = with python3Packages; [
@@ -35,20 +37,20 @@ python3Packages.buildPythonApplication (finalAttrs: {
     tqdm
   ];
 
-  nativeCheckInputs = [
-    python3Packages.pytestCheckHook
-  ];
+  pyproject = true;
 
   meta = {
     description = "Compress PPTX files";
+
     longDescription = ''
       Compress a PPTX or POTX file, converting all PNG/TIFF images to lossy
       JPEGs.
     '';
+
     homepage = "https://github.com/slhck/compress-pptx";
-    license = lib.licenses.mit;
     changelog = "https://github.com/slhck/compress-pptx/releases/tag/${finalAttrs.src.tag}";
-    mainProgram = "compress-pptx";
+    license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ artur-sannikov ];
+    mainProgram = "compress-pptx";
   };
 })

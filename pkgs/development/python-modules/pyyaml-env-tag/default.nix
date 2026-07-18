@@ -2,28 +2,25 @@
   lib,
   buildPythonPackage,
   fetchPypi,
-  pyyaml,
   pytestCheckHook,
+  pyyaml,
   setuptools,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "pyyaml-env-tag";
   version = "1.1";
-  pyproject = true;
 
   src = fetchPypi {
-    pname = "pyyaml_env_tag";
     inherit (finalAttrs) version;
     sha256 = "sha256-LrOLdaLSHuBHXW2X7BnGMoen4UAjHkIUlp0OrJI81/8=";
+    pname = "pyyaml_env_tag";
   };
 
-  build-system = [ setuptools ];
-
-  dependencies = [ pyyaml ];
-
   nativeCheckInputs = [ pytestCheckHook ];
-
+  build-system = [ setuptools ];
+  dependencies = [ pyyaml ];
+  pyproject = true;
   pythonImportsCheck = [ "yaml_env_tag" ];
 
   meta = {

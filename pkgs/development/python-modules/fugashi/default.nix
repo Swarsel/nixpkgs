@@ -1,12 +1,12 @@
 {
   lib,
   fetchFromGitHub,
-  pytestCheckHook,
   buildPythonPackage,
   cython,
-  mecab,
-  setuptools-scm,
   ipadic,
+  mecab,
+  pytestCheckHook,
+  setuptools-scm,
   unidic,
   unidic-lite,
 }:
@@ -14,7 +14,6 @@
 buildPythonPackage rec {
   pname = "fugashi";
   version = "1.5.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "polm";
@@ -28,27 +27,28 @@ buildPythonPackage rec {
       --replace-fail "Cython~=3.0.11" "Cython"
   '';
 
-  build-system = [
-    cython
-    mecab
-    setuptools-scm
-  ];
-
   nativeCheckInputs = [
     ipadic
     pytestCheckHook
   ]
   ++ optional-dependencies.unidic-lite;
 
-  optional-dependencies = {
-    unidic-lite = [ unidic-lite ];
-    unidic = [ unidic ];
-  };
-
   preCheck = ''
     cd fugashi
   '';
 
+  build-system = [
+    cython
+    mecab
+    setuptools-scm
+  ];
+
+  optional-dependencies = {
+    unidic = [ unidic ];
+    unidic-lite = [ unidic-lite ];
+  };
+
+  pyproject = true;
   pythonImportsCheck = [ "fugashi" ];
 
   meta = {

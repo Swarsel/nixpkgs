@@ -1,11 +1,11 @@
 {
   lib,
-  async-upnp-client,
-  buildHomeAssistantComponent,
   fetchFromGitHub,
   aiohomematic,
   aiohomematic-config,
   aiohomematic-test-support,
+  async-upnp-client,
+  buildHomeAssistantComponent,
   home-assistant,
   openccu-data,
   openccu-loom-client,
@@ -15,8 +15,6 @@
 }:
 
 buildHomeAssistantComponent rec {
-  owner = "SukramJ";
-  domain = "homematicip_local";
   version = "2.8.3";
 
   src = fetchFromGitHub {
@@ -33,19 +31,19 @@ buildHomeAssistantComponent rec {
       || (echo "error: only Home Assistant >= $min_ha_version is supported" && exit 1)
   '';
 
-  dependencies = [
-    aiohomematic
-    aiohomematic-config
-    openccu-data
-    openccu-loom-client
-  ];
-
   nativeCheckInputs = [
     aiohomematic-test-support
     async-upnp-client
     pytest-homeassistant-custom-component
     pytest-xdist
     pytestCheckHook
+  ];
+
+  dependencies = [
+    aiohomematic
+    aiohomematic-config
+    openccu-data
+    openccu-loom-client
   ];
 
   disabledTestPaths = [
@@ -58,11 +56,14 @@ buildHomeAssistantComponent rec {
     "test_async_validate_config_and_get_system_information"
   ];
 
+  domain = "homematicip_local";
+  owner = "SukramJ";
+
   meta = {
-    changelog = "https://github.com/SukramJ/custom_homematic/blob/${src.tag}/changelog.md";
     description = "Custom Home Assistant Component for HomeMatic";
     homepage = "https://github.com/SukramJ/custom_homematic";
-    maintainers = with lib.maintainers; [ dotlambda ];
+    changelog = "https://github.com/SukramJ/custom_homematic/blob/${src.tag}/changelog.md";
     license = lib.licenses.mit;
+    maintainers = with lib.maintainers; [ dotlambda ];
   };
 }

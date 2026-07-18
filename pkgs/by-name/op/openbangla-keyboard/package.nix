@@ -4,12 +4,12 @@
   fetchFromGitHub,
   cargo,
   cmake,
-  pkg-config,
-  rustPlatform,
-  rustc,
   fcitx5,
   ibus,
   libsForQt5,
+  pkg-config,
+  rustPlatform,
+  rustc,
   zstd,
   withFcitx5Support ? false,
   withIbusSupport ? true,
@@ -19,9 +19,6 @@ stdenv.mkDerivation (finalAttrs: {
   pname = "openbangla-keyboard";
   version = "2.0.0-unstable-2025-08-19";
 
-  __structuredAttrs = true;
-  strictDeps = true;
-
   src = fetchFromGitHub {
     owner = "openbangla";
     repo = "openbangla-keyboard";
@@ -29,6 +26,12 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-XAcL4gBcu84DMR6o9JSJ/PmI1PsDdTETknD6C48E8ek=";
     fetchSubmodules = true;
   };
+
+  postPatch = ''
+    cp ${./Cargo.lock} ${finalAttrs.cargoRoot}/Cargo.lock
+  '';
+
+  strictDeps = true;
 
   nativeBuildInputs = [
     cmake
@@ -51,11 +54,6 @@ stdenv.mkDerivation (finalAttrs: {
       zstd
     ];
 
-  cargoDeps = rustPlatform.fetchCargoVendor {
-    inherit (finalAttrs) src cargoRoot postPatch;
-    hash = "sha256-UrS12fcXIIT3xhl/nyegwROBMCIepi6n07CS5CEA2BY=";
-  };
-
   cmakeFlags =
     lib.optionals withFcitx5Support [
       "-DENABLE_FCITX=YES"
@@ -64,20 +62,24 @@ stdenv.mkDerivation (finalAttrs: {
       "-DENABLE_IBUS=YES"
     ];
 
+  __structuredAttrs = true;
+
+  cargoDeps = rustPlatform.fetchCargoVendor {
+    inherit (finalAttrs) src cargoRoot postPatch;
+    hash = "sha256-UrS12fcXIIT3xhl/nyegwROBMCIepi6n07CS5CEA2BY=";
+  };
+
   cargoRoot = "src/engine/riti";
-  postPatch = ''
-    cp ${./Cargo.lock} ${finalAttrs.cargoRoot}/Cargo.lock
-  '';
 
   meta = {
-    isIbusEngine = withIbusSupport;
     description = "OpenSource, Unicode compliant Bengali Input Method";
-    mainProgram = "openbangla-gui";
     homepage = "https://openbangla.github.io/";
     license = lib.licenses.gpl3Plus;
     maintainers = with lib.maintainers; [ johnrtitor ];
     platforms = lib.platforms.linux;
+    mainProgram = "openbangla-gui";
     # never built on aarch64-linux since first introduction in nixpkgs
     broken = stdenv.hostPlatform.isLinux && stdenv.hostPlatform.isAarch64;
+    isIbusEngine = withIbusSupport;
   };
 })

@@ -3,8 +3,8 @@
   stdenv,
   fetchurl,
   libopensmtpd,
-  openssl,
   mandoc,
+  openssl,
 }:
 stdenv.mkDerivation (finalAttrs: {
   pname = "opensmtpd-filter-dkimsign";
@@ -16,13 +16,12 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   patches = [ ./no-chown-while-installing.patch ];
+  nativeBuildInputs = [ mandoc ];
 
   buildInputs = [
     libopensmtpd
     openssl
   ];
-
-  nativeBuildInputs = [ mandoc ];
 
   makeFlags = [
     "-f Makefile.gnu"

@@ -9,8 +9,6 @@ buildDunePackage (finalAttrs: {
   pname = "ocaml-monadic";
   version = "0.5.0";
 
-  duneVersion = "3";
-
   src = fetchFromGitHub {
     owner = "zepalmer";
     repo = "ocaml-monadic";
@@ -19,6 +17,7 @@ buildDunePackage (finalAttrs: {
   };
 
   buildInputs = [ ppxlib ];
+  duneVersion = "3";
 
   meta = {
     inherit (finalAttrs.src.meta) homepage;

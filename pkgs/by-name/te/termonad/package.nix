@@ -2,18 +2,18 @@
   stdenv,
   haskellPackages,
   makeWrapper,
-  packages ? (pkgSet: [ ]),
   nixosTests,
+  packages ? (pkgSet: [ ]),
 }:
 
 let
   termonadEnv = haskellPackages.ghcWithPackages (self: [ self.termonad ] ++ packages self);
 in
 stdenv.mkDerivation {
-  pname = "termonad-with-packages";
   inherit (haskellPackages.termonad) version;
-
+  pname = "termonad-with-packages";
   nativeBuildInputs = [ makeWrapper ];
+  allowSubstitutes = false;
 
   buildCommand = ''
     mkdir -p $out/bin $out/share
@@ -23,8 +23,6 @@ stdenv.mkDerivation {
 
   # trivial derivation
   preferLocalBuild = true;
-  allowSubstitutes = false;
-
   passthru.tests.test = nixosTests.terminal-emulators.termonad;
 
   meta = haskellPackages.termonad.meta // {

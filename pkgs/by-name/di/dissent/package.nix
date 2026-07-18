@@ -1,15 +1,15 @@
 {
-  buildGoModule,
+  lib,
   fetchFromGitHub,
+  buildGoModule,
   gobject-introspection,
   gst_all_1,
-  lib,
+  gtksourceview5,
   libadwaita,
   libcanberra-gtk3,
+  libspelling,
   pkg-config,
   sound-theme-freedesktop,
-  libspelling,
-  gtksourceview5,
   wrapGAppsHook4,
 }:
 
@@ -46,6 +46,8 @@ buildGoModule (finalAttrs: {
     gtksourceview5
   ];
 
+  vendorHash = "sha256-tl9H0qtp96XOanniMFqjZcsSU8LqJ4aluPoKULDzVdw=";
+
   postInstall = ''
     substituteInPlace nix/so.libdb.dissent.service \
       --replace-warn "/usr/bin/dissent" "$out/bin/dissent"
@@ -56,19 +58,20 @@ buildGoModule (finalAttrs: {
     install -D -m 444 -t $out/share/dbus-1/services nix/so.libdb.dissent.service
   '';
 
-  vendorHash = "sha256-tl9H0qtp96XOanniMFqjZcsSU8LqJ4aluPoKULDzVdw=";
-
   meta = {
     description = "Third-party Discord client designed for a smooth, native experience (formerly gtkcord4)";
     homepage = "https://github.com/diamondburned/dissent";
+
     license = with lib.licenses; [
       gpl3Plus
       cc0
     ];
-    mainProgram = "dissent";
+
     maintainers = with lib.maintainers; [
       hmenke
       aleksana
     ];
+
+    mainProgram = "dissent";
   };
 })

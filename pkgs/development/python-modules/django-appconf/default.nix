@@ -1,8 +1,8 @@
 {
   lib,
+  fetchFromGitHub,
   buildPythonPackage,
   django,
-  fetchFromGitHub,
   python,
   setuptools,
 }:
@@ -10,7 +10,6 @@
 buildPythonPackage rec {
   pname = "django-appconf";
   version = "1.2.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "django-compressor";
@@ -18,10 +17,6 @@ buildPythonPackage rec {
     tag = "v${version}";
     hash = "sha256-kpytEpvibnumkQGfHBDKA0GzSB0R8o0g0f51Rv6KEhA=";
   };
-
-  build-system = [ setuptools ];
-
-  dependencies = [ django ];
 
   preCheck = ''
     # prove we're running tests against installed package, not build dir
@@ -36,6 +31,9 @@ buildPythonPackage rec {
     runHook postCheck
   '';
 
+  build-system = [ setuptools ];
+  dependencies = [ django ];
+  pyproject = true;
   pythonImportsCheck = [ "appconf" ];
 
   meta = {

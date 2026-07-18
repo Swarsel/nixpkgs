@@ -1,18 +1,17 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  requests,
+  buildPythonPackage,
   poetry-core,
-  pythonRelaxDepsHook,
   pytestCheckHook,
+  pythonRelaxDepsHook,
+  requests,
   requests-mock,
 }:
 
 buildPythonPackage rec {
   pname = "synology-srm";
   version = "0.2.3";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "aerialls";
@@ -21,20 +20,8 @@ buildPythonPackage rec {
     hash = "sha256-qQxctw1UUs3jYve//irBni8rNKeld5u/bVtOwD2ofEQ=";
   };
 
-  build-system = [
-    poetry-core
-  ];
-
   nativeBuildInputs = [
     pythonRelaxDepsHook
-  ];
-
-  pythonRelaxDeps = [
-    "requests"
-  ];
-
-  dependencies = [
-    requests
   ];
 
   nativeCheckInputs = [
@@ -42,8 +29,22 @@ buildPythonPackage rec {
     requests-mock
   ];
 
+  build-system = [
+    poetry-core
+  ];
+
+  dependencies = [
+    requests
+  ];
+
+  pyproject = true;
+
   pythonImportsCheck = [
     "synology_srm"
+  ];
+
+  pythonRelaxDeps = [
+    "requests"
   ];
 
   meta = {

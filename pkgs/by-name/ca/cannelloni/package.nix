@@ -4,14 +4,15 @@
   fetchFromGitHub,
   cmake,
   lksctp-tools,
-  sctpSupport ? true,
-  versionCheckHook,
   nix-update-script,
+  versionCheckHook,
+  sctpSupport ? true,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
   pname = "cannelloni";
   version = "2.0.1";
+
   src = fetchFromGitHub {
     owner = "mguentner";
     repo = "cannelloni";
@@ -29,19 +30,20 @@ stdenv.mkDerivation (finalAttrs: {
     "-DSCTP_SUPPORT=${lib.boolToString sctpSupport}"
   ];
 
+  doInstallCheck = true;
+
   nativeInstallInputs = [
     versionCheckHook
   ];
-  doInstallCheck = true;
 
   passthru.updateScript = nix-update-script { };
 
   meta = {
     description = "SocketCAN over Ethernet tunnel";
-    mainProgram = "cannelloni";
     homepage = "https://github.com/mguentner/cannelloni";
-    platforms = lib.platforms.linux;
     license = lib.licenses.gpl2Only;
     maintainers = [ lib.maintainers.samw ];
+    platforms = lib.platforms.linux;
+    mainProgram = "cannelloni";
   };
 })

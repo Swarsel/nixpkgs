@@ -2,12 +2,12 @@
   lib,
   stdenv,
   fetchFromGitHub,
+  autoreconfHook,
+  bison,
   gettext,
   libiconv,
-  bison,
   ncurses,
   perl,
-  autoreconfHook,
 }:
 
 stdenv.mkDerivation {
@@ -21,20 +21,21 @@ stdenv.mkDerivation {
     sha256 = "sha256-G/Sj3E8K4QDR4fJcipCKTXpQU19LOfOeLBp5k7uPwk4=";
   };
 
+  postPatch = ''
+    mkdir -p m4
+  '';
+
+  nativeBuildInputs = [
+    autoreconfHook
+    bison
+  ];
+
   buildInputs = [
     gettext
     libiconv
     ncurses
     perl
   ];
-  nativeBuildInputs = [
-    autoreconfHook
-    bison
-  ];
-
-  postPatch = ''
-    mkdir -p m4
-  '';
 
   meta = {
     description = "Genealogy tool with ncurses interface";

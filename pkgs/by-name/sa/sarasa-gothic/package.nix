@@ -1,9 +1,9 @@
 {
   lib,
-  stdenvNoCC,
   fetchurl,
-  unzip,
   installFonts,
+  stdenvNoCC,
+  unzip,
 }:
 
 stdenvNoCC.mkDerivation (finalAttrs: {
@@ -17,21 +17,23 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     hash = "sha256-riWSPs+KJEhKJ+L683CKjsyYjFfh6Jn1jXNtgsUsyYA=";
   };
 
-  sourceRoot = ".";
-
   nativeBuildInputs = [
     unzip
     installFonts
   ];
 
+  sourceRoot = ".";
+
   meta = {
     description = "CJK programming font based on Iosevka and Source Han Sans";
     homepage = "https://github.com/be5invis/Sarasa-Gothic";
     license = lib.licenses.ofl;
+
     maintainers = with lib.maintainers; [
       ChengCat
       wegank
     ];
+
     platforms = lib.platforms.all;
   };
 })

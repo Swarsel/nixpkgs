@@ -7,27 +7,22 @@
   flask,
   flask-sqlalchemy,
   mongoengine,
-  pytestCheckHook,
   mongomock,
+  pytestCheckHook,
+  setuptools,
   sqlalchemy,
   sqlalchemy-utils,
-  setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "factory-boy";
   version = "3.3.3";
-  pyproject = true;
 
   src = fetchPypi {
-    pname = "factory_boy";
     inherit version;
     hash = "sha256-hmhi0iYSjfrH8rQWAofomdr1TyYSd4Mn3QPQ4ssePQM=";
+    pname = "factory_boy";
   };
-
-  build-system = [ setuptools ];
-
-  dependencies = [ faker ];
 
   nativeCheckInputs = [
     django
@@ -40,16 +35,20 @@ buildPythonPackage rec {
     sqlalchemy-utils
   ];
 
-  disabledTests = [
-    # Test checks for MongoDB requires an a running DB
-    "MongoEngineTestCase"
-  ];
+  build-system = [ setuptools ];
+  dependencies = [ faker ];
 
   disabledTestPaths = [
     # incompatible with latest flask-sqlalchemy
     "examples/flask_alchemy/test_demoapp.py"
   ];
 
+  disabledTests = [
+    # Test checks for MongoDB requires an a running DB
+    "MongoEngineTestCase"
+  ];
+
+  pyproject = true;
   pythonImportsCheck = [ "factory" ];
 
   meta = {

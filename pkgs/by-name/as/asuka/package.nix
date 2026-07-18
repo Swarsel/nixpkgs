@@ -1,10 +1,10 @@
 {
   lib,
-  rustPlatform,
   fetchFromSourcehut,
-  pkg-config,
   ncurses,
   openssl,
+  pkg-config,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -18,8 +18,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-+rj6P3ejc4Qb/uqbf3N9MqyqDT7yg9JFE0yfW/uzd6M=";
   };
 
-  cargoHash = "sha256-aNHkhcvOdK6sf6nWxCNPxcktYhrnmLdMrLqWb/1QBQ4=";
-
   nativeBuildInputs = [ pkg-config ];
 
   buildInputs = [
@@ -27,12 +25,14 @@ rustPlatform.buildRustPackage (finalAttrs: {
     openssl
   ];
 
+  cargoHash = "sha256-aNHkhcvOdK6sf6nWxCNPxcktYhrnmLdMrLqWb/1QBQ4=";
+
   meta = {
     description = "Gemini Project client written in Rust with NCurses";
-    mainProgram = "asuka";
     homepage = "https://git.sr.ht/~julienxx/asuka";
     license = lib.licenses.mit;
-    platforms = lib.platforms.unix;
     maintainers = with lib.maintainers; [ sikmir ];
+    platforms = lib.platforms.unix;
+    mainProgram = "asuka";
   };
 })

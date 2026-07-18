@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule (finalAttrs: {
@@ -16,14 +16,13 @@ buildGoModule (finalAttrs: {
   };
 
   vendorHash = "sha256-bSpMYQvrlR9T06dYF8gaTZmMAp6Gnb2cfsYCUes7i2s=";
+  # Tests require network access
+  doCheck = false;
 
   ldflags = [
     "-w"
     "-s"
   ];
-
-  # Tests require network access
-  doCheck = false;
 
   meta = {
     description = "Tool to gather network ranges using ASN information";

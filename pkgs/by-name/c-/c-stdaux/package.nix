@@ -25,14 +25,16 @@ stdenv.mkDerivation (finalAttrs: {
   doCheck = true;
 
   meta = {
-    homepage = "https://github.com/c-util/c-stdaux";
     description = "Auxiliary macros and functions for the C standard library";
+    homepage = "https://github.com/c-util/c-stdaux";
     changelog = "https://github.com/c-util/c-stdaux/releases/tag/${finalAttrs.src.tag}";
+
     license = with lib.licenses; [
       asl20
       lgpl2Plus
     ];
-    platforms = lib.platforms.unix;
+
     maintainers = with lib.maintainers; [ qbisi ];
+    platforms = lib.platforms.unix;
   };
 })

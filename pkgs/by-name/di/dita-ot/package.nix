@@ -1,9 +1,9 @@
 {
+  lib,
   stdenv,
   fetchzip,
-  openjdk17,
-  lib,
   makeWrapper,
+  openjdk17,
   testers,
 }:
 
@@ -11,13 +11,13 @@ stdenv.mkDerivation (finalAttrs: {
   pname = "dita-ot";
   version = "4.4";
 
-  nativeBuildInputs = [ makeWrapper ];
-  buildInputs = [ openjdk17 ];
-
   src = fetchzip {
     url = "https://github.com/dita-ot/dita-ot/releases/download/${finalAttrs.version}/dita-ot-${finalAttrs.version}.zip";
     hash = "sha256-0P2E0c5HHOCk1w0/CHe3a6AH8FJIeKoQdTruuGkwo/c=";
   };
+
+  nativeBuildInputs = [ makeWrapper ];
+  buildInputs = [ openjdk17 ];
 
   installPhase = ''
     runHook preInstall
@@ -36,13 +36,13 @@ stdenv.mkDerivation (finalAttrs: {
   passthru.tests.version = testers.testVersion { package = finalAttrs.finalPackage; };
 
   meta = {
+    description = "Open-source publishing engine for content authored in the Darwin Information Typing Architecture";
     homepage = "https://dita-ot.org";
     changelog = "https://www.dita-ot.org/dev/release-notes/#v${finalAttrs.version}";
-    description = "Open-source publishing engine for content authored in the Darwin Information Typing Architecture";
     license = lib.licenses.asl20;
-    mainProgram = "dita";
-    platforms = openjdk17.meta.platforms;
     sourceProvenance = with lib.sourceTypes; [ binaryBytecode ];
     maintainers = with lib.maintainers; [ robertrichter ];
+    platforms = openjdk17.meta.platforms;
+    mainProgram = "dita";
   };
 })

@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   django,
   uv-build,
 }:
@@ -9,7 +9,6 @@
 buildPythonPackage rec {
   pname = "dj-database-url";
   version = "3.1.2";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "jazzband";
@@ -24,13 +23,11 @@ buildPythonPackage rec {
       --replace-fail 'version = "0.0.0"' 'version = "${version}"'
   '';
 
-  build-system = [ uv-build ];
-
-  dependencies = [ django ];
-
   # Tests access a DB via network
   doCheck = false;
-
+  build-system = [ uv-build ];
+  dependencies = [ django ];
+  pyproject = true;
   pythonImportsCheck = [ "dj_database_url" ];
 
   meta = {

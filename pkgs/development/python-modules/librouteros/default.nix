@@ -1,18 +1,17 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
+  poetry-core,
   pytest-asyncio,
   pytest-xdist,
   pytestCheckHook,
-  poetry-core,
   toml,
 }:
 
 buildPythonPackage rec {
   pname = "librouteros";
   version = "3.4.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "luqasz";
@@ -21,15 +20,14 @@ buildPythonPackage rec {
     hash = "sha256-vN12LYqFOU7flD6bTFtGw5VhPJ238pZ0MStM3ljwDU4=";
   };
 
-  build-system = [ poetry-core ];
-
-  dependencies = [ toml ];
-
   nativeCheckInputs = [
     pytest-asyncio
     pytest-xdist
     pytestCheckHook
   ];
+
+  build-system = [ poetry-core ];
+  dependencies = [ toml ];
 
   disabledTests = [
     # Disable tests which require QEMU to run
@@ -41,6 +39,7 @@ buildPythonPackage rec {
     "test_generator_ditch"
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "librouteros" ];
 
   meta = {

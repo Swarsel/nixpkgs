@@ -1,25 +1,23 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
-  versionCheckHook,
+  buildGoModule,
   nix-update-script,
   nixosTests,
-
+  versionCheckHook,
+  withCollector ? true,
+  withHistory ? true,
   # modules (https://github.com/Kioubit/FlapAlerted#module-documentation)
   withHttpApi ? true,
   withLog ? true,
+  withRoaFilter ? false,
   withScript ? true,
   withWebhook ? true,
-  withCollector ? true,
-  withHistory ? true,
-  withRoaFilter ? false,
 }:
 
 buildGoModule (finalAttrs: {
   pname = "flap-alerted";
   version = "4.5.0";
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "Kioubit";
@@ -29,8 +27,10 @@ buildGoModule (finalAttrs: {
   };
 
   vendorHash = null;
-
   env.CGO_ENABLED = 0;
+  doInstallCheck = true;
+  nativeInstallCheckInputs = [ versionCheckHook ];
+  __structuredAttrs = true;
 
   ldflags = [
     "-s"
@@ -47,12 +47,9 @@ buildGoModule (finalAttrs: {
     ++ lib.optionals (!withHistory) [ "disable_mod_history" ]
     ++ lib.optionals withRoaFilter [ "mod_roaFilter" ];
 
-  nativeInstallCheckInputs = [ versionCheckHook ];
-  doInstallCheck = true;
-
   passthru = {
-    updateScript = nix-update-script { };
     tests = { inherit (nixosTests) flap-alerted; };
+    updateScript = nix-update-script { };
   };
 
   meta = {

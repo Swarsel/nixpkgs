@@ -1,26 +1,26 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchurl,
   blueprint-compiler,
+  evolution-data-server-gtk4,
+  fribidi,
+  geoclue2,
+  gettext,
+  glib,
+  glib-networking,
+  gnome,
+  gsettings-desktop-schemas,
+  gtk4,
+  libadwaita,
+  libgweather,
+  libical,
+  libsoup_3,
+  libxml2,
   meson,
   ninja,
   pkg-config,
   wrapGAppsHook4,
-  libgweather,
-  geoclue2,
-  gettext,
-  libxml2,
-  gnome,
-  fribidi,
-  gtk4,
-  evolution-data-server-gtk4,
-  libical,
-  libsoup_3,
-  glib,
-  glib-networking,
-  gsettings-desktop-schemas,
-  libadwaita,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -63,11 +63,11 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   meta = {
-    homepage = "https://apps.gnome.org/Calendar/";
     description = "Simple and beautiful calendar application for GNOME";
-    mainProgram = "gnome-calendar";
-    teams = [ lib.teams.gnome ];
+    homepage = "https://apps.gnome.org/Calendar/";
     license = lib.licenses.gpl3Plus;
     platforms = lib.platforms.unix;
+    mainProgram = "gnome-calendar";
+    teams = [ lib.teams.gnome ];
   };
 })

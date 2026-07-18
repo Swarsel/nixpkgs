@@ -9,21 +9,18 @@
 buildPythonPackage rec {
   pname = "python-trovo";
   version = "0.1.7";
-  pyproject = true;
 
   src = fetchPypi {
-    pname = "python_trovo";
     inherit version;
     hash = "sha256-3EVSF4+nLvvM2RocNM2xz9Us5VrRRTCu/MWCcqwwikw=";
+    pname = "python_trovo";
   };
 
   nativeBuildInputs = [ poetry-core ];
-
   propagatedBuildInputs = [ requests ];
-
   # No tests found
   doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "trovoApi" ];
 
   meta = {

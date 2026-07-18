@@ -1,9 +1,9 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitLab,
-  qt6,
   cmake,
+  qt6,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -22,12 +22,12 @@ stdenv.mkDerivation (finalAttrs: {
       --replace "/Applications" "$out/Applications"
   '';
 
-  buildInputs = [ qt6.qtserialport ];
-
   nativeBuildInputs = [
     cmake
     qt6.wrapQtAppsHook
   ];
+
+  buildInputs = [ qt6.qtserialport ];
 
   postInstall =
     if stdenv.hostPlatform.isDarwin then

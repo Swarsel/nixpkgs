@@ -1,44 +1,39 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # build-system
-  hatchling,
-  hatch-vcs,
-
+  buildPythonPackage,
+  # gpu
+  cupy,
   # dependencies
   donfig,
-  numpy,
-  numcodecs,
-  google-crc32c,
-  packaging,
-  typing-extensions,
-
   # optional-dependencies
   # remote
   fsspec,
-  obstore ? null, # TODO: Package
-  # gpu
-  cupy,
-  # cli
-  typer,
-  # optional
-  rich,
-  universal-pathlib,
-
+  google-crc32c,
+  hatch-vcs,
+  # build-system
+  hatchling,
   # test
   hypothesis,
+  numcodecs,
+  numpy,
   numpydoc,
+  packaging,
   pytest-asyncio,
   pytestCheckHook,
+  # optional
+  rich,
   tomlkit,
+  # cli
+  typer,
+  typing-extensions,
+  universal-pathlib,
+  obstore ? null, # TODO: Package
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "zarr";
   version = "3.2.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "zarr-developers";
@@ -54,6 +49,15 @@ buildPythonPackage (finalAttrs: {
       --replace-fail '"--benchmark-disable",' "" \
   '';
 
+  nativeCheckInputs = [
+    hypothesis
+    numpydoc
+    pytest-asyncio
+    pytestCheckHook
+    tomlkit
+  ]
+  ++ finalAttrs.finalPackage.passthru.optional-dependencies.cli;
+
   build-system = [
     hatchling
     hatch-vcs
@@ -68,34 +72,6 @@ buildPythonPackage (finalAttrs: {
     typing-extensions
   ];
 
-  passthru = {
-    optional-dependencies = {
-      remote = [
-        fsspec
-        obstore
-      ];
-      gpu = [
-        cupy
-      ];
-      cli = [
-        typer
-      ];
-      optional = [
-        rich
-        universal-pathlib
-      ];
-    };
-  };
-
-  nativeCheckInputs = [
-    hypothesis
-    numpydoc
-    pytest-asyncio
-    pytestCheckHook
-    tomlkit
-  ]
-  ++ finalAttrs.finalPackage.passthru.optional-dependencies.cli;
-
   disabledTestPaths = [
     # requires uv and then fails at setting up python envs
     "tests/test_examples.py::test_scripts_can_run[script_path0]"
@@ -105,7 +81,30 @@ buildPythonPackage (finalAttrs: {
     "tests/benchmarks/"
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "zarr" ];
+
+  passthru = {
+    optional-dependencies = {
+      cli = [
+        typer
+      ];
+
+      gpu = [
+        cupy
+      ];
+
+      optional = [
+        rich
+        universal-pathlib
+      ];
+
+      remote = [
+        fsspec
+        obstore
+      ];
+    };
+  };
 
   meta = {
     description = "Implementation of chunked, compressed, N-dimensional arrays for Python";

@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   krakenex,
   pandas,
 }:
@@ -9,8 +9,6 @@
 buildPythonPackage rec {
   pname = "pykrakenapi";
   version = "0.3.2";
-
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "dominiktraxl";
@@ -26,7 +24,7 @@ buildPythonPackage rec {
 
   # tests require network connection
   doCheck = false;
-
+  format = "setuptools";
   pythonImportsCheck = [ "pykrakenapi" ];
 
   meta = {

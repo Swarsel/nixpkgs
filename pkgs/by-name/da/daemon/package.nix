@@ -14,15 +14,16 @@ stdenv.mkDerivation (finalAttrs: {
     sha256 = "sha256-+iiFmtNBywoLASwRwnGBT4cEggE7SfcQYAMh03mIfNE=";
   };
 
+  buildInputs = [ perl ];
+
   makeFlags = [
     "PREFIX=$(out)"
     "CC=${stdenv.cc.targetPrefix}cc"
   ];
 
-  buildInputs = [ perl ];
-
   meta = {
     description = "Turns other processes into daemons";
+
     longDescription = ''
       Daemon turns other process into daemons. There are many tasks that need
       to be performed to correctly set up a daemon process. This can be tedious.
@@ -30,6 +31,7 @@ stdenv.mkDerivation (finalAttrs: {
       writing daemons in languages other than C, C++ or Perl (e.g. /bin/sh,
       Java).
     '';
+
     license = lib.licenses.gpl2Plus;
     platforms = lib.platforms.unix;
     mainProgram = "daemon";

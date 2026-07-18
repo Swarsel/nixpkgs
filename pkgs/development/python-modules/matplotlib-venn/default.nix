@@ -1,27 +1,26 @@
 {
   lib,
   stdenv,
-  fetchPypi,
   buildPythonPackage,
-  setuptools,
+  fetchPypi,
   matplotlib,
   numpy,
-  scipy,
-  shapely,
   pytestCheckHook,
+  scipy,
+  setuptools,
+  shapely,
 }:
 
 buildPythonPackage rec {
   pname = "matplotlib-venn";
   version = "1.1.2";
 
-  pyproject = true;
-
   src = fetchPypi {
     inherit pname version;
     hash = "sha256-bysHoD6btaYt4vMvllIWc54XUXb51lTdGeevLCLsNuM=";
   };
 
+  nativeCheckInputs = [ pytestCheckHook ];
   build-system = [ setuptools ];
 
   dependencies = [
@@ -36,7 +35,7 @@ buildPythonPackage rec {
     "matplotlib_venn.layout.venn3.cost_based.LayoutAlgorithm"
   ];
 
-  nativeCheckInputs = [ pytestCheckHook ];
+  pyproject = true;
 
   meta = {
     description = "Functions for plotting area-proportional two- and three-way Venn diagrams in matplotlib";

@@ -2,13 +2,13 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  makeWrapper,
-  mariadb,
-  mailutils,
-  pbzip2,
-  pigz,
   bzip2,
   gzip,
+  mailutils,
+  makeWrapper,
+  mariadb,
+  pbzip2,
+  pigz,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -44,10 +44,10 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Script to run daily, weekly and monthly backups for your MySQL database";
-    mainProgram = "automysqlbackup";
     homepage = "https://github.com/sixhop/AutoMySQLBackup";
-    platforms = lib.platforms.linux;
-    maintainers = [ lib.maintainers.aanderse ];
     license = lib.licenses.gpl2Plus;
+    maintainers = [ lib.maintainers.aanderse ];
+    platforms = lib.platforms.linux;
+    mainProgram = "automysqlbackup";
   };
 })

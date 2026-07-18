@@ -1,18 +1,18 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
   fetchFromGitLab,
+  cmake,
   fetchpatch,
   gitUpdater,
-  nixosTests,
-  cmake,
   intltool,
   lomiri-content-hub,
   lomiri-indicator-network,
   lomiri-push-qml,
   lomiri-thumbnailer,
   lomiri-ui-toolkit,
+  nixosTests,
   pkg-config,
   qqc2-suru-style,
   qtbase,
@@ -30,6 +30,7 @@
 let
   tdlib-1811 = tdlib.overrideAttrs {
     version = "1.8.11";
+
     src = fetchFromGitHub {
       owner = "tdlib";
       repo = "td";
@@ -61,9 +62,9 @@ stdenv.mkDerivation (finalAttrs: {
   patches = [
     # Remove when https://gitlab.com/ubports/development/apps/teleports/-/merge_requests/551 merged & in release
     (fetchpatch {
+      hash = "sha256-zxxFvoj6jluGPCA9GQsxuYYweaSOVrkD01hZwCtq52U=";
       name = "0001-teleports-Call-i18n.bindtextdomain.patch";
       url = "https://gitlab.com/ubports/development/apps/teleports/-/commit/dd537c08453be9bfcdb2ee1eb692514c7e867e41.patch";
-      hash = "sha256-zxxFvoj6jluGPCA9GQsxuYYweaSOVrkD01hZwCtq52U=";
     })
 
     # Remove when https://gitlab.com/ubports/development/apps/teleports/-/merge_requests/586 merged & in release
@@ -123,14 +124,14 @@ stdenv.mkDerivation (finalAttrs: {
 
   passthru = {
     tdlib = tdlib-1811;
-
-    updateScript = gitUpdater { rev-prefix = "v"; };
     tests.vm = nixosTests.teleports;
+    updateScript = gitUpdater { rev-prefix = "v"; };
   };
 
   meta = {
     description = "Ubuntu Touch Telegram client";
     homepage = "https://gitlab.com/ubports/development/apps/teleports";
+
     license = with lib.licenses; [
       mit # main
       asl20 # benlau/asyncfuture in qtdlib
@@ -138,8 +139,9 @@ stdenv.mkDerivation (finalAttrs: {
       gpl3Only # components
       lgpl3Only # components
     ];
+
+    platforms = lib.platforms.linux;
     mainProgram = "teleports";
     teams = [ lib.teams.lomiri ];
-    platforms = lib.platforms.linux;
   };
 })

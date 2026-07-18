@@ -1,17 +1,16 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   django,
-  pytestCheckHook,
   pytest-django,
+  pytestCheckHook,
   python,
 }:
 
 buildPythonPackage {
   pname = "django-crossdomainmedia";
   version = "0.0.4";
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "stefanw";
@@ -23,15 +22,15 @@ buildPythonPackage {
     hash = "sha256-nwFUm+cxokZ38c5D77z15gIO/kg49oRACOl6+eGGEtQ=";
   };
 
-  dependencies = [ django ];
-
   checkPhase = ''
     ${python.interpreter} manage.py test
   '';
 
+  dependencies = [ django ];
+  format = "setuptools";
+
   # django.core.exceptions.ImproperlyConfigured: Requested setting DEBUG, but settings are not configured.
   # pythonImportsCheck = [ "crossdomainmedia" ];
-
   meta = {
     description = "Django application to retrieve user's IP address";
     homepage = "https://github.com/stefanw/django-crossdomainmedia";

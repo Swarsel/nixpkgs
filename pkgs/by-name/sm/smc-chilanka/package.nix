@@ -1,9 +1,9 @@
 {
   lib,
-  stdenvNoCC,
   fetchFromGitLab,
-  python3Packages,
   gnumake,
+  python3Packages,
+  stdenvNoCC,
   truetype ? false,
 }:
 
@@ -12,11 +12,11 @@ stdenvNoCC.mkDerivation rec {
   version = "1.7";
 
   src = fetchFromGitLab {
-    group = "smc";
     owner = "fonts";
     repo = "chilanka";
     rev = "Version${version}";
     hash = "sha256-VvotRUQks8vUqJOcYHqy6cuwaAKYg4OqtiAjaBIdBRk=";
+    group = "smc";
   };
 
   nativeBuildInputs = [
@@ -40,10 +40,10 @@ stdenvNoCC.mkDerivation rec {
   '';
 
   meta = {
-    homepage = "https://smc.org.in/fonts/chilanka";
     description = "Chilanka Malayalam Typeface";
+    homepage = "https://smc.org.in/fonts/chilanka";
     license = lib.licenses.ofl;
-    platforms = lib.platforms.all;
     maintainers = [ ];
+    platforms = lib.platforms.all;
   };
 }

@@ -3,11 +3,11 @@
   stdenv,
   fetchFromGitHub,
   fetchYarnDeps,
-  yarnConfigHook,
-  yarnInstallHook,
-  nodejs,
   makeBinaryWrapper,
   nix-update-script,
+  nodejs,
+  yarnConfigHook,
+  yarnInstallHook,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -19,11 +19,6 @@ stdenv.mkDerivation (finalAttrs: {
     repo = "cloudflare-cli";
     tag = "v${finalAttrs.version}";
     hash = "sha256-3I8KvP9nlkiyYi4h7LpP5LE9xR+uvQyfkLLdSmDaG7E=";
-  };
-
-  yarnOfflineCache = fetchYarnDeps {
-    yarnLock = finalAttrs.src + "/yarn.lock";
-    hash = "sha256-XCqKC/uATKsWaqF9FnEd/p+CRl2OFP7zdmz7LAkm5HQ=";
   };
 
   nativeBuildInputs = [
@@ -39,6 +34,7 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   doInstallCheck = true;
+
   installCheckPhase = ''
     runHook preInstallCheck
 
@@ -46,6 +42,11 @@ stdenv.mkDerivation (finalAttrs: {
 
     runHook postInstallCheck
   '';
+
+  yarnOfflineCache = fetchYarnDeps {
+    hash = "sha256-XCqKC/uATKsWaqF9FnEd/p+CRl2OFP7zdmz7LAkm5HQ=";
+    yarnLock = finalAttrs.src + "/yarn.lock";
+  };
 
   passthru.updateScript = nix-update-script { };
 

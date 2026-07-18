@@ -2,13 +2,12 @@
   lib,
   stdenv,
   fetchurl,
+  fetchpatch,
   findutils,
   fixDarwinDylibNames,
+  openssl,
   updateAutotoolsGnuConfigScriptsHook,
   sslSupport ? true,
-  openssl,
-  fetchpatch,
-
   static ? stdenv.hostPlatform.isStatic,
 }:
 
@@ -21,13 +20,29 @@ stdenv.mkDerivation (finalAttrs: {
     sha256 = "1fq30imk8zd26x8066di3kpc5zyfc5z6frr3zll685zcx4dxxrlj";
   };
 
+  # libevent_openssl is moved into its own output, so that openssl isn't present
+  # in the default closure.
+  outputs = [
+    "out"
+    "dev"
+  ]
+  ++ lib.optional sslSupport "openssl";
+
   patches = [
     # Don't define BIO_get_init() for LibreSSL 3.5+
     (fetchpatch {
-      url = "https://github.com/libevent/libevent/commit/883630f76cbf512003b81de25cd96cb75c6cf0f9.patch";
       sha256 = "sha256-VPJqJUAovw6V92jpqIXkIR1xYGbxIWxaHr8cePWI2SU=";
+      url = "https://github.com/libevent/libevent/commit/883630f76cbf512003b81de25cd96cb75c6cf0f9.patch";
     })
   ];
+
+  nativeBuildInputs = [
+    updateAutotoolsGnuConfigScriptsHook
+  ]
+  ++ lib.optional stdenv.hostPlatform.isDarwin fixDarwinDylibNames;
+
+  buildInputs =
+    lib.optional sslSupport openssl ++ lib.optional stdenv.hostPlatform.isCygwin findutils;
 
   configureFlags = lib.flatten [
     (lib.optional (!sslSupport) "--disable-openssl")
@@ -41,24 +56,6 @@ stdenv.mkDerivation (finalAttrs: {
     MACOSX_DEPLOYMENT_TARGET=10.16
   '';
 
-  # libevent_openssl is moved into its own output, so that openssl isn't present
-  # in the default closure.
-  outputs = [
-    "out"
-    "dev"
-  ]
-  ++ lib.optional sslSupport "openssl";
-  outputBin = "dev";
-  propagatedBuildOutputs = [ "out" ] ++ lib.optional sslSupport "openssl";
-
-  nativeBuildInputs = [
-    updateAutotoolsGnuConfigScriptsHook
-  ]
-  ++ lib.optional stdenv.hostPlatform.isDarwin fixDarwinDylibNames;
-
-  buildInputs =
-    lib.optional sslSupport openssl ++ lib.optional stdenv.hostPlatform.isCygwin findutils;
-
   doCheck = false; # needs the net
 
   postInstall = lib.optionalString sslSupport ''
@@ -69,10 +66,12 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   enableParallelBuilding = true;
+  outputBin = "dev";
+  propagatedBuildOutputs = [ "out" ] ++ lib.optional sslSupport "openssl";
 
   meta = {
     description = "Event notification library";
-    mainProgram = "event_rpcgen.py";
+
     longDescription = ''
       The libevent API provides a mechanism to execute a callback function
       when a specific event occurs on a file descriptor or after a timeout
@@ -84,8 +83,10 @@ stdenv.mkDerivation (finalAttrs: {
       and then add or remove events dynamically without having to change
       the event loop.
     '';
+
     homepage = "https://libevent.org/";
     license = lib.licenses.bsd3;
     platforms = lib.platforms.all;
+    mainProgram = "event_rpcgen.py";
   };
 })

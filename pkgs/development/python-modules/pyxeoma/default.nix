@@ -8,7 +8,6 @@
 buildPythonPackage rec {
   pname = "pyxeoma";
   version = "1.4.2";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
@@ -16,9 +15,9 @@ buildPythonPackage rec {
   };
 
   propagatedBuildInputs = [ aiohttp ];
-
   # Project doesn't have any tests
   doCheck = false;
+  format = "setuptools";
   pythonImportsCheck = [ "pyxeoma" ];
 
   meta = {

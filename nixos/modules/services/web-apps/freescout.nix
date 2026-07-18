@@ -1,6 +1,6 @@
 {
-  lib,
   config,
+  lib,
   pkgs,
   ...
 }:
@@ -23,26 +23,26 @@ let
     if autoDb == "mysql" then
       {
         DB_CONNECTION = "mysql";
+        DB_DATABASE = user;
         DB_HOST = "";
         DB_SOCKET = "/run/mysqld/mysqld.sock";
         DB_USERNAME = user;
-        DB_DATABASE = user;
       }
     else
       {
         DB_CONNECTION = "pgsql";
-        DB_HOST = "/run/postgresql";
         DB_DATABASE = user;
+        DB_HOST = "/run/postgresql";
         DB_USERNAME = user;
       }
   );
 
   raw_config = {
+    APP_DISABLE_UPDATING = true;
     APP_ENV = "production";
     APP_FORCE_HTTPS = true;
-    APP_URL = "https://${cfg.domain}";
     APP_TIMEZONE = config.time.timeZone;
-    APP_DISABLE_UPDATING = true;
+    APP_URL = "https://${cfg.domain}";
   }
   // cfg.settings
   // db_config;
@@ -52,15 +52,17 @@ let
       pkgs.ps
       artisanWrapped
     ];
+
     requires = [
       # Using requires (instead of wants) since a failing config
       # is indeed critical and should not allow this service to continue
       "freescout-setup.service"
     ]
     ++ dbService;
+
     serviceConfig = {
-      User = user;
       Group = group;
+      User = user;
     };
   };
 
@@ -70,6 +72,7 @@ let
     # all anymore. To keep compatibility with older versions, still add if available.
     extensions =
       { all, enabled }: enabled ++ [ all.iconv ] ++ (lib.optional (all ? opcache) all.opcache);
+
     # Don't log anything because we are not sure, if this may leak secrets
     # Logging can be increased, if we have time to check the logging library
     extraConfig = ''
@@ -79,6 +82,7 @@ let
 
   package = cfg.package.overrideAttrs (prev: {
     pname = "${prev.pname}-${cfg.domain}";
+
     postInstall = prev.postInstall or "" + ''
       ln -s ${datadir} $out/share/freescout/data
     '';
@@ -86,9 +90,11 @@ let
 
   artisanWrapped = pkgs.writeShellApplication {
     name = "artisan-wrapped";
+
     runtimeInputs = with pkgs; [
       util-linux
     ];
+
     text = ''
       cd ${datadir}
       _runuser='exec'
@@ -190,38 +196,72 @@ in
 {
   options.services.freescout = with lib; {
     enable = mkEnableOption "FreeScout helpdesk application";
-
     package = mkPackageOption pkgs "freescout" { };
 
-    phpPackage = mkOption {
-      type = types.package;
-      default = pkgs.php;
-      description = "The php package to use";
-      defaultText = literalExpression "pkgs.php";
+    databaseSetup = {
+      enable = mkOption {
+        default = true;
+        description = "Whether to enable automatic database setup and configuration";
+        type = types.bool;
+      };
+
+      kind = mkOption {
+        default = "pgsql";
+        description = "Type of database to automatically set up";
+        example = "mysql";
+
+        type = types.enum [
+          "mysql"
+          "pgsql"
+        ];
+      };
     };
 
     domain = mkOption {
-      type = types.str;
       description = "Domain the freescout installation will run under";
       example = "support.mydomain.net";
+      type = types.str;
+    };
+
+    phpPackage = mkOption {
+      default = pkgs.php;
+      defaultText = literalExpression "pkgs.php";
+      description = "The php package to use";
+      type = types.package;
+    };
+
+    poolConfig = mkOption {
+      default = {
+        "pm" = "ondemand";
+        "pm.max_children" = 32;
+        "pm.max_requests" = 500;
+        "pm.process_idle_timeout" = "120s";
+      };
+
+      description = ''
+        Options for the freescout PHP pool. See the documentation on `php-fpm.conf`
+        for details on configuration directives.
+      '';
+
+      type =
+        with types;
+        attrsOf (oneOf [
+          str
+          int
+          bool
+        ]);
     };
 
     settings = mkOption {
-      type = with types; attrsOf anything;
       apply = mapAttrs' (
         k: v: {
           name = toUpper k;
           value = v;
         }
       );
-      default = { };
-      description = ''
-        Settings to be set in the `.env` file. See
-        <https://github.com/freescout-help-desk/freescout/blob/master/.env.example>
-        for reference on available environment variables.
 
-        Will be merged with the shown defaults.
-      '';
+      default = { };
+
       defaultText = lib.literalExpression ''
         {
           APP_ENV = "production";
@@ -231,6 +271,15 @@ in
           APP_DISABLE_UPDATING = true;
         }
       '';
+
+      description = ''
+        Settings to be set in the `.env` file. See
+        <https://github.com/freescout-help-desk/freescout/blob/master/.env.example>
+        for reference on available environment variables.
+
+        Will be merged with the shown defaults.
+      '';
+
       example = lib.literalExpression ''
         {
           # NOTE: MUST be 256 bits (32 bytes) in length, the form of base64:<base64 encoded key> is recommended.
@@ -244,44 +293,8 @@ in
           DB_PASSWORD._secret = "/run/secret/freescout/db_pass";
         }
       '';
-    };
 
-    poolConfig = mkOption {
-      type =
-        with types;
-        attrsOf (oneOf [
-          str
-          int
-          bool
-        ]);
-      default = {
-        "pm" = "ondemand";
-        "pm.max_children" = 32;
-        "pm.process_idle_timeout" = "120s";
-        "pm.max_requests" = 500;
-      };
-      description = ''
-        Options for the freescout PHP pool. See the documentation on `php-fpm.conf`
-        for details on configuration directives.
-      '';
-    };
-
-    databaseSetup = {
-      enable = mkOption {
-        type = types.bool;
-        description = "Whether to enable automatic database setup and configuration";
-        default = true;
-      };
-
-      kind = mkOption {
-        type = types.enum [
-          "mysql"
-          "pgsql"
-        ];
-        default = "pgsql";
-        example = "mysql";
-        description = "Type of database to automatically set up";
-      };
+      type = with types; attrsOf anything;
     };
   };
 
@@ -293,132 +306,36 @@ in
       }
     ];
 
-    warnings =
-      lib.optional (app_config ? "APP_KEY" && lib.isString app_config.APP_KEY)
-        "`services.freescout.settings.APP_KEY` will be stored in the world readable nix store. Use `APP_KEY._secret` or `APP_KEY_FILE` instead!";
-
-    users.users.${user} = {
-      inherit group;
-      isSystemUser = true;
-      createHome = true;
-      home = datadir;
-      homeMode = "750";
-    };
-    users.users.${config.services.nginx.user}.extraGroups = [ group ];
-    users.groups.${group} = { };
-
-    services.postgresql = lib.mkIf (autoDb == "pgsql") {
-      enable = true;
-      ensureUsers = [
-        {
-          name = user;
-          ensureDBOwnership = true;
-        }
-      ];
-      ensureDatabases = [
-        app_config.DB_DATABASE
-      ];
-    };
-
     services.mysql = lib.mkIf (autoDb == "mysql") {
       enable = true;
       package = lib.mkDefault pkgs.mariadb;
-      ensureUsers = [
-        {
-          name = user;
-          ensurePermissions = {
-            "${app_config.DB_DATABASE}.*" = "ALL PRIVILEGES";
-          };
-        }
-      ];
+
       ensureDatabases = [
         app_config.DB_DATABASE
       ];
-    };
 
-    services.phpfpm.pools.${user} = {
-      inherit phpPackage user group;
+      ensureUsers = [
+        {
+          ensurePermissions = {
+            "${app_config.DB_DATABASE}.*" = "ALL PRIVILEGES";
+          };
 
-      phpOptions = ''
-        display_errors = On
-        display_startup_errors = On
-      '';
-      settings = {
-        "listen.owner" = user;
-        "listen.group" = config.services.nginx.group;
-        "catch_workers_output" = true;
-      }
-      // cfg.poolConfig;
-    };
-
-    systemd.services.${fpmService} = {
-      # Somehow the webinterface shows
-      inherit (baseService) path;
-    };
-
-    systemd.services.freescout-setup = lib.recursiveUpdate baseService {
-      description = "Preparational tasks for freescout";
-      requires = dbService;
-      wantedBy = [ "multi-user.target" ];
-      after = dbService;
-      script = freescoutSetupScript;
-      serviceConfig = {
-        PrivateTmp = true;
-        Type = "oneshot";
-        RemainAfterExit = true;
-        ExecStartPre = "+${configSetupScript}";
-      };
-    };
-
-    # This needs to be manually started again and again
-    # Freescout has its own scheduler built in to ensure tasks run at the desired frequency
-    # --no-interaction makes sure, that the queue worker is not executed.
-    # This is needed, because otherweise the queue worker process would continue running
-    # thus block further schedule invocations until the queue worker terminates.
-    # See https://github.com/freescout-help-desk/freescout/blob/74fa4b7d4f8288f8d3fb1d343308d3289c4d72e2/app/Console/Kernel.php#L195-L267
-    systemd.services."freescout-schedule-run" = baseService // {
-      startAt = "minutely";
-      script = "${lib.getExe artisanWrapped} schedule:run --no-interaction";
-    };
-
-    # This is both long-running but also stops quite frequently.
-    # Seeing job restart counts in the thousands here is normal.
-    systemd.services."freescout-queue" = lib.recursiveUpdate baseService {
-      # Copying the output to storage/logs because it makes
-      # debugging connection issues easier for the user.
-      script = ''
-        ${lib.getExe artisanWrapped} \
-          queue:work \
-          --queue emails,default \
-          --sleep=5 \
-          -vv \
-          --tries=20 \
-          | tee -a ${datadir}/storage/logs/queue-jobs.log
-      '';
-      serviceConfig = {
-        RestartSec = "15s";
-        RuntimeMaxSec = "1h";
-        Restart = "always";
-      };
-      wantedBy = [ "multi-user.target" ];
-      after = [ "freescout-setup.service" ] ++ dbService;
+          name = user;
+        }
+      ];
     };
 
     services.nginx = {
       enable = true;
+
       virtualHosts.${cfg.domain} =
         let
           vhostCfg = config.services.nginx.virtualHosts.${cfg.domain};
           optSsl = lib.optionalString (vhostCfg.forceSSL || vhostCfg.onlySSL) "fastcgi_param HTTPS on;";
         in
         {
-          root = lib.mkForce "${package}/share/freescout/public";
-
           locations = {
             "/" = {
-              index = "index.php";
-              tryFiles = "$uri $uri/ /index.php$is_args$args";
-
               extraConfig = ''
                 # Defeats E-Mail open tracking or possibly "real" exploits
                 add_header X-XSS-Protection "1; mode=block" always;
@@ -426,10 +343,26 @@ in
                 add_header Referrer-Policy "no-referrer-when-downgrade" always;
                 add_header Content-Security-Policy "default-src 'self'; style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-inline'";
               '';
+
+              index = "index.php";
+              tryFiles = "$uri $uri/ /index.php$is_args$args";
             };
 
+            "^~ /(css|js)/builds/".root = "${cachedir}/public/";
+
+            "^~ /storage/app/attachment/" = {
+              alias = "${datadir}/storage/app/attachment/";
+
+              extraConfig = ''
+                internal;
+              '';
+            };
+
+            "~ /\\.".extraConfig = ''
+              deny all;
+            '';
+
             "~ \\.php$" = {
-              tryFiles = "$uri $uri/ =404";
               extraConfig = ''
                 fastcgi_index index.php;
                 include ${pkgs.nginx}/conf/fastcgi_params;
@@ -443,15 +376,15 @@ in
                 add_header Referrer-Policy "no-referrer-when-downgrade" always;
                 add_header Content-Security-Policy "default-src 'self'; style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-inline'";
               '';
+
+              tryFiles = "$uri $uri/ =404";
             };
 
-            "~* ^/storage/attachment/" = {
-              tryFiles = "$uri $uri/ /index.php?$query_string";
-              extraConfig = ''
-                expires 1M;
-                access_log off;
-              '';
-            };
+            "~* ^/(?:css|fonts|img|installer|js|modules)$".extraConfig = ''
+              expires 1M;
+              access_log off;
+              add_header Cache-Control "public, must-revalidate";
+            '';
 
             "~* ^/(?:css|js)/.*\\.(?:css|js)$".extraConfig = ''
               expires 2d;
@@ -464,24 +397,122 @@ in
               add_header Content-Security-Policy "default-src 'self'; style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-inline'";
             '';
 
-            "~* ^/(?:css|fonts|img|installer|js|modules)$".extraConfig = ''
-              expires 1M;
-              access_log off;
-              add_header Cache-Control "public, must-revalidate";
-            '';
-
-            "~ /\\.".extraConfig = ''
-              deny all;
-            '';
-            "^~ /(css|js)/builds/".root = "${cachedir}/public/";
-            "^~ /storage/app/attachment/" = {
-              alias = "${datadir}/storage/app/attachment/";
+            "~* ^/storage/attachment/" = {
               extraConfig = ''
-                internal;
+                expires 1M;
+                access_log off;
               '';
+
+              tryFiles = "$uri $uri/ /index.php?$query_string";
             };
           };
+
+          root = lib.mkForce "${package}/share/freescout/public";
         };
     };
+
+    services.phpfpm.pools.${user} = {
+      inherit phpPackage user group;
+
+      phpOptions = ''
+        display_errors = On
+        display_startup_errors = On
+      '';
+
+      settings = {
+        "catch_workers_output" = true;
+        "listen.group" = config.services.nginx.group;
+        "listen.owner" = user;
+      }
+      // cfg.poolConfig;
+    };
+
+    services.postgresql = lib.mkIf (autoDb == "pgsql") {
+      enable = true;
+
+      ensureDatabases = [
+        app_config.DB_DATABASE
+      ];
+
+      ensureUsers = [
+        {
+          ensureDBOwnership = true;
+          name = user;
+        }
+      ];
+    };
+
+    systemd.services.${fpmService} = {
+      # Somehow the webinterface shows
+      inherit (baseService) path;
+    };
+
+    # This is both long-running but also stops quite frequently.
+    # Seeing job restart counts in the thousands here is normal.
+    systemd.services."freescout-queue" = lib.recursiveUpdate baseService {
+      after = [ "freescout-setup.service" ] ++ dbService;
+
+      # Copying the output to storage/logs because it makes
+      # debugging connection issues easier for the user.
+      script = ''
+        ${lib.getExe artisanWrapped} \
+          queue:work \
+          --queue emails,default \
+          --sleep=5 \
+          -vv \
+          --tries=20 \
+          | tee -a ${datadir}/storage/logs/queue-jobs.log
+      '';
+
+      serviceConfig = {
+        Restart = "always";
+        RestartSec = "15s";
+        RuntimeMaxSec = "1h";
+      };
+
+      wantedBy = [ "multi-user.target" ];
+    };
+
+    # This needs to be manually started again and again
+    # Freescout has its own scheduler built in to ensure tasks run at the desired frequency
+    # --no-interaction makes sure, that the queue worker is not executed.
+    # This is needed, because otherweise the queue worker process would continue running
+    # thus block further schedule invocations until the queue worker terminates.
+    # See https://github.com/freescout-help-desk/freescout/blob/74fa4b7d4f8288f8d3fb1d343308d3289c4d72e2/app/Console/Kernel.php#L195-L267
+    systemd.services."freescout-schedule-run" = baseService // {
+      script = "${lib.getExe artisanWrapped} schedule:run --no-interaction";
+      startAt = "minutely";
+    };
+
+    systemd.services.freescout-setup = lib.recursiveUpdate baseService {
+      after = dbService;
+      description = "Preparational tasks for freescout";
+      requires = dbService;
+      script = freescoutSetupScript;
+
+      serviceConfig = {
+        ExecStartPre = "+${configSetupScript}";
+        PrivateTmp = true;
+        RemainAfterExit = true;
+        Type = "oneshot";
+      };
+
+      wantedBy = [ "multi-user.target" ];
+    };
+
+    users.groups.${group} = { };
+    users.users.${config.services.nginx.user}.extraGroups = [ group ];
+
+    users.users.${user} = {
+      inherit group;
+      createHome = true;
+      home = datadir;
+      homeMode = "750";
+      isSystemUser = true;
+    };
+
+    warnings =
+      lib.optional (app_config ? "APP_KEY" && lib.isString app_config.APP_KEY)
+        "`services.freescout.settings.APP_KEY` will be stored in the world readable nix store. Use `APP_KEY._secret` or `APP_KEY_FILE` instead!";
   };
 }

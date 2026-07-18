@@ -1,12 +1,12 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
   cmake,
-  pkg-config,
   expat,
   fontconfig,
   freetype,
+  pkg-config,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -24,6 +24,7 @@ rustPlatform.buildRustPackage (finalAttrs: {
     cmake
     pkg-config
   ];
+
   buildInputs = [
     expat
     fontconfig

@@ -2,48 +2,43 @@
   lib,
   stdenv,
   fetchFromGitHub,
+  alsa-lib,
+  cairo,
   callPackage,
-  fetchpatch,
-
   # Required build tools
   cmake,
-  makeWrapper,
-  pkg-config,
-
-  # Required dependencies
-  fftwSinglePrec,
-  liblo,
-  minixml,
-  zlib,
-
-  # Optional dependencies
-  alsaSupport ? stdenv.hostPlatform.isLinux,
-  alsa-lib,
-  dssiSupport ? false,
-  dssi,
-  ladspa-header,
-  jackSupport ? true,
-  libjack2,
-  ossSupport ? true,
-  portaudioSupport ? true,
-  portaudio,
-  sndioSupport ? stdenv.hostPlatform.isOpenBSD,
-  sndio,
-
-  # Optional GUI dependencies
-  guiModule ? "zest",
-  cairo,
-  fltk,
-  libGL,
-  libjpeg,
-  libx11,
-  libxpm,
-  ntk,
-
+  ctestCheckHook,
   # Test dependencies
   cxxtest,
+  dssi,
+  fetchpatch,
+  # Required dependencies
+  fftwSinglePrec,
+  fltk,
+  ladspa-header,
+  libGL,
+  libjack2,
+  libjpeg,
+  liblo,
+  libx11,
+  libxpm,
+  makeWrapper,
+  minixml,
+  ntk,
+  pkg-config,
+  portaudio,
   ruby,
-  ctestCheckHook,
+  sndio,
+  zlib,
+  # Optional dependencies
+  alsaSupport ? stdenv.hostPlatform.isLinux,
+  dssiSupport ? false,
+  # Optional GUI dependencies
+  guiModule ? "zest",
+  jackSupport ? true,
+  ossSupport ? true,
+  portaudioSupport ? true,
+  sndioSupport ? stdenv.hostPlatform.isOpenBSD,
 }:
 
 assert builtins.elem guiModule [
@@ -72,8 +67,8 @@ stdenv.mkDerivation (finalAttrs: {
     owner = "zynaddsubfx";
     repo = "zynaddsubfx";
     tag = finalAttrs.version;
-    fetchSubmodules = true;
     hash = "sha256-0siAx141DZx39facXWmKbsi0rHBNpobApTdey07EcXg=";
+    fetchSubmodules = true;
   };
 
   outputs = [
@@ -84,8 +79,8 @@ stdenv.mkDerivation (finalAttrs: {
   patches = [
     # Lazily expand ZYN_DATADIR to fix builtin banks across updates
     (fetchpatch {
-      url = "https://github.com/zynaddsubfx/zynaddsubfx/commit/853aa03f4f92a180b870fa62a04685d12fca55a7.patch";
       hash = "sha256-4BsRZ9keeqKopr6lCQJznaZ3qWuMgD1/mCrdMiskusg=";
+      url = "https://github.com/zynaddsubfx/zynaddsubfx/commit/853aa03f4f92a180b870fa62a04685d12fca55a7.patch";
     })
   ];
 
@@ -145,22 +140,12 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   doCheck = true;
+
   nativeCheckInputs = [
     cxxtest
     ruby
     ctestCheckHook
   ];
-
-  disabledTests =
-    # PortChecker is non-deterministic. It's fixed in the master
-    # branch, but backporting would require an update to rtosc, so
-    # we'll just disable it until the next release.
-    [ "PortChecker" ]
-    # Tests fail on aarch64
-    ++ lib.optionals stdenv.hostPlatform.isAarch64 [
-      "MessageTest"
-      "UnisonTest"
-    ];
 
   # Use Zyn-Fusion logo for zest build
   # An SVG version of the logo isn't hosted anywhere we can fetch, I
@@ -184,12 +169,24 @@ stdenv.mkDerivation (finalAttrs: {
       --prefix LD_LIBRARY_PATH : ${mruby-zest}
   '';
 
+  disabledTests =
+    # PortChecker is non-deterministic. It's fixed in the master
+    # branch, but backporting would require an update to rtosc, so
+    # we'll just disable it until the next release.
+    [ "PortChecker" ]
+    # Tests fail on aarch64
+    ++ lib.optionals stdenv.hostPlatform.isAarch64 [
+      "MessageTest"
+      "UnisonTest"
+    ];
+
   passthru = {
     inherit mruby-zest;
   };
 
   meta = {
     description = "High quality software synthesizer (${guiName} GUI)";
+
     homepage =
       if guiModule == "zest" then
         "https://zynaddsubfx.sourceforge.io/zyn-fusion.html"
@@ -200,7 +197,6 @@ stdenv.mkDerivation (finalAttrs: {
     maintainers = with lib.maintainers; [ kira-bruneau ];
     platforms = lib.platforms.all;
     mainProgram = "zynaddsubfx";
-
     # On macOS:
     # - Tests don't compile (ld: unknown option: --no-as-needed)
     # - ZynAddSubFX LV2 & VST plugin fail to compile (not setup to use ObjC version of pugl)

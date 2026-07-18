@@ -1,27 +1,26 @@
 {
   lib,
+  fetchFromGitHub,
+  asdf,
   asdf-coordinates-schemas,
   asdf-standard,
   asdf-transform-schemas,
-  asdf,
   astropy,
   buildPythonPackage,
-  fetchFromGitHub,
   numpy,
   packaging,
   pytest-astropy-header,
   pytest-doctestplus,
   pytestCheckHook,
   scipy,
-  setuptools-scm,
   setuptools,
+  setuptools-scm,
   writableTmpDirAsHomeHook,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "asdf-astropy";
   version = "0.11.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "astropy";
@@ -34,6 +33,14 @@ buildPythonPackage (finalAttrs: {
     # pytest chokes on unhandled options in the [tool.pytest.ini_options] section
     sed -i "/asdf_schema_/d" pyproject.toml
   '';
+
+  nativeCheckInputs = [
+    pytest-astropy-header
+    pytest-doctestplus
+    pytestCheckHook
+    scipy
+    writableTmpDirAsHomeHook
+  ];
 
   build-system = [
     setuptools
@@ -50,14 +57,7 @@ buildPythonPackage (finalAttrs: {
     packaging
   ];
 
-  nativeCheckInputs = [
-    pytest-astropy-header
-    pytest-doctestplus
-    pytestCheckHook
-    scipy
-    writableTmpDirAsHomeHook
-  ];
-
+  pyproject = true;
   pythonImportsCheck = [ "asdf_astropy" ];
 
   meta = {

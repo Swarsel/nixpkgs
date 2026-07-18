@@ -1,33 +1,33 @@
 {
   lib,
-  fetchFromGitHub,
-  fetchpatch,
   stdenv,
+  fetchFromGitHub,
+  SDL2,
   cmake,
+  curlFull,
+  fetchpatch,
+  ffmpeg,
+  fftw,
+  hidapi,
+  json_c,
+  kdePackages,
+  lcms2,
+  libdovi,
+  libevdev,
+  libopus,
+  libplacebo,
+  libunwind,
+  miniupnpc,
+  nanopb,
   pkg-config,
   protobuf,
   python3,
-  ffmpeg,
-  libopus,
-  SDL2,
-  libevdev,
-  udev,
-  curlFull,
-  hidapi,
-  json_c,
-  fftw,
-  miniupnpc,
-  nanopb,
-  speexdsp,
-  libplacebo,
-  vulkan-loader,
-  vulkan-headers,
-  libunwind,
   shaderc,
-  lcms2,
-  libdovi,
+  speexdsp,
+  udev,
+  vulkan-headers,
+  vulkan-loader,
   xxhash,
-  kdePackages,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -82,20 +82,12 @@ stdenv.mkDerivation (finalAttrs: {
     xxhash
   ];
 
-  env.NIX_CFLAGS_COMPILE = "-std=gnu17";
-
   cmakeFlags = [
     "-Wno-dev"
     (lib.cmakeFeature "CHIAKI_USE_SYSTEM_CURL" "true")
   ];
 
-  qtWrapperArgs = [
-    "--prefix LD_LIBRARY_PATH : ${vulkan-loader}/lib"
-  ];
-
-  pythonPath = [
-    python3.pkgs.requests
-  ];
+  env.NIX_CFLAGS_COMPILE = "-std=gnu17";
 
   postInstall = ''
     install -Dm755 $src/scripts/psn-account-id.py $out/bin/psn-account-id
@@ -105,9 +97,17 @@ stdenv.mkDerivation (finalAttrs: {
     wrapPythonPrograms
   '';
 
+  pythonPath = [
+    python3.pkgs.requests
+  ];
+
+  qtWrapperArgs = [
+    "--prefix LD_LIBRARY_PATH : ${vulkan-loader}/lib"
+  ];
+
   meta = {
-    homepage = "https://streetpea.github.io/chiaki-ng/";
     description = "Next-Generation of Chiaki (the open-source remote play client for PlayStation)";
+    homepage = "https://streetpea.github.io/chiaki-ng/";
     # Includes OpenSSL linking exception that we currently have no way
     # to represent.
     #

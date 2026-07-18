@@ -1,7 +1,7 @@
 {
   lib,
-  appimageTools,
   fetchurl,
+  appimageTools,
   makeWrapper,
   nix-update-script,
 }:
@@ -18,7 +18,6 @@ let
 in
 appimageTools.wrapType2 {
   inherit pname version src;
-
   nativeBuildInputs = [ makeWrapper ];
 
   extraInstallCommands = ''
@@ -33,17 +32,16 @@ appimageTools.wrapType2 {
   '';
 
   extraPkgs = pkgs: with pkgs; [ zstd ];
-
   passthru.updateScript = nix-update-script { };
 
   meta = {
-    homepage = "https://davidotek.github.io/protonup-qt/";
     description = "Install and manage Proton-GE and Luxtorpeda for Steam and Wine-GE for Lutris with this graphical user interface";
+    homepage = "https://davidotek.github.io/protonup-qt/";
+    changelog = "https://github.com/DavidoTek/ProtonUp-Qt/releases/tag/v${version}";
     license = lib.licenses.gpl3Plus;
     sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
-    mainProgram = "protonup-qt";
-    changelog = "https://github.com/DavidoTek/ProtonUp-Qt/releases/tag/v${version}";
-    platforms = [ "x86_64-linux" ];
     maintainers = with lib.maintainers; [ michaelBelsanti ];
+    platforms = [ "x86_64-linux" ];
+    mainProgram = "protonup-qt";
   };
 }

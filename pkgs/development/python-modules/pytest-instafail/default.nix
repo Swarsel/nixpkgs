@@ -9,7 +9,6 @@
 buildPythonPackage rec {
   pname = "pytest-instafail";
   version = "0.5.0";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
@@ -17,9 +16,8 @@ buildPythonPackage rec {
   };
 
   buildInputs = [ pytest ];
-
   nativeCheckInputs = [ pytestCheckHook ];
-
+  format = "setuptools";
   pythonImportsCheck = [ "pytest_instafail" ];
 
   meta = {

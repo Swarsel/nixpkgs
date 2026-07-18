@@ -1,11 +1,11 @@
 {
   lib,
-  rustPlatform,
+  stdenv,
   fetchFromGitHub,
   pkg-config,
+  rustPlatform,
   udev,
   zstd,
-  stdenv,
 }:
 rustPlatform.buildRustPackage (finalAttrs: {
   pname = "argon";
@@ -18,8 +18,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-i2YWAXgrcS759+iNtSzjIHU1FmY22Xx6sy2q9ErGsnw=";
   };
 
-  cargoHash = "sha256-wj+T1XBLVQsDNMT9d/0ybR+L7fDZj4Ijhqv0fH+f7HA=";
-
   nativeBuildInputs = [ pkg-config ];
 
   buildInputs = [
@@ -28,6 +26,8 @@ rustPlatform.buildRustPackage (finalAttrs: {
   ++ lib.optionals stdenv.hostPlatform.isLinux [
     udev
   ];
+
+  cargoHash = "sha256-wj+T1XBLVQsDNMT9d/0ybR+L7fDZj4Ijhqv0fH+f7HA=";
 
   env = {
     ZSTD_SYS_USE_PKG_CONFIG = true;

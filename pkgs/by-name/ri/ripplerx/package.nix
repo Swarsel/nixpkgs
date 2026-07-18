@@ -2,10 +2,9 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  cmake,
-  pkg-config,
-  writableTmpDirAsHomeHook,
   alsa-lib,
+  cmake,
+  copyDesktopItems,
   expat,
   fontconfig,
   freetype,
@@ -14,9 +13,10 @@
   libxext,
   libxinerama,
   libxrandr,
-  nix-update-script,
   makeDesktopItem,
-  copyDesktopItems,
+  nix-update-script,
+  pkg-config,
+  writableTmpDirAsHomeHook,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -53,14 +53,8 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   env = {
-    # JUCE dlopens these at runtime, standalone executable crashes without them
-    NIX_LDFLAGS = toString [
-      "-lX11"
-      "-lXext"
-      "-lXcursor"
-      "-lXinerama"
-      "-lXrandr"
-    ];
+    # Fontconfig error: Cannot load default config file: No such file: (null)
+    FONTCONFIG_FILE = "${fontconfig.out}/etc/fonts/fonts.conf";
 
     NIX_CFLAGS_COMPILE = toString [
       # juce, compiled in this build as part of a Git submodule, uses `-flto` as
@@ -73,8 +67,14 @@ stdenv.mkDerivation (finalAttrs: {
       "-ffat-lto-objects"
     ];
 
-    # Fontconfig error: Cannot load default config file: No such file: (null)
-    FONTCONFIG_FILE = "${fontconfig.out}/etc/fonts/fonts.conf";
+    # JUCE dlopens these at runtime, standalone executable crashes without them
+    NIX_LDFLAGS = toString [
+      "-lX11"
+      "-lXext"
+      "-lXcursor"
+      "-lXinerama"
+      "-lXrandr"
+    ];
   };
 
   installPhase = ''
@@ -96,18 +96,19 @@ stdenv.mkDerivation (finalAttrs: {
 
   desktopItems = [
     (makeDesktopItem {
-      desktopName = "RipplerX";
-      comment = "Physically modeled synth";
-      name = "ripplerx";
-      exec = "ripplerx";
-      icon = "ripplerx";
-      terminal = false;
       categories = [
         "Audio"
         "AudioVideo"
         "Midi"
         "Music"
       ];
+
+      comment = "Physically modeled synth";
+      desktopName = "RipplerX";
+      exec = "ripplerx";
+      icon = "ripplerx";
+      name = "ripplerx";
+      terminal = false;
     })
   ];
 
@@ -115,13 +116,15 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Physically modeled synth";
+
     longDescription = ''
       RipplerX is a physically modeled synth, capable of sounds similar to AAS Chromaphone and Ableton Collision.
     '';
+
     homepage = "https://github.com/tiagolr/ripplerx";
-    mainProgram = "ripplerx";
     license = lib.licenses.gpl3Only;
     maintainers = with lib.maintainers; [ eljamm ];
     platforms = lib.platforms.linux;
+    mainProgram = "ripplerx";
   };
 })

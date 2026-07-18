@@ -36,8 +36,8 @@ let
         in
         {
           driver = drv;
-          names = lib.attrNames ids;
           ids = lib.attrValues ids;
+          names = lib.attrNames ids;
         }
       );
       toList = x: lib.concatStringsSep "," (map toString x);
@@ -50,8 +50,8 @@ let
   };
 
   alsaVariables = {
-    "ALSA_AUDIO_OUT" = cfg.defaultDevice.playback;
     "ALSA_AUDIO_IN" = cfg.defaultDevice.capture;
+    "ALSA_AUDIO_OUT" = cfg.defaultDevice.playback;
     "ALSA_PLUGIN_DIR" = lib.mkIf (cfg.plugins != [ ]) "${pluginsPath}/lib/alsa-lib";
   };
 
@@ -97,182 +97,16 @@ in
 
   options.hardware.alsa = {
 
-    enable = lib.mkOption {
-      type = lib.types.bool;
-      default = false;
-      description = ''
-        Whether to set up the user space part of the Advanced Linux Sound Architecture (ALSA)
-
-        ::: {.warning}
-        Enable this option only if you want to use ALSA as your main sound system,
-        not if you're using a sound server (e.g. PulseAudio or Pipewire).
-        :::
-      '';
-    };
-
-    enableOSSEmulation = lib.mkEnableOption "the OSS emulation";
-
-    enableBluetooth = lib.mkEnableOption "Bluetooth audio support via BlueALSA";
-
-    enableRecorder = lib.mkOption {
-      type = lib.types.bool;
-      default = false;
-      description = ''
-        Whether to set up a loopback device that continuously records and
-        allows to play back audio from the computer.
-
-        The loopback device is named `pcm.recorder`, audio can be saved
-        by capturing from this device as with any microphone.
-
-        ::: {.note}
-        By default the output is duplicated to the recorder assuming stereo
-        audio, for a more complex layout you have to override the pcm.splitter
-        device using `hardware.alsa.config`.
-        See the generated /etc/asound.conf for its definition.
-        :::
-      '';
-    };
-
-    plugins = lib.mkOption {
-      type = lib.types.listOf lib.types.package;
-      default = [ ];
-      example = lib.literalExpression "[ pkgs.bluez-alsa ]";
-      description = ''
-        List of ALSA plugins to be added to the search path.
-      '';
-    };
-
-    defaultDevice.playback = lib.mkOption {
-      type = lib.types.str;
-      default = "";
-      example = "dmix:CARD=1,DEV=0";
-      description = ''
-        The default playback device.
-        Leave empty to let ALSA pick the default automatically.
-
-        ::: {.note}
-        The device can be changed at runtime by setting the ALSA_AUDIO_OUT
-        environment variables (but only before starting a program).
-        :::
-      '';
-    };
-
-    defaultDevice.capture = lib.mkOption {
-      type = lib.types.str;
-      default = "";
-      example = "dsnoop:CARD=0,DEV=2";
-      description = ''
-        The default capture device (i.e. microphone).
-        Leave empty to let ALSA pick the default automatically.
-
-        ::: {.note}
-        The device can be changed at runtime by setting the ALSA_AUDIO_IN
-        environment variables (but only before starting a program).
-        :::
-      '';
-    };
-
-    controls = lib.mkOption {
-      type = lib.types.attrsOf (
-        lib.types.submodule {
-          options.name = lib.mkOption {
-            type = lib.types.nullOr lib.types.str;
-            default = null;
-            description = ''
-              Name of the control, as it appears in `alsamixer`.
-              If null it will be the same as the softvol device name.
-            '';
-          };
-          options.device = lib.mkOption {
-            type = lib.types.str;
-            default = "default";
-            description = ''
-              Name of the PCM device to control (slave).
-            '';
-          };
-          options.card = lib.mkOption {
-            type = lib.types.str;
-            default = "default";
-            description = ''
-              Name of the PCM card to control (slave).
-            '';
-          };
-          options.maxVolume = lib.mkOption {
-            type = lib.types.float;
-            default = 0.0;
-            description = ''
-              The maximum volume in dB.
-            '';
-          };
-        }
-      );
-      default = { };
-      example = lib.literalExpression ''
-        {
-          firefox = { device = "front"; maxVolume = -25.0; };
-          mpv     = { device = "front"; maxVolume = -25.0; };
-          # and run programs with `env ALSA_AUDIO_OUT=<name>`
-        }
-      '';
-      description = ''
-        Virtual volume controls (softvols) to add to a sound card.
-        These can be used to control the volume of specific applications
-        or a digital output device (HDMI video card).
-      '';
-    };
-
-    cardAliases = lib.mkOption {
-      type = lib.types.attrsOf (
-        lib.types.submodule {
-          options.driver = lib.mkOption {
-            type = lib.types.str;
-            description = ''
-              Name of the kernel module that provides the card.
-            '';
-          };
-          options.id = lib.mkOption {
-            type = lib.types.int;
-            default = "default";
-            description = ''
-              The ID of the sound card
-            '';
-          };
-        }
-      );
-      default = { };
-      example = lib.literalExpression ''
-        {
-          soundchip = { driver = "snd_intel_hda"; id = 0; };
-          videocard = { driver = "snd_intel_hda"; id = 1; };
-          usb       = { driver = "snd_usb_audio"; id = 2; };
-        }
-      '';
-      description = ''
-        Assign custom names and reorder the sound cards.
-
-        ::: {.note}
-        You can find the card ids by looking at `/proc/asound/cards`.
-        :::
-      '';
-    };
-
-    deviceAliases = lib.mkOption {
-      type = lib.types.attrsOf lib.types.str;
-      default = { };
-      example = lib.literalExpression ''
-        {
-          hdmi1 = "hw:CARD=videocard,DEV=5";
-          hdmi2 = "hw:CARD=videocard,DEV=6";
-        }
-      '';
-      description = ''
-        Assign custom names to sound cards.
-      '';
-    };
-
     config = lib.mkOption {
-      type = lib.types.lines;
       default = "";
+
+      description = ''
+        The content of the system-wide ALSA configuration (/etc/asound.conf).
+
+        Documentation of the configuration language and examples can be found
+        in the unofficial ALSA wiki: <https://alsa.opensrc.org/Asoundrc>
+      '';
+
       example = lib.literalExpression ''
         # Send audio to a remote host via SSH
         pcm.remote {
@@ -291,33 +125,254 @@ in
           }
         }
       '';
-      description = ''
-        The content of the system-wide ALSA configuration (/etc/asound.conf).
 
-        Documentation of the configuration language and examples can be found
-        in the unofficial ALSA wiki: <https://alsa.opensrc.org/Asoundrc>
+      type = lib.types.lines;
+    };
+
+    enable = lib.mkOption {
+      default = false;
+
+      description = ''
+        Whether to set up the user space part of the Advanced Linux Sound Architecture (ALSA)
+
+        ::: {.warning}
+        Enable this option only if you want to use ALSA as your main sound system,
+        not if you're using a sound server (e.g. PulseAudio or Pipewire).
+        :::
       '';
+
+      type = lib.types.bool;
+    };
+
+    cardAliases = lib.mkOption {
+      default = { };
+
+      description = ''
+        Assign custom names and reorder the sound cards.
+
+        ::: {.note}
+        You can find the card ids by looking at `/proc/asound/cards`.
+        :::
+      '';
+
+      example = lib.literalExpression ''
+        {
+          soundchip = { driver = "snd_intel_hda"; id = 0; };
+          videocard = { driver = "snd_intel_hda"; id = 1; };
+          usb       = { driver = "snd_usb_audio"; id = 2; };
+        }
+      '';
+
+      type = lib.types.attrsOf (
+        lib.types.submodule {
+          options.driver = lib.mkOption {
+            description = ''
+              Name of the kernel module that provides the card.
+            '';
+
+            type = lib.types.str;
+          };
+
+          options.id = lib.mkOption {
+            default = "default";
+
+            description = ''
+              The ID of the sound card
+            '';
+
+            type = lib.types.int;
+          };
+        }
+      );
+    };
+
+    controls = lib.mkOption {
+      default = { };
+
+      description = ''
+        Virtual volume controls (softvols) to add to a sound card.
+        These can be used to control the volume of specific applications
+        or a digital output device (HDMI video card).
+      '';
+
+      example = lib.literalExpression ''
+        {
+          firefox = { device = "front"; maxVolume = -25.0; };
+          mpv     = { device = "front"; maxVolume = -25.0; };
+          # and run programs with `env ALSA_AUDIO_OUT=<name>`
+        }
+      '';
+
+      type = lib.types.attrsOf (
+        lib.types.submodule {
+          options.card = lib.mkOption {
+            default = "default";
+
+            description = ''
+              Name of the PCM card to control (slave).
+            '';
+
+            type = lib.types.str;
+          };
+
+          options.device = lib.mkOption {
+            default = "default";
+
+            description = ''
+              Name of the PCM device to control (slave).
+            '';
+
+            type = lib.types.str;
+          };
+
+          options.maxVolume = lib.mkOption {
+            default = 0.0;
+
+            description = ''
+              The maximum volume in dB.
+            '';
+
+            type = lib.types.float;
+          };
+
+          options.name = lib.mkOption {
+            default = null;
+
+            description = ''
+              Name of the control, as it appears in `alsamixer`.
+              If null it will be the same as the softvol device name.
+            '';
+
+            type = lib.types.nullOr lib.types.str;
+          };
+        }
+      );
+    };
+
+    defaultDevice.capture = lib.mkOption {
+      default = "";
+
+      description = ''
+        The default capture device (i.e. microphone).
+        Leave empty to let ALSA pick the default automatically.
+
+        ::: {.note}
+        The device can be changed at runtime by setting the ALSA_AUDIO_IN
+        environment variables (but only before starting a program).
+        :::
+      '';
+
+      example = "dsnoop:CARD=0,DEV=2";
+      type = lib.types.str;
+    };
+
+    defaultDevice.playback = lib.mkOption {
+      default = "";
+
+      description = ''
+        The default playback device.
+        Leave empty to let ALSA pick the default automatically.
+
+        ::: {.note}
+        The device can be changed at runtime by setting the ALSA_AUDIO_OUT
+        environment variables (but only before starting a program).
+        :::
+      '';
+
+      example = "dmix:CARD=1,DEV=0";
+      type = lib.types.str;
+    };
+
+    deviceAliases = lib.mkOption {
+      default = { };
+
+      description = ''
+        Assign custom names to sound cards.
+      '';
+
+      example = lib.literalExpression ''
+        {
+          hdmi1 = "hw:CARD=videocard,DEV=5";
+          hdmi2 = "hw:CARD=videocard,DEV=6";
+        }
+      '';
+
+      type = lib.types.attrsOf lib.types.str;
+    };
+
+    enableBluetooth = lib.mkEnableOption "Bluetooth audio support via BlueALSA";
+    enableOSSEmulation = lib.mkEnableOption "the OSS emulation";
+
+    enableRecorder = lib.mkOption {
+      default = false;
+
+      description = ''
+        Whether to set up a loopback device that continuously records and
+        allows to play back audio from the computer.
+
+        The loopback device is named `pcm.recorder`, audio can be saved
+        by capturing from this device as with any microphone.
+
+        ::: {.note}
+        By default the output is duplicated to the recorder assuming stereo
+        audio, for a more complex layout you have to override the pcm.splitter
+        device using `hardware.alsa.config`.
+        See the generated /etc/asound.conf for its definition.
+        :::
+      '';
+
+      type = lib.types.bool;
+    };
+
+    plugins = lib.mkOption {
+      default = [ ];
+
+      description = ''
+        List of ALSA plugins to be added to the search path.
+      '';
+
+      example = lib.literalExpression "[ pkgs.bluez-alsa ]";
+      type = lib.types.listOf lib.types.package;
     };
 
   };
 
   options.hardware.alsa.enablePersistence = lib.mkOption {
-    type = lib.types.bool;
-    defaultText = lib.literalExpression "config.hardware.alsa.enable";
     default = config.hardware.alsa.enable;
+    defaultText = lib.literalExpression "config.hardware.alsa.enable";
+
     description = ''
       Whether to enable ALSA sound card state saving on shutdown.
       This is generally not necessary if you're using an external sound server.
     '';
+
+    type = lib.types.bool;
   };
 
   config = lib.mkMerge [
 
     (lib.mkIf cfg.enable {
-      # Disable sound servers enabled by default and,
-      # if the user enabled one manually, cause a conflict.
-      services.pipewire.enable = false;
-      services.pulseaudio.enable = false;
+      # Assign names to the sound cards
+      boot.extraModprobeConfig = lib.concatStringsSep "\n" cardsConfig;
+
+      boot.kernelModules =
+        [ ]
+        ++ lib.optionals cfg.enableOSSEmulation [
+          "snd_pcm_oss"
+          "snd_mixer_oss"
+        ]
+        ++ lib.optionals cfg.enableRecorder [ "snd_aloop" ];
+
+      environment.etc."asound.conf".text = cfg.config;
+      # Set default PCM devices
+      environment.sessionVariables = alsaVariables;
+      # Provide alsamixer, aplay, arecord, etc.
+      environment.systemPackages = [ pkgs.alsa-utils ];
+
+      hardware.alsa.cardAliases = lib.mkIf cfg.enableRecorder {
+        loopback.driver = "snd_aloop";
+        loopback.id = 2;
+      };
 
       hardware.alsa.config =
         let
@@ -403,54 +458,32 @@ in
         in
         lib.mkBefore (lib.concatStringsSep "\n" (lib.flatten conf));
 
-      hardware.alsa.cardAliases = lib.mkIf cfg.enableRecorder {
-        loopback.driver = "snd_aloop";
-        loopback.id = 2;
-      };
-
-      # Set default PCM devices
-      environment.sessionVariables = alsaVariables;
+      # Disable sound servers enabled by default and,
+      # if the user enabled one manually, cause a conflict.
+      services.pipewire.enable = false;
+      services.pulseaudio.enable = false;
       systemd.globalEnvironment = alsaVariables;
-
-      environment.etc."asound.conf".text = cfg.config;
-
-      boot.kernelModules =
-        [ ]
-        ++ lib.optionals cfg.enableOSSEmulation [
-          "snd_pcm_oss"
-          "snd_mixer_oss"
-        ]
-        ++ lib.optionals cfg.enableRecorder [ "snd_aloop" ];
-
-      # Assign names to the sound cards
-      boot.extraModprobeConfig = lib.concatStringsSep "\n" cardsConfig;
-
-      # Provide alsamixer, aplay, arecord, etc.
-      environment.systemPackages = [ pkgs.alsa-utils ];
     })
 
     (lib.mkIf (cfg.enable && cfg.enableBluetooth) {
-
-      users.users.bluealsa = {
-        description = "BlueALSA daemons user";
-        isSystemUser = true;
-        group = "audio";
-      };
 
       # Link ALSA configuration
       environment.etc."alsa/conf.d/20-bluealsa.conf".source =
         "${pkgs.bluez-alsa}/etc/alsa/conf.d/20-bluealsa.conf";
 
-      # Install plugin
-      hardware.alsa.plugins = [ pkgs.bluez-alsa ];
-
       # Install CLI tools and systemd units
       environment.systemPackages = [ pkgs.bluez-alsa ];
+      # Install plugin
+      hardware.alsa.plugins = [ pkgs.bluez-alsa ];
       systemd.packages = [ pkgs.bluez-alsa ];
-
       # See Nixpkgs issue #81138
       systemd.services."bluealsa".wantedBy = [ "bluetooth.target" ];
 
+      users.users.bluealsa = {
+        description = "BlueALSA daemons user";
+        group = "audio";
+        isSystemUser = true;
+      };
       # Note: bluealsa-aplay is available but we don't start it
       # by default, it's only needed to make the machine act as
       # bluetooth speaker
@@ -472,16 +505,14 @@ in
       # Service to store/restore the sound card settings
       systemd.services.alsa-store = {
         description = "Store Sound Card State";
-        wantedBy = [ "multi-user.target" ];
         restartIfChanged = false;
-        unitConfig = {
-          RequiresMountsFor = "/var/lib/alsa";
-          ConditionVirtualization = "!systemd-nspawn";
-        };
+
         serviceConfig = {
-          Type = "oneshot";
+          ExecStart = "${alsactl} restore -gU";
+          ExecStop = "${alsactl} store -gU";
           RemainAfterExit = true;
           StateDirectory = "alsa";
+
           # Note: the service should never be restated, otherwise any
           # setting changed between the last `store` and now will be lost.
           # To prevent NixOS from starting it in case it has failed we
@@ -490,9 +521,16 @@ in
             0
             99
           ];
-          ExecStart = "${alsactl} restore -gU";
-          ExecStop = "${alsactl} store -gU";
+
+          Type = "oneshot";
         };
+
+        unitConfig = {
+          ConditionVirtualization = "!systemd-nspawn";
+          RequiresMountsFor = "/var/lib/alsa";
+        };
+
+        wantedBy = [ "multi-user.target" ];
       };
     })
 

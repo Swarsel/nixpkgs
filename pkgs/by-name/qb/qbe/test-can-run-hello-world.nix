@@ -1,7 +1,7 @@
 {
   stdenv,
-  writeText,
   qbe,
+  writeText,
 }:
 
 # The hello world program available at https://c9x.me/compile/
@@ -23,12 +23,13 @@ let
 
 in
 stdenv.mkDerivation {
-  name = "qbe-test-can-run-hello-world";
-  meta.timeout = 10;
   buildCommand = ''
     ${qbe}/bin/qbe -o asm.s ${helloWorld}
     cc -o out asm.s
     ./out | grep 'One and one make 2!'
     touch $out
   '';
+
+  name = "qbe-test-can-run-hello-world";
+  meta.timeout = 10;
 }

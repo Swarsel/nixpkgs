@@ -1,10 +1,10 @@
 {
+  lib,
   stdenv,
-  fetchFromCodeberg,
   cmake,
+  fetchFromCodeberg,
   ninja,
   qt6,
-  lib,
 }:
 
 stdenv.mkDerivation {
@@ -23,6 +23,7 @@ stdenv.mkDerivation {
     cmake
     ninja
   ];
+
   buildInputs = [
     qt6.qtbase
   ];
@@ -40,8 +41,8 @@ stdenv.mkDerivation {
     description = "Simple QT6 Program Launcher";
     homepage = "https://codeberg.org/ItsZariep/SQLauncher";
     license = lib.licenses.gpl3Only;
-    mainProgram = "sqlauncher";
-    platforms = lib.platforms.linux;
     maintainers = [ lib.maintainers.reylak ];
+    platforms = lib.platforms.linux;
+    mainProgram = "sqlauncher";
   };
 }

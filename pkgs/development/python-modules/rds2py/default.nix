@@ -1,26 +1,25 @@
 {
   lib,
-  buildPythonPackage,
   stdenv,
   fetchFromGitHub,
+  biocframe,
+  biocutils,
+  buildPythonPackage,
   cmake,
-  zlib,
-  pybind11,
-  pytestCheckHook,
-  pytest-cov-stub,
+  pandas,
   pkg-config,
+  pybind11,
+  pytest-cov-stub,
+  pytestCheckHook,
+  scipy,
   setuptools,
   setuptools-scm,
-  biocutils,
-  biocframe,
-  pandas,
-  scipy,
+  zlib,
 }:
 
 buildPythonPackage rec {
   pname = "rds2py";
   version = "0.7.3";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "BiocPy";
@@ -28,30 +27,6 @@ buildPythonPackage rec {
     tag = version;
     hash = "sha256-GbRpkt+K2HXuAT7KtI4h1SnZ4RtSo5hrea2L92VZj/o=";
   };
-
-  rds2cpp-src = fetchFromGitHub {
-    owner = "LTLA";
-    repo = "rds2cpp";
-    rev = "v1.1.0";
-    hash = "sha256-q7C/oORmhgXlqnZnslhyrxBc3RRF2gdgGuQU4TimxtI=";
-  };
-
-  byteme-src = fetchFromGitHub {
-    owner = "LTLA";
-    repo = "byteme";
-    rev = "v1.2.2";
-    hash = "sha256-rM/pSMGlaMWE69lYORaa8SQYGQyzhdyQnXImmAesxFA=";
-  };
-
-  # Upstream uses CMake's FetchContent to download rds2cpp and byteme into
-  # build/_deps at configure time. We pre-fetch both repos and copy them
-  # into build/_deps manually. This way the build tree matches what upstream expects.
-  prePatch = ''
-    mkdir -p build/_deps
-    cp -r ${rds2cpp-src} build/_deps/rds2cpp-src
-    cp -r ${byteme-src} build/_deps/byteme-src
-    chmod -R u+w build/_deps
-  '';
 
   # Patch upstream CMakeLists.txt files to use our vendored sources instead of
   # calling FetchContent. We point add_subdirectory() to the copies staged in
@@ -70,12 +45,6 @@ buildPythonPackage rec {
       --replace-fail "FetchContent_MakeAvailable(byteme)" "# FetchContent_MakeAvailable(byteme) -- Patched by Nix"
   '';
 
-  # We use the MORE_CMAKE_OPTIONS environment variable, which is a hook provided
-  # by the upstream setup.py, to pass our zlib flags to the CMake configure step.
-  preConfigure = ''
-    export MORE_CMAKE_OPTIONS="-DZLIB_INCLUDE_DIR=${lib.getDev zlib}/include -DZLIB_LIBRARY=${lib.getLib zlib}/lib/libz.so"
-  '';
-
   nativeBuildInputs = [
     cmake
     pkg-config
@@ -83,14 +52,11 @@ buildPythonPackage rec {
     zlib
   ];
 
-  build-system = [
-    setuptools
-    setuptools-scm
-  ];
-
-  dependencies = [
-    biocutils
-  ];
+  # We use the MORE_CMAKE_OPTIONS environment variable, which is a hook provided
+  # by the upstream setup.py, to pass our zlib flags to the CMake configure step.
+  preConfigure = ''
+    export MORE_CMAKE_OPTIONS="-DZLIB_INCLUDE_DIR=${lib.getDev zlib}/include -DZLIB_LIBRARY=${lib.getLib zlib}/lib/libz.so"
+  '';
 
   nativeCheckInputs = [
     pytest-cov-stub
@@ -98,6 +64,22 @@ buildPythonPackage rec {
     biocframe
     pandas
     scipy
+  ];
+
+  build-system = [
+    setuptools
+    setuptools-scm
+  ];
+
+  byteme-src = fetchFromGitHub {
+    hash = "sha256-rM/pSMGlaMWE69lYORaa8SQYGQyzhdyQnXImmAesxFA=";
+    owner = "LTLA";
+    repo = "byteme";
+    rev = "v1.2.2";
+  };
+
+  dependencies = [
+    biocutils
   ];
 
   disabledTestPaths = [
@@ -112,7 +94,25 @@ buildPythonPackage rec {
   # setuptools drives the build, so disable cmake configure hook
   dontUseCmakeConfigure = true;
 
+  # Upstream uses CMake's FetchContent to download rds2cpp and byteme into
+  # build/_deps at configure time. We pre-fetch both repos and copy them
+  # into build/_deps manually. This way the build tree matches what upstream expects.
+  prePatch = ''
+    mkdir -p build/_deps
+    cp -r ${rds2cpp-src} build/_deps/rds2cpp-src
+    cp -r ${byteme-src} build/_deps/byteme-src
+    chmod -R u+w build/_deps
+  '';
+
+  pyproject = true;
   pythonImportsCheck = [ "rds2py" ];
+
+  rds2cpp-src = fetchFromGitHub {
+    hash = "sha256-q7C/oORmhgXlqnZnslhyrxBc3RRF2gdgGuQU4TimxtI=";
+    owner = "LTLA";
+    repo = "rds2cpp";
+    rev = "v1.1.0";
+  };
 
   meta = {
     description = "Read RDS files, in Python";

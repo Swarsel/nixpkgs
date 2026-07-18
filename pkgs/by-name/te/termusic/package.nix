@@ -1,19 +1,19 @@
 {
+  lib,
+  stdenv,
+  fetchFromGitHub,
   alsa-lib,
   cmake,
   dbus,
-  fetchFromGitHub,
   glib,
   gst_all_1,
-  lib,
+  libopus,
   mpv-unwrapped,
   openssl,
   pkg-config,
   protobuf,
   rustPlatform,
   sqlite,
-  libopus,
-  stdenv,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -26,12 +26,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
     rev = "v${finalAttrs.version}";
     hash = "sha256-GAbUvxRWKy5tDjf+G5cKXgwNs9Rm52h7mICyDFlrCoo=";
   };
-
-  cargoHash = "sha256-xFQObWhONoRBAdEZblBDQeQtq/KmaCWWnCwv3XEmG2k=";
-
-  useNextest = true;
-
-  buildFeatures = [ "rusty-libopus" ];
 
   nativeBuildInputs = [
     pkg-config
@@ -53,14 +47,20 @@ rustPlatform.buildRustPackage (finalAttrs: {
     alsa-lib
   ];
 
+  cargoHash = "sha256-xFQObWhONoRBAdEZblBDQeQtq/KmaCWWnCwv3XEmG2k=";
+  buildFeatures = [ "rusty-libopus" ];
+  useNextest = true;
+
   meta = {
     description = "Terminal Music Player TUI written in Rust";
     homepage = "https://github.com/tramhao/termusic";
     license = with lib.licenses; [ gpl3Only ];
+
     maintainers = with lib.maintainers; [
       devhell
       theeasternfurry
     ];
+
     mainProgram = "termusic";
   };
 })

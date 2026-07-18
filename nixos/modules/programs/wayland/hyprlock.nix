@@ -1,7 +1,7 @@
 {
+  config,
   lib,
   pkgs,
-  config,
   ...
 }:
 
@@ -19,11 +19,10 @@ in
       cfg.package
     ];
 
-    # Hyprlock needs Hypridle systemd service to be running to detect idle time
-    services.hypridle.enable = true;
-
     # Hyprlock needs PAM access to authenticate, else it fallbacks to su
     security.pam.services.hyprlock = { };
+    # Hyprlock needs Hypridle systemd service to be running to detect idle time
+    services.hypridle.enable = true;
   };
 
   meta.teams = [ lib.teams.hyprland ];

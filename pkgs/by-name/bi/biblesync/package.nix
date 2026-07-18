@@ -2,10 +2,10 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  fetchpatch,
-  pkg-config,
   cmake,
+  fetchpatch,
   libuuid,
+  pkg-config,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -23,9 +23,9 @@ stdenv.mkDerivation (finalAttrs: {
   patches = [
     # Fix cmake-4 support
     (fetchpatch {
+      hash = "sha256-CVYhYBDneLN3Ogvye01EQCc9zxjSwaKBzk1fBaKINug=";
       name = "cmake-4.patch";
       url = "https://github.com/karlkleinpaste/biblesync/commit/4b00f9fd3d0c858947eee18206ef44f9f6bd2283.patch?full_index=1";
-      hash = "sha256-CVYhYBDneLN3Ogvye01EQCc9zxjSwaKBzk1fBaKINug=";
     })
   ];
 
@@ -33,11 +33,12 @@ stdenv.mkDerivation (finalAttrs: {
     pkg-config
     cmake
   ];
+
   buildInputs = [ libuuid ];
 
   meta = {
-    homepage = "https://wiki.crosswire.org/BibleSync";
     description = "Multicast protocol to Bible software shared conavigation";
+
     longDescription = ''
       BibleSync is a multicast protocol to support Bible software shared
       co-navigation. It uses LAN multicast in either a personal/small team
@@ -47,6 +48,8 @@ stdenv.mkDerivation (finalAttrs: {
       support mode setting, setup for packet reception, transmit on local
       navigation, and handling of incoming packets.
     '';
+
+    homepage = "https://wiki.crosswire.org/BibleSync";
     license = lib.licenses.publicDomain;
     maintainers = [ ];
     platforms = lib.platforms.linux;

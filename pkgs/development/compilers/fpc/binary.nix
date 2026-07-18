@@ -1,10 +1,10 @@
 {
+  lib,
   stdenv,
   fetchurl,
-  undmg,
   cpio,
+  undmg,
   xar,
-  lib,
 }:
 
 stdenv.mkDerivation rec {

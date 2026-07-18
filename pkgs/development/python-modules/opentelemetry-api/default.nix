@@ -1,13 +1,13 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   deprecated,
   hatchling,
   importlib-metadata,
-  typing-extensions,
   opentelemetry-test-utils,
   pytestCheckHook,
+  typing-extensions,
   writeScript,
 }:
 
@@ -15,7 +15,6 @@ let
   self = buildPythonPackage rec {
     pname = "opentelemetry-api";
     version = "1.43.0";
-    pyproject = true;
 
     # to avoid breakage, every package in opentelemetry-python must inherit this version, src, and meta
     src = fetchFromGitHub {
@@ -25,7 +24,12 @@ let
       hash = "sha256-NnRx0sMVlht2CVXeKjP7mZlzhyOqU/YyveDMWRbmAD8=";
     };
 
-    sourceRoot = "${src.name}/opentelemetry-api";
+    doCheck = false;
+
+    nativeCheckInputs = [
+      opentelemetry-test-utils
+      pytestCheckHook
+    ];
 
     build-system = [ hatchling ];
 
@@ -35,18 +39,15 @@ let
       typing-extensions
     ];
 
-    pythonRelaxDeps = [ "importlib-metadata" ];
-
-    nativeCheckInputs = [
-      opentelemetry-test-utils
-      pytestCheckHook
-    ];
-
+    pyproject = true;
     pythonImportsCheck = [ "opentelemetry" ];
-
-    doCheck = false;
+    pythonRelaxDeps = [ "importlib-metadata" ];
+    sourceRoot = "${src.name}/opentelemetry-api";
 
     passthru = {
+      # Enable tests via passthru to avoid cyclic dependency with opentelemetry-test-utils.
+      tests.${self.pname} = self.overridePythonAttrs { doCheck = true; };
+
       updateScript = writeScript "update.sh" ''
         #!/usr/bin/env nix-shell
         #!nix-shell -i bash -p nix-update
@@ -55,13 +56,11 @@ let
         nix-update --version-regex 'v(.*)' python3Packages.opentelemetry-api
         nix-update python3Packages.opentelemetry-instrumentation
       '';
-      # Enable tests via passthru to avoid cyclic dependency with opentelemetry-test-utils.
-      tests.${self.pname} = self.overridePythonAttrs { doCheck = true; };
     };
 
     meta = {
-      homepage = "https://github.com/open-telemetry/opentelemetry-python/tree/main/opentelemetry-api";
       description = "OpenTelemetry Python API";
+      homepage = "https://github.com/open-telemetry/opentelemetry-python/tree/main/opentelemetry-api";
       changelog = "https://github.com/open-telemetry/opentelemetry-python/releases/tag/${src.tag}";
       license = lib.licenses.asl20;
       maintainers = [ lib.maintainers.natsukium ];

@@ -1,8 +1,8 @@
 {
   lib,
   stdenv,
-  cmake,
   fetchFromGitHub,
+  cmake,
   gitUpdater,
 }:
 
@@ -18,8 +18,6 @@ stdenv.mkDerivation (finalAttrs: {
     fetchSubmodules = true;
   };
 
-  sourceRoot = "${finalAttrs.src.name}/packages/grpc-tools";
-
   nativeBuildInputs = [ cmake ];
 
   cmakeFlags = [
@@ -32,21 +30,25 @@ stdenv.mkDerivation (finalAttrs: {
     install -Dm755 -t $out/bin deps/protobuf/protoc
   '';
 
+  sourceRoot = "${finalAttrs.src.name}/packages/grpc-tools";
+
   passthru.updateScript = gitUpdater {
-    url = "https://github.com/grpc/grpc-node.git";
     rev-prefix = "grpc-tools@";
+    url = "https://github.com/grpc/grpc-node.git";
   };
 
   meta = {
     description = "Distribution of protoc and the gRPC Node protoc plugin for ease of installation with npm";
+
     longDescription = ''
       This package distributes the Protocol Buffers compiler protoc along with
       the plugin for generating client and service objects for use with the Node
       gRPC libraries.
     '';
+
     homepage = "https://github.com/grpc/grpc-node/tree/master/packages/grpc-tools";
     license = lib.licenses.asl20;
-    platforms = lib.platforms.all;
     maintainers = [ lib.maintainers.nzhang-zh ];
+    platforms = lib.platforms.all;
   };
 })

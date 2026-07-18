@@ -1,13 +1,13 @@
 {
   lib,
+  fetchurl,
+  common-updater-scripts,
+  curl,
+  gnused,
   stdenvNoCC,
   unzip,
-  fetchurl,
   writeShellScript,
-  curl,
   xmlstarlet,
-  gnused,
-  common-updater-scripts,
 }:
 
 let
@@ -24,8 +24,6 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     hash = "sha256-7ti/FXoxNMhSYV7TWTeP8mAnCdqukI0SgDdW6RRQsFc=";
   };
 
-  sourceRoot = ".";
-
   nativeBuildInputs = [ unzip ];
 
   installPhase = ''
@@ -37,8 +35,11 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  sourceRoot = ".";
+
   passthru = {
     inherit build;
+
     updateScript = writeShellScript "monodraw-update-script" ''
       set -euo pipefail
       export PATH="${
@@ -67,10 +68,11 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     description = "Powerful ASCII art editor designed for the Mac";
     homepage = "https://monodraw.helftone.com/";
     license = lib.licenses.unfree;
+    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
     maintainers = with lib.maintainers; [ delafthi ];
+
     platforms = [
       "aarch64-darwin"
     ];
-    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
   };
 })

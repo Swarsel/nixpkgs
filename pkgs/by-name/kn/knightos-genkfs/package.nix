@@ -18,6 +18,11 @@ stdenv.mkDerivation (finalAttrs: {
     sha256 = "0f50idd2bb73b05qjmwlirjnhr1bp43zhrgy6z949ab9a7hgaydp";
   };
 
+  postPatch = ''
+    substituteInPlace CMakeLists.txt \
+      --replace-fail "cmake_minimum_required(VERSION 2.8.5)" "cmake_minimum_required(VERSION 3.10)"
+  '';
+
   strictDeps = true;
 
   nativeBuildInputs = [
@@ -28,17 +33,12 @@ stdenv.mkDerivation (finalAttrs: {
 
   hardeningDisable = [ "format" ];
 
-  postPatch = ''
-    substituteInPlace CMakeLists.txt \
-      --replace-fail "cmake_minimum_required(VERSION 2.8.5)" "cmake_minimum_required(VERSION 3.10)"
-  '';
-
   meta = {
-    homepage = "https://knightos.org/";
     description = "Utility to write a KFS filesystem into a ROM file";
-    mainProgram = "genkfs";
+    homepage = "https://knightos.org/";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ siraben ];
     platforms = lib.platforms.all;
+    mainProgram = "genkfs";
   };
 })

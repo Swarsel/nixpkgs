@@ -2,34 +2,34 @@
   lib,
   stdenv,
   fetchurl,
-  replaceVars,
+  avahi,
+  dleyna,
+  gettext,
+  glib,
+  gmime,
+  gnome,
+  gnome-online-accounts,
+  gom,
+  gperf,
+  grilo,
+  gst_all_1,
+  itstool,
+  json-glib,
+  libarchive,
+  libdmapsharing,
+  libmediaart,
+  liboauth,
+  librest,
+  libsoup_3,
+  libxml2,
+  localsearch,
+  lua5_4,
   meson,
   ninja,
   pkg-config,
-  gettext,
-  gperf,
-  glib,
-  localsearch,
+  replaceVars,
   sqlite,
-  libarchive,
-  libdmapsharing,
-  libsoup_3,
-  librest,
-  gnome,
-  libxml2,
-  lua5_4,
-  liboauth,
-  libmediaart,
-  grilo,
-  gst_all_1,
-  gnome-online-accounts,
-  gmime,
-  gom,
-  json-glib,
-  avahi,
   tinysparql,
-  dleyna,
-  itstool,
   totem-pl-parser,
 }:
 
@@ -64,10 +64,6 @@ stdenv.mkDerivation rec {
 
   strictDeps = true;
 
-  depsBuildBuild = [
-    pkg-config
-  ];
-
   nativeBuildInputs = [
     meson
     ninja
@@ -101,6 +97,10 @@ stdenv.mkDerivation rec {
     gst_all_1.gstreamer
   ];
 
+  depsBuildBuild = [
+    pkg-config
+  ];
+
   passthru = {
     updateScript = gnome.updateScript {
       packageName = pname;
@@ -109,10 +109,10 @@ stdenv.mkDerivation rec {
   };
 
   meta = {
-    homepage = "https://gitlab.gnome.org/GNOME/grilo-plugins";
     description = "Collection of plugins for the Grilo framework";
-    teams = [ lib.teams.gnome ];
+    homepage = "https://gitlab.gnome.org/GNOME/grilo-plugins";
     license = lib.licenses.lgpl21Plus;
     platforms = lib.platforms.unix;
+    teams = [ lib.teams.gnome ];
   };
 }

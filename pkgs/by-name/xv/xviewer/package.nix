@@ -1,19 +1,24 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
-  fetchpatch,
+  cinnamon-desktop,
   docbook_xsl,
   exempi,
+  fetchpatch,
   gdk-pixbuf,
   glib,
+  gnome,
   gobject-introspection,
-  gtk3,
   gtk-doc,
+  gtk3,
   itstool,
   lcms2,
+  libavif,
   libexif,
+  libheif,
   libjpeg,
+  libjxl,
   libpeas,
   librsvg,
   libxml2,
@@ -21,16 +26,11 @@
   ninja,
   pkg-config,
   python3,
+  webp-pixbuf-loader,
   wrapGAppsHook3,
-  cinnamon-desktop,
-  yelp-tools,
   xapp,
   xapp-symbolic-icons,
-  gnome,
-  libavif,
-  libheif,
-  libjxl,
-  webp-pixbuf-loader,
+  yelp-tools,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -47,8 +47,8 @@ stdenv.mkDerivation (finalAttrs: {
   patches = [
     # build: Add support for GIRepository-2.0.
     (fetchpatch {
-      url = "https://github.com/linuxmint/xviewer/commit/74d7d4ba2584c658ae6fb87208543671664943cc.patch";
       hash = "sha256-lL4MTvC2RvdVZ4O5RaYyK+1sHnLGPYzGNbZ99aN22U8=";
+      url = "https://github.com/linuxmint/xviewer/commit/74d7d4ba2584c658ae6fb87208543671664943cc.patch";
     })
   ];
 
@@ -103,11 +103,11 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Generic image viewer from Linux Mint";
-    mainProgram = "xviewer";
     homepage = "https://github.com/linuxmint/xviewer";
     license = lib.licenses.gpl2Only;
-    platforms = lib.platforms.linux;
     maintainers = with lib.maintainers; [ tu-maurice ];
+    platforms = lib.platforms.linux;
+    mainProgram = "xviewer";
     teams = [ lib.teams.cinnamon ];
   };
 })

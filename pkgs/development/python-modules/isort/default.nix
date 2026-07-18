@@ -1,10 +1,10 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   colorama,
-  hatchling,
   hatch-vcs,
+  hatchling,
   hypothesis,
   pylama,
   pytestCheckHook,
@@ -13,7 +13,6 @@
 buildPythonPackage rec {
   pname = "isort";
   version = "7.0.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "PyCQA";
@@ -22,17 +21,17 @@ buildPythonPackage rec {
     hash = "sha256-GN76dLk+Ju+Do/BymIuHD/9KAjYZ3sKvfz2cvNEnF5U=";
   };
 
-  build-system = [
-    hatchling
-    hatch-vcs
-  ];
-
   nativeCheckInputs = [
     colorama
     hypothesis
     pylama
     pytestCheckHook
   ];
+
+  preCheck = ''
+    HOME=$TMPDIR
+    export PATH=$PATH:$out/bin
+  '';
 
   postCheck = ''
     # Confirm that the produced executable script is wrapped correctly and runs
@@ -44,10 +43,10 @@ buildPythonPackage rec {
     )
   '';
 
-  preCheck = ''
-    HOME=$TMPDIR
-    export PATH=$PATH:$out/bin
-  '';
+  build-system = [
+    hatchling
+    hatch-vcs
+  ];
 
   disabledTestPaths = [
     "tests/benchmark/" # requires pytest-benchmark
@@ -76,6 +75,8 @@ buildPythonPackage rec {
     # https://github.com/PyCQA/isort/issues/2234
     "test_isort_should_warn_on_empty_custom_config_issue_1433"
   ];
+
+  pyproject = true;
 
   meta = {
     description = "Python utility / library to sort Python imports";

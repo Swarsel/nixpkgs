@@ -1,14 +1,14 @@
 {
-  stdenv,
-  config,
   lib,
+  stdenv,
   fetchFromGitHub,
   cmake,
+  config,
   eigen,
   onnxruntime,
   opencv,
-  cudaSupport ? config.cudaSupport,
   cudaPackages ? { },
+  cudaSupport ? config.cudaSupport,
 }@inputs:
 
 let
@@ -54,8 +54,6 @@ effectiveStdenv.mkDerivation (finalAttrs: {
     ]
   );
 
-  cmakeBuildType = "None";
-
   cmakeFlags = [
     (lib.cmakeBool "BUILD_SHARED_LIBS" true)
   ]
@@ -68,11 +66,13 @@ effectiveStdenv.mkDerivation (finalAttrs: {
     install -Dm644 ${finalAttrs.src}/cmake/Findonnxruntime.cmake $cmake/
   '';
 
+  cmakeBuildType = "None";
+
   meta = {
     description = "MaaAssistantArknights stripped-down version of FastDeploy";
     homepage = "https://github.com/MaaAssistantArknights/FastDeploy";
-    platforms = lib.platforms.linux ++ lib.platforms.darwin;
     license = lib.licenses.asl20;
+    platforms = lib.platforms.linux ++ lib.platforms.darwin;
     broken = cudaSupport && stdenv.hostPlatform.system != "x86_64-linux";
   };
 })

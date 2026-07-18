@@ -11,7 +11,6 @@
 python3Packages.buildPythonApplication (finalAttrs: {
   pname = "nwg-hello";
   version = "0.4.5";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "nwg-piotr";
@@ -19,22 +18,6 @@ python3Packages.buildPythonApplication (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-8SSNW/we3TPVEqiC6ts3MR/rJrv857L+U/IAfkdK2RU=";
   };
-
-  nativeBuildInputs = [
-    gobject-introspection
-    wrapGAppsHook3
-  ];
-
-  buildInputs = [
-    gtk3
-    gtk-layer-shell
-  ];
-
-  build-system = [ python3Packages.setuptools ];
-
-  dependencies = [
-    python3Packages.pygobject3
-  ];
 
   postPatch = ''
     # hard coded paths
@@ -50,29 +33,46 @@ python3Packages.buildPythonApplication (finalAttrs: {
     substituteInPlace nwg_hello/ui.py --replace-fail '/usr/share/nwg-hello' "$out/share/nwg-hello"
   '';
 
+  nativeBuildInputs = [
+    gobject-introspection
+    wrapGAppsHook3
+  ];
+
+  buildInputs = [
+    gtk3
+    gtk-layer-shell
+  ];
+
+  # Upstream has no tests
+  doCheck = false;
+
   postInstall = ''
     install -D -m 644 -t "$out/etc/nwg-hello/" nwg-hello-default.json nwg-hello-default.css hyprland.conf sway-config README
     install -D -m 644 -t "$out/share/nwg-hello/" nwg.jpg
     install -D -m 644 -t "$out/share/nwg-hello/" img/*
   '';
 
-  dontWrapGApps = true;
-
   preFixup = ''
     makeWrapperArgs+=("''${gappsWrapperArgs[@]}")
   '';
 
-  # Upstream has no tests
-  doCheck = false;
+  build-system = [ python3Packages.setuptools ];
+
+  dependencies = [
+    python3Packages.pygobject3
+  ];
+
+  dontWrapGApps = true;
+  pyproject = true;
   pythonImportsCheck = [ "nwg_hello" ];
 
   meta = {
+    description = "GTK3-based greeter for the greetd daemon, written in python";
     homepage = "https://github.com/nwg-piotr/nwg-hello";
     changelog = "https://github.com/nwg-piotr/nwg-hello/releases/tag/${finalAttrs.src.tag}";
-    description = "GTK3-based greeter for the greetd daemon, written in python";
     license = lib.licenses.mit;
-    platforms = lib.platforms.linux;
     maintainers = [ ];
+    platforms = lib.platforms.linux;
     mainProgram = "nwg-hello";
   };
 })

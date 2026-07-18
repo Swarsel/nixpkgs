@@ -2,8 +2,8 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  cmake,
   asciidoctor,
+  cmake,
   installShellFiles,
 }:
 
@@ -25,8 +25,6 @@ stdenv.mkDerivation (finalAttrs: {
     installShellFiles
   ];
 
-  dontUseCmakeBuildDir = true;
-
   postInstall = ''
     installShellCompletion --cmd timew \
       --bash completion/timew-completion.bash \
@@ -34,15 +32,19 @@ stdenv.mkDerivation (finalAttrs: {
       --zsh completion/timew.zsh
   '';
 
+  dontUseCmakeBuildDir = true;
+
   meta = {
     description = "Command-line time tracker";
     homepage = "https://timewarrior.net";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       matthiasbeyer
       mrVanDalo
     ];
-    mainProgram = "timew";
+
     platforms = lib.platforms.linux ++ lib.platforms.darwin;
+    mainProgram = "timew";
   };
 })

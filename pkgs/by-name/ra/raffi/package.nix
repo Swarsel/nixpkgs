@@ -1,12 +1,12 @@
 {
   lib,
   fetchFromGitHub,
-  rustPlatform,
+  fuzzel,
+  libxkbcommon,
   makeBinaryWrapper,
   pkg-config,
-  fuzzel,
+  rustPlatform,
   wayland,
-  libxkbcommon,
   writableTmpDirAsHomeHook,
   additionalPrograms ? [ ],
 }:
@@ -22,8 +22,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-Vi+NbRRknyzbHVAeGrVyYrwCS+orY7A3Ya6/rrexhCE=";
   };
 
-  cargoHash = "sha256-ApyblqfR+hmIYKoSaxhL56V7ulfnTm27rOAmhu4qXug=";
-
   nativeBuildInputs = [
     makeBinaryWrapper
     pkg-config
@@ -34,6 +32,8 @@ rustPlatform.buildRustPackage (finalAttrs: {
     wayland
     libxkbcommon
   ];
+
+  cargoHash = "sha256-ApyblqfR+hmIYKoSaxhL56V7ulfnTm27rOAmhu4qXug=";
 
   preCheck = ''
     # Several tests use `firefox` in their config fixtures. The test parses configs
@@ -62,12 +62,14 @@ rustPlatform.buildRustPackage (finalAttrs: {
     homepage = "https://github.com/chmouel/raffi";
     changelog = "https://github.com/chmouel/raffi/releases/tag/v${finalAttrs.version}";
     license = with lib.licenses; [ asl20 ];
+
     maintainers = with lib.maintainers; [
       aos
       chmouel
       vdemeester
     ];
-    mainProgram = "raffi";
+
     platforms = lib.platforms.linux;
+    mainProgram = "raffi";
   };
 })

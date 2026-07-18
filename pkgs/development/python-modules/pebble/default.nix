@@ -1,8 +1,8 @@
 {
   lib,
   stdenv,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   pytestCheckHook,
   setuptools,
 }:
@@ -10,7 +10,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "pebble";
   version = "5.2.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "noxdafox";
@@ -19,14 +18,14 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-U6siydeKf/Ekqq2qHZj/ro2VQix2dRaP80d5CPQnRKU=";
   };
 
+  doCheck = !stdenv.hostPlatform.isDarwin;
+  nativeCheckInputs = [ pytestCheckHook ];
+
   build-system = [
     setuptools
   ];
 
-  nativeCheckInputs = [ pytestCheckHook ];
-
-  doCheck = !stdenv.hostPlatform.isDarwin;
-
+  pyproject = true;
   pythonImportsCheck = [ "pebble" ];
 
   meta = {

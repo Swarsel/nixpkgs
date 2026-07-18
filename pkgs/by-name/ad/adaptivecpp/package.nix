@@ -1,25 +1,25 @@
 {
   lib,
   fetchFromGitHub,
-  llvmPackages_18,
-  python3,
-  cmake,
+  autoAddDriverRunpath,
   boost,
-  libxml2,
-  libffi,
-  makeWrapper,
+  callPackage,
+  cmake,
   config,
   cudaPackages,
+  libffi,
+  libxml2,
+  llvmPackages_18,
+  makeWrapper,
+  nix-update-script,
+  python3,
   rocmPackages,
+  runCommand,
+  symlinkJoin,
+  cudaSupport ? config.cudaSupport,
   ompSupport ? true,
   openclSupport ? false,
   rocmSupport ? config.rocmSupport,
-  cudaSupport ? config.cudaSupport,
-  autoAddDriverRunpath,
-  runCommand,
-  callPackage,
-  symlinkJoin,
-  nix-update-script,
 }:
 let
   inherit (llvmPackages) stdenv;
@@ -40,23 +40,6 @@ stdenv.mkDerivation (finalAttrs: {
   postPatch = ''
     rm cmake/FindCUDA.cmake
   '';
-
-  # we may be able to get away with just wrapping hipcc and nothing more
-  # this is mainly so that if acpp tries doing <PATH_TO_HIPCC>/../amdgcn/bitcode
-  rocmMerged = symlinkJoin {
-    name = "rocm-merged";
-    paths = with rocmPackages; [
-      clr
-      rocm-core
-      rocm-device-libs
-      rocm-runtime
-    ];
-    buildInputs = [ makeWrapper ];
-    postBuild = ''
-      wrapProgram $out/bin/hipcc \
-        --add-flags "--rocm-device-lib-path=$out/amdgcn/bitcode"
-    '';
-  };
 
   nativeBuildInputs = [
     cmake
@@ -97,6 +80,26 @@ stdenv.mkDerivation (finalAttrs: {
   # this hardening option breaks rocm builds
   hardeningDisable = [ "zerocallusedregs" ];
 
+  # we may be able to get away with just wrapping hipcc and nothing more
+  # this is mainly so that if acpp tries doing <PATH_TO_HIPCC>/../amdgcn/bitcode
+  rocmMerged = symlinkJoin {
+    buildInputs = [ makeWrapper ];
+
+    postBuild = ''
+      wrapProgram $out/bin/hipcc \
+        --add-flags "--rocm-device-lib-path=$out/amdgcn/bitcode"
+    '';
+
+    name = "rocm-merged";
+
+    paths = with rocmPackages; [
+      clr
+      rocm-core
+      rocm-device-libs
+      rocm-runtime
+    ];
+  };
+
   passthru = {
     tests =
       # Loosely based on the AdaptiveCpp GitHub CI: https://github.com/AdaptiveCpp/AdaptiveCpp/blob/develop/.github/workflows/linux.yml
@@ -119,9 +122,9 @@ stdenv.mkDerivation (finalAttrs: {
       in
       {
         inherit runner-omp runner-sscp;
+        pstl-sscp = runPstl runner-sscp "omp";
         sycl-omp = runSycl runner-omp "omp";
         sycl-sscp = runSycl runner-sscp "omp";
-        pstl-sscp = runPstl runner-sscp "omp";
       }
       // lib.optionalAttrs rocmSupport (
         let
@@ -131,11 +134,11 @@ stdenv.mkDerivation (finalAttrs: {
         in
         {
           inherit runner-rocm runner-rocm-integrated-multipass runner-rocm-explicit-multipass;
-          sycl-rocm = runSycl runner-rocm "omp;hip";
-          sycl-rocm-imp = runSycl runner-rocm-integrated-multipass "omp;hip";
-          sycl-rocm-emp = runSycl runner-rocm-explicit-multipass "omp;hip";
-          sycl-rocm-sscp = runSycl runner-sscp "omp;hip";
           pstl-rocm-sscp = runPstl runner-sscp "omp;hip";
+          sycl-rocm = runSycl runner-rocm "omp;hip";
+          sycl-rocm-emp = runSycl runner-rocm-explicit-multipass "omp;hip";
+          sycl-rocm-imp = runSycl runner-rocm-integrated-multipass "omp;hip";
+          sycl-rocm-sscp = runSycl runner-sscp "omp;hip";
         }
       )
       // lib.optionalAttrs cudaSupport (
@@ -146,12 +149,12 @@ stdenv.mkDerivation (finalAttrs: {
         in
         {
           inherit runner-cuda runner-cuda-integrated-multipass runner-cuda-explicit-multipass;
-          sycl-cuda = runSycl runner-cuda "omp;cuda";
-          sycl-cuda-imp = runSycl runner-cuda-integrated-multipass "omp;cuda";
-          sycl-cuda-emp = runSycl runner-cuda-explicit-multipass "omp;cuda";
-          sycl-cuda-sscp = runSycl runner-sscp "omp;cuda";
           pstl-cuda-imp = runPstl runner-cuda-integrated-multipass "omp;cuda";
           pstl-cuda-sscp = runPstl runner-sscp "omp;cuda";
+          sycl-cuda = runSycl runner-cuda "omp;cuda";
+          sycl-cuda-emp = runSycl runner-cuda-explicit-multipass "omp;cuda";
+          sycl-cuda-imp = runSycl runner-cuda-integrated-multipass "omp;cuda";
+          sycl-cuda-sscp = runSycl runner-sscp "omp;cuda";
         }
       );
 
@@ -159,10 +162,10 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   meta = {
-    homepage = "https://github.com/AdaptiveCpp/AdaptiveCpp";
     description = "Multi-backend implementation of SYCL for CPUs and GPUs";
-    mainProgram = "acpp";
-    maintainers = with lib.maintainers; [ yboettcher ];
+    homepage = "https://github.com/AdaptiveCpp/AdaptiveCpp";
     license = lib.licenses.bsd2;
+    maintainers = with lib.maintainers; [ yboettcher ];
+    mainProgram = "acpp";
   };
 })

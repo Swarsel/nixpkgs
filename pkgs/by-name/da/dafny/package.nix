@@ -1,21 +1,21 @@
 {
   lib,
-  buildDotnetModule,
   fetchFromGitHub,
-  runCommand,
+  buildDotnetModule,
   dafny,
-  writeScript,
-  jdk11,
-  z3,
   dotnetCorePackages,
+  jdk11,
+  runCommand,
+  writeScript,
+  z3,
 }:
 
 let
   examples = fetchFromGitHub {
+    hash = "sha256-Ng5wve/4gQr/2hsFWUFFcTL3K2xH7dP9w8IrmvWMKyg=";
     owner = "gaberch";
     repo = "Various-Algorithms-Verified-With-Dafny";
     rev = "50e451bbcd15e52e27d5bbbf66b0b4c4abbff41c";
-    hash = "sha256-Ng5wve/4gQr/2hsFWUFFcTL3K2xH7dP9w8IrmvWMKyg=";
   };
 
   tests = {
@@ -64,18 +64,13 @@ buildDotnetModule rec {
       --replace-fail "netstandard2.0;net452" net8.0
   '';
 
-  dotnet-sdk = dotnetCorePackages.sdk_8_0;
   nativeBuildInputs = [ jdk11 ];
-  nugetDeps = ./deps.json;
 
-  # Build just these projects. Building Source/Dafny.sln includes a bunch of
-  # unnecessary components like tests.
-  projectFile = [
-    "Source/Dafny/Dafny.csproj"
-    "Source/DafnyRuntime/DafnyRuntime.csproj"
-    "Source/DafnyLanguageServer/DafnyLanguageServer.csproj"
-  ];
+  postFixup = ''
+    ln -s "$out/bin/Dafny" "$out/bin/dafny" || true
+  '';
 
+  dotnet-sdk = dotnetCorePackages.sdk_8_0;
   executables = [ "Dafny" ];
 
   # Help Dafny find z3 and dotnet SDK (needed for dafny run)
@@ -88,17 +83,23 @@ buildDotnetModule rec {
     }"
   ];
 
-  postFixup = ''
-    ln -s "$out/bin/Dafny" "$out/bin/dafny" || true
-  '';
+  nugetDeps = ./deps.json;
+
+  # Build just these projects. Building Source/Dafny.sln includes a bunch of
+  # unnecessary components like tests.
+  projectFile = [
+    "Source/Dafny/Dafny.csproj"
+    "Source/DafnyRuntime/DafnyRuntime.csproj"
+    "Source/DafnyLanguageServer/DafnyLanguageServer.csproj"
+  ];
 
   passthru.tests = tests;
 
   meta = {
     description = "Programming language with built-in specification constructs";
     homepage = "https://research.microsoft.com/dafny";
-    maintainers = with lib.maintainers; [ layus ];
     license = lib.licenses.mit;
+    maintainers = with lib.maintainers; [ layus ];
     platforms = with lib.platforms; (linux ++ darwin);
   };
 }

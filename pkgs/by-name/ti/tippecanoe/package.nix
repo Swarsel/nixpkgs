@@ -2,10 +2,10 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  sqlite,
-  zlib,
   perl,
+  sqlite,
   testers,
+  zlib,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -23,26 +23,24 @@ stdenv.mkDerivation (finalAttrs: {
     sqlite
     zlib
   ];
-  nativeCheckInputs = [ perl ];
 
   makeFlags = [ "PREFIX=$(out)" ];
-
-  enableParallelBuilding = true;
-
   # https://github.com/felt/tippecanoe/issues/148
   doCheck = false;
+  nativeCheckInputs = [ perl ];
+  enableParallelBuilding = true;
 
   passthru.tests.version = testers.testVersion {
-    package = finalAttrs.finalPackage;
     version = "v${finalAttrs.version}";
+    package = finalAttrs.finalPackage;
   };
 
   meta = {
     description = "Build vector tilesets from large collections of GeoJSON features";
     homepage = "https://github.com/felt/tippecanoe";
     license = lib.licenses.bsd2;
-    teams = [ lib.teams.geospatial ];
     platforms = lib.platforms.unix;
     mainProgram = "tippecanoe";
+    teams = [ lib.teams.geospatial ];
   };
 })

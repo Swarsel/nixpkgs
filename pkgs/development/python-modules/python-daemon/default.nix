@@ -1,27 +1,32 @@
 {
   lib,
   buildPythonPackage,
-  fetchPypi,
   changelog-chug,
   docutils,
+  fetchPypi,
   lockfile,
   packaging,
   pytestCheckHook,
+  setuptools,
   testscenarios,
   testtools,
-  setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "python-daemon";
   version = "3.1.2";
-  pyproject = true;
 
   src = fetchPypi {
-    pname = "python_daemon";
     inherit version;
     hash = "sha256-97BDNa3Ec96Hf1EX4m1fEUL0yffNdlQI8Id3V75a+/Q=";
+    pname = "python_daemon";
   };
+
+  nativeCheckInputs = [
+    pytestCheckHook
+    testscenarios
+    testtools
+  ];
 
   build-system = [
     changelog-chug
@@ -32,12 +37,6 @@ buildPythonPackage rec {
   dependencies = [
     docutils
     lockfile
-  ];
-
-  nativeCheckInputs = [
-    pytestCheckHook
-    testscenarios
-    testtools
   ];
 
   disabledTests = [
@@ -57,6 +56,8 @@ buildPythonPackage rec {
     "YearRange_TestCase"
   ];
 
+  pyproject = true;
+
   pythonImportsCheck = [
     "daemon"
     "daemon.daemon"
@@ -66,11 +67,13 @@ buildPythonPackage rec {
   meta = {
     description = "Library to implement a well-behaved Unix daemon process";
     homepage = "https://pagure.io/python-daemon/";
+
     # See "Copying" section in https://pagure.io/python-daemon/blob/main/f/README
     license = with lib.licenses; [
       gpl3Plus
       asl20
     ];
+
     maintainers = [ ];
   };
 }

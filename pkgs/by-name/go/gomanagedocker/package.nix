@@ -1,21 +1,21 @@
 {
   lib,
   stdenv,
-  buildGoModule,
   fetchFromGitHub,
-  versionCheckHook,
-  nix-update-script,
-  libx11,
-  pkg-config,
-  gpgme,
   btrfs-progs,
+  buildGoModule,
+  gpgme,
+  libx11,
+  nix-update-script,
+  pkg-config,
+  versionCheckHook,
 }:
 let
   version = "1.5";
 in
 buildGoModule {
-  pname = "gomanagedocker";
   inherit version;
+  pname = "gomanagedocker";
 
   src = fetchFromGitHub {
     owner = "ajayd-san";
@@ -23,8 +23,6 @@ buildGoModule {
     tag = "v${version}";
     hash = "sha256-y2lepnhaLsjokd587D0bCEd9cmG7GuNBbbx+0sKSCGA=";
   };
-
-  vendorHash = "sha256-hUlv3i+ri9W8Pf1zVtFxB/QSdPJu1cWCjMbquCxoSno=";
 
   nativeBuildInputs = [
     pkg-config
@@ -36,19 +34,19 @@ buildGoModule {
   ]
   ++ lib.optionals stdenv.hostPlatform.isLinux [ libx11 ];
 
-  ldflags = [
-    "-s"
-    "-w"
-  ];
-
+  vendorHash = "sha256-hUlv3i+ri9W8Pf1zVtFxB/QSdPJu1cWCjMbquCxoSno=";
   # Mocking of docker and podman containers fails
   doCheck = false;
+  doInstallCheck = true;
 
   nativeInstallCheckInputs = [
     versionCheckHook
   ];
 
-  doInstallCheck = true;
+  ldflags = [
+    "-s"
+    "-w"
+  ];
 
   passthru = {
     updateScript = nix-update-script { };

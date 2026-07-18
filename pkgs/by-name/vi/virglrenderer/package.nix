@@ -2,22 +2,22 @@
   lib,
   stdenv,
   fetchFromGitLab,
-  meson,
-  ninja,
-  pkg-config,
   buildPackages,
   libGLU,
-  libepoxy,
-  libx11,
   libdrm,
+  libepoxy,
   libgbm,
   libva,
+  libx11,
+  meson,
+  ninja,
+  nix-update-script,
+  pkg-config,
   vulkan-headers,
   vulkan-loader,
-  nix-update-script,
-  vulkanSupport ? stdenv.hostPlatform.isLinux,
   nativeContextSupport ? stdenv.hostPlatform.isLinux,
   vaapiSupport ? !stdenv.hostPlatform.isDarwin,
+  vulkanSupport ? stdenv.hostPlatform.isLinux,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -25,19 +25,17 @@ stdenv.mkDerivation (finalAttrs: {
   version = "1.3.0";
 
   src = fetchFromGitLab {
-    domain = "gitlab.freedesktop.org";
     owner = "virgl";
     repo = "virglrenderer";
     tag = finalAttrs.version;
     hash = "sha256-2RoKIjtxShJCaezbkCrtW+lSaWKnOoUZzpSEPCJHSC8=";
+    domain = "gitlab.freedesktop.org";
   };
 
   patches = [
     # https://gitlab.freedesktop.org/virgl/virglrenderer/-/merge_requests/1624
     ./1001-virglrenderer-amdgpu-Use-inttypes-format-defines.patch
   ];
-
-  separateDebugInfo = true;
 
   nativeBuildInputs = [
     meson
@@ -86,6 +84,8 @@ stdenv.mkDerivation (finalAttrs: {
     ))
   ];
 
+  separateDebugInfo = true;
+
   passthru = {
     updateScript = nix-update-script { };
   };
@@ -95,7 +95,7 @@ stdenv.mkDerivation (finalAttrs: {
     homepage = "https://docs.mesa3d.org/drivers/virgl";
     license = lib.licenses.mit;
     maintainers = [ ];
-    mainProgram = "virgl_test_server";
     platforms = lib.platforms.unix;
+    mainProgram = "virgl_test_server";
   };
 })

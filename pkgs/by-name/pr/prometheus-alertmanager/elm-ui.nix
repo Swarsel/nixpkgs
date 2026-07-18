@@ -5,15 +5,19 @@
 }:
 
 buildNpmPackage (finalAttrs: {
-  pname = "alertmanager-elm-ui";
   inherit (prometheus-alertmanager) src version meta;
-
-  sourceRoot = "${finalAttrs.src.name}/ui/app";
+  pname = "alertmanager-elm-ui";
 
   postPatch = ''
     # don't download elm from github
     sed -i '/"elm":/d' package.json
   '';
+
+  nativeBuildInputs = [
+    elmPackages.elm
+  ];
+
+  npmDepsHash = "sha256-2flvNJXsOhE0k10Eu8kWo3p3aAABFB/f3yeYNrIztpw=";
 
   postConfigure = (
     elmPackages.fetchElmDeps {
@@ -25,16 +29,12 @@ buildNpmPackage (finalAttrs: {
     }
   );
 
-  npmDepsHash = "sha256-2flvNJXsOhE0k10Eu8kWo3p3aAABFB/f3yeYNrIztpw=";
-
-  nativeBuildInputs = [
-    elmPackages.elm
-  ];
-
   installPhase = ''
     runHook preInstall
     mkdir $out
     cp -r dist/* $out/
     runHook postInstall
   '';
+
+  sourceRoot = "${finalAttrs.src.name}/ui/app";
 })

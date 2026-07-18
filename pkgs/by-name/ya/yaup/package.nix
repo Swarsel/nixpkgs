@@ -2,13 +2,13 @@
   lib,
   stdenv,
   fetchFromGitHub,
+  copyDesktopItems,
+  gtk3,
   intltool,
+  makeDesktopItem,
+  miniupnpc,
   pkg-config,
   wrapGAppsHook3,
-  gtk3,
-  miniupnpc,
-  makeDesktopItem,
-  copyDesktopItems,
 }:
 
 stdenv.mkDerivation {
@@ -40,36 +40,41 @@ stdenv.mkDerivation {
     miniupnpc
   ];
 
-  desktopItems = [
-    (makeDesktopItem {
-      name = "yaup";
-      desktopName = "Yaup";
-      genericName = "UPnP Portmapper";
-      comment = "Yet Another UPnP Portmapper";
-      icon = "yaup";
-      exec = "yaup";
-      categories = [
-        "Network"
-        "Utility"
-      ];
-      keywords = [
-        "Port forwarding"
-      ];
-    })
-  ];
-
   postInstall = ''
     install -Dm644 src/yaup-dark.png $out/share/icons/hicolor/512x512/apps/yaup.png
   '';
 
+  desktopItems = [
+    (makeDesktopItem {
+      categories = [
+        "Network"
+        "Utility"
+      ];
+
+      comment = "Yet Another UPnP Portmapper";
+      desktopName = "Yaup";
+      exec = "yaup";
+      genericName = "UPnP Portmapper";
+      icon = "yaup";
+
+      keywords = [
+        "Port forwarding"
+      ];
+
+      name = "yaup";
+    })
+  ];
+
   meta = {
-    homepage = "https://github.com/Holarse-Linuxgaming/yaup";
     description = "Yet Another UPnP Portmapper";
+
     longDescription = ''
       Portmapping made easy.
       Portforward your incoming traffic to a specified local ip.
       Mostly used for IPv4.
     '';
+
+    homepage = "https://github.com/Holarse-Linuxgaming/yaup";
     license = lib.licenses.gpl3Plus;
     maintainers = with lib.maintainers; [ fgaz ];
     platforms = lib.platforms.all;

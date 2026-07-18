@@ -1,24 +1,23 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  # build-system
-  setuptools,
+  buildPythonPackage,
   #dependencies
   colcon,
   pyaml,
-  # tests
-  pytestCheckHook,
   pytest-cov-stub,
   pytest-repeat,
   pytest-rerunfailures,
+  # tests
+  pytestCheckHook,
   scspell,
+  # build-system
+  setuptools,
   writableTmpDirAsHomeHook,
 }:
 buildPythonPackage rec {
   pname = "colcon-defaults";
   version = "0.2.9";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "colcon";
@@ -26,15 +25,6 @@ buildPythonPackage rec {
     tag = version;
     hash = "sha256-Nb6D9jpbCvUnCNgRLBgWQFybNx0hyWVLSKj6gmTWjVs=";
   };
-
-  build-system = [
-    setuptools
-  ];
-
-  dependencies = [
-    colcon
-    pyaml
-  ];
 
   nativeCheckInputs = [
     pytestCheckHook
@@ -45,11 +35,21 @@ buildPythonPackage rec {
     writableTmpDirAsHomeHook
   ];
 
+  build-system = [
+    setuptools
+  ];
+
+  dependencies = [
+    colcon
+    pyaml
+  ];
+
   disabledTestPaths = [
     # Skip formatting checks to prevent depending on flake8
     "test/test_flake8.py"
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "colcon_defaults" ];
 
   meta = {

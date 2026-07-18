@@ -1,31 +1,31 @@
 {
   lib,
   stdenv,
-  patchelf,
-  makeWrapper,
-  gtk2,
-  glib,
-  udev,
   alsa-lib,
   atk,
-  nspr,
-  fontconfig,
   cairo,
-  pango,
-  nss,
-  freetype,
-  gnome2,
-  gdk-pixbuf,
   curl,
-  systemd,
-  libxrender,
-  libxfixes,
-  libxext,
-  libxdamage,
-  libxcursor,
-  libxcomposite,
+  fontconfig,
+  freetype,
+  gdk-pixbuf,
+  glib,
+  gnome2,
+  gtk2,
   libx11,
+  libxcomposite,
+  libxcursor,
+  libxdamage,
+  libxext,
+  libxfixes,
+  libxrender,
+  makeWrapper,
+  nspr,
+  nss,
+  pango,
+  patchelf,
   requireFile,
+  systemd,
+  udev,
 }:
 
 stdenv.mkDerivation rec {
@@ -33,9 +33,9 @@ stdenv.mkDerivation rec {
   version = "62857";
 
   src = requireFile {
+    sha256 = "0imi3k5144dsn3ka9khx3dj76klkw46ga7m6rddqjk4yslwabh3k";
     message = "This file has to be downloaded manually via nix-prefetch-url.";
     name = "PA_Linux_${version}.tar.bz2";
-    sha256 = "0imi3k5144dsn3ka9khx3dj76klkw46ga7m6rddqjk4yslwabh3k";
   };
 
   nativeBuildInputs = [
@@ -109,11 +109,11 @@ stdenv.mkDerivation rec {
   '';
 
   meta = {
-    homepage = "http://www.uberent.com/pa/";
     description = "Next-generation RTS that takes the genre to a planetary scale";
+    homepage = "http://www.uberent.com/pa/";
     license = lib.licenses.unfree;
-    platforms = lib.platforms.linux;
-    maintainers = [ ];
     sourceProvenance = [ lib.sourceTypes.binaryNativeCode ];
+    maintainers = [ ];
+    platforms = lib.platforms.linux;
   };
 }

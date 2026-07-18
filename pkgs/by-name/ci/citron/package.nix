@@ -1,10 +1,10 @@
 {
   lib,
-  rustPlatform,
-  fetchCrate,
   dbus,
+  fetchCrate,
   installShellFiles,
   pkg-config,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -16,22 +16,21 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-6wJ4UfiwpV9zFuBR8SYj6eBiRqQitFs7wRe5R51Z3SA=";
   };
 
-  cargoHash = "sha256-HEDkNzNCXKmBsI5fL8+UK4SHrU9eLde6Vfh4XhSrK+A=";
-
-  buildInputs = [ dbus ];
-
   nativeBuildInputs = [
     installShellFiles
     pkg-config
   ];
+
+  buildInputs = [ dbus ];
+  cargoHash = "sha256-HEDkNzNCXKmBsI5fL8+UK4SHrU9eLde6Vfh4XhSrK+A=";
 
   postInstall = ''
     installManPage doc/citron.1
   '';
 
   meta = {
-    homepage = "https://git.sr.ht/~grtcdr/citron";
     description = "System data via on-demand notifications";
+    homepage = "https://git.sr.ht/~grtcdr/citron";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ vuimuich ];
     platforms = lib.platforms.linux;

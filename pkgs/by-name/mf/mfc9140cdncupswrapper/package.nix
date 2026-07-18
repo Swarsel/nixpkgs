@@ -2,11 +2,11 @@
   lib,
   stdenv,
   fetchurl,
-  dpkg,
-  makeWrapper,
   coreutils,
+  dpkg,
   gnugrep,
   gnused,
+  makeWrapper,
   mfc9140cdnlpr,
   pkgsi686Linux,
   psutils,
@@ -21,16 +21,10 @@ stdenv.mkDerivation rec {
     sha256 = "18aramgqgra1shdhsa75i0090hk9i267gvabildwsk52kq2b96c6";
   };
 
-  unpackPhase = ''
-    dpkg-deb -x $src $out
-  '';
-
   nativeBuildInputs = [
     dpkg
     makeWrapper
   ];
-
-  dontBuild = true;
 
   installPhase = ''
     lpr=${mfc9140cdnlpr}/opt/brother/Printers/mfc9140cdn
@@ -65,12 +59,18 @@ stdenv.mkDerivation rec {
     chmod +x $out/lib/cups/filter/brother_lpdwrapper_mfc9140cdn
   '';
 
+  dontBuild = true;
+
+  unpackPhase = ''
+    dpkg-deb -x $src $out
+  '';
+
   meta = {
     description = "Brother MFC-9140CDN CUPS wrapper driver";
     homepage = "http://www.brother.com/";
-    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
     license = lib.licenses.gpl2Plus;
-    platforms = lib.platforms.linux;
+    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
     maintainers = with lib.maintainers; [ hexa ];
+    platforms = lib.platforms.linux;
   };
 }

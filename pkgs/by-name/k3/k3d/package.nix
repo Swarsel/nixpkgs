@@ -1,8 +1,8 @@
 {
   lib,
   stdenv,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   installShellFiles,
   k3sVersion ? null,
 }:
@@ -26,10 +26,33 @@ buildGoModule (finalAttrs: {
     hash = "sha256-W/fcpIgpE6kn87EXNVU+K9rFis5QAvVC2LgthI9M6yg=";
   };
 
-  vendorHash = "sha256-QRr8dmiqoNHu30OILwrS9AXK68hnNIqXlKMkASbcKVo=";
-  deleteVendor = true;
-
   nativeBuildInputs = [ installShellFiles ];
+  vendorHash = "sha256-QRr8dmiqoNHu30OILwrS9AXK68hnNIqXlKMkASbcKVo=";
+  env.GOWORK = "off";
+
+  preCheck = ''
+    # skip test that uses networking
+    substituteInPlace version/version_test.go \
+      --replace-fail "TestGetK3sVersion" "SkipGetK3sVersion"
+  '';
+
+  postInstall = lib.optionalString (stdenv.buildPlatform.canExecute stdenv.hostPlatform) ''
+    installShellCompletion --cmd k3d \
+      --bash <($out/bin/k3d completion bash) \
+      --fish <($out/bin/k3d completion fish) \
+      --zsh <($out/bin/k3d completion zsh)
+  '';
+
+  doInstallCheck = true;
+
+  installCheckPhase = ''
+    runHook preInstallCheck
+    $out/bin/k3d --help
+    $out/bin/k3d --version | grep -e "k3d version v${finalAttrs.version}" ${lib.optionalString k3sVersionSet "-e \"k3s version v${k3sVersion}\""}
+    runHook postInstallCheck
+  '';
+
+  deleteVendor = true;
 
   excludedPackages = [
     "tools"
@@ -47,41 +70,20 @@ buildGoModule (finalAttrs: {
     ]
     ++ lib.optionals k3sVersionSet [ "-X ${t}.K3sVersion=v${k3sVersion}" ];
 
-  preCheck = ''
-    # skip test that uses networking
-    substituteInPlace version/version_test.go \
-      --replace-fail "TestGetK3sVersion" "SkipGetK3sVersion"
-  '';
-
-  postInstall = lib.optionalString (stdenv.buildPlatform.canExecute stdenv.hostPlatform) ''
-    installShellCompletion --cmd k3d \
-      --bash <($out/bin/k3d completion bash) \
-      --fish <($out/bin/k3d completion fish) \
-      --zsh <($out/bin/k3d completion zsh)
-  '';
-
-  doInstallCheck = true;
-  installCheckPhase = ''
-    runHook preInstallCheck
-    $out/bin/k3d --help
-    $out/bin/k3d --version | grep -e "k3d version v${finalAttrs.version}" ${lib.optionalString k3sVersionSet "-e \"k3s version v${k3sVersion}\""}
-    runHook postInstallCheck
-  '';
-
-  env.GOWORK = "off";
-
   meta = {
-    homepage = "https://github.com/k3d-io/k3d/";
-    changelog = "https://github.com/k3d-io/k3d/blob/v${finalAttrs.version}/CHANGELOG.md";
     description = "Helper to run k3s (Lightweight Kubernetes. 5 less than k8s) in a docker container";
-    mainProgram = "k3d";
+
     longDescription = ''
       k3s is the lightweight Kubernetes distribution by Rancher: rancher/k3s
 
       k3d creates containerized k3s clusters. This means, that you can spin up a
       multi-node k3s cluster on a single machine using docker.
     '';
+
+    homepage = "https://github.com/k3d-io/k3d/";
+    changelog = "https://github.com/k3d-io/k3d/blob/v${finalAttrs.version}/CHANGELOG.md";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       kuznero
       jlesquembre
@@ -89,6 +91,8 @@ buildGoModule (finalAttrs: {
       jk
       ricochet
     ];
+
     platforms = lib.platforms.linux ++ lib.platforms.darwin;
+    mainProgram = "k3d";
   };
 })

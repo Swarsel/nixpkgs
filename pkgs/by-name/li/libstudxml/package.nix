@@ -1,8 +1,8 @@
 {
   lib,
   stdenv,
-  fetchgit,
   build2,
+  fetchgit,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -22,7 +22,6 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   strictDeps = true;
-
   nativeBuildInputs = [ build2 ];
 
   # lib files are not marked as executable by default

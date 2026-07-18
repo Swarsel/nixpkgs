@@ -1,11 +1,14 @@
 {
   lib,
-  buildPythonPackage,
-  fetchPypi,
-  hatchling,
   beautifulsoup4,
   bleach,
+  buildPythonPackage,
   defusedxml,
+  fetchPypi,
+  flaky,
+  hatchling,
+  ipykernel,
+  ipywidgets,
   jinja2,
   jupyter-core,
   jupyterlab-pygments,
@@ -15,17 +18,13 @@
   packaging,
   pandocfilters,
   pygments,
-  traitlets,
-  flaky,
-  ipykernel,
-  ipywidgets,
   pytestCheckHook,
+  traitlets,
 }:
 
 buildPythonPackage rec {
   pname = "nbconvert";
   version = "7.17.1";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
@@ -40,6 +39,19 @@ buildPythonPackage rec {
     substituteAllInPlace ./nbconvert/exporters/templateexporter.py
   '';
 
+  nativeCheckInputs = [
+    flaky
+    ipykernel
+    ipywidgets
+    pytestCheckHook
+  ];
+
+  preCheck = ''
+    export HOME=$(mktemp -d)
+  '';
+
+  # Some of the tests use localhost networking.
+  __darwinAllowLocalNetworking = true;
   build-system = [ hatchling ];
 
   dependencies = [
@@ -59,21 +71,6 @@ buildPythonPackage rec {
   ]
   ++ bleach.optional-dependencies.css;
 
-  preCheck = ''
-    export HOME=$(mktemp -d)
-  '';
-
-  nativeCheckInputs = [
-    flaky
-    ipykernel
-    ipywidgets
-    pytestCheckHook
-  ];
-
-  pytestFlags = [
-    "-Wignore::DeprecationWarning"
-  ];
-
   disabledTests = [
     # Attempts network access (Failed to establish a new connection: [Errno -3] Temporary failure in name resolution)
     "test_export"
@@ -83,8 +80,11 @@ buildPythonPackage rec {
     "test_post_processor"
   ];
 
-  # Some of the tests use localhost networking.
-  __darwinAllowLocalNetworking = true;
+  pyproject = true;
+
+  pytestFlags = [
+    "-Wignore::DeprecationWarning"
+  ];
 
   meta = {
     description = "Converting Jupyter Notebooks";

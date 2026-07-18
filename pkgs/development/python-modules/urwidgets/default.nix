@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   setuptools,
   urwid,
 }:
@@ -9,7 +9,6 @@
 buildPythonPackage rec {
   pname = "urwidgets";
   version = "0.2.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "AnonymouX47";
@@ -19,12 +18,10 @@ buildPythonPackage rec {
   };
 
   build-system = [ setuptools ];
-
   dependencies = [ urwid ];
-
-  pythonRelaxDeps = [ "urwid" ];
-
+  pyproject = true;
   pythonImportsCheck = [ "urwidgets" ];
+  pythonRelaxDeps = [ "urwid" ];
 
   meta = {
     description = "Collection of widgets for urwid";

@@ -1,23 +1,23 @@
 {
   lib,
-  banjobaserom ? null,
-  requireFile,
   fetchFromGitHub,
-  llvmPackages_21,
+  SDL2,
+  bk_rom_compressor,
   cmake,
   copyDesktopItems,
+  directx-shader-compiler,
+  gtk3,
   installShellFiles,
+  llvmPackages_21,
+  makeDesktopItem,
   makeWrapper,
+  n64recomp,
   ninja,
   pkg-config,
-  wrapGAppsHook3,
-  SDL2,
-  gtk3,
+  requireFile,
   vulkan-loader,
-  makeDesktopItem,
-  n64recomp,
-  directx-shader-compiler,
-  bk_rom_compressor,
+  wrapGAppsHook3,
+  banjobaserom ? null,
 }:
 
 let
@@ -27,7 +27,8 @@ let
       banjobaserom
     else
       requireFile {
-        name = "baserom.us.v10.z64";
+        hash = "sha256-WYdYNbmlEouwBUMVp/kp4gccIAHlKNcL9UPh1mgObv8=";
+
         message = ''
           banjorecomp only supports the US 1.0 version of Banjo-Kazooie.
           Please dump your copy and rename it to baserom.us.v10.z64
@@ -35,7 +36,8 @@ let
           nix-store --add-fixed sha256 baserom.us.v10.z64
           See https://dumping.guide/carts/nintendo/n64 for more details.
         '';
-        hash = "sha256-WYdYNbmlEouwBUMVp/kp4gccIAHlKNcL9UPh1mgObv8=";
+
+        name = "baserom.us.v10.z64";
       };
 
 in
@@ -53,7 +55,6 @@ llvmPackages_21.stdenv.mkDerivation (finalAttrs: {
   };
 
   strictDeps = true;
-  __structuredAttrs = true;
 
   nativeBuildInputs = [
     cmake
@@ -70,17 +71,6 @@ llvmPackages_21.stdenv.mkDerivation (finalAttrs: {
     SDL2
     gtk3
     vulkan-loader
-  ];
-
-  desktopItems = [
-    (makeDesktopItem {
-      name = "BanjoRecompiled";
-      icon = "BanjoRecompiled";
-      exec = "BanjoRecompiled";
-      comment = "Recompilation of Banjo-Kazooie";
-      desktopName = "BanjoRecompiled";
-      categories = [ "Game" ];
-    })
   ];
 
   preConfigure = ''
@@ -102,14 +92,6 @@ llvmPackages_21.stdenv.mkDerivation (finalAttrs: {
       --replace-fail "\''${PROJECT_SOURCE_DIR}/lib/rt64/src/contrib/dxc/lib/x64" "${directx-shader-compiler}/lib/" \
       --replace-fail "\''${PROJECT_SOURCE_DIR}/lib/rt64/src/contrib/dxc/bin/x64/dxc-linux" "${directx-shader-compiler}/bin/dxc"
   '';
-
-  # This is required or else nothing will build
-  hardeningDisable = [
-    "format"
-    "pic"
-    "stackprotector"
-    "zerocallusedregs"
-  ];
 
   installPhase = ''
     runHook preInstall
@@ -139,9 +121,31 @@ llvmPackages_21.stdenv.mkDerivation (finalAttrs: {
     wrapProgram $out/bin/BanjoRecompiled --chdir "$out/bin/"
   '';
 
+  __structuredAttrs = true;
+
+  desktopItems = [
+    (makeDesktopItem {
+      categories = [ "Game" ];
+      comment = "Recompilation of Banjo-Kazooie";
+      desktopName = "BanjoRecompiled";
+      exec = "BanjoRecompiled";
+      icon = "BanjoRecompiled";
+      name = "BanjoRecompiled";
+    })
+  ];
+
+  # This is required or else nothing will build
+  hardeningDisable = [
+    "format"
+    "pic"
+    "stackprotector"
+    "zerocallusedregs"
+  ];
+
   meta = {
     description = "PC Port of Banjo-Kazooie made using N64: Recompiled";
     homepage = "https://github.com/BanjoRecomp/BanjoRecomp";
+
     license = with lib.licenses; [
       # BanjoRecompiled, N64ModernRuntime
       gpl3Only
@@ -152,8 +156,9 @@ llvmPackages_21.stdenv.mkDerivation (finalAttrs: {
       # reverse engineering
       unfree
     ];
+
     maintainers = with lib.maintainers; [ qubitnano ];
-    mainProgram = "BanjoRecompiled";
     platforms = [ "x86_64-linux" ];
+    mainProgram = "BanjoRecompiled";
   };
 })

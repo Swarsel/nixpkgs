@@ -1,11 +1,11 @@
 {
+  meta,
+  passthru,
+  pname,
+  src,
   stdenvNoCC,
   unzip,
-  pname,
   version,
-  src,
-  passthru,
-  meta,
 }:
 
 stdenvNoCC.mkDerivation {
@@ -16,8 +16,6 @@ stdenvNoCC.mkDerivation {
     passthru
     meta
     ;
-
-  sourceRoot = "Postman.app";
 
   nativeBuildInputs = [ unzip ];
 
@@ -39,4 +37,5 @@ stdenvNoCC.mkDerivation {
   # in the bundle, which causes the notarization check to fail on macOS 13+.
   # See https://eclecticlight.co/2022/06/17/app-security-changes-coming-in-ventura/ for more information.
   dontFixup = true;
+  sourceRoot = "Postman.app";
 }

@@ -1,10 +1,10 @@
 {
-  writeShellApplication,
   common-updater-scripts,
-  nix-update,
-  yq-go,
   dart,
   nix,
+  nix-update,
+  writeShellApplication,
+  yq-go,
 }:
 let
   name = "update-mono_repo";
@@ -13,6 +13,7 @@ let
 in
 writeShellApplication {
   inherit name;
+
   runtimeInputs = [
     common-updater-scripts
     nix-update
@@ -20,6 +21,7 @@ writeShellApplication {
     dart
     nix
   ];
+
   text = ''
     pname="''${UPDATE_NIX_PNAME:-${packageName}}"
 

@@ -1,21 +1,21 @@
 {
+  lib,
   stdenv,
   fetchurl,
-  lib,
-  libidn,
-  openssl,
-  makeWrapper,
-  fetchhg,
   buildPackages,
+  fetchhg,
   icu,
+  libidn,
   lua,
+  makeWrapper,
   nixosTests,
+  openssl,
+  withCommunityModules ? [ ],
   withDBI ? true,
   # use withExtraLibs to add additional dependencies of community modules
   withExtraLibs ? [ ],
   withExtraLuaPackages ? _: [ ],
   withOnlyInstalledCommunityModules ? [ ],
-  withCommunityModules ? [ ],
 }:
 
 let
@@ -44,22 +44,6 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-7GlvnPViw69KBLB9P7NqHO3MTmmjkv3c/FJLxn2TBQ8=";
   };
 
-  # The following community modules are necessary for the nixos module
-  # prosody module to comply with XEP-0423 and provide a working
-  # default setup.
-  nixosModuleDeps = [
-    "cloud_notify"
-  ];
-
-  # A note to all those merging automated updates: Please also update this
-  # attribute as some modules might not be compatible with a newer prosody
-  # version.
-  communityModules = fetchhg {
-    url = "https://hg.prosody.im/prosody-modules";
-    rev = "15a7749c7acb";
-    hash = "sha256-RvhPV6YMdwxxIeHhpqXPfBh6087PAPAQV8D+stpXmBs=";
-  };
-
   nativeBuildInputs = [ makeWrapper ];
 
   buildInputs = [
@@ -79,17 +63,15 @@ stdenv.mkDerivation (finalAttrs: {
     "--linker=${stdenv.cc.targetPrefix}cc"
   ];
 
-  configurePlatforms = [ ];
-
-  postBuild = ''
-    make -C tools/migration
-  '';
-
   buildFlags = [
     # don't search for configs in the nix store when running prosodyctl
     "INSTALLEDCONFIG=/etc/prosody"
     "INSTALLEDDATA=/var/lib/prosody"
   ];
+
+  postBuild = ''
+    make -C tools/migration
+  '';
 
   # the wrapping should go away once lua hook is fixed
   postInstall = ''
@@ -106,6 +88,24 @@ stdenv.mkDerivation (finalAttrs: {
     make -C tools/migration install
   '';
 
+  # A note to all those merging automated updates: Please also update this
+  # attribute as some modules might not be compatible with a newer prosody
+  # version.
+  communityModules = fetchhg {
+    hash = "sha256-RvhPV6YMdwxxIeHhpqXPfBh6087PAPAQV8D+stpXmBs=";
+    rev = "15a7749c7acb";
+    url = "https://hg.prosody.im/prosody-modules";
+  };
+
+  configurePlatforms = [ ];
+
+  # The following community modules are necessary for the nixos module
+  # prosody module to comply with XEP-0423 and provide a working
+  # default setup.
+  nixosModuleDeps = [
+    "cloud_notify"
+  ];
+
   passthru = {
     communityModules = withCommunityModules;
     tests = { inherit (nixosTests) prosody prosody-mysql; };
@@ -113,15 +113,17 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Open-source XMPP application server written in Lua";
-    license = lib.licenses.mit;
-    changelog = "https://prosody.im/doc/release/${finalAttrs.version}";
     homepage = "https://prosody.im";
-    platforms = lib.platforms.linux;
-    mainProgram = "prosody";
+    changelog = "https://prosody.im/doc/release/${finalAttrs.version}";
+    license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       toastal
       mirror230469
       SuperSandro2000
     ];
+
+    platforms = lib.platforms.linux;
+    mainProgram = "prosody";
   };
 })

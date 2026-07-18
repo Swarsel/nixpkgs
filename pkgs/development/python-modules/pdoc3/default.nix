@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   mako,
   markdown,
   setuptools-scm,
@@ -11,7 +11,6 @@
 buildPythonPackage rec {
   pname = "pdoc3";
   version = "0.11.6";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "pdoc3";
@@ -25,6 +24,8 @@ buildPythonPackage rec {
       --replace-fail "'setuptools_git'," ""
   '';
 
+  nativeCheckInputs = [ unittestCheckHook ];
+
   build-system = [
     setuptools-scm
   ];
@@ -34,14 +35,13 @@ buildPythonPackage rec {
     markdown
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "pdoc" ];
 
-  nativeCheckInputs = [ unittestCheckHook ];
-
   meta = {
-    changelog = "https://github.com/pdoc3/pdoc/blob/${src.tag}/CHANGELOG";
     description = "Auto-generate API documentation for Python projects";
     homepage = "https://pdoc3.github.io/pdoc/";
+    changelog = "https://github.com/pdoc3/pdoc/blob/${src.tag}/CHANGELOG";
     license = lib.licenses.agpl3Plus;
     mainProgram = "pdoc";
   };

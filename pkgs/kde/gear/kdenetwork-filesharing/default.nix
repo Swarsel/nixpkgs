@@ -1,8 +1,8 @@
 {
   lib,
   mkKdeDerivation,
-  replaceVars,
   qtdeclarative,
+  replaceVars,
   samba,
   shadow,
 }:
@@ -19,16 +19,16 @@ mkKdeDerivation {
     ./samba-hint.patch
   ];
 
+  # Hardcoded as QStrings, which are UTF-16 so Nix can't pick these up automatically
+  postFixup = ''
+    mkdir -p $out/nix-support
+    echo "${samba} ${shadow}" > $out/nix-support/depends
+  '';
+
   extraBuildInputs = [
     qtdeclarative
   ];
 
   # We can't actually install samba via PackageKit, so let's not confuse users any more than we have to
   extraCmakeFlags = [ "-DSAMBA_INSTALL=OFF" ];
-
-  # Hardcoded as QStrings, which are UTF-16 so Nix can't pick these up automatically
-  postFixup = ''
-    mkdir -p $out/nix-support
-    echo "${samba} ${shadow}" > $out/nix-support/depends
-  '';
 }

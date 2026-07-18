@@ -1,41 +1,41 @@
 {
   lib,
   stdenv,
-  libGLU,
-  libGL,
-  libglut,
-  libx11,
-  plib,
-  openal,
-  freealut,
-  libxrandr,
-  xorgproto,
-  libxext,
-  libsm,
-  libice,
-  libxi,
-  libxt,
-  libxrender,
-  libxxf86vm,
-  openscenegraph,
-  expat,
-  libpng12,
-  zlib,
-  bash,
   SDL2,
   SDL2_mixer,
-  enet,
-  libjpeg,
-  cmake,
-  pkg-config,
-  libvorbis,
-  curl,
-  fetchgit,
+  bash,
   cjson,
-  minizip,
-  rhash,
+  cmake,
   copyDesktopItems,
+  curl,
+  enet,
+  expat,
+  fetchgit,
+  freealut,
+  libGL,
+  libGLU,
+  libglut,
+  libice,
+  libjpeg,
+  libpng12,
+  libsm,
+  libvorbis,
+  libx11,
+  libxext,
+  libxi,
+  libxrandr,
+  libxrender,
+  libxt,
+  libxxf86vm,
   makeWrapper,
+  minizip,
+  openal,
+  openscenegraph,
+  pkg-config,
+  plib,
+  rhash,
+  xorgproto,
+  zlib,
 }:
 
 let
@@ -76,8 +76,8 @@ let
   libPathVar = if stdenv.hostPlatform.isDarwin then "DYLD_LIBRARY_PATH" else "LD_LIBRARY_PATH";
 in
 stdenv.mkDerivation (finalAttrs: {
-  version = "2.4.2";
   pname = "speed-dreams";
+  version = "2.4.2";
 
   src = fetchgit {
     url = "https://forge.a-lec.org/speed-dreams/speed-dreams-code.git";
@@ -86,43 +86,8 @@ stdenv.mkDerivation (finalAttrs: {
     fetchSubmodules = true;
   };
 
-  env.NIX_CFLAGS_COMPILE = toString [
-    "-I${finalAttrs.src}/src/libs/tgf"
-    "-I${finalAttrs.src}/src/libs/tgfdata"
-    "-I${finalAttrs.src}/src/interfaces"
-    "-I${finalAttrs.src}/src/libs/math"
-    "-I${finalAttrs.src}/src/libs/portability"
-  ];
-
   patches = [
     ./darwin-gl-compat.patch
-  ];
-
-  postInstall = ''
-    substituteInPlace "$out/share/applications/speed-dreams.desktop" \
-      --replace-fail "Exec=$out/games/speed-dreams-2" "Exec=speed-dreams"
-    ${lib.optionalString stdenv.hostPlatform.isLinux ''
-      # Symlink for desktop icon
-      mkdir -p $out/share/icons/hicolor/{96x96,scalable}/apps
-      ln -s "$out/share/games/speed-dreams-2/data/icons/icon.png" "$out/share/icons/hicolor/96x96/apps/speed-dreams-2.png"
-      ln -s "$out/share/games/speed-dreams-2/data/icons/icon.svg" "$out/share/icons/hicolor/scalable/apps/speed-dreams-2.svg"
-      substituteInPlace "$out/share/applications/speed-dreams.desktop" \
-        --replace-fail "Icon=/build/speed-dreams-code/speed-dreams-data/data/data/icons/icon.png" "Icon=speed-dreams-2"
-    ''}
-  '';
-
-  postFixup = ''
-    mkdir -p "$out/bin"
-    makeWrapperArgs=(
-      --prefix ${libPathVar} : "$out/lib/games/speed-dreams-2/lib:$out/lib:${runtimeLibPath}"
-    )
-    ${lib.optionalString stdenv.hostPlatform.isLinux "makeWrapperArgs+=(--set SDL_VIDEODRIVER x11)"}
-    makeWrapper "$out/games/speed-dreams-2" "$out/bin/speed-dreams" "''${makeWrapperArgs[@]}"
-  '';
-
-  # RPATH of binary /nix/store/.../lib64/games/speed-dreams-2/drivers/shadow_sc/shadow_sc.so contains a forbidden reference to /build/
-  cmakeFlags = [
-    "-DCMAKE_SKIP_BUILD_RPATH=ON"
   ];
 
   nativeBuildInputs = [
@@ -167,14 +132,51 @@ stdenv.mkDerivation (finalAttrs: {
     libglut
   ];
 
+  # RPATH of binary /nix/store/.../lib64/games/speed-dreams-2/drivers/shadow_sc/shadow_sc.so contains a forbidden reference to /build/
+  cmakeFlags = [
+    "-DCMAKE_SKIP_BUILD_RPATH=ON"
+  ];
+
+  env.NIX_CFLAGS_COMPILE = toString [
+    "-I${finalAttrs.src}/src/libs/tgf"
+    "-I${finalAttrs.src}/src/libs/tgfdata"
+    "-I${finalAttrs.src}/src/interfaces"
+    "-I${finalAttrs.src}/src/libs/math"
+    "-I${finalAttrs.src}/src/libs/portability"
+  ];
+
+  postInstall = ''
+    substituteInPlace "$out/share/applications/speed-dreams.desktop" \
+      --replace-fail "Exec=$out/games/speed-dreams-2" "Exec=speed-dreams"
+    ${lib.optionalString stdenv.hostPlatform.isLinux ''
+      # Symlink for desktop icon
+      mkdir -p $out/share/icons/hicolor/{96x96,scalable}/apps
+      ln -s "$out/share/games/speed-dreams-2/data/icons/icon.png" "$out/share/icons/hicolor/96x96/apps/speed-dreams-2.png"
+      ln -s "$out/share/games/speed-dreams-2/data/icons/icon.svg" "$out/share/icons/hicolor/scalable/apps/speed-dreams-2.svg"
+      substituteInPlace "$out/share/applications/speed-dreams.desktop" \
+        --replace-fail "Icon=/build/speed-dreams-code/speed-dreams-data/data/data/icons/icon.png" "Icon=speed-dreams-2"
+    ''}
+  '';
+
+  postFixup = ''
+    mkdir -p "$out/bin"
+    makeWrapperArgs=(
+      --prefix ${libPathVar} : "$out/lib/games/speed-dreams-2/lib:$out/lib:${runtimeLibPath}"
+    )
+    ${lib.optionalString stdenv.hostPlatform.isLinux "makeWrapperArgs+=(--set SDL_VIDEODRIVER x11)"}
+    makeWrapper "$out/games/speed-dreams-2" "$out/bin/speed-dreams" "''${makeWrapperArgs[@]}"
+  '';
+
   meta = {
     description = "Car racing game - TORCS fork with more experimental approach";
     homepage = "https://www.speed-dreams.net/";
     license = lib.licenses.gpl2Plus;
+
     maintainers = with lib.maintainers; [
       raskin
       mio
     ];
+
     platforms = lib.platforms.linux ++ lib.platforms.darwin;
     mainProgram = "speed-dreams";
   };

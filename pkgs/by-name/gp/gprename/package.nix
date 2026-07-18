@@ -1,15 +1,15 @@
 {
   lib,
   stdenv,
+  at-spi2-atk,
   fetchzip,
+  gdk-pixbuf,
+  gtk3,
+  harfbuzz,
   makeWrapper,
   moreutils,
-  perlPackages,
-  gtk3,
   pango,
-  harfbuzz,
-  gdk-pixbuf,
-  at-spi2-atk,
+  perlPackages,
 }:
 stdenv.mkDerivation (finalAttrs: {
   pname = "gprename";
@@ -19,11 +19,6 @@ stdenv.mkDerivation (finalAttrs: {
     url = "mirror://sourceforge/gprename/gprename-${finalAttrs.version}.zip";
     hash = "sha256-Du9OO2qeB1jUEJFcVYmLbJAGi2p/IVe3sqladq09AyY=";
   };
-
-  nativeBuildInputs = [
-    makeWrapper
-    moreutils
-  ];
 
   postPatch = ''
     grep -Ev 'desktop-file-install|update-desktop-database' Makefile | sponge Makefile
@@ -36,11 +31,18 @@ stdenv.mkDerivation (finalAttrs: {
       --replace '/usr/local/share' $out/share
   '';
 
-  makeFlags = [ "DESTDIR=$(out)" ];
+  nativeBuildInputs = [
+    makeWrapper
+    moreutils
+  ];
+
   buildInputs = [
     perlPackages.perl
     pango
   ];
+
+  makeFlags = [ "DESTDIR=$(out)" ];
+
   postInstall = ''
     wrapProgram $out/bin/gprename \
       --set PERL5LIB ${
@@ -70,7 +72,7 @@ stdenv.mkDerivation (finalAttrs: {
     description = "Complete batch renamer for files and directories";
     homepage = "https://gprename.sourceforge.net/index.php";
     license = lib.licenses.gpl3Plus;
-    mainProgram = "gprename";
     maintainers = with lib.maintainers; [ quantenzitrone ];
+    mainProgram = "gprename";
   };
 })

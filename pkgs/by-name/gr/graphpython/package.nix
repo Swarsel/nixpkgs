@@ -7,7 +7,6 @@
 python3.pkgs.buildPythonApplication {
   pname = "graphpython";
   version = "1.0-unstable-2024-07-28";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "mlcsec";
@@ -17,6 +16,8 @@ python3.pkgs.buildPythonApplication {
     hash = "sha256-64M/Cc49mlceY5roBVuSsDIcbDx+lrX6oSjPAu9YDwA=";
   };
 
+  # Project has no tests
+  doCheck = false;
   build-system = with python3.pkgs; [ setuptools ];
 
   dependencies = with python3.pkgs; [
@@ -30,10 +31,8 @@ python3.pkgs.buildPythonApplication {
     tqdm
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "Graphpython" ];
-
-  # Project has no tests
-  doCheck = false;
 
   meta = {
     description = "Microsoft Graph API (Entra, o365, and Intune) enumeration and exploitation toolkit";

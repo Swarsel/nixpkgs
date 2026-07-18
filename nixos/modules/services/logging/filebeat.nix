@@ -1,8 +1,8 @@
 {
   config,
   lib,
-  utils,
   pkgs,
+  utils,
   ...
 }:
 
@@ -33,6 +33,8 @@ in
       };
 
       inputs = mkOption {
+        default = { };
+
         description = ''
           Inputs specify how Filebeat locates and processes input data.
 
@@ -48,28 +50,7 @@ in
 
           See <https://www.elastic.co/guide/en/beats/filebeat/current/configuration-filebeat-options.html>.
         '';
-        default = { };
-        type = types.attrsOf (
-          types.submodule (
-            { name, ... }:
-            {
-              freeformType = json.type;
-              options = {
-                type = mkOption {
-                  type = types.str;
-                  default = name;
-                  description = ''
-                    The input type.
 
-                    Look for the value after `type:` on
-                    the individual input pages linked from
-                    <https://www.elastic.co/guide/en/beats/filebeat/current/configuration-filebeat-options.html>.
-                  '';
-                };
-              };
-            }
-          )
-        );
         example = literalExpression ''
           {
             journald.id = "everything";  # Only for filebeat7
@@ -81,9 +62,36 @@ in
             };
           };
         '';
+
+        type = types.attrsOf (
+          types.submodule (
+            { name, ... }:
+            {
+              options = {
+                type = mkOption {
+                  default = name;
+
+                  description = ''
+                    The input type.
+
+                    Look for the value after `type:` on
+                    the individual input pages linked from
+                    <https://www.elastic.co/guide/en/beats/filebeat/current/configuration-filebeat-options.html>.
+                  '';
+
+                  type = types.str;
+                };
+              };
+
+              freeformType = json.type;
+            }
+          )
+        );
       };
 
       modules = mkOption {
+        default = { };
+
         description = ''
           Filebeat modules provide a quick way to get started
           processing common log formats. They contain default
@@ -103,28 +111,7 @@ in
 
           See <https://www.elastic.co/guide/en/beats/filebeat/current/filebeat-modules.html>.
         '';
-        default = { };
-        type = types.attrsOf (
-          types.submodule (
-            { name, ... }:
-            {
-              freeformType = json.type;
-              options = {
-                module = mkOption {
-                  type = types.str;
-                  default = name;
-                  description = ''
-                    The name of the module.
 
-                    Look for the value after `module:` on
-                    the individual input pages linked from
-                    <https://www.elastic.co/guide/en/beats/filebeat/current/filebeat-modules.html>.
-                  '';
-                };
-              };
-            }
-          )
-        );
         example = literalExpression ''
           {
             nginx = {
@@ -139,77 +126,35 @@ in
             };
           };
         '';
+
+        type = types.attrsOf (
+          types.submodule (
+            { name, ... }:
+            {
+              options = {
+                module = mkOption {
+                  default = name;
+
+                  description = ''
+                    The name of the module.
+
+                    Look for the value after `module:` on
+                    the individual input pages linked from
+                    <https://www.elastic.co/guide/en/beats/filebeat/current/filebeat-modules.html>.
+                  '';
+
+                  type = types.str;
+                };
+              };
+
+              freeformType = json.type;
+            }
+          )
+        );
       };
 
       settings = mkOption {
-        type = types.submodule {
-          freeformType = json.type;
-
-          options = {
-
-            output.elasticsearch.hosts = mkOption {
-              type = with types; listOf str;
-              default = [ "127.0.0.1:9200" ];
-              example = [ "myEShost:9200" ];
-              description = ''
-                The list of Elasticsearch nodes to connect to.
-
-                The events are distributed to these nodes in round
-                robin order. If one node becomes unreachable, the
-                event is automatically sent to another node. Each
-                Elasticsearch node can be defined as a URL or
-                IP:PORT. For example:
-                `http://192.15.3.2`,
-                `https://es.found.io:9230` or
-                `192.24.3.2:9300`. If no port is
-                specified, `9200` is used.
-              '';
-            };
-
-            filebeat = {
-              inputs = mkOption {
-                type = types.listOf json.type;
-                default = [ ];
-                internal = true;
-                description = ''
-                  Inputs specify how Filebeat locates and processes
-                  input data. Use [](#opt-services.filebeat.inputs) instead.
-
-                  See <https://www.elastic.co/guide/en/beats/filebeat/current/configuration-filebeat-options.html>.
-                '';
-              };
-              modules = mkOption {
-                type = types.listOf json.type;
-                default = [ ];
-                internal = true;
-                description = ''
-                  Filebeat modules provide a quick way to get started
-                  processing common log formats. They contain default
-                  configurations, Elasticsearch ingest pipeline
-                  definitions, and Kibana dashboards to help you
-                  implement and deploy a log monitoring solution.
-
-                  Use [](#opt-services.filebeat.modules) instead.
-
-                  See <https://www.elastic.co/guide/en/beats/filebeat/current/filebeat-modules.html>.
-                '';
-              };
-            };
-          };
-        };
         default = { };
-        example = literalExpression ''
-          {
-            settings = {
-              output.elasticsearch = {
-                hosts = [ "myEShost:9200" ];
-                username = "filebeat_internal";
-                password = { _secret = "/var/keys/elasticsearch_password"; };
-              };
-              logging.level = "info";
-            };
-          };
-        '';
 
         description = ''
           Configuration for filebeat. See
@@ -226,6 +171,82 @@ in
           key will be set to the contents of the
           {file}`/var/keys/elasticsearch_password` file.
         '';
+
+        example = literalExpression ''
+          {
+            settings = {
+              output.elasticsearch = {
+                hosts = [ "myEShost:9200" ];
+                username = "filebeat_internal";
+                password = { _secret = "/var/keys/elasticsearch_password"; };
+              };
+              logging.level = "info";
+            };
+          };
+        '';
+
+        type = types.submodule {
+          options = {
+
+            filebeat = {
+              inputs = mkOption {
+                default = [ ];
+
+                description = ''
+                  Inputs specify how Filebeat locates and processes
+                  input data. Use [](#opt-services.filebeat.inputs) instead.
+
+                  See <https://www.elastic.co/guide/en/beats/filebeat/current/configuration-filebeat-options.html>.
+                '';
+
+                internal = true;
+                type = types.listOf json.type;
+              };
+
+              modules = mkOption {
+                default = [ ];
+
+                description = ''
+                  Filebeat modules provide a quick way to get started
+                  processing common log formats. They contain default
+                  configurations, Elasticsearch ingest pipeline
+                  definitions, and Kibana dashboards to help you
+                  implement and deploy a log monitoring solution.
+
+                  Use [](#opt-services.filebeat.modules) instead.
+
+                  See <https://www.elastic.co/guide/en/beats/filebeat/current/filebeat-modules.html>.
+                '';
+
+                internal = true;
+                type = types.listOf json.type;
+              };
+            };
+
+            output.elasticsearch.hosts = mkOption {
+              default = [ "127.0.0.1:9200" ];
+
+              description = ''
+                The list of Elasticsearch nodes to connect to.
+
+                The events are distributed to these nodes in round
+                robin order. If one node becomes unreachable, the
+                event is automatically sent to another node. Each
+                Elasticsearch node can be defined as a URL or
+                IP:PORT. For example:
+                `http://192.15.3.2`,
+                `https://es.found.io:9230` or
+                `192.24.3.2:9300`. If no port is
+                specified, `9200` is used.
+              '';
+
+              example = [ "myEShost:9200" ];
+              type = with types; listOf str;
+            };
+          };
+
+          freeformType = json.type;
+        };
       };
     };
   };
@@ -236,11 +257,16 @@ in
     services.filebeat.settings.filebeat.modules = attrValues cfg.modules;
 
     systemd.services.filebeat = {
-      description = "Filebeat log shipper";
-      wantedBy = [ "multi-user.target" ];
-      wants = [ "elasticsearch.service" ];
       after = [ "elasticsearch.service" ];
+      description = "Filebeat log shipper";
+
       serviceConfig = {
+        ExecStart = ''
+          ${cfg.package}/bin/filebeat -e \
+            -c "/var/lib/filebeat/filebeat.yml" \
+            --path.data "/var/lib/filebeat"
+        '';
+
         ExecStartPre = pkgs.writeShellScript "filebeat-exec-pre" ''
           set -euo pipefail
 
@@ -248,14 +274,13 @@ in
 
           ${utils.genJqSecretsReplacementSnippet cfg.settings "/var/lib/filebeat/filebeat.yml"}
         '';
-        ExecStart = ''
-          ${cfg.package}/bin/filebeat -e \
-            -c "/var/lib/filebeat/filebeat.yml" \
-            --path.data "/var/lib/filebeat"
-        '';
+
         Restart = "always";
         StateDirectory = "filebeat";
       };
+
+      wantedBy = [ "multi-user.target" ];
+      wants = [ "elasticsearch.service" ];
     };
   };
 }

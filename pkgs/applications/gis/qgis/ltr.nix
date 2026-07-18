@@ -1,14 +1,11 @@
 {
   lib,
   stdenv,
+  libsForQt5,
   makeWrapper,
   nixosTests,
   symlinkJoin,
-
   extraPythonPackages ? (ps: [ ]),
-
-  libsForQt5,
-
   # unwrapped package parameters
   withGrass ? false,
   withServer ? false,
@@ -21,18 +18,13 @@ in
 
 symlinkJoin {
   inherit (qgis-ltr-unwrapped) version outputs src;
+  inherit (qgis-ltr-unwrapped) meta;
   pname = "qgis-ltr";
-
-  paths = [ qgis-ltr-unwrapped ];
 
   nativeBuildInputs = [
     makeWrapper
     qgis-ltr-unwrapped.py.pkgs.wrapPython
   ];
-
-  # extend to add to the python environment of QGIS without rebuilding QGIS application.
-  pythonInputs =
-    qgis-ltr-unwrapped.pythonBuildInputs ++ (extraPythonPackages qgis-ltr-unwrapped.py.pkgs);
 
   postBuild = ''
     buildPythonPath "$pythonInputs"
@@ -47,14 +39,19 @@ symlinkJoin {
     ln -s ${qgis-ltr-unwrapped.man} $man
   '';
 
+  paths = [ qgis-ltr-unwrapped ];
+
+  # extend to add to the python environment of QGIS without rebuilding QGIS application.
+  pythonInputs =
+    qgis-ltr-unwrapped.pythonBuildInputs ++ (extraPythonPackages qgis-ltr-unwrapped.py.pkgs);
+
   passthru = {
-    unwrapped = qgis-ltr-unwrapped;
     tests.qgis-ltr = nixosTests.qgis-ltr;
+    unwrapped = qgis-ltr-unwrapped;
+
     updateScript = [
       ./update.sh
       "qgis-ltr"
     ];
   };
-
-  inherit (qgis-ltr-unwrapped) meta;
 }

@@ -2,16 +2,16 @@
   lib,
   stdenv,
   fetchFromGitHub,
+  cairo,
+  gdk-pixbuf,
+  libxkbcommon,
   meson,
   ninja,
   pkg-config,
+  scdoc,
   wayland,
   wayland-protocols,
   wayland-scanner,
-  libxkbcommon,
-  cairo,
-  gdk-pixbuf,
-  scdoc,
 }:
 
 stdenv.mkDerivation {

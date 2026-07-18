@@ -3,8 +3,8 @@
   stdenv,
   fetchurl,
   bison,
-  lzo,
   db4,
+  lzo,
   versionCheckHook,
 }:
 
@@ -23,27 +23,25 @@ stdenv.mkDerivation (finalAttrs: {
     db4
   ];
 
-  hardeningDisable = [ "format" ];
-
   # mgllex.l:398:53: error: passing argument 1 of 'copy_string' from incompatible pointer type []
   env.NIX_CFLAGS_COMPILE = "-Wno-error=incompatible-pointer-types";
-
+  doInstallCheck = true;
+  nativeInstallCheckInputs = [ versionCheckHook ];
   # Disable parallel build, errors:
   #  link: `parseopt.lo' is not a valid libtool object
   enableParallelBuilding = false;
-
-  nativeInstallCheckInputs = [ versionCheckHook ];
+  hardeningDisable = [ "format" ];
   versionCheckProgram = "${placeholder "out"}/bin/nbdbtool";
-  doInstallCheck = true;
 
   meta = {
     description = "Mini PXE server";
     homepage = "https://netboot.sourceforge.net";
+    license = lib.licenses.gpl2Only;
     maintainers = with lib.maintainers; [ raskin ];
+
     platforms = [
       "x86_64-linux"
       "aarch64-linux"
     ];
-    license = lib.licenses.gpl2Only;
   };
 })

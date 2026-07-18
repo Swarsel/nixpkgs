@@ -1,15 +1,14 @@
 {
   lib,
   buildPythonPackage,
-  fetchpatch,
   fetchPypi,
+  fetchpatch,
   pytestCheckHook,
 }:
 
 buildPythonPackage rec {
   pname = "cookies";
   version = "2.2.1";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
@@ -18,9 +17,9 @@ buildPythonPackage rec {
 
   patches = [
     (fetchpatch {
+      hash = "sha256-8e3haOnbSXlL/ZY4uv6P4+ABBKrsCjbEpsLHaulbIUk=";
       name = "fix-deprecations.patch";
       url = "https://gitlab.com/sashahart/cookies/-/commit/22543d970568d577effe120c5a34636a38aa397b.patch";
-      hash = "sha256-8e3haOnbSXlL/ZY4uv6P4+ABBKrsCjbEpsLHaulbIUk=";
     })
   ];
 
@@ -30,6 +29,8 @@ buildPythonPackage rec {
     # https://gitlab.com/sashahart/cookies/-/issues/6
     "test_encoding_assumptions"
   ];
+
+  format = "setuptools";
 
   meta = {
     description = "Friendlier RFC 6265-compliant cookie parser/renderer";

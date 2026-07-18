@@ -1,7 +1,7 @@
 {
   config,
-  pkgs,
   lib,
+  pkgs,
   ...
 }:
 let
@@ -11,14 +11,13 @@ in
   options = {
     programs.kubeswitch = {
       enable = lib.mkEnableOption "kubeswitch";
+      package = lib.mkPackageOption pkgs "kubeswitch" { };
 
       commandName = lib.mkOption {
-        type = lib.types.str;
         default = "kswitch";
         description = "The name of the command to use";
+        type = lib.types.str;
       };
-
-      package = lib.mkPackageOption pkgs "kubeswitch" { };
     };
   };
 
@@ -39,6 +38,7 @@ in
         source ${shell_files}/share/${cfg.commandName}_init.bash
         source ${shell_files}/share/${cfg.commandName}_completion.bash
       '';
+
       programs.zsh.interactiveShellInit = ''
         source ${shell_files}/share/${cfg.commandName}_init.zsh
         source ${shell_files}/share/${cfg.commandName}_completion.zsh

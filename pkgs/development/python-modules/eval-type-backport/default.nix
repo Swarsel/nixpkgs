@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   pytestCheckHook,
   setuptools,
   setuptools-scm,
@@ -9,7 +9,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "eval-type-backport";
   version = "0.4.0";
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "alexmojaki";
@@ -24,6 +23,7 @@ buildPythonPackage (finalAttrs: {
   ];
 
   nativeCheckInputs = [ pytestCheckHook ];
+  format = "setuptools";
 
   meta = {
     description = "Like `typing._eval_type`, but lets older Python versions use newer typing features";

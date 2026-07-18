@@ -52,6 +52,8 @@ in
 
   options.hardware.graphics = {
     enable = lib.mkOption {
+      default = false;
+
       description = ''
         Whether to enable hardware accelerated graphics drivers.
 
@@ -62,34 +64,32 @@ in
         This option should be enabled by default by the corresponding modules,
         so you do not usually have to set it yourself.
       '';
-      type = lib.types.bool;
-      default = false;
-    };
 
-    enable32Bit = lib.mkOption {
-      description = ''
-        On 64-bit systems, whether to also install 32-bit drivers for
-        32-bit applications (such as Wine).
-      '';
       type = lib.types.bool;
-      default = false;
     };
 
     package = lib.mkOption {
       description = ''
         The package that provides the default driver set.
       '';
+
       type = lib.types.package;
     };
 
-    package32 = lib.mkOption {
+    enable32Bit = lib.mkOption {
+      default = false;
+
       description = ''
-        The package that provides the 32-bit driver set. Used when {option}`enable32Bit` is enabled.
+        On 64-bit systems, whether to also install 32-bit drivers for
+        32-bit applications (such as Wine).
       '';
-      type = lib.types.package;
+
+      type = lib.types.bool;
     };
 
     extraPackages = lib.mkOption {
+      default = [ ];
+
       description = ''
         Additional packages to add to the default graphics driver lookup path.
         This can be used to add OpenCL drivers, VA-API/VDPAU drivers, etc.
@@ -98,12 +98,14 @@ in
         intel-media-driver supports hardware Broadwell (2014) or newer. Older hardware should use the mostly unmaintained intel-vaapi-driver driver.
         :::
       '';
-      type = lib.types.listOf lib.types.package;
-      default = [ ];
+
       example = lib.literalExpression "with pkgs; [ intel-media-driver intel-ocl intel-vaapi-driver ]";
+      type = lib.types.listOf lib.types.package;
     };
 
     extraPackages32 = lib.mkOption {
+      default = [ ];
+
       description = ''
         Additional packages to add to 32-bit graphics driver lookup path on 64-bit systems.
         Used when {option}`enable32Bit` is set. This can be used to add OpenCL drivers, VA-API/VDPAU drivers, etc.
@@ -112,9 +114,17 @@ in
         intel-media-driver supports hardware Broadwell (2014) or newer. Older hardware should use the mostly unmaintained intel-vaapi-driver driver.
         :::
       '';
-      type = lib.types.listOf lib.types.package;
-      default = [ ];
+
       example = lib.literalExpression "with pkgs.pkgsi686Linux; [ intel-media-driver intel-vaapi-driver ]";
+      type = lib.types.listOf lib.types.package;
+    };
+
+    package32 = lib.mkOption {
+      description = ''
+        The package that provides the 32-bit driver set. Used when {option}`enable32Bit` is enabled.
+      '';
+
+      type = lib.types.package;
     };
   };
 
@@ -130,8 +140,12 @@ in
       }
     ];
 
+    hardware.graphics.package = lib.mkDefault pkgs.mesa;
+    hardware.graphics.package32 = lib.mkDefault pkgs.pkgsi686Linux.mesa;
+
     systemd.tmpfiles.settings.graphics-driver = {
       "/run/opengl-driver"."L+".argument = toString driversEnv;
+
       "/run/opengl-driver-32" =
         if pkgs.stdenv.hostPlatform.isi686 then
           { "L+".argument = "opengl-driver"; }
@@ -140,8 +154,5 @@ in
         else
           { "r" = { }; };
     };
-
-    hardware.graphics.package = lib.mkDefault pkgs.mesa;
-    hardware.graphics.package32 = lib.mkDefault pkgs.pkgsi686Linux.mesa;
   };
 }

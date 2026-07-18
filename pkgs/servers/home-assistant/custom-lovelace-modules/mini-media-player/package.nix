@@ -1,7 +1,7 @@
 {
   lib,
-  buildNpmPackage,
   fetchFromGitHub,
+  buildNpmPackage,
 }:
 
 buildNpmPackage rec {
@@ -29,9 +29,9 @@ buildNpmPackage rec {
   passthru.entrypoint = "mini-media-player-bundle.js";
 
   meta = {
-    changelog = "https://github.com/kalkih/mini-media-player/releases/tag/v${version}";
     description = "Minimalistic media card for Home Assistant Lovelace UI";
     homepage = "https://github.com/kalkih/mini-media-player";
+    changelog = "https://github.com/kalkih/mini-media-player/releases/tag/v${version}";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ hexa ];
   };

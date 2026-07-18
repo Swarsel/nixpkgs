@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   poetry-core,
   pysigma,
   pytestCheckHook,
@@ -10,7 +10,6 @@
 buildPythonPackage rec {
   pname = "pysigma-pipeline-windows";
   version = "2.0.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "SigmaHQ";
@@ -19,12 +18,10 @@ buildPythonPackage rec {
     hash = "sha256-2S4vWneBNKq/FwhDs4Iref9hvEbcqvG/MOSTMYd7crU=";
   };
 
-  build-system = [ poetry-core ];
-
-  dependencies = [ pysigma ];
-
   nativeCheckInputs = [ pytestCheckHook ];
-
+  build-system = [ poetry-core ];
+  dependencies = [ pysigma ];
+  pyproject = true;
   pythonImportsCheck = [ "sigma.pipelines.windows" ];
 
   meta = {

@@ -4,7 +4,6 @@
   mkLibretroCore,
 }:
 mkLibretroCore {
-  core = "nestopia";
   version = "0-unstable-2026-04-02";
 
   src = fetchFromGitHub {
@@ -14,8 +13,9 @@ mkLibretroCore {
     hash = "sha256-OQcjGCAwXQEiWKYldKgOzMwIJcWTR308v+0OcuzFTo8=";
   };
 
-  makefile = "Makefile";
   preBuild = "cd libretro";
+  core = "nestopia";
+  makefile = "Makefile";
 
   meta = {
     description = "Nestopia libretro port";

@@ -1,35 +1,29 @@
 {
   lib,
   stdenv,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # build-system
-  setuptools,
-
+  buildPythonPackage,
+  fetchpatch,
   # dependencies
   ml-dtypes,
   numpy,
   onnx,
-  sympy,
-  typing-extensions,
-
-  fetchpatch,
-
   # tests
   onnxruntime,
   parameterized,
   pytestCheckHook,
   safetensors,
+  # build-system
+  setuptools,
+  sympy,
   torch,
   tqdm,
+  typing-extensions,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "onnx-ir";
   version = "0.2.1";
-  pyproject = true;
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "onnx";
@@ -43,11 +37,27 @@ buildPythonPackage (finalAttrs: {
     # dicts, breaking `save_safetensors`
     # https://github.com/onnx/ir-py/pull/439
     (fetchpatch {
+      hash = "sha256-99MeGU1B/534shCq9/TgrAPWscp+braXVcjAtnWQ3uY=";
       name = "fix-safetensor-0.8.0-compat";
       url = "https://github.com/onnx/ir-py/commit/c4780478d251f839ec1bacbea72d0a0948553285.patch";
-      hash = "sha256-99MeGU1B/534shCq9/TgrAPWscp+braXVcjAtnWQ3uY=";
     })
   ];
+
+  # Importing onnxruntime in the sandbox crashes on aarch64-linux:
+  # Fatal Python error: Aborted
+  # See https://github.com/NixOS/nixpkgs/pull/481039
+  doCheck = !(stdenv.hostPlatform.isLinux && stdenv.hostPlatform.isAarch64);
+
+  nativeCheckInputs = [
+    onnxruntime
+    parameterized
+    pytestCheckHook
+    safetensors
+    torch
+    tqdm
+  ];
+
+  __structuredAttrs = true;
 
   build-system = [
     setuptools
@@ -61,15 +71,13 @@ buildPythonPackage (finalAttrs: {
     typing-extensions
   ];
 
-  pythonImportsCheck = [ "onnx_ir" ];
+  disabledTestPaths = [
+    # Circular dependency with onnxscript
+    "src/onnx_ir/passes/common/common_subexpression_elimination_test.py"
 
-  nativeCheckInputs = [
-    onnxruntime
-    parameterized
-    pytestCheckHook
-    safetensors
-    torch
-    tqdm
+    # ImportError: cannot import name 'hub' from 'onnx'
+    # onnx.hub was removed in 1.21.0
+    "tools/model_zoo_test/model_zoo_test.py"
   ];
 
   disabledTests = [
@@ -85,19 +93,8 @@ buildPythonPackage (finalAttrs: {
     "test_correct_module_name"
   ];
 
-  disabledTestPaths = [
-    # Circular dependency with onnxscript
-    "src/onnx_ir/passes/common/common_subexpression_elimination_test.py"
-
-    # ImportError: cannot import name 'hub' from 'onnx'
-    # onnx.hub was removed in 1.21.0
-    "tools/model_zoo_test/model_zoo_test.py"
-  ];
-
-  # Importing onnxruntime in the sandbox crashes on aarch64-linux:
-  # Fatal Python error: Aborted
-  # See https://github.com/NixOS/nixpkgs/pull/481039
-  doCheck = !(stdenv.hostPlatform.isLinux && stdenv.hostPlatform.isAarch64);
+  pyproject = true;
+  pythonImportsCheck = [ "onnx_ir" ];
 
   meta = {
     description = "Efficient in-memory representation for ONNX, in Python";

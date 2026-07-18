@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   pytestCheckHook,
   requests,
   setuptools,
@@ -10,7 +10,6 @@
 buildPythonPackage rec {
   pname = "hikvision";
   version = "2.0.4";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "fbradyirl";
@@ -19,12 +18,10 @@ buildPythonPackage rec {
     hash = "sha256-tiJUqr5WtRvnKll1OymJ9Uva1tUT5so4Zzc4SHLcH9A=";
   };
 
-  build-system = [ setuptools ];
-
-  dependencies = [ requests ];
-
   nativeCheckInputs = [ pytestCheckHook ];
-
+  build-system = [ setuptools ];
+  dependencies = [ requests ];
+  pyproject = true;
   pythonImportsCheck = [ "hikvision.api" ];
 
   meta = {

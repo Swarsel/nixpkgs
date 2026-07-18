@@ -21,9 +21,8 @@ buildGoModule {
     ./dependencies.patch
   ];
 
-  vendorHash = "sha256-17y+kxlLSqCFoxinNNKzg7IqGpbiv0IBsUuC9EC8xnk=";
-
   buildInputs = [ libwebp ];
+  vendorHash = "sha256-17y+kxlLSqCFoxinNNKzg7IqGpbiv0IBsUuC9EC8xnk=";
 
   ldflags = [
     "-s"

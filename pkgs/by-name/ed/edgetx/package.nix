@@ -2,20 +2,20 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  python3,
-  cmake,
-  ninja,
-  libsForQt5,
   SDL2,
-  fox_1_6,
-  replaceVars,
-  llvmPackages,
-  dfu-util,
-  gtest,
-  miniz,
-  yaml-cpp,
-  udevCheckHook,
   applyPatches,
+  cmake,
+  dfu-util,
+  fox_1_6,
+  gtest,
+  libsForQt5,
+  llvmPackages,
+  miniz,
+  ninja,
+  python3,
+  replaceVars,
+  udevCheckHook,
+  yaml-cpp,
   # List of targets to build simulators for
   targetsToBuild ? import ./targets.nix,
 }:
@@ -23,10 +23,10 @@
 let
   # Keep in sync with `cmake/FetchMaxLibQt.cmake`.
   maxlibqt = fetchFromGitHub {
+    hash = "sha256-u8e4qseU0+BJyZkV0JE4sUiXaFeIYvadkMTGXXiE2Kg=";
     owner = "edgetx";
     repo = "maxLibQt";
     rev = "ac1988ffd005cd15a8449b92150ce6c08574a4f1";
-    hash = "sha256-u8e4qseU0+BJyZkV0JE4sUiXaFeIYvadkMTGXXiE2Kg=";
   };
 
   pythonEnv = python3.withPackages (
@@ -46,6 +46,7 @@ let
 in
 
 stdenv.mkDerivation (finalAttrs: {
+  inherit targetsToBuild;
   pname = "edgetx";
   version = "2.11.3";
 
@@ -53,9 +54,29 @@ stdenv.mkDerivation (finalAttrs: {
     owner = "EdgeTX";
     repo = "edgetx";
     tag = "v${finalAttrs.version}";
-    fetchSubmodules = true;
     hash = "sha256-vlJsfebTWhdh6HDpUEA1QJJSVGMlcL49XFwIx4A9zHs=";
+    fetchSubmodules = true;
   };
+
+  patches = [
+    (replaceVars ./0001-libclang-paths.patch (
+      let
+        llvmMajor = lib.versions.major llvmPackages.llvm.version;
+      in
+      {
+        libc-cflags = "${llvmPackages.clang}/nix-support/libc-cflags";
+        libclang = "${lib.getLib llvmPackages.libclang}/lib/libclang.so";
+        libcxx-cflags = "${llvmPackages.clang}/nix-support/libcxx-cxxflags";
+        resourceDir = "${llvmPackages.clang.cc.lib}/lib/clang/${llvmMajor}";
+      }
+    ))
+  ];
+
+  postPatch = ''
+    sed -i companion/src/burnconfigdialog.cpp \
+      -e 's|/usr/.*bin/dfu-util|${dfu-util}/bin/dfu-util|'
+    patchShebangs companion/util radio/util
+  '';
 
   nativeBuildInputs = [
     cmake
@@ -73,28 +94,6 @@ stdenv.mkDerivation (finalAttrs: {
     SDL2
     fox_1_6
   ];
-
-  patches = [
-    (replaceVars ./0001-libclang-paths.patch (
-      let
-        llvmMajor = lib.versions.major llvmPackages.llvm.version;
-      in
-      {
-        resourceDir = "${llvmPackages.clang.cc.lib}/lib/clang/${llvmMajor}";
-        libclang = "${lib.getLib llvmPackages.libclang}/lib/libclang.so";
-        libc-cflags = "${llvmPackages.clang}/nix-support/libc-cflags";
-        libcxx-cflags = "${llvmPackages.clang}/nix-support/libcxx-cxxflags";
-      }
-    ))
-  ];
-
-  postPatch = ''
-    sed -i companion/src/burnconfigdialog.cpp \
-      -e 's|/usr/.*bin/dfu-util|${dfu-util}/bin/dfu-util|'
-    patchShebangs companion/util radio/util
-  '';
-
-  doInstallCheck = true;
 
   cmakeFlags = [
     # Unvendoring these libraries is infeasible. At least lets reuse the same sources.
@@ -119,16 +118,6 @@ stdenv.mkDerivation (finalAttrs: {
   env = {
     EDGETX_VERSION_SUFFIX = "nixpkgs";
   };
-
-  dontUseCmakeConfigure = true;
-  inherit targetsToBuild;
-  __structuredAttrs = true; # To pass targetsToBuild as an array.
-
-  configurePhase = ''
-    runHook preConfigure
-    prependToVar cmakeFlags "-GNinja"
-    runHook postConfigure
-  '';
 
   buildPhase = ''
     runHook preBuild
@@ -166,26 +155,42 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postBuild
   '';
 
+  doInstallCheck = true;
+  __structuredAttrs = true; # To pass targetsToBuild as an array.
+
+  configurePhase = ''
+    runHook preConfigure
+    prependToVar cmakeFlags "-GNinja"
+    runHook postConfigure
+  '';
+
+  dontUseCmakeConfigure = true;
+
   meta = {
     description = "EdgeTX Companion transmitter support software";
+
     longDescription = ''
       EdgeTX Companion is used for many different tasks like loading EdgeTX
       firmware to the radio, backing up model settings, editing settings and
       running radio simulators.
     '';
-    mainProgram = "companion" + lib.concatStrings (lib.take 2 (lib.splitVersion finalAttrs.version));
+
     homepage = "https://edgetx.org/";
     changelog = "https://github.com/EdgeTX/edgetx/releases/tag/${finalAttrs.src.tag}";
     license = lib.licenses.gpl2Only;
-    platforms = [
-      "i686-linux"
-      "x86_64-linux"
-      "aarch64-linux"
-    ];
+
     maintainers = with lib.maintainers; [
       lopsided98
       wucke13
       xokdvium
     ];
+
+    platforms = [
+      "i686-linux"
+      "x86_64-linux"
+      "aarch64-linux"
+    ];
+
+    mainProgram = "companion" + lib.concatStrings (lib.take 2 (lib.splitVersion finalAttrs.version));
   };
 })

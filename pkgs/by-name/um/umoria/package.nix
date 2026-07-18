@@ -2,9 +2,9 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  fetchpatch,
   autoreconfHook,
   cmake,
+  fetchpatch,
   ncurses6,
   runtimeShell,
 }:
@@ -26,26 +26,26 @@ stdenv.mkDerivation rec {
   patches = [
     # gcc-13 support: https://github.com/dungeons-of-moria/umoria/pull/58
     (fetchpatch {
+      hash = "sha256-5Ka3NTe0sJk6kReG+1hwZPEuB3R+Nn+2zxUXuOG7hm0=";
       name = "gcc-13.patch";
       url = "https://github.com/dungeons-of-moria/umoria/commit/71dad4103b5c8f3e1f7723eb14d14425755e7ba5.patch";
-      hash = "sha256-5Ka3NTe0sJk6kReG+1hwZPEuB3R+Nn+2zxUXuOG7hm0=";
     })
     # clang support: https://github.com/dungeons-of-moria/umoria/pull/72
     (fetchpatch {
+      hash = "sha256-se8G4n8codXA9gznyIy337IFyznLnpCY7KA6UryZDls=";
       name = "clang.patch";
       url = "https://github.com/dungeons-of-moria/umoria/commit/f294e5880cd21d25c11eee820d629f4ff504ad10.patch";
-      hash = "sha256-se8G4n8codXA9gznyIy337IFyznLnpCY7KA6UryZDls=";
     })
     (fetchpatch {
+      hash = "sha256-FXj5Y4G0gnXheXC2bmRbIx3a1IixJ/aGfRMxl2S/vqM=";
       name = "clang-p2.patch";
       url = "https://github.com/dungeons-of-moria/umoria/commit/bf513b05dc34405665a8dd1386292cd70307dce0.patch";
-      hash = "sha256-FXj5Y4G0gnXheXC2bmRbIx3a1IixJ/aGfRMxl2S/vqM=";
     })
     # clang crash fix: https://github.com/dungeons-of-moria/umoria/pull/87
     (fetchpatch {
+      hash = "sha256-4uwO8fe4M5jt0IM0z6MjO8UaEezweMA5L+pusel4VUU=";
       name = "clang-crash.patch";
       url = "https://github.com/dungeons-of-moria/umoria/commit/d073e8f867c49bb04a02c1995dd3efb0c5cc07e7.patch";
-      hash = "sha256-4uwO8fe4M5jt0IM0z6MjO8UaEezweMA5L+pusel4VUU=";
     })
   ];
 
@@ -57,7 +57,6 @@ stdenv.mkDerivation rec {
 
   nativeBuildInputs = [ cmake ];
   buildInputs = [ ncurses6 ];
-  enableParallelBuilding = true;
 
   installPhase = ''
     runHook preInstall
@@ -95,22 +94,28 @@ stdenv.mkDerivation rec {
     runHook postInstall
   '';
 
+  enableParallelBuilding = true;
+
   meta = {
-    homepage = "https://umoria.org/";
     description = "Dungeons of Moria - the original roguelike";
-    mainProgram = "umoria";
+
     longDescription = ''
       The Dungeons of Moria is a single player dungeon simulation originally written
       by Robert Alan Koeneke, with its first public release in 1983.
       The game was originally developed using VMS Pascal before being ported to the C
       language by James E. Wilson in 1988, and released a Umoria.
     '';
-    platforms = lib.platforms.unix;
-    badPlatforms = [ "aarch64-darwin" ];
+
+    homepage = "https://umoria.org/";
+    license = lib.licenses.gpl3Plus;
+
     maintainers = with lib.maintainers; [
       aciceri
       kenran
     ];
-    license = lib.licenses.gpl3Plus;
+
+    platforms = lib.platforms.unix;
+    badPlatforms = [ "aarch64-darwin" ];
+    mainProgram = "umoria";
   };
 }

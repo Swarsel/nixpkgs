@@ -11,22 +11,20 @@
 buildPythonPackage rec {
   pname = "python-whois";
   version = "0.9.6";
-  pyproject = true;
 
   src = fetchPypi {
-    pname = "python_whois";
     inherit version;
     hash = "sha256-Lm3nttcOMFqF9IWc0XeB7j8No6AqjpTyPLTNzS5AC/o=";
+    pname = "python_whois";
   };
-
-  build-system = [ setuptools ];
-
-  dependencies = [ python-dateutil ];
 
   nativeCheckInputs = [
     pytestCheckHook
     simplejson
   ];
+
+  build-system = [ setuptools ];
+  dependencies = [ python-dateutil ];
 
   disabledTests = [
     # Exclude tests that require network access
@@ -38,6 +36,7 @@ buildPythonPackage rec {
     "test_simple_unicode_domain"
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "whois" ];
 
   meta = {

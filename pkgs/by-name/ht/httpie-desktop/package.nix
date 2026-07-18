@@ -1,8 +1,8 @@
 {
-  appimageTools,
   lib,
-  fetchurl,
   stdenv,
+  fetchurl,
+  appimageTools,
 }:
 appimageTools.wrapType2 rec {
   pname = "httpie-desktop";
@@ -36,10 +36,12 @@ appimageTools.wrapType2 rec {
     homepage = "https://github.com/httpie/desktop";
     license = lib.licenses.unfree;
     maintainers = with lib.maintainers; [ luftmensch-luftmensch ];
-    mainProgram = "httpie-desktop";
+
     platforms = [
       "x86_64-linux"
       "aarch64-linux"
     ];
+
+    mainProgram = "httpie-desktop";
   };
 }

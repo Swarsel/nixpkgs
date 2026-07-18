@@ -3,22 +3,22 @@
   buildPythonPackage,
   fetchPypi,
   hatchling,
-  pytools,
   numpy,
-  typing-extensions,
   pytestCheckHook,
+  pytools,
+  typing-extensions,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "cgen";
   version = "2025.1";
-  pyproject = true;
 
   src = fetchPypi {
     inherit (finalAttrs) pname version;
     hash = "sha256-efAeAQ1JwT5YtMqPLUmWprcXiWj18tkGJiczSArnotQ=";
   };
 
+  nativeCheckInputs = [ pytestCheckHook ];
   build-system = [ hatchling ];
 
   dependencies = [
@@ -27,7 +27,7 @@ buildPythonPackage (finalAttrs: {
     typing-extensions
   ];
 
-  nativeCheckInputs = [ pytestCheckHook ];
+  pyproject = true;
 
   meta = {
     description = "C/C++ source generation from an AST";

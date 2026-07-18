@@ -1,21 +1,19 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
-  rustPlatform,
-  pkg-config,
-  openssl,
-  runCommand,
-  patchelf,
-  zlib,
   nix-update-script,
+  openssl,
+  patchelf,
+  pkg-config,
+  runCommand,
+  rustPlatform,
+  zlib,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
   pname = "cargo-bisect-rustc";
   version = "0.6.11";
-
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "rust-lang";
@@ -30,8 +28,8 @@ rustPlatform.buildRustPackage (finalAttrs: {
         runCommand "0001-dynamically-patchelf-binaries.patch"
           {
             CC = stdenv.cc;
-            patchelf = patchelf;
             libPath = "$ORIGIN/../lib:${lib.makeLibraryPath [ zlib ]}";
+            patchelf = patchelf;
           }
           ''
             export dynamicLinker=$(cat $CC/nix-support/dynamic-linker)
@@ -44,9 +42,7 @@ rustPlatform.buildRustPackage (finalAttrs: {
     lib.optionals stdenv.hostPlatform.isLinux [ patchelfPatch ];
 
   nativeBuildInputs = [ pkg-config ];
-
   buildInputs = [ openssl ];
-
   cargoHash = "sha256-WSO5LvdJkAorSwsICz9NAWKNM7x4aeNvhGLhJSO6Vi8=";
 
   checkFlags = [
@@ -54,20 +50,24 @@ rustPlatform.buildRustPackage (finalAttrs: {
     "--skip=cli_tests" # trycmd does not seem to work in nix's sandbox
   ];
 
+  __structuredAttrs = true;
+
   passthru = {
     updateScript = nix-update-script { };
   };
 
   meta = {
     description = "Bisects rustc, either nightlies or CI artifacts";
-    mainProgram = "cargo-bisect-rustc";
     homepage = "https://github.com/rust-lang/cargo-bisect-rustc";
+
     license =
       with lib.licenses;
       OR [
         asl20
         mit
       ];
+
     maintainers = with lib.maintainers; [ sandarukasa ];
+    mainProgram = "cargo-bisect-rustc";
   };
 })

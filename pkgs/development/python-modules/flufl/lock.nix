@@ -13,13 +13,18 @@
 buildPythonPackage rec {
   pname = "flufl-lock";
   version = "9.1.0";
-  pyproject = true;
 
   src = fetchPypi {
-    pname = "flufl_lock";
     inherit version;
     hash = "sha256-jXPIjKt8mLeSZxApnBFivsfOJT+bnF8KLKgDf58kAjQ=";
+    pname = "flufl_lock";
   };
+
+  nativeCheckInputs = [
+    pytestCheckHook
+    pytest-cov-stub
+    sybil
+  ];
 
   build-system = [ hatchling ];
 
@@ -28,19 +33,12 @@ buildPythonPackage rec {
     psutil
   ];
 
-  nativeCheckInputs = [
-    pytestCheckHook
-    pytest-cov-stub
-    sybil
-  ];
-
+  pyproject = true;
   # disable code coverage checks for all OS. Upstream does not enforce these
   # checks on Darwin, and code coverage cannot be improved downstream nor is it
   # relevant to the user.
   pytestFlags = [ "--no-cov" ];
-
   pythonImportsCheck = [ "flufl.lock" ];
-
   pythonNamespaces = [ "flufl" ];
 
   meta = {

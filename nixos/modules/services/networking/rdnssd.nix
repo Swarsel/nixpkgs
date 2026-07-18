@@ -22,8 +22,8 @@ in
   options = {
 
     services.rdnssd.enable = mkOption {
-      type = types.bool;
       default = false;
+
       #default = config.networking.enableIPv6;
       description = ''
         Whether to enable the RDNSS daemon
@@ -31,6 +31,8 @@ in
         {file}`/etc/resolv.conf` from RDNSS
         advertisements sent by IPv6 routers.
       '';
+
+      type = types.bool;
     };
 
   };
@@ -47,9 +49,13 @@ in
     ];
 
     systemd.services.rdnssd = {
-      description = "RDNSS daemon";
       after = [ "network.target" ];
-      wantedBy = [ "multi-user.target" ];
+      description = "RDNSS daemon";
+
+      postStop = ''
+        rm -f /run/resolvconf/interfaces/rdnssd
+        ${mergeHook}
+      '';
 
       preStart = ''
         # Create the proper run directory
@@ -63,24 +69,22 @@ in
         ${mergeHook}
       '';
 
-      postStop = ''
-        rm -f /run/resolvconf/interfaces/rdnssd
-        ${mergeHook}
-      '';
-
       serviceConfig = {
         ExecStart = "@${pkgs.ndisc6}/bin/rdnssd rdnssd -p /run/rdnssd/rdnssd.pid -r /run/rdnssd/resolv.conf -u rdnssd -H ${mergeHook}";
-        Type = "forking";
         PIDFile = "/run/rdnssd/rdnssd.pid";
+        Type = "forking";
       };
+
+      wantedBy = [ "multi-user.target" ];
     };
+
+    users.groups.rdnssd = { };
 
     users.users.rdnssd = {
       description = "RDNSSD Daemon User";
-      isSystemUser = true;
       group = "rdnssd";
+      isSystemUser = true;
     };
-    users.groups.rdnssd = { };
 
   };
 

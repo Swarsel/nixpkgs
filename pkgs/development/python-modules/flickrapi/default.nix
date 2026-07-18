@@ -1,20 +1,19 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  requests,
-  requests-toolbelt,
-  requests-oauthlib,
-  six,
+  buildPythonPackage,
   pytestCheckHook,
+  requests,
+  requests-oauthlib,
+  requests-toolbelt,
   responses,
   setuptools,
+  six,
 }:
 
 buildPythonPackage rec {
   pname = "flickrapi";
   version = "2.4";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "sybrenstuvel";
@@ -29,15 +28,6 @@ buildPythonPackage rec {
       --replace-fail "assertNotEquals" "assertNotEqual"
   '';
 
-  build-system = [ setuptools ];
-
-  dependencies = [
-    requests
-    requests-toolbelt
-    requests-oauthlib
-    six
-  ];
-
   nativeCheckInputs = [
     pytestCheckHook
     responses
@@ -46,6 +36,15 @@ buildPythonPackage rec {
   preCheck = ''
     export HOME=$(mktemp -d);
   '';
+
+  build-system = [ setuptools ];
+
+  dependencies = [
+    requests
+    requests-toolbelt
+    requests-oauthlib
+    six
+  ];
 
   disabledTests = [
     # Tests require network access
@@ -63,6 +62,7 @@ buildPythonPackage rec {
     "test_upload"
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "flickrapi" ];
 
   meta = {

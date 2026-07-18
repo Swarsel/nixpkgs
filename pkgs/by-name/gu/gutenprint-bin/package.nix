@@ -2,8 +2,8 @@
   lib,
   stdenv,
   fetchurl,
-  rpm,
   cpio,
+  rpm,
   zlib,
 }:
 
@@ -49,15 +49,6 @@ stdenv.mkDerivation {
     cpio
   ];
 
-  dontUnpack = true;
-  dontInstall = true;
-  dontFixup = true;
-
-  libPath = lib.makeLibraryPath [
-    stdenv.cc.cc
-    zlib
-  ];
-
   buildPhase = ''
     ar -x $src data.tar.gz
     tar xfz data.tar.gz
@@ -79,9 +70,18 @@ stdenv.mkDerivation {
     ln -s $out/cups/lib $out/lib/cups
   '';
 
+  dontFixup = true;
+  dontInstall = true;
+  dontUnpack = true;
+
+  libPath = lib.makeLibraryPath [
+    stdenv.cc.cc
+    zlib
+  ];
+
   meta = {
-    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
     description = "Some additional CUPS drivers including Canon drivers";
+    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
     platforms = [ "x86_64-linux" ];
   };
 }

@@ -1,14 +1,13 @@
 {
-  python,
-  fetchPypi,
   lib,
-  pymeta3,
   buildPythonPackage,
+  fetchPypi,
+  pymeta3,
+  python,
 }:
 buildPythonPackage rec {
   pname = "pybars3";
   version = "0.9.7";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
@@ -23,6 +22,7 @@ buildPythonPackage rec {
     runHook postCheck
   '';
 
+  format = "setuptools";
   pythonImportsCheck = [ "pybars" ];
 
   meta = {
@@ -30,6 +30,7 @@ buildPythonPackage rec {
     homepage = "https://github.com/wbond/pybars3";
     changelog = "https://github.com/wbond/pybars3/releases/tag/${version}";
     license = lib.licenses.lgpl3Only;
+
     maintainers = with lib.maintainers; [
       jfly
       matusf

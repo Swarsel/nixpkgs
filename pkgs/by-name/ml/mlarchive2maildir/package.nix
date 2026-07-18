@@ -1,13 +1,12 @@
 {
   lib,
-  python3,
   fetchPypi,
+  python3,
 }:
 
 python3.pkgs.buildPythonApplication (finalAttrs: {
   pname = "mlarchive2maildir";
   version = "0.0.9";
-  pyproject = true;
 
   src = fetchPypi {
     inherit (finalAttrs) pname version;
@@ -27,13 +26,14 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     six
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "mlarchive2maildir" ];
 
   meta = {
-    homepage = "https://github.com/flokli/mlarchive2maildir";
     description = "Imports mail from (pipermail) archives into a maildir";
-    mainProgram = "mlarchive2maildir";
+    homepage = "https://github.com/flokli/mlarchive2maildir";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ flokli ];
+    mainProgram = "mlarchive2maildir";
   };
 })

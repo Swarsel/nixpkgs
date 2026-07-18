@@ -1,14 +1,12 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
   pname = "s2png";
   version = "1.0.0";
-
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "dbohdan";
@@ -18,15 +16,18 @@ rustPlatform.buildRustPackage (finalAttrs: {
   };
 
   cargoHash = "sha256-aka4q3Wh0s1iaIUJkPuL/2FnJH5KdbpOOWLIAWirBFk=";
+  __structuredAttrs = true;
 
   meta = {
-    homepage = "https://github.com/dbohdan/s2png/";
     description = "Store any data in PNG images";
+    homepage = "https://github.com/dbohdan/s2png/";
     license = lib.licenses.gpl2Plus;
+
     maintainers = with lib.maintainers; [
       dbohdan
       kybe236
     ];
+
     platforms = lib.platforms.unix;
     mainProgram = "s2png";
   };

@@ -22,9 +22,9 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "C++ Unit Testing Easy Environment";
-    mainProgram = "cutee";
     homepage = "https://www.codesink.org/cutee_unit_testing.html";
     license = lib.licenses.gpl2Plus;
     platforms = lib.platforms.linux;
+    mainProgram = "cutee";
   };
 })

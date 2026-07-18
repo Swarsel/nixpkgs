@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   hatch-vcs,
   hatchling,
   pint,
@@ -18,7 +18,6 @@
 buildPythonPackage rec {
   pname = "superqt";
   version = "0.7.8";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "pyapp-kit";
@@ -26,6 +25,10 @@ buildPythonPackage rec {
     tag = "v${version}";
     hash = "sha256-ipDtwymKocCRwcW/eYpM6jrmrjkYQJlaEyaSV4SinMM=";
   };
+
+  # Segmentation fault
+  doCheck = false;
+  nativeCheckInputs = [ pytestCheckHook ];
 
   build-system = [
     hatch-vcs
@@ -39,21 +42,17 @@ buildPythonPackage rec {
   ];
 
   optional-dependencies = {
-    quantity = [ pint ];
+    pyqt5 = [ pyqt5 ];
+    pyqt6 = [ pyqt6 ];
     pyside2 = [ pyside2 ];
     pyside6 = [ pyside6 ];
-    pyqt6 = [ pyqt6 ];
-    pyqt5 = [ pyqt5 ];
+    quantity = [ pint ];
   };
 
-  nativeCheckInputs = [ pytestCheckHook ];
-
-  # Segmentation fault
-  doCheck = false;
+  pyproject = true;
 
   # Segmentation fault
   # pythonImportsCheck = [ "superqt" ];
-
   meta = {
     description = "Missing widgets and components for Qt-python (napari/superqt)";
     homepage = "https://github.com/napari/superqt";

@@ -3,27 +3,26 @@
   stdenv,
   fetchFromGitHub,
   autoreconfHook,
+  coreutils,
+  gawk,
+  gnugrep,
+  gnused,
   libbpf,
   libcap_ng,
+  makeWrapper,
   nix-update-script,
   numactl,
   openssl,
+  openvswitch,
   pkg-config,
   procps,
   python3,
+  tcpdump,
   unbound,
-  xdp-tools,
-  openvswitch,
-  gawk,
-  coreutils,
-  gnugrep,
-  gnused,
-  makeWrapper,
-
+  util-linux,
   # test dependencies
   which,
-  util-linux,
-  tcpdump,
+  xdp-tools,
 }:
 let
   withOpensslConfigureFlag = "--with-openssl=${lib.getLib openssl.dev}";
@@ -69,15 +68,6 @@ stdenv.mkDerivation (finalAttrs: {
     xdp-tools
   ];
 
-  # need to build the ovs submodule first
-  preConfigure = ''
-    pushd ovs
-    ./boot.sh
-    ./configure --with-dbdir=/var/lib/openvswitch ${lib.optionalString stdenv.hostPlatform.isStatic withOpensslConfigureFlag}
-    make -j $NIX_BUILD_CORES
-    popd
-  '';
-
   configureFlags = [
     "--localstatedir=/var"
     "--sharedstatedir=/var"
@@ -87,7 +77,18 @@ stdenv.mkDerivation (finalAttrs: {
   ]
   ++ lib.optional stdenv.hostPlatform.isStatic withOpensslConfigureFlag;
 
-  enableParallelBuilding = true;
+  env = {
+    SKIP_UNSTABLE = "yes";
+  };
+
+  # need to build the ovs submodule first
+  preConfigure = ''
+    pushd ovs
+    ./boot.sh
+    ./configure --with-dbdir=/var/lib/openvswitch ${lib.optionalString stdenv.hostPlatform.isStatic withOpensslConfigureFlag}
+    make -j $NIX_BUILD_CORES
+    popd
+  '';
 
   doCheck = true;
 
@@ -105,6 +106,31 @@ stdenv.mkDerivation (finalAttrs: {
     # scapy tests use flock to start scapy-server
     util-linux
   ];
+
+  # https://docs.ovn.org/en/latest/topics/testing.html
+  preCheck = ''
+    export TESTSUITEFLAGS="-j$NIX_BUILD_CORES"
+    # allow rechecks to retry flaky tests
+    export RECHECK=yes
+
+    # hack to stop tests from trying to read /etc/resolv.conf
+    export OVS_RESOLV_CONF="$PWD/resolv.conf"
+    touch $OVS_RESOLV_CONF
+
+    patchShebangs --build tests/scapy-server.py
+  '';
+
+  checkPhase = ''
+    runHook preCheck
+
+    if ! make check; then
+      echo "Some tests failed. Collecting logs for analysis..."
+      find tests/testsuite.dir -type f -exec echo "==== Contents of {} ====" \; -exec cat {} \;
+      exit 1
+    fi
+
+    runHook postCheck
+  '';
 
   postInstall = ''
     moveToOutput 'share/ovn/bugtool-plugins' "$tools"
@@ -133,53 +159,30 @@ stdenv.mkDerivation (finalAttrs: {
       }
   '';
 
-  env = {
-    SKIP_UNSTABLE = "yes";
-  };
-
-  # https://docs.ovn.org/en/latest/topics/testing.html
-  preCheck = ''
-    export TESTSUITEFLAGS="-j$NIX_BUILD_CORES"
-    # allow rechecks to retry flaky tests
-    export RECHECK=yes
-
-    # hack to stop tests from trying to read /etc/resolv.conf
-    export OVS_RESOLV_CONF="$PWD/resolv.conf"
-    touch $OVS_RESOLV_CONF
-
-    patchShebangs --build tests/scapy-server.py
-  '';
-
-  checkPhase = ''
-    runHook preCheck
-
-    if ! make check; then
-      echo "Some tests failed. Collecting logs for analysis..."
-      find tests/testsuite.dir -type f -exec echo "==== Contents of {} ====" \; -exec cat {} \;
-      exit 1
-    fi
-
-    runHook postCheck
-  '';
-
+  enableParallelBuilding = true;
   passthru.updateScript = nix-update-script { };
 
   meta = {
     description = "Open Virtual Network";
+
     longDescription = ''
       OVN (Open Virtual Network) is a series of daemons that translates virtual network configuration into OpenFlow, and installs them into Open vSwitch.
     '';
+
     homepage = "https://www.ovn.org";
     changelog = "https://github.com/ovn-org/ovn/blob/refs/tags/${finalAttrs.src.tag}/NEWS";
+
     license = with lib.licenses; [
       asl20
       lgpl21Plus # bugtool plugins
       sissl11 # lib/sflow from ovs submodule
     ];
+
     maintainers = with lib.maintainers; [
       adamcstephens
       booxter
     ];
+
     platforms = lib.platforms.linux;
   };
 })

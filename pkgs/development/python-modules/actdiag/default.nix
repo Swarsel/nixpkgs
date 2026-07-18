@@ -1,8 +1,8 @@
 {
   lib,
+  fetchFromGitHub,
   blockdiag,
   buildPythonPackage,
-  fetchFromGitHub,
   pytestCheckHook,
   setuptools,
 }:
@@ -10,7 +10,6 @@
 buildPythonPackage rec {
   pname = "actdiag";
   version = "3.0.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "blockdiag";
@@ -20,14 +19,9 @@ buildPythonPackage rec {
   };
 
   patches = [ ./fix_test_generate.patch ];
-
-  build-system = [ setuptools ];
-
   propagatedBuildInputs = [ blockdiag ];
-
   nativeCheckInputs = [ pytestCheckHook ];
-
-  enabledTestPaths = [ "src/actdiag/tests/" ];
+  build-system = [ setuptools ];
 
   disabledTests = [
     # AttributeError: 'TestRstDirectives' object has no attribute 'assertRegexpMatches'
@@ -35,6 +29,8 @@ buildPythonPackage rec {
     "noviewbox"
   ];
 
+  enabledTestPaths = [ "src/actdiag/tests/" ];
+  pyproject = true;
   pythonImportsCheck = [ "actdiag" ];
 
   meta = {
@@ -43,7 +39,7 @@ buildPythonPackage rec {
     changelog = "https://github.com/blockdiag/actdiag/blob/${version}/CHANGES.rst";
     license = lib.licenses.asl20;
     maintainers = with lib.maintainers; [ bjornfor ];
-    mainProgram = "actdiag";
     platforms = lib.platforms.unix;
+    mainProgram = "actdiag";
   };
 }

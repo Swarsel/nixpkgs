@@ -1,30 +1,30 @@
 {
   lib,
-  rust,
-  rustPlatform,
   fetchFromGitHub,
-  nix-update-script,
-  stdenvNoCC,
-  pkg-config,
-  openssl,
-  dbus,
-  zenity,
   cargo-tauri,
+  copyDesktopItems,
+  dbus,
+  fetchPnpmDeps,
   gdk-pixbuf,
   glib,
   gobject-introspection,
   gtk3,
   kdePackages,
-  libsoup_3,
   libayatana-appindicator,
+  libsoup_3,
+  makeDesktopItem,
+  nix-update-script,
+  nodejs,
+  openssl,
+  pkg-config,
+  pnpmConfigHook,
+  pnpm_10,
+  rust,
+  rustPlatform,
+  stdenvNoCC,
   webkitgtk_4_1,
   wrapGAppsHook3,
-  pnpm_10,
-  fetchPnpmDeps,
-  pnpmConfigHook,
-  nodejs,
-  makeDesktopItem,
-  copyDesktopItems,
+  zenity,
 }:
 let
   version = "1.5.2";
@@ -36,25 +36,16 @@ let
   };
 
   frontend = stdenvNoCC.mkDerivation rec {
-    pname = "firezone-gui-client-frontend";
     inherit version src;
-
-    pnpmDeps = fetchPnpmDeps {
-      inherit pname version;
-      pnpm = pnpm_10;
-      src = "${src}/rust/gui-client";
-      fetcherVersion = 4;
-      hash = "sha256-770+06rpf/P9hOFLgEWc0/BKjIxHyCWB2E3tqdEskAA=";
-    };
-    pnpmRoot = "rust/gui-client";
-
-    env.GITHUB_SHA = version;
+    pname = "firezone-gui-client-frontend";
 
     nativeBuildInputs = [
       pnpmConfigHook
       pnpm_10
       nodejs
     ];
+
+    env.GITHUB_SHA = version;
 
     buildPhase = ''
       runHook preBuild
@@ -73,16 +64,30 @@ let
 
       runHook postInstall
     '';
+
+    pnpmDeps = fetchPnpmDeps {
+      inherit pname version;
+      src = "${src}/rust/gui-client";
+      fetcherVersion = 4;
+      hash = "sha256-770+06rpf/P9hOFLgEWc0/BKjIxHyCWB2E3tqdEskAA=";
+      pnpm = pnpm_10;
+    };
+
+    pnpmRoot = "rust/gui-client";
   };
 in
 rustPlatform.buildRustPackage rec {
-  pname = "firezone-gui-client";
   inherit version src;
+  pname = "firezone-gui-client";
 
-  cargoHash = "sha256-LHHaklGIMuDuZwikXiQzLPbmkUbPyYR04UBQTBxq2ps=";
-  sourceRoot = "${src.name}/rust";
-  buildAndTestSubdir = "gui-client";
-  env.RUSTFLAGS = "--cfg system_certs";
+  # Required to remove profiling arguments which conflict with this builder
+  postPatch = ''
+    rm .cargo/config.toml
+    ln -s ${frontend} gui-client/dist
+
+    substituteInPlace gui-client/src-tauri/tauri.conf.json \
+      --replace-fail '../../target' '../../target/${rust.envVars.rustHostPlatformSpec}'
+  '';
 
   nativeBuildInputs = [
     cargo-tauri.hook
@@ -104,34 +109,11 @@ rustPlatform.buildRustPackage rec {
     webkitgtk_4_1
   ];
 
-  # Required to remove profiling arguments which conflict with this builder
-  postPatch = ''
-    rm .cargo/config.toml
-    ln -s ${frontend} gui-client/dist
-
-    substituteInPlace gui-client/src-tauri/tauri.conf.json \
-      --replace-fail '../../target' '../../target/${rust.envVars.rustHostPlatformSpec}'
-  '';
-
+  cargoHash = "sha256-LHHaklGIMuDuZwikXiQzLPbmkUbPyYR04UBQTBxq2ps=";
+  env.RUSTFLAGS = "--cfg system_certs";
   # Tries to compile apple specific crates due to workspace dependencies,
   # not sure if this can be worked around
   doCheck = false;
-
-  desktopItems = [
-    # Additional desktop item to associate deep-links
-    (makeDesktopItem {
-      name = "firezone-client-gui-deep-link";
-      exec = "firezone-client-gui open-deep-link %U";
-      icon = "firezone-client-gui";
-      comment = meta.description;
-      desktopName = "Firezone GUI Client";
-      categories = [ "Network" ];
-      noDisplay = true;
-      mimeTypes = [
-        "x-scheme-handler/firezone-fd0020211111"
-      ];
-    })
-  ];
 
   preFixup = ''
     gappsWrapperArgs+=(
@@ -149,6 +131,28 @@ rustPlatform.buildRustPackage rec {
     )
   '';
 
+  buildAndTestSubdir = "gui-client";
+
+  desktopItems = [
+    # Additional desktop item to associate deep-links
+    (makeDesktopItem {
+      categories = [ "Network" ];
+      comment = meta.description;
+      desktopName = "Firezone GUI Client";
+      exec = "firezone-client-gui open-deep-link %U";
+      icon = "firezone-client-gui";
+
+      mimeTypes = [
+        "x-scheme-handler/firezone-fd0020211111"
+      ];
+
+      name = "firezone-client-gui-deep-link";
+      noDisplay = true;
+    })
+  ];
+
+  sourceRoot = "${src.name}/rust";
+
   passthru = {
     inherit frontend;
 
@@ -164,11 +168,13 @@ rustPlatform.buildRustPackage rec {
     description = "GUI client for the Firezone zero-trust access platform";
     homepage = "https://github.com/firezone/firezone";
     license = lib.licenses.asl20;
+
     maintainers = with lib.maintainers; [
       oddlama
       patrickdag
     ];
-    mainProgram = "firezone-gui-client";
+
     platforms = lib.platforms.linux;
+    mainProgram = "firezone-gui-client";
   };
 }

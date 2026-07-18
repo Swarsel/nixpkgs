@@ -2,15 +2,15 @@
   lib,
   stdenv,
   fetchFromGitHub,
+  libGL,
+  libx11,
   meson,
   ninja,
   pkg-config,
-  util-macros,
   python3,
-  libGL,
-  libx11,
-  x11Support ? !stdenv.hostPlatform.isDarwin,
   testers,
+  util-macros,
+  x11Support ? !stdenv.hostPlatform.isDarwin,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -26,6 +26,11 @@ stdenv.mkDerivation (finalAttrs: {
       sha256 = "sha256-gZiyPOW2PeTMILcPiUTqPUGRNlMM5mI1z9563v4SgEs=";
     };
 
+  outputs = [
+    "out"
+    "dev"
+  ];
+
   patches = [ ./libgl-path.patch ];
 
   postPatch = ''
@@ -40,11 +45,6 @@ stdenv.mkDerivation (finalAttrs: {
       --replace-fail "[ 'cgl_core', [ 'cgl_core.c' ] ]," "" \
       --replace-fail "[ 'cgl_epoxy_api', [ 'cgl_epoxy_api.c' ] ]," ""
   '';
-
-  outputs = [
-    "out"
-    "dev"
-  ];
 
   nativeBuildInputs = [
     meson

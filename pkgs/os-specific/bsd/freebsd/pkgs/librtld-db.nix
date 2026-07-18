@@ -1,15 +1,10 @@
 {
   lib,
-  mkDerivation,
   libelf,
   libprocstat,
+  mkDerivation,
 }:
 mkDerivation {
-  path = "lib/librtld_db";
-  extraPaths = [
-    "lib/libproc/libproc.h"
-  ];
-
   outputs = [
     "out"
     "man"
@@ -21,5 +16,10 @@ mkDerivation {
     libprocstat
   ];
 
+  extraPaths = [
+    "lib/libproc/libproc.h"
+  ];
+
+  path = "lib/librtld_db";
   meta.platforms = lib.platforms.freebsd;
 }

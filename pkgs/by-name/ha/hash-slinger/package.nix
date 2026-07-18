@@ -2,9 +2,9 @@
   lib,
   stdenv,
   fetchFromGitHub,
+  libreswan,
   python3,
   unbound,
-  libreswan,
 }:
 
 stdenv.mkDerivation rec {
@@ -18,12 +18,15 @@ stdenv.mkDerivation rec {
     sha256 = "sha256-IN+jo2EuGx+3bnANKz+d/3opFBUCSmkBS/sCU3lT7Zs=";
   };
 
-  pythonPath = with python3.pkgs; [
-    dnspython
-    m2crypto
-    python-gnupg
-    pyunbound
-  ];
+  postPatch = ''
+    substituteInPlace Makefile \
+      --replace "$(DESTDIR)/usr" "$out"
+    substituteInPlace ipseckey \
+      --replace "/usr/sbin/ipsec" "${libreswan}/sbin/ipsec"
+    substituteInPlace tlsa \
+      --replace "/var/lib/unbound/root" "${python3.pkgs.pyunbound}/etc/pyunbound/root"
+    patchShebangs *
+  '';
 
   buildInputs = [
     python3.pkgs.wrapPython
@@ -35,26 +38,23 @@ stdenv.mkDerivation rec {
   ]
   ++ pythonPath;
 
-  propagatedUserEnvPkgs = [
-    unbound
-    libreswan
-  ];
-
-  postPatch = ''
-    substituteInPlace Makefile \
-      --replace "$(DESTDIR)/usr" "$out"
-    substituteInPlace ipseckey \
-      --replace "/usr/sbin/ipsec" "${libreswan}/sbin/ipsec"
-    substituteInPlace tlsa \
-      --replace "/var/lib/unbound/root" "${python3.pkgs.pyunbound}/etc/pyunbound/root"
-    patchShebangs *
-  '';
-
   installPhase = ''
     mkdir -p $out/bin $out/man $out/${python3.sitePackages}
     make install
     wrapPythonPrograms
   '';
+
+  propagatedUserEnvPkgs = [
+    unbound
+    libreswan
+  ];
+
+  pythonPath = with python3.pkgs; [
+    dnspython
+    m2crypto
+    python-gnupg
+    pyunbound
+  ];
 
   meta = {
     description = "Various tools to generate special DNS records";

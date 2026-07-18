@@ -2,10 +2,9 @@
   lib,
   stdenv,
   fetchFromGitHub,
+  abseil-cpp,
   cmake,
   ninja,
-  withAbseil ? false,
-  abseil-cpp,
   re2,
   # Enable C++17 support
   #     https://github.com/google/googletest/issues/3081
@@ -25,16 +24,12 @@
       null
   ),
   static ? stdenv.hostPlatform.isStatic,
+  withAbseil ? false,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
   pname = "gtest";
   version = "1.17.0";
-
-  outputs = [
-    "out"
-    "dev"
-  ];
 
   src = fetchFromGitHub {
     owner = "google";
@@ -42,6 +37,11 @@ stdenv.mkDerivation (finalAttrs: {
     rev = "v${finalAttrs.version}";
     hash = "sha256-HIHMxAUR4bjmFLoltJeIAVSulVQ6kVuIT2Ku+lwAx/4=";
   };
+
+  outputs = [
+    "out"
+    "dev"
+  ];
 
   patches = [
     ./fix-cmake-config-includedir.patch
@@ -68,7 +68,7 @@ stdenv.mkDerivation (finalAttrs: {
     description = "Google's framework for writing C++ tests";
     homepage = "https://github.com/google/googletest";
     license = lib.licenses.bsd3;
-    platforms = lib.platforms.all;
     maintainers = [ ];
+    platforms = lib.platforms.all;
   };
 })

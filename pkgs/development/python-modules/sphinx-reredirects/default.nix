@@ -9,12 +9,11 @@
 buildPythonPackage rec {
   pname = "sphinx-reredirects";
   version = "1.1.0";
-  pyproject = true;
 
   src = fetchPypi {
-    pname = "sphinx_reredirects";
     inherit version;
     hash = "sha256-+5sZUzWrFLQ/gnMofQx+62N7psVsZlgcEbRyAvZxiyk=";
+    pname = "sphinx_reredirects";
   };
 
   build-system = [
@@ -25,6 +24,8 @@ buildPythonPackage rec {
     sphinx
   ];
 
+  pyproject = true;
+
   pythonImportsCheck = [
     "sphinx_reredirects"
   ];
@@ -32,10 +33,12 @@ buildPythonPackage rec {
   meta = {
     description = "Handles redirects for moved pages in Sphinx documentation projects";
     homepage = "https://pypi.org/project/sphinx-reredirects";
+
     license = with lib.licenses; [
       bsd3
       mit
     ];
+
     maintainers = [ ];
   };
 }

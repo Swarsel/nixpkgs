@@ -2,12 +2,10 @@
   lib,
   stdenv,
   fetchFromGitHub,
-
+  libxkbcommon,
   meson,
   ninja,
   pkg-config,
-
-  libxkbcommon,
   wayland,
   wayland-scanner,
 }:
@@ -24,12 +22,14 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   strictDeps = true;
+
   nativeBuildInputs = [
     meson
     ninja
     pkg-config
     wayland-scanner
   ];
+
   buildInputs = [
     libxkbcommon
     wayland
@@ -39,8 +39,8 @@ stdenv.mkDerivation (finalAttrs: {
     description = "xdotool type for wayland";
     homepage = "https://github.com/atx/wtype";
     license = lib.licenses.mit;
-    platforms = lib.platforms.linux;
     maintainers = with lib.maintainers; [ justinlovinger ];
+    platforms = lib.platforms.linux;
     mainProgram = "wtype";
   };
 })

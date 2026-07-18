@@ -1,7 +1,7 @@
 {
-  symlinkJoin,
-  makeWrapper,
   itgmaniaPackages,
+  makeWrapper,
+  symlinkJoin,
   extraPackages ? [ ],
 }:
 let
@@ -9,9 +9,6 @@ let
 in
 symlinkJoin {
   inherit (unwrapped) pname version meta;
-
-  paths = [ unwrapped ] ++ extraPackages;
-
   nativeBuildInputs = [ makeWrapper ];
 
   postBuild = ''
@@ -19,5 +16,6 @@ symlinkJoin {
       --chdir $out/itgmania
   '';
 
+  paths = [ unwrapped ] ++ extraPackages;
   passthru.unwrapped = unwrapped;
 }

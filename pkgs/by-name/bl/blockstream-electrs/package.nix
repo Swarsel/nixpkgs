@@ -1,12 +1,12 @@
 {
+  lib,
+  stdenv,
+  fetchFromGitHub,
   bitcoind,
   electrum,
-  fetchFromGitHub,
-  lib,
   rocksdb,
   rust-jemalloc-sys,
   rustPlatform,
-  stdenv,
 }:
 
 rustPlatform.buildRustPackage rec {
@@ -20,8 +20,6 @@ rustPlatform.buildRustPackage rec {
     hash = "sha256-jFOEQwFDRVghCDFu0mybSLeTk9zWJSQW9clWFMkCa5A=";
   };
 
-  cargoHash = "sha256-P8slOt07Fu6NNzYLEso3UQtfx7Yj+C4w98lq/Wr8oTk=";
-
   nativeBuildInputs = [
     # Needed for librocksdb-sys
     rustPlatform.bindgenHook
@@ -32,31 +30,23 @@ rustPlatform.buildRustPackage rec {
     rust-jemalloc-sys
   ];
 
-  env = {
-    # Dynamically link rocksdb
-    ROCKSDB_INCLUDE_DIR = "${rocksdb}/include";
-    ROCKSDB_LIB_DIR = "${rocksdb}/lib";
+  cargoHash = "sha256-P8slOt07Fu6NNzYLEso3UQtfx7Yj+C4w98lq/Wr8oTk=";
 
+  env = {
     # External binaries for integration tests are provided via nixpkgs. Skip
     # trying to download them.
     BITCOIND_SKIP_DOWNLOAD = true;
     ELECTRUMD_SKIP_DOWNLOAD = true;
     ELEMENTSD_SKIP_DOWNLOAD = true;
+    # Dynamically link rocksdb
+    ROCKSDB_INCLUDE_DIR = "${rocksdb}/include";
+    ROCKSDB_LIB_DIR = "${rocksdb}/lib";
   };
-
-  # Only build the service
-  cargoBuildFlags = [
-    "--package=electrs"
-    "--bin=electrs"
-  ];
 
   # Some upstream dev-dependencies (electrumd, elementsd) currently fail to
   # build on non-x86_64-linux platforms, even if downloading is skipped.
   # TODO(phlip9): submit a PR to fix this
   doCheck = stdenv.hostPlatform.system == "x86_64-linux";
-
-  # Build tests in debug mode to reduce build time
-  checkType = "debug";
 
   # flaky: wait_for_sync roundtrip races the wallet daemon startup
   checkFlags = [
@@ -73,12 +63,23 @@ rustPlatform.buildRustPackage rec {
 
   # Make sure the final binary actually runs
   doInstallCheck = true;
+
   installCheckPhase = ''
     $out/bin/electrs --version
   '';
 
+  # Only build the service
+  cargoBuildFlags = [
+    "--package=electrs"
+    "--bin=electrs"
+  ];
+
+  # Build tests in debug mode to reduce build time
+  checkType = "debug";
+
   meta = {
     description = "Efficient re-implementation of Electrum Server in Rust";
+
     longDescription = ''
       A blockchain index engine and HTTP API written in Rust based on
       [romanz/electrs](https://github.com/romanz/electrs).
@@ -90,6 +91,7 @@ rustPlatform.buildRustPackage rec {
 
       Documentation for the database schema and indexing process [is available here](https://github.com/Blockstream/electrs/blob/new-index/doc/schema.md).
     '';
+
     homepage = "https://github.com/Blockstream/electrs";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ phlip9 ];

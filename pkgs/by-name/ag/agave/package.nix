@@ -1,7 +1,7 @@
 {
   lib,
-  fetchurl,
   stdenv,
+  fetchurl,
 }:
 
 let
@@ -11,9 +11,9 @@ let
   mkAg =
     name: hash:
     fetchurl {
-      url = "https://github.com/agarick/agave/releases/download/v${version}/Agave-${name}.ttf";
-      sha256 = hash;
       name = "Agave-${name}.ttf";
+      sha256 = hash;
+      url = "https://github.com/agarick/agave/releases/download/v${version}/Agave-${name}.ttf";
     };
   # There are slashed variants, but with same name so only bundle the default versions for now:
   fonts = [
@@ -24,14 +24,14 @@ let
 in
 stdenv.mkDerivation {
   inherit pname version;
-  srcs = fonts;
-  sourceRoot = ".";
-
-  dontUnpack = true;
 
   installPhase = ''
     install -D $srcs -t $out/share/fonts/truetype/
   '';
+
+  dontUnpack = true;
+  sourceRoot = ".";
+  srcs = fonts;
 
   meta = {
     description = "TrueType monospaced typeface designed for X environments";

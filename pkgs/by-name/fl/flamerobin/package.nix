@@ -2,15 +2,15 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  cmake,
-  wxwidgets_3_2,
   boost,
+  cmake,
   firebird,
+  wxwidgets_3_2,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
-  version = "0.9.14";
   pname = "flamerobin";
+  version = "0.9.14";
 
   src = fetchFromGitHub {
     owner = "mariuz";
@@ -19,8 +19,6 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-IwJEFF3vP0BC9PoMoY+XPLT+ygXnFXP/TWaqjdQWs8s=";
   };
 
-  enableParallelBuilding = true;
-
   nativeBuildInputs = [ cmake ];
 
   buildInputs = [
@@ -28,6 +26,8 @@ stdenv.mkDerivation (finalAttrs: {
     boost
     firebird
   ];
+
+  enableParallelBuilding = true;
 
   meta = {
     description = "Database administration tool for Firebird RDBMS";

@@ -1,11 +1,9 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
+  buildPythonPackage,
   # build-system
   poetry-core,
-
   # dependencies
   pyyaml,
 }:
@@ -13,7 +11,6 @@
 buildPythonPackage rec {
   pname = "conda-inject";
   version = "1.3.2";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "koesterlab";
@@ -21,6 +18,9 @@ buildPythonPackage rec {
     tag = "v${version}";
     hash = "sha256-M4+bz7ZuHlcF8tF5kSCUjjkIHG75eCCW1IJxcwxNL6o=";
   };
+
+  # no tests
+  doCheck = false;
 
   build-system = [
     poetry-core
@@ -30,12 +30,11 @@ buildPythonPackage rec {
     pyyaml
   ];
 
+  pyproject = true;
+
   pythonImportsCheck = [
     "conda_inject"
   ];
-
-  # no tests
-  doCheck = false;
 
   meta = {
     description = "Helper functions for injecting a conda environment into the current python environment";

@@ -23,8 +23,8 @@ stdenv.mkDerivation rec {
   '';
 
   meta = {
-    homepage = "https://www.gwtproject.org/";
     description = "Development toolkit for building and optimizing complex browser-based applications";
+    homepage = "https://www.gwtproject.org/";
     license = lib.licenses.asl20;
     platforms = lib.platforms.unix;
   };

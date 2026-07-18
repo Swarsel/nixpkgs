@@ -2,12 +2,12 @@
   lib,
   stdenv,
   fetchurl,
-  flex,
   bison,
-  perl,
+  flex,
   libnsl,
-  withLibWrap ? true,
+  perl,
   tcp_wrappers,
+  withLibWrap ? true,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -23,6 +23,7 @@ stdenv.mkDerivation (finalAttrs: {
     flex
     bison
   ];
+
   buildInputs = [
     perl
     libnsl

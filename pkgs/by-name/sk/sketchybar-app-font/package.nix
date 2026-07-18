@@ -1,12 +1,12 @@
 {
-  fetchFromGitHub,
   lib,
-  pnpm_11,
+  fetchFromGitHub,
   fetchPnpmDeps,
-  pnpmConfigHook,
-  stdenvNoCC,
-  nodejs,
   nix-update-script,
+  nodejs,
+  pnpmConfigHook,
+  pnpm_11,
+  stdenvNoCC,
 }:
 stdenvNoCC.mkDerivation (finalAttrs: {
   pname = "sketchybar-app-font";
@@ -17,13 +17,6 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     repo = "sketchybar-app-font";
     tag = "v${finalAttrs.version}";
     hash = "sha256-zlyAEdj/CxNuaPOvWToOltwc0GBPlx3lQP6shoYpKzk=";
-  };
-
-  pnpmDeps = fetchPnpmDeps {
-    inherit (finalAttrs) pname version src;
-    pnpm = pnpm_11;
-    fetcherVersion = 4;
-    hash = "sha256-zFheFcVSCZWDrThn5PnxhJscRhLG/psSI8Q8g48nXNU=";
   };
 
   nativeBuildInputs = [
@@ -51,13 +44,22 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  pnpmDeps = fetchPnpmDeps {
+    inherit (finalAttrs) pname version src;
+    fetcherVersion = 4;
+    hash = "sha256-zFheFcVSCZWDrThn5PnxhJscRhLG/psSI8Q8g48nXNU=";
+    pnpm = pnpm_11;
+  };
+
   passthru.updateScript = nix-update-script { };
 
   meta = {
     description = "Ligature-based symbol font and a mapping function for sketchybar";
+
     longDescription = ''
       A ligature-based symbol font and a mapping function for sketchybar, inspired by simple-bar's usage of community-contributed minimalistic app icons.
     '';
+
     homepage = "https://github.com/kvndrsslr/sketchybar-app-font";
     changelog = "https://github.com/kvndrsslr/sketchybar-app-font/releases/tag/v${finalAttrs.src.tag}";
     license = lib.licenses.cc0;

@@ -1,8 +1,8 @@
 {
   lib,
-  maven,
   fetchFromGitHub,
   buildGraalvmNativeImage,
+  maven,
 }:
 
 buildGraalvmNativeImage (finalAttrs: {
@@ -10,19 +10,13 @@ buildGraalvmNativeImage (finalAttrs: {
   version = "2.7.1";
 
   src = maven.buildMavenPackage {
-    pname = "certificate-ripper-jar";
     inherit (finalAttrs) version;
+    # Integration tests and network based tests fail, let's not bother with blacklisting them one-by-one
+    doCheck = false;
 
-    src = fetchFromGitHub {
-      owner = "Hakky54";
-      repo = "certificate-ripper";
-      tag = finalAttrs.version;
-      hash = "sha256-yKBINzHhUpjqrbMIt3LulKtMLyuZvuBzBaR6wMs6lCI=";
-    };
-
-    patches = [
-      ./pin-default-maven-plguin-versions.patch
-    ];
+    installPhase = ''
+      install -Dm644 target/crip.jar $out
+    '';
 
     mvnHash = "sha256-ZuqPzFL7CJ/H6SBcQMwTMqBsKtlxv9oiQXXfFgMdQpE=";
 
@@ -33,12 +27,18 @@ buildGraalvmNativeImage (finalAttrs: {
       "-Dproject.build.outputTimestamp=1980-01-01T00:00:02Z"
     ];
 
-    # Integration tests and network based tests fail, let's not bother with blacklisting them one-by-one
-    doCheck = false;
+    patches = [
+      ./pin-default-maven-plguin-versions.patch
+    ];
 
-    installPhase = ''
-      install -Dm644 target/crip.jar $out
-    '';
+    pname = "certificate-ripper-jar";
+
+    src = fetchFromGitHub {
+      owner = "Hakky54";
+      repo = "certificate-ripper";
+      tag = finalAttrs.version;
+      hash = "sha256-yKBINzHhUpjqrbMIt3LulKtMLyuZvuBzBaR6wMs6lCI=";
+    };
   };
 
   # Copied from pom.xml
@@ -49,9 +49,9 @@ buildGraalvmNativeImage (finalAttrs: {
   ];
 
   meta = {
-    changelog = "https://github.com/Hakky54/certificate-ripper/releases/tag/${finalAttrs.version}";
     description = "CLI tool to extract server certificates";
     homepage = "https://github.com/Hakky54/certificate-ripper";
+    changelog = "https://github.com/Hakky54/certificate-ripper/releases/tag/${finalAttrs.version}";
     license = lib.licenses.asl20;
     maintainers = with lib.maintainers; [ tomasajt ];
     mainProgram = "crip";

@@ -2,16 +2,16 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  git,
-  makeWrapper,
-  openssl,
   coreutils,
-  util-linux,
+  gawk,
+  git,
   gnugrep,
   gnused,
-  gawk,
+  makeWrapper,
+  openssl,
   testers,
   transcrypt,
+  util-linux,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -26,6 +26,7 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   nativeBuildInputs = [ makeWrapper ];
+
   buildInputs = [
     git
     openssl
@@ -70,13 +71,14 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   passthru.tests.version = testers.testVersion {
-    package = transcrypt;
-    command = "transcrypt --version";
     version = "transcrypt ${finalAttrs.version}";
+    command = "transcrypt --version";
+    package = transcrypt;
   };
 
   meta = {
     description = "Transparently encrypt files within a Git repository";
+
     longDescription = ''
       A script to configure transparent encryption of sensitive files stored in
       a Git repository. Files that you choose will be automatically encrypted
@@ -85,6 +87,7 @@ stdenv.mkDerivation (finalAttrs: {
       encryption password can safely commit changes to the repository's
       non-encrypted files.
     '';
+
     homepage = "https://github.com/elasticdog/transcrypt";
     license = lib.licenses.mit;
     maintainers = [ ];

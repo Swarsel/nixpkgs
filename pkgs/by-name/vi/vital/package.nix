@@ -1,27 +1,27 @@
 {
   lib,
   stdenv,
-  fetchzip,
   fetchurl,
-  autoPatchelfHook,
-  makeBinaryWrapper,
   alsa-lib,
-  libjack2,
-  curl,
-  libx11,
-  libsm,
-  libice,
-  libGL,
-  freetype,
-  zenity,
-  makeDesktopItem,
+  autoPatchelfHook,
   copyDesktopItems,
+  curl,
+  fetchzip,
+  freetype,
   imagemagick,
+  libGL,
+  libice,
+  libjack2,
+  libsm,
+  libx11,
+  makeBinaryWrapper,
+  makeDesktopItem,
+  zenity,
 }:
 let
   icon = fetchurl {
-    url = "https://vital.audio/images/apple_touch_icon.png";
     hash = "sha256-NZ/AQ2gjBXUPUj3ITbowD7HuxRmEDuATOWidLqLNrww=";
+    url = "https://vital.audio/images/apple_touch_icon.png";
   };
 in
 stdenv.mkDerivation (finalAttrs: {
@@ -32,22 +32,9 @@ stdenv.mkDerivation (finalAttrs: {
     url = "https://builds.vital.audio/VitalAudio/vital/${
       builtins.replaceStrings [ "." ] [ "_" ] finalAttrs.version
     }/VitalInstaller.zip";
+
     hash = "sha256-hCwXSUiBB0YpQ1oN6adLprwAoel6f72tBG5fEb61OCI=";
   };
-  desktopItems = [
-    (makeDesktopItem {
-      type = "Application";
-      name = "vital";
-      desktopName = "Vital";
-      comment = "Spectral warping wavetable synth";
-      icon = "Vital";
-      exec = "Vital";
-      categories = [
-        "Audio"
-        "AudioVideo"
-      ];
-    })
-  ];
 
   nativeBuildInputs = [
     autoPatchelfHook
@@ -66,8 +53,6 @@ stdenv.mkDerivation (finalAttrs: {
     freetype
     libjack2
   ];
-
-  dontBuild = true;
 
   installPhase = ''
     runHook preInstall
@@ -97,16 +82,36 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  desktopItems = [
+    (makeDesktopItem {
+      categories = [
+        "Audio"
+        "AudioVideo"
+      ];
+
+      comment = "Spectral warping wavetable synth";
+      desktopName = "Vital";
+      exec = "Vital";
+      icon = "Vital";
+      name = "vital";
+      type = "Application";
+    })
+  ];
+
+  dontBuild = true;
+
   meta = {
     description = "Spectral warping wavetable synth";
     homepage = "https://vital.audio/";
-    sourceProvenance = [ lib.sourceTypes.binaryNativeCode ];
     license = lib.licenses.unfree; # https://vital.audio/eula/
-    platforms = [ "x86_64-linux" ];
+    sourceProvenance = [ lib.sourceTypes.binaryNativeCode ];
+
     maintainers = with lib.maintainers; [
       PowerUser64
       l1npengtul
     ];
+
+    platforms = [ "x86_64-linux" ];
     mainProgram = "Vital";
   };
 })

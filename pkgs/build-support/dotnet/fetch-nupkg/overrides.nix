@@ -1,12 +1,12 @@
 {
+  lib,
+  stdenv,
   autoPatchelfHook,
   dotnetCorePackages,
   fontconfig,
-  lib,
   libice,
   libsm,
   libx11,
-  stdenv,
   writeText,
 }:
 {
@@ -16,7 +16,6 @@
   #   package.overrideAttrs (old: {
   #     buildInputs = old.buildInputs or [ ] ++ [ hello ];
   #   });
-
   "Avalonia" =
     package:
     package.overrideAttrs (
@@ -49,6 +48,15 @@
       }
     );
 
+  "Avalonia.BuildServices" =
+    package:
+    package.overrideAttrs (old: {
+      postPatch = ''
+        shopt -s extglob
+        rm -rf !(*.nuspec)
+      '';
+    });
+
   "Avalonia.X11" =
     package:
     package.overrideAttrs (
@@ -63,22 +71,12 @@
       }
     );
 
-  "Avalonia.BuildServices" =
-    package:
-    package.overrideAttrs (old: {
-      postPatch = ''
-        shopt -s extglob
-        rm -rf !(*.nuspec)
-      '';
-    });
-
   "SkiaSharp.NativeAssets.Linux" =
     package:
     package.overrideAttrs (
       old:
       lib.optionalAttrs stdenv.hostPlatform.isLinux {
         nativeBuildInputs = old.nativeBuildInputs or [ ] ++ [ autoPatchelfHook ];
-
         buildInputs = old.buildInputs or [ ] ++ [ fontconfig ];
 
         preInstall = old.preInstall or "" + ''

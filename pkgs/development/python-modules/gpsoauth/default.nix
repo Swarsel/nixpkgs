@@ -10,7 +10,6 @@
 buildPythonPackage rec {
   pname = "gpsoauth";
   version = "2.0.0";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
@@ -26,12 +25,11 @@ buildPythonPackage rec {
     requests
   ];
 
-  pythonRelaxDeps = [ "urllib3" ];
-
   # upstream tests are not very comprehensive
   doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "gpsoauth" ];
+  pythonRelaxDeps = [ "urllib3" ];
 
   meta = {
     description = "Library for Google Play Services OAuth";

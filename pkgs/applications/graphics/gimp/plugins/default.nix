@@ -4,8 +4,8 @@
 
 {
   lib,
-  pkgs,
   gimp,
+  pkgs,
 }:
 
 let
@@ -39,7 +39,6 @@ lib.makeScope pkgs.newScope (
       in
       stdenv.mkDerivation (
         {
-          prePhases = [ "extraLib" ];
           extraLib = ''
             installScripts(){
               mkdir -p $out/${gimp.targetScriptDir}/${name};
@@ -53,10 +52,17 @@ lib.makeScope pkgs.newScope (
               install -Dt "$pluginDir" "$@"
             }
           '';
+
+          prePhases = [ "extraLib" ];
         }
         // attrs
         // {
-          name = "${gimp.pname}-plugin-${name}";
+          nativeBuildInputs = [
+            pkg-config
+            intltool
+          ]
+          ++ (attrs.nativeBuildInputs or [ ]);
+
           buildInputs = [
             gimp
             gimp.gtk
@@ -64,20 +70,17 @@ lib.makeScope pkgs.newScope (
           ]
           ++ (attrs.buildInputs or [ ]);
 
-          nativeBuildInputs = [
-            pkg-config
-            intltool
-          ]
-          ++ (attrs.nativeBuildInputs or [ ]);
-
           # Override installation paths.
           env = {
-            "PKG_CONFIG_GIMP_${pkgConfigMajorVersion}_0_GIMPLIBDIR" =
-              "${placeholder "out"}/${gimp.targetLibDir}";
             "PKG_CONFIG_GIMP_${pkgConfigMajorVersion}_0_GIMPDATADIR" =
               "${placeholder "out"}/${gimp.targetDataDir}";
+
+            "PKG_CONFIG_GIMP_${pkgConfigMajorVersion}_0_GIMPLIBDIR" =
+              "${placeholder "out"}/${gimp.targetLibDir}";
           }
           // attrs.env or { };
+
+          name = "${gimp.pname}-plugin-${name}";
         }
       );
 
@@ -85,21 +88,19 @@ lib.makeScope pkgs.newScope (
       { src, ... }@attrs:
       pluginDerivation (
         {
-          prePhases = [ "extraLib" ];
-          dontUnpack = true;
           installPhase = ''
             runHook preInstall
             installScripts ${src}
             runHook postInstall
           '';
+
+          dontUnpack = true;
+          prePhases = [ "extraLib" ];
         }
         // attrs
       );
   in
   {
-    # Allow overriding GIMP package in the scope.
-    gimp = gimpArg;
-
     bimp = pluginDerivation rec {
       /*
         menu:
@@ -119,8 +120,8 @@ lib.makeScope pkgs.newScope (
         # Allow overriding installation path
         # https://github.com/alessandrofrancesconi/gimp-plugin-bimp/pull/311
         (fetchpatch {
-          url = "https://github.com/alessandrofrancesconi/gimp-plugin-bimp/commit/098edb5f70a151a3f377478fd6e0d08ed56b8ef7.patch";
           sha256 = "2Afx9fmdn6ztbsll2f2j7mfffMWYWyr4BuBy9ySV6vM=";
+          url = "https://github.com/alessandrofrancesconi/gimp-plugin-bimp/commit/098edb5f70a151a3f377478fd6e0d08ed56b8ef7.patch";
         })
       ];
 
@@ -130,7 +131,6 @@ lib.makeScope pkgs.newScope (
       '';
 
       nativeBuildInputs = with pkgs; [ which ];
-
       # workaround for issue:
       # https://github.com/alessandrofrancesconi/gimp-plugin-bimp/issues/411
       env.NIX_CFLAGS_COMPILE = "-Wno-error=incompatible-pointer-types";
@@ -142,11 +142,11 @@ lib.makeScope pkgs.newScope (
       installTargets = [ "install-admin" ];
 
       meta = {
-        broken = gimp.apiVersion != "2.0";
         description = "Batch Image Manipulation Plugin for GIMP";
         homepage = "https://github.com/alessandrofrancesconi/gimp-plugin-bimp";
         license = lib.licenses.gpl2Plus;
         maintainers = [ ];
+        broken = gimp.apiVersion != "2.0";
       };
     };
 
@@ -166,11 +166,11 @@ lib.makeScope pkgs.newScope (
       '';
 
       meta = {
-        broken = gimp.apiVersion != "2.0";
         description = "Gimp plug-in for the farbfeld image format";
         homepage = "https://github.com/ids1024/gimp-farbfeld";
         license = lib.licenses.mit;
         maintainers = with lib.maintainers; [ sikmir ];
+        broken = gimp.apiVersion != "2.0";
       };
     };
 
@@ -188,14 +188,14 @@ lib.makeScope pkgs.newScope (
         sha256 = "0mf7f8vaqs2madx832x3kcxw3hv3w3wampvzvaps1mkf2kvrjbsn";
       };
 
-      buildInputs = with pkgs; [ fftw ];
-
       postPatch = ''
         substituteInPlace Makefile --replace '$(GCC)' '$(CC)'
 
         # The tarball contains a prebuilt binary.
         make clean
       '';
+
+      buildInputs = with pkgs; [ fftw ];
 
       installPhase = ''
         runHook preInstall
@@ -206,10 +206,95 @@ lib.makeScope pkgs.newScope (
       '';
 
       meta = {
-        broken = gimp.apiVersion != "2.0";
         description = "GIMP plug-in to do the fourier transform";
         homepage = "https://people.via.ecp.fr/~remi/soft/gimp/gimp_plugin_en.php3#fourier";
         license = with lib.licenses; [ gpl3Plus ];
+        broken = gimp.apiVersion != "2.0";
+      };
+    };
+
+    # Allow overriding GIMP package in the scope.
+    gimp = gimpArg;
+
+    gimplensfun = pluginDerivation {
+      pname = "gimplensfun";
+      version = "unstable-2018-10-21";
+
+      src = fetchFromGitHub {
+        owner = "seebk";
+        repo = "GIMP-Lensfun";
+        rev = "1c5a5c1534b5faf098b7441f8840d22835592f17";
+        sha256 = "1jj3n7spkjc63aipwdqsvq9gi07w13bb1v8iqzvxwzld2kxa3c8w";
+      };
+
+      buildInputs = (
+        with pkgs;
+        [
+          lensfun
+          gexiv2
+        ]
+        ++ lib.optional stdenv.cc.isClang llvmPackages.openmp
+      );
+
+      installPhase = "
+      installPlugin gimp-lensfun
+    ";
+
+      meta = {
+        description = "GIMP plugin to correct lens distortion using the lensfun library and database";
+        homepage = "http://lensfun.sebastiankraft.net/";
+        license = lib.licenses.gpl3Plus;
+        maintainers = [ ];
+        broken = gimp.apiVersion != "2.0";
+      };
+    };
+
+    gmic = pkgs.gmic-qt.override {
+      inherit (self) gimp;
+      variant = "gimp";
+    };
+
+    # =============== simple script files ====================
+    lightning = scriptDerivation {
+      pname = "Lightning";
+      version = "0-unstable-2017-08-25";
+
+      src = fetchurl {
+        url = "https://github.com/pixlsus/registry.gimp.org_static/raw/master/registry.gimp.org/files/Lightning.scm";
+        sha256 = "c14a8f4f709695ede3f77348728a25b3f3ded420da60f3f8de3944b7eae98a49";
+      };
+    };
+
+    lqrPlugin = pluginDerivation rec {
+      /*
+        menu:
+        Layer/Liquid Rescale
+      */
+      pname = "lqr-plugin";
+      version = "0.7.2";
+
+      src = fetchFromGitHub {
+        owner = "carlobaldassi";
+        repo = "gimp-lqr-plugin";
+        rev = "v${version}";
+        sha256 = "81ajdZ2zQi/THxnBlSeT36tVTEzrS1YqLGpHMhFTKAo=";
+      };
+
+      patches = [
+        # Pull upstream fix for -fno-common toolchain support:
+        #   https://github.com/carlobaldassi/gimp-lqr-plugin/pull/6
+        (fetchpatch {
+          name = "fno-common.patch";
+          sha256 = "EdjZWM6U1bhUmsOnLA8iJ4SFKuAXHIfNPzxZqel+JrY=";
+          url = "https://github.com/carlobaldassi/gimp-lqr-plugin/commit/ae3464a82e1395fc577cc94999bdc7c4a7bb35f1.patch";
+        })
+      ];
+
+      buildInputs = with pkgs; [ liblqr1 ];
+
+      meta = {
+        homepage = "https://github.com/carlobaldassi/gimp-lqr-plugin";
+        broken = gimp.apiVersion != "2.0";
       };
     };
 
@@ -226,12 +311,7 @@ lib.makeScope pkgs.newScope (
       */
       pname = "resynthesizer";
       version = "3.0";
-      buildInputs = with pkgs; [ fftw ];
-      nativeBuildInputs = with pkgs; [
-        meson
-        ninja
-      ];
-      makeFlags = [ "GIMP_LIBDIR=${placeholder "out"}/${gimp.targetLibDir}" ];
+
       src = fetchFromGitHub {
         owner = "bootchk";
         repo = "resynthesizer";
@@ -239,23 +319,33 @@ lib.makeScope pkgs.newScope (
         hash = "sha256-/Py5R1RxiftTR0z++mQzgTn/J9v4p8efuGZSfhe6FfA=";
       };
 
+      nativeBuildInputs = with pkgs; [
+        meson
+        ninja
+      ];
+
+      buildInputs = with pkgs; [ fftw ];
+      makeFlags = [ "GIMP_LIBDIR=${placeholder "out"}/${gimp.targetLibDir}" ];
+
       meta = {
-        broken = lib.versionOlder gimp.version "3";
         description = "Suite of gimp plugins for texture synthesis";
         homepage = "https://github.com/bootchk/resynthesizer";
         license = [ lib.licenses.gpl3Plus ];
+        broken = lib.versionOlder gimp.version "3";
       };
     };
 
     texturize = pluginDerivation {
       pname = "texturize";
       version = "2.2+unstable=2021-12-03";
+
       src = fetchFromGitHub {
         owner = "lmanul";
         repo = "gimp-texturize";
         rev = "9ceff0d411cda018108e5477320669b8d00d811e";
         sha256 = "haYS0K3oAPlHtHB8phOCX5/gtWq9uiVQhG5ZhAFX0t0=";
       };
+
       nativeBuildInputs = with pkgs; [
         meson
         ninja
@@ -263,8 +353,8 @@ lib.makeScope pkgs.newScope (
       ];
 
       meta = {
-        broken = gimp.apiVersion != "2.0";
         homepage = "https://github.com/lmanul/gimp-texturize";
+        broken = gimp.apiVersion != "2.0";
       };
     };
 
@@ -293,87 +383,6 @@ lib.makeScope pkgs.newScope (
 
       meta = {
         broken = gimp.apiVersion != "2.0";
-      };
-    };
-
-    lqrPlugin = pluginDerivation rec {
-      /*
-        menu:
-        Layer/Liquid Rescale
-      */
-      pname = "lqr-plugin";
-      version = "0.7.2";
-      buildInputs = with pkgs; [ liblqr1 ];
-      src = fetchFromGitHub {
-        owner = "carlobaldassi";
-        repo = "gimp-lqr-plugin";
-        rev = "v${version}";
-        sha256 = "81ajdZ2zQi/THxnBlSeT36tVTEzrS1YqLGpHMhFTKAo=";
-      };
-      patches = [
-        # Pull upstream fix for -fno-common toolchain support:
-        #   https://github.com/carlobaldassi/gimp-lqr-plugin/pull/6
-        (fetchpatch {
-          name = "fno-common.patch";
-          url = "https://github.com/carlobaldassi/gimp-lqr-plugin/commit/ae3464a82e1395fc577cc94999bdc7c4a7bb35f1.patch";
-          sha256 = "EdjZWM6U1bhUmsOnLA8iJ4SFKuAXHIfNPzxZqel+JrY=";
-        })
-      ];
-
-      meta = {
-        broken = gimp.apiVersion != "2.0";
-        homepage = "https://github.com/carlobaldassi/gimp-lqr-plugin";
-      };
-    };
-
-    gmic = pkgs.gmic-qt.override {
-      variant = "gimp";
-      inherit (self) gimp;
-    };
-
-    gimplensfun = pluginDerivation {
-      version = "unstable-2018-10-21";
-      pname = "gimplensfun";
-
-      src = fetchFromGitHub {
-        owner = "seebk";
-        repo = "GIMP-Lensfun";
-        rev = "1c5a5c1534b5faf098b7441f8840d22835592f17";
-        sha256 = "1jj3n7spkjc63aipwdqsvq9gi07w13bb1v8iqzvxwzld2kxa3c8w";
-      };
-
-      buildInputs = (
-        with pkgs;
-        [
-          lensfun
-          gexiv2
-        ]
-        ++ lib.optional stdenv.cc.isClang llvmPackages.openmp
-      );
-
-      installPhase = "
-      installPlugin gimp-lensfun
-    ";
-
-      meta = {
-        broken = gimp.apiVersion != "2.0";
-        description = "GIMP plugin to correct lens distortion using the lensfun library and database";
-
-        homepage = "http://lensfun.sebastiankraft.net/";
-
-        license = lib.licenses.gpl3Plus;
-        maintainers = [ ];
-      };
-    };
-
-    # =============== simple script files ====================
-
-    lightning = scriptDerivation {
-      pname = "Lightning";
-      version = "0-unstable-2017-08-25";
-      src = fetchurl {
-        url = "https://github.com/pixlsus/registry.gimp.org_static/raw/master/registry.gimp.org/files/Lightning.scm";
-        sha256 = "c14a8f4f709695ede3f77348728a25b3f3ded420da60f3f8de3944b7eae98a49";
       };
     };
   }

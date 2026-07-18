@@ -2,29 +2,26 @@
   lib,
   stdenv,
   fetchurl,
-
-  # nativeBuildInputs
-  zstd,
-  pkg-config,
-  jq,
   cargo,
-  rustc,
-  rustPlatform,
-  luarocks,
-
-  # buildInputs
-  luajit,
+  fontconfig,
+  gentium-plus,
   harfbuzz,
   icu,
-  fontconfig,
+  jq,
   libiconv,
+  # buildInputs
+  luajit,
+  luarocks,
   # FONTCONFIG_FILE
   makeFontsConf,
-  gentium-plus,
-
+  pkg-config,
+  poppler-utils,
   # passthru.tests
   runCommand,
-  poppler-utils,
+  rustPlatform,
+  rustc,
+  # nativeBuildInputs
+  zstd,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -36,12 +33,14 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-XpfBllGv9xBoe5MpLVNhy0EWUglLzIxiyBHBn3qBRks=";
   };
 
-  cargoDeps = rustPlatform.fetchCargoVendor {
-    inherit (finalAttrs) pname version src;
-    dontConfigure = true;
-    nativeBuildInputs = [ zstd ];
-    hash = "sha256-phRnyaF8KTYlgrgBeVNPxBAokRBUoj9vs7P9y97wbG8=";
-  };
+  outputs = [
+    "out"
+    "doc"
+    "man"
+    "dev"
+  ];
+
+  strictDeps = true;
 
   nativeBuildInputs = [
     zstd
@@ -53,8 +52,6 @@ stdenv.mkDerivation (finalAttrs: {
     rustPlatform.cargoSetupHook
     luarocks
   ];
-  # luarocks propagates cmake, but it shouldn't be used as a build system.
-  dontUseCmakeConfigure = true;
 
   buildInputs = [
     finalAttrs.finalPackage.passthru.luaEnv
@@ -84,12 +81,15 @@ stdenv.mkDerivation (finalAttrs: {
     "--without-luajit"
   ];
 
-  outputs = [
-    "out"
-    "doc"
-    "man"
-    "dev"
-  ];
+  env = {
+    FONTCONFIG_FILE = makeFontsConf {
+      fontDirectories = [
+        gentium-plus
+      ];
+    };
+
+    LUA = "${finalAttrs.finalPackage.passthru.luaEnv}/bin/lua";
+  };
 
   # TODO: At some point, upstream should support installing the pre-built
   # manual automatically
@@ -97,20 +97,20 @@ stdenv.mkDerivation (finalAttrs: {
     install -Dm0644 documentation/sile.pdf $out/share/doc/sile/manual.pdf
   '';
 
-  env = {
-    FONTCONFIG_FILE = makeFontsConf {
-      fontDirectories = [
-        gentium-plus
-      ];
-    };
-    LUA = "${finalAttrs.finalPackage.passthru.luaEnv}/bin/lua";
+  cargoDeps = rustPlatform.fetchCargoVendor {
+    inherit (finalAttrs) pname version src;
+    nativeBuildInputs = [ zstd ];
+    dontConfigure = true;
+    hash = "sha256-phRnyaF8KTYlgrgBeVNPxBAokRBUoj9vs7P9y97wbG8=";
   };
 
-  strictDeps = true;
-
+  # luarocks propagates cmake, but it shouldn't be used as a build system.
+  dontUseCmakeConfigure = true;
   enableParallelBuilding = true;
 
   passthru = {
+    luaEnv = luajit.withPackages (ps: lib.attrVals finalAttrs.finalPackage.passthru.luaPackages ps);
+
     # Use this passthru variable to add packages to your lua environment. Use
     # something like this in your development environment:
     #
@@ -151,7 +151,6 @@ stdenv.mkDerivation (finalAttrs: {
     ++ lib.optionals (lib.versionOlder luajit.luaversion "5.3") [
       "compat53"
     ];
-    luaEnv = luajit.withPackages (ps: lib.attrVals finalAttrs.finalPackage.passthru.luaPackages ps);
 
     # Copied from Makefile.am
     tests.test = lib.optionalAttrs (!(stdenv.hostPlatform.isDarwin && stdenv.hostPlatform.isAarch64)) (
@@ -161,6 +160,7 @@ stdenv.mkDerivation (finalAttrs: {
             poppler-utils
             finalAttrs.finalPackage
           ];
+
           env.FONTCONFIG_FILE = finalAttrs.env.FONTCONFIG_FILE;
         }
         ''
@@ -173,6 +173,7 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Typesetting system";
+
     longDescription = ''
       SILE is a typesetting system; its job is to produce beautiful
       printed documents. Conceptually, SILE is similar to TeX—from
@@ -183,14 +184,17 @@ stdenv.mkDerivation (finalAttrs: {
       technologies and borrowing some ideas from graphical systems
       such as InDesign.
     '';
+
     homepage = "https://sile-typesetter.org";
     changelog = "https://github.com/sile-typesetter/sile/raw/v${finalAttrs.version}/CHANGELOG.md";
-    platforms = lib.platforms.unix;
+    license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       doronbehar
       alerque
     ];
-    license = lib.licenses.mit;
+
+    platforms = lib.platforms.unix;
     mainProgram = "sile";
   };
 })

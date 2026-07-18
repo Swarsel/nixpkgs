@@ -2,18 +2,18 @@
   lib,
   stdenv,
   fetchurl,
-  autoPatchelfHook,
-  dpkg,
   alsa-lib,
+  autoPatchelfHook,
+  curl,
+  dpkg,
+  fontconfig,
   freetype,
   libglvnd,
-  curl,
-  fontconfig,
+  libjack2,
   libxcursor,
   libxinerama,
   libxrandr,
   libxrender,
-  libjack2,
 }:
 
 stdenv.mkDerivation rec {
@@ -48,6 +48,11 @@ stdenv.mkDerivation rec {
   ]
   ++ runtimeDependencies;
 
+  installPhase = ''
+    mv usr $out
+    substituteInPlace $out/share/applications/ToneLib-GFX.desktop --replace /usr/ $out/
+  '';
+
   runtimeDependencies = map lib.getLib [
     curl
     fontconfig
@@ -60,19 +65,16 @@ stdenv.mkDerivation rec {
 
   unpackCmd = "dpkg -x $curSrc source";
 
-  installPhase = ''
-    mv usr $out
-    substituteInPlace $out/share/applications/ToneLib-GFX.desktop --replace /usr/ $out/
-  '';
-
   meta = {
     description = "Tonelib GFX is an amp and effects modeling software for electric guitar and bass";
     homepage = "https://tonelib.net/";
-    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
     license = lib.licenses.unfree;
+    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
+
     maintainers = with lib.maintainers; [
       husjon
     ];
+
     platforms = [ "x86_64-linux" ];
     mainProgram = "ToneLib-GFX";
   };

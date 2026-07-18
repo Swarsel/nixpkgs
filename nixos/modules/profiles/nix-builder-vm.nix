@@ -30,70 +30,86 @@ in
 
     # Avoid a dependency on stateVersion
     {
-      disabledModules = [
-        ../virtualisation/nixos-containers.nix
-        ../services/x11/desktop-managers/xterm.nix
-      ];
-      # swraid's default depends on stateVersion
-      config.boot.swraid.enable = false;
       options.boot.isContainer = lib.mkOption {
         default = false;
         internal = true;
       };
+
       options.boot.isNspawnContainer = lib.mkOption {
         default = false;
         internal = true;
       };
+
+      # swraid's default depends on stateVersion
+      config.boot.swraid.enable = false;
+
+      disabledModules = [
+        ../virtualisation/nixos-containers.nix
+        ../services/x11/desktop-managers/xterm.nix
+      ];
     }
   ];
 
   options.virtualisation.darwin-builder = with lib; {
     diskSize = mkOption {
       default = 20 * 1024;
-      type = types.int;
-      example = 30720;
       description = "The maximum disk space allocated to the runner in MiB (1024×1024 bytes).";
-    };
-    memorySize = mkOption {
-      default = 3 * 1024;
+      example = 30720;
       type = types.int;
-      example = 8192;
-      description = "The runner's memory in MiB (1024×1024 bytes).";
     };
-    min-free = mkOption {
-      default = 1024 * 1024 * 1024;
-      type = types.int;
-      example = 1073741824;
+
+    hostPort = mkOption {
+      default = 31022;
+
       description = ''
-        The threshold (in bytes) of free disk space left at which to
-        start garbage collection on the runner
+        The localhost host port to forward TCP to the guest port.
       '';
+
+      example = 22;
+      type = types.port;
     };
+
     max-free = mkOption {
       default = 3 * 1024 * 1024 * 1024;
-      type = types.int;
-      example = 3221225472;
+
       description = ''
         The threshold (in bytes) of free disk space left at which to
         stop garbage collection on the runner
       '';
+
+      example = 3221225472;
+      type = types.int;
     };
+
+    memorySize = mkOption {
+      default = 3 * 1024;
+      description = "The runner's memory in MiB (1024×1024 bytes).";
+      example = 8192;
+      type = types.int;
+    };
+
+    min-free = mkOption {
+      default = 1024 * 1024 * 1024;
+
+      description = ''
+        The threshold (in bytes) of free disk space left at which to
+        start garbage collection on the runner
+      '';
+
+      example = 1073741824;
+      type = types.int;
+    };
+
     workingDirectory = mkOption {
       default = ".";
-      type = types.str;
-      example = "/var/lib/darwin-builder";
+
       description = ''
         The working directory to use to run the script. When running
         as part of a flake will need to be set to a non read-only filesystem.
       '';
-    };
-    hostPort = mkOption {
-      default = 31022;
-      type = types.port;
-      example = 22;
-      description = ''
-        The localhost host port to forward TCP to the guest port.
-      '';
+
+      example = "/var/lib/darwin-builder";
+      type = types.str;
     };
   };
 
@@ -104,13 +120,11 @@ in
     environment.etc = {
       "ssh/ssh_host_ed25519_key" = {
         mode = "0600";
-
         source = ./keys/ssh_host_ed25519_key;
       };
 
       "ssh/ssh_host_ed25519_key.pub" = {
         mode = "0644";
-
         source = ./keys/ssh_host_ed25519_key.pub;
       };
     };
@@ -122,40 +136,43 @@ in
     # This works around that by using a public DNS server other than the DNS
     # server that QEMU provides (normally 10.0.2.3)
     networking.nameservers = [ "8.8.8.8" ];
-
     # The linux builder is a lightweight VM for remote building; not evaluation.
     nix.channel.enable = false;
 
-    # Deployment is by image.
-    # TODO system.switch.enable = false;?
-    system.disableInstallerTools = true;
-
-    # Allow the system derivation to be substituted, so that
-    # users are less likely to run into a state where they need
-    # the builder running to build the builder if they just want
-    # to make a tweak that only affects the macOS side of things,
-    # like changing the QEMU args.
-    #
-    # TODO(winter): Move to qemu-vm? Trying it here for now as a
-    # low impact change that'll probably improve people's experience.
-    system.systemBuilderArgs.allowSubstitutes = true;
-
     nix.settings = {
-      min-free = cfg.min-free;
-
       max-free = cfg.max-free;
-
+      min-free = cfg.min-free;
       trusted-users = [ user ];
     };
+
+    security.polkit.enable = true;
+
+    security.polkit.extraConfig = ''
+      polkit.addRule(function(action, subject) {
+        if (action.id === "org.freedesktop.login1.power-off" && subject.user === "${user}") {
+          return "yes";
+        } else {
+          return "no";
+        }
+      })
+    '';
 
     services = {
       getty.autologinUser = user;
 
       openssh = {
         enable = true;
-
         authorizedKeysFiles = [ "${keysDirectory}/%u_${keyType}.pub" ];
       };
+    };
+
+    system = {
+      # To prevent gratuitous rebuilds on each change to Nixpkgs
+      nixos.revision = null;
+      # To prevent channels and Git checkouts resulting in different system drvs
+      nixos.versionSuffix = "";
+      # to be updated by module maintainers, see nixpkgs#325610
+      stateVersion = "24.05";
     };
 
     system.build.macos-builder-installer =
@@ -216,9 +233,21 @@ in
 
       in
       hostPkgs.writeTextFile {
-        name = "create-builder";
-        executable = true;
+        checkPhase = ''
+          ${hostPkgs.stdenv.shellDryRun} "$target"
+        '';
+
         destination = "/bin/create-builder";
+        executable = true;
+        name = "create-builder";
+
+        passthru = {
+          inherit add-keys run-builder;
+          # Let users in the repl inspect the config
+          nixosConfig = config;
+          nixosOptions = options;
+        };
+
         text = ''
           #!${hostPkgs.runtimeShell}
           set -euo pipefail
@@ -226,54 +255,33 @@ in
           ${lib.getExe add-keys}
           ${lib.getExe run-builder}
         '';
-        checkPhase = ''
-          ${hostPkgs.stdenv.shellDryRun} "$target"
-        '';
-        meta = {
-          mainProgram = "create-builder";
-          description = "Create a Linux builder VM for macOS";
-          platforms = lib.platforms.darwin;
-        };
-        passthru = {
-          # Let users in the repl inspect the config
-          nixosConfig = config;
-          nixosOptions = options;
 
-          inherit add-keys run-builder;
+        meta = {
+          description = "Create a Linux builder VM for macOS";
+          mainProgram = "create-builder";
+          platforms = lib.platforms.darwin;
         };
       };
 
-    system = {
-      # To prevent gratuitous rebuilds on each change to Nixpkgs
-      nixos.revision = null;
-
-      # To prevent channels and Git checkouts resulting in different system drvs
-      nixos.versionSuffix = "";
-
-      # to be updated by module maintainers, see nixpkgs#325610
-      stateVersion = "24.05";
-    };
+    # Deployment is by image.
+    # TODO system.switch.enable = false;?
+    system.disableInstallerTools = true;
+    # Allow the system derivation to be substituted, so that
+    # users are less likely to run into a state where they need
+    # the builder running to build the builder if they just want
+    # to make a tweak that only affects the macOS side of things,
+    # like changing the QEMU args.
+    #
+    # TODO(winter): Move to qemu-vm? Trying it here for now as a
+    # low impact change that'll probably improve people's experience.
+    system.systemBuilderArgs.allowSubstitutes = true;
 
     users.users."${user}" = {
       isNormalUser = true;
     };
 
-    security.polkit.enable = true;
-
-    security.polkit.extraConfig = ''
-      polkit.addRule(function(action, subject) {
-        if (action.id === "org.freedesktop.login1.power-off" && subject.user === "${user}") {
-          return "yes";
-        } else {
-          return "no";
-        }
-      })
-    '';
-
     virtualisation = {
       diskSize = cfg.diskSize;
-
-      memorySize = cfg.memorySize;
 
       forwardPorts = [
         {
@@ -286,12 +294,16 @@ in
       # Disable graphics for the builder since users will likely want to run it
       # non-interactively in the background.
       graphics = false;
+      memorySize = cfg.memorySize;
 
       sharedDirectories.keys = {
         source = "\"$KEYS\"";
         target = keysDirectory;
       };
 
+      # Pass certificates from host to the guest otherwise when custom CA certificates
+      # are required we can't use the cached builder.
+      useHostCerts = true;
       # If we don't enable this option then the host will fail to delegate builds
       # to the guest, because:
       #
@@ -303,18 +315,12 @@ in
       # Snapshotting the host's /nix/store as an image isolates the guest VM's
       # /nix/store from the host's /nix/store, preventing this problem.
       useNixStoreImage = true;
-
       # Obviously the /nix/store needs to be writable on the guest in order for it
       # to perform builds.
       writableStore = true;
-
       # This ensures that anything built on the guest isn't lost when the guest is
       # restarted.
       writableStoreUseTmpfs = false;
-
-      # Pass certificates from host to the guest otherwise when custom CA certificates
-      # are required we can't use the cached builder.
-      useHostCerts = true;
     };
   };
 }

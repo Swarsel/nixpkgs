@@ -2,10 +2,10 @@
   lib,
   stdenv,
   fetchurl,
-  fetchpatch,
   autoreconfHook,
-  enableStatic ? stdenv.hostPlatform.isStatic,
+  fetchpatch,
   enableShared ? !stdenv.hostPlatform.isStatic,
+  enableStatic ? stdenv.hostPlatform.isStatic,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -17,23 +17,20 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-kaDiLlOHykRntbyxjt8cUbkwJi/UZtX9o5bdnSZxkQA=";
   };
 
-  patches = [
-    (fetchpatch {
-      name = "0001-tparam-replace-write-with-fprintf.patch";
-      url = "https://github.com/msys2/MINGW-packages/raw/c6691ad1bd9d4c6823a18068ca0683c3e32ea005/mingw-w64-termcap/0001-tparam-replace-write-with-fprintf.patch";
-      hash = "sha256-R9XaLfa8fzQBt+M+uA1AFTvKYCeOWLUD/7GViazXwto=";
-    })
-  ];
-
   outputs = [
     "out"
     "dev"
   ];
 
-  enableParallelBuilding = true;
+  patches = [
+    (fetchpatch {
+      hash = "sha256-R9XaLfa8fzQBt+M+uA1AFTvKYCeOWLUD/7GViazXwto=";
+      name = "0001-tparam-replace-write-with-fprintf.patch";
+      url = "https://github.com/msys2/MINGW-packages/raw/c6691ad1bd9d4c6823a18068ca0683c3e32ea005/mingw-w64-termcap/0001-tparam-replace-write-with-fprintf.patch";
+    })
+  ];
 
   strictDeps = true;
-
   nativeBuildInputs = [ autoreconfHook ];
 
   makeFlags = [
@@ -69,6 +66,8 @@ stdenv.mkDerivation (finalAttrs: {
         install -Dm644 ${impLibName} $out/lib
       ''
     );
+
+  enableParallelBuilding = true;
 
   meta = {
     description = "Terminal feature database";

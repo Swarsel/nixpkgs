@@ -1,5 +1,6 @@
 {
   lib,
+  fetchFromGitLab,
   aiofiles,
   aiohttp,
   authcaptureproxy,
@@ -8,7 +9,6 @@
   buildPythonPackage,
   certifi,
   cryptography,
-  fetchFromGitLab,
   poetry-core,
   pyotp,
   requests,
@@ -19,7 +19,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "alexapy";
   version = "1.29.25";
-  pyproject = true;
 
   src = fetchFromGitLab {
     owner = "keatontaylor";
@@ -28,8 +27,8 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-P/hvgqZVaBJF5dbmHrDjQMC+pwV3EEhKyFIS5KmhgD4=";
   };
 
-  pythonRelaxDeps = [ "aiofiles" ];
-
+  # Module has no tests (only a websocket test which seems unrelated to the module)
+  doCheck = false;
   build-system = [ poetry-core ];
 
   dependencies = [
@@ -46,10 +45,9 @@ buildPythonPackage (finalAttrs: {
     yarl
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "alexapy" ];
-
-  # Module has no tests (only a websocket test which seems unrelated to the module)
-  doCheck = false;
+  pythonRelaxDeps = [ "aiofiles" ];
 
   meta = {
     description = "Python Package for controlling Alexa devices (echo dot, etc) programmatically";

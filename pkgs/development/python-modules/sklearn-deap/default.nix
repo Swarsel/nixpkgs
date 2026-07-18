@@ -1,9 +1,9 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  fetchpatch,
+  buildPythonPackage,
   deap,
+  fetchpatch,
   numpy,
   scikit-learn,
   scipy,
@@ -13,7 +13,6 @@
 buildPythonPackage rec {
   pname = "sklearn-deap";
   version = "0.3.0";
-  format = "setuptools";
 
   # No tests in Pypi
   src = fetchFromGitHub {
@@ -26,12 +25,12 @@ buildPythonPackage rec {
   patches = [
     # Fix for scikit-learn v1.1. See: https://github.com/rsteca/sklearn-deap/pull/80
     (fetchpatch {
-      url = "https://github.com/rsteca/sklearn-deap/commit/3b84bd905796378dd845f99e083da17284c9ff6f.patch";
       hash = "sha256-YYLw0uzecyIbdNAy/CxxWDV67zJbZZhUMypnDm/zNGs=";
+      url = "https://github.com/rsteca/sklearn-deap/commit/3b84bd905796378dd845f99e083da17284c9ff6f.patch";
     })
     (fetchpatch {
-      url = "https://github.com/rsteca/sklearn-deap/commit/2f60e215c834f60966b4e51df25e91939a72b952.patch";
       hash = "sha256-vn5nLPwwkjsQrp3q7C7Z230lkgRiyJN0TQxO8Apizg8=";
+      url = "https://github.com/rsteca/sklearn-deap/commit/2f60e215c834f60966b4e51df25e91939a72b952.patch";
     })
   ];
 
@@ -43,7 +42,7 @@ buildPythonPackage rec {
   ];
 
   nativeCheckInputs = [ unittestCheckHook ];
-
+  format = "setuptools";
   pythonImportsCheck = [ "evolutionary_search" ];
 
   meta = {

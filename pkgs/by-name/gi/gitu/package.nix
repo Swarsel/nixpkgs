@@ -1,12 +1,12 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
-  pkg-config,
+  git,
   libgit2,
   openssl,
+  pkg-config,
+  rustPlatform,
   zlib,
-  git,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -20,8 +20,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-NpDTXTBHZs5o6HlOfpffOfo1S6Bw/oNxGuvRHzwv2II=";
   };
 
-  cargoHash = "sha256-brGnoaaXTxGPHCAHh2i4NzUVxHySmT8H2jmC9le2v8Q=";
-
   nativeBuildInputs = [
     pkg-config
   ];
@@ -31,6 +29,8 @@ rustPlatform.buildRustPackage (finalAttrs: {
     openssl
     zlib
   ];
+
+  cargoHash = "sha256-brGnoaaXTxGPHCAHh2i4NzUVxHySmT8H2jmC9le2v8Q=";
 
   nativeCheckInputs = [
     git

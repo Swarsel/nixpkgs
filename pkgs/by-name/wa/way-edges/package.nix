@@ -1,12 +1,12 @@
 {
   lib,
   fetchFromGitHub,
-  rustPlatform,
-  pkg-config,
-  libxkbcommon,
-  libpulseaudio,
   cairo,
+  libpulseaudio,
+  libxkbcommon,
   nix-update-script,
+  pkg-config,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -19,16 +19,18 @@ rustPlatform.buildRustPackage (finalAttrs: {
     tag = finalAttrs.version;
     hash = "sha256-hvIy5WAv+DqA8Agln2Wgc8dHG/yDktfUU1k/3nlwjmw=";
   };
-  cargoHash = "sha256-E1MmCUBZSXkV0oEJ7vHiO2YawnTteu24h2+IVgB71fc=";
 
   nativeBuildInputs = [
     pkg-config
   ];
+
   buildInputs = [
     cairo
     libxkbcommon
     libpulseaudio
   ];
+
+  cargoHash = "sha256-E1MmCUBZSXkV0oEJ7vHiO2YawnTteu24h2+IVgB71fc=";
 
   env.RUSTFLAGS = toString [
     "--cfg tokio_unstable"
@@ -42,7 +44,7 @@ rustPlatform.buildRustPackage (finalAttrs: {
     homepage = "https://github.com/way-edges/way-edges";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ denperidge ];
-    mainProgram = "way-edges";
     platforms = lib.platforms.linux;
+    mainProgram = "way-edges";
   };
 })

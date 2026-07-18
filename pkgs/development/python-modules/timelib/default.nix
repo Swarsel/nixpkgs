@@ -8,7 +8,6 @@
 buildPythonPackage rec {
   pname = "timelib";
   version = "0.3.0";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
@@ -16,6 +15,7 @@ buildPythonPackage rec {
   };
 
   nativeBuildInputs = [ cython ];
+  format = "setuptools";
 
   meta = {
     description = "Parse english textual date descriptions";

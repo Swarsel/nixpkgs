@@ -1,9 +1,9 @@
 {
   lib,
   stdenv,
-  makeWrapper,
   fetchurl,
   jre,
+  makeWrapper,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -14,9 +14,6 @@ stdenv.mkDerivation (finalAttrs: {
     url = "https://github.com/allure-framework/allure2/releases/download/${finalAttrs.version}/allure-${finalAttrs.version}.tgz";
     hash = "sha256-cCGpCCjADNbsmSAnzOSOipS9h/rUPQwtysR5XK3BeNc=";
   };
-
-  dontConfigure = true;
-  dontBuild = true;
 
   nativeBuildInputs = [ makeWrapper ];
   buildInputs = [ jre ];
@@ -33,17 +30,22 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  dontBuild = true;
+  dontConfigure = true;
+
   meta = {
-    homepage = "https://allurereport.org/";
     description = "Flexible, lightweight multi-language test reporting tool";
+
     longDescription = ''
       Allure Report is a flexible, lightweight multi-language test reporting
       tool providing clear graphical reports and allowing everyone involved
       in the development process to extract the maximum of information from
       the everyday testing process.
     '';
+
+    homepage = "https://allurereport.org/";
     license = lib.licenses.asl20;
-    mainProgram = "allure";
     maintainers = with lib.maintainers; [ happysalada ];
+    mainProgram = "allure";
   };
 })

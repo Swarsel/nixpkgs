@@ -1,12 +1,12 @@
 {
-  gitMinimal,
   lib,
+  stdenv,
+  fetchFromGitHub,
+  gitMinimal,
   libgit2,
   oniguruma,
   pkg-config,
   rustPlatform,
-  stdenv,
-  fetchFromGitHub,
 }:
 rustPlatform.buildRustPackage (finalAttrs: {
   pname = "git-instafix";
@@ -19,8 +19,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-Uz+KQ8cQT3v97EtmbAv2II30dUrFD0hMo/GhnqcdBOs=";
   };
 
-  cargoHash = "sha256-B0XTk0KxA60AuaS6eO3zF/eA/cTcLwA31ipG4VjvO8Q=";
-
   nativeBuildInputs = [ pkg-config ];
 
   buildInputs = [
@@ -28,23 +26,26 @@ rustPlatform.buildRustPackage (finalAttrs: {
     oniguruma
   ];
 
-  nativeCheckInputs = [ gitMinimal ];
-
+  cargoHash = "sha256-B0XTk0KxA60AuaS6eO3zF/eA/cTcLwA31ipG4VjvO8Q=";
   env.RUSTONIG_SYSTEM_LIBONIG = true;
+  nativeCheckInputs = [ gitMinimal ];
 
   meta = {
     description = "Quickly fix up an old commit using your currently-staged changes";
-    mainProgram = "git-instafix";
     homepage = "https://github.com/quodlibetor/git-instafix";
     changelog = "https://github.com/quodlibetor/git-instafix/releases/tag/v${finalAttrs.version}";
+
     license = with lib.licenses; [
       mit
       asl20
     ];
+
     maintainers = with lib.maintainers; [
       mightyiam
       quodlibetor
     ];
+
+    mainProgram = "git-instafix";
     broken = stdenv.hostPlatform.isDarwin;
   };
 })

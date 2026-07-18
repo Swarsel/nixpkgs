@@ -1,12 +1,12 @@
 {
   lib,
-  stdenvNoCC,
   fetchFromGitHub,
+  config,
   glib,
+  stdenvNoCC,
   # These loosen security a bit, so we don't install them by default. See also:
   # https://github.com/hardpixel/systemd-manager?tab=readme-ov-file#without-password-prompt
   allowPolkitPolicy ? "none",
-  config,
   systemd ? config.systemd.package,
 }:
 
@@ -51,14 +51,15 @@ stdenvNoCC.mkDerivation rec {
   '';
 
   passthru = {
-    extensionUuid = "systemd-manager@hardpixel.eu";
     extensionPortalSlug = "systemd-manager";
+    extensionUuid = "systemd-manager@hardpixel.eu";
   };
 
   meta = {
     description = "GNOME Shell extension to manage systemd services";
     homepage = "https://github.com/hardpixel/systemd-manager";
     license = lib.licenses.gpl3Only;
+
     maintainers = with lib.maintainers; [
       linsui
       doronbehar

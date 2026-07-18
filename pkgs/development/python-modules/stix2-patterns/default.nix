@@ -1,8 +1,8 @@
 {
   lib,
+  fetchFromGitHub,
   antlr4-python3-runtime,
   buildPythonPackage,
-  fetchFromGitHub,
   pytestCheckHook,
   setuptools,
 }:
@@ -10,7 +10,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "stix2-patterns";
   version = "2.1.2";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "oasis-open";
@@ -19,14 +18,14 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-ngRxUeT8ifFM4bpFRtS1ILtTz9lPXtyD8+0MYijWKoM=";
   };
 
+  nativeCheckInputs = [ pytestCheckHook ];
   build-system = [ setuptools ];
 
   dependencies = [
     antlr4-python3-runtime
   ];
 
-  nativeCheckInputs = [ pytestCheckHook ];
-
+  pyproject = true;
   pythonImportsCheck = [ "stix2patterns" ];
 
   meta = {

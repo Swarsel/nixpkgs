@@ -1,16 +1,15 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
+  pytestCheckHook,
   setuptools,
   tqdm,
-  pytestCheckHook,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "ghmap";
   version = "2.0.4";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "sgl-umons";
@@ -18,6 +17,8 @@ buildPythonPackage (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-FXeLSCoZRkHVXDtV/L75mACdU3MvOOSe3Cw6U2+6FfE=";
   };
+
+  nativeCheckInputs = [ pytestCheckHook ];
 
   build-system = [
     setuptools
@@ -27,7 +28,7 @@ buildPythonPackage (finalAttrs: {
     tqdm
   ];
 
-  nativeCheckInputs = [ pytestCheckHook ];
+  pyproject = true;
 
   pythonImportsCheck = [
     "ghmap"

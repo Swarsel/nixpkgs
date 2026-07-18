@@ -1,12 +1,12 @@
 {
   lib,
-  stdenvNoCC,
   fetchurl,
-  undmg,
   nix-update-script,
+  re-plistbuddy,
+  stdenvNoCC,
+  undmg,
   versionCheckHook,
   writeShellScript,
-  re-plistbuddy,
 }:
 
 stdenvNoCC.mkDerivation (finalAttrs: {
@@ -18,14 +18,8 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     hash = "sha256-I0Ei9+TsbmsA6iFD1CwScgrU7OO9mL3fl3/uvCYS4JI=";
   };
 
-  dontPatch = true;
-  dontConfigure = true;
-  dontBuild = true;
-  dontFixup = true;
-
   buildInputs = [ undmg ];
 
-  sourceRoot = ".";
   installPhase = ''
     runHook preInstall
 
@@ -35,14 +29,21 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  doInstallCheck = true;
   nativeInstallCheckInputs = [ versionCheckHook ];
+  dontBuild = true;
+  dontConfigure = true;
+  dontFixup = true;
+  dontPatch = true;
+  sourceRoot = ".";
+
   versionCheckProgram = writeShellScript "version-check" ''
     ${lib.getExe' re-plistbuddy "PlistBuddy"} -c "Print :CFBundleShortVersionString" "$1"
   '';
+
   versionCheckProgramArg = [
     "${placeholder "out"}/Applications/BetterDisplay.app/Contents/Info.plist"
   ];
-  doInstallCheck = true;
 
   passthru.updateScript = nix-update-script { };
 

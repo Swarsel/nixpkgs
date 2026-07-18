@@ -1,28 +1,27 @@
 {
   lib,
-  python3Packages,
   fetchFromGitHub,
-  ninja,
-  meson,
-  pkg-config,
-  wrapGAppsHook4,
-  glib,
-  gtk4,
-  desktop-file-utils,
   appstream-glib,
   blueprint-compiler,
+  desktop-file-utils,
+  glib,
+  gtk4,
+  gtksourceview5,
   libadwaita,
   libportal-gtk4,
-  gtksourceview5,
+  meson,
+  ninja,
   nix-update-script,
+  pkg-config,
+  python3Packages,
+  wrapGAppsHook4,
 }:
 let
   version = "1.1.1";
 in
 python3Packages.buildPythonApplication {
-  pname = "rewaita";
   inherit version;
-  pyproject = false;
+  pname = "rewaita";
 
   src = fetchFromGitHub {
     owner = "SwordPuffin";
@@ -50,13 +49,6 @@ python3Packages.buildPythonApplication {
     blueprint-compiler
   ];
 
-  dependencies = with python3Packages; [
-    pygobject3
-    pillow
-    numpy
-    fortune
-  ];
-
   buildInputs = [
     libadwaita
     gtk4
@@ -64,9 +56,16 @@ python3Packages.buildPythonApplication {
     gtksourceview5
   ];
 
+  dependencies = with python3Packages; [
+    pygobject3
+    pillow
+    numpy
+    fortune
+  ];
+
   dontWrapGApps = true;
   makeWrapperArgs = [ "\${gappsWrapperArgs[@]}" ];
-
+  pyproject = false;
   passthru.updateScript = nix-update-script { };
 
   meta = {
@@ -74,11 +73,13 @@ python3Packages.buildPythonApplication {
     homepage = "https://github.com/SwordPuffin/Rewaita";
     changelog = "https://github.com/SwordPuffin/Rewaita/releases/tag/v${version}";
     license = lib.licenses.gpl3Plus;
-    mainProgram = "rewaita";
-    platforms = lib.platforms.linux;
+
     maintainers = with lib.maintainers; [
       da157
       getchoo
     ];
+
+    platforms = lib.platforms.linux;
+    mainProgram = "rewaita";
   };
 }

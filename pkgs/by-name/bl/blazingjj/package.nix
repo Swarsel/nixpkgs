@@ -1,9 +1,9 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
-  makeBinaryWrapper,
   jujutsu,
+  makeBinaryWrapper,
+  rustPlatform,
   versionCheckHook,
 }:
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -17,12 +17,16 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-vefD93gzT6WEplpnYiENtzXLSeXBo+9K3/RYpSBafDs=";
   };
 
-  cargoHash = "sha256-E/xddxdvCDWH1xPn/CPXFyJIHg1Dy6EG3VZMZouWHQY=";
-
   nativeBuildInputs = [ makeBinaryWrapper ];
+  cargoHash = "sha256-E/xddxdvCDWH1xPn/CPXFyJIHg1Dy6EG3VZMZouWHQY=";
 
   nativeCheckInputs = [
     jujutsu
+  ];
+
+  checkFlags = [
+    # This tests checks the output of `jj diff`. However, `jj diff` had a change upstream making the test fail. Skip for now, until the test is updated.
+    "--skip=commander::files::tests::get_file_diff"
   ];
 
   postInstall = ''
@@ -30,14 +34,10 @@ rustPlatform.buildRustPackage (finalAttrs: {
       --prefix PATH : ${lib.makeBinPath [ jujutsu ]}
   '';
 
-  nativeInstallCheckInputs = [
-    versionCheckHook
-  ];
   doInstallCheck = true;
 
-  checkFlags = [
-    # This tests checks the output of `jj diff`. However, `jj diff` had a change upstream making the test fail. Skip for now, until the test is updated.
-    "--skip=commander::files::tests::get_file_diff"
+  nativeInstallCheckInputs = [
+    versionCheckHook
   ];
 
   __structuredAttrs = true;
@@ -46,10 +46,12 @@ rustPlatform.buildRustPackage (finalAttrs: {
     description = "TUI for Jujutsu/jj";
     homepage = "https://github.com/blazingjj/blazingjj";
     changelog = "https://github.com/blazingjj/blazingjj/releases/tag/v${finalAttrs.version}";
-    mainProgram = "blazingjj";
     license = lib.licenses.asl20;
+
     maintainers = with lib.maintainers; [
       peret
     ];
+
+    mainProgram = "blazingjj";
   };
 })

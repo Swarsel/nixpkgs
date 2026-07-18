@@ -3,30 +3,27 @@
   stdenv,
   callPackage,
   makeSetupHook,
-  runCommand,
-  tzdata,
-  zip,
-  zlib,
-
   # Version specific stuff
   release,
-  version,
+  runCommand,
   src,
+  tzdata,
+  version,
+  zip,
+  zlib,
   extraPatch ? "",
   ...
 }:
 
 let
   baseInterp = stdenv.mkDerivation rec {
-    pname = "tcl";
     inherit version src;
+    pname = "tcl";
 
     outputs = [
       "out"
       "man"
     ];
-
-    setOutputFlags = false;
 
     postPatch = ''
       substituteInPlace library/clock.tcl \
@@ -45,10 +42,6 @@ let
     buildInputs = lib.optionals (lib.versionAtLeast version "9.0") [
       zlib
     ];
-
-    preConfigure = ''
-      cd unix
-    '';
 
     # Note: pre-9.0 flags are temporarily interspersed to avoid a mass rebuild.
     configureFlags =
@@ -90,6 +83,10 @@ let
       ]
       ++ lib.optional stdenv.hostPlatform.is64bit "--enable-64bit";
 
+    makeFlags = lib.optionals stdenv.hostPlatform.isStatic [
+      "INSTALL_PACKAGE_TARGETS="
+    ];
+
     buildFlags = lib.optionals stdenv.hostPlatform.isStatic [
       # Don't use the default Make target for static,
       # since it builds shared libraries for bundled packages.
@@ -98,11 +95,9 @@ let
       "doc"
     ];
 
-    makeFlags = lib.optionals stdenv.hostPlatform.isStatic [
-      "INSTALL_PACKAGE_TARGETS="
-    ];
-
-    enableParallelBuilding = true;
+    preConfigure = ''
+      cd unix
+    '';
 
     postInstall =
       let
@@ -120,47 +115,55 @@ let
         ''}
       '';
 
-    meta = {
-      description = "Tcl scripting language";
-      homepage = "https://www.tcl.tk/";
-      license = lib.licenses.tcltk;
-      platforms = lib.platforms.all;
-      maintainers = with lib.maintainers; [ agbrooks ];
-    };
+    enableParallelBuilding = true;
+    setOutputFlags = false;
 
     passthru = rec {
       inherit release version;
       isTcl9 = lib.versions.major version == "9";
       libPrefix = "tcl${release}";
       libdir = "lib/${libPrefix}";
+
       tclPackageHook = callPackage (
         { buildPackages }:
         makeSetupHook {
-          name = "tcl-package-hook";
           propagatedBuildInputs = [ buildPackages.makeBinaryWrapper ];
+          name = "tcl-package-hook";
+
           meta = {
             inherit (meta) maintainers platforms;
             license = lib.licenses.mit;
           };
         } ./tcl-package-hook.sh
       ) { };
+
       tclRequiresCheckHook = callPackage (
         { buildPackages }:
         makeSetupHook {
-          name = "tcl-requires-check-hook";
           propagatedBuildInputs = [ buildPackages.makeBinaryWrapper ];
+          name = "tcl-requires-check-hook";
+
           meta = {
             inherit (meta) maintainers platforms;
             license = lib.licenses.mit;
           };
         } ./tcl-requires-check-hook.sh
       ) { };
+
       # verify that Tcl's clock library can access tzdata
       tests.tzdata = runCommand "${pname}-test-tzdata" { } ''
         ${baseInterp}/bin/tclsh <(echo "set t [clock scan {2004-10-30 05:00:00} \
                                       -format {%Y-%m-%d %H:%M:%S} \
                                       -timezone :America/New_York]") > $out
       '';
+    };
+
+    meta = {
+      description = "Tcl scripting language";
+      homepage = "https://www.tcl.tk/";
+      license = lib.licenses.tcltk;
+      maintainers = with lib.maintainers; [ agbrooks ];
+      platforms = lib.platforms.all;
     };
   };
 

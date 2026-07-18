@@ -5,9 +5,9 @@
   httpx,
   opentelemetry-api,
   opentelemetry-instrumentation,
-  opentelemetry-util-http,
-  opentelemetry-test-utils,
   opentelemetry-semantic-conventions,
+  opentelemetry-test-utils,
+  opentelemetry-util-http,
   pytestCheckHook,
   pythonOlder,
   respx,
@@ -16,9 +16,13 @@
 buildPythonPackage {
   inherit (opentelemetry-instrumentation) version src;
   pname = "opentelemetry-instrumentation-httpx";
-  pyproject = true;
+  doCheck = pythonOlder "3.14";
 
-  sourceRoot = "${opentelemetry-instrumentation.src.name}/instrumentation/opentelemetry-instrumentation-httpx";
+  nativeCheckInputs = [
+    opentelemetry-test-utils
+    pytestCheckHook
+    respx
+  ];
 
   build-system = [ hatchling ];
 
@@ -30,18 +34,12 @@ buildPythonPackage {
     opentelemetry-util-http
   ];
 
-  nativeCheckInputs = [
-    opentelemetry-test-utils
-    pytestCheckHook
-    respx
-  ];
-
-  doCheck = pythonOlder "3.14";
-
+  pyproject = true;
   pythonImportsCheck = [ "opentelemetry.instrumentation.httpx" ];
+  sourceRoot = "${opentelemetry-instrumentation.src.name}/instrumentation/opentelemetry-instrumentation-httpx";
 
   meta = opentelemetry-instrumentation.meta // {
-    homepage = "https://github.com/open-telemetry/opentelemetry-python-contrib/blob/main/instrumentation/opentelemetry-instrumentation-httpx";
     description = "Allows tracing HTTP requests made by the httpx library";
+    homepage = "https://github.com/open-telemetry/opentelemetry-python-contrib/blob/main/instrumentation/opentelemetry-instrumentation-httpx";
   };
 }

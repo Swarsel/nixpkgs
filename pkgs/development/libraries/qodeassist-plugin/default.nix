@@ -1,18 +1,18 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
-  runCommand,
   cmake,
-  pkg-config,
-  qttools,
-  ninja,
   cups,
   curl,
   libGL,
-  qtbase,
+  ninja,
+  pkg-config,
   qt5compat,
+  qtbase,
   qtcreator,
+  qttools,
+  runCommand,
   vulkan-headers,
 }:
 stdenv.mkDerivation (finalAttrs: {
@@ -26,7 +26,7 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-8GU19EWxwxHyjmSVBzTiz5qTrQr5WhLpWowispKUSyQ=";
   };
 
-  dontWrapQtApps = true;
+  outputs = [ "out" ];
 
   nativeBuildInputs = [
     cmake
@@ -45,11 +45,9 @@ stdenv.mkDerivation (finalAttrs: {
     vulkan-headers
   ];
 
-  outputs = [ "out" ];
-
   cmakeFlags = [ ];
-
   installPhase = "mkdir -p $out; cp -R lib $out/";
+  dontWrapQtApps = true;
 
   passthru.tests = {
     test-version = runCommand "${finalAttrs.pname}-test" { } ''
@@ -62,6 +60,7 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "AI-powered coding assistant plugin for Qt Creator";
+
     longDescription = ''
       QodeAssist is an AI-powered coding assistant plugin for Qt Creator.
       It provides intelligent code completion and suggestions for C++ and QML,
@@ -69,6 +68,7 @@ stdenv.mkDerivation (finalAttrs: {
       Enhance your coding productivity with context-aware AI assistance directly
       in your Qt development environment.
     '';
+
     homepage = "https://github.com/Palm1r/QodeAssist";
     license = lib.licenses.gpl3Only;
     maintainers = [ lib.maintainers.zatm8 ];

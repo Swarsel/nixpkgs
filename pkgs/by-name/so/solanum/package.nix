@@ -2,24 +2,21 @@
   lib,
   stdenv,
   fetchFromGitHub,
-
+  bison,
+  flex,
   # build
   libtool,
-  bison,
-  meson,
-  ninja,
-  flex,
-
+  libxcrypt,
   # runtime
   lksctp-tools,
-  vectorscan,
-  libxcrypt,
+  meson,
+  ninja,
+  nixosTests,
   openssl,
   pkg-config,
   sqlite,
   unstableGitUpdater,
-  nixosTests,
-
+  vectorscan,
   # flags
   withSCTP ? lib.meta.availableOn stdenv.hostPlatform lksctp-tools,
 }:
@@ -43,19 +40,6 @@ stdenv.mkDerivation (finalAttrs: {
     sed -i "/install_emptydir/d" meson.build
   '';
 
-  mesonBuildType = "debugoptimized";
-  mesonFlags = [
-    # (lib.mesonOption "custom_version" finalAttrs.src.rev)
-    (lib.mesonBool "fhs_paths" true)
-    (lib.mesonOption "localstatedir" "/var")
-    (lib.mesonOption "logdir" "/var/log")
-    (lib.mesonOption "rundir" "/run")
-    (lib.mesonEnable "mbedtls" false)
-    (lib.mesonEnable "openssl" true)
-    (lib.mesonEnable "gnutls" false)
-    (lib.mesonEnable "sctp" withSCTP)
-  ];
-
   nativeBuildInputs = [
     bison
     flex
@@ -75,9 +59,21 @@ stdenv.mkDerivation (finalAttrs: {
     lksctp-tools
   ];
 
-  doCheck = !stdenv.hostPlatform.isDarwin;
+  mesonFlags = [
+    # (lib.mesonOption "custom_version" finalAttrs.src.rev)
+    (lib.mesonBool "fhs_paths" true)
+    (lib.mesonOption "localstatedir" "/var")
+    (lib.mesonOption "logdir" "/var/log")
+    (lib.mesonOption "rundir" "/run")
+    (lib.mesonEnable "mbedtls" false)
+    (lib.mesonEnable "openssl" true)
+    (lib.mesonEnable "gnutls" false)
+    (lib.mesonEnable "sctp" withSCTP)
+  ];
 
+  doCheck = !stdenv.hostPlatform.isDarwin;
   enableParallelBuilding = true;
+  mesonBuildType = "debugoptimized";
 
   passthru = {
     tests = { inherit (nixosTests) solanum; };
@@ -85,12 +81,12 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   meta = {
-    broken = stdenv.hostPlatform.isDarwin;
     description = "IRCd for unified networks";
     homepage = "https://github.com/solanum-ircd/solanum";
     license = lib.licenses.gpl2Plus;
     maintainers = with lib.maintainers; [ hexa ];
-    mainProgram = "solanum";
     platforms = lib.platforms.unix;
+    mainProgram = "solanum";
+    broken = stdenv.hostPlatform.isDarwin;
   };
 })

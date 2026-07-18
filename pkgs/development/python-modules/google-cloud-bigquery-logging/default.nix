@@ -15,19 +15,20 @@
 buildPythonPackage (finalAttrs: {
   pname = "google-cloud-bigquery-logging";
   version = "1.10.0";
-  pyproject = true;
 
   src = fetchPypi {
-    pname = "google_cloud_bigquery_logging";
     inherit (finalAttrs) version;
     hash = "sha256-/uWxsAr51ZW68LWrAXcaTAWwO5zuRo0eA77GLJacWa8=";
+    pname = "google_cloud_bigquery_logging";
   };
 
-  build-system = [ setuptools ];
-
-  pythonRelaxDeps = [
-    "protobuf"
+  nativeCheckInputs = [
+    mock
+    pytestCheckHook
+    pytest-asyncio
   ];
+
+  build-system = [ setuptools ];
 
   dependencies = [
     google-api-core
@@ -37,15 +38,15 @@ buildPythonPackage (finalAttrs: {
   ]
   ++ google-api-core.optional-dependencies.grpc;
 
-  nativeCheckInputs = [
-    mock
-    pytestCheckHook
-    pytest-asyncio
-  ];
+  pyproject = true;
 
   pythonImportsCheck = [
     "google.cloud.bigquery_logging"
     "google.cloud.bigquery_logging_v1"
+  ];
+
+  pythonRelaxDeps = [
+    "protobuf"
   ];
 
   meta = {

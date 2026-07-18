@@ -2,12 +2,12 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  makeWrapper,
-  sqlite,
-  python3,
   coreutils,
   findutils,
   gnused,
+  makeWrapper,
+  python3,
+  sqlite,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -55,10 +55,10 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Analyze GHC .dump-timings files";
-    mainProgram = "time-ghc-modules";
     homepage = "https://github.com/codedownio/time-ghc-modules";
     license = lib.licenses.mit;
     maintainers = [ lib.maintainers.thomasjm ];
     platforms = lib.platforms.all;
+    mainProgram = "time-ghc-modules";
   };
 })

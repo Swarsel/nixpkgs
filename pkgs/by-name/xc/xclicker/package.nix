@@ -2,12 +2,12 @@
   lib,
   stdenv,
   fetchFromGitHub,
+  gtk3,
+  libxtst,
   meson,
   ninja,
   pkg-config,
   wrapGAppsHook3,
-  gtk3,
-  libxtst,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -33,8 +33,6 @@ stdenv.mkDerivation (finalAttrs: {
     libxtst
   ];
 
-  mesonBuildType = "release";
-
   installPhase = ''
     runHook preInstall
     install -Dm755 ./src/xclicker $out/bin/xclicker
@@ -43,16 +41,20 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  mesonBuildType = "release";
+
   meta = {
-    changelog = "https://github.com/robiot/xclicker/releases/tag/${finalAttrs.src.tag}";
     description = "Fast gui autoclicker for x11 linux desktops";
     homepage = "https://xclicker.xyz/";
+    changelog = "https://github.com/robiot/xclicker/releases/tag/${finalAttrs.src.tag}";
     license = lib.licenses.gpl3Only;
-    mainProgram = "xclicker";
+
     maintainers = with lib.maintainers; [
       gepbird
       tomasajt
     ];
+
     platforms = lib.platforms.linux;
+    mainProgram = "xclicker";
   };
 })

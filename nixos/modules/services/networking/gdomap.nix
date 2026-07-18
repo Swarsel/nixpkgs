@@ -21,11 +21,11 @@
     # NOTE: gdomap runs as root
     # TODO: extra user for gdomap?
     systemd.services.gdomap = {
-      description = "gdomap server";
-      wantedBy = [ "multi-user.target" ];
       after = [ "network.target" ];
+      description = "gdomap server";
       path = [ pkgs.gnustep-base ];
       serviceConfig.ExecStart = "${pkgs.gnustep-base}/bin/gdomap -f";
+      wantedBy = [ "multi-user.target" ];
     };
   };
 }

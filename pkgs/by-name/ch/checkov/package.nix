@@ -11,6 +11,7 @@ let
       # Requires 'cyclonedx-python-lib = ">=6.0.0,<8.0.0"'
       cyclonedx-python-lib = super.cyclonedx-python-lib.overridePythonAttrs (oldAttrs: rec {
         version = "7.6.2";
+
         src = fetchFromGitHub {
           owner = "CycloneDX";
           repo = "cyclonedx-python-lib";
@@ -36,7 +37,6 @@ in
 python3.pkgs.buildPythonApplication (finalAttrs: {
   pname = "checkov";
   version = "3.3.6";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "bridgecrewio";
@@ -45,35 +45,24 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     hash = "sha256-4wOFbEv1MVVuMpYQLs+oHQxCLw/tk++yTiR+yyLiCa8=";
   };
 
-  pythonRelaxDeps = [
-    "aiodns" # breaking change is that it requires pycares >= 5.0.0, which is fine.
-    "asteval"
-    "bc-detect-secrets"
-    "bc-python-hcl2"
-    "boto3"
-    "botocore"
-    "cachetools"
-    "cloudsplaining"
-    "dpath"
-    "igraph"
-    "importlib-metadata"
-    "license-expression"
-    "networkx"
-    "openai"
-    "packageurl-python"
-    "packaging"
-    "pycep-parser"
-    "rustworkx"
-    "schema"
-    "tabulate"
-    "termcolor"
-    "urllib3"
+  nativeCheckInputs = with py.pkgs; [
+    aioresponses
+    distutils
+    mock
+    pytest-asyncio
+    pytest-mock
+    pytest-xdist
+    pytestCheckHook
+    responses
   ];
 
-  pythonRemoveDeps = [
-    # pythonRelaxDeps doesn't work with that one
-    "pycep-parser"
-  ];
+  preCheck = ''
+    export HOME=$(mktemp -d);
+  '';
+
+  postInstall = ''
+    chmod +x $out/bin/checkov
+  '';
 
   build-system = with py.pkgs; [ setuptools-scm ];
 
@@ -123,20 +112,30 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     update-checker
   ];
 
-  nativeCheckInputs = with py.pkgs; [
-    aioresponses
-    distutils
-    mock
-    pytest-asyncio
-    pytest-mock
-    pytest-xdist
-    pytestCheckHook
-    responses
+  disabledTestPaths = [
+    # Tests are pulling from external sources
+    # https://github.com/bridgecrewio/checkov/blob/f03a4204d291cf47e3753a02a9b8c8d805bbd1be/.github/workflows/build.yml
+    "integration_tests/"
+    "tests/ansible/"
+    "tests/arm/"
+    "tests/bicep/"
+    "tests/cloudformation/"
+    "tests/common/"
+    "tests/dockerfile/"
+    "tests/generic_json/"
+    "tests/generic_yaml/"
+    "tests/github_actions/"
+    "tests/github/"
+    "tests/kubernetes/"
+    "tests/sca_package_2"
+    "tests/terraform/"
+    "cdk_integration_tests/"
+    "sast_integration_tests"
+    # Performance tests have no value for us
+    "performance_tests/test_checkov_performance.py"
+    # No Helm
+    "dogfood_tests/test_checkov_dogfood.py"
   ];
-
-  preCheck = ''
-    export HOME=$(mktemp -d);
-  '';
 
   disabledTests = [
     # No API key available
@@ -164,47 +163,51 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     "test_entrypoint"
   ];
 
-  disabledTestPaths = [
-    # Tests are pulling from external sources
-    # https://github.com/bridgecrewio/checkov/blob/f03a4204d291cf47e3753a02a9b8c8d805bbd1be/.github/workflows/build.yml
-    "integration_tests/"
-    "tests/ansible/"
-    "tests/arm/"
-    "tests/bicep/"
-    "tests/cloudformation/"
-    "tests/common/"
-    "tests/dockerfile/"
-    "tests/generic_json/"
-    "tests/generic_yaml/"
-    "tests/github_actions/"
-    "tests/github/"
-    "tests/kubernetes/"
-    "tests/sca_package_2"
-    "tests/terraform/"
-    "cdk_integration_tests/"
-    "sast_integration_tests"
-    # Performance tests have no value for us
-    "performance_tests/test_checkov_performance.py"
-    # No Helm
-    "dogfood_tests/test_checkov_dogfood.py"
-  ];
-
+  pyproject = true;
   pythonImportsCheck = [ "checkov" ];
 
-  postInstall = ''
-    chmod +x $out/bin/checkov
-  '';
+  pythonRelaxDeps = [
+    "aiodns" # breaking change is that it requires pycares >= 5.0.0, which is fine.
+    "asteval"
+    "bc-detect-secrets"
+    "bc-python-hcl2"
+    "boto3"
+    "botocore"
+    "cachetools"
+    "cloudsplaining"
+    "dpath"
+    "igraph"
+    "importlib-metadata"
+    "license-expression"
+    "networkx"
+    "openai"
+    "packageurl-python"
+    "packaging"
+    "pycep-parser"
+    "rustworkx"
+    "schema"
+    "tabulate"
+    "termcolor"
+    "urllib3"
+  ];
+
+  pythonRemoveDeps = [
+    # pythonRelaxDeps doesn't work with that one
+    "pycep-parser"
+  ];
 
   meta = {
     description = "Static code analysis tool for infrastructure-as-code";
-    homepage = "https://github.com/bridgecrewio/checkov";
-    changelog = "https://github.com/bridgecrewio/checkov/releases/tag/${finalAttrs.version}";
+
     longDescription = ''
       Prevent cloud misconfigurations during build-time for Terraform, Cloudformation,
       Kubernetes, Serverless framework and other infrastructure-as-code-languages.
     '';
-    mainProgram = "checkov";
+
+    homepage = "https://github.com/bridgecrewio/checkov";
+    changelog = "https://github.com/bridgecrewio/checkov/releases/tag/${finalAttrs.version}";
     license = lib.licenses.asl20;
     maintainers = with lib.maintainers; [ fab ];
+    mainProgram = "checkov";
   };
 })

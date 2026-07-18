@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   pytest-mock,
   pytestCheckHook,
   requests,
@@ -11,7 +11,6 @@
 buildPythonPackage rec {
   pname = "pydiscourse";
   version = "1.7.0";
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "pydiscourse";
@@ -28,14 +27,15 @@ buildPythonPackage rec {
     requests-mock
   ];
 
+  format = "setuptools";
   pythonImportsCheck = [ "pydiscourse" ];
 
   meta = {
     description = "Python library for working with Discourse";
-    mainProgram = "pydiscoursecli";
     homepage = "https://github.com/pydiscourse/pydiscourse";
     changelog = "https://github.com/pydiscourse/pydiscourse/releases/tag/v${version}";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ Dettorer ];
+    mainProgram = "pydiscoursecli";
   };
 }

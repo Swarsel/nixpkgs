@@ -3,9 +3,9 @@
   stdenv,
   fetchFromGitHub,
   autoreconfHook,
-  libtool,
-  fftw,
   eigen,
+  fftw,
+  libtool,
   qt5,
 }:
 
@@ -38,8 +38,6 @@ stdenv.mkDerivation (finalAttrs: {
     qt5.qtcharts
   ];
 
-  autoreconfFlags = [ "--install" ];
-
   postBuild = ''
     pushd libxavna/xavna_mock_ui/
     qmake
@@ -68,13 +66,15 @@ stdenv.mkDerivation (finalAttrs: {
     qtWrapperArgs+=(--prefix LD_LIBRARY_PATH : "$out/lib")
   '';
 
+  autoreconfFlags = [ "--install" ];
+
   meta = {
     description = "PC GUI software for NanoVNA V2 series";
     homepage = "https://nanorfe.com/nanovna-v2.html";
-    mainProgram = "vna_qt";
-    license = lib.licenses.gpl2Only;
     changelog = "https://github.com/nanovna-v2/NanoVNA-QT/releases/tag/v${finalAttrs.version}";
+    license = lib.licenses.gpl2Only;
     maintainers = with lib.maintainers; [ chuangzhu ];
     platforms = lib.platforms.linux;
+    mainProgram = "vna_qt";
   };
 })

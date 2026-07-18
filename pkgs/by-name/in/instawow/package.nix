@@ -1,14 +1,13 @@
 {
   lib,
-  python3,
   fetchFromGitHub,
+  python3,
   plugins ? [ ],
 }:
 
 python3.pkgs.buildPythonApplication (finalAttrs: {
   pname = "instawow";
   version = "7.0.0.post1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "layday";
@@ -17,12 +16,11 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     hash = "sha256-z7O3BHi0OECHSJF6v1ran5ALWe9PU4DxPijuN7yQJ+Q=";
   };
 
-  extras = [ ]; # Disable GUI, most dependencies are not packaged.
-
   nativeBuildInputs = with python3.pkgs; [
     hatchling
     hatch-vcs
   ];
+
   propagatedBuildInputs =
     with python3.pkgs;
     [
@@ -45,11 +43,14 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     ]
     ++ plugins;
 
+  extras = [ ]; # Disable GUI, most dependencies are not packaged.
+  pyproject = true;
+
   meta = {
-    homepage = "https://github.com/layday/instawow";
     description = "World of Warcraft add-on manager CLI and GUI";
-    mainProgram = "instawow";
+    homepage = "https://github.com/layday/instawow";
     license = lib.licenses.gpl3;
     maintainers = with lib.maintainers; [ seirl ];
+    mainProgram = "instawow";
   };
 })

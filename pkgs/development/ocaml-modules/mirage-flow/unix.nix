@@ -1,18 +1,17 @@
 {
+  alcotest,
   buildDunePackage,
+  cstruct,
   fmt,
   logs,
-  mirage-flow,
   lwt,
-  cstruct,
-  alcotest,
+  mirage-flow,
   mirage-flow-combinators,
 }:
 
 buildDunePackage {
-  pname = "mirage-flow-unix";
-
   inherit (mirage-flow) version src;
+  pname = "mirage-flow-unix";
 
   propagatedBuildInputs = [
     fmt
@@ -23,6 +22,7 @@ buildDunePackage {
   ];
 
   doCheck = true;
+
   checkInputs = [
     alcotest
     mirage-flow-combinators

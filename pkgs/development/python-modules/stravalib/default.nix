@@ -1,8 +1,8 @@
 {
   lib,
+  fetchFromGitHub,
   arrow,
   buildPythonPackage,
-  fetchFromGitHub,
   pint,
   pydantic,
   pytz,
@@ -15,7 +15,6 @@
 buildPythonPackage rec {
   pname = "stravalib";
   version = "2.5.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "stravalib";
@@ -23,6 +22,9 @@ buildPythonPackage rec {
     tag = "v${version}";
     hash = "sha256-3xmWg20fbp2tbwPNcxLtWSVajgeyDoZfRTQbwROEGVE=";
   };
+
+  # Tests require network access, testing strava API
+  doCheck = false;
 
   build-system = [
     setuptools
@@ -38,9 +40,7 @@ buildPythonPackage rec {
     responses
   ];
 
-  # Tests require network access, testing strava API
-  doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "stravalib" ];
 
   meta = {

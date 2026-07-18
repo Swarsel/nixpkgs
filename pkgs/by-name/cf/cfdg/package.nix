@@ -2,16 +2,17 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  libpng,
   bison,
-  flex,
   ffmpeg,
+  flex,
   icu,
+  libpng,
 }:
 
 stdenv.mkDerivation rec {
   pname = "cfdg";
   version = "3.4.3";
+
   src = fetchFromGitHub {
     owner = "MtnViewJohn";
     repo = "context-free";
@@ -19,20 +20,21 @@ stdenv.mkDerivation rec {
     sha256 = "sha256-a/HmB2AkhcibCxzHfiNjnUiYmz5hrfZVs7aZZu5IBIw=";
   };
 
+  postPatch = ''
+    sed -e "/YY_NO_UNISTD/a#include <stdio.h>" -i src-common/cfdg.l
+    sed -e '1i#include <algorithm>' -i src-common/{cfdg,builder,ast}.cpp
+  '';
+
   nativeBuildInputs = [
     bison
     flex
   ];
+
   buildInputs = [
     libpng
     ffmpeg
     icu
   ];
-
-  postPatch = ''
-    sed -e "/YY_NO_UNISTD/a#include <stdio.h>" -i src-common/cfdg.l
-    sed -e '1i#include <algorithm>' -i src-common/{cfdg,builder,ast}.cpp
-  '';
 
   installPhase = ''
     runHook preInstall
@@ -48,10 +50,10 @@ stdenv.mkDerivation rec {
 
   meta = {
     description = "Context-free design grammar - a tool for graphics generation";
-    maintainers = with lib.maintainers; [ raskin ];
-    platforms = lib.platforms.linux;
     homepage = "https://contextfreeart.org/";
     license = lib.licenses.gpl2Only;
+    maintainers = with lib.maintainers; [ raskin ];
+    platforms = lib.platforms.linux;
     mainProgram = "cfdg";
   };
 }

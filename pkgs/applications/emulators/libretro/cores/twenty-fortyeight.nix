@@ -4,7 +4,6 @@
   mkLibretroCore,
 }:
 mkLibretroCore {
-  core = "2048";
   version = "0-unstable-2026-04-10";
 
   src = fetchFromGitHub {
@@ -13,6 +12,8 @@ mkLibretroCore {
     rev = "c90437d3c3913999624deca3fb55ecfa632b72c4";
     hash = "sha256-dE3PanK+rpf01R4aoD3KMwVhEVvmmVS2klVPQUGTUC0=";
   };
+
+  core = "2048";
 
   meta = {
     description = "Port of 2048 puzzle game to libretro";

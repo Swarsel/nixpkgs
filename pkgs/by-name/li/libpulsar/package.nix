@@ -2,28 +2,26 @@
   lib,
   stdenv,
   fetchFromGitHub,
-
   asio_1_32_0,
   boost,
   boost186,
+  cmake,
+  curl,
+  gtest,
+  jsoncpp,
   log4cxx,
+  openssl,
+  pkg-config,
+  protobuf_21,
   snappy,
   zlib,
   zstd,
-  gtest,
-  cmake,
-  curl,
-  protobuf_21,
-  jsoncpp,
-  openssl,
-  pkg-config,
-
   asioSupport ? true,
+  gtestSupport ? false,
   log4cxxSupport ? false,
   snappySupport ? false,
   zlibSupport ? true,
   zstdSupport ? true,
-  gtestSupport ? false,
 }:
 
 let
@@ -39,6 +37,8 @@ stdenv.mkDerivation (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-+gGddndiRot2kW7KGuKfWA85mh8e+9PetnEBQvfZB1I=";
   };
+
+  strictDeps = true;
 
   nativeBuildInputs = [
     cmake
@@ -77,8 +77,6 @@ stdenv.mkDerivation (finalAttrs: {
     boost186
   ];
 
-  strictDeps = true;
-
   cmakeFlags = [
     (lib.cmakeBool "BUILD_TESTS" gtestSupport)
     (lib.cmakeBool "USE_LOG4CXX" log4cxxSupport)
@@ -88,6 +86,7 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   doInstallCheck = true;
+
   installCheckPhase = ''
     echo ${lib.escapeShellArg ''
       #include <pulsar/Client.h>
@@ -103,8 +102,8 @@ stdenv.mkDerivation (finalAttrs: {
     description = "Apache Pulsar C++ library";
     homepage = "https://pulsar.apache.org/docs/next/client-libraries-cpp/";
     changelog = "https://github.com/apache/pulsar-client-cpp/releases/tag/${finalAttrs.src.tag}";
-    platforms = lib.platforms.all;
     license = lib.licenses.asl20;
     maintainers = with lib.maintainers; [ corbanr ];
+    platforms = lib.platforms.all;
   };
 })

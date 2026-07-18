@@ -1,9 +1,8 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
   asgiref,
+  buildPythonPackage,
   greenlet,
   importlib-metadata,
   outcome,
@@ -14,7 +13,6 @@
 buildPythonPackage rec {
   pname = "greenback";
   version = "1.3.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "oremanj";
@@ -35,6 +33,7 @@ buildPythonPackage rec {
     sniffio
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "greenback" ];
 
   meta = {

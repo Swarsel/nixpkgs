@@ -1,8 +1,8 @@
 {
   lib,
+  beziers,
   buildPythonPackage,
   fetchPypi,
-  beziers,
   glyphslib,
   numpy,
 }:
@@ -10,7 +10,6 @@
 buildPythonPackage rec {
   pname = "glyphtools";
   version = "0.8.0";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
@@ -26,7 +25,7 @@ buildPythonPackage rec {
   # A unit test suite does exist, but it only contains a dummy test that
   # imports the library.
   doCheck = false;
-
+  format = "setuptools";
   pythonImportsCheck = [ "glyphtools" ];
 
   meta = {

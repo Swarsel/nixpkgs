@@ -1,9 +1,9 @@
 {
   lib,
-  cmake,
-  fetchFromGitHub,
-  nix-update-script,
   stdenv,
+  fetchFromGitHub,
+  cmake,
+  nix-update-script,
   testers,
 }:
 
@@ -22,16 +22,16 @@ stdenv.mkDerivation (finalAttrs: {
   nativeBuildInputs = [ cmake ];
 
   passthru = {
-    updateScript = nix-update-script { };
     tests = testers.testVersion { package = finalAttrs.finalPackage; };
+    updateScript = nix-update-script { };
   };
 
   meta = {
     description = "Lightweight STUN/TURN server";
     homepage = "https://github.com/paullouisageneau/violet";
     license = lib.licenses.gpl2Only;
-    mainProgram = "violet";
     maintainers = with lib.maintainers; [ oluceps ];
     platforms = lib.platforms.all;
+    mainProgram = "violet";
   };
 })

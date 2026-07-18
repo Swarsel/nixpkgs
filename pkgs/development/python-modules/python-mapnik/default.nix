@@ -1,37 +1,36 @@
 {
   lib,
-  buildPythonPackage,
-  fetchFromGitHub,
-  replaceVars,
-  isPyPy,
-  python,
   stdenv,
-  setuptools,
-  pillow,
-  pycairo,
-  pkg-config,
+  fetchFromGitHub,
   boost,
+  buildPythonPackage,
   cairo,
   harfbuzz,
   icu,
+  isPyPy,
   libjpeg,
   libpng,
   libtiff,
   libwebp,
-  mapnik,
-  proj,
-  zlib,
   libxml2,
-  sqlite,
-  pytestCheckHook,
-  sparsehash,
+  mapnik,
+  pillow,
+  pkg-config,
+  proj,
   pybind11,
+  pycairo,
+  pytestCheckHook,
+  python,
+  replaceVars,
+  setuptools,
+  sparsehash,
+  sqlite,
+  zlib,
 }:
 
 buildPythonPackage {
   pname = "python-mapnik";
   version = "4.1.3.unstable-2025-09-25";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "mapnik";
@@ -50,29 +49,10 @@ buildPythonPackage {
     })
   ];
 
-  build-system = [ setuptools ];
-
   nativeBuildInputs = [
     mapnik # for mapnik_config
     pkg-config
     pybind11
-  ];
-
-  dependencies = [
-    mapnik
-    boost
-    cairo
-    harfbuzz
-    icu
-    libjpeg
-    libpng
-    libtiff
-    libwebp
-    proj
-    zlib
-    libxml2
-    sqlite
-    sparsehash
   ];
 
   propagatedBuildInputs = [
@@ -81,8 +61,6 @@ buildPythonPackage {
   ];
 
   configureFlags = [ "XMLPARSER=libxml2" ];
-
-  disabled = isPyPy;
 
   preBuild = ''
     export BOOST_PYTHON_LIB="boost_python${"${lib.versions.major python.version}${lib.versions.minor python.version}"}"
@@ -103,6 +81,27 @@ buildPythonPackage {
     sed -i "s,/tmp,$TMPDIR,g" test/python_tests/*.py
   '';
 
+  build-system = [ setuptools ];
+
+  dependencies = [
+    mapnik
+    boost
+    cairo
+    harfbuzz
+    icu
+    libjpeg
+    libpng
+    libtiff
+    libwebp
+    proj
+    zlib
+    libxml2
+    sqlite
+    sparsehash
+  ];
+
+  disabled = isPyPy;
+
   # https://github.com/mapnik/python-mapnik/issues/255
   disabledTests = [
     "test_geometry_type"
@@ -122,13 +121,14 @@ buildPythonPackage {
     "test_pycairo_svg_surface3"
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "mapnik" ];
 
   meta = {
     description = "Python bindings for Mapnik";
     homepage = "https://mapnik.org";
     license = lib.licenses.lgpl21Plus;
-    teams = [ lib.teams.geospatial ];
     broken = true;
+    teams = [ lib.teams.geospatial ];
   };
 }

@@ -1,20 +1,19 @@
 {
   lib,
+  stdenv,
+  fetchFromGitHub,
   blas,
-  lapack,
   buildPythonPackage,
   cffi,
-  fetchFromGitHub,
-  setuptools,
-  pytestCheckHook,
+  lapack,
   numpy,
-  stdenv,
+  pytestCheckHook,
+  setuptools,
 }:
 
 buildPythonPackage {
   pname = "prox-tv";
   version = "3.3.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "albarji";
@@ -23,6 +22,12 @@ buildPythonPackage {
     sha256 = "0mlrjbb5rw78dgijkr3bspmsskk6jqs9y7xpsgs35i46dvb327q5";
   };
 
+  buildInputs = [
+    blas
+    lapack
+  ];
+
+  nativeCheckInputs = [ pytestCheckHook ];
   build-system = [ setuptools ];
 
   dependencies = [
@@ -30,22 +35,14 @@ buildPythonPackage {
     cffi
   ];
 
-  buildInputs = [
-    blas
-    lapack
-  ];
-
-  propagatedNativeBuildInputs = [ cffi ];
-
-  enableParallelBuilding = true;
-
-  nativeCheckInputs = [ pytestCheckHook ];
-
   disabledTests = [ "test_tvp_1d" ] ++ lib.optionals stdenv.hostPlatform.isDarwin [ "test_tv2_1d" ];
+  enableParallelBuilding = true;
+  propagatedNativeBuildInputs = [ cffi ];
+  pyproject = true;
 
   meta = {
-    homepage = "https://github.com/albarji/proxTV";
     description = "Toolbox for fast Total Variation proximity operators";
+    homepage = "https://github.com/albarji/proxTV";
     license = lib.licenses.bsd2;
     maintainers = with lib.maintainers; [ multun ];
   };

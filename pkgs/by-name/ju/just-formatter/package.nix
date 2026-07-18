@@ -1,6 +1,6 @@
 {
-  fetchCrate,
   lib,
+  fetchCrate,
   rustPlatform,
 }:
 
@@ -16,8 +16,8 @@ rustPlatform.buildRustPackage (finalAttrs: {
   cargoHash = "sha256-pJVvA2uzZzU5Rvh20gosYeasgCB6GAUjaWwqGWvLqAc=";
 
   meta = {
-    homepage = "https://github.com/eli-yip/just-formatter";
     description = "Format justfile from stdin to stdout";
+    homepage = "https://github.com/eli-yip/just-formatter";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ vuimuich ];
     mainProgram = "just-formatter";

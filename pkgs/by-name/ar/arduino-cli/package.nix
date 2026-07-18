@@ -1,14 +1,14 @@
 {
   lib,
   stdenv,
-  buildGoModule,
   fetchFromGitHub,
   buildFHSEnv,
+  buildGoModule,
+  go-task,
   installShellFiles,
   makeWrapper,
-  writableTmpDirAsHomeHook,
-  go-task,
   python3,
+  writableTmpDirAsHomeHook,
 }:
 
 let
@@ -23,18 +23,6 @@ let
       tag = "v${finalAttrs.version}";
       hash = "sha256-MZX6ERZwmfiJMqx6mQ0qAfv1dbXunTYHRbdzyoinOJY=";
     };
-
-    nativeBuildInputs = [
-      installShellFiles
-      makeWrapper
-      writableTmpDirAsHomeHook
-    ];
-
-    nativeCheckInputs = [ go-task ];
-
-    subPackages = [ "." ];
-
-    vendorHash = "sha256-j5SpZnBWcC8K8lHgc5HOCbGD3DdHr9tVtEhXWTCCogk=";
 
     postPatch =
       let
@@ -54,21 +42,21 @@ let
           --replace-fail "go test" "go test -p $NIX_BUILD_CORES -skip '(${lib.concatStringsSep "|" skipTests})'"
       '';
 
+    nativeBuildInputs = [
+      installShellFiles
+      makeWrapper
+      writableTmpDirAsHomeHook
+    ];
+
+    vendorHash = "sha256-j5SpZnBWcC8K8lHgc5HOCbGD3DdHr9tVtEhXWTCCogk=";
     doCheck = stdenv.hostPlatform.isLinux;
+    nativeCheckInputs = [ go-task ];
 
     checkPhase = ''
       runHook preCheck
       task go:test
       runHook postCheck
     '';
-
-    ldflags = [
-      "-s"
-      "-w"
-      "-X github.com/arduino/arduino-cli/internal/version.versionString=${finalAttrs.version}"
-      "-X github.com/arduino/arduino-cli/internal/version.commit=unknown"
-    ]
-    ++ lib.optionals stdenv.hostPlatform.isLinux [ "-extldflags '-static'" ];
 
     postInstall = ''
       wrapProgram $out/bin/arduino-cli --prefix PATH : ${lib.makeBinPath [ python3 ]}
@@ -80,19 +68,32 @@ let
         --fish <($out/bin/arduino-cli completion fish)
     '';
 
+    ldflags = [
+      "-s"
+      "-w"
+      "-X github.com/arduino/arduino-cli/internal/version.versionString=${finalAttrs.version}"
+      "-X github.com/arduino/arduino-cli/internal/version.commit=unknown"
+    ]
+    ++ lib.optionals stdenv.hostPlatform.isLinux [ "-extldflags '-static'" ];
+
+    subPackages = [ "." ];
+
     meta = {
       inherit (finalAttrs.src.meta) homepage;
       description = "Arduino from the command line";
-      mainProgram = "arduino-cli";
       changelog = "https://github.com/arduino/arduino-cli/releases/tag/${finalAttrs.src.tag}";
+
       license = with lib.licenses; [
         gpl3Only
         asl20
       ];
+
       maintainers = with lib.maintainers; [
         ryantm
         sfrijters
       ];
+
+      mainProgram = "arduino-cli";
     };
 
   });
@@ -105,14 +106,13 @@ if stdenv.hostPlatform.isLinux then
   buildFHSEnv {
     inherit (pkg) pname version meta;
 
-    runScript = "${pkg.outPath}/bin/arduino-cli";
-
     extraInstallCommands = lib.optionalString (stdenv.buildPlatform.canExecute stdenv.hostPlatform) ''
       cp -r ${pkg.outPath}/share $out/share
     '';
-    passthru.pureGoPkg = pkg;
 
+    runScript = "${pkg.outPath}/bin/arduino-cli";
     targetPkgs = pkgs: with pkgs; [ zlib ];
+    passthru.pureGoPkg = pkg;
   }
 else
   pkg

@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   nix-update-script,
   versionCheckHook,
 }:
@@ -17,6 +17,8 @@ buildGoModule (finalAttrs: {
   };
 
   vendorHash = "sha256-fE6GFfrDS3k9BmsL2+UbefG/EQngI/WGRZA3U10VBP4=";
+  doInstallCheck = true;
+  nativeInstallCheckInputs = [ versionCheckHook ];
 
   ldflags = [
     "-s"
@@ -24,9 +26,6 @@ buildGoModule (finalAttrs: {
     "-X github.com/mhersson/mpls/cmd.Version=${finalAttrs.version}"
     "-X github.com/mhersson/mpls/internal/mpls.Version=${finalAttrs.version}"
   ];
-
-  nativeInstallCheckInputs = [ versionCheckHook ];
-  doInstallCheck = true;
 
   passthru.updateScript = nix-update-script { };
 

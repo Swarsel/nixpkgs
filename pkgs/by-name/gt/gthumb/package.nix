@@ -1,35 +1,35 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchurl,
-  gnome,
-  pkg-config,
-  meson,
-  ninja,
-  exiv2,
-  libheif,
-  libjpeg,
-  libtiff,
-  gst_all_1,
-  libraw,
-  glib,
-  gtk3,
-  gsettings-desktop-schemas,
-  libjxl,
-  librsvg,
-  libwebp,
-  libx11,
-  lcms2,
   bison,
   brasero,
-  flex,
   clutter-gtk,
   colord,
-  wrapGAppsHook3,
-  shared-mime-info,
-  python3,
   desktop-file-utils,
+  exiv2,
+  flex,
+  glib,
+  gnome,
+  gsettings-desktop-schemas,
+  gst_all_1,
+  gtk3,
   itstool,
+  lcms2,
+  libheif,
+  libjpeg,
+  libjxl,
+  libraw,
+  librsvg,
+  libtiff,
+  libwebp,
+  libx11,
+  meson,
+  ninja,
+  pkg-config,
+  python3,
+  shared-mime-info,
+  wrapGAppsHook3,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -40,6 +40,15 @@ stdenv.mkDerivation (finalAttrs: {
     url = "mirror://gnome/sources/gthumb/${lib.versions.majorMinor finalAttrs.version}/gthumb-${finalAttrs.version}.tar.xz";
     sha256 = "sha256-MiI0RlPNb7XXmBtzlRrj2QxBT3QiCoschmWyVXQoTHU=";
   };
+
+  postPatch = ''
+    chmod +x gthumb/make-gthumb-h.py
+
+    patchShebangs data/gschemas/make-enums.py \
+      gthumb/make-gthumb-h.py \
+      po/make-potfiles-in.py \
+      gthumb/make-authors-tab.py
+  '';
 
   strictDeps = true;
 
@@ -79,15 +88,6 @@ stdenv.mkDerivation (finalAttrs: {
     libx11
   ];
 
-  postPatch = ''
-    chmod +x gthumb/make-gthumb-h.py
-
-    patchShebangs data/gschemas/make-enums.py \
-      gthumb/make-gthumb-h.py \
-      po/make-potfiles-in.py \
-      gthumb/make-authors-tab.py
-  '';
-
   preFixup = ''
     gappsWrapperArgs+=(--prefix XDG_DATA_DIRS : "${shared-mime-info}/share")
   '';
@@ -100,14 +100,16 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   meta = {
-    homepage = "https://gitlab.gnome.org/GNOME/gthumb";
     description = "Image browser and viewer for GNOME";
-    mainProgram = "gthumb";
-    platforms = lib.platforms.linux;
+    homepage = "https://gitlab.gnome.org/GNOME/gthumb";
     license = lib.licenses.gpl2Plus;
+
     maintainers = with lib.maintainers; [
       bobby285271
       mimame
     ];
+
+    platforms = lib.platforms.linux;
+    mainProgram = "gthumb";
   };
 })

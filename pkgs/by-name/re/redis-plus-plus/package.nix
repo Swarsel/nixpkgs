@@ -40,10 +40,10 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   meta = {
-    homepage = "https://github.com/sewenew/redis-plus-plus";
     description = "Redis client written in C++";
+    homepage = "https://github.com/sewenew/redis-plus-plus";
     license = lib.licenses.asl20;
-    platforms = lib.platforms.unix;
     maintainers = with lib.maintainers; [ wheelsandmetal ];
+    platforms = lib.platforms.unix;
   };
 })

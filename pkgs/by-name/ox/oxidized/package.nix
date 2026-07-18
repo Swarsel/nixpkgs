@@ -1,17 +1,15 @@
 {
   lib,
-  ruby,
   bundlerApp,
   bundlerUpdateScript,
   defaultGemConfig,
   nixosTests,
+  ruby,
 }:
 
 bundlerApp {
-  pname = "oxidized";
-  gemdir = ./.;
-
   inherit ruby;
+  pname = "oxidized";
 
   exes = [
     "oxidized"
@@ -19,6 +17,7 @@ bundlerApp {
   ];
 
   gemConfig = defaultGemConfig;
+  gemdir = ./.;
 
   passthru = {
     tests = nixosTests.oxidized;
@@ -29,11 +28,13 @@ bundlerApp {
     description = "Network device configuration backup tool. It's a RANCID replacement";
     homepage = "https://github.com/ytti/oxidized";
     license = lib.licenses.asl20;
+
     maintainers = with lib.maintainers; [
       nicknovitski
       liberodark
       johannwagner
     ];
+
     platforms = lib.platforms.linux;
   };
 }

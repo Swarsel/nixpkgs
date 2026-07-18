@@ -1,11 +1,11 @@
 {
   lib,
   stdenv,
-  mkDerivation,
   compatIfNeeded,
   compatIsNeeded,
-  libnetbsd,
   libmd,
+  libnetbsd,
+  mkDerivation,
 }:
 
 let
@@ -15,8 +15,10 @@ let
 
 in
 mkDerivation {
-  path = "contrib/mtree";
-  extraPaths = [ "contrib/mknod" ];
+  postPatch = ''
+    ln -s $BSDSRCDIR/contrib/mknod/*.c $BSDSRCDIR/contrib/mknod/*.h $BSDSRCDIR/contrib/mtree
+  '';
+
   buildInputs =
     compatIfNeeded
     ++ lib.optionals (!stdenv.hostPlatform.isFreeBSD) [
@@ -25,10 +27,6 @@ mkDerivation {
     ++ [
       libnetbsd
     ];
-
-  postPatch = ''
-    ln -s $BSDSRCDIR/contrib/mknod/*.c $BSDSRCDIR/contrib/mknod/*.h $BSDSRCDIR/contrib/mtree
-  '';
 
   preBuild = ''
     export NIX_LDFLAGS="$NIX_LDFLAGS ${
@@ -42,4 +40,7 @@ mkDerivation {
       )
     }"
   '';
+
+  extraPaths = [ "contrib/mknod" ];
+  path = "contrib/mtree";
 }

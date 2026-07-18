@@ -1,19 +1,18 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
   aiohttp,
   aioresponses,
+  buildPythonPackage,
   pytest-asyncio,
   pytest-cov-stub,
   pytestCheckHook,
+  setuptools,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "python-duco-connectivity";
   version = "0.7.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "ronaldvdmeer";
@@ -22,10 +21,6 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-Txm7l7fVkEcUIX2J5CEF3OLLgTiT9O/xva0tSCCMZpI=";
   };
 
-  build-system = [ setuptools ];
-
-  dependencies = [ aiohttp ];
-
   nativeCheckInputs = [
     aioresponses
     pytest-asyncio
@@ -33,6 +28,9 @@ buildPythonPackage (finalAttrs: {
     pytestCheckHook
   ];
 
+  build-system = [ setuptools ];
+  dependencies = [ aiohttp ];
+  pyproject = true;
   pythonImportsCheck = [ "duco_connectivity" ];
 
   meta = {

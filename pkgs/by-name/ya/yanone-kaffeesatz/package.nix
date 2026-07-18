@@ -1,7 +1,7 @@
 {
   lib,
-  stdenvNoCC,
   fetchzip,
+  stdenvNoCC,
 }:
 
 stdenvNoCC.mkDerivation {
@@ -10,8 +10,8 @@ stdenvNoCC.mkDerivation {
 
   src = fetchzip {
     url = "https://yanone.de/2015/data/UIdownloads/Yanone%20Kaffeesatz.zip";
-    stripRoot = false;
     hash = "sha256-8yAB73UJ77/c8/VLqiFeT1KtoBQzOh+vWrI+JA2dCoY=";
+    stripRoot = false;
   };
 
   installPhase = ''
@@ -24,9 +24,9 @@ stdenvNoCC.mkDerivation {
 
   meta = {
     description = "Free font classic";
-    maintainers = with lib.maintainers; [ mt-caret ];
-    platforms = with lib.platforms; all;
     homepage = "https://yanone.de/fonts/kaffeesatz/";
     license = lib.licenses.ofl;
+    maintainers = with lib.maintainers; [ mt-caret ];
+    platforms = with lib.platforms; all;
   };
 }

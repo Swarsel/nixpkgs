@@ -1,15 +1,15 @@
 {
-  fetchFromGitHub,
-  fetchpatch2,
   lib,
   stdenv,
-  flex,
-  bison,
+  fetchFromGitHub,
   autoreconfHook,
-  pkg-config,
+  bison,
+  fetchpatch2,
+  flex,
   libtirpc,
-  versionCheckHook,
   nix-update-script,
+  pkg-config,
+  versionCheckHook,
 }:
 
 stdenv.mkDerivation rec {
@@ -31,17 +31,16 @@ stdenv.mkDerivation rec {
   ];
 
   buildInputs = [ libtirpc ];
-
   configureFlags = [ "--disable-shared" ];
-
   doCheck = false; # no test suite
+  doInstallCheck = true;
 
   nativeInstallCheckInputs = [
     versionCheckHook
   ];
+
   versionCheckProgram = "${placeholder "out"}/bin/unfsd";
   versionCheckProgramArg = "-h";
-  doInstallCheck = true;
 
   passthru = {
     updateScript = nix-update-script {
@@ -64,10 +63,9 @@ stdenv.mkDerivation rec {
 
     homepage = "https://unfs3.github.io/";
     changelog = "https://raw.githubusercontent.com/unfs3/unfs3/unfs3-${version}/NEWS";
-    mainProgram = "unfsd";
-
     license = lib.licenses.bsd3;
-    platforms = lib.platforms.unix;
     maintainers = with lib.maintainers; [ tbutter ];
+    platforms = lib.platforms.unix;
+    mainProgram = "unfsd";
   };
 }

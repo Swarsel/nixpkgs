@@ -1,17 +1,16 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   nltk,
-  setuptools,
   pyphen,
-  pytestCheckHook,
   pytest,
+  pytestCheckHook,
+  setuptools,
 }:
 buildPythonPackage (finalAttrs: {
-  version = "0.7.13";
   pname = "textstat";
-  pyproject = true;
+  version = "0.7.13";
 
   src = fetchFromGitHub {
     owner = "textstat";
@@ -20,13 +19,15 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-VMWwhwyGMFaKNLHoDG3gw1/jzSYCDBH3Yq4pE4JZTTo=";
   };
 
-  build-system = [
-    setuptools
-  ];
+  env.NLTK_DATA = nltk.data.cmudict;
 
   nativeCheckInputs = [
     pytestCheckHook
     pytest
+  ];
+
+  build-system = [
+    setuptools
   ];
 
   dependencies = [
@@ -35,15 +36,15 @@ buildPythonPackage (finalAttrs: {
     nltk
   ];
 
-  pythonImportsCheck = [
-    "textstat"
-  ];
-
   enabledTestPaths = [
     "tests/"
   ];
 
-  env.NLTK_DATA = nltk.data.cmudict;
+  pyproject = true;
+
+  pythonImportsCheck = [
+    "textstat"
+  ];
 
   meta = {
     description = "Python package to calculate readability statistics of a text object";

@@ -8,7 +8,6 @@
 buildPythonPackage rec {
   pname = "fastimport";
   version = "0.9.16";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
@@ -16,13 +15,13 @@ buildPythonPackage rec {
   };
 
   nativeCheckInputs = [ unittestCheckHook ];
-
+  format = "setuptools";
   pythonImportsCheck = [ "fastimport" ];
 
   meta = {
-    homepage = "https://github.com/jelmer/python-fastimport";
     description = "VCS fastimport/fastexport parser";
-    maintainers = with lib.maintainers; [ koral ];
+    homepage = "https://github.com/jelmer/python-fastimport";
     license = lib.licenses.gpl2Plus;
+    maintainers = with lib.maintainers; [ koral ];
   };
 }

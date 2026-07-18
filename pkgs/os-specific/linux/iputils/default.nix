@@ -2,17 +2,17 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  meson,
-  ninja,
-  pkg-config,
-  gettext,
-  libxslt,
+  apparmorRulesFromClosure,
   docbook_xsl_ns,
+  gettext,
+  iproute2,
   libcap,
   libidn2,
-  iproute2,
-  apparmorRulesFromClosure,
+  libxslt,
+  meson,
+  ninja,
   nix-update-script,
+  pkg-config,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -32,9 +32,16 @@ stdenv.mkDerivation (finalAttrs: {
     "apparmor"
   ];
 
-  # We don't have the required permissions inside the build sandbox:
-  # /build/source/build/ping/ping: socket: Operation not permitted
-  doCheck = false;
+  nativeBuildInputs = [
+    meson
+    ninja
+    pkg-config
+    gettext
+    libxslt.bin
+    docbook_xsl_ns
+  ];
+
+  buildInputs = [ libcap ] ++ lib.optional (!stdenv.hostPlatform.isMusl) libidn2;
 
   mesonFlags = [
     "-DNO_SETCAP_OR_SUID=true"
@@ -45,15 +52,9 @@ stdenv.mkDerivation (finalAttrs: {
   # Disable idn usage w/musl (https://github.com/iputils/iputils/pull/111):
   ++ lib.optional stdenv.hostPlatform.isMusl "-DUSE_IDN=false";
 
-  nativeBuildInputs = [
-    meson
-    ninja
-    pkg-config
-    gettext
-    libxslt.bin
-    docbook_xsl_ns
-  ];
-  buildInputs = [ libcap ] ++ lib.optional (!stdenv.hostPlatform.isMusl) libidn2;
+  # We don't have the required permissions inside the build sandbox:
+  # /build/source/build/ping/ping: socket: Operation not permitted
+  doCheck = false;
   nativeCheckInputs = [ iproute2 ];
 
   postInstall = ''
@@ -83,9 +84,8 @@ stdenv.mkDerivation (finalAttrs: {
   passthru.updateScript = nix-update-script { };
 
   meta = {
-    homepage = "https://github.com/iputils/iputils";
-    changelog = "https://github.com/iputils/iputils/releases/tag/${finalAttrs.version}";
     description = "Set of small useful utilities for Linux networking";
+
     longDescription = ''
       A set of small useful utilities for Linux networking including:
 
@@ -94,11 +94,16 @@ stdenv.mkDerivation (finalAttrs: {
       - ping: send ICMP ECHO_REQUEST to network hosts
       - tracepath: traces path to a network host discovering MTU along this path
     '';
+
+    homepage = "https://github.com/iputils/iputils";
+    changelog = "https://github.com/iputils/iputils/releases/tag/${finalAttrs.version}";
+
     license = with lib.licenses; [
       gpl2Plus
       bsd3
     ];
-    platforms = lib.platforms.linux;
+
     maintainers = with lib.maintainers; [ mdaniels5757 ];
+    platforms = lib.platforms.linux;
   };
 })

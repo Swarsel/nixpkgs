@@ -1,10 +1,10 @@
 {
   lib,
+  fetchFromGitHub,
   aiohttp,
   aresponses,
   backoff,
   buildPythonPackage,
-  fetchFromGitHub,
   hatchling,
   pytest-asyncio,
   pytestCheckHook,
@@ -15,7 +15,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "aiogithubapi";
   version = "26.0.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "ludeeus";
@@ -24,8 +23,6 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-LQFOmg59kusqYtaLQaFePh+4aM25MaXVNkYy3PIeZ5A=";
   };
 
-  __darwinAllowLocalNetworking = true;
-
   postPatch = ''
     # Upstream is releasing with the help of a CI to PyPI, GitHub releases
     # are not in their focus
@@ -33,16 +30,8 @@ buildPythonPackage (finalAttrs: {
       --replace-fail 'version = "0"' 'version = "${finalAttrs.version}"'
   '';
 
-  build-system = [ hatchling ];
-
-  dependencies = [
-    aiohttp
-    backoff
-  ];
-
   # Optional dependencies for deprecated-verify are not added
   # Only sigstore < 2 is supported
-
   nativeCheckInputs = [
     aresponses
     pytest-asyncio
@@ -50,13 +39,21 @@ buildPythonPackage (finalAttrs: {
     writableTmpDirAsHomeHook
   ];
 
-  pytestFlags = [ "--asyncio-mode=auto" ];
-
   preCheck = ''
     # Need sigstore is an optional dependencies and need <2
     rm -rf tests/test_helper.py
   '';
 
+  __darwinAllowLocalNetworking = true;
+  build-system = [ hatchling ];
+
+  dependencies = [
+    aiohttp
+    backoff
+  ];
+
+  pyproject = true;
+  pytestFlags = [ "--asyncio-mode=auto" ];
   pythonImportsCheck = [ "aiogithubapi" ];
 
   meta = {

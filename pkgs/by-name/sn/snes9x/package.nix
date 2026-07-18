@@ -1,20 +1,21 @@
 {
   lib,
+  stdenv,
+  fetchFromGitHub,
   SDL2,
   alsa-lib,
   cmake,
-  fetchFromGitHub,
   gtkmm3,
   libGLX,
+  libepoxy,
+  libpng,
+  libselinux,
   libx11,
   libxdmcp,
   libxext,
   libxinerama,
   libxrandr,
   libxv,
-  libepoxy,
-  libpng,
-  libselinux,
   minizip,
   ninja,
   pcre2,
@@ -22,7 +23,6 @@
   portaudio,
   pulseaudio,
   python3,
-  stdenv,
   util-linuxMinimal,
   wrapGAppsHook3,
   zlib,
@@ -38,13 +38,25 @@ stdenv.mkDerivation (finalAttrs: {
     owner = "snes9xgit";
     repo = "snes9x";
     tag = finalAttrs.version;
-    fetchSubmodules = true;
     hash = "sha256-INMVyB3alwmsApO7ToAaUWgh7jlg2MeLxqHCEnUO88U=";
+    fetchSubmodules = true;
   };
 
   patches = [
     ./glslang-include-cstdint.patch
   ];
+
+  postPatch = lib.optionalString withGtk ''
+    # Please remove after snes9x > 1.63.  Fixed by upstream:
+    # https://github.com/snes9xgit/snes9x/commit/a4b4b98fffbde417ad550480021db89f18f11a5d.patch
+    substituteInPlace external/SPIRV-Cross/CMakeLists.txt \
+      --replace-fail 'cmake_minimum_required(VERSION 3.0)' 'cmake_minimum_required(VERSION 3.5)'
+
+    substituteInPlace external/glad/src/egl.c \
+      --replace-fail libEGL.so.1 "${lib.getLib libGLX}/lib/libEGL.so.1"
+    substituteInPlace external/glad/src/glx.c \
+      --replace-fail libGL.so.1 ${lib.getLib libGLX}/lib/libGL.so.1
+  '';
 
   nativeBuildInputs = [
     pkg-config
@@ -83,8 +95,6 @@ stdenv.mkDerivation (finalAttrs: {
     SDL2
   ];
 
-  hardeningDisable = [ "format" ];
-
   configureFlags =
     lib.optionals stdenv.hostPlatform.sse4_1Support [
       "--enable-sse41"
@@ -92,18 +102,6 @@ stdenv.mkDerivation (finalAttrs: {
     ++ lib.optionals stdenv.hostPlatform.avx2Support [
       "--enable-avx2"
     ];
-
-  postPatch = lib.optionalString withGtk ''
-    # Please remove after snes9x > 1.63.  Fixed by upstream:
-    # https://github.com/snes9xgit/snes9x/commit/a4b4b98fffbde417ad550480021db89f18f11a5d.patch
-    substituteInPlace external/SPIRV-Cross/CMakeLists.txt \
-      --replace-fail 'cmake_minimum_required(VERSION 3.0)' 'cmake_minimum_required(VERSION 3.5)'
-
-    substituteInPlace external/glad/src/egl.c \
-      --replace-fail libEGL.so.1 "${lib.getLib libGLX}/lib/libEGL.so.1"
-    substituteInPlace external/glad/src/glx.c \
-      --replace-fail libGL.so.1 ${lib.getLib libGLX}/lib/libGL.so.1
-  '';
 
   preConfigure = ''
     cd ${if withGtk then "gtk" else "unix"}
@@ -121,14 +119,15 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   enableParallelBuilding = true;
+  hardeningDisable = [ "format" ];
 
   meta =
     let
       interface = if withGtk then "GTK" else "X11";
     in
     {
-      homepage = "https://www.snes9x.com";
       description = "Super Nintendo Entertainment System (SNES) emulator, ${interface} version";
+
       longDescription = ''
         Snes9x is a portable, freeware Super Nintendo Entertainment System (SNES)
         emulator. It basically allows you to play most games designed for the SNES
@@ -137,16 +136,21 @@ stdenv.mkDerivation (finalAttrs: {
 
         Version build with ${interface} interface.
       '';
+
+      homepage = "https://www.snes9x.com";
+
       license = lib.licenses.unfreeRedistributable // {
         url = "https://github.com/snes9xgit/snes9x/blob/${finalAttrs.src.tag}/LICENSE";
       };
-      mainProgram = "snes9x";
+
       maintainers = with lib.maintainers; [
         qknight
         thiagokokada
         sugar700
       ];
+
       platforms = lib.platforms.unix;
+      mainProgram = "snes9x";
       broken = (withGtk && stdenv.hostPlatform.isDarwin);
     };
 })

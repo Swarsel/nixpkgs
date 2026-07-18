@@ -18,17 +18,12 @@ stdenv.mkDerivation {
   };
 
   nativeBuildInputs = [ autoreconfHook ];
+  configureFlags = lib.optional (payload != null) "--with-payload=${payload}";
 
   preConfigure = ''
     mkdir build
     cd build
   '';
-
-  configureScript = "../configure";
-
-  configureFlags = lib.optional (payload != null) "--with-payload=${payload}";
-
-  hardeningDisable = [ "all" ];
 
   # pk by default installs things in $out/$target_prefix/{bin,include,lib},
   # we want to remove the target prefix directory hierarchy
@@ -38,11 +33,14 @@ stdenv.mkDerivation {
     rmdir $out/.cleanup
   '';
 
+  configureScript = "../configure";
+  hardeningDisable = [ "all" ];
+
   meta = {
     description = "RISC-V Proxy Kernel and Bootloader";
     homepage = "https://github.com/riscv/riscv-pk";
     license = lib.licenses.bsd3;
-    platforms = lib.platforms.riscv;
     maintainers = [ lib.maintainers.shlevy ];
+    platforms = lib.platforms.riscv;
   };
 }

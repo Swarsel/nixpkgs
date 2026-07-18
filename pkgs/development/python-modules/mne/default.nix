@@ -1,38 +1,35 @@
 {
   lib,
-  buildPythonPackage,
-  fetchFromGitHub,
-  pythonAtLeast,
   stdenv,
-  hatchling,
-  hatch-vcs,
-  numpy,
-  scipy,
+  fetchFromGitHub,
+  buildPythonPackage,
+  decorator,
   flaky,
+  h5io,
+  hatch-vcs,
+  hatchling,
+  jinja2,
+  lazy-loader,
+  matplotlib,
+  numpy,
+  optipng,
+  packaging,
   pandas,
-  pytestCheckHook,
+  pooch,
+  procps,
+  pymatreader,
   pytest-cov-stub,
   pytest-timeout,
-  writableTmpDirAsHomeHook,
-  matplotlib,
-  decorator,
-  jinja2,
-  pooch,
+  pytestCheckHook,
+  pythonAtLeast,
+  scipy,
   tqdm,
-  packaging,
-  lazy-loader,
-  h5io,
-  pymatreader,
-  procps,
-  optipng,
+  writableTmpDirAsHomeHook,
 }:
 
 buildPythonPackage rec {
   pname = "mne";
   version = "1.12.1";
-  pyproject = true;
-
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "mne-tools";
@@ -48,6 +45,23 @@ buildPythonPackage rec {
       --replace-fail '"free"'   '"${lib.getExe' procps "free"}"' \
       --replace-fail '"sysctl"' '"${lib.getExe' procps "sysctl"}"'
   '';
+
+  nativeCheckInputs = [
+    flaky
+    pandas
+    pytestCheckHook
+    pytest-cov-stub
+    pytest-timeout
+    writableTmpDirAsHomeHook
+  ]
+  ++ lib.concatAttrValues optional-dependencies;
+
+  preCheck = ''
+    export MNE_SKIP_TESTING_DATASET_TESTS=true
+    export MNE_SKIP_NETWORK_TESTS=1
+  '';
+
+  __structuredAttrs = true;
 
   build-system = [
     hatchling
@@ -66,25 +80,11 @@ buildPythonPackage rec {
     lazy-loader
   ];
 
-  optional-dependencies.hdf5 = [
-    h5io
-    pymatreader
+  disabledTestMarks = [
+    "slowtest"
+    "ultraslowtest"
+    "pgtest"
   ];
-
-  nativeCheckInputs = [
-    flaky
-    pandas
-    pytestCheckHook
-    pytest-cov-stub
-    pytest-timeout
-    writableTmpDirAsHomeHook
-  ]
-  ++ lib.concatAttrValues optional-dependencies;
-
-  preCheck = ''
-    export MNE_SKIP_TESTING_DATASET_TESTS=true
-    export MNE_SKIP_NETWORK_TESTS=1
-  '';
 
   disabledTests = [
     # requires qtbot which is unmaintained/not in Nixpkgs:
@@ -101,22 +101,24 @@ buildPythonPackage rec {
     "test_sys_info_basic"
   ];
 
-  disabledTestMarks = [
-    "slowtest"
-    "ultraslowtest"
-    "pgtest"
+  optional-dependencies.hdf5 = [
+    h5io
+    pymatreader
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "mne" ];
 
   meta = {
     description = "Magnetoencephelography and electroencephalography in Python";
-    mainProgram = "mne";
     homepage = "https://mne.tools";
     changelog = "https://mne.tools/stable/changes/v${lib.versions.majorMinor version}.html";
     license = lib.licenses.bsd3;
+
     maintainers = with lib.maintainers; [
       bcdarwin
     ];
+
+    mainProgram = "mne";
   };
 }

@@ -1,14 +1,13 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   requests,
 }:
 
 buildPythonPackage rec {
   pname = "tahoma-api";
   version = "0.0.17";
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "philklei";
@@ -18,9 +17,9 @@ buildPythonPackage rec {
   };
 
   propagatedBuildInputs = [ requests ];
-
   # Project has no tests
   doCheck = false;
+  format = "setuptools";
   pythonImportsCheck = [ "tahoma_api" ];
 
   meta = {

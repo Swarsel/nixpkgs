@@ -3,9 +3,9 @@
   stdenv,
   fetchurl,
   autoreconfHook,
-  pkg-config,
-  libzen,
   libmediainfo,
+  libzen,
+  pkg-config,
   zlib,
 }:
 
@@ -22,28 +22,29 @@ stdenv.mkDerivation (finalAttrs: {
     autoreconfHook
     pkg-config
   ];
+
   buildInputs = [
     libzen
     libmediainfo
     zlib
   ];
 
-  sourceRoot = "MediaInfo/Project/GNU/CLI";
-
   configureFlags = [ "--with-libmediainfo=${libmediainfo}" ];
-
   enableParallelBuilding = true;
+  sourceRoot = "MediaInfo/Project/GNU/CLI";
 
   meta = {
     description = "Supplies technical and tag information about a video or audio file";
+
     longDescription = ''
       MediaInfo is a convenient unified display of the most relevant technical
       and tag data for video and audio files.
     '';
+
     homepage = "https://mediaarea.net/";
     license = lib.licenses.bsd2;
-    platforms = lib.platforms.unix;
     maintainers = [ lib.maintainers.devhell ];
+    platforms = lib.platforms.unix;
     mainProgram = "mediainfo";
   };
 })

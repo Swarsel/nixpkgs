@@ -2,12 +2,12 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  nodejs,
   fetchPnpmDeps,
-  pnpmConfigHook,
-  pnpm_10,
   makeBinaryWrapper,
   nix-update-script,
+  nodejs,
+  pnpmConfigHook,
+  pnpm_10,
 }:
 let
   pnpm = pnpm_10;
@@ -30,13 +30,6 @@ stdenv.mkDerivation (finalAttrs: {
     makeBinaryWrapper
   ];
 
-  pnpmDeps = fetchPnpmDeps {
-    inherit (finalAttrs) pname version src;
-    inherit pnpm;
-    fetcherVersion = 3;
-    hash = "sha256-DvhUXkh9Ijuik9uWzPOtM1idSNSaJxDiRHWpUMepf3U=";
-  };
-
   buildPhase = ''
     runHook preBuild
 
@@ -58,12 +51,19 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  pnpmDeps = fetchPnpmDeps {
+    inherit (finalAttrs) pname version src;
+    inherit pnpm;
+    fetcherVersion = 3;
+    hash = "sha256-DvhUXkh9Ijuik9uWzPOtM1idSNSaJxDiRHWpUMepf3U=";
+  };
+
   passthru.updateScript = nix-update-script { };
 
   meta = {
-    changelog = "https://github.com/Pana/nrm/releases/tag/v${finalAttrs.version}";
     description = "Helps you switch between npm registries easily";
     homepage = "https://github.com/Pana/nrm";
+    changelog = "https://github.com/Pana/nrm/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.mit;
     maintainers = [ ];
     mainProgram = "nrm";

@@ -1,14 +1,13 @@
 {
   lib,
+  blessed,
   buildPythonPackage,
   fetchPypi,
-  blessed,
 }:
 
 buildPythonPackage rec {
   pname = "dashing";
   version = "0.1.0";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
@@ -16,10 +15,11 @@ buildPythonPackage rec {
   };
 
   propagatedBuildInputs = [ blessed ];
+  format = "setuptools";
 
   meta = {
-    homepage = "https://github.com/FedericoCeratto/dashing";
     description = "Terminal dashboards for Python";
+    homepage = "https://github.com/FedericoCeratto/dashing";
     license = lib.licenses.gpl3;
     maintainers = with lib.maintainers; [ juliusrickert ];
   };

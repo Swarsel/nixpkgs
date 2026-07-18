@@ -1,18 +1,18 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchurl,
-  meson,
-  ninja,
+  gettext,
+  gnome,
+  gssdp_1_6,
+  gtk3,
+  gtksourceview4,
+  gupnp-av,
   gupnp_1_6,
   libsoup_3,
-  gssdp_1_6,
+  meson,
+  ninja,
   pkg-config,
-  gtk3,
-  gettext,
-  gupnp-av,
-  gtksourceview4,
-  gnome,
   wrapGAppsHook3,
 }:
 
@@ -58,7 +58,7 @@ stdenv.mkDerivation (finalAttrs: {
     description = "Set of utilities and demos to work with UPnP";
     homepage = "https://gitlab.gnome.org/GNOME/gupnp-tools";
     license = lib.licenses.gpl2Plus;
-    teams = [ lib.teams.gnome ];
     platforms = lib.platforms.unix;
+    teams = [ lib.teams.gnome ];
   };
 })

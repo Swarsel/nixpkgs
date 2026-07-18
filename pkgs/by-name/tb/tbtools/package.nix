@@ -1,10 +1,10 @@
 {
-  fetchFromGitHub,
   lib,
+  stdenv,
+  fetchFromGitHub,
   nix-update-script,
   pkg-config,
   rustPlatform,
-  stdenv,
   systemd,
 }:
 
@@ -19,8 +19,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-tDAaWFMZeJcU2wzrOD/4DLHerm/Iy56HTe5Qz98I23M=";
   };
 
-  cargoHash = "sha256-94O+ma6twGfXr/QM7nZRmNVV4s4Z2YnsYNsNELjnhiQ=";
-
   nativeBuildInputs = [
     pkg-config
   ];
@@ -28,6 +26,8 @@ rustPlatform.buildRustPackage (finalAttrs: {
   buildInputs = [
     systemd
   ];
+
+  cargoHash = "sha256-94O+ma6twGfXr/QM7nZRmNVV4s4Z2YnsYNsNELjnhiQ=";
 
   passthru = {
     updateScript = nix-update-script { };
@@ -37,10 +37,12 @@ rustPlatform.buildRustPackage (finalAttrs: {
     description = "Thunderbolt/USB4 debugging tools";
     homepage = "https://github.com/intel/tbtools";
     license = lib.licenses.mit;
-    mainProgram = "tblist";
+
     maintainers = with lib.maintainers; [
       felixsinger
     ];
+
     platforms = lib.platforms.linux;
+    mainProgram = "tblist";
   };
 })

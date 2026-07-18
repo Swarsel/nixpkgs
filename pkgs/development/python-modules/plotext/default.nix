@@ -1,13 +1,12 @@
 {
-  buildPythonPackage,
-  fetchFromGitHub,
   lib,
+  fetchFromGitHub,
+  buildPythonPackage,
 }:
 
 buildPythonPackage rec {
   pname = "plotext";
   version = "5.3.2";
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "piccolomo";
@@ -19,14 +18,14 @@ buildPythonPackage rec {
   # Package does not have a conventional test suite that can be run with either
   # `pytestCheckHook` or the standard setuptools testing situation.
   doCheck = false;
-
+  format = "setuptools";
   pythonImportsCheck = [ "plotext" ];
 
   meta = {
     description = "Plotting directly in the terminal";
-    mainProgram = "plotext";
     homepage = "https://github.com/piccolomo/plotext";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ samuela ];
+    mainProgram = "plotext";
   };
 }

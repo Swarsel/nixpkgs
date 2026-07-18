@@ -2,39 +2,39 @@
   lib,
   stdenv,
   fetchurl,
-  dpkg,
-  unzip,
-  autoPatchelfHook,
-  makeWrapper,
-  runtimeShell,
-  glibc,
-  gcc,
-  glib,
-  gtk3,
-  pango,
-  cairo,
-  dbus,
+  alsa-lib,
   at-spi2-atk,
+  autoPatchelfHook,
+  cairo,
   cups,
-  libdrm,
+  dbus,
+  dpkg,
+  expat,
+  gcc,
   gdk-pixbuf,
-  nss,
-  nspr,
-  libxrandr,
-  libxfixes,
-  libxext,
-  libxdamage,
-  libxcomposite,
+  glib,
+  glibc,
+  gtk3,
+  krb5,
+  libGL,
+  libdrm,
+  libgbm,
   libx11,
   libxcb,
-  alsa-lib,
-  expat,
+  libxcomposite,
+  libxdamage,
+  libxext,
+  libxfixes,
   libxkbcommon,
-  libgbm,
-  vulkan-loader,
+  libxrandr,
+  makeWrapper,
+  nspr,
+  nss,
+  pango,
+  runtimeShell,
   systemd,
-  libGL,
-  krb5,
+  unzip,
+  vulkan-loader,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -45,17 +45,18 @@ stdenv.mkDerivation (finalAttrs: {
     let
       selectSystem = attrs: attrs.${stdenv.hostPlatform.system};
       asset = selectSystem {
-        x86_64-linux = "beekeeper-studio_${finalAttrs.version}_amd64.deb";
-        aarch64-linux = "beekeeper-studio_${finalAttrs.version}_arm64.deb";
         aarch64-darwin = "Beekeeper-Studio-${finalAttrs.version}-arm64-mac.zip";
+        aarch64-linux = "beekeeper-studio_${finalAttrs.version}_arm64.deb";
+        x86_64-linux = "beekeeper-studio_${finalAttrs.version}_amd64.deb";
       };
     in
     fetchurl {
       url = "https://github.com/beekeeper-studio/beekeeper-studio/releases/download/v${finalAttrs.version}/${asset}";
+
       hash = selectSystem {
-        x86_64-linux = "sha256-e5y7uBzdbDSUQKpxRjho+2kU3wx23spdSv1PwmJ30gA=";
-        aarch64-linux = "sha256-iuZDeSYljiSRUqtLIA1BcrRaYoqg9dnlbRDLsetVkMQ=";
         aarch64-darwin = "sha256-Jnm4Vfm9+6dXmjnI5gYpYW1g7Anl9xhIKXbQA2SGUDE=";
+        aarch64-linux = "sha256-iuZDeSYljiSRUqtLIA1BcrRaYoqg9dnlbRDLsetVkMQ=";
+        x86_64-linux = "sha256-e5y7uBzdbDSUQKpxRjho+2kU3wx23spdSv1PwmJ30gA=";
       };
     };
 
@@ -98,8 +99,6 @@ stdenv.mkDerivation (finalAttrs: {
     krb5
   ];
 
-  runtimeDependencies = lib.optionals stdenv.hostPlatform.isLinux (lib.getLib systemd);
-
   installPhase = ''
     runHook preInstall
   ''
@@ -126,8 +125,6 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
-  dontFixup = stdenv.hostPlatform.isDarwin;
-
   preFixup = lib.optionalString stdenv.hostPlatform.isLinux ''
     patchelf --add-needed libGL.so.1 \
       --add-needed libEGL.so.1 \
@@ -138,6 +135,8 @@ stdenv.mkDerivation (finalAttrs: {
       } $out/opt/beekeeper-studio/beekeeper-studio-bin
   '';
 
+  dontFixup = stdenv.hostPlatform.isDarwin;
+  runtimeDependencies = lib.optionals stdenv.hostPlatform.isLinux (lib.getLib systemd);
   passthru.updateScript = ./update.sh;
 
   meta = {
@@ -146,16 +145,19 @@ stdenv.mkDerivation (finalAttrs: {
     changelog = "https://github.com/beekeeper-studio/beekeeper-studio/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.gpl3Only;
     sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
-    mainProgram = "beekeeper-studio";
+
     maintainers = with lib.maintainers; [
       milogert
       alexnortung
       iamanaws
     ];
+
     platforms = [
       "aarch64-linux"
       "x86_64-linux"
       "aarch64-darwin"
     ];
+
+    mainProgram = "beekeeper-studio";
   };
 })

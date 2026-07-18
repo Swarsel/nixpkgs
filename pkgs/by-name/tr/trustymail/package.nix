@@ -7,7 +7,6 @@
 python3.pkgs.buildPythonApplication (finalAttrs: {
   pname = "trustymail";
   version = "1.2.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "cisagov";
@@ -15,6 +14,11 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-NF89Am/sG3Ruaws2SUofrbLoEiKdYpgPuXIAKjst9hk=";
   };
+
+  nativeCheckInputs = with python3.pkgs; [
+    pytest-cov-stub
+    pytestCheckHook
+  ];
 
   build-system = with python3.pkgs; [ setuptools ];
 
@@ -30,11 +34,7 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     ]
     ++ publicsuffixlist.optional-dependencies.update;
 
-  nativeCheckInputs = with python3.pkgs; [
-    pytest-cov-stub
-    pytestCheckHook
-  ];
-
+  pyproject = true;
   pythonImportsCheck = [ "trustymail" ];
 
   meta = {

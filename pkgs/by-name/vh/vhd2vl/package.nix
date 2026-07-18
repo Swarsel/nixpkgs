@@ -29,24 +29,23 @@ stdenv.mkDerivation {
     iverilog
   ];
 
-  # the "translate" target both (a) builds the software and (b) runs
-  # the tests (without validating the results)
-  buildTargets = [ "translate" ];
-
-  # the "diff" target examines the test results
-  checkTarget = "diff";
-
   installPhase = ''
     runHook preInstall
     install -D -m755 src/vhd2vl $out/bin/vhd2vl
     runHook postInstall
   '';
 
+  # the "translate" target both (a) builds the software and (b) runs
+  # the tests (without validating the results)
+  buildTargets = [ "translate" ];
+  # the "diff" target examines the test results
+  checkTarget = "diff";
+
   meta = {
     description = "VHDL to Verilog converter";
-    mainProgram = "vhd2vl";
     homepage = "https://github.com/ldoolitt/vhd2vl";
     license = lib.licenses.gpl2Plus;
     maintainers = with lib.maintainers; [ matthuszagh ];
+    mainProgram = "vhd2vl";
   };
 }

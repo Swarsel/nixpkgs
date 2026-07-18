@@ -6,8 +6,8 @@
 }:
 
 stdenv.mkDerivation (finalAttrs: {
-  version = "1.5.0";
   pname = "zfs-prune-snapshots";
+  version = "1.5.0";
 
   src = fetchFromGitHub {
     owner = "bahamas10";
@@ -18,19 +18,19 @@ stdenv.mkDerivation (finalAttrs: {
 
   nativeBuildInputs = [ go-md2man ];
 
-  makeTargets = [ "man" ];
-
   installPhase = ''
     install -m 755 -D zfs-prune-snapshots $out/bin/zfs-prune-snapshots
     install -m 644 -D man/zfs-prune-snapshots.1 $out/share/man/man1/zfs-prune-snapshots.1
   '';
 
+  makeTargets = [ "man" ];
+
   meta = {
     description = "Remove snapshots from one or more zpools that match given criteria";
-    mainProgram = "zfs-prune-snapshots";
     homepage = "https://github.com/bahamas10/zfs-prune-snapshots";
     license = lib.licenses.mit;
     maintainers = [ ];
     platforms = lib.platforms.all;
+    mainProgram = "zfs-prune-snapshots";
   };
 })

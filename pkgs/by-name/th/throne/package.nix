@@ -1,26 +1,21 @@
 {
   lib,
   stdenv,
-
-  buildGoModule,
-  fetchFromGitHub,
   fetchurl,
+  fetchFromGitHub,
+  buildGoModule,
+  cmake,
+  copyDesktopItems,
   makeDesktopItem,
-
+  ninja,
   protobuf,
   protoc-gen-go,
   protoc-gen-go-grpc,
-
-  cmake,
-  copyDesktopItems,
-  ninja,
-
   qt6Packages,
-
   # override if you want to have more up-to-date rulesets
   throne-srslist ? fetchurl {
-    url = "https://raw.githubusercontent.com/throneproj/routeprofiles/c637d0bb8a3707eb5e122c81753600d3e18a5969/srslist.h";
     hash = "sha256-Kf3TAGXi7Y0PhWjdTOZdPUMlimszWkcrQw9zv8pb76s=";
+    url = "https://raw.githubusercontent.com/throneproj/routeprofiles/c637d0bb8a3707eb5e122c81753600d3e18a5969/srslist.h";
   },
 }:
 
@@ -34,6 +29,16 @@ stdenv.mkDerivation (finalAttrs: {
     tag = finalAttrs.version;
     hash = "sha256-gtbGKyEOTq+1IP7v4ZhVVohGQFlDtP7NbbhyFD2rCnA=";
   };
+
+  patches = [
+    # disable suid request as it cannot be applied to ThroneCore in nix store
+    # and prompt users to use NixOS module instead. And use ThroneCore from PATH
+    # to make use of security wrappers
+    ./nixos-disable-setuid-request.patch
+
+    # sets the Exec field of the auto-run .desktop file to use the Throne binary from PATH
+    ./fix-autorun-desktop-exec.patch
+  ];
 
   strictDeps = true;
 
@@ -50,26 +55,12 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   env.INPUT_VERSION = finalAttrs.version;
-
   # suppress errors in 3rdparty/simple-protobuf
   env.NIX_CFLAGS_COMPILE = "-Wno-error=maybe-uninitialized";
-
-  patches = [
-    # disable suid request as it cannot be applied to ThroneCore in nix store
-    # and prompt users to use NixOS module instead. And use ThroneCore from PATH
-    # to make use of security wrappers
-    ./nixos-disable-setuid-request.patch
-
-    # sets the Exec field of the auto-run .desktop file to use the Throne binary from PATH
-    ./fix-autorun-desktop-exec.patch
-  ];
 
   preBuild = ''
     ln -s ${throne-srslist} ./srslist.h
   '';
-
-  # we'll wrap manually
-  dontWrapQtApps = true;
 
   installPhase = ''
     runHook preInstall
@@ -87,34 +78,35 @@ stdenv.mkDerivation (finalAttrs: {
 
   desktopItems = [
     (makeDesktopItem {
-      name = "throne";
+      categories = [ "Network" ];
+      comment = finalAttrs.meta.description;
       desktopName = "Throne";
       exec = "Throne";
       icon = "Throne";
-      comment = finalAttrs.meta.description;
+      name = "throne";
       terminal = false;
-      categories = [ "Network" ];
     })
   ];
 
+  # we'll wrap manually
+  dontWrapQtApps = true;
+
   passthru.core = buildGoModule {
-    pname = "throne-core";
     inherit (finalAttrs) version src;
-    sourceRoot = "${finalAttrs.src.name}/core/server";
+    pname = "throne-core";
 
     patches = [
       # also check cap_net_admin so we don't have to set suid
       ./core-also-check-capabilities.patch
     ];
 
-    proxyVendor = true;
-    vendorHash = "sha256-G0ev2my+sHQFYdmfkR2Zq3ujSeqi5fZ4BdrnUS8mfDE=";
-
     nativeBuildInputs = [
       protobuf
       protoc-gen-go
       protoc-gen-go-grpc
     ];
+
+    vendorHash = "sha256-G0ev2my+sHQFYdmfkR2Zq3ujSeqi5fZ4BdrnUS8mfDE=";
 
     # taken from script/build_go.sh
     preBuild = ''
@@ -134,6 +126,9 @@ stdenv.mkDerivation (finalAttrs: {
       "internal/godebug.defaultGODEBUG=multipathtcp=0"
       "-checklinkname=0"
     ];
+
+    proxyVendor = true;
+    sourceRoot = "${finalAttrs.src.name}/core/server";
 
     tags = [
       "with_clash_api"
@@ -157,11 +152,13 @@ stdenv.mkDerivation (finalAttrs: {
     description = "Qt based cross-platform GUI proxy configuration manager";
     homepage = "https://github.com/throneproj/Throne";
     license = lib.licenses.gpl3Plus;
-    mainProgram = "Throne";
+
     maintainers = with lib.maintainers; [
       tomasajt
       aleksana
     ];
+
     platforms = lib.platforms.linux;
+    mainProgram = "Throne";
   };
 })

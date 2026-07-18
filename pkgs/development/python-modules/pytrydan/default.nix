@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   httpx,
   orjson,
   poetry-core,
@@ -18,7 +18,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "pytrydan";
   version = "1.0.2";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "dgomes";
@@ -27,7 +26,13 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-vxIY+BCo3o4FBI1otiMx3swWTxtmEgYfVCWQAq2OuUM=";
   };
 
-  pythonRelaxDeps = [ "tenacity" ];
+  nativeCheckInputs = [
+    pytest-asyncio
+    pytest-cov-stub
+    pytestCheckHook
+    respx
+    syrupy
+  ];
 
   build-system = [ poetry-core ];
 
@@ -39,15 +44,9 @@ buildPythonPackage (finalAttrs: {
     typer
   ];
 
-  nativeCheckInputs = [
-    pytest-asyncio
-    pytest-cov-stub
-    pytestCheckHook
-    respx
-    syrupy
-  ];
-
+  pyproject = true;
   pythonImportsCheck = [ "pytrydan" ];
+  pythonRelaxDeps = [ "tenacity" ];
 
   meta = {
     description = "Library to interface with V2C EVSE Trydan";

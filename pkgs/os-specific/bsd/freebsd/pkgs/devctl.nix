@@ -1,13 +1,14 @@
 {
-  mkDerivation,
   libdevctl,
+  mkDerivation,
 }:
 mkDerivation {
-  path = "usr.sbin/devctl";
   outputs = [
     "out"
     "debug"
   ];
+
   buildInputs = [ libdevctl ];
+  path = "usr.sbin/devctl";
   meta.mainProgram = "devctl";
 }

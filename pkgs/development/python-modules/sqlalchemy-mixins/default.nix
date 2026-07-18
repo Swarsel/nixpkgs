@@ -1,18 +1,17 @@
 {
   lib,
+  fetchFromGitHub,
   aiosqlite,
   buildPythonPackage,
-  fetchFromGitHub,
+  pytestCheckHook,
   setuptools,
   six,
   sqlalchemy,
-  pytestCheckHook,
 }:
 
 buildPythonPackage rec {
   pname = "sqlalchemy-mixins";
   version = "2.1.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "absent1706";
@@ -21,6 +20,11 @@ buildPythonPackage rec {
     hash = "sha256-0uB3x7RQSNEq3DyTSiOIGajwPQQEBjXK8HOyuXCNa/E=";
   };
 
+  nativeCheckInputs = [
+    aiosqlite
+    pytestCheckHook
+  ];
+
   build-system = [ setuptools ];
 
   dependencies = [
@@ -28,11 +32,7 @@ buildPythonPackage rec {
     sqlalchemy
   ];
 
-  nativeCheckInputs = [
-    aiosqlite
-    pytestCheckHook
-  ];
-
+  pyproject = true;
   pythonImportsCheck = [ "sqlalchemy_mixins" ];
 
   meta = {

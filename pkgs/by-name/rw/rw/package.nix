@@ -17,13 +17,15 @@ stdenv.mkDerivation (finalAttrs: {
   makeFlags = [ "PREFIX=$(out)" ];
 
   meta = {
-    homepage = "https://sortix.org/rw";
     description = "Block device and byte copying program similar to dd";
+
     longDescription = ''
       rw is a command line program which copies information between files
       or byte streams. The rw command is designed to be a replacement for
       dd with standard style command line flags.
     '';
+
+    homepage = "https://sortix.org/rw";
     license = lib.licenses.isc;
     maintainers = [ ];
     mainProgram = "rw";

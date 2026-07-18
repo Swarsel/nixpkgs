@@ -1,7 +1,7 @@
 {
-  appimageTools,
   lib,
   fetchurl,
+  appimageTools,
   nix-update-script,
 }:
 let
@@ -31,9 +31,9 @@ appimageTools.wrapType2 {
     description = "Installer for BetterDiscord";
     homepage = "https://betterdiscord.app";
     license = lib.licenses.mit;
+    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
     maintainers = with lib.maintainers; [ chillcicada ];
     platforms = [ "x86_64-linux" ];
     mainProgram = "betterdiscord-installer";
-    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
   };
 }

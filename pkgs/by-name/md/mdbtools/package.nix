@@ -1,18 +1,18 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
-  glib,
-  readline,
+  autoreconfHook,
   bison,
   flex,
-  pkg-config,
-  autoreconfHook,
-  txt2man,
-  which,
   gettext,
+  glib,
   nix-update-script,
+  pkg-config,
+  readline,
+  txt2man,
   versionCheckHook,
+  which,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -25,10 +25,6 @@ stdenv.mkDerivation (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-XWkFgQZKx9/pjVNEqfp9BwgR7w3fVxQ/bkJEYUvCXPs=";
   };
-
-  configureFlags = [ "--disable-scrollkeeper" ];
-
-  env.NIX_CFLAGS_COMPILE = lib.optionalString stdenv.cc.isClang "-Wno-error=unused-but-set-variable";
 
   nativeBuildInputs = [
     pkg-config
@@ -44,26 +40,29 @@ stdenv.mkDerivation (finalAttrs: {
     readline
   ];
 
+  configureFlags = [ "--disable-scrollkeeper" ];
+  env.NIX_CFLAGS_COMPILE = lib.optionalString stdenv.cc.isClang "-Wno-error=unused-but-set-variable";
+  doInstallCheck = true;
+  nativeInstallCheckInputs = [ versionCheckHook ];
+  enableParallelBuilding = true;
+
   postUnpack = ''
     cp -v ${gettext}/share/gettext/m4/lib-{link,prefix,ld}.m4 source/m4
   '';
 
-  enableParallelBuilding = true;
-
-  doInstallCheck = true;
-  nativeInstallCheckInputs = [ versionCheckHook ];
   versionCheckProgram = "${placeholder "out"}/bin/mdb-ver";
-
   passthru.updateScript = nix-update-script { };
 
   meta = {
-    changelog = "https://github.com/mdbtools/mdbtools/releases/tag/v${finalAttrs.version}";
     description = ".mdb (MS Access) format tools";
     homepage = "https://mdbtools.github.io/";
+    changelog = "https://github.com/mdbtools/mdbtools/releases/tag/v${finalAttrs.version}";
+
     license = with lib.licenses; [
       gpl2Plus
       lgpl2
     ];
+
     platforms = lib.platforms.unix;
   };
 })

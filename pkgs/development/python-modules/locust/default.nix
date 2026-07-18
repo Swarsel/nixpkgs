@@ -1,12 +1,8 @@
 {
   lib,
-  buildPythonPackage,
-  python,
-  callPackage,
   fetchFromGitHub,
-  hatchling,
-  hatch-vcs,
-  pytestCheckHook,
+  buildPythonPackage,
+  callPackage,
   configargparse,
   cryptography,
   flask,
@@ -14,11 +10,15 @@
   flask-login,
   gevent,
   geventhttpclient,
-  msgpack,
+  hatch-vcs,
+  hatchling,
   locust-cloud,
+  msgpack,
   psutil,
   pyquery,
   pytest,
+  pytestCheckHook,
+  python,
   pyzmq,
   requests,
   retry,
@@ -29,7 +29,6 @@
 buildPythonPackage rec {
   pname = "locust";
   version = "2.43.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "locustio";
@@ -46,27 +45,25 @@ buildPythonPackage rec {
       --replace-fail '"locust"' '"${placeholder "out"}/bin/locust"'
   '';
 
-  webui = callPackage ./webui.nix {
-    inherit version;
-    src = "${src}/locust/webui";
-  };
-
   preBuild = ''
     mkdir -p $out/${python.sitePackages}/locust/webui/dist
     ln -sf ${webui}/dist/* $out/${python.sitePackages}/locust/webui/dist
   '';
 
+  # locust's test suite is very flaky, due to heavy reliance on timing-based tests and access to the
+  # network.
+  doCheck = false;
+
+  nativeCheckInputs = [
+    cryptography
+    pyquery
+    pytestCheckHook
+    retry
+  ];
+
   build-system = [
     hatchling
     hatch-vcs
-  ];
-
-  pythonRelaxDeps = [
-    # version 0.7.0.dev0 is not considered to be >= 0.6.3
-    "flask-login"
-    # version 6.0.1 is listed as 0.0.1 in the dependency check and 0.0.1 is not >= 3.0.10
-    "flask-cors"
-    "requests"
   ];
 
   dependencies = [
@@ -86,18 +83,21 @@ buildPythonPackage rec {
     pytest
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "locust" ];
 
-  nativeCheckInputs = [
-    cryptography
-    pyquery
-    pytestCheckHook
-    retry
+  pythonRelaxDeps = [
+    # version 0.7.0.dev0 is not considered to be >= 0.6.3
+    "flask-login"
+    # version 6.0.1 is listed as 0.0.1 in the dependency check and 0.0.1 is not >= 3.0.10
+    "flask-cors"
+    "requests"
   ];
 
-  # locust's test suite is very flaky, due to heavy reliance on timing-based tests and access to the
-  # network.
-  doCheck = false;
+  webui = callPackage ./webui.nix {
+    inherit version;
+    src = "${src}/locust/webui";
+  };
 
   meta = {
     description = "Developer-friendly load testing framework";

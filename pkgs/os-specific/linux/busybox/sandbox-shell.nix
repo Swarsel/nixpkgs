@@ -8,8 +8,8 @@
 # Minimal shell for use as basic /bin/sh in sandbox builds
 busybox.override (
   {
-    enableStatic = true;
     enableMinimal = true;
+    enableStatic = true;
 
     extraConfig = ''
       CONFIG_FEATURE_FANCY_ECHO y

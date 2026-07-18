@@ -1,14 +1,13 @@
 {
   lib,
-  pythonPackages,
   fetchFromGitHub,
   mopidy,
+  pythonPackages,
 }:
 
 pythonPackages.buildPythonApplication (finalAttrs: {
   pname = "mopidy-listenbrainz";
   version = "0.3.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "suaviloquence";
@@ -26,9 +25,11 @@ pythonPackages.buildPythonApplication (finalAttrs: {
     pythonPackages.musicbrainzngs
   ];
 
+  pyproject = true;
+
   meta = {
-    homepage = "https://github.com/suaviloquence/mopidy-listenbrainz";
     description = "Mopidy extension for recording played tracks and getting recommendations to Listenbrainz, a libre alternative to Last.fm";
+    homepage = "https://github.com/suaviloquence/mopidy-listenbrainz";
     license = lib.licenses.asl20;
     maintainers = with lib.maintainers; [ bohanubis ];
   };

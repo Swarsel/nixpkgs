@@ -2,19 +2,19 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  pkgsi686Linux,
+  appstream,
+  dbus,
+  findutils,
+  gawk,
+  inih,
   makeWrapper,
   meson,
   ninja,
-  pkg-config,
-  dbus,
-  inih,
-  systemd,
-  appstream,
-  findutils,
-  gawk,
-  procps,
   nix-update-script,
+  pkg-config,
+  pkgsi686Linux,
+  procps,
+  systemd,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -81,6 +81,7 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   doCheck = true;
+
   nativeCheckInputs = [
     appstream
   ];

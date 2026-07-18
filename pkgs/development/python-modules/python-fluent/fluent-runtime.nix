@@ -1,15 +1,14 @@
 {
-  buildPythonPackage,
-  fetchFromGitHub,
   lib,
-  pytestCheckHook,
-  setuptools,
-
+  fetchFromGitHub,
   # dependencies
   attrs,
   babel,
+  buildPythonPackage,
   fluent-syntax,
+  pytestCheckHook,
   pytz,
+  setuptools,
   typing-extensions,
 }:
 
@@ -24,13 +23,10 @@ let
   };
 in
 buildPythonPackage {
-  pname = "fluent-runtime";
   inherit version;
-  pyproject = true;
-
   inherit src;
-  sourceRoot = "${src.name}/fluent.runtime";
-
+  pname = "fluent-runtime";
+  nativeCheckInputs = [ pytestCheckHook ];
   build-system = [ setuptools ];
 
   dependencies = [
@@ -41,21 +37,21 @@ buildPythonPackage {
     typing-extensions
   ];
 
-  nativeCheckInputs = [ pytestCheckHook ];
-
   disabledTests = [
     # https://github.com/projectfluent/python-fluent/pull/203
     "test_timeZone"
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "fluent.runtime" ];
+  sourceRoot = "${src.name}/fluent.runtime";
 
   meta = {
-    changelog = "https://github.com/projectfluent/python-fluent/blob/${src.rev}/fluent.runtime/CHANGELOG.rst";
     description = "Localization library for expressive translations";
-    downloadPage = "https://github.com/projectfluent/python-fluent/releases/tag/${src.rev}";
     homepage = "https://projectfluent.org/python-fluent/fluent.runtime/${version}";
+    changelog = "https://github.com/projectfluent/python-fluent/blob/${src.rev}/fluent.runtime/CHANGELOG.rst";
     license = lib.licenses.asl20;
     maintainers = with lib.maintainers; [ getpsyched ];
+    downloadPage = "https://github.com/projectfluent/python-fluent/releases/tag/${src.rev}";
   };
 }

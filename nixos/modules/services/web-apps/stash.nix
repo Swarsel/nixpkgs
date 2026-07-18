@@ -1,7 +1,7 @@
 {
   config,
-  pkgs,
   lib,
+  pkgs,
   ...
 }:
 let
@@ -21,97 +21,251 @@ let
 
   stashType = types.submodule {
     options = {
-      path = mkOption {
-        type = types.path;
-        description = "location of your media files";
-      };
-      excludevideo = mkOption {
-        type = types.bool;
-        default = false;
-        description = "Whether to exclude video files from being scanned into Stash";
-      };
       excludeimage = mkOption {
-        type = types.bool;
         default = false;
         description = "Whether to exclude image files from being scanned into Stash";
+        type = types.bool;
+      };
+
+      excludevideo = mkOption {
+        default = false;
+        description = "Whether to exclude video files from being scanned into Stash";
+        type = types.bool;
+      };
+
+      path = mkOption {
+        description = "location of your media files";
+        type = types.path;
       };
     };
   };
   stashBoxType = types.submodule {
     options = {
-      name = mkOption {
-        type = types.str;
-        description = "The name of the Stash Box";
-      };
-      endpoint = mkOption {
-        type = types.str;
-        description = "URL to the Stash Box graphql api";
-      };
       apikey = mkOption {
-        type = types.str;
         description = "Stash Box API key";
+        type = types.str;
+      };
+
+      endpoint = mkOption {
+        description = "URL to the Stash Box graphql api";
+        type = types.str;
+      };
+
+      name = mkOption {
+        description = "The name of the Stash Box";
+        type = types.str;
       };
     };
   };
 
   recentlyReleased = mode: {
     __typename = "CustomFilter";
+    direction = "DESC";
+
     message = {
       id = "recently_released_objects";
       values.objects = mode;
     };
+
     mode = toUpper mode;
     sortBy = "date";
-    direction = "DESC";
   };
   recentlyAdded = mode: {
     __typename = "CustomFilter";
+    direction = "DESC";
+
     message = {
       id = "recently_added_objects";
       values.objects = mode;
     };
+
     mode = toUpper mode;
     sortBy = "created_at";
-    direction = "DESC";
   };
   uiPresets = {
-    recentlyReleasedScenes = recentlyReleased "Scenes";
-    recentlyAddedScenes = recentlyAdded "Scenes";
-    recentlyReleasedGalleries = recentlyReleased "Galleries";
     recentlyAddedGalleries = recentlyAdded "Galleries";
     recentlyAddedImages = recentlyAdded "Images";
-    recentlyReleasedMovies = recentlyReleased "Movies";
     recentlyAddedMovies = recentlyAdded "Movies";
-    recentlyAddedStudios = recentlyAdded "Studios";
     recentlyAddedPerformers = recentlyAdded "Performers";
+    recentlyAddedScenes = recentlyAdded "Scenes";
+    recentlyAddedStudios = recentlyAdded "Studios";
+    recentlyReleasedGalleries = recentlyReleased "Galleries";
+    recentlyReleasedMovies = recentlyReleased "Movies";
+    recentlyReleasedScenes = recentlyReleased "Scenes";
   };
 
   settingsFormat = pkgs.formats.yaml { };
   settingsFile = settingsFormat.generate "config.yml" cfg.settings;
   settingsType = types.submodule {
-    freeformType = settingsFormat.type;
-
     options = {
-      host = mkOption {
+      blobs_path = mkOption {
+        default = "${cfg.dataDir}/blobs";
+        description = "Path to blobs";
+        type = types.path;
+      };
+
+      blobs_storage = mkOption {
+        default = "FILESYSTEM";
+        description = "Where to store blobs";
+
+        type = types.enum [
+          "FILESYSTEM"
+          "DATABASE"
+        ];
+      };
+
+      cache = mkOption {
+        default = "${cfg.dataDir}/cache";
+        description = "Path to cache";
+        type = types.path;
+      };
+
+      calculate_md5 = mkOption {
+        default = false;
+        description = "Whether to calculate MD5 checksums for scene video files";
+        type = types.bool;
+      };
+
+      create_image_clip_from_videos = mkOption {
+        default = false;
+        description = "Create Image Clips from Video extensions when Videos are disabled in Library";
+        type = types.bool;
+      };
+
+      dangerous_allow_public_without_auth = mkOption {
+        default = false;
+        description = "Learn more at <https://docs.stashapp.cc/networking/authentication-required-when-accessing-stash-from-the-internet/>";
+        type = types.bool;
+      };
+
+      database = mkOption {
+        default = "${cfg.dataDir}/go.sqlite";
+        description = "Path to the SQLite database";
+        type = types.path;
+      };
+
+      gallery_cover_regex = mkOption {
+        default = "(poster|cover|folder|board)\\.[^.]+$";
+        description = "Regex used to identify images as gallery covers";
         type = types.str;
+      };
+
+      generated = mkOption {
+        default = "${cfg.dataDir}/generated";
+        description = "Path to generated files";
+        type = types.path;
+      };
+
+      host = mkOption {
         default = "localhost";
-        example = "::1";
         description = "The ip address that Stash should bind to.";
+        example = "::1";
+        type = types.str;
+      };
+
+      no_proxy = mkOption {
+        default = "localhost,127.0.0.1,192.168.0.0/16,10.0.0.0/8,172.16.0.0/12";
+        description = "A list of domains for which the proxy must not be used";
+        type = types.str;
+      };
+
+      nobrowser = mkOption {
+        default = true;
+        description = "If we should not auto-open a browser window on startup";
+        type = types.bool;
+      };
+
+      notifications_enabled = mkOption {
+        default = true;
+        description = "If we should send notifications to the desktop";
+        type = types.bool;
+      };
+
+      parallel_tasks = mkOption {
+        default = 1;
+        description = "Number of parallel tasks to start during scan/generate";
+        type = types.int;
+      };
+
+      plugins_path = mkOption {
+        default = "${cfg.dataDir}/plugins";
+        description = "Path to scrapers";
+        type = types.path;
       };
 
       port = mkOption {
-        type = types.port;
         default = 9999;
-        example = 1234;
         description = "The port that Stash should listen on.";
+        example = 1234;
+        type = types.port;
+      };
+
+      preview_audio = mkOption {
+        default = true;
+        description = "Include audio stream in previews";
+        type = types.bool;
+      };
+
+      preview_exclude_end = mkOption {
+        default = 0;
+        description = "Duration of start of video to exclude when generating previews";
+        type = types.int;
+      };
+
+      preview_exclude_start = mkOption {
+        default = 0;
+        description = "Duration of end of video to exclude when generating previews";
+        type = types.int;
+      };
+
+      preview_segment_duration = mkOption {
+        default = 0.75;
+        description = "Preview segment duration, in seconds";
+        type = types.float;
+      };
+
+      preview_segments = mkOption {
+        default = 12;
+        description = "Number of segments in a preview file";
+        type = types.int;
+      };
+
+      scrapers_path = mkOption {
+        default = "${cfg.dataDir}/scrapers";
+        description = "Path to scrapers";
+        type = types.path;
+      };
+
+      security_tripwire_accessed_from_public_internet = mkOption {
+        default = "";
+        description = "Learn more at <https://docs.stashapp.cc/networking/authentication-required-when-accessing-stash-from-the-internet/>";
+        type = types.nullOr types.str;
+      };
+
+      sequential_scanning = mkOption {
+        default = false;
+        description = "Modifies behaviour of the scanning functionality to generate support files (previews/sprites/phash) at the same time as fingerprinting/screenshotting";
+        type = types.bool;
+      };
+
+      show_one_time_moved_notification = mkOption {
+        default = true;
+        description = "Whether a small notification to inform the user that Stash will no longer show a terminal window, and instead will be available in the tray";
+        type = types.bool;
+      };
+
+      sound_on_preview = mkOption {
+        default = false;
+        description = "Enable sound on mouseover previews";
+        type = types.bool;
       };
 
       stash = mkOption {
-        type = types.listOf stashType;
         description = ''
           Add directories containing your adult videos and images.
           Stash will use these directories to find videos and/or images during scanning.
         '';
+
         example = literalExpression ''
           {
             stash = [
@@ -122,11 +276,14 @@ let
             ];
           }
         '';
+
+        type = types.listOf stashType;
       };
+
       stash_boxes = mkOption {
-        type = types.listOf stashBoxType;
         default = [ ];
         description = "Stash-box facilitates automated tagging of scenes and performers based on fingerprints and filenames";
+
         example = literalExpression ''
           {
             stash_boxes = [
@@ -138,10 +295,19 @@ let
             ];
           }
         '';
+
+        type = types.listOf stashBoxType;
       };
+
+      theme_color = mkOption {
+        default = "#202b33";
+        description = "Sets the `theme-color` property in the UI";
+        type = types.str;
+      };
+
       ui.frontPageContent = mkOption {
-        description = "Search filters to display on the front page.";
-        type = types.either (types.listOf types.attrs) (types.functionTo (types.listOf types.attrs));
+        apply = type: if lib.isFunction type then (type uiPresets) else type;
+
         default = presets: [
           presets.recentlyReleasedScenes
           presets.recentlyAddedStudios
@@ -149,6 +315,9 @@ let
           presets.recentlyAddedPerformers
           presets.recentlyReleasedGalleries
         ];
+
+        description = "Search filters to display on the front page.";
+
         example = literalExpression ''
           presets: [
             # To get the savedFilterId, you can query `{ findSavedFilters(mode: <FilterMode>) { id name } }` on localhost:9999/graphql
@@ -167,161 +336,33 @@ let
             presets.recentlyAddedImages
           ]
         '';
-        apply = type: if lib.isFunction type then (type uiPresets) else type;
-      };
-      blobs_path = mkOption {
-        type = types.path;
-        default = "${cfg.dataDir}/blobs";
-        description = "Path to blobs";
-      };
-      cache = mkOption {
-        type = types.path;
-        default = "${cfg.dataDir}/cache";
-        description = "Path to cache";
-      };
-      database = mkOption {
-        type = types.path;
-        default = "${cfg.dataDir}/go.sqlite";
-        description = "Path to the SQLite database";
-      };
-      generated = mkOption {
-        type = types.path;
-        default = "${cfg.dataDir}/generated";
-        description = "Path to generated files";
-      };
-      plugins_path = mkOption {
-        type = types.path;
-        default = "${cfg.dataDir}/plugins";
-        description = "Path to scrapers";
-      };
-      scrapers_path = mkOption {
-        type = types.path;
-        default = "${cfg.dataDir}/scrapers";
-        description = "Path to scrapers";
+
+        type = types.either (types.listOf types.attrs) (types.functionTo (types.listOf types.attrs));
       };
 
-      blobs_storage = mkOption {
-        type = types.enum [
-          "FILESYSTEM"
-          "DATABASE"
-        ];
-        default = "FILESYSTEM";
-        description = "Where to store blobs";
-      };
-      calculate_md5 = mkOption {
-        type = types.bool;
-        default = false;
-        description = "Whether to calculate MD5 checksums for scene video files";
-      };
-      create_image_clip_from_videos = mkOption {
-        type = types.bool;
-        default = false;
-        description = "Create Image Clips from Video extensions when Videos are disabled in Library";
-      };
-      dangerous_allow_public_without_auth = mkOption {
-        type = types.bool;
-        default = false;
-        description = "Learn more at <https://docs.stashapp.cc/networking/authentication-required-when-accessing-stash-from-the-internet/>";
-      };
-      gallery_cover_regex = mkOption {
-        type = types.str;
-        default = "(poster|cover|folder|board)\\.[^.]+$";
-        description = "Regex used to identify images as gallery covers";
-      };
-      no_proxy = mkOption {
-        type = types.str;
-        default = "localhost,127.0.0.1,192.168.0.0/16,10.0.0.0/8,172.16.0.0/12";
-        description = "A list of domains for which the proxy must not be used";
-      };
-      nobrowser = mkOption {
-        type = types.bool;
-        default = true;
-        description = "If we should not auto-open a browser window on startup";
-      };
-      notifications_enabled = mkOption {
-        type = types.bool;
-        default = true;
-        description = "If we should send notifications to the desktop";
-      };
-      parallel_tasks = mkOption {
-        type = types.int;
-        default = 1;
-        description = "Number of parallel tasks to start during scan/generate";
-      };
-      preview_audio = mkOption {
-        type = types.bool;
-        default = true;
-        description = "Include audio stream in previews";
-      };
-      preview_exclude_end = mkOption {
-        type = types.int;
-        default = 0;
-        description = "Duration of start of video to exclude when generating previews";
-      };
-      preview_exclude_start = mkOption {
-        type = types.int;
-        default = 0;
-        description = "Duration of end of video to exclude when generating previews";
-      };
-      preview_segment_duration = mkOption {
-        type = types.float;
-        default = 0.75;
-        description = "Preview segment duration, in seconds";
-      };
-      preview_segments = mkOption {
-        type = types.int;
-        default = 12;
-        description = "Number of segments in a preview file";
-      };
-      security_tripwire_accessed_from_public_internet = mkOption {
-        type = types.nullOr types.str;
-        default = "";
-        description = "Learn more at <https://docs.stashapp.cc/networking/authentication-required-when-accessing-stash-from-the-internet/>";
-      };
-      sequential_scanning = mkOption {
-        type = types.bool;
-        default = false;
-        description = "Modifies behaviour of the scanning functionality to generate support files (previews/sprites/phash) at the same time as fingerprinting/screenshotting";
-      };
-      show_one_time_moved_notification = mkOption {
-        type = types.bool;
-        default = true;
-        description = "Whether a small notification to inform the user that Stash will no longer show a terminal window, and instead will be available in the tray";
-      };
-      sound_on_preview = mkOption {
-        type = types.bool;
-        default = false;
-        description = "Enable sound on mouseover previews";
-      };
-      theme_color = mkOption {
-        type = types.str;
-        default = "#202b33";
-        description = "Sets the `theme-color` property in the UI";
-      };
       video_file_naming_algorithm = mkOption {
+        default = "OSHASH";
+        description = "Hash algorithm to use for generated file naming";
+
         type = types.enum [
           "OSHASH"
           "MD5"
         ];
-        default = "OSHASH";
-        description = "Hash algorithm to use for generated file naming";
       };
+
       write_image_thumbnails = mkOption {
-        type = types.bool;
         default = true;
         description = "Write image thumbnails to disk when generating on the fly";
+        type = types.bool;
       };
     };
+
+    freeformType = settingsFormat.type;
   };
 
   pluginType =
     kind:
     mkOption {
-      type = types.listOf types.package;
-      default = [ ];
-      description = ''
-        The ${kind} Stash should be started with.
-      '';
       apply =
         srcs:
         pkgs.runCommand "stash-${kind}"
@@ -365,62 +406,64 @@ let
                 ' > $out_path/manifest
             done
           '';
+
+      default = [ ];
+
+      description = ''
+        The ${kind} Stash should be started with.
+      '';
+
+      type = types.listOf types.package;
     };
 in
 {
-  meta = {
-    buildDocsInSandbox = false;
-    maintainers = with lib.maintainers; [ DrakeTDL ];
-  };
-
   options = {
     services.stash = {
       enable = mkEnableOption "stash";
-
       package = mkPackageOption pkgs "stash" { };
 
-      user = mkOption {
-        type = types.str;
-        default = "stash";
-        description = "User under which Stash runs.";
+      dataDir = mkOption {
+        default = "/var/lib/stash";
+        description = "The directory where Stash stores its files.";
+        type = types.path;
       };
 
       group = mkOption {
-        type = types.str;
         default = "stash";
         description = "Group under which Stash runs.";
+        type = types.str;
       };
 
-      dataDir = mkOption {
+      jwtSecretKeyFile = mkOption {
+        description = "Path to file containing a secret used to sign JWT tokens.";
         type = types.path;
-        default = "/var/lib/stash";
-        description = "The directory where Stash stores its files.";
+      };
+
+      mutablePlugins = mkEnableOption "Whether plugins/themes can be installed, updated, uninstalled manually.";
+      mutableScrapers = mkEnableOption "Whether scrapers can be installed, updated, uninstalled manually.";
+
+      mutableSettings = mkOption {
+        default = true;
+
+        description = ''
+          Whether the Stash config.yml is writeable by Stash.
+
+          If `false`, Any config changes done from within Stash UI will be temporary and reset to those defined in {option}`services.stash.settings` upon `Stash.service` restart.
+          If `true`, the {option}`services.stash.settings` will only be used to initialize the Stash configuration if it does not exist, and are subsequently ignored.
+        '';
+
+        type = types.bool;
       };
 
       openFirewall = mkOption {
-        type = types.bool;
         default = false;
         description = "Open ports in the firewall for the Stash web interface.";
-      };
-
-      username = mkOption {
-        type = types.nullOr types.nonEmptyStr;
-        default = null;
-        example = "admin";
-        description = ''
-          Username for login.
-
-          ::: {.warning}
-            This option takes precedence over {option}`services.stash.settings.username`
-          ::
-
-        '';
+        type = types.bool;
       };
 
       passwordFile = mkOption {
-        type = types.nullOr types.path;
         default = null;
-        example = "/path/to/password/file";
+
         description = ''
           Path to file containing password for login.
 
@@ -429,35 +472,44 @@ in
           ::
 
         '';
+
+        example = "/path/to/password/file";
+        type = types.nullOr types.path;
       };
 
-      jwtSecretKeyFile = mkOption {
-        type = types.path;
-        description = "Path to file containing a secret used to sign JWT tokens.";
-      };
-      sessionStoreKeyFile = mkOption {
-        type = types.path;
-        description = "Path to file containing a secret for session store.";
-      };
-
-      mutableSettings = mkOption {
-        description = ''
-          Whether the Stash config.yml is writeable by Stash.
-
-          If `false`, Any config changes done from within Stash UI will be temporary and reset to those defined in {option}`services.stash.settings` upon `Stash.service` restart.
-          If `true`, the {option}`services.stash.settings` will only be used to initialize the Stash configuration if it does not exist, and are subsequently ignored.
-        '';
-        type = types.bool;
-        default = true;
-      };
-      mutablePlugins = mkEnableOption "Whether plugins/themes can be installed, updated, uninstalled manually.";
-      mutableScrapers = mkEnableOption "Whether scrapers can be installed, updated, uninstalled manually.";
       plugins = pluginType "plugins";
       scrapers = pluginType "scrapers";
 
+      sessionStoreKeyFile = mkOption {
+        description = "Path to file containing a secret for session store.";
+        type = types.path;
+      };
+
       settings = mkOption {
-        type = settingsType;
         description = "Stash configuration";
+        type = settingsType;
+      };
+
+      user = mkOption {
+        default = "stash";
+        description = "User under which Stash runs.";
+        type = types.str;
+      };
+
+      username = mkOption {
+        default = null;
+
+        description = ''
+          Username for login.
+
+          ::: {.warning}
+            This option takes precedence over {option}`services.stash.settings.username`
+          ::
+
+        '';
+
+        example = "admin";
+        type = types.nullOr types.nonEmptyStr;
       };
     };
   };
@@ -469,46 +521,39 @@ in
           !lib.xor (cfg.username != null || cfg.settings.username or null != null) (
             cfg.passwordFile != null || cfg.settings.password or null != null
           );
+
         message = "You must set either both username and password, or neither.";
       }
     ];
 
-    services.stash.settings = {
-      username = mkIf (cfg.username != null) cfg.username;
-      plugins_path = mkIf (!cfg.mutablePlugins) cfg.plugins;
-      scrapers_path = mkIf (!cfg.mutableScrapers) cfg.scrapers;
-    };
-
     networking.firewall.allowedTCPPorts = mkIf cfg.openFirewall [ cfg.settings.port ];
 
-    users.users.${cfg.user} = {
-      inherit (cfg) group;
-      isSystemUser = true;
-      home = cfg.dataDir;
+    services.stash.settings = {
+      plugins_path = mkIf (!cfg.mutablePlugins) cfg.plugins;
+      scrapers_path = mkIf (!cfg.mutableScrapers) cfg.scrapers;
+      username = mkIf (cfg.username != null) cfg.username;
     };
-    users.groups.${cfg.group} = { };
 
     systemd = {
-      tmpfiles.settings."10-stash-datadir".${cfg.dataDir}."d" = {
-        inherit (cfg) user group;
-        mode = "0755";
-      };
       services.stash = {
-        wantedBy = [ "multi-user.target" ];
         after = [ "network.target" ];
+        environment.STASH_CONFIG_FILE = "${cfg.dataDir}/config.yml";
+
         path = with pkgs; [
           ffmpeg-full
           python3
           ruby
         ];
-        environment.STASH_CONFIG_FILE = "${cfg.dataDir}/config.yml";
+
         serviceConfig = {
+          AmbientCapabilities = [ "" ];
+          BindReadOnlyPaths = mkIf (cfg.settings != { }) (map (stash: "${stash.path}") cfg.settings.stash);
+          CapabilityBoundingSet = [ "" ];
+          # hardening
+          DevicePolicy = "auto"; # needed for hardware acceleration
           DynamicUser = false;
-          User = cfg.user;
-          Group = cfg.group;
-          Restart = "on-failure";
-          WorkingDirectory = cfg.dataDir;
-          StateDirectory = mkIf (cfg.dataDir == "/var/lib/stash") (baseNameOf cfg.dataDir);
+          ExecStart = getExe cfg.package;
+
           ExecStartPre = pkgs.writers.writeBash "stash-setup.bash" (
             ''
               install -d ${cfg.settings.generated}
@@ -536,41 +581,39 @@ in
               ls ${cfg.scrapers} | xargs -I{} ln -sf '${cfg.scrapers}/{}' ${cfg.settings.scrapers_path}
             ''
           );
-          ExecStart = getExe cfg.package;
 
-          ProtectHome = "tmpfs";
-          BindReadOnlyPaths = mkIf (cfg.settings != { }) (map (stash: "${stash.path}") cfg.settings.stash);
-
-          # hardening
-
-          DevicePolicy = "auto"; # needed for hardware acceleration
-          PrivateDevices = false; # needed for hardware acceleration
-          AmbientCapabilities = [ "" ];
-          CapabilityBoundingSet = [ "" ];
-          ProtectSystem = "full";
+          Group = cfg.group;
           LockPersonality = true;
+          MemoryDenyWriteExecute = true;
           NoNewPrivileges = true;
+          PrivateDevices = false; # needed for hardware acceleration
           PrivateTmp = true;
           PrivateUsers = true;
+          ProcSubset = "pid";
           ProtectClock = true;
           ProtectControlGroups = true;
+          ProtectHome = "tmpfs";
           ProtectHostname = true;
           ProtectKernelLogs = true;
           ProtectKernelModules = true;
           ProtectKernelTunables = true;
-          ProcSubset = "pid";
           ProtectProc = "invisible";
+          ProtectSystem = "full";
           RemoveIPC = true;
+          Restart = "on-failure";
+
           RestrictAddressFamilies = [
             "AF_UNIX"
             "AF_INET"
             "AF_INET6"
           ];
+
           RestrictNamespaces = true;
           RestrictRealtime = true;
           RestrictSUIDSGID = true;
-          MemoryDenyWriteExecute = true;
+          StateDirectory = mkIf (cfg.dataDir == "/var/lib/stash") (baseNameOf cfg.dataDir);
           SystemCallArchitectures = "native";
+
           SystemCallFilter = [
             "~@cpu-emulation"
             "~@debug"
@@ -578,8 +621,31 @@ in
             "~@obsolete"
             "~@privileged"
           ];
+
+          User = cfg.user;
+          WorkingDirectory = cfg.dataDir;
         };
+
+        wantedBy = [ "multi-user.target" ];
+      };
+
+      tmpfiles.settings."10-stash-datadir".${cfg.dataDir}."d" = {
+        inherit (cfg) user group;
+        mode = "0755";
       };
     };
+
+    users.groups.${cfg.group} = { };
+
+    users.users.${cfg.user} = {
+      inherit (cfg) group;
+      home = cfg.dataDir;
+      isSystemUser = true;
+    };
+  };
+
+  meta = {
+    buildDocsInSandbox = false;
+    maintainers = with lib.maintainers; [ DrakeTDL ];
   };
 }

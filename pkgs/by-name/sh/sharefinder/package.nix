@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   nix-update-script,
   versionCheckHook,
 }:
@@ -9,8 +9,6 @@
 buildGoModule (finalAttrs: {
   pname = "sharefinder";
   version = "1.4.0";
-
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "vflame6";
@@ -20,15 +18,14 @@ buildGoModule (finalAttrs: {
   };
 
   vendorHash = "sha256-ABPq6WKYIjyCX5K8iU++6dszUW7s9Ld1Queb2hGdGzs=";
+  doInstallCheck = true;
+  nativeInstallCheckInputs = [ versionCheckHook ];
+  __structuredAttrs = true;
 
   ldflags = [
     "-s"
     "-X=github.com/vflame6/sharefinder/cmd.VERSION=${finalAttrs.version}"
   ];
-
-  nativeInstallCheckInputs = [ versionCheckHook ];
-
-  doInstallCheck = true;
 
   passthru.updateScript = nix-update-script { };
 

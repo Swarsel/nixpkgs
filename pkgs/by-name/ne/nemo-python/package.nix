@@ -1,13 +1,13 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
-  meson,
-  pkg-config,
-  ninja,
   glib,
   gtk3,
+  meson,
   nemo,
+  ninja,
+  pkg-config,
   python3,
 }:
 
@@ -22,8 +22,6 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-tXeMkaCYnWzg+6ng8Tyg4Ms1aUeE3xiEkQ3tKEX6Vv8=";
   };
 
-  sourceRoot = "${finalAttrs.src.name}/nemo-python";
-
   patches = [
     # Load extensions from NEMO_PYTHON_EXTENSION_DIR environment variable
     # https://github.com/NixOS/nixpkgs/issues/78327
@@ -32,6 +30,12 @@ stdenv.mkDerivation (finalAttrs: {
     # Pick up all passthru.nemoPythonExtensionDeps via nemo-with-extensions wrapper
     ./python-path.patch
   ];
+
+  postPatch = ''
+    # Tries to load libpython3.so via g_module_open ().
+    substituteInPlace meson.build \
+      --replace "get_option('prefix'), get_option('libdir')" "'${python3}/lib'"
+  '';
 
   nativeBuildInputs = [
     meson
@@ -47,19 +51,13 @@ stdenv.mkDerivation (finalAttrs: {
     python3.pkgs.pygobject3
   ];
 
-  postPatch = ''
-    # Tries to load libpython3.so via g_module_open ().
-    substituteInPlace meson.build \
-      --replace "get_option('prefix'), get_option('libdir')" "'${python3}/lib'"
-  '';
-
   env.PKG_CONFIG_LIBNEMO_EXTENSION_EXTENSIONDIR = "${placeholder "out"}/${nemo.extensiondir}";
-
+  sourceRoot = "${finalAttrs.src.name}/nemo-python";
   passthru.nemoPythonExtensionDeps = [ python3.pkgs.pygobject3 ];
 
   meta = {
-    homepage = "https://github.com/linuxmint/nemo-extensions/tree/master/nemo-python";
     description = "Python bindings for the Nemo extension library";
+    homepage = "https://github.com/linuxmint/nemo-extensions/tree/master/nemo-python";
     license = lib.licenses.gpl2Plus;
     platforms = lib.platforms.linux;
     teams = [ lib.teams.cinnamon ];

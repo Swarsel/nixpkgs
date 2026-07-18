@@ -1,13 +1,13 @@
 {
   lib,
   stdenv,
-  runCommand,
-  replaceVars,
-  slimevr,
-  jdk17,
   gradle,
   hidapi,
+  jdk17,
   makeWrapper,
+  replaceVars,
+  runCommand,
+  slimevr,
 }:
 let
   # JDK can't be headless while SlimeVR uses JavaOSC 0.8.
@@ -32,17 +32,12 @@ let
 in
 
 stdenv.mkDerivation (finalAttrs: {
-  pname = "slimevr-server";
-
   inherit (slimevr)
     src
     version
     ;
 
-  mitmCache = gradle.fetchDeps {
-    inherit (finalAttrs) pname;
-    data = ./deps.json;
-  };
+  pname = "slimevr-server";
 
   patches = [
     # Upstream code uses Git to find the program version
@@ -62,13 +57,6 @@ stdenv.mkDerivation (finalAttrs: {
     makeWrapper
   ];
 
-  # this is required for using mitm-cache on Darwin
-  __darwinAllowLocalNetworking = true;
-
-  gradleFlags = [ "-Dorg.gradle.java.home=${java}" ];
-
-  gradleBuildTask = "shadowJar";
-
   doCheck = true;
 
   installPhase = ''
@@ -82,24 +70,37 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  # this is required for using mitm-cache on Darwin
+  __darwinAllowLocalNetworking = true;
+  gradleBuildTask = "shadowJar";
+  gradleFlags = [ "-Dorg.gradle.java.home=${java}" ];
+
+  mitmCache = gradle.fetchDeps {
+    inherit (finalAttrs) pname;
+    data = ./deps.json;
+  };
+
   passthru = {
     inherit java javaOptions;
     # `slimevr-server` is updated by the `slimevr` update script.
   };
 
   meta = {
-    homepage = "https://docs.slimevr.dev/";
     description = "App for facilitating full-body tracking in virtual reality";
+    homepage = "https://docs.slimevr.dev/";
+
     license = with lib.licenses; [
       mit
       asl20
     ];
+
     maintainers = with lib.maintainers; [
       gale-username
       loucass003
     ];
+
     platforms = with lib.platforms; darwin ++ linux;
-    broken = stdenv.hostPlatform.isDarwin;
     mainProgram = "slimevr-server";
+    broken = stdenv.hostPlatform.isDarwin;
   };
 })

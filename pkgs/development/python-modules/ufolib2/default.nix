@@ -1,23 +1,21 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
   attrs,
-  fonttools,
-  pytestCheckHook,
-  setuptools-scm,
-
+  buildPythonPackage,
   # optionals
   cattrs,
+  fonttools,
   lxml,
-  orjson,
   msgpack,
+  orjson,
+  pytestCheckHook,
+  setuptools-scm,
 }:
 
 buildPythonPackage rec {
   pname = "ufolib2";
   version = "0.18.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "fonttools";
@@ -25,6 +23,11 @@ buildPythonPackage rec {
     tag = "v${version}";
     hash = "sha256-YFGgPpiEurPaTUFaSMsVBKS4Ob+vPyZhputfRE39wtg=";
   };
+
+  nativeCheckInputs = [
+    pytestCheckHook
+  ]
+  ++ lib.concatAttrValues optional-dependencies;
 
   build-system = [ setuptools-scm ];
 
@@ -35,29 +38,28 @@ buildPythonPackage rec {
   ++ fonttools.optional-dependencies.ufo;
 
   optional-dependencies = {
-    lxml = [ lxml ];
     converters = [ cattrs ];
+
     json = [
       cattrs
       orjson
     ];
+
+    lxml = [ lxml ];
+
     msgpack = [
       cattrs
       msgpack
     ];
   };
 
-  nativeCheckInputs = [
-    pytestCheckHook
-  ]
-  ++ lib.concatAttrValues optional-dependencies;
-
+  pyproject = true;
   pythonImportsCheck = [ "ufoLib2" ];
 
   meta = {
-    changelog = "https://github.com/fonttools/ufoLib2/releases/tag/${src.tag}";
     description = "Library to deal with UFO font sources";
     homepage = "https://github.com/fonttools/ufoLib2";
+    changelog = "https://github.com/fonttools/ufoLib2/releases/tag/${src.tag}";
     license = lib.licenses.mit;
     maintainers = [ ];
   };

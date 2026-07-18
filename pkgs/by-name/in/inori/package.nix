@@ -1,8 +1,8 @@
 {
   lib,
   fetchFromGitHub,
-  rustPlatform,
   nix-update-script,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -17,7 +17,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
   };
 
   cargoHash = "sha256-MlANGTStN1Z82eyFzWTwc678k0irlYuPf+i5fAES6v4=";
-
   passthru.updateScript = nix-update-script { };
 
   meta = {
@@ -25,11 +24,13 @@ rustPlatform.buildRustPackage (finalAttrs: {
     homepage = "https://github.com/eshrh/inori";
     changelog = "https://github.com/eshrh/inori/releases/tag/${finalAttrs.src.tag}";
     license = lib.licenses.gpl3Only;
-    platforms = lib.platforms.unix ++ lib.platforms.windows;
-    mainProgram = "inori";
+
     maintainers = with lib.maintainers; [
       stephen-huan
       esrh
     ];
+
+    platforms = lib.platforms.unix ++ lib.platforms.windows;
+    mainProgram = "inori";
   };
 })

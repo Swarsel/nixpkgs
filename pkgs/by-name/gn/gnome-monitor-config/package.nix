@@ -1,12 +1,12 @@
 {
   lib,
-  fetchFromGitHub,
   stdenv,
+  fetchFromGitHub,
+  cairo,
+  glib,
   meson,
   ninja,
   pkg-config,
-  cairo,
-  glib,
 }:
 
 stdenv.mkDerivation {
@@ -20,11 +20,13 @@ stdenv.mkDerivation {
     hash = "sha256-uVWhQ5SCyadDkeOd+pY2cYZAQ0ZvWMlgndcr1ZIEf50=";
   };
 
-  strictDeps = true;
+  postPatch = ''
+    substituteInPlace src/meson.build \
+      --replace-fail "executable('gnome-monitor-config', src" \
+                     "executable('gnome-monitor-config', src, install : true"
+  '';
 
-  depsBuildBuild = [
-    pkg-config
-  ];
+  strictDeps = true;
 
   nativeBuildInputs = [
     meson
@@ -38,11 +40,9 @@ stdenv.mkDerivation {
     glib
   ];
 
-  postPatch = ''
-    substituteInPlace src/meson.build \
-      --replace-fail "executable('gnome-monitor-config', src" \
-                     "executable('gnome-monitor-config', src, install : true"
-  '';
+  depsBuildBuild = [
+    pkg-config
+  ];
 
   meta = {
     description = "Program to help manage GNOME monitor configuration";

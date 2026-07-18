@@ -16,17 +16,17 @@ stdenv.mkDerivation (finalAttrs: {
     sha256 = "1f9ql6cjy2gwiyc51ylfan24v1ca9sjajxkbhszlds1lqmma8n05";
   };
 
-  buildInputs = [
-    blas
-    gfortran.cc.lib
-    lapack
-  ];
-
   postPatch = ''
     substituteInPlace Makefile --replace /usr/local/bin $out/bin
     substituteInPlace lib/Makefile \
       --replace-fail 'ar cr' '${stdenv.cc.targetPrefix}ar cr'
   '';
+
+  buildInputs = [
+    blas
+    gfortran.cc.lib
+    lapack
+  ];
 
   preInstall = ''
     rm -f INSTALL
@@ -34,10 +34,10 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   meta = {
+    description = "C Library for Semidefinite Programming";
     homepage = "https://projects.coin-or.org/Csdp";
     license = lib.licenses.cpl10;
     maintainers = [ lib.maintainers.roconnor ];
-    description = "C Library for Semidefinite Programming";
     platforms = lib.platforms.unix;
   };
 })

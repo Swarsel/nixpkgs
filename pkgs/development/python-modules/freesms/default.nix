@@ -1,17 +1,16 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
+  httmock,
   poetry-core,
   pytestCheckHook,
   requests,
-  httmock,
 }:
 
 buildPythonPackage rec {
   pname = "freesms";
   version = "0.3.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "bfontaine";
@@ -20,15 +19,14 @@ buildPythonPackage rec {
     hash = "sha256-5f5amXH6VVppX9/9DhILdBU8w/6n67EUgBy/zgTEUCM=";
   };
 
-  build-system = [ poetry-core ];
-
-  dependencies = [ requests ];
-
   nativeCheckInputs = [
     pytestCheckHook
     httmock
   ];
 
+  build-system = [ poetry-core ];
+  dependencies = [ requests ];
+  pyproject = true;
   pythonImportsCheck = [ "freesms" ];
 
   meta = {

@@ -1,15 +1,14 @@
 # Start this shell with:
 # nix-shell path/to/root/of/nixpkgs -A flatten-references-graph.dev-shell
 {
-  mkShell,
   callPackage,
+  mkShell,
   python3Packages,
 }:
 let
   helpers = callPackage (import ./helpers.nix) { };
 in
 mkShell {
-  inputsFrom = [ (callPackage (import ./package.nix) { }) ];
   buildInputs = [
     helpers.format
     helpers.lint
@@ -21,6 +20,9 @@ mkShell {
     # DEBUG_PLOT_IMAGE_VIEWER env var.
     # pkgs.gwenview
   ];
+
+  inputsFrom = [ (callPackage (import ./package.nix) { }) ];
+
   shellHook = ''
     echo '
     **********************************************************************

@@ -1,16 +1,11 @@
 {
   lib,
   stdenv,
-  callPackage,
   fetchFromGitHub,
-  makeWrapper,
-  wrapGAppsHook3,
-
-  withOpenGL ? !stdenv.hostPlatform.isDarwin,
-
   bison,
   blas,
   cairo,
+  callPackage,
   ffmpeg,
   fftw,
   flex,
@@ -21,21 +16,24 @@
   libGLU,
   libiconv,
   libpng,
+  libpq,
   libsvm,
   libtiff,
   libxml2,
   llvmPackages,
+  makeWrapper,
   netcdf,
   pdal,
   pkg-config,
-  libpq,
   proj,
   python3Packages,
   readline,
   sqlite,
+  wrapGAppsHook3,
   wxwidgets_3_2,
   zlib,
   zstd,
+  withOpenGL ? !stdenv.hostPlatform.isDarwin,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -48,6 +46,8 @@ stdenv.mkDerivation (finalAttrs: {
     rev = finalAttrs.version;
     hash = "sha256-rQnJrL4ol5yb/egxlpzzyS3JovNq/irIhmJoxZI8uSg=";
   };
+
+  strictDeps = true;
 
   nativeBuildInputs = [
     makeWrapper
@@ -92,8 +92,6 @@ stdenv.mkDerivation (finalAttrs: {
   ++ lib.optionals withOpenGL [ libGLU ]
   ++ lib.optionals stdenv.hostPlatform.isDarwin [ libiconv ]
   ++ lib.optionals stdenv.cc.isClang [ llvmPackages.openmp ];
-
-  strictDeps = true;
 
   configureFlags = [
     "--with-blas"
@@ -163,8 +161,8 @@ stdenv.mkDerivation (finalAttrs: {
     homepage = "https://grass.osgeo.org/";
     license = lib.licenses.gpl2Plus;
     maintainers = with lib.maintainers; [ mpickering ];
-    teams = [ lib.teams.geospatial ];
     platforms = lib.platforms.all;
     mainProgram = "grass";
+    teams = [ lib.teams.geospatial ];
   };
 })

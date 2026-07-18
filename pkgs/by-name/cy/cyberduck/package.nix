@@ -1,12 +1,12 @@
 {
   lib,
-  stdenvNoCC,
   fetchurl,
-  unzip,
   makeBinaryWrapper,
+  re-plistbuddy,
+  stdenvNoCC,
+  unzip,
   versionCheckHook,
   writeShellScript,
-  re-plistbuddy,
 }:
 stdenvNoCC.mkDerivation (finalAttrs: {
   pname = "cyberduck";
@@ -16,7 +16,6 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     url = "https://update.cyberduck.io/Cyberduck-${finalAttrs.version}.zip";
     hash = "sha256-fTJoNdgp6EWdloejk7XG2lJh1NErxFRmvx2fZiwvWuc=";
   };
-  sourceRoot = ".";
 
   nativeBuildInputs = [
     unzip
@@ -33,15 +32,18 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  doInstallCheck = true;
   nativeInstallCheckInputs = [ versionCheckHook ];
+  sourceRoot = ".";
+
   versionCheckProgram = writeShellScript "version-check" ''
     marketing_version=$(${lib.getExe' re-plistbuddy "PlistBuddy"} -c "Print :CFBundleShortVersionString" "$1")
     build_version=$(${lib.getExe' re-plistbuddy "PlistBuddy"} -c "Print :CFBundleVersion" "$1")
 
     echo $marketing_version.$build_version
   '';
+
   versionCheckProgramArg = [ "${placeholder "out"}/Applications/Cyberduck.app/Contents/Info.plist" ];
-  doInstallCheck = true;
 
   meta = {
     description = "Libre file transfer client for Mac and Windows";
@@ -49,10 +51,12 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     changelog = "https://cyberduck.io/changelog/";
     license = lib.licenses.gpl3Plus;
     sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
+
     maintainers = with lib.maintainers; [
       emilytrau
       DimitarNestorov
     ];
+
     platforms = lib.platforms.darwin;
     mainProgram = "cyberduck";
   };

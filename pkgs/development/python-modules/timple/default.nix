@@ -1,24 +1,21 @@
 {
   # lib & utils
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  nix-update-script,
-  setuptools,
-
+  buildPythonPackage,
   # deps
   matplotlib,
+  nix-update-script,
   numpy,
-
+  pandas,
   # tests
   pytestCheckHook,
-  pandas,
+  setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "timple";
   version = "0.1.8";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "theOehrly";
@@ -27,6 +24,11 @@ buildPythonPackage rec {
     hash = "sha256-tfw+m1ZrU5A9KbXmMS4c1AIP4f/9YT3/o7HRb/uxUSM";
   };
 
+  nativeCheckInputs = [
+    pytestCheckHook
+    pandas
+  ];
+
   build-system = [ setuptools ];
 
   dependencies = [
@@ -34,27 +36,24 @@ buildPythonPackage rec {
     numpy
   ];
 
-  nativeCheckInputs = [
-    pytestCheckHook
-    pandas
-  ];
-  pythonImportsCheck = [ "timple" ];
-
-  disabledTests = [
-    # wants write access to nix store
-    "test_mpl_default_functionality"
-  ];
   disabledTestPaths = [
     # gui plotting tests
     "timple/tests/test_timple.py"
   ];
 
+  disabledTests = [
+    # wants write access to nix store
+    "test_mpl_default_functionality"
+  ];
+
+  pyproject = true;
+  pythonImportsCheck = [ "timple" ];
   passthru.updateScript = nix-update-script { };
 
   meta = {
-    changelog = "https://github.com/theOehrly/timple/releases/tag/v${version}";
     description = "Extended functionality for plotting timedelta-like values with Matplotlib";
     homepage = "https://github.com/theOehrly/timple";
+    changelog = "https://github.com/theOehrly/timple/releases/tag/v${version}";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ vaisriv ];
   };

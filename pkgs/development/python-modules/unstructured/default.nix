@@ -1,122 +1,116 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  symlinkJoin,
-
-  # build-system
-  setuptools,
-
   # core networking and async dependencies
   anyio,
   backoff,
-  certifi,
-  httpcore,
-  httpx,
-  h11,
-  nest-asyncio,
-  requests,
-  requests-toolbelt,
-  sniffio,
-  urllib3,
-
   # core parsing and processing
   beautifulsoup4,
+  black,
+  buildPythonPackage,
+  certifi,
+  # core system utilities
+  cffi,
   chardet,
   charset-normalizer,
-  emoji,
-  filetype,
-  html5lib,
-  idna,
-  joblib,
-  # jsonpath-python,
-  nltk,
-  nltk-data,
-  olefile,
-  orderly-set,
-  python-dateutil,
-  python-iso639,
-  python-magic,
-  python-oxmsg,
-  rapidfuzz,
-  regex,
-  soupsieve,
-  webencodings,
-
+  click,
+  coverage,
+  cryptography,
   # core data handling
   dataclasses-json,
   deepdiff,
-  marshmallow,
-  mypy-extensions,
-  packaging,
-  typing-extensions,
-  typing-inspect,
-
-  # core system utilities
-  cffi,
-  cryptography,
-  psutil,
-  pycparser,
-  six,
-  tqdm,
-  wrapt,
-
+  emoji,
+  # xslx
+  et-xmlfile,
+  filetype,
+  freezegun,
+  grpcio,
+  h11,
+  html5lib,
+  httpcore,
+  httpx,
+  idna,
+  # markdown
+  importlib-metadata,
+  joblib,
+  # huggingface
+  langdetect,
+  # unstructured-paddleocr,
+  # pptx
+  lxml,
   # document format support
   markdown,
+  marshmallow,
+  # , label-studio-sdk
+  mypy,
+  mypy-extensions,
+  nest-asyncio,
+  networkx,
+  # jsonpath-python,
+  nltk,
+  nltk-data,
+  numba,
+  numpy,
+  olefile,
+  # pdf
+  opencv-python,
+  openpyxl,
+  orderly-set,
+  packaging,
+  paddlepaddle,
+  pandas,
+  pdf2image,
   pdfminer-six,
   pdfplumber,
   # pi-heif,
   pikepdf,
+  pillow,
+  psutil,
+  pycparser,
   pypandoc,
   pypdf,
+  pytest-cov-stub,
+  pytest-mock,
+  # test dependencies
+  pytestCheckHook,
+  python-dateutil,
   python-docx,
-  unstructured-client,
+  python-iso639,
+  python-magic,
+  python-oxmsg,
+  python-pptx,
   # unstructured-pytesseract,
   # optional dependencies
   # csv
   pytz,
-  tzdata,
-  # markdown
-  importlib-metadata,
-  zipp,
-  # pdf
-  opencv-python,
-  paddlepaddle,
-  pdf2image,
-  # unstructured-paddleocr,
-  # pptx
-  lxml,
-  pillow,
-  python-pptx,
-  xlsxwriter,
-  # xslx
-  et-xmlfile,
-  networkx,
-  numpy,
-  numba,
-  openpyxl,
-  pandas,
-  xlrd,
-  # huggingface
-  langdetect,
+  rapidfuzz,
+  regex,
+  requests,
+  requests-toolbelt,
   sacremoses,
   sentencepiece,
+  # build-system
+  setuptools,
+  six,
+  sniffio,
+  soupsieve,
+  symlinkJoin,
   torch,
+  tqdm,
   transformers,
+  typing-extensions,
+  typing-inspect,
+  tzdata,
+  unstructured-client,
   # local-inference
   unstructured-inference,
-  # test dependencies
-  pytestCheckHook,
-  black,
-  coverage,
-  click,
-  freezegun,
-  # , label-studio-sdk
-  mypy,
-  pytest-cov-stub,
-  pytest-mock,
+  urllib3,
   vcrpy,
-  grpcio,
+  webencodings,
+  wrapt,
+  xlrd,
+  xlsxwriter,
+  zipp,
 }:
 let
   version = "0.18.31";
@@ -127,6 +121,7 @@ let
   # uses paths ending in "nltk_data" as-is and appends "/nltk_data" to any others.
   nltkData = symlinkJoin {
     name = "nltk_data";
+
     paths = with nltk-data; [
       averaged-perceptron-tagger-eng
       punkt-tab
@@ -134,9 +129,8 @@ let
   };
 in
 buildPythonPackage rec {
-  pname = "unstructured";
   inherit version;
-  pyproject = true;
+  pname = "unstructured";
 
   src = fetchFromGitHub {
     owner = "Unstructured-IO";
@@ -145,12 +139,29 @@ buildPythonPackage rec {
     hash = "sha256-2RGwuCVnoKkqYFVzW7nWuaB9B4IguKSfLO7u1qqAALk=";
   };
 
-  build-system = [ setuptools ];
-
   postPatch = ''
     substituteInPlace unstructured/nlp/tokenize.py \
       --replace-fail 'import nltk' 'import nltk; nltk.data.path.append("${nltkData}")'
   '';
+
+  # the import-time NLTK download is handled via nltkData above, but the test suite has
+  # further offline/data requirements that are not yet verified, so keep it disabled.
+  doCheck = false;
+
+  nativeCheckInputs = [
+    pytestCheckHook
+    black
+    coverage
+    click
+    freezegun
+    mypy
+    pytest-cov-stub
+    pytest-mock
+    vcrpy
+    grpcio
+  ];
+
+  build-system = [ setuptools ];
 
   dependencies = [
     # Base dependencies
@@ -210,6 +221,7 @@ buildPythonPackage rec {
 
   optional-dependencies = rec {
     all-docs = csv ++ docx ++ epub ++ pdf ++ req-markdown ++ odt ++ org ++ pptx ++ xlsx;
+
     csv = [
       numpy
       pandas
@@ -217,32 +229,41 @@ buildPythonPackage rec {
       pytz
       tzdata
     ];
+
     docx = [
       lxml
       python-docx
       typing-extensions
     ];
+
     epub = [ pypandoc ];
-    req-markdown = [
-      importlib-metadata
-      markdown
-      zipp
+
+    huggingface = [
+      langdetect
+      sacremoses
+      sentencepiece
+      torch
+      transformers
     ];
+
     odt = [
       lxml
       pypandoc
       python-docx
       typing-extensions
     ];
+
     org = [
       pypandoc
     ];
+
     paddleocr = [
       opencv-python
       # paddlepaddle # 3.12 not supported for now
       pdf2image
       # unstructured-paddleocr
     ];
+
     pdf = [
       pdf2image
       pdfminer-six
@@ -253,12 +274,20 @@ buildPythonPackage rec {
       unstructured-inference
       # unstructured-pytesseract
     ];
+
     pptx = [
       lxml
       pillow
       python-pptx
       xlsxwriter
     ];
+
+    req-markdown = [
+      importlib-metadata
+      markdown
+      zipp
+    ];
+
     xlsx = [
       et-xmlfile
       networkx
@@ -267,14 +296,9 @@ buildPythonPackage rec {
       pandas
       xlrd
     ];
-    huggingface = [
-      langdetect
-      sacremoses
-      sentencepiece
-      torch
-      transformers
-    ];
   };
+
+  pyproject = true;
 
   pythonImportsCheck = [
     "unstructured"
@@ -282,29 +306,12 @@ buildPythonPackage rec {
     "unstructured.nlp.tokenize"
   ];
 
-  # the import-time NLTK download is handled via nltkData above, but the test suite has
-  # further offline/data requirements that are not yet verified, so keep it disabled.
-  doCheck = false;
-
-  nativeCheckInputs = [
-    pytestCheckHook
-    black
-    coverage
-    click
-    freezegun
-    mypy
-    pytest-cov-stub
-    pytest-mock
-    vcrpy
-    grpcio
-  ];
-
   meta = {
     description = "Open source libraries and APIs to build custom preprocessing pipelines for labeling, training, or production machine learning pipelines";
-    mainProgram = "unstructured-ingest";
     homepage = "https://github.com/Unstructured-IO/unstructured";
     changelog = "https://github.com/Unstructured-IO/unstructured/blob/${src.tag}/CHANGELOG.md";
     license = lib.licenses.asl20;
     maintainers = with lib.maintainers; [ happysalada ];
+    mainProgram = "unstructured-ingest";
   };
 }

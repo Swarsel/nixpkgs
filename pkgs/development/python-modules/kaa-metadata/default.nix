@@ -2,29 +2,25 @@
   lib,
   buildPythonPackage,
   fetchPypi,
-  kaa-base,
-  isPyPy,
   isPy3k,
-  python,
+  isPyPy,
+  kaa-base,
   pkgs,
+  python,
 }:
 
 buildPythonPackage rec {
-  version = "0.7.8dev-r4569-20111003";
-  format = "setuptools";
   pname = "kaa-metadata";
-  disabled = isPyPy || isPy3k;
+  version = "0.7.8dev-r4569-20111003";
 
   src = fetchPypi {
     inherit pname version;
     sha256 = "0bkbzfgxvmby8lvzkqjp86anxvv3vjd9nksv2g4l7shsk1n7y27a";
   };
 
-  doCheck = false;
-
   buildInputs = [ pkgs.libdvdread ];
-
   propagatedBuildInputs = [ kaa-base ];
+  doCheck = false;
 
   # Same as in buildPythonPackage except that it does not pass --old-and-unmanageable
   installPhase = ''
@@ -47,6 +43,9 @@ buildPythonPackage rec {
 
     runHook postInstall
   '';
+
+  disabled = isPyPy || isPy3k;
+  format = "setuptools";
 
   meta = {
     description = "Python library for parsing media metadata, which can extract metadata (e.g., such as id3 tags) from a wide range of media files";

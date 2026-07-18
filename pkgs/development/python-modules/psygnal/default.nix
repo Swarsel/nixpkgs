@@ -1,7 +1,8 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  attrs,
+  buildPythonPackage,
   hatch-vcs,
   hatchling,
   mypy-extensions,
@@ -12,13 +13,11 @@
   toolz,
   typing-extensions,
   wrapt,
-  attrs,
 }:
 
 buildPythonPackage rec {
   pname = "psygnal";
   version = "0.15.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "pyapp-kit";
@@ -26,6 +25,16 @@ buildPythonPackage rec {
     tag = "v${version}";
     hash = "sha256-7d9ejzdafoH14fKvYJd3OwYS0RGwDmMeLlj74qvsvjE=";
   };
+
+  nativeCheckInputs = [
+    numpy
+    pydantic
+    pytest-asyncio
+    pytestCheckHook
+    toolz
+    wrapt
+    attrs
+  ];
 
   build-system = [
     hatch-vcs
@@ -37,15 +46,7 @@ buildPythonPackage rec {
     typing-extensions
   ];
 
-  nativeCheckInputs = [
-    numpy
-    pydantic
-    pytest-asyncio
-    pytestCheckHook
-    toolz
-    wrapt
-    attrs
-  ];
+  pyproject = true;
 
   pytestFlags = [
     "-Wignore::pydantic.warnings.PydanticDeprecatedSince211"

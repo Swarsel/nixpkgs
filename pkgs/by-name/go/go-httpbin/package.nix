@@ -1,10 +1,10 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
-  versionCheckHook,
-  nixosTests,
+  buildGoModule,
   nix-update-script,
+  nixosTests,
+  versionCheckHook,
 }:
 
 buildGoModule (finalAttrs: {
@@ -19,19 +19,16 @@ buildGoModule (finalAttrs: {
   };
 
   vendorHash = null;
-
   env.CGO_ENABLED = 0;
+  doInstallCheck = true;
+  nativeInstallCheckInputs = [ versionCheckHook ];
+  __darwinAllowLocalNetworking = true;
 
   ldflags = [
     "-s"
     "-w"
     "-X main.version=${finalAttrs.version}"
   ];
-
-  __darwinAllowLocalNetworking = true;
-
-  nativeInstallCheckInputs = [ versionCheckHook ];
-  doInstallCheck = true;
 
   passthru = {
     tests = { inherit (nixosTests) go-httpbin; };

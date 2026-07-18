@@ -1,9 +1,9 @@
 {
   lib,
   stdenv,
+  autoreconfHook,
   fetchFromCodeberg,
   gtkmm3,
-  autoreconfHook,
   pkg-config,
   versionCheckHook,
 }:
@@ -23,28 +23,28 @@ stdenv.mkDerivation (finalAttrs: {
     ./fix-gcc15.patch
   ];
 
-  buildInputs = [
-    gtkmm3
-  ];
-
   nativeBuildInputs = [
     autoreconfHook
     pkg-config
   ];
 
+  buildInputs = [
+    gtkmm3
+  ];
+
   # Required for build with gcc-14
   env.NIX_CFLAGS_COMPILE = "-Wno-error=implicit-int";
-
-  enableParallelBuilding = true;
+  doInstallCheck = true;
 
   nativeInstallCheckInputs = [
     versionCheckHook
   ];
-  doInstallCheck = true;
+
+  enableParallelBuilding = true;
 
   meta = {
-    homepage = "https://codeberg.org/g0tsu/litemdview";
     description = "Suckless markdown viewer";
+
     longDescription = ''
       LiteMDview is a lightweight, extremely fast markdown viewer with lots of useful features. One of them is ability to use your prefered text editor to edit markdown files, every time you save the file, litemdview reloads those changes (I call it live-reload). It has a convinient navigation through local directories, has support for a basic "git-like" folders hierarchy as well as vimwiki projects.
 
@@ -66,6 +66,8 @@ stdenv.mkDerivation (finalAttrs: {
         - Basic html support (very simple offline documents in html)
         - Syntax highlighting
     '';
+
+    homepage = "https://codeberg.org/g0tsu/litemdview";
     license = lib.licenses.gpl2Plus;
     maintainers = with lib.maintainers; [ WhiteBlackGoose ];
     platforms = lib.platforms.linux;

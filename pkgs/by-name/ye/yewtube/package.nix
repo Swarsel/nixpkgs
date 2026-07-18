@@ -1,13 +1,12 @@
 {
   lib,
-  python3Packages,
   fetchFromGitHub,
+  python3Packages,
 }:
 
 python3Packages.buildPythonApplication (finalAttrs: {
   pname = "yewtube";
   version = "2.13.1";
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "mps-youtube";
@@ -41,16 +40,19 @@ python3Packages.buildPythonApplication (finalAttrs: {
     export XDG_CONFIG_HOME=$(mktemp -d)
   '';
 
+  format = "setuptools";
   pythonImportsCheck = [ "mps_youtube" ];
 
   meta = {
     description = "Terminal based YouTube player and downloader, forked from mps-youtube";
-    mainProgram = "yt";
     homepage = "https://github.com/mps-youtube/yewtube";
     license = lib.licenses.gpl3Plus;
+
     maintainers = with lib.maintainers; [
       fgaz
       koral
     ];
+
+    mainProgram = "yt";
   };
 })

@@ -2,37 +2,31 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  cmake,
-  pkg-config,
-  sphinx,
-  krb5,
-  xfsprogs,
-  btrfs-progs,
-  jemalloc,
-  libcap,
-  ntirpc,
-  liburcu,
-  bison,
-  flex,
-  nfs-utils,
   acl,
-  prometheus-cpp-lite,
-  useCeph ? false,
+  bison,
+  btrfs-progs,
   ceph,
-  useDbus ? true,
+  cmake,
   dbus,
+  flex,
+  jemalloc,
+  krb5,
+  libcap,
+  liburcu,
+  nfs-utils,
+  ntirpc,
+  pkg-config,
+  prometheus-cpp-lite,
   rdma-core,
+  sphinx,
+  xfsprogs,
+  useCeph ? false,
+  useDbus ? true,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
   pname = "nfs-ganesha";
   version = "9.16";
-
-  outputs = [
-    "out"
-    "man"
-    "tools"
-  ];
 
   src = fetchFromGitHub {
     owner = "nfs-ganesha";
@@ -41,35 +35,17 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-y5rsQjhmfhqZXQ7jXsItbNe/3Gq4lswIXUq7nnyQIcs=";
   };
 
+  outputs = [
+    "out"
+    "man"
+    "tools"
+  ];
+
   patches = lib.optional useDbus ./allow-bypassing-dbus-pkg-config-test.patch;
 
-  preConfigure = "cd src";
-
-  env.NIX_CFLAGS_COMPILE = "-Wno-redundant-move";
-
-  cmakeFlags = [
-    "-DUSE_SYSTEM_NTIRPC=ON"
-    "-DSYSSTATEDIR=/var"
-    "-DENABLE_VFS_POSIX_ACL=ON"
-    "-DUSE_ACL_MAPPING=ON"
-    "-DCMAKE_BUILD_WITH_INSTALL_RPATH=ON"
-    "-DUSE_MAN_PAGE=ON"
-    "-DUSE_MONITORING=ON"
-    "-DUSE_NFS_RDMA=ON"
-  ]
-  ++ lib.optionals useCeph [
-    "-DUSE_RADOS_RECOV=ON"
-    "-DRADOS_URLS=ON"
-    "-DUSE_FSAL_CEPH=ON"
-    "-DUSE_FSAL_RGW=ON"
-  ]
-  ++ lib.optionals useDbus [
-    "-DUSE_DBUS=ON"
-    "-DDBUS_NO_PKGCONFIG=ON"
-    "-DDBUS_LIBRARY_DIRS=${lib.getLib dbus}/lib"
-    "-DDBUS_INCLUDE_DIRS=${lib.getDev dbus}/include/dbus-1.0\\;${lib.getLib dbus}/lib/dbus-1.0/include"
-    "-DDBUS_LIBRARIES=dbus-1"
-  ];
+  postPatch = ''
+    substituteInPlace src/tools/mount.9P --replace-fail "/bin/mount" "/usr/bin/env mount"
+  '';
 
   nativeBuildInputs = [
     cmake
@@ -96,8 +72,39 @@ stdenv.mkDerivation (finalAttrs: {
   ]
   ++ lib.optional useCeph ceph;
 
-  postPatch = ''
-    substituteInPlace src/tools/mount.9P --replace-fail "/bin/mount" "/usr/bin/env mount"
+  cmakeFlags = [
+    "-DUSE_SYSTEM_NTIRPC=ON"
+    "-DSYSSTATEDIR=/var"
+    "-DENABLE_VFS_POSIX_ACL=ON"
+    "-DUSE_ACL_MAPPING=ON"
+    "-DCMAKE_BUILD_WITH_INSTALL_RPATH=ON"
+    "-DUSE_MAN_PAGE=ON"
+    "-DUSE_MONITORING=ON"
+    "-DUSE_NFS_RDMA=ON"
+  ]
+  ++ lib.optionals useCeph [
+    "-DUSE_RADOS_RECOV=ON"
+    "-DRADOS_URLS=ON"
+    "-DUSE_FSAL_CEPH=ON"
+    "-DUSE_FSAL_RGW=ON"
+  ]
+  ++ lib.optionals useDbus [
+    "-DUSE_DBUS=ON"
+    "-DDBUS_NO_PKGCONFIG=ON"
+    "-DDBUS_LIBRARY_DIRS=${lib.getLib dbus}/lib"
+    "-DDBUS_INCLUDE_DIRS=${lib.getDev dbus}/include/dbus-1.0\\;${lib.getLib dbus}/lib/dbus-1.0/include"
+    "-DDBUS_LIBRARIES=dbus-1"
+  ];
+
+  env.NIX_CFLAGS_COMPILE = "-Wno-redundant-move";
+  preConfigure = "cd src";
+
+  postInstall = ''
+    install -Dm755 ../tools/mount.9P $tools/bin/mount.9P
+  ''
+  + lib.optionalString useDbus ''
+    # Policy for D-Bus statistics interface
+    install -Dm644 $src/src/scripts/ganeshactl/org.ganesha.nfsd.conf $out/etc/dbus-1/system.d/org.ganesha.nfsd.conf
   '';
 
   postFixup = ''
@@ -110,21 +117,14 @@ stdenv.mkDerivation (finalAttrs: {
     patchelf --add-rpath $out/lib $out/lib/libganesha_rados_urls.so
   '';
 
-  postInstall = ''
-    install -Dm755 ../tools/mount.9P $tools/bin/mount.9P
-  ''
-  + lib.optionalString useDbus ''
-    # Policy for D-Bus statistics interface
-    install -Dm644 $src/src/scripts/ganeshactl/org.ganesha.nfsd.conf $out/etc/dbus-1/system.d/org.ganesha.nfsd.conf
-  '';
-
   meta = {
     description = "NFS server that runs in user space";
     homepage = "https://github.com/nfs-ganesha/nfs-ganesha/wiki";
+    license = lib.licenses.lgpl3Plus;
     maintainers = [ lib.maintainers.markuskowa ];
     platforms = lib.platforms.linux;
-    license = lib.licenses.lgpl3Plus;
     mainProgram = "ganesha.nfsd";
+
     outputsToInstall = [
       "out"
       "man"

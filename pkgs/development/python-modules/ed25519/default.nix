@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   setuptools,
   versioneer,
 }:
@@ -9,7 +9,6 @@
 buildPythonPackage rec {
   pname = "ed25519";
   version = "1.5";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "warner";
@@ -27,14 +26,15 @@ buildPythonPackage rec {
     versioneer
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "ed25519" ];
 
   meta = {
     description = "Ed25519 public-key signatures";
-    mainProgram = "edsig";
     homepage = "https://github.com/warner/python-ed25519";
     changelog = "https://github.com/warner/python-ed25519/blob/${version}/NEWS";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ np ];
+    mainProgram = "edsig";
   };
 }

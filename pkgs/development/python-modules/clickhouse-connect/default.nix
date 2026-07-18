@@ -1,42 +1,38 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  pytestCheckHook,
-  # build_requires
-  cython,
+  buildPythonPackage,
   # install_requires
   certifi,
+  # build_requires
+  cython,
   importlib-metadata,
-  urllib3,
-  pytz,
-  zstandard,
   lz4,
-  # extras_require
-  sqlalchemy,
   numpy,
+  orjson,
   pandas,
   pyarrow,
-  orjson,
   # not in tests_require, but should be
   pytest-dotenv,
+  pytestCheckHook,
+  pytz,
+  # extras_require
+  sqlalchemy,
+  urllib3,
+  zstandard,
 }:
 buildPythonPackage rec {
   pname = "clickhouse-connect";
   version = "0.10.0";
 
-  format = "setuptools";
-
   src = fetchFromGitHub {
-    repo = "clickhouse-connect";
     owner = "ClickHouse";
+    repo = "clickhouse-connect";
     tag = "v${version}";
     hash = "sha256-D2D0sOFb0gcbLfMigYn0/GrT8zJav2Q6T39dONLxui4=";
   };
 
   nativeBuildInputs = [ cython ];
-  setupPyBuildFlags = [ "--inplace" ];
-  enableParallelBuilding = true;
 
   propagatedBuildInputs = [
     certifi
@@ -61,6 +57,17 @@ buildPythonPackage rec {
     "tests/unit_tests/test_driver/test_httpclient.py"
   ];
 
+  enableParallelBuilding = true;
+  format = "setuptools";
+
+  optional-dependencies = {
+    arrow = [ pyarrow ];
+    numpy = [ numpy ];
+    orjson = [ orjson ];
+    pandas = [ pandas ];
+    sqlalchemy = [ sqlalchemy ];
+  };
+
   pythonImportsCheck = [
     "clickhouse_connect"
     "clickhouse_connect.driverc.buffer"
@@ -68,13 +75,7 @@ buildPythonPackage rec {
     "clickhouse_connect.driverc.npconv"
   ];
 
-  optional-dependencies = {
-    sqlalchemy = [ sqlalchemy ];
-    numpy = [ numpy ];
-    pandas = [ pandas ];
-    arrow = [ pyarrow ];
-    orjson = [ orjson ];
-  };
+  setupPyBuildFlags = [ "--inplace" ];
 
   meta = {
     description = "ClickHouse Database Core Driver for Python, Pandas, and Superset";

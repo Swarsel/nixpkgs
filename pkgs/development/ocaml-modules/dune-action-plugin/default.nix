@@ -8,10 +8,8 @@
 }:
 
 buildDunePackage {
-  pname = "dune-action-plugin";
   inherit (dune) src version;
-
-  dontAddPrefix = true;
+  pname = "dune-action-plugin";
 
   propagatedBuildInputs = [
     dune-glob
@@ -19,10 +17,12 @@ buildDunePackage {
     dune-rpc
   ];
 
+  dontAddPrefix = true;
+
   meta = {
     inherit (dune.meta) homepage;
     description = "API for writing dynamic Dune actions";
-    maintainers = [ ];
     license = lib.licenses.mit;
+    maintainers = [ ];
   };
 }

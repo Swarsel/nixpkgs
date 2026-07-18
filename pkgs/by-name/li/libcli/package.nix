@@ -22,8 +22,8 @@ stdenv.mkDerivation (finalAttrs: {
       pname = "libcli";
       version = "1.10.7";
       debianRevision = "2";
-      patch = "02-fix-transposed-calloc-args";
       hash = "sha256-lSZeg5h+LUIGa4DnkAmwIEs+tctCYs/tuY63hbBUjuw=";
+      patch = "02-fix-transposed-calloc-args";
     })
   ];
 
@@ -31,13 +31,13 @@ stdenv.mkDerivation (finalAttrs: {
     libxcrypt
   ];
 
-  enableParallelBuilding = true;
-
   makeFlags = [
     "CC=${stdenv.cc.targetPrefix}cc"
     "AR=${stdenv.cc.targetPrefix}ar"
     "PREFIX=${placeholder "out"}"
   ];
+
+  enableParallelBuilding = true;
 
   meta = {
     description = "Emulate a Cisco-style telnet command-line interface";

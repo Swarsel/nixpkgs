@@ -29,14 +29,16 @@ in
     settings = mkOption {
       inherit (format) type;
       default = { };
+
       description = ''
         Merecat configuration. Refer to {manpage}`merecat(8)` for details on supported values.
       '';
+
       example = {
+        directory = "/srv/www";
         hostname = "localhost";
         port = 8080;
         virtual-host = true;
-        directory = "/srv/www";
       };
     };
 
@@ -45,14 +47,16 @@ in
   config = mkIf cfg.enable {
 
     systemd.services.merecat = {
-      description = "Merecat HTTP server";
       after = [ "network.target" ];
-      wantedBy = [ "multi-user.target" ];
+      description = "Merecat HTTP server";
+
       serviceConfig = {
+        AmbientCapabilities = lib.mkIf ((cfg.settings.port or 80) < 1024) [ "CAP_NET_BIND_SERVICE" ];
         DynamicUser = true;
         ExecStart = "${pkgs.merecat}/bin/merecat -n -f ${configFile}";
-        AmbientCapabilities = lib.mkIf ((cfg.settings.port or 80) < 1024) [ "CAP_NET_BIND_SERVICE" ];
       };
+
+      wantedBy = [ "multi-user.target" ];
     };
 
   };

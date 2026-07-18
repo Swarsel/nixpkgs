@@ -33,8 +33,9 @@ stdenv.mkDerivation {
   '';
 
   meta = {
-    homepage = "https://github.com/jdebp/redo";
     description = "System for building target files from source files";
+    homepage = "https://github.com/jdebp/redo";
+
     # https://github.com/jdebp/redo/blob/trunk/source/COPYING
     license =
       with lib.licenses;
@@ -43,8 +44,9 @@ stdenv.mkDerivation {
         isc
         mit
       ];
+
     maintainers = [ ];
-    mainProgram = "redo";
     platforms = lib.platforms.unix;
+    mainProgram = "redo";
   };
 }

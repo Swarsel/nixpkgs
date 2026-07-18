@@ -1,6 +1,6 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
 }:
 
@@ -14,8 +14,6 @@ stdenv.mkDerivation {
     rev = "71f23ec79f7f5d66aa5ae9fd3f9b8dae41a89f15";
     hash = "sha256-lqrMnfANgQtXTAmzxzHaJMAyqHNOdrerjtrs8LGd0hg=";
   };
-
-  makefile = "Makefile.unix";
 
   env.NIX_CFLAGS_COMPILE = toString [
     # Add a workaround for -fno-common toolchains like upstream gcc-10.
@@ -38,11 +36,13 @@ stdenv.mkDerivation {
     runHook postInstall
   '';
 
+  makefile = "Makefile.unix";
+
   meta = {
-    homepage = "https://www.alanif.se/";
     description = "Alan interactive fiction language (legacy version)";
+    homepage = "https://www.alanif.se/";
     license = lib.licenses.artistic2;
-    platforms = lib.platforms.linux;
     maintainers = with lib.maintainers; [ neilmayhew ];
+    platforms = lib.platforms.linux;
   };
 }

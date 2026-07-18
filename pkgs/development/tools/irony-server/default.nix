@@ -2,31 +2,30 @@
   lib,
   stdenv,
   cmake,
-  llvmPackages,
-  llvm,
   irony,
+  llvm,
+  llvmPackages,
 }:
 
 stdenv.mkDerivation {
-  pname = "irony-server";
   inherit (irony) src version;
+  pname = "irony-server";
 
   nativeBuildInputs = [
     cmake
     llvm
   ];
+
   buildInputs = [ llvmPackages.libclang ];
-
-  dontUseCmakeBuildDir = true;
-
   cmakeDir = "server";
+  dontUseCmakeBuildDir = true;
 
   meta = {
     description = "Server part of irony";
-    mainProgram = "irony-server";
     homepage = "https://melpa.org/#/irony";
+    license = lib.licenses.free;
     maintainers = [ ];
     platforms = lib.platforms.unix;
-    license = lib.licenses.free;
+    mainProgram = "irony-server";
   };
 }

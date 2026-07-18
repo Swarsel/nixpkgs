@@ -1,21 +1,19 @@
 {
-  pkgs,
   lib,
   fetchFromGitHub,
   leveldb,
+  pkgs,
   ...
 }:
 
 {
   pname = "gerbil-leveldb";
   version = "unstable-2023-09-23";
-  git-version = "c62e47f";
-  gerbil-package = "clan";
-  gerbilInputs = [ ];
   nativeBuildInputs = [ pkgs.pkg-config ];
   buildInputs = [ leveldb ];
-  version-path = "";
-  softwareName = "Gerbil-LevelDB";
+  gerbil-package = "clan";
+  gerbilInputs = [ ];
+  git-version = "c62e47f";
 
   pre-src = {
     fun = fetchFromGitHub;
@@ -25,13 +23,15 @@
     sha256 = "177zn1smv2zq97mlryf8fi7v5gbjk07v5i0dix3r2wsanphaawvl";
   };
 
+  softwareName = "Gerbil-LevelDB";
+  version-path = "";
+
   meta = {
     description = "LevelDB bindings for Gerbil";
     homepage = "https://github.com/mighty-gerbils/gerbil-leveldb";
     license = lib.licenses.asl20;
-    platforms = lib.platforms.unix;
     maintainers = with lib.maintainers; [ fare ];
+    platforms = lib.platforms.unix;
   };
-
   # "-L${leveldb}/lib"
 }

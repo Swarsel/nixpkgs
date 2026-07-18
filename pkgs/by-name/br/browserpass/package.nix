@@ -1,13 +1,13 @@
 {
   lib,
   stdenv,
-  buildGoModule,
   fetchFromGitHub,
+  autoPatchelfHook,
+  browserpass,
+  buildGoModule,
   gnupg,
   makeWrapper,
-  autoPatchelfHook,
   testers,
-  browserpass,
 }:
 
 buildGoModule (finalAttrs: {
@@ -21,15 +21,6 @@ buildGoModule (finalAttrs: {
     sha256 = "sha256-UZzOPRRiCUIG7uSSp9AEPMDN/+4cgyK47RhrI8oUx8U=";
   };
 
-  nativeBuildInputs = [
-    makeWrapper
-  ]
-  ++ lib.optionals stdenv.hostPlatform.isLinux [ autoPatchelfHook ];
-
-  vendorHash = "sha256-CjuH4ANP2bJDeA+o+1j+obbtk5/NVLet/OFS3Rms4r0=";
-
-  doCheck = stdenv.buildPlatform.canExecute stdenv.hostPlatform;
-
   postPatch = ''
     # Because this Makefile will be installed to be used by the user, patch
     # variables to be valid by default
@@ -39,6 +30,12 @@ buildGoModule (finalAttrs: {
     sed -i -e 's/INSTALL =.*/INSTALL = install/' Makefile
   '';
 
+  nativeBuildInputs = [
+    makeWrapper
+  ]
+  ++ lib.optionals stdenv.hostPlatform.isLinux [ autoPatchelfHook ];
+
+  vendorHash = "sha256-CjuH4ANP2bJDeA+o+1j+obbtk5/NVLet/OFS3Rms4r0=";
   env.DESTDIR = placeholder "out";
 
   postConfigure = ''
@@ -49,7 +46,7 @@ buildGoModule (finalAttrs: {
     make browserpass
   '';
 
-  checkTarget = "test";
+  doCheck = stdenv.buildPlatform.canExecute stdenv.hostPlatform;
 
   installPhase = ''
     make install
@@ -63,16 +60,18 @@ buildGoModule (finalAttrs: {
     cp $out/lib/browserpass/hosts/firefox/*.json $out/lib/mozilla/native-messaging-hosts/
   '';
 
+  checkTarget = "test";
+
   passthru.tests.version = testers.testVersion {
-    package = browserpass;
     command = "browserpass --version";
+    package = browserpass;
   };
 
   meta = {
     description = "Browserpass native client app";
-    mainProgram = "browserpass";
     homepage = "https://github.com/browserpass/browserpass-native";
     license = lib.licenses.isc;
     maintainers = with lib.maintainers; [ rvolosatovs ];
+    mainProgram = "browserpass";
   };
 })

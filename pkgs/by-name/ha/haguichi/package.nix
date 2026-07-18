@@ -1,6 +1,6 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
   desktop-file-utils,
   glib,
@@ -51,13 +51,15 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Graphical frontend for Hamachi on Linux";
-    mainProgram = "haguichi";
     homepage = "https://haguichi.net/";
+
     changelog = "https://haguichi.net/news/release${
       lib.strings.replaceStrings [ "." ] [ "" ] finalAttrs.version
     }/";
+
     license = lib.licenses.gpl3Plus;
-    platforms = lib.platforms.linux;
     maintainers = with lib.maintainers; [ OPNA2608 ];
+    platforms = lib.platforms.linux;
+    mainProgram = "haguichi";
   };
 })

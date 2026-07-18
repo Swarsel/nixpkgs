@@ -1,13 +1,13 @@
 {
   lib,
   stdenv,
-  fetchFromGitHub,
   fetchurl,
+  fetchFromGitHub,
+  copyDesktopItems,
   fetchpatch2,
   love,
-  makeWrapper,
   makeDesktopItem,
-  copyDesktopItems,
+  makeWrapper,
   strip-nondeterminism,
   zip,
 }:
@@ -16,19 +16,19 @@ let
   pname = "90secondportraits";
 
   icon = fetchurl {
-    url = "http://tangramgames.dk/img/thumb/90secondportraits.png";
     sha256 = "13k6cq8s7jw77j81xfa5ri41445m778q6iqbfplhwdpja03c6faw";
+    url = "http://tangramgames.dk/img/thumb/90secondportraits.png";
   };
 
   desktopItems = [
     (makeDesktopItem {
-      name = "90secondportraits";
-      exec = pname;
-      icon = icon;
+      categories = [ "Game" ];
       comment = "A silly speed painting game";
       desktopName = "90 Second Portraits";
+      exec = pname;
       genericName = "90secondportraits";
-      categories = [ "Game" ];
+      icon = icon;
+      name = "90secondportraits";
     })
   ];
 
@@ -47,9 +47,9 @@ stdenv.mkDerivation rec {
 
   patches = [
     (fetchpatch2 {
+      hash = "sha256-/C4gqzwHQqZCuTA/m6WX8mvTxmLxOcHRItVLA3bty3Y=";
       # Love 11 support
       url = "https://github.com/SimonLarsen/90-Second-Portraits/commit/0ae7ba046f14cef9857fd6c05d9072455097441f.patch?full_index=true";
-      hash = "sha256-/C4gqzwHQqZCuTA/m6WX8mvTxmLxOcHRItVLA3bty3Y=";
     })
   ];
 
@@ -78,8 +78,7 @@ stdenv.mkDerivation rec {
   meta = {
     description = "Silly speed painting game";
     homepage = "https://github.com/SimonLarsen/90-Second-Portraits";
-    mainProgram = "90secondportraits";
-    platforms = love.meta.platforms;
+
     license = with lib.licenses; [
       zlib
       cc-by-sa-40
@@ -87,6 +86,9 @@ stdenv.mkDerivation rec {
       x11
       mit
     ];
+
+    platforms = love.meta.platforms;
+    mainProgram = "90secondportraits";
     downloadPage = "http://tangramgames.dk/games/90secondportraits";
   };
 

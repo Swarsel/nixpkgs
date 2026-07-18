@@ -2,11 +2,11 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  cmake,
-  pkg-config,
   cctools,
+  cmake,
   makeWrapper,
   mesa,
+  pkg-config,
   python3,
   runCommand,
   vulkan-headers,
@@ -16,38 +16,38 @@
 let
   # From https://github.com/google/amber/blob/main/DEPS
   glslang = fetchFromGitHub {
+    hash = "sha256-3h27yE6k4BgUAugQCkpUYO5aIHpK6Anyh90y3q+aYpM=";
     owner = "KhronosGroup";
     repo = "glslang";
     rev = "340bf88f3fdb4f4a25b7071cd2c1205035fc6eaa";
-    hash = "sha256-3h27yE6k4BgUAugQCkpUYO5aIHpK6Anyh90y3q+aYpM=";
   };
 
   lodepng = fetchFromGitHub {
+    hash = "sha256-dD8QoyOoGov6VENFNTXWRmen4nYYleoZ8+4TpICNSpo=";
     owner = "lvandeve";
     repo = "lodepng";
     rev = "5601b8272a6850b7c5d693dd0c0e16da50be8d8d";
-    hash = "sha256-dD8QoyOoGov6VENFNTXWRmen4nYYleoZ8+4TpICNSpo=";
   };
 
   shaderc = fetchFromGitHub {
+    hash = "sha256-p4tP/8lRy0tpdDHIuh2/tWPIBBr2ludFRSr+Q2TbUic=";
     owner = "google";
     repo = "shaderc";
     rev = "690d259384193c90c01b52288e280b05a8481121";
-    hash = "sha256-p4tP/8lRy0tpdDHIuh2/tWPIBBr2ludFRSr+Q2TbUic=";
   };
 
   spirv-headers = fetchFromGitHub {
+    hash = "sha256-GWcNNw08XoKaZs/BTW9nPAEMHL8wqbhbUm56PUtEan4=";
     owner = "KhronosGroup";
     repo = "SPIRV-Headers";
     rev = "babee77020ff82b571d723ce2c0262e2ec0ee3f1";
-    hash = "sha256-GWcNNw08XoKaZs/BTW9nPAEMHL8wqbhbUm56PUtEan4=";
   };
 
   spirv-tools = fetchFromGitHub {
+    hash = "sha256-x7OXe0q9ml8PIxWyTEx3j3tvSgIPp8kg5HwlLWIzNuk=";
     owner = "KhronosGroup";
     repo = "SPIRV-Tools";
     rev = "4c1ae3cd6f9076271cd64acde8cbef1d1287f27f";
-    hash = "sha256-x7OXe0q9ml8PIxWyTEx3j3tvSgIPp8kg5HwlLWIzNuk=";
   };
 
 in
@@ -62,11 +62,6 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-en+q6pLBTiVRg5XdP2qmPfkPnywYqEOsm2/er3m75Jw=";
   };
 
-  buildInputs = [
-    vulkan-headers
-    vulkan-loader
-  ];
-
   nativeBuildInputs = [
     cmake
     makeWrapper
@@ -77,11 +72,26 @@ stdenv.mkDerivation (finalAttrs: {
     cctools
   ];
 
+  buildInputs = [
+    vulkan-headers
+    vulkan-loader
+  ];
+
   # Tests are disabled so we do not have to pull in googletest and more dependencies
   cmakeFlags = [
     "-DAMBER_SKIP_TESTS=ON"
     "-DAMBER_DISABLE_WERROR=ON"
   ];
+
+  installPhase = ''
+    runHook preInstall
+
+    install -Dm755 -t $out/bin amber image_diff
+    wrapProgram $out/bin/amber \
+      --suffix VK_LAYER_PATH : ${vulkan-validation-layers}/share/vulkan/explicit_layer.d
+
+    runHook postInstall
+  '';
 
   prePatch = ''
     cp -r ${glslang}/ third_party/glslang
@@ -93,16 +103,6 @@ stdenv.mkDerivation (finalAttrs: {
 
     substituteInPlace tools/update_build_version.py \
       --replace "not os.path.exists(directory)" "True"
-  '';
-
-  installPhase = ''
-    runHook preInstall
-
-    install -Dm755 -t $out/bin amber image_diff
-    wrapProgram $out/bin/amber \
-      --suffix VK_LAYER_PATH : ${vulkan-validation-layers}/share/vulkan/explicit_layer.d
-
-    runHook postInstall
   '';
 
   passthru.tests.lavapipe =

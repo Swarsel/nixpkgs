@@ -1,25 +1,27 @@
 {
   lib,
   buildPythonPackage,
+  callPackage,
   fetchPypi,
   openstackdocstheme,
   pbr,
-  six,
   setuptools,
+  six,
   sphinxHook,
   wrapt,
-  callPackage,
 }:
 
 buildPythonPackage rec {
   pname = "debtcollector";
   version = "3.0.0";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
     hash = "sha256-KokX0lsOHx0NNl08HG7Px6UiselxbooaSpFRJvfM6m8=";
   };
+
+  # check in passthru.tests.pytest to escape infinite recursion with other oslo components
+  doCheck = false;
 
   build-system = [
     openstackdocstheme
@@ -28,21 +30,18 @@ buildPythonPackage rec {
     sphinxHook
   ];
 
-  sphinxBuilders = [ "man" ];
-
   dependencies = [
     six
     wrapt
   ];
 
-  # check in passthru.tests.pytest to escape infinite recursion with other oslo components
-  doCheck = false;
+  pyproject = true;
+  pythonImportsCheck = [ "debtcollector" ];
+  sphinxBuilders = [ "man" ];
 
   passthru.tests = {
     tests = callPackage ./tests.nix { };
   };
-
-  pythonImportsCheck = [ "debtcollector" ];
 
   meta = {
     description = "Collection of Python deprecation patterns and strategies that help you collect your technical debt in a non-destructive manner";

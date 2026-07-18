@@ -3,10 +3,10 @@
   stdenv,
   fetchurl,
   autoreconfHook,
-  pkg-config,
   bison,
   flex,
   openssl,
+  pkg-config,
   versionCheckHook,
 }:
 
@@ -41,23 +41,23 @@ stdenv.mkDerivation {
     autoreconfHook
     pkg-config
   ];
+
   buildInputs = [
     bison
     flex
     openssl
   ];
 
-  enableParallelBuilding = true;
-
-  nativeInstallCheckInputs = [ versionCheckHook ];
-  versionCheckProgramArg = "-v";
   doInstallCheck = true;
+  nativeInstallCheckInputs = [ versionCheckHook ];
+  enableParallelBuilding = true;
+  versionCheckProgramArg = "-v";
 
   meta = {
     description = "IRC proxy (bouncer)";
     homepage = "http://bip.milkypond.org/";
     license = lib.licenses.gpl2;
-    downloadPage = "https://projects.duckcorp.org/projects/bip/files";
     platforms = lib.platforms.linux;
+    downloadPage = "https://projects.duckcorp.org/projects/bip/files";
   };
 }

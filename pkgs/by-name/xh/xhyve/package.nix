@@ -1,6 +1,6 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
   zlib,
 }:
@@ -20,12 +20,6 @@ stdenv.mkDerivation rec {
     zlib
   ];
 
-  # Don't use git to determine version
-  prePatch = ''
-    substituteInPlace Makefile \
-      --replace 'shell git describe --abbrev=6 --dirty --always --tags' "$version"
-  '';
-
   makeFlags = [
     "CFLAGS+=-Wno-shift-sign-overflow"
     ''CFLAGS+=-DVERSION=\"${version}\"''
@@ -36,11 +30,17 @@ stdenv.mkDerivation rec {
     cp build/xhyve $out/bin
   '';
 
+  # Don't use git to determine version
+  prePatch = ''
+    substituteInPlace Makefile \
+      --replace 'shell git describe --abbrev=6 --dirty --always --tags' "$version"
+  '';
+
   meta = {
     description = "Lightweight Virtualization on macOS Based on bhyve";
     homepage = "https://github.com/mist64/xhyve";
-    maintainers = [ ];
     license = lib.licenses.bsd2;
+    maintainers = [ ];
     platforms = lib.platforms.darwin;
     # never built on aarch64-darwin since first introduction in nixpkgs
     broken = stdenv.hostPlatform.isDarwin && stdenv.hostPlatform.isAarch64;

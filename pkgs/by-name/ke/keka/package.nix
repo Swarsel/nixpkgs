@@ -1,8 +1,8 @@
 {
   lib,
-  stdenvNoCC,
   fetchzip,
   makeWrapper,
+  stdenvNoCC,
 }:
 stdenvNoCC.mkDerivation (finalAttrs: {
   pname = "keka";
@@ -31,10 +31,12 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     homepage = "https://www.keka.io";
     license = lib.licenses.unfree;
     sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
+
     maintainers = with lib.maintainers; [
       emilytrau
       kinnrai
     ];
+
     platforms = lib.platforms.darwin;
   };
 })

@@ -10,11 +10,6 @@ stdenv.mkDerivation (finalAttrs: {
   pname = "suitesparse-graphblas";
   version = "10.3.1";
 
-  outputs = [
-    "out"
-    "dev"
-  ];
-
   src = fetchFromGitHub {
     owner = "DrTimothyAldenDavis";
     repo = "GraphBLAS";
@@ -22,20 +17,25 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-m+sjfRdgIwH/FEaHkEp6fl5+fehNcBDLVc4f5H5Lslw=";
   };
 
+  outputs = [
+    "out"
+    "dev"
+  ];
+
   nativeBuildInputs = [
     cmake
     gnum4
   ];
-
-  preConfigure = ''
-    export HOME=$(mktemp -d)
-  '';
 
   cmakeFlags = [
     (lib.cmakeBool "GRAPHBLAS_USE_JIT" (
       !(stdenv.hostPlatform.isLinux && stdenv.hostPlatform.isAarch64)
     ))
   ];
+
+  preConfigure = ''
+    export HOME=$(mktemp -d)
+  '';
 
   meta = {
     description = "Graph algorithms in the language of linear algebra";

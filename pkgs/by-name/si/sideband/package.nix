@@ -1,15 +1,13 @@
 {
   lib,
-  python3Packages,
   fetchFromGitHub,
+  python3Packages,
   versionCheckHook,
 }:
 
 python3Packages.buildPythonApplication (finalAttrs: {
   pname = "sideband";
   version = "1.9.7";
-  pyproject = true;
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "markqvist";
@@ -34,6 +32,12 @@ python3Packages.buildPythonApplication (finalAttrs: {
         "1.9.2" \
         "1.9.7"
   '';
+
+  nativeCheckInputs = [
+    versionCheckHook
+  ];
+
+  __structuredAttrs = true;
 
   build-system = with python3Packages; [
     setuptools
@@ -66,21 +70,20 @@ python3Packages.buildPythonApplication (finalAttrs: {
       pyobjus
     ];
 
+  pyproject = true;
   pythonImportsCheck = [ "sbapp" ];
-
-  nativeCheckInputs = [
-    versionCheckHook
-  ];
   versionCheckProgramArg = [ "--version" ];
 
   meta = {
-    changelog = "https://github.com/markqvist/Sideband/releases/tag/${finalAttrs.version}";
     description = "LXMF client allowing you to communicate with people or LXMF-compatible systems over Reticulum networks";
     homepage = "https://github.com/markqvist/Sideband";
+    changelog = "https://github.com/markqvist/Sideband/releases/tag/${finalAttrs.version}";
     license = lib.licenses.cc-by-nc-sa-40;
+
     maintainers = with lib.maintainers; [
       drupol
     ];
+
     mainProgram = "sideband";
   };
 })

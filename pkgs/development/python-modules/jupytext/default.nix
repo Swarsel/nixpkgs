@@ -1,38 +1,34 @@
 {
   lib,
   stdenv,
-  buildPythonPackage,
   fetchFromGitHub,
-  nodejs,
-  yarn-berry_3,
-
+  # tests
+  addBinToPathHook,
+  buildPythonPackage,
   # build-system
   hatch-jupyter-builder,
   hatchling,
+  jupyter-client,
   jupyterlab,
-
   # dependencies
   markdown-it-py,
   mdit-py-plugins,
   nbformat,
-  packaging,
-  pyyaml,
-
-  # tests
-  addBinToPathHook,
-  jupyter-client,
+  nodejs,
   notebook,
+  packaging,
   pytest-asyncio,
   pytest-xdist,
   pytestCheckHook,
+  pyyaml,
   versionCheckHook,
   writableTmpDirAsHomeHook,
+  yarn-berry_3,
 }:
 
 buildPythonPackage rec {
   pname = "jupytext";
   version = "1.18.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "mwouts";
@@ -50,17 +46,6 @@ buildPythonPackage rec {
     yarn-berry_3.yarnBerryConfigHook
   ];
 
-  missingHashes = ./missing-hashes.json;
-
-  offlineCache = yarn-berry_3.fetchYarnBerryDeps {
-    inherit src missingHashes;
-    patches = [
-      ./fix-yarn-lock-typescript-offline-cache.patch
-    ];
-    sourceRoot = "${src.name}/jupyterlab";
-    hash = "sha256-k2lQnlSmCghIkp6VwNmq5KpSHS5tEbnFnsM+xqo3Ebw=";
-  };
-
   env.HATCH_BUILD_HOOKS_ENABLE = true;
 
   preConfigure = ''
@@ -70,20 +55,6 @@ buildPythonPackage rec {
   preBuild = ''
     popd
   '';
-
-  build-system = [
-    hatch-jupyter-builder
-    hatchling
-    jupyterlab
-  ];
-
-  dependencies = [
-    markdown-it-py
-    mdit-py-plugins
-    nbformat
-    packaging
-    pyyaml
-  ];
 
   nativeCheckInputs = [
     addBinToPathHook
@@ -103,6 +74,20 @@ buildPythonPackage rec {
       --replace-fail "format_str(sync_code, mode=FileMode())" "sync_code"
   '';
 
+  build-system = [
+    hatch-jupyter-builder
+    hatchling
+    jupyterlab
+  ];
+
+  dependencies = [
+    markdown-it-py
+    mdit-py-plugins
+    nbformat
+    packaging
+    pyyaml
+  ];
+
   disabledTestPaths = [
     # Requires the `git` python module
     "tests/external"
@@ -117,6 +102,21 @@ buildPythonPackage rec {
     "test_load_save_rename"
   ];
 
+  missingHashes = ./missing-hashes.json;
+
+  offlineCache = yarn-berry_3.fetchYarnBerryDeps {
+    inherit src missingHashes;
+
+    patches = [
+      ./fix-yarn-lock-typescript-offline-cache.patch
+    ];
+
+    hash = "sha256-k2lQnlSmCghIkp6VwNmq5KpSHS5tEbnFnsM+xqo3Ebw=";
+    sourceRoot = "${src.name}/jupyterlab";
+  };
+
+  pyproject = true;
+
   pythonImportsCheck = [
     "jupytext"
     "jupytext.cli"
@@ -127,7 +127,7 @@ buildPythonPackage rec {
     homepage = "https://github.com/mwouts/jupytext";
     changelog = "https://github.com/mwouts/jupytext/blob/${src.tag}/CHANGELOG.md";
     license = lib.licenses.mit;
-    teams = [ lib.teams.jupyter ];
     mainProgram = "jupytext";
+    teams = [ lib.teams.jupyter ];
   };
 }

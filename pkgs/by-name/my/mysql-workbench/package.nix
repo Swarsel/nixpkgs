@@ -2,41 +2,36 @@
   lib,
   stdenv,
   fetchurl,
-  fetchpatch,
-  replaceVars,
-
-  cmake,
-  jre,
-  ninja,
-  pkg-config,
-  swig,
-  wrapGAppsHook3,
-
-  bash,
-  coreutils,
-  glibc,
-  sudo,
-
-  python3Packages,
-
-  cairo,
-  mysql84,
-  libiodbc,
-  proj,
-
   antlr4_13,
+  bash,
   boost,
+  cairo,
+  cmake,
+  coreutils,
+  fetchpatch,
   gdal,
+  glibc,
   gtkmm3,
+  jre,
+  libiodbc,
   libmysqlconnectorcpp,
   libsecret,
   libssh,
   libuuid,
   libxml2,
   libzip,
+  mysql84,
+  ninja,
   openssl,
+  pkg-config,
+  proj,
+  python3Packages,
   rapidjson,
+  replaceVars,
+  sudo,
+  swig,
   vsqlite,
+  wrapGAppsHook3,
   zstd,
 }:
 
@@ -48,6 +43,7 @@ let
   # for some reason the package doesn't build with swig 4.3.0
   swig' = swig.overrideAttrs (prevAttrs: {
     version = "4.2.1";
+
     src = prevAttrs.src.override {
       hash = "sha256-VlUsiRZLScmbC7hZDzKqUr9481YXVwo0eXT/jy6Fda8=";
     };
@@ -83,9 +79,9 @@ stdenv.mkDerivation (finalAttrs: {
 
     # fixes the build with python 3.13
     (fetchpatch {
+      hash = "sha256-hLfPqZSNf3ls2WThF1SBRjV33zTUymfgDmdZVpgO22Q=";
       name = "python3.13.patch";
       url = "https://git.pld-linux.org/?p=packages/mysql-workbench.git;a=blob_plain;f=python-3.13.patch;h=d1425a93c41fb421603cda6edbb0514389cdc6a8;hb=bb09cb858f3b9c28df699d3b98530a6c590b5b7a";
-      hash = "sha256-hLfPqZSNf3ls2WThF1SBRjV33zTUymfgDmdZVpgO22Q=";
     })
   ];
 
@@ -133,6 +129,16 @@ stdenv.mkDerivation (finalAttrs: {
     # TODO: package sqlanydb and add it here
   ];
 
+  cmakeFlags = [
+    (lib.cmakeFeature "MySQL_CONFIG_PATH" (lib.getExe' mysql "mysql_config"))
+    (lib.cmakeFeature "IODBC_CONFIG_PATH" (lib.getExe' libiodbc "iodbc-config"))
+    (lib.cmakeFeature "ANTLR_JAR_PATH" "${antlr.jarLocation}")
+    # mysql-workbench 8.0.21 depends on libmysqlconnectorcpp 1.1.8.
+    # Newer versions of connector still provide the legacy library when enabled
+    # but the headers are in a different location.
+    (lib.cmakeFeature "MySQLCppConn_INCLUDE_DIR" "${lib.getDev libmysqlconnectorcpp}/include/jdbc")
+  ];
+
   env.NIX_CFLAGS_COMPILE = toString (
     [
       # error: 'OGRErr OGRSpatialReference::importFromWkt(char**)' is deprecated
@@ -147,20 +153,6 @@ stdenv.mkDerivation (finalAttrs: {
       "-Wno-error=maybe-uninitialized"
     ]
   );
-
-  cmakeFlags = [
-    (lib.cmakeFeature "MySQL_CONFIG_PATH" (lib.getExe' mysql "mysql_config"))
-    (lib.cmakeFeature "IODBC_CONFIG_PATH" (lib.getExe' libiodbc "iodbc-config"))
-    (lib.cmakeFeature "ANTLR_JAR_PATH" "${antlr.jarLocation}")
-    # mysql-workbench 8.0.21 depends on libmysqlconnectorcpp 1.1.8.
-    # Newer versions of connector still provide the legacy library when enabled
-    # but the headers are in a different location.
-    (lib.cmakeFeature "MySQLCppConn_INCLUDE_DIR" "${lib.getDev libmysqlconnectorcpp}/include/jdbc")
-  ];
-
-  # There is already an executable and a wrapper in bindir
-  # No need to wrap both
-  dontWrapGApps = true;
 
   preFixup = ''
     gappsWrapperArgs+=(
@@ -182,18 +174,24 @@ stdenv.mkDerivation (finalAttrs: {
     done
   '';
 
+  # There is already an executable and a wrapper in bindir
+  # No need to wrap both
+  dontWrapGApps = true;
+
   meta = {
     description = "Visual MySQL database modeling, administration and querying tool";
+
     longDescription = ''
       MySQL Workbench is a modeling tool that allows you to design
       and generate MySQL databases graphically. It also has administration
       and query development modules where you can manage MySQL server instances
       and execute SQL queries.
     '';
+
     homepage = "http://wb.mysql.com/";
     license = lib.licenses.gpl2Only;
-    mainProgram = "mysql-workbench";
     maintainers = with lib.maintainers; [ tomasajt ];
     platforms = lib.platforms.linux;
+    mainProgram = "mysql-workbench";
   };
 })

@@ -2,9 +2,9 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  cmake,
-  catch2_3,
   asio,
+  catch2_3,
+  cmake,
   python3,
 }:
 
@@ -23,10 +23,11 @@ stdenv.mkDerivation (finalAttrs: {
     ./cpm.patch
   ];
 
-  propagatedBuildInputs = [ asio ];
   nativeBuildInputs = [
     cmake
   ];
+
+  propagatedBuildInputs = [ asio ];
 
   cmakeFlags = [
     (lib.cmakeBool "CROW_BUILD_EXAMPLES" false)
@@ -35,9 +36,11 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   doCheck = true;
+
   nativeCheckInputs = [
     python3
   ];
+
   checkInputs = [
     catch2_3
   ];
@@ -45,8 +48,8 @@ stdenv.mkDerivation (finalAttrs: {
   meta = {
     description = "Fast and Easy to use microframework for the web";
     homepage = "https://crowcpp.org/";
+    license = lib.licenses.bsd3;
     maintainers = with lib.maintainers; [ l33tname ];
     platforms = lib.platforms.all;
-    license = lib.licenses.bsd3;
   };
 })

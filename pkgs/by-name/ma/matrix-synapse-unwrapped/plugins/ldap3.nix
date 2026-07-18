@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   ldap3,
   ldaptor,
   matrix-synapse-unwrapped,
@@ -15,7 +15,6 @@
 buildPythonPackage rec {
   pname = "matrix-synapse-ldap3";
   version = "0.4.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "matrix-org";
@@ -23,6 +22,12 @@ buildPythonPackage rec {
     tag = "v${version}";
     hash = "sha256-d3TRtPEhyc45dj7k2TpJlBn8fZgKFDZxocKdfAoeI2w=";
   };
+
+  nativeCheckInputs = [
+    ldaptor
+    matrix-synapse-unwrapped
+    pytestCheckHook
+  ];
 
   build-system = [ setuptools ];
 
@@ -33,12 +38,7 @@ buildPythonPackage rec {
     twisted
   ];
 
-  nativeCheckInputs = [
-    ldaptor
-    matrix-synapse-unwrapped
-    pytestCheckHook
-  ];
-
+  pyproject = true;
   pythonImportsCheck = [ "ldap_auth_provider" ];
 
   meta = {

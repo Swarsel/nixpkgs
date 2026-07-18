@@ -8,7 +8,6 @@
 buildPythonPackage rec {
   pname = "django-vite";
   version = "3.1.0";
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "MrBin99";
@@ -18,10 +17,9 @@ buildPythonPackage rec {
   };
 
   propagatedBuildInputs = [ django ];
-
   # Package doesn’t have any tests
   doCheck = false;
-
+  format = "setuptools";
   pythonImportsCheck = [ "django_vite" ];
 
   meta = {

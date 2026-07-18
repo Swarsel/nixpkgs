@@ -1,6 +1,5 @@
 {
   lib,
-  gccStdenv,
   fetchFromGitHub,
   cmake,
   expat,
@@ -8,6 +7,7 @@
   fontconfig,
   freetype,
   fribidi,
+  gccStdenv,
   gdk-pixbuf,
   gdk-pixbuf-xlib,
   gettext,
@@ -15,9 +15,17 @@
   glib,
   imlib2,
   libice,
+  libjpeg,
+  libogg,
+  libpng,
+  libpthread-stubs,
   libsm,
+  libsndfile,
+  libtiff,
   libx11,
+  libxcb,
   libxcomposite,
+  libxcursor,
   libxdamage,
   libxdmcp,
   libxext,
@@ -26,14 +34,6 @@
   libxinerama,
   libxpm,
   libxrandr,
-  libjpeg,
-  libogg,
-  libpng,
-  libpthread-stubs,
-  libsndfile,
-  libtiff,
-  libxcb,
-  libxcursor,
   mkfontdir,
   pcre2,
   perl,
@@ -110,9 +110,8 @@ gccStdenv.mkDerivation (finalAttrs: {
   '';
 
   meta = {
-    homepage = "https://ice-wm.org/";
-    changelog = "https://github.com/ice-wm/icewm/releases/tag/${finalAttrs.src.tag}";
     description = "Simple, lightweight X window manager";
+
     longDescription = ''
       IceWM is a window manager for the X Window System. The goal of IceWM is
       speed, simplicity, and not getting in the user’s way. It comes with a
@@ -126,6 +125,9 @@ gccStdenv.mkDerivation (finalAttrs: {
       optional external background wallpaper manager with transparency support,
       a simple session manager and a system tray.
     '';
+
+    homepage = "https://ice-wm.org/";
+    changelog = "https://github.com/ice-wm/icewm/releases/tag/${finalAttrs.src.tag}";
     license = lib.licenses.lgpl2Only;
     maintainers = [ ];
     platforms = lib.platforms.unix;

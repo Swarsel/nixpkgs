@@ -3,8 +3,8 @@
   stdenv,
   fetchurl,
   fixDarwinDylibNames,
-  readline,
   gitUpdater,
+  readline,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -16,12 +16,9 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-fPOl5iLP9BkD7/8DNFGPyUrwYyVnUsOLpGGKUZHkTxg=";
   };
 
-  buildInputs = [ readline ];
-
   nativeBuildInputs = lib.optionals stdenv.hostPlatform.isDarwin [ fixDarwinDylibNames ];
-
+  buildInputs = [ readline ];
   makeFlags = [ "prefix=$(out)" ];
-
   installFlags = [ "install-shared" ];
 
   passthru.updateScript = gitUpdater {
@@ -30,10 +27,10 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   meta = {
-    homepage = "https://mujs.com/";
     description = "Lightweight, embeddable Javascript interpreter";
-    platforms = lib.platforms.unix;
-    maintainers = with lib.maintainers; [ pSub ];
+    homepage = "https://mujs.com/";
     license = lib.licenses.isc;
+    maintainers = with lib.maintainers; [ pSub ];
+    platforms = lib.platforms.unix;
   };
 })

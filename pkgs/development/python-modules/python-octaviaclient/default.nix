@@ -1,6 +1,7 @@
 {
   lib,
   buildPythonPackage,
+  callPackage,
   cliff,
   fetchPypi,
   keystoneauth1,
@@ -13,32 +14,30 @@
   setuptools,
   sphinx,
   sphinxcontrib-apidoc,
-  callPackage,
 }:
 
 buildPythonPackage rec {
   pname = "python-octaviaclient";
   version = "3.13.0";
-  pyproject = true;
 
   src = fetchPypi {
-    pname = "python_octaviaclient";
     inherit version;
     hash = "sha256-Iq1TdXMUDqrE33V+yh8H7yYPIW01NVEa6cPqFPq4Yv4=";
+    pname = "python_octaviaclient";
   };
-
-  # NOTE(vinetos): This explicit dependency is removed to avoid infinite recursion
-  pythonRemoveDeps = [ "python-openstackclient" ];
-
-  build-system = [
-    setuptools
-    pbr
-  ];
 
   nativeBuildInputs = [
     openstackdocstheme
     sphinx
     sphinxcontrib-apidoc
+  ];
+
+  # Checks moved to 'passthru.tests' to workaround infinite recursion
+  doCheck = false;
+
+  build-system = [
+    setuptools
+    pbr
   ];
 
   dependencies = [
@@ -50,14 +49,14 @@ buildPythonPackage rec {
     requests
   ];
 
-  # Checks moved to 'passthru.tests' to workaround infinite recursion
-  doCheck = false;
+  pyproject = true;
+  pythonImportsCheck = [ "octaviaclient" ];
+  # NOTE(vinetos): This explicit dependency is removed to avoid infinite recursion
+  pythonRemoveDeps = [ "python-openstackclient" ];
 
   passthru.tests = {
     tests = callPackage ./tests.nix { };
   };
-
-  pythonImportsCheck = [ "octaviaclient" ];
 
   meta = {
     description = "OpenStack Octavia Command-line Client";

@@ -1,12 +1,11 @@
 {
   lib,
-  fetchPypi,
   buildPythonPackage,
+  fetchPypi,
 }:
 buildPythonPackage rec {
   pname = "banal";
   version = "1.0.6";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
@@ -15,7 +14,7 @@ buildPythonPackage rec {
 
   # no tests
   doCheck = false;
-
+  format = "setuptools";
   pythonImportsCheck = [ "banal" ];
 
   meta = {

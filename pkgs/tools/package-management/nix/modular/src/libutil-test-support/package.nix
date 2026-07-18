@@ -13,10 +13,8 @@
 }:
 
 mkMesonLibrary (finalAttrs: {
-  pname = "nix-util-test-support";
   inherit version;
-
-  workDir = ./.;
+  pname = "nix-util-test-support";
 
   propagatedBuildInputs = [
     nix-util
@@ -26,6 +24,8 @@ mkMesonLibrary (finalAttrs: {
 
   mesonFlags = [
   ];
+
+  workDir = ./.;
 
   meta = {
     platforms = lib.platforms.unix ++ lib.platforms.windows;

@@ -1,20 +1,19 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   cmake,
   cython,
   ninja,
-  scikit-build-core,
-  rapidfuzz-cpp,
-  rapidfuzz,
   pytestCheckHook,
+  rapidfuzz,
+  rapidfuzz-cpp,
+  scikit-build-core,
 }:
 
 buildPythonPackage rec {
   pname = "levenshtein";
   version = "0.27.3";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "rapidfuzz";
@@ -31,6 +30,9 @@ buildPythonPackage rec {
       --replace-fail "Cython>=3.1.6,<3.2.0" Cython
   '';
 
+  buildInputs = [ rapidfuzz-cpp ];
+  nativeCheckInputs = [ pytestCheckHook ];
+
   build-system = [
     cmake
     cython
@@ -38,14 +40,9 @@ buildPythonPackage rec {
     scikit-build-core
   ];
 
-  dontUseCmakeConfigure = true;
-
-  buildInputs = [ rapidfuzz-cpp ];
-
   dependencies = [ rapidfuzz ];
-
-  nativeCheckInputs = [ pytestCheckHook ];
-
+  dontUseCmakeConfigure = true;
+  pyproject = true;
   pythonImportsCheck = [ "Levenshtein" ];
 
   meta = {

@@ -1,8 +1,8 @@
 {
-  buildPythonPackage,
-  fetchFromGitHub,
-  hatchling,
   lib,
+  fetchFromGitHub,
+  buildPythonPackage,
+  hatchling,
   pytestCheckHook,
   regex,
 }:
@@ -10,15 +10,19 @@
 buildPythonPackage (finalAttrs: {
   pname = "python-jsonpath";
   version = "2.2.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "jg-rp";
     repo = "python-jsonpath";
     tag = "v${finalAttrs.version}";
-    fetchSubmodules = true;
     hash = "sha256-7kXDGm+pV0daeMEGW/hVb/U69svLFgZfZKklVgV+EJ4=";
+    fetchSubmodules = true;
   };
+
+  nativeCheckInputs = [
+    pytestCheckHook
+  ]
+  ++ finalAttrs.passthru.optional-dependencies.strict;
 
   build-system = [ hatchling ];
 
@@ -29,17 +33,13 @@ buildPythonPackage (finalAttrs: {
     ];
   };
 
+  pyproject = true;
   pythonImportsCheck = [ "jsonpath" ];
 
-  nativeCheckInputs = [
-    pytestCheckHook
-  ]
-  ++ finalAttrs.passthru.optional-dependencies.strict;
-
   meta = {
-    changelog = "https://github.com/jg-rp/python-jsonpath/blob/${finalAttrs.src.tag}/CHANGELOG.md";
     description = "Flexible JSONPath engine for Python with JSON Pointer and JSON Patch";
     homepage = "https://github.com/jg-rp/python-jsonpath";
+    changelog = "https://github.com/jg-rp/python-jsonpath/blob/${finalAttrs.src.tag}/CHANGELOG.md";
     license = lib.licenses.mit;
     maintainers = [ lib.maintainers.dotlambda ];
   };

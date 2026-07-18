@@ -1,11 +1,11 @@
 {
   lib,
+  fetchFromGitHub,
   buildPythonPackage,
   cachelib,
   cryptography,
-  fetchFromGitHub,
-  flask-sqlalchemy,
   flask,
+  flask-sqlalchemy,
   httpx,
   joserfc,
   mock,
@@ -21,7 +21,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "authlib";
   version = "1.7.2";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "lepture";
@@ -29,13 +28,6 @@ buildPythonPackage (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-FLSe9piZoFlOAutzoMcgygbsJsR8uSlZWqdNBU6D+aE=";
   };
-
-  build-system = [ setuptools ];
-
-  dependencies = [
-    cryptography
-    joserfc
-  ];
 
   nativeCheckInputs = [
     cachelib
@@ -51,7 +43,12 @@ buildPythonPackage (finalAttrs: {
     werkzeug
   ];
 
-  pythonImportsCheck = [ "authlib" ];
+  build-system = [ setuptools ];
+
+  dependencies = [
+    cryptography
+    joserfc
+  ];
 
   disabledTestPaths = [
     # Django tests require a running instance
@@ -60,6 +57,9 @@ buildPythonPackage (finalAttrs: {
     # Unsupported encryption algorithm
     "tests/jose/test_chacha20.py"
   ];
+
+  pyproject = true;
+  pythonImportsCheck = [ "authlib" ];
 
   meta = {
     description = "Library for building OAuth and OpenID Connect servers";

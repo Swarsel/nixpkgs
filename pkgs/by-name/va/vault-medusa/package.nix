@@ -19,9 +19,9 @@ buildGoModule (finalAttrs: {
 
   meta = {
     description = "Cli tool for importing and exporting Hashicorp Vault secrets";
-    mainProgram = "medusa";
     homepage = "https://github.com/jonasvinther/medusa";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ onny ];
+    mainProgram = "medusa";
   };
 })

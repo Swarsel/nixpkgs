@@ -1,17 +1,17 @@
 {
   lib,
-  buildNpmPackage,
   stdenv,
+  fetchFromGitHub,
+  buildNpmPackage,
+  cacert,
+  callPackage,
   chromium,
   ffmpeg,
   jq,
-  nodejs,
-  fetchFromGitHub,
   linkFarm,
-  callPackage,
   makeFontsConf,
   makeWrapper,
-  cacert,
+  nodejs,
 }:
 let
   inherit (stdenv.hostPlatform) system;
@@ -29,18 +29,8 @@ let
   };
 
   playwright = buildNpmPackage {
-    pname = "playwright";
     inherit version src;
-
-    sourceRoot = "${src.name}"; # update.sh depends on sourceRoot presence
-    npmDepsHash = "sha256-DTRhYHRaPlthyRcD2azEIKMPaRwROLuLOdUC27Rk5zM=";
-
-    nativeBuildInputs = [
-      cacert
-      jq
-    ];
-
-    env.ELECTRON_SKIP_BINARY_DOWNLOAD = true;
+    pname = "playwright";
 
     postPatch = ''
       sed -i '/\/\/ Update test runner./,/^\s*$/{d}' utils/build/build.js
@@ -49,6 +39,14 @@ let
       substituteInPlace packages/playwright-core/src/server/registry/index.ts \
         --replace-fail "['libGLESv2.so.2', 'libx264.so']" "[]"
     '';
+
+    nativeBuildInputs = [
+      cacert
+      jq
+    ];
+
+    npmDepsHash = "sha256-DTRhYHRaPlthyRcD2azEIKMPaRwROLuLOdUC27Rk5zM=";
+    env.ELECTRON_SKIP_BINARY_DOWNLOAD = true;
 
     installPhase = ''
       runHook preInstall
@@ -73,20 +71,23 @@ let
       runHook postInstall
     '';
 
+    sourceRoot = "${src.name}"; # update.sh depends on sourceRoot presence
+
     meta = {
+      inherit (nodejs.meta) platforms;
       description = "Framework for Web Testing and Automation";
       homepage = "https://playwright.dev";
       license = lib.licenses.asl20;
+
       maintainers = with lib.maintainers; [
         kalekseev
       ];
-      inherit (nodejs.meta) platforms;
     };
   };
 
   playwright-core = stdenv.mkDerivation (finalAttrs: {
-    pname = "playwright-core";
     inherit (playwright) version src meta;
+    pname = "playwright-core";
 
     installPhase = ''
       runHook preInstall
@@ -98,26 +99,30 @@ let
 
     passthru = {
       inherit browsersJSON;
-      selectBrowsers = browsers;
+      inherit components;
       browsers = browsers { };
+
       browsers-chromium = browsers {
+        withChromiumHeadlessShell = false;
         withFirefox = false;
         withWebkit = false;
-        withChromiumHeadlessShell = false;
       };
+
+      selectBrowsers = browsers;
+
       tests.browser-downloads = callPackage ./browser-downloads-test.nix {
         playwright-core = finalAttrs.finalPackage;
       };
-      inherit components;
+
       updateScript = ./update.sh;
     };
   });
 
   playwright-test = stdenv.mkDerivation (finalAttrs: {
-    pname = "playwright-test";
     inherit (playwright) version src;
-
+    pname = "playwright-test";
     nativeBuildInputs = [ makeWrapper ];
+
     installPhase = ''
       runHook preInstall
 
@@ -142,38 +147,43 @@ let
     chromium = callPackage ./chromium.nix {
       inherit system throwSystem;
       inherit (browsersJSON.chromium) revision browserVersion;
+
       fontconfig_file = makeFontsConf {
         fontDirectories = [ ];
       };
     };
+
     chromium-headless-shell = callPackage ./chromium-headless-shell.nix {
       inherit system throwSystem;
       inherit (browsersJSON."chromium-headless-shell") revision browserVersion;
     };
+
+    ffmpeg = callPackage ./ffmpeg.nix {
+      inherit system throwSystem;
+      inherit (browsersJSON.ffmpeg) revision;
+    };
+
     firefox = callPackage ./firefox.nix {
       inherit system throwSystem;
       inherit (browsersJSON.firefox) revision;
     };
+
     webkit = callPackage ./webkit.nix {
       inherit system throwSystem;
       inherit (browsersJSON.webkit) revision;
-    };
-    ffmpeg = callPackage ./ffmpeg.nix {
-      inherit system throwSystem;
-      inherit (browsersJSON.ffmpeg) revision;
     };
   };
 
   browsers = lib.makeOverridable (
     {
-      withChromium ? true,
-      withFirefox ? true,
-      withWebkit ? true, # may require `export PLAYWRIGHT_HOST_PLATFORM_OVERRIDE="ubuntu-24.04"`
-      withFfmpeg ? true,
-      withChromiumHeadlessShell ? true,
       fontconfig_file ? makeFontsConf {
         fontDirectories = [ ];
       },
+      withChromium ? true,
+      withChromiumHeadlessShell ? true,
+      withFfmpeg ? true,
+      withFirefox ? true,
+      withWebkit ? true, # may require `export PLAYWRIGHT_HOST_PLATFORM_OVERRIDE="ubuntu-24.04"`
     }:
     let
       browsers =

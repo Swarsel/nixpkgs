@@ -1,5 +1,4 @@
 {
-  mkDerivation,
   cmake,
   extra-cmake-modules,
   kauth,
@@ -9,35 +8,42 @@
   kguiaddons,
   ki18n,
   kwidgetsaddons,
-  qttools,
+  mkDerivation,
   qtbase,
+  qttools,
 }:
 
 mkDerivation {
   pname = "kconfigwidgets";
+
+  outputs = [
+    "out"
+    "dev"
+  ];
+
   nativeBuildInputs = [
     cmake
     extra-cmake-modules
     kdoctools
   ];
+
   buildInputs = [
     kguiaddons
     ki18n
     qtbase
     qttools
   ];
+
   propagatedBuildInputs = [
     kauth
     kcodecs
     kconfig
     kwidgetsaddons
   ];
-  outputs = [
-    "out"
-    "dev"
-  ];
-  outputBin = "dev";
+
   postInstall = ''
     moveToOutput ''${qtPluginPrefix:?}/designer/kconfigwidgets5widgets.so "$out"
   '';
+
+  outputBin = "dev";
 }

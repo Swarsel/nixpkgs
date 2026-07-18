@@ -1,26 +1,25 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   cython,
   pkgconfig,
-  setuptools,
-  wheel,
   pytestCheckHook,
   python,
+  setuptools,
+  wheel,
 }:
 
 buildPythonPackage rec {
   pname = "faust-cchardet";
   version = "2.1.19";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "faust-streaming";
     repo = "cChardet";
     tag = "v${version}";
-    fetchSubmodules = true;
     hash = "sha256-yY6YEhXC4S47rxnkKAta4m16IVGn7gkHSt056bYOYJ4=";
+    fetchSubmodules = true;
   };
 
   nativeBuildInputs = [
@@ -30,24 +29,27 @@ buildPythonPackage rec {
     wheel
   ];
 
+  nativeCheckInputs = [ pytestCheckHook ];
+
   postFixup = ''
     # fake cchardet distinfo, so packages that depend on cchardet
     # accept it as a drop-in replacement
     ln -s $out/${python.sitePackages}/{faust_,}cchardet-${version}.dist-info
   '';
 
+  pyproject = true;
   pythonImportsCheck = [ "cchardet" ];
 
-  nativeCheckInputs = [ pytestCheckHook ];
-
   meta = {
-    changelog = "https://github.com/faust-streaming/cChardet/blob/${src.rev}/CHANGES.rst";
     description = "High-speed universal character encoding detector";
-    mainProgram = "cchardetect";
     homepage = "https://github.com/faust-streaming/cChardet";
+    changelog = "https://github.com/faust-streaming/cChardet/blob/${src.rev}/CHANGES.rst";
     license = lib.licenses.mpl11;
+
     maintainers = with lib.maintainers; [
       dotlambda
     ];
+
+    mainProgram = "cchardetect";
   };
 }

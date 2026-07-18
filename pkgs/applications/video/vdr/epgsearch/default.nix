@@ -2,22 +2,27 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  vdr,
-  util-linux,
   groff,
-  perl,
   pcre2,
+  perl,
+  util-linux,
+  vdr,
 }:
 stdenv.mkDerivation rec {
   pname = "vdr-epgsearch";
   version = "2.4.6";
 
   src = fetchFromGitHub {
-    repo = "vdr-plugin-epgsearch";
     owner = "vdr-projects";
-    sha256 = "sha256-+csxlLBSIKiYIjgEPj0IUP8wZX9zuOM26cgA99uZ3EA=";
+    repo = "vdr-plugin-epgsearch";
     rev = "v${version}";
+    sha256 = "sha256-+csxlLBSIKiYIjgEPj0IUP8wZX9zuOM26cgA99uZ3EA=";
   };
+
+  outputs = [
+    "out"
+    "man"
+  ];
 
   postPatch = ''
     for f in *.sh; do
@@ -44,17 +49,12 @@ stdenv.mkDerivation rec {
     "DESTDIR=$(out)"
   ];
 
-  outputs = [
-    "out"
-    "man"
-  ];
-
   meta = {
     inherit (src.meta) homepage;
-    description = "Searchtimer and replacement of the VDR program menu";
-    mainProgram = "createcats";
-    maintainers = [ lib.maintainers.ck3d ];
-    license = lib.licenses.gpl2;
     inherit (vdr.meta) platforms;
+    description = "Searchtimer and replacement of the VDR program menu";
+    license = lib.licenses.gpl2;
+    maintainers = [ lib.maintainers.ck3d ];
+    mainProgram = "createcats";
   };
 }

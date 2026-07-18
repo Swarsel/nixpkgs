@@ -1,11 +1,11 @@
 {
   lib,
   fetchFromGitHub,
-  rustPlatform,
   installShellFiles,
-  pkg-config,
   libheif,
   nix-update-script,
+  pkg-config,
+  rustPlatform,
 }:
 rustPlatform.buildRustPackage (finalAttrs: {
   pname = "timewall";
@@ -18,15 +18,13 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-6tcIFdDJ297EbP/2wF1AR95Gb4z5ygbjNIT94ccIgxQ=";
   };
 
-  cargoHash = "sha256-hM8sTzYqoybSO3I2cwUpQE0YOO9PEBNYndR1o1+Bx/U=";
-
   nativeBuildInputs = [
     pkg-config
     installShellFiles
   ];
 
   buildInputs = [ libheif ];
-
+  cargoHash = "sha256-hM8sTzYqoybSO3I2cwUpQE0YOO9PEBNYndR1o1+Bx/U=";
   env.SHELL_COMPLETIONS_DIR = "completions";
 
   preBuild = ''
@@ -47,7 +45,7 @@ rustPlatform.buildRustPackage (finalAttrs: {
     homepage = "https://github.com/bcyran/timewall";
     changelog = "https://github.com/bcyran/timewall/releases/tag/${finalAttrs.version}";
     license = lib.licenses.mit;
-    mainProgram = "timewall";
     maintainers = with lib.maintainers; [ bcyran ];
+    mainProgram = "timewall";
   };
 })

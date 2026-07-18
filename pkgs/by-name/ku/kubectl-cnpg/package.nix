@@ -1,7 +1,7 @@
 {
-  buildGoModule,
-  fetchFromGitHub,
   lib,
+  fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule (finalAttrs: {
@@ -16,14 +16,13 @@ buildGoModule (finalAttrs: {
   };
 
   vendorHash = "sha256-Eh057tW8NTCNVtgyeY4A+Cc8wQbRDpUYDFmj4l+pn8o=";
-
   subPackages = [ "cmd/kubectl-cnpg" ];
 
   meta = {
-    homepage = "https://cloudnative-pg.io/";
     description = "Plugin for kubectl to manage a CloudNativePG cluster in Kubernetes";
-    mainProgram = "kubectl-cnpg";
+    homepage = "https://cloudnative-pg.io/";
     license = lib.licenses.asl20;
     maintainers = with lib.maintainers; [ devusb ];
+    mainProgram = "kubectl-cnpg";
   };
 })

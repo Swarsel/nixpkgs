@@ -1,21 +1,21 @@
 {
   lib,
   fetchFromGitHub,
-  rustPlatform,
+  appstream-glib,
+  blueprint-compiler,
+  bluez,
   cargo,
-  rustc,
+  dbus,
+  desktop-file-utils,
+  gtk4,
+  libadwaita,
+  libpulseaudio,
   meson,
   ninja,
   pkg-config,
+  rustPlatform,
+  rustc,
   wrapGAppsHook4,
-  desktop-file-utils,
-  appstream-glib,
-  blueprint-compiler,
-  dbus,
-  gtk4,
-  libadwaita,
-  bluez,
-  libpulseaudio,
 }:
 rustPlatform.buildRustPackage (finalAttrs: {
   pname = "overskride";
@@ -27,8 +27,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-JKYf0172sK/+IqtQqmeHOwC/P563ww+stEc3gxNwe/I=";
   };
-
-  cargoHash = "sha256-q1g+6JFW+euYCq2uMYQn4R0AP4yt5/cJoP88AXg9NLw=";
 
   nativeBuildInputs = [
     pkg-config
@@ -49,6 +47,8 @@ rustPlatform.buildRustPackage (finalAttrs: {
     bluez
     libpulseaudio
   ];
+
+  cargoHash = "sha256-q1g+6JFW+euYCq2uMYQn4R0AP4yt5/cJoP88AXg9NLw=";
 
   buildPhase = ''
     runHook preBuild
@@ -71,11 +71,13 @@ rustPlatform.buildRustPackage (finalAttrs: {
     homepage = "https://github.com/kaii-lb/overskride";
     changelog = "https://github.com/kaii-lb/overskride/blob/v${finalAttrs.version}/CHANGELOG.md";
     license = lib.licenses.gpl3Only;
-    mainProgram = "overskride";
+
     maintainers = with lib.maintainers; [
       mrcjkb
       ilkecan
     ];
+
     platforms = lib.platforms.linux;
+    mainProgram = "overskride";
   };
 })

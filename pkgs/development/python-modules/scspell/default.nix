@@ -1,9 +1,9 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
+  buildPythonPackage,
   pytestCheckHook,
+  setuptools,
   versionCheckHook,
   writableTmpDirAsHomeHook,
 }:
@@ -11,7 +11,6 @@
 buildPythonPackage {
   pname = "scspell";
   version = "2.3.0-unstable-2025-04-06";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "myint";
@@ -20,16 +19,15 @@ buildPythonPackage {
     hash = "sha256-mqU7Z6MluHTVYJ8fFbnN0OMWKjQFglD34YRnmJSE/jQ=";
   };
 
-  build-system = [ setuptools ];
-
   nativeCheckInputs = [
     pytestCheckHook
     versionCheckHook
     writableTmpDirAsHomeHook
   ];
 
+  build-system = [ setuptools ];
   preVersionCheck = "export version=2.3";
-
+  pyproject = true;
   pythonImportsCheck = [ "scspell" ];
 
   meta = {

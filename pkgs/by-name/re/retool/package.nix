@@ -1,15 +1,14 @@
 {
   lib,
   stdenv,
-  python3,
   fetchFromGitHub,
+  python3,
   qt6,
 }:
 
 python3.pkgs.buildPythonApplication (finalAttrs: {
   pname = "retool";
   version = "2.4.9";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "unexpectedpanda";
@@ -17,8 +16,6 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-FVBqmhU7nZpoFJSZBCtkmkcSLCAysNgwzOYyOwfOuGA=";
   };
-
-  pythonRelaxDeps = true;
 
   postPatch = ''
     # Upstream uses hatch-pyinstaller for a separate frozen-app target, but nixpkgs
@@ -36,8 +33,6 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
         "self.retool_location: pathlib.Path = pathlib.Path(os.environ.get('RETOOL_HOME', pathlib.Path.cwd())).expanduser()"
   '';
 
-  build-system = with python3.pkgs; [ hatchling ];
-
   nativeBuildInputs = [ qt6.wrapQtAppsHook ];
 
   buildInputs = [
@@ -46,6 +41,10 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
   ++ lib.optionals (stdenv.hostPlatform.isLinux) [
     qt6.qtwayland
   ];
+
+  # Upstream has no tests
+  doCheck = false;
+  build-system = with python3.pkgs; [ hatchling ];
 
   dependencies = with python3.pkgs; [
     alive-progress
@@ -57,8 +56,8 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     validators
   ];
 
-  # Upstream has no tests
-  doCheck = false;
+  pyproject = true;
+  pythonRelaxDeps = true;
 
   meta = {
     description = "Better filter tool for Redump and No-Intro dats";

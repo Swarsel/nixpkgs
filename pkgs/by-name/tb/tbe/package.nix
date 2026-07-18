@@ -29,6 +29,8 @@ stdenv.mkDerivation (finalAttrs: {
       --replace-fail "cmake_minimum_required(VERSION 2.8.5)" "cmake_minimum_required(VERSION 3.10)"
   '';
 
+  strictDeps = true;
+
   nativeBuildInputs = [
     cmake
   ]
@@ -41,7 +43,6 @@ stdenv.mkDerivation (finalAttrs: {
     qtbase
     qtsvg
   ];
-  strictDeps = true;
 
   installPhase = ''
     make DESTDIR=.. install
@@ -52,10 +53,10 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Physics-based game vaguely similar to Incredible Machine";
-    mainProgram = "tbe";
     homepage = "http://the-butterfly-effect.org/";
+    license = lib.licenses.gpl2Only;
     maintainers = with lib.maintainers; [ raskin ];
     platforms = lib.platforms.linux;
-    license = lib.licenses.gpl2Only;
+    mainProgram = "tbe";
   };
 })

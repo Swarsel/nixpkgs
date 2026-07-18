@@ -1,12 +1,12 @@
 {
   lib,
   stdenv,
-  buildDotnetModule,
   fetchFromGitHub,
+  buildDotnetModule,
+  dotnetCorePackages,
+  fetchNpmDeps,
   nodejs-slim,
   npmHooks,
-  fetchNpmDeps,
-  dotnetCorePackages,
 }:
 
 buildDotnetModule (finalAttrs: {
@@ -30,25 +30,8 @@ buildDotnetModule (finalAttrs: {
     stdenv.cc # c compiler is needed for compiling npm-deps
   ];
 
-  npmRoot = "Rnwood.Smtp4dev/ClientApp";
-
-  npmDeps = fetchNpmDeps {
-    inherit (finalAttrs) src patches;
-    hash = "sha256-lJyjoTTgum67j1qPtkLFGYO2sTpvN7ug0Q1jJw/Se/c=";
-    postPatch = "cd ${finalAttrs.npmRoot}";
-  };
-
-  dotnet-sdk = dotnetCorePackages.sdk_8_0;
-  dotnet-runtime = dotnetCorePackages.aspnetcore_8_0;
-  projectFile = "Rnwood.Smtp4dev/Rnwood.Smtp4dev.csproj";
-  nugetDeps = ./deps.json;
-  executables = [ "Rnwood.Smtp4dev" ];
-
-  postFixup = ''
-    mv $out/bin/Rnwood.Smtp4dev $out/bin/smtp4dev
-  '';
-
   doInstallCheck = true;
+
   installCheckPhase = ''
     runHook preInstallCheck
 
@@ -57,18 +40,37 @@ buildDotnetModule (finalAttrs: {
     runHook postInstallCheck
   '';
 
+  postFixup = ''
+    mv $out/bin/Rnwood.Smtp4dev $out/bin/smtp4dev
+  '';
+
+  dotnet-runtime = dotnetCorePackages.aspnetcore_8_0;
+  dotnet-sdk = dotnetCorePackages.sdk_8_0;
+  executables = [ "Rnwood.Smtp4dev" ];
+
+  npmDeps = fetchNpmDeps {
+    inherit (finalAttrs) src patches;
+    postPatch = "cd ${finalAttrs.npmRoot}";
+    hash = "sha256-lJyjoTTgum67j1qPtkLFGYO2sTpvN7ug0Q1jJw/Se/c=";
+  };
+
+  npmRoot = "Rnwood.Smtp4dev/ClientApp";
+  nugetDeps = ./deps.json;
+  projectFile = "Rnwood.Smtp4dev/Rnwood.Smtp4dev.csproj";
   passthru.updateScript = ./update.sh;
 
   meta = {
     description = "Fake smtp email server for development and testing";
     homepage = "https://github.com/rnwood/smtp4dev";
     license = lib.licenses.bsd3;
-    mainProgram = "smtp4dev";
+
     maintainers = with lib.maintainers; [
       rucadi
       jchw
       defelo
     ];
+
     platforms = lib.platforms.unix;
+    mainProgram = "smtp4dev";
   };
 })

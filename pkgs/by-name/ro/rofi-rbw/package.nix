@@ -1,22 +1,19 @@
 {
   lib,
-  python3Packages,
   fetchFromGitHub,
+  python3Packages,
   rbw,
-
-  waylandSupport ? false,
   wl-clipboard,
   wtype,
-
-  x11Support ? false,
   xclip,
   xdotool,
+  waylandSupport ? false,
+  x11Support ? false,
 }:
 
 python3Packages.buildPythonApplication (finalAttrs: {
   pname = "rofi-rbw";
   version = "1.6.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "fdw";
@@ -24,16 +21,6 @@ python3Packages.buildPythonApplication (finalAttrs: {
     tag = finalAttrs.version;
     hash = "sha256-gV1rZg6GLk8xXJPmQ9TdrfvUv930R68PRiChmiT7MTs=";
   };
-
-  build-system = [
-    python3Packages.hatchling
-  ];
-
-  dependencies = [
-    python3Packages.configargparse
-  ];
-
-  pythonImportsCheck = [ "rofi_rbw" ];
 
   preFixup =
     let
@@ -57,13 +44,26 @@ python3Packages.buildPythonApplication (finalAttrs: {
       makeWrapperArgs+=(--prefix PATH : ${lib.makeBinPath wrapperPaths} --add-flags "${wrapperFlags}")
     '';
 
+  build-system = [
+    python3Packages.hatchling
+  ];
+
+  dependencies = [
+    python3Packages.configargparse
+  ];
+
+  pyproject = true;
+  pythonImportsCheck = [ "rofi_rbw" ];
+
   meta = {
     description = "Rofi frontend for Bitwarden";
     homepage = "https://github.com/fdw/rofi-rbw";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       equirosa
     ];
+
     platforms = lib.platforms.linux;
     mainProgram = "rofi-rbw";
   };

@@ -1,12 +1,12 @@
 {
   lib,
-  stdenvNoCC,
   fetchFromGitHub,
-  gtk3,
-  jdupes,
   adwaita-icon-theme,
-  kdePackages,
+  gtk3,
   hicolor-icon-theme,
+  jdupes,
+  kdePackages,
+  stdenvNoCC,
 }:
 
 stdenvNoCC.mkDerivation rec {
@@ -31,14 +31,6 @@ stdenvNoCC.mkDerivation rec {
     hicolor-icon-theme
   ];
 
-  dontDropIconThemeCache = true;
-  dontWrapQtApps = true;
-
-  # These fixup steps are slow and unnecessary.
-  dontPatchELF = true;
-  dontRewriteSymlinks = true;
-  dontCheckForBrokenSymlinks = true;
-
   installPhase = ''
     runHook preInstall
 
@@ -50,13 +42,20 @@ stdenvNoCC.mkDerivation rec {
     runHook postInstall
   '';
 
+  dontCheckForBrokenSymlinks = true;
+  dontDropIconThemeCache = true;
+  # These fixup steps are slow and unnecessary.
+  dontPatchELF = true;
+  dontRewriteSymlinks = true;
+  dontWrapQtApps = true;
+
   meta = {
     description = "Flat colorful Design icon theme";
     homepage = "https://github.com/vinceliuice/tela-icon-theme";
     changelog = "https://github.com/vinceliuice/Tela-icon-theme/releases/tag/${src.rev}";
     license = lib.licenses.gpl3Only;
+    maintainers = [ ];
     # darwin systems use case-insensitive filesystems that cause hash mismatches
     platforms = lib.subtractLists lib.platforms.darwin lib.platforms.unix;
-    maintainers = [ ];
   };
 }

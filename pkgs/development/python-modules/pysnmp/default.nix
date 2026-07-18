@@ -1,26 +1,22 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
+  buildPythonPackage,
   # build-system
   flit-core,
-
   # dependencies
   pyasn1,
   pysmi,
   pysnmpcrypto,
-
-  # tests
-  pytestCheckHook,
   pytest-asyncio,
   pytest-cov-stub,
+  # tests
+  pytestCheckHook,
 }:
 
 buildPythonPackage rec {
   pname = "pysnmp";
   version = "7.1.27";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "lextudio";
@@ -28,6 +24,12 @@ buildPythonPackage rec {
     tag = "v${version}";
     hash = "sha256-BFdPdEa5aZAYa6i7714k33wM36Sq1ExJO/6dmsGLzVg=";
   };
+
+  nativeCheckInputs = [
+    pytestCheckHook
+    pytest-asyncio
+    pytest-cov-stub
+  ];
 
   build-system = [ flit-core ];
 
@@ -37,10 +39,9 @@ buildPythonPackage rec {
     pysnmpcrypto
   ];
 
-  nativeCheckInputs = [
-    pytestCheckHook
-    pytest-asyncio
-    pytest-cov-stub
+  disabledTestPaths = [
+    # MIB file "CISCO-ENHANCED-IPSEC-FLOW-MIB.py[co]" not found in search path
+    "tests/smi/manager/test_mib-tree-inspection.py"
   ];
 
   disabledTests = [
@@ -78,11 +79,7 @@ buildPythonPackage rec {
     "test_inet_address_roundtrip"
   ];
 
-  disabledTestPaths = [
-    # MIB file "CISCO-ENHANCED-IPSEC-FLOW-MIB.py[co]" not found in search path
-    "tests/smi/manager/test_mib-tree-inspection.py"
-  ];
-
+  pyproject = true;
   pythonImportsCheck = [ "pysnmp" ];
 
   meta = {

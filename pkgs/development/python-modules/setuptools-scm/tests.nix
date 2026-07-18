@@ -1,20 +1,16 @@
 {
   buildPythonPackage,
-  setuptools-scm,
-  pytestCheckHook,
   git,
   mercurial,
   pip,
+  pytestCheckHook,
+  setuptools-scm,
   virtualenv,
 }:
 
 buildPythonPackage {
-  pname = "setuptools-scm-tests";
   inherit (setuptools-scm) version src;
-  pyproject = false;
-
-  dontBuild = true;
-  dontInstall = true;
+  pname = "setuptools-scm-tests";
 
   nativeCheckInputs = [
     pytestCheckHook
@@ -29,4 +25,8 @@ buildPythonPackage {
     # network access
     "test_pip_download"
   ];
+
+  dontBuild = true;
+  dontInstall = true;
+  pyproject = false;
 }

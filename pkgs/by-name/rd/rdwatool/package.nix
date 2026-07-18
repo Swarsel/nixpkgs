@@ -7,7 +7,6 @@
 python3.pkgs.buildPythonApplication {
   pname = "rdwatool";
   version = "1.2-unstable-2023-11-27";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "p0dalirius";
@@ -15,14 +14,6 @@ python3.pkgs.buildPythonApplication {
     rev = "60b7816f06d155bd3d218b76b69d9419b8a82dbe";
     hash = "sha256-0mjnZiF8DxVbI8Lr12b7jzn+x+mn6Mel8LaIy8heEdI=";
   };
-
-  pythonRelaxDeps = [
-    "urllib3"
-  ];
-
-  pythonRemoveDeps = [
-    "bs4"
-  ];
 
   nativeBuildInputs = with python3.pkgs; [
     setuptools
@@ -35,8 +26,18 @@ python3.pkgs.buildPythonApplication {
     xlsxwriter
   ];
 
+  pyproject = true;
+
   pythonImportsCheck = [
     "rdwatool"
+  ];
+
+  pythonRelaxDeps = [
+    "urllib3"
+  ];
+
+  pythonRemoveDeps = [
+    "bs4"
   ];
 
   meta = {

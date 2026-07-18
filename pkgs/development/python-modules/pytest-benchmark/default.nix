@@ -1,9 +1,9 @@
 {
   lib,
+  fetchFromGitHub,
   aspectlib,
   buildPythonPackage,
   elasticsearch,
-  fetchFromGitHub,
   freezegun,
   gitMinimal,
   mercurial,
@@ -21,7 +21,6 @@
 buildPythonPackage rec {
   pname = "pytest-benchmark";
   version = "5.2.3";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "ionelmc";
@@ -30,25 +29,7 @@ buildPythonPackage rec {
     hash = "sha256-qjgP9H3WUYFm1xamOqhGk5YJQv94QfyJvrRoltHJHHc=";
   };
 
-  build-system = [ setuptools ];
-
   buildInputs = [ pytest ];
-
-  dependencies = [ py-cpuinfo ];
-
-  optional-dependencies = {
-    aspect = [ aspectlib ];
-    histogram = [
-      pygal
-      # FIXME package pygaljs
-      setuptools
-    ];
-    elasticsearch = [ elasticsearch ];
-  };
-
-  pythonImportsCheck = [ "pytest_benchmark" ];
-
-  __darwinAllowLocalNetworking = true;
 
   nativeCheckInputs = [
     freezegun
@@ -64,6 +45,10 @@ buildPythonPackage rec {
     export PATH="$out/bin:$PATH"
   '';
 
+  __darwinAllowLocalNetworking = true;
+  build-system = [ setuptools ];
+  dependencies = [ py-cpuinfo ];
+
   disabledTests = lib.optionals (pythonOlder "3.12") [
     # AttributeError: 'PluginImportFixer' object has no attribute 'find_spec'
     "test_compare_1"
@@ -73,10 +58,24 @@ buildPythonPackage rec {
     "test_rendering"
   ];
 
+  optional-dependencies = {
+    aspect = [ aspectlib ];
+    elasticsearch = [ elasticsearch ];
+
+    histogram = [
+      pygal
+      # FIXME package pygaljs
+      setuptools
+    ];
+  };
+
+  pyproject = true;
+  pythonImportsCheck = [ "pytest_benchmark" ];
+
   meta = {
-    changelog = "https://github.com/ionelmc/pytest-benchmark/blob/${src.tag}/CHANGELOG.rst";
     description = "Pytest fixture for benchmarking code";
     homepage = "https://github.com/ionelmc/pytest-benchmark";
+    changelog = "https://github.com/ionelmc/pytest-benchmark/blob/${src.tag}/CHANGELOG.rst";
     license = lib.licenses.bsd2;
     maintainers = with lib.maintainers; [ dotlambda ];
   };

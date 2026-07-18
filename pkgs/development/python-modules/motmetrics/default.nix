@@ -1,20 +1,17 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # build-system
-  setuptools,
-
+  buildPythonPackage,
   # dependencies
   numpy,
   pandas,
-  scipy,
-  xmltodict,
-
+  pytest-benchmark,
   # tests
   pytestCheckHook,
-  pytest-benchmark,
+  scipy,
+  # build-system
+  setuptools,
+  xmltodict,
 }:
 
 let
@@ -23,7 +20,6 @@ in
 buildPythonPackage {
   pname = "motmetrics";
   version = "${version}-unstable-2025-01-14";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "cheind";
@@ -32,6 +28,11 @@ buildPythonPackage {
     rev = "c199b3e853d589af4b6a7d88f5bcc8b8802fc434";
     hash = "sha256-DJ82nioW3jdIVo1B623BE8bBhVa1oMzYIkhhit4Z4dg=";
   };
+
+  nativeCheckInputs = [
+    pytestCheckHook
+    pytest-benchmark
+  ];
 
   build-system = [ setuptools ];
 
@@ -42,13 +43,8 @@ buildPythonPackage {
     xmltodict
   ];
 
-  nativeCheckInputs = [
-    pytestCheckHook
-    pytest-benchmark
-  ];
-
+  pyproject = true;
   pytestFlags = [ "--benchmark-disable" ];
-
   pythonImportsCheck = [ "motmetrics" ];
 
   meta = {

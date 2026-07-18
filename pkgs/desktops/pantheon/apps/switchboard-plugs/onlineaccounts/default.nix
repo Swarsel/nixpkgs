@@ -2,17 +2,17 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  nix-update-script,
-  meson,
-  ninja,
-  pkg-config,
-  vala,
   evolution-data-server-gtk4,
   glib,
   granite7,
   gtk4,
   libadwaita,
+  meson,
+  ninja,
+  nix-update-script,
+  pkg-config,
   switchboard,
+  vala,
 }:
 
 stdenv.mkDerivation rec {

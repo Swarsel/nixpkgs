@@ -1,26 +1,25 @@
 {
   stdenv,
+  meta,
+  nodejs,
+  pnpmConfigHook,
+  pnpmDeps,
+  pnpm_11,
   src,
   version,
-  meta,
-  pnpmDeps,
   apiEndpoint ? "http://localhost:3000",
-  pnpmConfigHook,
-  pnpm_11,
-  nodejs,
 }:
 
 stdenv.mkDerivation {
-  pname = "your_spotify_client";
   inherit version src pnpmDeps;
+  inherit meta;
+  pname = "your_spotify_client";
 
   nativeBuildInputs = [
     pnpmConfigHook
     pnpm_11
     nodejs
   ];
-
-  API_ENDPOINT = "${apiEndpoint}";
 
   buildPhase = ''
     runHook preBuild
@@ -45,5 +44,5 @@ stdenv.mkDerivation {
     runHook postInstall
   '';
 
-  inherit meta;
+  API_ENDPOINT = "${apiEndpoint}";
 }

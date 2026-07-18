@@ -1,17 +1,16 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  pytestCheckHook,
   boto3,
+  buildPythonPackage,
   moto,
   poetry-core,
+  pytestCheckHook,
 }:
 
 buildPythonPackage rec {
   pname = "bucketstore";
   version = "0.3.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "jpetrucciani";
@@ -20,8 +19,6 @@ buildPythonPackage rec {
     hash = "sha256-WjweYFnlDEoR+TYzNgjPMdCLdUUEbdPROubov6kancc=";
   };
 
-  build-system = [ poetry-core ];
-
   propagatedBuildInputs = [ boto3 ];
 
   nativeCheckInputs = [
@@ -29,6 +26,8 @@ buildPythonPackage rec {
     pytestCheckHook
   ];
 
+  build-system = [ poetry-core ];
+  pyproject = true;
   pythonImportsCheck = [ "bucketstore" ];
 
   meta = {

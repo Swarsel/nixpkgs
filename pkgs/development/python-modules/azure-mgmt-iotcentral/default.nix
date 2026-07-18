@@ -1,29 +1,29 @@
 {
   lib,
-  buildPythonPackage,
-  fetchPypi,
-  msrest,
-  msrestazure,
   azure-common,
   azure-mgmt-core,
   azure-mgmt-nspkg,
+  buildPythonPackage,
+  fetchPypi,
   isPy3k,
+  msrest,
+  msrestazure,
   setuptools,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "azure-mgmt-iotcentral";
   version = "9.0.0";
-  pyproject = true;
-
-  __structuredAttrs = true;
 
   src = fetchPypi {
     inherit (finalAttrs) pname version;
-    extension = "zip";
     hash = "sha256-ZN9z30SabzcX89CWPlhpIk7T5iFsed5XFJO+p8G1LLY=";
+    extension = "zip";
   };
 
+  # has no tests
+  doCheck = false;
+  __structuredAttrs = true;
   build-system = [ setuptools ];
 
   dependencies = [
@@ -34,9 +34,7 @@ buildPythonPackage (finalAttrs: {
   ]
   ++ lib.optionals (!isPy3k) [ azure-mgmt-nspkg ];
 
-  # has no tests
-  doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "azure.mgmt.iotcentral" ];
 
   meta = {

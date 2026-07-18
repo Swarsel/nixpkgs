@@ -1,40 +1,40 @@
 {
+  lib,
   stdenv,
   fetchurl,
+  apple-sdk_gstreamer,
+  bash-completion,
+  bison,
+  buildPackages,
+  directoryListingUpdater,
+  elfutils, # for libdw
+  flex,
+  gettext,
+  glib,
+  gobject-introspection,
+  hotdoc,
+  libcap,
+  libunwind,
+  # TODO: Clean up on `staging`
+  llvmPackages,
+  makeWrapper,
   meson,
   ninja,
   pkg-config,
-  gettext,
-  bison,
-  flex,
   python3,
-  glib,
-  makeWrapper,
-  libcap,
-  elfutils, # for libdw
-  bash-completion,
-  lib,
-  testers,
   rustc,
-  withRust ?
-    lib.any (lib.meta.platformMatch stdenv.hostPlatform) rustc.targetPlatforms
-    && lib.all (p: !lib.meta.platformMatch stdenv.hostPlatform p) rustc.badTargetPlatforms,
-  gobject-introspection,
-  buildPackages,
+  testers,
+  # Checks meson.is_cross_build(), so even canExecute isn't enough.
+  enableDocumentation ? stdenv.hostPlatform == stdenv.buildPlatform,
   withIntrospection ?
     lib.meta.availableOn stdenv.hostPlatform gobject-introspection
     && stdenv.hostPlatform.emulatorAvailable buildPackages,
-  libunwind,
   withLibunwind ?
     lib.meta.availableOn stdenv.hostPlatform libunwind
     && lib.elem "libunwind" libunwind.meta.pkgConfigModules or [ ],
-  # Checks meson.is_cross_build(), so even canExecute isn't enough.
-  enableDocumentation ? stdenv.hostPlatform == stdenv.buildPlatform,
-  hotdoc,
-  directoryListingUpdater,
-  apple-sdk_gstreamer,
-  # TODO: Clean up on `staging`
-  llvmPackages,
+  withRust ?
+    lib.any (lib.meta.platformMatch stdenv.hostPlatform) rustc.targetPlatforms
+    && lib.all (p: !lib.meta.platformMatch stdenv.hostPlatform p) rustc.badTargetPlatforms,
 }:
 
 let
@@ -44,25 +44,29 @@ stdenv.mkDerivation (finalAttrs: {
   pname = "gstreamer";
   version = "1.28.4";
 
+  src = fetchurl {
+    url = "https://gstreamer.freedesktop.org/src/gstreamer/gstreamer-${finalAttrs.version}.tar.xz";
+    hash = "sha256-9a3H6PRIwQJgs7JaoQHJ1UBnTI2aVMK3eobQTys7UN0=";
+  };
+
   outputs = [
     "bin"
     "out"
     "dev"
   ];
 
-  separateDebugInfo = true;
+  postPatch = ''
+    patchShebangs \
+      gst/parse/get_flex_version.py \
+      gst/parse/gen_grammar.py.in \
+      gst/parse/gen_lex.py.in \
+      libs/gst/helpers/ptp_helper_post_install.sh \
+      scripts/extract-release-date-from-doap-file.py \
+      docs/gst-plugins-doc-cache-generator.py
+  '';
 
-  src = fetchurl {
-    url = "https://gstreamer.freedesktop.org/src/gstreamer/gstreamer-${finalAttrs.version}.tar.xz";
-    hash = "sha256-9a3H6PRIwQJgs7JaoQHJ1UBnTI2aVMK3eobQTys7UN0=";
-  };
-
-  depsBuildBuild = [
-    pkg-config
-  ];
-
-  __structuredAttrs = true;
   strictDeps = true;
+
   nativeBuildInputs = [
     meson
     ninja
@@ -131,16 +135,6 @@ stdenv.mkDerivation (finalAttrs: {
     OBJC_LD = "lld";
   };
 
-  postPatch = ''
-    patchShebangs \
-      gst/parse/get_flex_version.py \
-      gst/parse/gen_grammar.py.in \
-      gst/parse/gen_lex.py.in \
-      libs/gst/helpers/ptp_helper_post_install.sh \
-      scripts/extract-release-date-from-doap-file.py \
-      docs/gst-plugins-doc-cache-generator.py
-  '';
-
   postInstall = ''
     for prog in "$bin/bin/"*; do
         # We can't use --suffix here due to quoting so we craft the export command by hand
@@ -153,12 +147,20 @@ stdenv.mkDerivation (finalAttrs: {
     moveToOutput "share/bash-completion" "$bin"
   '';
 
+  __structuredAttrs = true;
+
+  depsBuildBuild = [
+    pkg-config
+  ];
+
+  separateDebugInfo = true;
   setupHook = ./setup-hook.sh;
 
   passthru = {
     tests = {
       pkg-config = testers.testMetaPkgConfig finalAttrs.finalPackage;
     };
+
     updateScript = directoryListingUpdater { odd-unstable = true; };
   };
 
@@ -166,12 +168,15 @@ stdenv.mkDerivation (finalAttrs: {
     description = "Open source multimedia framework";
     homepage = "https://gstreamer.freedesktop.org";
     license = lib.licenses.lgpl2Plus;
-    pkgConfigModules = [
-      "gstreamer-controller-1.0"
-    ];
-    platforms = lib.platforms.unix;
+
     maintainers = with lib.maintainers; [
       tmarkus
+    ];
+
+    platforms = lib.platforms.unix;
+
+    pkgConfigModules = [
+      "gstreamer-controller-1.0"
     ];
   };
 })

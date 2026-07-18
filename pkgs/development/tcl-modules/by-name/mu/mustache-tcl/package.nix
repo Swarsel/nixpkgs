@@ -27,10 +27,10 @@ mkTclDerivation rec {
   '';
 
   meta = {
-    homepage = "https://github.com/ianka/mustache.tcl";
     description = "Tcl implementation of the mustache templating language";
+    homepage = "https://github.com/ianka/mustache.tcl";
     license = lib.licenses.bsd2;
-    platforms = lib.platforms.all;
     maintainers = with lib.maintainers; [ nat-418 ];
+    platforms = lib.platforms.all;
   };
 }

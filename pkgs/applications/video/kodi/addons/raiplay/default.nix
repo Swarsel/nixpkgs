@@ -1,27 +1,28 @@
 {
   lib,
-  rel,
+  addonUpdateScript,
   buildKodiAddon,
   fetchzip,
-  addonUpdateScript,
   inputstreamhelper,
   plugin-cache,
+  rel,
 }:
 
 buildKodiAddon rec {
   pname = "raiplay";
-  namespace = "plugin.video.raitv";
   version = "4.1.2";
+
+  src = fetchzip {
+    url = "https://mirrors.kodi.tv/addons/${lib.toLower rel}/${namespace}/${namespace}-${version}.zip";
+    sha256 = "sha256-9aR1kkl+0+nhP0bOTnaKCgSfuPvJzX5TWHU0WJZIvSM=";
+  };
 
   propagatedBuildInputs = [
     plugin-cache
     inputstreamhelper
   ];
 
-  src = fetchzip {
-    url = "https://mirrors.kodi.tv/addons/${lib.toLower rel}/${namespace}/${namespace}-${version}.zip";
-    sha256 = "sha256-9aR1kkl+0+nhP0bOTnaKCgSfuPvJzX5TWHU0WJZIvSM=";
-  };
+  namespace = "plugin.video.raitv";
 
   passthru = {
     updateScript = addonUpdateScript {
@@ -30,8 +31,8 @@ buildKodiAddon rec {
   };
 
   meta = {
-    homepage = "https://github.com/maxbambi/plugin.video.raitv/";
     description = "Live radio and TV channels, latest 7 days of programming, broadcast archive, news";
+    homepage = "https://github.com/maxbambi/plugin.video.raitv/";
     license = lib.licenses.gpl3Only;
     teams = [ lib.teams.kodi ];
   };

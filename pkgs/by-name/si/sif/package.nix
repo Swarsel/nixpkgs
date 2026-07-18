@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   installShellFiles,
   nix-update-script,
 }:
@@ -17,13 +17,15 @@ buildGoModule (finalAttrs: {
     hash = "sha256-1gyfWJVuuEdW87DBZ++NX/pSoA12l+Ju3n5TVDzfnoo=";
   };
 
-  vendorHash = "sha256-ftnEHvnjdJpViEXS3nLK8nRmJRBLzjzqMZKPVvlzRDk=";
-
-  subPackages = [ "cmd/sif" ];
-
   nativeBuildInputs = [ installShellFiles ];
-
+  vendorHash = "sha256-ftnEHvnjdJpViEXS3nLK8nRmJRBLzjzqMZKPVvlzRDk=";
   env.CGO_ENABLED = 0;
+  # network-dependent tests
+  doCheck = false;
+
+  postInstall = ''
+    installManPage man/sif.1
+  '';
 
   ldflags = [
     "-s"
@@ -32,12 +34,7 @@ buildGoModule (finalAttrs: {
     "-X main.version=${finalAttrs.version}"
   ];
 
-  # network-dependent tests
-  doCheck = false;
-
-  postInstall = ''
-    installManPage man/sif.1
-  '';
+  subPackages = [ "cmd/sif" ];
 
   passthru.updateScript = nix-update-script {
     extraArgs = [

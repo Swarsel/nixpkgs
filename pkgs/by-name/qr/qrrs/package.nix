@@ -1,8 +1,8 @@
 {
   lib,
   fetchFromGitHub,
-  rustPlatform,
   installShellFiles,
+  rustPlatform,
 }:
 rustPlatform.buildRustPackage (finalAttrs: {
   pname = "qrrs";
@@ -15,9 +15,8 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-lXfqKMJx9vtljQlYvbUAONFqMO3HKa4hx/29/YERw2U=";
   };
 
-  cargoHash = "sha256-blBZOnrKdNfq010b6u1NmTLY3W9Q2BjQAVbW+oNbDlE=";
-
   nativeBuildInputs = [ installShellFiles ];
+  cargoHash = "sha256-blBZOnrKdNfq010b6u1NmTLY3W9Q2BjQAVbW+oNbDlE=";
 
   postInstall = ''
     installManPage ./man/*.?
@@ -30,10 +29,10 @@ rustPlatform.buildRustPackage (finalAttrs: {
   '';
 
   meta = {
-    maintainers = with lib.maintainers; [ lenivaya ];
     description = "CLI QR code generator and reader written in rust";
-    license = lib.licenses.mit;
     homepage = "https://github.com/Lenivaya/qrrs";
+    license = lib.licenses.mit;
+    maintainers = with lib.maintainers; [ lenivaya ];
     mainProgram = "qrrs";
   };
 })

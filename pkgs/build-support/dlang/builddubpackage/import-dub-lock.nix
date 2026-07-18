@@ -1,47 +1,49 @@
 {
   lib,
-  runCommand,
-  linkFarm,
   fetchurl,
-  fetchgit,
   dub,
+  fetchgit,
+  linkFarm,
+  runCommand,
 }:
 
 {
+  lock,
   pname,
   version,
-  lock,
 }:
 
 let
   makeDubDep =
     {
       pname,
-      version,
       sha256,
+      version,
     }:
     {
       inherit pname version;
+
       src = fetchurl {
-        name = "dub-${pname}-${version}.zip";
-        url = "mirror://dub/${pname}/${version}.zip";
         inherit sha256;
+        url = "mirror://dub/${pname}/${version}.zip";
+        name = "dub-${pname}-${version}.zip";
       };
     };
 
   makeGitDep =
     {
       pname,
-      version,
       repository,
       sha256,
+      version,
     }:
     {
       inherit pname version;
+
       src = fetchgit {
+        inherit sha256;
         url = repository;
         rev = version;
-        inherit sha256;
       };
     };
 

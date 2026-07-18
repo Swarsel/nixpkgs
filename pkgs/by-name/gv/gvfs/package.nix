@@ -1,47 +1,47 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchurl,
+  avahi,
+  dbus,
+  docbook_xml_dtd_42,
+  docbook_xsl,
+  fuse3,
+  gcr_4,
+  gettext,
+  glib,
+  glib-networking,
+  gnome,
+  gnome-online-accounts,
+  gsettings-desktop-schemas,
+  libarchive,
+  libbluray,
+  libcap,
+  libcdio,
+  libcdio-paranoia,
+  libgcrypt,
+  libgphoto2,
+  libgudev,
+  libimobiledevice,
+  libmsgraph,
+  libmtp,
+  libnfs,
+  libsecret,
+  libsoup_3,
+  libxml2,
+  libxslt,
   meson,
   ninja,
-  pkg-config,
-  replaceVars,
-  gettext,
-  dbus,
-  glib,
-  udevSupport ? stdenv.hostPlatform.isLinux,
-  libgudev,
-  udisks,
-  libgcrypt,
-  libcap,
-  polkit,
-  libgphoto2,
-  avahi,
-  libarchive,
-  fuse3,
-  libcdio,
-  libxml2,
-  libsoup_3,
-  libxslt,
-  docbook_xsl,
-  docbook_xml_dtd_42,
-  samba,
-  libmtp,
-  gnomeSupport ? false,
-  gnome,
-  gcr_4,
-  glib-networking,
-  gnome-online-accounts,
-  wrapGAppsHook3,
-  libimobiledevice,
-  libbluray,
-  libcdio-paranoia,
-  libnfs,
   openssh,
-  libsecret,
-  libmsgraph,
+  pkg-config,
+  polkit,
   python3,
-  gsettings-desktop-schemas,
+  replaceVars,
+  samba,
+  udisks,
+  wrapGAppsHook3,
+  gnomeSupport ? false,
+  udevSupport ? stdenv.hostPlatform.isLinux,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -139,7 +139,6 @@ stdenv.mkDerivation (finalAttrs: {
 
   doCheck = false; # fails with "ModuleNotFoundError: No module named 'gi'"
   doInstallCheck = finalAttrs.finalPackage.doCheck;
-
   separateDebugInfo = true;
 
   passthru = {
@@ -152,6 +151,7 @@ stdenv.mkDerivation (finalAttrs: {
   meta = {
     description =
       "Virtual Filesystem support library" + lib.optionalString gnomeSupport " (full GNOME support)";
+
     license = lib.licenses.lgpl2Plus;
     platforms = lib.platforms.unix;
     teams = [ lib.teams.gnome ];

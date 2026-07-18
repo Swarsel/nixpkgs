@@ -1,35 +1,21 @@
 {
-  stdenv,
   lib,
+  stdenv,
   blackmagic-desktop-video,
   kernel,
 }:
 stdenv.mkDerivation (finalAttrs: {
-  pname = "decklink";
-
   # the download is a horrible curl mess. we reuse it between the kernel module
   # and desktop service, since the version of the two have to match anyways.
   # See pkgs/by-name/bl/blackmagic-desktop-video/package.nix for more.
   inherit (blackmagic-desktop-video) src version;
-
-  env = {
-    KERNELDIR = "${kernel.dev}/lib/modules/${kernel.modDirVersion}/build";
-    INSTALL_MOD_PATH = placeholder "out";
-  };
-
+  pname = "decklink";
   nativeBuildInputs = kernel.moduleBuildDependencies;
 
-  postUnpack =
-    let
-      arch = stdenv.hostPlatform.uname.processor;
-    in
-    ''
-      tar xf Blackmagic_Desktop_Video_Linux_${finalAttrs.version}/other/${arch}/desktopvideo-${finalAttrs.version}*-${arch}.tar.gz
-      bmVersion=$(ls -d $NIX_BUILD_TOP/desktopvideo-${finalAttrs.version}*-${arch}/usr/src | sed -e 's/.*desktopvideo-\([[:digit:]\.a-z]\+\).*/\1/')
-
-      moduleRoot=$NIX_BUILD_TOP/desktopvideo-$bmVersion-${arch}/usr/src
-      sourceRoot=$moduleRoot
-    '';
+  env = {
+    INSTALL_MOD_PATH = placeholder "out";
+    KERNELDIR = "${kernel.dev}/lib/modules/${kernel.modDirVersion}/build";
+  };
 
   buildPhase = ''
     runHook preBuild
@@ -45,12 +31,24 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  postUnpack =
+    let
+      arch = stdenv.hostPlatform.uname.processor;
+    in
+    ''
+      tar xf Blackmagic_Desktop_Video_Linux_${finalAttrs.version}/other/${arch}/desktopvideo-${finalAttrs.version}*-${arch}.tar.gz
+      bmVersion=$(ls -d $NIX_BUILD_TOP/desktopvideo-${finalAttrs.version}*-${arch}/usr/src | sed -e 's/.*desktopvideo-\([[:digit:]\.a-z]\+\).*/\1/')
+
+      moduleRoot=$NIX_BUILD_TOP/desktopvideo-$bmVersion-${arch}/usr/src
+      sourceRoot=$moduleRoot
+    '';
+
   meta = {
-    homepage = "https://www.blackmagicdesign.com/support/family/capture-and-playback";
-    maintainers = [ lib.maintainers.naxdy ];
-    license = lib.licenses.unfree;
     description = "Kernel module for the Blackmagic Design Decklink cards";
+    homepage = "https://www.blackmagicdesign.com/support/family/capture-and-playback";
+    license = lib.licenses.unfree;
     sourceProvenance = with lib.sourceTypes; [ binaryFirmware ];
+    maintainers = [ lib.maintainers.naxdy ];
     platforms = lib.platforms.linux;
   };
 })

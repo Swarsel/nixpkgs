@@ -1,13 +1,12 @@
 {
   lib,
-  python3,
   fetchFromGitHub,
+  python3,
 }:
 
 python3.pkgs.buildPythonApplication {
   pname = "hekatomb";
   version = "1.5.14-unstable-2024-02-14";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "ProcessusT";
@@ -15,10 +14,6 @@ python3.pkgs.buildPythonApplication {
     rev = "8cd372fd5d93e8b43c2cbe2ab2cada635f00e9dd";
     hash = "sha256-2juP2SuCfY4z2J27BlodrsP+29BjGxKDIDOW0mmwCPY=";
   };
-
-  pythonRelaxDeps = [
-    "impacket"
-  ];
 
   nativeBuildInputs = with python3.pkgs; [
     poetry-core
@@ -34,9 +29,14 @@ python3.pkgs.buildPythonApplication {
 
   # Project has no tests
   doCheck = false;
+  pyproject = true;
 
   pythonImportsCheck = [
     "hekatomb"
+  ];
+
+  pythonRelaxDeps = [
+    "impacket"
   ];
 
   meta = {

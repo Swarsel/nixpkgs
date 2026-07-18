@@ -1,13 +1,13 @@
 {
   lib,
   stdenv,
-  fetchzip,
   cmake,
+  fetchzip,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
-  version = "13.18";
   pname = "monkeys-audio";
+  version = "13.18";
 
   src = fetchzip {
     url = "https://monkeysaudio.com/files/MAC_${builtins.concatStringsSep "" (lib.strings.splitString "." finalAttrs.version)}_SDK.zip";
@@ -21,9 +21,9 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "APE codec and decompressor";
-    platforms = with lib.platforms; linux ++ windows ++ darwin;
-    mainProgram = "mac";
     license = lib.licenses.bsd3;
     maintainers = with lib.maintainers; [ doronbehar ];
+    platforms = with lib.platforms; linux ++ windows ++ darwin;
+    mainProgram = "mac";
   };
 })

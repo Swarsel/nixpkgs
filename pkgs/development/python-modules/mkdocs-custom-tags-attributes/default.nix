@@ -1,15 +1,14 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
+  buildPythonPackage,
   mkdocs,
+  setuptools,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "mkdocs-custom-tags-attributes";
   version = "0.3.3";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "Mara-Li";
@@ -17,6 +16,8 @@ buildPythonPackage (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-AtjUMk7v3+QI76nnPslqW/8LO11ld0YLSacHI6eaurs=";
   };
+
+  doCheck = false;
 
   build-system = [
     setuptools
@@ -26,11 +27,11 @@ buildPythonPackage (finalAttrs: {
     mkdocs
   ];
 
+  pyproject = true;
+
   pythonImportsCheck = [
     "custom_attributes"
   ];
-
-  doCheck = false;
 
   meta = {
     description = "A mkdocs plugin to create custom attributes using hashtags";

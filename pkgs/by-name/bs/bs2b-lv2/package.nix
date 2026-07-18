@@ -2,11 +2,11 @@
   lib,
   stdenv,
   fetchFromGitHub,
+  libbs2b,
+  lv2,
   pkg-config,
   python3,
   wafHook,
-  libbs2b,
-  lv2,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -17,8 +17,8 @@ stdenv.mkDerivation (finalAttrs: {
     owner = "nilninull";
     repo = "bs2b-lv2";
     tag = "v${finalAttrs.version}";
-    fetchSubmodules = true;
     hash = "sha256-dOcDPtiKN9Kfs2cdaeDO/GkWrh5tfJSHfiHPBtxJXvc=";
+    fetchSubmodules = true;
   };
 
   nativeBuildInputs = [

@@ -1,18 +1,16 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
+  buildPythonPackage,
   # build
   cargo,
-  rustc,
   rustPlatform,
+  rustc,
 }:
 
 buildPythonPackage rec {
   pname = "betterproto-rust-codec";
   version = "0.1.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "124C41p";
@@ -21,20 +19,22 @@ buildPythonPackage rec {
     hash = "sha256-Q8oCk/VVe4Dcw6Z5PBFJBKRlsHgi6Jn+FWDqLH8BgYc=";
   };
 
-  cargoDeps = rustPlatform.fetchCargoVendor {
-    inherit pname version src;
-    hash = "sha256-zYXE55o1/Tt6XJahV6WcGANPM/9xk6uYwQLazkIJj7A=";
-  };
-
-  build-system = [
-    rustPlatform.maturinBuildHook
-  ];
-
   nativeBuildInputs = [
     cargo
     rustPlatform.cargoSetupHook
     rustc
   ];
+
+  build-system = [
+    rustPlatform.maturinBuildHook
+  ];
+
+  cargoDeps = rustPlatform.fetchCargoVendor {
+    inherit pname version src;
+    hash = "sha256-zYXE55o1/Tt6XJahV6WcGANPM/9xk6uYwQLazkIJj7A=";
+  };
+
+  pyproject = true;
 
   pythonImportsCheck = [
     "betterproto_rust_codec"

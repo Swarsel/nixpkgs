@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule (finalAttrs: {
@@ -19,9 +19,9 @@ buildGoModule (finalAttrs: {
 
   meta = {
     description = "BOSH template merge tool";
-    mainProgram = "spruce";
     homepage = "https://github.com/geofffranks/spruce";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ risson ];
+    mainProgram = "spruce";
   };
 })

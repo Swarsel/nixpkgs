@@ -2,8 +2,8 @@
 
 lib.makeOverridable (
   {
-    seed,
     repo,
+    seed,
     node ? null,
     rev ? null,
     tag ? null,
@@ -21,8 +21,8 @@ lib.makeOverridable (
 
   fetchgit (
     {
-      url = "https://${seed}/${repo}.git";
       rev = "${namespacePrefix}${rev'}";
+      url = "https://${seed}/${repo}.git";
     }
     // removeAttrs args [
       "seed"

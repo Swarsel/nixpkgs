@@ -1,7 +1,7 @@
 {
-  buildNpmPackage,
-  fetchFromGitHub,
   lib,
+  fetchFromGitHub,
+  buildNpmPackage,
 }:
 
 buildNpmPackage rec {
@@ -16,17 +16,15 @@ buildNpmPackage rec {
   };
 
   npmDepsHash = "sha256-KRLgLWikcCWMF8/cOxThom6DHE9ar6WO/9HtosJQnLE=";
-
-  npmFlags = [ "--legacy-peer-deps" ];
-
   dontNpmBuild = true;
+  npmFlags = [ "--legacy-peer-deps" ];
 
   meta = {
     description = "Check for outdated, incorrect, and unused dependencies";
-    mainProgram = "npm-check";
     homepage = "https://github.com/dylang/npm-check";
     changelog = "https://github.com/dylang/npm-check/releases/tag/v${version}";
     license = lib.licenses.mit;
     maintainers = [ lib.maintainers.thomasjm ];
+    mainProgram = "npm-check";
   };
 }

@@ -1,13 +1,13 @@
 {
   lib,
+  fetchFromGitHub,
   buildPythonPackage,
   cryptography,
-  fetchFromGitHub,
   more-itertools,
   pendulum,
   pyjwt,
-  pytestCheckHook,
   pytest-cov-stub,
+  pytestCheckHook,
   pytz,
   requests,
   responses,
@@ -19,7 +19,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "simple-salesforce";
   version = "1.12.10";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "simple-salesforce";
@@ -53,6 +52,7 @@ buildPythonPackage (finalAttrs: {
     "test_token_login_failure_with_warning"
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "simple_salesforce" ];
 
   meta = {

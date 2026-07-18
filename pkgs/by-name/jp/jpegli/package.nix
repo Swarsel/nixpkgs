@@ -1,15 +1,15 @@
 {
-  stdenv,
   lib,
+  stdenv,
+  fetchFromGitHub,
   asciidoc,
   brotli,
   cmake,
-  fetchFromGitHub,
   giflib,
   gtest,
   lcms2,
-  libjpeg,
   libhwy,
+  libjpeg,
   libpng,
   ninja,
   openexr,
@@ -73,13 +73,13 @@ stdenv.mkDerivation {
     (lib.cmakeFeature "CMAKE_POLICY_VERSION_MINIMUM" "3.5")
   ];
 
+  doCheck = true;
+
   # Move `benchmark_xl` into a separate output to avoid a file collision
   # with the `benchmark_xl` binary provided by `libjxl`.
   postInstall = ''
     moveToOutput "bin/benchmark_xl" "$benchmark"
   '';
-
-  doCheck = true;
 
   passthru = {
     updateScript = unstableGitUpdater { hardcodeZeroVersion = true; };
@@ -89,11 +89,13 @@ stdenv.mkDerivation {
     description = "Improved JPEG encoder and decoder implementation";
     homepage = "https://github.com/google/jpegli";
     license = lib.licenses.bsd3;
-    platforms = lib.platforms.all;
+
     maintainers = with lib.maintainers; [
       jwillikers
       leiserfg
     ];
+
+    platforms = lib.platforms.all;
     mainProgram = "cjpegli";
   };
 }

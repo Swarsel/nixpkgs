@@ -1,22 +1,21 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  hatchling,
   bleak,
   bleak-retry-connector,
+  buildPythonPackage,
   cryptography,
   epaper-dithering,
+  hatchling,
   numpy,
   pillow,
-  pytestCheckHook,
   pytest-asyncio,
+  pytestCheckHook,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "py-opendisplay";
   version = "7.2.3";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "OpenDisplay";
@@ -24,6 +23,11 @@ buildPythonPackage (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-ByLbrsIbyCHNvzJuMy7kat6gWoU8Bb42adH03CH+G+g=";
   };
+
+  nativeCheckInputs = [
+    pytestCheckHook
+    pytest-asyncio
+  ];
 
   build-system = [ hatchling ];
 
@@ -36,14 +40,9 @@ buildPythonPackage (finalAttrs: {
     pillow
   ];
 
-  pythonRelaxDeps = [ "epaper-dithering" ];
-
-  nativeCheckInputs = [
-    pytestCheckHook
-    pytest-asyncio
-  ];
-
+  pyproject = true;
   pythonImportsCheck = [ "opendisplay" ];
+  pythonRelaxDeps = [ "epaper-dithering" ];
 
   meta = {
     description = "Python library for communicating with OpenDisplay BLE e-paper displays";

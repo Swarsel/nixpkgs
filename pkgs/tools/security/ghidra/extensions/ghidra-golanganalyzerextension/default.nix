@@ -19,8 +19,8 @@ buildGhidraExtension (finalAttrs: {
   meta = {
     description = "Facilitates the analysis of Golang binaries using Ghidra";
     homepage = "https://github.com/mooncat-greenpy/Ghidra_GolangAnalyzerExtension";
-    downloadPage = "https://github.com/mooncat-greenpy/Ghidra_GolangAnalyzerExtension/releases/tag/${finalAttrs.version}";
     license = lib.licenses.mit;
     maintainers = [ lib.maintainers.ivyfanchiang ];
+    downloadPage = "https://github.com/mooncat-greenpy/Ghidra_GolangAnalyzerExtension/releases/tag/${finalAttrs.version}";
   };
 })

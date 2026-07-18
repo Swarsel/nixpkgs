@@ -1,13 +1,11 @@
 {
   lib,
-  buildHomeAssistantComponent,
   fetchFromGitHub,
+  buildHomeAssistantComponent,
   midea-local,
 }:
 
 buildHomeAssistantComponent rec {
-  owner = "wuwentao";
-  domain = "midea_ac_lan";
   version = "0.6.12";
 
   src = fetchFromGitHub {
@@ -18,12 +16,14 @@ buildHomeAssistantComponent rec {
   };
 
   dependencies = [ midea-local ];
+  domain = "midea_ac_lan";
+  owner = "wuwentao";
 
   meta = {
     description = "Auto-configure and then control your Midea M-Smart devices (Air conditioner, Fan, Water heater, Washer, etc) via local area network";
     homepage = "https://github.com/wuwentao/midea_ac_lan/";
     changelog = "https://github.com/wuwentao/midea_ac_lan/releases/tag/v${version}";
-    maintainers = with lib.maintainers; [ k900 ];
     license = lib.licenses.mit;
+    maintainers = with lib.maintainers; [ k900 ];
   };
 }

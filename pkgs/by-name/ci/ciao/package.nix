@@ -7,6 +7,7 @@
 stdenv.mkDerivation (finalAttrs: {
   pname = "ciao";
   version = "1.25.0-m1";
+
   src = fetchFromGitHub {
     owner = "ciao-lang";
     repo = "ciao";
@@ -20,10 +21,6 @@ stdenv.mkDerivation (finalAttrs: {
       --replace-fail 'ln -s "$i" "$b"' 'ln -sr "$i" "$b"'
   '';
 
-  configurePhase = ''
-    ./ciao-boot.sh configure --instype=global --prefix=$prefix
-  '';
-
   buildPhase = ''
     ./ciao-boot.sh build
   '';
@@ -32,9 +29,13 @@ stdenv.mkDerivation (finalAttrs: {
     ./ciao-boot.sh install
   '';
 
+  configurePhase = ''
+    ./ciao-boot.sh configure --instype=global --prefix=$prefix
+  '';
+
   meta = {
-    homepage = "https://ciao-lang.org/";
     description = "General purpose, multi-paradigm programming language in the Prolog family";
+    homepage = "https://ciao-lang.org/";
     license = lib.licenses.lgpl21;
     maintainers = with lib.maintainers; [ suhr ];
     platforms = lib.platforms.unix;

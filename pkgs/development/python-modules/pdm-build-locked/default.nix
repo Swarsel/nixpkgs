@@ -1,10 +1,10 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  pdm-backend,
   build,
+  buildPythonPackage,
   hatchling,
+  pdm-backend,
   pkginfo,
   pytestCheckHook,
 }:
@@ -12,7 +12,6 @@
 buildPythonPackage rec {
   pname = "pdm-build-locked";
   version = "0.3.7";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "pdm-project";
@@ -27,10 +26,6 @@ buildPythonPackage rec {
     sed -i "/addopts/d" pyproject.toml
   '';
 
-  build-system = [ pdm-backend ];
-
-  pythonImportsCheck = [ "pdm_build_locked" ];
-
   nativeCheckInputs = [
     build
     hatchling
@@ -38,10 +33,15 @@ buildPythonPackage rec {
     pytestCheckHook
   ];
 
+  build-system = [ pdm-backend ];
+
   disabledTestPaths = [
     # circular import of pdm
     "tests/unit/test_build_command.py"
   ];
+
+  pyproject = true;
+  pythonImportsCheck = [ "pdm_build_locked" ];
 
   meta = {
     description = "Pdm-build-locked is a pdm plugin to publish locked dependencies as optional-dependencies";

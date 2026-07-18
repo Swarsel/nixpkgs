@@ -1,15 +1,15 @@
 {
   lib,
   stdenv,
-  fetchFromGitHub,
   fetchurl,
-  povray,
-  libsForQt5,
-  replaceVars,
-  zlib,
-  testers,
-  nix-update-script,
+  fetchFromGitHub,
   libGL,
+  libsForQt5,
+  nix-update-script,
+  povray,
+  replaceVars,
+  testers,
+  zlib,
 }:
 
 /*
@@ -19,8 +19,8 @@
 
 let
   parts = fetchurl {
-    url = "https://web.archive.org/web/20250709230715/https://library.ldraw.org/library/updates/complete.zip";
     hash = "sha256-Uy7YYE7LdcmgEGbt6DlljS3QCQxjcviLApFuu1p9GZ8=";
+    url = "https://web.archive.org/web/20250709230715/https://library.ldraw.org/library/updates/complete.zip";
   };
 
 in
@@ -35,6 +35,12 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-Utiy9JBKaPddb2yNv1Ta61KIB1vCsayZlxagn3or5UE=";
   };
 
+  patches = [
+    (replaceVars ./povray.patch {
+      inherit povray;
+    })
+  ];
+
   nativeBuildInputs = [
     libsForQt5.qmake
     libsForQt5.qttools
@@ -48,12 +54,6 @@ stdenv.mkDerivation (finalAttrs: {
 
   propagatedBuildInputs = [ povray ];
 
-  patches = [
-    (replaceVars ./povray.patch {
-      inherit povray;
-    })
-  ];
-
   qmakeFlags = [
     "INSTALL_PREFIX=${placeholder "out"}"
     "DISABLE_UPDATE_CHECK=1"
@@ -65,20 +65,23 @@ stdenv.mkDerivation (finalAttrs: {
 
   passthru = {
     tests.version = testers.testVersion {
-      package = finalAttrs.finalPackage;
       command = "env QT_QPA_PLATFORM=minimal ${lib.getExe finalAttrs.finalPackage} --version";
+      package = finalAttrs.finalPackage;
     };
+
     updateScript = nix-update-script { };
   };
 
   meta = {
     description = "CAD program for creating virtual LEGO models";
-    mainProgram = "leocad";
     homepage = "https://www.leocad.org/";
     license = lib.licenses.gpl2Only;
+
     maintainers = with lib.maintainers; [
       peterhoeg
     ];
+
     platforms = lib.platforms.linux;
+    mainProgram = "leocad";
   };
 })

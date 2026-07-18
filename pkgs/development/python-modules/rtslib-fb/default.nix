@@ -2,11 +2,9 @@
   lib,
   fetchFromGitHub,
   buildPythonPackage,
-
+  hatch-vcs,
   # build-system
   hatchling,
-  hatch-vcs,
-
   # dependencies
   pyudev,
 }:
@@ -14,7 +12,6 @@
 buildPythonPackage rec {
   pname = "rtslib-fb";
   version = "2.2.4";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "open-iscsi";
@@ -22,6 +19,9 @@ buildPythonPackage rec {
     tag = "v${version}";
     hash = "sha256-iDnirxx+gY2vg63IevI7qmfi4l79QXaKQc/TckjG7xE=";
   };
+
+  # No tests
+  doCheck = false;
 
   build-system = [
     hatchling
@@ -32,8 +32,7 @@ buildPythonPackage rec {
     pyudev
   ];
 
-  # No tests
-  doCheck = false;
+  pyproject = true;
 
   meta = {
     description = "Python object API for managing the Linux LIO kernel target";

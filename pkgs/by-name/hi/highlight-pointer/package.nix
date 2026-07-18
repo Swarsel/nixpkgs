@@ -3,9 +3,9 @@
   stdenv,
   fetchFromGitHub,
   libx11,
-  libxi,
-  libxfixes,
   libxext,
+  libxfixes,
+  libxi,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -39,8 +39,8 @@ stdenv.mkDerivation (finalAttrs: {
     homepage = "https://github.com/swillner/highlight-pointer";
     changelog = "https://github.com/swillner/highlight-pointer/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.mit;
-    platforms = lib.platforms.linux;
     maintainers = with lib.maintainers; [ DCsunset ];
+    platforms = lib.platforms.linux;
     mainProgram = "highlight-pointer";
   };
 })

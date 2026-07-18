@@ -1,10 +1,10 @@
 {
   lib,
   stdenv,
-  makeWrapper,
   fetchFromGitHub,
   gawk,
   installShellFiles,
+  makeWrapper,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -18,14 +18,14 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-trD0/t7f3JChlv9aLyeGlieAEcxfUl4iPfubfpieoVA=";
   };
 
+  postPatch = ''
+    grep -rl '/usr/local/lynis' ./ | xargs sed -i "s@/usr/local/lynis@$out/share/lynis@g"
+  '';
+
   nativeBuildInputs = [
     installShellFiles
     makeWrapper
   ];
-
-  postPatch = ''
-    grep -rl '/usr/local/lynis' ./ | xargs sed -i "s@/usr/local/lynis@$out/share/lynis@g"
-  '';
 
   installPhase = ''
     install -d $out/bin $out/share/lynis
@@ -41,10 +41,10 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Security auditing tool for Linux, macOS, and UNIX-based systems";
-    mainProgram = "lynis";
     homepage = "https://cisofy.com/lynis/";
     license = lib.licenses.gpl3Only;
-    platforms = lib.platforms.unix;
     maintainers = with lib.maintainers; [ ryneeverett ];
+    platforms = lib.platforms.unix;
+    mainProgram = "lynis";
   };
 })

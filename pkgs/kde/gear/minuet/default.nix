@@ -1,20 +1,21 @@
 {
+  fluidsynth,
+  kirigami,
   mkKdeDerivation,
   pkg-config,
   qtdeclarative,
   qtsvg,
-  kirigami,
-  fluidsynth,
 }:
 mkKdeDerivation {
   pname = "minuet";
 
-  extraNativeBuildInputs = [ pkg-config ];
   extraBuildInputs = [
     qtdeclarative
     qtsvg
     kirigami
     fluidsynth
   ];
+
+  extraNativeBuildInputs = [ pkg-config ];
   meta.mainProgram = "minuet";
 }

@@ -1,8 +1,8 @@
 {
   lib,
-  buildGoModule,
-  fetchFromGitHub,
   stdenv,
+  fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule rec {
@@ -17,17 +17,18 @@ buildGoModule rec {
   };
 
   vendorHash = "sha256-/LK+NSs7YZkw6TRvBQcn6/SszIwAfXN0rt2AKSBV7CE=";
-
   doCheck = false;
 
   meta = {
-    homepage = "https://mynewt.apache.org/";
     description = "Build and package management tool for embedded development";
+
     longDescription = ''
       Apache Newt is a smart build and package management tool,
       designed for C and C++ applications in embedded contexts. Newt
       was developed as a part of the Apache Mynewt Operating System.
     '';
+
+    homepage = "https://mynewt.apache.org/";
     license = lib.licenses.asl20;
     maintainers = with lib.maintainers; [ pjones ];
   };

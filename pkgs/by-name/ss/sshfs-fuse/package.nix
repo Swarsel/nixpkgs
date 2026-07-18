@@ -2,17 +2,17 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  meson,
-  pkg-config,
-  ninja,
   docutils,
-  makeWrapper,
   fuse3,
-  macfuse-stubs,
   glib,
-  which,
-  python3Packages,
+  macfuse-stubs,
+  makeWrapper,
+  meson,
+  ninja,
   openssh,
+  pkg-config,
+  python3Packages,
+  which,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -26,6 +26,11 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-BT9qttXyryliR2kV1xVYvcwJhB6gkGf7IEwrTB38SvI=";
   };
 
+  outputs = [
+    "out"
+    "man"
+  ];
+
   nativeBuildInputs = [
     meson
     pkg-config
@@ -33,30 +38,19 @@ stdenv.mkDerivation (finalAttrs: {
     docutils
     makeWrapper
   ];
+
   buildInputs = [
     fuse3
     glib
-  ];
-  nativeCheckInputs = [
-    which
-    python3Packages.pytest
   ];
 
   env.NIX_CFLAGS_COMPILE = lib.optionalString (
     stdenv.hostPlatform.system == "i686-linux"
   ) "-D_FILE_OFFSET_BITS=64";
 
-  postInstall = ''
-    mkdir -p $out/sbin
-    ln -sf $out/bin/sshfs $out/sbin/mount.sshfs
-  ''
-  + lib.optionalString (!stdenv.hostPlatform.isDarwin) ''
-    wrapProgram $out/bin/sshfs --prefix PATH : "${openssh}/bin"
-  '';
-
-  outputs = [
-    "out"
-    "man"
+  nativeCheckInputs = [
+    which
+    python3Packages.pytest
   ];
 
   # doCheck = true;
@@ -72,14 +66,22 @@ stdenv.mkDerivation (finalAttrs: {
     ${python3Packages.python.interpreter} -m pytest test/
   '';
 
+  postInstall = ''
+    mkdir -p $out/sbin
+    ln -sf $out/bin/sshfs $out/sbin/mount.sshfs
+  ''
+  + lib.optionalString (!stdenv.hostPlatform.isDarwin) ''
+    wrapProgram $out/bin/sshfs --prefix PATH : "${openssh}/bin"
+  '';
+
   meta = {
-    changelog = "https://github.com/libfuse/sshfs/blob/${finalAttrs.src.tag}/ChangeLog.rst";
     description = "FUSE-based filesystem that allows remote filesystems to be mounted over SSH";
     longDescription = macfuse-stubs.warning;
     homepage = "https://github.com/libfuse/sshfs";
+    changelog = "https://github.com/libfuse/sshfs/blob/${finalAttrs.src.tag}/ChangeLog.rst";
     license = lib.licenses.gpl2Plus;
+    maintainers = [ ];
     platforms = lib.platforms.darwin ++ lib.platforms.linux;
     mainProgram = "sshfs";
-    maintainers = [ ];
   };
 })

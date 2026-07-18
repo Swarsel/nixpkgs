@@ -1,12 +1,12 @@
 {
   lib,
   stdenv,
+  appnope,
   buildPythonPackage,
   callPackage,
+  comm,
   fetchPypi,
   hatchling,
-  appnope,
-  comm,
   ipython,
   jupyter-client,
   jupyter-core,
@@ -15,25 +15,20 @@
   packaging,
   psutil,
   pyzmq,
-  tornado,
-  traitlets,
-
   # Reverse dependency
   sage,
+  tornado,
+  traitlets,
 }:
 
 buildPythonPackage rec {
   pname = "ipykernel";
   version = "7.1.0";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
     hash = "sha256-WKP8iFM9WTDDVG3H6sZsbSiKzeT4AeIAHmXtxdyc8Ns=";
   };
-
-  # debugpy is optional, see https://github.com/ipython/ipykernel/pull/767
-  pythonRemoveDeps = [ "debugpy" ];
 
   nativeBuildInputs = [ hatchling ];
 
@@ -54,10 +49,13 @@ buildPythonPackage rec {
 
   # check in passthru.tests.pytest to escape infinite recursion with ipyparallel
   doCheck = false;
+  pyproject = true;
+  # debugpy is optional, see https://github.com/ipython/ipykernel/pull/767
+  pythonRemoveDeps = [ "debugpy" ];
 
   passthru.tests = {
-    pytest = callPackage ./tests.nix { };
     inherit sage;
+    pytest = callPackage ./tests.nix { };
   };
 
   meta = {

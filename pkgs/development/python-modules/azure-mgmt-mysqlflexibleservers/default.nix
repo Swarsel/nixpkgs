@@ -1,25 +1,24 @@
 {
   lib,
-  buildPythonPackage,
-  fetchPypi,
-  setuptools,
-  wheel,
   azure-common,
   azure-mgmt-core,
+  buildPythonPackage,
+  fetchPypi,
   isodate,
   msrest,
+  setuptools,
   typing-extensions,
+  wheel,
 }:
 
 buildPythonPackage rec {
   pname = "azure-mgmt-mysqlflexibleservers";
   version = "1.0.0";
-  pyproject = true;
 
   src = fetchPypi {
-    pname = "azure_mgmt_mysqlflexibleservers";
     inherit version;
     hash = "sha256-0HemVoiKXFl39HmiRKZKxKHTUQAumaft2vakmoIZLlY=";
+    pname = "azure_mgmt_mysqlflexibleservers";
   };
 
   build-system = [
@@ -34,6 +33,8 @@ buildPythonPackage rec {
     msrest
     typing-extensions
   ];
+
+  pyproject = true;
 
   pythonImportsCheck = [
     "azure.mgmt.mysqlflexibleservers"

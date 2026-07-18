@@ -1,29 +1,23 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   flit-core,
-  # documentation build dependencies
-  sphinxHook,
+  setuptools,
+  # runtime dependencies
+  sphinx,
+  sphinx-autoapi,
   sphinx-prompt,
   sphinx-rtd-theme,
   sphinx-tabs,
-  sphinx-autoapi,
+  # documentation build dependencies
+  sphinxHook,
   sphinxemoji,
-  # runtime dependencies
-  sphinx,
-  setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "sphinx-notfound-page";
   version = "1.1.0";
-  pyproject = true;
-
-  outputs = [
-    "out"
-    "doc"
-  ];
 
   src = fetchFromGitHub {
     owner = "readthedocs";
@@ -31,6 +25,11 @@ buildPythonPackage rec {
     tag = version;
     hash = "sha256-KkdbK8diuQtZQk6FC9xDK/U7mfRBwwUmXp4YYuKueLQ=";
   };
+
+  outputs = [
+    "out"
+    "doc"
+  ];
 
   nativeBuildInputs = [
     flit-core
@@ -43,9 +42,8 @@ buildPythonPackage rec {
   ];
 
   buildInputs = [ sphinx ];
-
   propagatedBuildInputs = [ setuptools ];
-
+  pyproject = true;
   pythonImportsCheck = [ "notfound" ];
 
   meta = {

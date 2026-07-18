@@ -2,18 +2,18 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  rustPlatform,
-  pkg-config,
-  meson,
-  ninja,
-  rustc,
   cargo,
-  wrapGAppsHook4,
-  python3,
-  libadwaita,
+  glib-networking,
   graphene,
   gst_all_1,
-  glib-networking,
+  libadwaita,
+  meson,
+  ninja,
+  pkg-config,
+  python3,
+  rustPlatform,
+  rustc,
+  wrapGAppsHook4,
 }:
 
 stdenv.mkDerivation rec {
@@ -25,11 +25,6 @@ stdenv.mkDerivation rec {
     repo = "glide";
     rev = version;
     hash = "sha256-gmBXUj6LxC7VDH/ni8neYivysagqcbI/UCUq9Ly3D24=";
-  };
-
-  cargoDeps = rustPlatform.fetchCargoVendor {
-    inherit pname version src;
-    hash = "sha256-5cohhm8/QP+vYzVf8iz3hLtu0ej7lQiHpDAC9I52+ME=";
   };
 
   postPatch = ''
@@ -63,13 +58,18 @@ stdenv.mkDerivation rec {
     glib-networking
   ];
 
+  cargoDeps = rustPlatform.fetchCargoVendor {
+    inherit pname version src;
+    hash = "sha256-5cohhm8/QP+vYzVf8iz3hLtu0ej7lQiHpDAC9I52+ME=";
+  };
+
   meta = {
     description = "Linux/macOS media player based on GStreamer and GTK";
     homepage = "https://philn.github.io/glide";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ aleksana ];
-    mainProgram = "glide";
     # Required gdk4-{wayland,x11} and gstreamer-gl not available on darwin
     platforms = lib.subtractLists lib.platforms.darwin lib.platforms.unix;
+    mainProgram = "glide";
   };
 }

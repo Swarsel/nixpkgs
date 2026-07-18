@@ -1,29 +1,24 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
+  # tests
+  beartype,
+  buildPythonPackage,
   # build-system
   hatchling,
-
   # dependencies
   jax,
   jaxtyping,
-  typing-extensions,
-  wadler-lindig,
-
-  # tests
-  beartype,
   optax,
   pytest-xdist,
   pytestCheckHook,
+  typing-extensions,
+  wadler-lindig,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "equinox";
   version = "0.13.8";
-  pyproject = true;
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "patrick-kidger";
@@ -41,6 +36,14 @@ buildPythonPackage (finalAttrs: {
       --replace-fail "speed < 2" "speed < 20"
   '';
 
+  nativeCheckInputs = [
+    beartype
+    optax
+    pytest-xdist
+    pytestCheckHook
+  ];
+
+  __structuredAttrs = true;
   build-system = [ hatchling ];
 
   dependencies = [
@@ -50,25 +53,19 @@ buildPythonPackage (finalAttrs: {
     wadler-lindig
   ];
 
-  nativeCheckInputs = [
-    beartype
-    optax
-    pytest-xdist
-    pytestCheckHook
-  ];
-
-  pythonImportsCheck = [ "equinox" ];
-
   disabledTests = [
     # Flaky under heavy load:
     #   AssertionError: Non-linear scaling detected: ratio=1.56
     "test_speed_buffer_while"
   ];
 
+  pyproject = true;
+  pythonImportsCheck = [ "equinox" ];
+
   meta = {
     description = "JAX library based around a simple idea: represent parameterised functions (such as neural networks) as PyTrees";
-    changelog = "https://github.com/patrick-kidger/equinox/releases/tag/${finalAttrs.src.tag}";
     homepage = "https://github.com/patrick-kidger/equinox";
+    changelog = "https://github.com/patrick-kidger/equinox/releases/tag/${finalAttrs.src.tag}";
     license = lib.licenses.asl20;
     maintainers = with lib.maintainers; [ GaetanLepage ];
   };

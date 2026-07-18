@@ -2,10 +2,10 @@
   lib,
   stdenv,
   fetchFromBitbucket,
-  libxcb-util,
-  libxcb-keysyms,
-  libxcb-wm,
   libxcb-cursor,
+  libxcb-keysyms,
+  libxcb-util,
+  libxcb-wm,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -19,18 +19,18 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-VkNF3F/NRQadBkbnbVmMZliIXRxFU0qqxOeQDX4UrJg=";
   };
 
+  postPatch = ''
+    substituteInPlace Makefile \
+      --replace "-L/usr/X11R6/lib" "" \
+      --replace "-I/usr/X11R6/include" ""
+  '';
+
   buildInputs = [
     libxcb-util
     libxcb-keysyms
     libxcb-wm
     libxcb-cursor
   ];
-
-  postPatch = ''
-    substituteInPlace Makefile \
-      --replace "-L/usr/X11R6/lib" "" \
-      --replace "-I/usr/X11R6/include" ""
-  '';
 
   makeFlags = [
     "PREFIX=$(out)"
@@ -40,8 +40,8 @@ stdenv.mkDerivation (finalAttrs: {
   enableParallelBuilding = true;
 
   meta = {
-    homepage = "https://bitbucket.org/natemaia/dk";
     description = "List based tiling window manager in the vein of dwm, bspwm, and xmonad";
+    homepage = "https://bitbucket.org/natemaia/dk";
     license = lib.licenses.x11;
     maintainers = with lib.maintainers; [ _3JlOy-PYCCKUi ];
     platforms = lib.platforms.linux;

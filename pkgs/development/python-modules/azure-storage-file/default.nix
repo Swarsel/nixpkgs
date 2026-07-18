@@ -1,26 +1,26 @@
 {
   lib,
-  buildPythonPackage,
-  fetchPypi,
-  setuptools,
   azure-common,
   azure-storage-common,
+  buildPythonPackage,
+  fetchPypi,
   isPy3k,
+  setuptools,
   futures ? null,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "azure-storage-file";
   version = "2.1.0";
-  pyproject = true;
-
-  __structuredAttrs = true;
 
   src = fetchPypi {
     inherit (finalAttrs) pname version;
     hash = "sha256-NVm5x6sTRQxm6oM+uCwoIzvuJPG9jKGap9J/jCPVvFM=";
   };
 
+  # has no tests
+  doCheck = false;
+  __structuredAttrs = true;
   build-system = [ setuptools ];
 
   dependencies = [
@@ -29,9 +29,7 @@ buildPythonPackage (finalAttrs: {
   ]
   ++ lib.optional (!isPy3k) futures;
 
-  # has no tests
-  doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "azure.storage.file" ];
 
   meta = {

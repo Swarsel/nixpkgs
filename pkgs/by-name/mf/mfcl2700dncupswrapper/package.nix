@@ -1,14 +1,14 @@
 {
+  lib,
+  stdenv,
+  fetchurl,
   coreutils,
   dpkg,
-  fetchurl,
   gnugrep,
   gnused,
   makeWrapper,
   mfcl2700dnlpr,
   perl,
-  lib,
-  stdenv,
 }:
 
 stdenv.mkDerivation rec {
@@ -24,8 +24,6 @@ stdenv.mkDerivation rec {
     dpkg
     makeWrapper
   ];
-
-  dontUnpack = true;
 
   installPhase = ''
     dpkg-deb -x $src $out
@@ -53,6 +51,8 @@ stdenv.mkDerivation rec {
     ln $dir/cupswrapper/brother_lpdwrapper_MFCL2700DN $out/lib/cups/filter
     ln $dir/cupswrapper/brother-MFCL2700DN-cups-en.ppd $out/share/cups/model
   '';
+
+  dontUnpack = true;
 
   meta = {
     description = "Brother MFC-L2700DN CUPS wrapper driver";

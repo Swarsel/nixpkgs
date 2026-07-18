@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   nixosTests,
 }:
 
@@ -17,16 +17,14 @@ buildGoModule rec {
   };
 
   vendorHash = "sha256-rRIQo+367nHdtgfisBka0Yn6f4P75Mm3Ead4CscnRCw=";
-
   doCheck = false;
-
   passthru.tests = { inherit (nixosTests.prometheus-exporters) mikrotik; };
 
   meta = {
     inherit (src.meta) homepage;
     description = "Prometheus MikroTik device(s) exporter";
-    mainProgram = "mikrotik-exporter";
     license = lib.licenses.bsd3;
     maintainers = with lib.maintainers; [ mmilata ];
+    mainProgram = "mikrotik-exporter";
   };
 }

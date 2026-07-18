@@ -3,8 +3,8 @@
   stdenv,
   fetchFromGitHub,
   autoreconfHook,
-  pkg-config,
   openssl,
+  pkg-config,
   unstableGitUpdater,
 }:
 
@@ -23,10 +23,9 @@ stdenv.mkDerivation {
     pkg-config
     autoreconfHook
   ];
+
   buildInputs = [ openssl ];
-
   enableParallelBuilding = true;
-
   passthru.updateScript = unstableGitUpdater { };
 
   meta = {

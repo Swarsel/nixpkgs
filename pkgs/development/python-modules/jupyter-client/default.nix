@@ -2,8 +2,8 @@
   lib,
   buildPythonPackage,
   fetchPypi,
-  jupyter-core,
   hatchling,
+  jupyter-core,
   python-dateutil,
   pyzmq,
   tornado,
@@ -13,14 +13,15 @@
 buildPythonPackage rec {
   pname = "jupyter-client";
   version = "8.8.0";
-  pyproject = true;
 
   src = fetchPypi {
-    pname = "jupyter_client";
     inherit version;
     hash = "sha256-1VaBFBmk8tlshprzToVOPwWbfMLW0Bqc2chcJnaRvj4=";
+    pname = "jupyter_client";
   };
 
+  # Circular dependency with ipykernel
+  doCheck = false;
   build-system = [ hatchling ];
 
   dependencies = [
@@ -31,10 +32,8 @@ buildPythonPackage rec {
     traitlets
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "jupyter_client" ];
-
-  # Circular dependency with ipykernel
-  doCheck = false;
 
   meta = {
     description = "Jupyter protocol implementation and client libraries";

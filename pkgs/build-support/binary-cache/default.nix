@@ -3,8 +3,8 @@
   stdenv,
   coreutils,
   jq,
-  python3,
   nix,
+  python3,
   xz,
   zstd,
 }:
@@ -16,9 +16,9 @@
 # nix-build -E 'with import ./. {}; mkBinaryCache { rootPaths = [hello]; }'
 
 {
-  name ? "binary-cache",
-  compression ? "zstd", # one of ["none" "xz" "zstd"]
   rootPaths,
+  compression ? "zstd", # one of ["none" "xz" "zstd"]
+  name ? "binary-cache",
 }:
 
 assert lib.elem compression [
@@ -30,12 +30,6 @@ assert lib.elem compression [
 stdenv.mkDerivation {
   inherit name;
 
-  __structuredAttrs = true;
-
-  exportReferencesGraph.closure = rootPaths;
-
-  preferLocalBuild = true;
-
   nativeBuildInputs = [
     coreutils
     jq
@@ -44,6 +38,8 @@ stdenv.mkDerivation {
   ]
   ++ lib.optional (compression == "xz") xz
   ++ lib.optional (compression == "zstd") zstd;
+
+  __structuredAttrs = true;
 
   buildCommand = ''
     mkdir -p $out/nar
@@ -56,4 +52,7 @@ stdenv.mkDerivation {
     mkdir $out/debuginfo
     mkdir $out/log
   '';
+
+  exportReferencesGraph.closure = rootPaths;
+  preferLocalBuild = true;
 }

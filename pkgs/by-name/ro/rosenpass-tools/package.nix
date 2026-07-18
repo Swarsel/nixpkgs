@@ -1,11 +1,11 @@
 {
   lib,
   stdenv,
-  makeWrapper,
-  installShellFiles,
   coreutils,
   findutils,
   gawk,
+  installShellFiles,
+  makeWrapper,
   rosenpass,
   wireguard-tools,
 }:

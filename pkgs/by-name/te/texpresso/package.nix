@@ -2,12 +2,7 @@
   lib,
   stdenv,
   fetchFromGitHub,
-
-  # nativeBuildInputs
-  makeWrapper,
-  pkg-config,
-  writeShellScriptBin,
-
+  SDL2,
   # buildInputs
   fontconfig,
   freetype,
@@ -15,8 +10,11 @@
   icu,
   jbig2dec,
   libjpeg,
+  # nativeBuildInputs
+  makeWrapper,
   mupdf,
-  SDL2,
+  pkg-config,
+  writeShellScriptBin,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -82,8 +80,8 @@ stdenv.mkDerivation (finalAttrs: {
   meta = {
     inherit (finalAttrs.src.meta) homepage;
     description = "Live rendering and error reporting for LaTeX";
-    maintainers = with lib.maintainers; [ nickhu ];
     license = lib.licenses.mit;
+    maintainers = with lib.maintainers; [ nickhu ];
     platforms = lib.platforms.unix;
   };
 })

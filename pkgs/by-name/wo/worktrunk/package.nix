@@ -2,11 +2,11 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  rustPlatform,
   gitMinimal,
   installShellFiles,
-  versionCheckHook,
   nix-update-script,
+  rustPlatform,
+  versionCheckHook,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -20,16 +20,21 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-GKXTEzCya5aOh02O3yoEdA4RS/GibiHZu+wXq7rrOV0=";
   };
 
+  nativeBuildInputs = [
+    installShellFiles
+  ];
+
   cargoHash = "sha256-MjRi4WK+afrShCLXEp7pWhDiAyjKPbtqHjVIOtI3LVI=";
-
-  cargoBuildFlags = [ "--package=worktrunk" ];
-
   # vergen-gitcl calls `git describe` at build time; VERGEN_IDEMPOTENT makes it
   # fall back gracefully when no git history is available (Nix sandbox).
   env.VERGEN_IDEMPOTENT = "1";
+  nativeCheckInputs = [ gitMinimal ];
 
-  nativeBuildInputs = [
-    installShellFiles
+  checkFlags = [
+    # Expects `which` on PATH
+    "--skip=output::commit_generation::tests::test_command_exists_known_command"
+    # Integration tests use insta snapshots with environment-specific paths
+    "--skip=integration_tests::"
   ];
 
   postInstall = lib.optionalString (stdenv.buildPlatform.canExecute stdenv.hostPlatform) ''
@@ -47,37 +52,33 @@ rustPlatform.buildRustPackage (finalAttrs: {
     cp -RL ${finalAttrs.src}/skills $out/
   '';
 
-  nativeCheckInputs = [ gitMinimal ];
-
-  checkFlags = [
-    # Expects `which` on PATH
-    "--skip=output::commit_generation::tests::test_command_exists_known_command"
-    # Integration tests use insta snapshots with environment-specific paths
-    "--skip=integration_tests::"
-  ];
-
   doInstallCheck = true;
   nativeInstallCheckInputs = [ versionCheckHook ];
-
+  cargoBuildFlags = [ "--package=worktrunk" ];
   passthru.updateScript = nix-update-script { };
 
   meta = {
     description = "Git worktree manager for parallel AI agent workflows";
+
     longDescription = ''
       worktrunk wraps git worktree with a simpler interface and integrates with
       AI coding tools like Claude Code, Cursor, and Aider.
     '';
+
     homepage = "https://worktrunk.dev/";
     changelog = "https://github.com/max-sixty/worktrunk/blob/v${finalAttrs.version}/CHANGELOG.md";
+
     license = with lib.licenses; [
       mit
       asl20
     ];
-    platforms = lib.platforms.unix;
-    mainProgram = "wt";
+
     maintainers = with lib.maintainers; [
       siriobalmelli
       DuskyElf
     ];
+
+    platforms = lib.platforms.unix;
+    mainProgram = "wt";
   };
 })

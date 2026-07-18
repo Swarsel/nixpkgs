@@ -1,20 +1,17 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  isPyPy,
-  setuptools,
+  buildPythonPackage,
   docutils,
+  isPyPy,
   pygments,
   pytestCheckHook,
+  setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "smartypants";
   version = "2.0.2";
-  pyproject = true;
-
-  disabled = isPyPy;
 
   src = fetchFromGitHub {
     owner = "leohemsted";
@@ -22,8 +19,6 @@ buildPythonPackage rec {
     tag = "v${version}";
     hash = "sha256-jSGiT36Rr0P6eEWZIHtMj4go3KGDRaF2spLxLNruDec=";
   };
-
-  build-system = [ setuptools ];
 
   nativeCheckInputs = [
     docutils
@@ -34,6 +29,10 @@ buildPythonPackage rec {
   preCheck = ''
     patchShebangs smartypants
   '';
+
+  build-system = [ setuptools ];
+  disabled = isPyPy;
+  pyproject = true;
 
   meta = {
     description = "Translate plain ASCII quotation marks and other characters into “smart” typographic HTML entities";

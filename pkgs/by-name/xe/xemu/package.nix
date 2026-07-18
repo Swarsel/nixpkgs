@@ -1,37 +1,37 @@
 {
   lib,
-  sdl3,
-  sdl3-image,
+  stdenv,
   fetchFromGitHub,
+  cacert,
+  cmake,
+  curl,
+  darwin,
+  desktopToDarwinBundle,
   gettext,
   git,
   glib,
   gtk3,
-  cmake,
-  curl,
   libdrm,
   libepoxy,
+  libgbm,
   libpcap,
   libsamplerate,
   libslirp,
-  libgbm,
-  vulkan-headers,
-  vulkan-loader,
   meson,
   ninja,
   openssl,
   perl,
   pkg-config,
   python3Packages,
-  stdenv,
+  sdl3,
+  sdl3-image,
+  tomlplusplus,
   vte,
+  vulkan-headers,
+  vulkan-loader,
   which,
   wrapGAppsHook3,
-  cacert,
-  darwin,
-  desktopToDarwinBundle,
   xxhash,
-  tomlplusplus,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -48,6 +48,7 @@ stdenv.mkDerivation (finalAttrs: {
       git
       meson
     ];
+
     # also fetch required git submodules
     postFetch = ''
       cd "$out"
@@ -59,7 +60,19 @@ stdenv.mkDerivation (finalAttrs: {
       find subprojects -type d -name .git -prune -execdir rm -r {} +
     '';
   };
-  __structuredAttrs = true;
+
+  postPatch = ''
+    patchShebangs scripts
+
+    substituteInPlace ./scripts/xemu-version.sh \
+      --replace-fail 'date -u' "date -d @$SOURCE_DATE_EPOCH '+%Y-%m-%d %H:%M:%S'"
+
+    substituteInPlace subprojects/volk/volk.c \
+      --replace-fail 'libvulkan.so' '${lib.getLib vulkan-loader}/lib/libvulkan.so'
+  '';
+
+  strictDeps = true;
+
   nativeBuildInputs = [
     meson
     cmake
@@ -117,25 +130,6 @@ stdenv.mkDerivation (finalAttrs: {
 
   buildFlags = [ "qemu-system-i386" ];
 
-  separateDebugInfo = true;
-
-  dontUseMesonConfigure = true;
-  dontUseCmakeConfigure = true;
-
-  setOutputFlags = false;
-
-  strictDeps = true;
-
-  postPatch = ''
-    patchShebangs scripts
-
-    substituteInPlace ./scripts/xemu-version.sh \
-      --replace-fail 'date -u' "date -d @$SOURCE_DATE_EPOCH '+%Y-%m-%d %H:%M:%S'"
-
-    substituteInPlace subprojects/volk/volk.c \
-      --replace-fail 'libvulkan.so' '${lib.getLib vulkan-loader}/lib/libvulkan.so'
-  '';
-
   preConfigure = ''
     configureFlagsArray+=("--extra-cflags=-DXBOX=1 -Wno-error=redundant-decls")
   ''
@@ -178,21 +172,31 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  __structuredAttrs = true;
+  dontUseCmakeConfigure = true;
+  dontUseMesonConfigure = true;
+  separateDebugInfo = true;
+  setOutputFlags = false;
+
   meta = {
-    homepage = "https://xemu.app/";
     description = "Original Xbox emulator";
+
     longDescription = ''
       A free and open-source application that emulates the original Microsoft
       Xbox game console, enabling people to play their original Xbox games on
       Windows, macOS, and Linux systems.
     '';
+
+    homepage = "https://xemu.app/";
     changelog = "https://github.com/xemu-project/xemu/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.gpl2Plus;
-    mainProgram = "xemu";
+
     maintainers = with lib.maintainers; [
       marcin-serwin
       matteopacini
     ];
+
     platforms = lib.platforms.linux ++ lib.platforms.darwin;
+    mainProgram = "xemu";
   };
 })

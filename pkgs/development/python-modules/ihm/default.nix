@@ -1,17 +1,16 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
-  swig,
+  buildPythonPackage,
   msgpack,
   pytestCheckHook,
+  setuptools,
+  swig,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "ihm";
   version = "2.10";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "ihmwg";
@@ -21,18 +20,16 @@ buildPythonPackage (finalAttrs: {
   };
 
   nativeBuildInputs = [ swig ];
-
-  build-system = [ setuptools ];
-
-  dependencies = [ msgpack ];
-
   nativeCheckInputs = [ pytestCheckHook ];
+  build-system = [ setuptools ];
+  dependencies = [ msgpack ];
 
   disabledTests = [
     # requires network access
     "test_validator_example"
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "ihm" ];
 
   meta = {

@@ -1,8 +1,8 @@
 {
-  stdenv,
   lib,
-  perlPackages,
+  stdenv,
   makeWrapper,
+  perlPackages,
 }:
 
 let
@@ -12,11 +12,8 @@ in
 stdenv.mkDerivation {
   pname = perconaToolkit.name;
   version = perconaToolkit.version;
-
-  nativeBuildInputs = [ makeWrapper ];
-
   src = perconaToolkit;
-  dontBuild = true;
+  nativeBuildInputs = [ makeWrapper ];
 
   installPhase = ''
     mkdir -p $out/bin
@@ -30,12 +27,14 @@ stdenv.mkDerivation {
     done
   '';
 
-  dontStrip = true;
   postFixup = ''
     for cmd in $out/bin/*; do
         wrapProgram $cmd --prefix PERL5LIB
     done
   '';
+
+  dontBuild = true;
+  dontStrip = true;
 
   meta = {
     inherit (perconaToolkit.meta)

@@ -2,27 +2,27 @@
   lib,
   stdenv,
   fetchurl,
+  gccmakedep,
+  imake,
   libx11,
   libxext,
   libxt,
-  imake,
-  gccmakedep,
 }:
 
 stdenv.mkDerivation rec {
   pname = "xzoom";
   version = "0.3";
-  patch = "24";
 
   # or fetchFromGitHub(owner,repo,rev) or fetchgit(rev)
   src = fetchurl {
     url = "http://www.ibiblio.org/pub/linux/libs/X/xzoom-${version}.tgz";
     sha256 = "0jzl5py4ny4n4i58lxx2hdwq9zphqf7h3m14spl3079y5mlzssxj";
   };
+
   patches = [
     (fetchurl {
-      url = "http://http.debian.net/debian/pool/main/x/xzoom/xzoom_${version}-${patch}.diff.gz";
       sha256 = "0zhc06whbvaz987bzzzi2bz6h9jp6rv812qs7b71drivvd820qbh";
+      url = "http://http.debian.net/debian/pool/main/x/xzoom/xzoom_${version}-${patch}.diff.gz";
     })
   ];
 
@@ -34,6 +34,7 @@ stdenv.mkDerivation rec {
     imake
     gccmakedep
   ];
+
   buildInputs = [
     libx11
     libxext
@@ -45,10 +46,13 @@ stdenv.mkDerivation rec {
     "BINDIR=$(out)/bin"
     "MANPATH=$(out)/share/man"
   ];
+
   installTargets = [
     "install"
     "install.man"
   ];
+
+  patch = "24";
 
   meta = {
     description = "X11 screen zoom tool";

@@ -1,22 +1,21 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  cmake,
-  setuptools,
-  setuptools-scm,
   backports-zstd,
+  buildPythonPackage,
+  cmake,
+  graphviz,
   numpy,
   pybind11,
-  wheel,
   pytestCheckHook,
-  graphviz,
+  setuptools,
+  setuptools-scm,
+  wheel,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "pyhepmc";
   version = "2.16.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "scikit-hep";
@@ -34,14 +33,6 @@ buildPythonPackage (finalAttrs: {
   ];
 
   buildInputs = [ pybind11 ];
-
-  dependencies = [
-    backports-zstd
-    numpy
-  ];
-
-  dontUseCmakeConfigure = true;
-
   env.CMAKE_ARGS = toString [ "-DEXTERNAL_PYBIND11=ON" ];
 
   nativeCheckInputs = [
@@ -49,6 +40,13 @@ buildPythonPackage (finalAttrs: {
     pytestCheckHook
   ];
 
+  dependencies = [
+    backports-zstd
+    numpy
+  ];
+
+  dontUseCmakeConfigure = true;
+  pyproject = true;
   pythonImportsCheck = [ "pyhepmc" ];
 
   meta = {

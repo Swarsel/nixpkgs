@@ -15,8 +15,6 @@ stdenv.mkDerivation {
     sha256 = "sha256-9u/QvK9TDsKxcubINH2OAbx5fXXkKF0+YT7LoLDaF0M=";
   };
 
-  dontConfigure = true;
-
   buildPhase = ''
     runHook preBuild
 
@@ -36,9 +34,11 @@ stdenv.mkDerivation {
     runHook postInstall
   '';
 
+  dontConfigure = true;
+
   meta = {
-    homepage = "https://nimbuskit.github.io/memorymapping/";
     description = "fmemopen for Mac OS and iOS";
+    homepage = "https://nimbuskit.github.io/memorymapping/";
     license = lib.licenses.asl20;
     maintainers = with lib.maintainers; [ veprbl ];
     # Uses BSD-style funopen() to implement glibc-style fmemopen().

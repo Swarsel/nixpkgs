@@ -2,32 +2,32 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  cmake,
-  rocm-cmake,
-  rocm-smi,
-  pkg-config,
+  amd-blis,
+  boost,
   clr,
+  cmake,
   gfortran,
   gtest,
-  boost,
+  hipblas-common,
+  jemalloc,
+  lapack-reference,
+  libffi,
+  libxml2,
   llvm,
   msgpack-cxx,
-  amd-blis,
-  libxml2,
-  python3,
-  python3Packages,
-  openmp,
-  hipblas-common,
-  lapack-reference,
   ncurses,
   ninja,
-  libffi,
-  jemalloc,
+  openmp,
+  pkg-config,
+  python3,
+  python3Packages,
+  rocm-cmake,
+  rocm-smi,
+  rocmUpdateScript,
   zlib,
   zstd,
-  rocmUpdateScript,
-  buildTests ? false,
   buildSamples ? false,
+  buildTests ? false,
   # hipblaslt supports only devices with MFMA or WMMA
   gpuTargets ? (clr.localGpuTargets or clr.gpuTargets),
 }:
@@ -77,28 +77,17 @@ stdenv.mkDerivation (finalAttrs: {
     repo = "rocm-libraries";
     rev = "rocm-${finalAttrs.version}";
     hash = "sha256-+xMmPKb32NP9U35dHCXfXWwa6exfiL5TezfXERVDfe4=";
-    sparseCheckout = [
-      "projects/hipblaslt"
-      "shared"
-    ];
+
     # Compress the 5ish GiB of yaml files so this .src is under output size limit
     postFetch = ''
       find $out -name '*.yaml' -path '*/Tensile/Logic/*' -exec ${lib.getExe zstd} --rm {} \;
     '';
-  };
-  sourceRoot = "${finalAttrs.src.name}/projects/hipblaslt";
-  env.CXX = compiler;
-  env.CFLAGS = cFlags;
-  env.CXXFLAGS = cFlags;
-  env.ROCM_PATH = "${clr}";
-  env.TENSILE_ROCM_ASSEMBLER_PATH = lib.getExe' clr "amdclang++";
-  env.TENSILE_GEN_ASSEMBLY_TOOLCHAIN = lib.getExe' clr "amdclang++";
-  env.LD_PRELOAD = "${jemalloc}/lib/libjemalloc.so";
-  env.MALLOC_CONF = "background_thread:true,metadata_thp:auto,dirty_decay_ms:10000,muzzy_decay_ms:10000";
-  requiredSystemFeatures = [ "big-parallel" ];
 
-  __structuredAttrs = true;
-  strictDeps = true;
+    sparseCheckout = [
+      "projects/hipblaslt"
+      "shared"
+    ];
+  };
 
   outputs = [
     "out"
@@ -126,10 +115,6 @@ stdenv.mkDerivation (finalAttrs: {
     ./Tensile-interning.patch
   ];
 
-  preConfigure = ''
-    find . -name '*.yaml.zst' -path '*/Tensile/Logic/*' -exec zstd -d --rm {} \;
-  '';
-
   postPatch = ''
     # git isn't needed and we have no .git
     substituteInPlace cmake/dependencies.cmake \
@@ -138,8 +123,7 @@ stdenv.mkDerivation (finalAttrs: {
       --replace-fail " LANGUAGES CXX" " LANGUAGES CXX C ASM"
   '';
 
-  doCheck = false;
-  doInstallCheck = true;
+  strictDeps = true;
 
   nativeBuildInputs = [
     cmake
@@ -203,6 +187,21 @@ stdenv.mkDerivation (finalAttrs: {
     "-DHIPBLASLT_ENABLE_MARKER=Off"
   ];
 
+  env.CFLAGS = cFlags;
+  env.CXX = compiler;
+  env.CXXFLAGS = cFlags;
+  env.LD_PRELOAD = "${jemalloc}/lib/libjemalloc.so";
+  env.MALLOC_CONF = "background_thread:true,metadata_thp:auto,dirty_decay_ms:10000,muzzy_decay_ms:10000";
+  env.ROCM_PATH = "${clr}";
+  env.TENSILE_GEN_ASSEMBLY_TOOLCHAIN = lib.getExe' clr "amdclang++";
+  env.TENSILE_ROCM_ASSEMBLER_PATH = lib.getExe' clr "amdclang++";
+
+  preConfigure = ''
+    find . -name '*.yaml.zst' -path '*/Tensile/Logic/*' -exec zstd -d --rm {} \;
+  '';
+
+  doCheck = false;
+
   postInstall =
     # Compress msgpack .dat files to stay under hydra output size limit
     # Relies on messagepack-compression-support.patch
@@ -226,6 +225,8 @@ stdenv.mkDerivation (finalAttrs: {
       rmdir $out/bin
     '';
 
+  doInstallCheck = true;
+
   installCheckPhase =
     # Verify compression worked and .dat files aren't huge
     ''
@@ -238,6 +239,9 @@ stdenv.mkDerivation (finalAttrs: {
       runHook postInstallCheck
     '';
 
+  __structuredAttrs = true;
+  requiredSystemFeatures = [ "big-parallel" ];
+  sourceRoot = "${finalAttrs.src.name}/projects/hipblaslt";
   # If this is false there are no kernels in the output lib
   # supporting the target device
   # so if it's an optional dep it's best to not depend on it
@@ -246,11 +250,12 @@ stdenv.mkDerivation (finalAttrs: {
   # so we have to support building an empty hipblaslt
   passthru.supportsTargetArches = supportsTargetArches;
   passthru.updateScript = rocmUpdateScript { inherit finalAttrs; };
+
   meta = {
     description = "Library that provides general matrix-matrix operations with a flexible API";
     homepage = "https://github.com/ROCm/rocm-libraries/tree/develop/projects/hipblaslt";
     license = with lib.licenses; [ mit ];
-    teams = [ lib.teams.rocm ];
     platforms = lib.platforms.linux;
+    teams = [ lib.teams.rocm ];
   };
 })

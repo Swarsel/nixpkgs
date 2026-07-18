@@ -1,11 +1,11 @@
 {
+  lib,
+  fetchFromGitHub,
   buildPythonPackage,
   click,
-  fetchFromGitHub,
+  git-filter-repo,
   gitpython,
   giturlparse,
-  git-filter-repo,
-  lib,
   nix-update-script,
   requests,
   setuptools-scm,
@@ -14,7 +14,6 @@
 buildPythonPackage rec {
   pname = "oca-port";
   version = "0.22";
-  pyproject = true;
 
   src = fetchFromGitHub {
     inherit version;
@@ -36,9 +35,9 @@ buildPythonPackage rec {
     git-filter-repo
   ];
 
-  passthru.updateScript = nix-update-script { };
-
+  pyproject = true;
   pythonImportsCheck = [ "oca_port" ];
+  passthru.updateScript = nix-update-script { };
 
   meta = {
     description = "Tool helping to port an addon or missing commits of an addon from one branch to another";

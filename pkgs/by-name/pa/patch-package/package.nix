@@ -3,11 +3,11 @@
   stdenv,
   fetchFromGitHub,
   fetchYarnDeps,
-  yarnConfigHook,
-  yarnBuildHook,
-  yarnInstallHook,
-  nodejs,
   nix-update-script,
+  nodejs,
+  yarnBuildHook,
+  yarnConfigHook,
+  yarnInstallHook,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -21,11 +21,6 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-QuCgdQGqy27wyLUI6w6p8EWLn1XA7QbkjpLJwFXSex8=";
   };
 
-  yarnOfflineCache = fetchYarnDeps {
-    yarnLock = "${finalAttrs.src}/yarn.lock";
-    hash = "sha256-WF9gJkj4wyrBeGPIzTOw3nG6Se7tFb0YLcAM8Uv9YNI=";
-  };
-
   nativeBuildInputs = [
     yarnConfigHook
     yarnBuildHook
@@ -33,13 +28,18 @@ stdenv.mkDerivation (finalAttrs: {
     nodejs
   ];
 
+  yarnOfflineCache = fetchYarnDeps {
+    hash = "sha256-WF9gJkj4wyrBeGPIzTOw3nG6Se7tFb0YLcAM8Uv9YNI=";
+    yarnLock = "${finalAttrs.src}/yarn.lock";
+  };
+
   passthru.updateScript = nix-update-script { };
 
   meta = {
     description = "Fix broken node modules instantly";
-    mainProgram = "patch-package";
     homepage = "https://github.com/ds300/patch-package";
     license = lib.licenses.mit;
     maintainers = [ ];
+    mainProgram = "patch-package";
   };
 })

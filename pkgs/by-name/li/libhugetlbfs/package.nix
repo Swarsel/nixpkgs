@@ -1,6 +1,6 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchurl,
   autoreconfHook,
 }:
@@ -25,11 +25,6 @@ stdenv.mkDerivation (finalAttrs: {
 
   nativeBuildInputs = [ autoreconfHook ];
 
-  postConfigure = ''
-    patchShebangs ld.hugetlbfs
-  '';
-
-  enableParallelBuilding = true;
   makeFlags = [
     "BUILDTYPE=NATIVEONLY"
     "PREFIX=$(out)"
@@ -51,18 +46,26 @@ stdenv.mkDerivation (finalAttrs: {
     "libs"
     "tools"
   ];
+
+  postConfigure = ''
+    patchShebangs ld.hugetlbfs
+  '';
+
+  enableParallelBuilding = true;
+
   installTargets = [
     "install"
     "install-docs"
   ];
 
   meta = {
+    description = "Library and utilities for Linux hugepages";
     homepage = "https://github.com/libhugetlbfs/libhugetlbfs";
     changelog = "https://github.com/libhugetlbfs/libhugetlbfs/blob/${finalAttrs.version}/NEWS";
-    description = "Library and utilities for Linux hugepages";
-    maintainers = with lib.maintainers; [ qyliss ];
     license = lib.licenses.lgpl21Plus;
+    maintainers = with lib.maintainers; [ qyliss ];
     platforms = lib.platforms.linux;
+
     badPlatforms = lib.flatten [
       lib.systems.inspect.platformPatterns.isStatic
       lib.systems.inspect.patterns.isMusl

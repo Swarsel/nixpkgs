@@ -1,6 +1,6 @@
 {
-  fetchFromGitHub,
   lib,
+  fetchFromGitHub,
   postgresql,
   postgresqlBuildExtension,
   postgresqlTestExtension,
@@ -21,6 +21,7 @@ postgresqlBuildExtension (finalAttrs: {
 
   passthru.tests.extension = postgresqlTestExtension {
     inherit (finalAttrs) finalPackage;
+
     sql = ''
       CREATE EXTENSION rum;
       CREATE TABLE test_table (t text, v tsvector);
@@ -32,7 +33,7 @@ postgresqlBuildExtension (finalAttrs: {
     description = "Full text search index method for PostgreSQL";
     homepage = "https://github.com/postgrespro/rum";
     license = lib.licenses.postgresql;
-    platforms = postgresql.meta.platforms;
     maintainers = with lib.maintainers; [ DeeUnderscore ];
+    platforms = postgresql.meta.platforms;
   };
 })

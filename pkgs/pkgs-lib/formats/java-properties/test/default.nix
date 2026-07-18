@@ -1,9 +1,9 @@
 {
+  lib,
+  stdenv,
   formats,
   glibcLocales,
   jdk,
-  lib,
-  stdenv,
 }:
 
 # This test primarily tests correct escaping.
@@ -17,17 +17,15 @@ let
   javaProperties = formats.javaProperties { };
 
   input = {
-    foo = "bar";
-    "empty value" = "";
-    "typical.dot.syntax" = "com.sun.awt";
     "" = "empty key's value";
-    "1" = "2 3";
-    "#" = "not a comment # still not";
     "!" = "not a comment!";
     "!a" = "still not! a comment";
     "!b" = "still not ! a comment";
-    "dos paths" = "C:\\Program Files\\Nix For Windows\\nix.exe";
+    "#" = "not a comment # still not";
+    "1" = "2 3";
     "a \t\nb" = " c";
+    "all stuff" = "foo = bar";
+
     "angry \t\nkey" = ''
       multi
       ${"\tline\r"}
@@ -37,9 +35,13 @@ let
       trailing-space${"  "}
       value
     '';
-    "this=not" = "bad";
+
+    "dos paths" = "C:\\Program Files\\Nix For Windows\\nix.exe";
+    "empty value" = "";
+    foo = "bar";
     "nor = this" = "bad";
-    "all stuff" = "foo = bar";
+    "this=not" = "bad";
+    "typical.dot.syntax" = "com.sun.awt";
     "unicode big brain" = "e = mc□";
     "ütf-8" = "dûh";
     # NB: Some editors (vscode) show this _whole_ line in right-to-left order
@@ -48,18 +50,32 @@ let
 
 in
 stdenv.mkDerivation {
-  name = "pkgs.formats.javaProperties-test-${jdk.name}";
+  src = lib.sources.sourceByGlobs ./. [
+    "**/*.java"
+  ];
+
   nativeBuildInputs = [
     jdk
     glibcLocales
   ];
 
-  # technically should go through the type.merge first, but that's tested
-  # in tests/formats.nix.
-  properties = javaProperties.generate "example.properties" input;
+  # On Linux, this can be C.UTF-8, but darwin + zulu requires en_US.UTF-8
+  env.LANG = "en_US.UTF-8";
 
-  # Expected output as printed by Main.java
-  passAsFile = [ "expected" ];
+  buildPhase = ''
+    javac Main.java
+  '';
+
+  doCheck = true;
+
+  checkPhase = ''
+    cat -v $properties
+    java Main $properties >actual
+    diff -U3 $expectedPath actual
+  '';
+
+  installPhase = "touch $out";
+
   expected = concatStrings (
     attrValues (
       mapAttrs (key: value: ''
@@ -72,19 +88,10 @@ stdenv.mkDerivation {
     )
   );
 
-  src = lib.sources.sourceByGlobs ./. [
-    "**/*.java"
-  ];
-  # On Linux, this can be C.UTF-8, but darwin + zulu requires en_US.UTF-8
-  env.LANG = "en_US.UTF-8";
-  buildPhase = ''
-    javac Main.java
-  '';
-  doCheck = true;
-  checkPhase = ''
-    cat -v $properties
-    java Main $properties >actual
-    diff -U3 $expectedPath actual
-  '';
-  installPhase = "touch $out";
+  name = "pkgs.formats.javaProperties-test-${jdk.name}";
+  # Expected output as printed by Main.java
+  passAsFile = [ "expected" ];
+  # technically should go through the type.merge first, but that's tested
+  # in tests/formats.nix.
+  properties = javaProperties.generate "example.properties" input;
 }

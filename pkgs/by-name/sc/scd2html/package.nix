@@ -16,16 +16,16 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-oZSHv5n/WOrvy77tC94Z8pYugLpHkcv7U1PrzR+8fHM=";
   };
 
+  postPatch = ''
+    substituteInPlace Makefile \
+      --replace "LDFLAGS+=-static" "LDFLAGS+="
+  '';
+
   strictDeps = true;
 
   nativeBuildInputs = [
     scdoc
   ];
-
-  postPatch = ''
-    substituteInPlace Makefile \
-      --replace "LDFLAGS+=-static" "LDFLAGS+="
-  '';
 
   makeFlags = [
     "PREFIX=${placeholder "out"}"

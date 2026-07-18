@@ -1,82 +1,82 @@
 {
-  stdenv,
   lib,
-  testers,
-  buildPackages,
+  stdenv,
   fetchFromGitLab,
-  fetchpatch,
-  python3,
-  meson,
-  ninja,
-  freebsd,
-  elogind,
-  libinotify-kqueue,
-  epoll-shim,
-  systemd,
-  enableSystemd ? lib.meta.availableOn stdenv.hostPlatform systemd, # enableSystemd=false maintained by maintainers.qyliss.
-  pkg-config,
+  alsa-lib,
+  avahi,
+  bashNonInteractive,
+  bluez,
+  buildPackages,
+  dbus,
   docutils,
   doxygen,
-  graphviz,
-  glib,
-  dbus,
-  alsa-lib,
-  libjack2,
-  libusb1,
-  udev,
-  libsndfile,
-  vulkanSupport ? true,
-  vulkan-headers,
-  vulkan-loader,
-  webrtc-audio-processing,
-  ncurses,
-  readline, # meson can't find <7 as those versions don't have a .pc file
-  lilv,
-  makeFontsConf,
-  nixosTests,
-  valgrind,
-  libcamera,
-  libdrm,
-  gst_all_1,
+  elogind,
+  epoll-shim,
+  fdk_aac,
+  fetchpatch,
+  ffado,
   # ffmpeg depends on SDL2 which depends on pipewire by default.
   # Break the cycle by depending on ffmpeg-headless.
   # Pipewire only uses libavcodec (via an SPA plugin), which isn't
   # affected by the *-headless changes.
   ffmpeg-headless,
   fftwFloat,
-  bluezSupport ? stdenv.hostPlatform.isLinux,
-  bluez,
-  sbc,
-  libfreeaptx,
-  liblc3,
-  fdk_aac,
-  libopus,
+  freebsd,
+  glib,
+  graphviz,
+  gst_all_1,
   ldacbt,
-  spandsp,
-  modemmanager,
-  libpulseaudio,
-  onnxruntimeSupport ? false,
-  onnxruntime,
-  zeroconfSupport ? true,
-  avahi,
-  raopSupport ? true,
-  openssl,
-  rocSupport ? true,
-  roc-toolkit,
-  x11Support ? true,
+  libcamera,
   libcanberra,
-  libxfixes,
+  libdrm,
+  libebur128,
+  libfreeaptx,
+  libinotify-kqueue,
+  libjack2,
+  liblc3,
+  libmysofa,
+  libopus,
+  libpulseaudio,
+  libselinux,
+  libsndfile,
+  libusb1,
   libx11,
   libxcb,
-  libmysofa,
+  libxfixes,
+  lilv,
+  makeFontsConf,
+  meson,
+  modemmanager,
+  ncurses,
+  ninja,
+  nixosTests,
+  onnxruntime,
+  openssl,
+  pkg-config,
+  python3,
+  readline, # meson can't find <7 as those versions don't have a .pc file
+  roc-toolkit,
+  sbc,
+  spandsp,
+  systemd,
+  testers,
+  udev,
+  valgrind,
+  vulkan-headers,
+  vulkan-loader,
+  webrtc-audio-processing,
+  bluezSupport ? stdenv.hostPlatform.isLinux,
+  enableSystemd ? lib.meta.availableOn stdenv.hostPlatform systemd, # enableSystemd=false maintained by maintainers.qyliss.
   ffadoSupport ?
     x11Support
     && lib.systems.equals stdenv.buildPlatform stdenv.hostPlatform
     && lib.meta.availableOn stdenv.hostPlatform ffado,
-  ffado,
-  libselinux,
-  libebur128,
-  bashNonInteractive,
+  onnxruntimeSupport ? false,
+  raopSupport ? true,
+  rocSupport ? true,
+  vulkanSupport ? true,
+  x11Support ? true,
+  zeroconfSupport ? true,
 }:
 
 let
@@ -90,6 +90,14 @@ stdenv.mkDerivation (finalAttrs: {
   pname = "pipewire";
   version = "1.6.7";
 
+  src = fetchFromGitLab {
+    owner = "pipewire";
+    repo = "pipewire";
+    tag = finalAttrs.version;
+    hash = "sha256-DSW9ho+NLikW/stlxvHLhRguMZy/4b7VEcC938ObJmQ=";
+    domain = "gitlab.freedesktop.org";
+  };
+
   outputs = [
     "out"
     "jack"
@@ -99,14 +107,6 @@ stdenv.mkDerivation (finalAttrs: {
     "installedTests"
   ];
 
-  src = fetchFromGitLab {
-    domain = "gitlab.freedesktop.org";
-    owner = "pipewire";
-    repo = "pipewire";
-    tag = finalAttrs.version;
-    hash = "sha256-DSW9ho+NLikW/stlxvHLhRguMZy/4b7VEcC938ObJmQ=";
-  };
-
   patches = [
     # Load libjack from a known location
     ./0060-libjack-path.patch
@@ -114,17 +114,23 @@ stdenv.mkDerivation (finalAttrs: {
     ./0070-installed-tests-path.patch
 
     (fetchpatch {
+      hash = "sha256-u8DLe6smodalVn3GwhI9RaDZTw4qZs8+Ylg9lxunMF0=";
       name = "musl.patch";
       url = "https://gitlab.freedesktop.org/pipewire/pipewire/-/commit/49ce385c44f4c2882ef0aeac0312e6ae9bc85f8a.patch";
-      hash = "sha256-u8DLe6smodalVn3GwhI9RaDZTw4qZs8+Ylg9lxunMF0=";
     })
   ];
 
-  strictDeps = true;
-  __structuredAttrs = true;
-  separateDebugInfo = true;
+  postPatch = ''
+    patchShebangs doc/*.py
+    patchShebangs doc/input-filter-h.sh
 
-  depsBuildBuild = [ buildPackages.stdenv.cc ];
+    # Remove problematic installed-tests
+    sed -i -e "/test-pipewire-alsa-stress/d" pipewire-alsa/tests/meson.build
+    sed -i -e "/benchmark-aec/d" spa/tests/meson.build
+  '';
+
+  strictDeps = true;
+
   nativeBuildInputs = [
     docutils
     doxygen
@@ -202,9 +208,6 @@ stdenv.mkDerivation (finalAttrs: {
   ++ lib.optional onnxruntimeSupport onnxruntime
   ++ lib.optional modemmanagerSupport modemmanager;
 
-  # Valgrind binary is required for running one optional test.
-  nativeCheckInputs = lib.optional (lib.meta.availableOn stdenv.hostPlatform valgrind) valgrind;
-
   mesonFlags = [
     (lib.mesonEnable "pipewire-alsa" stdenv.hostPlatform.isLinux)
     (lib.mesonEnable "alsa" stdenv.hostPlatform.isLinux)
@@ -262,25 +265,22 @@ stdenv.mkDerivation (finalAttrs: {
 
   # Fontconfig error: Cannot load default config file
   env.FONTCONFIG_FILE = makeFontsConf { fontDirectories = [ ]; };
-
   doCheck = true;
-  doInstallCheck = true;
-
-  postPatch = ''
-    patchShebangs doc/*.py
-    patchShebangs doc/input-filter-h.sh
-
-    # Remove problematic installed-tests
-    sed -i -e "/test-pipewire-alsa-stress/d" pipewire-alsa/tests/meson.build
-    sed -i -e "/benchmark-aec/d" spa/tests/meson.build
-  '';
+  # Valgrind binary is required for running one optional test.
+  nativeCheckInputs = lib.optional (lib.meta.availableOn stdenv.hostPlatform valgrind) valgrind;
 
   postInstall = ''
     moveToOutput "bin/pw-jack" "$jack"
   '';
 
+  doInstallCheck = true;
+  __structuredAttrs = true;
+  depsBuildBuild = [ buildPackages.stdenv.cc ];
+  separateDebugInfo = true;
+
   passthru.tests = {
     installed-tests = nixosTests.installed-tests.pipewire;
+
     pkg-config = testers.hasPkgConfigModules {
       package = finalAttrs.finalPackage;
     };
@@ -288,14 +288,17 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Server and user space API to deal with multimedia pipelines";
-    changelog = "https://gitlab.freedesktop.org/pipewire/pipewire/-/releases/${finalAttrs.version}";
     homepage = "https://pipewire.org/";
+    changelog = "https://gitlab.freedesktop.org/pipewire/pipewire/-/releases/${finalAttrs.version}";
     license = lib.licenses.mit;
-    platforms = lib.platforms.linux ++ lib.platforms.freebsd;
+
     maintainers = with lib.maintainers; [
       k900
       qweered
     ];
+
+    platforms = lib.platforms.linux ++ lib.platforms.freebsd;
+
     pkgConfigModules = [
       "libpipewire-0.3"
       "libspa-0.2"

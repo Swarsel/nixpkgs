@@ -2,27 +2,25 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  fetchpatch,
-
   at-spi2-atk,
   at-spi2-core,
-  libepoxy,
+  cmake,
+  doxygen,
+  fetchpatch,
   gtk3,
   libdatrie,
+  libepoxy,
+  libsForQt5,
   libselinux,
   libsepol,
   libthai,
+  libxdmcp,
+  libxtst,
+  pkg-config,
   util-linux,
   wayland,
-  libxtst,
-  libxdmcp,
-
-  cmake,
-  doxygen,
-  pkg-config,
   wayland-protocols,
   wayland-scanner,
-  libsForQt5,
 }:
 
 stdenv.mkDerivation {
@@ -35,6 +33,15 @@ stdenv.mkDerivation {
     rev = "ba6f7eda338a913f2c339eada3f0382e04f7dd67";
     hash = "sha256-iwWLnstQMG8F6uE5rKF6t2X43sXQuR/rIho2RN/D9jE=";
   };
+
+  nativeBuildInputs = [
+    cmake
+    doxygen
+    pkg-config
+    wayland-protocols
+    wayland-scanner
+    libsForQt5.wrapQtAppsHook
+  ];
 
   buildInputs = [
     at-spi2-atk
@@ -51,24 +58,15 @@ stdenv.mkDerivation {
     libxtst
   ];
 
-  nativeBuildInputs = [
-    cmake
-    doxygen
-    pkg-config
-    wayland-protocols
-    wayland-scanner
-    libsForQt5.wrapQtAppsHook
-  ];
-
   cmakeFlags = [
     "-DQT5_PLUGINS_INSTALL_DIR=${placeholder "out"}/${libsForQt5.qtbase.qtPluginPrefix}"
   ];
 
   meta = {
     description = "Core libraries of Maliit and server";
-    mainProgram = "maliit-server";
     homepage = "http://maliit.github.io/";
     license = lib.licenses.lgpl21Plus;
     maintainers = [ ];
+    mainProgram = "maliit-server";
   };
 }

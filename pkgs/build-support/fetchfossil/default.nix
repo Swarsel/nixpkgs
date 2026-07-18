@@ -1,35 +1,34 @@
 {
-  stdenv,
   lib,
-  fossil,
+  stdenv,
   cacert,
+  fossil,
 }:
 
 lib.fetchers.withNormalizedHash { } (
   {
-    name ? null,
-    url,
     rev,
+    url,
+    name ? null,
     outputHash ? lib.fakeHash,
     outputHashAlgo ? null,
   }:
 
   stdenv.mkDerivation {
-    name = "fossil-archive" + (lib.optionalString (name != null) "-${name}");
-    builder = ./builder.sh;
+    inherit outputHash outputHashAlgo;
+    inherit url rev;
+
     nativeBuildInputs = [
       fossil
       cacert
     ];
 
+    builder = ./builder.sh;
     # Envvar docs are hard to find. A link for the future:
     # https://www.fossil-scm.org/index.html/doc/trunk/www/env-opts.md
     impureEnvVars = [ "http_proxy" ];
-
-    inherit outputHash outputHashAlgo;
+    name = "fossil-archive" + (lib.optionalString (name != null) "-${name}");
     outputHashMode = "recursive";
-
-    inherit url rev;
     preferLocalBuild = true;
   }
 )

@@ -1,34 +1,33 @@
 {
   lib,
-  fetchPypi,
   fetchFromGitHub,
-  buildPythonPackage,
-  setuptools,
   absl-py,
+  buildPythonPackage,
+  fetchPypi,
   nltk,
   numpy,
-  six,
   pytestCheckHook,
+  setuptools,
+  six,
 }:
 let
   testdata = fetchFromGitHub {
+    hash = "sha256-ojqk6U2caS7Xz4iGUC9aQVHrKb2QNvMlPuQAL/jJat0=";
     owner = "google-research";
     repo = "google-research";
-    sparseCheckout = [ "rouge/testdata" ];
     rev = "1d4d2f1aa6f2883a790d2ae46a6ee8ab150d8f31";
-    hash = "sha256-ojqk6U2caS7Xz4iGUC9aQVHrKb2QNvMlPuQAL/jJat0=";
+    sparseCheckout = [ "rouge/testdata" ];
   };
 in
 buildPythonPackage (finalAttrs: {
   pname = "rouge-score";
   version = "0.1.2";
-  pyproject = true;
 
   src = fetchPypi {
-    pname = "rouge_score";
     inherit (finalAttrs) version;
-    extension = "tar.gz";
     hash = "sha256-x9TaJoPmjJq/ATXvkV1jpGZDZm+EjlWKG59+rRf/DwQ=";
+    extension = "tar.gz";
+    pname = "rouge_score";
   };
 
   # the tar file from pypi doesn't come with the test data
@@ -39,6 +38,7 @@ buildPythonPackage (finalAttrs: {
         '"${testdata}/rouge/testdata/"'
   '';
 
+  nativeCheckInputs = [ pytestCheckHook ];
   build-system = [ setuptools ];
 
   dependencies = [
@@ -48,8 +48,6 @@ buildPythonPackage (finalAttrs: {
     six
   ];
 
-  nativeCheckInputs = [ pytestCheckHook ];
-
   disabledTests = [
     # https://github.com/google-research/google-research/issues/1203
     "testRougeLSumSentenceSplitting"
@@ -57,6 +55,7 @@ buildPythonPackage (finalAttrs: {
     "testRougeLsumLarge"
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "rouge_score" ];
 
   meta = {

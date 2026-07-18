@@ -1,26 +1,21 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
+  buildPythonPackage,
+  # dependencies
+  h5py,
+  # tests
+  pytestCheckHook,
+  scipp,
+  scipy,
   # build-system
   setuptools,
   setuptools-scm,
-
-  # dependencies
-  h5py,
-  scipp,
-  scipy,
-
-  # tests
-  pytestCheckHook,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "scippnexus";
   version = "26.1.1";
-  pyproject = true;
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "scipp";
@@ -28,6 +23,12 @@ buildPythonPackage (finalAttrs: {
     tag = finalAttrs.version;
     hash = "sha256-sff/LZFoNOcmoVeQkuHZNGPZS9RMV8QrXIlmJiFJCeI=";
   };
+
+  nativeCheckInputs = [
+    pytestCheckHook
+  ];
+
+  __structuredAttrs = true;
 
   build-system = [
     setuptools
@@ -40,9 +41,7 @@ buildPythonPackage (finalAttrs: {
     scipy
   ];
 
-  nativeCheckInputs = [
-    pytestCheckHook
-  ];
+  pyproject = true;
 
   pythonImportsCheck = [
     "scippnexus"

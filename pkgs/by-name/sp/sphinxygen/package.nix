@@ -1,13 +1,12 @@
 {
   lib,
-  python3,
   fetchFromGitLab,
+  python3,
 }:
 
 python3.pkgs.buildPythonApplication (finalAttrs: {
   pname = "sphinxygen";
   version = "1.0.12";
-  pyproject = true;
 
   src = fetchFromGitLab {
     owner = "drobilla";
@@ -17,7 +16,7 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
   };
 
   build-system = with python3.pkgs; [ setuptools ];
-
+  pyproject = true;
   pythonImportsCheck = [ "sphinxygen" ];
 
   meta = {

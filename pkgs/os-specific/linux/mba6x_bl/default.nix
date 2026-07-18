@@ -1,9 +1,9 @@
 {
+  lib,
+  stdenv,
   fetchFromGitHub,
   kernel,
   kernelModuleMakeFlags,
-  lib,
-  stdenv,
 }:
 
 stdenv.mkDerivation {
@@ -17,9 +17,6 @@ stdenv.mkDerivation {
     sha256 = "sha256-QwxBpNa5FitKO+2ne54IIcRgwVYeNSQWI4f2hPPB8ls=";
   };
 
-  enableParallelBuilding = true;
-  hardeningDisable = [ "pic" ];
-
   nativeBuildInputs = kernel.moduleBuildDependencies;
 
   makeFlags = kernelModuleMakeFlags ++ [
@@ -27,12 +24,15 @@ stdenv.mkDerivation {
     "INSTALL_MOD_PATH=$(out)"
   ];
 
+  enableParallelBuilding = true;
+  hardeningDisable = [ "pic" ];
+
   meta = {
     description = "MacBook Air 6,1 and 6,2 (mid 2013) backlight driver";
     homepage = "https://github.com/patjak/mba6x_bl";
     license = lib.licenses.gpl2Only;
-    broken = lib.versionAtLeast kernel.version "6.11";
-    platforms = lib.platforms.linux;
     maintainers = [ lib.maintainers.simonvandel ];
+    platforms = lib.platforms.linux;
+    broken = lib.versionAtLeast kernel.version "6.11";
   };
 }

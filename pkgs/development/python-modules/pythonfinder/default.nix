@@ -1,8 +1,8 @@
 {
   lib,
+  fetchFromGitHub,
   buildPythonPackage,
   click,
-  fetchFromGitHub,
   packaging,
   pytest-cov-stub,
   pytest-timeout,
@@ -13,21 +13,12 @@
 buildPythonPackage (finalAttrs: {
   pname = "pythonfinder";
   version = "3.0.4";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "sarugaku";
     repo = "pythonfinder";
     tag = finalAttrs.version;
     hash = "sha256-MX5o8KIMpZjUj93QwL54CDp6OjAnhw8TtuEGT8wkKtw=";
-  };
-
-  build-system = [ setuptools ];
-
-  dependencies = [ packaging ];
-
-  optional-dependencies = {
-    cli = [ click ];
   };
 
   nativeCheckInputs = [
@@ -37,6 +28,14 @@ buildPythonPackage (finalAttrs: {
   ]
   ++ lib.flatten (builtins.attrValues finalAttrs.passthru.optional-dependencies);
 
+  build-system = [ setuptools ];
+  dependencies = [ packaging ];
+
+  optional-dependencies = {
+    cli = [ click ];
+  };
+
+  pyproject = true;
   pythonImportsCheck = [ "pythonfinder" ];
 
   meta = {

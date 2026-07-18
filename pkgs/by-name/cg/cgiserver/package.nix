@@ -11,17 +11,17 @@ buildGoModule (finalAttrs: {
 
   src = fetchzip {
     url = "https://src.anomalous.eu/cgiserver/snapshot/cgiserver-${finalAttrs.version}.tar.zst";
-    nativeBuildInputs = [ zstd ];
     hash = "sha256-uIrOZbHzxAdUJF12MBOzRUA6mSPvOKJ/K9ZwwLVId5E=";
+    nativeBuildInputs = [ zstd ];
   };
 
   vendorHash = "sha256-mygMtVbNWwtIkxTGxMnuAMUU0mp49NZ50B9d436nWgI=";
 
   meta = {
-    homepage = "https://src.anomalous.eu/cgiserver/about/";
     description = "Lightweight web server for sandboxing CGI applications";
-    mainProgram = "cgiserver";
-    maintainers = with lib.maintainers; [ qyliss ];
+    homepage = "https://src.anomalous.eu/cgiserver/about/";
     license = lib.licenses.osl3;
+    maintainers = with lib.maintainers; [ qyliss ];
+    mainProgram = "cgiserver";
   };
 })

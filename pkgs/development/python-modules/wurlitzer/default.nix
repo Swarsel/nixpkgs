@@ -2,29 +2,25 @@
   lib,
   buildPythonPackage,
   fetchPypi,
-  setuptools,
   pytestCheckHook,
+  setuptools,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "wurlitzer";
   version = "3.1.1";
-  pyproject = true;
-
-  __structuredAttrs = true;
 
   src = fetchPypi {
     inherit (finalAttrs) pname version;
     hash = "sha256-v7kUSrnwJIfYArn/idvT+jgtCPc+EtuK3EwvsAzTm9k=";
   };
 
-  build-system = [ setuptools ];
-
   nativeCheckInputs = [ pytestCheckHook ];
-
-  pythonImportsCheck = [ "wurlitzer" ];
-
+  __structuredAttrs = true;
+  build-system = [ setuptools ];
   enabledTestPaths = [ "test.py" ];
+  pyproject = true;
+  pythonImportsCheck = [ "wurlitzer" ];
 
   meta = {
     description = "Capture C-level output in context managers";

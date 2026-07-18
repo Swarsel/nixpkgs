@@ -1,16 +1,17 @@
 {
-  config,
   lib,
   stdenv,
   fetchFromGitHub,
-  pkg-config,
   autoreconfHook,
-  librdf_raptor2,
-  doCheck ? config.doCheckByDefault or false,
+  config,
   ladspaPlugins,
+  librdf_raptor2,
+  pkg-config,
+  doCheck ? config.doCheckByDefault or false,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
+  inherit doCheck;
   pname = "lrdf";
   version = "0.6.1";
 
@@ -31,9 +32,6 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   propagatedBuildInputs = [ librdf_raptor2 ];
-
-  inherit doCheck;
-
   enableParallelBuilding = true;
 
   meta = {

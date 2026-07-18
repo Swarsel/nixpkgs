@@ -1,8 +1,8 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
   pkg-config,
+  rustPlatform,
   udev,
 }:
 
@@ -17,21 +17,22 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-criNeQcbMAWA8q27GClzCncbcj/zhD7yJylQnnFKMS4=";
   };
 
-  cargoHash = "sha256-sMhH/Qzc2Pf+hnKcCEmw37s8rLniqFnfZ72ptG8APOk=";
-
   nativeBuildInputs = [ pkg-config ];
   buildInputs = [ udev ];
+  cargoHash = "sha256-sMhH/Qzc2Pf+hnKcCEmw37s8rLniqFnfZ72ptG8APOk=";
 
   meta = {
     description = "Swiss army knife for Framework laptops";
     homepage = "https://github.com/FrameworkComputer/framework-system";
     license = lib.licenses.bsd3;
-    platforms = [ "x86_64-linux" ];
+
     maintainers = with lib.maintainers; [
       nickcao
       kloenk
       johnazoidberg
     ];
+
+    platforms = [ "x86_64-linux" ];
     mainProgram = "framework_tool";
   };
 })

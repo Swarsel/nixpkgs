@@ -11,15 +11,18 @@ let
   version = "0.5.1";
 in
 buildPythonPackage {
-  pname = "opentelemetry-semantic-conventions-ai";
   inherit version;
-  pyproject = true;
+  pname = "opentelemetry-semantic-conventions-ai";
 
   src = fetchPypi {
-    pname = "opentelemetry_semantic_conventions_ai";
     inherit version;
     hash = "sha256-FTkGIA2MHS+OCb142+9SaRYCPehaw9qzWRK/r7af8Ew=";
+    pname = "opentelemetry_semantic_conventions_ai";
   };
+
+  nativeCheckInputs = [
+    pytestCheckHook
+  ];
 
   build-system = [ hatchling ];
 
@@ -28,10 +31,7 @@ buildPythonPackage {
     opentelemetry-semantic-conventions
   ];
 
-  nativeCheckInputs = [
-    pytestCheckHook
-  ];
-
+  pyproject = true;
   pythonImportsCheck = [ "opentelemetry.semconv_ai" ];
 
   meta = {

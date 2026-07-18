@@ -1,14 +1,14 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
-  pkg-config,
-  openssl,
-  makeWrapper,
   bat,
   fzf,
-  xdg-utils,
+  makeWrapper,
   nix-update-script,
+  openssl,
+  pkg-config,
+  rustPlatform,
+  xdg-utils,
 }:
 rustPlatform.buildRustPackage (finalAttrs: {
   pname = "noogle-search";
@@ -21,8 +21,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-js3jBZsyukleQW2BwggfYUvKCdS8pBTjD6ysWyMUtpI=";
   };
 
-  cargoHash = "sha256-axqFE5ZEiVP8PzFTtW5mbyyYcR4q9g3LX/0i6y+cgy8=";
-
   nativeBuildInputs = [
     makeWrapper
     pkg-config
@@ -31,6 +29,8 @@ rustPlatform.buildRustPackage (finalAttrs: {
   buildInputs = [
     openssl
   ];
+
+  cargoHash = "sha256-axqFE5ZEiVP8PzFTtW5mbyyYcR4q9g3LX/0i6y+cgy8=";
 
   postInstall = ''
     wrapProgram $out/bin/noogle-search \
@@ -49,7 +49,7 @@ rustPlatform.buildRustPackage (finalAttrs: {
     description = "Search Noogle functions with fzf";
     homepage = "https://github.com/argosnothing/noogle-search";
     license = lib.licenses.gpl3Plus;
-    mainProgram = "noogle-search";
     maintainers = with lib.maintainers; [ argos_nothing ];
+    mainProgram = "noogle-search";
   };
 })

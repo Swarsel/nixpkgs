@@ -1,23 +1,24 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchurl,
-  perl,
-  ghostscript,
   coreutils,
-  gnugrep,
-  which,
-  file,
-  gnused,
   dpkg,
-  makeWrapper,
+  file,
+  ghostscript,
+  gnugrep,
+  gnused,
   libredirect,
+  makeWrapper,
+  perl,
+  which,
   debugLvl ? "0",
 }:
 
 stdenv.mkDerivation rec {
   pname = "cups-brother-dcpt725dw";
   version = "3.5.0-1";
+
   src = fetchurl {
     url = "https://download.brother.com/welcome/dlf105181/dcpt725dwpdrv-${version}.i386.deb";
     hash = "sha256-fK6RHaW/ej1nFgSaTbzWxVgjIW32YTbJbd1xD37ZE7c=";
@@ -27,9 +28,8 @@ stdenv.mkDerivation rec {
     dpkg
     makeWrapper
   ];
-  buildInputs = [ perl ];
 
-  dontUnpack = true;
+  buildInputs = [ perl ];
 
   installPhase = ''
     runHook preInstall
@@ -98,16 +98,20 @@ stdenv.mkDerivation rec {
     runHook postInstall
   '';
 
+  dontUnpack = true;
+
   meta = {
     description = "Brother DCP-T725DW printer driver";
+    homepage = "http://www.brother.com/";
     license = lib.licenses.unfree;
     sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
     maintainers = with lib.maintainers; [ u2x1 ];
+
     platforms = [
       "x86_64-linux"
       "i686-linux"
     ];
+
     downloadPage = "https://support.brother.com/g/b/downloadtop.aspx?c=cn_ot&lang=en&prod=dcpt725dw_cn";
-    homepage = "http://www.brother.com/";
   };
 }

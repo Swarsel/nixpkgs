@@ -30,36 +30,25 @@ let
   '';
 in
 {
-  meta.maintainers = with lib.maintainers; [ costrouc ];
-
   options.services.jupyterhub = {
     enable = lib.mkEnableOption "Jupyterhub development server";
 
     authentication = lib.mkOption {
-      type = lib.types.str;
       default = "jupyterhub.auth.PAMAuthenticator";
+
       description = ''
         Jupyterhub authentication to use
 
         There are many authenticators available including: oauth, pam,
         ldap, kerberos, etc.
       '';
-    };
 
-    spawner = lib.mkOption {
       type = lib.types.str;
-      default = "systemdspawner.SystemdSpawner";
-      description = ''
-        Jupyterhub spawner to use
-
-        There are many spawners available including: local process,
-        systemd, docker, kubernetes, yarn, batch, etc.
-      '';
     };
 
     extraConfig = lib.mkOption {
-      type = lib.types.lines;
       default = "";
+
       description = ''
         Extra contents appended to the jupyterhub configuration
 
@@ -69,26 +58,40 @@ in
         defaults for configuration but you can override anything since
         this is a python file.
       '';
+
       example = ''
         c.SystemdSpawner.mem_limit = '8G'
         c.SystemdSpawner.cpu_limit = 2.0
       '';
+
+      type = lib.types.lines;
+    };
+
+    host = lib.mkOption {
+      default = "0.0.0.0";
+
+      description = ''
+        Bind IP JupyterHub will be listening on
+      '';
+
+      type = lib.types.str;
     };
 
     jupyterhubEnv = lib.mkOption {
-      type = lib.types.package;
       default = pkgs.python3.withPackages (
         p: with p; [
           jupyterhub
           jupyterhub-systemdspawner
         ]
       );
+
       defaultText = lib.literalExpression ''
         pkgs.python3.withPackages (p: with p; [
           jupyterhub
           jupyterhub-systemdspawner
         ])
       '';
+
       description = ''
         Python environment to run jupyterhub
 
@@ -97,22 +100,25 @@ in
         extraConfig that you may need. This will not normally need to
         be changed.
       '';
+
+      type = lib.types.package;
     };
 
     jupyterlabEnv = lib.mkOption {
-      type = lib.types.package;
       default = pkgs.python3.withPackages (
         p: with p; [
           jupyterhub
           jupyterlab
         ]
       );
+
       defaultText = lib.literalExpression ''
         pkgs.python3.withPackages (p: with p; [
           jupyterhub
           jupyterlab
         ])
       '';
+
       description = ''
         Python environment to run jupyterlab
 
@@ -122,20 +128,22 @@ in
         notebook extensions. This will not normally need to
         be changed.
       '';
+
+      type = lib.types.package;
     };
 
     kernels = lib.mkOption {
-      type = lib.types.nullOr (
-        lib.types.attrsOf (
-          lib.types.submodule (
-            import ../jupyter/kernel-options.nix {
-              inherit lib pkgs;
-            }
-          )
-        )
-      );
-
       default = null;
+
+      description = ''
+        Declarative kernel config
+
+        Kernels can be declared in any language that supports and has
+        the required dependencies to communicate with a jupyter server.
+        In python's case, it means that ipykernel package must always be
+        included in the list of packages of the targeted environment.
+      '';
+
       example = lib.literalExpression ''
         {
           python3 = let
@@ -159,57 +167,70 @@ in
           };
         }
       '';
-      description = ''
-        Declarative kernel config
 
-        Kernels can be declared in any language that supports and has
-        the required dependencies to communicate with a jupyter server.
-        In python's case, it means that ipykernel package must always be
-        included in the list of packages of the targeted environment.
-      '';
+      type = lib.types.nullOr (
+        lib.types.attrsOf (
+          lib.types.submodule (
+            import ../jupyter/kernel-options.nix {
+              inherit lib pkgs;
+            }
+          )
+        )
+      );
     };
 
     port = lib.mkOption {
-      type = lib.types.port;
       default = 8000;
+
       description = ''
         Port number Jupyterhub will be listening on
       '';
+
+      type = lib.types.port;
     };
 
-    host = lib.mkOption {
-      type = lib.types.str;
-      default = "0.0.0.0";
+    spawner = lib.mkOption {
+      default = "systemdspawner.SystemdSpawner";
+
       description = ''
-        Bind IP JupyterHub will be listening on
+        Jupyterhub spawner to use
+
+        There are many spawners available including: local process,
+        systemd, docker, kubernetes, yarn, batch, etc.
       '';
+
+      type = lib.types.str;
     };
 
     stateDirectory = lib.mkOption {
-      type = lib.types.str;
       default = "jupyterhub";
+
       description = ''
         Directory for jupyterhub state (token + database)
       '';
+
+      type = lib.types.str;
     };
   };
 
   config = lib.mkMerge [
     (lib.mkIf cfg.enable {
       systemd.services.jupyterhub = {
+        after = [ "network.target" ];
         description = "Jupyterhub development server";
 
-        after = [ "network.target" ];
-        wantedBy = [ "multi-user.target" ];
-
         serviceConfig = {
-          Restart = "always";
           ExecStart = "${cfg.jupyterhubEnv}/bin/jupyterhub --config ${jupyterhubConfig}";
-          User = "root";
+          Restart = "always";
           StateDirectory = cfg.stateDirectory;
+          User = "root";
           WorkingDirectory = "/var/lib/${cfg.stateDirectory}";
         };
+
+        wantedBy = [ "multi-user.target" ];
       };
     })
   ];
+
+  meta.maintainers = with lib.maintainers; [ costrouc ];
 }

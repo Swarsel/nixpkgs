@@ -2,58 +2,57 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  python3Packages,
-  libunistring,
-  harfbuzz,
-  fontconfig,
-  pkg-config,
-  ncurses,
-  imagemagick,
-  libstartup_notification,
-  libGL,
-  libx11,
-  libxrandr,
-  libxinerama,
-  libxcursor,
-  libxkbcommon,
-  libxi,
-  libxext,
-  wayland-protocols,
-  wayland,
-  xxhash,
-  nerd-fonts,
-  lcms2,
-  librsync,
-  openssl,
-  installShellFiles,
+  bashInteractive,
+  buildGo126Module,
+  cairo,
+  darwin,
   dbus,
-  sudo,
+  fish,
+  fontconfig,
+  go_1_26,
+  harfbuzz,
+  imagemagick,
+  installShellFiles,
+  lcms2,
+  libGL,
   libcanberra,
   libicns,
-  wayland-scanner,
   libpng,
-  python3,
-  zlib,
-  simde,
-  bashInteractive,
-  zsh,
-  fish,
-  nixosTests,
-  go_1_26,
-  buildGo126Module,
-  nix-update-script,
-  makeBinaryWrapper,
-  darwin,
-  cairo,
+  librsync,
+  libstartup_notification,
+  libunistring,
+  libx11,
+  libxcursor,
+  libxext,
+  libxi,
+  libxinerama,
+  libxkbcommon,
+  libxrandr,
   # TODO: Clean up on `staging`.
   llvmPackages,
+  makeBinaryWrapper,
+  ncurses,
+  nerd-fonts,
+  nix-update-script,
+  nixosTests,
+  openssl,
+  pkg-config,
+  python3,
+  python3Packages,
+  simde,
+  sudo,
+  wayland,
+  wayland-protocols,
+  wayland-scanner,
+  xxhash,
+  zlib,
+  zsh,
 }:
 
 with python3Packages;
 buildPythonApplication rec {
   pname = "kitty";
   version = "0.47.4";
-  pyproject = false;
 
   src = fetchFromGitHub {
     owner = "kovidgoyal";
@@ -62,12 +61,49 @@ buildPythonApplication rec {
     hash = "sha256-UDuWbWg7HiyJ4q/fVLLD+ZFmK74H2A2HRRwPoyGyGtU=";
   };
 
-  goModules =
-    (buildGo126Module {
-      pname = "kitty-go-modules";
-      inherit src version;
-      vendorHash = "sha256-o9S5KFT+9DRQ+OcZ5Wh8ZwtWE/19DYR810zCk+yUIr4=";
-    }).goModules;
+  outputs = [
+    "out"
+    "terminfo"
+    "shell_integration"
+    "kitten"
+  ];
+
+  patches = [
+    # Needed on darwin
+
+    # Gets `test_ssh_shell_integration` to pass for `zsh` when `compinit` complains about
+    # permissions.
+    ./zsh-compinit.patch
+
+    # Skip `test_ssh_bootstrap_with_different_launchers` when launcher is `zsh` since it causes:
+    # OSError: master_fd is in error condition
+    ./disable-test_ssh_bootstrap_with_different_launchers.patch
+
+  ];
+
+  nativeBuildInputs = [
+    installShellFiles
+    ncurses
+    pkg-config
+    sphinx
+    furo
+    sphinx-copybutton
+    sphinxext-opengraph
+    sphinx-inline-tabs
+    go_1_26
+    fontconfig
+    makeBinaryWrapper
+  ]
+  ++ lib.optionals stdenv.hostPlatform.isDarwin [
+    imagemagick
+    libicns # For the png2icns tool.
+    darwin.autoSignDarwinBinariesHook
+    # TODO: Clean up on `staging`.
+    llvmPackages.lld
+  ]
+  ++ lib.optionals stdenv.hostPlatform.isLinux [
+    wayland-scanner
+  ];
 
   buildInputs = [
     harfbuzz
@@ -102,57 +138,6 @@ buildPythonApplication rec {
     cairo
   ];
 
-  nativeBuildInputs = [
-    installShellFiles
-    ncurses
-    pkg-config
-    sphinx
-    furo
-    sphinx-copybutton
-    sphinxext-opengraph
-    sphinx-inline-tabs
-    go_1_26
-    fontconfig
-    makeBinaryWrapper
-  ]
-  ++ lib.optionals stdenv.hostPlatform.isDarwin [
-    imagemagick
-    libicns # For the png2icns tool.
-    darwin.autoSignDarwinBinariesHook
-    # TODO: Clean up on `staging`.
-    llvmPackages.lld
-  ]
-  ++ lib.optionals stdenv.hostPlatform.isLinux [
-    wayland-scanner
-  ];
-
-  depsBuildBuild = [ pkg-config ];
-
-  outputs = [
-    "out"
-    "terminfo"
-    "shell_integration"
-    "kitten"
-  ];
-
-  patches = [
-    # Needed on darwin
-
-    # Gets `test_ssh_shell_integration` to pass for `zsh` when `compinit` complains about
-    # permissions.
-    ./zsh-compinit.patch
-
-    # Skip `test_ssh_bootstrap_with_different_launchers` when launcher is `zsh` since it causes:
-    # OSError: master_fd is in error condition
-    ./disable-test_ssh_bootstrap_with_different_launchers.patch
-
-  ];
-
-  hardeningDisable = [
-    # causes redefinition of _FORTIFY_SOURCE
-    "fortify3"
-  ];
-
   env = {
     CGO_ENABLED = 0;
     GOFLAGS = "-trimpath";
@@ -162,13 +147,6 @@ buildPythonApplication rec {
   // lib.optionalAttrs stdenv.hostPlatform.isDarwin {
     NIX_CFLAGS_LINK = "-fuse-ld=lld";
   };
-
-  configurePhase = ''
-    export GOCACHE=$TMPDIR/go-cache
-    export GOPATH="$TMPDIR/go"
-    export GOPROXY=off
-    cp -r --reflink=auto $goModules vendor
-  '';
 
   buildPhase =
     let
@@ -321,28 +299,56 @@ buildPythonApplication rec {
     runHook postInstall
   '';
 
+  configurePhase = ''
+    export GOCACHE=$TMPDIR/go-cache
+    export GOPATH="$TMPDIR/go"
+    export GOPROXY=off
+    cp -r --reflink=auto $goModules vendor
+  '';
+
+  depsBuildBuild = [ pkg-config ];
+
+  goModules =
+    (buildGo126Module {
+      inherit src version;
+      pname = "kitty-go-modules";
+      vendorHash = "sha256-o9S5KFT+9DRQ+OcZ5Wh8ZwtWE/19DYR810zCk+yUIr4=";
+    }).goModules;
+
+  hardeningDisable = [
+    # causes redefinition of _FORTIFY_SOURCE
+    "fortify3"
+  ];
+
+  pyproject = false;
+
   passthru = {
     tests = lib.optionalAttrs stdenv.hostPlatform.isLinux {
       default = nixosTests.terminal-emulators.kitty;
     };
+
     updateScript = nix-update-script { };
   };
 
   meta = {
-    homepage = "https://github.com/kovidgoyal/kitty";
     description = "Fast, feature-rich, GPU based terminal emulator";
-    license = lib.licenses.gpl3Only;
+    homepage = "https://github.com/kovidgoyal/kitty";
+
     changelog = [
       "https://sw.kovidgoyal.net/kitty/changelog/"
       "https://github.com/kovidgoyal/kitty/blob/v${version}/docs/changelog.rst"
     ];
-    platforms = lib.platforms.darwin ++ lib.platforms.linux;
-    mainProgram = "kitty";
+
+    license = lib.licenses.gpl3Only;
+
     maintainers = with lib.maintainers; [
       rvolosatovs
       Luflosi
       kashw2
       leiserfg
     ];
+
+    platforms = lib.platforms.darwin ++ lib.platforms.linux;
+    mainProgram = "kitty";
   };
 }

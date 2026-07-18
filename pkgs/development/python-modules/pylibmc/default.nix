@@ -10,7 +10,6 @@
 buildPythonPackage rec {
   pname = "pylibmc";
   version = "1.6.3";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
@@ -23,12 +22,11 @@ buildPythonPackage rec {
     zlib
   ];
 
-  setupPyBuildFlags = [ "--with-sasl2" ];
-
   # Requires an external memcached server running
   doCheck = false;
-
+  format = "setuptools";
   pythonImportsCheck = [ "pylibmc" ];
+  setupPyBuildFlags = [ "--with-sasl2" ];
 
   meta = {
     description = "Quick and small memcached client for Python";

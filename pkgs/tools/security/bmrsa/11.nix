@@ -27,9 +27,9 @@ stdenv.mkDerivation rec {
 
   meta = {
     description = "RSA utility";
-    mainProgram = "bmrsa";
     homepage = "http://bmrsa.sourceforge.net/";
     license = lib.licenses.gpl2Only;
     platforms = lib.platforms.linux;
+    mainProgram = "bmrsa";
   };
 }

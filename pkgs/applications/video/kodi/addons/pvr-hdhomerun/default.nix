@@ -1,14 +1,13 @@
 {
   lib,
-  rel,
-  buildKodiBinaryAddon,
   fetchFromGitHub,
+  buildKodiBinaryAddon,
   jsoncpp,
   libhdhomerun,
+  rel,
 }:
 buildKodiBinaryAddon rec {
   pname = "pvr-hdhomerun";
-  namespace = "pvr.hdhomerun";
   version = "21.0.2";
 
   src = fetchFromGitHub {
@@ -23,11 +22,13 @@ buildKodiBinaryAddon rec {
     libhdhomerun
   ];
 
+  namespace = "pvr.hdhomerun";
+
   meta = {
-    homepage = "https://github.com/kodi-pvr/pvr.hdhomerun";
     description = "Kodi's HDHomeRun PVR client addon";
-    platforms = lib.platforms.all;
+    homepage = "https://github.com/kodi-pvr/pvr.hdhomerun";
     license = lib.licenses.gpl2Only;
+    platforms = lib.platforms.all;
     teams = [ lib.teams.kodi ];
   };
 }

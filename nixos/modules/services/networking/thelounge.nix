@@ -1,7 +1,7 @@
 {
-  pkgs,
-  lib,
   config,
+  lib,
+  pkgs,
   ...
 }:
 
@@ -44,30 +44,21 @@ in
 
   options.services.thelounge = {
     enable = mkEnableOption "The Lounge web IRC client";
-
     package = mkPackageOption pkgs "thelounge" { };
-
-    public = mkOption {
-      type = types.bool;
-      default = false;
-      description = ''
-        Make your The Lounge instance public.
-        Setting this to `false` will require you to configure user
-        accounts by using the ({command}`thelounge`) command or by adding
-        entries in {file}`${dataDir}/users`. You might need to restart
-        The Lounge after making changes to the state directory.
-      '';
-    };
-
-    port = mkOption {
-      type = types.port;
-      default = 9000;
-      description = "TCP port to listen on for http connections.";
-    };
 
     extraConfig = mkOption {
       default = { };
-      type = types.attrs;
+
+      description = ''
+        The Lounge's {file}`config.js` contents as attribute set (will be
+        converted to JSON to generate the configuration file).
+
+        The options defined here will be merged to the default configuration file.
+        Note: In case of duplicate configuration, options from {option}`extraConfig` have priority.
+
+        Documentation: <https://thelounge.chat/docs/server/configuration>
+      '';
+
       example = literalExpression ''
         {
           reverseProxy = true;
@@ -78,52 +69,69 @@ in
           };
         }
       '';
-      description = ''
-        The Lounge's {file}`config.js` contents as attribute set (will be
-        converted to JSON to generate the configuration file).
 
-        The options defined here will be merged to the default configuration file.
-        Note: In case of duplicate configuration, options from {option}`extraConfig` have priority.
-
-        Documentation: <https://thelounge.chat/docs/server/configuration>
-      '';
+      type = types.attrs;
     };
 
     plugins = mkOption {
       default = [ ];
-      type = types.listOf types.package;
-      example = literalExpression "[ pkgs.theLoungePlugins.themes.solarized ]";
+
       description = ''
         The Lounge plugins to install. Plugins can be found in
         `pkgs.theLoungePlugins.plugins` and `pkgs.theLoungePlugins.themes`.
       '';
+
+      example = literalExpression "[ pkgs.theLoungePlugins.themes.solarized ]";
+      type = types.listOf types.package;
+    };
+
+    port = mkOption {
+      default = 9000;
+      description = "TCP port to listen on for http connections.";
+      type = types.port;
+    };
+
+    public = mkOption {
+      default = false;
+
+      description = ''
+        Make your The Lounge instance public.
+        Setting this to `false` will require you to configure user
+        accounts by using the ({command}`thelounge`) command or by adding
+        entries in {file}`${dataDir}/users`. You might need to restart
+        The Lounge after making changes to the state directory.
+      '';
+
+      type = types.bool;
     };
   };
 
   config = mkIf cfg.enable {
+    environment.systemPackages = [ cfg.package ];
+
+    systemd.services.thelounge = {
+      after = [ "network-online.target" ];
+      description = "The Lounge web IRC client";
+      environment.THELOUNGE_PACKAGES = mkIf (cfg.plugins != [ ]) "${plugins}";
+      preStart = "ln -sf ${pkgs.writeText "config.js" configJsData} ${dataDir}/config.js";
+
+      serviceConfig = {
+        ExecStart = "${getExe cfg.package} start";
+        StateDirectory = baseNameOf dataDir;
+        User = "thelounge";
+      };
+
+      wantedBy = [ "multi-user.target" ];
+      wants = [ "network-online.target" ];
+    };
+
+    users.groups.thelounge = { };
+
     users.users.thelounge = {
       description = "The Lounge service user";
       group = "thelounge";
       isSystemUser = true;
     };
-
-    users.groups.thelounge = { };
-
-    systemd.services.thelounge = {
-      description = "The Lounge web IRC client";
-      wantedBy = [ "multi-user.target" ];
-      after = [ "network-online.target" ];
-      wants = [ "network-online.target" ];
-      preStart = "ln -sf ${pkgs.writeText "config.js" configJsData} ${dataDir}/config.js";
-      environment.THELOUNGE_PACKAGES = mkIf (cfg.plugins != [ ]) "${plugins}";
-      serviceConfig = {
-        User = "thelounge";
-        StateDirectory = baseNameOf dataDir;
-        ExecStart = "${getExe cfg.package} start";
-      };
-    };
-
-    environment.systemPackages = [ cfg.package ];
   };
 
   meta = {

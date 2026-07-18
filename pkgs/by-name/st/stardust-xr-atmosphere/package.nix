@@ -1,10 +1,10 @@
 {
   lib,
   fetchFromGitHub,
-  rustPlatform,
-  testers,
-  stardust-xr-atmosphere,
   nix-update-script,
+  rustPlatform,
+  stardust-xr-atmosphere,
+  testers,
 }:
 
 rustPlatform.buildRustPackage {
@@ -22,10 +22,11 @@ rustPlatform.buildRustPackage {
 
   passthru = {
     tests.versionTest = testers.testVersion {
-      package = stardust-xr-atmosphere;
-      command = "atmosphere --version";
       version = "stardust-xr-atmosphere 0.4.0";
+      command = "atmosphere --version";
+      package = stardust-xr-atmosphere;
     };
+
     updateScript = nix-update-script {
       extraArgs = [ "--version=branch" ];
     };
@@ -35,11 +36,13 @@ rustPlatform.buildRustPackage {
     description = "Environment, homespace, and setup client for Stardust XR";
     homepage = "https://stardustxr.org";
     license = lib.licenses.mit;
-    mainProgram = "atmosphere";
+
     maintainers = with lib.maintainers; [
       pandapip1
       technobaboo
     ];
+
     platforms = lib.platforms.linux;
+    mainProgram = "atmosphere";
   };
 }

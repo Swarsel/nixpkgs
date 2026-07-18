@@ -1,8 +1,8 @@
 {
-  stdenv,
-  cmake,
-  fetchFromGitHub,
   lib,
+  stdenv,
+  fetchFromGitHub,
+  cmake,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -20,9 +20,9 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Migration path to C++ library extensions scope_exit, scope_fail, scope_success, unique_resource";
+    homepage = "https://github.com/martinmoene/scope-lite";
     license = lib.licenses.boost;
     maintainers = [ lib.maintainers.shlevy ];
-    homepage = "https://github.com/martinmoene/scope-lite";
     platforms = lib.platforms.all;
   };
 })

@@ -8,13 +8,22 @@ stdenv.mkDerivation {
   pname = "etlegacy-assets";
   version = "2.83.2";
 
+  installPhase = ''
+    runHook preInstall
+    mkdir -p $out/lib/etlegacy/etmain
+    cp -r . $out/lib/etlegacy/etmain/
+    runHook postInstall
+  '';
+
+  sourceRoot = ".";
+
   srcs =
     let
       fetchAsset =
         { asset, hash }:
         fetchurl {
-          url = "https://mirror.etlegacy.com/etmain/${asset}";
           inherit hash;
+          url = "https://mirror.etlegacy.com/etmain/${asset}";
         };
     in
     [
@@ -32,25 +41,19 @@ stdenv.mkDerivation {
       })
     ];
 
-  sourceRoot = ".";
   unpackCmd = "cp -r $curSrc \${curSrc##*-}";
-
-  installPhase = ''
-    runHook preInstall
-    mkdir -p $out/lib/etlegacy/etmain
-    cp -r . $out/lib/etlegacy/etmain/
-    runHook postInstall
-  '';
 
   meta = {
     description = "ET: Legacy assets only";
-    homepage = "https://etlegacy.com";
-    license = with lib.licenses; [ cc-by-nc-sa-30 ];
+
     longDescription = ''
       ET: Legacy, an open source project fully compatible client and server
       for the popular online FPS game Wolfenstein: Enemy Territory - whose
       gameplay is still considered unmatched by many, despite its great age.
     '';
+
+    homepage = "https://etlegacy.com";
+    license = with lib.licenses; [ cc-by-nc-sa-30 ];
     maintainers = [ ];
     platforms = lib.platforms.linux;
   };

@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   versionCheckHook,
 }:
 
@@ -17,6 +17,8 @@ buildGoModule (finalAttrs: {
   };
 
   vendorHash = "sha256-CPdAinTb3Yd7dPvDiTHrKk/xeJnO0aAYETWMkf34yWI=";
+  doInstallCheck = true;
+  nativeInstallCheckInputs = [ versionCheckHook ];
 
   ldflags = [
     "-s"
@@ -25,12 +27,7 @@ buildGoModule (finalAttrs: {
     "-X=main.date=1970-01-01T00:00:00Z"
   ];
 
-  nativeInstallCheckInputs = [ versionCheckHook ];
-
   subPackages = [ "cmd/tlsanalyzer/" ];
-
-  doInstallCheck = true;
-
   versionCheckProgramArg = [ "version" ];
 
   meta = {

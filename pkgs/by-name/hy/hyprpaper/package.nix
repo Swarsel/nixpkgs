@@ -1,21 +1,19 @@
 {
   lib,
-  gcc15Stdenv,
   fetchFromGitHub,
-  cmake,
-  hyprwayland-scanner,
-  hyprwire,
-  pkg-config,
-  wayland-scanner,
   aquamarine,
   cairo,
+  cmake,
   expat,
   file,
   fribidi,
+  gcc15Stdenv,
   hyprgraphics,
   hyprlang,
-  hyprutils,
   hyprtoolkit,
+  hyprutils,
+  hyprwayland-scanner,
+  hyprwire,
   libGL,
   libdatrie,
   libdrm,
@@ -28,10 +26,12 @@
   libxdmcp,
   pango,
   pcre2,
-  wayland,
-  wayland-protocols,
+  pkg-config,
   util-linux,
   versionCheckHook,
+  wayland,
+  wayland-protocols,
+  wayland-scanner,
 }:
 
 gcc15Stdenv.mkDerivation (finalAttrs: {
@@ -44,11 +44,6 @@ gcc15Stdenv.mkDerivation (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-/4eWbt5XtOHzw3C9U0XPtoy8io03GxrEBd9znWMacbY=";
   };
-
-  prePatch = ''
-    substituteInPlace src/main.cpp \
-      --replace-fail GIT_COMMIT_HASH '"${finalAttrs.src.tag}"'
-  '';
 
   nativeBuildInputs = [
     cmake
@@ -87,17 +82,22 @@ gcc15Stdenv.mkDerivation (finalAttrs: {
 
   doInstallCheck = true;
   nativeInstallCheckInputs = [ versionCheckHook ];
-
   cmakeBuildType = "RelWithDebInfo";
+
+  prePatch = ''
+    substituteInPlace src/main.cpp \
+      --replace-fail GIT_COMMIT_HASH '"${finalAttrs.src.tag}"'
+  '';
+
   separateDebugInfo = true;
 
   meta = {
     inherit (finalAttrs.src.meta) homepage;
+    inherit (wayland.meta) platforms;
     description = "Blazing fast wayland wallpaper utility";
     license = lib.licenses.bsd3;
-    teams = [ lib.teams.hyprland ];
-    inherit (wayland.meta) platforms;
-    broken = gcc15Stdenv.hostPlatform.isDarwin;
     mainProgram = "hyprpaper";
+    broken = gcc15Stdenv.hostPlatform.isDarwin;
+    teams = [ lib.teams.hyprland ];
   };
 })

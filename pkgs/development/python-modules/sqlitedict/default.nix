@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   py,
   pytest-benchmark,
   pytestCheckHook,
@@ -11,7 +11,6 @@
 buildPythonPackage rec {
   pname = "sqlitedict";
   version = "2.1.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "RaRe-Technologies";
@@ -32,9 +31,9 @@ buildPythonPackage rec {
     mkdir tests/db
   '';
 
-  pythonImportsCheck = [ "sqlitedict" ];
-
+  pyproject = true;
   pytestFlags = [ "--benchmark-disable" ];
+  pythonImportsCheck = [ "sqlitedict" ];
 
   meta = {
     description = "Persistent, thread-safe dict";

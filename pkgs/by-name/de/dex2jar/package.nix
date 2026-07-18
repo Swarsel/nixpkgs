@@ -1,9 +1,9 @@
 {
   lib,
-  stdenvNoCC,
   fetchurl,
   jre,
   makeWrapper,
+  stdenvNoCC,
   unzip,
 }:
 
@@ -16,15 +16,15 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     hash = "sha256-7nxF6zwdJHSmFF2NRH5lGnNqItlmS209O+WlqBfdojo=";
   };
 
-  nativeBuildInputs = [
-    makeWrapper
-    unzip
-  ];
-
   postPatch = ''
     rm *.bat
     chmod +x *.sh
   '';
+
+  nativeBuildInputs = [
+    makeWrapper
+    unzip
+  ];
 
   installPhase = ''
     f=$out/share/dex2jar/
@@ -39,11 +39,11 @@ stdenvNoCC.mkDerivation (finalAttrs: {
   '';
 
   meta = {
-    homepage = "https://github.com/pxb1988/dex2jar";
     description = "Tools to work with android .dex and java .class files";
-    maintainers = with lib.maintainers; [ makefu ];
-    sourceProvenance = with lib.sourceTypes; [ binaryBytecode ];
+    homepage = "https://github.com/pxb1988/dex2jar";
     license = lib.licenses.asl20;
+    sourceProvenance = with lib.sourceTypes; [ binaryBytecode ];
+    maintainers = with lib.maintainers; [ makefu ];
     platforms = lib.platforms.unix;
   };
 })

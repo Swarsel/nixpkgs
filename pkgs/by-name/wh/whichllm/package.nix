@@ -1,15 +1,13 @@
 {
   lib,
-  python3Packages,
   fetchFromGitHub,
+  python3Packages,
   versionCheckHook,
 }:
 
 python3Packages.buildPythonApplication (finalAttrs: {
   pname = "whichllm";
   version = "0.5.15";
-  pyproject = true;
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "Andyyyy64";
@@ -18,6 +16,9 @@ python3Packages.buildPythonApplication (finalAttrs: {
     hash = "sha256-cP9/8Nl3jZJUW1zvyhEEjEHpEWAJ4m6yeGnjXpAkl9U=";
   };
 
+  nativeCheckInputs = with python3Packages; [ pytestCheckHook ];
+  nativeInstallCheckInputs = [ versionCheckHook ];
+  __structuredAttrs = true;
   build-system = with python3Packages; [ hatchling ];
 
   dependencies =
@@ -32,16 +33,13 @@ python3Packages.buildPythonApplication (finalAttrs: {
     ]
     ++ dbgpu.optional-dependencies.fuzz;
 
-  nativeCheckInputs = with python3Packages; [ pytestCheckHook ];
-
   disabledTests = [
     # require network access
     "test_plan_no_model_found_shows_error"
     "test_snippet_no_model_found"
   ];
 
-  nativeInstallCheckInputs = [ versionCheckHook ];
-
+  pyproject = true;
   pythonImportsCheck = [ "whichllm" ];
 
   meta = {

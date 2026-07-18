@@ -57,28 +57,9 @@ in
 
     services.getty = {
 
-      autologinUser = mkOption {
-        type = types.nullOr types.str;
-        default = null;
-        description = ''
-          Username of the account that will be automatically logged in at the console.
-          If unspecified, a login prompt is shown as usual.
-        '';
-      };
-
-      autologinOnce = mkOption {
-        type = types.bool;
-        default = false;
-        description = ''
-          If enabled the automatic login will only happen in the first tty
-          once per boot. This can be useful to avoid retyping the account
-          password on systems with full disk encrypted.
-        '';
-      };
-
       enable = mkOption {
-        type = types.bool;
         default = true;
+
         description = ''
           Include getty in the system.
 
@@ -92,20 +73,68 @@ in
           appliances, and similar configurations not meant for any human
           interaction ever.
         '';
+
+        type = types.bool;
       };
 
-      loginProgram = mkOption {
-        type = types.path;
-        default = "${pkgs.shadow}/bin/login";
-        defaultText = literalExpression ''"''${pkgs.shadow}/bin/login"'';
+      autologinOnce = mkOption {
+        default = false;
+
         description = ''
-          Path to the login binary executed by agetty.
+          If enabled the automatic login will only happen in the first tty
+          once per boot. This can be useful to avoid retyping the account
+          password on systems with full disk encrypted.
         '';
+
+        type = types.bool;
+      };
+
+      autologinUser = mkOption {
+        default = null;
+
+        description = ''
+          Username of the account that will be automatically logged in at the console.
+          If unspecified, a login prompt is shown as usual.
+        '';
+
+        type = types.nullOr types.str;
+      };
+
+      extraArgs = mkOption {
+        default = [ ];
+
+        description = ''
+          Additional arguments passed to agetty.
+        '';
+
+        example = [ "--nohostname" ];
+        type = types.listOf types.str;
+      };
+
+      greetingLine = mkOption {
+        description = ''
+          Welcome line printed by agetty.
+          The default shows current NixOS version label, machine type and tty.
+        '';
+
+        type = types.str;
+      };
+
+      helpLine = mkOption {
+        default = "";
+
+        description = ''
+          Help line printed by agetty below the welcome line.
+          Used by the installation CD to give some hints on
+          how to proceed.
+        '';
+
+        type = types.lines;
       };
 
       loginOptions = mkOption {
-        type = types.nullOr types.str;
         default = null;
+
         description = ''
           Template for arguments to be passed to
           {manpage}`login(1)`.
@@ -115,34 +144,20 @@ in
           will not be invoked with a {option}`--login-options`
           option.
         '';
+
         example = "-h darkstar -- \\u";
+        type = types.nullOr types.str;
       };
 
-      extraArgs = mkOption {
-        type = types.listOf types.str;
-        default = [ ];
-        description = ''
-          Additional arguments passed to agetty.
-        '';
-        example = [ "--nohostname" ];
-      };
+      loginProgram = mkOption {
+        default = "${pkgs.shadow}/bin/login";
+        defaultText = literalExpression ''"''${pkgs.shadow}/bin/login"'';
 
-      greetingLine = mkOption {
-        type = types.str;
         description = ''
-          Welcome line printed by agetty.
-          The default shows current NixOS version label, machine type and tty.
+          Path to the login binary executed by agetty.
         '';
-      };
 
-      helpLine = mkOption {
-        type = types.lines;
-        default = "";
-        description = ''
-          Help line printed by agetty below the welcome line.
-          Used by the installation CD to give some hints on
-          how to proceed.
-        '';
+        type = types.path;
       };
 
     };
@@ -152,9 +167,20 @@ in
   ###### implementation
 
   config = mkIf cfg.enable {
+    environment.etc.issue = mkDefault {
+      # Friendly greeting on the virtual consoles.
+      source = pkgs.writeText "issue" ''
+
+        [1;32m${config.services.getty.greetingLine}[0m
+        ${config.services.getty.helpLine}
+
+      '';
+    };
+
     # Note: this is set here rather than up there so that changing
     # nixos.label would not rebuild manual pages
     services.getty.greetingLine = mkDefault ''<<< Welcome to ${config.system.nixos.distroName} ${config.system.nixos.label} (\m) - \l >>>'';
+
     services.getty.helpLine = mkIf (
       config.documentation.nixos.enable && config.documentation.doc.enable
     ) "\nRun 'nixos-help' for the NixOS manual.";
@@ -168,61 +194,56 @@ in
       "container-getty@.service"
     ];
 
+    systemd.services.console-getty = {
+      enable = mkDefault config.boot.isContainer;
+      restartIfChanged = false;
+
+      serviceConfig.ExecStart = [
+        "" # override upstream default with an empty ExecStart
+        (gettyCmd "--noclear --keep-baud console 115200,38400,9600 $TERM")
+      ];
+
+      serviceConfig.Restart = "always";
+    };
+
+    systemd.services."container-getty@" = {
+      restartIfChanged = false;
+
+      serviceConfig.ExecStart = [
+        "" # override upstream default with an empty ExecStart
+        (gettyCmd "--noclear --keep-baud pts/%I 115200,38400,9600 $TERM")
+      ];
+    };
+
+    systemd.services."getty@" = {
+      # logind hardcodes spawning autovt@ttyN.service on VT switch. Upstream
+      # declares this alias via [Install] Alias=, which NixOS does not process.
+      aliases = [ "autovt@.service" ];
+      environment.TTY = "%I";
+      restartIfChanged = false;
+
+      serviceConfig.ExecStart = [
+        # override upstream default with an empty ExecStart
+        ""
+        (pkgs.writers.writeDash "getty" autologinScript)
+      ];
+    };
+
+    systemd.services."serial-getty@" = {
+      restartIfChanged = false;
+
+      serviceConfig.ExecStart = [
+        "" # override upstream default with an empty ExecStart
+        (gettyCmd "%I --keep-baud $TERM")
+      ];
+    };
+
     # We can't just rely on 'Conflicts=autovt@tty1.service' because
     # 'switch-to-configuration switch' will start 'autovt@tty1.service'
     # and kill the display manager.
     systemd.targets.getty.wants = lib.mkIf (!config.services.displayManager.enable) [
       "autovt@tty1.service"
     ];
-
-    systemd.services."getty@" = {
-      serviceConfig.ExecStart = [
-        # override upstream default with an empty ExecStart
-        ""
-        (pkgs.writers.writeDash "getty" autologinScript)
-      ];
-      environment.TTY = "%I";
-      restartIfChanged = false;
-      # logind hardcodes spawning autovt@ttyN.service on VT switch. Upstream
-      # declares this alias via [Install] Alias=, which NixOS does not process.
-      aliases = [ "autovt@.service" ];
-    };
-
-    systemd.services."serial-getty@" = {
-      serviceConfig.ExecStart = [
-        "" # override upstream default with an empty ExecStart
-        (gettyCmd "%I --keep-baud $TERM")
-      ];
-      restartIfChanged = false;
-    };
-
-    systemd.services."container-getty@" = {
-      serviceConfig.ExecStart = [
-        "" # override upstream default with an empty ExecStart
-        (gettyCmd "--noclear --keep-baud pts/%I 115200,38400,9600 $TERM")
-      ];
-      restartIfChanged = false;
-    };
-
-    systemd.services.console-getty = {
-      serviceConfig.ExecStart = [
-        "" # override upstream default with an empty ExecStart
-        (gettyCmd "--noclear --keep-baud console 115200,38400,9600 $TERM")
-      ];
-      serviceConfig.Restart = "always";
-      restartIfChanged = false;
-      enable = mkDefault config.boot.isContainer;
-    };
-
-    environment.etc.issue = mkDefault {
-      # Friendly greeting on the virtual consoles.
-      source = pkgs.writeText "issue" ''
-
-        [1;32m${config.services.getty.greetingLine}[0m
-        ${config.services.getty.helpLine}
-
-      '';
-    };
 
   };
 

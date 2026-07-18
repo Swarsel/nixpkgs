@@ -1,15 +1,14 @@
 {
   lib,
   fetchFromGitHub,
+  makeWrapper,
   python3,
   python3Packages,
-  makeWrapper,
 }:
 
 python3Packages.buildPythonApplication rec {
   pname = "villain";
   version = "2.2.1";
-  pyproject = false;
 
   src = fetchFromGitHub {
     owner = "t3l3machus";
@@ -19,14 +18,6 @@ python3Packages.buildPythonApplication rec {
   };
 
   nativeBuildInputs = [ makeWrapper ];
-
-  dependencies = with python3Packages; [
-    gnureadline
-    netifaces
-    pycryptodomex
-    pyperclip
-    requests
-  ];
 
   installPhase = ''
     runHook preInstall
@@ -39,12 +30,22 @@ python3Packages.buildPythonApplication rec {
     runHook postInstall
   '';
 
+  dependencies = with python3Packages; [
+    gnureadline
+    netifaces
+    pycryptodomex
+    pyperclip
+    requests
+  ];
+
+  pyproject = false;
+
   meta = {
     description = "High level stage 0/1 C2 framework that can handle multiple TCP socket & HoaxShell-based reverse shells";
     homepage = "https://github.com/t3l3machus/Villain";
     license = lib.licenses.cc-by-nc-nd-40;
-    mainProgram = "villain";
     maintainers = [ ];
     platforms = lib.platforms.unix;
+    mainProgram = "villain";
   };
 }

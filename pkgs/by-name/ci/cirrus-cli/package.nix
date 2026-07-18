@@ -17,14 +17,11 @@ buildGoModule (finalAttrs: {
     hash = "sha256-zkKbA2Nftkqxh4o30pFMCcZxNeBF9jXf2GkICaXEPjE=";
   };
 
-  vendorHash = "sha256-cpHxxAoVCHLWt9R2+tZVhIKT9SXdwiVvB1/NA9sNd3Y=";
-
-  ldflags = [
-    "-X github.com/cirruslabs/cirrus-cli/internal/version.Version=v${finalAttrs.version}"
-    "-X github.com/cirruslabs/cirrus-cli/internal/version.Commit=v${finalAttrs.version}"
-  ];
-
   nativeBuildInputs = [ installShellFiles ];
+  vendorHash = "sha256-cpHxxAoVCHLWt9R2+tZVhIKT9SXdwiVvB1/NA9sNd3Y=";
+  # tests fail on read-only filesystem
+  doCheck = false;
+
   postInstall = lib.optionalString (stdenv.buildPlatform.canExecute stdenv.hostPlatform) ''
     installShellCompletion --cmd cirrus \
       --bash <($out/bin/cirrus completion bash) \
@@ -32,8 +29,10 @@ buildGoModule (finalAttrs: {
       --fish <($out/bin/cirrus completion fish)
   '';
 
-  # tests fail on read-only filesystem
-  doCheck = false;
+  ldflags = [
+    "-X github.com/cirruslabs/cirrus-cli/internal/version.Version=v${finalAttrs.version}"
+    "-X github.com/cirruslabs/cirrus-cli/internal/version.Commit=v${finalAttrs.version}"
+  ];
 
   meta = {
     description = "CLI for executing Cirrus tasks locally and in any CI";

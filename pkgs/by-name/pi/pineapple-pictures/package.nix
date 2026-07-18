@@ -3,8 +3,8 @@
   stdenv,
   fetchFromGitHub,
   cmake,
-  qt6,
   exiv2,
+  qt6,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -37,8 +37,8 @@ stdenv.mkDerivation (finalAttrs: {
     description = "Homebrew lightweight image viewer";
     homepage = "https://github.com/BLumia/pineapple-pictures";
     license = lib.licenses.mit;
+    maintainers = with lib.maintainers; [ wineee ];
     platforms = lib.platforms.linux;
     mainProgram = "ppic";
-    maintainers = with lib.maintainers; [ wineee ];
   };
 })

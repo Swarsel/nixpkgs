@@ -1,10 +1,10 @@
 {
   lib,
-  javaPackages,
   stdenv,
   fetchurl,
-  nixosTests,
+  javaPackages,
   makeWrapper,
+  nixosTests,
   udev,
 }:
 let
@@ -18,6 +18,7 @@ let
   mkVersion = (
     version: value: {
       name = "vanilla-${escapeVersion version}";
+
       value = import ./derivation.nix {
         inherit
           lib
@@ -27,7 +28,9 @@ let
           makeWrapper
           udev
           ;
+
         inherit (value) version url sha1;
+
         jre_headless = getJavaVersion (
           if value.javaVersion == null then
             8

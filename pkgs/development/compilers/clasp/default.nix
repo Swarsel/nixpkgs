@@ -1,15 +1,15 @@
 {
   lib,
-  llvmPackages_18,
+  boost,
   fetchzip,
-  sbcl,
-  pkg-config,
   fmt_9,
   gmpxx,
   libelf,
-  boost,
   libunwind,
+  llvmPackages_18,
   ninja,
+  pkg-config,
+  sbcl,
 }:
 
 let
@@ -47,10 +47,10 @@ stdenv.mkDerivation rec {
     libclang
   ];
 
-  ninjaFlags = [
-    "-C"
-    "build"
-  ];
+  postInstall = ''
+    # --dylib-path not honored. Fix it in post.
+    mv $out/libclasp* $out/lib/
+  '';
 
   configurePhase = ''
     export SOURCE_DATE_EPOCH=1
@@ -69,19 +69,21 @@ stdenv.mkDerivation rec {
       --pkgconfig-path=$out/lib/pkgconfig
   '';
 
-  postInstall = ''
-    # --dylib-path not honored. Fix it in post.
-    mv $out/libclasp* $out/lib/
-  '';
+  ninjaFlags = [
+    "-C"
+    "build"
+  ];
 
   meta = {
     description = "Common Lisp implementation based on LLVM with C++ integration";
+    homepage = "https://github.com/clasp-developers/clasp";
     license = lib.licenses.lgpl21Plus;
-    teams = [ lib.teams.lisp ];
+
     platforms = [
       "x86_64-linux"
     ];
-    homepage = "https://github.com/clasp-developers/clasp";
+
     mainProgram = "clasp";
+    teams = [ lib.teams.lisp ];
   };
 }

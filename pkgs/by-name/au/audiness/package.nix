@@ -7,7 +7,6 @@
 python3.pkgs.buildPythonApplication (finalAttrs: {
   pname = "audiness";
   version = "1.0.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "audius";
@@ -16,10 +15,9 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     hash = "sha256-zru37eNQyY9AcbALge1qlINuxzVKq3RTNypm5Pyhkz8=";
   };
 
-  pythonRelaxDeps = [
-    "pytenable"
-    "typer"
-    "validators"
+  nativeCheckInputs = with python3.pkgs; [
+    pytest-mock
+    pytestCheckHook
   ];
 
   build-system = with python3.pkgs; [ poetry-core ];
@@ -30,12 +28,14 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     validators
   ];
 
-  nativeCheckInputs = with python3.pkgs; [
-    pytest-mock
-    pytestCheckHook
-  ];
-
+  pyproject = true;
   pythonImportsCheck = [ "audiness" ];
+
+  pythonRelaxDeps = [
+    "pytenable"
+    "typer"
+    "validators"
+  ];
 
   meta = {
     description = "CLI tool to interact with Nessus";

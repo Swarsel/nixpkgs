@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   gitMinimal,
   nix-update-script,
   versionCheckHook,
@@ -11,8 +11,6 @@
 buildGoModule (finalAttrs: {
   pname = "whale";
   version = "0.1.62";
-
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "usewhale";
@@ -28,21 +26,20 @@ buildGoModule (finalAttrs: {
     writableTmpDirAsHomeHook
   ];
 
-  nativeInstallCheckInputs = [ versionCheckHook ];
-
-  ldflags = [
-    "-s"
-    "-X=github.com/usewhale/whale/internal/build.Version=${finalAttrs.version}"
-  ];
-
-  excludedPackages = [ "cmd/dev" ];
-
   checkFlags = [
     # Fails in the sandbox
     "-skip=TestRulePolicyMCPPathOutsideWorkspaceRequiresExternalDirectoryApproval"
   ];
 
   doInstallCheck = true;
+  nativeInstallCheckInputs = [ versionCheckHook ];
+  __structuredAttrs = true;
+  excludedPackages = [ "cmd/dev" ];
+
+  ldflags = [
+    "-s"
+    "-X=github.com/usewhale/whale/internal/build.Version=${finalAttrs.version}"
+  ];
 
   passthru.updateScript = nix-update-script { };
 

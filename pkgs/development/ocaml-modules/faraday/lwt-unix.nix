@@ -6,14 +6,15 @@
 }:
 
 buildDunePackage {
-  pname = "faraday-lwt-unix";
   inherit (faraday) version src;
-  duneVersion = "3";
+  pname = "faraday-lwt-unix";
 
   propagatedBuildInputs = [
     lwt
     faraday-lwt
   ];
+
+  duneVersion = "3";
 
   meta = faraday.meta // {
     description = "Lwt + Unix support for Faraday";

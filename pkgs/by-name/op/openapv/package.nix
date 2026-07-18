@@ -1,10 +1,10 @@
 {
   lib,
   stdenv,
-  writeText,
   fetchFromGitHub,
   cmake,
   nix-update-script,
+  writeText,
 }:
 let
   # Requires an /etc/os-release file, so we override it with this.
@@ -27,13 +27,12 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   nativeBuildInputs = [ cmake ];
-
   passthru.updateScript = nix-update-script { };
 
   meta = {
-    changelog = "https://github.com/AcademySoftwareFoundation/openapv/releases/tag/v${finalAttrs.version}";
     description = "Reference implementation of the APV codec";
     homepage = "https://github.com/AcademySoftwareFoundation/openapv";
+    changelog = "https://github.com/AcademySoftwareFoundation/openapv/releases/tag/v${finalAttrs.version}";
     license = [ lib.licenses.bsd3 ];
     maintainers = with lib.maintainers; [ pyrox0 ];
   };

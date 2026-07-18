@@ -3,8 +3,6 @@
   buildPythonPackage,
   decorator,
   fetchPypi,
-  setuptools,
-  setuptools-scm,
   formencode,
   httpretty,
   libxml2,
@@ -19,6 +17,8 @@
   pyyaml,
   requests,
   requests-mock,
+  setuptools,
+  setuptools-scm,
   six,
   testfixtures,
   yamlloader,
@@ -27,7 +27,6 @@
 buildPythonPackage rec {
   pname = "pywbem";
   version = "1.9.0";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
@@ -38,11 +37,6 @@ buildPythonPackage rec {
     substituteInPlace pyproject.toml \
       --replace-fail "setuptools-scm>=9.2.0" "setuptools-scm"
   '';
-
-  build-system = [
-    setuptools
-    setuptools-scm
-  ];
 
   propagatedBuildInputs = [
     mock
@@ -68,12 +62,18 @@ buildPythonPackage rec {
     testfixtures
   ];
 
-  pythonImportsCheck = [ "pywbem" ];
+  build-system = [
+    setuptools
+    setuptools-scm
+  ];
 
   disabledTestPaths = [
     "tests/leaktest" # requires 'yagot'
     "tests/end2endtest" # requires 'pytest_easy_server'
   ];
+
+  pyproject = true;
+  pythonImportsCheck = [ "pywbem" ];
 
   meta = {
     description = "Support for the WBEM standard for systems management";

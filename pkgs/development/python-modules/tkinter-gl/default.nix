@@ -1,19 +1,18 @@
 {
   lib,
   fetchFromGitHub,
-  python,
   buildPythonPackage,
+  nix-update-script,
+  python,
   setuptools,
   setuptools-scm,
   tkgl,
   tkinter,
-  nix-update-script,
 }:
 
 buildPythonPackage rec {
   pname = "tkinter-gl";
   version = "1.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "3-manifolds";
@@ -31,13 +30,6 @@ buildPythonPackage rec {
                      "pkg_dir = os.path.join(__path__[0], 'tk')"
   '';
 
-  build-system = [
-    setuptools
-    setuptools-scm
-  ];
-
-  dependencies = [ tkinter ];
-
   postInstall =
     let
       pkgDir = "$out/${python.sitePackages}/tkinter_gl/tk";
@@ -47,6 +39,13 @@ buildPythonPackage rec {
       ln -s ${tkgl}/lib/Tkgl* ${pkgDir}
     '';
 
+  build-system = [
+    setuptools
+    setuptools-scm
+  ];
+
+  dependencies = [ tkinter ];
+  pyproject = true;
   pythonImportsCheck = [ "tkinter_gl" ];
 
   passthru.updateScript = nix-update-script {
@@ -58,9 +57,10 @@ buildPythonPackage rec {
 
   meta = {
     description = "Base class for GL rendering surfaces in tkinter";
-    changelog = "https://github.com/3-manifolds/tkinter_gl/releases/tag/${src.tag}";
     homepage = "https://github.com/3-manifolds/tkinter_gl";
+    changelog = "https://github.com/3-manifolds/tkinter_gl/releases/tag/${src.tag}";
     license = lib.licenses.gpl2Plus;
+
     maintainers = with lib.maintainers; [
       noiioiu
       alejo7797

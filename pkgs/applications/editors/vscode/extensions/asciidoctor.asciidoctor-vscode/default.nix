@@ -1,17 +1,10 @@
 {
-  asciidoctor,
   lib,
+  asciidoctor,
   vscode-utils,
 }:
 
 vscode-utils.buildVscodeMarketplaceExtension {
-  mktplcRef = {
-    name = "asciidoctor-vscode";
-    publisher = "asciidoctor";
-    version = "3.4.5";
-    hash = "sha256-X7njFSqfb45l6ZTr7GDS3At6DMHyvBT41JoghOeVjwI=";
-  };
-
   patches = [
     ./commands-abspath.patch
   ];
@@ -21,6 +14,13 @@ vscode-utils.buildVscodeMarketplaceExtension {
         --replace-fail "@ASCIIDOCTOR_PDF_BIN@" \
                        "${asciidoctor}/bin/asciidoctor-pdf"
   '';
+
+  mktplcRef = {
+    version = "3.4.5";
+    hash = "sha256-X7njFSqfb45l6ZTr7GDS3At6DMHyvBT41JoghOeVjwI=";
+    name = "asciidoctor-vscode";
+    publisher = "asciidoctor";
+  };
 
   meta = {
     license = lib.licenses.mit;

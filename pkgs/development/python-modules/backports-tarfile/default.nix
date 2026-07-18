@@ -1,19 +1,18 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
+  jaraco-test,
+  pytestCheckHook,
   setuptools,
   setuptools-scm,
   wheel,
-  jaraco-test,
-  pytestCheckHook,
 }:
 
 let
   self = buildPythonPackage rec {
     pname = "backports-tarfile";
     version = "1.2.0";
-    pyproject = true;
 
     src = fetchFromGitHub {
       owner = "jaraco";
@@ -22,17 +21,17 @@ let
       hash = "sha256-X3rkL35aDG+DnIOq0fI7CFoWGNtgLkLjtT9y6+23oto=";
     };
 
-    build-system = [
-      setuptools
-      setuptools-scm
-      wheel
-    ];
-
     doCheck = false;
 
     nativeCheckInputs = [
       jaraco-test
       pytestCheckHook
+    ];
+
+    build-system = [
+      setuptools
+      setuptools-scm
+      wheel
     ];
 
     disabledTests = [
@@ -52,8 +51,8 @@ let
       "test_modes"
     ];
 
+    pyproject = true;
     pythonImportsCheck = [ "backports.tarfile" ];
-
     passthru.tests.pytest = self.overridePythonAttrs { doCheck = true; };
 
     meta = {

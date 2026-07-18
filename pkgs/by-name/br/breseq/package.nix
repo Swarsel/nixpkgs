@@ -1,27 +1,24 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
-  callPackage,
-  nix-update-script,
-  libz,
-  libtool,
-  perl,
   R,
-  bowtie2,
-  which,
-  ghostscript,
-  makeWrapper,
   autoreconfHook,
+  bowtie2,
+  callPackage,
+  ghostscript,
+  libtool,
+  libz,
+  makeWrapper,
+  nix-update-script,
+  perl,
   versionCheckHook,
+  which,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
   pname = "breseq";
   version = "0.39.0";
-
-  strictDeps = true;
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "barricklab";
@@ -30,15 +27,17 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-DsDX2oGn7Ex50Wnp1phJjCziCzZIeeZOHriUGJbejsk=";
   };
 
-  buildInputs = [
-    perl
-    libz
-    libtool
-  ];
+  strictDeps = true;
 
   nativeBuildInputs = [
     makeWrapper
     autoreconfHook
+  ];
+
+  buildInputs = [
+    perl
+    libz
+    libtool
   ];
 
   postInstall = ''
@@ -70,25 +69,31 @@ stdenv.mkDerivation (finalAttrs: {
     cp tests/gdtools_compare_1 $out/tests/gdtools_compare_1 -r
   '';
 
+  doInstallCheck = true;
+
   nativeInstallCheckInputs = [
     versionCheckHook
   ];
-  doInstallCheck = true;
+
+  __structuredAttrs = true;
 
   passthru.tests = {
     breseq_works = callPackage ./tests/breseq.nix { };
     gdtools_works = callPackage ./tests/gdtools.nix { };
   };
+
   passthru.updateScript = nix-update-script { };
 
   meta = {
     description = "Computational pipeline for finding mutations relative to a reference sequence in short-read DNA re-sequencing data";
-    mainProgram = "breseq";
     homepage = "https://github.com/barricklab/breseq";
+
     license = with lib.licenses; [
       gpl2Plus # See barricklab/breseq#398
     ];
+
     maintainers = with lib.maintainers; [ croots ];
     platforms = lib.platforms.all;
+    mainProgram = "breseq";
   };
 })

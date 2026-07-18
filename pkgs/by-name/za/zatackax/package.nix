@@ -1,12 +1,12 @@
 {
-  autoreconfHook,
+  lib,
+  stdenv,
   fetchFromGitHub,
   SDL,
   SDL_image,
   SDL_mixer,
   SDL_ttf,
-  stdenv,
-  lib,
+  autoreconfHook,
   nix-update-script,
 }:
 
@@ -46,7 +46,6 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   configureFlags = [ "CFLAGS=-I${lib.getDev SDL}/include/SDL" ];
-
   passthru.updateScript = nix-update-script { };
 
   meta = {
@@ -55,7 +54,7 @@ stdenv.mkDerivation (finalAttrs: {
     changelog = "https://github.com/simenheg/zatackax/releases";
     license = lib.licenses.gpl3Plus;
     maintainers = [ lib.maintainers.alch-emi ];
-    mainProgram = "zatackax";
     platforms = with lib.platforms; linux ++ darwin;
+    mainProgram = "zatackax";
   };
 })

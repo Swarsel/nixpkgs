@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   pytestCheckHook,
   setuptools,
   setuptools-scm,
@@ -10,7 +10,6 @@
 buildPythonPackage rec {
   pname = "configparser";
   version = "7.2.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "jaraco";
@@ -25,6 +24,7 @@ buildPythonPackage rec {
   ];
 
   nativeCheckInputs = [ pytestCheckHook ];
+  pyproject = true;
 
   meta = {
     description = "Updated configparser from Python 3.7 for Python 2.6+";

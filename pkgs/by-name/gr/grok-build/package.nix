@@ -1,13 +1,13 @@
 {
   lib,
-  stdenvNoCC,
   fetchurl,
-  installShellFiles,
   autoPatchelfHook,
-  versionCheckHook,
-  runCommand,
-  testers,
   grok-build,
+  installShellFiles,
+  runCommand,
+  stdenvNoCC,
+  testers,
+  versionCheckHook,
 }:
 let
   version = "0.2.93";
@@ -15,36 +15,31 @@ let
   throwSystem = throw "Unsupported system: ${stdenvNoCC.hostPlatform.system}";
 
   platform = {
-    x86_64-linux = "linux-x86_64";
-    aarch64-linux = "linux-aarch64";
     aarch64-darwin = "macos-aarch64";
+    aarch64-linux = "linux-aarch64";
+    x86_64-linux = "linux-x86_64";
   };
 
   sourceData = lib.mapAttrs (
     system: upstreamPlatform:
     fetchurl {
-      url = "https://x.ai/cli/grok-${version}-${upstreamPlatform}";
       hash =
         {
-          x86_64-linux = "sha256-Tgc407VVDzyEK8CuafRogVxjKcAIoRDQwnppTcNAETU=";
-          aarch64-linux = "sha256-7a4g6SoKM/7ewao0iPPjgI2MTKISj8jzE/vYGOPpX18=";
           aarch64-darwin = "sha256-Kpe6Z1vZkqqbmB4ug3dkYNlPRptRDAuO/ii1DSNtdnw=";
+          aarch64-linux = "sha256-7a4g6SoKM/7ewao0iPPjgI2MTKISj8jzE/vYGOPpX18=";
+          x86_64-linux = "sha256-Tgc407VVDzyEK8CuafRogVxjKcAIoRDQwnppTcNAETU=";
         }
         .${system};
+
+      url = "https://x.ai/cli/grok-${version}-${upstreamPlatform}";
     }
   ) platform;
 in
 stdenvNoCC.mkDerivation (finalAttrs: {
-  pname = "grok-build";
   inherit version;
-
-  strictDeps = true;
-  __structuredAttrs = true;
-
+  pname = "grok-build";
   src = sourceData.${stdenvNoCC.hostPlatform.system} or throwSystem;
-
-  dontUnpack = true;
-  dontBuild = true;
+  strictDeps = true;
 
   nativeBuildInputs = [
     installShellFiles
@@ -69,7 +64,6 @@ stdenvNoCC.mkDerivation (finalAttrs: {
 
   doInstallCheck = true;
   nativeInstallCheckInputs = [ versionCheckHook ];
-  versionCheckProgramArg = "--version";
 
   installCheckPhase = ''
     runHook preInstallCheck
@@ -83,16 +77,20 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     runHook postInstallCheck
   '';
 
+  __structuredAttrs = true;
+  dontBuild = true;
+  dontUnpack = true;
+  versionCheckProgramArg = "--version";
   passthru.updateScript = ./update.sh;
 
   meta = {
     description = "Command-line coding agent by xAI";
     homepage = "https://docs.x.ai/build/overview";
-    downloadPage = "https://x.ai/cli/stable";
     license = lib.licenses.unfreeRedistributable;
+    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
     maintainers = with lib.maintainers; [ crertel ];
     platforms = lib.attrNames sourceData;
     mainProgram = "grok";
-    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
+    downloadPage = "https://x.ai/cli/stable";
   };
 })

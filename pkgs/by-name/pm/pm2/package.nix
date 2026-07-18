@@ -1,7 +1,7 @@
 {
   lib,
-  buildNpmPackage,
   fetchFromGitHub,
+  buildNpmPackage,
   npm-lockfile-fix,
 }:
 
@@ -22,15 +22,14 @@ buildNpmPackage rec {
   };
 
   npmDepsHash = "sha256-sX3yQ/40rDc1G/ybegICmic7+GuaCsDLcM1X6OD0B1E=";
-
   dontNpmBuild = true;
 
   meta = {
-    changelog = "https://github.com/Unitech/pm2/blob/${src.rev}/CHANGELOG.md";
     description = "Node.js production process manager with a built-in load balancer";
     homepage = "https://github.com/Unitech/pm2";
+    changelog = "https://github.com/Unitech/pm2/blob/${src.rev}/CHANGELOG.md";
     license = lib.licenses.agpl3Only;
-    mainProgram = "pm2";
     maintainers = with lib.maintainers; [ jeremyschlatter ];
+    mainProgram = "pm2";
   };
 }

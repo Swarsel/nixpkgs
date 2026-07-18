@@ -1,20 +1,15 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
   cmake,
-  libsForQt5,
   fetchpatch,
+  libsForQt5,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
   pname = "dotherside";
   version = "0.9.0";
-
-  outputs = [
-    "out"
-    "dev"
-  ];
 
   src = fetchFromGitHub {
     owner = "filcuc";
@@ -23,17 +18,17 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-o6RMjJz9vtfCsm+F9UYIiYPEaQn+6EU5jOTLhNHCwo4=";
   };
 
-  patches = [
-    (fetchpatch {
-      name = "bump-minimal-cmake-required-version.patch";
-      url = "https://github.com/filcuc/dotherside/commit/56cb910b368ad0f8ef1f18ef52d46ab8136ca5d6.patch?full_index=1";
-      hash = "sha256-xPMfSbTI8HWK6UYYFPATsz29lKbunm43JnaageTBZeY=";
-    })
+  outputs = [
+    "out"
+    "dev"
   ];
 
-  buildInputs = [
-    libsForQt5.qtbase
-    libsForQt5.qtquickcontrols2
+  patches = [
+    (fetchpatch {
+      hash = "sha256-xPMfSbTI8HWK6UYYFPATsz29lKbunm43JnaageTBZeY=";
+      name = "bump-minimal-cmake-required-version.patch";
+      url = "https://github.com/filcuc/dotherside/commit/56cb910b368ad0f8ef1f18ef52d46ab8136ca5d6.patch?full_index=1";
+    })
   ];
 
   nativeBuildInputs = [
@@ -41,11 +36,16 @@ stdenv.mkDerivation (finalAttrs: {
     libsForQt5.wrapQtAppsHook
   ];
 
+  buildInputs = [
+    libsForQt5.qtbase
+    libsForQt5.qtquickcontrols2
+  ];
+
   meta = {
     description = "C language library for creating bindings for the Qt QML language";
     homepage = "https://filcuc.github.io/dotherside";
     license = lib.licenses.lgpl3Plus;
-    platforms = lib.platforms.linux;
     maintainers = with lib.maintainers; [ toastal ];
+    platforms = lib.platforms.linux;
   };
 })

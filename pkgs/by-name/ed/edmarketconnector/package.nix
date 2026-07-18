@@ -1,9 +1,9 @@
 {
   lib,
-  fetchFromGitHub,
   stdenv,
-  python3,
+  fetchFromGitHub,
   makeWrapper,
+  python3,
 }:
 let
   pythonEnv = python3.buildEnv.override {
@@ -51,16 +51,18 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   meta = {
-    homepage = "https://github.com/EDCD/EDMarketConnector";
     description = "Uploads Elite: Dangerous market data to popular trading tools";
     longDescription = "Downloads commodity market and other station data from the game Elite: Dangerous for use with all popular online and offline trading tools.";
+    homepage = "https://github.com/EDCD/EDMarketConnector";
     changelog = "https://github.com/EDCD/EDMarketConnector/releases/tag/Release%2F${finalAttrs.version}";
     license = lib.licenses.gpl2Only;
-    platforms = lib.platforms.linux;
-    mainProgram = "edmarketconnector";
+
     maintainers = with lib.maintainers; [
       jiriks74
       toasteruwu
     ];
+
+    platforms = lib.platforms.linux;
+    mainProgram = "edmarketconnector";
   };
 })

@@ -1,15 +1,16 @@
 {
+  lib,
+  stdenv,
+  fetchurl,
+  fetchFromGitHub,
   autoreconfHook,
   cups,
   dbus,
   dejavu_fonts,
-  fetchFromGitHub,
   fetchpatch,
-  fetchurl,
   fontconfig,
   ghostscript,
   lcms2,
-  lib,
   libexif,
   libjpeg,
   libpng,
@@ -19,13 +20,12 @@
   poppler,
   poppler-utils,
   qpdf,
-  stdenv,
 }:
 
 let
   testpage = fetchurl {
-    url = "https://codeberg.org/raboof/cups-testpage/releases/download/v0.1/default-testpage.pdf";
     hash = "sha256-gtR/r/tORsXLw4PlFhxm29+//YNAKTT0c4z3GsgtzNw=";
+    url = "https://codeberg.org/raboof/cups-testpage/releases/download/v0.1/default-testpage.pdf";
   };
 in
 stdenv.mkDerivation {
@@ -39,34 +39,22 @@ stdenv.mkDerivation {
     hash = "sha256-WEcg+NSsny/N1VAR1ejytM+3nOF3JlNuIUPf4w6N2ew=";
   };
 
-  # Undefined symbols for architecture x86_64:
-  #   "_iconv", referenced from:
-  #       _cfFilterTextToText in libcupsfilters_la-texttotext.o
-  #   "_iconv_close", referenced from:
-  #       _cfFilterTextToText in libcupsfilters_la-texttotext.o
-  #   "_iconv_open", referenced from:
-  #       _cfFilterTextToText in libcupsfilters_la-texttotext.o
-  # ld: symbol(s) not found for architecture x86_64
-  env = lib.optionalAttrs stdenv.hostPlatform.isDarwin {
-    NIX_LDFLAGS = "-liconv";
-  };
-
   patches = [
     (fetchpatch {
-      # https://github.com/OpenPrinting/cups-filters/security/advisories/GHSA-893j-2wr2-wrh9
-      name = "CVE-2025-64503.patch";
-      url = "https://github.com/OpenPrinting/libcupsfilters/commit/fd01543f372ca3ba1f1c27bd3427110fa0094e3f.patch";
       # File has been renamed before the fix
       decode = "sed -e 's/pdftoraster\\.c/pdftoraster\\.cxx/g'";
       hash = "sha256-cKbDHZEc/A51M+ce3kVsRxjRUWA96ynGv/avpq4iUHU=";
+      # https://github.com/OpenPrinting/cups-filters/security/advisories/GHSA-893j-2wr2-wrh9
+      name = "CVE-2025-64503.patch";
+      url = "https://github.com/OpenPrinting/libcupsfilters/commit/fd01543f372ca3ba1f1c27bd3427110fa0094e3f.patch";
     })
     (fetchpatch {
+      hash = "sha256-rPUbgtTu7j3uUZrtUhUPO1vFbV6naxIWsHf6x3JhS74=";
       # https://github.com/OpenPrinting/libcupsfilters/security/advisories/GHSA-jpxg-qc2c-hgv4
       # https://github.com/OpenPrinting/libcupsfilters/security/advisories/GHSA-rc6w-jmvv-v7gx
       # https://github.com/OpenPrinting/libcupsfilters/security/advisories/GHSA-fmvr-45mx-43c6
       name = "CVE-2025-57812.patch";
       url = "https://github.com/OpenPrinting/libcupsfilters/commit/b69dfacec7f176281782e2f7ac44f04bf9633cfa.patch";
-      hash = "sha256-rPUbgtTu7j3uUZrtUhUPO1vFbV6naxIWsHf6x3JhS74=";
     })
   ]
   # build on platforms without execvpe
@@ -76,6 +64,7 @@ stdenv.mkDerivation {
     autoreconfHook
     pkg-config
   ];
+
   buildInputs = [
     cups
     dbus
@@ -91,6 +80,7 @@ stdenv.mkDerivation {
     poppler-utils
     qpdf
   ];
+
   configureFlags = [
     "--with-cups-config=${lib.getExe' (lib.getDev cups) "cups-config"}"
     "--with-mutool-path=${lib.getExe' mupdf "mutool"}"
@@ -101,19 +91,32 @@ stdenv.mkDerivation {
   ]
   # build on platforms without execvpe (path to Ghostscript must be absolute)
   ++ lib.optional stdenv.hostPlatform.isDarwin "--with-gs-path=${lib.getExe ghostscript}";
+
   makeFlags = [
     "CUPS_SERVERBIN=$(out)/lib/cups"
     "CUPS_DATADIR=$(out)/share/cups"
     "CUPS_SERVERROOT=$(out)/etc/cups"
   ];
 
+  # Undefined symbols for architecture x86_64:
+  #   "_iconv", referenced from:
+  #       _cfFilterTextToText in libcupsfilters_la-texttotext.o
+  #   "_iconv_close", referenced from:
+  #       _cfFilterTextToText in libcupsfilters_la-texttotext.o
+  #   "_iconv_open", referenced from:
+  #       _cfFilterTextToText in libcupsfilters_la-texttotext.o
+  # ld: symbol(s) not found for architecture x86_64
+  env = lib.optionalAttrs stdenv.hostPlatform.isDarwin {
+    NIX_LDFLAGS = "-liconv";
+  };
+
   preBuild = ''
     cp ${testpage} data/default-testpage.pdf
   '';
 
   meta = {
-    homepage = "https://github.com/OpenPrinting/libcupsfilters";
     description = "Backends, filters, and other software that was once part of the core CUPS distribution but is no longer maintained by Apple Inc";
+    homepage = "https://github.com/OpenPrinting/libcupsfilters";
     license = lib.licenses.asl20;
     platforms = lib.platforms.all;
   };

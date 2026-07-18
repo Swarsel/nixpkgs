@@ -1,27 +1,24 @@
 {
   lib,
   stdenv,
-  linuxHeaders,
+  bison,
   buildPackages,
-  libopcodes,
-  libopcodes_2_38,
+  elfutils,
+  flex,
   libbfd,
   libbfd_2_38,
-  elfutils,
+  libopcodes,
+  libopcodes_2_38,
+  linuxHeaders,
   openssl,
+  python3,
   readline,
   zlib,
-  python3,
-  bison,
-  flex,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
-  pname = "bpftools";
-
   inherit (linuxHeaders) version src;
-
-  separateDebugInfo = true;
+  pname = "bpftools";
 
   patches = [
     # fix unknown type name '__vector128' on powerpc64*
@@ -29,12 +26,12 @@ stdenv.mkDerivation (finalAttrs: {
     ./include-asm-types-for-powerpc64.patch
   ];
 
-  depsBuildBuild = [ buildPackages.stdenv.cc ];
   nativeBuildInputs = [
     python3
     bison
     flex
   ];
+
   buildInputs =
     (
       if (lib.versionAtLeast finalAttrs.version "5.20") then
@@ -55,6 +52,15 @@ stdenv.mkDerivation (finalAttrs: {
       readline
     ];
 
+  # needed for cross to riscv64
+  makeFlags = [ "ARCH=${stdenv.hostPlatform.linuxArch}" ];
+
+  buildFlags = [
+    "bpftool"
+    "bpf_asm"
+    "bpf_dbg"
+  ];
+
   preConfigure = ''
     patchShebangs scripts/bpf_doc.py
 
@@ -65,29 +71,25 @@ stdenv.mkDerivation (finalAttrs: {
       --replace '/sbin'      '/bin'
   '';
 
-  buildFlags = [
-    "bpftool"
-    "bpf_asm"
-    "bpf_dbg"
-  ];
-
-  # needed for cross to riscv64
-  makeFlags = [ "ARCH=${stdenv.hostPlatform.linuxArch}" ];
-
   installPhase = ''
     make -C bpftool install
     install -Dm755 -t $out/bin bpf_asm
     install -Dm755 -t $out/bin bpf_dbg
   '';
 
+  depsBuildBuild = [ buildPackages.stdenv.cc ];
+  separateDebugInfo = true;
+
   meta = {
-    homepage = "https://github.com/libbpf/bpftool";
     description = "Debugging/program analysis tools for the eBPF subsystem";
+    homepage = "https://github.com/libbpf/bpftool";
+
     license = [
       lib.licenses.gpl2Only
       lib.licenses.bsd2
     ];
-    platforms = lib.platforms.linux;
+
     maintainers = with lib.maintainers; [ thoughtpolice ];
+    platforms = lib.platforms.linux;
   };
 })

@@ -2,9 +2,9 @@
   lib,
   stdenv,
   fetchFromGitHub,
+  alsa-lib,
   gnat,
   raylib,
-  alsa-lib,
   wayland,
 }:
 
@@ -44,6 +44,17 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postBuild
   '';
 
+  installPhase = ''
+    runHook preInstall
+
+    mkdir -p $out/bin
+    cp ./eepers-linux $out/bin/eepers
+
+    cp -r ./assets $out/
+
+    runHook postInstall
+  '';
+
   postFixup = ''
     patchelf $out/bin/eepers \
       --add-needed libwayland-client.so \
@@ -58,24 +69,13 @@ stdenv.mkDerivation (finalAttrs: {
       }
   '';
 
-  installPhase = ''
-    runHook preInstall
-
-    mkdir -p $out/bin
-    cp ./eepers-linux $out/bin/eepers
-
-    cp -r ./assets $out/
-
-    runHook postInstall
-  '';
-
   meta = {
     description = "Simple Turn-based Game";
     homepage = "https://github.com/tsoding/eepers";
     changelog = "https://github.com/tsoding/eepers/blob/${finalAttrs.src.rev}/CHANGELOG.txt";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ GaetanLepage ];
-    mainProgram = "eepers";
     platforms = lib.platforms.all;
+    mainProgram = "eepers";
   };
 })

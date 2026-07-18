@@ -1,11 +1,11 @@
 {
   lib,
-  stdenvNoCC,
   fetchFromGitHub,
-  lsp-plugins,
   bankstown-lv2,
-  triforce-lv2,
+  lsp-plugins,
   nix-update-script,
+  stdenvNoCC,
+  triforce-lv2,
 }:
 stdenvNoCC.mkDerivation (finalAttrs: {
   pname = "asahi-audio";
@@ -34,16 +34,18 @@ stdenvNoCC.mkDerivation (finalAttrs: {
   '';
 
   passthru = {
-    updateScript = nix-update-script { };
     requiredLv2Packages = [
       lsp-plugins
       bankstown-lv2
       triforce-lv2
     ];
+
+    updateScript = nix-update-script { };
   };
 
   meta = {
     description = "Linux userspace audio configuration for Apple Silicon Macs";
+
     longDescription = ''
       This package contains DSP configuration files for Apple Silicon
       Macs supported by the Asahi Linux project. The goal is to make
@@ -69,6 +71,7 @@ stdenvNoCC.mkDerivation (finalAttrs: {
         - MacBook Pro (14-inch, M1/M2 Pro/Max, 2021/2023)
         - MacBook Pro (16-inch, M1/M2 Pro/Max, 2021/2023)
     '';
+
     homepage = "https://github.com/AsahiLinux/asahi-audio";
     changelog = "https://github.com/AsahiLinux/asahi-audio/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.mit;

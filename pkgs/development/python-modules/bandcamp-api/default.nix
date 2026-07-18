@@ -1,28 +1,28 @@
 {
   lib,
-  buildPythonPackage,
-  fetchPypi,
-  setuptools,
   beautifulsoup4,
+  buildPythonPackage,
   demjson3,
+  fetchPypi,
   html5lib,
   lxml,
   requests,
+  setuptools,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "bandcamp-api";
   version = "0.2.3";
-  pyproject = true;
-
-  __structuredAttrs = true;
 
   src = fetchPypi {
-    pname = "bandcamp_api";
     inherit (finalAttrs) version;
     hash = "sha256-7/WXMo7fCDMHATp4hEB8b7fNJWisUv06hbP+O878Phs=";
+    pname = "bandcamp_api";
   };
 
+  # upstream has no tests
+  doCheck = false;
+  __structuredAttrs = true;
   build-system = [ setuptools ];
 
   dependencies = [
@@ -33,10 +33,8 @@ buildPythonPackage (finalAttrs: {
     requests
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "bandcamp_api" ];
-
-  # upstream has no tests
-  doCheck = false;
 
   meta = {
     description = "Obtains information from bandcamp.com";

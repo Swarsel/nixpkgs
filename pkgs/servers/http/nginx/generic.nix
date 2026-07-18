@@ -3,50 +3,49 @@ outer@{
   stdenv,
   fetchurl,
   fetchpatch,
-  openssl,
-  zlib-ng,
-  pcre2,
+  gd,
+  geoip,
+  installShellFiles,
   libxml2,
   libxslt,
   nginx-doc,
-
   nixosTests,
-  installShellFiles,
-  replaceVars,
-  removeReferencesTo,
-  gd,
-  geoip,
+  openssl,
+  pcre2,
   perl,
+  removeReferencesTo,
+  replaceVars,
+  zlib-ng,
+  modules ? [ ],
   withDebug ? false,
   withGeoIP ? false,
   withImageFilter ? false,
   withKTLS ? true,
-  withStream ? true,
   withMail ? false,
   withPerl ? true,
   withSlice ? false,
-  modules ? [ ],
+  withStream ? true,
   ...
 }:
 
 {
-  pname ? "nginx",
   version,
-  nginxVersion ? version,
-  src ? null, # defaults to upstream nginx ${version}
-  hash ? null, # when not specifying src
-  configureFlags ? [ ],
-  nativeBuildInputs ? [ ],
   buildInputs ? [ ],
+  configureFlags ? [ ],
   extraPatches ? [ ],
   fixPatch ? p: p,
+  hash ? null, # when not specifying src
+  meta ? null,
+  nativeBuildInputs ? [ ],
+  nginx-doc ? outer.nginx-doc,
+  nginxVersion ? version,
+  passthru ? { },
+  pname ? "nginx",
+  postInstall ? "",
   postPatch ? null,
   preConfigure ? "",
   preInstall ? "",
-  postInstall ? "",
-  meta ? null,
-  nginx-doc ? outer.nginx-doc,
-  passthru ? { },
+  src ? null, # defaults to upstream nginx ${version}
 }:
 
 let
@@ -78,19 +77,56 @@ assert lib.assertMsg (lib.unique moduleNames == moduleNames)
 stdenv.mkDerivation {
   inherit pname version nginxVersion;
 
-  outputs = [
-    "out"
-    "doc"
-  ];
-
   src =
     if src != null then
       src
     else
       fetchurl {
-        url = "https://nginx.org/download/nginx-${version}.tar.gz";
         inherit hash;
+        url = "https://nginx.org/download/nginx-${version}.tar.gz";
       };
+
+  outputs = [
+    "out"
+    "doc"
+  ];
+
+  patches =
+    map fixPatch (
+      [
+        ./nix-etag-1.15.4.patch
+        ./nix-skip-check-logs-path.patch
+      ]
+      # Upstream may be against cross-compilation patches.
+      # https://trac.nginx.org/nginx/ticket/2240 https://trac.nginx.org/nginx/ticket/1928#comment:6
+      # That dev quit the project in 2024 so the stance could be different now.
+      ++ lib.optionals (stdenv.hostPlatform != stdenv.buildPlatform) [
+        (fetchpatch {
+          sha256 = "0i2k30ac8d7inj9l6bl0684kjglam2f68z8lf3xggcc2i5wzhh8a";
+          url = "https://raw.githubusercontent.com/openwrt/packages/c057dfb09c7027287c7862afab965a4cd95293a3/net/nginx/patches/102-sizeof_test_fix.patch";
+        })
+        (fetchpatch {
+          sha256 = "0v6890a85aqmw60pgj3mm7g8nkaphgq65dj4v9c6h58wdsrc6f0y";
+          url = "https://raw.githubusercontent.com/openwrt/packages/c057dfb09c7027287c7862afab965a4cd95293a3/net/nginx/patches/101-feature_test_fix.patch";
+        })
+        (fetchpatch {
+          sha256 = "0s497x6mkz947aw29wdy073k8dyjq8j99lax1a1mzpikzr4rxlmd";
+          url = "https://raw.githubusercontent.com/openwrt/packages/c057dfb09c7027287c7862afab965a4cd95293a3/net/nginx/patches/103-sys_nerr.patch";
+        })
+        (fetchpatch {
+          sha256 = "sha256-M7V3ZJfKImur2OoqXcoL+CbgFj/huWnfZ4xMCmvkqfc=";
+          url = "https://raw.githubusercontent.com/openwrt/packages/c057dfb09c7027287c7862afab965a4cd95293a3/net/nginx/patches/104-endianness_fix.patch";
+        })
+      ]
+      ++ mapModules "patches"
+    )
+    ++ extraPatches;
+
+  postPatch = lib.defaultTo ''
+    substituteInPlace src/http/ngx_http_core_module.c \
+      --replace-fail '@nixStoreDir@' "$NIX_STORE" \
+      --replace-fail '@nixStoreDirLen@' "''${#NIX_STORE}"
+  '' postPatch;
 
   nativeBuildInputs = [
     installShellFiles
@@ -206,8 +242,6 @@ stdenv.mkDerivation {
     CONFIG_BIG_ENDIAN = if stdenv.hostPlatform.isBigEndian then "y" else "n";
   };
 
-  configurePlatforms = [ ];
-
   # Disable _multioutConfig hook which adds --bindir=$out/bin into configureFlags,
   # which breaks build, since nginx does not actually use autoconf.
   preConfigure = ''
@@ -215,45 +249,6 @@ stdenv.mkDerivation {
   ''
   + preConfigure
   + lib.concatMapStringsSep "\n" (mod: mod.preConfigure or "") modules;
-
-  patches =
-    map fixPatch (
-      [
-        ./nix-etag-1.15.4.patch
-        ./nix-skip-check-logs-path.patch
-      ]
-      # Upstream may be against cross-compilation patches.
-      # https://trac.nginx.org/nginx/ticket/2240 https://trac.nginx.org/nginx/ticket/1928#comment:6
-      # That dev quit the project in 2024 so the stance could be different now.
-      ++ lib.optionals (stdenv.hostPlatform != stdenv.buildPlatform) [
-        (fetchpatch {
-          url = "https://raw.githubusercontent.com/openwrt/packages/c057dfb09c7027287c7862afab965a4cd95293a3/net/nginx/patches/102-sizeof_test_fix.patch";
-          sha256 = "0i2k30ac8d7inj9l6bl0684kjglam2f68z8lf3xggcc2i5wzhh8a";
-        })
-        (fetchpatch {
-          url = "https://raw.githubusercontent.com/openwrt/packages/c057dfb09c7027287c7862afab965a4cd95293a3/net/nginx/patches/101-feature_test_fix.patch";
-          sha256 = "0v6890a85aqmw60pgj3mm7g8nkaphgq65dj4v9c6h58wdsrc6f0y";
-        })
-        (fetchpatch {
-          url = "https://raw.githubusercontent.com/openwrt/packages/c057dfb09c7027287c7862afab965a4cd95293a3/net/nginx/patches/103-sys_nerr.patch";
-          sha256 = "0s497x6mkz947aw29wdy073k8dyjq8j99lax1a1mzpikzr4rxlmd";
-        })
-        (fetchpatch {
-          url = "https://raw.githubusercontent.com/openwrt/packages/c057dfb09c7027287c7862afab965a4cd95293a3/net/nginx/patches/104-endianness_fix.patch";
-          sha256 = "sha256-M7V3ZJfKImur2OoqXcoL+CbgFj/huWnfZ4xMCmvkqfc=";
-        })
-      ]
-      ++ mapModules "patches"
-    )
-    ++ extraPatches;
-
-  postPatch = lib.defaultTo ''
-    substituteInPlace src/http/ngx_http_core_module.c \
-      --replace-fail '@nixStoreDir@' "$NIX_STORE" \
-      --replace-fail '@nixStoreDirLen@' "''${#NIX_STORE}"
-  '' postPatch;
-
-  enableParallelBuilding = true;
 
   preInstall = ''
     mkdir -p $doc
@@ -267,8 +262,6 @@ stdenv.mkDerivation {
   ''
   + preInstall;
 
-  disallowedReferences = map (m: m.src) modules;
-
   postInstall =
     let
       noSourceRefs = lib.concatMapStrings (
@@ -277,8 +270,13 @@ stdenv.mkDerivation {
     in
     postInstall + noSourceRefs;
 
+  configurePlatforms = [ ];
+  disallowedReferences = map (m: m.src) modules;
+  enableParallelBuilding = true;
+
   passthru = {
     inherit modules;
+
     tests =
       passthru.tests or {
         inherit (nixosTests)
@@ -295,9 +293,10 @@ stdenv.mkDerivation {
           nginx-status-page
           nginx-unix-socket
           ;
-        variants = lib.recurseIntoAttrs nixosTests.nginx-variants;
+
         acme-integration = nixosTests.acme.nginx;
         acme-integration-without-reload = nixosTests.acme.nginx-without-reload;
+        variants = lib.recurseIntoAttrs nixosTests.nginx-variants;
       };
   }
   // lib.optionalAttrs (passthru ? updateScript) {
@@ -310,15 +309,17 @@ stdenv.mkDerivation {
     else
       {
         description = "Reverse proxy and lightweight webserver";
-        mainProgram = "nginx";
         homepage = "https://nginx.org";
         license = [ lib.licenses.bsd2 ] ++ lib.concatMap (m: m.meta.license) modules;
-        broken = lib.any (m: m.meta.broken or false) modules;
-        platforms = lib.platforms.all;
+
         maintainers = with lib.maintainers; [
           helsinki-Jo
           ma27
           leona
         ];
+
+        platforms = lib.platforms.all;
+        mainProgram = "nginx";
+        broken = lib.any (m: m.meta.broken or false) modules;
       };
 }

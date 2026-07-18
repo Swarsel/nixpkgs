@@ -4,8 +4,8 @@
   fetchFromGitHub,
   coreutils,
   makeWrapper,
-  rsync,
   python3,
+  rsync,
 }:
 
 stdenv.mkDerivation {
@@ -37,7 +37,7 @@ stdenv.mkDerivation {
     description = "Optional tools to help manage data in a mergerfs pool";
     homepage = "https://github.com/trapexit/mergerfs-tools";
     license = lib.licenses.isc;
-    platforms = lib.platforms.linux;
     maintainers = with lib.maintainers; [ makefu ];
+    platforms = lib.platforms.linux;
   };
 }

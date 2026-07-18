@@ -3,13 +3,13 @@
   stdenv,
   fetchFromGitHub,
   cmake,
-  pkg-config,
-  wrapGAppsHook4,
   glib,
   gtk4,
   ibus,
   libadwaita,
   libchewing,
+  pkg-config,
+  wrapGAppsHook4,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -40,12 +40,12 @@ stdenv.mkDerivation (finalAttrs: {
   enableParallelBuilding = true;
 
   meta = {
-    isIbusEngine = true;
     description = "Chewing engine for IBus";
     homepage = "https://github.com/chewing/ibus-chewing";
     changelog = "https://github.com/chewing/ibus-chewing/blob/${finalAttrs.src.rev}/CHANGELOG.md";
     license = lib.licenses.gpl2Plus;
     maintainers = with lib.maintainers; [ ShamrockLee ];
     platforms = lib.platforms.linux;
+    isIbusEngine = true;
   };
 })

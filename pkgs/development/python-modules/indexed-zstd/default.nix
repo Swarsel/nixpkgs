@@ -1,21 +1,22 @@
 {
   lib,
   buildPythonPackage,
+  cython,
   fetchPypi,
   setuptools,
-  cython,
   zstd,
 }:
 
 buildPythonPackage rec {
   pname = "indexed_zstd";
   version = "1.7.1";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
     hash = "sha256-DspqT15rkF6qGs09l7Gt40B4qClIOkODn1zy7+lxUPQ=";
   };
+
+  postPatch = "cython -3 --cplus indexed_zstd/indexed_zstd.pyx";
 
   nativeBuildInputs = [
     cython
@@ -23,12 +24,9 @@ buildPythonPackage rec {
   ];
 
   buildInputs = [ zstd.dev ];
-
-  postPatch = "cython -3 --cplus indexed_zstd/indexed_zstd.pyx";
-
   # has no tests
   doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "indexed_zstd" ];
 
   meta = {

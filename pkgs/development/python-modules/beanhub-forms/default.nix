@@ -2,11 +2,11 @@
   lib,
   fetchFromGitHub,
   buildPythonPackage,
-  pytestCheckHook,
   jinja2,
   multidict,
   poetry-core,
   pydantic,
+  pytestCheckHook,
   pyyaml,
   wtforms,
 }:
@@ -14,7 +14,6 @@
 buildPythonPackage rec {
   pname = "beanhub-forms";
   version = "0.1.3";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "LaunchPlatform";
@@ -22,6 +21,11 @@ buildPythonPackage rec {
     tag = version;
     hash = "sha256-313c+ENmTe1LyfEiMXNB9AUoGx3Yv/1D0T3HnAbd+Zw=";
   };
+
+  nativeCheckInputs = [
+    multidict
+    pytestCheckHook
+  ];
 
   build-system = [ poetry-core ];
 
@@ -32,11 +36,7 @@ buildPythonPackage rec {
     wtforms
   ];
 
-  nativeCheckInputs = [
-    multidict
-    pytestCheckHook
-  ];
-
+  pyproject = true;
   pythonImportsCheck = [ "beanhub_forms" ];
 
   meta = {

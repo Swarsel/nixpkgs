@@ -1,16 +1,15 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
+  buildPythonPackage,
   django,
   psycopg,
+  setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "django-tenants";
   version = "3.11.2";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "django-tenants";
@@ -26,6 +25,7 @@ buildPythonPackage rec {
     psycopg
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "django_tenants" ];
 
   meta = {

@@ -1,47 +1,47 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchurl,
-  dpkg,
-  wrapGAppsHook3,
-  hicolor-icon-theme,
-  gtk3,
-  glib,
-  systemd,
-  libxtst,
-  libxrender,
-  libxrandr,
-  libxi,
-  libxfixes,
-  libxext,
-  libxdamage,
-  libxcursor,
-  libxcomposite,
-  libx11,
-  libxshmfence,
-  libxcb,
-  nss,
-  nspr,
-  atk,
+  alsa-lib,
   at-spi2-atk,
-  dbus,
-  gdk-pixbuf,
-  pango,
+  at-spi2-core,
+  atk,
+  bintools,
   cairo,
+  cups,
+  dbus,
+  dpkg,
   expat,
+  gdk-pixbuf,
+  glib,
+  gtk3,
+  hicolor-icon-theme,
+  libGL,
   libdrm,
   libgbm,
-  alsa-lib,
-  at-spi2-core,
-  cups,
+  libx11,
+  libxcb,
+  libxcomposite,
+  libxcursor,
+  libxdamage,
+  libxext,
+  libxfixes,
+  libxi,
   libxkbcommon,
-  bintools,
-  libGL,
+  libxrandr,
+  libxrender,
+  libxshmfence,
+  libxtst,
+  nspr,
+  nss,
+  pango,
+  systemd,
+  wrapGAppsHook3,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
-  version = "7.0.0";
   pname = "staruml";
+  version = "7.0.0";
 
   src = fetchurl {
     url = "https://files.staruml.io/releases-v7/StarUML_${finalAttrs.version}_amd64.deb";
@@ -52,6 +52,7 @@ stdenv.mkDerivation (finalAttrs: {
     wrapGAppsHook3
     dpkg
   ];
+
   buildInputs = [
     glib
     hicolor-icon-theme
@@ -122,8 +123,8 @@ stdenv.mkDerivation (finalAttrs: {
   meta = {
     description = "Sophisticated software modeler";
     homepage = "https://staruml.io/";
-    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
     license = lib.licenses.unfree;
+    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
     maintainers = with lib.maintainers; [ kashw2 ];
     platforms = [ "x86_64-linux" ];
     mainProgram = "staruml";

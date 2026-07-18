@@ -3,14 +3,13 @@
   buildPythonPackage,
   fetchPypi,
   pyopenssl,
-  twisted,
   service-identity,
+  twisted,
 }:
 
 buildPythonPackage rec {
   pname = "txgithub";
   version = "15.0.0";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
@@ -23,6 +22,10 @@ buildPythonPackage rec {
     service-identity
   ];
 
+  # No tests distributed
+  doCheck = false;
+  format = "setuptools";
+
   # fix python3 issues
   patchPhase = ''
     sed -i 's/except usage.UsageError, errortext/except usage.UsageError as errortext/' txgithub/scripts/create_token.py
@@ -31,9 +34,6 @@ buildPythonPackage rec {
     sed -i '41d' txgithub/scripts/gist.py
     sed -i '41d' txgithub/scripts/gist.py
   '';
-
-  # No tests distributed
-  doCheck = false;
 
   meta = {
     description = "GitHub API client implemented using Twisted";

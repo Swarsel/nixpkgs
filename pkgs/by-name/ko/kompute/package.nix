@@ -2,14 +2,14 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  fetchpatch,
   cmake,
-  vulkan-headers,
-  vulkan-loader,
+  fetchpatch,
   fmt,
-  spdlog,
   glslang,
   ninja,
+  spdlog,
+  vulkan-headers,
+  vulkan-loader,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -22,6 +22,37 @@ stdenv.mkDerivation (finalAttrs: {
     rev = "v${finalAttrs.version}";
     hash = "sha256-cf9Ef85R+VKao286+WHLgBWUqgwvuRocgeCzVJOGbdc=";
   };
+
+  patches = [
+    # FIXME: remove next update
+    (fetchpatch {
+      name = "vulkan-14-support.patch";
+      sha256 = "sha256-JuoTQ+VjIdyF+I1IcT1ofbBjRS0Ibm2w6F2jrRJlx40=";
+      url = "https://github.com/KomputeProject/kompute/commit/299b11fb4b8a7607c5d2c27e2735f26b06ae8e29.patch";
+    })
+
+    # Fix the build with fmt ≥ 11.
+    (fetchpatch {
+      hash = "sha256-sZf1lazaGaiRzry0Y+KE6z3FKm79gVKoSFyW0GN3TMM=";
+      url = "https://github.com/KomputeProject/kompute/commit/e7985da9950bf75f00799f73b0e1d4ea7c24f0b2.patch";
+    })
+  ];
+
+  nativeBuildInputs = [
+    cmake
+    ninja
+  ];
+
+  buildInputs = [
+    fmt
+    spdlog
+  ];
+
+  propagatedBuildInputs = [
+    glslang
+    vulkan-headers
+    vulkan-loader
+  ];
 
   cmakeFlags = [
     "-DKOMPUTE_OPT_USE_SPDLOG=ON"
@@ -36,37 +67,9 @@ stdenv.mkDerivation (finalAttrs: {
     "-DKOMPUTE_OPT_INSTALL=1"
   ];
 
-  patches = [
-    # FIXME: remove next update
-    (fetchpatch {
-      name = "vulkan-14-support.patch";
-      url = "https://github.com/KomputeProject/kompute/commit/299b11fb4b8a7607c5d2c27e2735f26b06ae8e29.patch";
-      sha256 = "sha256-JuoTQ+VjIdyF+I1IcT1ofbBjRS0Ibm2w6F2jrRJlx40=";
-    })
-
-    # Fix the build with fmt ≥ 11.
-    (fetchpatch {
-      url = "https://github.com/KomputeProject/kompute/commit/e7985da9950bf75f00799f73b0e1d4ea7c24f0b2.patch";
-      hash = "sha256-sZf1lazaGaiRzry0Y+KE6z3FKm79gVKoSFyW0GN3TMM=";
-    })
-  ];
-
-  nativeBuildInputs = [
-    cmake
-    ninja
-  ];
-  buildInputs = [
-    fmt
-    spdlog
-  ];
-  propagatedBuildInputs = [
-    glslang
-    vulkan-headers
-    vulkan-loader
-  ];
-
   meta = {
     description = "General purpose GPU compute framework built on Vulkan";
+
     longDescription = ''
       General purpose GPU compute framework built on Vulkan to
       support 1000s of cross vendor graphics cards (AMD,
@@ -74,6 +77,7 @@ stdenv.mkDerivation (finalAttrs: {
       asynchronous and optimized for advanced GPU data
       processing usecases. Backed by the Linux Foundation"
     '';
+
     homepage = "https://kompute.cc/";
     license = lib.licenses.asl20;
     maintainers = [ ];

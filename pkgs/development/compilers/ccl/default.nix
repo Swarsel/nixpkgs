@@ -11,26 +11,29 @@
 
 let
   options = rec {
+    armv6l-linux = armv7l-linux;
+
+    armv7l-linux = {
+      arch = "linuxarm";
+      hash = "sha256-iyUMTDuHbyfEAxAAhjXANjh6HhpLkWG5+diXI6aFUUc=";
+      kernel = "linuxarm";
+      runtime = "armcl";
+    };
+
+    i686-linux = {
+      arch = "linuxx86";
+      hash = x86_64-linux.hash;
+      kernel = "linuxx8632";
+      runtime = "lx86cl";
+    };
+
     # TODO: there are also FreeBSD and Windows versions
     x86_64-linux = {
       arch = "linuxx86";
       hash = "sha256-cAae50xvBoXfg+tiJM4i8+eRnheyM0dseE5EDWDia/E=";
-      runtime = "lx86cl64";
       kernel = "linuxx8664";
+      runtime = "lx86cl64";
     };
-    i686-linux = {
-      arch = "linuxx86";
-      hash = x86_64-linux.hash;
-      runtime = "lx86cl";
-      kernel = "linuxx8632";
-    };
-    armv7l-linux = {
-      arch = "linuxarm";
-      hash = "sha256-iyUMTDuHbyfEAxAAhjXANjh6HhpLkWG5+diXI6aFUUc=";
-      runtime = "armcl";
-      kernel = "linuxarm";
-    };
-    armv6l-linux = armv7l-linux;
   };
   cfg =
     options.${stdenv.hostPlatform.system}
@@ -44,23 +47,6 @@ stdenv.mkDerivation (finalAttrs: {
   src = fetchurl {
     url = "https://github.com/Clozure/ccl/releases/download/v${finalAttrs.version}/ccl-${finalAttrs.version}-${cfg.arch}.tar.gz";
     hash = cfg.hash;
-  };
-
-  buildInputs =
-    if stdenv.hostPlatform.isDarwin then
-      [
-        bootstrap_cmds
-        m4
-      ]
-    else
-      [
-        glibc
-        m4
-      ];
-
-  env = {
-    CCL_RUNTIME = cfg.runtime;
-    CCL_KERNEL = cfg.kernel;
   };
 
   postPatch =
@@ -85,6 +71,23 @@ stdenv.mkDerivation (finalAttrs: {
           --replace "/bin/pwd" "${coreutils}/bin/pwd"
       '';
 
+  buildInputs =
+    if stdenv.hostPlatform.isDarwin then
+      [
+        bootstrap_cmds
+        m4
+      ]
+    else
+      [
+        glibc
+        m4
+      ];
+
+  env = {
+    CCL_KERNEL = cfg.kernel;
+    CCL_RUNTIME = cfg.runtime;
+  };
+
   buildPhase = ''
     make -C lisp-kernel/${finalAttrs.env.CCL_KERNEL} clean
     make -C lisp-kernel/${finalAttrs.env.CCL_KERNEL} all
@@ -105,13 +108,13 @@ stdenv.mkDerivation (finalAttrs: {
   hardeningDisable = [ "format" ];
 
   meta = {
-    # assembler failures during build, x86_64-darwin broken since 2020-10-14
-    broken = (stdenv.hostPlatform.isDarwin && stdenv.hostPlatform.isx86_64);
     description = "Clozure Common Lisp";
     homepage = "https://ccl.clozure.com/";
     license = lib.licenses.asl20;
-    mainProgram = "ccl";
-    teams = [ lib.teams.lisp ];
     platforms = lib.attrNames options;
+    mainProgram = "ccl";
+    # assembler failures during build, x86_64-darwin broken since 2020-10-14
+    broken = (stdenv.hostPlatform.isDarwin && stdenv.hostPlatform.isx86_64);
+    teams = [ lib.teams.lisp ];
   };
 })

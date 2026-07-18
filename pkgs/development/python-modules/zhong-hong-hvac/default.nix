@@ -1,15 +1,14 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
   attrs,
+  buildPythonPackage,
   poetry-core,
 }:
 
 buildPythonPackage rec {
   pname = "zhong-hong-hvac";
   version = "1.0.13";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "crhan";
@@ -18,13 +17,11 @@ buildPythonPackage rec {
     hash = "sha256-WLSmzvRydfYhLBZZW4EZDCFXZYqowA6vS0GJUl2UadQ=";
   };
 
-  build-system = [ poetry-core ];
-
-  dependencies = [ attrs ];
-
   # Tests require network hardware connection
   doCheck = false;
-
+  build-system = [ poetry-core ];
+  dependencies = [ attrs ];
+  pyproject = true;
   pythonImportsCheck = [ "zhong_hong_hvac" ];
 
   meta = {

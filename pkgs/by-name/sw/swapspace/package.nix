@@ -3,11 +3,11 @@
   stdenv,
   fetchFromGitHub,
   autoreconfHook,
-  installShellFiles,
-  util-linux,
   binlore,
-  swapspace,
+  installShellFiles,
   nixosTests,
+  swapspace,
+  util-linux,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -20,11 +20,6 @@ stdenv.mkDerivation (finalAttrs: {
     tag = "v${finalAttrs.version}";
     sha256 = "sha256-KrPdmF1H7WFI78ZJlLqDyfxbs7fymSUQpXL+7XjN9bI=";
   };
-
-  nativeBuildInputs = [
-    autoreconfHook
-    installShellFiles
-  ];
 
   postPatch = ''
     substituteInPlace 'swapspace.service' \
@@ -40,6 +35,11 @@ stdenv.mkDerivation (finalAttrs: {
       --replace 'install-data-local:' 'do-not-execute:'
   '';
 
+  nativeBuildInputs = [
+    autoreconfHook
+    installShellFiles
+  ];
+
   postInstall = ''
     installManPage doc/swapspace.8
     install --mode=444 -D 'swapspace.service' "$out/etc/systemd/system/swapspace.service"
@@ -51,6 +51,7 @@ stdenv.mkDerivation (finalAttrs: {
     binlore.out = binlore.synthesize swapspace ''
       execer cannot bin/swapspace
     '';
+
     tests = {
       inherit (nixosTests) swapspace;
     };
@@ -60,9 +61,9 @@ stdenv.mkDerivation (finalAttrs: {
     description = "Dynamic swap manager for Linux";
     homepage = "https://github.com/Tookmund/Swapspace";
     changelog = "https://github.com/Tookmund/Swapspace/releases/tag/v${finalAttrs.version}";
-    mainProgram = "swapspace";
     license = lib.licenses.gpl2Only;
-    platforms = lib.platforms.linux;
     maintainers = with lib.maintainers; [ Luflosi ];
+    platforms = lib.platforms.linux;
+    mainProgram = "swapspace";
   };
 })

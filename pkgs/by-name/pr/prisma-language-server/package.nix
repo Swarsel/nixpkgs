@@ -1,7 +1,7 @@
 {
   lib,
-  buildNpmPackage,
   fetchFromGitHub,
+  buildNpmPackage,
 }:
 
 buildNpmPackage (finalAttrs: {
@@ -15,8 +15,8 @@ buildNpmPackage (finalAttrs: {
     hash = "sha256-hcLjvIi7EZQSr99OLHGWesziBc5HhkvD+dmGOTgOY/c=";
   };
 
-  sourceRoot = "${finalAttrs.src.name}/packages/language-server";
   npmDepsHash = "sha256-lt/xIm7brU9itYhVdmmts5WpcZtQbWYcxXaRYKYp9H0=";
+  sourceRoot = "${finalAttrs.src.name}/packages/language-server";
 
   meta = {
     description = "Language server for Prisma";

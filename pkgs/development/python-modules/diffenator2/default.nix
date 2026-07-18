@@ -1,33 +1,32 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  pytestCheckHook,
-  poetry-core,
-  poetry-dynamic-versioning,
   blackrenderer,
+  buildPythonPackage,
   fonttools,
   freetype-py,
   gflanguages,
   glyphsets,
   jinja2,
   ninja,
+  numpy,
   pillow,
+  poetry-core,
+  poetry-dynamic-versioning,
   protobuf,
   pyahocorasick,
+  pytestCheckHook,
   python-bidi,
   selenium,
   tqdm,
   uharfbuzz,
   unicodedata2,
   youseedee,
-  numpy,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "diffenator2";
   version = "0.5.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "googlefonts";
@@ -37,13 +36,7 @@ buildPythonPackage (finalAttrs: {
   };
 
   env.PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION = "python";
-
-  pythonRelaxDeps = [
-    "protobuf"
-    "python-bidi"
-    "youseedee"
-    "unicodedata2"
-  ];
+  nativeCheckInputs = [ pytestCheckHook ];
 
   build-system = [
     poetry-core
@@ -70,7 +63,13 @@ buildPythonPackage (finalAttrs: {
     numpy
   ];
 
-  nativeCheckInputs = [ pytestCheckHook ];
+  disabledTestPaths = [
+    # Want the files downloaded by the tests above
+    "tests/test_functional.py"
+    "tests/test_html.py"
+    "tests/test_matcher.py"
+    "tests/test_font.py"
+  ];
 
   disabledTests = [
     # requires internet
@@ -80,12 +79,13 @@ buildPythonPackage (finalAttrs: {
     "test_download_latest_github_release"
   ];
 
-  disabledTestPaths = [
-    # Want the files downloaded by the tests above
-    "tests/test_functional.py"
-    "tests/test_html.py"
-    "tests/test_matcher.py"
-    "tests/test_font.py"
+  pyproject = true;
+
+  pythonRelaxDeps = [
+    "protobuf"
+    "python-bidi"
+    "youseedee"
+    "unicodedata2"
   ];
 
   meta = {
@@ -93,7 +93,7 @@ buildPythonPackage (finalAttrs: {
     homepage = "https://github.com/googlefonts/diffenator2";
     changelog = "https://github.com/googlefonts/diffenator2/releases/tag/${finalAttrs.src.tag}";
     license = lib.licenses.asl20;
-    mainProgram = "diffenator2";
     maintainers = with lib.maintainers; [ jopejoe1 ];
+    mainProgram = "diffenator2";
   };
 })

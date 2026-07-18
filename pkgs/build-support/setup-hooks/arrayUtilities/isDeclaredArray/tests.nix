@@ -1,7 +1,7 @@
 # NOTE: Tests related to isDeclaredArray go here.
 {
-  isDeclaredArray,
   lib,
+  isDeclaredArray,
   runCommand,
   testers,
 }:
@@ -10,10 +10,10 @@ let
   inherit (testers) shellcheck shfmt testBuildFailure';
 
   commonArgs = {
-    __structuredAttrs = true;
     strictDeps = true;
-    preferLocalBuild = true;
     nativeBuildInputs = [ isDeclaredArray ];
+    __structuredAttrs = true;
+    preferLocalBuild = true;
   };
 
   check =
@@ -36,9 +36,9 @@ let
           throw "Invalid scope: ${scope}";
     in
     {
+      intro,
       name,
       scope,
-      intro,
       values,
     }:
     runCommand name commonArgs ''
@@ -56,21 +56,10 @@ let
     '';
 in
 recurseIntoAttrs {
-  shellcheck = shellcheck {
-    name = "isDeclaredArray";
-    src = ./isDeclaredArray.bash;
-  };
-
-  shfmt = shfmt {
-    name = "isDeclaredArray";
-    src = ./isDeclaredArray.bash;
-  };
-
-  undeclaredFails = testBuildFailure' {
-    name = "undeclaredFails";
-    drv = runCommand "undeclared" commonArgs ''
+  emptyStringNamerefFails = testBuildFailure' {
+    drv = runCommand "emptyStringNameref" commonArgs ''
       set -eu
-      if isDeclaredArray undeclared; then
+      if isDeclaredArray ""; then
         nixLog "test passed"
         touch "$out"
       else
@@ -78,13 +67,16 @@ recurseIntoAttrs {
         exit 1
       fi
     '';
+
     expectedBuilderLogEntries = [
+      "local: `': not a valid identifier"
       "test failed"
     ];
+
+    name = "emptyStringNamerefFails";
   };
 
   mapFails = testBuildFailure' {
-    name = "mapFails";
     drv = runCommand "map" commonArgs ''
       set -eu
       local -A map
@@ -96,16 +88,278 @@ recurseIntoAttrs {
         exit 1
       fi
     '';
+
     expectedBuilderLogEntries = [
       "test failed"
     ];
+
+    name = "mapFails";
   };
 
-  emptyStringNamerefFails = testBuildFailure' {
-    name = "emptyStringNamerefFails";
-    drv = runCommand "emptyStringNameref" commonArgs ''
+  namerefToEmptyStringFails = testBuildFailure' {
+    drv = check {
+      intro = "local -n";
+      name = "namerefToEmptyString";
+      scope = null;
+      values = "";
+    };
+
+    expectedBuilderLogEntries = [
+      "local: `': not a valid identifier"
+      # The test fails in such a way that it exits immediately, without returning to the else branch.
+    ];
+
+    name = "namerefToEmptyStringFails";
+  };
+
+  previousScopeDeclareEmptyArrayFails = testBuildFailure' {
+    drv = check {
+      intro = "declare -a";
+      name = "previousScopeDeclareEmptyArray";
+      scope = "function";
+      values = "()";
+    };
+
+    expectedBuilderLogEntries = [
+      "test failed"
+    ];
+
+    name = "previousScopeDeclareEmptyArrayFails";
+  };
+
+  previousScopeDeclareGlobalEmptyArray = check {
+    intro = "declare -ag";
+    name = "previousScopeDeclareGlobalEmptyArray";
+    scope = "function";
+    values = "()";
+  };
+
+  previousScopeDeclareGlobalSingletonArray = check {
+    intro = "declare -ag";
+    name = "previousScopeDeclareGlobalSingletonArray";
+    scope = "function";
+    values = ''("hello!")'';
+  };
+
+  previousScopeDeclareGlobalUnsetArray = check {
+    intro = "declare -ag";
+    name = "previousScopeDeclareGlobalUnsetArray";
+    scope = "function";
+    values = null;
+  };
+
+  previousScopeDeclareSingletonArrayFails = testBuildFailure' {
+    drv = check {
+      intro = "declare -a";
+      name = "previousScopeDeclareSingletonArray";
+      scope = "function";
+      values = ''("hello!")'';
+    };
+
+    expectedBuilderLogEntries = [
+      "test failed"
+    ];
+
+    name = "previousScopeDeclareSingletonArrayFails";
+  };
+
+  previousScopeDeclareUnsetArrayFails = testBuildFailure' {
+    drv = check {
+      intro = "declare -a";
+      name = "previousScopeDeclareUnsetArray";
+      scope = "function";
+      values = null;
+    };
+
+    expectedBuilderLogEntries = [
+      "test failed"
+    ];
+
+    name = "previousScopeDeclareUnsetArrayFails";
+  };
+
+  # Works because the variable isn't lexically scoped.
+  previousScopeEmptyArray = check {
+    intro = null;
+    name = "previousScopeEmptyArray";
+    scope = "function";
+    values = "()";
+  };
+
+  previousScopeEmptyStringFails = testBuildFailure' {
+    drv = check {
+      intro = null;
+      name = "previousScopeEmptyString";
+      scope = "function";
+      values = "";
+    };
+
+    expectedBuilderLogEntries = [
+      "test failed"
+    ];
+
+    name = "previousScopeEmptyStringFails";
+  };
+
+  previousScopeLocalEmptyArrayFails = testBuildFailure' {
+    drv = check {
+      intro = "local -a";
+      name = "previousScopeLocalEmptyArray";
+      scope = "function";
+      values = "()";
+    };
+
+    expectedBuilderLogEntries = [
+      "test failed"
+    ];
+
+    name = "previousScopeLocalEmptyArrayFails";
+  };
+
+  previousScopeLocalGlobalEmptyArray = check {
+    intro = "local -ag";
+    name = "previousScopeLocalGlobalEmptyArray";
+    scope = "function";
+    values = "()";
+  };
+
+  previousScopeLocalGlobalSingletonArray = check {
+    intro = "local -ag";
+    name = "previousScopeLocalGlobalSingletonArray";
+    scope = "function";
+    values = ''("hello!")'';
+  };
+
+  previousScopeLocalGlobalUnsetArray = check {
+    intro = "local -ag";
+    name = "previousScopeLocalGlobalUnsetArray";
+    scope = "function";
+    values = null;
+  };
+
+  previousScopeLocalSingletonArrayFails = testBuildFailure' {
+    drv = check {
+      intro = "local -a";
+      name = "previousScopeLocalSingletonArray";
+      scope = "function";
+      values = ''("hello!")'';
+    };
+
+    expectedBuilderLogEntries = [
+      "test failed"
+    ];
+
+    name = "previousScopeLocalSingletonArrayFails";
+  };
+
+  previousScopeLocalUnsetArrayFails = testBuildFailure' {
+    drv = check {
+      intro = "local -a";
+      name = "previousScopeLocalUnsetArray";
+      scope = "function";
+      values = null;
+    };
+
+    expectedBuilderLogEntries = [
+      "test failed"
+    ];
+
+    name = "previousScopeLocalUnsetArrayFails";
+  };
+
+  # Works because the variable isn't lexically scoped.
+  previousScopeSingletonArray = check {
+    intro = null;
+    name = "previousScopeSingletonArray";
+    scope = "function";
+    values = ''("hello!")'';
+  };
+
+  sameScopeDeclareEmptyArray = check {
+    intro = "declare -a";
+    name = "sameScopeDeclareEmptyArray";
+    scope = null;
+    values = "()";
+  };
+
+  sameScopeDeclareSingletonArray = check {
+    intro = "declare -a";
+    name = "sameScopeDeclareSingletonArray";
+    scope = null;
+    values = ''("hello!")'';
+  };
+
+  sameScopeDeclareUnsetArray = check {
+    intro = "declare -a";
+    name = "sameScopeDeclareUnsetArray";
+    scope = null;
+    values = null;
+  };
+
+  sameScopeEmptyArray = check {
+    intro = null;
+    name = "sameScopeEmptyArray";
+    scope = null;
+    values = "()";
+  };
+
+  sameScopeEmptyStringFails = testBuildFailure' {
+    drv = check {
+      intro = null;
+      name = "sameScopeEmptyString";
+      scope = null;
+      values = "";
+    };
+
+    expectedBuilderLogEntries = [
+      "test failed"
+    ];
+
+    name = "sameScopeEmptyStringFails";
+  };
+
+  sameScopeLocalEmptyArray = check {
+    intro = "local -a";
+    name = "sameScopeLocalEmptyArray";
+    scope = null;
+    values = "()";
+  };
+
+  sameScopeLocalSingletonArray = check {
+    intro = "local -a";
+    name = "sameScopeLocalSingletonArray";
+    scope = null;
+    values = ''("hello!")'';
+  };
+
+  sameScopeLocalUnsetArray = check {
+    intro = "local -a";
+    name = "sameScopeLocalUnsetArray";
+    scope = null;
+    values = null;
+  };
+
+  sameScopeSingletonArray = check {
+    intro = null;
+    name = "sameScopeSingletonArray";
+    scope = null;
+    values = ''("hello!")'';
+  };
+
+  shellcheck = shellcheck {
+    src = ./isDeclaredArray.bash;
+    name = "isDeclaredArray";
+  };
+
+  shfmt = shfmt {
+    src = ./isDeclaredArray.bash;
+    name = "isDeclaredArray";
+  };
+
+  undeclaredFails = testBuildFailure' {
+    drv = runCommand "undeclared" commonArgs ''
       set -eu
-      if isDeclaredArray ""; then
+      if isDeclaredArray undeclared; then
         nixLog "test passed"
         touch "$out"
       else
@@ -113,241 +367,11 @@ recurseIntoAttrs {
         exit 1
       fi
     '';
-    expectedBuilderLogEntries = [
-      "local: `': not a valid identifier"
-      "test failed"
-    ];
-  };
 
-  namerefToEmptyStringFails = testBuildFailure' {
-    name = "namerefToEmptyStringFails";
-    drv = check {
-      name = "namerefToEmptyString";
-      scope = null;
-      intro = "local -n";
-      values = "";
-    };
-    expectedBuilderLogEntries = [
-      "local: `': not a valid identifier"
-      # The test fails in such a way that it exits immediately, without returning to the else branch.
-    ];
-  };
-
-  sameScopeEmptyStringFails = testBuildFailure' {
-    name = "sameScopeEmptyStringFails";
-    drv = check {
-      name = "sameScopeEmptyString";
-      scope = null;
-      intro = null;
-      values = "";
-    };
     expectedBuilderLogEntries = [
       "test failed"
     ];
-  };
 
-  sameScopeEmptyArray = check {
-    name = "sameScopeEmptyArray";
-    scope = null;
-    intro = null;
-    values = "()";
-  };
-
-  sameScopeSingletonArray = check {
-    name = "sameScopeSingletonArray";
-    scope = null;
-    intro = null;
-    values = ''("hello!")'';
-  };
-
-  sameScopeLocalUnsetArray = check {
-    name = "sameScopeLocalUnsetArray";
-    scope = null;
-    intro = "local -a";
-    values = null;
-  };
-
-  sameScopeLocalEmptyArray = check {
-    name = "sameScopeLocalEmptyArray";
-    scope = null;
-    intro = "local -a";
-    values = "()";
-  };
-
-  sameScopeLocalSingletonArray = check {
-    name = "sameScopeLocalSingletonArray";
-    scope = null;
-    intro = "local -a";
-    values = ''("hello!")'';
-  };
-
-  sameScopeDeclareUnsetArray = check {
-    name = "sameScopeDeclareUnsetArray";
-    scope = null;
-    intro = "declare -a";
-    values = null;
-  };
-
-  sameScopeDeclareEmptyArray = check {
-    name = "sameScopeDeclareEmptyArray";
-    scope = null;
-    intro = "declare -a";
-    values = "()";
-  };
-
-  sameScopeDeclareSingletonArray = check {
-    name = "sameScopeDeclareSingletonArray";
-    scope = null;
-    intro = "declare -a";
-    values = ''("hello!")'';
-  };
-
-  previousScopeEmptyStringFails = testBuildFailure' {
-    name = "previousScopeEmptyStringFails";
-    drv = check {
-      name = "previousScopeEmptyString";
-      scope = "function";
-      intro = null;
-      values = "";
-    };
-    expectedBuilderLogEntries = [
-      "test failed"
-    ];
-  };
-
-  # Works because the variable isn't lexically scoped.
-  previousScopeEmptyArray = check {
-    name = "previousScopeEmptyArray";
-    scope = "function";
-    intro = null;
-    values = "()";
-  };
-
-  # Works because the variable isn't lexically scoped.
-  previousScopeSingletonArray = check {
-    name = "previousScopeSingletonArray";
-    scope = "function";
-    intro = null;
-    values = ''("hello!")'';
-  };
-
-  previousScopeLocalUnsetArrayFails = testBuildFailure' {
-    name = "previousScopeLocalUnsetArrayFails";
-    drv = check {
-      name = "previousScopeLocalUnsetArray";
-      scope = "function";
-      intro = "local -a";
-      values = null;
-    };
-    expectedBuilderLogEntries = [
-      "test failed"
-    ];
-  };
-
-  previousScopeLocalEmptyArrayFails = testBuildFailure' {
-    name = "previousScopeLocalEmptyArrayFails";
-    drv = check {
-      name = "previousScopeLocalEmptyArray";
-      scope = "function";
-      intro = "local -a";
-      values = "()";
-    };
-    expectedBuilderLogEntries = [
-      "test failed"
-    ];
-  };
-
-  previousScopeLocalSingletonArrayFails = testBuildFailure' {
-    name = "previousScopeLocalSingletonArrayFails";
-    drv = check {
-      name = "previousScopeLocalSingletonArray";
-      scope = "function";
-      intro = "local -a";
-      values = ''("hello!")'';
-    };
-    expectedBuilderLogEntries = [
-      "test failed"
-    ];
-  };
-
-  previousScopeLocalGlobalUnsetArray = check {
-    name = "previousScopeLocalGlobalUnsetArray";
-    scope = "function";
-    intro = "local -ag";
-    values = null;
-  };
-
-  previousScopeLocalGlobalEmptyArray = check {
-    name = "previousScopeLocalGlobalEmptyArray";
-    scope = "function";
-    intro = "local -ag";
-    values = "()";
-  };
-
-  previousScopeLocalGlobalSingletonArray = check {
-    name = "previousScopeLocalGlobalSingletonArray";
-    scope = "function";
-    intro = "local -ag";
-    values = ''("hello!")'';
-  };
-
-  previousScopeDeclareUnsetArrayFails = testBuildFailure' {
-    name = "previousScopeDeclareUnsetArrayFails";
-    drv = check {
-      name = "previousScopeDeclareUnsetArray";
-      scope = "function";
-      intro = "declare -a";
-      values = null;
-    };
-    expectedBuilderLogEntries = [
-      "test failed"
-    ];
-  };
-
-  previousScopeDeclareEmptyArrayFails = testBuildFailure' {
-    name = "previousScopeDeclareEmptyArrayFails";
-    drv = check {
-      name = "previousScopeDeclareEmptyArray";
-      scope = "function";
-      intro = "declare -a";
-      values = "()";
-    };
-    expectedBuilderLogEntries = [
-      "test failed"
-    ];
-  };
-
-  previousScopeDeclareSingletonArrayFails = testBuildFailure' {
-    name = "previousScopeDeclareSingletonArrayFails";
-    drv = check {
-      name = "previousScopeDeclareSingletonArray";
-      scope = "function";
-      intro = "declare -a";
-      values = ''("hello!")'';
-    };
-    expectedBuilderLogEntries = [
-      "test failed"
-    ];
-  };
-
-  previousScopeDeclareGlobalUnsetArray = check {
-    name = "previousScopeDeclareGlobalUnsetArray";
-    scope = "function";
-    intro = "declare -ag";
-    values = null;
-  };
-
-  previousScopeDeclareGlobalEmptyArray = check {
-    name = "previousScopeDeclareGlobalEmptyArray";
-    scope = "function";
-    intro = "declare -ag";
-    values = "()";
-  };
-
-  previousScopeDeclareGlobalSingletonArray = check {
-    name = "previousScopeDeclareGlobalSingletonArray";
-    scope = "function";
-    intro = "declare -ag";
-    values = ''("hello!")'';
+    name = "undeclaredFails";
   };
 }

@@ -1,11 +1,11 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
-  pkg-config,
-  openssl,
-  versionCheckHook,
   nix-update-script,
+  openssl,
+  pkg-config,
+  rustPlatform,
+  versionCheckHook,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -19,11 +19,9 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-wxiADf5KjAD/lZBOYb7vbWYcfw9Xmk+gHmN9cPQ0vvI=";
   };
 
-  cargoHash = "sha256-Ab6XXCdT97reDJYqZBLELH2XgBYHZ4pLF/byELWy4j8=";
-
   nativeBuildInputs = [ pkg-config ];
-
   buildInputs = [ openssl ];
+  cargoHash = "sha256-Ab6XXCdT97reDJYqZBLELH2XgBYHZ4pLF/byELWy4j8=";
 
   # `test_setup_io` requires to be executed in an interactive shell
   checkFlags = [
@@ -38,7 +36,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
 
   doInstallCheck = true;
   nativeInstallCheckInputs = [ versionCheckHook ];
-
   passthru.updateScript = nix-update-script { };
 
   meta = {

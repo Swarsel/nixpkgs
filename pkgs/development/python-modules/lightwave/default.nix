@@ -7,17 +7,16 @@
 buildPythonPackage rec {
   pname = "lightwave";
   version = "0.24";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
     hash = "sha256-l9hwdAKrpdXj/pkrgyiuhbPaGgT6tjfoOw/TBpR+k1I=";
   };
 
-  pythonImportsCheck = [ "lightwave" ];
-
   # Requires physical hardware
   doCheck = false;
+  format = "setuptools";
+  pythonImportsCheck = [ "lightwave" ];
 
   meta = {
     description = "Module for interacting with LightwaveRF hubs";

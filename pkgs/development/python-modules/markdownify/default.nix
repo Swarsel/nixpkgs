@@ -1,8 +1,8 @@
 {
   lib,
+  fetchFromGitHub,
   beautifulsoup4,
   buildPythonPackage,
-  fetchFromGitHub,
   pytestCheckHook,
   setuptools,
   setuptools-scm,
@@ -12,7 +12,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "markdownify";
   version = "1.2.3";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "matthewwithanm";
@@ -20,6 +19,8 @@ buildPythonPackage (finalAttrs: {
     tag = finalAttrs.version;
     hash = "sha256-zhkWkEFdDLVvA0xgFOG2PDXCTLZy+DWweuiiSVNUU80=";
   };
+
+  nativeCheckInputs = [ pytestCheckHook ];
 
   build-system = [
     setuptools
@@ -31,8 +32,7 @@ buildPythonPackage (finalAttrs: {
     six
   ];
 
-  nativeCheckInputs = [ pytestCheckHook ];
-
+  pyproject = true;
   pythonImportsCheck = [ "markdownify" ];
 
   meta = {

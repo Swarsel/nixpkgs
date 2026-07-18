@@ -13,13 +13,13 @@ stdenv.mkDerivation (finalAttrs: {
     sha256 = "0gm0gzyp4d9rxqddbaskbz5zvmlhyr4nyb5x9g7x4abyyxqjlnkq";
   };
 
-  patchPhase = ''
-    sed 's/-o root -g root//' -i Makefile
-  '';
-
   makeFlags = [
     "PREFIX=${placeholder "out"}"
   ];
+
+  patchPhase = ''
+    sed 's/-o root -g root//' -i Makefile
+  '';
 
   meta = {
     description = "Diff-capable 'du' browser";

@@ -1,29 +1,29 @@
 {
   lib,
   stdenv,
-  cmake,
-  llvm,
   fetchFromGitHub,
-  mbedtls,
-  gtk3,
-  pkg-config,
-  capstone,
-  dbus,
-  libGLU,
-  libGL,
-  glfw3,
-  file,
-  perl,
-  python3,
-  jansson,
-  curl,
-  fmt_11,
-  nlohmann_json,
-  yara,
-  nix-update-script,
   autoPatchelfHook,
-  makeWrapper,
+  capstone,
+  cmake,
+  curl,
+  dbus,
+  file,
+  fmt_11,
+  glfw3,
+  gtk3,
+  jansson,
+  libGL,
+  libGLU,
+  llvm,
   llvmPackages,
+  makeWrapper,
+  mbedtls,
+  nix-update-script,
+  nlohmann_json,
+  perl,
+  pkg-config,
+  python3,
+  yara,
 }:
 
 let
@@ -31,26 +31,36 @@ let
   patterns_version = "1.38.1";
 
   patterns_src = fetchFromGitHub {
+    hash = "sha256-MqQHzR5lKWhQI6pIX1kbAPDVG18UrMJM45mtIe/ggJE=";
     name = "ImHex-Patterns-source-${patterns_version}";
     owner = "WerWolv";
     repo = "ImHex-Patterns";
     tag = "ImHex-v${patterns_version}";
-    hash = "sha256-MqQHzR5lKWhQI6pIX1kbAPDVG18UrMJM45mtIe/ggJE=";
   };
 
 in
 stdenv.mkDerivation (finalAttrs: {
-  pname = "imhex";
   inherit version;
+  pname = "imhex";
 
   src = fetchFromGitHub {
-    name = "ImHex-source-${version}";
-    fetchSubmodules = true;
     owner = "WerWolv";
     repo = "ImHex";
     tag = "v${finalAttrs.version}";
     hash = "sha256-lkpFiXuEF72nBkPuInv683Ct1Uu+uZ0PGejI9cVEUp0=";
+    fetchSubmodules = true;
+    name = "ImHex-source-${version}";
   };
+
+  # Comment out fixup_bundle in PostprocessBundle.cmake as we are not building a standalone application
+  postPatch = ''
+    # Link patterns source into location expected by cmake when IMHEX_OFFLINE_BUILD is set
+    ln -s ${patterns_src} ImHex-Patterns
+  ''
+  + lib.optionalString stdenv.hostPlatform.isDarwin ''
+    substituteInPlace cmake/modules/PostprocessBundle.cmake \
+      --replace-fail "fixup_bundle" "#fixup_bundle"
+  '';
 
   strictDeps = true;
 
@@ -82,14 +92,6 @@ stdenv.mkDerivation (finalAttrs: {
     llvm
   ];
 
-  # autoPatchelfHook only searches for *.so and *.so.*, and won't find *.hexpluglib
-  # however, we will append to RUNPATH ourselves
-  autoPatchelfIgnoreMissingDeps = lib.optionals stdenv.hostPlatform.isLinux [ "*.hexpluglib" ];
-  appendRunpaths = lib.optionals stdenv.hostPlatform.isLinux [
-    (lib.makeLibraryPath [ libGL ])
-    "${placeholder "out"}/lib/imhex/plugins"
-  ];
-
   cmakeFlags = [
     (lib.cmakeBool "IMHEX_OFFLINE_BUILD" true)
     (lib.cmakeBool "IMHEX_COMPRESS_DEBUG_INFO" false) # avoids error: cannot compress debug sections (zstd not enabled)
@@ -114,16 +116,6 @@ stdenv.mkDerivation (finalAttrs: {
     NIX_CFLAGS_LINK = "-fuse-ld=lld";
   };
 
-  # Comment out fixup_bundle in PostprocessBundle.cmake as we are not building a standalone application
-  postPatch = ''
-    # Link patterns source into location expected by cmake when IMHEX_OFFLINE_BUILD is set
-    ln -s ${patterns_src} ImHex-Patterns
-  ''
-  + lib.optionalString stdenv.hostPlatform.isDarwin ''
-    substituteInPlace cmake/modules/PostprocessBundle.cmake \
-      --replace-fail "fixup_bundle" "#fixup_bundle"
-  '';
-
   postInstall =
     if stdenv.hostPlatform.isLinux then
       ''
@@ -139,18 +131,28 @@ stdenv.mkDerivation (finalAttrs: {
     else
       throw "Unsupported system";
 
+  appendRunpaths = lib.optionals stdenv.hostPlatform.isLinux [
+    (lib.makeLibraryPath [ libGL ])
+    "${placeholder "out"}/lib/imhex/plugins"
+  ];
+
+  # autoPatchelfHook only searches for *.so and *.so.*, and won't find *.hexpluglib
+  # however, we will append to RUNPATH ourselves
+  autoPatchelfIgnoreMissingDeps = lib.optionals stdenv.hostPlatform.isLinux [ "*.hexpluglib" ];
   passthru.updateScript = nix-update-script { };
 
   meta = {
     description = "Hex Editor for Reverse Engineers, Programmers and people who value their retinas when working at 3 AM";
     homepage = "https://github.com/WerWolv/ImHex";
     license = with lib.licenses; [ gpl2Only ];
+
     maintainers = with lib.maintainers; [
       kashw2
       cafkafk
       govanify
       ryand56
     ];
+
     platforms = with lib.platforms; linux ++ darwin;
   };
 })

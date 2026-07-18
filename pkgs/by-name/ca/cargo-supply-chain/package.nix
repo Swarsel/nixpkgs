@@ -1,7 +1,7 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -19,16 +19,19 @@ rustPlatform.buildRustPackage (finalAttrs: {
 
   meta = {
     description = "Gather author, contributor and publisher data on crates in your dependency graph";
-    mainProgram = "cargo-supply-chain";
     homepage = "https://github.com/rust-secure-code/cargo-supply-chain";
     changelog = "https://github.com/rust-secure-code/cargo-supply-chain/blob/${finalAttrs.src.rev}/CHANGELOG.md";
+
     license = with lib.licenses; [
       asl20
       mit
       zlib
     ]; # any of three
+
     maintainers = with lib.maintainers; [
       matthiasbeyer
     ];
+
+    mainProgram = "cargo-supply-chain";
   };
 })

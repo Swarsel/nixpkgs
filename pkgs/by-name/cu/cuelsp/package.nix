@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule (finalAttrs: {
@@ -16,7 +16,6 @@ buildGoModule (finalAttrs: {
   };
 
   vendorHash = "sha256-zg4aXPY2InY5VEX1GLJkGhMlfa5EezObAjIuX/bGvlc=";
-
   doCheck = false;
 
   subPackages = [
@@ -25,9 +24,9 @@ buildGoModule (finalAttrs: {
 
   meta = {
     description = "Language Server implementation for CUE, with built-in support for Dagger";
-    mainProgram = "cuelsp";
     homepage = "https://github.com/dagger/cuelsp";
     license = lib.licenses.asl20;
     maintainers = with lib.maintainers; [ sagikazarmark ];
+    mainProgram = "cuelsp";
   };
 })

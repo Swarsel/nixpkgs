@@ -1,8 +1,8 @@
 {
   lib,
   fetchFromGitHub,
-  buildPythonPackage,
   beancount-parser,
+  buildPythonPackage,
   click,
   poetry-core,
   pytestCheckHook,
@@ -11,8 +11,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "beancount-black";
   version = "1.0.5";
-
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "LaunchPlatform";
@@ -29,14 +27,14 @@ buildPythonPackage (finalAttrs: {
   ];
 
   nativeCheckInputs = [ pytestCheckHook ];
-
+  pyproject = true;
   pythonImportsCheck = [ "beancount_black" ];
 
   meta = {
     description = "Opinioned code formatter for Beancount";
-    mainProgram = "bean-black";
     homepage = "https://github.com/LaunchPlatform/beancount-black/";
     license = with lib.licenses; [ mit ];
     maintainers = with lib.maintainers; [ ambroisie ];
+    mainProgram = "bean-black";
   };
 })

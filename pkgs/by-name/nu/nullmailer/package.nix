@@ -1,14 +1,14 @@
 {
-  gccStdenv,
-  fetchurl,
   lib,
-  tls ? true,
+  fetchurl,
+  gccStdenv,
   gnutls,
+  tls ? true,
 }:
 
 gccStdenv.mkDerivation (finalAttrs: {
-  version = "2.2";
   pname = "nullmailer";
+  version = "2.2";
 
   src = fetchurl {
     url = "https://untroubled.org/nullmailer/nullmailer-${finalAttrs.version}.tar.gz";
@@ -22,8 +22,6 @@ gccStdenv.mkDerivation (finalAttrs: {
     "--localstatedir=/var"
   ]
   ++ lib.optional tls "--enable-tls";
-
-  installFlags = [ "DESTDIR=$(out)" ];
 
   # We have to remove the ''var'' directory, since nix can't handle named pipes
   # and we can't use it in the store anyway. Same for ''etc''.
@@ -41,15 +39,17 @@ gccStdenv.mkDerivation (finalAttrs: {
   '';
 
   enableParallelBuilding = true;
+  installFlags = [ "DESTDIR=$(out)" ];
 
   meta = {
-    homepage = "http://untroubled.org/nullmailer/";
     description = ''
       A sendmail/qmail/etc replacement MTA for hosts which relay to a fixed set of smart relays.
       It is designed to be simple to configure, secure, and easily extendable.
     '';
+
+    homepage = "http://untroubled.org/nullmailer/";
     license = lib.licenses.gpl2Plus;
-    platforms = lib.platforms.all;
     maintainers = [ ];
+    platforms = lib.platforms.all;
   };
 })

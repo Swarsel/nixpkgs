@@ -2,19 +2,19 @@
   lib,
   stdenv,
   fetchFromGitHub,
+  alsa-lib,
+  docutils,
+  gtk-layer-shell,
   gtk3,
+  json_c,
+  libmpdclient,
+  libpulseaudio,
+  libxkbcommon,
+  makeWrapper,
   meson,
   ninja,
-  json_c,
-  pkg-config,
-  gtk-layer-shell,
-  libpulseaudio,
-  libmpdclient,
-  libxkbcommon,
   pipewire,
-  alsa-lib,
-  makeWrapper,
-  docutils,
+  pkg-config,
   wayland-scanner,
   wrapGAppsHook3,
 }:
@@ -30,6 +30,15 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-xenXcGo5kdntOsSOlXaYA9WZ9Ed0hncGlb5Jgv6rbio=";
   };
 
+  nativeBuildInputs = [
+    meson
+    ninja
+    pkg-config
+    makeWrapper
+    wayland-scanner
+    wrapGAppsHook3
+  ];
+
   buildInputs = [
     gtk3
     json_c
@@ -42,25 +51,18 @@ stdenv.mkDerivation (finalAttrs: {
     docutils # for rst2man
   ];
 
-  nativeBuildInputs = [
-    meson
-    ninja
-    pkg-config
-    makeWrapper
-    wayland-scanner
-    wrapGAppsHook3
-  ];
-
   meta = {
-    homepage = "https://github.com/LBCrion/sfwbar";
     description = "Flexible taskbar application for wayland compositors, designed with a stacking layout in mind";
+    homepage = "https://github.com/LBCrion/sfwbar";
     changelog = "https://github.com/LBCrion/sfwbar/releases/tag/v${finalAttrs.version}";
-    mainProgram = "sfwbar";
-    platforms = lib.platforms.linux;
+    license = lib.licenses.gpl3Only;
+
     maintainers = with lib.maintainers; [
       luftmensch-luftmensch
       NotAShelf
     ];
-    license = lib.licenses.gpl3Only;
+
+    platforms = lib.platforms.linux;
+    mainProgram = "sfwbar";
   };
 })

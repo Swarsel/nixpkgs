@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   unstableGitUpdater,
 }:
 
@@ -17,13 +17,13 @@ buildGoModule {
     hash = "sha256-E492d8P/Bek9xZlJP+k9xvIJEFtA1YrIB/pogvz3wM4=";
   };
 
-  vendorHash = "sha256-WcpRJ31kqWA255zfjuWDj0honJgSGdm4ONx2yOKk7/g=";
-
   # Currently hard-coded, will be fixed by developer
   postPatch = ''
     substituteInPlace main.go \
       --replace "/usr" "$out"
   '';
+
+  vendorHash = "sha256-WcpRJ31kqWA255zfjuWDj0honJgSGdm4ONx2yOKk7/g=";
 
   postInstall = ''
     mkdir -p $out/share
@@ -33,8 +33,8 @@ buildGoModule {
   passthru.updateScript = unstableGitUpdater { };
 
   meta = {
-    homepage = "https://github.com/raymond-w-ko/tewisay";
     description = "Cowsay replacement with unicode and partial ansi escape support";
+    homepage = "https://github.com/raymond-w-ko/tewisay";
     license = with lib.licenses; [ cc0 ];
     mainProgram = "tewisay";
   };

@@ -1,22 +1,26 @@
 {
   lib,
-  buildPythonPackage,
-  pythonAtLeast,
-  pythonOlder,
   fetchFromGitHub,
-  isPyPy,
-
-  # build-system
-  flit-core,
-
+  alabaster,
   # dependencies
   babel,
-  alabaster,
+  # reverse dependencies to test
+  breathe,
+  buildPythonPackage,
+  # check phase
+  defusedxml,
   docutils,
+  # build-system
+  flit-core,
   imagesize,
+  isPyPy,
   jinja2,
   packaging,
   pygments,
+  pytest-xdist,
+  pytestCheckHook,
+  pythonAtLeast,
+  pythonOlder,
   requests,
   roman-numerals,
   snowballstemmer,
@@ -27,29 +31,20 @@
   sphinxcontrib-qthelp,
   sphinxcontrib-serializinghtml,
   sphinxcontrib-websupport,
-
-  # check phase
-  defusedxml,
-  pytestCheckHook,
-  pytest-xdist,
   typing-extensions,
   writableTmpDirAsHomeHook,
-
-  # reverse dependencies to test
-  breathe,
 }:
 
 buildPythonPackage rec {
   pname = "sphinx";
   version = "9.1.0";
-  pyproject = true;
-
-  disabled = pythonOlder "3.12";
 
   src = fetchFromGitHub {
     owner = "sphinx-doc";
     repo = "sphinx";
     tag = "v${version}";
+    hash = "sha256-PgqjCeyHOhWtZjyzSZyvsPT0Q7yRyNDiW3x1fQq0K+8=";
+
     postFetch = ''
       # Change ä to æ in file names, since ä can be encoded multiple ways on different
       # filesystems, leading to different hashes on different platforms.
@@ -57,9 +52,17 @@ buildPythonPackage rec {
       mv tests/roots/test-images/{testimäge,testimæge}.png
       sed -i 's/testimäge/testimæge/g' tests/{test_build*.py,roots/test-images/index.rst}
     '';
-    hash = "sha256-PgqjCeyHOhWtZjyzSZyvsPT0Q7yRyNDiW3x1fQq0K+8=";
   };
 
+  nativeCheckInputs = [
+    defusedxml
+    pytestCheckHook
+    pytest-xdist
+    typing-extensions
+    writableTmpDirAsHomeHook
+  ];
+
+  __darwinAllowLocalNetworking = true;
   build-system = [ flit-core ];
 
   dependencies = [
@@ -83,15 +86,7 @@ buildPythonPackage rec {
     sphinxcontrib-websupport
   ];
 
-  __darwinAllowLocalNetworking = true;
-
-  nativeCheckInputs = [
-    defusedxml
-    pytestCheckHook
-    pytest-xdist
-    typing-extensions
-    writableTmpDirAsHomeHook
-  ];
+  disabled = pythonOlder "3.12";
 
   disabledTestPaths = lib.optionals isPyPy [
     # internals are asserted which are sightly different in PyPy
@@ -153,12 +148,15 @@ buildPythonPackage rec {
     "test_stringify_type_union_operator"
   ];
 
+  pyproject = true;
+
   passthru.tests = {
     inherit breathe;
   };
 
   meta = {
     description = "Python documentation generator";
+
     longDescription = ''
       Sphinx makes it easy to create intelligent and beautiful documentation.
 
@@ -187,6 +185,7 @@ buildPythonPackage rec {
       and publishing workflows. They both build upon Docutils to parse and write
       documents.
     '';
+
     homepage = "https://www.sphinx-doc.org";
     changelog = "https://www.sphinx-doc.org/en/master/changes.html";
     license = lib.licenses.bsd3;

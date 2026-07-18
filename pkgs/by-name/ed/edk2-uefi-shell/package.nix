@@ -3,14 +3,15 @@
   stdenv,
   edk2,
   llvmPackages,
-  util-linux,
   nasm,
-  python3,
   pkgsBuildHost,
+  python3,
+  util-linux,
 }:
 edk2.mkDerivation "ShellPkg/ShellPkg.dsc" (finalAttrs: {
-  pname = "edk2-uefi-shell";
   inherit (edk2) version;
+  pname = "edk2-uefi-shell";
+  strictDeps = true;
 
   nativeBuildInputs = [
     util-linux
@@ -21,7 +22,6 @@ edk2.mkDerivation "ShellPkg/ShellPkg.dsc" (finalAttrs: {
     llvmPackages.bintools
     llvmPackages.llvm
   ];
-  strictDeps = true;
 
   env = {
     # Set explicitly to use Python 3 from nixpkgs. Otherwise, the build system will detect and try to
@@ -35,10 +35,6 @@ edk2.mkDerivation "ShellPkg/ShellPkg.dsc" (finalAttrs: {
     ];
   };
 
-  # We only have a .efi file in $out which shouldn't be patched or stripped
-  dontPatchELF = true;
-  dontStrip = true;
-
   # GUID hardcoded to match ShellPkg.dsc
   installPhase = ''
     runHook preInstall
@@ -46,16 +42,21 @@ edk2.mkDerivation "ShellPkg/ShellPkg.dsc" (finalAttrs: {
     runHook postInstall
   '';
 
+  # We only have a .efi file in $out which shouldn't be patched or stripped
+  dontPatchELF = true;
+  dontStrip = true;
   passthru.efi = "${finalAttrs.finalPackage}/shell.efi";
 
   meta = {
     inherit (edk2.meta) license platforms;
     description = "UEFI Shell from Tianocore EFI development kit";
     homepage = "https://github.com/tianocore/tianocore.github.io/wiki/ShellPkg";
+
     maintainers = with lib.maintainers; [
       LunNova
       mjoerg
     ];
+
     broken = stdenv.hostPlatform.isDarwin && stdenv.hostPlatform.isAarch64;
   };
 })

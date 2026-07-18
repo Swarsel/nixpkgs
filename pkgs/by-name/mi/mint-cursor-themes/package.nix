@@ -1,7 +1,7 @@
 {
-  stdenvNoCC,
-  fetchFromGitHub,
   lib,
+  fetchFromGitHub,
+  stdenvNoCC,
 }:
 
 stdenvNoCC.mkDerivation {
@@ -26,10 +26,10 @@ stdenvNoCC.mkDerivation {
   '';
 
   meta = {
-    homepage = "https://github.com/linuxmint/mint-cursor-themes/";
     description = "Linux Mint cursor themes";
+    homepage = "https://github.com/linuxmint/mint-cursor-themes/";
     license = lib.licenses.gpl3Plus;
-    teams = [ lib.teams.cinnamon ];
     platforms = lib.platforms.linux;
+    teams = [ lib.teams.cinnamon ];
   };
 }

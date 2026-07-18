@@ -1,18 +1,17 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
+  buildPythonPackage,
   googleapis-common-protos,
   grpcio,
   protobuf,
   requests,
+  setuptools,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "clarifai-grpc";
   version = "12.5.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "Clarifai";
@@ -21,6 +20,8 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-CoG2q7Z6Rima3llFm7MIKqNuECgdf895EZNbqEApU0Y=";
   };
 
+  # almost all tests require network access
+  doCheck = false;
   build-system = [ setuptools ];
 
   dependencies = [
@@ -30,14 +31,12 @@ buildPythonPackage (finalAttrs: {
     requests
   ];
 
+  pyproject = true;
+  pythonImportsCheck = [ "clarifai_grpc" ];
+
   pythonRelaxDeps = [
     "grpcio"
   ];
-
-  # almost all tests require network access
-  doCheck = false;
-
-  pythonImportsCheck = [ "clarifai_grpc" ];
 
   meta = {
     description = "Clarifai gRPC API Client";

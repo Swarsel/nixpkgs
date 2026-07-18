@@ -7,7 +7,6 @@
 buildPythonPackage rec {
   pname = "stdiomask";
   version = "0.0.6";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
@@ -16,6 +15,7 @@ buildPythonPackage rec {
 
   # tests are not published: https://github.com/asweigart/stdiomask/issues/5
   doCheck = false;
+  format = "setuptools";
   pythonImportsCheck = [ "stdiomask" ];
 
   meta = {

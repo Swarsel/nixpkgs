@@ -28,8 +28,8 @@ rustPlatform.buildRustPackage (finalAttrs: {
     description = "Command-line tool for developing, building, and managing WebAssembly components";
     homepage = "https://github.com/wasmCloud/wash";
     changelog = "https://github.com/wasmCloud/wash/releases/tag/wash-v${finalAttrs.version}";
-    mainProgram = "wash";
     license = lib.licenses.asl20;
     maintainers = with lib.maintainers; [ bloveless ];
+    mainProgram = "wash";
   };
 })

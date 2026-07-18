@@ -1,13 +1,13 @@
 {
   lib,
   stdenv,
-  fetchFromGitHub,
-  nodejs,
-  pnpm_11,
-  fetchPnpmDeps,
-  pnpmConfigHook,
-  nix-update-script,
   fetchurl,
+  fetchFromGitHub,
+  fetchPnpmDeps,
+  nix-update-script,
+  nodejs,
+  pnpmConfigHook,
+  pnpm_11,
   runCommand,
 }:
 stdenv.mkDerivation (finalAttrs: {
@@ -26,13 +26,6 @@ stdenv.mkDerivation (finalAttrs: {
     pnpmConfigHook
     pnpm_11
   ];
-
-  pnpmDeps = fetchPnpmDeps {
-    inherit (finalAttrs) pname version src;
-    pnpm = pnpm_11;
-    fetcherVersion = 3;
-    hash = "sha256-geA40z7KH4kluCgz1EmmYqeGkBjEXgmrUDsUewpD7Xc=";
-  };
 
   buildPhase = ''
     runHook preBuild
@@ -63,12 +56,19 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postFixup
   '';
 
+  pnpmDeps = fetchPnpmDeps {
+    inherit (finalAttrs) pname version src;
+    fetcherVersion = 3;
+    hash = "sha256-geA40z7KH4kluCgz1EmmYqeGkBjEXgmrUDsUewpD7Xc=";
+    pnpm = pnpm_11;
+  };
+
   passthru = {
     tests.deobfuscate =
       let
         obfuscated = fetchurl {
-          url = "https://gist.github.com/relative/79e392bced4b9bed8fd076f834e06dee/raw/obfuscated.js";
           hash = "sha256-AQWKVIyb6x3wWG3bMMqIJWsV26S9W5Xd+QVB26zu8LA=";
+          url = "https://gist.github.com/relative/79e392bced4b9bed8fd076f834e06dee/raw/obfuscated.js";
         };
       in
       runCommand "synchrony-test" { } ''
@@ -80,11 +80,11 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   meta = {
+    inherit (nodejs.meta) platforms;
     description = "Simple deobfuscator for mangled or obfuscated JavaScript files";
     homepage = "https://deobfuscate.relative.im/";
     license = with lib.licenses; [ gpl3Only ];
     maintainers = with lib.maintainers; [ pluiedev ];
-    inherit (nodejs.meta) platforms;
     mainProgram = "synchrony";
   };
 })

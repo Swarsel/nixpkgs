@@ -16,14 +16,13 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   makeFlags = [ "PREFIX=${placeholder "out"}" ];
-
   doCheck = true;
 
   meta = {
     description = "Assembler for the Atmel AVR microcontroller family";
-    mainProgram = "avra";
     homepage = "https://github.com/Ro5bert/avra";
     license = lib.licenses.gpl2Plus;
     platforms = lib.platforms.all;
+    mainProgram = "avra";
   };
 })

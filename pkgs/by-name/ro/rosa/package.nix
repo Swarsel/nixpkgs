@@ -1,12 +1,12 @@
 {
-  stdenv,
   lib,
-  buildGoModule,
+  stdenv,
   fetchFromGitHub,
+  buildGoModule,
   installShellFiles,
-  testers,
-  rosa,
   nix-update-script,
+  rosa,
+  testers,
 }:
 
 buildGoModule (finalAttrs: {
@@ -19,17 +19,9 @@ buildGoModule (finalAttrs: {
     rev = "v${finalAttrs.version}";
     hash = "sha256-lvulPx9Vyo84Lt1yo/7LKsWEh0ABkRxhusXyO/aUVrU=";
   };
+
+  nativeBuildInputs = [ installShellFiles ];
   vendorHash = null;
-
-  ldflags = [
-    "-s"
-    "-w"
-  ];
-
-  __darwinAllowLocalNetworking = true;
-
-  # skip e2e tests package
-  excludedPackages = [ "tests/e2e" ];
 
   # skip tests that require network access
   checkFlags =
@@ -42,7 +34,6 @@ buildGoModule (finalAttrs: {
     in
     [ "-skip=^${lib.concatStringsSep "$|^" skippedTests}$" ];
 
-  nativeBuildInputs = [ installShellFiles ];
   postInstall = lib.optionalString (stdenv.buildPlatform.canExecute stdenv.hostPlatform) ''
     installShellCompletion --cmd rosa \
       --bash <($out/bin/rosa completion bash) \
@@ -50,18 +41,28 @@ buildGoModule (finalAttrs: {
       --zsh <($out/bin/rosa completion zsh)
   '';
 
+  __darwinAllowLocalNetworking = true;
+  # skip e2e tests package
+  excludedPackages = [ "tests/e2e" ];
+
+  ldflags = [
+    "-s"
+    "-w"
+  ];
+
   passthru = {
     tests.version = testers.testVersion {
-      package = rosa;
       command = "rosa version --client";
+      package = rosa;
     };
+
     updateScript = nix-update-script { };
   };
 
   meta = {
     description = "CLI for the Red Hat OpenShift Service on AWS";
-    license = lib.licenses.asl20;
     homepage = "https://github.com/openshift/rosa";
+    license = lib.licenses.asl20;
     maintainers = with lib.maintainers; [ jfchevrette ];
   };
 })

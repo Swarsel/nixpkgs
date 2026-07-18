@@ -1,9 +1,9 @@
 {
   lib,
-  rustPlatform,
+  stdenv,
   fetchFromGitHub,
   installShellFiles,
-  stdenv,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -18,21 +18,8 @@ rustPlatform.buildRustPackage (finalAttrs: {
     fetchSubmodules = true;
   };
 
-  # Disable cargo-auditable until https://github.com/rust-secure-code/cargo-auditable/issues/124 is solved.
-  auditable = false;
-
-  cargoHash = "sha256-mBp9QbjEpwT3v0Bmvur+HTUOncSNYkqmfoyORzEqR+k=";
-  cargoBuildFlags = [
-    "--package"
-    "wasm-tools"
-  ];
-  cargoTestFlags = [
-    "--workspace"
-    "--exclude"
-    "wit-dylib"
-  ];
-
   nativeBuildInputs = [ installShellFiles ];
+  cargoHash = "sha256-mBp9QbjEpwT3v0Bmvur+HTUOncSNYkqmfoyORzEqR+k=";
 
   postInstall = lib.optionalString (stdenv.buildPlatform.canExecute stdenv.hostPlatform) ''
     installShellCompletion --cmd wasm-tools \
@@ -40,6 +27,20 @@ rustPlatform.buildRustPackage (finalAttrs: {
       --fish <($out/bin/wasm-tools completion fish) \
       --zsh <($out/bin/wasm-tools completion zsh)
   '';
+
+  # Disable cargo-auditable until https://github.com/rust-secure-code/cargo-auditable/issues/124 is solved.
+  auditable = false;
+
+  cargoBuildFlags = [
+    "--package"
+    "wasm-tools"
+  ];
+
+  cargoTestFlags = [
+    "--workspace"
+    "--exclude"
+    "wit-dylib"
+  ];
 
   meta = {
     description = "Low level tooling for WebAssembly in Rust";

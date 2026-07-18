@@ -1,10 +1,10 @@
 dotnetPackages:
 {
-  buildEnv,
-  makeWrapper,
   lib,
-  symlinkJoin,
+  buildEnv,
   callPackage,
+  makeWrapper,
+  symlinkJoin,
 }:
 # TODO: Rethink how we determine and/or get the CLI.
 #       Possible options raised in #187118:
@@ -22,19 +22,8 @@ assert lib.assertMsg ((builtins.length dotnetPackages) > 0) ''
          ];`'';
 mkWrapper "sdk" (
   (buildEnv {
-    name = "dotnet-combined";
-    paths = dotnetPackages;
-    pathsToLink = map (x: "/share/dotnet/${x}") [
-      "host"
-      "metadata"
-      "packs"
-      "sdk"
-      "sdk-manifests"
-      "shared"
-      "templates"
-    ];
-    ignoreCollisions = true;
     nativeBuildInputs = [ makeWrapper ];
+
     postBuild = ''
       mkdir -p "$out"/bin "$out"/share/dotnet
       cp -R "${cli}"/nix-support "$out"/
@@ -55,20 +44,35 @@ mkWrapper "sdk" (
     + lib.optionalString (cli ? man) ''
       ln -s ${cli.man} $man
     '';
+
+    ignoreCollisions = true;
+    name = "dotnet-combined";
+    paths = dotnetPackages;
+
+    pathsToLink = map (x: "/share/dotnet/${x}") [
+      "host"
+      "metadata"
+      "packs"
+      "sdk"
+      "sdk-manifests"
+      "shared"
+      "templates"
+    ];
+
     passthru = {
+      inherit (cli) icu hasCrossTargetBug;
       pname = "dotnet";
       version = "combined";
-      inherit (cli) icu hasCrossTargetBug;
-
-      versions = lib.catAttrs "version" dotnetPackages;
       packages = lib.concatLists (lib.catAttrs "packages" dotnetPackages);
+
       targetPackages = lib.zipAttrsWith (_: lib.concatLists) (
         lib.catAttrs "targetPackages" dotnetPackages
       );
+
+      versions = lib.catAttrs "version" dotnetPackages;
     };
 
     meta = {
-      description = "${cli.meta.description or "dotnet"} (combined)";
       inherit (cli.meta)
         homepage
         license
@@ -76,6 +80,8 @@ mkWrapper "sdk" (
         maintainers
         platforms
         ;
+
+      description = "${cli.meta.description or "dotnet"} (combined)";
     };
   }).overrideAttrs
     {

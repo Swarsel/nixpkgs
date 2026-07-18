@@ -1,20 +1,19 @@
 {
   lib,
+  attrs,
   buildPythonPackage,
   fetchPypi,
-  setuptools-scm,
-  ruamel-yaml,
-  attrs,
-  pytest7CheckHook,
+  numpy,
   pytest-cov-stub,
   pytest-xdist,
-  numpy,
+  pytest7CheckHook,
+  ruamel-yaml,
+  setuptools-scm,
 }:
 
 buildPythonPackage rec {
   pname = "demes";
   version = "0.2.3";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
@@ -36,14 +35,14 @@ buildPythonPackage rec {
   ];
 
   disabledTestPaths = [ "tests/test_spec.py" ];
-
+  pyproject = true;
   pythonImportsCheck = [ "demes" ];
 
   meta = {
     description = "Tools for describing and manipulating demographic models";
-    mainProgram = "demes";
     homepage = "https://github.com/popsim-consortium/demes-python";
     license = lib.licenses.isc;
     maintainers = [ ];
+    mainProgram = "demes";
   };
 }

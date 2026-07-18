@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   hatchling,
   requests,
 }:
@@ -9,7 +9,6 @@
 buildPythonPackage rec {
   pname = "falconpy";
   version = "1.6.3";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "CrowdStrike";
@@ -24,6 +23,7 @@ buildPythonPackage rec {
     requests
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "falconpy" ];
 
   meta = {

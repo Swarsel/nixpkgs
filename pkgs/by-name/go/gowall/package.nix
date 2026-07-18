@@ -1,8 +1,8 @@
 {
   lib,
   stdenv,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   installShellFiles,
   nix-update-script,
   writableTmpDirAsHomeHook,
@@ -19,13 +19,14 @@ buildGoModule (finalAttrs: {
     hash = "sha256-mogjHIsm+N3/wtrfayiKuYe6REPVrt8xLZDpgdKkX34=";
   };
 
-  vendorHash = "sha256-nRmW7jGcURbrXVwg5kxmloet2aV2s8JjhEeO1KybtME=";
-
   nativeBuildInputs = [
     installShellFiles
     # using writableTmpDirAsHomeHook to prevent issues when creating config dir for shell completions
     writableTmpDirAsHomeHook
   ];
+
+  vendorHash = "sha256-nRmW7jGcURbrXVwg5kxmloet2aV2s8JjhEeO1KybtME=";
+
   postInstall = lib.optionalString (stdenv.buildPlatform.canExecute stdenv.hostPlatform) ''
     installShellCompletion --cmd gowall \
       --bash <($out/bin/gowall completion bash) \
@@ -36,15 +37,17 @@ buildGoModule (finalAttrs: {
   passthru.updateScript = nix-update-script { };
 
   meta = {
-    changelog = "https://github.com/Achno/gowall/releases/tag/v${finalAttrs.version}";
     description = "Tool to convert a Wallpaper's color scheme / palette";
     homepage = "https://github.com/Achno/gowall";
+    changelog = "https://github.com/Achno/gowall/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.mit;
-    mainProgram = "gowall";
+
     maintainers = with lib.maintainers; [
       crem
       emilytrau
       FKouhai
     ];
+
+    mainProgram = "gowall";
   };
 })

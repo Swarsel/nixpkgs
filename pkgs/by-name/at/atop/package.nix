@@ -2,14 +2,14 @@
   lib,
   stdenv,
   fetchurl,
-  glib,
-  zlib,
-  ncurses,
-  pkg-config,
   findutils,
-  systemd,
-  python3,
+  glib,
+  ncurses,
   nixosTests,
+  pkg-config,
+  python3,
+  systemd,
+  zlib,
   # makes the package unfree via pynvml
   withAtopgpu ? false,
 }:
@@ -22,6 +22,14 @@ stdenv.mkDerivation (finalAttrs: {
     url = "https://www.atoptool.nl/download/atop-${finalAttrs.version}.tar.gz";
     hash = "sha256-T9vmfF36+JQFY54YWZ9OrneXgHP/pU88eMNoq1S9EvY=";
   };
+
+  patches = [
+    # Fix paths in atop.service, atop-rotate.service, atopgpu.service, atopacct.service,
+    # and atop-pm.sh
+    ./fix-paths.patch
+    # Don't fail on missing /etc/default/atop, make sure /var/log/atop exists pre-start
+    ./atop.service.patch
+  ];
 
   nativeBuildInputs = [
     pkg-config
@@ -39,10 +47,6 @@ stdenv.mkDerivation (finalAttrs: {
     python3
   ];
 
-  pythonPath = lib.optionals withAtopgpu [
-    python3.pkgs.pynvml
-  ];
-
   makeFlags = [
     "DESTDIR=$(out)"
     "BINPATH=/bin"
@@ -52,14 +56,6 @@ stdenv.mkDerivation (finalAttrs: {
     "MAN8PATH=/share/man/man8"
     "SYSDPATH=/lib/systemd/system"
     "PMPATHD=/lib/systemd/system-sleep"
-  ];
-
-  patches = [
-    # Fix paths in atop.service, atop-rotate.service, atopgpu.service, atopacct.service,
-    # and atop-pm.sh
-    ./fix-paths.patch
-    # Don't fail on missing /etc/default/atop, make sure /var/log/atop exists pre-start
-    ./atop.service.patch
   ];
 
   preConfigure = ''
@@ -90,12 +86,15 @@ stdenv.mkDerivation (finalAttrs: {
       ''
   );
 
+  pythonPath = lib.optionals withAtopgpu [
+    python3.pkgs.pynvml
+  ];
+
   passthru.tests = { inherit (nixosTests) atop; };
 
   meta = {
-    platforms = lib.platforms.linux;
-    maintainers = with lib.maintainers; [ raskin ];
     description = "Console system performance monitor";
+
     longDescription = ''
       Atop is an ASCII full-screen performance monitor that is capable of reporting the activity of
       all processes (even if processes have finished during the interval), daily logging of system
@@ -104,7 +103,10 @@ stdenv.mkDerivation (finalAttrs: {
       swap, disks and network layers, and for every active process it shows the CPU utilization,
       memory growth, disk utilization, priority, username, state, and exit code.
     '';
+
     license = lib.licenses.gpl2Plus;
+    maintainers = with lib.maintainers; [ raskin ];
+    platforms = lib.platforms.linux;
     downloadPage = "http://atoptool.nl/downloadatop.php";
   };
 })

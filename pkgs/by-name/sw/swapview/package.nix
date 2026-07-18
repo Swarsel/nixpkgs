@@ -1,7 +1,7 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage {
@@ -19,10 +19,10 @@ rustPlatform.buildRustPackage {
 
   meta = {
     description = "Simple program to view processes' swap usage on Linux";
-    mainProgram = "swapview";
     homepage = "https://github.com/lilydjwg/swapview";
-    platforms = lib.platforms.linux;
     license = with lib.licenses; [ bsd3 ];
     maintainers = with lib.maintainers; [ oxalica ];
+    platforms = lib.platforms.linux;
+    mainProgram = "swapview";
   };
 }

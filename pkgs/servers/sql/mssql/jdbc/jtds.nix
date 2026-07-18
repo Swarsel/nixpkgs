@@ -14,14 +14,14 @@ stdenv.mkDerivation rec {
     sha256 = "sha256-eV0P8QdjfuHXzYssH8yHhynuH0Clg7MAece2Up3S9M0";
   };
 
-  sourceRoot = ".";
+  nativeBuildInputs = [ unzip ];
 
   installPhase = ''
     mkdir -p $out/share/java
     cp jtds-*.jar $out/share/java/jtds-jdbc.jar
   '';
 
-  nativeBuildInputs = [ unzip ];
+  sourceRoot = ".";
 
   meta = {
     description = "Pure Java (type 4) JDBC 3.0 driver for Microsoft SQL Server";

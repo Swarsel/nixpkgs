@@ -1,10 +1,10 @@
 {
   lib,
-  rustPlatform,
+  stdenv,
   fetchFromGitHub,
   installShellFiles,
   perl,
-  stdenv,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -18,10 +18,8 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-isdp0EbHsge5vn4h1rKH2LCLFGp33BXew4SU48QKz7g=";
   };
 
-  cargoHash = "sha256-YEgLNfES9ffxwz+mR+fjDONa2M0JxvKtmoYBORDaY8w=";
-
   nativeBuildInputs = [ installShellFiles ];
-
+  cargoHash = "sha256-YEgLNfES9ffxwz+mR+fjDONa2M0JxvKtmoYBORDaY8w=";
   nativeCheckInputs = [ perl ];
 
   # tests are locale sensitive
@@ -39,10 +37,10 @@ rustPlatform.buildRustPackage (finalAttrs: {
 
   meta = {
     description = "Tool to bypass a partial range of standard input to any command";
-    mainProgram = "teip";
     homepage = "https://github.com/greymd/teip";
     changelog = "https://github.com/greymd/teip/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.mit;
     maintainers = [ ];
+    mainProgram = "teip";
   };
 })

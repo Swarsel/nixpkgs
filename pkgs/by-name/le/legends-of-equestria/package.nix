@@ -1,45 +1,45 @@
 {
   lib,
   stdenv,
-  runCommand,
-  megacmd,
-  unzip,
-  makeWrapper,
   autoPatchelfHook,
-  makeDesktopItem,
-  copyDesktopItems,
-  libgcc,
   cairo,
+  copyDesktopItems,
   dbus,
-  xorg_sys_opengl,
-  systemd,
-  libcap,
-  libdrm,
-  pulseaudio,
-  libsndfile,
   flac,
   glib,
-  libvorbis,
-  libopus,
-  mpg123,
   lame,
   libGL,
-  vulkan-loader,
   libasyncns,
-  pango,
-  libxscrnsaver,
-  libxrender,
-  libxrandr,
+  libcap,
+  libdrm,
+  libgcc,
+  libopus,
+  libsndfile,
+  libvorbis,
+  libx11,
+  libxau,
+  libxcb,
+  libxcursor,
+  libxdmcp,
+  libxext,
+  libxfixes,
   libxi,
   libxinerama,
-  libxfixes,
-  libxext,
-  libxdmcp,
-  libxcursor,
-  libxau,
-  libx11,
-  libxcb,
+  libxrandr,
+  libxrender,
+  libxscrnsaver,
+  makeDesktopItem,
+  makeWrapper,
+  megacmd,
+  mpg123,
+  pango,
+  pulseaudio,
+  runCommand,
+  systemd,
+  unzip,
+  vulkan-loader,
   wayland,
+  xorg_sys_opengl,
 }:
 
 let
@@ -48,13 +48,14 @@ let
   description = "Free-to-play MMORPG";
 
   srcOptions = {
-    x86_64-linux = {
-      url = "https://mega.nz/file/QmBXXDiC#XoG19N2_uBIHVKDNId5mE4cod9q29iPkYOfGDgAX_Oo";
-      outputHash = "IdcowkU2k2grg133jTf3EOENATCCige64BMYXtFupRE=";
-    };
     aarch64-darwin = {
-      url = "https://mega.nz/file/xr4AHIrb#pD5wDIiYys2my4_59UWiYoqBpdyUQHf_CalPZe7hpME";
       outputHash = "PpDUFnobznB5FHYSF+m9S3RcNIdi7eWyxxDHRdS+zlY=";
+      url = "https://mega.nz/file/xr4AHIrb#pD5wDIiYys2my4_59UWiYoqBpdyUQHf_CalPZe7hpME";
+    };
+
+    x86_64-linux = {
+      outputHash = "IdcowkU2k2grg133jTf3EOENATCCige64BMYXtFupRE=";
+      url = "https://mega.nz/file/QmBXXDiC#XoG19N2_uBIHVKDNId5mE4cod9q29iPkYOfGDgAX_Oo";
     };
   };
 
@@ -89,19 +90,22 @@ let
 in
 stdenv.mkDerivation {
   inherit pname version;
+
   src =
     runCommand "mega-loe"
       (
         srcOptions.${stdenv.hostPlatform.system}
         // {
-          pname = "${pname}-source";
           inherit version;
+
           nativeBuildInputs = [
             megacmd
             unzip
           ];
+
           outputHashAlgo = "sha256";
           outputHashMode = "recursive";
+          pname = "${pname}-source";
         }
       )
       ''
@@ -113,7 +117,14 @@ stdenv.mkDerivation {
         unzip -d $out $dest/*.zip
       '';
 
-  dontBuild = true;
+  nativeBuildInputs = [
+    makeWrapper
+  ]
+  ++ lib.optionals stdenv.hostPlatform.isLinux [
+    copyDesktopItems
+    autoPatchelfHook
+  ];
+
   buildInputs = [
     libgcc
   ]
@@ -123,13 +134,6 @@ stdenv.mkDerivation {
     glib
     pango
     wayland
-  ];
-  nativeBuildInputs = [
-    makeWrapper
-  ]
-  ++ lib.optionals stdenv.hostPlatform.isLinux [
-    copyDesktopItems
-    autoPatchelfHook
   ];
 
   installPhase =
@@ -161,27 +165,28 @@ stdenv.mkDerivation {
         runHook postInstall
       '';
 
-  passthru.updateScript = ./update.sh;
-
   desktopItems = [
     (makeDesktopItem {
-      name = "legends-of-equestria";
+      categories = [ "Game" ];
       comment = description;
       desktopName = "Legends of Equestria";
-      genericName = "Legends of Equestria";
       exec = "LoE";
+      genericName = "Legends of Equestria";
       icon = "legends-of-equestria";
-      categories = [ "Game" ];
+      name = "legends-of-equestria";
     })
   ];
 
+  dontBuild = true;
+  passthru.updateScript = ./update.sh;
+
   meta = {
     inherit description;
-    license = lib.licenses.unfree;
-    platforms = lib.attrNames srcOptions;
-    maintainers = with lib.maintainers; [ ulysseszhan ];
-    mainProgram = "LoE";
     homepage = "https://www.legendsofequestria.com";
+    license = lib.licenses.unfree;
+    maintainers = with lib.maintainers; [ ulysseszhan ];
+    platforms = lib.attrNames srcOptions;
+    mainProgram = "LoE";
     downloadPage = "https://www.legendsofequestria.com/downloads";
   };
 

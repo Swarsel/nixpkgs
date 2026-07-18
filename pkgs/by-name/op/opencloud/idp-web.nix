@@ -1,27 +1,16 @@
 {
-  stdenvNoCC,
   lib,
-  opencloud,
-  pnpm_11,
   fetchPnpmDeps,
-  pnpmConfigHook,
-  pnpmBuildHook,
   nodejs,
+  opencloud,
+  pnpmBuildHook,
+  pnpmConfigHook,
+  pnpm_11,
+  stdenvNoCC,
 }:
 stdenvNoCC.mkDerivation (finalAttrs: {
-  pname = "opencloud-idp-web";
-
   inherit (opencloud) src version;
-
-  pnpmRoot = "services/idp";
-
-  pnpmDeps = fetchPnpmDeps {
-    inherit (finalAttrs) pname version src;
-    pnpm = pnpm_11;
-    sourceRoot = "${finalAttrs.src.name}/${finalAttrs.pnpmRoot}";
-    fetcherVersion = 4;
-    hash = "sha256-buDYvRw4NTLxFSdDRZHiuXMVe9fJbe2iu5hr+zh6KLs=";
-  };
+  pname = "opencloud-idp-web";
 
   nativeBuildInputs = [
     nodejs
@@ -45,15 +34,27 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  pnpmDeps = fetchPnpmDeps {
+    inherit (finalAttrs) pname version src;
+    fetcherVersion = 4;
+    hash = "sha256-buDYvRw4NTLxFSdDRZHiuXMVe9fJbe2iu5hr+zh6KLs=";
+    pnpm = pnpm_11;
+    sourceRoot = "${finalAttrs.src.name}/${finalAttrs.pnpmRoot}";
+  };
+
+  pnpmRoot = "services/idp";
+
   meta = {
     description = "OpenCloud - IDP Web UI";
     homepage = "https://github.com/opencloud-eu/opencloud";
     changelog = "https://github.com/opencloud-eu/opencloud/blob/${finalAttrs.src.tag}/CHANGELOG.md";
     license = lib.licenses.asl20;
+
     maintainers = with lib.maintainers; [
       christoph-heiss
       k900
     ];
+
     platforms = lib.platforms.all;
   };
 })

@@ -15,7 +15,6 @@ buildGoModule (finalAttrs: {
   };
 
   vendorHash = "sha256-25AhWZiXhniZ6Gmw4J7psE/FfbS1j7Ncte0s43Xo98o=";
-
   doCheck = false;
 
   ldflags = [
@@ -27,12 +26,12 @@ buildGoModule (finalAttrs: {
   subPackages = [ "." ];
 
   meta = {
+    description = "Human friendly `go test` runner";
     homepage = "https://github.com/gotestyourself/gotestsum";
     changelog = "https://github.com/gotestyourself/gotestsum/releases/tag/v${finalAttrs.version}";
-    description = "Human friendly `go test` runner";
-    mainProgram = "gotestsum";
-    platforms = with lib.platforms; linux ++ darwin;
     license = lib.licenses.asl20;
     maintainers = with lib.maintainers; [ isabelroses ];
+    platforms = with lib.platforms; linux ++ darwin;
+    mainProgram = "gotestsum";
   };
 })

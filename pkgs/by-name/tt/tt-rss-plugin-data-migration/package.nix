@@ -24,9 +24,9 @@ stdenv.mkDerivation {
 
   meta = {
     description = "Plugin for TT-RSS to exports and imports *all* articles of a specific user via neutral format (JSON files in a ZIP archive)";
+    homepage = "https://git.tt-rss.org/fox/ttrss-data-migration.git/";
     # this plugin doesn't have a license file
     license = lib.licenses.unfree;
-    homepage = "https://git.tt-rss.org/fox/ttrss-data-migration.git/";
     maintainers = with lib.maintainers; [ wrvsrx ];
     platforms = lib.platforms.all;
   };

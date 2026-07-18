@@ -2,18 +2,17 @@
   lib,
   fetchFromGitHub,
   buildPythonPackage,
-  numpy,
   cython,
-  scipy,
-  scikit-learn,
   matplotlib,
+  numpy,
   pytestCheckHook,
+  scikit-learn,
+  scipy,
 }:
 
 buildPythonPackage rec {
   pname = "scikit-learn-extra";
   version = "0.3.0";
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "scikit-learn-contrib";
@@ -26,11 +25,13 @@ buildPythonPackage rec {
     numpy
     cython
   ];
+
   propagatedBuildInputs = [
     numpy
     scipy
     scikit-learn
   ];
+
   nativeCheckInputs = [
     matplotlib
     pytestCheckHook
@@ -42,18 +43,22 @@ buildPythonPackage rec {
     rm -r sklearn_extra
   '';
 
-  pytestFlags = [
-    "--pyargs"
-    "sklearn_extra"
-  ];
   disabledTestPaths = [
     "benchmarks"
     "examples"
     "doc"
   ];
+
   disabledTests = [
     "build" # needs network connection
     "test_all_estimators" # sklearn.exceptions.NotFittedError: Estimator fails to pass `check_is_fitted` even though it has been fit.
+  ];
+
+  format = "setuptools";
+
+  pytestFlags = [
+    "--pyargs"
+    "sklearn_extra"
   ];
 
   # Check packages with cythonized modules
@@ -65,11 +70,11 @@ buildPythonPackage rec {
   ];
 
   meta = {
-    # Marked broken 2025-11-28 because it has failed on Hydra for at least one year.
-    broken = true;
     description = "Set of tools for scikit-learn";
     homepage = "https://github.com/scikit-learn-contrib/scikit-learn-extra";
     license = lib.licenses.bsd3;
     maintainers = with lib.maintainers; [ yl3dy ];
+    # Marked broken 2025-11-28 because it has failed on Hydra for at least one year.
+    broken = true;
   };
 }

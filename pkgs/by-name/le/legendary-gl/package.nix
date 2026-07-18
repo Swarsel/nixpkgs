@@ -1,14 +1,13 @@
 {
   lib,
-  gitUpdater,
   fetchFromGitHub,
+  gitUpdater,
   python3Packages,
 }:
 
 python3Packages.buildPythonApplication {
   pname = "legendary-gl"; # Name in pypi
   version = "0.20.34";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "legendary-gl";
@@ -16,6 +15,9 @@ python3Packages.buildPythonApplication {
     rev = "56d439ed2d3d9f34e2b08fa23e627c23a487b8d6";
     hash = "sha256-yCHeeEGw+9gtRMGyIhbStxJhmSM/1Fqly7HSRDkZILQ=";
   };
+
+  # no tests
+  doCheck = false;
 
   build-system = with python3Packages; [
     setuptools
@@ -26,11 +28,8 @@ python3Packages.buildPythonApplication {
     filelock
   ];
 
-  # no tests
-  doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "legendary" ];
-
   passthru.updateScript = gitUpdater { };
 
   meta = {

@@ -1,10 +1,10 @@
 {
   lib,
-  cedar,
-  testers,
-  rustPlatform,
   fetchFromGitHub,
+  cedar,
   nix-update-script,
+  rustPlatform,
+  testers,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -20,6 +20,10 @@ rustPlatform.buildRustPackage (finalAttrs: {
 
   cargoHash = "sha256-6AtFdE7vXoevOU3uWP4sgibakNHK8ffnuWCzJxFt/wo=";
 
+  preCheck = ''
+    export TMPDIR="/tmp"
+  '';
+
   cargoBuildFlags = [
     "--bin"
     "cedar"
@@ -28,10 +32,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
   ];
 
   cargoTestFlags = finalAttrs.cargoBuildFlags;
-
-  preCheck = ''
-    export TMPDIR="/tmp"
-  '';
 
   passthru = {
     tests.version = testers.testVersion { package = cedar; };

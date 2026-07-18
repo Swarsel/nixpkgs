@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   mypy-extensions,
   pytest-xdist,
   pytestCheckHook,
@@ -13,7 +13,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "cwl-upgrader";
   version = "1.2.15";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "common-workflow-language";
@@ -41,6 +40,7 @@ buildPythonPackage (finalAttrs: {
     pytestCheckHook
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "cwlupgrader" ];
 
   meta = {

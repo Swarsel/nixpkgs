@@ -1,9 +1,9 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
-  pkg-config,
   gtk3,
+  pkg-config,
   xsettingsd,
 }:
 
@@ -18,6 +18,10 @@ stdenv.mkDerivation (finalAttrs: {
     sha256 = "14z7hg9c7q8wliyqv68kp080mmk2rh6kpww6pn87hy7lwq20l2b7";
   };
 
+  postPatch = ''
+    substituteInPlace font-config-info.c --replace "dump_xsettings |" "${xsettingsd}/bin/dump_xsettings |"
+  '';
+
   nativeBuildInputs = [
     pkg-config
   ];
@@ -26,10 +30,6 @@ stdenv.mkDerivation (finalAttrs: {
     gtk3
     xsettingsd
   ];
-
-  postPatch = ''
-    substituteInPlace font-config-info.c --replace "dump_xsettings |" "${xsettingsd}/bin/dump_xsettings |"
-  '';
 
   installPhase = ''
     runHook preInstall
@@ -41,8 +41,8 @@ stdenv.mkDerivation (finalAttrs: {
     description = "Prints a Linux system's font configuration";
     homepage = "https://github.com/derat/font-config-info";
     license = with lib.licenses; [ bsd3 ];
-    platforms = lib.platforms.unix;
     maintainers = with lib.maintainers; [ romildo ];
+    platforms = lib.platforms.unix;
     mainProgram = "font-config-info";
   };
 })

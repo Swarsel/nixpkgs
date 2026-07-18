@@ -3,8 +3,8 @@
   stdenv,
   fetchurl,
   guile,
-  texinfo,
   pkg-config,
+  texinfo,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -17,16 +17,19 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   strictDeps = true;
+
   nativeBuildInputs = [
     guile
     pkg-config
     texinfo
   ];
+
   buildInputs = [
     guile
   ];
-  doCheck = true;
+
   makeFlags = [ "GUILE_AUTO_COMPILE=0" ];
+  doCheck = true;
 
   meta = {
     description = "JSON Bindings for GNU Guile";

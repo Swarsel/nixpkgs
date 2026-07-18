@@ -1,17 +1,17 @@
 {
   lib,
-  buildPlatform,
-  hostPlatform,
   fetchurl,
   bash,
-  gcc,
   binutils,
+  buildPlatform,
   findutils,
-  gnumake,
+  gcc,
   gnugrep,
+  gnumake,
   gnused,
   gnutar,
   gzip,
+  hostPlatform,
   linux-headers,
 }:
 let

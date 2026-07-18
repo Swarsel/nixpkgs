@@ -4,18 +4,18 @@
   fetchurl,
   autoconf,
   automake,
-  intltool,
-  libtool,
-  pkg-config,
-  which,
   docbook_xml_dtd_45,
   docbook_xsl,
   gtkmm2,
-  pangomm_2_42,
+  intltool,
   libgig,
   libsndfile,
+  libtool,
   libxslt,
   linuxsampler,
+  pangomm_2_42,
+  pkg-config,
+  which,
 }:
 
 let
@@ -29,8 +29,6 @@ stdenv.mkDerivation (finalAttrs: {
     url = "https://download.linuxsampler.org/packages/gigedit-${finalAttrs.version}.tar.bz2";
     hash = "sha256-pz+2gbVbPytuioXxNHQWE3Pml4r9JfwBIQcsbevWHkQ=";
   };
-
-  preConfigure = "make -f Makefile.svn";
 
   nativeBuildInputs = [
     autoconf
@@ -51,11 +49,12 @@ stdenv.mkDerivation (finalAttrs: {
     linuxsampler
   ];
 
+  preConfigure = "make -f Makefile.svn";
   enableParallelBuilding = true;
 
   meta = {
-    homepage = "http://www.linuxsampler.org";
     description = "Gigasampler file access library";
+    homepage = "http://www.linuxsampler.org";
     license = lib.licenses.gpl2;
     maintainers = [ ];
     platforms = lib.platforms.linux;

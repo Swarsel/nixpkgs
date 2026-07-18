@@ -1,7 +1,7 @@
 {
-  buildGoModule,
-  fetchFromGitHub,
   lib,
+  fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule (finalAttrs: {
@@ -28,9 +28,9 @@ buildGoModule (finalAttrs: {
   ];
 
   meta = {
-    license = lib.licenses.mit;
-    homepage = "https://github.com/gotify/cli";
     description = "Command line interface for pushing messages to gotify/server";
+    homepage = "https://github.com/gotify/cli";
+    license = lib.licenses.mit;
     maintainers = [ ];
     mainProgram = "gotify";
   };

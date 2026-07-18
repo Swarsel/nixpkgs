@@ -2,8 +2,8 @@
   lib,
   stdenv,
   fetchzip,
-  makeWrapper,
   jre,
+  makeWrapper,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -12,8 +12,8 @@ stdenv.mkDerivation (finalAttrs: {
 
   src = fetchzip {
     url = "https://search.maven.org/remotecontent?filepath=org/jacoco/jacoco/${finalAttrs.version}/jacoco-${finalAttrs.version}.zip";
-    stripRoot = false;
     sha256 = "sha256-ysqPAxZK/mcnGiqqqTzfCOCyAcvMMvymFrSme6rFCJE=";
+    stripRoot = false;
   };
 
   outputs = [
@@ -39,11 +39,11 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Free code coverage library for Java";
-    mainProgram = "jacoco";
     homepage = "https://www.jacoco.org/jacoco";
     changelog = "https://www.jacoco.org/jacoco/trunk/doc/changes.html";
     license = lib.licenses.epl20;
-    platforms = lib.platforms.all;
     maintainers = [ ];
+    platforms = lib.platforms.all;
+    mainProgram = "jacoco";
   };
 })

@@ -1,8 +1,8 @@
 {
-  fetchurl,
   lib,
-  ocamlPackages,
   stdenv,
+  fetchurl,
+  ocamlPackages,
 }:
 
 ocamlPackages.buildDunePackage (finalAttrs: {
@@ -16,8 +16,6 @@ ocamlPackages.buildDunePackage (finalAttrs: {
 
   nativeBuildInputs = [ ocamlPackages.menhir ];
 
-  sourceRoot = ".";
-
   buildInputs = with ocamlPackages; [
     cmdliner
     camlzip
@@ -30,6 +28,8 @@ ocamlPackages.buildDunePackage (finalAttrs: {
     zarith
     seq
   ];
+
+  sourceRoot = ".";
 
   meta = {
     description = "High-performance theorem prover and SMT solver";

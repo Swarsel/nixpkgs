@@ -1,6 +1,6 @@
 {
-  lib,
   config,
+  lib,
   pkgs,
   ...
 }:
@@ -18,9 +18,9 @@ in
 
   config = lib.mkIf cfg.enable {
     security.wrappers.trip = {
-      owner = "root";
-      group = "root";
       capabilities = "cap_net_raw+p";
+      group = "root";
+      owner = "root";
       source = lib.getExe pkgs.trippy;
     };
   };

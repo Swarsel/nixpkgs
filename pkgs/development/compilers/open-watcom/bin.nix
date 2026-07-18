@@ -1,14 +1,14 @@
 {
   lib,
-  stdenvNoCC,
   fetchurl,
-  qemu,
-  writeScript,
-  writeScriptBin,
-  ncurses,
   bash,
   coreutils,
+  ncurses,
+  qemu,
+  stdenvNoCC,
   unixtools,
+  writeScript,
+  writeScriptBin,
 }:
 
 let
@@ -74,9 +74,6 @@ stdenvNoCC.mkDerivation rec {
     unixtools.script
   ];
 
-  dontUnpack = true;
-  dontConfigure = true;
-
   buildPhase = ''
     cp ${src} install-bin-unwrapped
     wrapInPlace install-bin-unwrapped
@@ -93,17 +90,20 @@ stdenvNoCC.mkDerivation rec {
     done
   '';
 
+  dontConfigure = true;
+  dontUnpack = true;
   passthru.prettyName = "open-watcom-bin";
 
   meta = {
     description = "Project to maintain and enhance the Watcom C, C++, and Fortran cross compilers and tools";
-    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
     homepage = "http://www.openwatcom.org/";
     license = lib.licenses.watcom;
+    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
+    maintainers = [ lib.maintainers.blitz ];
+
     platforms = [
       "x86_64-linux"
       "i686-linux"
     ];
-    maintainers = [ lib.maintainers.blitz ];
   };
 }

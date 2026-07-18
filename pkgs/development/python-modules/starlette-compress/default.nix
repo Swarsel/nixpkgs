@@ -1,23 +1,22 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  hatchling,
-  isPyPy,
   brotli,
   brotlicffi,
-  starlette,
-  pythonOlder,
-  zstandard,
-  pytestCheckHook,
+  buildPythonPackage,
+  hatchling,
   httpx,
+  isPyPy,
+  pytestCheckHook,
+  pythonOlder,
+  starlette,
   trio,
+  zstandard,
 }:
 
 buildPythonPackage rec {
   pname = "starlette-compress";
   version = "1.6.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "Zaczero";
@@ -25,6 +24,15 @@ buildPythonPackage rec {
     tag = version;
     hash = "sha256-JRg0WeMVTYnSh2an+/duSXzAigbjbCZ9NUsSNpXlFg8=";
   };
+
+  nativeCheckInputs = [
+    pytestCheckHook
+  ];
+
+  checkInputs = [
+    httpx
+    trio
+  ];
 
   build-system = [ hatchling ];
 
@@ -36,21 +44,14 @@ buildPythonPackage rec {
     zstandard
   ];
 
-  checkInputs = [
-    httpx
-    trio
-  ];
-
-  nativeCheckInputs = [
-    pytestCheckHook
-  ];
-
+  pyproject = true;
   pythonImportsCheck = [ "starlette_compress" ];
 
   meta = {
     description = "Compression middleware for Starlette - supporting ZStd, Brotli, and GZip";
     homepage = "https://pypi.org/p/starlette-compress";
     license = lib.licenses.bsd0;
+
     maintainers = with lib.maintainers; [
       wrvsrx
       Zaczero

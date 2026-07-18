@@ -1,8 +1,8 @@
 {
   lib,
+  fetchFromGitHub,
   buildPythonPackage,
   captcha,
-  fetchFromGitHub,
   flask,
   flask-session,
   flask-sqlalchemy,
@@ -14,7 +14,6 @@
 buildPythonPackage rec {
   pname = "flask-session-captcha";
   version = "1.5.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "Tethik";
@@ -22,6 +21,12 @@ buildPythonPackage rec {
     tag = "v${version}";
     hash = "sha256-2JPJx8yQIl0bbcbshONJtja7BnSiieHzHi64A6jLpc0=";
   };
+
+  nativeCheckInputs = [
+    flask-session
+    flask-sqlalchemy
+    pytestCheckHook
+  ];
 
   build-system = [ setuptools ];
 
@@ -31,12 +36,7 @@ buildPythonPackage rec {
     markupsafe
   ];
 
-  nativeCheckInputs = [
-    flask-session
-    flask-sqlalchemy
-    pytestCheckHook
-  ];
-
+  pyproject = true;
   pythonImportsCheck = [ "flask_session_captcha" ];
 
   meta = {

@@ -1,32 +1,30 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchurl,
   autoPatchelfHook,
-  curl,
-  openssl,
-  versionCheckHook,
-  writeShellApplication,
   common-updater-scripts,
+  curl,
   gitMinimal,
   jq,
   nix-update,
-  pup,
   nixosTests,
+  openssl,
+  pup,
+  versionCheckHook,
+  writeShellApplication,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
   pname = "mongodb-ce";
   version = "8.2.11";
-  __structuredAttrs = true;
-  strictDeps = true;
 
   src =
     finalAttrs.passthru.sources.${stdenv.hostPlatform.system}
       or (throw "Unsupported platform for mongodb-ce: ${stdenv.hostPlatform.system}");
 
+  strictDeps = true;
   nativeBuildInputs = lib.optionals stdenv.hostPlatform.isLinux [ autoPatchelfHook ];
-  dontStrip = true;
 
   buildInputs = [
     curl.dev
@@ -49,28 +47,38 @@ stdenv.mkDerivation (finalAttrs: {
   # See https://github.com/NixOS/nixpkgs/issues/377016
   doInstallCheck = stdenv.hostPlatform.isDarwin;
   nativeInstallCheckInputs = [ versionCheckHook ];
-  versionCheckProgram = "${placeholder "out"}/bin/mongod";
+  __structuredAttrs = true;
+  dontStrip = true;
 
   # Apple's LibreSSL tries to read this while running `mongod --version`
   sandboxProfile = lib.optionalString stdenv.hostPlatform.isDarwin ''
     (allow file-read* (literal "/private/etc/ssl/openssl.cnf"))
   '';
 
+  versionCheckProgram = "${placeholder "out"}/bin/mongod";
+
   passthru = {
     sources = {
-      "x86_64-linux" = fetchurl {
-        url = "https://fastdl.mongodb.org/linux/mongodb-linux-x86_64-ubuntu2404-${finalAttrs.version}.tgz";
-        hash = "sha256-sqFkZ19eYZHQFwVX2zwaKaYXisvoqN25+8DFbyGU2H4=";
-      };
-      "aarch64-linux" = fetchurl {
-        url = "https://fastdl.mongodb.org/linux/mongodb-linux-aarch64-ubuntu2404-${finalAttrs.version}.tgz";
-        hash = "sha256-5AX8pb1jInbQTuE0RqpqqcRXon6wKwdvoDCNDF70krE=";
-      };
       "aarch64-darwin" = fetchurl {
-        url = "https://fastdl.mongodb.org/osx/mongodb-macos-arm64-${finalAttrs.version}.tgz";
         hash = "sha256-M3/x/d2rVKUmIZBQ9hVuT6W9ajZy/Ut5+8aDeXF+HwY=";
+        url = "https://fastdl.mongodb.org/osx/mongodb-macos-arm64-${finalAttrs.version}.tgz";
+      };
+
+      "aarch64-linux" = fetchurl {
+        hash = "sha256-5AX8pb1jInbQTuE0RqpqqcRXon6wKwdvoDCNDF70krE=";
+        url = "https://fastdl.mongodb.org/linux/mongodb-linux-aarch64-ubuntu2404-${finalAttrs.version}.tgz";
+      };
+
+      "x86_64-linux" = fetchurl {
+        hash = "sha256-sqFkZ19eYZHQFwVX2zwaKaYXisvoqN25+8DFbyGU2H4=";
+        url = "https://fastdl.mongodb.org/linux/mongodb-linux-x86_64-ubuntu2404-${finalAttrs.version}.tgz";
       };
     };
+
+    tests = {
+      inherit (nixosTests) mongodb-ce;
+    };
+
     updateScript =
       let
         script = writeShellApplication {
@@ -106,25 +114,23 @@ stdenv.mkDerivation (finalAttrs: {
       {
         command = lib.getExe script;
       };
-
-    tests = {
-      inherit (nixosTests) mongodb-ce;
-    };
   };
 
   meta = {
-    changelog = "https://www.mongodb.com/docs/upcoming/release-notes/8.2/";
     description = "MongoDB is a general purpose, document-based, distributed database";
-    homepage = "https://www.mongodb.com/";
-    license = with lib.licenses; [ sspl ];
+
     longDescription = ''
       MongoDB CE (Community Edition) is a general purpose, document-based, distributed database.
       It is designed to be flexible and easy to use, with the ability to store data of any structure.
       This pre-compiled binary distribution package provides the MongoDB daemon (mongod) and the MongoDB Shard utility
       (mongos).
     '';
+
+    homepage = "https://www.mongodb.com/";
+    changelog = "https://www.mongodb.com/docs/upcoming/release-notes/8.2/";
+    license = with lib.licenses; [ sspl ];
+    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
     maintainers = [ ];
     platforms = lib.attrNames finalAttrs.passthru.sources;
-    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
   };
 })

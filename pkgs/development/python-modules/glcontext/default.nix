@@ -1,17 +1,16 @@
 {
-  stdenv,
   lib,
-  buildPythonPackage,
+  stdenv,
   fetchFromGitHub,
-  setuptools,
+  buildPythonPackage,
   libGL,
   libx11,
+  setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "glcontext";
   version = "3.0.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "moderngl";
@@ -19,13 +18,6 @@ buildPythonPackage rec {
     tag = version;
     hash = "sha256-GC2sb6xQjg99xLcXSynLOOyyqNwCHZwZqrs9RZh99pY=";
   };
-
-  build-system = [ setuptools ];
-
-  buildInputs = [
-    libGL
-    libx11
-  ];
 
   postPatch = lib.optionalString (stdenv.hostPlatform.isLinux) ''
     substituteInPlace glcontext/x11.cpp \
@@ -36,18 +28,24 @@ buildPythonPackage rec {
       --replace-fail '"libEGL.so"' '"${libGL}/lib/libEGL.so"'
   '';
 
+  buildInputs = [
+    libGL
+    libx11
+  ];
+
   # Tests fail because they try to open display. See
   # https://github.com/NixOS/nixpkgs/pull/121439
   # for details.
   doCheck = false;
-
+  build-system = [ setuptools ];
+  pyproject = true;
   pythonImportsCheck = [ "glcontext" ];
 
   meta = {
-    homepage = "https://github.com/moderngl/glcontext";
     description = "OpenGL implementation for ModernGL";
+    homepage = "https://github.com/moderngl/glcontext";
     license = lib.licenses.mit;
-    platforms = lib.platforms.linux ++ lib.platforms.darwin;
     maintainers = [ ];
+    platforms = lib.platforms.linux ++ lib.platforms.darwin;
   };
 }

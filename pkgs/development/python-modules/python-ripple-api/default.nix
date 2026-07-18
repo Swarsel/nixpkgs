@@ -9,20 +9,17 @@
 buildPythonPackage rec {
   pname = "python-ripple-api";
   version = "0.0.3";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
     hash = "sha256-hlgc7swcCimpQueyxuy/zvr6WdBHWnjnqHTS/cUghss=";
   };
 
-  build-system = [ setuptools ];
-
-  dependencies = [ requests ];
-
   # No tests in the package
   doCheck = false;
-
+  build-system = [ setuptools ];
+  dependencies = [ requests ];
+  pyproject = true;
   pythonImportsCheck = [ "pyripple" ];
 
   meta = {

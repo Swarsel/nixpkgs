@@ -1,7 +1,7 @@
 {
   config,
-  pkgs,
   lib,
+  pkgs,
   utils,
   ...
 }:
@@ -15,21 +15,40 @@ in
   options.systemd.services = lib.mkOption {
     type = types.attrsOf (
       types.submodule (
-        { name, config, ... }:
+        { config, name, ... }:
         {
+          options.confinement.binSh = lib.mkOption {
+            default = toplevelConfig.environment.binsh;
+            defaultText = lib.literalExpression "config.environment.binsh";
+
+            description = ''
+              The program to make available as {file}`/bin/sh` inside
+              the chroot. If this is set to `null`, no
+              {file}`/bin/sh` is provided at all.
+
+              This is useful for some applications, which for example use the
+              {manpage}`system(3)` library function to execute commands.
+            '';
+
+            example = lib.literalExpression ''"''${pkgs.dash}/bin/dash"'';
+            type = types.nullOr types.path;
+          };
+
           options.confinement.enable = lib.mkOption {
-            type = types.bool;
             default = false;
+
             description = ''
               If set, all the required runtime store paths for this service are
               bind-mounted into a `tmpfs`-based
               {manpage}`chroot(2)`.
             '';
+
+            type = types.bool;
           };
 
           options.confinement.fullUnit = lib.mkOption {
-            type = types.bool;
             default = false;
+
             description = ''
               Whether to include the full closure of the systemd unit file into the
               chroot, instead of just the dependencies for the executables.
@@ -42,11 +61,45 @@ in
               chroot.
               :::
             '';
+
+            type = types.bool;
+          };
+
+          options.confinement.mode = lib.mkOption {
+            default = "full-apivfs";
+
+            description = ''
+              The value `full-apivfs` (the default) sets up
+              private {file}`/dev`, {file}`/proc`,
+              {file}`/sys`, {file}`/tmp` and {file}`/var/tmp` file systems
+              in a separate user name space.
+
+              If this is set to `chroot-only`, only the file
+              system name space is set up along with the call to
+              {manpage}`chroot(2)`.
+
+              In all cases, unless `serviceConfig.PrivateTmp=true` is set,
+              both {file}`/tmp` and {file}`/var/tmp` paths are added to `InaccessiblePaths=`.
+              This is to overcome options like `DynamicUser=true`
+              implying `PrivateTmp=true` without letting it being turned off.
+              Beware however that giving processes the `CAP_SYS_ADMIN` and `@mount` privileges
+              can let them undo the effects of `InaccessiblePaths=`.
+
+              ::: {.note}
+              This doesn't cover network namespaces and is solely for
+              file system level isolation.
+              :::
+            '';
+
+            type = types.enum [
+              "full-apivfs"
+              "chroot-only"
+            ];
           };
 
           options.confinement.packages = lib.mkOption {
-            type = types.listOf (types.either types.str types.package);
             default = [ ];
+
             description =
               let
                 mkScOption = optName: "{option}`serviceConfig.${optName}`";
@@ -73,51 +126,8 @@ in
                 above.
                 :::
               '';
-          };
 
-          options.confinement.binSh = lib.mkOption {
-            type = types.nullOr types.path;
-            default = toplevelConfig.environment.binsh;
-            defaultText = lib.literalExpression "config.environment.binsh";
-            example = lib.literalExpression ''"''${pkgs.dash}/bin/dash"'';
-            description = ''
-              The program to make available as {file}`/bin/sh` inside
-              the chroot. If this is set to `null`, no
-              {file}`/bin/sh` is provided at all.
-
-              This is useful for some applications, which for example use the
-              {manpage}`system(3)` library function to execute commands.
-            '';
-          };
-
-          options.confinement.mode = lib.mkOption {
-            type = types.enum [
-              "full-apivfs"
-              "chroot-only"
-            ];
-            default = "full-apivfs";
-            description = ''
-              The value `full-apivfs` (the default) sets up
-              private {file}`/dev`, {file}`/proc`,
-              {file}`/sys`, {file}`/tmp` and {file}`/var/tmp` file systems
-              in a separate user name space.
-
-              If this is set to `chroot-only`, only the file
-              system name space is set up along with the call to
-              {manpage}`chroot(2)`.
-
-              In all cases, unless `serviceConfig.PrivateTmp=true` is set,
-              both {file}`/tmp` and {file}`/var/tmp` paths are added to `InaccessiblePaths=`.
-              This is to overcome options like `DynamicUser=true`
-              implying `PrivateTmp=true` without letting it being turned off.
-              Beware however that giving processes the `CAP_SYS_ADMIN` and `@mount` privileges
-              can let them undo the effects of `InaccessiblePaths=`.
-
-              ::: {.note}
-              This doesn't cover network namespaces and is solely for
-              file system level isolation.
-              :::
-            '';
+            type = types.listOf (types.either types.str types.package);
           };
 
           config =
@@ -126,32 +136,6 @@ in
               wantsAPIVFS = lib.mkDefault (config.confinement.mode == "full-apivfs");
             in
             lib.mkIf config.confinement.enable {
-              serviceConfig = {
-                ReadOnlyPaths = [ "+/" ];
-                RuntimeDirectory = [ "confinement/%n" ];
-                RootDirectory = "/run/confinement/%n";
-                InaccessiblePaths = [ "-+/run/confinement/%n" ];
-                PrivateMounts = lib.mkDefault true;
-
-                # https://github.com/NixOS/nixpkgs/issues/14645 is a future attempt
-                # to change some of these to default to true.
-                #
-                # If we run in chroot-only mode, having something like PrivateDevices
-                # set to true by default will mount /dev within the chroot, whereas
-                # with "chroot-only" it's expected that there are no /dev, /proc and
-                # /sys file systems available.
-                #
-                # However, if this suddenly becomes true, the attack surface will
-                # increase, so let's explicitly set these options to true/false
-                # depending on the mode.
-                MountAPIVFS = wantsAPIVFS;
-                PrivateDevices = wantsAPIVFS;
-                PrivateTmp = wantsAPIVFS;
-                PrivateUsers = wantsAPIVFS;
-                ProtectControlGroups = wantsAPIVFS;
-                ProtectKernelModules = wantsAPIVFS;
-                ProtectKernelTunables = wantsAPIVFS;
-              };
               confinement.packages =
                 let
                   execOpts = [
@@ -174,6 +158,32 @@ in
                   unitPkgs = if fullUnit then allPkgs else execPkgs;
                 in
                 unitPkgs ++ lib.optional (binSh != null) binSh;
+
+              serviceConfig = {
+                InaccessiblePaths = [ "-+/run/confinement/%n" ];
+                # https://github.com/NixOS/nixpkgs/issues/14645 is a future attempt
+                # to change some of these to default to true.
+                #
+                # If we run in chroot-only mode, having something like PrivateDevices
+                # set to true by default will mount /dev within the chroot, whereas
+                # with "chroot-only" it's expected that there are no /dev, /proc and
+                # /sys file systems available.
+                #
+                # However, if this suddenly becomes true, the attack surface will
+                # increase, so let's explicitly set these options to true/false
+                # depending on the mode.
+                MountAPIVFS = wantsAPIVFS;
+                PrivateDevices = wantsAPIVFS;
+                PrivateMounts = lib.mkDefault true;
+                PrivateTmp = wantsAPIVFS;
+                PrivateUsers = wantsAPIVFS;
+                ProtectControlGroups = wantsAPIVFS;
+                ProtectKernelModules = wantsAPIVFS;
+                ProtectKernelTunables = wantsAPIVFS;
+                ReadOnlyPaths = [ "+/" ];
+                RootDirectory = "/run/confinement/%n";
+                RuntimeDirectory = [ "confinement/%n" ];
+              };
             };
         }
       )
@@ -193,6 +203,7 @@ in
       lib.optionals cfg.confinement.enable [
         {
           assertion = !cfg.serviceConfig.RootDirectoryStartOnly or false;
+
           message =
             "${whatOpt "RootDirectoryStartOnly"}, but right now systemd"
             + " doesn't support restricting bind-mounts to 'ExecStart'."
@@ -217,8 +228,8 @@ in
           pkgs.runCommand "${mkPathSafeName name}-chroot-paths"
             {
               closureInfo = pkgs.closureInfo { inherit rootPaths; };
-              serviceName = "${name}.service";
               excludedPath = rootPaths;
+              serviceName = "${name}.service";
             }
             ''
               mkdir -p "$out/lib/systemd/system/$serviceName.d"

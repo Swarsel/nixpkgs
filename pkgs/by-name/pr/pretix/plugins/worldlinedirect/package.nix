@@ -1,16 +1,15 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
+  onlinepayments-sdk-python3,
   pretix-plugin-build,
   setuptools,
-  onlinepayments-sdk-python3,
 }:
 
 buildPythonPackage rec {
   pname = "pretix-worldlinedirect";
   version = "1.1.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "pretix";
@@ -27,6 +26,8 @@ buildPythonPackage rec {
   dependencies = [
     onlinepayments-sdk-python3
   ];
+
+  pyproject = true;
 
   pythonImportsCheck = [
     "pretix_payonegopay"

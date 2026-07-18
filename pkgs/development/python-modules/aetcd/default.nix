@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   grpcio,
   protobuf,
   pytest-asyncio,
@@ -15,7 +15,6 @@
 buildPythonPackage rec {
   pname = "aetcd";
   version = "1.0.0a4";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "martyanov";
@@ -29,7 +28,12 @@ buildPythonPackage rec {
       --replace-fail "setuptools_scm==6.3.2" "setuptools_scm"
   '';
 
-  pythonRelaxDeps = [ "protobuf" ];
+  nativeCheckInputs = [
+    pytest-asyncio
+    pytest-cov-stub
+    pytest-mock
+    pytestCheckHook
+  ];
 
   build-system = [
     setuptools
@@ -41,19 +45,14 @@ buildPythonPackage rec {
     protobuf
   ];
 
-  nativeCheckInputs = [
-    pytest-asyncio
-    pytest-cov-stub
-    pytest-mock
-    pytestCheckHook
-  ];
-
-  pythonImportsCheck = [ "aetcd" ];
-
   disabledTestPaths = [
     # Tests require a running ectd instance
     "tests/integration/"
   ];
+
+  pyproject = true;
+  pythonImportsCheck = [ "aetcd" ];
+  pythonRelaxDeps = [ "protobuf" ];
 
   meta = {
     description = "Python asyncio-based client for etcd";

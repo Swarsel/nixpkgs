@@ -2,23 +2,23 @@
   lib,
   stdenv,
   fetchFromGitHub,
+  nix-update-script,
   quickjs,
   versionCheckHook,
-  nix-update-script,
 }:
 
 let
   qjsExtLib = fetchFromGitHub {
+    hash = "sha256-oq8MFXo2grwz11Tv7HMetwYKOpbgMmeqxd1caFBi57U=";
     owner = "ctn-malone";
     repo = "qjs-ext-lib";
     tag = "0.16.1";
-    hash = "sha256-oq8MFXo2grwz11Tv7HMetwYKOpbgMmeqxd1caFBi57U=";
   };
   justjs-scripts = fetchFromGitHub {
+    hash = "sha256-FWIS6f16wIvTgpEUxhCeYL94Jp8b19X4Nx6oww7sbU0=";
     owner = "5hubham5ingh";
     repo = "justjs";
     rev = "10b0c16e5d01ff0d1560d412cd1c19146d45a984";
-    hash = "sha256-FWIS6f16wIvTgpEUxhCeYL94Jp8b19X4Nx6oww7sbU0=";
   };
 in
 stdenv.mkDerivation (finalAttrs: {
@@ -31,8 +31,6 @@ stdenv.mkDerivation (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-v3dulDrbvAvwgeDlDt7um2qmZOkBkd5alaq8hyfgGfQ=";
   };
-
-  sourceRoot = "source/src";
 
   nativeBuildInputs = [
     quickjs
@@ -60,19 +58,21 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   doInstallCheck = true;
-  versionCheckProgramArg = "--version";
+
   nativeInstallCheckInputs = [
     versionCheckHook
   ];
 
+  sourceRoot = "source/src";
+  versionCheckProgramArg = "--version";
   passthru.updateScript = nix-update-script { };
 
   meta = {
     description = "Terminal based wallpaper and system theme manager";
     longDescription = "A terminal-based wallpaper manager that displays wallpapers in a grid, allowing users to select and set wallpapers while automatically customizing application color themes based on the chosen wallpaper. It also enables browsing and downloading wallpapers from a GitHub repository.";
-    mainProgram = "wallrizz";
     homepage = "https://github.com/5hubham5ingh/wallrizz";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ qweered ];
+    mainProgram = "wallrizz";
   };
 })

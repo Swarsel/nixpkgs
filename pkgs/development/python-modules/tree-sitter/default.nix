@@ -1,24 +1,21 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # build-system
-  setuptools,
-
+  buildPythonPackage,
   # tests
   pytestCheckHook,
-  tree-sitter-python,
-  tree-sitter-rust,
+  # build-system
+  setuptools,
   tree-sitter-html,
   tree-sitter-javascript,
   tree-sitter-json,
+  tree-sitter-python,
+  tree-sitter-rust,
 }:
 
 buildPythonPackage rec {
   pname = "tree-sitter";
   version = "0.25.2";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "tree-sitter";
@@ -27,8 +24,6 @@ buildPythonPackage rec {
     hash = "sha256-MgiVxq9MUaOkNNgn46g2Cy7/IUx/yatKSR1vE6LscKg=";
     fetchSubmodules = true;
   };
-
-  build-system = [ setuptools ];
 
   nativeCheckInputs = [
     pytestCheckHook
@@ -39,12 +34,12 @@ buildPythonPackage rec {
     tree-sitter-json
   ];
 
-  pythonImportsCheck = [ "tree_sitter" ];
-
   preCheck = ''
     # https://github.com/NixOS/nixpkgs/issues/255262#issuecomment-1721265871
     rm -r tree_sitter
   '';
+
+  build-system = [ setuptools ];
 
   disabledTests = [
     # Test fails only in the Nix sandbox, with:
@@ -52,6 +47,9 @@ buildPythonPackage rec {
     #    AssertionError: Lists differ: ['', '', ''] != ['graph {\n', 'label="new_parse"\n', '}\n']
     "test_dot_graphs"
   ];
+
+  pyproject = true;
+  pythonImportsCheck = [ "tree_sitter" ];
 
   meta = {
     description = "Python bindings to the Tree-sitter parsing library";

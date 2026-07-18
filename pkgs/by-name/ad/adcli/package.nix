@@ -1,11 +1,11 @@
 {
   lib,
   stdenv,
+  fetchFromGitLab,
   autoreconfHook,
   cyrus_sasl,
   docbook_xml_dtd_43,
   docbook_xsl,
-  fetchFromGitLab,
   libkrb5,
   libxslt,
   openldap,
@@ -19,34 +19,12 @@ stdenv.mkDerivation (finalAttrs: {
   version = "0.9.3a";
 
   src = fetchFromGitLab {
-    domain = "gitlab.freedesktop.org";
     owner = "realmd";
     repo = "adcli";
     tag = finalAttrs.version;
     hash = "sha256-IKZ6LW9+aUhNNNp6SL9jllkk7HI/7Ekv7EQo3jQ2VG4=";
+    domain = "gitlab.freedesktop.org";
   };
-
-  nativeBuildInputs = [
-    autoreconfHook
-    docbook_xsl
-    libxslt # xsltproc
-    pkg-config
-    util-linux
-    xmlto
-  ];
-
-  buildInputs = [
-    cyrus_sasl
-    libkrb5
-    openldap
-  ];
-
-  strictDeps = true;
-
-  configureFlags = [
-    "--disable-debug"
-    "ac_cv_path_KRB5_CONFIG=${lib.getExe' (lib.getDev libkrb5) "krb5-config"}"
-  ];
 
   postPatch = ''
     substituteInPlace tools/Makefile.am \
@@ -66,15 +44,39 @@ stdenv.mkDerivation (finalAttrs: {
     patch_docbook doc/adcli-docs.xml
   '';
 
+  strictDeps = true;
+
+  nativeBuildInputs = [
+    autoreconfHook
+    docbook_xsl
+    libxslt # xsltproc
+    pkg-config
+    util-linux
+    xmlto
+  ];
+
+  buildInputs = [
+    cyrus_sasl
+    libkrb5
+    openldap
+  ];
+
+  configureFlags = [
+    "--disable-debug"
+    "ac_cv_path_KRB5_CONFIG=${lib.getExe' (lib.getDev libkrb5) "krb5-config"}"
+  ];
+
   meta = {
-    homepage = "https://www.freedesktop.org/software/realmd/adcli/adcli.html";
     description = "Helper library and tools for Active Directory client operations";
-    mainProgram = "adcli";
+    homepage = "https://www.freedesktop.org/software/realmd/adcli/adcli.html";
     license = lib.licenses.lgpl21Only;
+
     maintainers = with lib.maintainers; [
       SohamG
       anthonyroussel
     ];
+
     platforms = lib.platforms.linux;
+    mainProgram = "adcli";
   };
 })

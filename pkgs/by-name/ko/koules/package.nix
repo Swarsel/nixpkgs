@@ -1,22 +1,22 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchurl,
-  fetchzip,
   copyDesktopItems,
+  fetchzip,
   gccmakedep,
+  imagemagick,
   imake,
   installShellFiles,
   libx11,
   libxext,
   makeDesktopItem,
-  imagemagick,
 }:
 
 let
   debian-extras = fetchzip {
-    url = "mirror://debian/pool/main/k/koules/koules_1.4-29.debian.tar.xz";
     hash = "sha256-8AQGU3uAu1nCKeu4nqCDOL7FcSJeYvD1pmidEPLLekY=";
+    url = "mirror://debian/pool/main/k/koules/koules_1.4-29.debian.tar.xz";
   };
 in
 stdenv.mkDerivation (finalAttrs: {
@@ -28,6 +28,12 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-w2+T/q/uvVmYO/RBACQOZ6hKi6yr1+5SjJMEbe/kohs=";
   };
 
+  postPatch = ''
+    # We do not want to depend on that particular font to be available in the
+    # xserver, hence substitute it by a font which is always available
+    sed -i -e 's:-schumacher-clean-bold-r-normal--8-80-75-75-c-80-\*iso\*:fixed:' xlib/init.c
+  '';
+
   nativeBuildInputs = [
     imake
     gccmakedep
@@ -35,21 +41,11 @@ stdenv.mkDerivation (finalAttrs: {
     copyDesktopItems
     imagemagick
   ];
+
   buildInputs = [
     libx11
     libxext
   ];
-
-  # Debian maintains lots of patches for koules. Let's include all of them.
-  prePatch = ''
-    patches="$patches $(cat ${debian-extras}/patches/series | sed 's|^|${debian-extras}/patches/|')"
-  '';
-
-  postPatch = ''
-    # We do not want to depend on that particular font to be available in the
-    # xserver, hence substitute it by a font which is always available
-    sed -i -e 's:-schumacher-clean-bold-r-normal--8-80-75-75-c-80-\*iso\*:fixed:' xlib/init.c
-  '';
 
   preBuild = ''
     cp xkoules.6 xkoules.man  # else "make" will not succeed
@@ -70,24 +66,30 @@ stdenv.mkDerivation (finalAttrs: {
 
   desktopItems = [
     (makeDesktopItem {
-      desktopName = "Koules";
-      name = "koules";
-      exec = "xkoules";
-      icon = "koules";
-      comment = "Push your enemies away, but stay away from obstacles";
       categories = [
         "Game"
         "ArcadeGame"
       ];
+
+      comment = "Push your enemies away, but stay away from obstacles";
+      desktopName = "Koules";
+      exec = "xkoules";
+      icon = "koules";
+      name = "koules";
     })
   ];
 
+  # Debian maintains lots of patches for koules. Let's include all of them.
+  prePatch = ''
+    patches="$patches $(cat ${debian-extras}/patches/series | sed 's|^|${debian-extras}/patches/|')"
+  '';
+
   meta = {
-    homepage = "https://www.ucw.cz/~hubicka/koules/English/";
     description = "Fast arcade game based on the fundamental law of body attraction";
-    mainProgram = "xkoules";
+    homepage = "https://www.ucw.cz/~hubicka/koules/English/";
     license = lib.licenses.gpl2Plus;
     maintainers = [ lib.maintainers.iblech ];
     platforms = lib.platforms.linux;
+    mainProgram = "xkoules";
   };
 })

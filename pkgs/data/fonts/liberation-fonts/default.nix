@@ -14,24 +14,23 @@ let
   ];
   common =
     {
-      version,
-      repo,
-      sha256,
       docsToInstall,
       nativeBuildInputs,
+      repo,
+      sha256,
+      version,
       postPatch ? null,
     }:
     stdenv.mkDerivation rec {
-      pname = "liberation-fonts";
       inherit version;
+      inherit nativeBuildInputs postPatch;
+      pname = "liberation-fonts";
 
       src = fetchFromGitHub {
+        inherit repo sha256;
         owner = "liberationfonts";
         rev = version;
-        inherit repo sha256;
       };
-
-      inherit nativeBuildInputs postPatch;
 
       installPhase = ''
         find . -name '*.ttf' -exec install -m444 -Dt $out/share/fonts/truetype {} \;
@@ -44,6 +43,7 @@ let
 
       meta = {
         description = "Liberation Fonts, replacements for Times New Roman, Arial, and Courier New";
+
         longDescription = ''
           The Liberation Fonts are intended to be replacements for the three most
           commonly used fonts on Microsoft systems: Times New Roman, Arial, and
@@ -56,16 +56,17 @@ let
           Bitstream Vera Sans Mono).
         '';
 
-        license = lib.licenses.ofl;
         homepage = "https://github.com/liberationfonts";
+        license = lib.licenses.ofl;
         maintainers = with lib.maintainers; [ raskin ];
       };
     };
 in
 {
   liberation_ttf_v1 = common {
-    repo = "liberation-1.7-fonts";
     version = "1.07.5";
+    nativeBuildInputs = commonNativeBuildInputs;
+
     docsToInstall = [
       "AUTHORS"
       "ChangeLog"
@@ -73,24 +74,30 @@ in
       "License.txt"
       "README"
     ];
-    nativeBuildInputs = commonNativeBuildInputs;
+
+    repo = "liberation-1.7-fonts";
     sha256 = "1ffl10mf78hx598sy9qr5m6q2b8n3mpnsj73bwixnd4985gsz56v";
   };
+
   liberation_ttf_v2 = common {
-    repo = "liberation-fonts";
     version = "2.1.5";
+
+    postPatch = ''
+      substituteInPlace scripts/setisFixedPitch-fonttools.py --replace \
+        'font = ttLib.TTFont(fontfile)' \
+        'font = ttLib.TTFont(fontfile, recalcTimestamp=False)'
+    '';
+
+    nativeBuildInputs = commonNativeBuildInputs ++ [ fonttools ];
+
     docsToInstall = [
       "AUTHORS"
       "ChangeLog"
       "LICENSE"
       "README.md"
     ];
-    nativeBuildInputs = commonNativeBuildInputs ++ [ fonttools ];
-    postPatch = ''
-      substituteInPlace scripts/setisFixedPitch-fonttools.py --replace \
-        'font = ttLib.TTFont(fontfile)' \
-        'font = ttLib.TTFont(fontfile, recalcTimestamp=False)'
-    '';
+
+    repo = "liberation-fonts";
     sha256 = "Wg1uoD2k/69Wn6XU+7wHqf2KO/bt4y7pwgmG7+IUh4Q=";
   };
 }

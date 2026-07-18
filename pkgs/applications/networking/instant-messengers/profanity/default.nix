@@ -2,43 +2,43 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  meson,
-  ninja,
   cmocka,
   curl,
+  enchant,
   expat,
   expect,
+  gdk-pixbuf,
   glib,
   glibcLocales,
-  libstrophe,
+  gpgme,
+  gtk3,
+  libgcrypt,
   libmicrohttpd,
+  libnotify,
+  libotr,
+  libsignal-protocol-c,
+  libstrophe,
   libuuid,
+  libx11,
+  libxscrnsaver,
+  meson,
   ncurses,
+  ninja,
   openssl,
   pkg-config,
+  python3,
+  qrencode,
   readline,
   sqlite,
   autoAwaySupport ? true,
-  libxscrnsaver,
-  libx11,
-  notifySupport ? true,
-  libnotify,
-  gdk-pixbuf,
-  omemoSupport ? true,
-  libsignal-protocol-c,
-  libgcrypt,
-  qrencode,
-  pgpSupport ? true,
-  gpgme,
-  pythonPluginSupport ? true,
-  python3,
-  traySupport ? true,
-  gtk3,
-  otrSupport ? true,
-  libotr,
   avatarScalingSupport ? true,
+  notifySupport ? true,
+  omemoSupport ? true,
+  otrSupport ? true,
+  pgpSupport ? true,
+  pythonPluginSupport ? true,
   spellcheckSupport ? true,
-  enchant,
+  traySupport ? true,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -51,8 +51,6 @@ stdenv.mkDerivation (finalAttrs: {
     rev = finalAttrs.version;
     hash = "sha256-rPiYzG5KvJyKt7b99AImmO6wTYxZPFcf/6Xhz8SrgIo=";
   };
-
-  enableParallelBuilding = true;
 
   nativeBuildInputs = [
     meson
@@ -109,11 +107,8 @@ stdenv.mkDerivation (finalAttrs: {
     (lib.mesonEnable "spellcheck" spellcheckSupport)
   ];
 
-  # this build directory is hard coded by the tests:
-  # https://github.com/profanity-im/profanity/blob/c9033aae568d1a8f5435c566f31aa165718c7726/tests/functionaltests/proftest.c#L275
-  mesonBuildDir = "build_run";
-
   doCheck = true;
+
   nativeCheckInputs = [
     cmocka
 
@@ -121,16 +116,23 @@ stdenv.mkDerivation (finalAttrs: {
     # stabber
   ];
 
+  enableParallelBuilding = true;
+  # this build directory is hard coded by the tests:
+  # https://github.com/profanity-im/profanity/blob/c9033aae568d1a8f5435c566f31aa165718c7726/tests/functionaltests/proftest.c#L275
+  mesonBuildDir = "build_run";
+
   meta = {
-    homepage = "https://profanity-im.github.io";
     description = "Console based XMPP client";
-    mainProgram = "profanity";
+
     longDescription = ''
       Profanity is a console based XMPP client written in C using ncurses and
       libstrophe, inspired by Irssi.
     '';
+
+    homepage = "https://profanity-im.github.io";
     license = lib.licenses.gpl3Plus;
     maintainers = [ lib.maintainers.devhell ];
     platforms = lib.platforms.unix;
+    mainProgram = "profanity";
   };
 })

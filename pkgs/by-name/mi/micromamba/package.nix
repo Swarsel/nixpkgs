@@ -2,17 +2,13 @@
   lib,
   stdenv,
   mamba-cpp,
-  testers,
   runCommand,
+  testers,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
   pname = "micromamba";
   version = mamba-cpp.version;
-
-  dontUnpack = true;
-  dontBuild = true;
-  dontConfigure = true;
 
   installPhase = ''
     mkdir -p $out/bin
@@ -24,11 +20,15 @@ stdenv.mkDerivation (finalAttrs: {
     cp ${mamba-cpp}/bin/mamba $out/bin/micromamba
   '';
 
+  dontBuild = true;
+  dontConfigure = true;
+  dontUnpack = true;
+
   passthru.tests = {
     # 1. Standard version check
     version = testers.testVersion {
-      package = finalAttrs.finalPackage;
       command = "micromamba --version";
+      package = finalAttrs.finalPackage;
     };
 
     # 2. Regression test for the shell initialization issue

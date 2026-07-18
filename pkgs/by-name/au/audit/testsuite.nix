@@ -2,21 +2,21 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  fetchpatch,
-  unstableGitUpdater,
   audit,
-  liburing,
-  nmap,
-  psmisc,
-  glibc,
-  perlPackages,
-  makeWrapper,
-  iptables,
   coreutils,
-  writeShellApplication,
-  systemd,
-  iproute2,
+  fetchpatch,
+  glibc,
   inetutils,
+  iproute2,
+  iptables,
+  liburing,
+  makeWrapper,
+  nmap,
+  perlPackages,
+  psmisc,
+  systemd,
+  unstableGitUpdater,
+  writeShellApplication,
 }:
 let
   perlEnv =
@@ -56,8 +56,8 @@ stdenv.mkDerivation (finalAttrs: {
   patches = [
     # https://github.com/linux-audit/audit-testsuite/pull/125
     (fetchpatch {
-      url = "https://github.com/tweag/audit-testsuite/commit/bd3f8b612ce3290d86a82170e69ac510818d52e3.patch";
       hash = "sha256-rsSQ9uTjTEnDnB1Wlt2/Of2HmS+ajCIX7Iw/FRA4Fng=";
+      url = "https://github.com/tweag/audit-testsuite/commit/bd3f8b612ce3290d86a82170e69ac510818d52e3.patch";
     })
   ];
 
@@ -67,7 +67,9 @@ stdenv.mkDerivation (finalAttrs: {
     }
   '';
 
-  passthru.updateScript = unstableGitUpdater { };
+  nativeBuildInputs = [
+    makeWrapper
+  ];
 
   buildInputs = [
     perlPackages.perl
@@ -76,10 +78,6 @@ stdenv.mkDerivation (finalAttrs: {
     nmap
     psmisc
     glibc
-  ];
-
-  nativeBuildInputs = [
-    makeWrapper
   ];
 
   doCheck = false; # Can't run checks in the build sandbox, these checks are meant to run in a full VM
@@ -111,10 +109,12 @@ stdenv.mkDerivation (finalAttrs: {
 
   passthru.runner = writeShellApplication {
     name = "audit-testsuite-runner";
+
     runtimeInputs = [
       coreutils
       systemd
     ];
+
     text = ''
       # log to journal for easier introspection in a VM test
       exec &> >(tee >(systemd-cat -t audit-testsuite))
@@ -139,12 +139,14 @@ stdenv.mkDerivation (finalAttrs: {
     '';
   };
 
+  passthru.updateScript = unstableGitUpdater { };
+
   meta = {
     description = "A simple, self-contained regression test suite for the Linux Kernel's audit subsystem";
     homepage = "https://github.com/linux-audit/audit-testsuite";
     license = lib.licenses.gpl2Only;
     maintainers = with lib.maintainers; [ grimmauld ];
-    mainProgram = "audit-testsuite";
     platforms = lib.platforms.all;
+    mainProgram = "audit-testsuite";
   };
 })

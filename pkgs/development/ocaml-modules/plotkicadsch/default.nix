@@ -1,27 +1,23 @@
 {
   lib,
-  buildDunePackage,
-  replaceVars,
   base64,
+  buildDunePackage,
   cmdliner,
+  coreutils,
   digestif,
   git-unix,
+  imagemagick,
   kicadsch,
   lwt,
   lwt_ppx,
+  replaceVars,
   sha,
   tyxml,
-  coreutils,
-  imagemagick,
 }:
 
 buildDunePackage {
-  pname = "plotkicadsch";
-  duneVersion = "3";
-
   inherit (kicadsch) src version;
-
-  minimalOCamlVersion = "4.09";
+  pname = "plotkicadsch";
 
   patches = [
     (replaceVars ./fix-paths.patch {
@@ -40,6 +36,9 @@ buildDunePackage {
     sha
     tyxml
   ];
+
+  duneVersion = "3";
+  minimalOCamlVersion = "4.09";
 
   meta = {
     description = "Tool to export Kicad Sch files to SVG pictures";

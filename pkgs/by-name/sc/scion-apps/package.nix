@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   openpam,
 }:
 
@@ -16,19 +16,17 @@ buildGoModule {
     hash = "sha256-Tj0vtdYDmKbMpcO+t9KrtFewqdjusr0JRXpX6gY69WM=";
   };
 
-  vendorHash = "sha256-/gBtKgCDyoCnJLfH5WgTCdOvoYRpPn8x2OHW0uYQnGQ=";
-
-  overrideModAttrs = old: {
-    # https://gitlab.com/cznic/libc/-/merge_requests/10
-    postBuild = ''
-      patch -p0 < ${./darwin-sandbox-fix.patch}
-    '';
-  };
-
   postPatch = ''
     substituteInPlace webapp/web/tests/health/scmpcheck.sh \
       --replace-fail "hostname -I" "hostname -i"
   '';
+
+  buildInputs = [
+    openpam
+  ];
+
+  vendorHash = "sha256-/gBtKgCDyoCnJLfH5WgTCdOvoYRpPn8x2OHW0uYQnGQ=";
+  checkFlags = [ "-skip=^(TestMangleSCIONAddrURL|TestRoundTripper)$" ];
 
   postInstall = ''
     # Add `scion-` prefix to all binaries
@@ -46,21 +44,23 @@ buildGoModule {
     cp -r webapp/web $out/share/scion-webapp
   '';
 
-  buildInputs = [
-    openpam
-  ];
-
-  checkFlags = [ "-skip=^(TestMangleSCIONAddrURL|TestRoundTripper)$" ];
-
   ldflags = [
     "-s"
     "-w"
   ];
 
+  overrideModAttrs = old: {
+    # https://gitlab.com/cznic/libc/-/merge_requests/10
+    postBuild = ''
+      patch -p0 < ${./darwin-sandbox-fix.patch}
+    '';
+  };
+
   meta = {
     description = "Public repository for SCION applications";
     homepage = "https://github.com/netsec-ethz/scion-apps";
     license = lib.licenses.asl20;
+
     maintainers = with lib.maintainers; [
       matthewcroughan
       sarcasticadmin

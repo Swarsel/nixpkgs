@@ -2,9 +2,9 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  pkg-config,
   curl,
   mpv,
+  pkg-config,
   yajl,
 }:
 

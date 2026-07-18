@@ -1,11 +1,11 @@
 {
   lib,
-  mkKdeDerivation,
   fetchurl,
+  kxmlgui,
+  mkKdeDerivation,
   qtdeclarative,
   qtsvg,
   qtwayland,
-  kxmlgui,
 }:
 mkKdeDerivation rec {
   pname = "marknote";

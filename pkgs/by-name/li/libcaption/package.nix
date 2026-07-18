@@ -1,6 +1,6 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
   cmake,
   re2c,
@@ -30,7 +30,7 @@ stdenv.mkDerivation (finalAttrs: {
     description = "Free open-source CEA608 / CEA708 closed-caption encoder/decoder";
     homepage = "https://github.com/szatmary/libcaption";
     license = lib.licenses.mit;
-    platforms = lib.platforms.all;
     maintainers = with lib.maintainers; [ pschmitt ];
+    platforms = lib.platforms.all;
   };
 })

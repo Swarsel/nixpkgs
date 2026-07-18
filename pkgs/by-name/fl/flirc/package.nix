@@ -4,8 +4,8 @@
   fetchurl,
   autoPatchelfHook,
   hidapi,
-  readline,
   libsForQt5,
+  readline,
 }:
 
 stdenv.mkDerivation {
@@ -29,9 +29,6 @@ stdenv.mkDerivation {
     libsForQt5.qtxmlpatterns
   ];
 
-  dontConfigure = true;
-  dontBuild = true;
-
   # udev rules don't appear in the official package
   # https://flirc.gitbooks.io/flirc-instructions/content/linux.html
   installPhase = ''
@@ -39,13 +36,16 @@ stdenv.mkDerivation {
     install -D ${./99-flirc.rules} $out/lib/udev/rules.d/99-flirc.rules
   '';
 
+  dontBuild = true;
+  dontConfigure = true;
+
   meta = {
-    homepage = "https://flirc.tv/more/flirc-usb";
     description = "Use any Remote with your Media Center";
-    maintainers = with lib.maintainers; [ aanderse ];
-    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
+    homepage = "https://flirc.tv/more/flirc-usb";
     license = lib.licenses.unfree;
-    mainProgram = "Flirc";
+    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
+    maintainers = with lib.maintainers; [ aanderse ];
     platforms = [ "x86_64-linux" ];
+    mainProgram = "Flirc";
   };
 }

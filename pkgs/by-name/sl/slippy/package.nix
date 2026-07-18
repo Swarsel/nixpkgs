@@ -1,9 +1,9 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
-  pkg-config,
   openssl,
+  pkg-config,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -17,8 +17,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-7Uvo5+saxwTMQjfDliyOYC6j6LbpMf/FiONfX38xepI=";
   };
 
-  cargoHash = "sha256-RGSc+jy2i97QZGfafe3M25bunBmCYAJ0UW3dAnvl5gs=";
-
   nativeBuildInputs = [
     pkg-config
   ];
@@ -27,14 +25,18 @@ rustPlatform.buildRustPackage (finalAttrs: {
     openssl
   ];
 
+  cargoHash = "sha256-RGSc+jy2i97QZGfafe3M25bunBmCYAJ0UW3dAnvl5gs=";
+
   meta = {
     description = "Markdown slideshows in Rust";
     homepage = "https://github.com/axodotdev/slippy";
     changelog = "https://github.com/axodotdev/slippy/releases/tag/${finalAttrs.src.rev}";
+
     license = with lib.licenses; [
       asl20
       mit
     ];
+
     maintainers = [ ];
     mainProgram = "slippy";
   };

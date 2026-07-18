@@ -1,8 +1,8 @@
 {
   lib,
-  fetchpatch,
-  fetchurl,
   stdenv,
+  fetchurl,
+  fetchpatch,
   replaceVars,
   vim,
   sendmailPath ? "/usr/sbin/sendmail",
@@ -20,7 +20,7 @@ stdenv.mkDerivation (finalAttrs: {
   patches = [
     (replaceVars ./0000-nixpkgs-specific.diff {
       inherit sendmailPath;
-      viPath = lib.getExe' vim "vim";
+
       defPath = lib.concatStringsSep ":" [
         "/run/wrappers/bin"
         "/nix/var/nix/profiles/default/bin"
@@ -28,25 +28,15 @@ stdenv.mkDerivation (finalAttrs: {
         "/usr/bin"
         "/bin"
       ];
+
+      viPath = lib.getExe' vim "vim";
     })
     # Fix build with gcc 15
     (fetchpatch {
-      url = "https://github.com/vixie/cron/commit/3ce0c3acdf086a82638818635961c70cba2b6ba7.patch";
       hash = "sha256-d1vN3TGAAOMlWpMZKnHU/RlZ5pBOl3+IXjZ4UALVqLI=";
+      url = "https://github.com/vixie/cron/commit/3ce0c3acdf086a82638818635961c70cba2b6ba7.patch";
     })
   ];
-
-  makeFlags = [
-    "CC=${stdenv.cc.targetPrefix}cc"
-    "DESTROOT=$(out)"
-  ];
-
-  unpackCmd = ''
-    mkdir cron
-    pushd cron
-    sh $curSrc
-    popd
-  '';
 
   # do not set sticky bit in /nix/store
   # further, do not strip during install since it breaks on cross-compilation
@@ -59,16 +49,28 @@ stdenv.mkDerivation (finalAttrs: {
       --replace ' -s cron' ' cron'
   '';
 
+  makeFlags = [
+    "CC=${stdenv.cc.targetPrefix}cc"
+    "DESTROOT=$(out)"
+  ];
+
   preInstall = ''
     mkdir -p $out/{{,s}bin,share/man/man{1,5,8}}
   '';
 
+  unpackCmd = ''
+    mkdir cron
+    pushd cron
+    sh $curSrc
+    popd
+  '';
+
   meta = {
-    homepage = "https://ftp.isc.org/isc/cron/";
     description = "Daemon for running commands at specific times";
+    homepage = "https://ftp.isc.org/isc/cron/";
     license = lib.licenses.bsd0;
-    mainProgram = "cron";
     maintainers = [ ];
     platforms = lib.platforms.unix;
+    mainProgram = "cron";
   };
 })

@@ -17,6 +17,7 @@ stdenv.mkDerivation (finalAttrs: {
     url =
       with finalAttrs;
       "https://salsa.debian.org/iso-codes-team/iso-codes/-/archive/v${version}/iso-codes-v${version}.tar.gz";
+
     hash = "sha256-LX2fYISrnObFNM5xo91RRLbkdPPJdhZFmoj3P0SmS/8=";
   };
 
@@ -38,8 +39,8 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   meta = {
-    homepage = "https://salsa.debian.org/iso-codes-team/iso-codes";
     description = "Various ISO codes packaged as XML files";
+    homepage = "https://salsa.debian.org/iso-codes-team/iso-codes";
     license = lib.licenses.lgpl21;
     maintainers = with lib.maintainers; [ mdaniels5757 ];
     platforms = lib.platforms.all;

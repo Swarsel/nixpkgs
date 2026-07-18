@@ -1,11 +1,11 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   nibabel,
+  pint,
   pydicom,
   pylibjpeg,
-  pint,
   pytestCheckHook,
   setuptools,
 }:
@@ -13,7 +13,6 @@
 buildPythonPackage {
   pname = "dcmstack";
   version = "0.9-unstable-2024-12-05";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "moloney";
@@ -22,6 +21,7 @@ buildPythonPackage {
     hash = "sha256-QXnBtlXkxYDJFdjiqCoEuBMcHnq+87YmHX8j5EPW7HU=";
   };
 
+  nativeCheckInputs = [ pytestCheckHook ];
   build-system = [ setuptools ];
 
   dependencies = [
@@ -31,14 +31,13 @@ buildPythonPackage {
     pint
   ];
 
-  nativeCheckInputs = [ pytestCheckHook ];
-
-  pythonImportsCheck = [ "dcmstack" ];
-
   disabledTestPaths = [
     # AttributeError: 'TestNitoolCli' object has no attribute 'out_dir'
     "test/test_cli.py"
   ];
+
+  pyproject = true;
+  pythonImportsCheck = [ "dcmstack" ];
 
   meta = {
     description = "DICOM to Nifti conversion preserving metadata";

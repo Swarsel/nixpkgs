@@ -24,9 +24,9 @@ stdenv.mkDerivation (finalAttrs: {
   env.NIX_CFLAGS_COMPILE = "-Wno-error=cast-function-type";
 
   meta = {
-    homepage = "https://www.netsurf-browser.org/projects/libwapcaplet/";
-    description = "String internment library for netsurf browser";
-    license = lib.licenses.mit;
     inherit (netsurf-buildsystem.meta) maintainers platforms;
+    description = "String internment library for netsurf browser";
+    homepage = "https://www.netsurf-browser.org/projects/libwapcaplet/";
+    license = lib.licenses.mit;
   };
 })

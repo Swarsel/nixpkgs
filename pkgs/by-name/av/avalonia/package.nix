@@ -1,10 +1,11 @@
 {
-  dotnetCorePackages,
+  lib,
   fetchFromGitHub,
+  dotnetCorePackages,
   fetchNpmDeps,
   fetchzip,
   fontconfig,
-  lib,
+  liberation_ttf,
   libice,
   libsm,
   libx11,
@@ -12,7 +13,6 @@
   libxext,
   libxi,
   libxrandr,
-  liberation_ttf,
   makeFontsConf,
   nodejs,
   npmHooks,
@@ -37,11 +37,13 @@ stdenvNoCC.mkDerivation (
   dotnetCorePackages.addNuGetDeps
     {
       nugetDeps = ./deps.json;
+
       overrideFetchAttrs = old: rec {
-        runtimeIds = map (system: dotnetCorePackages.systemToDotnetRid system) old.meta.platforms;
         buildInputs =
           old.buildInputs
           ++ lib.concatLists (lib.attrValues (lib.getAttrs runtimeIds dotnet-sdk.targetPackages));
+
+        runtimeIds = map (system: dotnetCorePackages.systemToDotnetRid system) old.meta.platforms;
       };
     }
     rec {
@@ -52,8 +54,8 @@ stdenvNoCC.mkDerivation (
         owner = "AvaloniaUI";
         repo = "Avalonia";
         tag = version;
-        fetchSubmodules = true;
         hash = "sha256-jBpzPm9zKSrhuaOwhfSRaWwrESgGI0iHPhrU3JczHwY=";
+        fetchSubmodules = true;
       };
 
       patches = [
@@ -69,23 +71,6 @@ stdenvNoCC.mkDerivation (
         # specific and currently not packaged in nixpkgs
         ./0004-disable-windows-desktop.patch
       ];
-
-      env = {
-        # this needs to be match the version being patched above
-        UNICODE_CHARACTER_DATABASE = fetchzip {
-          url = "https://www.unicode.org/Public/15.0.0/ucd/UCD.zip";
-          hash = "sha256-jj6bX46VcnH7vpc9GwM9gArG+hSPbOGL6E4SaVd0s60=";
-          stripRoot = false;
-        };
-        FONTCONFIG_FILE =
-          let
-            fc = makeFontsConf { fontDirectories = [ liberation_ttf ]; };
-          in
-          runCommand "fonts.conf" { } ''
-            substitute ${fc} $out \
-            --replace-fail "/etc/" "${fontconfig.out}/etc/"
-          '';
-      };
 
       postPatch = ''
         patchShebangs build.sh
@@ -112,11 +97,11 @@ stdenvNoCC.mkDerivation (
       +
         # TODO: implement updateScript
         lib.concatMapStrings (
-          { path, hash }:
+          { hash, path }:
           let
             deps = fetchNpmDeps {
-              src = "${src}/${path}";
               inherit hash;
+              src = "${src}/${path}";
             };
           in
           ''
@@ -139,18 +124,30 @@ stdenvNoCC.mkDerivation (
             ""
       '';
 
-      makeCacheWritable = true;
+      nativeBuildInputs = [
+        nodejs
+        dotnet-sdk
+      ];
 
-      # CSC : error CS1566: Error reading resource 'pdbstr.exe' -- 'Could not find a part of the path '/build/.nuget-temp/packages/sourcelink/1.1.0/tools/pdbstr.exe'.' [/build/source/nukebuild/_build.csproj]
-      linkNugetPackages = true;
+      buildInputs = dotnet-sdk.packages;
 
-      # [WRN] Could not inject value for Build.ApiCompatTool
-      # System.Exception: Missing package reference/download.
-      # Run one of the following commands:
-      #  ---> System.ArgumentException: Could not find package 'Microsoft.DotNet.ApiCompat.Tool' using:
-      #  - Project assets file '/build/source/nukebuild/obj/project.assets.json'
-      #  - NuGet packages config '/build/source/nukebuild/_build.csproj'
-      linkNuGetPackagesAndSources = true;
+      env = {
+        FONTCONFIG_FILE =
+          let
+            fc = makeFontsConf { fontDirectories = [ liberation_ttf ]; };
+          in
+          runCommand "fonts.conf" { } ''
+            substitute ${fc} $out \
+            --replace-fail "/etc/" "${fontconfig.out}/etc/"
+          '';
+
+        # this needs to be match the version being patched above
+        UNICODE_CHARACTER_DATABASE = fetchzip {
+          hash = "sha256-jj6bX46VcnH7vpc9GwM9gArG+hSPbOGL6E4SaVd0s60=";
+          stripRoot = false;
+          url = "https://www.unicode.org/Public/15.0.0/ucd/UCD.zip";
+        };
+      };
 
       preConfigure = ''
         # closed source (telemetry?) https://github.com/AvaloniaUI/Avalonia/discussions/16878
@@ -161,26 +158,6 @@ stdenvNoCC.mkDerivation (
         dotnet add tests/Avalonia.Direct2D1.UnitTests/Avalonia.Direct2D1.UnitTests.csproj \
           package Microsoft.NETCore.App --version 1.1.13 --no-restore
       '';
-
-      runtimeIds = [ (systemToDotnetRid stdenvNoCC.hostPlatform.system) ];
-
-      configurePhase = ''
-        runHook preConfigure
-        for project in nukebuild/_build.csproj dirs.proj; do
-          for rid in $runtimeIds; do
-            dotnet restore --runtime "$rid" "$project"
-          done
-        done
-        runHook postConfigure
-      '';
-
-      nativeBuildInputs = [
-        nodejs
-        dotnet-sdk
-      ];
-      buildInputs = dotnet-sdk.packages;
-
-      buildTarget = "Package";
 
       buildPhase = ''
         runHook preBuild
@@ -196,20 +173,46 @@ stdenvNoCC.mkDerivation (
         runHook postInstall
       '';
 
+      buildTarget = "Package";
+
+      configurePhase = ''
+        runHook preConfigure
+        for project in nukebuild/_build.csproj dirs.proj; do
+          for rid in $runtimeIds; do
+            dotnet restore --runtime "$rid" "$project"
+          done
+        done
+        runHook postConfigure
+      '';
+
+      # [WRN] Could not inject value for Build.ApiCompatTool
+      # System.Exception: Missing package reference/download.
+      # Run one of the following commands:
+      #  ---> System.ArgumentException: Could not find package 'Microsoft.DotNet.ApiCompat.Tool' using:
+      #  - Project assets file '/build/source/nukebuild/obj/project.assets.json'
+      #  - NuGet packages config '/build/source/nukebuild/_build.csproj'
+      linkNuGetPackagesAndSources = true;
+      # CSC : error CS1566: Error reading resource 'pdbstr.exe' -- 'Could not find a part of the path '/build/.nuget-temp/packages/sourcelink/1.1.0/tools/pdbstr.exe'.' [/build/source/nukebuild/_build.csproj]
+      linkNugetPackages = true;
+      makeCacheWritable = true;
+      runtimeIds = [ (systemToDotnetRid stdenvNoCC.hostPlatform.system) ];
+
       passthru = {
-        updateScript = ./update.bash;
         inherit npmDepsFile;
+        updateScript = ./update.bash;
       };
 
       meta = {
+        description = "Cross-platform UI framework for dotnet";
         homepage = "https://avaloniaui.net/";
         license = [ lib.licenses.mit ];
-        maintainers = with lib.maintainers; [ corngood ];
-        description = "Cross-platform UI framework for dotnet";
+
         sourceProvenance = with lib.sourceTypes; [
           fromSource
           binaryNativeCode # npm dependencies contain binaries
         ];
+
+        maintainers = with lib.maintainers; [ corngood ];
         platforms = dotnet-sdk.meta.platforms;
         broken = stdenvNoCC.hostPlatform.isDarwin;
       };

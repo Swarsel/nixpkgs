@@ -1,18 +1,17 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
-  pytestCheckHook,
+  buildPythonPackage,
   numpy,
+  pytestCheckHook,
   scipy,
+  setuptools,
   statsmodels,
 }:
 
 buildPythonPackage {
   pname = "changefinder";
   version = "unstable-2024-03-24";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "shunsukeaihara";
@@ -22,10 +21,8 @@ buildPythonPackage {
   };
 
   patches = [ ./fix_test_invocation.patch ];
-
+  nativeCheckInputs = [ pytestCheckHook ];
   build-system = [ setuptools ];
-
-  pythonRemoveDeps = [ "nose" ];
 
   dependencies = [
     numpy
@@ -33,10 +30,10 @@ buildPythonPackage {
     statsmodels
   ];
 
-  nativeCheckInputs = [ pytestCheckHook ];
   enabledTestPaths = [ "test/test.py" ];
-
+  pyproject = true;
   pythonImportsCheck = [ "changefinder" ];
+  pythonRemoveDeps = [ "nose" ];
 
   meta = {
     description = "Online Change-Point Detection library based on ChangeFinder algorithm";

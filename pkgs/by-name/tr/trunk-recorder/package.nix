@@ -2,23 +2,23 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  cmake,
-  git,
-  makeWrapper,
-  pkg-config,
   boost,
+  cmake,
   curl,
+  fdk-aac-encoder,
+  git,
   gmp,
   gnuradio,
   gnuradioPackages,
   hackrf,
+  makeWrapper,
   mpir,
   openssl,
+  pkg-config,
+  sox,
   spdlog,
   uhd,
   volk,
-  fdk-aac-encoder,
-  sox,
   hackrfSupport ? true,
 }:
 stdenv.mkDerivation (finalAttrs: {
@@ -32,7 +32,11 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-2qy6krI5NglkC+bUFfJaEuHIcBoYJrxBRnFs8O0NcZA=";
   };
 
-  cmakeFlags = [ "-DCMAKE_SKIP_BUILD_RPATH=ON" ];
+  postPatch = ''
+    # fix broken symlink
+    rm -v trunk-recorder/git.h
+    cp -v git.h trunk-recorder/git.h
+  '';
 
   nativeBuildInputs = [
     cmake
@@ -40,6 +44,7 @@ stdenv.mkDerivation (finalAttrs: {
     pkg-config
     makeWrapper
   ];
+
   buildInputs = [
     boost
     curl
@@ -54,11 +59,7 @@ stdenv.mkDerivation (finalAttrs: {
   ++ lib.optionals hackrfSupport [ hackrf ]
   ++ lib.optionals stdenv.hostPlatform.isDarwin [ mpir ];
 
-  postPatch = ''
-    # fix broken symlink
-    rm -v trunk-recorder/git.h
-    cp -v git.h trunk-recorder/git.h
-  '';
+  cmakeFlags = [ "-DCMAKE_SKIP_BUILD_RPATH=ON" ];
 
   postFixup = ''
     wrapProgram $out/bin/trunk-recorder --prefix PATH : ${

@@ -1,16 +1,15 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
-  pytestCheckHook,
+  buildPythonPackage,
   gitUpdater,
+  pytestCheckHook,
+  setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "cobble";
   version = "0.1.4";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "mwilliamson";
@@ -19,15 +18,11 @@ buildPythonPackage rec {
     hash = "sha256-xi6cCSUnMYc5Tp6+TQlC9Oo9kpam5C7QGCul/IoTW1k=";
   };
 
-  build-system = [ setuptools ];
-
-  pythonImportsCheck = [ "cobble" ];
-
   nativeCheckInputs = [
     pytestCheckHook
   ];
 
-  enabledTestPaths = [ "tests.py" ];
+  build-system = [ setuptools ];
 
   disabledTests = [
     # Broken tests
@@ -40,6 +35,9 @@ buildPythonPackage rec {
     "test_sub_sub_classes_are_included_in_abc"
   ];
 
+  enabledTestPaths = [ "tests.py" ];
+  pyproject = true;
+  pythonImportsCheck = [ "cobble" ];
   passthru.updateScript = gitUpdater { };
 
   meta = {

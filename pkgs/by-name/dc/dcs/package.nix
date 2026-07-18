@@ -1,10 +1,10 @@
 {
   lib,
-  buildGoModule,
+  stdenv,
   fetchFromGitHub,
+  buildGoModule,
   yuicompressor,
   zopfli,
-  stdenv,
 }:
 buildGoModule {
   pname = "dcs";
@@ -17,19 +17,19 @@ buildGoModule {
     hash = "sha256-N+6BXlKn1YTlh0ZdPNWa0nuJNcQtlUIc9TocM8cbzQk=";
   };
 
-  vendorHash = "sha256-l2mziuisx0HzuP88rS5M+Wha6lu8P036wJYZlmzjWfs=";
-
-  # Depends on dcs binaries
-  doCheck = false;
-
   nativeBuildInputs = [
     yuicompressor
     zopfli
   ];
 
+  vendorHash = "sha256-l2mziuisx0HzuP88rS5M+Wha6lu8P036wJYZlmzjWfs=";
+
   postBuild = ''
     make -C static -j$NIX_BUILD_CORES
   '';
+
+  # Depends on dcs binaries
+  doCheck = false;
 
   postInstall = ''
     mkdir -p $out/share/dcs

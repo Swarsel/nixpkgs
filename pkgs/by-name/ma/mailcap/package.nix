@@ -2,15 +2,14 @@
   lib,
   stdenv,
   fetchurl,
-  nixosTests,
-
-  # updater
-  git,
   coreutils,
   gawk,
+  # updater
+  git,
   gnused,
-  writeScript,
   nix-update,
+  nixosTests,
+  writeScript,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -35,6 +34,8 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  passthru.tests.nginx-mime = nixosTests.nginx-mime;
+
   passthru.updateScript = writeScript "update-mailcap" ''
     export PATH=${
       lib.makeBinPath [
@@ -53,8 +54,6 @@ stdenv.mkDerivation (finalAttrs: {
       head -n1)"
     exec nix-update --version "$VERSION" "$@"
   '';
-
-  passthru.tests.nginx-mime = nixosTests.nginx-mime;
 
   meta = {
     description = "Helper application and MIME type associations for file types";

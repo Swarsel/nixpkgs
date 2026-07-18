@@ -1,7 +1,7 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -21,10 +21,12 @@ rustPlatform.buildRustPackage (finalAttrs: {
     description = "Fast regex extraction tool with pattern matching, replacement, and configurable sorting";
     homepage = "https://github.com/wfxr/xre";
     changelog = "https://github.com/wfxr/xre/blob/${finalAttrs.src.rev}/CHANGELOG.md";
+
     license = with lib.licenses; [
       asl20
       mit
     ];
+
     maintainers = with lib.maintainers; [ doronbehar ];
     mainProgram = "xre";
   };

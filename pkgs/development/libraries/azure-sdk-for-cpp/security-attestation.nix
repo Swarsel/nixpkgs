@@ -2,19 +2,15 @@
   stdenv,
   fetchFromGitHub,
   cmake,
-  ninja,
   core,
-  openssl,
-  nix-update-script,
   meta,
+  ninja,
+  nix-update-script,
+  openssl,
 }:
 stdenv.mkDerivation (finalAttrs: {
   pname = "azure-sdk-for-cpp-security-attestation";
   version = "1.2.0-beta.1-unreleased-2025-03-12";
-  outputs = [
-    "out"
-    "dev"
-  ];
 
   src = fetchFromGitHub {
     owner = "Azure";
@@ -22,7 +18,11 @@ stdenv.mkDerivation (finalAttrs: {
     tag = "azure-security-attestation_1.1.0";
     hash = "sha256-RXCMB7MMIe5x5YgMAqAf306E/1vuRXweAlN5uDHumjA=";
   };
-  sourceRoot = "${finalAttrs.src.name}/sdk/attestation/azure-security-attestation";
+
+  outputs = [
+    "out"
+    "dev"
+  ];
 
   postPatch = ''
     sed -i '/CMAKE_CXX_STANDARD/d' CMakeLists.txt
@@ -40,19 +40,24 @@ stdenv.mkDerivation (finalAttrs: {
   buildInputs = [ openssl ];
   propagatedBuildInputs = [ core ];
 
-  env = {
-    AZURE_SDK_DISABLE_AUTO_VCPKG = 1;
-  };
-
   cmakeFlags = [
     "-DBUILD_SHARED_LIBS=ON"
     "-DWARNINGS_AS_ERRORS=OFF"
   ];
 
+  env = {
+    AZURE_SDK_DISABLE_AUTO_VCPKG = 1;
+  };
+
+  # See note in ./core.nix.
+  doCheck = false;
+
   postInstall = ''
     moveToOutput "share" "$dev"
     moveToOutput "share/$(basename "$sourceRoot")-cpp/copyright" "$out"
   '';
+
+  sourceRoot = "${finalAttrs.src.name}/sdk/attestation/azure-security-attestation";
 
   passthru.updateScript = nix-update-script {
     extraArgs = [
@@ -60,9 +65,6 @@ stdenv.mkDerivation (finalAttrs: {
       "azure-security-attestation_(.*)"
     ];
   };
-
-  # See note in ./core.nix.
-  doCheck = false;
 
   meta = (
     meta

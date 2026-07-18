@@ -1,8 +1,8 @@
 {
   lib,
   buildPythonPackage,
-  fetchpatch2,
   fetchPypi,
+  fetchpatch2,
   numpy,
   pandas,
   pytestCheckHook,
@@ -14,7 +14,6 @@
 buildPythonPackage rec {
   pname = "flammkuchen";
   version = "1.0.3";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
@@ -23,10 +22,15 @@ buildPythonPackage rec {
 
   patches = [
     (fetchpatch2 {
+      hash = "sha256-/goNkiEBrcprywQYf2oKvGbu5j12hmalPuB45wNNt+I=";
       name = "numpy-v2-compat.patch";
       url = "https://github.com/portugueslab/flammkuchen/commit/c523ea78e10facd98d4893f045249c68bae17940.patch?full_index=1";
-      hash = "sha256-/goNkiEBrcprywQYf2oKvGbu5j12hmalPuB45wNNt+I=";
     })
+  ];
+
+  nativeCheckInputs = [
+    pandas
+    pytestCheckHook
   ];
 
   build-system = [ setuptools ];
@@ -37,14 +41,11 @@ buildPythonPackage rec {
     tables
   ];
 
-  nativeCheckInputs = [
-    pandas
-    pytestCheckHook
-  ];
+  pyproject = true;
 
   meta = {
-    homepage = "https://github.com/portugueslab/flammkuchen";
     description = "Flexible HDF5 saving/loading library forked from deepdish (University of Chicago) and maintained by the Portugues lab";
+    homepage = "https://github.com/portugueslab/flammkuchen";
     license = lib.licenses.bsd3;
     maintainers = [ ];
   };

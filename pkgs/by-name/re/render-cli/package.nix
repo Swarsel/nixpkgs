@@ -16,19 +16,18 @@ buildGoModule rec {
   };
 
   vendorHash = "sha256-ywUuD8ZtfPAtVcHOrEIuXBncqWENTb++Spc4cp2LUOM=";
-
   # Tests require network access
   doCheck = false;
+
+  postInstall = ''
+    mv $out/bin/cli $out/bin/render
+  '';
 
   ldflags = [
     "-s"
     "-w"
     "-X github.com/render-oss/cli/pkg/cfg.Version=${version}"
   ];
-
-  postInstall = ''
-    mv $out/bin/cli $out/bin/render
-  '';
 
   meta = {
     description = "Official command-line interface for Render cloud hosting platform";

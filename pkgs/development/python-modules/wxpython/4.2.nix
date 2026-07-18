@@ -1,57 +1,52 @@
 {
   lib,
   stdenv,
-  buildPythonPackage,
-  setuptools,
-  fetchPypi,
-  fetchpatch,
-  replaceVars,
-
+  attrdict,
   # build
   autoPatchelfHook,
-  attrdict,
-  cython,
-  doxygen,
-  pkg-config,
-  python,
-  requests,
-  sip,
-  which,
   buildPackages,
-
+  buildPythonPackage,
   # runtime
   cairo,
+  cython,
+  doxygen,
+  fetchPypi,
+  fetchpatch,
   gst_all_1,
   gtk3,
   libGL,
   libGLU,
+  libgbm,
+  libglvnd,
   libsm,
   libxinerama,
   libxtst,
   libxxf86vm,
-  libglvnd,
-  libgbm,
-  pango,
-  webkitgtk_4_1,
-  wxGTK,
-  xorgproto,
-
   # propagates
   numpy,
+  pango,
   pillow,
-  six,
-
+  pkg-config,
   # checks
   py,
   pytest,
   pytest-forked,
+  python,
+  replaceVars,
+  requests,
+  setuptools,
+  sip,
+  six,
+  webkitgtk_4_1,
+  which,
+  wxGTK,
+  xorgproto,
   xvfb-run,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "wxpython";
   version = "4.2.5";
-  pyproject = false;
 
   src = fetchPypi {
     inherit (finalAttrs) pname version;
@@ -60,9 +55,9 @@ buildPythonPackage (finalAttrs: {
 
   patches = [
     (replaceVars ./4.2-ctypes.patch {
+      libcairo = "${lib.getLib cairo}/lib/libcairo${stdenv.hostPlatform.extensions.sharedLibrary}";
       libgdk = "${lib.getLib gtk3}/lib/libgdk-3${stdenv.hostPlatform.extensions.sharedLibrary}";
       libpangocairo = "${lib.getLib pango}/lib/libpangocairo-1.0${stdenv.hostPlatform.extensions.sharedLibrary}";
-      libcairo = "${lib.getLib cairo}/lib/libcairo${stdenv.hostPlatform.extensions.sharedLibrary}";
     })
     ./0001-add-missing-bool-c.patch # Add missing bool.c from old source
   ];
@@ -111,15 +106,6 @@ buildPythonPackage (finalAttrs: {
     six
   ];
 
-  nativeCheckInputs = [
-    py # py must be ordered before pytest (see https://github.com/pytest-dev/pytest-forked/issues/88)
-    pytest
-    pytest-forked
-    xvfb-run
-  ];
-
-  wafPath = "bin/waf";
-
   buildPhase = ''
     runHook preBuild
 
@@ -131,18 +117,16 @@ buildPythonPackage (finalAttrs: {
     runHook postBuild
   '';
 
-  installPhase = ''
-    runHook preInstall
-
-    ${python.pythonOnBuildForHost.interpreter} setup.py install --skip-build --prefix=$out
-    wrapPythonPrograms
-
-    runHook postInstall
-  '';
-
   # The majority of the tests require a graphical environment, but xvfb-run is available only on Linux.
   # Tests fail randomly on OfBorg and Hydra.
   doCheck = false;
+
+  nativeCheckInputs = [
+    py # py must be ordered before pytest (see https://github.com/pytest-dev/pytest-forked/issues/88)
+    pytest
+    pytest-forked
+    xvfb-run
+  ];
 
   checkPhase =
     let
@@ -170,10 +154,23 @@ buildPythonPackage (finalAttrs: {
       runHook postCheck
     '';
 
+  installPhase = ''
+    runHook preInstall
+
+    ${python.pythonOnBuildForHost.interpreter} setup.py install --skip-build --prefix=$out
+    wrapPythonPrograms
+
+    runHook postInstall
+  '';
+
+  pyproject = false;
+  wafPath = "bin/waf";
+
   meta = {
-    changelog = "https://github.com/wxWidgets/Phoenix/blob/wxPython-${finalAttrs.version}/CHANGES.rst";
     description = "Cross platform GUI toolkit for Python, Phoenix version";
     homepage = "http://wxpython.org/";
+    changelog = "https://github.com/wxWidgets/Phoenix/blob/wxPython-${finalAttrs.version}/CHANGES.rst";
+
     license = with lib.licenses; [
       lgpl2Plus
       wxWindowsException31

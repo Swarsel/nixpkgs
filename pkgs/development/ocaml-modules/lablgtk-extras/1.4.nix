@@ -1,12 +1,12 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchurl,
-  ocaml,
-  findlib,
   camlp4,
   config-file,
+  findlib,
   lablgtk,
+  ocaml,
   xmlm,
 }:
 
@@ -26,6 +26,7 @@ stdenv.mkDerivation rec {
     findlib
     camlp4
   ];
+
   propagatedBuildInputs = [
     config-file
     lablgtk
@@ -35,11 +36,11 @@ stdenv.mkDerivation rec {
   createFindlibDestdir = true;
 
   meta = {
-    platforms = ocaml.meta.platforms or [ ];
-    maintainers = with lib.maintainers; [ vbgl ];
-    homepage = "http://gtk-extras.forge.ocamlcore.org/";
     description = "Collection of libraries and modules useful when developing OCaml/LablGtk2 applications";
+    homepage = "http://gtk-extras.forge.ocamlcore.org/";
     license = lib.licenses.lgpl2Plus;
+    maintainers = with lib.maintainers; [ vbgl ];
+    platforms = ocaml.meta.platforms or [ ];
     branch = "1.4";
   };
 }

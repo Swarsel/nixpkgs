@@ -3,9 +3,9 @@
   stdenv,
   fetchFromGitHub,
   autoreconfHook,
+  json_c,
   libpcap,
   lua5_1,
-  json_c,
   testers,
   tracebox,
 }:
@@ -21,17 +21,18 @@ stdenv.mkDerivation (finalAttrs: {
     fetchSubmodules = true;
   };
 
+  postPatch = ''
+    sed -i configure.ac \
+      -e 's,$(git describe .*),${finalAttrs.version},'
+  '';
+
   nativeBuildInputs = [ autoreconfHook ];
+
   buildInputs = [
     libpcap
     lua5_1
     json_c
   ];
-
-  postPatch = ''
-    sed -i configure.ac \
-      -e 's,$(git describe .*),${finalAttrs.version},'
-  '';
 
   configureFlags = [
     "--with-lua=yes"
@@ -47,13 +48,13 @@ stdenv.mkDerivation (finalAttrs: {
   enableParallelBuilding = true;
 
   passthru.tests.version = testers.testVersion {
-    package = tracebox;
     command = "tracebox -V";
+    package = tracebox;
   };
 
   meta = {
-    homepage = "http://www.tracebox.org/";
     description = "Middlebox detection tool";
+    homepage = "http://www.tracebox.org/";
     license = lib.licenses.gpl2Only;
     maintainers = with lib.maintainers; [ ck3d ];
     platforms = lib.platforms.linux;

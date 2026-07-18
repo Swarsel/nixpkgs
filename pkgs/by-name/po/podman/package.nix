@@ -2,43 +2,43 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  pkg-config,
-  installShellFiles,
+  aardvark-dns,
+  btrfs-progs,
   buildGoModule,
   buildPackages,
+  catatonit,
+  conmon,
+  coreutils,
+  crun,
+  fuse-overlayfs,
   gpgme,
-  btrfs-progs,
+  gvproxy,
+  installShellFiles,
+  iproute2,
+  iptables,
+  krunkit,
   libapparmor,
   libseccomp,
   libselinux,
+  makeBinaryWrapper,
+  netavark,
+  nftables,
+  nixosTests,
+  passt,
+  pkg-config,
+  python3,
+  replaceVars,
+  runc,
+  runtimeShell,
+  symlinkJoin,
   # TODO: investigate why changing from `systemd` to `systemdMinimal` breaks `podman logs`
   systemd,
-  nixosTests,
-  python3,
-  makeBinaryWrapper,
-  symlinkJoin,
-  replaceVars,
-  extraPackages ? [ ],
-  crun,
-  runc,
-  krunkit,
-  conmon,
-  extraRuntimes ? lib.optionals stdenv.hostPlatform.isLinux [ runc ], # e.g.: runc, gvisor, youki
-  fuse-overlayfs,
   util-linuxMinimal,
-  nftables,
-  iptables,
-  iproute2,
-  catatonit,
-  gvproxy,
-  aardvark-dns,
-  netavark,
-  passt,
-  vfkit,
   versionCheckHook,
+  vfkit,
   writableTmpDirAsHomeHook,
-  coreutils,
-  runtimeShell,
+  extraPackages ? [ ],
+  extraRuntimes ? lib.optionals stdenv.hostPlatform.isLinux [ runc ], # e.g.: runc, gvisor, youki
 }:
 buildGoModule (finalAttrs: {
   pname = "podman";
@@ -51,6 +51,11 @@ buildGoModule (finalAttrs: {
     hash = "sha256-zhEtMZVKiv1L72EMlwgz8sHpmvhejGp98oW63aPj+rQ=";
   };
 
+  outputs = [
+    "out"
+    "man"
+  ];
+
   patches = [
     (replaceVars ./hardcode-paths.patch {
       bin_path = finalAttrs.passthru.helpersBin;
@@ -58,15 +63,6 @@ buildGoModule (finalAttrs: {
 
     # we intentionally don't build and install the helper so we shouldn't display messages to users about it
     ./rm-podman-mac-helper-msg.patch
-  ];
-
-  vendorHash = null;
-
-  doCheck = false;
-
-  outputs = [
-    "out"
-    "man"
   ];
 
   nativeBuildInputs = [
@@ -85,10 +81,12 @@ buildGoModule (finalAttrs: {
     systemd
   ];
 
+  vendorHash = null;
+
   env = {
+    GOMD2MAN = "${buildPackages.go-md2man}/bin/go-md2man";
     HELPER_BINARIES_DIR = "${placeholder "out"}/libexec/podman"; # used in buildPhase & installPhase
     PREFIX = "${placeholder "out"}";
-    GOMD2MAN = "${buildPackages.go-md2man}/bin/go-md2man";
   };
 
   buildPhase = ''
@@ -109,6 +107,8 @@ buildGoModule (finalAttrs: {
 
     runHook postBuild
   '';
+
+  doCheck = false;
 
   installPhase = ''
     runHook preInstall
@@ -132,6 +132,13 @@ buildGoModule (finalAttrs: {
     runHook postInstall
   '';
 
+  doInstallCheck = true;
+
+  nativeInstallCheckInputs = [
+    versionCheckHook
+    writableTmpDirAsHomeHook
+  ];
+
   postFixup = lib.optionalString stdenv.hostPlatform.isLinux ''
     RPATH=$(patchelf --print-rpath $out/bin/.podman-wrapped)
     patchelf --set-rpath "${lib.makeLibraryPath [ systemd ]}":$RPATH $out/bin/.podman-wrapped
@@ -140,24 +147,9 @@ buildGoModule (finalAttrs: {
       --replace-fail /bin/sh '${runtimeShell}'
   '';
 
-  doInstallCheck = true;
-  nativeInstallCheckInputs = [
-    versionCheckHook
-    writableTmpDirAsHomeHook
-  ];
   versionCheckKeepEnvironment = [ "HOME" ];
 
   passthru = {
-    tests = lib.optionalAttrs stdenv.hostPlatform.isLinux {
-      inherit (nixosTests) podman;
-      # related modules
-      inherit (nixosTests)
-        podman-tls-ghostunnel
-        ;
-      oci-containers-podman = nixosTests.oci-containers.podman;
-      oci-containers-podman-rootless-conmon = nixosTests.oci-containers.podman-rootless-conmon;
-      oci-containers-podman-rootless-healthy = nixosTests.oci-containers.podman-rootless-healthy;
-    };
     # do not add qemu to this wrapper, store paths get written to the podman vm config and break when GCed
     binPath = lib.makeBinPath (
       lib.optionals stdenv.hostPlatform.isLinux [
@@ -190,20 +182,35 @@ buildGoModule (finalAttrs: {
         ]
         ++ extraRuntimes;
     };
+
+    tests = lib.optionalAttrs stdenv.hostPlatform.isLinux {
+      inherit (nixosTests) podman;
+
+      # related modules
+      inherit (nixosTests)
+        podman-tls-ghostunnel
+        ;
+
+      oci-containers-podman = nixosTests.oci-containers.podman;
+      oci-containers-podman-rootless-conmon = nixosTests.oci-containers.podman-rootless-conmon;
+      oci-containers-podman-rootless-healthy = nixosTests.oci-containers.podman-rootless-healthy;
+    };
   };
 
   meta = {
-    homepage = "https://podman.io/";
     description = "Program for managing pods, containers and container images";
+
     longDescription = ''
       Podman (the POD MANager) is a tool for managing containers and images, volumes mounted into those containers, and pods made from groups of containers. Podman runs containers on Linux, but can also be used on Mac and Windows systems using a Podman-managed virtual machine. Podman is based on libpod, a library for container lifecycle management that is also contained in this repository. The libpod library provides APIs for managing containers, pods, container images, and volumes.
 
       To install on NixOS, please use the option `virtualisation.podman.enable = true`.
     '';
+
+    homepage = "https://podman.io/";
     changelog = "https://github.com/containers/podman/blob/v${finalAttrs.version}/RELEASE_NOTES.md";
     license = lib.licenses.asl20;
-    teams = [ lib.teams.podman ];
-    mainProgram = "podman";
     platforms = lib.platforms.unix;
+    mainProgram = "podman";
+    teams = [ lib.teams.podman ];
   };
 })

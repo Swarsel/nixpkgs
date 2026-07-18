@@ -1,10 +1,10 @@
 {
+  lib,
+  fetchFromGitHub,
   bash,
   binutils,
   buildGoModule,
-  fetchFromGitHub,
   kbd,
-  lib,
   libfido2,
   lvm2,
   lz4,
@@ -26,14 +26,9 @@ buildGoModule (finalAttrs: {
     hash = "sha256-uHxPzuD3PxKAI2JOZd7lcLvcqYqk9gW9yeZgOS1Y7x4=";
   };
 
-  vendorHash = "sha256-uI6TvBtky7Bpt4SbbtwT3vdMYbI/Awy3wgPfOla1qMw=";
-
   postPatch = ''
     substituteInPlace init/main.go --replace "/usr/bin/fsck" "${unixtools.fsck}/bin/fsck"
   '';
-
-  # integration tests are run against the current kernel
-  doCheck = false;
 
   nativeBuildInputs = [
     kbd
@@ -41,6 +36,10 @@ buildGoModule (finalAttrs: {
     makeWrapper
     xz
   ];
+
+  vendorHash = "sha256-uI6TvBtky7Bpt4SbbtwT3vdMYbI/Awy3wgPfOla1qMw=";
+  # integration tests are run against the current kernel
+  doCheck = false;
 
   postInstall =
     let

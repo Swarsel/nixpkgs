@@ -1,36 +1,30 @@
 {
   lib,
   stdenv,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # build-system
-  numpy,
-  pybind11,
-  setuptools,
-
+  buildPythonPackage,
   # dependencies
   clarabel,
   cvxopt,
   highspy,
+  # tests
+  hypothesis,
+  # build-system
+  numpy,
   osqp,
+  pybind11,
+  pytestCheckHook,
   qdldl,
   scipy,
   scs,
+  setuptools,
   sparsediffpy,
-
-  # tests
-  hypothesis,
-  pytestCheckHook,
-
   useOpenmp ? (!stdenv.hostPlatform.isDarwin),
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "cvxpy";
   version = "1.9.2";
-  pyproject = true;
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "cvxpy";
@@ -48,15 +42,25 @@ buildPythonPackage (finalAttrs: {
           "CLARABEL: 1e-6,"
     '';
 
+  # Required flags from https://github.com/cvxpy/cvxpy/releases/tag/v1.1.11
+  preBuild = lib.optionalString useOpenmp ''
+    export CFLAGS="-fopenmp"
+    export LDFLAGS="-lgomp"
+  '';
+
+  nativeCheckInputs = [
+    hypothesis
+    pytestCheckHook
+  ];
+
+  __structuredAttrs = true;
+
   build-system = [
     numpy
     pybind11
     setuptools
   ];
 
-  pythonRelaxDeps = [
-    "sparsediffpy"
-  ];
   dependencies = [
     clarabel
     cvxopt
@@ -68,19 +72,6 @@ buildPythonPackage (finalAttrs: {
     scs
     sparsediffpy
   ];
-
-  nativeCheckInputs = [
-    hypothesis
-    pytestCheckHook
-  ];
-
-  # Required flags from https://github.com/cvxpy/cvxpy/releases/tag/v1.1.11
-  preBuild = lib.optionalString useOpenmp ''
-    export CFLAGS="-fopenmp"
-    export LDFLAGS="-lgomp"
-  '';
-
-  enabledTestPaths = [ "cvxpy" ];
 
   disabledTests = [
     # Numerical assertions failing
@@ -101,14 +92,20 @@ buildPythonPackage (finalAttrs: {
     "test_oprelcone_2"
   ];
 
+  enabledTestPaths = [ "cvxpy" ];
+  pyproject = true;
   pythonImportsCheck = [ "cvxpy" ];
+
+  pythonRelaxDeps = [
+    "sparsediffpy"
+  ];
 
   meta = {
     description = "Domain-specific language for modeling convex optimization problems in Python";
     homepage = "https://www.cvxpy.org/";
-    downloadPage = "https://github.com/cvxpy/cvxpy//releases";
     changelog = "https://github.com/cvxpy/cvxpy/releases/tag/${finalAttrs.src.tag}";
     license = lib.licenses.asl20;
     maintainers = [ lib.maintainers.GaetanLepage ];
+    downloadPage = "https://github.com/cvxpy/cvxpy//releases";
   };
 })

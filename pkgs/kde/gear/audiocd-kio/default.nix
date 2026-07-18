@@ -1,13 +1,13 @@
 {
   lib,
-  mkKdeDerivation,
   cdparanoia,
   flac,
+  lame,
   libogg,
   libvorbis,
-  replaceVars,
-  lame,
+  mkKdeDerivation,
   opus-tools,
+  replaceVars,
 }:
 mkKdeDerivation {
   pname = "audiocd-kio";

@@ -1,15 +1,15 @@
 {
   lib,
-  nix-update-script,
   fetchFromGitLab,
   buildNpmPackage,
+  nix-update-script,
   nodejs,
 }:
 
 buildNpmPackage {
+  inherit nodejs;
   pname = "math-preview";
   version = "5.1.2-unstable-2024-08-01";
-  inherit nodejs;
 
   src = fetchFromGitLab {
     owner = "matsievskiysv";
@@ -27,11 +27,11 @@ buildNpmPackage {
   };
 
   meta = {
-    description = "Emacs preview math inline";
-    mainProgram = "math-preview";
-    license = lib.licenses.gpl3Plus;
-    homepage = "https://gitlab.com/matsievskiysv/math-preview";
-    maintainers = with lib.maintainers; [ renesat ];
     inherit (nodejs.meta) platforms;
+    description = "Emacs preview math inline";
+    homepage = "https://gitlab.com/matsievskiysv/math-preview";
+    license = lib.licenses.gpl3Plus;
+    maintainers = with lib.maintainers; [ renesat ];
+    mainProgram = "math-preview";
   };
 }

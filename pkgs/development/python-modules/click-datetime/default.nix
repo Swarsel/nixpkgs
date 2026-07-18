@@ -1,32 +1,28 @@
 {
   lib,
   buildPythonPackage,
+  click,
   fetchPypi,
   poetry-core,
-  click,
 }:
 
 buildPythonPackage rec {
   pname = "click-datetime";
   version = "0.4.0";
-  pyproject = true;
 
   src = fetchPypi {
-    pname = "click_datetime";
     inherit version;
     hash = "sha256-nzXtP6sT9VMiHOjFqJXlGF1zYJk8Ud1/hii5tPY2kws=";
+    pname = "click_datetime";
   };
-
-  build-system = [ poetry-core ];
-
-  pythonRemoveDeps = [ "wheel" ];
-
-  dependencies = [ click ];
 
   # no tests
   doCheck = false;
-
+  build-system = [ poetry-core ];
+  dependencies = [ click ];
+  pyproject = true;
   pythonImportsCheck = [ "click_datetime" ];
+  pythonRemoveDeps = [ "wheel" ];
 
   meta = {
     description = "Datetime type support for click";

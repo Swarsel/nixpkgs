@@ -1,8 +1,8 @@
 {
-  buildPythonPackage,
-  fetchFromGitHub,
-  httpx,
   lib,
+  fetchFromGitHub,
+  buildPythonPackage,
+  httpx,
   nix-update-script,
   poetry-core,
   pytestCheckHook,
@@ -12,7 +12,6 @@
 buildPythonPackage rec {
   pname = "discord-webhook";
   version = "1.4.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "lovvskillz";
@@ -21,6 +20,7 @@ buildPythonPackage rec {
     hash = "sha256-7nVvtXo1XjQExZSCF9VaYSCeEByJY2jn5KbVGTi33f0=";
   };
 
+  nativeCheckInputs = [ pytestCheckHook ];
   build-system = [ poetry-core ];
 
   dependencies = [
@@ -28,11 +28,11 @@ buildPythonPackage rec {
     httpx # Optional, required for async support.
   ];
 
+  pyproject = true;
+
   pythonImportsCheck = [
     "discord_webhook"
   ];
-
-  nativeCheckInputs = [ pytestCheckHook ];
 
   passthru.updateScript = nix-update-script { };
 

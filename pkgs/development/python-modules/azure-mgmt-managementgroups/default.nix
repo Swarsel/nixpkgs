@@ -12,14 +12,15 @@
 buildPythonPackage (finalAttrs: {
   pname = "azure-mgmt-managementgroups";
   version = "1.1.0";
-  pyproject = true;
 
   src = fetchPypi {
-    pname = "azure_mgmt_managementgroups";
     inherit (finalAttrs) version;
     hash = "sha256-5hmbrxGIkLor2jXdqDqIhhwLG77xJjEbIOwS7tloGVE=";
+    pname = "azure_mgmt_managementgroups";
   };
 
+  # has no tests
+  doCheck = false;
   build-system = [ setuptools ];
 
   dependencies = [
@@ -29,8 +30,7 @@ buildPythonPackage (finalAttrs: {
     typing-extensions
   ];
 
-  # has no tests
-  doCheck = false;
+  pyproject = true;
 
   meta = {
     description = "This is the Microsoft Azure Management Groups Client Library";

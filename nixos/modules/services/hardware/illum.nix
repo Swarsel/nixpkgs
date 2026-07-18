@@ -15,10 +15,12 @@ in
 
       enable = lib.mkOption {
         default = false;
-        type = lib.types.bool;
+
         description = ''
           Enable illum, a daemon for controlling screen brightness with brightness buttons.
         '';
+
+        type = lib.types.bool;
       };
 
     };
@@ -29,9 +31,9 @@ in
 
     systemd.services.illum = {
       description = "Backlight Adjustment Service";
-      wantedBy = [ "multi-user.target" ];
       serviceConfig.ExecStart = "${pkgs.illum}/bin/illum-d";
       serviceConfig.Restart = "on-failure";
+      wantedBy = [ "multi-user.target" ];
     };
 
   };

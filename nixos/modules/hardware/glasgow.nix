@@ -12,12 +12,14 @@ in
 {
   options.hardware.glasgow = {
     enable = lib.mkOption {
-      type = lib.types.bool;
       default = false;
+
       description = ''
         Enables Glasgow udev rules and ensures 'plugdev' group exists.
         This is a prerequisite to using Glasgow without being root.
       '';
+
+      type = lib.types.bool;
     };
   };
 

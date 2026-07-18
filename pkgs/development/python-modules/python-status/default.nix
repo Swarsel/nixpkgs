@@ -7,7 +7,6 @@
 buildPythonPackage rec {
   pname = "python-status";
   version = "1.0.1";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
@@ -16,7 +15,7 @@ buildPythonPackage rec {
 
   # Project doesn't ship tests yet
   doCheck = false;
-
+  format = "setuptools";
   pythonImportsCheck = [ "status" ];
 
   meta = {

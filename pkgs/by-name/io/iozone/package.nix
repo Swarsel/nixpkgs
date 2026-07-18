@@ -1,6 +1,6 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchurl,
   gnuplot,
 }:
@@ -28,20 +28,9 @@ stdenv.mkDerivation rec {
     hash = "sha256-HoCHraBW9dgBjuC8dmhtQW/CJR7QMDgFXb0K940eXOM=";
   };
 
-  license = fetchurl {
-    url = "https://www.iozone.org/docs/Iozone_License.txt";
-    hash = "sha256-O/8yztxKBI/UKs6vwv9mq16Rn3cf/UHpSxdVnAPVCYw=";
-  };
-
+  buildFlags = target;
   preBuild = "pushd src/current";
   postBuild = "popd";
-
-  buildFlags = target;
-
-  # The makefile doesn't define a rule for e.g. libbif.o
-  # Make will try to evaluate implicit built-in rules for these outputs if building in parallel
-  # Build in serial so that the main rule builds everything before the implicit ones are attempted
-  enableParallelBuilding = false;
 
   installPhase = ''
     mkdir -p $out/{bin,share/doc,libexec,share/man/man1}
@@ -62,18 +51,30 @@ stdenv.mkDerivation rec {
       --replace gnu3d.dem $out/libexec/gnu3d.dem
   '';
 
+  # The makefile doesn't define a rule for e.g. libbif.o
+  # Make will try to evaluate implicit built-in rules for these outputs if building in parallel
+  # Build in serial so that the main rule builds everything before the implicit ones are attempted
+  enableParallelBuilding = false;
+
+  license = fetchurl {
+    hash = "sha256-O/8yztxKBI/UKs6vwv9mq16Rn3cf/UHpSxdVnAPVCYw=";
+    url = "https://www.iozone.org/docs/Iozone_License.txt";
+  };
+
   meta = {
     description = "Filesystem benchmark tool";
     homepage = "http://www.iozone.org/";
     license = lib.licenses.unfreeRedistributable;
+
+    maintainers = with lib.maintainers; [
+      Baughn
+      makefu
+    ];
+
     platforms = [
       "i686-linux"
       "x86_64-linux"
       "aarch64-linux"
-    ];
-    maintainers = with lib.maintainers; [
-      Baughn
-      makefu
     ];
   };
 }

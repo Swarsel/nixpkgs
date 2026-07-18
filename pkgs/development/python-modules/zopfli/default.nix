@@ -2,15 +2,14 @@
   lib,
   buildPythonPackage,
   fetchPypi,
+  pytestCheckHook,
   setuptools-scm,
   zopfli,
-  pytestCheckHook,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "zopfli";
   version = "0.4.0";
-  pyproject = true;
 
   src = fetchPypi {
     inherit (finalAttrs) pname version;
@@ -22,13 +21,11 @@ buildPythonPackage (finalAttrs: {
       --replace-fail "setuptools<72.2.0" "setuptools"
   '';
 
-  build-system = [ setuptools-scm ];
-
   buildInputs = [ zopfli ];
-
   env.USE_SYSTEM_ZOPFLI = "True";
-
   nativeCheckInputs = [ pytestCheckHook ];
+  build-system = [ setuptools-scm ];
+  pyproject = true;
 
   meta = {
     description = "CPython bindings for zopfli";

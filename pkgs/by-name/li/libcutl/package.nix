@@ -1,8 +1,8 @@
 {
+  lib,
   build2,
   fetchgit,
   gccStdenv,
-  lib,
   xercesc,
 }:
 
@@ -17,24 +17,23 @@ gccStdenv.mkDerivation (finalAttrs: {
   };
 
   nativeBuildInputs = [ build2 ];
-
   buildInputs = [ xercesc ];
-
-  enableParallelBuilding = true;
-
   doCheck = true;
+  enableParallelBuilding = true;
 
   meta = {
     description = "C++ utility library from Code Synthesis";
+
     longDescription = ''
       libcutl is a C++ utility library.
       It contains a collection of generic and independent components such as
       meta-programming tests, smart pointers, containers, compiler building blocks, etc.
     '';
+
     homepage = "https://codesynthesis.com/projects/libcutl/";
     changelog = "https://git.codesynthesis.com/cgit/libcutl/libcutl/log/";
-    platforms = lib.platforms.all;
-    maintainers = [ lib.maintainers.xzfc ];
     license = lib.licenses.mit;
+    maintainers = [ lib.maintainers.xzfc ];
+    platforms = lib.platforms.all;
   };
 })

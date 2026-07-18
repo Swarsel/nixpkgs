@@ -2,27 +2,27 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  nix-update-script,
-  cmake,
-  pkg-config,
-  autoPatchelfHook,
-  # JUCE graphics / GL
-  freetype,
-  fontconfig,
-  libGL,
   # JUCE / standalone audio + MIDI
   alsa-lib,
+  autoPatchelfHook,
+  cmake,
+  fontconfig,
+  # JUCE graphics / GL
+  freetype,
+  libGL,
   libjack2,
   libpulseaudio,
   # JUCE GUI: linked at build time (juce_gui_basics dlopens these at runtime,
   # but the standalone host's X11 GUI path links them directly)
   libx11,
-  libxext,
   libxcursor,
+  libxext,
   libxinerama,
   libxrandr,
   libxrender,
   libxscrnsaver,
+  nix-update-script,
+  pkg-config,
 }:
 
 let
@@ -35,11 +35,10 @@ let
   # six-sines v1.2.0 tag requests in cmake/base_sdks.cmake. When bumping
   # six-sines, re-check those tags here.
   vst3sdk = fetchFromGitHub {
-    owner = "steinbergmedia";
-    repo = "vst3sdk";
-    rev = "v3.8.0_build_66";
     fetchSubmodules = true;
     hash = "sha256-9HnDOOiKT0ploNJukk4vcZjBLS5gL4SdvmfFqZJPIxA=";
+    owner = "steinbergmedia";
+
     # The `doc` submodule is ~130 MB of PDFs we never reference. The
     # `vstgui4` submodule isn't touched by clap-wrapper's VST3 glue either,
     # but it — like the `tutorials` submodule that appeared in 3.8.0 — is
@@ -48,52 +47,59 @@ let
     postFetch = ''
       rm -rf $out/doc
     '';
+
+    repo = "vst3sdk";
+    rev = "v3.8.0_build_66";
   };
 
   rtaudio-src = fetchFromGitHub {
+    hash = "sha256-Acsxbnl+V+Y4mKC1gD11n0m03E96HMK+oEY/YV7rlIY=";
     owner = "thestk";
     repo = "rtaudio";
     rev = "6.0.1";
-    hash = "sha256-Acsxbnl+V+Y4mKC1gD11n0m03E96HMK+oEY/YV7rlIY=";
   };
 
   rtmidi-src = fetchFromGitHub {
+    hash = "sha256-QuUeFx8rPpe0+exB3chT6dUceDa/7ygVy+cQYykq7e0=";
     owner = "thestk";
     repo = "rtmidi";
     rev = "6.0.0";
-    hash = "sha256-QuUeFx8rPpe0+exB3chT6dUceDa/7ygVy+cQYykq7e0=";
   };
 in
 
 stdenv.mkDerivation (finalAttrs: {
   pname = "six-sines";
   version = "1.2.0";
-  __structuredAttrs = true;
-  strictDeps = true;
 
   src = fetchFromGitHub {
     owner = "baconpaul";
     repo = "six-sines";
     rev = "v${finalAttrs.version}";
-    fetchSubmodules = true;
     hash = "sha256-6m3+IthBnBvRX8gB8JH3NVN7ot3jTn5zSl/HYUB5Zy4=";
+    fetchSubmodules = true;
   };
+
+  postPatch = ''
+    # sst-plugininfra's version_from_versionfile_or_git() looks for a
+    # BUILD_VERSION file before falling back to `git describe`. fetchFromGitHub
+    # strips .git, so we provide the file directly. The format is 5 lines:
+    # header (ignored), commit hash, tag, branch, display version.
+    cat > BUILD_VERSION <<EOF
+    Six Sines v${finalAttrs.version}
+    v${finalAttrs.version}
+    v${finalAttrs.version}
+    main
+    ${finalAttrs.version}
+    EOF
+  '';
+
+  strictDeps = true;
 
   nativeBuildInputs = [
     cmake
     pkg-config
     autoPatchelfHook
   ];
-
-  # nixpkgs' default `format` hardening injects `-Wformat -Wformat-security
-  # -Werror=format-security`. clap-wrapper's base_sdks.cmake adds
-  # `-Wno-format` privately to the VST3 SDK targets to silence a known
-  # confusion between `%lld` and `long long int`, which leaves
-  # `-Werror=format-security` dangling — and gcc treats "X ignored without
-  # Y" as a `-Werror=format-security` violation in its own right, breaking
-  # the base-sdk-vst3 compile. Disabling the whole hardening flag is the
-  # smallest change that lets the SDK's own pragma stand.
-  hardeningDisable = [ "format" ];
 
   buildInputs = [
     freetype
@@ -110,35 +116,6 @@ stdenv.mkDerivation (finalAttrs: {
     libxrender
     libxscrnsaver
   ];
-
-  # JUCE loads several X11 libraries via dlopen() in juce_XSymbols_linux.h
-  # (libx11.so.6, libxext.so.6, libxcursor.so.1, libxinerama.so.1,
-  # libxrender.so.1, libxrandr.so.2, plus libxss.so.1 from
-  # juce_XWindowSystem_linux.cpp). Listing them in runtimeDependencies makes
-  # autoPatchelfHook bake them into the binaries' RPATH.
-  runtimeDependencies = [
-    libx11
-    libxext
-    libxcursor
-    libxinerama
-    libxrandr
-    libxrender
-    libxscrnsaver
-  ];
-
-  postPatch = ''
-    # sst-plugininfra's version_from_versionfile_or_git() looks for a
-    # BUILD_VERSION file before falling back to `git describe`. fetchFromGitHub
-    # strips .git, so we provide the file directly. The format is 5 lines:
-    # header (ignored), commit hash, tag, branch, display version.
-    cat > BUILD_VERSION <<EOF
-    Six Sines v${finalAttrs.version}
-    v${finalAttrs.version}
-    v${finalAttrs.version}
-    main
-    ${finalAttrs.version}
-    EOF
-  '';
 
   cmakeFlags = [
     # Don't try to copy build artefacts into ~/.clap and ~/.vst3 from
@@ -187,6 +164,32 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  __structuredAttrs = true;
+  # nixpkgs' default `format` hardening injects `-Wformat -Wformat-security
+  # -Werror=format-security`. clap-wrapper's base_sdks.cmake adds
+  # `-Wno-format` privately to the VST3 SDK targets to silence a known
+  # confusion between `%lld` and `long long int`, which leaves
+  # `-Werror=format-security` dangling — and gcc treats "X ignored without
+  # Y" as a `-Werror=format-security` violation in its own right, breaking
+  # the base-sdk-vst3 compile. Disabling the whole hardening flag is the
+  # smallest change that lets the SDK's own pragma stand.
+  hardeningDisable = [ "format" ];
+
+  # JUCE loads several X11 libraries via dlopen() in juce_XSymbols_linux.h
+  # (libx11.so.6, libxext.so.6, libxcursor.so.1, libxinerama.so.1,
+  # libxrender.so.1, libxrandr.so.2, plus libxss.so.1 from
+  # juce_XWindowSystem_linux.cpp). Listing them in runtimeDependencies makes
+  # autoPatchelfHook bake them into the binaries' RPATH.
+  runtimeDependencies = [
+    libx11
+    libxext
+    libxcursor
+    libxinerama
+    libxrandr
+    libxrender
+    libxscrnsaver
+  ];
+
   # nix-update bumps version + src hash, but knows nothing about the
   # vst3sdk pin in the let-binding above — on every bump, re-check the
   # tag requested by the clap-wrapper submodule's cmake/base_sdks.cmake.
@@ -194,11 +197,13 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Small synthesizer exploring audio-rate inter-modulation of sine waves (FM/PM/AM)";
+
     longDescription = ''
       Six Sines is a six-operator phase-/amplitude-/ring-modulation synthesizer
       by Paul Walker (baconpaul). It ships as a CLAP plug-in, a VST3 plug-in,
       and a standalone application backed by RtAudio (ALSA / JACK / PulseAudio).
     '';
+
     homepage = "https://github.com/baconpaul/six-sines";
     changelog = "https://github.com/baconpaul/six-sines/blob/v${finalAttrs.version}/doc/changelog.md";
     # Author's own code is MIT (see LICENSE.md), but the binary statically
@@ -206,12 +211,12 @@ stdenv.mkDerivation (finalAttrs: {
     # (resources/LICENSE_GPL3).
     license = lib.licenses.gpl3Plus;
     maintainers = with lib.maintainers; [ magnetophon ];
-    mainProgram = "six-sines";
     # Since 1.2.0 upstream selects `-march=armv8-a` on aarch64 (`nehalem`
     # only on x86), and clap-wrapper derives the VST3 bundle arch dir from
     # CMAKE_SYSTEM_PROCESSOR instead of hard-coding x86_64-linux, so
     # aarch64-linux should now be viable — add it once a build has been
     # verified.
     platforms = [ "x86_64-linux" ];
+    mainProgram = "six-sines";
   };
 })

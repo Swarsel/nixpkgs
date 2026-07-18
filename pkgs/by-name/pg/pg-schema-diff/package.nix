@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   postgresql,
 }:
 buildGoModule (finalAttrs: {
@@ -15,15 +15,15 @@ buildGoModule (finalAttrs: {
     hash = "sha256-7N9n0puEyCOq3MKXRLNAgtgrFEC4Sh9d6OK9U/h4xCQ=";
   };
 
-  subPackages = [
-    "cmd/pg-schema-diff"
-  ];
+  vendorHash = "sha256-9tronDAe3/5bBtiMW04YGSgxww/F7xlq84sjYFTfxnk=";
 
   nativeCheckInputs = [
     postgresql
   ];
 
-  vendorHash = "sha256-9tronDAe3/5bBtiMW04YGSgxww/F7xlq84sjYFTfxnk=";
+  subPackages = [
+    "cmd/pg-schema-diff"
+  ];
 
   meta = {
     description = "Go library for diffing Postgres schemas and generating SQL migrations";

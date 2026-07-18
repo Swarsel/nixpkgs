@@ -1,31 +1,29 @@
 {
   lib,
   stdenv,
-  callPackage,
-  runCommand,
-  rustPlatform,
   fetchFromGitHub,
+  callPackage,
   cmake,
+  openssl,
   pkg-config,
   python3,
-  openssl,
+  runCommand,
+  rustPlatform,
 }:
 
 let
   openjtalk-src = fetchFromGitHub {
+    hash = "sha256-SBLdQ8D62QgktI8eI6eSNzdYt5PmGo6ZUCKxd01Z8UE=";
     owner = "VOICEVOX";
     repo = "open_jtalk";
     rev = "1.11"; # this is actually a branch. why?
-    hash = "sha256-SBLdQ8D62QgktI8eI6eSNzdYt5PmGo6ZUCKxd01Z8UE=";
   };
 in
 rustPlatform.buildRustPackage (finalAttrs: {
   pname = "voicevox-core";
-
   # Update only together with voicevox and voicevox-engine
   # nixpkgs-update: no auto update
   version = "0.16.2";
-  passthru.modelVersion = "0.16.4";
 
   src = fetchFromGitHub {
     owner = "VOICEVOX";
@@ -34,8 +32,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-aRy9x6IzFDwL4HjhCW705LpkZ13/SJ25h45XbbXciy0=";
   };
 
-  cargoHash = "sha256-8udiXUZGn3ZT7RvmZd/F5tLsCKi5QLPG3pzv7LFyLvQ=";
-
   postPatch = ''
     cp -r --no-preserve=all ${openjtalk-src} ./openjtalk
     substitute ${./openjtalk.patch} ./openjtalk.patch \
@@ -43,24 +39,20 @@ rustPlatform.buildRustPackage (finalAttrs: {
     patch -d $cargoDepsCopy/*/open_jtalk-sys-* -p1 < ./openjtalk.patch
   '';
 
-  cargoBuildFlags = [ "-p voicevox_core_c_api" ];
-
-  # don't link onnxruntime directly
-  buildFeatures = [ "load-onnxruntime" ];
-
-  # setting this to anything disables trying to download onnxruntime
-  env.ORT_LIB_LOCATION = "dummy";
-
   nativeBuildInputs = [
     cmake
     pkg-config
   ];
 
   buildInputs = [ openssl ];
-
+  cargoHash = "sha256-8udiXUZGn3ZT7RvmZd/F5tLsCKi5QLPG3pzv7LFyLvQ=";
+  # setting this to anything disables trying to download onnxruntime
+  env.ORT_LIB_LOCATION = "dummy";
   doCheck = false;
-
-  passthru.voicevox-onnxruntime = callPackage ./onnxruntime.nix { };
+  # don't link onnxruntime directly
+  buildFeatures = [ "load-onnxruntime" ];
+  cargoBuildFlags = [ "-p voicevox_core_c_api" ];
+  passthru.modelVersion = "0.16.4";
 
   passthru.models = stdenv.mkDerivation {
     pname = "voicevox-models";
@@ -91,6 +83,8 @@ rustPlatform.buildRustPackage (finalAttrs: {
     '';
   };
 
+  passthru.voicevox-onnxruntime = callPackage ./onnxruntime.nix { };
+
   passthru.wrapped = runCommand "voicevox-core-${finalAttrs.version}-wrapped" { } (
     ''
       mkdir -p "$out"/lib
@@ -106,10 +100,11 @@ rustPlatform.buildRustPackage (finalAttrs: {
   );
 
   meta = {
-    changelog = "https://github.com/VOICEVOX/voicevox_core/releases/tag/${finalAttrs.version}";
     description = "Core library for the VOICEVOX speech synthesis software";
     homepage = "https://github.com/VOICEVOX/voicevox_core";
+    changelog = "https://github.com/VOICEVOX/voicevox_core/releases/tag/${finalAttrs.version}";
     license = with lib.licenses; [ mit ];
+
     maintainers = with lib.maintainers; [
       tomasajt
       eljamm

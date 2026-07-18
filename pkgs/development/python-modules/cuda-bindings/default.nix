@@ -1,31 +1,26 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  cudaPackages,
-  replaceVars,
   addDriverRunpath,
-
+  buildPythonPackage,
+  # passthru
+  cuda-bindings,
+  cuda-pathfinder,
+  cudaPackages,
   # build-system
   cython,
-  pyclibrary,
-  setuptools,
-  setuptools-scm,
-  cuda-pathfinder,
-
-  # env
-  symlinkJoin,
-
   # dependencies
   numpy,
-
+  pyclibrary,
   # tests
   pytest-benchmark,
   pytestCheckHook,
+  replaceVars,
+  setuptools,
+  setuptools-scm,
+  # env
+  symlinkJoin,
   util-linux,
-
-  # passthru
-  cuda-bindings,
 }:
 
 let
@@ -35,6 +30,7 @@ let
     let
       args = {
         inherit replaceVars;
+
         cudaLibPaths = {
           libcudart = lib.getLib cudaPackages.cuda_cudart;
           libcufile = lib.getLib cudaPackages.libcufile;
@@ -42,6 +38,7 @@ let
           libnvjitlink = lib.getLib cudaPackages.libnvjitlink;
           libnvml = addDriverRunpath.driverLink;
           libnvrtc = lib.getLib cudaPackages.cuda_nvrtc;
+
           libnvvm =
             if cudaOlder "13.0" then "${cudaPackages.cuda_nvcc}/nvvm" else lib.getLib cudaPackages.libnvvm;
         };
@@ -61,10 +58,8 @@ let
   inherit (cudaPackages) cudaOlder cudaAtLeast;
 in
 buildPythonPackage (finalAttrs: {
-  pname = "cuda-bindings";
   inherit (versionSpecificAttrs) version;
-  pyproject = true;
-  __structuredAttrs = true;
+  pname = "cuda-bindings";
 
   src = fetchFromGitHub {
     owner = "NVIDIA";
@@ -73,14 +68,9 @@ buildPythonPackage (finalAttrs: {
     hash = versionSpecificAttrs.sourceHash;
   };
 
-  # Apply patch relative to cuda_bindings
-  patchFlags = [ "-p2" ];
-
   patches = [
     versionSpecificAttrs.nvidiaLibsPatch
   ];
-
-  sourceRoot = "${finalAttrs.src.name}/cuda_bindings";
 
   postPatch =
     let
@@ -106,31 +96,6 @@ buildPythonPackage (finalAttrs: {
     ''
     + (versionSpecificAttrs.postPatch or "");
 
-  preBuild = ''
-    export CUDA_PYTHON_PARALLEL_LEVEL=$NIX_BUILD_CORES
-  '';
-
-  build-system = [
-    cython
-    pyclibrary
-    setuptools
-    setuptools-scm
-  ]
-  ++ lib.optionals (cudaAtLeast "13.3") [
-    cuda-pathfinder
-  ];
-
-  env = {
-    CUDA_HOME = symlinkJoin {
-      name = "cuda-redist";
-      paths = with cudaPackages; [
-        (lib.getInclude cuda_cudart) # cuda_runtime.h
-        (lib.getInclude cuda_nvrtc) # nvrtc.h
-        (lib.getInclude cuda_profiler_api) # cudaProfiler.h, cuda_profiler_api.h
-      ];
-    };
-  };
-
   buildInputs = [
     cudaPackages.libcufile # cufile.h
   ]
@@ -142,29 +107,24 @@ buildPythonPackage (finalAttrs: {
     cudaPackages.cuda_crt # crt/host_defines.h
   ];
 
-  pythonRemoveDeps = [
-    # We circumvent cuda_pathfinder to localize nvidia libs with patches
-    "cuda-pathfinder"
-  ];
-  dependencies = [
-    # Not explicitly listed as a dependency, but is required at import time
-    numpy
-  ];
+  env = {
+    CUDA_HOME = symlinkJoin {
+      name = "cuda-redist";
 
-  pythonImportsCheck = [
-    "cuda"
-    "cuda.bindings.cufile"
-    "cuda.bindings.driver"
-    "cuda.bindings.nvjitlink"
-    "cuda.bindings.nvrtc"
-    "cuda.bindings.nvvm"
-    "cuda.bindings.runtime"
-  ]
-  ++ (versionSpecificAttrs.pythonImportsCheck or [ ]);
+      paths = with cudaPackages; [
+        (lib.getInclude cuda_cudart) # cuda_runtime.h
+        (lib.getInclude cuda_nvrtc) # nvrtc.h
+        (lib.getInclude cuda_profiler_api) # cudaProfiler.h, cuda_profiler_api.h
+      ];
+    };
+  };
 
-  preCheck = ''
-    rm -rf cuda
+  preBuild = ''
+    export CUDA_PYTHON_PARALLEL_LEVEL=$NIX_BUILD_CORES
   '';
+
+  # Tests need access to a GPU
+  doCheck = false;
 
   nativeCheckInputs = [
     pytestCheckHook
@@ -178,8 +138,25 @@ buildPythonPackage (finalAttrs: {
     util-linux # findmnt
   ];
 
-  enabledTestPaths = [
-    "tests/"
+  preCheck = ''
+    rm -rf cuda
+  '';
+
+  __structuredAttrs = true;
+
+  build-system = [
+    cython
+    pyclibrary
+    setuptools
+    setuptools-scm
+  ]
+  ++ lib.optionals (cudaAtLeast "13.3") [
+    cuda-pathfinder
+  ];
+
+  dependencies = [
+    # Not explicitly listed as a dependency, but is required at import time
+    numpy
   ];
 
   disabledTestPaths = lib.optionals (cudaOlder "13.0") [
@@ -191,11 +168,35 @@ buildPythonPackage (finalAttrs: {
 
   disabledTests = versionSpecificAttrs.disabledTests or [ ];
 
-  # Tests need access to a GPU
-  doCheck = false;
+  enabledTestPaths = [
+    "tests/"
+  ];
+
+  # Apply patch relative to cuda_bindings
+  patchFlags = [ "-p2" ];
+  pyproject = true;
+
+  pythonImportsCheck = [
+    "cuda"
+    "cuda.bindings.cufile"
+    "cuda.bindings.driver"
+    "cuda.bindings.nvjitlink"
+    "cuda.bindings.nvrtc"
+    "cuda.bindings.nvvm"
+    "cuda.bindings.runtime"
+  ]
+  ++ (versionSpecificAttrs.pythonImportsCheck or [ ]);
+
+  pythonRemoveDeps = [
+    # We circumvent cuda_pathfinder to localize nvidia libs with patches
+    "cuda-pathfinder"
+  ];
+
+  sourceRoot = "${finalAttrs.src.name}/cuda_bindings";
+
   passthru.gpuCheck = cuda-bindings.overridePythonAttrs {
-    requiredSystemFeatures = [ "cuda" ];
     doCheck = true;
+    requiredSystemFeatures = [ "cuda" ];
   };
 
   meta = {

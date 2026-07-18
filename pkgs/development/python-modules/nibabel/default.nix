@@ -1,40 +1,35 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  pythonOlder,
-
+  addBinToPathHook,
+  # optional-dependencies
+  backports-zstd,
+  buildPythonPackage,
+  gitMinimal,
+  h5py,
   # build-system
   hatch-vcs,
   hatchling,
-
+  importlib-resources,
+  indexed-gzip,
+  matplotlib,
   # dependencies
   numpy,
   packaging,
-  importlib-resources,
-  typing-extensions,
-
-  # optional-dependencies
-  backports-zstd,
-  indexed-gzip,
-  matplotlib,
-  pydicom,
   pillow,
-  h5py,
-  scipy,
-
-  addBinToPathHook,
-  gitMinimal,
+  pydicom,
   pytest-doctestplus,
   pytest-httpserver,
   pytest-xdist,
   pytestCheckHook,
+  pythonOlder,
+  scipy,
+  typing-extensions,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "nibabel";
   version = "5.4.2";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "nipy";
@@ -42,6 +37,16 @@ buildPythonPackage (finalAttrs: {
     tag = finalAttrs.version;
     hash = "sha256-QzkmSI0JGdIXLc3XSPZrGrBYSq98tLFrozNNopR/ytg=";
   };
+
+  nativeCheckInputs = [
+    addBinToPathHook
+    gitMinimal
+    pytest-doctestplus
+    pytest-httpserver
+    pytest-xdist
+    pytestCheckHook
+  ]
+  ++ finalAttrs.passthru.optional-dependencies.all;
 
   build-system = [
     hatch-vcs
@@ -66,22 +71,13 @@ buildPythonPackage (finalAttrs: {
     zstd = lib.optionals (pythonOlder "3.14") [ backports-zstd ];
   });
 
-  nativeCheckInputs = [
-    addBinToPathHook
-    gitMinimal
-    pytest-doctestplus
-    pytest-httpserver
-    pytest-xdist
-    pytestCheckHook
-  ]
-  ++ finalAttrs.passthru.optional-dependencies.all;
-
+  pyproject = true;
   pythonImportsCheck = [ "nibabel" ];
 
   meta = {
+    description = "Access a multitude of neuroimaging data formats";
     homepage = "https://nipy.org/nibabel";
     changelog = "https://github.com/nipy/nibabel/blob/${finalAttrs.version}/Changelog";
-    description = "Access a multitude of neuroimaging data formats";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ ashgillman ];
   };

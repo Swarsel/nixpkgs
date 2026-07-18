@@ -2,8 +2,8 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  python3,
   mpv,
+  python3,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -17,16 +17,16 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-Xx18EX/MxLrnwZGwMFZJxJURUpjU2P01CQue5XbZ3fw=";
   };
 
-  buildInputs = [
-    python3
-    mpv
-  ];
-
   postPatch = ''
     patchShebangs .
     substituteInPlace ff2mpv.json \
       --replace '/home/william/scripts/ff2mpv' "$out/bin/ff2mpv.py"
   '';
+
+  buildInputs = [
+    python3
+    mpv
+  ];
 
   installPhase = ''
     mkdir -p $out/bin $out/lib/mozilla/native-messaging-hosts

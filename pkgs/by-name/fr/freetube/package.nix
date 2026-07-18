@@ -1,19 +1,17 @@
 {
   lib,
-  stdenvNoCC,
   fetchFromGitHub,
-  fetchYarnDeps,
-  replaceVars,
-  makeDesktopItem,
-
-  nodejs,
-  yarnConfigHook,
-  yarnBuildHook,
-  makeShellWrapper,
   copyDesktopItems,
   electron,
-
+  fetchYarnDeps,
+  makeDesktopItem,
+  makeShellWrapper,
   nixosTests,
+  nodejs,
+  replaceVars,
+  stdenvNoCC,
+  yarnBuildHook,
+  yarnConfigHook,
 }:
 let
   description = "Open Source YouTube app for privacy";
@@ -29,29 +27,12 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     hash = "sha256-oo5ozdP3d82jY8OOYrt568MoSfPmwBoitdtgESiRMlE=";
   };
 
-  # Darwin requires writable Electron dist
-  postUnpack =
-    if stdenvNoCC.hostPlatform.isDarwin then
-      ''
-        cp -r ${electron.dist} source/electron-dist
-        chmod -R u+w source/electron-dist
-      ''
-    else
-      ''
-        ln -s ${electron.dist} source/electron-dist
-      '';
-
   patches = [
     (replaceVars ./patch-build-script.patch {
       electron-version = electron.version;
     })
     ./targets.patch
   ];
-
-  yarnOfflineCache = fetchYarnDeps {
-    yarnLock = "${finalAttrs.src}/yarn.lock";
-    hash = "sha256-9rO/XYfOf1TEQOpb5clCfdTiuDeynpnk6L4WpcIIWGk=";
-  };
 
   nativeBuildInputs = [
     nodejs
@@ -85,25 +66,44 @@ stdenvNoCC.mkDerivation (finalAttrs: {
 
   desktopItems = [
     (makeDesktopItem {
-      name = "freetube";
-      desktopName = "FreeTube";
+      categories = [ "Network" ];
       comment = description;
+      desktopName = "FreeTube";
       exec = "freetube %U";
+      icon = "freetube";
+      mimeTypes = [ "x-scheme-handler/freetube" ];
+      name = "freetube";
+      startupWMClass = "FreeTube";
       terminal = false;
       type = "Application";
-      icon = "freetube";
-      startupWMClass = "FreeTube";
-      mimeTypes = [ "x-scheme-handler/freetube" ];
-      categories = [ "Network" ];
     })
   ];
+
+  # Darwin requires writable Electron dist
+  postUnpack =
+    if stdenvNoCC.hostPlatform.isDarwin then
+      ''
+        cp -r ${electron.dist} source/electron-dist
+        chmod -R u+w source/electron-dist
+      ''
+    else
+      ''
+        ln -s ${electron.dist} source/electron-dist
+      '';
+
+  yarnOfflineCache = fetchYarnDeps {
+    hash = "sha256-9rO/XYfOf1TEQOpb5clCfdTiuDeynpnk6L4WpcIIWGk=";
+    yarnLock = "${finalAttrs.src}/yarn.lock";
+  };
 
   passthru.tests = nixosTests.freetube;
 
   meta = {
     inherit description;
+    inherit (electron.meta) platforms;
     homepage = "https://freetubeapp.io/";
     license = lib.licenses.agpl3Only;
+
     maintainers = with lib.maintainers; [
       ryneeverett
       pentane
@@ -111,7 +111,7 @@ stdenvNoCC.mkDerivation (finalAttrs: {
       sigmasquadron
       ddogfoodd
     ];
-    inherit (electron.meta) platforms;
+
     mainProgram = "freetube";
   };
 })

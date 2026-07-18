@@ -1,16 +1,15 @@
 {
   lib,
-  rel,
-  buildKodiBinaryAddon,
   fetchFromGitHub,
+  buildKodiBinaryAddon,
   openssl,
+  rel,
   rtmpdump,
   zlib,
 }:
 
 buildKodiBinaryAddon rec {
   pname = "inputstream-rtmp";
-  namespace = "inputstream.rtmp";
   version = "21.1.2";
 
   src = fetchFromGitHub {
@@ -26,11 +25,13 @@ buildKodiBinaryAddon rec {
     zlib
   ];
 
+  namespace = "inputstream.rtmp";
+
   meta = {
-    homepage = "https://github.com/xbmc/inputstream.rtmp/";
     description = "Client for RTMP streams";
-    platforms = lib.platforms.all;
+    homepage = "https://github.com/xbmc/inputstream.rtmp/";
     license = lib.licenses.gpl2Plus;
+    platforms = lib.platforms.all;
     teams = [ lib.teams.kodi ];
   };
 }

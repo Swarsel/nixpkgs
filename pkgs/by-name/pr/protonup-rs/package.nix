@@ -1,7 +1,7 @@
 {
   lib,
-  rustPlatform,
   fetchCrate,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -24,11 +24,13 @@ rustPlatform.buildRustPackage (finalAttrs: {
     description = "Rust app to install and update GE-Proton for Steam, and Wine-GE for Lutris";
     homepage = "https://github.com/auyer/Protonup-rs";
     changelog = "https://github.com/auyer/Protonup-rs/releases/tag/v${finalAttrs.version}";
-    platforms = lib.platforms.linux;
     license = lib.licenses.gpl3Plus;
+
     maintainers = with lib.maintainers; [
       joshprk
     ];
+
+    platforms = lib.platforms.linux;
     mainProgram = "protonup-rs";
   };
 })

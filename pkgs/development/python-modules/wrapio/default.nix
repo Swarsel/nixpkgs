@@ -8,7 +8,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "wrapio";
   version = "2.0.0";
-  pyproject = true;
 
   src = fetchPypi {
     inherit (finalAttrs) pname version;
@@ -16,7 +15,7 @@ buildPythonPackage (finalAttrs: {
   };
 
   build-system = [ setuptools ];
-
+  pyproject = true;
   pythonImportsCheck = [ "wrapio" ];
 
   meta = {

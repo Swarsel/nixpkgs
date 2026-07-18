@@ -1,7 +1,7 @@
 {
   lib,
-  stdenvNoCC,
   fetchFromCodeberg,
+  stdenvNoCC,
 }:
 
 stdenvNoCC.mkDerivation (finalAttrs: {
@@ -15,10 +15,6 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     hash = "sha256-dWLOLOICcVjqYTw8KAPM2/xgB9mTSEdGGIHD1WSrIvA=";
   };
 
-  dontConfigure = true;
-
-  dontBuild = true;
-
   installPhase = ''
     runHook preInstall
 
@@ -28,15 +24,20 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  dontBuild = true;
+  dontConfigure = true;
+
   meta = {
-    homepage = "https://durden.arcan-fe.com/";
     description = "Reference Desktop Environment for Arcan";
+
     longDescription = ''
       Durden is a desktop environment for the Arcan Display Server. It serves
       both as a reference showcase on how to take advantage of some of the
       features in Arcan, and as a very competent entry to the advanced-user side
       of the desktop environment spectrum.
     '';
+
+    homepage = "https://durden.arcan-fe.com/";
     license = with lib.licenses; [ bsd3 ];
     maintainers = [ ];
     platforms = lib.platforms.all;

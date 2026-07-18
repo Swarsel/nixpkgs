@@ -3,8 +3,8 @@
   stdenv,
   fetchFromGitHub,
   autoreconfHook,
-  gmpxx,
   flint,
+  gmpxx,
   nauty,
 }:
 
@@ -19,12 +19,6 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-O8zUhuR+e9yNxj9jC2xK7UZ2aUHoEWjwxn3XxTyP8hQ=";
   };
 
-  buildInputs = [
-    gmpxx
-    flint
-    nauty
-  ];
-
   outputs = [
     "out"
     "lib"
@@ -35,12 +29,18 @@ stdenv.mkDerivation (finalAttrs: {
     autoreconfHook
   ];
 
+  buildInputs = [
+    gmpxx
+    flint
+    nauty
+  ];
+
   meta = {
-    homepage = "https://www.normaliz.uni-osnabrueck.de/";
     description = "Open source tool for computations in affine monoids, vector configurations, lattice polytopes, and rational cones";
+    homepage = "https://www.normaliz.uni-osnabrueck.de/";
+    license = lib.licenses.gpl3Plus;
     maintainers = with lib.maintainers; [ yannickulrich ];
     platforms = with lib.platforms; unix ++ windows;
-    license = lib.licenses.gpl3Plus;
     mainProgram = "normaliz";
   };
 })

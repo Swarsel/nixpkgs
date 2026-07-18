@@ -1,7 +1,7 @@
 {
-  stdenvNoCC,
   lib,
   php,
+  stdenvNoCC,
 }:
 
 let
@@ -40,15 +40,7 @@ let
       || throw "mkComposerRepository expects composerNoScripts argument."
     );
     {
-      composerNoDev = previousAttrs.composerNoDev or true;
-      composerNoPlugins = previousAttrs.composerNoPlugins or true;
-      composerNoScripts = previousAttrs.composerNoScripts or true;
-      composerStrictValidation = previousAttrs.composerStrictValidation or true;
-
-      name = "${previousAttrs.pname}-composer-repository-${previousAttrs.version}";
-
-      # See https://github.com/NixOS/nix/issues/6660
-      dontPatchShebangs = previousAttrs.dontPatchShebangs or true;
+      strictDeps = previousAttrs.strictDeps or true;
 
       nativeBuildInputs = (previousAttrs.nativeBuildInputs or [ ]) ++ [
         composer
@@ -58,16 +50,6 @@ let
 
       buildInputs = previousAttrs.buildInputs or [ ];
 
-      strictDeps = previousAttrs.strictDeps or true;
-
-      # Should we keep these empty phases?
-      configurePhase =
-        previousAttrs.configurePhase or ''
-          runHook preConfigure
-
-          runHook postConfigure
-        '';
-
       buildPhase =
         previousAttrs.buildPhase or ''
           runHook preBuild
@@ -76,6 +58,7 @@ let
         '';
 
       doCheck = previousAttrs.doCheck or true;
+
       checkPhase =
         previousAttrs.checkPhase or ''
           runHook preCheck
@@ -91,6 +74,7 @@ let
         '';
 
       doInstallCheck = previousAttrs.doInstallCheck or false;
+
       installCheckPhase =
         previousAttrs.installCheckPhase or ''
           runHook preInstallCheck
@@ -98,10 +82,28 @@ let
           runHook postInstallCheck
         '';
 
-      outputHashMode = "recursive";
+      composerNoDev = previousAttrs.composerNoDev or true;
+      composerNoPlugins = previousAttrs.composerNoPlugins or true;
+      composerNoScripts = previousAttrs.composerNoScripts or true;
+      composerStrictValidation = previousAttrs.composerStrictValidation or true;
+
+      # Should we keep these empty phases?
+      configurePhase =
+        previousAttrs.configurePhase or ''
+          runHook preConfigure
+
+          runHook postConfigure
+        '';
+
+      # See https://github.com/NixOS/nix/issues/6660
+      dontPatchShebangs = previousAttrs.dontPatchShebangs or true;
+      name = "${previousAttrs.pname}-composer-repository-${previousAttrs.version}";
+      outputHash = finalAttrs.vendorHash or "";
+
       outputHashAlgo =
         if (finalAttrs ? vendorHash && finalAttrs.vendorHash != "") then null else "sha256";
-      outputHash = finalAttrs.vendorHash or "";
+
+      outputHashMode = "recursive";
     };
 in
 args: (stdenvNoCC.mkDerivation args).overrideAttrs mkComposerRepositoryOverride

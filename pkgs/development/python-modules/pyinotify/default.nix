@@ -7,7 +7,6 @@
 buildPythonPackage rec {
   pname = "pyinotify";
   version = "0.9.6";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
@@ -15,15 +14,14 @@ buildPythonPackage rec {
   };
 
   patches = [ ./skip-asyncore-python-3.12.patch ];
-
   # No tests distributed
   doCheck = false;
-
+  format = "setuptools";
   pythonImportsCheck = [ "pyinotify" ];
 
   meta = {
-    homepage = "https://github.com/seb-m/pyinotify/wiki";
     description = "Monitor filesystems events on Linux platforms with inotify";
+    homepage = "https://github.com/seb-m/pyinotify/wiki";
     license = lib.licenses.mit;
     platforms = lib.platforms.linux;
   };

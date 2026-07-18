@@ -2,16 +2,15 @@
   lib,
   buildPythonPackage,
   fetchPypi,
+  mock,
   paramiko,
   pytestCheckHook,
-  mock,
   setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "sshtunnel";
   version = "0.4.0";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
@@ -21,14 +20,13 @@ buildPythonPackage rec {
   # https://github.com/pahaz/sshtunnel/pull/301
   patches = [ ./paramiko-4.0-compat.patch ];
 
-  build-system = [ setuptools ];
-
-  dependencies = [ paramiko ];
-
   nativeCheckInputs = [
     pytestCheckHook
     mock
   ];
+
+  build-system = [ setuptools ];
+  dependencies = [ paramiko ];
 
   # disable impure tests
   disabledTests = [
@@ -39,11 +37,13 @@ buildPythonPackage rec {
     "test_read_private_key_file"
   ];
 
+  pyproject = true;
+
   meta = {
     description = "Pure python SSH tunnels";
-    mainProgram = "sshtunnel";
     homepage = "https://github.com/pahaz/sshtunnel";
     license = lib.licenses.mit;
     maintainers = [ ];
+    mainProgram = "sshtunnel";
   };
 }

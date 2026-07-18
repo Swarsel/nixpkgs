@@ -4,8 +4,8 @@
   fetchFromGitHub,
   meson,
   ninja,
-  pkg-config,
   openssl,
+  pkg-config,
 }:
 
 stdenv.mkDerivation {
@@ -19,16 +19,6 @@ stdenv.mkDerivation {
     hash = "sha256-kDAXA/v2nb/QAiJpGs0rTjm0t6CdbonTwHHoYhDQExE=";
   };
 
-  nativeBuildInputs = [
-    meson
-    ninja
-    pkg-config
-  ];
-
-  buildInputs = [
-    openssl
-  ];
-
   postPatch = ''
     # Upstream meson.build uses error() instead of warning() for missing
     # doxygen/dot, which fails the configure.
@@ -40,6 +30,16 @@ stdenv.mkDerivation {
     substituteInPlace src/usb/transaction.h \
       --replace-fail "define TRANSaCTION_H" "define TRANSACTION_H"
   '';
+
+  nativeBuildInputs = [
+    meson
+    ninja
+    pkg-config
+  ];
+
+  buildInputs = [
+    openssl
+  ];
 
   # Disable -Werror: upstream uses OpenSSL EC_KEY APIs deprecated since 3.0.
   mesonFlags = [ "--warnlevel=2" ];

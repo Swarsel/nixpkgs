@@ -1,8 +1,9 @@
 {
   lib,
-  buildNpmPackage,
-  fetchFromGitHub,
+  stdenv,
   fetchurl,
+  fetchFromGitHub,
+  buildNpmPackage,
   gcc,
   icu,
   nix-update-script,
@@ -10,17 +11,17 @@
   pkg-config,
   python3,
   sqlite,
-  stdenv,
   uwsgi,
 }:
 let
   version = "1.45.0";
 
   python = python3.override {
-    self = python;
     packageOverrides = final: prev: {
       django = prev.django_6;
     };
+
+    self = python;
   };
 
   uwsgiWithPython = uwsgi.override {
@@ -31,13 +32,13 @@ let
   # Compile the SQLite ICU extension for case-insensitive search and ordering.
   # This mirrors the compile-icu stage in the upstream Dockerfile.
   icuExtension = stdenv.mkDerivation {
-    pname = "linkding-sqlite-icu";
     inherit version;
+    pname = "linkding-sqlite-icu";
 
     src = fetchurl {
       url = "https://www.sqlite.org/src/raw/ext/icu/icu.c?name=91c021c7e3e8bbba286960810fa303295c622e323567b2e6def4ce58e4466e60";
-      name = "icu.c";
       hash = "sha256-DkELE5p82yZVz0GVFdWWAEU8eo10ob0fqx66Q7rxv+U=";
+      name = "icu.c";
     };
 
     nativeBuildInputs = [
@@ -49,8 +50,6 @@ let
       icu.dev
       sqlite.dev
     ];
-
-    dontUnpack = true;
 
     buildPhase = ''
       runHook preBuild
@@ -66,69 +65,19 @@ let
       install -Dm755 libicu.so $out/lib/libicu.so
       runHook postInstall
     '';
+
+    dontUnpack = true;
   };
 in
 python.pkgs.buildPythonApplication (finalAttrs: {
-  pname = "linkding";
   inherit version;
-  pyproject = true;
+  pname = "linkding";
 
   src = fetchFromGitHub {
     owner = "sissbruecker";
     repo = "linkding";
     tag = "v${finalAttrs.version}";
     hash = "sha256-iGvUKmOPL0akfR52hzSGH6wu06/WP9ygiQ/HxsmrYWg=";
-  };
-
-  __structuredAttrs = true;
-
-  build-system = with python.pkgs; [
-    setuptools
-  ];
-
-  dependencies = with python.pkgs; [
-    beautifulsoup4
-    bleach
-    bleach-allowlist
-    django
-    djangorestframework
-    huey
-    markdown
-    mozilla-django-oidc
-    requests
-    waybackpy
-  ];
-
-  optional-dependencies = {
-    postgres = with python.pkgs; [ psycopg ];
-  };
-
-  dontCheckRuntimeDeps = true;
-  # Django's runserver re-executes sys.argv[0] via the Python interpreter,
-  # so manage.py must remain a valid Python script and cannot be wrapped in bash.
-  dontWrapPythonPrograms = true;
-
-  pyprojectAppendix = ''
-    [tool.setuptools.packages.find]
-    include = ["bookmarks*"]
-    [tool.setuptools.package-data]
-    bookmarks = ["static/**/*", "styles/**/*", "templates/**/*", "version.txt"]
-  '';
-
-  ui = buildNpmPackage {
-    inherit (finalAttrs) version;
-
-    pname = "${finalAttrs.pname}-ui";
-    src = finalAttrs.src;
-
-    npmDepsHash = "sha256-zUMgl+h0BPm9QzGi1WZG8f0tDoYk8p+Al3q6uEKXqLk=";
-
-    installPhase = ''
-      runHook preInstall
-      mkdir -p $out/bookmarks
-      mv bookmarks/static $out/bookmarks
-      runHook postInstall
-    '';
   };
 
   postPatch = ''
@@ -271,15 +220,68 @@ python.pkgs.buildPythonApplication (finalAttrs: {
       chmod +x $out/bin/linkding-bootstrap
     '';
 
+  __structuredAttrs = true;
+
+  build-system = with python.pkgs; [
+    setuptools
+  ];
+
+  dependencies = with python.pkgs; [
+    beautifulsoup4
+    bleach
+    bleach-allowlist
+    django
+    djangorestframework
+    huey
+    markdown
+    mozilla-django-oidc
+    requests
+    waybackpy
+  ];
+
+  dontCheckRuntimeDeps = true;
+  # Django's runserver re-executes sys.argv[0] via the Python interpreter,
+  # so manage.py must remain a valid Python script and cannot be wrapped in bash.
+  dontWrapPythonPrograms = true;
+
+  optional-dependencies = {
+    postgres = with python.pkgs; [ psycopg ];
+  };
+
+  pyproject = true;
+
+  pyprojectAppendix = ''
+    [tool.setuptools.packages.find]
+    include = ["bookmarks*"]
+    [tool.setuptools.package-data]
+    bookmarks = ["static/**/*", "styles/**/*", "templates/**/*", "version.txt"]
+  '';
+
+  ui = buildNpmPackage {
+    inherit (finalAttrs) version;
+    pname = "${finalAttrs.pname}-ui";
+    src = finalAttrs.src;
+    npmDepsHash = "sha256-zUMgl+h0BPm9QzGi1WZG8f0tDoYk8p+Al3q6uEKXqLk=";
+
+    installPhase = ''
+      runHook preInstall
+      mkdir -p $out/bookmarks
+      mv bookmarks/static $out/bookmarks
+      runHook postInstall
+    '';
+  };
+
   passthru = {
     inherit
       python
       icuExtension
       uwsgiWithPython
       ;
+
     tests = {
       inherit (nixosTests) linkding linkding-postgres;
     };
+
     updateScript = nix-update-script {
       extraArgs = [
         "--subpackage"
@@ -293,9 +295,11 @@ python.pkgs.buildPythonApplication (finalAttrs: {
     homepage = "https://linkding.link/";
     changelog = "https://github.com/sissbruecker/linkding/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       squat
     ];
+
     platforms = lib.platforms.linux;
   };
 })

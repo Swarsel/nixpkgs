@@ -1,13 +1,13 @@
 {
   lib,
-  pkg-config,
+  stdenv,
+  fetchFromGitHub,
   SDL2,
   SDL2_image,
-  libx11,
   autoreconfHook,
-  fetchFromGitHub,
-  stdenv,
+  libx11,
   nix-update-script,
+  pkg-config,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -21,6 +21,13 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-Ea1p9NLk7tW3elU0zmlPAkobyv+yLYeKv5hscJTFJhs=";
   };
 
+  outputs = [
+    "out"
+    "man"
+  ];
+
+  strictDeps = true;
+
   nativeBuildInputs = [
     autoreconfHook
     pkg-config
@@ -32,13 +39,6 @@ stdenv.mkDerivation (finalAttrs: {
     libx11
   ];
 
-  outputs = [
-    "out"
-    "man"
-  ];
-
-  strictDeps = true;
-
   # gcc15 build failure
   env.NIX_CFLAGS_COMPILE = toString [ "-std=gnu17" ];
 
@@ -47,12 +47,12 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   meta = {
-    homepage = "https://github.com/erikg/vp";
-    description = "SDL based picture viewer/slideshow";
-    license = lib.licenses.gpl3Plus;
-    mainProgram = "vp";
-    maintainers = [ ];
     inherit (SDL2.meta) platforms;
+    description = "SDL based picture viewer/slideshow";
+    homepage = "https://github.com/erikg/vp";
+    license = lib.licenses.gpl3Plus;
+    maintainers = [ ];
+    mainProgram = "vp";
     hydraPlatforms = lib.platforms.linux; # build hangs on both Darwin platforms, needs investigation
   };
 })

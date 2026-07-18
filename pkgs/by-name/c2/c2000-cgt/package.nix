@@ -1,8 +1,8 @@
 {
   lib,
-  stdenvNoCC,
-  buildFHSEnv,
   fetchurl,
+  buildFHSEnv,
+  stdenvNoCC,
 }:
 
 let
@@ -19,8 +19,6 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     hash = "sha256-vkxV7/D3I4Uf7q3KBwdjEq9rn4DTPNMUm1NSuMYQEbM=";
   };
 
-  dontUnpack = true;
-
   installPhase = ''
     runHook preInstall
 
@@ -34,18 +32,22 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  dontUnpack = true;
+
   meta = {
     description = "C28x/CLA code generation tools (CGT) - compiler";
+
     longDescription = ''
       The TI C28x code generation tools (C2000-CGT) facilitate the development of applications
       for TI C28x microcontroller platforms. The platforms include the Concerto (F28M3xx),
       Piccolo (280xx), Delfino floating-point (283xx), and C28x fixed-point (2823x/280x/281x) device families.
     '';
+
     homepage = "https://www.ti.com/tool/C2000-CGT";
     changelog = "https://software-dl.ti.com/codegen/esd/cgt_public_sw/C2000/${finalAttrs.version}/README.html";
     license = lib.licenses.unfree;
     maintainers = with lib.maintainers; [ teczito ];
-    mainProgram = "cl2000";
     platforms = [ "x86_64-linux" ];
+    mainProgram = "cl2000";
   };
 })

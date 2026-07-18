@@ -1,21 +1,20 @@
 {
   lib,
+  fetchFromGitHub,
   buildPythonPackage,
   django,
-  fetchFromGitHub,
   pillow,
-  reportlab,
-  svglib,
-  pytestCheckHook,
   pytest-django,
+  pytestCheckHook,
+  reportlab,
   setuptools,
+  svglib,
   testfixtures,
 }:
 
 buildPythonPackage rec {
   pname = "easy-thumbnails";
   version = "2.10.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "SmileyChris";
@@ -23,18 +22,6 @@ buildPythonPackage rec {
     tag = version;
     hash = "sha256-GPZ99OaQRSogS8gJXz8rVUjUeNkEk019TYx0VWa0Q6I=";
   };
-
-  build-system = [ setuptools ];
-
-  dependencies = [
-    django
-    pillow
-  ];
-
-  optional-dependencies.svg = [
-    reportlab
-    svglib
-  ];
 
   nativeCheckInputs = [
     pytestCheckHook
@@ -44,15 +31,28 @@ buildPythonPackage rec {
 
   checkInputs = [ testfixtures ];
 
+  preCheck = ''
+    export DJANGO_SETTINGS_MODULE="easy_thumbnails.tests.settings"
+  '';
+
+  build-system = [ setuptools ];
+
+  dependencies = [
+    django
+    pillow
+  ];
+
   disabledTests = [
     # AssertionError: 'ERROR' != 'INFO'
     "test_postprocessor"
   ];
 
-  preCheck = ''
-    export DJANGO_SETTINGS_MODULE="easy_thumbnails.tests.settings"
-  '';
+  optional-dependencies.svg = [
+    reportlab
+    svglib
+  ];
 
+  pyproject = true;
   pythonImportsCheck = [ "easy_thumbnails" ];
 
   meta = {

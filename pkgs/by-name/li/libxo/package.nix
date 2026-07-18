@@ -1,12 +1,12 @@
 {
   lib,
+  stdenv,
+  fetchFromGitHub,
   autoreconfHook,
   bashNonInteractive,
   libtool,
-  fetchFromGitHub,
   nix-update-script,
   perl,
-  stdenv,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -20,6 +20,13 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-ElSxegY2ejw7IuIMznfVpl29Wyvpx9k1BdXregzYsoQ=";
   };
 
+  outputs = [
+    "bin"
+    "out"
+    "dev"
+    "man"
+  ];
+
   postPatch = ''
     substituteInPlace configure.ac \
       --replace-fail LIBTOOL=glibtool 'LIBTOOL=${lib.getExe libtool}'
@@ -29,11 +36,14 @@ stdenv.mkDerivation (finalAttrs: {
       --replace-fail '-L/opt/local/lib' ""
   '';
 
-  outputs = [
-    "bin"
-    "out"
-    "dev"
-    "man"
+  strictDeps = true;
+  nativeBuildInputs = [ autoreconfHook ];
+
+  buildInputs = [
+    autoreconfHook
+    # For patchShebangs in postInstall
+    bashNonInteractive
+    perl
   ];
 
   configureFlags = lib.optionals stdenv.hostPlatform.isDarwin [
@@ -42,23 +52,12 @@ stdenv.mkDerivation (finalAttrs: {
     "ac_cv_func_realloc_0_nonnull=yes"
   ];
 
-  strictDeps = true;
-
-  nativeBuildInputs = [ autoreconfHook ];
-  buildInputs = [
-    autoreconfHook
-    # For patchShebangs in postInstall
-    bashNonInteractive
-    perl
-  ];
-
   postInstall = ''
     moveToOutput "bin/libxo-config" "$dev"
     patchShebangs --host "$out/bin"
   '';
 
   __structuredAttrs = true;
-
   passthru.updateScript = nix-update-script { };
 
   meta = {

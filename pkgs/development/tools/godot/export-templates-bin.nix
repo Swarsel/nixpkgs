@@ -1,8 +1,8 @@
 {
+  lib,
   fetchurl,
   godot,
   hash,
-  lib,
   stdenvNoCC,
   unzip,
   version,
@@ -14,33 +14,33 @@
 # https://docs.godotengine.org/en/stable/tutorials/export/exporting_projects.html#export-templates
 let
   self = stdenvNoCC.mkDerivation {
-    __structuredAttrs = true;
-
     pname = "godot-export-templates${lib.optionalString withMono "-mono"}-bin";
     version = version;
 
     src = fetchurl {
-      url = "https://github.com/godotengine/godot/releases/download/${version}/Godot_v${version}${lib.optionalString withMono "_mono"}_export_templates.tpz";
       inherit hash;
+      url = "https://github.com/godotengine/godot/releases/download/${version}/Godot_v${version}${lib.optionalString withMono "_mono"}_export_templates.tpz";
     };
+
+    strictDeps = true;
 
     nativeBuildInputs = [
       unzip
     ];
-
-    strictDeps = true;
-
-    unpackPhase = ''
-      runHook preUnpack
-      unzip -q "$src"
-      runHook postUnpack
-    '';
 
     installPhase = ''
       templates="$out"/share/godot/export_templates
       mkdir -p "$templates"
       read version < templates/version.txt
       mv templates "$templates/$version"
+    '';
+
+    __structuredAttrs = true;
+
+    unpackPhase = ''
+      runHook preUnpack
+      unzip -q "$src"
+      runHook postUnpack
     '';
 
     meta = {
@@ -51,6 +51,7 @@ let
         license
         maintainers
         ;
+
       sourceProvenance = [ lib.sourceTypes.binaryNativeCode ];
     };
   };

@@ -1,38 +1,67 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  fetchzip,
   applyPatches,
-  replaceVars,
+  boost,
+  buildPythonPackage,
+  cairo,
+  catch2_3,
   cmake,
   comic-neue,
-  boost,
-  catch2_3,
-  cairo,
-  eigen,
-  python,
-  rapidjson,
-  maeparser,
   coordgenlibs,
+  eigen,
+  fetchzip,
+  maeparser,
   numpy,
   pandas,
   pillow,
+  python,
+  rapidjson,
+  replaceVars,
 }:
 let
   external = {
     avalon = fetchFromGitHub {
+      hash = "sha256-2MuFZgRIHXnkV7Nc1da4fa7wDx57VHUtwLthrmjk+5o=";
       owner = "rdkit";
       repo = "ava-formake";
       rev = "AvalonToolkit_2.0.5-pre.3";
-      hash = "sha256-2MuFZgRIHXnkV7Nc1da4fa7wDx57VHUtwLthrmjk+5o=";
     };
+
+    better_enums = fetchFromGitHub {
+      hash = "sha256-UYldCOkRTySc78oEOJzgoY9h2lB386W/D5Rz3KjVCO8=";
+      owner = "aantron";
+      repo = "better-enums";
+      tag = "0.11.3";
+    };
+
     chemdraw = fetchFromGitHub {
+      hash = "sha256-ee2Oxvo2d7Yb59lN0zkrbFqy/3rOvVLo6qdS+f23wVQ=";
       owner = "Glysade";
       repo = "chemdraw";
       tag = "v1.0.10";
-      hash = "sha256-ee2Oxvo2d7Yb59lN0zkrbFqy/3rOvVLo6qdS+f23wVQ=";
     };
+
+    freesasa = fetchFromGitHub {
+      hash = "sha256-7E+imvfDAJFnXQRWb5hNaSu+Xrf9NXeIKc9fl+o3yHQ=";
+      owner = "mittinatten";
+      repo = "freesasa";
+      rev = "2.0.3";
+    };
+
+    # We cannot use the inchi from nixpkgs as the version is too old
+    inchi = fetchzip {
+      hash = "sha256-TUC2175HifB63EfSsg/ixA3wYzAxsvUnY6ZyNjVR/Fc=";
+      url = "https://github.com/IUPAC-InChI/InChI/releases/download/v1.07.3/INCHI-1-SRC.zip";
+    };
+
+    pubchem-align3d = fetchFromGitHub {
+      hash = "sha256-tQB4wqza9rlSoy4Uj9bA99ddawjxGyN9G7DYbcv/Qdo=";
+      owner = "ncbi";
+      repo = "pubchem-align3d";
+      rev = "daefab3dd0c90ca56da9d3d5e375fe4d651e6be3";
+    };
+
     yaehmop = applyPatches {
       src = fetchFromGitHub {
         owner = "greglandrum";
@@ -49,36 +78,12 @@ let
             "cmake_minimum_required(VERSION 3.5)"
       '';
     };
-    freesasa = fetchFromGitHub {
-      owner = "mittinatten";
-      repo = "freesasa";
-      rev = "2.0.3";
-      hash = "sha256-7E+imvfDAJFnXQRWb5hNaSu+Xrf9NXeIKc9fl+o3yHQ=";
-    };
-    pubchem-align3d = fetchFromGitHub {
-      owner = "ncbi";
-      repo = "pubchem-align3d";
-      rev = "daefab3dd0c90ca56da9d3d5e375fe4d651e6be3";
-      hash = "sha256-tQB4wqza9rlSoy4Uj9bA99ddawjxGyN9G7DYbcv/Qdo=";
-    };
-    better_enums = fetchFromGitHub {
-      owner = "aantron";
-      repo = "better-enums";
-      tag = "0.11.3";
-      hash = "sha256-UYldCOkRTySc78oEOJzgoY9h2lB386W/D5Rz3KjVCO8=";
-    };
-    # We cannot use the inchi from nixpkgs as the version is too old
-    inchi = fetchzip {
-      url = "https://github.com/IUPAC-InChI/InChI/releases/download/v1.07.3/INCHI-1-SRC.zip";
-      hash = "sha256-TUC2175HifB63EfSsg/ixA3wYzAxsvUnY6ZyNjVR/Fc=";
-    };
   };
   boost' = boost.override { enableNumpy = true; };
 in
 buildPythonPackage rec {
   pname = "rdkit";
   version = "2025.03.6";
-  pyproject = false;
 
   src =
     let
@@ -90,37 +95,6 @@ buildPythonPackage rec {
       tag = "Release_${versionTag}";
       hash = "sha256-DqnwfT+lX7OnArIcFlCBrDl+QDmNpbPO9u7OGwu8fJo=";
     };
-
-  unpackPhase = ''
-    cp -r $src/* .
-    find . -type d -exec chmod +w {} +
-
-    mkdir External/AvalonTools/avalon
-    # In buildPhase, CMake patches the file in this directory
-    # see https://github.com/rdkit/rdkit/pull/5928
-    cp -r ${external.avalon}/* External/AvalonTools/avalon
-
-    mkdir External/ChemDraw/chemdraw
-    cp -r ${external.chemdraw}/* External/ChemDraw/chemdraw/
-    chmod -R +w External/ChemDraw/chemdraw
-
-    mkdir External/YAeHMOP/yaehmop
-    ln -s ${external.yaehmop}/* External/YAeHMOP/yaehmop
-
-    mkdir External/FreeSASA/freesasa
-    cp -r ${external.freesasa}/* External/FreeSASA/freesasa
-    chmod +w External/FreeSASA/freesasa/src
-    cp External/FreeSASA/freesasa2.c External/FreeSASA/freesasa/src
-
-    mkdir External/pubchem_shape/pubchem-align3d
-    cp -r ${external.pubchem-align3d}/* External/pubchem_shape/pubchem-align3d
-
-    mkdir External/INCHI-API/src
-    ln -s ${external.inchi}/* External/INCHI-API/src
-
-    ln -s ${rapidjson} External/rapidjson-1.1.0
-    ln -s ${comic-neue}/share/fonts/truetype/ComicNeue-Regular.ttf Data/Fonts/
-  '';
 
   patches = [
     (replaceVars ./dont-fetch-better-enums.patch {
@@ -150,14 +124,6 @@ buildPythonPackage rec {
     eigen
     maeparser
   ];
-
-  dependencies = [
-    numpy
-    pandas
-    pillow
-  ];
-
-  hardeningDisable = [ "format" ]; # required by yaehmop
 
   cmakeFlags = [
     (lib.cmakeBool "Boost_NO_BOOST_CMAKE" true)
@@ -191,6 +157,15 @@ buildPythonPackage rec {
     (cd $RDBASE/rdkit/Chem && python $RDBASE/rdkit/TestRunner.py test_list.py)
   '';
 
+  dependencies = [
+    numpy
+    pandas
+    pillow
+  ];
+
+  hardeningDisable = [ "format" ]; # required by yaehmop
+  pyproject = false;
+
   pythonImportsCheck = [
     "rdkit"
     "rdkit.Chem"
@@ -198,14 +173,46 @@ buildPythonPackage rec {
     "rdkit.Chem.rdDetermineBonds"
   ];
 
+  unpackPhase = ''
+    cp -r $src/* .
+    find . -type d -exec chmod +w {} +
+
+    mkdir External/AvalonTools/avalon
+    # In buildPhase, CMake patches the file in this directory
+    # see https://github.com/rdkit/rdkit/pull/5928
+    cp -r ${external.avalon}/* External/AvalonTools/avalon
+
+    mkdir External/ChemDraw/chemdraw
+    cp -r ${external.chemdraw}/* External/ChemDraw/chemdraw/
+    chmod -R +w External/ChemDraw/chemdraw
+
+    mkdir External/YAeHMOP/yaehmop
+    ln -s ${external.yaehmop}/* External/YAeHMOP/yaehmop
+
+    mkdir External/FreeSASA/freesasa
+    cp -r ${external.freesasa}/* External/FreeSASA/freesasa
+    chmod +w External/FreeSASA/freesasa/src
+    cp External/FreeSASA/freesasa2.c External/FreeSASA/freesasa/src
+
+    mkdir External/pubchem_shape/pubchem-align3d
+    cp -r ${external.pubchem-align3d}/* External/pubchem_shape/pubchem-align3d
+
+    mkdir External/INCHI-API/src
+    ln -s ${external.inchi}/* External/INCHI-API/src
+
+    ln -s ${rapidjson} External/rapidjson-1.1.0
+    ln -s ${comic-neue}/share/fonts/truetype/ComicNeue-Regular.ttf Data/Fonts/
+  '';
+
   meta = {
     description = "Open source toolkit for cheminformatics";
+    homepage = "https://www.rdkit.org";
+    changelog = "https://github.com/rdkit/rdkit/releases/tag/${src.tag}";
+    license = lib.licenses.bsd3;
+
     maintainers = with lib.maintainers; [
       rmcgibbo
       natsukium
     ];
-    license = lib.licenses.bsd3;
-    homepage = "https://www.rdkit.org";
-    changelog = "https://github.com/rdkit/rdkit/releases/tag/${src.tag}";
   };
 }

@@ -1,13 +1,13 @@
 {
   lib,
-  stdenvNoCC,
   fetchFromGitHub,
-  makeDesktopItem,
-  patsh,
   coreutils,
-  xorg-server,
-  xauth,
+  makeDesktopItem,
   nixosTests,
+  patsh,
+  stdenvNoCC,
+  xauth,
+  xorg-server,
 }:
 
 stdenvNoCC.mkDerivation (finalAttrs: {
@@ -21,8 +21,6 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     hash = "sha256-hKoz7Kuus8Yp7D0F05wCOQs6BvV0NkRM9uUXTntLJxQ=";
   };
 
-  makeFlags = [ "PREFIX=$(out)" ];
-
   nativeBuildInputs = [ patsh ];
 
   buildInputs = [
@@ -31,21 +29,24 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     xorg-server
   ];
 
+  makeFlags = [ "PREFIX=$(out)" ];
+
   postInstall = ''
     patsh -f $out/bin/sx -s ${builtins.storeDir} --path "$HOST_PATH"
 
     install -Dm755 -t $out/share/xsessions ${
       makeDesktopItem {
-        name = "sx";
-        desktopName = "sx";
         comment = "Start a xorg server";
+        desktopName = "sx";
         exec = "sx";
+        name = "sx";
       }
     }/share/applications/sx.desktop
   '';
 
   passthru = {
     providedSessions = [ "sx" ];
+
     tests = {
       inherit (nixosTests) sx;
     };
@@ -55,11 +56,13 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     description = "Simple alternative to both xinit and startx for starting a Xorg server";
     homepage = "https://github.com/earnestly/sx";
     license = lib.licenses.mit;
-    mainProgram = "sx";
+
     maintainers = with lib.maintainers; [
       thiagokokada
       liberodark
     ];
+
     platforms = lib.platforms.linux;
+    mainProgram = "sx";
   };
 })

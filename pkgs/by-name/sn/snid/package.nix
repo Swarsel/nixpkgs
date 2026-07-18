@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   nixosTests,
 }:
 
@@ -19,11 +19,12 @@ buildGoModule (finalAttrs: {
   vendorHash = "sha256-cVarG6Tx4yWpZE5BLZsMtLV9LF1lsiFfIXxhYiNjQlY=";
 
   passthru = {
-    tests.nixos = nixosTests.snid;
     services.default = {
       imports = [ (lib.modules.importApply ./service.nix { }) ];
       snid.package = finalAttrs.finalPackage;
     };
+
+    tests.nixos = nixosTests.snid;
   };
 
   meta = {

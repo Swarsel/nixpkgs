@@ -2,24 +2,22 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  unstableGitUpdater,
-  cmake,
-  pkg-config,
   alsa-lib,
+  cmake,
   jack2,
   libpulseaudio,
+  pkg-config,
   sndio,
   speexdsp,
-  validatePkgConfig,
-
   # passthru.tests
   testers,
-
+  unstableGitUpdater,
+  validatePkgConfig,
   alsaSupport ? !stdenv.hostPlatform.isDarwin,
-  pulseSupport ? !stdenv.hostPlatform.isDarwin,
-  jackSupport ? !stdenv.hostPlatform.isDarwin,
-  sndioSupport ? !stdenv.hostPlatform.isDarwin,
   enableShared ? !stdenv.hostPlatform.isStatic,
+  jackSupport ? !stdenv.hostPlatform.isDarwin,
+  pulseSupport ? !stdenv.hostPlatform.isDarwin,
+  sndioSupport ? !stdenv.hostPlatform.isDarwin,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -66,20 +64,22 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   passthru = {
-    updateScript = unstableGitUpdater { hardcodeZeroVersion = true; };
     tests.pkg-config = testers.testMetaPkgConfig finalAttrs.finalPackage;
+    updateScript = unstableGitUpdater { hardcodeZeroVersion = true; };
   };
 
   meta = {
     description = "Cross platform audio library";
-    mainProgram = "cubeb-test";
     homepage = "https://github.com/mozilla/cubeb";
     license = lib.licenses.isc;
-    platforms = with lib.platforms; linux ++ darwin;
+
     maintainers = with lib.maintainers; [
       zhaofengli
       marcin-serwin
     ];
+
+    platforms = with lib.platforms; linux ++ darwin;
+    mainProgram = "cubeb-test";
     pkgConfigModules = [ "libcubeb" ];
   };
 })

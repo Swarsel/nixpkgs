@@ -1,21 +1,22 @@
 {
   lib,
-  anki-utils,
   fetchFromGitHub,
-  python3,
+  anki-utils,
   nix-update-script,
+  python3,
 }:
 anki-utils.buildAnkiAddon (finalAttrs: {
   pname = "local-audio-yomichan";
   version = "0-unstable-2025-12-10";
+
   src = fetchFromGitHub {
     owner = "yomidevs";
     repo = "local-audio-yomichan";
     rev = "2cbabbc75b4195b75033adf059d2a5ff037f60a6";
-    sparseCheckout = [ "plugin" ];
     hash = "sha256-bsvxossIkZb8SuaNUzQX/xll3yb173TigXnrg5GA390=";
+    sparseCheckout = [ "plugin" ];
   };
-  sourceRoot = "${finalAttrs.src.name}/plugin";
+
   processUserFiles = ''
     # Addon will try to load extra stuff unless Python package name is "plugin".
     temp=$(mktemp -d)
@@ -30,11 +31,16 @@ anki-utils.buildAnkiAddon (finalAttrs: {
       "from plugin import db_utils; \
        db_utils.init_db()"
   '';
+
+  sourceRoot = "${finalAttrs.src.name}/plugin";
+
   passthru.updateScript = nix-update-script {
     extraArgs = [ "--version=branch" ];
   };
+
   meta = {
     description = "Run a local audio server for Yomitan";
+
     longDescription = ''
       This add-on must be configured with an audio collection.
 
@@ -66,6 +72,7 @@ anki-utils.buildAnkiAddon (finalAttrs: {
       }
       ```
     '';
+
     homepage = "https://github.com/yomidevs/local-audio-yomichan";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ junestepp ];

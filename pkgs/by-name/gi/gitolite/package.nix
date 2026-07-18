@@ -1,13 +1,13 @@
 {
+  lib,
   stdenv,
   coreutils,
   fetchFromCodeberg,
   git,
-  lib,
   makeWrapper,
   net-tools,
-  perl,
   nixosTests,
+  perl,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -21,15 +21,6 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-BwpqvjpHzoypV91W/QReAgiNrmpxZ0IE3W/bpCVO1GE=";
   };
 
-  buildInputs = [
-    net-tools
-    perl
-  ];
-  nativeBuildInputs = [ makeWrapper ];
-  propagatedBuildInputs = [ git ];
-
-  dontBuild = true;
-
   postPatch = ''
     substituteInPlace ./install --replace " 2>/dev/null" ""
     substituteInPlace src/lib/Gitolite/Hooks/PostUpdate.pm \
@@ -42,6 +33,21 @@ stdenv.mkDerivation (finalAttrs: {
       --replace /bin/rm "${coreutils}/bin/rm"
   '';
 
+  nativeBuildInputs = [ makeWrapper ];
+
+  buildInputs = [
+    net-tools
+    perl
+  ];
+
+  propagatedBuildInputs = [ git ];
+
+  installPhase = ''
+    mkdir -p $out/bin
+    perl ./install -to $out/bin
+    echo ${finalAttrs.version} > $out/bin/VERSION
+  '';
+
   postFixup = ''
     wrapProgram $out/bin/gitolite-shell \
       --prefix PATH : ${
@@ -52,11 +58,7 @@ stdenv.mkDerivation (finalAttrs: {
       }
   '';
 
-  installPhase = ''
-    mkdir -p $out/bin
-    perl ./install -to $out/bin
-    echo ${finalAttrs.version} > $out/bin/VERSION
-  '';
+  dontBuild = true;
 
   passthru.tests = {
     gitolite = nixosTests.gitolite;
@@ -66,11 +68,13 @@ stdenv.mkDerivation (finalAttrs: {
     description = "Finely-grained git repository hosting";
     homepage = "https://gitolite.com/gitolite/index.html";
     license = lib.licenses.gpl2;
-    platforms = lib.platforms.unix;
+
     maintainers = [
       lib.maintainers.thoughtpolice
       lib.maintainers.lassulus
       lib.maintainers.tomberek
     ];
+
+    platforms = lib.platforms.unix;
   };
 })

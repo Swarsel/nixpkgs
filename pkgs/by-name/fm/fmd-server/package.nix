@@ -1,13 +1,13 @@
 {
   lib,
-  buildGoModule,
+  stdenv,
   fetchFromGitLab,
+  buildGoModule,
   fetchPnpmDeps,
   nix-update-script,
   nodejs,
-  pnpm_10,
   pnpmConfigHook,
-  stdenv,
+  pnpm_10,
   versionCheckHook,
 }:
 buildGoModule (
@@ -18,19 +18,12 @@ buildGoModule (
   {
     pname = "fmd-server";
     version = "0.15.0";
+
     src = fetchFromGitLab {
       owner = "fmd-foss";
       repo = "fmd-server";
       tag = "v${finalAttrs.version}";
       hash = "sha256-EzhXrB15lRtDnFicdH7fjpcm1BYoAb1SBeylGSub69s=";
-    };
-
-    pnpmDeps = fetchPnpmDeps {
-      inherit (ui) pname src;
-      inherit pnpm_10;
-      sourceRoot = "${finalAttrs.src.name}/${ui.pnpmRoot}";
-      fetcherVersion = 3;
-      hash = "sha256-vKSKPwOkb7TwDUlkl8lUvO6tLKp2NyBQ0BGxThUN2P8=";
     };
 
     vendorHash = "sha256-cFIg9mOSQbrYHW4kg4aTeTaF+gy1jNpAlg8qepb81Jc=";
@@ -39,18 +32,22 @@ buildGoModule (
       cp -r ${ui}/${ui.distRoot} web/
     '';
 
-    nativeInstallCheckInputs = [ versionCheckHook ];
-    versionCheckProgramArg = "version";
-
     doInstallCheck = true;
-    passthru.updateScript = nix-update-script { };
+    nativeInstallCheckInputs = [ versionCheckHook ];
+
+    pnpmDeps = fetchPnpmDeps {
+      inherit (ui) pname src;
+      inherit pnpm_10;
+      fetcherVersion = 3;
+      hash = "sha256-vKSKPwOkb7TwDUlkl8lUvO6tLKp2NyBQ0BGxThUN2P8=";
+      sourceRoot = "${finalAttrs.src.name}/${ui.pnpmRoot}";
+    };
+
+    versionCheckProgramArg = "version";
 
     passthru.ui = stdenv.mkDerivation {
       inherit (finalAttrs) version src pnpmDeps;
       pname = "${finalAttrs.pname}-web-ui";
-
-      pnpmRoot = "web";
-      distRoot = "dist";
 
       nativeBuildInputs = [
         nodejs
@@ -76,19 +73,26 @@ buildGoModule (
 
         runHook postInstall
       '';
+
+      distRoot = "dist";
+      pnpmRoot = "web";
     };
+
+    passthru.updateScript = nix-update-script { };
 
     meta = {
       description = "Server to communicate with the FindMyDevice app and save the latest (encrypted) location";
       homepage = "https://fmd-foss.org/";
-      downloadPage = "https://gitlab.com/fmd-foss/fmd-server";
       license = lib.licenses.gpl3Plus;
+
       maintainers = with lib.maintainers; [
         j0hax
         jthulhu
       ];
-      teams = [ lib.teams.ngi ];
+
       mainProgram = "fmd-server";
+      downloadPage = "https://gitlab.com/fmd-foss/fmd-server";
+      teams = [ lib.teams.ngi ];
     };
   }
 )

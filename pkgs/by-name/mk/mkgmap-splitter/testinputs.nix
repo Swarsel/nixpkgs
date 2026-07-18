@@ -1,20 +1,20 @@
 { fetchurl }:
 let
   fetchTestInput =
-    { res, hash }:
+    { hash, res }:
     fetchurl {
       inherit hash;
-      url = "https://www.mkgmap.org.uk/testinput/${res}";
       name = builtins.replaceStrings [ "/" ] [ "__" ] res;
+      url = "https://www.mkgmap.org.uk/testinput/${res}";
     };
 in
 [
   (fetchTestInput {
-    res = "osm/alaska-2016-12-27.osm.pbf";
     hash = "sha256-9d7DL1+wMVjve/4S/VXbe6wjaJFusfDyfn0FFc4uq0I=";
+    res = "osm/alaska-2016-12-27.osm.pbf";
   })
   (fetchTestInput {
-    res = "osm/hamburg-2016-12-26.osm.pbf";
     hash = "sha256-TmvZHZgPevnwOtSB2H8BiYvoxnYpYRKC+KPyrRTxdiE=";
+    res = "osm/hamburg-2016-12-26.osm.pbf";
   })
 ]

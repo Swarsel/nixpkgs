@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   pytestCheckHook,
   setuptools,
 }:
@@ -9,7 +9,6 @@
 buildPythonPackage rec {
   pname = "uc-micro-py";
   version = "1.0.3";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "tsutsu3";
@@ -19,10 +18,9 @@ buildPythonPackage rec {
   };
 
   nativeBuildInputs = [ setuptools ];
-
-  pythonImportsCheck = [ "uc_micro" ];
-
   nativeCheckInputs = [ pytestCheckHook ];
+  pyproject = true;
+  pythonImportsCheck = [ "uc_micro" ];
 
   meta = {
     description = "Micro subset of unicode data files for linkify-it-py";

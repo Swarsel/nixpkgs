@@ -1,24 +1,25 @@
 {
-  writeTextFile,
-  pari_data,
-  pari,
-  singular,
-  maxima,
-  graphs,
-  elliptic_curves,
-  polytopes_db,
-  gap,
   combinatorial_designs,
-  mathjax,
-  three,
   cysignals,
+  elliptic_curves,
+  gap,
+  graphs,
+  mathjax,
+  maxima,
+  pari,
+  pari_data,
+  polytopes_db,
+  singular,
+  three,
+  writeTextFile,
 }:
 
 # A bash script setting various environment variables to tell sage where
 # the files its looking fore are located. Also see `sage-env`.
 writeTextFile rec {
-  name = "sage-env-locations";
   destination = "/${name}";
+  name = "sage-env-locations";
+
   text = ''
     export GP_DATA_DIR="${pari_data}/share/pari"
     export PARI_DATA_DIR="${pari_data}"

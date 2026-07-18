@@ -2,14 +2,13 @@
   lib,
   buildPythonPackage,
   fetchPypi,
-  pytestCheckHook,
   hypothesis,
+  pytestCheckHook,
 }:
 
 buildPythonPackage rec {
   pname = "hs-dbus-signature";
   version = "0.7";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
@@ -21,6 +20,7 @@ buildPythonPackage rec {
     hypothesis
   ];
 
+  format = "setuptools";
   pythonImportsCheck = [ "hs_dbus_signature" ];
 
   meta = {

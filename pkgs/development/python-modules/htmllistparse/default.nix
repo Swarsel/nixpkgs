@@ -1,18 +1,17 @@
 {
   lib,
+  beautifulsoup4,
   buildPythonPackage,
   fetchPypi,
-  setuptools,
-  beautifulsoup4,
+  fusepy,
   html5lib,
   requests,
-  fusepy,
+  setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "htmllistparse";
   version = "0.6.1";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
@@ -20,6 +19,7 @@ buildPythonPackage rec {
   };
 
   nativeBuildInputs = [ setuptools ];
+
   propagatedBuildInputs = [
     beautifulsoup4
     html5lib
@@ -29,14 +29,14 @@ buildPythonPackage rec {
 
   # upstream has no tests
   doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "htmllistparse" ];
 
   meta = {
-    homepage = "https://github.com/gumblex/htmllisting-parser";
     description = "Python parser for Apache/nginx-style HTML directory listing";
-    mainProgram = "rehttpfs";
+    homepage = "https://github.com/gumblex/htmllisting-parser";
     license = lib.licenses.mit;
     maintainers = [ ];
+    mainProgram = "rehttpfs";
   };
 }

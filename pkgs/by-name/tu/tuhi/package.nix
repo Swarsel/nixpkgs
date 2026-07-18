@@ -1,23 +1,21 @@
 {
   lib,
-  pkg-config,
-  python3Packages,
-  meson,
-  ninja,
+  fetchFromGitHub,
   appstream-glib,
   desktop-file-utils,
   glib,
-  gtk3,
   gobject-introspection,
+  gtk3,
+  meson,
+  ninja,
+  pkg-config,
+  python3Packages,
   wrapGAppsHook3,
-  fetchFromGitHub,
 }:
 
 python3Packages.buildPythonApplication (finalAttrs: {
   pname = "tuhi";
   version = "0.6";
-
-  pyproject = false;
 
   src = fetchFromGitHub {
     owner = "tuhiproject";
@@ -26,10 +24,7 @@ python3Packages.buildPythonApplication (finalAttrs: {
     sha256 = "sha256-NwyG2KhOrAKRewgmU23OMO0+A9SjkQZsDL4SGnLVCvo=";
   };
 
-  dontWrapGApps = true;
-  preFixup = ''
-    makeWrapperArgs+=("''${gappsWrapperArgs[@]}")
-  '';
+  strictDeps = false;
 
   nativeBuildInputs = [
     pkg-config
@@ -40,14 +35,12 @@ python3Packages.buildPythonApplication (finalAttrs: {
     wrapGAppsHook3
     gobject-introspection
   ];
+
   buildInputs = [
     gtk3
     glib
   ];
-  nativeCheckInputs = with python3Packages; [
-    flake8
-    pytest
-  ];
+
   propagatedBuildInputs = with python3Packages; [
     svgwrite
     pyxdg
@@ -56,21 +49,33 @@ python3Packages.buildPythonApplication (finalAttrs: {
     setuptools-scm
   ];
 
-  strictDeps = false;
   preConfigure = ''
     substituteInPlace meson_install.sh \
       --replace "/usr/bin/env sh" "sh"
   '';
+
+  nativeCheckInputs = with python3Packages; [
+    flake8
+    pytest
+  ];
+
+  preFixup = ''
+    makeWrapperArgs+=("''${gappsWrapperArgs[@]}")
+  '';
+
   postFixup = ''
     wrapPythonProgramsIn $out/libexec "$out ''${pythonPath[*]}"
   '';
 
+  dontWrapGApps = true;
+  pyproject = false;
+
   meta = {
     description = "DBus daemon to access Wacom SmartPad devices";
-    mainProgram = "tuhi";
     homepage = "https://github.com/tuhiproject/tuhi";
     license = lib.licenses.gpl2;
-    platforms = lib.platforms.linux;
     maintainers = with lib.maintainers; [ lammermann ];
+    platforms = lib.platforms.linux;
+    mainProgram = "tuhi";
   };
 })

@@ -25,15 +25,16 @@ in
 
   config = mkIf cfg.enable {
 
+    environment.systemPackages = [ pkgs.tab-window-manager ];
+
     services.xserver.windowManager.session = singleton {
       name = "twm";
+
       start = ''
         ${pkgs.tab-window-manager}/bin/twm &
         waitPID=$!
       '';
     };
-
-    environment.systemPackages = [ pkgs.tab-window-manager ];
 
   };
 

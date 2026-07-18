@@ -1,20 +1,19 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   hatchling,
-  scikit-learn,
   pandas,
-  pytestCheckHook,
   pytest-cov-stub,
   pytest-xdist,
+  pytestCheckHook,
   pytz,
+  scikit-learn,
 }:
 
 buildPythonPackage rec {
   pname = "sklearn-compat";
   version = "0.1.6";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "sklearn-compat";
@@ -22,6 +21,14 @@ buildPythonPackage rec {
     tag = version;
     hash = "sha256-bziweext3Mqq0Wa9KlX1gp5NpVYX8IpcvS1gTjxQa70=";
   };
+
+  nativeCheckInputs = [
+    pandas
+    pytestCheckHook
+    pytest-cov-stub
+    pytest-xdist
+    pytz
+  ];
 
   build-system = [
     hatchling
@@ -31,13 +38,7 @@ buildPythonPackage rec {
     scikit-learn
   ];
 
-  nativeCheckInputs = [
-    pandas
-    pytestCheckHook
-    pytest-cov-stub
-    pytest-xdist
-    pytz
-  ];
+  pyproject = true;
 
   pythonImportsCheck = [
     "sklearn_compat"

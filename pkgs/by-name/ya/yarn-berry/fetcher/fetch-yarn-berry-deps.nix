@@ -1,16 +1,16 @@
 {
   lib,
   stdenv,
-  yarn-berry-fetcher,
-  nix-prefetch-git,
-  cacert,
   berryVersion,
+  cacert,
+  nix-prefetch-git,
+  yarn-berry-fetcher,
 }:
 
 {
-  src ? null,
   hash ? "",
   sha256 ? "",
+  src ? null,
   ...
 }@args:
 
@@ -18,36 +18,28 @@ let
   hash_ =
     if hash != "" then
       {
-        outputHashAlgo = null;
         outputHash = hash;
+        outputHashAlgo = null;
       }
     else if sha256 != "" then
       {
-        outputHashAlgo = "sha256";
         outputHash = sha256;
+        outputHashAlgo = "sha256";
       }
     else
       {
-        outputHashAlgo = "sha256";
         outputHash = lib.fakeSha256;
+        outputHashAlgo = "sha256";
       };
 in
 
 stdenv.mkDerivation (
   {
-    # The name is fixed as to not produce multiple store paths with the same content
-    name = "offline";
-
-    dontUnpack = src == null;
-    dontInstall = true;
-
     nativeBuildInputs = [
       yarn-berry-fetcher
       nix-prefetch-git
       cacert
     ];
-
-    impureEnvVars = lib.fetchers.proxyImpureEnvVars;
 
     buildPhase = ''
       runHook preBuild
@@ -58,9 +50,13 @@ stdenv.mkDerivation (
       runHook postBuild
     '';
 
-    outputHashMode = "recursive";
-
     dontFixup = true; # fixup phase does the patching of the shebangs, and FODs must never contain nix store paths.
+    dontInstall = true;
+    dontUnpack = src == null;
+    impureEnvVars = lib.fetchers.proxyImpureEnvVars;
+    # The name is fixed as to not produce multiple store paths with the same content
+    name = "offline";
+    outputHashMode = "recursive";
 
     passthru = {
       inherit berryVersion;

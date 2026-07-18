@@ -3,13 +3,13 @@
   stdenv,
   gcc_meta,
   release_version,
+  runCommand,
   version,
   monorepoSrc ? null,
-  runCommand,
 }:
 stdenv.mkDerivation (finalAttrs: {
-  pname = "libbacktrace";
   inherit version;
+  pname = "libbacktrace";
 
   src = runCommand "libbacktrace-src-${version}" { src = monorepoSrc; } ''
     runPhase unpackPhase
@@ -39,10 +39,6 @@ stdenv.mkDerivation (finalAttrs: {
     "dev"
   ];
 
-  enableParallelBuilding = true;
-
-  sourceRoot = "${finalAttrs.src.name}/libbacktrace";
-
   preConfigure = ''
     mkdir ../../build
     cd ../../build
@@ -53,6 +49,8 @@ stdenv.mkDerivation (finalAttrs: {
     # Skip the gnudebuglink tests which fail on Darwin
     export libbacktrace_cv_objcopy_debuglink=no
   '';
+
+  doCheck = true;
 
   installPhase = ''
     runHook preInstall
@@ -67,7 +65,8 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
-  doCheck = true;
+  enableParallelBuilding = true;
+  sourceRoot = "${finalAttrs.src.name}/libbacktrace";
 
   passthru = {
     isGNU = true;

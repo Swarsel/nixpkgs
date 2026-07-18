@@ -1,19 +1,19 @@
 {
-  stdenv,
   lib,
+  stdenv,
   copyDesktopItems,
+  fetchzip,
+  jre,
   makeDesktopItem,
   makeWrapper,
-  jre,
-  fetchzip,
 }:
 let
   desktopItem = makeDesktopItem {
-    name = "ugs";
-    exec = "ugs";
+    categories = [ "Game" ];
     comment = "A cross-platform G-Code sender for GRBL, Smoothieware, TinyG and G2core.";
     desktopName = "Universal-G-Code-Sender";
-    categories = [ "Game" ];
+    exec = "ugs";
+    name = "ugs";
   };
 
 in
@@ -25,8 +25,6 @@ stdenv.mkDerivation (finalAttrs: {
     url = "https://github.com/winder/Universal-G-Code-Sender/releases/download/v${finalAttrs.version}/UniversalGcodeSender.zip";
     hash = "sha256-GRoQ9Wg+OyjhBjjRiNVZlMQ6pukvj9i3p9UA+7B/Tww=";
   };
-
-  dontUnpack = true;
 
   nativeBuildInputs = [
     copyDesktopItems
@@ -44,13 +42,14 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   desktopItems = [ desktopItem ];
+  dontUnpack = true;
 
   meta = {
     description = "Cross-platform G-Code sender for GRBL, Smoothieware, TinyG and G2core";
     homepage = "https://github.com/winder/Universal-G-Code-Sender";
-    maintainers = with lib.maintainers; [ matthewcroughan ];
-    sourceProvenance = with lib.sourceTypes; [ binaryBytecode ];
     license = lib.licenses.gpl3;
+    sourceProvenance = with lib.sourceTypes; [ binaryBytecode ];
+    maintainers = with lib.maintainers; [ matthewcroughan ];
     platforms = lib.platforms.all;
     mainProgram = "ugs";
   };

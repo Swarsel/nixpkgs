@@ -1,27 +1,22 @@
 {
   lib,
-  fetchFromGitHub,
   stdenv,
+  fetchFromGitHub,
   acl,
   glibmm_2_68,
+  gtk4,
   gtkmm4,
+  itstool,
   meson,
   nautilus,
   ninja,
   pkg-config,
-  itstool,
   wrapGAppsHook4,
-  gtk4,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
   pname = "eiciel";
   version = "0.10.1";
-
-  outputs = [
-    "out"
-    "nautilusExtension"
-  ];
 
   src = fetchFromGitHub {
     owner = "rofirrim";
@@ -29,6 +24,11 @@ stdenv.mkDerivation (finalAttrs: {
     rev = finalAttrs.version;
     sha256 = "sha256-gpuxx1Ts9HCO+3C+Z3k1tVA+1Mip8/Bd+FvWisVdsVY=";
   };
+
+  outputs = [
+    "out"
+    "nautilusExtension"
+  ];
 
   nativeBuildInputs = [
     meson

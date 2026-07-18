@@ -1,15 +1,14 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
+  buildPythonPackage,
   lml,
+  setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "pyexcel-io";
   version = "0.6.7.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "pyexcel";
@@ -18,13 +17,11 @@ buildPythonPackage rec {
     hash = "sha256-DBiHHiKXR26/WPJDmEZpRgjvJitFaidbV41Tvn0etLY=";
   };
 
-  build-system = [ setuptools ];
-
-  dependencies = [ lml ];
-
   # Tests depend on stuff that depends on this.
   doCheck = false;
-
+  build-system = [ setuptools ];
+  dependencies = [ lml ];
+  pyproject = true;
   pythonImportsCheck = [ "pyexcel_io" ];
 
   meta = {

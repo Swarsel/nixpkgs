@@ -1,8 +1,8 @@
 {
+  lib,
   stdenv,
   fetchFromGitHub,
   glib,
-  lib,
   writeScriptBin,
 }:
 let
@@ -26,6 +26,7 @@ stdenv.mkDerivation (finalAttrs: {
     glib
     fake-dconf
   ];
+
   makeFlags = [ "PREFIX=$(out)" ];
 
   # make install will back up this file, it will fail if the file doesn't exist.
@@ -43,7 +44,7 @@ stdenv.mkDerivation (finalAttrs: {
     description = "GNOME Shell theme inspired by material design";
     homepage = "https://drasite.com/flat-remix-gnome";
     license = lib.licenses.cc-by-sa-40;
-    platforms = lib.platforms.linux;
     maintainers = [ lib.maintainers.vanilla ];
+    platforms = lib.platforms.linux;
   };
 })

@@ -1,8 +1,8 @@
 {
   lib,
   stdenv,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   installShellFiles,
 }:
 
@@ -17,15 +17,8 @@ buildGoModule (finalAttrs: {
     hash = "sha256-A07AHCfXZtd5Z71jRxIx6oIipCFskPzYtgSHv21zKpE=";
   };
 
-  vendorHash = "sha256-VZYkS1UQ7w/BUYFF8FrjgsnYn7sNexNVczmrMvYERGY=";
-
-  ldflags = [
-    "-X 'github.com/jzelinskie/cobrautil/v2.Version=${finalAttrs.src.tag}'"
-  ];
-
-  subPackages = [ "cmd/spicedb" ];
-
   nativeBuildInputs = [ installShellFiles ];
+  vendorHash = "sha256-VZYkS1UQ7w/BUYFF8FrjgsnYn7sNexNVczmrMvYERGY=";
 
   postInstall = lib.optionalString (stdenv.buildPlatform.canExecute stdenv.hostPlatform) ''
     installShellCompletion --cmd spicedb \
@@ -34,19 +27,29 @@ buildGoModule (finalAttrs: {
       --zsh <($out/bin/spicedb completion zsh)
   '';
 
+  ldflags = [
+    "-X 'github.com/jzelinskie/cobrautil/v2.Version=${finalAttrs.src.tag}'"
+  ];
+
+  subPackages = [ "cmd/spicedb" ];
+
   meta = {
-    changelog = "https://github.com/authzed/spicedb/releases/tag/${finalAttrs.src.tag}";
     description = "Open source permission database";
+
     longDescription = ''
       SpiceDB is an open-source permissions database inspired by
       Google Zanzibar.
     '';
+
     homepage = "https://authzed.com/";
+    changelog = "https://github.com/authzed/spicedb/releases/tag/${finalAttrs.src.tag}";
     license = lib.licenses.asl20;
+
     maintainers = with lib.maintainers; [
       squat
       thoughtpolice
     ];
+
     mainProgram = "spicedb";
   };
 })

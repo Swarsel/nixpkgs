@@ -1,31 +1,31 @@
 {
   lib,
-  buildDunePackage,
   fetchurl,
-  pkg-config,
+  alcotest,
+  arp,
+  buildDunePackage,
   cstruct,
   cstruct-lwt,
-  mirage-net,
-  mirage-mtime,
-  mirage-crypto-rng,
-  mirage-sleep,
-  macaddr,
-  macaddr-cstruct,
+  duration,
+  ethernet,
   fmt,
+  ipaddr-cstruct,
+  logs,
+  lru,
   lwt,
   lwt-dllist,
-  logs,
-  duration,
-  randomconv,
-  ethernet,
-  alcotest,
+  macaddr,
+  macaddr-cstruct,
+  metrics,
+  mirage-crypto-rng,
   mirage-flow,
+  mirage-mtime,
+  mirage-net,
+  mirage-sleep,
   mirage-vnetif,
   pcap-format,
-  arp,
-  ipaddr-cstruct,
-  lru,
-  metrics,
+  pkg-config,
+  randomconv,
 }:
 
 buildDunePackage rec {
@@ -65,17 +65,19 @@ buildDunePackage rec {
   ];
 
   doCheck = true;
+
   checkInputs = [
     alcotest
     mirage-vnetif
     pcap-format
   ];
+
   __darwinAllowLocalNetworking = true;
 
   meta = {
     description = "OCaml TCP/IP networking stack, used in MirageOS";
     homepage = "https://github.com/mirage/mirage-tcpip";
-    maintainers = [ lib.maintainers.sternenseemann ];
     license = lib.licenses.isc;
+    maintainers = [ lib.maintainers.sternenseemann ];
   };
 }

@@ -2,8 +2,8 @@
   lib,
   stdenv,
   fetchurl,
-  ncurses,
   glibc,
+  ncurses,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -37,9 +37,7 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   meta = {
-    homepage = "https://sites.google.com/site/tranter/software";
     description = "Display serial port modem status lines";
-    license = lib.licenses.gpl2Plus;
 
     longDescription = ''
       Statserial displays a table of the signals on a standard 9-pin or
@@ -47,8 +45,10 @@ stdenv.mkDerivation (finalAttrs: {
       can be useful for debugging problems with serial ports or modems.
     '';
 
-    platforms = lib.platforms.unix;
+    homepage = "https://sites.google.com/site/tranter/software";
+    license = lib.licenses.gpl2Plus;
     maintainers = with lib.maintainers; [ rps ];
+    platforms = lib.platforms.unix;
     mainProgram = "statserial";
   };
 })

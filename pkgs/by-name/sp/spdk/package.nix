@@ -1,36 +1,35 @@
 {
   lib,
   stdenv,
+  fetchurl,
   fetchFromGitHub,
-  ncurses,
-  python3,
-  cunit,
-  dpdk,
-  fuse3,
-  libaio,
-  libbsd,
-  libuuid,
-  nasm,
   autoconf,
   automake,
+  cunit,
+  dpdk,
+  elfutils,
+  ensureNewerSourcesForZipFilesHook,
+  fuse3,
+  jansson,
+  libaio,
+  libbsd,
+  libnl,
+  libpcap,
   libtool,
+  libuuid,
+  nasm,
+  ncurses,
   numactl,
   openssl,
   pkg-config,
+  python3,
+  runtimeShell,
   zlib,
   zstd,
-  libpcap,
-  libnl,
-  elfutils,
-  fetchurl,
-  jansson,
-  ensureNewerSourcesForZipFilesHook,
-  runtimeShell,
 }:
 
 stdenv.mkDerivation rec {
   pname = "spdk";
-
   version = "26.01";
 
   src = fetchFromGitHub {
@@ -40,6 +39,14 @@ stdenv.mkDerivation rec {
     hash = "sha256-E52VozjnoGnIC7viXrsualaaKXiUU9Fx8zGylTjBzX0=";
     fetchSubmodules = true;
   };
+
+  postPatch = ''
+    patchShebangs .
+    # Override uv pip install command to use hatchling directly without downloading dependencies
+    substituteInPlace python/Makefile \
+      --replace-fail "uv pip install --prefix=\$(CONFIG_PREFIX)" \
+                     "python3 -m pip install --no-deps --no-build-isolation --prefix=\$(CONFIG_PREFIX)"
+  '';
 
   nativeBuildInputs = [
     python3
@@ -77,26 +84,22 @@ stdenv.mkDerivation rec {
     python3.pkgs.configshell-fb
   ];
 
-  postPatch = ''
-    patchShebangs .
-    # Override uv pip install command to use hatchling directly without downloading dependencies
-    substituteInPlace python/Makefile \
-      --replace-fail "uv pip install --prefix=\$(CONFIG_PREFIX)" \
-                     "python3 -m pip install --no-deps --no-build-isolation --prefix=\$(CONFIG_PREFIX)"
-  '';
+  configureFlags = [
+    "--with-dpdk=${dpdk}"
+    "--with-crypto"
+  ]
+  ++ lib.optional (!stdenv.hostPlatform.isStatic) "--with-shared";
 
-  enableParallelBuilding = true;
+  env.NIX_CFLAGS_COMPILE = "-mssse3"; # Necessary to compile.
 
   # Required for the vendored isa-l version to find nasm
   preConfigure = ''
     export AS=nasm
   '';
 
-  configureFlags = [
-    "--with-dpdk=${dpdk}"
-    "--with-crypto"
-  ]
-  ++ lib.optional (!stdenv.hostPlatform.isStatic) "--with-shared";
+  postCheck = ''
+    python3 -m spdk
+  '';
 
   # spdk does shenanigans with patchelf, so we need to stop them from messing with rpath
   preInstall = ''
@@ -127,10 +130,6 @@ stdenv.mkDerivation rec {
     chmod +x  $out/bin/spdk-setup
   '';
 
-  postCheck = ''
-    python3 -m spdk
-  '';
-
   postFixup = ''
     wrapPythonPrograms
     ${lib.optionalString (!stdenv.hostPlatform.isStatic) ''
@@ -139,13 +138,13 @@ stdenv.mkDerivation rec {
     ''}
   '';
 
-  env.NIX_CFLAGS_COMPILE = "-mssse3"; # Necessary to compile.
+  enableParallelBuilding = true;
 
   meta = {
     description = "Set of libraries for fast user-mode storage";
     homepage = "https://spdk.io/";
     license = lib.licenses.bsd3;
-    platforms = [ "x86_64-linux" ];
     maintainers = with lib.maintainers; [ ths-on ];
+    platforms = [ "x86_64-linux" ];
   };
 }

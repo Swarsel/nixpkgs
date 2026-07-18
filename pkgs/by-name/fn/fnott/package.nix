@@ -1,22 +1,22 @@
 {
-  stdenv,
   lib,
-  gitUpdater,
+  stdenv,
+  dbus,
+  fcft,
   fetchFromCodeberg,
-  pkg-config,
-  meson,
-  ninja,
-  scdoc,
-  wayland-scanner,
   fontconfig,
   freetype,
-  pixman,
+  gitUpdater,
   libpng,
+  meson,
+  ninja,
+  pixman,
+  pkg-config,
+  scdoc,
   tllist,
   wayland,
   wayland-protocols,
-  dbus,
-  fcft,
+  wayland-scanner,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -30,12 +30,8 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-II8fij64ufwXg71VoSayVpSFim9+2w3j4gdTRDBrYQE=";
   };
 
-  env.PKG_CONFIG_DBUS_1_SESSION_BUS_SERVICES_DIR = "${placeholder "out"}/share/dbus-1/services";
-
   strictDeps = true;
-  depsBuildBuild = [
-    pkg-config
-  ];
+
   nativeBuildInputs = [
     pkg-config
     meson
@@ -43,6 +39,7 @@ stdenv.mkDerivation (finalAttrs: {
     scdoc
     wayland-scanner
   ];
+
   buildInputs = [
     fontconfig
     freetype
@@ -55,20 +52,29 @@ stdenv.mkDerivation (finalAttrs: {
     fcft
   ];
 
+  env.PKG_CONFIG_DBUS_1_SESSION_BUS_SERVICES_DIR = "${placeholder "out"}/share/dbus-1/services";
+
+  depsBuildBuild = [
+    pkg-config
+  ];
+
   passthru.updateScript = gitUpdater { };
 
   meta = {
+    description = "Keyboard driven and lightweight Wayland notification daemon for wlroots-based compositors";
     homepage = "https://codeberg.org/dnkl/fnott";
     changelog = "https://codeberg.org/dnkl/fnott/src/tag/${finalAttrs.src.rev}/CHANGELOG.md";
-    description = "Keyboard driven and lightweight Wayland notification daemon for wlroots-based compositors";
+
     license = with lib.licenses; [
       mit
       zlib
     ];
+
     maintainers = with lib.maintainers; [
       jmbaur
     ];
-    mainProgram = "fnott";
+
     platforms = lib.platforms.linux;
+    mainProgram = "fnott";
   };
 })

@@ -5,13 +5,13 @@
   autoreconfHook,
   bison,
   flex,
+  fltk,
   ghostscript,
   groff,
-  netpbm,
-  fltk,
+  libjpeg,
   libxinerama,
   libxpm,
-  libjpeg,
+  netpbm,
 }:
 
 stdenv.mkDerivation {
@@ -19,30 +19,15 @@ stdenv.mkDerivation {
   version = "7.2";
 
   src = fetchurl {
+    hash = "sha256-XbfIsSzE7cwdK0DlOyS8PEJbBGc7Doa1HGLsVfx2ZaY=";
+
     urls = [
       # Since the original site is geo-blocked in the EU, we may revert to the archived version;
       # please update both URLs during future updates!
       "http://www.arkkra.com/ftp/pub/unix/mup72src.tar.gz"
       "https://web.archive.org/web/20250907143445/http://www.arkkra.com/ftp/pub/unix/mup72src.tar.gz"
     ];
-    hash = "sha256-XbfIsSzE7cwdK0DlOyS8PEJbBGc7Doa1HGLsVfx2ZaY=";
   };
-
-  nativeBuildInputs = [
-    autoreconfHook
-    bison
-    flex
-    ghostscript
-    groff
-    netpbm
-  ];
-
-  buildInputs = [
-    fltk
-    libxinerama
-    libxpm
-    libjpeg
-  ];
 
   patches = [ ./ghostscript-permit-file-write.patch ];
 
@@ -60,6 +45,22 @@ stdenv.mkDerivation {
       --replace-fail /usr/share/doc $out/share/doc
   '';
 
+  nativeBuildInputs = [
+    autoreconfHook
+    bison
+    flex
+    ghostscript
+    groff
+    netpbm
+  ];
+
+  buildInputs = [
+    fltk
+    libxinerama
+    libxpm
+    libjpeg
+  ];
+
   env = {
     NIX_CFLAGS_COMPILE = "-std=gnu17";
   };
@@ -67,8 +68,8 @@ stdenv.mkDerivation {
   enableParallelBuilding = false; # Undeclared dependencies + https://stackoverflow.com/a/19822767/1687334 for prolog.ps.
 
   meta = {
-    homepage = "http://www.arkkra.com/";
     description = "Music typesetting program (ASCII to PostScript and MIDI)";
+    homepage = "http://www.arkkra.com/";
     license = lib.licenses.bsd3;
     maintainers = [ ];
     platforms = lib.platforms.linux;

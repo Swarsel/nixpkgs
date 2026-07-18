@@ -8,12 +8,9 @@
 {
   pname = "gerbil-poo";
   version = "unstable-2023-11-29";
-  git-version = "0.2-5-gacf654e";
-  softwareName = "Gerbil-POO";
   gerbil-package = "clan/poo";
-  version-path = "version";
-
   gerbilInputs = with gerbilPackages; [ gerbil-utils ];
+  git-version = "0.2-5-gacf654e";
 
   pre-src = {
     fun = fetchFromGitHub;
@@ -23,11 +20,14 @@
     sha256 = "1pxv1j6hwcgjj67bb7vvlnyl3123r43ifldm6alm76v2mfp2vs81";
   };
 
+  softwareName = "Gerbil-POO";
+  version-path = "version";
+
   meta = {
     description = "Gerbil POO: Prototype Object Orientation for Gerbil Scheme";
     homepage = "https://github.com/fare/gerbil-poo";
     license = lib.licenses.asl20;
-    platforms = lib.platforms.unix;
     maintainers = with lib.maintainers; [ fare ];
+    platforms = lib.platforms.unix;
   };
 }

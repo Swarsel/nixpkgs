@@ -30,41 +30,16 @@ lib.extendMkDerivation {
   extendDrvArgs =
     finalAttrs:
     {
-      name ? "xwin-fetch-msvc",
+      arch ? hostArch,
       hash ? lib.fakeHash,
       manifest ? null,
-      arch ? hostArch,
+      name ? "xwin-fetch-msvc",
       ...
     }@args:
     {
       inherit name;
-      __structuredAttrs = true;
-      dontUnpack = true;
-      dontFixup = true;
-      dontInstall = true;
-
       strictDeps = true;
-
       nativeBuildInputs = [ xwin ];
-
-      outputHashAlgo = "sha256";
-      outputHashMode = "recursive";
-      outputHash =
-        if !config.microsoftVisualStudioLicenseAccepted then
-          throw ''
-            Microsoft Software License Terms are not accepted with config.microsoftVisualStudioLicenseAccepted.
-            Please read https://visualstudio.microsoft.com/license-terms/mt644918/ and if you agree, change your
-            config to indicate so.
-          ''
-        else
-          hash;
-
-      xwinArgs = lib.optionals (manifest != null) [ "--manifest=${manifest}" ] ++ [
-        "--accept-license"
-        "--cache-dir=${placeholder "out"}"
-        "--arch=${arch}"
-        "download"
-      ];
 
       buildPhase =
         args.buildPhase or ''
@@ -75,16 +50,41 @@ lib.extendMkDerivation {
           runHook postBuild
         '';
 
+      __structuredAttrs = true;
+      dontFixup = true;
+      dontInstall = true;
+      dontUnpack = true;
+
+      outputHash =
+        if !config.microsoftVisualStudioLicenseAccepted then
+          throw ''
+            Microsoft Software License Terms are not accepted with config.microsoftVisualStudioLicenseAccepted.
+            Please read https://visualstudio.microsoft.com/license-terms/mt644918/ and if you agree, change your
+            config to indicate so.
+          ''
+        else
+          hash;
+
+      outputHashAlgo = "sha256";
+      outputHashMode = "recursive";
+
+      xwinArgs = lib.optionals (manifest != null) [ "--manifest=${manifest}" ] ++ [
+        "--accept-license"
+        "--cache-dir=${placeholder "out"}"
+        "--arch=${arch}"
+        "download"
+      ];
+
       passthru = {
         inherit arch;
       };
 
       meta.license = {
         deprecated = false;
+        free = false;
         fullName = "Microsoft Software License Terms";
         shortName = "msvc";
         spdxId = "unknown";
-        free = false;
         url = "https://www.visualstudio.com/license-terms/mt644918/";
       };
     };

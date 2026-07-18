@@ -2,27 +2,26 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  fetchpatch,
-  autoreconfHook,
+  alsa-lib,
+  # for passthru.tests
+  audacity,
   autogen,
-  pkg-config,
-  python3,
+  autoreconfHook,
+  fetchpatch,
   flac,
+  freeswitch,
+  gst_all_1,
   lame,
   libmpg123,
   libogg,
   libopus,
-  libvorbis,
-  alsa-lib,
-
-  # for passthru.tests
-  audacity,
-  freeswitch,
-  gst_all_1,
   libsamplerate,
+  libvorbis,
   moc,
   pipewire,
+  pkg-config,
   pulseaudio,
+  python3,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -36,12 +35,20 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-MOOX/O0UaoeMaQPW9PvvE0izVp+6IoE5VbtTx0RvMkI=";
   };
 
+  outputs = [
+    "bin"
+    "dev"
+    "out"
+    "man"
+    "doc"
+  ];
+
   patches = [
     # Fix build with gcc15
     # https://github.com/libsndfile/libsndfile/pull/1055
     (fetchpatch {
-      url = "https://github.com/libsndfile/libsndfile/commit/2251737b3b175925684ec0d37029ff4cb521d302.patch";
       hash = "sha256-LaeptEicnjpVBExlK4dNMlN8+AAJhW8dIvemF6S4W2M=";
+      url = "https://github.com/libsndfile/libsndfile/commit/2251737b3b175925684ec0d37029ff4cb521d302.patch";
     })
   ];
 
@@ -51,6 +58,7 @@ stdenv.mkDerivation (finalAttrs: {
     pkg-config
     python3
   ];
+
   buildInputs = [
     flac
     lame
@@ -61,14 +69,10 @@ stdenv.mkDerivation (finalAttrs: {
   ]
   ++ lib.optionals stdenv.hostPlatform.isLinux [ alsa-lib ];
 
-  enableParallelBuilding = true;
-
-  outputs = [
-    "bin"
-    "dev"
-    "out"
-    "man"
-    "doc"
+  # Needed on Darwin.
+  env.NIX_CFLAGS_LINK = toString [
+    "-logg"
+    "-lvorbis"
   ];
 
   # need headers from the Carbon.framework in /System/Library/Frameworks to
@@ -77,20 +81,17 @@ stdenv.mkDerivation (finalAttrs: {
     NIX_CFLAGS_COMPILE+=" -I$SDKROOT/System/Library/Frameworks/Carbon.framework/Versions/A/Headers"
   '';
 
-  # Needed on Darwin.
-  env.NIX_CFLAGS_LINK = toString [
-    "-logg"
-    "-lvorbis"
-  ];
-
   # Broken with libopus >= 1.6.0
   doCheck = false;
+
   preCheck = ''
     patchShebangs tests/test_wrapper.sh tests/pedantic-header-test.sh
 
     substituteInPlace tests/test_wrapper.sh \
       --replace '/usr/bin/env' "$(type -P env)"
   '';
+
+  enableParallelBuilding = true;
 
   passthru.tests = {
     inherit
@@ -101,21 +102,18 @@ stdenv.mkDerivation (finalAttrs: {
       pipewire
       pulseaudio
       ;
+
     inherit (python3.pkgs)
       soundfile
       wavefile
       ;
+
     inherit (gst_all_1) gst-plugins-bad;
     lame = (lame.override { sndfileFileIOSupport = true; });
   };
 
   meta = {
     description = "C library for reading and writing files containing sampled sound";
-    homepage = "https://libsndfile.github.io/libsndfile/";
-    changelog = "https://github.com/libsndfile/libsndfile/releases/tag/${finalAttrs.version}";
-    license = lib.licenses.lgpl2Plus;
-    maintainers = [ ];
-    platforms = lib.platforms.all;
 
     longDescription = ''
       Libsndfile is a C library for reading and writing files containing
@@ -136,5 +134,11 @@ stdenv.mkDerivation (finalAttrs: {
       make it easy to extend for reading and writing new sound file
       formats.
     '';
+
+    homepage = "https://libsndfile.github.io/libsndfile/";
+    changelog = "https://github.com/libsndfile/libsndfile/releases/tag/${finalAttrs.version}";
+    license = lib.licenses.lgpl2Plus;
+    maintainers = [ ];
+    platforms = lib.platforms.all;
   };
 })

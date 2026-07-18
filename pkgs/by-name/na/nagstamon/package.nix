@@ -8,9 +8,6 @@
 python3Packages.buildPythonApplication (finalAttrs: {
   pname = "nagstamon";
   version = "3.18.2";
-  pyproject = true;
-
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "HenriWahl";
@@ -19,8 +16,6 @@ python3Packages.buildPythonApplication (finalAttrs: {
     hash = "sha256-ZA6gxV9zLKZ0g5v8CvnAuiYPhEDByz17kC54Idk9CYM=";
   };
 
-  build-system = with python3Packages; [ setuptools ];
-
   nativeBuildInputs = [ qt6Packages.wrapQtAppsHook ];
 
   buildInputs = [
@@ -28,11 +23,17 @@ python3Packages.buildPythonApplication (finalAttrs: {
     qt6Packages.qtsvg
   ];
 
-  dontWrapQtApps = true;
+  nativeCheckInputs = with python3Packages; [
+    pylint
+    pytestCheckHook
+  ];
 
   preFixup = ''
     makeWrapperArgs+=("''${qtWrapperArgs[@]}")
   '';
+
+  __structuredAttrs = true;
+  build-system = with python3Packages; [ setuptools ];
 
   dependencies = with python3Packages; [
     arrow
@@ -53,23 +54,23 @@ python3Packages.buildPythonApplication (finalAttrs: {
     tzlocal
   ];
 
-  nativeCheckInputs = with python3Packages; [
-    pylint
-    pytestCheckHook
-  ];
+  dontWrapQtApps = true;
+  pyproject = true;
 
   meta = {
     description = "Status monitor for the desktop";
     homepage = "https://nagstamon.de/";
     changelog = "https://github.com/HenriWahl/Nagstamon/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.gpl2Plus;
+
     maintainers = with lib.maintainers; [
       pSub
       liberodark
       videl
     ];
-    mainProgram = "nagstamon.py";
+
     # NameError: name 'bdist_rpm_options' is not defined. Did you mean: 'bdist_mac_options'?
     badPlatforms = [ lib.systems.inspect.patterns.isDarwin ];
+    mainProgram = "nagstamon.py";
   };
 })

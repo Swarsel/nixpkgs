@@ -1,9 +1,9 @@
 {
-  fetchurl,
   lib,
   stdenv,
-  pkg-config,
+  fetchurl,
   gtk2,
+  pkg-config,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -26,8 +26,6 @@ stdenv.mkDerivation (finalAttrs: {
   doCheck = true;
 
   meta = {
-    homepage = "https://gitlab.gnome.org/Archive/gtkimageview";
-
     description = "Image viewer widget for GTK";
 
     longDescription = ''
@@ -38,8 +36,8 @@ stdenv.mkDerivation (finalAttrs: {
       interpolation; GIF animation support.
     '';
 
+    homepage = "https://gitlab.gnome.org/Archive/gtkimageview";
     license = lib.licenses.lgpl2Plus;
-
     maintainers = [ ];
     platforms = lib.platforms.linux;
   };

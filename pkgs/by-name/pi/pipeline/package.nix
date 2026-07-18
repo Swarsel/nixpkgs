@@ -1,33 +1,33 @@
 {
   lib,
   stdenv,
-  rustPlatform,
-  cargo,
-  rustc,
   fetchFromGitLab,
-  gtk4,
-  libadwaita,
-  openssl,
-  meson,
-  ninja,
-  pkg-config,
-  wrapGAppsHook4,
-  glib,
   appstream,
-  desktop-file-utils,
   blueprint-compiler,
-  sqlite,
-  clapper-unwrapped,
+  cargo,
   clapper-enhancers,
+  clapper-unwrapped,
+  desktop-file-utils,
   gettext,
-  gst_all_1,
+  glib,
   glib-networking,
   gnome,
-  libjxl,
+  gst_all_1,
+  gtk4,
+  libadwaita,
   libheif,
-  webp-pixbuf-loader,
+  libjxl,
   librsvg,
+  meson,
+  ninja,
   nix-update-script,
+  openssl,
+  pkg-config,
+  rustPlatform,
+  rustc,
+  sqlite,
+  webp-pixbuf-loader,
+  wrapGAppsHook4,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -39,11 +39,6 @@ stdenv.mkDerivation (finalAttrs: {
     repo = "pipeline";
     tag = finalAttrs.version;
     hash = "sha256-KVAgUAQqnpzNXpCiPZJMQEVGrz/pt8fR/JcOFBynFCs=";
-  };
-
-  cargoDeps = rustPlatform.fetchCargoVendor {
-    inherit (finalAttrs) src pname version;
-    hash = "sha256-bWMTZrcdYRXsKWD3VmLcAu9J/y9LbZ6EPE8AuB87iKA=";
   };
 
   nativeBuildInputs = [
@@ -93,6 +88,11 @@ stdenv.mkDerivation (finalAttrs: {
     )
   '';
 
+  cargoDeps = rustPlatform.fetchCargoVendor {
+    inherit (finalAttrs) src pname version;
+    hash = "sha256-bWMTZrcdYRXsKWD3VmLcAu9J/y9LbZ6EPE8AuB87iKA=";
+  };
+
   passthru = {
     updateScript = nix-update-script { };
   };
@@ -100,12 +100,14 @@ stdenv.mkDerivation (finalAttrs: {
   meta = {
     description = "Watch YouTube and PeerTube videos in one place";
     homepage = "https://mobile.schmidhuberj.de/pipeline";
-    mainProgram = "tubefeeder";
     license = lib.licenses.gpl3Plus;
+
     maintainers = with lib.maintainers; [
       chuangzhu
       Kladki
     ];
+
     platforms = lib.platforms.linux;
+    mainProgram = "tubefeeder";
   };
 })

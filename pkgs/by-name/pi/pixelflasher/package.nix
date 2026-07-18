@@ -2,16 +2,15 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  wrapGAppsHook3,
-  python3Packages,
-  makeDesktopItem,
   copyDesktopItems,
+  makeDesktopItem,
   nix-update-script,
+  python3Packages,
+  wrapGAppsHook3,
 }:
 python3Packages.buildPythonApplication (finalAttrs: {
   pname = "pixelflasher";
   version = "8.14.3.1";
-  pyproject = false;
 
   src = fetchFromGitHub {
     owner = "badabing2005";
@@ -19,39 +18,6 @@ python3Packages.buildPythonApplication (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-Ey6wUl/9OaXxnQ17PvnhpBFB21++WbUsRhkGlrr7Yuk=";
   };
-
-  desktopItems = [
-    (makeDesktopItem {
-      name = "PixelFlasher";
-      exec = "pixelflasher";
-      icon = "pixelflasher";
-      desktopName = "PixelFlasher";
-      genericName = "Pixel™ phone flashing GUI utility with features";
-      categories = [ "Development" ];
-    })
-  ];
-
-  dependencies = with python3Packages; [
-    attrdict
-    beautifulsoup4
-    bsdiff4
-    chardet
-    cryptography
-    darkdetect
-    httplib2
-    json5
-    lz4
-    markdown
-    platformdirs
-    polib
-    protobuf
-    psutil
-    pyperclip
-    requests
-    rsa
-    six
-    wxpython
-  ];
 
   nativeBuildInputs = [
     wrapGAppsHook3
@@ -86,6 +52,40 @@ python3Packages.buildPythonApplication (finalAttrs: {
     runHook postInstall
   '';
 
+  dependencies = with python3Packages; [
+    attrdict
+    beautifulsoup4
+    bsdiff4
+    chardet
+    cryptography
+    darkdetect
+    httplib2
+    json5
+    lz4
+    markdown
+    platformdirs
+    polib
+    protobuf
+    psutil
+    pyperclip
+    requests
+    rsa
+    six
+    wxpython
+  ];
+
+  desktopItems = [
+    (makeDesktopItem {
+      categories = [ "Development" ];
+      desktopName = "PixelFlasher";
+      exec = "pixelflasher";
+      genericName = "Pixel™ phone flashing GUI utility with features";
+      icon = "pixelflasher";
+      name = "PixelFlasher";
+    })
+  ];
+
+  pyproject = false;
   passthru.updateScript = nix-update-script { };
 
   meta = {
@@ -94,7 +94,7 @@ python3Packages.buildPythonApplication (finalAttrs: {
     changelog = "https://github.com/badabing2005/PixelFlasher/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.agpl3Plus;
     maintainers = with lib.maintainers; [ cything ];
-    mainProgram = "pixelflasher";
     platforms = lib.platforms.linux;
+    mainProgram = "pixelflasher";
   };
 })

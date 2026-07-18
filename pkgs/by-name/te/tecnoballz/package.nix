@@ -2,11 +2,11 @@
   lib,
   stdenv,
   fetchurl,
+  SDL,
+  SDL_image,
+  SDL_mixer,
   autoconf,
   automake,
-  SDL,
-  SDL_mixer,
-  SDL_image,
   libmikmod,
   tinyxml,
 }:
@@ -19,6 +19,12 @@ stdenv.mkDerivation (finalAttrs: {
     url = "https://linux.tlk.fr/games/TecnoballZ/download/tecnoballz-${finalAttrs.version}.tgz";
     sha256 = "sha256-WRW76e+/eXE/KwuyOjzTPFQnKwNznbIrUrz14fnvgug=";
   };
+
+  # Newer compilers introduced warnings
+  postPatch = ''
+    substituteInPlace configure.ac \
+      --replace "-Werror" ""
+  '';
 
   nativeBuildInputs = [
     autoconf
@@ -33,12 +39,6 @@ stdenv.mkDerivation (finalAttrs: {
     tinyxml
   ];
 
-  # Newer compilers introduced warnings
-  postPatch = ''
-    substituteInPlace configure.ac \
-      --replace "-Werror" ""
-  '';
-
   preConfigure = ''
     ./bootstrap
   '';
@@ -52,10 +52,8 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   meta = {
-    homepage = "https://linux.tlk.fr/games/TecnoballZ/";
-    downloadPage = "https://linux.tlk.fr/games/TecnoballZ/download/";
     description = "Brick breaker game with a sophisticated system of weapons and bonuses";
-    mainProgram = "tecnoballz";
+
     longDescription = ''
       A exciting Brick Breaker with 50 levels of game and 11 special levels,
       distributed on the 2 modes of game to give the player a sophisticated
@@ -63,9 +61,13 @@ stdenv.mkDerivation (finalAttrs: {
       by gaining bonuses. Numerous decors, musics and sounds complete this great
       game. This game was ported from the Commodore Amiga.
     '';
+
+    homepage = "https://linux.tlk.fr/games/TecnoballZ/";
     license = lib.licenses.gpl3Plus;
     maintainers = with lib.maintainers; [ fgaz ];
     platforms = lib.platforms.all;
+    mainProgram = "tecnoballz";
     broken = stdenv.hostPlatform.isDarwin;
+    downloadPage = "https://linux.tlk.fr/games/TecnoballZ/download/";
   };
 })

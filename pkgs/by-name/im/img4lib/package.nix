@@ -2,10 +2,10 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  pkg-config,
-  openssl,
-  lzfse,
   gcc,
+  lzfse,
+  openssl,
+  pkg-config,
 }:
 stdenv.mkDerivation (finalAttrs: {
   pname = "img4lib";
@@ -18,6 +18,7 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-xCWovBJ9cxT17u1uo+aUQnxDoYFQXYy9Qer0mD45aOU=";
   };
 
+  strictDeps = true;
   nativeBuildInputs = [ pkg-config ] ++ lib.optional stdenv.hostPlatform.isDarwin gcc;
 
   buildInputs = [
@@ -33,16 +34,14 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   ";
 
-  strictDeps = true;
-
   meta = {
     description = "Library and tool for parsing, manipulating, and patching Apple .img4 container files";
     homepage = "https://github.com/xerub/img4lib";
     # No licensing information available
     # https://github.com/xerub/img4lib/issues/14
     license = lib.licenses.unfree;
-    platforms = lib.platforms.unix;
     maintainers = with lib.maintainers; [ onny ];
+    platforms = lib.platforms.unix;
     mainProgram = "img4";
   };
 })

@@ -1,12 +1,10 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
+  buildPythonPackage,
+  hatch-vcs,
   # build-system
   hatchling,
-  hatch-vcs,
-
   # tests
   numpy,
   pandas,
@@ -17,7 +15,6 @@
 buildPythonPackage rec {
   pname = "param";
   version = "2.3.2";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "holoviz";
@@ -26,17 +23,19 @@ buildPythonPackage rec {
     hash = "sha256-BqZ4HbYVdmgyOacwzmSia7GinMqz3k6pLyElbST3NTY=";
   };
 
-  build-system = [
-    hatchling
-    hatch-vcs
-  ];
-
   nativeCheckInputs = [
     numpy
     pandas
     pytest-asyncio
     pytestCheckHook
   ];
+
+  build-system = [
+    hatchling
+    hatch-vcs
+  ];
+
+  pyproject = true;
 
   pytestFlags = [
     "-Wignore::DeprecationWarning"

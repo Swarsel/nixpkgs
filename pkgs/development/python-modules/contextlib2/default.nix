@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   setuptools,
   unittestCheckHook,
 }:
@@ -9,7 +9,6 @@
 buildPythonPackage {
   pname = "contextlib2";
   version = "21.6.0-unstable-2024-05-23";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "jazzband";
@@ -18,10 +17,9 @@ buildPythonPackage {
     hash = "sha256-HX9N8G8jl6cpEwdJ80pDcoo4osTO/f8fz5sNcY/R1Nk=";
   };
 
-  build-system = [ setuptools ];
-
   nativeCheckInputs = [ unittestCheckHook ];
-
+  build-system = [ setuptools ];
+  pyproject = true;
   pythonImportsCheck = [ "contextlib2" ];
 
   meta = {

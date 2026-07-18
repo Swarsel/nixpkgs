@@ -1,11 +1,11 @@
 {
   lib,
+  fetchFromGitHub,
   aio-geojson-client,
   aiohttp,
   aiointercept,
   aioresponses,
   buildPythonPackage,
-  fetchFromGitHub,
   geojson,
   pytest-asyncio,
   pytestCheckHook,
@@ -16,7 +16,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "aio-geojson-generic-client";
   version = "2026.6.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "exxamalte";
@@ -25,8 +24,14 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-ZRPagyzFAa7f6liT1hWVf6FtabxPKfOzMS/Id14Jpv0=";
   };
 
-  __darwinAllowLocalNetworking = true;
+  nativeCheckInputs = [
+    aioresponses
+    aiointercept
+    pytest-asyncio
+    pytestCheckHook
+  ];
 
+  __darwinAllowLocalNetworking = true;
   build-system = [ setuptools ];
 
   dependencies = [
@@ -36,13 +41,7 @@ buildPythonPackage (finalAttrs: {
     pytz
   ];
 
-  nativeCheckInputs = [
-    aioresponses
-    aiointercept
-    pytest-asyncio
-    pytestCheckHook
-  ];
-
+  pyproject = true;
   pythonImportsCheck = [ "aio_geojson_generic_client" ];
 
   meta = {

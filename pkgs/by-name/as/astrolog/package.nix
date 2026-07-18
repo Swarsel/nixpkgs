@@ -1,8 +1,8 @@
 {
   lib,
   stdenv,
-  fetchzip,
   fetchurl,
+  fetchzip,
   libx11,
   withBigAtlas ? true,
   withEphemeris ? true,
@@ -18,29 +18,24 @@ stdenv.mkDerivation {
     stripRoot = false;
   };
 
-  patchPhase = ''
-    sed -i "s:~/astrolog:$out/astrolog:g" astrolog.h
-    substituteInPlace Makefile --replace cc "$CC" --replace strip "$STRIP"
-  '';
-
   buildInputs = [ libx11 ];
   env.NIX_CFLAGS_COMPILE = "-Wno-format-security";
 
   installPhase =
     let
       ephemeris = fetchzip {
-        url = "http://astrolog.org/ftp/ephem/astephem.zip";
         hash = "sha256-+on9LE27hCPRacHaIo6wz6M3V+G1QpyJ1Rp4wHbycM0=";
         stripRoot = false;
+        url = "http://astrolog.org/ftp/ephem/astephem.zip";
       };
       moonsEphemeris = fetchzip {
-        url = "https://www.astrolog.org/ftp/ephem/moons/sepm.zip";
         hash = "sha256-bHJc1yyR2loSOC4QJWsYNtKRYpxN9ZnKK5cWCapAptI=";
         stripRoot = false;
+        url = "https://www.astrolog.org/ftp/ephem/moons/sepm.zip";
       };
       atlas = fetchurl {
-        url = "http://astrolog.org/ftp/atlas/atlasbig.as";
         hash = "sha256-sEiuc7azeBA5959QOIo0qllXqHo7LABGV4sB08xNWsM=";
+        url = "http://astrolog.org/ftp/atlas/atlasbig.as";
       };
     in
     ''
@@ -60,12 +55,17 @@ stdenv.mkDerivation {
       ''}
     '';
 
+  patchPhase = ''
+    sed -i "s:~/astrolog:$out/astrolog:g" astrolog.h
+    substituteInPlace Makefile --replace cc "$CC" --replace strip "$STRIP"
+  '';
+
   meta = {
-    maintainers = with lib.maintainers; [ kmein ];
-    homepage = "https://astrolog.org/astrolog.htm";
     description = "Freeware astrology program";
-    mainProgram = "astrolog";
-    platforms = lib.platforms.linux;
+    homepage = "https://astrolog.org/astrolog.htm";
     license = lib.licenses.gpl2Plus;
+    maintainers = with lib.maintainers; [ kmein ];
+    platforms = lib.platforms.linux;
+    mainProgram = "astrolog";
   };
 }

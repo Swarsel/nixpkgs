@@ -1,7 +1,7 @@
 {
+  kirigami,
   mkKdeDerivation,
   qtdeclarative,
-  kirigami,
 }:
 mkKdeDerivation {
   pname = "polkit-kde-agent-1";

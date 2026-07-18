@@ -16,8 +16,6 @@ stdenv.mkDerivation (finalAttrs: {
     sha256 = "sha256-+RzPVWFhA7tsiw04/i9OxqmoHVF5Whr9FC1isV8RrE0=";
   };
 
-  nativeBuildInputs = [ cmake ];
-
   # https://github.com/Taywee/args/issues/108
   postPatch = ''
     substituteInPlace CMakeLists.txt \
@@ -25,6 +23,8 @@ stdenv.mkDerivation (finalAttrs: {
     substituteInPlace packaging/pkgconfig.pc.in \
       --replace '$'{prefix}/@CMAKE_INSTALL_INCLUDEDIR@ @CMAKE_INSTALL_FULL_INCLUDEDIR@
   '';
+
+  nativeBuildInputs = [ cmake ];
 
   meta = {
     description = "Simple header-only C++ argument parser library";

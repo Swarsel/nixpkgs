@@ -2,20 +2,20 @@
   lib,
   stdenv,
   fetchFromGitHub,
+  adwaita-icon-theme,
   autoreconfHook,
+  gettext,
   glib,
+  gtk2,
+  gtk3,
   intltool,
   libfm,
   libx11,
+  nix-update-script,
   pango,
   pkg-config,
   wrapGAppsHook3,
-  adwaita-icon-theme,
   withGtk3 ? true,
-  gtk2,
-  gtk3,
-  gettext,
-  nix-update-script,
 }:
 
 let
@@ -50,16 +50,14 @@ stdenv.mkDerivation (finalAttrs: {
     adwaita-icon-theme
   ];
 
-  env.ACLOCAL = "aclocal -I ${gettext}/share/gettext/m4";
-
   configureFlags = optional withGtk3 "--with-gtk=3";
-
+  env.ACLOCAL = "aclocal -I ${gettext}/share/gettext/m4";
   passthru.updateScript = nix-update-script { };
 
   meta = {
+    description = "File manager with GTK interface";
     homepage = "https://blog.lxde.org/category/pcmanfm/";
     license = lib.licenses.gpl2Plus;
-    description = "File manager with GTK interface";
     maintainers = [ ];
     platforms = lib.platforms.linux;
     mainProgram = "pcmanfm";

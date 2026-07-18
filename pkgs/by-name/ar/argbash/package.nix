@@ -43,8 +43,8 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   meta = {
-    homepage = "https://argbash.dev/";
     description = "Bash argument parsing code generator";
+    homepage = "https://argbash.dev/";
     license = lib.licenses.bsd3;
     maintainers = [ ];
     platforms = lib.platforms.all;

@@ -1,18 +1,17 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  mkdocs,
+  buildPythonPackage,
   csscompressor,
   htmlmin,
   jsmin,
+  mkdocs,
   pytestCheckHook,
 }:
 
 buildPythonPackage rec {
   pname = "mkdocs-minify-plugin";
   version = "0.7.1";
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "byrnereese";
@@ -28,14 +27,15 @@ buildPythonPackage rec {
     mkdocs
   ];
 
+  # Some tests fail with an assertion error failure
+  doCheck = false;
+
   nativeCheckInputs = [
     mkdocs
     pytestCheckHook
   ];
 
-  # Some tests fail with an assertion error failure
-  doCheck = false;
-
+  format = "setuptools";
   pythonImportsCheck = [ "mkdocs" ];
 
   meta = {

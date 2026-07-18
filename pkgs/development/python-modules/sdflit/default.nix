@@ -18,14 +18,8 @@ let
   };
 in
 buildPythonPackage {
-  pname = "sdflit";
   inherit version src;
-  pyproject = true;
-
-  cargoDeps = rustPlatform.fetchCargoVendor {
-    inherit src;
-    hash = "sha256-Bz4HfpC+qNWWV3KgLW8L+4d5odmbYNRvdMjdMBy6qIQ=";
-  };
+  pname = "sdflit";
 
   build-system = [
     cargo
@@ -33,6 +27,13 @@ buildPythonPackage {
     rustPlatform.maturinBuildHook
     rustc
   ];
+
+  cargoDeps = rustPlatform.fetchCargoVendor {
+    inherit src;
+    hash = "sha256-Bz4HfpC+qNWWV3KgLW8L+4d5odmbYNRvdMjdMBy6qIQ=";
+  };
+
+  pyproject = true;
 
   pythonImportsCheck = [
     "sdflit"

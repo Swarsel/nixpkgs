@@ -1,17 +1,13 @@
 {
   lib,
   stdenv,
-
-  buildGoModule,
   fetchFromGitHub,
-  versionCheckHook,
-
-  callPackage,
-
   bash,
-
-  nixosTests,
+  buildGoModule,
+  callPackage,
   nix-update-script,
+  nixosTests,
+  versionCheckHook,
 }:
 
 let
@@ -21,11 +17,6 @@ buildGoModule (finalAttrs: {
   pname = "llama-swap";
   version = "224";
 
-  outputs = [
-    "out"
-    "wol" # wake on lan proxy
-  ];
-
   src = fetchFromGitHub {
     owner = "mostlygeek";
     repo = "llama-swap";
@@ -34,6 +25,7 @@ buildGoModule (finalAttrs: {
     # populate values that require us to use git. By doing this in postFetch we
     # can delete .git afterwards and maintain better reproducibility of the src.
     leaveDotGit = true;
+
     postFetch = ''
       cd "$out"
       git rev-parse HEAD > $out/COMMIT
@@ -43,27 +35,21 @@ buildGoModule (finalAttrs: {
     '';
   };
 
-  vendorHash = "sha256-b+RreafBMCWT/jbWTlXaiDRzA4DRe76WaCEbrfRxV/4=";
-
-  passthru.ui = callPackage ./ui.nix { llama-swap = finalAttrs.finalPackage; };
-
-  nativeBuildInputs = [
-    versionCheckHook
-  ];
-
-  # required for testing
-  __darwinAllowLocalNetworking = true;
-
-  ldflags = [
-    "-s"
-    "-w"
-    "-X main.version=${finalAttrs.version}"
+  outputs = [
+    "out"
+    "wol" # wake on lan proxy
   ];
 
   postPatch = ''
     substituteInPlace internal/process/process_command_forking_test.go \
       --replace "#!/bin/bash" "#!${lib.getExe bash}"
   '';
+
+  nativeBuildInputs = [
+    versionCheckHook
+  ];
+
+  vendorHash = "sha256-b+RreafBMCWT/jbWTlXaiDRzA4DRe76WaCEbrfRxV/4=";
 
   preBuild = ''
     # ldflags based on metadata from git and source
@@ -74,17 +60,9 @@ buildGoModule (finalAttrs: {
     cp -r ${finalAttrs.passthru.ui}/ui_dist internal/server/
   '';
 
-  excludedPackages = [
-    # regression testing tool
-    "misc/process-cmd-test"
-    # benchmark/regression testing tool
-    "misc/benchmark-chatcompletion"
-  ]
-  ++ lib.optionals (!canExecute) [
-    # some tests expect to execute `simple-something`; if it can't be executed
-    # it's unneeded
-    "misc/simple-responder"
-  ];
+  # some tests expect to execute `simple-something` and proxy/helpers_test.go
+  # checks the file exists
+  doCheck = canExecute;
 
   checkFlags =
     let
@@ -110,13 +88,11 @@ buildGoModule (finalAttrs: {
     in
     [ "-skip=^${builtins.concatStringsSep "$|^" skippedTests}$" ];
 
-  # some tests expect to execute `simple-something` and proxy/helpers_test.go
-  # checks the file exists
-  doCheck = canExecute;
   preCheck = ''
     mkdir build
     ln -s "$GOPATH/bin/simple-responder" "./build/simple-responder_''${GOOS}_''${GOARCH}"
   '';
+
   postCheck = ''
     rm "$GOPATH/bin/simple-responder"
   '';
@@ -128,9 +104,31 @@ buildGoModule (finalAttrs: {
   '';
 
   doInstallCheck = true;
-  versionCheckProgramArg = "-version";
+  # required for testing
+  __darwinAllowLocalNetworking = true;
 
+  excludedPackages = [
+    # regression testing tool
+    "misc/process-cmd-test"
+    # benchmark/regression testing tool
+    "misc/benchmark-chatcompletion"
+  ]
+  ++ lib.optionals (!canExecute) [
+    # some tests expect to execute `simple-something`; if it can't be executed
+    # it's unneeded
+    "misc/simple-responder"
+  ];
+
+  ldflags = [
+    "-s"
+    "-w"
+    "-X main.version=${finalAttrs.version}"
+  ];
+
+  versionCheckProgramArg = "-version";
   passthru.tests.nixos = nixosTests.llama-swap;
+  passthru.ui = callPackage ./ui.nix { llama-swap = finalAttrs.finalPackage; };
+
   passthru.updateScript = nix-update-script {
     extraArgs = [
       "--subpackage"
@@ -139,9 +137,8 @@ buildGoModule (finalAttrs: {
   };
 
   meta = {
-    homepage = "https://github.com/mostlygeek/llama-swap";
-    changelog = "https://github.com/mostlygeek/llama-swap/releases/tag/${finalAttrs.src.tag}";
     description = "Model swapping for llama.cpp (or any local OpenAPI compatible server)";
+
     longDescription = ''
       llama-swap is a light weight, transparent proxy server that provides
       automatic model swapping to llama.cpp's server.
@@ -157,11 +154,16 @@ buildGoModule (finalAttrs: {
       to be loaded at the same time. You have complete control over how your
       system resources are used.
     '';
+
+    homepage = "https://github.com/mostlygeek/llama-swap";
+    changelog = "https://github.com/mostlygeek/llama-swap/releases/tag/${finalAttrs.src.tag}";
     license = lib.licenses.mit;
-    mainProgram = "llama-swap";
+
     maintainers = with lib.maintainers; [
       jk
       podium868909
     ];
+
+    mainProgram = "llama-swap";
   };
 })

@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   nixosTests,
 }:
 
@@ -17,10 +17,8 @@ buildGoModule (finalAttrs: {
   };
 
   vendorHash = null;
-
   # don't run tests, they perform checks via the network
   doCheck = false;
-
   ldflags = [ "-X main.Version=${finalAttrs.version}" ];
 
   passthru.tests = {
@@ -28,15 +26,17 @@ buildGoModule (finalAttrs: {
   };
 
   meta = {
-    changelog = "https://github.com/Zuplu/postfix-tlspol/releases/tag/${finalAttrs.src.tag}";
     description = "Lightweight MTA-STS + DANE/TLSA resolver and TLS policy server for Postfix, prioritizing DANE";
     homepage = "https://github.com/Zuplu/postfix-tlspol";
+    changelog = "https://github.com/Zuplu/postfix-tlspol/releases/tag/${finalAttrs.src.tag}";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       hexa
       valodim
     ];
-    mainProgram = "postfix-tlspol";
+
     platforms = lib.platforms.linux;
+    mainProgram = "postfix-tlspol";
   };
 })

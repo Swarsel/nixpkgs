@@ -3,9 +3,9 @@
   stdenv,
   fetchFromGitHub,
   autoreconfHook,
-  pkg-config,
-  openssl,
   boost,
+  openssl,
+  pkg-config,
   testers,
   asioVersion ? "1.38.0",
 }:
@@ -18,6 +18,7 @@ stdenv.mkDerivation (finalAttrs: {
     owner = "chriskohlhoff";
     repo = "asio";
     tag = "asio-${lib.replaceStrings [ "." ] [ "-" ] finalAttrs.version}";
+
     hash =
       {
         # Preserve 1.32.0 because some project depends on asio/io_service.hpp
@@ -27,9 +28,6 @@ stdenv.mkDerivation (finalAttrs: {
       }
       .${asioVersion} or (throw "Unsupported asio version. Please use overrideAttrs directly");
   };
-
-  sourceRoot =
-    finalAttrs.src.name + lib.optionalString (lib.versionOlder finalAttrs.version "1.38.0") "/asio";
 
   patches = [
     # Linking against `boost_system` fails because the stub compiled library
@@ -44,12 +42,6 @@ stdenv.mkDerivation (finalAttrs: {
     pkg-config
   ];
 
-  # Only used for test coverage
-  checkInputs = [
-    openssl
-    boost
-  ];
-
   configureFlags = lib.optionals finalAttrs.finalPackage.doCheck [
     # Only used in tests, "HAVE_BOOST_COROUTINE"
     "--enable-boost-coroutine"
@@ -59,9 +51,18 @@ stdenv.mkDerivation (finalAttrs: {
     # in the output.
   ];
 
+  doCheck = true;
+
+  # Only used for test coverage
+  checkInputs = [
+    openssl
+    boost
+  ];
+
   enableParallelBuilding = true;
 
-  doCheck = true;
+  sourceRoot =
+    finalAttrs.src.name + lib.optionalString (lib.versionOlder finalAttrs.version "1.38.0") "/asio";
 
   passthru.tests.pkg-config = testers.hasPkgConfigModules {
     package = finalAttrs.finalPackage;
@@ -69,8 +70,8 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   meta = {
-    homepage = "https://think-async.com/Asio";
     description = "Cross-platform C++ library for network and low-level I/O programming";
+    homepage = "https://think-async.com/Asio";
     license = lib.licenses.boost;
     maintainers = with lib.maintainers; [ aleksana ];
     platforms = lib.platforms.unix;

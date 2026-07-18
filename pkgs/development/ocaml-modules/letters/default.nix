@@ -1,4 +1,6 @@
 {
+  lib,
+  fetchFromGitHub,
   alcotest-lwt,
   buildDunePackage,
   ca-certs,
@@ -6,9 +8,7 @@
   containers,
   domain-name,
   emile,
-  fetchFromGitHub,
   fmt,
-  lib,
   logs,
   lwt,
   mrmime,
@@ -25,12 +25,14 @@ let
 in
 buildDunePackage {
   inherit pname version;
+
   src = fetchFromGitHub {
     owner = "oxidizing";
     repo = "letters";
     tag = version;
     hash = "sha256-75uLg+0AVDNdQ0M4w8H7MrTYwAKMhe8R5xC4vPNGkuQ=";
   };
+
   propagatedBuildInputs = [
     ca-certs
     colombe
@@ -47,8 +49,10 @@ buildDunePackage {
     tls-lwt
     x509
   ];
+
   doCheck = true;
   checkInputs = [ alcotest-lwt ];
+
   meta = {
     description = "OCaml library for creating and sending emails over SMTP using LWT";
     homepage = "https://github.com/oxidizing/letters";

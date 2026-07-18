@@ -1,26 +1,22 @@
 {
   lib,
   stdenv,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # build-system
-  setuptools,
-  setuptools-scm,
-
+  buildPythonPackage,
   # dependencies
   fsspec,
-  xrootd,
-
   # tests
   pkgs,
   pytestCheckHook,
+  # build-system
+  setuptools,
+  setuptools-scm,
+  xrootd,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "fsspec-xrootd";
   version = "0.5.4";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "CoffeaTeam";
@@ -28,6 +24,11 @@ buildPythonPackage (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-dlSh2TH7SQ95kFNPlSjMa697WdBURRlBxNtNf04uaBU=";
   };
+
+  nativeCheckInputs = [
+    pkgs.xrootd
+    pytestCheckHook
+  ];
 
   build-system = [
     setuptools
@@ -39,12 +40,9 @@ buildPythonPackage (finalAttrs: {
     xrootd
   ];
 
-  pythonImportsCheck = [ "fsspec_xrootd" ];
+  # Timeout related tests hang indifinetely
+  disabledTestPaths = lib.optionals stdenv.hostPlatform.isDarwin [ "tests/test_basicio.py" ];
 
-  nativeCheckInputs = [
-    pkgs.xrootd
-    pytestCheckHook
-  ];
   disabledTests = [
     # Hangs indefinitely
     "test_broken_server"
@@ -54,8 +52,8 @@ buildPythonPackage (finalAttrs: {
     "test_touch_modified"
   ];
 
-  # Timeout related tests hang indifinetely
-  disabledTestPaths = lib.optionals stdenv.hostPlatform.isDarwin [ "tests/test_basicio.py" ];
+  pyproject = true;
+  pythonImportsCheck = [ "fsspec_xrootd" ];
 
   meta = {
     description = "XRootD implementation for fsspec";

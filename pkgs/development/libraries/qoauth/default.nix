@@ -2,9 +2,9 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  qtbase,
-  qmake,
   qca-qt5,
+  qmake,
+  qtbase,
 }:
 
 stdenv.mkDerivation rec {
@@ -15,8 +15,8 @@ stdenv.mkDerivation rec {
     owner = "ayoy";
     repo = "qoauth";
     rev = "v${version}";
-    name = "qoauth-${version}.tar.gz";
     sha256 = "1b2jdqs526ac635yb2whm049spcsk7almnnr6r5b4yqhq922anw3";
+    name = "qoauth-${version}.tar.gz";
   };
 
   postPatch = ''
@@ -25,11 +25,12 @@ stdenv.mkDerivation rec {
         -e '/features.path =/ s|$$\[QMAKE_MKSPECS\]|$$NIX_OUTPUT_DEV/mkspecs|'
   '';
 
+  nativeBuildInputs = [ qmake ];
+
   buildInputs = [
     qtbase
     qca-qt5
   ];
-  nativeBuildInputs = [ qmake ];
 
   env = {
     NIX_CFLAGS_COMPILE = "-I${qca-qt5}/include/Qca-qt5/QtCrypto";
@@ -39,9 +40,9 @@ stdenv.mkDerivation rec {
   dontWrapQtApps = true;
 
   meta = {
+    inherit (qtbase.meta) platforms;
     description = "Qt library for OAuth authentication";
     homepage = "https://github.com/ayoy/qoauth";
-    inherit (qtbase.meta) platforms;
     license = lib.licenses.lgpl21;
   };
 }

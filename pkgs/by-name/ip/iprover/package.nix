@@ -2,8 +2,8 @@
   lib,
   stdenv,
   fetchFromGitLab,
-  ocamlPackages,
   eprover,
+  ocamlPackages,
   z3,
   zlib,
 }:
@@ -32,6 +32,7 @@ stdenv.mkDerivation {
     ocaml
     findlib
   ]);
+
   buildInputs = [
     zlib
     ocamlPackages.z3
@@ -43,11 +44,11 @@ stdenv.mkDerivation {
     zarith
   ]);
 
-  preConfigure = "patchShebangs .";
-
   env = {
     NIX_CFLAGS_COMPILE = "-std=gnu17";
   };
+
+  preConfigure = "patchShebangs .";
 
   installPhase = ''
     runHook preInstall
@@ -62,10 +63,12 @@ stdenv.mkDerivation {
   meta = {
     description = "Automated first-order logic theorem prover";
     homepage = "http://www.cs.man.ac.uk/~korovink/iprover/";
+    license = lib.licenses.gpl3;
+
     maintainers = with lib.maintainers; [
       raskin
     ];
+
     platforms = lib.platforms.linux;
-    license = lib.licenses.gpl3;
   };
 }

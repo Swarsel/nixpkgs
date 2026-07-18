@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   pymodbus,
   setuptools,
 }:
@@ -9,7 +9,6 @@
 buildPythonPackage rec {
   pname = "pysmarty2";
   version = "0.10.3";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "martinssipenko";
@@ -18,13 +17,11 @@ buildPythonPackage rec {
     hash = "sha256-an66TysXGPfKq9bPozwLM3M9E2sq3CC1if/uc47Ns5w=";
   };
 
-  build-system = [ setuptools ];
-
-  dependencies = [ pymodbus ];
-
   # Package has no tests
   doCheck = false;
-
+  build-system = [ setuptools ];
+  dependencies = [ pymodbus ];
+  pyproject = true;
   pythonImportsCheck = [ "pysmarty2" ];
 
   meta = {

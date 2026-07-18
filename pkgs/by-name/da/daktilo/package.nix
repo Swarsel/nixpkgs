@@ -1,14 +1,14 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
-  installShellFiles,
-  unixtools,
-  pkg-config,
   alsa-lib,
-  libxtst,
-  libxi,
+  installShellFiles,
   libx11,
+  libxi,
+  libxtst,
+  pkg-config,
+  rustPlatform,
+  unixtools,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -22,8 +22,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-gIBWonJGX6IpxyBeMulcfQEExsG1GrBVQLZbBBA1ruc=";
   };
 
-  cargoHash = "sha256-MV2XvBtVQyxu2PVCgE+5C9EBec11JwYgyeoyg29C7Ig=";
-
   nativeBuildInputs = [
     installShellFiles
     pkg-config
@@ -35,6 +33,8 @@ rustPlatform.buildRustPackage (finalAttrs: {
     libxi
     libxtst
   ];
+
+  cargoHash = "sha256-MV2XvBtVQyxu2PVCgE+5C9EBec11JwYgyeoyg29C7Ig=";
 
   nativeCheckInputs = [
     unixtools.script
@@ -58,10 +58,12 @@ rustPlatform.buildRustPackage (finalAttrs: {
     description = "Turn your keyboard into a typewriter";
     homepage = "https://github.com/orhun/daktilo";
     changelog = "https://github.com/orhun/daktilo/blob/${finalAttrs.src.rev}/CHANGELOG.md";
+
     license = with lib.licenses; [
       asl20
       mit
     ];
+
     maintainers = with lib.maintainers; [ orhun ];
     mainProgram = "daktilo";
   };

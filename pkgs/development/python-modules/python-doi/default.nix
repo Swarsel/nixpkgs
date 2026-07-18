@@ -1,14 +1,13 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   isPy3k,
 }:
 
 buildPythonPackage rec {
   pname = "python-doi";
   version = "0.2";
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "papis";
@@ -18,11 +17,12 @@ buildPythonPackage rec {
   };
 
   disabled = !isPy3k;
+  format = "setuptools";
 
   meta = {
     description = "Python library to work with Document Object Identifiers (doi)";
     homepage = "https://github.com/papis/python-doi";
-    maintainers = with lib.maintainers; [ teto ];
     license = lib.licenses.gpl3Plus;
+    maintainers = with lib.maintainers; [ teto ];
   };
 }

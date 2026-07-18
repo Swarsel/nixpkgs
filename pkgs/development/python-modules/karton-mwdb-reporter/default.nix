@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   karton-core,
   mwdblib,
 }:
@@ -9,7 +9,6 @@
 buildPythonPackage rec {
   pname = "karton-mwdb-reporter";
   version = "1.3.0";
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "CERT-Polska";
@@ -25,15 +24,15 @@ buildPythonPackage rec {
 
   # Project has no tests
   doCheck = false;
-
+  format = "setuptools";
   pythonImportsCheck = [ "karton.mwdb_reporter" ];
 
   meta = {
     description = "Karton service that uploads analyzed artifacts and metadata to MWDB Core";
-    mainProgram = "karton-mwdb-reporter";
     homepage = "https://github.com/CERT-Polska/karton-mwdb-reporter";
     changelog = "https://github.com/CERT-Polska/karton-mwdb-reporter/releases/tag/v${version}";
     license = with lib.licenses; [ bsd3 ];
     maintainers = with lib.maintainers; [ fab ];
+    mainProgram = "karton-mwdb-reporter";
   };
 }

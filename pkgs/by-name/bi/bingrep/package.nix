@@ -1,7 +1,7 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -19,9 +19,9 @@ rustPlatform.buildRustPackage (finalAttrs: {
 
   meta = {
     description = "Greps through binaries from various OSs and architectures, and colors them";
-    mainProgram = "bingrep";
     homepage = "https://github.com/m4b/bingrep";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ minijackson ];
+    mainProgram = "bingrep";
   };
 })

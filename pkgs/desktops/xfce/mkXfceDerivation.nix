@@ -2,26 +2,26 @@
   lib,
   stdenv,
   fetchFromGitLab,
-  pkg-config,
-  xfce4-dev-tools,
-  hicolor-icon-theme,
-  xfce,
-  wrapGAppsHook3,
   gitUpdater,
+  hicolor-icon-theme,
+  pkg-config,
+  wrapGAppsHook3,
+  xfce,
+  xfce4-dev-tools,
 }:
 
 {
   category,
   pname,
+  sha256,
   version,
   attrPath ? "xfce.${pname}",
-  rev-prefix ? "${pname}-",
-  rev ? "${rev-prefix}${version}",
-  sha256,
-  odd-unstable ? true,
-  patchlevel-unstable ? true,
-  passthru ? { },
   meta ? { },
+  odd-unstable ? true,
+  passthru ? { },
+  patchlevel-unstable ? true,
+  rev ? "${rev-prefix}${version}",
+  rev-prefix ? "${pname}-",
   ...
 }@args:
 
@@ -45,27 +45,27 @@ let
     attrsets: zipAttrsWithNames (filterAttrNames isList (head attrsets)) (_: concatLists) attrsets;
 
   template = {
-    nativeBuildInputs = [
-      pkg-config
-      xfce4-dev-tools
-      wrapGAppsHook3
-    ];
-    buildInputs = [ hicolor-icon-theme ];
-    configureFlags = [ "--enable-maintainer-mode" ];
-
     src = fetchFromGitLab {
-      domain = "gitlab.xfce.org";
+      inherit rev sha256;
       owner = category;
       repo = pname;
-      inherit rev sha256;
+      domain = "gitlab.xfce.org";
     };
 
-    enableParallelBuilding = true;
     outputs = [
       "out"
       "dev"
     ];
 
+    nativeBuildInputs = [
+      pkg-config
+      xfce4-dev-tools
+      wrapGAppsHook3
+    ];
+
+    buildInputs = [ hicolor-icon-theme ];
+    configureFlags = [ "--enable-maintainer-mode" ];
+    enableParallelBuilding = true;
     pos = builtins.unsafeGetAttrPos "pname" args;
 
     passthru = {

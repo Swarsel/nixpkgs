@@ -2,9 +2,9 @@
   lib,
   stdenv,
   fetchurl,
+  _7zz,
   appimageTools,
   makeWrapper,
-  _7zz,
 }:
 
 let
@@ -12,17 +12,19 @@ let
   version = "0.57.0";
 
   sources = {
-    x86_64-linux = {
-      url = "https://caido.download/releases/v${version}/caido-desktop-v${version}-linux-x86_64.AppImage";
-      hash = "sha256-a+WHhJ+TvwhOqHOxU7Y5LXeXAJ6T8hk71meFuTR+ra8=";
-    };
-    aarch64-linux = {
-      url = "https://caido.download/releases/v${version}/caido-desktop-v${version}-linux-aarch64.AppImage";
-      hash = "sha256-B7dw9uoG++AqT264ZlyHxGpv68fH5SlYzDKUaIM8c14=";
-    };
     aarch64-darwin = {
-      url = "https://caido.download/releases/v${version}/caido-desktop-v${version}-mac-aarch64.dmg";
       hash = "sha256-GmpMnaGR7gYz1RvSO5xj9AA3xU1mn2IBInakmVkuG7A=";
+      url = "https://caido.download/releases/v${version}/caido-desktop-v${version}-mac-aarch64.dmg";
+    };
+
+    aarch64-linux = {
+      hash = "sha256-B7dw9uoG++AqT264ZlyHxGpv68fH5SlYzDKUaIM8c14=";
+      url = "https://caido.download/releases/v${version}/caido-desktop-v${version}-linux-aarch64.AppImage";
+    };
+
+    x86_64-linux = {
+      hash = "sha256-a+WHhJ+TvwhOqHOxU7Y5LXeXAJ6T8hk71meFuTR+ra8=";
+      url = "https://caido.download/releases/v${version}/caido-desktop-v${version}-linux-x86_64.AppImage";
     };
   };
 
@@ -36,18 +38,21 @@ let
     homepage = "https://caido.io/";
     changelog = "https://github.com/caido/caido/releases/tag/v${version}";
     license = lib.licenses.unfree;
-    mainProgram = "caido-desktop";
+    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
+
     maintainers = with lib.maintainers; [
       blackzeshi
       m0streng0
       octodi
     ];
+
     platforms = [
       "x86_64-linux"
       "aarch64-linux"
       "aarch64-darwin"
     ];
-    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
+
+    mainProgram = "caido-desktop";
   };
 
   appimageContents = appimageTools.extractType2 { inherit pname version src; };
@@ -61,7 +66,6 @@ let
       ;
 
     nativeBuildInputs = [ makeWrapper ];
-    extraPkgs = pkgs: [ pkgs.libthai ];
 
     extraInstallCommands = ''
       install -m 444 -D ${appimageContents}/caido.desktop \
@@ -74,6 +78,8 @@ let
         --set WEBKIT_DISABLE_COMPOSITING_MODE 1 \
         --add-flags "\''${NIXOS_OZONE_WL:+\''${WAYLAND_DISPLAY:+--ozone-platform-hint=auto --enable-features=WaylandWindowDecorations --enable-wayland-ime=true}}"
     '';
+
+    extraPkgs = pkgs: [ pkgs.libthai ];
   };
 
   darwin = stdenv.mkDerivation {
@@ -89,14 +95,6 @@ let
       makeWrapper
     ];
 
-    unpackPhase = ''
-      runHook preUnpack
-      7zz x $src || true
-      runHook postUnpack
-    '';
-
-    sourceRoot = "Caido.app";
-
     installPhase = ''
       runHook preInstall
       mkdir -p $out/Applications/Caido.app $out/bin
@@ -104,6 +102,14 @@ let
       makeWrapper $out/Applications/Caido.app/Contents/MacOS/Caido \
         $out/bin/${pname}
       runHook postInstall
+    '';
+
+    sourceRoot = "Caido.app";
+
+    unpackPhase = ''
+      runHook preUnpack
+      7zz x $src || true
+      runHook postUnpack
     '';
   };
 

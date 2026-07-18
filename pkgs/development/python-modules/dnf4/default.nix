@@ -1,15 +1,15 @@
 {
   lib,
+  fetchFromGitHub,
   buildPythonPackage,
   cmake,
-  fetchFromGitHub,
   gettext,
   libcomps,
   libdnf,
+  nix-update-script,
   python,
   rpm,
   sphinx,
-  nix-update-script,
 }:
 
 let
@@ -19,13 +19,6 @@ in
 buildPythonPackage rec {
   pname = "dnf4";
   version = "4.24.0";
-  pyproject = false;
-
-  outputs = [
-    "out"
-    "man"
-    "py"
-  ];
 
   src = fetchFromGitHub {
     owner = "rpm-software-management";
@@ -33,6 +26,12 @@ buildPythonPackage rec {
     tag = version;
     hash = "sha256-zzWOc2I9YW5gjsS2Umfx6GGgY4B3pdia0E2KHHtAH2s=";
   };
+
+  outputs = [
+    "out"
+    "man"
+    "py"
+  ];
 
   patches = [ ./fix-python-install-dir.patch ];
 
@@ -64,8 +63,6 @@ buildPythonPackage rec {
 
   cmakeFlags = [ "-DPYTHON_DESIRED=${pyMajor}" ];
 
-  dontWrapPythonPrograms = true;
-
   postBuild = ''
     make doc-man
   '';
@@ -90,6 +87,8 @@ buildPythonPackage rec {
     moveToOutput "lib/${python.libPrefix}" "$py"
   '';
 
+  dontWrapPythonPrograms = true;
+  pyproject = false;
   passthru.updateScript = nix-update-script { };
 
   meta = {
@@ -98,7 +97,7 @@ buildPythonPackage rec {
     changelog = "https://github.com/rpm-software-management/dnf/releases/tag/${version}";
     license = lib.licenses.gpl2Only;
     maintainers = with lib.maintainers; [ katexochen ];
-    mainProgram = "dnf";
     platforms = lib.platforms.unix;
+    mainProgram = "dnf";
   };
 }

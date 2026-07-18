@@ -29,7 +29,7 @@ stdenv.mkDerivation (finalAttrs: {
     changelog = "https://github.com/ansilove/ansilove/blob/${finalAttrs.src.rev}/ChangeLog";
     license = lib.licenses.bsd2;
     maintainers = with lib.maintainers; [ jethair ];
-    mainProgram = "ansilove";
     platforms = lib.platforms.unix;
+    mainProgram = "ansilove";
   };
 })

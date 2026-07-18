@@ -2,15 +2,13 @@
   lib,
   buildPythonPackage,
   fetchPypi,
-  setuptools,
   pytestCheckHook,
+  setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "pyicumessageformat";
   version = "1.0.0";
-  pyproject = true;
-  build-system = [ setuptools ];
 
   src = fetchPypi {
     inherit pname version;
@@ -18,7 +16,8 @@ buildPythonPackage rec {
   };
 
   nativeCheckInputs = [ pytestCheckHook ];
-
+  build-system = [ setuptools ];
+  pyproject = true;
   pythonImportsCheck = [ "pyicumessageformat" ];
 
   meta = {

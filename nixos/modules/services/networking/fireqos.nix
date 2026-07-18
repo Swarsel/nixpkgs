@@ -10,10 +10,11 @@ let
 in
 {
   options.services.fireqos = {
-    enable = lib.mkEnableOption "FireQOS";
-
     config = lib.mkOption {
-      type = lib.types.lines;
+      description = ''
+        The FireQOS configuration.
+      '';
+
       example = ''
         interface wlp3s0 world-in input rate 10mbit ethernet
           class web commit 50kbit
@@ -23,26 +24,31 @@ in
           class web commit 50kbit
             match tcp ports 80,443
       '';
-      description = ''
-        The FireQOS configuration.
-      '';
+
+      type = lib.types.lines;
     };
+
+    enable = lib.mkEnableOption "FireQOS";
   };
 
   config = lib.mkIf cfg.enable {
     systemd.services.fireqos = {
-      description = "FireQOS";
       after = [ "network.target" ];
-      wantedBy = [ "multi-user.target" ];
+      description = "FireQOS";
+
       serviceConfig = {
-        Type = "oneshot";
-        RemainAfterExit = true;
         ExecStart = "${pkgs.firehol}/bin/fireqos start ${fireqosConfig}";
+
         ExecStop = [
           "${pkgs.firehol}/bin/fireqos stop"
           "${pkgs.firehol}/bin/fireqos clear_all_qos"
         ];
+
+        RemainAfterExit = true;
+        Type = "oneshot";
       };
+
+      wantedBy = [ "multi-user.target" ];
     };
   };
 }

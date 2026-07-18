@@ -2,16 +2,14 @@
   lib,
   fetchurl,
   buildDunePackage,
-  pkg-config,
   dune-configurator,
   libpq,
+  pkg-config,
 }:
 
 buildDunePackage (finalAttrs: {
   pname = "postgresql";
   version = "5.2.0";
-
-  minimalOCamlVersion = "4.12";
 
   src = fetchurl {
     url = "https://github.com/mmottl/postgresql-ocaml/releases/download/${finalAttrs.version}/postgresql-${finalAttrs.version}.tbz";
@@ -21,12 +19,13 @@ buildDunePackage (finalAttrs: {
   nativeBuildInputs = [ pkg-config ];
   buildInputs = [ dune-configurator ];
   propagatedBuildInputs = [ libpq ];
+  minimalOCamlVersion = "4.12";
 
   meta = {
     description = "Bindings to the PostgreSQL library";
-    license = lib.licenses.lgpl21Plus;
-    changelog = "https://raw.githubusercontent.com/mmottl/postgresql-ocaml/refs/tags/${finalAttrs.version}/CHANGELOG.md";
-    maintainers = with lib.maintainers; [ bcc32 ];
     homepage = "https://mmottl.github.io/postgresql-ocaml";
+    changelog = "https://raw.githubusercontent.com/mmottl/postgresql-ocaml/refs/tags/${finalAttrs.version}/CHANGELOG.md";
+    license = lib.licenses.lgpl21Plus;
+    maintainers = with lib.maintainers; [ bcc32 ];
   };
 })

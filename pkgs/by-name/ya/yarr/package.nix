@@ -1,11 +1,11 @@
 {
   lib,
   stdenv,
-  buildGoModule,
   fetchFromGitHub,
-  versionCheckHook,
+  buildGoModule,
   nix-update-script,
   nixosTests,
+  versionCheckHook,
 }:
 
 buildGoModule (finalAttrs: {
@@ -20,6 +20,8 @@ buildGoModule (finalAttrs: {
   };
 
   vendorHash = null;
+  doInstallCheck = true;
+  nativeInstallCheckInputs = [ versionCheckHook ];
 
   ldflags = [
     "-s"
@@ -33,23 +35,22 @@ buildGoModule (finalAttrs: {
     "sqlite_json"
   ];
 
-  doInstallCheck = true;
-  nativeInstallCheckInputs = [ versionCheckHook ];
-
   passthru = {
-    updateScript = nix-update-script { };
     tests = lib.optionalAttrs stdenv.hostPlatform.isLinux nixosTests.yarr;
+    updateScript = nix-update-script { };
   };
 
   meta = {
     description = "Yet another rss reader";
-    mainProgram = "yarr";
     homepage = "https://github.com/nkanaev/yarr";
     changelog = "https://github.com/nkanaev/yarr/blob/v${finalAttrs.version}/doc/changelog.md";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       sikmir
       christoph-heiss
     ];
+
+    mainProgram = "yarr";
   };
 })

@@ -1,8 +1,8 @@
 {
   lib,
   stdenv,
-  _7zz,
   fetchurl,
+  _7zz,
   nix-update-script,
 }:
 
@@ -15,8 +15,6 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-TxmvSW1P9EubDuAr4CvHYgfz42Wn+ed8chmgjGB4ONc=";
   };
 
-  sourceRoot = ".";
-
   nativeBuildInputs = [ _7zz ];
 
   installPhase = ''
@@ -28,6 +26,7 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  sourceRoot = ".";
   passthru.updateScript = nix-update-script { };
 
   meta = {
@@ -35,10 +34,11 @@ stdenv.mkDerivation (finalAttrs: {
     homepage = "https://meetingbar.app/";
     changelog = "https://github.com/leits/MeetingBar/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.asl20;
+    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
     maintainers = with lib.maintainers; [ delafthi ];
+
     platforms = [
       "aarch64-darwin"
     ];
-    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
   };
 })

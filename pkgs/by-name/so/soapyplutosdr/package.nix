@@ -2,12 +2,12 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  fetchpatch,
   cmake,
-  pkg-config,
+  fetchpatch,
   libad9361,
   libiio,
   libusb1,
+  pkg-config,
   soapysdr,
 }:
 
@@ -22,10 +22,23 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-uXKvv/QRbYknqsLGlPFxSH7KLh0CucLjq4XEFFcieWw=";
   };
 
+  patches = [
+    # CMake < 3.5.0 fixes. Remove as soon as https://github.com/pothosware/SoapyPlutoSDR/pull/72 is merged and we do the next version bump.
+    (fetchpatch {
+      hash = "sha256-ExrcziyDmytaVosQ+em177Unh6er/2+2nLjEXg6f0vU=";
+      url = "https://github.com/pothosware/SoapyPlutoSDR/commit/6ab50457c378e19fa53038cadb131313cde23916.patch";
+    })
+    (fetchpatch {
+      hash = "sha256-XgyCWSAlKqCXxH5vtijYqub6656xYkWaY6+B0dkfsGA=";
+      url = "https://github.com/pothosware/SoapyPlutoSDR/commit/4a01ddf1ae2fd0de86c6774ff35aa51f9b4f0b5a.patch";
+    })
+  ];
+
   nativeBuildInputs = [
     cmake
     pkg-config
   ];
+
   buildInputs = [
     libad9361
     libiio
@@ -33,24 +46,12 @@ stdenv.mkDerivation (finalAttrs: {
     soapysdr
   ];
 
-  patches = [
-    # CMake < 3.5.0 fixes. Remove as soon as https://github.com/pothosware/SoapyPlutoSDR/pull/72 is merged and we do the next version bump.
-    (fetchpatch {
-      url = "https://github.com/pothosware/SoapyPlutoSDR/commit/6ab50457c378e19fa53038cadb131313cde23916.patch";
-      hash = "sha256-ExrcziyDmytaVosQ+em177Unh6er/2+2nLjEXg6f0vU=";
-    })
-    (fetchpatch {
-      url = "https://github.com/pothosware/SoapyPlutoSDR/commit/4a01ddf1ae2fd0de86c6774ff35aa51f9b4f0b5a.patch";
-      hash = "sha256-XgyCWSAlKqCXxH5vtijYqub6656xYkWaY6+B0dkfsGA=";
-    })
-  ];
-
   cmakeFlags = [ "-DSoapySDR_DIR=${soapysdr}/share/cmake/SoapySDR/" ];
 
   meta = {
+    description = "SoapySDR plugin for Pluto SDR devices";
     homepage = "https://github.com/pothosware/SoapyPlutoSDR";
     changelog = "https://github.com/pothosware/SoapyPlutoSDR/blob/soapy-plutosdr-${finalAttrs.version}/Changelog.txt";
-    description = "SoapySDR plugin for Pluto SDR devices";
     license = lib.licenses.lgpl21;
     maintainers = with lib.maintainers; [ wucke13 ];
     platforms = lib.platforms.unix;

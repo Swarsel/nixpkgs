@@ -1,22 +1,22 @@
 {
   lib,
   stdenv,
-  fetchFromCodeberg,
-  testers,
-  cmake,
-  libx11,
-  libxext,
-  sdbus-cpp,
-  udev,
-  libxcb-image,
-  coreutils,
   cli11,
+  cmake,
+  coreutils,
   ddcutil,
+  fetchFromCodeberg,
   fmt,
-  nlohmann_json,
-  spdlog,
-  udevCheckHook,
+  libx11,
+  libxcb-image,
+  libxext,
   nix-update-script,
+  nlohmann_json,
+  sdbus-cpp,
+  spdlog,
+  testers,
+  udev,
+  udevCheckHook,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -29,6 +29,13 @@ stdenv.mkDerivation (finalAttrs: {
     rev = finalAttrs.version;
     hash = "sha256-ic+kTBoirMX6g79NdNoeFbNNo1LYg/z+nlt/GAB6UyQ=";
   };
+
+  # Fixes the "gummy start" command, without this it cannot find the binary.
+  # Setting this through cmake does not seem to work.
+  postPatch = ''
+    substituteInPlace gummyd/gummyd/api.cpp \
+      --replace "CMAKE_INSTALL_DAEMON_PATH" "\"${placeholder "out"}/libexec/gummyd\""
+  '';
 
   nativeBuildInputs = [
     cmake
@@ -55,12 +62,7 @@ stdenv.mkDerivation (finalAttrs: {
     })
   ];
 
-  # Fixes the "gummy start" command, without this it cannot find the binary.
-  # Setting this through cmake does not seem to work.
-  postPatch = ''
-    substituteInPlace gummyd/gummyd/api.cpp \
-      --replace "CMAKE_INSTALL_DAEMON_PATH" "\"${placeholder "out"}/libexec/gummyd\""
-  '';
+  doInstallCheck = true;
 
   preFixup = ''
     substituteInPlace $out/lib/udev/rules.d/99-gummy.rules \
@@ -69,18 +71,18 @@ stdenv.mkDerivation (finalAttrs: {
     ln -s $out/libexec/gummyd $out/bin/gummyd
   '';
 
-  doInstallCheck = true;
-
   passthru.tests.version = testers.testVersion { package = finalAttrs.finalPackage; };
   passthru.updateScript = nix-update-script { };
 
   meta = {
-    homepage = "https://codeberg.org/fusco/gummy";
     description = "Brightness and temperature manager for X11";
+
     longDescription = ''
       CLI screen manager for X11 that allows automatic and manual brightness/temperature adjustments,
       via backlight (currently only for embedded displays) and gamma. Multiple monitors are supported.
     '';
+
+    homepage = "https://codeberg.org/fusco/gummy";
     license = lib.licenses.gpl3Only;
     maintainers = [ ];
   };

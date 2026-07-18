@@ -1,7 +1,7 @@
 {
-  stdenvNoCC,
   fetchurl,
   makeBinaryWrapper,
+  stdenvNoCC,
   undmg,
 }:
 
@@ -13,8 +13,6 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     url = "https://client2.krunker.io/Official%20Krunker.io%20Client-${finalAttrs.version}.dmg";
     hash = "sha512-brvrOPCsXkkrUGcRxsa8bzpFsrY7GF3llt29ZIax6dC0XBsILKXUleESJ5LpurMOgSBsfxNYjZLPJhicIAtuUA==";
   };
-
-  sourceRoot = ".";
 
   nativeBuildInputs = [
     makeBinaryWrapper
@@ -29,4 +27,6 @@ stdenvNoCC.mkDerivation (finalAttrs: {
       $out/Applications/Official\ Krunker.io\ Client.app/Contents/MacOS/Official\ Krunker.io\ Client \
       $out/bin/krunker
   '';
+
+  sourceRoot = ".";
 })

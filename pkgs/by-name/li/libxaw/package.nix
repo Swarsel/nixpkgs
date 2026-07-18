@@ -2,19 +2,24 @@
   lib,
   stdenv,
   fetchurl,
-  pkg-config,
-  xorgproto,
   libx11,
   libxext,
   libxmu,
   libxpm,
   libxt,
-  writeScript,
+  pkg-config,
   testers,
+  writeScript,
+  xorgproto,
 }:
 stdenv.mkDerivation (finalAttrs: {
   pname = "libxaw";
   version = "1.0.16";
+
+  src = fetchurl {
+    url = "mirror://xorg/individual/lib/libXaw-${finalAttrs.version}.tar.xz";
+    hash = "sha256-cx1XK1THCPgeGXpq+oAWkY4uBt/TAl4GbKZCpbjDnI8=";
+  };
 
   outputs = [
     "out"
@@ -22,13 +27,7 @@ stdenv.mkDerivation (finalAttrs: {
     "devdoc"
   ];
 
-  src = fetchurl {
-    url = "mirror://xorg/individual/lib/libXaw-${finalAttrs.version}.tar.xz";
-    hash = "sha256-cx1XK1THCPgeGXpq+oAWkY4uBt/TAl4GbKZCpbjDnI8=";
-  };
-
   strictDeps = true;
-
   nativeBuildInputs = [ pkg-config ];
 
   buildInputs = [
@@ -52,6 +51,8 @@ stdenv.mkDerivation (finalAttrs: {
     lib.optionalString stdenv.hostPlatform.isStatic "rm $out/lib/*.so*";
 
   passthru = {
+    tests.pkg-config = testers.testMetaPkgConfig finalAttrs.finalPackage;
+
     updateScript = writeScript "update-${finalAttrs.pname}" ''
       #!/usr/bin/env nix-shell
       #!nix-shell -i bash -p common-updater-scripts
@@ -60,23 +61,25 @@ stdenv.mkDerivation (finalAttrs: {
         | sort -V | tail -n1)"
       update-source-version ${finalAttrs.pname} "$version"
     '';
-    tests.pkg-config = testers.testMetaPkgConfig finalAttrs.finalPackage;
   };
 
   meta = {
     description = "X Athena Widget Set, based on the X Toolkit Intrinsics (Xt) Library";
     homepage = "https://gitlab.freedesktop.org/xorg/lib/libxaw";
+
     license = with lib.licenses; [
       mitOpenGroup
       x11
       hpndSellVariant
       hpnd
     ];
+
     maintainers = [ ];
+    platforms = lib.platforms.unix;
+
     pkgConfigModules = [
       "xaw6"
       "xaw7"
     ];
-    platforms = lib.platforms.unix;
   };
 })

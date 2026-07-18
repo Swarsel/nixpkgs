@@ -2,11 +2,11 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  meson,
-  ninja,
   gettext,
   gtk3,
+  meson,
   ncurses,
+  ninja,
   openssl,
   pkg-config,
   readline,
@@ -40,8 +40,8 @@ stdenv.mkDerivation (finalAttrs: {
   hardeningDisable = [ "format" ];
 
   meta = {
-    homepage = "https://github.com/masneyb/gftp";
     description = "GTK-based multithreaded FTP client for *nix-based machines";
+    homepage = "https://github.com/masneyb/gftp";
     license = lib.licenses.gpl2Plus;
     maintainers = [ lib.maintainers.haylin ];
     platforms = lib.platforms.unix;

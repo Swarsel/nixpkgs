@@ -1,14 +1,13 @@
 {
   lib,
-  buildLua,
   fetchFromGitHub,
-  unstableGitUpdater,
+  buildLua,
   python3Packages,
+  unstableGitUpdater,
 }:
 buildLua {
   pname = "mpv-autosub";
   version = "0-unstable-2021-06-29";
-  scriptPath = "autosub.lua";
 
   src = fetchFromGitHub {
     owner = "davidde";
@@ -23,6 +22,7 @@ buildLua {
       "local subliminal = '${lib.getExe' python3Packages.subliminal "subliminal"}'"
   '';
 
+  scriptPath = "autosub.lua";
   passthru.updateScript = unstableGitUpdater { };
 
   meta = {

@@ -24,12 +24,12 @@ let
   ];
 in
 {
-  fetchFromGitHub,
   lib,
+  fetchFromGitHub,
   stdenvNoCC,
   accent ? "blue",
-  variant ? "macchiato",
   themeList ? validThemes,
+  variant ? "macchiato",
 }:
 let
   pname = "catppuccin";
@@ -60,171 +60,171 @@ let
   selectedSources = map (themeName: builtins.getAttr themeName sources) themeList;
   sources = {
     alacritty = fetchFromGitHub {
+      hash = "sha256-H8bouVCS46h0DgQ+oYY8JitahQDj0V9p2cOoD4cQX+Q=";
       name = "alacritty";
       owner = "catppuccin";
       repo = "alacritty";
       rev = "f6cb5a5c2b404cdaceaff193b9c52317f62c62f7";
-      hash = "sha256-H8bouVCS46h0DgQ+oYY8JitahQDj0V9p2cOoD4cQX+Q=";
     };
 
     bat = fetchFromGitHub {
+      hash = "sha256-lJapSgRVENTrbmpVyn+UQabC9fpV1G1e+CdlJ090uvg=";
       name = "bat";
       owner = "catppuccin";
       repo = "bat";
       rev = "6810349b28055dce54076712fc05fc68da4b8ec0";
-      hash = "sha256-lJapSgRVENTrbmpVyn+UQabC9fpV1G1e+CdlJ090uvg=";
     };
 
     bottom = fetchFromGitHub {
+      hash = "sha256-dfukdk70ug1lRGADKBnvMhkl+3tsY7F+UAwTS2Qyapk=";
       name = "bottom";
       owner = "catppuccin";
       repo = "bottom";
       rev = "eadd75acd0ecad4a58ade9a1d6daa3b97ccec07c";
-      hash = "sha256-dfukdk70ug1lRGADKBnvMhkl+3tsY7F+UAwTS2Qyapk=";
     };
 
     btop = fetchFromGitHub {
+      hash = "sha256-mEGZwScVPWGu+Vbtddc/sJ+mNdD2kKienGZVUcTSl+c=";
       name = "btop";
       owner = "catppuccin";
       repo = "btop";
       rev = "f437574b600f1c6d932627050b15ff5153b58fa3";
-      hash = "sha256-mEGZwScVPWGu+Vbtddc/sJ+mNdD2kKienGZVUcTSl+c=";
     };
 
     delta = fetchFromGitHub {
+      hash = "sha256-lztkxX9O41YossvRzpR7tqxMhDNT1Efy2JvkCwtsiXQ=";
       name = "delta";
       owner = "catppuccin";
       repo = "delta";
       rev = "011516f5d14f66b771b3e716f29c77231e008c74";
-      hash = "sha256-lztkxX9O41YossvRzpR7tqxMhDNT1Efy2JvkCwtsiXQ=";
     };
 
     element = fetchFromGitHub {
+      hash = "sha256-iUSPlmEvwL9akbPobkbDWPr6TTHA/LdCK2Nty7Zslls=";
       name = "element";
       owner = "catppuccin";
       repo = "element";
       rev = "70b7ee121dcef28c6c8191d60df2f88b23c89084";
-      hash = "sha256-iUSPlmEvwL9akbPobkbDWPr6TTHA/LdCK2Nty7Zslls=";
     };
 
     grub = fetchFromGitHub {
+      hash = "sha256-jgM22pvCQvb0bjQQXoiqGMgScR9AgCK3OfDF5Ud+/mk=";
       name = "grub";
       owner = "catppuccin";
       repo = "grub";
       rev = "0a37ab19f654e77129b409fed371891c01ffd0b9";
-      hash = "sha256-jgM22pvCQvb0bjQQXoiqGMgScR9AgCK3OfDF5Ud+/mk=";
     };
 
     hyprland = fetchFromGitHub {
+      hash = "sha256-xSa/z0Pu+ioZ0gFH9qSo9P94NPkEMovstm1avJ7rvzM=";
       name = "hyprland";
       owner = "catppuccin";
       repo = "hyprland";
       rev = "c388ac55563ddeea0afe9df79d4bfff0096b146b";
-      hash = "sha256-xSa/z0Pu+ioZ0gFH9qSo9P94NPkEMovstm1avJ7rvzM=";
     };
 
     k9s = fetchFromGitHub {
+      hash = "sha256-9h+jyEO4w0OnzeEKQXJbg9dvvWGZYQAO4MbgDn6QRzM=";
       name = "k9s";
       owner = "catppuccin";
       repo = "k9s";
       rev = "fdbec82284744a1fc2eb3e2d24cb92ef87ffb8b4";
-      hash = "sha256-9h+jyEO4w0OnzeEKQXJbg9dvvWGZYQAO4MbgDn6QRzM=";
     };
 
     kvantum = fetchFromGitHub {
+      hash = "sha256-gcvCVZjVbj5fRZWaM+mZTwH/g158MH36JmMuMgCBuqQ=";
       name = "kvantum";
       owner = "catppuccin";
       repo = "Kvantum";
       rev = "71105d224fef95dd023691303477ce3eea487457";
-      hash = "sha256-gcvCVZjVbj5fRZWaM+mZTwH/g158MH36JmMuMgCBuqQ=";
     };
 
     lazygit = fetchFromGitHub {
+      hash = "sha256-4eJEOEfwLBc4EoQ32TpuhXS3QDvQ8FtT7EgpotEKV7o=";
       name = "lazygit";
       owner = "catppuccin";
       repo = "lazygit";
       rev = "c24895902ec2a3cb62b4557f6ecd8e0afeed95d5";
-      hash = "sha256-4eJEOEfwLBc4EoQ32TpuhXS3QDvQ8FtT7EgpotEKV7o=";
     };
 
     lxqt = fetchFromGitHub {
+      hash = "sha256-3TuUkOwk6BSc7BnLnTowGAkSlNTOtGTRlEcjJ6MNJ5g=";
       name = "lxqt";
       owner = "catppuccin";
       repo = "lxqt";
       rev = "38cf86b3e499e0c0928a102c9c030e5dc6b79255";
-      hash = "sha256-3TuUkOwk6BSc7BnLnTowGAkSlNTOtGTRlEcjJ6MNJ5g=";
     };
 
     palette = fetchFromGitHub {
+      hash = "sha256-hsy+GhuM4MSjnwGq1YJSLBFIbVm67SSdPRgObP00mxw=";
       name = "palette";
       owner = "catppuccin";
       repo = "palette";
       rev = "07d02aa110ef9eb7e7427afca5c73ba9cf7f8ebd";
-      hash = "sha256-hsy+GhuM4MSjnwGq1YJSLBFIbVm67SSdPRgObP00mxw=";
     };
 
     plymouth = fetchFromGitHub {
+      hash = "sha256-3JK4lX2ZmxysITDEEkhBLkyINUeCzvu5nUgrpvWZ+ZE=";
       name = "plymouth";
       owner = "catppuccin";
       repo = "plymouth";
       rev = "da38011d25f6f36152f2409372dfadb11c8f047c";
-      hash = "sha256-3JK4lX2ZmxysITDEEkhBLkyINUeCzvu5nUgrpvWZ+ZE=";
     };
 
     qt5ct = fetchFromGitHub {
+      hash = "sha256-wDj6kQ2LQyMuEvTQP6NifYFdsDLT+fMCe3Fxr8S783w=";
       name = "qt5ct";
       owner = "catppuccin";
       repo = "qt5ct";
       rev = "cb585307edebccf74b8ae8f66ea14f21e6666535";
-      hash = "sha256-wDj6kQ2LQyMuEvTQP6NifYFdsDLT+fMCe3Fxr8S783w=";
     };
 
     refind = fetchFromGitHub {
+      hash = "sha256-34+MkvWEp3xq6Di1uWKR4ieaG4t2rufnRRN1/V0WRfw=";
       name = "refind";
       owner = "catppuccin";
       repo = "refind";
       rev = "e92ad6f4673e30fbc79e69c9cbe3780fb9a3f05f";
-      hash = "sha256-34+MkvWEp3xq6Di1uWKR4ieaG4t2rufnRRN1/V0WRfw=";
     };
 
     rofi = fetchFromGitHub {
+      hash = "sha256-81eeFjwM/haPjIEWkZPp1JSDwhWbWDAuKtWiCg7P9Q0=";
       name = "rofi";
       owner = "catppuccin";
       repo = "rofi";
       rev = "71fb15577ccb091df2f4fc1f65710edbc61b5a53";
-      hash = "sha256-81eeFjwM/haPjIEWkZPp1JSDwhWbWDAuKtWiCg7P9Q0=";
     };
 
     starship = fetchFromGitHub {
+      hash = "sha256-FLHjbClpTqaK4n2qmepCPkb8rocaAo3qeV4Zp1hia0g=";
       name = "starship";
       owner = "catppuccin";
       repo = "starship";
       rev = "5906cc369dd8207e063c0e6e2d27bd0c0b567cb8";
-      hash = "sha256-FLHjbClpTqaK4n2qmepCPkb8rocaAo3qeV4Zp1hia0g=";
     };
 
     thunderbird = fetchFromGitHub {
+      hash = "sha256-07gT37m1+OhRTbUk51l0Nhx+I+tl1il5ayx2ow23APY=";
       name = "thunderbird";
       owner = "catppuccin";
       repo = "thunderbird";
       rev = "0289f3bd9566f9666682f66a3355155c0d0563fc";
-      hash = "sha256-07gT37m1+OhRTbUk51l0Nhx+I+tl1il5ayx2ow23APY=";
     };
 
     waybar = fetchFromGitHub {
+      hash = "sha256-za0y6hcN2rvN6Xjf31xLRe4PP0YyHu2i454ZPjr+lWA=";
       name = "waybar";
       owner = "catppuccin";
       repo = "waybar";
       rev = "ee8ed32b4f63e9c417249c109818dcc05a2e25da";
-      hash = "sha256-za0y6hcN2rvN6Xjf31xLRe4PP0YyHu2i454ZPjr+lWA=";
     };
 
     whoogle = fetchFromGitHub {
+      hash = "sha256-GyJD/xAF481ZMHOEfwW1SrWW6LT8ARRFizbfjl526XE=";
       name = "whoogle";
       owner = "catppuccin";
       repo = "whoogle";
       rev = "9d961dc6e2ac405fee18ee1da9a14db1f139db39";
-      hash = "sha256-GyJD/xAF481ZMHOEfwW1SrWW6LT8ARRFizbfjl526XE=";
     };
   };
 in
@@ -241,15 +241,6 @@ lib.checkListOfEnum "${pname}: variant" validVariants [ variant ] lib.checkListO
   {
     inherit pname;
     version = "0-unstable-2026-03-24";
-
-    srcs = selectedSources;
-
-    unpackPhase = ''
-      for s in $selectedSources; do
-        b=$(basename $s)
-        cp $s ''${b#*-}
-      done
-    '';
 
     installPhase = ''
       runHook preInstall
@@ -371,14 +362,25 @@ lib.checkListOfEnum "${pname}: variant" validVariants [ variant ] lib.checkListO
       runHook postInstall
     '';
 
+    srcs = selectedSources;
+
+    unpackPhase = ''
+      for s in $selectedSources; do
+        b=$(basename $s)
+        cp $s ''${b#*-}
+      done
+    '';
+
     meta = {
       description = "Soothing pastel themes";
       homepage = "https://catppuccin.com";
       license = lib.licenses.mit;
-      platforms = lib.platforms.all;
+
       maintainers = with lib.maintainers; [
         khaneliman
         SchweGELBin
       ];
+
+      platforms = lib.platforms.all;
     };
   }

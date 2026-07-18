@@ -1,7 +1,7 @@
 {
   config,
-  pkgs,
   lib,
+  pkgs,
   ...
 }:
 let
@@ -17,20 +17,11 @@ in
   options = {
     services.duplicati = {
       enable = lib.mkEnableOption "Duplicati";
-
       package = lib.mkPackageOption pkgs "duplicati" { };
 
-      port = lib.mkOption {
-        default = 8200;
-        type = lib.types.port;
-        description = ''
-          Port serving the web interface
-        '';
-      };
-
       dataDir = lib.mkOption {
-        type = lib.types.str;
         default = "/var/lib/duplicati";
+
         description = ''
           The directory where Duplicati stores its data files.
 
@@ -40,32 +31,24 @@ in
           the directory exists with appropriate ownership and permissions.
           :::
         '';
+
+        type = lib.types.str;
       };
 
       interface = lib.mkOption {
         default = "127.0.0.1";
-        type = lib.types.str;
+
         description = ''
           Listening interface for the web UI
           Set it to "any" to listen on all available interfaces
         '';
-      };
 
-      user = lib.mkOption {
-        default = "duplicati";
         type = lib.types.str;
-        description = ''
-          Duplicati runs as it's own user. It will only be able to backup world-readable files.
-          Run as root with special care.
-        '';
       };
 
       parameters = lib.mkOption {
         default = "";
-        type = lib.types.lines;
-        example = ''
-          --webservice-allowedhostnames=*
-        '';
+
         description = ''
           This option can be used to store some or all of the options given to the
           commandline client.
@@ -74,11 +57,17 @@ in
           through command line arguments.
           [Duplicati docs: parameters-file](https://duplicati.readthedocs.io/en/latest/06-advanced-options/#parameters-file)
         '';
+
+        example = ''
+          --webservice-allowedhostnames=*
+        '';
+
+        type = lib.types.lines;
       };
 
       parametersFile = lib.mkOption {
         default = null;
-        type = lib.types.nullOr lib.types.path;
+
         description = ''
           This file can be used to store some or all of the options given to the
           commandline client.
@@ -87,13 +76,34 @@ in
           through command line arguments.
           [Duplicati docs: parameters-file](https://duplicati.readthedocs.io/en/latest/06-advanced-options/#parameters-file)
         '';
+
+        type = lib.types.nullOr lib.types.path;
+      };
+
+      port = lib.mkOption {
+        default = 8200;
+
+        description = ''
+          Port serving the web interface
+        '';
+
+        type = lib.types.port;
+      };
+
+      user = lib.mkOption {
+        default = "duplicati";
+
+        description = ''
+          Duplicati runs as it's own user. It will only be able to backup world-readable files.
+          Run as root with special care.
+        '';
+
+        type = lib.types.str;
       };
     };
   };
 
   config = lib.mkIf cfg.enable {
-    environment.systemPackages = [ cfg.package ];
-
     assertions = [
       {
         assertion = !(cfg.parametersFile != null && cfg.parameters != "");
@@ -101,31 +111,36 @@ in
       }
     ];
 
+    environment.systemPackages = [ cfg.package ];
+
     systemd.services.duplicati = {
-      description = "Duplicati backup";
       after = [ "network.target" ];
-      wantedBy = [ "multi-user.target" ];
+      description = "Duplicati backup";
+
       serviceConfig = lib.mkMerge [
         {
-          User = cfg.user;
-          Group = "duplicati";
           ExecStart = "${cfg.package}/bin/duplicati-server --webservice-interface=${cfg.interface} --webservice-port=${toString cfg.port} --server-datafolder=${cfg.dataDir} --parameters-file=${parametersFile}";
+          Group = "duplicati";
           Restart = "on-failure";
+          User = cfg.user;
         }
         (lib.mkIf (cfg.dataDir == "/var/lib/duplicati") {
           StateDirectory = "duplicati";
         })
       ];
+
+      wantedBy = [ "multi-user.target" ];
     };
+
+    users.groups.duplicati.gid = config.ids.gids.duplicati;
 
     users.users = lib.optionalAttrs (cfg.user == "duplicati") {
       duplicati = {
-        uid = config.ids.uids.duplicati;
-        home = cfg.dataDir;
         group = "duplicati";
+        home = cfg.dataDir;
+        uid = config.ids.uids.duplicati;
       };
     };
-    users.groups.duplicati.gid = config.ids.gids.duplicati;
 
   };
 }

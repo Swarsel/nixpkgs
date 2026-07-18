@@ -1,4 +1,4 @@
-{ runCommand, phoronix-test-suite }:
+{ phoronix-test-suite, runCommand }:
 
 let
   inherit (phoronix-test-suite) pname version;

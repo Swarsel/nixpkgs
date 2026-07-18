@@ -1,7 +1,7 @@
 {
   config,
-  pkgs,
   lib,
+  pkgs,
   ...
 }:
 let
@@ -12,85 +12,81 @@ in
   options = {
     services.radarr = {
       enable = lib.mkEnableOption "Radarr, a UsetNet/BitTorrent movie downloader";
-
       package = lib.mkPackageOption pkgs "radarr" { };
 
       dataDir = lib.mkOption {
-        type = lib.types.str;
         default = "/var/lib/radarr/.config/Radarr";
         description = "The directory where Radarr stores its data files.";
+        type = lib.types.str;
+      };
+
+      environmentFiles = servarr.mkServarrEnvironmentFiles "radarr";
+
+      group = lib.mkOption {
+        default = "radarr";
+        description = "Group under which Radarr runs.";
+        type = lib.types.str;
       };
 
       openFirewall = lib.mkOption {
-        type = lib.types.bool;
         default = false;
         description = "Open ports in the firewall for the Radarr web interface.";
+        type = lib.types.bool;
       };
 
       settings = servarr.mkServarrSettingsOptions "radarr" 7878;
 
-      environmentFiles = servarr.mkServarrEnvironmentFiles "radarr";
-
       user = lib.mkOption {
-        type = lib.types.str;
         default = "radarr";
         description = "User account under which Radarr runs.";
-      };
-
-      group = lib.mkOption {
         type = lib.types.str;
-        default = "radarr";
-        description = "Group under which Radarr runs.";
       };
     };
   };
 
   config = lib.mkIf cfg.enable {
-    systemd.tmpfiles.settings."10-radarr".${cfg.dataDir}.d = {
-      inherit (cfg) user group;
-      mode = "0700";
+    networking.firewall = lib.mkIf cfg.openFirewall {
+      allowedTCPPorts = [ cfg.settings.server.port ];
     };
 
     systemd.services.radarr = {
-      description = "Radarr";
       after = [ "network.target" ];
-      wantedBy = [ "multi-user.target" ];
+      description = "Radarr";
       environment = servarr.mkServarrSettingsEnvVars "RADARR" cfg.settings;
 
       serviceConfig = {
-        Type = "simple";
-        User = cfg.user;
-        Group = cfg.group;
-        EnvironmentFile = cfg.environmentFiles;
-        ExecStart = "${cfg.package}/bin/Radarr -nobrowser -data='${cfg.dataDir}'";
-        Restart = "on-failure";
-
         # Hardening
         CapabilityBoundingSet = "";
+        EnvironmentFile = cfg.environmentFiles;
+        ExecStart = "${cfg.package}/bin/Radarr -nobrowser -data='${cfg.dataDir}'";
+        Group = cfg.group;
+        LockPersonality = true;
         NoNewPrivileges = true;
-        ProtectHome = true;
-        ProtectClock = true;
-        ProtectKernelLogs = true;
-        PrivateTmp = true;
         PrivateDevices = true;
+        PrivateTmp = true;
         PrivateUsers = true;
-        ProtectKernelTunables = true;
-        ProtectKernelModules = true;
+        ProtectClock = true;
         ProtectControlGroups = true;
-        RestrictSUIDSGID = true;
-        RemoveIPC = true;
-        UMask = "0022";
+        ProtectHome = true;
         ProtectHostname = true;
+        ProtectKernelLogs = true;
+        ProtectKernelModules = true;
+        ProtectKernelTunables = true;
         ProtectProc = "invisible";
+        RemoveIPC = true;
+        Restart = "on-failure";
+
         RestrictAddressFamilies = [
           "AF_INET"
           "AF_INET6"
           "AF_UNIX"
         ];
+
         RestrictNamespaces = true;
         RestrictRealtime = true;
-        LockPersonality = true;
+        RestrictSUIDSGID = true;
         SystemCallArchitectures = "native";
+
         SystemCallFilter = [
           "@system-service"
           "~@privileged"
@@ -98,12 +94,23 @@ in
           "~@mount"
           "@chown"
         ];
+
+        Type = "simple";
+        UMask = "0022";
+        User = cfg.user;
       };
+
       unitConfig.RequiresMountsFor = [ cfg.dataDir ];
+      wantedBy = [ "multi-user.target" ];
     };
 
-    networking.firewall = lib.mkIf cfg.openFirewall {
-      allowedTCPPorts = [ cfg.settings.server.port ];
+    systemd.tmpfiles.settings."10-radarr".${cfg.dataDir}.d = {
+      inherit (cfg) user group;
+      mode = "0700";
+    };
+
+    users.groups = lib.mkIf (cfg.group == "radarr") {
+      radarr.gid = config.ids.gids.radarr;
     };
 
     users.users = lib.mkIf (cfg.user == "radarr") {
@@ -112,10 +119,6 @@ in
         home = cfg.dataDir;
         uid = config.ids.uids.radarr;
       };
-    };
-
-    users.groups = lib.mkIf (cfg.group == "radarr") {
-      radarr.gid = config.ids.gids.radarr;
     };
   };
 }

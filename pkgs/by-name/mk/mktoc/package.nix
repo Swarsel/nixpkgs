@@ -1,7 +1,7 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
+  rustPlatform,
   versionCheckHook,
 }:
 
@@ -17,17 +17,17 @@ rustPlatform.buildRustPackage (finalAttrs: {
   };
 
   cargoHash = "sha256-yTTJ0gxmQhn40eI+Elzvv/t0WLivI0TV8B/LS6KLg14=";
+  doInstallCheck = true;
 
   nativeInstallCheckInputs = [
     versionCheckHook
   ];
-  doInstallCheck = true;
 
   meta = {
     description = "Markdown Table of Content generator";
     homepage = "https://github.com/KevinGimbel/mktoc";
     license = lib.licenses.mit;
-    mainProgram = "mktoc";
     maintainers = with lib.maintainers; [ kevingimbel ];
+    mainProgram = "mktoc";
   };
 })

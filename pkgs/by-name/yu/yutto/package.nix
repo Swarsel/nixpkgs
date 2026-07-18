@@ -1,16 +1,13 @@
 {
   lib,
-  python3Packages,
   fetchFromGitHub,
   ffmpeg,
+  python3Packages,
 }:
 
 python3Packages.buildPythonApplication (finalAttrs: {
   pname = "yutto";
   version = "2.2.0";
-  pyproject = true;
-
-  pythonRelaxDeps = true;
 
   src = fetchFromGitHub {
     owner = "yutto-dev";
@@ -18,6 +15,14 @@ python3Packages.buildPythonApplication (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-5p0/a7cwmXqQVQP90cgwWHFpFaT+YDGDFbN+EGH89CA=";
   };
+
+  postPatch = ''
+    sed -ie 's/requires = \["uv_build[^"]*"]/requires = ["uv_build"]/' pyproject.toml
+  '';
+
+  preFixup = ''
+    makeWrapperArgs+=(--prefix PATH : ${lib.makeBinPath [ ffmpeg ]})
+  '';
 
   build-system = with python3Packages; [ uv-build ];
 
@@ -35,15 +40,9 @@ python3Packages.buildPythonApplication (finalAttrs: {
     ]
     ++ (with httpx.optional-dependencies; http2 ++ socks);
 
-  preFixup = ''
-    makeWrapperArgs+=(--prefix PATH : ${lib.makeBinPath [ ffmpeg ]})
-  '';
-
-  postPatch = ''
-    sed -ie 's/requires = \["uv_build[^"]*"]/requires = ["uv_build"]/' pyproject.toml
-  '';
-
+  pyproject = true;
   pythonImportsCheck = [ "yutto" ];
+  pythonRelaxDeps = true;
 
   meta = {
     description = "Bilibili downloader";

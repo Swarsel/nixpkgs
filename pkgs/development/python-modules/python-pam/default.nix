@@ -1,9 +1,9 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
+  buildPythonPackage,
   pam,
+  setuptools,
   six,
   toml,
 }:
@@ -11,7 +11,6 @@
 buildPythonPackage rec {
   pname = "python-pam";
   version = "2.0.2";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "FirefighterBlu3";
@@ -27,7 +26,6 @@ buildPythonPackage rec {
   '';
 
   nativeBuildInputs = [ setuptools ];
-
   buildInputs = [ pam ];
 
   propagatedBuildInputs = [
@@ -35,12 +33,14 @@ buildPythonPackage rec {
     toml
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "pam" ];
 
   meta = {
     description = "Python pam module";
     homepage = "https://github.com/FirefighterBlu3/python-pam";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       mkg20001
     ];

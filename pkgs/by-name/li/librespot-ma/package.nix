@@ -1,9 +1,9 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
-  pkg-config,
   openssl,
+  pkg-config,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage {
@@ -17,23 +17,24 @@ rustPlatform.buildRustPackage {
     hash = "sha256-quKAiXqTwf6cgKi9qqksQRaGqV9UZjerHQZfqDVHCIs=";
   };
 
-  cargoHash = "sha256-Kf3w6tD/MQaXXegtiCkFbUcYwr4OMw6ipLxNLxJ2NTQ=";
-
   nativeBuildInputs = [
     pkg-config
   ];
 
   buildInputs = [ openssl ];
+  cargoHash = "sha256-Kf3w6tD/MQaXXegtiCkFbUcYwr4OMw6ipLxNLxJ2NTQ=";
 
   meta = {
     description = "Fork of librespot for use in Music Assistant only";
     homepage = "https://github.com/music-assistant/librespot";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       sweenu
       emilylange
     ];
-    mainProgram = "librespot";
+
     platforms = lib.platforms.linux;
+    mainProgram = "librespot";
   };
 }

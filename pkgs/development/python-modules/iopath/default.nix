@@ -1,14 +1,14 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  # build inputs
-  tqdm,
-  portalocker,
   boto3,
+  buildPythonPackage,
+  portalocker,
   # check inputs
   pytestCheckHook,
   torch,
+  # build inputs
+  tqdm,
 }:
 let
   pname = "iopath";
@@ -16,7 +16,6 @@ let
 in
 buildPythonPackage {
   inherit pname version;
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "facebookresearch";
@@ -35,23 +34,25 @@ buildPythonPackage {
     torch
   ];
 
-  disabledTests = [
-    # requires network access
-    "test_download"
-    "test_bad_args"
-  ];
-
   disabledTestPaths = [
     # flakey
     "tests/async_torch_test.py"
     "tests/async_writes_test.py"
   ];
 
-  pythonImportsCheck = [ "iopath" ];
+  disabledTests = [
+    # requires network access
+    "test_download"
+    "test_bad_args"
+  ];
+
+  format = "setuptools";
 
   optional-dependencies = {
     aws = [ boto3 ];
   };
+
+  pythonImportsCheck = [ "iopath" ];
 
   meta = {
     description = "Python library that provides common I/O interface across different storage backends";

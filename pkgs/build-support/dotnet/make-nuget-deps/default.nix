@@ -1,17 +1,18 @@
 {
-  symlinkJoin,
   lib,
   fetchNupkg,
+  symlinkJoin,
 }:
 lib.makeOverridable (
   {
     name,
+    installable ? false,
     nugetDeps ? null,
     sourceFile ? null,
-    installable ? false,
   }:
   (symlinkJoin {
     name = "${name}-nuget-deps";
+
     paths =
       let
         loadDeps =

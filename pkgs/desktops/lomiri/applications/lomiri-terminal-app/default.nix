@@ -1,13 +1,13 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitLab,
-  gitUpdater,
-  nixosTests,
   cmake,
+  gitUpdater,
   gsettings-qt,
   lomiri-ui-extras,
   lomiri-ui-toolkit,
+  nixosTests,
   pkg-config,
   qmltermwidget,
   qtbase,
@@ -67,6 +67,7 @@ stdenv.mkDerivation (finalAttrs: {
       # vm-test = nixosTests.terminal-emulators.lomiri-terminal-app;
       inherit (nixosTests.lomiri) desktop-basics desktop-appinteractions;
     };
+
     updateScript = gitUpdater {
       rev-prefix = "v";
     };
@@ -75,12 +76,14 @@ stdenv.mkDerivation (finalAttrs: {
   meta = {
     description = "Terminal app for desktop and mobile devices";
     homepage = "https://gitlab.com/ubports/development/apps/lomiri-terminal-app";
+
     changelog = "https://gitlab.com/ubports/development/apps/lomiri-terminal-app/-/blob/${
       if (!isNull finalAttrs.src.tag) then finalAttrs.src.tag else finalAttrs.src.rev
     }/ChangeLog";
+
     license = lib.licenses.gpl3Only;
+    platforms = lib.platforms.linux;
     mainProgram = "lomiri-terminal-app";
     teams = [ lib.teams.lomiri ];
-    platforms = lib.platforms.linux;
   };
 })

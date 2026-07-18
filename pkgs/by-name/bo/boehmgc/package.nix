@@ -3,6 +3,7 @@
   stdenv,
   fetchFromGitHub,
   autoreconfHook,
+  nixVersions,
   # doc: https://github.com/bdwgc/bdwgc/blob/v8.2.12/doc/README.macros (LARGE_CONFIG)
   enableLargeConfig ? false,
   enableMmap ? true,
@@ -16,7 +17,6 @@
   #
   # If this parameter is set to `null`, the default from upstream is used, which is 4096 as of 8.2.8
   initialMarkStackSize ? null,
-  nixVersions,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -35,9 +35,6 @@ stdenv.mkDerivation (finalAttrs: {
     "dev"
     "doc"
   ];
-  separateDebugInfo = stdenv.hostPlatform.isLinux && stdenv.hostPlatform.libc != "musl";
-
-  __structuredAttrs = true;
 
   nativeBuildInputs = [
     autoreconfHook
@@ -80,15 +77,17 @@ stdenv.mkDerivation (finalAttrs: {
       || (stdenv.hostPlatform.isLinux && stdenv.hostPlatform.isAarch64)
     );
 
+  __structuredAttrs = true;
   enableParallelBuilding = true;
+  separateDebugInfo = stdenv.hostPlatform.isLinux && stdenv.hostPlatform.libc != "musl";
 
   passthru.tests = {
     inherit (nixVersions) latest stable;
   };
 
   meta = {
-    homepage = "https://hboehm.info/gc/";
     description = "Boehm-Demers-Weiser conservative garbage collector for C and C++";
+
     longDescription = ''
       The Boehm-Demers-Weiser conservative garbage collector can be used as a
       garbage collecting replacement for C malloc or C++ new.  It allows you
@@ -105,15 +104,19 @@ stdenv.mkDerivation (finalAttrs: {
       Alternatively, the garbage collector may be used as a leak detector for
       C or C++ programs, though that is not its primary goal.
     '';
+
+    homepage = "https://hboehm.info/gc/";
     changelog = "https://github.com/bdwgc/bdwgc/blob/v${finalAttrs.version}/ChangeLog";
     license = lib.licenses.boehmGC;
     maintainers = [ ];
-    teams = [ lib.teams.security-review ];
     platforms = lib.platforms.all;
+
     identifiers.cpeParts =
       lib.meta.cpeFullVersionWithVendor "boehm-demers-weiser" finalAttrs.version
       // {
         product = "garbage_collector";
       };
+
+    teams = [ lib.teams.security-review ];
   };
 })

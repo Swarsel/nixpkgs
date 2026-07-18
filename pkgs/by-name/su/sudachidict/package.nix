@@ -1,7 +1,7 @@
 {
   lib,
-  stdenvNoCC,
   fetchzip,
+  stdenvNoCC,
   dict-type ? "core",
 }:
 
@@ -11,16 +11,18 @@ let
 
   srcs = {
     core = fetchzip {
-      url = "https://github.com/WorksApplications/SudachiDict/releases/download/v${version}/sudachi-dictionary-${version}-core.zip";
       hash = "sha256-CTsSxUa+daLpoNDr4kIVhzAM6E1k3ZwvAhE7Lccm4YM=";
+      url = "https://github.com/WorksApplications/SudachiDict/releases/download/v${version}/sudachi-dictionary-${version}-core.zip";
     };
-    small = fetchzip {
-      url = "https://github.com/WorksApplications/SudachiDict/releases/download/v${version}/sudachi-dictionary-${version}-small.zip";
-      hash = "sha256-okLmQST77Iz/MkdcuhZ+Q+SDlgcM0bXTR4KNKqPHIlg=";
-    };
+
     full = fetchzip {
-      url = "https://github.com/WorksApplications/SudachiDict/releases/download/v${version}/sudachi-dictionary-${version}-full.zip";
       hash = "sha256-XG7zusuqDYl5q6OERDLwd9M7N7iZEvIgIuCkEhVMZiw=";
+      url = "https://github.com/WorksApplications/SudachiDict/releases/download/v${version}/sudachi-dictionary-${version}-full.zip";
+    };
+
+    small = fetchzip {
+      hash = "sha256-okLmQST77Iz/MkdcuhZ+Q+SDlgcM0bXTR4KNKqPHIlg=";
+      url = "https://github.com/WorksApplications/SudachiDict/releases/download/v${version}/sudachi-dictionary-${version}-small.zip";
     };
   };
 in
@@ -30,12 +32,7 @@ lib.checkListOfEnum "${pname}: dict-type" [ "core" "full" "small" ] [ dict-type 
   stdenvNoCC.mkDerivation
   {
     inherit pname version;
-
     src = srcs.${dict-type};
-
-    dontConfigure = true;
-
-    dontBuild = true;
 
     installPhase = ''
       runHook preInstall
@@ -44,6 +41,9 @@ lib.checkListOfEnum "${pname}: dict-type" [ "core" "full" "small" ] [ dict-type 
 
       runHook postInstall
     '';
+
+    dontBuild = true;
+    dontConfigure = true;
 
     passthru = {
       dict-type = dict-type;

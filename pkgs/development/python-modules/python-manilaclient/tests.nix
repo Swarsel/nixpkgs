@@ -11,12 +11,8 @@
 }:
 
 buildPythonPackage {
-  pname = "python-manilaclient-tests";
   inherit (python-manilaclient) version src;
-  pyproject = false;
-
-  dontBuild = true;
-  dontInstall = true;
+  pname = "python-manilaclient-tests";
 
   nativeCheckInputs = [
     ddt
@@ -32,4 +28,8 @@ buildPythonPackage {
   checkPhase = ''
     stestr run
   '';
+
+  dontBuild = true;
+  dontInstall = true;
+  pyproject = false;
 }

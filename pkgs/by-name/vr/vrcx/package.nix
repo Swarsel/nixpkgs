@@ -1,15 +1,15 @@
 {
   lib,
   stdenv,
-  nodejs_24,
-  electron_41,
-  makeWrapper,
   fetchFromGitHub,
-  buildNpmPackage,
-  makeDesktopItem,
-  copyDesktopItems,
   buildDotnetModule,
+  buildNpmPackage,
+  copyDesktopItems,
   dotnetCorePackages,
+  electron_41,
+  makeDesktopItem,
+  makeWrapper,
+  nodejs_24,
 }:
 let
   node = nodejs_24;
@@ -21,26 +21,23 @@ buildNpmPackage (finalAttrs: {
   version = "2026.05.03";
 
   src = fetchFromGitHub {
-    repo = "VRCX";
     owner = "vrcx-team";
+    repo = "VRCX";
     tag = "v${finalAttrs.version}";
     hash = "sha256-TIRX1DllUaq73Aue5/2mg98luBnDoptiiMDQcZ9aBTM=";
   };
 
-  nodejs = node;
-  makeCacheWritable = true;
-  npmFlags = [ "--ignore-scripts" ];
-  npmDepsHash = "sha256-hOfbDvBJgoPQ6QxnZ77kpeSHDXH9dSnidmrx9Mp9q08=";
+  postPatch = ''
+    # V2026.05.03 seems to have an out of date lockfile
+    cp ${./package-lock.json} package-lock.json
+  '';
 
   nativeBuildInputs = [
     makeWrapper
     copyDesktopItems
   ];
 
-  postPatch = ''
-    # V2026.05.03 seems to have an out of date lockfile
-    cp ${./package-lock.json} package-lock.json
-  '';
+  npmDepsHash = "sha256-hOfbDvBJgoPQ6QxnZ77kpeSHDXH9dSnidmrx9Mp9q08=";
 
   buildPhase = ''
     runHook preBuild
@@ -77,30 +74,29 @@ buildNpmPackage (finalAttrs: {
 
   desktopItems = [
     (makeDesktopItem {
-      name = "vrcx";
-      icon = "vrcx";
-      exec = "vrcx %u";
-      terminal = false;
-      desktopName = "VRCX";
-      comment = "Friendship management tool for VRChat";
       categories = [
         "Utility"
         "Application"
       ];
+
+      comment = "Friendship management tool for VRChat";
+      desktopName = "VRCX";
+      exec = "vrcx %u";
+      icon = "vrcx";
       mimeTypes = [ "x-scheme-handler/vrcx" ];
+      name = "vrcx";
+      terminal = false;
     })
   ];
+
+  makeCacheWritable = true;
+  nodejs = node;
+  npmFlags = [ "--ignore-scripts" ];
 
   passthru = {
     backend = buildDotnetModule {
       inherit (finalAttrs) version src;
       pname = "${finalAttrs.pname}-backend";
-
-      dotnet-sdk = dotnet.sdk;
-      dotnet-runtime = dotnet.runtime;
-      projectFile = "Dotnet/VRCX-Electron.csproj";
-
-      nugetDeps = ./deps.json;
 
       installPhase = ''
         runHook preInstall
@@ -110,23 +106,32 @@ buildNpmPackage (finalAttrs: {
 
         runHook postInstall
       '';
+
+      dotnet-runtime = dotnet.runtime;
+      dotnet-sdk = dotnet.sdk;
+      nugetDeps = ./deps.json;
+      projectFile = "Dotnet/VRCX-Electron.csproj";
     };
   };
 
   meta = {
     description = "Friendship management tool for VRChat";
+
     longDescription = ''
       VRCX is an assistant/companion application for VRChat that provides information about and helps you accomplish various things
       related to VRChat in a more convenient fashion than relying on the plain VRChat client (desktop or VR), or website alone.
     '';
-    license = lib.licenses.mit;
+
     homepage = "https://github.com/vrcx-team/VRCX";
-    downloadPage = "https://github.com/vrcx-team/VRCX/releases";
+    license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       ShyAssassin
       ImSapphire
     ];
+
     platforms = lib.platforms.linux;
     broken = !stdenv.hostPlatform.isx86_64;
+    downloadPage = "https://github.com/vrcx-team/VRCX/releases";
   };
 })

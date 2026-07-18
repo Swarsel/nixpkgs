@@ -4,26 +4,25 @@
   fetchFromGitHub,
   check,
   cmake,
-  pkg-config,
-  libtoxcore,
-  filter-audio,
   dbus,
+  filter-audio,
+  fontconfig,
+  freetype,
+  libopus,
+  libsodium,
+  libtoxcore,
+  libv4l,
   libvpx,
   libx11,
-  openal,
-  freetype,
-  libv4l,
-  libxrender,
-  fontconfig,
   libxext,
   libxft,
-  libsodium,
-  libopus,
+  libxrender,
+  openal,
+  pkg-config,
 }:
 
 stdenv.mkDerivation rec {
   pname = "utox";
-
   version = "0.18.1";
 
   src = fetchFromGitHub {
@@ -33,6 +32,16 @@ stdenv.mkDerivation rec {
     hash = "sha256-DxnolxUTn+CL6TbZHKLHOUMTHhtTSWufzzOTRpKjOwc=";
     fetchSubmodules = true;
   };
+
+  postPatch = ''
+    substituteInPlace CMakeLists.txt \
+      --replace-fail "cmake_minimum_required(VERSION 3.2)" "cmake_minimum_required(VERSION 3.10)"
+  '';
+
+  nativeBuildInputs = [
+    cmake
+    pkg-config
+  ];
 
   buildInputs = [
     libtoxcore
@@ -51,30 +60,20 @@ stdenv.mkDerivation rec {
     libopus
   ];
 
-  nativeBuildInputs = [
-    cmake
-    pkg-config
-  ];
-
   cmakeFlags = [
     "-DENABLE_AUTOUPDATE=OFF"
     "-DENABLE_TESTS=${if doCheck then "ON" else "OFF"}"
   ];
-
-  postPatch = ''
-    substituteInPlace CMakeLists.txt \
-      --replace-fail "cmake_minimum_required(VERSION 3.2)" "cmake_minimum_required(VERSION 3.10)"
-  '';
 
   doCheck = stdenv.buildPlatform.canExecute stdenv.hostPlatform;
   nativeCheckInputs = [ check ];
 
   meta = {
     description = "Lightweight Tox client";
-    mainProgram = "utox";
     homepage = "https://github.com/uTox/uTox";
     license = lib.licenses.gpl3;
     maintainers = [ ];
     platforms = lib.platforms.all;
+    mainProgram = "utox";
   };
 }

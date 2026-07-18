@@ -2,10 +2,10 @@
   lib,
   stdenv,
   fetchurl,
-  cmake,
   boost,
-  python3,
+  cmake,
   fmt,
+  python3,
   versionCheckHook,
 }:
 
@@ -38,19 +38,20 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   doCheck = true;
+  doInstallCheck = true;
 
   nativeInstallCheckInputs = [
     versionCheckHook
   ];
-  doInstallCheck = true;
+
   versionCheckProgram = "${placeholder "out"}/bin/avrogencpp";
 
   meta = {
     description = "C++ library which implements parts of the Avro Specification";
-    mainProgram = "avrogencpp";
     homepage = "https://avro.apache.org/";
     license = lib.licenses.asl20;
     maintainers = [ ];
     platforms = lib.platforms.all;
+    mainProgram = "avrogencpp";
   };
 })

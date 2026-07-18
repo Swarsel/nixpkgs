@@ -2,8 +2,8 @@
   lib,
   stdenv,
   fetchurl,
-  fetchpatch,
   bison,
+  fetchpatch,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -12,8 +12,8 @@ stdenv.mkDerivation (finalAttrs: {
 
   src = fetchurl {
     url = "mirror://debian/pool/main/a/as31/as31_${finalAttrs.version}.orig.tar.gz";
-    name = "${finalAttrs.pname}-${finalAttrs.version}.tar.gz";
     hash = "sha256-zSEyWHFon5nyq717Mpmdv1XZ5Hz0e8ZABqsP8M83c1U=";
+    name = "${finalAttrs.pname}-${finalAttrs.version}.tar.gz";
   };
 
   patches = [
@@ -22,8 +22,8 @@ stdenv.mkDerivation (finalAttrs: {
 
     # fix build with gcc14
     (fetchpatch {
-      url = "https://salsa.debian.org/debian/as31/-/raw/76735fbf1fb00ce70ffd98385137908b7bd9bd5c/debian/patches/update_sizebuf_types.patch";
       hash = "sha256-ERrPdY0afKwXmdSLoWmWR55nKfvmieGlz+nhwFWRnrM=";
+      url = "https://salsa.debian.org/debian/as31/-/raw/76735fbf1fb00ce70ffd98385137908b7bd9bd5c/debian/patches/update_sizebuf_types.patch";
     })
   ];
 
@@ -33,20 +33,20 @@ stdenv.mkDerivation (finalAttrs: {
     rm -f as31/parser.c
   '';
 
-  preConfigure = ''
-    chmod +x configure
-  '';
-
   nativeBuildInputs = [
     bison
   ];
 
+  preConfigure = ''
+    chmod +x configure
+  '';
+
   meta = {
-    homepage = "https://www.pjrc.com/tech/8051/tools/as31-doc.html";
     description = "8031/8051 assembler";
-    mainProgram = "as31";
+    homepage = "https://www.pjrc.com/tech/8051/tools/as31-doc.html";
     license = lib.licenses.gpl2Plus;
     maintainers = [ ];
     platforms = lib.platforms.unix;
+    mainProgram = "as31";
   };
 })

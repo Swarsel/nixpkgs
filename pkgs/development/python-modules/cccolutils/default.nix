@@ -2,30 +2,28 @@
   lib,
   buildPythonPackage,
   fetchPypi,
-  setuptools,
   git,
   gitpython,
   krb5-c, # C krb5 library, not PyPI krb5
   mock,
   pytestCheckHook,
+  setuptools,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "cccolutils";
   version = "1.5";
-  pyproject = true;
-
-  __structuredAttrs = true;
 
   src = fetchPypi {
-    pname = "CCColUtils";
     inherit (finalAttrs) version;
     hash = "sha256-YzKjG43biRbTZKtzSUHHhtzOfcZfzISHDFolqzrBjL8=";
+    pname = "CCColUtils";
   };
 
-  build-system = [ setuptools ];
-
   buildInputs = [ krb5-c ];
+  nativeCheckInputs = [ pytestCheckHook ];
+  __structuredAttrs = true;
+  build-system = [ setuptools ];
 
   dependencies = [
     git
@@ -33,8 +31,7 @@ buildPythonPackage (finalAttrs: {
     mock
   ];
 
-  nativeCheckInputs = [ pytestCheckHook ];
-
+  pyproject = true;
   pythonImportsCheck = [ "cccolutils" ];
 
   meta = {

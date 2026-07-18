@@ -1,33 +1,33 @@
 {
+  lib,
   stdenv,
   fetchurl,
-  fetchpatch,
-  lib,
-  pkg-config,
-  util-linux,
-  libcap,
-  libtirpc,
-  libevent,
-  libnl,
-  sqlite,
-  libkrb5,
-  kmod,
-  libuuid,
-  keyutils,
-  lvm2,
-  systemd,
-  coreutils,
-  python3,
   buildPackages,
-  nixosTests,
-  rpcsvc-proto,
-  openldap,
+  coreutils,
   cyrus_sasl,
+  fetchpatch,
+  keyutils,
+  kmod,
+  libcap,
+  libevent,
+  libkrb5,
+  libnl,
+  libtirpc,
+  libuuid,
   libxml2,
+  lvm2,
+  nixosTests,
+  openldap,
+  pkg-config,
+  python3,
   readline,
+  rpcsvc-proto,
+  sqlite,
+  systemd,
   udevCheckHook,
-  enablePython ? true,
+  util-linux,
   enableLdap ? true,
+  enablePython ? true,
 }:
 
 let
@@ -56,6 +56,39 @@ stdenv.mkDerivation (finalAttrs: {
     "man"
   ];
 
+  patches = lib.optionals stdenv.hostPlatform.isMusl [
+    # http://openwall.com/lists/musl/2015/08/18/10
+    (fetchpatch {
+      sha256 = "1fqws9dz8n1d9a418c54r11y3w330qgy2652dpwcy96cm44sqyhf";
+      url = "https://raw.githubusercontent.com/alpinelinux/aports/cb880042d48d77af412d4688f24b8310ae44f55f/main/nfs-utils/musl-getservbyport.patch";
+    })
+    (fetchpatch {
+      hash = "sha256-dZEafrXDZH/IPo1u7B65u01nwFMfcqSMnVyHAapexa8=";
+      url = "https://github.com/void-linux/void-packages/raw/31f0d5fef2f74999212bcfa6f982969973432750/srcpkgs/nfs-utils/patches/musl-includes.patch";
+    })
+    (fetchpatch {
+      hash = "sha256-wcQ2IRmlBP61qZVlXk6osi4UH8ETtjllVogPEaZNK9o=";
+      url = "https://github.com/void-linux/void-packages/raw/31f0d5fef2f74999212bcfa6f982969973432750/srcpkgs/nfs-utils/patches/musl-fix_long_unsigned_int.patch";
+    })
+  ];
+
+  postPatch = ''
+    patchShebangs tests
+    sed -i "s,/usr/sbin,$out/bin,g" utils/statd/statd.c
+    sed -i "s,^PATH=.*,PATH=$out/bin:${statdPath}," utils/statd/start-statd
+
+    substituteInPlace systemd/nfs-utils.service \
+      --replace "/bin/true" "${coreutils}/bin/true"
+
+    substituteInPlace tools/nfsrahead/Makefile.in systemd/Makefile.in \
+      --replace "/usr/lib/udev/rules.d/" "$out/lib/udev/rules.d/"
+
+    substituteInPlace utils/mount/Makefile.in \
+      --replace-fail "chmod 4711" "chmod 0711"
+
+    sed '1i#include <stdint.h>' -i support/nsm/rpc.c
+  '';
+
   nativeBuildInputs = [
     pkg-config
     buildPackages.stdenv.cc
@@ -82,14 +115,6 @@ stdenv.mkDerivation (finalAttrs: {
     cyrus_sasl
   ];
 
-  enableParallelBuilding = true;
-
-  preConfigure = ''
-    substituteInPlace configure \
-      --replace '$dir/include/gssapi' ${lib.getDev libkrb5}/include/gssapi \
-      --replace '$dir/bin/krb5-config' ${lib.getDev libkrb5}/bin/krb5-config
-  '';
-
   configureFlags = [
     "--with-start-statd=${placeholder "out"}/bin/start-statd"
     "--enable-gss"
@@ -104,57 +129,21 @@ stdenv.mkDerivation (finalAttrs: {
   ]
   ++ lib.optional enableLdap "--enable-ldap";
 
-  patches = lib.optionals stdenv.hostPlatform.isMusl [
-    # http://openwall.com/lists/musl/2015/08/18/10
-    (fetchpatch {
-      url = "https://raw.githubusercontent.com/alpinelinux/aports/cb880042d48d77af412d4688f24b8310ae44f55f/main/nfs-utils/musl-getservbyport.patch";
-      sha256 = "1fqws9dz8n1d9a418c54r11y3w330qgy2652dpwcy96cm44sqyhf";
-    })
-    (fetchpatch {
-      url = "https://github.com/void-linux/void-packages/raw/31f0d5fef2f74999212bcfa6f982969973432750/srcpkgs/nfs-utils/patches/musl-includes.patch";
-      hash = "sha256-dZEafrXDZH/IPo1u7B65u01nwFMfcqSMnVyHAapexa8=";
-    })
-    (fetchpatch {
-      url = "https://github.com/void-linux/void-packages/raw/31f0d5fef2f74999212bcfa6f982969973432750/srcpkgs/nfs-utils/patches/musl-fix_long_unsigned_int.patch";
-      hash = "sha256-wcQ2IRmlBP61qZVlXk6osi4UH8ETtjllVogPEaZNK9o=";
-    })
-  ];
-
-  postPatch = ''
-    patchShebangs tests
-    sed -i "s,/usr/sbin,$out/bin,g" utils/statd/statd.c
-    sed -i "s,^PATH=.*,PATH=$out/bin:${statdPath}," utils/statd/start-statd
-
-    substituteInPlace systemd/nfs-utils.service \
-      --replace "/bin/true" "${coreutils}/bin/true"
-
-    substituteInPlace tools/nfsrahead/Makefile.in systemd/Makefile.in \
-      --replace "/usr/lib/udev/rules.d/" "$out/lib/udev/rules.d/"
-
-    substituteInPlace utils/mount/Makefile.in \
-      --replace-fail "chmod 4711" "chmod 0711"
-
-    sed '1i#include <stdint.h>' -i support/nsm/rpc.c
-  '';
-
   makeFlags = [
     "sbindir=$(out)/bin"
     "generator_dir=$(out)/etc/systemd/system-generators"
   ];
 
-  doInstallCheck = true;
+  preConfigure = ''
+    substituteInPlace configure \
+      --replace '$dir/include/gssapi' ${lib.getDev libkrb5}/include/gssapi \
+      --replace '$dir/bin/krb5-config' ${lib.getDev libkrb5}/bin/krb5-config
+  '';
 
-  installFlags = [
-    "statedir=$(TMPDIR)"
-    "statdpath=$(TMPDIR)"
-  ];
-
-  stripDebugList = [
-    "lib"
-    "libexec"
-    "bin"
-    "etc/systemd/system-generators"
-  ];
+  # One test fails on mips.
+  # doCheck = !stdenv.hostPlatform.isMips;
+  # https://bugzilla.kernel.org/show_bug.cgi?id=203793
+  doCheck = false;
 
   postInstall = ''
     # Not used on NixOS
@@ -168,17 +157,26 @@ stdenv.mkDerivation (finalAttrs: {
     grep -l /usr/bin/python $out/bin/* | xargs -I {} rm -v {}
   '';
 
-  # One test fails on mips.
-  # doCheck = !stdenv.hostPlatform.isMips;
-  # https://bugzilla.kernel.org/show_bug.cgi?id=203793
-  doCheck = false;
-
+  doInstallCheck = true;
   disallowedReferences = [ (lib.getDev libkrb5) ];
+  enableParallelBuilding = true;
+
+  installFlags = [
+    "statedir=$(TMPDIR)"
+    "statdpath=$(TMPDIR)"
+  ];
+
+  stripDebugList = [
+    "lib"
+    "libexec"
+    "bin"
+    "etc/systemd/system-generators"
+  ];
 
   passthru.tests = {
     nfs3-simple = nixosTests.nfs3.simple;
-    nfs4-simple = nixosTests.nfs4.simple;
     nfs4-kerberos = nixosTests.nfs4.kerberos;
+    nfs4-simple = nixosTests.nfs4.simple;
   };
 
   passthru.updateScript = ./update.sh;
@@ -192,10 +190,10 @@ stdenv.mkDerivation (finalAttrs: {
       daemons.
     '';
 
-    changelog = "https://www.kernel.org/pub/linux/utils/nfs-utils/${finalAttrs.version}/${finalAttrs.version}-Changelog";
     homepage = "https://linux-nfs.org/";
+    changelog = "https://www.kernel.org/pub/linux/utils/nfs-utils/${finalAttrs.version}/${finalAttrs.version}-Changelog";
     license = lib.licenses.gpl2Plus;
-    platforms = lib.platforms.linux;
     maintainers = [ lib.maintainers.dotlambda ];
+    platforms = lib.platforms.linux;
   };
 })

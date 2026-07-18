@@ -1,16 +1,15 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
-  versionCheckHook,
   nix-update-script,
-  pkg-config,
   openssl,
+  pkg-config,
+  rustPlatform,
+  versionCheckHook,
 }:
 rustPlatform.buildRustPackage (finalAttrs: {
   pname = "sampo";
   version = "0.19.0";
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "bruits";
@@ -19,12 +18,13 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-WGK2B6SzZNnclD2HeurXLujlScTZaI+jQbOaOrAt8Xw=";
   };
 
-  cargoHash = "sha256-WY+LYVxEo5FEon3pv/OHiDUZDXSaPot7PIgdOTXpWII=";
-
   nativeBuildInputs = [ pkg-config ];
-
   buildInputs = [ openssl ];
-
+  cargoHash = "sha256-WY+LYVxEo5FEon3pv/OHiDUZDXSaPot7PIgdOTXpWII=";
+  env.OPENSSL_NO_VENDOR = true;
+  doInstallCheck = true;
+  nativeInstallCheckInputs = [ versionCheckHook ];
+  __structuredAttrs = true;
   # Disable self-update
   buildNoDefaultFeatures = true;
 
@@ -32,12 +32,8 @@ rustPlatform.buildRustPackage (finalAttrs: {
     "-p"
     "sampo"
   ];
+
   cargoTestFlags = finalAttrs.cargoBuildFlags;
-
-  env.OPENSSL_NO_VENDOR = true;
-
-  nativeInstallCheckInputs = [ versionCheckHook ];
-  doInstallCheck = true;
 
   passthru.updateScript = nix-update-script {
     extraArgs = [ "--version-regex=cargo-sampo-v([0-9\\.]*)" ];

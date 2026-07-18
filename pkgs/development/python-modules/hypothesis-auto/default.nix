@@ -12,19 +12,14 @@
 buildPythonPackage rec {
   pname = "hypothesis-auto";
   version = "1.1.5";
-  pyproject = true;
 
   src = fetchPypi {
-    pname = "hypothesis_auto";
     inherit version;
     hash = "sha256-U0vcOB9jXmUV5v2IwybVu2arY1FpPnKkP7m2kbD1kRw=";
+    pname = "hypothesis_auto";
   };
 
-  pythonRelaxDeps = [
-    "hypothesis"
-    "pydantic"
-  ];
-
+  nativeCheckInputs = [ pytestCheckHook ];
   build-system = [ poetry-core ];
 
   dependencies = [
@@ -36,9 +31,13 @@ buildPythonPackage rec {
     pytest = [ pytest ];
   };
 
+  pyproject = true;
   pythonImportsCheck = [ "hypothesis_auto" ];
 
-  nativeCheckInputs = [ pytestCheckHook ];
+  pythonRelaxDeps = [
+    "hypothesis"
+    "pydantic"
+  ];
 
   meta = {
     description = "Enables fully automatic tests for type annotated functions";

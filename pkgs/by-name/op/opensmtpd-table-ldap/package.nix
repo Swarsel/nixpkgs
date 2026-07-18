@@ -20,14 +20,14 @@ stdenv.mkDerivation (finalAttrs: {
 
   strictDeps = true;
 
-  buildInputs = [
-    libevent
-    libressl
-  ];
-
   nativeBuildInputs = [
     autoconf
     automake
+  ];
+
+  buildInputs = [
+    libevent
+    libressl
   ];
 
   configureFlags = [
@@ -42,13 +42,15 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   meta = {
-    homepage = "https://www.opensmtpd.org/";
     description = "LDAP tables for the OpenSMTPD mail server";
+    homepage = "https://www.opensmtpd.org/";
     changelog = "https://github.com/OpenSMTPD/table-ldap/releases/tag/${finalAttrs.version}";
     license = lib.licenses.isc;
-    platforms = lib.platforms.linux;
+
     maintainers = with lib.maintainers; [
       pks
     ];
+
+    platforms = lib.platforms.linux;
   };
 })

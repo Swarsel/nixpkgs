@@ -31,6 +31,18 @@ in
         below 20 requests per second
       '';
 
+      secretFile = mkOption {
+        default = null;
+
+        description = ''
+          A file containing secrets as environment variables that will be used in the configuration.
+          See [the documentation](https://isso-comments.de/docs/reference/server-config/#environment-variables) for details.
+        '';
+
+        example = "/run/secrets/isso.env";
+        type = types.nullOr types.str;
+      };
+
       settings = mkOption {
         description = ''
           Configuration for `isso`.
@@ -41,10 +53,6 @@ in
           [the documentation](https://isso-comments.de/docs/reference/server-config/#environment-variables).
         '';
 
-        type = types.submodule {
-          freeformType = settingsFormat.type;
-        };
-
         example = literalExpression ''
           {
             general = {
@@ -52,16 +60,10 @@ in
             };
           }
         '';
-      };
 
-      secretFile = mkOption {
-        type = types.nullOr types.str;
-        default = null;
-        description = ''
-          A file containing secrets as environment variables that will be used in the configuration.
-          See [the documentation](https://isso-comments.de/docs/reference/server-config/#environment-variables) for details.
-        '';
-        example = "/run/secrets/isso.env";
+        type = types.submodule {
+          freeformType = settingsFormat.type;
+        };
       };
     };
   };
@@ -71,28 +73,19 @@ in
 
     systemd.services.isso = {
       description = "isso, a commenting server similar to Disqus";
-      wantedBy = [ "multi-user.target" ];
 
       serviceConfig = {
-        User = "isso";
-        Group = "isso";
-
-        EnvironmentFile = mkIf (cfg.secretFile != null) [ cfg.secretFile ];
-
+        # Hardening
+        CapabilityBoundingSet = [ "" ];
+        DeviceAllow = [ "" ];
         DynamicUser = true;
-
-        StateDirectory = "isso";
+        EnvironmentFile = mkIf (cfg.secretFile != null) [ cfg.secretFile ];
 
         ExecStart = ''
           ${pkgs.isso}/bin/isso -c ${configFile}
         '';
 
-        Restart = "on-failure";
-        RestartSec = 1;
-
-        # Hardening
-        CapabilityBoundingSet = [ "" ];
-        DeviceAllow = [ "" ];
+        Group = "isso";
         LockPersonality = true;
         PrivateDevices = true;
         PrivateUsers = true;
@@ -105,20 +98,30 @@ in
         ProtectKernelModules = true;
         ProtectKernelTunables = true;
         ProtectProc = "invisible";
+        Restart = "on-failure";
+        RestartSec = 1;
+
         RestrictAddressFamilies = [
           "AF_INET"
           "AF_INET6"
         ];
+
         RestrictNamespaces = true;
         RestrictRealtime = true;
+        StateDirectory = "isso";
         SystemCallArchitectures = "native";
+
         SystemCallFilter = [
           "@system-service"
           "~@privileged"
           "~@resources"
         ];
+
         UMask = "0077";
+        User = "isso";
       };
+
+      wantedBy = [ "multi-user.target" ];
     };
   };
 }

@@ -1,9 +1,9 @@
 {
   lib,
-  pkgsBuildHost,
   stdenv,
-  stdenvNoCC,
+  pkgsBuildHost,
   sdkVersion,
+  stdenvNoCC,
 }:
 
 let
@@ -14,8 +14,6 @@ let
   inherit (pkgsBuildHost) darwin cctools xcbuild;
 in
 self: super: {
-  propagatedNativeBuildInputs = super.propagatedNativeBuildInputs or [ ] ++ [ xcbuild.xcrun ];
-
   postInstall = super.postInstall or "" + ''
     specspath=$out/Library/Xcode/Specifications
     toolchainsPath=$out/Toolchains/XcodeDefault.xctoolchain
@@ -50,4 +48,6 @@ self: super: {
       fi
     done
   '';
+
+  propagatedNativeBuildInputs = super.propagatedNativeBuildInputs or [ ] ++ [ xcbuild.xcrun ];
 }

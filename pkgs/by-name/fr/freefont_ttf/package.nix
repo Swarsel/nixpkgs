@@ -1,7 +1,7 @@
 {
   lib,
-  stdenvNoCC,
   fetchzip,
+  stdenvNoCC,
 }:
 
 stdenvNoCC.mkDerivation rec {
@@ -24,14 +24,16 @@ stdenvNoCC.mkDerivation rec {
 
   meta = {
     description = "GNU Free UCS Outline Fonts";
+
     longDescription = ''
       The GNU Freefont project aims to provide a set of free outline
       (PostScript Type0, TrueType, OpenType...) fonts covering the ISO
       10646/Unicode UCS (Universal Character Set).
     '';
+
     homepage = "https://www.gnu.org/software/freefont/";
     license = lib.licenses.gpl3Plus;
-    platforms = lib.platforms.all;
     maintainers = [ ];
+    platforms = lib.platforms.all;
   };
 }

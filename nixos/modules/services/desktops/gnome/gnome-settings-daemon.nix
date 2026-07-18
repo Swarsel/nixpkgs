@@ -15,12 +15,7 @@ in
 
 {
 
-  meta = {
-    teams = [ lib.teams.gnome ];
-  };
-
   ###### interface
-
   options = {
 
     services.gnome.gnome-settings-daemon = {
@@ -32,7 +27,6 @@ in
   };
 
   ###### implementation
-
   config = lib.mkIf cfg.enable {
 
     environment.systemPackages = [
@@ -55,6 +49,10 @@ in
       "org.gnome.SettingsDaemon.XSettings.service"
     ];
 
+  };
+
+  meta = {
+    teams = [ lib.teams.gnome ];
   };
 
 }

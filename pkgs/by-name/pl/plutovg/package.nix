@@ -17,6 +17,10 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-JP/nNHszTABIat79vcUqFdtv+/Z13D28aYKEt7BALCw=";
   };
 
+  nativeBuildInputs = [
+    cmake
+  ];
+
   cmakeFlags = [
     (lib.cmakeBool "BUILD_SHARED_LIBS" (!stdenv.hostPlatform.isStatic))
     (lib.cmakeBool "PLUTOVG_DISABLE_FONT_FACE_CACHE_LOAD" (!fontFaceCache))
@@ -27,26 +31,23 @@ stdenv.mkDerivation (finalAttrs: {
     "-DCMAKE_INSTALL_LIBDIR=lib"
   ];
 
-  nativeBuildInputs = [
-    cmake
-  ];
-
   passthru.tests = {
-    pkg-config = testers.hasPkgConfigModules {
+    cmake-config = testers.hasCmakeConfigModules {
+      moduleNames = [ "plutovg" ];
       package = finalAttrs.finalPackage;
       versionCheck = true;
     };
-    cmake-config = testers.hasCmakeConfigModules {
+
+    pkg-config = testers.hasPkgConfigModules {
       package = finalAttrs.finalPackage;
-      moduleNames = [ "plutovg" ];
       versionCheck = true;
     };
   };
 
   meta = {
+    description = "Tiny 2D vector graphics library in C";
     homepage = "https://github.com/sammycage/plutovg/";
     changelog = "https://github.com/sammycage/plutovg/releases/tag/v${finalAttrs.version}";
-    description = "Tiny 2D vector graphics library in C";
     license = lib.licenses.mit;
     maintainers = [ lib.maintainers.eymeric ];
     pkgConfigModules = [ "plutovg" ];

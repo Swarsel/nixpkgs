@@ -17,10 +17,8 @@ rustPlatform.buildRustPackage (finalAttrs: {
   };
 
   cargoHash = "sha256-F46gEUWcKl1nFS1faXeWJLV0lmCrJhBN3XpOiTcGXEc=";
-
-  passthru.updateScript = nix-update-script { };
-
   __structuredAttrs = true;
+  passthru.updateScript = nix-update-script { };
 
   meta = {
     description = "Converts a Mastodon thread to Markdown, and downloads all contained media files";

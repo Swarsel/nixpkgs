@@ -1,8 +1,8 @@
 {
-  stdenv,
   lib,
-  buildGoModule,
+  stdenv,
   fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule (finalAttrs: {
@@ -19,11 +19,11 @@ buildGoModule (finalAttrs: {
   vendorHash = "sha256-iMMkjJ5dnlr0oSCifBQPWkInQBCp1bh23s+BcKzDNCg=";
 
   meta = {
-    broken = stdenv.hostPlatform.isDarwin;
     description = "Multitree-based personal task manager";
     homepage = "https://github.com/climech/grit";
     license = lib.licenses.mit;
     maintainers = [ ];
     mainProgram = "grit";
+    broken = stdenv.hostPlatform.isDarwin;
   };
 })

@@ -25,10 +25,10 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   meta = {
-    homepage = "https://dotat.at/prog/unifdef/";
     description = "Selectively remove C preprocessor conditionals";
+    homepage = "https://dotat.at/prog/unifdef/";
     license = lib.licenses.bsd2;
-    platforms = lib.platforms.unix;
     maintainers = [ ];
+    platforms = lib.platforms.unix;
   };
 })

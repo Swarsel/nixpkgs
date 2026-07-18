@@ -2,16 +2,16 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  cmake,
-  ninja,
-  git,
   bison,
+  cmake,
   flex,
-  zlib,
+  git,
   intel-compute-runtime,
+  ninja,
   python3,
-  spirv-tools,
   spirv-headers,
+  spirv-tools,
+  zlib,
 }:
 
 let
@@ -20,46 +20,6 @@ in
 stdenv.mkDerivation rec {
   pname = "intel-graphics-compiler";
   version = "2.34.4";
-
-  # See the repository for expected versions:
-  # <https://github.com/intel/intel-graphics-compiler/blob/v2.16.0/documentation/build_ubuntu.md#revision-table>
-  srcs = [
-    (fetchFromGitHub {
-      name = "igc";
-      owner = "intel";
-      repo = "intel-graphics-compiler";
-      tag = "v${version}";
-      hash = "sha256-w20nrn3wo9Dvv3BILYBzuJTTLXqcWaRAF7SiPtryhwk=";
-    })
-    (fetchFromGitHub {
-      name = "llvm-project";
-      owner = "llvm";
-      repo = "llvm-project";
-      tag = "llvmorg-${llvmVersion}";
-      hash = "sha256-fspqSReX+VD+Nl/Cfq+tDcdPtnQPV1IRopNDfd5VtUs=";
-    })
-    (fetchFromGitHub {
-      name = "vc-intrinsics";
-      owner = "intel";
-      repo = "vc-intrinsics";
-      tag = "v0.25.0";
-      hash = "sha256-ozc1w3V5RqWHwqNHuefZJMN8RAYxrJxH9bd1BEqxfiQ=";
-    })
-    (fetchFromGitHub {
-      name = "opencl-clang";
-      owner = "intel";
-      repo = "opencl-clang";
-      tag = "v16.0.11";
-      hash = "sha256-ema1jTNMHs3pUituVb1NPllc6cA8eYJHtDOjuEzIDWM=";
-    })
-    (fetchFromGitHub {
-      name = "llvm-spirv";
-      owner = "KhronosGroup";
-      repo = "SPIRV-LLVM-Translator";
-      tag = "v16.0.24";
-      hash = "sha256-aTcwfQt2WdOA44jfHdD7x7oxt8emSDexgZnI7MPVqvU=";
-    })
-  ];
 
   patches = [
     # Raise minimum CMake version to 3.5
@@ -77,15 +37,6 @@ stdenv.mkDerivation rec {
     # that originate from within LLVM (see `IGC/common/LLVMWarningsPush.hpp`).
     ./gcc15-allow-llvm-free-nonheap-object-warning.patch
   ];
-
-  sourceRoot = ".";
-
-  cmakeDir = "../igc";
-
-  postUnpack = ''
-    chmod -R +w .
-    mv opencl-clang llvm-spirv llvm-project/llvm/projects/
-  '';
 
   postPatch = ''
     substituteInPlace igc/IGC/AdaptorOCL/igc-opencl.pc.in \
@@ -108,6 +59,8 @@ stdenv.mkDerivation rec {
       --replace-fail "16.0.6" "${llvmVersion}"
   '';
 
+  strictDeps = true;
+
   nativeBuildInputs = [
     bison
     cmake
@@ -128,17 +81,63 @@ stdenv.mkDerivation rec {
     spirv-tools
   ];
 
-  strictDeps = true;
-
-  # testing is done via intel-compute-runtime
-  doCheck = false;
-
   cmakeFlags = [
     "-DIGC_OPTION__SPIRV_TOOLS_MODE=Prebuilds"
     "-DIGC_OPTION__USE_PREINSTALLED_SPIRV_HEADERS=ON"
     "-DSPIRV-Headers_INCLUDE_DIR=${spirv-headers}/include"
     "-DLLVM_EXTERNAL_SPIRV_HEADERS_SOURCE_DIR=${spirv-headers.src}"
     "-Wno-dev"
+  ];
+
+  # testing is done via intel-compute-runtime
+  doCheck = false;
+  cmakeDir = "../igc";
+
+  postUnpack = ''
+    chmod -R +w .
+    mv opencl-clang llvm-spirv llvm-project/llvm/projects/
+  '';
+
+  sourceRoot = ".";
+
+  # See the repository for expected versions:
+  # <https://github.com/intel/intel-graphics-compiler/blob/v2.16.0/documentation/build_ubuntu.md#revision-table>
+  srcs = [
+    (fetchFromGitHub {
+      hash = "sha256-w20nrn3wo9Dvv3BILYBzuJTTLXqcWaRAF7SiPtryhwk=";
+      name = "igc";
+      owner = "intel";
+      repo = "intel-graphics-compiler";
+      tag = "v${version}";
+    })
+    (fetchFromGitHub {
+      hash = "sha256-fspqSReX+VD+Nl/Cfq+tDcdPtnQPV1IRopNDfd5VtUs=";
+      name = "llvm-project";
+      owner = "llvm";
+      repo = "llvm-project";
+      tag = "llvmorg-${llvmVersion}";
+    })
+    (fetchFromGitHub {
+      hash = "sha256-ozc1w3V5RqWHwqNHuefZJMN8RAYxrJxH9bd1BEqxfiQ=";
+      name = "vc-intrinsics";
+      owner = "intel";
+      repo = "vc-intrinsics";
+      tag = "v0.25.0";
+    })
+    (fetchFromGitHub {
+      hash = "sha256-ema1jTNMHs3pUituVb1NPllc6cA8eYJHtDOjuEzIDWM=";
+      name = "opencl-clang";
+      owner = "intel";
+      repo = "opencl-clang";
+      tag = "v16.0.11";
+    })
+    (fetchFromGitHub {
+      hash = "sha256-aTcwfQt2WdOA44jfHdD7x7oxt8emSDexgZnI7MPVqvU=";
+      name = "llvm-spirv";
+      owner = "KhronosGroup";
+      repo = "SPIRV-LLVM-Translator";
+      tag = "v16.0.24";
+    })
   ];
 
   passthru.tests = {
@@ -150,7 +149,7 @@ stdenv.mkDerivation rec {
     homepage = "https://github.com/intel/intel-graphics-compiler";
     changelog = "https://github.com/intel/intel-graphics-compiler/releases/tag/v${version}";
     license = lib.licenses.mit;
-    platforms = lib.platforms.linux;
     maintainers = with lib.maintainers; [ fleaz ];
+    platforms = lib.platforms.linux;
   };
 }

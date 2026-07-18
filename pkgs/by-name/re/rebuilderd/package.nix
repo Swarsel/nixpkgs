@@ -1,22 +1,22 @@
 {
   lib,
-  rustPlatform,
+  stdenv,
   fetchFromGitHub,
-  pkg-config,
-  shared-mime-info,
-  installShellFiles,
-  scdoc,
+  buildPackages,
   bzip2,
   cacert,
+  installShellFiles,
+  nix-update-script,
+  nixosTests,
   openssl,
+  pkg-config,
+  rustPlatform,
+  scdoc,
+  shared-mime-info,
   sqlite,
+  versionCheckHook,
   xz,
   zstd,
-  stdenv,
-  buildPackages,
-  versionCheckHook,
-  nixosTests,
-  nix-update-script,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -41,8 +41,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
       --replace-fail '/bin/echo' 'echo'
   '';
 
-  cargoHash = "sha256-se5u7+SF3fW5WqdUA3qmztUw5oPa0YXbgOp9GIVOQu0=";
-
   nativeBuildInputs = [
     pkg-config
     installShellFiles
@@ -57,6 +55,29 @@ rustPlatform.buildRustPackage (finalAttrs: {
     xz
     zstd
   ];
+
+  cargoHash = "sha256-se5u7+SF3fW5WqdUA3qmztUw5oPa0YXbgOp9GIVOQu0=";
+
+  checkFlags = [
+    # Failing tests
+    "--skip=decompress::tests::decompress_bzip2_compression"
+    "--skip=decompress::tests::decompress_gzip_compression"
+    "--skip=decompress::tests::decompress_xz_compression"
+    "--skip=decompress::tests::decompress_zstd_compression"
+    "--skip=decompress::tests::detect_bzip2_compression"
+    "--skip=decompress::tests::detect_gzip_compression"
+    "--skip=decompress::tests::detect_xz_compression"
+    "--skip=decompress::tests::detect_zstd_compression"
+    "--skip=proc::tests::hello_world"
+    "--skip=proc::tests::size_limit_kill"
+    "--skip=proc::tests::size_limit_no_kill"
+    "--skip=proc::tests::size_limit_no_kill_but_timeout"
+    "--skip=proc::tests::timeout"
+  ];
+
+  preCheck = ''
+    export SSL_CERT_FILE=${cacert.out}/etc/ssl/certs/ca-bundle.crt
+  '';
 
   postInstall =
     let
@@ -81,33 +102,13 @@ rustPlatform.buildRustPackage (finalAttrs: {
       done
     '';
 
-  preCheck = ''
-    export SSL_CERT_FILE=${cacert.out}/etc/ssl/certs/ca-bundle.crt
-  '';
-
-  __darwinAllowLocalNetworking = true;
-
-  checkFlags = [
-    # Failing tests
-    "--skip=decompress::tests::decompress_bzip2_compression"
-    "--skip=decompress::tests::decompress_gzip_compression"
-    "--skip=decompress::tests::decompress_xz_compression"
-    "--skip=decompress::tests::decompress_zstd_compression"
-    "--skip=decompress::tests::detect_bzip2_compression"
-    "--skip=decompress::tests::detect_gzip_compression"
-    "--skip=decompress::tests::detect_xz_compression"
-    "--skip=decompress::tests::detect_zstd_compression"
-    "--skip=proc::tests::hello_world"
-    "--skip=proc::tests::size_limit_kill"
-    "--skip=proc::tests::size_limit_no_kill"
-    "--skip=proc::tests::size_limit_no_kill_but_timeout"
-    "--skip=proc::tests::timeout"
-  ];
+  doInstallCheck = true;
 
   nativeInstallCheckInputs = [
     versionCheckHook
   ];
-  doInstallCheck = true;
+
+  __darwinAllowLocalNetworking = true;
 
   passthru.tests = {
     rebuilderd = nixosTests.rebuilderd;

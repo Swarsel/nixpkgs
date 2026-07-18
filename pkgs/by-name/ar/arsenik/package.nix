@@ -1,7 +1,7 @@
 {
   lib,
-  stdenvNoCC,
   fetchFromGitHub,
+  stdenvNoCC,
 }:
 
 stdenvNoCC.mkDerivation (finalAttrs: {
@@ -15,9 +15,6 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     hash = "sha256-qY+SRWvZoy3iwsoZbzN5+TVWNIe3WWXkUGu/9MT20AU=";
   };
 
-  dontConfigure = true;
-  dontBuild = true;
-
   installPhase = ''
     runHook preInstall
 
@@ -26,6 +23,9 @@ stdenvNoCC.mkDerivation (finalAttrs: {
 
     runHook postInstall
   '';
+
+  dontBuild = true;
+  dontConfigure = true;
 
   meta = {
     description = "33-key layout that works with all keyboards";

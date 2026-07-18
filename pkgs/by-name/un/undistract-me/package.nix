@@ -1,13 +1,13 @@
 {
   lib,
-  stdenvNoCC,
   fetchFromGitHub,
-  fetchpatch,
   coreutils,
+  fetchpatch,
   gnused,
   libnotify,
   pulseaudio,
   sound-theme-freedesktop,
+  stdenvNoCC,
   xprop,
 }:
 
@@ -27,8 +27,8 @@ stdenvNoCC.mkDerivation {
     #
     # See https://github.com/jml/undistract-me/pull/69
     (fetchpatch {
-      url = "https://github.com/jml/undistract-me/commit/2356ebbe8bf2bcb4b95af1ae2bcdc786ce7cc6e8.patch";
       sha256 = "sha256-Ij3OXTOnIQsYhKVmqjChhN1q4ASZ7waOkfQTTp5XfPo=";
+      url = "https://github.com/jml/undistract-me/commit/2356ebbe8bf2bcb4b95af1ae2bcdc786ce7cc6e8.patch";
     })
 
     # Fix showing notifications when using Wayland apps with XWayland
@@ -39,12 +39,10 @@ stdenvNoCC.mkDerivation {
     #
     # See https://github.com/jml/undistract-me/pull/71
     (fetchpatch {
-      url = "https://github.com/jml/undistract-me/commit/3f4ceaf5a4eba8e3cb02236c48247f87e3d1124f.patch";
       sha256 = "sha256-9AK9Jp3TXJ75Y+jwZXlwQ6j54FW1rOBddoktrm0VX68=";
+      url = "https://github.com/jml/undistract-me/commit/3f4ceaf5a4eba8e3cb02236c48247f87e3d1124f.patch";
     })
   ];
-
-  strictDeps = true;
 
   # Patch in dependencies. Can't use makeWrapper because the bash
   # functions will be sourced and invoked in a different environment
@@ -64,6 +62,8 @@ stdenvNoCC.mkDerivation {
         --replace xprop ${xprop}/bin/xprop
     done
   '';
+
+  strictDeps = true;
 
   installPhase = ''
     mkdir -p "$out/share/undistract-me" "$out/etc/profile.d" "$out/share/licenses/undistract-me"

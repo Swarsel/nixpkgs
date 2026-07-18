@@ -2,12 +2,12 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  pkg-config,
   cairo,
+  cpio,
+  libsndfile,
   libx11,
   lv2,
-  libsndfile,
-  cpio,
+  pkg-config,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -23,6 +23,7 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   nativeBuildInputs = [ pkg-config ];
+
   buildInputs = [
     cairo
     libx11
@@ -31,15 +32,14 @@ stdenv.mkDerivation (finalAttrs: {
     cpio
   ];
 
+  enableParallelBuilding = true;
   installFlags = [ "PREFIX=$(out)" ];
 
-  enableParallelBuilding = true;
-
   meta = {
-    homepage = "https://github.com/sjaehn/BChoppr";
     description = "Audio stream chopping LV2 plugin";
+    homepage = "https://github.com/sjaehn/BChoppr";
+    license = lib.licenses.gpl3Plus;
     maintainers = [ lib.maintainers.magnetophon ];
     platforms = lib.platforms.linux;
-    license = lib.licenses.gpl3Plus;
   };
 })

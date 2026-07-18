@@ -1,7 +1,7 @@
 {
   lib,
-  symlinkJoin,
   makeWrapper,
+  symlinkJoin,
 }:
 
 unwrapped:
@@ -16,10 +16,6 @@ if builtins.length mods == 0 then
   unwrapped
 else
   symlinkJoin {
-    name = unwrapped.name + "-with-mods";
-
-    paths = [ unwrapped ] ++ mods;
-
     nativeBuildInputs = [ makeWrapper ];
 
     postBuild = ''
@@ -47,4 +43,7 @@ else
           fi
       done
     '';
+
+    name = unwrapped.name + "-with-mods";
+    paths = [ unwrapped ] ++ mods;
   }

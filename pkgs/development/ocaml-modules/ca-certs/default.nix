@@ -1,17 +1,17 @@
 {
   lib,
-  buildDunePackage,
   fetchurl,
-  bos,
-  fpath,
-  ptime,
-  mirage-crypto,
-  x509,
-  astring,
-  logs,
-  cacert,
   alcotest,
+  astring,
+  bos,
+  buildDunePackage,
+  cacert,
   fmt,
+  fpath,
+  logs,
+  mirage-crypto,
+  ptime,
+  x509,
 }:
 
 buildDunePackage (finalAttrs: {
@@ -34,6 +34,7 @@ buildDunePackage (finalAttrs: {
   ];
 
   doCheck = true;
+
   checkInputs = [
     cacert # for /etc/ssl/certs/ca-bundle.crt
     alcotest
@@ -42,8 +43,8 @@ buildDunePackage (finalAttrs: {
 
   meta = {
     description = "Detect root CA certificates from the operating system";
-    maintainers = [ lib.maintainers.sternenseemann ];
-    license = lib.licenses.isc;
     homepage = "https://github.com/mirage/ca-certs";
+    license = lib.licenses.isc;
+    maintainers = [ lib.maintainers.sternenseemann ];
   };
 })

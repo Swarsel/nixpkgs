@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   pytestCheckHook,
   pyyaml,
 }:
@@ -9,7 +9,6 @@
 buildPythonPackage rec {
   pname = "python-i18n";
   version = "0.3.9";
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "danhper";
@@ -28,7 +27,9 @@ buildPythonPackage rec {
     pytestCheckHook
     pyyaml
   ];
+
   enabledTestPaths = [ "i18n/tests/run_tests.py" ];
+  format = "setuptools";
   pythonImportsCheck = [ "i18n" ];
 
   meta = {

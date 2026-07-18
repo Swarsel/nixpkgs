@@ -10,11 +10,11 @@ stdenv.mkDerivation (finalAttrs: {
   version = "15.3-1";
 
   src = fetchFromGitLab {
-    domain = "salsa.debian.org";
     owner = "debian";
     repo = "anarchism";
     rev = "debian/${finalAttrs.version}";
     sha256 = "04ylk0y5b3jml2awmyz7m1hnymni8y1n83m0k6ychdh0px8frhm5";
+    domain = "salsa.debian.org";
   };
 
   postPatch = ''
@@ -32,15 +32,17 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   meta = {
-    homepage = "https://www.anarchistfaq.org/";
-    changelog = "http://anarchism.pageabode.com/afaq/new.html";
     description = "Exhaustive exploration of Anarchist theory and practice";
+
     longDescription = ''
       The Anarchist FAQ is an excellent source of information regarding Anarchist
       (libertarian socialist) theory and practice. It covers all major topics,
       from the basics of Anarchism to very specific discussions of politics,
       social organization, and economics.
     '';
+
+    homepage = "https://www.anarchistfaq.org/";
+    changelog = "http://anarchism.pageabode.com/afaq/new.html";
     license = lib.licenses.gpl2Plus;
     maintainers = with lib.maintainers; [ davidak ];
     platforms = with lib.platforms; all;

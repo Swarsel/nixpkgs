@@ -23,17 +23,17 @@ buildGoModule (finalAttrs: {
 
   vendorHash = "sha256-l8eeeYv41yUPQ1dyJY4Jo3uvULrc1B/buGlMxYSdhCA=";
 
-  ldflags = [
-    "-s"
-    "-w"
-  ];
-
   postInstall = lib.optionalString (stdenv.buildPlatform.canExecute stdenv.hostPlatform) ''
     installShellCompletion --cmd ipam \
       --bash <($out/bin/ipam completion bash) \
       --fish <($out/bin/ipam completion fish) \
       --zsh <($out/bin/ipam completion zsh)
   '';
+
+  ldflags = [
+    "-s"
+    "-w"
+  ];
 
   meta = {
     description = "Cli based IPAM written in Go with PowerDNS support";

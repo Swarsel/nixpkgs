@@ -17,22 +17,22 @@ stdenv.mkDerivation (finalAttrs: {
     sha256 = "1nkwcw9fqf4vyrwidqi6by7nrmainkjqkirkz3yxmzk6kzwr38mi";
   };
 
-  prePatch = ''
-    # Don't change $PATH
-    substituteInPlace configure --replace PATH= NIRVANA=
-  '';
-
   buildInputs = [
     perlPackages.TextMarkdown
     python3.pkgs.pygments
   ];
 
+  prePatch = ''
+    # Don't change $PATH
+    substituteInPlace configure --replace PATH= NIRVANA=
+  '';
+
   meta = {
     description = "Quick-and-dirty, literate-programming-style documentation generator for / in POSIX shell";
-    mainProgram = "shocco";
     homepage = "https://rtomayko.github.io/shocco/";
     license = lib.licenses.mit;
-    platforms = lib.platforms.all;
     maintainers = with lib.maintainers; [ dotlambda ];
+    platforms = lib.platforms.all;
+    mainProgram = "shocco";
   };
 })

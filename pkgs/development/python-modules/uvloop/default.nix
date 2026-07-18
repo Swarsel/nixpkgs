@@ -1,26 +1,22 @@
 {
   lib,
   stdenv,
-  buildPythonPackage,
   fetchFromGitHub,
-
+  buildPythonPackage,
   # build-system
   cython,
-  setuptools_80,
-
   # native dependencies
   libuv,
-
   # tests
   psutil,
   pyopenssl,
   pytestCheckHook,
+  setuptools_80,
 }:
 
 buildPythonPackage rec {
   pname = "uvloop";
   version = "0.22.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "MagicStack";
@@ -36,19 +32,31 @@ buildPythonPackage rec {
       --replace-fail "use_system_libuv = False" "use_system_libuv = True"
   '';
 
-  build-system = [
-    cython
-    setuptools_80
-  ];
-
-  env.LIBUV_CONFIGURE_HOST = stdenv.hostPlatform.config;
-
   buildInputs = [ libuv ];
+  env.LIBUV_CONFIGURE_HOST = stdenv.hostPlatform.config;
 
   nativeCheckInputs = [
     pyopenssl
     pytestCheckHook
     psutil
+  ];
+
+  preCheck = ''
+    # force using installed/compiled uvloop
+    rm -rf uvloop
+  ''
+  + lib.optionalString stdenv.hostPlatform.isDarwin ''
+    # Work around "OSError: AF_UNIX path too long"
+    # https://github.com/MagicStack/uvloop/issues/463
+    export TMPDIR="/tmp"
+  '';
+
+  # Some of the tests use localhost networking.
+  __darwinAllowLocalNetworking = true;
+
+  build-system = [
+    cython
+    setuptools_80
   ];
 
   disabledTestPaths = [
@@ -86,28 +94,17 @@ buildPythonPackage rec {
     "tests/test_unix.py::Test_UV_UnixSSL"
   ];
 
-  preCheck = ''
-    # force using installed/compiled uvloop
-    rm -rf uvloop
-  ''
-  + lib.optionalString stdenv.hostPlatform.isDarwin ''
-    # Work around "OSError: AF_UNIX path too long"
-    # https://github.com/MagicStack/uvloop/issues/463
-    export TMPDIR="/tmp"
-  '';
+  pyproject = true;
 
   pythonImportsCheck = [
     "uvloop"
     "uvloop.loop"
   ];
 
-  # Some of the tests use localhost networking.
-  __darwinAllowLocalNetworking = true;
-
   meta = {
-    changelog = "https://github.com/MagicStack/uvloop/releases/tag/${src.tag}";
     description = "Fast implementation of asyncio event loop on top of libuv";
     homepage = "https://github.com/MagicStack/uvloop";
+    changelog = "https://github.com/MagicStack/uvloop/releases/tag/${src.tag}";
     license = lib.licenses.mit;
     maintainers = [ ];
   };

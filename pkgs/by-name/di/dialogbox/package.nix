@@ -1,6 +1,6 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
   libsForQt5,
 }:
@@ -37,12 +37,12 @@ stdenv.mkDerivation {
   '';
 
   meta = {
-    broken = stdenv.hostPlatform.isDarwin;
-    homepage = "https://github.com/martynets/dialogbox/";
     description = "Qt-based scriptable engine providing GUI dialog boxes";
+    homepage = "https://github.com/martynets/dialogbox/";
     license = lib.licenses.gpl3Plus;
     maintainers = [ ];
     platforms = lib.platforms.unix;
     mainProgram = "dialogbox";
+    broken = stdenv.hostPlatform.isDarwin;
   };
 }

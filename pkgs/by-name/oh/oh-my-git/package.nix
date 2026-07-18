@@ -1,16 +1,17 @@
 {
   lib,
+  stdenv,
+  fetchFromGitHub,
+  alsa-lib,
   autoPatchelfHook,
   copyDesktopItems,
-  fetchFromGitHub,
-  makeDesktopItem,
-  stdenv,
-  alsa-lib,
   gcc-unwrapped,
   git,
   godot3-export-templates,
   godot3-headless,
   libGLU,
+  libglvnd,
+  libpulseaudio,
   libx11,
   libxcursor,
   libxext,
@@ -19,11 +20,10 @@
   libxinerama,
   libxrandr,
   libxrender,
-  libglvnd,
-  libpulseaudio,
+  makeDesktopItem,
   perl,
-  zlib,
   udev, # for libudev
+  zlib,
 }:
 
 stdenv.mkDerivation rec {
@@ -36,6 +36,13 @@ stdenv.mkDerivation rec {
     rev = version;
     sha256 = "sha256-XqxliMVU55D5JSt7Yo5btvZnnTlagSukyhXv6Akgklo=";
   };
+
+  # patch shebangs so that e.g. the fake-editor script works:
+  # error: /usr/bin/env 'perl': No such file or directory
+  # error: There was a problem with the editor
+  postPatch = ''
+    patchShebangs scripts
+  '';
 
   nativeBuildInputs = [
     autoPatchelfHook
@@ -62,25 +69,6 @@ stdenv.mkDerivation rec {
     zlib
     udev
   ];
-
-  desktopItems = [
-    (makeDesktopItem {
-      name = "oh-my-git";
-      exec = "oh-my-git";
-      icon = "oh-my-git";
-      desktopName = "oh-my-git";
-      comment = "An interactive Git learning game!";
-      genericName = "An interactive Git learning game!";
-      categories = [ "Game" ];
-    })
-  ];
-
-  # patch shebangs so that e.g. the fake-editor script works:
-  # error: /usr/bin/env 'perl': No such file or directory
-  # error: There was a problem with the editor
-  postPatch = ''
-    patchShebangs scripts
-  '';
 
   buildPhase = ''
     runHook preBuild
@@ -119,6 +107,18 @@ stdenv.mkDerivation rec {
     runHook postInstall
   '';
 
+  desktopItems = [
+    (makeDesktopItem {
+      categories = [ "Game" ];
+      comment = "An interactive Git learning game!";
+      desktopName = "oh-my-git";
+      exec = "oh-my-git";
+      genericName = "An interactive Git learning game!";
+      icon = "oh-my-git";
+      name = "oh-my-git";
+    })
+  ];
+
   runtimeDependencies = map lib.getLib [
     alsa-lib
     libpulseaudio
@@ -126,11 +126,11 @@ stdenv.mkDerivation rec {
   ];
 
   meta = {
-    homepage = "https://ohmygit.org/";
     description = "Interactive Git learning game";
-    mainProgram = "oh-my-git";
+    homepage = "https://ohmygit.org/";
     license = with lib.licenses; [ blueOak100 ];
-    platforms = [ "x86_64-linux" ];
     maintainers = with lib.maintainers; [ jojosch ];
+    platforms = [ "x86_64-linux" ];
+    mainProgram = "oh-my-git";
   };
 }

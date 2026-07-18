@@ -1,25 +1,21 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
+  buildPythonPackage,
   # build-system
   flit-core,
-
   # dependencies
   markdown-it-py,
   mdformat,
   mdit-py-plugins,
-  wcwidth,
-
   # tests
   pytestCheckHook,
+  wcwidth,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "mdformat-gfm";
   version = "1.0.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "hukkin";
@@ -27,6 +23,8 @@ buildPythonPackage (finalAttrs: {
     tag = finalAttrs.version;
     hash = "sha256-Vijt5P3KRL4jkU8AI2lAsJkvFne/l3utUkjHUs8PQHI=";
   };
+
+  nativeCheckInputs = [ pytestCheckHook ];
 
   build-system = [
     flit-core
@@ -39,8 +37,7 @@ buildPythonPackage (finalAttrs: {
     wcwidth
   ];
 
-  nativeCheckInputs = [ pytestCheckHook ];
-
+  pyproject = true;
   pythonImportsCheck = [ "mdformat_gfm" ];
 
   meta = {
@@ -48,6 +45,7 @@ buildPythonPackage (finalAttrs: {
     homepage = "https://github.com/hukkin/mdformat-gfm";
     changelog = "https://github.com/hukkin/mdformat-gfm/blob/${finalAttrs.src.tag}/CHANGELOG.md";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       aldoborrero
       polarmutex

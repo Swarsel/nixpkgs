@@ -1,7 +1,7 @@
 {
   lib,
-  version,
   targetPrefix,
+  version,
 }:
 
 let
@@ -14,9 +14,11 @@ let
     ;
 in
 {
-  homepage = "https://gcc.gnu.org/";
-  license = licenses.gpl3Plus; # runtime support libraries are typically LGPLv3+
   description = "GNU Compiler Collection, version ${version}";
+  homepage = "https://gcc.gnu.org/";
+  identifiers.cpeParts = lib.meta.cpeFullVersionWithVendor "gnu" version;
+  license = licenses.gpl3Plus; # runtime support libraries are typically LGPLv3+
+
   longDescription = ''
     The GNU Compiler Collection includes compiler front ends for C, C++,
     Objective-C, Fortran, OpenMP for C/C++/Fortran, and Ada, as well as
@@ -26,12 +28,11 @@ in
     compiler used in the GNU system including the GNU/Linux variant.
   '';
 
+  mainProgram = "${targetPrefix}gcc";
   platforms = platforms.unix;
+
   teams = [
     teams.gcc
     teams.security-review
   ];
-  mainProgram = "${targetPrefix}gcc";
-
-  identifiers.cpeParts = lib.meta.cpeFullVersionWithVendor "gnu" version;
 }

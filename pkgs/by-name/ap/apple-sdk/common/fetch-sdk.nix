@@ -6,16 +6,14 @@
 }:
 
 {
+  hash,
   urls,
   version,
-  hash,
 }:
 
 fetchurl {
-  pname = "macOS-SDK";
   inherit version urls hash;
-
-  recursiveHash = true;
+  pname = "macOS-SDK";
 
   nativeBuildInputs = [
     cpio
@@ -35,4 +33,6 @@ fetchurl {
     mkdir -p "$out"
     cp -rd $src/* "$out"
   '';
+
+  recursiveHash = true;
 }

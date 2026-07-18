@@ -3,29 +3,21 @@
   appimageTools,
   lndir,
   pname,
-  version,
   sha256,
+  version,
   metaCommon ? { },
 }:
 
 let
   src = fetchurl {
+    inherit sha256;
     url = "https://github.com/sindresorhus/caprine/releases/download/v${version}/Caprine-${version}.AppImage";
     name = "Caprine-${version}.AppImage";
-    inherit sha256;
   };
   extracted = appimageTools.extractType2 { inherit pname version src; };
 in
 (appimageTools.wrapType2 {
   inherit pname version src;
-
-  passthru = {
-    inherit pname version src;
-  };
-
-  profile = ''
-    export LC_ALL=C.UTF-8
-  '';
 
   extraInstallCommands = ''
     mkdir -p $out/share
@@ -36,6 +28,14 @@ in
     substituteInPlace $out/share/applications/caprine.desktop \
         --replace AppRun caprine
   '';
+
+  profile = ''
+    export LC_ALL=C.UTF-8
+  '';
+
+  passthru = {
+    inherit pname version src;
+  };
 
   meta = metaCommon // {
     platforms = [ "x86_64-linux" ];

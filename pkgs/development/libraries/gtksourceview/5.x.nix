@@ -2,41 +2,41 @@
   lib,
   stdenv,
   fetchurl,
-  meson,
-  ninja,
-  pkg-config,
-  glib,
-  pcre2,
-  gtk4,
-  pango,
+  dbus,
   fribidi,
-  vala,
-  gi-docgen,
-  libxml2,
-  perl,
   gettext,
+  gi-docgen,
+  glib,
   gnome,
   gobject-introspection,
-  dbus,
-  xvfb-run,
+  gtk4,
+  libxml2,
+  meson,
+  ninja,
+  pango,
+  pcre2,
+  perl,
+  pkg-config,
   shared-mime-info,
   testers,
+  vala,
+  xvfb-run,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
   pname = "gtksourceview";
   version = "5.20.0";
 
+  src = fetchurl {
+    url = "mirror://gnome/sources/gtksourceview/${lib.versions.majorMinor finalAttrs.version}/gtksourceview-${finalAttrs.version}.tar.xz";
+    hash = "sha256-44vNI/UrhurfD+TYveaY46jKECMiuLTPGlGsKUpEjBs=";
+  };
+
   outputs = [
     "out"
     "dev"
     "devdoc"
   ];
-
-  src = fetchurl {
-    url = "mirror://gnome/sources/gtksourceview/${lib.versions.majorMinor finalAttrs.version}/gtksourceview-${finalAttrs.version}.tar.xz";
-    hash = "sha256-44vNI/UrhurfD+TYveaY46jKECMiuLTPGlGsKUpEjBs=";
-  };
 
   patches = [
     # By default, the library loads syntaxes from XDG_DATA_DIRS and user directory
@@ -72,16 +72,16 @@ stdenv.mkDerivation (finalAttrs: {
     shared-mime-info
   ];
 
-  nativeCheckInputs = [
-    xvfb-run
-    dbus
-  ];
-
   mesonFlags = [
     "-Ddocumentation=true"
   ];
 
   doCheck = stdenv.hostPlatform.isLinux;
+
+  nativeCheckInputs = [
+    xvfb-run
+    dbus
+  ];
 
   checkPhase = ''
     runHook preCheck
@@ -103,8 +103,8 @@ stdenv.mkDerivation (finalAttrs: {
 
   passthru = {
     updateScript = gnome.updateScript {
-      packageName = "gtksourceview";
       attrPath = "gtksourceview5";
+      packageName = "gtksourceview";
       versionPolicy = "odd-unstable";
     };
   };
@@ -114,9 +114,9 @@ stdenv.mkDerivation (finalAttrs: {
   meta = {
     description = "Source code editing widget for GTK";
     homepage = "https://gitlab.gnome.org/GNOME/gtksourceview";
-    pkgConfigModules = [ "gtksourceview-5" ];
-    platforms = lib.platforms.unix;
     license = lib.licenses.lgpl21Plus;
+    platforms = lib.platforms.unix;
+    pkgConfigModules = [ "gtksourceview-5" ];
     teams = [ lib.teams.gnome ];
   };
 })

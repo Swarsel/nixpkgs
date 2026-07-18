@@ -1,19 +1,19 @@
 # This combines together OCF definitions from other derivations.
 # https://github.com/ClusterLabs/resource-agents/blob/master/doc/dev-guides/ra-dev-guide.asc
 {
-  stdenv,
   lib,
-  runCommand,
-  lndir,
+  stdenv,
   fetchFromGitHub,
-  fetchpatch,
   autoreconfHook,
   bashNonInteractive,
+  drbd,
+  fetchpatch,
+  glib,
+  lndir,
+  pacemaker,
   pkg-config,
   python3,
-  glib,
-  drbd,
-  pacemaker,
+  runCommand,
 }:
 
 let
@@ -39,11 +39,13 @@ let
       # autoconf-2.72 upstream fix:
       #   https://github.com/ClusterLabs/resource-agents/pull/1908
       (fetchpatch {
+        hash = "sha256-Xq7W8pMRmFZmkqb2430bY5zdmVTrUrob6GwGiN6/bKY=";
         name = "autoconf-2.72.patch";
         url = "https://github.com/ClusterLabs/resource-agents/commit/bac658711a61fd704e792e2a0a45a2137213c442.patch";
-        hash = "sha256-Xq7W8pMRmFZmkqb2430bY5zdmVTrUrob6GwGiN6/bKY=";
       })
     ];
+
+    strictDeps = true;
 
     nativeBuildInputs = [
       autoreconfHook
@@ -56,8 +58,6 @@ let
       glib
     ];
 
-    strictDeps = true;
-
     env.NIX_CFLAGS_COMPILE = toString (
       lib.optionals (stdenv.cc.isGNU && lib.versionAtLeast stdenv.cc.version "12") [
         # Needed with GCC 12 but breaks on darwin (with clang) or older gcc
@@ -66,14 +66,16 @@ let
     );
 
     meta = {
-      homepage = "https://github.com/ClusterLabs/resource-agents";
       description = "Combined repository of OCF agents from the RHCS and Linux-HA projects";
+      homepage = "https://github.com/ClusterLabs/resource-agents";
       license = lib.licenses.gpl2Plus;
-      platforms = lib.platforms.linux;
+
       maintainers = with lib.maintainers; [
         ryantm
         astro
       ];
+
+      platforms = lib.platforms.linux;
     };
   });
 

@@ -11,12 +11,11 @@
 buildPythonPackage (finalAttrs: {
   pname = "pytest-metadata";
   version = "3.1.1";
-  pyproject = true;
 
   src = fetchPypi {
-    pname = "pytest_metadata";
     inherit (finalAttrs) version;
     hash = "sha256-0qKbA1X7wD8WiqltQf+IsaO0SjsCrL5JGAHJigSAF8g=";
+    pname = "pytest_metadata";
   };
 
   nativeBuildInputs = [
@@ -25,8 +24,8 @@ buildPythonPackage (finalAttrs: {
   ];
 
   buildInputs = [ pytest ];
-
   nativeCheckInputs = [ pytestCheckHook ];
+  pyproject = true;
 
   meta = {
     description = "Plugin for accessing test session metadata";

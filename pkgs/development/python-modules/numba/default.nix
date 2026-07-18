@@ -2,48 +2,44 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  buildPythonPackage,
-  replaceVars,
-
-  # nativeBuildInputs
-  setuptools,
-
-  # dependencies
-  llvmlite,
-  numpy,
-
-  # tests
-  numba,
-  pytestCheckHook,
-  pytest-xdist,
-  writableTmpDirAsHomeHook,
-  writers,
-  python,
-
   # CUDA-only dependencies:
   addDriverRunpath,
   autoAddDriverRunpath,
-  cudaPackages,
-
+  buildPythonPackage,
   # CUDA flags:
   config,
+  cudaPackages,
+  # dependencies
+  llvmlite,
+  # tests
+  numba,
+  numpy,
+  pytest-xdist,
+  pytestCheckHook,
+  python,
+  replaceVars,
+  # nativeBuildInputs
+  setuptools,
+  writableTmpDirAsHomeHook,
+  writers,
   cudaSupport ? config.cudaSupport,
-  testsWithoutSandbox ? false,
   doFullCheck ? false,
+  testsWithoutSandbox ? false,
 }:
 
 let
   cudatoolkit = cudaPackages.cuda_nvcc;
 in
 buildPythonPackage (finalAttrs: {
-  version = "0.65.1";
   pname = "numba";
-  pyproject = true;
+  version = "0.65.1";
 
   src = fetchFromGitHub {
     owner = "numba";
     repo = "numba";
     tag = finalAttrs.version;
+    hash = "sha256-DMmUyTElDFyMK4BUQ4EhDNmG43lOWQHurKbnSyhAs5k=";
+
     # Upstream uses .gitattributes to inject information about the revision
     # hash and the refname into `numba/_version.py`, see:
     #
@@ -52,7 +48,6 @@ buildPythonPackage (finalAttrs: {
     postFetch = ''
       sed -i 's/git_refnames = "[^"]*"/git_refnames = " (tag: ${finalAttrs.src.tag})"/' $out/numba/_version.py
     '';
-    hash = "sha256-DMmUyTElDFyMK4BUQ4EhDNmG43lOWQHurKbnSyhAs5k=";
   };
 
   patches = [
@@ -60,8 +55,8 @@ buildPythonPackage (finalAttrs: {
   ]
   ++ lib.optionals cudaSupport [
     (replaceVars ./cuda_path.patch {
-      cuda_toolkit_path = cudatoolkit;
       cuda_toolkit_lib_path = lib.getLib cudatoolkit;
+      cuda_toolkit_path = cudatoolkit;
     })
   ];
 
@@ -77,26 +72,12 @@ buildPythonPackage (finalAttrs: {
       --replace-fail "(2, 4)" "(2, 6)"
   '';
 
-  build-system = [
-    setuptools
-    numpy
-  ];
-
   nativeBuildInputs = lib.optionals cudaSupport [
     autoAddDriverRunpath
     cudaPackages.cuda_nvcc
   ];
 
   buildInputs = lib.optionals cudaSupport [ cudaPackages.cuda_cudart ];
-
-  pythonRelaxDeps = [
-    "numpy"
-  ];
-
-  dependencies = [
-    numpy
-    llvmlite
-  ];
 
   nativeCheckInputs = [
     pytestCheckHook
@@ -109,6 +90,26 @@ buildPythonPackage (finalAttrs: {
     cd $out
   '';
 
+  build-system = [
+    setuptools
+    numpy
+  ];
+
+  dependencies = [
+    numpy
+    llvmlite
+  ];
+
+  disabledTestPaths = lib.optionals (!testsWithoutSandbox) [
+    # See NOTE near passthru.tests.withoutSandbox
+    "${python.sitePackages}/numba/cuda/tests"
+  ];
+
+  disabledTests = lib.optionals (stdenv.hostPlatform.isLinux && stdenv.hostPlatform.isAarch64) [
+    # captured stderr: Fatal Python error: Segmentation fault
+    "test_sum1d_pyobj"
+  ];
+
   enabledTestPaths =
     if doFullCheck then
       null
@@ -120,17 +121,12 @@ buildPythonPackage (finalAttrs: {
         "${python.sitePackages}/numba/tests/test_usecases.py"
       ];
 
-  disabledTests = lib.optionals (stdenv.hostPlatform.isLinux && stdenv.hostPlatform.isAarch64) [
-    # captured stderr: Fatal Python error: Segmentation fault
-    "test_sum1d_pyobj"
-  ];
-
-  disabledTestPaths = lib.optionals (!testsWithoutSandbox) [
-    # See NOTE near passthru.tests.withoutSandbox
-    "${python.sitePackages}/numba/cuda/tests"
-  ];
-
+  pyproject = true;
   pythonImportsCheck = [ "numba" ];
+
+  pythonRelaxDeps = [
+    "numpy"
+  ];
 
   passthru.testers.cuda-detect =
     writers.writePython3Bin "numba-cuda-detect"
@@ -139,26 +135,28 @@ buildPythonPackage (finalAttrs: {
         from numba import cuda
         cuda.detect()
       '';
+
   passthru.tests = {
-    # CONTRIBUTOR NOTE: numba also contains CUDA tests, though these cannot be run in
-    # this sandbox environment. Consider building the derivation below with
-    # --no-sandbox to get a view of how many tests succeed outside the sandbox.
-    withoutSandbox = numba.override {
-      doFullCheck = true;
-      cudaSupport = true;
-      testsWithoutSandbox = true;
-    };
     withSandbox = numba.override {
       cudaSupport = false;
       doFullCheck = true;
       testsWithoutSandbox = false;
     };
+
+    # CONTRIBUTOR NOTE: numba also contains CUDA tests, though these cannot be run in
+    # this sandbox environment. Consider building the derivation below with
+    # --no-sandbox to get a view of how many tests succeed outside the sandbox.
+    withoutSandbox = numba.override {
+      cudaSupport = true;
+      doFullCheck = true;
+      testsWithoutSandbox = true;
+    };
   };
 
   meta = {
-    changelog = "https://numba.readthedocs.io/en/stable/release/${finalAttrs.version}-notes.html";
     description = "Compiling Python code using LLVM";
     homepage = "https://numba.pydata.org/";
+    changelog = "https://numba.readthedocs.io/en/stable/release/${finalAttrs.version}-notes.html";
     license = lib.licenses.bsd2;
     mainProgram = "numba";
   };

@@ -1,12 +1,12 @@
 {
-  asar,
   lib,
   stdenv,
   fetchurl,
-  makeWrapper,
+  _7zz,
+  asar,
   dpkg,
   electron,
-  _7zz,
+  makeWrapper,
 }:
 let
   mainProgram = "proton-mail";
@@ -15,24 +15,22 @@ let
   darwinHash = "sha256-C0URhmxcbQfP8uMe8nRuUx5f0JL0BMvvrWFfXHCVR90=";
 in
 stdenv.mkDerivation {
-  pname = "protonmail-desktop";
   inherit version;
+  pname = "protonmail-desktop";
 
   src =
     {
-      "x86_64-linux" = fetchurl {
-        url = "https://proton.me/download/mail/linux/${version}/ProtonMail-desktop-beta.deb";
-        hash = linuxHash;
-      };
       "aarch64-darwin" = fetchurl {
-        url = "https://proton.me/download/mail/macos/${version}/ProtonMail-desktop.dmg";
         hash = darwinHash;
+        url = "https://proton.me/download/mail/macos/${version}/ProtonMail-desktop.dmg";
+      };
+
+      "x86_64-linux" = fetchurl {
+        hash = linuxHash;
+        url = "https://proton.me/download/mail/linux/${version}/ProtonMail-desktop-beta.deb";
       };
     }
     ."${stdenv.hostPlatform.system}" or (throw "Unsupported system: ${stdenv.hostPlatform.system}");
-
-  dontConfigure = true;
-  dontBuild = true;
 
   nativeBuildInputs =
     lib.optionals stdenv.hostPlatform.isLinux [
@@ -79,22 +77,25 @@ stdenv.mkDerivation {
       --inherit-argv0
   '';
 
+  dontBuild = true;
+  dontConfigure = true;
   passthru.updateScript = ./update.sh;
 
   meta = {
+    inherit mainProgram;
     description = "Desktop application for Mail and Calendar, made with Electron";
     homepage = "https://github.com/ProtonMail/WebClients";
     license = lib.licenses.gpl3Plus;
+    sourceProvenance = [ lib.sourceTypes.binaryNativeCode ];
+
     maintainers = with lib.maintainers; [
       rsniezek
       matteopacini
     ];
+
     platforms = [
       "x86_64-linux"
     ]
     ++ lib.platforms.darwin;
-    sourceProvenance = [ lib.sourceTypes.binaryNativeCode ];
-
-    inherit mainProgram;
   };
 }

@@ -15,10 +15,11 @@ stdenv.mkDerivation (finalAttrs: {
     sha256 = "sha256-Cze+wgmMKtaVt0Q+XXlE3G3IKE+NAfzDC9uU3QM8ojo=";
   };
 
+  nativeBuildInputs = [ makeWrapper ];
+
   buildInputs = [
     flex
   ];
-  nativeBuildInputs = [ makeWrapper ];
 
   configureFlags = [
     # register keyword is removed in c++17 so stick to c++14
@@ -32,8 +33,8 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "GNU Chess engine";
+    license = lib.licenses.gpl3Plus;
     maintainers = with lib.maintainers; [ raskin ];
     platforms = lib.platforms.unix;
-    license = lib.licenses.gpl3Plus;
   };
 })

@@ -1,16 +1,15 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
+  flit-core,
   pytestCheckHook,
   requests,
-  flit-core,
 }:
 
 buildPythonPackage rec {
   pname = "asgineer";
   version = "0.9.5";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "almarklein";
@@ -19,13 +18,13 @@ buildPythonPackage rec {
     hash = "sha256-8qI5eHt+UmQGZNCn12Iup9dIVd+aI6r3Z1R+u+SziMc=";
   };
 
-  build-system = [ flit-core ];
-
   nativeCheckInputs = [
     pytestCheckHook
     requests
   ];
 
+  build-system = [ flit-core ];
+  pyproject = true;
   pythonImportsCheck = [ "asgineer" ];
 
   meta = {

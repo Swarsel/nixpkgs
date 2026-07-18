@@ -15,9 +15,9 @@ buildGoModule (finalAttrs: {
     rev = "v${finalAttrs.version}";
     hash = "sha256-Q0TMSomLDDivfDD4bDeirEpzRUuoJkC0Ph3XIhJ/dYw=";
   };
-  vendorHash = "sha256-YqduGY9c4zRQscjqze3ZOAB8EYj+0/6V7NceRwLe3DY=";
 
   buildInputs = [ sqlite ];
+  vendorHash = "sha256-YqduGY9c4zRQscjqze3ZOAB8EYj+0/6V7NceRwLe3DY=";
 
   buildPhase = ''
     runHook preBuild
@@ -34,6 +34,7 @@ buildGoModule (finalAttrs: {
 
   meta = {
     description = "GTFS to SQLite import utility";
+
     longDescription = ''
       Mobsql is a Go library and command-line application
       which facilitates loading one or multiple Mobility Database
@@ -42,10 +43,11 @@ buildGoModule (finalAttrs: {
       to each table (thus allowing multiple feeds to be loaded
       to the database simulatenously).
     '';
+
     homepage = "https://git.sr.ht/~mil/mobsql";
     license = lib.licenses.gpl3Plus;
     maintainers = [ lib.maintainers.McSinyx ];
-    mainProgram = "mobsql";
     platforms = lib.platforms.unix;
+    mainProgram = "mobsql";
   };
 })

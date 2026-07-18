@@ -1,14 +1,12 @@
 {
-  system,
   bootstrapFiles,
   extraAttrs,
+  system,
 }:
 
 derivation (
   {
-    name = "bootstrap-tools";
-
-    builder = bootstrapFiles.busybox;
+    inherit system;
 
     args = [
       "ash"
@@ -16,14 +14,8 @@ derivation (
       ./glibc/unpack-bootstrap-tools.sh
     ];
 
-    tarball = bootstrapFiles.bootstrapTools;
+    builder = bootstrapFiles.busybox;
 
-    inherit system;
-
-    # Needed by the GCC wrapper.
-    langC = true;
-    langCC = true;
-    isGNU = true;
     hardeningUnsupportedFlags = [
       "fortify3"
       "shadowstack"
@@ -32,6 +24,13 @@ derivation (
       "trivialautovarinit"
       "zerocallusedregs"
     ];
+
+    isGNU = true;
+    # Needed by the GCC wrapper.
+    langC = true;
+    langCC = true;
+    name = "bootstrap-tools";
+    tarball = bootstrapFiles.bootstrapTools;
   }
   // extraAttrs
 )

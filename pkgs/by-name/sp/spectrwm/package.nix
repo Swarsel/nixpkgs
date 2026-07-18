@@ -2,19 +2,19 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  libbsd,
-  pkg-config,
-  libxrandr,
-  libxcursor,
-  libxft,
-  libxt,
-  libxcb-util,
-  libxcb-keysyms,
-  libxcb-wm,
-  writeShellScript,
   curl,
   jq,
+  libbsd,
+  libxcb-keysyms,
+  libxcb-util,
+  libxcb-wm,
+  libxcursor,
+  libxft,
+  libxrandr,
+  libxt,
   nix-update,
+  pkg-config,
+  writeShellScript,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -29,6 +29,7 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   nativeBuildInputs = [ pkg-config ];
+
   buildInputs = [
     libxrandr
     libxcursor
@@ -40,9 +41,8 @@ stdenv.mkDerivation (finalAttrs: {
     libbsd
   ];
 
-  sourceRoot = finalAttrs.src.name + (if stdenv.hostPlatform.isDarwin then "/osx" else "/linux");
-
   makeFlags = [ "PREFIX=${placeholder "out"}" ];
+  sourceRoot = finalAttrs.src.name + (if stdenv.hostPlatform.isDarwin then "/osx" else "/linux");
 
   passthru.updateScript = writeShellScript "update-spectrwm" ''
     latestVersion=$(${lib.getExe curl} ''${GITHUB_TOKEN:+-u ":$GITHUB_TOKEN"} --silent --fail --location https://api.github.com/repos/conformal/spectrwm/releases/latest | ${lib.getExe jq} --raw-output .tag_name | grep -oP '\d+' | paste -sd.)
@@ -51,12 +51,6 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Tiling window manager";
-    homepage = "https://github.com/conformal/spectrwm";
-    maintainers = with lib.maintainers; [
-      rake5k
-    ];
-    license = lib.licenses.isc;
-    platforms = lib.platforms.all;
 
     longDescription = ''
       spectrwm is a small dynamic tiling window manager for X11. It
@@ -66,6 +60,15 @@ stdenv.mkDerivation (finalAttrs: {
       configuration. It was written by hackers for hackers and it
       strives to be small, compact and fast.
     '';
+
+    homepage = "https://github.com/conformal/spectrwm";
+    license = lib.licenses.isc;
+
+    maintainers = with lib.maintainers; [
+      rake5k
+    ];
+
+    platforms = lib.platforms.all;
   };
 
 })

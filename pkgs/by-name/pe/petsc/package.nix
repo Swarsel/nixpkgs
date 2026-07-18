@@ -1,62 +1,58 @@
 {
   lib,
-  newScope,
   stdenv,
-  fetchzip,
   bash,
-  pkg-config,
-  gfortran,
   bison,
-  mpi, # generic mpi dependency
-  mpiCheckPhaseHook,
-  python3Packages,
-
-  # Build options
-  debug ? false,
-  scalarType ? "real",
-  precision ? "double",
-  mpiSupport ? true,
-  fortranSupport ? true,
-  pythonSupport ? false, # petsc python binding
-  withExamples ? false,
-  withFullDeps ? false, # full External libraries support
-  withCommonDeps ? true, # common External libraries support
-
-  # External libraries options
-  withHdf5 ? withCommonDeps,
-  withMetis ? withCommonDeps,
-  withZlib ? (withP4est || withPtScotch),
-  withScalapack ? withCommonDeps && mpiSupport,
-  withParmetis ? withFullDeps, # parmetis is unfree
-  withPtScotch ? withCommonDeps && mpiSupport,
-  withMumps ? withCommonDeps,
-  withP4est ? withFullDeps,
-  withHypre ? withCommonDeps && mpiSupport,
-  withFftw ? withCommonDeps,
-  withSuperLu ? withCommonDeps,
-  withSuperLuDist ? withCommonDeps && mpiSupport,
-  withSuitesparse ? withCommonDeps,
-
   # External libraries
   blas,
-  lapack,
-  hdf5,
-  metis,
-  parmetis,
-  scotch,
-  scalapack,
-  mumps,
-  p4est,
-  zlib, # propagated by p4est but required by petsc
-  hypre,
+  fetchzip,
   fftw,
-  superlu,
-  superlu_dist,
-  suitesparse,
-
+  gfortran,
+  hdf5,
+  hypre,
+  lapack,
+  metis,
+  mpi, # generic mpi dependency
+  mpiCheckPhaseHook,
+  mpich,
+  mumps,
+  newScope,
+  p4est,
+  parmetis,
   # Used in passthru.tests
   petsc,
-  mpich,
+  pkg-config,
+  python3Packages,
+  scalapack,
+  scotch,
+  suitesparse,
+  superlu,
+  superlu_dist,
+  zlib, # propagated by p4est but required by petsc
+  # Build options
+  debug ? false,
+  fortranSupport ? true,
+  mpiSupport ? true,
+  precision ? "double",
+  pythonSupport ? false, # petsc python binding
+  scalarType ? "real",
+  withCommonDeps ? true, # common External libraries support
+  withExamples ? false,
+  withFftw ? withCommonDeps,
+  withFullDeps ? false, # full External libraries support
+  # External libraries options
+  withHdf5 ? withCommonDeps,
+  withHypre ? withCommonDeps && mpiSupport,
+  withMetis ? withCommonDeps,
+  withMumps ? withCommonDeps,
+  withP4est ? withFullDeps,
+  withParmetis ? withFullDeps, # parmetis is unfree
+  withPtScotch ? withCommonDeps && mpiSupport,
+  withScalapack ? withCommonDeps && mpiSupport,
+  withSuitesparse ? withCommonDeps,
+  withSuperLu ? withCommonDeps,
+  withSuperLuDist ? withCommonDeps && mpiSupport,
+  withZlib ? (withP4est || withPtScotch),
 }:
 assert withFullDeps -> withCommonDeps;
 
@@ -84,27 +80,29 @@ let
       precision
       withPtScotch
       ;
-    enableMpi = self.mpiSupport;
 
-    petscPackages = self;
     # external libraries
     blas = self.callPackage blas.override { };
-    lapack = self.callPackage lapack.override { };
+    enableMpi = self.mpiSupport;
+    fftw = self.callPackage fftw.override { };
+
     hdf5 = self.callPackage hdf5.override {
-      fortran = gfortran;
       cppSupport = !mpiSupport;
+      fortran = gfortran;
     };
+
+    hypre = self.callPackage hypre.override { };
+    lapack = self.callPackage lapack.override { };
     metis = self.callPackage metis.override { };
-    parmetis = self.callPackage parmetis.override { };
-    scotch = self.callPackage scotch.override { };
-    scalapack = self.callPackage scalapack.override { };
     mumps = self.callPackage mumps.override { };
     p4est = self.callPackage p4est.override { };
-    hypre = self.callPackage hypre.override { };
-    fftw = self.callPackage fftw.override { };
+    parmetis = self.callPackage parmetis.override { };
+    petscPackages = self;
+    scalapack = self.callPackage scalapack.override { };
+    scotch = self.callPackage scotch.override { };
+    suitesparse = self.callPackage suitesparse.override { };
     superlu = self.callPackage superlu.override { };
     superlu_dist = self.callPackage superlu_dist.override { };
-    suitesparse = self.callPackage suitesparse.override { };
   });
 in
 stdenv.mkDerivation (finalAttrs: {
@@ -197,10 +195,6 @@ stdenv.mkDerivation (finalAttrs: {
   ++ lib.optional withFftw "--with-fftw=1"
   ++ lib.optional withSuitesparse "--with-suitesparse=1";
 
-  installTargets = [ (if withExamples then "install" else "install-lib") ];
-
-  enableParallelBuilding = true;
-
   # Ensure petscvariables contains absolute paths for compilers and flags so that downstream
   # packages relying on PETSc's runtime configuration (e.g. form compilers, code generators)
   # can correctly compile and link generated code
@@ -223,14 +217,23 @@ stdenv.mkDerivation (finalAttrs: {
     ) finalAttrs.buildInputs
   );
 
-  __darwinAllowLocalNetworking = true;
-
   # This is needed as the checks need to compile and link the test cases with
   # -lpetsc, which is not available in the checkPhase, which is executed before
   # the installPhase. The installCheckPhase comes after the installPhase, so
   # the library is installed and available.
   doInstallCheck = true;
-  installCheckTarget = "check_install";
+
+  nativeInstallCheckInputs = [
+    mpiCheckPhaseHook
+  ]
+  ++ lib.optionals pythonSupport [
+    python3Packages.pythonImportsCheckHook
+    python3Packages.unittestCheckHook
+  ];
+
+  __darwinAllowLocalNetworking = true;
+  enableParallelBuilding = true;
+
   # check_install is defined in PETSc's top-level makefile. Select it directly
   # instead of the default GNUmakefile wrapper, then check the installed prefix
   # by pointing PETSC_DIR at $out. PETSC_ARCH must be empty for prefix installs,
@@ -242,13 +245,10 @@ stdenv.mkDerivation (finalAttrs: {
     "PETSC_ARCH="
   ];
 
-  nativeInstallCheckInputs = [
-    mpiCheckPhaseHook
-  ]
-  ++ lib.optionals pythonSupport [
-    python3Packages.pythonImportsCheckHook
-    python3Packages.unittestCheckHook
-  ];
+  installCheckTarget = "check_install";
+  installTargets = [ (if withExamples then "install" else "install-lib") ];
+  pythonImportsCheck = [ "petsc4py" ];
+  setupHook = ./setup-hook.sh;
 
   unittestFlagsArray = [
     "-s"
@@ -256,19 +256,19 @@ stdenv.mkDerivation (finalAttrs: {
     "-v"
   ];
 
-  pythonImportsCheck = [ "petsc4py" ];
-
   passthru = {
     inherit
       mpiSupport
       pythonSupport
       fortranSupport
       ;
+
     petscPackages = petscPackages.overrideScope (
       final: prev: {
         petsc = finalAttrs.finalPackage;
       }
     );
+
     tests = {
       serial = petsc.override {
         mpiSupport = false;
@@ -279,19 +279,18 @@ stdenv.mkDerivation (finalAttrs: {
         withFullDeps = true;
         withParmetis = false;
       };
+
       mpich = petsc.override {
         mpi = mpich;
       };
     };
   };
 
-  setupHook = ./setup-hook.sh;
-
   meta = {
     description = "Portable Extensible Toolkit for Scientific computation";
     homepage = "https://petsc.org/release/";
     license = lib.licenses.bsd2;
-    platforms = lib.platforms.unix;
     maintainers = with lib.maintainers; [ qbisi ];
+    platforms = lib.platforms.unix;
   };
 })

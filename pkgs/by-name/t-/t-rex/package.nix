@@ -1,10 +1,10 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
-  pkg-config,
   gdal,
   openssl,
+  pkg-config,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage rec {
@@ -18,8 +18,6 @@ rustPlatform.buildRustPackage rec {
     hash = "sha256-oZZrR86/acoyMX3vC1JGrpc8G+DEuplqfEAnaP+TBGU=";
   };
 
-  cargoHash = "sha256-z0YpX1dMWcn2N6fKDbT7lYEQC5PaDNNHi4CW88d/dgI=";
-
   nativeBuildInputs = [
     pkg-config
     rustPlatform.bindgenHook
@@ -30,14 +28,16 @@ rustPlatform.buildRustPackage rec {
     openssl
   ];
 
+  cargoHash = "sha256-z0YpX1dMWcn2N6fKDbT7lYEQC5PaDNNHi4CW88d/dgI=";
+
   meta = {
     description = "Vector tile server specialized on publishing MVT tiles";
     homepage = "https://t-rex.tileserver.ch/";
     changelog = "https://github.com/t-rex-tileserver/t-rex/blob/v${version}/CHANGELOG.md";
     license = lib.licenses.mit;
-    teams = [ lib.teams.geospatial ];
-    mainProgram = "t_rex";
     platforms = lib.platforms.unix;
+    mainProgram = "t_rex";
     broken = true; # see https://github.com/t-rex-tileserver/t-rex/issues/320
+    teams = [ lib.teams.geospatial ];
   };
 }

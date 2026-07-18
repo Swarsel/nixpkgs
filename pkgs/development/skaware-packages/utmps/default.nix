@@ -1,11 +1,8 @@
-{ skawarePackages, skalibs }:
+{ skalibs, skawarePackages }:
 
 skawarePackages.buildPackage {
   pname = "utmps";
   version = "0.1.3.3";
-  sha256 = "sha256-4iEr0C/hdzBCT39eMKTd5x0IYqUrI9i3Ke7XRCCjSaI=";
-
-  description = "Secure utmpx and wtmp implementation";
 
   configureFlags = [
     "--libdir=\${lib}/lib"
@@ -26,4 +23,7 @@ skawarePackages.buildPackage {
     mv doc $doc/share/doc/utmps/html
     mv examples $doc/share/doc/utmps/examples
   '';
+
+  description = "Secure utmpx and wtmp implementation";
+  sha256 = "sha256-4iEr0C/hdzBCT39eMKTd5x0IYqUrI9i3Ke7XRCCjSaI=";
 }

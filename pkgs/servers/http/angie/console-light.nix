@@ -6,8 +6,8 @@
 }:
 
 stdenv.mkDerivation rec {
-  version = "1.8.2";
   pname = "angie-console-light";
+  version = "1.8.2";
 
   src = fetchurl {
     url = "https://download.angie.software/files/${pname}/${pname}-${version}.tar.gz";
@@ -20,9 +20,6 @@ stdenv.mkDerivation rec {
   ];
 
   nativeBuildInputs = [ brotli ];
-
-  dontConfigure = true;
-  dontBuild = true;
 
   installPhase = ''
     runHook preInstall
@@ -41,11 +38,14 @@ stdenv.mkDerivation rec {
     runHook postInstall
   '';
 
+  dontBuild = true;
+  dontConfigure = true;
+
   meta = {
     description = "Console Light is a lightweight, real-time activity monitoring interface";
     homepage = "https://angie.software/en/console/";
     license = lib.licenses.asl20;
-    platforms = lib.platforms.all;
     maintainers = with lib.maintainers; [ izorkin ];
+    platforms = lib.platforms.all;
   };
 }

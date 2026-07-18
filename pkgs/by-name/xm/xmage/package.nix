@@ -14,17 +14,7 @@ stdenv.mkDerivation (finalAttrs: {
     sha256 = "sha256-n6g38rE19ZSyipoOp3cnLTsJirLRXeLF1ft7gvx3bVs=";
   };
 
-  preferLocalBuild = true;
-
   nativeBuildInputs = [ unzrip ];
-
-  sourceRoot = "source";
-
-  unpackPhase = ''
-    runHook preUnpack
-    unzrip $src -d "$sourceRoot"
-    runHook postUnpack
-  '';
 
   installPhase =
     let
@@ -41,15 +31,26 @@ stdenv.mkDerivation (finalAttrs: {
       chmod +x $out/bin/xmage
     '';
 
+  preferLocalBuild = true;
+  sourceRoot = "source";
+
+  unpackPhase = ''
+    runHook preUnpack
+    unzrip $src -d "$sourceRoot"
+    runHook postUnpack
+  '';
+
   meta = {
     description = "Magic Another Game Engine";
-    mainProgram = "xmage";
-    sourceProvenance = with lib.sourceTypes; [ binaryBytecode ];
+    homepage = "http://xmage.de/";
     license = lib.licenses.mit;
+    sourceProvenance = with lib.sourceTypes; [ binaryBytecode ];
+
     maintainers = with lib.maintainers; [
       matthiasbeyer
       abueide
     ];
-    homepage = "http://xmage.de/";
+
+    mainProgram = "xmage";
   };
 })

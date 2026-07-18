@@ -1,7 +1,7 @@
 {
   config,
-  pkgs,
   lib,
+  pkgs,
   ...
 }:
 let
@@ -12,63 +12,62 @@ in
   options = {
     services.nzbhydra2 = {
       enable = lib.mkEnableOption "NZBHydra2, Usenet meta search";
+      package = lib.mkPackageOption pkgs "nzbhydra2" { };
 
       dataDir = lib.mkOption {
-        type = lib.types.str;
         default = "/var/lib/nzbhydra2";
         description = "The directory where NZBHydra2 stores its data files.";
+        type = lib.types.str;
       };
 
       openFirewall = lib.mkOption {
-        type = lib.types.bool;
         default = false;
         description = "Open ports in the firewall for the NZBHydra2 web interface.";
+        type = lib.types.bool;
       };
-
-      package = lib.mkPackageOption pkgs "nzbhydra2" { };
     };
   };
 
   config = lib.mkIf cfg.enable {
-    systemd.tmpfiles.rules = [ "d '${cfg.dataDir}' 0700 nzbhydra2 nzbhydra2 - -" ];
+    networking.firewall = lib.mkIf cfg.openFirewall { allowedTCPPorts = [ 5076 ]; };
 
     systemd.services.nzbhydra2 = {
-      description = "NZBHydra2";
       after = [ "network.target" ];
-      wantedBy = [ "multi-user.target" ];
+      description = "NZBHydra2";
 
       serviceConfig = {
-        Type = "simple";
-        User = "nzbhydra2";
-        Group = "nzbhydra2";
+        DevicePolicy = "closed";
         ExecStart = "${cfg.package}/bin/nzbhydra2 --nobrowser --datafolder '${cfg.dataDir}'";
-        Restart = "on-failure";
+        Group = "nzbhydra2";
+        LockPersonality = true;
         # Hardening
         NoNewPrivileges = true;
-        PrivateTmp = true;
         PrivateDevices = true;
-        DevicePolicy = "closed";
-        ProtectSystem = "strict";
-        ReadWritePaths = cfg.dataDir;
-        ProtectHome = "read-only";
+        PrivateTmp = true;
         ProtectControlGroups = true;
+        ProtectHome = "read-only";
         ProtectKernelModules = true;
         ProtectKernelTunables = true;
+        ProtectSystem = "strict";
+        ReadWritePaths = cfg.dataDir;
+        Restart = "on-failure";
         RestrictAddressFamilies = "AF_UNIX AF_INET AF_INET6 AF_NETLINK";
         RestrictNamespaces = true;
         RestrictRealtime = true;
         RestrictSUIDSGID = true;
-        LockPersonality = true;
+        Type = "simple";
+        User = "nzbhydra2";
       };
+
+      wantedBy = [ "multi-user.target" ];
     };
 
-    networking.firewall = lib.mkIf cfg.openFirewall { allowedTCPPorts = [ 5076 ]; };
+    systemd.tmpfiles.rules = [ "d '${cfg.dataDir}' 0700 nzbhydra2 nzbhydra2 - -" ];
+    users.groups.nzbhydra2 = { };
 
     users.users.nzbhydra2 = {
       group = "nzbhydra2";
       isSystemUser = true;
     };
-
-    users.groups.nzbhydra2 = { };
   };
 }

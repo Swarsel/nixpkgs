@@ -1,7 +1,7 @@
 {
   lib,
-  commitlint-rs,
   fetchFromGitHub,
+  commitlint-rs,
   nix-update-script,
   rustPlatform,
   testers,
@@ -29,15 +29,18 @@ rustPlatform.buildRustPackage (finalAttrs: {
     description = "Lint commit messages with conventional commit messages";
     homepage = "https://keisukeyamashita.github.io/commitlint-rs";
     changelog = "https://github.com/KeisukeYamashita/commitlint-rs/releases/tag/${finalAttrs.src.rev}";
+
     license = with lib.licenses; [
       mit
       asl20
     ];
+
     maintainers = with lib.maintainers; [
       croissong
       getchoo
     ];
-    mainProgram = "commitlint";
+
     platforms = with lib.platforms; unix ++ windows;
+    mainProgram = "commitlint";
   };
 })

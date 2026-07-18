@@ -1,30 +1,24 @@
 {
   lib,
   stdenv,
-  fetchzip,
   fetchurl,
   autoPatchelfHook,
   copyDesktopItems,
-  makeWrapper,
-  makeDesktopItem,
   cups,
+  fetchzip,
+  makeDesktopItem,
+  makeWrapper,
   qt6,
   undmg,
-  xkeyboard-config,
   writeScript,
+  xkeyboard-config,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
   pname = "010editor";
   version = "16.0.4";
-
   src = finalAttrs.passthru.srcs.${stdenv.hostPlatform.system};
-
-  sourceRoot = ".";
-
   strictDeps = true;
-  dontBuild = true;
-  dontConfigure = true;
 
   nativeBuildInputs =
     lib.optionals stdenv.hostPlatform.isLinux [
@@ -69,12 +63,12 @@ stdenv.mkDerivation (finalAttrs: {
 
   desktopItems = [
     (makeDesktopItem {
-      name = "010editor";
-      exec = "010editor %f";
-      icon = "010";
-      desktopName = "010 Editor";
-      genericName = "Text and hex editor";
       categories = [ "Development" ];
+      desktopName = "010 Editor";
+      exec = "010editor %f";
+      genericName = "Text and hex editor";
+      icon = "010";
+
       mimeTypes = [
         "text/html"
         "text/plain"
@@ -82,20 +76,14 @@ stdenv.mkDerivation (finalAttrs: {
         "text/x-c++src"
         "text/xml"
       ];
+
+      name = "010editor";
     })
   ];
 
-  passthru.srcs = {
-    x86_64-linux = fetchzip {
-      url = "https://download.sweetscape.com/010EditorLinux64Installer${finalAttrs.version}.tar.gz";
-      hash = "sha256-M1D2Bmi45sYiB0Ci+0X0AxyIeR+On60xt4jP1Jsy5tA=";
-    };
-
-    aarch64-darwin = fetchurl {
-      url = "https://download.sweetscape.com/010EditorMacARM64Installer${finalAttrs.version}.dmg";
-      hash = "sha256-+yU5JdPNS2BfiZLsBLyyC+ieVNqbIWba3teBlTIDWtk=";
-    };
-  };
+  dontBuild = true;
+  dontConfigure = true;
+  sourceRoot = ".";
 
   passthru = {
     updateScript = writeScript "update-010editor" ''
@@ -112,16 +100,30 @@ stdenv.mkDerivation (finalAttrs: {
     '';
   };
 
+  passthru.srcs = {
+    aarch64-darwin = fetchurl {
+      hash = "sha256-+yU5JdPNS2BfiZLsBLyyC+ieVNqbIWba3teBlTIDWtk=";
+      url = "https://download.sweetscape.com/010EditorMacARM64Installer${finalAttrs.version}.dmg";
+    };
+
+    x86_64-linux = fetchzip {
+      hash = "sha256-M1D2Bmi45sYiB0Ci+0X0AxyIeR+On60xt4jP1Jsy5tA=";
+      url = "https://download.sweetscape.com/010EditorLinux64Installer${finalAttrs.version}.tar.gz";
+    };
+  };
+
   meta = {
     description = "Text and hex editor";
     homepage = "https://www.sweetscape.com/010editor/";
     license = lib.licenses.unfree;
+    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
     maintainers = with lib.maintainers; [ eljamm ];
+
     platforms = [
       "aarch64-darwin"
       "x86_64-linux"
     ];
-    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
+
     mainProgram = "010editor";
   };
 })

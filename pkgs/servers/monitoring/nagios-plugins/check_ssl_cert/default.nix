@@ -1,18 +1,18 @@
 {
+  lib,
+  stdenv,
+  fetchFromGitHub,
   bc,
   bind,
   coreutils,
   curl,
-  fetchFromGitHub,
   file,
   iproute2,
-  lib,
   makeWrapper,
   netcat-gnu,
   nmap,
   openssl,
   python3,
-  stdenv,
   which,
 }:
 
@@ -56,12 +56,12 @@ stdenv.mkDerivation rec {
   '';
 
   meta = {
-    changelog = "https://github.com/matteocorti/check_ssl_cert/releases/tag/v${version}";
     description = "Nagios plugin to check the CA and validity of an X.509 certificate";
     homepage = "https://github.com/matteocorti/check_ssl_cert";
+    changelog = "https://github.com/matteocorti/check_ssl_cert/releases/tag/v${version}";
     license = lib.licenses.gpl3Plus;
-    mainProgram = "check_ssl_cert";
     maintainers = with lib.maintainers; [ fab ];
     platforms = lib.platforms.all;
+    mainProgram = "check_ssl_cert";
   };
 }

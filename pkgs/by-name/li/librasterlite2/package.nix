@@ -2,8 +2,6 @@
   lib,
   stdenv,
   fetchurl,
-  pkg-config,
-  validatePkgConfig,
   cairo,
   curl,
   fontconfig,
@@ -23,8 +21,10 @@
   minizip,
   openjpeg,
   pixman,
+  pkg-config,
   proj,
   sqlite,
+  validatePkgConfig,
   xz,
   zstd,
 }:
@@ -75,21 +75,22 @@ stdenv.mkDerivation (finalAttrs: {
     zstd
   ];
 
-  enableParallelBuilding = true;
-
   # Failed tests:
   # - check_sql_stmt
   doCheck = false;
+  enableParallelBuilding = true;
 
   meta = {
     description = "Advanced library supporting raster handling methods";
     homepage = "https://www.gaia-gis.it/fossil/librasterlite2";
+
     # They allow any of these
     license = with lib.licenses; [
       gpl2Plus
       lgpl21Plus
       mpl11
     ];
+
     platforms = lib.platforms.unix;
     teams = [ lib.teams.geospatial ];
   };

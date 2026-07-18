@@ -1,19 +1,19 @@
 {
-  stdenv,
   lib,
-  maven,
+  stdenv,
+  bash,
+  copyDesktopItems,
   fetchzip,
   jre,
-  writeScript,
-  runCommandLocal,
-  bash,
-  unzip,
-  makeWrapper,
   libredirect,
-  xsettingsd,
   makeDesktopItem,
-  copyDesktopItems,
+  makeWrapper,
+  maven,
   python3,
+  runCommandLocal,
+  unzip,
+  writeScript,
+  xsettingsd,
 }:
 let
   # Run update.py to update this file.
@@ -33,15 +33,14 @@ let
   soapDeps = (maven.override { jdk_headless = jre; }).buildMavenPackage {
     pname = "anyk-soap-deps";
     version = "1.0.0";
-
     src = lib.sources.sourceFilesBySuffices ./. [ "pom.xml" ];
-
-    mvnHash = "sha256-6pezqcTIPR5NYFQUmLZ5Y3TOd+XRcB/eRmNSAEoBmls=";
 
     installPhase = ''
       mkdir -p $out/share/java
       cp target/lib/*.jar $out/share/java/
     '';
+
+    mvnHash = "sha256-6pezqcTIPR5NYFQUmLZ5Y3TOd+XRcB/eRmNSAEoBmls=";
   };
 
   # Binary patch ÁNYK so it works with the JARs we fetch above (removing .internal. from some package names).
@@ -93,25 +92,12 @@ let
   '';
 in
 stdenv.mkDerivation {
-  pname = "anyk";
   inherit version src;
-
-  dontConfigure = true;
-  dontBuild = true;
+  pname = "anyk";
 
   nativeBuildInputs = [
     makeWrapper
     copyDesktopItems
-  ];
-
-  desktopItems = [
-    (makeDesktopItem {
-      desktopName = "ÁNYK";
-      name = "anyk";
-      exec = "anyk";
-      icon = "anyk";
-      categories = [ "Office" ];
-    })
   ];
 
   installPhase = ''
@@ -134,18 +120,33 @@ stdenv.mkDerivation {
     runHook postInstall
   '';
 
+  desktopItems = [
+    (makeDesktopItem {
+      categories = [ "Office" ];
+      desktopName = "ÁNYK";
+      exec = "anyk";
+      icon = "anyk";
+      name = "anyk";
+    })
+  ];
+
+  dontBuild = true;
+  dontConfigure = true;
+
   meta = {
     description = "Tool for filling forms for the Hungarian government";
+
     longDescription = ''
       Official tool for filling Hungarian government forms.
 
       Use `anyk-java` to install form templates/help files like this: `anyk-java -jar NAV_IGAZOL.jar`
     '';
+
     homepage = "https://nav.gov.hu/nyomtatvanyok/letoltesek/nyomtatvanykitolto_programok/nyomtatvany_apeh/keretprogramok/javakitolto";
     license = lib.licenses.unfree;
+    sourceProvenance = [ lib.sourceTypes.binaryBytecode ];
     maintainers = with lib.maintainers; [ chpatrick ];
     platforms = jre.meta.platforms;
-    sourceProvenance = [ lib.sourceTypes.binaryBytecode ];
     mainProgram = "anyk";
   };
 }

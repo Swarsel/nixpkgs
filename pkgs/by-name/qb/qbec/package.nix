@@ -1,8 +1,8 @@
 {
   lib,
-  go,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
+  go,
 }:
 
 buildGoModule (finalAttrs: {
@@ -17,7 +17,6 @@ buildGoModule (finalAttrs: {
   };
 
   vendorHash = "sha256-raXRnuPu/t5opgU58MP4qiO1GcUcD976t4OmwHrLdc8=";
-
   doCheck = false;
 
   ldflags = [

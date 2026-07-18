@@ -1,20 +1,19 @@
 {
   lib,
   stdenv,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
-  google-auth,
-  requests-oauthlib,
+  buildPythonPackage,
   click,
-  pytestCheckHook,
+  google-auth,
   nix-update-script,
+  pytestCheckHook,
+  requests-oauthlib,
+  setuptools,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "google-auth-oauthlib";
   version = "1.4.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "googleapis";
@@ -23,23 +22,18 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-KJviH4dofYSvZu9S7VMBSnGjH66xMUEvhcmZN7GJ4Iw=";
   };
 
-  sourceRoot = "${finalAttrs.src.name}/packages/google-auth-oauthlib";
+  nativeCheckInputs = [
+    pytestCheckHook
+  ]
+  ++ lib.flatten (builtins.attrValues finalAttrs.passthru.optional-dependencies);
 
+  __darwinAllowLocalNetworking = true;
   build-system = [ setuptools ];
 
   dependencies = [
     google-auth
     requests-oauthlib
   ];
-
-  optional-dependencies = {
-    tool = [ click ];
-  };
-
-  nativeCheckInputs = [
-    pytestCheckHook
-  ]
-  ++ lib.flatten (builtins.attrValues finalAttrs.passthru.optional-dependencies);
 
   disabledTests = [
     # Flaky test. See https://github.com/NixOS/nixpkgs/issues/288424#issuecomment-1941609973.
@@ -50,9 +44,13 @@ buildPythonPackage (finalAttrs: {
     "test_run_local_server_bind_addr"
   ];
 
-  pythonImportsCheck = [ "google_auth_oauthlib" ];
+  optional-dependencies = {
+    tool = [ click ];
+  };
 
-  __darwinAllowLocalNetworking = true;
+  pyproject = true;
+  pythonImportsCheck = [ "google_auth_oauthlib" ];
+  sourceRoot = "${finalAttrs.src.name}/packages/google-auth-oauthlib";
 
   # The ATOM feed loses this update most of the time due to a high update volume,
   # so query github directly.
@@ -69,10 +67,12 @@ buildPythonPackage (finalAttrs: {
     homepage = "https://github.com/googleapis/google-cloud-python/tree/main/packages/google-auth-oauthlib";
     changelog = "https://github.com/googleapis/google-cloud-python/blob/${finalAttrs.src.tag}/packages/google-auth-oauthlib/CHANGELOG.md";
     license = lib.licenses.asl20;
+
     maintainers = with lib.maintainers; [
       sarahec
       terlar
     ];
+
     mainProgram = "google-oauthlib-tool";
   };
 })

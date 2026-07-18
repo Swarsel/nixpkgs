@@ -13,6 +13,10 @@ stdenv.mkDerivation (finalAttrs: {
     sha256 = "1vqva99lyv7r6f9c7yikk8ahcfh9aq3clvwm4pz964wlbr9mj1v6";
   };
 
+  buildInputs = [ libx11 ];
+  makeFlags = [ "CC=${stdenv.cc.targetPrefix}cc" ];
+  env.NIX_CFLAGS_COMPILE = "-Wno-error=incompatible-pointer-types";
+
   patchPhase = ''
     sed -i '
       s:/usr/local/bin:'$out'/bin:
@@ -24,11 +28,6 @@ stdenv.mkDerivation (finalAttrs: {
     sed -i '28i#include <time.h>' xtserv.c
     sed -i '35i#include <time.h>' xtbot.c
   '';
-  buildInputs = [ libx11 ];
-
-  env.NIX_CFLAGS_COMPILE = "-Wno-error=incompatible-pointer-types";
-
-  makeFlags = [ "CC=${stdenv.cc.targetPrefix}cc" ];
 
   meta = {
     description = "Multi-player version of the classical game of Tetris, for the X Window system";

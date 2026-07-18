@@ -1,10 +1,10 @@
 {
   lib,
-  stdenvNoCC,
   fetchurl,
   copyDesktopItems,
-  makeDesktopItem,
   makeBinaryWrapper,
+  makeDesktopItem,
+  stdenvNoCC,
   wineWow64Packages,
 }:
 
@@ -12,9 +12,9 @@ let
   wine = wineWow64Packages.stable;
   # The icon is also from the winbox AUR package (see above).
   icon = fetchurl {
+    hash = "sha256-YD6u2N+1thRnEsXO6AHm138fRda9XEtUX5+EGTg004A=";
     name = "winbox.png";
     url = "https://aur.archlinux.org/cgit/aur.git/plain/winbox.png?h=winbox";
-    hash = "sha256-YD6u2N+1thRnEsXO6AHm138fRda9XEtUX5+EGTg004A=";
   };
 in
 stdenvNoCC.mkDerivation (finalAttrs: {
@@ -33,8 +33,6 @@ stdenvNoCC.mkDerivation (finalAttrs: {
         hash = "sha256-W0HPUf2B6NCCaH9rUiFZz0q6IubfjtxIZyHU4JUHtuk=";
       }
   );
-
-  dontUnpack = true;
 
   nativeBuildInputs = [
     makeBinaryWrapper
@@ -56,23 +54,25 @@ stdenvNoCC.mkDerivation (finalAttrs: {
 
   desktopItems = [
     (makeDesktopItem {
-      name = "winbox";
-      desktopName = "Winbox";
+      categories = [ "Utility" ];
       comment = "GUI administration for Mikrotik RouterOS";
+      desktopName = "Winbox";
       exec = "winbox";
       icon = "winbox";
-      categories = [ "Utility" ];
+      name = "winbox";
     })
   ];
+
+  dontUnpack = true;
 
   meta = {
     description = "Graphical configuration utility for RouterOS-based devices";
     homepage = "https://mikrotik.com";
-    downloadPage = "https://mikrotik.com/download";
     changelog = "https://wiki.mikrotik.com/wiki/Winbox_changelog";
-    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
     license = lib.licenses.unfree;
-    mainProgram = "winbox";
+    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
     maintainers = with lib.maintainers; [ yrd ];
+    mainProgram = "winbox";
+    downloadPage = "https://mikrotik.com/download";
   };
 })

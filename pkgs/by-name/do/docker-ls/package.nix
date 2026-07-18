@@ -1,7 +1,7 @@
 {
-  buildGoModule,
-  fetchFromGitHub,
   lib,
+  fetchFromGitHub,
+  buildGoModule,
   docker,
 }:
 
@@ -20,6 +20,7 @@ buildGoModule (finalAttrs: {
 
   meta = {
     description = "Tools for browsing and manipulating docker registries";
+
     longDescription = ''
       Docker-ls is a set of CLI tools for browsing and manipulating docker registries.
       In particular, docker-ls can handle authentication and display the sha256 content digests associated
@@ -27,8 +28,8 @@ buildGoModule (finalAttrs: {
     '';
 
     homepage = "https://github.com/mayflower/docker-ls";
+    license = lib.licenses.mit;
     maintainers = [ ];
     platforms = docker.meta.platforms;
-    license = lib.licenses.mit;
   };
 })

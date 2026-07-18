@@ -2,56 +2,55 @@
   lib,
   stdenv,
   fetchFromGitLab,
-  fetchpatch, # Added for applying patch
-  meson,
-  ninja,
-  nix-update-script,
-  pkg-config,
-  python3,
-  wayland-scanner,
+  aml,
   cairo,
+  fetchpatch, # Added for applying patch
+  freerdp,
+  glslang,
+  gst_all_1,
+  lcms2,
   libGL,
   libdisplay-info_0_2,
   libdrm,
   libevdev,
-  libinput,
-  libxkbcommon,
   libgbm,
-  seatd,
-  wayland,
-  wayland-protocols,
-  libxcb-cursor,
-  glslang,
-
-  demoSupport ? true,
-  jpegSupport ? true,
+  libinput,
   libjpeg,
-  lcmsSupport ? true,
-  lcms2,
-  luaSupport ? true,
-  lua5_4_compat,
-  pangoSupport ? true,
-  pango,
-  pipewireSupport ? true,
-  pipewire,
-  rdpSupport ? true,
-  freerdp,
-  remotingSupport ? true,
-  gst_all_1,
-  vaapiSupport ? false,
   libva,
-  vncSupport ? true,
-  aml,
+  libwebp,
+  libxcb-cursor,
+  libxcursor,
+  libxkbcommon,
+  lua5_4_compat,
+  meson,
   neatvnc,
+  ninja,
+  nix-update-script,
   pam,
-  vulkanSupport ? true,
+  pango,
+  pipewire,
+  pkg-config,
+  python3,
+  seatd,
   vulkan-headers,
   vulkan-loader,
-  webpSupport ? true,
-  libwebp,
-  xwaylandSupport ? true,
-  libxcursor,
+  wayland,
+  wayland-protocols,
+  wayland-scanner,
   xwayland,
+  demoSupport ? true,
+  jpegSupport ? true,
+  lcmsSupport ? true,
+  luaSupport ? true,
+  pangoSupport ? true,
+  pipewireSupport ? true,
+  rdpSupport ? true,
+  remotingSupport ? true,
+  vaapiSupport ? false,
+  vncSupport ? true,
+  vulkanSupport ? true,
+  webpSupport ? true,
+  xwaylandSupport ? true,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -59,24 +58,23 @@ stdenv.mkDerivation (finalAttrs: {
   version = "15.0.1";
 
   src = fetchFromGitLab {
-    domain = "gitlab.freedesktop.org";
     owner = "wayland";
     repo = "weston";
     rev = finalAttrs.version;
     hash = "sha256-c6h8GQt1S3t2+K+8A4ncxBtWLtaV61EABdYA55o9i4o=";
+    domain = "gitlab.freedesktop.org";
   };
 
   patches = [
     # backend-vnc, gitlab-ci: Update to Neat VNC 1.0.0, aml 1.0.0
     # https://gitlab.freedesktop.org/wayland/weston/-/merge_requests/2064
     (fetchpatch {
-      url = "https://gitlab.freedesktop.org/wayland/weston/-/commit/8a1c91e771312d1e0d0cd92495ef717402784dae.patch";
-      hash = "sha256-9eBONM7OfzHhCuT8Wnq534KS51q2VtUyOOLjYHohEds=";
       excludes = [ ".gitlab-ci.yml" ];
+      hash = "sha256-9eBONM7OfzHhCuT8Wnq534KS51q2VtUyOOLjYHohEds=";
+      url = "https://gitlab.freedesktop.org/wayland/weston/-/commit/8a1c91e771312d1e0d0cd92495ef717402784dae.patch";
     })
   ];
 
-  depsBuildBuild = [ pkg-config ];
   nativeBuildInputs = [
     meson
     ninja
@@ -147,6 +145,8 @@ stdenv.mkDerivation (finalAttrs: {
     (lib.mesonOption "xwayland-path" (lib.getExe xwayland))
   ];
 
+  depsBuildBuild = [ pkg-config ];
+
   passthru = {
     providedSessions = [ "weston" ];
     updateScript = nix-update-script { };
@@ -154,6 +154,7 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Lightweight and functional Wayland compositor";
+
     longDescription = ''
       Weston is the reference implementation of a Wayland compositor, as well
       as a useful environment in and of itself.
@@ -164,12 +165,15 @@ stdenv.mkDerivation (finalAttrs: {
       top of Weston's core. A small suite of example or demo clients are also
       provided.
     '';
+
     homepage = "https://gitlab.freedesktop.org/wayland/weston";
     license = lib.licenses.mit; # Expat version
-    platforms = lib.platforms.linux;
-    mainProgram = "weston";
+
     maintainers = with lib.maintainers; [
       qyliss
     ];
+
+    platforms = lib.platforms.linux;
+    mainProgram = "weston";
   };
 })

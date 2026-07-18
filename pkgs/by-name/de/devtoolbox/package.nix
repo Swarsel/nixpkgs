@@ -1,27 +1,26 @@
 {
   lib,
-  python3Packages,
   fetchFromGitHub,
+  appstream,
+  autoPatchelfHook,
+  blueprint-compiler,
+  desktop-file-utils,
+  gcr_4,
+  gdk-pixbuf,
+  gobject-introspection,
+  gtksourceview5,
+  libadwaita,
+  libxml2,
   meson,
   ninja,
   pkg-config,
-  gobject-introspection,
-  blueprint-compiler,
-  wrapGAppsHook4,
-  desktop-file-utils,
-  libadwaita,
-  gtksourceview5,
+  python3Packages,
   webkitgtk_6_0,
-  gcr_4,
-  gdk-pixbuf,
-  autoPatchelfHook,
-  appstream,
-  libxml2,
+  wrapGAppsHook4,
 }:
 python3Packages.buildPythonApplication (finalAttrs: {
   pname = "devtoolbox";
   version = "1.3.0";
-  pyproject = false; # uses meson
 
   src = fetchFromGitHub {
     owner = "aleiepure";
@@ -57,6 +56,17 @@ python3Packages.buildPythonApplication (finalAttrs: {
     gdk-pixbuf
   ];
 
+  # Contains an unusable devtoolbox-run-script
+  postInstall = ''
+    rm -r $out/devtoolbox
+    ln -s $out/share/locale/zh_Hant $out/share/locale/zh_TW
+    ln -s $out/share/locale/zh_Hans $out/share/locale/zh_CN
+  '';
+
+  preFixup = ''
+    makeWrapperArgs+=("''${gappsWrapperArgs[@]}")
+  '';
+
   dependencies = with python3Packages; [
     pygobject3
     ruamel-yaml
@@ -86,20 +96,11 @@ python3Packages.buildPythonApplication (finalAttrs: {
   ];
 
   dontWrapGApps = true;
-
-  # Contains an unusable devtoolbox-run-script
-  postInstall = ''
-    rm -r $out/devtoolbox
-    ln -s $out/share/locale/zh_Hant $out/share/locale/zh_TW
-    ln -s $out/share/locale/zh_Hans $out/share/locale/zh_CN
-  '';
-
-  preFixup = ''
-    makeWrapperArgs+=("''${gappsWrapperArgs[@]}")
-  '';
+  pyproject = false; # uses meson
 
   meta = {
     description = "Development tools at your fingertips";
+
     longDescription = ''
       If you're tired of endlessly looking online for the right
       tool, or to find again that website of which you don't
@@ -116,7 +117,9 @@ python3Packages.buildPythonApplication (finalAttrs: {
       - Image converters
       - Much more...
     '';
+
     homepage = "https://github.com/aleiepure/devtoolbox";
+
     license = with lib.licenses; [
       gpl3Plus
       cc0
@@ -124,8 +127,9 @@ python3Packages.buildPythonApplication (finalAttrs: {
       mit
       unlicense
     ];
-    mainProgram = "devtoolbox";
+
     maintainers = with lib.maintainers; [ aleksana ];
     platforms = lib.platforms.linux;
+    mainProgram = "devtoolbox";
   };
 })

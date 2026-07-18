@@ -10,7 +10,6 @@
 buildPythonPackage rec {
   pname = "hupper";
   version = "1.12.1";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
@@ -29,13 +28,14 @@ buildPythonPackage rec {
     "tests/test_it.py"
   ];
 
+  format = "setuptools";
   pythonImportsCheck = [ "hupper" ];
 
   meta = {
     description = "In-process file monitor/reloader for reloading your code automatically during development";
-    mainProgram = "hupper";
     homepage = "https://github.com/Pylons/hupper";
     license = lib.licenses.mit;
     maintainers = [ ];
+    mainProgram = "hupper";
   };
 }

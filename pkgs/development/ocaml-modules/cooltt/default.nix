@@ -1,8 +1,8 @@
 {
   lib,
   fetchFromGitHub,
-  buildDunePackage,
   bos,
+  buildDunePackage,
   bwd,
   cmdliner,
   containers,
@@ -10,20 +10,21 @@
   findlib,
   menhir,
   menhirLib,
+  ounit2,
   ppx_deriving,
   ppxlib,
+  qcheck,
+  qcheck-core,
   uuseg,
   uutf,
   yuujinchou,
-  ounit2,
-  qcheck,
-  qcheck-core,
 }:
 
 let
   bantorra = buildDunePackage {
     pname = "bantorra";
     version = "unstable-2022-05-08";
+
     src = fetchFromGitHub {
       owner = "RedPRL";
       repo = "bantorra";
@@ -46,6 +47,7 @@ let
   kado = buildDunePackage {
     pname = "kado";
     version = "unstable-2023-10-03";
+
     src = fetchFromGitHub {
       owner = "RedPRL";
       repo = "kado";
@@ -54,7 +56,6 @@ let
     };
 
     propagatedBuildInputs = [ bwd ];
-
     doCheck = true;
     checkInputs = [ qcheck-core ];
 
@@ -69,8 +70,6 @@ in
 buildDunePackage {
   pname = "cooltt";
   version = "unstable-2023-10-03";
-
-  minimalOCamlVersion = "5.0";
 
   src = fetchFromGitHub {
     owner = "RedPRL";
@@ -106,9 +105,11 @@ buildDunePackage {
     qcheck
   ];
 
+  minimalOCamlVersion = "5.0";
+
   meta = {
-    homepage = "https://github.com/RedPRL/cooltt";
     description = "Cool implementation of normalization by evaluation (nbe) & elaboration for Cartesian cubical type theory";
+    homepage = "https://github.com/RedPRL/cooltt";
     license = lib.licenses.asl20;
     maintainers = with lib.maintainers; [ moni ];
   };

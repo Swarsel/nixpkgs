@@ -1,28 +1,23 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # build-system
-  setuptools,
-
-  # dependencies
-  packaging,
-
+  buildPythonPackage,
   # optional-dependencies
   eventlet,
   gevent,
-  tornado,
-  setproctitle,
-
-  pytestCheckHook,
+  # dependencies
+  packaging,
   pytest-cov-stub,
+  pytestCheckHook,
+  setproctitle,
+  # build-system
+  setuptools,
+  tornado,
 }:
 
 buildPythonPackage rec {
   pname = "gunicorn";
   version = "23.0.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "benoitc";
@@ -31,25 +26,25 @@ buildPythonPackage rec {
     hash = "sha256-Dq/mrQwo3II6DBvYfD1FHsKHaIlyHlJCZ+ZyrM4Efe0=";
   };
 
-  build-system = [ setuptools ];
-
-  dependencies = [ packaging ];
-
-  optional-dependencies = {
-    gevent = [ gevent ];
-    eventlet = [ eventlet ];
-    tornado = [ tornado ];
-    gthread = [ ];
-    setproctitle = [ setproctitle ];
-  };
-
-  pythonImportsCheck = [ "gunicorn" ];
-
   nativeCheckInputs = [
     pytestCheckHook
     pytest-cov-stub
   ]
   ++ lib.concatAttrValues optional-dependencies;
+
+  build-system = [ setuptools ];
+  dependencies = [ packaging ];
+
+  optional-dependencies = {
+    eventlet = [ eventlet ];
+    gevent = [ gevent ];
+    gthread = [ ];
+    setproctitle = [ setproctitle ];
+    tornado = [ tornado ];
+  };
+
+  pyproject = true;
+  pythonImportsCheck = [ "gunicorn" ];
 
   meta = {
     description = "WSGI HTTP Server for UNIX, fast clients and sleepy applications";

@@ -2,15 +2,14 @@
   lib,
   buildPythonPackage,
   fetchPypi,
-  pytestCheckHook,
   pytest-cov-stub,
+  pytestCheckHook,
   setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "venusian";
   version = "3.1.1";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
@@ -27,6 +26,8 @@ buildPythonPackage rec {
   checkPhase = ''
     pytest
   '';
+
+  pyproject = true;
 
   meta = {
     description = "Library for deferring decorator actions";

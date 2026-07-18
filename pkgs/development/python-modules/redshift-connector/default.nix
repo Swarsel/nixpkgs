@@ -1,30 +1,26 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # build-system
-  setuptools,
-
   # dependencies
   beautifulsoup4,
   boto3,
   botocore,
+  buildPythonPackage,
   lxml,
   packaging,
-  pytz,
-  requests,
-  scramp,
-
   # test
   pytest-mock,
   pytestCheckHook,
+  pytz,
+  requests,
+  scramp,
+  # build-system
+  setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "redshift-connector";
   version = "2.1.13";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "aws";
@@ -38,6 +34,12 @@ buildPythonPackage rec {
     substituteInPlace setup.cfg --replace 'addopts =' 'no-opts ='
   '';
 
+  nativeCheckInputs = [
+    pytest-mock
+    pytestCheckHook
+  ];
+
+  __darwinAllowLocalNetworking = true; # required for tests
   build-system = [ setuptools ];
 
   dependencies = [
@@ -51,16 +53,6 @@ buildPythonPackage rec {
     scramp
   ];
 
-  pythonRelaxDeps = [ "lxml" ];
-
-  nativeCheckInputs = [
-    pytest-mock
-    pytestCheckHook
-  ];
-
-  # integration tests require a Redshift cluster
-  enabledTestPaths = [ "test/unit" ];
-
   disabledTests = [
     # AttributeError: 'itertools._tee' object has no attribute 'status_code'
     # This is due to a broken pytest_mock.
@@ -73,7 +65,10 @@ buildPythonPackage rec {
     "test_set_cluster_identifier_calls_describe_custom_domain_associations"
   ];
 
-  __darwinAllowLocalNetworking = true; # required for tests
+  # integration tests require a Redshift cluster
+  enabledTestPaths = [ "test/unit" ];
+  pyproject = true;
+  pythonRelaxDeps = [ "lxml" ];
 
   meta = {
     description = "Redshift interface library";

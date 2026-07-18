@@ -24,20 +24,21 @@ stdenv.mkDerivation {
     pkg-config
     texinfo # for makeinfo
   ];
+
   buildInputs = [
     guile
   ];
-
-  # https://github.com/OrangeShark/guile-commonmark/issues/20
-  doCheck = false;
 
   makeFlags = [
     "GUILE_AUTO_COMPILE=0"
   ];
 
+  # https://github.com/OrangeShark/guile-commonmark/issues/20
+  doCheck = false;
+
   meta = {
-    homepage = "https://github.com/OrangeShark/guile-commonmark";
     description = "Implementation of CommonMark for Guile";
+    homepage = "https://github.com/OrangeShark/guile-commonmark";
     license = lib.licenses.lgpl3Plus;
     maintainers = [ ];
     platforms = guile.meta.platforms;

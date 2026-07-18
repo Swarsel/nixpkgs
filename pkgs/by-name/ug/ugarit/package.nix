@@ -11,12 +11,11 @@ in
 chickenPackages_4.eggDerivation rec {
   pname = "ugarit";
   version = "2.0";
-  name = "${pname}-${version}";
 
   src = chickenPackages_4.fetchegg {
     inherit version;
-    name = pname;
     sha256 = "1l5zkr6b8l5dw9p5mimbva0ncqw1sbvp3d4cywm1hqx2m03a0f1n";
+    name = pname;
   };
 
   buildInputs = with eggs; [
@@ -38,9 +37,11 @@ chickenPackages_4.eggDerivation rec {
     z3
   ];
 
+  name = "${pname}-${version}";
+
   meta = {
-    homepage = "https://www.kitten-technologies.co.uk/project/ugarit/";
     description = "Backup/archival system based around content-addressible storage";
+    homepage = "https://www.kitten-technologies.co.uk/project/ugarit/";
     license = lib.licenses.bsd3;
     platforms = lib.platforms.unix;
   };

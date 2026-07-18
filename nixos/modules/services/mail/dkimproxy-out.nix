@@ -15,40 +15,53 @@ in
   options = {
     services.dkimproxy-out = {
       enable = lib.mkOption {
-        type = lib.types.bool;
         default = false;
+
         description = ''
           Whether to enable dkimproxy_out.
 
           Note that a key will be auto-generated, and can be found in
           ${keydir}.
         '';
-      };
 
-      listen = lib.mkOption {
-        type = lib.types.str;
-        example = "127.0.0.1:10027";
-        description = "Address:port DKIMproxy should listen on.";
-      };
-
-      relay = lib.mkOption {
-        type = lib.types.str;
-        example = "127.0.0.1:10028";
-        description = "Address:port DKIMproxy should forward mail to.";
+        type = lib.types.bool;
       };
 
       domains = lib.mkOption {
-        type = with lib.types; listOf str;
+        description = "List of domains DKIMproxy can sign for.";
+
         example = [
           "example.org"
           "example.com"
         ];
-        description = "List of domains DKIMproxy can sign for.";
+
+        type = with lib.types; listOf str;
+      };
+
+      keySize = lib.mkOption {
+        default = 2048;
+
+        description = ''
+          Size of the RSA key to use to sign outgoing emails. Note that the
+          maximum mandatorily verified as per RFC6376 is 2048.
+        '';
+
+        type = lib.types.int;
+      };
+
+      listen = lib.mkOption {
+        description = "Address:port DKIMproxy should listen on.";
+        example = "127.0.0.1:10027";
+        type = lib.types.str;
+      };
+
+      relay = lib.mkOption {
+        description = "Address:port DKIMproxy should forward mail to.";
+        example = "127.0.0.1:10028";
+        type = lib.types.str;
       };
 
       selector = lib.mkOption {
-        type = lib.types.str;
-        example = "selector1";
         description = ''
           The selector to use for DKIM key identification.
 
@@ -57,17 +70,10 @@ in
           should contain the TXT record indicating the public key is the one
           in ${pubkey}: "v=DKIM1; t=s; p=[THE PUBLIC KEY]".
         '';
-      };
 
-      keySize = lib.mkOption {
-        type = lib.types.int;
-        default = 2048;
-        description = ''
-          Size of the RSA key to use to sign outgoing emails. Note that the
-          maximum mandatorily verified as per RFC6376 is 2048.
-        '';
+        example = "selector1";
+        type = lib.types.str;
       };
-
       # TODO: allow signature for other schemes than dkim(c=relaxed/relaxed)?
       # This being the scheme used by gmail, maybe nothing more is needed for
       # reasonable use.
@@ -90,16 +96,9 @@ in
       '';
     in
     lib.mkIf cfg.enable {
-      users.groups.dkimproxy-out = { };
-      users.users.dkimproxy-out = {
-        description = "DKIMproxy_out daemon";
-        group = "dkimproxy-out";
-        isSystemUser = true;
-      };
-
       systemd.services.dkimproxy-out = {
         description = "DKIMproxy_out";
-        wantedBy = [ "multi-user.target" ];
+
         preStart = ''
           if [ ! -d "${keydir}" ]; then
             mkdir -p "${keydir}"
@@ -109,11 +108,22 @@ in
             chown -R dkimproxy-out:dkimproxy-out "${keydir}"
           fi
         '';
+
         serviceConfig = {
           ExecStart = "${pkgs.dkimproxy}/bin/dkimproxy.out --conf_file=${configfile}";
-          User = "dkimproxy-out";
           PermissionsStartOnly = true;
+          User = "dkimproxy-out";
         };
+
+        wantedBy = [ "multi-user.target" ];
+      };
+
+      users.groups.dkimproxy-out = { };
+
+      users.users.dkimproxy-out = {
+        description = "DKIMproxy_out daemon";
+        group = "dkimproxy-out";
+        isSystemUser = true;
       };
     };
 

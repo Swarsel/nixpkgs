@@ -18,16 +18,16 @@ stdenv.mkDerivation (finalAttrs: {
 
   nativeBuildInputs = [ gradle ];
 
-  mitmCache = gradle.fetchDeps {
-    inherit (finalAttrs) pname;
-    data = ./deps.json;
-  };
-
   installPhase = ''
     mkdir -p "$out/share/java"
     cp -v rhino-all/build/libs/rhino-all-*.jar "$out/share/java/js-$pkgver.jar"
     ln -s "js-$pkgver.jar" "$out/share/java/js.jar"
   '';
+
+  mitmCache = gradle.fetchDeps {
+    inherit (finalAttrs) pname;
+    data = ./deps.json;
+  };
 
   meta = {
     description = "Implementation of JavaScript written in Java";
@@ -44,6 +44,7 @@ stdenv.mkDerivation (finalAttrs: {
       mpl11 # or
       gpl2Plus
     ];
+
     platforms = lib.platforms.linux ++ lib.platforms.darwin;
   };
 })

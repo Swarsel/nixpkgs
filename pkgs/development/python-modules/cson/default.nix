@@ -8,7 +8,6 @@
 buildPythonPackage rec {
   pname = "cson";
   version = "0.8";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
@@ -16,7 +15,7 @@ buildPythonPackage rec {
   };
 
   propagatedBuildInputs = [ speg ];
-
+  format = "setuptools";
   pythonImportsCheck = [ "cson" ];
 
   meta = {

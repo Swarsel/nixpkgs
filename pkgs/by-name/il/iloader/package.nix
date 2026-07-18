@@ -2,25 +2,21 @@
   lib,
   stdenv,
   fetchFromGitHub,
-
-  rustPlatform,
-  nodejs,
-  cargo-tauri,
   bun,
-  writableTmpDirAsHomeHook,
-
+  cargo-tauri,
   glib,
   glib-networking,
   gst_all_1,
+  makeWrapper,
+  nodejs,
   openssl,
   pkg-config,
+  rustPlatform,
   webkitgtk_4_1,
   wrapGAppsHook3,
-  makeWrapper,
+  writableTmpDirAsHomeHook,
 }:
 rustPlatform.buildRustPackage (finalAttrs: {
-  __structuredAttrs = true;
-
   pname = "iloader";
   version = "2.2.6";
 
@@ -30,50 +26,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
     rev = "v${finalAttrs.version}";
     sha256 = "sha256-zSl08bhJ/OrdcvvL1ciybxgnLqrg4IinmcGXrsPQYyQ=";
   };
-
-  nodeModules = stdenv.mkDerivation {
-    pname = "${finalAttrs.pname}-node_modules";
-    inherit (finalAttrs) src version;
-
-    nativeBuildInputs = [
-      bun
-      writableTmpDirAsHomeHook
-    ];
-
-    dontConfigure = true;
-
-    buildPhase = ''
-      runHook preBuild
-
-      bun install \
-        --cpu="*" \
-        --frozen-lockfile \
-        --ignore-scripts \
-        --no-progress \
-        --os="*"
-
-      runHook postBuild
-    '';
-
-    installPhase = ''
-      runHook preInstall
-
-      mkdir -p $out
-      cp -r node_modules $out/node_modules
-
-      runHook postInstall
-    '';
-
-    outputHash = "sha256-zB0BJrQuoIu7Y67WMfrVRsPPnJ6mhd5srL2M3zW6+1Q=";
-    outputHashAlgo = "sha256";
-    outputHashMode = "recursive";
-  };
-
-  cargoRoot = "src-tauri";
-  buildAndTestSubdir = "src-tauri";
-  cargoHash = "sha256-6nDqIikItl5SuHN2o/iQREiOkY+bYkP7akShOEtY9JY=";
-
-  doCheck = false;
 
   patches = [ ./disable-update.patch ];
 
@@ -101,28 +53,74 @@ rustPlatform.buildRustPackage (finalAttrs: {
     openssl
   ];
 
-  tauriBuildFlags = [
-    "--config"
-    "ci.conf.json"
-    "--no-sign"
-  ];
+  cargoHash = "sha256-6nDqIikItl5SuHN2o/iQREiOkY+bYkP7akShOEtY9JY=";
+  doCheck = false;
 
   postInstall = lib.optionalString stdenv.hostPlatform.isDarwin ''
     mkdir -p $out/bin
     makeWrapper $out/Applications/iloader.app/Contents/MacOS/iloader $out/bin/iloader
   '';
 
+  __structuredAttrs = true;
+  buildAndTestSubdir = "src-tauri";
+  cargoRoot = "src-tauri";
+
+  nodeModules = stdenv.mkDerivation {
+    inherit (finalAttrs) src version;
+    pname = "${finalAttrs.pname}-node_modules";
+
+    nativeBuildInputs = [
+      bun
+      writableTmpDirAsHomeHook
+    ];
+
+    buildPhase = ''
+      runHook preBuild
+
+      bun install \
+        --cpu="*" \
+        --frozen-lockfile \
+        --ignore-scripts \
+        --no-progress \
+        --os="*"
+
+      runHook postBuild
+    '';
+
+    installPhase = ''
+      runHook preInstall
+
+      mkdir -p $out
+      cp -r node_modules $out/node_modules
+
+      runHook postInstall
+    '';
+
+    dontConfigure = true;
+    outputHash = "sha256-zB0BJrQuoIu7Y67WMfrVRsPPnJ6mhd5srL2M3zW6+1Q=";
+    outputHashAlgo = "sha256";
+    outputHashMode = "recursive";
+  };
+
+  tauriBuildFlags = [
+    "--config"
+    "ci.conf.json"
+    "--no-sign"
+  ];
+
   meta = {
-    changelog = "https://github.com/nab138/iloader/releases/tag/v${finalAttrs.version}";
     description = "User friendly sideloader";
     homepage = "https://github.com/nab138/iloader";
+    changelog = "https://github.com/nab138/iloader/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.mit;
-    mainProgram = "iloader";
     maintainers = with lib.maintainers; [ ern775 ];
+
     platforms = [
       "aarch64-linux"
       "x86_64-linux"
       "aarch64-darwin"
     ];
+
+    mainProgram = "iloader";
   };
 })

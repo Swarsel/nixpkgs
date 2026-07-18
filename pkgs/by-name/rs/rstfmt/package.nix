@@ -7,7 +7,6 @@
 python3.pkgs.buildPythonApplication (finalAttrs: {
   pname = "rstfmt";
   version = "0.0.14";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "dzhu";
@@ -16,6 +15,8 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     hash = "sha256-zvmKgNzfxyWYHoaD+q84I48r1Mpp4kU4oIGAwMSRRlA=";
   };
 
+  # Project has no unittest just sample files
+  doCheck = false;
   build-system = with python3.pkgs; [ setuptools ];
 
   dependencies = with python3.pkgs; [
@@ -25,9 +26,7 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     sphinx
   ];
 
-  # Project has no unittest just sample files
-  doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "rstfmt" ];
 
   meta = {

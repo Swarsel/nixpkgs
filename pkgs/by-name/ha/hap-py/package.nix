@@ -1,20 +1,20 @@
 {
+  lib,
+  stdenv,
+  fetchFromGitHub,
   autoconf,
   bcftools,
   boost,
   bzip2,
   cmake,
   curl,
-  fetchFromGitHub,
   htslib,
-  lib,
   libdeflate,
   makeWrapper,
   perl,
   python3,
   rtg-tools,
   samtools,
-  stdenv,
   xz,
   zlib,
 }:
@@ -49,6 +49,13 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-K8XXhioMGMHw56MKvp0Eo8S6R36JczBzGRaBz035zRQ=";
   };
 
+  patches = [
+    # Compatibility with nix for boost and library flags : zlib, bzip2, curl, crypto, lzma
+    ./boost-library-flags.patch
+    # Update to python3
+    ./python3.patch
+  ];
+
   # CMake 4 dropped support of versions lower than 3.5,
   # versions lower than 3.10 are deprecated.
   # https://github.com/NixOS/nixpkgs/issues/445447
@@ -74,20 +81,12 @@ stdenv.mkDerivation (finalAttrs: {
       -e 's/pipes\.quote/shlex.quote/g' {} \;
   '';
 
-  patches = [
-    # Compatibility with nix for boost and library flags : zlib, bzip2, curl, crypto, lzma
-    ./boost-library-flags.patch
-    # Update to python3
-    ./python3.patch
-  ];
-
-  env.NIX_LDFLAGS = toString [ "-ldeflate" ];
-
   nativeBuildInputs = [
     autoconf
     cmake
     makeWrapper
   ];
+
   buildInputs = [
     boost
     bzip2
@@ -101,14 +100,15 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   env = {
+    BOOST_INCLUDEDIR = "${boost.dev}/include";
+    # For cmake : boost lib and includedir are in different location
+    BOOST_LIBRARYDIR = "${boost.out}/lib";
     # For illumina script
     BOOST_ROOT = "${boost.out}";
     ZLIBSTATIC = "${zlib.static}";
-
-    # For cmake : boost lib and includedir are in different location
-    BOOST_LIBRARYDIR = "${boost.out}/lib";
-    BOOST_INCLUDEDIR = "${boost.dev}/include";
   };
+
+  env.NIX_LDFLAGS = toString [ "-ldeflate" ];
 
   postFixup = ''
     wrapProgram $out/bin/hap.py \

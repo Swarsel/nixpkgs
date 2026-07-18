@@ -1,11 +1,11 @@
 {
   lib,
   stdenv,
-  rustPlatform,
   fetchFromGitHub,
   nix-update-script,
-  testers,
   pkg-config,
+  rustPlatform,
+  testers,
   validatePkgConfig,
 }:
 
@@ -20,8 +20,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-0JhYANVsVvNC0OZe1E6WzGc+pH9j7Z9SGCmhk8TQanU=";
   };
 
-  cargoHash = "sha256-atS6chUiKa9VVbsyar00YCdlVOuZ52qQWkz6HIvEqP4=";
-
   postPatch = ''
     # Force crate-type to include staticlib
     echo '
@@ -30,13 +28,10 @@ rustPlatform.buildRustPackage (finalAttrs: {
     ' >> temporal_capi/Cargo.toml
   '';
 
-  cargoBuildFlags = [
-    "--package"
-    "temporal_capi"
-    "--features"
-    "zoneinfo64,compiled_data"
-  ];
   nativeBuildInputs = [ validatePkgConfig ];
+  cargoHash = "sha256-atS6chUiKa9VVbsyar00YCdlVOuZ52qQWkz6HIvEqP4=";
+  # We don't want to run Rust checks, we only check the resulting lib using C/C++ in the installCheckPhase.
+  doCheck = false;
 
   installPhase = ''
     runHook preInstall
@@ -50,6 +45,7 @@ rustPlatform.buildRustPackage (finalAttrs: {
 
     runHook postInstall
   '';
+
   postInstall = ''
     mkdir $out/lib/pkgconfig
     cat -> $out/lib/pkgconfig/temporal_capi.pc <<EOF
@@ -65,17 +61,14 @@ rustPlatform.buildRustPackage (finalAttrs: {
     Cflags: -I\''${includedir}
     EOF
   '';
-  postFixup = lib.optional (stdenv.hostPlatform.isDarwin && !stdenv.hostPlatform.isStatic) ''
-    ${stdenv.cc.targetPrefix}install_name_tool -id "$out/lib/libtemporal_capi.dylib" "$out/lib/libtemporal_capi.dylib"
-  '';
 
-  # We don't want to run Rust checks, we only check the resulting lib using C/C++ in the installCheckPhase.
-  doCheck = false;
   doInstallCheck = true;
+
   nativeInstallCheckInputs = [
     stdenv.cc
     pkg-config
   ];
+
   installCheckPhase = ''
     runHook preInstallCheck
 
@@ -88,10 +81,22 @@ rustPlatform.buildRustPackage (finalAttrs: {
     runHook postInstallCheck
   '';
 
+  postFixup = lib.optional (stdenv.hostPlatform.isDarwin && !stdenv.hostPlatform.isStatic) ''
+    ${stdenv.cc.targetPrefix}install_name_tool -id "$out/lib/libtemporal_capi.dylib" "$out/lib/libtemporal_capi.dylib"
+  '';
+
+  cargoBuildFlags = [
+    "--package"
+    "temporal_capi"
+    "--features"
+    "zoneinfo64,compiled_data"
+  ];
+
   passthru.tests = {
     pkg-config = testers.hasPkgConfigModules {
       package = finalAttrs.finalPackage;
     };
+
     updateScript = nix-update-script { };
   };
 
@@ -99,10 +104,12 @@ rustPlatform.buildRustPackage (finalAttrs: {
     description = "A Rust implementation of ECMAScript's Temporal API";
     homepage = "https://github.com/boa-dev/temporal";
     changelog = "https://github.com/boa-dev/temporal/blob/${finalAttrs.src.rev}/CHANGELOG.md";
+
     license = with lib.licenses; [
       asl20
       mit
     ];
+
     maintainers = with lib.maintainers; [ aduh95 ];
     pkgConfigModules = [ "temporal_capi" ];
   };

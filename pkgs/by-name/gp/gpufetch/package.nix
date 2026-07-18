@@ -1,17 +1,17 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
+  autoAddDriverRunpath,
   cmake,
   config,
-  pciutils,
-  cudaSupport ? config.cudaSupport,
   cudaPackages,
-  installShellFiles,
-  autoAddDriverRunpath,
   gitUpdater,
+  installShellFiles,
+  pciutils,
   versionCheckHook,
   zlib,
+  cudaSupport ? config.cudaSupport,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -52,10 +52,11 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  doInstallCheck = true;
+
   nativeInstallCheckInputs = [
     versionCheckHook
   ];
-  doInstallCheck = true;
 
   passthru = {
     updateScript = gitUpdater { rev-prefix = "v"; };
@@ -65,8 +66,8 @@ stdenv.mkDerivation (finalAttrs: {
     description = "Simple yet fancy GPU architecture fetching tool";
     homepage = "https://github.com/Dr-Noob/gpufetch";
     license = lib.licenses.gpl2Only;
-    mainProgram = "gpufetch";
     maintainers = with lib.maintainers; [ bot-wxt1221 ];
     platforms = [ "x86_64-linux" ];
+    mainProgram = "gpufetch";
   };
 })

@@ -4,8 +4,8 @@
   fetchFromGitHub,
   cmake,
   openssl,
-  enableStatic ? stdenv.hostPlatform.isStatic,
   enableShared ? !stdenv.hostPlatform.isStatic,
+  enableStatic ? stdenv.hostPlatform.isStatic,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -26,7 +26,6 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   nativeBuildInputs = [ cmake ];
-
   buildInputs = [ openssl ];
 
   cmakeFlags = [
@@ -37,10 +36,10 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Eclipse Paho MQTT C Client Library";
-    mainProgram = "MQTTVersion";
     homepage = "https://www.eclipse.org/paho/";
     license = lib.licenses.epl20;
     maintainers = with lib.maintainers; [ sikmir ];
     platforms = lib.platforms.unix;
+    mainProgram = "MQTTVersion";
   };
 })

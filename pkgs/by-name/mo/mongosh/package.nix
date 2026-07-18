@@ -1,7 +1,7 @@
 {
   lib,
-  buildNpmPackage,
   fetchFromGitHub,
+  buildNpmPackage,
   nodejs_24,
 }:
 
@@ -16,18 +16,12 @@ buildNpmPackage.override { nodejs = nodejs_24; } (finalAttrs: {
     hash = "sha256-mwc9Mv8BJgI/7DzUH6QwHsWzgAquB8ehmnElM5+mYuI=";
   };
 
-  npmDepsHash = "sha256-xI+6a0sMuZmij46N5aqsprLLiVaSZifGW8tMq189fww=";
-
   patches = [
     ./disable-telemetry.patch
   ];
 
-  npmFlags = [
-    "--omit=optional"
-    "--ignore-scripts"
-  ];
-  npmBuildScript = "compile";
-  dontNpmInstall = true;
+  npmDepsHash = "sha256-xI+6a0sMuZmij46N5aqsprLLiVaSZifGW8tMq189fww=";
+
   installPhase = ''
     runHook preInstall
     npmWorkspace=packages/mongosh npmInstallHook
@@ -36,6 +30,14 @@ buildNpmPackage.override { nodejs = nodejs_24; } (finalAttrs: {
     runHook postInstall
   '';
 
+  dontNpmInstall = true;
+  npmBuildScript = "compile";
+
+  npmFlags = [
+    "--omit=optional"
+    "--ignore-scripts"
+  ];
+
   passthru = {
     # Version testing is skipped because upstream often forgets to update the version.
 
@@ -43,11 +45,11 @@ buildNpmPackage.override { nodejs = nodejs_24; } (finalAttrs: {
   };
 
   meta = {
+    description = "MongoDB Shell";
     homepage = "https://www.mongodb.com/try/download/shell";
     changelog = "https://github.com/mongodb-js/mongosh/releases/tag/v${finalAttrs.version}";
-    description = "MongoDB Shell";
-    maintainers = with lib.maintainers; [ aaronjheng ];
     license = lib.licenses.asl20;
+    maintainers = with lib.maintainers; [ aaronjheng ];
     mainProgram = "mongosh";
   };
 })

@@ -9,16 +9,17 @@ python3Packages.buildPythonApplication {
   version = "0-unstable-2021-11-09";
 
   src = fetchFromGitHub {
-    repo = "sdat2img";
     owner = "xpirt";
+    repo = "sdat2img";
     rev = "b432c988a412c06ff24d196132e354712fc18929";
     sha256 = "sha256-NCbf9H0hoJgeDtP6cQY0H280BQqgKXv3ConZ87QixVY=";
   };
 
-  pyproject = false;
   installPhase = ''
     install -D $src/sdat2img.py $out/bin/sdat2img
   '';
+
+  pyproject = false;
 
   meta = {
     description = "Convert sparse Android data image (.dat) into filesystem ext4 image (.img)";

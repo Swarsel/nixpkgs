@@ -1,7 +1,7 @@
 {
   config,
-  pkgs,
   lib,
+  pkgs,
   ...
 }:
 
@@ -12,38 +12,40 @@ with lib;
     services.pptpd = {
       enable = mkEnableOption "pptpd, the Point-to-Point Tunneling Protocol daemon";
 
-      serverIp = mkOption {
-        type = types.str;
-        description = "The server-side IP address.";
-        default = "10.124.124.1";
-      };
-
       clientIpRange = mkOption {
-        type = types.str;
-        description = "The range from which client IPs are drawn.";
         default = "10.124.124.2-11";
-      };
-
-      maxClients = mkOption {
-        type = types.int;
-        description = "The maximum number of simultaneous connections.";
-        default = 10;
-      };
-
-      extraPptpdOptions = mkOption {
-        type = types.lines;
-        description = "Adds extra lines to the pptpd configuration file.";
-        default = "";
+        description = "The range from which client IPs are drawn.";
+        type = types.str;
       };
 
       extraPppdOptions = mkOption {
-        type = types.lines;
-        description = "Adds extra lines to the pppd options file.";
         default = "";
+        description = "Adds extra lines to the pppd options file.";
+
         example = ''
           ms-dns 8.8.8.8
           ms-dns 8.8.4.4
         '';
+
+        type = types.lines;
+      };
+
+      extraPptpdOptions = mkOption {
+        default = "";
+        description = "Adds extra lines to the pptpd configuration file.";
+        type = types.lines;
+      };
+
+      maxClients = mkOption {
+        default = 10;
+        description = "The maximum number of simultaneous connections.";
+        type = types.int;
+      };
+
+      serverIp = mkOption {
+        default = "10.124.124.1";
+        description = "The server-side IP address.";
+        type = types.str;
       };
     };
   };
@@ -86,21 +88,19 @@ with lib;
         '';
 
         ppp-pptpd-wrapped = pkgs.stdenv.mkDerivation {
-          name = "ppp-pptpd-wrapped";
-          nativeBuildInputs = with pkgs; [ makeWrapper ];
           buildCommand = ''
             mkdir -p $out/bin
             makeWrapper ${pkgs.ppp}/bin/pppd $out/bin/pppd \
               --set LD_PRELOAD    "${pkgs.libredirect}/lib/libredirect.so" \
               --set NIX_REDIRECTS "/etc/ppp=/etc/ppp-pptpd"
           '';
+
+          name = "ppp-pptpd-wrapped";
+          nativeBuildInputs = with pkgs; [ makeWrapper ];
         };
       in
       {
         description = "pptpd server";
-
-        requires = [ "network-online.target" ];
-        wantedBy = [ "multi-user.target" ];
 
         preStart = ''
           mkdir -p -m 700 /etc/ppp-pptpd
@@ -115,13 +115,17 @@ with lib;
           EOF
         '';
 
+        requires = [ "network-online.target" ];
+
         serviceConfig = {
           ExecStart = "${pkgs.pptpd}/bin/pptpd --conf ${pptpd-conf}";
           KillMode = "process";
+          PIDFile = "/run/pptpd.pid";
           Restart = "on-success";
           Type = "forking";
-          PIDFile = "/run/pptpd.pid";
         };
+
+        wantedBy = [ "multi-user.target" ];
       };
   };
 }

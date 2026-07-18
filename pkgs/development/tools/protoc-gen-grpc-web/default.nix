@@ -17,9 +17,6 @@ stdenv.mkDerivation (finalAttrs: {
     sha256 = "sha256-yqiSuqan4vynE3AS8OnYdzA+3AVlVFTBkxTuJe17114=";
   };
 
-  sourceRoot = "${finalAttrs.src.name}/javascript/net/grpc/web/generator";
-
-  enableParallelBuilding = true;
   strictDeps = true;
   nativeBuildInputs = [ protobuf ];
   buildInputs = [ protobuf ];
@@ -31,6 +28,7 @@ stdenv.mkDerivation (finalAttrs: {
 
   doCheck = true;
   nativeCheckInputs = [ protobuf ];
+
   checkPhase = ''
     runHook preCheck
 
@@ -49,13 +47,16 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postCheck
   '';
 
+  enableParallelBuilding = true;
+  sourceRoot = "${finalAttrs.src.name}/javascript/net/grpc/web/generator";
+
   meta = {
+    description = "gRPC web support for Google's protocol buffers";
     homepage = "https://github.com/grpc/grpc-web";
     changelog = "https://github.com/grpc/grpc-web/blob/${finalAttrs.version}/CHANGELOG.md";
-    description = "gRPC web support for Google's protocol buffers";
-    mainProgram = "protoc-gen-grpc-web";
     license = lib.licenses.asl20;
     maintainers = with lib.maintainers; [ jk ];
     platforms = lib.platforms.unix;
+    mainProgram = "protoc-gen-grpc-web";
   };
 })

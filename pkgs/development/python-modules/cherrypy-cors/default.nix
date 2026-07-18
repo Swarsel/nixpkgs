@@ -1,17 +1,16 @@
 {
   lib,
   buildPythonPackage,
+  cherrypy,
   fetchPypi,
+  httpagentparser,
+  pytestCheckHook,
   setuptools,
   setuptools-scm,
-  httpagentparser,
-  cherrypy,
-  pytestCheckHook,
 }:
 buildPythonPackage rec {
   pname = "cherrypy-cors";
   version = "1.7.0";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
@@ -28,9 +27,9 @@ buildPythonPackage rec {
     cherrypy
   ];
 
-  pythonImportsCheck = [ "cherrypy_cors" ];
-
   nativeCheckInputs = [ pytestCheckHook ];
+  pyproject = true;
+  pythonImportsCheck = [ "cherrypy_cors" ];
 
   meta = {
     description = "CORS support for CherryPy";

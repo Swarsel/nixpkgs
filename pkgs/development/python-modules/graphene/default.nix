@@ -1,22 +1,21 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
+  buildPythonPackage,
   graphql-core,
   graphql-relay,
   pytest-asyncio,
   pytest-benchmark,
   pytest-mock,
   pytestCheckHook,
-  typing-extensions,
   python-dateutil,
+  setuptools,
+  typing-extensions,
 }:
 
 buildPythonPackage rec {
   pname = "graphene";
   version = "3.4.3";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "graphql-python";
@@ -24,6 +23,13 @@ buildPythonPackage rec {
     tag = "v${version}";
     hash = "sha256-K1IGKK3nTsRBe2D/cKJ/ahnAO5xxjf4gtollzTwt1zU=";
   };
+
+  nativeCheckInputs = [
+    pytestCheckHook
+    pytest-asyncio
+    pytest-benchmark
+    pytest-mock
+  ];
 
   build-system = [ setuptools ];
 
@@ -34,15 +40,8 @@ buildPythonPackage rec {
     typing-extensions
   ];
 
-  nativeCheckInputs = [
-    pytestCheckHook
-    pytest-asyncio
-    pytest-benchmark
-    pytest-mock
-  ];
-
+  pyproject = true;
   pytestFlags = [ "--benchmark-disable" ];
-
   pythonImportsCheck = [ "graphene" ];
 
   meta = {

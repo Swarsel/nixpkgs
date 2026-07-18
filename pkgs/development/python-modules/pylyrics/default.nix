@@ -1,21 +1,20 @@
 {
   lib,
+  beautifulsoup4,
   buildPythonPackage,
   fetchPypi,
-  beautifulsoup4,
   requests,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "pylyrics";
   version = "1.1.0";
-  format = "setuptools";
 
   src = fetchPypi {
-    pname = "PyLyrics";
     inherit (finalAttrs) version;
-    extension = "zip";
     hash = "sha256-xfNujvDtO0h6kkLONMGfloTkGKW7/9XTZ9wdFgS0zQs=";
+    extension = "zip";
+    pname = "PyLyrics";
   };
 
   propagatedBuildInputs = [
@@ -23,10 +22,10 @@ buildPythonPackage (finalAttrs: {
     requests
   ];
 
-  pythonImportsCheck = [ "PyLyrics" ];
-
   # tries to connect to lyrics.wikia.com
   doCheck = false;
+  format = "setuptools";
+  pythonImportsCheck = [ "PyLyrics" ];
 
   meta = {
     description = "Pythonic Implementation of lyrics.wikia.com for getting lyrics of songs";

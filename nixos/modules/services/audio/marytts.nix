@@ -11,69 +11,61 @@ in
 {
   options.services.marytts = {
     enable = lib.mkEnableOption "MaryTTS";
+    package = lib.mkPackageOption pkgs "marytts" { };
+
+    basePath = lib.mkOption {
+      default = "/var/lib/marytts";
+
+      description = ''
+        The base path in which MaryTTS runs.
+      '';
+
+      type = lib.types.path;
+    };
+
+    openFirewall = lib.mkOption {
+      default = false;
+
+      description = ''
+        Whether to open the port in the firewall for MaryTTS.
+      '';
+
+      example = true;
+      type = lib.types.bool;
+    };
+
+    port = lib.mkOption {
+      default = 59125;
+
+      description = ''
+        Port to bind the MaryTTS server to.
+      '';
+
+      type = lib.types.port;
+    };
 
     settings = lib.mkOption {
-      type = lib.types.submodule {
-        freeformType = format.type;
-      };
       default = { };
+
       description = ''
         Settings for MaryTTS.
 
         See the [default settings](https://github.com/marytts/marytts/blob/master/marytts-runtime/conf/marybase.config)
         for a list of possible keys.
       '';
-    };
 
-    package = lib.mkPackageOption pkgs "marytts" { };
-
-    basePath = lib.mkOption {
-      type = lib.types.path;
-      default = "/var/lib/marytts";
-      description = ''
-        The base path in which MaryTTS runs.
-      '';
-    };
-
-    port = lib.mkOption {
-      type = lib.types.port;
-      default = 59125;
-      description = ''
-        Port to bind the MaryTTS server to.
-      '';
-    };
-
-    openFirewall = lib.mkOption {
-      type = lib.types.bool;
-      default = false;
-      example = true;
-      description = ''
-        Whether to open the port in the firewall for MaryTTS.
-      '';
-    };
-
-    voices = lib.mkOption {
-      type = lib.types.listOf lib.types.path;
-      default = [ ];
-      example = lib.literalExpression ''
-        [
-          (pkgs.fetchzip {
-            url = "https://github.com/marytts/voice-bits1-hsmm/releases/download/v5.2/voice-bits1-hsmm-5.2.zip";
-            hash = "sha256-1nK+qZxjumMev7z5lgKr660NCKH5FDwvZ9sw/YYYeaA=";
-          })
-        ]
-      '';
-      description = ''
-        Paths to the JAR files that contain additional voices for MaryTTS.
-
-        Voices are automatically detected by MaryTTS, so there is no need to alter
-        your config to make use of new voices.
-      '';
+      type = lib.types.submodule {
+        freeformType = format.type;
+      };
     };
 
     userDictionaries = lib.mkOption {
-      type = lib.types.listOf lib.types.path;
       default = [ ];
+
+      description = ''
+        Paths to the user dictionary files for MaryTTS.
+      '';
+
       example = lib.literalExpression ''
         [
           (pkgs.writeTextFile {
@@ -85,24 +77,49 @@ in
           })
         ]
       '';
+
+      type = lib.types.listOf lib.types.path;
+    };
+
+    voices = lib.mkOption {
+      default = [ ];
+
       description = ''
-        Paths to the user dictionary files for MaryTTS.
+        Paths to the JAR files that contain additional voices for MaryTTS.
+
+        Voices are automatically detected by MaryTTS, so there is no need to alter
+        your config to make use of new voices.
       '';
+
+      example = lib.literalExpression ''
+        [
+          (pkgs.fetchzip {
+            url = "https://github.com/marytts/voice-bits1-hsmm/releases/download/v5.2/voice-bits1-hsmm-5.2.zip";
+            hash = "sha256-1nK+qZxjumMev7z5lgKr660NCKH5FDwvZ9sw/YYYeaA=";
+          })
+        ]
+      '';
+
+      type = lib.types.listOf lib.types.path;
     };
   };
 
   config = lib.mkIf cfg.enable {
+    environment.systemPackages = [ cfg.package ];
+
+    networking.firewall = lib.mkIf cfg.openFirewall {
+      allowedTCPPorts = [ cfg.port ];
+    };
+
     services.marytts.settings = {
       "mary.base" = lib.mkDefault cfg.basePath;
       "socket.port" = lib.mkDefault cfg.port;
     };
 
-    environment.systemPackages = [ cfg.package ];
-
     systemd.services.marytts = {
-      description = "MaryTTS server instance";
       after = [ "network.target" ];
-      wantedBy = [ "multi-user.target" ];
+      description = "MaryTTS server instance";
+      restartTriggers = cfg.voices ++ cfg.userDictionaries;
 
       # FIXME: MaryTTS's config loading mechanism appears to be horrendously broken
       # and it doesn't seem to actually read config files outside of precompiled JAR files.
@@ -113,72 +130,66 @@ in
         }
       '';
 
-      restartTriggers = cfg.voices ++ cfg.userDictionaries;
-
       serviceConfig = {
+        AmbientCapabilities = lib.optional (cfg.port < 1024) "CAP_NET_BIND_SERVICE";
+        CapabilityBoundingSet = "";
         DynamicUser = true;
-        User = "marytts";
-        RuntimeDirectory = "marytts";
-        StateDirectory = "marytts";
-        Restart = "on-failure";
-        RestartSec = 5;
-        TimeoutSec = 20;
-
+        LockPersonality = true;
+        MemoryDenyWriteExecute = false; # Java does not like w^x :(
+        PrivateDevices = true;
+        PrivateNetwork = false;
+        PrivateTmp = true;
+        PrivateUsers = cfg.port >= 1024;
+        ProcSubset = "pid";
         # Hardening
         ProtectClock = true;
-        ProtectKernelLogs = true;
         ProtectControlGroups = true;
-        ProtectKernelModules = true;
+        ProtectHome = true;
         ProtectHostname = true;
+        ProtectKernelLogs = true;
+        ProtectKernelModules = true;
         ProtectKernelTunables = true;
         ProtectProc = "invisible";
-        ProtectHome = true;
-        ProcSubset = "pid";
+        Restart = "on-failure";
+        RestartSec = 5;
 
-        PrivateTmp = true;
-        PrivateNetwork = false;
-        PrivateUsers = cfg.port >= 1024;
-        PrivateDevices = true;
-
-        RestrictRealtime = true;
-        RestrictNamespaces = true;
         RestrictAddressFamilies = [
           "AF_INET"
           "AF_INET6"
         ];
 
-        MemoryDenyWriteExecute = false; # Java does not like w^x :(
-        LockPersonality = true;
-        AmbientCapabilities = lib.optional (cfg.port < 1024) "CAP_NET_BIND_SERVICE";
-        CapabilityBoundingSet = "";
+        RestrictNamespaces = true;
+        RestrictRealtime = true;
+        RuntimeDirectory = "marytts";
+        StateDirectory = "marytts";
         SystemCallArchitectures = "native";
+
         SystemCallFilter = [
           "@system-service"
           "~@resources"
           "~@privileged"
         ];
+
+        TimeoutSec = 20;
         UMask = "0027";
+        User = "marytts";
       };
+
+      wantedBy = [ "multi-user.target" ];
     };
 
     systemd.tmpfiles.settings."10-marytts" = {
       "${cfg.basePath}/lib"."L+".argument = "${pkgs.symlinkJoin {
         name = "marytts-lib";
-
         # Put user paths before default ones so that user ones have priority
         paths = cfg.voices ++ [ "${cfg.package}/lib" ];
       }}";
 
       "${cfg.basePath}/user-dictionaries"."L+".argument = "${pkgs.symlinkJoin {
         name = "marytts-user-dictionaries";
-
         # Put user paths before default ones so that user ones have priority
         paths = cfg.userDictionaries ++ [ "${cfg.package}/user-dictionaries" ];
       }}";
-    };
-
-    networking.firewall = lib.mkIf cfg.openFirewall {
-      allowedTCPPorts = [ cfg.port ];
     };
   };
 }

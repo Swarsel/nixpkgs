@@ -3,8 +3,8 @@
   stdenv,
   fetchFromCodeberg,
   nix-update-script,
-  python3,
   pass,
+  python3,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -18,12 +18,12 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-8EThigW6uD5I4YmZYB2uNqdRzqqAHbULNY1UGA0vfAY=";
   };
 
-  buildInputs = [ python3 ];
-  makeFlags = [ "VERSION=${finalAttrs.version}" ];
-
   postPatch = ''
     sed -i 's#COMMAND = "pass"#COMMAND = "${pass}/bin/pass"#' src/passff.py
   '';
+
+  buildInputs = [ python3 ];
+  makeFlags = [ "VERSION=${finalAttrs.version}" ];
 
   installPhase = ''
     substituteInPlace bin/${finalAttrs.version}/passff.json \

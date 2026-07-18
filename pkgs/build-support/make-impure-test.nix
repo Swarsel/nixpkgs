@@ -32,15 +32,14 @@
 {
   lib,
   stdenv,
-  writeShellScript,
-
   name,
-  testedPackage ? null,
-  testPath ? "${testedPackage}.impureTests.${name}.testDerivation",
-  sandboxPaths ? [ "/sys" ],
-  prepareRunCommands ? "",
-  nixFlags ? [ ],
   testScript,
+  writeShellScript,
+  nixFlags ? [ ],
+  prepareRunCommands ? "",
+  sandboxPaths ? [ "/sys" ],
+  testPath ? "${testedPackage}.impureTests.${name}.testDerivation",
+  testedPackage ? null,
   ...
 }@args:
 
@@ -52,10 +51,6 @@ let
   testDerivation = stdenv.mkDerivation (
     lib.recursiveUpdate
       {
-        name = "test-run-${name}";
-
-        requiredSystemFeatures = [ "nixos-test" ];
-
         buildCommand = ''
           mkdir -p $out
 
@@ -68,6 +63,8 @@ let
           ${testScript}
         '';
 
+        name = "test-run-${name}";
+        requiredSystemFeatures = [ "nixos-test" ];
         passthru.runScript = runScript;
       }
       (

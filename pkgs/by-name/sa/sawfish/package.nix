@@ -7,19 +7,19 @@
   gettext,
   gtk2-x11,
   libice,
+  librep,
   libsm,
   libxcrypt,
   libxinerama,
   libxrandr,
   libxtst,
-  librep,
   makeWrapper,
   pango,
   pkg-config,
   rep-gtk,
   texinfo,
-  which,
   versionCheckHook,
+  which,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -32,6 +32,13 @@ stdenv.mkDerivation (finalAttrs: {
     tag = "sawfish-${finalAttrs.version}";
     hash = "sha256-4hxws3afDN9RjO9JCEjEgG4/g6bSycrmiJzRoyNnl3s=";
   };
+
+  postPatch = ''
+    sed -e 's|REP_DL_LOAD_PATH=|REP_DL_LOAD_PATH=$(REP_DL_LOAD_PATH):|g' -i Makedefs.in
+    sed -e 's|$(repexecdir)|$(libdir)/rep|g' -i src/Makefile.in
+  '';
+
+  strictDeps = true;
 
   nativeBuildInputs = [
     autoreconfHook
@@ -57,13 +64,9 @@ stdenv.mkDerivation (finalAttrs: {
     rep-gtk
   ];
 
-  postPatch = ''
-    sed -e 's|REP_DL_LOAD_PATH=|REP_DL_LOAD_PATH=$(REP_DL_LOAD_PATH):|g' -i Makedefs.in
-    sed -e 's|$(repexecdir)|$(libdir)/rep|g' -i src/Makefile.in
-  '';
-
-  strictDeps = true;
-  enableParallelBuilding = true;
+  # fixes:
+  # sawfish.h:52:13: error: 'bool' cannot be defined via 'typedef'
+  env.NIX_CFLAGS_COMPILE = "-std=gnu17";
 
   postInstall = ''
     for file in $out/lib/sawfish/sawfish-menu \
@@ -77,19 +80,18 @@ stdenv.mkDerivation (finalAttrs: {
     done
   '';
 
-  # fixes:
-  # sawfish.h:52:13: error: 'bool' cannot be defined via 'typedef'
-  env.NIX_CFLAGS_COMPILE = "-std=gnu17";
+  doInstallCheck = true;
 
   nativeInstallCheckInputs = [
     versionCheckHook
   ];
-  doInstallCheck = true;
+
+  enableParallelBuilding = true;
   versionCheckProgram = "${placeholder "out"}/bin/${finalAttrs.meta.mainProgram}";
 
   meta = {
-    homepage = "http://sawfish.tuxfamily.org/";
     description = "Extensible, Lisp-based window manager";
+
     longDescription = ''
       Sawfish is an extensible window manager using a Lisp-based scripting
       language. Its policy is very minimal compared to most window managers. Its
@@ -97,6 +99,8 @@ stdenv.mkDerivation (finalAttrs: {
       possible. All high-level WM functions are implemented in Lisp for future
       extensibility or redefinition.
     '';
+
+    homepage = "http://sawfish.tuxfamily.org/";
     license = lib.licenses.gpl2Plus;
     maintainers = [ ];
     platforms = lib.platforms.linux;

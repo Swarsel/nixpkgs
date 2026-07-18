@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   packageurl-python,
   rich,
   setuptools,
@@ -11,7 +11,6 @@
 buildPythonPackage rec {
   pname = "csaf-tool";
   version = "0.3.2";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "anthonyharrison";
@@ -20,6 +19,9 @@ buildPythonPackage rec {
     hash = "sha256-LR6r03z0nvvAQgFHaTWfukoJmLZ6SLPXfbp/G8N/HtM=";
   };
 
+  # has not tests
+  doCheck = false;
+  nativeCheckInputs = [ versionCheckHook ];
   build-system = [ setuptools ];
 
   dependencies = [
@@ -27,12 +29,8 @@ buildPythonPackage rec {
     rich
   ];
 
-  # has not tests
-  doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "csaf" ];
-
-  nativeCheckInputs = [ versionCheckHook ];
 
   meta = {
     description = "CSAF generator and validator";

@@ -1,7 +1,7 @@
 {
-  buildPythonPackage,
   lib,
   fetchFromGitLab,
+  buildPythonPackage,
   setuptools,
   sphinx,
 }:
@@ -9,7 +9,6 @@
 buildPythonPackage rec {
   pname = "sphinx-lv2-theme";
   version = "1.4.6";
-  pyproject = true;
 
   src = fetchFromGitLab {
     owner = "LV2";
@@ -19,9 +18,8 @@ buildPythonPackage rec {
   };
 
   build-system = [ setuptools ];
-
   dependencies = [ sphinx ];
-
+  pyproject = true;
   pythonImportsCheck = [ "sphinx_lv2_theme" ];
 
   meta = {

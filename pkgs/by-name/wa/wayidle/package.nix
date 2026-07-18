@@ -1,7 +1,7 @@
 {
   lib,
-  rustPlatform,
   fetchFromSourcehut,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -22,7 +22,7 @@ rustPlatform.buildRustPackage (finalAttrs: {
     homepage = "https://git.sr.ht/~whynothugo/wayidle";
     license = lib.licenses.isc;
     maintainers = [ ];
-    mainProgram = "wayidle";
     platforms = lib.platforms.linux;
+    mainProgram = "wayidle";
   };
 })

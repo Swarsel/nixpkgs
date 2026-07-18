@@ -7,7 +7,6 @@
 python3Packages.buildPythonApplication (finalAttrs: {
   pname = "ciel";
   version = "2.6.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "fossi-foundation";
@@ -26,6 +25,8 @@ python3Packages.buildPythonApplication (finalAttrs: {
     rich
     zstandard
   ];
+
+  pyproject = true;
 
   meta = {
     description = "Tool for managing Process Design Kits (PDKs) for ASIC and FPGA flows";

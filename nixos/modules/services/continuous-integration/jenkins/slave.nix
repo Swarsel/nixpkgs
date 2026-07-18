@@ -19,64 +19,72 @@ in
       # * Optionally configure the node as a jenkins ad-hoc slave. This would imply configuration
       # properties for the master node.
       enable = mkOption {
-        type = types.bool;
         default = false;
+
         description = ''
           If true the system will be configured to work as a jenkins slave.
           If the system is also configured to work as a jenkins master then this has no effect.
           In progress: Currently only assures the jenkins user is configured.
         '';
-      };
 
-      user = mkOption {
-        default = "jenkins";
-        type = types.str;
-        description = ''
-          User the jenkins slave agent should execute under.
-        '';
+        type = types.bool;
       };
 
       group = mkOption {
         default = "jenkins";
-        type = types.str;
+
         description = ''
           If the default slave agent user "jenkins" is configured then this is
           the primary group of that user.
         '';
+
+        type = types.str;
       };
 
       home = mkOption {
         default = "/var/lib/jenkins";
-        type = types.path;
+
         description = ''
           The path to use as JENKINS_HOME. If the default user "jenkins" is configured then
           this is the home of the "jenkins" user.
         '';
+
+        type = types.path;
       };
 
       javaPackage = lib.mkPackageOption pkgs "jdk" { };
+
+      user = mkOption {
+        default = "jenkins";
+
+        description = ''
+          User the jenkins slave agent should execute under.
+        '';
+
+        type = types.str;
+      };
     };
   };
 
   config = mkIf (cfg.enable && !masterCfg.enable) {
+    programs.java = {
+      enable = true;
+      package = cfg.javaPackage;
+    };
+
     users.groups = lib.optionalAttrs (cfg.group == "jenkins") {
       jenkins.gid = config.ids.gids.jenkins;
     };
 
     users.users = lib.optionalAttrs (cfg.user == "jenkins") {
       jenkins = {
-        description = "jenkins user";
         createHome = true;
-        home = cfg.home;
+        description = "jenkins user";
         group = cfg.group;
-        useDefaultShell = true;
+        home = cfg.home;
         uid = config.ids.uids.jenkins;
+        useDefaultShell = true;
       };
-    };
-
-    programs.java = {
-      enable = true;
-      package = cfg.javaPackage;
     };
   };
 }

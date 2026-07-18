@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule (finalAttrs: {
@@ -17,17 +17,17 @@ buildGoModule (finalAttrs: {
 
   vendorHash = "sha256-2krZ1JVioWiVuAGflMzw0W0wITpHTMu8j1Kio+uCkvM=";
 
-  ldflags = [
-    "-s"
-    "-w"
-  ];
-
   installPhase = ''
     runHook preInstall
     mkdir -p $out/bin
     cp "$GOPATH/bin/cmd" $out/bin/terraform-backend
     runHook postInstall
   '';
+
+  ldflags = [
+    "-s"
+    "-w"
+  ];
 
   meta = {
     description = "State backend server which implements the Terraform HTTP backend API with pluggable modules for authentication, storage, locking and state encryption";

@@ -1,9 +1,9 @@
 {
-  stdenvNoCC,
   lib,
   fetchFromGitHub,
   gettext,
   python3,
+  stdenvNoCC,
 }:
 
 stdenvNoCC.mkDerivation {
@@ -18,11 +18,6 @@ stdenvNoCC.mkDerivation {
     hash = "sha256-nNH8/MIgVk7Y9YyGfN1jjdGJ4DruXu2Lg8+GjQnIggM=";
   };
 
-  nativeBuildInputs = [
-    gettext
-    python3.pkgs.wrapPython
-  ];
-
   postPatch = ''
     substituteInPlace usr/share/nemo-python/extensions/nemo-folder-color-switcher.py \
       --replace "/usr/share/locale" "$out/share/locale" \
@@ -32,6 +27,11 @@ stdenvNoCC.mkDerivation {
     substituteInPlace usr/share/caja-python/extensions/caja-folder-color-switcher.py \
       --replace "/usr/share/folder-color-switcher/colors.d" "/run/current-system/sw/share/folder-color-switcher/colors.d"
   '';
+
+  nativeBuildInputs = [
+    gettext
+    python3.pkgs.wrapPython
+  ];
 
   installPhase = ''
     runHook preInstall
@@ -47,8 +47,8 @@ stdenvNoCC.mkDerivation {
   passthru.nemoPythonExtensionDeps = [ python3.pkgs.pycairo ];
 
   meta = {
-    homepage = "https://github.com/linuxmint/folder-color-switcher";
     description = "Change folder colors for Nemo and Caja";
+    homepage = "https://github.com/linuxmint/folder-color-switcher";
     license = lib.licenses.gpl3Only;
     platforms = lib.platforms.linux;
     teams = [ lib.teams.cinnamon ];

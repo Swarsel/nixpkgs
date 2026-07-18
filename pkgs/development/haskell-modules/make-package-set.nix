@@ -2,41 +2,32 @@
 # a full package set out of that.
 
 {
-  # package-set used for build tools (all of nixpkgs)
-  buildPackages,
-
-  # A haskell package set for Setup.hs, compiler plugins, and similar
-  # build-time uses.
-  buildHaskellPackages,
-
-  # package-set used for non-haskell dependencies (all of nixpkgs)
-  pkgs,
-
-  # stdenv provides our build and host platforms
-  stdenv,
-
   # this module provides the list of known licenses and maintainers
   lib,
-
-  # needed for overrideCabal & packageSourceOverrides
-  haskellLib,
-
+  # stdenv provides our build and host platforms
+  stdenv,
   # hashes for downloading Hackage packages
   # This is either a directory or a .tar.gz containing the cabal files and
   # hashes of Hackage as exemplified by this repository:
   # https://github.com/commercialhaskell/all-cabal-hashes/tree/hackage
   all-cabal-hashes,
-
-  # compiler to use
-  ghc,
-
-  # A function that takes `{ pkgs, lib, callPackage }` as the first arg and
-  # `self` as second, and returns a set of haskell packages
-  package-set,
-
+  # A haskell package set for Setup.hs, compiler plugins, and similar
+  # build-time uses.
+  buildHaskellPackages,
+  # package-set used for build tools (all of nixpkgs)
+  buildPackages,
   # The final, fully overridden package set usable with the nixpkgs fixpoint
   # overriding functionality
   extensible-self,
+  # compiler to use
+  ghc,
+  # needed for overrideCabal & packageSourceOverrides
+  haskellLib,
+  # A function that takes `{ pkgs, lib, callPackage }` as the first arg and
+  # `self` as second, and returns a set of haskell packages
+  package-set,
+  # package-set used for non-haskell dependencies (all of nixpkgs)
+  pkgs,
 }:
 
 # return value: a function from self to the package set
@@ -53,34 +44,27 @@ let
   mkDerivationImpl = pkgs.callPackage builder (
     {
       inherit stdenv;
+
       inherit (self)
         buildHaskellPackages
         ghc
         ;
+
       inherit (self.buildHaskellPackages) jailbreak-cabal;
     }
     // lib.optionalAttrs (!(ghc.isMhs or false)) {
       inherit haskellLib;
+
       inherit (self)
         ghcWithHoogle
         ghcWithPackages
         ;
-      nodejs = buildPackages.nodejs-slim;
-      iserv-proxy = {
-        build = buildHaskellPackages.iserv-proxy;
-        host = self.iserv-proxy;
-      };
-      hscolour = overrideCabal (drv: {
-        isLibrary = false;
-        doHaddock = false;
-        hyperlinkSource = false; # Avoid depending on hscolour for this build.
-        postFixup = "rm -rf $out/lib $out/share $out/nix-support";
-      }) self.buildHaskellPackages.hscolour;
+
       cpphs =
         overrideCabal
           (drv: {
-            isLibrary = false;
             postFixup = "rm -rf $out/lib $out/share $out/nix-support";
+            isLibrary = false;
           })
           (
             self.cpphs.overrideScope (
@@ -90,15 +74,29 @@ let
                   super.mkDerivation (
                     drv
                     // {
+                      doHaddock = false;
                       enableSharedExecutables = false;
                       enableSharedLibraries = false;
-                      doHaddock = false;
                       useCpphs = false;
                     }
                   );
               }
             )
           );
+
+      hscolour = overrideCabal (drv: {
+        postFixup = "rm -rf $out/lib $out/share $out/nix-support";
+        doHaddock = false;
+        hyperlinkSource = false; # Avoid depending on hscolour for this build.
+        isLibrary = false;
+      }) self.buildHaskellPackages.hscolour;
+
+      iserv-proxy = {
+        build = buildHaskellPackages.iserv-proxy;
+        host = self.iserv-proxy;
+      };
+
+      nodejs = buildPackages.nodejs-slim;
     }
     // lib.optionalAttrs (ghc.isMhs or false) {
       inherit (self) wrapMhs ghc-compat;
@@ -134,11 +132,15 @@ let
       # this wraps the `drv` function to add `scope` and `overrideScope` to the result.
       # it's a functor, so that we can pass through `functionArgs`
       drvScope = {
+        # `drvScope` accepts the same arguments as `drv`
+        __functionArgs = drvFunctionArgs;
+
         __functor =
           _: allArgs:
           ensureAttrs (drv allArgs)
           // {
             inherit scope;
+
             overrideScope =
               f:
               let
@@ -151,8 +153,6 @@ let
               # nothing.
               callPackageWithScope newScope drv manualArgs;
           };
-        # `drvScope` accepts the same arguments as `drv`
-        __functionArgs = drvFunctionArgs;
       };
     in
     lib.makeOverridable drvScope (auto // manualArgs);
@@ -184,8 +184,8 @@ let
     {
       name,
       src,
-      sha256 ? null,
       extraCabal2nixOptions ? "",
+      sha256 ? null,
     }:
     let
       sha256Arg = if sha256 == null then "--sha256=" else ''--sha256="${sha256}"'';
@@ -193,14 +193,16 @@ let
     buildPackages.runCommand "cabal2nix-${name}"
       {
         nativeBuildInputs = [ buildPackages.cabal2nix-unwrapped ];
-        preferLocalBuild = true;
-        allowSubstitutes = false;
+
         env = {
           LANG = "en_US.UTF-8";
         }
         // lib.optionalAttrs (buildPlatform.libc == "glibc") {
           LOCALE_ARCHIVE = "${buildPackages.glibcLocales}/lib/locale/locale-archive";
         };
+
+        allowSubstitutes = false;
+        preferLocalBuild = true;
       }
       ''
         export HOME="$TMP"
@@ -232,9 +234,9 @@ let
       component = all-cabal-hashes-component name version;
     in
     self.haskellSrc2nix {
+      src = "${component}/${name}.cabal";
       name = "${name}-${version}";
       sha256 = ''$(sed -e 's/.*"SHA256":"//' -e 's/".*$//' "${component}/${name}.json")'';
-      src = "${component}/${name}.cabal";
     };
 
   # Adds a nix file derived from cabal2nix in the passthru of the derivation it
@@ -268,6 +270,89 @@ package-set { inherit pkgs lib callPackage; } self
 
   inherit (haskellLib) packageSourceOverrides;
 
+  /*
+    Like `haskell.lib.buildFromSdist`, but using `cabal sdist` instead of
+    building `./Setup`.
+
+    Unlike `haskell.lib.buildFromSdist`, this does not require any dependencies
+    to be present. This makes `buildFromCabalSdist` faster than `haskell.lib.buildFromSdist`.
+  */
+  buildFromCabalSdist =
+    pkg:
+    haskellLib.overrideCabal
+      (_: {
+        # Patches are already applied by srcOnly above, so clear them
+        # to avoid double-application.
+        patches = [ ];
+      })
+      (
+        haskellLib.overrideSrc {
+          version = pkg.version;
+          src = self.cabalSdist { src = pkgs.srcOnly pkg; };
+        } pkg
+      );
+
+  /*
+    Run `cabal sdist` on a source.
+
+    Unlike `haskell.lib.sdistTarball`, this does not require any dependencies
+    to be present, as it uses `cabal-install` instead of building `Setup.hs`.
+    This makes `cabalSdist` faster than `sdistTarball`.
+  */
+  cabalSdist =
+    {
+      src,
+      name ? if src ? name then "${src.name}-sdist.tar.gz" else "source.tar.gz",
+    }:
+    pkgs.runCommandLocal name
+      {
+        inherit src;
+
+        nativeBuildInputs = [
+          buildHaskellPackages.cabal-install
+        ];
+
+        dontUnpack = false;
+      }
+      ''
+        unpackPhase
+        cd "''${sourceRoot:-.}"
+        patchPhase
+        mkdir out
+        HOME=$PWD cabal sdist --output-directory out
+        mv out/*.tar.gz $out
+      '';
+
+  callCabal2nix =
+    name: src: args:
+    self.callCabal2nixWithOptions name src "" args;
+
+  # Creates a Haskell package from a source package by calling cabal2nix on the source.
+  callCabal2nixWithOptions =
+    name: src: opts: args:
+    let
+      extraCabal2nixOptions = if builtins.isString opts then opts else opts.extraCabal2nixOptions or "";
+      srcModifier = opts.srcModifier or null;
+      defaultFilter = path: type: pkgs.lib.hasSuffix ".cabal" path || baseNameOf path == "package.yaml";
+      expr = self.haskellSrc2nix {
+        inherit name extraCabal2nixOptions;
+
+        src =
+          if srcModifier != null then
+            srcModifier src
+          else if pkgs.lib.canCleanSource src then
+            pkgs.lib.cleanSourceWith {
+              inherit src;
+              filter = defaultFilter;
+            }
+          else
+            src;
+      };
+    in
+    overrideCabal (orig: {
+      inherit src;
+    }) (callPackageKeepDeriver expr args);
+
   # callHackage :: Text -> Text -> AttrSet -> HaskellPackage
   #
   # e.g., while overriding a package set:
@@ -286,8 +371,8 @@ package-set { inherit pkgs lib callPackage; } self
   callHackageDirect =
     {
       pkg,
-      ver,
       sha256,
+      ver,
       candidate ? false,
       rev ? {
         revision = null;
@@ -298,47 +383,19 @@ package-set { inherit pkgs lib callPackage; } self
     let
       pkgver = "${pkg}-${ver}";
       firstRevision = self.callCabal2nix pkg (pkgs.fetchzip {
+        inherit sha256;
+
         url =
           if candidate then
             "mirror://hackage/${pkgver}/candidate/${pkgver}.tar.gz"
           else
             "mirror://hackage/${pkgver}/${pkgver}.tar.gz";
-        inherit sha256;
       }) args;
     in
     overrideCabal (orig: {
-      revision = rev.revision;
       editedCabalFile = rev.sha256;
+      revision = rev.revision;
     }) firstRevision;
-
-  # Creates a Haskell package from a source package by calling cabal2nix on the source.
-  callCabal2nixWithOptions =
-    name: src: opts: args:
-    let
-      extraCabal2nixOptions = if builtins.isString opts then opts else opts.extraCabal2nixOptions or "";
-      srcModifier = opts.srcModifier or null;
-      defaultFilter = path: type: pkgs.lib.hasSuffix ".cabal" path || baseNameOf path == "package.yaml";
-      expr = self.haskellSrc2nix {
-        inherit name extraCabal2nixOptions;
-        src =
-          if srcModifier != null then
-            srcModifier src
-          else if pkgs.lib.canCleanSource src then
-            pkgs.lib.cleanSourceWith {
-              inherit src;
-              filter = defaultFilter;
-            }
-          else
-            src;
-      };
-    in
-    overrideCabal (orig: {
-      inherit src;
-    }) (callPackageKeepDeriver expr args);
-
-  callCabal2nix =
-    name: src: args:
-    self.callCabal2nixWithOptions name src "" args;
 
   # : { root : Path
   #   , name : Defaulted String
@@ -371,13 +428,13 @@ package-set { inherit pkgs lib callPackage; } self
   developPackage =
     {
       root,
-      name ? lib.optionalString (builtins.typeOf root == "path") (baseNameOf root),
-      source-overrides ? { },
-      overrides ? self: super: { },
-      modifier ? drv: drv,
-      returnShellEnv ? pkgs.lib.inNixShell,
-      withHoogle ? returnShellEnv,
       cabal2nixOptions ? "",
+      modifier ? drv: drv,
+      name ? lib.optionalString (builtins.typeOf root == "path") (baseNameOf root),
+      overrides ? self: super: { },
+      returnShellEnv ? pkgs.lib.inNixShell,
+      source-overrides ? { },
+      withHoogle ? returnShellEnv,
     }:
     let
       drv =
@@ -391,6 +448,75 @@ package-set { inherit pkgs lib callPackage; } self
     in
     if returnShellEnv then (modifier drv).envFunc { inherit withHoogle; } else modifier drv;
 
+  /*
+    Modify given Haskell package to force GHC to employ the LLVM
+    codegen backend when compiling. Useful when working around bugs
+    in a native codegen backend GHC defaults to.
+
+    Example:
+      forceLlvmCodegenBackend tls
+
+    Type: drv -> drv
+  */
+  forceLlvmCodegenBackend = overrideCabal (drv: {
+    configureFlags = drv.configureFlags or [ ] ++ [ "--ghc-option=-fllvm" ];
+
+    buildTools =
+      drv.buildTools or [ ]
+      ++ [ self.ghc.llvmPackages.llvm ]
+      # GHC >= 9.10 needs LLVM specific assembler, i.e. clang
+      # On Darwin clang is always required
+      ++ lib.optionals (lib.versionAtLeast self.ghc.version "9.10" || stdenv.hostPlatform.isDarwin) [
+        self.ghc.llvmPackages.clang
+      ];
+  });
+
+  /*
+    Modify a Haskell package to add shell completion scripts for the
+    given executables produced by it. These completion scripts will be
+    picked up automatically if the resulting derivation is installed,
+    e.g. by `nix-env -i`.
+
+    This depends on the `--*-completion` flag `optparse-applicative` provides
+    automatically. Since we need to invoke installed executables, completions
+    are not generated if we are cross-compiling.
+
+     commands: names of the executables built by the derivation
+          pkg: Haskell package that builds the executables
+
+    Example:
+      generateOptparseApplicativeCompletions [ "exec1" "exec2" ] pkg
+
+     Type: [str] -> drv -> drv
+  */
+  generateOptparseApplicativeCompletions = self.callPackage (
+    { stdenv }:
+
+    commands: pkg:
+
+    if stdenv.buildPlatform.canExecute stdenv.hostPlatform then
+      lib.foldr haskellLib.__generateOptparseApplicativeCompletion pkg commands
+    else
+      pkg
+  ) { };
+
+  ghc = ghc // {
+    withHoogle = self.ghcWithHoogle;
+    withPackages = self.ghcWithPackages;
+  };
+
+  # This is like a combination of ghcWithPackages and hoogleWithPackages.
+  # It provides a derivation containing both GHC and Hoogle with an index of
+  # the given Haskell package database.
+  #
+  # Example:
+  #   $ nix-shell -p 'haskellPackages.ghcWithHoogle (hpkgs: [ hpkgs.conduit hpkgs.lens ])'
+  #
+  # ghcWithHoogle :: (HaskellPkgSet -> [ HaskellPkg ]) -> Derivation
+  ghcWithHoogle = self.ghcWithPackages.override {
+    withHoogle = true;
+  };
+
   # This can be used to easily create a derivation containing GHC and the specified set of Haskell packages.
   #
   # Example:
@@ -402,9 +528,17 @@ package-set { inherit pkgs lib callPackage; } self
   #
   # ghcWithPackages :: (HaskellPkgSet -> [ HaskellPkg ]) -> Derivation
   ghcWithPackages = buildHaskellPackages.callPackage ./with-packages-wrapper.nix {
-    haskellPackages = self;
     inherit (self) hoogleWithPackages;
+    haskellPackages = self;
   };
+
+  hoogleLocal =
+    {
+      packages ? [ ],
+    }:
+    lib.warn "hoogleLocal is deprecated, use hoogleWithPackages instead" (
+      self.hoogleWithPackages (_: packages)
+    );
 
   # Put 'hoogle' into the derivation's PATH with a database containing all
   # the package's dependencies; run 'hoogle server --local' in a shell to
@@ -421,24 +555,6 @@ package-set { inherit pkgs lib callPackage; } self
   # echo *.cabal | entr -r -- nix-shell --run 'hoogle server --local'
   hoogleWithPackages = self.callPackage ./hoogle.nix {
     haskellPackages = self;
-  };
-  hoogleLocal =
-    {
-      packages ? [ ],
-    }:
-    lib.warn "hoogleLocal is deprecated, use hoogleWithPackages instead" (
-      self.hoogleWithPackages (_: packages)
-    );
-  # This is like a combination of ghcWithPackages and hoogleWithPackages.
-  # It provides a derivation containing both GHC and Hoogle with an index of
-  # the given Haskell package database.
-  #
-  # Example:
-  #   $ nix-shell -p 'haskellPackages.ghcWithHoogle (hpkgs: [ hpkgs.conduit hpkgs.lens ])'
-  #
-  # ghcWithHoogle :: (HaskellPkgSet -> [ HaskellPkg ]) -> Derivation
-  ghcWithHoogle = self.ghcWithPackages.override {
-    withHoogle = true;
   };
 
   # Returns a derivation whose environment contains a GHC with only
@@ -479,13 +595,21 @@ package-set { inherit pkgs lib callPackage; } self
       # Packages to create this development shell for.  These are usually
       # your local packages.
       packages,
-      # Whether or not to generate a Hoogle database for all the
-      # dependencies.
-      withHoogle ? false,
       # Whether or not to include benchmark dependencies of your local
       # packages.  You should set this to true if you have benchmarks defined
       # in your local packages that you want to be able to run with cabal benchmark
       doBenchmark ? false,
+      # Extra dependencies, in the form of cabal2nix build attributes.
+      #
+      # An example use case is when you have Haskell scripts that use
+      # libraries that don't occur in your packages' dependencies.
+      #
+      # Example:
+      #
+      #   extraDependencies = p: {
+      #     libraryHaskellDepends = [ p.releaser ];
+      #   };
+      extraDependencies ? p: { },
       # An optional function that can modify the generic builder arguments
       # for the fake package that shellFor uses to construct its environment.
       #
@@ -517,18 +641,9 @@ package-set { inherit pkgs lib callPackage; } self
       # for the "shellFor" environment (ensuring that any test/benchmark
       # dependencies for "foo" will be available within the nix-shell).
       genericBuilderArgsModifier ? (args: args),
-
-      # Extra dependencies, in the form of cabal2nix build attributes.
-      #
-      # An example use case is when you have Haskell scripts that use
-      # libraries that don't occur in your packages' dependencies.
-      #
-      # Example:
-      #
-      #   extraDependencies = p: {
-      #     libraryHaskellDepends = [ p.releaser ];
-      #   };
-      extraDependencies ? p: { },
+      # Whether or not to generate a Hoogle database for all the
+      # dependencies.
+      withHoogle ? false,
       ...
     }@args:
     let
@@ -672,112 +787,5 @@ package-set { inherit pkgs lib callPackage; } self
       }
     );
 
-  ghc = ghc // {
-    withPackages = self.ghcWithPackages;
-    withHoogle = self.ghcWithHoogle;
-  };
-
   wrapMhs = pkgs.callPackage ../compilers/microhs/wrapper.nix { };
-
-  /*
-    Run `cabal sdist` on a source.
-
-    Unlike `haskell.lib.sdistTarball`, this does not require any dependencies
-    to be present, as it uses `cabal-install` instead of building `Setup.hs`.
-    This makes `cabalSdist` faster than `sdistTarball`.
-  */
-  cabalSdist =
-    {
-      src,
-      name ? if src ? name then "${src.name}-sdist.tar.gz" else "source.tar.gz",
-    }:
-    pkgs.runCommandLocal name
-      {
-        inherit src;
-        nativeBuildInputs = [
-          buildHaskellPackages.cabal-install
-        ];
-        dontUnpack = false;
-      }
-      ''
-        unpackPhase
-        cd "''${sourceRoot:-.}"
-        patchPhase
-        mkdir out
-        HOME=$PWD cabal sdist --output-directory out
-        mv out/*.tar.gz $out
-      '';
-
-  /*
-    Like `haskell.lib.buildFromSdist`, but using `cabal sdist` instead of
-    building `./Setup`.
-
-    Unlike `haskell.lib.buildFromSdist`, this does not require any dependencies
-    to be present. This makes `buildFromCabalSdist` faster than `haskell.lib.buildFromSdist`.
-  */
-  buildFromCabalSdist =
-    pkg:
-    haskellLib.overrideCabal
-      (_: {
-        # Patches are already applied by srcOnly above, so clear them
-        # to avoid double-application.
-        patches = [ ];
-      })
-      (
-        haskellLib.overrideSrc {
-          src = self.cabalSdist { src = pkgs.srcOnly pkg; };
-          version = pkg.version;
-        } pkg
-      );
-
-  /*
-    Modify a Haskell package to add shell completion scripts for the
-    given executables produced by it. These completion scripts will be
-    picked up automatically if the resulting derivation is installed,
-    e.g. by `nix-env -i`.
-
-    This depends on the `--*-completion` flag `optparse-applicative` provides
-    automatically. Since we need to invoke installed executables, completions
-    are not generated if we are cross-compiling.
-
-     commands: names of the executables built by the derivation
-          pkg: Haskell package that builds the executables
-
-    Example:
-      generateOptparseApplicativeCompletions [ "exec1" "exec2" ] pkg
-
-     Type: [str] -> drv -> drv
-  */
-  generateOptparseApplicativeCompletions = self.callPackage (
-    { stdenv }:
-
-    commands: pkg:
-
-    if stdenv.buildPlatform.canExecute stdenv.hostPlatform then
-      lib.foldr haskellLib.__generateOptparseApplicativeCompletion pkg commands
-    else
-      pkg
-  ) { };
-
-  /*
-    Modify given Haskell package to force GHC to employ the LLVM
-    codegen backend when compiling. Useful when working around bugs
-    in a native codegen backend GHC defaults to.
-
-    Example:
-      forceLlvmCodegenBackend tls
-
-    Type: drv -> drv
-  */
-  forceLlvmCodegenBackend = overrideCabal (drv: {
-    configureFlags = drv.configureFlags or [ ] ++ [ "--ghc-option=-fllvm" ];
-    buildTools =
-      drv.buildTools or [ ]
-      ++ [ self.ghc.llvmPackages.llvm ]
-      # GHC >= 9.10 needs LLVM specific assembler, i.e. clang
-      # On Darwin clang is always required
-      ++ lib.optionals (lib.versionAtLeast self.ghc.version "9.10" || stdenv.hostPlatform.isDarwin) [
-        self.ghc.llvmPackages.clang
-      ];
-  });
 }

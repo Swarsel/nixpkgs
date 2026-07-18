@@ -141,72 +141,9 @@ in
   options = {
     services.maddy = {
 
-      enable = lib.mkEnableOption "Maddy, a free an open source mail server";
-
-      package = lib.mkPackageOption pkgs "maddy" { };
-
-      user = lib.mkOption {
-        default = "maddy";
-        type = with lib.types; uniq str;
-        description = ''
-          User account under which maddy runs.
-
-          ::: {.note}
-          If left as the default value this user will automatically be created
-          on system activation, otherwise the sysadmin is responsible for
-          ensuring the user exists before the maddy service starts.
-          :::
-        '';
-      };
-
-      group = lib.mkOption {
-        default = "maddy";
-        type = with lib.types; uniq str;
-        description = ''
-          Group account under which maddy runs.
-
-          ::: {.note}
-          If left as the default value this group will automatically be created
-          on system activation, otherwise the sysadmin is responsible for
-          ensuring the group exists before the maddy service starts.
-          :::
-        '';
-      };
-
-      hostname = lib.mkOption {
-        default = "localhost";
-        type = with lib.types; uniq str;
-        example = "example.com";
-        description = ''
-          Hostname to use. It should be FQDN.
-        '';
-      };
-
-      primaryDomain = lib.mkOption {
-        default = "localhost";
-        type = with lib.types; uniq str;
-        example = "mail.example.com";
-        description = ''
-          Primary MX domain to use. It should be FQDN.
-        '';
-      };
-
-      localDomains = lib.mkOption {
-        type = with lib.types; listOf str;
-        default = [ "$(primary_domain)" ];
-        example = [
-          "$(primary_domain)"
-          "example.com"
-          "other.example.com"
-        ];
-        description = ''
-          Define list of allowed domains.
-        '';
-      };
-
       config = lib.mkOption {
-        type = with lib.types; nullOr lines;
         default = defaultConfig;
+
         description = ''
           Server configuration, see
           [https://maddy.email](https://maddy.email) for
@@ -217,18 +154,203 @@ in
           This should not be used in a production environment.
           :::
         '';
+
+        type = with lib.types; nullOr lines;
+      };
+
+      enable = lib.mkEnableOption "Maddy, a free an open source mail server";
+      package = lib.mkPackageOption pkgs "maddy" { };
+
+      ensureAccounts = lib.mkOption {
+        default = [ ];
+
+        description = ''
+          List of IMAP accounts which get automatically created. Note that for
+          a complete setup, user credentials for these accounts are required
+          and can be created using the `ensureCredentials` option.
+          This option does not delete accounts which are not (anymore) listed.
+        '';
+
+        example = [
+          "user1@localhost"
+          "user2@localhost"
+        ];
+
+        type = with lib.types; listOf str;
+      };
+
+      ensureCredentials = lib.mkOption {
+        default = { };
+
+        description = ''
+          List of user accounts which get automatically created if they don't
+          exist yet. Note that for a complete setup, corresponding mail boxes
+          have to get created using the `ensureAccounts` option.
+          This option does not delete accounts which are not (anymore) listed.
+        '';
+
+        example = {
+          "user1@localhost".passwordFile = "/secrets/user1-localhost";
+          "user2@localhost".passwordFile = "/secrets/user2-localhost";
+        };
+
+        type = lib.types.attrsOf (
+          lib.types.submodule {
+            options = {
+              passwordFile = lib.mkOption {
+                default = null;
+
+                description = ''
+                  Specifies the path to a file containing the
+                  clear text password for the user.
+                '';
+
+                example = "/path/to/file";
+                type = lib.types.path;
+              };
+            };
+          }
+        );
+      };
+
+      group = lib.mkOption {
+        default = "maddy";
+
+        description = ''
+          Group account under which maddy runs.
+
+          ::: {.note}
+          If left as the default value this group will automatically be created
+          on system activation, otherwise the sysadmin is responsible for
+          ensuring the group exists before the maddy service starts.
+          :::
+        '';
+
+        type = with lib.types; uniq str;
+      };
+
+      hostname = lib.mkOption {
+        default = "localhost";
+
+        description = ''
+          Hostname to use. It should be FQDN.
+        '';
+
+        example = "example.com";
+        type = with lib.types; uniq str;
+      };
+
+      localDomains = lib.mkOption {
+        default = [ "$(primary_domain)" ];
+
+        description = ''
+          Define list of allowed domains.
+        '';
+
+        example = [
+          "$(primary_domain)"
+          "example.com"
+          "other.example.com"
+        ];
+
+        type = with lib.types; listOf str;
+      };
+
+      openFirewall = lib.mkOption {
+        default = false;
+
+        description = ''
+          Open the configured incoming and outgoing mail server ports.
+        '';
+
+        type = lib.types.bool;
+      };
+
+      primaryDomain = lib.mkOption {
+        default = "localhost";
+
+        description = ''
+          Primary MX domain to use. It should be FQDN.
+        '';
+
+        example = "mail.example.com";
+        type = with lib.types; uniq str;
+      };
+
+      secrets = lib.mkOption {
+        default = [ ];
+
+        description = ''
+          A list of files containing the various secrets. Should be in the format
+          expected by systemd's `EnvironmentFile` directory. Secrets can be
+          referenced in the format `{env:VAR}`.
+
+          Paths can be prefixed with `-` to ignore errors if the file does not exist.
+        '';
+
+        type = with lib.types; listOf (either str path);
       };
 
       tls = {
-        loader = lib.mkOption {
+        certificates = lib.mkOption {
+          default = [ ];
+
+          description = ''
+            A list of attribute sets containing paths to TLS certificates and
+            keys. Maddy will use SNI if multiple pairs are selected.
+          '';
+
+          example = lib.literalExpression ''
+            [{
+              keyPath = "/etc/ssl/mx1.example.org.key";
+              certPath = "/etc/ssl/mx1.example.org.crt";
+            }]
+          '';
+
           type =
             with lib.types;
-            nullOr (enum [
-              "off"
-              "file"
-              "acme"
-            ]);
+            listOf (submodule {
+              options = {
+                certPath = lib.mkOption {
+                  description = ''
+                    Path to the certificate used for TLS.
+                  '';
+
+                  example = "/etc/ssl/mx1.example.org.crt";
+                  type = lib.types.path;
+                };
+
+                keyPath = lib.mkOption {
+                  description = ''
+                    Path to the private key used for TLS.
+                  '';
+
+                  example = "/etc/ssl/mx1.example.org.key";
+                  type = lib.types.path;
+                };
+              };
+            });
+        };
+
+        extraConfig = lib.mkOption {
+          default = "";
+
+          description = ''
+            Arguments for the specified certificate loader.
+
+            In case the `tls` loader is set, the defaults are considered secure
+            and there is no need to change anything in most cases.
+            For available options see [upstream manual](https://maddy.email/reference/tls/).
+
+            For ACME configuration, see [following page](https://maddy.email/reference/tls-acme).
+          '';
+
+          type = with lib.types; nullOr lines;
+        };
+
+        loader = lib.mkOption {
           default = "off";
+
           description = ''
             TLS certificates are obtained by modules called "certificate
             loaders".
@@ -246,119 +368,31 @@ in
             at runtime as environment variables. Secrets can be referenced with
             `{env:VAR}`.
           '';
-        };
 
-        certificates = lib.mkOption {
           type =
             with lib.types;
-            listOf (submodule {
-              options = {
-                keyPath = lib.mkOption {
-                  type = lib.types.path;
-                  example = "/etc/ssl/mx1.example.org.key";
-                  description = ''
-                    Path to the private key used for TLS.
-                  '';
-                };
-                certPath = lib.mkOption {
-                  type = lib.types.path;
-                  example = "/etc/ssl/mx1.example.org.crt";
-                  description = ''
-                    Path to the certificate used for TLS.
-                  '';
-                };
-              };
-            });
-          default = [ ];
-          example = lib.literalExpression ''
-            [{
-              keyPath = "/etc/ssl/mx1.example.org.key";
-              certPath = "/etc/ssl/mx1.example.org.crt";
-            }]
-          '';
-          description = ''
-            A list of attribute sets containing paths to TLS certificates and
-            keys. Maddy will use SNI if multiple pairs are selected.
-          '';
-        };
-
-        extraConfig = lib.mkOption {
-          type = with lib.types; nullOr lines;
-          description = ''
-            Arguments for the specified certificate loader.
-
-            In case the `tls` loader is set, the defaults are considered secure
-            and there is no need to change anything in most cases.
-            For available options see [upstream manual](https://maddy.email/reference/tls/).
-
-            For ACME configuration, see [following page](https://maddy.email/reference/tls-acme).
-          '';
-          default = "";
+            nullOr (enum [
+              "off"
+              "file"
+              "acme"
+            ]);
         };
       };
 
-      openFirewall = lib.mkOption {
-        type = lib.types.bool;
-        default = false;
-        description = ''
-          Open the configured incoming and outgoing mail server ports.
-        '';
-      };
+      user = lib.mkOption {
+        default = "maddy";
 
-      ensureAccounts = lib.mkOption {
-        type = with lib.types; listOf str;
-        default = [ ];
         description = ''
-          List of IMAP accounts which get automatically created. Note that for
-          a complete setup, user credentials for these accounts are required
-          and can be created using the `ensureCredentials` option.
-          This option does not delete accounts which are not (anymore) listed.
-        '';
-        example = [
-          "user1@localhost"
-          "user2@localhost"
-        ];
-      };
+          User account under which maddy runs.
 
-      ensureCredentials = lib.mkOption {
-        default = { };
-        description = ''
-          List of user accounts which get automatically created if they don't
-          exist yet. Note that for a complete setup, corresponding mail boxes
-          have to get created using the `ensureAccounts` option.
-          This option does not delete accounts which are not (anymore) listed.
+          ::: {.note}
+          If left as the default value this user will automatically be created
+          on system activation, otherwise the sysadmin is responsible for
+          ensuring the user exists before the maddy service starts.
+          :::
         '';
-        example = {
-          "user1@localhost".passwordFile = "/secrets/user1-localhost";
-          "user2@localhost".passwordFile = "/secrets/user2-localhost";
-        };
-        type = lib.types.attrsOf (
-          lib.types.submodule {
-            options = {
-              passwordFile = lib.mkOption {
-                type = lib.types.path;
-                example = "/path/to/file";
-                default = null;
-                description = ''
-                  Specifies the path to a file containing the
-                  clear text password for the user.
-                '';
-              };
-            };
-          }
-        );
-      };
 
-      secrets = lib.mkOption {
-        type = with lib.types; listOf (either str path);
-        description = ''
-          A list of files containing the various secrets. Should be in the format
-          expected by systemd's `EnvironmentFile` directory. Secrets can be
-          referenced in the format `{env:VAR}`.
-
-          Paths can be prefixed with `-` to ignore errors if the file does not exist.
-        '';
-        default = [ ];
+        type = with lib.types; uniq str;
       };
 
     };
@@ -369,6 +403,7 @@ in
     assertions = [
       {
         assertion = cfg.tls.loader == "file" -> cfg.tls.certificates != [ ];
+
         message = ''
           If Maddy is configured to use TLS, tls.certificates with attribute sets
           of certPath and keyPath must be provided.
@@ -378,6 +413,7 @@ in
       }
       {
         assertion = cfg.tls.loader == "acme" -> cfg.tls.extraConfig != "";
+
         message = ''
           If Maddy is configured to obtain TLS certificates using the ACME
           loader, extra configuration options must be supplied via
@@ -387,51 +423,6 @@ in
         '';
       }
     ];
-
-    systemd = {
-
-      packages = [ cfg.package ];
-      services = {
-        maddy = {
-          serviceConfig = {
-            User = cfg.user;
-            Group = cfg.group;
-            StateDirectory = [ "maddy" ];
-            EnvironmentFile = cfg.secrets;
-          };
-          restartTriggers = [ config.environment.etc."maddy/maddy.conf".source ];
-          wantedBy = [ "multi-user.target" ];
-        };
-        maddy-ensure-accounts = {
-          script = ''
-            ${lib.optionalString (cfg.ensureAccounts != [ ]) ''
-              ${lib.concatMapStrings (account: ''
-                if ! ${cfg.package}/bin/maddyctl imap-acct list | grep "${account}"; then
-                  ${cfg.package}/bin/maddyctl imap-acct create ${account}
-                fi
-              '') cfg.ensureAccounts}
-            ''}
-            ${lib.optionalString (cfg.ensureCredentials != { }) ''
-              ${lib.concatStringsSep "\n" (
-                lib.mapAttrsToList (name: credentials: ''
-                  if ! ${cfg.package}/bin/maddyctl creds list | grep "${name}"; then
-                    ${cfg.package}/bin/maddyctl creds create --password $(cat ${lib.escapeShellArg credentials.passwordFile}) ${name}
-                  fi
-                '') cfg.ensureCredentials
-              )}
-            ''}
-          '';
-          serviceConfig = {
-            Type = "oneshot";
-            User = "maddy";
-          };
-          after = [ "maddy.service" ];
-          wantedBy = [ "multi-user.target" ];
-        };
-
-      };
-
-    };
 
     environment.etc."maddy/maddy.conf" = {
       text = ''
@@ -469,17 +460,9 @@ in
       '';
     };
 
-    users.users = lib.optionalAttrs (cfg.user == name) {
-      ${name} = {
-        isSystemUser = true;
-        group = cfg.group;
-        description = "Maddy mail transfer agent user";
-      };
-    };
-
-    users.groups = lib.optionalAttrs (cfg.group == name) {
-      ${cfg.group} = { };
-    };
+    environment.systemPackages = [
+      cfg.package
+    ];
 
     networking.firewall = lib.mkIf cfg.openFirewall {
       allowedTCPPorts = [
@@ -489,8 +472,68 @@ in
       ];
     };
 
-    environment.systemPackages = [
-      cfg.package
-    ];
+    systemd = {
+
+      packages = [ cfg.package ];
+
+      services = {
+        maddy = {
+          restartTriggers = [ config.environment.etc."maddy/maddy.conf".source ];
+
+          serviceConfig = {
+            EnvironmentFile = cfg.secrets;
+            Group = cfg.group;
+            StateDirectory = [ "maddy" ];
+            User = cfg.user;
+          };
+
+          wantedBy = [ "multi-user.target" ];
+        };
+
+        maddy-ensure-accounts = {
+          after = [ "maddy.service" ];
+
+          script = ''
+            ${lib.optionalString (cfg.ensureAccounts != [ ]) ''
+              ${lib.concatMapStrings (account: ''
+                if ! ${cfg.package}/bin/maddyctl imap-acct list | grep "${account}"; then
+                  ${cfg.package}/bin/maddyctl imap-acct create ${account}
+                fi
+              '') cfg.ensureAccounts}
+            ''}
+            ${lib.optionalString (cfg.ensureCredentials != { }) ''
+              ${lib.concatStringsSep "\n" (
+                lib.mapAttrsToList (name: credentials: ''
+                  if ! ${cfg.package}/bin/maddyctl creds list | grep "${name}"; then
+                    ${cfg.package}/bin/maddyctl creds create --password $(cat ${lib.escapeShellArg credentials.passwordFile}) ${name}
+                  fi
+                '') cfg.ensureCredentials
+              )}
+            ''}
+          '';
+
+          serviceConfig = {
+            Type = "oneshot";
+            User = "maddy";
+          };
+
+          wantedBy = [ "multi-user.target" ];
+        };
+
+      };
+
+    };
+
+    users.groups = lib.optionalAttrs (cfg.group == name) {
+      ${cfg.group} = { };
+    };
+
+    users.users = lib.optionalAttrs (cfg.user == name) {
+      ${name} = {
+        description = "Maddy mail transfer agent user";
+        group = cfg.group;
+        isSystemUser = true;
+      };
+    };
   };
 }

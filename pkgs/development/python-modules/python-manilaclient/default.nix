@@ -22,13 +22,15 @@
 buildPythonPackage rec {
   pname = "python-manilaclient";
   version = "6.0.0";
-  pyproject = true;
 
   src = fetchPypi {
-    pname = "python_manilaclient";
     inherit version;
     hash = "sha256-EQwsbwZzFXE+KKDH2SxlC6G8oFvdXo2bK4bJKJZfrVw=";
+    pname = "python_manilaclient";
   };
+
+  # Checks moved to 'passthru.tests' to workaround infinite recursion
+  doCheck = false;
 
   build-system = [
     openstackdocstheme
@@ -36,8 +38,6 @@ buildPythonPackage rec {
     sphinxHook
     sphinxcontrib-programoutput
   ];
-
-  sphinxBuilders = [ "man" ];
 
   dependencies = [
     debtcollector
@@ -52,20 +52,19 @@ buildPythonPackage rec {
     requests
   ];
 
-  # Checks moved to 'passthru.tests' to workaround infinite recursion
-  doCheck = false;
+  pyproject = true;
+  pythonImportsCheck = [ "manilaclient" ];
+  sphinxBuilders = [ "man" ];
 
   passthru.tests = {
     tests = callPackage ./tests.nix { };
   };
 
-  pythonImportsCheck = [ "manilaclient" ];
-
   meta = {
     description = "Client library for OpenStack Manila API";
-    mainProgram = "manila";
     homepage = "https://github.com/openstack/python-manilaclient";
     license = lib.licenses.asl20;
+    mainProgram = "manila";
     teams = [ lib.teams.openstack ];
   };
 }

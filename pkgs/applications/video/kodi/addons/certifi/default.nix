@@ -1,14 +1,13 @@
 {
   lib,
-  rel,
-  buildKodiAddon,
-  fetchzip,
   addonUpdateScript,
+  buildKodiAddon,
   cacert,
+  fetchzip,
+  rel,
 }:
 buildKodiAddon rec {
   pname = "certifi";
-  namespace = "script.module.certifi";
   version = "2023.5.7";
 
   src = fetchzip {
@@ -26,6 +25,8 @@ buildKodiAddon rec {
     ln -snvf "${cacert}/etc/ssl/certs/ca-bundle.crt" "lib/certifi/cacert.pem"
   '';
 
+  namespace = "script.module.certifi";
+
   propagatedNativeBuildInputs = [
     # propagate cacerts setup-hook to set up `NIX_SSL_CERT_FILE`
     cacert
@@ -33,14 +34,15 @@ buildKodiAddon rec {
 
   passthru = {
     pythonPath = "lib";
+
     updateScript = addonUpdateScript {
       attrPath = "kodi.packages.certifi";
     };
   };
 
   meta = {
-    homepage = "https://certifi.io";
     description = "Python package for providing Mozilla's CA Bundle";
+    homepage = "https://certifi.io";
     license = lib.licenses.mpl20;
     teams = [ lib.teams.kodi ];
   };

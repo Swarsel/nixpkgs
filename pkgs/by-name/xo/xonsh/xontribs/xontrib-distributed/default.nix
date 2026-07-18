@@ -1,20 +1,18 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  poetry-core,
+  buildPythonPackage,
   distributed,
-  writableTmpDirAsHomeHook,
-  pytestCheckHook,
-  xonsh,
   nix-update-script,
+  poetry-core,
+  pytestCheckHook,
+  writableTmpDirAsHomeHook,
+  xonsh,
 }:
 
 buildPythonPackage rec {
   pname = "xontrib-distributed";
   version = "0.0.4";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "xonsh";
@@ -22,19 +20,6 @@ buildPythonPackage rec {
     tag = "v${version}";
     hash = "sha256-Hb7S3PqHi0w6zb9ki8ADMtgdYVv8O5WQZMgJzKF74qE=";
   };
-
-  prePatch = ''
-    substituteInPlace pyproject.toml \
-      --replace-fail 'xonsh = ">=0.12"' ""
-  '';
-
-  build-system = [
-    poetry-core
-  ];
-
-  dependencies = [
-    distributed
-  ];
 
   # As of v0.0.4 has no tests that get run by pytest
   doCheck = false;
@@ -45,6 +30,20 @@ buildPythonPackage rec {
     xonsh
   ];
 
+  build-system = [
+    poetry-core
+  ];
+
+  dependencies = [
+    distributed
+  ];
+
+  prePatch = ''
+    substituteInPlace pyproject.toml \
+      --replace-fail 'xonsh = ">=0.12"' ""
+  '';
+
+  pyproject = true;
   passthru.updateScript = nix-update-script { };
 
   meta = {

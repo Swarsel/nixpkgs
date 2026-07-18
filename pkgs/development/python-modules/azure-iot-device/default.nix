@@ -1,28 +1,25 @@
 {
   lib,
   buildPythonPackage,
-  fetchPypi,
-
-  setuptools,
-
-  urllib3,
   deprecation,
+  fetchPypi,
+  janus,
   paho-mqtt,
+  pysocks,
   requests,
   requests-unixsocket2,
-  janus,
-  pysocks,
+  setuptools,
   typing-extensions,
+  urllib3,
 }:
 buildPythonPackage rec {
   pname = "azure-iot-device";
   version = "2.14.0";
-  pyproject = true;
 
   src = fetchPypi {
     inherit version;
-    pname = "azure_iot_device";
     hash = "sha256-ttSNSTLCQAJXNqzlRMTnG8SaFXasmY6h3neK+CSW/84=";
+    pname = "azure_iot_device";
   };
 
   nativeBuildInputs = [ setuptools ];
@@ -40,6 +37,7 @@ buildPythonPackage rec {
 
   # Module has no tests
   doCheck = false;
+  pyproject = true;
 
   pythonImportsCheck = [
     "azure.iot.device"
@@ -47,11 +45,11 @@ buildPythonPackage rec {
   ];
 
   meta = {
-    # https://github.com/Azure/azure-iot-sdk-python/issues/1196
-    broken = lib.versionAtLeast paho-mqtt.version "2";
     description = "Microsoft Azure IoT Device Library for Python";
     homepage = "https://github.com/Azure/azure-iot-sdk-python";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ mikut ];
+    # https://github.com/Azure/azure-iot-sdk-python/issues/1196
+    broken = lib.versionAtLeast paho-mqtt.version "2";
   };
 }

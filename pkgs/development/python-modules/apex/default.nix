@@ -1,43 +1,34 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # build-system
-  ninja,
-  setuptools,
-  torch,
-
-  # buildInputs
-  pybind11,
-
-  # nativeBuildInputs
-  writableTmpDirAsHomeHook,
-
+  apex,
+  buildPythonPackage,
+  cudaPackages,
   # dependencies
   cxxfilt,
+  # build-system
+  ninja,
   numpy,
-  packaging,
-  pytest,
-  pyyaml,
-  tqdm,
-
   # tests
   onnxscript,
+  packaging,
+  # buildInputs
+  pybind11,
+  pytest,
   pytestCheckHook,
+  pyyaml,
+  setuptools,
+  torch,
   torchvision,
-
-  apex,
-
-  cudaPackages,
+  tqdm,
+  # nativeBuildInputs
+  writableTmpDirAsHomeHook,
   cudaSupport ? torch.cudaSupport,
 }:
 
 buildPythonPackage.override { inherit (torch) stdenv; } (finalAttrs: {
   pname = "apex";
   version = "25.09";
-  pyproject = true;
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "nvidia";
@@ -77,34 +68,8 @@ buildPythonPackage.override { inherit (torch) stdenv; } (finalAttrs: {
           "apex_lerp("
     '';
 
-  env = {
-    APEX_CPP_EXT = 1;
-  }
-  // lib.optionalAttrs cudaSupport {
-    CUDA_HOME = (lib.getBin cudaPackages.cuda_nvcc).outPath;
-    TORCH_CUDA_ARCH_LIST = "${lib.concatStringsSep ";" torch.cudaCapabilities}";
-
-    # Even if APEX_ALL_CONTRIB_EXT is enabled, APEX_CUDA_EXT must be explicitly enable
-    APEX_CUDA_EXT = 1;
-
-    # Enable all contrib extensions at once
-    # https://github.com/NVIDIA/apex/tree/25.09#custom-ccuda-extensions-and-install-options
-    APEX_ALL_CONTRIB_EXT = 1;
-
-    NVCC_APPEND_FLAGS = lib.toString [
-      # Make kernel compilation slightly more parallel
-      "--threads 2"
-    ];
-  };
-
-  preBuild = ''
-    export APEX_PARALLEL_BUILD=$NIX_BUILD_CORES
-  '';
-
-  build-system = [
-    ninja
-    setuptools
-    torch
+  nativeBuildInputs = [
+    writableTmpDirAsHomeHook
   ];
 
   buildInputs = [
@@ -127,8 +92,52 @@ buildPythonPackage.override { inherit (torch) stdenv; } (finalAttrs: {
     ]
   );
 
-  nativeBuildInputs = [
-    writableTmpDirAsHomeHook
+  env = {
+    APEX_CPP_EXT = 1;
+  }
+  // lib.optionalAttrs cudaSupport {
+    # Enable all contrib extensions at once
+    # https://github.com/NVIDIA/apex/tree/25.09#custom-ccuda-extensions-and-install-options
+    APEX_ALL_CONTRIB_EXT = 1;
+    # Even if APEX_ALL_CONTRIB_EXT is enabled, APEX_CUDA_EXT must be explicitly enable
+    APEX_CUDA_EXT = 1;
+    CUDA_HOME = (lib.getBin cudaPackages.cuda_nvcc).outPath;
+
+    NVCC_APPEND_FLAGS = lib.toString [
+      # Make kernel compilation slightly more parallel
+      "--threads 2"
+    ];
+
+    TORCH_CUDA_ARCH_LIST = "${lib.concatStringsSep ";" torch.cudaCapabilities}";
+  };
+
+  preBuild = ''
+    export APEX_PARALLEL_BUILD=$NIX_BUILD_CORES
+  '';
+
+  doCheck = false;
+
+  nativeCheckInputs = [
+    onnxscript
+    pytestCheckHook
+    torchvision
+  ];
+
+  preCheck = ''
+    rm -rf apex
+  ''
+  # Otherwise, test collection fails with:
+  #   ModuleNotFoundError: No module named 'test_fused_optimizer'
+  + ''
+    rm tests/L0/run_optimizers/__init__.py
+  '';
+
+  __structuredAttrs = true;
+
+  build-system = [
+    ninja
+    setuptools
+    torch
   ];
 
   dependencies = [
@@ -140,36 +149,6 @@ buildPythonPackage.override { inherit (torch) stdenv; } (finalAttrs: {
     tqdm
   ];
 
-  pythonImportsCheck = [
-    "apex"
-    "apex_C"
-  ]
-  ++ lib.optionals cudaSupport [
-    "_apex_gpu_direct_storage"
-    "_apex_nccl_allocator"
-    "amp_C"
-    "apex_C"
-    "bnp"
-    "fmhalib"
-    "fused_layer_norm_cuda"
-    "nccl_p2p_cuda"
-    "syncbn"
-  ];
-
-  nativeCheckInputs = [
-    onnxscript
-    pytestCheckHook
-    torchvision
-  ];
-  preCheck = ''
-    rm -rf apex
-  ''
-  # Otherwise, test collection fails with:
-  #   ModuleNotFoundError: No module named 'test_fused_optimizer'
-  + ''
-    rm tests/L0/run_optimizers/__init__.py
-  '';
-  doCheck = false;
   disabledTestPaths = [
     # Try to read the driver version from nvidia-smi (failing in the sandbox)
     #   TypeError: expected string or bytes-like object, got 'NoneType'
@@ -188,9 +167,27 @@ buildPythonPackage.override { inherit (torch) stdenv; } (finalAttrs: {
     "test_rms_export_cuda"
   ];
 
+  pyproject = true;
+
+  pythonImportsCheck = [
+    "apex"
+    "apex_C"
+  ]
+  ++ lib.optionals cudaSupport [
+    "_apex_gpu_direct_storage"
+    "_apex_nccl_allocator"
+    "amp_C"
+    "apex_C"
+    "bnp"
+    "fmhalib"
+    "fused_layer_norm_cuda"
+    "nccl_p2p_cuda"
+    "syncbn"
+  ];
+
   passthru.gpuCheck = apex.overridePythonAttrs {
-    requiredSystemFeatures = [ "cuda" ];
     doCheck = true;
+    requiredSystemFeatures = [ "cuda" ];
   };
 
   meta = {

@@ -17,29 +17,30 @@ in
   options = {
     services.haproxy = {
 
-      enable = lib.mkEnableOption "HAProxy, the reliable, high performance TCP/HTTP load balancer";
-
-      package = lib.mkPackageOption pkgs "haproxy" { };
-
-      user = lib.mkOption {
-        type = lib.types.str;
-        default = "haproxy";
-        description = "User account under which haproxy runs.";
-      };
-
-      group = lib.mkOption {
-        type = lib.types.str;
-        default = "haproxy";
-        description = "Group account under which haproxy runs.";
-      };
-
       config = lib.mkOption {
-        type = lib.types.nullOr lib.types.lines;
         default = null;
+
         description = ''
           Contents of the HAProxy configuration file,
           {file}`haproxy.conf`.
         '';
+
+        type = lib.types.nullOr lib.types.lines;
+      };
+
+      enable = lib.mkEnableOption "HAProxy, the reliable, high performance TCP/HTTP load balancer";
+      package = lib.mkPackageOption pkgs "haproxy" { };
+
+      group = lib.mkOption {
+        default = "haproxy";
+        description = "Group account under which haproxy runs.";
+        type = lib.types.str;
+      };
+
+      user = lib.mkOption {
+        default = "haproxy";
+        description = "User account under which haproxy runs.";
+        type = lib.types.str;
       };
     };
   };
@@ -57,39 +58,49 @@ in
     environment.etc."haproxy.cfg".source = haproxyCfg;
 
     systemd.services.haproxy = {
-      description = "HAProxy";
       after = [ "network.target" ];
-      wantedBy = [ "multi-user.target" ];
+      description = "HAProxy";
+
       serviceConfig = {
-        User = cfg.user;
-        Group = cfg.group;
-        Type = "notify";
-        ExecStartPre = [
-          # when the master process receives USR2, it reloads itself using exec(argv[0]),
-          # so we create a symlink there and update it before reloading
-          "${pkgs.coreutils}/bin/ln -sf ${lib.getExe cfg.package} /run/haproxy/haproxy"
-        ];
-        ExecStart = "/run/haproxy/haproxy -Ws -f /etc/haproxy.cfg -p /run/haproxy/haproxy.pid";
+        # needed in case we bind to port < 1024
+        AmbientCapabilities = "CAP_NET_BIND_SERVICE";
+
         # support reloading
         ExecReload = [
           "${pkgs.coreutils}/bin/ln -sf ${lib.getExe cfg.package} /run/haproxy/haproxy"
           "${pkgs.coreutils}/bin/kill -USR2 $MAINPID"
         ];
+
+        ExecStart = "/run/haproxy/haproxy -Ws -f /etc/haproxy.cfg -p /run/haproxy/haproxy.pid";
+
+        ExecStartPre = [
+          # when the master process receives USR2, it reloads itself using exec(argv[0]),
+          # so we create a symlink there and update it before reloading
+          "${pkgs.coreutils}/bin/ln -sf ${lib.getExe cfg.package} /run/haproxy/haproxy"
+        ];
+
+        Group = cfg.group;
         KillMode = "mixed";
-        SuccessExitStatus = "143";
-        Restart = "always";
-        RuntimeDirectory = "haproxy";
         # upstream hardening options
         NoNewPrivileges = true;
-        ProtectHome = true;
-        ProtectSystem = "strict";
-        ProtectKernelTunables = true;
-        ProtectKernelModules = true;
         ProtectControlGroups = true;
+        ProtectHome = true;
+        ProtectKernelModules = true;
+        ProtectKernelTunables = true;
+        ProtectSystem = "strict";
+        Restart = "always";
+        RuntimeDirectory = "haproxy";
+        SuccessExitStatus = "143";
         SystemCallFilter = "~@cpu-emulation @keyring @module @obsolete @raw-io @reboot @swap @sync";
-        # needed in case we bind to port < 1024
-        AmbientCapabilities = "CAP_NET_BIND_SERVICE";
+        Type = "notify";
+        User = cfg.user;
       };
+
+      wantedBy = [ "multi-user.target" ];
+    };
+
+    users.groups = lib.optionalAttrs (cfg.group == "haproxy") {
+      haproxy = { };
     };
 
     users.users = lib.optionalAttrs (cfg.user == "haproxy") {
@@ -97,10 +108,6 @@ in
         group = cfg.group;
         isSystemUser = true;
       };
-    };
-
-    users.groups = lib.optionalAttrs (cfg.group == "haproxy") {
-      haproxy = { };
     };
   };
 }

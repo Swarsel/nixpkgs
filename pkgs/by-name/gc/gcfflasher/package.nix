@@ -2,9 +2,9 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  pkg-config,
-  libgpiod,
   cmake,
+  libgpiod,
+  pkg-config,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -35,8 +35,8 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "CFFlasher is the tool to program the firmware of dresden elektronik's Zigbee products";
-    license = lib.licenses.bsd3;
     homepage = "https://github.com/dresden-elektronik/gcfflasher";
+    license = lib.licenses.bsd3;
     maintainers = with lib.maintainers; [ fleaz ];
     platforms = lib.platforms.all;
     mainProgram = "GCFFlasher";

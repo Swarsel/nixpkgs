@@ -1,9 +1,9 @@
 {
   lib,
   fetchFromGitHub,
-  rustPlatform,
-  nixosTests,
   nix-update-script,
+  nixosTests,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -18,7 +18,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
   };
 
   cargoHash = "sha256-vXicD4jUgaioK09oFBn3BgWDR3bzM7m5KStHr4Wqmfk=";
-
   # No unit tests; all testing is NixOS VM-based integration tests
   doCheck = false;
 
@@ -32,8 +31,8 @@ rustPlatform.buildRustPackage (finalAttrs: {
     homepage = "https://github.com/kittyandrew/grafana-to-ntfy";
     changelog = "https://github.com/kittyandrew/grafana-to-ntfy/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.agpl3Only;
-    platforms = lib.platforms.linux;
     maintainers = with lib.maintainers; [ kittyandrew ];
+    platforms = lib.platforms.linux;
     mainProgram = "grafana-to-ntfy";
   };
 })

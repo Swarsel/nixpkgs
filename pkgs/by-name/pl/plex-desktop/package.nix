@@ -1,66 +1,68 @@
 {
+  lib,
+  stdenv,
+  fetchurl,
   alsa-lib,
   autoPatchelfHook,
   buildFHSEnv,
   elfutils,
-  extraEnv ? { },
-  fetchurl,
   ffmpeg_6-headless,
-  lib,
   libdrm,
   libedit,
   libgbm,
   libpulseaudio,
   libva,
+  libxcb-image,
+  libxcb-keysyms,
+  libxcb-render-util,
+  libxcb-wm,
+  libxcomposite,
+  libxdamage,
+  libxinerama,
   libxkbcommon,
   libxml2_13,
+  libxrandr,
+  libxrender,
+  libxshmfence,
+  libxtst,
   makeDesktopItem,
   makeShellWrapper,
   minizip,
   nss,
   squashfsTools,
-  stdenv,
   writeShellScript,
   xkeyboard_config,
-  libxcb-wm,
-  libxcb-render-util,
-  libxcb-keysyms,
-  libxcb-image,
-  libxtst,
-  libxrender,
-  libxrandr,
-  libxinerama,
-  libxdamage,
-  libxcomposite,
   xrandr,
-  libxshmfence,
+  extraEnv ? { },
 }:
 let
   pname = "plex-desktop";
   version = "1.112.0";
   rev = "87";
   meta = {
-    homepage = "https://plex.tv/";
     description = "Streaming media player for Plex";
+
     longDescription = ''
       Plex for Linux is your client for playback on the Linux
       desktop. It features the point and click interface you see in your browser
       but uses a more powerful playback engine as well as
       some other advance features.
     '';
-    maintainers = with lib.maintainers; [ detroyejr ];
+
+    homepage = "https://plex.tv/";
     license = lib.licenses.unfree;
+    maintainers = with lib.maintainers; [ detroyejr ];
     platforms = [ "x86_64-linux" ];
     mainProgram = "plex-desktop";
   };
   desktopItem = makeDesktopItem {
-    name = "plex-desktop";
+    categories = [ "AudioVideo" ];
     desktopName = "Plex";
     exec = "plex-desktop";
     icon = "plex-desktop";
-    terminal = false;
-    categories = [ "AudioVideo" ];
+    name = "plex-desktop";
     startupWMClass = "Plex";
+    terminal = false;
   };
   plex-desktop = stdenv.mkDerivation {
     inherit pname version meta;
@@ -69,6 +71,8 @@ let
       url = "https://api.snapcraft.io/api/v1/snaps/download/qc6MFRM433ZhI1XjVzErdHivhSOhlpf0_${rev}.snap";
       hash = "sha512-xDBnqPkYIpSsUe+X6oalecNz1bsX0O3pXUTI9GBZLAsT+4U4qdovn2ILPh4APJaqwNEswoIYepkjTSmm9pOI9A==";
     };
+
+    strictDeps = true;
 
     nativeBuildInputs = [
       autoPatchelfHook
@@ -102,17 +106,6 @@ let
       xrandr
     ];
 
-    strictDeps = true;
-
-    unpackPhase = ''
-      runHook preUnpack
-      unsquashfs "$src"
-      cd squashfs-root
-      runHook postUnpack
-    '';
-
-    dontWrapQtApps = true;
-
     installPhase = ''
       runHook preInstall
 
@@ -144,15 +137,19 @@ let
 
       runHook postInstall
     '';
+
+    dontWrapQtApps = true;
+
+    unpackPhase = ''
+      runHook preUnpack
+      unsquashfs "$src"
+      cd squashfs-root
+      runHook postUnpack
+    '';
   };
 in
 buildFHSEnv {
   inherit pname version meta;
-  targetPkgs = pkgs: [
-    alsa-lib
-    libdrm
-    xkeyboard_config
-  ];
 
   extraInstallCommands = ''
     mkdir -p $out/share/applications $out/share/icons/hicolor/scalable/apps
@@ -181,5 +178,12 @@ buildFHSEnv {
     ${lib.toShellVars extraEnv}
     exec ${plex-desktop}/Plex.sh
   '';
+
+  targetPkgs = pkgs: [
+    alsa-lib
+    libdrm
+    xkeyboard_config
+  ];
+
   passthru.updateScript = ./update.sh;
 }

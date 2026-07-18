@@ -3,9 +3,9 @@
   stdenv,
   fetchurl,
   cpio,
-  xar,
-  undmg,
   libtapi,
+  undmg,
+  xar,
   isFuse3 ? false,
 }:
 
@@ -24,14 +24,6 @@ stdenv.mkDerivation rec {
     undmg
     libtapi
   ];
-
-  postUnpack = ''
-    xar -xf 'Install macFUSE.pkg'
-    cd Core.pkg
-    gunzip -dc Payload | cpio -i
-  '';
-
-  sourceRoot = ".";
 
   buildPhase = ''
     pushd usr/local/lib
@@ -58,17 +50,24 @@ stdenv.mkDerivation rec {
     cp -R usr/local/include/fuse{,.h} $out/include
   '';
 
+  postUnpack = ''
+    xar -xf 'Install macFUSE.pkg'
+    cd Core.pkg
+    gunzip -dc Payload | cpio -i
+  '';
+
+  sourceRoot = ".";
   passthru.warning = meta.description;
 
   meta = {
-    homepage = "https://osxfuse.github.io";
     description = "Build time stubs for FUSE on macOS";
+
     longDescription = ''
       macFUSE is required for this package to work on macOS. To install macFUSE,
       use the installer from the [project website](https://osxfuse.github.io/).
     '';
-    platforms = lib.platforms.darwin;
-    maintainers = with lib.maintainers; [ midchildan ];
+
+    homepage = "https://osxfuse.github.io";
 
     # macFUSE as a whole includes code with restrictions on commercial
     # redistribution. However, the build artifacts that we actually touch for
@@ -76,5 +75,8 @@ stdenv.mkDerivation rec {
     license = with lib.licenses; [
       lgpl2Plus # libfuse
     ];
+
+    maintainers = with lib.maintainers; [ midchildan ];
+    platforms = lib.platforms.darwin;
   };
 }

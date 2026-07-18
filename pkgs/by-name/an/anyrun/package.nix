@@ -1,18 +1,18 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
-  pkg-config,
-  wrapGAppsHook4,
   anyrun-provider,
   cairo,
   gdk-pixbuf,
   glib,
   gtk4,
-  pango,
-  wayland,
   gtk4-layer-shell,
   nix-update-script,
+  pango,
+  pkg-config,
+  rustPlatform,
+  wayland,
+  wrapGAppsHook4,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -26,11 +26,7 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-+Fx+JfSboBk8KKVgmaMKDKvMe9c3WC+7RKYjnpvMVpg=";
   };
 
-  cargoHash = "sha256-NHWKgLvILeXVLyKxfm/uWxb2mwb1wM6Utw9vPlUPYaI=";
-
   strictDeps = true;
-  enableParallelBuilding = true;
-  doCheck = true;
 
   nativeBuildInputs = [
     pkg-config
@@ -47,6 +43,13 @@ rustPlatform.buildRustPackage (finalAttrs: {
     wayland
   ];
 
+  cargoHash = "sha256-NHWKgLvILeXVLyKxfm/uWxb2mwb1wM6Utw9vPlUPYaI=";
+  doCheck = true;
+
+  postInstall = ''
+    install -Dm444 anyrun/res/style.css examples/config.ron -t $out/share/doc/anyrun/examples/
+  '';
+
   preFixup = ''
     gappsWrapperArgs+=(
      --prefix PATH ":" ${lib.makeBinPath [ anyrun-provider ]}
@@ -54,25 +57,25 @@ rustPlatform.buildRustPackage (finalAttrs: {
     )
   '';
 
-  postInstall = ''
-    install -Dm444 anyrun/res/style.css examples/config.ron -t $out/share/doc/anyrun/examples/
-  '';
+  enableParallelBuilding = true;
 
   passthru = {
-    updateScript = nix-update-script { };
     # This is used for detecting whether or not an Anyrun package has the provider
     inherit anyrun-provider;
+    updateScript = nix-update-script { };
   };
 
   meta = {
     description = "Wayland-native, highly customizable runner";
     homepage = "https://github.com/anyrun-org/anyrun";
     license = lib.licenses.gpl3Only;
+
     maintainers = with lib.maintainers; [
       khaneliman
       NotAShelf
     ];
-    mainProgram = "anyrun";
+
     platforms = lib.platforms.linux;
+    mainProgram = "anyrun";
   };
 })

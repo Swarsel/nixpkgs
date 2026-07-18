@@ -1,6 +1,6 @@
 {
-  fetchFromGitHub,
   lib,
+  fetchFromGitHub,
   perl,
   postgresql,
   postgresqlBuildExtension,
@@ -27,6 +27,7 @@ postgresqlBuildExtension (finalAttrs: {
 
   passthru.tests.extension = postgresqlTestExtension {
     inherit (finalAttrs) finalPackage;
+
     sql = ''
       CREATE EXTENSION ddlx;
 
@@ -42,8 +43,8 @@ postgresqlBuildExtension (finalAttrs: {
     description = "DDL eXtractor functions for PostgreSQL";
     homepage = "https://github.com/lacanoid/pgddl";
     changelog = "https://github.com/lacanoid/pgddl/releases/tag/${finalAttrs.version}";
-    platforms = postgresql.meta.platforms;
-    maintainers = [ lib.maintainers.joshainglis ];
     license = lib.licenses.postgresql;
+    maintainers = [ lib.maintainers.joshainglis ];
+    platforms = postgresql.meta.platforms;
   };
 })

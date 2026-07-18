@@ -2,25 +2,26 @@
   lib,
   stdenv,
   fetchurl,
-  makeWrapper,
   jre,
+  makeWrapper,
   ncurses,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
-  version = "3.3.6";
   pname = "scala-bare";
+  version = "3.3.6";
 
   src = fetchurl {
     url = "https://github.com/scala/scala3/releases/download/${finalAttrs.version}/scala3-${finalAttrs.version}.tar.gz";
     hash = "sha256-cmdSQkDuKJl2/tG4vAjABF1dKQ0/ruB8a3E3pCUrW5c=";
   };
 
+  nativeBuildInputs = [ makeWrapper ];
+
   propagatedBuildInputs = [
     jre
     ncurses.dev
   ];
-  nativeBuildInputs = [ makeWrapper ];
 
   installPhase = ''
     mkdir -p $out
@@ -40,8 +41,7 @@ stdenv.mkDerivation (finalAttrs: {
     description = "Scala 3 compiler, also known as Dotty";
     homepage = "https://scala-lang.org/";
     license = lib.licenses.asl20;
-    platforms = lib.platforms.all;
-    mainProgram = "scala";
+
     maintainers = with lib.maintainers; [
       virusdave
       kashw2
@@ -50,5 +50,8 @@ stdenv.mkDerivation (finalAttrs: {
       dottybot
       turebentzin
     ];
+
+    platforms = lib.platforms.all;
+    mainProgram = "scala";
   };
 })

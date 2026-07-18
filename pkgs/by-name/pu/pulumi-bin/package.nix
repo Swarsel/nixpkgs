@@ -3,22 +3,26 @@
   stdenv,
   fetchurl,
   autoPatchelfHook,
-  makeWrapper,
   installShellFiles,
+  makeWrapper,
 }:
 
 let
   data = import ./data.nix { };
 in
 stdenv.mkDerivation {
-  pname = "pulumi";
   inherit (data) version;
+  pname = "pulumi";
 
-  postUnpack = ''
-    mv pulumi-* pulumi
-  '';
+  nativeBuildInputs = [
+    installShellFiles
+  ]
+  ++ lib.optionals stdenv.hostPlatform.isLinux [
+    autoPatchelfHook
+    makeWrapper
+  ];
 
-  srcs = map fetchurl data.pulumiPkgs.${stdenv.hostPlatform.system};
+  buildInputs = [ stdenv.cc.cc.libgcc or null ];
 
   installPhase = ''
     install -D -t $out/bin/ *
@@ -33,26 +37,25 @@ stdenv.mkDerivation {
       --zsh  <($out/bin/pulumi completion zsh)
   '';
 
-  nativeBuildInputs = [
-    installShellFiles
-  ]
-  ++ lib.optionals stdenv.hostPlatform.isLinux [
-    autoPatchelfHook
-    makeWrapper
-  ];
-  buildInputs = [ stdenv.cc.cc.libgcc or null ];
+  postUnpack = ''
+    mv pulumi-* pulumi
+  '';
+
+  srcs = map fetchurl data.pulumiPkgs.${stdenv.hostPlatform.system};
 
   meta = {
-    homepage = "https://pulumi.io/";
     description = "Pulumi is a cloud development platform that makes creating cloud programs easy and productive";
-    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
+    homepage = "https://pulumi.io/";
     license = with lib.licenses; [ asl20 ];
-    platforms = builtins.attrNames data.pulumiPkgs;
+    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
+
     maintainers = with lib.maintainers; [
       jlesquembre
       cpcloud
       wrbbz
     ];
+
+    platforms = builtins.attrNames data.pulumiPkgs;
     hydraPlatforms = [ ]; # Hydra fails with "Output limit exceeded"
   };
 }

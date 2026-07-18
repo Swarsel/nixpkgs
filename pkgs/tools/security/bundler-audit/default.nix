@@ -1,21 +1,20 @@
 {
-  bundlerEnv,
-  ruby,
   lib,
+  bundlerEnv,
   bundlerUpdateScript,
+  ruby,
 }:
 
 bundlerEnv rec {
+  inherit ruby;
   pname = "bundler-audit";
   version = (import ./gemset.nix).bundler-audit.version;
-
-  inherit ruby;
   gemdir = ./.;
-
   passthru.updateScript = bundlerUpdateScript "bundler-audit";
 
   meta = {
     description = "Patch-level verification for Bundler";
+
     longDescription = ''
       Features:
       - Checks for vulnerable versions of gems in Gemfile.lock.
@@ -24,12 +23,15 @@ bundlerEnv rec {
       - Prints advisory information.
       - Does not require a network connection.
     '';
+
     homepage = "https://github.com/rubysec/bundler-audit";
     changelog = "https://github.com/rubysec/bundler-audit/blob/v${version}/ChangeLog.md";
     license = lib.licenses.gpl3Plus;
+
     maintainers = with lib.maintainers; [
       nicknovitski
     ];
+
     platforms = lib.platforms.unix;
   };
 }

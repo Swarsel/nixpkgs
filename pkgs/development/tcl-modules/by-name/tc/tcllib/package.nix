@@ -1,8 +1,8 @@
 {
   lib,
+  critcl,
   fetchzip,
   mkTclDerivation,
-  critcl,
   withCritcl ? true,
 }:
 
@@ -16,7 +16,6 @@ mkTclDerivation rec {
   };
 
   nativeBuildInputs = lib.optional withCritcl critcl;
-
   buildFlags = [ "all" ] ++ lib.optional withCritcl "critcl";
 
   # Tcllib contains a huge amount of Tcl packages:
@@ -29,10 +28,10 @@ mkTclDerivation rec {
   ];
 
   meta = {
-    homepage = "https://core.tcl-lang.org/tcllib/";
     description = "Tcl-only library of standard routines for Tcl";
+    homepage = "https://core.tcl-lang.org/tcllib/";
     license = lib.licenses.tcltk;
-    platforms = lib.platforms.unix;
     maintainers = with lib.maintainers; [ fgaz ];
+    platforms = lib.platforms.unix;
   };
 }

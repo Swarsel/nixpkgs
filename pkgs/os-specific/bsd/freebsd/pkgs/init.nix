@@ -1,16 +1,16 @@
 {
-  mkDerivation,
-  stdenv,
   lib,
+  stdenv,
+  mkDerivation,
 }:
 mkDerivation {
-  path = "sbin/init";
-  extraPaths = [ "sbin/mount" ];
   MK_TESTS = "no";
+  extraPaths = [ "sbin/mount" ];
+  path = "sbin/init";
 
   meta = {
-    broken = !stdenv.hostPlatform.isStatic;
     platforms = lib.platforms.freebsd;
     mainProgram = "init";
+    broken = !stdenv.hostPlatform.isStatic;
   };
 }

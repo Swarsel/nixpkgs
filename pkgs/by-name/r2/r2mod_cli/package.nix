@@ -1,11 +1,11 @@
 {
+  lib,
+  stdenv,
   bashInteractive,
+  fetchzip,
   jq,
   makeWrapper,
   p7zip,
-  lib,
-  stdenv,
-  fetchzip,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -19,9 +19,8 @@ stdenv.mkDerivation (finalAttrs: {
     stripRoot = false;
   };
 
-  buildInputs = [ bashInteractive ];
-
   nativeBuildInputs = [ makeWrapper ];
+  buildInputs = [ bashInteractive ];
 
   makeFlags = [
     "DESTDIR="
@@ -42,7 +41,7 @@ stdenv.mkDerivation (finalAttrs: {
     homepage = "https://thunderstore.io/package/Foldex/r2mod_cli";
     license = lib.licenses.gpl3Only;
     maintainers = [ lib.maintainers.reedrw ];
-    mainProgram = "r2mod";
     platforms = lib.platforms.unix;
+    mainProgram = "r2mod";
   };
 })

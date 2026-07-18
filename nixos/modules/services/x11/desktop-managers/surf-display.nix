@@ -54,55 +54,20 @@ in
       enable = mkEnableOption "surf-display as a kiosk browser session";
 
       defaultWwwUri = mkOption {
-        type = types.str;
         default = "${pkgs.surf-display}/share/surf-display/empty-page.html";
         defaultText = literalExpression ''"''${pkgs.surf-display}/share/surf-display/empty-page.html"'';
-        example = "https://www.example.com/";
         description = "Default URI to display.";
-      };
-
-      inactivityInterval = mkOption {
-        type = types.int;
-        default = 300;
-        example = 0;
-        description = ''
-          Setting for internal inactivity timer to restart surf-display if the
-          user goes inactive/idle to get a fresh session for the next user of
-          the kiosk.
-
-          If this value is set to zero, the whole feature of restarting due to
-          inactivity is disabled.
-        '';
-      };
-
-      screensaverSettings = mkOption {
-        type = types.separatedString " ";
-        default = "";
-        description = ''
-          Screensaver settings, see `man 1 xset` for possible options.
-        '';
-      };
-
-      pointerButtonMap = mkOption {
+        example = "https://www.example.com/";
         type = types.str;
-        default = "1 0 0 4 5 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0";
-        description = ''
-          Disable right and middle pointer device click in browser sessions
-          while keeping scrolling wheels' functionality intact. See pointer
-          subcommand on `man xmodmap` for details.
-        '';
-      };
-
-      hideIdlePointer = mkOption {
-        type = types.str;
-        default = "yes";
-        example = "no";
-        description = "Hide idle mouse pointer.";
       };
 
       extraConfig = mkOption {
-        type = types.lines;
         default = "";
+
+        description = ''
+          Extra configuration options to append to `/etc/default/surf-display`.
+        '';
+
         example = ''
           # Enforce fixed resolution for all displays (default: not set):
           DEFAULT_RESOLUTION="1920x1080"
@@ -117,18 +82,62 @@ in
           DISPLAYS['display-host-3']="www_uri=https://www.displayserver.comany.net/display-4/index.html"|res=1280x1024"
           DISPLAYS['display-host-local-file']="www_uri=file:///usr/share/doc/surf-display/empty-page.html"
         '';
+
+        type = types.lines;
+      };
+
+      hideIdlePointer = mkOption {
+        default = "yes";
+        description = "Hide idle mouse pointer.";
+        example = "no";
+        type = types.str;
+      };
+
+      inactivityInterval = mkOption {
+        default = 300;
+
         description = ''
-          Extra configuration options to append to `/etc/default/surf-display`.
+          Setting for internal inactivity timer to restart surf-display if the
+          user goes inactive/idle to get a fresh session for the next user of
+          the kiosk.
+
+          If this value is set to zero, the whole feature of restarting due to
+          inactivity is disabled.
         '';
+
+        example = 0;
+        type = types.int;
+      };
+
+      pointerButtonMap = mkOption {
+        default = "1 0 0 4 5 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0";
+
+        description = ''
+          Disable right and middle pointer device click in browser sessions
+          while keeping scrolling wheels' functionality intact. See pointer
+          subcommand on `man xmodmap` for details.
+        '';
+
+        type = types.str;
+      };
+
+      screensaverSettings = mkOption {
+        default = "";
+
+        description = ''
+          Screensaver settings, see `man 1 xset` for possible options.
+        '';
+
+        type = types.separatedString " ";
       };
     };
   };
 
   config = mkIf cfg.enable {
+    environment.etc."default/surf-display".text = surfDisplayConf;
+
     services.displayManager.sessionPackages = [
       pkgs.surf-display
     ];
-
-    environment.etc."default/surf-display".text = surfDisplayConf;
   };
 }

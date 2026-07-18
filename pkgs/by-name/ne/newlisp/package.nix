@@ -1,7 +1,7 @@
 {
   lib,
-  fetchurl,
   stdenv,
+  fetchurl,
   libffi,
   readline,
 }:
@@ -22,14 +22,13 @@ stdenv.mkDerivation (finalAttrs: {
 
   # Build fails with C standard newer than C17
   env.NIX_CFLAGS_COMPILE = "-std=gnu17";
-
-  configureScript = "./configure-alt";
-
   doCheck = true;
   checkTarget = "testall";
+  configureScript = "./configure-alt";
 
   meta = {
     description = "Lisp-like, general-purpose scripting language";
+
     longDescription = ''
       newLISP is a Lisp-like, general-purpose scripting language. It is
       especially well-suited for applications in AI, simulation, natural
@@ -39,12 +38,13 @@ stdenv.mkDerivation (finalAttrs: {
       already built in. This includes networking functions, support for
       distributed and multicore processing, and Bayesian statistics.
     '';
+
     homepage = "https://www.newlisp.org/";
-    downloadPage = "https://www.newlisp.org/downloads/";
     changelog = "https://www.newlisp.org/downloads/newlisp-${finalAttrs.version}/doc/CHANGES";
     license = lib.licenses.gpl3Plus;
     maintainers = with lib.maintainers; [ rc-zb ];
-    mainProgram = "newlisp";
     platforms = lib.platforms.all;
+    mainProgram = "newlisp";
+    downloadPage = "https://www.newlisp.org/downloads/";
   };
 })

@@ -21,8 +21,6 @@ stdenv.mkDerivation (finalAttrs: {
     faust2lv2
   ];
 
-  dontWrapQtApps = true;
-
   buildPhase = ''
     echo "hack out autoComp.dsp due to https://github.com/grame-cncm/faust/407/issues "
     rm autoComp.dsp
@@ -48,6 +46,8 @@ stdenv.mkDerivation (finalAttrs: {
       cp $f $out/bin/
     done
   '';
+
+  dontWrapQtApps = true;
 
   meta = {
     description = "Collection of bread and butter compressors";

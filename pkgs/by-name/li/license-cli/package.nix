@@ -1,14 +1,13 @@
 {
   lib,
   fetchFromSourcehut,
-  rustPlatform,
-  installShellFiles,
-  scdoc,
-  makeWrapper,
-  nix-update-script,
-
   # Script dependencies.
   fzf,
+  installShellFiles,
+  makeWrapper,
+  nix-update-script,
+  rustPlatform,
+  scdoc,
   wl-clipboard,
   xclip,
 }:
@@ -24,12 +23,12 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-eS4KuoUJA6e+Y6WNFCJTXgjV5t3Eh7wc2KvWi/+jCeI=";
   };
 
-  cargoHash = "sha256-7C/KAMBXbkxsjnkIJsGBOasOGGIXV8QhVEkkP+vseos=";
-
   nativeBuildInputs = [
     installShellFiles
     makeWrapper
   ];
+
+  cargoHash = "sha256-7C/KAMBXbkxsjnkIJsGBOasOGGIXV8QhVEkkP+vseos=";
 
   preInstall = ''
     ${scdoc}/bin/scdoc < doc/license.scd > license.1
@@ -59,10 +58,10 @@ rustPlatform.buildRustPackage (finalAttrs: {
   passthru.updateScript = nix-update-script { };
 
   meta = {
-    homepage = "https://git.sr.ht/~zethra/license";
     description = "Command-line tool to easily add license to your project";
+    homepage = "https://git.sr.ht/~zethra/license";
     license = lib.licenses.mpl20;
-    mainProgram = "license";
     maintainers = [ ];
+    mainProgram = "license";
   };
 })

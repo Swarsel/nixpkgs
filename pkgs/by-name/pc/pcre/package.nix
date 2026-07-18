@@ -3,12 +3,12 @@
   stdenv,
   fetchurl,
   fetchpatch,
-  updateAutotoolsGnuConfigScriptsHook,
   pcre,
-  windows ? null,
+  updateAutotoolsGnuConfigScriptsHook,
   # Disable jit on Apple Silicon, https://github.com/zherczeg/sljit/issues/51
   enableJit ? !(stdenv.hostPlatform.isDarwin && stdenv.hostPlatform.isAarch64),
   variant ? null,
+  windows ? null,
 }:
 
 assert lib.elem variant [
@@ -22,6 +22,7 @@ stdenv.mkDerivation rec {
     "pcre"
     + lib.optionalString (variant == "cpp") "-cpp"
     + lib.optionalString (variant != "cpp" && variant != null) variant;
+
   version = "8.45";
 
   src = fetchurl {
@@ -37,7 +38,21 @@ stdenv.mkDerivation rec {
     "man"
   ];
 
-  hardeningDisable = lib.optional enableJit "shadowstack";
+  patches = [
+    # https://bugs.exim.org/show_bug.cgi?id=2173
+    ./stacksize-detection.patch
+
+    # Fix segfaults & tests on powerpc64
+    (fetchpatch {
+      hash = "sha256-pttmKwihLzKrAV6O4qVLp2pu4NwNJEFS/9Id8/b3nAU=";
+      name = "sljit-ppc-icache-flush.patch";
+      url = "https://github.com/void-linux/void-packages/raw/d286e231ee680875ad8e80f90ea62e46f5edd812/srcpkgs/pcre/patches/ppc-icache-flush.patch";
+    })
+  ];
+
+  # necessary to build on FreeBSD native pending inclusion of
+  # https://git.savannah.gnu.org/cgit/config.git/commit/?id=e4786449e1c26716e3f9ea182caf472e4dbc96e0
+  nativeBuildInputs = [ updateAutotoolsGnuConfigScriptsHook ];
 
   configureFlags = [
     "--enable-unicode-properties"
@@ -46,31 +61,15 @@ stdenv.mkDerivation rec {
   ++ lib.optional enableJit "--enable-jit=auto"
   ++ lib.optional (variant != null) "--enable-${variant}";
 
-  patches = [
-    # https://bugs.exim.org/show_bug.cgi?id=2173
-    ./stacksize-detection.patch
-
-    # Fix segfaults & tests on powerpc64
-    (fetchpatch {
-      name = "sljit-ppc-icache-flush.patch";
-      url = "https://github.com/void-linux/void-packages/raw/d286e231ee680875ad8e80f90ea62e46f5edd812/srcpkgs/pcre/patches/ppc-icache-flush.patch";
-      hash = "sha256-pttmKwihLzKrAV6O4qVLp2pu4NwNJEFS/9Id8/b3nAU=";
-    })
-  ];
-
-  # necessary to build on FreeBSD native pending inclusion of
-  # https://git.savannah.gnu.org/cgit/config.git/commit/?id=e4786449e1c26716e3f9ea182caf472e4dbc96e0
-  nativeBuildInputs = [ updateAutotoolsGnuConfigScriptsHook ];
+  doCheck =
+    !(with stdenv.hostPlatform; isCygwin || isFreeBSD) && stdenv.hostPlatform == stdenv.buildPlatform;
 
   preCheck = ''
     patchShebangs RunGrepTest
   '';
 
-  doCheck =
-    !(with stdenv.hostPlatform; isCygwin || isFreeBSD) && stdenv.hostPlatform == stdenv.buildPlatform;
   # XXX: test failure on Cygwin
   # we are running out of stack on both freeBSDs on Hydra
-
   postFixup = ''
     moveToOutput bin/pcre-config "$dev"
   ''
@@ -78,10 +77,10 @@ stdenv.mkDerivation rec {
     ln -sf -t "$out/lib/" '${pcre.out}'/lib/libpcre{,posix}.{so.*.*.*,*dylib,*a}
   '';
 
+  hardeningDisable = lib.optional enableJit "shadowstack";
+
   meta = {
-    homepage = "https://www.pcre.org/";
     description = "Library for Perl Compatible Regular Expressions";
-    license = lib.licenses.bsd3;
 
     longDescription = ''
       The PCRE library is a set of functions that implement regular
@@ -91,8 +90,11 @@ stdenv.mkDerivation rec {
       PCRE library is free, even for building proprietary software.
     '';
 
-    platforms = lib.platforms.all;
+    homepage = "https://www.pcre.org/";
+    license = lib.licenses.bsd3;
     maintainers = [ ];
+    platforms = lib.platforms.all;
+
     pkgConfigModules = [
       "libpcre"
       "libpcreposix"

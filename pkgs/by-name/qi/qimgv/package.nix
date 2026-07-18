@@ -3,11 +3,11 @@
   stdenv,
   fetchFromGitHub,
   cmake,
-  pkg-config,
-  kdePackages,
   exiv2,
+  kdePackages,
   mpv,
   opencv4,
+  pkg-config,
 }:
 
 stdenv.mkDerivation {
@@ -21,16 +21,15 @@ stdenv.mkDerivation {
     sha256 = "sha256-avn02kdMyA5PZUSykxgIk1I78zHQ/WKd26tQO8lMOow=";
   };
 
+  postPatch = ''
+    sed -i "s@/usr/bin/mpv@${mpv}/bin/mpv@" \
+      qimgv/settings.cpp
+  '';
+
   nativeBuildInputs = [
     cmake
     pkg-config
     kdePackages.wrapQtAppsHook
-  ];
-
-  cmakeFlags = [
-    "-DVIDEO_SUPPORT=ON"
-    "-DUSE_QT5=OFF"
-    "-DKDE_SUPPORT=ON"
   ];
 
   buildInputs = [
@@ -45,10 +44,11 @@ stdenv.mkDerivation {
     kdePackages.kwindowsystem
   ];
 
-  postPatch = ''
-    sed -i "s@/usr/bin/mpv@${mpv}/bin/mpv@" \
-      qimgv/settings.cpp
-  '';
+  cmakeFlags = [
+    "-DVIDEO_SUPPORT=ON"
+    "-DUSE_QT5=OFF"
+    "-DKDE_SUPPORT=ON"
+  ];
 
   # Wrap the library path so it can see `libqimgv_player_mpv.so`, which is used
   # to play video files within qimgv itself.
@@ -58,10 +58,10 @@ stdenv.mkDerivation {
 
   meta = {
     description = "Qt6 image viewer with optional video support";
-    mainProgram = "qimgv";
     homepage = "https://github.com/easymodo/qimgv";
     license = lib.licenses.gpl3;
-    platforms = lib.platforms.linux;
     maintainers = with lib.maintainers; [ cole-h ];
+    platforms = lib.platforms.linux;
+    mainProgram = "qimgv";
   };
 }

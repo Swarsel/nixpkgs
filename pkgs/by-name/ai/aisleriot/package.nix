@@ -1,20 +1,20 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchurl,
-  pkg-config,
-  itstool,
+  desktop-file-utils,
+  gnome,
   gtk3,
-  wrapGAppsHook3,
-  meson,
+  guile,
+  itstool,
+  libcanberra-gtk3,
   librsvg,
   libxml2,
-  desktop-file-utils,
-  guile,
-  libcanberra-gtk3,
+  meson,
   ninja,
+  pkg-config,
+  wrapGAppsHook3,
   yelp-tools,
-  gnome,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -44,14 +44,14 @@ stdenv.mkDerivation (finalAttrs: {
     libcanberra-gtk3
   ];
 
+  mesonFlags = [ "-Dtheme_kde=false" ];
+
   prePatch = ''
     patchShebangs cards/meson_svgz.sh
     patchShebangs data/meson_desktopfile.py
     patchShebangs data/icons/meson_updateiconcache.py
     patchShebangs src/lib/meson_compileschemas.py
   '';
-
-  mesonFlags = [ "-Dtheme_kde=false" ];
 
   passthru = {
     updateScript = gnome.updateScript {
@@ -60,11 +60,11 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   meta = {
-    homepage = "https://gitlab.gnome.org/GNOME/aisleriot";
     description = "Collection of patience games written in guile scheme";
-    mainProgram = "sol";
-    teams = [ lib.teams.gnome ];
+    homepage = "https://gitlab.gnome.org/GNOME/aisleriot";
     license = lib.licenses.gpl3Plus;
     platforms = lib.platforms.linux;
+    mainProgram = "sol";
+    teams = [ lib.teams.gnome ];
   };
 })

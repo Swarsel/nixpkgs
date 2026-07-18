@@ -1,14 +1,14 @@
 {
   lib,
   stdenv,
-  cmake,
   fetchFromGitHub,
+  cmake,
   fetchpatch,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
-  version = "1.1.5";
   pname = "nanomsg";
+  version = "1.1.5";
 
   src = fetchFromGitHub {
     owner = "nanomsg";
@@ -20,17 +20,15 @@ stdenv.mkDerivation (finalAttrs: {
   patches = [
     # Add pkgconfig fix from https://github.com/nanomsg/nanomsg/pull/1085
     (fetchpatch {
-      url = "https://github.com/nanomsg/nanomsg/commit/e3323f19579529d272cb1d55bd6b653c4f34c064.patch";
       hash = "sha256-URz7TAqqpKxqjgvQqNX4WNSShwiEzAvO2h0hCZ2NhVY=";
+      url = "https://github.com/nanomsg/nanomsg/commit/e3323f19579529d272cb1d55bd6b653c4f34c064.patch";
     })
     # Fix compatibility with Cmake 4.0 and up
     (fetchpatch {
-      url = "https://github.com/nanomsg/nanomsg/commit/eb24489839de3e2419360c67cc38842f223836d9.patch";
       hash = "sha256-yaQWWZLW4YbiI41oV0nj7zap3lEs0Gwwb9kTD6o3La8=";
+      url = "https://github.com/nanomsg/nanomsg/commit/eb24489839de3e2419360c67cc38842f223836d9.patch";
     })
   ];
-
-  nativeBuildInputs = [ cmake ];
 
   # https://github.com/nanomsg/nanomsg/issues/1082
   postPatch = ''
@@ -38,11 +36,13 @@ stdenv.mkDerivation (finalAttrs: {
       --replace '$'{prefix}/@CMAKE_INSTALL_LIBDIR@ @CMAKE_INSTALL_FULL_LIBDIR@
   '';
 
+  nativeBuildInputs = [ cmake ];
+
   meta = {
     description = "Socket library that provides several common communication patterns";
     homepage = "https://nanomsg.org/";
     license = lib.licenses.mit;
-    mainProgram = "nanocat";
     platforms = lib.platforms.unix;
+    mainProgram = "nanocat";
   };
 })

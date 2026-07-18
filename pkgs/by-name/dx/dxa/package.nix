@@ -10,21 +10,20 @@ stdenv.mkDerivation (finalAttrs: {
   version = "0.1.5";
 
   src = fetchurl {
+    hash = "sha256-jkDtd4FlgfmtlaysLtaaL7KseFDkM9Gc1oQZOkWCZ5k=";
+
     urls = [
       "https://www.floodgap.com/retrotech/xa/dists/dxa-${finalAttrs.version}.tar.gz"
       "https://www.floodgap.com/retrotech/xa/dists/unsupported/dxa-${finalAttrs.version}.tar.gz"
     ];
-    hash = "sha256-jkDtd4FlgfmtlaysLtaaL7KseFDkM9Gc1oQZOkWCZ5k=";
   };
-
-  nativeBuildInputs = [ installShellFiles ];
-
-  dontConfigure = true;
 
   postPatch = ''
     substituteInPlace Makefile \
       --replace "CC = gcc" "CC = ${stdenv.cc.targetPrefix}cc"
   '';
+
+  nativeBuildInputs = [ installShellFiles ];
 
   installPhase = ''
     runHook preInstall
@@ -35,12 +34,14 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  dontConfigure = true;
+
   meta = {
-    homepage = "https://www.floodgap.com/retrotech/xa/";
     description = "Andre Fachat's open-source 6502 disassembler";
-    mainProgram = "dxa";
+    homepage = "https://www.floodgap.com/retrotech/xa/";
     license = lib.licenses.gpl2Plus;
     maintainers = [ ];
     platforms = with lib.platforms; unix;
+    mainProgram = "dxa";
   };
 })

@@ -1,15 +1,13 @@
 {
   lib,
-  stdenvNoCC,
-  pulumiTestHook,
   pulumi,
   pulumi-python,
+  pulumiTestHook,
   python3Packages,
+  stdenvNoCC,
 }:
 stdenvNoCC.mkDerivation {
-  name = "pulumi-python-smoke-test";
   src = builtins.filterSource (name: _: !(lib.hasSuffix ".nix" name)) ./.;
-
   doCheck = true;
 
   nativeCheckInputs = [
@@ -18,8 +16,6 @@ stdenvNoCC.mkDerivation {
     pulumi-python
     python3Packages.pulumi
   ];
-
-  __darwinAllowLocalNetworking = true;
 
   checkPhase = ''
     runHook preCheck
@@ -34,4 +30,7 @@ stdenvNoCC.mkDerivation {
     mkdir -p "$out"
     runHook postInstall
   '';
+
+  __darwinAllowLocalNetworking = true;
+  name = "pulumi-python-smoke-test";
 }

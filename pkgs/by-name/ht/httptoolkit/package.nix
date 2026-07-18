@@ -1,17 +1,14 @@
 {
   lib,
   stdenv,
-
-  buildNpmPackage,
   fetchFromGitHub,
-  makeDesktopItem,
-
+  buildNpmPackage,
   copyDesktopItems,
-  makeWrapper,
-  xcbuild,
-
   electron_41,
   httptoolkit-server,
+  makeDesktopItem,
+  makeWrapper,
+  xcbuild,
 }:
 
 let
@@ -19,7 +16,6 @@ let
 in
 buildNpmPackage rec {
   pname = "httptoolkit";
-
   # update together with httptoolkit-server
   # nixpkgs-update: no auto update
   version = "1.26.0";
@@ -40,19 +36,14 @@ buildNpmPackage rec {
       --replace-fail "@out@" "$out"
   '';
 
-  npmDepsHash = "sha256-fGVxHhJU/1ZsRyX3AnP6jM/jkY0PZHKDA1tb2z06lLs=";
-
-  makeCacheWritable = true;
-
-  env.ELECTRON_SKIP_BINARY_DOWNLOAD = "1";
-
   nativeBuildInputs = [
     makeWrapper
   ]
   ++ lib.optionals stdenv.hostPlatform.isLinux [ copyDesktopItems ]
   ++ lib.optionals stdenv.hostPlatform.isDarwin [ xcbuild ];
 
-  npmBuildScript = "build:src";
+  npmDepsHash = "sha256-fGVxHhJU/1ZsRyX3AnP6jM/jkY0PZHKDA1tb2z06lLs=";
+  env.ELECTRON_SKIP_BINARY_DOWNLOAD = "1";
 
   postBuild = ''
     cp -rL ${electron.dist} electron-dist
@@ -97,24 +88,27 @@ buildNpmPackage rec {
 
   desktopItems = [
     (makeDesktopItem {
-      name = "httptoolkit";
+      categories = [ "Development" ];
+      comment = meta.description;
       desktopName = "HTTP Toolkit";
       exec = "httptoolkit %U";
-      terminal = false;
       icon = "httptoolkit";
-      startupWMClass = "HTTP Toolkit";
-      comment = meta.description;
-      categories = [ "Development" ];
+      name = "httptoolkit";
       startupNotify = true;
+      startupWMClass = "HTTP Toolkit";
+      terminal = false;
     })
   ];
+
+  makeCacheWritable = true;
+  npmBuildScript = "build:src";
 
   meta = {
     description = "HTTP(S) debugging, development & testing tool";
     homepage = "https://httptoolkit.com/";
     license = lib.licenses.agpl3Plus;
-    mainProgram = "httptoolkit";
     maintainers = with lib.maintainers; [ tomasajt ];
     platforms = electron.meta.platforms;
+    mainProgram = "httptoolkit";
   };
 }

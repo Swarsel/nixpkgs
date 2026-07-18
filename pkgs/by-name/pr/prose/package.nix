@@ -1,9 +1,9 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
-  testers,
   nix-update-script,
+  rustPlatform,
+  testers,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -27,10 +27,12 @@ rustPlatform.buildRustPackage (finalAttrs: {
   meta = {
     description = "A CLI utility to reformat text";
     homepage = "https://github.com/jgdavey/prose";
+
     license = with lib.licenses; [
       asl20
       mit
     ];
+
     maintainers = with lib.maintainers; [ MoritzBoehme ];
     mainProgram = "prose";
   };

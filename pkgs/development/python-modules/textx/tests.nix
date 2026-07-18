@@ -1,6 +1,6 @@
 {
-  buildPythonPackage,
   attrs,
+  buildPythonPackage,
   click,
   gprof2dot,
   html5lib,
@@ -18,14 +18,8 @@
 }:
 
 buildPythonPackage {
-  pname = "textx-tests";
   inherit (textx) version;
-  pyproject = false;
-
-  srcs = textx.testout;
-
-  dontBuild = true;
-  dontInstall = true;
+  pname = "textx-tests";
 
   nativeCheckInputs = [
     attrs
@@ -44,10 +38,15 @@ buildPythonPackage {
     textx-types-dsl
   ];
 
-  enabledTestPaths = [ "tests/functional" ];
   disabledTests = [
     "test_examples" # assertion error: 0 == 12
   ];
+
+  dontBuild = true;
+  dontInstall = true;
+  enabledTestPaths = [ "tests/functional" ];
+  pyproject = false;
+  srcs = textx.testout;
 
   meta = {
     inherit (textx.meta) license maintainers;

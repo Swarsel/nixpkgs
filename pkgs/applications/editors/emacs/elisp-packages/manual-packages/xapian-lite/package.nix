@@ -18,14 +18,14 @@ stdenv.mkDerivation (finalAttrs: {
     domain = "sr.ht";
   };
 
-  preBuild = ''
-    rm emacs-module.h
-  '';
-
   buildInputs = [
     xapian
     emacs
   ];
+
+  preBuild = ''
+    rm emacs-module.h
+  '';
 
   installPhase = ''
     runHook preInstall
@@ -36,10 +36,10 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   meta = {
-    homepage = "https://git.sr.ht/~casouri/xapian-lite";
-    description = "Minimal Emacs dynamic module for Xapian";
-    maintainers = [ lib.maintainers.kotatsuyaki ];
-    license = lib.licenses.gpl3Plus;
     inherit (emacs.meta) platforms;
+    description = "Minimal Emacs dynamic module for Xapian";
+    homepage = "https://git.sr.ht/~casouri/xapian-lite";
+    license = lib.licenses.gpl3Plus;
+    maintainers = [ lib.maintainers.kotatsuyaki ];
   };
 })

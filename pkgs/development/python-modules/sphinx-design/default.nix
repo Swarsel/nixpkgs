@@ -1,31 +1,26 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  pythonOlder,
-
+  buildPythonPackage,
+  # tests
+  defusedxml,
   # build-system
   flit-core,
-
-  # dependencies
-  sphinx,
-
   # optional-dependencies
   furo,
   pydata-sphinx-theme,
-  sphinx-rtd-theme,
-  sphinx-book-theme,
-
-  # tests
-  defusedxml,
   pytest-regressions,
   pytestCheckHook,
+  pythonOlder,
+  # dependencies
+  sphinx,
+  sphinx-book-theme,
+  sphinx-rtd-theme,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "sphinx-design";
   version = "0.7.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "executablebooks";
@@ -34,8 +29,13 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-NlAAIw8X2gW2ejeSHcFrxj7Jl6OgnpZIXPK16yzxxRQ=";
   };
 
-  build-system = [ flit-core ];
+  nativeCheckInputs = [
+    defusedxml
+    pytest-regressions
+    pytestCheckHook
+  ];
 
+  build-system = [ flit-core ];
   dependencies = [ sphinx ];
 
   optional-dependencies = {
@@ -46,15 +46,9 @@ buildPythonPackage (finalAttrs: {
     # TODO: theme-im = [ sphinx-immaterial ];
   };
 
-  pythonRelaxDeps = [ "sphinx" ];
-
-  nativeCheckInputs = [
-    defusedxml
-    pytest-regressions
-    pytestCheckHook
-  ];
-
+  pyproject = true;
   pythonImportsCheck = [ "sphinx_design" ];
+  pythonRelaxDeps = [ "sphinx" ];
 
   meta = {
     description = "Sphinx extension for designing beautiful, view size responsive web components";

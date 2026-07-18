@@ -1,10 +1,10 @@
 {
+  lib,
   stdenv,
   fetchurl,
-  lib,
 }:
 
-{ version, src, ... }:
+{ src, version, ... }:
 
 let
   artifacts =
@@ -13,6 +13,7 @@ let
         file = fetchurl {
           inherit url hash;
         };
+
         url =
           if lib.versionOlder version "v4_6_1" then
             "https://storage.googleapis.com/simon-public-euw3/assets/sqlcipher/${version}.c"
@@ -21,17 +22,17 @@ let
       })
       {
         v4_10_0 = "sha256-3njvCHy8Juj+WE3gXxeQ8+NIl9uHMegVTcZ00/LfKMs=";
-        v4_9_0 = "sha256-uqvW5BgMjCS0GzeEDeGskb4It0NkWjNUpyXpGlBSIlc=";
-        v4_8_0 = "sha256-nfYmi9PJlMbLqiFRksOIUXYHgD8LL2AVey9GCUc03Jw=";
-        v4_6_1 = "sha256-8kBJiy8g1odpBQQUF5A7f9g3+WStbJTARyfvAi84YVE=";
-        v4_5_7 = "sha256-lDgSEVGZcoruF7nAp0C2kr6TN7XllpMzMVi/R1XfGP4=";
         v4_5_6 = "sha256-evZl3JUeyAfW0fGJ0EfFQs64Z/yRCZGeOeDGgXrFHFU=";
+        v4_5_7 = "sha256-lDgSEVGZcoruF7nAp0C2kr6TN7XllpMzMVi/R1XfGP4=";
+        v4_6_1 = "sha256-8kBJiy8g1odpBQQUF5A7f9g3+WStbJTARyfvAi84YVE=";
+        v4_8_0 = "sha256-nfYmi9PJlMbLqiFRksOIUXYHgD8LL2AVey9GCUc03Jw=";
+        v4_9_0 = "sha256-uqvW5BgMjCS0GzeEDeGskb4It0NkWjNUpyXpGlBSIlc=";
       };
 in
 stdenv.mkDerivation rec {
-  pname = "sqlcipher_flutter_libs";
   inherit version src;
   inherit (src) passthru;
+  pname = "sqlcipher_flutter_libs";
 
   installPhase = ''
     runHook preInstall

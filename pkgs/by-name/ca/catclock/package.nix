@@ -1,14 +1,14 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
-  motif,
-  libxt,
-  libxext,
-  libx11,
-  withAudioTracking ? false,
-  libpulseaudio,
   aubio,
+  libpulseaudio,
+  libx11,
+  libxext,
+  libxt,
+  motif,
+  withAudioTracking ? false,
 }:
 
 stdenv.mkDerivation {
@@ -22,18 +22,6 @@ stdenv.mkDerivation {
     sha256 = "0ls02j9waqg155rj6whisqm7ppsdabgkrln92n4rmkgnwv25hdbi";
   };
 
-  preInstall = ''
-    mkdir -p $out/bin
-    mkdir -p $out/share/man/man1
-    cp xclock.man $out/share/man/man1/xclock.1
-  '';
-
-  makeFlags = [
-    "DESTINATION=$(out)/bin/"
-    "CFLAGS=-Wno-incompatible-pointer-types"
-  ]
-  ++ lib.optional withAudioTracking "WITH_TEMPO_TRACKER=1";
-
   buildInputs = [
     motif
     libx11
@@ -45,12 +33,24 @@ stdenv.mkDerivation {
     aubio
   ];
 
+  makeFlags = [
+    "DESTINATION=$(out)/bin/"
+    "CFLAGS=-Wno-incompatible-pointer-types"
+  ]
+  ++ lib.optional withAudioTracking "WITH_TEMPO_TRACKER=1";
+
+  preInstall = ''
+    mkdir -p $out/bin
+    mkdir -p $out/share/man/man1
+    cp xclock.man $out/share/man/man1/xclock.1
+  '';
+
   meta = {
-    homepage = "http://codefromabove.com/2014/05/catclock/";
     description = "Analog / Digital / Cat clock for X";
+    homepage = "http://codefromabove.com/2014/05/catclock/";
     license = with lib.licenses; mit;
     maintainers = with lib.maintainers; [ ramkromberg ];
-    mainProgram = "xclock";
     platforms = with lib.platforms; linux ++ darwin;
+    mainProgram = "xclock";
   };
 }

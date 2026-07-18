@@ -17,45 +17,47 @@ in
 
     environment.systemPackages = [ cfg.package ];
 
-    users = {
-      groups.vnstatd = { };
-
-      users.vnstatd = {
-        isSystemUser = true;
-        group = "vnstatd";
-        description = "vnstat daemon user";
-      };
-    };
-
     systemd.services.vnstat = {
-      description = "vnStat network traffic monitor";
-      path = [ pkgs.coreutils ];
       after = [ "network.target" ];
-      wantedBy = [ "multi-user.target" ];
+      description = "vnStat network traffic monitor";
+
       documentation = [
         "man:vnstatd(1)"
         "man:vnstat(1)"
         "man:vnstat.conf(5)"
       ];
-      serviceConfig = {
-        ExecStart = "${cfg.package}/bin/vnstatd -n";
-        ExecReload = "${pkgs.procps}/bin/kill -HUP $MAINPID";
 
-        # Hardening (from upstream example service)
-        ProtectSystem = "strict";
-        StateDirectory = "vnstat";
+      path = [ pkgs.coreutils ];
+
+      serviceConfig = {
+        ExecReload = "${pkgs.procps}/bin/kill -HUP $MAINPID";
+        ExecStart = "${cfg.package}/bin/vnstatd -n";
+        Group = "vnstatd";
+        MemoryDenyWriteExecute = true;
         PrivateDevices = true;
-        ProtectKernelTunables = true;
+        PrivateTmp = true;
         ProtectControlGroups = true;
         ProtectHome = true;
         ProtectKernelModules = true;
-        PrivateTmp = true;
-        MemoryDenyWriteExecute = true;
-        RestrictRealtime = true;
+        ProtectKernelTunables = true;
+        # Hardening (from upstream example service)
+        ProtectSystem = "strict";
         RestrictNamespaces = true;
-
+        RestrictRealtime = true;
+        StateDirectory = "vnstat";
         User = "vnstatd";
-        Group = "vnstatd";
+      };
+
+      wantedBy = [ "multi-user.target" ];
+    };
+
+    users = {
+      groups.vnstatd = { };
+
+      users.vnstatd = {
+        description = "vnstat daemon user";
+        group = "vnstatd";
+        isSystemUser = true;
       };
     };
   };

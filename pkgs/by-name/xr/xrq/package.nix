@@ -16,16 +16,16 @@ stdenv.mkDerivation {
     sha256 = "1bxf6h3fjw3kjraz7028m7p229l423y1ngy88lqvf0xl1g3dhp36";
   };
 
-  installPhase = ''
-    make PREFIX=$out install
-  '';
-
   outputs = [
     "out"
     "man"
   ];
 
   buildInputs = [ libx11 ];
+
+  installPhase = ''
+    make PREFIX=$out install
+  '';
 
   meta = {
     description = "X utility for querying xrdb";

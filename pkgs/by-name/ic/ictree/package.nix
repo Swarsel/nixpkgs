@@ -1,6 +1,6 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
 }:
 
@@ -21,8 +21,8 @@ stdenv.mkDerivation (finalAttrs: {
   meta = {
     description = "Like tree but interactive";
     homepage = "https://github.com/NikitaIvanovV/ictree";
-    platforms = lib.platforms.unix;
     maintainers = [ ];
+    platforms = lib.platforms.unix;
     mainProgram = "ictree";
   };
 })

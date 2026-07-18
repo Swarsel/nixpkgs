@@ -1,4 +1,8 @@
 {
+  lib,
+  stdenv,
+  fetchFromGitHub,
+  SDL,
   addDriverRunpath,
   alembic,
   apple-sdk_15,
@@ -10,10 +14,8 @@
   cmake,
   config,
   cudaPackages,
-  cudaSupport ? config.cudaSupport,
   dbus,
   embree,
-  fetchFromGitHub,
   fetchzip,
   ffmpeg_7,
   fftw,
@@ -22,14 +24,12 @@
   gettext,
   glew,
   gmp,
-  jackaudioSupport ? false,
   jemalloc,
-  lib,
+  libGL,
+  libGLU,
   libdecor,
   libepoxy,
   libffi,
-  libGL,
-  libGLU,
   libharu,
   libjack2,
   libjpeg,
@@ -59,7 +59,6 @@
   openjpeg,
   openpgl,
   opensubdiv,
-  openUsdSupport ? !stdenv.hostPlatform.isDarwin,
   openvdb,
   openxr-loader,
   pkg-config,
@@ -67,22 +66,23 @@
   pugixml,
   python313Packages, # must use python3Packages instead of python3.pkgs, see https://github.com/NixOS/nixpkgs/issues/211340
   rocmPackages,
-  rocmSupport ? config.rocmSupport,
   rubberband,
   runCommand,
-  SDL,
   shaderc,
-  spaceNavSupport ? stdenv.hostPlatform.isLinux,
   sse2neon,
-  stdenv,
   vulkan-headers,
   vulkan-loader,
   wayland,
   wayland-protocols,
   wayland-scanner,
-  waylandSupport ? stdenv.hostPlatform.isLinux,
   zlib,
   zstd,
+  cudaSupport ? config.cudaSupport,
+  jackaudioSupport ? false,
+  openUsdSupport ? !stdenv.hostPlatform.isDarwin,
+  rocmSupport ? config.rocmSupport,
+  spaceNavSupport ? stdenv.hostPlatform.isLinux,
+  waylandSupport ? stdenv.hostPlatform.isLinux,
 }:
 
 let
@@ -107,10 +107,10 @@ let
 
   # See build_files/config/pipeline_config.yaml in upstream source for version
   optix = fetchFromGitHub {
+    hash = "sha256-SXkXZHzQH8JOkXypjjxNvT/lUlWZkCuhh6hNCHE7FkY=";
     owner = "NVIDIA";
     repo = "optix-dev";
     tag = "v8.0.0";
-    hash = "sha256-SXkXZHzQH8JOkXypjjxNvT/lUlWZkCuhh6hNCHE7FkY=";
   };
 in
 
@@ -119,9 +119,9 @@ stdenv'.mkDerivation (finalAttrs: {
   version = "5.1.2";
 
   src = fetchzip {
-    name = "source";
     url = "https://download.blender.org/source/blender-${finalAttrs.version}.tar.xz";
     hash = "sha256-FnReSNsP8U1/4jSgZN3cMQV2qkP7OZPh0f/9JA1lAxs=";
+    name = "source";
   };
 
   patches = [
@@ -159,80 +159,6 @@ stdenv'.mkDerivation (finalAttrs: {
       substituteInPlace extern/hipew/src/hipew.c --replace-fail '"opt/rocm/hip/bin"' '"${rocmPackages.clr}/bin"'
       substituteInPlace extern/hipew/src/hiprtew.cc --replace-fail '"/opt/rocm/lib/libhiprt64.so"' '"${rocmPackages.hiprt}/lib/libhiprt64.so"'
     '');
-
-  env.NIX_CFLAGS_COMPILE = "-I${python3}/include/${python3.libPrefix}";
-
-  cmakeFlags = [
-    "-C../build_files/cmake/config/blender_release.cmake"
-
-    (lib.cmakeFeature "MaterialX_DIR" "${python3Packages.materialx}/lib/cmake/MaterialX")
-    (lib.cmakeFeature "PYTHON_INCLUDE_DIR" "${python3}/include/${python3.libPrefix}")
-    (lib.cmakeFeature "PYTHON_LIBPATH" "${python3}/lib")
-    (lib.cmakeFeature "PYTHON_LIBRARY" "${python3.libPrefix}")
-    (lib.cmakeFeature "PYTHON_NUMPY_INCLUDE_DIRS" "${python3Packages.numpy}/${python3.sitePackages}/numpy/_core/include")
-    (lib.cmakeFeature "PYTHON_NUMPY_PATH" "${python3Packages.numpy}/${python3.sitePackages}")
-    (lib.cmakeFeature "PYTHON_VERSION" "${python3.pythonVersion}")
-
-    (lib.cmakeBool "WITH_BUILDINFO" false)
-    (lib.cmakeBool "WITH_CPU_CHECK" false)
-    (lib.cmakeBool "WITH_CYCLES_CUDA_BINARIES" cudaSupport)
-    (lib.cmakeBool "WITH_CYCLES_DEVICE_HIP" rocmSupport)
-    (lib.cmakeBool "WITH_CYCLES_DEVICE_ONEAPI" false)
-    (lib.cmakeBool "WITH_CYCLES_DEVICE_OPTIX" cudaSupport)
-    (lib.cmakeBool "WITH_CYCLES_EMBREE" embreeSupport)
-    (lib.cmakeBool "WITH_CYCLES_OSL" true)
-    (lib.cmakeBool "WITH_CYCLES_PARALLEL_DEVICE_KERNEL_BUILD" true)
-    (lib.cmakeBool "WITH_HYDRA" openUsdSupport)
-    (lib.cmakeBool "WITH_INSTALL_PORTABLE" false)
-    (lib.cmakeBool "WITH_JACK" jackaudioSupport)
-    (lib.cmakeBool "WITH_LIBS_PRECOMPILED" false)
-    (lib.cmakeBool "WITH_OPENIMAGEDENOISE" openImageDenoiseSupport)
-    (lib.cmakeBool "WITH_PIPEWIRE" false)
-    (lib.cmakeBool "WITH_PULSEAUDIO" false)
-    (lib.cmakeBool "WITH_PYTHON_INSTALL" false)
-    (lib.cmakeBool "WITH_PYTHON_INSTALL_NUMPY" false)
-    (lib.cmakeBool "WITH_PYTHON_INSTALL_REQUESTS" false)
-    (lib.cmakeBool "WITH_STRICT_BUILD_OPTIONS" true)
-    (lib.cmakeBool "WITH_SYSTEM_GLOG" true)
-    (lib.cmakeBool "WITH_USD" openUsdSupport)
-
-    # Blender supplies its own FindAlembic.cmake (incompatible with the Alembic-supplied config file)
-    (lib.cmakeFeature "ALEMBIC_INCLUDE_DIR" "${lib.getDev alembic}/include")
-    (lib.cmakeFeature "ALEMBIC_LIBRARY" "${lib.getLib alembic}/lib/libAlembic${stdenv.hostPlatform.extensions.sharedLibrary}")
-  ]
-  ++ lib.optionals cudaSupport [
-    (lib.cmakeFeature "OPTIX_ROOT_DIR" "${optix}")
-    (lib.cmakeBool "WITH_CYCLES_CUDA_BINARIES" true)
-  ]
-  ++ lib.optionals rocmSupport [
-    (lib.cmakeFeature "HIPRT_INCLUDE_DIR" "${rocmPackages.hiprt}/include")
-    (lib.cmakeBool "WITH_CYCLES_DEVICE_HIPRT" true)
-    (lib.cmakeBool "WITH_CYCLES_HIP_BINARIES" true)
-  ]
-  ++ lib.optionals waylandSupport [
-    (lib.cmakeBool "WITH_GHOST_WAYLAND" true)
-    (lib.cmakeBool "WITH_GHOST_WAYLAND_DYNLOAD" false)
-  ]
-  ++ lib.optionals stdenv.cc.isClang [
-    (lib.cmakeFeature "PYTHON_LINKFLAGS" "") # Clang doesn't support "-export-dynamic"
-  ]
-  ++ lib.optionals stdenv.hostPlatform.isDarwin [
-    (lib.cmakeFeature "LIBDIR" "/does-not-exist")
-  ]
-  ++ lib.optionals stdenv.hostPlatform.isAarch64 [
-    (lib.cmakeFeature "SSE2NEON_INCLUDE_DIR" "${sse2neon}/include")
-  ];
-
-  preConfigure = ''
-    (
-      expected_python_version=$(grep -E --only-matching 'set\(_PYTHON_VERSION_SUPPORTED [0-9.]+\)' build_files/cmake/Modules/FindPythonLibsUnix.cmake | grep -E --only-matching '[0-9.]+')
-      actual_python_version=$(python -c 'import sys; print(".".join(map(str, sys.version_info[0:2])))')
-      if ! [[ "$actual_python_version" = "$expected_python_version" ]]; then
-        echo "wrong Python version, expected '$expected_python_version', got '$actual_python_version'" >&2
-        exit 1
-      fi
-    )
-  '';
 
   nativeBuildInputs = [
     cmake
@@ -332,27 +258,79 @@ stdenv'.mkDerivation (finalAttrs: {
     vulkan-loader
   ];
 
-  pythonPath =
-    let
-      ps = python3Packages;
-    in
-    [
-      ps.materialx
-      ps.numpy
-      ps.openshadinglanguage
-      ps.requests
-      ps.zstandard
-    ]
-    ++ lib.optionals openUsdSupport [ pyPkgsOpenusd ];
+  cmakeFlags = [
+    "-C../build_files/cmake/config/blender_release.cmake"
 
-  blenderExecutable =
-    placeholder "out"
-    + (
-      if stdenv.hostPlatform.isDarwin then
-        "/Applications/Blender.app/Contents/MacOS/Blender"
-      else
-        "/bin/blender"
-    );
+    (lib.cmakeFeature "MaterialX_DIR" "${python3Packages.materialx}/lib/cmake/MaterialX")
+    (lib.cmakeFeature "PYTHON_INCLUDE_DIR" "${python3}/include/${python3.libPrefix}")
+    (lib.cmakeFeature "PYTHON_LIBPATH" "${python3}/lib")
+    (lib.cmakeFeature "PYTHON_LIBRARY" "${python3.libPrefix}")
+    (lib.cmakeFeature "PYTHON_NUMPY_INCLUDE_DIRS" "${python3Packages.numpy}/${python3.sitePackages}/numpy/_core/include")
+    (lib.cmakeFeature "PYTHON_NUMPY_PATH" "${python3Packages.numpy}/${python3.sitePackages}")
+    (lib.cmakeFeature "PYTHON_VERSION" "${python3.pythonVersion}")
+
+    (lib.cmakeBool "WITH_BUILDINFO" false)
+    (lib.cmakeBool "WITH_CPU_CHECK" false)
+    (lib.cmakeBool "WITH_CYCLES_CUDA_BINARIES" cudaSupport)
+    (lib.cmakeBool "WITH_CYCLES_DEVICE_HIP" rocmSupport)
+    (lib.cmakeBool "WITH_CYCLES_DEVICE_ONEAPI" false)
+    (lib.cmakeBool "WITH_CYCLES_DEVICE_OPTIX" cudaSupport)
+    (lib.cmakeBool "WITH_CYCLES_EMBREE" embreeSupport)
+    (lib.cmakeBool "WITH_CYCLES_OSL" true)
+    (lib.cmakeBool "WITH_CYCLES_PARALLEL_DEVICE_KERNEL_BUILD" true)
+    (lib.cmakeBool "WITH_HYDRA" openUsdSupport)
+    (lib.cmakeBool "WITH_INSTALL_PORTABLE" false)
+    (lib.cmakeBool "WITH_JACK" jackaudioSupport)
+    (lib.cmakeBool "WITH_LIBS_PRECOMPILED" false)
+    (lib.cmakeBool "WITH_OPENIMAGEDENOISE" openImageDenoiseSupport)
+    (lib.cmakeBool "WITH_PIPEWIRE" false)
+    (lib.cmakeBool "WITH_PULSEAUDIO" false)
+    (lib.cmakeBool "WITH_PYTHON_INSTALL" false)
+    (lib.cmakeBool "WITH_PYTHON_INSTALL_NUMPY" false)
+    (lib.cmakeBool "WITH_PYTHON_INSTALL_REQUESTS" false)
+    (lib.cmakeBool "WITH_STRICT_BUILD_OPTIONS" true)
+    (lib.cmakeBool "WITH_SYSTEM_GLOG" true)
+    (lib.cmakeBool "WITH_USD" openUsdSupport)
+
+    # Blender supplies its own FindAlembic.cmake (incompatible with the Alembic-supplied config file)
+    (lib.cmakeFeature "ALEMBIC_INCLUDE_DIR" "${lib.getDev alembic}/include")
+    (lib.cmakeFeature "ALEMBIC_LIBRARY" "${lib.getLib alembic}/lib/libAlembic${stdenv.hostPlatform.extensions.sharedLibrary}")
+  ]
+  ++ lib.optionals cudaSupport [
+    (lib.cmakeFeature "OPTIX_ROOT_DIR" "${optix}")
+    (lib.cmakeBool "WITH_CYCLES_CUDA_BINARIES" true)
+  ]
+  ++ lib.optionals rocmSupport [
+    (lib.cmakeFeature "HIPRT_INCLUDE_DIR" "${rocmPackages.hiprt}/include")
+    (lib.cmakeBool "WITH_CYCLES_DEVICE_HIPRT" true)
+    (lib.cmakeBool "WITH_CYCLES_HIP_BINARIES" true)
+  ]
+  ++ lib.optionals waylandSupport [
+    (lib.cmakeBool "WITH_GHOST_WAYLAND" true)
+    (lib.cmakeBool "WITH_GHOST_WAYLAND_DYNLOAD" false)
+  ]
+  ++ lib.optionals stdenv.cc.isClang [
+    (lib.cmakeFeature "PYTHON_LINKFLAGS" "") # Clang doesn't support "-export-dynamic"
+  ]
+  ++ lib.optionals stdenv.hostPlatform.isDarwin [
+    (lib.cmakeFeature "LIBDIR" "/does-not-exist")
+  ]
+  ++ lib.optionals stdenv.hostPlatform.isAarch64 [
+    (lib.cmakeFeature "SSE2NEON_INCLUDE_DIR" "${sse2neon}/include")
+  ];
+
+  env.NIX_CFLAGS_COMPILE = "-I${python3}/include/${python3.libPrefix}";
+
+  preConfigure = ''
+    (
+      expected_python_version=$(grep -E --only-matching 'set\(_PYTHON_VERSION_SUPPORTED [0-9.]+\)' build_files/cmake/Modules/FindPythonLibsUnix.cmake | grep -E --only-matching '[0-9.]+')
+      actual_python_version=$(python -c 'import sys; print(".".join(map(str, sys.version_info[0:2])))')
+      if ! [[ "$actual_python_version" = "$expected_python_version" ]]; then
+        echo "wrong Python version, expected '$expected_python_version', got '$actual_python_version'" >&2
+        exit 1
+      fi
+    )
+  '';
 
   postInstall =
     lib.optionalString stdenv.hostPlatform.isDarwin ''
@@ -379,16 +357,31 @@ stdenv'.mkDerivation (finalAttrs: {
       makeWrapper $out/Applications/Blender.app/Contents/MacOS/Blender $out/bin/blender
     '';
 
+  blenderExecutable =
+    placeholder "out"
+    + (
+      if stdenv.hostPlatform.isDarwin then
+        "/Applications/Blender.app/Contents/MacOS/Blender"
+      else
+        "/bin/blender"
+    );
+
+  pythonPath =
+    let
+      ps = python3Packages;
+    in
+    [
+      ps.materialx
+      ps.numpy
+      ps.openshadinglanguage
+      ps.requests
+      ps.zstandard
+    ]
+    ++ lib.optionals openUsdSupport [ pyPkgsOpenusd ];
+
   passthru = {
     python = python3;
     pythonPackages = python3Packages;
-
-    withPackages =
-      f:
-      (callPackage ./wrapper.nix { }).override {
-        blender = finalAttrs.finalPackage;
-        extraModules = (f python3Packages);
-      };
 
     tests = {
       render = runCommand "${finalAttrs.pname}-test" { nativeBuildInputs = [ mesa.llvmpipeHook ]; } ''
@@ -420,6 +413,7 @@ stdenv'.mkDerivation (finalAttrs: {
             --render-frame 1
         done
       '';
+
       tester-cudaAvailable = cudaPackages.writeGpuTestPython { } ''
         import subprocess
         subprocess.run([${
@@ -441,6 +435,13 @@ stdenv'.mkDerivation (finalAttrs: {
         "--url=https://projects.blender.org/blender/blender"
       ];
     };
+
+    withPackages =
+      f:
+      (callPackage ./wrapper.nix { }).override {
+        blender = finalAttrs.finalPackage;
+        extraModules = (f python3Packages);
+      };
   };
 
   meta = {
@@ -448,17 +449,19 @@ stdenv'.mkDerivation (finalAttrs: {
     homepage = "https://www.blender.org";
     # OptiX, enabled with cudaSupport, is non-free.
     license = with lib.licenses; [ gpl2Plus ] ++ lib.optional cudaSupport nvidiaCudaRedist;
-    donationPage = "https://fund.blender.org/";
+
+    maintainers = with lib.maintainers; [
+      amarshall
+      veprbl
+    ];
 
     platforms = [
       "aarch64-darwin"
       "aarch64-linux"
       "x86_64-linux"
     ];
-    maintainers = with lib.maintainers; [
-      amarshall
-      veprbl
-    ];
+
     mainProgram = "blender";
+    donationPage = "https://fund.blender.org/";
   };
 })

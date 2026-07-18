@@ -2,10 +2,10 @@
   lib,
   stdenv,
   fetchurl,
-  pkg-config,
+  gettext,
   gtk2,
   libxml2,
-  gettext,
+  pkg-config,
 }:
 
 stdenv.mkDerivation rec {
@@ -22,15 +22,6 @@ stdenv.mkDerivation rec {
     "dev"
   ];
 
-  strictDeps = true;
-
-  nativeBuildInputs = [
-    pkg-config
-    gettext
-  ];
-  buildInputs = [ gtk2 ];
-  propagatedBuildInputs = [ libxml2 ];
-
   postPatch = ''
     # uses pkg-config in some places and uses the correct $PKG_CONFIG in some
     # it's an ancient library so it has very old configure scripts and m4
@@ -38,5 +29,14 @@ stdenv.mkDerivation rec {
       --replace "pkg-config" "$PKG_CONFIG"
   '';
 
+  strictDeps = true;
+
+  nativeBuildInputs = [
+    pkg-config
+    gettext
+  ];
+
+  buildInputs = [ gtk2 ];
+  propagatedBuildInputs = [ libxml2 ];
   env.NIX_LDFLAGS = "-lgmodule-2.0";
 }

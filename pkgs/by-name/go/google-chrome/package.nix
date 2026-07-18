@@ -1,30 +1,53 @@
 {
-  fetchurl,
   lib,
-  makeWrapper,
-  patchelf,
-  stdenvNoCC,
-  bintools,
-
+  fetchurl,
+  # For Vulkan support (--enable-features=Vulkan)
+  addDriverRunpath,
+  adwaita-icon-theme,
   # Linked dynamic libraries.
   alsa-lib,
   at-spi2-atk,
   at-spi2-core,
   atk,
+  bintools,
+  ## Gentoo
+  bzip2,
   cairo,
+  # Command line programs
+  coreutils,
   cups,
+  # Additional dependencies according to other distros.
+  ## Ubuntu
+  curl,
   dbus,
   expat,
+  ## Arch Linux.
+  flac,
   fontconfig,
   freetype,
   gcc-unwrapped,
   gdk-pixbuf,
   glib,
+  gsettings-desktop-schemas,
   gtk3,
   gtk4,
+  harfbuzz,
+  icu,
+  kdePackages,
+  libcap,
   libdrm,
+  liberation_ttf,
+  # Loaded at runtime.
+  libexif,
+  libgbm,
   libglvnd,
   libkrb5,
+  libopus,
+  libpng,
+  # Necessary for USB audio devices.
+  libpulseaudio,
+  # For video acceleration via VA-API (--enable-features=VaapiVideoDecoder)
+  libva,
   libx11,
   libxcb,
   libxcomposite,
@@ -39,66 +62,31 @@
   libxscrnsaver,
   libxshmfence,
   libxtst,
-  libgbm,
+  makeWrapper,
   nspr,
   nss,
   pango,
-  pipewire,
-  vulkan-loader,
-  wayland, # ozone/wayland
-
-  # Command line programs
-  coreutils,
-
-  # command line arguments which are always set e.g "--disable-gpu"
-  commandLineArgs ? "",
-
-  # Will crash without.
-  systemd,
-
-  # Loaded at runtime.
-  libexif,
+  patchelf,
   pciutils,
-
-  # Additional dependencies according to other distros.
-  ## Ubuntu
-  curl,
-  liberation_ttf,
-  util-linux,
-  wget,
-  xdg-utils,
-  ## Arch Linux.
-  flac,
-  harfbuzz,
-  icu,
-  libopus,
-  libpng,
+  pipewire,
+  qt6,
   snappy,
   speechd-minimal,
-  ## Gentoo
-  bzip2,
-  libcap,
-
-  # Necessary for USB audio devices.
-  libpulseaudio,
-  pulseSupport ? true,
-
-  adwaita-icon-theme,
-  gsettings-desktop-schemas,
-
-  # For video acceleration via VA-API (--enable-features=VaapiVideoDecoder)
-  libva,
-  libvaSupport ? true,
-
-  # For Vulkan support (--enable-features=Vulkan)
-  addDriverRunpath,
+  stdenvNoCC,
+  # Will crash without.
+  systemd,
   undmg,
-
+  util-linux,
+  vulkan-loader,
+  wayland, # ozone/wayland
+  wget,
+  xdg-utils,
+  # command line arguments which are always set e.g "--disable-gpu"
+  commandLineArgs ? "",
+  libvaSupport ? true,
   # Enables Chrome's "Use QT" appearance to introspect the user's Plasma theme
   plasmaSupport ? false,
-  qt6,
-  kdePackages,
-
+  pulseSupport ? true,
   # Create a symlink at $out/bin/google-chrome
   withSymlink ? true,
 }:
@@ -205,16 +193,6 @@ let
       gsettings-desktop-schemas
     ];
 
-    unpackPhase = ''
-      runHook preUnpack
-      ${lib.getExe' bintools "ar"} x $src
-      tar xf data.tar.xz
-      runHook postUnpack
-    '';
-
-    rpath = lib.makeLibraryPath deps + ":" + lib.makeSearchPathOutput "lib" "lib64" deps;
-    binpath = lib.makeBinPath deps;
-
     installPhase = ''
       runHook preInstall
 
@@ -285,6 +263,16 @@ let
     postInstall = lib.optionalString withSymlink ''
       ln -s $out/bin/google-chrome-stable $out/bin/google-chrome
     '';
+
+    binpath = lib.makeBinPath deps;
+    rpath = lib.makeLibraryPath deps + ":" + lib.makeSearchPathOutput "lib" "lib64" deps;
+
+    unpackPhase = ''
+      runHook preUnpack
+      ${lib.getExe' bintools "ar"} x $src
+      tar xf data.tar.xz
+      runHook postUnpack
+    '';
   });
 
   darwin = stdenvNoCC.mkDerivation (finalAttrs: {
@@ -296,17 +284,10 @@ let
       hash = "sha256-ulMe+AP65d9VB2O7vhLnSX+dUfC7XqWd4GaOEQXGBac=";
     };
 
-    dontPatch = true;
-    dontConfigure = true;
-    dontBuild = true;
-    dontFixup = true;
-
     nativeBuildInputs = [
       makeWrapper
       undmg
     ];
-
-    sourceRoot = ".";
 
     installPhase = ''
       runHook preInstall
@@ -326,6 +307,12 @@ let
     postInstall = lib.optionalString withSymlink ''
       ln -s $out/bin/google-chrome-stable $out/bin/google-chrome
     '';
+
+    dontBuild = true;
+    dontConfigure = true;
+    dontFixup = true;
+    dontPatch = true;
+    sourceRoot = ".";
   });
 
   passthru.updateScript = ./update.sh;
@@ -334,12 +321,14 @@ let
     description = "Freeware web browser developed by Google";
     homepage = "https://www.google.com/chrome/browser/";
     license = lib.licenses.unfree;
+    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
+
     maintainers = with lib.maintainers; [
       iedame
       mdaniels5757
     ];
+
     platforms = lib.platforms.darwin ++ [ "x86_64-linux" ];
-    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
     mainProgram = "google-chrome-stable";
   };
 in

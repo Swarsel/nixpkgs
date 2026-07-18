@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   hy,
   pytestCheckHook,
   setuptools,
@@ -10,7 +10,6 @@
 buildPythonPackage rec {
   pname = "hyrule";
   version = "1.0.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "hylang";
@@ -19,15 +18,12 @@ buildPythonPackage rec {
     hash = "sha256-nyB2vsXR1yiSzp1r/UCCQwM5FfIa4P8obTcWSu7JFoA=";
   };
 
-  build-system = [ setuptools ];
-
-  dependencies = [ hy ];
-
   nativeCheckInputs = [ pytestCheckHook ];
-
   # Some tests depends on hy on PATH
   preCheck = "PATH=${hy}/bin:$PATH";
-
+  build-system = [ setuptools ];
+  dependencies = [ hy ];
+  pyproject = true;
   pythonImportsCheck = [ "hyrule" ];
 
   meta = {

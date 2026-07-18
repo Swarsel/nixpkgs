@@ -10,7 +10,6 @@
 buildPythonPackage {
   pname = "mediafire-dl";
   version = "unstable-2023-09-07";
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "Juvenal-Yescas";
@@ -25,6 +24,7 @@ buildPythonPackage {
     tqdm
   ];
 
+  format = "setuptools";
   pythonImportsCheck = [ "mediafire_dl" ];
 
   meta = {

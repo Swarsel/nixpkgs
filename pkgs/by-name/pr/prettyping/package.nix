@@ -1,12 +1,13 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
   pname = "prettyping";
   version = "1.1.0";
+
   src = fetchFromGitHub {
     owner = "denilsonsa";
     repo = "prettyping";
@@ -19,11 +20,11 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   meta = {
-    homepage = "https://github.com/denilsonsa/prettyping";
     description = "Wrapper around the standard ping tool with the objective of making the output prettier, more colorful, more compact, and easier to read";
-    mainProgram = "prettyping";
+    homepage = "https://github.com/denilsonsa/prettyping";
     license = with lib.licenses; [ mit ];
-    platforms = lib.platforms.unix;
     maintainers = with lib.maintainers; [ qoelet ];
+    platforms = lib.platforms.unix;
+    mainProgram = "prettyping";
   };
 })

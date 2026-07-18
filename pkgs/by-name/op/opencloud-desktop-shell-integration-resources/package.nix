@@ -17,12 +17,12 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-TqJanrAKD3aNQu5jL1Dt0bn84dYBNGImAKBGsAY2xeU=";
   };
 
-  buildInputs = [
-    kdePackages.extra-cmake-modules
-  ];
-
   nativeBuildInputs = [
     cmake
+  ];
+
+  buildInputs = [
+    kdePackages.extra-cmake-modules
   ];
 
   dontWrapQtApps = true;

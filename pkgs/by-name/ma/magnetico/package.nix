@@ -1,8 +1,8 @@
 {
   lib,
   stdenv,
-  fetchFromGitea,
   buildGoModule,
+  fetchFromGitea,
   nixosTests,
   sqlite,
 }:
@@ -12,27 +12,26 @@ buildGoModule (finalAttrs: {
   version = "0.13.0";
 
   src = fetchFromGitea {
-    domain = "maxwell.eurofusion.eu/git";
     owner = "rnhmjoj";
     repo = "magnetico";
     rev = "v${finalAttrs.version}";
     hash = "sha256-TqzsgUSPIBQT+k+ZrJPkF7uIt8o018ZN5p8nHom8cXM=";
+    domain = "maxwell.eurofusion.eu/git";
   };
 
-  vendorHash = "sha256-ZUtmQib6BD7P07ALYXKp/JAQodYnQCuvWZnWl9888Mg=";
-
   buildInputs = [ sqlite ];
+  vendorHash = "sha256-ZUtmQib6BD7P07ALYXKp/JAQodYnQCuvWZnWl9888Mg=";
+  doCheck = !stdenv.hostPlatform.isStatic;
 
-  tags = [
-    "fts5"
-    "libsqlite3"
-  ];
   ldflags = [
     "-s"
     "-w"
   ];
 
-  doCheck = !stdenv.hostPlatform.isStatic;
+  tags = [
+    "fts5"
+    "libsqlite3"
+  ];
 
   passthru.tests = { inherit (nixosTests) magnetico; };
 
@@ -40,7 +39,7 @@ buildGoModule (finalAttrs: {
     description = "Autonomous (self-hosted) BitTorrent DHT search engine suite";
     homepage = "https://maxwell.eurofusion.eu/git/rnhmjoj/magnetico";
     license = lib.licenses.agpl3Only;
-    badPlatforms = lib.platforms.darwin;
     maintainers = with lib.maintainers; [ rnhmjoj ];
+    badPlatforms = lib.platforms.darwin;
   };
 })

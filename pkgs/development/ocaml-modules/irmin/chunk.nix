@@ -1,17 +1,17 @@
 {
+  alcotest,
   buildDunePackage,
+  fmt,
   irmin,
   irmin-test,
-  fmt,
   logs,
   lwt,
-  alcotest,
 }:
 
 buildDunePackage {
 
-  pname = "irmin-chunk";
   inherit (irmin) version src;
+  pname = "irmin-chunk";
 
   propagatedBuildInputs = [
     irmin
@@ -21,6 +21,7 @@ buildDunePackage {
   ];
 
   doCheck = true;
+
   checkInputs = [
     alcotest
     irmin-test

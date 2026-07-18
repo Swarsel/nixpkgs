@@ -1,16 +1,15 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
-  writableTmpDirAsHomeHook,
   nix-update-script,
+  rustPlatform,
   versionCheckHook,
+  writableTmpDirAsHomeHook,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
   pname = "tuxedo";
   version = "2026.6.3";
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "webstonehq";
@@ -20,19 +19,17 @@ rustPlatform.buildRustPackage (finalAttrs: {
   };
 
   cargoHash = "sha256-PIhtD0/0hxFOn51PwOWCtz82a2dvhS+2jbd8Wvr/JUM=";
-
   nativeCheckInputs = [ writableTmpDirAsHomeHook ];
-
-  doInstallCheck = true;
-  nativeInstallCheckInputs = [ versionCheckHook ];
-
-  __darwinAllowLocalNetworking = true;
 
   checkFlags = [
     # Failure
     "--skip=insert_dialog_after_nl_parse"
   ];
 
+  doInstallCheck = true;
+  nativeInstallCheckInputs = [ versionCheckHook ];
+  __darwinAllowLocalNetworking = true;
+  __structuredAttrs = true;
   passthru.updateScript = nix-update-script { };
 
   meta = {

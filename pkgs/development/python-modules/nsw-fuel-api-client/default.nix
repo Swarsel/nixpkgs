@@ -1,17 +1,16 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
-  requests,
+  buildPythonPackage,
   pytestCheckHook,
+  requests,
   requests-mock,
+  setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "nsw-fuel-api-client";
   version = "1.1.3";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "nickw444";
@@ -19,6 +18,11 @@ buildPythonPackage rec {
     tag = version;
     hash = "sha256-3nkBDLmFOfYLvG5fi2subA9zxb51c7zWlhT4GaCQo9I=";
   };
+
+  nativeCheckInputs = [
+    pytestCheckHook
+    requests-mock
+  ];
 
   build-system = [
     setuptools
@@ -28,17 +32,14 @@ buildPythonPackage rec {
     requests
   ];
 
-  nativeCheckInputs = [
-    pytestCheckHook
-    requests-mock
+  pyproject = true;
+
+  pytestFlags = [
+    "nsw_fuel_tests/unit.py"
   ];
 
   pythonImportsCheck = [
     "nsw_fuel"
-  ];
-
-  pytestFlags = [
-    "nsw_fuel_tests/unit.py"
   ];
 
   meta = {

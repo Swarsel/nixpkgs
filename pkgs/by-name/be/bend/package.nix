@@ -1,9 +1,9 @@
 {
-  rustPlatform,
-  fetchFromGitHub,
   lib,
-  makeWrapper,
+  fetchFromGitHub,
   hvm,
+  makeWrapper,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -17,12 +17,12 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-8uBEI9GKUETk8t6Oanb0OECe3MlJ486QnccOuhIxPuY=";
   };
 
-  cargoHash = "sha256-xac5Gb0hcamT3vymq6SKaMiuEn8NU9Bfhu+t/dcjhTE=";
-
   nativeBuildInputs = [
     hvm
     makeWrapper
   ];
+
+  cargoHash = "sha256-xac5Gb0hcamT3vymq6SKaMiuEn8NU9Bfhu+t/dcjhTE=";
 
   postInstall = ''
     wrapProgram $out/bin/bend \
@@ -33,8 +33,8 @@ rustPlatform.buildRustPackage (finalAttrs: {
     description = "Massively parallel, high-level programming language";
     homepage = "https://higherorderco.com/";
     license = lib.licenses.asl20;
-    mainProgram = "bend";
     maintainers = with lib.maintainers; [ k3yss ];
     platforms = lib.platforms.unix;
+    mainProgram = "bend";
   };
 })

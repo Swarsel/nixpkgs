@@ -2,8 +2,8 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  python3Packages,
   python3,
+  python3Packages,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -18,23 +18,24 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   nativeBuildInputs = with python3Packages; [ wrapPython ];
-  pythonPath = with python3Packages; [
-    pyaes
-    pycrypto
-    uvloop
-  ];
 
   installPhase = ''
     install -Dm755 mtprotoproxy.py $out/bin/mtprotoproxy
     wrapPythonPrograms
   '';
 
+  pythonPath = with python3Packages; [
+    pyaes
+    pycrypto
+    uvloop
+  ];
+
   meta = {
     description = "Async MTProto proxy for Telegram";
-    license = lib.licenses.mit;
     homepage = "https://github.com/alexbers/mtprotoproxy";
-    platforms = python3.meta.platforms;
+    license = lib.licenses.mit;
     maintainers = [ ];
+    platforms = python3.meta.platforms;
     mainProgram = "mtprotoproxy";
   };
 })

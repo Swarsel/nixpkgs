@@ -1,16 +1,16 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchurl,
-  callPackage,
   autoPatchelfHook,
-  wrapGAppsHook4,
-  libusb1,
-  libsoup_3,
-  webkitgtk_4_1,
-  makeDesktopItem,
+  callPackage,
   copyDesktopItems,
+  libsoup_3,
+  libusb1,
+  makeDesktopItem,
   undmg,
+  webkitgtk_4_1,
+  wrapGAppsHook4,
 }:
 let
   pname = "keymapp";
@@ -18,13 +18,15 @@ let
 
   sources = rec {
     aarch64-darwin = {
-      url = "https://oryx.nyc3.cdn.digitaloceanspaces.com/keymapp/keymapp-${version}.dmg";
       hash = "sha256-H6xRau7pWuSF5Aa6lblwi/Lg5KxC+HM3rtUMjX+hEE8=";
+      url = "https://oryx.nyc3.cdn.digitaloceanspaces.com/keymapp/keymapp-${version}.dmg";
     };
+
     aarch64-linux = {
-      url = "https://oryx.nyc3.cdn.digitaloceanspaces.com/keymapp/keymapp-${version}.tar.gz";
       hash = "sha256-qHvHCDzWRhuhDg2kuU8kmikQDXElQtVEmPAelHz4aPo=";
+      url = "https://oryx.nyc3.cdn.digitaloceanspaces.com/keymapp/keymapp-${version}.tar.gz";
     };
+
     x86_64-linux = aarch64-linux;
   };
   src = fetchurl {
@@ -32,16 +34,18 @@ let
   };
 
   meta = {
-    homepage = "https://www.zsa.io/flash/";
     description = "Application for ZSA keyboards";
+    homepage = "https://www.zsa.io/flash/";
+    license = lib.licenses.unfree;
+    sourceProvenance = [ lib.sourceTypes.binaryNativeCode ];
+
     maintainers = with lib.maintainers; [
       afh
       jankaifer
       shawn8901
     ];
+
     platforms = lib.platforms.linux ++ lib.platforms.darwin;
-    sourceProvenance = [ lib.sourceTypes.binaryNativeCode ];
-    license = lib.licenses.unfree;
   };
 
 in

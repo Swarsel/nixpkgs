@@ -1,21 +1,20 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
-  pkg-config,
-  cmake,
-  libzip,
   boost,
-  fftw,
-  libusb1,
-  libsForQt5,
-  python3,
+  cmake,
   desktopToDarwinBundle,
+  fftw,
+  libsForQt5,
+  libusb1,
+  libzip,
+  pkg-config,
+  python3,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
   pname = "dsview";
-
   version = "1.3.2";
 
   src = fetchFromGitHub {
@@ -30,9 +29,6 @@ stdenv.mkDerivation (finalAttrs: {
     ./install.patch
     ./cmake4.patch
   ];
-
-  # /build/source/libsigrok4DSL/strutil.c:343:19: error: implicit declaration of function 'strcasecmp'; did you mean 'g_strcasecmp'? []
-  env.NIX_CFLAGS_COMPILE = "-Wno-error=implicit-function-declaration";
 
   nativeBuildInputs = [
     cmake
@@ -52,17 +48,21 @@ stdenv.mkDerivation (finalAttrs: {
   ]
   ++ lib.optional stdenv.hostPlatform.isLinux libsForQt5.qtwayland;
 
+  # /build/source/libsigrok4DSL/strutil.c:343:19: error: implicit declaration of function 'strcasecmp'; did you mean 'g_strcasecmp'? []
+  env.NIX_CFLAGS_COMPILE = "-Wno-error=implicit-function-declaration";
   doInstallCheck = true;
 
   meta = {
     description = "GUI program for supporting various instruments from DreamSourceLab, including logic analyzer, oscilloscope, etc";
-    mainProgram = "DSView";
     homepage = "https://www.dreamsourcelab.com/";
     license = lib.licenses.gpl3Plus;
-    platforms = lib.platforms.unix;
+
     maintainers = with lib.maintainers; [
       bachp
       carlossless
     ];
+
+    platforms = lib.platforms.unix;
+    mainProgram = "DSView";
   };
 })

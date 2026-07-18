@@ -1,13 +1,11 @@
 {
-  stdenv,
   lib,
-  buildPythonPackage,
+  stdenv,
   fetchFromGitHub,
-  setuptools,
-
   beautifulsoup4,
   bitmath,
   bpylist2,
+  buildPythonPackage,
   click,
   mako,
   markdown2,
@@ -16,13 +14,17 @@
   packaging,
   pathvalidate,
   pip,
-  ptpython,
   psutil,
+  ptpython,
+  pytest-mock,
+  # tests
+  pytestCheckHook,
   pytimeparse2,
   pyyaml,
   requests,
-  rich-theme-manager,
   rich,
+  rich-theme-manager,
+  setuptools,
   shortuuid,
   strpdatetime,
   tenacity,
@@ -32,18 +34,14 @@
   utitools,
   whenever,
   wrapt,
+  writableTmpDirAsHomeHook,
   wurlitzer,
   xdg-base-dirs,
-  # tests
-  pytestCheckHook,
-  pytest-mock,
-  writableTmpDirAsHomeHook,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "osxphotos";
   version = "0.76.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "RhetTbull";
@@ -52,15 +50,10 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-ZpY9T4Y0ZQmBgbFM0S/AuVw9YOpuM6V6CUW5GUHTjXI=";
   };
 
-  pythonRelaxDeps = [
-    "bitmath"
-    "mako"
-    "more-itertools"
-    "objexplore"
-    "rich"
-    "textx"
-    "tenacity"
-    "whenever"
+  nativeCheckInputs = [
+    pytestCheckHook
+    pytest-mock
+    writableTmpDirAsHomeHook
   ];
 
   build-system = [ setuptools ];
@@ -97,14 +90,6 @@ buildPythonPackage (finalAttrs: {
     xdg-base-dirs
   ];
 
-  pythonImportsCheck = [ "osxphotos" ];
-
-  nativeCheckInputs = [
-    pytestCheckHook
-    pytest-mock
-    writableTmpDirAsHomeHook
-  ];
-
   disabledTests = [
     "test_datetime_naive_to_local"
     "test_from_to_date_tz"
@@ -112,6 +97,20 @@ buildPythonPackage (finalAttrs: {
     "test_get_local_tz"
     "test_query_from_to_date_alt_location"
     "test_query_function_url"
+  ];
+
+  pyproject = true;
+  pythonImportsCheck = [ "osxphotos" ];
+
+  pythonRelaxDeps = [
+    "bitmath"
+    "mako"
+    "more-itertools"
+    "objexplore"
+    "rich"
+    "textx"
+    "tenacity"
+    "whenever"
   ];
 
   meta = {

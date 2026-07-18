@@ -2,8 +2,8 @@
 
 {
   config,
-  pkgs,
   lib,
+  pkgs,
   ...
 }:
 
@@ -13,23 +13,13 @@
     ./virtualbox-image.nix
   ];
 
-  virtualbox.params = {
-    audio = "none";
-    audioin = "off";
-    audioout = "off";
-    usb = "off";
-    usbehci = "off";
-  };
   documentation.man.enable = false;
   documentation.nixos.enable = false;
-
-  users.extraUsers.vagrant.extraGroups = [ "vboxsf" ];
-
   # generate the box v1 format which is much easier to generate
   # https://www.vagrantup.com/docs/boxes/format.html
   image.extension = lib.mkOverride 999 "${config.image.baseName}.box";
-  system.nixos.tags = [ "vagrant" ];
   system.build.image = lib.mkOverride 999 config.system.build.vagrantVirtualbox;
+
   system.build.vagrantVirtualbox = pkgs.runCommand config.image.fileName { } ''
       mkdir workdir
       cd workdir
@@ -61,4 +51,15 @@
     # 6. compress everything back together
     tar --owner=0 --group=0 --sort=name --numeric-owner -czf $out .
   '';
+
+  system.nixos.tags = [ "vagrant" ];
+  users.extraUsers.vagrant.extraGroups = [ "vboxsf" ];
+
+  virtualbox.params = {
+    audio = "none";
+    audioin = "off";
+    audioout = "off";
+    usb = "off";
+    usbehci = "off";
+  };
 }

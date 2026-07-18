@@ -1,10 +1,10 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
   installShellFiles,
-  versionCheckHook,
   nix-update-script,
+  rustPlatform,
+  versionCheckHook,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -18,15 +18,15 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-6gCoF+Uafw0WISuksBh4kwF7TL6N73Y8CpkcKe8Nyqw=";
   };
 
-  cargoHash = "sha256-Mse6pO9VXturMxMpPe3zaNTsvRpADdns1zu/pX4mfgE=";
-
   nativeBuildInputs = [ installShellFiles ];
+  cargoHash = "sha256-Mse6pO9VXturMxMpPe3zaNTsvRpADdns1zu/pX4mfgE=";
 
   postInstall = ''
     installManPage scraper/scraper.1
   '';
 
   doInstallCheck = true;
+
   nativeInstallCheckInputs = [
     versionCheckHook
   ];
@@ -37,12 +37,14 @@ rustPlatform.buildRustPackage (finalAttrs: {
 
   meta = {
     description = "Tool to query HTML files with CSS selectors";
-    mainProgram = "scraper";
     homepage = "https://github.com/rust-scraper/scraper";
     changelog = "https://github.com/rust-scraper/scraper/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.isc;
+
     maintainers = with lib.maintainers; [
       kachick
     ];
+
+    mainProgram = "scraper";
   };
 })

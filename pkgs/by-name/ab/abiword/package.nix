@@ -2,25 +2,25 @@
   lib,
   stdenv,
   fetchFromGitLab,
-  autoreconfHook,
   autoconf-archive,
-  pkg-config,
-  gtk3,
-  fribidi,
-  libpng,
-  popt,
-  libgsf,
-  enchant,
-  wv,
-  librsvg,
-  bzip2,
-  libjpeg,
-  perl,
+  autoreconfHook,
   boost,
-  libxslt,
-  goffice,
-  wrapGAppsHook3,
+  bzip2,
+  enchant,
+  fribidi,
   gitUpdater,
+  goffice,
+  gtk3,
+  libgsf,
+  libjpeg,
+  libpng,
+  librsvg,
+  libxslt,
+  perl,
+  pkg-config,
+  popt,
+  wrapGAppsHook3,
+  wv,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -28,12 +28,18 @@ stdenv.mkDerivation (finalAttrs: {
   version = "3.0.8";
 
   src = fetchFromGitLab {
-    domain = "gitlab.gnome.org";
     owner = "World";
     repo = "AbiWord";
     tag = "release-${finalAttrs.version}";
     hash = "sha256-TjOHixfCXDQlUUbD1L5wcGe4Nl0+1UqZw4EF+1/eZ4w=";
+    domain = "gitlab.gnome.org";
   };
+
+  postPatch = ''
+    patchShebangs ./tools/cdump/xp/cdump.pl ./po/ui-backport.pl
+  '';
+
+  strictDeps = true;
 
   nativeBuildInputs = [
     autoreconfHook
@@ -59,12 +65,7 @@ stdenv.mkDerivation (finalAttrs: {
     goffice
   ];
 
-  strictDeps = true;
   enableParallelBuilding = true;
-
-  postPatch = ''
-    patchShebangs ./tools/cdump/xp/cdump.pl ./po/ui-backport.pl
-  '';
 
   preAutoreconf = ''
     ./autogen-common.sh
@@ -76,14 +77,16 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Word processing program, similar to Microsoft Word";
-    mainProgram = "abiword";
     homepage = "https://gitlab.gnome.org/World/AbiWord/";
     license = lib.licenses.gpl3;
-    platforms = lib.platforms.linux;
+
     maintainers = with lib.maintainers; [
       pSub
       ylwghst
       sna
     ];
+
+    platforms = lib.platforms.linux;
+    mainProgram = "abiword";
   };
 })

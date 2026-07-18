@@ -10,8 +10,6 @@ buildDunePackage (finalAttrs: {
   pname = "spelll";
   version = "0.4";
 
-  duneVersion = "3";
-
   src = fetchFromGitHub {
     owner = "c-cube";
     repo = "spelll";
@@ -23,6 +21,8 @@ buildDunePackage (finalAttrs: {
     seq
     stdlib-shims
   ];
+
+  duneVersion = "3";
 
   meta = {
     inherit (finalAttrs.src.meta) homepage;

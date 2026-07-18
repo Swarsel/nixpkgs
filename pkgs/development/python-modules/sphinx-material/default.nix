@@ -15,18 +15,20 @@
 buildPythonPackage rec {
   pname = "sphinx-material";
   version = "0.0.36";
-  pyproject = true;
 
   src = fetchPypi {
-    pname = "sphinx_material";
     inherit version;
     hash = "sha256-7v9ffT3AFq8yuv33DGbmcdFch1Tb4GE9+9Yp++2RKGk=";
+    pname = "sphinx_material";
   };
 
   postPatch = ''
     # Remove vendorized versioneer.py
     rm versioneer.py
   '';
+
+  # Module has no tests
+  doCheck = false;
 
   build-system = [
     setuptools
@@ -42,9 +44,7 @@ buildPythonPackage rec {
     lxml
   ];
 
-  # Module has no tests
-  doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "sphinx_material" ];
 
   meta = {

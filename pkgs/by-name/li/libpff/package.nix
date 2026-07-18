@@ -1,9 +1,9 @@
 {
-  stdenv,
   lib,
+  stdenv,
+  autoreconfHook,
   fetchzip,
   pkg-config,
-  autoreconfHook,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -15,22 +15,23 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-VrdfZRC2iwTfv3YrObQvIH9QZPTi9pUQoAyUcBVJyes=";
   };
 
-  nativeBuildInputs = [
-    pkg-config
-    autoreconfHook
-  ];
   outputs = [
     "bin"
     "dev"
     "out"
   ];
 
+  nativeBuildInputs = [
+    pkg-config
+    autoreconfHook
+  ];
+
   meta = {
     description = "Library and tools to access the Personal Folder File (PFF) and the Offline Folder File (OFF) format";
     homepage = "https://github.com/libyal/libpff";
-    downloadPage = "https://github.com/libyal/libpff/releases";
     changelog = "https://github.com/libyal/libpff/blob/${finalAttrs.version}/ChangeLog";
     license = lib.licenses.lgpl3Only;
     maintainers = with lib.maintainers; [ hacker1024 ];
+    downloadPage = "https://github.com/libyal/libpff/releases";
   };
 })

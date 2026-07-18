@@ -4,18 +4,18 @@
   fetchFromGitHub,
   asciidoc,
   asciidoctor,
+  boost,
   cmake,
-  nix-update-script,
-  gitUpdater,
-  pkg-config,
   fftw,
   fftwFloat,
   gfortran,
+  gitUpdater,
   hamlib_4,
   libtool,
   libusb1,
+  nix-update-script,
+  pkg-config,
   qt5,
-  boost,
   texinfo,
 }:
 
@@ -30,6 +30,8 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-0Agm6lvzH3sgBatOBpYV3/CoyNJsO7Sw9mD/wewJ1DM=";
   };
 
+  strictDeps = true;
+
   nativeBuildInputs = [
     asciidoc
     asciidoctor
@@ -42,6 +44,7 @@ stdenv.mkDerivation (finalAttrs: {
     texinfo
     qt5.wrapQtAppsHook
   ];
+
   buildInputs = [
     fftw
     fftwFloat
@@ -54,8 +57,6 @@ stdenv.mkDerivation (finalAttrs: {
     boost
   ];
 
-  strictDeps = true;
-
   passthru.updateScript = nix-update-script {
     extraArgs = [
       "--version-regex"
@@ -65,6 +66,7 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Weak-signal digital communication modes for amateur radio";
+
     longDescription = ''
       WSJT-X implements communication protocols or "modes" called FT4, FT8, JT4,
       JT9, JT65, QRA64, ISCAT, MSK144, and WSPR, as well as one called Echo for
@@ -72,12 +74,15 @@ stdenv.mkDerivation (finalAttrs: {
       These modes were all designed for making reliable, confirmed ham radio
       contacts under extreme weak-signal conditions.
     '';
+
     homepage = "https://wsjt.sourceforge.io";
     license = with lib.licenses; [ gpl3Plus ];
-    platforms = lib.platforms.linux;
+
     maintainers = with lib.maintainers; [
       lasandell
       numinit
     ];
+
+    platforms = lib.platforms.linux;
   };
 })

@@ -16,20 +16,9 @@ in
   options.powerManagement.powertop = {
     enable = mkEnableOption "powertop auto tuning on startup";
 
-    preStart = mkOption {
-      type = types.lines;
-      default = "";
-      description = ''
-        Shell commands executed before `powertop` is started.
-      '';
-    };
-
     postStart = mkOption {
-      type = types.lines;
       default = "";
-      example = ''
-        ''${lib.getExe' config.systemd.package "udevadm"} trigger -c bind -s usb -a idVendor=046d -a idProduct=c08c
-      '';
+
       description = ''
         Shell commands executed after `powertop` is started.
 
@@ -43,6 +32,22 @@ in
         '''';
         ```
       '';
+
+      example = ''
+        ''${lib.getExe' config.systemd.package "udevadm"} trigger -c bind -s usb -a idVendor=046d -a idProduct=c08c
+      '';
+
+      type = types.lines;
+    };
+
+    preStart = mkOption {
+      default = "";
+
+      description = ''
+        Shell commands executed before `powertop` is started.
+      '';
+
+      type = types.lines;
     };
   };
 
@@ -51,18 +56,20 @@ in
   config = mkIf (cfg.enable) {
     systemd.services = {
       powertop = {
-        documentation = [ "man:powertop(8)" ];
-        wantedBy = [ "multi-user.target" ];
         after = [ "multi-user.target" ];
         description = "Powertop tunings";
+        documentation = [ "man:powertop(8)" ];
         path = [ pkgs.kmod ];
-        preStart = cfg.preStart;
         postStart = cfg.postStart;
+        preStart = cfg.preStart;
+
         serviceConfig = {
-          Type = "oneshot";
-          RemainAfterExit = "yes";
           ExecStart = "${pkgs.powertop}/bin/powertop --auto-tune";
+          RemainAfterExit = "yes";
+          Type = "oneshot";
         };
+
+        wantedBy = [ "multi-user.target" ];
       };
     };
   };

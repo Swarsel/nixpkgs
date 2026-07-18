@@ -1,8 +1,8 @@
 {
   lib,
+  fetchFromGitHub,
   buildPythonPackage,
   einops,
-  fetchFromGitHub,
   flit-core,
   numba,
   numpy,
@@ -14,7 +14,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "xarray-einstats";
   version = "0.10.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "arviz-devs";
@@ -22,6 +21,11 @@ buildPythonPackage (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-R/CbCaToW9U0+WqayE33gSyx5wKrhlZd7w4kjyxoxrk=";
   };
+
+  nativeCheckInputs = [
+    pytestCheckHook
+  ]
+  ++ lib.flatten (builtins.attrValues finalAttrs.passthru.optional-dependencies);
 
   build-system = [ flit-core ];
 
@@ -31,22 +35,18 @@ buildPythonPackage (finalAttrs: {
     xarray
   ];
 
+  disabledTests = [
+    # TypeError
+    "test_pinv"
+  ];
+
   optional-dependencies = {
     einops = [ einops ];
     numba = [ numba ];
   };
 
-  nativeCheckInputs = [
-    pytestCheckHook
-  ]
-  ++ lib.flatten (builtins.attrValues finalAttrs.passthru.optional-dependencies);
-
+  pyproject = true;
   pythonImportsCheck = [ "xarray_einstats" ];
-
-  disabledTests = [
-    # TypeError
-    "test_pinv"
-  ];
 
   meta = {
     description = "Stats, linear algebra and einops for xarray";

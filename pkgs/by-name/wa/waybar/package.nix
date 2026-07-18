@@ -1,10 +1,10 @@
 {
   lib,
   stdenv,
-  bash,
   fetchFromGitHub,
   SDL2,
   alsa-lib,
+  bash,
   catch2_3,
   fftw,
   glib,
@@ -27,6 +27,7 @@
   meson,
   ncurses,
   ninja,
+  nix-update-script,
   pipewire,
   pkg-config,
   playerctl,
@@ -43,7 +44,6 @@
   wayland-scanner,
   wireplumber,
   wrapGAppsHook3,
-
   cavaSupport ? true,
   enableManpages ? stdenv.buildPlatform.canExecute stdenv.hostPlatform,
   evdevSupport ? true,
@@ -66,7 +66,6 @@
   upowerSupport ? true,
   wireplumberSupport ? true,
   withMediaPlayer ? mprisSupport && false,
-  nix-update-script,
 }:
 
 let
@@ -96,11 +95,9 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-49ZKgK96a9uFip+svOdnw397xcEjiftXzd9gyv1H3sU=";
   };
 
-  postUnpack = lib.optional cavaSupport ''
-    pushd "$sourceRoot"
-    cp -R --no-preserve=mode,ownership ${libcava.src} subprojects/cava-${libcava.version}
-    patchShebangs .
-    popd
+  postPatch = ''
+    substituteInPlace include/util/command.hpp \
+      --replace-fail /bin/sh ${lib.getExe' bash "sh"}
   '';
 
   nativeBuildInputs = [
@@ -112,12 +109,6 @@ stdenv.mkDerivation (finalAttrs: {
   ]
   ++ lib.optional withMediaPlayer gobject-introspection
   ++ lib.optional enableManpages scdoc;
-
-  propagatedBuildInputs = lib.optionals withMediaPlayer [
-    glib
-    playerctl
-    python3.pkgs.pygobject3
-  ];
 
   buildInputs = [
     gtk-layer-shell
@@ -153,8 +144,11 @@ stdenv.mkDerivation (finalAttrs: {
   ++ lib.optional (cavaSupport || pipewireSupport) pipewire
   ++ lib.optional (!stdenv.hostPlatform.isLinux) libinotify-kqueue;
 
-  nativeCheckInputs = [ catch2_3 ];
-  doCheck = runTests;
+  propagatedBuildInputs = lib.optionals withMediaPlayer [
+    glib
+    playerctl
+    python3.pkgs.pygobject3
+  ];
 
   mesonFlags =
     (lib.mapAttrsToList lib.mesonEnable {
@@ -187,10 +181,13 @@ stdenv.mkDerivation (finalAttrs: {
     PKG_CONFIG_SYSTEMD_SYSTEMDUSERUNITDIR = "${placeholder "out"}/lib/systemd/user";
   };
 
-  postPatch = ''
-    substituteInPlace include/util/command.hpp \
-      --replace-fail /bin/sh ${lib.getExe' bash "sh"}
-  '';
+  doCheck = runTests;
+  nativeCheckInputs = [ catch2_3 ];
+  doInstallCheck = true;
+
+  nativeInstallCheckInputs = [
+    versionCheckHook
+  ];
 
   preFixup = lib.optionalString withMediaPlayer ''
     cp $src/resources/custom_modules/mediaplayer.py $out/bin/waybar-mediaplayer.py
@@ -199,22 +196,23 @@ stdenv.mkDerivation (finalAttrs: {
       --prefix PYTHONPATH : "$PYTHONPATH:$out/${python3.sitePackages}"
   '';
 
-  nativeInstallCheckInputs = [
-    versionCheckHook
-  ];
-
-  doInstallCheck = true;
+  postUnpack = lib.optional cavaSupport ''
+    pushd "$sourceRoot"
+    cp -R --no-preserve=mode,ownership ${libcava.src} subprojects/cava-${libcava.version}
+    patchShebangs .
+    popd
+  '';
 
   passthru = {
     updateScript = nix-update-script { };
   };
 
   meta = {
-    homepage = "https://github.com/alexays/waybar";
     description = "Highly customizable Wayland bar for Sway and Wlroots based compositors";
+    homepage = "https://github.com/alexays/waybar";
     changelog = "https://github.com/alexays/waybar/releases/tag/${finalAttrs.version}";
     license = lib.licenses.mit;
-    mainProgram = "waybar";
+
     maintainers = with lib.maintainers; [
       FlorianFranzen
       lovesegfault
@@ -222,6 +220,8 @@ stdenv.mkDerivation (finalAttrs: {
       rodrgz
       khaneliman
     ];
+
     platforms = lib.platforms.linux;
+    mainProgram = "waybar";
   };
 })

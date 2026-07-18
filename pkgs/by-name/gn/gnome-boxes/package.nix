@@ -1,51 +1,51 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchurl,
-  meson,
-  ninja,
-  wrapGAppsHook3,
-  pkg-config,
+  acl,
+  adwaita-icon-theme,
+  cdrkit,
+  cyrus_sasl,
+  desktop-file-utils,
+  gdbm,
   gettext,
-  itstool,
-  libvirt-glib,
   glib,
+  glib-networking,
+  gmp,
+  gnome,
   gobject-introspection,
-  libxml2,
   gtk3,
+  itstool,
+  json-glib,
+  libapparmor,
+  libarchive,
+  libcap,
+  libcap_ng,
+  libcdio,
+  libgudev,
+  libhandy,
+  libosinfo,
+  libportal-gtk3,
+  librsvg,
+  libsoup_3,
+  libusb1,
   libvirt,
+  libvirt-glib,
+  libxml2,
+  meson,
+  mtools,
+  ninja,
+  numactl,
+  pkg-config,
+  qemu-utils,
   spice-gtk,
   spice-protocol,
-  libhandy,
-  libsoup_3,
-  libosinfo,
   systemd,
   vala,
-  libcap,
-  yajl,
-  gmp,
-  gdbm,
-  cyrus_sasl,
-  gnome,
-  adwaita-icon-theme,
-  librsvg,
-  desktop-file-utils,
-  mtools,
-  cdrkit,
-  libcdio,
-  libusb1,
-  libarchive,
-  acl,
-  libgudev,
-  libcap_ng,
-  numactl,
-  libapparmor,
-  json-glib,
-  webkitgtk_4_1,
   vte,
-  glib-networking,
-  qemu-utils,
-  libportal-gtk3,
+  webkitgtk_4_1,
+  wrapGAppsHook3,
+  yajl,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -63,8 +63,6 @@ stdenv.mkDerivation (finalAttrs: {
     ./fix-gir-lib-path.patch
   ];
 
-  doCheck = true;
-
   nativeBuildInputs = [
     gettext
     gobject-introspection
@@ -79,9 +77,6 @@ stdenv.mkDerivation (finalAttrs: {
     gtk3
     desktop-file-utils
   ];
-
-  # Required for USB redirection PolicyKit rules file
-  propagatedUserEnvPkgs = [ spice-gtk ];
 
   buildInputs = [
     acl
@@ -116,6 +111,8 @@ stdenv.mkDerivation (finalAttrs: {
     libportal-gtk3
   ];
 
+  doCheck = true;
+
   preFixup = ''
     gappsWrapperArgs+=(--prefix PATH : "${
       lib.makeBinPath [
@@ -127,16 +124,19 @@ stdenv.mkDerivation (finalAttrs: {
     }")
   '';
 
+  # Required for USB redirection PolicyKit rules file
+  propagatedUserEnvPkgs = [ spice-gtk ];
+
   passthru = {
     updateScript = gnome.updateScript { packageName = "gnome-boxes"; };
   };
 
   meta = {
     description = "Simple GNOME 3 application to access remote or virtual systems";
-    mainProgram = "gnome-boxes";
     homepage = "https://apps.gnome.org/Boxes/";
     license = lib.licenses.lgpl2Plus;
     platforms = lib.platforms.linux;
+    mainProgram = "gnome-boxes";
     teams = [ lib.teams.gnome ];
   };
 })

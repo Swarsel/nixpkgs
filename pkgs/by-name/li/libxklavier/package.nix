@@ -1,22 +1,22 @@
 {
   lib,
   stdenv,
+  autoreconfHook,
+  docbook_xsl,
   fetchgit,
   fetchpatch,
-  autoreconfHook,
-  pkg-config,
-  gtk-doc,
-  xkeyboard_config,
-  libxml2,
-  libxi,
-  libx11,
-  libice,
-  xkbcomp,
-  libxkbfile,
-  docbook_xsl,
   glib,
-  isocodes,
   gobject-introspection,
+  gtk-doc,
+  isocodes,
+  libice,
+  libx11,
+  libxi,
+  libxkbfile,
+  libxml2,
+  pkg-config,
+  xkbcomp,
+  xkeyboard_config,
   withDoc ? (stdenv.buildPlatform == stdenv.hostPlatform),
 }:
 
@@ -30,21 +30,31 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-6uzfuVaQlnMMURIke+ZLqL0PhPEmCzx4bFR4+nItPfA=";
   };
 
-  patches = [
-    ./honor-XKB_CONFIG_ROOT.patch
-  ]
-  ++ lib.optionals stdenv.hostPlatform.isDarwin [
-    (fetchpatch {
-      url = "https://gitlab.freedesktop.org/archived-projects/libxklavier/-/commit/1387c21a788ec1ea203c8392ea1460fc29d83f70.patch";
-      sha256 = "sha256-fyWu7sVfDv/ozjhLSLCVsv+iNFawWgJqHUsQHHSkQn4=";
-    })
-  ];
-
   outputs = [
     "out"
     "dev"
   ]
   ++ lib.optionals withDoc [ "devdoc" ];
+
+  patches = [
+    ./honor-XKB_CONFIG_ROOT.patch
+  ]
+  ++ lib.optionals stdenv.hostPlatform.isDarwin [
+    (fetchpatch {
+      sha256 = "sha256-fyWu7sVfDv/ozjhLSLCVsv+iNFawWgJqHUsQHHSkQn4=";
+      url = "https://gitlab.freedesktop.org/archived-projects/libxklavier/-/commit/1387c21a788ec1ea203c8392ea1460fc29d83f70.patch";
+    })
+  ];
+
+  strictDeps = true;
+
+  nativeBuildInputs = [
+    autoreconfHook
+    pkg-config
+    gtk-doc
+    docbook_xsl
+    gobject-introspection
+  ];
 
   # TODO: enable xmodmap support, needs xmodmap DB
   propagatedBuildInputs = [
@@ -58,31 +68,21 @@ stdenv.mkDerivation (finalAttrs: {
     isocodes
   ];
 
-  depsBuildBuild = [
-    pkg-config
-  ];
-
-  nativeBuildInputs = [
-    autoreconfHook
-    pkg-config
-    gtk-doc
-    docbook_xsl
-    gobject-introspection
-  ];
-
-  strictDeps = true;
-
-  preAutoreconf = ''
-    export NOCONFIGURE=1
-    gtkdocize
-  '';
-
   configureFlags = [
     "--with-xkb-base=${xkeyboard_config}/etc/X11/xkb"
     "--with-xkb-bin-base=${xkbcomp}/bin"
     "--disable-xmodmap-support"
     "${if withDoc then "--enable-gtk-doc" else "--disable-gtk-doc"}"
   ];
+
+  depsBuildBuild = [
+    pkg-config
+  ];
+
+  preAutoreconf = ''
+    export NOCONFIGURE=1
+    gtkdocize
+  '';
 
   meta = {
     description = "Library providing high-level API for X Keyboard Extension known as XKB";

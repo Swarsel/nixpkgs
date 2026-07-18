@@ -2,36 +2,36 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  cmake,
-  ninja,
-  pkg-config,
-  ncurses,
-  libevdev,
   SDL2,
   SDL2_image,
-  libglvnd,
-  libslirp,
-  libdeflate,
-  zlib,
   boost,
-  libpcap,
-  xxd,
-  libnl,
-  libtiff,
-  libjpeg,
-  libwebp,
-  libpng,
-  xz,
-  libsysprof-capture,
+  cmake,
   lerc,
+  libdeflate,
+  libevdev,
+  libglvnd,
+  libjpeg,
+  libnl,
+  libpcap,
+  libpng,
+  libslirp,
+  libsysprof-capture,
+  libtiff,
+  libwebp,
   libx11,
   libxext,
-  qt6Packages,
+  ncurses,
+  ninja,
+  pkg-config,
   qt6,
-  enableQt6 ? true,
-  enableNcurses ? true,
-  enableSdl2 ? true,
+  qt6Packages,
+  xxd,
+  xz,
+  zlib,
   enableLibretro ? true,
+  enableNcurses ? true,
+  enableQt6 ? true,
+  enableSdl2 ? true,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -92,11 +92,13 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Apple II emulator for Linux";
+
     longDescription = ''
       AppleWin on Linux is a linux port of AppleWin that shares 100% of the code
       of the core emulator and video generation. Audio, UI, scheduling and other
       peripherals are reimplemented.
     '';
+
     homepage = "https://github.com/audetto/AppleWin";
     license = lib.licenses.gpl2Only;
     maintainers = [ lib.maintainers.matthewcroughan ];

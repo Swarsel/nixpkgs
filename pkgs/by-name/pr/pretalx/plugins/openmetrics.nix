@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   setuptools,
   unstableGitUpdater,
 }:
@@ -9,7 +9,6 @@
 buildPythonPackage {
   pname = "pretalx-openmetrics";
   version = "unstable-2025-05-25";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "why2025-datenzone";
@@ -18,11 +17,13 @@ buildPythonPackage {
     hash = "sha256-reQA61JFZsYWE/CAL28Oe60CmGANt0phXLzz9YGtDYQ=";
   };
 
+  doCheck = false; # no tests
+
   build-system = [
     setuptools
   ];
 
-  doCheck = false; # no tests
+  pyproject = true;
 
   pythonImportsCheck = [
     "pretalx_openmetrics"

@@ -1,16 +1,15 @@
 {
   lib,
   buildPythonPackage,
+  cython,
   fetchPypi,
   setuptools,
-  cython,
   zlib,
 }:
 
 buildPythonPackage rec {
   pname = "indexed_gzip";
   version = "1.9.5";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
@@ -23,10 +22,9 @@ buildPythonPackage rec {
   ];
 
   buildInputs = [ zlib ];
-
   # Too complicated to get to work, not a simple pytest call.
   doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "indexed_gzip" ];
 
   meta = {

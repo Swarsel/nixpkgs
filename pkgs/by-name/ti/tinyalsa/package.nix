@@ -16,6 +16,11 @@ stdenv.mkDerivation {
     hash = "sha256-RHeF3VShy+LYFtJK+AEU7swIr5/rnpg2fdllnH9cFCk=";
   };
 
+  postPatch = ''
+    substituteInPlace CMakeLists.txt \
+      --replace-fail "cmake_minimum_required(VERSION 3.1)" "cmake_minimum_required(VERSION 3.10)"
+  '';
+
   nativeBuildInputs = [
     cmake
   ];
@@ -28,14 +33,9 @@ stdenv.mkDerivation {
     "-Wno-error=sign-compare"
   ];
 
-  postPatch = ''
-    substituteInPlace CMakeLists.txt \
-      --replace-fail "cmake_minimum_required(VERSION 3.1)" "cmake_minimum_required(VERSION 3.10)"
-  '';
-
   meta = {
-    homepage = "https://github.com/tinyalsa/tinyalsa";
     description = "Tiny library to interface with ALSA in the Linux kernel";
+    homepage = "https://github.com/tinyalsa/tinyalsa";
     license = lib.licenses.mit;
     maintainers = [ ];
     platforms = with lib.platforms; linux;

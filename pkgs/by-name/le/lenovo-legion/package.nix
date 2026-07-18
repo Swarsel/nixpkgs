@@ -2,15 +2,14 @@
   lib,
   fetchFromGitHub,
   libxcb,
-  python3,
   nix-update-script,
+  python3,
   qt6,
 }:
 
 python3.pkgs.buildPythonApplication rec {
   pname = "lenovo-legion-app";
   version = "0.0.20-unstable-2026-05-12";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "johnfanv2";
@@ -19,7 +18,20 @@ python3.pkgs.buildPythonApplication rec {
     hash = "sha256-gTlUrbNKCUQ+g70StlqspDn90wKW2scssKPZqaegzTY=";
   };
 
-  sourceRoot = "${src.name}/python/legion_linux";
+  postPatch = ''
+    # only fixup application (legion-linux-gui), service (legiond) currently not installed so do not fixup
+    # /etc
+    substituteInPlace ./legion_linux/legion.py \
+      --replace-fail "/etc/legion_linux" "$out/share/legion_linux"
+
+    # /usr
+    substituteInPlace ./legion_linux/legion_gui.desktop \
+      --replace-fail "Icon=/usr/share/pixmaps/legion_logo.png" "Icon=legion_logo"
+  '';
+
+  preFixup = ''
+    makeWrapperArgs+=("''${qtWrapperArgs[@]}")
+  '';
 
   build-system = with python3.pkgs; [
     setuptools
@@ -36,35 +48,23 @@ python3.pkgs.buildPythonApplication rec {
     libxcb
   ];
 
-  postPatch = ''
-    # only fixup application (legion-linux-gui), service (legiond) currently not installed so do not fixup
-    # /etc
-    substituteInPlace ./legion_linux/legion.py \
-      --replace-fail "/etc/legion_linux" "$out/share/legion_linux"
-
-    # /usr
-    substituteInPlace ./legion_linux/legion_gui.desktop \
-      --replace-fail "Icon=/usr/share/pixmaps/legion_logo.png" "Icon=legion_logo"
-  '';
-
   dontWrapQtApps = true;
-
-  preFixup = ''
-    makeWrapperArgs+=("''${qtWrapperArgs[@]}")
-  '';
-
+  pyproject = true;
+  sourceRoot = "${src.name}/python/legion_linux";
   passthru.updateScript = nix-update-script { extraArgs = [ "--version=branch" ]; };
 
   meta = {
     description = "Utility to control Lenovo Legion laptop";
     homepage = "https://github.com/johnfanv2/LenovoLegionLinux";
     license = lib.licenses.gpl2Only;
-    platforms = [ "x86_64-linux" ];
+
     maintainers = with lib.maintainers; [
       ulrikstrid
       logger
       chn
     ];
+
+    platforms = [ "x86_64-linux" ];
     mainProgram = "legion_gui";
   };
 }

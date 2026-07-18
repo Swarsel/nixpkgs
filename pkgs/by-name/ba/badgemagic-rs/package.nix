@@ -1,9 +1,9 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
-  pkg-config,
   dbus,
+  pkg-config,
+  rustPlatform,
   systemdLibs,
 }:
 
@@ -18,10 +18,6 @@ rustPlatform.buildRustPackage {
     hash = "sha256-IyPUPNbXkLNz/cuzVuzrD2iCE1ddeO3xkAOKhbrNU+k=";
   };
 
-  cargoHash = "sha256-jT/pJLqdWGTpQFlnhuZo1FLqRQJWXCD2tuDB2AEyNPQ=";
-
-  buildFeatures = [ "cli" ];
-
   nativeBuildInputs = [
     pkg-config
   ];
@@ -30,6 +26,9 @@ rustPlatform.buildRustPackage {
     dbus
     systemdLibs
   ];
+
+  cargoHash = "sha256-jT/pJLqdWGTpQFlnhuZo1FLqRQJWXCD2tuDB2AEyNPQ=";
+  buildFeatures = [ "cli" ];
 
   meta = {
     description = "Badge Magic in Rust";

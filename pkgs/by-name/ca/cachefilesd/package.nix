@@ -21,10 +21,10 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Local network file caching management daemon";
-    mainProgram = "cachefilesd";
     homepage = "https://people.redhat.com/dhowells/fscache/";
     license = lib.licenses.gpl2Plus;
-    platforms = lib.platforms.linux;
     maintainers = [ ];
+    platforms = lib.platforms.linux;
+    mainProgram = "cachefilesd";
   };
 })

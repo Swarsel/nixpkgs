@@ -1,83 +1,44 @@
 {
-  stdenv,
-  kernel,
-  fetchurl,
   lib,
-  pam,
-  libxslt,
-  libxext,
-  libxcursor,
-  libxmu,
-  glib,
-  libxrandr,
+  stdenv,
+  fetchurl,
   dbus,
-  xz,
+  glib,
+  kernel,
+  libxcursor,
+  libxext,
+  libxmu,
+  libxrandr,
+  libxslt,
+  linuxHeaders,
+  makeself,
+  openssl,
+  pam,
+  patchelf,
   pkg-config,
+  platform,
+  virtualboxSha256,
+  virtualboxSubVersion,
+  virtualboxVersion,
   which,
   xorg-server,
   xrandr,
+  xz,
   yasm,
-  patchelf,
-  makeself,
-  linuxHeaders,
-  openssl,
-  virtualboxVersion,
-  virtualboxSubVersion,
-  virtualboxSha256,
-  platform,
 }:
 
 let
   buildType = "release";
 in
 stdenv.mkDerivation (finalAttrs: {
+  inherit virtualboxVersion virtualboxSubVersion;
   pname = "VirtualBox-GuestAdditions-builder-${kernel.version}";
   version = "${virtualboxVersion}${virtualboxSubVersion}";
-
-  inherit virtualboxVersion virtualboxSubVersion;
 
   src = fetchurl {
     url = "https://download.virtualbox.org/virtualbox/${finalAttrs.virtualboxVersion}/VirtualBox-${finalAttrs.virtualboxVersion}${finalAttrs.virtualboxSubVersion}.tar.bz2";
     sha256 = virtualboxSha256;
   };
-
-  env.NIX_CFLAGS_COMPILE = "-Wno-error=incompatible-pointer-types -Wno-error=implicit-function-declaration";
-
-  nativeBuildInputs = [
-    patchelf
-    pkg-config
-    which
-    yasm
-    makeself
-    xorg-server
-    openssl
-    linuxHeaders
-    xz
-  ]
-  ++ kernel.moduleBuildDependencies;
-  buildInputs = [
-    dbus
-    libxslt
-    libxext
-    libxcursor
-    pam
-    libxmu
-    libxrandr
-  ];
-
-  KERN_DIR = "${kernel.dev}/lib/modules/${kernel.modDirVersion}/build";
-  KERN_INCL = "${kernel.dev}/lib/modules/${kernel.modDirVersion}/source/include";
-
-  prePatch = ''
-    rm -r src/VBox/Additions/x11/x11include/
-    rm -r src/VBox/Additions/3D/mesa/mesa-*/
-    rm -r src/libs/openssl-*/
-    rm -r src/libs/curl-*/
-    rm -r src/libs/libpng-*/
-    rm -r src/libs/libxml2-*/
-    rm -r src/libs/liblzma-*/
-    rm -r src/libs/zlib*/
-  '';
 
   postPatch = ''
     set -x
@@ -93,6 +54,53 @@ stdenv.mkDerivation (finalAttrs: {
     substituteInPlace ./src/VBox/Additions/x11/VBoxClient/display.cpp --replace-fail /usr/X11/bin/xrandr ${xrandr}/bin/xrandr
     substituteInPlace ./src/VBox/Additions/x11/vboxvideo/Makefile.kmk --replace-fail /usr/include/xorg "${xorg-server.dev}/include/xorg "
   '';
+
+  nativeBuildInputs = [
+    patchelf
+    pkg-config
+    which
+    yasm
+    makeself
+    xorg-server
+    openssl
+    linuxHeaders
+    xz
+  ]
+  ++ kernel.moduleBuildDependencies;
+
+  buildInputs = [
+    dbus
+    libxslt
+    libxext
+    libxcursor
+    pam
+    libxmu
+    libxrandr
+  ];
+
+  env.NIX_CFLAGS_COMPILE = "-Wno-error=incompatible-pointer-types -Wno-error=implicit-function-declaration";
+
+  buildPhase = ''
+    runHook preBuild
+
+    source env.sh
+    VBOX_ONLY_ADDITIONS=1 VBOX_ONLY_BUILD=1 kmk -j $NIX_BUILD_CORES BUILD_TYPE="${buildType}"
+    VBOX_ONLY_ADDITIONS=1 VBOX_ONLY_BUILD=1 kmk packing
+
+    runHook postBuild
+  '';
+
+  installPhase = ''
+    runHook preInstall
+
+    mkdir -p $out
+    cp -rv ./out/linux.${platform}/${buildType}/bin/additions/VBoxGuestAdditions-${platform}.tar.bz2 $out/
+
+    runHook postInstall
+  '';
+
+  KERN_DIR = "${kernel.dev}/lib/modules/${kernel.modDirVersion}/build";
+  KERN_INCL = "${kernel.dev}/lib/modules/${kernel.modDirVersion}/source/include";
 
   configurePhase = ''
     NIX_CFLAGS_COMPILE=$(echo "$NIX_CFLAGS_COMPILE" | sed 's,\-isystem ${lib.getDev stdenv.cc.libc}/include,,g')
@@ -153,22 +161,14 @@ stdenv.mkDerivation (finalAttrs: {
 
   enableParallelBuilding = true;
 
-  buildPhase = ''
-    runHook preBuild
-
-    source env.sh
-    VBOX_ONLY_ADDITIONS=1 VBOX_ONLY_BUILD=1 kmk -j $NIX_BUILD_CORES BUILD_TYPE="${buildType}"
-    VBOX_ONLY_ADDITIONS=1 VBOX_ONLY_BUILD=1 kmk packing
-
-    runHook postBuild
-  '';
-
-  installPhase = ''
-    runHook preInstall
-
-    mkdir -p $out
-    cp -rv ./out/linux.${platform}/${buildType}/bin/additions/VBoxGuestAdditions-${platform}.tar.bz2 $out/
-
-    runHook postInstall
+  prePatch = ''
+    rm -r src/VBox/Additions/x11/x11include/
+    rm -r src/VBox/Additions/3D/mesa/mesa-*/
+    rm -r src/libs/openssl-*/
+    rm -r src/libs/curl-*/
+    rm -r src/libs/libpng-*/
+    rm -r src/libs/libxml2-*/
+    rm -r src/libs/liblzma-*/
+    rm -r src/libs/zlib*/
   '';
 })

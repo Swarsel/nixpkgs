@@ -16,17 +16,10 @@
 buildPythonPackage rec {
   pname = "aioftp";
   version = "0.27.2";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
     hash = "sha256-fASMMiAIF5bFmDKm/Z/Y+tl+POwSpQvjq8zy3LvrJho=";
-  };
-
-  build-system = [ setuptools ];
-
-  optional-dependencies = {
-    socks = [ siosocks ];
   };
 
   nativeCheckInputs = [
@@ -39,11 +32,18 @@ buildPythonPackage rec {
   ]
   ++ lib.concatAttrValues optional-dependencies;
 
+  build-system = [ setuptools ];
+
   disabledTests = lib.optionals stdenv.hostPlatform.isDarwin [
     # uses 127.0.0.2, which macos doesn't like
     "test_pasv_connection_pasv_forced_response_address"
   ];
 
+  optional-dependencies = {
+    socks = [ siosocks ];
+  };
+
+  pyproject = true;
   pythonImportsCheck = [ "aioftp" ];
 
   meta = {

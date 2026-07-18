@@ -1,9 +1,9 @@
 {
   lib,
   stdenv,
-  rustPlatform,
   fetchFromGitHub,
   installShellFiles,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -17,9 +17,8 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-lbj1usgwfp7IiCNPtmHSHvX3ARGY5UpJYT89U3+kTuk=";
   };
 
-  cargoHash = "sha256-IrUUAz4XEw3rxj8SuWMvBZu9pzCxOm5NZfiWp8i8MMo=";
-
   nativeBuildInputs = [ installShellFiles ];
+  cargoHash = "sha256-IrUUAz4XEw3rxj8SuWMvBZu9pzCxOm5NZfiWp8i8MMo=";
 
   postInstall = lib.optionalString (stdenv.buildPlatform.canExecute stdenv.hostPlatform) ''
     installShellCompletion --cmd kondo \

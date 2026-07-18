@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   nixosTests,
 }:
 
@@ -17,7 +17,6 @@ buildGoModule rec {
   };
 
   vendorHash = "sha256-41JsxA3CfQjiwZw/2KP4Re4g3gmexadHuN0lUP5rjdo=";
-
   passthru.tests = { inherit (nixosTests.prometheus-exporters) json; };
 
   meta = {

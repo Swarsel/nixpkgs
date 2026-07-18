@@ -1,23 +1,19 @@
 {
   lib,
   stdenv,
-  rustPlatform,
-
   fetchFromGitHub,
-  fetchNpmDeps,
-
+  alsa-lib,
   cargo-tauri,
+  fetchNpmDeps,
   makeBinaryWrapper,
+  nix-update-script,
   nodejs,
   npmHooks,
-  pkg-config,
-  wrapGAppsHook3,
-
-  alsa-lib,
   openssl,
+  pkg-config,
+  rustPlatform,
   webkitgtk_4_1,
-
-  nix-update-script,
+  wrapGAppsHook3,
 }:
 
 rustPlatform.buildRustPackage rec {
@@ -35,21 +31,6 @@ rustPlatform.buildRustPackage rec {
     # needed to not attempt codesigning on darwin
     ./remove-signing-identity.patch
   ];
-
-  cargoRoot = "src-tauri";
-  buildAndTestSubdir = "src-tauri";
-
-  cargoHash = "sha256-9vyvRJsR4o7kWSLJyGIoiM/13ABWWTrRXVdyU2HfJ+E=";
-
-  # FIXME: This is a workaround, because we have a git dependency node_modules/lrc-kit contains install scripts
-  # but has no lockfile, which is something that will probably break.
-  forceGitDeps = true;
-
-  npmDeps = fetchNpmDeps {
-    name = "lrcget-${version}-npm-deps";
-    inherit src forceGitDeps patches;
-    hash = "sha256-yXRbQ6xM23VrVaS8Hb5sxPPic1yawKtFi2rCGkplgw4=";
-  };
 
   nativeBuildInputs = [
     cargo-tauri.hook
@@ -71,9 +52,7 @@ rustPlatform.buildRustPackage rec {
     webkitgtk_4_1
   ];
 
-  # To fix `npm ERR! Your cache folder contains root-owned files`
-  makeCacheWritable = true;
-
+  cargoHash = "sha256-9vyvRJsR4o7kWSLJyGIoiM/13ABWWTrRXVdyU2HfJ+E=";
   # Disable checkPhase, since the project doesn't contain tests
   doCheck = false;
 
@@ -89,6 +68,20 @@ rustPlatform.buildRustPackage rec {
     )
   '';
 
+  buildAndTestSubdir = "src-tauri";
+  cargoRoot = "src-tauri";
+  # FIXME: This is a workaround, because we have a git dependency node_modules/lrc-kit contains install scripts
+  # but has no lockfile, which is something that will probably break.
+  forceGitDeps = true;
+  # To fix `npm ERR! Your cache folder contains root-owned files`
+  makeCacheWritable = true;
+
+  npmDeps = fetchNpmDeps {
+    inherit src forceGitDeps patches;
+    hash = "sha256-yXRbQ6xM23VrVaS8Hb5sxPPic1yawKtFi2rCGkplgw4=";
+    name = "lrcget-${version}-npm-deps";
+  };
+
   passthru.updateScript = nix-update-script { };
 
   meta = {
@@ -96,11 +89,13 @@ rustPlatform.buildRustPackage rec {
     homepage = "https://github.com/tranxuanthang/lrcget";
     changelog = "https://github.com/tranxuanthang/lrcget/releases/tag/${version}";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       anas
       Scrumplex
     ];
-    mainProgram = "LRCGET";
+
     platforms = with lib.platforms; unix ++ windows;
+    mainProgram = "LRCGET";
   };
 }

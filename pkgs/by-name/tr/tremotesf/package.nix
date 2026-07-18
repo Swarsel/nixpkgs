@@ -1,13 +1,13 @@
 {
-  stdenv,
   lib,
-  cmake,
-  pkg-config,
+  stdenv,
   fetchFromGitHub,
-  fmt,
-  libpsl,
+  cmake,
   cxxopts,
+  fmt,
   kdePackages,
+  libpsl,
+  pkg-config,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -41,9 +41,9 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Remote GUI for transmission-daemon";
-    mainProgram = "tremotesf";
-    license = lib.licenses.gpl3Plus;
     homepage = "https://github.com/equeim/tremotesf2";
+    license = lib.licenses.gpl3Plus;
     maintainers = with lib.maintainers; [ sochotnicky ];
+    mainProgram = "tremotesf";
   };
 })

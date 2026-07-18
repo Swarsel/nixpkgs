@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   freezegun,
   pytestCheckHook,
   pythonAtLeast,
@@ -11,7 +11,6 @@
 buildPythonPackage rec {
   pname = "python-json-logger";
   version = "4.0.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "nhairs";
@@ -20,12 +19,12 @@ buildPythonPackage rec {
     hash = "sha256-YFtM+YWXDCaipqhQntdGeGbTmWO5XMGfpWhgQwicxFQ=";
   };
 
-  build-system = [ setuptools ];
-
   nativeCheckInputs = [
     freezegun
     pytestCheckHook
   ];
+
+  build-system = [ setuptools ];
 
   disabledTests =
     lib.optionals (pythonAtLeast "3.12") [
@@ -38,6 +37,8 @@ buildPythonPackage rec {
       # https://github.com/madzak/python-json-logger/issues/198
       "test_json_default_encoder_with_timestamp"
     ];
+
+  pyproject = true;
 
   meta = {
     description = "Json Formatter for the standard python logger";

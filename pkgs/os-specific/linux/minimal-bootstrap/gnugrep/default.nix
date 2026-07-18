@@ -2,8 +2,8 @@
   lib,
   fetchurl,
   bash,
-  tinycc,
   gnumake,
+  tinycc,
 }:
 let
   pname = "gnugrep";
@@ -34,9 +34,9 @@ bash.runCommand "${pname}-${version}"
       description = "GNU implementation of the Unix grep command";
       homepage = "https://www.gnu.org/software/grep";
       license = lib.licenses.gpl3Plus;
-      teams = [ lib.teams.minimal-bootstrap ];
-      mainProgram = "grep";
       platforms = lib.platforms.unix;
+      mainProgram = "grep";
+      teams = [ lib.teams.minimal-bootstrap ];
     };
   }
   ''

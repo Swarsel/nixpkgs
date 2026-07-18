@@ -1,16 +1,15 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   fetchpatch,
-  setuptools,
   libuv,
+  setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "pyuv";
   version = "1.4.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "saghul";
@@ -21,26 +20,23 @@ buildPythonPackage rec {
 
   patches = [
     (fetchpatch {
+      hash = "sha256-J/3ky64Ff+gYpN3ksFLNuZ5xgPbBkyOl4LTY6fiHAgk=";
       name = "fix-build-with-python3.10.patch";
       url = "https://github.com/saghul/pyuv/commit/8bddcc27052017b5b9cb89c24dbfdf06737b0dd3.patch";
-      hash = "sha256-J/3ky64Ff+gYpN3ksFLNuZ5xgPbBkyOl4LTY6fiHAgk=";
     })
     (fetchpatch {
+      hash = "sha256-CQZexd6EjadCB7KyxeZKM24zrD9rXuNv4oA+Tb2nsdw=";
       name = "fix-build-with-python3.11.patch";
       url = "https://github.com/saghul/pyuv/commit/2a3d42d44c6315ebd73899a35118380d2d5979b5.patch";
-      hash = "sha256-CQZexd6EjadCB7KyxeZKM24zrD9rXuNv4oA+Tb2nsdw=";
     })
   ];
 
-  build-system = [ setuptools ];
-
-  setupPyBuildFlags = [ "--use-system-libuv" ];
-
   buildInputs = [ libuv ];
-
   doCheck = false; # doesn't work in sandbox
-
+  build-system = [ setuptools ];
+  pyproject = true;
   pythonImportsCheck = [ "pyuv" ];
+  setupPyBuildFlags = [ "--use-system-libuv" ];
 
   meta = {
     description = "Python interface for libuv";

@@ -1,11 +1,11 @@
 {
   lib,
   fetchFromGitHub,
-  rustPlatform,
-  pkg-config,
   dbus,
-  udev,
   openssl,
+  pkg-config,
+  rustPlatform,
+  udev,
 }:
 rustPlatform.buildRustPackage (finalAttrs: {
   pname = "cargo-v5";
@@ -18,20 +18,21 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-uIJcl1WfL96tvJ5QebbqnsP4nQqW7aCp4XYXgfu7CuY=";
   };
 
-  cargoHash = "sha256-D7zRkzJwh0jBTUFJhggG7Bc5ixMZ4YLtaqZihEQN6hM=";
-
   nativeBuildInputs = [ pkg-config ];
+
   buildInputs = [
     dbus
     udev
     openssl
   ];
 
+  cargoHash = "sha256-D7zRkzJwh0jBTUFJhggG7Bc5ixMZ4YLtaqZihEQN6hM=";
+
   meta = {
     description = "Cargo tool for working with VEX V5 Rust projects";
-    mainProgram = "cargo-v5";
     homepage = "https://github.com/vexide/cargo-v5";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ max-niederman ];
+    mainProgram = "cargo-v5";
   };
 })

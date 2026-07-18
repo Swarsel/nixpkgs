@@ -20,20 +20,19 @@ stdenv.mkDerivation (finalAttrs: {
     ncurses
   ];
 
-  env.NIX_CFLAGS_COMPILE = "-Wno-incompatible-pointer-types";
-
   makeFlags = [ "BIN=$(out)/bin" ];
+  env.NIX_CFLAGS_COMPILE = "-Wno-incompatible-pointer-types";
 
   preInstall = ''
     mkdir -p $out/bin
   '';
 
   meta = {
-    homepage = "https://sourceforge.net/projects/spooftooph";
     description = "Automate spoofing or clone Bluetooth device Name, Class, and Address";
-    mainProgram = "spooftooph";
+    homepage = "https://sourceforge.net/projects/spooftooph";
     license = lib.licenses.gpl2Only;
-    platforms = lib.platforms.linux;
     maintainers = [ ];
+    platforms = lib.platforms.linux;
+    mainProgram = "spooftooph";
   };
 })

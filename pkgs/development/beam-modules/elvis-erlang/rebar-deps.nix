@@ -3,44 +3,52 @@ let
   fetchOnly = { src, ... }: src;
 in
 {
-  builder ? fetchOnly,
+  fetchFromGitHub,
   fetchHex,
   fetchgit,
-  fetchFromGitHub,
+  builder ? fetchOnly,
   overrides ? (x: y: { }),
 }:
 let
   self = packages // (overrides self packages);
   packages = with self; {
-    katana_code = builder {
-      name = "katana_code";
-      version = "2.4.3";
-      src = fetchHex {
-        pkg = "katana_code";
-        version = "2.4.3";
-        sha256 = "sha256-YUxjQ9uqRc7e8n0j6wkBo4PEa/61dwOaXmDK0XGGzO4=";
-      };
-      beamDeps = [ ];
-    };
-    getopt = builder {
-      name = "getopt";
-      version = "1.0.3";
-      src = fetchHex {
-        pkg = "getopt";
-        version = "1.0.3";
-        sha256 = "sha256-fgHekKxUDyFJT/cnkrHjFi05mWbrv8Z0tM5Sy49JMk8=";
-      };
-      beamDeps = [ ];
-    };
     elvis_core = builder {
-      name = "elvis_core";
       version = "5.0.4";
+
       src = fetchHex {
+        sha256 = "sha256-fgzg0yNrG1afDvE5jrJzIf2GNnJy4LFPOJDQQTrMPpo=";
         pkg = "elvis_core";
         version = "5.0.4";
-        sha256 = "sha256-fgzg0yNrG1afDvE5jrJzIf2GNnJy4LFPOJDQQTrMPpo=";
       };
+
       beamDeps = [ katana_code ];
+      name = "elvis_core";
+    };
+
+    getopt = builder {
+      version = "1.0.3";
+
+      src = fetchHex {
+        sha256 = "sha256-fgHekKxUDyFJT/cnkrHjFi05mWbrv8Z0tM5Sy49JMk8=";
+        pkg = "getopt";
+        version = "1.0.3";
+      };
+
+      beamDeps = [ ];
+      name = "getopt";
+    };
+
+    katana_code = builder {
+      version = "2.4.3";
+
+      src = fetchHex {
+        sha256 = "sha256-YUxjQ9uqRc7e8n0j6wkBo4PEa/61dwOaXmDK0XGGzO4=";
+        pkg = "katana_code";
+        version = "2.4.3";
+      };
+
+      beamDeps = [ ];
+      name = "katana_code";
     };
   };
 in

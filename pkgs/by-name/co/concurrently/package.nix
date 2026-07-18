@@ -2,13 +2,13 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  makeWrapper,
-  nodejs,
-  pnpm_10,
   fetchPnpmDeps,
-  pnpmConfigHook,
-  versionCheckHook,
+  makeWrapper,
   nix-update-script,
+  nodejs,
+  pnpmConfigHook,
+  pnpm_10,
+  versionCheckHook,
 }:
 stdenv.mkDerivation (finalAttrs: {
   pname = "concurrently";
@@ -19,17 +19,6 @@ stdenv.mkDerivation (finalAttrs: {
     repo = "concurrently";
     tag = "v${finalAttrs.version}";
     hash = "sha256-PKbrYgQ6D0vxMSxx+aHBo09NJZh5YYfb9Fx9L5Ue8vM=";
-  };
-
-  pnpmDeps = fetchPnpmDeps {
-    inherit (finalAttrs)
-      pname
-      version
-      src
-      ;
-    pnpm = pnpm_10;
-    fetcherVersion = 3;
-    hash = "sha256-UVsmOneTICl3Ybmv7ebebkXmr1qwNh17dPhL0qlPgyg=";
   };
 
   nativeBuildInputs = [
@@ -71,18 +60,31 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  doInstallCheck = true;
+
   nativeInstallCheckInputs = [
     versionCheckHook
   ];
-  versionCheckProgramArg = "--version";
-  doInstallCheck = true;
 
+  pnpmDeps = fetchPnpmDeps {
+    inherit (finalAttrs)
+      pname
+      version
+      src
+      ;
+
+    fetcherVersion = 3;
+    hash = "sha256-UVsmOneTICl3Ybmv7ebebkXmr1qwNh17dPhL0qlPgyg=";
+    pnpm = pnpm_10;
+  };
+
+  versionCheckProgramArg = "--version";
   passthru.updateScript = nix-update-script { };
 
   meta = {
-    changelog = "https://github.com/open-cli-tools/concurrently/releases/tag/v${finalAttrs.version}";
     description = "Run commands concurrently";
     homepage = "https://github.com/open-cli-tools/concurrently";
+    changelog = "https://github.com/open-cli-tools/concurrently/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ jpetrucciani ];
     mainProgram = "concurrently";

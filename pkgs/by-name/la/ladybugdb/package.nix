@@ -1,10 +1,10 @@
 {
   lib,
   stdenv,
+  fetchFromGitHub,
   cmake,
   ninja,
   python3,
-  fetchFromGitHub,
   versionCheckHook,
 }:
 
@@ -31,19 +31,21 @@ stdenv.mkDerivation (finalAttrs: {
     python3
   ];
 
+  doInstallCheck = true;
+
   nativeInstallCheckInputs = [
     versionCheckHook
   ];
+
   versionCheckProgram = "${placeholder "out"}/bin/lbug";
-  doInstallCheck = true;
 
   meta = {
-    changelog = "https://github.com/LadybugDB/ladybug/releases/tag/${finalAttrs.src.tag}";
     description = "Embeddable property graph database management system (fork of Kuzu)";
     homepage = "https://ladybugdb.com/";
+    changelog = "https://github.com/LadybugDB/ladybug/releases/tag/${finalAttrs.src.tag}";
     license = lib.licenses.mit;
-    mainProgram = "lbug";
     maintainers = with lib.maintainers; [ hamidr ];
     platforms = lib.platforms.all;
+    mainProgram = "lbug";
   };
 })

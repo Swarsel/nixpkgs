@@ -1,11 +1,11 @@
 {
   lib,
-  stdenvNoCC,
   fetchFromGitHub,
   fetchYarnDeps,
+  nodejs,
+  stdenvNoCC,
   yarnConfigHook,
   yarnInstallHook,
-  nodejs,
 }:
 
 stdenvNoCC.mkDerivation (finalAttrs: {
@@ -19,11 +19,6 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     hash = "sha256-xkMsPE+iweIV14m4kE4ytEp4uHMJW6gr+n9oJblr4VQ=";
   };
 
-  offlineCache = fetchYarnDeps {
-    yarnLock = finalAttrs.src + "/yarn.lock";
-    hash = "sha256-QgT2JFvMupJo+pJc13n2lmHMZkROJRJWoozCho3E6+c=";
-  };
-
   strictDeps = true;
 
   nativeBuildInputs = [
@@ -32,9 +27,14 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     nodejs
   ];
 
+  offlineCache = fetchYarnDeps {
+    hash = "sha256-QgT2JFvMupJo+pJc13n2lmHMZkROJRJWoozCho3E6+c=";
+    yarnLock = finalAttrs.src + "/yarn.lock";
+  };
+
   meta = {
-    homepage = "https://github.com/ember-cli/ember-cli";
     description = "Ember.js command line utility";
+    homepage = "https://github.com/ember-cli/ember-cli";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ jfvillablanca ];
     platforms = lib.platforms.all;

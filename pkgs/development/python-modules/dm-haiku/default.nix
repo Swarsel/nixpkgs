@@ -1,35 +1,31 @@
 {
   lib,
-  buildPythonPackage,
-  pythonAtLeast,
   fetchFromGitHub,
-  fetchpatch,
-
-  # build-system
-  setuptools,
-
   # dependencies
   absl-py,
-  jaxlib,
-  jmp,
-  numpy,
-  tabulate,
-
-  # optional-dependencies
-  jax,
-  flax,
-
-  # tests
-  pytest-xdist,
-  pytestCheckHook,
   bsuite,
+  buildPythonPackage,
   chex,
   cloudpickle,
   dill,
   dm-env,
   dm-tree,
+  fetchpatch,
+  flax,
+  # optional-dependencies
+  jax,
+  jaxlib,
+  jmp,
+  numpy,
   optax,
+  # tests
+  pytest-xdist,
+  pytestCheckHook,
+  pythonAtLeast,
   rlax,
+  # build-system
+  setuptools,
+  tabulate,
   tensorflow,
 }:
 
@@ -37,7 +33,6 @@ let
   dm-haiku = buildPythonPackage rec {
     pname = "dm-haiku";
     version = "0.0.16";
-    pyproject = true;
 
     src = fetchFromGitHub {
       owner = "deepmind";
@@ -49,31 +44,13 @@ let
     patches = [
       # https://github.com/deepmind/dm-haiku/pull/672
       (fetchpatch {
+        hash = "sha256-qV94TdJnphlnpbq+B0G3KTx5CFGPno+8FvHyu/aZeQE=";
         name = "fix-find-namespace-packages.patch";
         url = "https://github.com/deepmind/dm-haiku/commit/728031721f77d9aaa260bba0eddd9200d107ba5d.patch";
-        hash = "sha256-qV94TdJnphlnpbq+B0G3KTx5CFGPno+8FvHyu/aZeQE=";
       })
     ];
 
-    build-system = [ setuptools ];
-
-    dependencies = [
-      absl-py
-      jaxlib # implicit runtime dependency
-      jmp
-      numpy
-      tabulate
-    ];
-
-    optional-dependencies = {
-      jax = [
-        jax
-        jaxlib
-      ];
-      flax = [ flax ];
-    };
-
-    pythonImportsCheck = [ "haiku" ];
+    doCheck = false;
 
     nativeCheckInputs = [
       bsuite
@@ -90,6 +67,23 @@ let
       pytestCheckHook
       # rlax (broken dependency tensorflow-probability)
       tensorflow
+    ];
+
+    build-system = [ setuptools ];
+
+    dependencies = [
+      absl-py
+      jaxlib # implicit runtime dependency
+      jmp
+      numpy
+      tabulate
+    ];
+
+    disabledTestPaths = [
+      # Require rlax which is unavailable as its dependency tensorflow-probability is broken
+      "examples/impala/actor_test.py"
+      "examples/impala/learner_test.py"
+      "examples/impala_lite_test.py"
     ];
 
     disabledTests = [
@@ -120,20 +114,22 @@ let
       "test_passing_function_to_transform_pmap_transform_with_state"
     ];
 
-    disabledTestPaths = [
-      # Require rlax which is unavailable as its dependency tensorflow-probability is broken
-      "examples/impala/actor_test.py"
-      "examples/impala/learner_test.py"
-      "examples/impala_lite_test.py"
-    ];
+    optional-dependencies = {
+      flax = [ flax ];
 
-    doCheck = false;
+      jax = [
+        jax
+        jaxlib
+      ];
+    };
+
+    pyproject = true;
+    pythonImportsCheck = [ "haiku" ];
 
     # check in passthru.tests.pytest to escape infinite recursion with bsuite
     passthru.tests.pytest = dm-haiku.overridePythonAttrs (_: {
       pname = "${pname}-tests";
       doCheck = true;
-
       # We don't have to install because the only purpose
       # of this passthru test is to, well, test.
       # This fixes having to set `catchConflicts` to false.

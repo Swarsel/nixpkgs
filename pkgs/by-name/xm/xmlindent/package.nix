@@ -22,10 +22,10 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "XML stream reformatter";
-    mainProgram = "xmlindent";
     homepage = "https://xmlindent.sourceforge.net/";
     license = lib.licenses.gpl3;
-    platforms = lib.platforms.linux;
     maintainers = [ ];
+    platforms = lib.platforms.linux;
+    mainProgram = "xmlindent";
   };
 })

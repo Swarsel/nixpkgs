@@ -4,8 +4,8 @@
   fetchzip,
   jre,
   makeWrapper,
-  plantuml-c4,
   plantuml,
+  plantuml-c4,
   runCommand,
 }:
 
@@ -21,13 +21,13 @@
 
 let
   c4-lib = fetchzip {
-    url = "https://github.com/plantuml-stdlib/C4-PlantUML/archive/refs/tags/v2.10.0.zip";
     hash = "sha256-p9Njb7VauXVf6yOBDQrO9mS+za9NntFUCK5tig0mH3U=";
+    url = "https://github.com/plantuml-stdlib/C4-PlantUML/archive/refs/tags/v2.10.0.zip";
   };
 
   sprites = fetchzip {
-    url = "https://github.com/tupadr3/plantuml-icon-font-sprites/archive/refs/tags/v3.0.0.zip";
     hash = "sha256-I/cR1VPR7aKyTZF9X/4GkgcxV9+sLgNpTZugvCy0Dvs=";
+    url = "https://github.com/tupadr3/plantuml-icon-font-sprites/archive/refs/tags/v3.0.0.zip";
   };
 
   # In order to pre-fix the plantuml.jar parameter with the argument
@@ -53,7 +53,6 @@ in
 stdenv.mkDerivation {
   pname = "plantuml-c4";
   version = "2.10.0";
-
   nativeBuildInputs = [ makeWrapper ];
 
   buildCommand = ''
@@ -77,13 +76,15 @@ stdenv.mkDerivation {
 
   meta = {
     description = "PlantUML bundled with C4-Plantuml and plantuml sprites library";
-    mainProgram = "plantuml";
     homepage = "https://github.com/plantuml-stdlib/C4-PlantUML";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       tfc
       anthonyroussel
     ];
+
     platforms = lib.platforms.unix;
+    mainProgram = "plantuml";
   };
 }

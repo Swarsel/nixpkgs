@@ -1,9 +1,9 @@
 {
-  config,
-  stdenv,
-  callPackage,
   lib,
+  stdenv,
   fetchurl,
+  callPackage,
+  config,
   unzip,
   licenseAccepted ? config.sc2-headless.accept_license or false,
 }:
@@ -12,26 +12,13 @@ let
   maps = callPackage ./maps.nix { inherit licenseAccepted; };
 in
 stdenv.mkDerivation rec {
-  version = "4.7.1";
   pname = "sc2-headless";
+  version = "4.7.1";
 
   src = fetchurl {
     url = "https://blzdistsc2-a.akamaihd.net/Linux/SC2.${version}.zip";
     sha256 = "0q1ry9bd3dm8y4hvh57yfq7s05hl2k2sxi2wsl6h0r3w690v1kdd";
   };
-
-  unpackCmd =
-    if !licenseAccepted then
-      throw ''
-        You must accept the Blizzard® Starcraft® II AI and Machine Learning License at
-        https://blzdistsc2-a.akamaihd.net/AI_AND_MACHINE_LEARNING_LICENSE.html
-        by setting nixpkgs config option 'sc2-headless.accept_license = true;'
-      ''
-    else
-      assert licenseAccepted;
-      ''
-        unzip -P 'iagreetotheeula' $curSrc
-      '';
 
   nativeBuildInputs = [ unzip ];
 
@@ -60,15 +47,30 @@ stdenv.mkDerivation rec {
     done
   '';
 
+  unpackCmd =
+    if !licenseAccepted then
+      throw ''
+        You must accept the Blizzard® Starcraft® II AI and Machine Learning License at
+        https://blzdistsc2-a.akamaihd.net/AI_AND_MACHINE_LEARNING_LICENSE.html
+        by setting nixpkgs config option 'sc2-headless.accept_license = true;'
+      ''
+    else
+      assert licenseAccepted;
+      ''
+        unzip -P 'iagreetotheeula' $curSrc
+      '';
+
   meta = {
-    platforms = lib.platforms.linux;
     description = "Starcraft II headless linux client for machine learning research";
-    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
+
     license = {
+      free = false;
       fullName = "BLIZZARD® STARCRAFT® II AI AND MACHINE LEARNING LICENSE";
       url = "https://blzdistsc2-a.akamaihd.net/AI_AND_MACHINE_LEARNING_LICENSE.html";
-      free = false;
     };
+
+    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
     maintainers = [ ];
+    platforms = lib.platforms.linux;
   };
 }

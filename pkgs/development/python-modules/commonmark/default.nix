@@ -1,16 +1,15 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
+  buildPythonPackage,
   hypothesis,
   python,
+  setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "commonmark";
   version = "0.9.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "readthedocs";
@@ -18,8 +17,6 @@ buildPythonPackage rec {
     tag = version;
     hash = "sha256-Ui/G/VLdjWcm7YmVjZ5Q8h0DEEFqdDByre29g3zHUq4=";
   };
-
-  build-system = [ setuptools ];
 
   nativeCheckInputs = [ hypothesis ];
 
@@ -37,10 +34,13 @@ buildPythonPackage rec {
     runHook postCheck
   '';
 
+  build-system = [ setuptools ];
+  pyproject = true;
+
   meta = {
     description = "Python CommonMark parser ";
-    mainProgram = "cmark";
     homepage = "https://github.com/readthedocs/commonmark.py";
     license = lib.licenses.bsd3;
+    mainProgram = "cmark";
   };
 }

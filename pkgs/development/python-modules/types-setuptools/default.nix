@@ -8,19 +8,17 @@
 buildPythonPackage rec {
   pname = "types-setuptools";
   version = "80.9.0.20251223";
-  pyproject = true;
 
   src = fetchPypi {
-    pname = "types_setuptools";
     inherit version;
     hash = "sha256-00EQWa4vXwOYUhfYasYITv6iyenKzV8Iae+VDzCBabI=";
+    pname = "types_setuptools";
   };
 
   nativeBuildInputs = [ setuptools ];
-
   # Module doesn't have tests
   doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "setuptools-stubs" ];
 
   meta = {

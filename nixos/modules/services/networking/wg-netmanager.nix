@@ -22,31 +22,36 @@ in
   config = mkIf cfg.enable {
     # NOTE: wg-netmanager runs as root
     systemd.services.wg-netmanager = {
-      description = "Wireguard network manager";
-      wantedBy = [ "multi-user.target" ];
       after = [ "network.target" ];
+      description = "Wireguard network manager";
+
       path = with pkgs; [
         wireguard-tools
         iproute2
         wireguard-go
       ];
+
       serviceConfig = {
-        Type = "simple";
-        Restart = "on-failure";
-        ExecStart = "${pkgs.wg-netmanager}/bin/wg_netmanager";
         ExecReload = "${pkgs.coreutils}/bin/kill -HUP $MAINPID";
+        ExecStart = "${pkgs.wg-netmanager}/bin/wg_netmanager";
         ExecStop = "${pkgs.coreutils}/bin/kill -HUP $MAINPID";
 
         ReadWritePaths = [
           "/tmp" # wg-netmanager creates files in /tmp before deleting them after use
         ];
+
+        Restart = "on-failure";
+        Type = "simple";
       };
+
       unitConfig = {
         ConditionPathExists = [
           "/etc/wg_netmanager/network.yaml"
           "/etc/wg_netmanager/peer.yaml"
         ];
       };
+
+      wantedBy = [ "multi-user.target" ];
     };
   };
 

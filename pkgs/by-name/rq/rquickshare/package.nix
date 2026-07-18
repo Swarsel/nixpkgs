@@ -1,7 +1,9 @@
 {
   lib,
-  cargo-tauri,
+  stdenv,
   fetchFromGitHub,
+  cargo-tauri,
+  fetchPnpmDeps,
   glib-networking,
   libayatana-appindicator,
   libsoup_3,
@@ -9,12 +11,10 @@
   nodejs,
   openssl,
   pkg-config,
-  pnpm_10,
-  fetchPnpmDeps,
   pnpmConfigHook,
+  pnpm_10,
   protobuf,
   rustPlatform,
-  stdenv,
   webkitgtk_4_1,
   wrapGAppsHook4,
 }:
@@ -44,27 +44,6 @@ rustPlatform.buildRustPackage rec {
       --replace-fail "libayatana-appindicator3.so.1" "${libayatana-appindicator}/lib/libayatana-appindicator3.so.1"
   '';
 
-  pnpmRoot = "app/main";
-  pnpmDeps = fetchPnpmDeps {
-    inherit
-      pname
-      version
-      src
-      patches
-      pnpm
-      ;
-    postPatch = "cd ${pnpmRoot}";
-    fetcherVersion = 4;
-    hash = "sha256-uugI9ztwHPYn7WdXfo3XlBxjhVczGnpWvTb3IEMJUqg=";
-  };
-
-  cargoRoot = "app/main/src-tauri";
-  buildAndTestSubdir = cargoRoot;
-  cargoPatches = [
-    ./remove-code-signing-darwin.patch
-  ];
-  cargoHash = "sha256-9LFMWr/TQZ0nolQykrsGR2aqrSWIXoPZRLYO4mjTmpg=";
-
   nativeBuildInputs = [
     cargo-tauri.hook
 
@@ -88,8 +67,31 @@ rustPlatform.buildRustPackage rec {
     webkitgtk_4_1
   ];
 
+  cargoHash = "sha256-9LFMWr/TQZ0nolQykrsGR2aqrSWIXoPZRLYO4mjTmpg=";
   env.OPENSSL_NO_VENDOR = 1;
+  buildAndTestSubdir = cargoRoot;
 
+  cargoPatches = [
+    ./remove-code-signing-darwin.patch
+  ];
+
+  cargoRoot = "app/main/src-tauri";
+
+  pnpmDeps = fetchPnpmDeps {
+    inherit
+      pname
+      version
+      src
+      patches
+      pnpm
+      ;
+
+    postPatch = "cd ${pnpmRoot}";
+    fetcherVersion = 4;
+    hash = "sha256-uugI9ztwHPYn7WdXfo3XlBxjhVczGnpWvTb3IEMJUqg=";
+  };
+
+  pnpmRoot = "app/main";
   passthru.updateScript = nix-update-script { };
 
   meta = {
@@ -97,11 +99,13 @@ rustPlatform.buildRustPackage rec {
     homepage = "https://github.com/Martichou/rquickshare";
     changelog = "https://github.com/Martichou/rquickshare/blob/v${version}/CHANGELOG.md";
     license = lib.licenses.gpl3Plus;
-    mainProgram = "rquickshare";
+
     maintainers = with lib.maintainers; [
       PerchunPak
       luftmensch-luftmensch
       sarunint
     ];
+
+    mainProgram = "rquickshare";
   };
 }

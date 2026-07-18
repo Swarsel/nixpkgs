@@ -1,14 +1,13 @@
 {
   lib,
-  elixir,
   fetchFromGitHub,
-  fetchMixDeps,
-  mixRelease,
-  nix-update-script,
-
   # for tests
   beam27Packages,
   beam28Packages,
+  elixir,
+  fetchMixDeps,
+  mixRelease,
+  nix-update-script,
 }:
 # Based on ../elixir-ls/default.nix
 
@@ -32,13 +31,13 @@ mixRelease {
 
   escriptBinName = "ex_doc";
 
-  stripDebug = true;
-
   mixFodDeps = fetchMixDeps {
-    pname = "mix-deps-${pname}";
     inherit src version elixir;
+    pname = "mix-deps-${pname}";
     hash = "sha256-FSLAQhFk7NCUXRMfNr6E9XvndrviapjcKZDisHbB87Y=";
   };
+
+  stripDebug = true;
 
   passthru = {
     tests = {
@@ -51,13 +50,14 @@ mixRelease {
   };
 
   meta = {
-    homepage = "https://github.com/elixir-lang/ex_doc";
     description = ''
       ExDoc produces HTML and EPUB documentation for Elixir projects
     '';
+
+    homepage = "https://github.com/elixir-lang/ex_doc";
     license = lib.licenses.asl20;
+    maintainers = with lib.maintainers; [ chiroptical ];
     platforms = lib.platforms.unix;
     mainProgram = "ex_doc";
-    maintainers = with lib.maintainers; [ chiroptical ];
   };
 }

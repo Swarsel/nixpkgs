@@ -1,13 +1,13 @@
 {
   lib,
   stdenv,
-  rustPlatform,
   fetchFromGitHub,
   installShellFiles,
   nix-update-script,
   nodejs,
-  usage,
+  rustPlatform,
   testers,
+  usage,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -21,14 +21,13 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-fqBcdbhoFOnlPqRSSaKPhG6IYilQHvwjgUGEkwQfBQY=";
   };
 
-  cargoHash = "sha256-0j17jlqEy+zbtaIS+pKZKE73j/QMaAvEExoS2TTunEs=";
-
   postPatch = ''
     substituteInPlace ./examples/*.sh \
       --replace-fail '/usr/bin/env -S usage' "$(pwd)/target/${stdenv.targetPlatform.rust.rustcTargetSpec}/release/usage"
   '';
 
   nativeBuildInputs = [ installShellFiles ];
+  cargoHash = "sha256-0j17jlqEy+zbtaIS+pKZKE73j/QMaAvEExoS2TTunEs=";
 
   nativeCheckInputs = [
     # for some tests
@@ -48,13 +47,13 @@ rustPlatform.buildRustPackage (finalAttrs: {
   '';
 
   passthru = {
-    updateScript = nix-update-script { };
     tests.version = testers.testVersion { package = usage; };
+    updateScript = nix-update-script { };
   };
 
   meta = {
-    homepage = "https://usage.jdx.dev";
     description = "Specification for CLIs";
+    homepage = "https://usage.jdx.dev";
     changelog = "https://github.com/jdx/usage/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ konradmalik ];

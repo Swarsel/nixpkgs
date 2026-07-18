@@ -1,47 +1,47 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
+  actool,
+  apparmorRulesFromClosure,
   cmake,
-  pkg-config,
-  python3,
-  openssl,
+  coreutils,
   curl,
-  libevent,
-  inotify-tools,
-  systemd,
-  zlib,
-  rapidjson,
-  small,
-  libb64,
-  libutp_3_4,
-  libdeflate,
-  utf8cpp,
+  dht,
   fast-float,
   fmt,
-  libpsl,
-  miniupnpc,
-  dht,
+  gtkmm4,
+  ibtool,
+  inotify-tools,
+  libayatana-appindicator,
+  libb64,
+  libdeflate,
+  libevent,
   libnatpmp,
+  libpsl,
+  libpthread-stubs,
+  libutp_3_4,
+  makeWrapper,
+  miniupnpc,
+  nixosTests,
+  openssl,
+  pkg-config,
+  python3,
+  qt6Packages,
+  rapidjson,
+  small,
+  systemd,
+  utf8cpp,
+  wrapGAppsHook4,
+  zlib,
+  enableCli ? true,
+  enableDaemon ? true,
   # Build options
   enableGTK ? false,
-  gtkmm4,
-  libpthread-stubs,
-  libayatana-appindicator,
-  wrapGAppsHook4,
-  enableQt ? false,
   enableMac ? false,
-  qt6Packages,
-  nixosTests,
+  enableQt ? false,
   enableSystemd ? lib.meta.availableOn stdenv.hostPlatform systemd,
-  enableDaemon ? true,
-  enableCli ? true,
   installLib ? false,
-  apparmorRulesFromClosure,
-  ibtool,
-  actool,
-  coreutils,
-  makeWrapper,
 }:
 
 let
@@ -75,13 +75,6 @@ stdenv.mkDerivation (finalAttrs: {
     fetchSubmodules = true;
   };
 
-  strictDeps = true;
-  __structuredAttrs = true;
-
-  patches = [
-    ./0001-Skip-bundle-fixup.patch
-  ];
-
   outputs = [
     "out"
   ]
@@ -89,25 +82,8 @@ stdenv.mkDerivation (finalAttrs: {
     "apparmor"
   ];
 
-  # Remove once https://github.com/NixOS/nixpkgs/pull/508307 lands
-  # Stop clang trying to write in $HOME
-  env.CLANG_MODULE_CACHE_PATH = "/tmp/clang_module_cache";
-
-  cmakeFlags = [
-    (cmakeBool "ENABLE_CLI" enableCli)
-    (cmakeBool "ENABLE_DAEMON" enableDaemon)
-    (cmakeBool "ENABLE_GTK" enableGTK)
-    (cmakeBool "ENABLE_MAC" enableMac)
-    (cmakeBool "ENABLE_QT" enableQt)
-    (cmakeBool "INSTALL_LIB" installLib)
-    (cmakeBool "RUN_CLANG_TIDY" false)
-  ]
-  ++ optionals stdenv.hostPlatform.isDarwin [
-    # Transmission sets this to 10.13 if not explicitly specified, see https://github.com/transmission/transmission/blob/0be7091eb12f4eb55f6690f313ef70a66795ee72/CMakeLists.txt#L7-L16.
-    "-DCMAKE_OSX_DEPLOYMENT_TARGET=${stdenv.hostPlatform.darwinMinVersion}"
-    # we don't have a compatible-enough signing tool right now
-    "-DCODESIGN_EXECUTABLE=${lib.getExe' coreutils "true"}"
-    "-DACTOOL_EXECUTABLE=${lib.getExe actool}"
+  patches = [
+    ./0001-Skip-bundle-fixup.patch
   ];
 
   postPatch = ''
@@ -136,6 +112,8 @@ stdenv.mkDerivation (finalAttrs: {
         'transmission::qt_impl)' \
         'transmission::qt_impl "-framework AppKit" "-framework CoreGraphics")'
   '';
+
+  strictDeps = true;
 
   nativeBuildInputs = [
     pkg-config
@@ -184,6 +162,27 @@ stdenv.mkDerivation (finalAttrs: {
   ++ optionals enableSystemd [ systemd ]
   ++ optionals stdenv.hostPlatform.isLinux [ inotify-tools ];
 
+  cmakeFlags = [
+    (cmakeBool "ENABLE_CLI" enableCli)
+    (cmakeBool "ENABLE_DAEMON" enableDaemon)
+    (cmakeBool "ENABLE_GTK" enableGTK)
+    (cmakeBool "ENABLE_MAC" enableMac)
+    (cmakeBool "ENABLE_QT" enableQt)
+    (cmakeBool "INSTALL_LIB" installLib)
+    (cmakeBool "RUN_CLANG_TIDY" false)
+  ]
+  ++ optionals stdenv.hostPlatform.isDarwin [
+    # Transmission sets this to 10.13 if not explicitly specified, see https://github.com/transmission/transmission/blob/0be7091eb12f4eb55f6690f313ef70a66795ee72/CMakeLists.txt#L7-L16.
+    "-DCMAKE_OSX_DEPLOYMENT_TARGET=${stdenv.hostPlatform.darwinMinVersion}"
+    # we don't have a compatible-enough signing tool right now
+    "-DCODESIGN_EXECUTABLE=${lib.getExe' coreutils "true"}"
+    "-DACTOOL_EXECUTABLE=${lib.getExe actool}"
+  ];
+
+  # Remove once https://github.com/NixOS/nixpkgs/pull/508307 lands
+  # Stop clang trying to write in $HOME
+  env.CLANG_MODULE_CACHE_PATH = "/tmp/clang_module_cache";
+
   postInstall =
     optionalString stdenv.hostPlatform.isLinux ''
       mkdir $apparmor
@@ -212,6 +211,8 @@ stdenv.mkDerivation (finalAttrs: {
       makeWrapper $out/Applications/Transmission.app/Contents/MacOS/Transmission $out/bin/transmission-mac
     '';
 
+  __structuredAttrs = true;
+
   passthru.tests = {
     apparmor = nixosTests.transmission_4; # starts the service with apparmor enabled
     smoke-test = nixosTests.bittorrent;
@@ -219,15 +220,7 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Fast, easy and free BitTorrent client";
-    mainProgram =
-      if enableQt then
-        "transmission-qt"
-      else if enableGTK then
-        "transmission-gtk"
-      else if enableMac then
-        "transmission-mac"
-      else
-        "transmission-cli";
+
     longDescription = ''
       Transmission is a BitTorrent client which features a simple interface
       on top of a cross-platform back-end.
@@ -239,12 +232,25 @@ stdenv.mkDerivation (finalAttrs: {
         * Bluetack (PeerGuardian) blocklists with automatic updates
         * Full encryption, DHT, and PEX support
     '';
+
     homepage = "https://www.transmissionbt.com/";
-    maintainers = with lib.maintainers; [ nyanloutre ];
+
     license = with lib.licenses; [
       gpl2Plus
       mit
     ];
+
+    maintainers = with lib.maintainers; [ nyanloutre ];
     platforms = if enableMac then lib.platforms.darwin else lib.platforms.unix;
+
+    mainProgram =
+      if enableQt then
+        "transmission-qt"
+      else if enableGTK then
+        "transmission-gtk"
+      else if enableMac then
+        "transmission-mac"
+      else
+        "transmission-cli";
   };
 })

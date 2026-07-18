@@ -1,8 +1,8 @@
 {
-  stdenv,
   lib,
-  fetchFromBitbucket,
+  stdenv,
   cmake,
+  fetchFromBitbucket,
   qt6,
 }:
 
@@ -16,8 +16,6 @@ stdenv.mkDerivation {
     rev = "3c1b4c18ccb275eb2891f9d8ff36a9205c0f566b";
     hash = "sha256-9/id5h+5aBntlcsEUGkyEzMJf7we7hMslnkqKDcbaNY=";
   };
-
-  sourceRoot = "source/src";
 
   patches = [
     ./01-fix-qt6-build.patch
@@ -33,11 +31,12 @@ stdenv.mkDerivation {
     qt6.qttools
   ];
 
+  sourceRoot = "source/src";
+
   meta = {
-    homepage = "https://speedcrunch.org";
-    license = lib.licenses.gpl2Plus;
+    inherit (qt6.qtbase.meta) platforms;
     description = "High-precision scientific calculator";
-    mainProgram = "speedcrunch";
+
     longDescription = ''
       SpeedCrunch is a high-precision scientific calculator.
       Among its distinctive features are a syntax-highlighted scrollable display,
@@ -47,10 +46,15 @@ stdenv.mkDerivation {
       fully keyboard-driven interface, over 80 built-in mathematical functions and
       support for user-defined functions.
     '';
+
+    homepage = "https://speedcrunch.org";
+    license = lib.licenses.gpl2Plus;
+
     maintainers = with lib.maintainers; [
       j0hax
     ];
-    inherit (qt6.qtbase.meta) platforms;
+
+    mainProgram = "speedcrunch";
     broken = stdenv.hostPlatform.isDarwin;
   };
 }

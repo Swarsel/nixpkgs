@@ -1,8 +1,8 @@
 {
-  stdenv,
   lib,
-  ruby,
+  stdenv,
   callPackage,
+  ruby,
   ...
 }:
 let
@@ -10,6 +10,16 @@ let
     { name, ... }@argSet:
     derivation {
       inherit name;
+
+      args = [
+        "-c"
+        "echo  $(<$textPath) > $out"
+      ];
+
+      builder = stdenv.shell;
+      passAsFile = [ "text" ];
+      system = stdenv.hostPlatform.system;
+
       text = (
         builtins.toJSON (
           lib.filterAttrs (
@@ -21,13 +31,6 @@ let
           ) argSet
         )
       );
-      builder = stdenv.shell;
-      args = [
-        "-c"
-        "echo  $(<$textPath) > $out"
-      ];
-      system = stdenv.hostPlatform.system;
-      passAsFile = [ "text" ];
     };
   fetchurl =
     {
@@ -47,10 +50,11 @@ let
   };
 in
 {
-  ruby = ruby';
   buildRubyGem = callPackage ../gem {
     inherit fetchurl;
     ruby = ruby';
   };
+
+  ruby = ruby';
   stdenv = stdenv';
 }

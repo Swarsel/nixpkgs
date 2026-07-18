@@ -8,12 +8,19 @@
 stdenv.mkDerivation (finalAttrs: {
   pname = "eliza";
   version = "0-unstable-2026-06-13";
+
   src = fetchFromGitHub {
     owner = "anthay";
     repo = "ELIZA";
     rev = "8e93cb50107a4c6c854e96b533a36958ac934d3f";
     hash = "sha256-KRw5ow/34A0GANUoCLM3xOhMc4dlzTWpVqWcsgruTCE=";
   };
+
+  buildPhase = ''
+    runHook preBuild
+    $CXX -std=c++20 -pedantic -o eliza ./src/eliza.cpp
+    runHook postBuild
+  '';
 
   doCheck = true;
 
@@ -22,12 +29,6 @@ stdenv.mkDerivation (finalAttrs: {
     runHook preCheck
     echo Corki is mana | ./eliza
     runHook postCheck
-  '';
-
-  buildPhase = ''
-    runHook preBuild
-    $CXX -std=c++20 -pedantic -o eliza ./src/eliza.cpp
-    runHook postBuild
   '';
 
   installPhase = ''
@@ -44,6 +45,7 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "C++ simulation of Joseph Weizenbaum’s 1966 ELIZA";
+
     longDescription = ''
       This is an implementation in C++ of ELIZA that attempts to be as close
       to the original as possible.
@@ -54,10 +56,11 @@ stdenv.mkDerivation (finalAttrs: {
       It is controlled by a script identical to the one given in the appendix of
       the 1966 paper.
     '';
-    license = lib.licenses.cc0;
-    mainProgram = "eliza";
+
     homepage = "https://github.com/anthay/ELIZA";
+    license = lib.licenses.cc0;
     maintainers = with lib.maintainers; [ EmanuelM153 ];
     platforms = lib.platforms.all;
+    mainProgram = "eliza";
   };
 })

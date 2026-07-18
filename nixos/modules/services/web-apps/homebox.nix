@@ -1,6 +1,6 @@
 {
-  lib,
   config,
+  lib,
   pkgs,
   ...
 }:
@@ -22,18 +22,26 @@ in
   options.services.homebox = {
     enable = mkEnableOption "homebox";
     package = mkPackageOption pkgs "homebox" { };
-    user = mkOption {
-      type = types.str;
-      default = defaultUser;
-      description = "User account under which Homebox runs.";
+
+    database = {
+      createLocally = mkOption {
+        default = false;
+
+        description = ''
+          Configure local PostgreSQL database server for Homebox.
+        '';
+
+        type = lib.types.bool;
+      };
     };
+
     group = mkOption {
-      type = types.str;
       default = defaultGroup;
       description = "Group under which Homebox runs.";
+      type = types.str;
     };
+
     settings = mkOption {
-      type = types.submodule { freeformType = types.attrsOf (types.nullOr types.str); };
       defaultText = lib.literalExpression ''
         {
           HBOX_STORAGE_CONN_STRING = "file:///var/lib/homebox";
@@ -47,19 +55,19 @@ in
           TMPDIR = "/var/lib/homebox/tmp";
         }
       '';
+
       description = ''
         The homebox configuration as environment variables. For definitions and available options see the upstream
         [documentation](https://homebox.software/en/configure/#configure-homebox).
       '';
+
+      type = types.submodule { freeformType = types.attrsOf (types.nullOr types.str); };
     };
-    database = {
-      createLocally = mkOption {
-        type = lib.types.bool;
-        default = false;
-        description = ''
-          Configure local PostgreSQL database server for Homebox.
-        '';
-      };
+
+    user = mkOption {
+      default = defaultUser;
+      description = "User account under which Homebox runs.";
+      type = types.str;
     };
   };
 
@@ -67,6 +75,7 @@ in
     assertions = [
       {
         assertion = !(cfg.settings ? HBOX_STORAGE_DATA);
+
         message = ''
           `services.homebox.settings.HBOX_STORAGE_DATA` has been deprecated.
           Please use `services.homebox.settings.HBOX_STORAGE_CONN_STRING` and `services.homebox.settings.HBOX_STORAGE_PREFIX_PATH` instead.
@@ -74,26 +83,15 @@ in
       }
     ];
 
-    users = {
-      users = mkIf (cfg.user == defaultUser) {
-        ${defaultUser} = {
-          description = "homebox service user";
-          inherit (cfg) group;
-          isSystemUser = true;
-        };
-      };
-      groups = mkIf (cfg.group == defaultGroup) { ${defaultGroup} = { }; };
-    };
-
     services.homebox.settings = lib.mkMerge [
       (lib.mapAttrs (_: mkDefault) {
-        HBOX_STORAGE_CONN_STRING = "file:///var/lib/homebox";
-        HBOX_STORAGE_PREFIX_PATH = "data";
         HBOX_DATABASE_DRIVER = "sqlite3";
         HBOX_DATABASE_SQLITE_PATH = "/var/lib/homebox/data/homebox.db?_pragma=busy_timeout=999&_pragma=journal_mode=WAL&_fk=1";
+        HBOX_MODE = "production";
         HBOX_OPTIONS_ALLOW_REGISTRATION = "false";
         HBOX_OPTIONS_CHECK_GITHUB_RELEASE = "false";
-        HBOX_MODE = "production";
+        HBOX_STORAGE_CONN_STRING = "file:///var/lib/homebox";
+        HBOX_STORAGE_PREFIX_PATH = "data";
         # Fix this startup issue:
         #   failed to create modcache index dir: mkdir /var/empty/.cache: read-only file system
         HOME = "/var/lib/homebox";
@@ -103,47 +101,50 @@ in
       })
 
       (mkIf cfg.database.createLocally {
+        HBOX_DATABASE_DATABASE = "homebox";
         HBOX_DATABASE_DRIVER = "postgres";
         HBOX_DATABASE_HOST = "/run/postgresql";
-        HBOX_DATABASE_USERNAME = "homebox";
-        HBOX_DATABASE_DATABASE = "homebox";
         HBOX_DATABASE_PORT = toString config.services.postgresql.settings.port;
+        HBOX_DATABASE_USERNAME = "homebox";
       })
     ];
 
     services.postgresql = mkIf cfg.database.createLocally {
       enable = true;
       ensureDatabases = [ "homebox" ];
+
       ensureUsers = [
         {
-          name = "homebox";
           ensureDBOwnership = true;
+          name = "homebox";
         }
       ];
     };
+
     systemd.services.homebox = {
-      requires = lib.optional cfg.database.createLocally "postgresql.target";
       after = lib.optional cfg.database.createLocally "postgresql.target";
       environment = lib.filterAttrs (_: v: v != null) cfg.settings;
+
       preStart = ''
         "${pkgs.coreutils}/bin/rm" -rf /var/lib/homebox/tmp
         "${pkgs.coreutils}/bin/mkdir" -p /var/lib/homebox/tmp
       '';
-      serviceConfig = {
-        User = cfg.user;
-        Group = cfg.group;
-        ExecStart = lib.getExe cfg.package;
-        LimitNOFILE = "1048576";
-        PrivateTmp = true;
-        PrivateDevices = true;
-        Restart = "always";
-        StateDirectory = "homebox";
 
+      requires = lib.optional cfg.database.createLocally "postgresql.target";
+
+      serviceConfig = {
         # Hardening
         CapabilityBoundingSet = "";
+        ExecStart = lib.getExe cfg.package;
+        Group = cfg.group;
+        LimitNOFILE = "1048576";
         LockPersonality = true;
         MemoryDenyWriteExecute = true;
+        PrivateDevices = true;
+        PrivateMounts = true;
+        PrivateTmp = true;
         PrivateUsers = true;
+        ProcSubset = "pid";
         ProtectClock = true;
         ProtectControlGroups = true;
         ProtectHome = true;
@@ -152,28 +153,47 @@ in
         ProtectKernelModules = true;
         ProtectKernelTunables = true;
         ProtectProc = "invisible";
-        ProcSubset = "pid";
         ProtectSystem = "strict";
+        Restart = "always";
+
         RestrictAddressFamilies = [
           "AF_UNIX"
           "AF_INET"
           "AF_INET6"
           "AF_NETLINK"
         ];
+
         RestrictNamespaces = true;
         RestrictRealtime = true;
+        RestrictSUIDSGID = true;
+        StateDirectory = "homebox";
         SystemCallArchitectures = "native";
+
         SystemCallFilter = [
           "@system-service"
           "@pkey"
         ];
-        RestrictSUIDSGID = true;
-        PrivateMounts = true;
+
         UMask = "0077";
+        User = cfg.user;
       };
+
       wantedBy = [ "multi-user.target" ];
     };
+
+    users = {
+      groups = mkIf (cfg.group == defaultGroup) { ${defaultGroup} = { }; };
+
+      users = mkIf (cfg.user == defaultUser) {
+        ${defaultUser} = {
+          inherit (cfg) group;
+          description = "homebox service user";
+          isSystemUser = true;
+        };
+      };
+    };
   };
+
   meta.maintainers = with lib.maintainers; [
     patrickdag
     swarsel

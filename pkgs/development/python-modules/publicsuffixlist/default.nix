@@ -3,16 +3,15 @@
   buildPythonPackage,
   fetchPypi,
   pandoc,
+  publicsuffix-list,
   pytestCheckHook,
   requests,
   setuptools,
-  publicsuffix-list,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "publicsuffixlist";
   version = "1.0.2.20260710";
-  pyproject = true;
 
   src = fetchPypi {
     inherit (finalAttrs) pname version;
@@ -24,18 +23,17 @@ buildPythonPackage (finalAttrs: {
     ln -s ${publicsuffix-list}/share/publicsuffix/public_suffix_list.dat publicsuffixlist/public_suffix_list.dat
   '';
 
+  nativeCheckInputs = [ pytestCheckHook ];
   build-system = [ setuptools ];
+  enabledTestPaths = [ "publicsuffixlist/test.py" ];
 
   optional-dependencies = {
-    update = [ requests ];
     readme = [ pandoc ];
+    update = [ requests ];
   };
 
-  nativeCheckInputs = [ pytestCheckHook ];
-
+  pyproject = true;
   pythonImportsCheck = [ "publicsuffixlist" ];
-
-  enabledTestPaths = [ "publicsuffixlist/test.py" ];
 
   meta = {
     description = "Public Suffix List parser implementation";

@@ -1,7 +1,7 @@
 {
-  python3Packages,
   lib,
   fetchzip,
+  python3Packages,
 }:
 
 python3Packages.buildPythonApplication (finalAttrs: {
@@ -14,15 +14,11 @@ python3Packages.buildPythonApplication (finalAttrs: {
     stripRoot = false;
   };
 
-  propagatedBuildInputs = with python3Packages; [ fontforge ];
-
-  pyproject = false;
-
   patches = [
     ./use-nix-paths.patch
   ];
 
-  dontBuild = true;
+  propagatedBuildInputs = with python3Packages; [ fontforge ];
 
   installPhase = ''
     mkdir -p $out/bin $out/share $out/lib
@@ -31,11 +27,14 @@ python3Packages.buildPythonApplication (finalAttrs: {
     cp -ra bin/scripts/name_parser $out/lib/
   '';
 
+  dontBuild = true;
+  pyproject = false;
+
   meta = {
     description = "Font patcher to generate Nerd font";
-    mainProgram = "nerd-font-patcher";
     homepage = "https://nerdfonts.com/";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ ck3d ];
+    mainProgram = "nerd-font-patcher";
   };
 })

@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   poetry-core,
   pysigma,
   pysigma-backend-elasticsearch,
@@ -10,7 +10,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "pysigma-backend-opensearch";
   version = "2.0.3";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "SigmaHQ";
@@ -19,8 +18,8 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-GKy2gQIeon3kewLXlNdE8ZCwiqQfaukz2BF6a4dOwJU=";
   };
 
-  pythonRelaxDeps = [ "pysigma" ];
-
+  # Starting with 2.0.0 all tests require network access
+  doCheck = false;
   build-system = [ poetry-core ];
 
   dependencies = [
@@ -28,11 +27,10 @@ buildPythonPackage (finalAttrs: {
     pysigma-backend-elasticsearch
   ];
 
-  # Starting with 2.0.0 all tests require network access
-  doCheck = false;
+  pyproject = true;
+  pythonRelaxDeps = [ "pysigma" ];
 
   #pythonImportsCheck = [ "sigma.backends.opensearch" ];
-
   meta = {
     description = "Library to support OpenSearch for pySigma";
     homepage = "https://github.com/SigmaHQ/pySigma-backend-opensearch";

@@ -1,14 +1,14 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitLab,
-  pkg-config,
-  wrapGAppsHook4,
+  glib-networking,
   libadwaita,
   openssl,
-  webkitgtk_6_0,
+  pkg-config,
+  rustPlatform,
   sqlite,
-  glib-networking,
+  webkitgtk_6_0,
+  wrapGAppsHook4,
 }:
 
 rustPlatform.buildRustPackage {
@@ -21,8 +21,6 @@ rustPlatform.buildRustPackage {
     rev = "594bdcdc3919c7216d611ddbbc77ab4d0c1f4f2b";
     hash = "sha256-RE0x4YWquWAcQzxGk9zdNjEp1pijrBtjV1EMBu9c5cs=";
   };
-
-  cargoHash = "sha256-XI0dpW0BQoTgw7rCNTA3Imo5tU1eMqLvIHyqQD3sC6Q=";
 
   nativeBuildInputs = [
     pkg-config
@@ -37,6 +35,7 @@ rustPlatform.buildRustPackage {
     glib-networking
   ];
 
+  cargoHash = "sha256-XI0dpW0BQoTgw7rCNTA3Imo5tU1eMqLvIHyqQD3sC6Q=";
   # 'error[E0432]: unresolved import' when compiling checks
   doCheck = false;
 
@@ -53,13 +52,15 @@ rustPlatform.buildRustPackage {
   meta = {
     description = "Comfortable GTK reader application for news.ycombinator.com";
     homepage = "https://gitlab.com/gunibert/hackgregator";
+
     license = with lib.licenses; [
       gpl3Plus
       # and
       cc0
     ];
-    mainProgram = "hackgregator";
+
     maintainers = with lib.maintainers; [ aleksana ];
     platforms = lib.platforms.unix;
+    mainProgram = "hackgregator";
   };
 }

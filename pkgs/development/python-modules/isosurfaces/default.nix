@@ -8,7 +8,6 @@
 buildPythonPackage rec {
   pname = "isosurfaces";
   version = "0.1.2";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
@@ -16,15 +15,14 @@ buildPythonPackage rec {
   };
 
   propagatedBuildInputs = [ numpy ];
-
   # no tests defined upstream
   doCheck = false;
-
+  format = "setuptools";
   pythonImportsCheck = [ "isosurfaces" ];
 
   meta = {
-    homepage = "https://github.com/jared-hughes/isosurfaces";
     description = "Construct isolines/isosurfaces of a 2D/3D scalar field defined by a function";
+
     longDescription = ''
       Construct isolines/isosurfaces of a 2D/3D scalar field defined by a
       function, i.e. curves over which f(x,y)=0 or surfaces over which
@@ -32,6 +30,8 @@ buildPythonPackage rec {
       uniform grid, but this uses a quadtree to avoid wasting time sampling
       many far from the implicit surface.
     '';
+
+    homepage = "https://github.com/jared-hughes/isosurfaces";
     license = lib.licenses.mit;
     maintainers = [ ];
   };

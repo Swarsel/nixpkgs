@@ -1,9 +1,9 @@
 {
   lib,
+  buildFHSEnv,
   makeWrapper,
   olympus-unwrapped,
   symlinkJoin,
-  buildFHSEnv,
   writeShellScript,
   # These need overriding if you launch Celeste/Loenn/MiniInstaller from Olympus.
   # Some examples:
@@ -15,10 +15,10 @@
   # - ./my-wrapper.sh: Use a custom script.
   # In any case, it can be overridden at runtime by OLYMPUS_{CELESTE,LOENN,MINIINSTALLER}_WRAPPER.
   celesteWrapper ? null,
+  finderHints ? [ ],
   loennWrapper ? null,
   miniinstallerWrapper ? null,
   skipHandlerCheck ? false, # whether to skip olympus xdg-mime check, true will override it
-  finderHints ? [ ],
 }:
 let
 
@@ -35,6 +35,7 @@ let
   miniinstaller-fhs = buildFHSEnv {
     pname = "olympus-miniinstaller-fhs";
     version = "1.0.0"; # remains constant, just to prevent complains
+
     targetPkgs =
       pkgs:
       (with pkgs; [
@@ -61,11 +62,6 @@ symlinkJoin {
 
   inherit (olympus-unwrapped) version meta;
   pname = "olympus";
-
-  paths = [
-    olympus-unwrapped
-  ];
-
   nativeBuildInputs = [ makeWrapper ];
 
   postBuild = ''
@@ -76,4 +72,8 @@ symlinkJoin {
       --set-default OLYMPUS_SKIP_SCHEME_HANDLER_CHECK "${if skipHandlerCheck then "1" else "0"}" \
       --suffix OLYMPUS_FINDER_HINTS : "${finderHints'}"
   '';
+
+  paths = [
+    olympus-unwrapped
+  ];
 }

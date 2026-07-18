@@ -2,18 +2,18 @@
   lib,
   stdenv,
   fetchurl,
-  buildPackages,
   bison,
-  flex,
-  pkg-config,
+  buildPackages,
   db,
-  iptables,
   elfutils,
-  libmnl,
-  libbpf,
-  python3,
+  flex,
   gitUpdater,
+  iptables,
+  libbpf,
+  libmnl,
+  pkg-config,
   pkgsStatic,
+  python3,
 }:
 
 stdenv.mkDerivation rec {
@@ -25,15 +25,33 @@ stdenv.mkDerivation rec {
     hash = "sha256-/Z+huVgJQXFXyoPdcpV+MmG9vOiWNTy5NvgK8LM6S1w=";
   };
 
+  outputs = [
+    "out"
+    "dev"
+    "scripts"
+  ];
+
   postPatch = ''
     substituteInPlace Makefile \
       --replace "CC := gcc" "CC ?= $CC"
   '';
 
-  outputs = [
-    "out"
-    "dev"
-    "scripts"
+  nativeBuildInputs = [
+    bison
+    flex
+    pkg-config
+  ];
+
+  buildInputs = [
+    db
+    iptables
+    libmnl
+    python3
+  ]
+  # needed to uploaded bpf programs
+  ++ lib.optionals (!stdenv.hostPlatform.isStatic) [
+    elfutils
+    libbpf
   ];
 
   configureFlags = [
@@ -60,49 +78,35 @@ stdenv.mkDerivation rec {
     "CONFDIR=/etc/iproute2"
   ];
 
-  installFlags = [
-    "CONFDIR=$(out)/etc/iproute2"
-  ];
-
   postInstall = ''
     moveToOutput sbin/routel "$scripts"
   '';
 
   depsBuildBuild = [ buildPackages.stdenv.cc ]; # netem requires $HOSTCC
-  nativeBuildInputs = [
-    bison
-    flex
-    pkg-config
-  ];
-  buildInputs = [
-    db
-    iptables
-    libmnl
-    python3
-  ]
-  # needed to uploaded bpf programs
-  ++ lib.optionals (!stdenv.hostPlatform.isStatic) [
-    elfutils
-    libbpf
-  ];
-
   enableParallelBuilding = true;
 
-  passthru.updateScript = gitUpdater {
-    # No nicer place to find latest release.
-    url = "https://git.kernel.org/pub/scm/network/iproute2/iproute2.git";
-    rev-prefix = "v";
-  };
+  installFlags = [
+    "CONFDIR=$(out)/etc/iproute2"
+  ];
+
   # needed for nixos-anywhere
   passthru.tests.static = pkgsStatic.iproute2;
 
+  passthru.updateScript = gitUpdater {
+    rev-prefix = "v";
+    # No nicer place to find latest release.
+    url = "https://git.kernel.org/pub/scm/network/iproute2/iproute2.git";
+  };
+
   meta = {
-    homepage = "https://wiki.linuxfoundation.org/networking/iproute2";
     description = "Collection of utilities for controlling TCP/IP networking and traffic control in Linux";
-    platforms = lib.platforms.linux;
+    homepage = "https://wiki.linuxfoundation.org/networking/iproute2";
     license = lib.licenses.gpl2Only;
+
     maintainers = with lib.maintainers; [
       fpletz
     ];
+
+    platforms = lib.platforms.linux;
   };
 }

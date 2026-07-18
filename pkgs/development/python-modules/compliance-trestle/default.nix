@@ -1,34 +1,31 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  pythonAtLeast,
-
-  # build-system
-  hatchling,
-
   # dependencies
   attrs,
+  buildPythonPackage,
   cmarkgfm,
   cryptography,
+  # tests
+  datamodel-code-generator,
   defusedxml,
   furl,
+  # build-system
+  hatchling,
   ilcli,
   importlib-resources,
   jinja2,
+  mypy,
   openpyxl,
   orjson,
   paramiko,
   pydantic,
+  pytestCheckHook,
   python-dotenv,
   python-frontmatter,
+  pythonAtLeast,
   requests,
   ruamel-yaml,
-
-  # tests
-  datamodel-code-generator,
-  pytestCheckHook,
-  mypy,
 }:
 
 let
@@ -36,17 +33,16 @@ let
   # nist-content itself.
   # Thus we simply inject it after the fact in postPatch.
   nist-content = fetchFromGitHub {
+    hash = "sha256-sDvNMheZZhk09YEfY5ocmZmAC3t3KenqD3PaNsi0mMU=";
     name = "nist-content";
     owner = "usnistgov";
     repo = "oscal-content";
     rev = "941c978d14c57379fbf6f7fb388f675067d5bff7";
-    hash = "sha256-sDvNMheZZhk09YEfY5ocmZmAC3t3KenqD3PaNsi0mMU=";
   };
 in
 buildPythonPackage (finalAttrs: {
   pname = "compliance-trestle";
   version = "3.12.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "oscal-compass";
@@ -67,12 +63,14 @@ buildPythonPackage (finalAttrs: {
     ln -s ${nist-content} ./nist-content
   '';
 
-  build-system = [
-    hatchling
+  nativeCheckInputs = [
+    datamodel-code-generator
+    mypy
+    pytestCheckHook
   ];
 
-  pythonRelaxDeps = [
-    "cryptography"
+  build-system = [
+    hatchling
   ];
 
   dependencies = [
@@ -95,10 +93,14 @@ buildPythonPackage (finalAttrs: {
   ]
   ++ pydantic.optional-dependencies.email;
 
-  nativeCheckInputs = [
-    datamodel-code-generator
-    mypy
-    pytestCheckHook
+  disabledTestPaths = [
+    # Requires network access
+    "tests/trestle/core/remote"
+  ]
+  ++ lib.optionals (pythonAtLeast "3.14") [
+    # pydantic.v1.errors.ConfigError: unable to infer type for attribute "poam"
+    "tests/trestle/core/models/interfaces_test.py"
+    "tests/trestle/tasks/ocp4_cis_profile_to_oscal_catalog_test.py"
   ];
 
   disabledTests = [
@@ -124,17 +126,12 @@ buildPythonPackage (finalAttrs: {
     "test_split_comp_def"
   ];
 
-  disabledTestPaths = [
-    # Requires network access
-    "tests/trestle/core/remote"
-  ]
-  ++ lib.optionals (pythonAtLeast "3.14") [
-    # pydantic.v1.errors.ConfigError: unable to infer type for attribute "poam"
-    "tests/trestle/core/models/interfaces_test.py"
-    "tests/trestle/tasks/ocp4_cis_profile_to_oscal_catalog_test.py"
-  ];
-
+  pyproject = true;
   pythonImportsCheck = [ "trestle" ];
+
+  pythonRelaxDeps = [
+    "cryptography"
+  ];
 
   meta = {
     description = "Opinionated tooling platform for managing compliance as code, using continuous integration and NIST's OSCAL standard";

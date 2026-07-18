@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule {
@@ -23,11 +23,11 @@ buildGoModule {
   ];
 
   meta = {
-    homepage = "https://github.com/jech/storrent";
     description = "Implementation of the BitTorrent protocol that is optimised for streaming media";
-    mainProgram = "storrent";
+    homepage = "https://github.com/jech/storrent";
     license = lib.licenses.mit;
-    platforms = lib.platforms.linux;
     maintainers = [ ];
+    platforms = lib.platforms.linux;
+    mainProgram = "storrent";
   };
 }

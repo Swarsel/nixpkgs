@@ -1,15 +1,14 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
+  buildPythonPackage,
   pytestCheckHook,
+  setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "tellcore-py";
   version = "1.1.3";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "erijo";
@@ -18,10 +17,9 @@ buildPythonPackage rec {
     hash = "sha256-AcdYMzd3Ln65PZ+weSxyR+CwXmdi2A+wSE6B/4hepE0=";
   };
 
-  build-system = [ setuptools ];
-
   nativeCheckInputs = [ pytestCheckHook ];
-
+  build-system = [ setuptools ];
+  pyproject = true;
   pythonImportsCheck = [ "tellcore" ];
 
   meta = {

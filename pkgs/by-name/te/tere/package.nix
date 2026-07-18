@@ -1,10 +1,10 @@
 {
   lib,
-  fetchFromGitHub,
-  rustPlatform,
-  ncurses,
   stdenv,
+  fetchFromGitHub,
+  ncurses,
   python3,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage {
@@ -19,18 +19,6 @@ rustPlatform.buildRustPackage {
   };
 
   cargoHash = "sha256-E3gLxuxidjjjmMVWCQYZCbz8sov1a+MkLiOj4/TU6MI=";
-
-  nativeCheckInputs = [
-    # ncurses provides the tput command needed for integration tests
-    # https://github.com/mgunyho/tere/issues/93#issuecomment-2029624187
-    ncurses
-  ];
-
-  checkFlags = lib.optionals stdenv.hostPlatform.isDarwin [
-    # Unexplained fail
-    # https://github.com/NixOS/nixpkgs/pull/298527#issuecomment-2053758845
-    "--skip=first_run_prompt"
-  ];
 
   # NOTE: workaround for build fail on aarch64
   # See https://github.com/NixOS/nixpkgs/issues/145726#issuecomment-971331986
@@ -55,6 +43,18 @@ rustPlatform.buildRustPackage {
       '';
     in
     "${python-with-toml}/bin/python3 ${script}";
+
+  nativeCheckInputs = [
+    # ncurses provides the tput command needed for integration tests
+    # https://github.com/mgunyho/tere/issues/93#issuecomment-2029624187
+    ncurses
+  ];
+
+  checkFlags = lib.optionals stdenv.hostPlatform.isDarwin [
+    # Unexplained fail
+    # https://github.com/NixOS/nixpkgs/pull/298527#issuecomment-2053758845
+    "--skip=first_run_prompt"
+  ];
 
   meta = {
     description = "Faster alternative to cd + ls";

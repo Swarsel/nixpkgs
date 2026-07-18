@@ -1,18 +1,17 @@
 {
   lib,
   stdenv,
-  rustPlatform,
   fetchFromGitHub,
   just,
   libcosmicAppHook,
-  sqlite,
   nix-update-script,
+  rustPlatform,
+  sqlite,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
   pname = "oboete";
   version = "0.2.5";
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "mariinkys";
@@ -21,15 +20,14 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-hOOpx1R7U5fJwWPATJaoT7VbODZJWMTg7v4ro00NZZc=";
   };
 
-  cargoHash = "sha256-i2fGYVt3axF74B66ics36xk+17joiArfFJcqkv3v40c=";
-
   nativeBuildInputs = [
     libcosmicAppHook
     just
   ];
 
   buildInputs = [ sqlite ];
-
+  cargoHash = "sha256-i2fGYVt3axF74B66ics36xk+17joiArfFJcqkv3v40c=";
+  __structuredAttrs = true;
   dontUseJustBuild = true;
   dontUseJustCheck = true;
 
@@ -51,10 +49,12 @@ rustPlatform.buildRustPackage (finalAttrs: {
     homepage = "https://github.com/mariinkys/oboete";
     changelog = "https://github.com/mariinkys/oboete/releases/tag/${finalAttrs.src.tag}";
     license = lib.licenses.gpl3Only;
+
     maintainers = with lib.maintainers; [
       GaetanLepage
       HeitorAugustoLN
     ];
+
     platforms = lib.platforms.linux;
     mainProgram = "oboete";
   };

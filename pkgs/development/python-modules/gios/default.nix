@@ -1,10 +1,10 @@
 {
   lib,
+  fetchFromGitHub,
   aiohttp,
   aioresponses,
   buildPythonPackage,
   dacite,
-  fetchFromGitHub,
   pytest-asyncio,
   pytest-error-for-skips,
   pytestCheckHook,
@@ -16,9 +16,6 @@
 buildPythonPackage rec {
   pname = "gios";
   version = "7.1.0";
-  pyproject = true;
-
-  disabled = pythonOlder "3.13";
 
   src = fetchFromGitHub {
     owner = "bieniu";
@@ -26,13 +23,6 @@ buildPythonPackage rec {
     tag = version;
     hash = "sha256-m7baTU7oWcjqCgiZ7GcOYVM23jcvycQcAbPhO1jWahk=";
   };
-
-  build-system = [ setuptools ];
-
-  dependencies = [
-    aiohttp
-    dacite
-  ];
 
   nativeCheckInputs = [
     aioresponses
@@ -42,11 +32,21 @@ buildPythonPackage rec {
     syrupy
   ];
 
+  build-system = [ setuptools ];
+
+  dependencies = [
+    aiohttp
+    dacite
+  ];
+
+  disabled = pythonOlder "3.13";
+
   disabledTests = [
     # Test requires network access
     "test_invalid_station_id"
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "gios" ];
 
   meta = {

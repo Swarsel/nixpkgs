@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule (finalAttrs: {
@@ -16,12 +16,11 @@ buildGoModule (finalAttrs: {
   };
 
   vendorHash = "sha256-eVB5k/Z5Z6SsPqySPm4xZIh07c9xbijImRk8zdvY6tA=";
-
   doCheck = false;
 
   meta = {
-    homepage = "https://github.com/sachaos/todoist";
     description = "Todoist CLI Client";
+    homepage = "https://github.com/sachaos/todoist";
     license = lib.licenses.mit;
     mainProgram = "todoist";
   };

@@ -1,19 +1,16 @@
 {
-  valkey,
-  kvrocks,
   stdenv,
+  kvrocks,
+  valkey,
 }:
 
 stdenv.mkDerivation {
-  name = "kvrocks-test-hook-test";
+  doCheck = true;
 
   nativeCheckInputs = [
     valkey
     kvrocks.hook
   ];
-
-  dontUnpack = true;
-  doCheck = true;
 
   preCheck = ''
     kvrocksTestPort=6380
@@ -44,4 +41,6 @@ stdenv.mkDerivation {
   '';
 
   __darwinAllowLocalNetworking = true;
+  dontUnpack = true;
+  name = "kvrocks-test-hook-test";
 }

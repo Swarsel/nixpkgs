@@ -1,19 +1,19 @@
 {
+  lib,
+  stdenv,
+  fetchurl,
+  fetchFromGitHub,
   bison,
   buildPackages,
   curl,
-  fetchFromGitHub,
-  fetchurl,
   file,
   flex,
-  targetArchitecture ? "i586",
-  lib,
   makeWrapper,
   perl,
-  stdenv,
   texinfo,
   unzip,
   which,
+  targetArchitecture ? "i586",
 }:
 
 let
@@ -27,26 +27,6 @@ stdenv.mkDerivation rec {
   pname = "djgpp";
   version = s.gccVersion;
   src = s.src;
-
-  patchPhase = ''
-    runHook prePatch
-    for f in "build-djgpp.sh" "script/${version}" "setenv/copyfile.sh"; do
-      substituteInPlace "$f" --replace '/usr/bin/env' '${buildPackages.coreutils}/bin/env'
-    done
-  ''
-  # i686 patches from https://github.com/andrewwutw/build-djgpp/issues/45#issuecomment-1484010755
-  # The build script unpacks some files so we can't patch ahead of time, instead patch the script
-  # to patch after it extracts
-
-  + lib.optionalString (targetArchitecture == "i686") ''
-    sed -i 's/i586/i686/g' setenv/setenv script/${version}
-    sed -i '/Building DXE tools./a sed -i "s/i586/i686/g" src/makefile.def src/dxe/makefile.dxe' script/${version}
-  ''
-  + ''
-    runHook postPatch
-  '';
-
-  env.NIX_CFLAGS_COMPILE = "-std=gnu89";
 
   nativeBuildInputs = [
     makeWrapper
@@ -63,11 +43,7 @@ stdenv.mkDerivation rec {
     which
   ];
 
-  hardeningDisable = [ "format" ];
-
-  # stripping breaks static libs, causing this when you attempt to compile a binary:
-  # error adding symbols: Archive has no index; run ranlib to add one
-  dontStrip = true;
+  env.NIX_CFLAGS_COMPILE = "-std=gnu89";
 
   buildPhase = ''
     runHook preBuild
@@ -96,6 +72,29 @@ stdenv.mkDerivation rec {
     for f in dxegen dxe3gen; do
       wrapProgram $out/bin/$f --set DJDIR $out
     done
+  '';
+
+  # stripping breaks static libs, causing this when you attempt to compile a binary:
+  # error adding symbols: Archive has no index; run ranlib to add one
+  dontStrip = true;
+  hardeningDisable = [ "format" ];
+
+  patchPhase = ''
+    runHook prePatch
+    for f in "build-djgpp.sh" "script/${version}" "setenv/copyfile.sh"; do
+      substituteInPlace "$f" --replace '/usr/bin/env' '${buildPackages.coreutils}/bin/env'
+    done
+  ''
+  # i686 patches from https://github.com/andrewwutw/build-djgpp/issues/45#issuecomment-1484010755
+  # The build script unpacks some files so we can't patch ahead of time, instead patch the script
+  # to patch after it extracts
+
+  + lib.optionalString (targetArchitecture == "i686") ''
+    sed -i 's/i586/i686/g' setenv/setenv script/${version}
+    sed -i '/Building DXE tools./a sed -i "s/i586/i686/g" src/makefile.def src/dxe/makefile.dxe' script/${version}
+  ''
+  + ''
+    runHook postPatch
   '';
 
   meta = {

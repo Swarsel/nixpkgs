@@ -1,7 +1,7 @@
 {
   config,
-  pkgs,
   lib,
+  pkgs,
   ...
 }:
 
@@ -33,10 +33,25 @@ in
   ];
 
   config = {
+    boot.growPartition = true;
+    boot.kernelParams = [ "console=tty1" ];
+    boot.loader.grub.device = if (!cfg.efi) then "/dev/vda" else "nodev";
+    boot.loader.grub.efiInstallAsRemovable = cfg.efi;
+    boot.loader.grub.efiSupport = cfg.efi;
+
+    boot.loader.grub.extraConfig = ''
+      serial --unit=1 --speed=115200 --word=8 --parity=no --stop=1
+      terminal_output console serial
+      terminal_input console serial
+    '';
+
+    boot.loader.timeout = 1;
+    boot.zfs.devNodes = mkIf cfg.zfs.enable "/dev/";
+
     fileSystems."/" = mkIf (!cfg.zfs.enable) {
+      autoResize = true;
       device = "/dev/disk/by-label/nixos";
       fsType = "ext4";
-      autoResize = true;
     };
 
     fileSystems."/boot" = mkIf (cfg.efi || cfg.zfs.enable) {
@@ -46,51 +61,42 @@ in
       fsType = "vfat";
     };
 
-    boot.growPartition = true;
-    boot.kernelParams = [ "console=tty1" ];
-    boot.loader.grub.device = if (!cfg.efi) then "/dev/vda" else "nodev";
-    boot.loader.grub.efiSupport = cfg.efi;
-    boot.loader.grub.efiInstallAsRemovable = cfg.efi;
-    boot.loader.timeout = 1;
-    boot.loader.grub.extraConfig = ''
-      serial --unit=1 --speed=115200 --word=8 --parity=no --stop=1
-      terminal_output console serial
-      terminal_input console serial
-    '';
-
-    services.zfs.expandOnBoot = mkIf cfg.zfs.enable (lib.mkDefault "all");
-    boot.zfs.devNodes = mkIf cfg.zfs.enable "/dev/";
+    # Force getting the hostname from Openstack metadata.
+    networking.hostName = mkDefault "";
 
     # Allow root logins
     services.openssh = {
       enable = true;
-      settings.PermitRootLogin = "prohibit-password";
       settings.PasswordAuthentication = mkDefault false;
+      settings.PermitRootLogin = "prohibit-password";
     };
 
-    # Enable the serial console on tty1
-    systemd.services."serial-getty@tty1".enable = true;
-
-    # Force getting the hostname from Openstack metadata.
-    networking.hostName = mkDefault "";
+    services.zfs.expandOnBoot = mkIf cfg.zfs.enable (lib.mkDefault "all");
 
     systemd.services.openstack-init = {
-      path = [ pkgs.wget ];
-      description = "Fetch Metadata on startup";
-      wantedBy = [ "multi-user.target" ];
+      after = [ "network-online.target" ];
+
       before = [
         "apply-ec2-data.service"
         "amazon-init.service"
       ];
-      wants = [ "network-online.target" ];
-      after = [ "network-online.target" ];
-      script = metadataFetcher;
+
+      description = "Fetch Metadata on startup";
+      path = [ pkgs.wget ];
       restartIfChanged = false;
-      unitConfig.X-StopOnRemoval = false;
+      script = metadataFetcher;
+
       serviceConfig = {
-        Type = "oneshot";
         RemainAfterExit = true;
+        Type = "oneshot";
       };
+
+      unitConfig.X-StopOnRemoval = false;
+      wantedBy = [ "multi-user.target" ];
+      wants = [ "network-online.target" ];
     };
+
+    # Enable the serial console on tty1
+    systemd.services."serial-getty@tty1".enable = true;
   };
 }

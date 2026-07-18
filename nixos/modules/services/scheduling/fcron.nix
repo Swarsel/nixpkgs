@@ -25,10 +25,10 @@ let
   '';
 
   allowdeny = target: users: {
+    gid = config.ids.gids.fcron;
+    mode = "644";
     source = pkgs.writeText "fcron.${target}" (concatStringsSep "\n" users);
     target = "fcron.${target}";
-    mode = "644";
-    gid = config.ids.gids.fcron;
   };
 
 in
@@ -42,42 +42,44 @@ in
     services.fcron = {
 
       enable = mkOption {
-        type = types.bool;
         default = false;
         description = "Whether to enable the {command}`fcron` daemon.";
+        type = types.bool;
       };
 
       allow = mkOption {
-        type = types.listOf types.str;
         default = [ "all" ];
+
         description = ''
           Users allowed to use fcrontab and fcrondyn (one name per
           line, `all` for everyone).
         '';
+
+        type = types.listOf types.str;
       };
 
       deny = mkOption {
-        type = types.listOf types.str;
         default = [ ];
         description = "Users forbidden from using fcron.";
+        type = types.listOf types.str;
       };
 
       maxSerialJobs = mkOption {
-        type = types.int;
         default = 1;
         description = "Maximum number of serial jobs which can run simultaneously.";
+        type = types.int;
       };
 
       queuelen = mkOption {
-        type = types.nullOr types.int;
         default = null;
         description = "Number of jobs the serial queue and the lavg queue can contain.";
+        type = types.nullOr types.int;
       };
 
       systab = mkOption {
-        type = types.lines;
         default = "";
         description = ''The "system" crontab contents.'';
+        type = types.lines;
       };
     };
 
@@ -86,8 +88,6 @@ in
   ###### implementation
 
   config = mkIf cfg.enable {
-
-    services.fcron.systab = systemCronJobs;
 
     environment.etc = listToAttrs (
       map
@@ -100,6 +100,9 @@ in
           (allowdeny "deny" cfg.deny)
           # see man 5 fcron.conf
           {
+            gid = config.ids.gids.fcron;
+            mode = "0644";
+
             source =
               let
                 isSendmailWrapped = lib.hasAttr "sendmail" config.security.wrappers;
@@ -116,47 +119,43 @@ in
                 sendmail    =       ${sendmailPath}
                 editor      =       ${pkgs.vim}/bin/vim
               '';
+
             target = "fcron.conf";
-            gid = config.ids.gids.fcron;
-            mode = "0644";
           }
         ]
     );
 
     environment.systemPackages = [ pkgs.fcron ];
-    users.users.fcron = {
-      uid = config.ids.uids.fcron;
-      home = "/var/spool/fcron";
-      group = "fcron";
-    };
-    users.groups.fcron.gid = config.ids.gids.fcron;
 
     security.wrappers = {
-      fcrontab = {
-        source = "${pkgs.fcron}/bin/fcrontab";
-        owner = "fcron";
-        group = "fcron";
-        setgid = true;
-        setuid = true;
-      };
       fcrondyn = {
-        source = "${pkgs.fcron}/bin/fcrondyn";
-        owner = "fcron";
         group = "fcron";
+        owner = "fcron";
         setgid = true;
         setuid = false;
+        source = "${pkgs.fcron}/bin/fcrondyn";
       };
+
       fcronsighup = {
-        source = "${pkgs.fcron}/bin/fcronsighup";
-        owner = "root";
         group = "fcron";
+        owner = "root";
         setuid = true;
+        source = "${pkgs.fcron}/bin/fcronsighup";
+      };
+
+      fcrontab = {
+        group = "fcron";
+        owner = "fcron";
+        setgid = true;
+        setuid = true;
+        source = "${pkgs.fcron}/bin/fcrontab";
       };
     };
+
+    services.fcron.systab = systemCronJobs;
+
     systemd.services.fcron = {
       description = "fcron daemon";
-      wantedBy = [ "multi-user.target" ];
-
       path = [ pkgs.fcron ];
 
       preStart = ''
@@ -170,9 +169,19 @@ in
       '';
 
       serviceConfig = {
-        Type = "forking";
         ExecStart = "${pkgs.fcron}/sbin/fcron -m ${toString cfg.maxSerialJobs} ${queuelen}";
+        Type = "forking";
       };
+
+      wantedBy = [ "multi-user.target" ];
+    };
+
+    users.groups.fcron.gid = config.ids.gids.fcron;
+
+    users.users.fcron = {
+      group = "fcron";
+      home = "/var/spool/fcron";
+      uid = config.ids.uids.fcron;
     };
   };
 }

@@ -1,16 +1,15 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
+  buildPythonPackage,
   llm,
   llm-hacker-news,
+  setuptools,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "llm-hacker-news";
   version = "0.1.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "simonw";
@@ -20,11 +19,9 @@ buildPythonPackage (finalAttrs: {
   };
 
   build-system = [ setuptools ];
-
   dependencies = [ llm ];
-
+  pyproject = true;
   pythonImportsCheck = [ "llm_hacker_news" ];
-
   passthru.tests = llm.mkPluginTest llm-hacker-news;
 
   meta = {

@@ -1,9 +1,9 @@
 {
   lib,
-  buildFishPlugin,
   fetchFromGitHub,
-  git,
+  buildFishPlugin,
   fishtape_3,
+  git,
 }:
 buildFishPlugin (finalAttrs: {
   pname = "pure";
@@ -17,13 +17,15 @@ buildFishPlugin (finalAttrs: {
   };
 
   nativeCheckInputs = [ git ];
-  checkPlugins = [ fishtape_3 ];
+
   checkPhase = ''
     rm tests/pure_tools_installer.test.fish
     rm tests/_pure_uninstall.test.fish
 
     fishtape tests/*.test.fish
   '';
+
+  checkPlugins = [ fishtape_3 ];
 
   meta = {
     description = "Pretty, minimal and fast Fish prompt, ported from zsh";

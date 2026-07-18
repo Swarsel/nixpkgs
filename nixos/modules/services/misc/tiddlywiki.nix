@@ -22,35 +22,40 @@ in
     enable = lib.mkEnableOption "TiddlyWiki nodejs server";
 
     listenOptions = lib.mkOption {
-      type = lib.types.attrs;
       default = { };
-      example = {
-        credentials = "../credentials.csv";
-        readers = "(authenticated)";
-        port = 3456;
-      };
+
       description = ''
         Parameters passed to `--listen` command.
         Refer to <https://tiddlywiki.com/#WebServer>
         for details on supported values.
       '';
+
+      example = {
+        credentials = "../credentials.csv";
+        port = 3456;
+        readers = "(authenticated)";
+      };
+
+      type = lib.types.attrs;
     };
   };
 
   config = lib.mkIf cfg.enable {
     systemd = {
       services.tiddlywiki = {
-        description = "TiddlyWiki nodejs server";
         after = [ "network.target" ];
-        wantedBy = [ "multi-user.target" ];
+        description = "TiddlyWiki nodejs server";
+
         serviceConfig = {
-          Type = "simple";
-          Restart = "on-failure";
           DynamicUser = true;
-          StateDirectory = name;
-          ExecStartPre = "-${exe} ${dataDir} --init server";
           ExecStart = "${exe} ${dataDir} --listen ${listenParams}";
+          ExecStartPre = "-${exe} ${dataDir} --init server";
+          Restart = "on-failure";
+          StateDirectory = name;
+          Type = "simple";
         };
+
+        wantedBy = [ "multi-user.target" ];
       };
     };
   };

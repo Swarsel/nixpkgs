@@ -2,17 +2,17 @@
   lib,
   stdenv,
   fetchurl,
-  fetchpatch,
   autoreconfHook,
-  docbook_xsl,
+  buildPackages,
   docbook_xml_dtd_43,
+  docbook_xsl,
+  fetchpatch,
   gtk-doc,
-  lzip,
   libidn2,
   libunistring,
   libxslt,
+  lzip,
   pkg-config,
-  buildPackages,
   publicsuffix-list,
 }:
 
@@ -25,19 +25,19 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-mp9qjG7bplDPnqVUdc0XLdKEhzFoBOnHMgLZdXLNOi0=";
   };
 
+  outputs = [
+    "out"
+    "dev"
+  ];
+
   patches = [
     # Can be dropped on next release, or if we switch to Meson for
     # this package.  Test pkgsStatic.curl still builds.
     (fetchpatch {
+      hash = "sha256-7Uu9gaVuA9Aly2mmnhUVgv2BYQTSBODJ2rDl5xp0uVY=";
       name = "static.patch";
       url = "https://github.com/rockdaboot/libpsl/commit/490bd6f98a2addcade55028ea60c36cce07e21e4.patch";
-      hash = "sha256-7Uu9gaVuA9Aly2mmnhUVgv2BYQTSBODJ2rDl5xp0uVY=";
     })
-  ];
-
-  outputs = [
-    "out"
-    "dev"
   ];
 
   nativeBuildInputs = [
@@ -60,16 +60,6 @@ stdenv.mkDerivation (finalAttrs: {
     publicsuffix-list
   ];
 
-  # bin/psl-make-dafsa brings a large runtime closure through python3
-  # use the libpsl-with-scripts package if you need this
-  postInstall = ''
-    rm $out/bin/psl-make-dafsa $out/share/man/man1/psl-make-dafsa*
-  '';
-
-  preAutoreconf = ''
-    gtkdocize
-  '';
-
   configureFlags = [
     # "--enable-gtk-doc"
     "--enable-man"
@@ -79,12 +69,23 @@ stdenv.mkDerivation (finalAttrs: {
     "PYTHON=${lib.getExe buildPackages.python3}"
   ];
 
+  doCheck = true;
+
+  # bin/psl-make-dafsa brings a large runtime closure through python3
+  # use the libpsl-with-scripts package if you need this
+  postInstall = ''
+    rm $out/bin/psl-make-dafsa $out/share/man/man1/psl-make-dafsa*
+  '';
+
   enableParallelBuilding = true;
 
-  doCheck = true;
+  preAutoreconf = ''
+    gtkdocize
+  '';
 
   meta = {
     description = "C library for the Publix Suffix List";
+
     longDescription = ''
       libpsl is a C library for the Publix Suffix List (PSL). A "public suffix"
       is a domain name under which Internet users can directly register own
@@ -92,12 +93,13 @@ stdenv.mkDerivation (finalAttrs: {
       "supercookies" and "super domain" certificates, for highlighting parts of
       the domain in a user interface or sorting domain lists by site.
     '';
+
     homepage = "https://rockdaboot.github.io/libpsl/";
     changelog = "https://raw.githubusercontent.com/rockdaboot/libpsl/libpsl-${finalAttrs.version}/NEWS";
     license = lib.licenses.mit;
     maintainers = [ ];
-    mainProgram = "psl";
     platforms = lib.platforms.unix ++ lib.platforms.windows;
+    mainProgram = "psl";
     pkgConfigModules = [ "libpsl" ];
   };
 })

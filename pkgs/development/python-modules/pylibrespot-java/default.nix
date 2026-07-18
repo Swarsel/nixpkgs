@@ -1,15 +1,14 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
   aiohttp,
+  buildPythonPackage,
   setuptools,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "pylibrespot-java";
   version = "0.1.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "uvjustin";
@@ -19,8 +18,8 @@ buildPythonPackage (finalAttrs: {
   };
 
   build-system = [ setuptools ];
-
   dependencies = [ aiohttp ];
+  pyproject = true;
 
   pythonImportsCheck = [
     "pylibrespot_java"
@@ -31,6 +30,7 @@ buildPythonPackage (finalAttrs: {
     homepage = "https://github.com/uvjustin/pylibrespot-java";
     changelog = "https://github.com/uvjustin/pylibrespot-java/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       hensoko
     ];

@@ -1,7 +1,6 @@
 {
   lib,
   fetchFromGitHub,
-  rustPlatform,
   cacert,
   gdk-pixbuf,
   gettext,
@@ -9,6 +8,7 @@
   gtk4,
   libadwaita,
   pkg-config,
+  rustPlatform,
   wrapGAppsHook4,
 }:
 
@@ -16,16 +16,12 @@ rustPlatform.buildRustPackage (finalAttrs: {
   pname = "rufin";
   version = "0.8.0";
 
-  __structuredAttrs = true;
-
   src = fetchFromGitHub {
     owner = "screwys";
     repo = "Rufin";
     tag = "v${finalAttrs.version}";
     hash = "sha256-N2JM0sRg32lQhRhajwfla0SVhxBgEp5cVEetFOXBqKE=";
   };
-
-  cargoHash = "sha256-1KTEVLqlvgUO02hLnTbqjdfPS5z8Ra6qQG5s5H0S2fY=";
 
   strictDeps = true;
 
@@ -50,11 +46,7 @@ rustPlatform.buildRustPackage (finalAttrs: {
     gst-libav
   ]);
 
-  cargoBuildFlags = [
-    "-p"
-    "rufin"
-  ];
-
+  cargoHash = "sha256-1KTEVLqlvgUO02hLnTbqjdfPS5z8Ra6qQG5s5H0S2fY=";
   doCheck = false;
 
   postInstall = ''
@@ -92,13 +84,20 @@ rustPlatform.buildRustPackage (finalAttrs: {
     )
   '';
 
+  __structuredAttrs = true;
+
+  cargoBuildFlags = [
+    "-p"
+    "rufin"
+  ];
+
   meta = {
     description = "Native GTK music client for Jellyfin";
     homepage = "https://github.com/screwys/Rufin";
     changelog = "https://github.com/screwys/Rufin/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.gpl3Plus;
     maintainers = with lib.maintainers; [ screwys ];
-    mainProgram = "rufin";
     platforms = lib.platforms.linux;
+    mainProgram = "rufin";
   };
 })

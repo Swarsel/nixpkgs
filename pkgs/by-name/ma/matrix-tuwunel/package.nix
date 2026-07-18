@@ -1,25 +1,25 @@
 {
   lib,
-  rustPlatform,
-  fetchFromGitHub,
-  pkg-config,
-  libredirect,
-  bzip2,
-  zstd,
   stdenv,
-  rocksdb,
-  nix-update-script,
-  testers,
+  fetchFromGitHub,
+  bzip2,
+  libredirect,
+  liburing,
   matrix-tuwunel,
+  nix-update-script,
+  nixosTests,
+  pkg-config,
+  rocksdb,
+  rust-jemalloc-sys,
+  rustPlatform,
+  rustc-unwrapped,
+  testers,
+  writeTextFile,
+  zstd,
   # upstream tuwunel enables jemalloc by default, so we follow suit
   enableJemalloc ? true,
-  rust-jemalloc-sys,
-  enableLiburing ? stdenv.hostPlatform.isLinux,
   enableLdap ? true,
-  liburing,
-  nixosTests,
-  writeTextFile,
-  rustc-unwrapped,
+  enableLiburing ? stdenv.hostPlatform.isLinux,
 }:
 let
   rust-jemalloc-sys' = rust-jemalloc-sys.override {
@@ -37,6 +37,8 @@ let
     }).overrideAttrs
       (
         final: old: {
+          version = "tuwunel-changes";
+
           src = fetchFromGitHub {
             owner = "matrix-construct";
             repo = "rocksdb";
@@ -46,9 +48,11 @@ let
             rev = "0bd7e6d6438d318d66e8374ec1fe24126204f3b3";
             hash = "sha256-THAHov40punmqm3J9kNYwFXfdRZ2VwjR/+lmFhun/xk=";
           };
-          version = "tuwunel-changes";
+
+          outputs = [ "out" ];
           patches = [ ];
           postPatch = "";
+
           cmakeFlags =
             lib.subtractLists [
               # no real reason to have snappy or zlib, no one uses this
@@ -81,7 +85,7 @@ let
               # we use rust-rocksdb via C interface and dont need C++ RTTI
               "-DUSE_RTTI=0"
             ];
-          outputs = [ "out" ];
+
           preInstall = "";
         }
       );
@@ -97,17 +101,15 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-3qMVu+IQMzI4Jtfb8mJsuDAcd7Jb7XSU07RlvnH7vfc=";
   };
 
-  cargoHash = "sha256-VzmaQAsNORH8VxYSUgKeQSIgcCPnI9cAzu3K9ks7ODA=";
-
-  nativeBuildInputs = [
-    pkg-config
-    rustPlatform.bindgenHook
-  ];
-
   patches = [
     # reduce closure size by not storing a reference to rustc-unwrapped
     # alternative to https://github.com/NixOS/nixpkgs/pull/462394
     ./dont-record-compilation-flags.patch
+  ];
+
+  nativeBuildInputs = [
+    pkg-config
+    rustPlatform.bindgenHook
   ];
 
   buildInputs = [
@@ -117,13 +119,37 @@ rustPlatform.buildRustPackage (finalAttrs: {
   ++ lib.optional enableJemalloc rust-jemalloc-sys'
   ++ lib.optional enableLiburing liburing;
 
+  cargoHash = "sha256-VzmaQAsNORH8VxYSUgKeQSIgcCPnI9cAzu3K9ks7ODA=";
+
   env = {
-    ZSTD_SYS_USE_PKG_CONFIG = true;
     ROCKSDB_INCLUDE_DIR = "${rocksdb'}/include";
     ROCKSDB_LIB_DIR = "${rocksdb'}/lib";
+    ZSTD_SYS_USE_PKG_CONFIG = true;
   };
 
-  buildNoDefaultFeatures = true;
+  doCheck = true;
+
+  nativeCheckInputs = [
+    libredirect.hook
+  ];
+
+  # Make sure tuwunel doesn't try to write to arbitrary
+  # directories or have DNS timeouts during `cargo test`.
+  preCheck =
+    let
+      fakeResolvConf = writeTextFile {
+        name = "resolv.conf";
+
+        text = ''
+          nameserver 0.0.0.0
+        '';
+      };
+    in
+    ''
+      export NIX_REDIRECTS="/etc/resolv.conf=${fakeResolvConf}"
+      export TUWUNEL_DATABASE_PATH="$(mktemp -d)/smoketest.db"
+    '';
+
   # See https://github.com/matrix-construct/tuwunel/blob/main/src/main/Cargo.toml
   # for available features.
   # We enable all default features except jemalloc and io_uring, which
@@ -146,28 +172,7 @@ rustPlatform.buildRustPackage (finalAttrs: {
   ++ lib.optional enableLiburing "io_uring"
   ++ lib.optional enableLdap "ldap";
 
-  nativeCheckInputs = [
-    libredirect.hook
-  ];
-
-  # Make sure tuwunel doesn't try to write to arbitrary
-  # directories or have DNS timeouts during `cargo test`.
-  preCheck =
-    let
-      fakeResolvConf = writeTextFile {
-        name = "resolv.conf";
-        text = ''
-          nameserver 0.0.0.0
-        '';
-      };
-    in
-    ''
-      export NIX_REDIRECTS="/etc/resolv.conf=${fakeResolvConf}"
-      export TUWUNEL_DATABASE_PATH="$(mktemp -d)/smoketest.db"
-    '';
-
-  doCheck = true;
-
+  buildNoDefaultFeatures = true;
   # 2026-06-24: Tuwunel has 16 integration tests. Cargo turns each of these
   # into a separate binary that links in all 110 MB worth of tuwunel.  Linking
   # 16 big binaries like this takes a really long time and was causing Hydra
@@ -175,10 +180,11 @@ rustPlatform.buildRustPackage (finalAttrs: {
   # "debug" profile.  This reduces the build+test time on my machine from
   # 44min to 12min.
   checkType = "debug";
+  disallowedReferences = [ rustc-unwrapped ];
 
   passthru = {
     rocksdb = rocksdb'; # make used rocksdb version available (e.g., for backup scripts)
-    updateScript = nix-update-script { };
+
     tests = {
       version = testers.testVersion {
         inherit (finalAttrs) version;
@@ -188,18 +194,20 @@ rustPlatform.buildRustPackage (finalAttrs: {
     // lib.optionalAttrs stdenv.hostPlatform.isLinux {
       inherit (nixosTests) matrix-tuwunel;
     };
-  };
 
-  disallowedReferences = [ rustc-unwrapped ];
+    updateScript = nix-update-script { };
+  };
 
   meta = {
     description = "Matrix homeserver written in Rust, official successor to conduwuit";
     homepage = "https://github.com/matrix-construct/tuwunel";
     changelog = "https://github.com/matrix-construct/tuwunel/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.asl20;
+
     maintainers = with lib.maintainers; [
       scvalex
     ];
+
     mainProgram = "tuwunel";
   };
 })

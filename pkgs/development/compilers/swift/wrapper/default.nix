@@ -1,29 +1,22 @@
 {
   lib,
   stdenv,
-  swift,
-  useSwiftDriver ? true,
-  swift-driver,
   clang,
-
   # TODO: Clean up on `staging`.
   llvmPackages,
+  swift,
+  swift-driver,
   writeShellScriptBin,
+  useSwiftDriver ? true,
 }:
 
 stdenv.mkDerivation (
   swift._wrapperParams
   // {
-    pname = "swift-wrapper";
     inherit (swift) version meta;
-
-    outputs = [
-      "out"
-      "man"
-    ];
-
     # Wrapper and setup hook variables.
     inherit swift;
+
     inherit (swift)
       swiftOs
       swiftArch
@@ -32,32 +25,18 @@ stdenv.mkDerivation (
       swiftStaticModuleSubdir
       swiftStaticLibSubdir
       ;
-    swiftDriver = lib.optionalString useSwiftDriver "${swift-driver}/bin/swift-driver";
-    cc_wrapper = clang.override (prev: {
-      extraBuildCommands =
-        prev.extraBuildCommands
-        # We need to use the resource directory corresponding to Swift’s
-        # version of Clang instead of passing along the one from the
-        # `cc-wrapper` flags.
-        + ''
-          rm -r $out/resource-root
-          substituteInPlace $out/nix-support/cc-cflags \
-            --replace-fail \
-              "-resource-dir=$out/resource-root" \
-              "-resource-dir=${lib.getLib swift}/lib/swift/clang"
-        ''
-        # We need the libc++ headers corresponding to the LLVM version of
-        # Swift’s Clang.
-        + lib.optionalString (clang.libcxx != null) ''
-          include -isystem "${lib.getDev swift}/include/c++/v1" > $out/nix-support/libcxx-cxxflags
-        '';
-    });
+
+    pname = "swift-wrapper";
+
+    outputs = [
+      "out"
+      "man"
+    ];
 
     env.darwinMinVersion = lib.optionalString stdenv.targetPlatform.isDarwin (
       stdenv.targetPlatform.darwinMinVersion
     );
 
-    passAsFile = [ "buildCommand" ];
     buildCommand = ''
       mkdir -p $out/bin $out/nix-support
 
@@ -105,8 +84,32 @@ stdenv.mkDerivation (
       printf '%s\n' ${lib.getBin llvmPackages.lld} >> $out/nix-support/propagated-build-inputs
     '';
 
+    cc_wrapper = clang.override (prev: {
+      extraBuildCommands =
+        prev.extraBuildCommands
+        # We need to use the resource directory corresponding to Swift’s
+        # version of Clang instead of passing along the one from the
+        # `cc-wrapper` flags.
+        + ''
+          rm -r $out/resource-root
+          substituteInPlace $out/nix-support/cc-cflags \
+            --replace-fail \
+              "-resource-dir=$out/resource-root" \
+              "-resource-dir=${lib.getLib swift}/lib/swift/clang"
+        ''
+        # We need the libc++ headers corresponding to the LLVM version of
+        # Swift’s Clang.
+        + lib.optionalString (clang.libcxx != null) ''
+          include -isystem "${lib.getDev swift}/include/c++/v1" > $out/nix-support/libcxx-cxxflags
+        '';
+    });
+
+    passAsFile = [ "buildCommand" ];
+    swiftDriver = lib.optionalString useSwiftDriver "${swift-driver}/bin/swift-driver";
+
     passthru = {
       inherit swift;
+
       inherit (swift)
         swiftOs
         swiftArch

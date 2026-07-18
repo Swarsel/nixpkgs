@@ -84,12 +84,27 @@ in
   options = {
     services.postsrsd = {
       enable = mkEnableOption "the postsrsd SRS server for Postfix.";
-
       package = mkPackageOption pkgs "postsrsd" { };
 
+      configurePostfix = lib.mkOption {
+        default = true;
+
+        description = ''
+          Whether to configure the required settings to use postsrsd in the local Postfix instance.
+        '';
+
+        type = lib.types.bool;
+      };
+
+      group = lib.mkOption {
+        default = "postsrsd";
+        description = "Group for the daemon";
+        type = lib.types.str;
+      };
+
       secretsFile = lib.mkOption {
-        type = lib.types.path;
         default = "/var/lib/postsrsd/postsrsd.secret";
+
         description = ''
           Secret keys used for signing and verification.
 
@@ -97,10 +112,125 @@ in
           The secret will be generated, if it does not exist at the given path.
           :::
         '';
+
+        type = lib.types.path;
       };
 
       settings = lib.mkOption {
+        default = { };
+
+        description = ''
+          Configuration options for the postsrsd.conf file.
+
+          See the [example configuration](https://github.com/roehling/postsrsd/blob/${cfg.package.version}/doc/postsrsd.conf) for possible values.
+        '';
+
         type = lib.types.submodule {
+          options = {
+            chroot-dir = lib.mkOption {
+              default = "";
+
+              description = ''
+                Path to chroot into at runtime as an additional layer of protection.
+
+                ::: {.note}
+                We confine the runtime environment through systemd hardening instead, so this option is read-only.
+                :::
+              '';
+
+              readOnly = true;
+              type = lib.types.str;
+            };
+
+            domains = lib.mkOption {
+              default = [ ];
+
+              description = ''
+                List of local domains, that do not require rewriting.
+              '';
+
+              example = [ "example.com" ];
+              type = with lib.types; listOf str;
+            };
+
+            secrets-file = lib.mkOption {
+              default = "\${CREDENTIALS_DIRECTORY}/secrets-file";
+
+              description = ''
+                Path to the file containing the secret keys.
+
+                ::: {.note}
+                Secrets are passed using `LoadCredential=` on the systemd unit,
+                so this options is read-only.
+
+                Configure {option}`services.postsrsd.secretsFile` instead.
+              '';
+
+              readOnly = true;
+              type = lib.types.str;
+            };
+
+            separator = lib.mkOption {
+              default = "=";
+
+              description = ''
+                SRS tag separator used in generated sender addresses.
+
+                Unless you have a very good reason, you should leave this
+                setting at its default.
+              '';
+
+              type = lib.types.enum [
+                "-"
+                "="
+                "+"
+              ];
+            };
+
+            socketmap = lib.mkOption {
+              default = "unix:/run/postsrsd/socket";
+
+              description = ''
+                Listener configuration in socket map format native to Postfix configuration.
+              '';
+
+              example = "inet:localhost:10003";
+              type = lib.types.strMatching "^(unix|inet):.+";
+            };
+
+            srs-domain = lib.mkOption {
+              default = null;
+
+              description = ''
+                Dedicated mail domain used for ephemeral SRS envelope addresses.
+
+                Recommended to configure, when hosting multiple unrelated mail
+                domains (e.g. for different customers), to prevent privacy
+                issues.
+
+                Set to `null` to not configure any `srs-domain`.
+              '';
+
+              example = "srs.example.com";
+              type = with lib.types; nullOr str;
+            };
+
+            unprivileged-user = lib.mkOption {
+              default = "";
+
+              description = ''
+                Unprivileged user to drop privileges to.
+
+                ::: {.note}
+                Our systemd unit never runs postsrsd as a privileged process, so this option is read-only.
+                :::
+              '';
+
+              readOnly = true;
+              type = lib.types.str;
+            };
+          };
+
           freeformType =
             with lib.types;
             attrsOf (oneOf [
@@ -111,124 +241,13 @@ in
               str
               (listOf str)
             ]);
-
-          options = {
-            domains = lib.mkOption {
-              type = with lib.types; listOf str;
-              default = [ ];
-              example = [ "example.com" ];
-              description = ''
-                List of local domains, that do not require rewriting.
-              '';
-            };
-
-            secrets-file = lib.mkOption {
-              type = lib.types.str;
-              default = "\${CREDENTIALS_DIRECTORY}/secrets-file";
-              readOnly = true;
-              description = ''
-                Path to the file containing the secret keys.
-
-                ::: {.note}
-                Secrets are passed using `LoadCredential=` on the systemd unit,
-                so this options is read-only.
-
-                Configure {option}`services.postsrsd.secretsFile` instead.
-              '';
-            };
-
-            separator = lib.mkOption {
-              type = lib.types.enum [
-                "-"
-                "="
-                "+"
-              ];
-              default = "=";
-              description = ''
-                SRS tag separator used in generated sender addresses.
-
-                Unless you have a very good reason, you should leave this
-                setting at its default.
-              '';
-            };
-
-            srs-domain = lib.mkOption {
-              type = with lib.types; nullOr str;
-              default = null;
-              example = "srs.example.com";
-              description = ''
-                Dedicated mail domain used for ephemeral SRS envelope addresses.
-
-                Recommended to configure, when hosting multiple unrelated mail
-                domains (e.g. for different customers), to prevent privacy
-                issues.
-
-                Set to `null` to not configure any `srs-domain`.
-              '';
-            };
-
-            socketmap = lib.mkOption {
-              type = lib.types.strMatching "^(unix|inet):.+";
-              default = "unix:/run/postsrsd/socket";
-              example = "inet:localhost:10003";
-              description = ''
-                Listener configuration in socket map format native to Postfix configuration.
-              '';
-            };
-
-            chroot-dir = lib.mkOption {
-              type = lib.types.str;
-              default = "";
-              readOnly = true;
-              description = ''
-                Path to chroot into at runtime as an additional layer of protection.
-
-                ::: {.note}
-                We confine the runtime environment through systemd hardening instead, so this option is read-only.
-                :::
-              '';
-            };
-
-            unprivileged-user = lib.mkOption {
-              type = lib.types.str;
-              default = "";
-              readOnly = true;
-              description = ''
-                Unprivileged user to drop privileges to.
-
-                ::: {.note}
-                Our systemd unit never runs postsrsd as a privileged process, so this option is read-only.
-                :::
-              '';
-            };
-          };
         };
-        default = { };
-        description = ''
-          Configuration options for the postsrsd.conf file.
-
-          See the [example configuration](https://github.com/roehling/postsrsd/blob/${cfg.package.version}/doc/postsrsd.conf) for possible values.
-        '';
-      };
-
-      configurePostfix = lib.mkOption {
-        type = lib.types.bool;
-        default = true;
-        description = ''
-          Whether to configure the required settings to use postsrsd in the local Postfix instance.
-        '';
       };
 
       user = lib.mkOption {
-        type = lib.types.str;
         default = "postsrsd";
         description = "User for the daemon";
-      };
-
-      group = lib.mkOption {
         type = lib.types.str;
-        default = "postsrsd";
-        description = "Group for the daemon";
       };
     };
   };
@@ -236,33 +255,102 @@ in
   config = lib.mkMerge [
     (lib.mkIf (cfg.enable && cfg.configurePostfix && config.services.postfix.enable) {
       services.postfix.settings.main = {
-        # https://github.com/roehling/postsrsd#configuration
-        sender_canonical_maps = "socketmap:${cfg.settings.socketmap}:forward";
-        sender_canonical_classes = "envelope_sender";
-        recipient_canonical_maps = "socketmap:${cfg.settings.socketmap}:reverse";
         recipient_canonical_classes = [
           "envelope_recipient"
           "header_recipient"
         ];
+
+        recipient_canonical_maps = "socketmap:${cfg.settings.socketmap}:reverse";
+        sender_canonical_classes = "envelope_sender";
+        # https://github.com/roehling/postsrsd#configuration
+        sender_canonical_maps = "socketmap:${cfg.settings.socketmap}:forward";
       };
 
       users.users.postfix.extraGroups = [ cfg.group ];
     })
 
     (lib.mkIf cfg.enable {
-      users.users = lib.optionalAttrs (cfg.user == "postsrsd") {
-        postsrsd = {
-          group = cfg.group;
-          uid = config.ids.uids.postsrsd;
-        };
-      };
+      environment.etc."postsrsd.conf".source = configFile;
 
-      users.groups = lib.optionalAttrs (cfg.group == "postsrsd") {
-        postsrsd.gid = config.ids.gids.postsrsd;
+      systemd.services.postsrsd = {
+        after = [
+          "network.target"
+          "postsrsd-generate-secrets.service"
+        ];
+
+        before = [ "postfix.service" ];
+        description = "Sender Rewriting Scheme daemon for Postfix";
+        reloadTriggers = [ configFile ];
+        requires = [ "postsrsd-generate-secrets.service" ];
+
+        serviceConfig = {
+          CapabilityBoundingSet = [ "" ];
+
+          ExecReload = toString [
+            (lib.getExe' pkgs.coreutils "kill")
+            "-SIGHUP"
+            "$MAINPID"
+          ];
+
+          ExecStart = utils.escapeSystemdExecArgs [
+            (lib.getExe cfg.package)
+            "-C"
+            "/etc/postsrsd.conf"
+          ];
+
+          Group = cfg.group;
+          LoadCredential = "secrets-file:${cfg.secretsFile}";
+          LockPersonality = true;
+          MemoryDenyWriteExecute = true;
+          NoNewPrivileges = true;
+          PrivateDevices = true;
+          PrivateMounts = true;
+          PrivateNetwork = lib.hasPrefix "unix:" cfg.settings.socketmap;
+          PrivateTmp = true;
+          PrivateUsers = true;
+          ProcSubset = "pid";
+          ProtectControlGroups = true;
+          ProtectHome = true;
+          ProtectHostname = true;
+          ProtectKernelLogs = true;
+          ProtectKernelModules = true;
+          ProtectKernelTunables = true;
+          ProtectProc = "noaccess";
+          ProtectSystem = "strict";
+          RemoveIPC = true;
+
+          RestrictAddressFamilies =
+            if lib.hasPrefix "unix:" cfg.settings.socketmap then
+              [ "AF_UNIX" ]
+            else
+              [
+                "AF_INET"
+                "AF_INET6"
+              ];
+
+          RestrictNamespaces = true;
+          RestrictRealtime = true;
+          RestrictSUIDSGID = true;
+          RuntimeDirectory = "postsrsd";
+          RuntimeDirectoryMode = "0750";
+          SystemCallArchitectures = "native";
+
+          SystemCallFilter = [
+            "@system-service"
+            "~@privileged @resources"
+          ];
+
+          Type = "notify-reload";
+          UMask = "0027";
+          User = cfg.user;
+        };
+
+        wantedBy = [ "multi-user.target" ];
       };
 
       systemd.services.postsrsd-generate-secrets = {
         path = [ pkgs.coreutils ];
+
         script = ''
           if [ -e "${cfg.secretsFile}" ]; then
             echo "Secrets file exists. Nothing to do!"
@@ -273,78 +361,20 @@ in
             install -m 600 -o ${cfg.user} -g ${cfg.group} <(dd if=/dev/random bs=18 count=1 | base64) "${cfg.secretsFile}"
           fi
         '';
+
         serviceConfig = {
           Type = "oneshot";
         };
       };
 
-      environment.etc."postsrsd.conf".source = configFile;
+      users.groups = lib.optionalAttrs (cfg.group == "postsrsd") {
+        postsrsd.gid = config.ids.gids.postsrsd;
+      };
 
-      systemd.services.postsrsd = {
-        description = "Sender Rewriting Scheme daemon for Postfix";
-        after = [
-          "network.target"
-          "postsrsd-generate-secrets.service"
-        ];
-        before = [ "postfix.service" ];
-        wantedBy = [ "multi-user.target" ];
-        requires = [ "postsrsd-generate-secrets.service" ];
-        reloadTriggers = [ configFile ];
-
-        serviceConfig = {
-          Type = "notify-reload";
-          ExecStart = utils.escapeSystemdExecArgs [
-            (lib.getExe cfg.package)
-            "-C"
-            "/etc/postsrsd.conf"
-          ];
-          ExecReload = toString [
-            (lib.getExe' pkgs.coreutils "kill")
-            "-SIGHUP"
-            "$MAINPID"
-          ];
-          User = cfg.user;
-          Group = cfg.group;
-          RuntimeDirectory = "postsrsd";
-          RuntimeDirectoryMode = "0750";
-          LoadCredential = "secrets-file:${cfg.secretsFile}";
-
-          CapabilityBoundingSet = [ "" ];
-          LockPersonality = true;
-          MemoryDenyWriteExecute = true;
-          NoNewPrivileges = true;
-          PrivateDevices = true;
-          PrivateMounts = true;
-          PrivateNetwork = lib.hasPrefix "unix:" cfg.settings.socketmap;
-          PrivateTmp = true;
-          PrivateUsers = true;
-          ProtectControlGroups = true;
-          ProtectHome = true;
-          ProtectHostname = true;
-          ProtectKernelLogs = true;
-          ProtectKernelModules = true;
-          ProtectKernelTunables = true;
-          ProtectSystem = "strict";
-          ProtectProc = "noaccess";
-          ProcSubset = "pid";
-          RemoveIPC = true;
-          RestrictAddressFamilies =
-            if lib.hasPrefix "unix:" cfg.settings.socketmap then
-              [ "AF_UNIX" ]
-            else
-              [
-                "AF_INET"
-                "AF_INET6"
-              ];
-          RestrictNamespaces = true;
-          RestrictRealtime = true;
-          RestrictSUIDSGID = true;
-          SystemCallArchitectures = "native";
-          SystemCallFilter = [
-            "@system-service"
-            "~@privileged @resources"
-          ];
-          UMask = "0027";
+      users.users = lib.optionalAttrs (cfg.user == "postsrsd") {
+        postsrsd = {
+          group = cfg.group;
+          uid = config.ids.uids.postsrsd;
         };
       };
     })

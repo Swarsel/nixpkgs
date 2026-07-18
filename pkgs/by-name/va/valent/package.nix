@@ -3,17 +3,12 @@
   stdenv,
   fetchFromGitHub,
   desktop-file-utils,
-  glycin-loaders,
-  gobject-introspection,
-  meson,
-  ninja,
-  pkg-config,
-  wrapGAppsHook4,
-  vala,
   evolution-data-server-gtk4,
   glib,
   glib-networking,
+  glycin-loaders,
   gnutls,
+  gobject-introspection,
   gst_all_1,
   json-glib,
   libadwaita,
@@ -21,10 +16,15 @@
   libpeas2,
   libphonenumber,
   libportal-gtk4,
+  meson,
+  ninja,
+  nix-update-script,
   pipewire,
+  pkg-config,
   pulseaudio,
   tinysparql,
-  nix-update-script,
+  vala,
+  wrapGAppsHook4,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -74,7 +74,7 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Implementation of the KDE Connect protocol, built on GNOME platform libraries";
-    mainProgram = "valent";
+
     longDescription = ''
       Note that you have to open firewall ports for other devices
       to connect to it. Use either:
@@ -92,17 +92,22 @@ stdenv.mkDerivation (finalAttrs: {
       }
       ```
     '';
+
     homepage = "https://valent.andyholmes.ca";
     changelog = "https://github.com/andyholmes/valent/blob/${finalAttrs.src.tag}/CHANGELOG.md";
+
     license = with lib.licenses; [
       gpl3Plus
       cc0
       cc-by-sa-30
     ];
+
     maintainers = with lib.maintainers; [
       aleksana
       baduhai
     ];
+
     platforms = lib.platforms.linux;
+    mainProgram = "valent";
   };
 })

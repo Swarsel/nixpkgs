@@ -7,13 +7,14 @@
 }:
 
 buildDunePackage {
-  pname = "gluten-lwt-unix";
   inherit (gluten)
     doCheck
     meta
     src
     version
     ;
+
+  pname = "gluten-lwt-unix";
 
   propagatedBuildInputs = [
     faraday-lwt-unix

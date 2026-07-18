@@ -2,9 +2,9 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  pidgin,
   glib,
   libxml2,
+  pidgin,
 }:
 
 stdenv.mkDerivation {
@@ -29,10 +29,10 @@ stdenv.mkDerivation {
   '';
 
   meta = {
-    homepage = "https://github.com/Junker/purple-xmpp-http-upload";
     description = "HTTP File Upload plugin for libpurple (XMPP Protocol XEP-0363)";
+    homepage = "https://github.com/Junker/purple-xmpp-http-upload";
     license = lib.licenses.gpl3;
-    platforms = lib.platforms.linux;
     maintainers = with lib.maintainers; [ emmanuelrosa ];
+    platforms = lib.platforms.linux;
   };
 }

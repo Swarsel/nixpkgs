@@ -29,10 +29,10 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Virtual ring buffer library written in C";
-    mainProgram = "vbuf";
-    license = lib.licenses.lgpl21;
     homepage = "http://vrb.sourceforge.net/";
+    license = lib.licenses.lgpl21;
     maintainers = [ lib.maintainers.bobvanderlinden ];
     platforms = lib.platforms.linux;
+    mainProgram = "vbuf";
   };
 })

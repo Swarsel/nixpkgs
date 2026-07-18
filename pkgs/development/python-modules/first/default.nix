@@ -7,7 +7,6 @@
 buildPythonPackage rec {
   pname = "first";
   version = "2.0.2";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
@@ -15,7 +14,7 @@ buildPythonPackage rec {
   };
 
   doCheck = false; # no tests
-
+  format = "setuptools";
   pythonImportsCheck = [ "first" ];
 
   meta = {

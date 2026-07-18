@@ -1,16 +1,16 @@
 {
   lib,
   stdenv,
-  fetchFromGitea,
-  makeWrapper,
-  pkg-config,
   alsa-lib,
   dbus,
+  fetchFromGitea,
+  gitUpdater,
   libjack2,
-  python3Packages,
+  makeWrapper,
   meson,
   ninja,
-  gitUpdater,
+  pkg-config,
+  python3Packages,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -18,12 +18,12 @@ stdenv.mkDerivation (finalAttrs: {
   version = "12";
 
   src = fetchFromGitea {
-    domain = "gitea.ladish.org";
     owner = "LADI";
     repo = "a2jmidid";
     tag = finalAttrs.version;
-    fetchSubmodules = true;
     hash = "sha256-PZKGhHmPMf0AucPruOLB9DniM5A3BKdghFCrd5pTzeM=";
+    fetchSubmodules = true;
+    domain = "gitea.ladish.org";
   };
 
   nativeBuildInputs = [
@@ -32,6 +32,7 @@ stdenv.mkDerivation (finalAttrs: {
     meson
     ninja
   ];
+
   buildInputs = [
     alsa-lib
     dbus
@@ -54,6 +55,7 @@ stdenv.mkDerivation (finalAttrs: {
     homepage = "https://a2jmidid.ladish.org/";
     license = lib.licenses.gpl2Only;
     maintainers = [ ];
+
     platforms = [
       "i686-linux"
       "x86_64-linux"

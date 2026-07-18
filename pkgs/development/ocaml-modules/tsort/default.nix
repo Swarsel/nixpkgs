@@ -1,13 +1,14 @@
 {
   lib,
-  buildDunePackage,
   fetchFromGitHub,
+  buildDunePackage,
   containers,
 }:
 
 buildDunePackage rec {
   pname = "tsort";
   version = "2.2.0";
+
   src = fetchFromGitHub {
     owner = "dmbaturin";
     repo = "ocaml-tsort";
@@ -18,8 +19,8 @@ buildDunePackage rec {
   propagatedBuildInputs = [ containers ];
 
   meta = {
-    description = "Easy to use and user-friendly topological sort";
     inherit (src.meta) homepage;
+    description = "Easy to use and user-friendly topological sort";
     license = lib.licenses.mit;
     maintainers = [ lib.maintainers.vbgl ];
   };

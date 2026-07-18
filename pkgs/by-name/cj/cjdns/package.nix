@@ -3,14 +3,14 @@
   stdenv,
   fetchFromGitHub,
   fetchpatch,
-  rustPlatform,
-  nodejs,
-  which,
-  util-linux,
-  nixosTests,
   libsodium,
+  nixosTests,
+  nodejs,
   pkg-config,
   replaceVars,
+  rustPlatform,
+  util-linux,
+  which,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -30,8 +30,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
     })
   ];
 
-  cargoHash = "sha256-tob45/99svE0R1Kk7G1+H7waBWYmI9VKC8ffl3ZmdcU=";
-
   nativeBuildInputs = [
     which
     nodejs
@@ -42,8 +40,8 @@ rustPlatform.buildRustPackage (finalAttrs: {
     lib.optional stdenv.hostPlatform.isLinux util-linux;
 
   buildInputs = [ libsodium ];
+  cargoHash = "sha256-tob45/99svE0R1Kk7G1+H7waBWYmI9VKC8ffl3ZmdcU=";
 
-  env.SODIUM_USE_PKG_CONFIG = 1;
   env.NIX_CFLAGS_COMPILE = toString (
     [
       "-O2"
@@ -56,17 +54,19 @@ rustPlatform.buildRustPackage (finalAttrs: {
     ]
   );
 
-  cargoTestFlags = [
-    # don't run doctests since they fail with "cannot find type `Ctx` in this scope"
-    "--lib"
-    "--bins"
-    "--tests"
-  ];
+  env.SODIUM_USE_PKG_CONFIG = 1;
 
   checkFlags = [
     # Tests don't seem to work - "called `Result::unwrap()` on an `Err` value: DecryptErr: NO_SESSION"
     "--skip=crypto::crypto_auth::tests::test_wireguard_iface_encrypt_decrypt"
     "--skip=crypto::crypto_auth::tests::test_wireguard_iface_encrypt_decrypt_with_auth"
+  ];
+
+  cargoTestFlags = [
+    # don't run doctests since they fail with "cannot find type `Ctx` in this scope"
+    "--lib"
+    "--bins"
+    "--tests"
   ];
 
   passthru.tests.basic = nixosTests.cjdns;

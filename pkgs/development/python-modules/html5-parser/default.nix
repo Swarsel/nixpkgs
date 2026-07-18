@@ -1,9 +1,9 @@
 {
   lib,
+  fetchFromGitHub,
   beautifulsoup4,
   buildPythonPackage,
   chardet,
-  fetchFromGitHub,
   lxml,
   pkg-config,
   pkgs,
@@ -13,7 +13,6 @@
 buildPythonPackage rec {
   pname = "html5-parser";
   version = "0.4.12";
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "kovidgoyal";
@@ -23,7 +22,6 @@ buildPythonPackage rec {
   };
 
   nativeBuildInputs = [ pkg-config ];
-
   buildInputs = [ pkgs.libxml2 ];
 
   propagatedBuildInputs = [
@@ -36,9 +34,9 @@ buildPythonPackage rec {
     pytestCheckHook
   ];
 
-  pythonImportsCheck = [ "html5_parser" ];
-
   enabledTestPaths = [ "test/*.py" ];
+  format = "setuptools";
+  pythonImportsCheck = [ "html5_parser" ];
 
   meta = {
     description = "Fast C based HTML 5 parsing for python";

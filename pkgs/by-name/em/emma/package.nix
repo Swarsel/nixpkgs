@@ -22,10 +22,10 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   meta = {
-    homepage = "https://emma.sourceforge.net/";
     description = "Code coverage tool for Java";
+    homepage = "https://emma.sourceforge.net/";
+    license = lib.licenses.cpl10;
     sourceProvenance = with lib.sourceTypes; [ binaryBytecode ];
     platforms = lib.platforms.unix;
-    license = lib.licenses.cpl10;
   };
 })

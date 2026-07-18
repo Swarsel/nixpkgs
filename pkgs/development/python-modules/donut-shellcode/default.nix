@@ -1,14 +1,13 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "donut-shellcode";
   version = "1.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "TheWover";
@@ -19,9 +18,8 @@ buildPythonPackage rec {
 
   # aplib64.a objects lack .note.GNU-stack; linker marks .so executable-stack, breaking dlopen.
   env.NIX_LDFLAGS = "-z,noexecstack";
-
   build-system = [ setuptools ];
-
+  pyproject = true;
   pythonImportsCheck = [ "donut" ];
 
   meta = {

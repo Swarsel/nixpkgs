@@ -2,9 +2,9 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  fetchpatch2,
   cmake,
   curl,
+  fetchpatch2,
   gpgme,
   libsolv,
   libxml2,
@@ -28,15 +28,25 @@ stdenv.mkDerivation (finalAttrs: {
   patches = [
     # Support for rpm >= 4.19
     (fetchpatch2 {
-      url = "https://patch-diff.githubusercontent.com/raw/vmware/tdnf/pull/410.patch";
       hash = "sha256-p/ix5O1J/lj2fw7qJokT+wPN4ROoulnVqByfxgFvuEo=";
+      url = "https://patch-diff.githubusercontent.com/raw/vmware/tdnf/pull/410.patch";
     })
     # Bump minimal cmake version
     (fetchpatch2 {
-      url = "https://github.com/vmware/tdnf/commit/24211f2077d2423e511c43f21cd5ee5b53fa4021.patch?full_index=1";
       hash = "sha256-twzyVV+VgtRljj1E70Tq5U0sNEiSWU/rG9buoAYDF0o=";
+      url = "https://github.com/vmware/tdnf/commit/24211f2077d2423e511c43f21cd5ee5b53fa4021.patch?full_index=1";
     })
   ];
+
+  postPatch = ''
+    substituteInPlace CMakeLists.txt \
+      --replace-fail 'SYSCONFDIR /etc' 'SYSCONFDIR $out/etc' \
+      --replace-fail '/etc/motdgen.d' '$out/etc/motdgen.d'
+    substituteInPlace client/tdnf.pc.in \
+      --replace-fail 'libdir=''${prefix}/@CMAKE_INSTALL_LIBDIR@' 'libdir=@CMAKE_INSTALL_FULL_LIBDIR@'
+    substituteInPlace tools/cli/lib/tdnf-cli-libs.pc.in \
+      --replace-fail 'libdir=''${prefix}/@CMAKE_INSTALL_LIBDIR@' 'libdir=@CMAKE_INSTALL_FULL_LIBDIR@'
+  '';
 
   nativeBuildInputs = [
     cmake
@@ -63,33 +73,24 @@ stdenv.mkDerivation (finalAttrs: {
     "-DSYSTEMD_DIR=$out/lib/systemd/system"
   ];
 
-  # error: format not a string literal and no format arguments [-Werror=format-security]
-  hardeningDisable = [ "format" ];
-
-  postPatch = ''
-    substituteInPlace CMakeLists.txt \
-      --replace-fail 'SYSCONFDIR /etc' 'SYSCONFDIR $out/etc' \
-      --replace-fail '/etc/motdgen.d' '$out/etc/motdgen.d'
-    substituteInPlace client/tdnf.pc.in \
-      --replace-fail 'libdir=''${prefix}/@CMAKE_INSTALL_LIBDIR@' 'libdir=@CMAKE_INSTALL_FULL_LIBDIR@'
-    substituteInPlace tools/cli/lib/tdnf-cli-libs.pc.in \
-      --replace-fail 'libdir=''${prefix}/@CMAKE_INSTALL_LIBDIR@' 'libdir=@CMAKE_INSTALL_FULL_LIBDIR@'
-  '';
-
   # remove binaries used for testing from the final output
   postInstall = "rm $out/bin/*test";
+  # error: format not a string literal and no format arguments [-Werror=format-security]
+  hardeningDisable = [ "format" ];
 
   meta = {
     description = "Tiny Dandified Yum";
     homepage = "https://github.com/vmware/tdnf";
     changelog = "https://github.com/vmware/tdnf/releases/tag/v${finalAttrs.version}";
+
     license = with lib.licenses; [
       gpl2
       lgpl21
     ];
+
     maintainers = [ lib.maintainers.malt3 ];
-    mainProgram = "tdnf";
     # rpm only supports linux
     platforms = lib.platforms.linux;
+    mainProgram = "tdnf";
   };
 })

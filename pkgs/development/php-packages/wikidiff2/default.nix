@@ -1,9 +1,9 @@
 {
   lib,
-  buildPecl,
   fetchFromGitHub,
-  pkg-config,
+  buildPecl,
   libthai,
+  pkg-config,
 }:
 
 buildPecl rec {
@@ -22,8 +22,8 @@ buildPecl rec {
 
   meta = {
     description = "PHP extension which formats changes between two input texts, producing HTML or JSON";
-    license = lib.licenses.gpl2;
     homepage = "https://www.mediawiki.org/wiki/Wikidiff2";
+    license = lib.licenses.gpl2;
     maintainers = with lib.maintainers; [ georgyo ];
   };
 }

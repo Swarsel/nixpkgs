@@ -1,7 +1,7 @@
 {
   config,
-  pkgs,
   lib,
+  pkgs,
   ...
 }:
 let
@@ -102,16 +102,10 @@ in
 
   config = lib.mkIf cfg.enable {
 
-    users.groups.nghttpx = { };
-    users.users.nghttpx = {
-      group = config.users.groups.nghttpx.name;
-      isSystemUser = true;
-    };
-
     systemd.services = {
       nghttpx = {
-        wantedBy = [ "multi-user.target" ];
         after = [ "network.target" ];
+
         script = ''
           ${pkgs.nghttp2}/bin/nghttpx --conf=${configurationFile}
         '';
@@ -120,7 +114,16 @@ in
           Restart = "on-failure";
           RestartSec = 60;
         };
+
+        wantedBy = [ "multi-user.target" ];
       };
+    };
+
+    users.groups.nghttpx = { };
+
+    users.users.nghttpx = {
+      group = config.users.groups.nghttpx.name;
+      isSystemUser = true;
     };
   };
 }

@@ -1,24 +1,20 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
+  buildPythonPackage,
   # build-system
   cython,
-  setuptools,
-  setuptools-scm,
-
   # dependencies
   numpy,
-
   # tests
   pytestCheckHook,
+  setuptools,
+  setuptools-scm,
 }:
 
 buildPythonPackage rec {
   pname = "pentapy";
   version = "1.4.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "GeoStat-Framework";
@@ -26,6 +22,10 @@ buildPythonPackage rec {
     tag = "v${version}";
     hash = "sha256-lw512rZCrwumDunoWFfd0HxCv0HAn/bAmIz8l8VeBP8=";
   };
+
+  nativeCheckInputs = [
+    pytestCheckHook
+  ];
 
   build-system = [
     cython
@@ -38,9 +38,7 @@ buildPythonPackage rec {
     numpy
   ];
 
-  nativeCheckInputs = [
-    pytestCheckHook
-  ];
+  pyproject = true;
 
   meta = {
     description = "A Python toolbox for pentadiagonal linear systems";

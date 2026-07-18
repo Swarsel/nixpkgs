@@ -23,79 +23,36 @@ let
 in
 
 {
-  meta.maintainers = pkgs.postfix-tlspol.meta.maintainers;
-
   options.services.postfix-tlspol = {
     enable = mkEnableOption "postfix-tlspol";
-
     package = mkPackageOption pkgs "postfix-tlspol" { };
 
+    configurePostfix = mkOption {
+      default = true;
+
+      description = ''
+        Whether to configure the required settings to use postfix-tlspol in the local Postfix instance.
+      '';
+
+      type = types.bool;
+    };
+
     settings = mkOption {
+      default = { };
+
+      description = ''
+        The postfix-tlspol configuration file as a Nix attribute set.
+
+        See the reference documentation for possible options.
+        <https://github.com/Zuplu/postfix-tlspol/blob/main/configs/config.default.yaml>
+      '';
+
       type = types.submodule {
-        freeformType = format.type;
         options = {
-          server = {
-            address = mkOption {
-              type = types.str;
-              default = "unix:/run/postfix-tlspol/tlspol.sock";
-              example = "127.0.0.1:8642";
-              description = ''
-                Path or address/port where postfix-tlspol binds its socket to.
-              '';
-            };
-
-            socket-permissions = mkOption {
-              type = types.str;
-              default = "0660";
-              readOnly = true;
-              description = ''
-                Permissions to the UNIX socket, if configured.
-
-                ::: {.note}
-                Due to hardening on the systemd unit the socket can never be created world readable/writable.
-                :::
-              '';
-              apply = value: (fromTOML "v=0o${value}").v;
-            };
-
-            log-level = mkOption {
-              type = types.enum [
-                "debug"
-                "info"
-                "warn"
-                "error"
-              ];
-              default = "info";
-              example = "warn";
-              description = ''
-                Log level
-              '';
-            };
-
-            prefetch = mkOption {
-              type = types.bool;
-              default = true;
-              example = false;
-              description = ''
-                Whether to prefetch DNS records when the TTL of a cached record is about to expire.
-              '';
-            };
-
-            cache-file = mkOption {
-              type = types.path;
-              default = "/var/cache/postfix-tlspol/cache.db";
-              readOnly = true;
-              description = ''
-                Path to the cache file.
-              '';
-            };
-          };
-
           dns = {
             address = mkOption {
-              type = with types; nullOr str;
               default = null;
-              example = "127.0.0.1:53";
+
               description = ''
                 IP and port to your DNS resolver.
 
@@ -105,26 +62,83 @@ in
                 The configured DNS resolver must validate DNSSEC signatures.
                 :::
               '';
+
+              example = "127.0.0.1:53";
+              type = with types; nullOr str;
+            };
+          };
+
+          server = {
+            address = mkOption {
+              default = "unix:/run/postfix-tlspol/tlspol.sock";
+
+              description = ''
+                Path or address/port where postfix-tlspol binds its socket to.
+              '';
+
+              example = "127.0.0.1:8642";
+              type = types.str;
+            };
+
+            cache-file = mkOption {
+              default = "/var/cache/postfix-tlspol/cache.db";
+
+              description = ''
+                Path to the cache file.
+              '';
+
+              readOnly = true;
+              type = types.path;
+            };
+
+            log-level = mkOption {
+              default = "info";
+
+              description = ''
+                Log level
+              '';
+
+              example = "warn";
+
+              type = types.enum [
+                "debug"
+                "info"
+                "warn"
+                "error"
+              ];
+            };
+
+            prefetch = mkOption {
+              default = true;
+
+              description = ''
+                Whether to prefetch DNS records when the TTL of a cached record is about to expire.
+              '';
+
+              example = false;
+              type = types.bool;
+            };
+
+            socket-permissions = mkOption {
+              apply = value: (fromTOML "v=0o${value}").v;
+              default = "0660";
+
+              description = ''
+                Permissions to the UNIX socket, if configured.
+
+                ::: {.note}
+                Due to hardening on the systemd unit the socket can never be created world readable/writable.
+                :::
+              '';
+
+              readOnly = true;
+              type = types.str;
             };
           };
         };
+
+        freeformType = format.type;
       };
-
-      default = { };
-      description = ''
-        The postfix-tlspol configuration file as a Nix attribute set.
-
-        See the reference documentation for possible options.
-        <https://github.com/Zuplu/postfix-tlspol/blob/main/configs/config.default.yaml>
-      '';
-    };
-
-    configurePostfix = mkOption {
-      type = types.bool;
-      default = true;
-      description = ''
-        Whether to configure the required settings to use postfix-tlspol in the local Postfix instance.
-      '';
     };
   };
 
@@ -133,7 +147,7 @@ in
       # https://github.com/Zuplu/postfix-tlspol#postfix-configuration
       services.postfix.settings.main = {
         smtp_dns_support_level = "dnssec";
-        smtp_tls_security_level = "dane";
+
         smtp_tls_policy_maps =
           let
             address =
@@ -143,11 +157,13 @@ in
                 "inet:${cfg.settings.server.address}";
           in
           [ "socketmap:${address}:QUERYwithTLSRPT" ];
+
+        smtp_tls_security_level = "dane";
       };
 
       systemd.services.postfix = {
-        wants = [ "postfix-tlspol.service" ];
         after = [ "postfix-tlspol.service" ];
+        wants = [ "postfix-tlspol.service" ];
       };
 
       users.users.postfix.extraGroups = [ "postfix-tlspol" ];
@@ -155,60 +171,31 @@ in
 
     (mkIf cfg.enable {
       environment.etc."postfix-tlspol/config.yaml".source = configFile;
-
       environment.systemPackages = [ cfg.package ];
-
-      users.users.postfix-tlspol = {
-        isSystemUser = true;
-        group = "postfix-tlspol";
-      };
-      users.groups.postfix-tlspol = { };
-
-      systemd.sockets.postfix-tlspol = {
-        wantedBy = [ "sockets.target" ];
-        socketConfig = {
-          Accept = false;
-          ListenStream = [
-            (lib.removePrefix "unix:" cfg.settings.server.address)
-          ];
-          SocketUser = "postfix-tlspol";
-          SocketGroup = "postfix-tlspol";
-          SocketMode = cfg.settings.server.socket-permissions;
-          DirectoryMode = "0755";
-        };
-      };
 
       systemd.services.postfix-tlspol = {
         after = [
           "nss-lookup.target"
           "network-online.target"
         ];
-        wants = [
-          "nss-lookup.target"
-          "network-online.target"
-        ];
 
         description = "Postfix DANE/MTA-STS TLS policy socketmap service";
         documentation = [ "https://github.com/Zuplu/postfix-tlspol" ];
-
         restartTriggers = [ configFile ];
 
         # https://github.com/Zuplu/postfix-tlspol/blob/main/init/postfix-tlspol.service
         serviceConfig = {
+          CacheDirectory = "postfix-tlspol";
+          CapabilityBoundingSet = [ "" ];
+          ExecReload = "${lib.getExe' pkgs.util-linux "kill"} -HUP $MAINPID";
+
           ExecStart = toString [
             (lib.getExe cfg.package)
             "-config"
             "/etc/postfix-tlspol/config.yaml"
           ];
-          ExecReload = "${lib.getExe' pkgs.util-linux "kill"} -HUP $MAINPID";
-          Restart = "always";
-          RestartSec = 5;
 
-          User = "postfix-tlspol";
           Group = "postfix-tlspol";
-
-          CacheDirectory = "postfix-tlspol";
-          CapabilityBoundingSet = [ "" ];
           LockPersonality = true;
           MemoryDenyWriteExecute = true;
           NoNewPrivileges = true;
@@ -227,29 +214,69 @@ in
           ProtectSystem = "strict";
           ReadOnlyPaths = [ "/etc/postfix-tlspol/config.yaml" ];
           RemoveIPC = true;
+          Restart = "always";
+          RestartSec = 5;
+
           RestrictAddressFamilies = [
             "AF_INET"
             "AF_INET6"
           ];
+
           RestrictNamespaces = true;
           RestrictRealtime = true;
           RestrictSUIDSGID = true;
-          SystemCallArchitectures = "native";
-          SystemCallFilter = [
-            "@system-service"
-            "~@privileged @resources"
-          ];
-          SystemCallErrorNumber = "EPERM";
+          RuntimeDirectory = "postfix-tlspol";
+          RuntimeDirectoryMode = "1750";
+
           SecureBits = [
             "noroot"
             "noroot-locked"
           ];
-          RuntimeDirectory = "postfix-tlspol";
-          RuntimeDirectoryMode = "1750";
-          WorkingDirectory = "/var/cache/postfix-tlspol";
+
+          SystemCallArchitectures = "native";
+          SystemCallErrorNumber = "EPERM";
+
+          SystemCallFilter = [
+            "@system-service"
+            "~@privileged @resources"
+          ];
+
           UMask = "0077";
+          User = "postfix-tlspol";
+          WorkingDirectory = "/var/cache/postfix-tlspol";
         };
+
+        wants = [
+          "nss-lookup.target"
+          "network-online.target"
+        ];
+      };
+
+      systemd.sockets.postfix-tlspol = {
+        socketConfig = {
+          Accept = false;
+          DirectoryMode = "0755";
+
+          ListenStream = [
+            (lib.removePrefix "unix:" cfg.settings.server.address)
+          ];
+
+          SocketGroup = "postfix-tlspol";
+          SocketMode = cfg.settings.server.socket-permissions;
+          SocketUser = "postfix-tlspol";
+        };
+
+        wantedBy = [ "sockets.target" ];
+      };
+
+      users.groups.postfix-tlspol = { };
+
+      users.users.postfix-tlspol = {
+        group = "postfix-tlspol";
+        isSystemUser = true;
       };
     })
   ];
+
+  meta.maintainers = pkgs.postfix-tlspol.meta.maintainers;
 }

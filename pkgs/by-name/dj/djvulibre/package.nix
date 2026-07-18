@@ -2,11 +2,11 @@
   lib,
   stdenv,
   fetchurl,
-  libjpeg,
-  libtiff,
-  librsvg,
-  libiconv,
   bash,
+  libiconv,
+  libjpeg,
+  librsvg,
+  libtiff,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -27,6 +27,7 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   strictDeps = true;
+
   nativeBuildInputs = [
     librsvg
   ];

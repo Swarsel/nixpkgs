@@ -13,8 +13,6 @@ stdenv.mkDerivation (finalAttrs: {
     sha256 = "1jjc5f26hj7bk8nkjxsa8znfxcf8pgry2ipnwmj2fr6ky0dhm3rv";
   };
 
-  hardeningDisable = [ "format" ];
-
   preBuild = ''
     # Ouch, the tarball contains pre-compiled binaries.
     make clean
@@ -28,11 +26,13 @@ stdenv.mkDerivation (finalAttrs: {
     cp vconfig.8 $out/share/man/man8/
   '';
 
+  hardeningDisable = [ "format" ];
+
   meta = {
     description = "User mode programs to enable VLANs on Ethernet devices";
     homepage = "https://www.candelatech.com/~greear/vlan.html";
-    platforms = lib.platforms.linux;
     license = lib.licenses.gpl2Plus;
+    platforms = lib.platforms.linux;
     mainProgram = "vconfig";
   };
 })

@@ -1,20 +1,19 @@
 {
   lib,
-  python3Packages,
   fetchFromGitHub,
+  desktop-file-utils,
+  gobject-introspection,
+  libadwaita,
   meson,
   ninja,
   pkg-config,
-  gobject-introspection,
+  python3Packages,
   wrapGAppsHook4,
-  desktop-file-utils,
-  libadwaita,
 }:
 
 python3Packages.buildPythonApplication (finalAttrs: {
   pname = "exhibit";
   version = "1.2.0";
-  pyproject = false; # Built with meson
 
   src = fetchFromGitHub {
     owner = "Nokse22";
@@ -34,26 +33,29 @@ python3Packages.buildPythonApplication (finalAttrs: {
 
   buildInputs = [ libadwaita ];
 
+  preFixup = ''
+    makeWrapperArgs+=("''${gappsWrapperArgs[@]}")
+  '';
+
   dependencies = with python3Packages; [
     pygobject3
     f3d
   ];
 
   dontWrapGApps = true;
-
-  preFixup = ''
-    makeWrapperArgs+=("''${gappsWrapperArgs[@]}")
-  '';
+  pyproject = false; # Built with meson
 
   meta = {
     description = "3D model viewer for the GNOME desktop powered by f3d";
     homepage = "https://github.com/Nokse22/Exhibit";
+
     license = with lib.licenses; [
       gpl3Plus
       cc0
     ];
-    mainProgram = "exhibit";
+
     maintainers = with lib.maintainers; [ aleksana ];
     platforms = lib.platforms.linux;
+    mainProgram = "exhibit";
   };
 })

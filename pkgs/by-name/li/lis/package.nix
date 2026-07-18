@@ -16,14 +16,16 @@ stdenv.mkDerivation (finalAttrs: {
   enableParallelBuilding = true;
 
   meta = {
-    homepage = "https://www.ssisc.org/lis/";
     description = "Library of Iterative Solvers for linear systems";
+
     longDescription = ''
       Lis (Library of Iterative Solvers for linear systems, pronounced [lis])
       is a parallel software library to solve discretized linear equations and
       eigenvalue problems that arise from the numerical solution of
       partial differential equations using iterative methods.
     '';
+
+    homepage = "https://www.ssisc.org/lis/";
     license = lib.licenses.bsd3;
     maintainers = with lib.maintainers; [ neural-blade ];
     platforms = lib.platforms.unix;

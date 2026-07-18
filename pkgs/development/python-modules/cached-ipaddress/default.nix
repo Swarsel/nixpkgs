@@ -1,20 +1,19 @@
 {
   lib,
+  fetchFromGitHub,
   buildPythonPackage,
   cython,
-  fetchFromGitHub,
   poetry-core,
+  propcache,
   pytest-codspeed,
   pytest-cov-stub,
   pytestCheckHook,
   setuptools,
-  propcache,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "cached-ipaddress";
   version = "1.1.2";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "bdraco";
@@ -23,6 +22,12 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-+A1kMD1L2K+dAWrZJ96qJpx0udRGMWbWApyWtMrE7lk=";
   };
 
+  nativeCheckInputs = [
+    pytest-codspeed
+    pytest-cov-stub
+    pytestCheckHook
+  ];
+
   build-system = [
     cython
     poetry-core
@@ -30,13 +35,7 @@ buildPythonPackage (finalAttrs: {
   ];
 
   dependencies = [ propcache ];
-
-  nativeCheckInputs = [
-    pytest-codspeed
-    pytest-cov-stub
-    pytestCheckHook
-  ];
-
+  pyproject = true;
   pythonImportsCheck = [ "cached_ipaddress" ];
 
   meta = {

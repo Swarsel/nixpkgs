@@ -1,9 +1,9 @@
 {
   lib,
-  mkKdeDerivation,
   fetchurl,
-  pkg-config,
   fuse3,
+  mkKdeDerivation,
+  pkg-config,
 }:
 mkKdeDerivation rec {
   pname = "kio-fuse";
@@ -14,8 +14,7 @@ mkKdeDerivation rec {
     hash = "sha256-rfaqfOBVwJh+cWqTrAHzwKl8EoBCFEPNayHg5x12PRQ=";
   };
 
-  extraNativeBuildInputs = [ pkg-config ];
   extraBuildInputs = [ fuse3 ];
-
+  extraNativeBuildInputs = [ pkg-config ];
   meta.license = with lib.licenses; [ gpl3Plus ];
 }

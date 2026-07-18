@@ -1,10 +1,10 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   nix-update-script,
-  testers,
   sou,
+  testers,
 }:
 
 buildGoModule (finalAttrs: {
@@ -19,6 +19,8 @@ buildGoModule (finalAttrs: {
   };
 
   vendorHash = "sha256-6kgiZx/g1PA7R50z7noG+ql+S9wSgTuVTkY5DIqeJHY=";
+  # Some of the tests use localhost networking
+  __darwinAllowLocalNetworking = true;
 
   ldflags = [
     "-s"
@@ -26,15 +28,13 @@ buildGoModule (finalAttrs: {
     "-X=main.version=${finalAttrs.version}"
   ];
 
-  # Some of the tests use localhost networking
-  __darwinAllowLocalNetworking = true;
-
   passthru = {
-    updateScript = nix-update-script { };
     tests.version = testers.testVersion {
       command = "HOME=$TMPDIR sou --version";
       package = sou;
     };
+
+    updateScript = nix-update-script { };
   };
 
   meta = {

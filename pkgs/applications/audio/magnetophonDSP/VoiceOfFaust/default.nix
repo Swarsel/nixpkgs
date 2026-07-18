@@ -5,8 +5,8 @@
   faust2jack,
   faust2lv2,
   helmholtz,
-  puredata-with-plugins,
   jack-example-tools,
+  puredata-with-plugins,
 }:
 let
   plugins = [
@@ -30,13 +30,12 @@ stdenv.mkDerivation (finalAttrs: {
     faust2lv2
   ];
 
-  enableParallelBuilding = true;
-
-  dontWrapQtApps = true;
-
   makeFlags = [
     "PREFIX=$(out)"
   ];
+
+  dontWrapQtApps = true;
+  enableParallelBuilding = true;
 
   patchPhase = ''
     sed -i "s@jack_connect@${jack-example-tools}/bin/jack_connect@g" launchers/synthWrapper

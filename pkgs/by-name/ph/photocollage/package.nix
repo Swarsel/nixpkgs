@@ -1,17 +1,16 @@
 {
   lib,
-  python3Packages,
   fetchFromGitHub,
-  gettext,
   gdk-pixbuf,
+  gettext,
   gobject-introspection,
+  python3Packages,
   wrapGAppsHook3,
 }:
 
 python3Packages.buildPythonApplication (finalAttrs: {
   pname = "photocollage";
   version = "1.5.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "adrienverge";
@@ -20,29 +19,15 @@ python3Packages.buildPythonApplication (finalAttrs: {
     hash = "sha256-YEkQ5yVFCBBFg8IL5ExvZIi0moaG/c0LtsIkphuzuog=";
   };
 
-  build-system = with python3Packages; [ setuptools ];
-
-  dependencies = with python3Packages; [
-    pillow
-    pycairo
-    pygobject3
-  ];
-
-  buildInputs = [
-    gdk-pixbuf
-  ];
-
   nativeBuildInputs = [
     gettext
     gobject-introspection
     wrapGAppsHook3
   ];
 
-  dontWrapGApps = true;
-
-  preFixup = ''
-    makeWrapperArgs+=("''${gappsWrapperArgs[@]}")
-  '';
+  buildInputs = [
+    gdk-pixbuf
+  ];
 
   postInstall = ''
     # Based on the debian package's list of files. Link:
@@ -52,6 +37,20 @@ python3Packages.buildPythonApplication (finalAttrs: {
     cp -r ./data/icons $out/share/icons
   '';
 
+  preFixup = ''
+    makeWrapperArgs+=("''${gappsWrapperArgs[@]}")
+  '';
+
+  build-system = with python3Packages; [ setuptools ];
+
+  dependencies = with python3Packages; [
+    pillow
+    pycairo
+    pygobject3
+  ];
+
+  dontWrapGApps = true;
+  pyproject = true;
   pythonImportsCheck = [ "photocollage" ];
 
   meta = {

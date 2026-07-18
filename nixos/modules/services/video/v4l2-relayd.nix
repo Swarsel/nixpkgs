@@ -44,77 +44,93 @@ let
       options = {
         enable = mkEnableOption "this v4l2-relayd instance";
 
-        name = mkOption {
-          type = types.str;
-          default = name;
-          description = ''
-            The name of the instance.
-          '';
-        };
-
         cardLabel = mkOption {
-          type = types.str;
           description = ''
             The name the camera will show up as.
           '';
+
+          type = types.str;
         };
 
         extraPackages = mkOption {
-          type = with types; listOf package;
           default = [ ];
+
           description = ''
             Extra packages to add to {env}`GST_PLUGIN_PATH` for the instance.
           '';
+
+          type = with types; listOf package;
         };
 
         input = {
-          pipeline = mkOption {
-            type = types.str;
-            description = ''
-              The gstreamer-pipeline to use for the input-stream.
-            '';
-          };
-
           format = mkOption {
-            type = types.str;
             default = "YUY2";
+
             description = ''
               The video-format to read from input-stream.
             '';
-          };
 
-          width = mkOption {
-            type = types.ints.positive;
-            default = 1280;
-            description = ''
-              The width to read from input-stream.
-            '';
-          };
-
-          height = mkOption {
-            type = types.ints.positive;
-            default = 720;
-            description = ''
-              The height to read from input-stream.
-            '';
+            type = types.str;
           };
 
           framerate = mkOption {
-            type = types.ints.positive;
             default = 30;
+
             description = ''
               The framerate to read from input-stream.
             '';
+
+            type = types.ints.positive;
           };
+
+          height = mkOption {
+            default = 720;
+
+            description = ''
+              The height to read from input-stream.
+            '';
+
+            type = types.ints.positive;
+          };
+
+          pipeline = mkOption {
+            description = ''
+              The gstreamer-pipeline to use for the input-stream.
+            '';
+
+            type = types.str;
+          };
+
+          width = mkOption {
+            default = 1280;
+
+            description = ''
+              The width to read from input-stream.
+            '';
+
+            type = types.ints.positive;
+          };
+        };
+
+        name = mkOption {
+          default = name;
+
+          description = ''
+            The name of the instance.
+          '';
+
+          type = types.str;
         };
 
         output = {
           format = mkOption {
-            type = types.str;
             default = "YUY2";
+
             description = ''
               The video-format to write to output-stream.
             '';
+
+            type = types.str;
           };
         };
 
@@ -127,8 +143,12 @@ in
   options.services.v4l2-relayd = {
 
     instances = mkOption {
-      type = with types; attrsOf (submodule instanceOpts);
       default = { };
+
+      description = ''
+        v4l2-relayd instances to be created.
+      '';
+
       example = literalExpression ''
         {
           example = {
@@ -137,9 +157,8 @@ in
           };
         }
       '';
-      description = ''
-        v4l2-relayd instances to be created.
-      '';
+
+      type = with types; attrsOf (submodule instanceOpts);
     };
 
   };
@@ -148,26 +167,27 @@ in
     let
 
       mkInstanceService = instance: {
-        description = "Streaming relay for v4l2loopback using GStreamer";
-
         after = [
           "modprobe@v4l2loopback.service"
           "systemd-logind.service"
         ];
-        wantedBy = [ "multi-user.target" ];
 
-        serviceConfig = {
-          Type = "simple";
-          Restart = "always";
-          PrivateNetwork = true;
-          PrivateTmp = true;
-          LimitNPROC = 1;
-        };
+        description = "Streaming relay for v4l2loopback using GStreamer";
 
         environment = {
           GST_PLUGIN_PATH = makeSearchPathOutput "lib" "lib/gstreamer-1.0" (gst ++ instance.extraPackages);
           V4L2_DEVICE_FILE = "/run/v4l2-relayd-${instance.name}/device";
         };
+
+        postStop = ''
+          ${kernelPackages.v4l2loopback.bin}/bin/v4l2loopback-ctl delete $(cat $V4L2_DEVICE_FILE)
+          rm -rf $(dirname $V4L2_DEVICE_FILE)
+        '';
+
+        preStart = ''
+          mkdir -p $(dirname $V4L2_DEVICE_FILE)
+          ${kernelPackages.v4l2loopback.bin}/bin/v4l2loopback-ctl add -x 1 -n "${instance.cardLabel}" > $V4L2_DEVICE_FILE
+        '';
 
         script =
           let
@@ -193,15 +213,15 @@ in
             exec ${pkgs.v4l2-relayd}/bin/v4l2-relayd -i "${instance.input.pipeline}" -o "${concatStringsSep " ! " outputPipeline}"
           '';
 
-        preStart = ''
-          mkdir -p $(dirname $V4L2_DEVICE_FILE)
-          ${kernelPackages.v4l2loopback.bin}/bin/v4l2loopback-ctl add -x 1 -n "${instance.cardLabel}" > $V4L2_DEVICE_FILE
-        '';
+        serviceConfig = {
+          LimitNPROC = 1;
+          PrivateNetwork = true;
+          PrivateTmp = true;
+          Restart = "always";
+          Type = "simple";
+        };
 
-        postStop = ''
-          ${kernelPackages.v4l2loopback.bin}/bin/v4l2loopback-ctl delete $(cat $V4L2_DEVICE_FILE)
-          rm -rf $(dirname $V4L2_DEVICE_FILE)
-        '';
+        wantedBy = [ "multi-user.target" ];
       };
 
       mkInstanceServices =
@@ -219,13 +239,13 @@ in
     {
 
       boot = mkIf ((length enabledInstances) > 0) {
-        extraModulePackages = [ kernelPackages.v4l2loopback ];
-        kernelModules = [ "v4l2loopback" ];
         # Prevent v4l2loopback from auto-creating a device at load time. An
         # unconfigured device has a degenerate framerate range that breaks
         # GStreamer caps negotiation. All devices are created at runtime via
         # v4l2loopback-ctl add in each instance's preStart instead.
         extraModprobeConfig = "options v4l2loopback devices=0";
+        extraModulePackages = [ kernelPackages.v4l2loopback ];
+        kernelModules = [ "v4l2loopback" ];
       };
 
       systemd.services = mkInstanceServices enabledInstances;

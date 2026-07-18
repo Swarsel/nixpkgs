@@ -1,13 +1,14 @@
 {
   lib,
+  stdenv,
   fetchFromGitHub,
   cmake,
-  stdenv,
   nix-update-script,
 }:
 stdenv.mkDerivation rec {
   pname = "espresso";
   version = "2.4";
+
   src = fetchFromGitHub {
     owner = "chipsalliance";
     repo = "espresso";
@@ -15,24 +16,23 @@ stdenv.mkDerivation rec {
     hash = "sha256-z5By57VbmIt4sgRgvECnLbZklnDDWUA6fyvWVyXUzsI=";
   };
 
+  outputs = [
+    "out"
+    "man"
+  ];
+
   postPatch = ''
     substituteInPlace utility/port.h \
       --replace-fail "VOID_HACK srandom();" "VOID_HACK srandom(unsigned int __seed);"
   '';
 
   nativeBuildInputs = [ cmake ];
-
   doCheck = true;
-
-  outputs = [
-    "out"
-    "man"
-  ];
-
   passthru.updateScript = nix-update-script { };
 
   meta = {
     description = "Multi-valued PLA minimization";
+
     # from manual
     longDescription = ''
       Espresso takes as input a two-level representation of a
@@ -41,14 +41,14 @@ stdenv.mkDerivation rec {
       represent an advance in both speed and optimality of solution in
       heuristic Boolean minimization.
     '';
-    homepage = "https://github.com/chipsalliance/espresso";
-    maintainers = with lib.maintainers; [ pineapplehunter ];
-    mainProgram = "espresso";
-    platforms = lib.platforms.all;
 
+    homepage = "https://github.com/chipsalliance/espresso";
     # The license is not provided in the GitHub repo,
     # so until there's an update on the license, it is marked as unfree.
     # See: https://github.com/chipsalliance/espresso/issues/4
     license = lib.licenses.unfree;
+    maintainers = with lib.maintainers; [ pineapplehunter ];
+    platforms = lib.platforms.all;
+    mainProgram = "espresso";
   };
 }

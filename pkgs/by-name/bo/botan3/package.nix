@@ -1,21 +1,24 @@
 {
   lib,
   stdenv,
-  libcxxStdenv,
   fetchFromGitHub,
-  pkgsStatic,
-  runCommandLocal,
   binutils,
-  python3,
-  docutils,
   bzip2,
-  zlib,
-  jitterentropy,
+  docutils,
   esdm,
+  jitterentropy,
+  libcxxStdenv,
+  pkgsStatic,
+  python3,
+  runCommandLocal,
   tpm2-tss,
-  static ? stdenv.hostPlatform.isStatic,
   windows,
-
+  zlib,
+  # create additional "selftests" output and put botan-test binary together with
+  # test vectors there. Useful to perform initial botan self-tests before using it
+  exposeSelftests ? false,
+  policy ? null,
+  static ? stdenv.hostPlatform.isStatic,
   # build ESDM RNG plugin
   withEsdm ? false,
   # build with jitterentropy RNG plugin,
@@ -25,10 +28,6 @@
   withJitterentropy ? false,
   # useful, but have to disable tests for now, as /dev/tpmrm0 is not accessible
   withTpm2 ? false,
-  policy ? null,
-  # create additional "selftests" output and put botan-test binary together with
-  # test vectors there. Useful to perform initial botan self-tests before using it
-  exposeSelftests ? false,
 }@args:
 
 assert lib.assertOneOf "policy" policy [
@@ -60,12 +59,15 @@ let
       '';
 in
 stdenv.mkDerivation (finalAttrs: {
-  version = "3.12.0";
   pname = "botan";
+  version = "3.12.0";
 
-  __structuredAttrs = true;
-  enableParallelBuilding = true;
-  strictDeps = true;
+  src = fetchFromGitHub {
+    owner = "randombit";
+    repo = "botan";
+    tag = finalAttrs.version;
+    hash = "sha256-2ODTjqsWSmlornOKh5m6pOX7cNOBHS3+ALblRyC8lPw=";
+  };
 
   outputs = [
     "bin"
@@ -78,12 +80,7 @@ stdenv.mkDerivation (finalAttrs: {
     "selftests"
   ];
 
-  src = fetchFromGitHub {
-    owner = "randombit";
-    repo = "botan";
-    tag = finalAttrs.version;
-    hash = "sha256-2ODTjqsWSmlornOKh5m6pOX7cNOBHS3+ALblRyC8lPw=";
-  };
+  strictDeps = true;
 
   nativeBuildInputs = [
     python3
@@ -108,13 +105,31 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   propagatedBuildInputs = lib.optional static empty-libgcc_eh;
+  doCheck = true;
 
-  buildTargets = [
-    "cli"
-  ]
-  ++ lib.optionals (finalAttrs.finalPackage.doCheck || exposeSelftests) [ "tests" ]
-  ++ lib.optionals static [ "static" ]
-  ++ lib.optionals (!static) [ "shared" ];
+  preInstall = ''
+    if [ -d src/scripts ]; then
+      patchShebangs src/scripts
+    fi
+  '';
+
+  postInstall =
+    lib.optionalString exposeSelftests ''
+      mkdir -p $selftests/bin
+      install -Dpm755 -D botan-test $selftests/bin/botan-test
+
+      # don't copy leading source folder structure
+      pushd src/tests/data &> /dev/null
+      find . -type d -exec install -d $selftests/test-data/{} \;
+      find . -type f -exec install -Dpm644 {} $selftests/test-data/{} \;
+      popd &> /dev/null
+    ''
+    + ''
+      cd "$out"/lib/pkgconfig
+      ln -s botan-*.pc botan.pc || true
+    '';
+
+  __structuredAttrs = true;
 
   botanConfigureFlags = [
     "--prefix=${placeholder "out"}"
@@ -151,35 +166,20 @@ stdenv.mkDerivation (finalAttrs: {
     "--os=mingw"
   ];
 
+  buildTargets = [
+    "cli"
+  ]
+  ++ lib.optionals (finalAttrs.finalPackage.doCheck || exposeSelftests) [ "tests" ]
+  ++ lib.optionals static [ "static" ]
+  ++ lib.optionals (!static) [ "shared" ];
+
   configurePhase = ''
     runHook preConfigure
     python configure.py ''${botanConfigureFlags[@]}
     runHook postConfigure
   '';
 
-  preInstall = ''
-    if [ -d src/scripts ]; then
-      patchShebangs src/scripts
-    fi
-  '';
-
-  postInstall =
-    lib.optionalString exposeSelftests ''
-      mkdir -p $selftests/bin
-      install -Dpm755 -D botan-test $selftests/bin/botan-test
-
-      # don't copy leading source folder structure
-      pushd src/tests/data &> /dev/null
-      find . -type d -exec install -d $selftests/test-data/{} \;
-      find . -type f -exec install -Dpm644 {} $selftests/test-data/{} \;
-      popd &> /dev/null
-    ''
-    + ''
-      cd "$out"/lib/pkgconfig
-      ln -s botan-*.pc botan.pc || true
-    '';
-
-  doCheck = true;
+  enableParallelBuilding = true;
 
   passthru.tests = {
     static = pkgsStatic.botan3;
@@ -188,13 +188,15 @@ stdenv.mkDerivation (finalAttrs: {
   meta = {
     description = "Cryptographic algorithms library";
     homepage = "https://botan.randombit.net";
-    mainProgram = "botan";
+    license = lib.licenses.bsd2;
+
     maintainers = with lib.maintainers; [
       raskin
       thillux
       nikstur
     ];
+
     platforms = lib.platforms.unix ++ lib.platforms.windows;
-    license = lib.licenses.bsd2;
+    mainProgram = "botan";
   };
 })

@@ -1,8 +1,8 @@
 {
   lib,
   stdenv,
-  rustPlatform,
   fetchFromGitHub,
+  rustPlatform,
   versionCheckHook,
 }:
 
@@ -18,15 +18,13 @@ rustPlatform.buildRustPackage (finalAttrs: {
   };
 
   strictDeps = true;
-
   cargoHash = "sha256-VcdHlQOplki31uLOutVx7HH7rjH9a5fEZhlxtLvuS9E=";
+  doInstallCheck = true;
+  nativeInstallCheckInputs = [ versionCheckHook ];
 
   __impureHostDeps = lib.optionals stdenv.hostPlatform.isDarwin [
     "/System/Library/Fonts"
   ];
-
-  doInstallCheck = true;
-  nativeInstallCheckInputs = [ versionCheckHook ];
 
   meta = {
     description = "Command-line tool for generating animated GIF files from asciicast files produced by asciinema terminal recorder";

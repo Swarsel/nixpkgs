@@ -1,20 +1,20 @@
 {
   lib,
   stdenv,
-  cmake,
-  pkg-config,
-  python3,
-  rake,
-  curl,
   fetchFromGitHub,
+  SDL2,
+  cmake,
+  curl,
+  janet,
   kubazip,
   libGL,
   libGLU,
   libx11,
-  janet,
   lua5_3_compat,
+  pkg-config,
+  python3,
   quickjs,
-  SDL2,
+  rake,
   # Whether to build TIC-80's "Pro" version, which is an incentive to support the project financially,
   # that enables some additional features. It is, however, fully open source.
   withPro ? false,
@@ -35,12 +35,12 @@ stdenv.mkDerivation {
     owner = "nesbox";
     repo = "TIC-80";
     rev = "881828910e77c799c1a6894cadc2d05a5c2f3f70";
+    hash = "sha256-bqLVoLJpT62k9d+WZUgIu4ClcJNUvURB7j+NE/fzWNk=";
     # TIC-80 vendors its dependencies as submodules. For the following dependencies,
     # there are no (or no compatible) packages in nixpkgs yet, so we use the vendored
     # ones as a fill-in: wasm, squirrel, pocketpy, argparse, naett,
     # sdlgpu, mruby.
     fetchSubmodules = true;
-    hash = "sha256-bqLVoLJpT62k9d+WZUgIu4ClcJNUvURB7j+NE/fzWNk=";
   };
 
   # TIC-80 tries to determine the revision part of the version using its Git history.
@@ -54,11 +54,24 @@ stdenv.mkDerivation {
       --replace-fail 'string(TIMESTAMP VERSION_YEAR "%Y")' 'set(VERSION_YEAR "${year}")'
   '';
 
-  # Taken from pkgs/development/compilers/mruby; necessary so it uses `gcc` instead of `ld` for linking.
-  # https://github.com/mruby/mruby/blob/e502fd88b988b0a8d9f31b928eb322eae269c45a/tasks/toolchains/gcc.rake#L30
-  preBuild = ''
-    unset LD
-  '';
+  nativeBuildInputs = [
+    cmake
+    curl
+    pkg-config
+    python3
+    rake
+  ];
+
+  buildInputs = [
+    kubazip
+    libGL
+    libGLU
+    libx11
+    janet
+    (lua5_3_compat.withPackages (ps: [ ps.fennel ]))
+    quickjs
+    SDL2
+  ];
 
   cmakeFlags =
     let
@@ -74,6 +87,12 @@ stdenv.mkDerivation {
       "BUILD_WITH_ALL"
     ]);
 
+  # Taken from pkgs/development/compilers/mruby; necessary so it uses `gcc` instead of `ld` for linking.
+  # https://github.com/mruby/mruby/blob/e502fd88b988b0a8d9f31b928eb322eae269c45a/tasks/toolchains/gcc.rake#L30
+  preBuild = ''
+    unset LD
+  '';
+
   postInstall = lib.optionalString stdenv.hostPlatform.isDarwin ''
     mkdir -p "$out"/Applications/TIC-80.app/Contents/{MacOS,Resources}
     cp bin/tic80 "$out"/Applications/TIC-80.app/Contents/MacOS/tic80
@@ -83,26 +102,9 @@ stdenv.mkDerivation {
     ln -s "$out"/Applications/TIC-80.app/Contents/MacOS/tic80 "$out"/bin/tic80
   '';
 
-  nativeBuildInputs = [
-    cmake
-    curl
-    pkg-config
-    python3
-    rake
-  ];
-  buildInputs = [
-    kubazip
-    libGL
-    libGLU
-    libx11
-    janet
-    (lua5_3_compat.withPackages (ps: [ ps.fennel ]))
-    quickjs
-    SDL2
-  ];
-
   meta = {
     description = "Free and open source fantasy computer for making, playing and sharing tiny games";
+
     longDescription = ''
       TIC-80 is a free and open source fantasy computer for making, playing and
       sharing tiny games.
@@ -118,10 +120,11 @@ stdenv.mkDerivation {
       240x136 pixels display, 16 color palette, 256 8x8 color sprites, 4
       channel sound and etc.
     '';
+
     homepage = "https://github.com/nesbox/TIC-80";
     license = lib.licenses.mit;
+    maintainers = with lib.maintainers; [ blinry ];
     platforms = with lib.platforms; linux ++ darwin;
     mainProgram = "tic80";
-    maintainers = with lib.maintainers; [ blinry ];
   };
 }

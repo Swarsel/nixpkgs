@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule (finalAttrs: {
@@ -16,15 +16,14 @@ buildGoModule (finalAttrs: {
   };
 
   vendorHash = "sha256-rD+QCQKgCZU5ktItV8NYqoyQPR7lk8sutvJwSJxFfZQ=";
-
   doCheck = false;
 
   meta = {
     description = "Command-line tool to run Firecracker microVMs";
     homepage = "https://github.com/firecracker-microvm/firectl";
     license = lib.licenses.asl20;
-    platforms = lib.platforms.linux;
     maintainers = with lib.maintainers; [ xrelkd ];
+    platforms = lib.platforms.linux;
     mainProgram = "firectl";
   };
 })

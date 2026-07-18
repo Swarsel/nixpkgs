@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   pytestCheckHook,
   setuptools,
 }:
@@ -9,9 +9,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "cstruct";
   version = "6.2";
-  pyproject = true;
-
-  build-system = [ setuptools ];
 
   src = fetchFromGitHub {
     owner = "andreax79";
@@ -20,9 +17,10 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-jLpuvApEP8Acva/OV3ulwl4+dOy8t/cD/LFJWWnD3BM=";
   };
 
-  pythonImportsCheck = [ "cstruct" ];
-
   nativeCheckInputs = [ pytestCheckHook ];
+  build-system = [ setuptools ];
+  pyproject = true;
+  pythonImportsCheck = [ "cstruct" ];
 
   meta = {
     description = "C-style structs for Python";

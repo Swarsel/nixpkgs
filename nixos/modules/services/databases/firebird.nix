@@ -46,34 +46,41 @@ in
 
       package = lib.mkPackageOption pkgs "firebird" {
         example = "firebird_3";
+
         extraDescription = ''
           For SuperServer use override: `pkgs.firebird_3.override { superServer = true; };`
         '';
       };
 
-      port = lib.mkOption {
-        default = 3050;
-        type = lib.types.port;
-        description = ''
-          Port Firebird uses.
-        '';
-      };
-
-      user = lib.mkOption {
-        default = "firebird";
-        type = lib.types.str;
-        description = ''
-          User account under which firebird runs.
-        '';
-      };
-
       baseDir = lib.mkOption {
         default = "/var/lib/firebird";
-        type = lib.types.str;
+
         description = ''
           Location containing data/ and system/ directories.
           data/ stores the databases, system/ stores the password database security2.fdb.
         '';
+
+        type = lib.types.str;
+      };
+
+      port = lib.mkOption {
+        default = 3050;
+
+        description = ''
+          Port Firebird uses.
+        '';
+
+        type = lib.types.port;
+      };
+
+      user = lib.mkOption {
+        default = "firebird";
+
+        description = ''
+          User account under which firebird runs.
+        '';
+
+        type = lib.types.str;
       };
 
     };
@@ -83,46 +90,6 @@ in
   ###### implementation
 
   config = lib.mkIf config.services.firebird.enable {
-
-    environment.systemPackages = [ cfg.package ];
-
-    systemd.tmpfiles.rules = [
-      "d '${dataDir}' 0700 ${cfg.user} - - -"
-      "d '${systemDir}' 0700 ${cfg.user} - - -"
-    ];
-
-    systemd.services.firebird = {
-      description = "Firebird Super-Server";
-
-      wantedBy = [ "multi-user.target" ];
-
-      # TODO: moving security2.fdb into the data directory works, maybe there
-      # is a better way
-      preStart = ''
-        if ! test -e "${systemDir}/security2.fdb"; then
-            cp ${firebird}/security2.fdb "${systemDir}"
-        fi
-
-        if ! test -e "${systemDir}/security3.fdb"; then
-            cp ${firebird}/security3.fdb "${systemDir}"
-        fi
-
-        if ! test -e "${systemDir}/security4.fdb"; then
-            cp ${firebird}/security4.fdb "${systemDir}"
-        fi
-
-        chmod -R 700         "${dataDir}" "${systemDir}" /var/log/firebird
-      '';
-
-      serviceConfig.User = cfg.user;
-      serviceConfig.LogsDirectory = "firebird";
-      serviceConfig.LogsDirectoryMode = "0700";
-      serviceConfig.ExecStart = "${firebird}/bin/fbserver -d";
-
-      # TODO think about shutdown
-    };
-
-    environment.etc."firebird/firebird.msg".source = "${firebird}/firebird.msg";
 
     # think about this again - and eventually make it an option
     environment.etc."firebird/firebird.conf".text = ''
@@ -152,13 +119,50 @@ in
       # there are some additional settings which should be reviewed
     '';
 
+    environment.etc."firebird/firebird.msg".source = "${firebird}/firebird.msg";
+    environment.systemPackages = [ cfg.package ];
+
+    systemd.services.firebird = {
+      description = "Firebird Super-Server";
+
+      # TODO: moving security2.fdb into the data directory works, maybe there
+      # is a better way
+      preStart = ''
+        if ! test -e "${systemDir}/security2.fdb"; then
+            cp ${firebird}/security2.fdb "${systemDir}"
+        fi
+
+        if ! test -e "${systemDir}/security3.fdb"; then
+            cp ${firebird}/security3.fdb "${systemDir}"
+        fi
+
+        if ! test -e "${systemDir}/security4.fdb"; then
+            cp ${firebird}/security4.fdb "${systemDir}"
+        fi
+
+        chmod -R 700         "${dataDir}" "${systemDir}" /var/log/firebird
+      '';
+
+      serviceConfig.ExecStart = "${firebird}/bin/fbserver -d";
+      serviceConfig.LogsDirectory = "firebird";
+      serviceConfig.LogsDirectoryMode = "0700";
+      serviceConfig.User = cfg.user;
+      wantedBy = [ "multi-user.target" ];
+      # TODO think about shutdown
+    };
+
+    systemd.tmpfiles.rules = [
+      "d '${dataDir}' 0700 ${cfg.user} - - -"
+      "d '${systemDir}' 0700 ${cfg.user} - - -"
+    ];
+
+    users.groups.firebird.gid = config.ids.gids.firebird;
+
     users.users.firebird = {
       description = "Firebird server user";
       group = "firebird";
       uid = config.ids.uids.firebird;
     };
-
-    users.groups.firebird.gid = config.ids.gids.firebird;
 
   };
 }

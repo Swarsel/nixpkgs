@@ -1,8 +1,8 @@
 {
   lib,
   stdenv,
-  autoreconfHook,
   fetchFromGitHub,
+  autoreconfHook,
   unstableGitUpdater,
 }:
 
@@ -23,11 +23,9 @@ stdenv.mkDerivation {
       --replace "set-rpath-library.sh" ""
   '';
 
-  setupHook = [ ./setup-hook.sh ];
-
   nativeBuildInputs = [ autoreconfHook ];
-
   doCheck = !stdenv.hostPlatform.isDarwin;
+  setupHook = [ ./setup-hook.sh ];
 
   passthru = {
     updateScript = unstableGitUpdater {
@@ -36,11 +34,11 @@ stdenv.mkDerivation {
   };
 
   meta = {
+    description = "Small utility to modify the dynamic linker and RPATH of ELF executables";
     homepage = "https://github.com/NixOS/patchelf";
     license = lib.licenses.gpl3;
-    description = "Small utility to modify the dynamic linker and RPATH of ELF executables";
-    mainProgram = "patchelf";
     maintainers = [ ];
     platforms = lib.platforms.all;
+    mainProgram = "patchelf";
   };
 }

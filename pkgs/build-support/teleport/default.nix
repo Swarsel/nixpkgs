@@ -1,90 +1,74 @@
 {
   lib,
-  rustPlatform,
+  stdenv,
   fetchFromGitHub,
-  fetchpatch,
-  makeWrapper,
   binaryen,
   cargo,
+  fetchPnpmDeps,
+  fetchpatch,
   libfido2,
+  makeWrapper,
+  nixosTests,
   nodejs,
   openssl,
   pkg-config,
-  pnpm_10,
-  fetchPnpmDeps,
   pnpmConfigHook,
+  pnpm_10,
+  rustPlatform,
   rustc,
-  stdenv,
-  xdg-utils,
   wasm-pack,
-  nixosTests,
+  xdg-utils,
 }:
 
 {
-  version,
-  hash,
+  buildGoModule,
   cargoHash,
+  hash,
   pnpmHash,
   vendorHash,
+  version,
   wasm-bindgen-cli,
-  buildGoModule,
-
-  withRdpClient ? true,
   extPatches ? [ ],
+  withRdpClient ? true,
 }:
 let
 
   # This repo has a private submodule "e" which fetchgit cannot handle without failing.
   src = fetchFromGitHub {
+    inherit hash;
     owner = "gravitational";
     repo = "teleport";
     tag = "v${version}";
-    inherit hash;
   };
   pname = "teleport";
   inherit version;
 
   rdpClient = rustPlatform.buildRustPackage (finalAttrs: {
-    pname = "teleport-rdpclient";
     inherit cargoHash;
     inherit version src;
-
-    buildAndTestSubdir = "lib/srv/desktop/rdp/rdpclient";
-
-    buildInputs = [ openssl ];
+    pname = "teleport-rdpclient";
     nativeBuildInputs = [ pkg-config ];
-
+    buildInputs = [ openssl ];
+    env.OPENSSL_NO_VENDOR = "1";
     # https://github.com/NixOS/nixpkgs/issues/161570 ,
     # buildRustPackage sets strictDeps = true;
     nativeCheckInputs = finalAttrs.buildInputs;
-
-    env.OPENSSL_NO_VENDOR = "1";
 
     postInstall = ''
       mkdir -p $out/include
       cp ${finalAttrs.buildAndTestSubdir}/librdpclient.h $out/include/
     '';
+
+    buildAndTestSubdir = "lib/srv/desktop/rdp/rdpclient";
   });
 
   webassets = stdenv.mkDerivation {
-    pname = "teleport-webassets";
     inherit src version;
+    pname = "teleport-webassets";
 
-    cargoDeps = rustPlatform.fetchCargoVendor {
-      inherit src;
-      hash = cargoHash;
-    };
-
-    pnpmDeps = fetchPnpmDeps {
-      inherit
-        src
-        pname
-        version
-        ;
-      pnpm = pnpm_10;
-      fetcherVersion = 3;
-      hash = pnpmHash;
-    };
+    patches = [
+      ./disable-wasm-opt-for-ironrdp.patch
+    ];
 
     nativeBuildInputs = [
       binaryen
@@ -98,18 +82,6 @@ let
       wasm-bindgen-cli
       wasm-pack
     ];
-
-    patches = [
-      ./disable-wasm-opt-for-ironrdp.patch
-    ];
-
-    configurePhase = ''
-      runHook preConfigure
-
-      export HOME=$(mktemp -d)
-
-      runHook postConfigure
-    '';
 
     buildPhase = ''
       PATH=$PATH:$PWD/node_modules/.bin
@@ -129,32 +101,41 @@ let
       mkdir -p $out
       cp -R webassets/. $out
     '';
+
+    cargoDeps = rustPlatform.fetchCargoVendor {
+      inherit src;
+      hash = cargoHash;
+    };
+
+    configurePhase = ''
+      runHook preConfigure
+
+      export HOME=$(mktemp -d)
+
+      runHook postConfigure
+    '';
+
+    pnpmDeps = fetchPnpmDeps {
+      inherit
+        src
+        pname
+        version
+        ;
+
+      fetcherVersion = 3;
+      hash = pnpmHash;
+      pnpm = pnpm_10;
+    };
   };
 in
 buildGoModule (finalAttrs: {
   inherit pname src version;
   inherit vendorHash;
-  proxyVendor = true;
 
-  subPackages = [
-    "tool/tbot"
-    "tool/tctl"
-    "tool/teleport"
-    "tool/tsh"
-  ];
-  tags = [
-    "libfido2"
-    "webassets_embed"
-  ]
-  ++ lib.optional withRdpClient "desktop_access_rdp";
-
-  buildInputs = [
-    openssl
-    libfido2
-  ];
-  nativeBuildInputs = [
-    makeWrapper
-    pkg-config
+  # Reduce closure size for client machines
+  outputs = [
+    "out"
+    "client"
   ];
 
   patches =
@@ -169,10 +150,14 @@ buildGoModule (finalAttrs: {
       ./0001-fix-add-nix-path-to-exec-env-reexec.patch
     ];
 
-  # Reduce closure size for client machines
-  outputs = [
-    "out"
-    "client"
+  nativeBuildInputs = [
+    makeWrapper
+    pkg-config
+  ];
+
+  buildInputs = [
+    openssl
+    libfido2
   ];
 
   preBuild = ''
@@ -206,12 +191,28 @@ buildGoModule (finalAttrs: {
     $out/bin/teleport version | grep ${version} > /dev/null
   '';
 
+  proxyVendor = true;
+
+  subPackages = [
+    "tool/tbot"
+    "tool/tctl"
+    "tool/teleport"
+    "tool/tsh"
+  ];
+
+  tags = [
+    "libfido2"
+    "webassets_embed"
+  ]
+  ++ lib.optional withRdpClient "desktop_access_rdp";
+
   passthru.tests = nixosTests.teleport;
 
   meta = {
     description = "Certificate authority and access plane for SSH, Kubernetes, web applications, and databases";
     homepage = "https://goteleport.com/";
     license = lib.licenses.agpl3Plus;
+
     maintainers = with lib.maintainers; [
       arianvp
       justinas
@@ -220,6 +221,7 @@ buildGoModule (finalAttrs: {
       techknowlogick
       juliusfreudenberger
     ];
+
     platforms = lib.platforms.unix;
     # go-libfido2 is broken on platforms with less than 64-bit because it defines an array
     # which occupies more than 31 bits of address space.

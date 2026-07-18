@@ -3,13 +3,13 @@
   stdenv,
   fetchurl,
   autoreconfHook,
-  pkg-config,
-  libmediainfo,
-  wxwidgets_3_2,
   desktop-file-utils,
-  libsm,
   imagemagick,
+  libmediainfo,
+  libsm,
+  pkg-config,
   wrapGAppsHook3,
+  wxwidgets_3_2,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -35,20 +35,21 @@ stdenv.mkDerivation (finalAttrs: {
     imagemagick
   ];
 
-  sourceRoot = "MediaInfo/Project/GNU/GUI";
-
   enableParallelBuilding = true;
+  sourceRoot = "MediaInfo/Project/GNU/GUI";
 
   meta = {
     description = "Supplies technical and tag information about a video or audio file (GUI version)";
+
     longDescription = ''
       MediaInfo is a convenient unified display of the most relevant technical
       and tag data for video and audio files.
     '';
+
     homepage = "https://mediaarea.net";
     license = lib.licenses.bsd2;
-    platforms = lib.platforms.unix;
     maintainers = with lib.maintainers; [ devhell ];
+    platforms = lib.platforms.unix;
     mainProgram = "mediainfo-gui";
   };
 })

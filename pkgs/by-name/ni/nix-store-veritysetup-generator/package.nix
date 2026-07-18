@@ -1,9 +1,9 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
-  systemd,
   nixosTests,
+  rustPlatform,
+  systemd,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -17,13 +17,11 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-RTGdcLn4zuZAcC1Td4gJcywIerCYyaD0JYz8g5ybmho=";
   };
 
-  sourceRoot = "${finalAttrs.src.name}/rust";
-
   cargoHash = "sha256-9DwED8X/RHjBCInm+VbzoeVSb28U+XIE2IjNAGon6+E=";
 
   env = {
-    SYSTEMD_VERITYSETUP_PATH = "${systemd}/lib/systemd/systemd-veritysetup";
     SYSTEMD_ESCAPE_PATH = "${systemd}/bin/systemd-escape";
+    SYSTEMD_VERITYSETUP_PATH = "${systemd}/lib/systemd/systemd-veritysetup";
   };
 
   # Use a fake path in tests so that they are not dependent on specific Nix
@@ -33,6 +31,7 @@ rustPlatform.buildRustPackage (finalAttrs: {
     export SYSTEMD_VERITYSETUP_PATH="systemd-veritysetup";
   '';
 
+  sourceRoot = "${finalAttrs.src.name}/rust";
   stripAllList = [ "bin" ];
 
   passthru.tests = {

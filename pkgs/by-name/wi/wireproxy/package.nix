@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   testers,
   wireproxy,
 }:
@@ -17,18 +17,18 @@ buildGoModule (finalAttrs: {
     hash = "sha256-R1G/VtyQsl7yoDwZw+24qTdeq//qYQTQwzAPvH8f+ls=";
   };
 
+  vendorHash = "sha256-T6RN7f05bNVL7gfhaAR0+lKZWqXvMcgjiyPldCmmvU4=";
+
   ldflags = [
     "-s"
     "-w"
     "-X main.version=v${finalAttrs.version}"
   ];
 
-  vendorHash = "sha256-T6RN7f05bNVL7gfhaAR0+lKZWqXvMcgjiyPldCmmvU4=";
-
   passthru.tests.version = testers.testVersion {
-    package = wireproxy;
-    command = "wireproxy --version";
     version = finalAttrs.src.rev;
+    command = "wireproxy --version";
+    package = wireproxy;
   };
 
   meta = {

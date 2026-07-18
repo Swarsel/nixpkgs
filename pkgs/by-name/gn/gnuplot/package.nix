@@ -2,33 +2,33 @@
   lib,
   stdenv,
   fetchurl,
-  makeWrapper,
-  pkg-config,
-  texinfo,
   cairo,
-  gd,
-  libcerf,
-  pango,
-  readline,
-  zlib,
-  withTeXLive ? false,
-  texliveSmall,
-  withLua ? false,
-  lua,
-  withCaca ? false,
-  libcaca,
-  libx11,
-  libxt,
-  libxpm,
-  libxaw,
-  aquaterm ? false,
-  withWxGTK ? false,
-  wxwidgets_3_2,
-  fontconfig,
-  gnused,
   coreutils,
-  withQt ? false,
+  fontconfig,
+  gd,
+  gnused,
+  libcaca,
+  libcerf,
+  libx11,
+  libxaw,
+  libxpm,
+  libxt,
+  lua,
+  makeWrapper,
+  pango,
+  pkg-config,
   qt5,
+  readline,
+  texinfo,
+  texliveSmall,
+  wxwidgets_3_2,
+  zlib,
+  aquaterm ? false,
+  withCaca ? false,
+  withLua ? false,
+  withQt ? false,
+  withTeXLive ? false,
+  withWxGTK ? false,
 }:
 
 let
@@ -42,6 +42,11 @@ stdenv.mkDerivation (finalAttrs: {
     url = "mirror://sourceforge/gnuplot/gnuplot-${finalAttrs.version}.tar.gz";
     hash = "sha256-RY2UdpYl5z1fYjJQD0nLrcsrGDOA1D0iZqD5cBrrnFs=";
   };
+
+  postPatch = ''
+    # lrelease is in qttools, not in qtbase.
+    sed -i configure -e 's|''${QT5LOC}/lrelease|lrelease|'
+  '';
 
   nativeBuildInputs = [
     makeWrapper
@@ -76,11 +81,6 @@ stdenv.mkDerivation (finalAttrs: {
   ]
   ++ lib.optional withWxGTK wxwidgets_3_2;
 
-  postPatch = ''
-    # lrelease is in qttools, not in qtbase.
-    sed -i configure -e 's|''${QT5LOC}/lrelease|lrelease|'
-  '';
-
   configureFlags = [
     (if withX then "--with-x" else "--without-x")
     (if withQt then "--with-qt=qt5" else "--without-qt")
@@ -89,13 +89,15 @@ stdenv.mkDerivation (finalAttrs: {
   ++ lib.optional withCaca "--with-caca"
   ++ lib.optional withTeXLive "--with-texdir=${placeholder "out"}/share/texmf/tex/latex/gnuplot";
 
+  # When cross-compiling, don't build docs and demos.
+  # Inspiration taken from https://sourceforge.net/p/gnuplot/gnuplot-main/merge-requests/10/
+  makeFlags = lib.optionals (!stdenv.buildPlatform.canExecute stdenv.hostPlatform) [
+    "-C src"
+  ];
+
   env = lib.optionalAttrs (stdenv.hostPlatform.isDarwin && withQt) {
     CXXFLAGS = "-std=c++11";
   };
-
-  # we'll wrap things ourselves
-  dontWrapGApps = true;
-  dontWrapQtApps = true;
 
   # binary wrappers don't support --run
   postInstall = lib.optionalString withX ''
@@ -112,20 +114,17 @@ stdenv.mkDerivation (finalAttrs: {
        --run '. ${./set-gdfontpath-from-fontconfig.sh}'
   '';
 
-  # When cross-compiling, don't build docs and demos.
-  # Inspiration taken from https://sourceforge.net/p/gnuplot/gnuplot-main/merge-requests/10/
-  makeFlags = lib.optionals (!stdenv.buildPlatform.canExecute stdenv.hostPlatform) [
-    "-C src"
-  ];
-
+  # we'll wrap things ourselves
+  dontWrapGApps = true;
+  dontWrapQtApps = true;
   enableParallelBuilding = true;
 
   meta = {
-    homepage = "http://www.gnuplot.info/";
     description = "Portable command-line driven graphing utility for many platforms";
-    platforms = lib.platforms.linux ++ lib.platforms.darwin;
+    homepage = "http://www.gnuplot.info/";
     license = lib.licenses.gnuplot;
     maintainers = [ ];
+    platforms = lib.platforms.linux ++ lib.platforms.darwin;
     mainProgram = "gnuplot";
   };
 })

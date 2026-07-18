@@ -20,9 +20,6 @@ buildDunePackage (finalAttrs: {
     sha256 = "sha256-6ReAzd+pCd5ccmXOh6GlSxHo4GuEgptxLha62n+dBsE=";
   };
 
-  minimalOCamlVersion = "4.08";
-  duneVersion = "3";
-
   propagatedBuildInputs = [
     cstruct-lwt
     logs
@@ -32,10 +29,14 @@ buildDunePackage (finalAttrs: {
   ];
 
   doCheck = true;
+
   checkInputs = [
     diet
     ounit2
   ];
+
+  duneVersion = "3";
+  minimalOCamlVersion = "4.08";
 
   meta = {
     description = "MirageOS disk block driver for Unix";

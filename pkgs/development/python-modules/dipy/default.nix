@@ -1,14 +1,14 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  meson-python,
-  packaging,
+  buildPythonPackage,
   cython,
-  numpy,
-  scipy,
   h5py,
+  meson-python,
   nibabel,
+  numpy,
+  packaging,
+  scipy,
   tqdm,
   trx-python,
 }:
@@ -16,7 +16,6 @@
 buildPythonPackage rec {
   pname = "dipy";
   version = "1.11.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "dipy";
@@ -24,6 +23,12 @@ buildPythonPackage rec {
     tag = version;
     hash = "sha256-vqjd5gd9B630pv6H4MvXnlPwlEhm1o7MbwYD0J7D24o=";
   };
+
+  # disable tests for now due to:
+  #   - some tests require data download (see dipy/dipy/issues/2092);
+  #   - running the tests manually causes a multiprocessing hang;
+  #   - import weirdness when running the tests
+  doCheck = false;
 
   build-system = [
     cython
@@ -42,11 +47,7 @@ buildPythonPackage rec {
     trx-python
   ];
 
-  # disable tests for now due to:
-  #   - some tests require data download (see dipy/dipy/issues/2092);
-  #   - running the tests manually causes a multiprocessing hang;
-  #   - import weirdness when running the tests
-  doCheck = false;
+  pyproject = true;
 
   pythonImportsCheck = [
     "dipy"
@@ -67,8 +68,8 @@ buildPythonPackage rec {
   ];
 
   meta = {
-    homepage = "https://dipy.org/";
     description = "Diffusion imaging toolkit for Python";
+    homepage = "https://dipy.org/";
     changelog = "https://github.com/dipy/dipy/blob/${version}/Changelog";
     license = lib.licenses.bsd3;
     maintainers = with lib.maintainers; [ bcdarwin ];

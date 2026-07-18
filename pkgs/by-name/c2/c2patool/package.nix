@@ -1,10 +1,10 @@
 {
   lib,
   fetchFromGitHub,
-  rustPlatform,
+  git,
   openssl,
   pkg-config,
-  git,
+  rustPlatform,
   versionCheckHook,
 }:
 
@@ -19,18 +19,15 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-BTPkqRfET77IrNafeo/sPT/4AxXb87prqbu+GjKErG8=";
   };
 
-  cargoHash = "sha256-cMvRDRVXa4044F7pHM+X3NcBB8OtgfIw6Sxw6PilNKs=";
-
-  # use the non-vendored openssl
-  env.OPENSSL_NO_VENDOR = 1;
-
   nativeBuildInputs = [
     git
     pkg-config
   ];
 
   buildInputs = [ openssl ];
-
+  cargoHash = "sha256-cMvRDRVXa4044F7pHM+X3NcBB8OtgfIw6Sxw6PilNKs=";
+  # use the non-vendored openssl
+  env.OPENSSL_NO_VENDOR = 1;
   # could not compile `c2pa` (lib test) due to 102 previous errors
   doCheck = false;
 
@@ -50,16 +47,17 @@ rustPlatform.buildRustPackage (finalAttrs: {
   ];
 
   doInstallCheck = true;
-
   nativeInstallCheckInputs = [ versionCheckHook ];
 
   meta = {
     description = "Command line tool for working with C2PA manifests and media assets";
     homepage = "https://github.com/contentauth/c2pa-rs/tree/main/cli";
+
     license = with lib.licenses; [
       asl20 # or
       mit
     ];
+
     maintainers = with lib.maintainers; [ ok-nick ];
     mainProgram = "c2patool";
   };

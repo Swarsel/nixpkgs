@@ -1,32 +1,27 @@
 {
   lib,
   fetchurl,
-  perlPackages,
-  makeBinaryWrapper,
-  gnupg,
-  re2c,
+  coreutils,
   gcc,
   gnumake,
-  libxcrypt,
-  openssl,
-  coreutils,
-  poppler-utils,
-  tesseract,
+  gnupg,
   iana-etc,
+  libxcrypt,
+  makeBinaryWrapper,
+  openssl,
+  perlPackages,
+  poppler-utils,
+  re2c,
+  tesseract,
 }:
 
 perlPackages.buildPerlPackage rec {
   pname = "SpamAssassin";
   version = "4.0.1";
-  rulesRev = "r1916528";
 
   src = fetchurl {
     url = "mirror://apache/spamassassin/source/Mail-${pname}-${version}.tar.bz2";
     hash = "sha256-l3XtdVnoPsPmwD7bK+j/x/FcxAX7E+hcFI6wvxkXIag=";
-  };
-  defaultRulesSrc = fetchurl {
-    url = "mirror://apache/spamassassin/source/Mail-${pname}-rules-${version}.${rulesRev}.tgz";
-    hash = "sha256-OB6t/H5RPl9zU4m3gXPeWvRx89Bv5quPEpY0pmRLS/Q=";
   };
 
   patches = [
@@ -35,6 +30,7 @@ perlPackages.buildPerlPackage rec {
   ];
 
   nativeBuildInputs = [ makeBinaryWrapper ];
+
   buildInputs =
     (with perlPackages; [
       HTMLParser
@@ -72,8 +68,6 @@ perlPackages.buildPerlPackage rec {
     "ENABLE_SSL=yes"
   ];
 
-  makeMakerFlags = [ "SYSCONFDIR=/etc LOCALSTATEDIR=/var/lib/spamassassin" ];
-
   checkInputs =
     (with perlPackages; [
       TextDiff # t/strip2.t
@@ -87,6 +81,7 @@ perlPackages.buildPerlPackage rec {
       gcc
       gnumake
     ];
+
   preCheck = ''
     substituteInPlace t/spamc_x_e.t \
       --replace "/bin/echo" "${coreutils}/bin/echo"
@@ -135,14 +130,24 @@ perlPackages.buildPerlPackage rec {
     done
   '';
 
+  defaultRulesSrc = fetchurl {
+    hash = "sha256-OB6t/H5RPl9zU4m3gXPeWvRx89Bv5quPEpY0pmRLS/Q=";
+    url = "mirror://apache/spamassassin/source/Mail-${pname}-rules-${version}.${rulesRev}.tgz";
+  };
+
+  makeMakerFlags = [ "SYSCONFDIR=/etc LOCALSTATEDIR=/var/lib/spamassassin" ];
+  rulesRev = "r1916528";
+
   meta = {
-    homepage = "https://spamassassin.apache.org/";
     description = "Open-Source Spam Filter";
+    homepage = "https://spamassassin.apache.org/";
     license = lib.licenses.asl20;
-    platforms = lib.platforms.unix;
+
     maintainers = with lib.maintainers; [
       qknight
       qyliss
     ];
+
+    platforms = lib.platforms.unix;
   };
 }

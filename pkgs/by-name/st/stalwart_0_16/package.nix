@@ -1,24 +1,24 @@
 {
   lib,
-  rustPlatform,
+  stdenv,
   fetchFromGitHub,
+  bzip2,
+  cacert,
+  callPackage,
+  foundationdb,
+  libredirect,
+  nix-update-script,
+  openssl,
   pkg-config,
   protobuf,
-  bzip2,
-  openssl,
-  sqlite,
-  foundationdb,
-  zstd,
-  stdenv,
-  nix-update-script,
-  rocksdb,
-  callPackage,
   python3Packages,
-  cacert,
-  libredirect,
+  rocksdb,
+  rustPlatform,
+  sqlite,
   writeTextFile,
-  withFoundationdb ? false,
+  zstd,
   stalwartEnterprise ? false,
+  withFoundationdb ? false,
 }:
 let
   migrate_v016 =
@@ -27,15 +27,9 @@ let
       version,
     }:
     python3Packages.buildPythonApplication {
-      pname = "migrate_v016";
       inherit src version;
-      __structuredAttrs = true;
-      format = "other";
-      dontBuild = true;
-      dependencies = [
-        python3Packages.urllib3
-        python3Packages.requests
-      ];
+      pname = "migrate_v016";
+
       installPhase = ''
         runHook preInstall
         mkdir -p $out/bin
@@ -43,6 +37,17 @@ let
         chmod +x $out/bin/migrate_v016
         runHook postInstall
       '';
+
+      __structuredAttrs = true;
+
+      dependencies = [
+        python3Packages.urllib3
+        python3Packages.requests
+      ];
+
+      dontBuild = true;
+      format = "other";
+
       postFixUp = ''
         wrapPythonPrograms
       '';
@@ -52,37 +57,12 @@ rustPlatform.buildRustPackage (finalAttrs: {
   pname = "stalwart" + (lib.optionalString stalwartEnterprise "-enterprise");
   version = "0.16.13";
 
-  __structuredAttrs = true;
-
   src = fetchFromGitHub {
     owner = "stalwartlabs";
     repo = "stalwart";
     tag = "v${finalAttrs.version}";
     hash = "sha256-Uc1dUuu4TnpTKB17GArlo/hYT2gdUUnl3NxWalSB50k=";
   };
-
-  cargoHash = "sha256-C+BwUqeYzutGcX13YgR1ngfUtuk+S12/k/xAYz68b3s=";
-
-  env = {
-    # https://docs.rs/openssl/latest/openssl/#manual
-    OPENSSL_NO_VENDOR = true;
-    OPENSSL_DIR = lib.getDev openssl;
-    OPENSSL_LIB_DIR = "${lib.getLib openssl}/lib";
-    ZSTD_SYS_USE_PKG_CONFIG = true;
-    ROCKSDB_INCLUDE_DIR = "${rocksdb}/include";
-    ROCKSDB_LIB_DIR = "${rocksdb}/lib";
-  }
-  //
-    lib.optionalAttrs
-      (stdenv.hostPlatform.isLinux && (stdenv.hostPlatform.isAarch64 || stdenv.hostPlatform.isArmv7))
-      {
-        JEMALLOC_SYS_WITH_LG_PAGE = 16;
-      };
-
-  depsBuildBuild = [
-    pkg-config
-    zstd
-  ];
 
   nativeBuildInputs = [
     protobuf
@@ -97,77 +77,31 @@ rustPlatform.buildRustPackage (finalAttrs: {
   ]
   ++ lib.optionals (stdenv.hostPlatform.isLinux && withFoundationdb) [ foundationdb ];
 
-  # Issue: https://github.com/stalwartlabs/stalwart/issues/1104
-  buildNoDefaultFeatures = true;
-  buildFeatures = [
-    "sqlite"
-    "postgres"
-    "mysql"
-    "rocks"
-    "s3"
-    "redis"
-    "azure"
-    "nats"
-  ]
-  ++ lib.optionals withFoundationdb [ "foundationdb" ]
-  ++ lib.optionals stalwartEnterprise [ "enterprise" ];
+  cargoHash = "sha256-C+BwUqeYzutGcX13YgR1ngfUtuk+S12/k/xAYz68b3s=";
 
-  cargoBuildFlags = [
-    "-p"
-    "stalwart"
-  ];
-  cargoTestFlags = finalAttrs.cargoBuildFlags;
+  env = {
+    OPENSSL_DIR = lib.getDev openssl;
+    OPENSSL_LIB_DIR = "${lib.getLib openssl}/lib";
+    # https://docs.rs/openssl/latest/openssl/#manual
+    OPENSSL_NO_VENDOR = true;
+    ROCKSDB_INCLUDE_DIR = "${rocksdb}/include";
+    ROCKSDB_LIB_DIR = "${rocksdb}/lib";
+    ZSTD_SYS_USE_PKG_CONFIG = true;
+  }
+  //
+    lib.optionalAttrs
+      (stdenv.hostPlatform.isLinux && (stdenv.hostPlatform.isAarch64 || stdenv.hostPlatform.isArmv7))
+      {
+        JEMALLOC_SYS_WITH_LG_PAGE = 16;
+      };
 
   doCheck = true;
+
   nativeCheckInputs = [
     openssl
     # ... panicked at crates/utils/src/lib.rs:94:17: Failed to build TLS connectors: Failed to build platform verifier: unexpected error: No CA certificates were loaded from the system
     cacert
   ];
-
-  # Allow network access during tests on Darwin/macOS
-  __darwinAllowLocalNetworking = true;
-  # Allow access to DNS settings exposed via config daemon
-  # thread ... panicked at tests/src/lib.rs:49:13: Errors: [ Build { ... , message: "Failed to read system DNS config: failed to access System Configuration dynamic store", }, ]
-  #  -> https://github.com/hickory-dns/hickory-dns/blob/f09321075b1f97902b7bc4ca4ffda7816fcf2971/crates/resolver/src/system_conf/apple.rs#L21
-  #    ->  https://crates.io/crates/system-configuration
-  #      -> https://developer.apple.com/documentation/systemconfiguration/scdynamicstore?language=objc
-  #        -> "The handle to an open dynamic store session with the system configuration daemon." (configd)
-  sandboxProfile = lib.optionalString stdenv.hostPlatform.isDarwin ''
-    (allow mach-lookup (global-name "com.apple.SystemConfiguration.configd"))
-  '';
-
-  preCheck =
-    let
-      nsswitch = writeTextFile {
-        name = "nsswitch.conf";
-        text = ''
-          hosts: files dns
-        '';
-      };
-      hosts = writeTextFile {
-        name = "hosts";
-        text = ''
-          127.0.0.1 localhost
-        '';
-      };
-      # ... panicked at tests/src/lib.rs:49:13: Errors: [ Build { ... , message: "Failed to read system DNS config: io error: No such file or directory (os error 2)" }, ... ]
-      #   -> https://github.com/hickory-dns/hickory-dns/blob/v0.26.1/crates/resolver/src/system_conf/unix.rs#L25
-      #   -> known issue: https://github.com/hickory-dns/hickory-dns/issues/2959
-      resolvConf = writeTextFile {
-        name = "resolv.conf";
-        text = ''
-          nameserver 127.0.0.1
-        '';
-      };
-    in
-    (lib.optionalString stdenv.hostPlatform.isLinux ''
-      export NIX_REDIRECTS="/etc/nsswitch.conf=${nsswitch}:/etc/hosts=${hosts}:/etc/resolv.conf=${resolvConf}"
-      export LD_PRELOAD="${libredirect}/lib/libredirect.so"
-    '')
-    + ''
-      export STORE=RocksDb
-    '';
 
   checkFlags = lib.forEach (
     [
@@ -262,6 +196,41 @@ rustPlatform.buildRustPackage (finalAttrs: {
     ]
   ) (test: "--skip=${test}");
 
+  preCheck =
+    let
+      nsswitch = writeTextFile {
+        name = "nsswitch.conf";
+
+        text = ''
+          hosts: files dns
+        '';
+      };
+      hosts = writeTextFile {
+        name = "hosts";
+
+        text = ''
+          127.0.0.1 localhost
+        '';
+      };
+      # ... panicked at tests/src/lib.rs:49:13: Errors: [ Build { ... , message: "Failed to read system DNS config: io error: No such file or directory (os error 2)" }, ... ]
+      #   -> https://github.com/hickory-dns/hickory-dns/blob/v0.26.1/crates/resolver/src/system_conf/unix.rs#L25
+      #   -> known issue: https://github.com/hickory-dns/hickory-dns/issues/2959
+      resolvConf = writeTextFile {
+        name = "resolv.conf";
+
+        text = ''
+          nameserver 127.0.0.1
+        '';
+      };
+    in
+    (lib.optionalString stdenv.hostPlatform.isLinux ''
+      export NIX_REDIRECTS="/etc/nsswitch.conf=${nsswitch}:/etc/hosts=${hosts}:/etc/resolv.conf=${resolvConf}"
+      export LD_PRELOAD="${libredirect}/lib/libredirect.so"
+    '')
+    + ''
+      export STORE=RocksDb
+    '';
+
   postInstall = ''
     mkdir -p $out/etc/stalwart
 
@@ -273,33 +242,77 @@ rustPlatform.buildRustPackage (finalAttrs: {
     ln -s ${migrate_v016 { inherit (finalAttrs) src version; }}/bin/migrate_v016 $out/bin/migrate_v016
   '';
 
+  # Allow network access during tests on Darwin/macOS
+  __darwinAllowLocalNetworking = true;
+  __structuredAttrs = true;
+
+  buildFeatures = [
+    "sqlite"
+    "postgres"
+    "mysql"
+    "rocks"
+    "s3"
+    "redis"
+    "azure"
+    "nats"
+  ]
+  ++ lib.optionals withFoundationdb [ "foundationdb" ]
+  ++ lib.optionals stalwartEnterprise [ "enterprise" ];
+
+  # Issue: https://github.com/stalwartlabs/stalwart/issues/1104
+  buildNoDefaultFeatures = true;
+
+  cargoBuildFlags = [
+    "-p"
+    "stalwart"
+  ];
+
+  cargoTestFlags = finalAttrs.cargoBuildFlags;
+
+  depsBuildBuild = [
+    pkg-config
+    zstd
+  ];
+
+  # Allow access to DNS settings exposed via config daemon
+  # thread ... panicked at tests/src/lib.rs:49:13: Errors: [ Build { ... , message: "Failed to read system DNS config: failed to access System Configuration dynamic store", }, ]
+  #  -> https://github.com/hickory-dns/hickory-dns/blob/f09321075b1f97902b7bc4ca4ffda7816fcf2971/crates/resolver/src/system_conf/apple.rs#L21
+  #    ->  https://crates.io/crates/system-configuration
+  #      -> https://developer.apple.com/documentation/systemconfiguration/scdynamicstore?language=objc
+  #        -> "The handle to an open dynamic store session with the system configuration daemon." (configd)
+  sandboxProfile = lib.optionalString stdenv.hostPlatform.isDarwin ''
+    (allow mach-lookup (global-name "com.apple.SystemConfiguration.configd"))
+  '';
+
   passthru = {
     inherit rocksdb; # make used rocksdb version available (e.g., for backup scripts)
-    webui = callPackage ./webui.nix { };
     spam-filter = callPackage ./spam-filter.nix { };
     updateScript = nix-update-script { };
+    webui = callPackage ./webui.nix { };
   };
 
   meta = {
     description = "Secure, modern, all-in-one mail and collaboration server";
+
     longDescription = ''
       Secure, scalable and fluent in every protocol (IMAP, JMAP, SMTP, CalDAV, CardDAV, WebDAV).
     '';
+
     homepage = "https://github.com/stalwartlabs/stalwart";
     changelog = "https://github.com/stalwartlabs/stalwart/blob/${finalAttrs.src.tag}/CHANGELOG.md";
+
     license = [
       lib.licenses.agpl3Only
     ]
     ++ lib.optionals stalwartEnterprise [
       {
-        fullName = "Stalwart Enterprise License 2.0 (SELv2) Agreement";
-        url = "https://github.com/stalwartlabs/stalwart/blob/${finalAttrs.src.tag}/LICENSES/LicenseRef-SEL.txt";
         free = false;
+        fullName = "Stalwart Enterprise License 2.0 (SELv2) Agreement";
         redistributable = false;
+        url = "https://github.com/stalwartlabs/stalwart/blob/${finalAttrs.src.tag}/LICENSES/LicenseRef-SEL.txt";
       }
     ];
 
-    mainProgram = "stalwart";
     maintainers = with lib.maintainers; [
       happysalada
       onny
@@ -308,5 +321,7 @@ rustPlatform.buildRustPackage (finalAttrs: {
       norpol
       debtquity
     ];
+
+    mainProgram = "stalwart";
   };
 })

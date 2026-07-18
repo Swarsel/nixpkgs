@@ -1,10 +1,10 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
+  fscrypt-experimental,
   gnum4,
   pam,
-  fscrypt-experimental,
 }:
 
 # Don't use this for anything important yet!
@@ -26,18 +26,17 @@ buildGoModule rec {
       --replace "/usr/local" "$out"
   '';
 
-  vendorHash = "sha256-0bCpmwWWTLWsa3P5ERwOCJ1we1sofqqPXy5JlZsqJpk=";
-
-  doCheck = false;
-
   nativeBuildInputs = [ gnum4 ];
   buildInputs = [ pam ];
+  vendorHash = "sha256-0bCpmwWWTLWsa3P5ERwOCJ1we1sofqqPXy5JlZsqJpk=";
 
   buildPhase = ''
     runHook preBuild
     make
     runHook postBuild
   '';
+
+  doCheck = false;
 
   installPhase = ''
     runHook preInstall
@@ -46,17 +45,19 @@ buildGoModule rec {
   '';
 
   meta = {
+    inherit (src.meta) homepage;
     description = "High-level tool for the management of Linux filesystem encryption";
-    mainProgram = "fscrypt";
+
     longDescription = ''
       This tool manages metadata, key generation, key wrapping, PAM integration,
       and provides a uniform interface for creating and modifying encrypted
       directories.
     '';
-    inherit (src.meta) homepage;
+
     changelog = "https://github.com/google/fscrypt/releases/tag/v${version}";
     license = lib.licenses.asl20;
-    platforms = lib.platforms.linux;
     maintainers = [ ];
+    platforms = lib.platforms.linux;
+    mainProgram = "fscrypt";
   };
 }

@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   django,
   python,
   setuptools,
@@ -10,7 +10,6 @@
 buildPythonPackage rec {
   pname = "django-picklefield";
   version = "3.4.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "gintas";
@@ -19,16 +18,15 @@ buildPythonPackage rec {
     hash = "sha256-SvKJGOSsTZhAYJkGO+slL81EjcJtXmaFN7YWCGSX6Ac=";
   };
 
-  build-system = [ setuptools ];
-
-  dependencies = [ django ];
-
   checkPhase = ''
     runHook preCheck
     ${python.interpreter} -m django test --settings=tests.settings
     runHook postCheck
   '';
 
+  build-system = [ setuptools ];
+  dependencies = [ django ];
+  pyproject = true;
   pythonImportsCheck = [ "picklefield" ];
 
   meta = {

@@ -13,11 +13,6 @@ stdenv.mkDerivation (finalAttrs: {
   pname = "poweralertd";
   version = "0.3.0";
 
-  outputs = [
-    "out"
-    "man"
-  ];
-
   src = fetchFromSourcehut {
     owner = "~kennylevinsen";
     repo = "poweralertd";
@@ -25,18 +20,23 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-WzqThv3Vu8R+g6Bn8EfesRk18rchCvw/UMPwbn9YC80=";
   };
 
+  outputs = [
+    "out"
+    "man"
+  ];
+
   postPatch = ''
     substituteInPlace meson.build --replace-fail "systemd.get_pkgconfig_variable('systemduserunitdir')" "'${placeholder "out"}/lib/systemd/user'"
   '';
-
-  buildInputs = [
-    systemd
-  ];
 
   nativeBuildInputs = [
     meson
     ninja
     pkg-config
+  ];
+
+  buildInputs = [
+    systemd
   ];
 
   depsBuildBuild = [
@@ -48,8 +48,8 @@ stdenv.mkDerivation (finalAttrs: {
     description = "UPower-powered power alerter";
     homepage = "https://git.sr.ht/~kennylevinsen/poweralertd";
     license = lib.licenses.gpl3Only;
-    platforms = lib.platforms.linux;
     maintainers = with lib.maintainers; [ thibautmarty ];
+    platforms = lib.platforms.linux;
     mainProgram = "poweralertd";
   };
 })

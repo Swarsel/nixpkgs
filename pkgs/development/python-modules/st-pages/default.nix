@@ -1,15 +1,14 @@
 {
   lib,
   stdenv,
-  buildPythonPackage,
   fetchFromGitHub,
-  streamlit,
+  buildPythonPackage,
   poetry-core,
+  streamlit,
 }:
 buildPythonPackage rec {
   pname = "st-pages";
   version = "1.0.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "blackary";
@@ -26,10 +25,13 @@ buildPythonPackage rec {
     streamlit
   ];
 
+  pyproject = true;
+
   meta = {
     description = "An experimental version of Streamlit Multi-Page Apps";
     homepage = "https://github.com/blackary/st_pages";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       keyzox
     ];

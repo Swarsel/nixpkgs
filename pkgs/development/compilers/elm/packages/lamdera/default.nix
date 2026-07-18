@@ -1,6 +1,6 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchurl,
 }:
 
@@ -8,9 +8,9 @@ let
   os = if stdenv.hostPlatform.isDarwin then "macos" else "linux";
   arch = if stdenv.hostPlatform.isAarch64 then "arm64" else "x86_64";
   hashes = {
-    "x86_64-linux" = "1i3mhm1swphkimm4dfdiyabxd6w3xni14cnlffz0da1p6a2x11v2";
-    "aarch64-linux" = "0p7dxnnxh0nskbdaq5ldf33rqmbgj0ymhqdi89y3pk1yxjlk7bcf";
     "aarch64-darwin" = "0j20i5g92h8zx6p3hzxdrh298dkipxxhyvp28asddrxbiscfca1b";
+    "aarch64-linux" = "0p7dxnnxh0nskbdaq5ldf33rqmbgj0ymhqdi89y3pk1yxjlk7bcf";
+    "x86_64-linux" = "1i3mhm1swphkimm4dfdiyabxd6w3xni14cnlffz0da1p6a2x11v2";
   };
 in
 
@@ -23,21 +23,22 @@ stdenv.mkDerivation rec {
     sha256 = hashes.${stdenv.system};
   };
 
-  dontUnpack = true;
-
   installPhase = ''
     install -m755 -D $src $out/bin/lamdera
   '';
 
+  dontUnpack = true;
+
   meta = {
+    description = "Delightful platform for full-stack web apps";
     homepage = "https://lamdera.com";
     license = lib.licenses.bsd3;
-    description = "Delightful platform for full-stack web apps";
+    maintainers = with lib.maintainers; [ Zimmi48 ];
+
     platforms = [
       "aarch64-linux"
       "x86_64-linux"
       "aarch64-darwin"
     ];
-    maintainers = with lib.maintainers; [ Zimmi48 ];
   };
 }

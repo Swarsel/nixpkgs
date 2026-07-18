@@ -2,8 +2,8 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  readline,
   cmake,
+  readline,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -38,11 +38,13 @@ stdenv.mkDerivation (finalAttrs: {
     description = "Tool for sequential logic synthesis and formal verification";
     homepage = "https://people.eecs.berkeley.edu/~alanmi/abc";
     license = lib.licenses.mit-modern;
+
     maintainers = with lib.maintainers; [
       thoughtpolice
       Luflosi
     ];
-    mainProgram = "abc";
+
     platforms = lib.platforms.unix;
+    mainProgram = "abc";
   };
 })

@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule (finalAttrs: {
@@ -9,9 +9,9 @@ buildGoModule (finalAttrs: {
   version = "0.4.1";
 
   src = fetchFromGitHub {
-    rev = finalAttrs.version;
     owner = "thehowl";
     repo = "claws";
+    rev = finalAttrs.version;
     hash = "sha256-3zzUBeYfu9x3vRGX1DionLnAs1e44tFj8Z1dpVwjdCg=";
   };
 
@@ -23,8 +23,8 @@ buildGoModule (finalAttrs: {
   ];
 
   meta = {
-    homepage = "https://github.com/thehowl/claws";
     description = "Interactive command line client for testing websocket servers";
+    homepage = "https://github.com/thehowl/claws";
     license = lib.licenses.mit;
     maintainers = [ ];
     mainProgram = "claws";

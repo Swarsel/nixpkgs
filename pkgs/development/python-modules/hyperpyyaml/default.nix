@@ -1,23 +1,19 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # build-system
-  setuptools,
-
+  buildPythonPackage,
+  # tests
+  pytestCheckHook,
   # dependencies
   pyyaml,
   ruamel-yaml,
-
-  # tests
-  pytestCheckHook,
+  # build-system
+  setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "hyperpyyaml";
   version = "1.2.3";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "speechbrain";
@@ -36,8 +32,7 @@ buildPythonPackage rec {
         hparams = yaml.load(yaml_stream, Loader=loader)"
   '';
 
-  # https://github.com/speechbrain/HyperPyYAML/pull/33
-  pythonRelaxDeps = [ "ruamel.yaml" ];
+  nativeCheckInputs = [ pytestCheckHook ];
 
   build-system = [
     setuptools
@@ -48,9 +43,10 @@ buildPythonPackage rec {
     ruamel-yaml
   ];
 
-  nativeCheckInputs = [ pytestCheckHook ];
-
+  pyproject = true;
   pythonImportsCheck = [ "hyperpyyaml" ];
+  # https://github.com/speechbrain/HyperPyYAML/pull/33
+  pythonRelaxDeps = [ "ruamel.yaml" ];
 
   meta = {
     description = "Extensions to YAML syntax for better python interaction";

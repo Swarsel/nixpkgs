@@ -1,38 +1,37 @@
 {
-  stdenv,
   lib,
-  makeBinaryWrapper,
+  stdenv,
   fetchurl,
-  writeShellScript,
-  makeDesktopItem,
+  atk,
+  cairo,
   copyDesktopItems,
-  imagemagick,
-  zulu21,
-  dpkg,
-  zip,
-  xz,
-  gnupg,
   coreutils,
-  tor,
-
+  dpkg,
+  fontconfig,
+  freetype,
+  gdk-pixbuf,
+  glib,
+  gnupg,
   # Native libraries required by the JavaFX natives that Bisq extracts from its bundled
   # javafx-graphics jar into ~/.openjfx/cache at runtime. Those .so files are
   # bare (no rpath), so every direct needed library must be on LD_LIBRARY_PATH.
   # The set below is exactly the verified closure (readelf NEEDED + ldd not_found=0).
   gtk3,
-  glib,
-  cairo,
-  pango,
-  atk,
-  gdk-pixbuf,
   harfbuzz,
-  freetype,
-  fontconfig,
+  imagemagick,
   libGL,
   libglvnd,
   libx11,
   libxtst,
   libxxf86vm,
+  makeBinaryWrapper,
+  makeDesktopItem,
+  pango,
+  tor,
+  writeShellScript,
+  xz,
+  zip,
+  zulu21,
 }:
 
 let
@@ -87,19 +86,19 @@ let
 
   # keys taken from bisq/docs/release-process.md
   publicKey = {
-    "E222AA02" = fetchurl {
-      url = "https://github.com/bisq-network/bisq/releases/download/v${version}/E222AA02.asc";
-      hash = sources."key-E222AA02-hash";
+    "387C8307" = fetchurl {
+      hash = sources."key-387C8307-hash";
+      url = "https://github.com/bisq-network/bisq/releases/download/v${version}/387C8307.asc";
     };
 
     "4A133008" = fetchurl {
-      url = "https://github.com/bisq-network/bisq/releases/download/v${version}/4A133008.asc";
       hash = sources."key-4A133008-hash";
+      url = "https://github.com/bisq-network/bisq/releases/download/v${version}/4A133008.asc";
     };
 
-    "387C8307" = fetchurl {
-      url = "https://github.com/bisq-network/bisq/releases/download/v${version}/387C8307.asc";
-      hash = sources."key-387C8307-hash";
+    "E222AA02" = fetchurl {
+      hash = sources."key-E222AA02-hash";
+      url = "https://github.com/bisq-network/bisq/releases/download/v${version}/E222AA02.asc";
     };
   };
 
@@ -128,21 +127,16 @@ let
 in
 stdenv.mkDerivation (finalAttrs: {
   inherit version;
-
   pname = "bisq1";
-
-  strictDeps = true;
-  __structuredAttrs = true;
 
   src = fetchurl {
     url = "https://github.com/bisq-network/bisq/releases/download/v${version}/Bisq-64bit-${version}.deb";
     hash = sources."deb-hash";
-
+    downloadToTemp = true;
     # Verify the upstream Debian package's detached PGP signature prior to use.
     # This ensures that a successful build of this Nix package requires the
     # signed Debian package to pass verification, preserving Bisq's trust model.
     nativeBuildInputs = [ gnupg ];
-    downloadToTemp = true;
 
     postFetch = ''
       pushd $(mktemp -d)
@@ -159,10 +153,7 @@ stdenv.mkDerivation (finalAttrs: {
     '';
   };
 
-  signature = fetchurl {
-    url = "https://github.com/bisq-network/bisq/releases/download/v${version}/Bisq-64bit-${version}.deb.asc";
-    hash = sources."sig-hash";
-  };
+  strictDeps = true;
 
   nativeBuildInputs = [
     copyDesktopItems
@@ -173,38 +164,6 @@ stdenv.mkDerivation (finalAttrs: {
     xz
     gnupg
   ];
-
-  desktopItems = [
-    (makeDesktopItem {
-      name = "bisq";
-      exec = "bisq";
-      icon = "bisq";
-      desktopName = "Bisq";
-      genericName = "Decentralized bitcoin exchange";
-      categories = [
-        "Network"
-        "P2P"
-      ];
-    })
-
-    (makeDesktopItem {
-      name = "bisq-hidpi";
-      exec = "bisq-hidpi";
-      icon = "bisq";
-      desktopName = "Bisq (HiDPI)";
-      genericName = "Decentralized bitcoin exchange";
-      categories = [
-        "Network"
-        "P2P"
-      ];
-    })
-  ];
-
-  unpackPhase = ''
-    runHook preUnpack
-    dpkg -x $src .
-    runHook postUnpack
-  '';
 
   buildPhase = ''
     runHook preBuild
@@ -244,20 +203,65 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  __structuredAttrs = true;
+
+  desktopItems = [
+    (makeDesktopItem {
+      categories = [
+        "Network"
+        "P2P"
+      ];
+
+      desktopName = "Bisq";
+      exec = "bisq";
+      genericName = "Decentralized bitcoin exchange";
+      icon = "bisq";
+      name = "bisq";
+    })
+
+    (makeDesktopItem {
+      categories = [
+        "Network"
+        "P2P"
+      ];
+
+      desktopName = "Bisq (HiDPI)";
+      exec = "bisq-hidpi";
+      genericName = "Decentralized bitcoin exchange";
+      icon = "bisq";
+      name = "bisq-hidpi";
+    })
+  ];
+
+  signature = fetchurl {
+    hash = sources."sig-hash";
+    url = "https://github.com/bisq-network/bisq/releases/download/v${version}/Bisq-64bit-${version}.deb.asc";
+  };
+
+  unpackPhase = ''
+    runHook preUnpack
+    dpkg -x $src .
+    runHook postUnpack
+  '';
+
   passthru.updateScript = ./update.sh;
 
   meta = {
     description = "Decentralized bitcoin exchange network (Bisq 1)";
     homepage = "https://bisq.network";
-    mainProgram = "bisq";
+    license = lib.licenses.agpl3Only;
+
     sourceProvenance = with lib.sourceTypes; [
       binaryBytecode
       binaryNativeCode
     ];
-    license = lib.licenses.agpl3Only;
+
     maintainers = with lib.maintainers; [ pmw ];
+
     platforms = [
       "x86_64-linux"
     ];
+
+    mainProgram = "bisq";
   };
 })

@@ -2,12 +2,12 @@
   stdenv,
 }:
 
-{ version, src, ... }:
+{ src, version, ... }:
 
 stdenv.mkDerivation {
-  pname = "flutter_volume_controller";
   inherit version src;
   inherit (src) passthru;
+  pname = "flutter_volume_controller";
 
   postPatch = ''
     substituteInPlace linux/CMakeLists.txt \

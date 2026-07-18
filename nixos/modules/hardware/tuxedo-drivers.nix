@@ -44,16 +44,28 @@ in
 
       For more inforation it is best to check at the source code description: <https://gitlab.com/tuxedocomputers/development/packages/tuxedo-drivers>
     '';
+
     settings = {
-      charging-profile = lib.mkOption {
+      charging-priority = lib.mkOption {
+        default = null;
+
+        description = ''
+          These options manage the trade-off between battery charging and CPU performance when the USB-C power supply cannot provide sufficient power for both simultaneously:
+          - `charge_battery` prioritizes battery charging (driver default)
+          - `performance` prioritizes maximum CPU performance
+        '';
+
         type = lib.types.nullOr (
           lib.types.enum [
-            "high_capacity"
-            "balanced"
-            "stationary"
+            "charge_battery"
+            "performance"
           ]
         );
+      };
+
+      charging-profile = lib.mkOption {
         default = null;
+
         description = ''
           The maximum charge level to help reduce battery wear:
           - `high_capacity` charges to 100% (driver default)
@@ -62,36 +74,34 @@ in
 
           **Note:** Regardless of the configured charging profile, the operating system will always report the battery as being charged to 100%.
         '';
-      };
-      charging-priority = lib.mkOption {
+
         type = lib.types.nullOr (
           lib.types.enum [
-            "charge_battery"
-            "performance"
+            "high_capacity"
+            "balanced"
+            "stationary"
           ]
         );
-        default = null;
-        description = ''
-          These options manage the trade-off between battery charging and CPU performance when the USB-C power supply cannot provide sufficient power for both simultaneously:
-          - `charge_battery` prioritizes battery charging (driver default)
-          - `performance` prioritizes maximum CPU performance
-        '';
       };
+
       fn-lock = lib.mkOption {
-        type = lib.types.nullOr lib.types.bool;
         default = null;
+
         description = ''
           Enables or disables the laptop keyboard's Function (Fn) lock at boot.
 
           When set to `true`, the Fn lock is enabled, allowing the function keys (F1–F12) to control brightness, volume etc.
         '';
+
+        type = lib.types.nullOr lib.types.bool;
       };
     };
   };
 
   config = lib.mkIf cfg.enable {
-    boot.kernelModules = [ "tuxedo_keyboard" ];
     boot.extraModulePackages = [ tuxedo-drivers ];
+    boot.kernelModules = [ "tuxedo_keyboard" ];
+
     services.udev.packages = [
       tuxedo-drivers
     ]

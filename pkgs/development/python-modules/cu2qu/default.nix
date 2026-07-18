@@ -1,19 +1,16 @@
 {
   lib,
   buildPythonPackage,
-  fetchPypi,
-
   # build
   cython,
-  setuptools-scm,
-  setuptools_80,
-
   # propagates
   defcon,
+  fetchPypi,
   fonttools,
-
   # tests
   pytestCheckHook,
+  setuptools-scm,
+  setuptools_80,
 }:
 
 let
@@ -22,7 +19,6 @@ let
 in
 buildPythonPackage rec {
   inherit pname version;
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
@@ -43,13 +39,14 @@ buildPythonPackage rec {
   ++ fonttools.optional-dependencies.ufo;
 
   nativeCheckInputs = [ pytestCheckHook ];
+  pyproject = true;
 
   meta = {
-    changelog = "https://github.com/googlefonts/cu2qu/releases/tag/v${version}";
     description = "Cubic-to-quadratic bezier curve conversion";
-    mainProgram = "cu2qu";
     homepage = "https://github.com/googlefonts/cu2qu";
+    changelog = "https://github.com/googlefonts/cu2qu/releases/tag/v${version}";
     license = lib.licenses.asl20;
     maintainers = [ ];
+    mainProgram = "cu2qu";
   };
 }

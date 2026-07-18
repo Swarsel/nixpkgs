@@ -1,16 +1,15 @@
 {
   lib,
   fetchFromGitHub,
-  python3,
-  qt6,
   gitUpdater,
   nixosTests,
+  python3,
+  qt6,
 }:
 
 python3.pkgs.buildPythonApplication (finalAttrs: {
   pname = "maestral-qt";
   version = "1.9.5";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "SamSchott";
@@ -19,6 +18,27 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     hash = "sha256-FCn9ELbodk+zCJNmlOVoxE/KSSqbxy5HTB1vpiu7AJA=";
   };
 
+  nativeBuildInputs = [ qt6.wrapQtAppsHook ];
+
+  buildInputs = [
+    qt6.qtwayland
+    qt6.qtbase
+    qt6.qtsvg # Needed for the systray icon
+  ];
+
+  # no tests
+  doCheck = false;
+
+  postInstall = ''
+    install -Dm444 -t $out/share/icons/hicolor/512x512/apps src/maestral_qt/resources/maestral.png
+  '';
+
+  preFixup = ''
+    # Add all necessary QT variables
+    makeWrapperArgs+=("''${qtWrapperArgs[@]}")
+  '';
+
+  __structuredAttrs = true;
   build-system = with python3.pkgs; [ setuptools ];
 
   dependencies = with python3.pkgs; [
@@ -28,14 +48,6 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     packaging
     pyqt6
   ];
-
-  buildInputs = [
-    qt6.qtwayland
-    qt6.qtbase
-    qt6.qtsvg # Needed for the systray icon
-  ];
-
-  nativeBuildInputs = [ qt6.wrapQtAppsHook ];
 
   dontWrapQtApps = true;
 
@@ -51,39 +63,29 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     (makePythonPath [ maestral ])
   ];
 
-  preFixup = ''
-    # Add all necessary QT variables
-    makeWrapperArgs+=("''${qtWrapperArgs[@]}")
-  '';
-
-  postInstall = ''
-    install -Dm444 -t $out/share/icons/hicolor/512x512/apps src/maestral_qt/resources/maestral.png
-  '';
-
-  # no tests
-  doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "maestral_qt" ];
 
   passthru = {
+    tests.maestral = nixosTests.maestral;
+
     updateScript = gitUpdater {
       ignoredVersions = "dev";
       rev-prefix = "v";
     };
-    tests.maestral = nixosTests.maestral;
   };
-
-  __structuredAttrs = true;
 
   meta = {
     description = "GUI front-end for maestral (an open-source Dropbox client) for Linux";
     homepage = "https://maestral.app";
     changelog = "https://github.com/samschott/maestral/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       peterhoeg
       sfrijters
     ];
+
     platforms = lib.platforms.linux;
     mainProgram = "maestral_qt";
   };

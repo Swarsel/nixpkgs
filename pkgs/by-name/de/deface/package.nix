@@ -1,15 +1,14 @@
 {
   lib,
   stdenv,
-  python3,
   fetchFromGitHub,
   pkgs,
+  python3,
 }:
 
 python3.pkgs.buildPythonApplication (finalAttrs: {
   pname = "deface";
   version = "1.5.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "ORB-HD";
@@ -37,6 +36,8 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
   makeWrapperArgs = [
     ''--prefix LD_LIBRARY_PATH : "${lib.makeLibraryPath [ pkgs.onnxruntime ]}"''
   ];
+
+  pyproject = true;
 
   pythonImportsCheck = [
     "deface"

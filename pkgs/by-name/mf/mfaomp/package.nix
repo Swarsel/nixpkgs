@@ -3,10 +3,10 @@
   stdenv,
   fetchFromGitHub,
   cmake,
-  pkg-config,
-  qt6,
   libvlc,
   libvlcpp,
+  pkg-config,
+  qt6,
 }:
 
 stdenv.mkDerivation (finalAttrs: {

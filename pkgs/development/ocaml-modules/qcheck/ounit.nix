@@ -1,13 +1,12 @@
 {
   buildDunePackage,
-  qcheck-core,
   ounit2,
+  qcheck-core,
 }:
 
 buildDunePackage {
-  pname = "qcheck-ounit";
-
   inherit (qcheck-core) version src;
+  pname = "qcheck-ounit";
 
   propagatedBuildInputs = [
     qcheck-core

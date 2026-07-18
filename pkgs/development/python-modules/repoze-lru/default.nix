@@ -2,26 +2,22 @@
   lib,
   buildPythonPackage,
   fetchPypi,
-  setuptools,
   pytestCheckHook,
+  setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "repoze-lru";
   version = "0.7";
-  pyproject = true;
 
   src = fetchPypi {
-    pname = "repoze.lru";
     inherit version;
     hash = "sha256-BCmnXhk4Dk7VDAaU4mrIgZtOp4Ue4fx1g8hXLbgK/3c=";
+    pname = "repoze.lru";
   };
 
   nativeBuildInputs = [ setuptools ];
-
   nativeCheckInputs = [ pytestCheckHook ];
-
-  enabledTestPaths = [ "repoze/lru/tests.py" ];
 
   disabledTests = [
     # time sensitive tests
@@ -29,8 +25,9 @@ buildPythonPackage rec {
     "test_renew_timeout"
   ];
 
+  enabledTestPaths = [ "repoze/lru/tests.py" ];
+  pyproject = true;
   pythonImportsCheck = [ "repoze.lru" ];
-
   pythonNamespaces = [ "repoze" ];
 
   meta = {

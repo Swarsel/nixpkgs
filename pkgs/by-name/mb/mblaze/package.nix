@@ -1,30 +1,21 @@
 {
-  coreutils,
+  lib,
+  stdenv,
   fetchFromGitHub,
+  coreutils,
   file,
   gawk,
   gnugrep,
   gnused,
   installShellFiles,
-  lib,
   libiconv,
   makeWrapper,
-  stdenv,
   ruby,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
   pname = "mblaze";
   version = "1.4";
-
-  nativeBuildInputs = [
-    installShellFiles
-    makeWrapper
-  ];
-  buildInputs = [
-    libiconv
-    ruby
-  ];
 
   src = fetchFromGitHub {
     owner = "leahneukirchen";
@@ -33,9 +24,17 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-v7g4kzCZFkkZ/VPogDObduFzgjBVQFziBzHocAdEw9A=";
   };
 
-  makeFlags = [ "PREFIX=$(out)" ];
+  nativeBuildInputs = [
+    installShellFiles
+    makeWrapper
+  ];
 
-  enableParallelBuilding = true;
+  buildInputs = [
+    libiconv
+    ruby
+  ];
+
+  makeFlags = [ "PREFIX=$(out)" ];
 
   postInstall = ''
     installShellCompletion contrib/_mblaze
@@ -68,11 +67,13 @@ stdenv.mkDerivation (finalAttrs: {
     done
   '';
 
+  enableParallelBuilding = true;
+
   meta = {
-    homepage = "https://github.com/leahneukirchen/mblaze";
     description = "Unix utilities for processing and interacting with mail messages which are stored in maildir folders";
+    homepage = "https://github.com/leahneukirchen/mblaze";
     license = lib.licenses.cc0;
-    platforms = lib.platforms.all;
     maintainers = [ lib.maintainers.ajgrf ];
+    platforms = lib.platforms.all;
   };
 })

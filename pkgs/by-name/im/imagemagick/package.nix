@@ -2,66 +2,66 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  pkg-config,
-  libtool,
-  bzip2Support ? true,
   bzip2,
-  zlibSupport ? true,
-  zlib,
-  libX11Support ? !stdenv.hostPlatform.isMinGW,
-  libx11,
-  libXtSupport ? !stdenv.hostPlatform.isMinGW,
-  libxt,
-  fontconfigSupport ? true,
-  fontconfig,
-  freetypeSupport ? true,
-  freetype,
-  ghostscriptSupport ? false,
-  ghostscript,
-  libjpegSupport ? true,
-  libjpeg,
-  djvulibreSupport ? true,
-  djvulibre,
-  lcms2Support ? true,
-  lcms2,
-  openexrSupport ? !stdenv.hostPlatform.isMinGW,
-  openexr,
-  libjxlSupport ? true,
-  libjxl,
-  libpngSupport ? true,
-  libpng,
-  liblqr1Support ? true,
-  liblqr1,
-  libraqmSupport ? true,
-  libraqm,
-  librawSupport ? true,
-  libraw,
-  librsvgSupport ? !stdenv.hostPlatform.isMinGW,
-  librsvg,
-  pango,
-  libtiffSupport ? true,
-  libtiff,
-  libultrahdrSupport ? lib.meta.availableOn stdenv.hostPlatform libultrahdr,
-  libultrahdr,
-  libxml2Support ? true,
-  libxml2,
-  openjpegSupport ? !stdenv.hostPlatform.isMinGW,
-  openjpeg,
-  libwebpSupport ? !stdenv.hostPlatform.isMinGW,
-  libwebp,
-  libheifSupport ? true,
-  libheif,
-  fftwSupport ? true,
-  fftw,
-  potrace,
   coreutils,
   curl,
-  versionCheckHook,
-  testers,
-  nixos-icons,
-  perlPackages,
-  python3,
+  djvulibre,
+  fftw,
+  fontconfig,
+  freetype,
+  ghostscript,
+  lcms2,
+  libheif,
+  libjpeg,
+  libjxl,
+  liblqr1,
+  libpng,
+  libraqm,
+  libraw,
+  librsvg,
+  libtiff,
+  libtool,
+  libultrahdr,
+  libwebp,
+  libx11,
+  libxml2,
+  libxt,
   nix-update-script,
+  nixos-icons,
+  openexr,
+  openjpeg,
+  pango,
+  perlPackages,
+  pkg-config,
+  potrace,
+  python3,
+  testers,
+  versionCheckHook,
+  zlib,
+  bzip2Support ? true,
+  djvulibreSupport ? true,
+  fftwSupport ? true,
+  fontconfigSupport ? true,
+  freetypeSupport ? true,
+  ghostscriptSupport ? false,
+  lcms2Support ? true,
+  libX11Support ? !stdenv.hostPlatform.isMinGW,
+  libXtSupport ? !stdenv.hostPlatform.isMinGW,
+  libheifSupport ? true,
+  libjpegSupport ? true,
+  libjxlSupport ? true,
+  liblqr1Support ? true,
+  libpngSupport ? true,
+  libraqmSupport ? true,
+  librawSupport ? true,
+  librsvgSupport ? !stdenv.hostPlatform.isMinGW,
+  libtiffSupport ? true,
+  libultrahdrSupport ? lib.meta.availableOn stdenv.hostPlatform libultrahdr,
+  libwebpSupport ? !stdenv.hostPlatform.isMinGW,
+  libxml2Support ? true,
+  openexrSupport ? !stdenv.hostPlatform.isMinGW,
+  openjpegSupport ? !stdenv.hostPlatform.isMinGW,
+  zlibSupport ? true,
 }:
 
 assert libXtSupport -> libX11Support;
@@ -103,31 +103,6 @@ stdenv.mkDerivation (finalAttrs: {
     "dev"
     "doc"
   ]; # bin/ isn't really big
-  outputMan = "out"; # it's tiny
-
-  enableParallelBuilding = true;
-
-  configureFlags = [
-    # specify delegates explicitly otherwise `convert` will invoke the build
-    # coreutils for filetypes it doesn't natively support.
-    "MVDelegate=${lib.getExe' coreutils "mv"}"
-    "RMDelegate=${lib.getExe' coreutils "rm"}"
-    "--with-frozenpaths"
-    (lib.withFeatureAs (arch != null) "gcc-arch" arch)
-    (lib.withFeature librsvgSupport "rsvg")
-    (lib.withFeature librsvgSupport "pango")
-    (lib.withFeature liblqr1Support "lqr")
-    (lib.withFeature libjxlSupport "jxl")
-    (lib.withFeature libultrahdrSupport "uhdr")
-    (lib.withFeatureAs ghostscriptSupport "gs-font-dir" "${ghostscript.fonts}/share/fonts")
-    (lib.withFeature ghostscriptSupport "gslib")
-    (lib.withFeature fftwSupport "fftw")
-  ]
-  ++ lib.optionals stdenv.hostPlatform.isMinGW [
-    # due to libxml2 being without DLLs ATM
-    "--enable-static"
-    "--disable-shared"
-  ];
 
   nativeBuildInputs = [
     pkg-config
@@ -169,6 +144,28 @@ stdenv.mkDerivation (finalAttrs: {
   ++ lib.optional libwebpSupport libwebp
   ++ lib.optional fftwSupport fftw;
 
+  configureFlags = [
+    # specify delegates explicitly otherwise `convert` will invoke the build
+    # coreutils for filetypes it doesn't natively support.
+    "MVDelegate=${lib.getExe' coreutils "mv"}"
+    "RMDelegate=${lib.getExe' coreutils "rm"}"
+    "--with-frozenpaths"
+    (lib.withFeatureAs (arch != null) "gcc-arch" arch)
+    (lib.withFeature librsvgSupport "rsvg")
+    (lib.withFeature librsvgSupport "pango")
+    (lib.withFeature liblqr1Support "lqr")
+    (lib.withFeature libjxlSupport "jxl")
+    (lib.withFeature libultrahdrSupport "uhdr")
+    (lib.withFeatureAs ghostscriptSupport "gs-font-dir" "${ghostscript.fonts}/share/fonts")
+    (lib.withFeature ghostscriptSupport "gslib")
+    (lib.withFeature fftwSupport "fftw")
+  ]
+  ++ lib.optionals stdenv.hostPlatform.isMinGW [
+    # due to libxml2 being without DLLs ATM
+    "--enable-static"
+    "--disable-shared"
+  ];
+
   postInstall = ''
     (cd "$dev/include" && ln -s ImageMagick* ImageMagick)
     # Q16HDRI = 16 bit quantum depth with HDRI support, and is the default ImageMagick configuration
@@ -195,33 +192,40 @@ stdenv.mkDerivation (finalAttrs: {
     versionCheckHook
   ];
 
+  enableParallelBuilding = true;
+  outputMan = "out"; # it's tiny
+
   passthru.tests = {
     inherit nixos-icons;
     inherit (perlPackages) ImageMagick;
     inherit (python3.pkgs) img2pdf willow;
+
     pkg-config = testers.hasPkgConfigModules {
-      package = finalAttrs.finalPackage;
       version = lib.head (lib.splitString "-" finalAttrs.version);
+      package = finalAttrs.finalPackage;
     };
   };
 
   passthru.updateScript = nix-update-script { };
 
   meta = {
+    description = "Software suite to create, edit, compose, or convert bitmap images";
     homepage = "http://www.imagemagick.org/";
     changelog = "https://github.com/ImageMagick/Website/blob/main/docs/changelog/index.md";
-    description = "Software suite to create, edit, compose, or convert bitmap images";
-    pkgConfigModules = [
-      "ImageMagick"
-      "MagickWand"
-    ];
-    platforms = lib.platforms.unix;
+    license = lib.licenses.asl20;
+
     maintainers = with lib.maintainers; [
       dotlambda
       rhendric
       faukah
     ];
-    license = lib.licenses.asl20;
+
+    platforms = lib.platforms.unix;
     mainProgram = "magick";
+
+    pkgConfigModules = [
+      "ImageMagick"
+      "MagickWand"
+    ];
   };
 })

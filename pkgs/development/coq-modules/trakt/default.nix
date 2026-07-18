@@ -1,23 +1,21 @@
 {
   lib,
-  mkCoqDerivation,
   coq,
   coq-elpi,
+  mkCoqDerivation,
   stdlib,
   version ? null,
 }:
 
 mkCoqDerivation {
-  pname = "trakt";
-  owner = "ecranceMERCE";
-  opam-name = "rocq-trakt";
-
-  release."1.0".hash = "sha256-Qhw5fWFYxUFO2kIWWz/og+4fuy9aYG27szfNk3IglhY=";
-  release."1.1".hash = "sha256-JmrtM9WcT8Bfy0WZCw8xdubuMomyXmfLXJwpnCNrvsg=";
-  release."1.2".hash = "sha256-YQRtK2MjjsMlytdu9iutUDKhwOo4yWrSwhyBb2zNHoE=";
-  release."1.2+8.13".hash = "sha256-hozms4sPSMr4lFkJ20x+uW9Wqt067bifnPQxdGyKhQQ=";
-
   inherit version;
+  pname = "trakt";
+
+  propagatedBuildInputs = [
+    coq-elpi
+    stdlib
+  ];
+
   defaultVersion =
     with lib.versions;
     lib.switch
@@ -38,17 +36,18 @@ mkCoqDerivation {
       ]
       null;
 
-  propagatedBuildInputs = [
-    coq-elpi
-    stdlib
-  ];
-
+  opam-name = "rocq-trakt";
+  owner = "ecranceMERCE";
+  release."1.0".hash = "sha256-Qhw5fWFYxUFO2kIWWz/og+4fuy9aYG27szfNk3IglhY=";
+  release."1.1".hash = "sha256-JmrtM9WcT8Bfy0WZCw8xdubuMomyXmfLXJwpnCNrvsg=";
+  release."1.2".hash = "sha256-YQRtK2MjjsMlytdu9iutUDKhwOo4yWrSwhyBb2zNHoE=";
+  release."1.2+8.13".hash = "sha256-hozms4sPSMr4lFkJ20x+uW9Wqt067bifnPQxdGyKhQQ=";
   useDuneifVersion = v: v != null && (v == "dev" || lib.versions.isGt "1.2.1" v);
 
   meta = {
     description = "Generic goal preprocessing tool for proof automation tactics in Coq";
-    maintainers = with lib.maintainers; [ siraben ];
     license = lib.licenses.lgpl3Plus;
+    maintainers = with lib.maintainers; [ siraben ];
     platforms = lib.platforms.unix;
   };
 }

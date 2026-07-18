@@ -1,13 +1,14 @@
 {
   buildAstalModule,
-  libcava,
   fftw,
+  libcava,
 }:
 buildAstalModule {
-  name = "cava";
   buildInputs = [
     libcava
     fftw
   ];
+
+  name = "cava";
   meta.description = "Astal module for audio visualization using cava";
 }

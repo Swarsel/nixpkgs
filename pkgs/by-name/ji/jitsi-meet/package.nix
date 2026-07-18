@@ -1,15 +1,12 @@
 {
   lib,
   stdenv,
-  nixosTests,
-
   fetchFromGitHub,
   fetchNpmDeps,
-  npmHooks,
-
   libarchive,
+  nixosTests,
   nodejs,
-
+  npmHooks,
   olm,
 }:
 
@@ -24,20 +21,21 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-K4Xrse1kpNqlUChbQnAjP5lRCRuDfJKiN/022tCmMVQ=";
   };
 
-  env = {
-    makeFlags = "source-package";
-    makeCacheWritable = true;
-    npmDeps = fetchNpmDeps {
-      inherit (finalAttrs) src;
-      hash = "sha256-2NPfr3gskHz9zSGs//uzyCCuE+CZ295hhitDPlS9xuY=";
-    };
-  };
-
   nativeBuildInputs = [
     libarchive
     nodejs
     npmHooks.npmConfigHook
   ];
+
+  env = {
+    makeFlags = "source-package";
+    makeCacheWritable = true;
+
+    npmDeps = fetchNpmDeps {
+      inherit (finalAttrs) src;
+      hash = "sha256-2NPfr3gskHz9zSGs//uzyCCuE+CZ295hhitDPlS9xuY=";
+    };
+  };
 
   # yes, the only way in the build system is to generate a tarball and extract
   # it immediately after
@@ -56,15 +54,17 @@ stdenv.mkDerivation (finalAttrs: {
   passthru.updateScript = ./update.sh;
 
   meta = {
+    inherit (nodejs.meta) platforms;
+    inherit (olm.meta) knownVulnerabilities;
     description = "Secure, Simple and Scalable Video Conferences";
+
     longDescription = ''
       Jitsi Meet is an open-source (Apache) WebRTC JavaScript application that uses Jitsi Videobridge
       to provide high quality, secure and scalable video conferences.
     '';
+
     homepage = "https://github.com/jitsi/jitsi-meet";
     license = lib.licenses.asl20;
     teams = [ lib.teams.jitsi ];
-    inherit (nodejs.meta) platforms;
-    inherit (olm.meta) knownVulnerabilities;
   };
 })

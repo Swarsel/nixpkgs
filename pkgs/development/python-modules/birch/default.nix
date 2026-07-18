@@ -1,19 +1,18 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   fetchpatch,
+  pytest-cov-stub,
+  pytestCheckHook,
+  pyyaml,
   setuptools,
   strct,
-  pytestCheckHook,
-  pytest-cov-stub,
-  pyyaml,
 }:
 
 buildPythonPackage rec {
   pname = "birch";
   version = "0.0.35";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "shaypal5";
@@ -25,9 +24,9 @@ buildPythonPackage rec {
   patches = [
     # https://github.com/shaypal5/birch/pull/4
     (fetchpatch {
+      hash = "sha256-xXADCSIhq1ARny2twzrhR1J8LkMFWFl6tmGxrM8RvkU=";
       name = "fix-versioneer-on-python312.patch";
       url = "https://github.com/shaypal5/birch/commit/84d597b2251ebb76fb15fb70fc86c83baa19dc0b.patch";
-      hash = "sha256-xXADCSIhq1ARny2twzrhR1J8LkMFWFl6tmGxrM8RvkU=";
     })
   ];
 
@@ -39,15 +38,6 @@ buildPythonPackage rec {
 
   nativeBuildInputs = [ setuptools ];
 
-  dependencies = [ strct ];
-
-  pythonImportsCheck = [
-    "birch"
-    "birch.casters"
-    "birch.exceptions"
-    "birch.paths"
-  ];
-
   nativeCheckInputs = [
     pytestCheckHook
     pytest-cov-stub
@@ -57,6 +47,16 @@ buildPythonPackage rec {
   preCheck = ''
     export HOME="$(mktemp -d)"
   '';
+
+  dependencies = [ strct ];
+  pyproject = true;
+
+  pythonImportsCheck = [
+    "birch"
+    "birch.casters"
+    "birch.exceptions"
+    "birch.paths"
+  ];
 
   meta = {
     description = "Simple hierarchical configuration for Python packages";

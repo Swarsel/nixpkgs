@@ -7,7 +7,6 @@
 buildPythonPackage rec {
   pname = "pykira";
   version = "0.1.3";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
@@ -16,7 +15,7 @@ buildPythonPackage rec {
 
   # Project has no tests
   doCheck = false;
-
+  format = "setuptools";
   pythonImportsCheck = [ "pykira" ];
 
   meta = {

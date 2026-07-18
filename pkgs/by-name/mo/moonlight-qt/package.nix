@@ -1,25 +1,25 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
-  fetchpatch,
-  qt6,
-  pkg-config,
-  vulkan-headers,
   SDL2,
   SDL2_ttf,
+  alsa-lib,
+  fetchpatch,
   ffmpeg,
+  libdrm,
   libopus,
   libplacebo,
-  openssl,
-  alsa-lib,
   libpulseaudio,
   libva,
   libvdpau,
   libxkbcommon,
-  wayland,
-  libdrm,
   nix-update-script,
+  openssl,
+  pkg-config,
+  qt6,
+  vulkan-headers,
+  wayland,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -37,8 +37,8 @@ stdenv.mkDerivation (finalAttrs: {
   patches = [
     # Fix build for Xcode < 14
     (fetchpatch {
-      url = "https://github.com/moonlight-stream/moonlight-qt/commit/76deafbd7bf868562d69061e7d6abf2612a2c7ad.patch";
       hash = "sha256-+rXdexZQpOP6yS+oTmvYVxasWxOX16uU1udN75zNX3w=";
+      url = "https://github.com/moonlight-stream/moonlight-qt/commit/76deafbd7bf868562d69061e7d6abf2612a2c7ad.patch";
     })
   ];
 
@@ -70,25 +70,26 @@ stdenv.mkDerivation (finalAttrs: {
     libdrm
   ];
 
-  qmakeFlags = [ "CONFIG+=disable-prebuilts" ];
-
   postInstall = lib.optionalString stdenv.hostPlatform.isDarwin ''
     mkdir $out/Applications $out/bin
     mv app/Moonlight.app $out/Applications
     ln -s $out/Applications/Moonlight.app/Contents/MacOS/Moonlight $out/bin/moonlight
   '';
 
+  qmakeFlags = [ "CONFIG+=disable-prebuilts" ];
   passthru.updateScript = nix-update-script { };
 
   meta = {
-    changelog = "https://github.com/moonlight-stream/moonlight-qt/releases/tag/v${finalAttrs.version}";
     description = "Play your PC games on almost any device";
     homepage = "https://moonlight-stream.org";
+    changelog = "https://github.com/moonlight-stream/moonlight-qt/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.gpl3Plus;
+
     maintainers = with lib.maintainers; [
       azuwis
       zmitchell
     ];
+
     platforms = lib.platforms.all;
     mainProgram = "moonlight";
   };

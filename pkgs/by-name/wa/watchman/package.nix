@@ -1,31 +1,27 @@
 {
   lib,
   stdenv,
-
   fetchFromGitHub,
-
-  cmake,
-  ninja,
-  pkg-config,
-  rustc,
   cargo,
-  rustPlatform,
+  cmake,
+  cpptoml,
+  edencommon,
   ensureNewerSourcesForZipFilesHook,
-
-  pcre2,
-  openssl,
+  fb303,
+  fbthrift,
+  fizz,
+  folly,
   gflags,
   glog,
-  libevent,
-  edencommon,
-  folly,
-  fizz,
-  wangle,
-  fbthrift,
-  fb303,
-  cpptoml,
-
   gtest,
+  libevent,
+  ninja,
+  openssl,
+  pcre2,
+  pkg-config,
+  rustPlatform,
+  rustc,
+  wangle,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -42,6 +38,19 @@ stdenv.mkDerivation (finalAttrs: {
   patches = [
     ./glog-0.7.patch
   ];
+
+  postPatch = ''
+    patchShebangs .
+
+    cp ${./Cargo.lock} ${finalAttrs.cargoRoot}/Cargo.lock
+
+    # The build system looks for `/usr/bin/python3`. It falls back
+    # gracefully if it’s not found, but let’s dodge the potential
+    # reproducibility risk for unsandboxed Darwin.
+    substituteInPlace CMakeLists.txt \
+      --replace-fail /usr/bin /var/empty
+
+  '';
 
   nativeBuildInputs = [
     cmake
@@ -68,10 +77,6 @@ stdenv.mkDerivation (finalAttrs: {
     cpptoml
   ];
 
-  checkInputs = [
-    gtest
-  ];
-
   cmakeFlags = [
     (lib.cmakeBool "CMAKE_INSTALL_RPATH_USE_LINK_PATH" true)
     # If we want to have one watchman per system, we need to have the state in
@@ -82,40 +87,32 @@ stdenv.mkDerivation (finalAttrs: {
     (lib.cmakeFeature "WATCHMAN_VERSION_OVERRIDE" finalAttrs.version)
   ];
 
-  cargoRoot = "watchman/cli";
+  doCheck = true;
+
+  checkInputs = [
+    gtest
+  ];
 
   cargoDeps = rustPlatform.importCargoLock {
     lockFile = ./Cargo.lock;
   };
 
-  doCheck = true;
-
-  postPatch = ''
-    patchShebangs .
-
-    cp ${./Cargo.lock} ${finalAttrs.cargoRoot}/Cargo.lock
-
-    # The build system looks for `/usr/bin/python3`. It falls back
-    # gracefully if it’s not found, but let’s dodge the potential
-    # reproducibility risk for unsandboxed Darwin.
-    substituteInPlace CMakeLists.txt \
-      --replace-fail /usr/bin /var/empty
-
-  '';
-
+  cargoRoot = "watchman/cli";
   passthru.updateScript = ./update.sh;
 
   meta = {
     description = "Watches files and takes action when they change";
     homepage = "https://facebook.github.io/watchman";
+    license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       kylesferrazza
       emily
       techknowlogick
       lf-
     ];
-    mainProgram = "watchman";
+
     platforms = lib.platforms.unix;
-    license = lib.licenses.mit;
+    mainProgram = "watchman";
   };
 })

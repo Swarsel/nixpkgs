@@ -11,7 +11,6 @@
 buildPythonPackage rec {
   pname = "parameterized";
   version = "0.9.0";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
@@ -20,9 +19,9 @@ buildPythonPackage rec {
 
   patches = [
     (fetchpatch2 {
+      hash = "sha256-tWcN0eRC0oRHrOaa/cctXLhi1WapDKvxO36e6gU6UIk=";
       name = "parameterized-docstring-3.13-compat.patch";
       url = "https://gitweb.gentoo.org/repo/gentoo.git/plain/dev-python/parameterized/files/parameterized-0.9.0-py313-test.patch?id=dec60bb6900d6ebdaaa6aa1dcb845b30b739f9b5";
-      hash = "sha256-tWcN0eRC0oRHrOaa/cctXLhi1WapDKvxO36e6gU6UIk=";
     })
   ];
 
@@ -36,7 +35,6 @@ buildPythonPackage rec {
   '';
 
   nativeBuildInputs = [ setuptools ];
-
   # 'yield' keyword is allowed in fixtures, but not in tests (test_naked_function)
   doCheck = false;
 
@@ -46,7 +44,7 @@ buildPythonPackage rec {
   ];
 
   enabledTestPaths = [ "parameterized/test.py" ];
-
+  pyproject = true;
   pythonImportsCheck = [ "parameterized" ];
 
   meta = {

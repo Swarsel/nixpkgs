@@ -1,9 +1,9 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
-  unstableGitUpdater,
-  writeShellApplication,
+  SDL2,
+  SDL2_ttf,
   cmake,
   fontconfig,
   freetype,
@@ -13,9 +13,8 @@
   libx11,
   openssl,
   pkg-config,
-  SDL2,
-  SDL2_ttf,
-
+  unstableGitUpdater,
+  writeShellApplication,
   enable16Bit ? true,
   enableX11 ? stdenv.hostPlatform.isLinux,
 }:
@@ -102,16 +101,17 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   env = {
-    NP2KAI_VERSION = finalAttrs.version;
-    NP2KAI_HASH = builtins.substring 0 7 finalAttrs.src.rev;
     # GCC 14 incompatibility
     NIX_CFLAGS_COMPILE = "-Wno-error=incompatible-pointer-types";
+    NP2KAI_HASH = builtins.substring 0 7 finalAttrs.src.rev;
+    NP2KAI_VERSION = finalAttrs.version;
   };
 
   passthru.updateScript = unstableGitUpdater {
     # 0.86 version prefix is implied, add it back for our versioning
     tagConverter = lib.getExe (writeShellApplication {
       name = "update-np2kai";
+
       text = ''
         sed -e 's/^rev\./0.86rev/g'
       '';
@@ -123,7 +123,7 @@ stdenv.mkDerivation (finalAttrs: {
     homepage = "https://github.com/AZO234/NP2kai";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ OPNA2608 ];
-    mainProgram = "${if enableX11 then "x" else "sdl"}np21kai";
     platforms = lib.platforms.x86;
+    mainProgram = "${if enableX11 then "x" else "sdl"}np21kai";
   };
 })

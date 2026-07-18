@@ -12,8 +12,8 @@ stdenv.mkDerivation (finalAttrs: {
   src = fetchFromGitHub {
     owner = "LanetNetwork";
     repo = "pingtcp";
-    hash = "sha256-yGKW/3/smzVvdhkqzf0NWpcthfW9XzXQCnoAD4YlaLM=";
     tag = "v${finalAttrs.version}";
+    hash = "sha256-yGKW/3/smzVvdhkqzf0NWpcthfW9XzXQCnoAD4YlaLM=";
     fetchSubmodules = true;
   };
 

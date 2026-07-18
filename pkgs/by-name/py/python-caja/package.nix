@@ -2,12 +2,12 @@
   lib,
   stdenv,
   fetchurl,
-  pkg-config,
-  gettext,
   caja,
-  gtk3,
-  python3Packages,
+  gettext,
   gitUpdater,
+  gtk3,
+  pkg-config,
+  python3Packages,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -33,13 +33,12 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   configureFlags = [ "--with-cajadir=$$out/lib/caja/extensions-2.0" ];
-
   enableParallelBuilding = true;
 
   passthru.updateScript = gitUpdater {
-    url = "https://git.mate-desktop.org/python-caja";
     odd-unstable = true;
     rev-prefix = "v";
+    url = "https://git.mate-desktop.org/python-caja";
   };
 
   meta = {

@@ -10,7 +10,6 @@
 buildPythonPackage rec {
   pname = "xlsx2csv";
   version = "0.8.6";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
@@ -23,11 +22,13 @@ buildPythonPackage rec {
     wheel
   ];
 
+  pyproject = true;
+
   meta = {
-    homepage = "https://github.com/dilshod/xlsx2csv";
     description = "Convert xlsx to csv";
-    mainProgram = "xlsx2csv";
+    homepage = "https://github.com/dilshod/xlsx2csv";
     license = lib.licenses.bsd3;
     maintainers = with lib.maintainers; [ jb55 ];
+    mainProgram = "xlsx2csv";
   };
 }

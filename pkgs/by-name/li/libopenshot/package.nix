@@ -14,9 +14,9 @@
   pkg-config,
   python3,
   qt6,
+  resvg,
   swig,
   zeromq,
-  resvg,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -34,6 +34,8 @@ stdenv.mkDerivation (finalAttrs: {
     # Darwin requires both Magick++ and MagickCore for a successful linkage
     ./0001-link-magickcore.diff
   ];
+
+  strictDeps = true;
 
   nativeBuildInputs = [
     cmake
@@ -61,13 +63,6 @@ stdenv.mkDerivation (finalAttrs: {
     llvmPackages.openmp
   ];
 
-  strictDeps = true;
-  __structuredAttrs = true;
-
-  dontWrapQtApps = true;
-
-  doCheck = true;
-
   cmakeFlags = [
     (lib.cmakeBool "ENABLE_RUBY" false)
     (lib.cmakeBool "ENABLE_PYTHON" true)
@@ -76,18 +71,24 @@ stdenv.mkDerivation (finalAttrs: {
     "-DUSE_QT6=ON"
   ];
 
+  doCheck = true;
+  __structuredAttrs = true;
+  dontWrapQtApps = true;
+
   passthru = {
     inherit libopenshot-audio;
   };
 
   meta = {
-    homepage = "http://openshot.org/";
     description = "Free, open-source video editor library";
+
     longDescription = ''
       OpenShot Library (libopenshot) is an open-source project dedicated to
       delivering high quality video editing, animation, and playback solutions
       to the world. API currently supports C++, Python, and Ruby.
     '';
+
+    homepage = "http://openshot.org/";
     license = with lib.licenses; [ gpl3Plus ];
     maintainers = [ ];
     platforms = lib.platforms.unix;

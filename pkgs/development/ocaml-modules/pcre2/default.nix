@@ -8,10 +8,8 @@
 }:
 
 buildDunePackage {
-  pname = "pcre2";
   inherit version;
-
-  minimalOCamlVersion = "4.08";
+  pname = "pcre2";
 
   src = fetchFromGitHub {
     owner = "camlp5";
@@ -22,6 +20,7 @@ buildDunePackage {
 
   buildInputs = [ dune-configurator ];
   propagatedBuildInputs = [ pcre2 ];
+  minimalOCamlVersion = "4.08";
 
   meta = {
     description = "OCaml bindings to PCRE";

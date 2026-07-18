@@ -1,31 +1,31 @@
 {
   lib,
   stdenv,
-  pulseaudio,
   makeDesktopItem,
-  qt5,
+  pulseaudio,
   python3,
+  qt5,
 }:
 
 let
   desktopItem = makeDesktopItem {
-    name = "qpaeq";
-    exec = "@out@/bin/qpaeq";
-    icon = "audio-volume-high";
-    desktopName = "qpaeq";
-    genericName = "Audio equalizer";
     categories = [
       "AudioVideo"
       "Audio"
       "Mixer"
     ];
+
+    desktopName = "qpaeq";
+    exec = "@out@/bin/qpaeq";
+    genericName = "Audio equalizer";
+    icon = "audio-volume-high";
+    name = "qpaeq";
     startupNotify = false;
   };
 in
 stdenv.mkDerivation {
-  pname = "qpaeq";
   inherit (pulseaudio) version src;
-
+  pname = "qpaeq";
   nativeBuildInputs = [ qt5.wrapQtAppsHook ];
 
   buildInputs = [
@@ -36,9 +36,6 @@ stdenv.mkDerivation {
       ]
     ))
   ];
-
-  dontBuild = true;
-  dontConfigure = true;
 
   installPhase = ''
     runHook preInstall
@@ -53,12 +50,15 @@ stdenv.mkDerivation {
     sed "s|@out@|$out|g" -i $out/share/applications/qpaeq.desktop
   '';
 
+  dontBuild = true;
+  dontConfigure = true;
+
   meta = {
     description = "Equalizer interface for pulseaudio's equalizer sinks";
-    mainProgram = "qpaeq";
     homepage = "http://www.pulseaudio.org/";
     license = lib.licenses.lgpl2Plus;
     maintainers = [ ];
     platforms = lib.platforms.unix;
+    mainProgram = "qpaeq";
   };
 }

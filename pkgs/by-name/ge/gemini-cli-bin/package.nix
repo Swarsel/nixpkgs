@@ -1,13 +1,13 @@
 {
   lib,
-  stdenvNoCC,
   fetchzip,
+  makeWrapper,
+  nix-update-script,
   nodejs,
+  ripgrep,
+  stdenvNoCC,
   sysctl,
   writableTmpDirAsHomeHook,
-  nix-update-script,
-  ripgrep,
-  makeWrapper,
 }:
 stdenvNoCC.mkDerivation (finalAttrs: {
   pname = "gemini-cli-bin";
@@ -29,6 +29,40 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     nodejs
     ripgrep
   ];
+
+  installPhase = ''
+    runHook preInstall
+
+    local bundleDir="$out/lib/gemini"
+
+    mkdir -p "$bundleDir"
+    cp -aT . "$bundleDir"
+
+    makeWrapper "${lib.getExe nodejs}" "$out/bin/gemini" \
+      --add-flags "--no-warnings=DEP0040" \
+      --add-flags "$bundleDir/gemini.js"
+
+    runHook postInstall
+  '';
+
+  doInstallCheck = true;
+
+  nativeInstallCheckInputs = [
+    writableTmpDirAsHomeHook
+  ]
+  ++ lib.optionals (with stdenvNoCC.hostPlatform; isDarwin && isx86_64) [
+    sysctl
+  ];
+
+  # versionCheckHook cannot be used because it assumes the executable is hermetic,
+  # but we need `nativeInstallCheckInputs`
+  installCheckPhase = ''
+    runHook preInstallCheck
+
+    "$out/bin/gemini" -v | grep "${finalAttrs.version}"
+
+    runHook postInstallCheck
+  '';
 
   patchPhase = ''
     runHook prePatch
@@ -54,49 +88,16 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     runHook postPatch
   '';
 
-  installPhase = ''
-    runHook preInstall
-
-    local bundleDir="$out/lib/gemini"
-
-    mkdir -p "$bundleDir"
-    cp -aT . "$bundleDir"
-
-    makeWrapper "${lib.getExe nodejs}" "$out/bin/gemini" \
-      --add-flags "--no-warnings=DEP0040" \
-      --add-flags "$bundleDir/gemini.js"
-
-    runHook postInstall
-  '';
-
-  doInstallCheck = true;
-  nativeInstallCheckInputs = [
-    writableTmpDirAsHomeHook
-  ]
-  ++ lib.optionals (with stdenvNoCC.hostPlatform; isDarwin && isx86_64) [
-    sysctl
-  ];
-
-  # versionCheckHook cannot be used because it assumes the executable is hermetic,
-  # but we need `nativeInstallCheckInputs`
-  installCheckPhase = ''
-    runHook preInstallCheck
-
-    "$out/bin/gemini" -v | grep "${finalAttrs.version}"
-
-    runHook postInstallCheck
-  '';
-
   passthru.updateScript = nix-update-script { };
 
   meta = {
     description = "AI agent that brings the power of Gemini directly into your terminal";
     homepage = "https://github.com/google-gemini/gemini-cli";
     license = lib.licenses.asl20;
-    maintainers = with lib.maintainers; [ ljxfstorm ];
-    mainProgram = "gemini";
-    platforms = lib.platforms.linux ++ lib.platforms.darwin;
     sourceProvenance = [ lib.sourceTypes.binaryBytecode ];
+    maintainers = with lib.maintainers; [ ljxfstorm ];
+    platforms = lib.platforms.linux ++ lib.platforms.darwin;
+    mainProgram = "gemini";
     priority = 10;
   };
 })

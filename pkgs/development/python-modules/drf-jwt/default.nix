@@ -1,15 +1,14 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  pyjwt,
+  buildPythonPackage,
   djangorestframework,
+  pyjwt,
 }:
 
 buildPythonPackage rec {
   pname = "drf-jwt";
   version = "1.19.2";
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "Styria-Digital";
@@ -26,6 +25,7 @@ buildPythonPackage rec {
 
   # requires setting up a django instance
   doCheck = false;
+  format = "setuptools";
 
   pythonImportsCheck = [
     "rest_framework_jwt"

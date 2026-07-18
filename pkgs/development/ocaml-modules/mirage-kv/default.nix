@@ -1,19 +1,17 @@
 {
   lib,
   fetchurl,
+  alcotest,
   buildDunePackage,
   fmt,
   lwt,
   optint,
   ptime,
-  alcotest,
 }:
 
 buildDunePackage (finalAttrs: {
   pname = "mirage-kv";
   version = "6.1.1";
-
-  minimalOCamlVersion = "4.08";
 
   src = fetchurl {
     url = "https://github.com/mirage/mirage-kv/releases/download/v${finalAttrs.version}/mirage-kv-${finalAttrs.version}.tbz";
@@ -29,6 +27,7 @@ buildDunePackage (finalAttrs: {
 
   doCheck = true;
   checkInputs = [ alcotest ];
+  minimalOCamlVersion = "4.08";
 
   meta = {
     description = "MirageOS signatures for key/value devices";

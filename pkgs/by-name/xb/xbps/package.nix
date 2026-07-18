@@ -2,11 +2,11 @@
   lib,
   stdenv,
   fetchFromGitHub,
+  libarchive,
+  openssl,
   pkg-config,
   which,
   zlib,
-  openssl,
-  libarchive,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -20,6 +20,16 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-noi+OAyBmLCBnmLDWEuNXEOPyqt9Qr1v4CNm7GjKXHA=";
   };
 
+  patches = [
+    ./cert-paths.patch
+  ];
+
+  # Don't try to install keys to /var/db/xbps, put in $out/share for now
+  postPatch = ''
+    substituteInPlace data/Makefile \
+      --replace-fail '$(DESTDIR)/$(DBDIR)' '$(DESTDIR)/$(SHAREDIR)'
+  '';
+
   nativeBuildInputs = [
     pkg-config
     which
@@ -31,25 +41,14 @@ stdenv.mkDerivation (finalAttrs: {
     libarchive
   ];
 
-  patches = [
-    ./cert-paths.patch
-  ];
-
   env.NIX_CFLAGS_COMPILE = "-Wno-error=unused-result -Wno-error=deprecated-declarations";
-
-  # Don't try to install keys to /var/db/xbps, put in $out/share for now
-  postPatch = ''
-    substituteInPlace data/Makefile \
-      --replace-fail '$(DESTDIR)/$(DBDIR)' '$(DESTDIR)/$(SHAREDIR)'
-  '';
-
   enableParallelBuilding = true;
 
   meta = {
-    homepage = "https://github.com/void-linux/xbps";
     description = "X Binary Package System";
-    platforms = lib.platforms.linux; # known to not work on Darwin, at least
+    homepage = "https://github.com/void-linux/xbps";
     license = lib.licenses.bsd2;
     maintainers = [ ];
+    platforms = lib.platforms.linux; # known to not work on Darwin, at least
   };
 })

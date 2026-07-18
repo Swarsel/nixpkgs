@@ -1,8 +1,8 @@
 {
   lib,
   fetchFromGitHub,
-  rustPlatform,
   openssh,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -17,7 +17,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
   };
 
   cargoHash = "sha256-u5kGYCYDvEhSuGOLnhdt9IpRwzllXbSJDwY1XzpHBCc=";
-
   nativeCheckInputs = [ openssh ];
 
   meta = {

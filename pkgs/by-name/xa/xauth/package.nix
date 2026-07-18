@@ -2,13 +2,13 @@
   lib,
   stdenv,
   fetchurl,
-  pkg-config,
   libx11,
   libxau,
   libxext,
   libxmu,
-  xorgproto,
+  pkg-config,
   writeScript,
+  xorgproto,
 }:
 stdenv.mkDerivation (finalAttrs: {
   pname = "xauth";
@@ -20,7 +20,6 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   strictDeps = true;
-
   nativeBuildInputs = [ pkg-config ];
 
   buildInputs = [
@@ -44,16 +43,20 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "X authority file utility";
+
     longDescription = ''
       The xauth program is used to edit and display the authorization information used in connecting
       to the X server.
     '';
+
     homepage = "https://gitlab.freedesktop.org/xorg/app/xauth";
     license = lib.licenses.mitOpenGroup;
-    mainProgram = "xauth";
+
     maintainers = with lib.maintainers; [
       nick-linux
     ];
+
     platforms = lib.platforms.unix;
+    mainProgram = "xauth";
   };
 })

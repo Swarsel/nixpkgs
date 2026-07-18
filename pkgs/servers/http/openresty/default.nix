@@ -1,52 +1,29 @@
 {
-  callPackage,
-  runCommand,
   lib,
   fetchurl,
+  callPackage,
+  curl,
   groff,
-  perl,
+  jq,
   libpq,
   makeWrapper,
-  nixosTests,
-  withPostgres ? true,
-  curl,
-  jq,
   nix-update,
+  nixosTests,
+  perl,
+  runCommand,
   writeShellApplication,
+  withPostgres ? true,
   ...
 }@args:
 
 callPackage ../nginx/generic.nix args rec {
   pname = "openresty";
   version = "1.31.1.1";
-  nginxVersion = lib.concatStringsSep "." (lib.init (lib.splitString "." version));
 
   src = fetchurl {
     url = "https://openresty.org/download/openresty-${version}.tar.gz";
     hash = "sha256-ZbeLqt0/CYQFXeib8T9KGTLlv+nDGTIDehNOorGgzkI=";
   };
-
-  # generic.nix applies fixPatch on top of every patch defined there.
-  # This allows updating the patch destination, as openresty has
-  # nginx source code in a different folder.
-  fixPatch =
-    patch:
-    let
-      name = patch.name or (baseNameOf patch);
-    in
-    runCommand "openresty-${name}" { src = patch; } ''
-      substitute $src $out \
-        --replace "a/" "a/bundle/nginx-${nginxVersion}/" \
-        --replace "b/" "b/bundle/nginx-${nginxVersion}/"
-    '';
-
-  nativeBuildInputs = [
-    libpq.pg_config
-    makeWrapper
-    perl
-  ];
-
-  buildInputs = [ libpq ];
 
   postPatch = ''
     substituteInPlace bundle/nginx-${nginxVersion}/src/http/ngx_http_core_module.c \
@@ -56,6 +33,13 @@ callPackage ../nginx/generic.nix args rec {
     patchShebangs configure bundle/
   '';
 
+  nativeBuildInputs = [
+    libpq.pg_config
+    makeWrapper
+    perl
+  ];
+
+  buildInputs = [ libpq ];
   configureFlags = lib.optionals withPostgres [ "--with-http_postgres_module" ];
 
   postInstall = ''
@@ -72,18 +56,37 @@ callPackage ../nginx/generic.nix args rec {
       --replace-fail "'bin/nginx'" "'$out/bin/nginx'"
   '';
 
+  # generic.nix applies fixPatch on top of every patch defined there.
+  # This allows updating the patch destination, as openresty has
+  # nginx source code in a different folder.
+  fixPatch =
+    patch:
+    let
+      name = patch.name or (baseNameOf patch);
+    in
+    runCommand "openresty-${name}" { src = patch; } ''
+      substitute $src $out \
+        --replace "a/" "a/bundle/nginx-${nginxVersion}/" \
+        --replace "b/" "b/bundle/nginx-${nginxVersion}/"
+    '';
+
+  nginxVersion = lib.concatStringsSep "." (lib.init (lib.splitString "." version));
+
   passthru = {
     tests = {
       inherit (nixosTests) openresty-lua;
       inherit (nixosTests.nginx-variants) openresty;
     };
+
     updateScript = lib.getExe (writeShellApplication {
       name = "openresty-update";
+
       runtimeInputs = [
         curl
         jq
         nix-update
       ];
+
       text = ''
         version="$(
           curl -fsSL https://api.github.com/repos/openresty/openresty/tags?per_page=1 |
@@ -105,10 +108,12 @@ callPackage ../nginx/generic.nix args rec {
     description = "Fast web application server built on Nginx";
     homepage = "https://openresty.org";
     license = lib.licenses.bsd2;
-    platforms = lib.platforms.all;
+
     maintainers = with lib.maintainers; [
       thoughtpolice
       lblasc
     ];
+
+    platforms = lib.platforms.all;
   };
 }

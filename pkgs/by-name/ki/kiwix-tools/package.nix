@@ -1,15 +1,15 @@
 {
   lib,
-  docopt_cpp,
+  stdenv,
   fetchFromGitHub,
+  docopt_cpp,
   gitUpdater,
-  nixosTests,
   icu,
   libkiwix,
   meson,
   ninja,
+  nixosTests,
   pkg-config,
-  stdenv,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -36,7 +36,6 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   passthru.tests.kiwix-serve = nixosTests.kiwix-serve;
-
   passthru.updateScript = gitUpdater { };
 
   meta = {
@@ -44,7 +43,7 @@ stdenv.mkDerivation (finalAttrs: {
     homepage = "https://kiwix.org";
     changelog = "https://github.com/kiwix/kiwix-tools/releases/tag/${finalAttrs.version}";
     license = lib.licenses.gpl3Plus;
-    platforms = lib.platforms.linux ++ lib.platforms.darwin;
     maintainers = with lib.maintainers; [ colinsane ];
+    platforms = lib.platforms.linux ++ lib.platforms.darwin;
   };
 })

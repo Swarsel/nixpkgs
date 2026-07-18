@@ -1,18 +1,18 @@
 {
   lib,
   stdenv,
-  python3,
-  groff,
-  less,
   fetchFromGitHub,
-  fetchpatch,
-  installShellFiles,
-  nix-update-script,
-  testers,
-  awscli2,
   addBinToPathHook,
-  writableTmpDirAsHomeHook,
+  awscli2,
   cacert,
+  fetchpatch,
+  groff,
+  installShellFiles,
+  less,
+  nix-update-script,
+  python3,
+  testers,
+  writableTmpDirAsHomeHook,
 }:
 
 let
@@ -22,6 +22,7 @@ let
         # https://github.com/NixOS/nixpkgs/issues/449266
         prompt-toolkit = prev.prompt-toolkit.overridePythonAttrs (prev: rec {
           version = "3.0.51";
+
           src = prev.src.override {
             tag = version;
             hash = "sha256-pNYmjAgnP9nK40VS/qvPR3g+809Yra2ISASWJDdQKrU=";
@@ -32,21 +33,24 @@ let
         # for python-dateutil 2.9.0.post0 (eg. post0)
         python-dateutil = prev.python-dateutil.overridePythonAttrs (prev: rec {
           version = "2.8.2";
-          format = "setuptools";
-          pyproject = null;
+
           src = prev.src.override {
             inherit version;
             hash = "sha256-ASPKzBYnrhnd88J6XeW9Z+5FhvvdZEDZdI+Ku0g9PoY=";
           };
+
           patches = [
             # https://github.com/dateutil/dateutil/pull/1285
             (fetchpatch {
-              url = "https://github.com/dateutil/dateutil/commit/f2293200747fb03d56c6c5997bfebeabe703576f.patch";
-              relative = "src";
               hash = "sha256-BVEFGV/WGUz9H/8q+l62jnyN9VDnoSR71DdL+LIkb0o=";
+              relative = "src";
+              url = "https://github.com/dateutil/dateutil/commit/f2293200747fb03d56c6c5997bfebeabe703576f.patch";
             })
           ];
+
           postPatch = null;
+          format = "setuptools";
+          pyproject = null;
         });
       }
     );
@@ -56,7 +60,6 @@ in
 py.pkgs.buildPythonApplication rec {
   pname = "awscli2";
   version = "2.35.11"; # N.B: if you change this, check if overrides are still up-to-date
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "aws";
@@ -93,33 +96,9 @@ py.pkgs.buildPythonApplication rec {
     installShellFiles
   ];
 
-  build-system = with py.pkgs; [
-    flit-core
-  ];
-
-  dependencies = with py.pkgs; [
-    awscrt
-    colorama
-    distro
-    docutils
-    jmespath
-    prompt-toolkit
-    python-dateutil
-    ruamel-yaml
-    urllib3
-  ];
-
   propagatedBuildInputs = [
     groff
     less
-  ];
-
-  # Prevent breakage when running in a Python environment: https://github.com/NixOS/nixpkgs/issues/47900
-  makeWrapperArgs = [
-    "--unset"
-    "NIX_PYTHONPATH"
-    "--unset"
-    "PYTHONPATH"
   ];
 
   nativeCheckInputs = with py.pkgs; [
@@ -154,8 +133,20 @@ py.pkgs.buildPythonApplication rec {
   # tests/unit/customizations/sso/test_utils.py uses sockets
   __darwinAllowLocalNetworking = true;
 
-  pytestFlags = [
-    "-Wignore::DeprecationWarning"
+  build-system = with py.pkgs; [
+    flit-core
+  ];
+
+  dependencies = with py.pkgs; [
+    awscrt
+    colorama
+    distro
+    docutils
+    jmespath
+    prompt-toolkit
+    python-dateutil
+    ruamel-yaml
+    urllib3
   ];
 
   disabledTestPaths = [
@@ -179,23 +170,39 @@ py.pkgs.buildPythonApplication rec {
     "test_details_disabled_for_choice_wo_details"
   ];
 
+  # Prevent breakage when running in a Python environment: https://github.com/NixOS/nixpkgs/issues/47900
+  makeWrapperArgs = [
+    "--unset"
+    "NIX_PYTHONPATH"
+    "--unset"
+    "PYTHONPATH"
+  ];
+
+  pyproject = true;
+
+  pytestFlags = [
+    "-Wignore::DeprecationWarning"
+  ];
+
   pythonImportsCheck = [
     "awscli"
   ];
 
   passthru = {
     python = py; # for aws_shell
+
+    tests.version = testers.testVersion {
+      inherit version;
+      command = "aws --version";
+      package = awscli2;
+    };
+
     updateScript = nix-update-script {
       # Excludes 1.x versions from the Github tags list
       extraArgs = [
         "--version-regex"
         "^(2\\.(.*))"
       ];
-    };
-    tests.version = testers.testVersion {
-      package = awscli2;
-      command = "aws --version";
-      inherit version;
     };
   };
 
@@ -204,11 +211,13 @@ py.pkgs.buildPythonApplication rec {
     homepage = "https://aws.amazon.com/cli/";
     changelog = "https://github.com/aws/aws-cli/blob/${version}/CHANGELOG.rst";
     license = lib.licenses.asl20;
+
     maintainers = with lib.maintainers; [
       davegallant
       devusb
       anthonyroussel
     ];
+
     mainProgram = "aws";
   };
 }

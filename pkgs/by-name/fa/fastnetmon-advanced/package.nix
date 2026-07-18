@@ -24,14 +24,6 @@ stdenv.mkDerivation rec {
     bzip2
   ];
 
-  unpackPhase = ''
-    ar xf $src
-    tar xf data.tar.xz
-
-    # unused libraries, which have additional dependencies
-    rm opt/fastnetmon/libraries/gcc1210/lib/libgccjit.so*
-  '';
-
   installPhase = ''
     mkdir -p $out/libexec/fastnetmon
     cp -r opt/fastnetmon/app/bin $out/bin
@@ -47,6 +39,7 @@ stdenv.mkDerivation rec {
   '';
 
   doInstallCheck = true;
+
   installCheckPhase = ''
     set +o pipefail
     $out/bin/fastnetmon 2>&1 | grep "Can't open log file"
@@ -55,15 +48,23 @@ stdenv.mkDerivation rec {
     $out/bin/fnm-gobgpd --help 2>&1 | grep "Application Options"
   '';
 
+  unpackPhase = ''
+    ar xf $src
+    tar xf data.tar.xz
+
+    # unused libraries, which have additional dependencies
+    rm opt/fastnetmon/libraries/gcc1210/lib/libgccjit.so*
+  '';
+
   passthru.tests = { inherit (nixosTests) fastnetmon-advanced; };
 
   meta = {
     description = "High performance DDoS detector / sensor - commercial edition";
     homepage = "https://fastnetmon.com";
     changelog = "https://github.com/FastNetMon/fastnetmon-advanced-releases/releases/tag/v${version}";
+    license = lib.licenses.unfree;
     sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
     maintainers = with lib.maintainers; [ yureka-wdz ];
-    license = lib.licenses.unfree;
     platforms = [ "x86_64-linux" ];
   };
 }

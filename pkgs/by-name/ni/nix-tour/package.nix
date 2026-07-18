@@ -2,10 +2,10 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  electron,
-  makeWrapper,
   copyDesktopItems,
+  electron,
   makeDesktopItem,
+  makeWrapper,
 }:
 
 stdenv.mkDerivation rec {
@@ -23,6 +23,7 @@ stdenv.mkDerivation rec {
     makeWrapper
     copyDesktopItems
   ];
+
   buildInputs = [ electron ];
 
   installPhase = ''
@@ -34,15 +35,16 @@ stdenv.mkDerivation rec {
 
   desktopItems = [
     (makeDesktopItem {
-      name = pname;
-      desktopName = "Tour of Nix";
-      genericName = "Tour of Nix";
-      comment = "Interactive programming guide dedicated to the nix programming language";
       categories = [
         "Development"
         "Documentation"
       ];
+
+      comment = "Interactive programming guide dedicated to the nix programming language";
+      desktopName = "Tour of Nix";
       exec = "nix-tour";
+      genericName = "Tour of Nix";
+      name = pname;
     })
   ];
 
@@ -50,9 +52,11 @@ stdenv.mkDerivation rec {
     description = "'the tour of nix' from nixcloud.io/tour as offline version";
     homepage = "https://nixcloud.io/tour";
     license = lib.licenses.gpl2;
+
     maintainers = with lib.maintainers; [
       qknight
     ];
+
     mainProgram = "nix-tour";
   };
 }

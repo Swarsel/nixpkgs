@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   jsonpickle,
   pytestCheckHook,
   requests,
@@ -12,7 +12,6 @@
 buildPythonPackage rec {
   pname = "python-digitalocean";
   version = "1.17.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "koalalorenzo";
@@ -20,13 +19,6 @@ buildPythonPackage rec {
     tag = "v${version}";
     hash = "sha256-CIYW6vl+IOO94VyfgTjJ3T13uGtz4BdKyVmE44maoLA=";
   };
-
-  build-system = [ setuptools ];
-
-  dependencies = [
-    jsonpickle
-    requests
-  ];
 
   nativeCheckInputs = [
     pytestCheckHook
@@ -37,9 +29,16 @@ buildPythonPackage rec {
     cd digitalocean
   '';
 
+  build-system = [ setuptools ];
+
+  dependencies = [
+    jsonpickle
+    requests
+  ];
+
   # Test tries to access the network
   disabledTests = [ "TestFirewall" ];
-
+  pyproject = true;
   pythonImportsCheck = [ "digitalocean" ];
 
   meta = {

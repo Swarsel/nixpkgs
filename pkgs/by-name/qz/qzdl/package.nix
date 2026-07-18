@@ -44,20 +44,20 @@ stdenv.mkDerivation {
 
   desktopItems = [
     (makeDesktopItem {
-      name = "zdl3";
-      exec = "zdl %U";
-      icon = "zdl3";
-      desktopName = "ZDL";
-      genericName = "A ZDoom WAD Launcher";
       categories = [ "Game" ];
+      desktopName = "ZDL";
+      exec = "zdl %U";
+      genericName = "A ZDoom WAD Launcher";
+      icon = "zdl3";
+      name = "zdl3";
     })
   ];
 
   meta = {
+    inherit (libsForQt5.qtbase.meta) platforms;
     description = "ZDoom WAD Launcher";
     homepage = "https://zdl.vectec.net";
     license = lib.licenses.gpl3Only;
-    inherit (libsForQt5.qtbase.meta) platforms;
     maintainers = [ ];
     mainProgram = "zdl";
   };

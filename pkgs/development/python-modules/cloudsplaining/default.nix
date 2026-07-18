@@ -1,12 +1,12 @@
 {
   lib,
+  fetchFromGitHub,
   boto3,
   botocore,
   buildPythonPackage,
   cached-property,
   click,
   click-option-group,
-  fetchFromGitHub,
   jinja2,
   markdown,
   policy-sentry,
@@ -19,7 +19,6 @@
 buildPythonPackage rec {
   pname = "cloudsplaining";
   version = "0.8.2";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "salesforce";
@@ -28,8 +27,7 @@ buildPythonPackage rec {
     hash = "sha256-Abp/uvH1IYO/rb2o+7uI0Ef6q7K6T0kN1mo+Qit438E=";
   };
 
-  pythonRelaxDeps = true;
-
+  nativeCheckInputs = [ pytestCheckHook ];
   build-system = [ setuptools ];
 
   dependencies = [
@@ -45,14 +43,14 @@ buildPythonPackage rec {
     schema
   ];
 
-  nativeCheckInputs = [ pytestCheckHook ];
-
   disabledTests = [
     "test_policy_expansion"
     "test_statement_details_for_allow_not_action"
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "cloudsplaining" ];
+  pythonRelaxDeps = true;
 
   meta = {
     description = "Python module for AWS IAM security assessment";

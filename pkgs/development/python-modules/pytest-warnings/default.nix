@@ -8,7 +8,6 @@
 buildPythonPackage rec {
   pname = "pytest-warnings";
   version = "0.3.1";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
@@ -16,6 +15,7 @@ buildPythonPackage rec {
   };
 
   buildInputs = [ pytest ];
+  format = "setuptools";
 
   meta = {
     description = "Plugin to list Python warnings in pytest report";

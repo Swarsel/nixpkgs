@@ -1,17 +1,17 @@
 {
+  lib,
   stdenv,
   fetchurl,
-  pkg-config,
-  lib,
-  zlib,
+  gd,
   ghostscript,
   imagemagick,
-  plotutils,
-  gd,
+  libiconv,
   libjpeg,
   libwebp,
-  libiconv,
   makeWrapper,
+  pkg-config,
+  plotutils,
+  zlib,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -23,19 +23,21 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-VYi0MtLGsq2YKLRJFepYE/+aOjMSpB+g3kw43ayd9y8=";
   };
 
+  outputs = [
+    "out"
+    "dev"
+  ];
+
   postPatch = ''
     # don't use gnu-isms like link.h on macos
     substituteInPlace src/pstoedit.cpp --replace-fail '#ifndef _MSC_VER' '#if !defined(_MSC_VER) && !defined(__APPLE__)'
   '';
 
-  outputs = [
-    "out"
-    "dev"
-  ];
   nativeBuildInputs = [
     makeWrapper
     pkg-config
   ];
+
   buildInputs = [
     zlib
     ghostscript

@@ -1,26 +1,24 @@
 {
   lib,
-  buildDunePackage,
   fetchurl,
   alcotest,
+  base64,
+  buildDunePackage,
   domain-name,
   duration,
+  fmt,
   gmap,
   ipaddr,
   logs,
   lru,
   metrics,
-  ptime,
-  fmt,
-  base64,
   ohex,
+  ptime,
 }:
 
 buildDunePackage (finalAttrs: {
   pname = "dns";
   version = "10.2.5";
-
-  minimalOCamlVersion = "4.13";
 
   src = fetchurl {
     url = "https://github.com/mirage/ocaml-dns/releases/download/v${finalAttrs.version}/dns-${finalAttrs.version}.tbz";
@@ -43,6 +41,7 @@ buildDunePackage (finalAttrs: {
 
   doCheck = true;
   checkInputs = [ alcotest ];
+  minimalOCamlVersion = "4.13";
 
   meta = {
     description = "Domain Name System (DNS) library";

@@ -2,42 +2,42 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  runCommand,
   config,
-  pkg-config,
-  libtool,
-  curl,
-  python3,
-  munge,
-  perl,
-  pam,
-  shadow,
   coreutils,
+  cudaPackages,
+  curl,
   dbus,
-  libbpf,
-  ncurses,
-  libmysqlclient,
-  lua,
-  hwloc,
-  numactl,
-  readline,
   freeipmi,
-  xauth,
-  lz4,
-  rdma-core,
-  nixosTests,
-  pmix,
-  libjwt,
-  libyaml,
+  hwloc,
   json_c,
+  libbpf,
+  libjwt,
+  libmysqlclient,
+  libtool,
+  libyaml,
   llhttp,
+  lua,
+  lz4,
+  munge,
+  ncurses,
+  nixosTests,
+  numactl,
+  pam,
+  perl,
+  pkg-config,
+  pmix,
+  python3,
+  rdma-core,
+  readline,
+  runCommand,
+  s2n-tls,
+  shadow,
+  symlinkJoin,
+  xauth,
+  enableNVML ? config.cudaSupport,
+  enablePAM ? true,
   # enable internal X11 support via libssh2
   enableX11 ? true,
-  enablePAM ? true,
-  enableNVML ? config.cudaSupport,
-  cudaPackages,
-  symlinkJoin,
-  s2n-tls,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -59,33 +59,13 @@ stdenv.mkDerivation (finalAttrs: {
     "dev"
   ];
 
-  prePatch = ''
-    substituteInPlace src/common/env.c \
-        --replace-fail "/bin/echo" "${lib.getExe' coreutils "echo"}"
-
-    # Autoconf does not support split packages for pmix (libs and headers).
-    # Fix the path to the pmix libraries, so dlopen can find it.
-    substituteInPlace src/plugins/mpi/pmix/mpi_pmix.c \
-        --replace-fail 'xstrfmtcat(full_path, "%s/", PMIXP_LIBPATH)' \
-                       'xstrfmtcat(full_path, "${lib.getLib pmix}/lib/")'
-
-  ''
-  + (lib.optionalString enableX11 ''
-    substituteInPlace src/common/x11_util.c \
-        --replace-fail '"/usr/bin/xauth"' '"${lib.getExe xauth}"'
-  '');
-
-  # nixos test fails to start slurmd with 'undefined symbol: slurm_job_preempt_mode'
-  # https://groups.google.com/forum/#!topic/slurm-devel/QHOajQ84_Es
-  # this doesn't fix tests completely at least makes slurmd to launch
-  hardeningDisable = [ "bindnow" ];
-
   nativeBuildInputs = [
     pkg-config
     libtool
     python3
     perl
   ];
+
   buildInputs = [
     curl
     python3
@@ -136,6 +116,7 @@ stdenv.mkDerivation (finalAttrs: {
     "--with-s2n=${
       symlinkJoin {
         name = s2n-tls.name;
+
         paths = [
           s2n-tls
           (lib.getDev s2n-tls)
@@ -155,6 +136,7 @@ stdenv.mkDerivation (finalAttrs: {
   + (lib.optionalString enablePAM ''
     mkdir -p $out/lib/security
   '');
+
   postConfigure = lib.optionalString enablePAM ''
     rm -rf $out
   '';
@@ -176,17 +158,39 @@ stdenv.mkDerivation (finalAttrs: {
     '';
 
   enableParallelBuilding = true;
+  # nixos test fails to start slurmd with 'undefined symbol: slurm_job_preempt_mode'
+  # https://groups.google.com/forum/#!topic/slurm-devel/QHOajQ84_Es
+  # this doesn't fix tests completely at least makes slurmd to launch
+  hardeningDisable = [ "bindnow" ];
+
+  prePatch = ''
+    substituteInPlace src/common/env.c \
+        --replace-fail "/bin/echo" "${lib.getExe' coreutils "echo"}"
+
+    # Autoconf does not support split packages for pmix (libs and headers).
+    # Fix the path to the pmix libraries, so dlopen can find it.
+    substituteInPlace src/plugins/mpi/pmix/mpi_pmix.c \
+        --replace-fail 'xstrfmtcat(full_path, "%s/", PMIXP_LIBPATH)' \
+                       'xstrfmtcat(full_path, "${lib.getLib pmix}/lib/")'
+
+  ''
+  + (lib.optionalString enableX11 ''
+    substituteInPlace src/common/x11_util.c \
+        --replace-fail '"/usr/bin/xauth"' '"${lib.getExe xauth}"'
+  '');
 
   passthru.tests.slurm = nixosTests.slurm;
 
   meta = {
-    homepage = "http://www.schedmd.com/";
     description = "Simple Linux Utility for Resource Management";
-    platforms = lib.platforms.linux;
+    homepage = "http://www.schedmd.com/";
     license = lib.licenses.gpl2Only;
+
     maintainers = with lib.maintainers; [
       markuskowa
       edwtjo
     ];
+
+    platforms = lib.platforms.linux;
   };
 })

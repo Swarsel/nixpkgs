@@ -1,13 +1,10 @@
 {
   fetchFromGitHub,
   buildPythonPackage,
-
-  # build-system
-  pdm-backend,
-
   # dependencies
   numpy,
-
+  # build-system
+  pdm-backend,
   # tests
   pytestCheckHook,
 }:
@@ -15,7 +12,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "plyfile";
   version = "1.1.4";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "dranjan";
@@ -24,12 +20,10 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-uV5gwRb3LKPF+pPQt/m85mwgVGTaEwusJZVUbmxQrJg=";
   };
 
-  build-system = [ pdm-backend ];
-
-  dependencies = [ numpy ];
-
   nativeCheckInputs = [ pytestCheckHook ];
-
+  build-system = [ pdm-backend ];
+  dependencies = [ numpy ];
+  pyproject = true;
   pythonImportsCheck = [ "plyfile" ];
 
   meta = {

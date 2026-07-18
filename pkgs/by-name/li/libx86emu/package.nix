@@ -18,20 +18,12 @@ stdenv.mkDerivation (finalAttrs: {
 
   nativeBuildInputs = [ perl ];
 
-  postUnpack = "rm $sourceRoot/git2log";
-  patchPhase = ''
-    # VERSION is usually generated using Git
-    echo "${finalAttrs.version}" > VERSION
-    substituteInPlace Makefile --replace "/usr" "/"
-  '';
-
   buildFlags = [
     "shared"
     "CC=${stdenv.cc.targetPrefix}cc"
   ];
 
   env.NIX_CFLAGS_COMPILE = "-Wno-implicit-function-declaration";
-
   enableParallelBuilding = true;
 
   installFlags = [
@@ -39,10 +31,18 @@ stdenv.mkDerivation (finalAttrs: {
     "LIBDIR=/lib"
   ];
 
+  patchPhase = ''
+    # VERSION is usually generated using Git
+    echo "${finalAttrs.version}" > VERSION
+    substituteInPlace Makefile --replace "/usr" "/"
+  '';
+
+  postUnpack = "rm $sourceRoot/git2log";
+
   meta = {
     description = "x86 emulation library";
-    license = lib.licenses.bsd2;
     homepage = "https://github.com/wfeldt/libx86emu";
+    license = lib.licenses.bsd2;
     maintainers = with lib.maintainers; [ bobvanderlinden ];
     platforms = lib.platforms.linux;
   };

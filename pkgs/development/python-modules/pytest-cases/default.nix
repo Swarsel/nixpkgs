@@ -1,25 +1,29 @@
 {
   lib,
   buildPythonPackage,
+  decopatch,
   fetchPypi,
   makefun,
-  decopatch,
   packaging,
   pytest,
-  setuptools_80,
   setuptools-scm,
+  setuptools_80,
 }:
 
 buildPythonPackage rec {
   pname = "pytest-cases";
   version = "3.9.1";
-  pyproject = true;
 
   src = fetchPypi {
-    pname = "pytest_cases";
     inherit version;
     hash = "sha256-xOGB8bUlyTGjGNSBL6jeZWwsj7d/zPFXHs8Mxf6Of48=";
+    pname = "pytest_cases";
   };
+
+  # Tests have dependencies (pytest-harvest, pytest-steps) which
+  # are not available in Nixpkgs. Most of the packages (decopatch,
+  # makefun, pytest-*) have circular dependencies.
+  doCheck = false;
 
   build-system = [
     setuptools_80
@@ -33,11 +37,7 @@ buildPythonPackage rec {
     pytest
   ];
 
-  # Tests have dependencies (pytest-harvest, pytest-steps) which
-  # are not available in Nixpkgs. Most of the packages (decopatch,
-  # makefun, pytest-*) have circular dependencies.
-  doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "pytest_cases" ];
 
   meta = {

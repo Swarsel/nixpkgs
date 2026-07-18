@@ -1,11 +1,11 @@
 {
   lib,
+  fetchFromGitHub,
   buildPythonPackage,
   dunamai,
-  fetchFromGitHub,
   jinja2,
-  poetry-core,
   poetry,
+  poetry-core,
   pytestCheckHook,
   tomlkit,
 }:
@@ -13,7 +13,6 @@
 buildPythonPackage rec {
   pname = "poetry-dynamic-versioning";
   version = "1.9.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "mtkennerly";
@@ -30,13 +29,13 @@ buildPythonPackage rec {
     tomlkit
   ];
 
+  # virtualenv: error: argument dest: the destination . is not write-able at /
+  doCheck = false;
+
   nativeCheckInputs = [
     pytestCheckHook
     poetry
   ];
-
-  # virtualenv: error: argument dest: the destination . is not write-able at /
-  doCheck = false;
 
   disabledTests = [
     # these require .git, but leaveDotGit = true doesn't help
@@ -46,16 +45,16 @@ buildPythonPackage rec {
     "test_integration"
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "poetry_dynamic_versioning" ];
-
   setupHook = ./setup-hook.sh;
 
   meta = {
     description = "Plugin for Poetry to enable dynamic versioning based on VCS tags";
-    mainProgram = "poetry-dynamic-versioning";
     homepage = "https://github.com/mtkennerly/poetry-dynamic-versioning";
     changelog = "https://github.com/mtkennerly/poetry-dynamic-versioning/blob/${src.tag}/CHANGELOG.md";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ cpcloud ];
+    mainProgram = "poetry-dynamic-versioning";
   };
 }

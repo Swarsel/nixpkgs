@@ -1,23 +1,20 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # build-system
-  setuptools,
-  setuptools-scm,
-
+  buildPythonPackage,
   # dependencies
   ipykernel,
   ipython,
   qtconsole,
   qtpy,
+  # build-system
+  setuptools,
+  setuptools-scm,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "napari-console";
   version = "0.1.4";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "napari";
@@ -26,14 +23,14 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-z1pyG31g+fvTNLbWc2W56zDf33HCx8PvPKwIIc/x2VA=";
   };
 
+  # Circular dependency: napari
+  doCheck = false;
+
   build-system = [
     setuptools
     setuptools-scm
   ];
 
-  pythonRelaxDeps = [
-    "ipykernel"
-  ];
   dependencies = [
     ipykernel
     ipython
@@ -41,8 +38,11 @@ buildPythonPackage (finalAttrs: {
     qtpy
   ];
 
-  # Circular dependency: napari
-  doCheck = false;
+  pyproject = true;
+
+  pythonRelaxDeps = [
+    "ipykernel"
+  ];
 
   meta = {
     description = "Plugin that adds a console to napari";

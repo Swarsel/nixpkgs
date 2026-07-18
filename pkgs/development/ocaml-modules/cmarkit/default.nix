@@ -1,8 +1,8 @@
 {
   lib,
   stdenv,
-  cmdliner,
   fetchurl,
+  cmdliner,
   findlib,
   ocaml,
   ocamlbuild,
@@ -10,6 +10,7 @@
 }:
 
 stdenv.mkDerivation rec {
+  inherit (topkg) buildPhase installPhase;
   pname = "cmarkit";
   version = "0.3.0";
 
@@ -17,6 +18,8 @@ stdenv.mkDerivation rec {
     url = "https://erratique.ch/software/cmarkit/releases/cmarkit-${version}.tbz";
     hash = "sha256-RouM5iU7VeTT0+4yhBgdEmxROeP/X31iqDjd1VI7z5c=";
   };
+
+  strictDeps = true;
 
   nativeBuildInputs = [
     ocaml
@@ -30,17 +33,13 @@ stdenv.mkDerivation rec {
     cmdliner
   ];
 
-  strictDeps = true;
-
-  inherit (topkg) buildPhase installPhase;
-
   meta = {
+    inherit (ocaml.meta) platforms;
     description = "CommonMark parser and renderer for OCaml";
     homepage = "https://erratique.ch/software/cmarkit";
     changelog = "https://github.com/dbuenzli/cmarkit/blob/v${version}/CHANGES.md";
     license = lib.licenses.isc;
     maintainers = [ ];
-    inherit (ocaml.meta) platforms;
     broken = lib.versionOlder ocaml.version "4.14.0";
   };
 }

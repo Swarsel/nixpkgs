@@ -23,53 +23,57 @@ in
 {
   options.services.pgscv = {
     enable = mkEnableOption "pgSCV, a PostgreSQL ecosystem metrics collector";
-
     package = mkPackageOption pkgs "pgscv" { };
 
     logLevel = mkOption {
+      default = "info";
+      description = "Log level for pgSCV.";
+
       type = types.enum [
         "debug"
         "info"
         "warn"
         "error"
       ];
-      default = "info";
-      description = "Log level for pgSCV.";
     };
 
     settings = mkOption {
-      type = settingsFormat.type;
       default = { };
+
       description = ''
         Configuration for pgSCV, in YAML format.
 
         See [configuration reference](https://github.com/cherts/pgscv/wiki/Configuration-settings-reference).
       '';
+
+      type = settingsFormat.type;
     };
   };
 
   config = mkIf cfg.enable {
     systemd.services.pgscv = {
-      description = "pgSCV - PostgreSQL ecosystem metrics collector";
-      wantedBy = [ "multi-user.target" ];
-      requires = [ "network-online.target" ];
       after = [ "network-online.target" ];
+      description = "pgSCV - PostgreSQL ecosystem metrics collector";
       path = [ pkgs.glibc ]; # shells out to getconf
+      requires = [ "network-online.target" ];
 
       serviceConfig = {
-        User = "postgres";
-        Group = "postgres";
         ExecStart = utils.escapeSystemdExecArgs [
           (lib.getExe cfg.package)
           "--log-level=${cfg.logLevel}"
           "--config-file=${configFile}"
         ];
+
+        Group = "postgres";
         KillMode = "control-group";
-        TimeoutSec = 5;
+        OOMScoreAdjust = 1000;
         Restart = "on-failure";
         RestartSec = 10;
-        OOMScoreAdjust = 1000;
+        TimeoutSec = 5;
+        User = "postgres";
       };
+
+      wantedBy = [ "multi-user.target" ];
     };
   };
 }

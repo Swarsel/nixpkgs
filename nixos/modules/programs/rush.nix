@@ -17,8 +17,6 @@ let
     ];
 in
 {
-  meta.maintainers = pkgs.rush.meta.maintainers;
-
   options.programs.rush = with lib.types; {
     enable = lib.mkEnableOption "Restricted User Shell.";
 
@@ -27,13 +25,12 @@ in
     };
 
     global = lib.mkOption {
-      type = lines;
-      description = "The `global` statement defines global settings.";
       default = "";
+      description = "The `global` statement defines global settings.";
+      type = lines;
     };
 
     rules = lib.mkOption {
-      type = attrsOf lines;
       default = { };
 
       description = ''
@@ -41,21 +38,22 @@ in
         statements located between it and the next rule statement (or end of file, whichever occurs first)
         modify the definition of that rule.
       '';
+
+      type = attrsOf lines;
     };
 
     shell = lib.mkOption {
-      readOnly = true;
-      type = either shellPackage path;
-
       description = ''
         The resolved shell path that users can inherit to set `rush` as their login shell.
         This is a convenience option for use in user definitions. Example:
           `users.users.alice = { inherit (config.programs.rush) shell; ... };`
       '';
+
+      readOnly = true;
+      type = either shellPackage path;
     };
 
     wrap = lib.mkOption {
-      type = bool;
       default = config.security.enableWrappers;
       defaultText = lib.literalExpression "config.security.enableWrappers";
 
@@ -63,6 +61,8 @@ in
         Whether to wrap the `rush` binary with a SUID-enabled wrapper.
         This is required if {option}`security.enableWrappers` is enabled in your configuration.
       '';
+
+      type = bool;
     };
   };
 
@@ -80,12 +80,7 @@ in
       })
 
       {
-        programs.rush.shell = if cfg.wrap then config.security.wrapperDir + "/rush" else cfg.package;
-
         environment = {
-          shells = [ cfg.shell ];
-          systemPackages = [ cfg.package ];
-
           etc."rush.rc".text =
             lib.pipe
               [
@@ -102,8 +97,15 @@ in
                 (builtins.concatStringsSep "\n\n")
                 (lib.mkDefault)
               ];
+
+          shells = [ cfg.shell ];
+          systemPackages = [ cfg.package ];
         };
+
+        programs.rush.shell = if cfg.wrap then config.security.wrapperDir + "/rush" else cfg.package;
       }
     ]
   );
+
+  meta.maintainers = pkgs.rush.meta.maintainers;
 }

@@ -1,14 +1,14 @@
 {
-  fetchFromSourcehut,
   lib,
+  stdenv,
+  fetchFromSourcehut,
   meson,
   ninja,
+  nixosTests,
   pkg-config,
   scdoc,
-  stdenv,
-  systemdSupport ? lib.meta.availableOn stdenv.hostPlatform systemdLibs,
   systemdLibs,
-  nixosTests,
+  systemdSupport ? lib.meta.availableOn stdenv.hostPlatform systemdLibs,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -29,10 +29,6 @@ stdenv.mkDerivation (finalAttrs: {
     "man"
   ];
 
-  depsBuildBuild = [
-    pkg-config
-  ];
-
   nativeBuildInputs = [
     meson
     ninja
@@ -48,12 +44,16 @@ stdenv.mkDerivation (finalAttrs: {
     "-Dserver=enabled"
   ];
 
+  depsBuildBuild = [
+    pkg-config
+  ];
+
   passthru.tests.basic = nixosTests.seatd;
 
   meta = {
     description = "Minimal seat management daemon, and a universal seat management library";
-    changelog = "https://git.sr.ht/~kennylevinsen/seatd/refs/${finalAttrs.version}";
     homepage = "https://sr.ht/~kennylevinsen/seatd/";
+    changelog = "https://git.sr.ht/~kennylevinsen/seatd/refs/${finalAttrs.version}";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ emantor ];
     platforms = with lib.platforms; freebsd ++ linux ++ netbsd;

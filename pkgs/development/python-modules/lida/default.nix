@@ -1,12 +1,13 @@
 {
   lib,
-  buildPythonPackage,
-  fetchPypi,
-  setuptools,
-  setuptools-scm,
   altair,
+  basemap,
+  basemap-data-hires,
+  buildPythonPackage,
   fastapi,
+  fetchPypi,
   geopandas,
+  geopy,
   kaleido,
   llmx,
   matplotlib,
@@ -14,26 +15,24 @@
   networkx,
   numpy,
   pandas,
+  peacasso,
   plotly,
   plotnine,
   pydantic,
   python-multipart,
   scipy,
   seaborn,
+  setuptools,
+  setuptools-scm,
   statsmodels,
   typer,
   uvicorn,
   wordcloud,
-  peacasso,
-  basemap,
-  basemap-data-hires,
-  geopy,
 }:
 
 buildPythonPackage rec {
   pname = "lida";
   version = "0.0.14";
-  pyproject = true;
 
   # No releases or tags are available in https://github.com/microsoft/lida
   src = fetchPypi {
@@ -46,6 +45,9 @@ buildPythonPackage rec {
     # However, since `/nix/store` is read-only, we patch it to the user's home directory.
     ./rw_data.patch
   ];
+
+  # require network
+  doCheck = false;
 
   build-system = [
     setuptools
@@ -79,23 +81,24 @@ buildPythonPackage rec {
     infographics = [
       peacasso
     ];
+
     tools = [
       basemap
       basemap-data-hires
       geopy
     ];
+
     transformers = [
       llmx
     ];
+
     web = [
       fastapi
       uvicorn
     ];
   };
 
-  # require network
-  doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "lida" ];
 
   meta = {

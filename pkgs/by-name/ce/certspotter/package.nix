@@ -16,20 +16,12 @@ buildGoModule (finalAttrs: {
     hash = "sha256-0GwESNuwvwC3HgNy+1dXxgGshlj5sFCnPj25TnDXbFw=";
   };
 
+  nativeBuildInputs = [ lowdown-unsandboxed ];
   vendorHash = "sha256-JA/HZrbeauCD0TA2Egy49nYWXHqVRkOs9OmgaAR1z/c=";
-
-  ldflags = [
-    "-s"
-    "-w"
-    "-X main.Version=${finalAttrs.version}"
-    "-X main.Source=software.sslmate.com/src/certspotter"
-  ];
 
   checkFlags = [
     "-skip=TestParseFromURL" # requires network access
   ];
-
-  nativeBuildInputs = [ lowdown-unsandboxed ];
 
   postInstall = ''
     cd man
@@ -38,12 +30,19 @@ buildGoModule (finalAttrs: {
     mv *.8 $out/share/man/man8
   '';
 
+  ldflags = [
+    "-s"
+    "-w"
+    "-X main.Version=${finalAttrs.version}"
+    "-X main.Source=software.sslmate.com/src/certspotter"
+  ];
+
   meta = {
     description = "Certificate Transparency Log Monitor";
     homepage = "https://github.com/SSLMate/certspotter";
     changelog = "https://github.com/SSLMate/certspotter/blob/${finalAttrs.src.rev}/CHANGELOG.md";
     license = lib.licenses.mpl20;
-    mainProgram = "certspotter";
     maintainers = with lib.maintainers; [ chayleaf ];
+    mainProgram = "certspotter";
   };
 })

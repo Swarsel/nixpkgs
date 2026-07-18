@@ -1,27 +1,27 @@
 {
+  lib,
+  fetchFromGitHub,
   _cuda,
   addDriverRunpath,
   backendStdenv,
   cmake,
+  cudaNamePrefix,
   cuda_cudart,
   cuda_nvcc,
   cuda_nvrtc,
-  cudaNamePrefix,
   cudnn,
-  fetchFromGitHub,
   flags,
+  # passthru.updateScript
+  gitUpdater,
   gtest,
-  lib,
   libcublas,
   libcurand,
   ninja,
   python3Packages,
-  # Options
-  pythonSupport ? true,
   enableF16C ? false,
   enableTools ? false,
-  # passthru.updateScript
-  gitUpdater,
+  # Options
+  pythonSupport ? true,
 }:
 let
   inherit (_cuda.lib) _mkMetaBadPlatforms;
@@ -40,11 +40,6 @@ in
 # TODO: Tests.
 assert assertMsg (!enableTools) "enableTools is not yet implemented";
 backendStdenv.mkDerivation (finalAttrs: {
-  __structuredAttrs = true;
-  strictDeps = true;
-
-  # NOTE: Depends on the CUDA package set, so use cudaNamePrefix.
-  name = "${cudaNamePrefix}-${finalAttrs.pname}-${finalAttrs.version}";
   pname = "cutlass";
   version = "4.5.2";
 
@@ -58,21 +53,6 @@ backendStdenv.mkDerivation (finalAttrs: {
   # TODO: As a header-only library, we should make sure we have an `include` directory or similar which is not a
   # superset of the `out` (`bin`) or `dev` outputs (whih is what the multiple-outputs setup hook does by default).
   outputs = [ "out" ] ++ optionals pythonSupport [ "dist" ];
-
-  nativeBuildInputs = [
-    cuda_nvcc
-    cmake
-    ninja
-    python3Packages.python # Python is always required
-  ]
-  ++ optionals pythonSupport (
-    with python3Packages;
-    [
-      build
-      pythonOutputDistHook
-      setuptools
-    ]
-  );
 
   postPatch =
     # Prepend some commands to the CUDA.cmake file so it can find the CUDA libraries using CMake's FindCUDAToolkit
@@ -135,7 +115,22 @@ backendStdenv.mkDerivation (finalAttrs: {
           ""
     '';
 
-  enableParallelBuilding = true;
+  strictDeps = true;
+
+  nativeBuildInputs = [
+    cuda_nvcc
+    cmake
+    ninja
+    python3Packages.python # Python is always required
+  ]
+  ++ optionals pythonSupport (
+    with python3Packages;
+    [
+      build
+      pythonOutputDistHook
+      setuptools
+    ]
+  );
 
   buildInputs = [
     cuda_cudart
@@ -183,7 +178,6 @@ backendStdenv.mkDerivation (finalAttrs: {
   '';
 
   doCheck = false;
-
   checkInputs = [ gtest ];
 
   # NOTE: Because the test cases immediately create and try to run the binaries, we don't have an opportunity
@@ -193,6 +187,11 @@ backendStdenv.mkDerivation (finalAttrs: {
     export LD_LIBRARY_PATH="$(readlink -mnv "${addDriverRunpath.driverLink}/lib")"
   '';
 
+  __structuredAttrs = true;
+  enableParallelBuilding = true;
+  # NOTE: Depends on the CUDA package set, so use cudaNamePrefix.
+  name = "${cudaNamePrefix}-${finalAttrs.pname}-${finalAttrs.version}";
+
   # This is *not* a derivation you want to build on a small machine.
   requiredSystemFeatures = optionals finalAttrs.doCheck [
     "big-parallel"
@@ -200,33 +199,35 @@ backendStdenv.mkDerivation (finalAttrs: {
   ];
 
   passthru = {
-    updateScript = gitUpdater {
-      inherit (finalAttrs) pname version;
-      rev-prefix = "v";
-    };
     # TODO:
     # tests.test = cutlass.overrideAttrs { doCheck = true; };
-
     # Include required architectures in compatibility check.
     # https://github.com/NVIDIA/cutlass/tree/main?tab=readme-ov-file#compatibility
     platformAssertions = [
       {
-        message = "all capabilities are >= 7.0 (${builtins.toJSON flags.cudaCapabilities})";
         assertion = all (flip versionAtLeast "7.0") flags.cudaCapabilities;
+        message = "all capabilities are >= 7.0 (${builtins.toJSON flags.cudaCapabilities})";
       }
     ];
+
+    updateScript = gitUpdater {
+      inherit (finalAttrs) pname version;
+      rev-prefix = "v";
+    };
   };
 
   meta = {
     description = "CUDA Templates for Linear Algebra Subroutines";
     homepage = "https://github.com/NVIDIA/cutlass";
     license = licenses.bsd3;
+    maintainers = [ maintainers.connorbaker ];
+
     platforms = [
       "aarch64-linux"
       "x86_64-linux"
     ];
+
     badPlatforms = _mkMetaBadPlatforms finalAttrs;
-    maintainers = [ maintainers.connorbaker ];
     teams = [ teams.cuda ];
   };
 })

@@ -7,18 +7,17 @@
 }:
 
 buildDunePackage {
-  pname = "opam-state";
-
   inherit (opam) src version;
-
-  # get rid of check for curl at configure time
-  # opam-state does not call curl at run time
-  configureFlags = [ "--disable-checks" ];
+  pname = "opam-state";
 
   propagatedBuildInputs = [
     opam-repository
     spdx_licenses
   ];
+
+  # get rid of check for curl at configure time
+  # opam-state does not call curl at run time
+  configureFlags = [ "--disable-checks" ];
 
   meta = opam.meta // {
     description = "OPAM development library handling the ~/.opam hierarchy, repository and switch states";

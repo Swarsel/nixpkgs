@@ -2,12 +2,12 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  rustPlatform,
-  pkg-config,
   libuv,
-  openssl,
-  vimUtils,
   nix-update-script,
+  openssl,
+  pkg-config,
+  rustPlatform,
+  vimUtils,
 }:
 let
   version = "2.0.5";
@@ -18,22 +18,24 @@ let
     hash = "sha256-X631pK8pAAdQMO4uQUoNk+jL1V9BvAq3cIi4f5LMT5s=";
   };
   codesnap-lib = rustPlatform.buildRustPackage {
-    pname = "codesnap-lib";
     inherit version src;
-
-    sourceRoot = "${src.name}/generator";
-
-    cargoHash = "sha256-b+S56yRtly25fW1XmOVx5D3AT6PEY186r/KXVPI13dM=";
+    pname = "codesnap-lib";
 
     nativeBuildInputs = [
       pkg-config
       rustPlatform.bindgenHook
     ];
 
+    buildInputs = [
+      libuv.dev
+      openssl
+    ];
+
+    cargoHash = "sha256-b+S56yRtly25fW1XmOVx5D3AT6PEY186r/KXVPI13dM=";
+
     env = {
       # Use system openssl
       OPENSSL_NO_VENDOR = 1;
-
       # Allow undefined symbols on Darwin - they will be provided by Neovim's LuaJIT runtime
       RUSTFLAGS = lib.optionalString stdenv.hostPlatform.isDarwin "-C link-arg=-undefined -C link-arg=dynamic_lookup";
     };
@@ -42,15 +44,12 @@ let
       echo "${version}" > $out/lib/.version
     '';
 
-    buildInputs = [
-      libuv.dev
-      openssl
-    ];
+    sourceRoot = "${src.name}/generator";
   };
 in
 vimUtils.buildVimPlugin {
-  pname = "codesnap.nvim";
   inherit version src;
+  pname = "codesnap.nvim";
 
   postPatch =
     let
@@ -67,12 +66,12 @@ vimUtils.buildVimPlugin {
     '';
 
   passthru = {
+    # needed for the update script
+    inherit codesnap-lib;
+
     updateScript = nix-update-script {
       attrPath = "vimPlugins.codesnap-nvim.codesnap-lib";
     };
-
-    # needed for the update script
-    inherit codesnap-lib;
   };
 
   meta = {

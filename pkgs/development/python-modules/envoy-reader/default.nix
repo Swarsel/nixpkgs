@@ -1,22 +1,21 @@
 {
   lib,
+  fetchFromGitHub,
   beautifulsoup4,
   buildPythonPackage,
   envoy-utils,
-  fetchFromGitHub,
-  setuptools,
   httpx,
   pyjwt,
   pytest-asyncio,
-  pytestCheckHook,
   pytest-raises,
+  pytestCheckHook,
   respx,
+  setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "envoy-reader";
   version = "0.21.3";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "jesserizzo";
@@ -24,6 +23,18 @@ buildPythonPackage rec {
     rev = version;
     hash = "sha256-aIpZ4ln4L57HwK8H0FqsyNnXosnAp3ingrJI6/MPS90=";
   };
+
+  postPatch = ''
+    substituteInPlace setup.py \
+      --replace-fail "pytest-runner>=5.2" ""
+  '';
+
+  nativeCheckInputs = [
+    pytest-raises
+    pytest-asyncio
+    pytestCheckHook
+    respx
+  ];
 
   build-system = [ setuptools ];
 
@@ -34,21 +45,9 @@ buildPythonPackage rec {
     pyjwt
   ];
 
-  nativeCheckInputs = [
-    pytest-raises
-    pytest-asyncio
-    pytestCheckHook
-    respx
-  ];
-
-  pythonRelaxDeps = [ "pyjwt" ];
-
-  postPatch = ''
-    substituteInPlace setup.py \
-      --replace-fail "pytest-runner>=5.2" ""
-  '';
-
+  pyproject = true;
   pythonImportsCheck = [ "envoy_reader" ];
+  pythonRelaxDeps = [ "pyjwt" ];
 
   meta = {
     description = "Python module to read from Enphase Envoy units";

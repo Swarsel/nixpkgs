@@ -8,21 +8,20 @@
 buildPythonPackage rec {
   pname = "multipledispatch";
   version = "1.0.0";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
     hash = "sha256-XIOZFUZcaCBsPpxHM1eQghbCg4O0JTYeXRRFlL+Fp+A=";
   };
 
+  propagatedBuildInputs = [ six ];
   # No tests in archive
   doCheck = false;
-
-  propagatedBuildInputs = [ six ];
+  format = "setuptools";
 
   meta = {
-    homepage = "https://github.com/mrocklin/multipledispatch/";
     description = "Relatively sane approach to multiple dispatch in Python";
+    homepage = "https://github.com/mrocklin/multipledispatch/";
     license = lib.licenses.bsd3;
   };
 }

@@ -2,20 +2,20 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  rustPlatform,
-  cargo,
-  pkg-config,
-  meson,
-  ninja,
+  appstream-glib,
   blueprint-compiler,
+  cargo,
+  desktop-file-utils,
   glib,
   gtk4,
   libadwaita,
+  meson,
+  ninja,
+  nix-update-script,
+  pkg-config,
+  rustPlatform,
   rustc,
   wrapGAppsHook4,
-  appstream-glib,
-  desktop-file-utils,
-  nix-update-script,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -27,11 +27,6 @@ stdenv.mkDerivation (finalAttrs: {
     repo = "eyedropper";
     tag = "v${finalAttrs.version}";
     hash = "sha256-008VFC2jjLWW6t6e7C8ZEoD+hFFqJVSmlgovO2RHGjw=";
-  };
-
-  cargoDeps = rustPlatform.fetchCargoVendor {
-    inherit (finalAttrs) pname src version;
-    hash = "sha256-P5Ligi6yfSHPHjO5Gsxsf7ZbXh3GOK/q8k4GqNnsQck=";
   };
 
   nativeBuildInputs = [
@@ -53,6 +48,11 @@ stdenv.mkDerivation (finalAttrs: {
     libadwaita
   ];
 
+  cargoDeps = rustPlatform.fetchCargoVendor {
+    inherit (finalAttrs) pname src version;
+    hash = "sha256-P5Ligi6yfSHPHjO5Gsxsf7ZbXh3GOK/q8k4GqNnsQck=";
+  };
+
   passthru = {
     updateScript = nix-update-script { };
   };
@@ -61,10 +61,10 @@ stdenv.mkDerivation (finalAttrs: {
     description = "Pick and format colors";
     homepage = "https://github.com/FineFindus/eyedropper";
     changelog = "https://github.com/FineFindus/eyedropper/releases/tag/v${finalAttrs.version}";
-    mainProgram = "eyedropper";
     license = lib.licenses.gpl3Plus;
-    platforms = lib.platforms.linux;
     maintainers = with lib.maintainers; [ zendo ];
+    platforms = lib.platforms.linux;
+    mainProgram = "eyedropper";
     teams = [ lib.teams.gnome-circle ];
   };
 })

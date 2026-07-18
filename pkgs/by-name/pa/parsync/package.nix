@@ -19,8 +19,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-XeHHfSrutKTL1JFxJrqo9K0lD2ZYuIxcxnusH6Q373M=";
   };
 
-  cargoHash = "sha256-SHieyv7Kc9Qtx3C11wxjJTI28h2RDh+YY1Ks++Z1rQ8=";
-
   nativeBuildInputs = [ pkg-config ];
 
   buildInputs = [
@@ -28,6 +26,8 @@ rustPlatform.buildRustPackage (finalAttrs: {
     sqlite
     zlib
   ];
+
+  cargoHash = "sha256-SHieyv7Kc9Qtx3C11wxjJTI28h2RDh+YY1Ks++Z1rQ8=";
 
   env = {
     OPENSSL_NO_VENDOR = true;

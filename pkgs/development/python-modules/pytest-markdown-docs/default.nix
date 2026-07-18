@@ -1,24 +1,20 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
+  buildPythonPackage,
   # build-system
   hatchling,
-
   # dependencies
   markdown-it-py,
-  pytest,
-
   # tests
   mdit-py-plugins,
+  pytest,
   pytestCheckHook,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "pytest-markdown-docs";
   version = "0.9.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "modal-com";
@@ -27,21 +23,23 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-7fGuKTHeaMEbsHD9Zje0ODP2FRWSi0WrCZsPwRYP6rg=";
   };
 
+  nativeCheckInputs = [
+    mdit-py-plugins
+    pytestCheckHook
+  ];
+
   build-system = [ hatchling ];
 
-  pythonRelaxDeps = [
-    "markdown-it-py"
-  ];
   dependencies = [
     markdown-it-py
     pytest
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "pytest_markdown_docs" ];
 
-  nativeCheckInputs = [
-    mdit-py-plugins
-    pytestCheckHook
+  pythonRelaxDeps = [
+    "markdown-it-py"
   ];
 
   meta = {

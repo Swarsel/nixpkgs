@@ -1,23 +1,23 @@
 {
   lib,
   stdenv,
-  fetchFromCodeberg,
-  cmake,
-  libuuid,
-  expat,
-  libiconv,
   botan3,
-  systemd,
+  cmake,
+  expat,
+  fetchFromCodeberg,
+  libiconv,
+  libidn,
+  libpq,
+  libuuid,
   pkg-config,
   python3Packages,
-  withIDN ? true,
-  libidn,
-  withPostgreSQL ? false,
-  libpq,
-  withSQLite ? true,
   sqlite,
-  withUDNS ? true,
+  systemd,
   udns,
+  withIDN ? true,
+  withPostgreSQL ? false,
+  withSQLite ? true,
+  withUDNS ? true,
 }:
 
 assert lib.assertMsg (
@@ -40,6 +40,7 @@ stdenv.mkDerivation {
     pkg-config
     python3Packages.sphinx
   ];
+
   buildInputs = [
     libuuid
     expat
@@ -52,15 +53,15 @@ stdenv.mkDerivation {
   ++ lib.optional withSQLite sqlite
   ++ lib.optional withUDNS udns;
 
-  buildFlags = [
-    "all"
-    "man"
-  ];
-
   cmakeFlags = [
     # Fix breakage with CMake 4
     "-DCMAKE_SKIP_RPATH=ON"
     "-DCMAKE_POLICY_VERSION_MINIMUM=3.5"
+  ];
+
+  buildFlags = [
+    "all"
+    "man"
   ];
 
   preConfigure = ''
@@ -71,10 +72,10 @@ stdenv.mkDerivation {
 
   meta = {
     description = "Modern XMPP IRC gateway";
-    mainProgram = "biboumi";
-    platforms = lib.platforms.unix;
     homepage = "https://codeberg.org/poezio/biboumi";
     license = lib.licenses.zlib;
     maintainers = [ lib.maintainers.woffs ];
+    platforms = lib.platforms.unix;
+    mainProgram = "biboumi";
   };
 }

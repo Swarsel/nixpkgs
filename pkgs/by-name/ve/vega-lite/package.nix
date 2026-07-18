@@ -1,12 +1,12 @@
 {
   lib,
-  buildNpmPackage,
   fetchFromGitHub,
-  pkg-config,
-  pixman,
+  buildNpmPackage,
   cairo,
-  pango,
   nix-update-script,
+  pango,
+  pixman,
+  pkg-config,
 }:
 
 buildNpmPackage (finalAttrs: {
@@ -20,8 +20,6 @@ buildNpmPackage (finalAttrs: {
     hash = "sha256-bsPnvUleHrihsoOL98O8KTbiONx3FNuQjH9vrZ/bLTw=";
   };
 
-  npmDepsHash = "sha256-dni2tEYzE/AzgGldCAtBpmQK24kIRck0KQXvD2e5xfw=";
-
   nativeBuildInputs = [
     pkg-config
   ];
@@ -32,12 +30,13 @@ buildNpmPackage (finalAttrs: {
     pango
   ];
 
+  npmDepsHash = "sha256-dni2tEYzE/AzgGldCAtBpmQK24kIRck0KQXvD2e5xfw=";
   passthru.updateScript = nix-update-script { };
 
   meta = {
-    changelog = "https://github.com/vega/vega-lite/releases/tag/v${finalAttrs.version}";
     description = "Concise grammar of interactive graphics, built on Vega";
     homepage = "https://vega.github.io/vega-lite/";
+    changelog = "https://github.com/vega/vega-lite/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.bsd3;
     maintainers = [ ];
   };

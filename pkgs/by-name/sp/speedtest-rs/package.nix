@@ -1,13 +1,13 @@
 {
   lib,
-  rustPlatform,
+  stdenv,
   fetchFromGitHub,
+  nix-update-script,
   openssl,
   pkg-config,
-  stdenv,
-  nix-update-script,
-  testers,
+  rustPlatform,
   speedtest-rs,
+  testers,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -21,10 +21,8 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-1FAFYiWDD/KG/7/UTv/EW6Nj2GnU0GZFFq6ouMc0URA=";
   };
 
-  buildInputs = [ openssl ];
-
   nativeBuildInputs = [ pkg-config ];
-
+  buildInputs = [ openssl ];
   cargoHash = "sha256-T8OG6jmUILeRmvPLjGDFlJyBm87Xdgy4bw4n7V0BQMk=";
 
   # Fail for unclear reasons (only on darwin)
@@ -34,18 +32,20 @@ rustPlatform.buildRustPackage (finalAttrs: {
   ];
 
   passthru = {
-    updateScript = nix-update-script { };
     tests.version = testers.testVersion { package = speedtest-rs; };
+    updateScript = nix-update-script { };
   };
 
   meta = {
     description = "Command line internet speedtest tool written in rust";
     homepage = "https://github.com/nelsonjchen/speedtest-rs";
     changelog = "https://github.com/nelsonjchen/speedtest-rs/blob/v${finalAttrs.version}/CHANGELOG.md";
+
     license = with lib.licenses; [
       mit
       asl20
     ];
+
     maintainers = with lib.maintainers; [ GaetanLepage ];
     mainProgram = "speedtest-rs";
   };

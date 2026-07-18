@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule (finalAttrs: {
@@ -19,9 +19,9 @@ buildGoModule (finalAttrs: {
 
   meta = {
     description = "Simply tool to convert json to yaml written in Go";
-    mainProgram = "gojsontoyaml";
     homepage = "https://github.com/brancz/gojsontoyaml";
     license = lib.licenses.mit;
     maintainers = [ ];
+    mainProgram = "gojsontoyaml";
   };
 })

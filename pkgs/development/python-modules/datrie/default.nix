@@ -1,18 +1,17 @@
 {
   lib,
   buildPythonPackage,
+  cython,
   fetchPypi,
+  hypothesis,
+  pytestCheckHook,
   setuptools,
   wheel,
-  cython,
-  pytestCheckHook,
-  hypothesis,
 }:
 
 buildPythonPackage rec {
   pname = "datrie";
   version = "0.8.3";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
@@ -24,12 +23,6 @@ buildPythonPackage rec {
       --replace '"pytest-runner", ' ""
   '';
 
-  dependencies = [
-    setuptools
-    wheel
-    cython
-  ];
-
   # workaround https://github.com/pytries/datrie/issues/101
   env.CFLAGS = "-Wno-error=incompatible-pointer-types";
 
@@ -38,6 +31,13 @@ buildPythonPackage rec {
     pytestCheckHook
   ];
 
+  dependencies = [
+    setuptools
+    wheel
+    cython
+  ];
+
+  pyproject = true;
   pythonImportsCheck = [ "datrie" ];
 
   meta = {

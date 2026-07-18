@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   pytestCheckHook,
   urwid,
 }:
@@ -9,7 +9,6 @@
 buildPythonPackage rec {
   pname = "hachoir";
   version = "3.3.0";
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "vstinner";
@@ -19,9 +18,8 @@ buildPythonPackage rec {
   };
 
   propagatedBuildInputs = [ urwid ];
-
   nativeCheckInputs = [ pytestCheckHook ];
-
+  format = "setuptools";
   pythonImportsCheck = [ "hachoir" ];
 
   meta = {

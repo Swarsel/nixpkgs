@@ -1,19 +1,19 @@
 {
-  stdenv,
   lib,
-  config,
+  stdenv,
   fetchFromGitHub,
-  cmake,
-  pkg-config,
-  alsaSupport ? stdenv.hostPlatform.isLinux,
   alsa-lib,
-  pulseSupport ? config.pulseaudio or stdenv.hostPlatform.isLinux,
-  libpulseaudio,
-  jackSupport ? false,
+  cmake,
+  config,
   libjack2,
-  soxr,
-  pcapSupport ? false,
   libpcap,
+  libpulseaudio,
+  pkg-config,
+  soxr,
+  alsaSupport ? stdenv.hostPlatform.isLinux,
+  jackSupport ? false,
+  pcapSupport ? false,
+  pulseSupport ? config.pulseaudio or stdenv.hostPlatform.isLinux,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -27,6 +27,11 @@ stdenv.mkDerivation (finalAttrs: {
     sha256 = "sha256-lP5mdNhZjkEVjgQUEsisPy+KXUqsE6xj6dFWcgD+VGM=";
   };
 
+  nativeBuildInputs = [
+    cmake
+    pkg-config
+  ];
+
   buildInputs =
     lib.optional pulseSupport libpulseaudio
     ++ lib.optionals jackSupport [
@@ -35,10 +40,6 @@ stdenv.mkDerivation (finalAttrs: {
     ]
     ++ lib.optional alsaSupport alsa-lib
     ++ lib.optional pcapSupport libpcap;
-  nativeBuildInputs = [
-    cmake
-    pkg-config
-  ];
 
   cmakeFlags = [
     "-DPULSEAUDIO_ENABLE=${if pulseSupport then "ON" else "OFF"}"
@@ -47,9 +48,8 @@ stdenv.mkDerivation (finalAttrs: {
     "-DPCAP_ENABLE=${if pcapSupport then "ON" else "OFF"}"
   ];
 
-  cmakeDir = "../Receivers/unix";
-
   doInstallCheck = true;
+
   installCheckPhase = ''
     set +o pipefail
 
@@ -57,12 +57,14 @@ stdenv.mkDerivation (finalAttrs: {
     $out/bin/scream -h 2>&1 | grep -q Usage:
   '';
 
+  cmakeDir = "../Receivers/unix";
+
   meta = {
     description = "Audio receiver for the Scream virtual network sound card";
     homepage = "https://github.com/duncanthrax/scream";
     license = lib.licenses.mspl;
+    maintainers = with lib.maintainers; [ arcnmx ];
     platforms = lib.platforms.linux;
     mainProgram = "scream";
-    maintainers = with lib.maintainers; [ arcnmx ];
   };
 })

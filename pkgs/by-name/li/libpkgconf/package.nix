@@ -4,10 +4,10 @@
   fetchurl,
   autoconf,
   automake,
+  autoreconfHook,
+  gitUpdater,
   libtool,
   removeReferencesTo,
-  gitUpdater,
-  autoreconfHook,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -35,8 +35,6 @@ stdenv.mkDerivation (finalAttrs: {
     autoreconfHook
   ];
 
-  enableParallelBuilding = true;
-
   # Debian has outputs like these too
   # (https://packages.debian.org/source/bullseye/pkgconf), so it is safe to
   # remove those references
@@ -58,14 +56,16 @@ stdenv.mkDerivation (finalAttrs: {
     mv ${placeholder "dev"}/share ${placeholder "out"}
   '';
 
+  enableParallelBuilding = true;
+
   passthru.updateScript = gitUpdater {
-    url = "https://github.com/pkgconf/pkgconf";
     rev-prefix = "pkgconf-";
+    url = "https://github.com/pkgconf/pkgconf";
   };
 
   meta = {
-    homepage = "https://github.com/pkgconf/pkgconf";
     description = "Package compiler and linker metadata toolkit";
+
     longDescription = ''
       pkgconf is a program which helps to configure compiler and linker flags
       for development libraries. It is similar to pkg-config from
@@ -75,12 +75,16 @@ stdenv.mkDerivation (finalAttrs: {
       functionality, to allow other tooling such as compilers and IDEs to
       discover and use libraries configured by pkgconf.
     '';
+
+    homepage = "https://github.com/pkgconf/pkgconf";
     changelog = "https://github.com/pkgconf/pkgconf/blob/pkgconf-${finalAttrs.version}/NEWS";
     license = lib.licenses.isc;
-    mainProgram = "pkgconf";
+
     maintainers = with lib.maintainers; [
       zaninime
     ];
+
     platforms = lib.platforms.all;
+    mainProgram = "pkgconf";
   };
 })

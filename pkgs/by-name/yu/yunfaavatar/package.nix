@@ -1,9 +1,9 @@
 {
   lib,
-  stdenvNoCC,
   fetchFromGitHub,
   imagemagick,
   makeWrapper,
+  stdenvNoCC,
 }:
 stdenvNoCC.mkDerivation rec {
   pname = "yunfaavatar";
@@ -32,8 +32,8 @@ stdenvNoCC.mkDerivation rec {
     description = "Utility for automatic centralized changing of avatar in Github, Discord, Steam, Shikimori, and many more";
     homepage = "https://github.com/yunfachi/yunfaAvatar";
     license = lib.licenses.mit;
-    platforms = lib.platforms.all;
     maintainers = with lib.maintainers; [ yunfachi ];
+    platforms = lib.platforms.all;
     mainProgram = "yunfaavatar";
   };
 }

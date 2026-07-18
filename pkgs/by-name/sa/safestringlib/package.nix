@@ -1,8 +1,8 @@
 {
   lib,
   stdenv,
-  cmake,
   fetchFromGitHub,
+  cmake,
   fetchpatch,
 }:
 
@@ -22,19 +22,12 @@ stdenv.mkDerivation {
     "out"
   ];
 
-  nativeBuildInputs = [ cmake ];
-
-  cmakeFlags = [
-    (lib.cmakeBool "BUILD_UNITTESTS" true)
-    "-DCMAKE_POLICY_VERSION_MINIMUM=3.5"
-  ];
-
   patches = [
     # https://github.com/intel/safestringlib/issues/74
     (fetchpatch {
+      hash = "sha256-4HS7XyKPQSmKczaMCi1s6NxgTNzRZXTds2CXBTbpuAM=";
       name = "darwin-fix";
       url = "https://github.com/intel/safestringlib/pull/75/commits/3ff9c6234be7dd4ee1dd5cdc2ccbb2c7541adfec.patch";
-      hash = "sha256-4HS7XyKPQSmKczaMCi1s6NxgTNzRZXTds2CXBTbpuAM=";
     })
   ];
 
@@ -50,13 +43,21 @@ stdenv.mkDerivation {
     sed -i 's/ wmemset_s/ wmemset8_s/g' unittests/*.c
   '';
 
+  nativeBuildInputs = [ cmake ];
+
+  cmakeFlags = [
+    (lib.cmakeBool "BUILD_UNITTESTS" true)
+    "-DCMAKE_POLICY_VERSION_MINIMUM=3.5"
+  ];
+
+  doCheck = true;
+
   checkPhase = ''
     runHook preCheck
     cd unittests
     ./safestring_test
     runHook postCheck
   '';
-  doCheck = true;
 
   installPhase = ''
     runHook preInstall
@@ -70,10 +71,10 @@ stdenv.mkDerivation {
   '';
 
   meta = {
-    homepage = "https://github.com/intel/safestringlib";
     description = "Safer replacements for C library functions that prevent serious security vulnerabilities";
+    homepage = "https://github.com/intel/safestringlib";
     license = lib.licenses.mit;
-    platforms = lib.platforms.unix;
     maintainers = with lib.maintainers; [ apraga ];
+    platforms = lib.platforms.unix;
   };
 }

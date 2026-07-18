@@ -1,6 +1,6 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
   cmake,
   hidapi,
@@ -31,15 +31,17 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Sidetone and Battery status for Logitech G930, G533, G633, G933 SteelSeries Arctis 7/PRO 2019 and Corsair VOID (Pro)";
+
     longDescription = ''
       A tool to control certain aspects of USB-connected headsets on Linux. Currently,
       support is provided for adjusting sidetone, getting battery state, controlling
       LEDs, and setting the inactive time.
     '';
+
     homepage = "https://github.com/Sapd/HeadsetControl";
     license = lib.licenses.gpl3Plus;
-    mainProgram = "headsetcontrol";
     maintainers = with lib.maintainers; [ leixb ];
     platforms = lib.platforms.all;
+    mainProgram = "headsetcontrol";
   };
 })

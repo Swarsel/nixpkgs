@@ -5,8 +5,8 @@
 }:
 
 buildDunePackage {
-  pname = "aches";
   inherit (ringo) src version;
+  pname = "aches";
 
   propagatedBuildInputs = [
     ringo

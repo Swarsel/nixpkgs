@@ -1,14 +1,14 @@
 {
   lib,
-  buildGo126Module,
   fetchFromGitHub,
+  buildGo126Module,
   nix-update-script,
   nixosTests,
   withServer ? true,
+  withVtGen ? false,
   withVtInsert ? false,
   withVtSelect ? false,
   withVtStorage ? false,
-  withVtGen ? false,
 }:
 
 buildGo126Module (finalAttrs: {
@@ -23,6 +23,13 @@ buildGo126Module (finalAttrs: {
   };
 
   vendorHash = null;
+  __darwinAllowLocalNetworking = true;
+
+  ldflags = [
+    "-s"
+    "-w"
+    "-X github.com/VictoriaMetrics/VictoriaTraces/lib/buildinfo.Version=${finalAttrs.version}"
+  ];
 
   subPackages =
     lib.optionals withServer [ "app/victoria-traces" ]
@@ -31,28 +38,22 @@ buildGo126Module (finalAttrs: {
     ++ lib.optionals withVtStorage [ "app/vtstorage" ]
     ++ lib.optionals withVtGen [ "app/vtgen" ];
 
-  ldflags = [
-    "-s"
-    "-w"
-    "-X github.com/VictoriaMetrics/VictoriaTraces/lib/buildinfo.Version=${finalAttrs.version}"
-  ];
-
-  __darwinAllowLocalNetworking = true;
-
   passthru = {
     tests = lib.recurseIntoAttrs nixosTests.victoriatraces;
     updateScript = nix-update-script { };
   };
 
   meta = {
-    homepage = "https://docs.victoriametrics.com/victoriatraces/";
     description = "Fast open-source observability solution for distributed traces";
+    homepage = "https://docs.victoriametrics.com/victoriatraces/";
+    changelog = "https://github.com/VictoriaMetrics/VictoriaTraces/releases/tag/${finalAttrs.src.tag}";
     license = lib.licenses.asl20;
+
     maintainers = with lib.maintainers; [
       cmacrae
       ma27
     ];
-    changelog = "https://github.com/VictoriaMetrics/VictoriaTraces/releases/tag/${finalAttrs.src.tag}";
+
     mainProgram = "victoria-traces";
   };
 })

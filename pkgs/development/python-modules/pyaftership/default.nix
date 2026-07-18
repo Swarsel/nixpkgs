@@ -1,9 +1,9 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
   aiohttp,
   aresponses,
+  buildPythonPackage,
   pytest-asyncio,
   pytestCheckHook,
 }:
@@ -11,7 +11,6 @@
 buildPythonPackage rec {
   pname = "pyaftership";
   version = "23.1.0";
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "ludeeus";
@@ -19,6 +18,13 @@ buildPythonPackage rec {
     tag = version;
     hash = "sha256-njlDScmxIYWxB4EL9lOSGCXqZDzP999gI9EkpcZyFlE=";
   };
+
+  postPatch = ''
+    # Upstream is releasing with the help of a CI to PyPI, GitHub releases
+    # are not in their focus
+    substituteInPlace setup.py \
+      --replace 'version="main",' 'version="${version}",'
+  '';
 
   propagatedBuildInputs = [ aiohttp ];
 
@@ -28,13 +34,7 @@ buildPythonPackage rec {
     pytestCheckHook
   ];
 
-  postPatch = ''
-    # Upstream is releasing with the help of a CI to PyPI, GitHub releases
-    # are not in their focus
-    substituteInPlace setup.py \
-      --replace 'version="main",' 'version="${version}",'
-  '';
-
+  format = "setuptools";
   pythonImportsCheck = [ "pyaftership" ];
 
   meta = {

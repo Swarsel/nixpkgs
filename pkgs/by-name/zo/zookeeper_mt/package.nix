@@ -19,8 +19,6 @@ stdenv.mkDerivation rec {
     hash = "sha512-Zb6uvLbvf2m4RMLwpZ3E2S9ChFvcOpyp/TH+WSfTe6tOmecAnv/YM6gz4z5PyBulyg0j7jqc3BmQvotvyPt5tw==";
   };
 
-  sourceRoot = "apache-${zookeeper.pname}-${version}/zookeeper-client/zookeeper-client-c";
-
   nativeBuildInputs = [
     autoreconfHook
     pkg-config
@@ -30,6 +28,11 @@ stdenv.mkDerivation rec {
   buildInputs = [
     openssl
     zookeeper
+  ];
+
+  configureFlags = [
+    # We're not going to start test servers in the sandbox anyway.
+    "--without-cppunit"
   ];
 
   # Generate the C marshallers/unmarshallers for the Jute-encoded
@@ -43,19 +46,18 @@ stdenv.mkDerivation rec {
     cd ..
   '';
 
-  configureFlags = [
-    # We're not going to start test servers in the sandbox anyway.
-    "--without-cppunit"
-  ];
+  sourceRoot = "apache-${zookeeper.pname}-${version}/zookeeper-client/zookeeper-client-c";
 
   meta = {
-    homepage = "https://zookeeper.apache.org";
     description = "Apache Zookeeper";
+    homepage = "https://zookeeper.apache.org";
     license = lib.licenses.asl20;
+
     maintainers = with lib.maintainers; [
       commandodev
       ztzg
     ];
+
     platforms = lib.platforms.unix;
   };
 }

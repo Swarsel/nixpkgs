@@ -15,26 +15,30 @@ let
     ;
 in
 {
-  port = 9798;
-
   extraOpts = {
+    serverFallback = mkOption {
+      default = false;
+
+      description = ''
+        If the configured serverID is unavailable, fall back to the closest available server.
+      '';
+
+      type = types.bool;
+    };
+
     serverID = mkOption {
-      type = types.int;
       default = -1;
+
       description = ''
         Speedtest.net server ID to run tests against.
         -1 picks the closest server to your location.
       '';
-    };
 
-    serverFallback = mkOption {
-      type = types.bool;
-      default = false;
-      description = ''
-        If the configured serverID is unavailable, fall back to the closest available server.
-      '';
+      type = types.int;
     };
   };
+
+  port = 9798;
 
   serviceOpts = {
     serviceConfig = {

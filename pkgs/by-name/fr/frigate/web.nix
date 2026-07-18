@@ -6,10 +6,9 @@
 }:
 
 buildNpmPackage {
-  pname = "frigate-web";
   inherit version src;
-
-  sourceRoot = "${src.name}/web";
+  inherit (frigate) meta;
+  pname = "frigate-web";
 
   postPatch = ''
     substituteInPlace package.json \
@@ -37,5 +36,5 @@ buildNpmPackage {
     cp -rv dist/ $out
   '';
 
-  inherit (frigate) meta;
+  sourceRoot = "${src.name}/web";
 }

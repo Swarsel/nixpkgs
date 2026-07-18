@@ -2,20 +2,20 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  cmake,
-  juce,
-  pkg-config,
   alsa-lib,
+  cmake,
   fftwFloat,
   fontconfig,
   freetype,
+  juce,
   libGL,
+  libjack2,
   libx11,
   libxcursor,
   libxext,
   libxinerama,
   libxrandr,
-  libjack2,
+  pkg-config,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -73,23 +73,25 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   passthru.clapJuceExtensions = fetchFromGitHub {
+    fetchSubmodules = true;
+    hash = "sha256-Lx88nyEFjPLA5yh8rrqBdyZIxe/j0FgIHoyKcbjuuI4=";
     owner = "free-audio";
     repo = "clap-juce-extensions";
     rev = "645ed2fd0949d36639e3d63333f26136df6df769";
-    hash = "sha256-Lx88nyEFjPLA5yh8rrqBdyZIxe/j0FgIHoyKcbjuuI4=";
-    fetchSubmodules = true;
   };
 
   meta = {
     description = "Wavetable synthesizer";
+
     longDescription = ''
       Hybrid wavetable additive / subtractive VST / AU / AAX synthesizer / sampler workstation plugin
     '';
+
     homepage = "https://www.vast-dynamics.com/?q=Vaporizer2";
-    downloadPage = "https://github.com/VASTDynamics/Vaporizer2";
     license = lib.licenses.gpl3Only;
     maintainers = with lib.maintainers; [ eljamm ];
-    mainProgram = "VASTvaporizer2";
     platforms = lib.platforms.linux;
+    mainProgram = "VASTvaporizer2";
+    downloadPage = "https://github.com/VASTDynamics/Vaporizer2";
   };
 })

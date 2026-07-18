@@ -1,27 +1,23 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # build-system
-  cython,
-  numpy,
-  setuptools,
-
+  buildPythonPackage,
   # dependencies
   click,
+  # build-system
+  cython,
   h5py,
+  numpy,
   pandas,
-  scipy,
-
   # tests
   pytestCheckHook,
+  scipy,
+  setuptools,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "biom-format";
   version = "2.1.17";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "biocore";
@@ -34,6 +30,16 @@ buildPythonPackage (finalAttrs: {
   postPatch = ''
     substituteInPlace biom/table.py \
       --replace-fail "np.in1d" "np.isin"
+  '';
+
+  nativeCheckInputs = [ pytestCheckHook ];
+
+  # make pytest resolve the package from $out
+  # some tests don't work if we change the level of directory nesting
+  preCheck = ''
+    mkdir biom_tests
+    mv biom/tests biom_tests/tests
+    rm -r biom
   '';
 
   build-system = [
@@ -50,26 +56,16 @@ buildPythonPackage (finalAttrs: {
     scipy
   ];
 
-  # make pytest resolve the package from $out
-  # some tests don't work if we change the level of directory nesting
-  preCheck = ''
-    mkdir biom_tests
-    mv biom/tests biom_tests/tests
-    rm -r biom
-  '';
-
-  nativeCheckInputs = [ pytestCheckHook ];
-
   enabledTestPaths = [ "biom_tests/tests" ];
-
+  pyproject = true;
   pythonImportsCheck = [ "biom" ];
 
   meta = {
     description = "Biological Observation Matrix (BIOM) format";
     homepage = "http://biom-format.org/";
-    downloadPage = "https://github.com/biocore/biom-format";
     changelog = "https://github.com/biocore/biom-format/blob/${finalAttrs.src.tag}/ChangeLog.md";
     license = lib.licenses.bsd3;
     maintainers = with lib.maintainers; [ tomasajt ];
+    downloadPage = "https://github.com/biocore/biom-format";
   };
 })

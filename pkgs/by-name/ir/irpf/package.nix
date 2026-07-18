@@ -1,15 +1,15 @@
 {
   lib,
-  stdenvNoCC,
-  fetchzip,
   copyDesktopItems,
+  fetchzip,
+  imagemagick,
   jdk17,
   makeDesktopItem,
   makeWrapper,
+  stdenvNoCC,
   unzip,
-  xdg-utils,
-  imagemagick,
   writeScript,
+  xdg-utils,
 }:
 let
   # The officially recommended version is Java 17
@@ -35,17 +35,6 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     makeWrapper
     copyDesktopItems
     imagemagick
-  ];
-
-  desktopItems = [
-    (makeDesktopItem {
-      name = "irpf";
-      exec = "irpf";
-      icon = "rfb";
-      desktopName = "Imposto de Renda Pessoa Física";
-      comment = "Programa Oficial da Receita para elaboração do IRPF";
-      categories = [ "Office" ];
-    })
   ];
 
   installPhase = ''
@@ -75,6 +64,17 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  desktopItems = [
+    (makeDesktopItem {
+      categories = [ "Office" ];
+      comment = "Programa Oficial da Receita para elaboração do IRPF";
+      desktopName = "Imposto de Renda Pessoa Física";
+      exec = "irpf";
+      icon = "rfb";
+      name = "irpf";
+    })
+  ];
+
   passthru.updateScript = writeScript "update-irpf" ''
     #!/usr/bin/env nix-shell
     #!nix-shell -i bash -p curl pup common-updater-scripts
@@ -87,18 +87,22 @@ stdenvNoCC.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Brazillian government application for reporting income tax";
+
     longDescription = ''
       Brazillian government application for reporting income tax.
 
       IRFP - Imposto de Renda Pessoa Física - Receita Federal do Brasil.
     '';
+
     homepage = "https://www.gov.br/receitafederal/pt-br";
     license = lib.licenses.unfree;
-    platforms = lib.platforms.all;
     sourceProvenance = with lib.sourceTypes; [ binaryBytecode ];
+
     maintainers = with lib.maintainers; [
       rafaelrc
     ];
+
+    platforms = lib.platforms.all;
     mainProgram = "irpf";
   };
 })

@@ -12,7 +12,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "mpris-api";
   version = "1.3.0";
-  pyproject = true;
 
   src = fetchFromBitbucket {
     owner = "massultidev";
@@ -21,6 +20,7 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-tr1McOBGTKUVLFToFmb6j8NUzl5bCH8XsNgzZT9Jv7s=";
   };
 
+  nativeCheckInputs = [ pytestCheckHook ];
   build-system = [ setuptools ];
 
   dependencies = [
@@ -29,8 +29,7 @@ buildPythonPackage (finalAttrs: {
     tunit
   ];
 
-  nativeCheckInputs = [ pytestCheckHook ];
-
+  pyproject = true;
   pythonImportsCheck = [ "mpris_api" ];
 
   meta = {

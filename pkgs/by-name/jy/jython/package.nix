@@ -2,13 +2,12 @@
   lib,
   stdenv,
   fetchurl,
-  makeWrapper,
   jre,
+  makeWrapper,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
   pname = "jython";
-
   version = "2.7.4";
 
   src = fetchurl {
@@ -18,20 +17,20 @@ stdenv.mkDerivation (finalAttrs: {
 
   nativeBuildInputs = [ makeWrapper ];
 
-  dontUnpack = true;
-
   installPhase = ''
     mkdir -pv $out/bin
     cp $src $out/jython.jar
     makeWrapper ${jre}/bin/java $out/bin/jython --add-flags "-jar $out/jython.jar"
   '';
 
+  dontUnpack = true;
+
   meta = {
     description = "Python interpreter written in Java";
-    mainProgram = "jython";
     homepage = "https://jython.org/";
-    sourceProvenance = with lib.sourceTypes; [ binaryBytecode ];
     license = lib.licenses.psfl;
+    sourceProvenance = with lib.sourceTypes; [ binaryBytecode ];
     platforms = jre.meta.platforms;
+    mainProgram = "jython";
   };
 })

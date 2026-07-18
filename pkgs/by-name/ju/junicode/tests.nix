@@ -1,7 +1,7 @@
 {
   lib,
-  runCommand,
   junicode,
+  runCommand,
   texliveBasic,
 }:
 let
@@ -12,16 +12,16 @@ let
 
   texTest =
     {
+      file,
+      fonttype,
       package,
       tex,
-      fonttype,
-      file,
     }:
     lib.attrsets.nameValuePair "${package}-${tex}-${fonttype}" (
       runCommand "${package}-test-${tex}-${fonttype}.pdf"
         {
-          nativeBuildInputs = [ texliveWithJunicode ];
           inherit tex fonttype file;
+          nativeBuildInputs = [ texliveWithJunicode ];
         }
         ''
           substituteAll $file test.tex
@@ -32,23 +32,26 @@ let
 in
 builtins.listToAttrs (
   lib.mapCartesianProduct texTest {
-    tex = [
-      "xelatex"
-      "lualatex"
-    ];
+    file = [ ./test.tex ];
+
     fonttype = [
       "ttf"
       "otf"
     ];
+
     package = [ "junicode" ];
-    file = [ ./test.tex ];
+
+    tex = [
+      "xelatex"
+      "lualatex"
+    ];
   }
   ++ [
     (texTest {
-      package = "junicodevf";
-      fonttype = "ttf";
-      tex = "lualatex";
       file = ./test-vf.tex;
+      fonttype = "ttf";
+      package = "junicodevf";
+      tex = "lualatex";
     })
   ]
 )

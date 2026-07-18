@@ -1,16 +1,7 @@
 {
   lib,
-  buildPythonPackage,
+  stdenv,
   fetchFromGitHub,
-  pythonAtLeast,
-
-  # build-system
-  setuptools,
-
-  # dependencies
-  certifi,
-  urllib3,
-
   # optional-dependencies
   aiohttp,
   anthropic,
@@ -19,8 +10,13 @@
   asyncpg,
   blinker,
   bottle,
+  # checks
+  brotli,
+  buildPythonPackage,
   celery,
   celery-redbeat,
+  # dependencies
+  certifi,
   chalice,
   clickhouse-driver,
   django,
@@ -33,44 +29,43 @@
   httpx,
   huey,
   huggingface-hub,
+  jsonschema,
   langchain,
   litestar,
   loguru,
   markupsafe,
   openai,
+  pip,
   protobuf,
   pure-eval,
   pymongo,
+  pyrsistent,
+  pysocks,
   pyspark,
+  pytest-asyncio,
+  pytest-forked,
+  pytest-localserver,
+  pytest-watch,
+  pytest-xdist,
+  pytestCheckHook,
+  pythonAtLeast,
   quart,
+  responses,
   rq,
   sanic,
+  # build-system
+  setuptools,
+  socksio,
   sqlalchemy,
   starlette,
   tiktoken,
   tornado,
-
-  # checks
-  brotli,
-  jsonschema,
-  pip,
-  pyrsistent,
-  pysocks,
-  pytest-asyncio,
-  pytestCheckHook,
-  pytest-forked,
-  pytest-localserver,
-  pytest-xdist,
-  pytest-watch,
-  responses,
-  socksio,
-  stdenv,
+  urllib3,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "sentry-sdk";
   version = "2.64.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "getsentry";
@@ -82,75 +77,6 @@ buildPythonPackage (finalAttrs: {
   postPatch = ''
     sed -i "/addopts =/d" pyproject.toml
   '';
-
-  build-system = [
-    setuptools
-  ];
-
-  dependencies = [
-    certifi
-    urllib3
-  ];
-
-  optional-dependencies = {
-    aiohttp = [ aiohttp ];
-    anthropic = [ anthropic ];
-    # TODO: arq
-    asyncpg = [ asyncpg ];
-    asyncio = [ httpcore ] ++ httpcore.optional-dependencies.asyncio;
-    beam = [ apache-beam ];
-    bottle = [ bottle ];
-    celery = [ celery ];
-    celery-redbeat = [ celery-redbeat ];
-    chalice = [ chalice ];
-    clickhouse-driver = [ clickhouse-driver ];
-    django = [ django ];
-    falcon = [ falcon ];
-    fastapi = [ fastapi ];
-    flask = [
-      blinker
-      flask
-      markupsafe
-    ];
-    grpcio = [
-      grpcio
-      protobuf
-    ];
-    http2 = [ httpcore ] ++ httpcore.optional-dependencies.http2;
-    httpx = [ httpx ];
-    huey = [ huey ];
-    huggingface-hub = [ huggingface-hub ];
-    langchain = [ langchain ];
-    # TODO: launchdarkly
-    litestar = [ litestar ];
-    loguru = [ loguru ];
-    openai = [
-      openai
-      tiktoken
-    ];
-    # TODO: openfeature
-    # TODO: opentelemetry
-    # TODO: opentelemetry-experimental
-    pure_eval = [
-      asttokens
-      executing
-      pure-eval
-    ];
-    pymongo = [ pymongo ];
-    pyspark = [ pyspark ];
-    quart = [
-      blinker
-      quart
-    ];
-    rq = [ rq ];
-    sanic = [ sanic ];
-    sqlalchemy = [ sqlalchemy ];
-    starlette = [ starlette ];
-    # TODO: starlite
-    # TODO: statsig
-    tornado = [ tornado ];
-    # TODO: unleash
-  };
 
   nativeCheckInputs = [
     brotli
@@ -173,6 +99,15 @@ buildPythonPackage (finalAttrs: {
   ++ finalAttrs.finalPackage.optional-dependencies.http2;
 
   __darwinAllowLocalNetworking = true;
+
+  build-system = [
+    setuptools
+  ];
+
+  dependencies = [
+    certifi
+    urllib3
+  ];
 
   disabledTestPaths = lib.optionals stdenv.hostPlatform.isDarwin [
     # darwin: 'profiler should not be running'
@@ -229,6 +164,75 @@ buildPythonPackage (finalAttrs: {
     "test_segment_span_has_profiler_id"
   ];
 
+  optional-dependencies = {
+    aiohttp = [ aiohttp ];
+    anthropic = [ anthropic ];
+    asyncio = [ httpcore ] ++ httpcore.optional-dependencies.asyncio;
+    # TODO: arq
+    asyncpg = [ asyncpg ];
+    beam = [ apache-beam ];
+    bottle = [ bottle ];
+    celery = [ celery ];
+    celery-redbeat = [ celery-redbeat ];
+    chalice = [ chalice ];
+    clickhouse-driver = [ clickhouse-driver ];
+    django = [ django ];
+    falcon = [ falcon ];
+    fastapi = [ fastapi ];
+
+    flask = [
+      blinker
+      flask
+      markupsafe
+    ];
+
+    grpcio = [
+      grpcio
+      protobuf
+    ];
+
+    http2 = [ httpcore ] ++ httpcore.optional-dependencies.http2;
+    httpx = [ httpx ];
+    huey = [ huey ];
+    huggingface-hub = [ huggingface-hub ];
+    langchain = [ langchain ];
+    # TODO: launchdarkly
+    litestar = [ litestar ];
+    loguru = [ loguru ];
+
+    openai = [
+      openai
+      tiktoken
+    ];
+
+    # TODO: openfeature
+    # TODO: opentelemetry
+    # TODO: opentelemetry-experimental
+    pure_eval = [
+      asttokens
+      executing
+      pure-eval
+    ];
+
+    pymongo = [ pymongo ];
+    pyspark = [ pyspark ];
+
+    quart = [
+      blinker
+      quart
+    ];
+
+    rq = [ rq ];
+    sanic = [ sanic ];
+    sqlalchemy = [ sqlalchemy ];
+    starlette = [ starlette ];
+    # TODO: starlite
+    # TODO: statsig
+    tornado = [ tornado ];
+    # TODO: unleash
+  };
+
+  pyproject = true;
   pythonImportsCheck = [ "sentry_sdk" ];
 
   meta = {

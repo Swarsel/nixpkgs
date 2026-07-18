@@ -17,14 +17,11 @@ stdenv.mkDerivation (finalAttrs: {
     fetchSubmodules = true;
   };
 
-  sourceRoot = "${finalAttrs.src.name}/src";
-
   postPatch = ''
     patchShebangs configure
   '';
 
-  # Avoid additional arguments are added to configureFlags
-  configurePlatforms = [ ];
+  nativeBuildInputs = [ gcc-arm-embedded-13 ];
 
   # from release/Makefile
   configureFlags = [
@@ -34,10 +31,6 @@ stdenv.mkDerivation (finalAttrs: {
     "--enable-certdo"
   ];
 
-  nativeBuildInputs = [ gcc-arm-embedded-13 ];
-
-  enableParallelBuilding = true;
-
   installPhase = ''
     runHook preInstall
     mkdir $out
@@ -45,15 +38,22 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  # Avoid additional arguments are added to configureFlags
+  configurePlatforms = [ ];
+  enableParallelBuilding = true;
+  sourceRoot = "${finalAttrs.src.name}/src";
+
   meta = {
     description = "Firmware for the Nitrokey Start device";
     homepage = "https://github.com/Nitrokey/nitrokey-start-firmware";
     license = lib.licenses.gpl3Plus;
+
     maintainers = with lib.maintainers; [
       amerino
       imadnyc
       kiike
     ];
+
     platforms = lib.platforms.unix;
   };
 })

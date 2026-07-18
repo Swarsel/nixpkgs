@@ -1,20 +1,20 @@
 {
   lib,
-  fetchCrate,
   fetchurl,
-  rustPlatform,
-  pkg-config,
-  openssl,
+  fetchCrate,
   nix-update-script,
+  openssl,
+  pkg-config,
+  rustPlatform,
 }:
 let
   # That is from cargoDeps/risc0-circuit-recursion/build.rs
   src-recursion-hash = "744b999f0a35b3c86753311c7efb2a0054be21727095cf105af6ee7d3f4d8849";
   src-recursion = fetchurl {
     name = "cargo-risczero-recursion-source";
-    url = "https://risc0-artifacts.s3.us-west-2.amazonaws.com/zkr/${src-recursion-hash}.zip";
     outputHash = src-recursion-hash; # This hash should be the same as src-recuresion-hash
     outputHashAlgo = "sha256";
+    url = "https://risc0-artifacts.s3.us-west-2.amazonaws.com/zkr/${src-recursion-hash}.zip";
   };
 in
 
@@ -27,12 +27,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-1tuY+XoZpilak9gc5vDnRDEB1SK+itBWoGNxwefT6xo=";
   };
 
-  env = {
-    RECURSION_SRC_PATH = src-recursion;
-  };
-
-  cargoHash = "sha256-ayKQvhjYawPEl9ryVmDx4J93/EGPSeKds0mOnkRI2Fo=";
-
   nativeBuildInputs = [
     pkg-config
   ];
@@ -41,13 +35,19 @@ rustPlatform.buildRustPackage (finalAttrs: {
     openssl
   ];
 
+  cargoHash = "sha256-ayKQvhjYawPEl9ryVmDx4J93/EGPSeKds0mOnkRI2Fo=";
+
+  env = {
+    RECURSION_SRC_PATH = src-recursion;
+  };
+
   passthru.updateScript = nix-update-script { };
 
   meta = {
     description = "Cargo extension to help create, manage, and test RISC Zero projects";
-    mainProgram = "cargo-risczero";
     homepage = "https://risczero.com";
     license = with lib.licenses; [ asl20 ];
     maintainers = [ ];
+    mainProgram = "cargo-risczero";
   };
 })

@@ -2,31 +2,27 @@
   lib,
   stdenv,
   fetchFromGitLab,
-  makeWrapper,
-  which,
   autoconf,
-  help2man,
   file,
+  help2man,
+  makeWrapper,
   pari,
+  which,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
-  version = "2.023.7";
   pname = "sympow";
+  version = "2.023.7";
 
   src = fetchFromGitLab {
-    group = "rezozer";
     owner = "forks";
     repo = "sympow";
     rev = "v${finalAttrs.version}";
     hash = "sha256-sex8gRiBdTcVMV3nSeiTYamAjPoXQdiiZwjRmeKA+mc=";
+    group = "rezozer";
   };
 
   patches = [ ./clean-extra-logfile-output-from-pari.patch ];
-
-  postUnpack = ''
-    patchShebangs .
-  '';
 
   nativeBuildInputs = [
     makeWrapper
@@ -36,14 +32,6 @@ stdenv.mkDerivation (finalAttrs: {
     file
     pari
   ];
-
-  configurePhase = ''
-    runHook preConfigure
-    export PREFIX="$out"
-    export VARPREFIX="$out" # see comment on postInstall
-    ./Configure # doesn't take any options
-    runHook postConfigure
-  '';
 
   # Usually, sympow has 3 levels of caching: statically distributed in /usr/,
   # shared in /var and per-user in ~/.sympow. The shared cache assumes trust in
@@ -59,6 +47,7 @@ stdenv.mkDerivation (finalAttrs: {
 
   # Example from the README as a sanity check.
   doInstallCheck = true;
+
   installCheckPhase = ''
     export HOME=$TMPDIR
     "$out/bin/sympow" -curve "[1,2,3,4,5]" -moddeg | grep 'Modular Degree is 464'
@@ -70,16 +59,30 @@ stdenv.mkDerivation (finalAttrs: {
     "$out/bin/sympow" -sp 2p16 -curve "[1,2,3,4,5]" | grep '8.3705'
   '';
 
+  configurePhase = ''
+    runHook preConfigure
+    export PREFIX="$out"
+    export VARPREFIX="$out" # see comment on postInstall
+    ./Configure # doesn't take any options
+    runHook postConfigure
+  '';
+
+  postUnpack = ''
+    patchShebangs .
+  '';
+
   meta = {
     description = "Compute special values of symmetric power elliptic curve L-functions";
     homepage = "https://gitlab.com/rezozer/forks/sympow";
-    mainProgram = "sympow";
+
     license = {
-      shortName = "sympow";
-      fullName = "Custom, BSD-like. See COPYING file.";
       free = true;
+      fullName = "Custom, BSD-like. See COPYING file.";
+      shortName = "sympow";
     };
-    teams = [ lib.teams.sage ];
+
     platforms = lib.platforms.unix;
+    mainProgram = "sympow";
+    teams = [ lib.teams.sage ];
   };
 })

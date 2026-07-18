@@ -1,13 +1,13 @@
 {
   lib,
   fetchFromCodeberg,
-  rustPlatform,
-  pkg-config,
-  lz4,
-  libxkbcommon,
   installShellFiles,
+  libxkbcommon,
+  lz4,
   makeWrapper,
+  pkg-config,
   procps,
+  rustPlatform,
   scdoc,
   wayland-protocols,
   wayland-scanner,
@@ -24,7 +24,12 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-owyQdC2vi0kYC119fzyVQp0J4G0t1n4xXUwryhlBbqA=";
   };
 
-  cargoHash = "sha256-huw9vzLzXE7eu1ksB6a/SJAtp4xLc2hDb0RHS8O28MY=";
+  nativeBuildInputs = [
+    pkg-config
+    installShellFiles
+    makeWrapper
+    scdoc
+  ];
 
   buildInputs = [
     lz4
@@ -33,14 +38,8 @@ rustPlatform.buildRustPackage (finalAttrs: {
     wayland-scanner
   ];
 
+  cargoHash = "sha256-huw9vzLzXE7eu1ksB6a/SJAtp4xLc2hDb0RHS8O28MY=";
   doCheck = false; # Integration tests do not work in sandbox environment
-
-  nativeBuildInputs = [
-    pkg-config
-    installShellFiles
-    makeWrapper
-    scdoc
-  ];
 
   postInstall = ''
     for f in doc/*.scd; do
@@ -66,10 +65,12 @@ rustPlatform.buildRustPackage (finalAttrs: {
     description = "Efficient animated wallpaper daemon for wayland, controlled at runtime";
     homepage = "https://codeberg.org/LGFae/awww";
     license = lib.licenses.gpl3;
+
     maintainers = with lib.maintainers; [
       mateodd25
       donovanglover
     ];
+
     platforms = lib.platforms.linux;
     mainProgram = "awww";
   };

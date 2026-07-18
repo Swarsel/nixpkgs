@@ -1,7 +1,6 @@
 { mkDerivation }:
 mkDerivation {
-  path = "usr.sbin/dhcpleasectl";
-
   extraPaths = [ "sbin/dhcpleased" ];
+  path = "usr.sbin/dhcpleasectl";
 
 }

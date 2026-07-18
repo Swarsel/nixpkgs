@@ -7,7 +7,6 @@
 buildPythonPackage rec {
   pname = "textdistance";
   version = "4.6.3";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
@@ -16,7 +15,7 @@ buildPythonPackage rec {
 
   # There aren't tests
   doCheck = false;
-
+  format = "setuptools";
   pythonImportsCheck = [ "textdistance" ];
 
   meta = {

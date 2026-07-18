@@ -1,8 +1,8 @@
 {
   lib,
   fetchurl,
-  stdenvNoCC,
   nix-update-script,
+  stdenvNoCC,
 }:
 stdenvNoCC.mkDerivation (finalAttrs: {
   pname = "arkenfox-userjs";
@@ -12,8 +12,6 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     url = "https://raw.githubusercontent.com/arkenfox/user.js/refs/tags/${finalAttrs.version}/user.js";
     hash = "sha256-5KszxpFImRdc9wNeDlei1/CKyIfY+VfxGZ5+Sbvn4z4=";
   };
-
-  dontUnpack = true;
 
   installPhase = ''
     runHook preInstall
@@ -26,17 +24,20 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  dontUnpack = true;
   passthru.updateScript = nix-update-script { };
 
   meta = {
-    changelog = "https://github.com/arkenfox/user.js/releases/tag/${finalAttrs.version}";
     description = "Comprehensive user.js template for configuration and hardening";
     homepage = "https://github.com/arkenfox/user.js";
+    changelog = "https://github.com/arkenfox/user.js/releases/tag/${finalAttrs.version}";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       linsui
       Guanran928
     ];
+
     platforms = lib.platforms.all;
   };
 })

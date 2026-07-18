@@ -1,24 +1,20 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # build-system
-  setuptools,
-
+  buildPythonPackage,
   # dependencies
   numpy,
-  scipy,
-  svgwrite,
-
   # tests
   pytestCheckHook,
+  scipy,
+  # build-system
+  setuptools,
+  svgwrite,
 }:
 
 buildPythonPackage rec {
   pname = "svgpathtools";
   version = "1.7.2";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "mathandy";
@@ -26,6 +22,10 @@ buildPythonPackage rec {
     tag = "v${version}";
     hash = "sha256-OGengjPIEuxDYHqzFUBbYcVs9RjBSKSd1NNjx/KqnSk=";
   };
+
+  nativeCheckInputs = [
+    pytestCheckHook
+  ];
 
   build-system = [
     setuptools
@@ -37,9 +37,7 @@ buildPythonPackage rec {
     svgwrite
   ];
 
-  nativeCheckInputs = [
-    pytestCheckHook
-  ];
+  pyproject = true;
 
   pythonImportsCheck = [
     "svgpathtools"

@@ -10,7 +10,6 @@
 buildPythonPackage rec {
   pname = "flake8-length";
   version = "0.3.1";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
@@ -18,14 +17,11 @@ buildPythonPackage rec {
   };
 
   nativeBuildInputs = [ flit-core ];
-
   propagatedBuildInputs = [ flake8 ];
-
   nativeCheckInputs = [ pytestCheckHook ];
-
-  pythonImportsCheck = [ "flake8_length" ];
-
   enabledTestPaths = [ "tests/" ];
+  pyproject = true;
+  pythonImportsCheck = [ "flake8_length" ];
 
   meta = {
     description = "Flake8 plugin for a smart line length validation";

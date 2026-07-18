@@ -2,15 +2,15 @@
   lib,
   stdenv,
   fetchurl,
-  gtk2,
   glib,
-  pkg-config,
-  libGLU,
+  gtk2,
   libGL,
-  wxwidgets_3_2,
+  libGLU,
   libx11,
-  xorgproto,
+  pkg-config,
   runtimeShell,
+  wxwidgets_3_2,
+  xorgproto,
 }:
 
 stdenv.mkDerivation rec {
@@ -18,9 +18,9 @@ stdenv.mkDerivation rec {
   version = "4.4";
 
   src = fetchurl {
-    name = "fsg-src-${version}.tar.gz";
     url = "https://raw.githubusercontent.com/ctrlcctrlv/wxsand/5716c16b655ca3670e7acd76372b43763bec20d1/fsg-src-${version}-ORIGINAL.tar.gz";
     sha256 = "1756y01rkvd3f1pkj88jqh83fqcfl2fy0c48mcq53pjzln9ycv8c";
+    name = "fsg-src-${version}.tar.gz";
   };
 
   patches = [ ./wxgtk-3.2.patch ];
@@ -30,8 +30,6 @@ stdenv.mkDerivation rec {
     substituteInPlace makefile \
       --replace-fail 'wx-config' "${lib.getExe' wxwidgets_3_2 "wx-config"}"
   '';
-
-  hardeningDisable = [ "format" ];
 
   nativeBuildInputs = [ pkg-config ];
 
@@ -44,16 +42,16 @@ stdenv.mkDerivation rec {
     xorgproto
   ];
 
+  makeFlags = [
+    "CPP=${stdenv.cc.targetPrefix}c++"
+  ];
+
   preBuild = ''
     sed -e '
       s@currentProbIndex != 100@0@;
     ' -i MainFrame.cpp
     sed -re '/ctrans_prob/s/energy\[center][+]energy\[other]/(int)(fmin(energy[center]+energy[other],99))/g' -i Canvas.cpp
   '';
-
-  makeFlags = [
-    "CPP=${stdenv.cc.targetPrefix}c++"
-  ];
 
   installPhase = ''
     mkdir -p $out/bin $out/libexec
@@ -62,10 +60,12 @@ stdenv.mkDerivation rec {
     chmod a+x $out/bin/fsg
   '';
 
+  hardeningDisable = [ "format" ];
+
   meta = {
     description = "Cellular automata engine tuned towards the likes of Falling Sand";
-    mainProgram = "fsg";
     maintainers = [ lib.maintainers.raskin ];
     platforms = lib.platforms.linux;
+    mainProgram = "fsg";
   };
 }

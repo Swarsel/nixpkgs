@@ -1,37 +1,31 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # build-system
-  hatchling,
-
+  buildPythonPackage,
   # dependencies
   filetype,
+  # tests
+  freezegun,
+  # passthru
+  gitUpdater,
   google-api-core,
   google-auth,
   google-genai,
+  # build-system
+  hatchling,
   langchain-core,
-  pydantic,
-
-  # tests
-  freezegun,
   langchain-tests,
   numpy,
+  pydantic,
   pytest-asyncio,
   pytest-mock,
   pytestCheckHook,
   syrupy,
-
-  # passthru
-  gitUpdater,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "langchain-google-genai";
   version = "4.2.7";
-  pyproject = true;
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "langchain-ai";
@@ -39,19 +33,6 @@ buildPythonPackage (finalAttrs: {
     tag = "libs/genai/v${finalAttrs.version}";
     hash = "sha256-pfjnXbUr8lkztcNZ8JImi+NiMF0DHOS3qtFsv5fKDiU=";
   };
-
-  sourceRoot = "${finalAttrs.src.name}/libs/genai";
-
-  build-system = [ hatchling ];
-
-  dependencies = [
-    filetype
-    google-api-core
-    google-auth
-    google-genai
-    langchain-core
-    pydantic
-  ];
 
   nativeCheckInputs = [
     freezegun
@@ -63,7 +44,23 @@ buildPythonPackage (finalAttrs: {
     syrupy
   ];
 
-  enabledTestPaths = [ "tests/unit_tests" ];
+  __structuredAttrs = true;
+  build-system = [ hatchling ];
+
+  dependencies = [
+    filetype
+    google-api-core
+    google-auth
+    google-genai
+    langchain-core
+    pydantic
+  ];
+
+  disabledTestPaths = [
+    # AssertionError: assert {'google_maps...s': None, ...} == {'google_maps...a'...
+    # https://github.com/langchain-ai/langchain-google/issues/1791
+    "tests/unit_tests/test_chat_models.py::test_response_to_result_grounding_metadata"
+  ];
 
   disabledTests = [
     # Fails when langchain-core gets ahead of this package
@@ -74,28 +71,27 @@ buildPythonPackage (finalAttrs: {
     "test_grounding_metadata_to_citations_conversion"
   ];
 
-  disabledTestPaths = [
-    # AssertionError: assert {'google_maps...s': None, ...} == {'google_maps...a'...
-    # https://github.com/langchain-ai/langchain-google/issues/1791
-    "tests/unit_tests/test_chat_models.py::test_response_to_result_grounding_metadata"
-  ];
-
+  enabledTestPaths = [ "tests/unit_tests" ];
+  pyproject = true;
   pythonImportsCheck = [ "langchain_google_genai" ];
+  sourceRoot = "${finalAttrs.src.name}/libs/genai";
 
   passthru = {
     # python updater script sets the wrong tag
     skipBulkUpdate = true;
+
     updateScript = gitUpdater {
-      rev-prefix = "libs/genai/v";
       ignoredVersions = "a|b|dev|rc";
+      rev-prefix = "libs/genai/v";
     };
   };
 
   meta = {
-    changelog = "https://github.com/langchain-ai/langchain-google/releases/tag/${finalAttrs.src.tag}";
     description = "LangChain integrations for Google Gemini";
     homepage = "https://github.com/langchain-ai/langchain-google/tree/main/libs/genai";
+    changelog = "https://github.com/langchain-ai/langchain-google/releases/tag/${finalAttrs.src.tag}";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       eu90h
       sarahec

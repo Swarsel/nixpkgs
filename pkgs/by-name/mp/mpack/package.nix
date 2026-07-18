@@ -2,10 +2,10 @@
   lib,
   stdenv,
   fetchurl,
-  fetchpatch,
   autoreconfHook,
-  testers,
+  fetchpatch,
   mpack,
+  testers,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -21,7 +21,7 @@ stdenv.mkDerivation (finalAttrs: {
     let
       # https://salsa.debian.org/debian/mpack/-/tree/7d6514b314a7341614ec8275b03acfcb6a854a6f/debian/patches
       fetchDebPatch =
-        { name, hash }:
+        { hash, name }:
         fetchpatch {
           inherit name hash;
           url = "https://salsa.debian.org/debian/mpack/-/raw/7d6514b314a7341614ec8275b03acfcb6a854a6f/debian/patches/${name}";
@@ -32,36 +32,36 @@ stdenv.mkDerivation (finalAttrs: {
     ]
     ++ (map fetchDebPatch [
       {
-        name = "01_legacy.patch";
         hash = "sha256-v2pZUXecgxJqoHadBhpAAoferQNSeYE+m7qzEiggeO4=";
+        name = "01_legacy.patch";
       }
       {
-        name = "02_fix-permissions.patch";
         hash = "sha256-sltnIqgv7+pwwSFQRCDeCwnjoo2OrvmGFm+SM9U/HB4=";
+        name = "02_fix-permissions.patch";
       }
       {
-        name = "03_specify-filename-replacement-character.patch";
         hash = "sha256-vmLIGFSqKK/qSsltzhdLQGoekew3r25EwAu56umeXlU=";
+        name = "03_specify-filename-replacement-character.patch";
       }
       {
-        name = "04_fix-return-error-code.patch";
         hash = "sha256-l23D6xhkgtkEsErzUy/q6U3aPf5N7YUw2PEToU1YXKI=";
+        name = "04_fix-return-error-code.patch";
       }
       {
-        name = "06_fix-makefile.patch";
         hash = "sha256-69plDqy2sLzO1O4mqjJIlTRCw5ZeVySiqwo93ZkX3Ho=";
+        name = "06_fix-makefile.patch";
       }
       {
-        name = "07_fix-decode-base64-attachment.patch";
         hash = "sha256-hzSCrEg0j6dJNLbfwRNn+rWGRnyUBLjJUlORJS9aDD4=";
+        name = "07_fix-decode-base64-attachment.patch";
       }
       {
-        name = "08_fix-mime-version.patch";
         hash = "sha256-l2rBqbyKmnz5tEPeuX6HCqw7rSV8pDb7ijpCHsdh57g=";
+        name = "08_fix-mime-version.patch";
       }
       {
-        name = "09_remove-debugging-message.patch";
         hash = "sha256-dtq6BHgH4ciho0+TNW/rU3KWoeKs/1jwJafnHTr9ebI=";
+        name = "09_remove-debugging-message.patch";
       }
     ]);
 
@@ -73,10 +73,9 @@ stdenv.mkDerivation (finalAttrs: {
       --replace-fail "char buf[1024], buf2[1024];" "char buf[1024], buf2[1066];"
   '';
 
+  nativeBuildInputs = [ autoreconfHook ];
   # fix build with gcc15
   env.NIX_CFLAGS_COMPILE = "-std=gnu17";
-
-  nativeBuildInputs = [ autoreconfHook ];
 
   postInstall = ''
     install -Dm644 -t $out/share/doc/mpack INSTALL README.*
@@ -86,11 +85,13 @@ stdenv.mkDerivation (finalAttrs: {
 
   passthru.tests = {
     version = testers.testVersion {
+      version = "mpack version ${finalAttrs.version}";
+
       command = ''
         mpack 2>&1 || echo "mpack exited with error code $?"
       '';
+
       package = mpack;
-      version = "mpack version ${finalAttrs.version}";
     };
   };
 

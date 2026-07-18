@@ -1,15 +1,14 @@
 {
   lib,
   fetchFromGitHub,
-  smassh,
   python3,
+  smassh,
   testers,
 }:
 
 python3.pkgs.buildPythonApplication (finalAttrs: {
   pname = "smassh";
   version = "3.2.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "kraanzu";
@@ -20,11 +19,6 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
 
   nativeBuildInputs = with python3.pkgs; [ hatchling ];
 
-  pythonRelaxDeps = [
-    "platformdirs"
-    "textual"
-  ];
-
   propagatedBuildInputs = with python3.pkgs; [
     click
     platformdirs
@@ -34,11 +28,17 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
 
   # No tests available
   doCheck = false;
+  pyproject = true;
+
+  pythonRelaxDeps = [
+    "platformdirs"
+    "textual"
+  ];
 
   passthru.tests.version = testers.testVersion {
-    package = smassh;
-    command = "HOME=$(mktemp -d) smassh --version";
     version = "smassh - v${finalAttrs.version}";
+    command = "HOME=$(mktemp -d) smassh --version";
+    package = smassh;
   };
 
   meta = {
@@ -46,10 +46,12 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     homepage = "https://github.com/kraanzu/smassh";
     changelog = "https://github.com/kraanzu/smassh/blob/main/CHANGELOG.md";
     license = lib.licenses.gpl3Plus;
+
     maintainers = with lib.maintainers; [
       aimpizza
       kraanzu
     ];
+
     mainProgram = "smassh";
   };
 })

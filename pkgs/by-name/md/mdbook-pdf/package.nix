@@ -1,9 +1,9 @@
 {
   lib,
   fetchCrate,
-  rustPlatform,
-  pkg-config,
   openssl,
+  pkg-config,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -15,31 +15,28 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-aADHRlIVWVc43DEfZx8ha/E4FaiAoKtjHccx+LAghtU=";
   };
 
-  cargoHash = "sha256-aHpycw9WmaNsI0VAYxI89KnB7fC31FxH+8ONnMEGtTM=";
-
   nativeBuildInputs = [ pkg-config ];
-
   buildInputs = [ openssl ];
-
+  cargoHash = "sha256-aHpycw9WmaNsI0VAYxI89KnB7fC31FxH+8ONnMEGtTM=";
   # Stop downloading from the Internet to
   # generate the Chrome Devtools Protocol
   env.DOCS_RS = true;
-
   # Stop formatting with rustfmt
   env.DO_NOT_FORMAT = true;
-
   # No test.
   doCheck = false;
 
   meta = {
     description = "Backend for mdBook written in Rust for generating PDF";
-    mainProgram = "mdbook-pdf";
     homepage = "https://github.com/HollowMan6/mdbook-pdf";
     changelog = "https://github.com/HollowMan6/mdbook-pdf/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.gpl3Plus;
+
     maintainers = with lib.maintainers; [
       hollowman6
       matthiasbeyer
     ];
+
+    mainProgram = "mdbook-pdf";
   };
 })

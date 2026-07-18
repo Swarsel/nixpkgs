@@ -1,42 +1,27 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
-  wheel,
-
-  psycopg,
   aiosqlite,
   asyncmy,
-
+  buildPythonPackage,
+  psycopg,
   # test
   pytest-asyncio,
   pytest-cov-stub,
-
   pytestCheckHook,
+  setuptools,
+  wheel,
 }:
 
 buildPythonPackage rec {
   pname = "mayim";
   version = "1.3.2";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "ahopkins";
     repo = "mayim";
     tag = "v${version}";
     hash = "sha256-HEnzHpgTbEZOBzUG7DDIO9YRWIoLroLY+Spq/jkMib0=";
-  };
-
-  build-system = [
-    setuptools
-    wheel
-  ];
-
-  optional-dependencies = {
-    postgres = [ psycopg ] ++ psycopg.optional-dependencies.pool;
-    mysql = [ asyncmy ];
-    sqlite = [ aiosqlite ];
   };
 
   nativeCheckInputs = [
@@ -53,6 +38,18 @@ buildPythonPackage rec {
     ]
   );
 
+  build-system = [
+    setuptools
+    wheel
+  ];
+
+  optional-dependencies = {
+    mysql = [ asyncmy ];
+    postgres = [ psycopg ] ++ psycopg.optional-dependencies.pool;
+    sqlite = [ aiosqlite ];
+  };
+
+  pyproject = true;
   pythonImportsCheck = [ "mayim" ];
 
   meta = {

@@ -2,15 +2,15 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  rustPlatform,
-  libcosmicAppHook,
   just,
-  pulseaudio,
-  pipewire,
+  libcosmicAppHook,
   libinput,
-  udev,
   nix-update-script,
   nixosTests,
+  pipewire,
+  pulseaudio,
+  rustPlatform,
+  udev,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -25,13 +25,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-veqkYF2CSwnc1nGIFeZXpfannCQ0RuacvqPVxVsiVDc=";
   };
 
-  cargoHash = "sha256-aweq4E2bwqRpetakpR0OqTsIsoJK6h4eRzMdBhGuIoU=";
-
-  separateDebugInfo = true;
-  __structuredAttrs = true;
-
-  env.POLKIT_AGENT_HELPER_1 = "/run/wrappers/bin/polkit-agent-helper-1";
-
   nativeBuildInputs = [
     just
     libcosmicAppHook
@@ -45,6 +38,9 @@ rustPlatform.buildRustPackage (finalAttrs: {
     pipewire
   ];
 
+  cargoHash = "sha256-aweq4E2bwqRpetakpR0OqTsIsoJK6h4eRzMdBhGuIoU=";
+  env.POLKIT_AGENT_HELPER_1 = "/run/wrappers/bin/polkit-agent-helper-1";
+  __structuredAttrs = true;
   dontUseJustBuild = true;
   dontUseJustCheck = true;
 
@@ -56,6 +52,8 @@ rustPlatform.buildRustPackage (finalAttrs: {
     "cargo-target-dir"
     "target/${stdenv.hostPlatform.rust.cargoShortTarget}"
   ];
+
+  separateDebugInfo = true;
 
   passthru = {
     tests = {
@@ -76,11 +74,11 @@ rustPlatform.buildRustPackage (finalAttrs: {
   };
 
   meta = {
-    homepage = "https://github.com/pop-os/cosmic-osd";
     description = "OSD for the COSMIC Desktop Environment";
-    mainProgram = "cosmic-osd";
+    homepage = "https://github.com/pop-os/cosmic-osd";
     license = lib.licenses.gpl3Only;
-    teams = [ lib.teams.cosmic ];
     platforms = lib.platforms.linux;
+    mainProgram = "cosmic-osd";
+    teams = [ lib.teams.cosmic ];
   };
 })

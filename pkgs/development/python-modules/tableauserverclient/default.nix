@@ -15,16 +15,18 @@
 buildPythonPackage rec {
   pname = "tableauserverclient";
   version = "0.38";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
     hash = "sha256-Td2QW10vsKojhk9eeO90QbArdIuNn+hbNk9LvCYwgyo=";
   };
 
-  pythonRelaxDeps = [
-    "defusedxml"
-    "urllib3"
+  # Tests attempt to create some file artifacts and fails
+  doCheck = false;
+
+  nativeCheckInputs = [
+    requests-mock
+    pytestCheckHook
   ];
 
   build-system = [
@@ -39,15 +41,13 @@ buildPythonPackage rec {
     typing-extensions
   ];
 
-  nativeCheckInputs = [
-    requests-mock
-    pytestCheckHook
-  ];
-
-  # Tests attempt to create some file artifacts and fails
-  doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "tableauserverclient" ];
+
+  pythonRelaxDeps = [
+    "defusedxml"
+    "urllib3"
+  ];
 
   meta = {
     description = "Module for working with the Tableau Server REST API";

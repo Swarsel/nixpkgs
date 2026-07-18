@@ -16,11 +16,6 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-KKjxKQHiSYMaGCfX1+h6DQ809xHh9Yfv8B4PXvr3CwQ=";
   };
 
-  zigDeps = zig_0_15.fetchDeps {
-    inherit (finalAttrs) src pname version;
-    hash = "sha256-89ig8lO5Yb9qFlJ1yL3NDDfKeZDl/CeM6qFxT40eOf8=";
-  };
-
   nativeBuildInputs = [ zig_0_15.hook ];
 
   postConfigure = ''
@@ -31,12 +26,17 @@ stdenv.mkDerivation (finalAttrs: {
   # Tests create a local http server to check the latency functionality
   __darwinAllowLocalNetworking = true;
 
+  zigDeps = zig_0_15.fetchDeps {
+    inherit (finalAttrs) src pname version;
+    hash = "sha256-89ig8lO5Yb9qFlJ1yL3NDDfKeZDl/CeM6qFxT40eOf8=";
+  };
+
   meta = {
+    inherit (zig_0_15.meta) platforms;
     description = "Command line version of fast.com in ~1.2 MB";
     homepage = "https://github.com/mikkelam/fast-cli";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ dwt ];
     mainProgram = "fast-cli";
-    inherit (zig_0_15.meta) platforms;
   };
 })

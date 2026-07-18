@@ -1,12 +1,12 @@
 {
+  lib,
   stdenv,
   fetchFromGitHub,
-  lib,
-  pulseaudio,
   autoreconfHook,
-  pkg-config,
-  nixosTests,
   gitUpdater,
+  nixosTests,
+  pkg-config,
+  pulseaudio,
 }:
 
 stdenv.mkDerivation rec {
@@ -19,6 +19,12 @@ stdenv.mkDerivation rec {
     rev = "v${version}";
     hash = "sha256-R1ZPifEjlueTJma6a0UiGdiNwTSa5+HnW4w9qGrauxE=";
   };
+
+  nativeBuildInputs = [
+    autoreconfHook
+    pkg-config
+    pulseaudio.dev
+  ];
 
   preConfigure = ''
     tar -xvf ${pulseaudio.src}
@@ -41,25 +47,20 @@ stdenv.mkDerivation rec {
     runHook postInstall
   '';
 
-  nativeBuildInputs = [
-    autoreconfHook
-    pkg-config
-    pulseaudio.dev
-  ];
-
   passthru = {
-    updateScript = gitUpdater { rev-prefix = "v"; };
     tests = {
       inherit (nixosTests) xrdp-with-audio-pulseaudio;
     };
+
+    updateScript = gitUpdater { rev-prefix = "v"; };
   };
 
   meta = {
     description = "xrdp sink/source pulseaudio modules";
     homepage = "https://github.com/neutrinolabs/pulseaudio-module-xrdp";
     license = lib.licenses.lgpl21;
+    sourceProvenance = [ lib.sourceTypes.fromSource ];
     maintainers = [ ];
     platforms = lib.platforms.linux;
-    sourceProvenance = [ lib.sourceTypes.fromSource ];
   };
 }

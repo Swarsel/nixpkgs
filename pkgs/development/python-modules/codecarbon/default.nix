@@ -1,56 +1,50 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # build-system
-  setuptools,
-
+  # optional-dependencies
+  amdsmi,
   # dependencies
   arrow,
   authlib,
-  click,
-  nvidia-ml-py,
-  pandas,
-  prometheus-client,
-  psutil,
-  py-cpuinfo,
-  pycountry,
-  pydantic,
-  questionary,
-  rapidfuzz,
-  requests,
-  rich,
-  typer,
-
-  # optional-dependencies
-  amdsmi,
-  dash,
-  dash-bootstrap-components,
-  fire,
-
   # tests
   bcrypt,
+  buildPythonPackage,
+  click,
+  dash,
+  dash-bootstrap-components,
   dependency-injector,
   email-validator,
   fastapi,
   fastapi-pagination,
+  fire,
   httpx,
   jwt,
   logfire,
+  nvidia-ml-py,
+  pandas,
+  prometheus-client,
+  psutil,
   psycopg2,
+  py-cpuinfo,
+  pycountry,
+  pydantic,
   pydantic-settings,
   pytestCheckHook,
+  questionary,
+  rapidfuzz,
+  requests,
   requests-mock,
   responses,
+  rich,
+  # build-system
+  setuptools,
   sqlalchemy,
+  typer,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "codecarbon";
   version = "3.2.8";
-  pyproject = true;
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "mlco2";
@@ -58,6 +52,26 @@ buildPythonPackage (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-3EowSWIWMEBF8lEDtT/cof+qvu9uPbpFT6yZbb9nvXQ=";
   };
+
+  nativeBuildInputs = [
+    bcrypt
+    dash
+    dependency-injector
+    email-validator
+    fastapi
+    fastapi-pagination
+    httpx
+    jwt
+    logfire
+    psycopg2
+    pydantic-settings
+    pytestCheckHook
+    requests-mock
+    responses
+    sqlalchemy
+  ];
+
+  __structuredAttrs = true;
 
   build-system = [
     setuptools
@@ -81,46 +95,6 @@ buildPythonPackage (finalAttrs: {
     typer
   ];
 
-  optional-dependencies = {
-    amdsmi = [
-      amdsmi
-    ];
-    carbonboard = [
-      dash
-      dash-bootstrap-components
-      fire
-    ];
-    viz-legacy = [
-      dash
-      dash-bootstrap-components
-      fire
-    ];
-  };
-
-  pythonImportsCheck = [ "codecarbon" ];
-
-  nativeBuildInputs = [
-    bcrypt
-    dash
-    dependency-injector
-    email-validator
-    fastapi
-    fastapi-pagination
-    httpx
-    jwt
-    logfire
-    psycopg2
-    pydantic-settings
-    pytestCheckHook
-    requests-mock
-    responses
-    sqlalchemy
-  ];
-
-  enabledTestPaths = [
-    "carbonserver/tests/"
-  ];
-
   disabledTestPaths = [
     # Fail in the sandbox:
     # FileNotFoundError: [Errno 2] No such file or directory: '/sys/class/powercap/intel-rapl/intel-rapl:0/energy_uj'
@@ -141,6 +115,31 @@ buildPythonPackage (finalAttrs: {
     # AttributeError: <module 'jwt' from ...> does not have the attribute 'decode'
     "test_check_user_from_jwt"
   ];
+
+  enabledTestPaths = [
+    "carbonserver/tests/"
+  ];
+
+  optional-dependencies = {
+    amdsmi = [
+      amdsmi
+    ];
+
+    carbonboard = [
+      dash
+      dash-bootstrap-components
+      fire
+    ];
+
+    viz-legacy = [
+      dash
+      dash-bootstrap-components
+      fire
+    ];
+  };
+
+  pyproject = true;
+  pythonImportsCheck = [ "codecarbon" ];
 
   meta = {
     description = "Track emissions from Compute and recommend ways to reduce their impact on the environment";

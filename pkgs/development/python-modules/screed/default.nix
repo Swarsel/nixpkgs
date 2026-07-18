@@ -1,15 +1,14 @@
 {
   lib,
-  fetchPypi,
   buildPythonPackage,
-  setuptools-scm,
+  fetchPypi,
   pytestCheckHook,
+  setuptools-scm,
 }:
 
 buildPythonPackage rec {
   pname = "screed";
   version = "1.1.3";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
@@ -17,8 +16,6 @@ buildPythonPackage rec {
   };
 
   nativeBuildInputs = [ setuptools-scm ];
-
-  pythonImportsCheck = [ "screed" ];
   checkInputs = [ pytestCheckHook ];
 
   # These tests use the screed CLI and make assumptions on how screed is
@@ -29,11 +26,14 @@ buildPythonPackage rec {
     "Test_fq_shell_command"
   ];
 
+  format = "setuptools";
+  pythonImportsCheck = [ "screed" ];
+
   meta = {
     description = "Simple read-only sequence database, designed for short reads";
-    mainProgram = "screed";
     homepage = "https://pypi.org/project/screed/";
-    maintainers = with lib.maintainers; [ luizirber ];
     license = lib.licenses.bsd3;
+    maintainers = with lib.maintainers; [ luizirber ];
+    mainProgram = "screed";
   };
 }

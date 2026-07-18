@@ -2,23 +2,23 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  rocmUpdateScript,
-  cmake,
-  ninja,
-  git,
-  pkg-config,
-  rocm-cmake,
-  rocm-smi,
   clr,
+  cmake,
+  git,
   hipsparse,
-  openmp,
+  libxml2,
   llvm,
   msgpack-cxx,
-  libxml2,
-  zlib,
-  zstd,
+  ninja,
+  openmp,
+  pkg-config,
   python3,
   python3Packages,
+  rocm-cmake,
+  rocm-smi,
+  rocmUpdateScript,
+  zlib,
+  zstd,
   # hipsparselt only supports gfx942/gfx950
   gpuTargets ? (clr.localGpuTargets or clr.gpuTargets),
 }:
@@ -50,6 +50,7 @@ stdenv.mkDerivation (finalAttrs: {
     repo = "rocm-libraries";
     rev = "rocm-${finalAttrs.version}";
     hash = "sha256-Al/0yZPn/wqtBFQU1FcGoSquDMObk6HQ3D5sSh5biHg=";
+
     sparseCheckout = [
       "projects/hipsparselt"
       "projects/hipblaslt/tensilelite"
@@ -58,15 +59,7 @@ stdenv.mkDerivation (finalAttrs: {
       "shared/origami"
     ];
   };
-  sourceRoot = "${finalAttrs.src.name}/projects/hipsparselt";
 
-  env.CXX = compiler;
-  env.ROCM_PATH = "${clr}";
-  env.TENSILE_ROCM_ASSEMBLER_PATH = lib.getExe' clr "amdclang++";
-  env.TENSILE_GEN_ASSEMBLY_TOOLCHAIN = lib.getExe' clr "amdclang++";
-  requiredSystemFeatures = [ "big-parallel" ];
-
-  __structuredAttrs = true;
   strictDeps = true;
 
   nativeBuildInputs = [
@@ -110,6 +103,13 @@ stdenv.mkDerivation (finalAttrs: {
     (lib.cmakeFeature "CMAKE_INSTALL_INCLUDEDIR" "include")
   ];
 
+  env.CXX = compiler;
+  env.ROCM_PATH = "${clr}";
+  env.TENSILE_GEN_ASSEMBLY_TOOLCHAIN = lib.getExe' clr "amdclang++";
+  env.TENSILE_ROCM_ASSEMBLER_PATH = lib.getExe' clr "amdclang++";
+  __structuredAttrs = true;
+  requiredSystemFeatures = [ "big-parallel" ];
+  sourceRoot = "${finalAttrs.src.name}/projects/hipsparselt";
   passthru.supportsTargetArches = supportsTargetArches;
   passthru.updateScript = rocmUpdateScript { inherit finalAttrs; };
 
@@ -117,7 +117,7 @@ stdenv.mkDerivation (finalAttrs: {
     description = "ROCm hipSPARSELt - a SPARSE marshalling library";
     homepage = "https://github.com/ROCm/rocm-libraries/tree/develop/projects/hipsparselt";
     license = with lib.licenses; [ mit ];
-    teams = [ lib.teams.rocm ];
     platforms = lib.platforms.linux;
+    teams = [ lib.teams.rocm ];
   };
 })

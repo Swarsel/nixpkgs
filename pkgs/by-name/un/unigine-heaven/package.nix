@@ -2,19 +2,19 @@
   lib,
   stdenv,
   fetchurl,
-  makeWrapper,
+  autoPatchelfHook,
+  fontconfig,
+  freetype,
+  imagemagick,
+  libglvnd,
   libx11,
   libxext,
-  libxrandr,
-  freetype,
-  fontconfig,
-  libxrender,
   libxinerama,
-  autoPatchelfHook,
-  libglvnd,
-  openal,
-  imagemagick,
+  libxrandr,
+  libxrender,
   makeDesktopItem,
+  makeWrapper,
+  openal,
 }:
 let
   version = "4.0";
@@ -28,21 +28,38 @@ let
       throw "Unsupported platform ${stdenv.hostPlatform.system}";
 
   desktopItem = makeDesktopItem {
-    name = "Heaven";
+    desktopName = "Heaven Benchmark";
     exec = "heaven";
     genericName = "A GPU Stress test tool from the UNIGINE";
     icon = "Heaven";
-    desktopName = "Heaven Benchmark";
+    name = "Heaven";
   };
 in
 stdenv.mkDerivation {
-  pname = "unigine-heaven";
   inherit version;
+  pname = "unigine-heaven";
 
   src = fetchurl {
     url = "https://assets.unigine.com/d/Unigine_Heaven-${version}.run";
     hash = "sha256-UtsuXe3VYh18K/qTa0gsCnzGmzBhYnjvGZUT1JTY45c=";
   };
+
+  nativeBuildInputs = [
+    autoPatchelfHook
+    makeWrapper
+    imagemagick
+  ];
+
+  buildInputs = [
+    libx11
+    stdenv.cc.cc
+    libxext
+    libxrandr
+    freetype
+    fontconfig
+    libxrender
+    libxinerama
+  ];
 
   installPhase = ''
     sh $src --target $name
@@ -74,35 +91,20 @@ stdenv.mkDerivation {
     ln -s ${desktopItem}/share/applications/* $out/share/applications
   '';
 
-  nativeBuildInputs = [
-    autoPatchelfHook
-    makeWrapper
-    imagemagick
-  ];
-
-  buildInputs = [
-    libx11
-    stdenv.cc.cc
-    libxext
-    libxrandr
-    freetype
-    fontconfig
-    libxrender
-    libxinerama
-  ];
-
   dontUnpack = true;
 
   meta = {
     description = "Unigine Heaven GPU benchmarking tool";
     homepage = "https://benchmark.unigine.com/heaven";
-    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
     license = lib.licenses.unfree;
+    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
     maintainers = [ ];
+
     platforms = [
       "x86_64-linux"
       "i686-linux"
     ];
+
     mainProgram = "heaven";
   };
 }

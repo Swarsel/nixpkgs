@@ -1,24 +1,22 @@
 {
-  python3Packages,
-  onionshare,
-  replaceVars,
   meek,
   obfs4,
+  onionshare,
+  python3Packages,
+  qt5,
+  replaceVars,
   snowflake,
   tor,
-  qt5,
 }:
 python3Packages.buildPythonApplication (finalAttrs: {
-  pname = "onionshare";
   inherit (onionshare)
     src
     version
     build-system
     pythonRelaxDeps
     ;
-  pyproject = true;
 
-  sourceRoot = "${finalAttrs.src.name}/desktop";
+  pname = "onionshare";
 
   patches = [
     # hardcode store paths of dependencies
@@ -29,20 +27,14 @@ python3Packages.buildPythonApplication (finalAttrs: {
         snowflake
         tor
         ;
+
       inherit (tor) geoip;
     })
   ];
 
-  dependencies = with python3Packages; [
-    onionshare
-    pyside6
-    python-gnupg
-    qrcode
-  ];
-
   nativeBuildInputs = [ qt5.wrapQtAppsHook ];
-
   buildInputs = [ qt5.qtwayland ];
+  doCheck = false;
 
   postInstall = ''
     mkdir -p $out/share/{appdata,applications,icons}
@@ -51,15 +43,21 @@ python3Packages.buildPythonApplication (finalAttrs: {
     cp $src/desktop/org.onionshare.OnionShare.appdata.xml $out/share/appdata
   '';
 
-  dontWrapQtApps = true;
-
   preFixup = ''
     makeWrapperArgs+=("''${qtWrapperArgs[@]}")
   '';
 
-  doCheck = false;
+  dependencies = with python3Packages; [
+    onionshare
+    pyside6
+    python-gnupg
+    qrcode
+  ];
 
+  dontWrapQtApps = true;
+  pyproject = true;
   pythonImportsCheck = [ "onionshare" ];
+  sourceRoot = "${finalAttrs.src.name}/desktop";
 
   meta = onionshare.meta // {
     mainProgram = "onionshare";

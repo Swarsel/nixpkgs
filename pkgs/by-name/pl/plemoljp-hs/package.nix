@@ -1,15 +1,14 @@
 {
-  stdenvNoCC,
   fetchzip,
   plemoljp,
+  stdenvNoCC,
 }:
 
 stdenvNoCC.mkDerivation (finalAttrs: {
-  pname = "plemoljp-hs";
-
   # plemoljp's updateScript also updates this version.
   # nixpkgs-update: no auto update
   inherit (plemoljp) version;
+  pname = "plemoljp-hs";
 
   src = fetchzip {
     url = "https://github.com/yuru7/PlemolJP/releases/download/v${finalAttrs.version}/PlemolJP_HS_v${finalAttrs.version}.zip";

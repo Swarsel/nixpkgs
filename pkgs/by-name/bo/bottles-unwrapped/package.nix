@@ -1,34 +1,34 @@
 {
   lib,
   fetchFromGitHub,
-  python3Packages,
-  blueprint-compiler,
-  meson,
-  ninja,
-  pkg-config,
-  wrapGAppsHook4,
   appstream-glib,
+  blueprint-compiler,
+  cabextract,
   desktop-file-utils,
   fvs2,
-  librsvg,
-  gtk4,
-  gtksourceview5,
-  libadwaita,
-  cabextract,
-  p7zip,
-  xdpyinfo,
-  imagemagick,
-  lsb-release,
-  pciutils,
-  procps,
   gamemode,
   gamescope,
-  mangohud,
-  vkbasalt-cli,
-  vulkan-tools,
-  vmtouch,
+  gtk4,
+  gtksourceview5,
+  imagemagick,
+  libadwaita,
   libportal,
+  librsvg,
+  lsb-release,
+  mangohud,
+  meson,
+  ninja,
   nix-update-script,
+  p7zip,
+  pciutils,
+  pkg-config,
+  procps,
+  python3Packages,
+  vkbasalt-cli,
+  vmtouch,
+  vulkan-tools,
+  wrapGAppsHook4,
+  xdpyinfo,
   removeWarningPopup ? false,
 }:
 
@@ -118,26 +118,27 @@ python3Packages.buildPythonApplication (finalAttrs: {
       procps
     ];
 
-  pyproject = false;
-  dontWrapGApps = true; # prevent double wrapping
-
   preFixup = ''
     makeWrapperArgs+=("''${gappsWrapperArgs[@]}")
   '';
 
+  dontWrapGApps = true; # prevent double wrapping
+  pyproject = false;
   passthru.updateScript = nix-update-script { };
 
   meta = {
     description = "Easy-to-use wineprefix manager";
     homepage = "https://usebottles.com/";
-    downloadPage = "https://github.com/bottlesdevs/Bottles/releases";
     license = lib.licenses.gpl3Only;
+
     maintainers = with lib.maintainers; [
       psydvl
       Gliczy
       XBagon
     ];
+
     platforms = lib.platforms.linux;
     mainProgram = "bottles";
+    downloadPage = "https://github.com/bottlesdevs/Bottles/releases";
   };
 })

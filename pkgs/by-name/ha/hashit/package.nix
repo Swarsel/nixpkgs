@@ -2,16 +2,16 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  nix-update-script,
+  desktop-file-utils,
+  gtk3,
+  libgee,
   meson,
   ninja,
-  pkg-config,
-  vala,
+  nix-update-script,
   pantheon,
+  pkg-config,
   python3,
-  libgee,
-  gtk3,
-  desktop-file-utils,
+  vala,
   wrapGAppsHook3,
 }:
 
@@ -25,6 +25,11 @@ stdenv.mkDerivation (finalAttrs: {
     rev = finalAttrs.version;
     sha256 = "1s8fbzg1z2ypn55xg1pfm5xh15waq55fkp49j8rsqiq8flvg6ybf";
   };
+
+  postPatch = ''
+    chmod +x meson/post_install.py
+    patchShebangs meson/post_install.py
+  '';
 
   nativeBuildInputs = [
     desktop-file-utils
@@ -42,11 +47,6 @@ stdenv.mkDerivation (finalAttrs: {
     pantheon.granite
   ];
 
-  postPatch = ''
-    chmod +x meson/post_install.py
-    patchShebangs meson/post_install.py
-  '';
-
   passthru = {
     updateScript = nix-update-script { };
   };
@@ -55,8 +55,8 @@ stdenv.mkDerivation (finalAttrs: {
     description = "Simple app for checking usual checksums - Designed for elementary OS";
     homepage = "https://github.com/artemanufrij/hashit";
     license = lib.licenses.gpl2Plus;
-    teams = [ lib.teams.pantheon ];
     platforms = lib.platforms.linux;
     mainProgram = "com.github.artemanufrij.hashit";
+    teams = [ lib.teams.pantheon ];
   };
 })

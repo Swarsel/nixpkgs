@@ -2,18 +2,18 @@
   lib,
   stdenv,
   fetchzip,
+  gtest,
+  libgbm,
+  libxcb,
+  libxkbcommon,
   meson,
   ninja,
+  pixman,
   pkg-config,
   python3,
   python3Packages,
-  wayland-scanner,
-  libxkbcommon,
-  libgbm,
-  pixman,
-  libxcb,
   wayland,
-  gtest,
+  wayland-scanner,
 }:
 
 stdenv.mkDerivation {
@@ -22,9 +22,9 @@ stdenv.mkDerivation {
 
   src = fetchzip rec {
     url = "https://chromium.googlesource.com/chromiumos/platform2/+archive/${passthru.rev}/vm_tools/sommelier.tar.gz";
-    passthru.rev = "fd3798efe23f2edbc48f86f2fbd82ba5059fd875";
-    stripRoot = false;
     sha256 = "BmWZnMcK7IGaEAkVPulyb3hngsmuI0D1YtQEbqMjV5c=";
+    stripRoot = false;
+    passthru.rev = "fd3798efe23f2edbc48f86f2fbd82ba5059fd875";
   };
 
   nativeBuildInputs = [
@@ -35,6 +35,7 @@ stdenv.mkDerivation {
     python3Packages.jinja2
     wayland-scanner
   ];
+
   buildInputs = [
     libxkbcommon
     libgbm
@@ -57,13 +58,13 @@ stdenv.mkDerivation {
   passthru.updateScript = ./update.py;
 
   meta = {
-    # Marked broken 2025-11-28 because it has failed on Hydra for at least one year.
-    broken = true;
-    homepage = "https://chromium.googlesource.com/chromiumos/platform2/+/refs/heads/main/vm_tools/sommelier/";
     description = "Nested Wayland compositor with support for X11 forwarding";
-    maintainers = with lib.maintainers; [ qyliss ];
+    homepage = "https://chromium.googlesource.com/chromiumos/platform2/+/refs/heads/main/vm_tools/sommelier/";
     license = lib.licenses.bsd3;
+    maintainers = with lib.maintainers; [ qyliss ];
     platforms = lib.platforms.linux;
     mainProgram = "sommelier";
+    # Marked broken 2025-11-28 because it has failed on Hydra for at least one year.
+    broken = true;
   };
 }

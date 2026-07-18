@@ -1,13 +1,12 @@
 {
+  TestPod,
   buildPerlModule,
   remctl,
-  TestPod,
 }:
 
 buildPerlModule {
-  pname = "NetRemctl";
-
   inherit (remctl) meta src version;
+  pname = "NetRemctl";
 
   postPatch = ''
     cp -R tests/tap/perl/Test perl/t/lib
@@ -16,6 +15,5 @@ buildPerlModule {
   '';
 
   buildInputs = [ remctl ];
-
   checkInputs = [ TestPod ];
 }

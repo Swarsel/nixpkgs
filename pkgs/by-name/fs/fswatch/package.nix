@@ -25,6 +25,7 @@ stdenv.mkDerivation (finalAttrs: {
     autoreconfHook
     makeWrapper
   ];
+
   buildInputs = [
     gettext
     libtool
@@ -35,10 +36,10 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Cross-platform file change monitor with multiple backends";
-    mainProgram = "fswatch";
     homepage = "https://github.com/emcrisostomo/fswatch";
     license = lib.licenses.gpl3Plus;
-    platforms = lib.platforms.all;
     maintainers = with lib.maintainers; [ pSub ];
+    platforms = lib.platforms.all;
+    mainProgram = "fswatch";
   };
 })

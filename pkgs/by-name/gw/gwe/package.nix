@@ -2,19 +2,19 @@
   lib,
   stdenv,
   fetchFromGitLab,
-  wrapGAppsHook3,
-  pkg-config,
-  meson,
-  ninja,
   cmake,
-  gobject-introspection,
   desktop-file-utils,
-  python3,
+  gobject-introspection,
   gtk3,
-  libdazzle,
   libappindicator-gtk3,
+  libdazzle,
   libnotify,
   linuxPackages,
+  meson,
+  ninja,
+  pkg-config,
+  python3,
+  wrapGAppsHook3,
 }:
 
 let
@@ -46,15 +46,6 @@ stdenv.mkDerivation (finalAttrs: {
     tag = finalAttrs.version;
     hash = "sha256-agq967QN1nsAOn+1Ce64+id7UlSS/K3XGsUUihWOztk=";
   };
-
-  prePatch = ''
-    patchShebangs scripts/{make_local_manifest,meson_post_install}.py
-
-    substituteInPlace gwe/repository/nvidia_repository.py \
-      --replace "from py3nvml import py3nvml" "import pynvml" \
-      --replace "py3nvml.py3nvml" "pynvml" \
-      --replace "py3nvml" "pynvml"
-  '';
 
   nativeBuildInputs = [
     wrapGAppsHook3
@@ -93,12 +84,21 @@ stdenv.mkDerivation (finalAttrs: {
       ''${gappsWrapperArgs[@]}
   '';
 
+  prePatch = ''
+    patchShebangs scripts/{make_local_manifest,meson_post_install}.py
+
+    substituteInPlace gwe/repository/nvidia_repository.py \
+      --replace "from py3nvml import py3nvml" "import pynvml" \
+      --replace "py3nvml.py3nvml" "pynvml" \
+      --replace "py3nvml" "pynvml"
+  '';
+
   meta = {
     description = "System utility designed to provide information, control the fans and overclock your NVIDIA card";
     homepage = "https://gitlab.com/leinardi/gwe";
-    platforms = lib.platforms.linux;
     license = lib.licenses.gpl3Only;
     maintainers = [ ];
+    platforms = lib.platforms.linux;
     mainProgram = "gwe";
   };
 })

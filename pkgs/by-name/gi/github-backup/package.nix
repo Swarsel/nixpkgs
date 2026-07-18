@@ -1,17 +1,16 @@
 {
   lib,
-  python3Packages,
-  cacert,
   fetchFromGitHub,
+  cacert,
   git,
   git-lfs,
+  python3Packages,
   versionCheckHook,
 }:
 
 python3Packages.buildPythonApplication (finalAttrs: {
   pname = "github-backup";
   version = "0.64.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "josegonzalez";
@@ -19,6 +18,12 @@ python3Packages.buildPythonApplication (finalAttrs: {
     tag = finalAttrs.version;
     hash = "sha256-UPHwohx2qN/vT5a1Km0UqW2SB7br6yAZJ1xKYKX4H70=";
   };
+
+  env.SSL_CERT_FILE = "${cacert}/etc/ssl/certs/ca-bundle.crt";
+
+  nativeInstallCheckInputs = [
+    versionCheckHook
+  ];
 
   build-system = with python3Packages; [
     setuptools
@@ -34,12 +39,7 @@ python3Packages.buildPythonApplication (finalAttrs: {
     ])
   ];
 
-  nativeInstallCheckInputs = [
-    versionCheckHook
-  ];
-
-  env.SSL_CERT_FILE = "${cacert}/etc/ssl/certs/ca-bundle.crt";
-
+  pyproject = true;
   versionCheckKeepEnvironment = [ "SSL_CERT_FILE" ];
 
   meta = {

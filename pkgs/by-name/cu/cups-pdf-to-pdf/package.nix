@@ -2,8 +2,8 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  cups,
   coreutils,
+  cups,
   nixosTests,
 }:
 
@@ -18,12 +18,12 @@ stdenv.mkDerivation {
     hash = "sha256-pa4PFf8OAFSra0hSazmKUfbMYL/cVWvYA1lBf7c7jmY=";
   };
 
-  buildInputs = [ cups ];
-
   postPatch = ''
     substituteInPlace cups-pdf.c \
       --replace-fail '"cp ' '"${lib.getExe' coreutils "cp"} '
   '';
+
+  buildInputs = [ cups ];
 
   # gcc command line is taken from original cups-pdf's README file
   # https://fossies.org/linux/cups-pdf/README
@@ -47,9 +47,7 @@ stdenv.mkDerivation {
 
   meta = {
     description = "CUPS backend that turns print jobs into searchable PDF files";
-    homepage = "https://github.com/alexivkin/CUPS-PDF-to-PDF";
-    license = lib.licenses.gpl2Only;
-    maintainers = [ lib.maintainers.yarny ];
+
     longDescription = ''
       cups-pdf is a CUPS backend that generates a PDF file for each print job and puts this file
       into a folder on the local machine such that the print job's owner can access the file.
@@ -60,5 +58,9 @@ stdenv.mkDerivation {
 
       Note that in order to use this package, you have to make sure that the cups-pdf program is called with root privileges.
     '';
+
+    homepage = "https://github.com/alexivkin/CUPS-PDF-to-PDF";
+    license = lib.licenses.gpl2Only;
+    maintainers = [ lib.maintainers.yarny ];
   };
 }

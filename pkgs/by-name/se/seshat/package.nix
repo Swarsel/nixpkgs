@@ -1,8 +1,8 @@
 {
   lib,
-  stdenvNoCC,
   fetchzip,
   installFonts,
+  stdenvNoCC,
 }:
 
 let
@@ -22,8 +22,8 @@ stdenvNoCC.mkDerivation {
   nativeBuildInputs = [ installFonts ];
 
   meta = {
-    homepage = "https://dotcolon.net/font/seshat/";
     description = "Roman body font designed for main text by Sora Sagano";
+
     longDescription = ''
       Seshat is a Roman body font designed for the main text. By
       referring to the classical balance, we changed some lines by
@@ -34,10 +34,14 @@ stdenvNoCC.mkDerivation {
 
       It incorporates symbols and ligatures used in the European region.
     '';
-    platforms = lib.platforms.all;
+
+    homepage = "https://dotcolon.net/font/seshat/";
+    license = lib.licenses.cc0;
+
     maintainers = with lib.maintainers; [
       minijackson
     ];
-    license = lib.licenses.cc0;
+
+    platforms = lib.platforms.all;
   };
 }

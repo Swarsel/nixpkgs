@@ -1,16 +1,16 @@
 {
   lib,
-  stdenvNoCC,
   fetchurl,
-  unzip,
-  writeShellApplication,
-  curl,
   cacert,
-  gnugrep,
   common-updater-scripts,
-  versionCheckHook,
-  writeShellScript,
+  curl,
+  gnugrep,
   re-plistbuddy,
+  stdenvNoCC,
+  unzip,
+  versionCheckHook,
+  writeShellApplication,
+  writeShellScript,
 }:
 
 stdenvNoCC.mkDerivation (finalAttrs: {
@@ -22,15 +22,7 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     hash = "sha256-1UR7Lj/4fdhwYIvlWjso8tGDO+0sH8XkiysXN2i6/78=";
   };
 
-  dontPatch = true;
-  dontConfigure = true;
-  dontBuild = true;
-  dontFixup = true;
-  dontUnpack = true;
-
   nativeBuildInputs = [ unzip ];
-
-  sourceRoot = "RapidAPI.app";
 
   installPhase = ''
     runHook preInstall
@@ -41,29 +33,39 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  doInstallCheck = true;
+  nativeInstallCheckInputs = [ versionCheckHook ];
+  dontBuild = true;
+  dontConfigure = true;
+  dontFixup = true;
+  dontPatch = true;
+  dontUnpack = true;
+  sourceRoot = "RapidAPI.app";
+
+  versionCheckProgram = writeShellScript "version-check" ''
+    marketing_version=$(${lib.getExe' re-plistbuddy "PlistBuddy"} -c "Print :CFBundleShortVersionString" "$1")
+    build_version=$(${lib.getExe' re-plistbuddy "PlistBuddy"} -c "Print :CFBundleVersion" "$1")
+    echo $marketing_version-$build_version
+  '';
+
+  versionCheckProgramArg = [ "${placeholder "out"}/Applications/RapidAPI.app/Contents/Info.plist" ];
+
   passthru.updateScript = lib.getExe (writeShellApplication {
     name = "rapidapi-update-script";
+
     runtimeInputs = [
       curl
       cacert
       gnugrep
       common-updater-scripts
     ];
+
     text = ''
       url="https://paw.cloud/download"
       version=$(curl -Ls -o /dev/null -w "%{url_effective}" "$url" | grep -oP '\d+\.\d+\.\d+-\d+')
       update-source-version rapidapi "$version"
     '';
   });
-
-  nativeInstallCheckInputs = [ versionCheckHook ];
-  versionCheckProgram = writeShellScript "version-check" ''
-    marketing_version=$(${lib.getExe' re-plistbuddy "PlistBuddy"} -c "Print :CFBundleShortVersionString" "$1")
-    build_version=$(${lib.getExe' re-plistbuddy "PlistBuddy"} -c "Print :CFBundleVersion" "$1")
-    echo $marketing_version-$build_version
-  '';
-  versionCheckProgramArg = [ "${placeholder "out"}/Applications/RapidAPI.app/Contents/Info.plist" ];
-  doInstallCheck = true;
 
   meta = {
     description = "Full-featured HTTP client that lets you test and describe the APIs you build or consume";
@@ -72,6 +74,7 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     license = lib.licenses.unfree;
     sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
     maintainers = with lib.maintainers; [ DimitarNestorov ];
+
     platforms = [
       "aarch64-darwin"
     ];

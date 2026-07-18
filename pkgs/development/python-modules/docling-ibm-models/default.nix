@@ -1,37 +1,33 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # build-system
-  poetry-core,
-
   # dependencies
   accelerate,
+  buildPythonPackage,
+  # tests
+  datasets,
   docling-core,
   huggingface-hub,
   jsonlines,
   numpy,
   opencv-python-headless,
   pillow,
+  # build-system
+  poetry-core,
   pydantic,
+  pytestCheckHook,
   rtree,
   safetensors,
   torch,
   torchvision,
   tqdm,
   transformers,
-
-  # tests
-  datasets,
-  pytestCheckHook,
   writableTmpDirAsHomeHook,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "docling-ibm-models";
   version = "3.13.2";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "docling-project";
@@ -40,15 +36,16 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-PYIcsKffrsZl4f9SFinUdrvUVEXm1fO/n7ZxXuiiByU=";
   };
 
+  nativeCheckInputs = [
+    datasets
+    pytestCheckHook
+    writableTmpDirAsHomeHook
+  ];
+
   build-system = [
     poetry-core
   ];
 
-  pythonRelaxDeps = [
-    "jsonlines"
-    "numpy"
-    "transformers"
-  ];
   dependencies = [
     accelerate
     docling-core
@@ -66,14 +63,6 @@ buildPythonPackage (finalAttrs: {
     transformers
   ];
 
-  pythonImportsCheck = [ "docling_ibm_models" ];
-
-  nativeCheckInputs = [
-    datasets
-    pytestCheckHook
-    writableTmpDirAsHomeHook
-  ];
-
   disabledTestPaths = [
     # Require network access
     "tests/test_tableformer_v2.py"
@@ -88,10 +77,19 @@ buildPythonPackage (finalAttrs: {
     "test_tf_predictor"
   ];
 
+  pyproject = true;
+  pythonImportsCheck = [ "docling_ibm_models" ];
+
+  pythonRelaxDeps = [
+    "jsonlines"
+    "numpy"
+    "transformers"
+  ];
+
   meta = {
-    changelog = "https://github.com/DS4SD/docling-ibm-models/blob/${finalAttrs.src.tag}/CHANGELOG.md";
     description = "Docling IBM models";
     homepage = "https://github.com/DS4SD/docling-ibm-models";
+    changelog = "https://github.com/DS4SD/docling-ibm-models/blob/${finalAttrs.src.tag}/CHANGELOG.md";
     license = lib.licenses.mit;
     maintainers = [ ];
   };

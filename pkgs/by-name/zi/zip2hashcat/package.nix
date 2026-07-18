@@ -36,10 +36,10 @@ stdenv.mkDerivation (finalAttrs: {
   meta = {
     description = "Processes input ZIP files into a format suitable for use with hashcat";
     homepage = "https://github.com/hashstation/zip2hashcat";
-    license = lib.licenses.mit;
     changelog = "https://github.com/hashstation/zip2hashcat/releases/tag/${finalAttrs.version}";
+    license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ pyrox0 ];
-    mainProgram = "zip2hashcat";
     platforms = lib.platforms.all;
+    mainProgram = "zip2hashcat";
   };
 })

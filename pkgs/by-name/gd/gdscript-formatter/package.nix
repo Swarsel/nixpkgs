@@ -22,13 +22,12 @@ rustPlatform.buildRustPackage (finalAttrs: {
   };
 
   cargoHash = "sha256-JGvtjxHfkMknilFCRJS3VzvN6yifDx0nTNTQua0qmlI=";
+  doInstallCheck = true;
+  nativeInstallCheckInputs = [ versionCheckHook ];
 
   cargoBuildFlags = [
     "--bin=gdscript-formatter"
   ];
-
-  nativeInstallCheckInputs = [ versionCheckHook ];
-  doInstallCheck = true;
 
   passthru.updateScript = nix-update-script { };
 
@@ -37,7 +36,7 @@ rustPlatform.buildRustPackage (finalAttrs: {
     homepage = "https://github.com/GDQuest/GDScript-formatter";
     changelog = "https://github.com/GDQuest/GDScript-formatter/blob/${finalAttrs.version}/CHANGELOG.md";
     license = lib.licenses.mit;
-    mainProgram = "gdscript-formatter";
     maintainers = with lib.maintainers; [ squarepear ];
+    mainProgram = "gdscript-formatter";
   };
 })

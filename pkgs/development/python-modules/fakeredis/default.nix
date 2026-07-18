@@ -1,10 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  pytestCheckHook,
-  redisTestHook,
-
+  buildPythonPackage,
   hatchling,
   hypothesis,
   jsonpath-ng,
@@ -13,7 +10,9 @@
   pyprobables,
   pytest-asyncio,
   pytest-mock,
+  pytestCheckHook,
   redis,
+  redisTestHook,
   sortedcontainers,
   valkey,
 }:
@@ -21,33 +20,12 @@
 buildPythonPackage (finalAttrs: {
   pname = "fakeredis";
   version = "2.36.2";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "cunla";
     repo = "fakeredis-py";
     tag = "v${finalAttrs.version}";
     hash = "sha256-vOQBezPsgcjSUigCiW7Q+VueUTtQm3Y7hhB0mTstwKM=";
-  };
-
-  build-system = [ hatchling ];
-
-  dependencies = [
-    redis
-    sortedcontainers
-  ];
-
-  optional-dependencies = {
-    lua = [ lupa ];
-    json = [ jsonpath-ng ];
-    bf = [ pyprobables ];
-    cf = [ pyprobables ];
-    probabilistic = [ pyprobables ];
-    valkey = [ valkey ];
-    vectorset = [
-      jsonpath-ng
-      numpy
-    ];
   };
 
   nativeCheckInputs = [
@@ -59,7 +37,16 @@ buildPythonPackage (finalAttrs: {
     valkey
   ];
 
-  pythonImportsCheck = [ "fakeredis" ];
+  preCheck = ''
+    redisTestPort=6390
+  '';
+
+  build-system = [ hatchling ];
+
+  dependencies = [
+    redis
+    sortedcontainers
+  ];
 
   disabledTestMarks = [ "slow" ];
 
@@ -68,9 +55,22 @@ buildPythonPackage (finalAttrs: {
     "test_async_lock"
   ];
 
-  preCheck = ''
-    redisTestPort=6390
-  '';
+  optional-dependencies = {
+    bf = [ pyprobables ];
+    cf = [ pyprobables ];
+    json = [ jsonpath-ng ];
+    lua = [ lupa ];
+    probabilistic = [ pyprobables ];
+    valkey = [ valkey ];
+
+    vectorset = [
+      jsonpath-ng
+      numpy
+    ];
+  };
+
+  pyproject = true;
+  pythonImportsCheck = [ "fakeredis" ];
 
   meta = {
     description = "Fake implementation of Redis API";

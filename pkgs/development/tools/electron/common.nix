@@ -4,22 +4,19 @@
   chromium,
   fetchNpmDeps,
   fetchpatch,
-
-  pkgsBuildHost,
   gclient2nix,
-  nodejs,
-  npmHooks,
-  yarn-berry_4,
-  unzip,
-  writers,
-
+  info,
   libnotify,
   libpulseaudio,
   libsecret,
+  nodejs,
+  npmHooks,
   pipewire,
+  pkgsBuildHost,
   speechd-minimal,
-
-  info,
+  unzip,
+  writers,
+  yarn-berry_4,
 }:
 
 let
@@ -32,79 +29,14 @@ let
 in
 
 ((chromium.override { upstream-info = info.chromium; }).mkDerivation (base: {
-  packageName = "electron";
   inherit (info) version;
-
-  buildTargets = [
-    "electron:copy_node_headers"
-    "electron:electron_dist_zip"
-  ];
+  inherit gclientDeps;
+  src = null;
 
   outputs = [
     "out"
     "headers"
   ];
-
-  # don't automatically move the include directory from $headers back into $out
-  moveToDev = false;
-
-  nativeBuildInputs = base.nativeBuildInputs ++ [
-    gclient2nix.gclientUnpackHook
-    nodejs
-    npmHooks.npmConfigHook
-    yarn-berry
-    yarn-berry.yarnBerryConfigHook
-    unzip
-  ];
-
-  buildInputs = base.buildInputs ++ [ libnotify ];
-
-  npmDeps = fetchNpmDeps rec {
-    src = gclientDeps."src".path;
-    # Assume that the fetcher always unpack the source,
-    # based on update.py
-    sourceRoot = "${src.name}/third_party/node";
-    hash = info.chromium_npm_hash;
-  };
-
-  npmRoot = "third_party/node";
-
-  missingHashes =
-    if (info.electron_yarn_data ? "missing_hashes") then
-      writers.writeJSON "missing-hashes.json" info.electron_yarn_data.missing_hashes
-    else
-      null;
-  yarnOfflineCache = yarn-berry.fetchYarnBerryDeps {
-    src = gclientDeps."src/electron".path;
-    patches = [ yarnPatch ];
-    hash = info.electron_yarn_data.hash;
-    missingHashes =
-      if (info.electron_yarn_data ? "missing_hashes") then
-        writers.writeJSON "missing-hashes.json" info.electron_yarn_data.missing_hashes
-      else
-        null;
-  };
-
-  dontYarnBerryInstallDeps = true; # we'll run the hook manually
-
-  inherit gclientDeps;
-  unpackPhase = null; # prevent chromium's unpackPhase from being used
-  sourceRoot = "src";
-
-  env = base.env // {
-    # Hydra can fail to build electron due to clang spamming deprecation
-    # warnings mid-build, causing the build log to grow beyond the limit
-    # of 64mb and then getting killed by Hydra.
-    # For some reason, the log size limit appears to only be enforced on
-    # aarch64-linux. x86_64-linux happily succeeds to build with ~180mb. To
-    # unbreak the build on h.n.o, we simply disable those warnings for now.
-    # https://hydra.nixos.org/build/283952243
-    NIX_CFLAGS_COMPILE = base.env.NIX_CFLAGS_COMPILE + " -Wno-deprecated";
-    # Needed for header generation in electron 35 and above
-    ELECTRON_OUT_DIR = "Release";
-  };
-
-  src = null;
 
   postPatch = ''
     mkdir -p third_party/jdk/current/bin
@@ -192,6 +124,30 @@ in
   ''
   + base.postPatch;
 
+  nativeBuildInputs = base.nativeBuildInputs ++ [
+    gclient2nix.gclientUnpackHook
+    nodejs
+    npmHooks.npmConfigHook
+    yarn-berry
+    yarn-berry.yarnBerryConfigHook
+    unzip
+  ];
+
+  buildInputs = base.buildInputs ++ [ libnotify ];
+
+  env = base.env // {
+    # Needed for header generation in electron 35 and above
+    ELECTRON_OUT_DIR = "Release";
+    # Hydra can fail to build electron due to clang spamming deprecation
+    # warnings mid-build, causing the build log to grow beyond the limit
+    # of 64mb and then getting killed by Hydra.
+    # For some reason, the log size limit appears to only be enforced on
+    # aarch64-linux. x86_64-linux happily succeeds to build with ~180mb. To
+    # unbreak the build on h.n.o, we simply disable those warnings for now.
+    # https://hydra.nixos.org/build/283952243
+    NIX_CFLAGS_COMPILE = base.env.NIX_CFLAGS_COMPILE + " -Wno-deprecated";
+  };
+
   preConfigure = ''
     (
       cd third_party/node
@@ -199,47 +155,6 @@ in
     )
   ''
   + (base.preConfigure or "");
-
-  gnFlags = rec {
-    # build/args/release.gn
-    is_component_build = false;
-    is_official_build = true;
-    rtc_use_h264 = proprietary_codecs;
-    is_component_ffmpeg = true;
-
-    # build/args/all.gn
-    is_electron_build = true;
-    root_extra_deps = [ "//electron" ];
-    node_module_version = lib.toInt info.modules;
-    v8_promise_internal_field_count = 1;
-    v8_embedder_string = "-electron.0";
-    v8_enable_snapshot_native_code_counters = false;
-    v8_enable_javascript_promise_hooks = true;
-    enable_cdm_host_verification = false;
-    proprietary_codecs = true;
-    ffmpeg_branding = "Chrome";
-    enable_printing = true;
-    angle_enable_vulkan_validation_layers = false;
-    dawn_enable_vulkan_validation_layers = false;
-    enable_pseudolocales = false;
-    allow_runtime_configurable_key_storage = true;
-    enable_cet_shadow_stack = false;
-    is_cfi = false;
-    v8_builtins_profiling_log_file = "";
-    enable_dangling_raw_ptr_checks = false;
-    dawn_use_built_dxc = false;
-    v8_enable_private_mapping_fork_optimization = true;
-    v8_expose_public_symbols = true;
-    enable_dangling_raw_ptr_feature_flag = false;
-    clang_unsafe_buffers_paths = "";
-    enterprise_cloud_content_analysis = false;
-    enable_linux_installer = false;
-    enable_pdf_save_to_drive = false;
-
-    # other
-    enable_widevine = false;
-    override_electron_version = info.version;
-  };
 
   installPhase = ''
     runHook preInstall
@@ -271,7 +186,86 @@ in
         $out/libexec/electron/electron
     '';
 
+  buildTargets = [
+    "electron:copy_node_headers"
+    "electron:electron_dist_zip"
+  ];
+
+  dontYarnBerryInstallDeps = true; # we'll run the hook manually
+
+  gnFlags = rec {
+    allow_runtime_configurable_key_storage = true;
+    angle_enable_vulkan_validation_layers = false;
+    clang_unsafe_buffers_paths = "";
+    dawn_enable_vulkan_validation_layers = false;
+    dawn_use_built_dxc = false;
+    enable_cdm_host_verification = false;
+    enable_cet_shadow_stack = false;
+    enable_dangling_raw_ptr_checks = false;
+    enable_dangling_raw_ptr_feature_flag = false;
+    enable_linux_installer = false;
+    enable_pdf_save_to_drive = false;
+    enable_printing = true;
+    enable_pseudolocales = false;
+    # other
+    enable_widevine = false;
+    enterprise_cloud_content_analysis = false;
+    ffmpeg_branding = "Chrome";
+    is_cfi = false;
+    # build/args/release.gn
+    is_component_build = false;
+    is_component_ffmpeg = true;
+    # build/args/all.gn
+    is_electron_build = true;
+    is_official_build = true;
+    node_module_version = lib.toInt info.modules;
+    override_electron_version = info.version;
+    proprietary_codecs = true;
+    root_extra_deps = [ "//electron" ];
+    rtc_use_h264 = proprietary_codecs;
+    v8_builtins_profiling_log_file = "";
+    v8_embedder_string = "-electron.0";
+    v8_enable_javascript_promise_hooks = true;
+    v8_enable_private_mapping_fork_optimization = true;
+    v8_enable_snapshot_native_code_counters = false;
+    v8_expose_public_symbols = true;
+    v8_promise_internal_field_count = 1;
+  };
+
+  missingHashes =
+    if (info.electron_yarn_data ? "missing_hashes") then
+      writers.writeJSON "missing-hashes.json" info.electron_yarn_data.missing_hashes
+    else
+      null;
+
+  # don't automatically move the include directory from $headers back into $out
+  moveToDev = false;
+
+  npmDeps = fetchNpmDeps rec {
+    src = gclientDeps."src".path;
+    hash = info.chromium_npm_hash;
+    # Assume that the fetcher always unpack the source,
+    # based on update.py
+    sourceRoot = "${src.name}/third_party/node";
+  };
+
+  npmRoot = "third_party/node";
+  packageName = "electron";
   requiredSystemFeatures = [ "big-parallel" ];
+  sourceRoot = "src";
+  unpackPhase = null; # prevent chromium's unpackPhase from being used
+
+  yarnOfflineCache = yarn-berry.fetchYarnBerryDeps {
+    src = gclientDeps."src/electron".path;
+    patches = [ yarnPatch ];
+    hash = info.electron_yarn_data.hash;
+
+    missingHashes =
+      if (info.electron_yarn_data ? "missing_hashes") then
+        writers.writeJSON "missing-hashes.json" info.electron_yarn_data.missing_hashes
+      else
+        null;
+  };
 
   passthru = {
     inherit info;
@@ -280,16 +274,18 @@ in
   meta = {
     description = "Cross platform desktop application shell";
     homepage = "https://github.com/electron/electron";
-    platforms = lib.platforms.linux;
     license = lib.licenses.mit;
-    teams = [ lib.teams.electron ];
+    platforms = lib.platforms.linux;
     mainProgram = "electron";
+
     hydraPlatforms =
       lib.optionals (!(lib.hasInfix "alpha" info.version) && !(lib.hasInfix "beta" info.version))
         [
           "aarch64-linux"
           "x86_64-linux"
         ];
+
+    teams = [ lib.teams.electron ];
     timeout = 172800; # 48 hours (increased from the Hydra default of 10h)
   };
 })).overrideAttrs

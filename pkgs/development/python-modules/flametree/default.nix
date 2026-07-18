@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   fontconfig,
   matplotlib,
   pandas,
@@ -13,7 +13,6 @@
 buildPythonPackage rec {
   pname = "flametree";
   version = "0.2.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "Edinburgh-Genome-Foundry";
@@ -21,8 +20,6 @@ buildPythonPackage rec {
     tag = "v${version}";
     hash = "sha256-5vtDfGmSX5niMXLnMqmafhq6D1gxhxVS3xbOAvQs3Po=";
   };
-
-  build-system = [ setuptools ];
 
   nativeCheckInputs = [
     matplotlib
@@ -35,11 +32,14 @@ buildPythonPackage rec {
     export FONTCONFIG_FILE=${fontconfig.out}/etc/fonts/fonts.conf
   '';
 
+  build-system = [ setuptools ];
+
   disabledTests = [
     # AssertionError, https://github.com/Edinburgh-Genome-Foundry/Flametree/issues/9
     "test_weasyprint"
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "flametree" ];
 
   meta = {

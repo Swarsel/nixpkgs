@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   nix-update-script,
 }:
 
@@ -17,12 +17,11 @@ buildGoModule (finalAttrs: {
   };
 
   vendorHash = "sha256-daMeYk64xzDPIyZl7SdXaQbu2Dvdw/yVV87/8Agvxk0=";
-
   passthru.updateScript = nix-update-script { };
 
   meta = {
-    homepage = "https://github.com/kc2g-flex-tools/nCAT";
     description = "FlexRadio remote control (CAT) via hamlib/rigctl protocol";
+    homepage = "https://github.com/kc2g-flex-tools/nCAT";
     changelog = "https://github.com/kc2g-flex-tools/nCAT/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ mvs ];

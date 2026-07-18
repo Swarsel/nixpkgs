@@ -2,9 +2,9 @@
   lib,
   buildPythonPackage,
   fetchPypi,
-  setuptools,
   numpy,
   opencv4,
+  setuptools,
   sotabenchapi,
   torch,
   torchvision,
@@ -17,7 +17,6 @@ let
 in
 buildPythonPackage {
   inherit pname version;
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
@@ -28,6 +27,9 @@ buildPythonPackage {
   postPatch = ''
     touch requirements.txt
   '';
+
+  # No tests
+  doCheck = false;
 
   build-system = [
     setuptools
@@ -42,12 +44,11 @@ buildPythonPackage {
     tqdm
   ];
 
+  pyproject = true;
+
   pythonImportsCheck = [
     "torchbench"
   ];
-
-  # No tests
-  doCheck = false;
 
   meta = {
     description = "Easily benchmark machine learning models in PyTorch";

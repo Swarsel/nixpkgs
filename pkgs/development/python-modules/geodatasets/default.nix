@@ -1,19 +1,17 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  pytestCheckHook,
-
+  buildPythonPackage,
   geopandas,
   pooch,
   pyogrio,
+  pytestCheckHook,
   setuptools-scm,
 }:
 
 buildPythonPackage rec {
   pname = "geodatasets";
   version = "2026.5.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "geopandas";
@@ -21,10 +19,6 @@ buildPythonPackage rec {
     tag = version;
     hash = "sha256-wKe5hDK0J3e+9PyMvH1dJWpNMC8Ct4u5ysJoi7/xw4k=";
   };
-
-  build-system = [ setuptools-scm ];
-
-  dependencies = [ pooch ];
 
   nativeCheckInputs = [
     geopandas
@@ -36,11 +30,15 @@ buildPythonPackage rec {
     export HOME=$TMPDIR
   '';
 
+  build-system = [ setuptools-scm ];
+  dependencies = [ pooch ];
+
   disabledTestMarks = [
     # disable tests which require network access
     "request"
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "geodatasets" ];
 
   meta = {

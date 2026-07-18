@@ -1,9 +1,9 @@
 {
   lib,
+  fetchFromGitHub,
   aiohttp,
   aiozoneinfo,
   buildPythonPackage,
-  fetchFromGitHub,
   pydantic,
   setuptools,
 }:
@@ -11,7 +11,6 @@
 buildPythonPackage rec {
   pname = "lacrosse-view";
   version = "1.1.2";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "IceBotYT";
@@ -20,6 +19,8 @@ buildPythonPackage rec {
     hash = "sha256-KU3/w/LpbDNmrE70wj7j1ztKn+k4wP6RzvUU1p50i2A=";
   };
 
+  # No tests
+  doCheck = false;
   build-system = [ setuptools ];
 
   dependencies = [
@@ -28,9 +29,7 @@ buildPythonPackage rec {
     pydantic
   ];
 
-  # No tests
-  doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "lacrosse_view" ];
 
   meta = {

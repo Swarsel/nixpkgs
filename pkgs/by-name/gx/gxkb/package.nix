@@ -1,16 +1,16 @@
 {
   lib,
   stdenv,
-  fetchFromGitHub,
   fetchurl,
-  git,
+  fetchFromGitHub,
   autoreconfHook,
-  pkg-config,
+  git,
   gtk3,
+  libayatana-appindicator,
   libwnck,
   libxklavier,
+  pkg-config,
   appindicatorSupport ? true,
-  libayatana-appindicator,
 }:
 
 stdenv.mkDerivation rec {
@@ -24,10 +24,20 @@ stdenv.mkDerivation rec {
     sha256 = "sha256-oBIBIkj4p6HlF0PRQtI/K5dhLs7pbPxN7Cgr/YZaI1s=";
   };
 
+  outputs = [
+    "out"
+    "man"
+  ];
+
+  postPatch = ''
+    ${git}/bin/git apply ${p1}
+  '';
+
   nativeBuildInputs = [
     pkg-config
     autoreconfHook
   ];
+
   buildInputs = [
     gtk3
     libwnck
@@ -36,22 +46,14 @@ stdenv.mkDerivation rec {
   ++ lib.optional appindicatorSupport libayatana-appindicator;
 
   configureFlags = lib.optional appindicatorSupport "--enable-appindicator=yes";
-  outputs = [
-    "out"
-    "man"
-  ];
 
   # This patch restore data which was wiped by upstream without any technical reasons
   # https://github.com/omgbebebe/gxkb/commit/727ec8b595a91dbb540e6087750f43b85d0dfbc0
   # NOTE: the `patch` hook cannot be used here due to lack of support for git binary patches
   p1 = fetchurl {
-    url = "https://github.com/omgbebebe/gxkb/commit/727ec8b595a91dbb540e6087750f43b85d0dfbc0.patch";
     hash = "sha256-x7x3MHHrOnPivvlzOFqgFAA5BDB2LOXMlalPYbwM/1Q=";
+    url = "https://github.com/omgbebebe/gxkb/commit/727ec8b595a91dbb540e6087750f43b85d0dfbc0.patch";
   };
-
-  postPatch = ''
-    ${git}/bin/git apply ${p1}
-  '';
 
   meta = {
     description = "X11 keyboard indicator and switcher";

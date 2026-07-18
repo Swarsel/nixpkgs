@@ -43,17 +43,14 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   nativeBuildInputs = [ cmake ];
-
   buildInputs = [ (hdf5.override { apiVersion = "v110"; }) ];
-
   checkPhase = "make test";
-
   postInstall = "rm -r $out/bin/testc";
 
   meta = {
     description = "Library to read and write MED files";
     homepage = "https://salome-platform.org/";
-    platforms = lib.platforms.linux ++ lib.platforms.darwin;
     license = lib.licenses.lgpl3Plus;
+    platforms = lib.platforms.linux ++ lib.platforms.darwin;
   };
 })

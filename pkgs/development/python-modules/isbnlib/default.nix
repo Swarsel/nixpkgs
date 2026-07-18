@@ -1,24 +1,18 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  pythonAtLeast,
-
-  # build-system
-  setuptools,
-
+  buildPythonPackage,
+  pytest-cov-stub,
   # tests
   pytestCheckHook,
-  pytest-cov-stub,
+  pythonAtLeast,
+  # build-system
+  setuptools,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "isbnlib";
   version = "3.10.14";
-  pyproject = true;
-
-  # Several tests fail and suggest that the package is incompatible with python >= 3.14
-  disabled = pythonAtLeast "3.14";
 
   src = fetchFromGitHub {
     owner = "xlcnd";
@@ -27,18 +21,30 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-d6p0wv7kj+NOZJRE2rzQgb7PXv+E3tASIibYCjzCdx8=";
   };
 
+  nativeCheckInputs = [
+    pytestCheckHook
+    pytest-cov-stub
+  ];
+
   build-system = [ setuptools ];
 
   dependencies = [
     setuptools # needed for 'pkg_resources'
   ];
 
-  nativeCheckInputs = [
-    pytestCheckHook
-    pytest-cov-stub
-  ];
+  # Several tests fail and suggest that the package is incompatible with python >= 3.14
+  disabled = pythonAtLeast "3.14";
 
-  enabledTestPaths = [ "isbnlib/test/" ];
+  disabledTestPaths = [
+    "isbnlib/test/test_cache_decorator.py"
+    "isbnlib/test/test_goom.py"
+    "isbnlib/test/test_metadata.py"
+    "isbnlib/test/test_openl.py"
+    "isbnlib/test/test_rename.py"
+    "isbnlib/test/test_webservice.py"
+    "isbnlib/test/test_wiki.py"
+    "isbnlib/test/test_words.py"
+  ];
 
   disabledTests = [
     # Require a network connection
@@ -52,16 +58,8 @@ buildPythonPackage (finalAttrs: {
     "test_cover"
   ];
 
-  disabledTestPaths = [
-    "isbnlib/test/test_cache_decorator.py"
-    "isbnlib/test/test_goom.py"
-    "isbnlib/test/test_metadata.py"
-    "isbnlib/test/test_openl.py"
-    "isbnlib/test/test_rename.py"
-    "isbnlib/test/test_webservice.py"
-    "isbnlib/test/test_wiki.py"
-    "isbnlib/test/test_words.py"
-  ];
+  enabledTestPaths = [ "isbnlib/test/" ];
+  pyproject = true;
 
   pythonImportsCheck = [
     "isbnlib"

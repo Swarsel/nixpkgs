@@ -1,14 +1,14 @@
 {
+  lib,
+  fetchurl,
   alcotest,
   base64,
   bigarray-overlap,
   bigstringaf,
   buildDunePackage,
-  fetchurl,
   fmt,
   jsonm,
   ke,
-  lib,
   ptime,
 }:
 
@@ -21,9 +21,6 @@ buildDunePackage (finalAttrs: {
     hash = "sha256-kXDxoRref02YpYSlvlK7a5FBX5ccbnWJQzG0axi5jwk=";
   };
 
-  duneVersion = "3";
-  minimalOCamlVersion = "4.08";
-
   propagatedBuildInputs = [
     bigarray-overlap
     bigstringaf
@@ -31,18 +28,22 @@ buildDunePackage (finalAttrs: {
     ke
   ];
 
+  doCheck = true;
+
   checkInputs = [
     ptime
     alcotest
     jsonm
     base64
   ];
-  doCheck = true;
+
+  duneVersion = "3";
+  minimalOCamlVersion = "4.08";
 
   meta = {
     description = "Simple bounded encoder to serialize human readable values and respect the 80-column constraint";
-    license = lib.licenses.mit;
     homepage = "https://github.com/dinosaure/prettym";
+    license = lib.licenses.mit;
     maintainers = [ ];
   };
 })

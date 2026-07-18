@@ -1,15 +1,12 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule rec {
   pname = "commitizen-go";
   version = "1.0.3";
-
-  # we can't obtain the commit hash when using fetchFromGitHub
-  commit_revision = "unspecified (nix build)";
 
   src = fetchFromGitHub {
     owner = "lintingzhen";
@@ -19,15 +16,16 @@ buildGoModule rec {
   };
 
   vendorHash = "sha256-TbrgKE7P3c0gkqJPDkbchWTPkOuTaTAWd8wDcpffcCc=";
-
-  subPackages = [ "." ];
-
   env.CGO_ENABLED = 0;
+  # we can't obtain the commit hash when using fetchFromGitHub
+  commit_revision = "unspecified (nix build)";
 
   ldflags = [
     "-X 'github.com/lintingzhen/commitizen-go/cmd.revision=${commit_revision}'"
     "-X 'github.com/lintingzhen/commitizen-go/cmd.version=${version}'"
   ];
+
+  subPackages = [ "." ];
 
   meta = {
     description = "Command line utility to standardize git commit messages, golang version";

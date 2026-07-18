@@ -1,12 +1,12 @@
 {
   lib,
   stdenv,
-  file,
   fetchurl,
-  makeWrapper,
   autoPatchelfHook,
+  file,
   jsoncpp,
   libpulseaudio,
+  makeWrapper,
 }:
 let
   versionMajor = "9.5";
@@ -32,23 +32,12 @@ stdenv.mkDerivation rec {
     else
       throw "NoMachine client is not supported on ${stdenv.hostPlatform.system}";
 
-  # nxusb-legacy is only needed for kernel versions < 3
-  postUnpack = ''
-    mv $(find . -type f -name nxrunner.tar.gz) .
-    mv $(find . -type f -name nxplayer.tar.gz) .
-    rm -r NX/
-    tar xf nxrunner.tar.gz
-    tar xf nxplayer.tar.gz
-    rm $(find . -maxdepth 1 -type f)
-    rm -r NX/share/src/nxusb-legacy
-    rm NX/bin/nxusbd-legacy NX/lib/libnxusb-legacy.so
-  '';
-
   nativeBuildInputs = [
     file
     makeWrapper
     autoPatchelfHook
   ];
+
   buildInputs = [
     jsoncpp
     libpulseaudio
@@ -93,20 +82,36 @@ stdenv.mkDerivation rec {
   dontBuild = true;
   dontStrip = true;
 
+  # nxusb-legacy is only needed for kernel versions < 3
+  postUnpack = ''
+    mv $(find . -type f -name nxrunner.tar.gz) .
+    mv $(find . -type f -name nxplayer.tar.gz) .
+    rm -r NX/
+    tar xf nxrunner.tar.gz
+    tar xf nxplayer.tar.gz
+    rm $(find . -maxdepth 1 -type f)
+    rm -r NX/share/src/nxusb-legacy
+    rm NX/bin/nxusbd-legacy NX/lib/libnxusb-legacy.so
+  '';
+
   meta = {
     description = "NoMachine remote desktop client (nxplayer)";
     homepage = "https://www.nomachine.com/";
-    mainProgram = "nxplayer";
-    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
+
     license = {
+      free = false;
       fullName = "NoMachine End User License Agreement, version 9";
       url = "https://www.nomachine.com/licensing/nomachine-end-user-license-agreement";
-      free = false;
     };
+
+    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
     maintainers = with lib.maintainers; [ talyz ];
+
     platforms = [
       "x86_64-linux"
       "i686-linux"
     ];
+
+    mainProgram = "nxplayer";
   };
 }

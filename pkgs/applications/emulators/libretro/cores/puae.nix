@@ -4,7 +4,6 @@
   mkLibretroCore,
 }:
 mkLibretroCore {
-  core = "puae";
   version = "0-unstable-2026-06-03";
 
   src = fetchFromGitHub {
@@ -14,6 +13,7 @@ mkLibretroCore {
     hash = "sha256-gkCzHvoSqh9CluahSSe3+dhZG1HtiNH0orU404pwjgo=";
   };
 
+  core = "puae";
   makefile = "Makefile";
 
   meta = {

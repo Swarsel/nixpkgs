@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   hatchling,
   pytestCheckHook,
 }:
@@ -9,7 +9,6 @@
 buildPythonPackage rec {
   pname = "annotated-types";
   version = "0.7.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "annotated-types";
@@ -19,10 +18,9 @@ buildPythonPackage rec {
   };
 
   nativeBuildInputs = [ hatchling ];
-
-  pythonImportsCheck = [ "annotated_types" ];
-
   nativeCheckInputs = [ pytestCheckHook ];
+  pyproject = true;
+  pythonImportsCheck = [ "annotated_types" ];
 
   meta = {
     description = "Reusable constraint types to use with typing.Annotated";

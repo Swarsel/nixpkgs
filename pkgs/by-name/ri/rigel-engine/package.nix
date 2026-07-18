@@ -2,10 +2,10 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  cmake,
-  libx11,
   SDL2,
   SDL2_mixer,
+  cmake,
+  libx11,
   buildOpenGLES ? false,
 }:
 
@@ -42,7 +42,7 @@ stdenv.mkDerivation {
     homepage = "https://github.com/lethal-guitar/RigelEngine";
     license = lib.licenses.gpl2Only;
     maintainers = with lib.maintainers; [ keenanweaver ];
-    mainProgram = "RigelEngine";
     platforms = lib.platforms.all;
+    mainProgram = "RigelEngine";
   };
 }

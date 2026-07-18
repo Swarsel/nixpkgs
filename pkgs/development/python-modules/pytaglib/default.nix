@@ -1,17 +1,16 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  taglib,
+  buildPythonPackage,
   cython,
   pytestCheckHook,
   setuptools,
+  taglib,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "pytaglib";
   version = "3.2.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "supermihi";
@@ -25,15 +24,14 @@ buildPythonPackage (finalAttrs: {
       --replace-fail "cython==3.2.4" "cython"
   '';
 
-  build-system = [ setuptools ];
-
   buildInputs = [
     cython
     taglib
   ];
 
   nativeCheckInputs = [ pytestCheckHook ];
-
+  build-system = [ setuptools ];
+  pyproject = true;
   pythonImportsCheck = [ "taglib" ];
 
   meta = {

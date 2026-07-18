@@ -1,12 +1,9 @@
 {
   lib,
   stdenv,
-  requireFile,
-  makeWrapper,
-  autoPatchelfHook,
-  wrapGAppsHook3,
   alsa-lib,
   atk,
+  autoPatchelfHook,
   cacert,
   cairo,
   dconf,
@@ -48,38 +45,40 @@
   libsecret,
   libsoup_3,
   libvorbis,
+  libx11,
+  libxaw,
+  libxcb,
+  libxext,
+  libxfixes,
+  libxinerama,
   libxml2_13,
+  libxmu,
+  libxrender,
+  libxscrnsaver,
   libxslt,
+  libxtst,
   llvmPackages,
+  makeWrapper,
   more,
   nspr,
   nss,
   opencv4,
   pango,
   pcsclite,
+  requireFile,
   sane-backends,
   speex,
   symlinkJoin,
   systemd,
   tzdata,
+  webkitgtk_4_1,
   which,
   woff2,
-  webkitgtk_4_1,
-  libxtst,
-  libxscrnsaver,
-  libxrender,
-  libxmu,
-  libxinerama,
-  libxfixes,
-  libxext,
-  libxaw,
-  libx11,
-  xprop,
-  xdpyinfo,
-  libxcb,
+  wrapGAppsHook3,
   x264,
+  xdpyinfo,
+  xprop,
   zlib,
-
   extraCerts ? [ ],
 }:
 
@@ -96,21 +95,23 @@ let
   gstPluginPath = lib.makeSearchPathOutput "lib" "lib/gstreamer-1.0" gstPackages;
 
   fuse3' = symlinkJoin {
-    name = "fuse3-backwards-compat";
-    paths = [ (lib.getLib fuse3) ];
     postBuild = ''
       ln -sf $out/lib/libfuse3.so.3.* $out/lib/libfuse3.so.3
     '';
+
+    name = "fuse3-backwards-compat";
+    paths = [ (lib.getLib fuse3) ];
   };
 
   opencv4' = symlinkJoin {
-    name = "opencv4-compat";
-    paths = [ opencv4 ];
     postBuild = ''
       for so in ${opencv4}/lib/*.so; do
         ln -s "$so" $out/lib/$(basename "$so").410 || true
       done
     '';
+
+    name = "opencv4-compat";
+    paths = [ opencv4 ];
   };
 
 in
@@ -120,7 +121,6 @@ stdenv.mkDerivation rec {
   version = "26.04.0.105";
 
   src = requireFile rec {
-    name = "linuxx64-${version}.tar.gz";
     sha256 = "1kl6b1ldjd9gb6cmvhxf6ggvc3amq1kz0qwjlb1fp6dxx0pivwm8";
 
     message = ''
@@ -137,15 +137,11 @@ stdenv.mkDerivation rec {
 
       nix-prefetch-url file://$PWD/${name}
     '';
+
+    name = "linuxx64-${version}.tar.gz";
   };
 
-  dontBuild = true;
-  dontConfigure = true;
   strictDeps = true;
-  __structuredAttrs = true;
-  sourceRoot = ".";
-  preferLocalBuild = true;
-  passthru.icaroot = "${placeholder "out"}/opt/citrix-icaclient";
 
   nativeBuildInputs = [
     autoPatchelfHook
@@ -216,26 +212,6 @@ stdenv.mkDerivation rec {
     zlib
   ]
   ++ gstPackages;
-
-  runtimeDependencies = [
-    glib
-    glib-networking
-    libappindicator-gtk3
-    libGL
-    pcsclite
-
-    libx11
-    libxscrnsaver
-    libxext
-    libxfixes
-    libxinerama
-    libxmu
-    libxrender
-    libxtst
-    libxcb
-    xdpyinfo
-    xprop
-  ];
 
   installPhase =
     let
@@ -418,9 +394,6 @@ stdenv.mkDerivation rec {
       runHook postInstall
     '';
 
-  # Make sure that `autoPatchelfHook` is executed before
-  # running `ctx_rehash`.
-  dontAutoPatchelf = true;
   postFixup = ''
     addAutoPatchelfSearchPath "$out/opt/citrix-icaclient/lib"
     autoPatchelf -- "$out"
@@ -428,15 +401,48 @@ stdenv.mkDerivation rec {
     $out/opt/citrix-icaclient/util/ctx_rehash
   '';
 
+  __structuredAttrs = true;
+  # Make sure that `autoPatchelfHook` is executed before
+  # running `ctx_rehash`.
+  dontAutoPatchelf = true;
+  dontBuild = true;
+  dontConfigure = true;
+  preferLocalBuild = true;
+
+  runtimeDependencies = [
+    glib
+    glib-networking
+    libappindicator-gtk3
+    libGL
+    pcsclite
+
+    libx11
+    libxscrnsaver
+    libxext
+    libxfixes
+    libxinerama
+    libxmu
+    libxrender
+    libxtst
+    libxcb
+    xdpyinfo
+    xprop
+  ];
+
+  sourceRoot = ".";
+  passthru.icaroot = "${placeholder "out"}/opt/citrix-icaclient";
+
   meta = {
-    license = lib.licenses.unfree;
     description = "Citrix Workspace";
+    homepage = "https://www.citrix.com/downloads/workspace-app/betas-and-tech-previews/workspace-app-tp-gcc11-for-linux.html";
+    license = lib.licenses.unfree;
     sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
-    platforms = [ "x86_64-linux" ];
+
     maintainers = with lib.maintainers; [
       khaneliman
       flacks
     ];
-    homepage = "https://www.citrix.com/downloads/workspace-app/betas-and-tech-previews/workspace-app-tp-gcc11-for-linux.html";
+
+    platforms = [ "x86_64-linux" ];
   };
 }

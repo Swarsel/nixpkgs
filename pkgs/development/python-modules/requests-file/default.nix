@@ -2,16 +2,15 @@
   lib,
   fetchFromGitHub,
   buildPythonPackage,
-  setuptools,
-  setuptools-scm,
   pytestCheckHook,
   requests,
+  setuptools,
+  setuptools-scm,
 }:
 
 buildPythonPackage rec {
   pname = "requests-file";
   version = "2.1.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "dashea";
@@ -20,15 +19,15 @@ buildPythonPackage rec {
     hash = "sha256-JtdtE44yiw2mLMZ0bJv0QiGWb7f8ywPLF7+BUufh/g4=";
   };
 
+  nativeCheckInputs = [ pytestCheckHook ];
+
   build-system = [
     setuptools
     setuptools-scm
   ];
 
   dependencies = [ requests ];
-
-  nativeCheckInputs = [ pytestCheckHook ];
-
+  pyproject = true;
   pythonImportsCheck = [ "requests_file" ];
 
   meta = {

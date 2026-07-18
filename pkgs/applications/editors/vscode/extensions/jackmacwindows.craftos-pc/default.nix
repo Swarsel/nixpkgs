@@ -1,22 +1,17 @@
 {
-  vscode-utils,
+  lib,
   craftos-pc,
   jq,
-  lib,
   moreutils,
+  vscode-utils,
 }:
 
 vscode-utils.buildVscodeMarketplaceExtension {
-  mktplcRef = {
-    name = "craftos-pc";
-    publisher = "jackmacwindows";
-    version = "1.2.3";
-    hash = "sha256-QoLMefSmownw9AEem0jx1+BF1bcolHYpiqyPKQNkdiQ=";
-  };
   nativeBuildInputs = [
     jq
     moreutils
   ];
+
   postInstall = ''
     cd "$out/$installPrefix"
 
@@ -31,13 +26,21 @@ vscode-utils.buildVscodeMarketplaceExtension {
     < package.json \
     | sponge package.json
   '';
+
+  mktplcRef = {
+    version = "1.2.3";
+    hash = "sha256-QoLMefSmownw9AEem0jx1+BF1bcolHYpiqyPKQNkdiQ=";
+    name = "craftos-pc";
+    publisher = "jackmacwindows";
+  };
+
   meta = {
-    changelog = "https://marketplace.visualstudio.com/items/jackmacwindows.craftos-pc/changelog";
     description = "Visual Studio Code extension for opening a CraftOS-PC window";
-    downloadPage = "https://marketplace.visualstudio.com/items?itemName=jackmacwindows.craftos-pc";
     homepage = "https://www.craftos-pc.cc/docs/extension";
+    changelog = "https://marketplace.visualstudio.com/items/jackmacwindows.craftos-pc/changelog";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ tomodachi94 ];
     platforms = craftos-pc.meta.platforms;
+    downloadPage = "https://marketplace.visualstudio.com/items?itemName=jackmacwindows.craftos-pc";
   };
 }

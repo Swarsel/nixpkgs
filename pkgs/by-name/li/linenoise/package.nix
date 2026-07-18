@@ -2,8 +2,8 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  validatePkgConfig,
   fixDarwinDylibNames,
+  validatePkgConfig,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -45,13 +45,15 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   meta = {
-    homepage = "https://github.com/antirez/linenoise";
     description = "Minimal, zero-config, BSD licensed, readline replacement";
+    homepage = "https://github.com/antirez/linenoise";
+    license = lib.licenses.bsd2;
+
     maintainers = with lib.maintainers; [
       fstamour
       remexre
     ];
+
     platforms = lib.platforms.unix;
-    license = lib.licenses.bsd2;
   };
 })

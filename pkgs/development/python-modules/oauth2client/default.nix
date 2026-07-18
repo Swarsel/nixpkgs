@@ -2,16 +2,15 @@
   lib,
   buildPythonPackage,
   fetchPypi,
-  six,
   httplib2,
   pyasn1-modules,
   rsa,
+  six,
 }:
 
 buildPythonPackage rec {
   pname = "oauth2client";
   version = "4.1.3";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
@@ -24,7 +23,9 @@ buildPythonPackage rec {
     pyasn1-modules
     rsa
   ];
+
   doCheck = false;
+  format = "setuptools";
 
   meta = {
     description = "Client library for OAuth 2.0";

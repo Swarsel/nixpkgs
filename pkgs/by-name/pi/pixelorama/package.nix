@@ -8,9 +8,9 @@
 
 let
   presets = {
+    "aarch64-linux" = "Linux ARM64";
     "i686-linux" = "Linux 32-bit";
     "x86_64-linux" = "Linux 64-bit";
-    "aarch64-linux" = "Linux ARM64";
   };
   preset =
     presets.${stdenv.hostPlatform.system}
@@ -74,16 +74,18 @@ stdenv.mkDerivation (finalAttrs: {
   passthru.updateScript = nix-update-script { };
 
   meta = {
-    homepage = "https://orama-interactive.itch.io/pixelorama";
     description = "Free & open-source 2D sprite editor, made with the Godot Engine";
+    homepage = "https://orama-interactive.itch.io/pixelorama";
     changelog = "https://github.com/Orama-Interactive/Pixelorama/blob/${finalAttrs.src.rev}/CHANGELOG.md";
     license = lib.licenses.mit;
+    maintainers = with lib.maintainers; [ felschr ];
+
     platforms = [
       "i686-linux"
       "x86_64-linux"
       "aarch64-linux"
     ];
-    maintainers = with lib.maintainers; [ felschr ];
+
     mainProgram = "pixelorama";
   };
 })

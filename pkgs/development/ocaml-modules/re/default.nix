@@ -31,20 +31,19 @@ buildDunePackage (finalAttrs: {
   pname = "re";
   version = version_sha.version;
 
-  minimalOCamlVersion = "4.02";
-
   src = fetchurl {
-    url = "https://github.com/ocaml/ocaml-re/releases/download/${finalAttrs.version}/re-${finalAttrs.version}.tbz";
     inherit (version_sha) hash;
+    url = "https://github.com/ocaml/ocaml-re/releases/download/${finalAttrs.version}/re-${finalAttrs.version}.tbz";
   };
 
   propagatedBuildInputs = [ seq ];
   doCheck = lib.versionAtLeast ocaml.version "4.08";
   checkInputs = [ (if lib.versionAtLeast finalAttrs.version "1.12" then ounit2 else ounit) ];
+  minimalOCamlVersion = "4.02";
 
   meta = {
-    homepage = "https://github.com/ocaml/ocaml-re";
     description = "Pure OCaml regular expressions, with support for Perl and POSIX-style strings";
+    homepage = "https://github.com/ocaml/ocaml-re";
     license = lib.licenses.lgpl2;
     maintainers = with lib.maintainers; [ vbgl ];
   };

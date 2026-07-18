@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule (finalAttrs: {
@@ -17,7 +17,20 @@ buildGoModule (finalAttrs: {
 
   vendorHash = "sha256-Ur0BfIg4lZakjx01UOL4n5/O1yjTJJcGuDxWVDqUOyY=";
 
-  proxyVendor = true;
+  installPhase = ''
+    runHook preInstall
+
+    mkdir -p $out/bin
+    install -Dm755 "$GOPATH/bin/cmd" -T $out/bin/argocd-autopilot
+
+    runHook postInstall
+  '';
+
+  doInstallCheck = true;
+
+  installCheckPhase = ''
+    $out/bin/argocd-autopilot version | grep ${finalAttrs.src.rev} > /dev/null
+  '';
 
   ldflags =
     let
@@ -34,30 +47,19 @@ buildGoModule (finalAttrs: {
       "-X ${package_url}.installationManifestsNamespacedURL=github.com/argoproj-labs/argocd-autopilot/manifests/insecure?ref=${finalAttrs.src.rev}"
     ];
 
+  proxyVendor = true;
   subPackages = [ "cmd" ];
-
-  doInstallCheck = true;
-  installCheckPhase = ''
-    $out/bin/argocd-autopilot version | grep ${finalAttrs.src.rev} > /dev/null
-  '';
-
-  installPhase = ''
-    runHook preInstall
-
-    mkdir -p $out/bin
-    install -Dm755 "$GOPATH/bin/cmd" -T $out/bin/argocd-autopilot
-
-    runHook postInstall
-  '';
 
   meta = {
     description = "ArgoCD Autopilot";
-    mainProgram = "argocd-autopilot";
-    downloadPage = "https://github.com/argoproj-labs/argocd-autopilot";
     homepage = "https://argocd-autopilot.readthedocs.io/en/stable/";
     license = lib.licenses.asl20;
+
     maintainers = with lib.maintainers; [
       sagikazarmark
     ];
+
+    mainProgram = "argocd-autopilot";
+    downloadPage = "https://github.com/argoproj-labs/argocd-autopilot";
   };
 })

@@ -9,65 +9,6 @@ let
   settingsFormat = pkgs.formats.javaProperties { };
 in
 {
-  options.services.languagetool = {
-    enable = lib.mkEnableOption "the LanguageTool server, a multilingual spelling, style, and grammar checker that helps correct or paraphrase texts";
-
-    package = lib.mkPackageOption pkgs "languagetool" { };
-
-    port = lib.mkOption {
-      type = lib.types.port;
-      default = 8081;
-      example = 8081;
-      description = ''
-        Port on which LanguageTool listens.
-      '';
-    };
-
-    public = lib.mkEnableOption "access from anywhere (rather than just localhost)";
-
-    allowOrigin = lib.mkOption {
-      type = lib.types.nullOr lib.types.str;
-      default = null;
-      example = "https://my-website.org";
-      description = ''
-        Set the Access-Control-Allow-Origin header in the HTTP response,
-        used for direct (non-proxy) JavaScript-based access from browsers.
-        `"*"` to allow access from all sites.
-      '';
-    };
-
-    settings = lib.mkOption {
-      type = lib.types.submodule {
-        freeformType = settingsFormat.type;
-
-        options.cacheSize = lib.mkOption {
-          type = lib.types.ints.unsigned;
-          default = 1000;
-          apply = toString;
-          description = "Number of sentences cached.";
-        };
-      };
-      default = { };
-      description = ''
-        Configuration file options for LanguageTool, see
-        'languagetool-http-server --help'
-        for supported settings.
-      '';
-    };
-
-    jvmOptions = lib.mkOption {
-      description = ''
-        Extra command line options for the JVM running languagetool.
-        More information can be found here: <https://docs.oracle.com/en/java/javase/19/docs/specs/man/java.html#standard-options-for-java>
-      '';
-      default = [ ];
-      type = lib.types.listOf lib.types.str;
-      example = [
-        "-Xmx512m"
-      ];
-    };
-  };
-
   imports = [
     (lib.mkRemovedOptionModule [
       "services"
@@ -76,23 +17,82 @@ in
     ] "The jre is now always taken from the package's jre attribute.")
   ];
 
+  options.services.languagetool = {
+    enable = lib.mkEnableOption "the LanguageTool server, a multilingual spelling, style, and grammar checker that helps correct or paraphrase texts";
+    package = lib.mkPackageOption pkgs "languagetool" { };
+
+    allowOrigin = lib.mkOption {
+      default = null;
+
+      description = ''
+        Set the Access-Control-Allow-Origin header in the HTTP response,
+        used for direct (non-proxy) JavaScript-based access from browsers.
+        `"*"` to allow access from all sites.
+      '';
+
+      example = "https://my-website.org";
+      type = lib.types.nullOr lib.types.str;
+    };
+
+    jvmOptions = lib.mkOption {
+      default = [ ];
+
+      description = ''
+        Extra command line options for the JVM running languagetool.
+        More information can be found here: <https://docs.oracle.com/en/java/javase/19/docs/specs/man/java.html#standard-options-for-java>
+      '';
+
+      example = [
+        "-Xmx512m"
+      ];
+
+      type = lib.types.listOf lib.types.str;
+    };
+
+    port = lib.mkOption {
+      default = 8081;
+
+      description = ''
+        Port on which LanguageTool listens.
+      '';
+
+      example = 8081;
+      type = lib.types.port;
+    };
+
+    public = lib.mkEnableOption "access from anywhere (rather than just localhost)";
+
+    settings = lib.mkOption {
+      default = { };
+
+      description = ''
+        Configuration file options for LanguageTool, see
+        'languagetool-http-server --help'
+        for supported settings.
+      '';
+
+      type = lib.types.submodule {
+        options.cacheSize = lib.mkOption {
+          apply = toString;
+          default = 1000;
+          description = "Number of sentences cached.";
+          type = lib.types.ints.unsigned;
+        };
+
+        freeformType = settingsFormat.type;
+      };
+    };
+  };
+
   config = lib.mkIf cfg.enable {
     systemd.services.languagetool = {
-      description = "LanguageTool HTTP server";
-      wantedBy = [ "multi-user.target" ];
       after = [ "network.target" ];
+      description = "LanguageTool HTTP server";
+
       serviceConfig = {
-        DynamicUser = true;
-        User = "languagetool";
-        Group = "languagetool";
         CapabilityBoundingSet = [ "" ];
-        RestrictNamespaces = [ "" ];
-        SystemCallFilter = [
-          "@system-service"
-          "~ @privileged"
-        ];
-        ProtectHome = "yes";
-        Restart = "on-failure";
+        DynamicUser = true;
+
         ExecStart = ''
           ${lib.getExe cfg.package.jre} \
             -cp ${cfg.package}/share/languagetool-server.jar \
@@ -103,7 +103,21 @@ in
               ${lib.optionalString (cfg.allowOrigin != null) "--allow-origin ${cfg.allowOrigin}"} \
               "--config" ${settingsFormat.generate "languagetool.conf" cfg.settings}
         '';
+
+        Group = "languagetool";
+        ProtectHome = "yes";
+        Restart = "on-failure";
+        RestrictNamespaces = [ "" ];
+
+        SystemCallFilter = [
+          "@system-service"
+          "~ @privileged"
+        ];
+
+        User = "languagetool";
       };
+
+      wantedBy = [ "multi-user.target" ];
     };
   };
 }

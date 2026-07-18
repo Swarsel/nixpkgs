@@ -1,6 +1,6 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
   perl,
   perlPackages,
@@ -18,20 +18,19 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-C0HVWgTm9iXDSFyXcUVRfT0ip31YGaaZ6ZvxggK/x7o=";
   };
 
+  outputs = [
+    "out"
+    "doc"
+  ];
+
   # Used for testing
   nativeBuildInputs = [
     perl
     perlPackages.IOTty
   ];
 
-  outputs = [
-    "out"
-    "doc"
-  ];
-
   makeFlags = [ "prefix=$(out)" ];
-
-  extensions = lib.mapAttrsToList (k: v: "${k}.sh ${v}") sharnessExtensions;
+  doCheck = true;
 
   postInstall = lib.optionalString (sharnessExtensions != { }) ''
     extDir=$out/share/sharness/sharness.d
@@ -46,8 +45,7 @@ stdenv.mkDerivation (finalAttrs: {
     linkExtensions
   '';
 
-  doCheck = true;
-
+  extensions = lib.mapAttrsToList (k: v: "${k}.sh ${v}") sharnessExtensions;
   passthru.SHARNESS_TEST_SRCDIR = finalAttrs.finalPackage + "/share/sharness";
 
   meta = {

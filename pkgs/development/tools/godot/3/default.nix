@@ -1,10 +1,10 @@
 {
   lib,
   stdenv,
+  fetchFromGitHub,
   alsa-lib,
   alsa-plugins,
   autoPatchelfHook,
-  fetchFromGitHub,
   freetype,
   installShellFiles,
   libGLU,
@@ -29,7 +29,6 @@
 stdenv.mkDerivation (finalAttrs: {
   pname = "godot3";
   version = "3.6.2";
-  godotBuildDescription = "X11 tools";
 
   src = fetchFromGitHub {
     owner = "godotengine";
@@ -37,6 +36,24 @@ stdenv.mkDerivation (finalAttrs: {
     rev = "${finalAttrs.version}-stable";
     hash = "sha256-loNjE+NmHniZ827Eb9MHSNo27F2LrURhWURjUq4d8xw=";
   };
+
+  outputs = [
+    "out"
+  ]
+  ++ lib.optional finalAttrs.shouldInstallManual "man"
+  ++ lib.optional finalAttrs.shouldBuildTools "dev";
+
+  patches = map (rp: ./patches + rp) [
+    # The version of SConstruct in the godot source appends the OS's PATH to the Scons PATH,
+    # but because it is an append, the Scons PATH takes precedence.  The Scons PATH contains a
+    # bunch of standard Linux paths like /usr/bin, so if they happen to contain versions of any
+    # build-time dependencies of Godot, they will be used instead of the Nix version of them.
+    #
+    # This patch simply replaces the entire Scons environment (including the PATH) with that
+    # of the OS. This isn't as surgical as just fixing the PATH, but it seems to work, and
+    # seems to be the Nix community's current strategy when using Scons.
+    /SConstruct/dontClobberEnvironment.patch
+  ];
 
   # Fix PIE hardening: https://github.com/godotengine/godot/pull/50737
   postPatch = ''
@@ -70,56 +87,6 @@ stdenv.mkDerivation (finalAttrs: {
     yasm
     zlib
   ];
-
-  shouldAddLinkFlagsToPulse = true;
-
-  patches = map (rp: ./patches + rp) [
-    # The version of SConstruct in the godot source appends the OS's PATH to the Scons PATH,
-    # but because it is an append, the Scons PATH takes precedence.  The Scons PATH contains a
-    # bunch of standard Linux paths like /usr/bin, so if they happen to contain versions of any
-    # build-time dependencies of Godot, they will be used instead of the Nix version of them.
-    #
-    # This patch simply replaces the entire Scons environment (including the PATH) with that
-    # of the OS. This isn't as surgical as just fixing the PATH, but it seems to work, and
-    # seems to be the Nix community's current strategy when using Scons.
-    /SConstruct/dontClobberEnvironment.patch
-  ];
-
-  enableParallelBuilding = true;
-  godotBuildPlatform = "x11";
-  shouldBuildTools = true;
-  godotBuildTarget = "release_debug";
-
-  lto = if finalAttrs.godotBuildTarget == "release" then "full" else "none";
-
-  sconsFlags = [
-    "arch=${stdenv.hostPlatform.linuxArch}"
-    "platform=${finalAttrs.godotBuildPlatform}"
-    "tools=${lib.boolToString finalAttrs.shouldBuildTools}"
-    "target=${finalAttrs.godotBuildTarget}"
-    "bits=${toString stdenv.hostPlatform.parsed.cpu.bits}"
-    "lto=${finalAttrs.lto}"
-  ];
-
-  shouldWrapBinary = finalAttrs.shouldBuildTools;
-  shouldInstallManual = finalAttrs.shouldBuildTools;
-  shouldPatchBinary = finalAttrs.shouldBuildTools;
-  shouldInstallHeaders = finalAttrs.shouldBuildTools;
-  shouldInstallShortcut = finalAttrs.shouldBuildTools && finalAttrs.godotBuildPlatform != "server";
-
-  outputs = [
-    "out"
-  ]
-  ++ lib.optional finalAttrs.shouldInstallManual "man"
-  ++ lib.optional finalAttrs.shouldBuildTools "dev";
-
-  builtGodotBinNamePattern =
-    if finalAttrs.godotBuildPlatform == "server" then "godot_server.*" else "godot.*";
-
-  godotBinInstallPath = "bin";
-  installedGodotBinName = finalAttrs.pname;
-  installedGodotShortcutFileName = "org.godotengine.Godot3.desktop";
-  installedGodotShortcutDisplayName = "Godot Engine 3";
 
   installPhase = ''
     runHook preInstall
@@ -162,6 +129,19 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  builtGodotBinNamePattern =
+    if finalAttrs.godotBuildPlatform == "server" then "godot_server.*" else "godot.*";
+
+  enableParallelBuilding = true;
+  godotBinInstallPath = "bin";
+  godotBuildDescription = "X11 tools";
+  godotBuildPlatform = "x11";
+  godotBuildTarget = "release_debug";
+  installedGodotBinName = finalAttrs.pname;
+  installedGodotShortcutDisplayName = "Godot Engine 3";
+  installedGodotShortcutFileName = "org.godotengine.Godot3.desktop";
+  lto = if finalAttrs.godotBuildTarget == "release" then "full" else "none";
+
   runtimeDependencies = lib.optionals finalAttrs.shouldPatchBinary (
     map lib.getLib [
       alsa-lib
@@ -170,20 +150,41 @@ stdenv.mkDerivation (finalAttrs: {
     ]
   );
 
+  sconsFlags = [
+    "arch=${stdenv.hostPlatform.linuxArch}"
+    "platform=${finalAttrs.godotBuildPlatform}"
+    "tools=${lib.boolToString finalAttrs.shouldBuildTools}"
+    "target=${finalAttrs.godotBuildTarget}"
+    "bits=${toString stdenv.hostPlatform.parsed.cpu.bits}"
+    "lto=${finalAttrs.lto}"
+  ];
+
+  shouldAddLinkFlagsToPulse = true;
+  shouldBuildTools = true;
+  shouldInstallHeaders = finalAttrs.shouldBuildTools;
+  shouldInstallManual = finalAttrs.shouldBuildTools;
+  shouldInstallShortcut = finalAttrs.shouldBuildTools && finalAttrs.godotBuildPlatform != "server";
+  shouldPatchBinary = finalAttrs.shouldBuildTools;
+  shouldWrapBinary = finalAttrs.shouldBuildTools;
+
   meta = {
-    homepage = "https://godotengine.org";
     description =
       "Free and Open Source 2D and 3D game engine (" + finalAttrs.godotBuildDescription + ")";
+
+    homepage = "https://godotengine.org";
     license = lib.licenses.mit;
+
+    maintainers = with lib.maintainers; [
+      rotaerk
+      twey
+    ];
+
     platforms = [
       "i686-linux"
       "x86_64-linux"
       "aarch64-linux"
     ];
+
     mainProgram = "godot3";
-    maintainers = with lib.maintainers; [
-      rotaerk
-      twey
-    ];
   };
 })

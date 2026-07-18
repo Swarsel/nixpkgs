@@ -1,19 +1,18 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
-  gitUpdater,
+  corrscope,
   ffmpeg,
+  gitUpdater,
   python3Packages,
   qt6Packages,
   testers,
-  corrscope,
 }:
 
 python3Packages.buildPythonApplication (finalAttrs: {
   pname = "corrscope";
   version = "0.11.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "corrscope";
@@ -24,10 +23,6 @@ python3Packages.buildPythonApplication (finalAttrs: {
 
   nativeBuildInputs = with qt6Packages; [
     wrapQtAppsHook
-  ];
-
-  build-system = with python3Packages; [
-    hatchling
   ];
 
   buildInputs = [
@@ -42,6 +37,17 @@ python3Packages.buildPythonApplication (finalAttrs: {
       qtwayland
     ]
   );
+
+  preFixup = ''
+    makeWrapperArgs+=(
+      --prefix PATH : ${lib.makeBinPath [ ffmpeg ]}
+      "''${qtWrapperArgs[@]}"
+    )
+  '';
+
+  build-system = with python3Packages; [
+    hatchling
+  ];
 
   dependencies = (
     with python3Packages;
@@ -62,26 +68,20 @@ python3Packages.buildPythonApplication (finalAttrs: {
     ]
   );
 
+  dontWrapQtApps = true;
+  pyproject = true;
+
   pythonRelaxDeps = [
     "ruamel-yaml"
   ];
 
-  dontWrapQtApps = true;
-
-  preFixup = ''
-    makeWrapperArgs+=(
-      --prefix PATH : ${lib.makeBinPath [ ffmpeg ]}
-      "''${qtWrapperArgs[@]}"
-    )
-  '';
-
   passthru = {
     tests.version = testers.testVersion {
-      package = corrscope;
       # Tries writing to
       # - $HOME/.local/share/corrscope on Linux
       # - $HOME/Library/Application Support/corrscope on Darwin
       command = "env HOME=$TMPDIR ${lib.getExe corrscope} --version";
+      package = corrscope;
     };
 
     updateScript = gitUpdater {
@@ -91,6 +91,7 @@ python3Packages.buildPythonApplication (finalAttrs: {
 
   meta = {
     description = "Render wave files into oscilloscope views, featuring advanced correlation-based triggering algorithm";
+
     longDescription = ''
       Corrscope renders oscilloscope views of WAV files recorded from chiptune (game music from
       retro sound chips).
@@ -98,6 +99,7 @@ python3Packages.buildPythonApplication (finalAttrs: {
       Corrscope uses "waveform correlation" to track complex waves (including SNES and Sega
       Genesis/FM synthesis) which jump around on other oscilloscope programs.
     '';
+
     homepage = "https://github.com/corrscope/corrscope";
     changelog = "https://github.com/corrscope/corrscope/releases/tag/${finalAttrs.version}";
     license = lib.licenses.bsd2;

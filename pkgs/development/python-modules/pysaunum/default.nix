@@ -1,18 +1,17 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
+  buildPythonPackage,
   pymodbus,
-  pytestCheckHook,
   pytest-asyncio,
   pytest-timeout,
+  pytestCheckHook,
+  setuptools,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "pysaunum";
   version = "0.6.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "mettolen";
@@ -21,16 +20,15 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-pyyiuBJ95bnhsM3X/jPdxepP/S0kx3MVJHwKUPXRBzM=";
   };
 
-  build-system = [ setuptools ];
-
-  dependencies = [ pymodbus ];
-
   nativeCheckInputs = [
     pytestCheckHook
     pytest-asyncio
     pytest-timeout
   ];
 
+  build-system = [ setuptools ];
+  dependencies = [ pymodbus ];
+  pyproject = true;
   pythonImportsCheck = [ "pysaunum" ];
 
   meta = {

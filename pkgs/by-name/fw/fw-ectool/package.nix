@@ -1,11 +1,11 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitLab,
   cmake,
-  pkg-config,
-  libusb1,
   libftdi1,
+  libusb1,
+  pkg-config,
 }:
 
 stdenv.mkDerivation {
@@ -13,11 +13,11 @@ stdenv.mkDerivation {
   version = "0-unstable-2024-04-23";
 
   src = fetchFromGitLab {
-    domain = "gitlab.howett.net";
     owner = "DHowett";
     repo = "ectool";
     rev = "abdd574ebe3640047988cb928bb6789a15dd1390";
     hash = "sha256-j0Z2Uo1LBXlHZVHPm4Xjx3LZaI6Qq0nSdViyC/CjWC8=";
+    domain = "gitlab.howett.net";
   };
 
   postPatch = ''

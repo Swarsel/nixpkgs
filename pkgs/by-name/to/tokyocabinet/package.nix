@@ -1,9 +1,9 @@
 {
-  fetchurl,
   lib,
   stdenv,
-  zlib,
+  fetchurl,
   bzip2,
+  zlib,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -46,7 +46,6 @@ stdenv.mkDerivation (finalAttrs: {
     '';
 
     license = lib.licenses.lgpl2Plus;
-
     maintainers = [ ];
     platforms = lib.platforms.unix;
   };

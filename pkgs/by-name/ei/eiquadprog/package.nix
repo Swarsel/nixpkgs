@@ -1,13 +1,13 @@
 {
+  lib,
+  stdenv,
+  fetchFromGitHub,
   boost,
   cmake,
   doxygen,
   eigen,
-  fetchFromGitHub,
   jrl-cmakemodules,
-  lib,
   pkg-config,
-  stdenv,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -32,10 +32,10 @@ stdenv.mkDerivation (finalAttrs: {
     pkg-config
     jrl-cmakemodules
   ];
-  propagatedBuildInputs = [ eigen ];
-  checkInputs = [ boost ];
 
+  propagatedBuildInputs = [ eigen ];
   doCheck = true;
+  checkInputs = [ boost ];
 
   meta = {
     description = "C++ reimplementation of eiquadprog";

@@ -1,25 +1,21 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # build-system
-  setuptools,
-
   # dependencies
   aiohttp,
-  typing-extensions,
-
   # tests
   aioresponses,
+  buildPythonPackage,
   pytest-asyncio,
   pytestCheckHook,
+  # build-system
+  setuptools,
+  typing-extensions,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "idrive-e2-client";
   version = "0.1.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "patrickvorgers";
@@ -28,6 +24,12 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-T/tPFcwowZuAoAdJayWvWoir13U+dOTGxjFfsgrOJCo=";
   };
 
+  nativeCheckInputs = [
+    aioresponses
+    pytest-asyncio
+    pytestCheckHook
+  ];
+
   build-system = [ setuptools ];
 
   dependencies = [
@@ -35,12 +37,7 @@ buildPythonPackage (finalAttrs: {
     typing-extensions
   ];
 
-  nativeCheckInputs = [
-    aioresponses
-    pytest-asyncio
-    pytestCheckHook
-  ];
-
+  pyproject = true;
   pythonImportsCheck = [ "idrive_e2" ];
 
   meta = {

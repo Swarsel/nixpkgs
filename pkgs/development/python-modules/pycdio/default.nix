@@ -1,20 +1,19 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  nix-update-script,
-  setuptools,
-  pkg-config,
-  swig,
+  buildPythonPackage,
   libcdio,
   libiconv,
+  nix-update-script,
+  pkg-config,
   pytestCheckHook,
+  setuptools,
+  swig,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "pycdio";
   version = "2.1.1-unstable-2024-02-26";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "rocky";
@@ -23,11 +22,10 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-bOm82mBUIaw4BGHj3Y24Fv5+RfAew+Ma1u4QENXoRiU=";
   };
 
-  preConfigure = ''
-    patchShebangs .
+  postPatch = ''
+    substituteInPlace {data,test}/isofs-m1.cue \
+      --replace-fail "ISOFS-M1.BIN" "isofs-m1.bin"
   '';
-
-  build-system = [ setuptools ];
 
   nativeBuildInputs = [
     pkg-config
@@ -39,14 +37,12 @@ buildPythonPackage (finalAttrs: {
     libiconv
   ];
 
-  postPatch = ''
-    substituteInPlace {data,test}/isofs-m1.cue \
-      --replace-fail "ISOFS-M1.BIN" "isofs-m1.bin"
+  preConfigure = ''
+    patchShebangs .
   '';
 
   nativeCheckInputs = [ pytestCheckHook ];
-
-  enabledTestPaths = [ "test/test-*.py" ];
+  build-system = [ setuptools ];
 
   disabledTests = [
     # Test are depending on image files that are not there
@@ -54,14 +50,17 @@ buildPythonPackage (finalAttrs: {
     "test_cdda"
   ];
 
+  enabledTestPaths = [ "test/test-*.py" ];
+  pyproject = true;
+
   passthru.updateScript = nix-update-script {
     extraArgs = [ "--version=branch" ];
   };
 
   meta = {
+    description = "Wrapper around libcdio (CD Input and Control library)";
     homepage = "https://www.gnu.org/software/libcdio/";
     changelog = "https://github.com/rocky/pycdio/blob/${finalAttrs.src.rev}/ChangeLog";
-    description = "Wrapper around libcdio (CD Input and Control library)";
     license = lib.licenses.gpl3Plus;
     maintainers = with lib.maintainers; [ sigmanificient ];
   };

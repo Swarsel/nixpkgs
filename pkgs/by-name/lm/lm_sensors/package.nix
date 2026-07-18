@@ -5,9 +5,9 @@
   bash,
   bison,
   flex,
-  which,
   perl,
   rrdtool,
+  which,
   sensord ? false,
 }:
 
@@ -17,13 +17,13 @@ let
 
 in
 stdenv.mkDerivation {
-  pname = "lm-sensors";
   inherit version;
+  pname = "lm-sensors";
 
   src = fetchFromGitHub {
+    inherit tag;
     owner = "hramrach"; # openSUSE fork used by openSUSE and Gentoo
     repo = "lm-sensors";
-    inherit tag;
     hash = "sha256-EmS9H3TQac6bHs2G8t1C2cQNAjN13zPoKDysny6aTFw=";
   };
 
@@ -72,25 +72,28 @@ stdenv.mkDerivation {
   ]
   ++ lib.optional sensord "PROG_EXTRA=sensord";
 
-  enableParallelBuilding = true;
-
   postInstall = ''
     mkdir -p $doc/share/doc/lm_sensors
     cp -r configs doc/* $doc/share/doc/lm_sensors
   '';
 
+  enableParallelBuilding = true;
+
   meta = {
+    description = "Tools for reading hardware sensors - maintained fork";
     homepage = "https://hwmon.wiki.kernel.org/lm_sensors";
     changelog = "https://raw.githubusercontent.com/hramrach/lm-sensors/${tag}/CHANGES";
-    description = "Tools for reading hardware sensors - maintained fork";
+
     license = with lib.licenses; [
       lgpl21Plus
       gpl2Plus
     ];
+
     maintainers = with lib.maintainers; [
       pmy
       oxalica
     ];
+
     platforms = lib.platforms.linux;
     mainProgram = "sensors";
   };

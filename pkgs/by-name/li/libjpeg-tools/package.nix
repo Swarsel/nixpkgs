@@ -27,6 +27,8 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postBuild
   '';
 
+  doCheck = false; # no tests
+
   installPhase = ''
     runHook preInstall
     install -m755 -D jpeg $out/bin/jpeg
@@ -34,13 +36,11 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
-  doCheck = false; # no tests
-
   meta = {
     description = "A complete implementation of 10918-1 (JPEG) coming from jpeg.org (the ISO group) with extensions for HDR, lossless and alpha channel coding standardized as ISO/IEC 18477 (JPEG XT)";
     homepage = "https://github.com/thorfdbg/libjpeg";
-    license = with lib.licenses; [ gpl3 ];
     changelog = "https://github.com/thorfdbg/libjpeg/README.history";
+    license = with lib.licenses; [ gpl3 ];
     maintainers = with lib.maintainers; [ bcdarwin ];
     platforms = lib.platforms.unix;
     mainProgram = "jpeg";

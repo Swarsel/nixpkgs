@@ -1,18 +1,17 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
   appdirs,
+  buildPythonPackage,
   click,
   flit-core,
-  pytestCheckHook,
   freezegun,
+  pytestCheckHook,
 }:
 
 buildPythonPackage rec {
   pname = "taxi";
   version = "6.3.3";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "sephii";
@@ -21,6 +20,11 @@ buildPythonPackage rec {
     hash = "sha256-FeAfat5/Dq0y/XHFbZnOEgFix2z+dP5GXvAANLTPFP8=";
   };
 
+  nativeCheckInputs = [
+    freezegun
+    pytestCheckHook
+  ];
+
   build-system = [ flit-core ];
 
   dependencies = [
@@ -28,18 +32,14 @@ buildPythonPackage rec {
     click
   ];
 
-  nativeCheckInputs = [
-    freezegun
-    pytestCheckHook
-  ];
-
+  pyproject = true;
   pythonImportsCheck = [ "taxi" ];
 
   meta = {
-    homepage = "https://github.com/sephii/taxi/";
     description = "Timesheeting made easy";
-    mainProgram = "taxi";
+    homepage = "https://github.com/sephii/taxi/";
     license = lib.licenses.wtfpl;
     maintainers = with lib.maintainers; [ jocelynthode ];
+    mainProgram = "taxi";
   };
 }

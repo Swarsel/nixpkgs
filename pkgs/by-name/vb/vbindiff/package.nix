@@ -9,12 +9,12 @@ stdenv.mkDerivation (finalAttrs: {
   pname = "vbindiff";
   version = "3.0_beta5";
 
-  buildInputs = [ ncurses ];
-
   src = fetchurl {
     url = "https://www.cjmweb.net/vbindiff/vbindiff-${finalAttrs.version}.tar.gz";
     sha256 = "1f1kj4jki08bnrwpzi663mjfkrx4wnfpzdfwd2qgijlkx5ysjkgh";
   };
+
+  buildInputs = [ ncurses ];
 
   meta = {
     description = "Terminal visual binary diff viewer";

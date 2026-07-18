@@ -3,14 +3,19 @@
   stdenv,
   fetchurl,
   fetchFromGitLab,
+  boost,
   cairo,
   clang-tools,
   cmake,
-  boost,
+  # for passthru.tests
+  cups-filters,
   curl,
   fontconfig,
   freetype,
+  gdal,
+  gegl,
   glib,
+  inkscape,
   lcms,
   libiconv,
   libintl,
@@ -19,30 +24,24 @@
   ninja,
   openjpeg,
   pkg-config,
-  python3,
-  zlib,
-  withData ? true,
   poppler_data,
+  python3,
+  scribus,
+  testers,
+  vips,
+  zlib,
+  gobject-introspection ? null,
+  gpgme ? null,
+  gpgmeSupport ? false,
+  introspectionSupport ? false,
+  minimal ? false,
+  nss ? null,
   qt5Support ? false,
   qt6Support ? false,
   qtbase ? null,
-  introspectionSupport ? false,
-  gobject-introspection ? null,
-  gpgmeSupport ? false,
-  gpgme ? null,
-  utils ? false,
-  nss ? null,
-  minimal ? false,
   suffix ? "glib",
-
-  # for passthru.tests
-  cups-filters,
-  gdal,
-  gegl,
-  inkscape,
-  scribus,
-  vips,
-  testers,
+  utils ? false,
+  withData ? true,
 }:
 
 let
@@ -54,25 +53,25 @@ let
   # version.
   testData = fetchFromGitLab {
     domain = "gitlab.freedesktop.org";
+    hash = "sha256-Xf8duSh0r1o09b5BKB7mBvzrMfXYlzTuTOuK2ZCeItc=";
     owner = "poppler";
     repo = "test";
     rev = "f0068e9c530017ad811d1f28b95f9b7f59264e37";
-    hash = "sha256-Xf8duSh0r1o09b5BKB7mBvzrMfXYlzTuTOuK2ZCeItc=";
   };
 in
 stdenv.mkDerivation (finalAttrs: {
   pname = "poppler-${suffix}";
   version = "26.06.0"; # beware: updates often break cups-filters build, check scribus too!
 
-  outputs = [
-    "out"
-    "dev"
-  ];
-
   src = fetchurl {
     url = "https://poppler.freedesktop.org/poppler-${finalAttrs.version}.tar.xz";
     hash = "sha256-TLTlo9yMte7HUciiPIuhn2H5be3AzQfSruawyOLPa6Q=";
   };
+
+  outputs = [
+    "out"
+    "dev"
+  ];
 
   nativeBuildInputs = [
     cmake
@@ -138,9 +137,6 @@ stdenv.mkDerivation (finalAttrs: {
     (mkFlag qt6Support "QT6")
     (mkFlag gpgmeSupport "GPGME")
   ];
-  disallowedReferences = lib.optional finalAttrs.finalPackage.doCheck testData;
-
-  dontWrapQtApps = true;
 
   preConfigure =
     lib.optionalString finalAttrs.finalPackage.doCheck ''
@@ -154,6 +150,8 @@ stdenv.mkDerivation (finalAttrs: {
       sed -i -e '1i cmake_policy(SET CMP0025 NEW)' CMakeLists.txt
     '';
 
+  doCheck = true;
+
   # Work around gpgme trying to write to $HOME during qt5 and qt6 tests:
   preCheck = lib.optionalString gpgmeSupport ''
     HOME_orig="$HOME"
@@ -165,10 +163,12 @@ stdenv.mkDerivation (finalAttrs: {
     unset -v HOME_orig
   '';
 
-  doCheck = true;
+  disallowedReferences = lib.optional finalAttrs.finalPackage.doCheck testData;
+  dontWrapQtApps = true;
 
   passthru = {
     inherit testData;
+
     tests = {
       # These depend on internal poppler code that frequently changes.
       inherit
@@ -181,31 +181,37 @@ stdenv.mkDerivation (finalAttrs: {
         gegl
         vips
         ;
+
       gdal = gdal.override { usePoppler = true; };
-      python-poppler-qt5 = python3.pkgs.poppler-qt5;
 
       pkg-config = testers.hasPkgConfigModules {
         package = finalAttrs.finalPackage;
       };
+
+      python-poppler-qt5 = python3.pkgs.poppler-qt5;
     };
   };
 
   meta = {
-    homepage = "https://poppler.freedesktop.org/";
-    changelog = "https://gitlab.freedesktop.org/poppler/poppler/-/blob/poppler-${finalAttrs.version}/NEWS";
     description = "PDF rendering library";
+
     longDescription = ''
       Poppler is a PDF rendering library based on the xpdf-3.0 code base. In
       addition it provides a number of tools that can be installed separately.
     '';
+
+    homepage = "https://poppler.freedesktop.org/";
+    changelog = "https://gitlab.freedesktop.org/poppler/poppler/-/blob/poppler-${finalAttrs.version}/NEWS";
     license = with lib.licenses; [ gpl2Plus ];
-    platforms = lib.platforms.all;
     maintainers = [ ];
-    teams = [ lib.teams.freedesktop ];
+    platforms = lib.platforms.all;
+
     pkgConfigModules = [
       "poppler"
     ]
     ++ lib.optionals (!minimal) [ "poppler-cpp" ]
     ++ lib.optionals introspectionSupport [ "poppler-glib" ];
+
+    teams = [ lib.teams.freedesktop ];
   };
 })

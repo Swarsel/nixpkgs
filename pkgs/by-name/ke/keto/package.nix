@@ -3,8 +3,8 @@
   stdenv,
   fetchFromGitHub,
   buildGoModule,
-  versionCheckHook,
   installShellFiles,
+  versionCheckHook,
 }:
 buildGoModule (finalAttrs: {
   pname = "keto";
@@ -17,39 +17,16 @@ buildGoModule (finalAttrs: {
     hash = "sha256-wRtz4RvJ7LxVnSLmXVZFGa9QXjcPnDNJxHKosbyTed0=";
   };
 
+  nativeBuildInputs = [ installShellFiles ];
   vendorHash = "sha256-B27aC4yXS36eOoq53+RWp0vq1Oqw2aR+gOjv0m+b/I4=";
 
-  __structuredAttrs = true;
-
-  tags = [
-    "sqlite"
-    "json1"
-    "hsm"
-  ];
-
-  subPackages = [ "..." ];
-
-  # Pass versioning information via ldflags
-  ldflags = [
-    "-s"
-    "-X github.com/ory/keto/internal/driver/config.Version=${finalAttrs.src.tag}"
-    "-X github.com/ory/keto/internal/driver/config.Commit=${finalAttrs.src.rev}"
-  ];
-
-  nativeBuildInputs = [ installShellFiles ];
-  # tests use dynamic port assignment via port `0`
-  __darwinAllowLocalNetworking = true;
-
-  preCheck = ''
-    export version='${finalAttrs.src.tag}'
-  '';
   checkFlags = [
     "-short"
   ];
 
-  doInstallCheck = true;
-  nativeInstallCheckInputs = [ versionCheckHook ];
-  versionCheckProgramArg = [ "version" ];
+  preCheck = ''
+    export version='${finalAttrs.src.tag}'
+  '';
 
   postInstall = lib.optionalString (stdenv.buildPlatform.canExecute stdenv.hostPlatform) ''
     installShellCompletion --cmd keto \
@@ -58,8 +35,32 @@ buildGoModule (finalAttrs: {
       --zsh <($out/bin/keto completion zsh)
   '';
 
+  doInstallCheck = true;
+  nativeInstallCheckInputs = [ versionCheckHook ];
+  # tests use dynamic port assignment via port `0`
+  __darwinAllowLocalNetworking = true;
+  __structuredAttrs = true;
+
+  # Pass versioning information via ldflags
+  ldflags = [
+    "-s"
+    "-X github.com/ory/keto/internal/driver/config.Version=${finalAttrs.src.tag}"
+    "-X github.com/ory/keto/internal/driver/config.Commit=${finalAttrs.src.rev}"
+  ];
+
+  subPackages = [ "..." ];
+
+  tags = [
+    "sqlite"
+    "json1"
+    "hsm"
+  ];
+
+  versionCheckProgramArg = [ "version" ];
+
   meta = {
     description = "Scalable and customizable permission server ";
+
     longDescription = ''
       Open source implementation of "Zanzibar: Google's Consistent, Global Authorization System". It follows
       [cloud architecture best practices](https://www.ory.com/docs/ecosystem/software-architecture-philosophy)
@@ -72,13 +73,16 @@ buildGoModule (finalAttrs: {
       - Horizontal scaling to billions of relationships
       - Consistency and high availability
     '';
+
     homepage = "https://github.com/ory/keto";
     changelog = "https://github.com/ory/keto/releases/tag/${finalAttrs.src.tag}";
     license = lib.licenses.asl20;
+
     maintainers = with lib.maintainers; [
       mrmebelman
       debtquity
     ];
+
     mainProgram = "keto";
   };
 })

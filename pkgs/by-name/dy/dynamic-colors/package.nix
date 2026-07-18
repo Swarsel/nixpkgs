@@ -15,12 +15,12 @@ stdenv.mkDerivation (finalAttrs: {
     sha256 = "sha256-jSdwq9WwYZP8MK6z7zJa0q93xfanr6iuvAt8YQkQxxE=";
   };
 
-  env.PREFIX = placeholder "out";
-
   postPatch = ''
     substituteInPlace bin/dynamic-colors \
       --replace /usr/share/dynamic-colors $out/share/dynamic-colors
   '';
+
+  env.PREFIX = placeholder "out";
 
   meta = {
     description = "Change terminal colors on the fly";

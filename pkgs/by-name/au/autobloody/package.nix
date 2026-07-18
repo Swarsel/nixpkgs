@@ -1,13 +1,12 @@
 {
   lib,
-  python3,
   fetchFromGitHub,
+  python3,
 }:
 
 python3.pkgs.buildPythonApplication (finalAttrs: {
   pname = "autobloody";
   version = "1.1.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "CravateRouge";
@@ -31,6 +30,8 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
   nativeCheckInputs = with python3.pkgs; [
     pytestCheckHook
   ];
+
+  pyproject = true;
 
   pythonImportsCheck = [
     "autobloody"

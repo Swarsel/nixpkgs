@@ -1,14 +1,13 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   pytestCheckHook,
 }:
 
 buildPythonPackage rec {
   pname = "pyuseragents";
   version = "1.0.5";
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "Animenosekai";
@@ -19,6 +18,7 @@ buildPythonPackage rec {
 
   nativeCheckInputs = [ pytestCheckHook ];
   enabledTestPaths = [ "test.py" ];
+  format = "setuptools";
   pythonImportsCheck = [ "pyuseragents" ];
 
   meta = {

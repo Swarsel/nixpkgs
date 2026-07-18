@@ -2,17 +2,17 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  gitUpdater,
-  autoreconfHook,
-  libtool,
-  pkg-config,
   autoconf-archive,
-  libxml2,
-  icu,
+  autoreconfHook,
   bzip2,
-  libtar,
-  ticcutils,
   frog,
+  gitUpdater,
+  icu,
+  libtar,
+  libtool,
+  libxml2,
+  pkg-config,
+  ticcutils,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -30,6 +30,7 @@ stdenv.mkDerivation (finalAttrs: {
     pkg-config
     autoreconfHook
   ];
+
   buildInputs = [
     bzip2
     libtool
@@ -44,7 +45,6 @@ stdenv.mkDerivation (finalAttrs: {
   env.CXXFLAGS = toString [ "-DU_USING_ICU_NAMESPACE=1" ];
 
   passthru = {
-    updateScript = gitUpdater { rev-prefix = "v"; };
     tests = {
       /**
         Reverse dependencies. Does not respect overrides.
@@ -53,19 +53,22 @@ stdenv.mkDerivation (finalAttrs: {
         inherit frog;
       };
     };
+
+    updateScript = gitUpdater { rev-prefix = "v"; };
   };
 
   meta = {
     description = "C++ API for FoLiA documents; an XML-based linguistic annotation format";
-    mainProgram = "folialint";
-    homepage = "https://proycon.github.io/folia/";
-    license = lib.licenses.gpl3;
-    platforms = lib.platforms.all;
-    maintainers = with lib.maintainers; [ roberth ];
 
     longDescription = ''
       A high-level C++ API to read, manipulate, and create FoLiA documents. FoLiA is an XML-based annotation format, suitable for the representation of linguistically annotated language resources. FoLiA’s intended use is as a format for storing and/or exchanging language resources, including corpora.
     '';
+
+    homepage = "https://proycon.github.io/folia/";
+    license = lib.licenses.gpl3;
+    maintainers = with lib.maintainers; [ roberth ];
+    platforms = lib.platforms.all;
+    mainProgram = "folialint";
   };
 
 })

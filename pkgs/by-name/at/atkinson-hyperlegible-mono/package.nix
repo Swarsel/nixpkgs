@@ -1,18 +1,13 @@
 {
   lib,
-  stdenvNoCC,
   fetchFromGitHub,
   installFonts,
+  stdenvNoCC,
 }:
 
 stdenvNoCC.mkDerivation {
   pname = "atkinson-hyperlegible-mono";
   version = "2.001-unstable-2024-11-20";
-
-  outputs = [
-    "out"
-    "webfont"
-  ];
 
   src = fetchFromGitHub {
     owner = "googlefonts";
@@ -21,15 +16,20 @@ stdenvNoCC.mkDerivation {
     hash = "sha256-V0zWbNYT3RGO9vjX+GHfO38ywMozcZVJkBZH+8G5sC0=";
   };
 
-  nativeBuildInputs = [ installFonts ];
+  outputs = [
+    "out"
+    "webfont"
+  ];
 
-  dontBuild = true;
+  nativeBuildInputs = [ installFonts ];
 
   # default installPhase invokes python, but we still want the font hook to run
   installPhase = ''
     runHook preInstall
     runHook postInstall
   '';
+
+  dontBuild = true;
 
   meta = {
     description = "New (2024) monospace sibling family to Atkinson Hyperlegible Next";

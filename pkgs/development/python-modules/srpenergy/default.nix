@@ -1,17 +1,16 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
+  buildPythonPackage,
+  pytestCheckHook,
   python-dateutil,
   requests,
-  pytestCheckHook,
+  setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "srpenergy";
   version = "1.3.8";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "lamoreauxlab";
@@ -25,6 +24,7 @@ buildPythonPackage rec {
       --replace-fail "setuptools==" "setuptools>="
   '';
 
+  nativeCheckInputs = [ pytestCheckHook ];
   build-system = [ setuptools ];
 
   dependencies = [
@@ -32,19 +32,18 @@ buildPythonPackage rec {
     requests
   ];
 
-  nativeCheckInputs = [ pytestCheckHook ];
-
   disabledTestPaths = [
     # requires an account
     "quickstart_test.py"
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "srpenergy.client" ];
 
   meta = {
-    changelog = "https://github.com/lamoreauxlab/srpenergy-api-client-python/releases/tag/${version}";
     description = "Unofficial Python module for interacting with Srp Energy data";
     homepage = "https://github.com/lamoreauxlab/srpenergy-api-client-python";
+    changelog = "https://github.com/lamoreauxlab/srpenergy-api-client-python/releases/tag/${version}";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ dotlambda ];
   };

@@ -1,18 +1,14 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  pythonOlder,
-  poetry-core,
+  buildPythonPackage,
   pkg-config,
+  poetry-core,
   pytestCheckHook,
+  pythonOlder,
 }:
 
 buildPythonPackage rec {
-  pname = "pkgconfig";
-  version = "1.5.5";
-  pyproject = true;
-
   inherit (pkg-config)
     setupHooks
     wrapperName
@@ -20,6 +16,9 @@ buildPythonPackage rec {
     targetPrefix
     baseBinName
     ;
+
+  pname = "pkgconfig";
+  version = "1.5.5";
 
   src = fetchFromGitHub {
     owner = "matze";
@@ -38,13 +37,11 @@ buildPythonPackage rec {
   '';
 
   nativeBuildInputs = [ poetry-core ];
-
   # ModuleNotFoundError: No module named 'distutils'
   # https://github.com/matze/pkgconfig/issues/64
   doCheck = pythonOlder "3.12";
-
   nativeCheckInputs = [ pytestCheckHook ];
-
+  pyproject = true;
   pythonImportsCheck = [ "pkgconfig" ];
 
   meta = {

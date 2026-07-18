@@ -1,17 +1,17 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
-  gfortran,
-  pkg-config,
   blas,
-  zlib,
   bzip2,
   coin-utils,
-  withGurobi ? false,
-  gurobi,
-  withCplex ? false,
   cplex,
+  gfortran,
+  gurobi,
+  pkg-config,
+  zlib,
+  withCplex ? false,
+  withGurobi ? false,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -25,6 +25,11 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-3aTO7JGEOP/RCOZ1X9b68rrtv6T78euf1TYGTjyXSRE=";
   };
 
+  nativeBuildInputs = [
+    gfortran
+    pkg-config
+  ];
+
   buildInputs = [
     blas
     zlib
@@ -33,10 +38,7 @@ stdenv.mkDerivation (finalAttrs: {
   ]
   ++ lib.optional withGurobi gurobi
   ++ lib.optional withCplex cplex;
-  nativeBuildInputs = [
-    gfortran
-    pkg-config
-  ];
+
   configureFlags =
     lib.optionals withGurobi [
       "--with-gurobi-incdir=${gurobi}/include"
@@ -55,17 +57,15 @@ stdenv.mkDerivation (finalAttrs: {
     NIX_LDFLAGS = "-L${cplex}/cplex/bin/${cplex.libArch}";
   };
 
-  hardeningDisable = [ "format" ];
-
   enableParallelBuilding = true;
-
+  hardeningDisable = [ "format" ];
   passthru = { inherit withGurobi withCplex; };
 
   meta = {
     description = "Abstract base class to a generic linear programming (LP) solver";
     homepage = "https://github.com/coin-or/Osi";
     license = lib.licenses.epl20;
-    platforms = lib.platforms.unix;
     maintainers = [ ];
+    platforms = lib.platforms.unix;
   };
 })

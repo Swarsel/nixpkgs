@@ -1,24 +1,24 @@
 {
   lib,
-  fetchPypi,
+  buildDotnetModule,
   buildPythonPackage,
-  pythonAtLeast,
-  pytestCheckHook,
+  cffi,
   dotnetCorePackages,
+  fetchPypi,
+  pytestCheckHook,
+  pythonAtLeast,
   setuptools,
   setuptools-scm,
   wheel,
-  buildDotnetModule,
-  cffi,
 }:
 
 let
   pname = "clr-loader";
   version = "0.2.10";
   src = fetchPypi {
-    pname = "clr_loader";
     inherit version;
     hash = "sha256-gfEUr7xQBbr8Xv5a8TQdQA4iE34nWwQqiXnz/rn8lEY=";
+    pname = "clr_loader";
   };
   # This stops msbuild from picking up $version from the environment
   postPatch = ''
@@ -44,12 +44,14 @@ let
       src
       postPatch
       ;
+
+    dotnet-sdk = dotnetCorePackages.sdk_10_0;
+    nugetDeps = ./deps.json;
+
     projectFile = [
       "netfx_loader/ClrLoader.csproj"
       "example/example.csproj"
     ];
-    nugetDeps = ./deps.json;
-    dotnet-sdk = dotnetCorePackages.sdk_10_0;
   };
 in
 buildPythonPackage {
@@ -60,12 +62,6 @@ buildPythonPackage {
     postPatch
     ;
 
-  disabled = pythonAtLeast "3.14";
-
-  pyproject = true;
-
-  buildInputs = dotnetCorePackages.sdk_10_0.packages ++ dotnet-build.nugetDeps;
-
   nativeBuildInputs = [
     setuptools
     setuptools-scm
@@ -73,17 +69,8 @@ buildPythonPackage {
     dotnetCorePackages.sdk_10_0
   ];
 
+  buildInputs = dotnetCorePackages.sdk_10_0.packages ++ dotnet-build.nugetDeps;
   propagatedBuildInputs = [ cffi ];
-
-  nativeCheckInputs = [ pytestCheckHook ];
-
-  disabledTests = [
-    # TODO: mono does not work due to https://github.com/NixOS/nixpkgs/issues/7307
-    "test_mono"
-    "test_mono_debug"
-    "test_mono_signal_chaining"
-    "test_mono_set_dir"
-  ];
 
   # Perform dotnet restore based on the nuget-source
   preConfigure = ''
@@ -96,6 +83,18 @@ buildPythonPackage {
       -p:Deterministic=true
   '';
 
+  nativeCheckInputs = [ pytestCheckHook ];
+  disabled = pythonAtLeast "3.14";
+
+  disabledTests = [
+    # TODO: mono does not work due to https://github.com/NixOS/nixpkgs/issues/7307
+    "test_mono"
+    "test_mono_debug"
+    "test_mono_signal_chaining"
+    "test_mono_set_dir"
+  ];
+
+  pyproject = true;
   passthru.fetch-deps = dotnet-build.fetch-deps;
 
   meta = {

@@ -2,32 +2,28 @@
   lib,
   buildPythonPackage,
   fetchPypi,
-
-  unittestCheckHook,
-
   setuptools,
+  unittestCheckHook,
 }:
 
 buildPythonPackage rec {
   pname = "tinysegmenter";
   version = "0.4";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
     hash = "sha256-ZEWL26VLp0gsAseF+WDPPWz2FZSk2rPWTDJUOQlPwbc=";
   };
 
-  build-system = [ setuptools ];
-
   nativeCheckInputs = [ unittestCheckHook ];
+  build-system = [ setuptools ];
+  pyproject = true;
+  pythonImportsCheck = [ "tinysegmenter" ];
 
   unittestFlagsArray = [
     "-s"
     "tests"
   ];
-
-  pythonImportsCheck = [ "tinysegmenter" ];
 
   meta = {
     description = "Very compact Japanese tokenizer";

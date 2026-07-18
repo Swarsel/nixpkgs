@@ -1,15 +1,14 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools_80,
+  buildPythonPackage,
   pytestCheckHook,
+  setuptools_80,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "zope-event";
   version = "6.2";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "zopefoundation";
@@ -18,14 +17,11 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-FoE9bdr/JcOaB8/OQTUmxGrNgIDc1vPDlmZq0v+bjmQ=";
   };
 
-  build-system = [ setuptools_80 ];
-
-  pythonImportsCheck = [ "zope.event" ];
-
   nativeCheckInputs = [ pytestCheckHook ];
-
+  build-system = [ setuptools_80 ];
   enabledTestPaths = [ "src/zope/event/tests.py" ];
-
+  pyproject = true;
+  pythonImportsCheck = [ "zope.event" ];
   pythonNamespaces = [ "zope" ];
 
   meta = {

@@ -1,29 +1,29 @@
 {
   lib,
   stdenv,
-  fetchFromGitHub,
-  unstableGitUpdater,
   fetchurl,
-  pkg-config,
+  fetchFromGitHub,
   cmake,
-  libcbor,
-  openssl,
-  zlib,
-  gnugrep,
-  gawk,
-  # Linux only
-  pcsclite,
-  udev,
-  imagemagick,
-  # GUI
-  python3,
-  xterm,
-  makeDesktopItem,
   copyDesktopItems,
+  gawk,
+  gnugrep,
+  imagemagick,
+  libcbor,
+  libcouchbase,
+  libsolv,
   # Darwin only
   libuv,
-  libsolv,
-  libcouchbase,
+  makeDesktopItem,
+  openssl,
+  # Linux only
+  pcsclite,
+  pkg-config,
+  # GUI
+  python3,
+  udev,
+  unstableGitUpdater,
+  xterm,
+  zlib,
 }:
 let
   pythonEnv = python3.withPackages (ps: [ ps.tkinter ]);
@@ -39,12 +39,14 @@ stdenv.mkDerivation rec {
     hash = "sha256-olkEUHJ350FIMUlWG37wqSfO2wyYni4CYspwa4lAO5w=";
   };
 
-  passthru.updateScript = unstableGitUpdater { };
-
-  icon = fetchurl {
-    url = "https://token2.net/img/icon/logo-white.png";
-    hash = "sha256-UpxRzn24v1vigMFlofVU+YOzKrkxCu2Pk5iktqFgNO8=";
-  };
+  postPatch = ''
+    substituteInPlace ./src/libfido2.pc.in \
+      --replace-fail "\''${prefix}/@CMAKE_INSTALL_LIBDIR@" "@CMAKE_INSTALL_FULL_LIBDIR@"
+  ''
+  + lib.optionalString stdenv.hostPlatform.isDarwin ''
+    substituteInPlace ./CMakeLists.txt \
+      --replace-fail "/\''${CMAKE_INSTALL_LIBDIR}" "/lib"
+  '';
 
   nativeBuildInputs = [
     pkg-config
@@ -73,15 +75,6 @@ stdenv.mkDerivation rec {
 
   cmakeFlags = [ "-USE_PCSC=ON" ];
 
-  postPatch = ''
-    substituteInPlace ./src/libfido2.pc.in \
-      --replace-fail "\''${prefix}/@CMAKE_INSTALL_LIBDIR@" "@CMAKE_INSTALL_FULL_LIBDIR@"
-  ''
-  + lib.optionalString stdenv.hostPlatform.isDarwin ''
-    substituteInPlace ./CMakeLists.txt \
-      --replace-fail "/\''${CMAKE_INSTALL_LIBDIR}" "/lib"
-  '';
-
   postInstall =
     lib.optionalString stdenv.hostPlatform.isLinux ''
       install $src/fido2-manage.sh $out/bin/fido2-manage
@@ -92,19 +85,6 @@ stdenv.mkDerivation rec {
     + lib.optionalString stdenv.hostPlatform.isDarwin ''
       install $src/fido2-manage-mac.sh $out/bin/fido2-manage
     '';
-
-  desktopItems = lib.optionals stdenv.hostPlatform.isLinux [
-    (makeDesktopItem {
-      desktopName = "Fido2 Manager";
-      name = "fido2-manage";
-      exec = "fido2-manage-gui";
-      icon = "token2";
-      comment = meta.description;
-      categories = [
-        "Utility"
-      ];
-    })
-  ];
 
   postFixup = ''
     substituteInPlace $out/bin/fido2-manage \
@@ -129,12 +109,33 @@ stdenv.mkDerivation rec {
       --replace-fail "ggrep" "${gnugrep}/bin/grep"
   '';
 
+  desktopItems = lib.optionals stdenv.hostPlatform.isLinux [
+    (makeDesktopItem {
+      categories = [
+        "Utility"
+      ];
+
+      comment = meta.description;
+      desktopName = "Fido2 Manager";
+      exec = "fido2-manage-gui";
+      icon = "token2";
+      name = "fido2-manage";
+    })
+  ];
+
+  icon = fetchurl {
+    hash = "sha256-UpxRzn24v1vigMFlofVU+YOzKrkxCu2Pk5iktqFgNO8=";
+    url = "https://token2.net/img/icon/logo-white.png";
+  };
+
+  passthru.updateScript = unstableGitUpdater { };
+
   meta = {
     description = "Manage FIDO2.1 devices over USB or NFC, including Passkeys";
     homepage = "https://github.com/token2/fido2-manage";
-    platforms = lib.platforms.all;
     license = lib.licenses.bsd2;
-    mainProgram = "fido2-manage";
     maintainers = with lib.maintainers; [ Srylax ];
+    platforms = lib.platforms.all;
+    mainProgram = "fido2-manage";
   };
 }

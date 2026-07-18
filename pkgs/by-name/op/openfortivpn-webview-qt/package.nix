@@ -1,6 +1,6 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
   cmake,
   qt6Packages,
@@ -15,19 +15,22 @@ stdenv.mkDerivation (finalAttrs: {
     rev = "v${finalAttrs.version}-qt";
     hash = "sha256-TohrOgLzvxmUsRVV36XHgE9ul38CjU/qKF+LZOZQieE=";
   };
-  sourceRoot = "${finalAttrs.src.name}/openfortivpn-webview-qt";
 
   nativeBuildInputs = [
     cmake
     qt6Packages.wrapQtAppsHook
   ];
+
   buildInputs = [ qt6Packages.qtwebengine ];
+
   installPhase = ''
     runHook preInstall
     mkdir -p $out/bin
     cp openfortivpn-webview $out/bin/
     runHook postInstall
   '';
+
+  sourceRoot = "${finalAttrs.src.name}/openfortivpn-webview-qt";
 
   meta = {
     description = "Perform the SAML single sign-on and easily retrieve the SVPNCOOKIE needed by openfortivpn";

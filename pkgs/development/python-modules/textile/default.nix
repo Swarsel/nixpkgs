@@ -1,20 +1,19 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   nh3,
   pillow,
   pytest-cov-stub,
   pytestCheckHook,
   regex,
-  setuptools-scm,
   setuptools,
+  setuptools-scm,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "textile";
   version = "4.0.4";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "textile";
@@ -22,6 +21,11 @@ buildPythonPackage (finalAttrs: {
     tag = finalAttrs.version;
     hash = "sha256-fHji+TOIFVljkvlOaRp/8EnZ6KYgMu/DLpg6PmOSEbk=";
   };
+
+  nativeCheckInputs = [
+    pytest-cov-stub
+    pytestCheckHook
+  ];
 
   build-system = [
     setuptools
@@ -37,11 +41,7 @@ buildPythonPackage (finalAttrs: {
     imagesize = [ pillow ];
   };
 
-  nativeCheckInputs = [
-    pytest-cov-stub
-    pytestCheckHook
-  ];
-
+  pyproject = true;
   pythonImportsCheck = [ "textile" ];
 
   meta = {

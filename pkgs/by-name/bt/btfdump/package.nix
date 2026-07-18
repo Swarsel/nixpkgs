@@ -1,12 +1,12 @@
 {
   lib,
   stdenv,
-  rustPlatform,
-  fetchCrate,
   cargo-hack,
+  fetchCrate,
+  libxml2,
+  rustPlatform,
   rustc,
   zlib,
-  libxml2,
 }:
 
 rustPlatform.buildRustPackage rec {
@@ -22,9 +22,9 @@ rustPlatform.buildRustPackage rec {
 
   meta = {
     description = "BTF introspection tool";
-    mainProgram = "btf";
     homepage = "https://github.com/anakryiko/btfdump";
     license = with lib.licenses; [ bsd2 ];
     maintainers = [ ];
+    mainProgram = "btf";
   };
 }

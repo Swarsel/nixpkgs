@@ -1,15 +1,16 @@
 {
   lib,
+  stdenv,
+  fetchFromGitHub,
   boost,
   ceres-solver,
   cgal,
   cmake,
   eigen,
-  fetchFromGitHub,
   glfw,
   gmp,
-  libjxl,
   libjpeg,
+  libjxl,
   libpng,
   libtiff,
   mpfr,
@@ -18,7 +19,6 @@
   openmp,
   pkg-config,
   python3Packages,
-  stdenv,
   vcg,
   zstd,
 }:
@@ -29,8 +29,8 @@ let
   });
 in
 stdenv.mkDerivation rec {
-  version = "2.4.0";
   pname = "openmvs";
+  version = "2.4.0";
 
   src = fetchFromGitHub {
     owner = "cdcseacave";
@@ -40,17 +40,17 @@ stdenv.mkDerivation rec {
     fetchSubmodules = true;
   };
 
-  # SSE is enabled by default
-  cmakeFlags = [
-    (lib.cmakeFeature "Python3_EXECUTABLE" (lib.getExe python3Packages.python))
-  ]
-  ++ lib.optional (!stdenv.hostPlatform.isx86_64) "-DOpenMVS_USE_SSE=OFF";
-
   postPatch = ''
     substituteInPlace CMakeLists.txt --replace-fail \
       'FIND_PACKAGE(Boost REQUIRED COMPONENTS iostreams program_options system serialization OPTIONAL_COMPONENTS ''${Boost_EXTRA_COMPONENTS})' \
       'FIND_PACKAGE(Boost REQUIRED COMPONENTS iostreams program_options serialization OPTIONAL_COMPONENTS ''${Boost_EXTRA_COMPONENTS})'
   '';
+
+  nativeBuildInputs = [
+    cmake
+    pkg-config
+    python3Packages.python
+  ];
 
   buildInputs = [
     boostWithZstd
@@ -70,17 +70,11 @@ stdenv.mkDerivation rec {
     vcg
   ];
 
-  nativeBuildInputs = [
-    cmake
-    pkg-config
-    python3Packages.python
-  ];
-
-  postInstall = ''
-    mv $out/bin/OpenMVS/* $out/bin
-    rmdir $out/bin/OpenMVS
-    rm $out/bin/Tests
-  '';
+  # SSE is enabled by default
+  cmakeFlags = [
+    (lib.cmakeFeature "Python3_EXECUTABLE" (lib.getExe python3Packages.python))
+  ]
+  ++ lib.optional (!stdenv.hostPlatform.isx86_64) "-DOpenMVS_USE_SSE=OFF";
 
   doCheck = true;
 
@@ -94,14 +88,22 @@ stdenv.mkDerivation rec {
     runHook postCheck
   '';
 
+  postInstall = ''
+    mv $out/bin/OpenMVS/* $out/bin
+    rmdir $out/bin/OpenMVS
+    rm $out/bin/Tests
+  '';
+
   meta = {
     description = "Open Multi-View Stereo reconstruction library";
     homepage = "https://github.com/cdcseacave/openMVS";
     license = lib.licenses.agpl3Only;
-    platforms = lib.platforms.unix;
+
     maintainers = with lib.maintainers; [
       bouk
       miniharinn
     ];
+
+    platforms = lib.platforms.unix;
   };
 }

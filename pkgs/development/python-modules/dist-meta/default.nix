@@ -1,22 +1,21 @@
 {
-  buildPythonPackage,
-  fetchPypi,
   lib,
+  buildPythonPackage,
   domdf-python-tools,
+  fetchPypi,
   handy-archives,
-  hatchling,
   hatch-requirements-txt,
+  hatchling,
   packaging,
 }:
 buildPythonPackage rec {
   pname = "dist-meta";
   version = "0.9.0";
-  pyproject = true;
 
   src = fetchPypi {
-    pname = "dist_meta";
     inherit version;
     hash = "sha256-+hbr1VdHRKCVlqs0IIOhHXIJ2NBc8yiR0cmFvn7Ay9c=";
+    pname = "dist_meta";
   };
 
   build-system = [
@@ -29,6 +28,8 @@ buildPythonPackage rec {
     handy-archives
     packaging
   ];
+
+  pyproject = true;
 
   meta = {
     description = "Parse and create Python distribution metadata";

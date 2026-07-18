@@ -1,10 +1,10 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
   nix-update-script,
-  runCommand,
   nix-your-shell,
+  runCommand,
+  rustPlatform,
 }:
 rustPlatform.buildRustPackage (finalAttrs: {
   pname = "nix-your-shell";
@@ -25,15 +25,16 @@ rustPlatform.buildRustPackage (finalAttrs: {
       runCommand "nix-your-shell-config" { } ''
         ${lib.getExe nix-your-shell} ${lib.escapeShellArg shell} >> "$out"
       '';
+
     updateScript = nix-update-script { };
   };
 
   meta = {
-    mainProgram = "nix-your-shell";
     description = "`nix` and `nix-shell` wrapper for shells other than `bash`";
     homepage = "https://github.com/MercuryTechnologies/nix-your-shell";
     changelog = "https://github.com/MercuryTechnologies/nix-your-shell/releases/tag/v${finalAttrs.version}";
     license = [ lib.licenses.mit ];
     maintainers = with lib.maintainers; [ _9999years ];
+    mainProgram = "nix-your-shell";
   };
 })

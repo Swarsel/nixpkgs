@@ -1,12 +1,10 @@
 {
   lib,
-  buildHomeAssistantComponent,
   fetchFromGitHub,
+  buildHomeAssistantComponent,
 }:
 
 buildHomeAssistantComponent rec {
-  owner = "jwillemsen";
-  domain = "daikin_onecta";
   version = "4.6.12";
 
   src = fetchFromGitHub {
@@ -16,11 +14,14 @@ buildHomeAssistantComponent rec {
     hash = "sha256-IMYrgSB4Fyc+BEhY4+FGE9Dca7llAQgvkAiOssut04c=";
   };
 
+  domain = "daikin_onecta";
+  owner = "jwillemsen";
+
   meta = {
-    changelog = "https://github.com/jwillemsen/daikin_onecta/releases/tag/v${version}";
     description = "Home Assistant Integration for devices supported by the Daikin Onecta App";
     homepage = "https://github.com/jwillemsen/daikin_onecta";
-    maintainers = with lib.maintainers; [ dandellion ];
+    changelog = "https://github.com/jwillemsen/daikin_onecta/releases/tag/v${version}";
     license = lib.licenses.gpl3Only;
+    maintainers = with lib.maintainers; [ dandellion ];
   };
 }

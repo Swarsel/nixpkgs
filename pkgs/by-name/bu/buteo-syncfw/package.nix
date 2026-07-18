@@ -1,14 +1,14 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
-  gitUpdater,
-  testers,
   dbus,
   doxygen,
+  gitUpdater,
   glib,
   libsForQt5,
   pkg-config,
+  testers,
   wrapGAppsHook3,
 }:
 
@@ -16,18 +16,18 @@ stdenv.mkDerivation (finalAttrs: {
   pname = "buteo-syncfw";
   version = "0.11.11";
 
-  outputs = [
-    "out"
-    "dev"
-    "doc"
-  ];
-
   src = fetchFromGitHub {
     owner = "sailfishos";
     repo = "buteo-syncfw";
     tag = finalAttrs.version;
     hash = "sha256-t69jUOTCyVWlbEinCesm8YVnYuT+SQ10z+2GXAtAPTA=";
   };
+
+  outputs = [
+    "out"
+    "dev"
+    "doc"
+  ];
 
   postPatch = ''
     # Wildcard breaks file installation (tries to run ~ "install source/* target/*")
@@ -87,8 +87,6 @@ stdenv.mkDerivation (finalAttrs: {
     signond
   ]);
 
-  dontWrapGApps = true;
-
   # Do all configuring now, not during build
   postConfigure = ''
     make qmake_all
@@ -105,12 +103,15 @@ stdenv.mkDerivation (finalAttrs: {
     qtWrapperArgs+=("''${gappsWrapperArgs[@]}")
   '';
 
+  dontWrapGApps = true;
+
   passthru = {
-    updateScript = gitUpdater { };
     tests.pkg-config = testers.hasPkgConfigModules {
       package = finalAttrs.finalPackage;
       # Version is hardcoded to 1.0.0
     };
+
+    updateScript = gitUpdater { };
   };
 
   meta = {
@@ -118,11 +119,13 @@ stdenv.mkDerivation (finalAttrs: {
     homepage = "https://github.com/sailfishos/buteo-syncfw";
     changelog = "https://github.com/sailfishos/buteo-syncfw/releases/tag/${finalAttrs.version}";
     license = lib.licenses.lgpl21Only;
-    mainProgram = "msyncd";
-    teams = [ lib.teams.lomiri ];
     platforms = lib.platforms.linux;
+    mainProgram = "msyncd";
+
     pkgConfigModules = [
       "buteosyncfw5"
     ];
+
+    teams = [ lib.teams.lomiri ];
   };
 })

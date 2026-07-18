@@ -2,19 +2,19 @@
   lib,
   cargo-tauri,
   dbus,
-  fetchgit,
   fetchYarnDeps,
+  fetchgit,
   freetype,
   gsettings-desktop-schemas,
-  yarnConfigHook,
+  libayatana-appindicator,
   nodejs,
   openssl,
   pkg-config,
   rustPlatform,
-  webkitgtk_4_1,
-  libayatana-appindicator,
-  wrapGAppsHook4,
   sqlite,
+  webkitgtk_4_1,
+  wrapGAppsHook4,
+  yarnConfigHook,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -26,13 +26,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
     rev = finalAttrs.version;
     hash = "sha256-qa87pgNHGRhP1G4TEFHYrkiJ9AHWG7PUdgxEF4X9EM8=";
     fetchLFS = true;
-  };
-
-  cargoHash = "sha256-Rg65BiHQF7bBBCtc5F+gY31yhcuI0+IDfxr3pFmxT+w=";
-
-  offlineCache = fetchYarnDeps {
-    yarnLock = "${finalAttrs.src}/yarn.lock";
-    hash = "sha256-Q0xsi1xymQne6qN0oxm4YkaDLnGL17iuj70CTdQlxzM=";
   };
 
   postPatch = ''
@@ -58,8 +51,7 @@ rustPlatform.buildRustPackage (finalAttrs: {
     sqlite
   ];
 
-  cargoRoot = "src-tauri";
-  buildAndTestSubdir = finalAttrs.cargoRoot;
+  cargoHash = "sha256-Rg65BiHQF7bBBCtc5F+gY31yhcuI0+IDfxr3pFmxT+w=";
 
   env = {
     VERGEN_GIT_DESCRIBE = finalAttrs.version;
@@ -71,13 +63,21 @@ rustPlatform.buildRustPackage (finalAttrs: {
       --set WEBKIT_DISABLE_COMPOSITING_MODE 1
   '';
 
+  buildAndTestSubdir = finalAttrs.cargoRoot;
+  cargoRoot = "src-tauri";
+
+  offlineCache = fetchYarnDeps {
+    hash = "sha256-Q0xsi1xymQne6qN0oxm4YkaDLnGL17iuj70CTdQlxzM=";
+    yarnLock = "${finalAttrs.src}/yarn.lock";
+  };
+
   meta = {
     description = "Local-first, encrypted, note taking application organized in tree-like structures";
     homepage = "https://codeberg.org/solver-orgz/treedome";
+    changelog = "https://codeberg.org/solver-orgz/treedome/releases/tag/${finalAttrs.version}";
     license = lib.licenses.agpl3Plus;
+    maintainers = with lib.maintainers; [ tengkuizdihar ];
     platforms = [ "x86_64-linux" ];
     mainProgram = "treedome";
-    maintainers = with lib.maintainers; [ tengkuizdihar ];
-    changelog = "https://codeberg.org/solver-orgz/treedome/releases/tag/${finalAttrs.version}";
   };
 })

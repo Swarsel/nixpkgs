@@ -9,8 +9,6 @@ let
   cfg = config.services.framework-control;
 in
 {
-  meta.maintainers = [ lib.maintainers.ozturkkl ];
-
   options.services.framework-control = {
     enable = lib.mkEnableOption "Framework Control device hardware service";
     package = lib.mkPackageOption pkgs "framework-control" { };
@@ -20,29 +18,31 @@ in
     environment.systemPackages = [ cfg.package ];
 
     systemd.services.framework-control = {
-      description = "Framework Control Service";
-      wantedBy = [ "multi-user.target" ];
       after = [ "network.target" ];
-
+      description = "Framework Control Service";
       # framework-control shells out to framework_tool at runtime for hardware access
       path = [ pkgs.framework-tool ];
 
       serviceConfig = {
-        Type = "simple";
         ExecStart = lib.getExe cfg.package;
-        Restart = "on-failure";
-        RestartSec = "5s";
+        LockPersonality = true;
         NoNewPrivileges = true;
         PrivateTmp = true;
-        ProtectHostname = true;
         ProtectClock = true;
-        ProtectKernelModules = true;
+        ProtectHostname = true;
         ProtectKernelLogs = true;
-        LockPersonality = true;
-        RestrictRealtime = true;
+        ProtectKernelModules = true;
+        Restart = "on-failure";
+        RestartSec = "5s";
         RestrictNamespaces = true;
+        RestrictRealtime = true;
         SystemCallArchitectures = "native";
+        Type = "simple";
       };
+
+      wantedBy = [ "multi-user.target" ];
     };
   };
+
+  meta.maintainers = [ lib.maintainers.ozturkkl ];
 }

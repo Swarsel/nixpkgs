@@ -1,13 +1,12 @@
 {
-  python3Packages,
   lib,
   fetchPypi,
+  python3Packages,
 }:
 
 python3Packages.buildPythonApplication (finalAttrs: {
   pname = "snowmachine";
   version = "2.0.2";
-  pyproject = true;
 
   src = fetchPypi {
     inherit (finalAttrs) pname version;
@@ -21,16 +20,19 @@ python3Packages.buildPythonApplication (finalAttrs: {
   ];
 
   doCheck = false;
+  pyproject = true;
   pythonImportsCheck = [ "snowmachine" ];
 
   meta = {
     description = "Python script that will make your terminal snow";
     homepage = "https://github.com/sontek/snowmachine";
-    mainProgram = "snowmachine";
     license = with lib.licenses; [ bsd3 ];
+
     maintainers = with lib.maintainers; [
       djanatyn
       sontek
     ];
+
+    mainProgram = "snowmachine";
   };
 })

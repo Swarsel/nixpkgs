@@ -8,7 +8,6 @@
 buildPythonPackage rec {
   pname = "uonet-request-signer-hebe";
   version = "0.1.1";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
@@ -16,10 +15,9 @@ buildPythonPackage rec {
   };
 
   propagatedBuildInputs = [ pyopenssl ];
-
   # Source is not tagged
   doCheck = false;
-
+  format = "setuptools";
   pythonImportsCheck = [ "uonet_request_signer_hebe" ];
 
   meta = {

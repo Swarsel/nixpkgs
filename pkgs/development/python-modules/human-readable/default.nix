@@ -1,20 +1,19 @@
 {
   lib,
-  fetchPypi,
   buildPythonPackage,
-  hatchling,
+  fetchPypi,
   hatch-vcs,
+  hatchling,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "human-readable";
   version = "2.0.3";
-  pyproject = true;
 
   src = fetchPypi {
-    pname = "human_readable";
     inherit (finalAttrs) version;
     hash = "sha256-P4Ef1W7oZpVyyy7J+FK1PuBwB0jlPDaVcx/9mrT8Uks=";
+    pname = "human_readable";
   };
 
   build-system = [
@@ -22,6 +21,7 @@ buildPythonPackage (finalAttrs: {
     hatch-vcs
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "human_readable" ];
 
   meta = {

@@ -1,8 +1,8 @@
 {
   lib,
-  stdenvNoCC,
   fetchFromGitHub,
   installFonts,
+  stdenvNoCC,
 }:
 
 stdenvNoCC.mkDerivation {
@@ -20,13 +20,15 @@ stdenvNoCC.mkDerivation {
   nativeBuildInputs = [ installFonts ];
 
   meta = {
-    homepage = "https://www.paratype.ru/catalog/font/pt/pt-serif";
     description = "Open Paratype font";
+    homepage = "https://www.paratype.ru/catalog/font/pt/pt-serif";
     license = lib.licenses.ofl;
-    platforms = lib.platforms.all;
+
     maintainers = with lib.maintainers; [
       raskin
       pancaek
     ];
+
+    platforms = lib.platforms.all;
   };
 }

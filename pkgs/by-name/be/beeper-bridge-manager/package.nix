@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   makeWrapper,
   python3,
 }:
@@ -31,9 +31,9 @@ buildGoModule (finalAttrs: {
   meta = {
     description = "Tool for running self-hosted bridges with the Beeper Matrix server";
     homepage = "https://github.com/beeper/bridge-manager";
+    changelog = "https://github.com/beeper/bridge-manager/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.asl20;
     maintainers = [ lib.maintainers.heywoodlh ];
     mainProgram = "bbctl";
-    changelog = "https://github.com/beeper/bridge-manager/releases/tag/v${finalAttrs.version}";
   };
 })

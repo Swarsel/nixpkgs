@@ -1,9 +1,9 @@
 {
   lib,
-  runCommand,
+  glib,
   gsettings-desktop-schemas,
   mate-wayland-session,
-  glib,
+  runCommand,
 }:
 
 let

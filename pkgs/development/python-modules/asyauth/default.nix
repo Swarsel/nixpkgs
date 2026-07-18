@@ -12,13 +12,14 @@
 buildPythonPackage rec {
   pname = "asyauth";
   version = "0.0.23";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
     hash = "sha256-NvA4TdsrYloQMzNjyv4ZDW6cntF/0Hs+KIdkGjzGJvA=";
   };
 
+  # Project doesn't have tests
+  doCheck = false;
   build-system = [ setuptools ];
 
   dependencies = [
@@ -28,9 +29,7 @@ buildPythonPackage rec {
     unicrypto
   ];
 
-  # Project doesn't have tests
-  doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "asyauth" ];
 
   meta = {

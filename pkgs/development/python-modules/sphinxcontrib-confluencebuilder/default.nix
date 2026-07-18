@@ -12,14 +12,15 @@
 buildPythonPackage rec {
   pname = "sphinxcontrib-confluencebuilder";
   version = "3.1.0";
-  pyproject = true;
 
   src = fetchPypi {
-    pname = "sphinxcontrib_confluencebuilder";
     inherit version;
     hash = "sha256-5eBr1+QqRDKwXZDChQG5Wf5p79zqvCGyCUp3KgNg1yE=";
+    pname = "sphinxcontrib_confluencebuilder";
   };
 
+  # Tests are disabled due to a circular dependency on Sphinx
+  doCheck = false;
   build-system = [ flit-core ];
 
   dependencies = [
@@ -29,11 +30,8 @@ buildPythonPackage rec {
     jinja2
   ];
 
-  # Tests are disabled due to a circular dependency on Sphinx
-  doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "sphinxcontrib.confluencebuilder" ];
-
   pythonNamespaces = [ "sphinxcontrib" ];
 
   meta = {

@@ -18,8 +18,6 @@ stdenv.mkDerivation (finalAttrs: {
     sha256 = "0npmlnybblp82mfpinjbz7dhwqgpdqc1s63wc1zs8mlcs19pdh98";
   };
 
-  sourceRoot = "${finalAttrs.src.name}/ipc-client";
-
   nativeBuildInputs = [
     cmake
   ];
@@ -29,12 +27,14 @@ stdenv.mkDerivation (finalAttrs: {
     xorgproto
   ];
 
+  sourceRoot = "${finalAttrs.src.name}/ipc-client";
+
   meta = {
     description = "Tiny program to interact with wmderland";
     homepage = "https://github.com/aesophor/wmderland/tree/master/ipc-client";
     license = lib.licenses.mit;
-    platforms = lib.platforms.all;
     maintainers = with lib.maintainers; [ takagiy ];
+    platforms = lib.platforms.all;
     mainProgram = "wmderlandc";
   };
 })

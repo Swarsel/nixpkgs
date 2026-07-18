@@ -1,5 +1,4 @@
 {
-  mkDerivation,
   bison,
   cmake,
   extra-cmake-modules,
@@ -11,21 +10,25 @@
   kdoctools,
   ki18n,
   kwindowsystem,
+  mkDerivation,
   qtbase,
   shared-mime-info,
 }:
 
 mkDerivation {
   pname = "kservice";
+
+  patches = [
+    ./qdiriterator-follow-symlinks.patch
+    ./no-canonicalize-path.patch
+  ];
+
   nativeBuildInputs = [
     cmake
     extra-cmake-modules
     kdoctools
   ];
-  propagatedNativeBuildInputs = [
-    bison
-    flex
-  ];
+
   buildInputs = [
     kcrash
     kdbusaddons
@@ -33,13 +36,16 @@ mkDerivation {
     kwindowsystem
     qtbase
   ];
+
   propagatedBuildInputs = [
     kconfig
     kcoreaddons
   ];
-  propagatedUserEnvPkgs = [ shared-mime-info ]; # for kbuildsycoca5
-  patches = [
-    ./qdiriterator-follow-symlinks.patch
-    ./no-canonicalize-path.patch
+
+  propagatedNativeBuildInputs = [
+    bison
+    flex
   ];
+
+  propagatedUserEnvPkgs = [ shared-mime-info ]; # for kbuildsycoca5
 }

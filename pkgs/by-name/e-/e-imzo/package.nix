@@ -1,11 +1,11 @@
 {
   lib,
-  stdenvNoCC,
   fetchurl,
   jre8,
-  pcsclite,
-  udev,
   makeWrapper,
+  pcsclite,
+  stdenvNoCC,
+  udev,
 }:
 stdenvNoCC.mkDerivation (finalAttrs: {
   pname = "e-imzo";
@@ -44,16 +44,18 @@ stdenvNoCC.mkDerivation (finalAttrs: {
 
   meta = {
     description = "For uzbek state web identity proving & key signing";
-    mainProgram = "e-imzo";
-    platforms = with lib.platforms; linux ++ darwin;
     homepage = "https://e-imzo.soliq.uz";
     license = lib.licenses.unfree;
     sourceProvenance = with lib.sourceTypes; [ binaryBytecode ];
+
     maintainers = with lib.maintainers; [
       orzklv
       shakhzodkudratov
       bahrom04
       bemeritus
     ];
+
+    platforms = with lib.platforms; linux ++ darwin;
+    mainProgram = "e-imzo";
   };
 })

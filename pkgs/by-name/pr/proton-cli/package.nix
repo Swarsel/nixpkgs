@@ -1,21 +1,19 @@
 {
   lib,
-  buildGoModule,
-  fetchFromGitHub,
-  installShellFiles,
-  pkg-config,
   stdenv,
-  webkitgtk_4_1,
+  fetchFromGitHub,
+  buildGoModule,
   gtk3,
+  installShellFiles,
   nix-update-script,
+  pkg-config,
   versionCheckHook,
+  webkitgtk_4_1,
 }:
 
 buildGoModule (finalAttrs: {
   pname = "proton-cli";
   version = "1.9.0";
-
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "roman-16";
@@ -23,18 +21,6 @@ buildGoModule (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-0IVWoDUHXvJusFceerlz5DgifFme9PN/NaAdwwwkCK4=";
   };
-
-  vendorHash = "sha256-H4q7b+NfiktjWRyStV9/lXF9fuAkApepq6l6CNV/5co=";
-
-  subPackages = [ "." ];
-
-  tags = [ "embed_hv" ];
-
-  ldflags = [
-    "-s"
-    "-w"
-    "-X=github.com/roman-16/proton-cli/internal/cli.version=${finalAttrs.version}"
-  ];
 
   nativeBuildInputs = [
     installShellFiles
@@ -46,13 +32,11 @@ buildGoModule (finalAttrs: {
     gtk3
   ];
 
+  vendorHash = "sha256-H4q7b+NfiktjWRyStV9/lXF9fuAkApepq6l6CNV/5co=";
+
   preBuild = ''
     bash scripts/build-hv-helpers.sh
   '';
-
-  overrideModAttrs = _: {
-    preBuild = null;
-  };
 
   postInstall = ''
     installShellCompletion --cmd proton-cli \
@@ -61,9 +45,22 @@ buildGoModule (finalAttrs: {
       --zsh  <($out/bin/proton-cli completion zsh)
   '';
 
-  nativeInstallCheckInputs = [ versionCheckHook ];
   doInstallCheck = true;
+  nativeInstallCheckInputs = [ versionCheckHook ];
+  __structuredAttrs = true;
 
+  ldflags = [
+    "-s"
+    "-w"
+    "-X=github.com/roman-16/proton-cli/internal/cli.version=${finalAttrs.version}"
+  ];
+
+  overrideModAttrs = _: {
+    preBuild = null;
+  };
+
+  subPackages = [ "." ];
+  tags = [ "embed_hv" ];
   passthru.updateScript = nix-update-script { };
 
   meta = {
@@ -71,8 +68,8 @@ buildGoModule (finalAttrs: {
     homepage = "https://github.com/roman-16/proton-cli";
     changelog = "https://github.com/roman-16/proton-cli/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.mit;
-    mainProgram = "proton-cli";
     maintainers = with lib.maintainers; [ roman-16 ];
     platforms = lib.platforms.linux ++ lib.platforms.darwin;
+    mainProgram = "proton-cli";
   };
 })

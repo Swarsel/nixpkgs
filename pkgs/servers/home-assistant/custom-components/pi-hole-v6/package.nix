@@ -5,8 +5,6 @@
 }:
 
 buildHomeAssistantComponent rec {
-  owner = "bastgau";
-  domain = "pi_hole_v6";
   version = "1.19.0";
 
   src = fetchFromGitHub {
@@ -18,16 +16,20 @@ buildHomeAssistantComponent rec {
 
   # has no tests
   doCheck = false;
+  domain = "pi_hole_v6";
+  owner = "bastgau";
 
   meta = {
-    changelog = "https://github.com/bastgau/ha-pi-hole-v6/releases/tag/${src.tag}";
     description = "Pi-hole V6 Integration for Home Assistant";
+
     longDescription = ''
       This custom integration restored compatibility between Home Assistant and Pi-hole, which was no longer supported by the native integration.
       Today, this integration offers additional and complementary features.
     '';
+
     homepage = "https://github.com/bastgau/ha-pi-hole-v6";
-    maintainers = with lib.maintainers; [ SuperSandro2000 ];
+    changelog = "https://github.com/bastgau/ha-pi-hole-v6/releases/tag/${src.tag}";
     license = lib.licenses.mit;
+    maintainers = with lib.maintainers; [ SuperSandro2000 ];
   };
 }

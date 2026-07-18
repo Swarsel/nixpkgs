@@ -3,17 +3,17 @@
   stdenv,
   fetchFromGitHub,
   fetchFromGitLab,
-  fetchgit,
   buildKakounePluginFrom2Nix,
-  kakoune-lsp,
-  parinfer-rust,
-  rep,
+  fetchgit,
   fzf,
   git,
   guile,
+  kakoune-lsp,
   kakoune-unwrapped,
   lua5_3,
+  parinfer-rust,
   plan9port,
+  rep,
   rustPlatform,
 }:
 
@@ -23,12 +23,14 @@ self: super: {
   case-kak = buildKakounePluginFrom2Nix {
     pname = "case-kak";
     version = "2020-04-06";
+
     src = fetchFromGitLab {
       owner = "FlyingWombat";
       repo = "case.kak";
       rev = "6f1511820aa3abfa118e0f856118adc8113e2185";
       sha256 = "002njrlwgakqgp74wivbppr9qyn57dn4n5bxkr6k6nglk9qndwdp";
     };
+
     meta.homepage = "https://gitlab.com/FlyingWombat/case.kak";
   };
 
@@ -44,6 +46,40 @@ self: super: {
         --replace \'fzf\' \'"$fzfImpl"\'
     '';
   });
+
+  hop-kak = rustPlatform.buildRustPackage {
+    pname = "hop-kak";
+    version = "0.2.0";
+
+    src = fetchgit {
+      url = "https://git.sr.ht/~hadronized/hop.kak";
+      rev = "7314ec64809a69e0044ba7ec57a18b43e3b5f005";
+      sha256 = "stmGZQU0tp+5xxrexKMzwSwHj5F/F4HzDO9BorNWC3w=";
+      # this package uses git to put the commit hash in the
+      # help dialog, so leave the .git folder so the command
+      # succeeds.
+      leaveDotGit = true;
+    };
+
+    nativeBuildInputs = [
+      git
+    ];
+
+    cargoHash = "sha256-cgUBa0rgfJFnosCgD20G1rlOl/nyXJ9bA9SSf4BuqAs=";
+
+    postInstall = ''
+      mkdir -p $out/share/kak/bin
+      mv $out/bin/hop-kak $out/share/kak/bin/
+    '';
+
+    meta = {
+      description = "Hinting brought to Kakoune selections";
+      homepage = "https://git.sr.ht/~hadronized/hop.kak/";
+      license = lib.licenses.bsd3;
+      maintainers = with lib.maintainers; [ oleina ];
+      platforms = lib.platforms.all;
+    };
+  };
 
   kak-ansi = stdenv.mkDerivation (finalAttrs: {
     pname = "kak-ansi";
@@ -71,10 +107,12 @@ self: super: {
       description = "Kakoune support for rendering ANSI code";
       homepage = "https://github.com/eraserhd/kak-ansi";
       license = lib.licenses.unlicense;
+
       maintainers = with lib.maintainers; [
         eraserhd
         philiptaron
       ];
+
       platforms = lib.platforms.all;
     };
   });
@@ -104,13 +142,35 @@ self: super: {
       description = "Kakoune integration with the Plan 9 plumber";
       homepage = "https://github.com/eraserhd/kak-plumb";
       license = lib.licenses.unlicense;
+
       maintainers = with lib.maintainers; [
         eraserhd
         philiptaron
       ];
+
       platforms = lib.platforms.all;
     };
   });
+
+  kakoune-catppuccin = buildKakounePluginFrom2Nix {
+    pname = "kakoune-catppuccin";
+    version = "0-unstable-2024-03-29";
+
+    src = fetchFromGitHub {
+      owner = "catppuccin";
+      repo = "kakoune";
+      rev = "7f187d9da2867a7fda568b2135d29b9c00cfbb94";
+      hash = "sha256-acBOQuJ8MgsMKdvFV5B2CxuxvXIYsg11n1mHEGqd120=";
+    };
+
+    meta = {
+      description = "Soothing pastel theme for Kakoune";
+      homepage = "https://github.com/catppuccin/kakoune/";
+      license = lib.licenses.mit;
+      maintainers = with lib.maintainers; [ jadewilk ];
+      platforms = lib.platforms.all;
+    };
+  };
 
   kakoune-rainbow = super.kakoune-rainbow.overrideAttrs (oldAttrs: {
     preFixup = ''
@@ -138,10 +198,12 @@ self: super: {
       description = "Help Kakoune save and restore state between sessions";
       homepage = "https://gitlab.com/Screwtapello/kakoune-state-save";
       license = lib.licenses.mit;
+
       maintainers = with lib.maintainers; [
         Flakebi
         philiptaron
       ];
+
       platforms = lib.platforms.all;
     };
   };
@@ -152,41 +214,6 @@ self: super: {
         --replace ' git ' ' ${git}/bin/git '
     '';
   });
-
-  hop-kak = rustPlatform.buildRustPackage {
-    pname = "hop-kak";
-    version = "0.2.0";
-
-    src = fetchgit {
-      url = "https://git.sr.ht/~hadronized/hop.kak";
-      rev = "7314ec64809a69e0044ba7ec57a18b43e3b5f005";
-      sha256 = "stmGZQU0tp+5xxrexKMzwSwHj5F/F4HzDO9BorNWC3w=";
-
-      # this package uses git to put the commit hash in the
-      # help dialog, so leave the .git folder so the command
-      # succeeds.
-      leaveDotGit = true;
-    };
-
-    nativeBuildInputs = [
-      git
-    ];
-
-    cargoHash = "sha256-cgUBa0rgfJFnosCgD20G1rlOl/nyXJ9bA9SSf4BuqAs=";
-
-    postInstall = ''
-      mkdir -p $out/share/kak/bin
-      mv $out/bin/hop-kak $out/share/kak/bin/
-    '';
-
-    meta = {
-      description = "Hinting brought to Kakoune selections";
-      homepage = "https://git.sr.ht/~hadronized/hop.kak/";
-      license = lib.licenses.bsd3;
-      maintainers = with lib.maintainers; [ oleina ];
-      platforms = lib.platforms.all;
-    };
-  };
 
   quickscope-kak = buildKakounePluginFrom2Nix rec {
     pname = "quickscope-kak";
@@ -213,24 +240,6 @@ self: super: {
       license = lib.licenses.unlicense;
       maintainers = with lib.maintainers; [ eraserhd ];
       platforms = lib.platforms.all;
-    };
-  };
-
-  kakoune-catppuccin = buildKakounePluginFrom2Nix {
-    pname = "kakoune-catppuccin";
-    version = "0-unstable-2024-03-29";
-    src = fetchFromGitHub {
-      owner = "catppuccin";
-      repo = "kakoune";
-      rev = "7f187d9da2867a7fda568b2135d29b9c00cfbb94";
-      hash = "sha256-acBOQuJ8MgsMKdvFV5B2CxuxvXIYsg11n1mHEGqd120=";
-    };
-    meta = {
-      description = "Soothing pastel theme for Kakoune";
-      homepage = "https://github.com/catppuccin/kakoune/";
-      license = lib.licenses.mit;
-      platforms = lib.platforms.all;
-      maintainers = with lib.maintainers; [ jadewilk ];
     };
   };
 }

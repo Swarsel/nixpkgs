@@ -1,8 +1,8 @@
 {
-  stdenv,
-  buildNpmPackage,
-  fetchFromGitHub,
   lib,
+  stdenv,
+  fetchFromGitHub,
+  buildNpmPackage,
   electron,
   makeWrapper,
   writableTmpDirAsHomeHook,
@@ -19,17 +19,16 @@ buildNpmPackage rec {
     hash = "sha256-jLktsUza5cEPIry+LyP8lB4A0ivxdGtE5y1i6UHap30=";
   };
 
-  npmDepsHash = "sha256-Q/E+Rc9CuaN2cN6AKKT3EHiR97sdLAAnks5DYBQK24I=";
-  makeCacheWritable = true;
-
-  env = {
-    ELECTRON_SKIP_BINARY_DOWNLOAD = true;
-  };
-
   nativeBuildInputs = [
     makeWrapper
     writableTmpDirAsHomeHook
   ];
+
+  npmDepsHash = "sha256-Q/E+Rc9CuaN2cN6AKKT3EHiR97sdLAAnks5DYBQK24I=";
+
+  env = {
+    ELECTRON_SKIP_BINARY_DOWNLOAD = true;
+  };
 
   buildPhase = ''
     runHook preBuild
@@ -64,12 +63,14 @@ buildNpmPackage rec {
     runHook postInstall
   '';
 
+  makeCacheWritable = true;
+
   meta = {
     description = "YouTube Leanback on the desktop, with enhancements";
     homepage = "https://github.com/shy1132/VacuumTube";
-    mainProgram = "VacuumTube";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ theCapypara ];
+    mainProgram = "VacuumTube";
     # https://github.com/NixOS/nixpkgs/pull/453698#issuecomment-3422020307
     broken = stdenv.hostPlatform.isDarwin;
   };

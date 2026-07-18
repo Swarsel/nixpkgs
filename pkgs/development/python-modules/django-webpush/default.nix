@@ -1,8 +1,8 @@
 {
   lib,
+  fetchFromGitHub,
   buildPythonPackage,
   django,
-  fetchFromGitHub,
   pywebpush,
   setuptools-scm,
 }:
@@ -10,7 +10,6 @@
 buildPythonPackage rec {
   pname = "django-webpush";
   version = "0.3.4";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "safwanrahman";
@@ -19,7 +18,8 @@ buildPythonPackage rec {
     hash = "sha256-Mwp53apdPpBcn7VfDbyDlvLAVAG65UUBhT0w9OKjKbU=";
   };
 
-  pythonRelaxDeps = [ "pywebpush" ];
+  # Module has no tests
+  doCheck = false;
 
   build-system = [
     setuptools-scm
@@ -30,10 +30,9 @@ buildPythonPackage rec {
     pywebpush
   ];
 
-  # Module has no tests
-  doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "webpush" ];
+  pythonRelaxDeps = [ "pywebpush" ];
 
   meta = {
     description = "Module for integrating and sending Web Push Notification in Django Application";

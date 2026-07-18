@@ -2,9 +2,9 @@
   lib,
   stdenv,
   fetchFromGitHub,
+  capstone,
   cmake,
   installShellFiles,
-  capstone,
   libpng,
   libyaml,
   stb,
@@ -22,17 +22,11 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-QWHD4TwTWYYSWE/zaCKdnSjsfoHPS21xNdTx0mP1imo=";
   };
 
-  hardeningDisable = [ "format" ];
-
   strictDeps = true;
 
   nativeBuildInputs = [
     cmake
     installShellFiles
-  ];
-
-  cmakeFlags = [
-    (lib.cmakeFeature "CMAKE_POLICY_VERSION_MINIMUM" "3.5")
   ];
 
   buildInputs = [
@@ -43,6 +37,10 @@ stdenv.mkDerivation (finalAttrs: {
     zlib
   ];
 
+  cmakeFlags = [
+    (lib.cmakeFeature "CMAKE_POLICY_VERSION_MINIMUM" "3.5")
+  ];
+
   installPhase = ''
     runHook preInstall
 
@@ -50,6 +48,8 @@ stdenv.mkDerivation (finalAttrs: {
 
     runHook postInstall
   '';
+
+  hardeningDisable = [ "format" ];
 
   meta = {
     description = "Collection of tools for Super Mario 64 ROM hacking";

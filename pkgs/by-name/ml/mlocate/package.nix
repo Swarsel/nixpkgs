@@ -21,7 +21,7 @@ stdenv.mkDerivation (finalAttrs: {
     description = "Utility to index and quickly search for files";
     homepage = "https://pagure.io/mlocate";
     license = lib.licenses.gpl2Only;
-    platforms = lib.platforms.linux;
     maintainers = [ ];
+    platforms = lib.platforms.linux;
   };
 })

@@ -1,6 +1,6 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
   jdk,
   maven,
@@ -18,8 +18,8 @@ let
   };
 
   deps = stdenv.mkDerivation {
-    pname = "deps-${pname}";
     inherit src version;
+    pname = "deps-${pname}";
 
     nativeBuildInputs = [
       jdk
@@ -34,6 +34,8 @@ let
       runHook postBuild
     '';
 
+    doCheck = false;
+
     # keep only *.{pom,jar,sha1,nbm} and delete all ephemeral files with lastModified timestamps inside
     installPhase = ''
       runHook preInstall
@@ -44,23 +46,21 @@ let
       runHook postInstall
     '';
 
-    outputHashMode = "recursive";
     outputHash = "sha256-Mtu67CcNY5uThfaa7CQr9cHHpjX+EMFktuSZOlLwyFg=";
-
-    doCheck = false;
+    outputHashMode = "recursive";
   };
 in
 stdenv.mkDerivation rec {
   inherit version pname src;
 
+  postPatch = ''
+    sed -i "s/\/usr\/bin\/id/$(which id | sed 's#/#\\/#g')/g" src/main/java/jnr/posix/JavaPOSIX.java
+  '';
+
   nativeBuildInputs = [
     maven
     which
   ];
-
-  postPatch = ''
-    sed -i "s/\/usr\/bin\/id/$(which id | sed 's#/#\\/#g')/g" src/main/java/jnr/posix/JavaPOSIX.java
-  '';
 
   buildPhase = ''
     runHook preBuild
@@ -81,11 +81,13 @@ stdenv.mkDerivation rec {
   meta = {
     description = "Lightweight cross-platform POSIX emulation layer for Java, written in Java and is part of the JNR project";
     homepage = "https://github.com/jnr/jnr-posix";
+
     license = with lib.licenses; [
       epl20
       gpl2Only
       lgpl21Only
     ];
+
     maintainers = with lib.maintainers; [ rhysmdnz ];
   };
 }

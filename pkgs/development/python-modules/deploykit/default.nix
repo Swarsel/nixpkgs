@@ -1,18 +1,17 @@
 {
   lib,
-  buildPythonPackage,
+  stdenv,
   fetchFromGitHub,
-  hatchling,
   bash,
+  buildPythonPackage,
+  hatchling,
   openssh,
   pytestCheckHook,
-  stdenv,
 }:
 
 buildPythonPackage rec {
   pname = "deploykit";
   version = "1.2.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "numtide";
@@ -21,19 +20,17 @@ buildPythonPackage rec {
     hash = "sha256-RONE/oJdNmVjLYdJWDTzyXnmStkLIx92GsydaYYG5O4=";
   };
 
-  build-system = [ hatchling ];
-
   nativeCheckInputs = [
     bash
     openssh
     pytestCheckHook
   ];
 
+  build-system = [ hatchling ];
   disabledTests = lib.optionals stdenv.hostPlatform.isDarwin [ "test_ssh" ];
-
+  pyproject = true;
   # don't swallow stdout/stderr
   pytestFlags = [ "-s" ];
-
   pythonImportsCheck = [ "deploykit" ];
 
   meta = {
@@ -41,10 +38,12 @@ buildPythonPackage rec {
     homepage = "https://github.com/numtide/deploykit";
     changelog = "https://github.com/numtide/deploykit/releases/tag/${version}";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       mic92
       zowoq
     ];
+
     platforms = lib.platforms.unix;
   };
 }

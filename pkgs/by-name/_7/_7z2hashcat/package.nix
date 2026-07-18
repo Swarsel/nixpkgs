@@ -2,9 +2,9 @@
   lib,
   stdenv,
   fetchFromGitHub,
+  makeWrapper,
   perl,
   perlPackages,
-  makeWrapper,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -37,12 +37,12 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   meta = {
-    changelog = "https://github.com/philsmd/7z2hashcat/releases/tag/${finalAttrs.version}";
     description = "Extract hashcat hashes from password-protected .7z archives (and .sfx files)";
     homepage = "https://github.com/philsmd/7z2hashcat";
+    changelog = "https://github.com/philsmd/7z2hashcat/releases/tag/${finalAttrs.version}";
     license = lib.licenses.publicDomain;
-    mainProgram = "7z2hashcat";
     maintainers = with lib.maintainers; [ emilytrau ];
     platforms = lib.platforms.unix;
+    mainProgram = "7z2hashcat";
   };
 })

@@ -1,13 +1,13 @@
 {
   lib,
   stdenv,
-  fetchzip,
-  makeWrapper,
-  makeDesktopItem,
+  asar,
   copyDesktopItems,
   electron,
-  asar,
+  fetchzip,
   git,
+  makeDesktopItem,
+  makeWrapper,
 }:
 
 let
@@ -21,28 +21,14 @@ stdenv.mkDerivation {
 
   src = fetchzip {
     url = "https://github.com/ExpressLRS/ExpressLRS-Configurator/releases/download/v${version}/${pname}-${version}.zip";
-    stripRoot = false;
     hash = "sha256-BIbJzNWjYFbbwCEWoym3g6XBpQGi2owbf2XsQiXwHmw=";
+    stripRoot = false;
   };
 
   nativeBuildInputs = [
     makeWrapper
     copyDesktopItems
     asar
-  ];
-
-  desktopItems = [
-    (makeDesktopItem {
-      name = pname;
-      exec = pname;
-      icon = pname;
-      desktopName = "ExpressLRS Configurator";
-      comment = "Configuration tool for ExpressLRS";
-      categories = [
-        "Utility"
-        "Development"
-      ];
-    })
   ];
 
   installPhase = ''
@@ -76,12 +62,27 @@ stdenv.mkDerivation {
     runHook postInstall
   '';
 
+  desktopItems = [
+    (makeDesktopItem {
+      categories = [
+        "Utility"
+        "Development"
+      ];
+
+      comment = "Configuration tool for ExpressLRS";
+      desktopName = "ExpressLRS Configurator";
+      exec = pname;
+      icon = pname;
+      name = pname;
+    })
+  ];
+
   meta = {
     description = "Cross-platform build & configuration tool for ExpressLRS";
     homepage = "https://github.com/ExpressLRS/ExpressLRS-Configurator";
     license = lib.licenses.gpl3Plus;
-    platforms = lib.platforms.linux;
     maintainers = with lib.maintainers; [ asamonik ];
+    platforms = lib.platforms.linux;
     mainProgram = "expresslrs-configurator";
   };
 }

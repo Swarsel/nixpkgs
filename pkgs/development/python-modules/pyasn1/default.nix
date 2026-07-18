@@ -1,15 +1,14 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
+  buildPythonPackage,
   pytestCheckHook,
+  setuptools,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "pyasn1";
   version = "0.6.3";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "pyasn1";
@@ -18,10 +17,9 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-fHpAJ1WSoLwaWuSMcfHjZmnl8oNhADrdjHaYIEmqQiw=";
   };
 
-  build-system = [ setuptools ];
-
   nativeCheckInputs = [ pytestCheckHook ];
-
+  build-system = [ setuptools ];
+  pyproject = true;
   pythonImportsCheck = [ "pyasn1" ];
 
   meta = {

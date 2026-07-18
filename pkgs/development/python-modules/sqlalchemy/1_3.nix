@@ -1,16 +1,13 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # build-system
-  setuptools,
-
-  # dependencies
-  greenlet,
-
+  buildPythonPackage,
   # optionals
   cx-oracle,
+  # dependencies
+  greenlet,
+  # tests
+  mock,
   mysqlclient,
   pg8000,
   psycopg2,
@@ -18,17 +15,15 @@
   # TODO: pymssql
   pymysql,
   pyodbc,
-
-  # tests
-  mock,
   pytest-xdist,
   pytestCheckHook,
+  # build-system
+  setuptools,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "sqlalchemy";
   version = "1.3.24";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "sqlalchemy";
@@ -43,15 +38,29 @@ buildPythonPackage (finalAttrs: {
     sed -i '/tag_build = dev/d' setup.cfg
   '';
 
-  build-system = [ setuptools ];
+  nativeCheckInputs = [
+    pytest-xdist
+    pytestCheckHook
+    mock
+  ];
 
+  build-system = [ setuptools ];
   dependencies = [ greenlet ];
+
+  disabledTestPaths = [
+    # typing correctness, not interesting
+    "test/ext/mypy"
+    # slow and high memory usage, not interesting
+    "test/aaa_profiling"
+  ];
 
   optional-dependencies = lib.fix (self: {
     mssql = [ pyodbc ];
+
     mssql_pymysql = [
       # TODO: pymssql
     ];
+
     mssql_pyodbc = [ pyodbc ];
     mysql = [ mysqlclient ];
     oracle = [ cx-oracle ];
@@ -62,29 +71,19 @@ buildPythonPackage (finalAttrs: {
     pymysql = [ pymysql ];
   });
 
-  nativeCheckInputs = [
-    pytest-xdist
-    pytestCheckHook
-    mock
-  ];
-
-  disabledTestPaths = [
-    # typing correctness, not interesting
-    "test/ext/mypy"
-    # slow and high memory usage, not interesting
-    "test/aaa_profiling"
-  ];
-
+  pyproject = true;
   pythonImportsCheck = [ "sqlalchemy" ];
 
   meta = {
+    description = "Database Toolkit for Python";
+    homepage = "https://github.com/sqlalchemy/sqlalchemy";
+
     changelog =
       let
         shortVersion = lib.replaceString "." "" (lib.versions.majorMinor finalAttrs.version);
       in
       "https://github.com/sqlalchemy/sqlalchemy/blob/${finalAttrs.src.rev}/doc/build/changelog/changelog_${shortVersion}.rst";
-    description = "Database Toolkit for Python";
-    homepage = "https://github.com/sqlalchemy/sqlalchemy";
+
     license = lib.licenses.mit;
   };
 })

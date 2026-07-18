@@ -1,17 +1,15 @@
 {
   lib,
   fetchFromGitHub,
-  rustPlatform,
   cacert,
-  versionCheckHook,
   nix-update-script,
+  rustPlatform,
+  versionCheckHook,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
   pname = "mdbook-linkcheck2";
   version = "0.12.2";
-
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "marxin";
@@ -22,8 +20,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
 
   cargoHash = "sha256-XY1epCro/BqHm95HVP1eK0oVLSPYjD2hU7IdiEkgNMM=";
 
-  propagatedNativeBuildInputs = [ cacert ];
-
   checkFlags = map (t: "--skip=${t}") [
     "check_all_links_in_a_valid_book"
     "correctly_find_broken_links"
@@ -33,17 +29,20 @@ rustPlatform.buildRustPackage (finalAttrs: {
   # should be dropped in the next update
   doInstallCheck = false;
   nativeInstallCheckInputs = [ versionCheckHook ];
-
+  __structuredAttrs = true;
+  propagatedNativeBuildInputs = [ cacert ];
   passthru.updateScript = nix-update-script { };
 
   meta = {
     description = "Backend for mdbook which will check your links for you";
-    mainProgram = "mdbook-linkcheck2";
     homepage = "https://github.com/marxin/mdbook-linkcheck2";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       scandiravian
       stepbrobd
     ];
+
+    mainProgram = "mdbook-linkcheck2";
   };
 })

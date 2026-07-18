@@ -1,31 +1,30 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
-  setuptools-scm,
   brotli,
+  buildPythonPackage,
   inflate64,
   multivolumefile,
   psutil,
+  py-cpuinfo,
   pybcj,
   pycryptodomex,
   pyppmd,
-  pyzstd,
-  texttable,
-  py-cpuinfo,
   pytest-benchmark,
   pytest-httpserver,
   pytest-remotedata,
   pytest-timeout,
   pytestCheckHook,
+  pyzstd,
   requests,
+  setuptools,
+  setuptools-scm,
+  texttable,
 }:
 
 buildPythonPackage rec {
   pname = "py7zr";
   version = "1.1.3";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "miurahr";
@@ -33,6 +32,16 @@ buildPythonPackage rec {
     tag = "v${version}";
     hash = "sha256-/sorvv5/kwlY/DtxW33ytHhyrR06p6aNgGW9oH+lpUw=";
   };
+
+  nativeCheckInputs = [
+    py-cpuinfo
+    pytest-benchmark
+    pytest-httpserver
+    pytest-remotedata
+    pytest-timeout
+    pytestCheckHook
+    requests
+  ];
 
   build-system = [
     setuptools
@@ -51,35 +60,29 @@ buildPythonPackage rec {
     texttable
   ];
 
-  pythonRelaxDeps = [
-    "pyppmd"
-    "pybcj"
-    "inflate64"
-  ];
-
-  nativeCheckInputs = [
-    py-cpuinfo
-    pytest-benchmark
-    pytest-httpserver
-    pytest-remotedata
-    pytest-timeout
-    pytestCheckHook
-    requests
-  ];
-
+  pyproject = true;
   pytestFlags = [ "--benchmark-disable" ];
 
   pythonImportsCheck = [
     "py7zr"
   ];
 
+  pythonRelaxDeps = [
+    "pyppmd"
+    "pybcj"
+    "inflate64"
+  ];
+
   meta = {
     description = "7zip in Python 3 with ZStandard, PPMd, LZMA2, LZMA1, Delta, BCJ, BZip2";
     homepage = "https://github.com/miurahr/py7zr";
+
     changelog = "https://github.com/miurahr/py7zr/blob/v${version}/docs/Changelog.rst#v${
       builtins.replaceStrings [ "." ] [ "" ] version
     }";
+
     license = lib.licenses.gpl2Only;
+
     maintainers = with lib.maintainers; [
       pitkling
       PopeRigby

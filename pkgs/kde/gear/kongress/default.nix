@@ -1,6 +1,6 @@
 {
-  mkKdeDerivation,
   kcontacts,
+  mkKdeDerivation,
   qtlocation,
   qtsvg,
 }:

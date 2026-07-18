@@ -1,8 +1,8 @@
 {
   lib,
+  fetchurl,
   brotli,
   buildPerlPackage,
-  fetchurl,
   perlPackages,
   pkg-config,
 }:
@@ -44,10 +44,12 @@ buildPerlPackage {
     description = "Write Brotli buffers/streams";
     homepage = "https://github.com/timlegge/perl-IO-Compress-Brotli";
     changelog = "https://github.com/timlegge/perl-IO-Compress-Brotli/blob/main/Changes";
+
     license = with lib.licenses; [
       artistic1
       gpl1Plus
     ];
+
     maintainers = [ lib.maintainers.anthonyroussel ];
   };
 }

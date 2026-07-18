@@ -1,17 +1,16 @@
 {
   lib,
-  buildPythonPackage,
-  fetchFromGitHub,
   stdenv,
+  fetchFromGitHub,
+  buildPythonPackage,
   hatchling,
-  mpv-unwrapped,
   lame,
+  mpv-unwrapped,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "anki-audio";
   version = "0.1.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "ankitects";
@@ -20,11 +19,9 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-iOAZ7EytEVpvsrnVFk6bkiU8FWf2Q7tTzJjawZQCW6E=";
   };
 
-  build-system = [ hatchling ];
-
   env = {
-    ANKI_AUDIO_TARGET_OS = "darwin";
     ANKI_AUDIO_TARGET_ARCH = stdenv.hostPlatform.darwinArch;
+    ANKI_AUDIO_TARGET_OS = "darwin";
   };
 
   preBuild =
@@ -36,18 +33,22 @@ buildPythonPackage (finalAttrs: {
       ln -s ${lib.getExe mpv-unwrapped} ${lib.getExe lame} mac/${archDir}/dist/audio/Resources/
     '';
 
+  build-system = [ hatchling ];
+  pyproject = true;
   pythonImportsCheck = [ "anki_audio" ];
 
   meta = {
     description = "Audio binaries (mpv, lame) for Anki";
     homepage = "https://github.com/ankitects/anki-bundle-extras";
-    sourceProvenance = with lib.sourceTypes; [ fromSource ];
-    platforms = lib.platforms.darwin;
     license = lib.licenses.gpl2Plus;
+    sourceProvenance = with lib.sourceTypes; [ fromSource ];
+
     maintainers = with lib.maintainers; [
       euank
       junestepp
       oxij
     ];
+
+    platforms = lib.platforms.darwin;
   };
 })

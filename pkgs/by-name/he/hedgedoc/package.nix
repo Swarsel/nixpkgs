@@ -3,9 +3,9 @@
   stdenv,
   fetchFromGitHub,
   makeBinaryWrapper,
+  nixosTests,
   nodejs,
   python3,
-  nixosTests,
   yarn-berry_4,
 }:
 
@@ -25,15 +25,6 @@ stdenv.mkDerivation (finalAttrs: {
     # https://github.com/hedgedoc/hedgedoc/blob/develop/package.json#L28
     ./yarn-4.14-support.patch
   ];
-
-  # Generate this file with:
-  # nix run nixpkgs#yarn-berry_4.yarn-berry-fetcher missing-hashes yarn.lock
-  missingHashes = ./missing-hashes.json;
-
-  offlineCache = yarn-berry_4.fetchYarnBerryDeps {
-    inherit (finalAttrs) src missingHashes patches;
-    hash = "sha256-Vj1s8aA+L0GwJ6qr/5IXpYM5ZAY7qIiPn9BKadcO52E=";
-  };
 
   nativeBuildInputs = [
     makeBinaryWrapper
@@ -77,16 +68,25 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  # Generate this file with:
+  # nix run nixpkgs#yarn-berry_4.yarn-berry-fetcher missing-hashes yarn.lock
+  missingHashes = ./missing-hashes.json;
+
+  offlineCache = yarn-berry_4.fetchYarnBerryDeps {
+    inherit (finalAttrs) src missingHashes patches;
+    hash = "sha256-Vj1s8aA+L0GwJ6qr/5IXpYM5ZAY7qIiPn9BKadcO52E=";
+  };
+
   passthru = {
     tests = { inherit (nixosTests) hedgedoc; };
   };
 
   meta = {
     description = "Realtime collaborative markdown notes on all platforms";
-    license = lib.licenses.agpl3Only;
     homepage = "https://hedgedoc.org";
-    mainProgram = "hedgedoc";
+    license = lib.licenses.agpl3Only;
     maintainers = with lib.maintainers; [ SuperSandro2000 ];
     platforms = lib.platforms.linux;
+    mainProgram = "hedgedoc";
   };
 })

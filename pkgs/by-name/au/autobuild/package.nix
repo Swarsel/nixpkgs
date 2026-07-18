@@ -1,10 +1,10 @@
 {
-  fetchurl,
   lib,
   stdenv,
+  fetchurl,
   makeWrapper,
-  perl,
   openssh,
+  perl,
   rsync,
 }:
 
@@ -18,6 +18,7 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   nativeBuildInputs = [ makeWrapper ];
+
   buildInputs = [
     perl
     openssh

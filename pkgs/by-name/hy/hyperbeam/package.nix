@@ -1,7 +1,7 @@
 {
   lib,
-  buildNpmPackage,
   fetchFromGitHub,
+  buildNpmPackage,
   nix-update-script,
 }:
 
@@ -16,23 +16,21 @@ buildNpmPackage (finalAttrs: {
     hash = "sha256-SSHSQIVfHYFa1YkV3eeDkXSQV8KERADlmhOmxIiY+ko=";
   };
 
-  npmDepsHash = "sha256-EjzdBqA1KNZbhkRkyMwC/YSgbkbs5BRC6ummQkQHyEs=";
-
-  dontNpmBuild = true;
-
   postPatch = ''
     cp ${./package-lock.json} ./package-lock.json
   '';
 
+  npmDepsHash = "sha256-EjzdBqA1KNZbhkRkyMwC/YSgbkbs5BRC6ummQkQHyEs=";
+  dontNpmBuild = true;
   passthru.updateScript = nix-update-script { };
 
   meta = {
     description = "1-1 End-to-End Encrypted Internet Pipe Powered by Hyperswarm";
     homepage = "https://github.com/holepunchto/hyperbeam";
-    mainProgram = "hyperbeam";
     license = lib.licenses.mit;
-    platforms = lib.platforms.all;
-    teams = with lib.teams; [ ngi ];
     maintainers = with lib.maintainers; [ davhau ];
+    platforms = lib.platforms.all;
+    mainProgram = "hyperbeam";
+    teams = with lib.teams; [ ngi ];
   };
 })

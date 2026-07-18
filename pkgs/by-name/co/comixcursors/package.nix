@@ -1,9 +1,9 @@
 {
   lib,
-  stdenvNoCC,
   fetchFromGitLab,
   bc,
   librsvg,
+  stdenvNoCC,
   xcursorgen,
 }:
 
@@ -17,25 +17,28 @@ let
       "Red"
       "White"
     ];
-    opacity = [
-      ""
-      "Opaque_"
-    ]; # Translucent or opaque.
-    thickness = [
-      ""
-      "Slim_"
-    ]; # Thick or slim edges.
+
     handedness = [
       ""
       "LH_"
     ]; # Right- or left-handed.
+
+    opacity = [
+      ""
+      "Opaque_"
+    ]; # Translucent or opaque.
+
+    thickness = [
+      ""
+      "Slim_"
+    ]; # Thick or slim edges.
   };
   variantName =
     {
       color,
+      handedness,
       opacity,
       thickness,
-      handedness,
     }:
     "${handedness}${opacity}${thickness}${color}";
   variants =
@@ -55,17 +58,29 @@ stdenvNoCC.mkDerivation rec {
     sha256 = "0bpxqw4izj7m0zb9lnxnmsjicfw60ppkdyv5nwrrz4x865wb296a";
   };
 
-  nativeBuildInputs = [
-    bc
-    librsvg
-    xcursorgen
-  ];
+  outputs =
+    let
+      default = "Opaque_Black";
+    in
+    # Have the most-traditional variant be the default output (as the first).
+    # Even with outputsToInstall=[], the default/first still has an effect on
+    # some Nix tools (e.g. nix-build).
+    [ default ]
+    ++ (lib.remove default variants)
+    # Need a dummy "out" output to prevent the builder scripts from breaking.
+    ++ [ "out" ];
 
   patches = [ ./makefile-shell-var.patch ];
 
   postPatch = ''
     patchShebangs ./install-all ./bin/
   '';
+
+  nativeBuildInputs = [
+    bc
+    librsvg
+    xcursorgen
+  ];
 
   # install-all is used instead of the directions in upstream's INSTALL file,
   # because using its Makefile directly is broken.  Upstream itself seems to use
@@ -100,24 +115,13 @@ stdenvNoCC.mkDerivation rec {
     mkdir -p $out
   '';
 
-  outputs =
-    let
-      default = "Opaque_Black";
-    in
-    # Have the most-traditional variant be the default output (as the first).
-    # Even with outputsToInstall=[], the default/first still has an effect on
-    # some Nix tools (e.g. nix-build).
-    [ default ]
-    ++ (lib.remove default variants)
-    # Need a dummy "out" output to prevent the builder scripts from breaking.
-    ++ [ "out" ];
-
   # No default output (to the extent possible).  Instead, the outputs'
   # attributes are used to choose which variant(s) to have.
   outputsToInstall = [ ];
 
   meta = {
     description = "Comix Cursors mouse themes";
+
     longDescription = ''
       There are many (${toString ((lib.length outputs) - 1)}) variants of color,
       opacity, edge thickness, and right- or left-handedness, for this cursor
@@ -129,6 +133,7 @@ stdenvNoCC.mkDerivation rec {
       variants.  To install all the variants, use `comixcursors.all` (which is a
       list).
     '';
+
     homepage = "https://gitlab.com/limitland/comixcursors";
     changelog = "https://gitlab.com/limitland/comixcursors/-/blob/HEAD/NEWS";
     license = lib.licenses.gpl3Plus;

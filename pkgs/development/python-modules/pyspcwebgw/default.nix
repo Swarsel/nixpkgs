@@ -1,10 +1,10 @@
 {
   lib,
+  fetchFromGitHub,
   aiohttp,
   aioresponses,
   asynccmd,
   buildPythonPackage,
-  fetchFromGitHub,
   fetchpatch,
   poetry-core,
   pytest-asyncio,
@@ -14,7 +14,6 @@
 buildPythonPackage rec {
   pname = "pyspcwebgw";
   version = "0.7.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "mbrrg";
@@ -26,10 +25,16 @@ buildPythonPackage rec {
   patches = [
     # https://github.com/pyspcwebgw/pyspcwebgw/pull/27
     (fetchpatch {
+      hash = "sha256-Og0imZts49jwjbz7Yp41UIzwU/lVjKVc/Tp4+vNz32U=";
       name = "replace-async-timeout-with-asyncio.timeout.patch";
       url = "https://github.com/pyspcwebgw/pyspcwebgw/commit/22cacc8db53cf2a244c30c0e62a0dad90fbcb00b.patch";
-      hash = "sha256-Og0imZts49jwjbz7Yp41UIzwU/lVjKVc/Tp4+vNz32U=";
     })
+  ];
+
+  nativeCheckInputs = [
+    aioresponses
+    pytest-asyncio
+    pytest8_3CheckHook
   ];
 
   build-system = [ poetry-core ];
@@ -39,12 +44,7 @@ buildPythonPackage rec {
     aiohttp
   ];
 
-  nativeCheckInputs = [
-    aioresponses
-    pytest-asyncio
-    pytest8_3CheckHook
-  ];
-
+  pyproject = true;
   pythonImportsCheck = [ "pyspcwebgw" ];
 
   meta = {

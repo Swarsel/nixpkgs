@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   installShellFiles,
 }:
 
@@ -17,10 +17,10 @@ buildGoModule (finalAttrs: {
     repo = "process-compose";
     tag = "v${finalAttrs.version}";
     hash = "sha256-J1Sk6TfTVFgw+FU48CxYBxT5NVbR/pACpsnq2TRuf38=";
-
     # populate values that require us to use git. By doing this in postFetch we
     # can delete .git afterwards and maintain better reproducibility of the src.
     leaveDotGit = true;
+
     postFetch = ''
       cd "$out"
       git rev-parse --short HEAD > $out/COMMIT
@@ -30,23 +30,17 @@ buildGoModule (finalAttrs: {
     '';
   };
 
-  # ldflags based on metadata from git and source
-  preBuild = ''
-    ldflags+=" -X ${config-module}.Commit=$(cat COMMIT)"
-    ldflags+=" -X ${config-module}.Date=$(cat SOURCE_DATE_EPOCH)"
-  '';
-
-  ldflags = [
-    "-X ${config-module}.Version=v${finalAttrs.version}"
-    "-s"
-    "-w"
-  ];
-
   nativeBuildInputs = [
     installShellFiles
   ];
 
   vendorHash = "sha256-50N4IsSnUh3qmqqw+WACx2j0fMhLZKZdYK+7HAszxAY=";
+
+  # ldflags based on metadata from git and source
+  preBuild = ''
+    ldflags+=" -X ${config-module}.Commit=$(cat COMMIT)"
+    ldflags+=" -X ${config-module}.Date=$(cat SOURCE_DATE_EPOCH)"
+  '';
 
   doCheck = false;
 
@@ -56,6 +50,12 @@ buildGoModule (finalAttrs: {
       --zsh <($out/bin/process-compose completion zsh) \
       --fish <($out/bin/process-compose completion fish)
   '';
+
+  ldflags = [
+    "-X ${config-module}.Version=v${finalAttrs.version}"
+    "-s"
+    "-w"
+  ];
 
   meta = {
     description = "Simple and flexible scheduler and orchestrator to manage non-containerized applications";

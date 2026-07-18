@@ -4,12 +4,12 @@
   fetchurl,
   cmake,
   libGLU,
-  libxmu,
-  libxi,
   libxext,
-  enableEGL ? (!stdenv.hostPlatform.isDarwin),
-  testers,
+  libxi,
+  libxmu,
   mesa,
+  testers,
+  enableEGL ? (!stdenv.hostPlatform.isDarwin),
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -28,14 +28,15 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   nativeBuildInputs = [ cmake ];
+
   buildInputs = lib.optionals (!stdenv.hostPlatform.isDarwin) [
     libxmu
     libxi
     libxext
   ];
+
   propagatedBuildInputs = lib.optionals (!stdenv.hostPlatform.isDarwin) [ libGLU ]; # GL/glew.h includes GL/glu.h
 
-  cmakeDir = "cmake";
   cmakeFlags = [
     "-DBUILD_SHARED_LIBS=ON"
   ]
@@ -59,22 +60,26 @@ stdenv.mkDerivation (finalAttrs: {
     EOF
   '';
 
+  cmakeDir = "cmake";
   passthru.tests.pkg-config = testers.testMetaPkgConfig finalAttrs.finalPackage;
 
   meta = {
     description = "OpenGL extension loading library for C/C++";
     homepage = "https://glew.sourceforge.net/";
+
     license = with lib.licenses; [
       # modified bsd
       free
       mit
       gpl2Only
     ]; # For full details, see https://github.com/nigels-com/glew#copyright-and-licensing
-    pkgConfigModules = [ "glew" ];
+
     platforms =
       if enableEGL then
         lib.subtractLists lib.platforms.darwin mesa.meta.platforms
       else
         mesa.meta.platforms;
+
+    pkgConfigModules = [ "glew" ];
   };
 })

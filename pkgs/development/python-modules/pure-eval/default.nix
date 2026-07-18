@@ -1,16 +1,15 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
+  pytestCheckHook,
   setuptools-scm,
   toml,
-  pytestCheckHook,
 }:
 
 buildPythonPackage rec {
   pname = "pure-eval";
   version = "0.2.3";
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "alexmojaki";
@@ -19,12 +18,10 @@ buildPythonPackage rec {
     hash = "sha256-gdP8/MkzTyjkZaWUG5PoaOtBqzbCXYNYBX2XBLWLh18=";
   };
 
-  build-system = [ setuptools-scm ];
-
-  dependencies = [ toml ];
-
   nativeCheckInputs = [ pytestCheckHook ];
-
+  build-system = [ setuptools-scm ];
+  dependencies = [ toml ];
+  format = "setuptools";
   pythonImportsCheck = [ "pure_eval" ];
 
   meta = {

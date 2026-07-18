@@ -2,28 +2,26 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  cmake,
-  pkg-config,
   adwaita-icon-theme,
-  gmime3,
-  webkitgtk_4_1,
-  ronn,
-  libsass,
-  notmuch,
   boost,
-  wrapGAppsHook3,
+  cmake,
+  fetchpatch,
   glib-networking,
-  protobuf,
+  gmime3,
+  gobject-introspection,
+  gsettings-desktop-schemas,
   gtkmm3,
   libpeas,
-  gsettings-desktop-schemas,
-  gobject-introspection,
+  libsass,
+  notmuch,
+  pkg-config,
+  protobuf,
   python3,
-  fetchpatch,
-
+  ronn,
   # vim to be used, should support the GUI mode.
   vim,
-
+  webkitgtk_4_1,
+  wrapGAppsHook3,
   # additional python3 packages to be available within plugins
   extraPythonPackages ? [ ],
 }:
@@ -42,8 +40,8 @@ stdenv.mkDerivation (finalAttrs: {
   patches = [
     # Until next version, patch to build with boost 1.89
     (fetchpatch {
-      url = "https://github.com/astroidmail/astroid/commit/b84962a7920aaa9b0cc4a85a0c9fd1802495b1bc.patch";
       hash = "sha256-QO5hoWscSMcxWLjPn/NT2MaIKrgMvTJeutitm4GaKZY=";
+      url = "https://github.com/astroidmail/astroid/commit/b84962a7920aaa9b0cc4a85a0c9fd1802495b1bc.patch";
     })
   ];
 
@@ -83,7 +81,6 @@ stdenv.mkDerivation (finalAttrs: {
     vim
   ];
 
-  pythonPath = with python3.pkgs; requiredPythonModules extraPythonPackages;
   preFixup = ''
     buildPythonPath "$out ''${pythonPath[*]}"
     gappsWrapperArgs+=(
@@ -91,15 +88,19 @@ stdenv.mkDerivation (finalAttrs: {
     )
   '';
 
+  pythonPath = with python3.pkgs; requiredPythonModules extraPythonPackages;
+
   meta = {
-    homepage = "https://astroidmail.github.io/";
     description = "GTK frontend to the notmuch mail system";
-    mainProgram = "astroid";
+    homepage = "https://astroidmail.github.io/";
+    license = lib.licenses.gpl3Plus;
+
     maintainers = with lib.maintainers; [
       bdimcheff
       SuprDewd
     ];
-    license = lib.licenses.gpl3Plus;
+
     platforms = lib.platforms.linux;
+    mainProgram = "astroid";
   };
 })

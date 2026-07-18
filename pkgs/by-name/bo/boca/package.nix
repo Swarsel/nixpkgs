@@ -2,12 +2,11 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  pkg-config,
-
   expat,
   libcdio,
   libcdio-paranoia,
   libpulseaudio,
+  pkg-config,
   smooth,
   uriparser,
   zlib,
@@ -44,8 +43,8 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Component library used by the fre:ac audio converter";
-    license = lib.licenses.gpl2Plus;
     homepage = "https://github.com/enzo1982/boca";
+    license = lib.licenses.gpl2Plus;
     platforms = lib.platforms.linux;
   };
 })

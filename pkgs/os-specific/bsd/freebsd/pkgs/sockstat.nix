@@ -1,23 +1,24 @@
 {
-  mkDerivation,
+  libcapsicum,
+  libcasper,
   libjail,
   libxo,
-  libcasper,
-  libcapsicum,
+  mkDerivation,
 }:
 mkDerivation {
-  path = "usr.bin/sockstat";
   outputs = [
     "out"
     "debug"
   ];
+
   buildInputs = [
     libjail
     libxo
     libcasper
     libcapsicum
   ];
-  MK_TESTS = "no";
 
+  MK_TESTS = "no";
+  path = "usr.bin/sockstat";
   meta.mainProgram = "sockstat";
 }

@@ -16,7 +16,13 @@ stdenv.mkDerivation (finalAttrs: {
     sha256 = "169vdh55wsbn6fl58lpzqx64v6ifzh7krykav33x1d9hsk98qjqh";
   };
 
-  doCheck = true;
+  patches = [ ./no-loader-test.patch ];
+
+  postPatch = ''
+    substituteInPlace CMakeLists.txt --replace-fail \
+      'cmake_minimum_required(VERSION 2.6 FATAL_ERROR)' \
+      'cmake_minimum_required(VERSION 4.0)'
+  '';
 
   nativeBuildInputs = [ cmake ];
 
@@ -28,27 +34,23 @@ stdenv.mkDerivation (finalAttrs: {
       --replace \"/lib32/ld-linux.so.2 \""$(cat $NIX_CC/nix-support/dynamic-linker)"
   '';
 
+  doCheck = true;
+
   checkPhase = ''
     LD_LIBRARY_PATH=$(pwd)/src make test
   '';
 
-  patches = [ ./no-loader-test.patch ];
-
-  postPatch = ''
-    substituteInPlace CMakeLists.txt --replace-fail \
-      'cmake_minimum_required(VERSION 2.6 FATAL_ERROR)' \
-      'cmake_minimum_required(VERSION 4.0)'
-  '';
-
   meta = {
     description = "Hot patching executables on Linux using .so file injection";
-    mainProgram = "hotpatcher";
     homepage = finalAttrs.src.meta.homepage;
     license = lib.licenses.bsd3;
     maintainers = [ ];
+
     platforms = [
       "i686-linux"
       "x86_64-linux"
     ];
+
+    mainProgram = "hotpatcher";
   };
 })

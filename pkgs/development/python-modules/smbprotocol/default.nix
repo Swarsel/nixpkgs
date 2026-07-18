@@ -1,9 +1,9 @@
 {
   lib,
   stdenv,
+  fetchFromGitHub,
   buildPythonPackage,
   cryptography,
-  fetchFromGitHub,
   pyspnego,
   pytest-mock,
   pytestCheckHook,
@@ -13,7 +13,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "smbprotocol";
   version = "1.17.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "jborean93";
@@ -22,16 +21,16 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-Mqv4vngO2tPXThsB/Z4RW7v09sfqZdqRKDW70GqjHH4=";
   };
 
+  nativeCheckInputs = [
+    pytest-mock
+    pytestCheckHook
+  ];
+
   build-system = [ setuptools ];
 
   dependencies = [
     cryptography
     pyspnego
-  ];
-
-  nativeCheckInputs = [
-    pytest-mock
-    pytestCheckHook
   ];
 
   disabledTests = lib.optionals stdenv.hostPlatform.isDarwin [
@@ -44,6 +43,7 @@ buildPythonPackage (finalAttrs: {
     "test_recv_"
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "smbprotocol" ];
 
   meta = {

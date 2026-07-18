@@ -1,7 +1,7 @@
 {
+  libxslt,
   mkKdeDerivation,
   shared-mime-info,
-  libxslt,
 }:
 mkKdeDerivation {
   pname = "akonadi-mime";

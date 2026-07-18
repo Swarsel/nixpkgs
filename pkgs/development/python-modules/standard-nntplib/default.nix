@@ -1,7 +1,7 @@
 {
-  buildPythonPackage,
-  fetchFromGitHub,
   lib,
+  fetchFromGitHub,
+  buildPythonPackage,
   pytestCheckHook,
   pythonOlder,
   setuptools,
@@ -10,9 +10,6 @@
 buildPythonPackage rec {
   pname = "standard-nntplib";
   version = "3.13.0";
-  pyproject = true;
-
-  disabled = pythonOlder "3.13";
 
   src = fetchFromGitHub {
     owner = "youknowone";
@@ -22,11 +19,12 @@ buildPythonPackage rec {
     sparseCheckout = [ "nntplib" ];
   };
 
-  build-system = [ setuptools ];
-  sourceRoot = "${src.name}/nntplib";
-
   nativeCheckInputs = [ pytestCheckHook ];
+  build-system = [ setuptools ];
+  disabled = pythonOlder "3.13";
+  pyproject = true;
   pythonImportsCheck = [ "nntplib" ];
+  sourceRoot = "${src.name}/nntplib";
 
   meta = {
     description = "Standard library nntplib redistribution";

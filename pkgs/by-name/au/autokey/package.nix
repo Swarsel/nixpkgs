@@ -1,23 +1,22 @@
 {
   lib,
-  python3Packages,
   fetchFromGitHub,
-  wrapGAppsHook3,
   gobject-introspection,
-  imagemagick,
   gtksourceview3,
+  imagemagick,
   libappindicator-gtk3,
   libnotify,
+  python3Packages,
+  wmctrl,
+  wrapGAppsHook3,
   xautomation,
   xwd,
   zenity,
-  wmctrl,
 }:
 
 python3Packages.buildPythonApplication (finalAttrs: {
   pname = "autokey";
   version = "0.96.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "autokey";
@@ -44,10 +43,6 @@ python3Packages.buildPythonApplication (finalAttrs: {
     libnotify
   ];
 
-  build-system = with python3Packages; [
-    setuptools
-  ];
-
   nativeCheckInputs = with python3Packages; [
     pyqt5
     pyhamcrest
@@ -55,14 +50,22 @@ python3Packages.buildPythonApplication (finalAttrs: {
     pytest-cov-stub
   ];
 
-  disabledTestPaths = [
-    # Runs `git describe` during test collection.
-    "tests/test_common.py"
-  ];
-
   preCheck = ''
     export HOME=$TMPDIR
   '';
+
+  postInstall = ''
+    # remove Qt version which we currently do not support
+    rm $out/bin/autokey-qt $out/share/applications/autokey-qt.desktop
+  '';
+
+  preFixup = ''
+    makeWrapperArgs+=(''${gappsWrapperArgs[@]} --prefix PATH : ${lib.makeBinPath finalAttrs.runtimeDeps})
+  '';
+
+  build-system = with python3Packages; [
+    setuptools
+  ];
 
   dependencies = with python3Packages; [
     dbus-python
@@ -73,6 +76,14 @@ python3Packages.buildPythonApplication (finalAttrs: {
     standard-imghdr
   ];
 
+  disabledTestPaths = [
+    # Runs `git describe` during test collection.
+    "tests/test_common.py"
+  ];
+
+  dontWrapGApps = true;
+  pyproject = true;
+
   runtimeDeps = [
     imagemagick
     zenity
@@ -80,17 +91,6 @@ python3Packages.buildPythonApplication (finalAttrs: {
     xwd
     wmctrl
   ];
-
-  dontWrapGApps = true;
-
-  preFixup = ''
-    makeWrapperArgs+=(''${gappsWrapperArgs[@]} --prefix PATH : ${lib.makeBinPath finalAttrs.runtimeDeps})
-  '';
-
-  postInstall = ''
-    # remove Qt version which we currently do not support
-    rm $out/bin/autokey-qt $out/share/applications/autokey-qt.desktop
-  '';
 
   meta = {
     description = "Desktop automation utility for Linux and X11";

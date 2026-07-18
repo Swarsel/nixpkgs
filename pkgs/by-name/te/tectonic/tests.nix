@@ -4,12 +4,12 @@
 {
   lib,
   fetchFromGitHub,
-  writeText,
+  cacert,
+  curl,
+  emptyFile,
   runCommand,
   tectonic,
-  curl,
-  cacert,
-  emptyFile,
+  writeText,
 }:
 
 let
@@ -20,11 +20,11 @@ let
     i.e. biber<=2.19, we fetch the test files directly from GitHub.
   */
   biber-dev-source = fetchFromGitHub {
+    hash = "sha256-Z5BdMteBouiDQasF6GZXkS//YzrZkcX1eLvKIQIBkBs=";
     owner = "plk";
     repo = "biber";
     # curl https://api.github.com/repos/plk/biber/pulls/467 | jq .merge_commit_sha
     rev = "d43e352586f5c9f98f0331978ca9d0b908986e09";
-    hash = "sha256-Z5BdMteBouiDQasF6GZXkS//YzrZkcX1eLvKIQIBkBs=";
   };
   testfiles = "${biber-dev-source}/testfiles";
 
@@ -72,8 +72,9 @@ let
           outputHashMode
           outputHash
           ;
-        allowSubstitutes = false;
+
         inherit nativeBuildInputs;
+        allowSubstitutes = false;
       }
       ''
         ${checkInternet}
@@ -92,16 +93,16 @@ lib.mapAttrs networkRequiringTestPkg {
     tectonic -X compile ./test.tex
   '';
 
-  workspace = ''
-    tectonic -X new
-    cat Tectonic.toml | grep "${tectonic.unwrapped.TECTONIC_BUNDLE_LOCKED}"
-  '';
-
   /**
     test that the `nextonic -> tectonic` symlink is working as intended
   */
   nextonic = ''
     nextonic new 2>&1 \
       | grep '"version 2" Tectonic command-line interface activated'
+  '';
+
+  workspace = ''
+    tectonic -X new
+    cat Tectonic.toml | grep "${tectonic.unwrapped.TECTONIC_BUNDLE_LOCKED}"
   '';
 }

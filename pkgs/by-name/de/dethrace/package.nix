@@ -2,8 +2,8 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  cmake,
   SDL2,
+  cmake,
   perl,
 }:
 
@@ -19,22 +19,23 @@ stdenv.mkDerivation (finalAttrs: {
     fetchSubmodules = true;
   };
 
-  buildInputs = [ SDL2 ];
   nativeBuildInputs = [
     cmake
     perl
   ];
+
+  buildInputs = [ SDL2 ];
 
   installPhase = ''
     install -Dm755 dethrace $out/bin/dethrace
   '';
 
   meta = {
-    homepage = "https://twitter.com/dethrace_labs";
     description = "Reverse engineering the 1997 game Carmageddon";
+    homepage = "https://twitter.com/dethrace_labs";
     license = lib.licenses.gpl3;
-    platforms = lib.platforms.linux;
     maintainers = with lib.maintainers; [ astro ];
+    platforms = lib.platforms.linux;
     mainProgram = "dethrace";
   };
 })

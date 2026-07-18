@@ -1,27 +1,22 @@
 {
+  lib,
   stdenv,
   fetchFromGitLab,
-  meson,
-  pkg-config,
   docutils,
-  ninja,
+  gitUpdater,
   glib,
   libvirt,
   libvirt-glib,
-  systemd,
-  gitUpdater,
-  lib,
+  meson,
+  ninja,
   nixosTests,
+  pkg-config,
+  systemd,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
   pname = "libvirt-dbus";
   version = "1.4.1";
-
-  outputs = [
-    "out"
-    "man"
-  ];
 
   src = fetchFromGitLab {
     owner = "libvirt";
@@ -29,6 +24,11 @@ stdenv.mkDerivation (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-S4QktQmcnTte4XsIcgc5dkA8LjMJaOD2lljS01WT0dk=";
   };
+
+  outputs = [
+    "out"
+    "man"
+  ];
 
   postPatch = ''
     substituteInPlace "data/system/meson.build" \
@@ -65,11 +65,12 @@ stdenv.mkDerivation (finalAttrs: {
   doCheck = false; # needs running D-Bus and libvirt
 
   passthru = {
-    updateScript = gitUpdater {
-      rev-prefix = "v";
-    };
     tests = {
       inherit (nixosTests) libvirtd;
+    };
+
+    updateScript = gitUpdater {
+      rev-prefix = "v";
     };
   };
 
@@ -78,7 +79,7 @@ stdenv.mkDerivation (finalAttrs: {
     homepage = "https://libvirt.org/dbus.html";
     changelog = "https://gitlab.com/libvirt/libvirt-dbus/-/blob/v${finalAttrs.version}/NEWS.rst";
     license = lib.licenses.lgpl2Plus;
-    platforms = lib.platforms.linux;
     maintainers = with lib.maintainers; [ andre4ik3 ];
+    platforms = lib.platforms.linux;
   };
 })

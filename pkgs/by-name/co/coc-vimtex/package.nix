@@ -1,12 +1,12 @@
 {
   lib,
-  stdenvNoCC,
   fetchFromGitHub,
   fetchYarnDeps,
+  nix-update-script,
+  nodejs,
+  stdenvNoCC,
   yarnConfigHook,
   yarnInstallHook,
-  nodejs,
-  nix-update-script,
 }:
 stdenvNoCC.mkDerivation (finalAttrs: {
   pname = "coc-vimtex";
@@ -19,16 +19,16 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     hash = "sha256-Z0vhgpdzh3GY9o6qnYWkeaUtjtoJ6PdqtDpRQHQXCjI=";
   };
 
-  yarnOfflineCache = fetchYarnDeps {
-    inherit (finalAttrs) src;
-    hash = "sha256-XEDPfnEkUTVCpxBp/DAdrRDvxYrTo/e+PTQGmtSy58c=";
-  };
-
   nativeBuildInputs = [
     yarnConfigHook
     yarnInstallHook
     nodejs
   ];
+
+  yarnOfflineCache = fetchYarnDeps {
+    inherit (finalAttrs) src;
+    hash = "sha256-XEDPfnEkUTVCpxBp/DAdrRDvxYrTo/e+PTQGmtSy58c=";
+  };
 
   passthru.updateScript = nix-update-script { };
 

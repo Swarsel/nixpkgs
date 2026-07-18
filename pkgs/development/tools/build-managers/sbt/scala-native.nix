@@ -1,11 +1,11 @@
 {
   lib,
-  sbt,
-  makeWrapper,
   boehmgc,
   libunwind,
-  re2,
   llvmPackages,
+  makeWrapper,
+  re2,
+  sbt,
   zlib,
 }:
 

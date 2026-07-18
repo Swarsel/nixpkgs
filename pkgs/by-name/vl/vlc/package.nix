@@ -1,5 +1,7 @@
 {
   lib,
+  stdenv,
+  fetchFromGitLab,
   alsa-lib,
   autoreconfHook,
   avahi,
@@ -7,7 +9,6 @@
   cairo,
   dbus,
   faad2,
-  fetchFromGitLab,
   fetchpatch,
   ffmpeg_7,
   flac,
@@ -20,12 +21,8 @@
   gnutls,
   harfbuzz,
   libGL,
-  libsm,
-  libxext,
-  libxinerama,
-  libxpm,
-  libarchive,
   libaacs,
+  libarchive,
   libass,
   libbluray-full,
   libcaca,
@@ -52,6 +49,7 @@
   librsvg,
   libsForQt5,
   libsamplerate,
+  libsm,
   libspatialaudio,
   libssh2,
   libtheora,
@@ -60,7 +58,11 @@
   libv4l,
   libva,
   libvorbis,
+  libxcb-keysyms,
+  libxext,
+  libxinerama,
   libxml2,
+  libxpm,
   live555,
   lua5,
   ncurses,
@@ -74,7 +76,6 @@
   schroedinger,
   speex,
   srt,
-  stdenv,
   systemdLibs,
   taglib_1,
   unzip,
@@ -82,7 +83,6 @@
   wayland-protocols,
   wayland-scanner,
   wrapGAppsHook3,
-  libxcb-keysyms,
   zlib,
   chromecastSupport ? true,
   jackSupport ? false,
@@ -104,14 +104,48 @@ stdenv.mkDerivation (finalAttrs: {
   version = "3.0.23-2";
 
   src = fetchFromGitLab {
-    domain = "code.videolan.org";
     owner = "videolan";
     repo = "vlc";
     rev = finalAttrs.version;
     hash = "sha256-vg/kKNrIpGF7Olz8EiA1ZsW5SB4iHlvFbREDp4JokB0=";
+    domain = "code.videolan.org";
   };
 
-  depsBuildBuild = optionals waylandSupport [ pkg-config ];
+  outputs = [
+    "out"
+    "dev"
+    "doc"
+    "man"
+  ];
+
+  patches = [
+    # patch to build with recent live555
+    # upstream issue: https://code.videolan.org/videolan/vlc/-/issues/25473
+    (fetchpatch {
+      hash = "sha256-qs3gY1ksCZlf931TSZyMuT2JD0sqrmcRCZwL+wVG0U8=";
+      url = "https://code.videolan.org/videolan/vlc/uploads/eb1c313d2d499b8a777314f789794f9d/0001-Add-lssl-and-lcrypto-to-liblive555_plugin_la_LIBADD.patch";
+    })
+    # make the plugins.dat file generation reproducible
+    # upstream merge request: https://code.videolan.org/videolan/vlc/-/merge_requests/7149
+    ./deterministic-plugin-cache.diff
+  ];
+
+  postPatch = ''
+    echo "$version" > src/revision.txt
+    substituteInPlace modules/text_renderer/freetype/platform_fonts.h \
+      --replace-fail \
+        /usr/share/fonts/truetype/freefont \
+        ${freefont_ttf}/share/fonts/truetype
+  ''
+  # Upstream luac can't cross compile, so we have to install the lua sources
+  # instead of bytecode, which was built for buildPlatform:
+  # https://www.lua.org/wshop13/Jericke.pdf#page=39
+  + lib.optionalString (!stdenv.hostPlatform.canExecute stdenv.buildPlatform) ''
+    substituteInPlace share/Makefile.am \
+      --replace-fail $'.luac \\\n' $'.lua \\\n'
+  '';
+
+  strictDeps = true;
 
   nativeBuildInputs = [
     autoreconfHook
@@ -220,53 +254,6 @@ stdenv.mkDerivation (finalAttrs: {
   )
   ++ optionals (waylandSupport && withQt5) [ libsForQt5.qtwayland ];
 
-  strictDeps = true;
-  __structuredAttrs = true;
-
-  outputs = [
-    "out"
-    "dev"
-    "doc"
-    "man"
-  ];
-
-  env = {
-    # vlc searches for c11-gcc, c11, c99-gcc, c99, which don't exist and would be wrong for cross compilation anyway.
-    BUILDCC = lib.getExe pkgsBuildBuild.stdenv.cc;
-    LIVE555_PREFIX = live555;
-  };
-
-  patches = [
-    # patch to build with recent live555
-    # upstream issue: https://code.videolan.org/videolan/vlc/-/issues/25473
-    (fetchpatch {
-      url = "https://code.videolan.org/videolan/vlc/uploads/eb1c313d2d499b8a777314f789794f9d/0001-Add-lssl-and-lcrypto-to-liblive555_plugin_la_LIBADD.patch";
-      hash = "sha256-qs3gY1ksCZlf931TSZyMuT2JD0sqrmcRCZwL+wVG0U8=";
-    })
-    # make the plugins.dat file generation reproducible
-    # upstream merge request: https://code.videolan.org/videolan/vlc/-/merge_requests/7149
-    ./deterministic-plugin-cache.diff
-  ];
-
-  postPatch = ''
-    echo "$version" > src/revision.txt
-    substituteInPlace modules/text_renderer/freetype/platform_fonts.h \
-      --replace-fail \
-        /usr/share/fonts/truetype/freefont \
-        ${freefont_ttf}/share/fonts/truetype
-  ''
-  # Upstream luac can't cross compile, so we have to install the lua sources
-  # instead of bytecode, which was built for buildPlatform:
-  # https://www.lua.org/wshop13/Jericke.pdf#page=39
-  + lib.optionalString (!stdenv.hostPlatform.canExecute stdenv.buildPlatform) ''
-    substituteInPlace share/Makefile.am \
-      --replace-fail $'.luac \\\n' $'.lua \\\n'
-  '';
-
-  enableParallelBuilding = true;
-
-  dontWrapGApps = true; # to prevent double wrapping of Qtwrap and Gwrap
-
   # Most of the libraries are auto-detected so we don't need to set a bunch of
   # "--enable-foo" flags here
   configureFlags = [
@@ -280,6 +267,12 @@ stdenv.mkDerivation (finalAttrs: {
     "--enable-chromecast"
     "--enable-microdns"
   ];
+
+  env = {
+    # vlc searches for c11-gcc, c11, c99-gcc, c99, which don't exist and would be wrong for cross compilation anyway.
+    BUILDCC = lib.getExe pkgsBuildBuild.stdenv.cc;
+    LIVE555_PREFIX = live555;
+  };
 
   # Remove runtime dependencies on libraries
   postConfigure = ''
@@ -315,17 +308,23 @@ stdenv.mkDerivation (finalAttrs: {
     remove-references-to -t "${libsForQt5.qtbase.dev}" $out/lib/vlc/plugins/gui/libqt_plugin.so
   '';
 
+  __structuredAttrs = true;
+  depsBuildBuild = optionals waylandSupport [ pkg-config ];
+  dontWrapGApps = true; # to prevent double wrapping of Qtwrap and Gwrap
+  enableParallelBuilding = true;
   passthru.updateScript = nix-update-script { };
 
   meta = {
     description = "Cross-platform media player and streaming server";
     homepage = "https://www.videolan.org/vlc/";
-    donationPage = "https://www.videolan.org/contribute.html#money";
     license = lib.licenses.lgpl21Plus;
+
     maintainers = with lib.maintainers; [
       nick-linux
     ];
+
     platforms = lib.platforms.linux;
     mainProgram = "vlc";
+    donationPage = "https://www.videolan.org/contribute.html#money";
   };
 })

@@ -1,39 +1,32 @@
 {
   lib,
   stdenv,
-  gcc13Stdenv,
-  buildPythonPackage,
   fetchFromGitHub,
-
+  autoAddDriverRunpath,
+  buildPythonPackage,
   # nativeBuildInputs
   cmake,
+  config,
+  # dependencies
+  diskcache,
+  gcc13Stdenv,
+  # passthru
+  gitUpdater,
+  huggingface-hub,
+  jinja2,
+  llama-cpp-python,
   ninja,
-  autoAddDriverRunpath,
-
+  numpy,
   # build-system
   pathspec,
   pyproject-metadata,
+  pytestCheckHook,
   scikit-build-core,
-
-  # dependencies
-  diskcache,
-  jinja2,
-  numpy,
-  typing-extensions,
-
   # tests
   scipy,
-  huggingface-hub,
-
-  # passthru
-  gitUpdater,
-  pytestCheckHook,
-  llama-cpp-python,
-
-  config,
-  cudaSupport ? config.cudaSupport,
+  typing-extensions,
   cudaPackages ? { },
-
+  cudaSupport ? config.cudaSupport,
 }:
 let
   stdenvTarget = if cudaSupport then gcc13Stdenv else stdenv;
@@ -41,7 +34,6 @@ in
 buildPythonPackage.override { stdenv = stdenvTarget; } rec {
   pname = "llama-cpp-python";
   version = "0.3.23";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "abetlen";
@@ -51,7 +43,23 @@ buildPythonPackage.override { stdenv = stdenvTarget; } rec {
     fetchSubmodules = true;
   };
 
-  dontUseCmakeConfigure = true;
+  nativeBuildInputs = [
+    cmake
+    ninja
+  ]
+  ++ lib.optionals cudaSupport [
+    autoAddDriverRunpath
+  ];
+
+  buildInputs = lib.optionals cudaSupport (
+    with cudaPackages;
+    [
+      cuda_cudart # cuda_runtime.h
+      cccl # <thrust/*>
+      libcublas # cublas_v2.h
+    ]
+  );
+
   cmakeFlags = [
     # Set GGML_NATIVE=off. Otherwise, cmake attempts to build with
     # -march=native* which is either a no-op (if cc-wrapper is able to ignore
@@ -69,14 +77,10 @@ buildPythonPackage.override { stdenv = stdenvTarget; } rec {
     (lib.cmakeFeature "CMAKE_CUDA_COMPILER" "${lib.getExe cudaPackages.cuda_nvcc}")
   ];
 
-  enableParallelBuilding = true;
-
-  nativeBuildInputs = [
-    cmake
-    ninja
-  ]
-  ++ lib.optionals cudaSupport [
-    autoAddDriverRunpath
+  nativeCheckInputs = [
+    pytestCheckHook
+    scipy
+    huggingface-hub
   ];
 
   build-system = [
@@ -85,15 +89,6 @@ buildPythonPackage.override { stdenv = stdenvTarget; } rec {
     scikit-build-core
   ];
 
-  buildInputs = lib.optionals cudaSupport (
-    with cudaPackages;
-    [
-      cuda_cudart # cuda_runtime.h
-      cccl # <thrust/*>
-      libcublas # cublas_v2.h
-    ]
-  );
-
   dependencies = [
     diskcache
     jinja2
@@ -101,17 +96,15 @@ buildPythonPackage.override { stdenv = stdenvTarget; } rec {
     typing-extensions
   ];
 
-  nativeCheckInputs = [
-    pytestCheckHook
-    scipy
-    huggingface-hub
-  ];
-
   disabledTests = [
     # tries to download model from huggingface-hub
     "test_real_model"
     "test_real_llama"
   ];
+
+  dontUseCmakeConfigure = true;
+  enableParallelBuilding = true;
+  pyproject = true;
 
   pythonImportsCheck = lib.optionals (!cudaSupport) [
     # `libllama.so` is loaded at import time, and failing when cudaSupport is enabled as the cuda
@@ -122,14 +115,15 @@ buildPythonPackage.override { stdenv = stdenvTarget; } rec {
   ];
 
   passthru = {
-    updateScript = gitUpdater {
-      rev-prefix = "v";
-      allowedVersions = "^[.0-9]+$";
-    };
     tests = lib.optionalAttrs stdenvTarget.hostPlatform.isLinux {
       withCuda = llama-cpp-python.override {
         cudaSupport = true;
       };
+    };
+
+    updateScript = gitUpdater {
+      allowedVersions = "^[.0-9]+$";
+      rev-prefix = "v";
     };
   };
 
@@ -138,6 +132,7 @@ buildPythonPackage.override { stdenv = stdenvTarget; } rec {
     homepage = "https://github.com/abetlen/llama-cpp-python";
     changelog = "https://github.com/abetlen/llama-cpp-python/blob/v${version}/CHANGELOG.md";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       booxter
       kirillrdy

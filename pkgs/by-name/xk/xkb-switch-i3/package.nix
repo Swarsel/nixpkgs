@@ -1,15 +1,15 @@
 {
   lib,
   stdenv,
-  cmake,
   fetchFromGitHub,
+  cmake,
+  fetchpatch,
   i3,
   jsoncpp,
   libsigcxx,
   libx11,
   libxkbfile,
   pkg-config,
-  fetchpatch,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -26,9 +26,9 @@ stdenv.mkDerivation (finalAttrs: {
 
   patches = [
     (fetchpatch {
+      hash = "sha256-J8EITYxi5EpYwROmFrAXgqFgbnFh8/fy9nxEKNhBvek=";
       name = "bump-cmake-required-version.patch";
       url = "https://github.com/Zebradil/xkb-switch-i3/commit/95f6ff96c77fc17891d57332f6d3a014500396eb.patch?full_index=1";
-      hash = "sha256-J8EITYxi5EpYwROmFrAXgqFgbnFh8/fy9nxEKNhBvek=";
     })
   ];
 
@@ -42,6 +42,7 @@ stdenv.mkDerivation (finalAttrs: {
     cmake
     pkg-config
   ];
+
   buildInputs = [
     i3
     jsoncpp

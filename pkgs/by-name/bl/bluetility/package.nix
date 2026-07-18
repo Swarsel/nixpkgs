@@ -1,7 +1,7 @@
 {
   lib,
-  stdenvNoCC,
   fetchurl,
+  stdenvNoCC,
   unzip,
 }:
 
@@ -14,8 +14,6 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     hash = "sha256-Batnv06nXXxvUz+DlrH1MpeL4f5kNSPDH6Iqd/UiFbw=";
   };
 
-  dontUnpack = true;
-
   nativeBuildInputs = [ unzip ];
 
   installPhase = ''
@@ -26,6 +24,8 @@ stdenvNoCC.mkDerivation (finalAttrs: {
 
     runHook postInstall
   '';
+
+  dontUnpack = true;
 
   meta = {
     description = "Bluetooth Low Energy browse";

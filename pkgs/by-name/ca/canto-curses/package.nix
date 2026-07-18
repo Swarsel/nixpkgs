@@ -1,17 +1,16 @@
 {
   lib,
-  fetchFromGitHub,
   fetchurl,
+  fetchFromGitHub,
+  canto-daemon,
+  ncurses,
   python3Packages,
   readline,
-  ncurses,
-  canto-daemon,
 }:
 
 python3Packages.buildPythonApplication (finalAttrs: {
-  version = "0.9.9";
-  pyproject = true;
   pname = "canto-curses";
+  version = "0.9.9";
 
   src = fetchFromGitHub {
     owner = "themoken";
@@ -23,13 +22,9 @@ python3Packages.buildPythonApplication (finalAttrs: {
   # Fixes the issue found here https://github.com/themoken/canto-curses/issues/59
   patches = [
     (fetchurl {
-      url = "https://gitlab.archlinux.org/archlinux/packaging/packages/canto-curses/-/raw/6daa56bc5baebb2444c368a8208666ef484a6fc0/fix-build.patch";
       hash = "sha256-2TMNmwjUAGyenSDqxfI+U2hNeDZaj2CivfTfpX7CKgY=";
+      url = "https://gitlab.archlinux.org/archlinux/packaging/packages/canto-curses/-/raw/6daa56bc5baebb2444c368a8208666ef484a6fc0/fix-build.patch";
     })
-  ];
-
-  build-system = with python3Packages; [
-    setuptools
   ];
 
   buildInputs = [
@@ -37,11 +32,18 @@ python3Packages.buildPythonApplication (finalAttrs: {
     ncurses
     canto-daemon
   ];
+
   propagatedBuildInputs = [ canto-daemon ];
+
+  build-system = with python3Packages; [
+    setuptools
+  ];
+
+  pyproject = true;
 
   meta = {
     description = "Ncurses-based console Atom/RSS feed reader";
-    mainProgram = "canto-curses";
+
     longDescription = ''
       Canto is an Atom/RSS feed reader for the console that is meant to be
       quick, concise, and colorful. It's meant to allow you to crank through
@@ -50,9 +52,11 @@ python3Packages.buildPythonApplication (finalAttrs: {
       unreadable white text. An interface with almost infinite customization
       and extensibility using the excellent Python programming language.
     '';
+
     homepage = "https://codezen.org/canto-ng/";
     license = lib.licenses.gpl2;
-    platforms = lib.platforms.linux;
     maintainers = [ lib.maintainers.devhell ];
+    platforms = lib.platforms.linux;
+    mainProgram = "canto-curses";
   };
 })

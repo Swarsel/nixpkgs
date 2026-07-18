@@ -1,8 +1,7 @@
 {
-  buildGoModule,
-  fetchFromGitHub,
   lib,
-
+  fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule (finalAttrs: {
@@ -17,15 +16,14 @@ buildGoModule (finalAttrs: {
   };
 
   vendorHash = "sha256-9+2s84bqoNU3aaxmWYzIuFKPA3Tw9phXu5Csaaq/L60=";
-
   doCheck = false;
 
   meta = {
     description = "Embed static files in Go binaries (replacement for gobuffalo/packr)";
-    mainProgram = "pkger";
     homepage = "https://github.com/markbates/pkger";
     changelog = "https://github.com/markbates/pkger/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ flokli ];
+    mainProgram = "pkger";
   };
 })

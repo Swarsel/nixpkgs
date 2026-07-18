@@ -1,9 +1,9 @@
 {
-  buildPythonPackage,
-  fetchFromGitHub,
-  hatchling,
-  hatch-vcs,
   lib,
+  fetchFromGitHub,
+  buildPythonPackage,
+  hatch-vcs,
+  hatchling,
   pytest-asyncio,
   pytestCheckHook,
   rustPlatform,
@@ -23,14 +23,11 @@ let
   };
 
   rmodbus-server = rustPlatform.buildRustPackage (finalAttrs: {
+    inherit src;
     pname = "rmodbus-server";
     version = "0.1.0";
-
-    inherit src;
-
-    sourceRoot = "${src.name}/integration_tests/rmodbus";
-
     cargoHash = "sha256-t7lJ7zC5+z1E/EDWTPR6cbGhcy/RmtXQXon+FiXRZlI=";
+    sourceRoot = "${src.name}/integration_tests/rmodbus";
 
     meta = {
       description = "Rust Modbus server";
@@ -40,14 +37,11 @@ let
   });
 
   tokio-modbus-server = rustPlatform.buildRustPackage (finalAttrs: {
+    inherit src;
     pname = "tokio-modbus-server";
     version = "0.1.0";
-
-    inherit src;
-
-    sourceRoot = "${src.name}/integration_tests/tokio";
-
     cargoHash = "sha256-grYnQxf0CH7hkFq1zTMxw6brtHfCheh/O2EtPPPpVqA=";
+    sourceRoot = "${src.name}/integration_tests/tokio";
 
     meta = {
       description = "Rust Tokio Modbus server";
@@ -58,11 +52,8 @@ let
 in
 
 buildPythonPackage (finalAttrs: {
-  pname = "tmodbus";
   inherit version src;
-  pyproject = true;
-
-  __structuredAttrs = true;
+  pname = "tmodbus";
 
   postPatch = ''
     substituteInPlace \
@@ -76,6 +67,14 @@ buildPythonPackage (finalAttrs: {
     ln -s ${lib.getExe tokio-modbus-server} integration_tests/tokio/target/release/
   '';
 
+  nativeCheckInputs = [
+    pytest-asyncio
+    pytestCheckHook
+  ]
+  ++ lib.concatAttrValues finalAttrs.passthru.optional-dependencies;
+
+  __structuredAttrs = true;
+
   build-system = [
     hatch-vcs
     hatchling
@@ -85,16 +84,13 @@ buildPythonPackage (finalAttrs: {
     async-serial = [
       serialx
     ];
+
     smart = [
       tenacity
     ];
   };
 
-  nativeCheckInputs = [
-    pytest-asyncio
-    pytestCheckHook
-  ]
-  ++ lib.concatAttrValues finalAttrs.passthru.optional-dependencies;
+  pyproject = true;
 
   pythonImportsCheck = [
     "tmodbus"
@@ -110,6 +106,7 @@ buildPythonPackage (finalAttrs: {
     changelog = "https://github.com/wlcrs/tmodbus/releases/tag/${finalAttrs.src.tag}";
     license = lib.licenses.bsd3;
     maintainers = with lib.maintainers; [ hexa ];
+
     badPlatforms = [
       "aarch64-darwin" # tests fail, no indication they should work
     ];

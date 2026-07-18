@@ -1,83 +1,77 @@
 {
   lib,
   stdenv,
-  coreutils,
   fetchurl,
-  zlib,
-  libx11,
-  libxext,
-  libsm,
-  libice,
-  libxkbcommon,
-  libxshmfence,
-  libxfixes,
-  libxt,
-  libxi,
-  libxcursor,
-  libxscrnsaver,
-  libxcomposite,
-  libxdamage,
-  libxtst,
-  libxrandr,
+  addDriverRunpath,
   alsa-lib,
-  dbus,
-  cups,
-  libexif,
-  ffmpeg,
-  systemd,
-  libva,
-  libGL,
-  freetype,
-  fontconfig,
-  libxft,
-  libxrender,
-  libxcb,
-  expat,
-  libuuid,
-  libxml2,
-  glib,
-  gtk3,
-  pango,
-  gdk-pixbuf,
-  cairo,
-  atk,
   at-spi2-atk,
   at-spi2-core,
-  qt6,
+  atk,
+  cairo,
+  coreutils,
+  cups,
+  dbus,
+  expat,
+  ffmpeg,
+  fontconfig,
+  freetype,
+  gdk-pixbuf,
+  glib,
+  gtk3,
+  libGL,
   libdrm,
+  libexif,
   libgbm,
-  vulkan-loader,
-  addDriverRunpath,
-  nss,
-  nspr,
-  patchelf,
-  makeWrapper,
-  wayland,
-  pipewire,
-  proprietaryCodecs ? false,
-  vivaldi-ffmpeg-codecs ? null,
-  enableWidevine ? false,
-  widevine-cdm ? null,
-  commandLineArgs ? "",
-  pulseSupport ? stdenv.hostPlatform.isLinux,
-  libpulseaudio,
-  kerberosSupport ? true,
+  libice,
   libkrb5,
+  libpulseaudio,
+  libsm,
+  libuuid,
+  libva,
+  libx11,
+  libxcb,
+  libxcomposite,
+  libxcursor,
+  libxdamage,
+  libxext,
+  libxfixes,
+  libxft,
+  libxi,
+  libxkbcommon,
+  libxml2,
+  libxrandr,
+  libxrender,
+  libxscrnsaver,
+  libxshmfence,
+  libxt,
+  libxtst,
+  makeWrapper,
+  nspr,
+  nss,
+  pango,
+  patchelf,
+  pipewire,
+  qt6,
+  systemd,
+  vulkan-loader,
+  wayland,
+  zlib,
+  commandLineArgs ? "",
+  enableWidevine ? false,
+  kerberosSupport ? true,
+  proprietaryCodecs ? false,
+  pulseSupport ? stdenv.hostPlatform.isLinux,
+  vivaldi-ffmpeg-codecs ? null,
+  widevine-cdm ? null,
 }:
 
 stdenv.mkDerivation rec {
   pname = "vivaldi";
   version = "8.1.4087.48";
 
-  suffix =
-    {
-      aarch64-linux = "arm64";
-      x86_64-linux = "amd64";
-    }
-    .${stdenv.hostPlatform.system} or (throw "Unsupported system: ${stdenv.hostPlatform.system}");
-
   src = fetchurl {
     url = "https://downloads.vivaldi.com/stable/vivaldi-stable_${version}-1_${suffix}.deb";
+
     hash =
       {
         aarch64-linux = "sha256-T6mBi4FpHz2iGXeF91giTbuVp4KjFG1DUnPNpKEV06c=";
@@ -86,20 +80,11 @@ stdenv.mkDerivation rec {
       .${stdenv.hostPlatform.system} or (throw "Unsupported system: ${stdenv.hostPlatform.system}");
   };
 
-  unpackPhase = ''
-    runHook preUnpack
-    ar vx $src
-    tar -xvf data.tar.xz
-    runHook postUnpack
-  '';
-
   nativeBuildInputs = [
     patchelf
     makeWrapper
     qt6.wrapQtAppsHook
   ];
-
-  dontWrapQtApps = true;
 
   buildInputs = [
     stdenv.cc.cc
@@ -158,13 +143,6 @@ stdenv.mkDerivation rec {
   ++ lib.optional pulseSupport libpulseaudio
   ++ lib.optional kerberosSupport libkrb5;
 
-  libPath =
-    lib.makeLibraryPath buildInputs
-    + lib.optionalString (stdenv.hostPlatform.is64bit) (
-      ":" + lib.makeSearchPathOutput "lib" "lib64" buildInputs
-    )
-    + ":$out/opt/vivaldi/lib";
-
   buildPhase = ''
     runHook preBuild
     echo "Patching Vivaldi binaries"
@@ -186,9 +164,6 @@ stdenv.mkDerivation rec {
     echo "Finished patching Vivaldi binaries"
     runHook postBuild
   '';
-
-  dontPatchELF = true;
-  dontStrip = true;
 
   installPhase = ''
     runHook preInstall
@@ -227,6 +202,31 @@ stdenv.mkDerivation rec {
     runHook postInstall
   '';
 
+  dontPatchELF = true;
+  dontStrip = true;
+  dontWrapQtApps = true;
+
+  libPath =
+    lib.makeLibraryPath buildInputs
+    + lib.optionalString (stdenv.hostPlatform.is64bit) (
+      ":" + lib.makeSearchPathOutput "lib" "lib64" buildInputs
+    )
+    + ":$out/opt/vivaldi/lib";
+
+  suffix =
+    {
+      aarch64-linux = "arm64";
+      x86_64-linux = "amd64";
+    }
+    .${stdenv.hostPlatform.system} or (throw "Unsupported system: ${stdenv.hostPlatform.system}");
+
+  unpackPhase = ''
+    runHook preUnpack
+    ar vx $src
+    tar -xvf data.tar.xz
+    runHook postUnpack
+  '';
+
   passthru.updateScript = ./update-vivaldi.sh;
 
   meta = {
@@ -234,15 +234,18 @@ stdenv.mkDerivation rec {
     homepage = "https://vivaldi.com";
     license = lib.licenses.unfree;
     sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
-    mainProgram = "vivaldi";
+
     maintainers = with lib.maintainers; [
       marcusramberg
       max06
       wineee
     ];
+
     platforms = [
       "x86_64-linux"
       "aarch64-linux"
     ];
+
+    mainProgram = "vivaldi";
   };
 }

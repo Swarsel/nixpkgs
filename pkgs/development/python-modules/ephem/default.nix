@@ -8,7 +8,6 @@
 buildPythonPackage rec {
   pname = "ephem";
   version = "4.2.1";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
@@ -24,6 +23,7 @@ buildPythonPackage rec {
     pytest --pyargs ephem.tests -k "not JPLTest"
   '';
 
+  format = "setuptools";
   pythonImportsCheck = [ "ephem" ];
 
   meta = {

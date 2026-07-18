@@ -1,13 +1,13 @@
 {
-  buildPackages,
   lib,
   stdenv,
   fetchFromGitHub,
+  buildPackages,
   cmake,
-  python3,
-  withDynarec ? stdenv.hostPlatform.isAarch32,
-  runCommand,
   hello-x86_32,
+  python3,
+  runCommand,
+  withDynarec ? stdenv.hostPlatform.isAarch32,
 }:
 
 # Currently only supported on specific archs
@@ -45,6 +45,8 @@ stdenv.mkDerivation (finalAttrs: {
     (lib.cmakeBool "ARM_DYNAREC" (withDynarec && stdenv.hostPlatform.isAarch))
   ];
 
+  doCheck = stdenv.buildPlatform.canExecute stdenv.hostPlatform;
+
   installPhase = ''
     runHook preInstall
 
@@ -52,8 +54,6 @@ stdenv.mkDerivation (finalAttrs: {
 
     runHook postInstall
   '';
-
-  doCheck = stdenv.buildPlatform.canExecute stdenv.hostPlatform;
 
   doInstallCheck = stdenv.buildPlatform.canExecute stdenv.hostPlatform;
 
@@ -70,8 +70,6 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   passthru = {
-    # gitUpdater for local system, otherwise we're cross-compiling gitUpdater
-    updateScript = buildPackages.gitUpdater { rev-prefix = "v"; };
     tests.hello =
       runCommand "box86-test-hello" { nativeBuildInputs = [ finalAttrs.finalPackage ]; }
         # There is no actual "Hello, world!" with any of the logging enabled, and with all logging disabled it's hard to
@@ -79,18 +77,22 @@ stdenv.mkDerivation (finalAttrs: {
         ''
           BOX86_NOBANNER=0 BOX86_LOG=1 box86 ${lib.getExe hello-x86_32} --version | tee $out
         '';
+
+    # gitUpdater for local system, otherwise we're cross-compiling gitUpdater
+    updateScript = buildPackages.gitUpdater { rev-prefix = "v"; };
   };
 
   meta = {
-    homepage = "https://box86.org/";
     description = "Lets you run x86 Linux programs on non-x86 Linux systems";
+    homepage = "https://box86.org/";
     changelog = "https://github.com/ptitSeb/box86/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       gador
       OPNA2608
     ];
-    mainProgram = "box86";
+
     platforms = [
       "i686-linux"
       "armv7l-linux"
@@ -98,5 +100,7 @@ stdenv.mkDerivation (finalAttrs: {
       "loongarch64-linux"
       "mipsel-linux"
     ];
+
+    mainProgram = "box86";
   };
 })

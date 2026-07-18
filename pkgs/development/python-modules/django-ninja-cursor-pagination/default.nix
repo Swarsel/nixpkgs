@@ -1,19 +1,18 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  hatch-vcs,
-  hatchling,
+  buildPythonPackage,
   django,
   django-ninja,
-  pytestCheckHook,
+  hatch-vcs,
+  hatchling,
   pytest-django,
+  pytestCheckHook,
 }:
 
 buildPythonPackage {
   pname = "django-ninja-cursor-pagination";
   version = "0.1.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "kitware-resonant";
@@ -21,6 +20,11 @@ buildPythonPackage {
     rev = "2cc22187885b9a12956530a00e554c7a6012de63";
     hash = "sha256-uZ+l/s70A8UG/HlSLIXW4r2WFM0Jj1Ep7fGoNdH9P5M=";
   };
+
+  nativeCheckInputs = [
+    pytestCheckHook
+    pytest-django
+  ];
 
   build-system = [
     hatch-vcs
@@ -32,10 +36,7 @@ buildPythonPackage {
     django-ninja
   ];
 
-  nativeCheckInputs = [
-    pytestCheckHook
-    pytest-django
-  ];
+  pyproject = true;
 
   meta = {
     description = "Django Ninja extension for cursor-based pagination";

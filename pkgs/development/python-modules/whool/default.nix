@@ -1,9 +1,9 @@
 {
-  buildPythonPackage,
+  lib,
   fetchFromGitHub,
+  buildPythonPackage,
   git,
   hatch-vcs,
-  lib,
   manifestoo-core,
   pytestCheckHook,
   wheel,
@@ -12,7 +12,6 @@
 buildPythonPackage rec {
   pname = "whool";
   version = "1.3";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "sbidoul";
@@ -21,6 +20,11 @@ buildPythonPackage rec {
     hash = "sha256-vY7MPTBjNy3LY29k0MjMDnPiU7l9lUvPvTCrji8A5Cw=";
   };
 
+  nativeCheckInputs = [
+    pytestCheckHook
+    git
+  ];
+
   build-system = [ hatch-vcs ];
 
   dependencies = [
@@ -28,13 +32,8 @@ buildPythonPackage rec {
     wheel
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "whool" ];
-
-  nativeCheckInputs = [
-    pytestCheckHook
-    git
-  ];
-
   setupHook = ./setup-hook.sh;
 
   meta = {

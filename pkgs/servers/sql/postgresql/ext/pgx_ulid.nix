@@ -1,16 +1,14 @@
 {
+  lib,
+  fetchFromGitHub,
   buildPgrxExtension,
   cargo-pgrx_0_17_0,
-  fetchFromGitHub,
-  lib,
   nix-update-script,
   postgresql,
   util-linux,
 }:
 buildPgrxExtension (finalAttrs: {
   inherit postgresql;
-  cargo-pgrx = cargo-pgrx_0_17_0;
-
   pname = "pgx_ulid";
   version = "0.2.3";
 
@@ -22,6 +20,8 @@ buildPgrxExtension (finalAttrs: {
   };
 
   cargoHash = "sha256-oQTetxtIqrVqSDcO8GEMAJ20/RKyYoBAIVflAcWHrPA=";
+  # pgrx tests try to install the extension into postgresql nix store
+  doCheck = false;
 
   postInstall = ''
     # Upstream renames the extension when packaging as well as upgrade scripts
@@ -29,8 +29,7 @@ buildPgrxExtension (finalAttrs: {
     ${util-linux}/bin/rename pgx_ulid ulid $out/share/postgresql/extension/pgx_ulid*
   '';
 
-  # pgrx tests try to install the extension into postgresql nix store
-  doCheck = false;
+  cargo-pgrx = cargo-pgrx_0_17_0;
 
   passthru = {
     updateScript = nix-update-script { };
@@ -41,6 +40,7 @@ buildPgrxExtension (finalAttrs: {
     homepage = "https://github.com/pksunkara/pgx_ulid";
     changelog = "https://github.com/pksunkara/pgx_ulid/blob/v${finalAttrs.version}/CHANGELOG.md";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       myypo
       typedrat

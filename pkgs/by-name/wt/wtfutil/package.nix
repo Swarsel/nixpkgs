@@ -1,12 +1,12 @@
 {
   lib,
   stdenv,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   makeWrapper,
   ncurses,
-  versionCheckHook,
   nix-update-script,
+  versionCheckHook,
 }:
 
 buildGoModule (finalAttrs: {
@@ -20,25 +20,15 @@ buildGoModule (finalAttrs: {
     sha256 = "sha256-sq+8r317JMY8Wbl3KlrmHgIicbs6HZ3BLtG4VGBSHM4=";
   };
 
-  vendorHash = "sha256-L6ZXbSsmsYH8yPcxNgJ99iJwGOjelsssPoYkeYQmglQ=";
-  proxyVendor = true;
-
-  doCheck = false;
-
-  ldflags = [
-    "-s"
-    "-w"
-  ];
-
-  subPackages = [ "." ];
-
-  nativeBuildInputs = [ makeWrapper ];
-
   postPatch = ''
     substituteInPlace flags/flags.go \
       --replace-fail 'version := info.Main.Version' 'version := "v${finalAttrs.version}"' \
       --replace-fail 'var official bool' 'official := true'
   '';
+
+  nativeBuildInputs = [ makeWrapper ];
+  vendorHash = "sha256-L6ZXbSsmsYH8yPcxNgJ99iJwGOjelsssPoYkeYQmglQ=";
+  doCheck = false;
 
   postInstall = ''
     mv "$out/bin/wtf" "$out/bin/wtfutil"
@@ -49,6 +39,13 @@ buildGoModule (finalAttrs: {
   # Darwin Error: mkdir /var/empty: file exists
   nativeInstallCheckInputs = lib.optional (!stdenv.hostPlatform.isDarwin) versionCheckHook;
 
+  ldflags = [
+    "-s"
+    "-w"
+  ];
+
+  proxyVendor = true;
+  subPackages = [ "." ];
   passthru.updateScript = nix-update-script { };
 
   meta = {
@@ -56,11 +53,13 @@ buildGoModule (finalAttrs: {
     homepage = "https://wtfutil.com/";
     changelog = "https://github.com/wtfutil/wtf/raw/v${finalAttrs.version}/CHANGELOG.md";
     license = lib.licenses.mpl20;
+
     maintainers = with lib.maintainers; [
       xiaoxiangmoe
       kalbasit
     ];
-    mainProgram = "wtfutil";
+
     platforms = lib.platforms.linux ++ lib.platforms.darwin;
+    mainProgram = "wtfutil";
   };
 })

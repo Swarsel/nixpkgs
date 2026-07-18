@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   poetry-core,
   pytest-asyncio,
   pytest-cov-stub,
@@ -12,7 +12,6 @@
 buildPythonPackage rec {
   pname = "aiolimiter";
   version = "1.2.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "mjpieters";
@@ -29,8 +28,6 @@ buildPythonPackage rec {
       'asyncio_default_fixture_loop_scope = session'
   '';
 
-  build-system = [ poetry-core ];
-
   nativeCheckInputs = [
     pytest-asyncio
     pytest-cov-stub
@@ -38,6 +35,8 @@ buildPythonPackage rec {
     toml
   ];
 
+  build-system = [ poetry-core ];
+  pyproject = true;
   pythonImportsCheck = [ "aiolimiter" ];
 
   meta = {

@@ -2,10 +2,10 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  gtest,
   cmake,
-  pkg-config,
+  gtest,
   libchewing,
+  pkg-config,
   qt5,
 }:
 
@@ -20,8 +20,6 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-gF3OotO/xb3Dc0YjVwAKIYnuEPIrgjpGR2tdjOBT4aI=";
   };
 
-  doCheck = true;
-
   strictDeps = true;
 
   nativeBuildInputs = [
@@ -29,6 +27,7 @@ stdenv.mkDerivation (finalAttrs: {
     pkg-config
     qt5.wrapQtAppsHook
   ];
+
   buildInputs = [
     gtest
     libchewing
@@ -36,16 +35,20 @@ stdenv.mkDerivation (finalAttrs: {
     qt5.qttools
   ];
 
+  doCheck = true;
+
   meta = {
     description = "Cross platform chewing user phrase editor";
-    mainProgram = "chewing-editor";
+
     longDescription = ''
       chewing-editor is a cross platform chewing user phrase editor. It provides a easy way to manage user phrase. With it, user can customize their user phrase to increase input performance.
     '';
+
     homepage = "https://github.com/chewing/chewing-editor";
     license = lib.licenses.gpl2Plus;
     maintainers = with lib.maintainers; [ ShamrockLee ];
     platforms = lib.platforms.all;
+    mainProgram = "chewing-editor";
     broken = stdenv.hostPlatform.isDarwin;
   };
 })

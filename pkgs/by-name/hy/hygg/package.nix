@@ -1,9 +1,9 @@
 {
   lib,
-  pkgs,
   fetchFromGitHub,
-  rustPlatform,
   nix-update-script,
+  pkgs,
+  rustPlatform,
   versionCheckHook,
   writableTmpDirAsHomeHook,
 }:
@@ -19,11 +19,12 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-Gu56WH7Sp1y/fXwEOOACUAe8nshvc6d2302YwPvM+ZM=";
   };
 
-  cargoHash = "sha256-AUkwjgF/LwOvbhOWcrK8ayvL2/MSc7GFh+/bfdZ28/8=";
-
   nativeBuildInputs = [
     writableTmpDirAsHomeHook
   ];
+
+  cargoHash = "sha256-AUkwjgF/LwOvbhOWcrK8ayvL2/MSc7GFh+/bfdZ28/8=";
+
   checkFlags = [
     # e2e test fails since it cant find the input pdf file
     "--skip=tests::test_end_to_end"
@@ -40,6 +41,7 @@ rustPlatform.buildRustPackage (finalAttrs: {
 
   meta = {
     description = "Minimalistic Vim-like TUI document reader";
+
     longDescription = ''
       Hygg provides universal document support for PDF,EPUB DOCX amongst others
       It also comes with:
@@ -49,10 +51,11 @@ rustPlatform.buildRustPackage (finalAttrs: {
       * Extensible workflows - Execute commands directly from copied text
       * Respects your privacy - Run locally without server, or selfhost the sync server
     '';
+
     homepage = "https://terminaltrove.com/hygg";
-    downloadPage = "https://github.com/kruseio/hygg";
     license = lib.licenses.agpl3Only;
-    platforms = lib.platforms.linux ++ [ "aarch64-darwin" ];
     maintainers = [ lib.maintainers.FKouhai ];
+    platforms = lib.platforms.linux ++ [ "aarch64-darwin" ];
+    downloadPage = "https://github.com/kruseio/hygg";
   };
 })

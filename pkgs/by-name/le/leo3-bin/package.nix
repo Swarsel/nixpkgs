@@ -14,8 +14,6 @@ stdenv.mkDerivation (finalAttrs: {
     sha256 = "sha256-HEUi8Krxv9u9Rq/2Gu0Tts86sseaAZq+pccJ4Q5MRr0=";
   };
 
-  dontUnpack = true;
-
   installPhase = ''
     mkdir -p "$out"/{bin,lib/java/leo3}
     cp "${finalAttrs.src}" "$out/lib/java/leo3/leo3.jar"
@@ -24,13 +22,15 @@ stdenv.mkDerivation (finalAttrs: {
     chmod a+x "$out/bin/leo3"
   '';
 
+  dontUnpack = true;
+
   meta = {
     description = "Automated theorem prover for classical higher-order logic with choice";
-    mainProgram = "leo3";
-    sourceProvenance = with lib.sourceTypes; [ binaryBytecode ];
+    homepage = "https://page.mi.fu-berlin.de/lex/leo3/";
     license = lib.licenses.bsd3;
+    sourceProvenance = with lib.sourceTypes; [ binaryBytecode ];
     maintainers = [ lib.maintainers.raskin ];
     platforms = lib.platforms.linux;
-    homepage = "https://page.mi.fu-berlin.de/lex/leo3/";
+    mainProgram = "leo3";
   };
 })

@@ -20,6 +20,15 @@ stdenv.mkDerivation {
     hash = "sha256-zF/HE+uToC7YJ59YrEdvb2GVByeAUiT05rxSIoBEJaA=";
   };
 
+  postPatch = ''
+    substituteInPlace Makefile \
+      --replace "-isystem/usr/include/ffmpeg" "\$(shell pkg-config --cflags libavformat libavcodec libavutil libui)" \
+      --replace "-lavformat -lavcodec -lavutil" "\$(shell pkg-config --libs libavformat libavcodec libavutil)" \
+      --replace "-lui -lpthread" "\$(shell pkg-config --libs libui) -lpthread"
+  '';
+
+  strictDeps = true;
+
   nativeBuildInputs = [
     pkg-config
     wrapGAppsHook3
@@ -31,15 +40,6 @@ stdenv.mkDerivation {
     ffmpeg_6
     libui
   ];
-
-  strictDeps = true;
-
-  postPatch = ''
-    substituteInPlace Makefile \
-      --replace "-isystem/usr/include/ffmpeg" "\$(shell pkg-config --cflags libavformat libavcodec libavutil libui)" \
-      --replace "-lavformat -lavcodec -lavutil" "\$(shell pkg-config --libs libavformat libavcodec libavutil)" \
-      --replace "-lui -lpthread" "\$(shell pkg-config --libs libui) -lpthread"
-  '';
 
   buildPhase = ''
     runHook preBuild
@@ -65,8 +65,8 @@ stdenv.mkDerivation {
     description = "Restore a truncated mp4/mov (improved version of ponchio/untrunc)";
     homepage = "https://github.com/anthwlock/untrunc";
     license = lib.licenses.gpl2Only;
-    mainProgram = "untrunc";
-    platforms = lib.platforms.all;
     maintainers = [ lib.maintainers.romildo ];
+    platforms = lib.platforms.all;
+    mainProgram = "untrunc";
   };
 }

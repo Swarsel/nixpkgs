@@ -14,12 +14,12 @@ stdenv.mkDerivation {
     hash = "sha256-zg0A5Dm3255jqcioK45P2uzDnaaSAUkl4WtCJh77IuQ=";
   };
 
-  strictDeps = true;
-
   postPatch = ''
     substituteInPlace Makefile \
       --replace-fail "CC=g++" "CC=c++"
   '';
+
+  strictDeps = true;
 
   installPhase = ''
     runHook preInstall
@@ -28,8 +28,8 @@ stdenv.mkDerivation {
   '';
 
   meta = {
-    homepage = "https://github.com/AndroidRoot/BlobTools";
     description = "Tools for modifiying ASUS Transformer firmware";
+    homepage = "https://github.com/AndroidRoot/BlobTools";
     license = lib.licenses.asl20;
     maintainers = with lib.maintainers; [ ungeskriptet ];
     mainProgram = "blobpack";

@@ -1,24 +1,20 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # build-system
-  setuptools,
-
   # dependencies
   btrees,
+  buildPythonPackage,
   persistent,
-  zope-interface,
-
   # tests
   pytestCheckHook,
+  # build-system
+  setuptools,
+  zope-interface,
 }:
 
 buildPythonPackage rec {
   pname = "zope-index";
   version = "8.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "zopefoundation";
@@ -32,6 +28,10 @@ buildPythonPackage rec {
       --replace-fail "setuptools ==" "setuptools >="
   '';
 
+  nativeCheckInputs = [
+    pytestCheckHook
+  ];
+
   build-system = [
     setuptools
   ];
@@ -42,9 +42,7 @@ buildPythonPackage rec {
     zope-interface
   ];
 
-  nativeCheckInputs = [
-    pytestCheckHook
-  ];
+  pyproject = true;
 
   pythonImportsCheck = [
     "zope.index"

@@ -20,6 +20,8 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-TVvCqWWjfFHcFOMEO9frfrs9638cOjkV8yvqavdzdmI=";
   };
 
+  strictDeps = true;
+
   nativeBuildInputs = [
     makeWrapper
     pkg-config
@@ -35,11 +37,6 @@ stdenv.mkDerivation (finalAttrs: {
     "PREFIX=${placeholder "out"}"
   ];
 
-  installFlags = [
-    "CPPFLAGS=$NIX_CFLAGS_COMPILE"
-    "LDFLAGS=$NIX_LDFLAGS"
-  ];
-
   postFixup = ''
     for file in $out/bin/*; do
       wrapProgram $file \
@@ -52,14 +49,17 @@ stdenv.mkDerivation (finalAttrs: {
     done
   '';
 
-  strictDeps = true;
+  installFlags = [
+    "CPPFLAGS=$NIX_CFLAGS_COMPILE"
+    "LDFLAGS=$NIX_LDFLAGS"
+  ];
 
   meta = {
-    homepage = "https://github.com/gabrielzschmitz/Tomato.C";
     description = "Pomodoro timer written in pure C";
+    homepage = "https://github.com/gabrielzschmitz/Tomato.C";
     license = with lib.licenses; [ gpl3Plus ];
     maintainers = with lib.maintainers; [ _3JlOy-PYCCKUi ];
-    mainProgram = "tomato";
     platforms = lib.platforms.unix;
+    mainProgram = "tomato";
   };
 })

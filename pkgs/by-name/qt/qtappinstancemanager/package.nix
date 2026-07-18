@@ -3,8 +3,8 @@
   stdenv,
   fetchFromGitHub,
   cmake,
-  qt6,
   nix-update-script,
+  qt6,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -38,7 +38,7 @@ stdenv.mkDerivation (finalAttrs: {
     changelog = "https://github.com/oclero/qtappinstancemanager/blob/${finalAttrs.src.tag}/CHANGELOG.md";
     license = lib.licenses.mit;
     maintainers = [ ];
-    mainProgram = "qtappinstancemanager";
     platforms = lib.platforms.all;
+    mainProgram = "qtappinstancemanager";
   };
 })

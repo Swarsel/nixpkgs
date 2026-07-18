@@ -1,15 +1,14 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  python,
+  buildPythonPackage,
   pillow,
+  python,
 }:
 
 buildPythonPackage rec {
   pname = "icnsutil";
   version = "1.1.0";
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "relikd";
@@ -18,13 +17,13 @@ buildPythonPackage rec {
     hash = "sha256-tiq8h6s2noWLBIOIWcj8jfSqJFN01ee2uoHN4aFwn7s=";
   };
 
-  dependencies = [ pillow ];
-
   checkPhase = ''
     ${python.interpreter} tests/test_icnsutil.py
     ${python.interpreter} tests/test_cli.py
   '';
 
+  dependencies = [ pillow ];
+  format = "setuptools";
   pythonImportsCheck = [ "icnsutil" ];
 
   meta = {

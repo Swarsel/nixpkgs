@@ -1,12 +1,12 @@
 {
   lib,
   stdenv,
-  replaceVars,
+  fetchFromGitHub,
   buildEnv,
   fetchgit,
-  fetchFromGitHub,
-  python3Packages,
   gmp,
+  python3Packages,
+  replaceVars,
 }:
 
 let
@@ -18,7 +18,6 @@ let
   pycrypto = python3Packages.buildPythonPackage rec {
     pname = "pycrypto";
     version = "2.6.1-13.1";
-    format = "setuptools";
 
     src = fetchgit {
       url = "https://salsa.debian.org/sramacher/python-crypto.git";
@@ -34,13 +33,14 @@ let
 
     buildInputs = [ gmp ];
 
-    # Tests are relying on old Python 2 modules.
-    doCheck = false;
-
     preConfigure = ''
       sed -i 's,/usr/include,/no-such-dir,' configure
       sed -i "s!,'/usr/include/'!!" setup.py
     '';
+
+    # Tests are relying on old Python 2 modules.
+    doCheck = false;
+    format = "setuptools";
   };
 
   potr = python3Packages.potr.overridePythonAttrs (oldAttrs: {
@@ -52,8 +52,8 @@ stdenv.mkDerivation rec {
   version = "1.9.2";
 
   src = fetchFromGitHub {
-    repo = "weechat-otr";
     owner = "mmb";
+    repo = "weechat-otr";
     rev = "v${version}";
     sha256 = "1lngv98y6883vk8z2628cl4d5y8jxy39w8245gjdvshl8g18k5s2";
   };
@@ -63,6 +63,7 @@ stdenv.mkDerivation rec {
       env = "${
         buildEnv {
           name = "weechat-otr-env";
+
           paths = [
             potr
             pycrypto
@@ -72,18 +73,19 @@ stdenv.mkDerivation rec {
     })
   ];
 
-  passthru.scripts = [ "weechat_otr.py" ];
-
   installPhase = ''
     mkdir -p $out/share
     cp weechat_otr.py $out/share/weechat_otr.py
   '';
 
+  passthru.scripts = [ "weechat_otr.py" ];
+
   meta = {
+    description = "WeeChat script for Off-the-Record messaging";
     homepage = "https://github.com/mmb/weechat-otr";
     license = lib.licenses.gpl3;
     maintainers = [ ];
-    description = "WeeChat script for Off-the-Record messaging";
+
     knownVulnerabilities = [
       "There is no upstream release since 2018-03."
       "Utilizes deprecated and vulnerable pycrypto library with Debian patches from 2020-04."

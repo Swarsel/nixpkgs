@@ -3,14 +3,13 @@
   buildPythonPackage,
   fetchPypi,
   fonttools,
-  setuptools-scm,
   pytestCheckHook,
+  setuptools-scm,
 }:
 
 buildPythonPackage rec {
   pname = "fontmath";
   version = "0.9.4";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
@@ -19,10 +18,9 @@ buildPythonPackage rec {
   };
 
   nativeBuildInputs = [ setuptools-scm ];
-
   propagatedBuildInputs = [ fonttools ];
-
   nativeCheckInputs = [ pytestCheckHook ];
+  format = "setuptools";
 
   meta = {
     description = "Collection of objects that implement fast font, glyph, etc. math";

@@ -1,9 +1,9 @@
 {
   lib,
   stdenv,
+  fetchFromGitHub,
   buildPythonPackage,
   cryptography,
-  fetchFromGitHub,
   powershell,
   pytestCheckHook,
   setuptools,
@@ -13,7 +13,6 @@
 buildPythonPackage rec {
   pname = "psrpcore";
   version = "0.3.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "jborean93";
@@ -22,16 +21,15 @@ buildPythonPackage rec {
     hash = "sha256-svfqTOKKFKMphIPnvXfAbPZrp1GTV2D+33I0Rajfv1Y=";
   };
 
-  build-system = [ setuptools ];
-
-  dependencies = [ cryptography ];
-
   nativeCheckInputs = [
     powershell
     pytestCheckHook
     xmldiff
   ];
 
+  build-system = [ setuptools ];
+  dependencies = [ cryptography ];
+  pyproject = true;
   pythonImportsCheck = [ "psrpcore" ];
 
   meta = {

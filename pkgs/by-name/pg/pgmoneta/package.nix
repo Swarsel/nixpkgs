@@ -1,12 +1,12 @@
 {
   lib,
   stdenv,
+  fetchFromGitHub,
   bzip2,
   cjson,
   cmake,
   curl,
   docutils,
-  fetchFromGitHub,
   libarchive,
   libev,
   libgccjit,

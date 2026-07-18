@@ -1,10 +1,10 @@
 {
+  lib,
   stdenv,
   fetchFromGitHub,
+  bashInteractive,
   flock,
   gitUpdater,
-  bashInteractive,
-  lib,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -24,12 +24,6 @@ stdenv.mkDerivation (finalAttrs: {
       --replace-fail 'git submodule update' 'echo git submodule update'
   '';
 
-  makeTarget = "install";
-  makeFlags = [
-    "DESTDIR=${placeholder "out"}"
-    "prefix=/"
-  ];
-
   nativeBuildInputs = [
     flock
   ];
@@ -38,15 +32,21 @@ stdenv.mkDerivation (finalAttrs: {
     bashInteractive
   ];
 
+  makeFlags = [
+    "DESTDIR=${placeholder "out"}"
+    "prefix=/"
+  ];
+
+  makeTarget = "install";
   passthru.updateScript = gitUpdater { rev-prefix = "v"; };
 
   meta = {
     description = "Simple yet powerful tool to turn traditional container/OS images into unprivileged sandboxes";
-    license = lib.licenses.asl20;
     homepage = "https://github.com/NVIDIA/enroot";
     changelog = "https://github.com/NVIDIA/enroot/releases/tag/v${finalAttrs.version}";
-    platforms = lib.platforms.linux;
+    license = lib.licenses.asl20;
     maintainers = [ ];
+    platforms = lib.platforms.linux;
     mainProgram = "enroot";
   };
 })

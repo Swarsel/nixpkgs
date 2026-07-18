@@ -13,7 +13,6 @@
 buildPythonPackage rec {
   pname = "curtsies";
   version = "0.4.3";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
@@ -31,6 +30,8 @@ buildPythonPackage rec {
     pyte
     pytestCheckHook
   ];
+
+  pyproject = true;
 
   meta = {
     description = "Curses-like terminal wrapper, with colored strings";

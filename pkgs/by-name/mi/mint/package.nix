@@ -17,13 +17,6 @@ crystal.buildCrystalPackage rec {
     hash = "sha256-T8gbJ6IeheaiT3QZ/005IV3942wTMjMa/8lWUuyayX0=";
   };
 
-  format = "shards";
-
-  # Update with
-  #   nix-shell -p crystal2nix --run crystal2nix
-  # with mint's shard.lock file in the current directory
-  shardsFile = ./shards.nix;
-
   nativeBuildInputs = [
     libxml2 # xmllint
   ];
@@ -35,10 +28,16 @@ crystal.buildCrystalPackage rec {
       --replace-fail "clear_env: true" "clear_env: false"
   '';
 
+  format = "shards";
+  # Update with
+  #   nix-shell -p crystal2nix --run crystal2nix
+  # with mint's shard.lock file in the current directory
+  shardsFile = ./shards.nix;
+
   meta = {
     description = "Refreshing language for the front-end web";
-    mainProgram = "mint";
     homepage = "https://www.mint-lang.com/";
     license = lib.licenses.bsd3;
+    mainProgram = "mint";
   };
 }

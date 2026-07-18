@@ -1,8 +1,8 @@
 {
   lib,
-  stdenvNoCC,
   fetchFromGitHub,
   installFonts,
+  stdenvNoCC,
 }:
 
 stdenvNoCC.mkDerivation {
@@ -19,10 +19,10 @@ stdenvNoCC.mkDerivation {
   nativeBuildInputs = [ installFonts ];
 
   meta = {
-    homepage = "https://jonpinhorn.github.io/shrikhand/";
     description = "Vibrant and playful typeface for both Latin and Gujarati writing systems";
+    homepage = "https://jonpinhorn.github.io/shrikhand/";
+    license = lib.licenses.ofl;
     maintainers = with lib.maintainers; [ sternenseemann ];
     platforms = lib.platforms.all;
-    license = lib.licenses.ofl;
   };
 }

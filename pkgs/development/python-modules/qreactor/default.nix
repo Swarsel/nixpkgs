@@ -1,16 +1,15 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  twisted,
-  qtpy,
+  buildPythonPackage,
   pyqt6,
+  qtpy,
+  twisted,
 }:
 
 buildPythonPackage {
   pname = "qreactor-unstable";
   version = "0.6.1";
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "frmdstryr";
@@ -27,12 +26,12 @@ buildPythonPackage {
   ];
 
   nativeCheckInputs = [ pyqt6 ];
-
+  format = "setuptools";
   pythonImportsCheck = [ "qreactor" ];
 
   meta = {
-    homepage = "https://github.com/frmdstryr/qt-reactor";
     description = "Twisted and PyQt5/qtpy eventloop integration base";
+    homepage = "https://github.com/frmdstryr/qt-reactor";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ raboof ];
   };

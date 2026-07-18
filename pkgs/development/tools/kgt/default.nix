@@ -26,7 +26,6 @@ stdenv.mkDerivation {
   ];
 
   nativeBuildInputs = [ bmake ];
-  enableParallelBuilding = true;
 
   makeFlags = [
     "-r"
@@ -48,6 +47,7 @@ stdenv.mkDerivation {
           "examples"
           "doc"
         ];
+
         noiseFiles = [
           "build/src"
           "build/lib"
@@ -79,19 +79,23 @@ stdenv.mkDerivation {
     ${cleanPackaging.checkForRemainingFiles}
   '';
 
+  enableParallelBuilding = true;
+
   meta = {
     description = "BNF wrangling and railroad diagrams";
-    mainProgram = "kgt";
+
     longDescription = ''
       KGT: Kate's Grammar Tool
 
       Input: Various BNF-like syntaxes
       Output: Various BNF-like syntaxes, AST dumps, and Railroad Syntax Diagrams
     '';
+
     homepage = "https://github.com/katef/kgt";
     license = lib.licenses.bsd2;
-    platforms = lib.platforms.unix;
     maintainers = [ ];
+    platforms = lib.platforms.unix;
+    mainProgram = "kgt";
   };
 
 }

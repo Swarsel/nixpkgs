@@ -1,11 +1,11 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchurl,
-  unzip,
   boost,
-  pugixml,
   hidapi,
+  pugixml,
+  unzip,
   libusb1 ? null,
 }:
 
@@ -23,26 +23,32 @@ stdenv.mkDerivation {
     url = "https://software-dl.ti.com/msp430/msp430_public_sw/mcu/msp430/MSPDS/3_15_1_001/export/MSPDebugStack_OS_Package_3_15_1_1.zip";
     sha256 = "1j5sljqwc20zrb50mrji4mnmw5i680qc7n0lb0pakrrxqjc9m9g3";
   };
-  sourceRoot = ".";
 
-  enableParallelBuilding = true;
-  libName = "libmsp430${stdenv.hostPlatform.extensions.sharedLibrary}";
+  patches = [ ./bsl430.patch ];
+  nativeBuildInputs = [ unzip ];
+
+  buildInputs = [
+    boost
+    hidapi
+    pugixml
+  ]
+  ++ lib.optional stdenv.hostPlatform.isLinux libusb1;
+
   makeFlags = [
     "OUTPUT=$(libName)"
     "HIDOBJ="
   ];
 
   env = {
+    NIX_CFLAGS_COMPILE = toString [
+      "-I${hidapi}/include/hidapi"
+    ];
+
     NIX_LDFLAGS = toString [
       "-lpugixml"
       "-lhidapi${hidapiDriver}"
     ];
-    NIX_CFLAGS_COMPILE = toString [
-      "-I${hidapi}/include/hidapi"
-    ];
   };
-
-  patches = [ ./bsl430.patch ];
 
   preBuild = ''
     rm ThirdParty/src/pugixml.cpp
@@ -57,19 +63,15 @@ stdenv.mkDerivation {
     install -Dm0644 -t $out/include DLL430_v3/include/*.h
   '';
 
-  nativeBuildInputs = [ unzip ];
-  buildInputs = [
-    boost
-    hidapi
-    pugixml
-  ]
-  ++ lib.optional stdenv.hostPlatform.isLinux libusb1;
+  enableParallelBuilding = true;
+  libName = "libmsp430${stdenv.hostPlatform.extensions.sharedLibrary}";
+  sourceRoot = ".";
 
   meta = {
     description = "TI MSP430 FET debug driver";
     homepage = "https://www.ti.com/tool/MSPDS";
     license = lib.licenses.bsd3;
-    platforms = lib.platforms.linux ++ lib.platforms.darwin;
     maintainers = with lib.maintainers; [ aerialx ];
+    platforms = lib.platforms.linux ++ lib.platforms.darwin;
   };
 }

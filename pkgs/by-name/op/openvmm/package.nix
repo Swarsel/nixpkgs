@@ -1,10 +1,10 @@
 {
   lib,
   fetchFromGitHub,
-  rustPlatform,
-  pkg-config,
   openssl,
+  pkg-config,
   protobuf,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage {
@@ -18,32 +18,36 @@ rustPlatform.buildRustPackage {
     hash = "sha256-w6MxJVm5/ABU04MZUCSjzHVZLXQIsOVCIJZkHOfxQC0=";
   };
 
-  separateDebugInfo = true;
-
-  env = {
-    # Needed to get openssl-sys to use pkg-config.
-    OPENSSL_NO_VENDOR = 1;
-    PROTOC = "protoc";
-  };
   nativeBuildInputs = [
     pkg-config
     protobuf
   ];
+
   buildInputs = [
     openssl
   ];
 
   cargoHash = "sha256-u0E09yFssd71wUS1BD766ztDImauu90T/jIWOb2v0mE=";
 
+  env = {
+    # Needed to get openssl-sys to use pkg-config.
+    OPENSSL_NO_VENDOR = 1;
+    PROTOC = "protoc";
+  };
+
+  separateDebugInfo = true;
+
   meta = {
-    homepage = "https://github.com/microsoft/openvmm";
     description = "Modular, cross-platform Virtual Machine Monitor (VMM), written in Rust";
+    homepage = "https://github.com/microsoft/openvmm";
     license = lib.licenses.mit;
-    mainProgram = "openvmm";
     maintainers = with lib.maintainers; [ astro ];
+
     platforms = [
       "aarch64-linux"
       "x86_64-linux"
     ];
+
+    mainProgram = "openvmm";
   };
 }

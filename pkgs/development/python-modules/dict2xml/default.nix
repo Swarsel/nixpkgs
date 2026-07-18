@@ -1,14 +1,13 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   hatchling,
 }:
 
 buildPythonPackage rec {
   pname = "dict2xml";
   version = "1.7.8";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "delfick";
@@ -18,10 +17,9 @@ buildPythonPackage rec {
   };
 
   nativeBuildInputs = [ hatchling ];
-
   # Tests are implemented in a custom DSL (RSpec)
   doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "dict2xml" ];
 
   meta = {

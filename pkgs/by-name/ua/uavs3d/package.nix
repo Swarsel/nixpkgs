@@ -1,8 +1,8 @@
 {
   lib,
+  stdenv,
   fetchFromGitHub,
   cmake,
-  stdenv,
   testers,
   unstableGitUpdater,
 }:
@@ -18,18 +18,9 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-SlCGLglBsU3ua406Bnf89c4X80F5B93piF2sAXqtRus=";
   };
 
-  cmakeFlags = [
-    (lib.cmakeBool "COMPILE_10BIT" true)
-    (lib.cmakeBool "BUILD_SHARED_LIBS" (!stdenv.hostPlatform.isStatic))
-  ];
-
   outputs = [
     "out"
     "dev"
-  ];
-
-  nativeBuildInputs = [
-    cmake
   ];
 
   # Fix the build with CMake 4.
@@ -40,19 +31,29 @@ stdenv.mkDerivation (finalAttrs: {
         'cmake_minimum_required(VERSION 3.10)'
   '';
 
+  nativeBuildInputs = [
+    cmake
+  ];
+
+  cmakeFlags = [
+    (lib.cmakeBool "COMPILE_10BIT" true)
+    (lib.cmakeBool "BUILD_SHARED_LIBS" (!stdenv.hostPlatform.isStatic))
+  ];
+
   passthru = {
+    tests.pkg-config = testers.hasPkgConfigModules { package = finalAttrs.finalPackage; };
+
     updateScript = unstableGitUpdater {
       tagPrefix = "v";
     };
-    tests.pkg-config = testers.hasPkgConfigModules { package = finalAttrs.finalPackage; };
   };
 
   meta = {
-    homepage = "https://github.com/uavs3/uavs3d";
     description = "AVS3 decoder which supports AVS3-P2 baseline profile";
+    homepage = "https://github.com/uavs3/uavs3d";
     license = lib.licenses.bsd3;
-    pkgConfigModules = [ "uavs3d" ];
     maintainers = with lib.maintainers; [ jopejoe1 ];
     platforms = lib.platforms.all;
+    pkgConfigModules = [ "uavs3d" ];
   };
 })

@@ -1,16 +1,15 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  poetry-core,
+  buildPythonPackage,
   hypothesis,
+  poetry-core,
   pytestCheckHook,
 }:
 
 buildPythonPackage rec {
   pname = "ochre";
   version = "0.4.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "getcuia";
@@ -26,6 +25,7 @@ buildPythonPackage rec {
     pytestCheckHook
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "ochre" ];
 
   meta = {

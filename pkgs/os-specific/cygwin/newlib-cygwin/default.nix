@@ -1,17 +1,16 @@
 {
   lib,
   stdenv,
-  stdenvNoCC,
-  stdenvNoLibc,
   autoreconfHook,
   bison,
   buildPackages,
   cocom-tool-set,
   flex,
   perl,
+  stdenvNoCC,
+  stdenvNoLibc,
   w32api,
   w32api-headers,
-
   headersOnly ? false,
 }:
 
@@ -55,29 +54,31 @@
     passthru.w32api = if headersOnly then w32api-headers else w32api;
 
     meta = {
-      homepage = "https://cygwin.com/";
       description = "A DLL which provides substantial POSIX API functionality on Windows.";
+      homepage = "https://cygwin.com/";
+
       license = with lib.licenses; [
         # newlib
         gpl2
         # winsup
         gpl3
       ];
-      platforms = lib.platforms.cygwin;
+
       maintainers = [ lib.maintainers.corngood ];
+      platforms = lib.platforms.cygwin;
     };
   }
   // (
     if headersOnly then
       {
-        dontConfigure = true;
-        dontBuild = true;
-
         installPhase = ''
           mkdir -p $out/include/
           cp -r newlib/libc/include/* $out/include/
           cp -r winsup/cygwin/include/* $out/include/
         '';
+
+        dontBuild = true;
+        dontConfigure = true;
       }
     else
       {
@@ -85,12 +86,31 @@
           patchShebangs --build winsup/cygwin/scripts
         '';
 
-        autoreconfFlags = [
-          "winsup"
-        ]
-        # Only reconfigure root when fix-cross.patch is applied. Otherwise the
-        # autoconf version check will fail.
-        ++ lib.optional (stdenvNoLibc.hostPlatform != stdenvNoLibc.buildPlatform) ".";
+        strictDeps = true;
+
+        nativeBuildInputs = [
+          autoreconfHook
+          bison
+          cocom-tool-set
+          flex
+          perl
+        ];
+
+        buildInputs = [ w32api ];
+
+        configureFlags = [
+          "--disable-shared"
+          "--disable-doc"
+          "--enable-static"
+          "--disable-dumper"
+          "--with-cross-bootstrap"
+          # if gm4 or gnum4 are in PATH, they would be be preferred to nixpkgs m4
+          "M4=m4"
+        ];
+
+        makeFlags = [
+          "tooldir=${placeholder "out"}"
+        ];
 
         env =
           let
@@ -107,56 +127,11 @@
             ];
           };
 
-        strictDeps = true;
-
-        depsBuildBuild = [ buildPackages.stdenv.cc ];
-
-        nativeBuildInputs = [
-          autoreconfHook
-          bison
-          cocom-tool-set
-          flex
-          perl
-        ];
-
-        buildInputs = [ w32api ];
-
-        makeFlags = [
-          "tooldir=${placeholder "out"}"
-        ];
-
-        enableParallelBuilding = true;
-
-        # this is explicitly -j1 in cygwin.cygport
-        # without it the install order is non-deterministic
-        enableParallelInstalling = false;
-
-        hardeningDisable = [
-          # conflicts with internal definition of 'bzero'
-          "fortify"
-          "stackprotector"
-        ];
-
-        configurePlatforms = [
-          "build"
-          "target"
-        ];
-
         preConfigure =
           lib.optionalString (!lib.systems.equals stdenvNoLibc.hostPlatform stdenvNoLibc.buildPlatform)
             ''
               configureFlagsArray+=(ac_cv_prog_CC=$CC_FOR_BUILD)
             '';
-
-        configureFlags = [
-          "--disable-shared"
-          "--disable-doc"
-          "--enable-static"
-          "--disable-dumper"
-          "--with-cross-bootstrap"
-          # if gm4 or gnum4 are in PATH, they would be be preferred to nixpkgs m4
-          "M4=m4"
-        ];
 
         allowedImpureDLLs = [
           "ADVAPI32.dll"
@@ -167,6 +142,30 @@
           "USERENV.dll"
           "dbghelp.dll"
           "ntdll.dll"
+        ];
+
+        autoreconfFlags = [
+          "winsup"
+        ]
+        # Only reconfigure root when fix-cross.patch is applied. Otherwise the
+        # autoconf version check will fail.
+        ++ lib.optional (stdenvNoLibc.hostPlatform != stdenvNoLibc.buildPlatform) ".";
+
+        configurePlatforms = [
+          "build"
+          "target"
+        ];
+
+        depsBuildBuild = [ buildPackages.stdenv.cc ];
+        enableParallelBuilding = true;
+        # this is explicitly -j1 in cygwin.cygport
+        # without it the install order is non-deterministic
+        enableParallelInstalling = false;
+
+        hardeningDisable = [
+          # conflicts with internal definition of 'bzero'
+          "fortify"
+          "stackprotector"
         ];
       }
   )

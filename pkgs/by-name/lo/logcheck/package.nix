@@ -15,10 +15,12 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-zBYMvKwo85OI6LluRixOYtAFRTtpV/Hw6qjAk/+c898=";
   };
 
-  prePatch = ''
-    # do not set sticky bit in nix store.
-    substituteInPlace Makefile --replace-fail 2750 0750
-  '';
+  makeFlags = [
+    "DESTDIR=$(out)"
+    "SBINDIR=sbin"
+    "BINDIR=bin"
+    "SHAREDIR=share/logtail/detectrotate"
+  ];
 
   preConfigure = ''
     substituteInPlace src/logtail --replace-fail "/usr/bin/perl" "${perlPackages.perl}/bin/perl"
@@ -31,21 +33,21 @@ stdenv.mkDerivation (finalAttrs: {
            -e 's|\$(run-parts --list "\$dir")|"$dir"/*|' src/logcheck
   '';
 
-  makeFlags = [
-    "DESTDIR=$(out)"
-    "SBINDIR=sbin"
-    "BINDIR=bin"
-    "SHAREDIR=share/logtail/detectrotate"
-  ];
+  prePatch = ''
+    # do not set sticky bit in nix store.
+    substituteInPlace Makefile --replace-fail 2750 0750
+  '';
 
   meta = {
     description = "Mails anomalies in the system logfiles to the administrator";
+
     longDescription = ''
       Mails anomalies in the system logfiles to the administrator.
 
       Logcheck helps spot problems and security violations in your logfiles automatically and will send the results to you by e-mail.
       Logcheck was part of the Abacus Project of security tools, but this version has been rewritten.
     '';
+
     homepage = "https://salsa.debian.org/debian/logcheck";
     license = lib.licenses.gpl2Plus;
   };

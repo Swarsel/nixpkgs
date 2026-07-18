@@ -1,36 +1,36 @@
 {
   lib,
   stdenv,
-  pkgs,
-  buildPythonPackage,
   fetchFromGitHub,
-  writableTmpDirAsHomeHook,
-  runCommand,
-  hatchling,
+  appdirs,
+  apscheduler,
+  argos-translate-files,
   argostranslate,
+  buildPythonPackage,
+  expiringdict,
   flask,
+  flask-babel,
+  flask-limiter,
+  flask-session,
   flask-swagger,
   flask-swagger-ui,
-  flask-limiter,
-  flask-babel,
-  flask-session,
-  waitress,
-  expiringdict,
+  hatchling,
   langdetect,
   lexilang,
   libretranslate,
+  lndir,
   ltpycld2,
   morfessor,
-  appdirs,
-  apscheduler,
-  translatehtml,
-  argos-translate-files,
-  requests,
-  redis,
-  prometheus-client,
+  pkgs,
   polib,
+  prometheus-client,
   python,
-  lndir,
+  redis,
+  requests,
+  runCommand,
+  translatehtml,
+  waitress,
+  writableTmpDirAsHomeHook,
 }:
 
 let
@@ -40,7 +40,6 @@ in
 buildPythonPackage (finalAttrs: {
   pname = "libretranslate";
   version = "1.9.6";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "LibreTranslate";
@@ -49,19 +48,19 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-AIjbwx2WoynN/ExGNQ2fhHxjEM/2LIvgydaA7ylU0D8=";
   };
 
+  doCheck = !isAarch64Linux;
+  # needed to import the argostranslate module
+  nativeCheckInputs = [ writableTmpDirAsHomeHook ];
+
+  postInstall = ''
+    # expose static files to be able to serve them via web-server
+    mkdir -p $out/share/libretranslate
+    ln -s $out/${python.sitePackages}/libretranslate/static $out/share/libretranslate/static
+  '';
+
   build-system = [
     hatchling
   ];
-
-  pythonRelaxDeps = true;
-
-  # LibreTranslate has forked argos-translate [1] to fix some bugs and make stanza optional, but it's
-  # unclear what the future of this fork is.
-  #
-  # We'll stay on upstream argostranslate for now.
-  #
-  # [1]: https://github.com/Libretranslate/argos-translate/
-  pythonRemoveDeps = [ "argos-translate-lt" ];
 
   dependencies = [
     argostranslate
@@ -87,19 +86,18 @@ buildPythonPackage (finalAttrs: {
     polib
   ];
 
-  postInstall = ''
-    # expose static files to be able to serve them via web-server
-    mkdir -p $out/share/libretranslate
-    ln -s $out/${python.sitePackages}/libretranslate/static $out/share/libretranslate/static
-  '';
-
-  # needed to import the argostranslate module
-  nativeCheckInputs = [ writableTmpDirAsHomeHook ];
-
+  pyproject = true;
   # aarch64-linux fails cpuinfo test, because /sys/devices/system/cpu/ does not exist in the sandbox:
   # terminate called after throwing an instance of 'onnxruntime::OnnxRuntimeException'
   pythonImportsCheck = lib.optional (!isAarch64Linux) "libretranslate";
-  doCheck = !isAarch64Linux;
+  pythonRelaxDeps = true;
+  # LibreTranslate has forked argos-translate [1] to fix some bugs and make stanza optional, but it's
+  # unclear what the future of this fork is.
+  #
+  # We'll stay on upstream argostranslate for now.
+  #
+  # [1]: https://github.com/Libretranslate/argos-translate/
+  pythonRemoveDeps = [ "argos-translate-lt" ];
 
   passthru = {
     static-compressed =

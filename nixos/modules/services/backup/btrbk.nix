@@ -1,7 +1,7 @@
 {
   config,
-  pkgs,
   lib,
+  pkgs,
   ...
 }:
 let
@@ -39,8 +39,8 @@ let
       0 # Leaf options.
     else
       {
-        target = 1; # Contains: options.
         subvolume = 2; # Contains: options, target.
+        target = 1; # Contains: options.
         volume = 3; # Contains: options, target, subvolume.
       }
       .${name} or (throw "Unknow section '${name}'");
@@ -64,34 +64,35 @@ let
       concatLists (mapAttrsToList (genSection name) value);
 
   sudoRule = {
-    users = [ "btrbk" ];
     commands = [
       {
+        options = [ "NOPASSWD" ];
         command = "${pkgs.btrfs-progs}/bin/btrfs";
-        options = [ "NOPASSWD" ];
       }
       {
+        options = [ "NOPASSWD" ];
         command = "${pkgs.coreutils}/bin/mkdir";
-        options = [ "NOPASSWD" ];
       }
       {
-        command = "${pkgs.coreutils}/bin/readlink";
         options = [ "NOPASSWD" ];
+        command = "${pkgs.coreutils}/bin/readlink";
       }
       # for ssh, they are not the same than the one hard coded in ${pkgs.btrbk}
       {
+        options = [ "NOPASSWD" ];
         command = "/run/current-system/sw/bin/btrfs";
-        options = [ "NOPASSWD" ];
       }
       {
+        options = [ "NOPASSWD" ];
         command = "/run/current-system/sw/bin/mkdir";
-        options = [ "NOPASSWD" ];
       }
       {
-        command = "/run/current-system/sw/bin/readlink";
         options = [ "NOPASSWD" ];
+        command = "/run/current-system/sw/bin/readlink";
       }
     ];
+
+    users = [ "btrbk" ];
   };
 
   sudo_doas =
@@ -107,8 +108,6 @@ let
   mkConfigFile =
     name: settings:
     pkgs.writeTextFile {
-      name = "btrbk-${name}.conf";
-      text = genConfig' (addDefaults settings);
       checkPhase = ''
         set +e
         ${pkgs.btrbk}/bin/btrbk -c $out dryrun
@@ -121,17 +120,20 @@ let
         fi
         set -e
       '';
+
+      name = "btrbk-${name}.conf";
+      text = genConfig' (addDefaults settings);
     };
 
   streamCompressMap = {
-    gzip = pkgs.gzip;
-    pigz = pkgs.pigz;
     bzip2 = pkgs.bzip2;
-    pbzip2 = pkgs.pbzip2;
     bzip3 = pkgs.bzip3;
-    xz = pkgs.xz;
-    lzo = pkgs.lzo;
+    gzip = pkgs.gzip;
     lz4 = pkgs.lz4;
+    lzo = pkgs.lzo;
+    pbzip2 = pkgs.pbzip2;
+    pigz = pkgs.pigz;
+    xz = pkgs.xz;
     zstd = pkgs.zstd;
   };
 
@@ -140,11 +142,11 @@ let
   serviceEnabled = cfg.instances != { };
 in
 {
-  meta.maintainers = with lib.maintainers; [ oxalica ];
-
   options = {
     services.btrbk = {
       extraPackages = mkOption {
+        default = [ ];
+
         description = ''
           Extra packages for btrbk, like compression utilities for `stream_compress`.
 
@@ -153,64 +155,63 @@ in
           depending on configured compression method in
           `services.btrbk.instances.<name>.settings` option.
         '';
-        type = types.listOf types.package;
-        default = [ ];
+
         example = literalExpression "[ pkgs.xz ]";
+        type = types.listOf types.package;
       };
-      niceness = mkOption {
-        description = "Niceness for local instances of btrbk. Also applies to remote ones connecting via ssh when positive.";
-        type = types.ints.between (-20) 19;
-        default = 10;
-      };
-      ioSchedulingClass = mkOption {
-        description = "IO scheduling class for btrbk (see {manpage}`ionice(1)` for a quick description). Applies to local instances, and remote ones connecting by ssh if set to idle.";
-        type = types.enum [
-          "idle"
-          "best-effort"
-          "realtime"
-        ];
-        default = "best-effort";
-      };
+
       instances = mkOption {
+        default = { };
         description = "Set of btrbk instances. The instance named `btrbk` is the default one.";
+
         type =
           with types;
           attrsOf (submodule {
             options = {
               onCalendar = mkOption {
-                type = types.nullOr types.str;
                 default = "daily";
+
                 description = ''
                   How often this btrbk instance is started. See {manpage}`systemd.time(7)` for more information about the format.
                   Setting it to null disables the timer, thus this instance can only be started manually.
                 '';
+
+                type = types.nullOr types.str;
               };
-              snapshotOnly = mkOption {
-                type = types.bool;
-                default = false;
-                description = ''
-                  Whether to run in snapshot only mode. This skips backup creation and deletion steps.
-                  Useful when you want to manually backup to an external drive that might not always be connected.
-                  Use `btrbk -c /path/to/conf resume` to trigger manual backups.
-                  More examples [here](https://github.com/digint/btrbk#example-backups-to-usb-disk).
-                  See also `snapshot` subcommand in {manpage}`btrbk(1)`.
-                '';
-              };
+
               settings = mkOption {
+                default = { };
+                description = "configuration options for btrbk. Nested attrsets translate to subsections.";
+
+                example = {
+                  snapshot_preserve = "14d";
+                  snapshot_preserve_min = "2d";
+
+                  volume = {
+                    "/mnt/btr_pool" = {
+                      subvolume = {
+                        "home" = {
+                          snapshot_create = "always";
+                        };
+
+                        "rootfs" = { };
+                      };
+
+                      target = "/mnt/btr_backup/mylaptop";
+                    };
+                  };
+                };
+
                 type = types.submodule {
-                  freeformType =
-                    let
-                      t = types.attrsOf (
-                        types.either types.str (t // { description = "instances of this type recursively"; })
-                      );
-                    in
-                    t;
                   options = {
                     stream_compress = mkOption {
+                      default = "no";
+
                       description = ''
                         Compress the btrfs send stream before transferring it from/to remote locations using a
                         compression command.
                       '';
+
                       type = types.enum [
                         "gzip"
                         "pigz"
@@ -223,43 +224,87 @@ in
                         "zstd"
                         "no"
                       ];
-                      default = "no";
                     };
                   };
+
+                  freeformType =
+                    let
+                      t = types.attrsOf (
+                        types.either types.str (t // { description = "instances of this type recursively"; })
+                      );
+                    in
+                    t;
                 };
-                default = { };
-                example = {
-                  snapshot_preserve_min = "2d";
-                  snapshot_preserve = "14d";
-                  volume = {
-                    "/mnt/btr_pool" = {
-                      target = "/mnt/btr_backup/mylaptop";
-                      subvolume = {
-                        "rootfs" = { };
-                        "home" = {
-                          snapshot_create = "always";
-                        };
-                      };
-                    };
-                  };
-                };
-                description = "configuration options for btrbk. Nested attrsets translate to subsections.";
+              };
+
+              snapshotOnly = mkOption {
+                default = false;
+
+                description = ''
+                  Whether to run in snapshot only mode. This skips backup creation and deletion steps.
+                  Useful when you want to manually backup to an external drive that might not always be connected.
+                  Use `btrbk -c /path/to/conf resume` to trigger manual backups.
+                  More examples [here](https://github.com/digint/btrbk#example-backups-to-usb-disk).
+                  See also `snapshot` subcommand in {manpage}`btrbk(1)`.
+                '';
+
+                type = types.bool;
               };
             };
           });
-        default = { };
       };
+
+      ioSchedulingClass = mkOption {
+        default = "best-effort";
+        description = "IO scheduling class for btrbk (see {manpage}`ionice(1)` for a quick description). Applies to local instances, and remote ones connecting by ssh if set to idle.";
+
+        type = types.enum [
+          "idle"
+          "best-effort"
+          "realtime"
+        ];
+      };
+
+      niceness = mkOption {
+        default = 10;
+        description = "Niceness for local instances of btrbk. Also applies to remote ones connecting via ssh when positive.";
+        type = types.ints.between (-20) 19;
+      };
+
       sshAccess = mkOption {
+        default = [ ];
         description = "SSH keys that should be able to make or push snapshots on this system remotely with btrbk";
+
         type =
           with types;
           listOf (submodule {
             options = {
-              key = mkOption {
-                type = str;
-                description = "SSH public key allowed to login as user `btrbk` to run remote backups.";
+              extraArgs = mkOption {
+                default = [ ];
+                description = "Additional arguments to pass to ssh_filter_btrbk";
+
+                example = [
+                  "--log"
+                  "--restrict-path <path>"
+                ];
+
+                type = listOf str;
               };
+
+              key = mkOption {
+                description = "SSH public key allowed to login as user `btrbk` to run remote backups.";
+                type = str;
+              };
+
               roles = mkOption {
+                description = "What actions can be performed with this SSH key. See ssh_filter_btrbk(1) for details";
+
+                example = [
+                  "source"
+                  "info"
+                  "send"
+                ];
+
                 type = listOf (enum [
                   "info"
                   "source"
@@ -269,43 +314,30 @@ in
                   "send"
                   "receive"
                 ]);
-                example = [
-                  "source"
-                  "info"
-                  "send"
-                ];
-                description = "What actions can be performed with this SSH key. See ssh_filter_btrbk(1) for details";
-              };
-              extraArgs = mkOption {
-                type = listOf str;
-                description = "Additional arguments to pass to ssh_filter_btrbk";
-                default = [ ];
-                example = [
-                  "--log"
-                  "--restrict-path <path>"
-                ];
               };
             };
           });
-        default = [ ];
       };
     };
 
   };
+
   config = mkIf (sshEnabled || serviceEnabled) {
 
-    environment.systemPackages = [ pkgs.btrbk ] ++ cfg.extraPackages;
+    environment.etc = mapAttrs' (name: instance: {
+      name = "btrbk/${name}.conf";
+      value.source = mkConfigFile name instance.settings;
+    }) cfg.instances;
 
-    security.sudo.extraRules = mkIf (sudo_doas == "sudo") [ sudoRule ];
-    security.sudo-rs.extraRules = mkIf (sudo_doas == "sudo") [ sudoRule ];
+    environment.systemPackages = [ pkgs.btrbk ] ++ cfg.extraPackages;
 
     security.doas = mkIf (sudo_doas == "doas") {
       extraRules =
         let
           doasCmdNoPass = cmd: {
-            users = [ "btrbk" ];
             cmd = cmd;
             noPass = true;
+            users = [ "btrbk" ];
           };
         in
         [
@@ -323,21 +355,80 @@ in
           (doasCmdNoPass "readlink")
         ];
     };
+
+    security.sudo.extraRules = mkIf (sudo_doas == "sudo") [ sudoRule ];
+    security.sudo-rs.extraRules = mkIf (sudo_doas == "sudo") [ sudoRule ];
+
+    systemd.services = mapAttrs' (name: instance: {
+      name = "btrbk-${name}";
+
+      value = {
+        description = "Takes BTRFS snapshots and maintains retention policies.";
+
+        path = [
+          "/run/wrappers"
+        ]
+        ++ cfg.extraPackages
+        ++ optional (instance.settings.stream_compress != "no") (
+          getAttr instance.settings.stream_compress streamCompressMap
+        );
+
+        serviceConfig = {
+          ExecStart = "${pkgs.btrbk}/bin/btrbk -c /etc/btrbk/${name}.conf ${
+            if instance.snapshotOnly then "snapshot" else "run"
+          }";
+
+          Group = "btrbk";
+          IOSchedulingClass = cfg.ioSchedulingClass;
+          Nice = cfg.niceness;
+          StateDirectory = "btrbk";
+          Type = "oneshot";
+          User = "btrbk";
+        };
+
+        unitConfig.Documentation = "man:btrbk(1)";
+      };
+    }) cfg.instances;
+
+    systemd.timers = mapAttrs' (name: instance: {
+      name = "btrbk-${name}";
+
+      value = {
+        description = "Timer to take BTRFS snapshots and maintain retention policies.";
+
+        timerConfig = {
+          AccuracySec = "10min";
+          OnCalendar = instance.onCalendar;
+          Persistent = true;
+        };
+
+        wantedBy = [ "timers.target" ];
+      };
+    }) (filterAttrs (name: instance: instance.onCalendar != null) cfg.instances);
+
+    systemd.tmpfiles.rules = [
+      "d /var/lib/btrbk 0750 btrbk btrbk"
+      "d /var/lib/btrbk/.ssh 0700 btrbk btrbk"
+      "f /var/lib/btrbk/.ssh/config 0700 btrbk btrbk - StrictHostKeyChecking=accept-new"
+    ];
+
+    users.groups.btrbk = { };
+
     users.users.btrbk = {
-      isSystemUser = true;
+      createHome = true;
+      group = "btrbk";
       # ssh needs a home directory
       home = "/var/lib/btrbk";
-      createHome = true;
-      shell = "${pkgs.bash}/bin/bash";
-      group = "btrbk";
+      isSystemUser = true;
+
       openssh.authorizedKeys.keys = map (
         v:
         let
           options = concatMapStringsSep " " (x: "--" + x) v.roles;
           ioniceClass =
             {
-              "idle" = 3;
               "best-effort" = 2;
+              "idle" = 3;
               "realtime" = 1;
             }
             .${cfg.ioSchedulingClass};
@@ -347,55 +438,11 @@ in
           optionalString (cfg.niceness >= 1) "${pkgs.coreutils}/bin/nice -n ${toString cfg.niceness}"
         } ${pkgs.btrbk}/share/btrbk/scripts/ssh_filter_btrbk.sh ${sudo_doas_flag} ${options} ${escapeShellArgs v.extraArgs}" ${v.key}''
       ) cfg.sshAccess;
-    };
-    users.groups.btrbk = { };
-    systemd.tmpfiles.rules = [
-      "d /var/lib/btrbk 0750 btrbk btrbk"
-      "d /var/lib/btrbk/.ssh 0700 btrbk btrbk"
-      "f /var/lib/btrbk/.ssh/config 0700 btrbk btrbk - StrictHostKeyChecking=accept-new"
-    ];
-    environment.etc = mapAttrs' (name: instance: {
-      name = "btrbk/${name}.conf";
-      value.source = mkConfigFile name instance.settings;
-    }) cfg.instances;
-    systemd.services = mapAttrs' (name: instance: {
-      name = "btrbk-${name}";
-      value = {
-        description = "Takes BTRFS snapshots and maintains retention policies.";
-        unitConfig.Documentation = "man:btrbk(1)";
-        path = [
-          "/run/wrappers"
-        ]
-        ++ cfg.extraPackages
-        ++ optional (instance.settings.stream_compress != "no") (
-          getAttr instance.settings.stream_compress streamCompressMap
-        );
-        serviceConfig = {
-          User = "btrbk";
-          Group = "btrbk";
-          Type = "oneshot";
-          ExecStart = "${pkgs.btrbk}/bin/btrbk -c /etc/btrbk/${name}.conf ${
-            if instance.snapshotOnly then "snapshot" else "run"
-          }";
-          Nice = cfg.niceness;
-          IOSchedulingClass = cfg.ioSchedulingClass;
-          StateDirectory = "btrbk";
-        };
-      };
-    }) cfg.instances;
 
-    systemd.timers = mapAttrs' (name: instance: {
-      name = "btrbk-${name}";
-      value = {
-        description = "Timer to take BTRFS snapshots and maintain retention policies.";
-        wantedBy = [ "timers.target" ];
-        timerConfig = {
-          OnCalendar = instance.onCalendar;
-          AccuracySec = "10min";
-          Persistent = true;
-        };
-      };
-    }) (filterAttrs (name: instance: instance.onCalendar != null) cfg.instances);
+      shell = "${pkgs.bash}/bin/bash";
+    };
   };
+
+  meta.maintainers = with lib.maintainers; [ oxalica ];
 
 }

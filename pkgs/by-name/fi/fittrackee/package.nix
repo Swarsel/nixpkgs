@@ -1,7 +1,7 @@
 {
-  fetchFromGitHub,
   lib,
   stdenv,
+  fetchFromGitHub,
   postgresql,
   postgresqlTestHook,
   python3Packages,
@@ -9,7 +9,6 @@
 python3Packages.buildPythonApplication (finalAttrs: {
   pname = "fittrackee";
   version = "0.11.2";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "SamR1";
@@ -17,10 +16,6 @@ python3Packages.buildPythonApplication (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-A9gebHxNCpYUUIm7IjyySojIIyuTxfYCUeUufpUM1iA=";
   };
-
-  build-system = [
-    python3Packages.poetry-core
-  ];
 
   # The upstream project changed the behavior of the CLI when --set-admin and --set-role are used together.
   # Previously, it would raise an error, but now it issues a deprecation warning.
@@ -31,18 +26,23 @@ python3Packages.buildPythonApplication (finalAttrs: {
       --replace '"--set-admin and --set-role can not be used together."' '"WARNING: --set-admin is deprecated. Please use --set-role option instead."'
   '';
 
-  pythonRelaxDeps = [
-    "authlib"
-    "fitdecode"
-    "flask"
-    "flask-limiter"
-    "flask-migrate"
-    "nh3"
-    "lxml"
-    "pyopenssl"
-    "pytz"
-    "sqlalchemy"
-    "xmltodict"
+  doCheck = !stdenv.hostPlatform.isDarwin; # tests are a bit flaky on darwin
+
+  nativeCheckInputs = with python3Packages; [
+    pytestCheckHook
+    freezegun
+    postgresqlTestHook
+    postgresql
+    time-machine
+  ];
+
+  preCheck = ''
+    export TMP=$TMPDIR
+    export UI_URL=http://0.0.0.0:5000
+  '';
+
+  build-system = [
+    python3Packages.poetry-core
   ];
 
   dependencies =
@@ -78,16 +78,6 @@ python3Packages.buildPythonApplication (finalAttrs: {
     ++ dramatiq.optional-dependencies.redis
     ++ flask-limiter.optional-dependencies.redis;
 
-  pythonImportsCheck = [ "fittrackee" ];
-
-  nativeCheckInputs = with python3Packages; [
-    pytestCheckHook
-    freezegun
-    postgresqlTestHook
-    postgresql
-    time-machine
-  ];
-
   enabledTestPaths = [
     "fittrackee"
   ];
@@ -96,18 +86,29 @@ python3Packages.buildPythonApplication (finalAttrs: {
     export DATABASE_TEST_URL=postgresql://$PGUSER/$PGDATABASE?host=$PGHOST
   '';
 
-  doCheck = !stdenv.hostPlatform.isDarwin; # tests are a bit flaky on darwin
+  pyproject = true;
+  pythonImportsCheck = [ "fittrackee" ];
 
-  preCheck = ''
-    export TMP=$TMPDIR
-    export UI_URL=http://0.0.0.0:5000
-  '';
+  pythonRelaxDeps = [
+    "authlib"
+    "fitdecode"
+    "flask"
+    "flask-limiter"
+    "flask-migrate"
+    "nh3"
+    "lxml"
+    "pyopenssl"
+    "pytz"
+    "sqlalchemy"
+    "xmltodict"
+  ];
 
   meta = {
     description = "Self-hosted outdoor activity tracker";
     homepage = "https://github.com/SamR1/FitTrackee";
     changelog = "https://github.com/SamR1/FitTrackee/blob/${finalAttrs.src.tag}/CHANGELOG.md";
     license = lib.licenses.agpl3Only;
+
     maintainers = with lib.maintainers; [
       tebriel
       traxys

@@ -21,8 +21,6 @@ stdenv.mkDerivation (finalAttrs: {
     faust2lv2
   ];
 
-  dontWrapQtApps = true;
-
   buildPhase = ''
     faust2jaqt -vec -double -time -t 99999 shelfMultiBand.dsp
     faust2jaqt -vec -double -time -t 99999 shelfMultiBandMono.dsp
@@ -39,6 +37,8 @@ stdenv.mkDerivation (finalAttrs: {
     cp -r shelfMultiBand.lv2/ $out/lib/lv2
     cp -r shelfMultiBandMono.lv2/ $out/lib/lv2
   '';
+
+  dontWrapQtApps = true;
 
   meta = {
     description = "Multiband compressor made from shelving filters";

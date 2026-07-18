@@ -1,4 +1,4 @@
-{ runCommand, hello }:
+{ hello, runCommand }:
 
 runCommand "hello-test-run"
   {

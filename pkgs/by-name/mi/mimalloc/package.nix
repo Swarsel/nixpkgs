@@ -21,30 +21,10 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-GZ37qQVDe9jgMb4Coe5oKvgaLTspZDlSkS5rdy1MfUU=";
   };
 
-  doCheck = !stdenv.hostPlatform.isStatic;
-  preCheck =
-    let
-      ldLibraryPathEnv = if stdenv.hostPlatform.isDarwin then "DYLD_LIBRARY_PATH" else "LD_LIBRARY_PATH";
-    in
-    ''
-      export ${ldLibraryPathEnv}="$(pwd)/build:''${${ldLibraryPathEnv}}"
-    '';
-
-  nativeBuildInputs = [
-    cmake
-    ninja
+  outputs = [
+    "out"
+    "dev"
   ];
-  cmakeFlags = lib.mapAttrsToList lib.cmakeBool {
-    MI_INSTALL_TOPLEVEL = true;
-    MI_SECURE = secureBuild;
-    MI_BUILD_SHARED = stdenv.hostPlatform.hasSharedLibraries;
-    MI_LIBC_MUSL = stdenv.hostPlatform.libc == "musl";
-    MI_BUILD_TESTS = finalAttrs.doCheck;
-
-    # MI_OPT_ARCH is inaccurate (e.g. it assumes aarch64 == armv8.1-a).
-    # Nixpkgs's native platform configuration does a better job.
-    MI_NO_OPT_ARCH = true;
-  };
 
   postPatch = ''
     substituteInPlace cmake/mimalloc-config.cmake \
@@ -53,6 +33,32 @@ stdenv.mkDerivation (finalAttrs: {
       --replace-fail 'string(REPLACE "/lib/cmake/" "/lib/" MIMALLOC_OBJECT_DIR "''${CMAKE_CURRENT_LIST_DIR}")' \
                      "set(MIMALLOC_OBJECT_DIR \"$out/lib\")"
   '';
+
+  nativeBuildInputs = [
+    cmake
+    ninja
+  ];
+
+  cmakeFlags = lib.mapAttrsToList lib.cmakeBool {
+    MI_BUILD_SHARED = stdenv.hostPlatform.hasSharedLibraries;
+    MI_BUILD_TESTS = finalAttrs.doCheck;
+    MI_INSTALL_TOPLEVEL = true;
+    MI_LIBC_MUSL = stdenv.hostPlatform.libc == "musl";
+    # MI_OPT_ARCH is inaccurate (e.g. it assumes aarch64 == armv8.1-a).
+    # Nixpkgs's native platform configuration does a better job.
+    MI_NO_OPT_ARCH = true;
+    MI_SECURE = secureBuild;
+  };
+
+  doCheck = !stdenv.hostPlatform.isStatic;
+
+  preCheck =
+    let
+      ldLibraryPathEnv = if stdenv.hostPlatform.isDarwin then "DYLD_LIBRARY_PATH" else "LD_LIBRARY_PATH";
+    in
+    ''
+      export ${ldLibraryPathEnv}="$(pwd)/build:''${${ldLibraryPathEnv}}"
+    '';
 
   postInstall =
     let
@@ -74,19 +80,16 @@ stdenv.mkDerivation (finalAttrs: {
       ln -sfv $out/lib/mimalloc-secure.o $out/lib/mimalloc.o
     '');
 
-  outputs = [
-    "out"
-    "dev"
-  ];
-
   meta = {
     description = "Compact, fast, general-purpose memory allocator";
     homepage = "https://github.com/microsoft/mimalloc";
     license = lib.licenses.bsd2;
-    platforms = lib.platforms.unix;
+
     maintainers = with lib.maintainers; [
       kamadorueda
       thoughtpolice
     ];
+
+    platforms = lib.platforms.unix;
   };
 })

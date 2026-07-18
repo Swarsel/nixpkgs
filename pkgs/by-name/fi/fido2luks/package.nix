@@ -1,9 +1,9 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
   cryptsetup,
   pkg-config,
+  rustPlatform,
 }:
 rustPlatform.buildRustPackage (finalAttrs: {
   pname = "fido2luks";
@@ -16,19 +16,18 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-bXwaFiRHURvS5KtTqIj+3GlGNbEulDgMDP51ZiO1w9o=";
   };
 
-  cargoPatches = [
-    ./0001-libcryptsetup-rs-bump-version-to-0.9-55.patch
-    ./0002-cargo-update.patch
-  ];
-
   nativeBuildInputs = [
     pkg-config
     rustPlatform.bindgenHook
   ];
 
   buildInputs = [ cryptsetup ];
-
   cargoHash = "sha256-WJXrT1jLytFkJ0gTE/4GYmfMqgqAyVFKi0SdyYGI/ug=";
+
+  cargoPatches = [
+    ./0001-libcryptsetup-rs-bump-version-to-0.9-55.patch
+    ./0002-cargo-update.patch
+  ];
 
   meta = {
     description = "Decrypt your LUKS partition using a FIDO2 compatible authenticator";

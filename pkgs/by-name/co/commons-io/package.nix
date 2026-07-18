@@ -5,8 +5,8 @@
 }:
 
 stdenv.mkDerivation (finalAttrs: {
-  version = "2.22.0";
   pname = "commons-io";
+  version = "2.22.0";
 
   src = fetchurl {
     url = "mirror://apache/commons/io/binaries/commons-io-${finalAttrs.version}-bin.tar.gz";
@@ -20,11 +20,11 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   meta = {
-    homepage = "https://commons.apache.org/proper/commons-io";
     description = "Library of utilities to assist with developing IO functionality";
-    maintainers = [ ];
-    sourceProvenance = with lib.sourceTypes; [ binaryBytecode ];
+    homepage = "https://commons.apache.org/proper/commons-io";
     license = lib.licenses.asl20;
+    sourceProvenance = with lib.sourceTypes; [ binaryBytecode ];
+    maintainers = [ ];
     platforms = with lib.platforms; unix;
   };
 })

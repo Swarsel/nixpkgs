@@ -1,19 +1,18 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   flit-core,
+  glibcLocales,
   numpy,
+  pytestCheckHook,
   scipy,
   spglib,
-  glibcLocales,
-  pytestCheckHook,
 }:
 
 buildPythonPackage rec {
   pname = "seekpath";
   version = "2.2.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "giovannipizzi";
@@ -22,8 +21,9 @@ buildPythonPackage rec {
     hash = "sha256-mrutQCSSiiLPt0KEohZeYcQ8aw2Jhy02bEvn6Of8w6U=";
   };
 
+  nativeBuildInputs = [ glibcLocales ];
   env.LC_ALL = "en_US.utf-8";
-
+  nativeCheckInputs = [ pytestCheckHook ] ++ optional-dependencies.bz;
   build-system = [ flit-core ];
 
   dependencies = [
@@ -35,11 +35,8 @@ buildPythonPackage rec {
     bz = [ scipy ];
   };
 
-  nativeBuildInputs = [ glibcLocales ];
-
+  pyproject = true;
   pythonImportsCheck = [ "seekpath" ];
-
-  nativeCheckInputs = [ pytestCheckHook ] ++ optional-dependencies.bz;
 
   meta = {
     description = "Module to obtain and visualize band paths in the Brillouin zone of crystal structures";

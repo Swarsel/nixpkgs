@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule (finalAttrs: {
@@ -22,10 +22,12 @@ buildGoModule (finalAttrs: {
     description = "Tool to cast YouTube videos from the command-line";
     homepage = "https://github.com/MarcoLucidi01/ytcast";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       waelwindows
       claes
     ];
+
     mainProgram = "ytcast";
   };
 })

@@ -1,12 +1,12 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   hatchling,
   pydantic-settings,
+  pyhamcrest,
   pyserial,
   pyserial-asyncio-fast,
-  pyhamcrest,
   pytest-asyncio,
   pytest-cov-stub,
   pytest-mock,
@@ -16,7 +16,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "pyteleinfo";
   version = "0.4.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "esciara";
@@ -24,16 +23,6 @@ buildPythonPackage (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-uNkCunWlFoGmg80t69z2PXyPL1pGDsezTc8heec97VI=";
   };
-
-  build-system = [ hatchling ];
-
-  pythonRelaxDeps = [ "pydantic-settings" ];
-
-  dependencies = [
-    pydantic-settings
-    pyserial
-    pyserial-asyncio-fast
-  ];
 
   nativeCheckInputs = [
     pyhamcrest
@@ -43,7 +32,17 @@ buildPythonPackage (finalAttrs: {
     pytestCheckHook
   ];
 
+  build-system = [ hatchling ];
+
+  dependencies = [
+    pydantic-settings
+    pyserial
+    pyserial-asyncio-fast
+  ];
+
+  pyproject = true;
   pythonImportsCheck = [ "teleinfo" ];
+  pythonRelaxDeps = [ "pydantic-settings" ];
 
   meta = {
     description = "Python library for decoding and encoding ENEDIS teleinfo frames";

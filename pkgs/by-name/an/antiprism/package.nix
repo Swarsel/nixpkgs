@@ -3,10 +3,10 @@
   stdenv,
   fetchFromGitHub,
   autoreconfHook,
-  libx11,
   libGL,
   libGLU,
   libglut,
+  libx11,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -30,8 +30,8 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   meta = {
-    homepage = "https://www.antiprism.com";
     description = "Collection of programs for generating, manipulating, transforming and viewing polyhedra";
+    homepage = "https://www.antiprism.com";
     license = with lib.licenses; [ mit ];
     maintainers = [ ];
   };

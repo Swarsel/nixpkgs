@@ -1,51 +1,51 @@
 {
   lib,
   stdenv,
-  gettext,
   fetchurl,
-  wrapGAppsHook3,
-  gnome-video-effects,
-  libcanberra-gtk3,
-  pkg-config,
-  gtk3,
-  glib,
-  clutter-gtk,
-  clutter-gst,
-  gst_all_1,
-  itstool,
-  vala,
-  docbook_xml_dtd_43,
-  docbook-xsl-nons,
-  appstream-glib,
-  libxslt,
-  gtk-doc,
   adwaita-icon-theme,
-  librsvg,
-  totem,
+  appstream-glib,
+  clutter-gst,
+  clutter-gtk,
+  dbus,
+  docbook-xsl-nons,
+  docbook_xml_dtd_43,
   gdk-pixbuf,
+  gettext,
+  glib,
   gnome,
   gnome-desktop,
+  gnome-video-effects,
+  gst_all_1,
+  gtk-doc,
+  gtk3,
+  itstool,
+  libcanberra-gtk3,
+  librsvg,
   libxml2,
+  libxslt,
   meson,
   ninja,
-  dbus,
   pipewire,
+  pkg-config,
+  totem,
+  vala,
+  wrapGAppsHook3,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
   pname = "cheese";
   version = "44.1";
 
+  src = fetchurl {
+    url = "mirror://gnome/sources/cheese/${lib.versions.major finalAttrs.version}/cheese-${finalAttrs.version}.tar.xz";
+    hash = "sha256-XyGFxMmeVN3yuLr2DIKBmVDlSVLhMuhjmHXz7cv49o4=";
+  };
+
   outputs = [
     "out"
     "man"
     "devdoc"
   ];
-
-  src = fetchurl {
-    url = "mirror://gnome/sources/cheese/${lib.versions.major finalAttrs.version}/cheese-${finalAttrs.version}.tar.xz";
-    hash = "sha256-XyGFxMmeVN3yuLr2DIKBmVDlSVLhMuhjmHXz7cv49o4=";
-  };
 
   nativeBuildInputs = [
     appstream-glib
@@ -86,6 +86,11 @@ stdenv.mkDerivation (finalAttrs: {
     gst_all_1.gstreamer
   ];
 
+  # Fix GCC 14 build
+  # ../libcheese/cheese-flash.c:135:22: error: assignment to 'GtkWidget *' {aka 'struct _GtkWidget *'} from
+  # incompatible pointer type 'GObject *' {aka 'struct _GObject *'} [-Wincompatible-pointer-types]
+  env.NIX_CFLAGS_COMPILE = "-Wno-error=incompatible-pointer-types";
+
   preFixup = ''
     gappsWrapperArgs+=(
       # Effects
@@ -98,11 +103,6 @@ stdenv.mkDerivation (finalAttrs: {
     )
   '';
 
-  # Fix GCC 14 build
-  # ../libcheese/cheese-flash.c:135:22: error: assignment to 'GtkWidget *' {aka 'struct _GtkWidget *'} from
-  # incompatible pointer type 'GObject *' {aka 'struct _GObject *'} [-Wincompatible-pointer-types]
-  env.NIX_CFLAGS_COMPILE = "-Wno-error=incompatible-pointer-types";
-
   passthru = {
     updateScript = gnome.updateScript {
       packageName = "cheese";
@@ -110,12 +110,12 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   meta = {
+    description = "Take photos and videos with your webcam, with fun graphical effects";
     homepage = "https://gitlab.gnome.org/GNOME/cheese";
     changelog = "https://gitlab.gnome.org/GNOME/cheese/-/blob/${finalAttrs.version}/NEWS?ref_type=tags";
-    description = "Take photos and videos with your webcam, with fun graphical effects";
-    mainProgram = "cheese";
-    maintainers = with lib.maintainers; [ aleksana ];
     license = lib.licenses.gpl2Plus;
+    maintainers = with lib.maintainers; [ aleksana ];
     platforms = lib.platforms.linux;
+    mainProgram = "cheese";
   };
 })

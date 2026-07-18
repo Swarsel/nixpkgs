@@ -16,9 +16,6 @@ stdenv.mkDerivation (finalAttrs: {
 
   nativeBuildInputs = [ mkfontscale ];
 
-  dontConfigure = true;
-  dontBuild = true;
-
   installPhase = ''
     runHook preInstall
 
@@ -39,11 +36,14 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  dontBuild = true;
+  dontConfigure = true;
+
   meta = {
-    homepage = "https://github.com/bluescan/proggyfonts";
     description = "Set of fixed-width screen fonts that are designed for code listings";
+    homepage = "https://github.com/bluescan/proggyfonts";
     license = lib.licenses.mit;
-    platforms = lib.platforms.all;
     maintainers = [ lib.maintainers.myrl ];
+    platforms = lib.platforms.all;
   };
 })

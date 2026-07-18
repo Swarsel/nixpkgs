@@ -1,7 +1,7 @@
 {
-  buildGoModule,
-  fetchFromGitHub,
   lib,
+  fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule (finalAttrs: {
@@ -19,7 +19,7 @@ buildGoModule (finalAttrs: {
 
   meta = {
     description = "Documentation generator plugin for Google Protocol Buffers";
-    mainProgram = "protoc-gen-doc";
+
     longDescription = ''
       This is a documentation generator plugin for the Google Protocol Buffers
       compiler (protoc). The plugin can generate HTML, JSON, DocBook and
@@ -28,8 +28,10 @@ buildGoModule (finalAttrs: {
       It supports proto2 and proto3, and can handle having both in the same
       context.
     '';
+
     homepage = "https://github.com/pseudomuto/protoc-gen-doc";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ kalbasit ];
+    mainProgram = "protoc-gen-doc";
   };
 })

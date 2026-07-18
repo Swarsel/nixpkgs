@@ -1,11 +1,11 @@
 {
   lib,
-  buildPythonPackage,
+  fetchFromGitHub,
   braintree,
+  buildPythonPackage,
   cryptography,
   django,
   django-phonenumber-field,
-  fetchFromGitHub,
   mercadopago,
   requests,
   setuptools,
@@ -18,7 +18,6 @@
 buildPythonPackage rec {
   pname = "django-payments";
   version = "4.0.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "jazzband";
@@ -26,6 +25,9 @@ buildPythonPackage rec {
     tag = "v${version}";
     hash = "sha256-AWWgjLIt3uG5QUVkHLaxWVwqq2dfuPbxUn8VwqMlPwo=";
   };
+
+  # require internet connection
+  doCheck = false;
 
   build-system = [
     setuptools
@@ -39,11 +41,6 @@ buildPythonPackage rec {
   ]
   ++ django-phonenumber-field.optional-dependencies.phonenumberslite;
 
-  # require internet connection
-  doCheck = false;
-
-  pythonImportsCheck = [ "payments" ];
-
   optional-dependencies = {
     braintree = [ braintree ];
     cybersource = [ suds-community ];
@@ -52,6 +49,9 @@ buildPythonPackage rec {
     sofort = [ xmltodict ];
     stripe = [ stripe ];
   };
+
+  pyproject = true;
+  pythonImportsCheck = [ "payments" ];
 
   meta = {
     description = "Universal payment handling for Django";

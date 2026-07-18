@@ -3,8 +3,8 @@
   stdenv,
   fetchFromGitHub,
   autoreconfHook,
-  wxwidgets_3_2,
   sqlite,
+  wxwidgets_3_2,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -17,8 +17,6 @@ stdenv.mkDerivation (finalAttrs: {
     rev = "v${finalAttrs.version}";
     hash = "sha256-RSAA4wZRouGPpIekfSXA8cTUb9ByCK2GbV5/mcJ/6eQ=";
   };
-
-  enableParallelBuilding = true;
 
   nativeBuildInputs = [
     autoreconfHook
@@ -39,14 +37,18 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postCheck
   '';
 
+  enableParallelBuilding = true;
+
   meta = {
-    homepage = "https://utelle.github.io/wxsqlite3/";
     description = "C++ wrapper around the public domain SQLite 3.x for wxWidgets";
-    platforms = lib.platforms.unix;
-    maintainers = [ ];
+    homepage = "https://utelle.github.io/wxsqlite3/";
+
     license = with lib.licenses; [
       lgpl3Plus
       gpl3Plus
     ];
+
+    maintainers = [ ];
+    platforms = lib.platforms.unix;
   };
 })

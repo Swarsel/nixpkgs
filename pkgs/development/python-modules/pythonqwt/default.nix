@@ -1,25 +1,21 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # build-system
-  setuptools,
-
+  buildPythonPackage,
   # dependencies
   numpy,
-  qtpy,
-
   # tests
   pyqt6,
-  qt6,
   pytestCheckHook,
+  qt6,
+  qtpy,
+  # build-system
+  setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "pythonqwt";
   version = "0.16.3";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "PlotPyStack";
@@ -28,14 +24,6 @@ buildPythonPackage rec {
     hash = "sha256-uCCbKlyqeXUcmFYz/0b/+vpL7vivO8qn0L2PHgfN1H8=";
   };
 
-  build-system = [
-    setuptools
-  ];
-
-  dependencies = [
-    qtpy
-    numpy
-  ];
   nativeCheckInputs = [
     pytestCheckHook
     # Not propagating this, to allow one to choose to either choose a pyqt /
@@ -48,6 +36,16 @@ buildPythonPackage rec {
     export QT_QPA_PLATFORM=offscreen
   '';
 
+  build-system = [
+    setuptools
+  ];
+
+  dependencies = [
+    qtpy
+    numpy
+  ];
+
+  pyproject = true;
   pythonImportsCheck = [ "qwt" ];
 
   meta = {

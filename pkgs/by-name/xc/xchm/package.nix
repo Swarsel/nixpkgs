@@ -3,9 +3,9 @@
   stdenv,
   fetchFromGitHub,
   autoreconfHook,
-  wxwidgets_3_2,
   chmlib,
   desktopToDarwinBundle,
+  wxwidgets_3_2,
 }:
 
 stdenv.mkDerivation (finalAttrs: {

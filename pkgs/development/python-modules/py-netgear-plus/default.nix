@@ -1,17 +1,16 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  pytestCheckHook,
-  lxml,
-  requests,
+  buildPythonPackage,
   hatchling,
+  lxml,
+  pytestCheckHook,
+  requests,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "py-netgear-plus";
   version = "0.6.4";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "foxey";
@@ -20,6 +19,10 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-UDy5kMfSrKXLsGTRLcYWqi7Mv1dtYSaIx+sy8PHipKE=";
   };
 
+  nativeCheckInputs = [
+    pytestCheckHook
+  ];
+
   build-system = [ hatchling ];
 
   dependencies = [
@@ -27,16 +30,13 @@ buildPythonPackage (finalAttrs: {
     requests
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "py_netgear_plus" ];
 
-  nativeCheckInputs = [
-    pytestCheckHook
-  ];
-
   meta = {
-    changelog = "https://github.com/foxey/py-netgear-plus/releases/tag/${finalAttrs.src.tag}";
     description = "Python Library for NETGEAR Plus Switches";
     homepage = "https://github.com/foxey/py-netgear-plus";
+    changelog = "https://github.com/foxey/py-netgear-plus/releases/tag/${finalAttrs.src.tag}";
     license = lib.licenses.asl20;
     maintainers = with lib.maintainers; [ aiyion ];
   };

@@ -1,23 +1,22 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   hatchling,
   pandas,
-  pyarrow,
-  pytz,
-  textual,
-  tzdata,
   polars,
+  pyarrow,
   pytest-asyncio,
   pytest-textual-snapshot,
   pytestCheckHook,
+  pytz,
+  textual,
+  tzdata,
 }:
 
 buildPythonPackage rec {
   pname = "textual-fastdatatable";
   version = "0.14.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "tconbeer";
@@ -25,6 +24,13 @@ buildPythonPackage rec {
     tag = "v${version}";
     hash = "sha256-gm1h+r8rZO1/9sXoNwqVuBbv7CpZm2a3YAMHRHGg5uo=";
   };
+
+  nativeCheckInputs = [
+    pytest-asyncio
+    pytest-textual-snapshot
+    pytestCheckHook
+  ]
+  ++ lib.concatAttrValues optional-dependencies;
 
   build-system = [ hatchling ];
 
@@ -37,28 +43,22 @@ buildPythonPackage rec {
   ]
   ++ textual.optional-dependencies.syntax;
 
+  disabledTestPaths = [
+    # Tests are comparing CLI output
+    "tests/snapshot_tests/test_snapshots.py"
+  ];
+
   optional-dependencies = {
     polars = [ polars ];
   };
 
-  nativeCheckInputs = [
-    pytest-asyncio
-    pytest-textual-snapshot
-    pytestCheckHook
-  ]
-  ++ lib.concatAttrValues optional-dependencies;
+  pyproject = true;
+  pythonImportsCheck = [ "textual_fastdatatable" ];
 
   pythonRelaxDeps = [
     "numpy"
     "pandas"
     "pyarrow"
-  ];
-
-  pythonImportsCheck = [ "textual_fastdatatable" ];
-
-  disabledTestPaths = [
-    # Tests are comparing CLI output
-    "tests/snapshot_tests/test_snapshots.py"
   ];
 
   meta = {

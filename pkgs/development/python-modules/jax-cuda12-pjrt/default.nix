@@ -1,15 +1,15 @@
 {
   lib,
   stdenv,
-  buildPythonPackage,
-  fetchPypi,
   addDriverRunpath,
   autoPatchelfHook,
-  pypaInstallHook,
-  wheelUnpackHook,
+  buildPythonPackage,
   cudaPackages,
-  python,
+  fetchPypi,
   jaxlib,
+  pypaInstallHook,
+  python,
+  wheelUnpackHook,
 }:
 let
   inherit (jaxlib) version;
@@ -32,28 +32,32 @@ let
 
 in
 buildPythonPackage (finalAttrs: {
-  pname = "jax-cuda12-pjrt";
   inherit version;
-  pyproject = false;
+  inherit cudaLibPath;
+  pname = "jax-cuda12-pjrt";
 
   src = fetchPypi {
-    pname = "jax_cuda12_pjrt";
     inherit version;
-    format = "wheel";
-    python = "py3";
-    dist = "py3";
-    platform =
-      {
-        x86_64-linux = "manylinux_2_27_x86_64";
-        aarch64-linux = "manylinux_2_27_aarch64";
-      }
-      .${stdenv.hostPlatform.system};
+
     hash =
       {
-        x86_64-linux = "sha256-gG0f0pA4tqz1orKJ3WIZKr6pd+4mrvYOopWx0oojrPg=";
         aarch64-linux = "sha256-tvLWZUjuHukQqDa1/j0Ou+HaBKYtD0aLpIIhiQNqMrM=";
+        x86_64-linux = "sha256-gG0f0pA4tqz1orKJ3WIZKr6pd+4mrvYOopWx0oojrPg=";
       }
       .${stdenv.hostPlatform.system};
+
+    dist = "py3";
+    format = "wheel";
+
+    platform =
+      {
+        aarch64-linux = "manylinux_2_27_aarch64";
+        x86_64-linux = "manylinux_2_27_x86_64";
+      }
+      .${stdenv.hostPlatform.system};
+
+    pname = "jax_cuda12_pjrt";
+    python = "py3";
   };
 
   nativeBuildInputs = [
@@ -61,6 +65,9 @@ buildPythonPackage (finalAttrs: {
     pypaInstallHook
     wheelUnpackHook
   ];
+
+  # FIXME: there are no tests, but we need to run preInstallCheck above
+  doCheck = true;
 
   # jax-cuda12-pjrt looks for ptxas, nvlink and nvvm at runtime, eg when running `jax.random.PRNGKey(0)`.
   # Linking into $out is the least bad solution. See
@@ -84,18 +91,14 @@ buildPythonPackage (finalAttrs: {
     patchelf --add-rpath "${cudaLibPath}" $out/${python.sitePackages}/jax_plugins/xla_cuda12/xla_cuda_plugin.so
   '';
 
-  # FIXME: there are no tests, but we need to run preInstallCheck above
-  doCheck = true;
-
+  pyproject = false;
   pythonImportsCheck = [ "jax_plugins" ];
-
-  inherit cudaLibPath;
 
   meta = {
     description = "JAX XLA PJRT Plugin for NVIDIA GPUs";
     homepage = "https://github.com/jax-ml/jax/tree/main/jax_plugins/cuda";
-    sourceProvenance = [ lib.sourceTypes.binaryNativeCode ];
     license = lib.licenses.asl20;
+    sourceProvenance = [ lib.sourceTypes.binaryNativeCode ];
     maintainers = with lib.maintainers; [ natsukium ];
     platforms = lib.platforms.linux;
     # see CUDA compatibility matrix

@@ -1,18 +1,17 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  typing-extensions,
+  buildPythonPackage,
   diffimg,
   imgdiff,
   pytestCheckHook,
   recommonmark,
+  typing-extensions,
 }:
 
 buildPythonPackage rec {
   pname = "pytest-image-diff";
   version = "0.0.14";
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "Apkawa";
@@ -27,12 +26,13 @@ buildPythonPackage rec {
     imgdiff
   ];
 
-  pythonImportsCheck = [ "pytest_image_diff" ];
-
   nativeCheckInputs = [
     pytestCheckHook
     recommonmark
   ];
+
+  format = "setuptools";
+  pythonImportsCheck = [ "pytest_image_diff" ];
 
   meta = {
     description = "Pytest helps for compare images and regression";

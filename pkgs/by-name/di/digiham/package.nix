@@ -1,12 +1,12 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
   cmake,
-  protobuf,
-  icu,
-  csdr,
   codecserver,
+  csdr,
+  icu,
+  protobuf,
   versionCheckHook,
 }:
 
@@ -43,13 +43,13 @@ stdenv.mkDerivation (finalAttrs: {
     icu
   ];
 
+  doInstallCheck = true;
   nativeInstallCheckInputs = [ versionCheckHook ];
   versionCheckProgram = "${placeholder "out"}/bin/dmr_decoder";
-  doInstallCheck = true;
 
   meta = {
-    homepage = "https://github.com/jketterl/digiham";
     description = "Tools for decoding digital ham communication";
+    homepage = "https://github.com/jketterl/digiham";
     license = lib.licenses.gpl3Only;
     platforms = lib.platforms.unix;
   };

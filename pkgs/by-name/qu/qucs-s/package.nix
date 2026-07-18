@@ -1,16 +1,16 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
-  flex,
-  bison,
-  libx11,
-  cmake,
-  gperf,
   adms,
+  bison,
+  cmake,
+  flex,
+  gperf,
+  libx11,
   ngspice,
-  qucsator-rf,
   qt6Packages,
+  qucsator-rf,
   kernels ? [
     ngspice
     qucsator-rf
@@ -53,6 +53,7 @@ stdenv.mkDerivation (finalAttrs: {
     qt6Packages.wrapQtAppsHook
     cmake
   ];
+
   buildInputs =
     with qt6Packages;
     [
@@ -75,6 +76,13 @@ stdenv.mkDerivation (finalAttrs: {
     "-DWITH_QT6=ON"
   ];
 
+  env.QTDIR = qt6Packages.qtbase.dev;
+  doInstallCheck = true;
+
+  installCheck = ''
+    $out/bin/qucs-s --version
+  '';
+
   # Make custom kernels available from qucs-s
   qtWrapperArgs = [
     "--prefix"
@@ -83,27 +91,24 @@ stdenv.mkDerivation (finalAttrs: {
     (lib.makeBinPath kernels)
   ];
 
-  env.QTDIR = qt6Packages.qtbase.dev;
-
-  doInstallCheck = true;
-  installCheck = ''
-    $out/bin/qucs-s --version
-  '';
-
   meta = {
     description = "Spin-off of Qucs that allows custom simulation kernels";
+
     longDescription = ''
       Spin-off of Qucs that allows custom simulation kernels.
       Default version is installed with ngspice.
     '';
+
     homepage = "https://ra3xdh.github.io/";
     license = lib.licenses.gpl2Plus;
-    mainProgram = "qucs-s";
+
     maintainers = with lib.maintainers; [
       mazurel
       kashw2
       thomaslepoix
     ];
+
     platforms = lib.platforms.unix;
+    mainProgram = "qucs-s";
   };
 })

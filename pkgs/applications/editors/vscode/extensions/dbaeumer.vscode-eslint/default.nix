@@ -5,17 +5,17 @@
 
 vscode-utils.buildVscodeMarketplaceExtension {
   mktplcRef = {
-    name = "vscode-eslint";
-    publisher = "dbaeumer";
     version = "3.0.24";
     hash = "sha256-ZQVzpSSLf3tpO4QtLjbCOje3L5/EqzT9A9IOssl6e54=";
+    name = "vscode-eslint";
+    publisher = "dbaeumer";
   };
 
   meta = {
-    changelog = "https://marketplace.visualstudio.com/items/dbaeumer.vscode-eslint/changelog";
     description = "Integrates ESLint JavaScript into VS Code";
-    downloadPage = "https://marketplace.visualstudio.com/items?itemName=dbaeumer.vscode-eslint";
     homepage = "https://github.com/Microsoft/vscode-eslint";
+    changelog = "https://marketplace.visualstudio.com/items/dbaeumer.vscode-eslint/changelog";
     license = lib.licenses.mit;
+    downloadPage = "https://marketplace.visualstudio.com/items?itemName=dbaeumer.vscode-eslint";
   };
 }

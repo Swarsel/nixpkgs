@@ -1,9 +1,10 @@
 {
   lib,
+  stdenv,
+  fetchFromGitHub,
   cimg,
   cmake,
   curl,
-  fetchFromGitHub,
   fftw,
   gimp,
   gimpPlugins,
@@ -18,7 +19,6 @@
   nix-update-script,
   openexr,
   pkg-config,
-  stdenv,
   zlib,
   variant ? "standalone",
 }:
@@ -26,16 +26,17 @@
 let
   variants = {
     gimp = {
+      description = "GIMP plugin for the G'MIC image processing framework";
+
       extraDeps = [
         gimp
         gimp.gtk
       ];
-      description = "GIMP plugin for the G'MIC image processing framework";
     };
 
     standalone = {
-      extraDeps = [ ]; # Just to keep uniformity and avoid test-for-null
       description = "Versatile front-end to the image processing framework G'MIC";
+      extraDeps = [ ]; # Just to keep uniformity and avoid test-for-null
     };
   };
 
@@ -58,6 +59,15 @@ stdenv.mkDerivation (finalAttrs: {
     rev = "v.${finalAttrs.version}";
     hash = "sha256-1fav1O75HBC7ySBgybn4goLFkX6HFbwRHARncfbkaoM=";
   };
+
+  postPatch = ''
+    patchShebangs \
+      translations/filters/csv2ts.sh \
+      translations/lrelease.sh
+
+    mkdir ../src
+    ln -s ${gmic.src}/src/gmic.cpp ../src/gmic.cpp
+  '';
 
   nativeBuildInputs = [
     cmake
@@ -87,15 +97,6 @@ stdenv.mkDerivation (finalAttrs: {
   ]
   ++ variants.${variant}.extraDeps;
 
-  postPatch = ''
-    patchShebangs \
-      translations/filters/csv2ts.sh \
-      translations/lrelease.sh
-
-    mkdir ../src
-    ln -s ${gmic.src}/src/gmic.cpp ../src/gmic.cpp
-  '';
-
   cmakeFlags = [
     (lib.cmakeBool "ENABLE_DYNAMIC_LINKING" true)
     (lib.cmakeBool "ENABLE_SYSTEM_GMIC" true)
@@ -116,9 +117,9 @@ stdenv.mkDerivation (finalAttrs: {
 
   passthru = {
     tests = {
+      inherit cimg gmic;
       # They need to be update in lockstep.
       gimp-plugin = gimpPlugins.gmic;
-      inherit cimg gmic;
     };
 
     updateScript = nix-update-script {
@@ -130,11 +131,11 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   meta = {
-    homepage = "http://gmic.eu/";
     inherit (variants.${variant}) description;
+    homepage = "http://gmic.eu/";
     license = lib.licenses.gpl3Plus;
-    mainProgram = "gmic_qt";
     maintainers = [ ];
     platforms = lib.platforms.unix;
+    mainProgram = "gmic_qt";
   };
 })

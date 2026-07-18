@@ -1,6 +1,6 @@
 {
-  fetchFromGitHub,
   lib,
+  fetchFromGitHub,
   rustPlatform,
 }:
 
@@ -19,15 +19,18 @@ rustPlatform.buildRustPackage (finalAttrs: {
 
   meta = {
     description = "Tool to check that your Cargo.toml dependencies are sorted alphabetically";
-    mainProgram = "cargo-sort";
     homepage = "https://github.com/devinr528/cargo-sort";
     changelog = "https://github.com/devinr528/cargo-sort/blob/v${finalAttrs.version}/changelog.md";
+
     license = with lib.licenses; [
       mit # or
       asl20
     ];
+
     maintainers = with lib.maintainers; [
       matthiasbeyer
     ];
+
+    mainProgram = "cargo-sort";
   };
 })

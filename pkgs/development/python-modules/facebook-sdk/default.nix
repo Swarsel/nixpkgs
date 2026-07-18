@@ -2,14 +2,13 @@
   lib,
   buildPythonPackage,
   fetchPypi,
-  requests,
   python,
+  requests,
 }:
 
 buildPythonPackage rec {
   pname = "facebook-sdk";
   version = "3.1.0";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
@@ -17,13 +16,14 @@ buildPythonPackage rec {
   };
 
   propagatedBuildInputs = [ requests ];
-
   # checks require network
   doCheck = false;
 
   checkPhase = ''
     ${python.interpreter} test/test_facebook.py
   '';
+
+  format = "setuptools";
 
   meta = {
     description = "Client library that supports the Facebook Graph API and the official Facebook JavaScript SDK";

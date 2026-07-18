@@ -1,16 +1,15 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   flake8,
-  setuptools,
   pytestCheckHook,
+  setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "flake8-quotes";
   version = "3.4.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "zheller";
@@ -19,14 +18,16 @@ buildPythonPackage rec {
     hash = "sha256-A8PBdYQzOBpMYBQGchZouuZiZqmwhhjp2PJblnNZOFU=";
   };
 
-  build-system = [
-    setuptools
-  ];
-
   nativeCheckInputs = [
     flake8
     pytestCheckHook
   ];
+
+  build-system = [
+    setuptools
+  ];
+
+  pyproject = true;
 
   pythonImportsCheck = [
     "flake8_quotes"

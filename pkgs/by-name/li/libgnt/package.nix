@@ -1,21 +1,26 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchurl,
-  meson,
-  ninja,
-  pkg-config,
-  gtk-doc,
   docbook-xsl-nons,
   glib,
-  ncurses,
+  gtk-doc,
   libxml2,
-  buildDocs ? true,
+  meson,
   mesonEmulatorHook,
+  ncurses,
+  ninja,
+  pkg-config,
+  buildDocs ? true,
 }:
 stdenv.mkDerivation (finalAttrs: {
   pname = "libgnt";
   version = "2.14.4-dev";
+
+  src = fetchurl {
+    url = "mirror://sourceforge/pidgin/libgnt-${finalAttrs.version}.tar.xz";
+    hash = "sha256-GVkzqacx01dXkbiBulzArSpxXh6cTCPMqqKhfhZMluw=";
+  };
 
   outputs = [
     "out"
@@ -23,10 +28,11 @@ stdenv.mkDerivation (finalAttrs: {
   ]
   ++ lib.optional buildDocs "devdoc";
 
-  src = fetchurl {
-    url = "mirror://sourceforge/pidgin/libgnt-${finalAttrs.version}.tar.xz";
-    hash = "sha256-GVkzqacx01dXkbiBulzArSpxXh6cTCPMqqKhfhZMluw=";
-  };
+  postPatch = ''
+    substituteInPlace meson.build --replace-fail \
+      "ncurses_sys_prefix = '/usr'" \
+      "ncurses_sys_prefix = '${lib.getDev ncurses}'"
+  '';
 
   nativeBuildInputs = [
     glib
@@ -48,11 +54,6 @@ stdenv.mkDerivation (finalAttrs: {
     libxml2
   ];
 
-  postPatch = ''
-    substituteInPlace meson.build --replace-fail \
-      "ncurses_sys_prefix = '/usr'" \
-      "ncurses_sys_prefix = '${lib.getDev ncurses}'"
-  '';
   mesonFlags = [
     (lib.mesonBool "doc" buildDocs)
     (lib.mesonBool "python2" false)
@@ -62,7 +63,7 @@ stdenv.mkDerivation (finalAttrs: {
     description = "Ncurses toolkit for creating text-mode graphical user interfaces";
     homepage = "https://keep.imfreedom.org/libgnt/libgnt/";
     license = lib.licenses.gpl2Plus;
-    platforms = lib.platforms.unix;
     maintainers = with lib.maintainers; [ ony ];
+    platforms = lib.platforms.unix;
   };
 })

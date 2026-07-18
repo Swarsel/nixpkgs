@@ -1,18 +1,17 @@
 {
   lib,
+  fetchFromGitHub,
   buildPythonPackage,
   dissect-cstruct,
   dissect-util,
-  fetchFromGitHub,
+  pytestCheckHook,
   setuptools,
   setuptools-scm,
-  pytestCheckHook,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "dissect-volume";
   version = "3.18";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "fox-it";
@@ -20,6 +19,8 @@ buildPythonPackage (finalAttrs: {
     tag = finalAttrs.version;
     hash = "sha256-2ivRkA4OLFntS2CtnXIr+/sLlcDVpmz6eINbejeH/3s=";
   };
+
+  nativeCheckInputs = [ pytestCheckHook ];
 
   build-system = [
     setuptools
@@ -30,10 +31,6 @@ buildPythonPackage (finalAttrs: {
     dissect-cstruct
     dissect-util
   ];
-
-  nativeCheckInputs = [ pytestCheckHook ];
-
-  pythonImportsCheck = [ "dissect.volume" ];
 
   disabledTests = [
     # gzip.BadGzipFile: Not a gzipped file
@@ -57,6 +54,9 @@ buildPythonPackage (finalAttrs: {
     "test_md_read"
     "test_vinum"
   ];
+
+  pyproject = true;
+  pythonImportsCheck = [ "dissect.volume" ];
 
   meta = {
     description = "Dissect module implementing various utility functions for the other Dissect modules";

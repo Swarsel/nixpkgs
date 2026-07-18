@@ -1,7 +1,7 @@
 {
-  buildGoModule,
-  fetchFromGitHub,
   lib,
+  fetchFromGitHub,
+  buildGoModule,
   makeWrapper,
   runc,
   wrapperDir ? "/run/wrappers/bin", # Default for NixOS, other systems might need customization.
@@ -18,8 +18,6 @@ buildGoModule (finalAttrs: {
     sha256 = "0r5hihzp2679ki9hr3p0f085rafy2hc8kpkdhnd4m5k4iibqib08";
   };
 
-  vendorHash = null;
-
   postPatch = ''
     V={newgidmap,newgidmap} \
       substituteInPlace ./internal/unshare/unshare.c \
@@ -30,28 +28,29 @@ buildGoModule (finalAttrs: {
     makeWrapper
   ];
 
-  tags = [
-    "seccomp"
-    "noembed" # disables embedded `runc`
-  ];
+  vendorHash = null;
+  # Tests fail as: internal/binutils/install.go:57:15: undefined: Asset
+  doCheck = false;
+
+  postInstall = ''
+    wrapProgram "$out/bin/img" --prefix PATH : ${lib.makeBinPath [ runc ]}
+  '';
 
   ldflags = [
     "-X github.com/genuinetools/img/version.VERSION=v${finalAttrs.version}"
     "-s -w"
   ];
 
-  postInstall = ''
-    wrapProgram "$out/bin/img" --prefix PATH : ${lib.makeBinPath [ runc ]}
-  '';
-
-  # Tests fail as: internal/binutils/install.go:57:15: undefined: Asset
-  doCheck = false;
+  tags = [
+    "seccomp"
+    "noembed" # disables embedded `runc`
+  ];
 
   meta = {
     description = "Standalone, daemon-less, unprivileged Dockerfile and OCI compatible container image builder";
-    mainProgram = "img";
-    license = lib.licenses.mit;
     homepage = "https://github.com/genuinetools/img";
+    license = lib.licenses.mit;
     maintainers = [ ];
+    mainProgram = "img";
   };
 })

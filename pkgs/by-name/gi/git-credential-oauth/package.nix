@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   installShellFiles,
 }:
 
@@ -17,18 +17,17 @@ buildGoModule (finalAttrs: {
   };
 
   nativeBuildInputs = [ installShellFiles ];
+  vendorHash = "sha256-ActdfhT4SOWFjXz9XXx1AAnfRQbdTeID79dI8L+WuIc=";
+
+  postInstall = ''
+    installManPage $src/git-credential-oauth.1
+  '';
 
   ldflags = [
     "-s"
     "-w"
     "-X main.version=${finalAttrs.version}"
   ];
-
-  vendorHash = "sha256-ActdfhT4SOWFjXz9XXx1AAnfRQbdTeID79dI8L+WuIc=";
-
-  postInstall = ''
-    installManPage $src/git-credential-oauth.1
-  '';
 
   meta = {
     description = "Git credential helper that securely authenticates to GitHub, GitLab and BitBucket using OAuth";

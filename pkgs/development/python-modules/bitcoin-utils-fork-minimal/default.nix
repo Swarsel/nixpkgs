@@ -10,7 +10,6 @@
 buildPythonPackage rec {
   pname = "bitcoin-utils-fork-minimal";
   version = "0.4.11.6";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
@@ -32,7 +31,7 @@ buildPythonPackage rec {
 
   # Project doesn't ship tests
   doCheck = false;
-
+  format = "setuptools";
   pythonImportsCheck = [ "bitcoinutils" ];
 
   meta = {

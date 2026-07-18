@@ -10,8 +10,8 @@ let
 
   fhsEnv = pkgs.buildFHSEnv {
     name = "boinc-fhs-env";
-    targetPkgs = pkgs': [ cfg.package ] ++ cfg.extraEnvPackages;
     runScript = "/bin/boinc_client";
+    targetPkgs = pkgs': [ cfg.package ] ++ cfg.extraEnvPackages;
   };
   fhsEnvExecutable = "${fhsEnv}/bin/${fhsEnv.name}";
 
@@ -19,31 +19,25 @@ in
 {
   options.services.boinc = {
     enable = lib.mkOption {
-      type = lib.types.bool;
       default = false;
+
       description = ''
         Whether to enable the BOINC distributed computing client. If this
         option is set to true, the boinc_client daemon will be run as a
         background service. The boinccmd command can be used to control the
         daemon.
       '';
+
+      type = lib.types.bool;
     };
 
     package = lib.mkPackageOption pkgs "boinc" {
       example = "boinc-headless";
     };
 
-    dataDir = lib.mkOption {
-      type = lib.types.path;
-      default = "/var/lib/boinc";
-      description = ''
-        The directory in which to store BOINC's configuration and data files.
-      '';
-    };
-
     allowRemoteGuiRpc = lib.mkOption {
-      type = lib.types.bool;
       default = false;
+
       description = ''
         If set to true, any remote host can connect to and control this BOINC
         client (subject to password authentication). If instead set to false,
@@ -52,12 +46,23 @@ in
 
         See also: <https://github.com/BOINC/boinc/wiki/Controlling_BOINC_remotely#remote-access>
       '';
+
+      type = lib.types.bool;
+    };
+
+    dataDir = lib.mkOption {
+      default = "/var/lib/boinc";
+
+      description = ''
+        The directory in which to store BOINC's configuration and data files.
+      '';
+
+      type = lib.types.path;
     };
 
     extraEnvPackages = lib.mkOption {
-      type = lib.types.listOf lib.types.package;
       default = [ ];
-      example = lib.literalExpression "[ pkgs.virtualbox ]";
+
       description = ''
         Additional packages to make available in the environment in which
         BOINC will run. Common choices are:
@@ -76,34 +81,40 @@ in
           Also provides OpenCL drivers for NVIDIA GPUs;
           {var}`pkgs.ocl-icd` is also needed in this case.
       '';
+
+      example = lib.literalExpression "[ pkgs.virtualbox ]";
+      type = lib.types.listOf lib.types.package;
     };
   };
 
   config = lib.mkIf cfg.enable {
     environment.systemPackages = [ cfg.package ];
 
-    users.users.boinc = {
-      group = "boinc";
-      createHome = false;
+    systemd.services.boinc = {
+      after = [ "network.target" ];
       description = "BOINC Client";
-      home = cfg.dataDir;
-      isSystemUser = true;
+
+      serviceConfig = {
+        ExecStart = "${fhsEnvExecutable} --dir ${cfg.dataDir} ${allowRemoteGuiRpcFlag}";
+        Nice = 10;
+        User = "boinc";
+      };
+
+      wantedBy = [ "multi-user.target" ];
     };
-    users.groups.boinc = { };
 
     systemd.tmpfiles.rules = [
       "d '${cfg.dataDir}' - boinc boinc - -"
     ];
 
-    systemd.services.boinc = {
+    users.groups.boinc = { };
+
+    users.users.boinc = {
+      createHome = false;
       description = "BOINC Client";
-      after = [ "network.target" ];
-      wantedBy = [ "multi-user.target" ];
-      serviceConfig = {
-        ExecStart = "${fhsEnvExecutable} --dir ${cfg.dataDir} ${allowRemoteGuiRpcFlag}";
-        User = "boinc";
-        Nice = 10;
-      };
+      group = "boinc";
+      home = cfg.dataDir;
+      isSystemUser = true;
     };
   };
 

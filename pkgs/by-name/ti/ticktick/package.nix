@@ -1,18 +1,18 @@
 {
   lib,
-  fetchurl,
   stdenv,
-  wrapGAppsHook3,
-  dpkg,
+  fetchurl,
+  alsa-lib,
   autoPatchelfHook,
-  glibc,
+  dpkg,
   gcc-unwrapped,
-  nss,
+  glibc,
   libdrm,
   libgbm,
-  alsa-lib,
-  xdg-utils,
+  nss,
   systemd,
+  wrapGAppsHook3,
+  xdg-utils,
 }:
 let
   baseUrl = "https://d2atcrkye2ik4e.cloudfront.net/download";
@@ -51,18 +51,6 @@ stdenv.mkDerivation (finalAttrs: {
     xdg-utils
   ];
 
-  # Needed to make the process get past zygote_linux fork()'ing
-  runtimeDependencies = [ systemd ];
-
-  unpackPhase = ''
-    runHook preUnpack
-
-    mkdir -p "$out/share" "$out/opt/ticktick" "$out/bin"
-    dpkg-deb --fsys-tarfile "$src" | tar --extract --directory="$out"
-
-    runHook postUnpack
-  '';
-
   installPhase = ''
     runHook preInstall
 
@@ -77,18 +65,32 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  # Needed to make the process get past zygote_linux fork()'ing
+  runtimeDependencies = [ systemd ];
+
+  unpackPhase = ''
+    runHook preUnpack
+
+    mkdir -p "$out/share" "$out/opt/ticktick" "$out/bin"
+    dpkg-deb --fsys-tarfile "$src" | tar --extract --directory="$out"
+
+    runHook postUnpack
+  '';
+
   meta = {
     description = "Powerful to-do & task management app with seamless cloud synchronization across all your devices";
     homepage = "https://ticktick.com/home/";
     license = lib.licenses.unfree;
+    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
+
     maintainers = with lib.maintainers; [
       hbjydev
       jonocodes
     ];
+
     platforms = [
       "x86_64-linux"
       "aarch64-linux"
     ];
-    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
   };
 })

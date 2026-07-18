@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   nix-update-script,
 }:
 
@@ -29,8 +29,8 @@ buildGoModule (finalAttrs: {
     description = "Nix-channel-compatible package search";
     homepage = "https://github.com/diamondburned/nix-search";
     license = lib.licenses.gpl3Only;
-    mainProgram = "nix-search";
     maintainers = with lib.maintainers; [ azuwis ];
     platforms = lib.platforms.all;
+    mainProgram = "nix-search";
   };
 })

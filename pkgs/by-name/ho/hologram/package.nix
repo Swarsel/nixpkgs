@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule (finalAttrs: {
@@ -29,9 +29,9 @@ buildGoModule (finalAttrs: {
   ];
 
   meta = {
-    homepage = "https://github.com/AdRoll/hologram/";
     description = "Easy, painless AWS credentials on developer laptops";
-    maintainers = [ ];
+    homepage = "https://github.com/AdRoll/hologram/";
     license = lib.licenses.asl20;
+    maintainers = [ ];
   };
 })

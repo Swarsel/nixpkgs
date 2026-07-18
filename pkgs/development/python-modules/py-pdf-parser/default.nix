@@ -11,7 +11,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "py-pdf-parser";
   version = "0.13.0";
-  pyproject = true;
 
   src = fetchPypi {
     inherit (finalAttrs) pname version;
@@ -28,18 +27,19 @@ buildPythonPackage (finalAttrs: {
     wand
   ];
 
-  pythonRelaxDeps = [
-    "docopt"
-    "pdfminer.six"
-    "wand"
-  ];
-
   # needs pyvoronoi, which isn't packaged yet
   doCheck = false;
+  pyproject = true;
 
   pythonImportsCheck = [
     "py_pdf_parser"
     "py_pdf_parser.loaders"
+  ];
+
+  pythonRelaxDeps = [
+    "docopt"
+    "pdfminer.six"
+    "wand"
   ];
 
   meta = {

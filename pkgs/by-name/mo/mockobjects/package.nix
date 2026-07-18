@@ -13,9 +13,6 @@ stdenv.mkDerivation (finalAttrs: {
     sha256 = "18rnyqfcyh0s3dwkkaszdd50ssyjx5fa1y3ii309ldqg693lfgnz";
   };
 
-  # Work around the "unpacker appears to have produced no directories"
-  sourceRoot = ".";
-
   installPhase = ''
     runHook preInstall
 
@@ -25,10 +22,13 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  # Work around the "unpacker appears to have produced no directories"
+  sourceRoot = ".";
+
   meta = {
     description = "Generic unit testing framework and methodology for testing any kind of code";
+    license = lib.licenses.asl20;
     sourceProvenance = with lib.sourceTypes; [ binaryBytecode ];
     platforms = lib.platforms.unix;
-    license = lib.licenses.asl20;
   };
 })

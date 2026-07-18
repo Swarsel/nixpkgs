@@ -2,24 +2,22 @@
   lib,
   buildPythonPackage,
   fetchPypi,
-  setuptools,
-  roadrecon,
   roadlib,
+  roadrecon,
   roadtx,
+  setuptools,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "roadtools";
   version = "0.0.2";
-  pyproject = true;
-
-  __structuredAttrs = true;
 
   src = fetchPypi {
     inherit (finalAttrs) pname version;
     hash = "sha256-RxRbcT9uhQBYRDqq1asYDIwqrji14zi7dwRuQLXJiyQ=";
   };
 
+  __structuredAttrs = true;
   build-system = [ setuptools ];
 
   dependencies = [
@@ -28,6 +26,7 @@ buildPythonPackage (finalAttrs: {
     roadtx
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "roadtools" ];
 
   meta = {

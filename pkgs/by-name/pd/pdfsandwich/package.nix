@@ -1,11 +1,11 @@
 {
   lib,
   stdenv,
-  ocaml,
-  makeWrapper,
   fetchsvn,
   ghostscript,
   imagemagick,
+  makeWrapper,
+  ocaml,
   perl,
   poppler-utils,
   tesseract,
@@ -13,8 +13,8 @@
 }:
 
 stdenv.mkDerivation {
-  version = "0.1.7";
   pname = "pdfsandwich";
+  version = "0.1.7";
 
   src = fetchsvn {
     url = "svn://svn.code.sf.net/p/pdfsandwich/code/trunk/src";
@@ -29,6 +29,7 @@ stdenv.mkDerivation {
     ocaml
     perl
   ];
+
   installPhase = ''
     mkdir -p $out/bin
     cp -p pdfsandwich $out/bin

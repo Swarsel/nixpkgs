@@ -1,12 +1,12 @@
 {
-  stdenv,
-  cmake,
-  fetchFromGitHub,
-  fetchpatch,
   lib,
+  stdenv,
+  fetchFromGitHub,
+  cmake,
+  fetchpatch,
+  libsForQt5,
   libusb1,
   python3,
-  libsForQt5,
   udev,
   zlib,
 }:
@@ -26,8 +26,8 @@ stdenv.mkDerivation rec {
     #   https://github.com/openambitproject/openambit/pull/244
     (fetchpatch {
       name = "fno-common.patch";
-      url = "https://github.com/openambitproject/openambit/commit/b6d97eab417977b6dbe355e0b071d0a56cc3df6b.patch";
       sha256 = "1p0dg902mlcfjvs01dxl9wv2b50ayp4330p38d14q87mn0c2xl5d";
+      url = "https://github.com/openambitproject/openambit/commit/b6d97eab417977b6dbe355e0b071d0a56cc3df6b.patch";
     })
   ];
 
@@ -50,6 +50,7 @@ stdenv.mkDerivation rec {
     libsForQt5.qttools
     libsForQt5.wrapQtAppsHook
   ];
+
   buildInputs = [
     libusb1
     python3
@@ -60,20 +61,21 @@ stdenv.mkDerivation rec {
 
   cmakeFlags = [ "-DCMAKE_INSTALL_UDEVRULESDIR=${placeholder "out"}/lib/udev/rules.d" ];
 
+  postInstall = ''
+    install -m755 -D $src/tools/openambit2gpx.py $out/bin/openambit2gpx
+
+    mv -v $out/lib/udev/rules.d/libambit.rules \
+          $out/lib/udev/rules.d/20-libambit.rules
+  '';
+
   doInstallCheck = true;
+
   installCheckPhase = ''
     runHook preInstallCheck
 
     $out/bin/openambit --version
 
     runHook postInstallCheck
-  '';
-
-  postInstall = ''
-    install -m755 -D $src/tools/openambit2gpx.py $out/bin/openambit2gpx
-
-    mv -v $out/lib/udev/rules.d/libambit.rules \
-          $out/lib/udev/rules.d/20-libambit.rules
   '';
 
   meta = {

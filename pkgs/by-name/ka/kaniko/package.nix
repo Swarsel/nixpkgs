@@ -1,11 +1,11 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
   buildGoModule,
   installShellFiles,
-  testers,
   kaniko,
+  testers,
   versionCheckHook,
 }:
 
@@ -20,18 +20,8 @@ buildGoModule (finalAttrs: {
     hash = "sha256-0d0QdNmR7FaybJJEq6bb9WshTg6dX3HtO9oESg1e4S4=";
   };
 
-  vendorHash = null;
-
-  ldflags = [
-    "-s"
-    "-w"
-    "-X github.com/chainguard-dev/kaniko/pkg/version.version=${finalAttrs.version}"
-  ];
-
-  excludedPackages = [ "hack/release_notes" ];
-
   nativeBuildInputs = [ installShellFiles ];
-
+  vendorHash = null;
   doCheck = false; # requires docker, container-diff (unpackaged yet)
 
   postInstall =
@@ -47,6 +37,14 @@ buildGoModule (finalAttrs: {
 
   doInstallCheck = true;
   nativeInstallCheckInputs = [ versionCheckHook ];
+  excludedPackages = [ "hack/release_notes" ];
+
+  ldflags = [
+    "-s"
+    "-w"
+    "-X github.com/chainguard-dev/kaniko/pkg/version.version=${finalAttrs.version}"
+  ];
+
   versionCheckProgram = "${placeholder "out"}/bin/${finalAttrs.meta.mainProgram}";
   versionCheckProgramArg = "version";
 
@@ -54,11 +52,13 @@ buildGoModule (finalAttrs: {
     description = "Tool to build container images from a Dockerfile, inside a container or Kubernetes cluster";
     homepage = "https://github.com/chainguard-forks/kaniko";
     license = lib.licenses.asl20;
-    platforms = lib.platforms.linux;
+
     maintainers = with lib.maintainers; [
       jk
       qjoly
     ];
+
+    platforms = lib.platforms.linux;
     mainProgram = "executor";
   };
 })

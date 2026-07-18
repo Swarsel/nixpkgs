@@ -4,12 +4,11 @@
   fetchFromGitHub,
   cmake,
   ninja,
+  nix-update-script,
   python3,
+  testers,
   validatePkgConfig,
   versionCheckHook,
-  testers,
-  nix-update-script,
-
   enableCmdline ? !stdenv.hostPlatform.isNone,
   enableMath ? false,
 }:
@@ -17,18 +16,18 @@ stdenv.mkDerivation (finalAttrs: {
   pname = "jerryscript";
   version = "3.0.0";
 
-  outputs = [
-    "out"
-    "lib"
-    "dev"
-  ];
-
   src = fetchFromGitHub {
     owner = "jerryscript-project";
     repo = "jerryscript";
     tag = "v${finalAttrs.version}";
     hash = "sha256-Evu4qLlwg3Sf9w/ojtZMNxGJEtopHgKnwqlpf115zD4=";
   };
+
+  outputs = [
+    "out"
+    "lib"
+    "dev"
+  ];
 
   patches = [
     # https://github.com/jerryscript-project/jerryscript/issues/5263
@@ -52,11 +51,12 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   env.NIX_CFLAGS_COMPILE = lib.optionalString stdenv.cc.isClang "-Wno-enum-enum-conversion -Wno-enum-float-conversion -Wno-literal-range";
+  doCheck = true;
 
   nativeCheckInputs = [
     python3
   ];
-  doCheck = true;
+
   checkPhase = ''
     runHook preCheck
 
@@ -73,11 +73,13 @@ stdenv.mkDerivation (finalAttrs: {
     mv "$out/lib" "$lib/"
   '';
 
+  doInstallCheck = true;
+
   nativeInstallCheckInputs = [
     validatePkgConfig
     versionCheckHook
   ];
-  doInstallCheck = true;
+
   postInstallCheck = ''
     echo 'print("Hello" + " " + "World!")' | \
     "$out/bin/jerry" - | \
@@ -89,23 +91,27 @@ stdenv.mkDerivation (finalAttrs: {
       package = finalAttrs.finalPackage;
       versionCheck = true;
     };
+
     updateScript = nix-update-script { };
   };
 
   meta = {
     description = "Lightweight JavaScript engine for resource-constrained devices";
     homepage = "https://jerryscript.net/";
-    downloadPage = "https://github.com/jerryscript-project/jerryscript/";
     changelog = "https://github.com/jerryscript-project/jerryscript/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.asl20;
+
+    maintainers = with lib.maintainers; [
+      wishstudio
+    ];
+
     mainProgram = "jerry";
+    downloadPage = "https://github.com/jerryscript-project/jerryscript/";
+
     pkgConfigModules = [
       "libjerry-core"
       "libjerry-ext"
       "libjerry-port"
-    ];
-    maintainers = with lib.maintainers; [
-      wishstudio
     ];
   };
 })

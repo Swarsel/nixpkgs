@@ -1,9 +1,10 @@
 {
   lib,
+  fetchFromGitHub,
   anyio,
   anysqlite,
   buildPythonPackage,
-  fetchFromGitHub,
+  fakeredis,
   fastapi,
   hatch-fancy-pypi-readme,
   hatchling,
@@ -15,7 +16,6 @@
   redis,
   redisTestHook,
   requests,
-  fakeredis,
   time-machine,
   typing-extensions,
 }:
@@ -23,7 +23,6 @@
 buildPythonPackage rec {
   pname = "hishel";
   version = "1.3.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "karpetrosyan";
@@ -36,27 +35,6 @@ buildPythonPackage rec {
     sed -i "/addopts/d" pyproject.toml
   '';
 
-  build-system = [
-    hatch-fancy-pypi-readme
-    hatchling
-  ];
-
-  dependencies = [
-    msgpack
-    typing-extensions
-  ];
-
-  optional-dependencies = {
-    async = [
-      anyio
-      anysqlite
-    ];
-    requests = [ requests ];
-    httpx = [ httpx ];
-    fastapi = [ fastapi ];
-    redis = [ redis ];
-  };
-
   nativeCheckInputs = [
     inline-snapshot
     pytest-asyncio
@@ -67,6 +45,16 @@ buildPythonPackage rec {
   ]
   ++ lib.concatAttrValues optional-dependencies;
 
+  build-system = [
+    hatch-fancy-pypi-readme
+    hatchling
+  ];
+
+  dependencies = [
+    msgpack
+    typing-extensions
+  ];
+
   disabledTests = [
     # network access
     "test_encoded_content_caching"
@@ -74,6 +62,19 @@ buildPythonPackage rec {
     "test_simple_caching_ignoring_spec"
   ];
 
+  optional-dependencies = {
+    async = [
+      anyio
+      anysqlite
+    ];
+
+    fastapi = [ fastapi ];
+    httpx = [ httpx ];
+    redis = [ redis ];
+    requests = [ requests ];
+  };
+
+  pyproject = true;
   pythonImportsCheck = [ "hishel" ];
 
   meta = {

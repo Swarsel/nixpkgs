@@ -11,12 +11,11 @@
 buildPythonPackage rec {
   pname = "azure-keyvault-secrets";
   version = "4.10.0";
-  pyproject = true;
 
   src = fetchPypi {
-    pname = "azure_keyvault_secrets";
     inherit version;
     hash = "sha256-Zm+kKJL5zudJVj5VGpDwYENauHiXfJUmUXOoJG1UajY=";
+    pname = "azure_keyvault_secrets";
   };
 
   nativeBuildInputs = [ setuptools ];
@@ -27,10 +26,10 @@ buildPythonPackage rec {
     typing-extensions
   ];
 
-  pythonNamespaces = [ "azure.keyvault" ];
-
   # Tests require checkout from mono-repo
   doCheck = false;
+  pyproject = true;
+  pythonNamespaces = [ "azure.keyvault" ];
 
   meta = {
     description = "Microsoft Azure Key Vault Secrets Client Library for Python";

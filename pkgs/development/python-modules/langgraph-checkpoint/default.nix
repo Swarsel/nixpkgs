@@ -1,34 +1,29 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
+  buildPythonPackage,
+  # testing
+  dataclasses-json,
+  # passthru
+  gitUpdater,
   # build system
   hatchling,
-
   # dependencies
   langchain-core,
   msgpack,
-  ormsgpack,
-
-  # testing
-  dataclasses-json,
   numpy,
+  ormsgpack,
   pandas,
   pycryptodome,
   pytest-asyncio,
   pytest-mock,
   pytestCheckHook,
   redis,
-
-  # passthru
-  gitUpdater,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "langgraph-checkpoint";
   version = "4.1.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "langchain-ai";
@@ -37,18 +32,7 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-P4SbQK6lFG572WKxisnNn/ZiHcMYBBM/vcBB9N6xpfo=";
   };
 
-  sourceRoot = "${finalAttrs.src.name}/libs/checkpoint";
-
-  build-system = [ hatchling ];
-
-  dependencies = [
-    langchain-core
-    ormsgpack
-  ];
-
   propagatedBuildInputs = [ msgpack ];
-
-  pythonImportsCheck = [ "langgraph.checkpoint" ];
 
   nativeCheckInputs = [
     dataclasses-json
@@ -61,20 +45,33 @@ buildPythonPackage (finalAttrs: {
     redis
   ];
 
+  build-system = [ hatchling ];
+
+  dependencies = [
+    langchain-core
+    ormsgpack
+  ];
+
+  pyproject = true;
+  pythonImportsCheck = [ "langgraph.checkpoint" ];
+  sourceRoot = "${finalAttrs.src.name}/libs/checkpoint";
+
   passthru = {
     # python updater script sets the wrong tag
     skipBulkUpdate = true;
+
     updateScript = gitUpdater {
-      rev-prefix = "checkpoint==";
       ignoredVersions = "a|b|dev|rc";
+      rev-prefix = "checkpoint==";
     };
   };
 
   meta = {
-    changelog = "https://github.com/langchain-ai/langgraph/releases/tag/${finalAttrs.src.tag}";
     description = "Library with base interfaces for LangGraph checkpoint savers";
     homepage = "https://github.com/langchain-ai/langgraph/tree/main/libs/checkpoint";
+    changelog = "https://github.com/langchain-ai/langgraph/releases/tag/${finalAttrs.src.tag}";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       sarahec
     ];

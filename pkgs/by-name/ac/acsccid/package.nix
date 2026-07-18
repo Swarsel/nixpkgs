@@ -5,24 +5,31 @@
   autoconf,
   autoconf-archive,
   automake,
-  libtool,
-  gettext,
   flex,
+  gettext,
+  libiconv,
+  libtool,
+  libusb1,
+  pcsclite,
   perl,
   pkg-config,
-  pcsclite,
-  libusb1,
-  libiconv,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
-  version = "1.1.13";
   pname = "acsccid";
+  version = "1.1.13";
 
   src = fetchurl {
     url = "mirror://sourceforge/acsccid/acsccid-${finalAttrs.version}.tar.bz2";
     sha256 = "sha256-ixmroQPsA8RIudG1YsgyL40v83zyHUy4sM9SLF84XJ8=";
   };
+
+  postPatch = ''
+    substituteInPlace src/Makefile.in \
+      --replace-fail '$(INSTALL_UDEV_RULE_FILE)' ""
+    patchShebangs src/convert_version.pl
+    patchShebangs src/create_Info_plist.pl
+  '';
 
   nativeBuildInputs = [
     pkg-config
@@ -49,15 +56,9 @@ stdenv.mkDerivation (finalAttrs: {
 
   doCheck = true;
 
-  postPatch = ''
-    substituteInPlace src/Makefile.in \
-      --replace-fail '$(INSTALL_UDEV_RULE_FILE)' ""
-    patchShebangs src/convert_version.pl
-    patchShebangs src/create_Info_plist.pl
-  '';
-
   meta = {
     description = "PC/SC driver for Linux/Mac OS X and it supports ACS CCID smart card readers";
+
     longDescription = ''
       acsccid is a PC/SC driver for Linux/Mac OS X and it supports ACS CCID smart card
       readers. This library provides a PC/SC IFD handler implementation and
@@ -71,6 +72,7 @@ stdenv.mkDerivation (finalAttrs: {
         services.pcscd.enable = true;
         services.pcscd.plugins = [ pkgs.acsccid ];
     '';
+
     homepage = "http://acsccid.sourceforge.net";
     license = lib.licenses.lgpl2Plus;
     maintainers = [ ];

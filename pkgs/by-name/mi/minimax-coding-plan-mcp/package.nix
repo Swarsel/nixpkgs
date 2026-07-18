@@ -15,7 +15,6 @@ python3Packages.buildPythonApplication (finalAttrs: {
     hash = "sha256-pxXeakBfn2FYAiznuJyBy58FkoV/Sx1zSYaSFDZUJX0=";
   };
 
-  pyproject = true;
   build-system = [ python3Packages.setuptools ];
 
   dependencies = with python3Packages; [
@@ -24,6 +23,7 @@ python3Packages.buildPythonApplication (finalAttrs: {
     requests
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "minimax_mcp" ];
 
   meta = {

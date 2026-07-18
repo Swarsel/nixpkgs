@@ -43,14 +43,12 @@
         workDir = if cfg.workDir == null then runtimeDir else cfg.workDir;
       in
       lib.nameValuePair svcName {
-        description = "GitHub Actions runner";
-
-        wantedBy = [ "multi-user.target" ];
-        wants = [ "network-online.target" ];
         after = [
           "network.target"
           "network-online.target"
         ];
+
+        description = "GitHub Actions runner";
 
         environment = {
           HOME = workDir;
@@ -73,6 +71,15 @@
 
         serviceConfig = lib.mkMerge [
           {
+            # Hardening (may overlap with DynamicUser=)
+            # The following options are only for optimizing:
+            # systemd-analyze security github-runner
+            AmbientCapabilities = lib.mkBefore [ "" ];
+            BindPaths = lib.optionals (cfg.workDir != null) [ cfg.workDir ];
+            CapabilityBoundingSet = lib.mkBefore [ "" ];
+            # ProtectClock= adds DeviceAllow=char-rtc r
+            DeviceAllow = lib.mkBefore [ "" ];
+            DynamicUser = lib.mkDefault true;
             ExecStart = "${cfg.package}/bin/Runner.Listener run --startuptype service";
 
             # Does the following, sequentially:
@@ -239,22 +246,6 @@
                   setupWorkDir
                 ];
 
-            # If running in ephemeral mode, restart the service on-exit (i.e., successful de-registration of the runner)
-            # to trigger a fresh registration.
-            Restart = if cfg.ephemeral then "on-success" else "no";
-            # If the runner exits with `ReturnCode.RetryableError = 2`, always restart the service:
-            # https://github.com/actions/runner/blob/40ed7f8/src/Runner.Common/Constants.cs#L146
-            RestartForceExitStatus = [ 2 ];
-
-            # Contains _diag
-            LogsDirectory = [ systemdDir ];
-            # Default RUNNER_ROOT which contains ephemeral Runner data
-            RuntimeDirectory = [ systemdDir ];
-            # Home of persistent runner data, e.g., credentials
-            StateDirectory = [ systemdDir ];
-            StateDirectoryMode = "0700";
-            WorkingDirectory = workDir;
-
             InaccessiblePaths = [
               # Token file path given in the configuration, if visible to the service
               "-${cfg.tokenFile}"
@@ -263,19 +254,27 @@
             ];
 
             KillSignal = "SIGINT";
-
-            # Hardening (may overlap with DynamicUser=)
-            # The following options are only for optimizing:
-            # systemd-analyze security github-runner
-            AmbientCapabilities = lib.mkBefore [ "" ];
-            CapabilityBoundingSet = lib.mkBefore [ "" ];
-            # ProtectClock= adds DeviceAllow=char-rtc r
-            DeviceAllow = lib.mkBefore [ "" ];
+            # Coverage programs for compiled code such as `cargo-tarpaulin` disable
+            # ASLR (address space layout randomization) which requires the
+            # `personality` syscall
+            # You may want to set this to `true` if not using coverage tooling on
+            # compiled code
+            LockPersonality = lib.mkDefault false;
+            # Contains _diag
+            LogsDirectory = [ systemdDir ];
+            # Cannot be true due to Node
+            MemoryDenyWriteExecute = lib.mkDefault false;
             NoNewPrivileges = lib.mkDefault true;
             PrivateDevices = lib.mkDefault true;
             PrivateMounts = lib.mkDefault true;
+            # Needs network access
+            PrivateNetwork = lib.mkDefault false;
             PrivateTmp = lib.mkDefault true;
             PrivateUsers = lib.mkDefault true;
+            # The more restrictive "pid" option makes `nix` commands in CI emit
+            # "GC Warning: Couldn't read /proc/stat"
+            # You may want to set this to "pid" if not using `nix` commands
+            ProcSubset = lib.mkDefault "all";
             ProtectClock = lib.mkDefault true;
             ProtectControlGroups = lib.mkDefault true;
             ProtectHome = lib.mkDefault true;
@@ -283,13 +282,32 @@
             ProtectKernelLogs = lib.mkDefault true;
             ProtectKernelModules = lib.mkDefault true;
             ProtectKernelTunables = lib.mkDefault true;
+            ProtectProc = lib.mkDefault "invisible";
             ProtectSystem = lib.mkDefault "strict";
             RemoveIPC = lib.mkDefault true;
+            # If running in ephemeral mode, restart the service on-exit (i.e., successful de-registration of the runner)
+            # to trigger a fresh registration.
+            Restart = if cfg.ephemeral then "on-success" else "no";
+            # If the runner exits with `ReturnCode.RetryableError = 2`, always restart the service:
+            # https://github.com/actions/runner/blob/40ed7f8/src/Runner.Common/Constants.cs#L146
+            RestartForceExitStatus = [ 2 ];
+
+            RestrictAddressFamilies = lib.mkBefore [
+              "AF_INET"
+              "AF_INET6"
+              "AF_UNIX"
+              "AF_NETLINK"
+            ];
+
             RestrictNamespaces = lib.mkDefault true;
             RestrictRealtime = lib.mkDefault true;
             RestrictSUIDSGID = lib.mkDefault true;
-            UMask = lib.mkDefault "0066";
-            ProtectProc = lib.mkDefault "invisible";
+            # Default RUNNER_ROOT which contains ephemeral Runner data
+            RuntimeDirectory = [ systemdDir ];
+            # Home of persistent runner data, e.g., credentials
+            StateDirectory = [ systemdDir ];
+            StateDirectoryMode = "0700";
+
             SystemCallFilter = lib.mkBefore [
               "~@clock"
               "~@cpu-emulation"
@@ -302,32 +320,9 @@
               "~setdomainname"
               "~sethostname"
             ];
-            RestrictAddressFamilies = lib.mkBefore [
-              "AF_INET"
-              "AF_INET6"
-              "AF_UNIX"
-              "AF_NETLINK"
-            ];
 
-            BindPaths = lib.optionals (cfg.workDir != null) [ cfg.workDir ];
-
-            # Needs network access
-            PrivateNetwork = lib.mkDefault false;
-            # Cannot be true due to Node
-            MemoryDenyWriteExecute = lib.mkDefault false;
-
-            # The more restrictive "pid" option makes `nix` commands in CI emit
-            # "GC Warning: Couldn't read /proc/stat"
-            # You may want to set this to "pid" if not using `nix` commands
-            ProcSubset = lib.mkDefault "all";
-            # Coverage programs for compiled code such as `cargo-tarpaulin` disable
-            # ASLR (address space layout randomization) which requires the
-            # `personality` syscall
-            # You may want to set this to `true` if not using coverage tooling on
-            # compiled code
-            LockPersonality = lib.mkDefault false;
-
-            DynamicUser = lib.mkDefault true;
+            UMask = lib.mkDefault "0066";
+            WorkingDirectory = workDir;
           }
           (lib.mkIf (cfg.user != null) {
             DynamicUser = false;
@@ -339,6 +334,9 @@
           })
           cfg.serviceOverrides
         ];
+
+        wantedBy = [ "multi-user.target" ];
+        wants = [ "network-online.target" ];
       }
     ));
 }

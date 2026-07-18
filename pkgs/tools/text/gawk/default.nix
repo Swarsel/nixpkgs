@@ -2,13 +2,11 @@
   lib,
   stdenv,
   fetchurl,
+  autoreconfHook, # no-pma fix
+  readline,
   removeReferencesTo,
   runtimeShellPackage,
   texinfo,
-  interactive ? false,
-  readline,
-  autoreconfHook, # no-pma fix
-
   /*
     Test suite broke on:
         stdenv.hostPlatform.isCygwin # XXX: `test-dup2' segfaults on Cygwin 6.1
@@ -18,12 +16,14 @@
   */
   doCheck ? (interactive && stdenv.hostPlatform.isLinux),
   glibcLocales ? null,
+  interactive ? false,
   locale ? null,
 }:
 
 assert (doCheck && stdenv.hostPlatform.isLinux) -> glibcLocales != null;
 
 stdenv.mkDerivation rec {
+  inherit doCheck;
   pname = "gawk" + lib.optionalString interactive "-interactive";
   version = "5.4.0";
 
@@ -66,16 +66,14 @@ stdenv.mkDerivation rec {
     (if interactive then "--with-readline=${readline.dev}" else "--without-readline")
   ];
 
-  env = lib.optionalAttrs stdenv.hostPlatform.isDarwin {
-    # TODO: figure out a better way to unbreak _NSGetExecutablePath invocations
-    NIX_CFLAGS_COMPILE = "-Wno-implicit-function-declaration";
-  };
-
   makeFlags = [
     "AR=${stdenv.cc.targetPrefix}ar"
   ];
 
-  inherit doCheck;
+  env = lib.optionalAttrs stdenv.hostPlatform.isDarwin {
+    # TODO: figure out a better way to unbreak _NSGetExecutablePath invocations
+    NIX_CFLAGS_COMPILE = "-Wno-implicit-function-declaration";
+  };
 
   postInstall =
     (
@@ -95,8 +93,8 @@ stdenv.mkDerivation rec {
     '';
 
   meta = {
-    homepage = "https://www.gnu.org/software/gawk/";
     description = "GNU implementation of the Awk programming language";
+
     longDescription = ''
       Many computer users need to manipulate text files: extract and then
       operate on data from parts of certain lines while discarding the rest,
@@ -110,12 +108,16 @@ stdenv.mkDerivation rec {
       makes it possible to handle many data-reformatting jobs with just a few
       lines of code.
     '';
+
+    homepage = "https://www.gnu.org/software/gawk/";
     license = lib.licenses.gpl3Plus;
-    platforms = lib.platforms.unix ++ lib.platforms.windows;
+
     maintainers = with lib.maintainers; [
       das_j
       helsinki-Jo
     ];
+
+    platforms = lib.platforms.unix ++ lib.platforms.windows;
     mainProgram = "gawk";
   };
 }

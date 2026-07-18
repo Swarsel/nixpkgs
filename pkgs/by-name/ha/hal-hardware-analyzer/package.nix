@@ -1,27 +1,27 @@
 {
   lib,
   stdenv,
+  fetchFromGitHub,
   boost,
   cmake,
-  fetchFromGitHub,
   graphviz,
   igraph_0, # https://github.com/emsec/hal/issues/623
+  libsForQt5,
   llvmPackages,
   ninja,
+  nix-update-script,
   nlohmann_json,
   pkg-config,
   python3Packages,
-  libsForQt5,
   rapidjson,
   spdlog,
   verilator,
   z3,
-  nix-update-script,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
-  version = "4.5.0";
   pname = "hal-hardware-analyzer";
+  version = "4.5.0";
 
   src = fetchFromGitHub {
     owner = "emsec";
@@ -46,6 +46,7 @@ stdenv.mkDerivation (finalAttrs: {
     pkg-config
     libsForQt5.wrapQtAppsHook
   ];
+
   buildInputs = [
     libsForQt5.qtbase
     libsForQt5.qtsvg
@@ -82,9 +83,6 @@ stdenv.mkDerivation (finalAttrs: {
     "-DUSE_VENDORED_NLOHMANN_JSON=off"
     "-DBUILD_ALL_PLUGINS=on"
   ];
-  # needed for macos build - this is why we use wrapQtAppsHook instead of
-  # the qt mkDerivation - the latter forcibly overrides this.
-  cmakeBuildType = "MinSizeRel";
 
   # https://github.com/emsec/hal/issues/598
   env = lib.optionalAttrs stdenv.hostPlatform.isAarch64 {
@@ -98,17 +96,22 @@ stdenv.mkDerivation (finalAttrs: {
     done
   '';
 
+  # needed for macos build - this is why we use wrapQtAppsHook instead of
+  # the qt mkDerivation - the latter forcibly overrides this.
+  cmakeBuildType = "MinSizeRel";
   passthru.updateScript = nix-update-script { };
 
   meta = {
-    changelog = "https://github.com/emsec/hal/blob/${finalAttrs.src.tag}/CHANGELOG.md";
     description = "Comprehensive reverse engineering and manipulation framework for gate-level netlists";
-    mainProgram = "hal";
     homepage = "https://github.com/emsec/hal";
+    changelog = "https://github.com/emsec/hal/blob/${finalAttrs.src.tag}/CHANGELOG.md";
     license = lib.licenses.mit;
-    platforms = lib.platforms.unix;
+
     maintainers = with lib.maintainers; [
       ris
     ];
+
+    platforms = lib.platforms.unix;
+    mainProgram = "hal";
   };
 })

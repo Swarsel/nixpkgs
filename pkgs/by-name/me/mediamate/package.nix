@@ -1,8 +1,8 @@
 {
   lib,
-  stdenvNoCC,
   fetchurl,
   nix-update-script,
+  stdenvNoCC,
   unzip,
 }:
 
@@ -14,10 +14,9 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     url = "https://github.com/Wouter01/MediaMate-Releases/releases/download/v${finalAttrs.version}/MediaMate_v${
       lib.strings.replaceStrings [ "_" ] [ "-" ] finalAttrs.version
     }.zip";
+
     hash = "sha256-O+V7x0AJBgsPL7clEpQYvvE38/0IxyN8J4tptxCmgo0=";
   };
-
-  sourceRoot = ".";
 
   nativeBuildInputs = [ unzip ];
 
@@ -30,14 +29,15 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  sourceRoot = ".";
   passthru.updateScript = nix-update-script { };
 
   meta = {
     description = "New, fresh visuals for changing your volume, brightness and now playing media";
     homepage = "https://wouter01.github.io/MediaMate/";
     license = lib.licenses.unfree;
+    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
     maintainers = with lib.maintainers; [ _4evy ];
     platforms = lib.platforms.darwin;
-    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
   };
 })

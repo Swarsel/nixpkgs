@@ -26,22 +26,23 @@ in
     enable = mkEnableOption "support for Intel IPU6/MIPI cameras";
 
     platform = mkOption {
-      type = types.enum [
-        "ipu6"
-        "ipu6ep"
-        "ipu6epmtl"
-      ];
       description = ''
         Choose the version for your hardware platform.
 
         Use `ipu6` for Tiger Lake, `ipu6ep` for Alder Lake or Raptor Lake,
         and `ipu6epmtl` for Meteor Lake.
       '';
+
+      type = types.enum [
+        "ipu6"
+        "ipu6ep"
+        "ipu6epmtl"
+      ];
     };
 
     videoDeviceNumber = mkOption {
-      type = types.int;
       default = 50;
+
       description = ''
         v4l2loopback device number for the relay output (`/dev/videoN`).
 
@@ -50,6 +51,8 @@ in
         reboots. Choose a number above the IPU6 raw node range (typically 3-34)
         and any other v4l2loopback devices on the system.
       '';
+
+      type = types.int;
     };
 
   };
@@ -65,6 +68,22 @@ in
       ivsc-firmware
     ];
 
+    # Disable raw IPU6 nodes in WirePlumber. Matched via udev ID_V4L_PRODUCT=ipu6,
+    # set by the kernel at device registration without requiring a device open.
+    services.pipewire.wireplumber.extraConfig."ipu6-v4l2-rules" = {
+      "monitor.v4l2.rules" = [
+        {
+          actions = {
+            "update-props" = {
+              "device.disabled" = true;
+            };
+          };
+
+          matches = [ { "device.product.name" = "ipu6"; } ];
+        }
+      ];
+    };
+
     # Restrict IPU6 raw nodes and media controller to root. DRIVERS== matches the
     # parent PCI device. TAG-="uaccess" blocks logind ACL grants at login.
     services.udev.extraRules = ''
@@ -73,27 +92,8 @@ in
       SUBSYSTEM=="video4linux", DRIVERS=="intel-ipu6", MODE="0600", GROUP="root", TAG-="uaccess"
     '';
 
-    # ipu6-camera-hal writes AIQ tuning data and debug logs here.
-    systemd.tmpfiles.rules = [ "d /run/camera 0755 root video -" ];
-
-    # Disable raw IPU6 nodes in WirePlumber. Matched via udev ID_V4L_PRODUCT=ipu6,
-    # set by the kernel at device registration without requiring a device open.
-    services.pipewire.wireplumber.extraConfig."ipu6-v4l2-rules" = {
-      "monitor.v4l2.rules" = [
-        {
-          matches = [ { "device.product.name" = "ipu6"; } ];
-          actions = {
-            "update-props" = {
-              "device.disabled" = true;
-            };
-          };
-        }
-      ];
-    };
-
     services.v4l2-relayd.instances.ipu6 = {
       enable = mkDefault true;
-
       cardLabel = mkDefault "Intel MIPI Camera";
 
       extraPackages =
@@ -104,8 +104,8 @@ in
         ++ optional (cfg.platform == "ipu6epmtl") icamerasrc-ipu6epmtl;
 
       input = {
-        pipeline = "icamerasrc";
         format = mkIf (cfg.platform != "ipu6") (mkDefault "NV12");
+        pipeline = "icamerasrc";
       };
     };
 
@@ -115,16 +115,20 @@ in
     # - Keep the device alive on stop so apps survive relay restarts via
     #   VIDIOC_DQBUF blocking rather than receiving errors.
     systemd.services.v4l2-relayd-ipu6 = {
+      postStop = mkForce ''
+        rm -rf "$(dirname "$V4L2_DEVICE_FILE")"
+      '';
+
       preStart = mkForce ''
         mkdir -p "$(dirname "$V4L2_DEVICE_FILE")"
         ${config.boot.kernelPackages.v4l2loopback.bin}/bin/v4l2loopback-ctl \
           add --name "Intel MIPI Camera" --exclusive-caps=1 ${toString cfg.videoDeviceNumber} || [ $? -eq 17 ]
         echo /dev/video${toString cfg.videoDeviceNumber} > "$V4L2_DEVICE_FILE"
       '';
-      postStop = mkForce ''
-        rm -rf "$(dirname "$V4L2_DEVICE_FILE")"
-      '';
     };
+
+    # ipu6-camera-hal writes AIQ tuning data and debug logs here.
+    systemd.tmpfiles.rules = [ "d /run/camera 0755 root video -" ];
 
   };
 }

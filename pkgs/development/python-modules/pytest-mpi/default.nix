@@ -1,19 +1,18 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
-  sybil,
-  pytest,
-  pytestCheckHook,
+  buildPythonPackage,
   mpi,
   mpi4py,
+  pytest,
+  pytestCheckHook,
+  setuptools,
+  sybil,
 }:
 
 buildPythonPackage rec {
   pname = "pytest-mpi";
   version = "0.6";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "aragilar";
@@ -22,25 +21,31 @@ buildPythonPackage rec {
     hash = "sha256-m3HTGLoPnYeg0oeIA1nzTzch7FtkuXTYpox4rRgo5MU=";
   };
 
-  build-system = [
-    setuptools
-  ];
   buildInputs = [
     # Don't propagate it to let a different pytest version be used if needed
     pytest
   ];
-  dependencies = [
-    sybil
-  ];
+
+  # Tests cause the Python interpreter to crash from some reason, a hard issue
+  # to debug. (TODO: discuss this with upstream)
+  doCheck = false;
 
   nativeCheckInputs = [
     pytestCheckHook
     mpi
     mpi4py
   ];
-  # Tests cause the Python interpreter to crash from some reason, a hard issue
-  # to debug. (TODO: discuss this with upstream)
-  doCheck = false;
+
+  build-system = [
+    setuptools
+  ];
+
+  dependencies = [
+    sybil
+  ];
+
+  pyproject = true;
+
   pytestFlags = [
     # https://github.com/aragilar/pytest-mpi/issues/4#issuecomment-634614337
     "-ppytester"

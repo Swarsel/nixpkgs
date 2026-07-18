@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule (finalAttrs: {
@@ -32,14 +32,16 @@ buildGoModule (finalAttrs: {
   subPackages = [ "cmd/aws-iam-authenticator" ];
 
   meta = {
-    homepage = "https://github.com/kubernetes-sigs/aws-iam-authenticator";
     description = "AWS IAM credentials for Kubernetes authentication";
-    mainProgram = "aws-iam-authenticator";
+    homepage = "https://github.com/kubernetes-sigs/aws-iam-authenticator";
     changelog = "https://github.com/kubernetes-sigs/aws-iam-authenticator/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.asl20;
+
     maintainers = with lib.maintainers; [
       srhb
       ryan4yin
     ];
+
+    mainProgram = "aws-iam-authenticator";
   };
 })

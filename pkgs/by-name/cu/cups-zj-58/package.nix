@@ -2,8 +2,8 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  cups,
   cmake,
+  cups,
   pkg-config,
 }:
 
@@ -24,12 +24,6 @@ stdenv.mkDerivation {
   ];
 
   buildInputs = [ cups ];
-
-  patchPhase = ''
-    substituteInPlace CMakeLists.txt \
-    --replace-fail "cmake_minimum_required ( VERSION 3.0 )" "cmake_minimum_required ( VERSION 3.10 )"
-  '';
-
   env.NIX_CFLAGS_COMPILE = "-Wno-error=incompatible-pointer-types";
 
   installPhase = ''
@@ -38,14 +32,21 @@ stdenv.mkDerivation {
     install -D rastertozj $out/lib/cups/filter/rastertozj
   '';
 
+  patchPhase = ''
+    substituteInPlace CMakeLists.txt \
+    --replace-fail "cmake_minimum_required ( VERSION 3.0 )" "cmake_minimum_required ( VERSION 3.10 )"
+  '';
+
   meta = {
     description = "CUPS filter for thermal printer Zjiang ZJ-58";
     homepage = "https://github.com/klirichek/zj-58";
-    platforms = lib.platforms.linux;
+    license = lib.licenses.bsd2;
+
     maintainers = with lib.maintainers; [
       makefu
       deimelias
     ];
-    license = lib.licenses.bsd2;
+
+    platforms = lib.platforms.linux;
   };
 }

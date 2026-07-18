@@ -2,17 +2,15 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  jq,
   fetchYarnDeps,
-
-  yarnConfigHook,
-  yarnBuildHook,
-  npmHooks,
+  jq,
   nodejs,
+  npmHooks,
+  yarnBuildHook,
+  yarnConfigHook,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
-  name = "awk-language-server";
   version = "0.10.6";
 
   src = fetchFromGitHub {
@@ -20,7 +18,7 @@ stdenv.mkDerivation (finalAttrs: {
     repo = "awk-language-server";
     tag = "server-${finalAttrs.version}";
     hash = "sha256-YtduDfMAUAoQY9tgyhgERFwx9TEgD52KdeHnX2MrjjI=";
-    sparseCheckout = [ "server" ];
+
     postFetch = ''
       # combine both yarn lock files
       tail -n+4 $out/server/yarn.lock >> $out/yarn.lock
@@ -35,11 +33,8 @@ stdenv.mkDerivation (finalAttrs: {
         > package.json
       mv -f package.json $out/
     '';
-  };
 
-  yarnOfflineCache = fetchYarnDeps {
-    yarnLock = "${finalAttrs.src}/yarn.lock";
-    hash = "sha256-PaebqpXQGBxqcaxun8zi6TPeIgHmY+2fjsE/3LaWPN8=";
+    sparseCheckout = [ "server" ];
   };
 
   nativeBuildInputs = [
@@ -49,8 +44,14 @@ stdenv.mkDerivation (finalAttrs: {
     nodejs
   ];
 
-  yarnBuildScript = "build:server";
   dontNpmPrune = true;
+  name = "awk-language-server";
+  yarnBuildScript = "build:server";
+
+  yarnOfflineCache = fetchYarnDeps {
+    hash = "sha256-PaebqpXQGBxqcaxun8zi6TPeIgHmY+2fjsE/3LaWPN8=";
+    yarnLock = "${finalAttrs.src}/yarn.lock";
+  };
 
   meta = {
     description = "Language Server for AWK and associated VSCode client extension";

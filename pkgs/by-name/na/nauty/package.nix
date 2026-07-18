@@ -1,6 +1,6 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchurl,
 }:
 stdenv.mkDerivation (finalAttrs: {
@@ -11,6 +11,7 @@ stdenv.mkDerivation (finalAttrs: {
     url = "https://pallini.di.uniroma1.it/nauty${
       builtins.replaceStrings [ "." ] [ "_" ] finalAttrs.version
     }.tar.gz";
+
     sha256 = "sha256-n8TtrgT4ig9Yg5hb47Oc9/iY/WzJbpa57iVFJ0PMG1s=";
   };
 
@@ -37,11 +38,11 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Programs for computing automorphism groups of graphs and digraphs";
-    license = lib.licenses.asl20;
-    teams = [ lib.teams.sage ];
-    platforms = lib.platforms.unix;
+    homepage = "https://pallini.di.uniroma1.it/";
     # The filename may change for future changelogs. Better than nothing in any case.
     changelog = "https://pallini.di.uniroma1.it/changes24-2${lib.versions.minor finalAttrs.version}.txt";
-    homepage = "https://pallini.di.uniroma1.it/";
+    license = lib.licenses.asl20;
+    platforms = lib.platforms.unix;
+    teams = [ lib.teams.sage ];
   };
 })

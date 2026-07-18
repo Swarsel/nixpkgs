@@ -2,8 +2,8 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  perl,
   buildPackages,
+  perl,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -19,22 +19,22 @@ stdenv.mkDerivation (finalAttrs: {
 
   nativeBuildInputs = [ perl ];
 
-  prePatch = ''
-    patchShebangs .
-  ''
-  + lib.optionalString (!stdenv.buildPlatform.canExecute stdenv.hostPlatform) ''
-    substituteInPlace GNUmakefile \
-      --replace './snowball' '${lib.getBin buildPackages.libstemmer}/bin/snowball'
-  '';
-
-  makeTarget = "libstemmer.a";
-
   installPhase = ''
     runHook preInstall
     install -Dt $out/lib libstemmer.a
     install -Dt $out/include include/libstemmer.h
     install -Dt $out/bin {snowball,stemwords}
     runHook postInstall
+  '';
+
+  makeTarget = "libstemmer.a";
+
+  prePatch = ''
+    patchShebangs .
+  ''
+  + lib.optionalString (!stdenv.buildPlatform.canExecute stdenv.hostPlatform) ''
+    substituteInPlace GNUmakefile \
+      --replace './snowball' '${lib.getBin buildPackages.libstemmer}/bin/snowball'
   '';
 
   meta = {

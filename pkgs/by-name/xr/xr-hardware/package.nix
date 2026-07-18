@@ -1,8 +1,8 @@
 {
   lib,
-  stdenvNoCC,
   fetchFromGitLab,
   nix-update-script,
+  stdenvNoCC,
   udevCheckHook,
 }:
 stdenvNoCC.mkDerivation (finalAttrs: {
@@ -10,11 +10,11 @@ stdenvNoCC.mkDerivation (finalAttrs: {
   version = "1.1.1";
 
   src = fetchFromGitLab {
-    domain = "gitlab.freedesktop.org";
     owner = "monado/utilities";
     repo = "xr-hardware";
     tag = finalAttrs.version;
     hash = "sha256-w35/LoozCJz0ytHEHWsEdCaYYwyGU6sE13iMckVdOzY=";
+    domain = "gitlab.freedesktop.org";
   };
 
   nativeBuildInputs = [
@@ -22,13 +22,10 @@ stdenvNoCC.mkDerivation (finalAttrs: {
   ];
 
   doInstallCheck = true;
-
-  dontConfigure = true;
   dontBuild = true;
-
-  installTargets = "install_package";
+  dontConfigure = true;
   installFlags = "DESTDIR=${placeholder "out"}";
-
+  installTargets = "install_package";
   passthru.updateScript = nix-update-script { };
 
   meta = {

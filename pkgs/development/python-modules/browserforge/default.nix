@@ -1,10 +1,10 @@
 {
   lib,
+  fetchFromGitHub,
   aiofiles,
   apify-fingerprint-datapoints,
   buildPythonPackage,
   click,
-  fetchFromGitHub,
   httpx,
   orjson,
   poetry-core,
@@ -14,7 +14,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "browserforge";
   version = "1.2.4";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "daijro";
@@ -23,6 +22,8 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-8mh1Wok96rwUNAdnaoI1VYkyNr50JX/K7o04n/epuMo=";
   };
 
+  # Module has no test
+  doCheck = false;
   build-system = [ poetry-core ];
 
   dependencies = [
@@ -34,9 +35,7 @@ buildPythonPackage (finalAttrs: {
     rich
   ];
 
-  # Module has no test
-  doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "browserforge" ];
 
   meta = {

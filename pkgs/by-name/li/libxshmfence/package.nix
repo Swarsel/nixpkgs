@@ -3,31 +3,31 @@
   stdenv,
   fetchurl,
   pkg-config,
-  xorgproto,
-  writeScript,
   testers,
+  writeScript,
+  xorgproto,
 }:
 stdenv.mkDerivation (finalAttrs: {
   pname = "libxshmfence";
   version = "1.3.3";
-
-  outputs = [
-    "out"
-    "dev"
-  ];
 
   src = fetchurl {
     url = "mirror://xorg/individual/lib/libxshmfence-${finalAttrs.version}.tar.xz";
     hash = "sha256-1KTfCWq6lv6gLAKe46ROEaR+t/chPBpym+g+hew/3hA=";
   };
 
+  outputs = [
+    "out"
+    "dev"
+  ];
+
   strictDeps = true;
-
   nativeBuildInputs = [ pkg-config ];
-
   buildInputs = [ xorgproto ];
 
   passthru = {
+    tests.pkg-config = testers.testMetaPkgConfig finalAttrs.finalPackage;
+
     updateScript = writeScript "update-${finalAttrs.pname}" ''
       #!/usr/bin/env nix-shell
       #!nix-shell -i bash -p common-updater-scripts
@@ -36,11 +36,11 @@ stdenv.mkDerivation (finalAttrs: {
         | sort -V | tail -n1)"
       update-source-version ${finalAttrs.pname} "$version"
     '';
-    tests.pkg-config = testers.testMetaPkgConfig finalAttrs.finalPackage;
   };
 
   meta = {
     description = "Shared memory 'SyncFence' synchronization primitive library";
+
     longDescription = ''
       This library offers a CPU-based synchronization primitive compatible with the X SyncFence
       objects that can be shared between processes using file descriptor passing.
@@ -48,10 +48,11 @@ stdenv.mkDerivation (finalAttrs: {
       - On Linux, the library uses futexes
       - On other systems, the library uses posix mutexes and condition variables.
     '';
+
     homepage = "https://gitlab.freedesktop.org/xorg/lib/libxshmfence";
     license = lib.licenses.hpndSellVariant;
     maintainers = [ ];
-    pkgConfigModules = [ "xshmfence" ];
     platforms = lib.platforms.unix;
+    pkgConfigModules = [ "xshmfence" ];
   };
 })

@@ -1,16 +1,15 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  unstableGitUpdater,
-  poetry-core,
+  buildPythonPackage,
   nixops,
+  poetry-core,
+  unstableGitUpdater,
 }:
 
 buildPythonPackage {
   pname = "nixos-modules-contrib";
   version = "0-unstable-2021-01-20";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "nix-community";
@@ -33,8 +32,8 @@ buildPythonPackage {
     nixops
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "nixos_modules_contrib" ];
-
   passthru.updateScript = unstableGitUpdater { };
 
   meta = {

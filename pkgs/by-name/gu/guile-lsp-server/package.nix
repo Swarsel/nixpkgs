@@ -1,12 +1,12 @@
 {
   lib,
-  guile,
   stdenv,
-  fetchFromCodeberg,
-  pkg-config,
   bash,
-  makeWrapper,
+  fetchFromCodeberg,
+  guile,
   guile-json-rpc,
+  makeWrapper,
+  pkg-config,
 }:
 stdenv.mkDerivation (finalAttrs: {
   pname = "guile-lsp-server";
@@ -56,11 +56,11 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   meta = {
-    homepage = "https://codeberg.org/rgherdt/scheme-lsp-server";
     description = "LSP server for Guile";
-    mainProgram = "guile-lsp-server";
+    homepage = "https://codeberg.org/rgherdt/scheme-lsp-server";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ knightpp ];
     platforms = guile.meta.platforms;
+    mainProgram = "guile-lsp-server";
   };
 })

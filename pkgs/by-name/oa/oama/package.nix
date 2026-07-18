@@ -1,27 +1,18 @@
 {
-  haskell,
   lib,
   stdenv,
   coreutils,
-  libsecret,
   gnupg,
+  haskell,
+  libsecret,
   makeBinaryWrapper,
-  withLibsecret ? true, # default oama config uses libsecret
   withGpg ? false,
+  withLibsecret ? true, # default oama config uses libsecret
 }:
 let
   inherit (haskell.lib.compose) overrideCabal justStaticExecutables;
 
   overrides = {
-    description = "OAuth credential MAnager";
-    homepage = "https://github.com/pdobsan/oama";
-
-    passthru.updateScript = ./update.sh;
-
-    buildDepends = [
-      makeBinaryWrapper
-    ];
-
     postInstall = ''
       wrapProgram $out/bin/oama \
         --prefix PATH : ${
@@ -30,6 +21,14 @@ let
           )
         }
     '';
+
+    buildDepends = [
+      makeBinaryWrapper
+    ];
+
+    description = "OAuth credential MAnager";
+    homepage = "https://github.com/pdobsan/oama";
+    passthru.updateScript = ./update.sh;
   };
 
   raw-pkg = haskell.packages.ghc912.callPackage ./generated-package.nix { };

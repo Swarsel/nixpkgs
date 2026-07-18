@@ -10,10 +10,6 @@ buildDunePackage rec {
   pname = "stdint";
   version = "0.7.2";
 
-  duneVersion = "3";
-
-  minimalOCamlVersion = "4.03";
-
   src = fetchurl {
     url = "https://github.com/andrenth/ocaml-stdint/releases/download/${version}/stdint-${version}.tbz";
     sha256 = "sha256-FWAZjYvJx68+qVLEDavoJmZpQhDsw/35u/60MhHpd+Y=";
@@ -33,6 +29,8 @@ buildDunePackage rec {
 
   doCheck = lib.versionAtLeast ocaml.version "4.08";
   checkInputs = [ qcheck ];
+  duneVersion = "3";
+  minimalOCamlVersion = "4.03";
 
   meta = {
     description = "Various signed and unsigned integers for OCaml";

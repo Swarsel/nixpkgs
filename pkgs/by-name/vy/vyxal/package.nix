@@ -1,10 +1,10 @@
 {
   lib,
-  stdenvNoCC,
-  clangStdenv,
-  fetchFromGitHub,
   fetchurl,
+  fetchFromGitHub,
+  clangStdenv,
   mill,
+  stdenvNoCC,
   which,
 }:
 
@@ -14,6 +14,7 @@ let
   lockedMill = mill.overrideAttrs (oldAttrs: rec {
     # should ideally match the version listed inside the `.mill-version` file of the source
     version = "0.11.12";
+
     src = fetchurl {
       url = "https://github.com/com-lihaoyi/mill/releases/download/${version}/${version}-assembly";
       hash = "sha256-k4/oMHvtq5YXY8hRlX4gWN16ClfjXEAn6mRIoEBHNJo=";
@@ -29,29 +30,6 @@ clangStdenv.mkDerivation (finalAttrs: {
     repo = "Vyxal";
     tag = "v${finalAttrs.version}";
     hash = "sha256-8hA4u9zz8jm+tlSZ88z69/PUFNYk7+i3jtgUntgDgPE=";
-  };
-
-  # make sure to resolve all dependencies needed
-  deps = stdenvNoCC.mkDerivation {
-    name = "vyxal-${finalAttrs.version}-deps";
-    inherit (finalAttrs) src;
-
-    nativeBuildInputs = [ lockedMill ];
-
-    buildPhase = ''
-      runHook preBuild
-
-      export JAVA_TOOL_OPTIONS="-Duser.home=$(mktemp -d)"
-      export COURSIER_CACHE=$out/.coursier
-
-      mill native.prepareOffline --all
-
-      runHook postBuild
-    '';
-
-    outputHashAlgo = "sha256";
-    outputHashMode = "recursive";
-    outputHash = "sha256-yXKzntb498b8ZLYq7w+s1Brj+pvPN9otdkdY8QGVHPs=";
   };
 
   nativeBuildInputs = [
@@ -76,13 +54,35 @@ clangStdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  # make sure to resolve all dependencies needed
+  deps = stdenvNoCC.mkDerivation {
+    inherit (finalAttrs) src;
+    nativeBuildInputs = [ lockedMill ];
+
+    buildPhase = ''
+      runHook preBuild
+
+      export JAVA_TOOL_OPTIONS="-Duser.home=$(mktemp -d)"
+      export COURSIER_CACHE=$out/.coursier
+
+      mill native.prepareOffline --all
+
+      runHook postBuild
+    '';
+
+    name = "vyxal-${finalAttrs.version}-deps";
+    outputHash = "sha256-yXKzntb498b8ZLYq7w+s1Brj+pvPN9otdkdY8QGVHPs=";
+    outputHashAlgo = "sha256";
+    outputHashMode = "recursive";
+  };
+
   meta = {
-    changelog = "https://github.com/Vyxal/Vyxal/releases/tag/v${finalAttrs.version}";
     description = "Code-golfing language that has aspects of traditional programming languages";
     homepage = "https://github.com/Vyxal/Vyxal";
+    changelog = "https://github.com/Vyxal/Vyxal/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.mit;
-    mainProgram = "vyxal";
     maintainers = with lib.maintainers; [ tomasajt ];
     platforms = lib.platforms.all;
+    mainProgram = "vyxal";
   };
 })

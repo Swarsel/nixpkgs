@@ -1,10 +1,10 @@
 {
   lib,
+  stdenv,
+  fetchFromGitHub,
   boost,
   bzip2,
   cmake,
-  enablePython ? true,
-  fetchFromGitHub,
   fmt,
   giflib,
   libheif,
@@ -20,8 +20,8 @@
   ptex,
   python3Packages,
   robin-map,
-  stdenv,
   unzip,
+  enablePython ? true,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -85,8 +85,8 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   meta = {
-    homepage = "https://openimageio.org";
     description = "Library and tools for reading and writing images";
+    homepage = "https://openimageio.org";
     license = lib.licenses.asl20;
     maintainers = with lib.maintainers; [ yzx9 ];
     platforms = lib.platforms.unix;

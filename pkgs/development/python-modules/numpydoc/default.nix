@@ -2,25 +2,21 @@
   lib,
   buildPythonPackage,
   fetchPypi,
-
-  # build-system
-  setuptools,
-
   # dependencies
   jinja2,
-  sphinx,
-  tabulate,
-
   # tests
   matplotlib,
   pytest-cov-stub,
   pytestCheckHook,
+  # build-system
+  setuptools,
+  sphinx,
+  tabulate,
 }:
 
 buildPythonPackage rec {
   pname = "numpydoc";
   version = "1.10.0";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname;
@@ -28,18 +24,18 @@ buildPythonPackage rec {
     hash = "sha256-P3lw9u7jCRImCmsxrHK7okMoMM1nIlaewX7o0+9f+gE=";
   };
 
+  nativeCheckInputs = [
+    matplotlib
+    pytest-cov-stub
+    pytestCheckHook
+  ];
+
   build-system = [ setuptools ];
 
   dependencies = [
     jinja2
     sphinx
     tabulate
-  ];
-
-  nativeCheckInputs = [
-    matplotlib
-    pytest-cov-stub
-    pytestCheckHook
   ];
 
   disabledTests = [
@@ -56,13 +52,14 @@ buildPythonPackage rec {
     "test_mangle_docstrings_inherited_class_members"
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "numpydoc" ];
 
   meta = {
-    changelog = "https://github.com/numpy/numpydoc/releases/tag/v${version}";
     description = "Sphinx extension to support docstrings in Numpy format";
-    mainProgram = "validate-docstrings";
     homepage = "https://github.com/numpy/numpydoc";
+    changelog = "https://github.com/numpy/numpydoc/releases/tag/v${version}";
     license = lib.licenses.free;
+    mainProgram = "validate-docstrings";
   };
 }

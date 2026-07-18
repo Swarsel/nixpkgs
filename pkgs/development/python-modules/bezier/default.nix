@@ -3,20 +3,19 @@
   stdenv,
   fetchFromGitHub,
   buildPythonPackage,
-  setuptools,
-  numpy,
-  matplotlib,
-  scipy,
-  sympy,
-
   cmake,
   gfortran,
-
+  matplotlib,
   nix-update-script,
+  numpy,
+  scipy,
+  setuptools,
+  sympy,
 }:
 buildPythonPackage rec {
   pname = "bezier";
   version = "2024.6.20";
+
   src = fetchFromGitHub {
     owner = "dhermes";
     repo = "bezier";
@@ -24,26 +23,11 @@ buildPythonPackage rec {
     hash = "sha256-TH3x6K5S3uV/K/5e+TXCSiJsyJE0tZ+8ZLc+i/x/fV8=";
   };
 
-  pyproject = true;
-
-  build-system = [ setuptools ];
-
-  dependencies = [ numpy ];
-  optional-dependencies = {
-    full = [
-      matplotlib
-      scipy
-      sympy
-    ];
-  };
-
   env = {
     BEZIER_IGNORE_VERSION_CHECK = 1;
-    BEZIER_INSTALL_PREFIX = stdenv.mkDerivation {
-      name = "bezier-fortran-extension";
-      inherit version src;
 
-      sourceRoot = "${src.name}/src/fortran";
+    BEZIER_INSTALL_PREFIX = stdenv.mkDerivation {
+      inherit version src;
 
       nativeBuildInputs = [
         cmake
@@ -56,20 +40,35 @@ buildPythonPackage rec {
         NIX_CFLAGS_COMPILE = lib.optionalString stdenv.hostPlatform.isDarwin "-Wno-complain-wrong-lang";
         NIX_LDFLAGS = lib.optionalString stdenv.hostPlatform.isLinux "-z,noexecstack";
       };
+
+      name = "bezier-fortran-extension";
+      sourceRoot = "${src.name}/src/fortran";
     };
+
     NIX_CFLAGS_COMPILE = toString [
       "-Wno-error=incompatible-pointer-types"
     ];
   };
 
-  pythonImportsCheck = [ "bezier" ];
+  build-system = [ setuptools ];
+  dependencies = [ numpy ];
 
+  optional-dependencies = {
+    full = [
+      matplotlib
+      scipy
+      sympy
+    ];
+  };
+
+  pyproject = true;
+  pythonImportsCheck = [ "bezier" ];
   passthru.updateScript = nix-update-script { };
 
   meta = {
     description = "Helper for Bézier Curves, Triangles, and Higher Order Objects";
-    changelog = "https://bezier.readthedocs.io/en/latest/releases/latest.html";
     homepage = "https://github.com/dhermes/bezier";
+    changelog = "https://bezier.readthedocs.io/en/latest/releases/latest.html";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ WeetHet ];
   };

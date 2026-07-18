@@ -2,11 +2,11 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  rustPlatform,
   installShellFiles,
-  pkg-config,
-  openssl,
   nix-update-script,
+  openssl,
+  pkg-config,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -20,15 +20,13 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-zH93Pi/zVnCLo8O/1HnSTfUOu9vtzF3JSzn+1/1/Oz0=";
   };
 
-  cargoHash = "sha256-e75srZlKx/WfxbguyIu7MWZm33WuOfDubGqfvviN1HA=";
-
-  buildFeatures = [ "full" ];
-
   nativeBuildInputs = [
     installShellFiles
     pkg-config
   ];
+
   buildInputs = [ openssl ];
+  cargoHash = "sha256-e75srZlKx/WfxbguyIu7MWZm33WuOfDubGqfvviN1HA=";
 
   checkFlags = [
     # requires network access
@@ -85,6 +83,7 @@ rustPlatform.buildRustPackage (finalAttrs: {
       --zsh <($out/bin/ltrs completions zsh)
   '';
 
+  buildFeatures = [ "full" ];
   passthru.updateScript = nix-update-script { };
 
   meta = {

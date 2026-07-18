@@ -3,8 +3,8 @@
   stdenv,
   fetchurl,
   jre,
-  unzip,
   runtimeShell,
+  unzip,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -17,7 +17,6 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   nativeBuildInputs = [ unzip ];
-
   buildInputs = [ jre ];
 
   installPhase = ''
@@ -34,13 +33,13 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   meta = {
-    # Quicker to unpack locally than load Hydra
-    hydraPlatforms = [ ];
-    maintainers = with lib.maintainers; [ raskin ];
-    sourceProvenance = with lib.sourceTypes; [ binaryBytecode ];
-    license = lib.licenses.lgpl21Plus;
     description = "GraphViz graph viewer/navigator";
+    license = lib.licenses.lgpl21Plus;
+    sourceProvenance = with lib.sourceTypes; [ binaryBytecode ];
+    maintainers = with lib.maintainers; [ raskin ];
     platforms = with lib.platforms; unix;
     mainProgram = "zgrviewer";
+    # Quicker to unpack locally than load Hydra
+    hydraPlatforms = [ ];
   };
 })

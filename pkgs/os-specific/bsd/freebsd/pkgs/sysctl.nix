@@ -1,11 +1,12 @@
 {
-  mkDerivation,
   libjail,
+  mkDerivation,
 }:
 mkDerivation {
-  path = "sbin/sysctl";
   buildInputs = [
     libjail
   ];
+
   MK_TESTS = "no";
+  path = "sbin/sysctl";
 }

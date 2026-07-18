@@ -1,20 +1,18 @@
 {
-  stdenv,
   lib,
-  rustPlatform,
-  openssl,
-  nushell,
-  pkg-config,
+  stdenv,
   nix-update-script,
+  nushell,
+  openssl,
+  pkg-config,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
-  pname = "nu_plugin_gstat";
   inherit (nushell) version src cargoHash;
-
+  pname = "nu_plugin_gstat";
   nativeBuildInputs = [ pkg-config ] ++ lib.optionals stdenv.cc.isClang [ rustPlatform.bindgenHook ];
   buildInputs = [ openssl ];
-
   buildAndTestSubdir = "crates/nu_plugin_gstat";
 
   passthru.updateScript = nix-update-script {
@@ -24,11 +22,13 @@ rustPlatform.buildRustPackage (finalAttrs: {
 
   meta = {
     description = "Git status plugin for Nushell";
-    mainProgram = "nu_plugin_gstat";
     homepage = "https://github.com/nushell/nushell/tree/${finalAttrs.version}/crates/nu_plugin_gstat";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       mrkkrp
     ];
+
+    mainProgram = "nu_plugin_gstat";
   };
 })

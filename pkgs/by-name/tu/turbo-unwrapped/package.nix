@@ -1,8 +1,8 @@
 {
   lib,
   stdenv,
-  capnproto,
   fetchFromGitHub,
+  capnproto,
   fontconfig,
   installShellFiles,
   llvmPackages,
@@ -26,8 +26,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-ugPkWeUJqt1KnGYC85hihHXl3JPlfbTvk4RaLIvVq2Y=";
   };
 
-  cargoHash = "sha256-LBGaZgW4q//VJfXIqzByQogz0o/fyQcTAAFwlHPuRUc=";
-
   nativeBuildInputs = [
     capnproto
     installShellFiles
@@ -44,10 +42,12 @@ rustPlatform.buildRustPackage (finalAttrs: {
     zlib
   ];
 
-  cargoBuildFlags = [
-    "--package"
-    "turbo"
-  ];
+  cargoHash = "sha256-LBGaZgW4q//VJfXIqzByQogz0o/fyQcTAAFwlHPuRUc=";
+
+  env = {
+    # nightly features are used
+    RUSTC_BOOTSTRAP = 1;
+  };
 
   # Browser tests time out with chromium and google-chrome
   doCheck = false;
@@ -59,10 +59,10 @@ rustPlatform.buildRustPackage (finalAttrs: {
       --zsh <($out/bin/turbo completion zsh)
   '';
 
-  env = {
-    # nightly features are used
-    RUSTC_BOOTSTRAP = 1;
-  };
+  cargoBuildFlags = [
+    "--package"
+    "turbo"
+  ];
 
   passthru = {
     updateScript = nix-update-script {
@@ -77,10 +77,12 @@ rustPlatform.buildRustPackage (finalAttrs: {
     homepage = "https://turbo.build/";
     changelog = "https://github.com/vercel/turborepo/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       getchoo
       hythera
     ];
+
     mainProgram = "turbo";
   };
 })

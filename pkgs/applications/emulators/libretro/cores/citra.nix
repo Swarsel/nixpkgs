@@ -1,14 +1,13 @@
 {
   lib,
-  cmake,
   fetchFromGitHub,
+  cmake,
   libGL,
   libGLU,
   libx11,
   mkLibretroCore,
 }:
 mkLibretroCore {
-  core = "citra";
   version = "0-unstable-2025-08-17";
 
   src = fetchFromGitHub {
@@ -23,16 +22,6 @@ mkLibretroCore {
     # Fix build with GCC 15. See https://github.com/KhronosGroup/glslang/pull/3684.
     ./patches/citra-gcc-15.patch
   ];
-
-  makefile = "Makefile";
-
-  extraBuildInputs = [
-    libGL
-    libGLU
-    libx11
-  ];
-
-  extraNativeBuildInputs = [ cmake ];
 
   # https://github.com/libretro/citra/blob/a31aff7e1a3a66f525b9ea61633d2c5e5b0c8b31/.gitlab-ci.yml#L6
   cmakeFlags = with lib.strings; [
@@ -57,6 +46,17 @@ mkLibretroCore {
     # > Or, add -DCMAKE_POLICY_VERSION_MINIMUM=3.5 to try configuring anyway.
     (cmakeFeature "CMAKE_POLICY_VERSION_MINIMUM" "3.5")
   ];
+
+  core = "citra";
+
+  extraBuildInputs = [
+    libGL
+    libGLU
+    libx11
+  ];
+
+  extraNativeBuildInputs = [ cmake ];
+  makefile = "Makefile";
 
   meta = {
     description = "Port of Citra to libretro";

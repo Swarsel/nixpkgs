@@ -1,36 +1,35 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
-  cmake,
-  kdePackages,
-  pkg-config,
-  makeWrapper,
-  freetype,
   SDL2,
-  glib,
-  pcre2,
-  openal,
-  rtmidi,
-  fluidsynth,
-  jack2,
   alsa-lib,
-  qt5,
-  libvncserver,
+  cmake,
   discord-gamesdk,
+  flac,
+  fluidsynth,
+  freetype,
+  glib,
+  jack2,
+  kdePackages,
+  libgcrypt,
+  libmpg123,
+  libogg,
+  libopus,
   libpcap,
-  libslirp,
   libserialport,
+  libslirp,
+  libsndfile,
+  libvncserver,
+  libvorbis,
+  makeWrapper,
+  openal,
+  pcre2,
+  pkg-config,
+  qt5,
+  rtmidi,
   wayland,
   wayland-scanner,
-  libsndfile,
-  flac,
-  libogg,
-  libvorbis,
-  libopus,
-  libmpg123,
-  libgcrypt,
-
   enableDynarec ? with stdenv.hostPlatform; isx86 || isAarch,
   enableNewDynarec ? enableDynarec && stdenv.hostPlatform.isAarch,
   enableVncRenderer ? false,
@@ -121,16 +120,6 @@ stdenv.mkDerivation (finalAttrs: {
       ln -s ${finalAttrs.passthru.roms} $out/share/86Box/roms
     '';
 
-  passthru = {
-    roms = fetchFromGitHub {
-      owner = "86Box";
-      repo = "roms";
-      tag = "v${finalAttrs.version}";
-      hash = "sha256-AjFxyxW6Op4w637k5AXPtibqablVoPK03Axh2h2JWdI=";
-    };
-    updateScript = ./update.sh;
-  };
-
   # Some libraries are loaded dynamically, but QLibrary doesn't seem to search
   # the runpath, so use a wrapper instead.
   preFixup =
@@ -142,18 +131,32 @@ stdenv.mkDerivation (finalAttrs: {
       makeWrapperArgs+=(--prefix ${libPathVar} : "${libPath}")
     '';
 
+  passthru = {
+    roms = fetchFromGitHub {
+      hash = "sha256-AjFxyxW6Op4w637k5AXPtibqablVoPK03Axh2h2JWdI=";
+      owner = "86Box";
+      repo = "roms";
+      tag = "v${finalAttrs.version}";
+    };
+
+    updateScript = ./update.sh;
+  };
+
   meta = {
     description = "Emulator of x86-based machines based on PCem";
-    mainProgram = "86Box";
     homepage = "https://86box.net/";
     changelog = "https://github.com/86Box/86Box/releases/tag/v${finalAttrs.version}";
+
     license =
       with lib.licenses;
       [ gpl2Only ] ++ lib.optional (unfreeEnableDiscord || unfreeEnableRoms) unfree;
+
     maintainers = with lib.maintainers; [
       jchw
       matteopacini
     ];
+
     platforms = lib.platforms.linux ++ lib.platforms.darwin;
+    mainProgram = "86Box";
   };
 })

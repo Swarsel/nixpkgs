@@ -1,9 +1,9 @@
 {
   lib,
-  buildNpmPackage,
   fetchFromGitHub,
-  nodejs,
+  buildNpmPackage,
   nix-update-script,
+  nodejs,
 }:
 
 buildNpmPackage rec {
@@ -18,23 +18,23 @@ buildNpmPackage rec {
   };
 
   npmDepsHash = "sha256-4sjP3ri52CunwLcbIJF6+qGgciiPmZKsrLnm50HX0PQ=";
-  dontNpmBuild = true;
-
   doCheck = true;
+
   checkPhase = ''
     runHook preCheck
     npm run test
     runHook postCheck
   '';
 
+  dontNpmBuild = true;
   passthru.updateScript = nix-update-script { };
 
   meta = {
+    inherit (nodejs.meta) platforms;
     description = "CLI interface to json-stable-stringify";
     homepage = "https://github.com/tillig/json-sort-cli";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ hasnep ];
-    inherit (nodejs.meta) platforms;
     mainProgram = "json-sort";
   };
 }

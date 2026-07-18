@@ -2,21 +2,19 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  rustPlatform,
-  wrapGAppsHook4,
-  nix-update-script,
-
-  cargo-tauri,
-  nodejs,
-  pkg-config,
-  bun,
-  writableTmpDirAsHomeHook,
-
   alsa-lib,
+  bun,
+  cargo-tauri,
   glib-networking,
   libappindicator-gtk3,
+  nix-update-script,
+  nodejs,
   openssl,
+  pkg-config,
+  rustPlatform,
   webkitgtk_4_1,
+  wrapGAppsHook4,
+  writableTmpDirAsHomeHook,
 }:
 rustPlatform.buildRustPackage (finalAttrs: {
   pname = "atuin-desktop";
@@ -27,64 +25,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
     repo = "desktop";
     tag = "v${finalAttrs.version}";
     hash = "sha256-8FMB64UeGhXpWD5w33okpOVwKInrQ5R33aZuKIRCFEs=";
-  };
-
-  cargoRoot = "./.";
-  cargoDeps = rustPlatform.fetchCargoVendor {
-    inherit (finalAttrs) src;
-    hash = "sha256-68yQkgIVpqUo5tOcvxKh6NOkW565V94zHIZeI4q7nNA=";
-  };
-
-  node_modules = stdenv.mkDerivation {
-    inherit (finalAttrs) src version;
-    pname = "${finalAttrs.pname}-node_modules";
-
-    impureEnvVars = lib.fetchers.proxyImpureEnvVars ++ [
-      "GIT_PROXY_COMMAND"
-      "SOCKS_SERVER"
-    ];
-
-    nativeBuildInputs = [
-      bun
-      writableTmpDirAsHomeHook
-    ];
-
-    dontConfigure = true;
-    dontFixup = true;
-    dontPatchShebangs = true; # Patch shebangs manually in configurePhase after copying node_modules in the main derivation.
-
-    buildPhase = ''
-      runHook preBuild
-
-      export BUN_INSTALL_CACHE_DIR=$(mktemp -d)
-
-      # Install dependencies without running lifecycle scripts:
-      #  - Skip scripts to avoid running ts-tiny-activerecord's prepare script with unpatched shebangs.
-      #  - Rebuild in the main derivation after shebangs are patched there manually.
-      bun install \
-        --force \
-        --no-progress \
-        --frozen-lockfile \
-        --ignore-scripts
-
-      runHook postBuild
-    '';
-    installPhase = ''
-      runHook preInstall
-
-      cp -R ./node_modules $out
-
-      runHook postInstall
-    '';
-    outputHash =
-      {
-        aarch64-darwin = "sha256-YbjDAa2KG8U0ODqIYc5h7iNr5px+6+iforDrPomOVDo=";
-        aarch64-linux = "sha256-JoUPAfBF4xdQxtx+J/VNpYomBACNsL7Wes0XXuGByGk=";
-        x86_64-linux = "sha256-w8fMS6f+F+23EtMjjl0RsHMm6b5jOXSwUDAc21vqLAg=";
-      }
-      .${stdenv.hostPlatform.system}
-        or (throw "${finalAttrs.pname}: Platform ${stdenv.hostPlatform.system} is not packaged yet.");
-    outputHashMode = "recursive";
   };
 
   nativeBuildInputs = [
@@ -105,15 +45,12 @@ rustPlatform.buildRustPackage (finalAttrs: {
   ];
 
   env = {
-    # Used upstream: https://github.com/atuinsh/desktop/blob/v0.2.19/.envrc#L1
-    NODE_OPTIONS = "--max-old-space-size=6144";
-
     # TMP: Fix build failure with GCC 15.
     NIX_CFLAGS_COMPILE = "-std=gnu17";
+    # Used upstream: https://github.com/atuinsh/desktop/blob/v0.2.19/.envrc#L1
+    NODE_OPTIONS = "--max-old-space-size=6144";
   };
 
-  # Otherwise tauri will look for a private key we don't have.
-  tauriConf = builtins.toJSON { bundle.createUpdaterArtifacts = false; };
   preBuild = ''
     tauriConfPath="tauriConf"
     printf "%s" "$tauriConf" > "$tauriConfPath"
@@ -122,6 +59,22 @@ rustPlatform.buildRustPackage (finalAttrs: {
       "$tauriConfPath"
     )
   '';
+
+  doCheck = !stdenv.hostPlatform.isDarwin;
+
+  checkFlags = [
+    "--skip=ui::viewport::tests::test_add_line_scrolling"
+    "--skip=ui::viewport::tests::test_line_wrapping"
+  ];
+
+  __structuredAttrs = true;
+
+  cargoDeps = rustPlatform.fetchCargoVendor {
+    inherit (finalAttrs) src;
+    hash = "sha256-68yQkgIVpqUo5tOcvxKh6NOkW565V94zHIZeI4q7nNA=";
+  };
+
+  cargoRoot = "./.";
 
   configurePhase = ''
     runHook preConfigure
@@ -146,28 +99,79 @@ rustPlatform.buildRustPackage (finalAttrs: {
     runHook postConfigure
   '';
 
+  node_modules = stdenv.mkDerivation {
+    inherit (finalAttrs) src version;
+    pname = "${finalAttrs.pname}-node_modules";
+
+    nativeBuildInputs = [
+      bun
+      writableTmpDirAsHomeHook
+    ];
+
+    buildPhase = ''
+      runHook preBuild
+
+      export BUN_INSTALL_CACHE_DIR=$(mktemp -d)
+
+      # Install dependencies without running lifecycle scripts:
+      #  - Skip scripts to avoid running ts-tiny-activerecord's prepare script with unpatched shebangs.
+      #  - Rebuild in the main derivation after shebangs are patched there manually.
+      bun install \
+        --force \
+        --no-progress \
+        --frozen-lockfile \
+        --ignore-scripts
+
+      runHook postBuild
+    '';
+
+    installPhase = ''
+      runHook preInstall
+
+      cp -R ./node_modules $out
+
+      runHook postInstall
+    '';
+
+    dontConfigure = true;
+    dontFixup = true;
+    dontPatchShebangs = true; # Patch shebangs manually in configurePhase after copying node_modules in the main derivation.
+
+    impureEnvVars = lib.fetchers.proxyImpureEnvVars ++ [
+      "GIT_PROXY_COMMAND"
+      "SOCKS_SERVER"
+    ];
+
+    outputHash =
+      {
+        aarch64-darwin = "sha256-YbjDAa2KG8U0ODqIYc5h7iNr5px+6+iforDrPomOVDo=";
+        aarch64-linux = "sha256-JoUPAfBF4xdQxtx+J/VNpYomBACNsL7Wes0XXuGByGk=";
+        x86_64-linux = "sha256-w8fMS6f+F+23EtMjjl0RsHMm6b5jOXSwUDAc21vqLAg=";
+      }
+      .${stdenv.hostPlatform.system}
+        or (throw "${finalAttrs.pname}: Platform ${stdenv.hostPlatform.system} is not packaged yet.");
+
+    outputHashMode = "recursive";
+  };
+
+  # Otherwise tauri will look for a private key we don't have.
+  tauriConf = builtins.toJSON { bundle.createUpdaterArtifacts = false; };
   passthru.updateScript = nix-update-script { };
-
-  checkFlags = [
-    "--skip=ui::viewport::tests::test_add_line_scrolling"
-    "--skip=ui::viewport::tests::test_line_wrapping"
-  ];
-  doCheck = !stdenv.hostPlatform.isDarwin;
-
-  __structuredAttrs = true;
 
   meta = {
     description = "Local-first, executable runbook editor";
     homepage = "https://atuin.sh";
-    downloadPage = "https://github.com/atuinsh/desktop";
     changelog = "https://github.com/atuinsh/desktop/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.asl20;
+
     maintainers = with lib.maintainers; [
       adda
       dzervas
       randoneering
     ];
-    mainProgram = "atuin-desktop";
+
     platforms = with lib.platforms; windows ++ darwin ++ linux;
+    mainProgram = "atuin-desktop";
+    downloadPage = "https://github.com/atuinsh/desktop";
   };
 })

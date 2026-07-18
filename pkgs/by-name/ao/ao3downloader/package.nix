@@ -1,7 +1,7 @@
 {
   lib,
-  python312Packages,
   fetchFromGitHub,
+  python312Packages,
 }:
 
 # ao3downloader explicitly does not support Python 3.13 yet
@@ -9,7 +9,6 @@
 python312Packages.buildPythonApplication (finalAttrs: {
   pname = "ao3downloader";
   version = "2026.7.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "nianeyna";
@@ -17,6 +16,12 @@ python312Packages.buildPythonApplication (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-cyn4bWHKKfRGade8A1kAJRJzdcXCY46nGgVw5i0OUyQ=";
   };
+
+  nativeCheckInputs = with python312Packages; [
+    pytestCheckHook
+    syrupy
+    pythonImportsCheckHook
+  ];
 
   build-system = with python312Packages; [
     hatchling
@@ -31,26 +36,22 @@ python312Packages.buildPythonApplication (finalAttrs: {
     tqdm
   ];
 
-  pythonRelaxDeps = [
-    "requests"
-  ];
+  pyproject = true;
 
   pythonImportsCheck = [
     "ao3downloader"
   ];
 
-  nativeCheckInputs = with python312Packages; [
-    pytestCheckHook
-    syrupy
-    pythonImportsCheckHook
+  pythonRelaxDeps = [
+    "requests"
   ];
 
   meta = {
     description = "Utility for downloading fanfiction in bulk from the Archive of Our Own";
-    changelog = "https://github.com/nianeyna/ao3downloader/releases/tag/v${finalAttrs.version}";
-    mainProgram = "ao3downloader";
     homepage = "https://nianeyna.dev/ao3downloader";
+    changelog = "https://github.com/nianeyna/ao3downloader/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.gpl3;
     maintainers = [ lib.maintainers.samasaur ];
+    mainProgram = "ao3downloader";
   };
 })

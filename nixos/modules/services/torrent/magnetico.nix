@@ -63,76 +63,75 @@ in
     enable = lib.mkEnableOption "Magnetico, Bittorrent DHT crawler";
 
     crawler.address = lib.mkOption {
-      type = lib.types.str;
       default = "0.0.0.0";
-      example = "1.2.3.4";
+
       description = ''
         Address to be used for indexing DHT nodes.
       '';
+
+      example = "1.2.3.4";
+      type = lib.types.str;
     };
 
-    crawler.port = lib.mkOption {
-      type = lib.types.port;
-      default = 0;
+    crawler.extraOptions = lib.mkOption {
+      default = [ ];
+
       description = ''
-        Port to be used for indexing DHT nodes.
-        This port should be added to
-        {option}`networking.firewall.allowedTCPPorts`.
+        Extra command line arguments to pass to magneticod.
       '';
+
+      type = lib.types.listOf lib.types.str;
+    };
+
+    crawler.maxLeeches = lib.mkOption {
+      default = 200;
+
+      description = ''
+        Maximum number of simultaneous leeches.
+      '';
+
+      type = lib.types.ints.positive;
     };
 
     crawler.maxNeighbors = lib.mkOption {
-      type = lib.types.ints.positive;
       default = 1000;
+
       description = ''
         Maximum number of simultaneous neighbors of an indexer.
         Be careful changing this number: high values can very
         easily cause your network to be congested or even crash
         your router.
       '';
-    };
 
-    crawler.maxLeeches = lib.mkOption {
       type = lib.types.ints.positive;
-      default = 200;
-      description = ''
-        Maximum number of simultaneous leeches.
-      '';
     };
 
-    crawler.extraOptions = lib.mkOption {
-      type = lib.types.listOf lib.types.str;
-      default = [ ];
+    crawler.port = lib.mkOption {
+      default = 0;
+
       description = ''
-        Extra command line arguments to pass to magneticod.
+        Port to be used for indexing DHT nodes.
+        This port should be added to
+        {option}`networking.firewall.allowedTCPPorts`.
       '';
+
+      type = lib.types.port;
     };
 
     web.address = lib.mkOption {
-      type = lib.types.str;
       default = "localhost";
-      example = "1.2.3.4";
+
       description = ''
         Address the web interface will listen to.
       '';
-    };
 
-    web.port = lib.mkOption {
-      type = lib.types.port;
-      default = 8080;
-      description = ''
-        Port the web interface will listen to.
-      '';
+      example = "1.2.3.4";
+      type = lib.types.str;
     };
 
     web.credentials = lib.mkOption {
-      type = lib.types.attrsOf lib.types.str;
       default = { };
-      example = lib.literalExpression ''
-        {
-          myuser = "$2y$12$YE01LZ8jrbQbx6c0s2hdZO71dSjn2p/O9XsYJpz.5968yCysUgiaG";
-        }
-      '';
+
       description = ''
         The credentials to access the web interface, in case authentication is
         enabled, in the format `username:hash`. If unset no
@@ -151,11 +150,19 @@ in
         don't want this.
         :::
       '';
+
+      example = lib.literalExpression ''
+        {
+          myuser = "$2y$12$YE01LZ8jrbQbx6c0s2hdZO71dSjn2p/O9XsYJpz.5968yCysUgiaG";
+        }
+      '';
+
+      type = lib.types.attrsOf lib.types.str;
     };
 
     web.credentialsFile = lib.mkOption {
-      type = lib.types.nullOr lib.types.path;
       default = null;
+
       description = ''
         The path to the file holding the credentials to access the web
         interface. If unset no authentication will be required.
@@ -169,14 +176,28 @@ in
         package may be used to generate the hash:
         {command}`htpasswd -bnBC 12 username password`
       '';
+
+      type = lib.types.nullOr lib.types.path;
     };
 
     web.extraOptions = lib.mkOption {
-      type = lib.types.listOf lib.types.str;
       default = [ ];
+
       description = ''
         Extra command line arguments to pass to magneticow.
       '';
+
+      type = lib.types.listOf lib.types.str;
+    };
+
+    web.port = lib.mkOption {
+      default = 8080;
+
+      description = ''
+        Port the web interface will listen to.
+      '';
+
+      type = lib.types.port;
     };
 
   };
@@ -185,50 +206,55 @@ in
 
   config = lib.mkIf cfg.enable {
 
-    users.users.magnetico = {
-      description = "Magnetico daemons user";
-      group = "magnetico";
-      isSystemUser = true;
-    };
-    users.groups.magnetico = { };
-
-    systemd.services.magneticod = {
-      description = "Magnetico DHT crawler";
-      wantedBy = [ "multi-user.target" ];
-      after = [ "network.target" ];
-
-      serviceConfig = {
-        User = "magnetico";
-        Restart = "on-failure";
-        ExecStart = "${pkgs.magnetico}/bin/magneticod ${crawlerArgs}";
-      };
-    };
-
-    systemd.services.magneticow = {
-      description = "Magnetico web interface";
-      wantedBy = [ "multi-user.target" ];
-      after = [
-        "network.target"
-        "magneticod.service"
-      ];
-
-      serviceConfig = {
-        User = "magnetico";
-        StateDirectory = "magnetico";
-        Restart = "on-failure";
-        ExecStart = "${pkgs.magnetico}/bin/magneticow ${webArgs}";
-      };
-    };
-
     assertions = [
       {
         assertion = cfg.web.credentialsFile == null || cfg.web.credentials == { };
+
         message = ''
           The options services.magnetico.web.credentialsFile and
           services.magnetico.web.credentials are mutually exclusives.
         '';
       }
     ];
+
+    systemd.services.magneticod = {
+      after = [ "network.target" ];
+      description = "Magnetico DHT crawler";
+
+      serviceConfig = {
+        ExecStart = "${pkgs.magnetico}/bin/magneticod ${crawlerArgs}";
+        Restart = "on-failure";
+        User = "magnetico";
+      };
+
+      wantedBy = [ "multi-user.target" ];
+    };
+
+    systemd.services.magneticow = {
+      after = [
+        "network.target"
+        "magneticod.service"
+      ];
+
+      description = "Magnetico web interface";
+
+      serviceConfig = {
+        ExecStart = "${pkgs.magnetico}/bin/magneticow ${webArgs}";
+        Restart = "on-failure";
+        StateDirectory = "magnetico";
+        User = "magnetico";
+      };
+
+      wantedBy = [ "multi-user.target" ];
+    };
+
+    users.groups.magnetico = { };
+
+    users.users.magnetico = {
+      description = "Magnetico daemons user";
+      group = "magnetico";
+      isSystemUser = true;
+    };
 
   };
 

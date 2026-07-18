@@ -1,14 +1,14 @@
 {
-  clangStdenv,
   lib,
-  binutils,
   fetchFromGitHub,
-  cmake,
-  pkg-config,
-  wrapGAppsHook3,
+  binutils,
   boost186,
+  catch2_3,
   cereal,
   cgal_5,
+  clangStdenv,
+  cmake,
+  ctestCheckHook,
   curl,
   dbus,
   eigen,
@@ -18,31 +18,31 @@
   glib-networking,
   gmp,
   gtk3,
+  heatshrink,
   hicolor-icon-theme,
   hidapi,
+  libbgcode,
   libpng,
+  libx11,
   mpfr,
   nanosvg,
-  nlopt,
+  nix-update-script,
   nlohmann_json,
+  nlopt,
+  onetbb,
   opencascade-occt_7_6_1,
   openvdb,
+  pkg-config,
   qhull,
-  onetbb,
-  wxwidgets_3_2,
-  libx11,
-  libbgcode,
-  heatshrink,
-  catch2_3,
-  webkitgtk_4_1,
-  ctestCheckHook,
-  withSystemd ? lib.meta.availableOn clangStdenv.hostPlatform systemd,
   systemd,
   udevCheckHook,
+  webkitgtk_4_1,
+  wrapGAppsHook3,
+  wxwidgets_3_2,
   z3,
-  nix-update-script,
-  wxGTK-override ? null,
   opencascade-override ? null,
+  withSystemd ? lib.meta.availableOn clangStdenv.hostPlatform systemd,
+  wxGTK-override ? null,
 }:
 let
   nanosvg-fltk = nanosvg.overrideAttrs (old: {
@@ -63,14 +63,15 @@ in
 clangStdenv.mkDerivation (finalAttrs: {
   pname = "prusa-slicer";
   version = "2.9.6";
+
   # Build with clang even on Linux, because GCC uses absolutely obscene amounts of memory
   # on this particular code base (OOM with 32GB memory and --cores 16 on GCC, succeeds
   # with --cores 32 on clang).
   src = fetchFromGitHub {
     owner = "prusa3d";
     repo = "PrusaSlicer";
-    hash = "sha256-SXNIyAncnPU6Zac8/plM32sPBgj9Uj9eVDL3NBu+IL4=";
     rev = "version_${finalAttrs.version}";
+    hash = "sha256-SXNIyAncnPU6Zac8/plM32sPBgj9Uj9eVDL3NBu+IL4=";
   };
 
   # only applies to prusa slicer because super-slicer overrides *all* patches
@@ -112,6 +113,8 @@ clangStdenv.mkDerivation (finalAttrs: {
         'MimeType=model/stl;application/vnd.ms-3mfdocument;application/prs.wavefront-obj;application/x-amf;x-scheme-handler/prusaslicer;'
     ''
   );
+
+  strictDeps = true;
 
   nativeBuildInputs = [
     cmake
@@ -158,11 +161,15 @@ clangStdenv.mkDerivation (finalAttrs: {
     systemd
   ];
 
-  strictDeps = true;
-
-  separateDebugInfo = true;
-
-  doInstallCheck = true;
+  cmakeFlags = [
+    "-DSLIC3R_STATIC=0"
+    "-DSLIC3R_FHS=1"
+    "-DSLIC3R_GTK=3"
+    "-DCMAKE_CXX_FLAGS=-DBOOST_LOG_DYN_LINK"
+    # there is many different min versions set accross different
+    # Find*.cmake files, substituting them all is not viable
+    "-DCMAKE_POLICY_VERSION_MINIMUM=3.10"
+  ];
 
   env = {
     # The build system uses custom logic - defined in
@@ -175,6 +182,41 @@ clangStdenv.mkDerivation (finalAttrs: {
     # prusa-slicer uses dlopen on `libudev.so` at runtime
     NIX_LDFLAGS = "-ludev";
   };
+
+  doCheck = true;
+  nativeCheckInputs = [ ctestCheckHook ];
+
+  checkFlags = [
+    "--force-new-ctest-process"
+    "-E"
+    "libslic3r_tests|sla_print_tests"
+  ];
+
+  postInstall = ''
+    ln -s "$out/bin/prusa-slicer" "$out/bin/prusa-gcodeviewer"
+
+    mkdir -p "$out/lib"
+    mv -v $out/bin/*.* $out/lib/
+
+    mkdir -p "$out"/share/mime/packages
+    cat << EOF > "$out"/share/mime/packages/prusa-gcode-viewer.xml
+    <?xml version="1.0" encoding="UTF-8"?>
+    <mime-info xmlns="http://www.freedesktop.org/standards/shared-mime-info">
+      <mime-type type="application/x-bgcode">
+        <comment xml:lang="en">Binary G-code file</comment>
+        <glob pattern="*.bgcode"/>
+      </mime-type>
+    </mime-info>
+    EOF
+  '';
+
+  doInstallCheck = true;
+
+  preFixup = ''
+    gappsWrapperArgs+=(
+      --prefix LD_LIBRARY_PATH : "$out/lib"
+    )
+  '';
 
   prePatch = ''
     # Since version 2.5.0 of nlopt we need to link to libnlopt, as libnlopt_cxx
@@ -204,47 +246,7 @@ clangStdenv.mkDerivation (finalAttrs: {
       --replace-fail "#ifdef __APPLE__" "#if 0"
   '';
 
-  cmakeFlags = [
-    "-DSLIC3R_STATIC=0"
-    "-DSLIC3R_FHS=1"
-    "-DSLIC3R_GTK=3"
-    "-DCMAKE_CXX_FLAGS=-DBOOST_LOG_DYN_LINK"
-    # there is many different min versions set accross different
-    # Find*.cmake files, substituting them all is not viable
-    "-DCMAKE_POLICY_VERSION_MINIMUM=3.10"
-  ];
-
-  postInstall = ''
-    ln -s "$out/bin/prusa-slicer" "$out/bin/prusa-gcodeviewer"
-
-    mkdir -p "$out/lib"
-    mv -v $out/bin/*.* $out/lib/
-
-    mkdir -p "$out"/share/mime/packages
-    cat << EOF > "$out"/share/mime/packages/prusa-gcode-viewer.xml
-    <?xml version="1.0" encoding="UTF-8"?>
-    <mime-info xmlns="http://www.freedesktop.org/standards/shared-mime-info">
-      <mime-type type="application/x-bgcode">
-        <comment xml:lang="en">Binary G-code file</comment>
-        <glob pattern="*.bgcode"/>
-      </mime-type>
-    </mime-info>
-    EOF
-  '';
-
-  preFixup = ''
-    gappsWrapperArgs+=(
-      --prefix LD_LIBRARY_PATH : "$out/lib"
-    )
-  '';
-
-  doCheck = true;
-  nativeCheckInputs = [ ctestCheckHook ];
-  checkFlags = [
-    "--force-new-ctest-process"
-    "-E"
-    "libslic3r_tests|sla_print_tests"
-  ];
+  separateDebugInfo = true;
 
   passthru.updateScript = nix-update-script {
     extraArgs = [
@@ -258,11 +260,13 @@ clangStdenv.mkDerivation (finalAttrs: {
     homepage = "https://github.com/prusa3d/PrusaSlicer";
     changelog = "https://github.com/prusa3d/PrusaSlicer/releases/tag/version_${finalAttrs.version}";
     license = lib.licenses.agpl3Plus;
+
     maintainers = with lib.maintainers; [
       tweber
       tmarkus
       fliegendewurst
     ];
+
     platforms = lib.platforms.unix;
   }
   // lib.optionalAttrs (clangStdenv.hostPlatform.isDarwin) {

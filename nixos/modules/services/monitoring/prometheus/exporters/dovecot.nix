@@ -16,19 +16,25 @@ let
     ;
 in
 {
-  port = 9166;
   extraOpts = {
-    telemetryPath = mkOption {
-      type = types.str;
-      default = "/metrics";
+    scopes = mkOption {
+      default = [ "user" ];
+
       description = ''
-        Path under which to expose metrics.
+        Stats scopes to query.
       '';
+
+      example = [
+        "user"
+        "global"
+      ];
+
+      type = types.listOf types.str;
     };
+
     socketPath = mkOption {
-      type = types.path;
       default = "/var/run/dovecot/stats";
-      example = "/var/run/dovecot2/old-stats";
+
       description = ''
         Path under which the stats socket is placed.
         The user/group under which the exporter runs,
@@ -72,22 +78,28 @@ in
         }
         ```
       '';
+
+      example = "/var/run/dovecot2/old-stats";
+      type = types.path;
     };
-    scopes = mkOption {
-      type = types.listOf types.str;
-      default = [ "user" ];
-      example = [
-        "user"
-        "global"
-      ];
+
+    telemetryPath = mkOption {
+      default = "/metrics";
+
       description = ''
-        Stats scopes to query.
+        Path under which to expose metrics.
       '';
+
+      type = types.str;
     };
   };
+
+  port = 9166;
+
   serviceOpts = {
     serviceConfig = {
       DynamicUser = false;
+
       ExecStart = ''
         ${lib.getExe pkgs.dovecot_exporter} \
           --web.listen-address ${cfg.listenAddress}:${toString cfg.port} \
@@ -96,6 +108,7 @@ in
           --dovecot.scopes ${concatStringsSep "," cfg.scopes} \
           ${concatStringsSep " \\\n  " cfg.extraFlags}
       '';
+
       RestrictAddressFamilies = [
         # Need AF_UNIX to collect data
         "AF_UNIX"

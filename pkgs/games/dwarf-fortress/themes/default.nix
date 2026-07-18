@@ -13,6 +13,7 @@ in
 listToAttrs (
   map (v: {
     inherit (v) name;
+
     value = fetchFromGitHub {
       pname = v.name;
       version = v.version;
@@ -20,12 +21,15 @@ listToAttrs (
       repo = v.name;
       rev = v.version;
       sha256 = v.sha256;
+
       meta = {
-        platforms = platforms.all;
+        license = licenses.unfree;
+
         maintainers = [
           maintainers.shazow
         ];
-        license = licenses.unfree;
+
+        platforms = platforms.all;
       };
     };
   }) (importJSON ./themes.json)

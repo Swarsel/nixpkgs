@@ -18,57 +18,69 @@ let
     ;
 in
 {
-  port = 9103;
   extraOpts = {
     collectdBinary = {
       enable = mkEnableOption "collectd binary protocol receiver";
 
       authFile = mkOption {
         default = null;
-        type = types.nullOr types.path;
         description = "File mapping user names to pre-shared keys (passwords).";
-      };
-
-      port = mkOption {
-        type = types.port;
-        default = 25826;
-        description = "Network address on which to accept collectd binary network packets.";
+        type = types.nullOr types.path;
       };
 
       listenAddress = mkOption {
-        type = types.str;
         default = "0.0.0.0";
+
         description = ''
           Address to listen on for binary network packets.
         '';
+
+        type = types.str;
+      };
+
+      port = mkOption {
+        default = 25826;
+        description = "Network address on which to accept collectd binary network packets.";
+        type = types.port;
       };
 
       securityLevel = mkOption {
+        default = "None";
+
+        description = ''
+          Minimum required security level for accepted packets.
+        '';
+
         type = types.enum [
           "None"
           "Sign"
           "Encrypt"
         ];
-        default = "None";
-        description = ''
-          Minimum required security level for accepted packets.
-        '';
       };
     };
 
     logFormat = mkOption {
+      default = "logfmt";
+
+      description = ''
+        Set the log format.
+      '';
+
+      example = "json";
+
       type = types.enum [
         "logfmt"
         "json"
       ];
-      default = "logfmt";
-      example = "json";
-      description = ''
-        Set the log format.
-      '';
     };
 
     logLevel = mkOption {
+      default = "info";
+
+      description = ''
+        Only log messages with the given severity or above.
+      '';
+
       type = types.enum [
         "debug"
         "info"
@@ -76,12 +88,11 @@ in
         "error"
         "fatal"
       ];
-      default = "info";
-      description = ''
-        Only log messages with the given severity or above.
-      '';
     };
   };
+
+  port = 9103;
+
   serviceOpts =
     let
       collectSettingsArgs = optionalString (cfg.collectdBinary.enable) ''

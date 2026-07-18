@@ -1,19 +1,18 @@
 {
   lib,
+  fetchFromGitHub,
   authlib,
   buildPythonPackage,
   deprecated,
-  fetchFromGitHub,
   poetry-core,
-  requests,
   pytest-cov-stub,
   pytestCheckHook,
+  requests,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "pyvicare";
   version = "2.60.2";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "openviess";
@@ -27,6 +26,11 @@ buildPythonPackage (finalAttrs: {
       --replace-fail 'version = "0.1.0"' 'version = "${finalAttrs.version}"'
   '';
 
+  nativeCheckInputs = [
+    pytest-cov-stub
+    pytestCheckHook
+  ];
+
   build-system = [ poetry-core ];
 
   dependencies = [
@@ -35,11 +39,7 @@ buildPythonPackage (finalAttrs: {
     requests
   ];
 
-  nativeCheckInputs = [
-    pytest-cov-stub
-    pytestCheckHook
-  ];
-
+  pyproject = true;
   pythonImportsCheck = [ "PyViCare" ];
 
   meta = {

@@ -2,14 +2,14 @@
   lib,
   stdenv,
   fetchFromGitHub,
+  bicpl,
   cmake,
   coreutils,
-  perlPackages,
-  bicpl,
   libminc,
-  zlib,
-  minc_tools,
   makeWrapper,
+  minc_tools,
+  perlPackages,
+  zlib,
 }:
 
 stdenv.mkDerivation {
@@ -23,15 +23,22 @@ stdenv.mkDerivation {
     hash = "sha256-Inr4b2bxguzkcRQBURObsQQ0Rb3H/Zz6hEzNRd+IX3w=";
   };
 
+  postPatch = ''
+    substituteInPlace CMakeLists.txt \
+      --replace-fail "CMAKE_MINIMUM_REQUIRED(VERSION 3.1)" "cmake_minimum_required(VERSION 3.10)"
+  '';
+
   nativeBuildInputs = [
     cmake
     makeWrapper
   ];
+
   buildInputs = [
     libminc
     zlib
     bicpl
   ];
+
   propagatedBuildInputs = [
     coreutils
     minc_tools
@@ -47,11 +54,6 @@ stdenv.mkDerivation {
     "-DBICPL_DIR=${bicpl}/lib"
   ];
 
-  postPatch = ''
-    substituteInPlace CMakeLists.txt \
-      --replace-fail "CMAKE_MINIMUM_REQUIRED(VERSION 3.1)" "cmake_minimum_required(VERSION 3.10)"
-  '';
-
   postFixup = ''
     for p in $out/bin/*; do
       wrapProgram $p --prefix PERL5LIB : $PERL5LIB --set PATH "${
@@ -64,10 +66,10 @@ stdenv.mkDerivation {
   '';
 
   meta = {
-    homepage = "https://github.com/BIC-MNI/conglomerate";
     description = "More command-line utilities for working with MINC files";
+    homepage = "https://github.com/BIC-MNI/conglomerate";
+    license = lib.licenses.hpndUc;
     maintainers = with lib.maintainers; [ bcdarwin ];
     platforms = lib.platforms.unix;
-    license = lib.licenses.hpndUc;
   };
 }

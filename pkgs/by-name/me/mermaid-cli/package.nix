@@ -1,8 +1,8 @@
 {
-  buildNpmPackage,
   lib,
   stdenv,
   fetchFromGitHub,
+  buildNpmPackage,
   chromium,
   nix-update-script,
 }:
@@ -10,8 +10,8 @@ let
   version = "11.16.0";
 in
 buildNpmPackage {
-  pname = "mermaid-cli";
   inherit version;
+  pname = "mermaid-cli";
 
   src = fetchFromGitHub {
     owner = "mermaid-js";
@@ -30,9 +30,8 @@ buildNpmPackage {
     PUPPETEER_SKIP_DOWNLOAD = true;
   };
 
-  npmBuildScript = "prepare";
-
   makeWrapperArgs = lib.lists.optional (lib.meta.availableOn stdenv.hostPlatform chromium) "--set PUPPETEER_EXECUTABLE_PATH '${lib.getExe chromium}'";
+  npmBuildScript = "prepare";
 
   passthru = {
     updateScript = nix-update-script { };
@@ -42,8 +41,8 @@ buildNpmPackage {
     description = "Generation of diagrams from text in a similar manner as markdown";
     homepage = "https://github.com/mermaid-js/mermaid-cli";
     license = lib.licenses.mit;
-    mainProgram = "mmdc";
     maintainers = with lib.maintainers; [ ysndr ];
     platforms = lib.platforms.all;
+    mainProgram = "mmdc";
   };
 }

@@ -1,7 +1,7 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
+  rustPlatform,
   versionCheckHook,
 }:
 
@@ -18,8 +18,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
 
   cargoHash = "sha256-sjHyifhKU7FxwxrrAPuMwcUEw0lDGV83mOxXzLZul88=";
 
-  __structuredAttrs = true;
-
   # This test asserts that a nested .gitignore excludes a build directory, but
   # the `ignore` crate only applies gitignore rules inside a real git repository.
   # The sandbox builds from a source tarball with no .git, so it is skipped here.
@@ -29,6 +27,7 @@ rustPlatform.buildRustPackage (finalAttrs: {
 
   doInstallCheck = true;
   nativeInstallCheckInputs = [ versionCheckHook ];
+  __structuredAttrs = true;
 
   meta = {
     description = "Consistent dependency versions in large JavaScript monorepos";

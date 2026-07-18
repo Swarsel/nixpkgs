@@ -1,18 +1,18 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
-  gitUpdater,
-  cmake,
-  pkg-config,
-  libx11,
-  libxrandr,
-  libxinerama,
-  libxext,
-  libxcursor,
-  freetype,
   alsa-lib,
+  cmake,
+  freetype,
+  gitUpdater,
   libjack2,
+  libx11,
+  libxcursor,
+  libxext,
+  libxinerama,
+  libxrandr,
+  pkg-config,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -23,8 +23,8 @@ stdenv.mkDerivation (finalAttrs: {
     owner = "asb2m10";
     repo = "dexed";
     tag = "v${finalAttrs.version}";
-    fetchSubmodules = true;
     hash = "sha256-9EbaME3kw2ptCWpaV9CnM0j5HOof264s5iFoOTcjwNg=";
+    fetchSubmodules = true;
   };
 
   patches = [
@@ -59,15 +59,6 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   env = lib.optionalAttrs stdenv.hostPlatform.isLinux {
-    # JUCE insists on only dlopen'ing these
-    NIX_LDFLAGS = toString [
-      "-lX11"
-      "-lXext"
-      "-lXcursor"
-      "-lXinerama"
-      "-lXrandr"
-      "-ljack"
-    ];
     NIX_CFLAGS_COMPILE = toString [
       # juce, compiled in this build as part of a Git submodule, uses `-flto` as
       # a Link Time Optimization flag, and instructs the plugin compiled here to
@@ -77,6 +68,16 @@ stdenv.mkDerivation (finalAttrs: {
       # in our juce's source, but that is not possible because it is used as a
       # Git Submodule.
       "-ffat-lto-objects"
+    ];
+
+    # JUCE insists on only dlopen'ing these
+    NIX_LDFLAGS = toString [
+      "-lX11"
+      "-lXext"
+      "-lXcursor"
+      "-lXinerama"
+      "-lXrandr"
+      "-ljack"
     ];
   };
 
@@ -123,10 +124,10 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "DX7 FM multi platform/multi format plugin";
-    mainProgram = "Dexed";
     homepage = "https://asb2m10.github.io/dexed";
     license = lib.licenses.gpl3Only;
-    platforms = lib.platforms.all;
     maintainers = with lib.maintainers; [ OPNA2608 ];
+    platforms = lib.platforms.all;
+    mainProgram = "Dexed";
   };
 })

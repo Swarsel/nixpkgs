@@ -2,10 +2,10 @@
   lib,
   stdenv,
   fetchurl,
-  pkg-config,
   libx11,
-  xorgproto,
+  pkg-config,
   writeScript,
+  xorgproto,
 }:
 stdenv.mkDerivation (finalAttrs: {
   pname = "xprop";
@@ -17,7 +17,6 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   strictDeps = true;
-
   nativeBuildInputs = [ pkg-config ];
 
   buildInputs = [
@@ -39,15 +38,18 @@ stdenv.mkDerivation (finalAttrs: {
   meta = {
     description = "Command line tool to display and/or set window and font properties of an X server";
     homepage = "https://gitlab.freedesktop.org/xorg/app/xprop";
+
     license = with lib.licenses; [
       mitOpenGroup
       hpndSellVariant
       mit
     ];
-    mainProgram = "xprop";
+
     maintainers = with lib.maintainers; [
       nick-linux
     ];
+
     platforms = lib.platforms.unix;
+    mainProgram = "xprop";
   };
 })

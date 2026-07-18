@@ -2,28 +2,22 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  openssl,
-  boost,
-  libevent,
   autoreconfHook,
+  boost,
   db4,
+  hexdump,
+  libevent,
+  openssl,
   pkg-config,
   protobuf,
-  hexdump,
+  qt5,
   zeromq,
   withGui ? true,
-  qt5,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
   pname = "digibyte";
   version = "7.17.3";
-
-  # Satisfy nixpkgs-vet requirements for new packages
-  strictDeps = true;
-  __structuredAttrs = true;
-
-  name = finalAttrs.pname + toString (lib.optional (!withGui) "d") + "-" + finalAttrs.version;
 
   src = fetchFromGitHub {
     owner = "digibyte-core";
@@ -62,6 +56,9 @@ stdenv.mkDerivation (finalAttrs: {
     done
   '';
 
+  # Satisfy nixpkgs-vet requirements for new packages
+  strictDeps = true;
+
   nativeBuildInputs = [
     autoreconfHook
     pkg-config
@@ -85,10 +82,6 @@ stdenv.mkDerivation (finalAttrs: {
     protobuf
   ];
 
-  enableParallelBuilding = true;
-
-  env.CXXFLAGS = "-Wno-error -std=c++17";
-
   configureFlags = [
     "--with-boost=${boost.dev}"
     "--with-boost-libdir=${boost.out}/lib"
@@ -106,6 +99,11 @@ stdenv.mkDerivation (finalAttrs: {
     "--with-gui=qt5"
     "--with-qt-bindir=${qt5.qtbase.dev}/bin:${qt5.qttools.dev}/bin"
   ];
+
+  env.CXXFLAGS = "-Wno-error -std=c++17";
+  __structuredAttrs = true;
+  enableParallelBuilding = true;
+  name = finalAttrs.pname + toString (lib.optional (!withGui) "d") + "-" + finalAttrs.version;
 
   meta = {
     description = "DigiByte (DGB) is a rapidly growing decentralized, global blockchain";

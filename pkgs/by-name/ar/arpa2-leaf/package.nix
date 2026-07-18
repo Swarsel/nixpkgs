@@ -2,13 +2,13 @@
   lib,
   stdenv,
   fetchFromGitLab,
-  cmake,
   arpa2cm,
-  quickder,
-  quickmem,
-  quick-sasl,
+  cmake,
   lillydap,
   nix-update-script,
+  quick-sasl,
+  quickder,
+  quickmem,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -44,8 +44,8 @@ stdenv.mkDerivation (finalAttrs: {
     homepage = "https://gitlab.com/arpa2/leaf";
     changelog = "https://gitlab.com/arpa2/leaf/-/blob/v${finalAttrs.version}/CHANGES";
     license = lib.licenses.bsd2;
-    teams = with lib.teams; [ ngi ];
     maintainers = with lib.maintainers; [ ethancedwards8 ];
     platforms = lib.platforms.linux;
+    teams = with lib.teams; [ ngi ];
   };
 })

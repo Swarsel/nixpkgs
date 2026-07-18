@@ -1,8 +1,8 @@
 {
   lib,
-  stdenvNoCC,
   fetchzip,
   installFonts,
+  stdenvNoCC,
 }:
 
 stdenvNoCC.mkDerivation (finalAttrs: {
@@ -14,15 +14,14 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     hash = "sha256-p8BvE4f6zQLygl49hzYTXXVQFZEJjrlfUvjNW+miar4=";
   };
 
+  nativeBuildInputs = [ installFonts ];
   sourceRoot = "${finalAttrs.src.name}/roboto-flex-fonts/fonts";
 
-  nativeBuildInputs = [ installFonts ];
-
   meta = {
-    homepage = "https://github.com/googlefonts/roboto-flex";
     description = "Google Roboto Flex family of fonts";
+    homepage = "https://github.com/googlefonts/roboto-flex";
     license = lib.licenses.ofl;
-    platforms = lib.platforms.all;
     maintainers = [ lib.maintainers.romildo ];
+    platforms = lib.platforms.all;
   };
 })

@@ -1,25 +1,24 @@
 {
-  buildPythonPackage,
   lib,
-  git,
   fetchFromGitHub,
+  buildPythonPackage,
+  datalad,
+  datalad-next,
+  git,
+  git-annex,
+  outdated,
+  pyqtdarktheme,
+  pyside6,
+  pytest-qt,
+  pytestCheckHook,
   pythonAtLeast,
   setuptools,
-  git-annex,
-  pyside6,
-  pyqtdarktheme,
-  datalad-next,
-  outdated,
-  datalad,
-  pytestCheckHook,
-  pytest-qt,
 }:
 
 buildPythonPackage {
   pname = "datalad-gooey";
   # many bug fixes on `master` but no new release
   version = "unstable-2024-02-20";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "datalad";
@@ -33,6 +32,17 @@ buildPythonPackage {
     ./setuptools.patch
   ];
 
+  nativeCheckInputs = [
+    pytestCheckHook
+    pytest-qt
+    git
+    git-annex
+  ];
+
+  preCheck = ''
+    export HOME=$TMPDIR
+  '';
+
   build-system = [ setuptools ];
 
   dependencies = [
@@ -43,24 +53,13 @@ buildPythonPackage {
     datalad
   ];
 
-  pythonRemoveDeps = [ "applescript" ];
-
-  preCheck = ''
-    export HOME=$TMPDIR
-  '';
-
-  nativeCheckInputs = [
-    pytestCheckHook
-    pytest-qt
-    git
-    git-annex
-  ];
-
   disabledTests = lib.optionals (pythonAtLeast "3.14") [
     "test_lsfiles"
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "datalad_gooey" ];
+  pythonRemoveDeps = [ "applescript" ];
 
   meta = {
     description = "Graphical user interface (GUI) for DataLad";

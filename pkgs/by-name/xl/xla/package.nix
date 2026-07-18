@@ -1,13 +1,13 @@
 {
+  lib,
+  stdenv,
+  fetchFromGitHub,
   bazel_7,
   buildBazelPackage,
-  fetchFromGitHub,
   gitMinimal,
-  lib,
   llvmPackages_18,
   patchelf,
   python3,
-  stdenv,
   which,
 }:
 
@@ -35,15 +35,6 @@ in
     rev = "964a0a45a0c3090cd484a3c51e8f9d05ed10b968";
     hash = "sha256-K0lveAY1nXeFA9FIV3nXhEJ0r589CNaVp/M5heUo1BY=";
   };
-
-  bazel = bazel_7; # from .bazelversion
-
-  nativeBuildInputs = [
-    gitMinimal
-    patchelf
-    pythonEnv
-    which
-  ];
 
   postPatch =
     # Remove the .bazelversion file to allow our Bazel version
@@ -111,6 +102,13 @@ in
           ],'
     '';
 
+  nativeBuildInputs = [
+    gitMinimal
+    patchelf
+    pythonEnv
+    which
+  ];
+
   # Configure XLA for CPU-only build using the official configure.py script.
   # This creates a xla_configure.bazelrc file with the appropriate options.
   # Using clang which matches XLA CI environment.
@@ -123,13 +121,10 @@ in
       --clang_path=${lib.getExe clangStdenv.cc}
   '';
 
-  bazelTargets = [
-    "//xla/..."
-  ];
+  bazel = bazel_7; # from .bazelversion
 
   # Tests are disabled - most XLA tests are skipped in OSS builds due to tag
   # filters and size constraints. See https://github.com/openxla/xla/issues/36756.
-
   bazelFlags = [
     "-c opt"
     # Use sandboxed strategy for most actions, but allow local for genrules
@@ -151,40 +146,9 @@ in
 
   ];
 
-  removeRulesCC = false;
-  # We need some local_config_* repos (CUDA, ROCm, TensorRT stubs) in the build
-  # phase.
-  removeLocal = false;
-
-  fetchAttrs = {
-    sha256 =
-      {
-        x86_64-linux = "sha256-9L+oVq/yHqUGLhzSpwqxfYSJ1bIVcnaZgFVB3sjokXs=";
-      }
-      .${stdenv.hostPlatform.system} or (throw "unsupported system: ${stdenv.hostPlatform.system}");
-    preInstall =
-      # Note: $bazelOut/external is the entire contents of the deps archive (see
-      # `deps.installPhase` in buildBazelPackage).
-      ''
-        chmod -R +w $bazelOut/external
-        rm -rf $bazelOut/external/{local_config_python,\@local_config_python.marker}
-        rm -rf $bazelOut/external/{local_config_sh,\@local_config_sh.marker}
-        rm -rf $bazelOut/external/{local_config_xcode,\@local_config_xcode.marker}
-        rm -rf $bazelOut/external/{local_execution_config_python,\@local_execution_config_python.marker}
-        rm -rf $bazelOut/external/{local_jdk,\@local_jdk.marker}
-      ''
-      # Normalize all /nix/store hashes to a fixed value so the deps archive is
-      # reproducible regardless of which nixpkgs revision built it. Somehow this
-      # does not break the build (yet).
-      + ''
-        find $bazelOut/external -type f -exec \
-          sed -i 's|/nix/store/[a-z0-9]\{32\}-|/nix/store/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa-|g' {} +
-      ''
-      # Delete non-deterministic Python bytecode (contains timestamps)
-      + ''
-        find $bazelOut/external -name '*.pyc' -delete
-      '';
-  };
+  bazelTargets = [
+    "//xla/..."
+  ];
 
   buildAttrs = {
     outputs = [ "out" ];
@@ -236,6 +200,41 @@ in
     '';
   };
 
+  fetchAttrs = {
+    preInstall =
+      # Note: $bazelOut/external is the entire contents of the deps archive (see
+      # `deps.installPhase` in buildBazelPackage).
+      ''
+        chmod -R +w $bazelOut/external
+        rm -rf $bazelOut/external/{local_config_python,\@local_config_python.marker}
+        rm -rf $bazelOut/external/{local_config_sh,\@local_config_sh.marker}
+        rm -rf $bazelOut/external/{local_config_xcode,\@local_config_xcode.marker}
+        rm -rf $bazelOut/external/{local_execution_config_python,\@local_execution_config_python.marker}
+        rm -rf $bazelOut/external/{local_jdk,\@local_jdk.marker}
+      ''
+      # Normalize all /nix/store hashes to a fixed value so the deps archive is
+      # reproducible regardless of which nixpkgs revision built it. Somehow this
+      # does not break the build (yet).
+      + ''
+        find $bazelOut/external -type f -exec \
+          sed -i 's|/nix/store/[a-z0-9]\{32\}-|/nix/store/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa-|g' {} +
+      ''
+      # Delete non-deterministic Python bytecode (contains timestamps)
+      + ''
+        find $bazelOut/external -name '*.pyc' -delete
+      '';
+
+    sha256 =
+      {
+        x86_64-linux = "sha256-9L+oVq/yHqUGLhzSpwqxfYSJ1bIVcnaZgFVB3sjokXs=";
+      }
+      .${stdenv.hostPlatform.system} or (throw "unsupported system: ${stdenv.hostPlatform.system}");
+  };
+
+  # We need some local_config_* repos (CUDA, ROCm, TensorRT stubs) in the build
+  # phase.
+  removeLocal = false;
+  removeRulesCC = false;
   requiredSystemFeatures = [ "big-parallel" ];
 
   meta = {
@@ -243,6 +242,7 @@ in
     homepage = "https://github.com/openxla/xla";
     license = lib.licenses.asl20;
     maintainers = with lib.maintainers; [ samuela ];
+
     platforms = [
       "x86_64-linux"
 

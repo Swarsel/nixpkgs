@@ -1,9 +1,9 @@
 {
   lib,
-  python3Packages,
   fetchFromGitHub,
-  versionCheckHook,
   nix-update-script,
+  python3Packages,
+  versionCheckHook,
 }:
 
 let
@@ -17,7 +17,6 @@ in
 pythonPackages.buildPythonApplication (finalAttrs: {
   pname = "nginx-language-server";
   version = "0.9.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "pappasam";
@@ -26,12 +25,12 @@ pythonPackages.buildPythonApplication (finalAttrs: {
     hash = "sha256-v9+Y8NBvN8HvTdNrK9D9YQuqDB3olIu5LfYapjlVlAM=";
   };
 
-  build-system = with pythonPackages; [
-    poetry-core
+  nativeCheckInputs = [
+    versionCheckHook
   ];
 
-  pythonRelaxDeps = [
-    "pydantic"
+  build-system = with pythonPackages; [
+    poetry-core
   ];
 
   dependencies = with pythonPackages; [
@@ -42,10 +41,11 @@ pythonPackages.buildPythonApplication (finalAttrs: {
     typing-extensions
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "nginx_language_server" ];
 
-  nativeCheckInputs = [
-    versionCheckHook
+  pythonRelaxDeps = [
+    "pydantic"
   ];
 
   passthru = {

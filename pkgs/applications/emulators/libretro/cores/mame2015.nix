@@ -1,12 +1,11 @@
 {
   lib,
-  alsa-lib,
   fetchFromGitHub,
+  alsa-lib,
   mkLibretroCore,
   python3,
 }:
 mkLibretroCore {
-  core = "mame2015";
   version = "0-unstable-2026-04-22";
 
   src = fetchFromGitHub {
@@ -18,11 +17,12 @@ mkLibretroCore {
 
   patches = [ ./patches/mame2015-python311.patch ];
   makeFlags = [ "PYTHON=python3" ];
-  extraNativeBuildInputs = [ python3 ];
-  extraBuildInputs = [ alsa-lib ];
-  makefile = "Makefile";
   # Build failures when this is set to a bigger number
   env.NIX_BUILD_CORES = 8;
+  core = "mame2015";
+  extraBuildInputs = [ alsa-lib ];
+  extraNativeBuildInputs = [ python3 ];
+  makefile = "Makefile";
 
   meta = {
     description = "Port of MAME ~2015 to libretro, compatible with MAME 0.160 sets";

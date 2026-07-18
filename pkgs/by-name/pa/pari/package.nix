@@ -3,8 +3,8 @@
   stdenv,
   fetchurl,
   gmp,
-  libx11,
   libpthread-stubs,
+  libx11,
   perl,
   readline,
   texliveBasic,
@@ -18,12 +18,13 @@ stdenv.mkDerivation rec {
   version = "2.17.3";
 
   src = fetchurl {
+    hash = "sha256-jZxPzVhMRo0n4PI8NoNlhyhEUglMSxxATCDEuBBGLcs=";
+
     urls = [
       "https://pari.math.u-bordeaux.fr/pub/pari/unix/${pname}-${version}.tar.gz"
       # old versions are at the url below
       "https://pari.math.u-bordeaux.fr/pub/pari/OLD/${lib.versions.majorMinor version}/${pname}-${version}.tar.gz"
     ];
-    hash = "sha256-jZxPzVhMRo0n4PI8NoNlhyhEUglMSxxATCDEuBBGLcs=";
   };
 
   buildInputs = [
@@ -37,22 +38,23 @@ stdenv.mkDerivation rec {
     libpthread-stubs
   ];
 
-  configureScript = "./Configure";
   configureFlags = [
     "--with-gmp=${lib.getDev gmp}"
     "--with-readline=${lib.getDev readline}"
   ]
   ++ lib.optional withThread "--mt=pthread";
 
+  makeFlags = [ "all" ];
+
   preConfigure = ''
     export LD=$CC
   '';
 
-  makeFlags = [ "all" ];
+  configureScript = "./Configure";
 
   meta = {
-    homepage = "http://pari.math.u-bordeaux.fr";
     description = "Computer algebra system for high-performance number theory computations";
+
     longDescription = ''
       PARI/GP is a widely used computer algebra system designed for fast
       computations in number theory (factorizations, algebraic number theory,
@@ -76,10 +78,12 @@ stdenv.mkDerivation rec {
         3 or 4 times faster.) gp2c currently only understands a subset of the
         GP language.
     '';
-    downloadPage = "http://pari.math.u-bordeaux.fr/download.html";
+
+    homepage = "http://pari.math.u-bordeaux.fr";
     license = lib.licenses.gpl2Plus;
-    teams = [ lib.teams.sage ];
     platforms = lib.platforms.linux ++ lib.platforms.darwin;
     mainProgram = "gp";
+    downloadPage = "http://pari.math.u-bordeaux.fr/download.html";
+    teams = [ lib.teams.sage ];
   };
 }

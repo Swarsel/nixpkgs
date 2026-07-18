@@ -2,21 +2,21 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  autoreconfHook,
-  pkg-config,
-  librsvg,
-  libxml2,
   SDL,
   SDL_image,
   SDL_mixer,
   SDL_net,
   SDL_ttf,
+  autoreconfHook,
+  librsvg,
+  libxml2,
+  pkg-config,
   t4kcommon,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
-  version = "1.8.3";
   pname = "tuxtype";
+  version = "1.8.3";
 
   src = fetchFromGitHub {
     owner = "tux4kids";
@@ -46,6 +46,7 @@ stdenv.mkDerivation (finalAttrs: {
     autoreconfHook
     pkg-config
   ];
+
   buildInputs = [
     librsvg
     libxml2
@@ -61,10 +62,10 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Educational Typing Tutor Game Starring Tux, the Linux Penguin";
-    mainProgram = "tuxtype";
     homepage = "https://github.com/tux4kids/tuxtype";
     license = lib.licenses.gpl3Plus;
     maintainers = [ ];
     platforms = lib.platforms.linux;
+    mainProgram = "tuxtype";
   };
 })

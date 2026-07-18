@@ -1,11 +1,11 @@
 {
+  lib,
+  fetchFromGitHub,
   bash,
   black,
   clang-tools,
   coreutils,
   cvise,
-  fetchFromGitHub,
-  lib,
   minisat,
   python3,
 }:
@@ -13,7 +13,6 @@
 python3.pkgs.buildPythonApplication rec {
   pname = "shrinkray";
   version = "26.4.14.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "DRMacIver";
@@ -21,6 +20,7 @@ python3.pkgs.buildPythonApplication rec {
     tag = "v${version}";
     hash = "sha256-zNOWBpj39R9x/wQ3fAKMzHg61IFGh8aeHBeVsXxXDGM=";
   };
+
   postPatch = ''
     substituteInPlace tests/test_main.py \
       --replace-fail '/usr/bin/env' '${lib.getExe' coreutils "env"}'
@@ -44,22 +44,6 @@ python3.pkgs.buildPythonApplication rec {
                 "shrinkray.subprocess.worker"' "\"$out/bin/shrinkray-worker\""
   '';
 
-  build-system = [ python3.pkgs.setuptools ];
-  dependencies = with python3.pkgs; [
-    click
-    chardet
-    trio
-    textual
-    textual-plotext
-    humanize
-    libcst
-    exceptiongroup
-    binaryornot
-  ];
-  propagatedNativeBuildInputs = [
-    black
-    clang-tools
-  ];
   nativeCheckInputs = [
     minisat
   ]
@@ -75,6 +59,20 @@ python3.pkgs.buildPythonApplication rec {
     pytestCheckHook
   ]);
 
+  build-system = [ python3.pkgs.setuptools ];
+
+  dependencies = with python3.pkgs; [
+    click
+    chardet
+    trio
+    textual
+    textual-plotext
+    humanize
+    libcst
+    exceptiongroup
+    binaryornot
+  ];
+
   disabledTestPaths = [
     # Tests pretending these utilities are missing don't pass when we
     # patch in absolute paths
@@ -85,10 +83,17 @@ python3.pkgs.buildPythonApplication rec {
     "tests/test_validation.py::test_validation_output_streams_immediately"
   ];
 
+  propagatedNativeBuildInputs = [
+    black
+    clang-tools
+  ];
+
+  pyproject = true;
+
   meta = {
     description = "Modern multi-format test-case reducer";
-    license = lib.licenses.mit;
     homepage = "https://github.com/DRMacIver/shrinkray";
+    license = lib.licenses.mit;
     maintainers = [ lib.maintainers.andersk ];
     mainProgram = "shrinkray";
   };

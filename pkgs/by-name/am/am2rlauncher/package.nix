@@ -1,30 +1,28 @@
 {
   lib,
+  fetchFromGitHub,
   buildDotnetModule,
-  writeShellScript,
-  glibc,
-  gtk3,
-  libappindicator,
+  buildFHSEnv,
+  dotnetCorePackages,
   # webkitgtk_4_0,
   e2fsprogs,
-  libnotify,
-  libgit2,
-  openssl,
-  xdelta,
   file,
-  openjdk,
-  patchelf,
-  fetchFromGitHub,
-  buildFHSEnv,
   glib-networking,
-  wrapGAppsHook3,
+  glibc,
   gsettings-desktop-schemas,
-  dotnetCorePackages,
+  gtk3,
+  libappindicator,
+  libgit2,
+  libnotify,
+  openjdk,
+  openssl,
+  patchelf,
+  wrapGAppsHook3,
+  writeShellScript,
+  xdelta,
 }:
 let
   am2r-run = buildFHSEnv {
-    name = "am2r-run";
-
     multiArch = true;
 
     multiPkgs =
@@ -40,6 +38,8 @@ let
         openal
         zlib
       ];
+
+    name = "am2r-run";
 
     runScript = writeShellScript "am2r-run" ''
       exec -- "$1" "$@"
@@ -57,21 +57,9 @@ buildDotnetModule {
     hash = "sha256-/nHqo8jh3sOUngbpqdfiQjUWO/8Uzpc5jtW7Ep4q6Wg=";
   };
 
-  dotnet-sdk = dotnetCorePackages.sdk_8_0;
-  projectFile = "AM2RLauncher/AM2RLauncher.Gtk/AM2RLauncher.Gtk.csproj";
-
-  nugetDeps = ./deps.json;
-  executables = "AM2RLauncher.Gtk";
-
-  runtimeDeps = [
-    glibc
-    gtk3
-    libappindicator
-    # webkitgtk_4_0
-    e2fsprogs
-    libnotify
-    libgit2
-    openssl
+  patches = [
+    ./am2r-run-binary.patch
+    ./dotnet-8-upgrade.patch
   ];
 
   nativeBuildInputs = [ wrapGAppsHook3 ];
@@ -82,14 +70,22 @@ buildDotnetModule {
     glib-networking
   ];
 
-  patches = [
-    ./am2r-run-binary.patch
-    ./dotnet-8-upgrade.patch
-  ];
+  postFixup = ''
+    mkdir -p $out/share/icons
+    install -Dm644 $src/AM2RLauncher/distribution/linux/AM2RLauncher.png $out/share/icons/AM2RLauncher.png
+    install -Dm644 $src/AM2RLauncher/distribution/linux/AM2RLauncher.desktop $out/share/applications/AM2RLauncher.desktop
+
+    # renames binary for desktop file
+    mv $out/bin/AM2RLauncher.Gtk $out/bin/AM2RLauncher
+  '';
+
+  dotnet-sdk = dotnetCorePackages.sdk_8_0;
 
   dotnetFlags = [
     ''-p:DefineConstants="NOAPPIMAGE;NOAUTOUPDATE;PATCHOPENSSL"''
   ];
+
+  executables = "AM2RLauncher.Gtk";
 
   makeWrapperArgs = [
     "--prefix"
@@ -106,28 +102,35 @@ buildDotnetModule {
     ))
   ];
 
-  postFixup = ''
-    mkdir -p $out/share/icons
-    install -Dm644 $src/AM2RLauncher/distribution/linux/AM2RLauncher.png $out/share/icons/AM2RLauncher.png
-    install -Dm644 $src/AM2RLauncher/distribution/linux/AM2RLauncher.desktop $out/share/applications/AM2RLauncher.desktop
+  nugetDeps = ./deps.json;
+  projectFile = "AM2RLauncher/AM2RLauncher.Gtk/AM2RLauncher.Gtk.csproj";
 
-    # renames binary for desktop file
-    mv $out/bin/AM2RLauncher.Gtk $out/bin/AM2RLauncher
-  '';
+  runtimeDeps = [
+    glibc
+    gtk3
+    libappindicator
+    # webkitgtk_4_0
+    e2fsprogs
+    libnotify
+    libgit2
+    openssl
+  ];
 
   meta = {
-    # webkitgtk_4_0 was removed
-    broken = true;
-    homepage = "https://github.com/AM2R-Community-Developers/AM2RLauncher";
     description = "Front-end for dealing with AM2R updates and mods";
+
     longDescription = ''
       A front-end application that simplifies installing the latest
       AM2R-Community-Updates, creating APKs for Android use, as well as Mods for
       AM2R.
     '';
+
+    homepage = "https://github.com/AM2R-Community-Developers/AM2RLauncher";
     license = lib.licenses.gpl3Only;
     maintainers = with lib.maintainers; [ nsnelson ];
-    mainProgram = "AM2RLauncher";
     platforms = lib.platforms.linux;
+    mainProgram = "AM2RLauncher";
+    # webkitgtk_4_0 was removed
+    broken = true;
   };
 }

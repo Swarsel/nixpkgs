@@ -1,52 +1,33 @@
 {
   lib,
   fetchurl,
-  stdenvNoCC,
-  runtimeShell,
   copyDesktopItems,
   makeDesktopItem,
+  runtimeShell,
+  stdenvNoCC,
   wineWow64Packages,
 }:
 
 let
   icon = fetchurl {
+    hash = "sha256-M9cQqHwwjko5pchdNtIMjYwd4joIvBphAYnpw73qYzM=";
     name = "synthesia.png";
     url = "https://cdn.synthesia.app/images/headerIcon.png";
-    hash = "sha256-M9cQqHwwjko5pchdNtIMjYwd4joIvBphAYnpw73qYzM=";
   };
 in
 stdenvNoCC.mkDerivation rec {
   pname = "synthesia";
   version = "10.9";
 
-  desktopItems = [
-    (makeDesktopItem {
-      name = "synthesia";
-      desktopName = "Synthesia";
-      comment = meta.description;
-      exec = "synthesia";
-      icon = "synthesia";
-      categories = [
-        "Game"
-        "Audio"
-      ];
-      startupWMClass = "synthesia.exe";
-    })
-  ];
-
-  nativeBuildInputs = [
-    copyDesktopItems
-    wineWow64Packages.stable
-  ];
-
   src = fetchurl {
     url = "https://cdn.synthesia.app/files/Synthesia-${version}-installer.exe";
     hash = "sha256-BFTsbesfMqxY1731ss6S0w8BcUaoqjVrr62VeU1BfrU=";
   };
 
-  dontUnpack = true;
-
-  dontBuild = true;
+  nativeBuildInputs = [
+    copyDesktopItems
+    wineWow64Packages.stable
+  ];
 
   installPhase = ''
     runHook preInstall
@@ -68,13 +49,32 @@ stdenvNoCC.mkDerivation rec {
     runHook postInstall
   '';
 
+  desktopItems = [
+    (makeDesktopItem {
+      categories = [
+        "Game"
+        "Audio"
+      ];
+
+      comment = meta.description;
+      desktopName = "Synthesia";
+      exec = "synthesia";
+      icon = "synthesia";
+      name = "synthesia";
+      startupWMClass = "synthesia.exe";
+    })
+  ];
+
+  dontBuild = true;
+  dontUnpack = true;
+
   meta = {
     description = "Fun way to learn how to play the piano";
     homepage = "https://synthesiagame.com/";
-    downloadPage = "https://synthesiagame.com/download";
-    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
     license = lib.licenses.unfree;
+    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
     maintainers = with lib.maintainers; [ ners ];
     platforms = wineWow64Packages.stable.meta.platforms;
+    downloadPage = "https://synthesiagame.com/download";
   };
 }

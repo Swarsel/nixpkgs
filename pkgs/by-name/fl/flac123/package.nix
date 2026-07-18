@@ -21,6 +21,7 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   nativeBuildInputs = [ autoreconfHook ];
+
   buildInputs = [
     flac
     libao
@@ -29,12 +30,12 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   meta = {
+    description = "Command-line program for playing FLAC audio files";
     homepage = "https://github.com/flac123/flac123";
     changelog = "https://github.com/flac123/flac123/blob/${finalAttrs.src.rev}/NEWS";
-    description = "Command-line program for playing FLAC audio files";
     license = lib.licenses.gpl2Plus;
     maintainers = with lib.maintainers; [ kiike ];
-    mainProgram = "flac123";
     platforms = lib.platforms.unix;
+    mainProgram = "flac123";
   };
 })

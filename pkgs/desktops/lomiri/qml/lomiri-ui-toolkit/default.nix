@@ -1,19 +1,15 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitLab,
-  gitUpdater,
-  replaceVars,
-  testers,
   bluez,
   cmake,
   dbus-test-runner,
   dpkg,
   gdb,
+  gitUpdater,
   glib,
   kdePackages,
-  # Used on Qt6
-  ktactilefeedback ? null,
   libevdev,
   lttng-ust,
   mesa,
@@ -23,20 +19,24 @@
   qmake,
   qtbase,
   qtdeclarative,
+  qtsvg,
+  qttools,
+  replaceVars,
+  spirv-tools,
+  suru-icon-theme,
+  testers,
+  validatePkgConfig,
+  wrapQtAppsHook,
+  xvfb-run,
+  # Used on Qt6
+  ktactilefeedback ? null,
+  qt5compat ? null,
   # Used on Qt5
   qtfeedback ? null,
   qtgraphicaleffects ? null,
   qtpim ? null,
   qtquickcontrols2 ? null,
-  qtsvg,
   qtsystems ? null,
-  qttools,
-  qt5compat ? null,
-  spirv-tools,
-  suru-icon-theme,
-  validatePkgConfig,
-  wrapQtAppsHook,
-  xvfb-run,
 }:
 
 let
@@ -230,6 +230,8 @@ stdenv.mkDerivation (finalAttrs: {
     qtfeedback
   ];
 
+  doCheck = stdenv.buildPlatform.canExecute stdenv.hostPlatform;
+
   nativeCheckInputs = [
     dbus-test-runner
     dpkg # `dpkg-architecture -qDEB_HOST_ARCH` response decides how tests are run
@@ -237,17 +239,6 @@ stdenv.mkDerivation (finalAttrs: {
     mesa.llvmpipeHook # ShapeMaterial needs an OpenGL context: https://gitlab.com/ubports/development/core/lomiri-ui-toolkit/-/issues/35
     xvfb-run
   ];
-
-  qmakeFlags = lib.optionals (!withQt6) [
-    # Ubuntu UITK compatibility, for older / not-yet-migrated applications
-    "CONFIG+=ubuntu-uitk-compat"
-    "QMAKE_PKGCONFIG_PREFIX=${placeholder "out"}"
-  ];
-
-  doCheck = stdenv.buildPlatform.canExecute stdenv.hostPlatform;
-
-  # Explicitly not parallel-safe, large parts are always run in series and at least qquick_image_extension fails with parallelism
-  enableParallelChecking = false;
 
   checkPhase = ''
     runHook preCheck
@@ -308,6 +299,15 @@ stdenv.mkDerivation (finalAttrs: {
     done
   '';
 
+  # Explicitly not parallel-safe, large parts are always run in series and at least qquick_image_extension fails with parallelism
+  enableParallelChecking = false;
+
+  qmakeFlags = lib.optionals (!withQt6) [
+    # Ubuntu UITK compatibility, for older / not-yet-migrated applications
+    "CONFIG+=ubuntu-uitk-compat"
+    "QMAKE_PKGCONFIG_PREFIX=${placeholder "out"}"
+  ];
+
   passthru = {
     tests.pkg-config = testers.testMetaPkgConfig finalAttrs.finalPackage;
     updateScript = gitUpdater { };
@@ -315,6 +315,7 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "QML components to ease the creation of beautiful applications in QML";
+
     longDescription = ''
       This project consists of a set of QML components to ease the creation of beautiful applications in QML for Lomiri.
 
@@ -329,18 +330,23 @@ stdenv.mkDerivation (finalAttrs: {
       Other features:
         - localisation through gettext
     '';
+
     homepage = "https://gitlab.com/ubports/development/core/lomiri-ui-toolkit";
     changelog = "https://gitlab.com/ubports/development/core/lomiri-ui-toolkit/-/blob/${finalAttrs.version}/ChangeLog";
+
     license = with lib.licenses; [
       gpl3Only
       cc-by-sa-30
     ];
-    teams = [ lib.teams.lomiri ];
+
     platforms = lib.platforms.linux;
+
     pkgConfigModules = [
       "LomiriGestures${lib.optionalString withQt6 "-Qt6"}"
       "LomiriMetrics${lib.optionalString withQt6 "-Qt6"}"
       "LomiriToolkit${lib.optionalString withQt6 "-Qt6"}"
     ];
+
+    teams = [ lib.teams.lomiri ];
   };
 })

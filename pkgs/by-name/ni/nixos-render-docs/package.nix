@@ -6,22 +6,23 @@
 
 let
   python = python3.override {
-    self = python;
     packageOverrides = final: prev: {
       markdown-it-py = prev.markdown-it-py.overridePythonAttrs (_: {
         doCheck = false;
       });
+
       mdit-py-plugins = prev.mdit-py-plugins.overridePythonAttrs (_: {
         doCheck = false;
       });
     };
+
+    self = python;
   };
 in
 
 python.pkgs.buildPythonApplication rec {
   pname = "nixos-render-docs";
   version = "0.0";
-  pyproject = true;
 
   src = lib.cleanSourceWith {
     filter =
@@ -35,8 +36,14 @@ python.pkgs.buildPythonApplication rec {
           "__pycache__"
         ]
       );
+
     src = ./src;
   };
+
+  propagatedBuildInputs = with python.pkgs; [
+    markdown-it-py
+    mdit-py-plugins
+  ];
 
   nativeCheckInputs = [
     python.pkgs.pytestCheckHook
@@ -46,17 +53,14 @@ python.pkgs.buildPythonApplication rec {
     python.pkgs.setuptools
   ];
 
-  propagatedBuildInputs = with python.pkgs; [
-    markdown-it-py
-    mdit-py-plugins
+  enabledTestPaths = [
+    "tests/"
   ];
+
+  pyproject = true;
 
   pytestFlags = [
     "-vvrP"
-  ];
-
-  enabledTestPaths = [
-    "tests/"
   ];
 
   # NOTE this is a CI test rather than a build-time test because we want to keep the
@@ -82,8 +86,8 @@ python.pkgs.buildPythonApplication rec {
 
   meta = {
     description = "Renderer for NixOS manual and option docs";
-    mainProgram = "nixos-render-docs";
     license = lib.licenses.mit;
     maintainers = [ ];
+    mainProgram = "nixos-render-docs";
   };
 }

@@ -26,6 +26,12 @@ stdenv.mkDerivation (finalAttrs: {
     rm -r dependencies/lhwm-cpp-wrapper
   '';
 
+  nativeBuildInputs = [
+    pkg-config
+    qt6Packages.qmake
+    qt6Packages.wrapQtAppsHook
+  ];
+
   buildInputs = [
     qt6Packages.qtbase
     glib
@@ -33,15 +39,9 @@ stdenv.mkDerivation (finalAttrs: {
     lm_sensors
   ];
 
-  nativeBuildInputs = [
-    pkg-config
-    qt6Packages.qmake
-    qt6Packages.wrapQtAppsHook
-  ];
-
   meta = {
-    homepage = "https://gitlab.com/OpenRGBDevelopers/OpenRGBHardwareSyncPlugin";
     description = "Sync your ARGB devices colors with hardware measures (CPU, GPU, fan speed, etc...)";
+    homepage = "https://gitlab.com/OpenRGBDevelopers/OpenRGBHardwareSyncPlugin";
     license = lib.licenses.gpl2Plus;
     maintainers = with lib.maintainers; [ fgaz ];
     platforms = lib.platforms.linux;

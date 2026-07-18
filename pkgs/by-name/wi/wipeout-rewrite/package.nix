@@ -1,11 +1,11 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
-  unstableGitUpdater,
-  makeWrapper,
-  glew,
   SDL2,
+  glew,
+  makeWrapper,
+  unstableGitUpdater,
   writeShellScript,
 }:
 
@@ -34,8 +34,6 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-+5YQrzK0NbAu0iWYpMuFhDxtKYMDJ3D6CQdZ7IFkjMQ=";
   };
 
-  enableParallelBuilding = true;
-
   nativeBuildInputs = [
     makeWrapper
   ];
@@ -62,14 +60,15 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  enableParallelBuilding = true;
   passthru.updateScript = unstableGitUpdater { };
 
   meta = {
-    mainProgram = "wipegame";
     description = "Re-implementation of the 1995 PSX game wipEout";
     homepage = "https://github.com/phoboslab/wipeout-rewrite";
     license = lib.licenses.unfree;
     maintainers = with lib.maintainers; [ OPNA2608 ];
     platforms = lib.platforms.all;
+    mainProgram = "wipegame";
   };
 })

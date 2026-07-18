@@ -1,23 +1,23 @@
 {
   lib,
   stdenv,
-  rustPlatform,
-  fetchzip,
-  openssl,
-  pkg-config,
-  installShellFiles,
   bash,
+  fetchzip,
+  fzf,
+  installShellFiles,
+  openssl,
+  pass,
+  perl,
+  pkg-config,
+  rofi,
+  rustPlatform,
+  xclip,
   # rbw-fzf
   withFzf ? false,
-  fzf,
-  perl,
-  # rbw-rofi
-  withRofi ? false,
-  rofi,
-  xclip,
   # pass-import
   withPass ? false,
-  pass,
+  # rbw-rofi
+  withRofi ? false,
 }:
 rustPlatform.buildRustPackage (finalAttrs: {
   pname = "rbw";
@@ -28,14 +28,13 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-N/s1flB+s2HwEeLsf7YlJG+5TJgP8Wu7PHNPWmVfpIo=";
   };
 
-  cargoHash = "sha256-N4IxnAXDvD+vp3LUB9CKYM+1C5i1Flihk+Pfb2c5IWY=";
-
   nativeBuildInputs = [
     installShellFiles
   ]
   ++ lib.optionals stdenv.hostPlatform.isLinux [ pkg-config ];
 
   buildInputs = [ bash ]; # for git-credential-rbw
+  cargoHash = "sha256-N4IxnAXDvD+vp3LUB9CKYM+1C5i1Flihk+Pfb2c5IWY=";
 
   preConfigure = lib.optionalString stdenv.hostPlatform.isLinux ''
     export OPENSSL_INCLUDE_DIR="${openssl.dev}/include"
@@ -75,10 +74,12 @@ rustPlatform.buildRustPackage (finalAttrs: {
     homepage = "https://crates.io/crates/rbw";
     changelog = "https://git.tozt.net/rbw/plain/CHANGELOG.md?id=${finalAttrs.version}";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       albakham
       jasonxue1
     ];
+
     mainProgram = "rbw";
   };
 })

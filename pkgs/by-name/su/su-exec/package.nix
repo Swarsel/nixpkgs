@@ -22,10 +22,10 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Switch user and group id and exec";
-    mainProgram = "su-exec";
     homepage = "https://github.com/ncopa/su-exec";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ zimbatm ];
     platforms = lib.platforms.linux;
+    mainProgram = "su-exec";
   };
 })

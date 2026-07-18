@@ -1,16 +1,15 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
+  pytestCheckHook,
   serialx,
   setuptools,
-  pytestCheckHook,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "ultraheat-api";
   version = "0.6.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "vpathuis";
@@ -19,18 +18,16 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-I8tdq50zCbC3+D19R5TLkb8F1TbEh0GZG3tepe1mPPc=";
   };
 
-  build-system = [ setuptools ];
-
-  dependencies = [ serialx ];
-
   nativeCheckInputs = [ pytestCheckHook ];
-
+  build-system = [ setuptools ];
+  dependencies = [ serialx ];
+  pyproject = true;
   pythonImportsCheck = [ "ultraheat_api" ];
 
   meta = {
-    changelog = "https://github.com/vpathuis/ultraheat/releases/tag/${finalAttrs.src.tag}";
     description = "Module for working with data from Landis+Gyr Ultraheat heat meter unit";
     homepage = "https://github.com/vpathuis/uh50";
+    changelog = "https://github.com/vpathuis/ultraheat/releases/tag/${finalAttrs.src.tag}";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ fab ];
   };

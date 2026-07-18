@@ -1,15 +1,16 @@
 {
   lib,
-  mkDerivation,
   libjail,
   libxo,
+  mkDerivation,
 }:
 mkDerivation {
-  path = "usr.sbin/jls";
   buildInputs = [
     libjail
     libxo
   ];
+
+  path = "usr.sbin/jls";
   meta.mainProgram = "jls";
   meta.platforms = lib.platforms.freebsd;
 }

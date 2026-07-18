@@ -1,18 +1,18 @@
 {
   lib,
   stdenv,
-  fetchpatch2,
   fetchFromGitHub,
   cmake,
+  fetchpatch2,
   gfortran,
-  perl,
-  mpi,
   metis,
   mmg,
+  mpi,
+  perl,
   scotch,
+  testers,
   vtk-full,
   withVtk ? true,
-  testers,
 }:
 stdenv.mkDerivation (finalAttrs: {
   pname = "parmmg";
@@ -32,8 +32,8 @@ stdenv.mkDerivation (finalAttrs: {
 
   patches = [
     (fetchpatch2 {
-      url = "https://github.com/MmgTools/ParMmg/commit/a9551c502c58a1f8a109fb17d8f45cb9370f8fc6.patch?full_index=1";
       hash = "sha256-i0KwzseffeI9UYIYuyNYmdF9eTZ+nQQfSI6ukSowIYs=";
+      url = "https://github.com/MmgTools/ParMmg/commit/a9551c502c58a1f8a109fb17d8f45cb9370f8fc6.patch?full_index=1";
     })
   ];
 
@@ -77,8 +77,8 @@ stdenv.mkDerivation (finalAttrs: {
   meta = {
     description = "Distributed parallelization of 3D volume mesh adaptation";
     homepage = "http://www.mmgtools.org/";
-    platforms = lib.platforms.unix;
     license = lib.licenses.lgpl3Plus;
     maintainers = with lib.maintainers; [ mkez ];
+    platforms = lib.platforms.unix;
   };
 })

@@ -22,13 +22,14 @@ stdenv.mkDerivation (finalAttrs: {
     cmake
     python3
   ];
+
   buildInputs = [ vulkan-headers ];
 
   meta = {
     description = "Set of utility libraries for Vulkan";
     homepage = "https://github.com/KhronosGroup/Vulkan-Utility-Libraries";
-    platforms = lib.platforms.all;
     license = lib.licenses.asl20;
     maintainers = with lib.maintainers; [ nickcao ];
+    platforms = lib.platforms.all;
   };
 })

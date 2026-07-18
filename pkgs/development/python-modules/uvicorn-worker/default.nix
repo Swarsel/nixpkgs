@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   gunicorn,
   hatchling,
   httpx,
@@ -13,7 +13,6 @@
 buildPythonPackage rec {
   pname = "uvicorn-worker";
   version = "0.4.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "Kludex";
@@ -21,13 +20,6 @@ buildPythonPackage rec {
     tag = version;
     hash = "sha256-qfk3lkHwuGbRWj4D65EontmEgKtk7ILq6gZCrxcrrJU=";
   };
-
-  build-system = [ hatchling ];
-
-  dependencies = [
-    gunicorn
-    uvicorn
-  ];
 
   nativeCheckInputs = [
     gunicorn
@@ -40,6 +32,14 @@ buildPythonPackage rec {
     export PATH="$PATH:$out/bin";
   '';
 
+  build-system = [ hatchling ];
+
+  dependencies = [
+    gunicorn
+    uvicorn
+  ];
+
+  pyproject = true;
   pythonImportsCheck = [ "uvicorn_worker" ];
 
   meta = {

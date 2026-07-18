@@ -1,13 +1,13 @@
 {
   lib,
   stdenv,
-  cockpit,
-  nodejs,
-  gettext,
-  writeShellScriptBin,
   fetchFromGitHub,
+  cockpit,
+  gettext,
   gitUpdater,
+  nodejs,
   podman,
+  writeShellScriptBin,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -19,18 +19,9 @@ stdenv.mkDerivation (finalAttrs: {
     repo = "cockpit-podman";
     tag = finalAttrs.version;
     hash = "sha256-GlnIZGV5nk7o28EUs4H/IdZkgtHG0a9uwCTCS4rCP6c=";
-
     fetchSubmodules = true;
     postFetch = "cp $out/node_modules/.package-lock.json $out/package-lock.json";
   };
-
-  buildInputs = [
-    nodejs
-    gettext
-    (writeShellScriptBin "git" "true")
-  ];
-
-  cockpitSrc = cockpit.src;
 
   postPatch = ''
     mkdir -p pkg; cp -r $cockpitSrc/pkg/lib pkg
@@ -47,17 +38,25 @@ stdenv.mkDerivation (finalAttrs: {
     patchShebangs build.js
   '';
 
+  buildInputs = [
+    nodejs
+    gettext
+    (writeShellScriptBin "git" "true")
+  ];
+
+  cockpitSrc = cockpit.src;
+
   passthru = {
-    updateScript = gitUpdater { };
     cockpitPath = [ podman ];
+    updateScript = gitUpdater { };
   };
 
   meta = {
     description = "Cockpit UI for podman containers";
     homepage = "https://github.com/cockpit-project/cockpit-podman";
     changelog = "https://github.com/cockpit-project/cockpit-podman/releases/tag/${finalAttrs.version}";
-    platforms = lib.platforms.linux;
     license = [ lib.licenses.lgpl21 ];
+    platforms = lib.platforms.linux;
     teams = [ lib.teams.cockpit ];
   };
 })

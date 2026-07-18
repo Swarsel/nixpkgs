@@ -2,11 +2,11 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  openjdk,
-  openjfx,
   gradle_7,
   makeDesktopItem,
   makeWrapper,
+  openjdk,
+  openjfx,
 }:
 let
   jdk = openjdk.override (
@@ -29,32 +29,28 @@ let
   gradle = gradle_7;
 
   desktopItem = makeDesktopItem {
-    name = "scenic-view";
+    categories = [ "Development" ];
+    comment = "JavaFx application to visualize and modify the scenegraph of running JavaFx applications.";
     desktopName = "scenic-view";
     exec = "scenic-view";
-    comment = "JavaFx application to visualize and modify the scenegraph of running JavaFx applications.";
+
     mimeTypes = [
       "application/java"
       "application/java-vm"
       "application/java-archive"
     ];
-    categories = [ "Development" ];
+
+    name = "scenic-view";
   };
 
 in
 stdenv.mkDerivation rec {
   inherit pname version src;
+
   nativeBuildInputs = [
     gradle
     makeWrapper
   ];
-
-  mitmCache = gradle.fetchDeps {
-    inherit pname;
-    data = ./deps.json;
-  };
-
-  __darwinAllowLocalNetworking = true;
 
   doCheck = true;
 
@@ -68,24 +64,34 @@ stdenv.mkDerivation rec {
     runHook postInstall
   '';
 
+  __darwinAllowLocalNetworking = true;
   desktopItems = [ desktopItem ];
 
+  mitmCache = gradle.fetchDeps {
+    inherit pname;
+    data = ./deps.json;
+  };
+
   meta = {
-    broken = stdenv.hostPlatform.isDarwin;
     description = "JavaFx application to visualize and modify the scenegraph of running JavaFx applications";
-    mainProgram = "scenic-view";
+
     longDescription = ''
       A JavaFX application designed to make it simple to understand the current state of your application scenegraph
       and to also easily manipulate properties of the scenegraph without having to keep editing your code.
       This lets you find bugs and get things pixel perfect without having to do the compile-check-compile dance.
     '';
+
     homepage = "https://github.com/JonathanGiles/scenic-view/";
+    license = lib.licenses.gpl3Plus;
+
     sourceProvenance = with lib.sourceTypes; [
       fromSource
       binaryBytecode # deps
     ];
-    license = lib.licenses.gpl3Plus;
+
     maintainers = with lib.maintainers; [ wirew0rm ];
     platforms = lib.platforms.all;
+    mainProgram = "scenic-view";
+    broken = stdenv.hostPlatform.isDarwin;
   };
 }

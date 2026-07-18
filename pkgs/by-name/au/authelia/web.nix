@@ -1,10 +1,10 @@
 {
   stdenv,
-  nodejs,
+  fetchFromGitHub,
   fetchPnpmDeps,
+  nodejs,
   pnpmConfigHook,
   pnpm_11,
-  fetchFromGitHub,
 }:
 
 let
@@ -18,28 +18,8 @@ let
     ;
 in
 stdenv.mkDerivation (finalAttrs: {
-  pname = "${pname}-web";
   inherit src version;
-
-  sourceRoot = "${finalAttrs.src.name}/web";
-
-  nativeBuildInputs = [
-    nodejs
-    pnpmConfigHook
-    pnpm
-  ];
-
-  pnpmDeps = fetchPnpmDeps {
-    inherit (finalAttrs)
-      pname
-      version
-      src
-      sourceRoot
-      ;
-    inherit pnpm; # This may be different than pkgs.pnpm
-    fetcherVersion = 4;
-    hash = pnpmDepsHash;
-  };
+  pname = "${pname}-web";
 
   postPatch = ''
     NL=$'\n'
@@ -49,6 +29,12 @@ stdenv.mkDerivation (finalAttrs: {
       --replace-fail 'outDir: "../internal/server/public_html"' 'outDir: "dist"' \
       --replace-fail "$LINE_BEFORE_HOST" "$LINE_BEFORE_HOST$NL"'            host: "127.0.0.1",'
   '';
+
+  nativeBuildInputs = [
+    nodejs
+    pnpmConfigHook
+    pnpm
+  ];
 
   postBuild = ''
     pnpm run build
@@ -63,6 +49,20 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  pnpmDeps = fetchPnpmDeps {
+    inherit (finalAttrs)
+      pname
+      version
+      src
+      sourceRoot
+      ;
+
+    inherit pnpm; # This may be different than pkgs.pnpm
+    fetcherVersion = 4;
+    hash = pnpmDepsHash;
+  };
+
+  sourceRoot = "${finalAttrs.src.name}/web";
   # (node:24500) Warning: File descriptor 19 closed but not opened in unmanaged mode
   # (node:24500) Warning: File descriptor 19 opened in unmanaged mode twice
   meta.broken = stdenv.hostPlatform.isDarwin;

@@ -1,16 +1,14 @@
 {
   lib,
-  buildDunePackage,
   fetchFromGitHub,
   alcotest,
+  buildDunePackage,
   qcheck-core,
 }:
 
 buildDunePackage (finalAttrs: {
   pname = "algaeff";
   version = "2.0.0";
-
-  minimalOCamlVersion = "5.0";
 
   src = fetchFromGitHub {
     owner = "RedPRL";
@@ -20,10 +18,13 @@ buildDunePackage (finalAttrs: {
   };
 
   doCheck = true;
+
   checkInputs = [
     alcotest
     qcheck-core
   ];
+
+  minimalOCamlVersion = "5.0";
 
   meta = {
     description = "Reusable Effects-Based Components";

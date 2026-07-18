@@ -1,17 +1,17 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
   autoreconfHook,
-  flex,
   bison,
-  xmlto,
-  docbook_xsl,
   docbook_xml_dtd_44,
-  swig,
+  docbook_xsl,
+  flex,
   perl,
   python3,
+  swig,
   udevCheckHook,
+  xmlto,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -24,6 +24,13 @@ stdenv.mkDerivation (finalAttrs: {
     tag = "r${lib.replaceStrings [ "." ] [ "_" ] finalAttrs.version}";
     hash = "sha256-3Hl6CHRvSzpNXXT6Z8RRbKKM/DS46+eORF9uYXgT2k0=";
   };
+
+  outputs = [
+    "out"
+    "dev"
+    "man"
+    "doc"
+  ];
 
   nativeBuildInputs = [
     autoreconfHook
@@ -38,23 +45,16 @@ stdenv.mkDerivation (finalAttrs: {
     udevCheckHook
   ];
 
-  preConfigure = ''
-    patchShebangs --build doc/mkref doc/mkdr perl/Comedi.pm
-  '';
-
   configureFlags = [
     "--with-udev-hotplug=${placeholder "out"}/lib"
     "--sysconfdir=${placeholder "out"}/etc"
   ];
 
-  doInstallCheck = true;
+  preConfigure = ''
+    patchShebangs --build doc/mkref doc/mkdr perl/Comedi.pm
+  '';
 
-  outputs = [
-    "out"
-    "dev"
-    "man"
-    "doc"
-  ];
+  doInstallCheck = true;
 
   meta = {
     description = "Linux Control and Measurement Device Interface Library";

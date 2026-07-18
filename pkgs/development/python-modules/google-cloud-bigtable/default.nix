@@ -1,26 +1,22 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # build-system
-  setuptools,
-
+  buildPythonPackage,
   # dependencies
   google-api-core,
   google-cloud-core,
   google-crc32c,
   grpc-google-iam-v1,
-  proto-plus,
-  protobuf,
-
-  # optional dependencies
-  libcst,
-
   # testing
   grpcio,
+  # optional dependencies
+  libcst,
   mock,
+  proto-plus,
+  protobuf,
   pytestCheckHook,
+  # build-system
+  setuptools,
 }:
 
 buildPythonPackage rec {
@@ -34,28 +30,6 @@ buildPythonPackage rec {
     hash = "sha256-rvw7mHWifJ6+g89DXtV0pOFwbbGQNlK1J+IRhy/7W5o=";
   };
 
-  pyproject = true;
-
-  build-system = [ setuptools ];
-
-  pythonRelaxDeps = [
-    "protobuf"
-  ];
-
-  dependencies = [
-    google-api-core
-    google-cloud-core
-    google-crc32c
-    grpc-google-iam-v1
-    proto-plus
-    protobuf
-  ]
-  ++ google-api-core.optional-dependencies.grpc;
-
-  optional-dependencies = {
-    libcst = [ libcst ];
-  };
-
   nativeCheckInputs = [
     grpcio
     mock
@@ -67,12 +41,34 @@ buildPythonPackage rec {
     rm -r google
   '';
 
+  build-system = [ setuptools ];
+
+  dependencies = [
+    google-api-core
+    google-cloud-core
+    google-crc32c
+    grpc-google-iam-v1
+    proto-plus
+    protobuf
+  ]
+  ++ google-api-core.optional-dependencies.grpc;
+
   disabledTests = [ "policy" ];
+
+  optional-dependencies = {
+    libcst = [ libcst ];
+  };
+
+  pyproject = true;
 
   pythonImportsCheck = [
     "google.cloud.bigtable_admin_v2"
     "google.cloud.bigtable_v2"
     "google.cloud.bigtable"
+  ];
+
+  pythonRelaxDeps = [
+    "protobuf"
   ];
 
   meta = {

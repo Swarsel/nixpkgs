@@ -28,12 +28,11 @@ stdenv.mkDerivation (finalAttrs: {
     cmake
     libtool
   ];
+
   buildInputs = [
     openssl
     zlib
   ];
-
-  dontUseCmakeConfigure = true;
 
   preBuild = ''
     patchShebangs build/gen_version
@@ -49,12 +48,14 @@ stdenv.mkDerivation (finalAttrs: {
     cp target/Linux-x86_64/bin/asd $out/bin/asd
   '';
 
+  dontUseCmakeConfigure = true;
+
   meta = {
     description = "Flash-optimized, in-memory, NoSQL database";
-    mainProgram = "asd";
     homepage = "https://aerospike.com/";
     license = lib.licenses.agpl3Only;
-    platforms = [ "x86_64-linux" ];
     maintainers = with lib.maintainers; [ kalbasit ];
+    platforms = [ "x86_64-linux" ];
+    mainProgram = "asd";
   };
 })

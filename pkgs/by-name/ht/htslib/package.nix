@@ -2,13 +2,13 @@
   lib,
   stdenv,
   fetchurl,
-  fetchpatch,
-  zlib,
   bzip2,
-  xz,
   curl,
+  fetchpatch,
   libdeflate,
   perl,
+  xz,
+  zlib,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -22,8 +22,8 @@ stdenv.mkDerivation (finalAttrs: {
 
   patches = [
     (fetchpatch {
-      url = "https://github.com/samtools/htslib/commit/31006e1c8edd02eb6321ed9be76b84fca5d20cb6.patch";
       hash = "sha256-sbnkVmXIbs/Cn/msUUrJpJZCI2DHX5kpGSka2cccZIQ=";
+      url = "https://github.com/samtools/htslib/commit/31006e1c8edd02eb6321ed9be76b84fca5d20cb6.patch";
     })
   ];
 
@@ -53,6 +53,12 @@ stdenv.mkDerivation (finalAttrs: {
     make LDFLAGS=-static bgzip htsfile tabix
   '';
 
+  doCheck = true;
+
+  preCheck = ''
+    patchShebangs test/
+  '';
+
   installPhase = lib.optional stdenv.hostPlatform.isStatic ''
     install -d $out/bin
     install -d $out/lib
@@ -62,19 +68,13 @@ stdenv.mkDerivation (finalAttrs: {
     install -D bgzip htsfile tabix $out/bin
   '';
 
-  preCheck = ''
-    patchShebangs test/
-  '';
-
   enableParallelBuilding = true;
-
-  doCheck = true;
 
   meta = {
     description = "C library for reading/writing high-throughput sequencing data";
-    license = lib.licenses.mit;
     homepage = "http://www.htslib.org/";
-    platforms = lib.platforms.unix;
+    license = lib.licenses.mit;
     maintainers = [ lib.maintainers.mimame ];
+    platforms = lib.platforms.unix;
   };
 })

@@ -2,8 +2,8 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  cmake,
   boost,
+  cmake,
   libzip,
   range-v3,
 }:
@@ -20,6 +20,7 @@ stdenv.mkDerivation {
   };
 
   nativeBuildInputs = [ cmake ];
+
   buildInputs = [
     boost
     libzip

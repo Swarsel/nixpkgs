@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   func-timeout,
   jaraco-itertools,
   setuptools,
@@ -12,7 +12,6 @@ let
   zipp = buildPythonPackage rec {
     pname = "zipp";
     version = "4.0.0";
-    pyproject = true;
 
     src = fetchFromGitHub {
       owner = "jaraco";
@@ -26,11 +25,6 @@ let
       sed -i "/coherent\.licensed/d" pyproject.toml
     '';
 
-    build-system = [
-      setuptools
-      setuptools-scm
-    ];
-
     # Prevent infinite recursion with pytest
     doCheck = false;
 
@@ -39,6 +33,12 @@ let
       jaraco-itertools
     ];
 
+    build-system = [
+      setuptools
+      setuptools-scm
+    ];
+
+    pyproject = true;
     pythonImportsCheck = [ "zipp" ];
 
     passthru.tests = {

@@ -31,60 +31,34 @@ in
   options = {
     services.qui = {
       enable = mkEnableOption "qui";
-
       package = mkPackageOption pkgs "qui" { };
 
-      user = mkOption {
-        type = str;
-        default = "qui";
-        description = "User to run qui as.";
-      };
-
       group = mkOption {
-        type = str;
         default = "qui";
-        example = "torrents";
         description = "Group to run qui as.";
+        example = "torrents";
+        type = str;
       };
 
       openFirewall = mkOption {
-        type = bool;
         default = false;
         description = "Whether or not to open ports in the firewall for qui.";
+        type = bool;
       };
 
       secretFile = mkOption {
-        type = path;
-        example = "/run/secrets/qui-session.txt";
         description = ''
           Path to a file that contains the session secret. The session secret
           can be generated with `openssl rand -hex 32`.
         '';
+
+        example = "/run/secrets/qui-session.txt";
+        type = path;
       };
 
       settings = mkOption {
         default = { };
-        example = {
-          port = 7777;
-          logLevel = "DEBUG";
-          metricsEnabled = true;
-        };
-        type = submodule {
-          freeformType = configFormat.type;
-          options = {
-            host = mkOption {
-              type = str;
-              default = "127.0.0.1";
-              description = "The host address qui listens on.";
-            };
 
-            port = mkOption {
-              type = port;
-              default = 7476;
-              description = "The port qui listens on.";
-            };
-          };
-        };
         description = ''
           qui configuration options.
 
@@ -93,6 +67,36 @@ in
           The documentation contains the available [environment variables](https://getqui.com/docs/configuration/environment/),
           this can be used to get an overview.
         '';
+
+        example = {
+          logLevel = "DEBUG";
+          metricsEnabled = true;
+          port = 7777;
+        };
+
+        type = submodule {
+          options = {
+            host = mkOption {
+              default = "127.0.0.1";
+              description = "The host address qui listens on.";
+              type = str;
+            };
+
+            port = mkOption {
+              default = 7476;
+              description = "The port qui listens on.";
+              type = port;
+            };
+          };
+
+          freeformType = configFormat.type;
+        };
+      };
+
+      user = mkOption {
+        default = "qui";
+        description = "User to run qui as.";
+        type = str;
       };
 
     };
@@ -102,6 +106,7 @@ in
     assertions = [
       {
         assertion = !(cfg.settings ? sessionSecret);
+
         message = ''
           Session secrets should not be passed via settings, as
           these are stored in the world-readable nix store.
@@ -110,30 +115,27 @@ in
       }
     ];
 
+    networking.firewall = mkIf cfg.openFirewall {
+      allowedTCPPorts = [ cfg.settings.port ];
+    };
+
     systemd.services.qui = {
-      description = "qui: alternative qBittorrent webUI";
       after = [ "network-online.target" ];
-      wants = [ "network-online.target" ];
-      wantedBy = [ "multi-user.target" ];
+      description = "qui: alternative qBittorrent webUI";
 
       serviceConfig = {
-        Type = "simple";
-        User = cfg.user;
-        Group = cfg.group;
-
-        LoadCredential = "sessionSecret:${cfg.secretFile}";
+        # Based on qbittorrent and nemorosa hardening settings
+        # Similar to what systemd hardening helper suggests
+        CapabilityBoundingSet = "";
         Environment = [ "QUI__SESSION_SECRET_FILE=%d/sessionSecret" ];
-        StateDirectory = "qui";
+        ExecStart = "${getExe cfg.package} serve --config-dir %S/qui";
 
         ExecStartPre = ''
           ${pkgs.coreutils}/bin/install -m 600 '${configFile}' '%S/qui/config.toml'
         '';
-        ExecStart = "${getExe cfg.package} serve --config-dir %S/qui";
-        Restart = "on-failure";
 
-        # Based on qbittorrent and nemorosa hardening settings
-        # Similar to what systemd hardening helper suggests
-        CapabilityBoundingSet = "";
+        Group = cfg.group;
+        LoadCredential = "sessionSecret:${cfg.secretFile}";
         LockPersonality = true;
         MemoryDenyWriteExecute = true;
         NoNewPrivileges = true;
@@ -153,36 +155,41 @@ in
         # This should allow for hardlinking to torrent client files
         ProtectSystem = "full";
         RemoveIPC = true;
+        Restart = "on-failure";
+
         RestrictAddressFamilies = [
           "AF_INET"
           "AF_INET6"
           "AF_NETLINK"
           "AF_UNIX"
         ];
+
         RestrictNamespaces = true;
         RestrictRealtime = true;
         RestrictSUIDSGID = true;
+        StateDirectory = "qui";
         SystemCallArchitectures = "native";
         SystemCallFilter = [ "@system-service" ];
+        Type = "simple";
+        User = cfg.user;
       };
-    };
 
-    networking.firewall = mkIf cfg.openFirewall {
-      allowedTCPPorts = [ cfg.settings.port ];
+      wantedBy = [ "multi-user.target" ];
+      wants = [ "network-online.target" ];
     };
 
     users = {
-      users = mkIf (cfg.user == "qui") {
-        qui = {
-          group = cfg.group;
-          description = "qui user";
-          isSystemUser = true;
-          home = stateDir;
-        };
-      };
-
       groups = mkIf (cfg.group == "qui") {
         qui = { };
+      };
+
+      users = mkIf (cfg.user == "qui") {
+        qui = {
+          description = "qui user";
+          group = cfg.group;
+          home = stateDir;
+          isSystemUser = true;
+        };
       };
     };
   };

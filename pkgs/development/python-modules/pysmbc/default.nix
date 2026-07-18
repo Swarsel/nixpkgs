@@ -2,14 +2,13 @@
   lib,
   buildPythonPackage,
   fetchPypi,
-  samba,
   pkg-config,
+  samba,
 }:
 
 buildPythonPackage rec {
   pname = "pysmbc";
   version = "1.0.25.1";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
@@ -17,12 +16,10 @@ buildPythonPackage rec {
   };
 
   nativeBuildInputs = [ pkg-config ];
-
   buildInputs = [ samba ];
-
   # Tests would require a local SMB server
   doCheck = false;
-
+  format = "setuptools";
   pythonImportsCheck = [ "smbc" ];
 
   meta = {

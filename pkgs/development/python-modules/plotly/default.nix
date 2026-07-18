@@ -1,26 +1,22 @@
 {
   lib,
   stdenv,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # build-system
-  hatchling,
-
-  # dependencies
-  narwhals,
-  packaging,
-
-  # optional-dependencies
-  numpy,
-  kaleido,
-
   # tests
   anywidget,
+  buildPythonPackage,
+  # build-system
+  hatchling,
   ipython,
   ipywidgets,
+  kaleido,
   matplotlib,
+  # dependencies
+  narwhals,
   nbformat,
+  # optional-dependencies
+  numpy,
+  packaging,
   pandas,
   pdfrw,
   pillow,
@@ -38,8 +34,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "plotly";
   version = "6.8.0";
-  pyproject = true;
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "plotly";
@@ -49,20 +43,6 @@ buildPythonPackage (finalAttrs: {
   };
 
   env.SKIP_NPM = true;
-
-  build-system = [
-    hatchling
-  ];
-
-  dependencies = [
-    narwhals
-    packaging
-  ];
-
-  optional-dependencies = {
-    express = [ numpy ];
-    kaleido = [ kaleido ];
-  };
 
   nativeCheckInputs = [
     anywidget
@@ -85,21 +65,17 @@ buildPythonPackage (finalAttrs: {
   ]
   ++ lib.concatAttrValues finalAttrs.passthru.optional-dependencies;
 
-  disabledTests = [
-    # failed pinning test, sensitive to dep versions
-    "test_legend_dots"
-    "test_linestyle"
-    # lazy loading error, could it be the sandbox PYTHONPATH?
-    # AssertionError: assert "plotly" not in sys.modules
-    "test_dependencies_not_imported"
-    "test_lazy_imports"
-    # [0.0, 'rgb(252, 255, 164)'] != [0.0, '#fcffa4']
-    "test_acceptance_named"
-    # AssertionError: assert '' == 'browser'
-    "test_default_renderer"
+  __darwinAllowLocalNetworking = true;
+  __structuredAttrs = true;
+
+  build-system = [
+    hatchling
   ];
 
-  __darwinAllowLocalNetworking = true;
+  dependencies = [
+    narwhals
+    packaging
+  ];
 
   disabledTestPaths = [
     # Broken imports
@@ -131,17 +107,39 @@ buildPythonPackage (finalAttrs: {
     "tests/test_plotly_utils/validators/test_xarray_input.py"
   ];
 
+  disabledTests = [
+    # failed pinning test, sensitive to dep versions
+    "test_legend_dots"
+    "test_linestyle"
+    # lazy loading error, could it be the sandbox PYTHONPATH?
+    # AssertionError: assert "plotly" not in sys.modules
+    "test_dependencies_not_imported"
+    "test_lazy_imports"
+    # [0.0, 'rgb(252, 255, 164)'] != [0.0, '#fcffa4']
+    "test_acceptance_named"
+    # AssertionError: assert '' == 'browser'
+    "test_default_renderer"
+  ];
+
+  optional-dependencies = {
+    express = [ numpy ];
+    kaleido = [ kaleido ];
+  };
+
+  pyproject = true;
   pythonImportsCheck = [ "plotly" ];
 
   meta = {
     description = "Python plotting library for collaborative, interactive, publication-quality graphs";
     homepage = "https://plot.ly/python/";
-    downloadPage = "https://github.com/plotly/plotly.py";
     changelog = "https://github.com/plotly/plotly.py/blob/master/CHANGELOG.md";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       pandapip1
       sarahec
     ];
+
+    downloadPage = "https://github.com/plotly/plotly.py";
   };
 })

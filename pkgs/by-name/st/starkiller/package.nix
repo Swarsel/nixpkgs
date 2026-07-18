@@ -3,9 +3,9 @@
   stdenv,
   fetchFromGitHub,
   fetchYarnDeps,
-  yarnConfigHook,
-  nodejs_24,
   nix-update-script,
+  nodejs_24,
+  yarnConfigHook,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -19,10 +19,11 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-uFSv/SfXATi01e4VH6iImvRnlFTUB3OarhfSTLQDg/M=";
   };
 
-  yarnOfflineCache = fetchYarnDeps {
-    yarnLock = finalAttrs.src + "/yarn.lock";
-    hash = "sha256-NAnROD2Bt2sYydLbZVzudwDajbc4zonTjSLcdD32KNE=";
-  };
+  nativeBuildInputs = [
+    yarnConfigHook
+    # Needed for executing package.json scripts
+    nodejs_24
+  ];
 
   buildPhase = ''
     runHook preBuild
@@ -43,24 +44,25 @@ stdenv.mkDerivation (finalAttrs: {
     cp -r dist/** $out
   '';
 
-  nativeBuildInputs = [
-    yarnConfigHook
-    # Needed for executing package.json scripts
-    nodejs_24
-  ];
+  yarnOfflineCache = fetchYarnDeps {
+    hash = "sha256-NAnROD2Bt2sYydLbZVzudwDajbc4zonTjSLcdD32KNE=";
+    yarnLock = finalAttrs.src + "/yarn.lock";
+  };
 
   passthru = {
     updateScript = nix-update-script { };
   };
 
   meta = {
+    description = "Web UI for Empire";
     homepage = "https://github.com/BC-SECURITY/Starkiller";
     license = lib.licenses.mit;
-    platforms = lib.platforms.unix;
-    description = "Web UI for Empire";
+
     maintainers = with lib.maintainers; [
       fzakaria
       vrose
     ];
+
+    platforms = lib.platforms.unix;
   };
 })

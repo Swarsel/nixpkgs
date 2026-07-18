@@ -1,11 +1,11 @@
 {
   lib,
   fetchFromGitHub,
-  python3,
+  benchexec,
   libseccomp,
   nixosTests,
+  python3,
   testers,
-  benchexec,
 }:
 python3.pkgs.buildPythonApplication (finalAttrs: {
   pname = "benchexec";
@@ -17,8 +17,6 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     tag = finalAttrs.version;
     hash = "sha256-lokz7klAQAascij0T/T43/PrbMh6ZUAvFnIqg13pVUk=";
   };
-
-  pyproject = true;
 
   postPatch = ''
     substituteInPlace pyproject.toml \
@@ -42,6 +40,7 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
   ];
 
   makeWrapperArgs = [ "--set-default LIBSECCOMP ${lib.getLib libseccomp}/lib/libseccomp.so" ];
+  pyproject = true;
 
   passthru.tests =
     let
@@ -53,18 +52,18 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
         };
     in
     {
-      nixos = nixosTests.benchexec;
       benchexec-version = testVersion "benchexec";
+      containerexec-version = testVersion "containerexec";
+      nixos = nixosTests.benchexec;
       runexec-version = testVersion "runexec";
       table-generator-version = testVersion "table-generator";
-      containerexec-version = testVersion "containerexec";
     };
 
   meta = {
     description = "Framework for Reliable Benchmarking and Resource Measurement";
     homepage = "https://github.com/sosy-lab/benchexec";
-    maintainers = with lib.maintainers; [ lorenzleutgeb ];
     license = lib.licenses.asl20;
+    maintainers = with lib.maintainers; [ lorenzleutgeb ];
     mainProgram = "benchexec";
   };
 })

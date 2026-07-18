@@ -1,28 +1,24 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # build-system
-  pybind11,
-  setuptools,
-
+  buildPythonPackage,
   # dependencies
   guidance-stitch,
-  jinja2,
-  llguidance,
-  numpy,
-  psutil,
-  pydantic,
-  requests,
-
-  # optional-dependencies
-  openai,
-
   # tests
   huggingface-hub,
+  jinja2,
   jsonschema,
+  llguidance,
+  numpy,
+  # optional-dependencies
+  openai,
+  psutil,
+  # build-system
+  pybind11,
+  pydantic,
   pytestCheckHook,
+  requests,
+  setuptools,
   tokenizers,
   torch,
   writableTmpDirAsHomeHook,
@@ -31,40 +27,12 @@
 buildPythonPackage (finalAttrs: {
   pname = "guidance";
   version = "0.3.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "guidance-ai";
     repo = "guidance";
     tag = finalAttrs.version;
     hash = "sha256-g0Vb5qcEvGY4S/LzhQvYtLiN1gIDBhPIgdzenSYX7zQ=";
-  };
-
-  build-system = [
-    pybind11
-    setuptools
-  ];
-
-  pythonRelaxDeps = [
-    "llguidance"
-  ];
-
-  dependencies = [
-    guidance-stitch
-    jinja2
-    llguidance
-    numpy
-    psutil
-    pydantic
-    requests
-  ];
-
-  optional-dependencies = {
-    azureai = [
-      # azure-ai-inference
-      openai
-    ];
-    openai = [ openai ];
   };
 
   nativeCheckInputs = [
@@ -76,7 +44,26 @@ buildPythonPackage (finalAttrs: {
     writableTmpDirAsHomeHook
   ];
 
-  enabledTestPaths = [ "tests/unit" ];
+  preCheck = ''
+    rm tests/conftest.py
+  '';
+
+  __darwinAllowLocalNetworking = true;
+
+  build-system = [
+    pybind11
+    setuptools
+  ];
+
+  dependencies = [
+    guidance-stitch
+    jinja2
+    llguidance
+    numpy
+    psutil
+    pydantic
+    requests
+  ];
 
   disabledTests = [
     # require network access
@@ -96,13 +83,23 @@ buildPythonPackage (finalAttrs: {
     "test_remote_mock_gen" # frequently fails when building packages in parallel
   ];
 
-  preCheck = ''
-    rm tests/conftest.py
-  '';
+  enabledTestPaths = [ "tests/unit" ];
 
+  optional-dependencies = {
+    azureai = [
+      # azure-ai-inference
+      openai
+    ];
+
+    openai = [ openai ];
+  };
+
+  pyproject = true;
   pythonImportsCheck = [ "guidance" ];
 
-  __darwinAllowLocalNetworking = true;
+  pythonRelaxDeps = [
+    "llguidance"
+  ];
 
   meta = {
     description = "Guidance language for controlling large language models";

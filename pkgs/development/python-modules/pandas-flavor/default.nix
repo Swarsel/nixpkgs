@@ -1,25 +1,20 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # build-system
-  setuptools-scm,
-
-  # test framework
-  pytestCheckHook,
-  pytest-cov-stub,
-
+  buildPythonPackage,
   # dependencies
   pandas,
+  pytest-cov-stub,
+  # test framework
+  pytestCheckHook,
+  # build-system
+  setuptools-scm,
   xarray,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "pandas-flavor";
   version = "0.8.1";
-  pyproject = true;
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "pyjanitor-devs";
@@ -27,6 +22,13 @@ buildPythonPackage (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-c1pHH8vQOl1qicJJCVGuQoPbJp9uK03KDVr+rJWByhY=";
   };
+
+  nativeCheckInputs = [
+    pytestCheckHook
+    pytest-cov-stub
+  ];
+
+  __structuredAttrs = true;
 
   build-system = [
     setuptools-scm
@@ -37,10 +39,7 @@ buildPythonPackage (finalAttrs: {
     xarray
   ];
 
-  nativeCheckInputs = [
-    pytestCheckHook
-    pytest-cov-stub
-  ];
+  pyproject = true;
 
   pythonImportsCheck = [
     "pandas_flavor"

@@ -1,16 +1,16 @@
 {
   lib,
   stdenv,
-  rustPlatform,
   fetchFromGitHub,
-  pkg-config,
-  perl,
-  udev,
-  openssl,
   gitMinimal,
-  writableTmpDirAsHomeHook,
   installShellFiles,
+  openssl,
+  perl,
+  pkg-config,
+  rustPlatform,
+  udev,
   versionCheckHook,
+  writableTmpDirAsHomeHook,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -24,10 +24,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-qKC4ayaNPSUh4wSElBWxk/P+Y2dFgCIFiMkI0/QztDY=";
   };
 
-  cargoHash = "sha256-vdELHNH1GqR0LPY3SSNgSR3krZZ85Tsx6aTHve0Vhe8=";
-
-  env.OPENSSL_NO_VENDOR = 1;
-
   nativeBuildInputs = [
     pkg-config
     perl
@@ -38,6 +34,9 @@ rustPlatform.buildRustPackage (finalAttrs: {
     openssl
   ]
   ++ lib.optionals stdenv.hostPlatform.isLinux [ udev ];
+
+  cargoHash = "sha256-vdELHNH1GqR0LPY3SSNgSR3krZZ85Tsx6aTHve0Vhe8=";
+  env.OPENSSL_NO_VENDOR = 1;
 
   nativeCheckInputs = [
     gitMinimal
@@ -64,11 +63,13 @@ rustPlatform.buildRustPackage (finalAttrs: {
     description = "Interactive CLI for creating conventional commits";
     homepage = "https://github.com/its-danny/koji";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       ByteSudoer
       WeetHet
     ];
-    mainProgram = "koji";
+
     platforms = lib.platforms.unix;
+    mainProgram = "koji";
   };
 })

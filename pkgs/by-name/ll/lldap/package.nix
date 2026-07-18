@@ -1,17 +1,17 @@
 {
-  binaryen,
-  fetchFromGitHub,
   lib,
+  fetchFromGitHub,
+  binaryen,
+  cacert,
+  curl,
   makeWrapper,
   nixosTests,
+  runCommand,
   rustPlatform,
   rustc,
   wasm-bindgen-cli_0_2_120,
   wasm-pack,
   which,
-  runCommand,
-  cacert,
-  curl,
   staticAssetsHash ? "sha256-xVbHD9s3ofbtHCDvjYwmsWXDEJ9z9vRxQDRR6pW6rt8=",
 }:
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -25,14 +25,13 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-EafYBCorK5t8ZLoXTjqLg+Q6GDRZjalpRqSoVySdpOk=";
   };
 
+  nativeBuildInputs = [ makeWrapper ];
   cargoHash = "sha256-GhSoPDMsWRuW6SYS/QTPgsA7fBFup5C5+DBqnlFqwlQ=";
-  ## workaround for overrideAttrs on buildRustPackage
-  ## see https://discourse.nixos.org/t/is-it-possible-to-override-cargosha256-in-buildrustpackage/4393/3
-  cargoDeps = rustPlatform.fetchCargoVendor {
-    name = "${finalAttrs.pname}-cargo-deps";
-    inherit (finalAttrs) src patches;
-    hash = finalAttrs.cargoHash;
-  };
+
+  postInstall = ''
+    wrapProgram $out/bin/lldap \
+      --set LLDAP_ASSETS_PATH ${finalAttrs.finalPackage.frontend}
+  '';
 
   cargoBuildFlags = [
     "-p"
@@ -43,11 +42,13 @@ rustPlatform.buildRustPackage (finalAttrs: {
     "lldap_set_password"
   ];
 
-  nativeBuildInputs = [ makeWrapper ];
-  postInstall = ''
-    wrapProgram $out/bin/lldap \
-      --set LLDAP_ASSETS_PATH ${finalAttrs.finalPackage.frontend}
-  '';
+  ## workaround for overrideAttrs on buildRustPackage
+  ## see https://discourse.nixos.org/t/is-it-possible-to-override-cargosha256-in-buildrustpackage/4393/3
+  cargoDeps = rustPlatform.fetchCargoVendor {
+    inherit (finalAttrs) src patches;
+    hash = finalAttrs.cargoHash;
+    name = "${finalAttrs.pname}-cargo-deps";
+  };
 
   passthru = {
 
@@ -58,7 +59,9 @@ rustPlatform.buildRustPackage (finalAttrs: {
         cargoDeps
         patches
         ;
+
       pname = finalAttrs.pname + "-frontend";
+
       nativeBuildInputs = [
         wasm-pack
         wasm-bindgen-cli_0_2_120
@@ -67,11 +70,15 @@ rustPlatform.buildRustPackage (finalAttrs: {
         rustc
         rustc.llvmPackages.lld
       ];
+
       buildPhase = ''
         runHook preBuild
         HOME=`pwd` ./app/build.sh
         runHook postBuild
       '';
+
+      doCheck = false;
+
       installPhase = ''
         runHook preInstall
         mkdir -p $out
@@ -81,20 +88,21 @@ rustPlatform.buildRustPackage (finalAttrs: {
         rm $out/static/libraries.txt $out/static/fonts/fonts.txt
         runHook postInstall
       '';
-      doCheck = false;
     };
 
     staticAssets =
       runCommand "${finalAttrs.pname}-static-assets"
         {
-          outputHash = staticAssetsHash;
-          outputHashAlgo = "sha256";
-          outputHashMode = "recursive";
           inherit (finalAttrs) src;
+
           nativeBuildInputs = [
             curl
           ];
+
           env.SSL_CERT_FILE = "${cacert}/etc/ssl/certs/ca-bundle.crt";
+          outputHash = staticAssetsHash;
+          outputHashAlgo = "sha256";
+          outputHashMode = "recursive";
         }
         ''
           mkdir $out
@@ -118,11 +126,13 @@ rustPlatform.buildRustPackage (finalAttrs: {
     homepage = "https://github.com/lldap/lldap";
     changelog = "https://github.com/lldap/lldap/blob/v${finalAttrs.version}/CHANGELOG.md";
     license = lib.licenses.gpl3Only;
-    platforms = lib.platforms.linux;
+
     maintainers = with lib.maintainers; [
       bendlas
       ibizaman
     ];
+
+    platforms = lib.platforms.linux;
     mainProgram = "lldap";
   };
 })

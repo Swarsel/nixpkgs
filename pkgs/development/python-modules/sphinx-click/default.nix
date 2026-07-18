@@ -1,29 +1,29 @@
 {
   lib,
   buildPythonPackage,
+  # Dependencies
+  click,
+  defusedxml,
+  docutils,
   fetchPypi,
-  sphinxHook,
+  # Checks
+  pytestCheckHook,
   # Build system
   setuptools,
   setuptools-scm,
-  # Dependencies
-  click,
-  docutils,
   sphinx,
-  # Checks
-  pytestCheckHook,
-  defusedxml,
+  sphinxHook,
 }:
 
 buildPythonPackage rec {
   pname = "sphinx-click";
   version = "6.2.0";
-  pyproject = true;
 
-  build-system = [
-    setuptools
-    setuptools-scm
-  ];
+  src = fetchPypi {
+    inherit version;
+    hash = "sha256-/Hi0FUpOUVlGLjbeVbhkN0fabNqGs7Uqi7YiieYDd2w=";
+    pname = "sphinx_click";
+  };
 
   postPatch = ''
     # Would require reno which would require the .git directory to stay around
@@ -37,26 +37,27 @@ buildPythonPackage rec {
     sphinxHook
   ];
 
+  nativeCheckInputs = [
+    pytestCheckHook
+    defusedxml
+  ];
+
+  build-system = [
+    setuptools
+    setuptools-scm
+  ];
+
   dependencies = [
     click
     docutils
     sphinx
   ];
 
-  nativeCheckInputs = [
-    pytestCheckHook
-    defusedxml
-  ];
+  pyproject = true;
 
   pythonImportsCheck = [
     "sphinx_click"
   ];
-
-  src = fetchPypi {
-    inherit version;
-    pname = "sphinx_click";
-    hash = "sha256-/Hi0FUpOUVlGLjbeVbhkN0fabNqGs7Uqi7YiieYDd2w=";
-  };
 
   meta = {
     description = "Sphinx extension that automatically documents click applications";

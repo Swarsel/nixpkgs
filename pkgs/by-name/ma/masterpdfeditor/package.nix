@@ -3,15 +3,15 @@
   stdenv,
   fetchurl,
   autoPatchelfHook,
-  libsForQt5,
+  common-updater-scripts,
   cups,
   libinput,
+  libsForQt5,
   mtdev,
+  nix-update,
   nss,
   pkcs11helper,
   sane-backends,
-  common-updater-scripts,
-  nix-update,
   writeShellScript,
 }:
 
@@ -25,12 +25,13 @@ stdenv.mkDerivation (finalAttrs: {
     in
     fetchurl {
       url = selectSystem {
-        x86_64-linux = "https://code-industry.net/public/master-pdf-editor-${finalAttrs.version}-qt5.x86_64-qt_include.tar.gz";
         aarch64-linux = "https://code-industry.net/public/master-pdf-editor-${finalAttrs.version}-qt5.arm64.tar.gz";
+        x86_64-linux = "https://code-industry.net/public/master-pdf-editor-${finalAttrs.version}-qt5.x86_64-qt_include.tar.gz";
       };
+
       hash = selectSystem {
-        x86_64-linux = "sha256-KNAssyWLeMqtMyZQIF6Qr1K/9tioC4cD84lL9c1iMgM=";
         aarch64-linux = "sha256-+jNXO4fbbkh9Uea0N+0fJbHRMu9zS/d7o8W4D2+7kMI=";
+        x86_64-linux = "sha256-KNAssyWLeMqtMyZQIF6Qr1K/9tioC4cD84lL9c1iMgM=";
       };
     };
 
@@ -50,8 +51,6 @@ stdenv.mkDerivation (finalAttrs: {
     pkcs11helper
     sane-backends
   ];
-
-  dontStrip = true;
 
   installPhase = ''
     runHook preInstall
@@ -74,6 +73,8 @@ stdenv.mkDerivation (finalAttrs: {
       --add-needed libsmime3.so
   '';
 
+  dontStrip = true;
+
   passthru.updateScript = writeShellScript "update-masterpdfeditor" ''
     latestVersion=$(curl -s https://code-industry.net/downloads/ | grep -A1 "fa-linux" | grep -oP 'Version\s+\K[\d.]+' | head -n 1)
     ${lib.getExe nix-update} pkgsCross.gnu64.masterpdfeditor --version $latestVersion
@@ -83,13 +84,15 @@ stdenv.mkDerivation (finalAttrs: {
   meta = {
     description = "Master PDF Editor";
     homepage = "https://code-industry.net/free-pdf-editor/";
-    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
     license = lib.licenses.unfreeRedistributable;
+    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
+    maintainers = with lib.maintainers; [ cmcdragonkai ];
+
     platforms = [
       "x86_64-linux"
       "aarch64-linux"
     ];
-    maintainers = with lib.maintainers; [ cmcdragonkai ];
+
     mainProgram = "masterpdfeditor5";
   };
 })

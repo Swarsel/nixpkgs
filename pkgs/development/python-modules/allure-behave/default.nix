@@ -1,16 +1,15 @@
 {
   lib,
   fetchFromGitHub,
-  buildPythonPackage,
-  behave,
   allure-python-commons,
+  behave,
+  buildPythonPackage,
   setuptools-scm,
 }:
 
 buildPythonPackage rec {
   pname = "allure-behave";
   version = "2.15.3";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "allure-framework";
@@ -19,8 +18,7 @@ buildPythonPackage rec {
     hash = "sha256-06SKodvyoT0mYn4RmAIryZc+VyTI79KXFK+2/zuhzQ0=";
   };
 
-  sourceRoot = "${src.name}/allure-behave";
-
+  doCheck = false; # no tests
   build-system = [ setuptools-scm ];
 
   dependencies = [
@@ -28,9 +26,9 @@ buildPythonPackage rec {
     behave
   ];
 
-  doCheck = false; # no tests
-
+  pyproject = true;
   pythonImportsCheck = [ "allure_behave" ];
+  sourceRoot = "${src.name}/allure-behave";
 
   meta = {
     description = "Allure behave integration";

@@ -3,22 +3,23 @@
   buildPythonPackage,
   docopt,
   fetchPypi,
+  pytestCheckHook,
   pytz,
   setuptools,
   setuptools-scm,
   sqlalchemy,
-  pytestCheckHook,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "pygtfs";
   version = "0.1.11";
-  pyproject = true;
 
   src = fetchPypi {
     inherit (finalAttrs) pname version;
     hash = "sha256-NaSGjzBBFK3mqHibcKV2gQIQoWn+qZay7KJasjcwxW4=";
   };
+
+  nativeCheckInputs = [ pytestCheckHook ];
 
   build-system = [
     setuptools
@@ -31,10 +32,8 @@ buildPythonPackage (finalAttrs: {
     sqlalchemy
   ];
 
-  nativeCheckInputs = [ pytestCheckHook ];
-
   enabledTestPaths = [ "pygtfs/test/test.py" ];
-
+  pyproject = true;
   pythonImportsCheck = [ "pygtfs" ];
 
   meta = {

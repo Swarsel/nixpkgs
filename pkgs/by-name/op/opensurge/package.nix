@@ -2,15 +2,15 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  cmake,
-  ninja,
   allegro5,
+  cmake,
   libglvnd,
-  surgescript,
-  physfs,
   libx11,
-  versionCheckHook,
+  ninja,
   nix-update-script,
+  physfs,
+  surgescript,
+  versionCheckHook,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -23,6 +23,11 @@ stdenv.mkDerivation (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-HvpKZ62mYy7XkZOnIn7QRA2rFVREFnKO1NO83aCR76k=";
   };
+
+  postPatch = ''
+    substituteInPlace CMakeLists.txt \
+      --replace-fail "CMAKE_MINIMUM_REQUIRED(VERSION 3.1)" "cmake_minimum_required(VERSION 3.10)"
+  '';
 
   nativeBuildInputs = [
     cmake
@@ -45,25 +50,19 @@ stdenv.mkDerivation (finalAttrs: {
     "-DWANT_BUILD_DATE=OFF"
   ];
 
-  nativeInstallCheckInputs = [ versionCheckHook ];
   # Darwin fails with "Critical error: required built-in appearance SystemAppearance not found"
   doInstallCheck = !stdenv.hostPlatform.isDarwin;
-
+  nativeInstallCheckInputs = [ versionCheckHook ];
   passthru.updateScript = nix-update-script { };
 
-  postPatch = ''
-    substituteInPlace CMakeLists.txt \
-      --replace-fail "CMAKE_MINIMUM_REQUIRED(VERSION 3.1)" "cmake_minimum_required(VERSION 3.10)"
-  '';
-
   meta = {
-    mainProgram = "opensurge";
     description = "Fun 2D retro platformer inspired by Sonic games and a game creation system";
     homepage = "https://opensurge2d.org/";
-    downloadPage = "https://github.com/alemart/opensurge";
     changelog = "https://github.com/alemart/opensurge/blob/v${finalAttrs.version}/CHANGES.md";
     license = lib.licenses.gpl3Only;
-    platforms = lib.platforms.all;
     maintainers = [ ];
+    platforms = lib.platforms.all;
+    mainProgram = "opensurge";
+    downloadPage = "https://github.com/alemart/opensurge";
   };
 })

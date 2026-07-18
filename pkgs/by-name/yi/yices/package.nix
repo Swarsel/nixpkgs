@@ -2,10 +2,10 @@
   lib,
   stdenv,
   fetchFromGitHub,
+  autoreconfHook,
   cudd,
   gmp,
   gperf,
-  autoreconfHook,
   libpoly,
   ncurses5,
 }:
@@ -34,28 +34,29 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   nativeBuildInputs = [ autoreconfHook ];
+
   buildInputs = [
     cudd
     gmp-static
     gperf
     libpoly
   ];
+
   configureFlags = [
     "--with-static-gmp=${gmp-static.out}/lib/libgmp.a"
     "--with-static-gmp-include-dir=${gmp-static.dev}/include"
     "--enable-mcsat"
   ];
 
-  enableParallelBuilding = true;
   doCheck = true;
-
   nativeCheckInputs = [ ncurses5 ];
+  enableParallelBuilding = true;
 
   meta = {
     description = "High-performance theorem prover and SMT solver";
     homepage = "https://yices.csl.sri.com";
     license = lib.licenses.gpl3Plus;
-    platforms = lib.platforms.linux ++ lib.platforms.darwin;
     maintainers = with lib.maintainers; [ thoughtpolice ];
+    platforms = lib.platforms.linux ++ lib.platforms.darwin;
   };
 })

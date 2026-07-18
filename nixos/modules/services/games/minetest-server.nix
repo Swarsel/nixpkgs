@@ -32,6 +32,7 @@ let
           int = "${name} = ${toString value}\n";
           null = "";
           set = "${name} = {\n${toConf value}}\n";
+
           string =
             if (builtins.match NEEDS_MULTILINE_RE value) != null then
               toConfMultiline name value
@@ -74,107 +75,121 @@ in
 {
   options = {
     services.minetest-server = {
+      config = lib.mkOption {
+        default = { };
+
+        description = ''
+          Settings to add to the minetest config file.
+
+          This option is ignored if `configPath` is set.
+        '';
+
+        type = lib.types.attrsOf lib.types.anything;
+      };
+
       enable = lib.mkOption {
-        type = lib.types.bool;
         default = false;
         description = "If enabled, starts a Minetest Server.";
-      };
-
-      gameId = lib.mkOption {
-        type = lib.types.nullOr lib.types.str;
-        default = null;
-        description = ''
-          Id of the game to use. To list available games run
-          `minetestserver --gameid list`.
-
-          If only one game exists, this option can be null.
-        '';
-      };
-
-      world = lib.mkOption {
-        type = lib.types.nullOr lib.types.path;
-        default = null;
-        description = ''
-          Name of the world to use. To list available worlds run
-          `minetestserver --world list`.
-
-          If only one world exists, this option can be null.
-        '';
+        type = lib.types.bool;
       };
 
       configPath = lib.mkOption {
-        type = lib.types.nullOr lib.types.path;
         default = null;
+
         description = ''
           Path to the config to use.
 
           If set to null, the config of the running user will be used:
           `~/.minetest/minetest.conf`.
         '';
+
+        type = lib.types.nullOr lib.types.path;
       };
 
-      config = lib.mkOption {
-        type = lib.types.attrsOf lib.types.anything;
-        default = { };
-        description = ''
-          Settings to add to the minetest config file.
+      extraArgs = lib.mkOption {
+        default = [ ];
 
-          This option is ignored if `configPath` is set.
+        description = ''
+          Additional command line flags to pass to the minetest executable.
         '';
+
+        type = lib.types.listOf lib.types.str;
+      };
+
+      gameId = lib.mkOption {
+        default = null;
+
+        description = ''
+          Id of the game to use. To list available games run
+          `minetestserver --gameid list`.
+
+          If only one game exists, this option can be null.
+        '';
+
+        type = lib.types.nullOr lib.types.str;
       };
 
       logPath = lib.mkOption {
-        type = lib.types.nullOr lib.types.path;
         default = null;
+
         description = ''
           Path to logfile for logging.
 
           If set to null, logging will be output to stdout which means
           all output will be caught by systemd.
         '';
+
+        type = lib.types.nullOr lib.types.path;
       };
 
       port = lib.mkOption {
-        type = lib.types.nullOr lib.types.port;
         default = null;
+
         description = ''
           Port number to bind to.
 
           If set to null, the default 30000 will be used.
         '';
+
+        type = lib.types.nullOr lib.types.port;
       };
 
-      extraArgs = lib.mkOption {
-        type = lib.types.listOf lib.types.str;
-        default = [ ];
+      world = lib.mkOption {
+        default = null;
+
         description = ''
-          Additional command line flags to pass to the minetest executable.
+          Name of the world to use. To list available worlds run
+          `minetestserver --world list`.
+
+          If only one world exists, this option can be null.
         '';
+
+        type = lib.types.nullOr lib.types.path;
       };
     };
   };
 
   config = lib.mkIf cfg.enable {
-    users.users.minetest = {
-      description = "Minetest Server Service user";
-      home = "/var/lib/minetest";
-      createHome = true;
-      uid = config.ids.uids.minetest;
-      group = "minetest";
+    systemd.services.minetest-server = {
+      after = [ "network.target" ];
+      description = "Minetest Server Service";
+      serviceConfig.ExecStart = "${pkgs.luanti}/bin/luanti ${lib.escapeShellArgs flags}";
+      serviceConfig.Group = "minetest";
+      serviceConfig.Restart = "always";
+      serviceConfig.StateDirectory = "minetest";
+      serviceConfig.User = "minetest";
+      serviceConfig.WorkingDirectory = "/var/lib/minetest";
+      wantedBy = [ "multi-user.target" ];
     };
+
     users.groups.minetest.gid = config.ids.gids.minetest;
 
-    systemd.services.minetest-server = {
-      description = "Minetest Server Service";
-      wantedBy = [ "multi-user.target" ];
-      after = [ "network.target" ];
-
-      serviceConfig.Restart = "always";
-      serviceConfig.User = "minetest";
-      serviceConfig.Group = "minetest";
-      serviceConfig.StateDirectory = "minetest";
-      serviceConfig.WorkingDirectory = "/var/lib/minetest";
-      serviceConfig.ExecStart = "${pkgs.luanti}/bin/luanti ${lib.escapeShellArgs flags}";
+    users.users.minetest = {
+      createHome = true;
+      description = "Minetest Server Service user";
+      group = "minetest";
+      home = "/var/lib/minetest";
+      uid = config.ids.uids.minetest;
     };
   };
 }

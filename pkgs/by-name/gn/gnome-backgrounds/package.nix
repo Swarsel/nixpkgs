@@ -1,10 +1,10 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchurl,
+  gnome,
   meson,
   ninja,
-  gnome,
 }:
 
 stdenv.mkDerivation (finalAttrs: {

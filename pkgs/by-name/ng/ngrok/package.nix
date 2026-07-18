@@ -30,19 +30,10 @@ let
 
 in
 stdenv.mkDerivation (finalAttrs: {
-  pname = "ngrok";
   inherit version;
-
+  pname = "ngrok";
   # run ./update
   src = fetchurl { inherit sha256 url; };
-
-  sourceRoot = ".";
-
-  unpackPhase = ''
-    runHook preUnpack
-    cp $src ngrok
-    runHook postUnpack
-  '';
 
   buildPhase = ''
     runHook preBuild
@@ -56,26 +47,35 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
-  passthru = {
-    updateScript = ./update.sh;
-    tests.version = testers.testVersion { package = finalAttrs.finalPackage; };
-  };
-
   # Stripping causes SEGFAULT on darwin
   dontStrip = stdenv.hostPlatform.isDarwin;
+  sourceRoot = ".";
+
+  unpackPhase = ''
+    runHook preUnpack
+    cp $src ngrok
+    runHook postUnpack
+  '';
+
+  passthru = {
+    tests.version = testers.testVersion { package = finalAttrs.finalPackage; };
+    updateScript = ./update.sh;
+  };
 
   meta = {
     description = "Allows you to expose a web server running on your local machine to the internet";
     homepage = "https://ngrok.com/";
-    downloadPage = "https://ngrok.com/download";
     changelog = "https://ngrok.com/docs/agent/changelog/";
-    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
     license = lib.licenses.unfree;
-    platforms = lib.platforms.unix;
+    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
+
     maintainers = with lib.maintainers; [
       bobvanderlinden
       brodes
     ];
+
+    platforms = lib.platforms.unix;
     mainProgram = "ngrok";
+    downloadPage = "https://ngrok.com/download";
   };
 })

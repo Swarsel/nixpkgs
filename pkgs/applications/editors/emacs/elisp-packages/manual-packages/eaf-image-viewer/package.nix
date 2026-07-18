@@ -1,14 +1,14 @@
 {
   # Basic
   lib,
-  melpaBuild,
   fetchFromGitHub,
-  # JavaScript dependency
-  nodejs,
   fetchNpmDeps,
-  npmHooks,
+  melpaBuild,
   # Updater
   nix-update-script,
+  # JavaScript dependency
+  nodejs,
+  npmHooks,
 }:
 
 melpaBuild (finalAttrs: {
@@ -23,22 +23,16 @@ melpaBuild (finalAttrs: {
     hash = "sha256-5MJibLr4UJOKl79PsDmXEZR+XFBx1xvcoykX4z/XbrI=";
   };
 
-  env.npmDeps = fetchNpmDeps {
-    name = "${finalAttrs.pname}-npm-deps";
-    inherit (finalAttrs) src;
-    hash = "sha256-d1DVOAhYtXEzRQcUWFJE0gbHnqPRCUGibSqc/Nf3dVE=";
-  };
-
   nativeBuildInputs = [
     nodejs
     npmHooks.npmConfigHook
   ];
 
-  files = ''
-    ("*.el"
-     "*.py"
-     "*.html")
-  '';
+  env.npmDeps = fetchNpmDeps {
+    inherit (finalAttrs) src;
+    hash = "sha256-d1DVOAhYtXEzRQcUWFJE0gbHnqPRCUGibSqc/Nf3dVE=";
+    name = "${finalAttrs.pname}-npm-deps";
+  };
 
   postInstall = ''
     LISPDIR=$out/share/emacs/site-lisp/elpa/${finalAttrs.ename}-${finalAttrs.melpaVersion}
@@ -46,15 +40,22 @@ melpaBuild (finalAttrs: {
     cp -r node_modules $LISPDIR/
   '';
 
+  files = ''
+    ("*.el"
+     "*.py"
+     "*.html")
+  '';
+
   passthru = {
-    updateScript = nix-update-script { extraArgs = [ "--version=branch" ]; };
     eafPythonDeps = ps: [ ];
+    updateScript = nix-update-script { extraArgs = [ "--version=branch" ]; };
   };
 
   meta = {
     description = "Image viewer application for the EAF";
     homepage = "https://github.com/emacs-eaf/eaf-image-viewer";
     license = lib.licenses.gpl3Only;
+
     maintainers = with lib.maintainers; [
       thattemperature
     ];

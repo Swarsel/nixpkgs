@@ -1,26 +1,58 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  pythonAtLeast,
-
-  # build-system
-  hatchling,
-
   # dependencies
   atpublic,
-  parsy,
-  python-dateutil,
-  sqlglot,
-  toolz,
-  typing-extensions,
-  tzdata,
-
-  # tests
-  pytestCheckHook,
   black,
+  buildPythonPackage,
+  # - clickhouse
+  clickhouse-connect,
+  # - databricks
+  # databricks-sql-connector-core, (unpackaged)
+  # - datafusion
+  datafusion,
+  # - bigquery
+  db-dtypes,
+  # - duckdb
+  duckdb,
   filelock,
+  fsspec,
+  # - flink
+  # - geospatial
+  geopandas,
+  google-cloud-bigquery,
+  google-cloud-bigquery-storage,
+  # - visualization
+  graphviz,
+  # build-system
+  hatchling,
   hypothesis,
+  numpy,
+  # - oracle
+  oracledb,
+  packaging,
+  pandas,
+  parsy,
+  # examples
+  pins,
+  # - polars
+  polars,
+  # - postgres
+  psycopg2,
+  pyarrow,
+  pyarrow-hotfix,
+  # optional-dependencies
+  # - athena
+  pyathena,
+  pydata-google-auth,
+  # - druid
+  pydruid,
+  # - mysql
+  pymysql,
+  # - mssql
+  pyodbc,
+  # - pyspark
+  pyspark,
   pytest-benchmark,
   pytest-httpserver,
   pytest-mock,
@@ -28,59 +60,23 @@
   pytest-snapshot,
   pytest-timeout,
   pytest-xdist,
-  writableTmpDirAsHomeHook,
-
-  # optional-dependencies
-  # - athena
-  pyathena,
-  fsspec,
-  # - bigquery
-  db-dtypes,
-  google-cloud-bigquery,
-  google-cloud-bigquery-storage,
-  pyarrow,
-  pyarrow-hotfix,
-  pydata-google-auth,
-  numpy,
-  pandas,
-  rich,
-  # - clickhouse
-  clickhouse-connect,
-  # - databricks
-  # databricks-sql-connector-core, (unpackaged)
-  # - datafusion
-  datafusion,
-  # - druid
-  pydruid,
-  # - duckdb
-  duckdb,
-  packaging,
-  # - flink
-  # - geospatial
-  geopandas,
-  shapely,
-  # - mssql
-  pyodbc,
-  # - mysql
-  pymysql,
-  # - oracle
-  oracledb,
-  # - polars
-  polars,
-  # - postgres
-  psycopg2,
-  # - pyspark
-  pyspark,
-  # - snowflake
-  snowflake-connector-python,
+  # tests
+  pytestCheckHook,
+  python-dateutil,
+  pythonAtLeast,
   # sqlite
   regex,
+  rich,
+  shapely,
+  # - snowflake
+  snowflake-connector-python,
+  sqlglot,
+  toolz,
   # - trino
   trino-python-client,
-  # - visualization
-  graphviz,
-  # examples
-  pins,
+  typing-extensions,
+  tzdata,
+  writableTmpDirAsHomeHook,
 }:
 let
   testBackends = [
@@ -89,18 +85,17 @@ let
   ];
 
   ibisTestingData = fetchFromGitHub {
+    hash = "sha256-1fenQNQB+Q0pbb0cbK2S/UIwZDE4PXXG15MH3aVbyLU=";
     owner = "ibis-project";
     repo = "testing-data";
     # https://github.com/ibis-project/ibis/blob/10.5.0/nix/overlay.nix#L94-L100
     rev = "b26bd40cf29004372319df620c4bbe41420bb6f8";
-    hash = "sha256-1fenQNQB+Q0pbb0cbK2S/UIwZDE4PXXG15MH3aVbyLU=";
   };
 in
 
 buildPythonPackage (finalAttrs: {
   pname = "ibis-framework";
   version = "12.0.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "ibis-project";
@@ -109,19 +104,12 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-GqSbjjUr4EaWueMl4TrhaDvqn1iDd4CO3QcDnOXfSAk=";
   };
 
-  build-system = [
-    hatchling
-  ];
-
-  dependencies = [
-    atpublic
-    parsy
-    python-dateutil
-    sqlglot
-    toolz
-    typing-extensions
-    tzdata
-  ];
+  # patch out tests that check formatting with black
+  postPatch = ''
+    find ibis/tests -type f -name '*.py' -exec sed -i \
+      -e '/^ *assert_decompile_roundtrip/d' \
+      -e 's/^\( *\)code = ibis.decompile(expr, format=True)/\1code = ibis.decompile(expr)/g' {} +
+  '';
 
   nativeCheckInputs = [
     pytestCheckHook
@@ -141,23 +129,30 @@ buildPythonPackage (finalAttrs: {
   ]
   ++ lib.concatMap (name: finalAttrs.passthru.optional-dependencies.${name}) testBackends;
 
-  pytestFlags = [
-    "--benchmark-disable"
-    "-Wignore::FutureWarning"
-    # DeprecationWarning: fetch_arrow_table() is deprecated, use to_arrow_table() instead.
-    "-Wignore:fetch_arrow_table:DeprecationWarning"
-    # DeprecationWarning: fetch_record_batch() is deprecated, use to_arrow_reader() instead.
-    "-Wignore:fetch_record_batch:DeprecationWarning"
-    # DeprecationWarning: '_UnionGenericAlias' is deprecated and slated for removal in Python 3.17
-    # DeprecationWarning: The 'generic' unit for NumPy timedelta is deprecated, and will raise an error in the future. This includes implicit conversion of bare integers (e.g. `+ 1`).Please use a specific unit instead.
-    "-Wignore::DeprecationWarning"
-  ]
-  ++ lib.optionals (pythonAtLeast "3.14") [
-    # Multiple tests with warnings fail without it
-    "-Wignore::pytest.PytestUnraisableExceptionWarning"
+  preCheck = ''
+    export IBIS_TEST_DATA_DIRECTORY="ci/ibis-testing-data"
+
+    # copy the test data to a directory
+    ln -s "${ibisTestingData}" "$IBIS_TEST_DATA_DIRECTORY"
+  '';
+
+  postCheck = ''
+    rm -r "$IBIS_TEST_DATA_DIRECTORY"
+  '';
+
+  build-system = [
+    hatchling
   ];
 
-  enabledTestMarks = testBackends ++ [ "core" ];
+  dependencies = [
+    atpublic
+    parsy
+    python-dateutil
+    sqlglot
+    toolz
+    typing-extensions
+    tzdata
+  ];
 
   disabledTests = [
     # tries to download duckdb extensions
@@ -272,25 +267,7 @@ buildPythonPackage (finalAttrs: {
     "test_signature_from_callable_with_keyword_only_arguments"
   ];
 
-  # patch out tests that check formatting with black
-  postPatch = ''
-    find ibis/tests -type f -name '*.py' -exec sed -i \
-      -e '/^ *assert_decompile_roundtrip/d' \
-      -e 's/^\( *\)code = ibis.decompile(expr, format=True)/\1code = ibis.decompile(expr)/g' {} +
-  '';
-
-  preCheck = ''
-    export IBIS_TEST_DATA_DIRECTORY="ci/ibis-testing-data"
-
-    # copy the test data to a directory
-    ln -s "${ibisTestingData}" "$IBIS_TEST_DATA_DIRECTORY"
-  '';
-
-  postCheck = ''
-    rm -r "$IBIS_TEST_DATA_DIRECTORY"
-  '';
-
-  pythonImportsCheck = [ "ibis" ] ++ map (backend: "ibis.backends.${backend}") testBackends;
+  enabledTestMarks = testBackends ++ [ "core" ];
 
   optional-dependencies = {
     athena = [
@@ -303,6 +280,7 @@ buildPythonPackage (finalAttrs: {
       packaging
       fsspec
     ];
+
     bigquery = [
       db-dtypes
       google-cloud-bigquery
@@ -314,6 +292,7 @@ buildPythonPackage (finalAttrs: {
       pandas
       rich
     ];
+
     clickhouse = [
       clickhouse-connect
       pyarrow
@@ -322,6 +301,7 @@ buildPythonPackage (finalAttrs: {
       pandas
       rich
     ];
+
     databricks = [
       # databricks-sql-connector-core (unpackaged)
       pyarrow
@@ -330,6 +310,7 @@ buildPythonPackage (finalAttrs: {
       pandas
       rich
     ];
+
     datafusion = [
       datafusion
       pyarrow
@@ -338,6 +319,9 @@ buildPythonPackage (finalAttrs: {
       pandas
       rich
     ];
+
+    decompiler = [ black ];
+
     druid = [
       pydruid
       pyarrow
@@ -346,6 +330,7 @@ buildPythonPackage (finalAttrs: {
       pandas
       rich
     ];
+
     duckdb = [
       duckdb
       pyarrow
@@ -355,6 +340,9 @@ buildPythonPackage (finalAttrs: {
       rich
       packaging
     ];
+
+    examples = [ pins ] ++ pins.optional-dependencies.gcs;
+
     flink = [
       pyarrow
       pyarrow-hotfix
@@ -362,10 +350,12 @@ buildPythonPackage (finalAttrs: {
       pandas
       rich
     ];
+
     geospatial = [
       geopandas
       shapely
     ];
+
     mssql = [
       pyodbc
       pyarrow
@@ -374,6 +364,7 @@ buildPythonPackage (finalAttrs: {
       pandas
       rich
     ];
+
     mysql = [
       pymysql
       pyarrow
@@ -382,6 +373,7 @@ buildPythonPackage (finalAttrs: {
       pandas
       rich
     ];
+
     oracle = [
       oracledb
       packaging
@@ -391,6 +383,7 @@ buildPythonPackage (finalAttrs: {
       pandas
       rich
     ];
+
     polars = [
       polars
       packaging
@@ -400,6 +393,7 @@ buildPythonPackage (finalAttrs: {
       pandas
       rich
     ];
+
     postgres = [
       psycopg2
       pyarrow
@@ -408,6 +402,7 @@ buildPythonPackage (finalAttrs: {
       pandas
       rich
     ];
+
     pyspark = [
       pyspark
       packaging
@@ -417,6 +412,7 @@ buildPythonPackage (finalAttrs: {
       pandas
       rich
     ];
+
     snowflake = [
       snowflake-connector-python
       pyarrow
@@ -425,6 +421,7 @@ buildPythonPackage (finalAttrs: {
       pandas
       rich
     ];
+
     sqlite = [
       regex
       pyarrow
@@ -433,6 +430,7 @@ buildPythonPackage (finalAttrs: {
       pandas
       rich
     ];
+
     trino = [
       trino-python-client
       pyarrow
@@ -441,16 +439,36 @@ buildPythonPackage (finalAttrs: {
       pandas
       rich
     ];
+
     visualization = [ graphviz ];
-    decompiler = [ black ];
-    examples = [ pins ] ++ pins.optional-dependencies.gcs;
   };
+
+  pyproject = true;
+
+  pytestFlags = [
+    "--benchmark-disable"
+    "-Wignore::FutureWarning"
+    # DeprecationWarning: fetch_arrow_table() is deprecated, use to_arrow_table() instead.
+    "-Wignore:fetch_arrow_table:DeprecationWarning"
+    # DeprecationWarning: fetch_record_batch() is deprecated, use to_arrow_reader() instead.
+    "-Wignore:fetch_record_batch:DeprecationWarning"
+    # DeprecationWarning: '_UnionGenericAlias' is deprecated and slated for removal in Python 3.17
+    # DeprecationWarning: The 'generic' unit for NumPy timedelta is deprecated, and will raise an error in the future. This includes implicit conversion of bare integers (e.g. `+ 1`).Please use a specific unit instead.
+    "-Wignore::DeprecationWarning"
+  ]
+  ++ lib.optionals (pythonAtLeast "3.14") [
+    # Multiple tests with warnings fail without it
+    "-Wignore::pytest.PytestUnraisableExceptionWarning"
+  ];
+
+  pythonImportsCheck = [ "ibis" ] ++ map (backend: "ibis.backends.${backend}") testBackends;
 
   meta = {
     description = "Productivity-centric Python Big Data Framework";
     homepage = "https://github.com/ibis-project/ibis";
     changelog = "https://github.com/ibis-project/ibis/releases/tag/${finalAttrs.src.tag}";
     license = lib.licenses.asl20;
+
     maintainers = with lib.maintainers; [
       cpcloud
       sarahec

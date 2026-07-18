@@ -1,11 +1,11 @@
 {
+  lib,
+  fetchFromGitHub,
   buildPythonPackage,
   cached-property,
   click,
   coloredlogs,
   construct,
-  fetchFromGitHub,
-  lib,
   plumbum,
   pyimg4,
   remotezip2,
@@ -17,7 +17,6 @@
 buildPythonPackage rec {
   pname = "ipsw-parser";
   version = "1.5.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "doronz88";
@@ -25,6 +24,14 @@ buildPythonPackage rec {
     tag = "v${version}";
     hash = "sha256-+lhrRlIuchWIezzxkpTv4gdxXbOpNPWOJrdOU/g1i68=";
   };
+
+  checkPhase = ''
+    runHook preCheck
+
+    "$out"/bin/${meta.mainProgram} --help
+
+    runHook postCheck
+  '';
 
   build-system = [
     setuptools
@@ -42,22 +49,15 @@ buildPythonPackage rec {
     requests
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "ipsw_parser" ];
 
-  checkPhase = ''
-    runHook preCheck
-
-    "$out"/bin/${meta.mainProgram} --help
-
-    runHook postCheck
-  '';
-
   meta = {
-    changelog = "https://github.com/doronz88/ipsw_parser/releases/tag/${src.tag}";
     description = "Python3 utility for parsing and extracting data from IPSW";
     homepage = "https://github.com/doronz88/ipsw_parser";
+    changelog = "https://github.com/doronz88/ipsw_parser/releases/tag/${src.tag}";
     license = lib.licenses.gpl3Plus;
-    mainProgram = "ipsw-parser";
     maintainers = [ lib.maintainers.dotlambda ];
+    mainProgram = "ipsw-parser";
   };
 }

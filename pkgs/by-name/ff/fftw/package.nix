@@ -1,15 +1,15 @@
 {
-  fetchurl,
-  stdenv,
   lib,
+  stdenv,
+  fetchurl,
   gfortran,
-  perl,
   llvmPackages,
-  precision ? "double",
-  enableMpi ? false,
   mpi,
-  withDoc ? stdenv.cc.isGNU,
+  perl,
   testers,
+  enableMpi ? false,
+  precision ? "double",
+  withDoc ? stdenv.cc.isGNU,
 }:
 
 assert lib.elem precision [
@@ -24,11 +24,12 @@ stdenv.mkDerivation (finalAttrs: {
   version = "3.3.11";
 
   src = fetchurl {
+    hash = "sha256-VjDCTN6zOxMWEvfrSxqZNCNHVPnziP+GF0WNC+byOaE=";
+
     urls = [
       "https://fftw.org/fftw-${finalAttrs.version}.tar.gz"
       "ftp://ftp.fftw.org/pub/fftw/fftw-${finalAttrs.version}.tar.gz"
     ];
-    hash = "sha256-VjDCTN6zOxMWEvfrSxqZNCNHVPnziP+GF0WNC+byOaE=";
   };
 
   outputs = [
@@ -37,8 +38,13 @@ stdenv.mkDerivation (finalAttrs: {
     "man"
   ]
   ++ lib.optional withDoc "info"; # it's dev-doc only
-  outputBin = "dev"; # fftw-wisdom
 
+  # fftw builds with -mtune=native by default
+  postPatch = ''
+    substituteInPlace configure --replace-fail "-mtune=native" "-mtune=generic"
+  '';
+
+  strictDeps = true;
   nativeBuildInputs = [ gfortran ];
 
   buildInputs =
@@ -83,37 +89,30 @@ stdenv.mkDerivation (finalAttrs: {
   # doc generation causes Fortran wrapper generation which hard-codes gcc
   ++ lib.optional (!withDoc) "--disable-doc";
 
-  # fftw builds with -mtune=native by default
-  postPatch = ''
-    substituteInPlace configure --replace-fail "-mtune=native" "-mtune=generic"
-  '';
-
-  strictDeps = true;
-  enableParallelBuilding = true;
-
   nativeCheckInputs = [ perl ];
-
+  __structuredAttrs = true;
+  enableParallelBuilding = true;
+  outputBin = "dev"; # fftw-wisdom
   passthru.tests.pkg-config = testers.testMetaPkgConfig finalAttrs.finalPackage;
 
-  __structuredAttrs = true;
-
   meta = {
-    changelog = "https://github.com/FFTW/fftw3/blob/fftw-${finalAttrs.version}/NEWS";
     description = "Fastest Fourier Transform in the West library";
     homepage = "https://www.fftw.org/";
+    changelog = "https://github.com/FFTW/fftw3/blob/fftw-${finalAttrs.version}/NEWS";
     license = lib.licenses.gpl2Plus;
     maintainers = [ ];
-    pkgConfigModules = [
-      {
-        "single" = "fftw3f";
-        "double" = "fftw3";
-        "long-double" = "fftw3l";
-        "quad-precision" = "fftw3q";
-      }
-      .${precision}
-    ];
     platforms = lib.platforms.unix;
     # quad-precision requires libquadmath from gfortran, but libquadmath is not supported on aarch64
     badPlatforms = lib.optionals (precision == "quad-precision") lib.platforms.aarch64;
+
+    pkgConfigModules = [
+      {
+        "double" = "fftw3";
+        "long-double" = "fftw3l";
+        "quad-precision" = "fftw3q";
+        "single" = "fftw3f";
+      }
+      .${precision}
+    ];
   };
 })

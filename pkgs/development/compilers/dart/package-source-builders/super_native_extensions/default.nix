@@ -1,21 +1,51 @@
 {
   lib,
-  rustPlatform,
-  pkg-config,
-  at-spi2-atk,
-  gdk-pixbuf,
-  cairo,
-  gtk3,
-  writeText,
   stdenv,
+  at-spi2-atk,
+  cairo,
+  gdk-pixbuf,
+  gtk3,
+  pkg-config,
+  rustPlatform,
+  writeText,
 }:
 
-{ version, src, ... }:
+{ src, version, ... }:
 
 let
   rustDep = rustPlatform.buildRustPackage {
-    pname = "super_native_extensions-rs";
     inherit version src;
+    pname = "super_native_extensions-rs";
+    nativeBuildInputs = [ pkg-config ];
+
+    buildInputs = [
+      at-spi2-atk
+      gdk-pixbuf
+      cairo
+      gtk3
+    ];
+
+    cargoHash =
+      rec {
+        _0_8_17 = _0_8_22;
+        _0_8_18 = _0_8_22;
+        _0_8_19 = _0_8_22;
+        _0_8_20 = _0_8_22;
+        _0_8_21 = _0_8_22;
+        _0_8_22 = "sha256-gYYoC3bGJrYY1uUHfqMv6pp4SK+P9fRoBsLtf34rsCg=";
+        _0_8_24 = _0_8_22;
+        _0_9_0-dev_3 = _0_8_22;
+        _0_9_0-dev_5 = _0_8_22;
+        _0_9_0-dev_6 = "sha256-1yJIbBxScmkCwy/e+/z2cYA8qQBfT0yoIBmOSPVd4h4=";
+        _0_9_1 = _0_9_0-dev_6;
+      }
+      .${"_" + (lib.replaceStrings [ "." ] [ "_" ] version)} or (throw ''
+        Unsupported version of pub 'super_native_extensions': '${version}'
+        Please add cargoHash to here. If the cargoHash
+        is the same with existing versions, add an alias here.
+      '');
+
+    sourceRoot = "${src.name}/rust";
 
     unpackPhase = ''
       runHook preUnpack
@@ -30,37 +60,6 @@ let
       runHook postUnpack
     '';
 
-    sourceRoot = "${src.name}/rust";
-
-    cargoHash =
-      rec {
-        _0_9_1 = _0_9_0-dev_6;
-        _0_9_0-dev_6 = "sha256-1yJIbBxScmkCwy/e+/z2cYA8qQBfT0yoIBmOSPVd4h4=";
-        _0_9_0-dev_5 = _0_8_22;
-        _0_9_0-dev_3 = _0_8_22;
-        _0_8_22 = "sha256-gYYoC3bGJrYY1uUHfqMv6pp4SK+P9fRoBsLtf34rsCg=";
-        _0_8_24 = _0_8_22;
-        _0_8_21 = _0_8_22;
-        _0_8_20 = _0_8_22;
-        _0_8_19 = _0_8_22;
-        _0_8_18 = _0_8_22;
-        _0_8_17 = _0_8_22;
-      }
-      .${"_" + (lib.replaceStrings [ "." ] [ "_" ] version)} or (throw ''
-        Unsupported version of pub 'super_native_extensions': '${version}'
-        Please add cargoHash to here. If the cargoHash
-        is the same with existing versions, add an alias here.
-      '');
-
-    nativeBuildInputs = [ pkg-config ];
-
-    buildInputs = [
-      at-spi2-atk
-      gdk-pixbuf
-      cairo
-      gtk3
-    ];
-
     passthru.libraryPath = "lib/libsuper_native_extensions.so";
   };
 
@@ -73,9 +72,9 @@ let
 
 in
 stdenv.mkDerivation {
-  pname = "super_native_extensions";
   inherit version src;
   inherit (src) passthru;
+  pname = "super_native_extensions";
 
   installPhase = ''
     runHook preInstall

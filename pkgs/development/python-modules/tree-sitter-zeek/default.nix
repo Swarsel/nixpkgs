@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   setuptools,
   tree-sitter,
 }:
@@ -9,7 +9,6 @@
 buildPythonPackage rec {
   pname = "tree-sitter-zeek";
   version = "0.2.15";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "zeek";
@@ -24,12 +23,14 @@ buildPythonPackage rec {
     core = [ tree-sitter ];
   };
 
+  pyproject = true;
   pythonImportsCheck = [ "tree_sitter_zeek" ];
 
   meta = {
     description = "Tree-sitter grammar for the Zeek scripting language";
     homepage = "https://github.com/zeek/tree-sitter-zeek";
     license = lib.licenses.bsd3;
+
     maintainers = with lib.maintainers; [
       mdaniels5757
     ];

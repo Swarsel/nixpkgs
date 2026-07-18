@@ -1,13 +1,13 @@
 {
   lib,
   stdenv,
-  fetchYarnDeps,
   fetchFromGitHub,
+  fetchYarnDeps,
   nix-update-script,
-  yarnConfigHook,
-  yarnBuildHook,
-  npmHooks,
   nodejs,
+  npmHooks,
+  yarnBuildHook,
+  yarnConfigHook,
 }:
 stdenv.mkDerivation (finalAttrs: {
   pname = "diagnostic-languageserver";
@@ -20,17 +20,17 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-EFkvxMvtA5L6ZiDxrZxGnNAphNn/P3ra6ZrslplScZg=";
   };
 
-  yarnOfflineCache = fetchYarnDeps {
-    yarnLock = "${finalAttrs.src}/yarn.lock";
-    hash = "sha256-T8ppt8EDljtMhGp9i0VleU2Nw3tJexE2ufT6C4EtAz0=";
-  };
-
   nativeBuildInputs = [
     yarnConfigHook
     yarnBuildHook
     npmHooks.npmInstallHook
     nodejs
   ];
+
+  yarnOfflineCache = fetchYarnDeps {
+    hash = "sha256-T8ppt8EDljtMhGp9i0VleU2Nw3tJexE2ufT6C4EtAz0=";
+    yarnLock = "${finalAttrs.src}/yarn.lock";
+  };
 
   passthru.updateScript = nix-update-script { };
 
@@ -39,7 +39,7 @@ stdenv.mkDerivation (finalAttrs: {
     homepage = "https://github.com/iamcco/diagnostic-languageserver";
     changelog = "https://github.com/iamcco/diagnostic-languageserver/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.mit;
-    mainProgram = "diagnostic-languageserver";
     maintainers = [ ];
+    mainProgram = "diagnostic-languageserver";
   };
 })

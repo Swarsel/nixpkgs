@@ -13,18 +13,16 @@ in
 
 buildPythonPackage {
   inherit pname version;
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
     hash = "sha256-JWpnIQbxZ0VEUijZZiQLd7VfRqCW0gMFkBpXql0fTC8=";
   };
 
-  build-system = [ setuptools ];
-
-  pythonImportsCheck = [ "atomicwrites" ];
-
   nativeCheckInputs = [ pytestCheckHook ];
+  build-system = [ setuptools ];
+  pyproject = true;
+  pythonImportsCheck = [ "atomicwrites" ];
 
   meta = {
     description = "Atomic file writes";

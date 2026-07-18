@@ -1,7 +1,7 @@
 {
   config,
-  pkgs,
   lib,
+  pkgs,
   ...
 }:
 with lib;
@@ -55,9 +55,6 @@ in
     )
   ];
 
-  # interface
-  options.services.vmalert.package = mkPackageOption pkgs "victoriametrics" { };
-
   options.services.vmalert.instances = mkOption {
     default = { };
 
@@ -67,82 +64,40 @@ in
 
     type = types.attrsOf (
       types.submodule (
-        { name, config, ... }:
+        { config, name, ... }:
         {
           options = {
             enable = lib.mkOption {
-              type = lib.types.bool;
               default = false;
+
               description = ''
                 Wether to enable VictoriaMetrics's `vmalert`.
 
                 `vmalert` evaluates alerting and recording rules against a data source, sends notifications via Alertmanager.
               '';
-            };
 
-            settings = mkOption {
-              type = types.submodule {
-                freeformType = confType;
-                options = {
-
-                  "datasource.url" = mkOption {
-                    type = types.nonEmptyStr;
-                    example = "http://localhost:8428";
-                    description = ''
-                      Datasource compatible with Prometheus HTTP API.
-                    '';
-                  };
-
-                  "notifier.url" = mkOption {
-                    type = with types; listOf nonEmptyStr;
-                    default = [ ];
-                    example = [ "http://127.0.0.1:9093" ];
-                    description = ''
-                      Prometheus Alertmanager URL. List all Alertmanager URLs if it runs in the cluster mode to ensure high availability.
-                    '';
-                  };
-
-                  "rule" = mkOption {
-                    type = with types; listOf path;
-                    description = ''
-                      Path to the files with alerting and/or recording rules.
-
-                      ::: {.note}
-                      Consider using the {option}`services.vmalert.instances.<name>.rules` option as a convenient alternative for declaring rules
-                      directly in the `nix` language.
-                      :::
-                    '';
-                  };
-
-                };
-              };
-              default = { };
-              example = {
-                "datasource.url" = "http://localhost:8428";
-                "datasource.disableKeepAlive" = true;
-                "datasource.showURL" = false;
-                "rule" = [
-                  "http://<some-server-addr>/path/to/rules"
-                  "dir/*.yaml"
-                ];
-              };
-              description = ''
-                `vmalert` configuration, passed via command line flags. Refer to
-                <https://github.com/VictoriaMetrics/VictoriaMetrics/blob/master/app/vmalert/README.md#configuration>
-                for details on supported values.
-              '';
+              type = lib.types.bool;
             };
 
             rules = mkOption {
-              type = format.type;
               default = { };
+
+              description = ''
+                A list of the given alerting or recording rules against configured `"datasource.url"` compatible with
+                Prometheus HTTP API for `vmalert` to execute. Refer to
+                <https://github.com/VictoriaMetrics/VictoriaMetrics/blob/master/app/vmalert/README.md#rules>
+                for details on supported values.
+              '';
+
               example = {
                 group = [
                   {
                     name = "TestGroup";
+
                     rules = [
                       {
                         alert = "ExampleAlertAlwaysFiring";
+
                         expr = ''
                           sum by(job)
                           (up == 1)
@@ -152,12 +107,70 @@ in
                   }
                 ];
               };
+
+              type = format.type;
+            };
+
+            settings = mkOption {
+              default = { };
+
               description = ''
-                A list of the given alerting or recording rules against configured `"datasource.url"` compatible with
-                Prometheus HTTP API for `vmalert` to execute. Refer to
-                <https://github.com/VictoriaMetrics/VictoriaMetrics/blob/master/app/vmalert/README.md#rules>
+                `vmalert` configuration, passed via command line flags. Refer to
+                <https://github.com/VictoriaMetrics/VictoriaMetrics/blob/master/app/vmalert/README.md#configuration>
                 for details on supported values.
               '';
+
+              example = {
+                "datasource.disableKeepAlive" = true;
+                "datasource.showURL" = false;
+                "datasource.url" = "http://localhost:8428";
+
+                "rule" = [
+                  "http://<some-server-addr>/path/to/rules"
+                  "dir/*.yaml"
+                ];
+              };
+
+              type = types.submodule {
+                options = {
+
+                  "datasource.url" = mkOption {
+                    description = ''
+                      Datasource compatible with Prometheus HTTP API.
+                    '';
+
+                    example = "http://localhost:8428";
+                    type = types.nonEmptyStr;
+                  };
+
+                  "notifier.url" = mkOption {
+                    default = [ ];
+
+                    description = ''
+                      Prometheus Alertmanager URL. List all Alertmanager URLs if it runs in the cluster mode to ensure high availability.
+                    '';
+
+                    example = [ "http://127.0.0.1:9093" ];
+                    type = with types; listOf nonEmptyStr;
+                  };
+
+                  "rule" = mkOption {
+                    description = ''
+                      Path to the files with alerting and/or recording rules.
+
+                      ::: {.note}
+                      Consider using the {option}`services.vmalert.instances.<name>.rules` option as a convenient alternative for declaring rules
+                      directly in the `nix` language.
+                      :::
+                    '';
+
+                    type = with types; listOf path;
+                  };
+
+                };
+
+                freeformType = confType;
+              };
             };
           };
 
@@ -170,6 +183,9 @@ in
       )
     );
   };
+
+  # interface
+  options.services.vmalert.package = mkPackageOption pkgs "victoriametrics" { };
 
   # implementation
   config = mkIf (enabledInstances != { }) {
@@ -188,17 +204,18 @@ in
         name' = vmalertName name;
       in
       lib.nameValuePair name' {
-        description = "vmalert service";
-        wantedBy = [ "multi-user.target" ];
         after = [ "network.target" ];
+        description = "vmalert service";
         reloadTriggers = [ config.environment.etc."${name'}/rules.yml".source ];
 
         serviceConfig = {
           DynamicUser = true;
-          Restart = "on-failure";
-          ExecStart = "${cfg.package}/bin/vmalert ${mkConfOpts settings}";
           ExecReload = ''${pkgs.coreutils}/bin/kill -SIGHUP "$MAINPID"'';
+          ExecStart = "${cfg.package}/bin/vmalert ${mkConfOpts settings}";
+          Restart = "on-failure";
         };
+
+        wantedBy = [ "multi-user.target" ];
       }
     ) enabledInstances;
   };

@@ -1,16 +1,15 @@
 {
   lib,
+  fetchFromGitHub,
   aiohttp,
   async-timeout,
   buildPythonPackage,
-  fetchFromGitHub,
   setuptools_80,
 }:
 
 buildPythonPackage rec {
   pname = "mill-local";
   version = "0.5.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "Danielhiversen";
@@ -20,15 +19,15 @@ buildPythonPackage rec {
   };
 
   buildInputs = [ setuptools_80 ];
+  # Project has no tests
+  doCheck = false;
 
   dependencies = [
     aiohttp
     async-timeout
   ];
 
-  # Project has no tests
-  doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "mill_local" ];
 
   meta = {

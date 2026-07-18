@@ -1,11 +1,11 @@
 {
-  fetchurl,
-  fetchpatch,
   lib,
   stdenv,
+  fetchurl,
+  fetchpatch,
   gmpxx,
-  perl,
   gnum4,
+  perl,
 }:
 
 let
@@ -13,8 +13,8 @@ let
 in
 
 stdenv.mkDerivation {
-  pname = "ppl";
   inherit version;
+  pname = "ppl";
 
   src = fetchurl {
     url = "https://mirror.metanet.ch/sage/spkg/upstream/ppl/ppl-${version}.tar.bz2";
@@ -24,8 +24,8 @@ stdenv.mkDerivation {
   patches = [
     (fetchpatch {
       name = "clang5-support.patch";
-      url = "https://raw.githubusercontent.com/sagemath/sage/9.2/build/pkgs/ppl/patches/clang5-support.patch";
       sha256 = "1zj90hm25pkgvk4jlkfzh18ak9b98217gbidl3731fdccbw6hr87";
+      url = "https://raw.githubusercontent.com/sagemath/sage/9.2/build/pkgs/ppl/patches/clang5-support.patch";
     })
   ];
 
@@ -40,6 +40,7 @@ stdenv.mkDerivation {
     perl
     gnum4
   ];
+
   propagatedBuildInputs = [ gmpxx ];
 
   configureFlags = [
@@ -56,7 +57,6 @@ stdenv.mkDerivation {
   # x86_64 box.  Nevertheless, being a dependency of GCC, it probably ought
   # to be tested.
   doCheck = false;
-
   enableParallelBuilding = true;
 
   meta = {
@@ -78,9 +78,7 @@ stdenv.mkDerivation {
     '';
 
     homepage = "http://bugseng.com/products/ppl/";
-
     license = lib.licenses.gpl3Plus;
-
     maintainers = [ ];
     platforms = lib.platforms.unix;
   };

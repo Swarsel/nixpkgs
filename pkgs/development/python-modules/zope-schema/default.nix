@@ -1,18 +1,17 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   setuptools,
-  zope-event,
-  zope-interface,
   unittestCheckHook,
+  zope-event,
   zope-i18nmessageid,
+  zope-interface,
 }:
 
 buildPythonPackage rec {
   pname = "zope-schema";
   version = "8.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "zopefoundation";
@@ -26,6 +25,11 @@ buildPythonPackage rec {
       --replace-fail "setuptools ==" "setuptools >="
   '';
 
+  nativeCheckInputs = [
+    unittestCheckHook
+    zope-i18nmessageid
+  ];
+
   build-system = [ setuptools ];
 
   dependencies = [
@@ -33,20 +37,14 @@ buildPythonPackage rec {
     zope-interface
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "zope.schema" ];
-
-  nativeCheckInputs = [
-    unittestCheckHook
-    zope-i18nmessageid
-  ];
-
+  pythonNamespaces = [ "zope" ];
   unittestFlagsArray = [ "src/zope/schema/tests" ];
 
-  pythonNamespaces = [ "zope" ];
-
   meta = {
-    homepage = "https://github.com/zopefoundation/zope.schema";
     description = "zope.interface extension for defining data schemas";
+    homepage = "https://github.com/zopefoundation/zope.schema";
     changelog = "https://github.com/zopefoundation/zope.schema/blob/${src.tag}/CHANGES.rst";
     license = lib.licenses.zpl21;
     maintainers = [ ];

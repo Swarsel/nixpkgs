@@ -17,9 +17,9 @@ let
   inherit (lib.cli) toCommandLine;
 
   optionFormat = optionName: {
+    explicitBool = false;
     option = "-${optionName}";
     sep = null;
-    explicitBool = false;
   };
 
   cfg = config.services.hylafax;
@@ -71,49 +71,55 @@ let
     } ''mkdir --parents "$out/" ${concatLines (mapModems mkLine)}'';
 
   setupSpoolScript = pkgs.replaceVarsWith {
-    name = "hylafax-setup-spool.sh";
-    src = ./spool.sh;
     isExecutable = true;
+    name = "hylafax-setup-spool.sh";
+
     replacements = {
-      faxuser = "uucp";
-      faxgroup = "uucp";
-      lockPath = "/var/lock";
       inherit globalConfigPath modemConfigPath;
       inherit (cfg) package spoolAreaPath userAccessFile;
       inherit (pkgs) runtimeShell;
+      faxgroup = "uucp";
+      faxuser = "uucp";
+      lockPath = "/var/lock";
     };
+
+    src = ./spool.sh;
   };
 
   waitFaxqScript = pkgs.replaceVarsWith {
+    isExecutable = true;
     # This script checks the modems status files
     # and waits until all modems report readiness.
     name = "hylafax-faxq-wait-start.sh";
-    src = ./faxq-wait.sh;
-    isExecutable = true;
+
     replacements = {
-      timeoutSec = toString 10;
       inherit (cfg) spoolAreaPath;
       inherit (pkgs) runtimeShell;
+      timeoutSec = toString 10;
     };
+
+    src = ./faxq-wait.sh;
   };
 
   sockets.hylafax-hfaxd = {
     description = "HylaFAX server socket";
     documentation = [ "man:hfaxd(8)" ];
-    wantedBy = [ "multi-user.target" ];
     listenStreams = [ "127.0.0.1:4559" ];
-    socketConfig.FreeBind = true;
     socketConfig.Accept = true;
+    socketConfig.FreeBind = true;
+    wantedBy = [ "multi-user.target" ];
   };
 
   paths.hylafax-faxq = {
     description = "HylaFAX queue manager sendq watch";
+
     documentation = [
       "man:faxq(8)"
       "man:sendq(5)"
     ];
-    wantedBy = [ "multi-user.target" ];
+
     pathConfig.PathExistsGlob = [ "${cfg.spoolAreaPath}/sendq/q*" ];
+    wantedBy = [ "multi-user.target" ];
   };
 
   timers = mkMerge [
@@ -152,6 +158,7 @@ let
   services.hylafax-spool = {
     description = "HylaFAX spool area preparation";
     documentation = [ "man:hylafax-server(4)" ];
+
     script = ''
       ${setupSpoolScript}
       cd "${cfg.spoolAreaPath}"
@@ -162,6 +169,7 @@ let
         exit 1
       fi
     '';
+
     serviceConfig.ExecStop = "${setupSpoolScript}";
     serviceConfig.RemainAfterExit = true;
     serviceConfig.Type = "oneshot";
@@ -169,13 +177,10 @@ let
   };
 
   services.hylafax-faxq = {
+    after = [ "hylafax-spool.service" ];
     description = "HylaFAX queue manager";
     documentation = [ "man:faxq(8)" ];
     requires = [ "hylafax-spool.service" ];
-    after = [ "hylafax-spool.service" ];
-    wants = mapModems ({ name, ... }: "hylafax-faxgetty@${name}.service");
-    wantedBy = mkIf cfg.autostart [ "multi-user.target" ];
-    serviceConfig.Type = "forking";
     serviceConfig.ExecStart = mkSpoolCmd "" "faxq" null { };
     # This delays the "readiness" of this service until
     # all modems are initialized (or a timeout is reached).
@@ -190,81 +195,92 @@ let
     # disable some systemd hardening settings
     serviceConfig.PrivateDevices = null;
     serviceConfig.RestrictRealtime = null;
+    serviceConfig.Type = "forking";
+    wantedBy = mkIf cfg.autostart [ "multi-user.target" ];
+    wants = mapModems ({ name, ... }: "hylafax-faxgetty@${name}.service");
   };
 
   services."hylafax-hfaxd@" = {
+    after = [ "hylafax-faxq.service" ];
     description = "HylaFAX server";
     documentation = [ "man:hfaxd(8)" ];
-    after = [ "hylafax-faxq.service" ];
     requires = [ "hylafax-faxq.service" ];
-    serviceConfig.StandardInput = "socket";
-    serviceConfig.StandardOutput = "socket";
+
     serviceConfig.ExecStart = mkSpoolCmd "" "hfaxd" null {
-      d = true;
       I = true;
+      d = true;
     };
-    unitConfig.RequiresMountsFor = [ cfg.userAccessFile ];
+
     # disable some systemd hardening settings
     serviceConfig.PrivateDevices = null;
     serviceConfig.PrivateNetwork = null;
+    serviceConfig.StandardInput = "socket";
+    serviceConfig.StandardOutput = "socket";
+    unitConfig.RequiresMountsFor = [ cfg.userAccessFile ];
   };
 
   services.hylafax-faxcron = rec {
+    after = [ "hylafax-spool.service" ];
     description = "HylaFAX spool area maintenance";
     documentation = [ "man:faxcron(8)" ];
-    after = [ "hylafax-spool.service" ];
     requires = [ "hylafax-spool.service" ];
-    wantedBy = mkIf cfg.faxcron.enable.spoolInit requires;
-    startAt = mkIf (cfg.faxcron.enable.frequency != null) cfg.faxcron.enable.frequency;
+
     serviceConfig.ExecStart = mkSpoolCmd "" "faxcron" null {
       info = cfg.faxcron.infoDays;
       log = cfg.faxcron.logDays;
       rcv = cfg.faxcron.rcvDays;
     };
+
+    startAt = mkIf (cfg.faxcron.enable.frequency != null) cfg.faxcron.enable.frequency;
+    wantedBy = mkIf cfg.faxcron.enable.spoolInit requires;
   };
 
   services.hylafax-faxqclean = rec {
+    after = [ "hylafax-spool.service" ];
     description = "HylaFAX spool area queue cleaner";
     documentation = [ "man:faxqclean(8)" ];
-    after = [ "hylafax-spool.service" ];
     requires = [ "hylafax-spool.service" ];
-    wantedBy = mkIf cfg.faxqclean.enable.spoolInit requires;
-    startAt = mkIf (cfg.faxqclean.enable.frequency != null) cfg.faxqclean.enable.frequency;
+
     serviceConfig.ExecStart = mkSpoolCmd "" "faxqclean" null {
-      v = true;
-      a = cfg.faxqclean.archiving != "never";
       A = cfg.faxqclean.archiving == "always";
-      j = 60 * cfg.faxqclean.doneqMinutes;
+      a = cfg.faxqclean.archiving != "never";
       d = 60 * cfg.faxqclean.docqMinutes;
+      j = 60 * cfg.faxqclean.doneqMinutes;
+      v = true;
     };
+
+    startAt = mkIf (cfg.faxqclean.enable.frequency != null) cfg.faxqclean.enable.frequency;
+    wantedBy = mkIf cfg.faxqclean.enable.spoolInit requires;
   };
 
   mkFaxgettyService =
     { name, ... }:
     lib.nameValuePair "hylafax-faxgetty@${name}" rec {
-      description = "HylaFAX faxgetty for %I";
-      documentation = [ "man:faxgetty(8)" ];
-      bindsTo = [ "dev-%i.device" ];
-      requires = [ "hylafax-spool.service" ];
       after = bindsTo ++ requires;
+
       before = [
         "hylafax-faxq.service"
         "getty.target"
       ];
-      unitConfig.StopWhenUnneeded = true;
-      unitConfig.AssertFileNotEmpty = "${cfg.spoolAreaPath}/etc/config.%I";
-      serviceConfig.UtmpIdentifier = "%I";
-      serviceConfig.TTYPath = "/dev/%I";
-      serviceConfig.Restart = "always";
-      serviceConfig.KillMode = "process";
-      serviceConfig.IgnoreSIGPIPE = false;
+
+      bindsTo = [ "dev-%i.device" ];
+      description = "HylaFAX faxgetty for %I";
+      documentation = [ "man:faxgetty(8)" ];
+      requires = [ "hylafax-spool.service" ];
       serviceConfig.ExecStart = mkSpoolCmd "-" "faxgetty" "/dev/%I" { };
       # faxquit fails if the pipe is already gone
       # (e.g. the service is already stopping)
       serviceConfig.ExecStop = mkSpoolCmd "-" "faxquit" "%I" { };
+      serviceConfig.IgnoreSIGPIPE = false;
+      serviceConfig.KillMode = "process";
       # disable some systemd hardening settings
       serviceConfig.PrivateDevices = null;
+      serviceConfig.Restart = "always";
       serviceConfig.RestrictRealtime = null;
+      serviceConfig.TTYPath = "/dev/%I";
+      serviceConfig.UtmpIdentifier = "%I";
+      unitConfig.AssertFileNotEmpty = "${cfg.spoolAreaPath}/etc/config.%I";
+      unitConfig.StopWhenUnneeded = true;
     };
 
   modemServices = lib.listToAttrs (mapModems mkFaxgettyService);

@@ -50,8 +50,8 @@ stdenv.mkDerivation (finalAttrs: {
   meta = {
     description = "Lightweight conic solver for second-order cone programming";
     homepage = "https://www.embotech.com/ECOS";
-    downloadPage = "https://github.com/embotech/ecos/releases";
     license = lib.licenses.gpl3;
     platforms = lib.platforms.all;
+    downloadPage = "https://github.com/embotech/ecos/releases";
   };
 })

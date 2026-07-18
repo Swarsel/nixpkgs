@@ -1,6 +1,6 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
   kernel,
 }:
@@ -19,22 +19,22 @@ stdenv.mkDerivation {
     sha256 = "sha256-GVyrwnwNSBW4OCNDqQMU6e31C4bG14arC0MPkRWfiJQ=";
   };
 
-  hardeningDisable = [ "pic" ];
-
   nativeBuildInputs = kernel.moduleBuildDependencies;
-
   buildPhase = "make -C ${KDIR} M=/build/source modules";
+
   installPhase = ''
     make -C ${KDIR} M=/build/source INSTALL_MOD_PATH="$out" modules_install
   '';
 
+  hardeningDisable = [ "pic" ];
+
   meta = {
-    homepage = "https://github.com/twifty/amd-gpu-i2c";
-    downloadPage = "https://github.com/twifty/amd-gpu-i2c";
     description = "Exposes i2c interface to set colors on AMD GPUs";
-    broken = kernel.kernelOlder "6.1.0";
+    homepage = "https://github.com/twifty/amd-gpu-i2c";
     license = lib.licenses.gpl2Plus;
-    platforms = lib.platforms.linux;
     maintainers = with lib.maintainers; [ thardin ];
+    platforms = lib.platforms.linux;
+    broken = kernel.kernelOlder "6.1.0";
+    downloadPage = "https://github.com/twifty/amd-gpu-i2c";
   };
 }

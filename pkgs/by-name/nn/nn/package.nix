@@ -1,6 +1,6 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
   unstableGitUpdater,
 }:
@@ -15,20 +15,18 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-SzkLxR5ZkIlCoMlN18+uc1/xYWhHhXMdd2PpA1jvnFI=";
   };
 
-  sourceRoot = "${finalAttrs.src.name}/nn";
-
   # fixes:
   # triangle.c: In function 'triangulate':
   # triangle.c:15619:1: error: number of arguments doesn't match prototype
   env.NIX_CFLAGS_COMPILE = "-std=gnu17";
-
+  sourceRoot = "${finalAttrs.src.name}/nn";
   passthru.updateScript = unstableGitUpdater { };
 
   meta = {
     description = "C code for Natural Neighbours interpolation of 2D scattered data";
     homepage = "https://github.com/sakov/nn-c/";
-    platforms = lib.platforms.unix;
     license = lib.licenses.bsd3;
     maintainers = with lib.maintainers; [ mkez ];
+    platforms = lib.platforms.unix;
   };
 })

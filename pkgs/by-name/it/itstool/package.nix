@@ -1,10 +1,10 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchurl,
+  autoreconfHook,
   fetchpatch,
   python3,
-  autoreconfHook,
   versionCheckHook,
 }:
 
@@ -20,13 +20,11 @@ stdenv.mkDerivation (finalAttrs: {
   patches = [
     # https://github.com/itstool/itstool/pull/51
     (fetchpatch {
+      hash = "sha256-5J4mRXQu24o2rqVtaXN/ETgj6A8R0Ym+YkZhqhZTzIc=";
       name = "fix-insufficiently-quoted-regular-expressions-pr51";
       url = "https://github.com/itstool/itstool/commit/19f9580f27aa261ea383b395fdef7e153f3f9e6d.patch";
-      hash = "sha256-5J4mRXQu24o2rqVtaXN/ETgj6A8R0Ym+YkZhqhZTzIc=";
     })
   ];
-
-  strictDeps = true;
 
   postPatch = ''
     # Do not let autoconf find Python, but set it directly. This fixes cross-compilation.
@@ -37,28 +35,30 @@ stdenv.mkDerivation (finalAttrs: {
       --replace-fail "@PYTHON@" "${python3.interpreter}"
   '';
 
+  strictDeps = true;
+
   nativeBuildInputs = [
     autoreconfHook
     python3.pkgs.wrapPython
   ];
 
-  pythonPath = [
-    python3.pkgs.libxml2
-  ];
+  doInstallCheck = true;
+  nativeInstallCheckInputs = [ versionCheckHook ];
 
   postFixup = ''
     wrapPythonPrograms
   '';
 
-  nativeInstallCheckInputs = [ versionCheckHook ];
-  doInstallCheck = true;
+  pythonPath = [
+    python3.pkgs.libxml2
+  ];
 
   meta = {
-    homepage = "https://itstool.org/";
     description = "XML to PO and back again";
-    mainProgram = "itstool";
+    homepage = "https://itstool.org/";
     license = lib.licenses.gpl3Plus;
-    platforms = lib.platforms.all;
     maintainers = [ ];
+    platforms = lib.platforms.all;
+    mainProgram = "itstool";
   };
 })

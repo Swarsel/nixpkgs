@@ -5,9 +5,8 @@
 }:
 
 buildPythonPackage rec {
-  version = "0.4.1";
-  format = "setuptools";
   pname = "httpauth";
+  version = "0.4.1";
 
   src = fetchPypi {
     inherit pname version;
@@ -15,6 +14,7 @@ buildPythonPackage rec {
   };
 
   doCheck = false;
+  format = "setuptools";
 
   meta = {
     description = "WSGI HTTP Digest Authentication middleware";

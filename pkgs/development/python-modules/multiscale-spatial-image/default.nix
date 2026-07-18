@@ -1,9 +1,9 @@
 {
   lib,
-  buildPythonPackage,
-  dask-image,
-  dask,
   fetchFromGitHub,
+  buildPythonPackage,
+  dask,
+  dask-image,
   fsspec,
   hatch-vcs,
   hatchling,
@@ -12,15 +12,14 @@
   python-dateutil,
   spatial-image,
   writableTmpDirAsHomeHook,
-  xarray-dataclass,
   xarray,
+  xarray-dataclass,
   zarr,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "multiscale-spatial-image";
   version = "2.1.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "spatial-image";
@@ -29,11 +28,8 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-uF9ZccLvP1ref6qn3l6EpedsoK29Q8lAdr68JjsYMis=";
   };
 
-  pythonRelaxDeps = [
-    "dask"
-    "ngff-zarr"
-    "xarray"
-  ];
+  nativeBuildInputs = [ writableTmpDirAsHomeHook ];
+  doCheck = false; # all test files try to download data
 
   build-system = [
     hatch-vcs
@@ -58,11 +54,14 @@ buildPythonPackage (finalAttrs: {
     #];
   };
 
-  nativeBuildInputs = [ writableTmpDirAsHomeHook ];
-
-  doCheck = false; # all test files try to download data
-
+  pyproject = true;
   pythonImportsCheck = [ "multiscale_spatial_image" ];
+
+  pythonRelaxDeps = [
+    "dask"
+    "ngff-zarr"
+    "xarray"
+  ];
 
   meta = {
     description = "Generate a multiscale, chunked, multi-dimensional spatial image data structure that can serialized to OME-NGFF";

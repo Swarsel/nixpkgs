@@ -34,15 +34,6 @@ in
 
   options.security.sudo-rs = {
 
-    defaultOptions = lib.mkOption {
-      type = with lib.types; listOf str;
-      default = [ "SETENV" ];
-      description = ''
-        Options used for the default rules, granting `root` and the
-        `wheel` group permission to run any command as any user.
-      '';
-    };
-
     enable = lib.mkEnableOption ''
       a memory-safe implementation of the {command}`sudo` command,
       which allows non-root users to execute commands as root
@@ -50,44 +41,61 @@ in
 
     package = lib.mkPackageOption pkgs "sudo-rs" { };
 
-    wheelNeedsPassword = lib.mkOption {
-      type = lib.types.bool;
-      default = true;
-      description = ''
-        Whether users of the `wheel` group must
-        provide a password to run commands as super user via {command}`sudo`.
-      '';
-    };
-
-    execWheelOnly = lib.mkOption {
-      type = lib.types.bool;
-      default = false;
-      description = ''
-        Only allow members of the `wheel` group to execute sudo by
-        setting the executable's permissions accordingly.
-        This prevents users that are not members of `wheel` from
-        exploiting vulnerabilities in sudo such as CVE-2021-3156.
-      '';
-    };
-
     configFile = lib.mkOption {
-      type = lib.types.lines;
       # Note: if syntax errors are detected in this file, the NixOS
       # configuration will fail to build.
       description = ''
         This string contains the contents of the
         {file}`sudoers` file.
       '';
+
+      type = lib.types.lines;
+    };
+
+    defaultOptions = lib.mkOption {
+      default = [ "SETENV" ];
+
+      description = ''
+        Options used for the default rules, granting `root` and the
+        `wheel` group permission to run any command as any user.
+      '';
+
+      type = with lib.types; listOf str;
+    };
+
+    execWheelOnly = lib.mkOption {
+      default = false;
+
+      description = ''
+        Only allow members of the `wheel` group to execute sudo by
+        setting the executable's permissions accordingly.
+        This prevents users that are not members of `wheel` from
+        exploiting vulnerabilities in sudo such as CVE-2021-3156.
+      '';
+
+      type = lib.types.bool;
+    };
+
+    extraConfig = lib.mkOption {
+      default = "";
+
+      description = ''
+        Extra configuration text appended to {file}`sudoers`.
+      '';
+
+      type = lib.types.lines;
     };
 
     extraRules = lib.mkOption {
+      default = [ ];
+
       description = ''
         Define specific rules to be in the {file}`sudoers` file.
         More specific rules should come after more general ones in order to
         yield the expected behavior. You can use `lib.mkBefore`/`lib.mkAfter` to ensure
         this is the case when configuration options are merged.
       '';
-      default = [ ];
+
       example = lib.literalExpression ''
         [
           # Allow execution of any command by all users in group sudo,
@@ -107,66 +115,29 @@ in
                   { command = '''/home/baz/cmd2.sh ""'''; options = [ "SETENV" ]; } ]; }
         ]
       '';
+
       type =
         with lib.types;
         listOf (submodule {
           options = {
-            users = lib.mkOption {
-              type = with lib.types; listOf (either str int);
-              description = ''
-                The usernames / UIDs this rule should apply for.
-              '';
-              default = [ ];
-            };
-
-            groups = lib.mkOption {
-              type = with lib.types; listOf (either str int);
-              description = ''
-                The groups / GIDs this rule should apply for.
-              '';
-              default = [ ];
-            };
-
-            host = lib.mkOption {
-              type = lib.types.str;
-              default = "ALL";
-              description = ''
-                For what host this rule should apply.
-              '';
-            };
-
-            runAs = lib.mkOption {
-              type = with lib.types; str;
-              default = "ALL:ALL";
-              description = ''
-                Under which user/group the specified command is allowed to run.
-
-                A user can be specified using just the username: `"foo"`.
-                It is also possible to specify a user/group combination using `"foo:bar"`
-                or to only allow running as a specific group with `":bar"`.
-              '';
-            };
-
             commands = lib.mkOption {
               description = ''
                 The commands for which the rule should apply.
               '';
+
               type =
                 with lib.types;
                 listOf (
                   either str (submodule {
 
                     options = {
-                      command = lib.mkOption {
-                        type = with lib.types; str;
-                        description = ''
-                          A command being either just a path to a binary to allow any arguments,
-                          the full command with arguments pre-set or with `""` used as the argument,
-                          not allowing arguments to the command at all.
-                        '';
-                      };
-
                       options = lib.mkOption {
+                        default = [ ];
+
+                        description = ''
+                          Options for running the command. Refer to the [sudo manual](https://www.sudo.ws/man/1.7.10/sudoers.man.html).
+                        '';
+
                         type =
                           with lib.types;
                           listOf (enum [
@@ -181,26 +152,79 @@ in
                             "LOG_OUTPUT"
                             "NOLOG_OUTPUT"
                           ]);
+                      };
+
+                      command = lib.mkOption {
                         description = ''
-                          Options for running the command. Refer to the [sudo manual](https://www.sudo.ws/man/1.7.10/sudoers.man.html).
+                          A command being either just a path to a binary to allow any arguments,
+                          the full command with arguments pre-set or with `""` used as the argument,
+                          not allowing arguments to the command at all.
                         '';
-                        default = [ ];
+
+                        type = with lib.types; str;
                       };
                     };
 
                   })
                 );
             };
+
+            groups = lib.mkOption {
+              default = [ ];
+
+              description = ''
+                The groups / GIDs this rule should apply for.
+              '';
+
+              type = with lib.types; listOf (either str int);
+            };
+
+            host = lib.mkOption {
+              default = "ALL";
+
+              description = ''
+                For what host this rule should apply.
+              '';
+
+              type = lib.types.str;
+            };
+
+            runAs = lib.mkOption {
+              default = "ALL:ALL";
+
+              description = ''
+                Under which user/group the specified command is allowed to run.
+
+                A user can be specified using just the username: `"foo"`.
+                It is also possible to specify a user/group combination using `"foo:bar"`
+                or to only allow running as a specific group with `":bar"`.
+              '';
+
+              type = with lib.types; str;
+            };
+
+            users = lib.mkOption {
+              default = [ ];
+
+              description = ''
+                The usernames / UIDs this rule should apply for.
+              '';
+
+              type = with lib.types; listOf (either str int);
+            };
           };
         });
     };
 
-    extraConfig = lib.mkOption {
-      type = lib.types.lines;
-      default = "";
+    wheelNeedsPassword = lib.mkOption {
+      default = true;
+
       description = ''
-        Extra configuration text appended to {file}`sudoers`.
+        Whether users of the `wheel` group must
+        provide a password to run commands as super user via {command}`sudo`.
       '';
+
+      type = lib.types.bool;
     };
   };
 
@@ -213,44 +237,38 @@ in
         message = "`security.sudo` and `security.sudo-rs` cannot both be enabled";
       }
     ];
-    security.sudo.enable = lib.mkDefault false;
+
+    environment.etc.sudoers = {
+      mode = "0440";
+
+      source = pkgs.runCommand "sudoers" {
+        preferLocalBuild = true;
+        src = pkgs.writeText "sudoers-in" cfg.configFile;
+      } "${pkgs.buildPackages.sudo-rs}/bin/visudo -f $src -c && cp $src $out";
+    };
+
+    environment.systemPackages = [ cfg.package ];
+
+    security.pam.services = {
+      su-l = {
+        forwardXAuth = true;
+        logFailures = true;
+        rootOK = true;
+      };
+
+      sudo = {
+        sshAgentAuth = true;
+        usshAuth = true;
+      };
+
+      sudo-i = {
+        sshAgentAuth = true;
+        usshAuth = true;
+      };
+    };
 
     security.shadow.su.package = lib.mkDefault cfg.package;
-
-    security.sudo-rs.extraRules =
-      let
-        defaultRule =
-          {
-            users ? [ ],
-            groups ? [ ],
-            opts ? [ ],
-          }:
-          [
-            {
-              inherit users groups;
-              commands = [
-                {
-                  command = "ALL";
-                  options = opts ++ cfg.defaultOptions;
-                }
-              ];
-            }
-          ];
-      in
-      lib.mkMerge [
-        # This is ordered before users' `lib.mkBefore` rules,
-        # so as not to introduce unexpected changes.
-        (lib.mkOrder 400 (defaultRule {
-          users = [ "root" ];
-        }))
-
-        # This is ordered to show before (most) other rules, but
-        # late-enough for a user to `lib.mkBefore` it.
-        (lib.mkOrder 600 (defaultRule {
-          groups = [ "wheel" ];
-          opts = (lib.optional (!cfg.wheelNeedsPassword) "NOPASSWD");
-        }))
-      ];
+    security.sudo.enable = lib.mkDefault false;
 
     security.sudo-rs.configFile = lib.concatStringsSep "\n" (
       lib.filter (s: s != "") [
@@ -279,6 +297,42 @@ in
       ]
     );
 
+    security.sudo-rs.extraRules =
+      let
+        defaultRule =
+          {
+            groups ? [ ],
+            opts ? [ ],
+            users ? [ ],
+          }:
+          [
+            {
+              inherit users groups;
+
+              commands = [
+                {
+                  options = opts ++ cfg.defaultOptions;
+                  command = "ALL";
+                }
+              ];
+            }
+          ];
+      in
+      lib.mkMerge [
+        # This is ordered before users' `lib.mkBefore` rules,
+        # so as not to introduce unexpected changes.
+        (lib.mkOrder 400 (defaultRule {
+          users = [ "root" ];
+        }))
+
+        # This is ordered to show before (most) other rules, but
+        # late-enough for a user to `lib.mkBefore` it.
+        (lib.mkOrder 600 (defaultRule {
+          groups = [ "wheel" ];
+          opts = (lib.optional (!cfg.wheelNeedsPassword) "NOPASSWD");
+        }))
+      ];
+
     security.wrappers =
       let
         owner = "root";
@@ -288,50 +342,27 @@ in
       in
       {
         sudo = {
+          inherit
+            owner
+            group
+            setuid
+            permissions
+            ;
+
           source = lib.getExe cfg.package;
-          inherit
-            owner
-            group
-            setuid
-            permissions
-            ;
         };
+
         sudoedit = {
-          source = lib.getExe' cfg.package "sudoedit";
           inherit
             owner
             group
             setuid
             permissions
             ;
+
+          source = lib.getExe' cfg.package "sudoedit";
         };
       };
-
-    environment.systemPackages = [ cfg.package ];
-
-    security.pam.services = {
-      su-l = {
-        rootOK = true;
-        forwardXAuth = true;
-        logFailures = true;
-      };
-      sudo = {
-        sshAgentAuth = true;
-        usshAuth = true;
-      };
-      sudo-i = {
-        sshAgentAuth = true;
-        usshAuth = true;
-      };
-    };
-
-    environment.etc.sudoers = {
-      source = pkgs.runCommand "sudoers" {
-        src = pkgs.writeText "sudoers-in" cfg.configFile;
-        preferLocalBuild = true;
-      } "${pkgs.buildPackages.sudo-rs}/bin/visudo -f $src -c && cp $src $out";
-      mode = "0440";
-    };
 
   };
 

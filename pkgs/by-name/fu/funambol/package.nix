@@ -2,10 +2,10 @@
   lib,
   stdenv,
   fetchurl,
-  zlib,
-  curl,
   autoreconfHook,
+  curl,
   unzip,
+  zlib,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -17,17 +17,17 @@ stdenv.mkDerivation (finalAttrs: {
     sha256 = "1667gahz30i5r8kbv7w415z0hbgm6f6pln1137l5skapi1if6r73";
   };
 
-  postUnpack = ''sourceRoot+="/sdk/cpp/build/autotools"'';
+  nativeBuildInputs = [
+    autoreconfHook
+    unzip
+  ];
 
   propagatedBuildInputs = [
     zlib
     curl
   ];
 
-  nativeBuildInputs = [
-    autoreconfHook
-    unzip
-  ];
+  postUnpack = ''sourceRoot+="/sdk/cpp/build/autotools"'';
 
   meta = {
     description = "SyncML client sdk by Funambol project";

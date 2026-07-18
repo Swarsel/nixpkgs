@@ -1,11 +1,11 @@
 {
   lib,
   stdenv,
-  unzip,
   fetchurl,
   electron,
-  makeWrapper,
   geogebra,
+  makeWrapper,
+  unzip,
 }:
 let
   pname = "geogebra";
@@ -16,21 +16,26 @@ let
 
   meta = {
     description = "Dynamic mathematics software with graphics, algebra and spreadsheets";
+
     longDescription = ''
       Dynamic mathematics software for all levels of education that brings
       together geometry, algebra, spreadsheets, graphing, statistics and
       calculus in one easy-to-use package.
     '';
+
     homepage = "https://www.geogebra.org/";
-    maintainers = with lib.maintainers; [
-      voidless
-      sikmir
-    ];
     license = lib.licenses.geogebra;
+
     sourceProvenance = with lib.sourceTypes; [
       binaryBytecode
       binaryNativeCode # some jars include native binaries
     ];
+
+    maintainers = with lib.maintainers; [
+      voidless
+      sikmir
+    ];
+
     platforms = with lib.platforms; linux ++ darwin;
     hydraPlatforms = [ ];
   };
@@ -39,24 +44,18 @@ let
     inherit pname version meta;
 
     src = fetchurl {
+      hash = "sha256-sNCq1Xcx/Y5r+SIRiqQYcG9dVsfIC2Ef5KJf+tgfxC8=";
+
       urls = [
         "https://download.geogebra.org/installers/6.0/GeoGebra-Linux64-Portable-${version}.zip"
         "https://web.archive.org/web/20230824011801/https://download.geogebra.org/installers/6.0/GeoGebra-Linux64-Portable-${version}.zip"
       ];
-      hash = "sha256-sNCq1Xcx/Y5r+SIRiqQYcG9dVsfIC2Ef5KJf+tgfxC8=";
     };
-
-    dontConfigure = true;
-    dontBuild = true;
 
     nativeBuildInputs = [
       unzip
       makeWrapper
     ];
-
-    unpackPhase = ''
-      unzip $src
-    '';
 
     installPhase = ''
       mkdir -p $out/libexec/geogebra/ $out/bin
@@ -70,20 +69,26 @@ let
       install -Dm644 "${srcIcon}" \
         "$out/share/icons/hicolor/scalable/apps/geogebra.svg"
     '';
+
+    dontBuild = true;
+    dontConfigure = true;
+
+    unpackPhase = ''
+      unzip $src
+    '';
   };
 
   darwinPkg = stdenv.mkDerivation {
     inherit pname version;
 
     src = fetchurl {
+      hash = "sha256-CrSoKAjXiejfJHyv8wIpcRr2d8u/50HnatiDm1CdnGQ=";
+
       urls = [
         "https://download.geogebra.org/installers/6.0/GeoGebra-Classic-6-MacOS-Portable-${version}.zip"
         "https://web.archive.org/web/20230824012900/https://download.geogebra.org/installers/6.0/GeoGebra-Classic-6-MacOS-Portable-${version}.zip"
       ];
-      hash = "sha256-CrSoKAjXiejfJHyv8wIpcRr2d8u/50HnatiDm1CdnGQ=";
     };
-
-    dontUnpack = true;
 
     nativeBuildInputs = [ unzip ];
 
@@ -91,6 +96,8 @@ let
       install -dm755 $out/Applications
       unzip $src -d $out/Applications
     '';
+
+    dontUnpack = true;
 
     meta = meta // {
       sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];

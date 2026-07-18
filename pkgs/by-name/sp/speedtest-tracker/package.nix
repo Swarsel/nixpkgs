@@ -1,12 +1,12 @@
 {
   lib,
   fetchFromGitHub,
-  stdenvNoCC,
-  nodejs,
-  fetchNpmDeps,
   buildPackages,
-  php84,
+  fetchNpmDeps,
   nixosTests,
+  nodejs,
+  php84,
+  stdenvNoCC,
   dataDir ? "/var/lib/speedtest-tracker",
 }:
 
@@ -21,8 +21,6 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     hash = "sha256-YI/LHTynR9AiC1MhXdO788imIUB/XndXozIepXkeuyc=";
   };
 
-  buildInputs = [ php84 ];
-
   nativeBuildInputs = [
     nodejs
     buildPackages.npmHooks.npmConfigHook
@@ -30,19 +28,7 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     php84.composerHooks2.composerInstallHook
   ];
 
-  composerVendor = php84.mkComposerVendor {
-    inherit (finalAttrs) pname src version;
-    composerNoScripts = true;
-    composerStrictValidation = false;
-    strictDeps = true;
-    vendorHash = "sha256-Xu8Zsz5FkXiyotOZRwA9KPMHapMThmQQdVdanRGzaJc=";
-  };
-
-  npmDeps = fetchNpmDeps {
-    inherit (finalAttrs) src;
-    name = "${finalAttrs.pname}-npm-deps";
-    hash = "sha256-Ys3hCLLjoIrno9ztSh/m2xz1HiTn20g3Vu/Pnymy/Fc=";
-  };
+  buildInputs = [ php84 ];
 
   preInstall = ''
     npm run build
@@ -55,6 +41,20 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     ln -s ${dataDir}/storage $out/storage
     ln -s ${dataDir}/cache $out/bootstrap/cache
   '';
+
+  composerVendor = php84.mkComposerVendor {
+    inherit (finalAttrs) pname src version;
+    strictDeps = true;
+    vendorHash = "sha256-Xu8Zsz5FkXiyotOZRwA9KPMHapMThmQQdVdanRGzaJc=";
+    composerNoScripts = true;
+    composerStrictValidation = false;
+  };
+
+  npmDeps = fetchNpmDeps {
+    inherit (finalAttrs) src;
+    hash = "sha256-Ys3hCLLjoIrno9ztSh/m2xz1HiTn20g3Vu/Pnymy/Fc=";
+    name = "${finalAttrs.pname}-npm-deps";
+  };
 
   passthru = {
     phpPackage = php84;

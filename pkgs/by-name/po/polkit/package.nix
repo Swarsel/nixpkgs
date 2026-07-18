@@ -2,38 +2,38 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  fetchpatch,
-  pkg-config,
-  glib,
+  buildPackages,
+  coreutils,
+  dbus,
+  docbook-xsl-nons,
+  docbook_xml_dtd_412,
+  duktape,
+  elogind,
   expat,
-  pam,
+  fetchpatch,
+  gettext,
+  glib,
+  gobject-introspection,
+  gtk-doc,
+  libxslt,
   meson,
   mesonEmulatorHook,
   ninja,
+  pam,
   perl,
+  pkg-config,
   python3,
-  gettext,
-  duktape,
-  gobject-introspection,
-  libxslt,
-  docbook-xsl-nons,
-  dbus,
-  util-linux,
-  docbook_xml_dtd_412,
-  gtk-doc,
-  coreutils,
-  useSystemd ? lib.meta.availableOn stdenv.hostPlatform systemdMinimal,
   systemdMinimal,
-  elogind,
-  buildPackages,
-  withIntrospection ?
-    lib.meta.availableOn stdenv.hostPlatform gobject-introspection
-    && stdenv.hostPlatform.emulatorAvailable buildPackages,
+  util-linux,
   # A few tests currently fail on musl (polkitunixusertest, polkitunixgrouptest, polkitidentitytest segfault).
   # Not yet investigated; it may be due to the "Make netgroup support optional"
   # patch not updating the tests correctly yet, or doing something wrong,
   # or being unrelated to that.
   doCheck ? (stdenv.hostPlatform.isLinux && !stdenv.hostPlatform.isMusl),
+  useSystemd ? lib.meta.availableOn stdenv.hostPlatform systemdMinimal,
+  withIntrospection ?
+    lib.meta.availableOn stdenv.hostPlatform gobject-introspection
+    && stdenv.hostPlatform.emulatorAvailable buildPackages,
 }:
 
 let
@@ -41,14 +41,9 @@ let
   setuid = "/run/wrappers/bin";
 in
 stdenv.mkDerivation rec {
+  inherit doCheck;
   pname = "polkit";
   version = "127";
-
-  outputs = [
-    "bin"
-    "dev"
-    "out"
-  ]; # small man pages in $bin
 
   # Tarballs do not contain subprojects.
   src = fetchFromGitHub {
@@ -58,15 +53,31 @@ stdenv.mkDerivation rec {
     hash = "sha256-YTugETy0rqu/bv53jV1UeGqSK79bRXR52EJNcTblvzo=";
   };
 
+  outputs = [
+    "bin"
+    "dev"
+    "out"
+  ]; # small man pages in $bin
+
   patches = [
     # Allow changing base for paths in pkg-config file as before.
     # https://gitlab.freedesktop.org/polkit/polkit/-/merge_requests/100
     ./0001-build-Use-datarootdir-in-Meson-generated-pkg-config-.patch
   ];
 
-  depsBuildBuild = [
-    pkg-config
-  ];
+  postPatch = ''
+    patchShebangs \
+      test/wrapper.py
+
+    # ‘libpolkit-agent-1.so’ should call the setuid wrapper on
+    # NixOS.  Hard-coding the path is kinda ugly.  Maybe we can just
+    # call through $PATH, but that might have security implications.
+    substituteInPlace src/polkitagent/polkitagentsession.c \
+      --replace-fail 'PACKAGE_PREFIX "/lib/polkit-1/'   '"${setuid}/'
+    substituteInPlace test/data/etc/polkit-1/rules.d/10-testing.rules \
+      --replace-fail /bin/true ${coreutils}/bin/true \
+      --replace-fail /bin/false ${coreutils}/bin/false
+  '';
 
   nativeBuildInputs = [
     glib
@@ -104,36 +115,6 @@ stdenv.mkDerivation rec {
     glib # in .pc Requires
   ];
 
-  nativeCheckInputs = [
-    dbus
-    util-linux # for mount
-    (python3.pythonOnBuildForHost.withPackages (
-      pp: with pp; [
-        dbus-python
-        (python-dbusmock.override {
-          # Avoid dependency cycle.
-          doCheck = false;
-        })
-      ]
-    ))
-  ];
-
-  env = {
-    # HACK: We want to install policy files files to $out/share but polkit
-    # should read them from /run/current-system/sw/share on a NixOS system.
-    # Similarly for config files in /etc.
-    # With autotools, it was possible to override Make variables
-    # at install time but Meson does not support this
-    # so we need to convince it to install all files to a temporary
-    # location using DESTDIR and then move it to proper one in postInstall.
-    DESTDIR = "dest";
-
-    # Set these to the default locations, so the builds with and
-    # without systemd can have the same installation path below.
-    PKG_CONFIG_SYSTEMD_SYSUSERS_DIR = "/usr/lib/sysusers.d";
-    PKG_CONFIG_SYSTEMD_TMPFILES_DIR = "/usr/lib/tmpfiles.d";
-  };
-
   mesonFlags = [
     "--datadir=${system}/share"
     "--sysconfdir=/etc"
@@ -149,21 +130,34 @@ stdenv.mkDerivation rec {
     "-Dsession_tracking=${if useSystemd then "logind" else "elogind"}"
   ];
 
-  inherit doCheck;
+  env = {
+    # HACK: We want to install policy files files to $out/share but polkit
+    # should read them from /run/current-system/sw/share on a NixOS system.
+    # Similarly for config files in /etc.
+    # With autotools, it was possible to override Make variables
+    # at install time but Meson does not support this
+    # so we need to convince it to install all files to a temporary
+    # location using DESTDIR and then move it to proper one in postInstall.
+    DESTDIR = "dest";
+    # Set these to the default locations, so the builds with and
+    # without systemd can have the same installation path below.
+    PKG_CONFIG_SYSTEMD_SYSUSERS_DIR = "/usr/lib/sysusers.d";
+    PKG_CONFIG_SYSTEMD_TMPFILES_DIR = "/usr/lib/tmpfiles.d";
+  };
 
-  postPatch = ''
-    patchShebangs \
-      test/wrapper.py
-
-    # ‘libpolkit-agent-1.so’ should call the setuid wrapper on
-    # NixOS.  Hard-coding the path is kinda ugly.  Maybe we can just
-    # call through $PATH, but that might have security implications.
-    substituteInPlace src/polkitagent/polkitagentsession.c \
-      --replace-fail 'PACKAGE_PREFIX "/lib/polkit-1/'   '"${setuid}/'
-    substituteInPlace test/data/etc/polkit-1/rules.d/10-testing.rules \
-      --replace-fail /bin/true ${coreutils}/bin/true \
-      --replace-fail /bin/false ${coreutils}/bin/false
-  '';
+  nativeCheckInputs = [
+    dbus
+    util-linux # for mount
+    (python3.pythonOnBuildForHost.withPackages (
+      pp: with pp; [
+        dbus-python
+        (python-dbusmock.override {
+          # Avoid dependency cycle.
+          doCheck = false;
+        })
+      ]
+    ))
+  ];
 
   postInstall = ''
     # Move stuff from DESTDIR to proper location.
@@ -182,15 +176,21 @@ stdenv.mkDerivation rec {
     ! test -e "$DESTDIR"
   '';
 
+  depsBuildBuild = [
+    pkg-config
+  ];
+
   meta = {
-    homepage = "https://github.com/polkit-org/polkit";
     description = "Toolkit for defining and handling the policy that allows unprivileged processes to speak to privileged processes";
+    homepage = "https://github.com/polkit-org/polkit";
     license = lib.licenses.lgpl2Plus;
     platforms = lib.platforms.linux;
+
     badPlatforms = [
       # mandatory libpolkit-gobject shared library
       lib.systems.inspect.platformPatterns.isStatic
     ];
+
     teams = [ lib.teams.freedesktop ];
   };
 }

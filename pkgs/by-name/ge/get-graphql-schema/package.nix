@@ -1,13 +1,13 @@
 {
   lib,
   stdenv,
-  fetchYarnDeps,
   fetchFromGitHub,
-  nodejs,
-  yarnConfigHook,
-  yarnBuildHook,
-  npmHooks,
+  fetchYarnDeps,
   nix-update-script,
+  nodejs,
+  npmHooks,
+  yarnBuildHook,
+  yarnConfigHook,
 }:
 stdenv.mkDerivation (finalAttrs: {
   pname = "get-graphql-schema";
@@ -20,11 +20,6 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-ujc0LGAqmo4SmItm4VcbBOtmUvL6aV1ppMm4fMmuSRs=";
   };
 
-  yarnOfflineCache = fetchYarnDeps {
-    yarnLock = "${finalAttrs.src}/yarn.lock";
-    hash = "sha256-TZGNX8UHbolLyBmQNGTnFjgx3/3f2HNVQf/h9rIVJKs=";
-  };
-
   nativeBuildInputs = [
     yarnConfigHook
     yarnBuildHook
@@ -32,13 +27,18 @@ stdenv.mkDerivation (finalAttrs: {
     nodejs
   ];
 
+  yarnOfflineCache = fetchYarnDeps {
+    hash = "sha256-TZGNX8UHbolLyBmQNGTnFjgx3/3f2HNVQf/h9rIVJKs=";
+    yarnLock = "${finalAttrs.src}/yarn.lock";
+  };
+
   passthru.updateScript = nix-update-script { };
 
   meta = {
     description = "Fetch and print the GraphQL schema from a GraphQL HTTP endpoint";
     homepage = "https://github.com/prisma-labs/get-graphql-schema";
     license = lib.licenses.mit;
-    mainProgram = "get-graphql-schema";
     maintainers = [ ];
+    mainProgram = "get-graphql-schema";
   };
 })

@@ -7,13 +7,13 @@
   desktop-file-utils,
   glib,
   gst_all_1,
-  pipewire,
   gtk4,
   libadwaita,
   libpulseaudio,
   librsvg,
   meson,
   ninja,
+  pipewire,
   pkg-config,
   rustPlatform,
   rustc,
@@ -30,11 +30,6 @@ stdenv.mkDerivation rec {
     repo = "Kooha";
     rev = "v${version}";
     hash = "sha256-Z+PMSV6fipfHBrqGS24SOgGJS173Vct12sVzCGZL0IA=";
-  };
-
-  cargoDeps = rustPlatform.fetchCargoVendor {
-    inherit pname version src;
-    hash = "sha256-3LYoNQquYbyiEd9ZXRr4UPIcl3gultsBYWCWaCYshwQ=";
   };
 
   nativeBuildInputs = [
@@ -67,12 +62,17 @@ stdenv.mkDerivation rec {
     $out/bin/kooha --help
   '';
 
+  cargoDeps = rustPlatform.fetchCargoVendor {
+    inherit pname version src;
+    hash = "sha256-3LYoNQquYbyiEd9ZXRr4UPIcl3gultsBYWCWaCYshwQ=";
+  };
+
   meta = {
     description = "Elegantly record your screen";
     homepage = "https://github.com/SeaDve/Kooha";
     license = lib.licenses.gpl3Only;
-    platforms = lib.platforms.linux;
     maintainers = with lib.maintainers; [ austinbutler ];
+    platforms = lib.platforms.linux;
     mainProgram = "kooha";
   };
 }

@@ -19,8 +19,8 @@ rustPlatform.buildRustPackage (finalAttrs: {
     description = "Run applications through VPN connections in network namespaces";
     homepage = "https://github.com/jamesmcm/vopono";
     license = lib.licenses.gpl3Plus;
-    platforms = lib.platforms.linux;
     maintainers = [ lib.maintainers.romildo ];
+    platforms = lib.platforms.linux;
     mainProgram = "vopono";
   };
 })

@@ -1,8 +1,8 @@
 {
   lib,
   buildPythonPackage,
-  fetchPypi,
   dill,
+  fetchPypi,
   freezegun,
   pytestCheckHook,
   python-utils,
@@ -13,7 +13,6 @@
 buildPythonPackage rec {
   pname = "progressbar2";
   version = "4.5.0";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
@@ -24,11 +23,6 @@ buildPythonPackage rec {
     sed -i "/-cov/d" pytest.ini
   '';
 
-  build-system = [
-    setuptools
-    setuptools-scm
-  ];
-
   propagatedBuildInputs = [ python-utils ];
 
   nativeCheckInputs = [
@@ -37,6 +31,12 @@ buildPythonPackage rec {
     pytestCheckHook
   ];
 
+  build-system = [
+    setuptools
+    setuptools-scm
+  ];
+
+  pyproject = true;
   pythonImportsCheck = [ "progressbar" ];
 
   meta = {

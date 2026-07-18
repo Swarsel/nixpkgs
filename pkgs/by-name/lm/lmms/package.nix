@@ -2,12 +2,10 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  replaceVars,
-  unstableGitUpdater,
-  cmake,
-  pkg-config,
+  SDL2,
   alsa-lib,
   carla,
+  cmake,
   fftwFloat,
   fltk,
   fluidsynth,
@@ -18,37 +16,39 @@
   libogg,
   libpulseaudio,
   libsamplerate,
-  libsoundio,
   libsndfile,
+  libsoundio,
   libvorbis,
   lilv,
   lv2,
   perl5,
   perl5Packages,
+  pkg-config,
   portaudio,
   qt5,
+  replaceVars,
   sndio,
-  SDL2,
   suil,
+  unstableGitUpdater,
   wineWow64Packages,
   withALSA ? true,
-  withPulseAudio ? true,
-  withSoundio ? false,
-  withPortAudio ? false,
-  withSndio ? false,
-  withJACK ? true,
-  withSDL ? true,
-  withOggVorbis ? true,
-  withMP3Lame ? true,
-  withSoundFont ? true,
-  withZyn ? true,
-  withSWH ? true,
-  withSID ? true,
-  withGIG ? true,
-  withLV2 ? true,
-  withVST ? true,
   withCarla ? true,
+  withGIG ? true,
+  withJACK ? true,
+  withLV2 ? true,
+  withMP3Lame ? true,
+  withOggVorbis ? true,
+  withPortAudio ? false,
+  withPulseAudio ? true,
+  withSDL ? true,
+  withSID ? true,
+  withSWH ? true,
+  withSndio ? false,
+  withSoundFont ? true,
+  withSoundio ? false,
+  withVST ? true,
   withWine ? false,
+  withZyn ? true,
 }:
 
 let
@@ -67,8 +67,18 @@ stdenv.mkDerivation (finalAttrs: {
     fetchSubmodules = true;
   };
 
+  patches = [
+    # Use modern CMake imported target for libgig so that its non-standard
+    # library path (lib/libgig/) is properly propagated to the install RPATH.
+    ./0002-fix-gigplayer-linking.patch
+  ]
+  ++ lib.optionals withWine [
+    (replaceVars ./0001-fix-add-unique-string-to-FindWine-for-replacement-in.patch {
+      WINE_LOCATION = winePackages;
+    })
+  ];
+
   strictDeps = true;
-  __structuredAttrs = true;
 
   nativeBuildInputs = [
     cmake
@@ -140,17 +150,6 @@ stdenv.mkDerivation (finalAttrs: {
     winePackages
   ];
 
-  patches = [
-    # Use modern CMake imported target for libgig so that its non-standard
-    # library path (lib/libgig/) is properly propagated to the install RPATH.
-    ./0002-fix-gigplayer-linking.patch
-  ]
-  ++ lib.optionals withWine [
-    (replaceVars ./0001-fix-add-unique-string-to-FindWine-for-replacement-in.patch {
-      WINE_LOCATION = winePackages;
-    })
-  ];
-
   cmakeFlags = [
     # Fix the build with CMake 4.
     "-DCMAKE_POLICY_VERSION_MINIMUM=3.5"
@@ -173,17 +172,20 @@ stdenv.mkDerivation (finalAttrs: {
     (lib.cmakeBool "WANT_CARLA" withCarla)
   ];
 
+  __structuredAttrs = true;
   passthru.updateScript = unstableGitUpdater { };
 
   meta = {
     description = "DAW similar to FL Studio (music production software)";
-    mainProgram = "lmms";
     homepage = "https://lmms.io";
     license = lib.licenses.gpl2Plus;
-    platforms = lib.platforms.linux;
+
     maintainers = with lib.maintainers; [
       wizardlink
       jaredmontoya
     ];
+
+    platforms = lib.platforms.linux;
+    mainProgram = "lmms";
   };
 })

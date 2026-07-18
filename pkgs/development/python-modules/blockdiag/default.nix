@@ -1,9 +1,9 @@
 {
   lib,
+  fetchFromGitHub,
   buildPythonPackage,
   docutils,
   ephem,
-  fetchFromGitHub,
   fetchpatch,
   fetchpatch2,
   funcparserlib,
@@ -17,7 +17,6 @@
 buildPythonPackage rec {
   pname = "blockdiag";
   version = "3.0.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "blockdiag";
@@ -29,15 +28,15 @@ buildPythonPackage rec {
   patches = [
     # https://github.com/blockdiag/blockdiag/pull/179
     (fetchpatch {
+      hash = "sha256-t1zWFzAsLL2EUa0nD4Eui4Y5AhAZLRmp/yC9QpzzeUA=";
       name = "pillow-10-compatibility.patch";
       url = "https://github.com/blockdiag/blockdiag/commit/20d780cad84e7b010066cb55f848477957870165.patch";
-      hash = "sha256-t1zWFzAsLL2EUa0nD4Eui4Y5AhAZLRmp/yC9QpzzeUA=";
     })
     # https://github.com/blockdiag/blockdiag/pull/175
     (fetchpatch2 {
+      hash = "sha256-OkfKJwJtb2DJRXE/8thYnisTFwcfstUFTTJHdM/qBzg=";
       name = "migrate-to-pytest.patch";
       url = "https://github.com/blockdiag/blockdiag/commit/4f4f726252084f17ecc6c524592222af09d37da4.patch";
-      hash = "sha256-OkfKJwJtb2DJRXE/8thYnisTFwcfstUFTTJHdM/qBzg=";
     })
   ];
 
@@ -47,6 +46,11 @@ buildPythonPackage rec {
     rm src/blockdiag/tests/diagrams/node_icon.diag
     # note: this is a postPatch as `seqdiag` uses them directly
   '';
+
+  nativeCheckInputs = [
+    ephem
+    pytestCheckHook
+  ];
 
   build-system = [ setuptools_80 ];
 
@@ -59,13 +63,6 @@ buildPythonPackage rec {
     webcolors
   ];
 
-  nativeCheckInputs = [
-    ephem
-    pytestCheckHook
-  ];
-
-  enabledTestPaths = [ "src/blockdiag/tests/" ];
-
   disabledTests = [
     # Test require network access
     "test_app_cleans_up_images"
@@ -75,6 +72,8 @@ buildPythonPackage rec {
     "test_generate_with_separate"
   ];
 
+  enabledTestPaths = [ "src/blockdiag/tests/" ];
+  pyproject = true;
   pythonImportsCheck = [ "blockdiag" ];
 
   meta = {
@@ -83,7 +82,7 @@ buildPythonPackage rec {
     changelog = "https://github.com/blockdiag/blockdiag/blob/${version}/CHANGES.rst";
     license = lib.licenses.asl20;
     maintainers = with lib.maintainers; [ bjornfor ];
-    mainProgram = "blockdiag";
     platforms = lib.platforms.unix;
+    mainProgram = "blockdiag";
   };
 }

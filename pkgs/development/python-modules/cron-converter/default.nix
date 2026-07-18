@@ -2,14 +2,13 @@
   lib,
   fetchFromGitHub,
   buildPythonPackage,
-  setuptools,
-  python-dateutil,
   python,
+  python-dateutil,
+  setuptools,
 }:
 buildPythonPackage rec {
   pname = "cron-converter";
   version = "1.3.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "Sonic0";
@@ -24,10 +23,6 @@ buildPythonPackage rec {
       --replace-fail "test_timezone" "dont_test_timezone"
   '';
 
-  build-system = [ setuptools ];
-
-  dependencies = [ python-dateutil ];
-
   checkPhase = ''
     runHook preCheck
     ${python.interpreter} -m unittest discover -s tests/unit -v
@@ -35,6 +30,9 @@ buildPythonPackage rec {
     runHook postCheck
   '';
 
+  build-system = [ setuptools ];
+  dependencies = [ python-dateutil ];
+  pyproject = true;
   pythonImportsCheck = [ "cron_converter" ];
 
   meta = {

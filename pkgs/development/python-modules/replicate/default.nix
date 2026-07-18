@@ -1,26 +1,22 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  pythonAtLeast,
-  setuptools,
+  buildPythonPackage,
   httpx,
   packaging,
   pydantic,
-  typing-extensions,
-  pytestCheckHook,
   pytest-asyncio,
   pytest-recording,
+  pytestCheckHook,
+  pythonAtLeast,
   respx,
+  setuptools,
+  typing-extensions,
 }:
 
 buildPythonPackage rec {
   pname = "replicate";
   version = "1.1.0b3";
-  pyproject = true;
-
-  # uses pydantic.v1 compat layer, unsupported on 3.14
-  disabled = pythonAtLeast "3.14";
 
   src = fetchFromGitHub {
     owner = "replicate";
@@ -28,6 +24,13 @@ buildPythonPackage rec {
     tag = version;
     hash = "sha256-wafxaMQhusTr4wYnkrpfXr6FE2rbi6BVq42VSTXdEoc=";
   };
+
+  nativeCheckInputs = [
+    pytestCheckHook
+    pytest-asyncio
+    pytest-recording
+    respx
+  ];
 
   build-system = [ setuptools ];
 
@@ -38,14 +41,10 @@ buildPythonPackage rec {
     typing-extensions
   ];
 
+  # uses pydantic.v1 compat layer, unsupported on 3.14
+  disabled = pythonAtLeast "3.14";
+  pyproject = true;
   pythonImportsCheck = [ "replicate" ];
-
-  nativeCheckInputs = [
-    pytestCheckHook
-    pytest-asyncio
-    pytest-recording
-    respx
-  ];
 
   meta = {
     description = "Python client for Replicate";

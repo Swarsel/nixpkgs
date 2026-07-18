@@ -1,18 +1,16 @@
 {
   lib,
-  buildDunePackage,
   fetchurl,
-  ppx_cstruct,
+  buildDunePackage,
   cstruct,
   lwt,
   ounit,
+  ppx_cstruct,
 }:
 
 buildDunePackage rec {
   pname = "shared-memory-ring";
   version = "3.2.1";
-
-  duneVersion = "3";
 
   src = fetchurl {
     url = "https://github.com/mirage/shared-memory-ring/releases/download/v${version}/shared-memory-ring-${version}.tbz";
@@ -28,15 +26,18 @@ buildDunePackage rec {
   ];
 
   doCheck = true;
+
   checkInputs = [
     lwt
     ounit
   ];
 
+  duneVersion = "3";
+
   meta = {
     description = "Shared memory rings for RPC and bytestream communications";
-    license = lib.licenses.isc;
     homepage = "https://github.com/mirage/shared-memory-ring";
+    license = lib.licenses.isc;
     maintainers = [ lib.maintainers.sternenseemann ];
   };
 }

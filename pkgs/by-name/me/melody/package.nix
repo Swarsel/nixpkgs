@@ -1,7 +1,7 @@
 {
   lib,
-  rustPlatform,
   fetchCrate,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -9,9 +9,9 @@ rustPlatform.buildRustPackage (finalAttrs: {
   version = "0.20.0";
 
   src = fetchCrate {
-    pname = "melody_cli";
     inherit (finalAttrs) version;
     hash = "sha256-u+d16jc7GqT2aK2HzP+OXFUBkVodwcW+20sKqmxzYhk=";
+    pname = "melody_cli";
   };
 
   cargoHash = "sha256-TNW36FLK1E6uoDICfGN5ZmTX8V9ndSqyif7tbBqvqDI=";

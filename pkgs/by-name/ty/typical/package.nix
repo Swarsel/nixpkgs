@@ -1,9 +1,9 @@
 {
   lib,
-  rustPlatform,
+  stdenv,
   fetchFromGitHub,
   installShellFiles,
-  stdenv,
+  rustPlatform,
   versionCheckHook,
 }:
 
@@ -18,11 +18,11 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-gcaOQhEyCiU2kXWZRymGca0Mq+TOBGDR4v/5sFOaDz0=";
   };
 
-  cargoHash = "sha256-cRlxyh8a+lJLc/YkOYYXkCEi8D3KJHlm5a01rhWk3VQ=";
-
   nativeBuildInputs = [
     installShellFiles
   ];
+
+  cargoHash = "sha256-cRlxyh8a+lJLc/YkOYYXkCEi8D3KJHlm5a01rhWk3VQ=";
 
   preCheck = ''
     export NO_COLOR=true
@@ -35,16 +35,15 @@ rustPlatform.buildRustPackage (finalAttrs: {
       --zsh <($out/bin/typical shell-completion zsh)
   '';
 
-  nativeInstallCheckInputs = [ versionCheckHook ];
-
   doInstallCheck = true;
+  nativeInstallCheckInputs = [ versionCheckHook ];
 
   meta = {
     description = "Data interchange with algebraic data types";
-    mainProgram = "typical";
     homepage = "https://github.com/stepchowfun/typical";
     changelog = "https://github.com/stepchowfun/typical/blob/${finalAttrs.src.rev}/CHANGELOG.md";
     license = lib.licenses.mit;
     maintainers = [ ];
+    mainProgram = "typical";
   };
 })

@@ -5,9 +5,9 @@
   fetchpatch2,
   lv2,
   lv2lint,
-  pkg-config,
   meson,
   ninja,
+  pkg-config,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -23,10 +23,12 @@ stdenv.mkDerivation (finalAttrs: {
 
   patches = [
     (fetchpatch2 {
-      url = "https://gitlab.com/drobilla/fomp/-/commit/f8e4e1e0b1abe3afd2ea17b13795bbe871fccece.patch";
       hash = "sha256-uJpUwTEBOp0Zo7zKT9jekhtkg9okUvGTavLIQmNKutU=";
+      url = "https://gitlab.com/drobilla/fomp/-/commit/f8e4e1e0b1abe3afd2ea17b13795bbe871fccece.patch";
     })
   ];
+
+  strictDeps = true;
 
   nativeBuildInputs = [
     pkg-config
@@ -39,11 +41,9 @@ stdenv.mkDerivation (finalAttrs: {
     lv2
   ];
 
-  strictDeps = true;
-
   meta = {
-    homepage = "https://drobilla.net/software/fomp.html";
     description = "LV2 port of the MCP, VCO, FIL, and WAH plugins by Fons Adriaensen";
+    homepage = "https://drobilla.net/software/fomp.html";
     license = lib.licenses.gpl2Plus;
     maintainers = [ lib.maintainers.magnetophon ];
     platforms = lib.platforms.linux;

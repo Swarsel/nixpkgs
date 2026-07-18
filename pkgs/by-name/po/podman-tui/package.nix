@@ -3,8 +3,8 @@
   stdenv,
   fetchFromGitHub,
   buildGoModule,
-  testers,
   nix-update-script,
+  testers,
 }:
 
 buildGoModule (finalAttrs: {
@@ -19,19 +19,7 @@ buildGoModule (finalAttrs: {
   };
 
   vendorHash = null;
-
   env.CGO_ENABLED = 0;
-
-  tags = [
-    "containers_image_openpgp"
-    "remote"
-  ]
-  ++ lib.optional stdenv.hostPlatform.isDarwin "darwin";
-
-  ldflags = [
-    "-s"
-    "-w"
-  ];
 
   checkFlags =
     let
@@ -43,17 +31,28 @@ buildGoModule (finalAttrs: {
     in
     [ "-skip=^${builtins.concatStringsSep "$|^" skippedTests}$" ];
 
+  ldflags = [
+    "-s"
+    "-w"
+  ];
+
+  tags = [
+    "containers_image_openpgp"
+    "remote"
+  ]
+  ++ lib.optional stdenv.hostPlatform.isDarwin "darwin";
+
   passthru.tests.version = testers.testVersion {
-    package = finalAttrs.finalPackage;
-    command = "HOME=$(mktemp -d) podman-tui version";
     version = "v${finalAttrs.version}";
+    command = "HOME=$(mktemp -d) podman-tui version";
+    package = finalAttrs.finalPackage;
   };
 
   passthru.updateScript = nix-update-script { };
 
   meta = {
-    homepage = "https://github.com/containers/podman-tui";
     description = "Podman Terminal UI";
+    homepage = "https://github.com/containers/podman-tui";
     license = lib.licenses.asl20;
     maintainers = with lib.maintainers; [ aaronjheng ];
     mainProgram = "podman-tui";

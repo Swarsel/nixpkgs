@@ -9,7 +9,6 @@
 buildPythonPackage rec {
   pname = "docloud";
   version = "1.0.375";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
@@ -23,6 +22,7 @@ buildPythonPackage rec {
 
   # Pypi's tarball doesn't contain tests. Source not available.
   doCheck = false;
+  format = "setuptools";
   pythonImportsCheck = [ "docloud" ];
 
   meta = {

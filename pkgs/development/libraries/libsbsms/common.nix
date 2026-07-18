@@ -2,12 +2,12 @@
   lib,
   stdenv,
   fetchurl,
-  replaceVars,
-  pname,
-  version,
-  url,
-  sha256,
   homepage,
+  pname,
+  replaceVars,
+  sha256,
+  url,
+  version,
 }:
 
 stdenv.mkDerivation {
@@ -29,8 +29,8 @@ stdenv.mkDerivation {
   meta = {
     inherit homepage;
     description = "Subband sinusoidal modeling library for time stretching and pitch scaling audio";
-    maintainers = [ ];
     license = lib.licenses.gpl2;
+    maintainers = [ ];
     platforms = lib.platforms.all;
   };
 }

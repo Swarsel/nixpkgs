@@ -1,7 +1,7 @@
 {
   config,
-  pkgs,
   lib,
+  pkgs,
   ...
 }:
 let
@@ -44,28 +44,15 @@ let
   '';
 
   settings = {
-    log.level = cfg.logLevel;
-    opentelemetry = lib.optionalAttrs cfg.openTelemetry.enable {
-      enabled = true;
-      grpc-url = cfg.openTelemetry.grpcURL;
-    };
-    prometheus = lib.optionalAttrs cfg.prometheus.enable {
-      enabled = true;
-    };
     analytics.reporting = {
       enabled = cfg.analytics.reporting.enable;
       samples = cfg.analytics.reporting.samples;
     };
-    server.addr = cfg.server.addr;
+
     cache = {
       allow-delete-verb = cfg.cache.allowDeleteVerb;
       allow-put-verb = cfg.cache.allowPutVerb;
-      hostname = cfg.cache.hostName;
-      database-url = cfg.cache.databaseURL;
-      database.pool = {
-        max-open-conns = cfg.cache.database.pool.maxOpenConns;
-        max-idle-conns = cfg.cache.database.pool.maxIdleConns;
-      };
+
       cdc = {
         inherit (cfg.cache.cdc)
           enabled
@@ -74,55 +61,85 @@ let
           max
           ;
       };
-      max-size = cfg.cache.maxSize;
+
+      database.pool = {
+        max-idle-conns = cfg.cache.database.pool.maxIdleConns;
+        max-open-conns = cfg.cache.database.pool.maxOpenConns;
+      };
+
+      database-url = cfg.cache.databaseURL;
+      hostname = cfg.cache.hostName;
+
+      lock = {
+        allow-degraded-mode = cfg.cache.lock.allowDegradedMode;
+        backend = cfg.cache.lock.backend;
+        download-lock-ttl = cfg.cache.lock.downloadTTL;
+        lru-lock-ttl = cfg.cache.lock.lruTTL;
+        redis.key-prefix = cfg.cache.lock.redisKeyPrefix;
+
+        retry = {
+          initial-delay = cfg.cache.lock.retry.initialDelay;
+          jitter = cfg.cache.lock.retry.jitter;
+          max-attempts = cfg.cache.lock.retry.maxAttempts;
+          max-delay = cfg.cache.lock.retry.maxDelay;
+        };
+      };
+
       lru = {
         schedule = cfg.cache.lru.schedule;
         timezone = cfg.cache.lru.scheduleTimeZone;
       };
+
+      max-size = cfg.cache.maxSize;
+      netrc-file = cfg.netrcFile;
+
+      redis = lib.optionalAttrs (cfg.cache.redis != null) {
+        addrs = cfg.cache.redis.addresses;
+        db = cfg.cache.redis.database;
+        pool-size = cfg.cache.redis.poolSize;
+        use-tls = cfg.cache.redis.useTLS;
+        username = cfg.cache.redis.username;
+      };
+
       sign-narinfo = cfg.cache.signNarinfo;
+
       storage =
         if cfg.cache.storage.s3 != null then
           {
             s3 = {
               bucket = cfg.cache.storage.s3.bucket;
               endpoint = cfg.cache.storage.s3.endpoint;
-              region = cfg.cache.storage.s3.region;
               force-path-style = cfg.cache.storage.s3.forcePathStyle;
+              region = cfg.cache.storage.s3.region;
             };
           }
         else
           {
             local = cfg.cache.storage.local;
           };
+
       temp-path = cfg.cache.tempPath;
-      netrc-file = cfg.netrcFile;
+
       upstream = {
-        urls = cfg.cache.upstream.urls;
-        public-keys = cfg.cache.upstream.publicKeys;
         dialer-timeout = cfg.cache.upstream.dialerTimeout;
+        public-keys = cfg.cache.upstream.publicKeys;
         response-header-timeout = cfg.cache.upstream.responseHeaderTimeout;
-      };
-      lock = {
-        backend = cfg.cache.lock.backend;
-        redis.key-prefix = cfg.cache.lock.redisKeyPrefix;
-        download-lock-ttl = cfg.cache.lock.downloadTTL;
-        lru-lock-ttl = cfg.cache.lock.lruTTL;
-        retry = {
-          max-attempts = cfg.cache.lock.retry.maxAttempts;
-          initial-delay = cfg.cache.lock.retry.initialDelay;
-          max-delay = cfg.cache.lock.retry.maxDelay;
-          jitter = cfg.cache.lock.retry.jitter;
-        };
-        allow-degraded-mode = cfg.cache.lock.allowDegradedMode;
-      };
-      redis = lib.optionalAttrs (cfg.cache.redis != null) {
-        addrs = cfg.cache.redis.addresses;
-        db = cfg.cache.redis.database;
-        username = cfg.cache.redis.username;
-        use-tls = cfg.cache.redis.useTLS;
-        pool-size = cfg.cache.redis.poolSize;
+        urls = cfg.cache.upstream.urls;
       };
     };
+
+    log.level = cfg.logLevel;
+
+    opentelemetry = lib.optionalAttrs cfg.openTelemetry.enable {
+      enabled = true;
+      grpc-url = cfg.openTelemetry.grpcURL;
+    };
+
+    prometheus = lib.optionalAttrs cfg.prometheus.enable {
+      enabled = true;
+    };
+
+    server.addr = cfg.server.addr;
   };
 
   configFile = pkgs.writeText "ncps-config.json" (
@@ -171,45 +188,20 @@ in
   options = {
     services.ncps = {
       enable = lib.mkEnableOption "ncps: Nix binary cache proxy service implemented in Go";
+      package = lib.mkPackageOption pkgs "ncps" { };
 
       analytics.reporting = {
         enable = lib.mkOption {
-          type = lib.types.bool;
           default = true;
+
           description = ''
             Enable reporting anonymous usage statistics (DB type, Lock type, Total Size) to the project maintainers.
           '';
+
+          type = lib.types.bool;
         };
 
         samples = lib.mkEnableOption "Enable printing the analytics samples to stdout. This is useful for debugging and verification purposes only.";
-      };
-
-      package = lib.mkPackageOption pkgs "ncps" { };
-
-      openTelemetry = {
-        enable = lib.mkEnableOption "Enable OpenTelemetry logs, metrics, and tracing";
-
-        grpcURL = lib.mkOption {
-          type = lib.types.nullOr lib.types.str;
-          default = null;
-          description = ''
-            Configure OpenTelemetry gRPC URL. Missing or "https" scheme enables
-            secure gRPC, "insecure" otherwise. Omit to emit telemetry to
-            stdout.
-          '';
-        };
-      };
-
-      prometheus.enable = lib.mkEnableOption "Enable Prometheus metrics endpoint at /metrics";
-
-      logLevel = lib.mkOption {
-        type = lib.types.enum logLevels;
-        default = "info";
-        description = ''
-          Set the level for logging. Refer to
-          <https://pkg.go.dev/github.com/rs/zerolog#readme-leveled-logging> for
-          more information.
-        '';
       };
 
       cache = {
@@ -224,426 +216,538 @@ in
         '';
 
         cdc = {
+          avg = lib.mkOption {
+            default = 65536;
+
+            description = ''
+              The average chunk size for CDC in bytes.
+            '';
+
+            type = lib.types.ints.u32;
+          };
+
           enabled = lib.mkEnableOption ''
             Whether to enable Content-Defined Chunking (CDC) for deduplication (experimental).
           '';
 
-          min = lib.mkOption {
-            type = lib.types.ints.u32;
-            default = 16384;
-            description = ''
-              The minimum chunk size for CDC in bytes.
-            '';
-          };
-
-          avg = lib.mkOption {
-            type = lib.types.ints.u32;
-            default = 65536;
-            description = ''
-              The average chunk size for CDC in bytes.
-            '';
-          };
-
           max = lib.mkOption {
-            type = lib.types.ints.u32;
             default = 262144;
+
             description = ''
               The maximum chunk size for CDC in bytes.
             '';
+
+            type = lib.types.ints.u32;
           };
-        };
 
-        hostName = lib.mkOption {
-          type = lib.types.str;
-          description = ''
-            The hostname of the cache server. **This is used to generate the
-            private key used for signing store paths (.narinfo)**
-          '';
-        };
+          min = lib.mkOption {
+            default = 16384;
 
-        databaseURL = lib.mkOption {
-          type = lib.types.nullOr lib.types.str;
-          default = "sqlite:${cfg.cache.storage.local}/db/db.sqlite";
-          defaultText = "sqlite:/var/lib/ncps/db/db.sqlite";
-          description = ''
-            The URL of the database (currently only SQLite is supported)
-          '';
-        };
+            description = ''
+              The minimum chunk size for CDC in bytes.
+            '';
 
-        databaseURLFile = lib.mkOption {
-          type = lib.types.nullOr lib.types.path;
-          default = null;
-          description = ''
-            File containing the URL of the database.
-          '';
+            type = lib.types.ints.u32;
+          };
         };
 
         database = {
           pool = {
-            maxOpenConns = lib.mkOption {
-              type = lib.types.int;
-              default = 0;
-              description = ''
-                Maximum number of open connections to the database (0 = use
-                database-specific defaults).
-              '';
-            };
-
             maxIdleConns = lib.mkOption {
-              type = lib.types.int;
               default = 0;
+
               description = ''
                 Maximum number of idle connections in the pool (0 = use
                 database-specific defaults).
               '';
+
+              type = lib.types.int;
+            };
+
+            maxOpenConns = lib.mkOption {
+              default = 0;
+
+              description = ''
+                Maximum number of open connections to the database (0 = use
+                database-specific defaults).
+              '';
+
+              type = lib.types.int;
+            };
+          };
+        };
+
+        databaseURL = lib.mkOption {
+          default = "sqlite:${cfg.cache.storage.local}/db/db.sqlite";
+          defaultText = "sqlite:/var/lib/ncps/db/db.sqlite";
+
+          description = ''
+            The URL of the database (currently only SQLite is supported)
+          '';
+
+          type = lib.types.nullOr lib.types.str;
+        };
+
+        databaseURLFile = lib.mkOption {
+          default = null;
+
+          description = ''
+            File containing the URL of the database.
+          '';
+
+          type = lib.types.nullOr lib.types.path;
+        };
+
+        hostName = lib.mkOption {
+          description = ''
+            The hostname of the cache server. **This is used to generate the
+            private key used for signing store paths (.narinfo)**
+          '';
+
+          type = lib.types.str;
+        };
+
+        lock = {
+          allowDegradedMode = lib.mkOption {
+            default = false;
+
+            description = ''
+              Allow falling back to local locks if Redis is unavailable (WARNING:
+              breaks HA guarantees).
+            '';
+
+            type = lib.types.bool;
+          };
+
+          backend = lib.mkOption {
+            default = "local";
+
+            description = ''
+              Lock backend to use: 'local' (single instance), 'redis'
+              (distributed).
+            '';
+
+            type = lib.types.enum [
+              "local"
+              "redis"
+            ];
+          };
+
+          downloadTTL = lib.mkOption {
+            default = "5m0s";
+
+            description = ''
+              TTL for download locks (per-hash locks).
+            '';
+
+            type = lib.types.str;
+          };
+
+          lruTTL = lib.mkOption {
+            default = "30m0s";
+
+            description = ''
+              TTL for LRU lock (global exclusive lock).
+            '';
+
+            type = lib.types.str;
+          };
+
+          redisKeyPrefix = lib.mkOption {
+            default = "ncps:lock:";
+
+            description = ''
+              Prefix for all Redis lock keys (only used when Redis is
+              configured).
+            '';
+
+            type = lib.types.str;
+          };
+
+          retry = {
+            initialDelay = lib.mkOption {
+              default = "100ms";
+
+              description = ''
+                Initial retry delay for distributed locks.
+              '';
+
+              type = lib.types.str;
+            };
+
+            jitter = lib.mkOption {
+              default = true;
+
+              description = ''
+                Enable jitter in retry delays to prevent thundering herd.
+              '';
+
+              type = lib.types.bool;
+            };
+
+            maxAttempts = lib.mkOption {
+              default = 3;
+
+              description = ''
+                Maximum number of retry attempts for distributed locks.
+              '';
+
+              type = lib.types.int;
+            };
+
+            maxDelay = lib.mkOption {
+              default = "2s";
+
+              description = ''
+                Maximum retry delay for distributed locks (exponential backoff
+                caps at this).
+              '';
+
+              type = lib.types.str;
             };
           };
         };
 
         lru = {
           schedule = lib.mkOption {
-            type = lib.types.nullOr lib.types.str;
             default = null;
-            example = "0 2 * * *";
+
             description = ''
               The cron spec for cleaning the store to keep it under
               config.ncps.cache.maxSize. Refer to
               https://pkg.go.dev/github.com/robfig/cron/v3#hdr-Usage for
               documentation.
             '';
+
+            example = "0 2 * * *";
+            type = lib.types.nullOr lib.types.str;
           };
 
           scheduleTimeZone = lib.mkOption {
-            type = lib.types.str;
             default = "Local";
-            example = "America/Los_Angeles";
+
             description = ''
               The name of the timezone to use for the cron schedule. See
               <https://en.wikipedia.org/wiki/List_of_tz_database_time_zones>
               for a comprehensive list of possible values for this setting.
             '';
-          };
-        };
 
-        lock = {
-          backend = lib.mkOption {
-            type = lib.types.enum [
-              "local"
-              "redis"
-            ];
-            default = "local";
-            description = ''
-              Lock backend to use: 'local' (single instance), 'redis'
-              (distributed).
-            '';
-          };
-
-          redisKeyPrefix = lib.mkOption {
+            example = "America/Los_Angeles";
             type = lib.types.str;
-            default = "ncps:lock:";
-            description = ''
-              Prefix for all Redis lock keys (only used when Redis is
-              configured).
-            '';
-          };
-
-          downloadTTL = lib.mkOption {
-            type = lib.types.str;
-            default = "5m0s";
-            description = ''
-              TTL for download locks (per-hash locks).
-            '';
-          };
-
-          lruTTL = lib.mkOption {
-            type = lib.types.str;
-            default = "30m0s";
-            description = ''
-              TTL for LRU lock (global exclusive lock).
-            '';
-          };
-
-          retry = {
-            maxAttempts = lib.mkOption {
-              type = lib.types.int;
-              default = 3;
-              description = ''
-                Maximum number of retry attempts for distributed locks.
-              '';
-            };
-
-            initialDelay = lib.mkOption {
-              type = lib.types.str;
-              default = "100ms";
-              description = ''
-                Initial retry delay for distributed locks.
-              '';
-            };
-
-            maxDelay = lib.mkOption {
-              type = lib.types.str;
-              default = "2s";
-              description = ''
-                Maximum retry delay for distributed locks (exponential backoff
-                caps at this).
-              '';
-            };
-
-            jitter = lib.mkOption {
-              type = lib.types.bool;
-              default = true;
-              description = ''
-                Enable jitter in retry delays to prevent thundering herd.
-              '';
-            };
-          };
-
-          allowDegradedMode = lib.mkOption {
-            type = lib.types.bool;
-            default = false;
-            description = ''
-              Allow falling back to local locks if Redis is unavailable (WARNING:
-              breaks HA guarantees).
-            '';
           };
         };
 
         maxSize = lib.mkOption {
-          type = lib.types.nullOr lib.types.str;
           default = null;
-          example = "100G";
+
           description = ''
             The maximum size of the store. It can be given with units such as
             5K, 10G etc. Supported units: B, K, M, G, T.
           '';
+
+          example = "100G";
+          type = lib.types.nullOr lib.types.str;
         };
 
         redis = lib.mkOption {
-          type = lib.types.nullOr (
-            lib.types.submodule {
-              options = {
-                addresses = lib.mkOption {
-                  type = lib.types.listOf lib.types.str;
-                  example = ''
-                    ["redis0:6379" "redis1:6379"]
-                  '';
-                  description = ''
-                    A list of host:port for the Redis servers that are part of a cluster.
-                    To use a single Redis instance, just set this to its single address.
-                  '';
-                };
-
-                database = lib.mkOption {
-                  type = lib.types.int;
-                  default = 0;
-                  description = ''
-                    Redis database number (0-15)
-                  '';
-                };
-
-                username = lib.mkOption {
-                  type = lib.types.nullOr lib.types.str;
-                  default = null;
-                  description = ''
-                    Redis username for authentication (for Redis ACL).
-                  '';
-                };
-
-                password = lib.mkOption {
-                  type = lib.types.nullOr lib.types.str;
-                  default = null;
-                  description = ''
-                    Redis password for authentication (for Redis ACL).
-                  '';
-                };
-
-                passwordFile = lib.mkOption {
-                  type = lib.types.nullOr lib.types.path;
-                  default = null;
-                  description = ''
-                    File containing the redis password for authentication (for Redis ACL).
-                  '';
-                };
-
-                poolSize = lib.mkOption {
-                  type = lib.types.int;
-                  default = 10;
-                  description = ''
-                    Redis connection pool size.
-                  '';
-                };
-
-                useTLS = lib.mkOption {
-                  type = lib.types.bool;
-                  default = false;
-                  description = ''
-                    Use TLS for Redis connection.
-                  '';
-                };
-              };
-            }
-          );
-
           default = null;
 
           description = ''
             Configure Redis.
           '';
+
+          type = lib.types.nullOr (
+            lib.types.submodule {
+              options = {
+                addresses = lib.mkOption {
+                  description = ''
+                    A list of host:port for the Redis servers that are part of a cluster.
+                    To use a single Redis instance, just set this to its single address.
+                  '';
+
+                  example = ''
+                    ["redis0:6379" "redis1:6379"]
+                  '';
+
+                  type = lib.types.listOf lib.types.str;
+                };
+
+                database = lib.mkOption {
+                  default = 0;
+
+                  description = ''
+                    Redis database number (0-15)
+                  '';
+
+                  type = lib.types.int;
+                };
+
+                password = lib.mkOption {
+                  default = null;
+
+                  description = ''
+                    Redis password for authentication (for Redis ACL).
+                  '';
+
+                  type = lib.types.nullOr lib.types.str;
+                };
+
+                passwordFile = lib.mkOption {
+                  default = null;
+
+                  description = ''
+                    File containing the redis password for authentication (for Redis ACL).
+                  '';
+
+                  type = lib.types.nullOr lib.types.path;
+                };
+
+                poolSize = lib.mkOption {
+                  default = 10;
+
+                  description = ''
+                    Redis connection pool size.
+                  '';
+
+                  type = lib.types.int;
+                };
+
+                useTLS = lib.mkOption {
+                  default = false;
+
+                  description = ''
+                    Use TLS for Redis connection.
+                  '';
+
+                  type = lib.types.bool;
+                };
+
+                username = lib.mkOption {
+                  default = null;
+
+                  description = ''
+                    Redis username for authentication (for Redis ACL).
+                  '';
+
+                  type = lib.types.nullOr lib.types.str;
+                };
+              };
+            }
+          );
         };
 
         secretKeyPath = lib.mkOption {
-          type = lib.types.nullOr lib.types.path;
           default = null;
+
           description = ''
             The path to load the secretKey for signing narinfos. Leave this
             empty to automatically generate a private/public key.
           '';
+
+          type = lib.types.nullOr lib.types.path;
+        };
+
+        signNarinfo = lib.mkOption {
+          default = true;
+
+          description = ''
+            Whether to sign narInfo files or passthru as-is from upstream
+          '';
+
+          example = false;
+          type = lib.types.bool;
         };
 
         storage = {
           local = lib.mkOption {
-            type = lib.types.path;
             default = "/var/lib/ncps";
+
             description = ''
               The local directory for storing configuration and cached store
               paths. This is ignored if services.ncps.cache.storage.s3 is not
               null.
             '';
+
+            type = lib.types.path;
           };
 
           s3 = lib.mkOption {
+            default = null;
+
+            description = ''
+              Use S3 for storage instead of local storage.
+            '';
+
             type = lib.types.nullOr (
               lib.types.submodule {
                 options = {
-                  bucket = lib.mkOption {
-                    type = lib.types.str;
-                    description = ''
-                      The name of the S3 bucket.
-                    '';
-                  };
-
-                  endpoint = lib.mkOption {
-                    type = lib.types.str;
-                    description = ''
-                      S3-compatible endpoint URL with scheme.
-                    '';
-                    example = "https://s3.amazonaws.com";
-                  };
-
-                  forcePathStyle = lib.mkOption {
-                    type = lib.types.bool;
-                    default = false;
-                    description = ''
-                      Force path-style S3 addressing (bucket/key vs key.bucket).
-                    '';
-                  };
-
-                  region = lib.mkOption {
-                    type = lib.types.nullOr lib.types.str;
-                    default = null;
-                    description = ''
-                      The S3 region.
-                    '';
-                  };
-
                   accessKeyIdPath = lib.mkOption {
-                    type = lib.types.path;
                     description = ''
                       The path to a file containing only the access-key-id.
                     '';
+
+                    type = lib.types.path;
+                  };
+
+                  bucket = lib.mkOption {
+                    description = ''
+                      The name of the S3 bucket.
+                    '';
+
+                    type = lib.types.str;
+                  };
+
+                  endpoint = lib.mkOption {
+                    description = ''
+                      S3-compatible endpoint URL with scheme.
+                    '';
+
+                    example = "https://s3.amazonaws.com";
+                    type = lib.types.str;
+                  };
+
+                  forcePathStyle = lib.mkOption {
+                    default = false;
+
+                    description = ''
+                      Force path-style S3 addressing (bucket/key vs key.bucket).
+                    '';
+
+                    type = lib.types.bool;
+                  };
+
+                  region = lib.mkOption {
+                    default = null;
+
+                    description = ''
+                      The S3 region.
+                    '';
+
+                    type = lib.types.nullOr lib.types.str;
                   };
 
                   secretAccessKeyPath = lib.mkOption {
-                    type = lib.types.path;
                     description = ''
                       The path to a file containing only the secret-access-key.
                     '';
+
+                    type = lib.types.path;
                   };
                 };
               }
             );
-            default = null;
-            description = ''
-              Use S3 for storage instead of local storage.
-            '';
           };
         };
 
         tempPath = lib.mkOption {
-          type = lib.types.path;
           default = "/tmp";
+
           description = ''
             The path to the temporary directory that is used by the cache to download NAR files
           '';
-        };
 
-        signNarinfo = lib.mkOption {
-          type = lib.types.bool;
-          default = true;
-          example = false;
-          description = ''
-            Whether to sign narInfo files or passthru as-is from upstream
-          '';
+          type = lib.types.path;
         };
 
         upstream = {
           dialerTimeout = lib.mkOption {
-            type = lib.types.nullOr lib.types.str;
             default = null;
+
             description = ''
               Timeout for establishing TCP connections to upstream caches (e.g., 3s, 5s, 10s).
             '';
-          };
 
-          responseHeaderTimeout = lib.mkOption {
             type = lib.types.nullOr lib.types.str;
-            default = null;
-            example = "5s";
-            description = ''
-              Timeout for waiting for upstream server's response headers.
-            '';
           };
 
           publicKeys = lib.mkOption {
-            type = lib.types.listOf lib.types.str;
             default = [ ];
-            example = [ "cache.nixos.org-1:6NCHdD59X431o0gWypbMrAURkbJ16ZPMQFGspcDShjY=" ];
+
             description = ''
               A list of public keys of upstream caches in the format
               `host[-[0-9]*]:public-key`. This flag is used to verify the
               signatures of store paths downloaded from upstream caches.
             '';
+
+            example = [ "cache.nixos.org-1:6NCHdD59X431o0gWypbMrAURkbJ16ZPMQFGspcDShjY=" ];
+            type = lib.types.listOf lib.types.str;
+          };
+
+          responseHeaderTimeout = lib.mkOption {
+            default = null;
+
+            description = ''
+              Timeout for waiting for upstream server's response headers.
+            '';
+
+            example = "5s";
+            type = lib.types.nullOr lib.types.str;
           };
 
           urls = lib.mkOption {
-            type = lib.types.listOf lib.types.str;
-            example = [ "https://cache.nixos.org" ];
             description = ''
               A list of URLs of upstream binary caches.
             '';
+
+            example = [ "https://cache.nixos.org" ];
+            type = lib.types.listOf lib.types.str;
           };
         };
 
       };
 
-      server = {
-        addr = lib.mkOption {
-          type = lib.types.str;
-          default = ":8501";
-          description = ''
-            The address and port the server listens on.
-          '';
-        };
+      logLevel = lib.mkOption {
+        default = "info";
+
+        description = ''
+          Set the level for logging. Refer to
+          <https://pkg.go.dev/github.com/rs/zerolog#readme-leveled-logging> for
+          more information.
+        '';
+
+        type = lib.types.enum logLevels;
       };
 
       netrcFile = lib.mkOption {
-        type = lib.types.nullOr lib.types.path;
         default = null;
-        example = "/etc/nix/netrc";
+
         description = ''
           The path to netrc file for upstream authentication.
           When unspecified ncps will look for ``$HOME/.netrc`.
         '';
+
+        example = "/etc/nix/netrc";
+        type = lib.types.nullOr lib.types.path;
+      };
+
+      openTelemetry = {
+        enable = lib.mkEnableOption "Enable OpenTelemetry logs, metrics, and tracing";
+
+        grpcURL = lib.mkOption {
+          default = null;
+
+          description = ''
+            Configure OpenTelemetry gRPC URL. Missing or "https" scheme enables
+            secure gRPC, "insecure" otherwise. Omit to emit telemetry to
+            stdout.
+          '';
+
+          type = lib.types.nullOr lib.types.str;
+        };
+      };
+
+      prometheus.enable = lib.mkEnableOption "Enable Prometheus metrics endpoint at /metrics";
+
+      server = {
+        addr = lib.mkOption {
+          default = ":8501";
+
+          description = ''
+            The address and port the server listens on.
+          '';
+
+          type = lib.types.str;
+        };
       };
     };
   };
@@ -661,6 +765,7 @@ in
       {
         assertion =
           cfg.cache.redis == null || cfg.cache.redis.password == null || cfg.cache.redis.passwordFile == null;
+
         message = "You cannot specify both config.ncps.cache.redis.password and config.ncps.cache.redis.passwordFile";
       }
       {
@@ -673,36 +778,9 @@ in
       }
     ];
 
-    users.users.ncps = {
-      isSystemUser = true;
-      group = "ncps";
-    };
-    users.groups.ncps = { };
-
-    systemd.tmpfiles.settings.ncps =
-      let
-        perms = {
-          group = "ncps";
-          mode = "0700";
-          user = "ncps";
-        };
-      in
-      lib.mkMerge [
-        (lib.mkIf (cfg.cache.storage.s3 == null && cfg.cache.storage.local != "/var/lib/ncps") {
-          "${cfg.cache.storage.local}".d = perms;
-        })
-
-        (lib.mkIf isSqlite { "${dbDir}".d = perms; })
-
-        (lib.mkIf (cfg.cache.tempPath != "/tmp") { "${cfg.cache.tempPath}".d = perms; })
-      ];
-
     systemd.services.ncps = {
-      description = "ncps binary cache proxy service";
-
       after = [ "network-online.target" ];
-      wants = [ "network-online.target" ];
-      wantedBy = [ "multi-user.target" ];
+      description = "ncps binary cache proxy service";
 
       preStart = ''
         ${lib.optionalString (cfg.cache.databaseURLFile != null) ''
@@ -718,10 +796,10 @@ in
       serviceConfig = lib.mkMerge [
         {
           ExecStart = "${ncpsWrapper} serve";
-          User = "ncps";
           Group = "ncps";
           Restart = "on-failure";
           RuntimeDirectory = "ncps";
+          User = "ncps";
         }
 
         # credentials for cache.secretKeyPath
@@ -769,38 +847,40 @@ in
 
         # Hardening
         {
+          CapabilityBoundingSet = "";
+          DeviceAllow = [ "" ];
+          DevicePolicy = "closed";
+          LimitNOFILE = 65536;
+          LockPersonality = true;
+          MemoryDenyWriteExecute = true;
+          NoNewPrivileges = true;
+          PrivateDevices = true;
+          PrivateMounts = true;
+          PrivateNetwork = false;
+          PrivateTmp = true;
+          PrivateUsers = true;
+          ProcSubset = "pid";
+          ProtectClock = true;
+          ProtectControlGroups = true;
+          ProtectHome = true;
+          ProtectHostname = true;
+          ProtectKernelLogs = true;
+          ProtectKernelModules = true;
+          ProtectKernelTunables = true;
+          ProtectProc = "invisible";
+          ProtectSystem = "strict";
+          RestrictAddressFamilies = "AF_UNIX AF_INET AF_INET6";
+          RestrictNamespaces = true;
+          RestrictRealtime = true;
+          RestrictSUIDSGID = true;
+          SystemCallArchitectures = "native";
+
           SystemCallFilter = [
             "@system-service"
             "~@privileged"
             "~@resources"
           ];
-          CapabilityBoundingSet = "";
-          PrivateUsers = true;
-          DevicePolicy = "closed";
-          DeviceAllow = [ "" ];
-          ProtectKernelModules = true;
-          ProtectKernelTunables = true;
-          ProtectControlGroups = true;
-          ProtectKernelLogs = true;
-          ProtectHostname = true;
-          ProtectClock = true;
-          ProtectProc = "invisible";
-          ProtectSystem = "strict";
-          ProtectHome = true;
-          RestrictSUIDSGID = true;
-          RestrictRealtime = true;
-          MemoryDenyWriteExecute = true;
-          ProcSubset = "pid";
-          RestrictNamespaces = true;
-          SystemCallArchitectures = "native";
-          PrivateNetwork = false;
-          PrivateTmp = true;
-          PrivateDevices = true;
-          PrivateMounts = true;
-          NoNewPrivileges = true;
-          LockPersonality = true;
-          RestrictAddressFamilies = "AF_UNIX AF_INET AF_INET6";
-          LimitNOFILE = 65536;
+
           UMask = "0066";
         }
       ];
@@ -809,6 +889,34 @@ in
         (lib.optional (cfg.cache.storage.s3 == null) "${cfg.cache.storage.local}")
         ++ (lib.optional isSqlite dbDir)
       );
+
+      wantedBy = [ "multi-user.target" ];
+      wants = [ "network-online.target" ];
+    };
+
+    systemd.tmpfiles.settings.ncps =
+      let
+        perms = {
+          group = "ncps";
+          mode = "0700";
+          user = "ncps";
+        };
+      in
+      lib.mkMerge [
+        (lib.mkIf (cfg.cache.storage.s3 == null && cfg.cache.storage.local != "/var/lib/ncps") {
+          "${cfg.cache.storage.local}".d = perms;
+        })
+
+        (lib.mkIf isSqlite { "${dbDir}".d = perms; })
+
+        (lib.mkIf (cfg.cache.tempPath != "/tmp") { "${cfg.cache.tempPath}".d = perms; })
+      ];
+
+    users.groups.ncps = { };
+
+    users.users.ncps = {
+      group = "ncps";
+      isSystemUser = true;
     };
   };
 

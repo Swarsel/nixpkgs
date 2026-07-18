@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   numpy,
   setuptools,
 }:
@@ -17,12 +17,9 @@ buildPythonPackage rec {
     hash = "sha256-tPQ/v2AVnAEC+08BVAvvgJ8Pj89nXZSn2tQ6nxXuSfA=";
   };
 
-  pyproject = true;
-
   nativeBuildInputs = [ setuptools ];
-
   propagatedBuildInputs = [ numpy ];
-
+  pyproject = true;
   pythonImportsCheck = [ "jumpy" ];
 
   meta = {

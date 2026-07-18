@@ -1,9 +1,9 @@
 {
   lib,
+  fetchFromGitHub,
   aiohttp,
   aiounittest,
   buildPythonPackage,
-  fetchFromGitHub,
   ffmpeg-python,
   pytestCheckHook,
   requests,
@@ -13,7 +13,6 @@
 buildPythonPackage rec {
   pname = "reolink";
   version = "0.64";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "fwestenberg";
@@ -21,19 +20,6 @@ buildPythonPackage rec {
     tag = "v${version}";
     hash = "sha256-3r5BwVlNolji2HIGjqv8gkizx4wWxrKYkiNmSJedKmI=";
   };
-
-  build-system = [ setuptools ];
-
-  dependencies = [
-    aiohttp
-    ffmpeg-python
-    requests
-  ];
-
-  nativeCheckInputs = [
-    aiounittest
-    pytestCheckHook
-  ];
 
   postPatch = ''
     # Packages in nixpkgs is different than the module name
@@ -44,7 +30,18 @@ buildPythonPackage rec {
   # https://github.com/fwestenberg/reolink/issues/83
   doCheck = false;
 
-  enabledTestPaths = [ "test.py" ];
+  nativeCheckInputs = [
+    aiounittest
+    pytestCheckHook
+  ];
+
+  build-system = [ setuptools ];
+
+  dependencies = [
+    aiohttp
+    ffmpeg-python
+    requests
+  ];
 
   disabledTests = [
     # Tests require network access
@@ -55,8 +52,9 @@ buildPythonPackage rec {
     "test_succes"
   ];
 
+  enabledTestPaths = [ "test.py" ];
+  pyproject = true;
   pythonImportsCheck = [ "reolink" ];
-
   passthru.skipBulkUpdate = true;
 
   meta = {

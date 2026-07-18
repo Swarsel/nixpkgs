@@ -2,13 +2,13 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  makeWrapper,
+  dzen2,
   ffmpeg,
   imagemagick,
-  dzen2,
-  xwininfo,
-  xmodmap,
+  makeWrapper,
   xinput,
+  xmodmap,
+  xwininfo,
 }:
 
 stdenv.mkDerivation {
@@ -47,9 +47,9 @@ stdenv.mkDerivation {
   '';
 
   meta = {
+    description = "Screencasts of windows with list of keystrokes overlayed";
     homepage = "https://github.com/KeyboardFire/xscast";
     license = lib.licenses.mit;
-    description = "Screencasts of windows with list of keystrokes overlayed";
     maintainers = [ ];
     mainProgram = "xscast";
   };

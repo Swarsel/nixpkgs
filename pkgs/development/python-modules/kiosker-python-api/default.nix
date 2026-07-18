@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   hatchling,
   httpx,
 }:
@@ -9,7 +9,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "kiosker-python-api";
   version = "1.2.9";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "Top-North";
@@ -18,13 +17,11 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-DGJ1lxi4pP4gyRWDpeUdyPGCKQmzpRaWw8bwHrFUKF0=";
   };
 
-  build-system = [ hatchling ];
-
-  dependencies = [ httpx ];
-
   # Tests require a live Kiosker device (HOST/TOKEN env vars).
   doCheck = false;
-
+  build-system = [ hatchling ];
+  dependencies = [ httpx ];
+  pyproject = true;
   pythonImportsCheck = [ "kiosker" ];
 
   meta = {

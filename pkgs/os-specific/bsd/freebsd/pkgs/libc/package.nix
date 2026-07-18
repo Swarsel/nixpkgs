@@ -1,27 +1,27 @@
 {
-  symlinkJoin,
-  include,
   csu,
+  i18n,
+  include,
   libcMinimal,
-  libssp_nonshared,
-  libgcc,
-  libmd,
-  libthr,
-  msun,
-  librpcsvc,
-  libutil,
-  librt,
   libcrypt,
+  libdevstat,
+  libdl,
   libelf,
   libexecinfo,
+  libgcc,
+  libiconvModules,
   libkvm,
+  libmd,
   libmemstat,
   libprocstat,
-  libdevstat,
-  libiconvModules,
-  libdl,
-  i18n,
+  librpcsvc,
+  librt,
+  libssp_nonshared,
+  libthr,
+  libutil,
+  msun,
   rtld-elf,
+  symlinkJoin,
   baseModules ? [
     include
     csu
@@ -50,7 +50,7 @@
 }:
 
 symlinkJoin {
-  pname = "libc";
   inherit (libcMinimal) version;
+  pname = "libc";
   paths = baseModules ++ extraModules;
 }

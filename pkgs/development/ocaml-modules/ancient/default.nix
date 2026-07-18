@@ -1,13 +1,11 @@
 {
   lib,
-  buildDunePackage,
   fetchurl,
+  buildDunePackage,
 }:
 buildDunePackage (finalAttrs: {
   pname = "ancient";
   version = "0.10.0";
-
-  minimalOCamlVersion = "4.12";
 
   src = fetchurl {
     url = "https://github.com/OCamlPro/ocaml-ancient/releases/download/${finalAttrs.version}/ancient-${finalAttrs.version}.tbz";
@@ -15,9 +13,11 @@ buildDunePackage (finalAttrs: {
   };
 
   doCheck = true;
+  minimalOCamlVersion = "4.12";
 
   meta = {
     description = "Use data structures larger than available memory";
+
     longDescription = ''
       This module allows you to use in-memory data structures which are
       larger than available memory and so are kept in swap.  If you try this
@@ -34,6 +34,7 @@ buildDunePackage (finalAttrs: {
       and any process that has read/write access that disk file can map that
       file in and see the structures.
     '';
+
     homepage = "https://github.com/OCamlPro/ocaml-ancient";
     changelog = "https://raw.githubusercontent.com/OCamlPro/ocaml-ancient/refs/tags/${finalAttrs.version}/CHANGES.md";
     license = lib.licenses.lgpl21Plus;

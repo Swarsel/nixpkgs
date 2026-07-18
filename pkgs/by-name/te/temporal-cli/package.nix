@@ -1,12 +1,12 @@
 {
   lib,
+  stdenv,
   fetchFromGitHub,
   buildGoModule,
   installShellFiles,
-  writableTmpDirAsHomeHook,
-  stdenv,
   nix-update-script,
   versionCheckHook,
+  writableTmpDirAsHomeHook,
 }:
 
 buildGoModule (finalAttrs: {
@@ -20,29 +20,11 @@ buildGoModule (finalAttrs: {
     hash = "sha256-Z5Ba4oVQR6g/HyaBd/0iLIWq6Ht2SJAdylTVaErRFL0=";
   };
 
-  vendorHash = "sha256-9lO9uhy1n85QYyoh27cKhdlcuL4GT98aCNWwe8tOwoQ=";
-
-  __structuredAttrs = true;
-
   nativeBuildInputs = [ installShellFiles ];
-
-  subPackages = [
-    "cmd/temporal"
-  ];
-
-  ldflags = [
-    "-s"
-    "-w"
-    "-X github.com/temporalio/cli/internal/temporalcli.Version=${finalAttrs.version}"
-  ];
-
+  vendorHash = "sha256-9lO9uhy1n85QYyoh27cKhdlcuL4GT98aCNWwe8tOwoQ=";
   # Tests fail with x86 on macOS Rosetta 2
   doCheck = !(stdenv.hostPlatform.isDarwin && stdenv.hostPlatform.isx86_64);
-
   nativeCheckInputs = [ writableTmpDirAsHomeHook ];
-
-  doInstallCheck = true;
-  nativeInstallCheckInputs = [ versionCheckHook ];
 
   postInstall = lib.optionalString (stdenv.buildPlatform.canExecute stdenv.hostPlatform) ''
     installShellCompletion --cmd temporal \
@@ -51,7 +33,20 @@ buildGoModule (finalAttrs: {
       --zsh <($out/bin/temporal completion zsh)
   '';
 
+  doInstallCheck = true;
+  nativeInstallCheckInputs = [ versionCheckHook ];
   __darwinAllowLocalNetworking = true;
+  __structuredAttrs = true;
+
+  ldflags = [
+    "-s"
+    "-w"
+    "-X github.com/temporalio/cli/internal/temporalcli.Version=${finalAttrs.version}"
+  ];
+
+  subPackages = [
+    "cmd/temporal"
+  ];
 
   passthru.updateScript = nix-update-script {
     extraArgs = [
@@ -64,10 +59,12 @@ buildGoModule (finalAttrs: {
     description = "Command-line interface for running Temporal Server and interacting with Workflows, Activities, Namespaces, and other parts of Temporal";
     homepage = "https://docs.temporal.io/cli";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       aaronjheng
       jlesquembre
     ];
+
     mainProgram = "temporal";
   };
 })

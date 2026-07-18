@@ -1,14 +1,13 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   poetry-core,
 }:
 
 buildPythonPackage {
   pname = "gdb-pt-dump";
   version = "0-unstable-2024-04-01";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "martinradev";
@@ -18,7 +17,7 @@ buildPythonPackage {
   };
 
   build-system = [ poetry-core ];
-
+  pyproject = true;
   pythonImportsCheck = [ "pt" ];
 
   meta = {

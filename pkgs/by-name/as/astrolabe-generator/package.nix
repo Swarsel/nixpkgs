@@ -16,12 +16,12 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-yTYiUEjxlfZbFNSxvF56LlUPL3kRH6QVFq4GhXN1L5A=";
   };
 
-  buildInputs = [ jre ];
   nativeBuildInputs = [
     makeWrapper
     unzip
   ];
-  sourceRoot = ".";
+
+  buildInputs = [ jre ];
 
   installPhase = ''
     mkdir -p $out/{bin,share/java}
@@ -31,13 +31,15 @@ stdenv.mkDerivation (finalAttrs: {
       --add-flags "-jar $out/share/java/AstrolabeGenerator-${finalAttrs.version}.jar"
   '';
 
+  sourceRoot = ".";
+
   meta = {
-    homepage = "https://www.astrolabeproject.com";
     description = "Java-based tool for generating EPS files for constructing astrolabes and related tools";
-    sourceProvenance = with lib.sourceTypes; [ binaryBytecode ];
+    homepage = "https://www.astrolabeproject.com";
     license = lib.licenses.gpl3;
+    sourceProvenance = with lib.sourceTypes; [ binaryBytecode ];
     maintainers = [ ];
-    mainProgram = "AstrolabeGenerator";
     platforms = lib.platforms.all;
+    mainProgram = "AstrolabeGenerator";
   };
 })

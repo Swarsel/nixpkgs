@@ -1,11 +1,11 @@
 {
-  rustPlatform,
-  fetchFromGitHub,
   lib,
-  acl,
-  nix-update-script,
-  installShellFiles,
   stdenv,
+  fetchFromGitHub,
+  acl,
+  installShellFiles,
+  nix-update-script,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -19,25 +19,10 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-OuwzgtMQMQcWhQnwD1Ow2fsT0yhl+DVGkqoebe2osf8=";
   };
 
-  cargoHash = "sha256-8WRiHHMvYwwx7AxuovGjnn83AxIAJK0T86b2WCOtGuw=";
-
   nativeBuildInputs = [ installShellFiles ];
-
+  cargoHash = "sha256-8WRiHHMvYwwx7AxuovGjnn83AxIAJK0T86b2WCOtGuw=";
   checkInputs = lib.optionals stdenv.hostPlatform.isLinux [ acl ];
 
-  # disable tests depending on special filesystem features
-  checkNoDefaultFeatures = true;
-  checkFeatures = [
-    "test_no_reflink"
-    "test_no_sparse"
-    "test_no_extents"
-    "test_no_acl"
-    "test_no_xattr"
-    "test_no_perms"
-  ];
-
-  # had concurrency issues on 64 cores, also tests are quite fast compared to build
-  dontUseCargoParallelTests = true;
   checkFlags = lib.optionals stdenv.hostPlatform.isDarwin [
     # ---- test_socket_file::test_with_parallel_file_driver stdout ----
     # STDOUT: 12:20:56 [WARN] Socket copy not supported by this OS: /private/tmp/nix-build-xcp-0.24.1.drv-0/source/targ>
@@ -69,6 +54,19 @@ rustPlatform.buildRustPackage (finalAttrs: {
       --zsh completions/xcp.zsh
   '';
 
+  checkFeatures = [
+    "test_no_reflink"
+    "test_no_sparse"
+    "test_no_extents"
+    "test_no_acl"
+    "test_no_xattr"
+    "test_no_perms"
+  ];
+
+  # disable tests depending on special filesystem features
+  checkNoDefaultFeatures = true;
+  # had concurrency issues on 64 cores, also tests are quite fast compared to build
+  dontUseCargoParallelTests = true;
   passthru.updateScript = nix-update-script { };
 
   meta = {

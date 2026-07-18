@@ -19,8 +19,8 @@ rustPlatform.buildRustPackage (finalAttrs: {
 
   meta = {
     description = "Find and replace text in source files";
-    mainProgram = "ruplacer";
     homepage = "https://github.com/TankerHQ/ruplacer";
     license = lib.licenses.bsd3;
+    mainProgram = "ruplacer";
   };
 })

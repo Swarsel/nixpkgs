@@ -1,8 +1,8 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
   gettext,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -22,8 +22,8 @@ rustPlatform.buildRustPackage (finalAttrs: {
   # setting `GETTEXT_SYSTEM` only works on some platforms (i.e., not Darwin).
   env = {
     GETTEXT_BIN_DIR = "${lib.getBin gettext}/bin";
-    GETTEXT_LIB_DIR = "${lib.getLib gettext}/lib";
     GETTEXT_INCLUDE_DIR = "${lib.getInclude gettext}/include";
+    GETTEXT_LIB_DIR = "${lib.getLib gettext}/lib";
   };
 
   cargoTestFlags = [ "--lib" ];

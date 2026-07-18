@@ -1,7 +1,7 @@
 {
-  stdenvNoCC,
   lib,
   fetchzip,
+  stdenvNoCC,
 }:
 
 stdenvNoCC.mkDerivation rec {
@@ -13,9 +13,6 @@ stdenvNoCC.mkDerivation rec {
     sha256 = "sha256-hD3SRUkk50sf0MhhgHNMvBoJHTKz/71lyFxaAXM4/qI=";
   };
 
-  dontConfigure = true;
-  dontBuild = true;
-
   installPhase = ''
     runHook preInstall
 
@@ -25,11 +22,14 @@ stdenvNoCC.mkDerivation rec {
     runHook postInstall
   '';
 
+  dontBuild = true;
+  dontConfigure = true;
+
   meta = {
-    homepage = "https://rpg.hamsterrepublic.com/ohrrpgce/Compiling_in_Mac_OS_X";
     description = "FreeBASIC, a multi-platform BASIC Compiler (precompiled Darwin build by OHRRPGCE team)";
-    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
+    homepage = "https://rpg.hamsterrepublic.com/ohrrpgce/Compiling_in_Mac_OS_X";
     license = lib.licenses.gpl2Plus; # runtime & graphics libraries are LGPLv2+ w/ static linking exception
+    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
     maintainers = with lib.maintainers; [ OPNA2608 ];
     platforms = [ ];
   };

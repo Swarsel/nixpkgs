@@ -1,11 +1,11 @@
 {
   lib,
+  fetchFromGitHub,
   async-interrupt,
   bleak,
   bleak-retry-connector,
   buildPythonPackage,
   cryptography,
-  fetchFromGitHub,
   lru-dict,
   poetry-core,
   pytest-asyncio,
@@ -16,7 +16,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "yalexs-ble";
   version = "3.4.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "Yale-Libs";
@@ -24,6 +23,12 @@ buildPythonPackage (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-sNWLyg+ltwFu14QjoboA6r9zR+5jDHIy+F22Q7+GdoY=";
   };
+
+  nativeCheckInputs = [
+    pytest-asyncio
+    pytest-cov-stub
+    pytestCheckHook
+  ];
 
   build-system = [ poetry-core ];
 
@@ -35,12 +40,7 @@ buildPythonPackage (finalAttrs: {
     lru-dict
   ];
 
-  nativeCheckInputs = [
-    pytest-asyncio
-    pytest-cov-stub
-    pytestCheckHook
-  ];
-
+  pyproject = true;
   pythonImportsCheck = [ "yalexs_ble" ];
 
   meta = {

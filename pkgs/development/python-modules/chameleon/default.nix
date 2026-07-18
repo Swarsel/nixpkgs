@@ -1,15 +1,14 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
+  buildPythonPackage,
   pytestCheckHook,
+  setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "chameleon";
   version = "4.6.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "malthe";
@@ -18,18 +17,17 @@ buildPythonPackage rec {
     hash = "sha256-zCEM5yl8Y11FbexD7veS9bFJgm30L6fsTde59m2t1ec=";
   };
 
-  build-system = [ setuptools ];
-
   nativeCheckInputs = [ pytestCheckHook ];
-
+  build-system = [ setuptools ];
+  pyproject = true;
   pythonImportsCheck = [ "chameleon" ];
 
   meta = {
-    changelog = "https://github.com/malthe/chameleon/blob/${src.tag}/CHANGES.rst";
     description = "Fast HTML/XML Template Compiler";
-    downloadPage = "https://github.com/malthe/chameleon";
     homepage = "https://chameleon.readthedocs.io";
+    changelog = "https://github.com/malthe/chameleon/blob/${src.tag}/CHANGES.rst";
     license = lib.licenses.bsd0;
     maintainers = [ ];
+    downloadPage = "https://github.com/malthe/chameleon";
   };
 }

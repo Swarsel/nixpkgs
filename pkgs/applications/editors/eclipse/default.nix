@@ -2,22 +2,22 @@
   lib,
   stdenv,
   fetchurl,
-  makeDesktopItem,
-  makeWrapper,
-  freetype,
+  buildEnv,
+  callPackage,
   fontconfig,
+  freetype,
+  glib,
+  gsettings-desktop-schemas,
+  gtk3,
+  jdk,
   libx11,
   libxrender,
-  zlib,
-  glib,
-  gtk3,
   libxtst,
-  jdk,
-  gsettings-desktop-schemas,
-  webkitgtk_4_1 ? null, # for internal web browser
-  buildEnv,
+  makeDesktopItem,
+  makeWrapper,
   runCommand,
-  callPackage,
+  zlib,
+  webkitgtk_4_1 ? null, # for internal web browser
 }:
 
 # ./update.sh fully automates updating for each quarterly release.  you can run
@@ -76,21 +76,24 @@ let
     id:
     {
       description,
-      hashes,
       dropUrl,
+      hashes,
     }:
     builtins.listToAttrs [
       {
         name = "eclipse-${lib.strings.toLower id}";
+
         value = buildEclipse {
-          pname = "eclipse-${lib.strings.toLower id}";
           inherit description;
+          pname = "eclipse-${lib.strings.toLower id}";
+
           src = fetchurl {
             url =
               if dropUrl then
                 "https://www.eclipse.org/downloads/download.php?r=1&nf=1&file=/eclipse/downloads/drops${platform_major}/R-${platform_major}.${platform_minor}-${timestamp}/eclipse-${id}-${platform_major}.${platform_minor}-linux-gtk-${arch}.tar.gz"
               else
                 "https://www.eclipse.org/downloads/download.php?r=1&nf=1&file=/technology/epp/downloads/release/${year}-${month}/R/eclipse-${id}-${year}-${month}-R-linux-gtk-${arch}.tar.gz";
+
             hash = hashes.${arch};
           };
         };
@@ -112,8 +115,8 @@ generatedEclipses
   eclipseWithPlugins =
     {
       eclipse,
-      plugins ? [ ],
       jvmArgs ? [ ],
+      plugins ? [ ],
     }:
     let
       # Gather up the desired plugins.

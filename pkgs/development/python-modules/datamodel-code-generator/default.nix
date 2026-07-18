@@ -1,9 +1,9 @@
 {
   lib,
+  fetchFromGitHub,
   argcomplete,
   black,
   buildPythonPackage,
-  fetchFromGitHub,
   genson,
   graphql-core,
   hatch-vcs,
@@ -16,12 +16,12 @@
   openapi-spec-validator,
   packaging,
   prance,
-  ruff,
   pydantic,
   pysnooper,
   pytest-mock,
   pytestCheckHook,
   pyyaml,
+  ruff,
   time-machine,
   watchfiles,
 }:
@@ -29,7 +29,6 @@
 buildPythonPackage rec {
   pname = "datamodel-code-generator";
   version = "0.55.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "koxudaxi";
@@ -38,10 +37,13 @@ buildPythonPackage rec {
     hash = "sha256-zsLJv7gKhmnEIS/AUvnBzm+07QFQoMdiFo/PkfRyHek=";
   };
 
-  pythonRelaxDeps = [
-    "inflect"
-    "isort"
-  ];
+  nativeCheckInputs = [
+    inline-snapshot
+    pytest-mock
+    pytestCheckHook
+    time-machine
+  ]
+  ++ optional-dependencies.all;
 
   build-system = [
     hatchling
@@ -60,34 +62,34 @@ buildPythonPackage rec {
     pyyaml
   ];
 
+  disabledTests = [
+    # remote testing, name resolution failure.
+    "test_openapi_parser_parse_remote_ref"
+  ];
+
   optional-dependencies = {
     all = lib.concatAttrValues (lib.removeAttrs optional-dependencies [ "all" ]);
     debug = [ pysnooper ];
     graphql = [ graphql-core ];
     http = [ httpx ];
     ruff = [ ruff ];
+
     validation = [
       openapi-spec-validator
       prance
     ];
+
     watch = [
       watchfiles
     ];
   };
 
-  nativeCheckInputs = [
-    inline-snapshot
-    pytest-mock
-    pytestCheckHook
-    time-machine
-  ]
-  ++ optional-dependencies.all;
-
+  pyproject = true;
   pythonImportsCheck = [ "datamodel_code_generator" ];
 
-  disabledTests = [
-    # remote testing, name resolution failure.
-    "test_openapi_parser_parse_remote_ref"
+  pythonRelaxDeps = [
+    "inflect"
+    "isort"
   ];
 
   meta = {

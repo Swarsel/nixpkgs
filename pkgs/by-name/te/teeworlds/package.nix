@@ -1,21 +1,21 @@
 {
-  fetchFromGitHub,
-  fetchpatch,
   lib,
   stdenv,
+  fetchFromGitHub,
+  SDL2,
+  alsa-lib,
   cmake,
+  fetchpatch,
+  freetype,
+  icoutils,
+  libGLU,
+  libx11,
+  lua5_3,
+  nixosTests,
   pkg-config,
   python3,
-  alsa-lib,
-  libx11,
-  libGLU,
-  SDL2,
-  lua5_3,
-  zlib,
-  freetype,
   wavpack,
-  icoutils,
-  nixosTests,
+  zlib,
   buildClient ? true,
 }:
 
@@ -36,15 +36,15 @@ stdenv.mkDerivation (finalAttrs: {
     # Using fetchurl instead is also not a good idea, see https://github.com/NixOS/nixpkgs/issues/32084#issuecomment-727223713
     ./rename-VERSION-to-VERSION.txt.patch
     (fetchpatch {
+      hash = "sha256-2MmsucaaYjqLgMww1492gNmHmvBJm/NED+VV5pZDnBY=";
       name = "CVE-2021-43518.patch";
       url = "https://salsa.debian.org/games-team/teeworlds/-/raw/a6c4b23c1ce73466e6d89bccbede70e61e8c9cba/debian/patches/CVE-2021-43518.patch";
-      hash = "sha256-2MmsucaaYjqLgMww1492gNmHmvBJm/NED+VV5pZDnBY=";
     })
     # Fix for CMake v4
     # ref. https://github.com/teeworlds/teeworlds/pull/2821 merged upstream
     (fetchpatch {
-      url = "https://github.com/teeworlds/teeworlds/commit/23f33517b4b0621253862b559f6ed0cd0146bae2.patch";
       hash = "sha256-RZvq/my7N68Kea26WuzLmyaTNOm5eZL5Gw9SGYpTeoQ=";
+      url = "https://github.com/teeworlds/teeworlds/commit/23f33517b4b0621253862b559f6ed0cd0146bae2.patch";
     })
   ];
 
@@ -123,7 +123,6 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Retro multiplayer shooter game";
-    mainProgram = "teeworlds_srv";
 
     longDescription = ''
       Teeworlds is a free online multiplayer game, available for all
@@ -133,6 +132,7 @@ stdenv.mkDerivation (finalAttrs: {
     '';
 
     homepage = "https://teeworlds.com/";
+
     license = with lib.licenses; [
       # See https://github.com/teeworlds/teeworlds/blob/master/license.txt
       lib.licenses.zlib # Main license
@@ -145,9 +145,12 @@ stdenv.mkDerivation (finalAttrs: {
       # zlib src/engine/external/pnglite/
       # zlib src/engine/external/zlib/
     ];
+
     maintainers = with lib.maintainers; [
       Luflosi
     ];
+
     platforms = lib.platforms.unix;
+    mainProgram = "teeworlds_srv";
   };
 })

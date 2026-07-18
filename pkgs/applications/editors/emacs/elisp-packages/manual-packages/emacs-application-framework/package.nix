@@ -1,19 +1,19 @@
 {
+  lib,
   # Basic
   stdenv,
-  lib,
-  melpaBuild,
   fetchFromGitHub,
-  symlinkJoin,
-  # Python dependency
-  python3,
   # Emacs dependencies
   all-the-icons,
+  melpaBuild,
+  # Python dependency
+  python3,
+  symlinkJoin,
+  # Updater
+  unstableGitUpdater,
   # Other dependencies
   wmctrl,
   xdotool,
-  # Updater
-  unstableGitUpdater,
   # Sub-applications in the framework
   enabledApps ? [ ],
 }:
@@ -63,10 +63,6 @@ melpaBuild (finalAttrs: {
     hash = "sha256-wWC5Ma9p/k0GLcGpPn7NO0KqkIXmEbaQc7TJ2ImMIr4=";
   };
 
-  packageRequires = [
-    all-the-icons
-  ];
-
   postPatch = ''
     substituteInPlace eaf.el \
       --replace-fail "\"python.exe\" \"python3\"" \
@@ -85,14 +81,6 @@ melpaBuild (finalAttrs: {
                      "(executable-find \"${xdotoolExe}\")" \
       --replace-fail "(shell-command-to-string \"xdotool getactivewindow getwindowname\")" \
                      "(shell-command-to-string \"${xdotoolExe} getactivewindow getwindowname\")"
-  '';
-
-  files = ''
-    ("*.el"
-     "*.py"
-     "applications.json"
-     "core"
-     "extension")
   '';
 
   preInstall = ''
@@ -115,12 +103,25 @@ melpaBuild (finalAttrs: {
     fi
   '';
 
+  files = ''
+    ("*.el"
+     "*.py"
+     "applications.json"
+     "core"
+     "extension")
+  '';
+
+  packageRequires = [
+    all-the-icons
+  ];
+
   passthru.updateScript = unstableGitUpdater { };
 
   meta = {
     description = "Extensible framework of Emacs";
     homepage = "https://github.com/emacs-eaf/emacs-application-framework";
     license = lib.licenses.gpl3Only;
+
     maintainers = with lib.maintainers; [
       thattemperature
     ];

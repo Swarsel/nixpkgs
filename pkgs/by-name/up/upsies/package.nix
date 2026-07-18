@@ -19,7 +19,6 @@ in
 python3Packages.buildPythonApplication (finalAttrs: {
   pname = "upsies";
   version = "2026.06.12";
-  pyproject = true;
 
   src = fetchFromCodeberg {
     owner = "plotski";
@@ -30,13 +29,32 @@ python3Packages.buildPythonApplication (finalAttrs: {
 
   patches = [
     (fetchpatch {
-      name = "use-pytest-timeout.patch";
-      url = "https://codeberg.org/plotski/upsies/commit/db6b564f8575c913a6fbabb61d5326a073c9b52c.patch";
       hash = "sha256-UeUrZ6ogUSS0FvyNQwwwp8q+FArEK61o+Y2Uh7mrPtw=";
+      name = "use-pytest-timeout.patch";
       revert = true;
+      url = "https://codeberg.org/plotski/upsies/commit/db6b564f8575c913a6fbabb61d5326a073c9b52c.patch";
     })
   ];
 
+  nativeCheckInputs =
+    with python3Packages;
+    [
+      pytest-asyncio
+      pytest-cov-stub
+      pytest-httpserver
+      pytest-mock
+      pytest-timeout
+      pytestCheckHook
+      trustme
+    ]
+    ++ finalAttrs.passthru.runtimeDeps;
+
+  preCheck = ''
+    # `utils.is_running_in_development_environment` expects it in tests
+    export VIRTUAL_ENV=1
+  '';
+
+  __darwinAllowLocalNetworking = true;
   build-system = with python3Packages; [ setuptools ];
 
   dependencies = with python3Packages; [
@@ -59,18 +77,16 @@ python3Packages.buildPythonApplication (finalAttrs: {
     unidecode
   ];
 
-  nativeCheckInputs =
-    with python3Packages;
-    [
-      pytest-asyncio
-      pytest-cov-stub
-      pytest-httpserver
-      pytest-mock
-      pytest-timeout
-      pytestCheckHook
-      trustme
-    ]
-    ++ finalAttrs.passthru.runtimeDeps;
+  disabledTestPaths = [
+    # DNS resolution errors in the sandbox on some of the tests
+    "tests/utils_test/http_test/http_test.py"
+    "tests/utils_test/http_test/http_tls_test.py"
+  ]
+  ++ lib.optionals stdenv.hostPlatform.isDarwin [
+    # Fail due to the different set of codecs on Darwin
+    "tests/utils_test/predbs_test/predbs_integration_test.py"
+    "tests/utils_test/release_info_test.py"
+  ];
 
   disabledTests = lib.optionals stdenv.hostPlatform.isDarwin [
     # Fail during object comparisons on Darwin
@@ -89,22 +105,6 @@ python3Packages.buildPythonApplication (finalAttrs: {
     "test_search"
   ];
 
-  disabledTestPaths = [
-    # DNS resolution errors in the sandbox on some of the tests
-    "tests/utils_test/http_test/http_test.py"
-    "tests/utils_test/http_test/http_tls_test.py"
-  ]
-  ++ lib.optionals stdenv.hostPlatform.isDarwin [
-    # Fail due to the different set of codecs on Darwin
-    "tests/utils_test/predbs_test/predbs_integration_test.py"
-    "tests/utils_test/release_info_test.py"
-  ];
-
-  preCheck = ''
-    # `utils.is_running_in_development_environment` expects it in tests
-    export VIRTUAL_ENV=1
-  '';
-
   makeWrapperArgs = [
     "--suffix"
     "PATH"
@@ -112,7 +112,7 @@ python3Packages.buildPythonApplication (finalAttrs: {
     (lib.makeBinPath finalAttrs.passthru.runtimeDeps)
   ];
 
-  __darwinAllowLocalNetworking = true;
+  pyproject = true;
 
   passthru = {
     inherit runtimeDeps;
@@ -122,7 +122,7 @@ python3Packages.buildPythonApplication (finalAttrs: {
     description = "Toolkit for collecting, generating, normalizing and sharing video metadata";
     homepage = "https://upsies.readthedocs.io/";
     license = lib.licenses.gpl3Plus;
-    mainProgram = "upsies";
     maintainers = with lib.maintainers; [ ambroisie ];
+    mainProgram = "upsies";
   };
 })

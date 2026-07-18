@@ -1,13 +1,13 @@
 {
   lib,
-  stdenvNoCC,
   fetchFromGitHub,
   autoreconfHook,
-  gtk3,
-  moka-icon-theme,
   faba-icon-theme,
   gnome-icon-theme,
+  gtk3,
   hicolor-icon-theme,
+  moka-icon-theme,
+  stdenvNoCC,
 }:
 
 stdenvNoCC.mkDerivation {
@@ -33,20 +33,20 @@ stdenvNoCC.mkDerivation {
     hicolor-icon-theme
   ];
 
-  dontDropIconThemeCache = true;
-
   postInstall = ''
     for theme in $out/share/icons/*; do
       gtk-update-icon-cache $theme
     done
   '';
 
+  dontDropIconThemeCache = true;
+
   meta = {
     description = "Full set of Faba monochrome panel icons";
     homepage = "https://snwh.org/moka";
     license = lib.licenses.gpl3;
+    maintainers = with lib.maintainers; [ romildo ];
     # moka-icon-theme dependency is restricted to linux
     platforms = lib.platforms.linux;
-    maintainers = with lib.maintainers; [ romildo ];
   };
 }

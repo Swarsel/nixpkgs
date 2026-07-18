@@ -1,10 +1,10 @@
 {
   lib,
+  fetchFromGitHub,
   buildPythonPackage,
   chardet,
   diff-match-patch,
   django,
-  fetchFromGitHub,
   psycopg2,
   python,
   pytz,
@@ -15,7 +15,6 @@
 buildPythonPackage rec {
   pname = "django-import-export";
   version = "4.4.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "django-import-export";
@@ -24,7 +23,18 @@ buildPythonPackage rec {
     hash = "sha256-6/I5GI2fcD48IOwtbhgqpNn5RHU7Z4PeqMBZUEtiE9g=";
   };
 
-  pythonRelaxDeps = [ "tablib" ];
+  nativeCheckInputs = [
+    chardet
+    psycopg2
+    pytz
+  ]
+  ++ lib.concatAttrValues optional-dependencies;
+
+  checkPhase = ''
+    runHook preCheck
+    ${python.interpreter} tests/manage.py test core --settings=settings
+    runHook postCheck
+  '';
 
   build-system = [ setuptools-scm ];
 
@@ -44,20 +54,9 @@ buildPythonPackage rec {
     yaml = [ tablib ] ++ tablib.optional-dependencies.yaml;
   };
 
-  nativeCheckInputs = [
-    chardet
-    psycopg2
-    pytz
-  ]
-  ++ lib.concatAttrValues optional-dependencies;
-
-  checkPhase = ''
-    runHook preCheck
-    ${python.interpreter} tests/manage.py test core --settings=settings
-    runHook postCheck
-  '';
-
+  pyproject = true;
   pythonImportsCheck = [ "import_export" ];
+  pythonRelaxDeps = [ "tablib" ];
 
   meta = {
     description = "Django application and library for importing and exporting data with admin integration";

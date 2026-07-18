@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   google-api-core,
   google-cloud-access-context-manager,
   google-cloud-org-policy,
@@ -21,7 +21,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "google-cloud-asset";
   version = "4.4.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "googleapis";
@@ -30,13 +29,14 @@ buildPythonPackage (finalAttrs: {
     sha256 = "sha256-M/7uDWWz4YCfxa4gyM9BaAo10iyTMvtR2MhNpdFYnis=";
   };
 
-  sourceRoot = "${finalAttrs.src.name}/packages/google-cloud-asset";
+  nativeCheckInputs = [
+    google-cloud-testutils
+    mock
+    pytest-asyncio
+    pytestCheckHook
+  ];
 
   build-system = [ setuptools ];
-
-  pythonRelaxDeps = [
-    "protobuf"
-  ];
 
   dependencies = [
     grpc-google-iam-v1
@@ -54,12 +54,7 @@ buildPythonPackage (finalAttrs: {
     libcst = [ libcst ];
   };
 
-  nativeCheckInputs = [
-    google-cloud-testutils
-    mock
-    pytest-asyncio
-    pytestCheckHook
-  ];
+  pyproject = true;
 
   pythonImportsCheck = [
     "google.cloud.asset"
@@ -69,9 +64,16 @@ buildPythonPackage (finalAttrs: {
     "google.cloud.asset_v1p5beta1"
   ];
 
+  pythonRelaxDeps = [
+    "protobuf"
+  ];
+
+  sourceRoot = "${finalAttrs.src.name}/packages/google-cloud-asset";
+
   passthru = {
     # python updater script sets the wrong tag
     skipBulkUpdate = true;
+
     updateScript = nix-update-script {
       extraArgs = [
         "--version-regexp"

@@ -1,22 +1,13 @@
 {
   lib,
-  cmake,
-  fetchFromGitHub,
   stdenv,
+  fetchFromGitHub,
+  cmake,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
   pname = "numkong";
   version = "7.7.0";
-
-  outputs = [
-    "out"
-    "lib"
-    "dev"
-  ];
-
-  __structuredAttrs = true;
-  strictDeps = true;
 
   src = fetchFromGitHub {
     owner = "ashvardanian";
@@ -25,7 +16,15 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-JZafqqq3jDX+iim2DvyuavuvZ0wrPLIU+hcrOiT1L84=";
   };
 
+  outputs = [
+    "out"
+    "lib"
+    "dev"
+  ];
+
+  strictDeps = true;
   nativeBuildInputs = [ cmake ];
+  __structuredAttrs = true;
 
   meta = {
     description = "Portable mixed-precision math, linear-algebra, & retrieval library with 2000+ SIMD kernels for x86, Arm, RISC-V, LoongArch, Power, & WebAssembly";

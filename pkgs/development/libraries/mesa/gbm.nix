@@ -2,35 +2,49 @@
   lib,
   stdenv,
   fetchFromGitLab,
-  libglvnd,
   bison,
   flex,
-  meson,
-  pkg-config,
-  ninja,
-  python3Packages,
   libdrm,
+  libglvnd,
+  meson,
+  ninja,
+  pkg-config,
+  python3Packages,
 }:
 
 let
   common = import ./common.nix { inherit lib fetchFromGitLab; };
 in
 stdenv.mkDerivation rec {
+  inherit (common) meta;
   pname = "mesa-libgbm";
-
   # We don't use the versions from common.nix, because libgbm is a world rebuild,
   # so the updates need to happen separately on staging.
   version = "26.1.3";
 
   src = fetchFromGitLab {
-    domain = "gitlab.freedesktop.org";
     owner = "mesa";
     repo = "mesa";
     rev = "mesa-${version}";
     hash = "sha256-W2Ud9wmiIuDYMnFj8sK2SGAI1WayMCtdj7/7od/1Ql4=";
+    domain = "gitlab.freedesktop.org";
   };
 
-  mesonAutoFeatures = "disabled";
+  strictDeps = true;
+
+  nativeBuildInputs = [
+    bison
+    flex
+    meson
+    pkg-config
+    ninja
+    python3Packages.packaging
+    python3Packages.python
+    python3Packages.mako
+    python3Packages.pyyaml
+  ];
+
+  propagatedBuildInputs = [ libdrm ];
 
   mesonFlags = [
     "--sysconfdir=/etc"
@@ -48,21 +62,5 @@ stdenv.mkDerivation rec {
     (lib.mesonOption "vulkan-layers" "")
   ];
 
-  strictDeps = true;
-
-  propagatedBuildInputs = [ libdrm ];
-
-  nativeBuildInputs = [
-    bison
-    flex
-    meson
-    pkg-config
-    ninja
-    python3Packages.packaging
-    python3Packages.python
-    python3Packages.mako
-    python3Packages.pyyaml
-  ];
-
-  inherit (common) meta;
+  mesonAutoFeatures = "disabled";
 }

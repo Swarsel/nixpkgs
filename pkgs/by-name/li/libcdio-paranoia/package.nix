@@ -4,8 +4,8 @@
   fetchFromGitHub,
   autoreconfHook,
   libcdio,
-  pkg-config,
   libiconv,
+  pkg-config,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -23,6 +23,7 @@ stdenv.mkDerivation (finalAttrs: {
     autoreconfHook
     pkg-config
   ];
+
   buildInputs = [
     libcdio
   ]
@@ -36,14 +37,16 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "CD paranoia on top of libcdio";
+
     longDescription = ''
       This is a port of xiph.org's cdda paranoia to use libcdio for CDROM
       access. By doing this, cdparanoia runs on platforms other than GNU/Linux.
     '';
+
     homepage = "https://github.com/libcdio/libcdio-paranoia";
     license = lib.licenses.gpl3;
     maintainers = [ ];
-    mainProgram = "cd-paranoia";
     platforms = lib.platforms.unix;
+    mainProgram = "cd-paranoia";
   };
 })

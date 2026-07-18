@@ -1,11 +1,11 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
   cmake,
-  python3,
-  osi,
   cplex,
+  osi,
+  python3,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -19,30 +19,23 @@ stdenv.mkDerivation (finalAttrs: {
     sha256 = "sha256-JwBdV44h6LAJeIjKHPouvb3ZleydAc55QiuaFGrFx1Y=";
   };
 
+  postPatch = ''
+    # Needed because the package tries to be too smart.
+    export CC="$(which $CC)"
+    export CXX="$(which $CXX)"
+  '';
+
   nativeBuildInputs = [
     cmake
     python3.pkgs.wrapPython
   ];
+
   buildInputs = [
     python3
     osi
   ];
 
   cmakeFlags = lib.optionals osi.withCplex [ "-DDOWNWARD_CPLEX_ROOT=${cplex}/cplex" ];
-
-  configurePhase = ''
-    runHook preConfigure
-
-    python build.py release
-
-    runHook postConfigure
-  '';
-
-  postPatch = ''
-    # Needed because the package tries to be too smart.
-    export CC="$(which $CC)"
-    export CXX="$(which $CXX)"
-  '';
 
   installPhase = ''
     install -Dm755 builds/release/bin/downward $out/libexec/fast-downward/downward
@@ -68,12 +61,20 @@ stdenv.mkDerivation (finalAttrs: {
       --replace 'args.build = "release"' "args.build = \"$out/libexec/fast-downward\""
   '';
 
+  configurePhase = ''
+    runHook preConfigure
+
+    python build.py release
+
+    runHook postConfigure
+  '';
+
   meta = {
     description = "Domain-independent planning system";
-    mainProgram = "fast-downward";
     homepage = "https://www.fast-downward.org/";
     license = lib.licenses.gpl3Plus;
-    platforms = lib.platforms.unix;
     maintainers = [ ];
+    platforms = lib.platforms.unix;
+    mainProgram = "fast-downward";
   };
 })

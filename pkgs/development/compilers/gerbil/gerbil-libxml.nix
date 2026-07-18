@@ -1,21 +1,19 @@
 {
-  pkgs,
   lib,
   fetchFromGitHub,
   libxml2,
+  pkgs,
   ...
 }:
 
 {
   pname = "gerbil-libxml";
   version = "unstable-2023-09-23";
-  git-version = "b08e5d8";
-  gerbil-package = "clan";
-  gerbilInputs = [ ];
   nativeBuildInputs = [ pkgs.pkg-config ];
   buildInputs = [ libxml2 ];
-  version-path = "";
-  softwareName = "Gerbil-LibXML";
+  gerbil-package = "clan";
+  gerbilInputs = [ ];
+  git-version = "b08e5d8";
 
   pre-src = {
     fun = fetchFromGitHub;
@@ -25,11 +23,14 @@
     sha256 = "1zfccqaibwy2b3srwmwwgv91dwy1xl18cfimxhcsxl6mxvgm61pd";
   };
 
+  softwareName = "Gerbil-LibXML";
+  version-path = "";
+
   meta = {
     description = "libxml bindings for Gerbil";
     homepage = "https://github.com/mighty-gerbils/gerbil-libxml";
     license = lib.licenses.asl20;
-    platforms = lib.platforms.unix;
     maintainers = with lib.maintainers; [ fare ];
+    platforms = lib.platforms.unix;
   };
 }

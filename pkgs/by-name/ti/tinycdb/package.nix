@@ -1,6 +1,6 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchurl,
 }:
 let
@@ -13,11 +13,14 @@ let
   ranlib = if !isCross then "ranlib" else "${cross}-ranlib";
 in
 stdenv.mkDerivation (finalAttrs: {
-  postPatch = ''
-    sed -i 's,set --, set -x; set --,' Makefile
-  '';
   pname = "tinycdb";
   version = "0.81";
+
+  src = fetchurl {
+    url = "https://www.corpit.ru/mjt/tinycdb/tinycdb-${finalAttrs.version}.tar.gz";
+    hash = "sha256-Rp3i1EW/VIgPZS9LbclcfN9vVQLDVSSkWyEi1w1H68I=";
+  };
+
   # In general, static library (.a) goes to "dev", shared (.so) to
   # "lib". In case of static build, there is no .so library, so "lib"
   # output is useless and empty.
@@ -27,7 +30,11 @@ stdenv.mkDerivation (finalAttrs: {
     "man"
   ]
   ++ lib.optional (!static) "lib";
-  separateDebugInfo = true;
+
+  postPatch = ''
+    sed -i 's,set --, set -x; set --,' Makefile
+  '';
+
   makeFlags = [
     "prefix=$(out)"
     "CC=${cc}"
@@ -36,6 +43,7 @@ stdenv.mkDerivation (finalAttrs: {
     "static"
   ]
   ++ lib.optional (!static) "shared";
+
   postInstall = ''
     mkdir -p $dev/lib $out/bin
     mv $out/lib/libcdb.a $dev/lib
@@ -54,15 +62,11 @@ stdenv.mkDerivation (finalAttrs: {
       ''
   );
 
-  src = fetchurl {
-    url = "https://www.corpit.ru/mjt/tinycdb/tinycdb-${finalAttrs.version}.tar.gz";
-    hash = "sha256-Rp3i1EW/VIgPZS9LbclcfN9vVQLDVSSkWyEi1w1H68I=";
-  };
+  separateDebugInfo = true;
 
   meta = {
 
     description = "Utility to manipulate constant databases (cdb)";
-    mainProgram = "cdb";
 
     longDescription = ''
       tinycdb is a small, fast and reliable utility and subroutine
@@ -73,5 +77,6 @@ stdenv.mkDerivation (finalAttrs: {
     homepage = "https://www.corpit.ru/mjt/tinycdb.html";
     license = lib.licenses.publicDomain;
     platforms = lib.platforms.linux;
+    mainProgram = "cdb";
   };
 })

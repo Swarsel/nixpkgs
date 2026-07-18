@@ -2,10 +2,10 @@
   lib,
   stdenv,
   fetchFromGitHub,
+  libhighscore,
   meson,
   ninja,
   pkg-config,
-  libhighscore,
   unstableGitUpdater,
 }:
 
@@ -19,8 +19,6 @@ stdenv.mkDerivation (finalAttrs: {
     rev = "f1572c44150d1e772e4d1f4e6ff4284ac8609905";
     hash = "sha256-ly5jkz6LewoZXon2z77EdPnnGqnp4cbTQQuJsRffuxg=";
   };
-
-  sourceRoot = "${finalAttrs.src.name}/src/os/highscore";
 
   postPatch = ''
     substituteInPlace meson.build \
@@ -38,14 +36,16 @@ stdenv.mkDerivation (finalAttrs: {
     libhighscore
   ];
 
+  sourceRoot = "${finalAttrs.src.name}/src/os/highscore";
+
   passthru.updateScript = unstableGitUpdater {
     hardcodeZeroVersion = true;
   };
 
   meta = {
+    inherit (libhighscore.meta) maintainers platforms;
     description = "Port of Stella to Highscore";
     homepage = "https://github.com/highscore-emu/stella";
     license = lib.licenses.gpl2Only;
-    inherit (libhighscore.meta) maintainers platforms;
   };
 })

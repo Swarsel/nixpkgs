@@ -1,15 +1,11 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # build-system
-  setuptools,
-  mypy-protobuf,
-
+  buildPythonPackage,
   # dependencies
   evaluate,
   joblib,
+  mypy-protobuf,
   ninja,
   numpy,
   onnx,
@@ -22,13 +18,14 @@
   rich,
   scipy,
   sentencepiece,
+  # build-system
+  setuptools,
   tqdm,
   zstandard,
 }:
 buildPythonPackage (finalAttrs: {
   pname = "amd-quark";
   version = "0.11.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "amd";
@@ -45,6 +42,8 @@ buildPythonPackage (finalAttrs: {
   '';
 
   env.QUARK_RELEASE = "1";
+  # Most of the tests require gpu and some other unspecified dependencies
+  doCheck = false;
 
   build-system = [
     setuptools
@@ -70,12 +69,9 @@ buildPythonPackage (finalAttrs: {
     zstandard
   ];
 
-  pythonRelaxDeps = true;
-
+  pyproject = true;
   pythonImportsCheck = [ "quark" ];
-
-  # Most of the tests require gpu and some other unspecified dependencies
-  doCheck = false;
+  pythonRelaxDeps = true;
 
   meta = {
     description = "AMD Quark Model Optimizer";

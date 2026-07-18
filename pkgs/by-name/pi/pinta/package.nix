@@ -1,35 +1,35 @@
 {
   lib,
   stdenv,
-  dotnetCorePackages,
-  buildDotnetModule,
   fetchFromGitHub,
-  glibcLocales,
-  gtk4,
-  glib,
-  libadwaita,
-  intltool,
-  wrapGAppsHook4,
-  nix-update-script,
-
-  # Darwin transitive deps
-  graphene,
-  gettext,
-  pango,
-  gdk-pixbuf,
+  buildDotnetModule,
   cairo,
-  harfbuzz,
-  fribidi,
+  dotnetCorePackages,
   fontconfig,
   freetype,
-  libthai,
-  pcre2,
+  fribidi,
+  gdk-pixbuf,
+  gettext,
+  glib,
+  glibcLocales,
+  # Darwin transitive deps
+  graphene,
+  gtk4,
+  harfbuzz,
+  intltool,
+  libadwaita,
   libepoxy,
+  libthai,
+  nix-update-script,
+  pango,
+  pcre2,
+  wrapGAppsHook4,
 }:
 
 buildDotnetModule rec {
   pname = "Pinta";
   version = "3.1.2";
+
   src = fetchFromGitHub {
     owner = "PintaProject";
     repo = "Pinta";
@@ -42,42 +42,11 @@ buildDotnetModule rec {
     wrapGAppsHook4
   ];
 
-  runtimeDeps = [
-    gtk4
-    glib
-    libadwaita
-  ]
-  ++ lib.optionals stdenv.hostPlatform.isDarwin [
-    # Transitive dylib deps that Pinta's NativeImportResolver dlopen's by bare name.
-    # These are not pulled in by wrapGAppsHook4's LD_LIBRARY_PATH on Darwin, so symlink is needed.
-    graphene
-    gettext
-    pango
-    gdk-pixbuf
-    cairo
-    harfbuzz
-    fribidi
-    fontconfig
-    freetype
-    libthai
-    pcre2
-    libepoxy
-  ];
-
   buildInputs = runtimeDeps;
-
-  dotnet-sdk = dotnetCorePackages.sdk_8_0;
-  dotnet-runtime = dotnetCorePackages.runtime_8_0;
-
-  nugetDeps = ./deps.json;
-
-  projectFile = "Pinta";
 
   env = lib.optionalAttrs (!stdenv.hostPlatform.isDarwin) {
     LOCALE_ARCHIVE = "${glibcLocales}/lib/locale/locale-archive";
   };
-
-  dotnetFlags = [ "-p:BuildTranslations=true" ];
 
   postBuild = ''
     intltool-merge -x po/ xdg/com.github.PintaProject.Pinta.metainfo.xml.in xdg/com.github.PintaProject.Pinta.metainfo.xml
@@ -123,19 +92,49 @@ buildDotnetModule rec {
     ln -s "$out/lib"   "$APP/Resources/lib"
   '';
 
+  dotnet-runtime = dotnetCorePackages.runtime_8_0;
+  dotnet-sdk = dotnetCorePackages.sdk_8_0;
+  dotnetFlags = [ "-p:BuildTranslations=true" ];
+  nugetDeps = ./deps.json;
+  projectFile = "Pinta";
+
+  runtimeDeps = [
+    gtk4
+    glib
+    libadwaita
+  ]
+  ++ lib.optionals stdenv.hostPlatform.isDarwin [
+    # Transitive dylib deps that Pinta's NativeImportResolver dlopen's by bare name.
+    # These are not pulled in by wrapGAppsHook4's LD_LIBRARY_PATH on Darwin, so symlink is needed.
+    graphene
+    gettext
+    pango
+    gdk-pixbuf
+    cairo
+    harfbuzz
+    fribidi
+    fontconfig
+    freetype
+    libthai
+    pcre2
+    libepoxy
+  ];
+
   passthru = {
     updateScript = nix-update-script { };
   };
 
   meta = {
-    homepage = "https://www.pinta-project.com/";
     description = "Drawing/editing program modeled after Paint.NET";
+    homepage = "https://www.pinta-project.com/";
     changelog = "https://github.com/PintaProject/Pinta/releases/tag/${version}";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       thiagokokada
       philocalyst
     ];
+
     platforms = lib.platforms.unix;
     mainProgram = "pinta";
   };

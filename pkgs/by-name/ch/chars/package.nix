@@ -1,8 +1,8 @@
 {
   lib,
   fetchFromGitHub,
-  rustPlatform,
   nix-update-script,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -24,9 +24,9 @@ rustPlatform.buildRustPackage (finalAttrs: {
 
   meta = {
     description = "Commandline tool to display information about unicode characters";
-    mainProgram = "chars";
     homepage = "https://github.com/boinkor-net/chars";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ bbigras ];
+    mainProgram = "chars";
   };
 })

@@ -1,20 +1,20 @@
 {
   lib,
   stdenv,
-  rustPlatform,
-  fetchFromGitHub,
   fetchurl,
+  fetchFromGitHub,
+  buildNpmPackage,
+  bzip2,
+  gitUpdater,
+  oniguruma,
   pkg-config,
   protobuf,
-  bzip2,
-  oniguruma,
+  rustPlatform,
   sqlite,
+  versionCheckHook,
   xz,
   zlib,
   zstd,
-  versionCheckHook,
-  buildNpmPackage,
-  gitUpdater,
 }:
 
 rustPlatform.buildRustPackage (
@@ -23,10 +23,13 @@ rustPlatform.buildRustPackage (
     web = buildNpmPackage {
       inherit (finalAttrs) src version;
       pname = "openobserve-ui";
-
-      sourceRoot = "${finalAttrs.src.name}/web";
-
       npmDepsHash = "sha256-te8uABzndzLRb6GQVSn33aaleQau2U/xo8LnMynTtx0=";
+
+      env = {
+        # cypress tries to download binaries otherwise
+        CYPRESS_INSTALL_BINARY = 0;
+        NODE_OPTIONS = "--max-old-space-size=8192";
+      };
 
       preBuild = ''
         # Patch vite config to not open the browser to visualize plugin composition
@@ -34,18 +37,14 @@ rustPlatform.buildRustPackage (
           --replace "open: true" "open: false";
       '';
 
-      env = {
-        NODE_OPTIONS = "--max-old-space-size=8192";
-        # cypress tries to download binaries otherwise
-        CYPRESS_INSTALL_BINARY = 0;
-      };
-
       installPhase = ''
         runHook preInstall
         mkdir -p $out/share
         mv dist $out/share/openobserve-ui
         runHook postInstall
       '';
+
+      sourceRoot = "${finalAttrs.src.name}/web";
     };
   in
   {
@@ -64,12 +63,6 @@ rustPlatform.buildRustPackage (
       ./build.rs.patch
     ];
 
-    preBuild = ''
-      cp -r ${web}/share/openobserve-ui web/dist
-    '';
-
-    cargoHash = "sha256-PIhHHEP9kJmliOGtom1gDf7wt5C4RicWKgQe0hkW+4M=";
-
     nativeBuildInputs = [
       pkg-config
       protobuf
@@ -84,18 +77,16 @@ rustPlatform.buildRustPackage (
       zstd
     ];
 
+    cargoHash = "sha256-PIhHHEP9kJmliOGtom1gDf7wt5C4RicWKgQe0hkW+4M=";
+
     env = {
-      RUSTONIG_SYSTEM_LIBONIG = true;
-      ZSTD_SYS_USE_PKG_CONFIG = true;
-
-      RUSTC_BOOTSTRAP = 1; # uses experimental features
-
+      GIT_BUILD_DATE = "1970-01-01T00:00:00Z";
+      GIT_COMMIT_HASH = "builtByNix";
       # the patched build.rs file sets these variables
       GIT_VERSION = finalAttrs.src.tag;
-      GIT_COMMIT_HASH = "builtByNix";
-      GIT_BUILD_DATE = "1970-01-01T00:00:00Z";
-
+      RUSTC_BOOTSTRAP = 1; # uses experimental features
       RUSTFLAGS = "-C target-feature=+aes,+sse2";
+      RUSTONIG_SYSTEM_LIBONIG = true;
 
       SWAGGER_UI_DOWNLOAD_URL =
         # When updating:
@@ -106,27 +97,18 @@ rustPlatform.buildRustPackage (
         let
           swaggerUiVersion = "5.17.14";
           swaggerUi = fetchurl {
-            url = "https://github.com/swagger-api/swagger-ui/archive/refs/tags/v${swaggerUiVersion}.zip";
             hash = "sha256-SBJE0IEgl7Efuu73n3HZQrFxYX+cn5UU5jrL4T5xzNw=";
+            url = "https://github.com/swagger-api/swagger-ui/archive/refs/tags/v${swaggerUiVersion}.zip";
           };
         in
         "file://${swaggerUi}";
+
+      ZSTD_SYS_USE_PKG_CONFIG = true;
     };
 
-    # swagger-ui will once more be copied in the target directory during the check phase
-    # Not deleting the existing unpacked archive leads to a `PermissionDenied` error
-    preCheck = ''
-      rm -rf target/${stdenv.hostPlatform.rust.cargoShortTarget}/release/build/
+    preBuild = ''
+      cp -r ${web}/share/openobserve-ui web/dist
     '';
-
-    # Skip doctests: upstream release build for v0.50.3 runs cargo build only,
-    # and the doctest examples currently fail due to async context.
-    cargoTestFlags = [
-      "--lib"
-      "--bins"
-      "--tests"
-      "--examples"
-    ];
 
     # requires network access or filesystem mutations
     checkFlags = [
@@ -148,12 +130,27 @@ rustPlatform.buildRustPackage (
       "--test-threads=1"
     ];
 
+    # swagger-ui will once more be copied in the target directory during the check phase
+    # Not deleting the existing unpacked archive leads to a `PermissionDenied` error
+    preCheck = ''
+      rm -rf target/${stdenv.hostPlatform.rust.cargoShortTarget}/release/build/
+    '';
+
     doInstallCheck = true;
     nativeInstallCheckInputs = [ versionCheckHook ];
 
+    # Skip doctests: upstream release build for v0.50.3 runs cargo build only,
+    # and the doctest examples currently fail due to async context.
+    cargoTestFlags = [
+      "--lib"
+      "--bins"
+      "--tests"
+      "--examples"
+    ];
+
     passthru.updateScript = gitUpdater {
-      rev-prefix = "v";
       ignoredVersions = "rc";
+      rev-prefix = "v";
     };
 
     meta = {
@@ -162,8 +159,8 @@ rustPlatform.buildRustPackage (
       changelog = "https://github.com/openobserve/openobserve/releases/tag/v${finalAttrs.version}";
       license = lib.licenses.asl20;
       maintainers = with lib.maintainers; [ happysalada ];
-      mainProgram = "openobserve";
       platforms = lib.platforms.linux ++ lib.platforms.darwin;
+      mainProgram = "openobserve";
     };
   }
 )

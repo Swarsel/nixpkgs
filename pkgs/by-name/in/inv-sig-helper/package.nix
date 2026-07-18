@@ -1,16 +1,13 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
-
-  # nativeBuildInputs
-  pkg-config,
-
-  # buildInputs
-  openssl,
-
   # passthru
   nixosTests,
+  # buildInputs
+  openssl,
+  # nativeBuildInputs
+  pkg-config,
+  rustPlatform,
   unstableGitUpdater,
 }:
 
@@ -25,8 +22,6 @@ rustPlatform.buildRustPackage {
     hash = "sha256-QVVCTM1gn/n6zDD6XdmwXdpVBlnBV9cHCvn8xfOq6E8=";
   };
 
-  cargoHash = "sha256-DnJL7kkcVn5dW3AoPCn829WmkaCjpDZtYUXnpiB857Q=";
-
   nativeBuildInputs = [
     pkg-config
   ];
@@ -35,10 +30,13 @@ rustPlatform.buildRustPackage {
     openssl
   ];
 
+  cargoHash = "sha256-DnJL7kkcVn5dW3AoPCn829WmkaCjpDZtYUXnpiB857Q=";
+
   passthru = {
     tests = {
       inherit (nixosTests) invidious;
     };
+
     updateScript = unstableGitUpdater { };
   };
 

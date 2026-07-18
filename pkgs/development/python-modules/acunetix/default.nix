@@ -1,8 +1,8 @@
 {
   lib,
+  fetchFromGitHub,
   aiofiles,
   buildPythonPackage,
-  fetchFromGitHub,
   requests,
   setuptools,
 }:
@@ -10,7 +10,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "acunetix";
   version = "0.0.7";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "hikariatama";
@@ -20,6 +19,8 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-ycdCz8CNSP0USxv657jf6Vz4iF//reCeO2tG+und86A=";
   };
 
+  # Module has no tests
+  doCheck = false;
   build-system = [ setuptools ];
 
   dependencies = [
@@ -27,9 +28,7 @@ buildPythonPackage (finalAttrs: {
     requests
   ];
 
-  # Module has no tests
-  doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "acunetix" ];
 
   meta = {

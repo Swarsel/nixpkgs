@@ -2,22 +2,21 @@
   lib,
   stdenv,
   buildPythonPackage,
-  fetchPypi,
-  setuptools-scm,
   demes,
+  fetchPypi,
   matplotlib,
+  mpmath,
   numpy,
-  scipy,
-  pytestCheckHook,
   pytest-cov-stub,
   pytest-xdist,
-  mpmath,
+  pytestCheckHook,
+  scipy,
+  setuptools-scm,
 }:
 
 buildPythonPackage rec {
   pname = "demesdraw";
   version = "0.4.1";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
@@ -44,13 +43,14 @@ buildPythonPackage rec {
     mpmath
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "demesdraw" ];
 
   meta = {
     description = "Drawing functions for Demes demographic models";
-    mainProgram = "demesdraw";
     homepage = "https://github.com/grahamgower/demesdraw";
     license = lib.licenses.isc;
     maintainers = [ ];
+    mainProgram = "demesdraw";
   };
 }

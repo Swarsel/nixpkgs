@@ -1,10 +1,10 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
-  pkg-config,
   makeBinaryWrapper,
   openssl,
+  pkg-config,
+  rustPlatform,
 }:
 rustPlatform.buildRustPackage (finalAttrs: {
   pname = "railway";
@@ -17,15 +17,13 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-OImzgztObPJy7hAGYrgMdMZTCeDvHFctO+Zz9WHAysQ=";
   };
 
-  cargoHash = "sha256-EMupuiYuosuH/aSa/rPCuYJNPcoUHbId4NPVLMF8YWc=";
-
   nativeBuildInputs = [
     pkg-config
     makeBinaryWrapper
   ];
 
   buildInputs = [ openssl ];
-
+  cargoHash = "sha256-EMupuiYuosuH/aSa/rPCuYJNPcoUHbId4NPVLMF8YWc=";
   env.OPENSSL_NO_VENDOR = 1;
 
   postInstall = ''
@@ -34,14 +32,16 @@ rustPlatform.buildRustPackage (finalAttrs: {
   '';
 
   meta = {
-    mainProgram = "railway";
     description = "Railway.app CLI";
     homepage = "https://github.com/railwayapp/cli";
     changelog = "https://github.com/railwayapp/cli/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       Crafter
       techknowlogick
     ];
+
+    mainProgram = "railway";
   };
 })

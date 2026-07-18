@@ -2,21 +2,18 @@
   lib,
   stdenv,
   fetchurl,
-  redland,
-  pkg-config,
   gmp,
-  zlib,
   librdf_raptor2,
   librdf_rasqal,
+  pkg-config,
+  redland,
   versionCheckHook,
+  zlib,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
   pname = "redstore";
   version = "0.5.4";
-
-  __structuredAttrs = true;
-  strictDeps = true;
 
   src = fetchurl {
     url = "https://www.aelius.com/njh/redstore/redstore-${finalAttrs.version}.tar.gz";
@@ -30,7 +27,9 @@ stdenv.mkDerivation (finalAttrs: {
       'true' 'opt'
   '';
 
+  strictDeps = true;
   nativeBuildInputs = [ pkg-config ];
+
   buildInputs = [
     gmp
     redland
@@ -46,15 +45,16 @@ stdenv.mkDerivation (finalAttrs: {
     )
   '';
 
-  nativeInstallCheckInputs = [ versionCheckHook ];
   doInstallCheck = true;
+  nativeInstallCheckInputs = [ versionCheckHook ];
+  __structuredAttrs = true;
 
   meta = {
     description = "HTTP interface to Redland RDF store";
-    mainProgram = "redstore";
     homepage = "https://www.aelius.com/njh/redstore/";
+    license = lib.licenses.gpl3Plus;
     maintainers = [ lib.maintainers.raskin ];
     platforms = with lib.platforms; linux ++ freebsd ++ gnu;
-    license = lib.licenses.gpl3Plus;
+    mainProgram = "redstore";
   };
 })

@@ -1,10 +1,10 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
+  nix-update-script,
   pkg-config,
   pulseaudio,
-  nix-update-script,
 }:
 
 buildGoModule (finalAttrs: {
@@ -18,19 +18,17 @@ buildGoModule (finalAttrs: {
     hash = "sha256-l0V2NVzLsnpPe5EJcr5i9U7OGaYzNRDd1f/ogrdCnvk=";
   };
 
-  vendorHash = "sha256-CnZTUP2JBbhG8VUHbVX+vicfQJC9Y8endlwQHdmzMus=";
-
   nativeBuildInputs = [ pkg-config ];
   buildInputs = [ pulseaudio ];
-
+  vendorHash = "sha256-CnZTUP2JBbhG8VUHbVX+vicfQJC9Y8endlwQHdmzMus=";
   passthru.updateScript = nix-update-script { };
 
   meta = {
-    homepage = "https://github.com/nonoo/kappanhang";
     description = "Remote control for Icom radio transceivers";
+    homepage = "https://github.com/nonoo/kappanhang";
     license = lib.licenses.mit;
-    platforms = lib.platforms.linux;
     maintainers = with lib.maintainers; [ mvs ];
+    platforms = lib.platforms.linux;
     mainProgram = "kappanhang";
   };
 })

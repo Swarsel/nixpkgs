@@ -1,15 +1,15 @@
 {
-  stdenvNoCC,
   lib,
   fetchFromGitHub,
+  gitUpdater,
+  glib,
+  mate-notification-daemon,
+  mate-polkit,
+  mate-settings-daemon,
   meson,
   ninja,
-  glib,
-  mate-polkit,
-  mate-notification-daemon,
-  mate-settings-daemon,
+  stdenvNoCC,
   wayfire,
-  gitUpdater,
 }:
 
 stdenvNoCC.mkDerivation (finalAttrs: {
@@ -23,12 +23,6 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     hash = "sha256-YWuBAzsLrvnwGgXbcDzIZtQIscIl37Y3wIRCOKidtYo=";
   };
 
-  nativeBuildInputs = [
-    meson
-    ninja
-    glib
-  ];
-
   postPatch = ''
     substituteInPlace session/mate-wayland-components.sh \
       --replace-fail "polkit-mate-authentication-agent-1" "${mate-polkit}/libexec/polkit-mate-authentication-agent-1" \
@@ -39,11 +33,18 @@ stdenvNoCC.mkDerivation (finalAttrs: {
       --replace-fail "/usr/share/doc/wayfire/examples/wayfire.ini" "${wayfire.src}/wayfire.ini"
   '';
 
+  nativeBuildInputs = [
+    meson
+    ninja
+    glib
+  ];
+
   passthru = {
     providedSessions = [ "MATE" ];
+
     updateScript = gitUpdater {
-      rev-prefix = "v";
       odd-unstable = true;
+      rev-prefix = "v";
     };
   };
 

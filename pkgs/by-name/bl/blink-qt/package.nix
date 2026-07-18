@@ -1,17 +1,16 @@
 {
   lib,
+  stdenv,
   fetchFromGitHub,
   fetchpatch2,
+  libvncserver,
   python3Packages,
   qt6Packages,
-  libvncserver,
-  stdenv,
 }:
 
 python3Packages.buildPythonApplication (finalAttrs: {
   pname = "blink-qt";
   version = "6.0.6";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "AGProjects";
@@ -27,15 +26,22 @@ python3Packages.buildPythonApplication (finalAttrs: {
 
   nativeBuildInputs = [ qt6Packages.wrapQtAppsHook ];
 
-  build-system = with python3Packages; [
-    cython
-    setuptools
-  ];
-
   buildInputs = [
     libvncserver
     qt6Packages.qtbase
     qt6Packages.qtsvg
+  ];
+
+  # no upstream tests exist
+  doCheck = false;
+
+  preFixup = ''
+    makeWrapperArgs+=("''${qtWrapperArgs[@]}")
+  '';
+
+  build-system = with python3Packages; [
+    cython
+    setuptools
   ];
 
   dependencies =
@@ -65,24 +71,17 @@ python3Packages.buildPythonApplication (finalAttrs: {
     ];
 
   dontWrapQtApps = true;
-
-  preFixup = ''
-    makeWrapperArgs+=("''${qtWrapperArgs[@]}")
-  '';
-
+  pyproject = true;
   pythonImportsCheck = [ "blink" ];
-
-  # no upstream tests exist
-  doCheck = false;
 
   meta = {
     description = "Blink SIP Client";
     homepage = "https://icanblink.com";
-    downloadPage = "https://github.com/agprojects/blink-qt";
     changelog = "https://github.com/AGProjects/blink-qt/releases/tag/${finalAttrs.version}";
     license = lib.licenses.gpl3Plus;
-    teams = [ lib.teams.ngi ];
     platforms = lib.platforms.unix;
     mainProgram = "blink";
+    downloadPage = "https://github.com/agprojects/blink-qt";
+    teams = [ lib.teams.ngi ];
   };
 })

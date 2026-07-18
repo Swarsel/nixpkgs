@@ -1,10 +1,10 @@
 {
   lib,
+  fetchFromGitHub,
   asyncssh,
   buildPythonPackage,
-  fetchFromGitHub,
-  pytest-cov-stub,
   pytest-asyncio,
+  pytest-cov-stub,
   pytest-mock,
   pytestCheckHook,
   setuptools,
@@ -13,7 +13,6 @@
 buildPythonPackage rec {
   pname = "aioasuswrt";
   version = "1.5.4";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "kennedyshead";
@@ -22,10 +21,6 @@ buildPythonPackage rec {
     hash = "sha256-tsvtOe3EX/Z7g6Z0MM2npYOTEJoKV9wUbhkhcROILxE=";
   };
 
-  build-system = [ setuptools ];
-
-  dependencies = [ asyncssh ];
-
   nativeCheckInputs = [
     pytest-asyncio
     pytest-cov-stub
@@ -33,6 +28,9 @@ buildPythonPackage rec {
     pytestCheckHook
   ];
 
+  build-system = [ setuptools ];
+  dependencies = [ asyncssh ];
+  pyproject = true;
   pythonImportsCheck = [ "aioasuswrt" ];
 
   meta = {

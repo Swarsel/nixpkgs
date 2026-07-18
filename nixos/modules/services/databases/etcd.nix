@@ -1,8 +1,8 @@
 {
   config,
   lib,
-  options,
   pkgs,
+  options,
   ...
 }:
 let
@@ -14,143 +14,52 @@ in
 
   options.services.etcd = {
     enable = lib.mkOption {
-      description = "Whether to enable etcd.";
       default = false;
+      description = "Whether to enable etcd.";
       type = lib.types.bool;
     };
 
     package = lib.mkPackageOption pkgs "etcd" { };
 
-    name = lib.mkOption {
-      description = "Etcd unique node name.";
-      default = config.networking.hostName;
-      defaultText = lib.literalExpression "config.networking.hostName";
-      type = lib.types.str;
-    };
-
     advertiseClientUrls = lib.mkOption {
-      description = "Etcd list of this member's client URLs to advertise to the rest of the cluster.";
       default = cfg.listenClientUrls;
       defaultText = lib.literalExpression "config.${opt.listenClientUrls}";
+      description = "Etcd list of this member's client URLs to advertise to the rest of the cluster.";
       type = lib.types.listOf lib.types.str;
-    };
-
-    listenClientUrls = lib.mkOption {
-      description = "Etcd list of URLs to listen on for client traffic.";
-      default = [ "http://127.0.0.1:2379" ];
-      type = lib.types.listOf lib.types.str;
-    };
-
-    listenPeerUrls = lib.mkOption {
-      description = "Etcd list of URLs to listen on for peer traffic.";
-      default = [ "http://127.0.0.1:2380" ];
-      type = lib.types.listOf lib.types.str;
-    };
-
-    initialAdvertisePeerUrls = lib.mkOption {
-      description = "Etcd list of this member's peer URLs to advertise to rest of the cluster.";
-      default = cfg.listenPeerUrls;
-      defaultText = lib.literalExpression "config.${opt.listenPeerUrls}";
-      type = lib.types.listOf lib.types.str;
-    };
-
-    initialCluster = lib.mkOption {
-      description = "Etcd initial cluster configuration for bootstrapping.";
-      default = [ "${cfg.name}=http://127.0.0.1:2380" ];
-      defaultText = lib.literalExpression ''["''${config.${opt.name}}=http://127.0.0.1:2380"]'';
-      type = lib.types.listOf lib.types.str;
-    };
-
-    initialClusterState = lib.mkOption {
-      description = "Etcd initial cluster configuration for bootstrapping.";
-      default = "new";
-      type = lib.types.enum [
-        "new"
-        "existing"
-      ];
-    };
-
-    initialClusterToken = lib.mkOption {
-      description = "Etcd initial cluster token for etcd cluster during bootstrap.";
-      default = "etcd-cluster";
-      type = lib.types.str;
-    };
-
-    discovery = lib.mkOption {
-      description = "Etcd discovery url";
-      default = "";
-      type = lib.types.str;
-    };
-
-    clientCertAuth = lib.mkOption {
-      description = "Whether to use certs for client authentication";
-      default = false;
-      type = lib.types.bool;
-    };
-
-    trustedCaFile = lib.mkOption {
-      description = "Certificate authority file to use for clients";
-      default = null;
-      type = lib.types.nullOr lib.types.path;
     };
 
     certFile = lib.mkOption {
+      default = null;
       description = "Cert file to use for clients";
-      default = null;
       type = lib.types.nullOr lib.types.path;
     };
 
-    keyFile = lib.mkOption {
-      description = "Key file to use for clients";
-      default = null;
-      type = lib.types.nullOr lib.types.path;
-    };
-
-    openFirewall = lib.mkOption {
-      type = lib.types.bool;
+    clientCertAuth = lib.mkOption {
       default = false;
-      description = ''
-        Open etcd ports in the firewall.
-        Ports opened:
-        - 2379/tcp for client requests
-        - 2380/tcp for peer communication
-      '';
-    };
-
-    peerCertFile = lib.mkOption {
-      description = "Cert file to use for peer to peer communication";
-      default = cfg.certFile;
-      defaultText = lib.literalExpression "config.${opt.certFile}";
-      type = lib.types.nullOr lib.types.path;
-    };
-
-    peerKeyFile = lib.mkOption {
-      description = "Key file to use for peer to peer communication";
-      default = cfg.keyFile;
-      defaultText = lib.literalExpression "config.${opt.keyFile}";
-      type = lib.types.nullOr lib.types.path;
-    };
-
-    peerTrustedCaFile = lib.mkOption {
-      description = "Certificate authority file to use for peer to peer communication";
-      default = cfg.trustedCaFile;
-      defaultText = lib.literalExpression "config.${opt.trustedCaFile}";
-      type = lib.types.nullOr lib.types.path;
-    };
-
-    peerClientCertAuth = lib.mkOption {
-      description = "Whether to check all incoming peer requests from the cluster for valid client certificates signed by the supplied CA";
-      default = false;
+      description = "Whether to use certs for client authentication";
       type = lib.types.bool;
+    };
+
+    dataDir = lib.mkOption {
+      default = "/var/lib/etcd";
+      description = "Etcd data directory.";
+      type = lib.types.path;
+    };
+
+    discovery = lib.mkOption {
+      default = "";
+      description = "Etcd discovery url";
+      type = lib.types.str;
     };
 
     extraConf = lib.mkOption {
+      default = { };
+
       description = ''
         Etcd extra configuration. See
         <https://github.com/coreos/etcd/blob/master/Documentation/op-guide/configuration.md#configuration-flags>
       '';
-      type = lib.types.attrsOf lib.types.str;
-      default = { };
+
       example = lib.literalExpression ''
         {
           "CORS" = "*";
@@ -160,72 +69,113 @@ in
           "MAX_RETRY_ATTEMPTS" = "3";
         }
       '';
+
+      type = lib.types.attrsOf lib.types.str;
     };
 
-    dataDir = lib.mkOption {
-      type = lib.types.path;
-      default = "/var/lib/etcd";
-      description = "Etcd data directory.";
+    initialAdvertisePeerUrls = lib.mkOption {
+      default = cfg.listenPeerUrls;
+      defaultText = lib.literalExpression "config.${opt.listenPeerUrls}";
+      description = "Etcd list of this member's peer URLs to advertise to rest of the cluster.";
+      type = lib.types.listOf lib.types.str;
+    };
+
+    initialCluster = lib.mkOption {
+      default = [ "${cfg.name}=http://127.0.0.1:2380" ];
+      defaultText = lib.literalExpression ''["''${config.${opt.name}}=http://127.0.0.1:2380"]'';
+      description = "Etcd initial cluster configuration for bootstrapping.";
+      type = lib.types.listOf lib.types.str;
+    };
+
+    initialClusterState = lib.mkOption {
+      default = "new";
+      description = "Etcd initial cluster configuration for bootstrapping.";
+
+      type = lib.types.enum [
+        "new"
+        "existing"
+      ];
+    };
+
+    initialClusterToken = lib.mkOption {
+      default = "etcd-cluster";
+      description = "Etcd initial cluster token for etcd cluster during bootstrap.";
+      type = lib.types.str;
+    };
+
+    keyFile = lib.mkOption {
+      default = null;
+      description = "Key file to use for clients";
+      type = lib.types.nullOr lib.types.path;
+    };
+
+    listenClientUrls = lib.mkOption {
+      default = [ "http://127.0.0.1:2379" ];
+      description = "Etcd list of URLs to listen on for client traffic.";
+      type = lib.types.listOf lib.types.str;
+    };
+
+    listenPeerUrls = lib.mkOption {
+      default = [ "http://127.0.0.1:2380" ];
+      description = "Etcd list of URLs to listen on for peer traffic.";
+      type = lib.types.listOf lib.types.str;
+    };
+
+    name = lib.mkOption {
+      default = config.networking.hostName;
+      defaultText = lib.literalExpression "config.networking.hostName";
+      description = "Etcd unique node name.";
+      type = lib.types.str;
+    };
+
+    openFirewall = lib.mkOption {
+      default = false;
+
+      description = ''
+        Open etcd ports in the firewall.
+        Ports opened:
+        - 2379/tcp for client requests
+        - 2380/tcp for peer communication
+      '';
+
+      type = lib.types.bool;
+    };
+
+    peerCertFile = lib.mkOption {
+      default = cfg.certFile;
+      defaultText = lib.literalExpression "config.${opt.certFile}";
+      description = "Cert file to use for peer to peer communication";
+      type = lib.types.nullOr lib.types.path;
+    };
+
+    peerClientCertAuth = lib.mkOption {
+      default = false;
+      description = "Whether to check all incoming peer requests from the cluster for valid client certificates signed by the supplied CA";
+      type = lib.types.bool;
+    };
+
+    peerKeyFile = lib.mkOption {
+      default = cfg.keyFile;
+      defaultText = lib.literalExpression "config.${opt.keyFile}";
+      description = "Key file to use for peer to peer communication";
+      type = lib.types.nullOr lib.types.path;
+    };
+
+    peerTrustedCaFile = lib.mkOption {
+      default = cfg.trustedCaFile;
+      defaultText = lib.literalExpression "config.${opt.trustedCaFile}";
+      description = "Certificate authority file to use for peer to peer communication";
+      type = lib.types.nullOr lib.types.path;
+    };
+
+    trustedCaFile = lib.mkOption {
+      default = null;
+      description = "Certificate authority file to use for clients";
+      type = lib.types.nullOr lib.types.path;
     };
   };
 
   config = lib.mkIf cfg.enable {
-    systemd.tmpfiles.settings."10-etcd".${cfg.dataDir}.d = {
-      user = "etcd";
-      mode = "0700";
-    };
-
-    systemd.services.etcd = {
-      description = "etcd key-value store";
-      wantedBy = [ "multi-user.target" ];
-      after = [
-        "network-online.target"
-      ]
-      ++ lib.optional config.networking.firewall.enable "firewall.service";
-      wants = [
-        "network-online.target"
-      ]
-      ++ lib.optional config.networking.firewall.enable "firewall.service";
-
-      environment =
-        (lib.filterAttrs (n: v: v != null) {
-          ETCD_NAME = cfg.name;
-          ETCD_DISCOVERY = cfg.discovery;
-          ETCD_DATA_DIR = cfg.dataDir;
-          ETCD_ADVERTISE_CLIENT_URLS = lib.concatStringsSep "," cfg.advertiseClientUrls;
-          ETCD_LISTEN_CLIENT_URLS = lib.concatStringsSep "," cfg.listenClientUrls;
-          ETCD_LISTEN_PEER_URLS = lib.concatStringsSep "," cfg.listenPeerUrls;
-          ETCD_INITIAL_ADVERTISE_PEER_URLS = lib.concatStringsSep "," cfg.initialAdvertisePeerUrls;
-          ETCD_PEER_CLIENT_CERT_AUTH = toString cfg.peerClientCertAuth;
-          ETCD_PEER_TRUSTED_CA_FILE = cfg.peerTrustedCaFile;
-          ETCD_PEER_CERT_FILE = cfg.peerCertFile;
-          ETCD_PEER_KEY_FILE = cfg.peerKeyFile;
-          ETCD_CLIENT_CERT_AUTH = toString cfg.clientCertAuth;
-          ETCD_TRUSTED_CA_FILE = cfg.trustedCaFile;
-          ETCD_CERT_FILE = cfg.certFile;
-          ETCD_KEY_FILE = cfg.keyFile;
-        })
-        // (lib.optionalAttrs (cfg.discovery == "") {
-          ETCD_INITIAL_CLUSTER = lib.concatStringsSep "," cfg.initialCluster;
-          ETCD_INITIAL_CLUSTER_STATE = cfg.initialClusterState;
-          ETCD_INITIAL_CLUSTER_TOKEN = cfg.initialClusterToken;
-        })
-        // (lib.mapAttrs' (n: v: lib.nameValuePair "ETCD_${n}" v) cfg.extraConf);
-
-      unitConfig = {
-        Documentation = "https://github.com/coreos/etcd";
-      };
-
-      serviceConfig = {
-        Type = "notify";
-        Restart = "always";
-        RestartSec = "30s";
-        ExecStart = "${cfg.package}/bin/etcd";
-        User = "etcd";
-        LimitNOFILE = 40000;
-      };
-    };
-
     environment.systemPackages = [ cfg.package ];
 
     networking.firewall = lib.mkIf cfg.openFirewall {
@@ -235,13 +185,73 @@ in
       ];
     };
 
-    users.users.etcd = {
-      isSystemUser = true;
-      group = "etcd";
-      description = "Etcd daemon user";
-      home = cfg.dataDir;
+    systemd.services.etcd = {
+      after = [
+        "network-online.target"
+      ]
+      ++ lib.optional config.networking.firewall.enable "firewall.service";
+
+      description = "etcd key-value store";
+
+      environment =
+        (lib.filterAttrs (n: v: v != null) {
+          ETCD_ADVERTISE_CLIENT_URLS = lib.concatStringsSep "," cfg.advertiseClientUrls;
+          ETCD_CERT_FILE = cfg.certFile;
+          ETCD_CLIENT_CERT_AUTH = toString cfg.clientCertAuth;
+          ETCD_DATA_DIR = cfg.dataDir;
+          ETCD_DISCOVERY = cfg.discovery;
+          ETCD_INITIAL_ADVERTISE_PEER_URLS = lib.concatStringsSep "," cfg.initialAdvertisePeerUrls;
+          ETCD_KEY_FILE = cfg.keyFile;
+          ETCD_LISTEN_CLIENT_URLS = lib.concatStringsSep "," cfg.listenClientUrls;
+          ETCD_LISTEN_PEER_URLS = lib.concatStringsSep "," cfg.listenPeerUrls;
+          ETCD_NAME = cfg.name;
+          ETCD_PEER_CERT_FILE = cfg.peerCertFile;
+          ETCD_PEER_CLIENT_CERT_AUTH = toString cfg.peerClientCertAuth;
+          ETCD_PEER_KEY_FILE = cfg.peerKeyFile;
+          ETCD_PEER_TRUSTED_CA_FILE = cfg.peerTrustedCaFile;
+          ETCD_TRUSTED_CA_FILE = cfg.trustedCaFile;
+        })
+        // (lib.optionalAttrs (cfg.discovery == "") {
+          ETCD_INITIAL_CLUSTER = lib.concatStringsSep "," cfg.initialCluster;
+          ETCD_INITIAL_CLUSTER_STATE = cfg.initialClusterState;
+          ETCD_INITIAL_CLUSTER_TOKEN = cfg.initialClusterToken;
+        })
+        // (lib.mapAttrs' (n: v: lib.nameValuePair "ETCD_${n}" v) cfg.extraConf);
+
+      serviceConfig = {
+        ExecStart = "${cfg.package}/bin/etcd";
+        LimitNOFILE = 40000;
+        Restart = "always";
+        RestartSec = "30s";
+        Type = "notify";
+        User = "etcd";
+      };
+
+      unitConfig = {
+        Documentation = "https://github.com/coreos/etcd";
+      };
+
+      wantedBy = [ "multi-user.target" ];
+
+      wants = [
+        "network-online.target"
+      ]
+      ++ lib.optional config.networking.firewall.enable "firewall.service";
     };
+
+    systemd.tmpfiles.settings."10-etcd".${cfg.dataDir}.d = {
+      mode = "0700";
+      user = "etcd";
+    };
+
     users.groups.etcd = { };
+
+    users.users.etcd = {
+      description = "Etcd daemon user";
+      group = "etcd";
+      home = cfg.dataDir;
+      isSystemUser = true;
+    };
   };
 
   meta.maintainers = pkgs.etcd.meta.maintainers;

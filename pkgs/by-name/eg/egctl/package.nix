@@ -1,9 +1,9 @@
 {
-  stdenv,
-  buildGoModule,
-  fetchFromGitHub,
-  installShellFiles,
   lib,
+  stdenv,
+  fetchFromGitHub,
+  buildGoModule,
+  installShellFiles,
   testers,
 }:
 
@@ -18,7 +18,25 @@ buildGoModule (finalAttrs: {
     hash = "sha256-givYesuucfw/gumEwxpU/NTtyfZQgmGXg7u+xg9Yx0s=";
   };
 
+  nativeBuildInputs = [ installShellFiles ];
   vendorHash = "sha256-5Hlycq0+/wvboP81MKlKBFLEgxa545eyXwPtueHONNE=";
+  env.CGO_ENABLED = 0;
+
+  postInstall = lib.optionalString (stdenv.buildPlatform.canExecute stdenv.hostPlatform) ''
+    $out/bin/egctl completion bash >egctl.bash
+    $out/bin/egctl completion fish >egctl.fish
+    $out/bin/egctl completion zsh >egctl.zsh
+    installShellCompletion egctl.{bash,fish,zsh}
+  '';
+
+  __darwinAllowLocalNetworking = true;
+
+  ldflags = [
+    "-s"
+    "-w"
+    "-X github.com/envoyproxy/gateway/internal/cmd/version.envoyGatewayVersion=v${finalAttrs.version}"
+  ];
+
   # Fix case-insensitive conflicts producing platform-dependent checksums
   # https://github.com/microsoft/go-mssqldb/issues/234
   proxyVendor = true;
@@ -28,32 +46,13 @@ buildGoModule (finalAttrs: {
     "internal/cmd/egctl"
   ];
 
-  ldflags = [
-    "-s"
-    "-w"
-    "-X github.com/envoyproxy/gateway/internal/cmd/version.envoyGatewayVersion=v${finalAttrs.version}"
-  ];
-
-  env.CGO_ENABLED = 0;
-
-  nativeBuildInputs = [ installShellFiles ];
-
-  postInstall = lib.optionalString (stdenv.buildPlatform.canExecute stdenv.hostPlatform) ''
-    $out/bin/egctl completion bash >egctl.bash
-    $out/bin/egctl completion fish >egctl.fish
-    $out/bin/egctl completion zsh >egctl.zsh
-    installShellCompletion egctl.{bash,fish,zsh}
-  '';
-
   passthru.tests = {
     version = testers.testVersion {
-      package = finalAttrs.finalPackage;
-      command = "egctl version --remote=false";
       version = "v${finalAttrs.version}";
+      command = "egctl version --remote=false";
+      package = finalAttrs.finalPackage;
     };
   };
-
-  __darwinAllowLocalNetworking = true;
 
   meta = {
     description = "Command-line utility for operating Envoy Gateway";

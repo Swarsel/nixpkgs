@@ -1,9 +1,9 @@
 {
   lib,
+  fetchFromGitHub,
   aiohttp,
   aresponses,
   buildPythonPackage,
-  fetchFromGitHub,
   poetry-core,
   pytest-asyncio,
   pytest-cov-stub,
@@ -16,7 +16,6 @@
 buildPythonPackage rec {
   pname = "energyzero";
   version = "4.0.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "klaasnicolaas";
@@ -29,8 +28,6 @@ buildPythonPackage rec {
     substituteInPlace pyproject.toml \
       --replace-fail '"0.0.0"' '"${version}"'
   '';
-
-  build-system = [ poetry-core ];
 
   propagatedBuildInputs = [
     aiohttp
@@ -46,6 +43,8 @@ buildPythonPackage rec {
     syrupy
   ];
 
+  build-system = [ poetry-core ];
+  pyproject = true;
   pythonImportsCheck = [ "energyzero" ];
 
   meta = {

@@ -1,15 +1,15 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
-  wrapGAppsHook3,
-  python3,
+  common-licenses,
+  gettext,
+  glib,
   gobject-introspection,
   gsettings-desktop-schemas,
-  gettext,
   gtk3,
-  glib,
-  common-licenses,
+  python3,
+  wrapGAppsHook3,
   xapp-symbolic-icons,
 }:
 
@@ -23,6 +23,14 @@ stdenv.mkDerivation (finalAttrs: {
     tag = finalAttrs.version;
     hash = "sha256-rUQ4GN8Pj7dXLbQBt99RmFk4rs+mFL/1taFJiTTVC2A=";
   };
+
+  postPatch = ''
+    substituteInPlace usr/lib/bulky/bulky.py \
+      --replace-fail "/usr/share/locale" "$out/share/locale" \
+      --replace-fail /usr/share/bulky "$out/share/bulky" \
+      --replace-fail /usr/share/common-licenses "${common-licenses}/share/common-licenses" \
+      --replace-fail __DEB_VERSION__  "${finalAttrs.version}"
+  '';
 
   nativeBuildInputs = [
     wrapGAppsHook3
@@ -44,14 +52,6 @@ stdenv.mkDerivation (finalAttrs: {
     glib
   ];
 
-  postPatch = ''
-    substituteInPlace usr/lib/bulky/bulky.py \
-      --replace-fail "/usr/share/locale" "$out/share/locale" \
-      --replace-fail /usr/share/bulky "$out/share/bulky" \
-      --replace-fail /usr/share/common-licenses "${common-licenses}/share/common-licenses" \
-      --replace-fail __DEB_VERSION__  "${finalAttrs.version}"
-  '';
-
   installPhase = ''
     runHook preInstall
     chmod +x usr/share/applications/*
@@ -72,10 +72,10 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Bulk rename app";
-    mainProgram = "bulky";
     homepage = "https://github.com/linuxmint/bulky";
     license = lib.licenses.gpl3Plus;
     platforms = lib.platforms.linux;
+    mainProgram = "bulky";
     teams = [ lib.teams.cinnamon ];
   };
 })

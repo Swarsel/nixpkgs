@@ -1,19 +1,16 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
+  buildPythonPackage,
+  # propagates
+  cryptography,
   # build-system
   cython,
   poetry-core,
-  setuptools,
-
-  # propagates
-  cryptography,
-
   # tests
   pytest-cov-stub,
   pytestCheckHook,
+  setuptools,
 }:
 
 let
@@ -23,7 +20,6 @@ in
 
 buildPythonPackage {
   inherit pname version;
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "bdraco";
@@ -38,16 +34,16 @@ buildPythonPackage {
     setuptools
   ];
 
-  pythonRelaxDeps = [ "cryptography" ];
-
   propagatedBuildInputs = [ cryptography ];
-
-  pythonImportsCheck = [ "chacha20poly1305_reuseable" ];
 
   nativeCheckInputs = [
     pytest-cov-stub
     pytestCheckHook
   ];
+
+  pyproject = true;
+  pythonImportsCheck = [ "chacha20poly1305_reuseable" ];
+  pythonRelaxDeps = [ "cryptography" ];
 
   meta = {
     description = "ChaCha20Poly1305 that is reuseable for asyncio";

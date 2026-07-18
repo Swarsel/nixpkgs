@@ -1,11 +1,11 @@
 {
   lib,
   stdenv,
-  fetchgit,
   boost,
   cmake,
   cmark,
   cryptopp,
+  fetchgit,
   immer,
   kdePackages,
   lager,
@@ -26,6 +26,8 @@ stdenv.mkDerivation (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-7o6xUt/cryOg71/R33VBGpubskqlm9eYGSTyoGderDA=";
   };
+
+  strictDeps = true;
 
   nativeBuildInputs = [
     cmake
@@ -53,14 +55,12 @@ stdenv.mkDerivation (finalAttrs: {
     zug
   ];
 
-  strictDeps = true;
-
   meta = {
     description = "Convergent matrix client and instant messaging app";
     homepage = "https://kazv.chat/";
     license = lib.licenses.agpl3Plus;
     maintainers = with lib.maintainers; [ fgaz ];
-    mainProgram = "kazv";
     platforms = lib.platforms.all;
+    mainProgram = "kazv";
   };
 })

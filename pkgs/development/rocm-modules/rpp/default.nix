@@ -2,23 +2,22 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  rocmUpdateScript,
+  boost,
+  clr,
   cmake,
+  half,
+  openmp,
+  python3Packages,
   rocm-cmake,
   rocm-docs-core,
-  half,
-  clr,
-  openmp,
-  boost,
-  python3Packages,
+  rocmUpdateScript,
   buildDocs ? false, # Needs internet
-  useCPU ? false,
   gpuTargets ? clr.localGpuTargets or [ ],
+  useCPU ? false,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
   pname = "rpp-${if useCPU then "cpu" else "hip"}";
-
   version = "7.2.3";
 
   src = fetchFromGitHub {
@@ -27,6 +26,12 @@ stdenv.mkDerivation (finalAttrs: {
     rev = "rocm-${finalAttrs.version}";
     hash = "sha256-6e4JHKFC2dvtSGo9xbQKzIdUwlHB09pr5C/5xHwP3l4=";
   };
+
+  postPatch = lib.optionalString (!useCPU) ''
+    # Bad path
+    substituteInPlace CMakeLists.txt \
+      --replace "COMPILER_FOR_HIP \''${ROCM_PATH}/llvm/bin/clang++" "COMPILER_FOR_HIP ${clr}/bin/hipcc"
+  '';
 
   nativeBuildInputs = [
     cmake
@@ -55,12 +60,6 @@ stdenv.mkDerivation (finalAttrs: {
     "-DAMDGPU_TARGETS=${lib.concatStringsSep ";" gpuTargets}"
   ];
 
-  postPatch = lib.optionalString (!useCPU) ''
-    # Bad path
-    substituteInPlace CMakeLists.txt \
-      --replace "COMPILER_FOR_HIP \''${ROCM_PATH}/llvm/bin/clang++" "COMPILER_FOR_HIP ${clr}/bin/hipcc"
-  '';
-
   postBuild = lib.optionalString buildDocs ''
     python3 -m sphinx -T -E -b html -d _build/doctrees -D language=en ../docs _build/html
   '';
@@ -71,7 +70,7 @@ stdenv.mkDerivation (finalAttrs: {
     description = "Comprehensive high-performance computer vision library for AMD processors";
     homepage = "https://github.com/ROCm/rpp";
     license = with lib.licenses; [ mit ];
-    teams = [ lib.teams.rocm ];
     platforms = lib.platforms.linux;
+    teams = [ lib.teams.rocm ];
   };
 })

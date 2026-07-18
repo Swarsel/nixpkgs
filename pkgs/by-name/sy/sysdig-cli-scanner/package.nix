@@ -1,6 +1,6 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchurl,
   writeShellScript,
 }:
@@ -27,9 +27,7 @@ in
 stdenv.mkDerivation {
   pname = "sysdig-cli-scanner";
   version = versionMetadata.version;
-
   src = fetchurl { inherit (fetchForSystem) url hash; };
-  dontUnpack = true;
 
   installPhase = ''
     runHook preInstall
@@ -41,10 +39,12 @@ stdenv.mkDerivation {
     runHook postInstall
   '';
 
+  dontUnpack = true;
   passthru.updateScript = ./update.sh;
 
   meta = {
     description = "Tool for scanning container images and directories using Sysdig";
+
     longDescription = ''
       The Sysdig Vulnerability CLI Scanner, sysdig-cli-scanner, is a versatile tool designed to
       manually scan container images and directories, whether they are located locally or remotely.
@@ -52,15 +52,18 @@ stdenv.mkDerivation {
       in Vulnerability Management (VM) mode for image scanning or Infrastructure as Code (IaC) mode
       for scanning directories.
     '';
+
     homepage = "https://docs.sysdig.com/en/docs/installation/sysdig-secure/install-vulnerability-cli-scanner/";
-    mainProgram = "sysdig-cli-scanner";
     license = lib.licenses.unfreeRedistributable;
+    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
     maintainers = with lib.maintainers; [ tembleking ];
+
     platforms = [
       "x86_64-linux"
       "aarch64-linux"
       "aarch64-darwin"
     ];
-    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
+
+    mainProgram = "sysdig-cli-scanner";
   };
 }

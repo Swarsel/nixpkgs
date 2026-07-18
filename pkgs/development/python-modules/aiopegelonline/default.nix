@@ -1,9 +1,9 @@
 {
   lib,
+  fetchFromGitHub,
   aiohttp,
   aioresponses,
   buildPythonPackage,
-  fetchFromGitHub,
   pytest-asyncio,
   pytestCheckHook,
   setuptools,
@@ -12,7 +12,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "aiopegelonline";
   version = "0.1.2";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "mib1185";
@@ -26,16 +25,15 @@ buildPythonPackage (finalAttrs: {
       --replace-fail "setuptools==82.0.1" "setuptools"
   '';
 
-  build-system = [ setuptools ];
-
-  dependencies = [ aiohttp ];
-
   nativeCheckInputs = [
     aioresponses
     pytest-asyncio
     pytestCheckHook
   ];
 
+  build-system = [ setuptools ];
+  dependencies = [ aiohttp ];
+  pyproject = true;
   pythonImportsCheck = [ "aiopegelonline" ];
 
   meta = {

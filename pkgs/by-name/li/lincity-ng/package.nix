@@ -1,15 +1,17 @@
 {
+  lib,
   stdenv,
+  fetchFromGitHub,
   SDL2,
   SDL2_image,
   SDL2_mixer,
   SDL2_ttf,
   cmake,
-  fetchFromGitHub,
   fmt,
-  lib,
-  libwebp,
+  gettext,
+  include-what-you-use,
   libtiff,
+  libwebp,
   libx11,
   libxml2,
   libxmlxx5,
@@ -17,8 +19,6 @@
   pkg-config,
   xorgproto,
   zlib,
-  gettext,
-  include-what-you-use,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -31,8 +31,6 @@ stdenv.mkDerivation (finalAttrs: {
     tag = "lincity-ng-${finalAttrs.version}";
     hash = "sha256-HW+bB9xnrok8tWKIJJUt3Qgo5e9HmI6NZORG4PazmEM=";
   };
-
-  hardeningDisable = [ "format" ];
 
   strictDeps = true;
 
@@ -72,15 +70,19 @@ stdenv.mkDerivation (finalAttrs: {
     -I${lib.getDev SDL2_mixer}/include/SDL2
   ";
 
+  hardeningDisable = [ "format" ];
+
   meta = {
-    homepage = "https://github.com/lincity-ng/lincity-ng";
     description = "City building game";
-    mainProgram = "lincity-ng";
+    homepage = "https://github.com/lincity-ng/lincity-ng";
     license = lib.licenses.gpl2Plus;
+
     maintainers = with lib.maintainers; [
       raskin
       iedame
     ];
+
     platforms = lib.platforms.linux;
+    mainProgram = "lincity-ng";
   };
 })

@@ -1,24 +1,23 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
   astropy,
-  qtpy,
-  pyqt6,
+  buildPythonPackage,
+  matplotlib,
   pyqt-builder,
+  pyqt6,
+  pytest-astropy,
+  pytestCheckHook,
+  qtpy,
+  scipy,
   setuptools,
   setuptools-scm,
-  scipy,
-  matplotlib,
   spectral-cube,
-  pytestCheckHook,
-  pytest-astropy,
 }:
 
 buildPythonPackage rec {
   pname = "pvextractor";
   version = "0.4";
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "radio-astro-tools";
@@ -27,11 +26,13 @@ buildPythonPackage rec {
     sha256 = "sha256-TjwoTtoGWU6C6HdFuS+gJj69PUnfchPHs7UjFqwftVQ=";
   };
 
-  buildInputs = [ pyqt-builder ];
   nativeBuildInputs = [
     setuptools
     setuptools-scm
   ];
+
+  buildInputs = [ pyqt-builder ];
+
   propagatedBuildInputs = [
     astropy
     scipy
@@ -50,11 +51,12 @@ buildPythonPackage rec {
     pytest-astropy
   ];
 
+  format = "setuptools";
   pythonImportsCheck = [ "pvextractor" ];
 
   meta = {
-    homepage = "http://pvextractor.readthedocs.io";
     description = "Position-velocity diagram extractor";
+    homepage = "http://pvextractor.readthedocs.io";
     license = lib.licenses.bsd3;
     maintainers = with lib.maintainers; [ ifurther ];
   };

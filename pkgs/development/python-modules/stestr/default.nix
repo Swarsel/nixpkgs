@@ -1,26 +1,28 @@
 {
   lib,
   buildPythonPackage,
-  fetchPypi,
+  callPackage,
   cliff,
+  fetchPypi,
   fixtures,
   flit-core,
   python-subunit,
   testtools,
   tomlkit,
   voluptuous,
-  callPackage,
 }:
 
 buildPythonPackage rec {
   pname = "stestr";
   version = "4.2.0";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
     hash = "sha256-Rexjny0cw3LjYwYTuT83zynT3+adSdTz+UCNN7Ebwpw=";
   };
+
+  # check in passthru.tests.pytest to escape infinite recursion with other oslo components
+  doCheck = false;
 
   build-system = [
     flit-core
@@ -35,20 +37,18 @@ buildPythonPackage rec {
     voluptuous
   ];
 
-  # check in passthru.tests.pytest to escape infinite recursion with other oslo components
-  doCheck = false;
+  pyproject = true;
+  pythonImportsCheck = [ "stestr" ];
 
   passthru.tests = {
     tests = callPackage ./tests.nix { };
   };
 
-  pythonImportsCheck = [ "stestr" ];
-
   meta = {
     description = "Parallel Python test runner built around subunit";
-    mainProgram = "stestr";
     homepage = "https://github.com/mtreinish/stestr";
     license = lib.licenses.asl20;
+    mainProgram = "stestr";
     teams = [ lib.teams.openstack ];
   };
 }

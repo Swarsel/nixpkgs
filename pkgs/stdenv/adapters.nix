@@ -6,8 +6,8 @@
 
 {
   lib,
-  pkgs,
   config,
+  pkgs,
 }:
 
 let
@@ -51,34 +51,63 @@ in
 
 rec {
 
-  # Override the compiler in stdenv for specific packages.
-  overrideCC =
-    stdenv: cc:
-    stdenv.override {
-      allowedRequisites = null;
-      cc = cc;
-      hasCC = cc != null;
+  /*
+    Modify a stdenv so that the specified attributes are added to
+    every derivation returned by its mkDerivation function.
+
+    Example:
+      stdenvNoOptimise =
+        addAttrsToDerivation
+          { env.NIX_CFLAGS_COMPILE = "-O0"; }
+          stdenv;
+  */
+  addAttrsToDerivation = extraAttrs: overrideMkDerivationArgs (_: extraAttrs);
+
+  /*
+    Modify a stdenv so that it builds binaries optimized specifically
+    for the machine they are built on.
+
+    WARNING: this breaks purity!
+  */
+  impureUseNativeOptimizations = overrideMkDerivationArgs (args: {
+    env = (args.env or { }) // {
+      NIX_CFLAGS_COMPILE = toString (args.env.NIX_CFLAGS_COMPILE or "") + " -march=native";
     };
 
-  # Add some arbitrary packages to buildInputs for specific packages.
-  # Used to override packages in stdenv like Make.  Should not be used
-  # for other dependencies.
-  overrideInStdenv =
-    stdenv: pkgs:
-    stdenv.override (prev: {
-      allowedRequisites = null;
-      extraBuildInputs = (prev.extraBuildInputs or [ ]) ++ pkgs;
-    });
+    NIX_ENFORCE_NO_NATIVE = false;
+    allowSubstitutes = false;
+    preferLocalBuild = true;
+  });
 
-  # Override the setup script of stdenv.  Useful for testing new
-  # versions of the setup script without causing a rebuild of
-  # everything.
-  #
-  # Example:
-  #   randomPkg = import ../bla { ...
-  #     stdenv = overrideSetup stdenv ../stdenv/generic/setup-latest.sh;
-  #   };
-  overrideSetup = stdenv: setupScript: stdenv.override { inherit setupScript; };
+  /*
+    Modify a stdenv so that it produces debug builds; that is,
+    binaries have debug info, and compiler optimisations are
+    disabled.
+  */
+  keepDebugInfo = overrideMkDerivationArgs (args: {
+    env = (args.env or { }) // {
+      NIX_CFLAGS_COMPILE = toString (args.env.NIX_CFLAGS_COMPILE or "") + " -ggdb -Og";
+      NIX_RUSTFLAGS = toString (args.env.NIX_RUSTFLAGS or "") + " -g -C opt-level=0 -C strip=none";
+    };
+
+    dontStrip = true;
+  });
+
+  # Puts all the other ones together
+  makeStatic =
+    stdenv:
+    lib.foldl' (lib.flip lib.id) stdenv (
+      lib.optional stdenv.hostPlatform.isDarwin makeStaticDarwin
+
+      ++ [
+        makeStaticLibraries
+        propagateBuildInputs
+      ]
+
+      # Apple does not provide a static version of libSystem or crt0.o
+      # So we can’t build static binaries without extensive hacks.
+      ++ lib.optional (!stdenv.hostPlatform.isDarwin) makeStaticBinaries
+    );
 
   # Return a modified stdenv that tries to build statically linked
   # binaries.
@@ -116,6 +145,7 @@ rec {
                 configureFlags = (args.configureFlags or [ ]) ++ [
                   "--disable-shared" # brrr...
                 ];
+
                 cmakeFlags = (args.cmakeFlags or [ ]) ++ [ "-DCMAKE_SKIP_INSTALL_RPATH=On" ];
               }
             )
@@ -127,26 +157,6 @@ rec {
         ];
       }
     );
-
-  # Return a modified stdenv that builds static libraries instead of
-  # shared libraries.
-  makeStaticLibraries = overrideMkDerivationArgs (
-    args:
-    {
-      dontDisableStatic = true;
-    }
-    // lib.optionalAttrs (!(args.dontAddStaticConfigureFlags or false)) {
-      configureFlags = (args.configureFlags or [ ]) ++ [
-        "--enable-static"
-        "--disable-shared"
-      ];
-      cmakeFlags = (args.cmakeFlags or [ ]) ++ [ "-DBUILD_SHARED_LIBS:BOOL=OFF" ];
-      mesonFlags = (args.mesonFlags or [ ]) ++ [
-        "-Ddefault_library=static"
-        "-Ddefault_both_libraries=static"
-      ];
-    }
-  );
 
   # Best effort static binaries. Will still be linked to libSystem,
   # but more portable than Nix store binaries.
@@ -175,42 +185,46 @@ rec {
       );
     });
 
-  # Puts all the other ones together
-  makeStatic =
-    stdenv:
-    lib.foldl' (lib.flip lib.id) stdenv (
-      lib.optional stdenv.hostPlatform.isDarwin makeStaticDarwin
+  # Return a modified stdenv that builds static libraries instead of
+  # shared libraries.
+  makeStaticLibraries = overrideMkDerivationArgs (
+    args:
+    {
+      dontDisableStatic = true;
+    }
+    // lib.optionalAttrs (!(args.dontAddStaticConfigureFlags or false)) {
+      configureFlags = (args.configureFlags or [ ]) ++ [
+        "--enable-static"
+        "--disable-shared"
+      ];
 
-      ++ [
-        makeStaticLibraries
-        propagateBuildInputs
-      ]
+      cmakeFlags = (args.cmakeFlags or [ ]) ++ [ "-DBUILD_SHARED_LIBS:BOOL=OFF" ];
 
-      # Apple does not provide a static version of libSystem or crt0.o
-      # So we can’t build static binaries without extensive hacks.
-      ++ lib.optional (!stdenv.hostPlatform.isDarwin) makeStaticBinaries
-    );
+      mesonFlags = (args.mesonFlags or [ ]) ++ [
+        "-Ddefault_library=static"
+        "-Ddefault_both_libraries=static"
+      ];
+    }
+  );
 
-  /*
-    Modify a stdenv so that all buildInputs are implicitly propagated to
-    consuming derivations
-  */
-  propagateBuildInputs = overrideMkDerivationArgs (args: {
-    propagatedBuildInputs = (args.propagatedBuildInputs or [ ]) ++ (args.buildInputs or [ ]);
-    buildInputs = [ ];
-  });
+  # Override the compiler in stdenv for specific packages.
+  overrideCC =
+    stdenv: cc:
+    stdenv.override {
+      allowedRequisites = null;
+      cc = cc;
+      hasCC = cc != null;
+    };
 
-  /*
-    Modify a stdenv so that the specified attributes are added to
-    every derivation returned by its mkDerivation function.
-
-    Example:
-      stdenvNoOptimise =
-        addAttrsToDerivation
-          { env.NIX_CFLAGS_COMPILE = "-O0"; }
-          stdenv;
-  */
-  addAttrsToDerivation = extraAttrs: overrideMkDerivationArgs (_: extraAttrs);
+  # Add some arbitrary packages to buildInputs for specific packages.
+  # Used to override packages in stdenv like Make.  Should not be used
+  # for other dependencies.
+  overrideInStdenv =
+    stdenv: pkgs:
+    stdenv.override (prev: {
+      allowedRequisites = null;
+      extraBuildInputs = (prev.extraBuildInputs or [ ]) ++ pkgs;
+    });
 
   /*
     Modify a stdenv so as to extend `mkDerivation`'s arguments.
@@ -228,6 +242,25 @@ rec {
     stdenv.override (old: {
       mkDerivationFromStdenv = extendMkDerivationArgs old extension;
     });
+
+  # Override the setup script of stdenv.  Useful for testing new
+  # versions of the setup script without causing a rebuild of
+  # everything.
+  #
+  # Example:
+  #   randomPkg = import ../bla { ...
+  #     stdenv = overrideSetup stdenv ../stdenv/generic/setup-latest.sh;
+  #   };
+  overrideSetup = stdenv: setupScript: stdenv.override { inherit setupScript; };
+
+  /*
+    Modify a stdenv so that all buildInputs are implicitly propagated to
+    consuming derivations
+  */
+  propagateBuildInputs = overrideMkDerivationArgs (args: {
+    buildInputs = [ ];
+    propagatedBuildInputs = (args.propagatedBuildInputs or [ ]) ++ (args.buildInputs or [ ]);
+  });
 
   /*
     Use the trace output to report all processed derivations with their
@@ -249,24 +282,11 @@ rec {
         in
         pkg
         // {
-          outPath = printDrvPath pkg.outPath;
           drvPath = printDrvPath pkg.drvPath;
+          outPath = printDrvPath pkg.outPath;
         }
       );
     });
-
-  /*
-    Modify a stdenv so that it produces debug builds; that is,
-    binaries have debug info, and compiler optimisations are
-    disabled.
-  */
-  keepDebugInfo = overrideMkDerivationArgs (args: {
-    dontStrip = true;
-    env = (args.env or { }) // {
-      NIX_CFLAGS_COMPILE = toString (args.env.NIX_CFLAGS_COMPILE or "") + " -ggdb -Og";
-      NIX_RUSTFLAGS = toString (args.env.NIX_RUSTFLAGS or "") + " -g -C opt-level=0 -C strip=none";
-    };
-  });
 
   # Modify a stdenv so that it uses the Gold linker.
   useGoldLinker = overrideMkDerivationArgs (args: {
@@ -292,6 +312,7 @@ rec {
         This assumes targetStdenv.cc is a cc-wrapper.
       */
       cc = targetStdenv.cc.override {
+        gccForLibs = ccForLibs;
         /*
           NOTE(originally by rrbutani):
           Normally the `useCcForLibs`/`gccForLibs` mechanism is used to get a
@@ -305,7 +326,6 @@ rec {
           `gccForLibs`'s paths should take precedence.
         */
         useCcForLibs = true;
-        gccForLibs = ccForLibs;
       };
     in
     overrideCC targetStdenv cc;
@@ -357,6 +377,7 @@ rec {
     else
       stdenv.override (prev: {
         allowedRequisites = null;
+
         cc = prev.cc.override {
           bintools = prev.cc.bintools.override {
             extraBuildCommands = ''
@@ -365,23 +386,6 @@ rec {
           };
         };
       });
-
-  /*
-    Modify a stdenv so that it builds binaries optimized specifically
-    for the machine they are built on.
-
-    WARNING: this breaks purity!
-  */
-  impureUseNativeOptimizations = overrideMkDerivationArgs (args: {
-    env = (args.env or { }) // {
-      NIX_CFLAGS_COMPILE = toString (args.env.NIX_CFLAGS_COMPILE or "") + " -march=native";
-    };
-
-    NIX_ENFORCE_NO_NATIVE = false;
-
-    preferLocalBuild = true;
-    allowSubstitutes = false;
-  });
 
   /*
     Modify a stdenv so that it builds binaries with the specified list of
@@ -420,6 +424,8 @@ rec {
           bintools';
     in
     stdenv.override (old: {
+      allowedRequisites = lib.mapNullable (rs: rs ++ [ bintools ]) (stdenv.allowedRequisites or null);
+
       cc =
         if stdenv.cc == null then
           null
@@ -427,6 +433,5 @@ rec {
           stdenv.cc.override {
             inherit bintools;
           };
-      allowedRequisites = lib.mapNullable (rs: rs ++ [ bintools ]) (stdenv.allowedRequisites or null);
     });
 }

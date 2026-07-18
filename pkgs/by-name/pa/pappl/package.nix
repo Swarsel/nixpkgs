@@ -8,10 +8,10 @@
   libjpeg,
   libpng,
   libusb1,
-  pkg-config,
-  withPAMSupport ? true,
   pam,
+  pkg-config,
   zlib,
+  withPAMSupport ? true,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -55,6 +55,7 @@ stdenv.mkDerivation (finalAttrs: {
   # doCheck = true;
 
   doInstallCheck = true;
+
   installCheckPhase = ''
     $out/bin/pappl-makeresheader --help
   '';
@@ -63,11 +64,11 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "C-based framework/library for developing CUPS Printer Applications";
-    changelog = "https://github.com/michaelrsweet/pappl/blob/v${finalAttrs.version}/CHANGES.md";
-    mainProgram = "pappl-makeresheader";
     homepage = "https://github.com/michaelrsweet/pappl";
+    changelog = "https://github.com/michaelrsweet/pappl/blob/v${finalAttrs.version}/CHANGES.md";
     license = lib.licenses.asl20;
-    platforms = lib.platforms.linux; # should also work for darwin, but requires additional work
     maintainers = [ lib.maintainers.NotAShelf ];
+    platforms = lib.platforms.linux; # should also work for darwin, but requires additional work
+    mainProgram = "pappl-makeresheader";
   };
 })

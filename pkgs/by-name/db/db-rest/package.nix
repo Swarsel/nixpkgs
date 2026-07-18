@@ -1,16 +1,15 @@
 {
   lib,
-  buildNpmPackage,
   fetchFromGitHub,
-  nodejs,
+  buildNpmPackage,
   nix-update-script,
   nixosTests,
+  nodejs,
 }:
 buildNpmPackage rec {
+  inherit nodejs;
   pname = "db-rest";
   version = "6.1.0";
-
-  inherit nodejs;
 
   src = fetchFromGitHub {
     owner = "derhuerst";
@@ -25,10 +24,11 @@ buildNpmPackage rec {
     patchShebangs ./build/index.js
   '';
 
-  passthru.updateScript = nix-update-script { };
   passthru.tests = {
     inherit (nixosTests) db-rest;
   };
+
+  passthru.updateScript = nix-update-script { };
 
   meta = {
     description = "Clean REST API wrapping around the Deutsche Bahn API";

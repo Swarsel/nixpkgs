@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   versionCheckHook,
 }:
 
@@ -17,7 +17,7 @@ buildGoModule (finalAttrs: {
   };
 
   vendorHash = "sha256-QcljmDsz5LsXfHaXNVBU7IIVVgkm3Vfnirchx5ZOMSg=";
-
+  doInstallCheck = true;
   nativeInstallCheckInputs = [ versionCheckHook ];
 
   ldflags = [
@@ -25,8 +25,6 @@ buildGoModule (finalAttrs: {
     "-w"
     "-X=main.version=${finalAttrs.version}"
   ];
-
-  doInstallCheck = true;
 
   meta = {
     description = "Formatter for JSON files";

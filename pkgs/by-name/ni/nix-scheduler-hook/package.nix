@@ -1,30 +1,31 @@
 {
-  fetchFromGitHub,
-  fetchFromCodeberg,
-  stdenv,
   lib,
-  nixVersions,
-  meson,
-  cmake,
-  ninja,
+  stdenv,
+  fetchFromGitHub,
   boost,
-  pkg-config,
-  nlohmann_json,
+  cmake,
   curl,
-  openpbs,
-  symlinkJoin,
-  slurm,
+  fetchFromCodeberg,
   gitUpdater,
+  meson,
+  ninja,
+  nixVersions,
+  nlohmann_json,
+  openpbs,
+  pkg-config,
+  slurm,
+  symlinkJoin,
 }:
 let
   restclient-cpp = fetchFromGitHub {
+    hash = "sha256-9//KssNRD7OJFNFdXgzsu7rKP/Nlb4wtmBjfhOt2Vgw=";
     owner = "mrtazz";
     repo = "restclient-cpp";
     rev = "3356f816b161279cfbe318c45cb07c07fb8de6df";
-    hash = "sha256-9//KssNRD7OJFNFdXgzsu7rKP/Nlb4wtmBjfhOt2Vgw=";
   };
   slurmJoined = symlinkJoin {
     name = "slurm";
+
     paths = [
       slurm
       slurm.dev
@@ -42,8 +43,6 @@ stdenv.mkDerivation rec {
     tag = "v${version}";
     hash = "sha256-QMenfkNvn6bBGdu+d6i533/CkHNS7Tmr40cgl/ks5dk=";
   };
-
-  sourceRoot = "source/src";
 
   nativeBuildInputs = [
     meson
@@ -63,11 +62,6 @@ stdenv.mkDerivation rec {
     slurmJoined
   ];
 
-  postUnpack = ''
-    mkdir $sourceRoot/subprojects
-    cp -r ${restclient-cpp} $sourceRoot/subprojects/restclient-cpp
-  '';
-
   installPhase = ''
     mkdir -p $out/bin
     mv nsh $out/bin
@@ -76,6 +70,13 @@ stdenv.mkDerivation rec {
     mv subprojects/restclient-cpp/librestclient_cpp.so!(*p) $out/lib
   '';
 
+  postUnpack = ''
+    mkdir $sourceRoot/subprojects
+    cp -r ${restclient-cpp} $sourceRoot/subprojects/restclient-cpp
+  '';
+
+  sourceRoot = "source/src";
+
   passthru = {
     updateScript = gitUpdater {
       rev-prefix = "v";
@@ -83,11 +84,11 @@ stdenv.mkDerivation rec {
   };
 
   meta = {
+    inherit (nix.meta) platforms;
     description = "Nix build hook that forwards builds to job schedulers";
     homepage = "https://github.com/lisanna-dettwyler/nix-scheduler-hook";
     license = lib.licenses.lgpl21;
-    mainProgram = "nsh";
     maintainers = with lib.maintainers; [ lisanna-dettwyler ];
-    inherit (nix.meta) platforms;
+    mainProgram = "nsh";
   };
 }

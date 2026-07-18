@@ -1,22 +1,18 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # build-system
-  setuptools,
-
+  buildPythonPackage,
   # dependencies
   numpy,
-
   # tests
   python,
+  # build-system
+  setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "cma";
   version = "4.4.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "CMA-ES";
@@ -31,12 +27,6 @@ buildPythonPackage rec {
     rm -rf notebooks
   '';
 
-  build-system = [ setuptools ];
-
-  dependencies = [ numpy ];
-
-  pythonImportsCheck = [ "cma" ];
-
   # At least one doctest fails, thus only limited amount of files is tested
   checkPhase = ''
     ${python.executable} -m cma.test \
@@ -46,6 +36,11 @@ buildPythonPackage rec {
       optimization_tools.py \
       transformations.py
   '';
+
+  build-system = [ setuptools ];
+  dependencies = [ numpy ];
+  pyproject = true;
+  pythonImportsCheck = [ "cma" ];
 
   meta = {
     description = "Library for Covariance Matrix Adaptation Evolution Strategy for non-linear numerical optimization";

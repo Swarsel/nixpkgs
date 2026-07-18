@@ -3,15 +3,15 @@
   stdenv,
   fetchurl,
   gettext,
+  gitUpdater,
+  glib,
+  gtk3,
+  libxfce4ui,
+  libxfce4util,
   meson,
   ninja,
   pkg-config,
-  libxfce4util,
   xfce4-panel,
-  libxfce4ui,
-  glib,
-  gtk3,
-  gitUpdater,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -41,13 +41,13 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   passthru.updateScript = gitUpdater {
-    url = "https://gitlab.xfce.org/panel-plugins/xfce4-fsguard-plugin";
     rev-prefix = "xfce4-fsguard-plugin-";
+    url = "https://gitlab.xfce.org/panel-plugins/xfce4-fsguard-plugin";
   };
 
   meta = {
-    homepage = "https://docs.xfce.org/panel-plugins/xfce4-fsguard-plugin";
     description = "Filesystem usage monitor plugin for the Xfce panel";
+    homepage = "https://docs.xfce.org/panel-plugins/xfce4-fsguard-plugin";
     license = lib.licenses.bsd2;
     platforms = lib.platforms.linux;
     teams = [ lib.teams.xfce ];

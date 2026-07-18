@@ -5,23 +5,26 @@
 
 {
   lib,
-  replaceVarsWith,
   perl,
+  replaceVarsWith,
   signingUtils,
   stdenvNoCC,
   shell ? stdenvNoCC.shell,
 }:
 replaceVarsWith {
   src = ./nuke-refs;
+  dir = "bin";
+  isExecutable = true;
+
   replacements = {
     inherit perl; # FIXME: get rid of perl dependency.
     inherit (builtins) storeDir;
     shell = lib.getBin shell + (shell.shellPath or "");
+
     signingUtils = lib.optionalString (
       stdenvNoCC.targetPlatform.isDarwin && stdenvNoCC.targetPlatform.isAarch64
     ) signingUtils;
   };
-  dir = "bin";
-  isExecutable = true;
+
   meta.mainProgram = "nuke-refs";
 }

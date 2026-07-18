@@ -1,13 +1,14 @@
 {
-  writeShellApplication,
+  cargo,
+  common-updater-scripts,
   curl,
   jq,
-  common-updater-scripts,
-  cargo,
+  writeShellApplication,
 }:
 
 writeShellApplication {
   name = "update-terracotta";
+
   runtimeInputs = [
     curl
     jq

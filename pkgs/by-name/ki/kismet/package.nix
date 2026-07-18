@@ -1,10 +1,10 @@
 {
   lib,
   stdenv,
+  fetchFromGitHub,
   autoreconfHook,
   binutils,
   elfutils,
-  fetchFromGitHub,
   glib,
   libbtbb,
   libcap,
@@ -18,18 +18,18 @@
   networkmanager,
   nix-update-script,
   nixosTests,
+  openssl,
   pcre2,
   pkg-config,
-  openssl,
   protobuf,
   protobufc,
   python3,
   rtl-sdr-librtlsdr,
   sqlite,
+  zlib,
   withNetworkManager ? false,
   withPython ? stdenv.buildPlatform.canExecute stdenv.hostPlatform,
   withSensors ? false,
-  zlib,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -48,14 +48,6 @@ stdenv.mkDerivation (finalAttrs: {
       --replace-fail "-m 4550" ""
     substituteInPlace configure.ac \
       --replace-fail "pkg-config" "$PKG_CONFIG"
-  '';
-
-  postConfigure = ''
-    sed -e 's/-o $(INSTUSR)//' \
-        -e 's/-g $(INSTGRP)//' \
-        -e 's/-g $(MANGRP)//' \
-        -e 's/-g $(SUIDGROUP)//' \
-        -i Makefile
   '';
 
   strictDeps = true;
@@ -116,10 +108,19 @@ stdenv.mkDerivation (finalAttrs: {
     "--disable-lmsensors"
   ];
 
+  postConfigure = ''
+    sed -e 's/-o $(INSTUSR)//' \
+        -e 's/-g $(INSTGRP)//' \
+        -e 's/-g $(MANGRP)//' \
+        -e 's/-g $(SUIDGROUP)//' \
+        -i Makefile
+  '';
+
   enableParallelBuilding = true;
 
   passthru = {
     tests.kismet = nixosTests.kismet;
+
     updateScript = nix-update-script {
       extraArgs = [
         "--version-regex"
@@ -132,7 +133,7 @@ stdenv.mkDerivation (finalAttrs: {
     description = "Wireless network sniffer";
     homepage = "https://www.kismetwireless.net/";
     license = lib.licenses.gpl3Plus;
-    platforms = lib.platforms.linux;
     maintainers = with lib.maintainers; [ numinit ];
+    platforms = lib.platforms.linux;
   };
 })

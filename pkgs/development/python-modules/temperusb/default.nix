@@ -8,7 +8,6 @@
 buildPythonPackage rec {
   pname = "temperusb";
   version = "1.6.1";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
@@ -16,10 +15,9 @@ buildPythonPackage rec {
   };
 
   propagatedBuildInputs = [ pyusb ];
-
   # Module has no tests which are shipped and source is not tagged
   doCheck = false;
-
+  format = "setuptools";
   pythonImportsCheck = [ "temperusb" ];
 
   meta = {

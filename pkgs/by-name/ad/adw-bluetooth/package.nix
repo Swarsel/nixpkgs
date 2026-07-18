@@ -1,17 +1,17 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
+  blueprint-compiler,
   buildGoModule,
+  desktop-file-utils,
+  gjs,
+  libadwaita,
   meson,
   ninja,
   pkg-config,
-  blueprint-compiler,
   typescript,
-  desktop-file-utils,
   wrapGAppsHook4,
-  gjs,
-  libadwaita,
 }:
 
 let
@@ -25,15 +25,15 @@ let
   };
 
   daemon = buildGoModule {
-    pname = "adw-bluetooth-daemon";
     inherit version;
+    pname = "adw-bluetooth-daemon";
     src = src + "/daemon";
     vendorHash = "sha256-7tiSwNhq6e4LEh4lUkfh2i4tEdWWL6TxQpYYwYKsfog=";
   };
 in
 stdenv.mkDerivation (finalAttrs: {
-  pname = "adw-bluetooth";
   inherit version src;
+  pname = "adw-bluetooth";
 
   nativeBuildInputs = [
     meson
@@ -61,7 +61,7 @@ stdenv.mkDerivation (finalAttrs: {
     description = "GNOME Inspired LibAdwaita Bluetooth Applet";
     homepage = "https://github.com/ezratweaver/adw-bluetooth";
     license = lib.licenses.gpl3Only;
-    platforms = lib.platforms.linux;
     maintainers = with lib.maintainers; [ ezratweaver ];
+    platforms = lib.platforms.linux;
   };
 })

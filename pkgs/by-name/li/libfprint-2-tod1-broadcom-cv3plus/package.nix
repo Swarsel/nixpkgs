@@ -1,11 +1,11 @@
 {
+  lib,
+  stdenv,
   autoPatchelfHook,
   fetchgit,
-  lib,
   libfprint-tod,
   openssl,
   patchelfUnstable,
-  stdenv,
 }:
 
 let
@@ -14,9 +14,9 @@ let
 
   src = fetchgit {
     url = "git://git.launchpad.net/~oem-solutions-engineers/pc-enablement/+git/libfprint-2-tod1-broadcom-cv3plus/";
-    branchName = "ubuntu/latest";
     rev = "ac7a8ab2318216e603c8c23b279bbad28a301d3";
     hash = "sha256-4JwoUuvskj8GqTUQpKBECCL+jkSfxpaukqRTTVTmSLk=";
+    branchName = "ubuntu/latest";
   };
 
   wrapperLibName = "wrapper-lib.so";
@@ -24,13 +24,13 @@ let
 
   # wraps `fopen()` for finding firmware files
   wrapperLib = stdenv.mkDerivation {
-    pname = "${pname}-wrapper-lib";
     inherit version;
+    pname = "${pname}-wrapper-lib";
 
     src = builtins.path {
+      filter = path: type: baseNameOf path == wrapperLibSource;
       name = "${pname}-wrapper-lib-source";
       path = ./.;
-      filter = path: type: baseNameOf path == wrapperLibSource;
     };
 
     postPatch = ''
@@ -49,15 +49,15 @@ in
 stdenv.mkDerivation {
   inherit src pname version;
 
+  nativeBuildInputs = [
+    autoPatchelfHook
+    patchelfUnstable # have to use patchelfUnstable to support --rename-dynamic-symbols
+  ];
+
   buildInputs = [
     libfprint-tod
     openssl
     wrapperLib
-  ];
-
-  nativeBuildInputs = [
-    autoPatchelfHook
-    patchelfUnstable # have to use patchelfUnstable to support --rename-dynamic-symbols
   ];
 
   installPhase = ''
@@ -81,11 +81,13 @@ stdenv.mkDerivation {
     description = "Broadcom driver module for libfprint-2-tod Touch OEM Driver for Dell ControlVault v3+";
     homepage = "https://git.launchpad.net/~oem-solutions-engineers/pc-enablement/+git/libfprint-2-tod1-broadcom-cv3plus/";
     license = lib.licenses.unfree;
+    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
+
     maintainers = with lib.maintainers; [
       aionescu
       pitkling
     ];
+
     platforms = [ "x86_64-linux" ];
-    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
   };
 }

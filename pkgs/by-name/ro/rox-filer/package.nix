@@ -3,12 +3,12 @@
   stdenv,
   fetchurl,
   fetchpatch,
-  pkg-config,
-  wrapGAppsHook3,
-  libxml2,
   gtk2,
   libsm,
+  libxml2,
+  pkg-config,
   shared-mime-info,
+  wrapGAppsHook3,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -20,10 +20,22 @@ stdenv.mkDerivation (finalAttrs: {
     sha256 = "a929bd32ee18ef7a2ed48b971574574592c42e34ae09f36604bf663d7c101ba8";
   };
 
+  patches = [
+    ./rox-filer-2.11-in-source-build.patch
+    # Pull upstream fix for -fno-common toolchains like upstream gcc-10:
+    #   https://github.com/rox-desktop/rox-filer/pull/15
+    (fetchpatch {
+      name = "fno-common.patch";
+      sha256 = "1csyx229i09p00lbdlkdqdhn3x2lb5zby1h9rkjgzlr2qz74gc69";
+      url = "https://github.com/rox-desktop/rox-filer/commit/86b0bb9144186d51ea9b898905111bd8b143b552.patch";
+    })
+  ];
+
   nativeBuildInputs = [
     pkg-config
     wrapGAppsHook3
   ];
+
   buildInputs = [
     libxml2
     gtk2
@@ -32,26 +44,9 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   env = {
-    NIX_LDFLAGS = "-lm";
     NIX_CFLAGS_COMPILE = "-fpermissive";
+    NIX_LDFLAGS = "-lm";
   };
-
-  patches = [
-    ./rox-filer-2.11-in-source-build.patch
-    # Pull upstream fix for -fno-common toolchains like upstream gcc-10:
-    #   https://github.com/rox-desktop/rox-filer/pull/15
-    (fetchpatch {
-      name = "fno-common.patch";
-      url = "https://github.com/rox-desktop/rox-filer/commit/86b0bb9144186d51ea9b898905111bd8b143b552.patch";
-      sha256 = "1csyx229i09p00lbdlkdqdhn3x2lb5zby1h9rkjgzlr2qz74gc69";
-    })
-  ];
-
-  # go to the source directory after unpacking the sources
-  sourceRoot = "rox-filer-${finalAttrs.version}/ROX-Filer";
-
-  # account for 'setSourceRoot' offset
-  patchFlags = [ "-p2" ];
 
   # patch the main.c to disable the lookup of the APP_DIR environment variable,
   # which is used to lookup the location for certain images when rox-filer
@@ -63,8 +58,6 @@ stdenv.mkDerivation (finalAttrs: {
     mkdir build
     cd build
   '';
-
-  configureScript = "../src/configure";
 
   installPhase = ''
     mkdir -p "$out"
@@ -97,15 +90,23 @@ stdenv.mkDerivation (finalAttrs: {
     ln -sv application-{msword,rtf}.png
   '';
 
+  configureScript = "../src/configure";
+  # account for 'setSourceRoot' offset
+  patchFlags = [ "-p2" ];
+  # go to the source directory after unpacking the sources
+  sourceRoot = "rox-filer-${finalAttrs.version}/ROX-Filer";
+
   meta = {
     description = "Fast, lightweight, gtk2 file manager";
-    mainProgram = "rox";
     homepage = "http://rox.sourceforge.net/desktop";
+
     license = with lib.licenses; [
       gpl2
       lgpl2
     ];
-    platforms = lib.platforms.linux;
+
     maintainers = [ lib.maintainers.eleanor ];
+    platforms = lib.platforms.linux;
+    mainProgram = "rox";
   };
 })

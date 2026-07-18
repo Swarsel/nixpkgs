@@ -1,8 +1,8 @@
 {
   lib,
   stdenv,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   importlib-metadata,
   natsort,
   pillow,
@@ -22,7 +22,6 @@
 buildPythonPackage rec {
   pname = "comicapi";
   version = "3.2.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "comictagger";
@@ -30,6 +29,8 @@ buildPythonPackage rec {
     rev = "2bf8332114e49add0bbc0fd3d85bdbba02de3d1a";
     hash = "sha256-Cd3ILy/4PqWUj1Uu9of9gCpdVp2R6CXjPOuSXgrB894=";
   };
+
+  nativeCheckInputs = [ pytestCheckHook ] ++ lib.concatAttrValues optional-dependencies;
 
   build-system = [
     setuptools
@@ -47,6 +48,11 @@ buildPythonPackage rec {
     wordninja
   ];
 
+  disabledTests = [
+    # AssertionError
+    "test_copy_from_archive"
+  ];
+
   optional-dependencies = {
     _7z = [ py7zr ];
 
@@ -57,20 +63,12 @@ buildPythonPackage rec {
     ++ lib.optional (stdenv.hostPlatform.isDarwin || stdenv.hostPlatform.isLinux) pyicu;
 
     cbr = [ rarfile ];
-
     icu = lib.optional (stdenv.hostPlatform.isDarwin || stdenv.hostPlatform.isLinux) pyicu;
   };
 
-  nativeCheckInputs = [ pytestCheckHook ] ++ lib.concatAttrValues optional-dependencies;
-
-  pythonRelaxDeps = [ "pycountry" ];
-
-  disabledTests = [
-    # AssertionError
-    "test_copy_from_archive"
-  ];
-
+  pyproject = true;
   pythonImportsCheck = [ "comicapi" ];
+  pythonRelaxDeps = [ "pycountry" ];
 
   meta = {
     description = "Comic archive (cbr/cbz/cbt) and metadata utilities";

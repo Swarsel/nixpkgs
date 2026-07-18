@@ -1,23 +1,23 @@
 {
   lib,
   stdenv,
-  cmake,
   fetchFromGitHub,
+  cmake,
   withFilters ? false,
 }:
 
 let
   generic =
-    { version, hash }:
+    { hash, version }:
     stdenv.mkDerivation {
       inherit version;
       pname = "h3";
 
       src = fetchFromGitHub {
+        inherit hash;
         owner = "uber";
         repo = "h3";
         tag = "v${version}";
-        inherit hash;
       };
 
       outputs = [
@@ -40,12 +40,12 @@ let
       ++ (lib.optionals (lib.versionOlder version "4.0.0") [ "-DCMAKE_POLICY_VERSION_MINIMUM=3.5" ]);
 
       meta = {
-        homepage = "https://h3geo.org/";
         description = "Hexagonal hierarchical geospatial indexing system";
-        license = lib.licenses.asl20;
+        homepage = "https://h3geo.org/";
         changelog = "https://github.com/uber/h3/raw/v${version}/CHANGELOG.md";
-        platforms = lib.platforms.all;
+        license = lib.licenses.asl20;
         maintainers = with lib.maintainers; [ kalbasit ];
+        platforms = lib.platforms.all;
       };
     };
 in

@@ -1,9 +1,9 @@
 {
   lib,
+  fetchFromGitHub,
   aiofiles,
   buildPythonPackage,
   colorama,
-  fetchFromGitHub,
   git,
   jsonschema,
   pdm-backend,
@@ -14,7 +14,6 @@
 buildPythonPackage rec {
   pname = "griffe";
   version = "1.15.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "mkdocstrings";
@@ -23,10 +22,6 @@ buildPythonPackage rec {
     hash = "sha256-AMMTAqsJfj2MltTgAxfvjUTVzi+ZFmx+J9pzhMp28Z4=";
   };
 
-  build-system = [ pdm-backend ];
-
-  dependencies = [ colorama ];
-
   nativeCheckInputs = [
     git
     jsonschema
@@ -34,16 +29,20 @@ buildPythonPackage rec {
     pytestCheckHook
   ];
 
-  optional-dependencies = {
-    async = [ aiofiles ];
-  };
-
-  pythonImportsCheck = [ "griffe" ];
+  build-system = [ pdm-backend ];
+  dependencies = [ colorama ];
 
   disabledTestPaths = [
     # Circular dependencies
     "tests/test_api.py"
   ];
+
+  optional-dependencies = {
+    async = [ aiofiles ];
+  };
+
+  pyproject = true;
+  pythonImportsCheck = [ "griffe" ];
 
   meta = {
     description = "Signatures for entire Python programs";

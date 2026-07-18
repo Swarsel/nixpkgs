@@ -1,14 +1,14 @@
 {
+  atdgen,
+  atdgen-runtime,
   buildDunePackage,
   github,
   yojson,
-  atdgen,
-  atdgen-runtime,
 }:
 
 buildDunePackage {
-  pname = "github-data";
   inherit (github) version src;
+  pname = "github-data";
 
   postPatch = ''
     substituteInPlace lib_data/dune --replace-warn 'atdgen)' 'atdgen-runtime)'

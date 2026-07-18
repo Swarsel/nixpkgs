@@ -1,12 +1,12 @@
 {
-  apple-sdk_15,
-  stdenv,
   lib,
-  rustPlatform,
+  stdenv,
   fetchFromGitHub,
+  apple-sdk_15,
   nix-update-script,
-  pkg-config,
   openssl,
+  pkg-config,
+  rustPlatform,
 }:
 rustPlatform.buildRustPackage (finalAttrs: {
   pname = "jikken";
@@ -19,11 +19,9 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-j9Rmo9szQtTZU2O6YRhkjMr5pV8tflUdr5hgXqYQxjc=";
   };
 
-  cargoHash = "sha256-V7Qy+0l3UvW5bM2OV3haGVg3KWDaEiEMvg4wvpwwuk4=";
-
   nativeBuildInputs = [ pkg-config ];
-
   buildInputs = [ openssl ] ++ lib.optionals stdenv.hostPlatform.isDarwin [ apple-sdk_15 ];
+  cargoHash = "sha256-V7Qy+0l3UvW5bM2OV3haGVg3KWDaEiEMvg4wvpwwuk4=";
 
   passthru.updateScript = nix-update-script {
     extraArgs = [

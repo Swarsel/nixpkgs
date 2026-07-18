@@ -1,21 +1,21 @@
 {
-  version,
   hash,
   minimumOTPVersion,
+  version,
   maximumOTPVersion ? null,
 }:
 {
+  lib,
+  stdenv,
+  fetchFromGitHub,
   bash,
   config,
   coreutils,
   curl,
-  debugInfo ? false,
   erlang,
-  fetchFromGitHub,
-  lib,
   makeWrapper,
   nix-update-script,
-  stdenv,
+  debugInfo ? false,
 }:
 
 let
@@ -69,26 +69,25 @@ if !config.allowAliases && !bothAssert then
 else
   assert assertMsg bothAssert compatibilityMsg;
   stdenv.mkDerivation {
+    inherit version debugInfo;
     pname = "elixir";
 
     src = fetchFromGitHub {
+      inherit hash;
       owner = "elixir-lang";
       repo = "elixir";
       rev = "v${version}";
-      inherit hash;
     };
-
-    inherit version debugInfo;
 
     nativeBuildInputs = [ makeWrapper ];
     buildInputs = [ erlang ];
 
     env = {
+      DESTDIR = placeholder "out";
+      ERL_COMPILER_OPTIONS = "[${concatStringsSep "," erlc_opts}]";
       LANG = "C.UTF-8";
       LC_TYPE = "C.UTF-8";
-      DESTDIR = placeholder "out";
       PREFIX = "/";
-      ERL_COMPILER_OPTIONS = "[${concatStringsSep "," erlc_opts}]";
     };
 
     preBuild = ''
@@ -134,9 +133,7 @@ else
     };
 
     meta = {
-      homepage = "https://elixir-lang.org/";
       description = "Functional, meta-programming aware language built on top of the Erlang VM";
-      changelog = "https://github.com/elixir-lang/elixir/releases/tag/v${version}";
 
       longDescription = ''
         Elixir is a functional, meta-programming aware language built on
@@ -146,6 +143,8 @@ else
         with hot code upgrades.
       '';
 
+      homepage = "https://elixir-lang.org/";
+      changelog = "https://github.com/elixir-lang/elixir/releases/tag/v${version}";
       license = lib.licenses.asl20;
       platforms = lib.platforms.unix;
       teams = [ lib.teams.beam ];

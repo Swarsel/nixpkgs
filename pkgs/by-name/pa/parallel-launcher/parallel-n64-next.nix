@@ -2,11 +2,11 @@
   lib,
   stdenv,
   fetchFromGitLab,
-  pkg-config,
-  libGLU,
   libGL,
+  libGLU,
   libpng,
   libretro,
+  pkg-config,
 }:
 let
   # Converts a version string like x.y.z to vx.y-z
@@ -14,7 +14,6 @@ let
 in
 # Based on the libretro parallel-n64 derivation with slight tweaks
 libretro.mkLibretroCore (finalAttrs: {
-  core = "parallel-n64-next";
   version = "2.28.0";
 
   src = fetchFromGitLab {
@@ -24,17 +23,10 @@ libretro.mkLibretroCore (finalAttrs: {
     hash = "sha256-o5zF100TzAO7XQXau4rglr1rO+roJao43SSFhYPCPO0=";
   };
 
-  extraNativeBuildInputs = [
-    pkg-config
-  ];
-
-  extraBuildInputs = [
-    libGLU
-    libGL
-    libpng
-  ];
-
-  makefile = "Makefile";
+  postPatch = lib.optionalString stdenv.hostPlatform.isAarch64 ''
+    sed -i -e '1 i\CPUFLAGS += -DARM_FIX -DNO_ASM -DARM_ASM -DDONT_WANT_ARM_OPTIMIZATIONS -DARM64' Makefile \
+    && sed -i -e 's,CPUFLAGS  :=,,g' Makefile
+  '';
 
   makeFlags = [
     "HAVE_PARALLEL=1"
@@ -49,11 +41,6 @@ libretro.mkLibretroCore (finalAttrs: {
   # Upstream issue: https://gitlab.com/parallel-launcher/parallel-n64/-/issues/18
   env.NIX_CFLAGS_COMPILE = "-std=gnu17";
 
-  postPatch = lib.optionalString stdenv.hostPlatform.isAarch64 ''
-    sed -i -e '1 i\CPUFLAGS += -DARM_FIX -DNO_ASM -DARM_ASM -DDONT_WANT_ARM_OPTIMIZATIONS -DARM64' Makefile \
-    && sed -i -e 's,CPUFLAGS  :=,,g' Makefile
-  '';
-
   preInstall =
     let
       suffix = stdenv.hostPlatform.extensions.sharedLibrary;
@@ -62,18 +49,34 @@ libretro.mkLibretroCore (finalAttrs: {
       mv parallel_n64_libretro${suffix} parallel_n64_next_libretro${suffix}
     '';
 
+  core = "parallel-n64-next";
+
+  extraBuildInputs = [
+    libGLU
+    libGL
+    libpng
+  ];
+
+  extraNativeBuildInputs = [
+    pkg-config
+  ];
+
+  makefile = "Makefile";
   passthru.updateScript = { };
 
   meta = {
     description = "Fork of libretro's parallel-n64 core designed to be used with Parallel Launcher";
     homepage = "https://gitlab.com/parallel-launcher/parallel-n64";
     license = lib.licenses.gpl3Only;
-    teams = [ ];
+
     maintainers = with lib.maintainers; [
       WheelsForReals
     ];
+
     badPlatforms = [
       "aarch64-linux"
     ];
+
+    teams = [ ];
   };
 })

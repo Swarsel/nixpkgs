@@ -1,7 +1,7 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
+  rustPlatform,
 }:
 rustPlatform.buildRustPackage (oldAttrs: {
   pname = "yggdrasil-ng";
@@ -15,17 +15,18 @@ rustPlatform.buildRustPackage (oldAttrs: {
   };
 
   cargoHash = "sha256-eA5tXPqZJnRIYQGxmjOA8esDV8u74afWMfZ9bn9PsWE=";
-
   __structuredAttrs = true;
 
   meta = {
-    mainProgram = "telemt";
     description = "Yggdrasil Network rewritten in Rust";
     homepage = "https://github.com/Revertron/Yggdrasil-ng";
     license = with lib.licenses; [ mpl20 ];
+
     maintainers = with lib.maintainers; [
       r4v3n6101
       malik
     ];
+
+    mainProgram = "telemt";
   };
 })

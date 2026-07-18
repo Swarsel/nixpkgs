@@ -1,26 +1,19 @@
 {
   lib,
   stdenv,
-  cmake,
   fetchFromGitHub,
+  cmake,
   freetype,
   gtk3-x11,
+  libx11,
+  libxrandr,
   pcre2,
   pkg-config,
   webkitgtk_4_1,
-  libxrandr,
-  libx11,
 }:
 stdenv.mkDerivation (finalAttrs: {
   pname = "rnnoise-plugin";
   version = "1.10";
-  outputs = [
-    "out"
-    "ladspa"
-    "lv2"
-    "lxvst"
-    "vst3"
-  ];
 
   src = fetchFromGitHub {
     owner = "werman";
@@ -29,14 +22,22 @@ stdenv.mkDerivation (finalAttrs: {
     sha256 = "sha256-sfwHd5Fl2DIoGuPDjELrPp5KpApZJKzQikCJmCzhtY8=";
   };
 
-  nativeBuildInputs = [
-    cmake
-    pkg-config
+  outputs = [
+    "out"
+    "ladspa"
+    "lv2"
+    "lxvst"
+    "vst3"
   ];
 
   patches = lib.optionals stdenv.hostPlatform.isDarwin [
     # Ubsan seems to be broken on aarch64-darwin, it produces linker errors similar to https://github.com/NixOS/nixpkgs/issues/140751
     ./disable-ubsan.patch
+  ];
+
+  nativeBuildInputs = [
+    cmake
+    pkg-config
   ];
 
   buildInputs = [
@@ -63,11 +64,13 @@ stdenv.mkDerivation (finalAttrs: {
     description = "Real-time noise suppression plugin for voice based on Xiph's RNNoise";
     homepage = "https://github.com/werman/noise-suppression-for-voice";
     license = lib.licenses.gpl3;
-    platforms = lib.platforms.all;
+
     maintainers = with lib.maintainers; [
       panaeon
       henrikolsson
       sciencentistguy
     ];
+
+    platforms = lib.platforms.all;
   };
 })

@@ -1,16 +1,16 @@
 {
-  buildDunePackage,
-  conan,
-  cachet,
   alcotest,
+  buildDunePackage,
+  cachet,
+  conan,
   crowbar,
   fmt,
   rresult,
 }:
 
 buildDunePackage {
-  pname = "conan-unix";
   inherit (conan) version src meta;
+  pname = "conan-unix";
 
   propagatedBuildInputs = [
     cachet

@@ -1,25 +1,21 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # build-system
-  poetry-core,
-
+  buildPythonPackage,
   # dependencies
   emoji,
+  # build-system
+  poetry-core,
+  # nativeCheckInputs
+  pytestCheckHook,
   python-yakh,
   questo,
   rich,
-
-  # nativeCheckInputs
-  pytestCheckHook,
 }:
 
 buildPythonPackage rec {
   pname = "beaupy";
   version = "3.12.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "petereon";
@@ -27,6 +23,10 @@ buildPythonPackage rec {
     rev = "v${version}";
     hash = "sha256-9iJZFOtQ6UTc8i4cN4soEG0SLcljenAQwq0wfK6r/Rw=";
   };
+
+  nativeCheckInputs = [
+    pytestCheckHook
+  ];
 
   build-system = [
     poetry-core
@@ -39,12 +39,10 @@ buildPythonPackage rec {
     rich
   ];
 
+  pyproject = true;
+
   pythonImportsCheck = [
     "beaupy"
-  ];
-
-  nativeCheckInputs = [
-    pytestCheckHook
   ];
 
   meta = {

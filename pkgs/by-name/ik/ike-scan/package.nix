@@ -1,10 +1,10 @@
 {
   lib,
-  autoreconfHook,
+  stdenv,
   fetchFromGitHub,
+  autoreconfHook,
   fetchpatch,
   openssl,
-  stdenv,
 }:
 
 stdenv.mkDerivation {
@@ -21,9 +21,9 @@ stdenv.mkDerivation {
   patches = [
     # Using the same patches as for the Fedora RPM
     (fetchpatch {
+      hash = "sha256-VVJZSTZfDV0qHuxdNoZV1NXJYCEMtB0bO1oi2hLCeXE=";
       # Memory leaks, https://github.com/royhills/ike-scan/pull/15
       url = "https://github.com/royhills/ike-scan/pull/15/commits/d864811de08dcddd65ac9b8d0f2acf5d7ddb9dea.patch";
-      hash = "sha256-VVJZSTZfDV0qHuxdNoZV1NXJYCEMtB0bO1oi2hLCeXE=";
     })
   ];
 
@@ -36,13 +36,15 @@ stdenv.mkDerivation {
 
   meta = {
     description = "Tool to discover, fingerprint and test IPsec VPN servers";
+
     longDescription = ''
       ike-scan is a command-line tool that uses the IKE protocol to discover,
       fingerprint and test IPsec VPN servers.
     '';
+
     homepage = "https://github.com/royhills/ike-scan";
     license = lib.licenses.gpl3Plus;
-    platforms = lib.platforms.linux;
     maintainers = with lib.maintainers; [ fab ];
+    platforms = lib.platforms.linux;
   };
 }

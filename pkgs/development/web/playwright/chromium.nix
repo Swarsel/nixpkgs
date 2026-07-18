@@ -1,50 +1,50 @@
 {
-  runCommand,
-  makeWrapper,
-  fontconfig_file,
-  chromium,
-  fetchzip,
-  revision,
-  browserVersion,
-  system,
-  throwSystem,
   lib,
+  stdenv,
   alsa-lib,
   at-spi2-atk,
   atk,
   autoPatchelfHook,
+  browserVersion,
   cairo,
+  chromium,
   cups,
   dbus,
   expat,
+  fetchzip,
+  fontconfig_file,
   glib,
   gobject-introspection,
   libGL,
   libgbm,
   libgcc,
+  libx11,
+  libxcb,
+  libxcomposite,
+  libxdamage,
+  libxext,
+  libxfixes,
   libxkbcommon,
+  libxrandr,
+  makeWrapper,
   nspr,
   nss,
   pango,
   patchelf,
   pciutils,
-  stdenv,
+  revision,
+  runCommand,
+  system,
   systemd,
+  throwSystem,
   vulkan-loader,
-  libxrandr,
-  libxfixes,
-  libxext,
-  libxdamage,
-  libxcomposite,
-  libx11,
-  libxcb,
   ...
 }:
 let
   download =
     (import ./browser-downloads.nix {
-      name = "chromium";
       inherit revision browserVersion;
+      name = "chromium";
     }).${system} or throwSystem;
 
   # Playwright expects different directory names for different architectures:
@@ -52,19 +52,19 @@ let
   # - linux-arm64 expects: chrome-linux
   chromeDir =
     {
-      x86_64-linux = "chrome-linux64";
       aarch64-linux = "chrome-linux";
+      x86_64-linux = "chrome-linux64";
     }
     .${system} or throwSystem;
 
   chromium-linux = stdenv.mkDerivation {
-    name = "playwright-chromium";
     src = fetchzip {
       inherit (download) url stripRoot;
+
       hash =
         {
-          x86_64-linux = "sha256-/0OwT0Asm4A/rUkFruw1JYWbDInFJPuDX0CEdNjeMLo=";
           aarch64-linux = "sha256-5vNF1/utXGctixYJj/0qvi6X0qklIG9XCcet94feQoA=";
+          x86_64-linux = "sha256-/0OwT0Asm4A/rUkFruw1JYWbDInFJPuDX0CEdNjeMLo=";
         }
         .${system} or throwSystem;
     };
@@ -74,6 +74,7 @@ let
       patchelf
       makeWrapper
     ];
+
     buildInputs = [
       alsa-lib
       at-spi2-atk
@@ -114,20 +115,23 @@ let
       runHook postInstall
     '';
 
+    postFixup = ''
+      # replace bundled vulkan-loader since we are also already adding our own to RPATH
+      rm "$out/${chromeDir}/libvulkan.so.1"
+      ln -s -t "$out/${chromeDir}" "${lib.getLib vulkan-loader}/lib/libvulkan.so.1"
+    '';
+
     appendRunpaths = lib.makeLibraryPath [
       libGL
       vulkan-loader
       pciutils
     ];
 
-    postFixup = ''
-      # replace bundled vulkan-loader since we are also already adding our own to RPATH
-      rm "$out/${chromeDir}/libvulkan.so.1"
-      ln -s -t "$out/${chromeDir}" "${lib.getLib vulkan-loader}/lib/libvulkan.so.1"
-    '';
+    name = "playwright-chromium";
   };
   chromium-darwin = fetchzip {
     inherit (download) url stripRoot;
+
     hash =
       {
         aarch64-darwin = "sha256-aJbvZQ1hY0FfDC+ZktfW2yNW3nwc0kh/P30+n/cmLf0=";
@@ -136,8 +140,8 @@ let
   };
 in
 {
-  x86_64-linux = chromium-linux;
-  aarch64-linux = chromium-linux;
   aarch64-darwin = chromium-darwin;
+  aarch64-linux = chromium-linux;
+  x86_64-linux = chromium-linux;
 }
 .${system} or throwSystem

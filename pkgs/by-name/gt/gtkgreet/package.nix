@@ -1,18 +1,18 @@
 {
-  stdenv,
   lib,
-  fetchFromSourcehut,
-  wrapGAppsHook3,
-  pkg-config,
+  stdenv,
   cmake,
-  meson,
-  ninja,
-  gtk3,
+  fetchFromSourcehut,
   gtk-layer-shell,
+  gtk3,
   json_c,
   librsvg,
-  scdoc,
+  meson,
+  ninja,
   nix-update-script,
+  pkg-config,
+  scdoc,
+  wrapGAppsHook3,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -26,7 +26,11 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-GKBYql0hzqB6uY87SsAqHwf3qLAr7xznMnAjRtP4HS8=";
   };
 
-  depsBuildBuild = [ pkg-config ];
+  postPatch = ''
+    substituteInPlace meson.build \
+      --replace "dependency('scdoc'," "dependency('scdoc', native:true,"
+  '';
+
   nativeBuildInputs = [
     pkg-config
     meson
@@ -47,14 +51,9 @@ stdenv.mkDerivation (finalAttrs: {
     "-Dlayershell=enabled"
   ];
 
-  postPatch = ''
-    substituteInPlace meson.build \
-      --replace "dependency('scdoc'," "dependency('scdoc', native:true,"
-  '';
-
   # G_APPLICATION_FLAGS_NONE is deprecated in GLib 2.73.3+.
   env.NIX_CFLAGS_COMPILE = "-Wno-error=deprecated-declarations";
-
+  depsBuildBuild = [ pkg-config ];
   passthru.updateScript = nix-update-script { };
 
   meta = {

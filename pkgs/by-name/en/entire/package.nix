@@ -1,12 +1,12 @@
 {
   lib,
-  buildGoModule,
-  fetchFromGitHub,
-  installShellFiles,
-  git,
   stdenv,
-  writableTmpDirAsHomeHook,
+  fetchFromGitHub,
+  buildGoModule,
+  git,
+  installShellFiles,
   nix-update-script,
+  writableTmpDirAsHomeHook,
 }:
 
 buildGoModule (finalAttrs: {
@@ -20,17 +20,8 @@ buildGoModule (finalAttrs: {
     hash = "sha256-luxUyIScUCY/hd2vp32HcItRd3xfra+SDYdzf3q8Dv0=";
   };
 
-  vendorHash = "sha256-N8VH9uHPfF+WX1LF6ysV+mkhgpb81Txz1Y68+DoxQ3A=";
-
-  subPackages = [ "cmd/entire" ];
-
-  ldflags = [
-    "-s"
-    "-X=github.com/entireio/cli/cmd/entire/cli/versioninfo.Version=${finalAttrs.version}"
-    "-X=github.com/entireio/cli/cmd/entire/cli/versioninfo.Commit=${finalAttrs.src.rev}"
-  ];
-
   nativeBuildInputs = [ installShellFiles ];
+  vendorHash = "sha256-N8VH9uHPfF+WX1LF6ysV+mkhgpb81Txz1Y68+DoxQ3A=";
 
   nativeCheckInputs = [
     git
@@ -44,23 +35,34 @@ buildGoModule (finalAttrs: {
       --zsh <($out/bin/entire completion zsh)
   '';
 
+  ldflags = [
+    "-s"
+    "-X=github.com/entireio/cli/cmd/entire/cli/versioninfo.Version=${finalAttrs.version}"
+    "-X=github.com/entireio/cli/cmd/entire/cli/versioninfo.Commit=${finalAttrs.src.rev}"
+  ];
+
+  subPackages = [ "cmd/entire" ];
   passthru.updateScript = nix-update-script { };
 
   meta = {
     description = "CLI tool that captures AI agent sessions alongside git commits";
+
     longDescription = ''
       Entire hooks into your git workflow to capture AI agent sessions on every
       push. Sessions are indexed alongside commits, creating a searchable record
       of how code was written in your repo.
     '';
+
     homepage = "https://github.com/entireio/cli";
     changelog = "https://github.com/entireio/cli/blob/${finalAttrs.src.tag}/CHANGELOG.md";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       iamanaws
       sheeeng
       squishykid
     ];
+
     mainProgram = "entire";
   };
 })

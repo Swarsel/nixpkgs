@@ -1,8 +1,8 @@
 {
   lib,
   stdenv,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   installShellFiles,
   nix-update-script,
 }:
@@ -18,14 +18,8 @@ buildGoModule (finalAttrs: {
     hash = "sha256-xzwgNuvEedqC0DS0cMi472x2Tx0mWdk+22E9Bz1G9Tk=";
   };
 
-  vendorHash = "sha256-AJQQVhrYhgazCwI2Dnvorj4Y78iwVO7mhx1gzZUA9BI=";
   nativeBuildInputs = [ installShellFiles ];
-  subPackages = [ "cmd/doggo" ];
-
-  ldflags = [
-    "-s"
-    "-X main.buildVersion=v${finalAttrs.version}"
-  ];
+  vendorHash = "sha256-AJQQVhrYhgazCwI2Dnvorj4Y78iwVO7mhx1gzZUA9BI=";
 
   postInstall = lib.optionalString (stdenv.buildPlatform.canExecute stdenv.hostPlatform) ''
     installShellCompletion --cmd doggo \
@@ -34,20 +28,30 @@ buildGoModule (finalAttrs: {
       --zsh <($out/bin/doggo completions zsh)
   '';
 
+  ldflags = [
+    "-s"
+    "-X main.buildVersion=v${finalAttrs.version}"
+  ];
+
+  subPackages = [ "cmd/doggo" ];
   passthru.updateScript = nix-update-script { };
 
   meta = {
-    homepage = "https://github.com/mr-karan/doggo";
     description = "Command-line DNS Client for Humans. Written in Golang";
-    mainProgram = "doggo";
+
     longDescription = ''
       doggo is a modern command-line DNS client (like dig) written in Golang.
       It outputs information in a neat concise manner and supports protocols like DoH, DoT, DoQ, and DNSCrypt as well
     '';
+
+    homepage = "https://github.com/mr-karan/doggo";
     license = lib.licenses.gpl3Only;
+
     maintainers = with lib.maintainers; [
       georgesalkhouri
       ma27
     ];
+
+    mainProgram = "doggo";
   };
 })

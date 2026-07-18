@@ -1,12 +1,12 @@
 {
   lib,
+  fetchFromGitHub,
   aiohttp,
   buildPythonPackage,
-  fetchFromGitHub,
   hatchling,
-  pytestCheckHook,
   pytest-asyncio,
   pytest-vcr,
+  pytestCheckHook,
   vcrpy,
   yarl,
 }:
@@ -14,7 +14,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "asyncprawcore";
   version = "4.0.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "praw-dev";
@@ -23,18 +22,18 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-kpqd6H8uiqp4rM+8B+qJxfslrY5uvRTEARwh/0runIg=";
   };
 
-  build-system = [ hatchling ];
-
-  dependencies = [
-    aiohttp
-    yarl
-  ];
-
   nativeCheckInputs = [
     pytestCheckHook
     pytest-asyncio
     pytest-vcr
     vcrpy
+  ];
+
+  build-system = [ hatchling ];
+
+  dependencies = [
+    aiohttp
+    yarl
   ];
 
   disabledTestPaths = [
@@ -48,6 +47,7 @@ buildPythonPackage (finalAttrs: {
     "test_initialize"
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "asyncprawcore" ];
 
   meta = {

@@ -4,26 +4,24 @@
   fetchurl,
   autoreconfHook,
   libuuid,
-  zlib,
-
   # tests
   mu,
   perlPackages,
   python3,
   xapian-omega,
+  zlib,
 }:
 
 let
   generic =
     version: hash:
     stdenv.mkDerivation {
-      pname = "xapian";
       inherit version;
-      passthru = { inherit version; };
+      pname = "xapian";
 
       src = fetchurl {
-        url = "https://oligarchy.co.uk/xapian/${version}/xapian-core-${version}.tar.xz";
         inherit hash;
+        url = "https://oligarchy.co.uk/xapian/${version}/xapian-core-${version}.tar.xz";
       };
 
       outputs = [
@@ -32,15 +30,12 @@ let
         "doc"
       ];
 
+      nativeBuildInputs = [ autoreconfHook ];
+
       buildInputs = [
         libuuid
         zlib
       ];
-      nativeBuildInputs = [ autoreconfHook ];
-
-      enableParallelBuilding = true;
-
-      doCheck = true;
 
       env = {
         AUTOMATED_TESTING = true; # https://trac.xapian.org/changeset/8be35f5e1/git
@@ -55,6 +50,10 @@ let
         substituteInPlace config.h \
           --replace "#define HAVE___EXP10 1" "#undef HAVE___EXP10"
       '';
+
+      doCheck = true;
+      enableParallelBuilding = true;
+      passthru = { inherit version; };
 
       passthru.tests = {
         inherit mu xapian-omega;

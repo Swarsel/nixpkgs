@@ -1,24 +1,10 @@
 {
   lib,
   stdenv,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # build-system
-  setuptools,
-  setuptools-scm,
-
-  # dependencies
-  numpy,
-  packaging,
-  pandas,
-  pydantic,
-  typeguard,
-  typing-extensions,
-  typing-inspect,
-
   # optional-dependencies
   black,
+  buildPythonPackage,
   dask,
   duckdb,
   fastapi,
@@ -26,26 +12,35 @@
   geopandas,
   hypothesis,
   ibis-framework,
-  pandas-stubs,
-  polars,
-  pyyaml,
-  scipy,
-  shapely,
-
   # tests
   joblib,
-  pyarrow-hotfix,
+  # dependencies
+  numpy,
+  packaging,
+  pandas,
+  pandas-stubs,
+  polars,
   pyarrow,
+  pyarrow-hotfix,
+  pydantic,
   pytest-asyncio,
   pytestCheckHook,
   pythonAtLeast,
+  pyyaml,
   rich,
+  scipy,
+  # build-system
+  setuptools,
+  setuptools-scm,
+  shapely,
+  typeguard,
+  typing-extensions,
+  typing-inspect,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "pandera";
   version = "0.30.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "unionai-oss";
@@ -53,6 +48,16 @@ buildPythonPackage (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-JmD8p0Syt/Tgf9LiMWeug1dSPp4cyd7BtBfo6yi08xg=";
   };
+
+  nativeCheckInputs = [
+    joblib
+    pyarrow
+    pyarrow-hotfix
+    pytest-asyncio
+    pytestCheckHook
+    rich
+  ]
+  ++ finalAttrs.passthru.optional-dependencies.all;
 
   build-system = [
     setuptools
@@ -66,61 +71,6 @@ buildPythonPackage (finalAttrs: {
     typing-extensions
     typing-inspect
   ];
-
-  optional-dependencies =
-    let
-      dask-dataframe = [ dask ] ++ dask.optional-dependencies.dataframe;
-      extras = {
-        strategies = [ hypothesis ];
-        hypotheses = [ scipy ];
-        io = [
-          pyyaml
-          black
-          frictionless
-        ];
-        # pyspark expression does not define optional-dependencies.connect:
-        #pyspark = [ pyspark ] ++ pyspark.optional-dependencies.connect;
-        # modin not in nixpkgs:
-        #modin = [
-        #  modin
-        #  ray
-        #] ++ dask-dataframe;
-        #modin-ray = [
-        #  modin
-        #  ray
-        #];
-        #modin-dask = [
-        #  modin
-        #] ++ dask-dataframe;
-        dask = dask-dataframe;
-        mypy = [ pandas-stubs ];
-        fastapi = [ fastapi ];
-        geopandas = [
-          geopandas
-          shapely
-        ];
-        ibis = [
-          ibis-framework
-          duckdb
-        ];
-        pandas = [
-          numpy
-          pandas
-        ];
-        polars = [ polars ];
-      };
-    in
-    extras // { all = lib.concatLists (lib.attrValues extras); };
-
-  nativeCheckInputs = [
-    joblib
-    pyarrow
-    pyarrow-hotfix
-    pytest-asyncio
-    pytestCheckHook
-    rich
-  ]
-  ++ finalAttrs.passthru.optional-dependencies.all;
 
   disabledTestPaths = [
     "tests/fastapi/test_app.py" # tries to access network
@@ -154,6 +104,60 @@ buildPythonPackage (finalAttrs: {
     # AssertionError: assert DataType(Sparse[float64, nan]) == DataType(Sparse[float64, nan])
     "test_legacy_default_pandas_extension_dtype"
   ];
+
+  optional-dependencies =
+    let
+      dask-dataframe = [ dask ] ++ dask.optional-dependencies.dataframe;
+      extras = {
+        # pyspark expression does not define optional-dependencies.connect:
+        #pyspark = [ pyspark ] ++ pyspark.optional-dependencies.connect;
+        # modin not in nixpkgs:
+        #modin = [
+        #  modin
+        #  ray
+        #] ++ dask-dataframe;
+        #modin-ray = [
+        #  modin
+        #  ray
+        #];
+        #modin-dask = [
+        #  modin
+        #] ++ dask-dataframe;
+        dask = dask-dataframe;
+        fastapi = [ fastapi ];
+
+        geopandas = [
+          geopandas
+          shapely
+        ];
+
+        hypotheses = [ scipy ];
+
+        ibis = [
+          ibis-framework
+          duckdb
+        ];
+
+        io = [
+          pyyaml
+          black
+          frictionless
+        ];
+
+        mypy = [ pandas-stubs ];
+
+        pandas = [
+          numpy
+          pandas
+        ];
+
+        polars = [ polars ];
+        strategies = [ hypothesis ];
+      };
+    in
+    extras // { all = lib.concatLists (lib.attrValues extras); };
+
+  pyproject = true;
 
   pythonImportsCheck = [
     "pandera"

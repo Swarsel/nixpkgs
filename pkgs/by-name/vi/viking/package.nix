@@ -2,40 +2,40 @@
   lib,
   stdenv,
   fetchurl,
+  curl,
   desktopToDarwinBundle,
   docbook_xml_dtd_45,
   docbook_xsl,
+  file,
+  gdk-pixbuf,
+  geoclue2,
+  gexiv2,
+  gpsbabel,
+  gpsd,
+  gtk3,
   intltool,
   itstool,
-  libxslt,
-  pkg-config,
-  wrapGAppsHook3,
-  xxd,
-  yelp-tools,
-  curl,
-  gdk-pixbuf,
-  gtk3,
   json-glib,
   libnova,
-  libxml2,
-  gpsbabel,
-  withGeoClue ? true,
-  geoclue2,
-  withGeoTag ? true,
-  gexiv2,
-  withMagic ? true,
-  file,
-  withMapnik ? false,
-  mapnik,
-  withMBTiles ? true,
-  sqlite,
-  withMd5Hash ? true,
-  nettle,
-  withOAuth ? true,
   liboauth,
-  withRealtimeGPSTracking ? (!stdenv.hostPlatform.isDarwin),
-  gpsd,
+  libxml2,
+  libxslt,
+  mapnik,
+  nettle,
+  pkg-config,
+  sqlite,
+  wrapGAppsHook3,
+  xxd,
   xz,
+  yelp-tools,
+  withGeoClue ? true,
+  withGeoTag ? true,
+  withMBTiles ? true,
+  withMagic ? true,
+  withMapnik ? false,
+  withMd5Hash ? true,
+  withOAuth ? true,
+  withRealtimeGPSTracking ? (!stdenv.hostPlatform.isDarwin),
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -99,7 +99,7 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "GPS data editor and analyzer";
-    mainProgram = "viking";
+
     longDescription = ''
       Viking is a free/open source program to manage GPS data.  You
       can import and plot tracks and waypoints, show Openstreetmaps
@@ -107,12 +107,16 @@ stdenv.mkDerivation (finalAttrs: {
       on the map, make new tracks and waypoints, see real-time GPS
       position, etc.
     '';
+
     homepage = "https://sourceforge.net/projects/viking/";
     license = lib.licenses.gpl2Plus;
+
     maintainers = with lib.maintainers; [
       pSub
       sikmir
     ];
+
     platforms = with lib.platforms; unix;
+    mainProgram = "viking";
   };
 })

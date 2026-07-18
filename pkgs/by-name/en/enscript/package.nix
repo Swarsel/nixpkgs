@@ -23,8 +23,8 @@ stdenv.mkDerivation (finalAttrs: {
     # Fix build with gcc15
     #   regex.c:3565:13: error: too many arguments to function 're_match_2_internal'; expected 0, have 8
     (fetchpatch2 {
-      url = "https://salsa.debian.org/debian/enscript/-/raw/7a51479540a210dee5eee4ece5b54e3ce15dec52/debian/patches/1096582-gcc-15";
       hash = "sha256-0H8FNCKgQ1YCwcBaMChQSuFaYlmzSsoqtfsNSr567+Y=";
+      url = "https://salsa.debian.org/debian/enscript/-/raw/7a51479540a210dee5eee4ece5b54e3ce15dec52/debian/patches/1096582-gcc-15";
     })
   ];
 
@@ -36,12 +36,10 @@ stdenv.mkDerivation (finalAttrs: {
        __private_extern__  '__attribute__ ((visibility ("hidden")))'
   '';
 
-  buildInputs = [ gettext ];
-
-  doCheck = true;
-
-  __structuredAttrs = true;
   strictDeps = true;
+  buildInputs = [ gettext ];
+  doCheck = true;
+  __structuredAttrs = true;
 
   meta = {
     description = "Converter from ASCII to PostScript, HTML, or RTF";
@@ -57,10 +55,8 @@ stdenv.mkDerivation (finalAttrs: {
       it has many options that can be used to customize printouts.
     '';
 
-    license = lib.licenses.gpl3Plus;
-
     homepage = "https://www.gnu.org/software/enscript/";
-
+    license = lib.licenses.gpl3Plus;
     maintainers = with lib.maintainers; [ aiyion ];
     platforms = lib.platforms.all;
     mainProgram = "enscript";

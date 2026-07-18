@@ -7,7 +7,6 @@
 buildPythonPackage rec {
   pname = "progressbar33";
   version = "2.4";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
@@ -16,10 +15,11 @@ buildPythonPackage rec {
 
   # no tests implemented
   doCheck = false;
+  format = "setuptools";
 
   meta = {
-    homepage = "https://pypi.org/project/progressbar33/";
     description = "Text progressbar library for python";
+    homepage = "https://pypi.org/project/progressbar33/";
     license = lib.licenses.lgpl3Plus;
     maintainers = with lib.maintainers; [ twey ];
   };

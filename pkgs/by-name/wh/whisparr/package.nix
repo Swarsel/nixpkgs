@@ -1,19 +1,17 @@
 {
   lib,
   stdenv,
-
+  fetchurl,
   curl,
   dotnet-runtime,
-  fetchurl,
   icu,
   libmediainfo,
   makeWrapper,
   mono,
+  nixosTests,
   openssl,
   sqlite,
   zlib,
-
-  nixosTests,
 }:
 
 let
@@ -40,22 +38,12 @@ stdenv.mkDerivation rec {
   version = "2.0.0.2151";
 
   src = fetchurl {
-    name = "${pname}-${arch}-${os}-${version}.tar.gz";
-    url = "https://whisparr.servarr.com/v1/update/nightly/updatefile?runtime=netcore&version=${version}&arch=${arch}&os=${os}";
     inherit hash;
+    url = "https://whisparr.servarr.com/v1/update/nightly/updatefile?runtime=netcore&version=${version}&arch=${arch}&os=${os}";
+    name = "${pname}-${arch}-${os}-${version}.tar.gz";
   };
 
   nativeBuildInputs = [ makeWrapper ];
-
-  runtimeLibs = lib.makeLibraryPath [
-    curl
-    icu
-    libmediainfo
-    mono
-    openssl
-    sqlite
-    zlib
-  ];
 
   installPhase = ''
     runHook preInstall
@@ -72,9 +60,19 @@ stdenv.mkDerivation rec {
     runHook postInstall
   '';
 
+  runtimeLibs = lib.makeLibraryPath [
+    curl
+    icu
+    libmediainfo
+    mono
+    openssl
+    sqlite
+    zlib
+  ];
+
   passthru = {
-    updateScript = ./update.sh;
     tests.smoke-test = nixosTests.whisparr;
+    updateScript = ./update.sh;
   };
 
   meta = {
@@ -82,13 +80,15 @@ stdenv.mkDerivation rec {
     homepage = "https://wiki.servarr.com/en/whisparr";
     changelog = "https://whisparr.servarr.com/v1/update/nightly/changes";
     license = lib.licenses.gpl3Only;
+    sourceProvenance = [ lib.sourceTypes.binaryNativeCode ];
+    maintainers = [ ];
+
     platforms = [
       "aarch64-darwin"
       "aarch64-linux"
       "x86_64-linux"
     ];
-    sourceProvenance = [ lib.sourceTypes.binaryNativeCode ];
+
     mainProgram = "Whisparr";
-    maintainers = [ ];
   };
 }

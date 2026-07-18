@@ -1,12 +1,10 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
+  buildPythonPackage,
   # build-system
   hatch-vcs,
   hatchling,
-
   # dependencies
   tomlkit,
 }:
@@ -14,7 +12,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "hatch-min-requirements";
   version = "0.2.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "tlambert03";
@@ -22,6 +19,9 @@ buildPythonPackage (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-QKO5fVvjSqwY+48Fc8sAiZazrxZ4eBYxzVElHr2lcEA=";
   };
+
+  # As of v0.1.0 all tests attempt to use the network
+  doCheck = false;
 
   build-system = [
     hatchling
@@ -32,9 +32,7 @@ buildPythonPackage (finalAttrs: {
     tomlkit
   ];
 
-  # As of v0.1.0 all tests attempt to use the network
-  doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "hatch_min_requirements" ];
 
   meta = {
@@ -42,6 +40,7 @@ buildPythonPackage (finalAttrs: {
     homepage = "https://github.com/tlambert03/hatch-min-requirements";
     changelog = "https://github.com/tlambert03/hatch-min-requirements/releases/tag/${finalAttrs.src.tag}";
     license = lib.licenses.bsd3;
+
     maintainers = with lib.maintainers; [
       samuela
     ];

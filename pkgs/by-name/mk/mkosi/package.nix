@@ -1,42 +1,40 @@
 {
   lib,
-  python3Packages,
-  fetchFromGitHub,
   stdenv,
-  systemd,
-  pandoc,
-  kmod,
-  gnutar,
-  util-linux,
-  cpio,
+  fetchFromGitHub,
   bash,
-  coreutils,
   btrfs-progs,
+  coreutils,
+  cpio,
+  gnutar,
+  kmod,
   libseccomp,
-  replaceVars,
-  udevCheckHook,
-
-  # Optional dependencies
-  withQemu ? false,
+  pandoc,
+  python3Packages,
   qemu,
-
+  replaceVars,
+  systemd,
+  udevCheckHook,
+  util-linux,
   # Workaround for supporting providing additional package manager
   # dependencies in the recursive use in the binary path.
   # This can / should be removed once the `finalAttrs` pattern is
   # available for Python packages.
   extraDeps ? [ ],
+  # Optional dependencies
+  withQemu ? false,
 }:
 let
   # For systemd features used by mkosi, see
   # https://github.com/systemd/mkosi/blob/19bb5e274d9a9c23891905c4bcbb8f68955a701d/action.yaml#L64-L72
   systemdForMkosi = systemd.override {
-    withRepart = true;
     withBootloader = true;
-    withSysusers = true;
-    withFirstboot = true;
     withEfi = true;
-    withUkify = true;
+    withFirstboot = true;
     withKernelInstall = true;
+    withRepart = true;
+    withSysusers = true;
+    withUkify = true;
   };
 
   pythonWithPefile = python3Packages.python.withPackages (ps: [ ps.pefile ]);
@@ -59,12 +57,6 @@ in
 python3Packages.buildPythonApplication (finalAttrs: {
   pname = "mkosi";
   version = "26";
-  pyproject = true;
-
-  outputs = [
-    "out"
-    "man"
-  ];
 
   src = fetchFromGitHub {
     owner = "systemd";
@@ -73,12 +65,17 @@ python3Packages.buildPythonApplication (finalAttrs: {
     hash = "sha256-6DVIyFsEV2VkQ/kesn6cN+iH9MW+mmAZw5i0R5C4xaU=";
   };
 
+  outputs = [
+    "out"
+    "man"
+  ];
+
   patches = [
     (replaceVars ./0001-Use-wrapped-binaries-instead-of-Python-interpreter.patch {
-      UKIFY = "${systemdForMkosi}/lib/systemd/ukify";
-      PYTHON_PEFILE = lib.getExe pythonWithPefile;
-      NIX_PATH = toString (lib.makeBinPath deps);
       MKOSI_SANDBOX = null; # will be replaced in postPatch
+      NIX_PATH = toString (lib.makeBinPath deps);
+      PYTHON_PEFILE = lib.getExe pythonWithPefile;
+      UKIFY = "${systemdForMkosi}/lib/systemd/ukify";
     })
     (replaceVars ./0002-Fix-library-resolving.patch {
       LIBC = "${stdenv.cc.libc}/lib/libc.so.6";
@@ -105,8 +102,6 @@ python3Packages.buildPythonApplication (finalAttrs: {
     udevCheckHook
   ];
 
-  dependencies = deps;
-
   postBuild = ''
     ./tools/make-man-page.sh
   '';
@@ -120,16 +115,21 @@ python3Packages.buildPythonApplication (finalAttrs: {
     mv mkosi/resources/man/mkosi.1 $out/share/man/man1/
   '';
 
+  dependencies = deps;
+  pyproject = true;
+
   meta = {
     description = "Build legacy-free OS images";
     homepage = "https://github.com/systemd/mkosi";
     changelog = "https://github.com/systemd/mkosi/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.lgpl21Only;
-    mainProgram = "mkosi";
+
     maintainers = with lib.maintainers; [
       malt3
       msanft
     ];
+
     platforms = lib.platforms.linux;
+    mainProgram = "mkosi";
   };
 })

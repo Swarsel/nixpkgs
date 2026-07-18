@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   numpy,
   pillow,
   pytestCheckHook,
@@ -11,7 +11,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "epaper-dithering";
   version = "5.0.9";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "OpenDisplay";
@@ -20,7 +19,15 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-JG+UXE4T9HbjESGLzLjUhvYfqWwPHq+b+dENjq3eQrA=";
   };
 
-  sourceRoot = "${finalAttrs.src.name}/packages/python";
+  nativeBuildInputs = [
+    rustPlatform.cargoSetupHook
+    rustPlatform.maturinBuildHook
+  ];
+
+  nativeCheckInputs = [
+    numpy
+    pytestCheckHook
+  ];
 
   cargoDeps = rustPlatform.fetchCargoVendor {
     inherit (finalAttrs)
@@ -29,24 +36,17 @@ buildPythonPackage (finalAttrs: {
       src
       sourceRoot
       ;
+
     hash = "sha256-KXEDtl4k08jco8sG7cS9yM3iJkKWKZNF5Fb9+wHxhyc=";
   };
-
-  nativeBuildInputs = [
-    rustPlatform.cargoSetupHook
-    rustPlatform.maturinBuildHook
-  ];
 
   dependencies = [
     pillow
   ];
 
-  nativeCheckInputs = [
-    numpy
-    pytestCheckHook
-  ];
-
+  pyproject = true;
   pythonImportsCheck = [ "epaper_dithering" ];
+  sourceRoot = "${finalAttrs.src.name}/packages/python";
 
   meta = {
     description = "Dithering algorithms for e-paper/e-ink displays";

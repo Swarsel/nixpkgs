@@ -10,12 +10,11 @@
 buildPythonPackage (finalAttrs: {
   pname = "botocore-stubs";
   version = "1.43.14";
-  pyproject = true;
 
   src = fetchPypi {
-    pname = "botocore_stubs";
     inherit (finalAttrs) version;
     hash = "sha256-njvB/dUdp0c/DfcmyCdHobCukTRJ1illl2XCR/7MIDk=";
+    pname = "botocore_stubs";
   };
 
   build-system = [ setuptools ];
@@ -25,6 +24,7 @@ buildPythonPackage (finalAttrs: {
     typing-extensions
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "botocore-stubs" ];
 
   meta = {

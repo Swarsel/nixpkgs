@@ -1,21 +1,21 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
   cmake,
-  qttools,
-  perl,
   cpp-utilities,
-  qtutilities,
+  perl,
   qtbase,
+  qttools,
+  qtutilities,
 }:
 
 let
   fork_awesome_release = fetchFromGitHub {
+    hash = "sha256-zG6/0dWjU7/y/oDZuSEv+54Mchng64LVyV8bluskYzc=";
     owner = "ForkAwesome";
     repo = "Fork-Awesome";
     tag = "1.2.0";
-    hash = "sha256-zG6/0dWjU7/y/oDZuSEv+54Mchng64LVyV8bluskYzc=";
   };
 in
 stdenv.mkDerivation (finalAttrs: {
@@ -54,8 +54,8 @@ stdenv.mkDerivation (finalAttrs: {
   dontWrapQtApps = true;
 
   meta = {
-    homepage = "https://github.com/Martchus/qtforkawesome";
     description = "Library that bundles ForkAwesome for use within Qt applications";
+    homepage = "https://github.com/Martchus/qtforkawesome";
     license = lib.licenses.gpl2Plus;
     maintainers = with lib.maintainers; [ doronbehar ];
     platforms = lib.platforms.linux ++ lib.platforms.darwin;

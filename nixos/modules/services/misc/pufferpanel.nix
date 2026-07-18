@@ -1,7 +1,7 @@
 {
   config,
-  pkgs,
   lib,
+  pkgs,
   ...
 }:
 let
@@ -10,8 +10,8 @@ in
 {
   options.services.pufferpanel = {
     enable = lib.mkOption {
-      type = lib.types.bool;
       default = false;
+
       description = ''
         Whether to enable PufferPanel game management server.
 
@@ -36,41 +36,15 @@ in
         [PufferPanel templates]: https://github.com/PufferPanel/templates
         [FHS environment]: https://wikipedia.org/wiki/Filesystem_Hierarchy_Standard
       '';
+
+      type = lib.types.bool;
     };
 
     package = lib.mkPackageOption pkgs "pufferpanel" { };
 
-    extraGroups = lib.mkOption {
-      type = lib.types.listOf lib.types.str;
-      default = [ ];
-      example = [ "podman" ];
-      description = ''
-        Additional groups for the systemd service.
-      '';
-    };
-
-    extraPackages = lib.mkOption {
-      type = lib.types.listOf lib.types.package;
-      default = [ ];
-      example = lib.literalExpression "[ pkgs.jre ]";
-      description = ''
-        Packages to add to the PATH environment variable. Both the {file}`bin`
-        and {file}`sbin` subdirectories of each package are added.
-      '';
-    };
-
     environment = lib.mkOption {
-      type = lib.types.attrsOf lib.types.str;
       default = { };
-      example = lib.literalExpression ''
-        {
-          PUFFER_WEB_HOST = ":8080";
-          PUFFER_DAEMON_SFTP_HOST = ":5657";
-          PUFFER_DAEMON_CONSOLE_BUFFER = "1000";
-          PUFFER_DAEMON_CONSOLE_FORWARD = "true";
-          PUFFER_PANEL_REGISTRATIONENABLED = "false";
-        }
-      '';
+
       description = ''
         Environment variables to set for the service. Secrets should be
         specified using {option}`environmentFile`.
@@ -93,26 +67,61 @@ in
 
         [PufferPanel source code]: https://github.com/PufferPanel/PufferPanel/blob/master/config/entries.go
       '';
+
+      example = lib.literalExpression ''
+        {
+          PUFFER_WEB_HOST = ":8080";
+          PUFFER_DAEMON_SFTP_HOST = ":5657";
+          PUFFER_DAEMON_CONSOLE_BUFFER = "1000";
+          PUFFER_DAEMON_CONSOLE_FORWARD = "true";
+          PUFFER_PANEL_REGISTRATIONENABLED = "false";
+        }
+      '';
+
+      type = lib.types.attrsOf lib.types.str;
     };
 
     environmentFile = lib.mkOption {
-      type = lib.types.nullOr lib.types.path;
       default = null;
+
       description = ''
         File to load environment variables from. Loaded variables override
         values set in {option}`environment`.
       '';
+
+      type = lib.types.nullOr lib.types.path;
+    };
+
+    extraGroups = lib.mkOption {
+      default = [ ];
+
+      description = ''
+        Additional groups for the systemd service.
+      '';
+
+      example = [ "podman" ];
+      type = lib.types.listOf lib.types.str;
+    };
+
+    extraPackages = lib.mkOption {
+      default = [ ];
+
+      description = ''
+        Packages to add to the PATH environment variable. Both the {file}`bin`
+        and {file}`sbin` subdirectories of each package are added.
+      '';
+
+      example = lib.literalExpression "[ pkgs.jre ]";
+      type = lib.types.listOf lib.types.package;
     };
   };
 
   config = lib.mkIf cfg.enable {
     systemd.services.pufferpanel = {
-      description = "PufferPanel game management server";
-      wantedBy = [ "multi-user.target" ];
       after = [ "network.target" ];
-
-      path = cfg.extraPackages;
+      description = "PufferPanel game management server";
       environment = cfg.environment;
+      path = cfg.extraPackages;
 
       # Note that we export environment variables for service directories if the
       # value is not set. An empty environment variable is considered to be set.
@@ -127,64 +136,63 @@ in
               export ${name}="''${${name}-${value}}"
             '')
             {
-              PUFFER_LOGS = "$LOGS_DIRECTORY";
+              PUFFER_DAEMON_DATA_BINARIES = "$STATE_DIRECTORY/binaries";
               PUFFER_DAEMON_DATA_CACHE = "$CACHE_DIRECTORY";
               PUFFER_DAEMON_DATA_SERVERS = "$STATE_DIRECTORY/servers";
-              PUFFER_DAEMON_DATA_BINARIES = "$STATE_DIRECTORY/binaries";
+              PUFFER_LOGS = "$LOGS_DIRECTORY";
             }
         )}
         exec ${lib.getExe cfg.package} run --workDir "$STATE_DIRECTORY"
       '';
 
       serviceConfig = {
-        Type = "simple";
-        Restart = "always";
-
-        UMask = "0077";
-
-        SupplementaryGroups = cfg.extraGroups;
-
-        StateDirectory = "pufferpanel";
-        StateDirectoryMode = "0700";
         CacheDirectory = "pufferpanel";
         CacheDirectoryMode = "0700";
-        LogsDirectory = "pufferpanel";
-        LogsDirectoryMode = "0700";
-
+        CapabilityBoundingSet = [ "" ];
+        DeviceAllow = [ "" ];
+        DevicePolicy = "closed";
+        DynamicUser = true;
         EnvironmentFile = cfg.environmentFile;
-
         # Command "pufferpanel shutdown --pid $MAINPID" sends SIGTERM (code 15)
         # to the main process and waits for termination. This is essentially
         # KillMode=mixed we are using here. See
         # https://freedesktop.org/software/systemd/man/systemd.kill.html#KillMode=
         KillMode = "mixed";
-
-        DynamicUser = true;
-        ProtectHome = true;
-        ProtectProc = "invisible";
+        LockPersonality = true;
+        LogsDirectory = "pufferpanel";
+        LogsDirectoryMode = "0700";
+        PrivateDevices = true;
+        PrivateUsers = true;
         ProtectClock = true;
-        ProtectHostname = true;
         ProtectControlGroups = true;
+        ProtectHome = true;
+        ProtectHostname = true;
         ProtectKernelLogs = true;
         ProtectKernelModules = true;
         ProtectKernelTunables = true;
-        PrivateUsers = true;
-        PrivateDevices = true;
-        RestrictRealtime = true;
-        RestrictNamespaces = [
-          "user"
-          "mnt"
-        ]; # allow buildFHSEnv
+        ProtectProc = "invisible";
+        Restart = "always";
+
         RestrictAddressFamilies = [
           "AF_INET"
           "AF_INET6"
           "AF_UNIX"
         ];
-        LockPersonality = true;
-        DeviceAllow = [ "" ];
-        DevicePolicy = "closed";
-        CapabilityBoundingSet = [ "" ];
+
+        RestrictNamespaces = [
+          "user"
+          "mnt"
+        ]; # allow buildFHSEnv
+
+        RestrictRealtime = true;
+        StateDirectory = "pufferpanel";
+        StateDirectoryMode = "0700";
+        SupplementaryGroups = cfg.extraGroups;
+        Type = "simple";
+        UMask = "0077";
       };
+
+      wantedBy = [ "multi-user.target" ];
     };
   };
 

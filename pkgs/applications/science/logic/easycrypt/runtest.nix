@@ -1,16 +1,9 @@
-{ python3Packages, easycrypt }:
+{ easycrypt, python3Packages }:
 
 python3Packages.buildPythonApplication {
   inherit (easycrypt) src version;
-  pyproject = false;
-
   pname = "easycrypt-runtest";
-
-  dontConfigure = true;
-  dontBuild = true;
   doCheck = false;
-
-  pythonPath = with python3Packages; [ pyyaml ];
 
   installPhase = ''
     runHook preInstall
@@ -18,6 +11,11 @@ python3Packages.buildPythonApplication {
     cp scripts/testing/runtest $out/bin/ec-runtest
     runHook postInstall
   '';
+
+  dontBuild = true;
+  dontConfigure = true;
+  pyproject = false;
+  pythonPath = with python3Packages; [ pyyaml ];
 
   meta = easycrypt.meta // {
     description = "Testing program for EasyCrypt formalizations";

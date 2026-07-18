@@ -1,17 +1,16 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   hatchling,
   pydantic,
-  pytestCheckHook,
   pytest-cov-stub,
+  pytestCheckHook,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "camel-converter";
   version = "5.1.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "sanders41";
@@ -20,24 +19,25 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-7CqwpmRGHK7mkYoIS+3NwMtEqtdtnLB463OO2Dp0Ut0=";
   };
 
-  build-system = [ hatchling ];
-
-  optional-dependencies = {
-    pydantic = [ pydantic ];
-  };
-
   nativeCheckInputs = [
     pytestCheckHook
     pytest-cov-stub
   ]
   ++ lib.flatten (builtins.attrValues finalAttrs.passthru.optional-dependencies);
 
-  pythonImportsCheck = [ "camel_converter" ];
+  build-system = [ hatchling ];
 
   disabledTests = [
     # AttributeError: 'Test' object has no attribute 'model_dump'
     "test_camel_config"
   ];
+
+  optional-dependencies = {
+    pydantic = [ pydantic ];
+  };
+
+  pyproject = true;
+  pythonImportsCheck = [ "camel_converter" ];
 
   meta = {
     description = "Module to convert strings from snake case to camel case or camel case to snake case";

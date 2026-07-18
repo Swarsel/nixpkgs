@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule (finalAttrs: {
@@ -21,8 +21,8 @@ buildGoModule (finalAttrs: {
     description = "Mobile Device Management server for Apple Devices, focused on giving you all the power through an API";
     homepage = "https://github.com/micromdm/micromdm";
     license = lib.licenses.mit;
-    mainProgram = "micromdm";
-    platforms = lib.platforms.unix;
     maintainers = with lib.maintainers; [ neverbehave ];
+    platforms = lib.platforms.unix;
+    mainProgram = "micromdm";
   };
 })

@@ -16,30 +16,28 @@ stdenv.mkDerivation (finalAttrs: {
     sha256 = "GvEzv97DqCsaDWVqDpajQRWYe+WM8xCYmGE0D3UcSrM=";
   };
 
-  sourceRoot = "${finalAttrs.src.name}/ctrtool";
-
-  enableParallelBuilding = true;
+  # workaround for https://github.com/3DSGuy/Project_CTR/issues/145
+  env.NIX_CFLAGS_COMPILE = "-O0";
 
   preBuild = ''
     make -j $NIX_BUILD_CORES deps
   '';
-
-  # workaround for https://github.com/3DSGuy/Project_CTR/issues/145
-  env.NIX_CFLAGS_COMPILE = "-O0";
 
   installPhase = "
     mkdir $out/bin -p
     cp bin/ctrtool${stdenv.hostPlatform.extensions.executable} $out/bin/
   ";
 
+  enableParallelBuilding = true;
+  sourceRoot = "${finalAttrs.src.name}/ctrtool";
   passthru.updateScript = gitUpdater { rev-prefix = "ctrtool-v"; };
 
   meta = {
-    license = lib.licenses.mit;
     description = "Tool to extract data from a 3ds rom";
     homepage = "https://github.com/3DSGuy/Project_CTR";
-    platforms = with lib.platforms; linux ++ darwin;
+    license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ marius851000 ];
+    platforms = with lib.platforms; linux ++ darwin;
     mainProgram = "ctrtool";
   };
 

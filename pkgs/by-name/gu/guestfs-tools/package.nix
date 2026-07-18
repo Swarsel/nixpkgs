@@ -9,6 +9,7 @@
   curl,
   flex,
   getopt,
+  gitUpdater,
   glib,
   gnupg,
   hivex,
@@ -26,7 +27,6 @@
   pkg-config,
   qemu,
   xz,
-  gitUpdater,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -37,6 +37,14 @@ stdenv.mkDerivation (finalAttrs: {
     url = "https://download.libguestfs.org/guestfs-tools/${lib.versions.majorMinor finalAttrs.version}-stable/guestfs-tools-${finalAttrs.version}.tar.gz";
     hash = "sha256-0xLCwj6TXU5b+tUewhKE9X0E+FN0MpX6+V+WHFxmiEc=";
   };
+
+  postPatch = ''
+    # If it uses the executable name, then there's nothing we can do
+    # when wrapping to stop it looking in
+    # $out/etc/.virt-builder-wrapped, which won't exist.
+    substituteInPlace common/mlstdutils/std_utils.ml \
+        --replace Sys.executable_name '(Array.get Sys.argv 0)'
+  '';
 
   nativeBuildInputs = [
     bison
@@ -76,27 +84,13 @@ stdenv.mkDerivation (finalAttrs: {
     xz
   ];
 
-  postPatch = ''
-    # If it uses the executable name, then there's nothing we can do
-    # when wrapping to stop it looking in
-    # $out/etc/.virt-builder-wrapped, which won't exist.
-    substituteInPlace common/mlstdutils/std_utils.ml \
-        --replace Sys.executable_name '(Array.get Sys.argv 0)'
-  '';
-
-  preConfigure = ''
-    patchShebangs ocaml-dep.sh.in ocaml-link.sh.in run.in
-  '';
-
   makeFlags = [
     "LIBGUESTFS_PATH=${libguestfs-with-appliance}/lib/guestfs"
   ];
 
-  installFlags = [
-    "BASH_COMPLETIONS_DIR=${placeholder "out"}/share/bash-completion/completions"
-  ];
-
-  enableParallelBuilding = true;
+  preConfigure = ''
+    patchShebangs ocaml-dep.sh.in ocaml-link.sh.in run.in
+  '';
 
   postInstall = ''
     wrapProgram $out/bin/virt-builder \
@@ -119,20 +113,28 @@ stdenv.mkDerivation (finalAttrs: {
       }
   '';
 
+  enableParallelBuilding = true;
+
+  installFlags = [
+    "BASH_COMPLETIONS_DIR=${placeholder "out"}/share/bash-completion/completions"
+  ];
+
   passthru.updateScript = gitUpdater {
-    url = "https://github.com/libguestfs/guestfs-tools";
-    rev-prefix = "v";
     odd-unstable = true;
+    rev-prefix = "v";
+    url = "https://github.com/libguestfs/guestfs-tools";
   };
 
   meta = {
     description = "Extra tools for accessing and modifying virtual machine disk images";
+    homepage = "https://libguestfs.org/";
+    changelog = "https://www.libguestfs.org/guestfs-tools-release-notes-${lib.versions.majorMinor finalAttrs.version}.1.html";
+
     license = with lib.licenses; [
       gpl2Plus
       lgpl21Plus
     ];
-    homepage = "https://libguestfs.org/";
-    changelog = "https://www.libguestfs.org/guestfs-tools-release-notes-${lib.versions.majorMinor finalAttrs.version}.1.html";
+
     maintainers = [ ];
     platforms = lib.platforms.linux;
     hydraPlatforms = [ ];

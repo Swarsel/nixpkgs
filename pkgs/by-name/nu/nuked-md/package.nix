@@ -1,11 +1,11 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
+  SDL2,
+  cmake,
   fetchpatch,
   gitUpdater,
-  cmake,
-  SDL2,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -22,9 +22,9 @@ stdenv.mkDerivation (finalAttrs: {
   patches = [
     # Remove when version > 1.2
     (fetchpatch {
+      hash = "sha256-Mx3jmrlBbxdz3ZBr4XhmBk1S04xB0uaxzPXpXSlipV4=";
       name = "0001-nuked-md-Fix-missing-string-h-include.patch";
       url = "https://github.com/nukeykt/Nuked-MD/commit/b875cd79104217af581131b22f4111409273617a.patch";
-      hash = "sha256-Mx3jmrlBbxdz3ZBr4XhmBk1S04xB0uaxzPXpXSlipV4=";
     })
   ];
 
@@ -73,14 +73,16 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Cycle accurate Mega Drive emulator";
+
     longDescription = ''
       Cycle accurate Mega Drive core. The goal of this project is to emulate Sega Mega Drive chipset as accurately as
       possible using decapped chips photos.
     '';
+
     homepage = "https://github.com/nukeykt/Nuked-MD";
     license = lib.licenses.gpl2Plus;
-    mainProgram = "Nuked-MD";
     maintainers = with lib.maintainers; [ OPNA2608 ];
     platforms = lib.platforms.all;
+    mainProgram = "Nuked-MD";
   };
 })

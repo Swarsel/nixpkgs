@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule (finalAttrs: {
@@ -16,14 +16,13 @@ buildGoModule (finalAttrs: {
   };
 
   vendorHash = "sha256-i5IPJ3srUXL7WWjBW9w803VSoyjwA5JgPWKsAckPYxY=";
-
   doCheck = false;
 
   meta = {
     description = "Turn any program that uses STDIN/STDOUT into a WebSocket server";
     homepage = "http://websocketd.com/";
-    maintainers = [ lib.maintainers.bjornfor ];
     license = lib.licenses.bsd2;
+    maintainers = [ lib.maintainers.bjornfor ];
     mainProgram = "websocketd";
   };
 })

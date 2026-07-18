@@ -1,11 +1,11 @@
 {
   lib,
   stdenv,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   installShellFiles,
-  testers,
   sq,
+  testers,
 }:
 
 buildGoModule (finalAttrs: {
@@ -19,20 +19,10 @@ buildGoModule (finalAttrs: {
     hash = "sha256-K9bqV9iJADP3yHSay6ZUv+ohakbD5sIEDJusTGSoqec=";
   };
 
-  vendorHash = "sha256-w08vGn2AxdZVQU/E/RPBipqFOuujnAjpvSluw/a8zjY=";
-
-  proxyVendor = true;
-
   nativeBuildInputs = [ installShellFiles ];
-
+  vendorHash = "sha256-w08vGn2AxdZVQU/E/RPBipqFOuujnAjpvSluw/a8zjY=";
   # Some tests violates sandbox constraints.
   doCheck = false;
-
-  ldflags = [
-    "-s"
-    "-w"
-    "-X=github.com/neilotoole/sq/cli/buildinfo.Version=v${finalAttrs.version}"
-  ];
 
   postInstall = lib.optionalString (stdenv.buildPlatform.canExecute stdenv.hostPlatform) ''
     installShellCompletion --cmd sq \
@@ -41,19 +31,27 @@ buildGoModule (finalAttrs: {
       --zsh <($out/bin/sq completion zsh)
   '';
 
+  ldflags = [
+    "-s"
+    "-w"
+    "-X=github.com/neilotoole/sq/cli/buildinfo.Version=v${finalAttrs.version}"
+  ];
+
+  proxyVendor = true;
+
   passthru.tests = {
     version = testers.testVersion {
-      package = sq;
       version = "v${finalAttrs.version}";
+      package = sq;
     };
   };
 
   meta = {
     description = "Swiss army knife for data";
-    mainProgram = "sq";
     homepage = "https://sq.io/";
     license = lib.licenses.mit;
-    platforms = lib.platforms.all;
     maintainers = [ ];
+    platforms = lib.platforms.all;
+    mainProgram = "sq";
   };
 })

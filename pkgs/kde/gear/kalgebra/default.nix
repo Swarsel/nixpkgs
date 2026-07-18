@@ -1,8 +1,8 @@
 {
   mkKdeDerivation,
+  ncurses,
   qtsvg,
   qtwebengine,
-  ncurses,
   readline,
 }:
 mkKdeDerivation {

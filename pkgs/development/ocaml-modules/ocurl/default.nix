@@ -2,12 +2,12 @@
   lib,
   stdenv,
   fetchurl,
-  pkg-config,
-  ocaml,
-  findlib,
   curl,
+  findlib,
   lwt,
   lwt_ppx,
+  ocaml,
+  pkg-config,
 }:
 
 stdenv.mkDerivation rec {
@@ -19,28 +19,32 @@ stdenv.mkDerivation rec {
     sha256 = "sha256-4DWXGMh02s1VwLWW5d7h0jtMOUubWmBPGm1hghfWd2M=";
   };
 
+  strictDeps = true;
+
   nativeBuildInputs = [
     pkg-config
     ocaml
     findlib
   ];
+
   propagatedBuildInputs = [
     curl
     lwt
     lwt_ppx
   ];
 
-  strictDeps = true;
-
   createFindlibDestdir = true;
+
   meta = {
     description = "OCaml bindings to libcurl (deprecated)";
-    license = lib.licenses.mit;
     homepage = "http://ygrek.org.ua/p/ocurl/";
+    license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       dandellion
       bennofs
     ];
+
     platforms = ocaml.meta.platforms or [ ];
     broken = lib.versionOlder ocaml.version "4.04";
   };

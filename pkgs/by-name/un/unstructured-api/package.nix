@@ -1,10 +1,10 @@
 {
   lib,
-  stdenvNoCC,
   fetchFromGitHub,
-  python3,
   makeWrapper,
   nix-update-script,
+  python3,
+  stdenvNoCC,
 }:
 let
   pythonEnv = python3.withPackages (
@@ -151,8 +151,8 @@ let
   ]);
 in
 stdenvNoCC.mkDerivation {
-  pname = "unstructured-api";
   inherit version;
+  pname = "unstructured-api";
 
   src = fetchFromGitHub {
     owner = "Unstructured-IO";

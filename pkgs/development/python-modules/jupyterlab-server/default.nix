@@ -1,29 +1,25 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # build-system
-  hatchling,
-
   # dependencies
   babel,
+  buildPythonPackage,
+  # build-system
+  hatchling,
   jinja2,
   json5,
   jsonschema,
   jupyter-server,
-  packaging,
-  requests,
-
   # optional-dependencies
   openapi-core,
-  ruamel-yaml,
-
+  packaging,
   # tests
   pytest-jupyter,
   pytest-timeout,
   pytestCheckHook,
+  requests,
   requests-mock,
+  ruamel-yaml,
   strict-rfc3339,
   writableTmpDirAsHomeHook,
 }:
@@ -31,7 +27,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "jupyterlab-server";
   version = "2.28.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "jupyterlab";
@@ -44,6 +39,18 @@ buildPythonPackage (finalAttrs: {
     # oopenapi-core changed their API, which breaks jupyterlab-server
     ./fix-openapi-core-compat.patch
   ];
+
+  nativeCheckInputs = [
+    pytest-jupyter
+    pytest-timeout
+    pytestCheckHook
+    requests-mock
+    strict-rfc3339
+    writableTmpDirAsHomeHook
+  ]
+  ++ finalAttrs.passthru.optional-dependencies.openapi;
+
+  __darwinAllowLocalNetworking = true;
 
   build-system = [
     hatchling
@@ -59,6 +66,11 @@ buildPythonPackage (finalAttrs: {
     requests
   ];
 
+  disabledTestPaths = [
+    # require optional language pack packages for tests
+    "tests/test_translation_api.py"
+  ];
+
   optional-dependencies = {
     openapi = [
       openapi-core
@@ -66,24 +78,8 @@ buildPythonPackage (finalAttrs: {
     ];
   };
 
+  pyproject = true;
   pythonImportsCheck = [ "jupyterlab_server" ];
-
-  nativeCheckInputs = [
-    pytest-jupyter
-    pytest-timeout
-    pytestCheckHook
-    requests-mock
-    strict-rfc3339
-    writableTmpDirAsHomeHook
-  ]
-  ++ finalAttrs.passthru.optional-dependencies.openapi;
-
-  disabledTestPaths = [
-    # require optional language pack packages for tests
-    "tests/test_translation_api.py"
-  ];
-
-  __darwinAllowLocalNetworking = true;
 
   meta = {
     description = "Set of server components for JupyterLab and JupyterLab like applications";

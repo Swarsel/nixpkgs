@@ -16,21 +16,23 @@ rustPlatform.buildRustPackage rec {
     hash = "sha256-V//tVcIzhCh03VjwMC+R2ynaOFm+dp6qxa0oqBfvGUs=";
   };
 
+  cargoHash = "sha256-+x4pOtszvdzI/zR55ezcxlS52GrWQTuBn7vbnqDTVac=";
+
   cargoPatches = [
     # Remove when new version of mdzk is released.
     ./update-mdbook-for-rust-1.64.patch
   ];
-
-  cargoHash = "sha256-+x4pOtszvdzI/zR55ezcxlS52GrWQTuBn7vbnqDTVac=";
 
   meta = {
     description = "Plain text Zettelkasten based on mdBook";
     homepage = "https://github.com/mdzk-rs/mdzk/";
     changelog = "https://github.com/mdzk-rs/mdzk/blob/main/CHANGELOG.md";
     license = lib.licenses.mpl20;
+
     maintainers = with lib.maintainers; [
       ratsclub
     ];
+
     mainProgram = "mdzk";
   };
 }

@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   flit-core,
   fsspec,
   oci,
@@ -11,7 +11,6 @@
 buildPythonPackage rec {
   pname = "ocifs";
   version = "1.3.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "oracle";
@@ -20,6 +19,8 @@ buildPythonPackage rec {
     hash = "sha256-IGl9G4NyzhcqrfYfgeZin+wt1OwHmh6780MPfZBwsXA=";
   };
 
+  # Module has no tests
+  doCheck = false;
   build-system = [ flit-core ];
 
   dependencies = [
@@ -28,9 +29,7 @@ buildPythonPackage rec {
     requests
   ];
 
-  # Module has no tests
-  doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "ocifs" ];
 
   meta = {

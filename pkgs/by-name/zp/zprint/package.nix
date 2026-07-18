@@ -1,7 +1,7 @@
 {
   lib,
-  buildGraalvmNativeImage,
   fetchurl,
+  buildGraalvmNativeImage,
   testers,
 }:
 
@@ -25,17 +25,19 @@ buildGraalvmNativeImage (finalAttrs: {
 
   passthru.tests.version = testers.testVersion {
     inherit (finalAttrs) version;
-    package = finalAttrs.finalPackage;
     command = "zprint --version";
+    package = finalAttrs.finalPackage;
   };
 
   meta = {
     description = "Clojure/EDN source code formatter and pretty printer";
+
     longDescription = ''
       Library and command line tool providing a variety of pretty printing capabilities
       for both Clojure code and Clojure/EDN structures. It can meet almost anyone's needs.
       As such, it supports a number of major source code formatting approaches
     '';
+
     homepage = "https://github.com/kkinnear/zprint";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ stelcodes ];

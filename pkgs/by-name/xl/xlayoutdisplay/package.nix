@@ -2,12 +2,12 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  pkg-config,
-  libxrandr,
-  libxcursor,
-  libx11,
   boost,
   gtest,
+  libx11,
+  libxcursor,
+  libxrandr,
+  pkg-config,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -22,25 +22,25 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   nativeBuildInputs = [ pkg-config ];
+
   buildInputs = [
     libx11
     libxrandr
     libxcursor
     boost
   ];
-  nativeCheckInputs = [ gtest ];
-
-  doCheck = true;
-  checkTarget = "gtest";
 
   makeFlags = [ "PREFIX=${placeholder "out"}" ];
+  doCheck = true;
+  nativeCheckInputs = [ gtest ];
+  checkTarget = "gtest";
   enableParallelBuilding = true;
 
   meta = {
     description = "Detects and arranges linux display outputs, using XRandR for detection and xrandr for arrangement";
     homepage = "https://github.com/alex-courtis/xlayoutdisplay";
-    maintainers = with lib.maintainers; [ stephen-huan ];
     license = lib.licenses.asl20;
+    maintainers = with lib.maintainers; [ stephen-huan ];
     platforms = lib.platforms.linux;
     mainProgram = "xlayoutdisplay";
   };

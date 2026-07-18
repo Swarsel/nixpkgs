@@ -2,8 +2,8 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  libxrandr,
   libxcb,
+  libxrandr,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -30,8 +30,8 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Invert colors on all screens, using XRandR";
-    license = lib.licenses.gpl3Plus;
     homepage = "https://github.com/zoltanp/xrandr-invert-colors";
+    license = lib.licenses.gpl3Plus;
     maintainers = [ lib.maintainers.magnetophon ];
     platforms = lib.platforms.linux;
     mainProgram = "xrandr-invert-colors";

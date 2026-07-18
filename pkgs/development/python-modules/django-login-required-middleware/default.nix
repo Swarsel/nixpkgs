@@ -1,9 +1,9 @@
 {
   lib,
+  fetchFromGitHub,
   buildPythonPackage,
   django,
   djangorestframework,
-  fetchFromGitHub,
   python,
   setuptools-scm,
 }:
@@ -11,7 +11,6 @@
 buildPythonPackage rec {
   pname = "django-login-required-middleware";
   version = "0.9.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "CleitonDeLima";
@@ -21,16 +20,15 @@ buildPythonPackage rec {
   };
 
   nativeBuildInputs = [ setuptools-scm ];
-
   propagatedBuildInputs = [ django ];
-
   checkInputs = [ djangorestframework ];
-
-  pythonImportsCheck = [ "login_required" ];
 
   checkPhase = ''
     ${python.interpreter} -m django test --settings tests.settings
   '';
+
+  pyproject = true;
+  pythonImportsCheck = [ "login_required" ];
 
   meta = {
     description = "Requires login to all requests through middleware in Django";

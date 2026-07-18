@@ -2,10 +2,10 @@
   lib,
   stdenv,
   fetchurl,
+  gash,
   guile,
   makeWrapper,
   pkg-config,
-  gash,
 }:
 
 stdenv.mkDerivation (finalAttrs: {

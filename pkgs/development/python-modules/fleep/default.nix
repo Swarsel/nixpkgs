@@ -1,14 +1,13 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   python,
 }:
 
 buildPythonPackage {
   pname = "fleep";
   version = "1.0.1";
-  format = "setuptools";
 
   # Pypi version does not have tests
   src = fetchFromGitHub {
@@ -25,6 +24,7 @@ buildPythonPackage {
     ${python.interpreter} tests/speedtest.py
   '';
 
+  format = "setuptools";
   pythonImportsCheck = [ "fleep" ];
 
   meta = {

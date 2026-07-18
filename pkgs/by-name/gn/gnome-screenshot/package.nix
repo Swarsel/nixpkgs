@@ -1,24 +1,24 @@
 {
-  stdenv,
   lib,
-  gettext,
-  libxml2,
-  libhandy,
+  stdenv,
   fetchurl,
-  fetchpatch,
-  pkg-config,
-  libcanberra-gtk3,
-  gtk3,
-  glib,
-  meson,
-  ninja,
-  python3,
-  wrapGAppsHook3,
+  adwaita-icon-theme,
   appstream-glib,
   desktop-file-utils,
+  fetchpatch,
+  gettext,
+  glib,
   gnome,
-  adwaita-icon-theme,
   gsettings-desktop-schemas,
+  gtk3,
+  libcanberra-gtk3,
+  libhandy,
+  libxml2,
+  meson,
+  ninja,
+  pkg-config,
+  python3,
+  wrapGAppsHook3,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -34,10 +34,15 @@ stdenv.mkDerivation (finalAttrs: {
     # Fix build with meson 0.61
     # https://gitlab.gnome.org/GNOME/gnome-screenshot/-/issues/186
     (fetchpatch {
-      url = "https://gitlab.gnome.org/GNOME/gnome-screenshot/-/commit/b60dad3c2536c17bd201f74ad8e40eb74385ed9f.patch";
       hash = "sha256-Js83h/3xxcw2hsgjzGa5lAYFXVrt6MPhXOTh5dZTx/w=";
+      url = "https://gitlab.gnome.org/GNOME/gnome-screenshot/-/commit/b60dad3c2536c17bd201f74ad8e40eb74385ed9f.patch";
     })
   ];
+
+  postPatch = ''
+    chmod +x build-aux/postinstall.py # patchShebangs requires executable file
+    patchShebangs build-aux/postinstall.py
+  '';
 
   nativeBuildInputs = [
     meson
@@ -62,11 +67,6 @@ stdenv.mkDerivation (finalAttrs: {
 
   doCheck = true;
 
-  postPatch = ''
-    chmod +x build-aux/postinstall.py # patchShebangs requires executable file
-    patchShebangs build-aux/postinstall.py
-  '';
-
   passthru = {
     updateScript = gnome.updateScript {
       packageName = "gnome-screenshot";
@@ -74,11 +74,11 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   meta = {
-    homepage = "https://gitlab.gnome.org/GNOME/gnome-screenshot";
     description = "Utility used in the GNOME desktop environment for taking screenshots";
-    mainProgram = "gnome-screenshot";
-    teams = [ lib.teams.gnome ];
+    homepage = "https://gitlab.gnome.org/GNOME/gnome-screenshot";
     license = lib.licenses.gpl2Plus;
     platforms = lib.platforms.linux;
+    mainProgram = "gnome-screenshot";
+    teams = [ lib.teams.gnome ];
   };
 })

@@ -1,7 +1,7 @@
 {
-  runCommand,
   cargo,
   neovim,
+  runCommand,
   rust-analyzer,
   rustc,
 }:
@@ -13,13 +13,6 @@ runCommand "test-neovim-rust-analyzer"
       rust-analyzer
       rustc
     ];
-
-    testRustSrc = ''
-      fn main() {
-        let mut var = vec![None];
-        var.push(Some("hello".to_owned()));
-      }
-    '';
 
     # NB. Wait for server done type calculations before sending `hover` request,
     # otherwise it would return `{unknown}`.
@@ -55,6 +48,13 @@ runCommand "test-neovim-rust-analyzer"
           vim.cmd("q")
         end
       }))
+    '';
+
+    testRustSrc = ''
+      fn main() {
+        let mut var = vec![None];
+        var.push(Some("hello".to_owned()));
+      }
     '';
 
   }

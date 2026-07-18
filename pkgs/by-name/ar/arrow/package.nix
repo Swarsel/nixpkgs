@@ -1,9 +1,11 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
-  godot_4_4,
   alsa-lib,
+  autoPatchelfHook,
+  copyDesktopItems,
+  godot_4_4,
   libGL,
   libpulseaudio,
   libx11,
@@ -11,13 +13,11 @@
   libxext,
   libxi,
   libxrandr,
+  makeDesktopItem,
+  nix-update-script,
   udev,
   vulkan-loader,
-  autoPatchelfHook,
   writableTmpDirAsHomeHook,
-  makeDesktopItem,
-  copyDesktopItems,
-  nix-update-script,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -31,40 +31,12 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-+Tlqh0Xn2xnF2AWv9u5xIWo6Mvg/uEsqqxWx70kd3+k=";
   };
 
-  desktopItems = [
-    (makeDesktopItem {
-      type = "Application";
-      name = "Arrow";
-      exec = "Arrow";
-      icon = "Arrow";
-      terminal = false;
-      comment = "Game Narrative Design Tool";
-      desktopName = "Arrow";
-      categories = [ "Application" ];
-    })
-  ];
-
   nativeBuildInputs = [
     autoPatchelfHook
     writableTmpDirAsHomeHook
     godot_4_4
     copyDesktopItems
   ];
-
-  runtimeDependencies = map lib.getLib [
-    alsa-lib
-    libGL
-    libpulseaudio
-    libx11
-    libxcursor
-    libxext
-    libxi
-    libxrandr
-    udev
-    vulkan-loader
-  ];
-
-  passthru.updateScript = nix-update-script { };
 
   buildPhase = ''
     runHook preBuild
@@ -91,12 +63,40 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  desktopItems = [
+    (makeDesktopItem {
+      categories = [ "Application" ];
+      comment = "Game Narrative Design Tool";
+      desktopName = "Arrow";
+      exec = "Arrow";
+      icon = "Arrow";
+      name = "Arrow";
+      terminal = false;
+      type = "Application";
+    })
+  ];
+
+  runtimeDependencies = map lib.getLib [
+    alsa-lib
+    libGL
+    libpulseaudio
+    libx11
+    libxcursor
+    libxext
+    libxi
+    libxrandr
+    udev
+    vulkan-loader
+  ];
+
+  passthru.updateScript = nix-update-script { };
+
   meta = {
-    homepage = "https://mhgolkar.github.io/Arrow/";
     description = "Game Narrative Design Tool";
+    homepage = "https://mhgolkar.github.io/Arrow/";
     license = lib.licenses.mit;
-    mainProgram = "Arrow";
     maintainers = with lib.maintainers; [ miampf ];
     platforms = lib.platforms.linux;
+    mainProgram = "Arrow";
   };
 })

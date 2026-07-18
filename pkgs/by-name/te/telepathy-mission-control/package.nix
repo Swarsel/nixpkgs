@@ -2,19 +2,24 @@
   lib,
   stdenv,
   fetchurl,
-  pkg-config,
+  autoreconfHook,
   dconf,
-  telepathy-glib,
-  python3,
+  gtk-doc,
   libxslt,
   makeWrapper,
-  autoreconfHook,
-  gtk-doc,
+  pkg-config,
+  python3,
+  telepathy-glib,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
   pname = "telepathy-mission-control";
   version = "5.16.6";
+
+  src = fetchurl {
+    url = "https://telepathy.freedesktop.org/releases/telepathy-mission-control/telepathy-mission-control-${finalAttrs.version}.tar.gz";
+    sha256 = "0ibs575pfr0wmhfcw6ln6iz7gw2y45l3bah11rksf6g9jlwsxy1d";
+  };
 
   outputs = [
     "out"
@@ -22,13 +27,7 @@ stdenv.mkDerivation (finalAttrs: {
     "dev"
   ];
 
-  src = fetchurl {
-    url = "https://telepathy.freedesktop.org/releases/telepathy-mission-control/telepathy-mission-control-${finalAttrs.version}.tar.gz";
-    sha256 = "0ibs575pfr0wmhfcw6ln6iz7gw2y45l3bah11rksf6g9jlwsxy1d";
-  };
-
   # TODO: optional build inputs missing
-
   nativeBuildInputs = [
     telepathy-glib # glib-genmarshal
     pkg-config
@@ -47,13 +46,13 @@ stdenv.mkDerivation (finalAttrs: {
 
   doCheck = true;
 
-  enableParallelBuilding = true;
-
   preFixup = ''
     wrapProgram "$lib/libexec/mission-control-5" \
       --prefix GIO_EXTRA_MODULES : "${lib.getLib dconf}/lib/gio/modules" \
       --prefix XDG_DATA_DIRS : "$GSETTINGS_SCHEMAS_PATH"
   '';
+
+  enableParallelBuilding = true;
 
   meta = {
     description = "Account manager and channel dispatcher for the Telepathy framework";

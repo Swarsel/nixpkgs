@@ -1,7 +1,7 @@
 {
   lib,
-  buildDunePackage,
   fetchFromGitLab,
+  buildDunePackage,
   ocaml,
 }:
 
@@ -19,8 +19,8 @@ buildDunePackage (finalAttrs: {
   minimalOCamlVersion = "4.12";
 
   meta = {
-    homepage = "https://ocaml.org/p/memprof-limits/latest";
     description = "Memory limits, allocation limits, and thread cancellation for OCaml";
+    homepage = "https://ocaml.org/p/memprof-limits/latest";
     license = lib.licenses.lgpl3;
     maintainers = with lib.maintainers; [ alizter ];
     broken = !(lib.versionOlder ocaml.version "5.0.0");

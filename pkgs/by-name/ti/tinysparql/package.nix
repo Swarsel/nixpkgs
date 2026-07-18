@@ -1,41 +1,49 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchurl,
+  asciidoc,
+  avahi,
+  buildPackages,
+  dbus,
   fetchpatch,
   gettext,
+  glib,
+  gnome,
+  gobject-introspection,
+  icu,
+  json-glib,
+  libsoup_3,
+  libstemmer,
+  libuuid,
+  libxml2,
+  man-db,
   meson,
   mesonEmulatorHook,
   ninja,
   pkg-config,
-  asciidoc,
-  gobject-introspection,
-  buildPackages,
+  python3,
+  sqlite,
+  testers,
+  vala,
+  wrapGAppsNoGuiHook,
+  writeText,
   withIntrospection ?
     lib.meta.availableOn stdenv.hostPlatform gobject-introspection
     && stdenv.hostPlatform.emulatorAvailable buildPackages,
-  vala,
-  python3,
-  libxml2,
-  glib,
-  wrapGAppsNoGuiHook,
-  sqlite,
-  libstemmer,
-  gnome,
-  icu,
-  libuuid,
-  libsoup_3,
-  json-glib,
-  avahi,
-  dbus,
-  man-db,
-  writeText,
-  testers,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
   pname = "tinysparql";
   version = "3.11.1";
+
+  src = fetchurl {
+    url =
+      with finalAttrs;
+      "mirror://gnome/sources/tinysparql/${lib.versions.majorMinor version}/tinysparql-${version}.tar.xz";
+
+    hash = "sha256-z9RgIe4VFK1DXnFPeqHsenh8f1FqlPTHQ4iX7j1uyh4=";
+  };
 
   outputs = [
     "out"
@@ -43,30 +51,29 @@ stdenv.mkDerivation (finalAttrs: {
     "devdoc"
   ];
 
-  src = fetchurl {
-    url =
-      with finalAttrs;
-      "mirror://gnome/sources/tinysparql/${lib.versions.majorMinor version}/tinysparql-${version}.tar.xz";
-    hash = "sha256-z9RgIe4VFK1DXnFPeqHsenh8f1FqlPTHQ4iX7j1uyh4=";
-  };
-
   patches = [
     # sqlite changed the precision of float <-> text conversions, causing
     # failures in the test suite. patch here until this appears in a release.
     # https://gitlab.gnome.org/GNOME/tinysparql/-/work_items/496
     # https://gitlab.gnome.org/GNOME/tinysparql/-/merge_requests/811
     (fetchpatch {
+      hash = "sha256-k6eELZCEEtD8s7GiMckjTlf6QcAiUNY1Mraw7GROsm4=";
       name = "tinysparql-sqlite-double-value-precision.patch";
       url = "https://gitlab.gnome.org/GNOME/tinysparql/-/commit/47d5bf9313d0ccb1feb7169eed9047d0e1597a39.patch";
-      hash = "sha256-k6eELZCEEtD8s7GiMckjTlf6QcAiUNY1Mraw7GROsm4=";
     })
   ];
 
-  strictDeps = true;
+  postPatch = ''
+    patchShebangs \
+      utils/data-generators/cc/generate
 
-  depsBuildBuild = [
-    pkg-config
-  ];
+    # File "/build/tinysparql-3.8.0/tests/functional-tests/test_cli.py", line 233, in test_help
+    # self.assertIn("TINYSPARQL-IMPORT(1)", output, "Manpage not found")
+    # AssertionError: 'TINYSPARQL-IMPORT(1)' not found in '\x1b[4mTINYSPARQL-IMPORT\x1b[24m(1) ...'
+    substituteInPlace tests/functional-tests/test_cli.py --replace-fail "TINYSPARQL-IMPORT(1)" "TINYSPARQL-IMPORT"
+  '';
+
+  strictDeps = true;
 
   nativeBuildInputs = [
     meson
@@ -98,11 +105,6 @@ stdenv.mkDerivation (finalAttrs: {
     libstemmer
   ];
 
-  nativeCheckInputs = [
-    dbus
-    man-db
-  ];
-
   mesonFlags = [
     "-Ddocs=true"
     "-Dsystemd_user_services_dir=${placeholder "out"}/lib/systemd/user"
@@ -124,15 +126,10 @@ stdenv.mkDerivation (finalAttrs: {
 
   doCheck = true;
 
-  postPatch = ''
-    patchShebangs \
-      utils/data-generators/cc/generate
-
-    # File "/build/tinysparql-3.8.0/tests/functional-tests/test_cli.py", line 233, in test_help
-    # self.assertIn("TINYSPARQL-IMPORT(1)", output, "Manpage not found")
-    # AssertionError: 'TINYSPARQL-IMPORT(1)' not found in '\x1b[4mTINYSPARQL-IMPORT\x1b[24m(1) ...'
-    substituteInPlace tests/functional-tests/test_cli.py --replace-fail "TINYSPARQL-IMPORT(1)" "TINYSPARQL-IMPORT"
-  '';
+  nativeCheckInputs = [
+    dbus
+    man-db
+  ];
 
   preCheck =
     let
@@ -175,25 +172,32 @@ stdenv.mkDerivation (finalAttrs: {
     moveToOutput "share/doc" "$devdoc"
   '';
 
+  depsBuildBuild = [
+    pkg-config
+  ];
+
   passthru = {
-    updateScript = gnome.updateScript { packageName = finalAttrs.pname; };
     tests.pkg-config = testers.hasPkgConfigModules {
       package = finalAttrs.finalPackage;
     };
+
+    updateScript = gnome.updateScript { packageName = finalAttrs.pname; };
   };
 
   meta = {
-    homepage = "https://tracker.gnome.org/";
     description = "Desktop-neutral user information store, search tool and indexer";
-    mainProgram = "tinysparql";
-    teams = [ lib.teams.gnome ];
+    homepage = "https://tracker.gnome.org/";
     license = lib.licenses.gpl2Plus;
     platforms = lib.platforms.unix;
+    mainProgram = "tinysparql";
+    # Not before <gio/gdesktopappinfo.h> is properly conditioned.
+    broken = stdenv.hostPlatform.isDarwin;
+
     pkgConfigModules = [
       "tracker-sparql-3.0"
       "tinysparql-3.0"
     ];
-    # Not before <gio/gdesktopappinfo.h> is properly conditioned.
-    broken = stdenv.hostPlatform.isDarwin;
+
+    teams = [ lib.teams.gnome ];
   };
 })

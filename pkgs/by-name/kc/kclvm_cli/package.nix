@@ -1,8 +1,8 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
   kclvm,
+  rustPlatform,
   rustc,
 }:
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -16,24 +16,25 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-wRmLXR1r/FtZVfc6jifEj0jS0U0HIgJzBtuuzLQchjo=";
   };
 
-  sourceRoot = "${finalAttrs.src.name}/cli";
-
-  cargoHash = "sha256-ZhrjxHqwWwcVkCVkJJnVm2CZLfRlrI2383ejgI+B2KQ=";
-  cargoPatches = [ ./cargo_lock.patch ];
-
   buildInputs = [
     kclvm
     rustc
   ];
 
+  cargoHash = "sha256-ZhrjxHqwWwcVkCVkJJnVm2CZLfRlrI2383ejgI+B2KQ=";
+  cargoPatches = [ ./cargo_lock.patch ];
+  sourceRoot = "${finalAttrs.src.name}/cli";
+
   meta = {
     description = "High-performance implementation of KCL written in Rust that uses LLVM as the compiler backend";
     homepage = "https://github.com/kcl-lang/kcl";
     license = lib.licenses.asl20;
-    platforms = lib.platforms.linux ++ lib.platforms.darwin;
+
     maintainers = with lib.maintainers; [
       selfuryon
     ];
+
+    platforms = lib.platforms.linux ++ lib.platforms.darwin;
     mainProgram = "kclvm_cli";
   };
 })

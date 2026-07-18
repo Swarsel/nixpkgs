@@ -15,14 +15,13 @@ buildDunePackage (finalAttrs: {
     hash = "sha256-5tQNsqbiU9oJvKHUjeTo/ST4A0Axc95gdJISLaa9VRM=";
   };
 
+  doCheck = true;
   minimalOCamlVersion = "4.07";
 
-  doCheck = true;
-
   meta = {
-    license = lib.licenses.mit;
-    homepage = "https://www.liquidsoap.info/ocaml-mem_usage/";
     description = "Cross-platform memory usage information";
+    homepage = "https://www.liquidsoap.info/ocaml-mem_usage/";
+    license = lib.licenses.mit;
     maintainers = [ lib.maintainers.vbgl ];
   };
 })

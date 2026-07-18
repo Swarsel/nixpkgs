@@ -7,7 +7,6 @@
 python3Packages.buildPythonApplication (finalAttrs: {
   pname = "bikeshed";
   version = "7.0.7";
-  pyproject = true;
 
   src = fetchPypi {
     inherit (finalAttrs) pname version;
@@ -16,9 +15,11 @@ python3Packages.buildPythonApplication (finalAttrs: {
 
   patches = [ ./remove-install-check.patch ];
 
-  build-system = [ python3Packages.setuptools ];
+  checkPhase = ''
+    $out/bin/bikeshed test
+  '';
 
-  pythonRelaxDeps = true;
+  build-system = [ python3Packages.setuptools ];
 
   dependencies = with python3Packages; [
     about-time
@@ -55,15 +56,13 @@ python3Packages.buildPythonApplication (finalAttrs: {
     yarl
   ];
 
-  checkPhase = ''
-    $out/bin/bikeshed test
-  '';
-
+  pyproject = true;
   pythonImportsCheck = [ "bikeshed" ];
+  pythonRelaxDeps = true;
 
   meta = {
     description = "Preprocessor for anyone writing specifications that converts source files into actual specs";
-    mainProgram = "bikeshed";
+
     longDescription = ''
       Bikeshed is a pre-processor for spec documents, turning a source document
       (containing only the actual spec content, plus several shorthands for linking
@@ -71,11 +70,15 @@ python3Packages.buildPythonApplication (finalAttrs: {
       bibliography, indexes, etc all filled in. It's used on specs for CSS
       and many other W3C working groups, WHATWG, the C++ standards committee, and elsewhere!
     '';
+
     homepage = "https://tabatkins.github.io/bikeshed/";
     license = lib.licenses.cc0;
+
     maintainers = with lib.maintainers; [
       matthiasbeyer
       hemera
     ];
+
+    mainProgram = "bikeshed";
   };
 })

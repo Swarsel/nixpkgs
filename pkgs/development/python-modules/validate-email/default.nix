@@ -8,19 +8,17 @@
 buildPythonPackage rec {
   pname = "validate-email";
   version = "1.3";
-  pyproject = true;
 
   src = fetchPypi {
     inherit version;
-    pname = "validate_email";
     hash = "sha256-eEcZ3F94C+MZzdGF3IXdk6/r2267lDgRvEx8X5xyrq8=";
+    pname = "validate_email";
   };
-
-  build-system = [ setuptools ];
 
   # No tests
   doCheck = false;
-
+  build-system = [ setuptools ];
+  pyproject = true;
   pythonImportsCheck = [ "validate_email" ];
 
   meta = {

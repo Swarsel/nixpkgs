@@ -1,16 +1,16 @@
 {
   lib,
   stdenv,
-  fetchFromGitHub,
   fetchurl,
-  pkg-config,
+  fetchFromGitHub,
   autoreconfHook,
-  help2man,
+  doxygen,
   gettext,
+  help2man,
   libxml2,
   perl,
+  pkg-config,
   python3,
-  doxygen,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -27,8 +27,8 @@ stdenv.mkDerivation (finalAttrs: {
   patches = [
     (fetchurl {
       name = "musl.patch";
-      url = "https://git.alpinelinux.org/aports/plain/community/libsmbios/fixes.patch?id=bdc4f67889c958c1266fa5d0cab71c3cd639122f";
       sha256 = "aVVc52OovDYvqWRyKcRAi62daa9AalkKvnVOGvrTmRk=";
+      url = "https://git.alpinelinux.org/aports/plain/community/libsmbios/fixes.patch?id=bdc4f67889c958c1266fa5d0cab71c3cd639122f";
     })
   ];
 
@@ -43,10 +43,7 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   buildInputs = [ python3 ];
-
   configureFlags = [ "--disable-graphviz" ];
-
-  enableParallelBuilding = true;
 
   postInstall = ''
     mkdir -p $out/include
@@ -59,14 +56,19 @@ stdenv.mkDerivation (finalAttrs: {
     patchelf --shrink-rpath --allowed-rpath-prefixes "$NIX_STORE" "$out/sbin/smbios-sys-info-lite"
   '';
 
+  enableParallelBuilding = true;
+
   meta = {
-    homepage = "https://github.com/dell/libsmbios";
     description = "Library to obtain BIOS information";
+    homepage = "https://github.com/dell/libsmbios";
+
     license = with lib.licenses; [
       osl21
       gpl2Plus
     ];
+
     maintainers = [ ];
+
     platforms = [
       "i686-linux"
       "x86_64-linux"

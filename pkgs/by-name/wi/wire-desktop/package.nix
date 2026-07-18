@@ -1,16 +1,16 @@
 {
   lib,
   stdenv,
-  stdenvNoCC,
   fetchFromGitHub,
-  electron,
-  nodejs,
-  yarn-berry_3,
-  makeWrapper,
-  makeDesktopItem,
   darwin,
-  zip,
+  electron,
   jq,
+  makeDesktopItem,
+  makeWrapper,
+  nodejs,
+  stdenvNoCC,
+  yarn-berry_3,
+  zip,
 }:
 let
   hostPlatform = stdenvNoCC.hostPlatform;
@@ -18,17 +18,9 @@ let
   yarn-berry = yarn-berry_3;
   # same hash for this release but can change in the future
   sources = rec {
-    x86_64-linux = rec {
-      version = "3.40.3882";
-      src = fetchFromGitHub {
-        owner = "wireapp";
-        repo = "wire-desktop";
-        tag = "linux/${version}";
-        hash = "sha256-pNu+/JKvaKSqHxNeDL8RcDy+FiY3aynQH06t05qgXrA=";
-      };
-    };
     aarch64-darwin = rec {
       version = "3.42.5489";
+
       src = fetchFromGitHub {
         owner = "wireapp";
         repo = "wire-desktop";
@@ -36,45 +28,42 @@ let
         hash = "sha256-v80sdksor6V0OVXlBTeMf9Jz8lhQy+UdyTxxupuafeo=";
       };
     };
+
     aarch64-linux = x86_64-linux;
+
+    x86_64-linux = rec {
+      version = "3.40.3882";
+
+      src = fetchFromGitHub {
+        owner = "wireapp";
+        repo = "wire-desktop";
+        tag = "linux/${version}";
+        hash = "sha256-pNu+/JKvaKSqHxNeDL8RcDy+FiY3aynQH06t05qgXrA=";
+      };
+    };
   };
   web-config = fetchFromGitHub {
+    hash = "sha256-E9x/tRcMfXw/tjgNBUTefym9/m/Xu9/9CclwSmxpDzU=";
     owner = "wireapp";
     repo = "wire-web-config-wire";
     tag = "v0.34.9-0";
-    hash = "sha256-E9x/tRcMfXw/tjgNBUTefym9/m/Xu9/9CclwSmxpDzU=";
   };
   electron-dist-zip = stdenvNoCC.mkDerivation {
     pname = "electron-dist-zip";
     version = electron.version;
     src = electron.dist;
     nativeBuildInputs = [ zip ];
+
     buildPhase = ''
       zip --recurse-paths - . > $out
     '';
+
     dontInstall = true;
   };
 in
 stdenv.mkDerivation (finalAttrs: {
-  pname = "wire-desktop";
   inherit (sources.${stdenv.system} or sources.x86_64-linux) version src;
-
-  missingHashes = ./missing-hashes.json;
-  offlineCache = yarn-berry.fetchYarnBerryDeps {
-    inherit (finalAttrs) src missingHashes;
-    hash = "sha256-md7B8NSqT9dmPxrp9zbWifNow+1j2tuTRMOljG1V8WE=";
-  };
-
-  nativeBuildInputs = [
-    nodejs
-    yarn-berry.yarnBerryConfigHook
-    yarn-berry
-    makeWrapper
-  ]
-  ++ lib.optionals stdenv.hostPlatform.isDarwin [
-    jq
-    darwin.autoSignDarwinBinariesHook
-  ];
+  pname = "wire-desktop";
 
   patches = [
     ./build-linux.patch
@@ -86,6 +75,17 @@ stdenv.mkDerivation (finalAttrs: {
     substituteInPlace .copyconfigrc.js \
       --replace-fail 'repositoryUrl,' 'repositoryUrl, externalDir : "${web-config}",'
   '';
+
+  nativeBuildInputs = [
+    nodejs
+    yarn-berry.yarnBerryConfigHook
+    yarn-berry
+    makeWrapper
+  ]
+  ++ lib.optionals stdenv.hostPlatform.isDarwin [
+    jq
+    darwin.autoSignDarwinBinariesHook
+  ];
 
   env.ELECTRON_SKIP_BINARY_DOWNLOAD = "1";
 
@@ -159,6 +159,7 @@ stdenv.mkDerivation (finalAttrs: {
       "Chat"
       "VideoConference"
     ];
+
     comment = "Secure messenger for everyone";
     desktopName = "Wire";
     exec = "wire-desktop %U";
@@ -168,8 +169,16 @@ stdenv.mkDerivation (finalAttrs: {
     startupWMClass = "Wire";
   };
 
+  missingHashes = ./missing-hashes.json;
+
+  offlineCache = yarn-berry.fetchYarnBerryDeps {
+    inherit (finalAttrs) src missingHashes;
+    hash = "sha256-md7B8NSqT9dmPxrp9zbWifNow+1j2tuTRMOljG1V8WE=";
+  };
+
   meta = {
     description = "Modern, secure messenger for everyone";
+
     longDescription = ''
       Wire Personal is a secure, privacy-friendly messenger. It combines useful
       and fun features, audited security, and a beautiful, distinct user
@@ -181,18 +190,22 @@ stdenv.mkDerivation (finalAttrs: {
         * Timed messages and chats
         * Synced across your phone, desktop and tablet
     '';
+
     homepage = "https://wire.com/";
-    downloadPage = "https://wire.com/download/";
     license = lib.licenses.gpl3Plus;
+
     maintainers = with lib.maintainers; [
       arianvp
       ern775
       korkutkardes7
     ];
+
     platforms = [
       "x86_64-linux"
       "aarch64-linux"
       "aarch64-darwin"
     ];
+
+    downloadPage = "https://wire.com/download/";
   };
 })

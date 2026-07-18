@@ -12,16 +12,16 @@
 buildPythonPackage (finalAttrs: {
   pname = "alibabacloud-ram20150501";
   version = "1.2.1";
-  pyproject = true;
-
-  __structuredAttrs = true;
 
   src = fetchPypi {
-    pname = "alibabacloud_ram20150501";
     inherit (finalAttrs) version;
     hash = "sha256-dzFVfjw5oPAVm59dEMksDeZZXCf0VT3EWeA8zZpMIqU=";
+    pname = "alibabacloud_ram20150501";
   };
 
+  # Module has no tests
+  doCheck = false;
+  __structuredAttrs = true;
   build-system = [ setuptools ];
 
   dependencies = [
@@ -31,10 +31,8 @@ buildPythonPackage (finalAttrs: {
     alibabacloud-tea-util
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "alibabacloud_ram20150501" ];
-
-  # Module has no tests
-  doCheck = false;
 
   meta = {
     description = "Alibaba Cloud Resource Access Management (20150501) SDK Library for Python";

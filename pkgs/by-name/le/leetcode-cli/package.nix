@@ -1,14 +1,14 @@
 {
+  lib,
+  stdenv,
   dbus,
   fetchCrate,
   installShellFiles,
-  lib,
   nix-update-script,
   openssl,
   pkg-config,
   rustPlatform,
   sqlite,
-  stdenv,
   versionCheckHook,
 }:
 
@@ -21,8 +21,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-+6DpMDWP2ApyoQTRXLy1mJn3MZzYqunhcoy+c6fHOAk=";
   };
 
-  cargoHash = "sha256-bbwyuFY3i/pcWBJjaKIZf2zHEkp4raZp7i5cWZtS9w8=";
-
   nativeBuildInputs = [
     installShellFiles
     pkg-config
@@ -34,6 +32,8 @@ rustPlatform.buildRustPackage (finalAttrs: {
     sqlite
   ];
 
+  cargoHash = "sha256-bbwyuFY3i/pcWBJjaKIZf2zHEkp4raZp7i5cWZtS9w8=";
+
   postInstall = lib.optionalString (stdenv.buildPlatform.canExecute stdenv.hostPlatform) ''
     installShellCompletion --cmd leetcode \
       --bash <($out/bin/leetcode completions bash) \
@@ -43,7 +43,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
 
   doInstallCheck = true;
   nativeInstallCheckInputs = [ versionCheckHook ];
-
   passthru.updateScript = nix-update-script { };
 
   meta = {

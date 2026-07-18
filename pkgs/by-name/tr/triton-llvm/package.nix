@@ -2,28 +2,27 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  pkgsBuildBuild,
-  pkg-config,
   cmake,
-  ninja,
-  libxml2,
-  libxcrypt,
+  doxygen,
   libedit,
   libffi,
   libpfm,
+  libxcrypt,
+  libxml2,
   lit,
   mpfr,
-  zlib,
   ncurses,
-  doxygen,
-  sphinx,
-  which,
-  sysctl,
+  ninja,
+  pkg-config,
+  pkgsBuildBuild,
   python3Packages,
+  sphinx,
+  sysctl,
+  which,
+  zlib,
   buildDocs ? true,
   buildMan ? true,
   buildTests ? true,
-  llvmTargetsToBuild ? [ "NATIVE" ], # "NATIVE" resolves into x86 or aarch64 depending on stdenv
   llvmProjectsToBuild ? [
     # Required for building triton>=3.5.0
     # https://github.com/triton-lang/triton/blob/c3c476f357f1e9768ea4e45aa5c17528449ab9ef/third_party/amd/CMakeLists.txt#L6
@@ -32,6 +31,7 @@
     "llvm"
     "mlir"
   ],
+  llvmTargetsToBuild ? [ "NATIVE" ], # "NATIVE" resolves into x86 or aarch64 depending on stdenv
 }:
 
 let
@@ -70,7 +70,13 @@ stdenv.mkDerivation (finalAttrs: {
   pname = "triton-llvm";
   version = "23.0.0-unstable-2026-01-29"; # See https://github.com/llvm/llvm-project/blob/main/cmake/Modules/LLVMVersion.cmake
 
-  __structuredAttrs = true;
+  # See https://github.com/triton-lang/triton/blob/main/cmake/llvm-hash.txt
+  src = fetchFromGitHub {
+    owner = "llvm";
+    repo = "llvm-project";
+    rev = "ac5dc54d509169d387fcfd495d71853d81c46484";
+    hash = "sha256-tA1KcZqyPsgfxQs9tbNhX11oFcNGJefxWmfCpYqdI9M=";
+  };
 
   outputs = [
     "out"
@@ -82,13 +88,35 @@ stdenv.mkDerivation (finalAttrs: {
     "man"
   ];
 
-  # See https://github.com/triton-lang/triton/blob/main/cmake/llvm-hash.txt
-  src = fetchFromGitHub {
-    owner = "llvm";
-    repo = "llvm-project";
-    rev = "ac5dc54d509169d387fcfd495d71853d81c46484";
-    hash = "sha256-tA1KcZqyPsgfxQs9tbNhX11oFcNGJefxWmfCpYqdI9M=";
-  };
+  postPatch =
+    # `CMake Error: cannot write to file "/build/source/llvm/build/lib/cmake/mlir/MLIRTargets.cmake": Permission denied`
+    ''
+      chmod +w -R ./mlir
+      patchShebangs ./mlir/test/mlir-reduce
+    ''
+    # FileSystem permissions tests fail with various special bits
+    + ''
+      rm llvm/test/tools/llvm-objcopy/ELF/mirror-permissions-unix.test
+      rm llvm/unittests/Support/Path.cpp
+
+      substituteInPlace llvm/unittests/Support/CMakeLists.txt \
+        --replace-fail "Path.cpp" ""
+    ''
+    # Not sure why this fails
+    + ''
+      rm mlir/test/Dialect/SPIRV/IR/availability.mlir
+      rm mlir/test/Dialect/SPIRV/IR/target-env.mlir
+    ''
+    # Not sure why this fails
+    + lib.optionalString stdenv.hostPlatform.isAarch64 ''
+      rm llvm/test/tools/llvm-exegesis/AArch64/latency-by-opcode-name.s
+    ''
+    # The second llvm-install-name-tool invocation fails with
+    # "is not a Mach-O file" on aarch64-linux, even on a fresh copy of
+    # the original yaml2obj output. Root cause unknown.
+    + lib.optionalString stdenv.hostPlatform.isAarch64 ''
+      rm llvm/test/tools/llvm-objcopy/MachO/install-name-tool-change.test
+    '';
 
   nativeBuildInputs = [
     pkg-config
@@ -116,10 +144,6 @@ stdenv.mkDerivation (finalAttrs: {
     zlib
     ncurses
   ];
-
-  preConfigure = ''
-    cd llvm
-  '';
 
   cmakeFlags = [
     (lib.cmakeFeature "LLVM_TARGETS_TO_BUILD" (lib.concatStringsSep ";" llvmTargetsToBuild'))
@@ -182,35 +206,12 @@ stdenv.mkDerivation (finalAttrs: {
     ]
   );
 
-  postPatch =
-    # `CMake Error: cannot write to file "/build/source/llvm/build/lib/cmake/mlir/MLIRTargets.cmake": Permission denied`
-    ''
-      chmod +w -R ./mlir
-      patchShebangs ./mlir/test/mlir-reduce
-    ''
-    # FileSystem permissions tests fail with various special bits
-    + ''
-      rm llvm/test/tools/llvm-objcopy/ELF/mirror-permissions-unix.test
-      rm llvm/unittests/Support/Path.cpp
+  preConfigure = ''
+    cd llvm
+  '';
 
-      substituteInPlace llvm/unittests/Support/CMakeLists.txt \
-        --replace-fail "Path.cpp" ""
-    ''
-    # Not sure why this fails
-    + ''
-      rm mlir/test/Dialect/SPIRV/IR/availability.mlir
-      rm mlir/test/Dialect/SPIRV/IR/target-env.mlir
-    ''
-    # Not sure why this fails
-    + lib.optionalString stdenv.hostPlatform.isAarch64 ''
-      rm llvm/test/tools/llvm-exegesis/AArch64/latency-by-opcode-name.s
-    ''
-    # The second llvm-install-name-tool invocation fails with
-    # "is not a Mach-O file" on aarch64-linux, even on a fresh copy of
-    # the original yaml2obj output. Root cause unknown.
-    + lib.optionalString stdenv.hostPlatform.isAarch64 ''
-      rm llvm/test/tools/llvm-objcopy/MachO/install-name-tool-change.test
-    '';
+  doCheck = buildTests;
+  nativeCheckInputs = [ which ] ++ lib.optionals stdenv.hostPlatform.isDarwin [ sysctl ];
 
   postInstall = ''
     cp ${lib.getExe lit} $out/bin/llvm-lit
@@ -219,10 +220,7 @@ stdenv.mkDerivation (finalAttrs: {
     cp -a NATIVE/bin/llvm-config $out/bin/llvm-config-native
   '');
 
-  doCheck = buildTests;
-
-  nativeCheckInputs = [ which ] ++ lib.optionals stdenv.hostPlatform.isDarwin [ sysctl ];
-
+  __structuredAttrs = true;
   checkTarget = "check-all";
   requiredSystemFeatures = [ "big-parallel" ];
 
@@ -231,9 +229,11 @@ stdenv.mkDerivation (finalAttrs: {
     homepage = "https://github.com/llvm/llvm-project";
     changelog = "https://github.com/llvm/llvm-project/releases/tag/llvmorg-${finalAttrs.version}";
     license = with lib.licenses; [ ncsa ];
+
     maintainers = with lib.maintainers; [
       SomeoneSerge
     ];
+
     platforms = with lib.platforms; aarch64 ++ x86;
   };
 })

@@ -29,6 +29,11 @@ stdenv.mkDerivation (finalAttrs: {
     ./remove-hard-encodings.patch
   ];
 
+  nativeBuildInputs = with qt6; [
+    wrapQtAppsHook
+    qmake
+  ];
+
   buildInputs = [
     eigen
     hidapi
@@ -45,14 +50,7 @@ stdenv.mkDerivation (finalAttrs: {
     libpulseaudio
   ];
 
-  nativeBuildInputs = with qt6; [
-    wrapQtAppsHook
-    qmake
-  ];
-
   env.LANG = "C.UTF-8";
-
-  qmakeFlags = [ "wfview.pro" ];
 
   postInstall = lib.optionalString stdenv.hostPlatform.isDarwin ''
     mkdir -pv $out/Applications
@@ -62,12 +60,14 @@ stdenv.mkDerivation (finalAttrs: {
     makeWrapper "$out/Applications/wfview.app/Contents/MacOS/wfview" "$out/bin/wfview"
   '';
 
+  qmakeFlags = [ "wfview.pro" ];
+
   meta = {
     description = "Open-source software for the control of modern Icom radios";
     homepage = "https://wfview.org/";
     license = lib.licenses.gpl3Only;
+    maintainers = with lib.maintainers; [ Cryolitia ];
     platforms = lib.platforms.unix;
     mainProgram = "wfview";
-    maintainers = with lib.maintainers; [ Cryolitia ];
   };
 })

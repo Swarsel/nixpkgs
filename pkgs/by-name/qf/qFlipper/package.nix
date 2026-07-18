@@ -1,15 +1,14 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
-  pkg-config,
-  zlib,
-  libusb1,
   libGL,
-  wrapGAppsHook3,
-
   libsForQt5,
+  libusb1,
   nix-update-script,
+  pkg-config,
+  wrapGAppsHook3,
+  zlib,
 }:
 let
   pname = "qFlipper";
@@ -23,12 +22,20 @@ stdenv.mkDerivation {
   inherit pname version;
 
   src = fetchFromGitHub {
+    inherit hash;
     owner = "flipperdevices";
     repo = "qFlipper";
     rev = version;
     fetchSubmodules = true;
-    inherit hash;
   };
+
+  postPatch = ''
+    substituteInPlace qflipper_common.pri \
+        --replace 'GIT_VERSION = unknown' 'GIT_VERSION = "${version}"' \
+        --replace 'GIT_TIMESTAMP = 0' 'GIT_TIMESTAMP = ${timestamp}' \
+        --replace 'GIT_COMMIT = unknown' 'GIT_COMMIT = "${commit}"'
+    cat qflipper_common.pri
+  '';
 
   nativeBuildInputs = [
     pkg-config
@@ -56,21 +63,6 @@ stdenv.mkDerivation {
     libsForQt5.qtwayland
   ];
 
-  qmakeFlags = [
-    "DEFINES+=DISABLE_APPLICATION_UPDATES"
-    "CONFIG+=qtquickcompiler"
-  ];
-
-  dontWrapGApps = true;
-
-  postPatch = ''
-    substituteInPlace qflipper_common.pri \
-        --replace 'GIT_VERSION = unknown' 'GIT_VERSION = "${version}"' \
-        --replace 'GIT_TIMESTAMP = 0' 'GIT_TIMESTAMP = ${timestamp}' \
-        --replace 'GIT_COMMIT = unknown' 'GIT_COMMIT = "${commit}"'
-    cat qflipper_common.pri
-  '';
-
   postInstall = ''
     mkdir -p $out/bin
     ${lib.optionalString stdenv.hostPlatform.isDarwin ''
@@ -83,18 +75,26 @@ stdenv.mkDerivation {
   '';
 
   doInstallCheck = true;
+  dontWrapGApps = true;
+
+  qmakeFlags = [
+    "DEFINES+=DISABLE_APPLICATION_UPDATES"
+    "CONFIG+=qtquickcompiler"
+  ];
 
   passthru.updateScript = nix-update-script { };
 
   meta = {
-    broken = stdenv.hostPlatform.isDarwin;
     description = "Cross-platform desktop tool to manage your flipper device";
     homepage = "https://flipperzero.one/";
     license = lib.licenses.gpl3Only;
     maintainers = with lib.maintainers; [ cab404 ];
+
     platforms = [
       "x86_64-linux"
       "aarch64-linux"
     ]; # qtbase doesn't build yet on aarch64-darwin
+
+    broken = stdenv.hostPlatform.isDarwin;
   };
 }

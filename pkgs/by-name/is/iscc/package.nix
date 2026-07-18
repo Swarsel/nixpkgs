@@ -1,10 +1,10 @@
 {
-  stdenvNoCC,
+  lib,
   fetchurl,
   innoextract,
   runtimeShell,
+  stdenvNoCC,
   wineWow64Packages,
-  lib,
 }:
 
 let
@@ -12,24 +12,19 @@ let
   tagVersion = lib.replaceStrings [ "." ] [ "_" ] version;
 in
 stdenvNoCC.mkDerivation rec {
-  pname = "iscc";
   inherit version;
+  pname = "iscc";
+
   src = fetchurl {
     url = "https://github.com/jrsoftware/issrc/releases/download/is-${tagVersion}/innosetup-${version}.exe";
     hash = "sha256-9Bdg4fGuFdIIm7arFi4hcguSrnUG7XBmezkgAGPWjjQ=";
   };
+
   nativeBuildInputs = [
     innoextract
     wineWow64Packages.stable
   ];
-  unpackPhase = ''
-    runHook preUnpack
 
-    innoextract $src
-
-    runHook postUnpack
-  '';
-  dontBuild = true;
   installPhase = ''
     runHook preInstall
 
@@ -56,9 +51,18 @@ stdenvNoCC.mkDerivation rec {
     runHook postInstall
   '';
 
+  dontBuild = true;
   # Stripping causes `$out/bin/Setup.e32` to lose something important and causes the built windows installers to not run on windows "This app can't run on your PC".
   # They worked in wine but not on real windows.
   dontStrip = 1;
+
+  unpackPhase = ''
+    runHook preUnpack
+
+    innoextract $src
+
+    runHook postUnpack
+  '';
 
   meta = {
     description = "Compiler for Inno Setup, a tool for creating Windows installers";
@@ -66,7 +70,7 @@ stdenvNoCC.mkDerivation rec {
     changelog = "https://jrsoftware.org/files/is6-whatsnew.htm";
     license = lib.licenses.unfreeRedistributable;
     maintainers = with lib.maintainers; [ liberodark ];
-    mainProgram = "iscc";
     platforms = wineWow64Packages.stable.meta.platforms;
+    mainProgram = "iscc";
   };
 }

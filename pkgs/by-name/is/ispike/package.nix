@@ -2,8 +2,8 @@
   lib,
   stdenv,
   fetchurl,
-  cmake,
   boost186,
+  cmake,
 }:
 
 let
@@ -35,7 +35,7 @@ stdenv.mkDerivation (finalAttrs: {
     description = "Spiking neural interface between iCub and a spiking neural simulator";
     homepage = "https://sourceforge.net/projects/ispike/";
     license = lib.licenses.lgpl3;
-    platforms = lib.platforms.unix;
     maintainers = [ lib.maintainers.nico202 ];
+    platforms = lib.platforms.unix;
   };
 })

@@ -1,16 +1,15 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
+  buildPythonPackage,
   llm,
   llm-deepseek,
+  setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "llm-deepseek";
   version = "0.1.6";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "abrasumente233";
@@ -20,11 +19,9 @@ buildPythonPackage rec {
   };
 
   build-system = [ setuptools ];
-
   dependencies = [ llm ];
-
+  pyproject = true;
   pythonImportsCheck = [ "llm_deepseek" ];
-
   passthru.tests = llm.mkPluginTest llm-deepseek;
 
   meta = {

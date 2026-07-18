@@ -1,7 +1,7 @@
 {
   lib,
-  stdenvNoCC,
   fetchurl,
+  stdenvNoCC,
   unzip,
 }:
 stdenvNoCC.mkDerivation (finalAttrs: {
@@ -12,7 +12,6 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     url = "https://github.com/onebadidea/swiftquit/releases/download/v${finalAttrs.version}/Swift.Quit.zip";
     sha256 = "sha256-pORnyxOhTc/zykBHF5ujsWEZ9FjNauJGeBDz9bnHTvs=";
   };
-  dontUnpack = true;
 
   nativeBuildInputs = [ unzip ];
 
@@ -24,6 +23,8 @@ stdenvNoCC.mkDerivation (finalAttrs: {
 
     runHook postInstall
   '';
+
+  dontUnpack = true;
 
   meta = {
     description = "Automatic quitting of macOS apps when closing their windows";

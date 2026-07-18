@@ -33,8 +33,8 @@ stdenv.mkDerivation (finalAttrs: {
     description = "Simple library to adjust color saturation of X11 outputs";
     homepage = "https://github.com/libvibrant/libvibrant";
     license = lib.licenses.gpl3Plus;
-    platforms = lib.platforms.linux;
     maintainers = with lib.maintainers; [ Scrumplex ];
+    platforms = lib.platforms.linux;
     mainProgram = "vibrant-cli";
   };
 })

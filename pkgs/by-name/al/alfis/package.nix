@@ -1,11 +1,11 @@
 {
-  stdenv,
   lib,
-  rustPlatform,
+  stdenv,
   fetchFromGitHub,
-  pkg-config,
-  makeWrapper,
   libayatana-appindicator,
+  makeWrapper,
+  pkg-config,
+  rustPlatform,
   webkitgtk_4_1,
   xdotool,
   zenity,
@@ -23,7 +23,10 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-zZ8xltFgdPAfx+jtnnyLzzoC4r/L4oVjt59YemoDtgE=";
   };
 
-  cargoHash = "sha256-zqeWNf1fOGJFvRFU8ABm4s2QCfo4loNCPC1Zj19XE1U=";
+  postPatch = lib.optionalString stdenv.hostPlatform.isLinux ''
+    substituteInPlace $cargoDepsCopy/*/libappindicator-sys-*/src/lib.rs \
+      --replace-fail "libayatana-appindicator3.so.1" "${libayatana-appindicator}/lib/libayatana-appindicator3.so.1"
+  '';
 
   nativeBuildInputs = [
     pkg-config
@@ -35,8 +38,7 @@ rustPlatform.buildRustPackage (finalAttrs: {
     xdotool
   ];
 
-  buildNoDefaultFeatures = true;
-  buildFeatures = [ "doh" ] ++ lib.optional withGui "webgui";
+  cargoHash = "sha256-zqeWNf1fOGJFvRFU8ABm4s2QCfo4loNCPC1Zj19XE1U=";
 
   checkFlags = [
     # these want internet access, disable them
@@ -44,15 +46,13 @@ rustPlatform.buildRustPackage (finalAttrs: {
     "--skip=dns::client::tests::test_udp_client"
   ];
 
-  postPatch = lib.optionalString stdenv.hostPlatform.isLinux ''
-    substituteInPlace $cargoDepsCopy/*/libappindicator-sys-*/src/lib.rs \
-      --replace-fail "libayatana-appindicator3.so.1" "${libayatana-appindicator}/lib/libayatana-appindicator3.so.1"
-  '';
-
   postInstall = lib.optionalString (withGui && stdenv.hostPlatform.isLinux) ''
     wrapProgram $out/bin/alfis \
       --prefix PATH : ${lib.makeBinPath [ zenity ]}
   '';
+
+  buildFeatures = [ "doh" ] ++ lib.optional withGui "webgui";
+  buildNoDefaultFeatures = true;
 
   meta = {
     description = "Alternative Free Identity System";

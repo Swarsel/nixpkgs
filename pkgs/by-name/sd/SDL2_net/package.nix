@@ -1,9 +1,9 @@
 {
   lib,
-  SDL2,
-  fetchFromGitHub,
-  pkg-config,
   stdenv,
+  fetchFromGitHub,
+  SDL2,
+  pkg-config,
   # Boolean flags
   enableSdltest ? (!stdenv.hostPlatform.isDarwin),
 }:
@@ -24,6 +24,8 @@ stdenv.mkDerivation (finalAttrs: {
     "dev"
   ];
 
+  strictDeps = true;
+
   nativeBuildInputs = [
     SDL2
     pkg-config
@@ -36,13 +38,11 @@ stdenv.mkDerivation (finalAttrs: {
     (lib.enableFeature enableSdltest "sdltest")
   ];
 
-  strictDeps = true;
-
   meta = {
-    homepage = "https://github.com/libsdl-org/SDL_net";
+    inherit (SDL2.meta) platforms;
     description = "SDL multiplatform networking library";
+    homepage = "https://github.com/libsdl-org/SDL_net";
     license = lib.licenses.zlib;
     teams = [ lib.teams.sdl ];
-    inherit (SDL2.meta) platforms;
   };
 })

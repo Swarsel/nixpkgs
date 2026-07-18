@@ -1,12 +1,12 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  poetry-core,
   aiohttp,
-  cbor2,
-  pycryptodomex,
+  buildPythonPackage,
   busypie,
+  cbor2,
+  poetry-core,
+  pycryptodomex,
   pytest-asyncio,
   pytest-cov-stub,
   pytest-vcr,
@@ -17,7 +17,6 @@
 buildPythonPackage rec {
   pname = "freenub";
   version = "0.1.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "bdraco";
@@ -25,6 +24,14 @@ buildPythonPackage rec {
     tag = "v${version}";
     hash = "sha256-UkW/7KUQ4uCu3cxDSL+kw0gjKjs4KnmxRIOLVP4hwyA=";
   };
+
+  nativeCheckInputs = [
+    busypie
+    pytest-asyncio
+    pytest-cov-stub
+    pytest-vcr
+    pytestCheckHook
+  ];
 
   build-system = [ poetry-core ];
 
@@ -35,14 +42,7 @@ buildPythonPackage rec {
     requests
   ];
 
-  nativeCheckInputs = [
-    busypie
-    pytest-asyncio
-    pytest-cov-stub
-    pytest-vcr
-    pytestCheckHook
-  ];
-
+  pyproject = true;
   pythonImportsCheck = [ "pubnub" ];
 
   meta = {

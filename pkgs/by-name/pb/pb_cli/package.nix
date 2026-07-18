@@ -1,16 +1,16 @@
 {
-  screenshots ? true,
-  video ? false,
-  clipboard ? true,
   lib,
   stdenv,
-  jq,
-  curl,
   fetchFromGitHub,
+  curl,
+  jq,
   makeWrapper,
-  maim ? null,
-  xclip ? null,
   capture ? null,
+  clipboard ? true,
+  maim ? null,
+  screenshots ? true,
+  video ? false,
+  xclip ? null,
 }:
 
 assert screenshots -> maim != null;
@@ -30,14 +30,6 @@ stdenv.mkDerivation rec {
 
   nativeBuildInputs = [ makeWrapper ];
 
-  liveDeps = [
-    jq
-    curl
-  ]
-  ++ lib.optional screenshots maim
-  ++ lib.optional video capture
-  ++ lib.optional clipboard xclip;
-
   installPhase = ''
     install -Dm755 src/pb.sh $out/bin/pb
 
@@ -46,11 +38,19 @@ stdenv.mkDerivation rec {
       --prefix PATH : '${lib.makeBinPath liveDeps}'
   '';
 
+  liveDeps = [
+    jq
+    curl
+  ]
+  ++ lib.optional screenshots maim
+  ++ lib.optional video capture
+  ++ lib.optional clipboard xclip;
+
   meta = {
     description = "No bullshit 0x0.st client";
     homepage = "https://github.com/ptpb/pb_cli";
-    maintainers = [ lib.maintainers.ar1a ];
     license = lib.licenses.gpl3Plus;
+    maintainers = [ lib.maintainers.ar1a ];
     mainProgram = "pb";
   };
 }

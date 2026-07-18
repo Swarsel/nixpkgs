@@ -1,14 +1,13 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "psychrolib";
   version = "2.5.0";
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "psychrometrics";
@@ -17,14 +16,12 @@ buildPythonPackage rec {
     hash = "sha256-OkjoYIakF7NXluNTaJnUHk5cI5t8GnpqrbqHYwnLOts=";
   };
 
-  sourceRoot = "${src.name}/src/python";
-
   nativeBuildInputs = [ setuptools ];
-
   # Module has no tests
   doCheck = false;
-
+  format = "setuptools";
   pythonImportsCheck = [ "psychrolib" ];
+  sourceRoot = "${src.name}/src/python";
 
   meta = {
     description = "Library of psychrometric functions to calculate thermodynamic properties";

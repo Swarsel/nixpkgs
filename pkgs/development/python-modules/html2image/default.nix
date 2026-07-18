@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   hatchling,
   requests,
   websocket-client,
@@ -10,7 +10,6 @@
 buildPythonPackage rec {
   pname = "html2image";
   version = "2.0.7";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "vgalin";
@@ -26,6 +25,7 @@ buildPythonPackage rec {
     websocket-client
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "html2image" ];
 
   meta = {

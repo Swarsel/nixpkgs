@@ -1,21 +1,21 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
-  meson,
-  pkg-config,
-  ninja,
-  glib,
-  gtk3,
   cjs,
-  gtksourceview4,
-  gobject-introspection,
-  libmusicbrainz,
-  webkitgtk_4_1,
-  clutter-gtk,
   clutter-gst,
-  wrapGAppsHook3,
+  clutter-gtk,
+  glib,
+  gobject-introspection,
+  gtk3,
+  gtksourceview4,
+  libmusicbrainz,
+  meson,
   nemo,
+  ninja,
+  pkg-config,
+  webkitgtk_4_1,
+  wrapGAppsHook3,
   xreader,
 }:
 
@@ -29,8 +29,6 @@ stdenv.mkDerivation (finalAttrs: {
     tag = finalAttrs.version;
     hash = "sha256-tXeMkaCYnWzg+6ng8Tyg4Ms1aUeE3xiEkQ3tKEX6Vv8=";
   };
-
-  sourceRoot = "${finalAttrs.src.name}/nemo-preview";
 
   nativeBuildInputs = [
     wrapGAppsHook3
@@ -53,9 +51,11 @@ stdenv.mkDerivation (finalAttrs: {
     xreader
   ];
 
+  sourceRoot = "${finalAttrs.src.name}/nemo-preview";
+
   meta = {
-    homepage = "https://github.com/linuxmint/nemo-extensions/tree/master/nemo-preview";
     description = "Quick previewer for Nemo, the Cinnamon desktop file manager";
+    homepage = "https://github.com/linuxmint/nemo-extensions/tree/master/nemo-preview";
     license = lib.licenses.gpl2Plus;
     platforms = lib.platforms.linux;
     teams = [ lib.teams.cinnamon ];

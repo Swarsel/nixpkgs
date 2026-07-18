@@ -3,10 +3,10 @@
   stdenv,
   fetchFromGitHub,
   autoreconfHook,
+  cmocka,
+  git,
   pkg-config,
   ronn,
-  git,
-  cmocka,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -41,9 +41,9 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Blog compiler";
-    license = lib.licenses.bsd3;
     homepage = "https://blogc.rgm.io";
-    platforms = lib.platforms.unix;
+    license = lib.licenses.bsd3;
     maintainers = with lib.maintainers; [ sikmir ];
+    platforms = lib.platforms.unix;
   };
 })

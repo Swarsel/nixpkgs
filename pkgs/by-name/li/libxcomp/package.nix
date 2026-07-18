@@ -3,10 +3,10 @@
   stdenv,
   fetchurl,
   autoreconfHook,
-  pkg-config,
   libjpeg,
   libpng,
   libx11,
+  pkg-config,
   zlib,
 }:
 
@@ -15,9 +15,14 @@ stdenv.mkDerivation (finalAttrs: {
   version = "3.5.99.16";
 
   src = fetchurl {
-    sha256 = "1m3z9w3h6qpgk265xf030w7lcs181jgw2cdyzshb7l97mn1f7hh2";
     url = "https://code.x2go.org/releases/source/nx-libs/nx-libs-${finalAttrs.version}-lite.tar.gz";
+    sha256 = "1m3z9w3h6qpgk265xf030w7lcs181jgw2cdyzshb7l97mn1f7hh2";
   };
+
+  nativeBuildInputs = [
+    autoreconfHook
+    pkg-config
+  ];
 
   buildInputs = [
     libjpeg
@@ -25,17 +30,13 @@ stdenv.mkDerivation (finalAttrs: {
     libx11
     zlib
   ];
-  nativeBuildInputs = [
-    autoreconfHook
-    pkg-config
-  ];
+
+  enableParallelBuilding = true;
 
   preAutoreconf = ''
     cd nxcomp/
     sed -i 's|/src/.libs/libXcomp.a|/src/.libs/libXcomp.la|' test/Makefile.am
   '';
-
-  enableParallelBuilding = true;
 
   meta = {
     description = "NX compression library";

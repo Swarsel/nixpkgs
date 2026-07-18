@@ -1,8 +1,8 @@
 {
   lib,
   stdenv,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   pytest-cov-stub,
   pytest-django,
   pytest-xdist,
@@ -12,7 +12,6 @@
 buildPythonPackage rec {
   pname = "diskcache";
   version = "5.6.3";
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "grantjenks";
@@ -40,6 +39,7 @@ buildPythonPackage rec {
     "test_cache_write_unpicklable_object"
   ];
 
+  format = "setuptools";
   pythonImportsCheck = [ "diskcache" ];
 
   meta = {

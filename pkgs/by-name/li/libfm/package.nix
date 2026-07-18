@@ -2,10 +2,12 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  fetchpatch,
   autoreconfHook,
-  gtk-doc,
+  fetchpatch,
   glib,
+  gtk-doc,
+  gtk2,
+  gtk3,
   intltool,
   menu-cache,
   pango,
@@ -13,8 +15,6 @@
   vala,
   extraOnly ? false,
   withGtk3 ? false,
-  gtk2,
-  gtk3,
 }:
 
 let
@@ -39,6 +39,7 @@ stdenv.mkDerivation (finalAttrs: {
     intltool
     gtk-doc
   ];
+
   buildInputs = [
     glib
     gtk
@@ -52,21 +53,20 @@ stdenv.mkDerivation (finalAttrs: {
   ++ optional extraOnly "--with-extra-only"
   ++ optional withGtk3 "--with-gtk=3";
 
-  installFlags = [ "sysconfdir=${placeholder "out"}/etc" ];
-
   # libfm-extra is pulled in by menu-cache and thus leads to a collision for libfm
   postInstall = optionalString (!extraOnly) ''
     rm $out/lib/libfm-extra.so $out/lib/libfm-extra.so.* $out/lib/libfm-extra.la $out/lib/pkgconfig/libfm-extra.pc
   '';
 
   enableParallelBuilding = true;
+  installFlags = [ "sysconfdir=${placeholder "out"}/etc" ];
 
   meta = {
-    broken = stdenv.hostPlatform.isDarwin;
+    description = "Glib-based library for file management";
     homepage = "https://blog.lxde.org/category/pcmanfm/";
     license = lib.licenses.lgpl21Plus;
-    description = "Glib-based library for file management";
     maintainers = [ ];
     platforms = lib.platforms.linux ++ lib.platforms.darwin;
+    broken = stdenv.hostPlatform.isDarwin;
   };
 })

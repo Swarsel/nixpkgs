@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   nix-update-script,
   versionCheckHook,
 }:
@@ -17,6 +17,11 @@ buildGoModule (finalAttrs: {
   };
 
   vendorHash = "sha256-4u40PdRT3E+BZ8bIrnIgRnJkpws6EPK5DRyXu9oY7hc=";
+  doInstallCheck = true;
+
+  nativeInstallCheckInputs = [
+    versionCheckHook
+  ];
 
   ldflags = [
     "-s"
@@ -24,12 +29,6 @@ buildGoModule (finalAttrs: {
   ];
 
   passthru.updateScript = nix-update-script { };
-
-  nativeInstallCheckInputs = [
-    versionCheckHook
-  ];
-
-  doInstallCheck = true;
 
   meta = {
     description = "Tool to bring existing Azure resources under Terraform's management";

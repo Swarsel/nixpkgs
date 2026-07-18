@@ -1,7 +1,7 @@
 {
-  buildGoModule,
-  fetchFromGitHub,
   lib,
+  fetchFromGitHub,
+  buildGoModule,
   nixosTests,
   symlinkJoin,
 }:
@@ -26,15 +26,13 @@ let
 
   meta = {
     description = "Distributed reliable key-value store for the most critical data of a distributed system";
-    license = lib.licenses.asl20;
     homepage = "https://etcd.io/";
+    license = lib.licenses.asl20;
     maintainers = with lib.maintainers; [ dtomvan ];
     platforms = lib.platforms.darwin ++ lib.platforms.linux;
   };
 
   etcdserver = buildGoModule {
-    pname = "etcdserver";
-
     inherit
       env
       meta
@@ -42,26 +40,23 @@ let
       version
       ;
 
-    __darwinAllowLocalNetworking = true;
-
+    pname = "etcdserver";
     vendorHash = etcdServerVendorHash;
-
-    modRoot = "./server";
 
     preInstall = ''
       mv $GOPATH/bin/{server,etcd}
     '';
 
+    __darwinAllowLocalNetworking = true;
     # We set the GitSHA to `GitNotFound` to match official build scripts when
     # git is unavailable. This is to avoid doing a full Git Checkout of etcd.
     # User facing version numbers are still available in the binary, just not
     # the sha it was built from.
     ldflags = [ "-X go.etcd.io/etcd/api/v3/version.GitSHA=GitNotFound" ];
+    modRoot = "./server";
   };
 
   etcdutl = buildGoModule {
-    pname = "etcdutl";
-
     inherit
       env
       meta
@@ -69,14 +64,12 @@ let
       version
       ;
 
+    pname = "etcdutl";
     vendorHash = etcdUtlVendorHash;
-
     modRoot = "./etcdutl";
   };
 
   etcdctl = buildGoModule {
-    pname = "etcdctl";
-
     inherit
       env
       meta
@@ -84,27 +77,27 @@ let
       version
       ;
 
+    pname = "etcdctl";
     vendorHash = etcdCtlVendorHash;
-
     modRoot = "./etcdctl";
   };
 in
 symlinkJoin {
-  pname = "etcd";
-
   inherit meta version;
-
-  passthru = {
-    deps = {
-      inherit etcdserver etcdutl etcdctl;
-    };
-    tests = nixosTests.etcd."3_5";
-    updateScript = ./update.sh;
-  };
+  pname = "etcd";
 
   paths = [
     etcdserver
     etcdutl
     etcdctl
   ];
+
+  passthru = {
+    deps = {
+      inherit etcdserver etcdutl etcdctl;
+    };
+
+    tests = nixosTests.etcd."3_5";
+    updateScript = ./update.sh;
+  };
 }

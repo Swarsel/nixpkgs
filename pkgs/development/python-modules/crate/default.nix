@@ -3,22 +3,21 @@
   fetchFromGitHub,
   buildPythonPackage,
   dask,
-  urllib3,
   geojson,
-  verlib2,
-  pueblo,
+  orjson,
   pandas,
-  sqlalchemy,
+  pueblo,
   pytestCheckHook,
   pytz,
   setuptools,
-  orjson,
+  sqlalchemy,
+  urllib3,
+  verlib2,
 }:
 
 buildPythonPackage rec {
   pname = "crate";
   version = "2.0.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "crate";
@@ -26,6 +25,13 @@ buildPythonPackage rec {
     tag = version;
     hash = "sha256-K09jezBINTw4sUl1Xvm4lJa68ZpwMy9ju/pxdRwnaE4=";
   };
+
+  nativeCheckInputs = [
+    dask
+    pandas
+    pytestCheckHook
+    pytz
+  ];
 
   build-system = [
     setuptools
@@ -40,11 +46,9 @@ buildPythonPackage rec {
     pueblo
   ];
 
-  nativeCheckInputs = [
-    dask
-    pandas
-    pytestCheckHook
-    pytz
+  disabledTestPaths = [
+    # imports setuptools.ssl_support, which doesn't exist anymore
+    "tests/client/test_http.py"
   ];
 
   disabledTests = [
@@ -59,14 +63,11 @@ buildPythonPackage rec {
     "test_verbosity"
   ];
 
-  disabledTestPaths = [
-    # imports setuptools.ssl_support, which doesn't exist anymore
-    "tests/client/test_http.py"
-  ];
+  pyproject = true;
 
   meta = {
-    homepage = "https://github.com/crate/crate-python";
     description = "Python client library for CrateDB";
+    homepage = "https://github.com/crate/crate-python";
     changelog = "https://github.com/crate/crate-python/blob/${version}/CHANGES.rst";
     license = lib.licenses.asl20;
     maintainers = with lib.maintainers; [ doronbehar ];

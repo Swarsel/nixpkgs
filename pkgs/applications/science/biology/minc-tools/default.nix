@@ -2,15 +2,15 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  cmake,
-  makeWrapper,
-  flex,
-  bison,
-  perl,
   TextFormat,
-  libminc,
+  bison,
+  cmake,
+  flex,
   libjpeg,
+  libminc,
+  makeWrapper,
   nifticlib,
+  perl,
   zlib,
 }:
 
@@ -66,11 +66,11 @@ stdenv.mkDerivation {
   '';
 
   meta = {
-    homepage = "https://github.com/BIC-MNI/minc-tools";
     description = "Command-line utilities for working with MINC files";
+    homepage = "https://github.com/BIC-MNI/minc-tools";
+    license = lib.licenses.free;
     maintainers = with lib.maintainers; [ bcdarwin ];
     platforms = lib.platforms.unix;
-    license = lib.licenses.free;
     broken = stdenv.hostPlatform.isDarwin;
   };
 }

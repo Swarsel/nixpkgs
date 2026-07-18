@@ -6,12 +6,8 @@
 }:
 
 stdenv.mkDerivation (finalAttrs: {
-  version = "1.4";
   pname = "gfxtablet-uinput-driver";
-
-  buildInputs = [
-    linuxHeaders
-  ];
+  version = "1.4";
 
   src = fetchFromGitHub {
     owner = "rfc2822";
@@ -19,6 +15,10 @@ stdenv.mkDerivation (finalAttrs: {
     rev = "android-app-${finalAttrs.version}";
     sha256 = "1i2m98yypfa9phshlmvjlgw7axfisxmldzrvnbzm5spvv5s4kvvb";
   };
+
+  buildInputs = [
+    linuxHeaders
+  ];
 
   preBuild = "cd driver-uinput";
 
@@ -32,9 +32,9 @@ stdenv.mkDerivation (finalAttrs: {
   meta = {
     description = "Uinput driver for Android GfxTablet tablet-as-input-device app";
     homepage = "https://github.com/rfc2822/GfxTablet";
-    mainProgram = "networktablet";
     license = lib.licenses.mit;
     maintainers = [ lib.maintainers.raskin ];
     platforms = lib.platforms.linux;
+    mainProgram = "networktablet";
   };
 })

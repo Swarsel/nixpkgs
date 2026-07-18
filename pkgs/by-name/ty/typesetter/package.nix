@@ -1,48 +1,39 @@
 {
   lib,
   stdenv,
-  fetchFromCodeberg,
-  rustPlatform,
-
   # nativeBuildInputs
   cargo,
   desktop-file-utils,
-  gettext,
-  meson,
-  ninja,
-  pkg-config,
-  python3,
-  rustc,
-  wrapGAppsHook4,
-
+  fetchFromCodeberg,
   # buildInputs
   gdk-pixbuf,
+  gettext,
   graphene,
   gtk4,
   gtksourceview5,
   libadwaita,
   libspelling,
+  meson,
+  ninja,
+  nix-update-script,
   openssl,
   pango,
-
-  nix-update-script,
+  pkg-config,
+  python3,
+  rustPlatform,
+  rustc,
+  wrapGAppsHook4,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
   pname = "typesetter";
   version = "0.13.5";
-  __structuredAttrs = true;
 
   src = fetchFromCodeberg {
     owner = "haydn";
     repo = "typesetter";
     tag = "v${finalAttrs.version}";
     hash = "sha256-sJUuc7Ado0NFbLrnO3WVxgMA2l5Uh7X0uLvJVhgwwPA=";
-  };
-
-  cargoDeps = rustPlatform.fetchCargoVendor {
-    inherit (finalAttrs) pname version src;
-    hash = "sha256-E2ADu5jo8ulXGIw+vd9m4oFcxMMvo85oIetsIJy9ql4=";
   };
 
   strictDeps = true;
@@ -72,6 +63,12 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   env.OPENSSL_NO_VENDOR = true;
+  __structuredAttrs = true;
+
+  cargoDeps = rustPlatform.fetchCargoVendor {
+    inherit (finalAttrs) pname version src;
+    hash = "sha256-E2ADu5jo8ulXGIw+vd9m4oFcxMMvo85oIetsIJy9ql4=";
+  };
 
   passthru.updateScript = nix-update-script { };
 

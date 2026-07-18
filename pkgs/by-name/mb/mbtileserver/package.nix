@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule (finalAttrs: {
@@ -19,10 +19,10 @@ buildGoModule (finalAttrs: {
 
   meta = {
     description = "Simple Go-based server for map tiles stored in mbtiles format";
-    mainProgram = "mbtileserver";
     homepage = "https://github.com/consbio/mbtileserver";
     changelog = "https://github.com/consbio/mbtileserver/blob/v${finalAttrs.version}/CHANGELOG.md";
     license = lib.licenses.isc;
+    mainProgram = "mbtileserver";
     teams = [ lib.teams.geospatial ];
   };
 })

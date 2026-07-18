@@ -1,18 +1,17 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   cython,
   numpy,
   pbr,
-  setuptools,
   pytestCheckHook,
+  setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "fastremap";
   version = "1.19.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "seung-lab";
@@ -20,6 +19,14 @@ buildPythonPackage rec {
     tag = version;
     hash = "sha256-fPDgCpCJrMomxr0dicM9NBqzH4s+/Ux37hTsnsGts2g=";
   };
+
+  env.PBR_VERSION = version;
+
+  nativeCheckInputs = [
+    pytestCheckHook
+  ];
+
+  preCheck = "rm -r fastremap/";
 
   build-system = [
     cython
@@ -32,13 +39,7 @@ buildPythonPackage rec {
     numpy
   ];
 
-  env.PBR_VERSION = version;
-
-  nativeCheckInputs = [
-    pytestCheckHook
-  ];
-
-  preCheck = "rm -r fastremap/";
+  pyproject = true;
 
   pythonImportsCheck = [
     "fastremap"

@@ -8,12 +8,12 @@ buildDunePackage (finalAttrs: {
   pname = "rusage";
   version = "1.0.0";
 
-  duneVersion = "3";
-
   src = fetchurl {
     url = "https://github.com/CraigFe/ocaml-rusage/releases/download/${finalAttrs.version}/rusage-${finalAttrs.version}.tbz";
     hash = "sha256-OgYA2Fe1goqoaOS45Z6FBJNNYN/uq+KQoUwG8KSo6Fk=";
   };
+
+  duneVersion = "3";
 
   meta = {
     description = "Bindings to the GETRUSAGE(2) syscall";

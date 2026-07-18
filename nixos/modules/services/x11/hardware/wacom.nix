@@ -20,8 +20,8 @@ in
     services.xserver.wacom = {
 
       enable = mkOption {
-        type = types.bool;
         default = false;
+
         description = ''
           Whether to enable the Wacom touchscreen/digitizer/tablet.
           If you ever have any issues such as, try switching to terminal (ctrl-alt-F1) and back
@@ -31,6 +31,8 @@ in
           {option}`environment.etc."X11/xorg.conf.d/70-wacom.conf"` in
           configuration.nix easily.
         '';
+
+        type = types.bool;
       };
 
     };
@@ -39,14 +41,12 @@ in
 
   config = mkIf cfg.enable {
 
-    environment.systemPackages = [ pkgs.xf86-input-wacom ]; # provides xsetwacom
-
-    services.xserver.modules = [ pkgs.xf86-input-wacom ];
-
-    services.udev.packages = [ pkgs.xf86-input-wacom ];
-
     environment.etc."X11/xorg.conf.d/70-wacom.conf".source =
       "${pkgs.xf86-input-wacom}/share/X11/xorg.conf.d/70-wacom.conf";
+
+    environment.systemPackages = [ pkgs.xf86-input-wacom ]; # provides xsetwacom
+    services.udev.packages = [ pkgs.xf86-input-wacom ];
+    services.xserver.modules = [ pkgs.xf86-input-wacom ];
 
   };
 

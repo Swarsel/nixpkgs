@@ -1,13 +1,13 @@
 {
   lib,
   fetchurl,
+  libx11,
+  makeDesktopItem,
+  makeWrapper,
   tcl,
   tk,
-  libx11,
-  zlib,
-  makeWrapper,
   which,
-  makeDesktopItem,
+  zlib,
 }:
 
 tcl.mkTclDerivation rec {
@@ -29,13 +29,13 @@ tcl.mkTclDerivation rec {
     makeWrapper
     which
   ];
+
   buildInputs = [
     tk
     libx11
     zlib
   ];
 
-  addTclConfigureFlags = false;
   configureFlags = [
     "BINDIR=${placeholder "out"}/bin"
     "SHAREDIR=${placeholder "out"}/share"
@@ -51,25 +51,28 @@ tcl.mkTclDerivation rec {
     install -D icons/scid.png "$out"/share/icons/hicolor/128x128/apps/scid.png
   '';
 
+  addTclConfigureFlags = false;
+
   desktopItem = makeDesktopItem {
-    name = "scid-vs-pc";
-    desktopName = "Scid vs. PC";
-    genericName = "Chess Database";
-    comment = meta.description;
-    icon = "scid";
-    exec = "scid";
     categories = [
       "Game"
       "BoardGame"
     ];
+
+    comment = meta.description;
+    desktopName = "Scid vs. PC";
+    exec = "scid";
+    genericName = "Chess Database";
+    icon = "scid";
+    name = "scid-vs-pc";
   };
 
   meta = {
     description = "Chess database with play and training functionality";
     homepage = "https://scidvspc.sourceforge.net/";
     license = lib.licenses.gpl2Only;
-    mainProgram = "scid";
     maintainers = [ lib.maintainers.paraseba ];
     platforms = lib.platforms.linux;
+    mainProgram = "scid";
   };
 }

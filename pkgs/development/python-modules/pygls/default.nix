@@ -1,22 +1,21 @@
 {
   lib,
   stdenv,
-  buildPythonPackage,
   fetchFromGitHub,
-  poetry-core,
   attrs,
+  buildPythonPackage,
   cattrs,
   lsprotocol,
-  websockets,
+  nix-update-script,
+  poetry-core,
   pytest-asyncio,
   pytestCheckHook,
-  nix-update-script,
+  websockets,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "pygls";
   version = "2.1.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "openlawlibrary";
@@ -35,23 +34,24 @@ buildPythonPackage (finalAttrs: {
     lsprotocol
   ];
 
-  optional-dependencies = {
-    ws = [ websockets ];
-  };
-
   nativeCheckInputs = [
     pytest-asyncio
     pytestCheckHook
   ];
-
-  # Fixes hanging tests on Darwin
-  __darwinAllowLocalNetworking = true;
 
   preCheck = lib.optionalString stdenv.hostPlatform.isDarwin ''
     # Darwin issue: OSError: [Errno 24] Too many open files
     ulimit -n 1024
   '';
 
+  # Fixes hanging tests on Darwin
+  __darwinAllowLocalNetworking = true;
+
+  optional-dependencies = {
+    ws = [ websockets ];
+  };
+
+  pyproject = true;
   pythonImportsCheck = [ "pygls" ];
 
   passthru.updateScript = nix-update-script {

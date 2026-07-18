@@ -2,25 +2,25 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  gitMinimal,
-  makeBinaryWrapper,
-  installShellFiles,
-  rustPlatform,
-  testers,
-  cachix,
-  nixVersions,
-  openssl,
-  dbus,
-  protobuf,
-  sqlite,
-  pkg-config,
-  glibcLocalesUtf8,
+  bash,
   boehmgc,
+  cachix,
+  dbus,
+  devenv, # required to run version test
+  gitMinimal,
+  glibcLocalesUtf8,
+  installShellFiles,
   libghostty-vt,
   llvmPackages,
+  makeBinaryWrapper,
+  nixVersions,
   nixd,
-  bash,
-  devenv, # required to run version test
+  openssl,
+  pkg-config,
+  protobuf,
+  rustPlatform,
+  sqlite,
+  testers,
 }:
 
 let
@@ -29,11 +29,11 @@ let
   devenvNixRev = "42d4b7de21c15f28c568410f4383fa06a8458a40";
 
   devenvNixSrc = fetchFromGitHub {
+    hash = "sha256-g2KEBuHpc3a56c+jPcg0+w6LSuIj6f+zzdztLCOyIhc=";
     name = "devenv-nix-${devenvNixVersion}-source";
     owner = "cachix";
     repo = "nix";
     rev = devenvNixRev;
-    hash = "sha256-g2KEBuHpc3a56c+jPcg0+w6LSuIj6f+zzdztLCOyIhc=";
   };
 
   nix_components = (nixVersions.nixComponents_git.overrideSource devenvNixSrc).overrideScope (
@@ -43,8 +43,8 @@ let
   );
 in
 rustPlatform.buildRustPackage {
-  pname = "devenv";
   inherit version;
+  pname = "devenv";
 
   src = fetchFromGitHub {
     owner = "cachix";
@@ -52,21 +52,6 @@ rustPlatform.buildRustPackage {
     tag = "v2.1.2";
     hash = "sha256-EQnZCy7r4VMO6KDoytxHBa0mFbM1D9g1kaDfs/s0YZA=";
   };
-
-  cargoHash = "sha256-uEwxqnLqCFpyV2NbnfuUyVqKrMeVeQzoGQmElaVeGU8=";
-
-  env = {
-    RUSTFLAGS = "--cfg tracing_unstable";
-    LIBSQLITE3_SYS_USE_PKG_CONFIG = "1";
-    DEVENV_IS_RELEASE = true;
-  };
-
-  cargoBuildFlags = [
-    "-p"
-    "devenv"
-    "-p"
-    "devenv-run-tests"
-  ];
 
   nativeBuildInputs = [
     installShellFiles
@@ -91,6 +76,14 @@ rustPlatform.buildRustPackage {
     nix_components.nix-main-c
   ];
 
+  cargoHash = "sha256-uEwxqnLqCFpyV2NbnfuUyVqKrMeVeQzoGQmElaVeGU8=";
+
+  env = {
+    DEVENV_IS_RELEASE = true;
+    LIBSQLITE3_SYS_USE_PKG_CONFIG = "1";
+    RUSTFLAGS = "--cfg tracing_unstable";
+  };
+
   nativeCheckInputs = [
     gitMinimal
     bash
@@ -105,12 +98,6 @@ rustPlatform.buildRustPackage {
     git add -A
     popd
   '';
-
-  useNextest = true;
-  cargoTestFlags = [
-    "-p"
-    "devenv"
-  ];
 
   postInstall =
     let
@@ -144,22 +131,38 @@ rustPlatform.buildRustPackage {
         --zsh $compdir/_devenv
     '';
 
+  cargoBuildFlags = [
+    "-p"
+    "devenv"
+    "-p"
+    "devenv-run-tests"
+  ];
+
+  cargoTestFlags = [
+    "-p"
+    "devenv"
+  ];
+
+  useNextest = true;
+
   passthru.tests = {
     version = testers.testVersion {
-      package = devenv;
       command = "export XDG_DATA_HOME=$PWD; devenv version";
+      package = devenv;
     };
   };
 
   meta = {
-    changelog = "https://github.com/cachix/devenv/releases";
     description = "Fast, Declarative, Reproducible, and Composable Developer Environments";
     homepage = "https://github.com/cachix/devenv";
+    changelog = "https://github.com/cachix/devenv/releases";
     license = lib.licenses.asl20;
-    mainProgram = "devenv";
+
     maintainers = with lib.maintainers; [
       domenkozar
       sandydoo
     ];
+
+    mainProgram = "devenv";
   };
 }

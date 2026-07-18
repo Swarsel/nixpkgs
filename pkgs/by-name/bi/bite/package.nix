@@ -1,29 +1,27 @@
 {
   lib,
-  apple-sdk_15,
-  rustPlatform,
+  stdenv,
   fetchFromGitHub,
-  pkg-config,
-  makeBinaryWrapper,
-  copyDesktopItems,
-  makeDesktopItem,
-  imagemagick,
+  apple-sdk_15,
   atk,
   cairo,
+  copyDesktopItems,
   gdk-pixbuf,
   glib,
   gtk3,
+  imagemagick,
   libxkbcommon,
+  makeBinaryWrapper,
+  makeDesktopItem,
   pango,
+  pkg-config,
+  rustPlatform,
   vulkan-loader,
-  stdenv,
   wayland,
 }:
 rustPlatform.buildRustPackage (finalAttrs: {
   pname = "bite";
   version = "0.43";
-
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "WINSDK";
@@ -31,8 +29,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-akwkTV1bZJ3GcEtObyF+qN5IkBRoXdztUSOghjQy7A0=";
   };
-
-  cargoHash = "sha256-OlxUHYTbljWGWdiceBmW3J0oB4w0/5izgNnwCafV6xY=";
 
   nativeBuildInputs = [
     pkg-config
@@ -58,13 +54,7 @@ rustPlatform.buildRustPackage (finalAttrs: {
     apple-sdk_15
   ];
 
-  runtimeDependencies = [
-    libxkbcommon
-    vulkan-loader
-  ]
-  ++ lib.optionals stdenv.hostPlatform.isLinux [
-    wayland
-  ];
+  cargoHash = "sha256-OlxUHYTbljWGWdiceBmW3J0oB4w0/5izgNnwCafV6xY=";
 
   postInstall = ''
     wrapProgram $out/bin/bite \
@@ -74,28 +64,41 @@ rustPlatform.buildRustPackage (finalAttrs: {
     convert $src/assets/iconx64.png -background black -alpha remove -alpha off $out/share/icons/hicolor/64x64/apps/bite.png
   '';
 
+  __structuredAttrs = true;
+
   desktopItems = [
     (makeDesktopItem {
-      name = "BiTE";
-      exec = finalAttrs.meta.mainProgram;
-      icon = "bite";
-      desktopName = "BiTE";
-      comment = finalAttrs.meta.description;
       categories = [
         "Development"
         "Utility"
       ];
+
+      comment = finalAttrs.meta.description;
+      desktopName = "BiTE";
+      exec = finalAttrs.meta.mainProgram;
+      icon = "bite";
+      name = "BiTE";
     })
+  ];
+
+  runtimeDependencies = [
+    libxkbcommon
+    vulkan-loader
+  ]
+  ++ lib.optionals stdenv.hostPlatform.isLinux [
+    wayland
   ];
 
   meta = {
     description = "Disassembler focused on comprehensive rust support";
     homepage = "https://github.com/WINSDK/bite";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       vinnymeller
       kybe236
     ];
+
     mainProgram = "bite";
   };
 })

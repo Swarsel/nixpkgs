@@ -1,16 +1,15 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  pdm-backend,
   bleak,
   bleak-retry-connector,
+  buildPythonPackage,
+  pdm-backend,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "eurotronic-cometblue-ha";
   version = "1.4.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "rikroe";
@@ -19,6 +18,8 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-j3UuN0Cmb2mOo3QGqy0wu19+vRyMahclXKyka2Vy10w=";
   };
 
+  # Tests require a real Bluetooth Comet Blue device.
+  doCheck = false;
   build-system = [ pdm-backend ];
 
   dependencies = [
@@ -26,9 +27,7 @@ buildPythonPackage (finalAttrs: {
     bleak-retry-connector
   ];
 
-  # Tests require a real Bluetooth Comet Blue device.
-  doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "eurotronic_cometblue_ha" ];
 
   meta = {

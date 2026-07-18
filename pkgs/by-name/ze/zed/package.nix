@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   testers,
   zed,
 }:
@@ -19,24 +19,25 @@ buildGoModule (finalAttrs: {
 
   vendorHash = "sha256-E9CXS3BQAglJV36BPgwhkb9SswxAj/yBcGqJ+XXwTmE=";
 
-  subPackages = [
-    "cmd/zed"
-    "cmd/zq"
-  ];
-
   ldflags = [
     "-s"
     "-w"
     "-X=github.com/brimdata/zed/cli.version=${finalAttrs.version}"
   ];
 
+  subPackages = [
+    "cmd/zed"
+    "cmd/zq"
+  ];
+
   passthru.tests = {
     zed-version = testers.testVersion {
       package = zed;
     };
+
     zq-version = testers.testVersion {
-      package = zed;
       command = "zq --version";
+      package = zed;
     };
   };
 

@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   libx11,
   nix-update-script,
   versionCheckHook,
@@ -10,8 +10,6 @@ buildGoModule (finalAttrs: {
   pname = "nerdlog";
   version = "1.10.0";
 
-  __structuredAttrs = true;
-
   src = fetchFromGitHub {
     owner = "dimonomid";
     repo = "nerdlog";
@@ -19,16 +17,9 @@ buildGoModule (finalAttrs: {
     hash = "sha256-XlzWNeyd+Ar4ArFcN1wkQ0aod6ckAiIb12odK7cf4+s=";
   };
 
-  vendorHash = "sha256-hvv0dsE1yz85VLaBOE7RWbux8L8kVTihcA1HyyHRYAM=";
-
+  nativeBuildInputs = [ versionCheckHook ];
   buildInputs = [ libx11 ];
-
-  subPackages = [ "cmd/nerdlog" ];
-
-  ldflags = [
-    "-X github.com/dimonomid/nerdlog/version.version=${finalAttrs.version}"
-    "-X github.com/dimonomid/nerdlog/version.builtBy=nix"
-  ];
+  vendorHash = "sha256-hvv0dsE1yz85VLaBOE7RWbux8L8kVTihcA1HyyHRYAM=";
 
   # e2e tests require SSH connections to test hosts
   checkFlags = [
@@ -37,24 +28,31 @@ buildGoModule (finalAttrs: {
   ];
 
   doInstallCheck = true;
-  nativeBuildInputs = [ versionCheckHook ];
+  __structuredAttrs = true;
 
+  ldflags = [
+    "-X github.com/dimonomid/nerdlog/version.version=${finalAttrs.version}"
+    "-X github.com/dimonomid/nerdlog/version.builtBy=nix"
+  ];
+
+  subPackages = [ "cmd/nerdlog" ];
   # `nerdlog --version` will fail if $HOME is not defined
   versionCheckKeepEnvironment = [ "HOME" ];
-
   passthru.updateScript = nix-update-script { };
 
   meta = {
-    changelog = "https://github.com/dimonomid/nerdlog/releases/tag/${finalAttrs.src.tag}";
     description = "Fast, remote-first, multi-host TUI log viewer with timeline histogram";
+
     longDescription = ''
       Nerdlog is a fast, remote-first, multi-host TUI log viewer with timeline histogram
       and no central server. Loosely inspired by Graylog/Kibana, but without the bloat.
       Pretty much no setup needed, either.
     '';
+
     homepage = "https://github.com/dimonomid/nerdlog";
+    changelog = "https://github.com/dimonomid/nerdlog/releases/tag/${finalAttrs.src.tag}";
     license = lib.licenses.bsd2;
-    mainProgram = "nerdlog";
     maintainers = with lib.maintainers; [ tophcodes ];
+    mainProgram = "nerdlog";
   };
 })

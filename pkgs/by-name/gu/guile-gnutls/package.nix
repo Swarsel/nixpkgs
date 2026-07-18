@@ -21,10 +21,6 @@ stdenv.mkDerivation (finalAttrs: {
 
   strictDeps = true;
 
-  depsBuildBuild = [
-    buildPackages.stdenv.cc
-  ];
-
   nativeBuildInputs = [
     gnutls
     guile
@@ -44,9 +40,13 @@ stdenv.mkDerivation (finalAttrs: {
     "--with-guile-extension-dir=${placeholder "out"}/lib/guile/${guile.effectiveVersion}/extensions"
   ];
 
+  depsBuildBuild = [
+    buildPackages.stdenv.cc
+  ];
+
   meta = {
-    homepage = "https://gitlab.com/gnutls/guile/";
     description = "Guile bindings for GnuTLS library";
+    homepage = "https://gitlab.com/gnutls/guile/";
     license = lib.licenses.lgpl21Plus;
     maintainers = [ ];
     platforms = guile.meta.platforms;

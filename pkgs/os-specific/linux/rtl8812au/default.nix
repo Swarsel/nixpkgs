@@ -2,8 +2,8 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  kernel,
   bc,
+  kernel,
   nukeReferences,
 }:
 
@@ -23,17 +23,6 @@ stdenv.mkDerivation {
     nukeReferences
   ]
   ++ kernel.moduleBuildDependencies;
-  hardeningDisable = [
-    "pic"
-    "format"
-  ];
-
-  prePatch = ''
-    substituteInPlace ./Makefile \
-      --replace /lib/modules/ "${kernel.dev}/lib/modules/" \
-      --replace /sbin/depmod \# \
-      --replace '$(MODDESTDIR)' "$out/lib/modules/${kernel.modDirVersion}/kernel/net/wireless/"
-  '';
 
   makeFlags = [
     "ARCH=${stdenv.hostPlatform.linuxArch}"
@@ -54,12 +43,24 @@ stdenv.mkDerivation {
 
   enableParallelBuilding = true;
 
+  hardeningDisable = [
+    "pic"
+    "format"
+  ];
+
+  prePatch = ''
+    substituteInPlace ./Makefile \
+      --replace /lib/modules/ "${kernel.dev}/lib/modules/" \
+      --replace /sbin/depmod \# \
+      --replace '$(MODDESTDIR)' "$out/lib/modules/${kernel.modDirVersion}/kernel/net/wireless/"
+  '';
+
   meta = {
     description = "Driver for Realtek 802.11ac, rtl8812au, provides the 8812au mod";
     homepage = "https://github.com/morrownr/8812au-20210820";
     license = lib.licenses.gpl2Only;
-    platforms = lib.platforms.linux;
     maintainers = with lib.maintainers; [ moni ];
+    platforms = lib.platforms.linux;
     broken = kernel.kernelOlder "5.10" || kernel.kernelAtLeast "6.15";
   };
 }

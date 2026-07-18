@@ -2,14 +2,13 @@
   lib,
   stdenv,
   fetchurl,
-
+  cargo,
+  jq,
+  pkg-config,
+  rustPlatform,
+  rustc,
   # nativeBuildInputs
   zstd,
-  pkg-config,
-  jq,
-  cargo,
-  rustc,
-  rustPlatform,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -21,12 +20,12 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-JATJ8cFjtCkK65NpTTrUkYHAo4nDrqftarqyJInRTpM=";
   };
 
-  cargoDeps = rustPlatform.fetchCargoVendor {
-    inherit (finalAttrs) pname version src;
-    dontConfigure = true;
-    nativeBuildInputs = [ zstd ];
-    hash = "sha256-hXU9Yw9rGQDkNnwy63LYPIrreOO2P/f8jVaPnVOhrWI=";
-  };
+  outputs = [
+    "out"
+    "doc"
+    "man"
+    "dev"
+  ];
 
   nativeBuildInputs = [
     zstd
@@ -37,28 +36,32 @@ stdenv.mkDerivation (finalAttrs: {
     rustPlatform.cargoSetupHook
   ];
 
-  outputs = [
-    "out"
-    "doc"
-    "man"
-    "dev"
-  ];
+  cargoDeps = rustPlatform.fetchCargoVendor {
+    inherit (finalAttrs) pname version src;
+    nativeBuildInputs = [ zstd ];
+    dontConfigure = true;
+    hash = "sha256-hXU9Yw9rGQDkNnwy63LYPIrreOO2P/f8jVaPnVOhrWI=";
+  };
 
   enableParallelBuilding = true;
 
   meta = {
     description = "Utility to change the case of prose strings following natural language style guides";
+
     longDescription = ''
       A CLI utility to cast strings to title-case (and other cases) according
       to locale specific style guides including Turkish support.
     '';
+
     homepage = "https://github.com/alerque/decasify";
     changelog = "https://github.com/alerque/decasify/raw/v${finalAttrs.version}/CHANGELOG.md";
-    platforms = lib.platforms.unix;
+    license = lib.licenses.lgpl3Only;
+
     maintainers = with lib.maintainers; [
       alerque
     ];
-    license = lib.licenses.lgpl3Only;
+
+    platforms = lib.platforms.unix;
     mainProgram = "decasify";
   };
 })

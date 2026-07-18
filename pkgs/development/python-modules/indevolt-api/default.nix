@@ -1,15 +1,14 @@
 {
   lib,
+  fetchFromGitHub,
   aiohttp,
   buildPythonPackage,
-  fetchFromGitHub,
   setuptools,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "indevolt-api";
   version = "1.8.6";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "Xirt";
@@ -18,13 +17,11 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-KFYavUYlFNaHj3QqJsHqhn7s1KzYAPjJrR6h7lw+ttU=";
   };
 
-  build-system = [ setuptools ];
-
-  dependencies = [ aiohttp ];
-
   # no tests in upstream repository
   doCheck = false;
-
+  build-system = [ setuptools ];
+  dependencies = [ aiohttp ];
+  pyproject = true;
   pythonImportsCheck = [ "indevolt_api" ];
 
   meta = {

@@ -1,26 +1,26 @@
 {
-  config,
-  stdenv,
   lib,
+  stdenv,
   fetchurl,
-  intltool,
-  pkg-config,
-  python3Packages,
-  bluez,
-  gtk3,
-  obex_data_server,
-  xdg-utils,
-  dnsmasq,
-  dhcpcd,
-  iproute2,
   adwaita-icon-theme,
-  librsvg,
-  wrapGAppsHook3,
+  bluez,
+  config,
+  dhcpcd,
+  dnsmasq,
   gobject-introspection,
-  networkmanager,
-  withPulseAudio ? config.pulseaudio or stdenv.hostPlatform.isLinux,
+  gtk3,
+  intltool,
+  iproute2,
   libpulseaudio,
+  librsvg,
+  networkmanager,
+  obex_data_server,
+  pkg-config,
   procps,
+  python3Packages,
+  wrapGAppsHook3,
+  xdg-utils,
+  withPulseAudio ? config.pulseaudio or stdenv.hostPlatform.isLinux,
 }:
 
 let
@@ -35,6 +35,10 @@ stdenv.mkDerivation rec {
     url = "https://github.com/blueman-project/blueman/releases/download/${version}/blueman-${version}.tar.xz";
     sha256 = "sha256-xxKnN/mFWQZoTAdNFm1PEMfxZTeK+WYSgYu//Pv45WY=";
   };
+
+  postPatch = lib.optionalString withPulseAudio ''
+    sed -i 's,CDLL(",CDLL("${libpulseaudio.out}/lib/,g' blueman/main/PulseAudioUtils.py
+  '';
 
   nativeBuildInputs = [
     gobject-introspection
@@ -57,17 +61,6 @@ stdenv.mkDerivation rec {
   ++ pythonPath
   ++ lib.optional withPulseAudio libpulseaudio;
 
-  postPatch = lib.optionalString withPulseAudio ''
-    sed -i 's,CDLL(",CDLL("${libpulseaudio.out}/lib/,g' blueman/main/PulseAudioUtils.py
-  '';
-
-  pythonPath = with pythonPackages; [
-    pygobject3
-    pycairo
-  ];
-
-  propagatedUserEnvPkgs = [ obex_data_server ];
-
   configureFlags = [
     "--with-systemdsystemunitdir=${placeholder "out"}/lib/systemd/system"
     "--with-systemduserunitdir=${placeholder "out"}/lib/systemd/user"
@@ -75,6 +68,12 @@ stdenv.mkDerivation rec {
     "--disable-runtime-deps-check"
     (lib.enableFeature withPulseAudio "pulseaudio")
   ];
+
+  postFixup = ''
+    # This mimics ../../../development/interpreters/python/wrap.sh
+    wrapPythonProgramsIn "$out/bin" "$out ''${pythonPath[*]}"
+    wrapPythonProgramsIn "$out/libexec" "$out ''${pythonPath[*]}"
+  '';
 
   dontWrapGApps = true;
 
@@ -90,19 +89,20 @@ stdenv.mkDerivation rec {
     "\${gappsWrapperArgs[@]}"
   ];
 
-  postFixup = ''
-    # This mimics ../../../development/interpreters/python/wrap.sh
-    wrapPythonProgramsIn "$out/bin" "$out ''${pythonPath[*]}"
-    wrapPythonProgramsIn "$out/libexec" "$out ''${pythonPath[*]}"
-  '';
+  propagatedUserEnvPkgs = [ obex_data_server ];
+
+  pythonPath = with pythonPackages; [
+    pygobject3
+    pycairo
+  ];
 
   meta = {
-    homepage = "https://github.com/blueman-project/blueman";
     description = "GTK-based Bluetooth Manager";
-    mainProgram = "blueman-manager";
-    license = lib.licenses.gpl3;
-    platforms = lib.platforms.linux;
+    homepage = "https://github.com/blueman-project/blueman";
     changelog = "https://github.com/blueman-project/blueman/releases/tag/${version}";
+    license = lib.licenses.gpl3;
     maintainers = [ ];
+    platforms = lib.platforms.linux;
+    mainProgram = "blueman-manager";
   };
 }

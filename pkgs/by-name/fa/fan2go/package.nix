@@ -1,10 +1,10 @@
 {
-  config,
-  buildGoModule,
-  fetchFromGitHub,
   lib,
-  lm_sensors,
+  fetchFromGitHub,
   autoAddDriverRunpath,
+  buildGoModule,
+  config,
+  lm_sensors,
   enableNVML ? config.cudaSupport,
 }:
 
@@ -18,6 +18,7 @@ buildGoModule (finalAttrs: {
     tag = finalAttrs.version;
     hash = "sha256-LEPyyVlVPbGnAfRF0E7wr4fQqRNSKKSsDSKGBCISt5A=";
     leaveDotGit = true;
+
     postFetch = ''
       cd $out
       git rev-parse --short HEAD > $out/GIT_REV
@@ -25,13 +26,12 @@ buildGoModule (finalAttrs: {
     '';
   };
 
-  vendorHash = "sha256-LydoBk7qt3Xsf13isJ/yTf6a+FExV9TSSUfD5Tu8Hqk=";
-
   nativeBuildInputs = lib.optionals enableNVML [
     autoAddDriverRunpath
   ];
 
   buildInputs = [ lm_sensors ];
+  vendorHash = "sha256-LydoBk7qt3Xsf13isJ/yTf6a+FExV9TSSUfD5Tu8Hqk=";
 
   postConfigure = ''
     substituteInPlace vendor/github.com/md14454/gosensors/gosensors.go \
@@ -55,22 +55,22 @@ buildGoModule (finalAttrs: {
     runHook postBuild
   '';
 
-  postFixup = lib.optionalString enableNVML ''
-    patchelf --add-needed libnvidia-ml.so "$out/bin/fan2go"
-  '';
-
   checkPhase = ''
     runHook preCheck
     make test
     runHook postCheck
   '';
 
+  postFixup = lib.optionalString enableNVML ''
+    patchelf --add-needed libnvidia-ml.so "$out/bin/fan2go"
+  '';
+
   meta = {
     description = "Simple daemon providing dynamic fan speed control based on temperature sensors";
-    mainProgram = "fan2go";
     homepage = "https://github.com/markusressel/fan2go";
     license = lib.licenses.agpl3Plus;
     maintainers = with lib.maintainers; [ mtoohey ];
     platforms = lib.platforms.linux;
+    mainProgram = "fan2go";
   };
 })

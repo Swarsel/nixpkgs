@@ -3,9 +3,9 @@
   stdenv,
   fetchFromGitHub,
   fetchpatch,
-  pkg-config,
   libnl,
   openssl,
+  pkg-config,
 }:
 
 stdenv.mkDerivation rec {
@@ -22,16 +22,34 @@ stdenv.mkDerivation rec {
   patches = [
     # Fix compile errors with GCC 10 on newer Kali
     (fetchpatch {
-      url = "https://github.com/sensepost/hostapd-mana/commit/8581994d8d19646da63e1e37cde27dd4c966e526.patch";
       hash = "sha256-UBkhuqvX1nFiceECAIC9B13ReKbrAAUtPKjqD17mQgg=";
+      url = "https://github.com/sensepost/hostapd-mana/commit/8581994d8d19646da63e1e37cde27dd4c966e526.patch";
     })
   ];
 
+  postPatch = ''
+    substituteInPlace hostapd/Makefile --replace /usr/local $out
+  '';
+
   nativeBuildInputs = [ pkg-config ];
+
   buildInputs = [
     libnl
     openssl
   ];
+
+  preInstall = ''
+    mkdir -p $out/bin
+  '';
+
+  configurePhase = ''
+    runHook preConfigure
+    cd hostapd
+    cp -v defconfig .config
+    echo "$extraConfig" >> .config
+    export NIX_CFLAGS_COMPILE="$NIX_CFLAGS_COMPILE $(pkg-config --cflags libnl-${lib.versions.major libnl.version}.0)"
+    runHook postConfigure
+  '';
 
   extraConfig = ''
     CONFIG_DRIVER_WIRED=y
@@ -64,26 +82,9 @@ stdenv.mkDerivation rec {
     CONFIG_SAE=y
   '';
 
-  postPatch = ''
-    substituteInPlace hostapd/Makefile --replace /usr/local $out
-  '';
-
-  configurePhase = ''
-    runHook preConfigure
-    cd hostapd
-    cp -v defconfig .config
-    echo "$extraConfig" >> .config
-    export NIX_CFLAGS_COMPILE="$NIX_CFLAGS_COMPILE $(pkg-config --cflags libnl-${lib.versions.major libnl.version}.0)"
-    runHook postConfigure
-  '';
-
-  preInstall = ''
-    mkdir -p $out/bin
-  '';
-
   meta = {
-    homepage = "https://github.com/sensepost/hostapd-mana";
     description = "Featureful rogue wifi access point tool";
+    homepage = "https://github.com/sensepost/hostapd-mana";
     license = lib.licenses.bsd3;
     maintainers = with lib.maintainers; [ bbjubjub ];
     platforms = lib.platforms.linux;

@@ -1,15 +1,14 @@
 {
   lib,
+  stdenv,
   bash,
   buildPythonPackage,
   fetchPypi,
-  stdenv,
 }:
 
 buildPythonPackage rec {
   pname = "invoke";
   version = "2.2.1";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
@@ -23,8 +22,6 @@ buildPythonPackage rec {
   # errors with vendored libs
   doCheck = false;
 
-  pythonImportsCheck = [ "invoke" ];
-
   postInstall = lib.optionalString (stdenv.buildPlatform.canExecute stdenv.hostPlatform) ''
     mkdir -p $out/share/{bash-completion/completions,fish/vendor_completions.d,zsh/site-functions}
     $out/bin/inv --print-completion-script=zsh >$out/share/zsh/site-functions/_inv
@@ -32,10 +29,13 @@ buildPythonPackage rec {
     $out/bin/inv --print-completion-script=fish >$out/share/fish/vendor_completions.d/inv.fish
   '';
 
+  format = "setuptools";
+  pythonImportsCheck = [ "invoke" ];
+
   meta = {
-    changelog = "https://www.pyinvoke.org/changelog.html";
     description = "Pythonic task execution";
     homepage = "https://www.pyinvoke.org/";
+    changelog = "https://www.pyinvoke.org/changelog.html";
     license = lib.licenses.bsd2;
     maintainers = [ ];
   };

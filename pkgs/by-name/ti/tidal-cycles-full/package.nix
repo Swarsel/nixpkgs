@@ -1,8 +1,8 @@
 {
   lib,
-  stdenvNoCC,
   fetchFromGitHub,
   haskellPackages,
+  stdenvNoCC,
   supercollider-with-sc3-plugins,
   symlinkJoin,
   writeShellApplication,
@@ -17,12 +17,9 @@ let
   ]);
 
   tidalBoot = stdenvNoCC.mkDerivation {
-    pname = "tidal-cycles-boot";
     inherit version;
+    pname = "tidal-cycles-boot";
     src = haskellPackages.tidal.src;
-
-    dontConfigure = true;
-    dontBuild = true;
 
     installPhase = ''
       runHook preInstall
@@ -31,21 +28,21 @@ let
 
       runHook postInstall
     '';
+
+    dontBuild = true;
+    dontConfigure = true;
   };
 
   mkQuark =
     {
       pname,
-      version,
       quarkName,
       src,
+      version,
       dependencies ? [ ],
     }:
     stdenvNoCC.mkDerivation {
       inherit pname version src;
-
-      dontConfigure = true;
-      dontBuild = true;
 
       installPhase =
         let
@@ -77,46 +74,56 @@ let
 
           runHook postInstall
         '';
+
+      dontBuild = true;
+      dontConfigure = true;
     };
 
   dirt-samples = mkQuark {
     pname = "dirt-samples";
     version = "unstable-2023-10-27";
-    quarkName = "Dirt-Samples";
+
     src = fetchFromGitHub {
       owner = "tidalcycles";
       repo = "dirt-samples";
       rev = "9a6dff8f9ec3cd55b287290cf04e01afa6b8f532";
       hash = "sha256-Mp8qBpsOvW9Zguv95Kv7EU6S3ICaF2aO02Wz6xGURtE=";
     };
+
+    quarkName = "Dirt-Samples";
   };
 
   vowel = mkQuark {
     pname = "vowel";
     version = "unstable-2022-01-04";
-    quarkName = "Vowel";
+
     src = fetchFromGitHub {
       owner = "supercollider-quarks";
       repo = "vowel";
       rev = "ab59caa870201ecf2604b3efdd2196e21a8b5446";
       hash = "sha256-zfF6cvAGDNYWYsE8dOIo38b+dIymd17Pexg0HiPFbxM=";
     };
+
+    quarkName = "Vowel";
   };
 
   superdirt = mkQuark {
     pname = "superdirt";
     version = "unstable-2023-10-15";
-    quarkName = "SuperDirt";
+
     src = fetchFromGitHub {
       owner = "musikinformatik";
       repo = "superdirt";
       rev = "c7f32998572984705d340e7c1b9ed9ad998a39b6";
       hash = "sha256-9qU9CHYAXbN1IE3xXDqGipuroifVaSVXj3c/cDfwM80=";
     };
+
     dependencies = [
       dirt-samples
       vowel
     ];
+
+    quarkName = "SuperDirt";
   };
 
   superdirtStartSc = writeText "superdirt-start.sc" "SuperDirt.start;";
@@ -124,6 +131,7 @@ let
   tidalCycles = writeShellApplication {
     name = "tidal-cycles";
     runtimeInputs = [ ghcWithTidal ];
+
     text = ''
       exec ghci -ghci-script "${tidalBoot}/share/tidal-cycles/BootTidal.hs" "$@"
     '';
@@ -132,6 +140,7 @@ let
   sclangWithSuperDirt = writeShellApplication {
     name = "sclang-with-superdirt";
     runtimeInputs = [ supercollider-with-sc3-plugins ];
+
     text = ''
       exec sclang -l "${superdirt}/sclang_conf.yaml" "$@"
     '';
@@ -139,6 +148,7 @@ let
 
   superdirtStart = writeShellApplication {
     name = "superdirt-start";
+
     text = ''
       start_script="''${1:-${superdirtStartSc}}"
 
@@ -164,14 +174,17 @@ let
   superdirtInstall = writeShellApplication {
     name = "superdirt-install";
     runtimeInputs = [ supercollider-with-sc3-plugins ];
+
     text = ''
       exec sclang "${superdirt}/install.scd"
     '';
   };
 in
 symlinkJoin {
-  pname = "tidal-cycles-full";
   inherit version;
+  pname = "tidal-cycles-full";
+  strictDeps = true;
+  __structuredAttrs = true;
 
   paths = [
     tidalCycles
@@ -192,11 +205,9 @@ symlinkJoin {
       ;
   };
 
-  strictDeps = true;
-  __structuredAttrs = true;
-
   meta = {
     description = "TidalCycles live-coding environment with SuperDirt";
+
     longDescription = ''
       This package provides the TidalCycles live-coding environment and
       SuperDirt setup helpers. It installs the `tidal-cycles`,
@@ -204,14 +215,17 @@ symlinkJoin {
       commands, and also makes the wrapped SuperCollider programs from
       `supercollider-with-sc3-plugins` available.
     '';
+
     homepage = "https://tidalcycles.org/";
+
     license = with lib.licenses; [
       gpl2Only
       gpl3Only
       gpl3Plus
     ];
-    mainProgram = "tidal-cycles";
+
     maintainers = with lib.maintainers; [ crertel ];
     platforms = lib.platforms.linux;
+    mainProgram = "tidal-cycles";
   };
 }

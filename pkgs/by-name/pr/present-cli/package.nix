@@ -15,13 +15,12 @@ rustPlatform.buildRustPackage {
     sha256 = "aMy8Qn1kUM7jmvD9nGjBk1XXQF1rTLfnPDJOh9d4uIg=";
   };
 
-  cargoHash = "sha256-rLLhZL8WQs68+nwCrJ9Dej3T1JU9t+ZrBhSMxAdOfbw=";
-
   # required for tests
   postPatch = ''
     patchShebangs bin/get_version
   '';
 
+  cargoHash = "sha256-rLLhZL8WQs68+nwCrJ9Dej3T1JU9t+ZrBhSMxAdOfbw=";
   doCheck = true;
 
   meta = {

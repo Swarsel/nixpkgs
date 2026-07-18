@@ -1,8 +1,8 @@
 {
   lib,
-  buildNpmPackage,
-  fetchFromGitHub,
   fetchurl,
+  fetchFromGitHub,
+  buildNpmPackage,
   nix-update-script,
   versionCheckHook,
 }:
@@ -19,23 +19,22 @@ buildNpmPackage (finalAttrs: {
   };
 
   npmDepsHash = "sha256-NQSWOALsSfv2rjQW3gQDIYw28zDETRxKYaqHMPgUqew=";
-
-  dontNpmBuild = true;
-  dontNpmPrune = true;
-  npmInstallFlags = [ "--omit=dev" ];
+  doInstallCheck = true;
 
   nativeInstallCheckInputs = [
     versionCheckHook
   ];
-  doInstallCheck = true;
-  versionCheckProgram = "${placeholder "out"}/bin/git-node";
 
+  dontNpmBuild = true;
+  dontNpmPrune = true;
+  npmInstallFlags = [ "--omit=dev" ];
+  versionCheckProgram = "${placeholder "out"}/bin/git-node";
   passthru.updateScript = nix-update-script { };
 
   meta = {
-    changelog = "https://github.com/${finalAttrs.src.owner}/${finalAttrs.src.repo}/blob/${finalAttrs.src.tag}/CHANGELOG.md";
     description = "CLI tools for Node.js Core collaborators";
     homepage = "https://github.com/nodejs/node-core-utils";
+    changelog = "https://github.com/${finalAttrs.src.owner}/${finalAttrs.src.repo}/blob/${finalAttrs.src.tag}/CHANGELOG.md";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ aduh95 ];
   };

@@ -1,7 +1,7 @@
 {
-  buildGoModule,
   lib,
   fetchFromGitHub,
+  buildGoModule,
   testers,
   versionCheckHook,
 }:
@@ -18,8 +18,18 @@ buildGoModule (finalAttrs: {
   };
 
   vendorHash = "sha256-4AmciHL4CGtEwDAs7eAtjfWlzjoCLXAN2HEatev8gZg=";
-  proxyVendor = true;
-  subPackages = [ "cmd/app" ];
+  doCheck = true;
+
+  postInstall = ''
+    mv $out/bin/app $out/bin/argonaut
+  '';
+
+  doInstallCheck = true;
+
+  nativeInstallCheckInputs = [
+    versionCheckHook
+  ];
+
   ldflags = [
     "-s"
     "-w"
@@ -28,26 +38,20 @@ buildGoModule (finalAttrs: {
     "-X main.buildDate=1970-01-01T00:00:00Z"
   ];
 
-  doCheck = true;
-
-  nativeInstallCheckInputs = [
-    versionCheckHook
-  ];
+  proxyVendor = true;
+  subPackages = [ "cmd/app" ];
   versionCheckProgramArg = "--version";
-  doInstallCheck = true;
-
-  postInstall = ''
-    mv $out/bin/app $out/bin/argonaut
-  '';
 
   meta = {
     description = "Keyboard-first terminal UI for Argo CD";
     homepage = "https://github.com/darksworm/argonaut";
     changelog = "https://github.com/darksworm/argonaut/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.gpl3Only;
-    mainProgram = "argonaut";
+
     maintainers = with lib.maintainers; [
       ehrenschwan-gh
     ];
+
+    mainProgram = "argonaut";
   };
 })

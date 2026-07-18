@@ -1,22 +1,21 @@
 {
   lib,
-  python3Packages,
   fetchFromGitHub,
-  meson,
-  ninja,
-  pkg-config,
-  wrapGAppsHook4,
   appstream-glib,
   desktop-file-utils,
   gobject-introspection,
-  libadwaita,
   gst_all_1,
+  libadwaita,
+  meson,
+  ninja,
+  pkg-config,
+  python3Packages,
+  wrapGAppsHook4,
 }:
 
 python3Packages.buildPythonApplication (finalAttrs: {
   pname = "cozy";
   version = "1.3.0";
-  pyproject = false; # built with meson
 
   src = fetchFromGitHub {
     owner = "geigi";
@@ -63,8 +62,6 @@ python3Packages.buildPythonApplication (finalAttrs: {
     requests
   ];
 
-  dontWrapGApps = true;
-
   preFixup = ''
     makeWrapperArgs+=("''${gappsWrapperArgs[@]}")
   '';
@@ -73,15 +70,20 @@ python3Packages.buildPythonApplication (finalAttrs: {
     ln -s $out/bin/com.github.geigi.cozy $out/bin/cozy
   '';
 
+  dontWrapGApps = true;
+  pyproject = false; # built with meson
+
   meta = {
     description = "Modern audio book player for Linux";
     homepage = "https://cozy.geigi.de/";
+    license = lib.licenses.gpl3Plus;
+
     maintainers = with lib.maintainers; [
       makefu
       aleksana
     ];
-    license = lib.licenses.gpl3Plus;
-    mainProgram = "com.github.geigi.cozy";
+
     platforms = lib.platforms.linux;
+    mainProgram = "com.github.geigi.cozy";
   };
 })

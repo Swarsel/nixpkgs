@@ -13,8 +13,6 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-O3LMappbGiKhiCBahAkNOilDR6hGGA79dVzxo8hI4+c=";
   };
 
-  sourceRoot = "idb-companion.universal";
-
   installPhase = ''
     runHook preInstall
 
@@ -24,13 +22,15 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  sourceRoot = "idb-companion.universal";
+
   meta = {
     description = "Powerful command line tool for automating iOS simulators and devices";
     homepage = "https://github.com/facebook/idb";
     license = lib.licenses.mit;
-    platforms = lib.platforms.darwin;
-    mainProgram = "idb_companion";
     sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
     maintainers = with lib.maintainers; [ siddarthkay ];
+    platforms = lib.platforms.darwin;
+    mainProgram = "idb_companion";
   };
 })

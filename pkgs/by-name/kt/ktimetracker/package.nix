@@ -1,10 +1,10 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
   cmake,
-  pkg-config,
   kdePackages,
+  pkg-config,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -48,9 +48,9 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Todo management and time tracking application";
-    mainProgram = "ktimetracker";
-    license = lib.licenses.gpl2;
     homepage = "https://userbase.kde.org/KTimeTracker";
+    license = lib.licenses.gpl2;
     maintainers = [ ];
+    mainProgram = "ktimetracker";
   };
 })

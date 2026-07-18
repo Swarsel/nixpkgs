@@ -1,8 +1,8 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
   nixosTests,
+  rustPlatform,
   testers,
   zenoh,
 }:
@@ -18,6 +18,17 @@ rustPlatform.buildRustPackage (finalAttrs: {
   };
 
   cargoHash = "sha256-1PjtZ5/bAnLlMbkcKAA6DCKDafItGiATjct5Pv8muas=";
+  doCheck = false;
+
+  preInstall = ''
+    cp -r $releaseDir/examples/* $tmpDir/
+    bins=$(find $tmpDir \
+      -maxdepth 1 \
+      -type f \
+      -executable \
+      -regextype posix-extended \
+      ! -regex ".*\.(so\.[0-9.]+|so|a|d|dylib)|.*-[0-9a-f]{16,}")
+  '';
 
   cargoBuildFlags = [
     "--workspace"
@@ -32,23 +43,12 @@ rustPlatform.buildRustPackage (finalAttrs: {
     "zenoh-ext-examples"
   ];
 
-  doCheck = false;
-
-  preInstall = ''
-    cp -r $releaseDir/examples/* $tmpDir/
-    bins=$(find $tmpDir \
-      -maxdepth 1 \
-      -type f \
-      -executable \
-      -regextype posix-extended \
-      ! -regex ".*\.(so\.[0-9.]+|so|a|d|dylib)|.*-[0-9a-f]{16,}")
-  '';
-
   passthru.tests = {
     version = testers.testVersion {
-      package = zenoh;
       version = "v" + finalAttrs.version;
+      package = zenoh;
     };
+
     zenohd = nixosTests.zenohd;
   };
 
@@ -59,7 +59,7 @@ rustPlatform.buildRustPackage (finalAttrs: {
     changelog = "https://github.com/eclipse-zenoh/zenoh/releases/tag/${finalAttrs.src.rev}";
     license = lib.licenses.asl20;
     maintainers = with lib.maintainers; [ ck3d ];
-    mainProgram = "zenohd";
     platforms = lib.platforms.linux ++ lib.platforms.darwin;
+    mainProgram = "zenohd";
   };
 })

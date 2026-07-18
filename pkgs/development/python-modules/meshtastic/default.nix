@@ -1,16 +1,16 @@
 {
   lib,
+  fetchFromGitHub,
   argcomplete,
   bleak,
   buildPythonPackage,
-  dash-bootstrap-components,
   dash,
+  dash-bootstrap-components,
   dotmap,
-  fetchFromGitHub,
   hypothesis,
   packaging,
-  pandas-stubs,
   pandas,
+  pandas-stubs,
   parse,
   platformdirs,
   poetry-core,
@@ -34,7 +34,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "meshtastic";
   version = "2.7.10";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "meshtastic";
@@ -43,12 +42,15 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-bzDGiwaq58zmp93HXK9dpMVQiVZJA8MRO63bm3SPDzU=";
   };
 
-  pythonRelaxDeps = [
-    "bleak"
-    "packaging"
-    "protobuf"
-    "tabulate"
-  ];
+  nativeCheckInputs = [
+    hypothesis
+    pytestCheckHook
+  ]
+  ++ lib.concatAttrValues finalAttrs.passthru.optional-dependencies;
+
+  preCheck = ''
+    export PATH="$PATH:$out/bin";
+  '';
 
   build-system = [ poetry-core ];
 
@@ -63,42 +65,6 @@ buildPythonPackage (finalAttrs: {
     setuptools
     tabulate
   ];
-
-  optional-dependencies = {
-    analysis = [
-      dash
-      dash-bootstrap-components
-      pandas
-      pandas-stubs
-    ];
-    cli = [
-      argcomplete
-      dotmap
-      print-color
-      pyqrcode
-      wcwidth
-    ];
-    powermon = [
-      parse
-      platformdirs
-      ppk2-api
-      pyarrow
-      riden
-    ];
-    tunnel = [ pytap2 ];
-  };
-
-  nativeCheckInputs = [
-    hypothesis
-    pytestCheckHook
-  ]
-  ++ lib.concatAttrValues finalAttrs.passthru.optional-dependencies;
-
-  preCheck = ''
-    export PATH="$PATH:$out/bin";
-  '';
-
-  pythonImportsCheck = [ "meshtastic" ];
 
   disabledTestPaths = [
     # Circular import with dash-bootstrap-components
@@ -119,6 +85,43 @@ buildPythonPackage (finalAttrs: {
     "test_SerialInterface_single_port"
     "test_support_info"
     "test_TCPInterface"
+  ];
+
+  optional-dependencies = {
+    analysis = [
+      dash
+      dash-bootstrap-components
+      pandas
+      pandas-stubs
+    ];
+
+    cli = [
+      argcomplete
+      dotmap
+      print-color
+      pyqrcode
+      wcwidth
+    ];
+
+    powermon = [
+      parse
+      platformdirs
+      ppk2-api
+      pyarrow
+      riden
+    ];
+
+    tunnel = [ pytap2 ];
+  };
+
+  pyproject = true;
+  pythonImportsCheck = [ "meshtastic" ];
+
+  pythonRelaxDeps = [
+    "bleak"
+    "packaging"
+    "protobuf"
+    "tabulate"
   ];
 
   meta = {

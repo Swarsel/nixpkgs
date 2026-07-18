@@ -7,7 +7,6 @@
 python3.pkgs.buildPythonApplication (finalAttrs: {
   pname = "knowsmore";
   version = "0.1.50";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "helviojunior";
@@ -16,11 +15,7 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     hash = "sha256-D3WhlReBwQLU+U/389r5gR73+DNvFiVuSr6NQgG2oFY=";
   };
 
-  pythonRelaxDeps = [
-    "neo4j"
-    "urllib3"
-  ];
-
+  nativeCheckInputs = with python3.pkgs; [ pytestCheckHook ];
   build-system = with python3.pkgs; [ setuptools ];
 
   dependencies = with python3.pkgs; [
@@ -41,15 +36,18 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     xmltodict
   ];
 
-  nativeCheckInputs = with python3.pkgs; [ pytestCheckHook ];
-
-  pythonImportsCheck = [ "knowsmore" ];
-
-  enabledTestPaths = [ "tests/tests*" ];
-
   disabledTests = [
     # Issue with later neo4j versions
     "test_create_db"
+  ];
+
+  enabledTestPaths = [ "tests/tests*" ];
+  pyproject = true;
+  pythonImportsCheck = [ "knowsmore" ];
+
+  pythonRelaxDeps = [
+    "neo4j"
+    "urllib3"
   ];
 
   meta = {

@@ -6,19 +6,18 @@
 }:
 
 buildPythonPackage rec {
-  version = "3.0.0";
-  format = "setuptools";
   pname = "robotframework-selenium2library";
+  version = "3.0.0";
 
   src = fetchPypi {
     inherit pname version;
     sha256 = "2a8e942b0788b16ded253039008b34d2b46199283461b294f0f41a579c70fda7";
   };
 
+  propagatedBuildInputs = [ robotframework-seleniumlibrary ];
   # Neither the PyPI tarball nor the repository has tests
   doCheck = false;
-
-  propagatedBuildInputs = [ robotframework-seleniumlibrary ];
+  format = "setuptools";
 
   meta = {
     description = "Web testing library for Robot Framework";

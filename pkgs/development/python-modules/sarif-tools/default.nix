@@ -2,21 +2,20 @@
   lib,
   fetchFromGitHub,
   buildPythonPackage,
-  poetry-core,
+  jinja2,
   jsonpath-ng,
   jsonschema,
-  jinja2,
+  matplotlib,
+  poetry-core,
+  pytestCheckHook,
   python,
   python-docx,
-  matplotlib,
   pyyaml,
-  pytestCheckHook,
 }:
 
 buildPythonPackage rec {
   pname = "sarif-tools";
   version = "3.0.5";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "microsoft";
@@ -24,6 +23,11 @@ buildPythonPackage rec {
     tag = "v${version}";
     hash = "sha256-Dt8VcYIIpujRp2sOlK2JPGzy5cYZDXdXgnvT/+h3DuU=";
   };
+
+  nativeCheckInputs = [
+    jsonschema
+    pytestCheckHook
+  ];
 
   build-system = [ poetry-core ];
 
@@ -36,19 +40,14 @@ buildPythonPackage rec {
     pyyaml
   ];
 
-  nativeCheckInputs = [
-    jsonschema
-    pytestCheckHook
-  ];
-
-  pythonRelaxDeps = [ "python-docx" ];
-
   disabledTests = [
     # Broken, re-enable once https://github.com/microsoft/sarif-tools/pull/41 is merged
     "test_version"
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "sarif" ];
+  pythonRelaxDeps = [ "python-docx" ];
 
   meta = {
     description = "Set of command line tools and Python library for working with SARIF files";

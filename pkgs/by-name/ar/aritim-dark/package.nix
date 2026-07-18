@@ -1,7 +1,7 @@
 {
   lib,
-  stdenvNoCC,
   fetchFromGitHub,
+  stdenvNoCC,
 }:
 
 stdenvNoCC.mkDerivation {
@@ -15,7 +15,6 @@ stdenvNoCC.mkDerivation {
     hash = "sha256-xGnw5KpXbVyDdTuAkav1Hec6bitpZdPzZk0xv7WHTdY=";
   };
 
-  dontBuild = true;
   installPhase = ''
     mkdir -p $out/share/plasma/desktoptheme
     cp -R KDE/plasmaTheme/Aritim-Dark* $out/share/plasma/desktoptheme
@@ -29,11 +28,13 @@ stdenvNoCC.mkDerivation {
     cp -R GTK $out/share/themes/Aritim-Dark
   '';
 
+  dontBuild = true;
+
   meta = {
     description = "Dark theme deeply inspired by the Ayu Dark color palette";
     homepage = "https://github.com/Mrcuve0/Aritim-Dark";
     license = with lib.licenses; [ gpl3Only ];
-    platforms = lib.platforms.unix;
     maintainers = [ lib.maintainers.pasqui23 ];
+    platforms = lib.platforms.unix;
   };
 }

@@ -1,8 +1,8 @@
 {
   lib,
   stdenv,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   installShellFiles,
   pkgsBuildBuild,
 }:
@@ -18,27 +18,12 @@ buildGoModule (finalAttrs: {
     hash = "sha256-TM/eK8biMxKV4SFJ1Lys+NPPeaHVjbBo83k2RH1Xi40=";
   };
 
-  vendorHash = "sha256-Y/2+ykzcJdA5uwP1v9Z1wZtF3hBV2x7XZc7+FhPJP64=";
-
-  doCheck = false;
-
-  subPackages = [
-    "cmd/argo"
-  ];
-
   nativeBuildInputs = [
     installShellFiles
   ];
 
-  ldflags = [
-    "-s"
-    "-w"
-    "-X github.com/argoproj/argo-workflows/v3.buildDate=unknown"
-    "-X github.com/argoproj/argo-workflows/v3.gitCommit=${finalAttrs.src.rev}"
-    "-X github.com/argoproj/argo-workflows/v3.gitTag=${finalAttrs.src.rev}"
-    "-X github.com/argoproj/argo-workflows/v3.gitTreeState=clean"
-    "-X github.com/argoproj/argo-workflows/v3.version=${finalAttrs.version}"
-  ];
+  vendorHash = "sha256-Y/2+ykzcJdA5uwP1v9Z1wZtF3hBV2x7XZc7+FhPJP64=";
+  doCheck = false;
 
   postInstall = ''
     for shell in bash zsh fish; do
@@ -52,16 +37,32 @@ buildGoModule (finalAttrs: {
     done
   '';
 
+  ldflags = [
+    "-s"
+    "-w"
+    "-X github.com/argoproj/argo-workflows/v3.buildDate=unknown"
+    "-X github.com/argoproj/argo-workflows/v3.gitCommit=${finalAttrs.src.rev}"
+    "-X github.com/argoproj/argo-workflows/v3.gitTag=${finalAttrs.src.rev}"
+    "-X github.com/argoproj/argo-workflows/v3.gitTreeState=clean"
+    "-X github.com/argoproj/argo-workflows/v3.version=${finalAttrs.version}"
+  ];
+
+  subPackages = [
+    "cmd/argo"
+  ];
+
   meta = {
     description = "Container native workflow engine for Kubernetes";
-    mainProgram = "argo";
     homepage = "https://github.com/argoproj/argo-workflows";
     changelog = "https://github.com/argoproj/argo-workflows/blob/v${finalAttrs.version}/CHANGELOG.md";
     license = lib.licenses.asl20;
+
     maintainers = with lib.maintainers; [
       groodt
       joibel
     ];
+
     platforms = lib.platforms.unix;
+    mainProgram = "argo";
   };
 })

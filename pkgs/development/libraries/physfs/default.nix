@@ -11,14 +11,14 @@ let
   generic =
     version: sha256:
     stdenv.mkDerivation rec {
-      pname = "physfs";
       inherit version;
+      pname = "physfs";
 
       src = fetchFromGitHub {
+        inherit sha256;
         owner = "icculus";
         repo = "physfs";
         rev = "release-${version}";
-        inherit sha256;
       };
 
       patches = [
@@ -38,7 +38,6 @@ let
       ];
 
       buildInputs = [ zlib ];
-
       doInstallCheck = true;
 
       installCheckPhase = ''
@@ -46,17 +45,17 @@ let
       '';
 
       meta = {
-        homepage = "https://icculus.org/physfs/";
         description = "Library to provide abstract access to various archives";
-        mainProgram = "test_physfs";
+        homepage = "https://icculus.org/physfs/";
         changelog = "https://github.com/icculus/physfs/releases/tag/release-${version}";
         license = lib.licenses.zlib;
         platforms = lib.platforms.all;
+        mainProgram = "test_physfs";
       };
     };
 
 in
 {
-  physfs_2 = generic "2.1.1" "sha256-hmS/bfszit3kD6B2BjnuV50XKueq2GcRaqyAKLkvfLc=";
   physfs = generic "3.2.0" "sha256-FhFIshX7G3uHEzvHGlDIrXa7Ux6ThQNzVssaENs+JMw=";
+  physfs_2 = generic "2.1.1" "sha256-hmS/bfszit3kD6B2BjnuV50XKueq2GcRaqyAKLkvfLc=";
 }

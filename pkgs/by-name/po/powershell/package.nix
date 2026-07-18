@@ -2,22 +2,22 @@
   lib,
   stdenv,
   fetchurl,
-  less,
-  makeWrapper,
   autoPatchelfHook,
-  curl,
-  icu,
-  libuuid,
-  libunwind,
-  openssl,
-  lttng-ust,
-  pam,
-  testers,
-  powershell,
-  writeShellScript,
   common-updater-scripts,
+  curl,
   gnused,
+  icu,
   jq,
+  less,
+  libunwind,
+  libuuid,
+  lttng-ust,
+  makeWrapper,
+  openssl,
+  pam,
+  powershell,
+  testers,
+  writeShellScript,
 }:
 
 let
@@ -36,15 +36,6 @@ stdenv.mkDerivation rec {
   src =
     passthru.sources.${stdenv.hostPlatform.system}
       or (throw "Unsupported system: ${stdenv.hostPlatform.system}");
-
-  sourceRoot = "source";
-
-  unpackPhase = ''
-    runHook preUnpack
-    mkdir -p "$sourceRoot"
-    tar xf $src --directory="$sourceRoot"
-    runHook postUnpack
-  '';
 
   strictDeps = true;
 
@@ -90,27 +81,40 @@ stdenv.mkDerivation rec {
   '';
 
   dontStrip = true;
+  sourceRoot = "source";
+
+  unpackPhase = ''
+    runHook preUnpack
+    mkdir -p "$sourceRoot"
+    tar xf $src --directory="$sourceRoot"
+    runHook postUnpack
+  '';
 
   passthru = {
     shellPath = "/bin/pwsh";
+
     sources = {
       aarch64-darwin = fetchurl {
-        url = "https://github.com/PowerShell/PowerShell/releases/download/v${version}/powershell-${version}-osx-arm64.tar.gz";
         hash = "sha256-8CY8IHL+fQlTeBxgSXpXS+qZs3I38lVKWc5LrQfejTY=";
+        url = "https://github.com/PowerShell/PowerShell/releases/download/v${version}/powershell-${version}-osx-arm64.tar.gz";
       };
+
       aarch64-linux = fetchurl {
-        url = "https://github.com/PowerShell/PowerShell/releases/download/v${version}/powershell-${version}-linux-arm64.tar.gz";
         hash = "sha256-ehSjheyn3FvtwciqPYt2X0Sa2jCqvleFqf0zEmbrBi0=";
+        url = "https://github.com/PowerShell/PowerShell/releases/download/v${version}/powershell-${version}-linux-arm64.tar.gz";
       };
+
       x86_64-linux = fetchurl {
-        url = "https://github.com/PowerShell/PowerShell/releases/download/v${version}/powershell-${version}-linux-x64.tar.gz";
         hash = "sha256-hW0HZdIzI3f516Sup279/eTeUURudzjd4t/aQdup4qc=";
+        url = "https://github.com/PowerShell/PowerShell/releases/download/v${version}/powershell-${version}-linux-x64.tar.gz";
       };
     };
+
     tests.version = testers.testVersion {
-      package = powershell;
       command = "HOME=$(mktemp -d) pwsh --version";
+      package = powershell;
     };
+
     updateScript = writeShellScript "update-powershell" ''
       set -o errexit
       export PATH="${
@@ -138,12 +142,14 @@ stdenv.mkDerivation rec {
     description = "Powerful cross-platform (Windows, Linux, and macOS) shell and scripting language based on .NET";
     homepage = "https://microsoft.com/PowerShell";
     license = lib.licenses.mit;
-    mainProgram = "pwsh";
-    maintainers = with lib.maintainers; [ wegank ];
-    platforms = builtins.attrNames passthru.sources;
+
     sourceProvenance = with lib.sourceTypes; [
       binaryBytecode
       binaryNativeCode
     ];
+
+    maintainers = with lib.maintainers; [ wegank ];
+    platforms = builtins.attrNames passthru.sources;
+    mainProgram = "pwsh";
   };
 }

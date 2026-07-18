@@ -2,25 +2,22 @@
   lib,
   stdenv,
   fetchFromGitHub,
-
-  # nativeBuildInputs
-  python3,
   cmake,
-  gfortran,
-  pkg-config,
-  hdf5-mpi,
-  zpp,
-
   # buildInputs
   gbenchmark,
+  gfortran,
+  hdf5-mpi,
   libyaml,
   mpi,
-  spdlog,
-
   # passthru
   nix-update-script,
-  testers,
   pdi,
+  pkg-config,
+  # nativeBuildInputs
+  python3,
+  spdlog,
+  testers,
+  zpp,
 }:
 let
   python = python3.withPackages (
@@ -81,11 +78,12 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   passthru = {
-    updateScript = nix-update-script { };
     tests.version = testers.testVersion {
-      package = pdi;
       command = "pdirun";
+      package = pdi;
     };
+
+    updateScript = nix-update-script { };
   };
 
   meta = {
@@ -93,11 +91,13 @@ stdenv.mkDerivation (finalAttrs: {
     homepage = "https://pdi.dev/master/";
     changelog = "https://github.com/pdidev/pdi/releases/tag/${finalAttrs.version}";
     license = lib.licenses.bsd3;
-    mainProgram = "pdirun";
     maintainers = with lib.maintainers; [ GaetanLepage ];
+
     badPlatforms = [
       # fatal error: 'link.h' file not found
       lib.systems.inspect.patterns.isDarwin
     ];
+
+    mainProgram = "pdirun";
   };
 })

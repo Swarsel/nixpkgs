@@ -2,8 +2,8 @@
   lib,
   fetchFromGitHub,
   buildGoModule,
-  versionCheckHook,
   nix-update-script,
+  versionCheckHook,
 }:
 
 buildGoModule (finalAttrs: {
@@ -19,6 +19,13 @@ buildGoModule (finalAttrs: {
 
   vendorHash = "sha256-tEy0nTueTGs3lZY1lX7e6XPnbL5mxsvLpfdDRE7A3EI=";
 
+  postInstall = ''
+    mv $out/bin/warp $out/bin/minio-warp
+  '';
+
+  doInstallCheck = true;
+  nativeInstallCheckInputs = [ versionCheckHook ];
+
   # See .goreleaser.yml
   ldflags = [
     "-s"
@@ -29,13 +36,6 @@ buildGoModule (finalAttrs: {
     "-X github.com/minio/warp/pkg.ShortCommitID=${finalAttrs.src.rev}"
     "-X github.com/minio/warp/pkg.ReleaseTime=1970-01-01T00:00:00Z"
   ];
-
-  postInstall = ''
-    mv $out/bin/warp $out/bin/minio-warp
-  '';
-
-  doInstallCheck = true;
-  nativeInstallCheckInputs = [ versionCheckHook ];
 
   passthru.updateScript = nix-update-script { };
 

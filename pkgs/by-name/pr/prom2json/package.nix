@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule rec {
@@ -9,9 +9,9 @@ buildGoModule rec {
   version = "1.5.0";
 
   src = fetchFromGitHub {
-    rev = "v${version}";
     owner = "prometheus";
     repo = "prom2json";
+    rev = "v${version}";
     sha256 = "sha256-Zd3p1anHleKAkFcHEx7tgpxjTlb5OvdWXFNNyfJ63+w=";
   };
 
@@ -19,9 +19,9 @@ buildGoModule rec {
 
   meta = {
     description = "Tool to scrape a Prometheus client and dump the result as JSON";
-    mainProgram = "prom2json";
     homepage = "https://github.com/prometheus/prom2json";
     license = lib.licenses.asl20;
     maintainers = with lib.maintainers; [ benley ];
+    mainProgram = "prom2json";
   };
 }

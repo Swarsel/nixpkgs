@@ -1,23 +1,22 @@
 {
   lib,
   buildPythonPackage,
-  fetchPypi,
-  hatchling,
   django,
   django-otp,
   djangorestframework,
+  fetchPypi,
+  hatchling,
   webauthn,
 }:
 
 buildPythonPackage rec {
   pname = "django-otp-webauthn";
   version = "0.8.0";
-  pyproject = true;
 
   src = fetchPypi {
     inherit version;
-    pname = "django_otp_webauthn";
     hash = "sha256-GMkKL+U7CPfw3WaSlsnoi0VmEPF/wbb86phfl01NM6I=";
+    pname = "django_otp_webauthn";
   };
 
   build-system = [ hatchling ];
@@ -29,8 +28,8 @@ buildPythonPackage rec {
     webauthn
   ];
 
+  pyproject = true;
   # Tests are on the roadmap, but not yet implemented
-
   pythonImportsCheck = [ "django_otp_webauthn" ];
 
   meta = {

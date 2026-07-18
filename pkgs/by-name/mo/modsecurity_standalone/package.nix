@@ -1,19 +1,19 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
-  pkg-config,
-  autoreconfHook,
-  curl,
   apacheHttpd,
-  pcre,
   apr,
   aprutil,
+  autoreconfHook,
+  curl,
   libxml2,
-  luaSupport ? false,
   lua5,
+  pcre,
   perl,
+  pkg-config,
   versionCheckHook,
+  luaSupport ? false,
 }:
 
 let
@@ -32,10 +32,22 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-scMOiu8oI3+VcXe05gLNQ8ILmnP4iwls8ZZ9r+3ei5Y=";
   };
 
+  outputs = [
+    "out"
+    "nginx"
+  ];
+
+  patches = [
+    # by default modsecurity's install script copies compiled output to httpd's modules folder
+    # this patch removes those lines
+    ./Makefile.am.patch
+  ];
+
   nativeBuildInputs = [
     pkg-config
     autoreconfHook
   ];
+
   buildInputs = [
     curl
     apacheHttpd
@@ -58,18 +70,6 @@ stdenv.mkDerivation (finalAttrs: {
     "--with-lua=${luaValue}"
   ];
 
-  enableParallelBuilding = true;
-
-  outputs = [
-    "out"
-    "nginx"
-  ];
-  patches = [
-    # by default modsecurity's install script copies compiled output to httpd's modules folder
-    # this patch removes those lines
-    ./Makefile.am.patch
-  ];
-
   doCheck = true;
   nativeCheckInputs = [ perl ];
 
@@ -79,16 +79,19 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   doInstallCheck = true;
+
   nativeInstallCheckInputs = [
     versionCheckHook
   ];
-  versionCheckProgramArg = "-v";
+
+  enableParallelBuilding = true;
   versionCheckProgram = "${placeholder "out"}/bin/mlogc";
+  versionCheckProgramArg = "-v";
 
   meta = {
     description = "Open source, cross-platform web application firewall (WAF)";
-    license = lib.licenses.asl20;
     homepage = "https://github.com/owasp-modsecurity/ModSecurity";
+    license = lib.licenses.asl20;
     maintainers = [ ];
     platforms = lib.platforms.linux ++ lib.platforms.darwin;
   };

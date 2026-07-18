@@ -1,33 +1,28 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # build-system
-  poetry-core,
-
-  # dependencies
-  django,
-
   # optionals
   bleach,
+  buildPythonPackage,
+  # dependencies
+  django,
   docutils,
   markdown,
+  # build-system
+  poetry-core,
   pygments,
-  python-creole,
-  smartypants,
-  textile,
-
   # tests
   pytest-cov-stub,
   pytest-django,
   pytestCheckHook,
+  python-creole,
+  smartypants,
+  textile,
 }:
 
 buildPythonPackage rec {
   pname = "django-markup";
   version = "1.10";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "bartTC";
@@ -36,9 +31,24 @@ buildPythonPackage rec {
     hash = "sha256-LcEbN5/LbY3xWellBVK2Kfvt/XLzRJjGWcEk8h722Og=";
   };
 
-  build-system = [ poetry-core ];
+  nativeCheckInputs = [
+    pytest-cov-stub
+    pytest-django
+    pytestCheckHook
+  ]
+  ++ optional-dependencies.all_filter_dependencies;
 
+  preCheck = ''
+    export DJANGO_SETTINGS_MODULE=django_markup.tests
+  '';
+
+  build-system = [ poetry-core ];
   dependencies = [ django ];
+
+  disabledTests = [
+    # pygments compat issue
+    "test_rst_with_pygments"
+  ];
 
   optional-dependencies = {
     all_filter_dependencies = [
@@ -52,23 +62,8 @@ buildPythonPackage rec {
     ];
   };
 
+  pyproject = true;
   pythonImportsCheck = [ "django_markup" ];
-
-  nativeCheckInputs = [
-    pytest-cov-stub
-    pytest-django
-    pytestCheckHook
-  ]
-  ++ optional-dependencies.all_filter_dependencies;
-
-  disabledTests = [
-    # pygments compat issue
-    "test_rst_with_pygments"
-  ];
-
-  preCheck = ''
-    export DJANGO_SETTINGS_MODULE=django_markup.tests
-  '';
 
   meta = {
     description = "Generic Django application to convert text with specific markup to html";

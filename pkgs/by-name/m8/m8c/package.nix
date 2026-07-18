@@ -1,13 +1,13 @@
 {
+  lib,
   stdenv,
   fetchFromGitHub,
-  lib,
-  pkg-config,
-  sdl3,
-  libserialport,
   cmake,
   copyDesktopItems,
+  libserialport,
   nix-update-script,
+  pkg-config,
+  sdl3,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -21,10 +21,6 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-cr5tat7JOFJ7y7AEinphgV/5T138gV6jidb87GooZ8U=";
   };
 
-  makeFlags = [ "CC=${stdenv.cc.targetPrefix}cc" ];
-
-  installFlags = [ "PREFIX=$(out)" ];
-
   nativeBuildInputs = [
     cmake
     pkg-config
@@ -36,14 +32,16 @@ stdenv.mkDerivation (finalAttrs: {
     libserialport
   ];
 
+  makeFlags = [ "CC=${stdenv.cc.targetPrefix}cc" ];
+  installFlags = [ "PREFIX=$(out)" ];
   passthru.updateScript = nix-update-script { };
 
   meta = {
     description = "Cross-platform M8 tracker headless client";
     homepage = "https://github.com/laamaa/m8c";
     license = lib.licenses.mit;
-    platforms = lib.platforms.all;
     maintainers = with lib.maintainers; [ mrtnvgr ];
+    platforms = lib.platforms.all;
     mainProgram = "m8c";
   };
 })

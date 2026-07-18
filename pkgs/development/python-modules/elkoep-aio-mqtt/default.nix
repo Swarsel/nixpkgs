@@ -1,18 +1,17 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
   attrs,
+  buildPythonPackage,
   paho-mqtt,
   pytest-asyncio,
   pytestCheckHook,
+  setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "elkoep-aio-mqtt";
   version = "0.1.0.beta.4";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "epdevlab";
@@ -21,6 +20,11 @@ buildPythonPackage rec {
     hash = "sha256-pQzM0wLLZk6cEizhDqLbVF4pMeyefgSUU0ay3CiGgAE=";
   };
 
+  nativeCheckInputs = [
+    pytest-asyncio
+    pytestCheckHook
+  ];
+
   build-system = [ setuptools ];
 
   dependencies = [
@@ -28,11 +32,7 @@ buildPythonPackage rec {
     paho-mqtt
   ];
 
-  nativeCheckInputs = [
-    pytest-asyncio
-    pytestCheckHook
-  ];
-
+  pyproject = true;
   pythonImportsCheck = [ "inelsmqtt" ];
 
   meta = {

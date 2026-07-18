@@ -1,19 +1,19 @@
 {
-  makeBinaryWrapper,
-  nodejs_26,
-  nodejs-slim_26,
-  node-gyp,
-  fetchPnpmDeps,
-  fetchFromGitHub,
-  pnpm_11,
-  pnpmConfigHook,
-  stdenv,
   lib,
-  vips,
-  pkg-config,
-  python3,
+  stdenv,
+  fetchFromGitHub,
+  fetchPnpmDeps,
+  makeBinaryWrapper,
   nix-update-script,
+  node-gyp,
+  nodejs-slim_26,
+  nodejs_26,
+  pkg-config,
+  pnpmConfigHook,
+  pnpm_11,
+  python3,
   tsx,
+  vips,
 }:
 let
   pnpm = pnpm_11.override { nodejs-slim = nodejs-slim_26; };
@@ -31,16 +31,11 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-4Kcfv6bcKM7SXTmKn0cjXjhUXEZSypSFWyr7jIP/4+E=";
   };
 
-  pnpmDeps = fetchPnpmDeps {
-    inherit (finalAttrs) pname version src;
-    pnpm = pnpm;
-    fetcherVersion = 4;
-    hash = "sha256-1Iv8vvGFQuxBFM8YB8sYulmU4SxE4G9Yyh67BBzEoZo=";
-    pnpmWorkspaces = [
-      "@papra/app-client..."
-      "@papra/app-server..."
-    ];
-  };
+  postPatch = ''
+    substituteInPlace apps/papra-server/src/modules/app/static-assets/static-assets.routes.ts \
+      --replace-fail "./public" "$out/lib/public" \
+      --replace-fail "public/index.html" "$out/lib/public/index.html"
+  '';
 
   nativeBuildInputs = [
     makeBinaryWrapper
@@ -58,12 +53,6 @@ stdenv.mkDerivation (finalAttrs: {
 
   env.SHARP_FORCE_GLOBAL_LIBVIPS = 1;
   env.npm_config_nodedir = nodejs;
-
-  postPatch = ''
-    substituteInPlace apps/papra-server/src/modules/app/static-assets/static-assets.routes.ts \
-      --replace-fail "./public" "$out/lib/public" \
-      --replace-fail "public/index.html" "$out/lib/public/index.html"
-  '';
 
   buildPhase = ''
     runHook preBuild
@@ -95,6 +84,18 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  pnpmDeps = fetchPnpmDeps {
+    inherit (finalAttrs) pname version src;
+    fetcherVersion = 4;
+    hash = "sha256-1Iv8vvGFQuxBFM8YB8sYulmU4SxE4G9Yyh67BBzEoZo=";
+    pnpm = pnpm;
+
+    pnpmWorkspaces = [
+      "@papra/app-client..."
+      "@papra/app-server..."
+    ];
+  };
+
   passthru.updateScript = nix-update-script { };
 
   meta = {
@@ -102,6 +103,7 @@ stdenv.mkDerivation (finalAttrs: {
     homepage = "https://papra.app/";
     changelog = "https://github.com/papra-hq/papra/releases";
     license = lib.licenses.agpl3Only;
+
     maintainers = with lib.maintainers; [
       wariuccio
       miniharinn

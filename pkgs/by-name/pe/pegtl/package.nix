@@ -1,10 +1,10 @@
 {
-  cmake,
-  fetchFromGitHub,
-  gitUpdater,
   lib,
-  ninja,
   stdenv,
+  fetchFromGitHub,
+  cmake,
+  gitUpdater,
+  ninja,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -40,12 +40,14 @@ stdenv.mkDerivation (finalAttrs: {
   passthru.updateScript = gitUpdater { };
 
   meta = {
-    homepage = "https://github.com/taocpp/pegtl";
     description = "Parsing Expression Grammar Template Library";
+
     longDescription = ''
       Zero-dependency C++ header-only parser combinator library
       for creating parsers according to a Parsing Expression Grammar (PEG).
     '';
+
+    homepage = "https://github.com/taocpp/pegtl";
     license = lib.licenses.boost;
     maintainers = [ ];
     platforms = lib.platforms.all;

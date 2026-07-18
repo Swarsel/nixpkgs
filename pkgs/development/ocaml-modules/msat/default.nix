@@ -2,8 +2,8 @@
   lib,
   fetchFromGitHub,
   buildDunePackage,
-  iter,
   containers,
+  iter,
   mdx,
 }:
 
@@ -18,17 +18,17 @@ buildDunePackage (finalAttrs: {
     hash = "sha256-ER7ZUejW+Zy3l2HIoFDYbR8iaKMvLZWaeWrOAAYXjG4=";
   };
 
-  propagatedBuildInputs = [
-    iter
-  ];
-
   postPatch = ''
     substituteInPlace dune --replace mdx ocaml-mdx
   '';
 
+  propagatedBuildInputs = [
+    iter
+  ];
+
   doCheck = true;
-  checkInputs = [ containers ];
   nativeCheckInputs = [ mdx.bin ];
+  checkInputs = [ containers ];
 
   meta = {
     description = "Modular sat/smt solver with proof output";

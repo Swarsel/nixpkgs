@@ -1,17 +1,16 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
-  regex,
+  buildPythonPackage,
   pytest-asyncio,
   pytestCheckHook,
+  regex,
+  setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "sentence-stream";
   version = "1.3.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "OHF-Voice";
@@ -19,6 +18,11 @@ buildPythonPackage rec {
     tag = "v${version}";
     hash = "sha256-UVoRto2zGf+GZFcYt4NC63Fm9iS7DWgwH7sJrrHxvXs=";
   };
+
+  nativeCheckInputs = [
+    pytest-asyncio
+    pytestCheckHook
+  ];
 
   build-system = [
     setuptools
@@ -28,10 +32,7 @@ buildPythonPackage rec {
     regex
   ];
 
-  nativeCheckInputs = [
-    pytest-asyncio
-    pytestCheckHook
-  ];
+  pyproject = true;
 
   pythonImportsCheck = [
     "sentence_stream"

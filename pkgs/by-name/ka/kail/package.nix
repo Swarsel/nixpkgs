@@ -1,18 +1,12 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule (finalAttrs: {
   pname = "kail";
   version = "0.17.4";
-
-  ldflags = [
-    "-s"
-    "-w"
-    "-X main.version=${finalAttrs.version}"
-  ];
 
   src = fetchFromGitHub {
     owner = "boz";
@@ -23,13 +17,21 @@ buildGoModule (finalAttrs: {
 
   vendorHash = "sha256-u6/LsLphaqYswJkAuqgrgknnm+7MnaeH+kf9BPcdtrc=";
 
+  ldflags = [
+    "-s"
+    "-w"
+    "-X main.version=${finalAttrs.version}"
+  ];
+
   meta = {
     description = "Kubernetes log viewer";
     homepage = "https://github.com/boz/kail";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       vdemeester
     ];
+
     mainProgram = "kail";
   };
 })

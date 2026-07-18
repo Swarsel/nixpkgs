@@ -1,7 +1,7 @@
 {
-  buildGoModule,
-  fetchFromGitHub,
   lib,
+  fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule (finalAttrs: {
@@ -16,7 +16,6 @@ buildGoModule (finalAttrs: {
   };
 
   vendorHash = "sha256-/1bZNarqCI24pm/SXtOZ+PDDTVpCdFebx6ccDSvnf5o=";
-
   subPackages = [ "cmd/sloth" ];
 
   meta = {

@@ -1,17 +1,17 @@
 {
+  lib,
   stdenv,
   fetchFromGitHub,
-  lib,
   cmake,
+  libx11,
+  libxcb,
+  libxcb-keysyms,
+  lz4,
   makeWrapper,
   pkg-config,
   python3,
-  wayland,
-  libx11,
-  libxcb,
-  lz4,
   vulkan-loader,
-  libxcb-keysyms,
+  wayland,
   zlib,
   zstd,
 }:
@@ -28,6 +28,12 @@ stdenv.mkDerivation (finalAttrs: {
     fetchSubmodules = true;
   };
 
+  nativeBuildInputs = [
+    cmake
+    makeWrapper
+    pkg-config
+  ];
+
   buildInputs = [
     libx11
     libxcb
@@ -38,18 +44,6 @@ stdenv.mkDerivation (finalAttrs: {
     zlib
     zstd
   ];
-
-  nativeBuildInputs = [
-    cmake
-    makeWrapper
-    pkg-config
-  ];
-
-  # The python script searches in subfolders, but we want to search in the same bin directory
-  prePatch = ''
-    substituteInPlace tools/gfxrecon/gfxrecon.py \
-      --replace-fail "scriptdir, '..', cmd" 'scriptdir'
-  '';
 
   # Fix the paths to load the layer.
   # Also remove the .py suffix on files so that gfxrecon
@@ -67,6 +61,12 @@ stdenv.mkDerivation (finalAttrs: {
 
     # Remove unrelated files that got installed
     rm -r $out/lib/{cmake,pkgconfig}
+  '';
+
+  # The python script searches in subfolders, but we want to search in the same bin directory
+  prePatch = ''
+    substituteInPlace tools/gfxrecon/gfxrecon.py \
+      --replace-fail "scriptdir, '..', cmd" 'scriptdir'
   '';
 
   meta = {

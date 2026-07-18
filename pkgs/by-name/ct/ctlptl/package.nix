@@ -1,8 +1,8 @@
 {
   lib,
   stdenv,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   installShellFiles,
 }:
 
@@ -17,17 +17,8 @@ buildGoModule (finalAttrs: {
     hash = "sha256-/E1E3agKPYIgBjhUDGr2eKmoWH3tAbx+eSQRnDja2k0=";
   };
 
-  vendorHash = "sha256-uARktb9Umo/SkJ8UvbOZhNSYb2ooXFybHhtY4xIVSFs=";
-
   nativeBuildInputs = [ installShellFiles ];
-
-  subPackages = [ "cmd/ctlptl" ];
-
-  ldflags = [
-    "-s"
-    "-w"
-    "-X main.version=${finalAttrs.version}"
-  ];
+  vendorHash = "sha256-uARktb9Umo/SkJ8UvbOZhNSYb2ooXFybHhtY4xIVSFs=";
 
   postInstall = lib.optionalString (stdenv.buildPlatform.canExecute stdenv.hostPlatform) ''
     installShellCompletion --cmd ctlptl \
@@ -35,6 +26,14 @@ buildGoModule (finalAttrs: {
       --fish <($out/bin/ctlptl completion fish) \
       --zsh <($out/bin/ctlptl completion zsh)
   '';
+
+  ldflags = [
+    "-s"
+    "-w"
+    "-X main.version=${finalAttrs.version}"
+  ];
+
+  subPackages = [ "cmd/ctlptl" ];
 
   meta = {
     description = "CLI for declaratively setting up local Kubernetes clusters";

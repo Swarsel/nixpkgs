@@ -2,35 +2,32 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  fetchpatch,
-
-  # nativeBuildInputs
-  cmake,
-  libsForQt5,
-  libtool,
-  pkg-config,
-  unzip,
-
   # buildInputs
   c-ares,
+  # nativeBuildInputs
+  cmake,
   cryptopp,
   curl,
+  fetchpatch,
   ffmpeg,
   hicolor-icon-theme,
   icu,
   libmediainfo,
+  libsForQt5,
   libsodium,
+  libtool,
   libuv,
   libxcb,
   libzen,
+  nix-update-script,
   openssl,
+  pkg-config,
   readline,
   sqlite,
+  unzip,
   wget,
   xrdb,
   zlib,
-
-  nix-update-script,
 }:
 stdenv.mkDerivation (finalAttrs: {
   pname = "megasync";
@@ -43,6 +40,7 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-PgIRIr3+XRwv48EpREL56yzuqI8Ws72V4o3pTSR1ZfA=";
     fetchSubmodules = false; # DesignTokensImporter cannot be fetched, see #1010 in github:meganz/megasync
     leaveDotGit = true;
+
     postFetch = ''
       cd $out
 
@@ -58,18 +56,18 @@ stdenv.mkDerivation (finalAttrs: {
 
   patches = [
     (fetchpatch {
-      url = "https://github.com/archlinux/aur/raw/ff59780039697591e7e3a966db058b23bee0451c/020-megasync-sdk-fix-cmake-dependencies-detection.patch";
-      hash = "sha256-hQY6tMwiV3B6M6WiFdOESdhahAtuWjdoj2eI2mst/K8=";
       extraPrefix = "src/MEGASync/mega/";
+      hash = "sha256-hQY6tMwiV3B6M6WiFdOESdhahAtuWjdoj2eI2mst/K8=";
       stripLen = true;
+      url = "https://github.com/archlinux/aur/raw/ff59780039697591e7e3a966db058b23bee0451c/020-megasync-sdk-fix-cmake-dependencies-detection.patch";
     })
     (fetchpatch {
-      url = "https://github.com/archlinux/aur/raw/ff59780039697591e7e3a966db058b23bee0451c/030-megasync-app-fix-cmake-dependencies-detection.patch";
       hash = "sha256-11XWctv1veUEguc9Xvz2hMYw26CaCwu6M4hyA+5r81U=";
+      url = "https://github.com/archlinux/aur/raw/ff59780039697591e7e3a966db058b23bee0451c/030-megasync-app-fix-cmake-dependencies-detection.patch";
     })
     (fetchpatch {
-      url = "https://github.com/archlinux/aur/raw/c1f647871f5aad7e421971165b07e51b3e7900e9/040-megasync-app-add-missing-link-to-zlib.patch";
       hash = "sha256-HMsS5TlzkQZbfANSIrvH8Cp6mTxLJ04idcWUWeD2A0U=";
+      url = "https://github.com/archlinux/aur/raw/c1f647871f5aad7e421971165b07e51b3e7900e9/040-megasync-app-add-missing-link-to-zlib.patch";
     })
     ./megasync-fix-cmake-install-bindir.patch
     ./dont-fetch-clang-format.patch
@@ -119,9 +117,6 @@ stdenv.mkDerivation (finalAttrs: {
     zlib
   ];
 
-  dontUseQmakeConfigure = true;
-  enableParallelBuilding = true;
-
   cmakeFlags = [
     (lib.cmakeBool "USE_PDFIUM" false) # PDFIUM is not in nixpkgs
     (lib.cmakeBool "USE_FREEIMAGE" false) # freeimage is insecure
@@ -134,6 +129,9 @@ stdenv.mkDerivation (finalAttrs: {
     qtWrapperArgs+=(--prefix PATH : ${lib.makeBinPath [ xrdb ]})
   '';
 
+  dontUseQmakeConfigure = true;
+  enableParallelBuilding = true;
+
   passthru = {
     updateScript = nix-update-script {
       extraArgs = [
@@ -145,14 +143,16 @@ stdenv.mkDerivation (finalAttrs: {
   meta = {
     description = "Easy automated syncing between your computers and your MEGA Cloud Drive";
     homepage = "https://mega.nz/";
-    downloadPage = "https://github.com/meganz/MEGAsync";
     changelog = "https://github.com/meganz/MEGAsync/releases/tag/v${finalAttrs.version}_Linux";
     license = lib.licenses.unfreeRedistributable;
+    maintainers = [ ];
+
     platforms = [
       "i686-linux"
       "x86_64-linux"
     ];
-    maintainers = [ ];
+
     mainProgram = "megasync";
+    downloadPage = "https://github.com/meganz/MEGAsync";
   };
 })

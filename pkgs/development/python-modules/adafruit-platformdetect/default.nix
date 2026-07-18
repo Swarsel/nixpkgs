@@ -8,19 +8,17 @@
 buildPythonPackage (finalAttrs: {
   pname = "adafruit-platformdetect";
   version = "3.89.1";
-  pyproject = true;
 
   src = fetchPypi {
-    pname = "adafruit_platformdetect";
     inherit (finalAttrs) version;
     hash = "sha256-dFUtGvz3eahMpjUnoerumZXEKf9CLbFUkrrQw1mcq0s=";
+    pname = "adafruit_platformdetect";
   };
-
-  build-system = [ setuptools-scm ];
 
   # Project has not published tests yet
   doCheck = false;
-
+  build-system = [ setuptools-scm ];
+  pyproject = true;
   pythonImportsCheck = [ "adafruit_platformdetect" ];
 
   meta = {

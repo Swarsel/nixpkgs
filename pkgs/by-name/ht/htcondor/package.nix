@@ -2,21 +2,21 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  cmake,
-  libuuid,
-  expat,
-  curl,
-  pcre2,
-  sqlite,
-  python3,
   boost,
-  libxml2,
+  cmake,
+  curl,
+  expat,
+  libuuid,
   libvirt,
+  libxml2,
   munge,
-  voms,
-  perl,
-  scitokens-cpp,
   openssl,
+  pcre2,
+  perl,
+  python3,
+  scitokens-cpp,
+  sqlite,
+  voms,
 }:
 
 stdenv.mkDerivation rec {
@@ -26,12 +26,12 @@ stdenv.mkDerivation rec {
   src = fetchFromGitHub {
     owner = "htcondor";
     repo = "htcondor";
-
     rev = "v${version}";
     hash = "sha256-F8uI8Stvao7VKULTcOjv/nFUhFHxqd00gRNe6tkKgPE=";
   };
 
   nativeBuildInputs = [ cmake ];
+
   buildInputs = [
     libuuid
     expat
@@ -49,19 +49,19 @@ stdenv.mkDerivation rec {
     scitokens-cpp
   ];
 
-  env.CXXFLAGS = "-fpermissive";
-
   cmakeFlags = [
     "-DSYSTEM_NAME=NixOS"
     "-DWITH_PYTHON_BINDINGS=false"
   ];
 
+  env.CXXFLAGS = "-fpermissive";
+
   meta = {
-    homepage = "https://htcondor.org/";
     description = "Software system that creates a High-Throughput Computing (HTC) environment";
-    platforms = lib.platforms.linux;
+    homepage = "https://htcondor.org/";
     license = lib.licenses.asl20;
     maintainers = with lib.maintainers; [ evey ];
+    platforms = lib.platforms.linux;
     # On Aarch64: ld: cannot find -lpthread: No such file or directory
     # On x86_64:  ld: cannot find -ldl:      No such file or directory
     broken = true;

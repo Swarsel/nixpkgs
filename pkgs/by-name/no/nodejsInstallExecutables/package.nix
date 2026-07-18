@@ -1,21 +1,24 @@
 {
   lib,
-  makeSetupHook,
   installShellFiles,
+  jq,
+  makeSetupHook,
   makeWrapper,
   nodejs,
-  jq,
 }:
 
 makeSetupHook {
-  name = "nodejs-install-executables";
   propagatedBuildInputs = [
     installShellFiles
     makeWrapper
   ];
+
+  name = "nodejs-install-executables";
+
   substitutions = {
     hostNode = "${nodejs}/bin/node";
     jq = "${jq}/bin/jq";
   };
+
   meta.license = lib.licenses.mit;
 } ./hook.sh

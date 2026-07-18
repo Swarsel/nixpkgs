@@ -1,22 +1,21 @@
 {
   lib,
+  fetchFromGitHub,
+  asdf,
   asdf-astropy,
   asdf-wcs-schemas,
-  asdf,
   astropy,
   buildPythonPackage,
-  fetchFromGitHub,
   numpy,
   pytestCheckHook,
   scipy,
-  setuptools-scm,
   setuptools,
+  setuptools-scm,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "gwcs";
   version = "1.0.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "spacetelescope";
@@ -28,6 +27,8 @@ buildPythonPackage (finalAttrs: {
   postPatch = ''
     sed -i "/--doctest-rst/d" pyproject.toml
   '';
+
+  nativeCheckInputs = [ pytestCheckHook ];
 
   build-system = [
     setuptools
@@ -43,8 +44,7 @@ buildPythonPackage (finalAttrs: {
     scipy
   ];
 
-  nativeCheckInputs = [ pytestCheckHook ];
-
+  pyproject = true;
   pythonImportsCheck = [ "gwcs" ];
 
   meta = {

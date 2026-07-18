@@ -13,17 +13,17 @@ stdenv.mkDerivation (finalAttrs: {
     owner = "apache";
     repo = "incubator-tvm";
     tag = "v${finalAttrs.version}";
-    fetchSubmodules = true;
     hash = "sha256-+YnxYIGaPMgfLDsQEiCpqGuJRBTFEbXWI1L2JdnUyfI=";
+    fetchSubmodules = true;
   };
 
   nativeBuildInputs = [ cmake ];
 
   meta = {
-    homepage = "https://tvm.apache.org/";
     description = "End to End Deep Learning Compiler Stack for CPUs, GPUs and accelerators";
+    homepage = "https://tvm.apache.org/";
     license = lib.licenses.asl20;
-    platforms = lib.platforms.all;
     maintainers = with lib.maintainers; [ adelbertc ];
+    platforms = lib.platforms.all;
   };
 })

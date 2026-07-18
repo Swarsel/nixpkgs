@@ -1,35 +1,34 @@
 {
-  fetchFromGitHub,
   lib,
-  makeWrapper,
-  writeTextFile,
+  stdenv,
+  fetchFromGitHub,
+  SDL2,
   copyDesktopItems,
-  makeDesktopItem,
-  imagemagick,
-
   curl,
   hexdump,
-  python3,
-  SDL2,
-  stdenv,
-  zlib,
+  imagemagick,
   libGL,
-
+  makeDesktopItem,
+  makeWrapper,
+  python3,
   sm64baserom,
+  writeTextFile,
+  zlib,
   enableCoopNet ? true,
   enableDiscord ? true,
   enableTextureFix ? true,
 }:
 let
   libc_hack = writeTextFile {
+    destination = "/include/libc.h";
     name = "libc-hack";
+
     # https://stackoverflow.com/questions/21768542/libc-h-no-such-file-or-directory-when-compiling-nanomsg-pipeline-sample
     text = ''
       #include <unistd.h>
       #include <string.h>
       #include <pthread.h>
     '';
-    destination = "/include/libc.h";
   };
   baserom =
     (sm64baserom.override {
@@ -66,19 +65,6 @@ stdenv.mkDerivation (finalAttrs: {
     zlib
     libGL
   ];
-
-  icon = "${finalAttrs.src}/res/icon.ico";
-  desktopItems = [
-    (makeDesktopItem {
-      name = finalAttrs.pname;
-      desktopName = "sm64coopdx";
-      exec = "sm64coopdx";
-      icon = finalAttrs.pname;
-      categories = [ "Game" ];
-    })
-  ];
-
-  enableParallelBuilding = true;
 
   makeFlags = [
     "BREW_PREFIX=/not-exist"
@@ -124,8 +110,22 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  desktopItems = [
+    (makeDesktopItem {
+      categories = [ "Game" ];
+      desktopName = "sm64coopdx";
+      exec = "sm64coopdx";
+      icon = finalAttrs.pname;
+      name = finalAttrs.pname;
+    })
+  ];
+
+  enableParallelBuilding = true;
+  icon = "${finalAttrs.src}/res/icon.ico";
+
   meta = {
     description = "Multiplayer fork of the Super Mario 64 decompilation";
+
     longDescription = ''
       This is a fork of sm64ex-coop, which was itself a fork of sm64ex, which was a fork of the sm64 decompilation project.
 
@@ -137,16 +137,19 @@ stdenv.mkDerivation (finalAttrs: {
       - `enableDiscord`: (default: `true`) whether to enable discord integration, which allows showing status and connecting to games over discord
       - `enableCoopNet`: (default: `true`) whether to enable Co-op Net integration, a server made specifically for multiplayer sm64
     '';
-    license = lib.licenses.unfree;
-    platforms = lib.platforms.x86;
-    maintainers = [ lib.maintainers.shelvacu ];
-    mainProgram = "sm64coopdx";
+
     homepage = "https://sm64coopdx.com/";
     changelog = "https://github.com/coop-deluxe/sm64coopdx/releases/tag/${finalAttrs.version}";
+    license = lib.licenses.unfree;
+
     sourceProvenance = with lib.sourceTypes; [
       fromSource
       # The lua engine, discord sdk, and coopnet library are vendored pre-built. See https://github.com/coop-deluxe/sm64coopdx/tree/v1.0.3/lib
       binaryNativeCode
     ];
+
+    maintainers = [ lib.maintainers.shelvacu ];
+    platforms = lib.platforms.x86;
+    mainProgram = "sm64coopdx";
   };
 })

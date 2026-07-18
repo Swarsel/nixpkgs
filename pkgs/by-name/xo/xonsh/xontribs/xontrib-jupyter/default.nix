@@ -1,20 +1,18 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  poetry-core,
+  buildPythonPackage,
   jupyter-client,
-  writableTmpDirAsHomeHook,
-  pytestCheckHook,
-  xonsh,
   nix-update-script,
+  poetry-core,
+  pytestCheckHook,
+  writableTmpDirAsHomeHook,
+  xonsh,
 }:
 
 buildPythonPackage rec {
   pname = "xontrib-jupyter";
   version = "0.3.2";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "xonsh";
@@ -23,13 +21,11 @@ buildPythonPackage rec {
     hash = "sha256-gf+jyA2il7MD+Moez/zBYpf4EaPiNcgr5ZrJFK4uD2k=";
   };
 
-  prePatch = ''
-    substituteInPlace pyproject.toml \
-      --replace-fail 'xonsh = ">=0.12"' ""
-
-    substituteInPlace xonsh_jupyter/shell.py \
-      --replace-fail 'xonsh.base_shell' 'xonsh.shells.base_shell'
-  '';
+  nativeCheckInputs = [
+    writableTmpDirAsHomeHook
+    pytestCheckHook
+    xonsh
+  ];
 
   build-system = [
     poetry-core
@@ -39,12 +35,15 @@ buildPythonPackage rec {
     jupyter-client
   ];
 
-  nativeCheckInputs = [
-    writableTmpDirAsHomeHook
-    pytestCheckHook
-    xonsh
-  ];
+  prePatch = ''
+    substituteInPlace pyproject.toml \
+      --replace-fail 'xonsh = ">=0.12"' ""
 
+    substituteInPlace xonsh_jupyter/shell.py \
+      --replace-fail 'xonsh.base_shell' 'xonsh.shells.base_shell'
+  '';
+
+  pyproject = true;
   passthru.updateScript = nix-update-script { };
 
   meta = {

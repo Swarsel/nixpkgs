@@ -8,6 +8,7 @@
 stdenv.mkDerivation rec {
   pname = "xfractint";
   version = "20.04p16";
+
   # or fetchFromGitHub(owner,repo,rev) or fetchgit(rev)
   src = fetchurl {
     url = "https://www.fractint.net/ftp/current/linux/xfractint-${version}.tar.gz";
@@ -19,6 +20,8 @@ stdenv.mkDerivation rec {
     libxft
   ];
 
+  makeFlags = [ "PREFIX=$(out)" ];
+
   configurePhase = ''
     runHook preConfigure
 
@@ -27,16 +30,14 @@ stdenv.mkDerivation rec {
     runHook postConfigure
   '';
 
-  makeFlags = [ "PREFIX=$(out)" ];
-
   meta = {
     description = "";
+    homepage = "https://www.fractint.net/";
     # Code cannot be used in commercial programs
     # Looks like the definition hinges on the price, not license
     license = lib.licenses.unfree;
     maintainers = [ lib.maintainers.raskin ];
     platforms = lib.platforms.linux;
-    homepage = "https://www.fractint.net/";
     mainProgram = "xfractint";
   };
 }

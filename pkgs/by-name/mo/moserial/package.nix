@@ -3,16 +3,16 @@
   stdenv,
   fetchFromGitLab,
   autoreconfHook,
-  wrapGAppsHook3,
-  intltool,
-  itstool,
-  pkg-config,
-  vala,
   glib,
   graphviz,
-  yelp-tools,
   gtk3,
+  intltool,
+  itstool,
   lrzsz,
+  pkg-config,
+  vala,
+  wrapGAppsHook3,
+  yelp-tools,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -20,11 +20,11 @@ stdenv.mkDerivation (finalAttrs: {
   version = "3.0.21";
 
   src = fetchFromGitLab {
-    domain = "gitlab.gnome.org";
     owner = "GNOME";
     repo = "moserial";
     rev = "moserial_${lib.replaceStrings [ "." ] [ "_" ] finalAttrs.version}";
     sha256 = "sha256-wfdI51ECqVNcUrIVjYBijf/yqpiwSQeMiKaVJSSma3k=";
+    domain = "gitlab.gnome.org";
   };
 
   nativeBuildInputs = [

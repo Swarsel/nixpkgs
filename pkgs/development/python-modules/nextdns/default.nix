@@ -1,10 +1,10 @@
 {
   lib,
+  fetchFromGitHub,
   aiohttp,
   aiointercept,
   aioresponses,
   buildPythonPackage,
-  fetchFromGitHub,
   pytest-asyncio,
   pytest-error-for-skips,
   pytestCheckHook,
@@ -16,7 +16,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "nextdns";
   version = "5.0.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "bieniu";
@@ -24,15 +23,6 @@ buildPythonPackage (finalAttrs: {
     tag = finalAttrs.version;
     hash = "sha256-QCiosQHxuwDxztXMEkEosob8M2NMtnlGI33m5oAkaBw=";
   };
-
-  pythonRelaxDeps = [ "aiohttp" ];
-
-  build-system = [ setuptools ];
-
-  dependencies = [
-    aiohttp
-    tenacity
-  ];
 
   nativeCheckInputs = [
     aiointercept
@@ -43,7 +33,16 @@ buildPythonPackage (finalAttrs: {
     syrupy
   ];
 
+  build-system = [ setuptools ];
+
+  dependencies = [
+    aiohttp
+    tenacity
+  ];
+
+  pyproject = true;
   pythonImportsCheck = [ "nextdns" ];
+  pythonRelaxDeps = [ "aiohttp" ];
 
   meta = {
     description = "Module for the NextDNS API";

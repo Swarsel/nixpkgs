@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule (finalAttrs: {
@@ -14,6 +14,7 @@ buildGoModule (finalAttrs: {
     rev = "v${finalAttrs.version}";
     sha256 = "sha256-EulQYGOMIh952e4Xp13hT/HMW3qP1QXYtt5PEej1VTY=";
   };
+
   vendorHash = "sha256-D6ipwGMxT0B3uYUzg6Oo2TYnsOVBY0mYO5lC7vtVPc0=";
 
   ldflags = [
@@ -22,10 +23,8 @@ buildGoModule (finalAttrs: {
   ];
 
   meta = {
-    homepage = "https://github.com/praetorian-inc/snowcat";
-    changelog = "https://github.com/praetorian-inc/snowcat/releases/tag/v${finalAttrs.version}";
     description = "Tool to audit the istio service mesh";
-    mainProgram = "snowcat";
+
     longDescription = ''
       Snowcat gathers and analyzes the configuration of an Istio cluster and
       audits it for potential violations of security best practices.
@@ -35,7 +34,11 @@ buildGoModule (finalAttrs: {
       with Istio, and begin to enumerate the required data. Optionally, you can
       point snowcat at a directory containing Kubernets YAML files.
     '';
+
+    homepage = "https://github.com/praetorian-inc/snowcat";
+    changelog = "https://github.com/praetorian-inc/snowcat/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.asl20;
     maintainers = with lib.maintainers; [ jk ];
+    mainProgram = "snowcat";
   };
 })

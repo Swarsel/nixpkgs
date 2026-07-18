@@ -1,19 +1,18 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   graphviz,
-  stdlib-list,
   pytestCheckHook,
   pyyaml,
   setuptools,
+  stdlib-list,
   toml,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "pydeps";
   version = "3.0.6";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "thebjorn";
@@ -22,14 +21,13 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-/Ie75jQWG3t4cGMRMVPJ7r6aBdm4hC7/CgwmuOUk4BA=";
   };
 
-  build-system = [ setuptools ];
+  postPatch = ''
+    # Path is hard-coded
+    substituteInPlace pydeps/dot.py \
+      --replace "dot -Gstart=1" "${lib.makeBinPath [ graphviz ]}/dot -Gstart=1"
+  '';
 
   buildInputs = [ graphviz ];
-
-  dependencies = [
-    graphviz
-    stdlib-list
-  ];
 
   nativeCheckInputs = [
     pytestCheckHook
@@ -37,17 +35,19 @@ buildPythonPackage (finalAttrs: {
     toml
   ];
 
-  postPatch = ''
-    # Path is hard-coded
-    substituteInPlace pydeps/dot.py \
-      --replace "dot -Gstart=1" "${lib.makeBinPath [ graphviz ]}/dot -Gstart=1"
-  '';
+  build-system = [ setuptools ];
+
+  dependencies = [
+    graphviz
+    stdlib-list
+  ];
 
   disabledTests = [
     # Would require to have additional modules available
     "test_find_package_names"
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "pydeps" ];
 
   meta = {

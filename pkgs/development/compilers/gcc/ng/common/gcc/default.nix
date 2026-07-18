@@ -1,46 +1,45 @@
 {
   lib,
   stdenv,
-  gcc_meta,
-  release_version,
-  version,
-  monorepoSrc ? null,
+  bintools,
+  buildGccPackages,
+  buildPackages,
   fetchpatch,
+  gcc_meta,
+  getVersionFile,
+  gettext,
+  gmp,
+  isl,
+  libc,
+  libmpc,
+  mpfr,
+  perl,
+  release_version,
+  runCommand,
+  targetPackages,
+  texinfo,
+  version,
+  which,
+  zlib,
+  enablePlugin ? lib.systems.equals stdenv.hostPlatform stdenv.buildPlatform,
   langAda ? false,
   langC ? true,
   langCC ? true,
   langFortran ? false,
   langGo ? false,
   langJava ? false,
+  langJit ? false,
   langObjC ? stdenv.targetPlatform.isDarwin,
   langObjCpp ? stdenv.targetPlatform.isDarwin,
-  langJit ? false,
-  enablePlugin ? lib.systems.equals stdenv.hostPlatform stdenv.buildPlatform,
-  runCommand,
-  buildPackages,
-  isl,
-  zlib,
-  gmp,
-  libmpc,
-  mpfr,
-  perl,
-  texinfo,
-  which,
-  gettext,
-  getVersionFile,
-  buildGccPackages,
-  targetPackages,
-  libc,
-  bintools,
+  monorepoSrc ? null,
 }:
 let
   inherit (stdenv) targetPlatform hostPlatform;
   targetPrefix = lib.optionalString (targetPlatform != hostPlatform) "${targetPlatform.config}-";
 in
 stdenv.mkDerivation (finalAttrs: {
-  pname = "${targetPrefix}${if langFortran then "gfortran" else "gcc"}";
   inherit version;
-
+  pname = "${targetPrefix}${if langFortran then "gfortran" else "gcc"}";
   src = monorepoSrc;
 
   outputs = [
@@ -51,67 +50,38 @@ stdenv.mkDerivation (finalAttrs: {
 
   patches = [
     (fetchpatch {
+      hash = "sha256-J7SrypmVSbvYUzxWWvK2EwEbRsfGGLg4vNZuLEe6Xe0=";
       name = "for_each_path-functional-programming.patch";
       url = "https://github.com/gcc-mirror/gcc/commit/f23bac62f46fc296a4d0526ef54824d406c3756c.diff";
-      hash = "sha256-J7SrypmVSbvYUzxWWvK2EwEbRsfGGLg4vNZuLEe6Xe0=";
     })
     (fetchpatch {
+      hash = "sha256-doXak3VfdWR/BP9XiJaU7uJz7rex78N1oaW6CqYwKaQ=";
       name = "find_a_program-separate-from-find_a_file.patch";
       url = "https://github.com/gcc-mirror/gcc/commit/948eb02800777d0318ee2a38bf32076afee739f2.diff";
-      hash = "sha256-doXak3VfdWR/BP9XiJaU7uJz7rex78N1oaW6CqYwKaQ=";
     })
     (fetchpatch {
+      hash = "sha256-kW6ZHyMzsn7snUBuDx4XLriaFGWZ1fixNc9UH8O5els=";
       name = "simplify-find_a_program-and-find_a_file.patch";
       url = "https://github.com/gcc-mirror/gcc/commit/073b4656d07e40f83a1db7f4462ab2d68b1875a2.diff";
-      hash = "sha256-kW6ZHyMzsn7snUBuDx4XLriaFGWZ1fixNc9UH8O5els=";
     })
     (fetchpatch {
+      hash = "sha256-preG5DdRX+a0NIebsapAVnqiLYtPjsR4H5BkAXL/65g=";
       name = "for_each_path-fix-uninitialized-ret-PR121806.patch";
       url = "https://github.com/gcc-mirror/gcc/commit/6b008944e7bc3a342a734c4fcf1001d63fd0a6f8.diff";
-      hash = "sha256-preG5DdRX+a0NIebsapAVnqiLYtPjsR4H5BkAXL/65g=";
     })
     (fetchpatch {
+      hash = "sha256-NsgGnTMQTnz1c4urr6jeoGOzQ4xeJ/p+F53osNDYDCA=";
       name = "for_each_path-pass-machine-specific.patch";
       url = "https://github.com/gcc-mirror/gcc/commit/f62f68e7c4bde0385fbd2dba3e926586dd2f1281.diff";
-      hash = "sha256-NsgGnTMQTnz1c4urr6jeoGOzQ4xeJ/p+F53osNDYDCA=";
     })
     (fetchpatch {
+      hash = "sha256-54/HzM+aeWq8CTkQu8Pualqc/LgRLS0+8EY8uPUsD+s=";
       name = "find_a_program-search-with-machine-prefix.patch";
       url = "https://github.com/gcc-mirror/gcc/commit/a514707ffd7d58b140686036c2dece43ecb7d33c.diff";
-      hash = "sha256-54/HzM+aeWq8CTkQu8Pualqc/LgRLS0+8EY8uPUsD+s=";
     })
 
     (getVersionFile "gcc/fix-collect2-paths.diff")
   ];
-
-  enableParallelBuilding = true;
-
-  hardeningDisable = [
-    "format" # Some macro-indirect formatting in e.g. libcpp
-  ];
-
-  strictDeps = true;
-
-  depsBuildBuild = [ buildPackages.stdenv.cc ];
-  nativeBuildInputs = [
-    texinfo
-    which
-    gettext
-  ]
-  ++ lib.optional (perl != null) perl;
-
-  buildInputs = [
-    gmp
-    libmpc
-    mpfr
-  ]
-  ++ lib.optional (isl != null) isl
-  ++ lib.optional (zlib != null) zlib;
-
-  postUnpack = ''
-    mkdir -p ./build
-    buildRoot=$(readlink -e "./build")
-  '';
 
   postPatch = ''
     configureScripts=$(find . -name configure)
@@ -129,54 +99,22 @@ stdenv.mkDerivation (finalAttrs: {
       --replace 'if (stdinc)' 'if (0)'
   '';
 
-  preConfigure =
-    # Don't built target libraries, because we want to build separately
-    ''
-      substituteInPlace configure \
-        --replace 'noconfigdirs=""' 'noconfigdirs="$noconfigdirs $target_libraries"'
-    ''
-    # HACK: if host and target config are the same, but the platforms are
-    # actually different we need to convince the configure script that it
-    # is in fact building a cross compiler although it doesn't believe it.
-    +
-      lib.optionalString (targetPlatform.config == hostPlatform.config && targetPlatform != hostPlatform)
-        ''
-          substituteInPlace configure --replace is_cross_compiler=no is_cross_compiler=yes
-        ''
-    # Cannot configure from src dir
-    + ''
-      cd "$buildRoot"
+  strictDeps = true;
 
-      mkdir -p "$buildRoot/libbacktrace/.libs"
-      cp ${buildGccPackages.libbacktrace}/lib/libbacktrace.a "$buildRoot/libbacktrace/.libs/libbacktrace.a"
-      cp -r ${buildGccPackages.libbacktrace}/lib/*.la "$buildRoot/libbacktrace"
-      cp -r ${buildGccPackages.libbacktrace.dev}/include/*.h "$buildRoot/libbacktrace"
+  nativeBuildInputs = [
+    texinfo
+    which
+    gettext
+  ]
+  ++ lib.optional (perl != null) perl;
 
-      mkdir -p "$buildRoot/libiberty/pic"
-      cp ${buildGccPackages.libiberty}/lib/libiberty.a "$buildRoot/libiberty"
-      cp ${buildGccPackages.libiberty}/lib/libiberty_pic.a "$buildRoot/libiberty/pic/libiberty.a"
-      touch "$buildRoot/libiberty/stamp-noasandir"
-      touch "$buildRoot/libiberty/stamp-h"
-      touch "$buildRoot/libiberty/stamp-picdir"
-
-      mkdir -p "$buildRoot/build-${stdenv.hostPlatform.config}"
-      cp -r "$buildRoot/libiberty" "$buildRoot/build-${stdenv.hostPlatform.config}/libiberty"
-
-      configureScript=../$sourceRoot/configure
-    '';
-
-  # Don't store the configure flags in the resulting executables.
-  postConfigure = ''
-    sed -e '/TOPLEVEL_CONFIGURE_ARGUMENTS=/d' -i Makefile
-  '';
-
-  dontDisableStatic = true;
-
-  configurePlatforms = [
-    "build"
-    "host"
-    "target"
-  ];
+  buildInputs = [
+    gmp
+    libmpc
+    mpfr
+  ]
+  ++ lib.optional (isl != null) isl
+  ++ lib.optional (zlib != null) zlib;
 
   configureFlags = [
     # Force target prefix. The behavior if `--target` and `--host` are
@@ -236,10 +174,70 @@ stdenv.mkDerivation (finalAttrs: {
       "--with-multilib-list="
     ];
 
+  preConfigure =
+    # Don't built target libraries, because we want to build separately
+    ''
+      substituteInPlace configure \
+        --replace 'noconfigdirs=""' 'noconfigdirs="$noconfigdirs $target_libraries"'
+    ''
+    # HACK: if host and target config are the same, but the platforms are
+    # actually different we need to convince the configure script that it
+    # is in fact building a cross compiler although it doesn't believe it.
+    +
+      lib.optionalString (targetPlatform.config == hostPlatform.config && targetPlatform != hostPlatform)
+        ''
+          substituteInPlace configure --replace is_cross_compiler=no is_cross_compiler=yes
+        ''
+    # Cannot configure from src dir
+    + ''
+      cd "$buildRoot"
+
+      mkdir -p "$buildRoot/libbacktrace/.libs"
+      cp ${buildGccPackages.libbacktrace}/lib/libbacktrace.a "$buildRoot/libbacktrace/.libs/libbacktrace.a"
+      cp -r ${buildGccPackages.libbacktrace}/lib/*.la "$buildRoot/libbacktrace"
+      cp -r ${buildGccPackages.libbacktrace.dev}/include/*.h "$buildRoot/libbacktrace"
+
+      mkdir -p "$buildRoot/libiberty/pic"
+      cp ${buildGccPackages.libiberty}/lib/libiberty.a "$buildRoot/libiberty"
+      cp ${buildGccPackages.libiberty}/lib/libiberty_pic.a "$buildRoot/libiberty/pic/libiberty.a"
+      touch "$buildRoot/libiberty/stamp-noasandir"
+      touch "$buildRoot/libiberty/stamp-h"
+      touch "$buildRoot/libiberty/stamp-picdir"
+
+      mkdir -p "$buildRoot/build-${stdenv.hostPlatform.config}"
+      cp -r "$buildRoot/libiberty" "$buildRoot/build-${stdenv.hostPlatform.config}/libiberty"
+
+      configureScript=../$sourceRoot/configure
+    '';
+
+  # Don't store the configure flags in the resulting executables.
+  postConfigure = ''
+    sed -e '/TOPLEVEL_CONFIGURE_ARGUMENTS=/d' -i Makefile
+  '';
+
   doCheck = false;
 
   postInstall = ''
     moveToOutput "lib/gcc/${targetPlatform.config}/${version}/plugin/include" "''${!outputDev}"
+  '';
+
+  configurePlatforms = [
+    "build"
+    "host"
+    "target"
+  ];
+
+  depsBuildBuild = [ buildPackages.stdenv.cc ];
+  dontDisableStatic = true;
+  enableParallelBuilding = true;
+
+  hardeningDisable = [
+    "format" # Some macro-indirect formatting in e.g. libcpp
+  ];
+
+  postUnpack = ''
+    mkdir -p ./build
+    buildRoot=$(readlink -e "./build")
   '';
 
   passthru = {
@@ -252,6 +250,7 @@ stdenv.mkDerivation (finalAttrs: {
       langFortran
       langGo
       ;
+
     isGNU = true;
   };
 

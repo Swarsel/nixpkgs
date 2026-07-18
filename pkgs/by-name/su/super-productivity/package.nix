@@ -1,28 +1,27 @@
 {
-  buildNpmPackage,
-  copyDesktopItems,
-  electron_41,
-  fetchFromGitHub,
   lib,
-  makeDesktopItem,
-  nix-update-script,
-  prefetch-npm-deps,
-  rsync,
   stdenv,
-  nodejs_22,
-  rustPlatform,
+  fetchFromGitHub,
+  buildNpmPackage,
   cacert,
   cargo,
+  copyDesktopItems,
+  electron_41,
+  makeDesktopItem,
+  nix-update-script,
+  nodejs_22,
+  prefetch-npm-deps,
+  rsync,
+  rustPlatform,
 }:
 let
   electron = electron_41;
   nodejs = nodejs_22;
 in
 buildNpmPackage rec {
+  inherit nodejs;
   pname = "super-productivity";
   version = "18.13.1";
-
-  inherit nodejs;
 
   src = fetchFromGitHub {
     owner = "johannesjo";
@@ -30,78 +29,6 @@ buildNpmPackage rec {
     tag = "v${version}";
     hash = "sha256-gfoGGLJ2Pyl2BPcCAukk2eNPTsGYofT2G6a9FmlDwTE=";
   };
-
-  # Use custom fetcher for deps because super-productivity uses multiple
-  # package-lock.json files to manage plugins.  It checks all lock
-  # files and produces a merged output.  This should still be compatible
-  # with nix-update.
-  npmDeps = stdenv.mkDerivation (
-    lib.fetchers.normalizeHash { } {
-      pname = "super-productivity-deps";
-      inherit version src;
-
-      nativeBuildInputs = [
-        prefetch-npm-deps
-        rsync
-      ];
-
-      __structuredAttrs = true;
-      strictDeps = true;
-
-      env = {
-        # Some lockfiles do not include any dependencies to install so
-        # prefertch-npm-deps produces an error.  Those can be ignored with
-        # this flag.
-        FORCE_EMPTY_CACHE = true;
-        NPM_FETCHER_VERSION = "2";
-        SSL_CERT_FILE = "${cacert}/etc/ssl/certs/ca-bundle.crt";
-      };
-
-      buildPhase = ''
-        mkdir -p $out
-        find -name package-lock.json | sort | while read -r lockfile; do
-          prefetch-npm-deps $lockfile /tmp/cache
-          # Merge output
-          rsync -a /tmp/cache/ $out
-          rm -rf /tmp/cache
-        done
-        # Ensure that the root package-lock.json is placed in the output.
-        # This means only the root lockfile is checked for consistancy,
-        # but that should not be an issue.
-        cp package-lock.json $out
-      '';
-
-      dontInstall = true;
-
-      outputHashMode = "recursive";
-      hash = "sha256-staJsDxwcF2TC+Y8wr9iaq7TmfQVG3ZIQh17UTCP/9I=";
-    }
-  );
-
-  makeCacheWritable = true;
-  npmDepsFetcherVersion = 2;
-
-  cargoRoot = "electron/wayland-idle-helper";
-  cargoDeps = rustPlatform.fetchCargoVendor {
-    inherit
-      pname
-      version
-      src
-      cargoRoot
-      ;
-    hash = "sha256-u/GjzX8zykIqJlMR/611ADX2EcD1cb4Qr94EkI2sdlA=";
-  };
-
-  env = {
-    ELECTRON_SKIP_BINARY_DOWNLOAD = "1";
-    CHROMEDRIVER_SKIP_DOWNLOAD = "true";
-  };
-
-  nativeBuildInputs = lib.optionals stdenv.hostPlatform.isLinux [
-    cargo
-    copyDesktopItems
-    rustPlatform.cargoSetupHook
-  ];
 
   postPatch = ''
     substituteInPlace electron-builder.yaml \
@@ -113,6 +40,17 @@ buildNpmPackage rec {
     substituteInPlace electron/idle-time-handler.ts \
       --replace-fail "path.dirname(process.execPath)" "path.dirname(app.getAppPath())"
   '';
+
+  nativeBuildInputs = lib.optionals stdenv.hostPlatform.isLinux [
+    cargo
+    copyDesktopItems
+    rustPlatform.cargoSetupHook
+  ];
+
+  env = {
+    CHROMEDRIVER_SKIP_DOWNLOAD = "true";
+    ELECTRON_SKIP_BINARY_DOWNLOAD = "1";
+  };
 
   buildPhase = ''
     runHook preBuild
@@ -168,41 +106,107 @@ buildNpmPackage rec {
     runHook postInstall
   '';
 
+  cargoDeps = rustPlatform.fetchCargoVendor {
+    inherit
+      pname
+      version
+      src
+      cargoRoot
+      ;
+
+    hash = "sha256-u/GjzX8zykIqJlMR/611ADX2EcD1cb4Qr94EkI2sdlA=";
+  };
+
+  cargoRoot = "electron/wayland-idle-helper";
+
   # matches upstream electron-builder.yaml linux.desktop config
   desktopItems = [
     (makeDesktopItem {
-      name = "superproductivity";
-      desktopName = "Super Productivity";
-      exec = "superproductivity %U";
-      terminal = false;
-      type = "Application";
-      icon = "superproductivity";
-      startupWMClass = "superproductivity";
       categories = [
         "Office"
         "ProjectManagement"
       ];
+
+      desktopName = "Super Productivity";
+      exec = "superproductivity %U";
+      icon = "superproductivity";
       mimeTypes = [ "x-scheme-handler/superproductivity" ];
+      name = "superproductivity";
+      startupWMClass = "superproductivity";
+      terminal = false;
+      type = "Application";
     })
   ];
 
+  makeCacheWritable = true;
+
+  # Use custom fetcher for deps because super-productivity uses multiple
+  # package-lock.json files to manage plugins.  It checks all lock
+  # files and produces a merged output.  This should still be compatible
+  # with nix-update.
+  npmDeps = stdenv.mkDerivation (
+    lib.fetchers.normalizeHash { } {
+      inherit version src;
+      pname = "super-productivity-deps";
+      strictDeps = true;
+
+      nativeBuildInputs = [
+        prefetch-npm-deps
+        rsync
+      ];
+
+      env = {
+        # Some lockfiles do not include any dependencies to install so
+        # prefertch-npm-deps produces an error.  Those can be ignored with
+        # this flag.
+        FORCE_EMPTY_CACHE = true;
+        NPM_FETCHER_VERSION = "2";
+        SSL_CERT_FILE = "${cacert}/etc/ssl/certs/ca-bundle.crt";
+      };
+
+      buildPhase = ''
+        mkdir -p $out
+        find -name package-lock.json | sort | while read -r lockfile; do
+          prefetch-npm-deps $lockfile /tmp/cache
+          # Merge output
+          rsync -a /tmp/cache/ $out
+          rm -rf /tmp/cache
+        done
+        # Ensure that the root package-lock.json is placed in the output.
+        # This means only the root lockfile is checked for consistancy,
+        # but that should not be an issue.
+        cp package-lock.json $out
+      '';
+
+      __structuredAttrs = true;
+      dontInstall = true;
+      hash = "sha256-staJsDxwcF2TC+Y8wr9iaq7TmfQVG3ZIQh17UTCP/9I=";
+      outputHashMode = "recursive";
+    }
+  );
+
+  npmDepsFetcherVersion = 2;
   passthru.updateScript = nix-update-script { };
 
   meta = {
     description = "To Do List / Time Tracker with Jira Integration";
+
     longDescription = ''
       Experience the best ToDo app for digital professionals and get more done!
       Super Productivity comes with integrated time-boxing and time tracking capabilities
       and you can load your task from your calendars and from
       Jira, Gitlab, GitHub, Open Project and others all into a single ToDo list.
     '';
+
     homepage = "https://super-productivity.com";
     license = lib.licenses.mit;
-    platforms = lib.platforms.all;
+
     maintainers = with lib.maintainers; [
       pineapplehunter
       tebriel
     ];
+
+    platforms = lib.platforms.all;
     mainProgram = "superproductivity";
   };
 }

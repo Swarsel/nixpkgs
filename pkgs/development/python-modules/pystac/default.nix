@@ -1,14 +1,13 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  pytestCheckHook,
-
+  buildPythonPackage,
   html5lib,
   jsonschema,
   pytest-cov-stub,
   pytest-mock,
   pytest-recording,
+  pytestCheckHook,
   python-dateutil,
   requests-mock,
   setuptools,
@@ -17,7 +16,6 @@
 buildPythonPackage rec {
   pname = "pystac";
   version = "1.14.3";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "stac-utils";
@@ -25,8 +23,6 @@ buildPythonPackage rec {
     tag = "v${version}";
     hash = "sha256-O17KG8DRr7KpFpZYsl7zHBKDs5Ad0vigaThBnNP17rs=";
   };
-
-  build-system = [ setuptools ];
 
   propagatedBuildInputs = [ python-dateutil ];
 
@@ -40,6 +36,8 @@ buildPythonPackage rec {
     requests-mock
   ];
 
+  build-system = [ setuptools ];
+  pyproject = true;
   pythonImportsCheck = [ "pystac" ];
 
   meta = {

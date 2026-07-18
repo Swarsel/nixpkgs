@@ -1,19 +1,19 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
-  pkg-config,
   expat,
   fontconfig,
   freetype,
   libGL,
-  libxkbcommon,
-  pipewire,
-  wayland,
-  libxrandr,
-  libxi,
-  libxcursor,
   libx11,
+  libxcursor,
+  libxi,
+  libxkbcommon,
+  libxrandr,
+  pipewire,
+  pkg-config,
+  rustPlatform,
+  wayland,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -26,12 +26,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
     rev = "b3fb0fb05059ba12f58d2a998842e13f0636cfed";
     hash = "sha256-TQJcIvCyWaDtJYcjZwclG5NtaUpDBugQQQc1txNzu88=";
   };
-
-  cargoPatches = [
-    ./0001-fix-regenerate-Cargo.lock.patch
-  ];
-
-  cargoHash = "sha256-q1rgoEGQjzlXYcsfRUhrJi4w716a8D0x5SGl5fWM3ig=";
 
   nativeBuildInputs = [ pkg-config ];
 
@@ -50,6 +44,8 @@ rustPlatform.buildRustPackage (finalAttrs: {
     libxrandr
   ];
 
+  cargoHash = "sha256-q1rgoEGQjzlXYcsfRUhrJi4w716a8D0x5SGl5fWM3ig=";
+
   postFixup = ''
     patchelf $out/bin/pw-viz \
       --add-rpath ${
@@ -60,6 +56,10 @@ rustPlatform.buildRustPackage (finalAttrs: {
         ]
       }
   '';
+
+  cargoPatches = [
+    ./0001-fix-regenerate-Cargo.lock.patch
+  ];
 
   meta = {
     description = "Simple and elegant pipewire graph editor";

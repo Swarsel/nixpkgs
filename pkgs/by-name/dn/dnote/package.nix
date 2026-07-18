@@ -1,15 +1,15 @@
 {
   lib,
   stdenv,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   fetchNpmDeps,
-  npmHooks,
-  nodejs,
   nix-update-script,
-  versionCheckHook,
-  postgresqlTestHook,
+  nodejs,
+  npmHooks,
   postgresql,
+  postgresqlTestHook,
+  versionCheckHook,
   defaultApiEndPoint ? "https://api.getdnote.com",
 }:
 
@@ -29,50 +29,28 @@ buildGoModule rec {
     rm -rf pkg/e2e
   '';
 
-  npmDeps = fetchNpmDeps {
-    inherit version src;
-    pname = "${pname}-webui";
-    sourceRoot = "${src.name}/pkg/server/assets";
-    hash = "sha256-yq55iO3Svqbjah9HdWfSicJISNEipxUkNDD1KJ7ZUhY=";
-  };
-
-  overrideModAttrs = oldAttrs: {
-    # Do not add `npmConfigHook` to `goModules`
-    nativeBuildInputs = lib.remove npmHooks.npmConfigHook oldAttrs.nativeBuildInputs;
-    preBuild = null;
-  };
-
-  npmRoot = "pkg/server/assets";
-
-  env = {
-    DBHost = "localhost";
-    DBPort = "5432";
-    DBName = "test_db";
-    DBUser = "postgres";
-    DBPassword = "";
-    DBSkipSSL = true;
-    SmtpUsername = "mock-SmtpUsername";
-    SmtpPassword = "mock-SmtpPassword";
-    SmtpHost = "mock-SmtpHost";
-    SmtpPort = 465;
-    WebURL = "http://localhost:3000";
-    DisableRegistration = false;
-    postgresqlEnableTCP = true;
-  };
-
   nativeBuildInputs = [
     npmHooks.npmConfigHook
     nodejs
   ];
 
-  nativeCheckInputs = [
-    postgresqlTestHook
-    postgresql
-  ];
+  vendorHash = "sha256-PExF+1SWcCROmthzo1e8Y7zqhW780GufYe35l0FRhxY=";
 
-  tags = [
-    "fts5"
-  ];
+  env = {
+    DBHost = "localhost";
+    DBName = "test_db";
+    DBPassword = "";
+    DBPort = "5432";
+    DBSkipSSL = true;
+    DBUser = "postgres";
+    DisableRegistration = false;
+    SmtpHost = "mock-SmtpHost";
+    SmtpPassword = "mock-SmtpPassword";
+    SmtpPort = 465;
+    SmtpUsername = "mock-SmtpUsername";
+    WebURL = "http://localhost:3000";
+    postgresqlEnableTCP = true;
+  };
 
   preBuild = ''
     patchShebangs .
@@ -85,6 +63,31 @@ buildGoModule rec {
     popd
   '';
 
+  nativeCheckInputs = [
+    postgresqlTestHook
+    postgresql
+  ];
+
+  checkFlags = [ "-p 1" ];
+
+  postInstall = ''
+    mv $out/bin/cli $out/bin/dnote-cli
+    mv $out/bin/server $out/bin/dnote-server
+    mv $out/bin/schema $out/bin/dnote-schema
+    mv $out/bin/watcher $out/bin/dnote-watcher
+  '';
+
+  # Fails on darwin:
+  # panic: initializing context: initializing files: creating the dnote dir:
+  #   initializing config dir: creating a directory at /var/empty/.config/dnote: mkdir /var/empty: file exists
+  doInstallCheck = !stdenv.hostPlatform.isDarwin;
+
+  nativeInstallCheckInputs = [
+    versionCheckHook
+  ];
+
+  __darwinAllowLocalNetworking = true;
+
   ldflags = [
     "-X github.com/dnote/dnote/pkg/server/buildinfo.Version=${version}"
     "-X github.com/dnote/dnote/pkg/cli/buildinfo.Version=${version}"
@@ -95,28 +98,27 @@ buildGoModule rec {
     "-X github.com/dnote/dnote/pkg/server/buildinfo.CSSFiles=main.css"
   ];
 
-  __darwinAllowLocalNetworking = true;
+  npmDeps = fetchNpmDeps {
+    inherit version src;
+    pname = "${pname}-webui";
+    hash = "sha256-yq55iO3Svqbjah9HdWfSicJISNEipxUkNDD1KJ7ZUhY=";
+    sourceRoot = "${src.name}/pkg/server/assets";
+  };
 
-  postInstall = ''
-    mv $out/bin/cli $out/bin/dnote-cli
-    mv $out/bin/server $out/bin/dnote-server
-    mv $out/bin/schema $out/bin/dnote-schema
-    mv $out/bin/watcher $out/bin/dnote-watcher
-  '';
+  npmRoot = "pkg/server/assets";
 
-  checkFlags = [ "-p 1" ];
+  overrideModAttrs = oldAttrs: {
+    # Do not add `npmConfigHook` to `goModules`
+    nativeBuildInputs = lib.remove npmHooks.npmConfigHook oldAttrs.nativeBuildInputs;
+    preBuild = null;
+  };
 
-  vendorHash = "sha256-PExF+1SWcCROmthzo1e8Y7zqhW780GufYe35l0FRhxY=";
-
-  nativeInstallCheckInputs = [
-    versionCheckHook
+  tags = [
+    "fts5"
   ];
+
   versionCheckProgram = "${placeholder "out"}/bin/dnote-cli";
   versionCheckProgramArg = "version";
-  # Fails on darwin:
-  # panic: initializing context: initializing files: creating the dnote dir:
-  #   initializing config dir: creating a directory at /var/empty/.config/dnote: mkdir /var/empty: file exists
-  doInstallCheck = !stdenv.hostPlatform.isDarwin;
 
   passthru = {
     updateScript = nix-update-script { };
@@ -126,11 +128,13 @@ buildGoModule rec {
     description = "Simple command line notebook for programmers";
     homepage = "https://www.getdnote.com/";
     changelog = "https://github.com/dnote/dnote/blob/cli-v${version}/CHANGELOG.md";
-    platforms = lib.platforms.unix;
-    maintainers = with lib.maintainers; [ bot-wxt1221 ];
+
     license = with lib.licenses; [
       gpl3Only
       agpl3Only
     ];
+
+    maintainers = with lib.maintainers; [ bot-wxt1221 ];
+    platforms = lib.platforms.unix;
   };
 }

@@ -2,11 +2,11 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  pkg-config,
+  cmake,
   ibus,
   ibus-table,
+  pkg-config,
   python3,
-  cmake,
   writableTmpDirAsHomeHook,
 }:
 
@@ -34,11 +34,11 @@ stdenv.mkDerivation {
   ];
 
   meta = {
-    isIbusEngine = true;
     description = "Chinese tables for IBus-Table";
     homepage = "https://github.com/mike-fabian/ibus-table-chinese";
     license = lib.licenses.gpl3;
-    platforms = lib.platforms.linux;
     maintainers = [ ];
+    platforms = lib.platforms.linux;
+    isIbusEngine = true;
   };
 }

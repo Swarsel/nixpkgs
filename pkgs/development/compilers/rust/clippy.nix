@@ -1,28 +1,16 @@
 {
-  stdenv,
   lib,
+  stdenv,
   rustPlatform,
   rustc,
 }:
 
 rustPlatform.buildRustPackage {
-  pname = "clippy";
   inherit (rustc) version src;
-
-  separateDebugInfo = true;
-
-  # the rust source tarball already has all the dependencies vendored, no need to fetch them again
-  cargoVendorDir = "vendor";
-  buildAndTestSubdir = "src/tools/clippy";
-
-  # changes hash of vendor directory otherwise
-  dontUpdateAutotoolsGnuConfigScripts = true;
-
+  pname = "clippy";
   buildInputs = [ rustc.llvm ];
-
   # fixes: error: the option `Z` is only accepted on the nightly compiler
   env.RUSTC_BOOTSTRAP = 1;
-
   # Without disabling the test the build fails with:
   # error: failed to run custom build command for `rustc_llvm v0.0.0
   #   (/private/tmp/nix-build-clippy-1.36.0.drv-0/rustc-1.36.0-src/src/librustc_llvm)
@@ -39,16 +27,25 @@ rustPlatform.buildRustPackage {
     install_name_tool -add_rpath "${rustc.unwrapped}/lib" "$out/bin/cargo-clippy"
   '';
 
+  buildAndTestSubdir = "src/tools/clippy";
+  # the rust source tarball already has all the dependencies vendored, no need to fetch them again
+  cargoVendorDir = "vendor";
+  # changes hash of vendor directory otherwise
+  dontUpdateAutotoolsGnuConfigScripts = true;
+  separateDebugInfo = true;
+
   meta = {
-    homepage = "https://rust-lang.github.io/rust-clippy/";
     description = "Bunch of lints to catch common mistakes and improve your Rust code";
-    mainProgram = "cargo-clippy";
-    maintainers = with lib.maintainers; [ basvandijk ];
-    teams = [ lib.teams.rust ];
+    homepage = "https://rust-lang.github.io/rust-clippy/";
+
     license = with lib.licenses; [
       mit
       asl20
     ];
+
+    maintainers = with lib.maintainers; [ basvandijk ];
     platforms = lib.platforms.unix;
+    mainProgram = "cargo-clippy";
+    teams = [ lib.teams.rust ];
   };
 }

@@ -1,33 +1,33 @@
 {
   lib,
   stdenv,
-  gettext,
   fetchurl,
   blueprint-compiler,
-  evolution-data-server-gtk4,
-  pkg-config,
-  libxslt,
+  desktop-file-utils,
   docbook-xsl-nons,
   docbook_xml_dtd_42,
-  desktop-file-utils,
-  gtk4,
-  glib,
-  libportal-gtk4,
-  gnome-online-accounts,
-  qrencode,
-  wrapGAppsHook4,
+  evolution-data-server-gtk4,
   folks,
-  libxml2,
+  gettext,
+  glib,
   gnome,
-  vala,
-  meson,
-  ninja,
+  gnome-online-accounts,
+  gsettings-desktop-schemas,
+  gst_all_1,
+  gtk4,
   libadwaita,
   libglycin,
   libglycin-gtk4,
-  gsettings-desktop-schemas,
-  gst_all_1,
+  libportal-gtk4,
+  libxml2,
+  libxslt,
+  meson,
+  ninja,
   pipewire,
+  pkg-config,
+  qrencode,
+  vala,
+  wrapGAppsHook4,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -79,11 +79,11 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   meta = {
-    homepage = "https://apps.gnome.org/Contacts/";
     description = "GNOME’s integrated address book";
-    mainProgram = "gnome-contacts";
-    teams = [ lib.teams.gnome ];
+    homepage = "https://apps.gnome.org/Contacts/";
     license = lib.licenses.gpl2Plus;
     platforms = lib.platforms.linux;
+    mainProgram = "gnome-contacts";
+    teams = [ lib.teams.gnome ];
   };
 })

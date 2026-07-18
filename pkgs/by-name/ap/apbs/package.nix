@@ -2,12 +2,12 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  cmake,
   blas,
-  superlu,
-  suitesparse,
-  python3,
+  cmake,
   libintl,
+  python3,
+  suitesparse,
+  superlu,
 }:
 let
   # this is a fork version of fetk (http://www.fetk.org/)
@@ -27,10 +27,11 @@ let
       cmake
     ];
 
-    env = lib.optionalAttrs (!stdenv.hostPlatform.isDarwin) {
-      # Required for gcc-15 compatibility
-      NIX_CFLAGS_COMPILE = "-std=gnu17";
-    };
+    buildInputs = [
+      blas
+      superlu
+      suitesparse
+    ];
 
     cmakeFlags = [
       "-DBLAS_LIBRARIES=${blas}/lib"
@@ -39,11 +40,10 @@ let
       "-DCMAKE_C_FLAGS=-Wno-error=implicit-int"
     ];
 
-    buildInputs = [
-      blas
-      superlu
-      suitesparse
-    ];
+    env = lib.optionalAttrs (!stdenv.hostPlatform.isDarwin) {
+      # Required for gcc-15 compatibility
+      NIX_CFLAGS_COMPILE = "-std=gnu17";
+    };
 
     meta = {
       description = "Fork of the Finite Element ToolKit from fetk.org";
@@ -103,11 +103,11 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Software for biomolecular electrostatics and solvation calculations";
-    mainProgram = "apbs";
     homepage = "https://www.poissonboltzmann.org/";
     changelog = "https://github.com/Electrostatics/apbs/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.bsd3;
     maintainers = with lib.maintainers; [ natsukium ];
     platforms = lib.platforms.unix;
+    mainProgram = "apbs";
   };
 })

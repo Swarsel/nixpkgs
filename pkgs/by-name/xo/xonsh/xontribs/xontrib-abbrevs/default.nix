@@ -1,22 +1,20 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  setuptools,
-  setuptools-scm,
+  buildPythonPackage,
+  nix-update-script,
   poetry-core,
   prompt-toolkit,
-  writableTmpDirAsHomeHook,
   pytestCheckHook,
+  setuptools,
+  setuptools-scm,
+  writableTmpDirAsHomeHook,
   xonsh,
-  nix-update-script,
 }:
 
 buildPythonPackage rec {
   pname = "xontrib-abbrevs";
   version = "0.1.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "xonsh";
@@ -25,10 +23,11 @@ buildPythonPackage rec {
     hash = "sha256-JxH5b2ey99tvHXSUreU5r6fS8nko4RrS/1c8psNbJNc=";
   };
 
-  prePatch = ''
-    substituteInPlace pyproject.toml \
-      --replace-fail '"xonsh>=0.17", ' ""
-  '';
+  nativeCheckInputs = [
+    writableTmpDirAsHomeHook
+    pytestCheckHook
+    xonsh
+  ];
 
   build-system = [
     setuptools
@@ -40,12 +39,12 @@ buildPythonPackage rec {
     prompt-toolkit
   ];
 
-  nativeCheckInputs = [
-    writableTmpDirAsHomeHook
-    pytestCheckHook
-    xonsh
-  ];
+  prePatch = ''
+    substituteInPlace pyproject.toml \
+      --replace-fail '"xonsh>=0.17", ' ""
+  '';
 
+  pyproject = true;
   passthru.updateScript = nix-update-script { };
 
   meta = {

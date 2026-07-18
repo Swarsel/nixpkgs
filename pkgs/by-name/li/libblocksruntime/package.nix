@@ -21,13 +21,7 @@ stdenv.mkDerivation {
     runHook postBuild
   '';
 
-  installPhase = ''
-    runHook preInstall
-    prefix="/" DESTDIR=$out ./installlib ${
-      if stdenv.hostPlatform.isStatic then "-static" else "-shared"
-    }
-    runHook postInstall
-  '';
+  doCheck = false; # hasdescriptor.c test fails, hrm.
 
   checkPhase = ''
     runHook preCheck
@@ -35,7 +29,13 @@ stdenv.mkDerivation {
     runHook postCheck
   '';
 
-  doCheck = false; # hasdescriptor.c test fails, hrm.
+  installPhase = ''
+    runHook preInstall
+    prefix="/" DESTDIR=$out ./installlib ${
+      if stdenv.hostPlatform.isStatic then "-static" else "-shared"
+    }
+    runHook postInstall
+  '';
 
   meta = {
     description = "Installs the BlocksRuntime library from the compiler-rt";

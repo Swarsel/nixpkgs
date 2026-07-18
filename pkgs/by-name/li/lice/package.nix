@@ -1,13 +1,12 @@
 {
   lib,
-  python3Packages,
   fetchPypi,
+  python3Packages,
 }:
 
 python3Packages.buildPythonPackage rec {
   pname = "lice";
   version = "0.6";
-  pyproject = true;
 
   # github is missing tags
   src = fetchPypi {
@@ -15,11 +14,10 @@ python3Packages.buildPythonPackage rec {
     hash = "sha256-LZU2YPdJiepaCH/TWNrtJiuyPlJP6t1+c3a2uHL0fmo=";
   };
 
-  build-system = [ python3Packages.setuptools ];
-
-  dependencies = [ python3Packages.setuptools ]; # pkg_resources
-
   nativeCheckInputs = [ python3Packages.pytestCheckHook ];
+  build-system = [ python3Packages.setuptools ];
+  dependencies = [ python3Packages.setuptools ]; # pkg_resources
+  pyproject = true;
 
   meta = {
     description = "Print license based on selection and user options";

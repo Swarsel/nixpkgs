@@ -12,14 +12,15 @@
 buildPythonPackage rec {
   pname = "azure-storage-file-share";
   version = "12.24.0";
-  pyproject = true;
 
   src = fetchPypi {
-    pname = "azure_storage_file_share";
     inherit version;
     hash = "sha256-kPmwI053H9oIv1YQPEOk9KwIv3kzTZ2se7G283uq3SU=";
+    pname = "azure_storage_file_share";
   };
 
+  # Tests require checkout from monorepo
+  doCheck = false;
   build-system = [ setuptools ];
 
   dependencies = [
@@ -33,8 +34,7 @@ buildPythonPackage rec {
     aio = [ azure-core ] ++ azure-core.optional-dependencies.aio;
   };
 
-  # Tests require checkout from monorepo
-  doCheck = false;
+  pyproject = true;
 
   pythonImportsCheck = [
     "azure.core"

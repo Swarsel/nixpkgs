@@ -3,9 +3,9 @@
   stdenv,
   fetchFromGitHub,
   cmake,
-  pkg-config,
-  libusb1,
   fftwSinglePrec,
+  libusb1,
+  pkg-config,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -44,7 +44,7 @@ stdenv.mkDerivation (finalAttrs: {
     description = "Open source SDR platform";
     homepage = "https://greatscottgadgets.com/hackrf/";
     license = lib.licenses.gpl2;
-    platforms = lib.platforms.all;
     maintainers = [ ];
+    platforms = lib.platforms.all;
   };
 })

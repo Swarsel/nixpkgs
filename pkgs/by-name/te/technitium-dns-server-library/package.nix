@@ -1,7 +1,7 @@
 {
   lib,
-  buildDotnetModule,
   fetchFromGitHub,
+  buildDotnetModule,
   dotnetCorePackages,
   nix-update-script,
 }:
@@ -18,7 +18,6 @@ buildDotnetModule rec {
   };
 
   dotnet-sdk = dotnetCorePackages.sdk_10_0;
-
   nugetDeps = ./nuget-deps.json;
 
   projectFile = [
@@ -30,15 +29,17 @@ buildDotnetModule rec {
   passthru.updateScript = nix-update-script { };
 
   meta = {
-    changelog = "https://github.com/TechnitiumSoftware/DnsServer/blob/master/CHANGELOG.md";
     description = "Library for Authorative and Recursive DNS server for Privacy and Security";
     homepage = "https://github.com/TechnitiumSoftware/DnsServer";
+    changelog = "https://github.com/TechnitiumSoftware/DnsServer/blob/master/CHANGELOG.md";
     license = lib.licenses.gpl3Only;
-    mainProgram = "technitium-dns-server-library";
+
     maintainers = with lib.maintainers; [
       fabianrig
       awildleon
     ];
+
     platforms = lib.platforms.linux;
+    mainProgram = "technitium-dns-server-library";
   };
 }

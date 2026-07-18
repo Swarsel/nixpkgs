@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   hatchling,
   pytest-asyncio,
   pytest-mock,
@@ -15,7 +15,6 @@
 buildPythonPackage rec {
   pname = "asyncwhois";
   version = "1.1.12";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "pogzyb";
@@ -24,6 +23,12 @@ buildPythonPackage rec {
     hash = "sha256-bi8tBT6htxEgE/qoDID2GykCrHVfpe8EcH/Mbq9B0T4=";
   };
 
+  nativeCheckInputs = [
+    pytest-asyncio
+    pytest-mock
+    pytestCheckHook
+  ];
+
   build-system = [ hatchling ];
 
   dependencies = [
@@ -31,12 +36,6 @@ buildPythonPackage rec {
     python-socks
     tldextract
     whodap
-  ];
-
-  nativeCheckInputs = [
-    pytest-asyncio
-    pytest-mock
-    pytestCheckHook
   ];
 
   disabledTests = [
@@ -56,6 +55,7 @@ buildPythonPackage rec {
     "test__get_top_level_domain"
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "asyncwhois" ];
 
   meta = {

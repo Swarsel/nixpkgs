@@ -19,21 +19,10 @@ stdenv.mkDerivation (finalAttrs: {
 
   strictDeps = true;
 
-  passthru.updateScript = nix-update-script { extraArgs = [ "--version=unstable" ]; };
-
   buildPhase = ''
     runHook preBuild
     ${stdenv.cc.targetPrefix}cc -o lamb lamb.c
     runHook postBuild
-  '';
-
-  installPhase = ''
-    runHook preInstall
-
-    install -Dm755 lamb -t "$out/bin"
-    install -Dm644 std.lamb -t "$out/share/lamb"
-
-    runHook postInstall
   '';
 
   doCheck = stdenv.buildPlatform.canExecute stdenv.hostPlatform;
@@ -63,13 +52,24 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postCheck
   '';
 
+  installPhase = ''
+    runHook preInstall
+
+    install -Dm755 lamb -t "$out/bin"
+    install -Dm644 std.lamb -t "$out/share/lamb"
+
+    runHook postInstall
+  '';
+
+  passthru.updateScript = nix-update-script { extraArgs = [ "--version=unstable" ]; };
+
   meta = {
     description = "Tiny pure functional programming language in C";
     homepage = "https://github.com/tsoding/lamb";
     license = lib.licenses.mit;
     sourceProvenance = with lib.sourceTypes; [ fromSource ];
     maintainers = with lib.maintainers; [ Zaczero ];
-    mainProgram = "lamb";
     platforms = lib.platforms.unix;
+    mainProgram = "lamb";
   };
 })

@@ -1,8 +1,8 @@
 {
   lib,
-  nixosTests,
   stdenv,
   fetchFromGitHub,
+  nixosTests,
 }:
 
 stdenv.mkDerivation {
@@ -26,8 +26,8 @@ stdenv.mkDerivation {
 
   meta = {
     description = "Plugin for TT-RSS to authenticate users via ldap";
-    license = lib.licenses.asl20;
     homepage = "https://github.com/hydrian/TTRSS-Auth-LDAP";
+    license = lib.licenses.asl20;
     maintainers = with lib.maintainers; [ mic92 ];
     platforms = lib.platforms.all;
   };

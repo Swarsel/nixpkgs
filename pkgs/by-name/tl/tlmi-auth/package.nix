@@ -2,10 +2,10 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  pkg-config,
   meson,
   ninja,
   openssl,
+  pkg-config,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -30,11 +30,11 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   meta = {
-    homepage = "https://github.com/lenovo/tlmi-auth";
-    maintainers = with lib.maintainers; [ snpschaaf ];
     description = "Utility for creating signature strings needed for thinklmi certificate based authentication";
-    mainProgram = "tlmi-auth";
+    homepage = "https://github.com/lenovo/tlmi-auth";
     license = lib.licenses.gpl2;
+    maintainers = with lib.maintainers; [ snpschaaf ];
     platforms = lib.platforms.linux;
+    mainProgram = "tlmi-auth";
   };
 })

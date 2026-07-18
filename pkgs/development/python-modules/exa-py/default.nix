@@ -1,32 +1,27 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # build
-  poetry-core,
-
+  buildPythonPackage,
   # deps
   httpcore,
   httpx,
   openai,
+  # build
+  poetry-core,
   pydantic,
-  python-dotenv,
-  requests,
-  typing-extensions,
-
   # tests
   pytest-asyncio,
   pytest-cov-stub,
   pytest-mock,
   pytestCheckHook,
+  python-dotenv,
+  requests,
+  typing-extensions,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "exa-py";
   version = "2.16.1";
-  pyproject = true;
-  __structuredAttrs = true;
 
   # pypi doesn't include tests but there aren't any upstream git tags
   src = fetchFromGitHub {
@@ -35,6 +30,15 @@ buildPythonPackage (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-zMQAPJnIHA7PiHCoPf0/iPrTEsctnM8cQBY2fVpDpjo=";
   };
+
+  nativeCheckInputs = [
+    pytest-asyncio
+    pytest-cov-stub
+    pytest-mock
+    pytestCheckHook
+  ];
+
+  __structuredAttrs = true;
 
   build-system = [
     poetry-core
@@ -50,24 +54,18 @@ buildPythonPackage (finalAttrs: {
     typing-extensions
   ];
 
+  pyproject = true;
+  pytestFlags = [ "tests/" ];
+
   pythonImportsCheck = [
     "exa_py"
   ];
-
-  nativeCheckInputs = [
-    pytest-asyncio
-    pytest-cov-stub
-    pytest-mock
-    pytestCheckHook
-  ];
-
-  pytestFlags = [ "tests/" ];
 
   meta = {
     description = "Official Python SDK for Exa, the web search API for AI";
     homepage = "https://github.com/exa-labs/exa-py/";
     changelog = "https://github.com/exa-labs/exa-py/releases/tag/v${finalAttrs.version}";
-    maintainers = with lib.maintainers; [ ethancedwards8 ];
     license = lib.licenses.mit;
+    maintainers = with lib.maintainers; [ ethancedwards8 ];
   };
 })

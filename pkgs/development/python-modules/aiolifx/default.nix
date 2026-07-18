@@ -1,10 +1,10 @@
 {
   lib,
+  fetchFromGitHub,
   async-timeout,
   bitstring,
   buildPythonPackage,
   click,
-  fetchFromGitHub,
   ifaddr,
   inquirerpy,
   setuptools,
@@ -13,7 +13,6 @@
 buildPythonPackage rec {
   pname = "aiolifx";
   version = "1.2.2";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "aiolifx";
@@ -22,9 +21,9 @@ buildPythonPackage rec {
     hash = "sha256-v2001UY12HTi1pgugfRQSUg1R6uZAfVpwCASZZW9S0o=";
   };
 
+  # Module has no tests
+  doCheck = false;
   build-system = [ setuptools ];
-
-  pythonRelaxDeps = [ "click" ];
 
   dependencies = [
     async-timeout
@@ -34,10 +33,9 @@ buildPythonPackage rec {
     inquirerpy
   ];
 
-  # Module has no tests
-  doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "aiolifx" ];
+  pythonRelaxDeps = [ "click" ];
 
   meta = {
     description = "Module for local communication with LIFX devices over a LAN";

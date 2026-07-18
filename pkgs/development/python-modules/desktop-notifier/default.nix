@@ -1,20 +1,19 @@
 {
   lib,
   stdenv,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
   bidict,
-  packaging,
-  typing-extensions,
+  buildPythonPackage,
   dbus-fast,
+  packaging,
   rubicon-objc,
+  setuptools,
+  typing-extensions,
 }:
 
 buildPythonPackage rec {
   pname = "desktop-notifier";
   version = "6.2.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "SamSchott";
@@ -23,6 +22,8 @@ buildPythonPackage rec {
     hash = "sha256-VVbBKhGCtdsNOfRJPpDk9wwsTtdEwbTSZjheXLydO70=";
   };
 
+  # no tests available, do the imports check instead
+  doCheck = false;
   build-system = [ setuptools ];
 
   dependencies = [
@@ -33,9 +34,7 @@ buildPythonPackage rec {
   ++ lib.optionals stdenv.hostPlatform.isLinux [ dbus-fast ]
   ++ lib.optionals stdenv.hostPlatform.isDarwin [ rubicon-objc ];
 
-  # no tests available, do the imports check instead
-  doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "desktop_notifier" ];
 
   meta = {

@@ -1,6 +1,5 @@
 {
   lib,
-  python3,
   fetchFromGitLab,
   appstream,
   desktop-file-utils,
@@ -14,13 +13,13 @@
   ninja,
   pkg-config,
   poppler_gi,
+  python3,
   wrapGAppsHook4,
 }:
 
 python3.pkgs.buildPythonApplication (finalAttrs: {
   pname = "metadata-cleaner";
   version = "4.0.0";
-  pyproject = false;
 
   src = fetchFromGitLab {
     owner = "metadatacleaner";
@@ -55,15 +54,19 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     pygobject3
   ];
 
+  pyproject = false;
+
   meta = {
     description = "Python GTK application to view and clean metadata in files, using mat2";
-    mainProgram = "metadata-cleaner";
     homepage = "https://gitlab.com/metadatacleaner/metadatacleaner";
     changelog = "https://gitlab.com/metadatacleaner/metadatacleaner/-/releases/${finalAttrs.src.tag}";
+
     license = with lib.licenses; [
       gpl3Plus
       cc-by-sa-40
     ];
+
     maintainers = with lib.maintainers; [ dotlambda ];
+    mainProgram = "metadata-cleaner";
   };
 })

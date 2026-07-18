@@ -12,16 +12,16 @@
 buildPythonPackage (finalAttrs: {
   pname = "alibabacloud-rds20140815";
   version = "15.9.1";
-  pyproject = true;
-
-  __structuredAttrs = true;
 
   src = fetchPypi {
-    pname = "alibabacloud_rds20140815";
     inherit (finalAttrs) version;
     hash = "sha256-nR1TzieZC84LqDnZWEVp5iTjCwwGU/MVbGSv2n0f4Eg=";
+    pname = "alibabacloud_rds20140815";
   };
 
+  # Module has no tests
+  doCheck = false;
+  __structuredAttrs = true;
   build-system = [ setuptools ];
 
   dependencies = [
@@ -31,10 +31,8 @@ buildPythonPackage (finalAttrs: {
     alibabacloud-tea-util
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "alibabacloud_rds20140815" ];
-
-  # Module has no tests
-  doCheck = false;
 
   meta = {
     description = "Alibaba Cloud rds (20140815) SDK Library for Python";

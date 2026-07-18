@@ -1,7 +1,7 @@
 {
-  fetchurl,
   lib,
   stdenv,
+  fetchurl,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -26,14 +26,16 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Keyboard shortcut daemon";
+
     longDescription = ''
       actkbd is a simple daemon that binds actions to keyboard events
       directly on evdev interface (that is, no X11 required). It
       recognises key combinations and can handle press, repeat and
       release events.
     '';
-    license = lib.licenses.gpl2Only;
+
     homepage = "http://users.softlab.ece.ntua.gr/~thkala/projects/actkbd/";
+    license = lib.licenses.gpl2Only;
     platforms = lib.platforms.linux;
     mainProgram = "actkbd";
   };

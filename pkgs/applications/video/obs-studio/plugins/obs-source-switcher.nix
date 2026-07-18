@@ -18,9 +18,7 @@ stdenv.mkDerivation {
   };
 
   nativeBuildInputs = [ cmake ];
-
   buildInputs = [ obs-studio ];
-
   cmakeFlags = [ "-DBUILD_OUT_OF_TREE=On" ];
 
   postInstall = ''
@@ -28,10 +26,10 @@ stdenv.mkDerivation {
   '';
 
   meta = {
+    inherit (obs-studio.meta) platforms;
     description = "Plugin for OBS Studio to switch between a list of sources";
     homepage = "https://github.com/exeldro/obs-source-switcher";
-    maintainers = with lib.maintainers; [ flexiondotorg ];
     license = lib.licenses.gpl2Plus;
-    inherit (obs-studio.meta) platforms;
+    maintainers = with lib.maintainers; [ flexiondotorg ];
   };
 }

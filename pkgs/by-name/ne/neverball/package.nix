@@ -2,56 +2,38 @@
   lib,
   stdenv,
   fetchurl,
-  fetchpatch,
   SDL2,
-  libGL,
-  libpng,
-  libjpeg,
-  libx11,
   SDL2_ttf,
-  libvorbis,
+  fetchpatch,
   gettext,
-  physfs,
   iconv,
+  libGL,
+  libjpeg,
+  libpng,
+  libvorbis,
+  libx11,
   makeBinaryWrapper,
+  physfs,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
   pname = "neverball";
   version = "1.6.0";
+
   src = fetchurl {
     url = "https://neverball.org/neverball-${finalAttrs.version}.tar.gz";
     sha256 = "184gm36c6p6vaa6gwrfzmfh86klhnb03pl40ahsjsvprlk667zkk";
   };
+
   patches = [
     # Pull upstream fix for -fno-common toolchains
     #   https://github.com/Neverball/neverball/pull/198
     (fetchpatch {
       name = "fno-common.patch";
-      url = "https://github.com/Neverball/neverball/commit/a42492b8db06934c7a794630db92e3ff6ebaadaa.patch";
       sha256 = "0sqyxfwpl4xxra8iz87j5rxzwani16xra2xl4l5z61shvq30308h";
+      url = "https://github.com/Neverball/neverball/commit/a42492b8db06934c7a794630db92e3ff6ebaadaa.patch";
     })
   ];
-
-  nativeBuildInputs = lib.optionals stdenv.hostPlatform.isDarwin [
-    iconv
-    makeBinaryWrapper
-  ];
-  buildInputs = [
-    libpng
-    SDL2
-    libGL
-    libjpeg
-    SDL2_ttf
-    libvorbis
-    gettext
-    physfs
-  ]
-  ++ lib.optionals (!stdenv.hostPlatform.isDarwin) [
-    libx11
-  ];
-
-  dontPatchELF = true;
 
   postPatch = ''
     sed -i -e 's@\./data@'$out/share/neverball/data@ share/base_config.h Makefile
@@ -72,6 +54,25 @@ stdenv.mkDerivation (finalAttrs: {
       popd
     done
   '';
+
+  nativeBuildInputs = lib.optionals stdenv.hostPlatform.isDarwin [
+    iconv
+    makeBinaryWrapper
+  ];
+
+  buildInputs = [
+    libpng
+    SDL2
+    libGL
+    libjpeg
+    SDL2_ttf
+    libvorbis
+    gettext
+    physfs
+  ]
+  ++ lib.optionals (!stdenv.hostPlatform.isDarwin) [
+    libx11
+  ];
 
   # The map generation code requires a writable HOME
   preConfigure = "export HOME=$TMPDIR";
@@ -99,17 +100,20 @@ stdenv.mkDerivation (finalAttrs: {
     cp mapc $out/bin
   '';
 
+  dontPatchELF = true;
   enableParallelBuilding = true;
 
   meta = {
-    homepage = "https://neverball.org/";
     description = "Tilt the floor to roll a ball";
+    homepage = "https://neverball.org/";
+
     license = with lib.licenses; [
       gpl2Plus
       ijg
       mit
       gpl3Only
     ];
+
     maintainers = with lib.maintainers; [ Rhys-T ];
     platforms = with lib.platforms; linux ++ darwin;
   };

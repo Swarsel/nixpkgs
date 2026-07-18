@@ -2,33 +2,35 @@
   lib,
   buildPythonPackage,
   fetchPypi,
-  setuptools,
   nix-update-script,
+  setuptools,
   torch,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "muon-optimizer";
   version = "0.1.0";
-  pyproject = true;
-  __structuredAttrs = true;
 
   src = fetchPypi {
-    pname = "muon_optimizer";
     inherit (finalAttrs) version;
     hash = "sha256-ZcUEQfKbckjlhjg9NxJi65BiZT6CCxEUPIGnoQukjac=";
+    pname = "muon_optimizer";
   };
+
+  __structuredAttrs = true;
 
   build-system = [
     setuptools
   ];
 
-  pythonImportsCheck = [
-    "muon"
-  ];
-
   dependencies = [
     torch
+  ];
+
+  pyproject = true;
+
+  pythonImportsCheck = [
+    "muon"
   ];
 
   passthru.updateScript = nix-update-script { };

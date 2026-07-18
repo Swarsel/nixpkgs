@@ -2,15 +2,14 @@
   lib,
   fetchFromGitHub,
   buildPythonPackage,
-  pytestCheckHook,
   poetry-core,
   pytest-mock,
+  pytestCheckHook,
 }:
 
 buildPythonPackage rec {
   pname = "timelength";
   version = "3.0.2";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "EtorixDev";
@@ -19,16 +18,17 @@ buildPythonPackage rec {
     hash = "sha256-iaAtDkx6jPPB7s+sTQsrfNFiwerSDZ+7y7C9oNNYEmg=";
   };
 
-  build-system = [
-    poetry-core
-  ];
-
-  pythonImportsCheck = [ "timelength" ];
-
   nativeCheckInputs = [
     pytestCheckHook
     pytest-mock
   ];
+
+  build-system = [
+    poetry-core
+  ];
+
+  pyproject = true;
+  pythonImportsCheck = [ "timelength" ];
 
   meta = {
     description = "Flexible python duration parser designed for human readable lengths of time";

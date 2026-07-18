@@ -33,7 +33,7 @@ stdenv.mkDerivation {
   meta = {
     description = "Optimization tools for the (P)MCM problem";
     homepage = "https://gitlab.com/kumm/pagsuite";
-    maintainers = with lib.maintainers; [ wegank ];
     license = lib.licenses.unfree;
+    maintainers = with lib.maintainers; [ wegank ];
   };
 }

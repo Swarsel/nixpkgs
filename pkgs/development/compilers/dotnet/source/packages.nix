@@ -1,12 +1,12 @@
 {
-  stdenvNoCC,
   lib,
   callPackage,
+  nugetPackageHook,
+  stdenvNoCC,
+  strip-nondeterminism,
   vmr,
   xmlstarlet,
-  strip-nondeterminism,
   zip,
-  nugetPackageHook,
   baseName ? "dotnet",
   fallbackTargetPackages ? { },
 }:
@@ -20,14 +20,17 @@ let
         args
         // {
           outputs = args.outputs or [ "out" ] ++ [ "man" ];
+
           postFixup = args.postFixup or "" + ''
             ln -s ${vmr.man} $man
           '';
+
           propagatedSandboxProfile = lib.optionalString stdenvNoCC.hostPlatform.isDarwin ''
             (allow file-read* (subpath "/private/var/db/mds/system"))
             (allow mach-lookup (global-name "com.apple.SecurityServer")
                               (global-name "com.apple.system.opendirectoryd.membership"))
           '';
+
           passthru = args.passthru or { } // {
             inherit (vmr) icu hasCrossTargetBug;
           };
@@ -46,9 +49,7 @@ let
     pname: version:
     stdenvNoCC.mkDerivation {
       inherit pname version;
-
       src = vmr;
-      dontUnpack = true;
 
       nativeBuildInputs = [
         xmlstarlet
@@ -88,6 +89,8 @@ let
 
         runHook postInstall
       '';
+
+      dontUnpack = true;
     };
 
   packages = [
@@ -128,19 +131,17 @@ let
   sdk = mkCommon "sdk" {
     pname = "${baseName}-sdk";
     version = sdkVersion;
-
     src = vmr;
-    dontUnpack = true;
+
+    outputs = [
+      "out"
+      "artifacts"
+    ];
 
     nativeBuildInputs = [
       xmlstarlet
       strip-nondeterminism
       zip
-    ];
-
-    outputs = [
-      "out"
-      "artifacts"
     ];
 
     installPhase = ''
@@ -185,6 +186,8 @@ let
         cp "$src"/nix-support/manual-sdk-deps "$out"/nix-support/manual-sdk-deps
       '';
 
+    dontUnpack = true;
+
     passthru = {
       inherit (vmr)
         targetRid
@@ -207,9 +210,7 @@ let
   runtime = mkCommon "runtime" {
     pname = "${baseName}-runtime";
     version = runtimeVersion;
-
     src = vmr;
-    dontUnpack = true;
 
     installPhase = ''
       runHook preInstall
@@ -223,6 +224,8 @@ let
       runHook postInstall
     '';
 
+    dontUnpack = true;
+
     meta = vmr.meta // {
       mainProgram = "dotnet";
     };
@@ -231,9 +234,7 @@ let
   aspnetcore = mkCommon "aspnetcore" {
     pname = "${baseName}-aspnetcore-runtime";
     version = aspnetcoreVersion;
-
     src = vmr;
-    dontUnpack = true;
 
     installPhase = ''
       runHook preInstall
@@ -249,6 +250,8 @@ let
 
       runHook postInstall
     '';
+
+    dontUnpack = true;
 
     meta = vmr.meta // {
       mainProgram = "dotnet";

@@ -1,8 +1,8 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
   installShellFiles,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -16,9 +16,8 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-QxkFpcEFLn98LvGDQ/PEovzzHTfNiKFQfGaHl/w5aLQ=";
   };
 
-  cargoHash = "sha256-45oFBZC8IRCybhnmZfwDsouFVsm2hgPQohem/1nsAxc=";
-
   nativeBuildInputs = [ installShellFiles ];
+  cargoHash = "sha256-45oFBZC8IRCybhnmZfwDsouFVsm2hgPQohem/1nsAxc=";
 
   postInstall = ''
     installShellCompletion --cmd tldr \
@@ -36,16 +35,19 @@ rustPlatform.buildRustPackage (finalAttrs: {
     description = "Very fast implementation of tldr in Rust";
     homepage = "https://github.com/tealdeer-rs/tealdeer";
     changelog = "https://github.com/tealdeer-rs/tealdeer/blob/v${finalAttrs.version}/CHANGELOG.md";
+
+    license = with lib.licenses; [
+      asl20
+      mit
+    ];
+
     maintainers = with lib.maintainers; [
       davidak
       newam
       mfrw
       ryan4yin
     ];
-    license = with lib.licenses; [
-      asl20
-      mit
-    ];
+
     mainProgram = "tldr";
   };
 })

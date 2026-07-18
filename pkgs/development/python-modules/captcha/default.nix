@@ -10,7 +10,6 @@
 buildPythonPackage rec {
   pname = "captcha";
   version = "0.7.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "lepture";
@@ -19,13 +18,11 @@ buildPythonPackage rec {
     hash = "sha256-wMnfPkHexiRprtDL6Kkmh9dms4NtW3u37DKtDMPb2ZI=";
   };
 
-  dependencies = [ pillow ];
-
   nativeBuildInputs = [ setuptools ];
-
-  pythonImportsCheck = [ "captcha" ];
-
   nativeCheckInputs = [ pytestCheckHook ];
+  dependencies = [ pillow ];
+  pyproject = true;
+  pythonImportsCheck = [ "captcha" ];
 
   meta = {
     description = "Captcha library that generates audio and image CAPTCHAs";

@@ -10,39 +10,18 @@ let
   settingsFormat = pkgs.formats.toml { };
 in
 {
-  meta.maintainers = [ ];
-
   options.services.hockeypuck = {
     enable = lib.mkEnableOption "Hockeypuck OpenPGP Key Server";
 
     port = lib.mkOption {
       default = 11371;
-      type = lib.types.port;
       description = "HKP port to listen on.";
+      type = lib.types.port;
     };
 
     settings = lib.mkOption {
-      type = settingsFormat.type;
       default = { };
-      example = lib.literalExpression ''
-        {
-          hockeypuck = {
-            loglevel = "INFO";
-            logfile = "/var/log/hockeypuck/hockeypuck.log";
-            indexTemplate = "''${pkgs.hockeypuck-web}/share/templates/index.html.tmpl";
-            vindexTemplate = "''${pkgs.hockeypuck-web}/share/templates/index.html.tmpl";
-            statsTemplate = "''${pkgs.hockeypuck-web}/share/templates/stats.html.tmpl";
-            webroot = "''${pkgs.hockeypuck-web}/share/webroot";
 
-            hkp.bind = ":''${toString cfg.port}";
-
-            openpgp.db = {
-              driver = "postgres-jsonb";
-              dsn = "database=hockeypuck host=/var/run/postgresql sslmode=disable";
-            };
-          };
-        }
-      '';
       description = ''
         Configuration file for hockeypuck, here you can override
         certain settings (`loglevel` and
@@ -66,50 +45,78 @@ in
           };
         ```
       '';
+
+      example = lib.literalExpression ''
+        {
+          hockeypuck = {
+            loglevel = "INFO";
+            logfile = "/var/log/hockeypuck/hockeypuck.log";
+            indexTemplate = "''${pkgs.hockeypuck-web}/share/templates/index.html.tmpl";
+            vindexTemplate = "''${pkgs.hockeypuck-web}/share/templates/index.html.tmpl";
+            statsTemplate = "''${pkgs.hockeypuck-web}/share/templates/stats.html.tmpl";
+            webroot = "''${pkgs.hockeypuck-web}/share/webroot";
+
+            hkp.bind = ":''${toString cfg.port}";
+
+            openpgp.db = {
+              driver = "postgres-jsonb";
+              dsn = "database=hockeypuck host=/var/run/postgresql sslmode=disable";
+            };
+          };
+        }
+      '';
+
+      type = settingsFormat.type;
     };
   };
 
   config = lib.mkIf cfg.enable {
     services.hockeypuck.settings.hockeypuck = {
-      loglevel = lib.mkDefault "INFO";
-      logfile = "/var/log/hockeypuck/hockeypuck.log";
-      indexTemplate = "${pkgs.hockeypuck-web}/share/templates/index.html.tmpl";
-      vindexTemplate = "${pkgs.hockeypuck-web}/share/templates/index.html.tmpl";
-      statsTemplate = "${pkgs.hockeypuck-web}/share/templates/stats.html.tmpl";
-      webroot = "${pkgs.hockeypuck-web}/share/webroot";
-
       hkp.bind = ":${toString cfg.port}";
+      indexTemplate = "${pkgs.hockeypuck-web}/share/templates/index.html.tmpl";
+      logfile = "/var/log/hockeypuck/hockeypuck.log";
+      loglevel = lib.mkDefault "INFO";
 
       openpgp.db = {
         driver = "postgres-jsonb";
         dsn = lib.mkDefault "database=hockeypuck host=/var/run/postgresql sslmode=disable";
       };
-    };
 
-    users.users.hockeypuck = {
-      isSystemUser = true;
-      group = "hockeypuck";
-      description = "Hockeypuck user";
+      statsTemplate = "${pkgs.hockeypuck-web}/share/templates/stats.html.tmpl";
+      vindexTemplate = "${pkgs.hockeypuck-web}/share/templates/index.html.tmpl";
+      webroot = "${pkgs.hockeypuck-web}/share/webroot";
     };
-    users.groups.hockeypuck = { };
 
     systemd.services.hockeypuck = {
-      description = "Hockeypuck OpenPGP Key Server";
       after = [
         "network.target"
         "postgresql.target"
       ];
-      wantedBy = [ "multi-user.target" ];
+
+      description = "Hockeypuck OpenPGP Key Server";
+
       serviceConfig = {
-        WorkingDirectory = "/var/lib/hockeypuck";
-        User = "hockeypuck";
         ExecStart = "${pkgs.hockeypuck}/bin/hockeypuck -config ${settingsFormat.generate "config.toml" cfg.settings}";
-        Restart = "always";
-        RestartSec = "5s";
         LogsDirectory = "hockeypuck";
         LogsDirectoryMode = "0755";
+        Restart = "always";
+        RestartSec = "5s";
         StateDirectory = "hockeypuck";
+        User = "hockeypuck";
+        WorkingDirectory = "/var/lib/hockeypuck";
       };
+
+      wantedBy = [ "multi-user.target" ];
+    };
+
+    users.groups.hockeypuck = { };
+
+    users.users.hockeypuck = {
+      description = "Hockeypuck user";
+      group = "hockeypuck";
+      isSystemUser = true;
     };
   };
+
+  meta.maintainers = [ ];
 }

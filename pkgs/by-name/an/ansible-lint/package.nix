@@ -1,20 +1,19 @@
 {
   lib,
-  python3Packages,
-  fetchPypi,
   ansible,
+  fetchPypi,
+  python3Packages,
   writableTmpDirAsHomeHook,
 }:
 
 python3Packages.buildPythonApplication (finalAttrs: {
   pname = "ansible-lint";
   version = "25.8.2";
-  pyproject = true;
 
   src = fetchPypi {
     inherit (finalAttrs) version;
-    pname = "ansible_lint";
     hash = "sha256-Nd093RLYBjh2kVvy8GuaG4D9J6fLHKTOUcjOu4RpCSI=";
+    pname = "ansible_lint";
   };
 
   postPatch = ''
@@ -22,30 +21,6 @@ python3Packages.buildPythonApplication (finalAttrs: {
     substituteInPlace conftest.py \
       --replace-fail "sys.exit(1)" ""
   '';
-
-  build-system = with python3Packages; [
-    setuptools
-    setuptools-scm
-  ];
-
-  dependencies = with python3Packages; [
-    # https://github.com/ansible/ansible-lint/blob/master/.config/requirements.in
-    ansible-core
-    ansible-compat
-    black
-    filelock
-    importlib-metadata
-    jsonschema
-    packaging
-    pyyaml
-    rich
-    ruamel-yaml
-    subprocess-tee
-    wcmatch
-    yamllint
-  ];
-
-  pythonRelaxDeps = [ "ruamel.yaml" ];
 
   # tests can't be easily run without installing things from ansible-galaxy
   doCheck = false;
@@ -72,6 +47,28 @@ python3Packages.buildPythonApplication (finalAttrs: {
     ln -s ../roles examples/playbooks/roles
   '';
 
+  build-system = with python3Packages; [
+    setuptools
+    setuptools-scm
+  ];
+
+  dependencies = with python3Packages; [
+    # https://github.com/ansible/ansible-lint/blob/master/.config/requirements.in
+    ansible-core
+    ansible-compat
+    black
+    filelock
+    importlib-metadata
+    jsonschema
+    packaging
+    pyyaml
+    rich
+    ruamel-yaml
+    subprocess-tee
+    wcmatch
+    yamllint
+  ];
+
   disabledTests = [
     # requires network
     "test_cli_auto_detect"
@@ -88,17 +85,21 @@ python3Packages.buildPythonApplication (finalAttrs: {
   ];
 
   makeWrapperArgs = [ "--prefix PATH : ${lib.makeBinPath [ ansible ]}" ];
+  pyproject = true;
+  pythonRelaxDeps = [ "ruamel.yaml" ];
 
   meta = {
     description = "Best practices checker for Ansible";
-    mainProgram = "ansible-lint";
     homepage = "https://github.com/ansible/ansible-lint";
     changelog = "https://github.com/ansible/ansible-lint/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       sengaya
       HarisDotParis
       robsliwi
     ];
+
+    mainProgram = "ansible-lint";
   };
 })

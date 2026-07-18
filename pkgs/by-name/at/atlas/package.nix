@@ -1,8 +1,8 @@
 {
   lib,
   stdenv,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   installShellFiles,
   testers,
 }:
@@ -18,20 +18,8 @@ buildGoModule (finalAttrs: {
     hash = "sha256-Ox/EgTSz0ONEJqLyiJsvpgUNfHyV2rQYXrIAImDwrLo=";
   };
 
-  modRoot = "cmd/atlas";
-
-  proxyVendor = true;
-  vendorHash = "sha256-9yg8VkRtyaMQjCAAOHIG4A9QSV1VOFOLBK9cTrE83a4=";
-
   nativeBuildInputs = [ installShellFiles ];
-
-  ldflags = [
-    "-s"
-    "-w"
-    "-X ariga.io/atlas/cmd/atlas/internal/cmdapi.version=v${finalAttrs.version}"
-  ];
-
-  subPackages = [ "." ];
+  vendorHash = "sha256-9yg8VkRtyaMQjCAAOHIG4A9QSV1VOFOLBK9cTrE83a4=";
 
   postInstall = lib.optionalString (stdenv.buildPlatform.canExecute stdenv.hostPlatform) ''
     installShellCompletion --cmd atlas \
@@ -40,10 +28,20 @@ buildGoModule (finalAttrs: {
       --zsh <($out/bin/atlas completion zsh)
   '';
 
+  ldflags = [
+    "-s"
+    "-w"
+    "-X ariga.io/atlas/cmd/atlas/internal/cmdapi.version=v${finalAttrs.version}"
+  ];
+
+  modRoot = "cmd/atlas";
+  proxyVendor = true;
+  subPackages = [ "." ];
+
   passthru.tests.version = testers.testVersion {
-    package = finalAttrs.finalPackage;
-    command = "atlas version";
     version = "v${finalAttrs.version}";
+    command = "atlas version";
+    package = finalAttrs.finalPackage;
   };
 
   meta = {

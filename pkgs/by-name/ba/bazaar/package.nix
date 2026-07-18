@@ -2,14 +2,9 @@
   lib,
   stdenv,
   fetchFromGitHub,
+  appstream,
   blueprint-compiler,
   desktop-file-utils,
-  meson,
-  python3,
-  ninja,
-  pkg-config,
-  wrapGAppsHook4,
-  appstream,
   flatpak,
   glib-networking,
   glycin-loaders,
@@ -21,23 +16,32 @@
   libglycin,
   libglycin-gtk4,
   libproxy,
+  libsecret,
   libsoup_3,
-  libxmlb,
   libxml2,
+  libxmlb,
   libyaml,
   malcontent,
   md4c,
-  webkitgtk_6_0,
-  libsecret,
+  meson,
+  ninja,
   nix-update-script,
+  pkg-config,
+  python3,
+  webkitgtk_6_0,
+  wrapGAppsHook4,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
   pname = "bazaar";
   version = "0.9.1";
 
-  __structuredAttrs = true;
-  strictDeps = true;
+  src = fetchFromGitHub {
+    owner = "bazaar-org";
+    repo = "bazaar";
+    tag = "v${finalAttrs.version}";
+    hash = "sha256-9J+XI5JnV8Yfk3xRI/VM5RSG4eMafbw2rBRpPMIu5yA=";
+  };
 
   outputs = [
     "out"
@@ -46,12 +50,7 @@ stdenv.mkDerivation (finalAttrs: {
     "dev"
   ];
 
-  src = fetchFromGitHub {
-    owner = "bazaar-org";
-    repo = "bazaar";
-    tag = "v${finalAttrs.version}";
-    hash = "sha256-9J+XI5JnV8Yfk3xRI/VM5RSG4eMafbw2rBRpPMIu5yA=";
-  };
+  strictDeps = true;
 
   nativeBuildInputs = [
     blueprint-compiler
@@ -106,6 +105,8 @@ stdenv.mkDerivation (finalAttrs: {
     wrapGApp $out/bin/bazaar
   '';
 
+  __structuredAttrs = true;
+
   passthru = {
     updateScript = nix-update-script { };
   };
@@ -114,10 +115,12 @@ stdenv.mkDerivation (finalAttrs: {
     description = "FlatHub-first app store for GNOME";
     homepage = "https://github.com/kolunmi/bazaar";
     license = lib.licenses.gpl3Plus;
+
     maintainers = with lib.maintainers; [
       dtomvan
     ];
-    mainProgram = "bazaar";
+
     platforms = lib.platforms.linux;
+    mainProgram = "bazaar";
   };
 })

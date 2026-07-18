@@ -11,6 +11,8 @@
 }:
 
 stdenv.mkDerivation rec {
+  # Allow users set their own list of patches
+  inherit patches;
   pname = "evilwm";
   version = "1.5";
 
@@ -18,6 +20,12 @@ stdenv.mkDerivation rec {
     url = "https://www.6809.org.uk/evilwm/evilwm-${version}.tar.gz";
     sha256 = "sha256-YQSFJBPm1QZpNh3K3aWiXTnisrDJWmOEAiyQWVeidA8=";
   };
+
+  postPatch = ''
+    substituteInPlace ./Makefile \
+      --replace /usr $out \
+      --replace "CC = gcc" "#CC = gcc"
+  '';
 
   buildInputs = [
     libx11
@@ -27,24 +35,17 @@ stdenv.mkDerivation rec {
     xorgproto
   ];
 
-  postPatch = ''
-    substituteInPlace ./Makefile \
-      --replace /usr $out \
-      --replace "CC = gcc" "#CC = gcc"
-  '';
-
-  # Allow users set their own list of patches
-  inherit patches;
-
   meta = {
-    homepage = "http://www.6809.org.uk/evilwm/";
     description = "Minimalist window manager for the X Window System";
+    homepage = "http://www.6809.org.uk/evilwm/";
+
     license = {
-      shortName = "evilwm";
-      fullName = "Custom, inherited from aewm and 9wm";
-      url = "https://www.6809.org.uk/evilwm/";
       free = true;
+      fullName = "Custom, inherited from aewm and 9wm";
+      shortName = "evilwm";
+      url = "https://www.6809.org.uk/evilwm/";
     }; # like BSD/MIT, but Share-Alike'y; See README.
+
     maintainers = [ ];
     platforms = lib.platforms.all;
     mainProgram = "evilwm";

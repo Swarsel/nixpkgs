@@ -1,10 +1,10 @@
 {
   lib,
+  fetchFromGitHub,
+  betamax,
   betamax-matchers,
   betamax-serializers,
-  betamax,
   buildPythonPackage,
-  fetchFromGitHub,
   fetchpatch,
   flit-core,
   mock,
@@ -18,7 +18,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "praw";
   version = "7.8.2";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "praw-dev";
@@ -30,10 +29,18 @@ buildPythonPackage (finalAttrs: {
   patches = [
     # fix tests under python 3.14
     (fetchpatch {
-      url = "https://github.com/praw-dev/praw/commit/9edc0bfa62c1878c395d8bc225edfe87e4fc4cd4.patch";
-      includes = [ "tests/unit/test_reddit.py" ];
       hash = "sha256-QozdHz8WPCsuBgFgx1j0NwFsPFBmq9KhKiW7B5/QmfE=";
+      includes = [ "tests/unit/test_reddit.py" ];
+      url = "https://github.com/praw-dev/praw/commit/9edc0bfa62c1878c395d8bc225edfe87e4fc4cd4.patch";
     })
+  ];
+
+  nativeCheckInputs = [
+    betamax
+    betamax-serializers
+    betamax-matchers
+    pytestCheckHook
+    requests-toolbelt
   ];
 
   build-system = [ flit-core ];
@@ -45,19 +52,12 @@ buildPythonPackage (finalAttrs: {
     websocket-client
   ];
 
-  nativeCheckInputs = [
-    betamax
-    betamax-serializers
-    betamax-matchers
-    pytestCheckHook
-    requests-toolbelt
-  ];
-
   disabledTestPaths = [
     # tests requiring network
     "tests/integration"
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "praw" ];
 
   meta = {

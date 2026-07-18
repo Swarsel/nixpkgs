@@ -1,11 +1,11 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
-  pkg-config,
   bzip2,
-  zstd,
   nix-update-script,
+  pkg-config,
+  rustPlatform,
+  zstd,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -19,8 +19,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-OcCWmBNDo4AA5Pk5TQqb8hen9LlHaY09Wrm4BkrU7qA=";
   };
 
-  cargoHash = "sha256-UGPXV55+0w6QFYxfmmimSX/dleCdtEahveNi8DgSVzQ=";
-
   nativeBuildInputs = [
     pkg-config
   ];
@@ -29,6 +27,8 @@ rustPlatform.buildRustPackage (finalAttrs: {
     bzip2
     zstd
   ];
+
+  cargoHash = "sha256-UGPXV55+0w6QFYxfmmimSX/dleCdtEahveNi8DgSVzQ=";
 
   env = {
     ZSTD_SYS_USE_PKG_CONFIG = true;

@@ -2,10 +2,10 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  libsodium,
   liboprf,
-  testers,
+  libsodium,
   nix-update-script,
+  testers,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -19,7 +19,12 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-VVD4489yWAJTWLGrpXYe8or5QjDnAuQ9/tzlNJJu/lo=";
   };
 
-  sourceRoot = "${finalAttrs.src.name}/src";
+  # expand_message_xmd has been renamed to oprf_expand_message_xmd in liboprf
+  # TODO: remove in the next release
+  postPatch = ''
+    substituteInPlace opaque.c \
+      --replace-fail 'expand_message_xmd' 'oprf_expand_message_xmd'
+  '';
 
   strictDeps = true;
 
@@ -28,19 +33,14 @@ stdenv.mkDerivation (finalAttrs: {
     liboprf
   ];
 
-  # expand_message_xmd has been renamed to oprf_expand_message_xmd in liboprf
-  # TODO: remove in the next release
-  postPatch = ''
-    substituteInPlace opaque.c \
-      --replace-fail 'expand_message_xmd' 'oprf_expand_message_xmd'
-  '';
+  makeFlags = [ "PREFIX=$(out)" ];
 
   postInstall = ''
     mkdir -p ${placeholder "out"}/lib/pkgconfig
     cp ../libopaque.pc ${placeholder "out"}/lib/pkgconfig/
   '';
 
-  makeFlags = [ "PREFIX=$(out)" ];
+  sourceRoot = "${finalAttrs.src.name}/src";
 
   passthru = {
     tests.pkg-config = testers.testMetaPkgConfig finalAttrs.finalPackage;
@@ -52,8 +52,8 @@ stdenv.mkDerivation (finalAttrs: {
     homepage = "https://github.com/stef/libopaque/";
     changelog = "https://github.com/stef/libopaque/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.lgpl3Plus;
-    teams = [ lib.teams.ngi ];
     platforms = lib.platforms.unix;
     pkgConfigModules = [ "libopaque" ];
+    teams = [ lib.teams.ngi ];
   };
 })

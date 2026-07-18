@@ -7,21 +7,17 @@
 }:
 
 stdenv.mkDerivation rec {
-  version = "2.4.52";
   pname = "swagger-codegen";
-
-  jarfilename = "${pname}-cli-${version}.jar";
-
-  nativeBuildInputs = [
-    makeWrapper
-  ];
+  version = "2.4.52";
 
   src = fetchurl {
     url = "mirror://maven/io/swagger/${pname}-cli/${version}/${jarfilename}";
     sha256 = "sha256-8MwqDGP6A2V2B0kGOTVpf66yOGzUCe1bFOO/l+GBrmY=";
   };
 
-  dontUnpack = true;
+  nativeBuildInputs = [
+    makeWrapper
+  ];
 
   installPhase = ''
     install -D $src $out/share/java/${jarfilename}
@@ -30,11 +26,14 @@ stdenv.mkDerivation rec {
       --add-flags "-jar $out/share/java/${jarfilename}"
   '';
 
+  dontUnpack = true;
+  jarfilename = "${pname}-cli-${version}.jar";
+
   meta = {
     description = "Allows generation of API client libraries (SDK generation), server stubs and documentation automatically given an OpenAPI Spec";
     homepage = "https://github.com/swagger-api/swagger-codegen";
-    sourceProvenance = with lib.sourceTypes; [ binaryBytecode ];
     license = lib.licenses.asl20;
+    sourceProvenance = with lib.sourceTypes; [ binaryBytecode ];
     maintainers = [ lib.maintainers.jraygauthier ];
     mainProgram = "swagger-codegen";
   };

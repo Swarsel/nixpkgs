@@ -1,20 +1,21 @@
 {
   lib,
-  python314,
+  stdenv,
   fetchFromGitLab,
   callPackage,
-  stdenv,
   makeWrapper,
   nixosTests,
+  python314,
 }:
 
 let
   python = python314.override {
-    self = python;
     packageOverrides = final: prev: {
       django = final.django_6;
       glitchtip-rust = final.callPackage ./glitchtip-rust.nix { };
     };
+
+    self = python;
   };
 
   pythonPackages =
@@ -80,7 +81,6 @@ in
 stdenv.mkDerivation (finalAttrs: {
   pname = "glitchtip";
   version = "6.2.0";
-  pyproject = true;
 
   src = fetchFromGitLab {
     owner = "glitchtip";
@@ -97,12 +97,12 @@ stdenv.mkDerivation (finalAttrs: {
     )' >> glitchtip/settings.py
   '';
 
-  propagatedBuildInputs = pythonPackages;
-
   nativeBuildInputs = [
     makeWrapper
     python
   ];
+
+  propagatedBuildInputs = pythonPackages;
 
   buildPhase = ''
     runHook preBuild
@@ -128,6 +128,8 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  pyproject = true;
+
   passthru = {
     inherit frontend python;
     inherit (python.pkgs) glitchtip-rust;
@@ -140,10 +142,12 @@ stdenv.mkDerivation (finalAttrs: {
     homepage = "https://glitchtip.com";
     changelog = "https://gitlab.com/glitchtip/glitchtip-backend/-/blob/v${finalAttrs.version}/CHANGELOG";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       defelo
       felbinger
     ];
+
     mainProgram = "glitchtip-manage";
   };
 })

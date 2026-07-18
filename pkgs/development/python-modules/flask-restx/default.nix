@@ -1,24 +1,16 @@
 {
   lib,
   stdenv,
-  buildPythonPackage,
   fetchFromGitHub,
-  pythonAtLeast,
-
-  # build-system
-  setuptools,
-
   # dependencies
   aniso8601,
+  # tests
+  blinker,
+  buildPythonPackage,
+  faker,
   flask,
   importlib-resources,
   jsonschema,
-  pytz,
-  werkzeug,
-
-  # tests
-  blinker,
-  faker,
   mock,
   py,
   pytest-benchmark,
@@ -26,12 +18,16 @@
   pytest-mock,
   pytest-vcr,
   pytestCheckHook,
+  pythonAtLeast,
+  pytz,
+  # build-system
+  setuptools,
+  werkzeug,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "flask-restx";
   version = "1.3.2";
-  pyproject = true;
 
   # Tests not included in PyPI tarball
   src = fetchFromGitHub {
@@ -40,17 +36,6 @@ buildPythonPackage (finalAttrs: {
     tag = finalAttrs.version;
     hash = "sha256-KSHRfGX6M/w09P35A68u7uzMKaRioytScPh0Sw8JBfw=";
   };
-
-  build-system = [ setuptools ];
-
-  dependencies = [
-    aniso8601
-    flask
-    importlib-resources
-    jsonschema
-    pytz
-    werkzeug
-  ];
 
   nativeCheckInputs = [
     blinker
@@ -64,9 +49,17 @@ buildPythonPackage (finalAttrs: {
     pytestCheckHook
   ];
 
-  pytestFlags = [
-    "--benchmark-disable"
+  build-system = [ setuptools ];
+
+  dependencies = [
+    aniso8601
+    flask
+    importlib-resources
+    jsonschema
+    pytz
+    werkzeug
   ];
+
   disabledTestPaths = [
     "tests/test_inputs.py::URLTest::test_check"
     "tests/test_inputs.py::EmailTest::test_valid_value_check"
@@ -99,6 +92,12 @@ buildPythonPackage (finalAttrs: {
     "test_readonly"
     "test_required"
     "test_title"
+  ];
+
+  pyproject = true;
+
+  pytestFlags = [
+    "--benchmark-disable"
   ];
 
   pythonImportsCheck = [ "flask_restx" ];

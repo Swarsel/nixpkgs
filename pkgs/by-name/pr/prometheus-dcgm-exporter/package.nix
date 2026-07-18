@@ -1,13 +1,12 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
   autoAddDriverRunpath,
+  buildGoModule,
   dcgm,
 }:
 buildGoModule rec {
   pname = "dcgm-exporter";
-
   # The first portion of this version string corresponds to a compatible DCGM
   # version.
   version = "4.3.1-4.4.0"; # N.B: If you change this, update dcgm as well to the matching version.
@@ -19,22 +18,16 @@ buildGoModule rec {
     hash = "sha256-NafQWP1NxHTwmOND8ovy3oVia7qq0rCwZYE3VNlMBKQ=";
   };
 
-  env.CGO_LDFLAGS = "-ldcgm";
+  nativeBuildInputs = [
+    autoAddDriverRunpath
+  ];
 
   buildInputs = [
     dcgm
   ];
 
-  # gonvml and go-dcgm do not work with ELF BIND_NOW hardening because not all
-  # symbols are available on startup.
-  hardeningDisable = [ "bindnow" ];
-
   vendorHash = "sha256-BfHC49Dzb4ArXK87JKD+aYEHR5HUS5NL0fEHa0jOCYM=";
-
-  nativeBuildInputs = [
-    autoAddDriverRunpath
-  ];
-
+  env.CGO_LDFLAGS = "-ldcgm";
   # Tests try to interact with running DCGM service.
   doCheck = false;
 
@@ -42,15 +35,21 @@ buildGoModule rec {
     patchelf --add-needed libnvidia-ml.so "$out/bin/dcgm-exporter"
   '';
 
+  # gonvml and go-dcgm do not work with ELF BIND_NOW hardening because not all
+  # symbols are available on startup.
+  hardeningDisable = [ "bindnow" ];
+
   meta = {
     description = "NVIDIA GPU metrics exporter for Prometheus leveraging DCGM";
     homepage = "https://github.com/NVIDIA/dcgm-exporter";
     license = lib.licenses.asl20;
+
     maintainers = with lib.maintainers; [
       de11n
       despsyched
     ];
-    mainProgram = "dcgm-exporter";
+
     platforms = lib.platforms.linux;
+    mainProgram = "dcgm-exporter";
   };
 }

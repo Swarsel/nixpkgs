@@ -1,14 +1,14 @@
 {
   lib,
-  rustPlatform,
-  fetchFromGitHub,
-  pkg-config,
-  installShellFiles,
-  getconf,
-  dbus,
-  libseccomp,
-  systemd,
   stdenv,
+  fetchFromGitHub,
+  dbus,
+  getconf,
+  installShellFiles,
+  libseccomp,
+  pkg-config,
+  rustPlatform,
+  systemd,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -34,6 +34,8 @@ rustPlatform.buildRustPackage (finalAttrs: {
     systemd
   ];
 
+  cargoHash = "sha256-QOugjSoJVqeiRfpzyuD6nFsBUdlfJLvbXavXFyiHWSo=";
+
   postInstall = lib.optionalString (stdenv.buildPlatform.canExecute stdenv.hostPlatform) ''
     installShellCompletion --cmd youki \
       --bash <($out/bin/youki completion -s bash) \
@@ -52,8 +54,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
     "-p"
     "youki"
   ];
-
-  cargoHash = "sha256-QOugjSoJVqeiRfpzyuD6nFsBUdlfJLvbXavXFyiHWSo=";
 
   meta = {
     description = "Container runtime written in Rust";

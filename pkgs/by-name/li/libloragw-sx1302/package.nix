@@ -15,8 +15,6 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-NYu54UpMn2OZfGihBH9Kbp2kUcEy0epH1Tt5I3r6jTs=";
   };
 
-  passthru.updateScript = gitUpdater { rev-prefix = "V"; };
-
   makeFlags = [
     "-e"
     "-C"
@@ -39,13 +37,17 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  passthru.updateScript = gitUpdater { rev-prefix = "V"; };
+
   meta = {
     description = "SX1302 Hardware Abstraction Layer and Tools (packet forwarder...)";
     homepage = "https://github.com/brocaar/sx1302_hal";
+
     license = [
       lib.licenses.bsd3
       lib.licenses.mit
     ];
+
     maintainers = [ lib.maintainers.stv0g ];
     platforms = lib.platforms.linux;
   };

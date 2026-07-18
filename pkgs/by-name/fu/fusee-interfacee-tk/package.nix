@@ -2,8 +2,8 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  python3,
   makeWrapper,
+  python3,
 }:
 
 let
@@ -41,12 +41,14 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   meta = {
-    homepage = "https://github.com/nh-server/fusee-interfacee-tk";
     description = "Tool to send .bin files to a Nintendo Switch in RCM mode";
-    mainProgram = "fusee-interfacee-tk";
+
     longDescription = "A mod of falquinhos Fusée Launcher for use with Nintendo Homebrew Switch Guide. It also adds the ability to mount SD while in RCM.
     Must be run as sudo.";
-    maintainers = with lib.maintainers; [ kristian-brucaj ];
+
+    homepage = "https://github.com/nh-server/fusee-interfacee-tk";
     license = lib.licenses.gpl2;
+    maintainers = with lib.maintainers; [ kristian-brucaj ];
+    mainProgram = "fusee-interfacee-tk";
   };
 })

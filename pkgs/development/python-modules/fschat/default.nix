@@ -1,41 +1,40 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
+  accelerate,
   aiohttp,
+  anthropic,
+  buildPythonPackage,
+  einops,
   fastapi,
+  gradio,
   httpx,
   markdown2,
   nh3,
   numpy,
+  openai,
+  peft,
   prompt-toolkit,
+  protobuf,
   pydantic,
+  ray,
   requests,
   rich,
+  sentencepiece,
+  setuptools,
   shortuuid,
   tiktoken,
-  uvicorn,
-  anthropic,
-  openai,
-  ray,
-  wandb,
-  einops,
-  gradio,
-  accelerate,
-  peft,
-  sentencepiece,
   torch,
   transformers,
-  protobuf,
+  uvicorn,
+  wandb,
 }:
 let
   version = "0.2.36";
 in
 buildPythonPackage {
-  pname = "fschat";
   inherit version;
-  pyproject = true;
+  pname = "fschat";
 
   src = fetchFromGitHub {
     owner = "lm-sys";
@@ -63,18 +62,16 @@ buildPythonPackage {
     # ] ++ markdown2.optional-dependencies.all;
   ];
 
+  # tests require networking
+  doCheck = false;
+
   optional-dependencies = {
     llm_judge = [
       anthropic
       openai
       ray
     ];
-    train = [
-      # flash-attn
-      wandb
-      einops
-    ];
-    webui = [ gradio ];
+
     model_worker = [
       accelerate
       peft
@@ -83,12 +80,18 @@ buildPythonPackage {
       transformers
       protobuf
     ];
+
+    train = [
+      # flash-attn
+      wandb
+      einops
+    ];
+
+    webui = [ gradio ];
   };
 
+  pyproject = true;
   pythonImportsCheck = [ "fastchat" ];
-
-  # tests require networking
-  doCheck = false;
 
   meta = {
     description = "Open platform for training, serving, and evaluating large language models. Release repo for Vicuna and Chatbot Arena";

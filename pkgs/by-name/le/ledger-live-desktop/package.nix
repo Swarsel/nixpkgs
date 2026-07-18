@@ -2,8 +2,8 @@
   lib,
   fetchurl,
   appimageTools,
-  makeWrapper,
   imagemagick,
+  makeWrapper,
 }:
 
 let
@@ -21,7 +21,6 @@ let
 in
 appimageTools.wrapType2 rec {
   inherit pname version src;
-
   nativeBuildInputs = [ makeWrapper ];
 
   extraInstallCommands = ''
@@ -41,6 +40,8 @@ appimageTools.wrapType2 rec {
     description = "App for Ledger hardware wallets";
     homepage = "https://www.ledger.com/ledger-live/";
     license = lib.licenses.mit;
+    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
+
     maintainers = with lib.maintainers; [
       andresilva
       thedavidmeister
@@ -48,8 +49,8 @@ appimageTools.wrapType2 rec {
       RaghavSood
       th0rgal
     ];
+
     platforms = [ "x86_64-linux" ];
     mainProgram = "ledger-live-desktop";
-    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
   };
 }

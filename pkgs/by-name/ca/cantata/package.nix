@@ -1,43 +1,41 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
+  cdparanoia,
   cmake,
+  ffmpeg_6,
+  gst_all_1,
+  kdePackages,
+  lame,
+  libcddb,
+  libmtp,
+  libmusicbrainz,
+  libvlc,
+  mpg123,
+  perl,
   pkg-config,
   qt6,
-  kdePackages,
-  perl,
-
+  speex,
+  taglib_1,
+  taglib_extras,
+  udisks,
   # Cantata doesn't build with cdparanoia enabled so we disable that
   # default for now until I (or someone else) figure it out.
   withCdda ? false,
-  cdparanoia,
   withCddb ? false,
-  libcddb,
-  withLame ? false,
-  lame,
-  withMusicbrainz ? false,
-  libmusicbrainz,
-
-  withTaglib ? true,
-  taglib_1,
-  taglib_extras,
-  withHttpStream ? true,
-  gst_all_1,
-  withReplaygain ? true,
-  ffmpeg_6,
-  speex,
-  mpg123,
-  withMtp ? true,
-  libmtp,
-  withOnlineServices ? true,
   withDevices ? true,
-  udisks,
   withDynamic ? true,
   withHttpServer ? true,
+  withHttpStream ? true,
+  withLame ? false,
   withLibVlc ? true,
-  libvlc,
+  withMtp ? true,
+  withMusicbrainz ? false,
+  withOnlineServices ? true,
+  withReplaygain ? true,
   withStreams ? true,
+  withTaglib ? true,
 }:
 
 # Inter-dependencies.
@@ -65,32 +63,34 @@ let
 
   options = [
     {
-      names = [ "CDDB" ];
       enable = withCddb;
+      names = [ "CDDB" ];
       pkgs = [ libcddb ];
     }
     {
-      names = [ "CDPARANOIA" ];
       enable = withCdda;
+      names = [ "CDPARANOIA" ];
       pkgs = [ cdparanoia ];
     }
     {
-      names = [ "DEVICES_SUPPORT" ];
       enable = withDevices;
+      names = [ "DEVICES_SUPPORT" ];
       pkgs = [ ];
     }
     {
-      names = [ "DYNAMIC" ];
       enable = withDynamic;
+      names = [ "DYNAMIC" ];
       pkgs = [ ];
     }
     {
+      enable = withReplaygain;
+
       names = [
         "FFMPEG"
         "MPG123"
         "SPEEXDSP"
       ];
-      enable = withReplaygain;
+
       pkgs = [
         ffmpeg_6
         speex
@@ -98,64 +98,66 @@ let
       ];
     }
     {
-      names = [ "HTTPS_SUPPORT" ];
       enable = true;
+      names = [ "HTTPS_SUPPORT" ];
       pkgs = [ ];
     }
     {
-      names = [ "HTTP_SERVER" ];
       enable = withHttpServer;
+      names = [ "HTTP_SERVER" ];
       pkgs = [ ];
     }
     {
-      names = [ "HTTP_STREAM_PLAYBACK" ];
       enable = withHttpStream;
+      names = [ "HTTP_STREAM_PLAYBACK" ];
       pkgs = [ qt6.qtmultimedia ];
     }
     {
-      names = [ "LAME" ];
       enable = withLame;
+      names = [ "LAME" ];
       pkgs = [ lame ];
     }
     {
-      names = [ "LIBVLC" ];
       enable = withLibVlc;
+      names = [ "LIBVLC" ];
       pkgs = [ libvlc ];
     }
     {
-      names = [ "MTP" ];
       enable = withMtp;
+      names = [ "MTP" ];
       pkgs = [ libmtp ];
     }
     {
-      names = [ "MUSICBRAINZ" ];
       enable = withMusicbrainz;
+      names = [ "MUSICBRAINZ" ];
       pkgs = [ libmusicbrainz ];
     }
     {
-      names = [ "ONLINE_SERVICES" ];
       enable = withOnlineServices;
+      names = [ "ONLINE_SERVICES" ];
       pkgs = [ ];
     }
     {
-      names = [ "STREAMS" ];
       enable = withStreams;
+      names = [ "STREAMS" ];
       pkgs = [ ];
     }
     {
+      enable = withTaglib;
+
       names = [
         "TAGLIB"
         "TAGLIB_EXTRAS"
       ];
-      enable = withTaglib;
+
       pkgs = [
         taglib_1
         taglib_extras
       ];
     }
     {
-      names = [ "UDISKS2" ];
       enable = withUdisks;
+      names = [ "UDISKS2" ];
       pkgs = [ udisks ];
     }
   ];
@@ -183,6 +185,13 @@ stdenv.mkDerivation (finalAttrs: {
     patchShebangs playlists
   '';
 
+  nativeBuildInputs = [
+    cmake
+    pkg-config
+    qt6.qttools
+    qt6.wrapQtAppsHook
+  ];
+
   buildInputs = [
     qt6.qtbase
     qt6.qtsvg
@@ -193,13 +202,6 @@ stdenv.mkDerivation (finalAttrs: {
   ]
   ++ lib.flatten (builtins.catAttrs "pkgs" (builtins.filter (e: e.enable) options));
 
-  nativeBuildInputs = [
-    cmake
-    pkg-config
-    qt6.qttools
-    qt6.wrapQtAppsHook
-  ];
-
   cmakeFlags = lib.flatten (map (e: map (f: fstat e.enable f) e.names) options);
 
   qtWrapperArgs = lib.optionals (withHttpStream && !withLibVlc) [
@@ -208,7 +210,6 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Graphical client for MPD";
-    mainProgram = "cantata";
     homepage = "https://github.com/nullobsi/cantata";
     license = lib.licenses.gpl3Only;
     maintainers = with lib.maintainers; [ peterhoeg ];
@@ -216,5 +217,6 @@ stdenv.mkDerivation (finalAttrs: {
     # bother figuring that one out, be my guest.
     platforms = lib.platforms.unix;
     badPlatforms = lib.platforms.darwin;
+    mainProgram = "cantata";
   };
 })

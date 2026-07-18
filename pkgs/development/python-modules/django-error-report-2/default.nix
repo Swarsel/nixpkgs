@@ -1,14 +1,13 @@
 {
+  lib,
+  fetchFromGitHub,
   buildPythonPackage,
   django,
-  fetchFromGitHub,
-  lib,
   setuptools,
 }:
 buildPythonPackage (finalAttrs: {
   pname = "django-error-report-2";
   version = "0.4.2";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "matmair";
@@ -17,15 +16,15 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-ZCaslqgruJxM8345/jSlZGruM+27H9hvwL0wtPkUzc0=";
   };
 
+  # There are no tests on upstream
+  doCheck = false;
   build-system = [ setuptools ];
 
   dependencies = [
     django
   ];
 
-  # There are no tests on upstream
-  doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "error_report" ];
 
   meta = {

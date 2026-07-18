@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule (finalAttrs: {
@@ -17,7 +17,9 @@ buildGoModule (finalAttrs: {
 
   vendorHash = "sha256-kSDbQFiZ8XMKyW7aYKe1s0pq038YC+RORCtMXFI+knA=";
 
-  subPackages = [ "." ];
+  postInstall = ''
+    ln -s $out/bin/ktop $out/bin/kubectl-ktop
+  '';
 
   ldflags = [
     "-s"
@@ -26,9 +28,7 @@ buildGoModule (finalAttrs: {
     "-X github.com/vladimirvivien/ktop/buildinfo.GitSHA=${finalAttrs.src.rev}"
   ];
 
-  postInstall = ''
-    ln -s $out/bin/ktop $out/bin/kubectl-ktop
-  '';
+  subPackages = [ "." ];
 
   meta = {
     description = "Top-like tool for your Kubernetes clusters";

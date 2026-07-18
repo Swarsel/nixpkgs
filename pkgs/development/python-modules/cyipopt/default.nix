@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   cython,
   ipopt,
   numpy,
@@ -13,7 +13,6 @@
 buildPythonPackage rec {
   pname = "cyipopt";
   version = "1.6.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "mechmotum";
@@ -23,8 +22,8 @@ buildPythonPackage rec {
   };
 
   nativeBuildInputs = [ pkg-config ];
-
   buildInputs = [ ipopt ];
+  nativeCheckInputs = [ pytestCheckHook ];
 
   build-system = [
     cython
@@ -33,9 +32,7 @@ buildPythonPackage rec {
   ];
 
   dependencies = [ numpy ];
-
-  nativeCheckInputs = [ pytestCheckHook ];
-
+  pyproject = true;
   pythonImportsCheck = [ "cyipopt" ];
 
   meta = {

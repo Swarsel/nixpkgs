@@ -16,11 +16,11 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   strictDeps = true;
-
   nativeBuildInputs = [ pkg-config ];
 
   passthru = {
     tests.pkg-config = testers.testMetaPkgConfig finalAttrs.finalPackage;
+
     updateScript = writeScript "update-${finalAttrs.pname}" ''
       #!/usr/bin/env nix-shell
       #!nix-shell -i bash -p common-updater-scripts
@@ -32,14 +32,16 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   meta = {
-    homepage = "https://gitlab.freedesktop.org/xorg/data/bitmaps";
     description = "X BitMap (XBM) format bitmaps commonly used in X.Org applications";
+    homepage = "https://gitlab.freedesktop.org/xorg/data/bitmaps";
+
     license = with lib.licenses; [
       icu
       smlnj
     ];
+
     maintainers = [ ];
-    pkgConfigModules = [ "xbitmaps" ];
     platforms = lib.platforms.unix;
+    pkgConfigModules = [ "xbitmaps" ];
   };
 })

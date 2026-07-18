@@ -3,13 +3,13 @@
   stdenv,
   fetchFromGitHub,
   cmake,
+  coreutils,
+  libatasmart,
   lm_sensors,
-  yaml-cpp,
   pkg-config,
   procps,
-  coreutils,
+  yaml-cpp,
   smartSupport ? false,
-  libatasmart,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -40,14 +40,6 @@ stdenv.mkDerivation (finalAttrs: {
       --replace-fail "/bin/kill" "${lib.getExe' procps "kill"}"
   '';
 
-  cmakeFlags = [
-    "-DCMAKE_INSTALL_DOCDIR=share/doc/thinkfan"
-    "-DUSE_NVML=OFF"
-    # force install unit files
-    "-DSYSTEMD_FOUND=ON"
-  ]
-  ++ lib.optional smartSupport "-DUSE_ATASMART=ON";
-
   nativeBuildInputs = [
     cmake
     pkg-config
@@ -59,18 +51,30 @@ stdenv.mkDerivation (finalAttrs: {
   ]
   ++ lib.optional smartSupport libatasmart;
 
+  cmakeFlags = [
+    "-DCMAKE_INSTALL_DOCDIR=share/doc/thinkfan"
+    "-DUSE_NVML=OFF"
+    # force install unit files
+    "-DSYSTEMD_FOUND=ON"
+  ]
+  ++ lib.optional smartSupport "-DUSE_ATASMART=ON";
+
   meta = {
     description = "Simple, lightweight fan control program";
+
     longDescription = ''
       Thinkfan is a minimalist fan control program. Originally designed
       specifically for IBM/Lenovo Thinkpads, it now supports any kind of
       system via the sysfs hwmon interface (/sys/class/hwmon).
     '';
-    license = lib.licenses.gpl3Plus;
+
     homepage = "https://github.com/vmatare/thinkfan";
+    license = lib.licenses.gpl3Plus;
+
     maintainers = with lib.maintainers; [
       rnhmjoj
     ];
+
     platforms = lib.platforms.linux;
     mainProgram = "thinkfan";
   };

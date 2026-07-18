@@ -1,12 +1,12 @@
 {
   lib,
   stdenv,
-  rustPlatform,
   fetchFromGitHub,
-  pkg-config,
   dbus,
-  udev,
   openssl,
+  pkg-config,
+  rustPlatform,
+  udev,
 }:
 rustPlatform.buildRustPackage {
   pname = "cargo-vibe";
@@ -19,8 +19,6 @@ rustPlatform.buildRustPackage {
     hash = "sha256-0IwxbMcRH+6WgrzpcU5zfRuKs80XY0mDBjDE9DBnOFk=";
   };
 
-  cargoHash = "sha256-qQLBq3jV3Ii/8KDTNRPi0r2KnJDtFIJURNx9zTsGDMQ=";
-
   nativeBuildInputs = [
     pkg-config
   ];
@@ -31,11 +29,13 @@ rustPlatform.buildRustPackage {
   ]
   ++ lib.optional stdenv.hostPlatform.isLinux udev;
 
+  cargoHash = "sha256-qQLBq3jV3Ii/8KDTNRPi0r2KnJDtFIJURNx9zTsGDMQ=";
+
   meta = {
     description = "Cargo x Buttplug.io";
-    mainProgram = "cargo-vibe";
     homepage = "https://github.com/shadlock0133/cargo-vibe";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ _999eagle ];
+    mainProgram = "cargo-vibe";
   };
 }

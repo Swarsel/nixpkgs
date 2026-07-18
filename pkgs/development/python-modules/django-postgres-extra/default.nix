@@ -1,12 +1,10 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
-  django,
-  python-dateutil,
+  buildPythonPackage,
   # test dependencies
   dj-database-url,
+  django,
   freezegun,
   postgresql,
   psycopg2,
@@ -14,11 +12,12 @@
   pytest-freezegun,
   pytest-lazy-fixture,
   pytestCheckHook,
+  python-dateutil,
+  setuptools,
 }:
 buildPythonPackage rec {
   pname = "django-postgres-extra";
   version = "2.0.9";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "SectorLabs";
@@ -26,13 +25,6 @@ buildPythonPackage rec {
     rev = "v${version}";
     hash = "sha256-/2qoXZ2f3un2cgJFAGMnQWBraJ7urkb0kHtcKKJsh6w=";
   };
-
-  build-system = [ setuptools ];
-
-  dependencies = [
-    django
-    python-dateutil
-  ];
 
   nativeCheckInputs = [
     dj-database-url
@@ -65,6 +57,13 @@ buildPythonPackage rec {
     pg_ctl stop -w
   '';
 
+  build-system = [ setuptools ];
+
+  dependencies = [
+    django
+    python-dateutil
+  ];
+
   disabledTests = [
     "test_management_command_partition_auto_confirm"
     "test_management_command_partition_confirm_no"
@@ -81,6 +80,7 @@ buildPythonPackage rec {
     "test_query_annotate_rename_chain"
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "psqlextra" ];
 
   meta = {

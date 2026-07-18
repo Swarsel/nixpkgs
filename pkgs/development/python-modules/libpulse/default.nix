@@ -1,20 +1,19 @@
 {
   lib,
-  buildPythonPackage,
+  stdenv,
   fetchFromGitLab,
+  buildPythonPackage,
   flit-core,
   glibcLocales,
   libpulseaudio,
   pulseaudio,
   pytestCheckHook,
-  stdenv,
   writableTmpDirAsHomeHook,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "libpulse";
   version = "0.7";
-  pyproject = true;
 
   src = fetchFromGitLab {
     owner = "xdegaye";
@@ -27,8 +26,6 @@ buildPythonPackage (finalAttrs: {
     substituteInPlace libpulse/libpulse_ctypes.py \
       --replace-fail "find_library('pulse')" "'${lib.getLib libpulseaudio}/lib/libpulse${stdenv.hostPlatform.extensions.sharedLibrary}'"
   '';
-
-  build-system = [ flit-core ];
 
   nativeCheckInputs = [
     glibcLocales
@@ -44,19 +41,22 @@ buildPythonPackage (finalAttrs: {
     pulseaudio --verbose --daemonize=yes
   '';
 
+  build-system = [ flit-core ];
+
   disabledTests = [
     # path to lib is patched and which breaks the mocking
     "test_missing_lib"
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "libpulse" ];
 
   meta = {
     description = "Asyncio interface to the Pulseaudio and Pipewire pulse library";
     homepage = "https://gitlab.com/xdegaye/libpulse";
     license = lib.licenses.mit;
-    mainProgram = "pactl-py";
     maintainers = with lib.maintainers; [ SuperSandro2000 ];
     platforms = lib.platforms.linux;
+    mainProgram = "pactl-py";
   };
 })

@@ -1,20 +1,18 @@
 {
   lib,
-  buildHomeAssistantComponent,
   fetchFromGitHub,
   aiofiles,
-  shapely,
-  paho-mqtt,
-  pytestCheckHook,
-  pytest-homeassistant-custom-component,
-  pytest-freezer,
-  pytest-cov-stub,
+  buildHomeAssistantComponent,
   home-assistant-frontend,
+  paho-mqtt,
+  pytest-cov-stub,
+  pytest-freezer,
+  pytest-homeassistant-custom-component,
+  pytestCheckHook,
+  shapely,
 }:
 
 buildHomeAssistantComponent rec {
-  owner = "amitfin";
-  domain = "oref_alert";
   version = "6.20.2";
 
   src = fetchFromGitHub {
@@ -30,20 +28,6 @@ buildHomeAssistantComponent rec {
       --replace-fail 'version = await publish_cards(hass)' 'version = "1.0.0"'
   '';
 
-  dependencies = [
-    aiofiles
-    shapely
-    paho-mqtt
-  ];
-
-  ignoreVersionRequirement = [ "shapely" ];
-
-  # These tests are broken with cards removed.
-  disabledTestPaths = [
-    "tests/test_custom_cards.py"
-    "tests/test_init.py"
-  ];
-
   nativeCheckInputs = [
     pytestCheckHook
     pytest-homeassistant-custom-component
@@ -52,10 +36,26 @@ buildHomeAssistantComponent rec {
     home-assistant-frontend
   ];
 
+  dependencies = [
+    aiofiles
+    shapely
+    paho-mqtt
+  ];
+
+  # These tests are broken with cards removed.
+  disabledTestPaths = [
+    "tests/test_custom_cards.py"
+    "tests/test_init.py"
+  ];
+
+  domain = "oref_alert";
+  ignoreVersionRequirement = [ "shapely" ];
+  owner = "amitfin";
+
   meta = {
-    changelog = "https://github.com/amitfin/oref_alert/releases/tag/v${version}";
     description = "Israeli Oref Alerts";
     homepage = "https://github.com/amitfin/oref_alert";
+    changelog = "https://github.com/amitfin/oref_alert/releases/tag/v${version}";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ kranzes ];
   };

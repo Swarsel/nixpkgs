@@ -2,18 +2,18 @@
   lib,
   stdenv,
   fetchurl,
-  nasmSupport ? true,
-  nasm, # Assembly optimizations
-  cpmlSupport ? true, # Compaq's fast math library
-  #, efenceSupport ? false, libefence # Use ElectricFence for malloc debugging
-  sndfileFileIOSupport ? false,
   libsndfile, # Use libsndfile, instead of lame's internal routines
+  nasm, # Assembly optimizations
   analyzerHooksSupport ? true, # Use analyzer hooks
+  cpmlSupport ? true, # Compaq's fast math library
+  debugSupport ? false, # Debugging (disables optimizations)
   decoderSupport ? true, # mpg123 decoder
   frontendSupport ? true, # Build the lame executable
   #, mp3xSupport ? false, gtk1 # Build GTK frame analyzer
   mp3rtpSupport ? false, # Build mp3rtp
-  debugSupport ? false, # Debugging (disables optimizations)
+  nasmSupport ? true,
+  #, efenceSupport ? false, libefence # Use ElectricFence for malloc debugging
+  sndfileFileIOSupport ? false,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -30,7 +30,6 @@ stdenv.mkDerivation (finalAttrs: {
     "lib"
     "doc"
   ]; # a small single header
-  outputMan = "out";
 
   nativeBuildInputs = [ ] ++ lib.optional nasmSupport nasm;
 
@@ -59,6 +58,8 @@ stdenv.mkDerivation (finalAttrs: {
     # https://hydrogenaud.io/index.php/topic,114777.msg946373.html#msg946373
     sed -i '/lame_init_old/d' include/libmp3lame.sym
   '';
+
+  outputMan = "out";
 
   meta = {
     description = "High quality MPEG Audio Layer III (MP3) encoder";

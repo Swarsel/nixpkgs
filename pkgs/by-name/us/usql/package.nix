@@ -2,10 +2,10 @@
   lib,
   fetchFromGitHub,
   buildGo126Module,
-  unixodbc,
   icu,
   nix-update-script,
   testers,
+  unixodbc,
   usql,
 }:
 
@@ -26,7 +26,8 @@ buildGo126Module (finalAttrs: {
   ];
 
   vendorHash = "sha256-GxU3NLLUJgMTrdtnlyDGivKdf8xjRekpz5gHm7CrWqY=";
-  proxyVendor = true;
+  # All the checks currently require docker instances to run the databases.
+  doCheck = false;
 
   # Exclude drivers from the bad group
   # These drivers break too often and are not used.
@@ -34,6 +35,14 @@ buildGo126Module (finalAttrs: {
   excludedPackages = [
     "impala"
   ];
+
+  ldflags = [
+    "-s"
+    "-w"
+    "-X github.com/xo/usql/text.CommandVersion=${finalAttrs.version}"
+  ];
+
+  proxyVendor = true;
 
   # These tags and flags are copied from build.sh
   tags = [
@@ -48,22 +57,14 @@ buildGo126Module (finalAttrs: {
     "no_adodb"
   ];
 
-  ldflags = [
-    "-s"
-    "-w"
-    "-X github.com/xo/usql/text.CommandVersion=${finalAttrs.version}"
-  ];
-
-  # All the checks currently require docker instances to run the databases.
-  doCheck = false;
-
   passthru = {
-    updateScript = nix-update-script { };
     tests.version = testers.testVersion {
       inherit (finalAttrs) version;
-      package = usql;
       command = "usql --version";
+      package = usql;
     };
+
+    updateScript = nix-update-script { };
   };
 
   meta = {
@@ -71,11 +72,13 @@ buildGo126Module (finalAttrs: {
     homepage = "https://github.com/xo/usql";
     changelog = "https://github.com/xo/usql/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.mit;
-    mainProgram = "usql";
+
     maintainers = with lib.maintainers; [
       georgyo
       anthonyroussel
     ];
+
     platforms = with lib.platforms; linux ++ darwin;
+    mainProgram = "usql";
   };
 })

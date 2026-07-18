@@ -1,40 +1,14 @@
 {
   lib,
-  stdenvNoCC,
   fetchurl,
   fetchFromGitHub,
+  stdenvNoCC,
 }:
 
 let
   pname = "mplus-outline-fonts";
 in
 {
-  osdnRelease = stdenvNoCC.mkDerivation {
-    pname = "${pname}-osdn";
-    version = "063a";
-
-    src = fetchurl {
-      url = "mirror://osdn/mplus-fonts/62344/mplus-TESTFLIGHT-063a.tar.xz";
-      hash = "sha256-ROuXO0tq/1dN5FTbEF3cI+Z0nCKUc0vZyx4Nc05M3Xk=";
-    };
-
-    installPhase = ''
-      runHook preInstall
-
-      install -m444 -Dt $out/share/fonts/truetype/${pname} *.ttf
-
-      runHook postInstall
-    '';
-
-    meta = {
-      description = "M+ Outline Fonts (legacy OSDN release)";
-      homepage = "https://mplus-fonts.osdn.jp";
-      maintainers = with lib.maintainers; [ uakci ];
-      platforms = lib.platforms.all;
-      license = lib.licenses.mplus;
-    };
-  };
-
   githubRelease = stdenvNoCC.mkDerivation {
     pname = "${pname}-github";
     version = "unstable-2022-05-19";
@@ -59,9 +33,35 @@ in
     meta = {
       description = "M+ Outline Fonts (GitHub release)";
       homepage = "https://mplusfonts.github.io";
+      license = lib.licenses.ofl;
       maintainers = with lib.maintainers; [ uakci ];
       platforms = lib.platforms.all;
-      license = lib.licenses.ofl;
+    };
+  };
+
+  osdnRelease = stdenvNoCC.mkDerivation {
+    pname = "${pname}-osdn";
+    version = "063a";
+
+    src = fetchurl {
+      url = "mirror://osdn/mplus-fonts/62344/mplus-TESTFLIGHT-063a.tar.xz";
+      hash = "sha256-ROuXO0tq/1dN5FTbEF3cI+Z0nCKUc0vZyx4Nc05M3Xk=";
+    };
+
+    installPhase = ''
+      runHook preInstall
+
+      install -m444 -Dt $out/share/fonts/truetype/${pname} *.ttf
+
+      runHook postInstall
+    '';
+
+    meta = {
+      description = "M+ Outline Fonts (legacy OSDN release)";
+      homepage = "https://mplus-fonts.osdn.jp";
+      license = lib.licenses.mplus;
+      maintainers = with lib.maintainers; [ uakci ];
+      platforms = lib.platforms.all;
     };
   };
 }

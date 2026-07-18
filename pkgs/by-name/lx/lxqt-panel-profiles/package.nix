@@ -1,10 +1,10 @@
 {
   lib,
   stdenv,
+  bash,
   fetchFromCodeberg,
   python3Packages,
   qt6,
-  bash,
 }:
 let
   pythonWithPyqt6 = python3Packages.python.withPackages (ps: [
@@ -48,7 +48,7 @@ stdenv.mkDerivation (finalAttrs: {
     changelog = "https://codeberg.org/MrReplikant/lxqt-panel-profiles/releases/tag/${finalAttrs.version}";
     license = lib.licenses.gpl2Plus;
     maintainers = with lib.maintainers; [ linuxissuper ];
-    mainProgram = "lxqt-panel-profiles";
     platforms = lib.platforms.linux;
+    mainProgram = "lxqt-panel-profiles";
   };
 })

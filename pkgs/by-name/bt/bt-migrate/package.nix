@@ -1,15 +1,15 @@
 {
   lib,
+  stdenv,
+  fetchFromGitHub,
   boost,
   cmake,
   cxxopts,
   digestpp,
-  fetchFromGitHub,
   fmt,
   jsoncons,
   pugixml,
   sqlite_orm,
-  stdenv,
 }:
 stdenv.mkDerivation {
   pname = "bt-migrate";
@@ -21,6 +21,8 @@ stdenv.mkDerivation {
     rev = "eb5b0ba5e0176844efde3a319595f52ffe900c2c";
     hash = "sha256-eg7rZnqpQiOA1N7GHv14eDAmvmj6VWq/dlw2YBw6IAA=";
   };
+
+  strictDeps = true;
 
   nativeBuildInputs = [
     cmake
@@ -52,14 +54,12 @@ stdenv.mkDerivation {
     runHook postInstall
   '';
 
-  strictDeps = true;
-
   meta = {
     description = "Torrent state migration tool";
     homepage = "https://github.com/mikedld/bt-migrate?tab=readme-ov-file";
     license = lib.licenses.gpl3Only;
     maintainers = with lib.maintainers; [ ambroisie ];
-    mainProgram = "BtMigrate";
     platforms = lib.platforms.all;
+    mainProgram = "BtMigrate";
   };
 }

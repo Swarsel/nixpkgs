@@ -1,12 +1,12 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   lxml,
   paragraphs,
+  pytestCheckHook,
   setuptools,
   setuptools-scm,
-  pytestCheckHook,
   types-lxml,
   typing-extensions,
 }:
@@ -14,7 +14,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "docx2python";
   version = "3.6.2";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "ShayHill";
@@ -22,6 +21,8 @@ buildPythonPackage (finalAttrs: {
     tag = finalAttrs.version;
     hash = "sha256-1/v8slL7EYwXM8ybcJKIdjLBKNBxHgdF4gQHDYyJg6w=";
   };
+
+  nativeCheckInputs = [ pytestCheckHook ];
 
   build-system = [
     setuptools
@@ -35,8 +36,7 @@ buildPythonPackage (finalAttrs: {
     typing-extensions
   ];
 
-  nativeCheckInputs = [ pytestCheckHook ];
-
+  pyproject = true;
   pythonImportsCheck = [ "docx2python" ];
 
   meta = {

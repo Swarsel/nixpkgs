@@ -14,19 +14,20 @@
 buildPythonPackage (finalAttrs: {
   pname = "google-cloud-workflows";
   version = "1.23.0";
-  pyproject = true;
 
   src = fetchPypi {
-    pname = "google_cloud_workflows";
     inherit (finalAttrs) version;
     hash = "sha256-vo4IpdE0GG2834Z8BbFZrYrH3jtkJbIb76q39PJY1Kg=";
+    pname = "google_cloud_workflows";
   };
 
-  build-system = [ setuptools ];
-
-  pythonRelaxDeps = [
-    "protobuf"
+  nativeCheckInputs = [
+    mock
+    pytestCheckHook
+    pytest-asyncio
   ];
+
+  build-system = [ setuptools ];
 
   dependencies = [
     google-api-core
@@ -35,16 +36,16 @@ buildPythonPackage (finalAttrs: {
   ]
   ++ google-api-core.optional-dependencies.grpc;
 
-  nativeCheckInputs = [
-    mock
-    pytestCheckHook
-    pytest-asyncio
-  ];
+  pyproject = true;
 
   pythonImportsCheck = [
     "google.cloud.workflows"
     "google.cloud.workflows_v1"
     "google.cloud.workflows_v1beta"
+  ];
+
+  pythonRelaxDeps = [
+    "protobuf"
   ];
 
   meta = {

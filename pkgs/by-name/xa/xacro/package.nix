@@ -8,7 +8,6 @@
 python3Packages.buildPythonApplication (finalAttrs: {
   pname = "xacro";
   version = "2.1.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "ros";
@@ -16,6 +15,9 @@ python3Packages.buildPythonApplication (finalAttrs: {
     tag = finalAttrs.version;
     hash = "sha256-xYFwVM5qpy2/cYKtcf/v5sSlL2e/taIC4IQ48ZiRxiw=";
   };
+
+  strictDeps = true;
+  __structuredAttrs = true;
 
   build-system = [
     python3Packages.setuptools
@@ -26,10 +28,8 @@ python3Packages.buildPythonApplication (finalAttrs: {
     python3Packages.pyyaml
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "xacro" ];
-
-  strictDeps = true;
-  __structuredAttrs = true;
 
   meta = {
     description = "Xacro is an XML macro language. With xacro, you can construct shorter and more readable XML files by using macros that expand to larger XML expressions";

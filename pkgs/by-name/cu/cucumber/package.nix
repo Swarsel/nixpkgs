@@ -6,9 +6,8 @@
 
 bundlerApp {
   pname = "cucumber";
-  gemdir = ./.;
   exes = [ "cucumber" ];
-
+  gemdir = ./.;
   passthru.updateScript = bundlerUpdateScript "cucumber";
 
   meta = {
@@ -16,11 +15,13 @@ bundlerApp {
     homepage = "https://cucumber.io/";
     changelog = "https://github.com/cucumber/cucumber-ruby/blob/main/CHANGELOG.md";
     license = lib.licenses.mit;
-    mainProgram = "cucumber";
+
     maintainers = with lib.maintainers; [
       nicknovitski
       anthonyroussel
     ];
+
     platforms = lib.platforms.unix;
+    mainProgram = "cucumber";
   };
 }

@@ -1,9 +1,9 @@
 {
-  metaFetch,
-  coq,
   lib,
-  glib,
   adwaita-icon-theme,
+  coq,
+  glib,
+  metaFetch,
   wrapGAppsHook3,
   version ? null,
 }:
@@ -27,8 +27,10 @@ let
     repo = "vsrocq";
   };
   fetch = metaFetch {
-    release."2.0.3+coq8.18".sha256 = "sha256-VXhHCP6Ni5/OcsgoI1EbJfYCpXzwkuR8kbbKrl6dfjU=";
+    # This is the last version of VsCoq. Now, new versions are for VsRocq.
+    inherit location;
     release."2.0.3+coq8.18".rev = "v2.0.3+coq8.18";
+    release."2.0.3+coq8.18".sha256 = "sha256-VXhHCP6Ni5/OcsgoI1EbJfYCpXzwkuR8kbbKrl6dfjU=";
     release."2.1.2".rev = "v2.1.2";
     release."2.1.2".sha256 = "sha256-GloY68fLmIv3oiEGNWwmgKv1CMAReBuXzMTUsKOs328=";
     release."2.1.4".rev = "v2.1.4";
@@ -41,16 +43,15 @@ let
     release."2.2.5".sha256 = "sha256-XyIjwem/yS7UIpQATNixgKkrMOHHs74nkAOvpU5WG1k=";
     release."2.2.6".rev = "v2.2.6";
     release."2.2.6".sha256 = "sha256-J8nRTAwN6GBEYgqlXa2kkkrHPatXsSObQg9QUQoZhgE=";
-    # This is the last version of VsCoq. Now, new versions are for VsRocq.
-    inherit location;
   };
   fetched = fetch (if version != null then version else defaultVersion);
 in
 ocamlPackages.buildDunePackage {
-  pname = "vscoq-language-server";
   inherit (fetched) version;
+  pname = "vscoq-language-server";
   src = "${fetched.src}/language-server";
   nativeBuildInputs = [ coq ];
+
   buildInputs = [
     coq
     glib
@@ -78,11 +79,11 @@ ocamlPackages.buildDunePackage {
   meta = {
     description = "Language server for the vscoq vscode/codium extension";
     homepage = "https://github.com/rocq-prover/vsrocq";
-    maintainers = with lib.maintainers; [ cohencyril ];
     license = lib.licenses.mit;
+    maintainers = with lib.maintainers; [ cohencyril ];
   }
   // lib.optionalAttrs (fetched.broken or false) {
-    rocqFilter = true;
     broken = true;
+    rocqFilter = true;
   };
 }

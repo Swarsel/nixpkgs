@@ -2,20 +2,18 @@
   lib,
   stdenv,
   fetchFromGitHub,
-
-  cmake,
-  makeWrapper,
-  pkg-config,
-
-  bash,
   SDL2,
   SDL2_image,
-  SDL2_ttf,
   SDL2_mixer,
+  SDL2_ttf,
+  bash,
+  cmake,
   libmpeg2,
   libvorbis,
-  libzip,
   libx11,
+  libzip,
+  makeWrapper,
+  pkg-config,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -30,7 +28,6 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   patches = [ ./use-shared-mpeg2.patch ];
-
   strictDeps = true;
 
   nativeBuildInputs = [
@@ -82,8 +79,8 @@ stdenv.mkDerivation (finalAttrs: {
     description = "Laserdisc game emulator, the SDL2 version of Daphne and Singe";
     homepage = "https://github.com/DirtBagXon/hypseus-singe";
     license = lib.licenses.gpl3Only;
-    mainProgram = "hypseus";
     maintainers = with lib.maintainers; [ tomasajt ];
     platforms = lib.platforms.all;
+    mainProgram = "hypseus";
   };
 })

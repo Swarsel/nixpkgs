@@ -3,31 +3,31 @@
   stdenv,
   fetchurl,
   buildPackages,
-  perl,
   coreutils,
-  writeShellScript,
-  makeBinaryWrapper,
-  withCryptodev ? false,
   cryptodev,
-  withZlib ? false,
+  makeBinaryWrapper,
+  perl,
+  removeReferencesTo,
+  testers,
+  writeShellScript,
   zlib,
+  autoloadProviders ? false,
+  # path to openssl.cnf file. will be placed in $etc/etc/ssl/openssl.cnf to replace the default
+  conf ? null,
+  enableKTLS ? stdenv.hostPlatform.isLinux,
+  enableMD2 ? false,
   enableSSL2 ? false,
   enableSSL3 ? false,
-  enableMD2 ? false,
-  enableKTLS ? stdenv.hostPlatform.isLinux,
+  extraINIConfig ? null, # Extra INI config in the format { section_name = { key = "value"}; }
+  providers ? [ ], # Each provider in the format { name = "provider-name"; package = <drv>; }
   # change this to a value between 0 and 5 (as of OpenSSL 3.5)
   # if null, default is used, changes the permitted algorithms
   # and key lengths in the default config
   # see: https://docs.openssl.org/3.5/man3/SSL_CTX_set_security_level/
   securityLevel ? null,
   static ? stdenv.hostPlatform.isStatic,
-  # path to openssl.cnf file. will be placed in $etc/etc/ssl/openssl.cnf to replace the default
-  conf ? null,
-  removeReferencesTo,
-  testers,
-  providers ? [ ], # Each provider in the format { name = "provider-name"; package = <drv>; }
-  autoloadProviders ? false,
-  extraINIConfig ? null, # Extra INI config in the format { section_name = { key = "value"}; }
+  withCryptodev ? false,
+  withZlib ? false,
 }:
 
 # Note: this package is used for bootstrapping fetchurl, and thus
@@ -43,17 +43,20 @@ let
 
   common =
     {
-      version,
       hash,
+      version,
+      extraMeta ? { },
       patches ? [ ],
       withDocs ? false,
-      extraMeta ? { },
     }:
     stdenv.mkDerivation (finalAttrs: {
-      pname = "openssl";
       inherit version;
+      inherit patches;
+      pname = "openssl";
 
       src = fetchurl {
+        inherit hash;
+
         url =
           if lib.versionOlder version "3.0" then
             let
@@ -62,10 +65,21 @@ let
             "https://github.com/openssl/openssl/releases/download/OpenSSL_${versionFixed}/openssl-${version}.tar.gz"
           else
             "https://github.com/openssl/openssl/releases/download/openssl-${version}/openssl-${version}.tar.gz";
-        inherit hash;
       };
 
-      inherit patches;
+      outputs = [
+        "bin"
+        "dev"
+        "out"
+        "man"
+      ]
+      ++ lib.optional withDocs "doc"
+      # Separate output for the runtime dependencies of the static build.
+      # Specifically, move OPENSSLDIR into this output, as its path will be
+      # compiled into 'libcrypto.a'. This makes it a runtime dependency of
+      # any package that statically links openssl, so we want to keep that
+      # output minimal.
+      ++ lib.optional static "etc";
 
       postPatch = ''
         patchShebangs Configure
@@ -112,88 +126,15 @@ let
           --replace-fail '"-connect",' '"-4", "-connect",'
       '';
 
-      outputs = [
-        "bin"
-        "dev"
-        "out"
-        "man"
-      ]
-      ++ lib.optional withDocs "doc"
-      # Separate output for the runtime dependencies of the static build.
-      # Specifically, move OPENSSLDIR into this output, as its path will be
-      # compiled into 'libcrypto.a'. This makes it a runtime dependency of
-      # any package that statically links openssl, so we want to keep that
-      # output minimal.
-      ++ lib.optional static "etc";
-      setOutputFlags = false;
-      separateDebugInfo =
-        !stdenv.hostPlatform.isDarwin
-        && !stdenv.hostPlatform.isAndroid
-        && !(stdenv.hostPlatform.useLLVM or false)
-        && stdenv.cc.isGNU;
+      strictDeps = true;
 
       nativeBuildInputs =
         lib.optional useBinaryWrapper makeBinaryWrapper
         ++ [ perl ]
         ++ lib.optionals static [ removeReferencesTo ];
+
       buildInputs = lib.optional withCryptodev cryptodev ++ lib.optional withZlib zlib;
 
-      # TODO(@Ericson2314): Improve with mass rebuild
-      configurePlatforms = [ ];
-      configureScript =
-        {
-          armv5tel-linux = "./Configure linux-armv4 -march=armv5te";
-          armv6l-linux = "./Configure linux-armv4 -march=armv6";
-          armv7l-linux = "./Configure linux-armv4 -march=armv7-a";
-          aarch64-darwin = "./Configure darwin64-arm64-cc";
-          x86_64-linux = "./Configure linux-x86_64";
-          x86_64-solaris = "./Configure solaris64-x86_64-gcc";
-          powerpc-linux = "./Configure linux-ppc";
-          powerpc64-linux = "./Configure linux-ppc64";
-          riscv32-linux = "./Configure ${
-            if lib.versionAtLeast version "3.2" then "linux32-riscv32" else "linux-latomic"
-          }";
-          riscv64-linux = "./Configure linux64-riscv64";
-        }
-        .${stdenv.hostPlatform.system} or (
-          if stdenv.hostPlatform == stdenv.buildPlatform then
-            "./config"
-          else if stdenv.hostPlatform.isBSD then
-            if stdenv.hostPlatform.isx86_64 then
-              "./Configure BSD-x86_64"
-            else if stdenv.hostPlatform.isx86_32 then
-              "./Configure BSD-x86" + lib.optionalString stdenv.hostPlatform.isElf "-elf"
-            else
-              "./Configure BSD-generic${toString stdenv.hostPlatform.parsed.cpu.bits}"
-          else if stdenv.hostPlatform.isMinGW then
-            "./Configure mingw${
-              lib.optionalString (stdenv.hostPlatform.parsed.cpu.bits != 32) (
-                toString stdenv.hostPlatform.parsed.cpu.bits
-              )
-            }"
-          else if stdenv.hostPlatform.isLinux then
-            if stdenv.hostPlatform.isx86_64 then
-              "./Configure linux-x86_64"
-            else if stdenv.hostPlatform.isMicroBlaze then
-              "./Configure linux-latomic"
-            else if stdenv.hostPlatform.isMips32 then
-              "./Configure linux-mips32"
-            else if stdenv.hostPlatform.isMips64n32 then
-              "./Configure linux-mips64"
-            else if stdenv.hostPlatform.isMips64n64 then
-              "./Configure linux64-mips64"
-            else
-              "./Configure linux-generic${toString stdenv.hostPlatform.parsed.cpu.bits}"
-          else if stdenv.hostPlatform.isiOS then
-            "./Configure ios${toString stdenv.hostPlatform.parsed.cpu.bits}-cross"
-          else if stdenv.hostPlatform.isCygwin then
-            "./Configure Cygwin-${stdenv.hostPlatform.linuxArch}"
-          else
-            throw "Not sure what configuration to use for ${stdenv.hostPlatform.config}"
-        );
-
-      # OpenSSL doesn't like the `--enable-static` / `--disable-shared` flags.
-      dontAddStaticConfigureFlags = true;
       configureFlags = [
         "shared" # "shared" builds both shared and static libraries
         "--libdir=lib"
@@ -269,14 +210,11 @@ let
         "MANSUFFIX=ssl"
       ];
 
-      enableParallelBuilding = true;
-
       doCheck = true;
+
       preCheck = ''
         patchShebangs util
       '';
-
-      __darwinAllowLocalNetworking = true;
 
       postInstall =
         (
@@ -365,8 +303,6 @@ let
           echo '${lib.generators.toINI { } extraINIConfig}' >> $etc/etc/ssl/openssl.cnf
         '';
 
-      allowedImpureDLLs = [ "CRYPT32.dll" ];
-
       postFixup =
         lib.optionalString (!stdenv.hostPlatform.isWindows) ''
           # Check to make sure the main output and the static runtime dependencies
@@ -382,27 +318,97 @@ let
           rm -rf $dev/lib/cmake
         '';
 
+      __darwinAllowLocalNetworking = true;
+      __structuredAttrs = true;
+      allowedImpureDLLs = [ "CRYPT32.dll" ];
+      # TODO(@Ericson2314): Improve with mass rebuild
+      configurePlatforms = [ ];
+
+      configureScript =
+        {
+          aarch64-darwin = "./Configure darwin64-arm64-cc";
+          armv5tel-linux = "./Configure linux-armv4 -march=armv5te";
+          armv6l-linux = "./Configure linux-armv4 -march=armv6";
+          armv7l-linux = "./Configure linux-armv4 -march=armv7-a";
+          powerpc-linux = "./Configure linux-ppc";
+          powerpc64-linux = "./Configure linux-ppc64";
+
+          riscv32-linux = "./Configure ${
+            if lib.versionAtLeast version "3.2" then "linux32-riscv32" else "linux-latomic"
+          }";
+
+          riscv64-linux = "./Configure linux64-riscv64";
+          x86_64-linux = "./Configure linux-x86_64";
+          x86_64-solaris = "./Configure solaris64-x86_64-gcc";
+        }
+        .${stdenv.hostPlatform.system} or (
+          if stdenv.hostPlatform == stdenv.buildPlatform then
+            "./config"
+          else if stdenv.hostPlatform.isBSD then
+            if stdenv.hostPlatform.isx86_64 then
+              "./Configure BSD-x86_64"
+            else if stdenv.hostPlatform.isx86_32 then
+              "./Configure BSD-x86" + lib.optionalString stdenv.hostPlatform.isElf "-elf"
+            else
+              "./Configure BSD-generic${toString stdenv.hostPlatform.parsed.cpu.bits}"
+          else if stdenv.hostPlatform.isMinGW then
+            "./Configure mingw${
+              lib.optionalString (stdenv.hostPlatform.parsed.cpu.bits != 32) (
+                toString stdenv.hostPlatform.parsed.cpu.bits
+              )
+            }"
+          else if stdenv.hostPlatform.isLinux then
+            if stdenv.hostPlatform.isx86_64 then
+              "./Configure linux-x86_64"
+            else if stdenv.hostPlatform.isMicroBlaze then
+              "./Configure linux-latomic"
+            else if stdenv.hostPlatform.isMips32 then
+              "./Configure linux-mips32"
+            else if stdenv.hostPlatform.isMips64n32 then
+              "./Configure linux-mips64"
+            else if stdenv.hostPlatform.isMips64n64 then
+              "./Configure linux64-mips64"
+            else
+              "./Configure linux-generic${toString stdenv.hostPlatform.parsed.cpu.bits}"
+          else if stdenv.hostPlatform.isiOS then
+            "./Configure ios${toString stdenv.hostPlatform.parsed.cpu.bits}-cross"
+          else if stdenv.hostPlatform.isCygwin then
+            "./Configure Cygwin-${stdenv.hostPlatform.linuxArch}"
+          else
+            throw "Not sure what configuration to use for ${stdenv.hostPlatform.config}"
+        );
+
+      # OpenSSL doesn't like the `--enable-static` / `--disable-shared` flags.
+      dontAddStaticConfigureFlags = true;
+      enableParallelBuilding = true;
+
+      separateDebugInfo =
+        !stdenv.hostPlatform.isDarwin
+        && !stdenv.hostPlatform.isAndroid
+        && !(stdenv.hostPlatform.useLLVM or false)
+        && stdenv.cc.isGNU;
+
+      setOutputFlags = false;
       passthru.tests.pkg-config = testers.testMetaPkgConfig finalAttrs.finalPackage;
 
-      strictDeps = true;
-      __structuredAttrs = true;
-
       meta = {
+        description = "Cryptographic library that implements the SSL and TLS protocols";
         homepage = "https://www.openssl.org/";
         changelog = "https://github.com/openssl/openssl/blob/openssl-${version}/CHANGES.md";
-        donationPage = "https://openssl.foundation/donate/ways-to-give";
-        description = "Cryptographic library that implements the SSL and TLS protocols";
         license = lib.licenses.openssl;
-        mainProgram = "openssl";
         maintainers = with lib.maintainers; [ thillux ];
-        teams = [ lib.teams.security-review ];
+        platforms = lib.platforms.all;
+        mainProgram = "openssl";
+        donationPage = "https://openssl.foundation/donate/ways-to-give";
+        identifiers.cpeParts = lib.meta.cpeFullVersionWithVendor "openssl" finalAttrs.version;
+
         pkgConfigModules = [
           "libcrypto"
           "libssl"
           "openssl"
         ];
-        platforms = lib.platforms.all;
-        identifiers.cpeParts = lib.meta.cpeFullVersionWithVendor "openssl" finalAttrs.version;
+
+        teams = [ lib.teams.security-review ];
       }
       // extraMeta;
     });
@@ -424,7 +430,7 @@ in
   # and backport this to stable release (at time of writing this 23.11).
   openssl_1_1 = common {
     version = "1.1.1w";
-    hash = "sha256-zzCYlQy02FOtlcCEHx+cbT3BAtzPys1SHZOSUgi3asg=";
+
     patches = [
       ./1.1/nix-ssl-cert-file.patch
 
@@ -435,17 +441,19 @@ in
           ./1.1/use-etc-ssl-certs.patch
       )
     ];
-    withDocs = true;
+
     extraMeta = {
       knownVulnerabilities = [
         "OpenSSL 1.1 is reaching its end of life on 2023/09/11 and cannot be supported through the NixOS 23.11 release cycle. https://www.openssl.org/blog/blog/2023/03/28/1.1.1-EOL/"
       ];
     };
+
+    hash = "sha256-zzCYlQy02FOtlcCEHx+cbT3BAtzPys1SHZOSUgi3asg=";
+    withDocs = true;
   };
 
   openssl_3 = common {
     version = "3.0.21";
-    hash = "sha256-YX4pr45CH0ZklISkk35IxoXkf0ZIgWfJgviLxOwdUi8=";
 
     patches = [
       # Support for NIX_SSL_CERT_FILE, motivation:
@@ -466,16 +474,16 @@ in
       # and also https://github.com/openssl/openssl/pull/29321
       lib.optional stdenv.hostPlatform.isCygwin ./openssl-3.0.18-skip-dllmain-detach.patch;
 
-    withDocs = true;
-
     extraMeta = {
       license = lib.licenses.asl20;
     };
+
+    hash = "sha256-YX4pr45CH0ZklISkk35IxoXkf0ZIgWfJgviLxOwdUi8=";
+    withDocs = true;
   };
 
   openssl_3_5 = common {
     version = "3.5.7";
-    hash = "sha256-qMDSilKcpID582z1eS4s0hmEVSo8jkqhGiSqMa6smOg=";
 
     patches = [
       # Support for NIX_SSL_CERT_FILE, motivation:
@@ -498,16 +506,16 @@ in
       ./3.5/fix-mingw-linking.patch
     ];
 
-    withDocs = true;
-
     extraMeta = {
       license = lib.licenses.asl20;
     };
+
+    hash = "sha256-qMDSilKcpID582z1eS4s0hmEVSo8jkqhGiSqMa6smOg=";
+    withDocs = true;
   };
 
   openssl_3_6 = common {
     version = "3.6.3";
-    hash = "sha256-JDqGZJz28j7rai/yRW4J5dd92QGKVNPZawxr3Wumx/E=";
 
     patches = [
       # Support for NIX_SSL_CERT_FILE, motivation:
@@ -527,16 +535,16 @@ in
       )
     ];
 
-    withDocs = true;
-
     extraMeta = {
       license = lib.licenses.asl20;
     };
+
+    hash = "sha256-JDqGZJz28j7rai/yRW4J5dd92QGKVNPZawxr3Wumx/E=";
+    withDocs = true;
   };
 
   openssl_4_0 = common {
     version = "4.0.1";
-    hash = "sha256-LbPzoNbqS1nh8JSs4sjNU23/uHzcOQhMWvoeb3833Qk=";
 
     patches = [
       # Support for NIX_SSL_CERT_FILE, motivation:
@@ -556,10 +564,11 @@ in
       )
     ];
 
-    withDocs = true;
-
     extraMeta = {
       license = lib.licenses.asl20;
     };
+
+    hash = "sha256-LbPzoNbqS1nh8JSs4sjNU23/uHzcOQhMWvoeb3833Qk=";
+    withDocs = true;
   };
 }

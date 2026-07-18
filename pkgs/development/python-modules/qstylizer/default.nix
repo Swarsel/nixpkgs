@@ -1,25 +1,21 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # build-system
-  pbr,
-  setuptools,
-
+  buildPythonPackage,
   # dependencies
   inflection,
-  tinycss2,
-
+  # build-system
+  pbr,
+  pytest-mock,
   # checks
   pytestCheckHook,
-  pytest-mock,
+  setuptools,
+  tinycss2,
 }:
 
 buildPythonPackage rec {
   pname = "qstylizer";
   version = "0.2.4";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "blambright";
@@ -29,6 +25,11 @@ buildPythonPackage rec {
   };
 
   env.PBR_VERSION = version;
+
+  nativeCheckInputs = [
+    pytestCheckHook
+    pytest-mock
+  ];
 
   build-system = [
     pbr
@@ -40,11 +41,7 @@ buildPythonPackage rec {
     tinycss2
   ];
 
-  nativeCheckInputs = [
-    pytestCheckHook
-    pytest-mock
-  ];
-
+  pyproject = true;
   pythonImportsCheck = [ "qstylizer" ];
 
   meta = {

@@ -1,18 +1,17 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  sphinx,
-  pyenchant,
-  hatchling,
+  buildPythonPackage,
   hatch-vcs,
+  hatchling,
+  pyenchant,
+  sphinx,
   wheel,
 }:
 
 buildPythonPackage rec {
   pname = "sphinxcontrib-spelling";
   version = "8.0.2";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "sphinx-contrib";
@@ -34,9 +33,8 @@ buildPythonPackage rec {
 
   # No tests included
   doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "sphinxcontrib.spelling" ];
-
   pythonNamespaces = [ "sphinxcontrib" ];
 
   meta = {

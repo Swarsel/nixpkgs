@@ -2,20 +2,14 @@
   lib,
   stdenv,
   fetchFromGitHub,
-
-  # nativeBuildInputs
-  cmake,
-  ninja,
-  pkg-config,
-  wrapGAppsHook3,
-
   # buildInputs
   alsa-lib,
   alsa-plugins,
+  # nativeBuildInputs
+  cmake,
   ffmpeg,
   flac,
   freetype,
-  qt6,
   lame,
   libjack2,
   libogg,
@@ -25,13 +19,16 @@
   libsndfile,
   libvorbis,
   mnxdom,
+  ninja,
+  # passthru tests
+  nixosTests,
+  pkg-config,
   portaudio,
   portmidi,
   pugixml,
+  qt6,
   utf8cpp,
-
-  # passthru tests
-  nixosTests,
+  wrapGAppsHook3,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -45,58 +42,7 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-wWqFJkXLRi3JtnEW3STTG/jBBIQK1dIYPZdKCiBn0m0=";
   };
 
-  cmakeFlags = [
-    (lib.cmakeFeature "MUSE_APP_BUILD_MODE" "release")
-    # Disable the build and usage of the `/bin/crashpad_handler` utility - it's
-    # not useful on NixOS, see:
-    # https://github.com/musescore/MuseScore/issues/15571
-    (lib.cmakeBool "MUSE_MODULE_DIAGNOSTICS_CRASHPAD_CLIENT" false)
-    # Don't build unit tests unless we are going to run them.
-    (lib.cmakeBool "MUSE_ENABLE_UNIT_TESTS" finalAttrs.finalPackage.doCheck)
-  ]
-  # Use our versions of system libraries, see:
-  # https://github.com/musescore/MuseScore/issues/11572
-  ++ map (l: lib.cmakeBool "MUE_COMPILE_USE_SYSTEM_${l}" true) [
-    "FREETYPE"
-    "HARFBUZZ"
-    "MNXDOM"
-    # Implies also OPUS
-    "OPUSENC"
-    "FLAC"
-    "PUGIXML"
-    "LAME"
-    "UTF8CPP"
-  ]
-  ++ lib.optionals stdenv.hostPlatform.isDarwin [
-    # https://github.com/musescore/MuseScore/issues/33467
-    (lib.cmakeBool "MUE_BUILD_MACOS_INTEGRATION" false)
-  ];
-
-  qtWrapperArgs = [
-    # MuseScore JACK backend loads libjack at runtime.
-    "--prefix"
-    "${lib.optionalString stdenv.hostPlatform.isDarwin "DY"}LD_LIBRARY_PATH"
-    ":"
-    (lib.makeLibraryPath [ libjack2 ])
-  ]
-  ++ lib.optionals (stdenv.hostPlatform.isLinux) [
-    "--set"
-    "ALSA_PLUGIN_DIR"
-    "${alsa-plugins}/lib/alsa-lib"
-  ]
-  ++ lib.optionals (!stdenv.hostPlatform.isDarwin) [
-    # There are some issues with using the wayland backend, see:
-    # https://musescore.org/en/node/321936
-    "--set-default"
-    "QT_QPA_PLATFORM"
-    "xcb"
-  ];
-
-  preFixup = ''
-    qtWrapperArgs+=("''${gappsWrapperArgs[@]}")
-  '';
-
-  dontWrapGApps = true;
+  strictDeps = true;
 
   nativeBuildInputs = [
     cmake
@@ -139,6 +85,33 @@ stdenv.mkDerivation (finalAttrs: {
     qt6.qtwayland
   ];
 
+  cmakeFlags = [
+    (lib.cmakeFeature "MUSE_APP_BUILD_MODE" "release")
+    # Disable the build and usage of the `/bin/crashpad_handler` utility - it's
+    # not useful on NixOS, see:
+    # https://github.com/musescore/MuseScore/issues/15571
+    (lib.cmakeBool "MUSE_MODULE_DIAGNOSTICS_CRASHPAD_CLIENT" false)
+    # Don't build unit tests unless we are going to run them.
+    (lib.cmakeBool "MUSE_ENABLE_UNIT_TESTS" finalAttrs.finalPackage.doCheck)
+  ]
+  # Use our versions of system libraries, see:
+  # https://github.com/musescore/MuseScore/issues/11572
+  ++ map (l: lib.cmakeBool "MUE_COMPILE_USE_SYSTEM_${l}" true) [
+    "FREETYPE"
+    "HARFBUZZ"
+    "MNXDOM"
+    # Implies also OPUS
+    "OPUSENC"
+    "FLAC"
+    "PUGIXML"
+    "LAME"
+    "UTF8CPP"
+  ]
+  ++ lib.optionals stdenv.hostPlatform.isDarwin [
+    # https://github.com/musescore/MuseScore/issues/33467
+    (lib.cmakeBool "MUE_BUILD_MACOS_INTEGRATION" false)
+  ];
+
   # Put the default, `$prefix/lib` directory to look for ffmpeg shared objects,
   # Nixpkgs' provided ffmpeg, for both MacOS & Linux. Note that upstream uses
   # the /usr/lib/x86_64-linux-gnu location for any Linux (e.g aarch64 too).
@@ -148,8 +121,8 @@ stdenv.mkDerivation (finalAttrs: {
       --replace-fail "/opt/homebrew/lib" "${lib.getLib ffmpeg}/lib" \
   '';
 
-  strictDeps = true;
-  __structuredAttrs = true;
+  # Don't run bundled upstreams tests, as they require a running X window system.
+  doCheck = false;
 
   postInstall = lib.optionalString stdenv.hostPlatform.isDarwin ''
     mkdir -p "$out/Applications"
@@ -158,6 +131,18 @@ stdenv.mkDerivation (finalAttrs: {
     ln -s $out/Applications/mscore.app/Contents/MacOS/mscore $out/bin/mscore
   '';
 
+  preFixup = ''
+    qtWrapperArgs+=("''${gappsWrapperArgs[@]}")
+  '';
+
+  postFixup = lib.optionalString stdenv.hostPlatform.isLinux ''
+    mkdir -p $out/libexec
+    mv $out/bin/mscore $out/libexec
+    makeQtWrapper $out/libexec/mscore $out/bin/mscore
+  '';
+
+  __structuredAttrs = true;
+  dontWrapGApps = true;
   # muse-sounds-manager installs Muse Sounds sampler libMuseSamplerCoreLib.so.
   # It requires that argv0 of the calling process ends with "/mscore" or "/MuseScore-4".
   # We need to ensure this in two cases:
@@ -175,14 +160,26 @@ stdenv.mkDerivation (finalAttrs: {
   #
   # TODO: check if something like this is also needed for macOS.
   dontWrapQtApps = stdenv.hostPlatform.isLinux;
-  postFixup = lib.optionalString stdenv.hostPlatform.isLinux ''
-    mkdir -p $out/libexec
-    mv $out/bin/mscore $out/libexec
-    makeQtWrapper $out/libexec/mscore $out/bin/mscore
-  '';
 
-  # Don't run bundled upstreams tests, as they require a running X window system.
-  doCheck = false;
+  qtWrapperArgs = [
+    # MuseScore JACK backend loads libjack at runtime.
+    "--prefix"
+    "${lib.optionalString stdenv.hostPlatform.isDarwin "DY"}LD_LIBRARY_PATH"
+    ":"
+    (lib.makeLibraryPath [ libjack2 ])
+  ]
+  ++ lib.optionals (stdenv.hostPlatform.isLinux) [
+    "--set"
+    "ALSA_PLUGIN_DIR"
+    "${alsa-plugins}/lib/alsa-lib"
+  ]
+  ++ lib.optionals (!stdenv.hostPlatform.isDarwin) [
+    # There are some issues with using the wayland backend, see:
+    # https://musescore.org/en/node/321936
+    "--set-default"
+    "QT_QPA_PLATFORM"
+    "xcb"
+  ];
 
   passthru.tests.nixos = nixosTests.musescore;
 
@@ -190,12 +187,14 @@ stdenv.mkDerivation (finalAttrs: {
     description = "Music notation and composition software";
     homepage = "https://musescore.org/";
     license = lib.licenses.gpl3Only;
+
     maintainers = with lib.maintainers; [
       vandenoever
       doronbehar
       sarunint
     ];
-    mainProgram = "mscore";
+
     platforms = lib.platforms.unix;
+    mainProgram = "mscore";
   };
 })

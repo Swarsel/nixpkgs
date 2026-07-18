@@ -14,10 +14,6 @@ stdenv.mkDerivation (finalAttrs: {
     sha256 = "sha256-VfV3dVpA3P0ChRjpxuh6C9loxr5t3s1xK0BP3DOCeQ4=";
   };
 
-  sourceRoot = ".";
-
-  propagatedUserEnvPkgs = [ gtk-engine-murrine ];
-
   installPhase = ''
     runHook preInstall
     mkdir -p $out/share/themes
@@ -25,11 +21,14 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  propagatedUserEnvPkgs = [ gtk-engine-murrine ];
+  sourceRoot = ".";
+
   meta = {
     description = "Based on Linux Mint theme with dark menus and more intensive green";
     homepage = "https://github.com/madmaxms/theme-jade-1";
     license = with lib.licenses; [ gpl3Only ];
-    platforms = lib.platforms.linux;
     maintainers = [ lib.maintainers.romildo ];
+    platforms = lib.platforms.linux;
   };
 })

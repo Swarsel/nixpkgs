@@ -2,8 +2,8 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  kernel,
   bc,
+  kernel,
   nukeReferences,
 }:
 
@@ -17,16 +17,6 @@ stdenv.mkDerivation (finalAttrs: {
     rev = "865ab0fa91471d595c283d2f3db323f7f15455f5";
     hash = "sha256-c2dpnZS6a0waL1khB9ZEglTwJIBsyRebTMig1B4A0xU=";
   };
-
-  nativeBuildInputs = [
-    bc
-    nukeReferences
-  ]
-  ++ kernel.moduleBuildDependencies;
-  hardeningDisable = [
-    "pic"
-    "format"
-  ];
 
   patches = [
     # https://github.com/lwfinger/rtl8852au/pull/115
@@ -42,6 +32,12 @@ stdenv.mkDerivation (finalAttrs: {
       --replace-fail /lib/modules "${kernel.dev}/lib/modules"
   '';
 
+  nativeBuildInputs = [
+    bc
+    nukeReferences
+  ]
+  ++ kernel.moduleBuildDependencies;
+
   makeFlags = [
     "ARCH=${stdenv.hostPlatform.linuxArch}"
     ("CONFIG_PLATFORM_I386_PC=" + (if stdenv.hostPlatform.isx86 then "y" else "n"))
@@ -50,6 +46,9 @@ stdenv.mkDerivation (finalAttrs: {
   ++ lib.optionals (stdenv.hostPlatform != stdenv.buildPlatform) [
     "CROSS_COMPILE=${stdenv.cc.targetPrefix}"
   ];
+
+  # GCC 14 makes this an error by default
+  env.NIX_CFLAGS_COMPILE = "-Wno-designated-init";
 
   preInstall = ''
     mkdir -p "$out/lib/modules/${kernel.modDirVersion}/kernel/net/wireless/"
@@ -60,18 +59,20 @@ stdenv.mkDerivation (finalAttrs: {
     nuke-refs $out/lib/modules/*/kernel/net/wireless/*.ko
   '';
 
-  # GCC 14 makes this an error by default
-  env.NIX_CFLAGS_COMPILE = "-Wno-designated-init";
-
   enableParallelBuilding = true;
+
+  hardeningDisable = [
+    "pic"
+    "format"
+  ];
 
   meta = {
     description = "Driver for Realtek 802.11ac, rtl8852au, provides the 8852au mod";
     homepage = "https://github.com/lwfinger/rtl8852au";
     license = lib.licenses.gpl2Only;
+    maintainers = with lib.maintainers; [ lonyelon ];
     platforms = [ "x86_64-linux" ];
     # FIX: error: invalid initializer
     broken = kernel.kernelAtLeast "6.17";
-    maintainers = with lib.maintainers; [ lonyelon ];
   };
 })

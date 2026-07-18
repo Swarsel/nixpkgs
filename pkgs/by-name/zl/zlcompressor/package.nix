@@ -1,31 +1,29 @@
 {
   lib,
-  clangStdenv,
   fetchFromGitHub,
-
-  # nativeBuildInputs
-  cmake,
-  darwin,
-  ninja,
-  pkg-config,
-  python3,
-  writableTmpDirAsHomeHook,
-
   # buildInputs
   alsa-lib,
+  clangStdenv,
+  # nativeBuildInputs
+  cmake,
   curl,
+  darwin,
   expat,
   fontconfig,
   freetype,
   libGL,
+  libepoxy,
+  libjack2,
   libxcursor,
   libxext,
   libxinerama,
-  libxrandr,
-  libepoxy,
-  libjack2,
   libxkbcommon,
+  libxrandr,
   lv2,
+  ninja,
+  pkg-config,
+  python3,
+  writableTmpDirAsHomeHook,
 }:
 
 clangStdenv.mkDerivation (finalAttrs: {
@@ -68,27 +66,6 @@ clangStdenv.mkDerivation (finalAttrs: {
     libxkbcommon
   ];
 
-  # JUCE dlopen's these at runtime, crashes without them
-  env = lib.optionalAttrs clangStdenv.hostPlatform.isLinux {
-    NIX_LDFLAGS = toString [
-      "-lX11"
-      "-lXext"
-      "-lXcursor"
-      "-lXinerama"
-      "-lXrandr"
-    ];
-    NIX_CFLAGS_COMPILE = toString [
-      # juce, compiled in this build as part of a Git submodule, uses `-flto` as
-      # a Link Time Optimization flag, and instructs the plugin compiled here to
-      # use this flag to. This breaks the build for us. Using _fat_ LTO allows
-      # successful linking while still providing LTO benefits. If our build of
-      # `juce` was used as a dependency, we could have patched that `-flto` line
-      # in our juce's source, but that is not possible because it is used as a
-      # Git Submodule.
-      "-ffat-lto-objects"
-    ];
-  };
-
   cmakeFlags = [
     # see: https://github.com/ZL-Audio/ZlEqualizer#clone-and-build
     (lib.cmakeFeature "KFR_ARCHS" (
@@ -113,6 +90,28 @@ clangStdenv.mkDerivation (finalAttrs: {
     (lib.cmakeFeature "FOOBAR_VERSION" "${finalAttrs.version}")
   ];
 
+  # JUCE dlopen's these at runtime, crashes without them
+  env = lib.optionalAttrs clangStdenv.hostPlatform.isLinux {
+    NIX_CFLAGS_COMPILE = toString [
+      # juce, compiled in this build as part of a Git submodule, uses `-flto` as
+      # a Link Time Optimization flag, and instructs the plugin compiled here to
+      # use this flag to. This breaks the build for us. Using _fat_ LTO allows
+      # successful linking while still providing LTO benefits. If our build of
+      # `juce` was used as a dependency, we could have patched that `-flto` line
+      # in our juce's source, but that is not possible because it is used as a
+      # Git Submodule.
+      "-ffat-lto-objects"
+    ];
+
+    NIX_LDFLAGS = toString [
+      "-lX11"
+      "-lXext"
+      "-lXcursor"
+      "-lXinerama"
+      "-lXrandr"
+    ];
+  };
+
   installPhase = ''
     runHook preInstall
   ''
@@ -133,12 +132,14 @@ clangStdenv.mkDerivation (finalAttrs: {
   '';
 
   meta = {
-    homepage = "https://zl-audio.github.io/plugins/zlcompressor/";
     description = "Versatile compressor plugin for VST3, LV2 and standalone";
+    homepage = "https://zl-audio.github.io/plugins/zlcompressor/";
     license = lib.licenses.agpl3Plus;
+
     maintainers = with lib.maintainers; [
       magnetophon
     ];
+
     platforms = lib.platforms.linux ++ lib.platforms.darwin;
   };
 })

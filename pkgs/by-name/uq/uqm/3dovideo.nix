@@ -1,10 +1,10 @@
 {
-  stdenv,
   lib,
-  requireFile,
-  writeText,
+  stdenv,
   fetchFromGitHub,
   haskellPackages,
+  requireFile,
+  writeText,
 }:
 
 let
@@ -39,9 +39,6 @@ let
         hash = "sha256-rK30u2PBysiSGSA9829F1Nom/wtoVN6rGTBneRKeWEw=";
       };
 
-      isLibrary = false;
-      isExecutable = true;
-
       buildDepends = [
         base
         binary
@@ -51,16 +48,16 @@ let
       ];
 
       description = "Extract video files from a Star Control II 3DO image";
+      isExecutable = true;
+      isLibrary = false;
       license = lib.licenses.bsd3;
     };
 
 in
 stdenv.mkDerivation {
-  name = "uqm-3dovideo";
-
   src = requireFile rec {
-    name = "videos.tar";
     sha256 = "044h0cl69r0kc43vk4n0akk0prwzb7inq324h5yfqb38sd4zkds1";
+
     message = ''
       In order to get the intro and ending sequences from the 3DO version, you
       need to have the original 3DO Star Control II CD. Create an image from
@@ -73,6 +70,8 @@ stdenv.mkDerivation {
 
       [*] ${helper}/bin/uqm3donix CDIMAGE ${name}
     '';
+
+    name = "videos.tar";
   };
 
   buildCommand = ''
@@ -80,4 +79,6 @@ stdenv.mkDerivation {
     tar xf "$src" -C "$out" --strip-components=3
     cp "${videoRMP}" "$out/3dovideo.rmp"
   '';
+
+  name = "uqm-3dovideo";
 }

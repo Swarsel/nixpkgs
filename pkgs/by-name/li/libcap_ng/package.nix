@@ -3,10 +3,10 @@
   stdenv,
   fetchFromGitHub,
   autoreconfHook,
+  nix-update-script,
   pkg-config,
   swig,
   testers,
-  nix-update-script,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -20,6 +20,12 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-anuPOBWp4Hlpo+m6kYlSd2v7H3P7LQ9brZdq1lo7Po4=";
   };
 
+  outputs = [
+    "out"
+    "dev"
+    "man"
+  ];
+
   # NEWS needs to exist or else the build fails
   postPatch = ''
     touch NEWS
@@ -28,7 +34,6 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   strictDeps = true;
-  enableParallelBuilding = true;
 
   nativeBuildInputs = [
     autoreconfHook
@@ -36,36 +41,32 @@ stdenv.mkDerivation (finalAttrs: {
     swig
   ];
 
-  outputs = [
-    "out"
-    "dev"
-    "man"
-  ];
-
   configureFlags = [
     "--without-python"
   ];
 
-  passthru = {
-    updateScript = nix-update-script { };
-    tests = {
-      pkg-config = testers.testMetaPkgConfig finalAttrs.finalPackage;
-    };
-  };
-
   # assumption: build machine runs linux kernel 5.0 or newer
   # see https://github.com/stevegrubb/libcap-ng?tab=readme-ov-file#note-to-distributions
   doCheck = true;
+  enableParallelBuilding = true;
+
+  passthru = {
+    tests = {
+      pkg-config = testers.testMetaPkgConfig finalAttrs.finalPackage;
+    };
+
+    updateScript = nix-update-script { };
+  };
 
   meta = {
-    changelog = "https://people.redhat.com/sgrubb/libcap-ng/ChangeLog";
     description = "Library for working with POSIX capabilities";
     homepage = "https://people.redhat.com/sgrubb/libcap-ng/";
-    pkgConfigModules = [ "libcap-ng" ];
-    platforms = lib.platforms.linux;
+    changelog = "https://people.redhat.com/sgrubb/libcap-ng/ChangeLog";
     license = lib.licenses.lgpl21;
     maintainers = with lib.maintainers; [ grimmauld ];
-    teams = [ lib.teams.security-review ];
+    platforms = lib.platforms.linux;
     identifiers.cpeParts = lib.meta.cpeFullVersionWithVendor "libcap-ng_project" finalAttrs.version;
+    pkgConfigModules = [ "libcap-ng" ];
+    teams = [ lib.teams.security-review ];
   };
 })

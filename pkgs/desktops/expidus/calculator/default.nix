@@ -1,7 +1,7 @@
 {
   lib,
-  flutter,
   fetchFromGitHub,
+  flutter,
 }:
 flutter.buildFlutterApplication rec {
   pname = "expidus-calculator";
@@ -12,17 +12,6 @@ flutter.buildFlutterApplication rec {
     repo = "calculator";
     rev = version;
     hash = "sha256-O3LHp10Fo3PW3zoN7mFSQEKh+AAaR+IqkRtc6nQrIZE=";
-  };
-
-  flutterBuildFlags = [
-    "--dart-define=COMMIT_HASH=a5d8f54404b9994f83beb367a1cd11e04a6420cb"
-  ];
-
-  pubspecLock = lib.importJSON ./pubspec.lock.json;
-
-  gitHashes = {
-    libtokyo = "sha256-T0+vyfSfijLv7MvM+zt3bkVpb3aVrlDnse2xyNMp9GU=";
-    libtokyo_flutter = "sha256-T0+vyfSfijLv7MvM+zt3bkVpb3aVrlDnse2xyNMp9GU=";
   };
 
   postInstall = ''
@@ -43,16 +32,29 @@ flutter.buildFlutterApplication rec {
       --replace "Icon=com.expidusos.calculator" "Icon=$out/share/icons/com.expidusos.calculator.png"
   '';
 
+  flutterBuildFlags = [
+    "--dart-define=COMMIT_HASH=a5d8f54404b9994f83beb367a1cd11e04a6420cb"
+  ];
+
+  gitHashes = {
+    libtokyo = "sha256-T0+vyfSfijLv7MvM+zt3bkVpb3aVrlDnse2xyNMp9GU=";
+    libtokyo_flutter = "sha256-T0+vyfSfijLv7MvM+zt3bkVpb3aVrlDnse2xyNMp9GU=";
+  };
+
+  pubspecLock = lib.importJSON ./pubspec.lock.json;
+
   meta = {
-    broken = true;
     description = "ExpidusOS Calculator";
     homepage = "https://expidusos.com";
     license = lib.licenses.gpl3Only;
     maintainers = with lib.maintainers; [ RossComputerGuy ];
+
     platforms = [
       "x86_64-linux"
       "aarch64-linux"
     ];
+
     mainProgram = "expidus-calculator";
+    broken = true;
   };
 }

@@ -2,22 +2,19 @@
   lib,
   stdenv,
   fetchFromGitHub,
+  bash,
+  coreutils,
+  gawk,
   makeWrapper,
   nixosTests,
   shellcheck,
-  bash,
   systemd,
-  coreutils,
-  gawk,
   util-linux,
 }:
 
 stdenv.mkDerivation {
   pname = "nmtrust";
   version = "0.1.1";
-
-  strictDeps = true;
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "brett";
@@ -26,10 +23,11 @@ stdenv.mkDerivation {
     hash = "sha256-niCbYxeunNxfkM/HEUiMAvwiholR0nmEPqssOOl9Qvo=";
   };
 
+  strictDeps = true;
   nativeBuildInputs = [ makeWrapper ];
+  doCheck = true;
   nativeCheckInputs = [ shellcheck ];
 
-  doCheck = true;
   checkPhase = ''
     runHook preCheck
     shellcheck nmtrust.sh
@@ -52,10 +50,12 @@ stdenv.mkDerivation {
     runHook postInstall
   '';
 
+  __structuredAttrs = true;
   passthru.tests = { inherit (nixosTests) nmtrust; };
 
   meta = {
     description = "Declarative network trust management for NixOS";
+
     longDescription = ''
       nmtrust evaluates the trust state of active NetworkManager connections
       and activates corresponding systemd targets. Services bound to these
@@ -64,10 +64,11 @@ stdenv.mkDerivation {
 
       A NixOS-native reimplementation of nmtrust by Peter Hogg (pigmonkey).
     '';
+
     homepage = "https://github.com/brett/nmtrust-nix";
     license = lib.licenses.unlicense;
     maintainers = [ lib.maintainers.brett ];
-    mainProgram = "nmtrust";
     platforms = lib.platforms.linux;
+    mainProgram = "nmtrust";
   };
 }

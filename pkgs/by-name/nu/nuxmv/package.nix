@@ -14,6 +14,7 @@ stdenv.mkDerivation rec {
     url = "https://nuxmv.fbk.eu/downloads/nuXmv-${version}-${
       if stdenv.hostPlatform.isDarwin then "macos-universal" else "linux64"
     }.tar.xz";
+
     sha256 =
       if stdenv.hostPlatform.isDarwin then
         "sha256-3AoXEPCunzbhYjjUCzXc9m+CPTVwE70udMCfbpucbdU="
@@ -23,6 +24,7 @@ stdenv.mkDerivation rec {
 
   nativeBuildInputs = [ makeWrapper ];
   buildInputs = lib.optionals stdenv.hostPlatform.isDarwin [ gmp ];
+
   installPhase = ''
     runHook preInstall
     install -Dm755 -t $out/bin ./bin/nuXmv
@@ -36,9 +38,10 @@ stdenv.mkDerivation rec {
   meta = {
     description = "Symbolic model checker for analysis of finite and infinite state systems";
     homepage = "https://nuxmv.fbk.eu/";
-    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
     license = lib.licenses.unfree;
+    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
     maintainers = with lib.maintainers; [ siraben ];
+
     platforms = [
       "x86_64-linux"
       "aarch64-darwin"

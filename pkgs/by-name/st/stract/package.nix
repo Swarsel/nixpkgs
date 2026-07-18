@@ -1,13 +1,13 @@
 {
   lib,
   stdenv,
-  fetchFromGitHub,
-  unstableGitUpdater,
   fetchurl,
-  rustPlatform,
-  pkg-config,
+  fetchFromGitHub,
   oniguruma,
   openssl,
+  pkg-config,
+  rustPlatform,
+  unstableGitUpdater,
   zstd,
 }:
 
@@ -23,8 +23,6 @@ rustPlatform.buildRustPackage {
     fetchSubmodules = true;
   };
 
-  cargoHash = "sha256-UArPGrcEfFZBOZ4Tv7NraqPzdMtyJXVFsfUM32eSGic=";
-
   nativeBuildInputs = [ pkg-config ];
 
   buildInputs = [
@@ -33,9 +31,11 @@ rustPlatform.buildRustPackage {
     zstd
   ];
 
+  cargoHash = "sha256-UArPGrcEfFZBOZ4Tv7NraqPzdMtyJXVFsfUM32eSGic=";
+
   env = {
     RUSTONIG_SYSTEM_LIBONIG = true;
-    ZSTD_SYS_USE_PKG_CONFIG = true;
+
     SWAGGER_UI_DOWNLOAD_URL =
       let
         # When updating:
@@ -45,18 +45,14 @@ rustPlatform.buildRustPackage {
         #   https://github.com/juhaku/utoipa/blob/utoipa-swagger-ui-<UTOPIA-SWAGGER-UI-VERSION>/utoipa-swagger-ui/build.rs#L21-L22
         swaggerUiVersion = "5.17.12";
         swaggerUi = fetchurl {
-          url = "https://github.com/swagger-api/swagger-ui/archive/refs/tags/v${swaggerUiVersion}.zip";
           hash = "sha256-HK4z/JI+1yq8BTBJveYXv9bpN/sXru7bn/8g5mf2B/I=";
+          url = "https://github.com/swagger-api/swagger-ui/archive/refs/tags/v${swaggerUiVersion}.zip";
         };
       in
       "file://${swaggerUi}";
-  };
 
-  # swagger-ui will once more be copied in the target directory during the check phase
-  # Not deleting the existing unpacked archive leads to a `PermissionDenied` error
-  preCheck = ''
-    rm -rf target/${stdenv.hostPlatform.rust.cargoShortTarget}/release/build/
-  '';
+    ZSTD_SYS_USE_PKG_CONFIG = true;
+  };
 
   checkFlags = [
     # error: struct `MyCustomDocument` is never constructed
@@ -66,19 +62,29 @@ rustPlatform.buildRustPackage {
     "--skip=ampc::dht::tests::proptest_chaos"
   ];
 
+  # swagger-ui will once more be copied in the target directory during the check phase
+  # Not deleting the existing unpacked archive leads to a `PermissionDenied` error
+  preCheck = ''
+    rm -rf target/${stdenv.hostPlatform.rust.cargoShortTarget}/release/build/
+  '';
+
   passthru.updateScript = unstableGitUpdater { };
 
   meta = {
     description = "Open source web search engine";
+
     longDescription = ''
       Stract is an open source web search engine targeted towards tinkerers and
       developers, with an official instance hosted at stract.com
     '';
+
     homepage = "https://github.com/StractOrg/stract";
     license = lib.licenses.agpl3Only;
+
     maintainers = with lib.maintainers; [
       ailsa-sun
     ];
+
     teams = [ lib.teams.ngi ];
   };
 }

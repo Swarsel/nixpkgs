@@ -3,9 +3,9 @@
   stdenv,
   fetchFromGitHub,
   autoreconfHook,
+  gitUpdater,
   libpcap,
   versionCheckHook,
-  gitUpdater,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -27,11 +27,11 @@ stdenv.mkDerivation (finalAttrs: {
     libpcap
   ];
 
+  doInstallCheck = true;
+
   nativeInstallCheckInputs = [
     versionCheckHook
   ];
-
-  doInstallCheck = true;
 
   passthru.updateScript = gitUpdater { rev-prefix = "softflowd-v"; };
 

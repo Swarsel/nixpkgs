@@ -1,26 +1,21 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # build-system
-  hatchling,
-
   # dependencies
   anyio,
+  buildPythonPackage,
+  # build-system
+  hatchling,
   pycrdt,
-  sqlite-anyio,
-
   # tests
   pytestCheckHook,
+  sqlite-anyio,
   trio,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "pycrdt-store";
   version = "0.1.5";
-  pyproject = true;
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "y-crdt";
@@ -28,6 +23,13 @@ buildPythonPackage (finalAttrs: {
     tag = finalAttrs.version;
     hash = "sha256-ggfk9MT/thBKHStToYwSDT4+ZL7mqveg9XDEXLAViU8=";
   };
+
+  nativeCheckInputs = [
+    pytestCheckHook
+    trio
+  ];
+
+  __structuredAttrs = true;
 
   build-system = [
     hatchling
@@ -39,13 +41,8 @@ buildPythonPackage (finalAttrs: {
     sqlite-anyio
   ];
 
-  nativeCheckInputs = [
-    pytestCheckHook
-    trio
-  ];
-
   disabledTestMarks = [ "flaky" ];
-
+  pyproject = true;
   pythonImportsCheck = [ "pycrdt.store" ];
 
   meta = {

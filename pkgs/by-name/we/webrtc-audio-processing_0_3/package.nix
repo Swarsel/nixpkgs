@@ -2,8 +2,8 @@
   lib,
   stdenv,
   fetchurl,
-  fetchpatch,
   autoreconfHook,
+  fetchpatch,
   pkg-config,
 }:
 
@@ -26,42 +26,43 @@ stdenv.mkDerivation (finalAttrs: {
     ./enable-powerpc.patch
     # big-endian support, from https://gitlab.freedesktop.org/pulseaudio/pulseaudio/-/issues/127
     (fetchpatch {
+      hash = "sha256-zVAj9H8SJureQd0t5O5v1je4ia8/gHJOXYxuEBEB6gg=";
       name = "0001-webrtc-audio-processing-big-endian.patch";
       url = "https://gitlab.freedesktop.org/pulseaudio/pulseaudio/uploads/2994c0512aaa76ebf41ce11c7b9ba23e/webrtc-audio-processing-0.2-big-endian.patch";
-      hash = "sha256-zVAj9H8SJureQd0t5O5v1je4ia8/gHJOXYxuEBEB6gg=";
     })
     (fetchpatch {
-      url = "https://raw.githubusercontent.com/freebsd/freebsd-ports/2f3c3b1d9dadc25356da4b612130bf4dea27b817/audio/webrtc-audio-processing0/files/patch-configure.ac";
+      extraPrefix = "";
       hash = "sha256-IOSW3ZLIuRXY/M+MU813M9o0Vu4mcGoAtdNRlJwESHw=";
-      extraPrefix = "";
+      url = "https://raw.githubusercontent.com/freebsd/freebsd-ports/2f3c3b1d9dadc25356da4b612130bf4dea27b817/audio/webrtc-audio-processing0/files/patch-configure.ac";
     })
     (fetchpatch {
-      url = "https://raw.githubusercontent.com/freebsd/freebsd-ports/27f26f19a34755fe4b939a7210d8ba7ee9358a0d/audio/webrtc-audio-processing0/files/patch-webrtc_base_stringutils.h";
+      extraPrefix = "";
       hash = "sha256-j85CdFpDIPhhEquwA3P0r5djnMEGVnvfsPM2bYbURt8=";
-      extraPrefix = "";
+      url = "https://raw.githubusercontent.com/freebsd/freebsd-ports/27f26f19a34755fe4b939a7210d8ba7ee9358a0d/audio/webrtc-audio-processing0/files/patch-webrtc_base_stringutils.h";
     })
     (fetchpatch {
-      url = "https://raw.githubusercontent.com/freebsd/freebsd-ports/0d316feccaf89c1bd804d6001274426a7135c93a/audio/webrtc-audio-processing0/files/patch-webrtc_base_platform__thread.cc";
-      hash = "sha256-MsZtNWv3bwxJLxpQaMqj34XIBhqAaO2NkBHjlFWZreA=";
       extraPrefix = "";
+      hash = "sha256-MsZtNWv3bwxJLxpQaMqj34XIBhqAaO2NkBHjlFWZreA=";
+      url = "https://raw.githubusercontent.com/freebsd/freebsd-ports/0d316feccaf89c1bd804d6001274426a7135c93a/audio/webrtc-audio-processing0/files/patch-webrtc_base_platform__thread.cc";
     })
-  ];
-
-  nativeBuildInputs = [
-    autoreconfHook
-    pkg-config
   ];
 
   postPatch = lib.optionalString stdenv.hostPlatform.isMusl ''
     substituteInPlace webrtc/base/checks.cc --replace 'defined(__UCLIBC__)' 1
   '';
 
+  nativeBuildInputs = [
+    autoreconfHook
+    pkg-config
+  ];
+
   enableParallelBuilding = true;
 
   meta = {
-    homepage = "https://www.freedesktop.org/software/pulseaudio/webrtc-audio-processing";
     description = "More Linux packaging friendly copy of the AudioProcessing module from the WebRTC project";
+    homepage = "https://www.freedesktop.org/software/pulseaudio/webrtc-audio-processing";
     license = lib.licenses.bsd3;
+
     # https://gitlab.freedesktop.org/pulseaudio/webrtc-audio-processing/-/blob/v0.3.1/webrtc/typedefs.h
     # + our patches
     platforms = lib.intersectLists lib.platforms.unix (

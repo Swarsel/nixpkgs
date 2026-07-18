@@ -1,19 +1,18 @@
 {
   lib,
-  python3Packages,
   fetchFromGitHub,
-  libxslt,
+  adwaita-icon-theme,
   gobject-introspection,
   gtk3,
+  libxslt,
+  python3Packages,
   wrapGAppsHook3,
-  adwaita-icon-theme,
   writableTmpDirAsHomeHook,
 }:
 
 python3Packages.buildPythonApplication (finalAttrs: {
   pname = "wpgtk";
   version = "6.7.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "deviantfero";
@@ -21,8 +20,6 @@ python3Packages.buildPythonApplication (finalAttrs: {
     tag = finalAttrs.version;
     hash = "sha256-TbykgmS/F/6N7ZmcKlX79RhMvOMBsfFNl8TZKLji80w=";
   };
-
-  build-system = with python3Packages; [ setuptools ];
 
   nativeBuildInputs = [
     gobject-introspection
@@ -36,24 +33,25 @@ python3Packages.buildPythonApplication (finalAttrs: {
     libxslt
   ];
 
+  # No test exist
+  doCheck = false;
+  build-system = with python3Packages; [ setuptools ];
+
   dependencies = with python3Packages; [
     pygobject3
     pillow
     pywal16
   ];
 
+  dontWrapGApps = true;
+  makeWrapperArgs = [ "\${gappsWrapperArgs[@]}" ];
+  pyproject = true;
   # use pywal16 fork instead
   pythonRemoveDeps = [ "pywal" ];
 
-  dontWrapGApps = true;
-
-  makeWrapperArgs = [ "\${gappsWrapperArgs[@]}" ];
-
-  # No test exist
-  doCheck = false;
-
   meta = {
     description = "Template based wallpaper/colorscheme generator and manager";
+
     longDescription = ''
       In short, wpgtk is a colorscheme/wallpaper manager with a template system attached which lets you create templates from any textfile and will replace keywords on it on the fly, allowing for great styling and theming possibilities.
 
@@ -61,13 +59,16 @@ python3Packages.buildPythonApplication (finalAttrs: {
 
       INFO: To work properly, this tool needs "programs.dconf.enable = true" on nixos or dconf installed. A reboot may be required after installing dconf.
     '';
+
     homepage = "https://github.com/deviantfero/wpgtk";
     license = lib.licenses.gpl2Only;
-    platforms = lib.platforms.linux;
+
     maintainers = with lib.maintainers; [
       melkor333
       cafkafk
     ];
+
+    platforms = lib.platforms.linux;
     mainProgram = "wpg";
   };
 })

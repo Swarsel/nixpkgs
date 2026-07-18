@@ -1,14 +1,14 @@
 {
   lib,
-  stdenvNoCC,
   fetchFromGitHub,
   gtk3,
   hicolor-icon-theme,
   jdupes,
-  roundedIcons ? false,
-  blackPanelIcons ? false,
+  stdenvNoCC,
   allColorVariants ? false,
+  blackPanelIcons ? false,
   colorVariants ? [ ],
+  roundedIcons ? false,
 }:
 let
   pname = "Fluent-icon-theme";
@@ -39,21 +39,16 @@ lib.checkListOfEnum "${pname}: available color variants"
       hash = "sha256-qAKNAbmSfVuzUGDJGVU0QF3LMc5tRzAy+l0ZwEXaJ28=";
     };
 
+    postPatch = ''
+      patchShebangs install.sh
+    '';
+
     nativeBuildInputs = [
       gtk3
       jdupes
     ];
 
     buildInputs = [ hicolor-icon-theme ];
-
-    # Unnecessary & slow fixup's
-    dontPatchELF = true;
-    dontRewriteSymlinks = true;
-    dontDropIconThemeCache = true;
-
-    postPatch = ''
-      patchShebangs install.sh
-    '';
 
     installPhase = ''
       runHook preInstall
@@ -70,11 +65,16 @@ lib.checkListOfEnum "${pname}: available color variants"
       runHook postInstall
     '';
 
+    dontDropIconThemeCache = true;
+    # Unnecessary & slow fixup's
+    dontPatchELF = true;
+    dontRewriteSymlinks = true;
+
     meta = {
       description = "Fluent icon theme for linux desktops";
       homepage = "https://github.com/vinceliuice/Fluent-icon-theme";
       license = lib.licenses.gpl3Plus;
-      platforms = lib.platforms.linux;
       maintainers = with lib.maintainers; [ icy-thought ];
+      platforms = lib.platforms.linux;
     };
   }

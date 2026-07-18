@@ -1,36 +1,35 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitLab,
-  meson,
-  ninja,
-  pkg-config,
-  wrapGAppsHook4,
-  libadwaita,
+  appstream,
+  appstream-glib,
+  blueprint-compiler,
+  desktop-file-utils,
   gettext,
   glib,
   gobject-introspection,
-  desktop-file-utils,
-  appstream,
-  appstream-glib,
   gtk4,
+  libadwaita,
   librsvg,
-  python3Packages,
-  blueprint-compiler,
+  meson,
+  ninja,
   nix-update-script,
+  pkg-config,
+  python3Packages,
+  wrapGAppsHook4,
 }:
 
 python3Packages.buildPythonApplication (finalAttrs: {
   pname = "eartag";
   version = "1.0.2";
-  pyproject = false;
 
   src = fetchFromGitLab {
-    domain = "gitlab.gnome.org";
     owner = "World";
     repo = "eartag";
     rev = finalAttrs.version;
     hash = "sha256-Iwfk0SqxYF2bzkKZNqGonJh8MQ2c+K1wN0o4GECR/Rw=";
+    domain = "gitlab.gnome.org";
   };
 
   postPatch = ''
@@ -73,25 +72,27 @@ python3Packages.buildPythonApplication (finalAttrs: {
     xxhash
   ];
 
-  dontWrapGApps = true;
   preFixup = ''
     makeWrapperArgs+=("''${gappsWrapperArgs[@]}")
   '';
+
+  dontWrapGApps = true;
+  pyproject = false;
 
   passthru = {
     updateScript = nix-update-script { };
   };
 
   meta = {
-    homepage = "https://gitlab.gnome.org/World/eartag";
     description = "Simple music tag editor";
+    homepage = "https://gitlab.gnome.org/World/eartag";
     changelog = "https://gitlab.gnome.org/World/eartag/-/releases/${finalAttrs.version}";
     # This seems to be using ICU license but we're flagging it to MIT license
     # since ICU license is a modified version of MIT and to prevent it from
     # being incorrectly identified as unfree software.
     license = lib.licenses.mit;
-    mainProgram = "eartag";
     maintainers = [ ];
+    mainProgram = "eartag";
     teams = [ lib.teams.gnome-circle ];
   };
 })

@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   git,
 }:
 
@@ -18,22 +18,22 @@ buildGoModule (finalAttrs: {
 
   vendorHash = "sha256-wwpaJO5cXMsvqFXj+qGiIm4zg/SL4YCm2mNnG/qdilw=";
 
-  ldflags = [
-    "-s"
-    "-w"
-  ];
-
   nativeCheckInputs = [
     git # required by unit tests
+  ];
+
+  checkFlags = [
+    # Disable tests requiring network access to gitlab.com
+    "-skip=Test(Run|Start|(Fetch|Pull)With(Go|)Git)"
   ];
 
   preCheck = ''
     HOME=$(mktemp -d)
   '';
 
-  checkFlags = [
-    # Disable tests requiring network access to gitlab.com
-    "-skip=Test(Run|Start|(Fetch|Pull)With(Go|)Git)"
+  ldflags = [
+    "-s"
+    "-w"
   ];
 
   meta = {

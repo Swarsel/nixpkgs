@@ -1,17 +1,12 @@
 {
   lib,
-  newScope,
   lxqt,
+  newScope,
 }:
 
 let
   packages =
     self: with self; {
-
-      # Libs
-      libcprime = callPackage ../applications/misc/cubocore-packages/libcprime { };
-
-      libcsys = callPackage ../applications/misc/cubocore-packages/libcsys { };
 
       # Apps
       coreaction = callPackage ../applications/misc/cubocore-packages/coreaction {
@@ -79,8 +74,8 @@ let
       };
 
       coreterminal = callPackage ../applications/misc/cubocore-packages/coreterminal {
-        qtermwidget = lxqt.qtermwidget;
         inherit libcprime libcsys;
+        qtermwidget = lxqt.qtermwidget;
       };
 
       coretime = callPackage ../applications/misc/cubocore-packages/coretime {
@@ -94,6 +89,10 @@ let
       coreuniverse = callPackage ../applications/misc/cubocore-packages/coreuniverse {
         inherit libcprime libcsys;
       };
+
+      # Libs
+      libcprime = callPackage ../applications/misc/cubocore-packages/libcprime { };
+      libcsys = callPackage ../applications/misc/cubocore-packages/libcsys { };
     };
 in
 lib.makeScope newScope packages

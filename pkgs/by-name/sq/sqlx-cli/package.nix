@@ -1,15 +1,15 @@
 {
-  stdenv,
   lib,
-  rustPlatform,
+  stdenv,
   fetchCrate,
   installShellFiles,
-  pkg-config,
-  openssl,
   libiconv,
-  testers,
-  sqlx-cli,
   nix-update-script,
+  openssl,
+  pkg-config,
+  rustPlatform,
+  sqlx-cli,
+  testers,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -22,18 +22,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
     inherit (finalAttrs) pname version;
     hash = "sha256-XariusjsCgn0Qai0XWtr7EzSzDDTp1cCzjff1kJNO9Y=";
   };
-
-  cargoHash = "sha256-pHaMKuB9v3fjbgeVyLyRtfoQ9BkE6z+TjDfdBaVdbXM=";
-
-  buildNoDefaultFeatures = true;
-  buildFeatures = [
-    "native-tls"
-    "postgres"
-    "sqlite"
-    "mysql"
-    "completions"
-    "sqlx-toml"
-  ];
 
   nativeBuildInputs = [
     installShellFiles
@@ -48,6 +36,8 @@ rustPlatform.buildRustPackage (finalAttrs: {
       libiconv
     ];
 
+  cargoHash = "sha256-pHaMKuB9v3fjbgeVyLyRtfoQ9BkE6z+TjDfdBaVdbXM=";
+
   postInstall = ''
     for shell in bash fish zsh; do
       $out/bin/sqlx completions $shell > sqlx.$shell
@@ -55,9 +45,20 @@ rustPlatform.buildRustPackage (finalAttrs: {
     done
   '';
 
+  buildFeatures = [
+    "native-tls"
+    "postgres"
+    "sqlite"
+    "mysql"
+    "completions"
+    "sqlx-toml"
+  ];
+
+  buildNoDefaultFeatures = true;
+
   passthru.tests.version = testers.testVersion {
-    package = sqlx-cli;
     command = "sqlx --version";
+    package = sqlx-cli;
   };
 
   passthru.updateScript = nix-update-script { };
@@ -67,11 +68,13 @@ rustPlatform.buildRustPackage (finalAttrs: {
     homepage = "https://github.com/transact-rs/sqlx";
     changelog = "https://github.com/transact-rs/sqlx/blob/v${finalAttrs.version}/CHANGELOG.md";
     license = lib.licenses.asl20;
+
     maintainers = with lib.maintainers; [
       greizgh
       xrelkd
       fd
     ];
+
     mainProgram = "sqlx";
   };
 })

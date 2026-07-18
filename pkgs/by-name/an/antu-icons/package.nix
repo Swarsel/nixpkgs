@@ -1,8 +1,8 @@
 {
   lib,
-  stdenvNoCC,
   fetchFromGitLab,
   hicolor-icon-theme,
+  stdenvNoCC,
 }:
 
 stdenvNoCC.mkDerivation {
@@ -18,8 +18,6 @@ stdenvNoCC.mkDerivation {
 
   propagatedBuildInputs = [ hicolor-icon-theme ];
 
-  dontDropIconThemeCache = true;
-
   installPhase = ''
     runHook preInstall
     mkdir -p $out/share/icons/antu-icons
@@ -30,11 +28,13 @@ stdenvNoCC.mkDerivation {
     runHook postInstall
   '';
 
+  dontDropIconThemeCache = true;
+
   meta = {
     description = "Smooth icon theme designed for Plasma Desktop";
     homepage = "https://gitlab.com/froodo_alexis/Antu-icons";
     license = lib.licenses.cc-by-nc-sa-30;
-    platforms = lib.platforms.linux;
     maintainers = with lib.maintainers; [ iamanaws ];
+    platforms = lib.platforms.linux;
   };
 }

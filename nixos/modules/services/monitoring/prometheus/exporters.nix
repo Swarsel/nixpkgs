@@ -1,7 +1,7 @@
 {
   config,
-  pkgs,
   lib,
+  pkgs,
   options,
   utils,
   ...
@@ -161,6 +161,7 @@ let
             options
             utils
             ;
+
           type = params.type;
         }
       )
@@ -169,22 +170,27 @@ let
           name = "exportarr";
           type = "bazarr";
         };
+
         exportarr-lidarr = {
           name = "exportarr";
           type = "lidarr";
         };
+
         exportarr-prowlarr = {
           name = "exportarr";
           type = "prowlarr";
         };
+
         exportarr-radarr = {
           name = "exportarr";
           type = "radarr";
         };
+
         exportarr-readarr = {
           name = "exportarr";
           type = "readarr";
         };
+
         exportarr-sonarr = {
           name = "exportarr";
           type = "sonarr";
@@ -196,86 +202,116 @@ let
     { name, port }:
     {
       enable = mkEnableOption "the prometheus ${name} exporter";
-      port = mkOption {
-        type = types.port;
-        default = port;
-        description = ''
-          Port to listen on.
-        '';
-      };
-      listenAddress = mkOption {
-        type = types.str;
-        default = "0.0.0.0";
-        description = ''
-          Address to listen on.
-        '';
-      };
+
       extraFlags = mkOption {
-        type = types.listOf types.str;
         default = [ ];
+
         description = ''
           Extra commandline options to pass to the ${name} exporter.
         '';
+
+        type = types.listOf types.str;
       };
-      openFirewall = mkOption {
-        type = types.bool;
-        default = false;
-        description = ''
-          Open port in firewall for incoming connections.
-        '';
-      };
+
       firewallFilter = mkOption {
-        type = types.nullOr types.str;
         default = null;
-        example = literalExpression ''
-          "-i eth0 -p tcp -m tcp --dport ${toString port}"
-        '';
+
         description = ''
           Specify a filter for iptables to use when
           {option}`services.prometheus.exporters.${name}.openFirewall`
           is true. It is used as `ip46tables -I nixos-fw firewallFilter -j nixos-fw-accept`.
         '';
-      };
-      firewallRules = mkOption {
-        type = types.nullOr types.lines;
-        default = null;
+
         example = literalExpression ''
-          iifname "eth0" tcp dport ${toString port} counter accept
+          "-i eth0 -p tcp -m tcp --dport ${toString port}"
         '';
+
+        type = types.nullOr types.str;
+      };
+
+      firewallRules = mkOption {
+        default = null;
+
         description = ''
           Specify rules for nftables to add to the input chain
           when {option}`services.prometheus.exporters.${name}.openFirewall` is true.
         '';
-      };
-      user = mkOption {
-        type = types.str;
-        default = "${name}-exporter";
-        description = ''
-          User name under which the ${name} exporter shall be run.
+
+        example = literalExpression ''
+          iifname "eth0" tcp dport ${toString port} counter accept
         '';
+
+        type = types.nullOr types.lines;
       };
+
       group = mkOption {
-        type = types.str;
         default = "${name}-exporter";
+
         description = ''
           Group under which the ${name} exporter shall be run.
         '';
+
+        type = types.str;
+      };
+
+      listenAddress = mkOption {
+        default = "0.0.0.0";
+
+        description = ''
+          Address to listen on.
+        '';
+
+        type = types.str;
+      };
+
+      openFirewall = mkOption {
+        default = false;
+
+        description = ''
+          Open port in firewall for incoming connections.
+        '';
+
+        type = types.bool;
+      };
+
+      port = mkOption {
+        default = port;
+
+        description = ''
+          Port to listen on.
+        '';
+
+        type = types.port;
+      };
+
+      user = mkOption {
+        default = "${name}-exporter";
+
+        description = ''
+          User name under which the ${name} exporter shall be run.
+        '';
+
+        type = types.str;
       };
     }
   );
 
   mkSubModule =
     {
-      name,
-      port,
       extraOpts,
       imports,
+      name,
+      port,
     }:
     {
       ${name} = mkOption {
+        default = { };
+        internal = true;
+
         type = types.submodule [
           {
             inherit imports;
+
             options = (
               mkExporterOpts {
                 inherit name port;
@@ -291,8 +327,6 @@ let
             }
           )
         ];
-        internal = true;
-        default = { };
       };
     };
 
@@ -303,8 +337,8 @@ let
         mkSubModule {
           inherit name;
           inherit (opts) port;
-          extraOpts = opts.extraOpts or { };
           imports = opts.imports or [ ];
+          extraOpts = opts.extraOpts or { };
         }
       ) exporterOpts
     )
@@ -312,8 +346,8 @@ let
 
   mkExporterConf =
     {
-      name,
       conf,
+      name,
       serviceOpts,
     }:
     let
@@ -321,74 +355,32 @@ let
       nftables = config.networking.nftables.enable;
     in
     mkIf conf.enable {
-      warnings = conf.warnings or [ ];
       assertions = conf.assertions or [ ];
-      users.users."${name}-exporter" = (
-        mkIf (conf.user == "${name}-exporter" && !enableDynamicUser) {
-          description = "Prometheus ${name} exporter service user";
-          isSystemUser = true;
-          inherit (conf) group;
-          extraGroups = mkIf (name == "libvirt") [ "libvirtd" ];
-        }
-      );
-      users.groups = mkMerge [
-        (mkIf (conf.group == "${name}-exporter" && !enableDynamicUser) {
-          "${name}-exporter" = { };
-        })
-        (mkIf (name == "smartctl") {
-          "smartctl-exporter-access" = { };
-        })
-      ];
-      services.udev.extraRules = mkIf (name == "smartctl") ''
-        ACTION=="add", SUBSYSTEM=="nvme", KERNEL=="nvme[0-9]*", RUN+="${pkgs.acl}/bin/setfacl -m g:smartctl-exporter-access:rw /dev/$kernel"
-      '';
-      systemd.services.prometheus-fail2ban-exporter-setup =
-        mkIf (config.services.fail2ban.enable && name == "fail2ban")
-          {
-            description = "Set fail2ban socket ACLs";
-            after = [ "fail2ban.service" ];
-            requires = [ "fail2ban.service" ];
-            before = [ "prometheus-fail2ban-exporter.service" ];
-            wantedBy = [ "prometheus-fail2ban-exporter.service" ];
-            path = [
-              pkgs.acl
-              pkgs.coreutils
-            ];
-            script = ''
-              while [ ! -S ${conf.fail2banSocket} ]; do
-                sleep 0.1
-              done
 
-              setfacl -m u:${conf.user}:x $(dirname ${conf.fail2banSocket})
-              setfacl -m u:${conf.user}:rwx ${conf.fail2banSocket}
-            '';
-            serviceConfig = {
-              Type = "oneshot";
-              User = "root";
-            };
-          };
       networking.firewall.extraCommands = mkIf (conf.openFirewall && !nftables) (concatStrings [
         "ip46tables -A nixos-fw ${conf.firewallFilter} "
         "-m comment --comment ${name}-exporter -j nixos-fw-accept"
       ]);
+
       networking.firewall.extraInputRules = mkIf (conf.openFirewall && nftables) conf.firewallRules;
+
+      services.udev.extraRules = mkIf (name == "smartctl") ''
+        ACTION=="add", SUBSYSTEM=="nvme", KERNEL=="nvme[0-9]*", RUN+="${pkgs.acl}/bin/setfacl -m g:smartctl-exporter-access:rw /dev/$kernel"
+      '';
+
       systemd.services."prometheus-${name}-exporter" = mkMerge [
         {
-          wantedBy = [ "multi-user.target" ];
           after = [ "network.target" ];
-          serviceConfig.Restart = mkDefault "always";
-          serviceConfig.PrivateTmp = mkDefault true;
-          serviceConfig.WorkingDirectory = mkDefault "/tmp";
-          serviceConfig.DynamicUser = mkDefault enableDynamicUser;
-          serviceConfig.User = mkDefault conf.user;
-          serviceConfig.Group = conf.group;
           # Hardening
           serviceConfig.CapabilityBoundingSet = mkDefault [ "" ];
           serviceConfig.DeviceAllow = [ "" ];
+          serviceConfig.DynamicUser = mkDefault enableDynamicUser;
+          serviceConfig.Group = conf.group;
           serviceConfig.LockPersonality = true;
           serviceConfig.MemoryDenyWriteExecute = true;
           serviceConfig.NoNewPrivileges = true;
           serviceConfig.PrivateDevices = mkDefault true;
+          serviceConfig.PrivateTmp = mkDefault true;
           serviceConfig.ProtectClock = mkDefault true;
           serviceConfig.ProtectControlGroups = true;
           serviceConfig.ProtectHome = true;
@@ -398,25 +390,94 @@ let
           serviceConfig.ProtectKernelTunables = true;
           serviceConfig.ProtectSystem = mkDefault "strict";
           serviceConfig.RemoveIPC = true;
+          serviceConfig.Restart = mkDefault "always";
+
           serviceConfig.RestrictAddressFamilies = [
             "AF_INET"
             "AF_INET6"
           ];
+
           serviceConfig.RestrictNamespaces = true;
           serviceConfig.RestrictRealtime = true;
           serviceConfig.RestrictSUIDSGID = true;
           serviceConfig.SystemCallArchitectures = "native";
           serviceConfig.UMask = "0077";
+          serviceConfig.User = mkDefault conf.user;
+          serviceConfig.WorkingDirectory = mkDefault "/tmp";
+          wantedBy = [ "multi-user.target" ];
         }
         serviceOpts
       ];
+
+      systemd.services.prometheus-fail2ban-exporter-setup =
+        mkIf (config.services.fail2ban.enable && name == "fail2ban")
+          {
+            after = [ "fail2ban.service" ];
+            before = [ "prometheus-fail2ban-exporter.service" ];
+            description = "Set fail2ban socket ACLs";
+
+            path = [
+              pkgs.acl
+              pkgs.coreutils
+            ];
+
+            requires = [ "fail2ban.service" ];
+
+            script = ''
+              while [ ! -S ${conf.fail2banSocket} ]; do
+                sleep 0.1
+              done
+
+              setfacl -m u:${conf.user}:x $(dirname ${conf.fail2banSocket})
+              setfacl -m u:${conf.user}:rwx ${conf.fail2banSocket}
+            '';
+
+            serviceConfig = {
+              Type = "oneshot";
+              User = "root";
+            };
+
+            wantedBy = [ "prometheus-fail2ban-exporter.service" ];
+          };
+
+      users.groups = mkMerge [
+        (mkIf (conf.group == "${name}-exporter" && !enableDynamicUser) {
+          "${name}-exporter" = { };
+        })
+        (mkIf (name == "smartctl") {
+          "smartctl-exporter-access" = { };
+        })
+      ];
+
+      users.users."${name}-exporter" = (
+        mkIf (conf.user == "${name}-exporter" && !enableDynamicUser) {
+          inherit (conf) group;
+          description = "Prometheus ${name} exporter service user";
+          extraGroups = mkIf (name == "libvirt") [ "libvirtd" ];
+          isSystemUser = true;
+        }
+      );
+
+      warnings = conf.warnings or [ ];
     };
 in
 {
 
   options.services.prometheus.exporters = mkOption {
+    default = { };
+    description = "Prometheus exporter configuration";
+
+    example = literalExpression ''
+      {
+        node = {
+          enable = true;
+          enabledCollectors = [ "systemd" ];
+        };
+        varnish.enable = true;
+      }
+    '';
+
     type = types.submodule {
-      options = mkSubModules;
       imports = [
         ../../../misc/assertions.nix
         (lib.mkRenamedOptionModule [ "unifi-poller" ] [ "unpoller" ])
@@ -432,18 +493,9 @@ in
           https://docs.rspamd.com/developers/protocol#controller-http-endpoints
         '')
       ];
+
+      options = mkSubModules;
     };
-    description = "Prometheus exporter configuration";
-    default = { };
-    example = literalExpression ''
-      {
-        node = {
-          enable = true;
-          enabledCollectors = [ "systemd" ];
-        };
-        varnish.enable = true;
-      }
-    '';
   };
 
   config = mkMerge (
@@ -453,6 +505,7 @@ in
           {
             assertion =
               cfg.ipmi.enable -> (cfg.ipmi.configFile != null) -> (!(lib.hasPrefix "/tmp/" cfg.ipmi.configFile));
+
             message = ''
               Config file specified in `services.prometheus.exporters.ipmi.configFile' must
                 not reside within /tmp - it won't be visible to the systemd service.
@@ -463,6 +516,7 @@ in
               cfg.ipmi.enable
               -> (cfg.ipmi.webConfigFile != null)
               -> (!(lib.hasPrefix "/tmp/" cfg.ipmi.webConfigFile));
+
             message = ''
               Config file specified in `services.prometheus.exporters.ipmi.webConfigFile' must
                 not reside within /tmp - it won't be visible to the systemd service.
@@ -471,6 +525,7 @@ in
           {
             assertion =
               cfg.restic.enable -> ((cfg.restic.repository == null) != (cfg.restic.repositoryFile == null));
+
             message = ''
               Please specify either 'services.prometheus.exporters.restic.repository'
                 or 'services.prometheus.exporters.restic.repositoryFile'.
@@ -479,6 +534,7 @@ in
           {
             assertion =
               cfg.snmp.enable -> ((cfg.snmp.configurationPath == null) != (cfg.snmp.configuration == null));
+
             message = ''
               Please ensure you have either `services.prometheus.exporters.snmp.configuration'
                 or `services.prometheus.exporters.snmp.configurationPath' set!
@@ -487,6 +543,7 @@ in
           {
             assertion =
               cfg.mikrotik.enable -> ((cfg.mikrotik.configFile == null) != (cfg.mikrotik.configuration == null));
+
             message = ''
               Please specify either `services.prometheus.exporters.mikrotik.configuration'
                 or `services.prometheus.exporters.mikrotik.configFile'.
@@ -494,6 +551,7 @@ in
           }
           {
             assertion = cfg.mail.enable -> ((cfg.mail.configFile == null) != (cfg.mail.configuration == null));
+
             message = ''
               Please specify either 'services.prometheus.exporters.mail.configuration'
                 or 'services.prometheus.exporters.mail.configFile'.
@@ -501,6 +559,7 @@ in
           }
           {
             assertion = cfg.mysqld.runAsLocalSuperUser -> config.services.mysql.enable;
+
             message = ''
               The exporter is configured to run as 'services.mysql.user', but
                 'services.mysql.enable' is set to false.
@@ -509,6 +568,7 @@ in
           {
             assertion =
               cfg.nextcloud.enable -> ((cfg.nextcloud.passwordFile == null) != (cfg.nextcloud.tokenFile == null));
+
             message = ''
               Please specify either 'services.prometheus.exporters.nextcloud.passwordFile' or
                 'services.prometheus.exporters.nextcloud.tokenFile'
@@ -516,6 +576,7 @@ in
           }
           {
             assertion = cfg.sql.enable -> ((cfg.sql.configFile == null) != (cfg.sql.configuration == null));
+
             message = ''
               Please specify either 'services.prometheus.exporters.sql.configuration' or
                 'services.prometheus.exporters.sql.configFile'
@@ -524,6 +585,7 @@ in
           {
             assertion =
               cfg.idrac.enable -> ((cfg.idrac.configurationPath == null) != (cfg.idrac.configuration == null));
+
             message = ''
               Please ensure you have either `services.prometheus.exporters.idrac.configuration'
                 or `services.prometheus.exporters.idrac.configurationPath' set!
@@ -533,6 +595,7 @@ in
             assertion =
               cfg.deluge.enable
               -> ((cfg.deluge.delugePassword == null) != (cfg.deluge.delugePasswordFile == null));
+
             message = ''
               Please ensure you have either `services.prometheus.exporters.deluge.delugePassword'
                 or `services.prometheus.exporters.deluge.delugePasswordFile' set!
@@ -542,6 +605,7 @@ in
             assertion =
               cfg.pgbouncer.enable
               -> (xor (cfg.pgbouncer.connectionEnvFile == null) (cfg.pgbouncer.connectionString == null));
+
             message = ''
               Options `services.prometheus.exporters.pgbouncer.connectionEnvFile` and
               `services.prometheus.exporters.pgbouncer.connectionString` are mutually exclusive!
@@ -550,12 +614,14 @@ in
         ]
         ++ (flip map (attrNames exporterOpts) (exporter: {
           assertion = cfg.${exporter}.firewallFilter != null -> cfg.${exporter}.openFirewall;
+
           message = ''
             The `firewallFilter'-option of exporter ${exporter} doesn't have any effect unless
             `openFirewall' is set to `true'!
           '';
         }))
         ++ config.services.prometheus.exporters.assertions;
+
         warnings = [
           (mkIf
             (

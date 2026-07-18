@@ -1,7 +1,7 @@
 {
-  rustPlatform,
-  fetchCrate,
   lib,
+  fetchCrate,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {

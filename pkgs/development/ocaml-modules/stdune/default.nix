@@ -1,24 +1,21 @@
 {
   lib,
   buildDunePackage,
-  ocaml,
+  csexp,
   dune,
   dyn,
+  fs-io,
+  ocaml,
   ordering,
   pp,
-  csexp,
-  fs-io,
   top-closure,
   version ? if lib.versionAtLeast ocaml.version "4.13" then dune.version else "3.22.2",
 }:
 
 buildDunePackage {
-  pname = "stdune";
   inherit version;
-
   inherit (dune.override { inherit version; }) src;
-
-  dontAddPrefix = true;
+  pname = "stdune";
 
   propagatedBuildInputs = [
     dyn
@@ -28,6 +25,8 @@ buildDunePackage {
     fs-io
     top-closure
   ];
+
+  dontAddPrefix = true;
 
   meta = dune.meta // {
     description = "Dune's unstable standard library";

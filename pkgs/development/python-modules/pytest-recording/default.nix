@@ -1,23 +1,22 @@
 {
   lib,
   stdenv,
-  buildPythonPackage,
   fetchFromGitHub,
-  # install dependencies
-  pytest,
-  vcrpy,
+  buildPythonPackage,
   # test dependencies
   hatchling,
-  pytestCheckHook,
+  # install dependencies
+  pytest,
   pytest-httpbin,
   pytest-mock,
+  pytestCheckHook,
   requests,
+  vcrpy,
 }:
 
 buildPythonPackage rec {
   pname = "pytest-recording";
   version = "0.13.4";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "kiwicom";
@@ -26,15 +25,9 @@ buildPythonPackage rec {
     hash = "sha256-S++MnI0GgpQxS6kFkt05kcE4JMW7jyFjJ3o7DhfYoVA=";
   };
 
-  build-system = [ hatchling ];
-
   buildInputs = [
     pytest
   ];
-
-  dependencies = [ vcrpy ];
-
-  __darwinAllowLocalNetworking = true;
 
   nativeCheckInputs = [
     pytestCheckHook
@@ -42,6 +35,10 @@ buildPythonPackage rec {
     pytest-mock
     requests
   ];
+
+  __darwinAllowLocalNetworking = true;
+  build-system = [ hatchling ];
+  dependencies = [ vcrpy ];
 
   disabledTests = [
     "test_block_network_with_allowed_hosts"
@@ -52,7 +49,7 @@ buildPythonPackage rec {
   ];
 
   enabledTestPaths = [ "tests" ];
-
+  pyproject = true;
   pythonImportsCheck = [ "pytest_recording" ];
 
   meta = {

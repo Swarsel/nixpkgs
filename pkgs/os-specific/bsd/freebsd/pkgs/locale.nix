@@ -1,7 +1,7 @@
-{ mkDerivation, libsbuf }:
+{ libsbuf, mkDerivation }:
 mkDerivation {
-  path = "usr.bin/locale";
   buildInputs = [ libsbuf ];
-  extraPaths = [ "lib/libc/locale" ];
   MK_TESTS = "no";
+  extraPaths = [ "lib/libc/locale" ];
+  path = "usr.bin/locale";
 }

@@ -10,19 +10,18 @@
 buildPythonPackage rec {
   pname = "base58";
   version = "2.1.1";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
     hash = "sha256-xdDLP1tugejjXaV1Q4jdzG0NFLbGoTLLk9ae1YCnJ4w=";
   };
 
-  build-system = [ setuptools ];
-
   nativeCheckInputs = [
     pyhamcrest
     pytestCheckHook
   ];
+
+  build-system = [ setuptools ];
 
   disabledTests = [
     # avoid dependency on pytest-benchmark
@@ -30,6 +29,7 @@ buildPythonPackage rec {
     "test_encode_random"
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "base58" ];
 
   meta = {

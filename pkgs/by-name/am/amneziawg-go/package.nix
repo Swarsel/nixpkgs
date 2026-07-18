@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   nix-update-script,
 }:
 
@@ -21,17 +21,15 @@ buildGoModule (finalAttrs: {
     rm -f format_test.go
   '';
 
+  strictDeps = true;
   vendorHash = "sha256-oqnDK3H+ssgAc1F85OS/qfJRE+LCnfxDy3v7bf4RxUQ=";
-
-  subPackages = [ "." ];
 
   ldflags = [
     "-s"
     "-w"
   ];
 
-  strictDeps = true;
-
+  subPackages = [ "." ];
   passthru.updateScript = nix-update-script { };
 
   meta = {

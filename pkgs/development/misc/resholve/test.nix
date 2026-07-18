@@ -1,60 +1,60 @@
 {
   lib,
   stdenv,
-  callPackage,
-  resholve,
-  shunit2,
-  coreutils,
-  gnused,
-  gnugrep,
-  findutils,
-  jq,
-  bash,
-  bats,
-  libressl,
-  openssl,
-  file,
-  gettext,
-  rSrc,
-  runDemo ? false,
-  binlore,
-  sqlite,
-  unixtools,
-  gawk,
-  rlwrap,
-  gnutar,
-  bc,
-  systemd,
-  # override testing
-  esh,
-  getconf,
-  libarchive,
-  locale,
-  mount,
-  ncurses,
-  nixos-install-tools,
-  procps,
-  ps,
   # known consumers
   aaxtomp3,
   arch-install-scripts,
+  bash,
   bashup-events32,
+  bats,
+  bc,
+  binlore,
+  callPackage,
+  coreutils,
   dgoss,
+  # override testing
+  esh,
+  file,
+  findutils,
+  gawk,
+  getconf,
+  gettext,
   git-ftp,
+  gnugrep,
+  gnused,
+  gnutar,
+  jq,
   lesspipe,
+  libarchive,
+  libressl,
+  locale,
   locate-dominating-file,
   mons,
+  mount,
   msmtp,
+  ncurses,
   nix-direnv,
+  nixos-install-tools,
+  openssl,
   pdf2odt,
   pdfmm,
+  procps,
+  ps,
+  rSrc,
+  resholve,
+  rlwrap,
   s0ix-selftest-tool,
+  shunit2,
+  sqlite,
+  systemd,
   unix-privesc-check,
+  unixtools,
   wgnord,
   wsl-vpnkit,
   xdg-utils,
   yadm,
   zxfer,
+  runDemo ? false,
 }:
 
 let
@@ -81,147 +81,33 @@ let
   ];
 in
 rec {
-  module1 = resholve.mkDerivation (finalAttrs: {
-    pname = "testmod1";
-    version = "unreleased";
-
-    src = rSrc;
-    setSourceRoot = "sourceRoot=$(echo */tests/nix/libressl)";
-
-    installPhase = ''
-      mkdir -p $out/{bin,submodule}
-      install libressl.sh $out/bin/libressl.sh
-      install submodule/helper.sh $out/submodule/helper.sh
-    '';
-
-    solutions = {
-      libressl = {
-        # submodule to demonstrate
-        scripts = [
-          "bin/libressl.sh"
-          "submodule/helper.sh"
-        ];
-        interpreter = "none";
-        inputs = [
-          jq
-          module2
-          libressl.bin
-        ];
-      };
-    };
-
-    # finalAttrs proof-of-life
-    passthru.version = finalAttrs.version;
-  });
-  module2 = resholve.mkDerivation {
-    pname = "testmod2";
-    version = "unreleased";
-
-    src = rSrc;
-    setSourceRoot = "sourceRoot=$(echo */tests/nix/openssl)";
-
-    installPhase = ''
-      mkdir -p $out/bin $out/libexec
-      install openssl.sh $out/bin/openssl.sh
-      install libexec.sh $out/libexec/invokeme
-      install profile $out/profile
-    '';
-    # LOGLEVEL="DEBUG";
-    solutions = {
-      openssl = {
-        fix = {
-          aliases = true;
-        };
-        scripts = [
-          "bin/openssl.sh"
-          "libexec/invokeme"
-        ];
-        interpreter = "none";
-        inputs = [
-          shunit2
-          openssl.bin
-          "libexec"
-          "libexec/invokeme"
-        ];
-        execer = [
-          /*
-            This is the same verdict binlore will
-            come up with. It's a no-op just to demo
-            how to fiddle lore via the Nix API.
-          */
-          "cannot:${openssl.bin}/bin/openssl"
-          # different verdict, but not used
-          "can:${openssl.bin}/bin/c_rehash"
-        ];
-      };
-      profile = {
-        scripts = [ "profile" ];
-        interpreter = "none";
-        inputs = [ ];
-      };
-    };
-    postResholve = ''
-      echo "not a load-bearing test, just prove we exist"
-    '';
-  };
-  # demonstrate that we could use resholve in larger build
-  module3 = stdenv.mkDerivation {
-    pname = "testmod3";
-    version = "unreleased";
-
-    src = rSrc;
-    setSourceRoot = "sourceRoot=$(echo */tests/nix/future_perfect_tense)";
-
-    installPhase = ''
-      mkdir -p $out/bin
-      install conjure.sh $out/bin/conjure.sh
-      ${resholve.phraseSolution "conjure" {
-        scripts = [ "bin/conjure.sh" ];
-        interpreter = "${bash}/bin/bash";
-        inputs = [ module1 ];
-        fake = {
-          external = [
-            "jq"
-            "openssl"
-          ];
-        };
-      }}
-    '';
-  };
+  # ensure known consumers in nixpkgs keep working
+  inherit aaxtomp3;
+  inherit bashup-events32;
+  inherit bats;
+  inherit git-ftp;
+  inherit lesspipe;
+  inherit locate-dominating-file;
+  inherit mons;
+  inherit msmtp;
+  inherit nix-direnv;
+  inherit pdf2odt;
+  # TODO: re-enable when safe; disabled may 9 2026 due
+  # to build failure down in pdfmm > zenity > appstream
+  # inherit pdfmm;
+  inherit shunit2;
+  inherit xdg-utils;
+  inherit yadm;
 
   cli = stdenv.mkDerivation {
-    name = "resholve-test";
     src = rSrc;
-
-    dontBuild = true;
-
-    installPhase = ''
-      mkdir $out
-      cp *.ansi $out/
-    '';
-
-    doCheck = true;
     buildInputs = [ resholve ];
+    doCheck = true;
+
     nativeCheckInputs = [
       coreutils
       bats
     ];
-    # LOGLEVEL="DEBUG";
-
-    # default path
-    RESHOLVE_PATH = "${lib.makeBinPath default_packages}";
-    # but separate packages for combining as needed
-    PKG_FILE = "${lib.makeBinPath [ file ]}";
-    PKG_FINDUTILS = "${lib.makeBinPath [ findutils ]}";
-    PKG_GETTEXT = "${lib.makeBinPath [ gettext ]}";
-    PKG_COREUTILS = "${lib.makeBinPath [ coreutils ]}";
-    RESHOLVE_LORE = "${binlore.collect {
-      drvs = default_packages ++ [ coreutils ] ++ parsed_packages;
-    }}";
-    PKG_PARSED = "${lib.makeBinPath parsed_packages}";
-
-    # explicit interpreter for demo suite; maybe some better way...
-    INTERP = "${bash}/bin/bash";
 
     checkPhase = ''
       echo removing parse tests matching no${stdenv.buildPlatform.uname.system}
@@ -245,43 +131,44 @@ rec {
         cat demo.ansi && exit 1
       fi
     '';
+
+    installPhase = ''
+      mkdir $out
+      cp *.ansi $out/
+    '';
+
+    # explicit interpreter for demo suite; maybe some better way...
+    INTERP = "${bash}/bin/bash";
+    PKG_COREUTILS = "${lib.makeBinPath [ coreutils ]}";
+    # but separate packages for combining as needed
+    PKG_FILE = "${lib.makeBinPath [ file ]}";
+    PKG_FINDUTILS = "${lib.makeBinPath [ findutils ]}";
+    PKG_GETTEXT = "${lib.makeBinPath [ gettext ]}";
+    PKG_PARSED = "${lib.makeBinPath parsed_packages}";
+
+    RESHOLVE_LORE = "${binlore.collect {
+      drvs = default_packages ++ [ coreutils ] ++ parsed_packages;
+    }}";
+
+    # LOGLEVEL="DEBUG";
+    # default path
+    RESHOLVE_PATH = "${lib.makeBinPath default_packages}";
+    dontBuild = true;
+    name = "resholve-test";
   };
 
-  # Caution: ci.nix asserts the equality of both of these w/ diff
-  resholvedScript =
-    resholve.writeScript "resholved-script"
-      {
-        inputs = [ file ];
-        interpreter = "${bash}/bin/bash";
-      }
-      ''
-        echo "Hello"
-        file .
-      '';
-  resholvedScriptBin =
-    resholve.writeScriptBin "resholved-script-bin"
-      {
-        inputs = [ file ];
-        interpreter = "${bash}/bin/bash";
-      }
-      ''
-        echo "Hello"
-        file .
-      '';
-  resholvedScriptBinNone =
-    resholve.writeScriptBin "resholved-script-bin"
-      {
-        inputs = [ file ];
-        interpreter = "none";
-      }
-      ''
-        echo "Hello"
-        file .
-      '';
   # spot-check lore overrides
   loreOverrides =
     resholve.writeScriptBin "verify-overrides"
       {
+        execer = [
+          "cannot:${esh}/bin/esh"
+        ];
+
+        fix = {
+          mount = true;
+        };
+
         inputs = [
           coreutils
           esh
@@ -296,13 +183,8 @@ rec {
         ++ lib.optionals stdenv.hostPlatform.isLinux [
           nixos-install-tools
         ];
+
         interpreter = "none";
-        execer = [
-          "cannot:${esh}/bin/esh"
-        ];
-        fix = {
-          mount = true;
-        };
       }
       (
         ''
@@ -324,23 +206,159 @@ rec {
         ''
       );
 
-  # ensure known consumers in nixpkgs keep working
-  inherit aaxtomp3;
-  inherit bashup-events32;
-  inherit bats;
-  inherit git-ftp;
-  inherit lesspipe;
-  inherit locate-dominating-file;
-  inherit mons;
-  inherit msmtp;
-  inherit nix-direnv;
-  inherit pdf2odt;
-  # TODO: re-enable when safe; disabled may 9 2026 due
-  # to build failure down in pdfmm > zenity > appstream
-  # inherit pdfmm;
-  inherit shunit2;
-  inherit xdg-utils;
-  inherit yadm;
+  module1 = resholve.mkDerivation (finalAttrs: {
+    pname = "testmod1";
+    version = "unreleased";
+    src = rSrc;
+
+    installPhase = ''
+      mkdir -p $out/{bin,submodule}
+      install libressl.sh $out/bin/libressl.sh
+      install submodule/helper.sh $out/submodule/helper.sh
+    '';
+
+    setSourceRoot = "sourceRoot=$(echo */tests/nix/libressl)";
+
+    solutions = {
+      libressl = {
+        inputs = [
+          jq
+          module2
+          libressl.bin
+        ];
+
+        interpreter = "none";
+
+        # submodule to demonstrate
+        scripts = [
+          "bin/libressl.sh"
+          "submodule/helper.sh"
+        ];
+      };
+    };
+
+    # finalAttrs proof-of-life
+    passthru.version = finalAttrs.version;
+  });
+
+  module2 = resholve.mkDerivation {
+    pname = "testmod2";
+    version = "unreleased";
+    src = rSrc;
+
+    installPhase = ''
+      mkdir -p $out/bin $out/libexec
+      install openssl.sh $out/bin/openssl.sh
+      install libexec.sh $out/libexec/invokeme
+      install profile $out/profile
+    '';
+
+    postResholve = ''
+      echo "not a load-bearing test, just prove we exist"
+    '';
+
+    setSourceRoot = "sourceRoot=$(echo */tests/nix/openssl)";
+
+    # LOGLEVEL="DEBUG";
+    solutions = {
+      openssl = {
+        execer = [
+          /*
+            This is the same verdict binlore will
+            come up with. It's a no-op just to demo
+            how to fiddle lore via the Nix API.
+          */
+          "cannot:${openssl.bin}/bin/openssl"
+          # different verdict, but not used
+          "can:${openssl.bin}/bin/c_rehash"
+        ];
+
+        fix = {
+          aliases = true;
+        };
+
+        inputs = [
+          shunit2
+          openssl.bin
+          "libexec"
+          "libexec/invokeme"
+        ];
+
+        interpreter = "none";
+
+        scripts = [
+          "bin/openssl.sh"
+          "libexec/invokeme"
+        ];
+      };
+
+      profile = {
+        inputs = [ ];
+        interpreter = "none";
+        scripts = [ "profile" ];
+      };
+    };
+  };
+
+  # demonstrate that we could use resholve in larger build
+  module3 = stdenv.mkDerivation {
+    pname = "testmod3";
+    version = "unreleased";
+    src = rSrc;
+
+    installPhase = ''
+      mkdir -p $out/bin
+      install conjure.sh $out/bin/conjure.sh
+      ${resholve.phraseSolution "conjure" {
+        fake = {
+          external = [
+            "jq"
+            "openssl"
+          ];
+        };
+
+        inputs = [ module1 ];
+        interpreter = "${bash}/bin/bash";
+        scripts = [ "bin/conjure.sh" ];
+      }}
+    '';
+
+    setSourceRoot = "sourceRoot=$(echo */tests/nix/future_perfect_tense)";
+  };
+
+  # Caution: ci.nix asserts the equality of both of these w/ diff
+  resholvedScript =
+    resholve.writeScript "resholved-script"
+      {
+        inputs = [ file ];
+        interpreter = "${bash}/bin/bash";
+      }
+      ''
+        echo "Hello"
+        file .
+      '';
+
+  resholvedScriptBin =
+    resholve.writeScriptBin "resholved-script-bin"
+      {
+        inputs = [ file ];
+        interpreter = "${bash}/bin/bash";
+      }
+      ''
+        echo "Hello"
+        file .
+      '';
+
+  resholvedScriptBinNone =
+    resholve.writeScriptBin "resholved-script-bin"
+      {
+        inputs = [ file ];
+        interpreter = "none";
+      }
+      ''
+        echo "Hello"
+        file .
+      '';
 }
 // lib.optionalAttrs stdenv.hostPlatform.isLinux {
   inherit arch-install-scripts;

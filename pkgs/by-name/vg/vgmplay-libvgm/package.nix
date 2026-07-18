@@ -1,13 +1,13 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
-  unstableGitUpdater,
   cmake,
-  pkg-config,
-  zlib,
-  libvgm,
   inih,
+  libvgm,
+  pkg-config,
+  unstableGitUpdater,
+  zlib,
 }:
 
 stdenv.mkDerivation {
@@ -45,11 +45,11 @@ stdenv.mkDerivation {
   };
 
   meta = {
-    mainProgram = "vgmplay";
-    homepage = "https://github.com/ValleyBell/vgmplay-libvgm";
     description = "New VGMPlay, based on libvgm";
+    homepage = "https://github.com/ValleyBell/vgmplay-libvgm";
     license = lib.licenses.unfree; # no licensing text anywhere yet
     maintainers = with lib.maintainers; [ OPNA2608 ];
     platforms = lib.platforms.all;
+    mainProgram = "vgmplay";
   };
 }

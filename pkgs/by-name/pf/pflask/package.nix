@@ -4,8 +4,8 @@
   fetchFromGitHub,
   fetchpatch,
   python3,
-  wafHook,
   waf,
+  wafHook,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -23,19 +23,18 @@ stdenv.mkDerivation (finalAttrs: {
     # Pull patch pending upstream inclusion for -fno-common toolchain support:
     #  https://github.com/ghedo/pflask/pull/30
     (fetchpatch {
+      hash = "sha256-KVuBS7LbYJQv6NXljpSiGGja7ar7W6A6SKzkEjB1B6U=";
       name = "fno-common.patch";
       url = "https://github.com/ghedo/pflask/commit/73ba32ec48e1e0e4a56b1bceed4635711526e079.patch";
-      hash = "sha256-KVuBS7LbYJQv6NXljpSiGGja7ar7W6A6SKzkEjB1B6U=";
     })
   ];
-
-  waf-version = "2.0.27";
 
   nativeBuildInputs = [
     python3
     (wafHook.override {
       waf = waf.overrideAttrs (old: {
         version = finalAttrs.waf-version;
+
         src = fetchFromGitHub {
           inherit (old.src) owner repo;
           rev = "waf-${finalAttrs.waf-version}";
@@ -50,12 +49,14 @@ stdenv.mkDerivation (finalAttrs: {
     cp build/pflask $out/bin
   '';
 
+  waf-version = "2.0.27";
+
   meta = {
     description = "Lightweight process containers for Linux";
-    mainProgram = "pflask";
     homepage = "https://ghedo.github.io/pflask/";
     license = lib.licenses.bsd2;
-    platforms = lib.platforms.linux;
     maintainers = with lib.maintainers; [ bot-wxt1221 ];
+    platforms = lib.platforms.linux;
+    mainProgram = "pflask";
   };
 })

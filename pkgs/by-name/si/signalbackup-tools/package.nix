@@ -2,13 +2,11 @@
   lib,
   stdenv,
   fetchFromGitHub,
-
   cmake,
-  pkg-config,
-
   darwinMinVersionHook,
   dbus,
   openssl,
+  pkg-config,
   sqlite,
 }:
 
@@ -50,10 +48,10 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Tool to work with Signal Backup files";
-    mainProgram = "signalbackup-tools";
     homepage = "https://github.com/bepaald/signalbackup-tools";
     license = lib.licenses.gpl3Only;
     maintainers = [ lib.maintainers.malo ];
     platforms = lib.platforms.all;
+    mainProgram = "signalbackup-tools";
   };
 })

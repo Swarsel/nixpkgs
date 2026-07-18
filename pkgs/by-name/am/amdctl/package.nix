@@ -25,10 +25,10 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Set P-State voltages and clock speeds on recent AMD CPUs on Linux";
-    mainProgram = "amdctl";
     homepage = "https://github.com/kevinlekiller/amdctl";
     license = lib.licenses.gpl3Plus;
     maintainers = [ ];
     platforms = [ "x86_64-linux" ];
+    mainProgram = "amdctl";
   };
 })

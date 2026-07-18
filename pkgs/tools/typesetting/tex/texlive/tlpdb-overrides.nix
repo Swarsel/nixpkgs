@@ -1,13 +1,9 @@
 {
-  stdenv,
-  fetchpatch,
   lib,
-  tlpdb,
+  stdenv,
   bin,
-  tlpdbxz,
-  tl,
-  installShellFiles,
   coreutils,
+  fetchpatch,
   findutils,
   gawk,
   getopt,
@@ -20,13 +16,17 @@
   gnused,
   gzip,
   html-tidy,
+  installShellFiles,
+  luajit,
   ncurses,
   perl,
   python3,
   ruby,
-  zip,
-  luajit,
   texinfo,
+  tl,
+  tlpdb,
+  tlpdbxz,
+  zip,
 }:
 oldTlpdb:
 let
@@ -58,25 +58,25 @@ let
   orig = removeFormatLinks (removeAttrs oldTlpdb [ "00texlive.config" ]);
 in
 lib.recursiveUpdate orig rec {
-  #### overrides of texlive.tlpdb
+  # Use top-level git-latexdiff's version and src. NOTE that this derivation is
+  # still different from top-level's `git-latexdiff`, due to __structuredAttrs
+  # enabled unconditionally. Still though this derivation produces a funcitonal
+  # binary.
+  inherit git-latexdiff;
+  #### other runtime PATH dependencies
+  a2ping.extraBuildInputs = [ ghostscript_headless ];
 
-  #### nonstandard script folders
-  context-legacy.scriptsFolder = "context/ruby";
-  cyrillic-bin.scriptsFolder = "texlive-extra";
-  fontinst.scriptsFolder = "texlive-extra";
-  mptopdf.scriptsFolder = "context/perl";
-  pdftex.scriptsFolder = "simpdftex";
-  texlive-scripts.scriptsFolder = "texlive";
-  texlive-scripts-extra.scriptsFolder = "texlive-extra";
-  xetex.scriptsFolder = "texlive-extra";
+  #### add PATH dependencies without wrappers
+  # TODO deduplicate this code
+  a2ping.postFixup = ''
+    sed -i '6i$ENV{PATH}='"'"'${lib.makeBinPath a2ping.extraBuildInputs}'"'"' . ($ENV{PATH} ? ":$ENV{PATH}" : '"'''"');' "$out"/bin/a2ping
+  '';
 
-  #### interpreters not detected by looking at the script extensions
-  ctanbib.extraBuildInputs = [ bin.luatex ];
-  de-macro.extraBuildInputs = [ python3 ];
-  match_parens.extraBuildInputs = [ ruby ];
-  optexcount.extraBuildInputs = [ python3 ];
-  pdfbook2.extraBuildInputs = [ python3 ];
-  texlogsieve.extraBuildInputs = [ bin.luatex ];
+  bibexport.extraBuildInputs = [ gnugrep ];
+
+  bibexport.postFixup = ''
+    sed -i '2iPATH="${lib.makeBinPath bibexport.extraBuildInputs}''${PATH:+:$PATH}"' "$out"/bin/bibexport
+  '';
 
   #### perl packages
   bundledoc.extraBuildInputs = [
@@ -86,6 +86,49 @@ lib.recursiveUpdate orig rec {
       ]
     ))
   ];
+
+  checklistings.extraBuildInputs = [ coreutils ];
+
+  checklistings.postFixup = ''
+    sed -i '2iPATH="${lib.makeBinPath checklistings.extraBuildInputs}''${PATH:+:$PATH}"' "$out"/bin/checklistings
+  '';
+
+  cjk-gs-integrate.extraBuildInputs = [ ghostscript_headless ];
+
+  cjk-gs-integrate.postFixup = ''
+    sed -i '2i$ENV{PATH}='"'"'${lib.makeBinPath cjk-gs-integrate.extraBuildInputs}'"'"' . ($ENV{PATH} ? ":$ENV{PATH}" : '"'''"');' "$out"/bin/cjk-gs-integrate
+  '';
+
+  #### additional symlinks
+  cluttex.binlinks = {
+    cllualatex = "cluttex";
+    clxelatex = "cluttex";
+  };
+
+  # remove dependency-heavy packages from the basic collections
+  collection-basic.deps = lib.subtractLists [ "metafont" "xdvi" ] orig.collection-basic.deps;
+  # add them elsewhere so that collections cover all packages
+  collection-metapost.deps = orig.collection-metapost.deps ++ [ "metafont" ];
+  collection-plaingeneric.deps = orig.collection-plaingeneric.deps ++ [ "xdvi" ];
+
+  context.binlinks = {
+    context = "luametatex";
+    "context.lua" = tl.context.tex + "/scripts/context/lua/context.lua";
+    mtxrun = "luametatex";
+    "mtxrun.lua" = tl.context.tex + "/scripts/context/lua/mtxrun.lua";
+  };
+
+  # Since the packaging change for ConTeXt, context-legacy is missing the xetex dependency
+  context-legacy.deps = (orig.context-legacy.deps or [ ]) ++ [ "xetex" ];
+
+  context-legacy.postFixup = ''
+    sed -i 's!File.dirname(\$0)!'"'"'${tl.context-legacy.tex}/scripts/context/ruby'"'"'!' "$out"/bin/*
+  '';
+
+  #### overrides of texlive.tlpdb
+  #### nonstandard script folders
+  context-legacy.scriptsFolder = "context/ruby";
+
   crossrefware.extraBuildInputs = [
     (perl.withPackages (
       ps: with ps; [
@@ -95,6 +138,7 @@ lib.recursiveUpdate orig rec {
       ]
     ))
   ];
+
   ctan-o-mat.extraBuildInputs = [
     (perl.withPackages (
       ps: with ps; [
@@ -103,7 +147,11 @@ lib.recursiveUpdate orig rec {
       ]
     ))
   ];
+
+  #### interpreters not detected by looking at the script extensions
+  ctanbib.extraBuildInputs = [ bin.luatex ];
   ctanify.extraBuildInputs = [ (perl.withPackages (ps: with ps; [ FileCopyRecursive ])) ];
+
   ctanupload.extraBuildInputs = [
     (perl.withPackages (
       ps: with ps; [
@@ -112,11 +160,122 @@ lib.recursiveUpdate orig rec {
       ]
     ))
   ];
+
+  cyrillic-bin.extraBuildInputs = [
+    coreutils
+    gnused
+  ];
+
+  cyrillic-bin.postFixup = ''
+    sed -i '2iPATH="${lib.makeBinPath cyrillic-bin.extraBuildInputs}''${PATH:+:$PATH}"' "$out"/bin/rumakeindex
+  '';
+
+  cyrillic-bin.scriptsFolder = "texlive-extra";
+  de-macro.extraBuildInputs = [ python3 ];
+
+  dtxgen.extraBuildInputs = [
+    coreutils
+    getopt
+    gettext
+    gnumake
+    texinfo
+    zip
+  ];
+
+  dtxgen.postFixup = ''
+    sed -i '2iPATH="${lib.makeBinPath dtxgen.extraBuildInputs}''${PATH:+:$PATH}"' "$out"/bin/dtxgen
+  '';
+
+  dviljk.extraBuildInputs = [ coreutils ];
+
+  dviljk.postFixup = ''
+    sed -i '2iPATH="${lib.makeBinPath dviljk.extraBuildInputs}''${PATH:+:$PATH}"' "$out"/bin/dvihp
+  '';
+
+  dvipdfmx.binlinks = {
+    # even though 'ebb' was removed from the Makefile, this symlink is still
+    # part of the binary container of dvipdfmx
+    ebb = "xdvipdfmx";
+  };
+
+  #### other script fixes
+  # misc tab and python3 fixes
+  ebong.postFixup = ''
+    sed -Ei 's/import sre/import re/; s/file\(/open(/g; s/\t/        /g; s/print +(.*)$/print(\1)/g' "$out"/bin/ebong
+  '';
+
+  epspdf.extraBuildInputs = [ ghostscript_headless ];
+
+  # find files in script directory, not binary directory
+  # add runtime dependencies to PATH
+  epspdf.postFixup = ''
+    sed -i '2ios.setenv("PATH","${lib.makeBinPath epspdf.extraBuildInputs}" .. (os.getenv("PATH") and ":" .. os.getenv("PATH") or ""))' "$out"/bin/epspdf
+    substituteInPlace "$out"/bin/epspdftk --replace-fail '[info script]' "\"$scriptsFolder/epspdftk.tcl\""
+  '';
+
+  epstopdf.binlinks.repstopdf = "epstopdf";
+  epstopdf.extraBuildInputs = [ ghostscript_headless ];
+
+  epstopdf.postFixup = ''
+    sed -i '2i$ENV{PATH}='"'"'${lib.makeBinPath epstopdf.extraBuildInputs}'"'"' . ($ENV{PATH} ? ":$ENV{PATH}" : '"'''"');' "$out"/bin/epstopdf
+  '';
+
   exceltex.extraBuildInputs = [ (perl.withPackages (ps: with ps; [ SpreadsheetParseExcel ])) ];
+  # use correct path to xdvipdfmx
+  extractbb.extraBuildInputs = [ bin.core.dvipdfmx ];
+
+  extractbb.postFixup = ''
+    sed -i "2ios.setenv('NIX_TEXLIVE_XDVIPDFMX','$(PATH="$HOST_PATH" command -v xdvipdfmx)')" "$out"/bin/extractbb
+  '';
+
+  extractbb.postUnpack = ''
+    if [[ -f "$out"/scripts/extractbb/extractbb-wrapper.lua ]] ; then
+      sed -i 's!local target_path = interpreter_dir .. "/" .. TARGET_PATH_NAME .. target_ext!local target_path = os.getenv("NIX_TEXLIVE_XDVIPDFMX")!' "$out"/scripts/extractbb/extractbb-wrapper.lua
+    fi
+  '';
+
+  fontinst.scriptsFolder = "texlive-extra";
+  fragmaster.extraBuildInputs = [ ghostscript_headless ];
+
+  fragmaster.postFixup = ''
+    sed -i '2i$ENV{PATH}='"'"'${lib.makeBinPath fragmaster.extraBuildInputs}'"'"' . ($ENV{PATH} ? ":$ENV{PATH}" : '"'''"');' "$out"/bin/fragmaster
+  '';
+
+  installfont.extraBuildInputs = [
+    coreutils
+    getopt
+    gnused
+  ];
+
+  installfont.postFixup = ''
+    sed -i '2iPATH="${lib.makeBinPath installfont.extraBuildInputs}''${PATH:+:$PATH}"' "$out"/bin/installfont-tl
+  '';
+
+  # l3build ignores the TEXMFCNF variable to prevent user customisations from affecting the build
+  # but we rely on TEXMFCNF to find the system texmf.cnf, so we must inject its path into l3build
+  # WARNING: this relies on the system texmf.cnf being in $TEXMFSYSVAR/web2c
+  l3build.postUnpack = ''
+    if [[ -f "$out"/scripts/l3build/l3build-aux.lua ]] ; then
+      substituteInPlace "$out"/scripts/l3build/l3build-aux.lua --replace-fail '" TEXMFCNF=."' '" TEXMFCNF=." .. os_pathsep .. kpse.var_value("TEXMFSYSVAR") .. "/web2c"'
+    fi
+  '';
+
+  latex-git-log.extraBuildInputs = [ (perl.withPackages (ps: with ps; [ IPCSystemSimple ])) ];
+
   latexdiff.extraBuildInputs = [
     (perl.withPackages (ps: with ps; [ EncodeLocale ]))
   ];
-  latex-git-log.extraBuildInputs = [ (perl.withPackages (ps: with ps; [ IPCSystemSimple ])) ];
+
+  latexfileversion.extraBuildInputs = [
+    coreutils
+    gnugrep
+    gnused
+  ];
+
+  latexfileversion.postFixup = ''
+    sed -i '2iPATH="${lib.makeBinPath latexfileversion.extraBuildInputs}''${PATH:+:$PATH}"' "$out"/bin/latexfileversion
+  '';
+
   latexindent.extraBuildInputs = [
     (perl.withPackages (
       ps: with ps; [
@@ -128,7 +287,92 @@ lib.recursiveUpdate orig rec {
       ]
     ))
   ];
+
+  # find files in script directory, not in binary directory
+  latexindent.postFixup = ''
+    substituteInPlace "$out"/bin/latexindent --replace-fail 'use FindBin;' "BEGIN { \$0 = '$scriptsFolder' . '/latexindent.pl'; }; use FindBin;"
+  '';
+
+  listings-ext.extraBuildInputs = [
+    coreutils
+    getopt
+  ];
+
+  listings-ext.postFixup = ''
+    sed -i '2iPATH="${lib.makeBinPath listings-ext.extraBuildInputs}''${PATH:+:$PATH}"' "$out"/bin/listings-ext.sh
+  '';
+
+  ltxfileinfo.extraBuildInputs = [
+    coreutils
+    getopt
+    gnused
+  ];
+
+  ltxfileinfo.postFixup = ''
+    sed -i '2iPATH="${lib.makeBinPath ltxfileinfo.extraBuildInputs}''${PATH:+:$PATH}"' "$out"/bin/ltxfileinfo
+  '';
+
+  ltximg.extraBuildInputs = [ ghostscript_headless ];
+
+  ltximg.postFixup = ''
+    sed -i '2i$ENV{PATH}='"'"'${lib.makeBinPath ltximg.extraBuildInputs}'"'"' . ($ENV{PATH} ? ":$ENV{PATH}" : '"'''"');' "$out"/bin/ltximg
+  '';
+
+  # RISC-V: https://github.com/LuaJIT/LuaJIT/issues/628
+  luajittex.binfiles = lib.optionals (lib.meta.availableOn stdenv.hostPlatform luajit) orig.luajittex.binfiles;
+  luaotfload.extraBuildInputs = [ ncurses ];
+
+  luaotfload.postFixup = ''
+    sed -i '2ios.setenv("PATH","${lib.makeBinPath luaotfload.extraBuildInputs}" .. (os.getenv("PATH") and ":" .. os.getenv("PATH") or ""))' "$out"/bin/luaotfload-tool
+  '';
+
+  makeindex.extraBuildInputs = [
+    coreutils
+    gnused
+  ];
+
+  makeindex.postFixup = ''
+    sed -i '2iPATH="${lib.makeBinPath makeindex.extraBuildInputs}''${PATH:+:$PATH}"' "$out"/bin/mkindex
+  '';
+
+  match_parens.extraBuildInputs = [ ruby ];
+
+  # find files in script directory, not in binary directory
+  minted.postFixup = ''
+    substituteInPlace "$out"/bin/latexminted --replace-fail "__file__" "\"$scriptsFolder/latexminted.py\""
+  '';
+
+  mltex.deps = (orig.mltex.deps or [ ]) ++ [ "pdftex" ];
+  #### adjustments to binaries
+  # TODO patch the scripts from bin.* directly in bin.* instead of here
+  # mptopdf is a format link, but not generated by texlinks
+  # so we add it back to binfiles to generate it from mkPkgBin
+  mptopdf.binfiles = (orig.mptopdf.binfiles or [ ]) ++ [ "mptopdf" ];
+  mptopdf.scriptsFolder = "context/perl";
+  #### dependency changes
+  # Since 2025 OpTeX is based on luahbtex
+  optex.deps = (orig.optex.deps or [ ]) ++ [ "luahbtex" ];
+  optexcount.extraBuildInputs = [ python3 ];
+
+  pagelayout.extraBuildInputs = [
+    gnused
+    ncurses
+  ];
+
+  pagelayout.postFixup = ''
+    sed -i '2iPATH="${lib.makeBinPath [ gnused ]}''${PATH:+:$PATH}"' "$out"/bin/pagelayoutapi
+    sed -i '2iPATH="${lib.makeBinPath [ ncurses ]}''${PATH:+:$PATH}"' "$out"/bin/textestvis
+  '';
+
   pax.extraBuildInputs = [ (perl.withPackages (ps: with ps; [ FileWhich ])) ];
+  pdfbook2.extraBuildInputs = [ python3 ];
+  pdfcrop.binlinks.rpdfcrop = "pdfcrop";
+  pdfcrop.extraBuildInputs = [ ghostscript_headless ];
+
+  pdfcrop.postFixup = ''
+    sed -i '2i$ENV{PATH}='"'"'${lib.makeBinPath pdfcrop.extraBuildInputs}'"'"' . ($ENV{PATH} ? ":$ENV{PATH}" : '"'''"');' "$out"/bin/pdfcrop
+  '';
+
   pdflatexpicscale.extraBuildInputs = [
     (perl.withPackages (
       ps: with ps; [
@@ -137,237 +381,12 @@ lib.recursiveUpdate orig rec {
       ]
     ))
   ];
-  ptex-fontmaps.extraBuildInputs = [ (perl.withPackages (ps: with ps; [ Tk ])) ];
-  purifyeps.extraBuildInputs = [ (perl.withPackages (ps: with ps; [ FileWhich ])) ];
-  sqltex.extraBuildInputs = [ (perl.withPackages (ps: with ps; [ DBI ])) ];
-  svn-multi.extraBuildInputs = [ (perl.withPackages (ps: with ps; [ TimeDate ])) ];
-  texdoctk.extraBuildInputs = [ (perl.withPackages (ps: with ps; [ Tk ])) ];
-  typog.extraBuildInputs = [ (perl.withPackages (ps: with ps; [ IPCSystemSimple ])) ];
-  ulqda.extraBuildInputs = [ (perl.withPackages (ps: with ps; [ DigestSHA1 ])) ];
 
-  #### python packages
-  pythontex.extraBuildInputs = [ (python3.withPackages (ps: with ps; [ pygments ])) ];
-
-  #### other runtime PATH dependencies
-  a2ping.extraBuildInputs = [ ghostscript_headless ];
-  bibexport.extraBuildInputs = [ gnugrep ];
-  checklistings.extraBuildInputs = [ coreutils ];
-  cjk-gs-integrate.extraBuildInputs = [ ghostscript_headless ];
-  cyrillic-bin.extraBuildInputs = [
-    coreutils
-    gnused
-  ];
-  dtxgen.extraBuildInputs = [
-    coreutils
-    getopt
-    gettext
-    gnumake
-    texinfo
-    zip
-  ];
-  dviljk.extraBuildInputs = [ coreutils ];
-  epspdf.extraBuildInputs = [ ghostscript_headless ];
-  epstopdf.extraBuildInputs = [ ghostscript_headless ];
-  fragmaster.extraBuildInputs = [ ghostscript_headless ];
-  installfont.extraBuildInputs = [
-    coreutils
-    getopt
-    gnused
-  ];
-  latexfileversion.extraBuildInputs = [
-    coreutils
-    gnugrep
-    gnused
-  ];
-  listings-ext.extraBuildInputs = [
-    coreutils
-    getopt
-  ];
-  ltxfileinfo.extraBuildInputs = [
-    coreutils
-    getopt
-    gnused
-  ];
-  ltximg.extraBuildInputs = [ ghostscript_headless ];
-  luaotfload.extraBuildInputs = [ ncurses ];
-  makeindex.extraBuildInputs = [
-    coreutils
-    gnused
-  ];
-  pagelayout.extraBuildInputs = [
-    gnused
-    ncurses
-  ];
-  pdfcrop.extraBuildInputs = [ ghostscript_headless ];
   pdftex.extraBuildInputs = [
     coreutils
     ghostscript_headless
     gnused
   ];
-  pdftex-quiet.extraBuildInputs = [ coreutils ];
-  pdfxup.extraBuildInputs = [
-    coreutils
-    ghostscript_headless
-  ];
-  pkfix-helper.extraBuildInputs = [ ghostscript_headless ];
-  ps2eps.extraBuildInputs = [ ghostscript_headless ];
-  pst2pdf.extraBuildInputs = [ ghostscript_headless ];
-  tex4ebook.extraBuildInputs = [ html-tidy ];
-  texlive-scripts.extraBuildInputs = [ gnused ];
-  texlive-scripts-extra.extraBuildInputs = [
-    coreutils
-    findutils
-    ghostscript_headless
-    gnused
-  ];
-  thumbpdf.extraBuildInputs = [ ghostscript_headless ];
-  tpic2pdftex.extraBuildInputs = [ gawk ];
-  wordcount.extraBuildInputs = [
-    coreutils
-    gnugrep
-  ];
-  xdvi.extraBuildInputs = [
-    coreutils
-    gnugrep
-  ];
-  xindy.extraBuildInputs = [ gzip ];
-
-  #### adjustments to binaries
-  # TODO patch the scripts from bin.* directly in bin.* instead of here
-
-  # mptopdf is a format link, but not generated by texlinks
-  # so we add it back to binfiles to generate it from mkPkgBin
-  mptopdf.binfiles = (orig.mptopdf.binfiles or [ ]) ++ [ "mptopdf" ];
-
-  # remove man
-  texlive-scripts.binfiles = lib.remove "man" orig.texlive-scripts.binfiles;
-  # xindy is broken on some platforms unfortunately
-  xindy.binfiles =
-    if bin ? xindy then lib.subtractLists [ "xindy.mem" "xindy.run" ] orig.xindy.binfiles else [ ];
-
-  #### additional symlinks
-  cluttex.binlinks = {
-    cllualatex = "cluttex";
-    clxelatex = "cluttex";
-  };
-
-  context.binlinks = {
-    context = "luametatex";
-    "context.lua" = tl.context.tex + "/scripts/context/lua/context.lua";
-    mtxrun = "luametatex";
-    "mtxrun.lua" = tl.context.tex + "/scripts/context/lua/mtxrun.lua";
-  };
-
-  dvipdfmx.binlinks = {
-    # even though 'ebb' was removed from the Makefile, this symlink is still
-    # part of the binary container of dvipdfmx
-    ebb = "xdvipdfmx";
-  };
-
-  epstopdf.binlinks.repstopdf = "epstopdf";
-  pdfcrop.binlinks.rpdfcrop = "pdfcrop";
-
-  # TODO: handle symlinks in bin.core
-  ptex.binlinks = {
-    pbibtex = tl.uptex.out + "/bin/upbibtex";
-    pdvitype = tl.uptex.out + "/bin/updvitype";
-    ppltotf = tl.uptex.out + "/bin/uppltotf";
-    ptftopl = tl.uptex.out + "/bin/uptftopl";
-  };
-
-  texdef.binlinks = {
-    latexdef = "texdef";
-  };
-
-  texlive-scripts.binlinks = {
-    mktexfmt = "fmtutil";
-    texhash = tl."texlive.infra".out + "/bin/mktexlsr";
-  };
-
-  texlive-scripts-extra.binlinks = {
-    allec = "allcm";
-    kpsepath = "kpsetool";
-    kpsexpand = "kpsetool";
-  };
-
-  #### add PATH dependencies without wrappers
-  # TODO deduplicate this code
-  a2ping.postFixup = ''
-    sed -i '6i$ENV{PATH}='"'"'${lib.makeBinPath a2ping.extraBuildInputs}'"'"' . ($ENV{PATH} ? ":$ENV{PATH}" : '"'''"');' "$out"/bin/a2ping
-  '';
-
-  bibexport.postFixup = ''
-    sed -i '2iPATH="${lib.makeBinPath bibexport.extraBuildInputs}''${PATH:+:$PATH}"' "$out"/bin/bibexport
-  '';
-
-  checklistings.postFixup = ''
-    sed -i '2iPATH="${lib.makeBinPath checklistings.extraBuildInputs}''${PATH:+:$PATH}"' "$out"/bin/checklistings
-  '';
-
-  cjk-gs-integrate.postFixup = ''
-    sed -i '2i$ENV{PATH}='"'"'${lib.makeBinPath cjk-gs-integrate.extraBuildInputs}'"'"' . ($ENV{PATH} ? ":$ENV{PATH}" : '"'''"');' "$out"/bin/cjk-gs-integrate
-  '';
-
-  context-legacy.postFixup = ''
-    sed -i 's!File.dirname(\$0)!'"'"'${tl.context-legacy.tex}/scripts/context/ruby'"'"'!' "$out"/bin/*
-  '';
-
-  cyrillic-bin.postFixup = ''
-    sed -i '2iPATH="${lib.makeBinPath cyrillic-bin.extraBuildInputs}''${PATH:+:$PATH}"' "$out"/bin/rumakeindex
-  '';
-
-  dtxgen.postFixup = ''
-    sed -i '2iPATH="${lib.makeBinPath dtxgen.extraBuildInputs}''${PATH:+:$PATH}"' "$out"/bin/dtxgen
-  '';
-
-  dviljk.postFixup = ''
-    sed -i '2iPATH="${lib.makeBinPath dviljk.extraBuildInputs}''${PATH:+:$PATH}"' "$out"/bin/dvihp
-  '';
-
-  epstopdf.postFixup = ''
-    sed -i '2i$ENV{PATH}='"'"'${lib.makeBinPath epstopdf.extraBuildInputs}'"'"' . ($ENV{PATH} ? ":$ENV{PATH}" : '"'''"');' "$out"/bin/epstopdf
-  '';
-
-  fragmaster.postFixup = ''
-    sed -i '2i$ENV{PATH}='"'"'${lib.makeBinPath fragmaster.extraBuildInputs}'"'"' . ($ENV{PATH} ? ":$ENV{PATH}" : '"'''"');' "$out"/bin/fragmaster
-  '';
-
-  installfont.postFixup = ''
-    sed -i '2iPATH="${lib.makeBinPath installfont.extraBuildInputs}''${PATH:+:$PATH}"' "$out"/bin/installfont-tl
-  '';
-
-  latexfileversion.postFixup = ''
-    sed -i '2iPATH="${lib.makeBinPath latexfileversion.extraBuildInputs}''${PATH:+:$PATH}"' "$out"/bin/latexfileversion
-  '';
-
-  listings-ext.postFixup = ''
-    sed -i '2iPATH="${lib.makeBinPath listings-ext.extraBuildInputs}''${PATH:+:$PATH}"' "$out"/bin/listings-ext.sh
-  '';
-
-  ltxfileinfo.postFixup = ''
-    sed -i '2iPATH="${lib.makeBinPath ltxfileinfo.extraBuildInputs}''${PATH:+:$PATH}"' "$out"/bin/ltxfileinfo
-  '';
-
-  ltximg.postFixup = ''
-    sed -i '2i$ENV{PATH}='"'"'${lib.makeBinPath ltximg.extraBuildInputs}'"'"' . ($ENV{PATH} ? ":$ENV{PATH}" : '"'''"');' "$out"/bin/ltximg
-  '';
-
-  luaotfload.postFixup = ''
-    sed -i '2ios.setenv("PATH","${lib.makeBinPath luaotfload.extraBuildInputs}" .. (os.getenv("PATH") and ":" .. os.getenv("PATH") or ""))' "$out"/bin/luaotfload-tool
-  '';
-
-  makeindex.postFixup = ''
-    sed -i '2iPATH="${lib.makeBinPath makeindex.extraBuildInputs}''${PATH:+:$PATH}"' "$out"/bin/mkindex
-  '';
-
-  pagelayout.postFixup = ''
-    sed -i '2iPATH="${lib.makeBinPath [ gnused ]}''${PATH:+:$PATH}"' "$out"/bin/pagelayoutapi
-    sed -i '2iPATH="${lib.makeBinPath [ ncurses ]}''${PATH:+:$PATH}"' "$out"/bin/textestvis
-  '';
-
-  pdfcrop.postFixup = ''
-    sed -i '2i$ENV{PATH}='"'"'${lib.makeBinPath pdfcrop.extraBuildInputs}'"'"' . ($ENV{PATH} ? ":$ENV{PATH}" : '"'''"');' "$out"/bin/pdfcrop
-  '';
 
   pdftex.postFixup = ''
     sed -i -e '2iPATH="${
@@ -382,102 +401,74 @@ lib.recursiveUpdate orig rec {
       "$out"/bin/simpdftex
   '';
 
+  pdftex.scriptsFolder = "simpdftex";
+  pdftex-quiet.extraBuildInputs = [ coreutils ];
+
   pdftex-quiet.postFixup = ''
     sed -i '2iPATH="${lib.makeBinPath pdftex-quiet.extraBuildInputs}''${PATH:+:$PATH}"' "$out"/bin/pdftex-quiet
   '';
+
+  pdfxup.extraBuildInputs = [
+    coreutils
+    ghostscript_headless
+  ];
 
   pdfxup.postFixup = ''
     sed -i '2iPATH="${lib.makeBinPath pdfxup.extraBuildInputs}''${PATH:+:$PATH}"' "$out"/bin/pdfxup
   '';
 
+  pkfix-helper.extraBuildInputs = [ ghostscript_headless ];
+
   pkfix-helper.postFixup = ''
     sed -i '2i$ENV{PATH}='"'"'${lib.makeBinPath pkfix-helper.extraBuildInputs}'"'"' . ($ENV{PATH} ? ":$ENV{PATH}" : '"'''"');' "$out"/bin/pkfix-helper
   '';
+
+  ps2eps.extraBuildInputs = [ ghostscript_headless ];
 
   ps2eps.postFixup = ''
     sed -i '2i$ENV{PATH}='"'"'${lib.makeBinPath ps2eps.extraBuildInputs}'"'"' . ($ENV{PATH} ? ":$ENV{PATH}" : '"'''"');' "$out"/bin/ps2eps
   '';
 
+  pst2pdf.extraBuildInputs = [ ghostscript_headless ];
+
   pst2pdf.postFixup = ''
     sed -i '2i$ENV{PATH}='"'"'${lib.makeBinPath pst2pdf.extraBuildInputs}'"'"' . ($ENV{PATH} ? ":$ENV{PATH}" : '"'''"');' "$out"/bin/pst2pdf
   '';
+
+  # TODO: handle symlinks in bin.core
+  ptex.binlinks = {
+    pbibtex = tl.uptex.out + "/bin/upbibtex";
+    pdvitype = tl.uptex.out + "/bin/updvitype";
+    ppltotf = tl.uptex.out + "/bin/uppltotf";
+    ptftopl = tl.uptex.out + "/bin/uptftopl";
+  };
+
+  ptex-fontmaps.extraBuildInputs = [ (perl.withPackages (ps: with ps; [ Tk ])) ];
+  purifyeps.extraBuildInputs = [ (perl.withPackages (ps: with ps; [ FileWhich ])) ];
+  #### python packages
+  pythontex.extraBuildInputs = [ (python3.withPackages (ps: with ps; [ pygments ])) ];
+  sqltex.extraBuildInputs = [ (perl.withPackages (ps: with ps; [ DBI ])) ];
+  svn-multi.extraBuildInputs = [ (perl.withPackages (ps: with ps; [ TimeDate ])) ];
+  tex4ebook.extraBuildInputs = [ html-tidy ];
 
   tex4ebook.postFixup = ''
     sed -i '2ios.setenv("PATH","${lib.makeBinPath tex4ebook.extraBuildInputs}" .. (os.getenv("PATH") and ":" .. os.getenv("PATH") or ""))' "$out"/bin/tex4ebook
   '';
 
-  texlive-scripts.postFixup = ''
-    sed -i '2iPATH="${lib.makeBinPath texlive-scripts.extraBuildInputs}''${PATH:+:$PATH}"' "$out"/bin/{fmtutil-user,mktexmf,mktexpk,mktextfm,updmap-user}
-  '';
+  #### misc
+  # replace tex4ht.jar with our rebuilt version
+  tex4ht.deps = (orig.tex4ht.deps or [ ]) ++ [ "tex4htJar" ];
+  tex4ht.hasJar = false;
 
-  thumbpdf.postFixup = ''
-    sed -i '2i$ENV{PATH}='"'"'${lib.makeBinPath thumbpdf.extraBuildInputs}'"'"' . ($ENV{PATH} ? ":$ENV{PATH}" : '"'''"');' "$out"/bin/thumbpdf
-  '';
-
-  tpic2pdftex.postFixup = ''
-    sed -i '2iPATH="${lib.makeBinPath tpic2pdftex.extraBuildInputs}''${PATH:+:$PATH}"' "$out"/bin/tpic2pdftex
-  '';
-
-  wordcount.postFixup = ''
-    sed -i '2iPATH="${lib.makeBinPath wordcount.extraBuildInputs}''${PATH:+:$PATH}"' "$out"/bin/wordcount
-  '';
-
-  # TODO patch in bin.xdvi
-  xdvi.postFixup = ''
-    sed -i '2iPATH="${lib.makeBinPath xdvi.extraBuildInputs}''${PATH:+:$PATH}"' "$out"/bin/xdvi
-  '';
-
-  xindy.postFixup = ''
-    sed -i '2i$ENV{PATH}='"'"'${lib.makeBinPath xindy.extraBuildInputs}'"'"' . ($ENV{PATH} ? ":$ENV{PATH}" : '"'''"');' "$out"/bin/{texindy,xindy}
-  '';
-
-  #### other script fixes
-  # misc tab and python3 fixes
-  ebong.postFixup = ''
-    sed -Ei 's/import sre/import re/; s/file\(/open(/g; s/\t/        /g; s/print +(.*)$/print(\1)/g' "$out"/bin/ebong
-  '';
-
-  # find files in script directory, not binary directory
-  # add runtime dependencies to PATH
-  epspdf.postFixup = ''
-    sed -i '2ios.setenv("PATH","${lib.makeBinPath epspdf.extraBuildInputs}" .. (os.getenv("PATH") and ":" .. os.getenv("PATH") or ""))' "$out"/bin/epspdf
-    substituteInPlace "$out"/bin/epspdftk --replace-fail '[info script]' "\"$scriptsFolder/epspdftk.tcl\""
-  '';
-
-  # use correct path to xdvipdfmx
-  extractbb.extraBuildInputs = [ bin.core.dvipdfmx ];
-  extractbb.postUnpack = ''
-    if [[ -f "$out"/scripts/extractbb/extractbb-wrapper.lua ]] ; then
-      sed -i 's!local target_path = interpreter_dir .. "/" .. TARGET_PATH_NAME .. target_ext!local target_path = os.getenv("NIX_TEXLIVE_XDVIPDFMX")!' "$out"/scripts/extractbb/extractbb-wrapper.lua
-    fi
-  '';
-  extractbb.postFixup = ''
-    sed -i "2ios.setenv('NIX_TEXLIVE_XDVIPDFMX','$(PATH="$HOST_PATH" command -v xdvipdfmx)')" "$out"/bin/extractbb
-  '';
-
-  # find files in script directory, not in binary directory
-  latexindent.postFixup = ''
-    substituteInPlace "$out"/bin/latexindent --replace-fail 'use FindBin;' "BEGIN { \$0 = '$scriptsFolder' . '/latexindent.pl'; }; use FindBin;"
-  '';
-
-  # l3build ignores the TEXMFCNF variable to prevent user customisations from affecting the build
-  # but we rely on TEXMFCNF to find the system texmf.cnf, so we must inject its path into l3build
-  # WARNING: this relies on the system texmf.cnf being in $TEXMFSYSVAR/web2c
-  l3build.postUnpack = ''
-    if [[ -f "$out"/scripts/l3build/l3build-aux.lua ]] ; then
-      substituteInPlace "$out"/scripts/l3build/l3build-aux.lua --replace-fail '" TEXMFCNF=."' '" TEXMFCNF=." .. os_pathsep .. kpse.var_value("TEXMFSYSVAR") .. "/web2c"'
-    fi
-  '';
-
-  # find files in script directory, not in binary directory
-  minted.postFixup = ''
-    substituteInPlace "$out"/bin/latexminted --replace-fail "__file__" "\"$scriptsFolder/latexminted.py\""
+  tex4ht.postUnpack = ''
+    [[ ! -d "$out"/tex4ht/bin ]] || rm -fr "$out"/tex4ht/bin
   '';
 
   # find files in source container, fix incompatibilities with snobol4
   texaccents.postFixup = ''
     sed -i '1s!$! -I${tl.texaccents.texsource}/source/support/texaccents!' "$out"/bin/*
   '';
+
   texaccents.postUnpack = ''
     if [[ -f "$out"/source/support/texaccents/grepl.inc ]] ; then
       sed -i 's!^-include "repl.inc"!-include "repl.sno"!' "$out"/source/support/texaccents/grepl.inc
@@ -491,6 +482,70 @@ lib.recursiveUpdate orig rec {
 
   # flag lua dependency
   texblend.scriptExts = [ "lua" ];
+
+  texdef.binlinks = {
+    latexdef = "texdef";
+  };
+
+  texdoc = {
+    # install zsh completion
+    postFixup = ''
+      TEXMFCNF="${tl.kpathsea.tex}"/web2c TEXMF="$scriptsFolder/../.." \
+        texlua "$out"/bin/texdoc --print-completion zsh > "$TMPDIR"/_texdoc
+      installShellCompletion --zsh "$TMPDIR"/_texdoc
+    '';
+
+    extraNativeBuildInputs = [ installShellFiles ];
+    extraRevision = "-tlpdb${toString tlpdbVersion.revision}";
+    extraVersion = "-tlpdb-${toString tlpdbVersion.revision}";
+
+    # build Data.tlpdb.lua (part of the 'tlType == "run"' package)
+    postUnpack = ''
+      if [[ -f "$out"/scripts/texdoc/texdoc.tlu ]]; then
+        unxz --stdout "${tlpdbxz}" > texlive.tlpdb
+
+        # create dummy doc file to ensure that texdoc does not return an error
+        mkdir -p support/texdoc
+        touch support/texdoc/NEWS
+
+        TEXMFCNF="${tl.kpathsea.tex}/web2c" TEXMF="$out" TEXDOCS=. TEXMFVAR=. \
+          "${bin.luatex}"/bin/texlua "$out"/scripts/texdoc/texdoc.tlu \
+          -c texlive_tlpdb=texlive.tlpdb -lM texdoc
+
+        cp texdoc/cache-tlpdb.lua "$out"/scripts/texdoc/Data.tlpdb.lua
+      fi
+    '';
+  };
+
+  texdoctk.extraBuildInputs = [ (perl.withPackages (ps: with ps; [ Tk ])) ];
+  # remove man
+  texlive-scripts.binfiles = lib.remove "man" orig.texlive-scripts.binfiles;
+
+  texlive-scripts.binlinks = {
+    mktexfmt = "fmtutil";
+    texhash = tl."texlive.infra".out + "/bin/mktexlsr";
+  };
+
+  texlive-scripts.extraBuildInputs = [ gnused ];
+
+  texlive-scripts.postFixup = ''
+    sed -i '2iPATH="${lib.makeBinPath texlive-scripts.extraBuildInputs}''${PATH:+:$PATH}"' "$out"/bin/{fmtutil-user,mktexmf,mktexpk,mktextfm,updmap-user}
+  '';
+
+  texlive-scripts.scriptsFolder = "texlive";
+
+  texlive-scripts-extra.binlinks = {
+    allec = "allcm";
+    kpsepath = "kpsetool";
+    kpsexpand = "kpsetool";
+  };
+
+  texlive-scripts-extra.extraBuildInputs = [
+    coreutils
+    findutils
+    ghostscript_headless
+    gnused
+  ];
 
   # Patch texlinks.sh back to 2015 version;
   # otherwise some bin/ links break, e.g. xe(la)tex.
@@ -519,109 +574,9 @@ lib.recursiveUpdate orig rec {
     }''${PATH:+:$PATH}"' "$out"/bin/texconfig-dialog
   '';
 
-  # patch interpreter
-  texosquery.postFixup = ''
-    substituteInPlace "$out"/bin/* --replace-fail java "$interpJava"
-  '';
-
-  # hardcode revision numbers (since texlive.infra, tlshell are not in either system or user texlive.tlpdb)
-  tlshell.postFixup = ''
-    substituteInPlace "$out"/bin/tlshell \
-      --replace-fail '[dict get $::pkgs texlive.infra localrev]' '${
-        toString orig."texlive.infra".revision
-      }' \
-      --replace-fail '[dict get $::pkgs tlshell localrev]' '${toString orig.tlshell.revision}'
-  '';
-
-  #### dependency changes
-
-  # Since 2025 OpTeX is based on luahbtex
-  optex.deps = (orig.optex.deps or [ ]) ++ [ "luahbtex" ];
-
-  # Since the packaging change for ConTeXt, context-legacy is missing the xetex dependency
-  context-legacy.deps = (orig.context-legacy.deps or [ ]) ++ [ "xetex" ];
-
-  # it seems to need it to transform fonts
-  xdvi.deps = (orig.xdvi.deps or [ ]) ++ [ "metafont" ];
-
-  mltex.deps = (orig.mltex.deps or [ ]) ++ [ "pdftex" ];
-
-  # remove dependency-heavy packages from the basic collections
-  collection-basic.deps = lib.subtractLists [ "metafont" "xdvi" ] orig.collection-basic.deps;
-
-  # add them elsewhere so that collections cover all packages
-  collection-metapost.deps = orig.collection-metapost.deps ++ [ "metafont" ];
-  collection-plaingeneric.deps = orig.collection-plaingeneric.deps ++ [ "xdvi" ];
-
-  #### misc
-
-  # replace tex4ht.jar with our rebuilt version
-  tex4ht.deps = (orig.tex4ht.deps or [ ]) ++ [ "tex4htJar" ];
-  tex4ht.postUnpack = ''
-    [[ ! -d "$out"/tex4ht/bin ]] || rm -fr "$out"/tex4ht/bin
-  '';
-  tex4ht.hasJar = false;
-
-  # Use top-level git-latexdiff's version and src. NOTE that this derivation is
-  # still different from top-level's `git-latexdiff`, due to __structuredAttrs
-  # enabled unconditionally. Still though this derivation produces a funcitonal
-  # binary.
-  inherit git-latexdiff;
-
-  # RISC-V: https://github.com/LuaJIT/LuaJIT/issues/628
-  luajittex.binfiles = lib.optionals (lib.meta.availableOn stdenv.hostPlatform luajit) orig.luajittex.binfiles;
-
-  texdoc = {
-    extraRevision = "-tlpdb${toString tlpdbVersion.revision}";
-    extraVersion = "-tlpdb-${toString tlpdbVersion.revision}";
-
-    extraNativeBuildInputs = [ installShellFiles ];
-
-    # build Data.tlpdb.lua (part of the 'tlType == "run"' package)
-    postUnpack = ''
-      if [[ -f "$out"/scripts/texdoc/texdoc.tlu ]]; then
-        unxz --stdout "${tlpdbxz}" > texlive.tlpdb
-
-        # create dummy doc file to ensure that texdoc does not return an error
-        mkdir -p support/texdoc
-        touch support/texdoc/NEWS
-
-        TEXMFCNF="${tl.kpathsea.tex}/web2c" TEXMF="$out" TEXDOCS=. TEXMFVAR=. \
-          "${bin.luatex}"/bin/texlua "$out"/scripts/texdoc/texdoc.tlu \
-          -c texlive_tlpdb=texlive.tlpdb -lM texdoc
-
-        cp texdoc/cache-tlpdb.lua "$out"/scripts/texdoc/Data.tlpdb.lua
-      fi
-    '';
-
-    # install zsh completion
-    postFixup = ''
-      TEXMFCNF="${tl.kpathsea.tex}"/web2c TEXMF="$scriptsFolder/../.." \
-        texlua "$out"/bin/texdoc --print-completion zsh > "$TMPDIR"/_texdoc
-      installShellCompletion --zsh "$TMPDIR"/_texdoc
-    '';
-  };
+  texlive-scripts-extra.scriptsFolder = "texlive-extra";
 
   "texlive.infra" = {
-    extraRevision = ".tlpdb${toString tlpdbVersion.revision}";
-    extraVersion = "-tlpdb-${toString tlpdbVersion.revision}";
-
-    # add license of tlmgr and TeXLive::* perl packages and of bin.core
-    license = [
-      "gpl2Plus"
-    ]
-    ++ lib.toList bin.core.meta.license.shortName
-    ++ orig."texlive.infra".license or [ ];
-
-    scriptsFolder = "texlive";
-    extraBuildInputs = [
-      coreutils
-      gnused
-      gnupg
-      tl.kpathsea
-      (perl.withPackages (ps: with ps; [ Tk ]))
-    ];
-
     # make tlmgr believe it can use kpsewhich to evaluate TEXMFROOT
     postFixup = ''
       substituteInPlace "$out"/bin/tlmgr \
@@ -636,11 +591,96 @@ lib.recursiveUpdate orig rec {
       }''${PATH:+:$PATH}"' "$out"/bin/mktexlsr
     '';
 
+    extraBuildInputs = [
+      coreutils
+      gnused
+      gnupg
+      tl.kpathsea
+      (perl.withPackages (ps: with ps; [ Tk ]))
+    ];
+
+    extraRevision = ".tlpdb${toString tlpdbVersion.revision}";
+    extraVersion = "-tlpdb-${toString tlpdbVersion.revision}";
+
+    # add license of tlmgr and TeXLive::* perl packages and of bin.core
+    license = [
+      "gpl2Plus"
+    ]
+    ++ lib.toList bin.core.meta.license.shortName
+    ++ orig."texlive.infra".license or [ ];
+
     # add minimal texlive.tlpdb
     postUnpack = ''
       if [[ -d "$out"/TeXLive ]] ; then
         xzcat "${tlpdbxz}" | sed -n -e '/^name \(00texlive.config\|00texlive.installation\)$/,/^$/p' > "$out"/texlive.tlpdb
       fi
     '';
+
+    scriptsFolder = "texlive";
   };
+
+  texlogsieve.extraBuildInputs = [ bin.luatex ];
+
+  # patch interpreter
+  texosquery.postFixup = ''
+    substituteInPlace "$out"/bin/* --replace-fail java "$interpJava"
+  '';
+
+  thumbpdf.extraBuildInputs = [ ghostscript_headless ];
+
+  thumbpdf.postFixup = ''
+    sed -i '2i$ENV{PATH}='"'"'${lib.makeBinPath thumbpdf.extraBuildInputs}'"'"' . ($ENV{PATH} ? ":$ENV{PATH}" : '"'''"');' "$out"/bin/thumbpdf
+  '';
+
+  # hardcode revision numbers (since texlive.infra, tlshell are not in either system or user texlive.tlpdb)
+  tlshell.postFixup = ''
+    substituteInPlace "$out"/bin/tlshell \
+      --replace-fail '[dict get $::pkgs texlive.infra localrev]' '${
+        toString orig."texlive.infra".revision
+      }' \
+      --replace-fail '[dict get $::pkgs tlshell localrev]' '${toString orig.tlshell.revision}'
+  '';
+
+  tpic2pdftex.extraBuildInputs = [ gawk ];
+
+  tpic2pdftex.postFixup = ''
+    sed -i '2iPATH="${lib.makeBinPath tpic2pdftex.extraBuildInputs}''${PATH:+:$PATH}"' "$out"/bin/tpic2pdftex
+  '';
+
+  typog.extraBuildInputs = [ (perl.withPackages (ps: with ps; [ IPCSystemSimple ])) ];
+  ulqda.extraBuildInputs = [ (perl.withPackages (ps: with ps; [ DigestSHA1 ])) ];
+
+  wordcount.extraBuildInputs = [
+    coreutils
+    gnugrep
+  ];
+
+  wordcount.postFixup = ''
+    sed -i '2iPATH="${lib.makeBinPath wordcount.extraBuildInputs}''${PATH:+:$PATH}"' "$out"/bin/wordcount
+  '';
+
+  # it seems to need it to transform fonts
+  xdvi.deps = (orig.xdvi.deps or [ ]) ++ [ "metafont" ];
+
+  xdvi.extraBuildInputs = [
+    coreutils
+    gnugrep
+  ];
+
+  # TODO patch in bin.xdvi
+  xdvi.postFixup = ''
+    sed -i '2iPATH="${lib.makeBinPath xdvi.extraBuildInputs}''${PATH:+:$PATH}"' "$out"/bin/xdvi
+  '';
+
+  xetex.scriptsFolder = "texlive-extra";
+
+  # xindy is broken on some platforms unfortunately
+  xindy.binfiles =
+    if bin ? xindy then lib.subtractLists [ "xindy.mem" "xindy.run" ] orig.xindy.binfiles else [ ];
+
+  xindy.extraBuildInputs = [ gzip ];
+
+  xindy.postFixup = ''
+    sed -i '2i$ENV{PATH}='"'"'${lib.makeBinPath xindy.extraBuildInputs}'"'"' . ($ENV{PATH} ? ":$ENV{PATH}" : '"'''"');' "$out"/bin/{texindy,xindy}
+  '';
 }

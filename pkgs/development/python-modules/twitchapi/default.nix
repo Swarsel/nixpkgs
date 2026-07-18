@@ -1,17 +1,16 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
   aiohttp,
+  buildPythonPackage,
   python-dateutil,
+  setuptools,
   typing-extensions,
 }:
 
 buildPythonPackage rec {
   pname = "twitchapi";
   version = "4.5.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "Teekeks";
@@ -24,10 +23,8 @@ buildPythonPackage rec {
     sed -i "/document_enum/d" twitchAPI/type.py
   '';
 
-  pythonRemoveDeps = [
-    "enum-tools"
-  ];
-
+  # upstream has no tests
+  doCheck = false;
   build-system = [ setuptools ];
 
   dependencies = [
@@ -36,8 +33,7 @@ buildPythonPackage rec {
     typing-extensions
   ];
 
-  # upstream has no tests
-  doCheck = false;
+  pyproject = true;
 
   pythonImportsCheck = [
     "twitchAPI.chat"
@@ -48,11 +44,16 @@ buildPythonPackage rec {
     "twitchAPI.type"
   ];
 
+  pythonRemoveDeps = [
+    "enum-tools"
+  ];
+
   meta = {
-    changelog = "https://github.com/Teekeks/pyTwitchAPI/blob/${src.tag}/docs/changelog.rst";
     description = "Python implementation of the Twitch Helix API, EventSub and Chat";
     homepage = "https://github.com/Teekeks/pyTwitchAPI";
+    changelog = "https://github.com/Teekeks/pyTwitchAPI/blob/${src.tag}/docs/changelog.rst";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       dotlambda
     ];

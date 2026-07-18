@@ -1,15 +1,14 @@
 {
   lib,
   stdenv,
-  python3,
   fetchFromGitHub,
+  python3,
   writableTmpDirAsHomeHook,
 }:
 
 python3.pkgs.buildPythonApplication (finalAttrs: {
   pname = "fromager";
   version = "0.71.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "python-wheel-build";
@@ -17,6 +16,14 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     tag = finalAttrs.version;
     hash = "sha256-3zz37BZx8FcKNl8mSmClIrZxvL+2AS0hJDct6K7BhBE=";
   };
+
+  nativeCheckInputs = with python3.pkgs; [
+    pytestCheckHook
+    requests-mock
+    twine
+    uv
+    writableTmpDirAsHomeHook
+  ];
 
   build-system = with python3.pkgs; [
     hatchling
@@ -45,18 +52,6 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     wheel
   ];
 
-  nativeCheckInputs = with python3.pkgs; [
-    pytestCheckHook
-    requests-mock
-    twine
-    uv
-    writableTmpDirAsHomeHook
-  ];
-
-  pythonImportsCheck = [
-    "fromager"
-  ];
-
   disabledTestPaths = [
     # Depends on wheel.cli module that is private since wheel 0.46.0
     "tests/test_wheels.py"
@@ -71,6 +66,12 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     # Assumes platform.machine() returns 'arm64' on ARM64, which is not true for Linux.
     # Re-enable once https://github.com/python-wheel-build/fromager/pull/849 is merged.
     "test_add_constraint_conflict"
+  ];
+
+  pyproject = true;
+
+  pythonImportsCheck = [
+    "fromager"
   ];
 
   meta = {

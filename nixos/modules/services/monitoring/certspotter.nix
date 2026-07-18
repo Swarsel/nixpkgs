@@ -15,6 +15,7 @@ let
     }
     ++ lib.optional (cfg.emailRecipients != [ ]) {
       name = "email_recipients";
+
       path = pkgs.writeText "certspotter-email_recipients" (
         builtins.concatStringsSep "\n" cfg.emailRecipients
       );
@@ -22,6 +23,7 @@ let
     # always generate hooks dir when no emails are provided to allow running cert spotter with no hooks/emails
     ++ lib.optional (cfg.emailRecipients == [ ] || cfg.hooks != [ ]) {
       name = "hooks.d";
+
       path = pkgs.linkFarm "certspotter-hooks" (
         lib.imap1 (i: path: {
           inherit path;
@@ -34,45 +36,24 @@ in
 {
   options.services.certspotter = {
     enable = lib.mkEnableOption "Cert Spotter, a Certificate Transparency log monitor";
-
     package = lib.mkPackageOption pkgs "certspotter" { };
 
-    startAtEnd = lib.mkOption {
-      type = lib.types.bool;
-      description = ''
-        Whether to skip certificates issued before the first launch of Cert Spotter.
-        Setting this to `false` will cause Cert Spotter to download tens of terabytes of data.
-      '';
-      default = true;
-    };
-
-    sendmailPath = lib.mkOption {
-      type = with lib.types; nullOr path;
-      description = ''
-        Path to the `sendmail` binary. By default, the local sendmail wrapper is used
-        (see {option}`services.mail.sendmailSetuidWrapper`}).
-      '';
-      example = lib.literalExpression ''"''${pkgs.system-sendmail}/bin/sendmail"'';
-    };
-
-    watchlist = lib.mkOption {
-      type = with lib.types; listOf str;
-      description = "Domain names to watch. To monitor a domain with all subdomains, prefix its name with `.` (e.g. `.example.org`).";
-      default = [ ];
-      example = [
-        ".example.org"
-        "another.example.com"
-      ];
-    };
-
     emailRecipients = lib.mkOption {
-      type = with lib.types; listOf str;
-      description = "A list of email addresses to send certificate updates to.";
       default = [ ];
+      description = "A list of email addresses to send certificate updates to.";
+      type = with lib.types; listOf str;
+    };
+
+    extraFlags = lib.mkOption {
+      default = [ ];
+      description = "Extra command-line arguments to pass to Cert Spotter";
+      example = [ "-no_save" ];
+      type = with lib.types; listOf str;
     };
 
     hooks = lib.mkOption {
-      type = with lib.types; listOf path;
+      default = [ ];
+
       description = ''
         Scripts to run upon the detection of a new certificate. See `man 8 certspotter-script` or
         [the GitHub page](https://github.com/SSLMate/certspotter/blob/${
@@ -80,7 +61,7 @@ in
         }/man/certspotter-script.md)
         for more info.
       '';
-      default = [ ];
+
       example = lib.literalExpression ''
         [
           (pkgs.writeShellScript "certspotter-hook" '''
@@ -88,13 +69,41 @@ in
           ''')
         ]
       '';
+
+      type = with lib.types; listOf path;
     };
 
-    extraFlags = lib.mkOption {
-      type = with lib.types; listOf str;
-      description = "Extra command-line arguments to pass to Cert Spotter";
-      example = [ "-no_save" ];
+    sendmailPath = lib.mkOption {
+      description = ''
+        Path to the `sendmail` binary. By default, the local sendmail wrapper is used
+        (see {option}`services.mail.sendmailSetuidWrapper`}).
+      '';
+
+      example = lib.literalExpression ''"''${pkgs.system-sendmail}/bin/sendmail"'';
+      type = with lib.types; nullOr path;
+    };
+
+    startAtEnd = lib.mkOption {
+      default = true;
+
+      description = ''
+        Whether to skip certificates issued before the first launch of Cert Spotter.
+        Setting this to `false` will cause Cert Spotter to download tens of terabytes of data.
+      '';
+
+      type = lib.types.bool;
+    };
+
+    watchlist = lib.mkOption {
       default = [ ];
+      description = "Domain names to watch. To monitor a domain with all subdomains, prefix its name with `.` (e.g. `.example.org`).";
+
+      example = [
+        ".example.org"
+        "another.example.com"
+      ];
+
+      type = with lib.types; listOf str;
     };
   };
 
@@ -102,6 +111,7 @@ in
     assertions = [
       {
         assertion = (cfg.emailRecipients != [ ]) -> (cfg.sendmailPath != null);
+
         message = ''
           You must configure the sendmail setuid wrapper (services.mail.sendmailSetuidWrapper)
           or services.certspotter.sendmailPath
@@ -121,21 +131,14 @@ in
         (lib.mkIf (sendmailSetuidWrapper == null) (lib.mkOptionDefault null))
       ];
 
-    users.users.certspotter = {
-      description = "Cert Spotter user";
-      group = "certspotter";
-      home = "/var/lib/certspotter";
-      isSystemUser = true;
-    };
-    users.groups.certspotter = { };
-
     systemd.services.certspotter = {
-      description = "Cert Spotter - Certificate Transparency Monitor";
       after = [ "network.target" ];
-      wantedBy = [ "multi-user.target" ];
+      description = "Cert Spotter - Certificate Transparency Monitor";
       environment.CERTSPOTTER_CONFIG_DIR = configDir;
+
       environment.SENDMAIL_PATH =
         if cfg.sendmailPath != null then cfg.sendmailPath else "/run/current-system/sw/bin/false";
+
       script = ''
         export CERTSPOTTER_STATE_DIR="$STATE_DIRECTORY"
         cd "$CERTSPOTTER_STATE_DIR"
@@ -147,14 +150,26 @@ in
         ''}
         exec ${cfg.package}/bin/certspotter ${lib.escapeShellArgs cfg.extraFlags}
       '';
+
       serviceConfig = {
-        User = "certspotter";
         Group = "certspotter";
         StateDirectory = "certspotter";
+        User = "certspotter";
       };
+
+      wantedBy = [ "multi-user.target" ];
+    };
+
+    users.groups.certspotter = { };
+
+    users.users.certspotter = {
+      description = "Cert Spotter user";
+      group = "certspotter";
+      home = "/var/lib/certspotter";
+      isSystemUser = true;
     };
   };
 
-  meta.maintainers = with lib.maintainers; [ chayleaf ];
   meta.doc = ./certspotter.md;
+  meta.maintainers = with lib.maintainers; [ chayleaf ];
 }

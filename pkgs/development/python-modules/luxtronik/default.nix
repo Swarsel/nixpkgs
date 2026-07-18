@@ -1,13 +1,12 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
 }:
 
 buildPythonPackage rec {
   pname = "luxtronik";
   version = "0.3.14";
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "Bouni";
@@ -18,7 +17,7 @@ buildPythonPackage rec {
 
   # Project has no tests
   doCheck = false;
-
+  format = "setuptools";
   pythonImportsCheck = [ "luxtronik" ];
 
   meta = {

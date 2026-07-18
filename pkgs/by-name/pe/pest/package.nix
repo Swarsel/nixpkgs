@@ -15,15 +15,15 @@ php.buildComposerProject2 (finalAttrs: {
     hash = "sha256-ddsdVx/Vsg7GG11fGASouBU3HAJLSjs1AQGHx52TWzA=";
   };
 
-  composerLock = ./composer.lock;
   vendorHash = "sha256-Lv+wbOJVO7gGs4bOcECKyaw7+k3Z4f8gbNEv9uk4he8=";
+  composerLock = ./composer.lock;
 
   meta = {
-    changelog = "https://github.com/pestphp/pest/releases/tag/v${finalAttrs.version}";
     description = "PHP testing framework";
     homepage = "https://pestphp.com";
+    changelog = "https://github.com/pestphp/pest/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.mit;
-    mainProgram = "pest";
     maintainers = [ lib.maintainers.patka ];
+    mainProgram = "pest";
   };
 })

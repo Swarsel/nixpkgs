@@ -2,26 +2,27 @@
 # "ssh-openpgp-auth" and "sshd-openpgpg-auth"
 {
   lib,
-  rustPlatform,
+  cargoHash,
   fetchFromCodeberg,
-  pkg-config,
-  just,
-  rust-script,
   installShellFiles,
+  just,
+  metaDescription,
   nettle,
-  openssl,
-  sqlite,
   openssh,
+  openssl,
+  pkg-config,
   # Arguments not supplied by callPackage
   pname,
-  version,
+  rust-script,
+  rustPlatform,
+  sqlite,
   srcHash,
-  cargoHash,
-  metaDescription,
+  version,
 }:
 
 rustPlatform.buildRustPackage {
   inherit pname version;
+  inherit cargoHash;
 
   src = fetchFromCodeberg {
     owner = "wiktor";
@@ -30,9 +31,6 @@ rustPlatform.buildRustPackage {
     rev = "${pname}/${version}";
     hash = srcHash;
   };
-  buildAndTestSubdir = pname;
-
-  inherit cargoHash;
 
   nativeBuildInputs = [
     pkg-config
@@ -41,11 +39,18 @@ rustPlatform.buildRustPackage {
     rust-script
     installShellFiles
   ];
-  # Otherwise just's build, check and install phases take precedence over
-  # buildRustPackage's phases.
-  dontUseJustBuild = true;
-  dontUseJustCheck = true;
-  dontUseJustInstall = true;
+
+  buildInputs = [
+    nettle
+    openssl
+    sqlite
+  ];
+
+  doCheck = true;
+
+  nativeCheckInputs = [
+    openssh
+  ];
 
   postInstall = ''
     export HOME=$(mktemp -d)
@@ -57,24 +62,22 @@ rustPlatform.buildRustPackage {
       --zsh  shell_completions/_${pname}
   '';
 
-  buildInputs = [
-    nettle
-    openssl
-    sqlite
-  ];
-
-  doCheck = true;
-  nativeCheckInputs = [
-    openssh
-  ];
+  buildAndTestSubdir = pname;
+  # Otherwise just's build, check and install phases take precedence over
+  # buildRustPackage's phases.
+  dontUseJustBuild = true;
+  dontUseJustCheck = true;
+  dontUseJustInstall = true;
 
   meta = {
     description = metaDescription;
     homepage = "https://codeberg.org/wiktor/ssh-openpgp-auth";
+
     license = with lib.licenses; [
       mit # or
       asl20
     ];
+
     maintainers = with lib.maintainers; [ doronbehar ];
     mainProgram = pname;
   };

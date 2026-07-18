@@ -1,37 +1,37 @@
 {
   lib,
   stdenv,
-  callPackage,
   fetchFromGitHub,
-  rocmUpdateScript,
-  pkg-config,
-  cmake,
-  rocm-cmake,
-  clr,
-  openmp,
-  rocblas,
-  hipblas-common,
-  hipblas,
-  hipblaslt,
-  rocmlir,
-  miopen,
-  protobuf,
   abseil-cpp,
-  half,
-  nlohmann_json,
+  blaze,
   boost,
+  callPackage,
+  clr,
+  cmake,
+  docutils,
+  doxygen,
+  ghostscript,
+  half,
+  hipblas,
+  hipblas-common,
+  hipblaslt,
+  miopen,
   msgpack-cxx,
-  sqlite,
+  nlohmann_json,
   # TODO(@LunNova): Swap to `onednn` once v3 is supported
   # Upstream issue: https://github.com/ROCm/AMDMIGraphX/issues/4351
   onednn_2,
-  blaze,
-  texliveSmall,
-  doxygen,
-  sphinx,
-  docutils,
-  ghostscript,
+  openmp,
+  pkg-config,
+  protobuf,
   python3Packages,
+  rocblas,
+  rocm-cmake,
+  rocmUpdateScript,
+  rocmlir,
+  sphinx,
+  sqlite,
+  texliveSmall,
   writableTmpDirAsHomeHook,
   buildDocs ? false,
   buildTests ? false,
@@ -61,6 +61,13 @@ stdenv.mkDerivation (finalAttrs: {
   pname = "migraphx";
   version = "7.2.3";
 
+  src = fetchFromGitHub {
+    owner = "ROCm";
+    repo = "AMDMIGraphX";
+    rev = "rocm-${finalAttrs.version}";
+    hash = "sha256-raYsrMZASdEIxSstk14b38q9dt5EOq3rKidoFvobnxk=";
+  };
+
   outputs = [
     "out"
   ]
@@ -71,12 +78,28 @@ stdenv.mkDerivation (finalAttrs: {
     "test"
   ];
 
-  src = fetchFromGitHub {
-    owner = "ROCm";
-    repo = "AMDMIGraphX";
-    rev = "rocm-${finalAttrs.version}";
-    hash = "sha256-raYsrMZASdEIxSstk14b38q9dt5EOq3rKidoFvobnxk=";
-  };
+  postPatch = ''
+    export CXXFLAGS+=" -w -isystem${rocmlir}/include/rocmlir -I${half}/include -I${lib.getInclude abseil-cpp}/include -I${hipblas-common}/include -I${lib.getInclude protobuf}/include"
+    patchShebangs tools
+
+    # `error: '__clang_hip_runtime_wrapper.h' file not found [clang-diagnostic-error]`
+    substituteInPlace CMakeLists.txt \
+      --replace "set(MIGRAPHX_TIDY_ERRORS ALL)" ""
+
+    # Fix Unicode minus sign (U+2212) in comment that breaks EMBED_USE=CArrays
+    # The embed mechanism generates char[] arrays that can't store unicode −
+    # which has values >127
+    substituteInPlace src/targets/gpu/kernels/include/migraphx/kernels/bit.hpp \
+      --replace-fail "// popcount(~(x | −x))" "// popcount(~(x | -x))"
+  ''
+  + lib.optionalString (!buildDocs) ''
+    substituteInPlace CMakeLists.txt \
+      --replace "add_subdirectory(doc)" ""
+  ''
+  + lib.optionalString (!buildTests) ''
+    substituteInPlace CMakeLists.txt \
+      --replace "add_subdirectory(test)" ""
+  '';
 
   nativeBuildInputs = [
     pkg-config
@@ -116,8 +139,6 @@ stdenv.mkDerivation (finalAttrs: {
     python3Packages.onnx
   ];
 
-  env.LDFLAGS = "-Wl,--allow-shlib-undefined";
-
   cmakeFlags = [
     "-DMIGRAPHX_ENABLE_GPU=ON"
     "-DMIGRAPHX_ENABLE_CPU=ON"
@@ -142,28 +163,7 @@ stdenv.mkDerivation (finalAttrs: {
     "-DGPU_TARGETS=${lib.concatStringsSep ";" gpuTargets}"
   ];
 
-  postPatch = ''
-    export CXXFLAGS+=" -w -isystem${rocmlir}/include/rocmlir -I${half}/include -I${lib.getInclude abseil-cpp}/include -I${hipblas-common}/include -I${lib.getInclude protobuf}/include"
-    patchShebangs tools
-
-    # `error: '__clang_hip_runtime_wrapper.h' file not found [clang-diagnostic-error]`
-    substituteInPlace CMakeLists.txt \
-      --replace "set(MIGRAPHX_TIDY_ERRORS ALL)" ""
-
-    # Fix Unicode minus sign (U+2212) in comment that breaks EMBED_USE=CArrays
-    # The embed mechanism generates char[] arrays that can't store unicode −
-    # which has values >127
-    substituteInPlace src/targets/gpu/kernels/include/migraphx/kernels/bit.hpp \
-      --replace-fail "// popcount(~(x | −x))" "// popcount(~(x | -x))"
-  ''
-  + lib.optionalString (!buildDocs) ''
-    substituteInPlace CMakeLists.txt \
-      --replace "add_subdirectory(doc)" ""
-  ''
-  + lib.optionalString (!buildTests) ''
-    substituteInPlace CMakeLists.txt \
-      --replace "add_subdirectory(test)" ""
-  '';
+  env.LDFLAGS = "-Wl,--allow-shlib-undefined";
 
   # Unfortunately, it seems like we have to call make on this manually
   preInstall = lib.optionalString buildDocs ''
@@ -190,13 +190,14 @@ stdenv.mkDerivation (finalAttrs: {
       migraphx = finalAttrs.finalPackage;
     };
   };
+
   passthru.updateScript = rocmUpdateScript { inherit finalAttrs; };
 
   meta = {
     description = "AMD's graph optimization engine";
     homepage = "https://github.com/ROCm/AMDMIGraphX";
     license = with lib.licenses; [ mit ];
-    teams = [ lib.teams.rocm ];
     platforms = lib.platforms.linux;
+    teams = [ lib.teams.rocm ];
   };
 })

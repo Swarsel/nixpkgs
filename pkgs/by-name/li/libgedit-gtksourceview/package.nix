@@ -1,41 +1,41 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitLab,
   docbook-xsl-nons,
+  gitUpdater,
+  glib,
   gobject-introspection,
   gtk-doc,
-  meson,
-  ninja,
-  pkg-config,
+  gtk3,
   libgedit-amtk,
   libgedit-gfls,
   libxml2,
-  glib,
-  gtk3,
+  meson,
+  ninja,
+  pkg-config,
   shared-mime-info,
-  gitUpdater,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
   pname = "libgedit-gtksourceview";
   version = "299.7.1";
 
+  src = fetchFromGitLab {
+    owner = "gedit";
+    repo = "libgedit-gtksourceview";
+    tag = finalAttrs.version;
+    hash = "sha256-i+6Rfqm/KPJrLSvhvTVY53Q6O+LJEU9WjLJ/L3hMSUA=";
+    domain = "gitlab.gnome.org";
+    forceFetchGit = true; # To avoid occasional 501 failures.
+    group = "World";
+  };
+
   outputs = [
     "out"
     "dev"
     "devdoc"
   ];
-
-  src = fetchFromGitLab {
-    domain = "gitlab.gnome.org";
-    group = "World";
-    owner = "gedit";
-    repo = "libgedit-gtksourceview";
-    tag = finalAttrs.version;
-    forceFetchGit = true; # To avoid occasional 501 failures.
-    hash = "sha256-i+6Rfqm/KPJrLSvhvTVY53Q6O+LJEU9WjLJ/L3hMSUA=";
-  };
 
   patches = [
     # By default, the library loads syntaxes from XDG_DATA_DIRS and user directory

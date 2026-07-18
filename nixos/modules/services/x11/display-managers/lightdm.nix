@@ -1,8 +1,8 @@
 {
   config,
   lib,
-  utils,
   pkgs,
+  utils,
   ...
 }:
 
@@ -73,10 +73,6 @@ let
 
 in
 {
-  meta = {
-    teams = [ lib.teams.pantheon ];
-  };
-
   # Note: the order in which lightdm greeter modules are imported
   # here determines the default: later modules (if enable) are
   # preferred.
@@ -114,73 +110,89 @@ in
     services.xserver.displayManager.lightdm = {
 
       enable = mkOption {
-        type = types.bool;
         default = false;
+
         description = ''
           Whether to enable lightdm as the display manager.
         '';
+
+        type = types.bool;
+      };
+
+      # Configuration for automatic login specific to LightDM
+      autoLogin.timeout = mkOption {
+        default = 0;
+
+        description = ''
+          Show the greeter for this many seconds before automatic login occurs.
+        '';
+
+        type = types.int;
+      };
+
+      background = mkOption {
+        # Manual cannot depend on packages, we are actually setting the default in config below.
+        defaultText = literalExpression "pkgs.nixos-artwork.wallpapers.simple-dark-gray-bottom.gnomeFilePath";
+
+        description = ''
+          The background image or color to use.
+        '';
+
+        type = types.either types.path (types.strMatching "^#[0-9A-Fa-f]{6}$");
+      };
+
+      extraConfig = mkOption {
+        default = "";
+        description = "Extra lines to append to LightDM section.";
+
+        example = ''
+          user-authority-in-system-dir = true
+        '';
+
+        type = types.lines;
+      };
+
+      extraSeatDefaults = mkOption {
+        default = "";
+        description = "Extra lines to append to SeatDefaults section.";
+
+        example = ''
+          greeter-show-manual-login=true
+        '';
+
+        type = types.lines;
       };
 
       greeter = {
         enable = mkOption {
-          type = types.bool;
           default = true;
+
           description = ''
             If set to false, run lightdm in greeterless mode. This only works if autologin
             is enabled and autoLogin.timeout is zero.
           '';
+
+          type = types.bool;
         };
+
         package = mkOption {
-          type = types.package;
           description = ''
             The LightDM greeter to login via. The package should be a directory
             containing a .desktop file matching the name in the 'name' option.
           '';
 
+          type = types.package;
+
         };
+
         name = mkOption {
-          type = types.str;
           description = ''
             The name of a .desktop file in the directory specified
             in the 'package' option.
           '';
+
+          type = types.str;
         };
-      };
-
-      extraConfig = mkOption {
-        type = types.lines;
-        default = "";
-        example = ''
-          user-authority-in-system-dir = true
-        '';
-        description = "Extra lines to append to LightDM section.";
-      };
-
-      background = mkOption {
-        type = types.either types.path (types.strMatching "^#[0-9A-Fa-f]{6}$");
-        # Manual cannot depend on packages, we are actually setting the default in config below.
-        defaultText = literalExpression "pkgs.nixos-artwork.wallpapers.simple-dark-gray-bottom.gnomeFilePath";
-        description = ''
-          The background image or color to use.
-        '';
-      };
-
-      extraSeatDefaults = mkOption {
-        type = types.lines;
-        default = "";
-        example = ''
-          greeter-show-manual-login=true
-        '';
-        description = "Extra lines to append to SeatDefaults section.";
-      };
-
-      # Configuration for automatic login specific to LightDM
-      autoLogin.timeout = mkOption {
-        type = types.int;
-        default = 0;
-        description = ''
-          Show the greeter for this many seconds before automatic login occurs.
-        '';
       };
 
     };
@@ -191,18 +203,21 @@ in
     assertions = [
       {
         assertion = xcfg.enable;
+
         message = ''
           LightDM requires services.xserver.enable to be true
         '';
       }
       {
         assertion = dmcfg.autoLogin.enable -> sessionData.autologinSession != null;
+
         message = ''
           LightDM auto-login requires that services.displayManager.defaultSession is set.
         '';
       }
       {
         assertion = !cfg.greeter.enable -> (dmcfg.autoLogin.enable && cfg.autoLogin.timeout == 0);
+
         message = ''
           LightDM can only run without greeter if automatic login is enabled and the timeout for it
           is set to zero.
@@ -210,9 +225,231 @@ in
       }
     ];
 
-    # Keep in sync with the defaultText value from the option definition.
-    services.xserver.displayManager.lightdm.background =
-      mkDefault pkgs.nixos-artwork.wallpapers.simple-dark-gray-bottom.gnomeFilePath;
+    environment.etc."lightdm/lightdm.conf".source = lightdmConf;
+    environment.etc."lightdm/users.conf".source = usersConf;
+    # Enable the accounts daemon to find lightdm's dbus interface
+    environment.systemPackages = [ lightdm ];
+
+    security.pam.services.lightdm = {
+      rules = {
+        account = utils.pam.autoOrderRules [
+          {
+            control = "include";
+            modulePath = "login";
+            name = "login";
+          }
+          {
+            # https://github.com/elementary/switchboard-plug-parental-controls/blob/8.0.1/src/daemon/Server.vala#L325
+            enable = config.services.pantheon.parental-controls.enable;
+            control = "required";
+            modulePath = "${config.security.pam.package}/lib/security/pam_time.so";
+            name = "time";
+            # Must specify conffile since pam_time defaults to ${linux-pam}/etc/security/time.conf.
+            settings.conffile = "/etc/security/time.conf";
+          }
+        ];
+
+        auth = utils.pam.autoOrderRules [
+          {
+            control = "substack";
+            modulePath = "login";
+            name = "login";
+          }
+        ];
+
+        password = utils.pam.autoOrderRules [
+          {
+            control = "substack";
+            modulePath = "login";
+            name = "login";
+          }
+        ];
+
+        session = utils.pam.autoOrderRules [
+          {
+            control = "include";
+            modulePath = "login";
+            name = "login";
+          }
+        ];
+      };
+
+      useDefaultRules = false;
+    };
+
+    security.pam.services.lightdm-autologin = {
+      rules = {
+        account = utils.pam.autoOrderRules [
+          {
+            control = "sufficient";
+            modulePath = "${config.security.pam.package}/lib/security/pam_unix.so";
+            name = "unix";
+          }
+        ];
+
+        auth = utils.pam.autoOrderRules [
+          {
+            control = "requisite";
+            modulePath = "${config.security.pam.package}/lib/security/pam_nologin.so";
+            name = "nologin";
+          }
+          {
+            args = lib.mkBefore [
+              "uid"
+              ">="
+              "1000"
+            ];
+
+            control = "required";
+            modulePath = "${config.security.pam.package}/lib/security/pam_succeed_if.so";
+            name = "lightdm-normal-user";
+            settings.quiet = true;
+          }
+          {
+            control = "required";
+            modulePath = "${config.security.pam.package}/lib/security/pam_permit.so";
+            name = "permit";
+          }
+        ];
+
+        password = utils.pam.autoOrderRules [
+          {
+            control = "requisite";
+            modulePath = "${config.security.pam.package}/lib/security/pam_unix.so";
+            name = "unix";
+            settings.nullok = true;
+            settings.yescrypt = true;
+          }
+        ];
+
+        session = utils.pam.autoOrderRules [
+          {
+            control = "optional";
+            modulePath = "${config.security.pam.package}/lib/security/pam_keyinit.so";
+            name = "keyinit";
+            settings.revoke = true;
+          }
+          {
+            control = "include";
+            modulePath = "login";
+            name = "login";
+          }
+        ];
+      };
+
+      useDefaultRules = false;
+    };
+
+    security.pam.services.lightdm-greeter = {
+      rules = {
+        account = utils.pam.autoOrderRules [
+          {
+            args = lib.mkAfter [
+              "user"
+              "="
+              "lightdm"
+            ];
+
+            control = "required";
+            modulePath = "${config.security.pam.package}/lib/security/pam_succeed_if.so";
+            name = "lightdm-user";
+            settings.audit = true;
+            settings.quiet_success = true;
+          }
+          {
+            control = "sufficient";
+            modulePath = "${config.security.pam.package}/lib/security/pam_unix.so";
+            name = "unix";
+          }
+        ];
+
+        auth = utils.pam.autoOrderRules [
+          {
+            args = lib.mkAfter [
+              "user"
+              "="
+              "lightdm"
+            ];
+
+            control = "required";
+            modulePath = "${config.security.pam.package}/lib/security/pam_succeed_if.so";
+            name = "lightdm-user";
+            settings.audit = true;
+            settings.quiet_success = true;
+          }
+          {
+            control = "optional";
+            modulePath = "${config.security.pam.package}/lib/security/pam_permit.so";
+            name = "permit";
+          }
+        ];
+
+        password = utils.pam.autoOrderRules [
+          {
+            control = "required";
+            modulePath = "${config.security.pam.package}/lib/security/pam_deny.so";
+            name = "deny";
+          }
+        ];
+
+        session = utils.pam.autoOrderRules [
+          {
+            args = lib.mkAfter [
+              "user"
+              "="
+              "lightdm"
+            ];
+
+            control = "required";
+            modulePath = "${config.security.pam.package}/lib/security/pam_succeed_if.so";
+            name = "lightdm-user";
+            settings.audit = true;
+            settings.quiet_success = true;
+          }
+          {
+            control = "required";
+            modulePath = "${config.security.pam.package}/lib/security/pam_env.so";
+            name = "env";
+            settings.conffile = "/etc/pam/environment";
+            settings.readenv = 0;
+          }
+          {
+            control = "optional";
+            modulePath = "${config.systemd.package}/lib/security/pam_systemd.so";
+            name = "systemd";
+          }
+          {
+            control = "optional";
+            modulePath = "${config.security.pam.package}/lib/security/pam_keyinit.so";
+            name = "keyinit";
+            settings.force = true;
+            settings.revoke = true;
+          }
+          {
+            control = "optional";
+            modulePath = "${config.security.pam.package}/lib/security/pam_permit.so";
+            name = "permit";
+          }
+        ];
+      };
+
+      useDefaultRules = false;
+    };
+
+    security.polkit.enable = true;
+    # lightdm uses the accounts daemon to remember language/window-manager per user
+    services.accounts-daemon.enable = true;
+    services.dbus.enable = true;
+    services.dbus.packages = [ lightdm ];
+    services.displayManager.generic.enable = true;
+    # setSessionScript needs session-files in XDG_DATA_DIRS
+    services.displayManager.generic.environment.XDG_DATA_DIRS = "${dmcfg.sessionData.desktops}/share/";
+
+    # lightdm relaunches itself via just `lightdm`, so needs to be on the PATH
+    services.displayManager.generic.execCmd = ''
+      export PATH=${lightdm}/sbin:$PATH
+      exec ${lightdm}/sbin/lightdm
+    '';
 
     # Set default session in session chooser to a specified values – basically ignore session history.
     # Auto-login is already covered by a config value.
@@ -222,21 +459,11 @@ in
           ${setSessionScript}/bin/set-session ${dmcfg.defaultSession}
         '';
 
-    # setSessionScript needs session-files in XDG_DATA_DIRS
-    services.displayManager.generic.environment.XDG_DATA_DIRS = "${dmcfg.sessionData.desktops}/share/";
+    services.xserver.display = null; # We specify our own display (and logfile) in xserver-wrapper up there
 
-    # setSessionScript wants AccountsService
-    systemd.services.display-manager.wants = [
-      "accounts-daemon.service"
-    ];
-
-    services.displayManager.generic.enable = true;
-
-    # lightdm relaunches itself via just `lightdm`, so needs to be on the PATH
-    services.displayManager.generic.execCmd = ''
-      export PATH=${lightdm}/sbin:$PATH
-      exec ${lightdm}/sbin/lightdm
-    '';
+    # Keep in sync with the defaultText value from the option definition.
+    services.xserver.displayManager.lightdm.background =
+      mkDefault pkgs.nixos-artwork.wallpapers.simple-dark-gray-bottom.gnomeFilePath;
 
     # Pull in dependencies of services we replace.
     systemd.services.display-manager.after = [
@@ -246,14 +473,14 @@ in
       "user.slice"
     ];
 
-    # user.slice needs to be present
-    systemd.services.display-manager.requires = [
-      "user.slice"
-    ];
-
     # lightdm stops plymouth so when it fails make sure plymouth stops.
     systemd.services.display-manager.onFailure = [
       "plymouth-quit.service"
+    ];
+
+    # user.slice needs to be present
+    systemd.services.display-manager.requires = [
+      "user.slice"
     ];
 
     systemd.services.display-manager.serviceConfig = {
@@ -266,221 +493,10 @@ in
       StandardError = "inherit";
     };
 
-    environment.etc."lightdm/lightdm.conf".source = lightdmConf;
-    environment.etc."lightdm/users.conf".source = usersConf;
-
-    services.dbus.enable = true;
-    services.dbus.packages = [ lightdm ];
-
-    # lightdm uses the accounts daemon to remember language/window-manager per user
-    services.accounts-daemon.enable = true;
-
-    # Enable the accounts daemon to find lightdm's dbus interface
-    environment.systemPackages = [ lightdm ];
-
-    security.polkit.enable = true;
-
-    security.pam.services.lightdm = {
-      useDefaultRules = false;
-      rules = {
-        auth = utils.pam.autoOrderRules [
-          {
-            name = "login";
-            control = "substack";
-            modulePath = "login";
-          }
-        ];
-        account = utils.pam.autoOrderRules [
-          {
-            name = "login";
-            control = "include";
-            modulePath = "login";
-          }
-          {
-            name = "time";
-            # https://github.com/elementary/switchboard-plug-parental-controls/blob/8.0.1/src/daemon/Server.vala#L325
-            enable = config.services.pantheon.parental-controls.enable;
-            control = "required";
-            modulePath = "${config.security.pam.package}/lib/security/pam_time.so";
-            # Must specify conffile since pam_time defaults to ${linux-pam}/etc/security/time.conf.
-            settings.conffile = "/etc/security/time.conf";
-          }
-        ];
-        password = utils.pam.autoOrderRules [
-          {
-            name = "login";
-            control = "substack";
-            modulePath = "login";
-          }
-        ];
-        session = utils.pam.autoOrderRules [
-          {
-            name = "login";
-            control = "include";
-            modulePath = "login";
-          }
-        ];
-      };
-    };
-
-    security.pam.services.lightdm-greeter = {
-      useDefaultRules = false;
-      rules = {
-        auth = utils.pam.autoOrderRules [
-          {
-            name = "lightdm-user";
-            control = "required";
-            modulePath = "${config.security.pam.package}/lib/security/pam_succeed_if.so";
-            settings.audit = true;
-            settings.quiet_success = true;
-            args = lib.mkAfter [
-              "user"
-              "="
-              "lightdm"
-            ];
-          }
-          {
-            name = "permit";
-            control = "optional";
-            modulePath = "${config.security.pam.package}/lib/security/pam_permit.so";
-          }
-        ];
-
-        account = utils.pam.autoOrderRules [
-          {
-            name = "lightdm-user";
-            control = "required";
-            modulePath = "${config.security.pam.package}/lib/security/pam_succeed_if.so";
-            settings.audit = true;
-            settings.quiet_success = true;
-            args = lib.mkAfter [
-              "user"
-              "="
-              "lightdm"
-            ];
-          }
-          {
-            name = "unix";
-            control = "sufficient";
-            modulePath = "${config.security.pam.package}/lib/security/pam_unix.so";
-          }
-        ];
-
-        password = utils.pam.autoOrderRules [
-          {
-            name = "deny";
-            control = "required";
-            modulePath = "${config.security.pam.package}/lib/security/pam_deny.so";
-          }
-        ];
-
-        session = utils.pam.autoOrderRules [
-          {
-            name = "lightdm-user";
-            control = "required";
-            modulePath = "${config.security.pam.package}/lib/security/pam_succeed_if.so";
-            settings.audit = true;
-            settings.quiet_success = true;
-            args = lib.mkAfter [
-              "user"
-              "="
-              "lightdm"
-            ];
-          }
-          {
-            name = "env";
-            control = "required";
-            modulePath = "${config.security.pam.package}/lib/security/pam_env.so";
-            settings.conffile = "/etc/pam/environment";
-            settings.readenv = 0;
-          }
-          {
-            name = "systemd";
-            control = "optional";
-            modulePath = "${config.systemd.package}/lib/security/pam_systemd.so";
-          }
-          {
-            name = "keyinit";
-            control = "optional";
-            modulePath = "${config.security.pam.package}/lib/security/pam_keyinit.so";
-            settings.force = true;
-            settings.revoke = true;
-          }
-          {
-            name = "permit";
-            control = "optional";
-            modulePath = "${config.security.pam.package}/lib/security/pam_permit.so";
-          }
-        ];
-      };
-    };
-
-    security.pam.services.lightdm-autologin = {
-      useDefaultRules = false;
-      rules = {
-        auth = utils.pam.autoOrderRules [
-          {
-            name = "nologin";
-            control = "requisite";
-            modulePath = "${config.security.pam.package}/lib/security/pam_nologin.so";
-          }
-          {
-            name = "lightdm-normal-user";
-            control = "required";
-            modulePath = "${config.security.pam.package}/lib/security/pam_succeed_if.so";
-            settings.quiet = true;
-            args = lib.mkBefore [
-              "uid"
-              ">="
-              "1000"
-            ];
-          }
-          {
-            name = "permit";
-            control = "required";
-            modulePath = "${config.security.pam.package}/lib/security/pam_permit.so";
-          }
-        ];
-
-        account = utils.pam.autoOrderRules [
-          {
-            name = "unix";
-            control = "sufficient";
-            modulePath = "${config.security.pam.package}/lib/security/pam_unix.so";
-          }
-        ];
-
-        password = utils.pam.autoOrderRules [
-          {
-            name = "unix";
-            control = "requisite";
-            modulePath = "${config.security.pam.package}/lib/security/pam_unix.so";
-            settings.nullok = true;
-            settings.yescrypt = true;
-          }
-        ];
-
-        session = utils.pam.autoOrderRules [
-          {
-            name = "keyinit";
-            control = "optional";
-            modulePath = "${config.security.pam.package}/lib/security/pam_keyinit.so";
-            settings.revoke = true;
-          }
-          {
-            name = "login";
-            control = "include";
-            modulePath = "login";
-          }
-        ];
-      };
-    };
-
-    users.users.lightdm = {
-      home = "/var/lib/lightdm";
-      group = "lightdm";
-      uid = config.ids.uids.lightdm;
-    };
+    # setSessionScript wants AccountsService
+    systemd.services.display-manager.wants = [
+      "accounts-daemon.service"
+    ];
 
     systemd.tmpfiles.rules = [
       "d /run/lightdm 0711 lightdm lightdm -"
@@ -491,6 +507,15 @@ in
     ];
 
     users.groups.lightdm.gid = config.ids.gids.lightdm;
-    services.xserver.display = null; # We specify our own display (and logfile) in xserver-wrapper up there
+
+    users.users.lightdm = {
+      group = "lightdm";
+      home = "/var/lib/lightdm";
+      uid = config.ids.uids.lightdm;
+    };
+  };
+
+  meta = {
+    teams = [ lib.teams.pantheon ];
   };
 }

@@ -9,7 +9,6 @@
 buildPythonPackage rec {
   pname = "distlib";
   version = "0.4.0";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
@@ -17,10 +16,14 @@ buildPythonPackage rec {
   };
 
   nativeBuildInputs = [ setuptools ];
+  # Tests use pypi.org.
+  doCheck = false;
 
   postFixup = lib.optionalString (!stdenv.hostPlatform.isWindows) ''
     find $out -name '*.exe' -delete
   '';
+
+  pyproject = true;
 
   pythonImportsCheck = [
     "distlib"
@@ -32,9 +35,6 @@ buildPythonPackage rec {
     "distlib.util"
     "distlib.resources"
   ];
-
-  # Tests use pypi.org.
-  doCheck = false;
 
   meta = {
     description = "Low-level components of distutils2/packaging";

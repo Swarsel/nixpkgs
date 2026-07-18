@@ -1,28 +1,28 @@
 {
   lib,
   aiohttp,
+  buildPythonPackage,
   cbor2,
   cryptography,
-  buildPythonPackage,
   fetchPypi,
   pyjwt,
-  setuptools,
   requests,
+  setuptools,
   sqlalchemy,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "roadlib";
   version = "1.7.0";
-  pyproject = true;
-
-  __structuredAttrs = true;
 
   src = fetchPypi {
     inherit (finalAttrs) pname version;
     hash = "sha256-al1FnLcKAFWRY43weXtsS8DN5pXCO1qFUw1vwLfZvGM=";
   };
 
+  # Module has no test
+  doCheck = false;
+  __structuredAttrs = true;
   build-system = [ setuptools ];
 
   dependencies = [
@@ -37,9 +37,7 @@ buildPythonPackage (finalAttrs: {
     async = [ aiohttp ];
   };
 
-  # Module has no test
-  doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "roadtools.roadlib" ];
 
   meta = {

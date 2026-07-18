@@ -2,10 +2,10 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  cmake,
-  qt6,
   cfitsio,
+  cmake,
   gsl,
+  qt6,
   wcslib,
   withTester ? false,
 }:
@@ -22,8 +22,6 @@ stdenv.mkDerivation (finalAttrs: {
 
   nativeBuildInputs = [ cmake ];
 
-  dontWrapQtApps = true;
-
   buildInputs = [
     qt6.qtbase
     cfitsio
@@ -36,13 +34,17 @@ stdenv.mkDerivation (finalAttrs: {
     (lib.strings.cmakeBool "USE_QT5" false)
   ];
 
+  dontWrapQtApps = true;
+
   meta = {
-    homepage = "https://github.com/rlancaste/stellarsolver";
     description = "Astrometric plate solving library";
+    homepage = "https://github.com/rlancaste/stellarsolver";
     license = lib.licenses.gpl3Plus;
+
     maintainers = with lib.maintainers; [
       returntoreality
     ];
+
     platforms = lib.platforms.unix;
   };
 })

@@ -1,15 +1,14 @@
 {
   lib,
   buildPythonPackage,
-  fetchPypi,
   f5-icontrol-rest,
+  fetchPypi,
   six,
 }:
 
 buildPythonPackage rec {
   pname = "f5-sdk";
   version = "3.0.21";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
@@ -23,7 +22,7 @@ buildPythonPackage rec {
 
   # needs to be updated to newer pytest version and requires physical device
   doCheck = false;
-
+  format = "setuptools";
   pythonImportsCheck = [ "f5" ];
 
   meta = {

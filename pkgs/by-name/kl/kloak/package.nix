@@ -2,17 +2,17 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  pkg-config,
-  which,
-  wayland-scanner,
-  ronn,
   installShellFiles,
   libevdev,
-  libsodium,
   libinput,
-  wayland,
+  libsodium,
   libxkbcommon,
   nix-update-script,
+  pkg-config,
+  ronn,
+  wayland,
+  wayland-scanner,
+  which,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -27,7 +27,6 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   strictDeps = true;
-  __structuredAttrs = true;
 
   nativeBuildInputs = [
     pkg-config
@@ -56,6 +55,7 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  __structuredAttrs = true;
   passthru.updateScript = nix-update-script { };
 
   meta = {
@@ -63,7 +63,7 @@ stdenv.mkDerivation (finalAttrs: {
     homepage = "https://github.com/Whonix/kloak";
     license = lib.licenses.bsd3;
     maintainers = with lib.maintainers; [ sotormd ];
-    mainProgram = "kloak";
     platforms = lib.platforms.linux;
+    mainProgram = "kloak";
   };
 })

@@ -2,22 +2,22 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  pkg-config,
-  sqlite,
-  openssl,
   libllvm,
   libxml2,
-  replaceVars,
   llvmPackages,
-  buildllvmsparse ? false,
+  openssl,
+  pkg-config,
+  replaceVars,
+  sqlite,
   buildc2xml ? false,
+  buildllvmsparse ? false,
 }:
 let
   version = "1.74";
 in
 stdenv.mkDerivation (finalAttrs: {
-  pname = "smatch";
   inherit version;
+  pname = "smatch";
 
   src = fetchFromGitHub {
     owner = "error27";
@@ -39,8 +39,6 @@ stdenv.mkDerivation (finalAttrs: {
     )
   ];
 
-  enableParallelBuilding = true;
-
   nativeBuildInputs = [ pkg-config ];
 
   buildInputs = [
@@ -55,11 +53,13 @@ stdenv.mkDerivation (finalAttrs: {
     "CXX=${stdenv.cc.targetPrefix}c++"
   ];
 
+  enableParallelBuilding = true;
+
   meta = {
     description = "Semantic analysis tool for C";
     homepage = "https://sparse.docs.kernel.org/";
-    maintainers = [ ];
     license = lib.licenses.gpl2Plus;
+    maintainers = [ ];
     platforms = lib.platforms.all;
   };
 })

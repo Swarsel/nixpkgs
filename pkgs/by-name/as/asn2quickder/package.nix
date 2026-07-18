@@ -1,14 +1,13 @@
 {
   lib,
-  python3Packages,
   fetchFromGitLab,
   makeWrapper,
+  python3Packages,
 }:
 
 python3Packages.buildPythonApplication rec {
   pname = "asn2quickder";
   version = "1.7.1";
-  format = "setuptools";
 
   src = fetchFromGitLab {
     owner = "arpa2";
@@ -24,8 +23,6 @@ python3Packages.buildPythonApplication rec {
     substituteInPlace setup.py --replace 'pyparsing==3.0.0' 'pyparsing'
   '';
 
-  dontUseCmakeConfigure = true;
-
   nativeBuildInputs = [
     makeWrapper
     python3Packages.cmake
@@ -39,6 +36,8 @@ python3Packages.buildPythonApplication rec {
   ];
 
   doCheck = false; # Flaky tests
+  dontUseCmakeConfigure = true;
+  format = "setuptools";
 
   meta = {
     description = "ASN.1 compiler with a backend for Quick DER";

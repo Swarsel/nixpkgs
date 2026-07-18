@@ -1,18 +1,18 @@
 {
-  stdenv,
   lib,
-  fetchzip,
-  wxwidgets_3_2,
-  coreutils,
+  stdenv,
   SDL2,
-  openal,
   alsa-lib,
-  pkg-config,
-  gtk3,
-  wrapGAppsHook3,
   autoreconfHook,
-  withNetworking ? true,
+  coreutils,
+  fetchzip,
+  gtk3,
+  openal,
+  pkg-config,
+  wrapGAppsHook3,
+  wxwidgets_3_2,
   withALSA ? true,
+  withNetworking ? true,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -21,8 +21,8 @@ stdenv.mkDerivation (finalAttrs: {
 
   src = fetchzip {
     url = "https://pcem-emulator.co.uk/files/PCemV${finalAttrs.version}Linux.tar.gz";
-    stripRoot = false;
     sha256 = "067pbnc15h6a4pnnym82klr1w8qwfm6p0pkx93gx06wvwqsxvbdv";
+    stripRoot = false;
   };
 
   nativeBuildInputs = [
@@ -30,6 +30,7 @@ stdenv.mkDerivation (finalAttrs: {
     pkg-config
     wrapGAppsHook3
   ];
+
   buildInputs = [
     wxwidgets_3_2
     coreutils
@@ -50,10 +51,10 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Emulator for IBM PC computers and clones";
-    mainProgram = "pcem";
     homepage = "https://pcem-emulator.co.uk/";
     license = lib.licenses.gpl2Only;
     maintainers = [ lib.maintainers.terin ];
     platforms = lib.platforms.linux ++ lib.platforms.windows;
+    mainProgram = "pcem";
   };
 })

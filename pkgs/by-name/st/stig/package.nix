@@ -2,8 +2,8 @@
   lib,
   fetchFromGitHub,
   python3Packages,
-  testers,
   stig,
+  testers,
 }:
 
 python3Packages.buildPythonApplication (finalAttrs: {
@@ -11,7 +11,6 @@ python3Packages.buildPythonApplication (finalAttrs: {
   # This project has a different concept for pre release / alpha,
   # Read the project's README for details: https://github.com/rndusr/stig#stig
   version = "0.14.2a0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "rndusr";
@@ -19,6 +18,12 @@ python3Packages.buildPythonApplication (finalAttrs: {
     rev = "v${finalAttrs.version}";
     hash = "sha256-g37be8EiuQGnGC6uKNadtG9Z78f+NutHHpAwzGcsmD8=";
   };
+
+  # According to the upstream author,
+  # stig no longer has working tests
+  # since asynctest (former test dependency) got abandoned.
+  # See https://github.com/rndusr/stig/issues/206#issuecomment-2669636320
+  doCheck = false;
 
   build-system = with python3Packages; [
     setuptools
@@ -35,21 +40,17 @@ python3Packages.buildPythonApplication (finalAttrs: {
     setproctitle
   ];
 
+  pyproject = true;
+
   pythonRelaxDeps = [
     # relax urwidtrees==1.0.3
     "urwidtrees"
   ];
 
-  # According to the upstream author,
-  # stig no longer has working tests
-  # since asynctest (former test dependency) got abandoned.
-  # See https://github.com/rndusr/stig/issues/206#issuecomment-2669636320
-  doCheck = false;
-
   passthru.tests = testers.testVersion {
-    package = stig;
-    command = "stig -v";
     version = "stig version ${finalAttrs.version}";
+    command = "stig -v";
+    package = stig;
   };
 
   meta = {

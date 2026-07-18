@@ -8,25 +8,19 @@
 stdenv.mkDerivation rec {
   pname = "zopfli";
   version = "1.0.3";
-  outputs = [
-    "out"
-    "lib"
-    "dev"
-  ];
 
   src = fetchFromGitHub {
     owner = "google";
     repo = "zopfli";
     rev = "${pname}-${version}";
-    name = "${pname}-${version}-src";
     sha256 = "0dr8n4j5nj2h9n208jns56wglw59gg4qm3s7c6y3hs75d0nnkhm4";
+    name = "${pname}-${version}-src";
   };
 
-  nativeBuildInputs = [ cmake ];
-
-  cmakeFlags = [
-    "-DBUILD_SHARED_LIBS=ON"
-    "-DCMAKE_BUILD_WITH_INSTALL_RPATH=ON"
+  outputs = [
+    "out"
+    "lib"
+    "dev"
   ];
 
   # Fix the build with CMake 4.
@@ -39,6 +33,13 @@ stdenv.mkDerivation rec {
         'cmake_minimum_required(VERSION 3.10)'
   '';
 
+  nativeBuildInputs = [ cmake ];
+
+  cmakeFlags = [
+    "-DBUILD_SHARED_LIBS=ON"
+    "-DCMAKE_BUILD_WITH_INSTALL_RPATH=ON"
+  ];
+
   postInstall = ''
     install -Dm444 -t $out/share/doc/zopfli ../README*
     cp $src/src/zopfli/*.h $dev/include/
@@ -47,6 +48,7 @@ stdenv.mkDerivation rec {
   meta = {
     inherit (src.meta) homepage;
     description = "Very good, but slow, deflate or zlib compression";
+
     longDescription = ''
       Zopfli Compression Algorithm is a compression library programmed
       in C to perform very good, but slow, deflate or zlib compression.
@@ -54,12 +56,15 @@ stdenv.mkDerivation rec {
       This library can only compress, not decompress. Existing zlib or
       deflate libraries can decompress the data.
     '';
-    platforms = lib.platforms.unix;
+
     license = lib.licenses.asl20;
-    mainProgram = "zopfli";
+
     maintainers = with lib.maintainers; [
       bobvanderlinden
       edef
     ];
+
+    platforms = lib.platforms.unix;
+    mainProgram = "zopfli";
   };
 }

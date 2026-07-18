@@ -1,25 +1,22 @@
 {
   lib,
-  stdenvNoCC,
   breezy,
+  stdenvNoCC,
 }:
 lib.fetchers.withNormalizedHash { } (
   {
-    url,
-    rev,
     outputHash,
     outputHashAlgo,
+    rev,
+    url,
   }:
 
   stdenvNoCC.mkDerivation {
-    name = "bzr-export";
-
-    builder = ./builder.sh;
-    nativeBuildInputs = [ breezy ];
-
     inherit outputHash outputHashAlgo;
-    outputHashMode = "recursive";
-
     inherit url rev;
+    nativeBuildInputs = [ breezy ];
+    builder = ./builder.sh;
+    name = "bzr-export";
+    outputHashMode = "recursive";
   }
 )

@@ -1,16 +1,10 @@
 {
+  lib,
   # build tools
   stdenv,
-  autoreconfHook,
-  makeWrapper,
-  pkg-config,
-
-  # check hook
-  versionCheckHook,
-
   # fetchers
   fetchFromGitHub,
-
+  autoreconfHook,
   # build inputs
   bison,
   brotli,
@@ -21,7 +15,6 @@
   flex,
   icu,
   jansson,
-  lib,
   libbsd,
   libcap,
   libchardet,
@@ -31,19 +24,22 @@
   libsrs2,
   libuuid,
   libxml2,
+  makeWrapper,
   nghttp2,
   openssl,
   pcre2,
   perl,
+  pkg-config,
   rsync,
   shapelib,
   sqlite,
   unixtools,
   valgrind,
+  # check hook
+  versionCheckHook,
   wslay,
   xapian,
   zlib,
-
   # feature flags
   enableAutoCreate ? true,
   enableBackup ? true,
@@ -75,11 +71,44 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-zPEaxETzG4Aj8JYP/aZpN2xXrD+O22io/HzI4LK+s/o=";
   };
 
+  postPatch =
+    let
+      managesieveLibs = [
+        zlib
+        cyrus_sasl
+        sqlite
+      ]
+      # Darwin doesn't have libuuid, try to build without it
+      ++ lib.optional (!stdenv.hostPlatform.isDarwin) libuuid;
+      imapLibs = managesieveLibs ++ [ pcre2 ];
+      mkLibsString = lib.strings.concatMapStringsSep " " (l: "-L${lib.getLib l}/lib");
+    in
+    ''
+      patchShebangs cunit/*.pl
+      patchShebangs imap/promdatagen
+      patchShebangs tools/*
+
+      echo ${finalAttrs.version} > VERSION
+
+      substituteInPlace cunit/command.testc \
+        --replace-fail /usr/bin/touch ${lib.getExe' coreutils "touch"} \
+        --replace-fail /bin/echo ${lib.getExe' coreutils "echo"} \
+        --replace-fail /usr/bin/tr ${lib.getExe' coreutils "tr"} \
+        --replace-fail /bin/sh ${stdenv.shell}
+
+      # fix for https://github.com/cyrusimap/cyrus-imapd/issues/3893
+      substituteInPlace perl/imap/Makefile.PL.in \
+        --replace-fail  '"$LIB_SASL' '"${mkLibsString imapLibs} -lpcre2-posix $LIB_SASL'
+      substituteInPlace perl/sieve/managesieve/Makefile.PL.in \
+        --replace-fail  '"$LIB_SASL' '"${mkLibsString managesieveLibs} $LIB_SASL'
+    '';
+
   nativeBuildInputs = [
     makeWrapper
     pkg-config
     autoreconfHook
   ];
+
   buildInputs = [
     unixtools.xxd
     pcre2
@@ -117,44 +146,6 @@ stdenv.mkDerivation (finalAttrs: {
   ++ lib.optionals withPgSQL [ libpq ]
   ++ lib.optionals withSQLite [ sqlite ];
 
-  enableParallelBuilding = true;
-
-  postPatch =
-    let
-      managesieveLibs = [
-        zlib
-        cyrus_sasl
-        sqlite
-      ]
-      # Darwin doesn't have libuuid, try to build without it
-      ++ lib.optional (!stdenv.hostPlatform.isDarwin) libuuid;
-      imapLibs = managesieveLibs ++ [ pcre2 ];
-      mkLibsString = lib.strings.concatMapStringsSep " " (l: "-L${lib.getLib l}/lib");
-    in
-    ''
-      patchShebangs cunit/*.pl
-      patchShebangs imap/promdatagen
-      patchShebangs tools/*
-
-      echo ${finalAttrs.version} > VERSION
-
-      substituteInPlace cunit/command.testc \
-        --replace-fail /usr/bin/touch ${lib.getExe' coreutils "touch"} \
-        --replace-fail /bin/echo ${lib.getExe' coreutils "echo"} \
-        --replace-fail /usr/bin/tr ${lib.getExe' coreutils "tr"} \
-        --replace-fail /bin/sh ${stdenv.shell}
-
-      # fix for https://github.com/cyrusimap/cyrus-imapd/issues/3893
-      substituteInPlace perl/imap/Makefile.PL.in \
-        --replace-fail  '"$LIB_SASL' '"${mkLibsString imapLibs} -lpcre2-posix $LIB_SASL'
-      substituteInPlace perl/sieve/managesieve/Makefile.PL.in \
-        --replace-fail  '"$LIB_SASL' '"${mkLibsString managesieveLibs} $LIB_SASL'
-    '';
-
-  postFixup = ''
-    wrapProgram $out/bin/cyradm --set PERL5LIB $(find $out/lib/perl5 -type d | tr "\\n" ":")
-  '';
-
   configureFlags = [
     "--with-pidfile=/run/cyrus/master.pid"
     (lib.enableFeature enableAutoCreate "autocreate")
@@ -177,26 +168,34 @@ stdenv.mkDerivation (finalAttrs: {
     (lib.withFeature withSQLite "sqlite")
   ];
 
-  checkInputs = [ cunit ];
   doCheck = true;
+  checkInputs = [ cunit ];
+  doInstallCheck = true;
 
-  versionCheckProgram = "${placeholder "out"}/libexec/master";
-  versionCheckProgramArg = "-V";
   nativeInstallCheckInputs = [
     versionCheckHook
   ];
-  doInstallCheck = true;
+
+  postFixup = ''
+    wrapProgram $out/bin/cyradm --set PERL5LIB $(find $out/lib/perl5 -type d | tr "\\n" ":")
+  '';
+
+  enableParallelBuilding = true;
+  versionCheckProgram = "${placeholder "out"}/libexec/master";
+  versionCheckProgramArg = "-V";
 
   meta = {
-    homepage = "https://www.cyrusimap.org";
     description = "Email, contacts and calendar server";
+    homepage = "https://www.cyrusimap.org";
     changelog = "https://www.cyrusimap.org/imap/download/release-notes/${lib.versions.majorMinor finalAttrs.version}/x/${finalAttrs.version}.html";
     license = with lib.licenses; [ bsdOriginal ];
-    mainProgram = "cyradm";
+
     maintainers = with lib.maintainers; [
       moraxyc
       pingiun
     ];
+
     platforms = lib.platforms.unix;
+    mainProgram = "cyradm";
   };
 })

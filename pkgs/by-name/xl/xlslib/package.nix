@@ -20,15 +20,14 @@ stdenv.mkDerivation (finalAttrs: {
     autoreconfHook
   ];
 
-  setSourceRoot = "export sourceRoot=xlslib/xlslib";
-
   enableParallelBuilding = true;
+  setSourceRoot = "export sourceRoot=xlslib/xlslib";
 
   meta = {
     description = "C++/C library to construct Excel .xls files in code";
     homepage = "https://sourceforge.net/projects/xlslib/";
     license = lib.licenses.bsd2;
-    platforms = lib.platforms.linux;
     maintainers = [ ];
+    platforms = lib.platforms.linux;
   };
 })

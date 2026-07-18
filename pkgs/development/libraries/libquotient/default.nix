@@ -1,24 +1,19 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
-  fetchpatch,
   cmake,
+  fetchpatch,
   olm,
   openssl,
   qtbase,
-  qtmultimedia,
   qtkeychain,
+  qtmultimedia,
 }:
 
 stdenv.mkDerivation rec {
   pname = "libquotient";
   version = "0.9.6.1";
-
-  outputs = [
-    "out"
-    "dev"
-  ];
 
   src = fetchFromGitHub {
     owner = "quotient-im";
@@ -26,6 +21,18 @@ stdenv.mkDerivation rec {
     rev = version;
     hash = "sha256-ea7vOxmc4S7KizbwYp21NryW3BGh+Jn0HOR4qsA1roE=";
   };
+
+  outputs = [
+    "out"
+    "dev"
+  ];
+
+  # https://github.com/quotient-im/libQuotient/issues/551
+  postPatch = ''
+    substituteInPlace Quotient.pc.in \
+      --replace '$'{prefix}/@CMAKE_INSTALL_LIBDIR@ @CMAKE_INSTALL_FULL_LIBDIR@ \
+      --replace '$'{prefix}/@CMAKE_INSTALL_INCLUDEDIR@ @CMAKE_INSTALL_FULL_INCLUDEDIR@
+  '';
 
   nativeBuildInputs = [ cmake ];
 
@@ -41,24 +48,18 @@ stdenv.mkDerivation rec {
     "-DQuotient_ENABLE_E2EE=ON"
   ];
 
-  # https://github.com/quotient-im/libQuotient/issues/551
-  postPatch = ''
-    substituteInPlace Quotient.pc.in \
-      --replace '$'{prefix}/@CMAKE_INSTALL_LIBDIR@ @CMAKE_INSTALL_FULL_LIBDIR@ \
-      --replace '$'{prefix}/@CMAKE_INSTALL_INCLUDEDIR@ @CMAKE_INSTALL_FULL_INCLUDEDIR@
-  '';
-
-  dontWrapQtApps = true;
-
   postInstall = ''
     # causes cyclic dependency but is not used
     rm $out/share/ndk-modules/Android.mk
   '';
 
+  dontWrapQtApps = true;
+
   meta = {
     description = "Qt5/Qt6 library to write cross-platform clients for Matrix";
     homepage = "https://quotient-im.github.io/libQuotient/";
     license = lib.licenses.lgpl21;
+
     maintainers = with lib.maintainers; [
       matthiasbeyer
     ];

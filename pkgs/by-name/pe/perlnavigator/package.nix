@@ -1,7 +1,7 @@
 {
   lib,
-  buildNpmPackage,
   fetchFromGitHub,
+  buildNpmPackage,
 }:
 
 let
@@ -13,41 +13,45 @@ let
     hash = "sha256-CNsgFf+W7YQwAR++GwfTka4Cy8woRu02BQIJRmRAxK4=";
   };
   browser-ext = buildNpmPackage {
-    pname = "perlnavigator-web-server";
     inherit version src;
-    sourceRoot = "${src.name}/browser-ext";
+    pname = "perlnavigator-web-server";
     npmDepsHash = "sha256-PJKW+ni2wKw1ivkgQsL6g0jaxoYboa3XpVEEwgT4jWo=";
-    dontNpmBuild = true;
+
     installPhase = ''
       cp -r . "$out"
     '';
+
+    dontNpmBuild = true;
+    sourceRoot = "${src.name}/browser-ext";
   };
   client = buildNpmPackage {
-    pname = "perlnavigator-client";
     inherit version src;
-    sourceRoot = "${src.name}/client";
+    pname = "perlnavigator-client";
     npmDepsHash = "sha256-CM0l+D1VNkXBrZQHQGDiB/vAxMvpbHYoYlIugoLxSfA=";
-    dontNpmBuild = true;
+
     installPhase = ''
       cp -r . "$out"
     '';
+
+    dontNpmBuild = true;
+    sourceRoot = "${src.name}/client";
   };
   server = buildNpmPackage {
-    pname = "perlnavigator-server";
     inherit version src;
-    sourceRoot = "${src.name}/server";
+    pname = "perlnavigator-server";
     npmDepsHash = "sha256-TxK3ba9T97p8TBlULHUov6YX7WRl2QMq6TiNHxBoQeY=";
-    dontNpmBuild = true;
+
     installPhase = ''
       cp -r . "$out"
     '';
+
+    dontNpmBuild = true;
+    sourceRoot = "${src.name}/server";
   };
 in
 buildNpmPackage rec {
-  pname = "perlnavigator";
   inherit version src;
-
-  npmDepsHash = "sha256-nEinmgrbbFC+nkfTwu9djiUS+tj0VM4WKl2oqKpcGtM=";
+  pname = "perlnavigator";
 
   postPatch = ''
     sed -i /postinstall/d package.json
@@ -59,11 +63,11 @@ buildNpmPackage rec {
     chmod +w browser-ext client server
   '';
 
+  npmDepsHash = "sha256-nEinmgrbbFC+nkfTwu9djiUS+tj0VM4WKl2oqKpcGtM=";
+
   env = {
     PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD = 1;
   };
-
-  npmBuildScript = "compile";
 
   postInstall = ''
     cp -r ${browser-ext}/node_modules "$out/lib/node_modules/perlnavigator/browser-ext"
@@ -71,12 +75,14 @@ buildNpmPackage rec {
     cp -r ${server}/node_modules "$out/lib/node_modules/perlnavigator/server"
   '';
 
+  npmBuildScript = "compile";
+
   meta = {
-    changelog = "https://github.com/bscan/PerlNavigator/blob/${src.rev}/CHANGELOG.md";
     description = "Perl Language Server that includes syntax checking, perl critic, and code navigation";
     homepage = "https://github.com/bscan/PerlNavigator/tree/main/server";
+    changelog = "https://github.com/bscan/PerlNavigator/blob/${src.rev}/CHANGELOG.md";
     license = lib.licenses.mit;
-    mainProgram = "perlnavigator";
     maintainers = [ ];
+    mainProgram = "perlnavigator";
   };
 }

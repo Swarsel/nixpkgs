@@ -1,35 +1,27 @@
 {
   lib,
   stdenv,
-
-  buildGoModule,
   fetchFromGitHub,
-
-  makeWrapper,
-  installShellFiles,
+  buildGoModule,
   # runtime tooling - linux
   getent,
+  installShellFiles,
   iproute2,
   iptables,
-  shadow,
-  procps,
   # runtime tooling - darwin
   lsof,
+  makeWrapper,
+  nixosTests,
+  procps,
+  shadow,
+  tailscale-nginx-auth,
   # check phase tooling - darwin
   unixtools,
-
-  nixosTests,
-  tailscale-nginx-auth,
 }:
 
 buildGoModule (finalAttrs: {
   pname = "tailscale";
   version = "1.98.8";
-
-  outputs = [
-    "out"
-    "derper"
-  ];
 
   src = fetchFromGitHub {
     owner = "tailscale";
@@ -38,60 +30,30 @@ buildGoModule (finalAttrs: {
     hash = "sha256-3Ikti52jcncQTq9//rBa3Q9N2C2MkGONJ6+4cn4eUFc=";
   };
 
-  vendorHash = "sha256-Sd2iLJ7eDfDYdIRuW4xuiKgzhQWJWGAnz97FJWrVRlE=";
+  outputs = [
+    "out"
+    "derper"
+  ];
 
   nativeBuildInputs = [
     makeWrapper
     installShellFiles
   ];
 
-  nativeCheckInputs = lib.optionals stdenv.hostPlatform.isDarwin [
-    unixtools.netstat
-  ];
-
+  vendorHash = "sha256-Sd2iLJ7eDfDYdIRuW4xuiKgzhQWJWGAnz97FJWrVRlE=";
   env.CGO_ENABLED = 0;
-
-  subPackages = [
-    "cmd/derper"
-    "cmd/derpprobe"
-    "cmd/tailscaled"
-    "cmd/get-authkey"
-  ];
-
-  excludedPackages = [
-    # Exclude integration tests which fail to work and require additional tooling
-    "tstest/integration"
-  ];
-
-  ldflags = [
-    "-w"
-    "-s"
-    "-X tailscale.com/version.longStamp=${finalAttrs.version}"
-    "-X tailscale.com/version.shortStamp=${finalAttrs.version}"
-  ];
-
-  tags = [
-    "ts_include_cli"
-  ];
 
   # Remove vendored tooling to ensure it's not used; also avoids some unnecessary tests
   preBuild = ''
     rm -rf ./tool
   '';
 
-  # Tests start http servers which need to bind to local addresses:
-  # panic: httptest: failed to listen on a port: listen tcp6 [::1]:0: bind: operation not permitted
-  __darwinAllowLocalNetworking = true;
-
   # Tests are in the `tests` passthru derivation because they are flaky, frequently causing build failures.
   doCheck = false;
 
-  preCheck = ''
-    # feed in all tests for testing
-    # subPackages above limits what is built to just what we
-    # want but also limits the tests
-    unset subPackages
-  '';
+  nativeCheckInputs = lib.optionals stdenv.hostPlatform.isDarwin [
+    unixtools.netstat
+  ];
 
   checkFlags =
     let
@@ -203,6 +165,13 @@ buildGoModule (finalAttrs: {
     in
     [ "-skip=^${builtins.concatStringsSep "$|^" skippedTests}$" ];
 
+  preCheck = ''
+    # feed in all tests for testing
+    # subPackages above limits what is built to just what we
+    # want but also limits the tests
+    unset subPackages
+  '';
+
   postInstall = ''
     ln -s $out/bin/tailscaled $out/bin/tailscale
     moveToOutput "bin/derper" "$derper"
@@ -240,6 +209,33 @@ buildGoModule (finalAttrs: {
       --zsh <($out/bin/tailscale completion zsh)
   '';
 
+  # Tests start http servers which need to bind to local addresses:
+  # panic: httptest: failed to listen on a port: listen tcp6 [::1]:0: bind: operation not permitted
+  __darwinAllowLocalNetworking = true;
+
+  excludedPackages = [
+    # Exclude integration tests which fail to work and require additional tooling
+    "tstest/integration"
+  ];
+
+  ldflags = [
+    "-w"
+    "-s"
+    "-X tailscale.com/version.longStamp=${finalAttrs.version}"
+    "-X tailscale.com/version.shortStamp=${finalAttrs.version}"
+  ];
+
+  subPackages = [
+    "cmd/derper"
+    "cmd/derpprobe"
+    "cmd/tailscaled"
+    "cmd/get-authkey"
+  ];
+
+  tags = [
+    "ts_include_cli"
+  ];
+
   passthru.tests = {
     inherit (nixosTests) headscale;
     inherit tailscale-nginx-auth;
@@ -247,11 +243,11 @@ buildGoModule (finalAttrs: {
   };
 
   meta = {
-    homepage = "https://tailscale.com";
     description = "Node agent for Tailscale, a mesh VPN built on WireGuard";
+    homepage = "https://tailscale.com";
     changelog = "https://tailscale.com/changelog#client";
     license = lib.licenses.bsd3;
-    mainProgram = "tailscale";
+
     maintainers = with lib.maintainers; [
       mbaillie
       jk
@@ -260,5 +256,7 @@ buildGoModule (finalAttrs: {
       pyrox0
       ryan4yin
     ];
+
+    mainProgram = "tailscale";
   };
 })

@@ -1,11 +1,11 @@
 {
   lib,
-  cmake,
-  fetchFromGitHub,
-  openssl,
   stdenv,
+  fetchFromGitHub,
+  cmake,
   copyPkgconfigItems,
   makePkgconfigItem,
+  openssl,
 }:
 stdenv.mkDerivation (finalAttrs: {
   pname = "httplib";
@@ -18,6 +18,8 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-psVyn14QHMXG/x9SOOiR7ZBt8dHqa2A/w92WQQDukKM=";
   };
 
+  strictDeps = true;
+
   nativeBuildInputs = [
     cmake
     copyPkgconfigItems
@@ -25,29 +27,30 @@ stdenv.mkDerivation (finalAttrs: {
 
   buildInputs = [ openssl ];
 
-  strictDeps = true;
-
   pkgconfigItems = [
     (makePkgconfigItem rec {
-      name = "httplib";
       inherit (finalAttrs) version;
-      cflags = [ "-I${variables.includedir}" ];
-      variables = rec {
-        prefix = placeholder "out";
-        includedir = "${prefix}/include";
-      };
       inherit (finalAttrs.meta) description;
+      cflags = [ "-I${variables.includedir}" ];
+      name = "httplib";
+
+      variables = rec {
+        includedir = "${prefix}/include";
+        prefix = placeholder "out";
+      };
     })
   ];
 
   meta = {
-    homepage = "https://github.com/yhirose/cpp-httplib";
     description = "C++ header-only HTTP/HTTPS server and client library";
+    homepage = "https://github.com/yhirose/cpp-httplib";
     changelog = "https://github.com/yhirose/cpp-httplib/releases/tag/${finalAttrs.src.rev}";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       fzakaria
     ];
+
     platforms = lib.platforms.all;
   };
 })

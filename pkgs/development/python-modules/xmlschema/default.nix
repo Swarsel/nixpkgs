@@ -1,8 +1,8 @@
 {
   lib,
+  fetchFromGitHub,
   buildPythonPackage,
   elementpath,
-  fetchFromGitHub,
   jinja2,
   lxml,
   pytestCheckHook,
@@ -12,7 +12,6 @@
 buildPythonPackage rec {
   pname = "xmlschema";
   version = "4.3.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "sissaschool";
@@ -21,15 +20,14 @@ buildPythonPackage rec {
     hash = "sha256-O34MHsP4BC5fALHDzXJBWGtcRifdL3dJNwW721QN4vA=";
   };
 
-  build-system = [ setuptools ];
-
-  dependencies = [ elementpath ];
-
   nativeCheckInputs = [
     jinja2
     lxml
     pytestCheckHook
   ];
+
+  build-system = [ setuptools ];
+  dependencies = [ elementpath ];
 
   disabledTests = [
     # Incorrect error message in pickling test for Python 3.12 in Debian
@@ -37,6 +35,7 @@ buildPythonPackage rec {
     "test_pickling_subclassed_schema__issue_263"
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "xmlschema" ];
 
   meta = {

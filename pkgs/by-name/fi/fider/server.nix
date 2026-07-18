@@ -1,10 +1,9 @@
 {
   buildGoModule,
-
   pname,
-  version,
   src,
   vendorHash,
+  version,
 }:
 
 buildGoModule {
@@ -15,13 +14,12 @@ buildGoModule {
     ./0001-disable-etc-copy.patch
   ];
 
+  doCheck = false; # requires a running PostgreSQL database
+
   ldflags = [
     "-s"
     "-w"
   ];
-
-  doCheck = false; # requires a running PostgreSQL database
-
   # preCheck = ''
   #   set -o allexport
   #   source ./.test.env

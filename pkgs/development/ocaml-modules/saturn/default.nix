@@ -1,27 +1,24 @@
 {
   lib,
   fetchurl,
-  ocaml,
-  version ? "1.0.0",
-  buildDunePackage,
   backoff,
+  buildDunePackage,
   domain_shims,
   dscheck,
   mdx,
   multicore-bench,
   multicore-magic,
   multicore-magic-dscheck,
+  ocaml,
   qcheck,
   qcheck-alcotest,
   qcheck-stm,
+  version ? "1.0.0",
 }:
 
 buildDunePackage {
   inherit version;
-
   pname = "saturn";
-
-  minimalOCamlVersion = "4.14";
 
   src = fetchurl {
     url = "https://github.com/ocaml-multicore/saturn/releases/download/${version}/saturn-${version}.tbz";
@@ -34,6 +31,8 @@ buildDunePackage {
   ];
 
   doCheck = lib.versionAtLeast ocaml.version "5.2";
+  nativeCheckInputs = [ mdx.bin ];
+
   checkInputs = [
     domain_shims
     dscheck
@@ -44,7 +43,8 @@ buildDunePackage {
     qcheck-alcotest
     qcheck-stm
   ];
-  nativeCheckInputs = [ mdx.bin ];
+
+  minimalOCamlVersion = "4.14";
 
   meta = {
     description = "Parallelism-safe data structures for multicore OCaml";

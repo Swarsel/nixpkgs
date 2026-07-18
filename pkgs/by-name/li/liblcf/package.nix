@@ -2,12 +2,12 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  nix-update-script,
   autoreconfHook,
-  pkg-config,
   expat,
   icu74,
   inih,
+  nix-update-script,
+  pkg-config,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -36,11 +36,9 @@ stdenv.mkDerivation (finalAttrs: {
     inih
   ];
 
+  doCheck = stdenv.buildPlatform.canExecute stdenv.hostPlatform;
   enableParallelBuilding = true;
   enableParallelChecking = true;
-
-  doCheck = stdenv.buildPlatform.canExecute stdenv.hostPlatform;
-
   passthru.updateScript = nix-update-script { };
 
   meta = {

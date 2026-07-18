@@ -1,14 +1,13 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
   aiohttp,
+  buildPythonPackage,
 }:
 
 buildPythonPackage {
   pname = "pysabnzbd";
   version = "1.1.1";
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "jeradM";
@@ -18,10 +17,9 @@ buildPythonPackage {
   };
 
   propagatedBuildInputs = [ aiohttp ];
-
   # upstream has no tests
   doCheck = false;
-
+  format = "setuptools";
   pythonImportsCheck = [ "pysabnzbd" ];
 
   meta = {

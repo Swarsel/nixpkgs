@@ -4,8 +4,8 @@
 # Service module
 {
   lib,
-  options,
   config,
+  options,
   ...
 }:
 let
@@ -14,24 +14,7 @@ let
 in
 {
   _class = "service";
-  options = {
-    package = lib.mkPackageOption pkgs "autopush-rs.out" { };
-    autoconnect.settings = lib.mkOption {
-      type = lib.types.submodule {
-        freeformType = tomlFmt.type;
-        options = {
-          db_dsn = lib.mkOption {
-            description = "Endpoint of the database server.";
-            type = lib.types.str;
-            default = "";
-            example = lib.literalExpression "redis+socket://\${config.services.redis.servers.autopush-rs.port}";
-          };
-        };
-      };
-      default = { };
-      description = "";
-    };
-  };
+
   config =
     let
       configFile = tomlFmt.generate "autoconnect.toml" cfg.settings;
@@ -46,38 +29,34 @@ in
     // lib.optionalAttrs (options ? systemd) {
       systemd.service = {
         after = [ "network.target" ];
-        wants = [ "network.target" ];
-        wantedBy = [ "multi-user.target" ];
-        serviceConfig = {
-          Restart = "on-failure";
 
+        serviceConfig = {
+          DynamicUser = true;
+          LockPersonality = true;
           #hardening
           MemoryDenyWriteExecute = true;
-          StateDirectoryMode = 0700;
-          UMask = 077;
-          DynamicUser = true;
-          PrivateUsers = true;
-          PrivateTmp = true;
-          PrivateDevices = true;
-          ProtectSystem = "full";
-          ProtectHome = true;
           NoNewPrivileges = true;
-          RuntimeDirectoryMode = 755;
-          ProtectHostname = true;
+          PrivateDevices = true;
+          PrivateTmp = true;
+          PrivateUsers = true;
+          ProcSubset = "pid";
           ProtectClock = true;
-          ProtectKernelTunables = true;
-          ProtectKernelModules = true;
-          ProtectKernelLogs = true;
           ProtectControlGroups = true;
+          ProtectHome = true;
+          ProtectHostname = true;
+          ProtectKernelLogs = true;
+          ProtectKernelModules = true;
+          ProtectKernelTunables = true;
+          ProtectProc = "invisible";
+          ProtectSystem = "full";
+          RemoveIPC = true;
+          Restart = "on-failure";
           RestrictNamespaces = true;
-          LockPersonality = true;
           RestrictRealtime = true;
           RestrictSUIDSGID = true;
-          RemoveIPC = true;
+          RuntimeDirectoryMode = 755;
+          StateDirectoryMode = 0700;
           SystemCallArchitectures = "native";
-
-          ProtectProc = "invisible";
-          ProcSubset = "pid";
 
           SystemCallFilter = [
             "~@clock"
@@ -90,7 +69,34 @@ in
             "~@reboot"
             "~@swap"
           ];
+
+          UMask = 077;
+        };
+
+        wantedBy = [ "multi-user.target" ];
+        wants = [ "network.target" ];
+      };
+    };
+
+  options = {
+    autoconnect.settings = lib.mkOption {
+      default = { };
+      description = "";
+
+      type = lib.types.submodule {
+        freeformType = tomlFmt.type;
+
+        options = {
+          db_dsn = lib.mkOption {
+            default = "";
+            description = "Endpoint of the database server.";
+            example = lib.literalExpression "redis+socket://\${config.services.redis.servers.autopush-rs.port}";
+            type = lib.types.str;
+          };
         };
       };
     };
+
+    package = lib.mkPackageOption pkgs "autopush-rs.out" { };
+  };
 }

@@ -1,9 +1,9 @@
 {
+  lib,
   stdenv,
+  fetchurl,
   callPackage,
   channel ? "stable",
-  fetchurl,
-  lib,
   # This is only relevant for Linux, so we need to pass it through
   polkitPolicyOwners ? [ ],
 }:
@@ -28,18 +28,21 @@ let
   meta = {
     description = "Multi-platform password manager";
     homepage = "https://1password.com/";
-    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
     license = lib.licenses.unfree;
+    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
+
     maintainers = with lib.maintainers; [
       khaneliman
       timstott
       bdd
     ];
+
     platforms = [
       "x86_64-linux"
       "aarch64-linux"
       "aarch64-darwin"
     ];
+
     mainProgram = "1password";
   };
 

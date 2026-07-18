@@ -1,8 +1,9 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   flit-core,
+  gitUpdater,
   httpx,
   microsoft-kiota-abstractions,
   opentelemetry-api,
@@ -11,13 +12,11 @@
   pytest-mock,
   pytestCheckHook,
   urllib3,
-  gitUpdater,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "microsoft-kiota-http";
   version = "1.11.7";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "microsoft";
@@ -26,7 +25,12 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-Fd9XSO3H1Au8y+Acft5to7hi7QNwWcmP0/NeWZlufjg=";
   };
 
-  sourceRoot = "${finalAttrs.src.name}/packages/http/httpx/";
+  nativeCheckInputs = [
+    pytest-asyncio
+    pytest-mock
+    pytestCheckHook
+    urllib3
+  ];
 
   build-system = [ flit-core ];
 
@@ -38,14 +42,9 @@ buildPythonPackage (finalAttrs: {
   ]
   ++ httpx.optional-dependencies.http2;
 
-  nativeCheckInputs = [
-    pytest-asyncio
-    pytest-mock
-    pytestCheckHook
-    urllib3
-  ];
-
+  pyproject = true;
   pythonImportsCheck = [ "kiota_http" ];
+  sourceRoot = "${finalAttrs.src.name}/packages/http/httpx/";
 
   passthru.updateScript = gitUpdater {
     rev-prefix = "microsoft-kiota-http-v";

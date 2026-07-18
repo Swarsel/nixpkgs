@@ -3,17 +3,17 @@
   stdenv,
   fetchurl,
   cmake,
+  fltk_1_3,
   libGL,
   libGLU,
-  libxv,
-  libxtst,
-  libxi,
   libjpeg_turbo,
-  fltk_1_3,
   libxcb-keysyms,
-  opencl-headers,
-  opencl-clhpp,
+  libxi,
+  libxtst,
+  libxv,
   ocl-icd,
+  opencl-clhpp,
+  opencl-headers,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -32,14 +32,6 @@ stdenv.mkDerivation (finalAttrs: {
     mv server/CMakeLists2.txt server/CMakeLists.txt
   '';
 
-  cmakeFlags = [
-    "-DVGL_SYSTEMFLTK=1"
-    "-DTJPEG_LIBRARY=${libjpeg_turbo.out}/lib/libturbojpeg.so"
-    (lib.cmakeFeature "CMAKE_POLICY_VERSION_MINIMUM" "4.0")
-  ];
-
-  makeFlags = [ "PREFIX=$(out)" ];
-
   nativeBuildInputs = [ cmake ];
 
   buildInputs = [
@@ -56,6 +48,14 @@ stdenv.mkDerivation (finalAttrs: {
     ocl-icd
   ];
 
+  cmakeFlags = [
+    "-DVGL_SYSTEMFLTK=1"
+    "-DTJPEG_LIBRARY=${libjpeg_turbo.out}/lib/libturbojpeg.so"
+    (lib.cmakeFeature "CMAKE_POLICY_VERSION_MINIMUM" "4.0")
+  ];
+
+  makeFlags = [ "PREFIX=$(out)" ];
+
   fixupPhase = ''
     substituteInPlace $out/bin/vglrun \
       --replace "LD_PRELOAD=libvglfaker" "LD_PRELOAD=$out/lib/libvglfaker" \
@@ -64,13 +64,15 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   meta = {
-    homepage = "https://www.virtualgl.org/";
     description = "X11 GL rendering in a remote computer with full 3D hw acceleration";
+    homepage = "https://www.virtualgl.org/";
+
     license = with lib.licenses; [
       lgpl2Plus
       wxWindowsException31
     ];
-    platforms = lib.platforms.linux;
+
     maintainers = [ ];
+    platforms = lib.platforms.linux;
   };
 })

@@ -1,20 +1,19 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
+  buildPythonPackage,
   dask,
+  ipywidgets,
   pandas,
   psutil,
-  tqdm,
-  ipywidgets,
   ray,
+  setuptools,
+  tqdm,
 }:
 
 buildPythonPackage rec {
   pname = "swifter";
   version = "1.4.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "jmcarpenter2";
@@ -23,6 +22,9 @@ buildPythonPackage rec {
     hash = "sha256-lgdf8E9GGjeLY4ERzxqtjQuYVtdtIZt2HFLSiNBbtX4=";
   };
 
+  # tests may hang due to ignoring cpu core limit
+  # https://github.com/jmcarpenter2/swifter/issues/221
+  doCheck = false;
   build-system = [ setuptools ];
 
   dependencies = [
@@ -38,11 +40,8 @@ buildPythonPackage rec {
     notebook = [ ipywidgets ];
   };
 
+  pyproject = true;
   pythonImportsCheck = [ "swifter" ];
-
-  # tests may hang due to ignoring cpu core limit
-  # https://github.com/jmcarpenter2/swifter/issues/221
-  doCheck = false;
 
   meta = {
     description = "Package which efficiently applies any function to a pandas dataframe or series in the fastest available manner";

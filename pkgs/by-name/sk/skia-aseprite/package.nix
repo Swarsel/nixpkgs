@@ -1,20 +1,20 @@
 {
+  lib,
+  fetchFromGitHub,
   aseprite,
+  cctools,
   clangStdenv,
   expat,
-  cctools,
-  fetchFromGitHub,
   fetchgit,
   fontconfig,
   gn,
   harfbuzzFull,
-  lib,
+  libgbm,
   libglvnd,
   libjpeg,
   libpng,
   libwebp,
   libx11,
-  libgbm,
   ninja,
   python3,
   zlib,
@@ -35,6 +35,14 @@ clangStdenv.mkDerivation (finalAttrs: {
     hash = "sha256-D79Z/deJsDVclcUTZXUrNZdTPW2TFNaVF4mTeHO8I+U=";
   };
 
+  # Using substituteInPlace because no clean upstream backport for GCC 15 exists for this version of Skia, newer versions fix this with large refactorings.
+  postPatch = ''
+    #include <cstdint>"
+    substituteInPlace src/sksl/transform/SkSLTransform.h \
+      --replace-fail "#include <vector>" "#include <vector>
+    #include <cstdint>"
+  '';
+
   nativeBuildInputs = [
     gn
     ninja
@@ -44,30 +52,6 @@ clangStdenv.mkDerivation (finalAttrs: {
     # Skia's build invokes `libtool -static` on Darwin to create `.a` archives.
     cctools.libtool
   ];
-
-  # Using substituteInPlace because no clean upstream backport for GCC 15 exists for this version of Skia, newer versions fix this with large refactorings.
-  postPatch = ''
-    #include <cstdint>"
-    substituteInPlace src/sksl/transform/SkSLTransform.h \
-      --replace-fail "#include <vector>" "#include <vector>
-    #include <cstdint>"
-  '';
-
-  preConfigure = with depSrcs; ''
-    mkdir -p third_party/externals
-    ln -s ${angle2} third_party/externals/angle2
-    ln -s ${dng_sdk} third_party/externals/dng_sdk
-    ln -s ${icu} third_party/externals/icu
-    ln -s ${icu4x} third_party/externals/icu4x
-    ln -s ${piex} third_party/externals/piex
-    ln -s ${wuffs} third_party/externals/wuffs
-  '';
-
-  configurePhase = ''
-    runHook preConfigure
-    gn gen lib --args="is_debug=false is_official_build=true skia_use_system_icu=false extra_cflags=[\"-I${harfbuzzFull.dev}/include/harfbuzz\"]"
-    runHook postConfigure
-  '';
 
   buildInputs = [
     expat
@@ -83,6 +67,16 @@ clangStdenv.mkDerivation (finalAttrs: {
     libx11
     libgbm
   ];
+
+  preConfigure = with depSrcs; ''
+    mkdir -p third_party/externals
+    ln -s ${angle2} third_party/externals/angle2
+    ln -s ${dng_sdk} third_party/externals/dng_sdk
+    ln -s ${icu} third_party/externals/icu
+    ln -s ${icu4x} third_party/externals/icu4x
+    ln -s ${piex} third_party/externals/piex
+    ln -s ${wuffs} third_party/externals/wuffs
+  '';
 
   buildPhase = ''
     runHook preBuild
@@ -123,14 +117,20 @@ clangStdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  configurePhase = ''
+    runHook preConfigure
+    gn gen lib --args="is_debug=false is_official_build=true skia_use_system_icu=false extra_cflags=[\"-I${harfbuzzFull.dev}/include/harfbuzz\"]"
+    runHook postConfigure
+  '';
+
   passthru.updateScript = [ ./update.sh ] ++ builtins.attrNames depSrcs;
 
   meta = {
+    inherit (aseprite.meta) maintainers;
     description = "Complete 2D graphic library for drawing Text, Geometries, and Images (Aseprite's fork)";
     homepage = "https://skia.org/";
-    downloadPage = "https://github.com/aseprite/skia";
     license = lib.licenses.bsd3;
-    inherit (aseprite.meta) maintainers;
     platforms = lib.platforms.all;
+    downloadPage = "https://github.com/aseprite/skia";
   };
 })

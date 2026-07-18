@@ -17,14 +17,13 @@ php.buildComposerProject2 (finalAttrs: {
   };
 
   vendorHash = "sha256-pbxcpDhi/1pmeZFqAFn8GNokfDoYzxzDt3RmE8pGW68=";
-
-  nativeInstallCheckInputs = [ versionCheckHook ];
   doInstallCheck = true;
+  nativeInstallCheckInputs = [ versionCheckHook ];
 
   meta = {
-    changelog = "https://magerun.net/category/magerun/";
     description = "Swiss army knife for Magento2 developers";
     homepage = "https://magerun.net/";
+    changelog = "https://magerun.net/category/magerun/";
     license = lib.licenses.mit;
     mainProgram = "n98-magerun2";
     teams = [ lib.teams.php ];

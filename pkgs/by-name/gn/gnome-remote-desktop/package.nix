@@ -1,36 +1,36 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchurl,
-  cairo,
-  meson,
-  ninja,
-  pkg-config,
-  python3,
   asciidoc,
-  wrapGAppsHook3,
+  cairo,
+  fdk_aac,
+  freerdp,
+  fuse3,
+  gdk-pixbuf,
   glib,
+  gnome,
+  libdrm,
   libei,
   libepoxy,
-  libdrm,
   libkrb5,
-  libva,
-  vulkan-loader,
-  shaderc,
-  nv-codec-headers-11,
-  pipewire,
-  systemd,
-  libsecret,
   libnotify,
   libopus,
+  libsecret,
+  libva,
   libxkbcommon,
-  gdk-pixbuf,
-  freerdp,
-  fdk_aac,
-  tpm2-tss,
-  fuse3,
-  gnome,
+  meson,
+  ninja,
+  nv-codec-headers-11,
+  pipewire,
+  pkg-config,
   polkit,
+  python3,
+  shaderc,
+  systemd,
+  tpm2-tss,
+  vulkan-loader,
+  wrapGAppsHook3,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -92,12 +92,12 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   meta = {
+    description = "GNOME Remote Desktop server";
     homepage = "https://gitlab.gnome.org/GNOME/gnome-remote-desktop";
     changelog = "https://gitlab.gnome.org/GNOME/gnome-remote-desktop/-/blob/${finalAttrs.version}/NEWS?ref_type=tags";
-    description = "GNOME Remote Desktop server";
-    mainProgram = "grdctl";
-    teams = [ lib.teams.gnome ];
     license = lib.licenses.gpl2Plus;
     platforms = lib.platforms.linux;
+    mainProgram = "grdctl";
+    teams = [ lib.teams.gnome ];
   };
 })

@@ -4,30 +4,30 @@
   fetchurl,
   alsa-lib,
   bzip2,
+  capnproto,
   fftw,
+  fftwFloat,
+  libfishsound,
+  libid3tag,
   libjack2,
-  libx11,
   liblo,
   libmad,
-  lrdf,
+  liboggz,
+  libpulseaudio,
   libsamplerate,
   libsndfile,
+  libx11,
+  lrdf,
+  meson,
+  ninja,
+  opusfile,
   pkg-config,
-  libpulseaudio,
+  qt6,
   redland,
   rubberband,
   serd,
   sord,
   vamp-plugin-sdk,
-  fftwFloat,
-  capnproto,
-  liboggz,
-  libfishsound,
-  libid3tag,
-  opusfile,
-  meson,
-  ninja,
-  qt6,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -38,6 +38,11 @@ stdenv.mkDerivation (finalAttrs: {
     url = "https://github.com/sonic-visualiser/sonic-visualiser/releases/download/sv_v${finalAttrs.version}/sonic-visualiser-${finalAttrs.version}.tar.gz";
     hash = "sha256-LzOK8CMekwU5xeXgTax8M4QleGbMKf2hEiFfjEEImMk=";
   };
+
+  patches = [
+    ./fix-atomic-qt.patch
+    ./fix-modifier-names.patch
+  ];
 
   nativeBuildInputs = [
     meson
@@ -71,11 +76,6 @@ stdenv.mkDerivation (finalAttrs: {
     serd
     sord
     vamp-plugin-sdk
-  ];
-
-  patches = [
-    ./fix-atomic-qt.patch
-    ./fix-modifier-names.patch
   ];
 
   enableParallelBuilding = true;

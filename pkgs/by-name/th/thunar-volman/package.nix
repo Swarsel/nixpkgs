@@ -1,18 +1,18 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitLab,
   gettext,
-  pkg-config,
-  xfce4-dev-tools,
-  wrapGAppsHook3,
-  xfce4-exo,
+  gitUpdater,
   gtk3,
   libgudev,
   libxfce4ui,
   libxfce4util,
+  pkg-config,
+  wrapGAppsHook3,
+  xfce4-dev-tools,
+  xfce4-exo,
   xfconf,
-  gitUpdater,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -20,11 +20,11 @@ stdenv.mkDerivation (finalAttrs: {
   version = "4.20.0";
 
   src = fetchFromGitLab {
-    domain = "gitlab.xfce.org";
     owner = "xfce";
     repo = "thunar-volman";
     tag = "thunar-volman-${finalAttrs.version}";
     hash = "sha256-XIVs/vRwy3QJQW/U7eLBvGdzplWlhdxn3f1lyTQsmpE=";
+    domain = "gitlab.xfce.org";
   };
 
   nativeBuildInputs = [
@@ -47,16 +47,16 @@ stdenv.mkDerivation (finalAttrs: {
   enableParallelBuilding = true;
 
   passthru.updateScript = gitUpdater {
-    rev-prefix = "thunar-volman-";
     odd-unstable = true;
+    rev-prefix = "thunar-volman-";
   };
 
   meta = {
     description = "Thunar extension for automatic management of removable drives and media";
     homepage = "https://gitlab.xfce.org/xfce/thunar-volman";
     license = lib.licenses.gpl2Plus;
-    mainProgram = "thunar-volman";
     platforms = lib.platforms.linux;
+    mainProgram = "thunar-volman";
     teams = [ lib.teams.xfce ];
   };
 })

@@ -2,17 +2,16 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  kernel ? null,
   elfutils,
   nasm,
   python3,
+  kernel ? null,
   withDriver ? false,
 }:
 
 python3.pkgs.buildPythonApplication (finalAttrs: {
   pname = "chipsec";
   version = "1.13.20";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "chipsec";
@@ -25,10 +24,6 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     ./log-path.diff
   ];
 
-  env = lib.optionalAttrs withDriver {
-    KSRC = "${kernel.dev}/lib/modules/${kernel.modDirVersion}/build";
-  };
-
   nativeBuildInputs = [
     nasm
   ]
@@ -37,10 +32,9 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
   ]
   ++ lib.optionals withDriver kernel.moduleBuildDependencies;
 
-  build-system = [ python3.pkgs.setuptools ];
-  dependencies = with python3.pkgs; [
-    brotli
-  ];
+  env = lib.optionalAttrs withDriver {
+    KSRC = "${kernel.dev}/lib/modules/${kernel.modDirVersion}/build";
+  };
 
   # Marker file preventing driver from being built
   preBuild = lib.optionals (!withDriver) ''
@@ -65,12 +59,21 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     popd
   '';
 
+  build-system = [ python3.pkgs.setuptools ];
+
+  dependencies = with python3.pkgs; [
+    brotli
+  ];
+
+  pyproject = true;
+
   pythonImportsCheck = [
     "chipsec"
   ];
 
   meta = {
     description = "Platform Security Assessment Framework";
+
     longDescription = ''
       CHIPSEC is a framework for analyzing the security of PC platforms
       including hardware, system firmware (BIOS/UEFI), and platform components.
@@ -78,13 +81,16 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
       interfaces, and forensic capabilities. It can be run on Windows, Linux,
       Mac OS X and UEFI shell.
     '';
-    license = lib.licenses.gpl2Only;
+
     homepage = "https://github.com/chipsec/chipsec";
+    license = lib.licenses.gpl2Only;
+
     maintainers = with lib.maintainers; [
       johnazoidberg
       erdnaxe
       staslyakhov
     ];
+
     platforms = if withDriver then [ "x86_64-linux" ] else with lib.platforms; linux ++ darwin;
     mainProgram = "chipsec_main";
   };

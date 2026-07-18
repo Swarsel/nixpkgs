@@ -1,41 +1,35 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # build-system
-  hatchling,
-
-  # dependencies
-  langchain-core,
-  openai,
-  tiktoken,
-
+  buildPythonPackage,
   # tests
   freezegun,
+  # passthru
+  gitUpdater,
+  # build-system
+  hatchling,
   langchain,
+  # dependencies
+  langchain-core,
   langchain-tests,
   lark,
+  openai,
   pandas,
   pytest-asyncio,
   pytest-cov-stub,
-  pytestCheckHook,
   pytest-mock,
   pytest-socket,
+  pytestCheckHook,
   requests-mock,
   responses,
   syrupy,
+  tiktoken,
   toml,
-
-  # passthru
-  gitUpdater,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "langchain-openai";
   version = "1.3.2";
-  pyproject = true;
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "langchain-ai";
@@ -43,16 +37,6 @@ buildPythonPackage (finalAttrs: {
     tag = "langchain-openai==${finalAttrs.version}";
     hash = "sha256-VmGbfciQlKBYgyUhFLUVzZaYSpEcK2pRokvsWrFpxaM=";
   };
-
-  sourceRoot = "${finalAttrs.src.name}/libs/partners/openai";
-
-  build-system = [ hatchling ];
-
-  dependencies = [
-    langchain-core
-    openai
-    tiktoken
-  ];
 
   nativeCheckInputs = [
     freezegun
@@ -71,7 +55,14 @@ buildPythonPackage (finalAttrs: {
     toml
   ];
 
-  enabledTestPaths = [ "tests/unit_tests" ];
+  __structuredAttrs = true;
+  build-system = [ hatchling ];
+
+  dependencies = [
+    langchain-core
+    openai
+    tiktoken
+  ];
 
   disabledTests = [
     # These tests require network access
@@ -91,22 +82,27 @@ buildPythonPackage (finalAttrs: {
     "test_format_message_content"
   ];
 
+  enabledTestPaths = [ "tests/unit_tests" ];
+  pyproject = true;
   pythonImportsCheck = [ "langchain_openai" ];
+  sourceRoot = "${finalAttrs.src.name}/libs/partners/openai";
 
   passthru = {
     # python updater script sets the wrong tag
     skipBulkUpdate = true;
+
     updateScript = gitUpdater {
-      rev-prefix = "langchain-openai==";
       ignoredVersions = "a|b|dev|rc";
+      rev-prefix = "langchain-openai==";
     };
   };
 
   meta = {
-    changelog = "https://github.com/langchain-ai/langchain/releases/tag/${finalAttrs.src.tag}";
     description = "Integration package connecting OpenAI and LangChain";
     homepage = "https://github.com/langchain-ai/langchain/tree/master/libs/partners/openai";
+    changelog = "https://github.com/langchain-ai/langchain/releases/tag/${finalAttrs.src.tag}";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       natsukium
       sarahec

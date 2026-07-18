@@ -1,7 +1,7 @@
 {
   config,
-  pkgs,
   lib,
+  pkgs,
   ...
 }:
 {
@@ -15,11 +15,13 @@
       `gnomeExtensions.gsconnect` as an alternative
       implementation if you use Gnome
     '';
+
     package = lib.mkPackageOption pkgs [ "kdePackages" "kdeconnect-kde" ] {
-      nullable = true;
       example = "gnomeExtensions.gsconnect";
+      nullable = true;
     };
   };
+
   config =
     let
       cfg = config.programs.kdeconnect;
@@ -28,6 +30,7 @@
       environment.systemPackages = lib.optionals (cfg.package != null) [
         cfg.package
       ];
+
       networking.firewall = rec {
         allowedTCPPortRanges = [
           {
@@ -35,6 +38,7 @@
             to = 1764;
           }
         ];
+
         allowedUDPPortRanges = allowedTCPPortRanges;
       };
     };

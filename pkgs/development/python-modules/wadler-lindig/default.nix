@@ -1,11 +1,9 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
+  buildPythonPackage,
   # build-system
   hatchling,
-
   # tests
   numpy,
   pytestCheckHook,
@@ -14,7 +12,6 @@
 buildPythonPackage rec {
   pname = "wadler-lindig";
   version = "0.1.7";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "patrick-kidger";
@@ -23,17 +20,19 @@ buildPythonPackage rec {
     hash = "sha256-qP826zdzR5BEQ8bGd45RFSLTH6Eal+b7UN+BW07/glo=";
   };
 
+  nativeCheckInputs = [
+    numpy
+    pytestCheckHook
+  ];
+
   build-system = [
     hatchling
   ];
 
+  pyproject = true;
+
   pythonImportsCheck = [
     "wadler_lindig"
-  ];
-
-  nativeCheckInputs = [
-    numpy
-    pytestCheckHook
   ];
 
   meta = {

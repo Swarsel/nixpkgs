@@ -2,11 +2,11 @@
   lib,
   stdenv,
   fetchurl,
-  pkg-config,
   libGL,
-  xorgproto,
   libx11,
+  pkg-config,
   writeScript,
+  xorgproto,
 }:
 stdenv.mkDerivation (finalAttrs: {
   pname = "xdriinfo";
@@ -18,7 +18,6 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   strictDeps = true;
-
   nativeBuildInputs = [ pkg-config ];
 
   buildInputs = [
@@ -42,8 +41,8 @@ stdenv.mkDerivation (finalAttrs: {
     description = "Utility to query configuration information of X11 DRI drivers";
     homepage = "https://gitlab.freedesktop.org/xorg/app/xdriinfo";
     license = lib.licenses.mit;
-    mainProgram = "xdriinfo";
     maintainers = [ ];
     platforms = lib.platforms.unix;
+    mainProgram = "xdriinfo";
   };
 })

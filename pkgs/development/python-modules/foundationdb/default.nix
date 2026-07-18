@@ -1,23 +1,22 @@
 {
-  buildPythonPackage,
   lib,
+  buildPythonPackage,
   foundationdb,
 }:
 
 buildPythonPackage {
   pname = "foundationdb";
   version = foundationdb.version;
-  format = "setuptools";
-
   src = foundationdb.pythonsrc;
-  unpackCmd = "tar xf $curSrc";
+  doCheck = false;
+  format = "setuptools";
 
   patchPhase = ''
     substituteInPlace ./fdb/impl.py \
       --replace libfdb_c.so "${foundationdb.lib}/lib/libfdb_c.so"
   '';
 
-  doCheck = false;
+  unpackCmd = "tar xf $curSrc";
 
   meta = {
     description = "Python bindings for FoundationDB";

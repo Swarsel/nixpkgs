@@ -1,13 +1,13 @@
 {
-  callPackage,
   lib,
   stdenv,
-  buildPackages,
   fetchFromGitHub,
-  rustPlatform,
-  installShellFiles,
-  testers,
+  buildPackages,
   cacert,
+  callPackage,
+  installShellFiles,
+  rustPlatform,
+  testers,
 }:
 
 let
@@ -22,7 +22,9 @@ rustPlatform.buildRustPackage (finalAttrs: {
     owner = "lycheeverse";
     repo = "lychee";
     tag = "lychee-v${finalAttrs.version}";
+    hash = "sha256-fXuLeLwrE/CINQKqk87o0Dp+8nGOqCyUkS5gTr9YOXY=";
     leaveDotGit = true;
+
     postFetch = ''
       GIT_DATE=$(git -C $out/.git show -s --format=%cs)
       substituteInPlace $out/lychee-bin/build.rs \
@@ -31,33 +33,14 @@ rustPlatform.buildRustPackage (finalAttrs: {
           '("cargo:rustc-env=GIT_DATE={}", "'$GIT_DATE'")'
       rm -rf $out/.git
     '';
-    hash = "sha256-fXuLeLwrE/CINQKqk87o0Dp+8nGOqCyUkS5gTr9YOXY=";
   };
-
-  cargoHash = "sha256-21J6eH2xSLK2VWnsrMk9WaKjPJiNP2UQGJuYkZUqsnM=";
 
   nativeBuildInputs = [
     installShellFiles
   ];
 
+  cargoHash = "sha256-21J6eH2xSLK2VWnsrMk9WaKjPJiNP2UQGJuYkZUqsnM=";
   nativeCheckInputs = [ cacert ];
-
-  postFixup = lib.optionalString canRun ''
-    ${lychee} --generate man > lychee.1
-    installManPage lychee.1
-
-    installShellCompletion --cmd lychee \
-      --bash <(${lychee} --generate complete-bash) \
-      --fish <(${lychee} --generate complete-fish) \
-      --zsh <(${lychee} --generate complete-zsh)
-  '';
-
-  cargoTestFlags = [
-    # don't run doctests since they tend to use the network
-    "--lib"
-    "--bins"
-    "--tests"
-  ];
 
   checkFlags = [
     #  Network errors for all of these tests
@@ -78,28 +61,48 @@ rustPlatform.buildRustPackage (finalAttrs: {
     "--skip=formatters::response::color::tests::test_format_response_with_ok_status"
   ];
 
+  postFixup = lib.optionalString canRun ''
+    ${lychee} --generate man > lychee.1
+    installManPage lychee.1
+
+    installShellCompletion --cmd lychee \
+      --bash <(${lychee} --generate complete-bash) \
+      --fish <(${lychee} --generate complete-fish) \
+      --zsh <(${lychee} --generate complete-zsh)
+  '';
+
+  cargoTestFlags = [
+    # don't run doctests since they tend to use the network
+    "--lib"
+    "--bins"
+    "--tests"
+  ];
+
   passthru.tests = {
-    # NOTE: These assume that testers.lycheeLinkCheck uses this exact derivation.
-    #       Which is true most of the time, but not necessarily after overriding.
-    ok = callPackage ./tests/ok.nix { };
     fail = callPackage ./tests/fail.nix { };
     fail-emptyDirectory = callPackage ./tests/fail-emptyDirectory.nix { };
     fail-rootRelative = callPackage ./tests/fail-rootRelative.nix { };
     network = testers.runNixOSTest ./tests/network.nix;
+    # NOTE: These assume that testers.lycheeLinkCheck uses this exact derivation.
+    #       Which is true most of the time, but not necessarily after overriding.
+    ok = callPackage ./tests/ok.nix { };
   };
 
   meta = {
     description = "Fast, async, stream-based link checker written in Rust";
     homepage = "https://github.com/lycheeverse/lychee";
-    downloadPage = "https://github.com/lycheeverse/lychee/releases/tag/lychee-v${finalAttrs.version}";
+
     license = with lib.licenses; [
       asl20
       mit
     ];
+
     maintainers = with lib.maintainers; [
       totoroot
       tuxinaut
     ];
+
     mainProgram = "lychee";
+    downloadPage = "https://github.com/lycheeverse/lychee/releases/tag/lychee-v${finalAttrs.version}";
   };
 })

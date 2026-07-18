@@ -1,18 +1,15 @@
 {
   lib,
   fetchurl,
+  alcotest,
   buildDunePackage,
   decompress,
   stdlib-shims,
-  alcotest,
 }:
 
 buildDunePackage (finalAttrs: {
-  minimalOCamlVersion = "4.08";
-  version = "20221222";
   pname = "imagelib";
-
-  duneVersion = "3";
+  version = "20221222";
 
   src = fetchurl {
     url = "https://github.com/rlepigre/ocaml-imagelib/releases/download/${finalAttrs.version}/imagelib-${finalAttrs.version}.tbz";
@@ -26,6 +23,8 @@ buildDunePackage (finalAttrs: {
 
   doCheck = true;
   checkInputs = [ alcotest ];
+  duneVersion = "3";
+  minimalOCamlVersion = "4.08";
 
   meta = {
     description = "Image formats such as PNG and PPM in OCaml";

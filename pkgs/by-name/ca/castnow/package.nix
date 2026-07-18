@@ -1,7 +1,7 @@
 {
   lib,
-  buildNpmPackage,
   fetchFromGitHub,
+  buildNpmPackage,
 }:
 
 buildNpmPackage rec {
@@ -16,7 +16,6 @@ buildNpmPackage rec {
   };
 
   npmDepsHash = "sha256-1cLuti3JHpMHn1sno8gE8Ko+eoUWCqFUfIDIBAS+M34=";
-
   dontNpmBuild = true;
 
   meta = {

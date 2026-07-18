@@ -1,12 +1,12 @@
 {
   lib,
   stdenv,
-  makeImpureTest,
   fetchFromGitHub,
   clr,
-  rocm-smi,
+  makeImpureTest,
   name,
   offloadArches,
+  rocm-smi,
 }:
 
 let
@@ -49,7 +49,11 @@ let
 in
 makeImpureTest {
   inherit name;
-  testedPackage = "rocmPackages.clr";
+
+  nativeBuildInputs = [
+    vectoradd
+    rocm-smi
+  ];
 
   sandboxPaths = [
     "/sys"
@@ -57,16 +61,13 @@ makeImpureTest {
     "/dev/kfd"
   ];
 
-  nativeBuildInputs = [
-    vectoradd
-    rocm-smi
-  ];
-
   testScript = ''
     rocm-smi
 
     vectoradd
   '';
+
+  testedPackage = "rocmPackages.clr";
 
   meta = {
     teams = [ lib.teams.rocm ];

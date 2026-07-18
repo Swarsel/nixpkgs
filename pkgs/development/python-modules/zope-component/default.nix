@@ -1,24 +1,23 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
+  persistent,
   setuptools,
+  unittestCheckHook,
+  zope-configuration,
   zope-event,
   zope-hookable,
-  zope-interface,
-  persistent,
-  zope-configuration,
   zope-i18nmessageid,
+  zope-interface,
   zope-location,
   zope-proxy,
   zope-security,
-  unittestCheckHook,
 }:
 
 buildPythonPackage rec {
   pname = "zope-component";
   version = "7.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "zopefoundation";
@@ -32,6 +31,16 @@ buildPythonPackage rec {
       --replace-fail "setuptools ==" "setuptools >="
   '';
 
+  nativeCheckInputs = [
+    unittestCheckHook
+    zope-configuration
+  ];
+
+  # AssertionError: 'test_interface.IFoo' != 'zope.component.tests.test_interface.IFoo'
+  preCheck = ''
+    rm src/zope/component/tests/test_interface.py
+  '';
+
   build-system = [ setuptools ];
 
   dependencies = [
@@ -43,36 +52,27 @@ buildPythonPackage rec {
   optional-dependencies = {
     hook = [ ];
     persistentregistry = [ persistent ];
+
     security = [
       zope-location
       zope-proxy
       zope-security
     ];
+
     zcml = [
       zope-configuration
       zope-i18nmessageid
     ];
   };
 
+  pyproject = true;
   pythonImportsCheck = [ "zope.component" ];
-
-  nativeCheckInputs = [
-    unittestCheckHook
-    zope-configuration
-  ];
-
+  pythonNamespaces = [ "zope" ];
   unittestFlagsArray = [ "src/zope/component/tests" ];
 
-  # AssertionError: 'test_interface.IFoo' != 'zope.component.tests.test_interface.IFoo'
-  preCheck = ''
-    rm src/zope/component/tests/test_interface.py
-  '';
-
-  pythonNamespaces = [ "zope" ];
-
   meta = {
-    homepage = "https://github.com/zopefoundation/zope.component";
     description = "Zope Component Architecture";
+    homepage = "https://github.com/zopefoundation/zope.component";
     changelog = "https://github.com/zopefoundation/zope.component/blob/${version}/CHANGES.rst";
     license = lib.licenses.zpl21;
     maintainers = [ ];

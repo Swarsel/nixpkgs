@@ -2,8 +2,8 @@
   lib,
   buildPythonPackage,
   fetchPypi,
-  pyqt5,
   pyqt-builder,
+  pyqt5,
   python,
   qtcharts,
   setuptools,
@@ -13,25 +13,33 @@
 buildPythonPackage rec {
   pname = "pyqtchart";
   version = "5.15.7";
-  pyproject = true;
 
   src = fetchPypi {
-    pname = "PyQtChart";
     inherit version;
     hash = "sha256-vJ8dJscl6CCw//jbbpBuiyhhKKFLOpjFmgzQw9mSQJU=";
+    pname = "PyQtChart";
   };
-
-  postPatch = ''
-    substituteInPlace pyproject.toml \
-      --replace "[tool.sip.project]" "[tool.sip.project]''\nsip-include-dirs = [\"${pyqt5}/${python.sitePackages}/PyQt5/bindings\"]"
-  '';
 
   outputs = [
     "out"
     "dev"
   ];
 
-  enableParallelBuilding = true;
+  postPatch = ''
+    substituteInPlace pyproject.toml \
+      --replace "[tool.sip.project]" "[tool.sip.project]''\nsip-include-dirs = [\"${pyqt5}/${python.sitePackages}/PyQt5/bindings\"]"
+  '';
+
+  nativeBuildInputs = [
+    sip
+    qtcharts
+    setuptools
+    pyqt-builder
+  ];
+
+  buildInputs = [ qtcharts ];
+  propagatedBuildInputs = [ pyqt5 ];
+
   # HACK: paralellize compilation of make calls within pyqt's setup.py
   # pkgs/stdenv/generic/setup.sh doesn't set this for us because
   # make gets called by python code and not its build phase
@@ -42,24 +50,12 @@ buildPythonPackage rec {
     export MAKEFLAGS+="''${enableParallelBuilding:+-j$NIX_BUILD_CORES}"
   '';
 
-  dontWrapQtApps = true;
-
-  nativeBuildInputs = [
-    sip
-    qtcharts
-    setuptools
-    pyqt-builder
-  ];
-
-  buildInputs = [ qtcharts ];
-
-  propagatedBuildInputs = [ pyqt5 ];
-
-  dontConfigure = true;
-
   # has no tests
   doCheck = false;
-
+  dontConfigure = true;
+  dontWrapQtApps = true;
+  enableParallelBuilding = true;
+  pyproject = true;
   pythonImportsCheck = [ "PyQt5.QtChart" ];
 
   meta = {

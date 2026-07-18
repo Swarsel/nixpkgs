@@ -2,21 +2,25 @@
   lib,
   stdenv,
   fetchurl,
-  makeWrapper,
-  unzip,
   jre,
+  makeWrapper,
   runtimeShell,
+  unzip,
 }:
 
 stdenv.mkDerivation rec {
-  version = "1.9";
   pname = "msgviewer";
-  uname = "MSGViewer";
+  version = "1.9";
 
   src = fetchurl {
     url = "mirror://sourceforge/msgviewer/${uname}-${version}/${uname}-${version}.zip";
     sha256 = "0igmr8c0757xsc94xlv2470zv2mz57zaj52dwr9wj8agmj23jbjz";
   };
+
+  nativeBuildInputs = [
+    makeWrapper
+    unzip
+  ];
 
   buildCommand = ''
     dir=$out/lib/msgviewer
@@ -31,18 +35,15 @@ stdenv.mkDerivation rec {
     chmod 755 $out/bin/msgviewer
   '';
 
-  nativeBuildInputs = [
-    makeWrapper
-    unzip
-  ];
+  uname = "MSGViewer";
 
   meta = {
     description = "Viewer for .msg files (MS Outlook)";
-    mainProgram = "msgviewer";
     homepage = "https://www.washington.edu/alpine/";
-    sourceProvenance = with lib.sourceTypes; [ binaryBytecode ];
     license = lib.licenses.asl20;
+    sourceProvenance = with lib.sourceTypes; [ binaryBytecode ];
     maintainers = with lib.maintainers; [ peterhoeg ];
     platforms = lib.platforms.all;
+    mainProgram = "msgviewer";
   };
 }

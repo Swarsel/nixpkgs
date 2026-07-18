@@ -1,9 +1,9 @@
 {
   lib,
-  rustPlatform,
   fetchCrate,
-  versionCheckHook,
   nix-update-script,
+  rustPlatform,
+  versionCheckHook,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -12,16 +12,14 @@ rustPlatform.buildRustPackage (finalAttrs: {
 
   src = fetchCrate {
     inherit (finalAttrs) version;
-    crateName = "petname";
     hash = "sha256-p5sGxGYzvc1b8Ch8MBwluMVFyu2Z8IIqhJzt68o90HQ=";
+    crateName = "petname";
   };
 
   cargoHash = "sha256-7+LATYCokoh27sZkIWZ5eW4n1HZSB5fDvQKBeyObCgE=";
-
   doInstallCheck = true;
   nativeInstallCheckInputs = [ versionCheckHook ];
   versionCheckProgramArg = "--version";
-
   passthru.updateScript = nix-update-script { };
 
   meta = {

@@ -1,16 +1,15 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
   aiohttp,
+  buildPythonPackage,
   pyjwt,
+  setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "laundrify-aio";
   version = "1.2.2";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "laundrify";
@@ -19,6 +18,8 @@ buildPythonPackage rec {
     hash = "sha256-iFQ0396BkGWM7Ma/I0gbXucd2/yPmEVF4IC3/bMK2SA=";
   };
 
+  # Module has no tests
+  doCheck = false;
   build-system = [ setuptools ];
 
   dependencies = [
@@ -26,9 +27,7 @@ buildPythonPackage rec {
     pyjwt
   ];
 
-  # Module has no tests
-  doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "laundrify_aio" ];
 
   meta = {

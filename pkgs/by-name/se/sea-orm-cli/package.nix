@@ -1,10 +1,10 @@
 {
   lib,
-  rustPlatform,
   fetchCrate,
-  pkg-config,
-  openssl,
   nix-update-script,
+  openssl,
+  pkg-config,
+  rustPlatform,
   versionCheckHook,
 }:
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -17,13 +17,10 @@ rustPlatform.buildRustPackage (finalAttrs: {
   };
 
   nativeBuildInputs = [ pkg-config ];
-
   buildInputs = [ openssl ];
-
   cargoHash = "sha256-38KIJYwRvVmChGSJwaRRWbb/HPuuTp/qnvXpo3xjRpE=";
-
-  nativeInstallCheckInputs = [ versionCheckHook ];
   doInstallCheck = true;
+  nativeInstallCheckInputs = [ versionCheckHook ];
   __darwinAllowLocalNetworking = true;
 
   passthru = {
@@ -31,13 +28,15 @@ rustPlatform.buildRustPackage (finalAttrs: {
   };
 
   meta = {
-    mainProgram = "sea-orm-cli";
-    homepage = "https://www.sea-ql.org/SeaORM";
     description = "Command line utility for SeaORM";
+    homepage = "https://www.sea-ql.org/SeaORM";
+
     license = with lib.licenses; [
       mit # or
       asl20
     ];
+
     maintainers = with lib.maintainers; [ traxys ];
+    mainProgram = "sea-orm-cli";
   };
 })

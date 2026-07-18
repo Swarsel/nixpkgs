@@ -1,7 +1,7 @@
 {
   lib,
-  mkDerivation,
   fetchFromGitHub,
+  mkDerivation,
   unstableGitUpdater,
 }:
 
@@ -32,7 +32,7 @@ mkDerivation {
     description = "Formalised, cross-linked reference resource for mathematics done in Homotopy Type Theory ";
     homepage = "https://github.com/the1lab/1lab";
     license = lib.licenses.agpl3Only;
-    platforms = lib.platforms.unix;
     maintainers = with lib.maintainers; [ ncfavier ];
+    platforms = lib.platforms.unix;
   };
 }

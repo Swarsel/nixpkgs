@@ -1,18 +1,18 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
-  rustPlatform,
-  libarchive,
-  openssl,
-  pkg-config,
   bubblewrap,
+  cacert,
   elfutils,
+  libarchive,
   nix,
   nixosTests,
+  openssl,
+  pkg-config,
+  rustPlatform,
   systemd,
   util-linux,
-  cacert,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -26,7 +26,7 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-PG/TqfXTuricAcwCB+2dKlVgHXxhCVVRJaVJ5v0xd4o=";
   };
 
-  cargoHash = "sha256-XDkW1tCSvmiTU0GN3L0oL0uhgWYQSlxRIV0xcwSlgkY=";
+  nativeBuildInputs = [ pkg-config ];
 
   buildInputs = [
     libarchive
@@ -36,9 +36,10 @@ rustPlatform.buildRustPackage (finalAttrs: {
     systemd
   ];
 
-  nativeBuildInputs = [ pkg-config ];
-
+  cargoHash = "sha256-XDkW1tCSvmiTU0GN3L0oL0uhgWYQSlxRIV0xcwSlgkY=";
+  env.OPENSSL_NO_VENDOR = "1";
   doCheck = stdenv.hostPlatform.isLinux;
+
   nativeCheckInputs = [
     bubblewrap
     elfutils
@@ -52,8 +53,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
     "--no-default-features"
   ];
 
-  env.OPENSSL_NO_VENDOR = "1";
-
   passthru.tests = { inherit (nixosTests) nixseparatedebuginfod2; };
 
   meta = {
@@ -61,10 +60,12 @@ rustPlatform.buildRustPackage (finalAttrs: {
     homepage = "https://github.com/symphorien/nixseparatedebuginfod2";
     changelog = "https://https://github.com/symphorien/nixseparatedebuginfod2/blob/v${finalAttrs.version}/CHANGELOG.md/";
     license = lib.licenses.gpl3Only;
+
     maintainers = with lib.maintainers; [
       symphorien
       feyorsh
     ];
+
     platforms = lib.platforms.unix;
     mainProgram = "nixseparatedebuginfod2";
   };

@@ -1,16 +1,14 @@
 {
-  buildDunePackage,
-  cstruct,
-  async_unix,
   async,
+  async_unix,
+  buildDunePackage,
   core,
+  cstruct,
 }:
 
 buildDunePackage {
-  pname = "cstruct-async";
   inherit (cstruct) src version meta;
-
-  duneVersion = "3";
+  pname = "cstruct-async";
 
   propagatedBuildInputs = [
     async_unix
@@ -18,4 +16,6 @@ buildDunePackage {
     cstruct
     core
   ];
+
+  duneVersion = "3";
 }

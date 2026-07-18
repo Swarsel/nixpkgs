@@ -1,11 +1,11 @@
 {
+  lib,
   stdenv,
+  fetchFromGitHub,
   cmake,
   curl,
-  fetchFromGitHub,
   gss,
   hwloc,
-  lib,
   libsodium,
   libuv,
   nix-update-script,
@@ -30,6 +30,7 @@ stdenv.mkDerivation (finalAttrs: {
     cmake
     pkg-config
   ];
+
   buildInputs = [
     libuv
     zeromq
@@ -58,13 +59,15 @@ stdenv.mkDerivation (finalAttrs: {
     description = "Decentralized pool for Monero mining";
     homepage = "https://github.com/SChernykh/p2pool";
     license = lib.licenses.gpl3Only;
+
     maintainers = with lib.maintainers; [
       ratsclub
       JacoMalan1
       jk
     ];
-    mainProgram = "p2pool";
+
     platforms = lib.platforms.all;
+    mainProgram = "p2pool";
     broken = stdenv.hostPlatform.isDarwin;
   };
 })

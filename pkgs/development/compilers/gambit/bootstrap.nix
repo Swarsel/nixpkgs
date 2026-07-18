@@ -2,12 +2,12 @@
 # used to compile the full version of Gambit stable *and* unstable.
 
 {
-  gccStdenv,
   fetchurl,
   autoconf,
-  gcc,
   coreutils,
   gambit-support,
+  gcc,
+  gccStdenv,
   ...
 }:
 # As explained in build.nix, GCC compiles Gambit 10x faster than Clang, for code 3x better
@@ -23,14 +23,6 @@ gccStdenv.mkDerivation {
 
   buildInputs = [ autoconf ];
 
-  configurePhase = ''
-    export CC=${gcc}/bin/gcc CXX=${gcc}/bin/g++ \
-           CPP=${gcc}/bin/cpp CXXCPP=${gcc}/bin/cpp LD=${gcc}/bin/ld \
-           XMKMF=${coreutils}/bin/false
-    unset CFLAGS LDFLAGS LIBS CPPFLAGS CXXFLAGS
-    ./configure --prefix=$out/gambit
-  '';
-
   buildPhase = ''
     # Copy the (configured) sources now, not later, so we don't have to filter out
     # all the intermediate build products.
@@ -42,6 +34,14 @@ gccStdenv.mkDerivation {
 
   installPhase = ''
     cp -fa ./gsc-boot $out/gambit/
+  '';
+
+  configurePhase = ''
+    export CC=${gcc}/bin/gcc CXX=${gcc}/bin/g++ \
+           CPP=${gcc}/bin/cpp CXXCPP=${gcc}/bin/cpp LD=${gcc}/bin/ld \
+           XMKMF=${coreutils}/bin/false
+    unset CFLAGS LDFLAGS LIBS CPPFLAGS CXXFLAGS
+    ./configure --prefix=$out/gambit
   '';
 
   forceShare = [ "info" ];

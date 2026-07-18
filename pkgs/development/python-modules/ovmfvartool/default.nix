@@ -1,15 +1,14 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  pyyaml,
+  buildPythonPackage,
   nixosTests,
+  pyyaml,
 }:
 
 buildPythonPackage {
   pname = "ovmfvartool";
   version = "unstable-2022-09-04";
-  format = "setuptools";
 
   src = fetchFromGitHub {
     # https://github.com/hlandau/ovmfvartool/pull/4
@@ -20,10 +19,9 @@ buildPythonPackage {
   };
 
   propagatedBuildInputs = [ pyyaml ];
-
   # has no tests
   doCheck = false;
-
+  format = "setuptools";
   pythonImportsCheck = [ "ovmfvartool" ];
 
   passthru.tests = {
@@ -32,12 +30,14 @@ buildPythonPackage {
 
   meta = {
     description = "Parse and generate OVMF_VARS.fd from Yaml";
-    mainProgram = "ovmfvartool";
     homepage = "https://github.com/hlandau/ovmfvartool";
     license = lib.licenses.gpl3Plus;
+
     maintainers = with lib.maintainers; [
       baloo
       raitobezarius
     ];
+
+    mainProgram = "ovmfvartool";
   };
 }

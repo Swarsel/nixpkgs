@@ -1,16 +1,14 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitLab,
-  gitUpdater,
-  testers,
   boost,
   cmake,
   cmake-extras,
   dbus,
   dbus-test-runner,
-  withDocumentation ? true,
   doxygen,
+  gitUpdater,
   glog,
   graphviz,
   gtest,
@@ -22,9 +20,11 @@
   qtdeclarative,
   qtscxml,
   qttools,
+  testers,
   validatePkgConfig,
   wrapQtAppsHook,
   xvfb-run,
+  withDocumentation ? true,
 }:
 
 let
@@ -85,6 +85,14 @@ stdenv.mkDerivation (finalAttrs: {
     qtdeclarative
   ];
 
+  cmakeFlags = [
+    (lib.cmakeBool "ENABLE_QT6" withQt6)
+    (lib.cmakeBool "ENABLE_DOC" withDocumentation)
+    (lib.cmakeBool "ENABLE_WERROR" (!withQt6))
+  ];
+
+  doCheck = stdenv.buildPlatform.canExecute stdenv.hostPlatform;
+
   nativeCheckInputs = [
     dbus
     dbus-test-runner
@@ -94,23 +102,14 @@ stdenv.mkDerivation (finalAttrs: {
 
   checkInputs = [ gtest ];
 
-  cmakeFlags = [
-    (lib.cmakeBool "ENABLE_QT6" withQt6)
-    (lib.cmakeBool "ENABLE_DOC" withDocumentation)
-    (lib.cmakeBool "ENABLE_WERROR" (!withQt6))
-  ];
-
-  makeTargets = [ "all" ] ++ lib.optionals withDocumentation [ "doc" ];
-
-  doCheck = stdenv.buildPlatform.canExecute stdenv.hostPlatform;
-
-  # xvfb tests are flaky on xvfb shutdown when parallelised
-  enableParallelChecking = false;
-
   preCheck = ''
     export HOME=$TMPDIR # temp files in home
     export QT_PLUGIN_PATH=${lib.getBin qtbase}/${qtbase.qtPluginPrefix} # xcb platform & sqlite driver
   '';
+
+  # xvfb tests are flaky on xvfb shutdown when parallelised
+  enableParallelChecking = false;
+  makeTargets = [ "all" ] ++ lib.optionals withDocumentation [ "doc" ];
 
   passthru = {
     tests.pkg-config = testers.testMetaPkgConfig finalAttrs.finalPackage;
@@ -120,17 +119,21 @@ stdenv.mkDerivation (finalAttrs: {
   meta = {
     description = "Performs uploads and downloads from a centralized location";
     homepage = "https://gitlab.com/ubports/development/core/lomiri-download-manager";
+
     changelog = "https://gitlab.com/ubports/development/core/lomiri-download-manager/-/blob/${
       if (!isNull finalAttrs.src.tag) then finalAttrs.src.tag else finalAttrs.src.rev
     }/ChangeLog";
+
     license = lib.licenses.lgpl3Only;
-    teams = [ lib.teams.lomiri ];
     platforms = lib.platforms.linux;
+
     pkgConfigModules = map (pc: pc + lib.optionalString withQt6 "-qt6") [
       "ldm-common"
       "lomiri-download-manager-client"
       "lomiri-download-manager-common"
       "lomiri-upload-manager-common"
     ];
+
+    teams = [ lib.teams.lomiri ];
   };
 })

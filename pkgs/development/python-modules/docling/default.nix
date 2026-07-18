@@ -1,14 +1,10 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # build system
-  poetry-core,
-
   # dependencies
   accelerate,
   beautifulsoup4,
+  buildPythonPackage,
   certifi,
   docling-core,
   docling-ibm-models,
@@ -18,16 +14,25 @@
   huggingface-hub,
   lxml,
   marko,
+  # optional dependencies
+  # mkdocs-click # not yet packaged
+  mkdocs-jupyter,
+  mkdocs-material,
+  mkdocstrings,
   # ocrmac # not yet packaged
   onnxruntime,
   openpyxl,
   pandas,
   pillow,
   pluggy,
+  # build system
+  poetry-core,
   pydantic,
   pydantic-settings,
   pylatexenc,
   pypdfium2,
+  # tests
+  pytestCheckHook,
   python-docx,
   python-pptx,
   rapidocr,
@@ -38,22 +43,12 @@
   tqdm,
   transformers,
   typer,
-
-  # optional dependencies
-  # mkdocs-click # not yet packaged
-  mkdocs-jupyter,
-  mkdocs-material,
-  mkdocstrings,
-
-  # tests
-  pytestCheckHook,
   writableTmpDirAsHomeHook,
 }:
 
 buildPythonPackage rec {
   pname = "docling";
   version = "2.69.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "docling-project";
@@ -61,6 +56,11 @@ buildPythonPackage rec {
     tag = "v${version}";
     hash = "sha256-r7jAah/tqLylPyyzrK0NW2ok66NVdb/V/YLV95McGC4=";
   };
+
+  nativeCheckInputs = [
+    pytestCheckHook
+    writableTmpDirAsHomeHook
+  ];
 
   build-system = [
     poetry-core
@@ -98,42 +98,6 @@ buildPythonPackage rec {
     tqdm
     transformers
     typer
-  ];
-
-  pythonRelaxDeps = [
-    "lxml"
-    "pypdfium2"
-    "pillow"
-  ];
-
-  optional-dependencies = {
-    ocrmac = [
-      # ocrmac # not yet packaged
-    ];
-    rapidocr = [
-      onnxruntime
-      rapidocr
-    ];
-    tesserocr = [
-      tesserocr
-    ];
-
-    docs = [
-      # mkdocs-click # not yet packaged
-      mkdocs-jupyter
-      mkdocs-material
-      mkdocstrings
-      # griffle-pydantic
-    ];
-  };
-
-  nativeCheckInputs = [
-    pytestCheckHook
-    writableTmpDirAsHomeHook
-  ];
-
-  pythonImportsCheck = [
-    "docling"
   ];
 
   disabledTests = [
@@ -174,6 +138,41 @@ buildPythonPackage rec {
 
     # AssertionError: pred_itxt==true_itxt
     "test_e2e_valid_csv_conversions"
+  ];
+
+  optional-dependencies = {
+    docs = [
+      # mkdocs-click # not yet packaged
+      mkdocs-jupyter
+      mkdocs-material
+      mkdocstrings
+      # griffle-pydantic
+    ];
+
+    ocrmac = [
+      # ocrmac # not yet packaged
+    ];
+
+    rapidocr = [
+      onnxruntime
+      rapidocr
+    ];
+
+    tesserocr = [
+      tesserocr
+    ];
+  };
+
+  pyproject = true;
+
+  pythonImportsCheck = [
+    "docling"
+  ];
+
+  pythonRelaxDeps = [
+    "lxml"
+    "pypdfium2"
+    "pillow"
   ];
 
   meta = {

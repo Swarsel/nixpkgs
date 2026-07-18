@@ -27,25 +27,24 @@ in
 
     enable = mkOption {
       default = false;
-      type = types.bool;
+
       description = ''
         If true, enable cgit (fast web interface for git repositories) as a
         sub-service in lighttpd.
       '';
-    };
 
-    subdir = mkOption {
-      default = "cgit";
-      example = "";
-      type = types.str;
-      description = ''
-        The subdirectory in which to serve cgit. The web application will be
-        accessible at http://yourserver/''${subdir}
-      '';
+      type = types.bool;
     };
 
     configText = mkOption {
       default = "";
+
+      description = ''
+        Verbatim contents of the cgit runtime configuration file. Documentation
+        (with cgitrc example file) is available in "man cgitrc". Or online:
+        <http://git.zx2c4.com/cgit/tree/cgitrc.5.txt>
+      '';
+
       example = literalExpression ''
         '''
           source-filter=''${pkgs.cgit}/lib/cgit/filters/syntax-highlighting.py
@@ -54,12 +53,20 @@ in
           scan-path=/srv/git
         '''
       '';
+
       type = types.lines;
+    };
+
+    subdir = mkOption {
+      default = "cgit";
+
       description = ''
-        Verbatim contents of the cgit runtime configuration file. Documentation
-        (with cgitrc example file) is available in "man cgitrc". Or online:
-        <http://git.zx2c4.com/cgit/tree/cgitrc.5.txt>
+        The subdirectory in which to serve cgit. The web application will be
+        accessible at http://yourserver/''${subdir}
       '';
+
+      example = "";
+      type = types.str;
     };
 
   };

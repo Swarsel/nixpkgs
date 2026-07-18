@@ -3,11 +3,11 @@
   buildGo125Module,
   fetchFromCodeberg,
   fetchYarnDeps,
+  nix-update-script,
+  nixosTests,
   nodejs,
   yarn,
   yarnConfigHook,
-  nixosTests,
-  nix-update-script,
 }:
 buildGo125Module (finalAttrs: {
   pname = "gotosocial";
@@ -20,31 +20,13 @@ buildGo125Module (finalAttrs: {
     hash = "sha256-rslzi9WqPqN/wm9PN6SWdXtLdMRJJV6Hhb3whJ0RicU=";
   };
 
-  vendorHash = null;
-
-  ldflags = [
-    "-s"
-    "-w"
-    "-X main.Version=${finalAttrs.version}"
-  ];
-
-  tags = [
-    "kvformat"
-  ];
-
   nativeBuildInputs = [
     nodejs
     yarn
     yarnConfigHook
   ];
 
-  yarnOfflineCache = fetchYarnDeps {
-    yarnLock = "${finalAttrs.src}/web/source/yarn.lock";
-    hash = "sha256-rfZxslIEoOTufENIvk8Eq5wzdD3rUpUP3wrMjmLH44k=";
-  };
-
-  # manually calling yarnConfigHook in sub-directory
-  dontYarnInstallDeps = true;
+  vendorHash = null;
 
   postConfigure = ''
     pushd ./web/source
@@ -62,14 +44,6 @@ buildGo125Module (finalAttrs: {
     ./scripts/bundle_licenses.sh
   '';
 
-  postInstall = ''
-    # remove a Go codegen helper binary
-    rm $out/bin/gen
-
-    mkdir -p $out/share/gotosocial/web
-    mv web/{assets,template} $out/share/gotosocial/web
-  '';
-
   # tests are working only on x86_64-linux
   # doCheck = stdenv.hostPlatform.isLinux && stdenv.hostPlatform.isx86_64;
   # checks are currently very unstable in our setup, so we should test manually for now
@@ -85,13 +59,38 @@ buildGo125Module (finalAttrs: {
     in
     [ "-skip=^${builtins.concatStringsSep "$|^" skippedTests}$" ];
 
+  postInstall = ''
+    # remove a Go codegen helper binary
+    rm $out/bin/gen
+
+    mkdir -p $out/share/gotosocial/web
+    mv web/{assets,template} $out/share/gotosocial/web
+  '';
+
+  # manually calling yarnConfigHook in sub-directory
+  dontYarnInstallDeps = true;
+
+  ldflags = [
+    "-s"
+    "-w"
+    "-X main.Version=${finalAttrs.version}"
+  ];
+
+  tags = [
+    "kvformat"
+  ];
+
+  yarnOfflineCache = fetchYarnDeps {
+    hash = "sha256-rfZxslIEoOTufENIvk8Eq5wzdD3rUpUP3wrMjmLH44k=";
+    yarnLock = "${finalAttrs.src}/web/source/yarn.lock";
+  };
+
   passthru.tests.gotosocial = nixosTests.gotosocial;
   passthru.updateScript = nix-update-script { };
 
   meta = {
-    homepage = "https://gotosocial.org";
-    changelog = "https://codeberg.org/superseriousbusiness/gotosocial/releases/tag/v${finalAttrs.version}";
     description = "Fast, fun, ActivityPub server, powered by Go";
+
     longDescription = ''
       ActivityPub social network server, written in Golang.
       You can keep in touch with your friends, post, read, and
@@ -99,10 +98,14 @@ buildGo125Module (finalAttrs: {
       advertised to! A light-weight alternative to Mastodon
       and Pleroma, with support for clients!
     '';
+
+    homepage = "https://gotosocial.org";
+    changelog = "https://codeberg.org/superseriousbusiness/gotosocial/releases/tag/v${finalAttrs.version}";
+    license = lib.licenses.agpl3Only;
+
     maintainers = with lib.maintainers; [
       blakesmith
       cherrykitten
     ];
-    license = lib.licenses.agpl3Only;
   };
 })

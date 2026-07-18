@@ -1,16 +1,16 @@
 {
-  buildGoModule,
-  fetchFromGitHub,
+  lib,
+  stdenv,
   fetchurl,
+  fetchFromGitHub,
+  buildGoModule,
   fetchpatch,
   go-bindata,
-  lib,
+  libiconv,
+  nixosTests,
   perl,
   pkg-config,
   rustPlatform,
-  stdenv,
-  libiconv,
-  nixosTests,
 }:
 
 let
@@ -26,23 +26,26 @@ let
   };
 
   ui = fetchurl {
-    url = "https://github.com/influxdata/ui/releases/download/${ui_version}/build.tar.gz";
     hash = "sha256-aC+GYMaxYKkY9GMaeRx22hQ3xi3kfWpaTLC9ajqOaAA=";
+    url = "https://github.com/influxdata/ui/releases/download/${ui_version}/build.tar.gz";
   };
 
   flux = rustPlatform.buildRustPackage (finalAttrs: {
     pname = "libflux";
     version = libflux_version;
+
     src = fetchFromGitHub {
       owner = "influxdata";
       repo = "flux";
       rev = "v${libflux_version}";
       hash = "sha256-935aN2SxfNZvpG90rXuqZ2OTpSGLgiBDbZsBoG0WUvU=";
     };
+
     patches = [
       # https://github.com/influxdata/flux/pull/5542
       ./fix-unsigned-char.patch
     ];
+
     # Don't fail on warnings
     postPatch = ''
       substituteInPlace flux/Cargo.toml \
@@ -50,18 +53,11 @@ let
       substituteInPlace flux-core/Cargo.toml \
         --replace-fail 'default = ["strict"]' 'default = []'
     '';
-    sourceRoot = "${finalAttrs.src.name}/libflux";
 
-    cargoHash = "sha256-A6j/lb47Ob+Po8r1yvqBXDVP0Hf7cNz8WFZqiVUJj+Y=";
     nativeBuildInputs = [ rustPlatform.bindgenHook ];
     buildInputs = lib.optional stdenv.hostPlatform.isDarwin libiconv;
-    pkgcfg = ''
-      Name: flux
-      Version: ${libflux_version}
-      Description: Library for the InfluxData Flux engine
-      Cflags: -I/out/include
-      Libs: -L/out/lib -lflux -lpthread
-    '';
+    cargoHash = "sha256-A6j/lb47Ob+Po8r1yvqBXDVP0Hf7cNz8WFZqiVUJj+Y=";
+
     postInstall = ''
       mkdir -p $out/include $out/pkgconfig
       cp -r $NIX_BUILD_TOP/${finalAttrs.src.name}/libflux/include/influxdata $out/include
@@ -74,12 +70,28 @@ let
     '';
 
     __structuredAttrs = true;
+
+    pkgcfg = ''
+      Name: flux
+      Version: ${libflux_version}
+      Description: Library for the InfluxData Flux engine
+      Cflags: -I/out/include
+      Libs: -L/out/lib -lflux -lpthread
+    '';
+
+    sourceRoot = "${finalAttrs.src.name}/libflux";
   });
 in
 buildGoModule {
+  inherit src;
   pname = "influxdb";
   version = version;
-  inherit src;
+
+  postPatch = ''
+    # use go-bindata from environment
+    substituteInPlace static/static.go \
+      --replace-fail 'go run github.com/kevinburke/go-bindata/' ""
+  '';
 
   nativeBuildInputs = [
     go-bindata
@@ -88,18 +100,7 @@ buildGoModule {
   ];
 
   vendorHash = "sha256-B4w8+UaewujKVr98MFhRh2c6UMOdB+TE/mOT+cy2pHk=";
-  subPackages = [
-    "cmd/influxd"
-    "cmd/telemetryd"
-  ];
-
   env.PKG_CONFIG_PATH = "${flux}/pkgconfig";
-
-  postPatch = ''
-    # use go-bindata from environment
-    substituteInPlace static/static.go \
-      --replace-fail 'go run github.com/kevinburke/go-bindata/' ""
-  '';
 
   # Check that libflux and the UI are at the right version, and embed
   # the UI assets into the Go source tree.
@@ -125,12 +126,17 @@ buildGoModule {
     popd
   '';
 
-  tags = [ "assets" ];
-
   ldflags = [
     "-X main.commit=v${version}"
     "-X main.version=${version}"
   ];
+
+  subPackages = [
+    "cmd/influxd"
+    "cmd/telemetryd"
+  ];
+
+  tags = [ "assets" ];
 
   passthru.tests = {
     inherit (nixosTests) influxdb2;
@@ -138,8 +144,8 @@ buildGoModule {
 
   meta = {
     description = "Open-source distributed time series database";
-    license = lib.licenses.mit;
     homepage = "https://influxdata.com/";
+    license = lib.licenses.mit;
     maintainers = [ ];
   };
 }

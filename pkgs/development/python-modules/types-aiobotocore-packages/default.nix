@@ -14,25 +14,21 @@ let
   buildTypesAiobotocorePackage =
     serviceName: version: hash:
     buildPythonPackage (finalAttrs: {
-      pname = "types-aiobotocore-${serviceName}";
       inherit version;
-      pyproject = true;
-
-      oldStylePackages = [
-        "gamesparks"
-        "iot-roborunner"
-        "macie"
-      ];
+      pname = "types-aiobotocore-${serviceName}";
 
       src = fetchPypi {
+        inherit version hash;
+
         pname =
           if builtins.elem serviceName finalAttrs.oldStylePackages then
             "types-aiobotocore-${serviceName}"
           else
             "types_aiobotocore_${toUnderscore serviceName}";
-        inherit version hash;
       };
 
+      # Module has no tests
+      doCheck = false;
       build-system = [ setuptools ];
 
       dependencies = [
@@ -41,9 +37,13 @@ let
         botocore
       ];
 
-      # Module has no tests
-      doCheck = false;
+      oldStylePackages = [
+        "gamesparks"
+        "iot-roborunner"
+        "macie"
+      ];
 
+      pyproject = true;
       pythonImportsCheck = [ "types_aiobotocore_${toUnderscore serviceName}" ];
 
       meta = {

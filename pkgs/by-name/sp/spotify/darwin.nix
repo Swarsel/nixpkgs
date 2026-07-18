@@ -1,16 +1,15 @@
 {
+  lib,
   stdenv,
-  pname,
-  meta,
   fetchurl,
+  meta,
+  pname,
   undmg,
   updateScript,
-  lib,
 }:
 
 stdenv.mkDerivation {
   inherit pname;
-
   version = "1.2.92.147";
 
   src =
@@ -31,8 +30,6 @@ stdenv.mkDerivation {
 
   nativeBuildInputs = [ undmg ];
 
-  sourceRoot = ".";
-
   installPhase = ''
     runHook preInstall
 
@@ -42,6 +39,7 @@ stdenv.mkDerivation {
     runHook postInstall
   '';
 
+  sourceRoot = ".";
   passthru = { inherit updateScript; };
 
   meta = meta // {

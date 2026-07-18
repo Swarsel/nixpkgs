@@ -1,12 +1,13 @@
 {
+  lib,
+  stdenv,
+  fetchFromGitHub,
   autoAddDriverRunpath,
   buildPythonPackage,
+  callPackage,
   config,
   cudaPackages,
-  callPackage,
-  fetchFromGitHub,
   jax,
-  lib,
   llvmPackages, # TODO: use llvm 21 in 1.10, see python-packages.nix
   numpy,
   pkgsBuildHost,
@@ -14,23 +15,19 @@
   replaceVars,
   runCommand,
   setuptools,
-  stdenv,
   torch,
   warp-lang, # Self-reference to this package for passthru.tests
   writableTmpDirAsHomeHook,
   writeShellApplication,
-
-  # Use standalone LLVM-based JIT compiler and CPU device support
-  standaloneSupport ? true,
-
   # Use CUDA toolchain and GPU device support
   cudaSupport ? config.cudaSupport,
-
   # Build Warp with MathDx support (requires CUDA support)
   # Most linear-algebra tile operations like tile_cholesky(), tile_fft(),
   # and tile_matmul() require Warp to be built with the MathDx library.
   # libmathdxSupport ? cudaSupport && stdenv.hostPlatform.isLinux,
   libmathdxSupport ? cudaSupport,
+  # Use standalone LLVM-based JIT compiler and CPU device support
+  standaloneSupport ? true,
 }@args:
 
 assert libmathdxSupport -> cudaSupport;
@@ -44,12 +41,6 @@ in
 buildPythonPackage.override { stdenv = effectiveStdenv; } (finalAttrs: {
   pname = "warp-lang";
   version = "1.11.0";
-  pyproject = true;
-
-  # TODO(@connorbaker): Some CUDA setup hook is failing when __structuredAttrs is false,
-  # causing a bunch of missing math symbols (like expf) when linking against the static library
-  # provided by NVCC.
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "NVIDIA";
@@ -60,8 +51,8 @@ buildPythonPackage.override { stdenv = effectiveStdenv; } (finalAttrs: {
 
   patches = lib.optionals standaloneSupport [
     (replaceVars ./dynamic-link.patch {
-      LLVM_LIB = llvmPackages.llvm.lib;
       LIBCLANG_LIB = llvmPackages.libclang.lib;
+      LLVM_LIB = llvmPackages.llvm.lib;
     })
   ];
 
@@ -144,14 +135,6 @@ buildPythonPackage.override { stdenv = effectiveStdenv; } (finalAttrs: {
         ""
   '';
 
-  build-system = [
-    setuptools
-  ];
-
-  dependencies = [
-    numpy
-  ];
-
   nativeBuildInputs = lib.optionals cudaSupport [
     # NOTE: While normally we wouldn't include autoAddDriverRunpath for packages built from source, since Warp
     # will be loading GPU drivers at runtime, we need to inject the path to our video drivers.
@@ -207,12 +190,26 @@ buildPythonPackage.override { stdenv = effectiveStdenv; } (finalAttrs: {
       "${python.pythonOnBuildForHost.interpreter}" "$PWD/build_lib.py" ${buildOptionString}
     '';
 
+  # See passthru.tests.
+  doCheck = false;
+  # TODO(@connorbaker): Some CUDA setup hook is failing when __structuredAttrs is false,
+  # causing a bunch of missing math symbols (like expf) when linking against the static library
+  # provided by NVCC.
+  __structuredAttrs = true;
+
+  build-system = [
+    setuptools
+  ];
+
+  dependencies = [
+    numpy
+  ];
+
+  pyproject = true;
+
   pythonImportsCheck = [
     "warp"
   ];
-
-  # See passthru.tests.
-  doCheck = false;
 
   passthru = {
     # Make libmathdx available for introspection.
@@ -233,6 +230,7 @@ buildPythonPackage.override { stdenv = effectiveStdenv; } (finalAttrs: {
       writeShellApplication {
         name = "warp-lang-unit-tests";
         runtimeInputs = [ python' ];
+
         text = ''
           ${python'}/bin/python3 -m warp.tests
         '';
@@ -264,6 +262,7 @@ buildPythonPackage.override { stdenv = effectiveStdenv; } (finalAttrs: {
                 warp-lang'.passthru.testers.unit-tests
                 writableTmpDirAsHomeHook
               ];
+
               requiredSystemFeatures = lib.optionals cudaSupport [ "cuda" ];
             }
             ''
@@ -283,11 +282,13 @@ buildPythonPackage.override { stdenv = effectiveStdenv; } (finalAttrs: {
           cudaSupport = false;
           libmathdxSupport = false;
         };
+
         cuda = {
           cudaOnly = mkUnitTests {
             cudaSupport = true;
             libmathdxSupport = false;
           };
+
           cudaWithLibmathDx = mkUnitTests {
             cudaSupport = true;
             libmathdxSupport = true;
@@ -298,6 +299,7 @@ buildPythonPackage.override { stdenv = effectiveStdenv; } (finalAttrs: {
 
   meta = {
     description = "Python framework for high performance GPU simulation and graphics";
+
     longDescription = ''
       Warp is a Python framework for writing high-performance simulation
       and graphics code. Warp takes regular Python functions and JIT
@@ -311,10 +313,11 @@ buildPythonPackage.override { stdenv = effectiveStdenv; } (finalAttrs: {
       of machine-learning pipelines with frameworks such as PyTorch,
       JAX and Paddle.
     '';
+
     homepage = "https://github.com/NVIDIA/warp";
     changelog = "https://github.com/NVIDIA/warp/blob/${finalAttrs.src.tag}/CHANGELOG.md";
     license = lib.licenses.asl20;
-    platforms = lib.platforms.linux ++ [ "aarch64-darwin" ];
     maintainers = with lib.maintainers; [ yzx9 ];
+    platforms = lib.platforms.linux ++ [ "aarch64-darwin" ];
   };
 })

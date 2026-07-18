@@ -1,24 +1,23 @@
 {
-  autoPatchelfHook,
-  squashfsTools,
-  alsa-lib,
+  lib,
+  stdenv,
   fetchurl,
+  alsa-lib,
+  autoPatchelfHook,
+  libgbm,
+  libsecret,
   makeDesktopItem,
   makeWrapper,
-  stdenv,
-  lib,
-  libsecret,
-  libgbm,
+  sqlite,
+  squashfsTools,
   udev,
   wrapGAppsHook3,
   writeScript,
-  sqlite,
 }:
 
 stdenv.mkDerivation rec {
   pname = "termius";
   version = "9.39.0";
-  revision = "263";
 
   src = fetchurl {
     # find the latest version with
@@ -30,21 +29,6 @@ stdenv.mkDerivation rec {
     url = "https://api.snapcraft.io/api/v1/snaps/download/WkTBXwoX81rBe3s3OTt3EiiLKBx2QhuS_${revision}.snap";
     hash = "sha512-DbSUzg84xHx8xnbvbILTXG1KV2v3GQqli732JofYQIma+M2bPfeCchUF50q8qXOSO0kG/UPD5QPJj0baWv9g8w==";
   };
-
-  desktopItem = makeDesktopItem {
-    categories = [ "Network" ];
-    comment = "The SSH client that works on Desktop and Mobile";
-    desktopName = "Termius";
-    exec = "termius-app";
-    genericName = "Cross-platform SSH client";
-    icon = "termius-app";
-    name = "termius-app";
-  };
-
-  dontBuild = true;
-  dontConfigure = true;
-  dontPatchELF = true;
-  dontWrapGApps = true;
 
   # TODO: migrate off autoPatchelfHook and use nixpkgs' electron
   nativeBuildInputs = [
@@ -61,12 +45,6 @@ stdenv.mkDerivation rec {
     sqlite
   ];
 
-  unpackPhase = ''
-    runHook preUnpack
-    unsquashfs "$src"
-    runHook postUnpack
-  '';
-
   installPhase = ''
     runHook preInstall
     cd squashfs-root
@@ -80,11 +58,32 @@ stdenv.mkDerivation rec {
     runHook postInstall
   '';
 
-  runtimeDependencies = [ (lib.getLib udev) ];
-
   postFixup = ''
     makeWrapper $out/opt/termius/termius-app $out/bin/termius-app \
       "''${gappsWrapperArgs[@]}"
+  '';
+
+  desktopItem = makeDesktopItem {
+    categories = [ "Network" ];
+    comment = "The SSH client that works on Desktop and Mobile";
+    desktopName = "Termius";
+    exec = "termius-app";
+    genericName = "Cross-platform SSH client";
+    icon = "termius-app";
+    name = "termius-app";
+  };
+
+  dontBuild = true;
+  dontConfigure = true;
+  dontPatchELF = true;
+  dontWrapGApps = true;
+  revision = "263";
+  runtimeDependencies = [ (lib.getLib udev) ];
+
+  unpackPhase = ''
+    runHook preUnpack
+    unsquashfs "$src"
+    runHook postUnpack
   '';
 
   passthru.updateScript = writeScript "update-termius" ''
@@ -112,14 +111,16 @@ stdenv.mkDerivation rec {
   meta = {
     description = "Cross-platform SSH client with cloud data sync and more";
     homepage = "https://termius.com/";
-    downloadPage = "https://termius.com/linux/";
-    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
     license = lib.licenses.unfree;
+    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
+
     maintainers = with lib.maintainers; [
       th0rgal
       Rishik-Y
     ];
+
     platforms = [ "x86_64-linux" ];
     mainProgram = "termius-app";
+    downloadPage = "https://termius.com/linux/";
   };
 }

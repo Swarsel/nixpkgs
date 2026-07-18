@@ -1,15 +1,15 @@
 {
   lib,
   stdenv,
-  config,
   fetchurl,
+  config,
+  fontconfig,
+  freetype,
   libx11,
   libxext,
   libxinerama,
   libxrandr,
   libxrender,
-  fontconfig,
-  freetype,
   openal,
   runtimeShell,
 }:
@@ -19,7 +19,6 @@ let
 in
 
 stdenv.mkDerivation {
-  name = "oilrush";
   src =
     let
       url = config.oilrush.url or null;
@@ -27,17 +26,29 @@ stdenv.mkDerivation {
     in
     assert url != null && sha256 != null;
     fetchurl { inherit url sha256; };
-  shell = stdenv.shell;
+
+  installPhase = ''
+    cd ..
+    mkdir -p "$out/opt/oilrush"
+    cp -r * "$out/opt/oilrush"
+    mkdir -p "$out/bin"
+    cat << EOF > "$out/bin/oilrush"
+    #!${runtimeShell}
+    LD_LIBRARY_PATH=.:${makeLibraryPath [ openal ]}:\$LD_LIBRARY_PATH
+    cd "$out/opt/oilrush"
+    exec ./launcher_$arch.sh "\$@"
+    EOF
+    chmod +x "$out/bin/oilrush"
+  '';
+
   arch =
     if stdenv.hostPlatform.system == "x86_64-linux" then
       "x64"
     else
       lib.optionalString (stdenv.hostPlatform.system == "i686-linux") "x86";
-  unpackPhase = ''
-    mkdir oilrush
-    cd oilrush
-    "$shell" "$src" --tar xf
-  '';
+
+  name = "oilrush";
+
   patchPhase = ''
     cd bin
     for f in launcher_$arch libQtCoreUnigine_$arch.so.4 OilRush_$arch
@@ -108,31 +119,29 @@ stdenv.mkDerivation {
     }\
              OilRush_$arch
   '';
-  installPhase = ''
-    cd ..
-    mkdir -p "$out/opt/oilrush"
-    cp -r * "$out/opt/oilrush"
-    mkdir -p "$out/bin"
-    cat << EOF > "$out/bin/oilrush"
-    #!${runtimeShell}
-    LD_LIBRARY_PATH=.:${makeLibraryPath [ openal ]}:\$LD_LIBRARY_PATH
-    cd "$out/opt/oilrush"
-    exec ./launcher_$arch.sh "\$@"
-    EOF
-    chmod +x "$out/bin/oilrush"
+
+  shell = stdenv.shell;
+
+  unpackPhase = ''
+    mkdir oilrush
+    cd oilrush
+    "$shell" "$src" --tar xf
   '';
+
   meta = {
     description = "Naval strategy game";
+
     longDescription = ''
       Oil Rush is a real-time naval strategy game based on group control. It
       combines the strategic challenge of a classical RTS with the sheer fun
       of Tower Defense.
     '';
+
     homepage = "http://oilrush-game.com/";
     license = lib.licenses.unfree;
+    sourceProvenance = [ lib.sourceTypes.binaryNativeCode ];
     platforms = lib.platforms.linux;
     hydraPlatforms = [ ];
-    sourceProvenance = [ lib.sourceTypes.binaryNativeCode ];
   };
 
 }

@@ -14,9 +14,9 @@
   libical,
   libnotify,
   libsecret,
-  openssl,
   meson,
   ninja,
+  openssl,
   pkg-config,
   sqlite,
   webkitgtk_4_1,
@@ -28,11 +28,11 @@ stdenv.mkDerivation (finalAttrs: {
   version = "2.6.5";
 
   src = fetchFromGitLab {
-    domain = "gitlab.gnome.org";
     owner = "GNOME";
     repo = "balsa";
     tag = finalAttrs.version;
     hash = "sha256-KvgDIFbXmVkTqOibKF+8UhupEDgdhje600aSbmeKZqo=";
+    domain = "gitlab.gnome.org";
   };
 
   nativeBuildInputs = [
@@ -60,10 +60,6 @@ stdenv.mkDerivation (finalAttrs: {
     webkitgtk_4_1
   ];
 
-  mesonFlags = [
-    (lib.mesonOption "sysconfdir" "etc")
-  ];
-
   configureFlags = [
     "--with-canberra"
     "--with-gtksourceview"
@@ -75,15 +71,19 @@ stdenv.mkDerivation (finalAttrs: {
     "--without-gnome"
   ];
 
+  mesonFlags = [
+    (lib.mesonOption "sysconfdir" "etc")
+  ];
+
   enableParallelBuilding = true;
 
   meta = {
     description = "E-mail client for GNOME";
     homepage = "https://gitlab.gnome.org/GNOME/balsa";
     changelog = "https://gitlab.gnome.org/GNOME/balsa/-/blob/master/ChangeLog";
-    mainProgram = "balsa";
     license = lib.licenses.gpl2Plus;
-    platforms = lib.platforms.unix;
     maintainers = with lib.maintainers; [ timon ];
+    platforms = lib.platforms.unix;
+    mainProgram = "balsa";
   };
 })

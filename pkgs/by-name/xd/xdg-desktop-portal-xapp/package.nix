@@ -1,16 +1,16 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
+  cinnamon-desktop,
+  glib,
+  gsettings-desktop-schemas,
+  gtk3,
+  mate-desktop,
   meson,
   ninja,
   pkg-config,
   wrapGAppsNoGuiHook,
-  cinnamon-desktop,
-  glib,
-  gtk3,
-  gsettings-desktop-schemas,
-  mate-desktop,
   xapp,
   xdg-desktop-portal,
 }:
@@ -55,8 +55,8 @@ stdenv.mkDerivation (finalAttrs: {
   meta = {
     description = "Backend implementation for xdg-desktop-portal for Cinnamon, MATE, Xfce";
     homepage = "https://github.com/linuxmint/xdg-desktop-portal-xapp";
-    teams = [ lib.teams.cinnamon ];
-    platforms = lib.platforms.linux;
     license = lib.licenses.lgpl21Plus;
+    platforms = lib.platforms.linux;
+    teams = [ lib.teams.cinnamon ];
   };
 })

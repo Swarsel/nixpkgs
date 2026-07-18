@@ -13,8 +13,6 @@ let
   usingDefaultUserAndGroup = cfg.user == "temporal" && cfg.group == "temporal";
 in
 {
-  meta.maintainers = [ lib.maintainers.jpds ];
-
   options.services.temporal = {
     enable = lib.mkEnableOption "Temporal";
 
@@ -22,23 +20,10 @@ in
       default = [ "temporal" ];
     };
 
-    settings = lib.mkOption {
-      type = lib.types.submodule {
-        freeformType = settingsFormat.type;
-      };
-
-      description = ''
-        Temporal configuration.
-
-        See <https://docs.temporal.io/references/configuration> for more
-        information about Temporal configuration options
-      '';
-    };
-
     dataDir = lib.mkOption {
-      type = lib.types.path;
-      default = "/var/lib/temporal";
       apply = lib.converge (lib.removeSuffix "/");
+      default = "/var/lib/temporal";
+
       description = ''
         Data directory for Temporal. If you change this, you need to
         manually create the directory. You also need to create the
@@ -47,35 +32,56 @@ in
         [](#opt-services.temporal.group) to existing ones with
         access to the directory.
       '';
-    };
 
-    user = lib.mkOption {
-      type = lib.types.str;
-      default = "temporal";
-      description = ''
-        The user Temporal runs as. Should be left at default unless
-        you have very specific needs.
-      '';
+      type = lib.types.path;
     };
 
     group = lib.mkOption {
-      type = lib.types.str;
       default = "temporal";
+
       description = ''
         The group temporal runs as. Should be left at default unless
         you have very specific needs.
       '';
+
+      type = lib.types.str;
     };
 
     restartIfChanged = lib.mkOption {
-      type = lib.types.bool;
+      default = true;
+
       description = ''
         Automatically restart the service on config change.
         This can be set to false to defer restarts on a server or cluster.
         Please consider the security implications of inadvertently running an older version,
         and the possibility of unexpected behavior caused by inconsistent versions across a cluster when disabling this option.
       '';
-      default = true;
+
+      type = lib.types.bool;
+    };
+
+    settings = lib.mkOption {
+      description = ''
+        Temporal configuration.
+
+        See <https://docs.temporal.io/references/configuration> for more
+        information about Temporal configuration options
+      '';
+
+      type = lib.types.submodule {
+        freeformType = settingsFormat.type;
+      };
+    };
+
+    user = lib.mkOption {
+      default = "temporal";
+
+      description = ''
+        The user Temporal runs as. Should be left at default unless
+        you have very specific needs.
+      '';
+
+      type = lib.types.str;
     };
   };
 
@@ -84,50 +90,58 @@ in
       settingsFormat.generate "temporal-server.yaml" cfg.settings;
 
     systemd.services.temporal = {
-      description = "Temporal server";
-      wantedBy = [ "multi-user.target" ];
-      after = [ "network.target" ];
       inherit (cfg) restartIfChanged;
-      restartTriggers = [ config.environment.etc."temporal/temporal-server.yaml".source ];
+      after = [ "network.target" ];
+      description = "Temporal server";
+
       environment = {
         HOME = cfg.dataDir;
       };
+
+      restartTriggers = [ config.environment.etc."temporal/temporal-server.yaml".source ];
+
       serviceConfig = {
+        CapabilityBoundingSet = [ "" ];
+        DevicePolicy = "closed";
+        DynamicUser = usingDefaultUserAndGroup && usingDefaultDataDir;
+
         ExecStart = ''
           ${cfg.package}/bin/temporal-server --root / --config /etc/temporal/ -e temporal-server start
         '';
-        User = cfg.user;
+
         Group = cfg.group;
-        Restart = "on-failure";
-        DynamicUser = usingDefaultUserAndGroup && usingDefaultDataDir;
-        CapabilityBoundingSet = [ "" ];
-        DevicePolicy = "closed";
         LockPersonality = true;
         MemoryDenyWriteExecute = true;
         NoNewPrivileges = true;
         PrivateDevices = true;
         ProcSubset = "pid";
         ProtectClock = true;
+        ProtectControlGroups = true;
         ProtectHome = true;
         ProtectHostname = true;
-        ProtectControlGroups = true;
         ProtectKernelLogs = true;
         ProtectKernelModules = true;
         ProtectKernelTunables = true;
         ProtectProc = "invisible";
         ProtectSystem = "strict";
+
         ReadWritePaths = [
           cfg.dataDir
         ];
+
+        Restart = "on-failure";
+
         RestrictAddressFamilies = [
           "AF_NETLINK"
           "AF_INET"
           "AF_INET6"
         ];
+
         RestrictNamespaces = true;
         RestrictRealtime = true;
         RestrictSUIDSGID = true;
         SystemCallArchitectures = "native";
+
         SystemCallFilter = [
           # 1. allow a reasonable set of syscalls
           "@system-service @resources"
@@ -136,11 +150,17 @@ in
           # 3. then allow the required subset within denied groups
           "@chown"
         ];
+
+        User = cfg.user;
       }
       // (lib.optionalAttrs usingDefaultDataDir {
         StateDirectory = "temporal";
         StateDirectoryMode = "0700";
       });
+
+      wantedBy = [ "multi-user.target" ];
     };
   };
+
+  meta.maintainers = [ lib.maintainers.jpds ];
 }

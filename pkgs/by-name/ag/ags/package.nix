@@ -1,12 +1,12 @@
 {
   lib,
+  stdenv,
+  fetchFromGitHub,
   astal,
   blueprint-compiler,
   buildGoModule,
   callPackage,
   dart-sass,
-  symlinkJoin,
-  fetchFromGitHub,
   gjs,
   glib,
   gobject-introspection,
@@ -14,9 +14,8 @@
   installShellFiles,
   nix-update-script,
   nodejs,
-  stdenv,
+  symlinkJoin,
   wrapGAppsHook3,
-
   extraPackages ? [ ],
 }:
 buildGoModule (finalAttrs: {
@@ -29,16 +28,6 @@ buildGoModule (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-GLyNtU9A2VN22jNRHZ2OXuFfTJLh8uEVVt+ftsKUX0c=";
   };
-
-  vendorHash = "sha256-Pw6UNT5YkDVz4HcH7b5LfOg+K3ohrBGPGB9wYGAQ9F4=";
-  proxyVendor = true;
-
-  ldflags = [
-    "-s"
-    "-w"
-    "-X main.astalGjs=${astal.gjs}/share/astal/gjs"
-    "-X main.gtk4LayerShell=${gtk4-layer-shell}/lib/libgtk4-layer-shell.so"
-  ];
 
   nativeBuildInputs = [
     wrapGAppsHook3
@@ -53,6 +42,19 @@ buildGoModule (finalAttrs: {
     astal.astal4
     gobject-introspection # needed for type generation
   ];
+
+  vendorHash = "sha256-Pw6UNT5YkDVz4HcH7b5LfOg+K3ohrBGPGB9wYGAQ9F4=";
+
+  postInstall =
+    lib.optionalString (stdenv.buildPlatform.canExecute stdenv.hostPlatform)
+      # bash
+      ''
+        installShellCompletion \
+          --cmd ags \
+          --bash <($out/bin/ags completion bash) \
+          --fish <($out/bin/ags completion fish) \
+          --zsh <($out/bin/ags completion zsh)
+      '';
 
   preFixup =
     let
@@ -83,16 +85,14 @@ buildGoModule (finalAttrs: {
       )
     '';
 
-  postInstall =
-    lib.optionalString (stdenv.buildPlatform.canExecute stdenv.hostPlatform)
-      # bash
-      ''
-        installShellCompletion \
-          --cmd ags \
-          --bash <($out/bin/ags completion bash) \
-          --fish <($out/bin/ags completion fish) \
-          --zsh <($out/bin/ags completion zsh)
-      '';
+  ldflags = [
+    "-s"
+    "-w"
+    "-X main.astalGjs=${astal.gjs}/share/astal/gjs"
+    "-X main.gtk4LayerShell=${gtk4-layer-shell}/lib/libgtk4-layer-shell.so"
+  ];
+
+  proxyVendor = true;
 
   passthru = {
     bundle = callPackage ./bundle.nix { };
@@ -104,11 +104,13 @@ buildGoModule (finalAttrs: {
     homepage = "https://github.com/Aylur/ags";
     changelog = "https://github.com/Aylur/ags/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.gpl3Plus;
+
     maintainers = with lib.maintainers; [
       PerchunPak
       johnrtitor
     ];
-    mainProgram = "ags";
+
     platforms = lib.platforms.linux;
+    mainProgram = "ags";
   };
 })

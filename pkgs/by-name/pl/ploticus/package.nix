@@ -2,13 +2,13 @@
   lib,
   stdenv,
   fetchurl,
-  zlib,
-  libx11,
-  libpng,
-  libjpeg,
-  gd,
   freetype,
+  gd,
+  libjpeg,
+  libpng,
+  libx11,
   runCommand,
+  zlib,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -19,6 +19,7 @@ stdenv.mkDerivation (finalAttrs: {
     url = "mirror://sourceforge/ploticus/ploticus/${finalAttrs.version}/ploticus${
       lib.replaceStrings [ "." ] [ "" ] finalAttrs.version
     }_src.tar.gz";
+
     hash = "sha256-PynkufQFIDqT7+yQDlgW2eG0OBghiB4kHAjKt91m4LA=";
   };
 
@@ -40,10 +41,9 @@ stdenv.mkDerivation (finalAttrs: {
     ./fix-zlib-file-type.patch
   ];
 
-  # GCC 15 uses C23, which fails with the following error
-  # plg.h:283:8: error: conflicting types for 'atof'; have 'double(void)'
-  #   283 | double atof(), sqrt(), log();
-  env.NIX_CFLAGS_COMPILE = "-std=gnu17";
+  postPatch = ''
+    substituteInPlace src/pl.h --subst-var out
+  '';
 
   buildInputs = [
     zlib
@@ -54,19 +54,15 @@ stdenv.mkDerivation (finalAttrs: {
     libjpeg
   ];
 
-  hardeningDisable = [ "format" ];
-
-  postPatch = ''
-    substituteInPlace src/pl.h --subst-var out
-  '';
+  makeFlags = [ "CC:=$(CC)" ];
+  # GCC 15 uses C23, which fails with the following error
+  # plg.h:283:8: error: conflicting types for 'atof'; have 'double(void)'
+  #   283 | double atof(), sqrt(), log();
+  env.NIX_CFLAGS_COMPILE = "-std=gnu17";
 
   preBuild = ''
     cd src
   '';
-
-  makeFlags = [ "CC:=$(CC)" ];
-
-  enableParallelBuilding = true;
 
   preInstall = ''
     mkdir -p "$out/bin"
@@ -83,6 +79,9 @@ stdenv.mkDerivation (finalAttrs: {
     ln -s "pl" "$out/bin/ploticus"
   '';
 
+  enableParallelBuilding = true;
+  hardeningDisable = [ "format" ];
+
   passthru.tests = {
     prefab =
       runCommand "ploticus-prefab-test"
@@ -98,6 +97,7 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Non-interactive software package for producing plots and charts";
+
     longDescription = ''
       Ploticus is a free, GPL'd, non-interactive
       software package for producing plots, charts, and graphics from
@@ -106,9 +106,10 @@ stdenv.mkDerivation (finalAttrs: {
       statistical capabilities.  It allows significant user control
       over colors, styles, options and details.
     '';
+
+    homepage = "https://ploticus.sourceforge.net/";
     license = lib.licenses.gpl2Plus;
     maintainers = with lib.maintainers; [ pSub ];
-    homepage = "https://ploticus.sourceforge.net/";
     platforms = with lib.platforms; linux ++ darwin;
   };
 })

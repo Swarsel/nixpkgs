@@ -2,18 +2,18 @@
   lib,
   stdenv,
   fetchurl,
-  autoPatchelfHook,
-  dpkg,
   alsa-lib,
-  freetype,
-  libglvnd,
-  libgbm,
+  autoPatchelfHook,
   curl,
+  dpkg,
+  freetype,
+  libgbm,
+  libglvnd,
+  libjack2,
   libxcursor,
   libxinerama,
   libxrandr,
   libxrender,
-  libjack2,
 }:
 stdenv.mkDerivation rec {
   pname = "tonelib-metal";
@@ -27,15 +27,6 @@ stdenv.mkDerivation rec {
   nativeBuildInputs = [
     autoPatchelfHook
     dpkg
-  ];
-
-  runtimeDependencies = map lib.getLib [
-    curl
-    libxcursor
-    libxinerama
-    libxrandr
-    libxrender
-    libjack2
   ];
 
   buildInputs = [
@@ -57,11 +48,20 @@ stdenv.mkDerivation rec {
     runHook postInstall
   '';
 
+  runtimeDependencies = map lib.getLib [
+    curl
+    libxcursor
+    libxinerama
+    libxrandr
+    libxrender
+    libjack2
+  ];
+
   meta = {
     description = "ToneLib Metal – Guitar amp simulator targeted at metal players";
     homepage = "https://tonelib.net";
-    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
     license = lib.licenses.unfree;
+    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
     maintainers = [ ];
     platforms = [ "x86_64-linux" ];
     mainProgram = "ToneLib-Metal";

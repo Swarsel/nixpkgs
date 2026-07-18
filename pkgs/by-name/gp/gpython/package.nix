@@ -1,9 +1,9 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
-  testers,
+  buildGoModule,
   gpython,
+  testers,
 }:
 
 buildGoModule (finalAttrs: {
@@ -19,10 +19,6 @@ buildGoModule (finalAttrs: {
 
   vendorHash = "sha256-NXPllEhootdB8m5Wvfy8MW899oQnjWAQj7yCC2oDvqE=";
 
-  subPackages = [
-    "."
-  ];
-
   ldflags = [
     "-s"
     "-w"
@@ -31,19 +27,23 @@ buildGoModule (finalAttrs: {
     "-X=main.date=1970-01-01"
   ];
 
+  subPackages = [
+    "."
+  ];
+
   passthru.tests = {
     version = testers.testVersion {
-      package = gpython;
       command = "gpython < /dev/null";
+      package = gpython;
     };
   };
 
   meta = {
     description = "Python interpreter written in Go";
-    mainProgram = "gpython";
     homepage = "https://github.com/go-python/gpython";
     changelog = "https://github.com/go-python/gpython/releases/tag/${finalAttrs.src.rev}";
     license = lib.licenses.bsd3;
     maintainers = [ ];
+    mainProgram = "gpython";
   };
 })

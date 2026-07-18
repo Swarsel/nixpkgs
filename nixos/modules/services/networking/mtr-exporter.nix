@@ -46,64 +46,66 @@ in
     services = {
       mtr-exporter = {
         enable = mkEnableOption "a Prometheus exporter for MTR";
+        package = mkPackageOption pkgs "mtr-exporter" { };
 
         address = mkOption {
-          type = types.str;
           default = "127.0.0.1";
           description = "Listen address for MTR exporter.";
-        };
-
-        port = mkOption {
-          type = types.port;
-          default = 8080;
-          description = "Listen port for MTR exporter.";
+          type = types.str;
         };
 
         extraFlags = mkOption {
-          type = types.listOf types.str;
           default = [ ];
-          example = [ "-flag.deprecatedMetrics" ];
+
           description = ''
             Extra command line options to pass to MTR exporter.
           '';
+
+          example = [ "-flag.deprecatedMetrics" ];
+          type = types.listOf types.str;
         };
-
-        package = mkPackageOption pkgs "mtr-exporter" { };
-
-        mtrPackage = mkPackageOption pkgs "mtr" { };
 
         jobs = mkOption {
           description = "List of MTR jobs. Will be added to /etc/mtr-exporter.conf";
+
           type = types.nonEmptyListOf (
             types.submodule {
               options = {
-                name = mkOption {
-                  type = types.str;
-                  description = "Name of ICMP pinging job.";
-                };
-
                 address = mkOption {
-                  type = types.str;
-                  example = "host.example.org:1234";
                   description = "Target address for MTR client.";
-                };
-
-                schedule = mkOption {
+                  example = "host.example.org:1234";
                   type = types.str;
-                  default = "@every 60s";
-                  example = "@hourly";
-                  description = "Schedule of MTR checks. Also accepts Cron format.";
                 };
 
                 flags = mkOption {
-                  type = with types; listOf str;
                   default = [ ];
-                  example = [ "-G1" ];
                   description = "Additional flags to pass to MTR.";
+                  example = [ "-G1" ];
+                  type = with types; listOf str;
+                };
+
+                name = mkOption {
+                  description = "Name of ICMP pinging job.";
+                  type = types.str;
+                };
+
+                schedule = mkOption {
+                  default = "@every 60s";
+                  description = "Schedule of MTR checks. Also accepts Cron format.";
+                  example = "@hourly";
+                  type = types.str;
                 };
               };
             }
           );
+        };
+
+        mtrPackage = mkPackageOption pkgs "mtr" { };
+
+        port = mkOption {
+          default = 8080;
+          description = "Listen port for MTR exporter.";
+          type = types.port;
         };
       };
     };
@@ -115,10 +117,14 @@ in
     };
 
     systemd.services.mtr-exporter = {
-      wantedBy = [ "multi-user.target" ];
-      requires = [ "network.target" ];
       after = [ "network.target" ];
+      requires = [ "network.target" ];
+
       serviceConfig = {
+        # Hardening
+        CapabilityBoundingSet = [ "" ];
+        DynamicUser = true;
+
         ExecStart = ''
           ${cfg.package}/bin/mtr-exporter \
             -mtr '${cfg.mtrPackage}/bin/mtr' \
@@ -126,15 +132,12 @@ in
             -jobs '${jobsConfig}' \
             ${escapeShellArgs cfg.extraFlags}
         '';
-        Restart = "on-failure";
-        # Hardening
-        CapabilityBoundingSet = [ "" ];
-        DynamicUser = true;
+
         LockPersonality = true;
-        ProcSubset = "pid";
         PrivateDevices = true;
-        PrivateUsers = true;
         PrivateTmp = true;
+        PrivateUsers = true;
+        ProcSubset = "pid";
         ProtectClock = true;
         ProtectControlGroups = true;
         ProtectHome = true;
@@ -144,9 +147,12 @@ in
         ProtectKernelTunables = true;
         ProtectProc = "invisible";
         ProtectSystem = "strict";
+        Restart = "on-failure";
         RestrictNamespaces = true;
         RestrictRealtime = true;
       };
+
+      wantedBy = [ "multi-user.target" ];
     };
   };
 

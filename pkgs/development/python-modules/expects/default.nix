@@ -1,13 +1,12 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
 }:
 
 buildPythonPackage rec {
   pname = "expects";
   version = "0.9.0";
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "jaimegildesagredo";
@@ -19,6 +18,7 @@ buildPythonPackage rec {
   # mamba is used as test runner. Not available and should not be used as
   # it's just another unmaintained test runner.
   doCheck = false;
+  format = "setuptools";
   pythonImportsCheck = [ "expects" ];
 
   meta = {

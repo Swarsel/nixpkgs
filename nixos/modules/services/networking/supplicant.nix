@@ -1,8 +1,8 @@
 {
   config,
   lib,
-  utils,
   pkgs,
+  utils,
   ...
 }:
 
@@ -62,13 +62,10 @@ let
       );
     in
     {
-      description = "Supplicant ${iface}${optionalString (iface == "WLAN" || iface == "LAN") " %I"}";
-      wantedBy = [ "multi-user.target" ] ++ deps;
-      wants = [ "network.target" ];
-      bindsTo = deps;
       after = deps;
       before = [ "network.target" ];
-
+      bindsTo = deps;
+      description = "Supplicant ${iface}${optionalString (iface == "WLAN" || iface == "LAN") " %I"}";
       path = [ pkgs.coreutils ];
 
       preStart = ''
@@ -87,6 +84,9 @@ let
           (if (iface == "DBUS") then "-u" else ifaceArg)
       }";
 
+      wantedBy = [ "multi-user.target" ] ++ deps;
+      wants = [ "network.target" ];
+
     };
 
 in
@@ -98,125 +98,7 @@ in
   options = {
 
     networking.supplicant = mkOption {
-      type =
-        with types;
-        attrsOf (submodule {
-          options = {
-
-            configFile = {
-
-              path = mkOption {
-                type = types.nullOr types.path;
-                default = null;
-                example = literalExpression "/etc/wpa_supplicant.conf";
-                description = ''
-                  External {file}`wpa_supplicant.conf` configuration file.
-                  The configuration options defined declaratively within `networking.supplicant` have
-                  precedence over options defined in `configFile`.
-                '';
-              };
-
-              writable = mkOption {
-                type = types.bool;
-                default = false;
-                description = ''
-                  Whether the configuration file at `configFile.path` should be written to by
-                  `wpa_supplicant`.
-                '';
-              };
-
-            };
-
-            extraConf = mkOption {
-              type = types.lines;
-              default = "";
-              example = ''
-                ap_scan=1
-                device_name=My-NixOS-Device
-                device_type=1-0050F204-1
-                driver_param=use_p2p_group_interface=1
-                disable_scan_offload=1
-                p2p_listen_reg_class=81
-                p2p_listen_channel=1
-                p2p_oper_reg_class=81
-                p2p_oper_channel=1
-                manufacturer=NixOS
-                model_name=NixOS_Unstable
-                model_number=2015
-              '';
-              description = ''
-                Configuration options for {file}`wpa_supplicant.conf`.
-                Options defined here have precedence over options in `configFile`.
-                NOTE: Do not write sensitive data into `extraConf` as it will
-                be world-readable in the `nix-store`. For sensitive information
-                use the `configFile` instead.
-              '';
-            };
-
-            extraCmdArgs = mkOption {
-              type = types.str;
-              default = "";
-              example = "-e/run/wpa_supplicant/entropy.bin";
-              description = "Command line arguments to add when executing `wpa_supplicant`.";
-            };
-
-            driver = mkOption {
-              type = types.nullOr types.str;
-              default = "nl80211,wext";
-              description = "Force a specific wpa_supplicant driver.";
-            };
-
-            bridge = mkOption {
-              type = types.str;
-              default = "";
-              description = "Name of the bridge interface that wpa_supplicant should listen at.";
-            };
-
-            userControlled = {
-
-              enable = mkOption {
-                type = types.bool;
-                default = false;
-                description = ''
-                  Allow normal users to control wpa_supplicant through wpa_gui or wpa_cli.
-                  This is useful for laptop users that switch networks a lot and don't want
-                  to depend on a large package such as NetworkManager just to pick nearby
-                  access points.
-                '';
-              };
-
-              socketDir = mkOption {
-                type = types.str;
-                default = "/run/wpa_supplicant";
-                description = "Directory of sockets for controlling wpa_supplicant.";
-              };
-
-              group = mkOption {
-                type = types.str;
-                default = "wheel";
-                example = "network";
-                description = "Members of this group can control wpa_supplicant.";
-              };
-
-            };
-          };
-        });
-
       default = { };
-
-      example = literalExpression ''
-        { "wlan0 wlan1" = {
-            configFile.path = "/etc/wpa_supplicant.conf";
-            userControlled.group = "network";
-            extraConf = '''
-              ap_scan=1
-              p2p_disabled=1
-            ''';
-            extraCmdArgs = "-u -W";
-            bridge = "br0";
-          };
-        }
-      '';
 
       description = ''
         Interfaces for which to start {command}`wpa_supplicant`.
@@ -235,6 +117,133 @@ in
         service that can be accessed through `D-Bus`.
       '';
 
+      example = literalExpression ''
+        { "wlan0 wlan1" = {
+            configFile.path = "/etc/wpa_supplicant.conf";
+            userControlled.group = "network";
+            extraConf = '''
+              ap_scan=1
+              p2p_disabled=1
+            ''';
+            extraCmdArgs = "-u -W";
+            bridge = "br0";
+          };
+        }
+      '';
+
+      type =
+        with types;
+        attrsOf (submodule {
+          options = {
+
+            bridge = mkOption {
+              default = "";
+              description = "Name of the bridge interface that wpa_supplicant should listen at.";
+              type = types.str;
+            };
+
+            configFile = {
+
+              path = mkOption {
+                default = null;
+
+                description = ''
+                  External {file}`wpa_supplicant.conf` configuration file.
+                  The configuration options defined declaratively within `networking.supplicant` have
+                  precedence over options defined in `configFile`.
+                '';
+
+                example = literalExpression "/etc/wpa_supplicant.conf";
+                type = types.nullOr types.path;
+              };
+
+              writable = mkOption {
+                default = false;
+
+                description = ''
+                  Whether the configuration file at `configFile.path` should be written to by
+                  `wpa_supplicant`.
+                '';
+
+                type = types.bool;
+              };
+
+            };
+
+            driver = mkOption {
+              default = "nl80211,wext";
+              description = "Force a specific wpa_supplicant driver.";
+              type = types.nullOr types.str;
+            };
+
+            extraCmdArgs = mkOption {
+              default = "";
+              description = "Command line arguments to add when executing `wpa_supplicant`.";
+              example = "-e/run/wpa_supplicant/entropy.bin";
+              type = types.str;
+            };
+
+            extraConf = mkOption {
+              default = "";
+
+              description = ''
+                Configuration options for {file}`wpa_supplicant.conf`.
+                Options defined here have precedence over options in `configFile`.
+                NOTE: Do not write sensitive data into `extraConf` as it will
+                be world-readable in the `nix-store`. For sensitive information
+                use the `configFile` instead.
+              '';
+
+              example = ''
+                ap_scan=1
+                device_name=My-NixOS-Device
+                device_type=1-0050F204-1
+                driver_param=use_p2p_group_interface=1
+                disable_scan_offload=1
+                p2p_listen_reg_class=81
+                p2p_listen_channel=1
+                p2p_oper_reg_class=81
+                p2p_oper_channel=1
+                manufacturer=NixOS
+                model_name=NixOS_Unstable
+                model_number=2015
+              '';
+
+              type = types.lines;
+            };
+
+            userControlled = {
+
+              enable = mkOption {
+                default = false;
+
+                description = ''
+                  Allow normal users to control wpa_supplicant through wpa_gui or wpa_cli.
+                  This is useful for laptop users that switch networks a lot and don't want
+                  to depend on a large package such as NetworkManager just to pick nearby
+                  access points.
+                '';
+
+                type = types.bool;
+              };
+
+              group = mkOption {
+                default = "wheel";
+                description = "Members of this group can control wpa_supplicant.";
+                example = "network";
+                type = types.str;
+              };
+
+              socketDir = mkOption {
+                default = "/run/wpa_supplicant";
+                description = "Directory of sockets for controlling wpa_supplicant.";
+                type = types.str;
+              };
+
+            };
+          };
+        });
+
     };
 
   };
@@ -244,15 +253,13 @@ in
   config = mkIf (cfg != { }) {
 
     environment.systemPackages = [ pkgs.wpa_supplicant ];
-
     services.dbus.packages = [ pkgs.wpa_supplicant ];
-
-    systemd.services = mapAttrs' (n: v: nameValuePair (serviceName n) (supplicantService n v)) cfg;
 
     services.udev.packages = [
       (pkgs.writeTextFile {
-        name = "99-zzz-60-supplicant.rules";
         destination = "/etc/udev/rules.d/99-zzz-60-supplicant.rules";
+        name = "99-zzz-60-supplicant.rules";
+
         text = ''
           ${flip (concatMapStringsSep "\n")
             (filter (n: n != "WLAN" && n != "LAN" && n != "DBUS") (attrNames cfg))
@@ -276,6 +283,8 @@ in
         '';
       })
     ];
+
+    systemd.services = mapAttrs' (n: v: nameValuePair (serviceName n) (supplicantService n v)) cfg;
 
   };
 

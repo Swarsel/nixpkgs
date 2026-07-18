@@ -1,14 +1,13 @@
 {
   lib,
-  python3,
   fetchFromGitHub,
   fetchpatch,
+  python3,
 }:
 
 python3.pkgs.buildPythonApplication (finalAttrs: {
   pname = "uchecker";
   version = "0.1.2";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "cloudlinux";
@@ -20,9 +19,9 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
   patches = [
     # Switch to poetry-core, https://github.com/cloudlinux/kcare-uchecker/pull/52
     (fetchpatch {
+      hash = "sha256-YPPw6M7MGN8nguAvAwjmz0VEYm0RD98ZkoVIq9SP3sA=";
       name = "switch-poetry-core.patch";
       url = "https://github.com/cloudlinux/kcare-uchecker/commit/d7d5ab75efa6a355b3dd3190c1edbaba8110c885.patch";
-      hash = "sha256-YPPw6M7MGN8nguAvAwjmz0VEYm0RD98ZkoVIq9SP3sA=";
     })
   ];
 
@@ -34,6 +33,8 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     mock
     pytestCheckHook
   ];
+
+  pyproject = true;
 
   pythonImportsCheck = [
     "uchecker"

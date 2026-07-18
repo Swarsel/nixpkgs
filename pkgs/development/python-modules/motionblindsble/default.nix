@@ -1,9 +1,9 @@
 {
   lib,
-  bleak-retry-connector,
-  bleak,
-  buildPythonPackage,
   fetchFromGitHub,
+  bleak,
+  bleak-retry-connector,
+  buildPythonPackage,
   pycryptodome,
   pytest-asyncio,
   pytestCheckHook,
@@ -13,7 +13,6 @@
 buildPythonPackage rec {
   pname = "motionblindsble";
   version = "0.1.3";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "LennP";
@@ -32,6 +31,11 @@ buildPythonPackage rec {
       --replace-fail "{{VERSION_PLACEHOLDER}}" "${version}"
   '';
 
+  nativeCheckInputs = [
+    pytest-asyncio
+    pytestCheckHook
+  ];
+
   build-system = [ setuptools ];
 
   dependencies = [
@@ -40,17 +44,13 @@ buildPythonPackage rec {
     pycryptodome
   ];
 
-  nativeCheckInputs = [
-    pytest-asyncio
-    pytestCheckHook
-  ];
-
-  pythonImportsCheck = [ "motionblindsble" ];
-
   disabledTests = [
     # AssertionError
     "test_establish_connection"
   ];
+
+  pyproject = true;
+  pythonImportsCheck = [ "motionblindsble" ];
 
   meta = {
     description = "Module to interface with Motionblinds motors using Bluetooth Low Energy (BLE)";

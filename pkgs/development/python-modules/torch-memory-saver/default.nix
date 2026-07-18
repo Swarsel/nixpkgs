@@ -1,30 +1,23 @@
 {
   lib,
-  buildPythonPackage,
-  cudaPackages,
   fetchFromGitHub,
-  symlinkJoin,
-
-  # build-system
-  setuptools,
-
   # nativeBuildInputs
   autoAddDriverRunpath,
-
-  # dependencies
-  torch,
-
+  buildPythonPackage,
+  cudaPackages,
   # tests
   nvidia-ml-py,
   pytestCheckHook,
+  # build-system
+  setuptools,
+  symlinkJoin,
+  # dependencies
+  torch,
   torch-memory-saver,
 }:
 buildPythonPackage.override { inherit (torch) stdenv; } (finalAttrs: {
   pname = "torch-memory-saver";
   version = "0.0.9.post1";
-  pyproject = true;
-
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "fzyzcjy";
@@ -40,47 +33,53 @@ buildPythonPackage.override { inherit (torch) stdenv; } (finalAttrs: {
       --replace-fail lib64 lib
   '';
 
-  build-system = [
-    setuptools
-  ];
-
   nativeBuildInputs = [
     autoAddDriverRunpath
   ];
 
   env = {
-    TMS_CUDA_MAJOR = cudaPackages.cudaMajorVersion;
     CUDA_HOME = symlinkJoin {
       name = "cudatoolkit-joined";
+
       paths = [
         cudaPackages.cuda_nvcc # crt/host_defines.h
         cudaPackages.cuda_cudart # cuda_runtime_api.h
       ];
     };
+
+    TMS_CUDA_MAJOR = cudaPackages.cudaMajorVersion;
   };
-
-  dependencies = [
-    nvidia-ml-py
-    torch
-  ];
-
-  pythonImportsCheck = [ "torch_memory_saver" ];
-
-  preCheck = ''
-    rm -r torch_memory_saver
-  '';
 
   # requires GPU
   doCheck = false;
+
   nativeCheckInputs = [
     # propagated from torch
     nvidia-ml-py
     pytestCheckHook
   ];
 
+  preCheck = ''
+    rm -r torch_memory_saver
+  '';
+
+  __structuredAttrs = true;
+
+  build-system = [
+    setuptools
+  ];
+
+  dependencies = [
+    nvidia-ml-py
+    torch
+  ];
+
+  pyproject = true;
+  pythonImportsCheck = [ "torch_memory_saver" ];
+
   passthru.gpuCheck = torch-memory-saver.overridePythonAttrs {
-    requiredSystemFeatures = [ "cuda" ];
     doCheck = true;
+    requiredSystemFeatures = [ "cuda" ];
   };
 
   meta = {

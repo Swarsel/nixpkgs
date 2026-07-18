@@ -1,9 +1,9 @@
 {
+  lib,
+  fetchFromGitHub,
   async-timeout,
   buildPythonPackage,
-  fetchFromGitHub,
   httpx,
-  lib,
   pydantic,
   pytest-asyncio,
   pytestCheckHook,
@@ -13,7 +13,6 @@
 buildPythonPackage rec {
   pname = "lektricowifi";
   version = "0.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "Lektrico";
@@ -22,11 +21,15 @@ buildPythonPackage rec {
     hash = "sha256-GkRZ+fBjLtiZ3dPsn/xeJ7c0cVMY6SHIs+wqhmXXOTk=";
   };
 
-  build-system = [ setuptools ];
+  # AttributeError: type object 'InfoForCharger' has no attribute 'from_dict'
+  doCheck = false;
 
-  pythonRelaxDeps = [
-    "pydantic"
+  nativeCheckInputs = [
+    pytest-asyncio
+    pytestCheckHook
   ];
+
+  build-system = [ setuptools ];
 
   dependencies = [
     async-timeout
@@ -34,15 +37,12 @@ buildPythonPackage rec {
     pydantic
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "lektricowifi" ];
 
-  nativeCheckInputs = [
-    pytest-asyncio
-    pytestCheckHook
+  pythonRelaxDeps = [
+    "pydantic"
   ];
-
-  # AttributeError: type object 'InfoForCharger' has no attribute 'from_dict'
-  doCheck = false;
 
   meta = {
     description = "Communication with Lektrico's chargers";

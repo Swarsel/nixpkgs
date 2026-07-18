@@ -1,7 +1,7 @@
 {
   lib,
-  runCommandLocal,
   nix,
+  runCommandLocal,
 }:
 
 # Replace some direct dependencies of drv, not recursing into the dependency tree.
@@ -70,7 +70,7 @@ else
           (placeholder "out")
         ]
         ++ concatMap (
-          { oldDependency, newDependency }:
+          { newDependency, oldDependency }:
           [
             oldDependency
             newDependency

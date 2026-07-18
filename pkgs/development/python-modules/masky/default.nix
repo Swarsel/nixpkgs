@@ -1,10 +1,10 @@
 {
   lib,
+  fetchFromGitHub,
   asn1crypto,
   buildPythonPackage,
   colorama,
   cryptography,
-  fetchFromGitHub,
   impacket,
   pyasn1,
   setuptools_80,
@@ -13,7 +13,6 @@
 buildPythonPackage rec {
   pname = "masky";
   version = "0.2.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "Z4kSec";
@@ -22,6 +21,8 @@ buildPythonPackage rec {
     hash = "sha256-npRuszHkxwjJ+B+q8eQywXPd0OX0zS+AfCro4TM83Uc=";
   };
 
+  # Module has no tests
+  doCheck = false;
   build-system = [ setuptools_80 ];
 
   dependencies = [
@@ -32,17 +33,15 @@ buildPythonPackage rec {
     pyasn1
   ];
 
-  # Module has no tests
-  doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "masky" ];
 
   meta = {
     description = "Library to remotely dump domain credentials";
-    mainProgram = "masky";
     homepage = "https://github.com/Z4kSec/Masky";
     changelog = "https://github.com/Z4kSec/Masky/releases/tag/v${version}";
     license = lib.licenses.mit;
     maintainers = [ ];
+    mainProgram = "masky";
   };
 }

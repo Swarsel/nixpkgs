@@ -15,13 +15,12 @@ stdenv.mkDerivation (finalAttrs: {
     sha256 = "sha256-JGbQO2fvC8ug4Q+zUtGp/9n5aRFlerzjy7a6Qpxlbi8=";
   };
 
+  nativeBuildInputs = [ pkg-config ];
   propagatedBuildInputs = [ libogg ];
 
-  nativeBuildInputs = [ pkg-config ];
-
   meta = {
-    homepage = "https://xiph.org/oggz/";
     description = "C library and tools for manipulating with Ogg files and streams";
+
     longDescription = ''
       Oggz comprises liboggz and the tool oggz, which provides commands to
       inspect, edit and validate Ogg files. The oggz-chop tool can also be used
@@ -34,7 +33,9 @@ stdenv.mkDerivation (finalAttrs: {
       interleaving data container developed by Monty at Xiph.Org, originally to
       support the Ogg Vorbis audio format but now used for many free codecs
       including Dirac, FLAC, Speex and Theora.'';
-    platforms = lib.platforms.unix;
+
+    homepage = "https://xiph.org/oggz/";
     license = lib.licenses.bsd3;
+    platforms = lib.platforms.unix;
   };
 })

@@ -1,22 +1,21 @@
 {
   lib,
+  fetchFromGitHub,
   aiohttp,
   buildPythonPackage,
-  fetchFromGitHub,
   httpx,
   pytest-aiohttp,
   pytest-mock,
   pytestCheckHook,
   requests,
-  setuptools-scm,
   setuptools,
+  setuptools-scm,
   websockets,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "homematicip";
   version = "2.13.2";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "hahn-th";
@@ -24,6 +23,12 @@ buildPythonPackage (finalAttrs: {
     tag = finalAttrs.version;
     hash = "sha256-gOpdmsLsF73m1da027hfU6IK8DfV67p0JXI/inIsvd4=";
   };
+
+  nativeCheckInputs = [
+    pytest-aiohttp
+    pytest-mock
+    pytestCheckHook
+  ];
 
   build-system = [
     setuptools
@@ -36,14 +41,6 @@ buildPythonPackage (finalAttrs: {
     requests
     websockets
   ];
-
-  nativeCheckInputs = [
-    pytest-aiohttp
-    pytest-mock
-    pytestCheckHook
-  ];
-
-  pytestFlags = [ "--asyncio-mode=auto" ];
 
   disabledTests = [
     # Assert issues with datetime
@@ -71,6 +68,8 @@ buildPythonPackage (finalAttrs: {
     "test_websocket"
   ];
 
+  pyproject = true;
+  pytestFlags = [ "--asyncio-mode=auto" ];
   pythonImportsCheck = [ "homematicip" ];
 
   meta = {

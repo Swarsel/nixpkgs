@@ -1,20 +1,19 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  sqlalchemy,
-  setuptools-scm,
-  setuptools,
-  pytestCheckHook,
-  pytest-sugar,
-  pymysql,
+  buildPythonPackage,
   psycopg2,
+  pymysql,
+  pytest-sugar,
+  pytestCheckHook,
+  setuptools,
+  setuptools-scm,
+  sqlalchemy,
 }:
 
 buildPythonPackage rec {
   pname = "sqlalchemy-jsonfield";
   version = "1.0.2";
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "penguinolog";
@@ -37,6 +36,7 @@ buildPythonPackage rec {
     psycopg2
   ];
 
+  format = "setuptools";
   pythonImportsCheck = [ "sqlalchemy_jsonfield" ];
 
   meta = {

@@ -1,17 +1,15 @@
 {
   lib,
   fetchFromGitHub,
-  ppx_deriving,
-  ppxlib,
   buildDunePackage,
   ounit,
+  ppx_deriving,
+  ppxlib,
 }:
 
 buildDunePackage (finalAttrs: {
   pname = "lens";
   version = "1.2.5";
-
-  duneVersion = "3";
 
   src = fetchFromGitHub {
     owner = "pdonadeo";
@@ -20,7 +18,6 @@ buildDunePackage (finalAttrs: {
     sha256 = "1k23n7pa945fk6nbaq6nlkag5kg97wsw045ghz4gqp8b9i2im3vn";
   };
 
-  minimalOCamlVersion = "4.10";
   buildInputs = [
     ppx_deriving
     ppxlib
@@ -28,11 +25,14 @@ buildDunePackage (finalAttrs: {
 
   doCheck = true;
   checkInputs = [ ounit ];
+  duneVersion = "3";
+  minimalOCamlVersion = "4.10";
 
   meta = {
-    homepage = "https://github.com/pdonadeo/ocaml-lens";
     description = "Functional lenses";
+    homepage = "https://github.com/pdonadeo/ocaml-lens";
     license = lib.licenses.bsd3;
+
     maintainers = with lib.maintainers; [
       kazcw
     ];

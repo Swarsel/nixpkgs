@@ -13,20 +13,11 @@ let
   ];
 in
 {
-  meta.maintainers = with lib.maintainers; [
-    julienmalka
-    camillemndn
-  ];
-  meta.doc = ./clevis.md;
-
   options = {
-    boot.initrd.clevis.enable = lib.mkEnableOption "Clevis in initrd";
-
-    boot.initrd.clevis.package = lib.mkPackageOption pkgs "clevis" { };
-
     boot.initrd.clevis.devices = lib.mkOption {
-      description = "Encrypted devices that need to be unlocked at boot using Clevis";
       default = { };
+      description = "Encrypted devices that need to be unlocked at boot using Clevis";
+
       type = lib.types.attrsOf (
         lib.types.submodule {
           options.secretFile = lib.mkOption {
@@ -37,9 +28,12 @@ in
       );
     };
 
+    boot.initrd.clevis.enable = lib.mkEnableOption "Clevis in initrd";
+    boot.initrd.clevis.package = lib.mkPackageOption pkgs "clevis" { };
+
     boot.initrd.clevis.useTang = lib.mkOption {
-      description = "Whether the Clevis JWE file used to decrypt the devices uses a Tang server as a pin.";
       default = false;
+      description = "Whether the Clevis JWE file used to decrypt the devices uses a Tang server as a pin.";
       type = lib.types.bool;
     };
 
@@ -48,7 +42,6 @@ in
   config = lib.mkIf cfg.enable {
 
     # Implementation of clevis unlocking for the supported filesystems are located directly in the respective modules.
-
     assertions = (
       lib.attrValues (
         lib.mapAttrs (device: _: {
@@ -59,18 +52,11 @@ in
               || (fs.fsType == "zfs" && lib.hasPrefix "${device}/" fs.device)
             ) config.system.build.fileSystems)
             || (lib.hasAttr device config.boot.initrd.luks.devices);
+
           message = "No filesystem or LUKS device with the name ${device} is declared in your configuration.";
         }) cfg.devices
       )
     );
-
-    warnings =
-      if
-        cfg.useTang && !config.boot.initrd.network.enable && !config.boot.initrd.systemd.network.enable
-      then
-        [ "In order to use a Tang pinned secret you must configure networking in initrd" ]
-      else
-        [ ];
 
     boot.initrd = {
       extraUtilsCommands = lib.mkIf (!systemd.enable) ''
@@ -123,5 +109,20 @@ in
         ];
       };
     };
+
+    warnings =
+      if
+        cfg.useTang && !config.boot.initrd.network.enable && !config.boot.initrd.systemd.network.enable
+      then
+        [ "In order to use a Tang pinned secret you must configure networking in initrd" ]
+      else
+        [ ];
   };
+
+  meta.doc = ./clevis.md;
+
+  meta.maintainers = with lib.maintainers; [
+    julienmalka
+    camillemndn
+  ];
 }

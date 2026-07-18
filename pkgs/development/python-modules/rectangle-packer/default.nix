@@ -1,16 +1,15 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
+  buildPythonPackage,
   cython,
   pytestCheckHook,
+  setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "rectangle-packer";
   version = "2.0.5";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "Penlect";
@@ -19,18 +18,19 @@ buildPythonPackage rec {
     hash = "sha256-BHFy88yrcfDRalvrzwUHseSKmQXIM70ginnd+W6LVLY=";
   };
 
-  build-system = [
-    cython
-    setuptools
-  ];
-
-  pythonImportsCheck = [ "rpack" ];
-
   nativeCheckInputs = [ pytestCheckHook ];
 
   preCheck = ''
     rm -r rpack
   '';
+
+  build-system = [
+    cython
+    setuptools
+  ];
+
+  pyproject = true;
+  pythonImportsCheck = [ "rpack" ];
 
   meta = {
     description = "Pack a set of rectangles into a bounding box with minimum area";

@@ -2,20 +2,19 @@
   lib,
   fetchFromGitHub,
   buildPythonPackage,
-  numpy,
-  pyparsing,
   cython,
-  zlib,
-  python-lzo,
-  pytestCheckHook,
-  setuptools,
+  numpy,
   oldest-supported-numpy,
+  pyparsing,
+  pytestCheckHook,
+  python-lzo,
+  setuptools,
+  zlib,
 }:
 
 buildPythonPackage rec {
   pname = "bx-python";
   version = "0.14.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "bxlab";
@@ -30,26 +29,14 @@ buildPythonPackage rec {
       --replace-fail "--doctest-cython" ""
   '';
 
-  build-system = [
-    setuptools
-    cython
-    oldest-supported-numpy
-  ];
-
   buildInputs = [ zlib ];
-
-  dependencies = [
-    numpy
-    pyparsing
-  ];
+  # https://github.com/bxlab/bx-python/issues/101
+  doCheck = false;
 
   nativeCheckInputs = [
     python-lzo
     pytestCheckHook
   ];
-
-  # https://github.com/bxlab/bx-python/issues/101
-  doCheck = false;
 
   postInstall = ''
     cp -r scripts/* $out/bin
@@ -60,6 +47,19 @@ buildPythonPackage rec {
     rm -rf scripts
     ln -s $out/bin scripts
   '';
+
+  build-system = [
+    setuptools
+    cython
+    oldest-supported-numpy
+  ];
+
+  dependencies = [
+    numpy
+    pyparsing
+  ];
+
+  pyproject = true;
 
   meta = {
     description = "Tools for manipulating biological data, particularly multiple sequence alignments";

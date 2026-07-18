@@ -1,30 +1,26 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # build-system
-  setuptools,
-
+  buildPythonPackage,
+  lightgbm,
   # dependencies
   numpy,
   onnx,
-  skl2onnx,
-
+  onnxruntime,
+  pandas,
+  pyspark,
   # tests
   pytestCheckHook,
-  pandas,
-  xgboost,
-  onnxruntime,
   scikit-learn,
-  pyspark,
-  lightgbm,
+  # build-system
+  setuptools,
+  skl2onnx,
+  xgboost,
 }:
 
 buildPythonPackage rec {
   pname = "onnxmltools";
   version = "1.16.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "onnx";
@@ -32,18 +28,6 @@ buildPythonPackage rec {
     tag = version;
     hash = "sha256-2cAxk/Qvu39N/IaIofuTFMciKyxVv3kwsnH4xpGrkIg=";
   };
-
-  build-system = [
-    setuptools
-  ];
-
-  dependencies = [
-    numpy
-    onnx
-    skl2onnx
-  ];
-
-  pythonImportsCheck = [ "onnxmltools" ];
 
   # there are still some dependencies that need to be packaged for the tests to run
   doCheck = false;
@@ -60,6 +44,19 @@ buildPythonPackage rec {
     # libsvm
     # h20
   ];
+
+  build-system = [
+    setuptools
+  ];
+
+  dependencies = [
+    numpy
+    onnx
+    skl2onnx
+  ];
+
+  pyproject = true;
+  pythonImportsCheck = [ "onnxmltools" ];
 
   meta = {
     description = "ONNXMLTools enables conversion of models to ONNX";

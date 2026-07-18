@@ -8,7 +8,6 @@
 buildPythonPackage rec {
   pname = "python-pipedrive";
   version = "0.4.0";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
@@ -16,8 +15,8 @@ buildPythonPackage rec {
   };
 
   propagatedBuildInputs = [ httplib2 ];
-
   doCheck = false; # Tests are not provided.
+  format = "setuptools";
 
   meta = {
     description = "Python library for interacting with the pipedrive.com API";

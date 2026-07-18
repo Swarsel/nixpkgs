@@ -1,6 +1,6 @@
 {
-  fetchCrate,
   lib,
+  fetchCrate,
   rustPlatform,
 }:
 
@@ -9,9 +9,9 @@ rustPlatform.buildRustPackage (finalAttrs: {
   version = "0.8.3";
 
   src = fetchCrate {
-    pname = "grpc-compiler";
     inherit (finalAttrs) version;
     hash = "sha256-gt+Qa68N5EkqhCAvU2ISvVPT9vYPXMySad4DCyTVHkQ=";
+    pname = "grpc-compiler";
   };
 
   cargoHash = "sha256-7PTe7popLS0zYYKv+K4629GkNG1wR/fhGi14a/4pkS0=";

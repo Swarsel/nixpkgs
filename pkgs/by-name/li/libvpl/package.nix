@@ -1,11 +1,11 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
+  addDriverRunpath,
   cmake,
   pkg-config,
   replaceVars,
-  addDriverRunpath,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -19,6 +19,12 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-TbneMexrGShBE83WRCHvECucG2/eYMtljwb3yvCTP7k=";
   };
 
+  patches = [
+    (replaceVars ./opengl-driver-lib.patch {
+      inherit (addDriverRunpath) driverLink;
+    })
+  ];
+
   nativeBuildInputs = [
     cmake
     pkg-config
@@ -26,12 +32,6 @@ stdenv.mkDerivation (finalAttrs: {
 
   cmakeFlags = [
     (lib.cmakeBool "BUILD_TESTS" finalAttrs.finalPackage.doCheck)
-  ];
-
-  patches = [
-    (replaceVars ./opengl-driver-lib.patch {
-      inherit (addDriverRunpath) driverLink;
-    })
   ];
 
   doCheck = true;

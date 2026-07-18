@@ -2,20 +2,20 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  meson,
-  ninja,
-  pkg-config,
   aml,
   ffmpeg,
   gnutls,
   libdrm,
-  libjpeg_turbo,
   libgbm,
+  libjpeg_turbo,
+  meson,
   nettle,
-  pixman,
-  zlib,
-  python3,
+  ninja,
   openssl,
+  pixman,
+  pkg-config,
+  python3,
+  zlib,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -49,21 +49,22 @@ stdenv.mkDerivation (finalAttrs: {
     zlib
   ];
 
-  nativeCheckInputs = [
-    python3
-    openssl
-  ];
-
   mesonFlags = [
     (lib.mesonBool "tests" finalAttrs.finalPackage.doCheck)
   ];
 
   doCheck = stdenv.buildPlatform.canExecute stdenv.hostPlatform;
 
+  nativeCheckInputs = [
+    python3
+    openssl
+  ];
+
   __structuredAttrs = true;
 
   meta = {
     description = "VNC server library";
+
     longDescription = ''
       This is a liberally licensed VNC server library that's intended to be
       fast and neat. Goals:
@@ -71,10 +72,11 @@ stdenv.mkDerivation (finalAttrs: {
       - Clean interface
       - Interoperability with the Freedesktop.org ecosystem
     '';
+
     homepage = "https://github.com/any1/neatvnc";
     changelog = "https://github.com/any1/neatvnc/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.isc;
-    platforms = lib.platforms.linux;
     maintainers = with lib.maintainers; [ nickcao ];
+    platforms = lib.platforms.linux;
   };
 })

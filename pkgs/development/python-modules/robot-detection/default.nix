@@ -8,7 +8,6 @@
 buildPythonPackage rec {
   pname = "robot-detection";
   version = "0.4";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
@@ -16,9 +15,9 @@ buildPythonPackage rec {
   };
 
   propagatedBuildInputs = [ six ];
-
   # no tests in archive
   doCheck = false;
+  format = "setuptools";
 
   meta = {
     description = "Library for detecting if a HTTP User Agent header is likely to be a bot";

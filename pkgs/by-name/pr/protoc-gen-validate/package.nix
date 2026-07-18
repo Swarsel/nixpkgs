@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule (finalAttrs: {
@@ -16,7 +16,6 @@ buildGoModule (finalAttrs: {
   };
 
   vendorHash = "sha256-r4oT4Jd21hQccvGEqOXpEKqUy6lvMKN+vF8e2KxY6oQ=";
-
   excludedPackages = [ "tests" ];
 
   meta = {

@@ -1,28 +1,24 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # build-system
-  setuptools,
-
   # dependencies
   beautifulsoup4,
+  buildPythonPackage,
   compressed-rtf,
   ebcdic,
   olefile,
-  red-black-tree-mod,
-  rtfde,
-  tzlocal,
-
   # tests
   pytestCheckHook,
+  red-black-tree-mod,
+  rtfde,
+  # build-system
+  setuptools,
+  tzlocal,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "extract-msg";
   version = "0.55.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "TeamMsgExtractor";
@@ -31,11 +27,7 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-n/v3ubgzWlWqLXZfy1O7+FvTJoLMtgL7DFPL39SZnfM=";
   };
 
-  pythonRelaxDeps = [
-    "beautifulsoup4"
-    "ebcdic"
-  ];
-
+  nativeCheckInputs = [ pytestCheckHook ];
   build-system = [ setuptools ];
 
   dependencies = [
@@ -48,11 +40,14 @@ buildPythonPackage (finalAttrs: {
     tzlocal
   ];
 
-  nativeCheckInputs = [ pytestCheckHook ];
-
+  enabledTestPaths = [ "extract_msg_tests/*.py" ];
+  pyproject = true;
   pythonImportsCheck = [ "extract_msg" ];
 
-  enabledTestPaths = [ "extract_msg_tests/*.py" ];
+  pythonRelaxDeps = [
+    "beautifulsoup4"
+    "ebcdic"
+  ];
 
   meta = {
     description = "Extracts emails and attachments saved in Microsoft Outlook's .msg files";

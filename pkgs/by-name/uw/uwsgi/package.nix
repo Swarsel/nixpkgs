@@ -1,62 +1,62 @@
 {
-  stdenv,
-  nixosTests,
   lib,
-  pkg-config,
-  jansson,
-  pcre2,
-  libxcrypt,
-  openssl,
+  stdenv,
+  fetchFromGitHub,
   expat,
+  jansson,
+  libcap,
+  libxcrypt,
+  makeWrapper,
+  ncurses,
+  nixosTests,
+  openssl,
+  pam,
+  pcre2,
+  php,
+  pkg-config,
+  python3,
+  ruby,
+  systemd,
   zlib,
   # plugins: list of strings, eg. [ "python3" ]
   plugins ? [ ],
-  pam,
-  withPAM ? stdenv.hostPlatform.isLinux,
-  systemd,
-  withSystemd ? lib.meta.availableOn stdenv.hostPlatform systemd,
-  libcap,
   withCap ? stdenv.hostPlatform.isLinux,
-  python3,
-  ncurses,
-  ruby,
-  php,
-  makeWrapper,
-  fetchFromGitHub,
+  withPAM ? stdenv.hostPlatform.isLinux,
+  withSystemd ? lib.meta.availableOn stdenv.hostPlatform systemd,
 }:
 
 let
   php-embed = php.override {
-    embedSupport = true;
     apxs2Support = false;
+    embedSupport = true;
   };
 
   available = lib.listToAttrs [
     (lib.nameValuePair "python3" {
-      interpreter = python3.pythonOnBuildForHost.interpreter;
-      path = "plugins/python";
       inputs = [
         python3
         ncurses
       ];
+
       install = ''
         install -Dm644 uwsgidecorators.py $out/${python3.sitePackages}/uwsgidecorators.py
         ${python3.pythonOnBuildForHost.executable} -m compileall $out/${python3.sitePackages}/
         ${python3.pythonOnBuildForHost.executable} -O -m compileall $out/${python3.sitePackages}/
       '';
+
+      interpreter = python3.pythonOnBuildForHost.interpreter;
+      path = "plugins/python";
     })
     (lib.nameValuePair "rack" {
-      path = "plugins/rack";
       inputs = [ ruby ];
+      path = "plugins/rack";
     })
     (lib.nameValuePair "cgi" {
+      inputs = [ ];
       # usage: https://uwsgi-docs.readthedocs.io/en/latest/CGI.html?highlight=cgi
       path = "plugins/cgi";
-      inputs = [ ];
     })
     (lib.nameValuePair "php" {
-      # usage: https://uwsgi-docs.readthedocs.io/en/latest/PHP.html#running-php-apps-with-nginx
-      path = "plugins/php";
       inputs = [
         php-embed
         php-embed.extensions.session
@@ -64,12 +64,15 @@ let
         php-embed.unwrapped.dev
       ]
       ++ php-embed.unwrapped.buildInputs;
+
+      # usage: https://uwsgi-docs.readthedocs.io/en/latest/PHP.html#running-php-apps-with-nginx
+      path = "plugins/php";
     })
     (lib.nameValuePair "http" {
+      inputs = [ openssl.dev ];
       # usage: https://uwsgi-docs.readthedocs.io/en/latest/HTTP.html
       # usage: https://uwsgi-docs.readthedocs.io/en/latest/HTTPS.html
       path = "plugins/http";
-      inputs = [ openssl.dev ];
     })
   ];
 
@@ -102,6 +105,14 @@ stdenv.mkDerivation (finalAttrs: {
     ./additional-php-ldflags.patch
   ];
 
+  postPatch = ''
+    for f in uwsgiconfig.py plugins/*/uwsgiplugin.py; do
+      substituteInPlace "$f" \
+        --replace pkg-config "$PKG_CONFIG"
+    done
+    sed -e "s/ + php_version//" -i plugins/php/uwsgiplugin.py
+  '';
+
   nativeBuildInputs = [
     makeWrapper
     pkg-config
@@ -122,10 +133,6 @@ stdenv.mkDerivation (finalAttrs: {
   ++ lib.optional withCap libcap
   ++ lib.concatMap (x: x.inputs) needed;
 
-  basePlugins = lib.concatStringsSep "," (
-    lib.optional withPAM "pam" ++ lib.optional withSystemd "systemd_logger"
-  );
-
   env = {
     # UWSGI_INCLUDES environment variable required for "auto" plugins
     # to be detected. See uwsgiconfig.py for more details.
@@ -143,28 +150,6 @@ stdenv.mkDerivation (finalAttrs: {
       "-l:session.so"
     ];
   };
-
-  passthru = {
-    inherit python3;
-    tests.uwsgi = nixosTests.uwsgi;
-  };
-
-  postPatch = ''
-    for f in uwsgiconfig.py plugins/*/uwsgiplugin.py; do
-      substituteInPlace "$f" \
-        --replace pkg-config "$PKG_CONFIG"
-    done
-    sed -e "s/ + php_version//" -i plugins/php/uwsgiplugin.py
-  '';
-
-  configurePhase = ''
-    runHook preConfigure
-
-    export pluginDir=$out/lib/uwsgi
-    substituteAll ${./nixos.ini} buildconf/nixos.ini
-
-    runHook postConfigure
-  '';
 
   buildPhase = ''
     runHook preBuild
@@ -192,13 +177,33 @@ stdenv.mkDerivation (finalAttrs: {
     wrapProgram $out/bin/uwsgi --set PHP_INI_SCAN_DIR ${php-embed}/lib
   '';
 
+  basePlugins = lib.concatStringsSep "," (
+    lib.optional withPAM "pam" ++ lib.optional withSystemd "systemd_logger"
+  );
+
+  configurePhase = ''
+    runHook preConfigure
+
+    export pluginDir=$out/lib/uwsgi
+    substituteAll ${./nixos.ini} buildconf/nixos.ini
+
+    runHook postConfigure
+  '';
+
+  passthru = {
+    inherit python3;
+    tests.uwsgi = nixosTests.uwsgi;
+  };
+
   meta = {
     description = "Fast, self-healing and developer/sysadmin-friendly application container server coded in pure C";
     homepage = "https://uwsgi-docs.readthedocs.org/en/latest/";
     license = lib.licenses.gpl2Plus;
+
     maintainers = with lib.maintainers; [
       globin
     ];
+
     platforms = lib.platforms.unix;
     mainProgram = "uwsgi";
   };

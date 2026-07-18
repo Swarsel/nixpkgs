@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   jsonschema,
   pytestCheckHook,
   python-dateutil,
@@ -14,7 +14,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "polyswarm-api";
   version = "3.18.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "polyswarm";
@@ -22,6 +21,12 @@ buildPythonPackage (finalAttrs: {
     tag = finalAttrs.version;
     hash = "sha256-Mrw+/SbDhfVfC651EHcItf2x2/97kj8ePpxfAQYxBXc=";
   };
+
+  nativeCheckInputs = [
+    pytestCheckHook
+    responses
+    vcrpy
+  ];
 
   build-system = [ setuptools ];
 
@@ -31,12 +36,7 @@ buildPythonPackage (finalAttrs: {
     requests
   ];
 
-  nativeCheckInputs = [
-    pytestCheckHook
-    responses
-    vcrpy
-  ];
-
+  pyproject = true;
   pythonImportsCheck = [ "polyswarm_api" ];
 
   meta = {

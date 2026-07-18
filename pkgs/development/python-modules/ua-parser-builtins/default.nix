@@ -7,11 +7,8 @@
 }:
 
 buildPythonPackage rec {
-  pname = "ua-parser-builtins";
   inherit (ua-parser) version src;
-  pyproject = true;
-
-  sourceRoot = "${src.name}/ua-parser-builtins";
+  pname = "ua-parser-builtins";
 
   postPatch = ''
     # don't use git to determine version
@@ -25,6 +22,9 @@ buildPythonPackage rec {
     versioningit
   ];
 
+  pyproject = true;
+  sourceRoot = "${src.name}/ua-parser-builtins";
+
   meta = {
     inherit (ua-parser.meta)
       description
@@ -32,6 +32,7 @@ buildPythonPackage rec {
       license
       changelog
       ;
+
     maintainers = [ ];
   };
 }

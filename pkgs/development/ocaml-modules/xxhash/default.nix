@@ -2,18 +2,16 @@
   lib,
   fetchFromGitHub,
   buildDunePackage,
-  pkgs,
   ctypes,
   ctypes-foreign,
   dune-configurator,
+  pkgs,
   ppx_expect,
 }:
 
 buildDunePackage rec {
   pname = "xxhash";
   version = "0.2";
-
-  minimalOCamlVersion = "4.08";
 
   src = fetchFromGitHub {
     owner = "314eter";
@@ -42,9 +40,11 @@ buildDunePackage rec {
     ppx_expect
   ];
 
+  minimalOCamlVersion = "4.08";
+
   meta = {
-    homepage = "https://github.com/314eter/ocaml-xxhash";
     description = "Bindings for xxHash, an extremely fast hash algorithm";
+    homepage = "https://github.com/314eter/ocaml-xxhash";
     license = with lib.licenses; [ mit ];
     maintainers = with lib.maintainers; [ toastal ];
   };

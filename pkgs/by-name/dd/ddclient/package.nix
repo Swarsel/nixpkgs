@@ -1,10 +1,10 @@
 {
   lib,
   fetchFromGitHub,
-  perlPackages,
   autoreconfHook,
-  perl,
   curl,
+  perl,
+  perlPackages,
 }:
 
 let
@@ -14,14 +14,14 @@ perlPackages.buildPerlPackage rec {
   pname = "ddclient";
   version = "4.0.0";
 
-  outputs = [ "out" ];
-
   src = fetchFromGitHub {
     owner = "ddclient";
     repo = "ddclient";
     rev = "v${version}";
     sha256 = "sha256-RCE24RKcW4EhicOTwgz5UE/gzqLxw+UNNk960vFx5Gs=";
   };
+
+  outputs = [ "out" ];
 
   postPatch = ''
     touch Makefile.PL
@@ -40,6 +40,9 @@ perlPackages.buildPerlPackage rec {
     "--with-perl=${lib.getExe myPerl}"
   ];
 
+  # TODO: run upstream tests
+  doCheck = false;
+
   installPhase = ''
     runHook preInstall
 
@@ -49,15 +52,12 @@ perlPackages.buildPerlPackage rec {
     runHook postInstall
   '';
 
-  # TODO: run upstream tests
-  doCheck = false;
-
   meta = {
     description = "Client for updating dynamic DNS service entries";
     homepage = "https://ddclient.net/";
     license = lib.licenses.gpl2Plus;
-    platforms = lib.platforms.linux;
     maintainers = with lib.maintainers; [ bjornfor ];
+    platforms = lib.platforms.linux;
     mainProgram = "ddclient";
   };
 }

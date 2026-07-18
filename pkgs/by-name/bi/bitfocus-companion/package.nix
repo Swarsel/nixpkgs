@@ -1,18 +1,18 @@
 {
-  stdenv,
   lib,
-  fetchFromGitHub,
+  stdenv,
   fetchurl,
-  nodejs,
+  fetchFromGitHub,
+  dart-sass,
+  electron,
   git,
+  libusb1,
+  makeWrapper,
+  nix-update-script,
+  nodejs,
   python3,
   udev,
   yarn-berry_4,
-  libusb1,
-  dart-sass,
-  electron,
-  makeWrapper,
-  nix-update-script,
 }:
 
 let
@@ -20,12 +20,13 @@ let
 
   builtinSurfaces = {
     elgato-stream-deck = fetchurl {
-      url = "https://s4.bitfocus.io/developer-module-builds/surface/elgato-stream-deck/v1.4.3-70e2c01d15a0f58c52a8e80d7d6f4977f157d58e/elgato-stream-deck-v1.4.3.tgz";
       hash = "sha256-bZnXvkyfllzHZTAJtH/hSYIv+J5ZOYWZycUHdz9srGI=";
+      url = "https://s4.bitfocus.io/developer-module-builds/surface/elgato-stream-deck/v1.4.3-70e2c01d15a0f58c52a8e80d7d6f4977f157d58e/elgato-stream-deck-v1.4.3.tgz";
     };
+
     xkeys = fetchurl {
-      url = "https://s4.bitfocus.io/developer-module-builds/surface/xkeys/v1.0.2-876f00ee194faa57ec14468b7019bbaa516a9e6d/xkeys-v1.0.2.tgz";
       hash = "sha256-LYJD0Wb90hIIs8AIiZoqLxxKtMWko9rryPSds9ZYCac=";
+      url = "https://s4.bitfocus.io/developer-module-builds/surface/xkeys/v1.0.2-876f00ee194faa57ec14468b7019bbaa516a9e6d/xkeys-v1.0.2.tgz";
     };
   };
 
@@ -33,9 +34,9 @@ let
     attrs:
     attrs.${stdenv.hostPlatform.system} or (throw "Unsupported system: ${stdenv.hostPlatform.system}");
   platform = selectSystem {
-    x86_64-linux = "linux-x64";
     aarch64-linux = "linux-arm64";
     armv7l-linux = "linux-armv7l";
+    x86_64-linux = "linux-x64";
   };
 in
 
@@ -43,17 +44,12 @@ stdenv.mkDerivation rec {
   pname = "bitfocus-companion";
   version = "4.3.4";
 
-  __structuredAttrs = true;
-  strictDeps = true;
-
   src = fetchFromGitHub {
     owner = "bitfocus";
     repo = "companion";
     tag = "v${version}";
     hash = "sha256-ojSXiWaRKFCjHmAMs/RtzNhgSNUy7RKTZ4CE/wCxEaI=";
   };
-
-  passthru.updateScript = nix-update-script { };
 
   postPatch = ''
     # patch out git calls to generate version strings.
@@ -79,6 +75,8 @@ stdenv.mkDerivation rec {
       --replace-fail "if (!(await fs.pathExists(nodePath))) return null" "return '${lib.getExe nodejs}'" \
   '';
 
+  strictDeps = true;
+
   nativeBuildInputs = [
     nodejs
     yarn-berry.yarnBerryConfigHook
@@ -96,26 +94,13 @@ stdenv.mkDerivation rec {
     udev
   ];
 
-  missingHashes = ./missing-hashes.json;
-
-  offlineCache = yarn-berry.fetchYarnBerryDeps {
-    inherit src missingHashes;
-    hash = "sha256-XDXxv+LSr9fYhVhwkcvmd56fAL6gY9FK6kiQlXxTWXo=";
-  };
-
   env = {
+    ELECTRON = 0;
     ELECTRON_SKIP_BINARY_DOWNLOAD = 1;
     SKIP_LAUNCH_CHECK = true;
-    ELECTRON = 0;
     # prevent yarn >= 4.14 from triggering a lockfile refresh for v8 lockfiles
     YARN_LOCKFILE_VERSION_OVERRIDE = 8;
   };
-
-  # with dontConfigure it doesn't seem to retrieve node_modules, so empty configurePhase instead
-  configurePhase = ''
-    runHook preConfigure
-    runHook postConfigure
-  '';
 
   buildPhase = ''
     runHook preBuild
@@ -142,13 +127,6 @@ stdenv.mkDerivation rec {
     rm -rf dist/node-runtimes
   '';
 
-  postInstall = ''
-    # patch the env whitelist companion uses when spawning module child processes to include
-    # LD_LIBRARY_PATH, so all surface modules (builtin and user-downloaded) can find libudev
-    substituteInPlace $out/share/bitfocus-companion/dist/main.js \
-      --replace-fail '"DISABLE_IPV6"],t={}' '"DISABLE_IPV6","LD_LIBRARY_PATH"],t={}'
-  '';
-
   installPhase = ''
     runHook preInstall
 
@@ -168,13 +146,37 @@ stdenv.mkDerivation rec {
     runHook postInstall
   '';
 
+  postInstall = ''
+    # patch the env whitelist companion uses when spawning module child processes to include
+    # LD_LIBRARY_PATH, so all surface modules (builtin and user-downloaded) can find libudev
+    substituteInPlace $out/share/bitfocus-companion/dist/main.js \
+      --replace-fail '"DISABLE_IPV6"],t={}' '"DISABLE_IPV6","LD_LIBRARY_PATH"],t={}'
+  '';
+
+  __structuredAttrs = true;
+
+  # with dontConfigure it doesn't seem to retrieve node_modules, so empty configurePhase instead
+  configurePhase = ''
+    runHook preConfigure
+    runHook postConfigure
+  '';
+
+  missingHashes = ./missing-hashes.json;
+
+  offlineCache = yarn-berry.fetchYarnBerryDeps {
+    inherit src missingHashes;
+    hash = "sha256-XDXxv+LSr9fYhVhwkcvmd56fAL6gY9FK6kiQlXxTWXo=";
+  };
+
+  passthru.updateScript = nix-update-script { };
+
   meta = {
     description = "Program for controlling Stream Deck devices";
     longDescription = "Bitfocus Companion enables the Elgato Stream Deck and other controllers to be a professional shotbox surface for an increasing amount of different presentation switchers, video playback software and broadcast equipment.";
     homepage = "https://bitfocus.io/companion";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ tiebe ];
-    mainProgram = "bitfocus-companion";
     platforms = lib.platforms.linux;
+    mainProgram = "bitfocus-companion";
   };
 }

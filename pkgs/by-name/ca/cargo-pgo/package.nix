@@ -1,7 +1,7 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -16,7 +16,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
   };
 
   cargoHash = "sha256-wYarUvQX6DZCe339i2Xfg2ACnxfn6Sngoawm/uyw9wo=";
-
   # Integration tests do not run in Nix build environment due to needing to
   # create and build Cargo workspaces.
   doCheck = false;

@@ -4,7 +4,6 @@
   mkLibretroCore,
 }:
 mkLibretroCore {
-  core = "mednafen-saturn";
   version = "0-unstable-2026-07-07";
 
   src = fetchFromGitHub {
@@ -14,12 +13,14 @@ mkLibretroCore {
     hash = "sha256-Q50CQDLO090csrF73fo2qxzIaV7o3E8YS9MdQZBp/V8=";
   };
 
+  core = "mednafen-saturn";
   makefile = "Makefile";
 
   meta = {
     description = "Port of Mednafen's Saturn core to libretro";
     homepage = "https://github.com/libretro/beetle-saturn-libretro";
     license = lib.licenses.gpl2Only;
+
     platforms = [
       "aarch64-linux"
       "x86_64-linux"

@@ -1,7 +1,7 @@
 {
-  buildDunePackage,
-  fetchFromGitHub,
   lib,
+  fetchFromGitHub,
+  buildDunePackage,
   uutf,
 }:
 
@@ -17,13 +17,12 @@ buildDunePackage rec {
   };
 
   propagatedBuildInputs = [ uutf ];
-
   minimalOCamlVersion = "4.13";
 
   meta = {
-    changelog = "https://github.com/wllfaria/terml/blob/${version}/CHANGES.md";
     description = "Terminal manipulation library in pure Ocaml";
     homepage = "https://github.com/wllfaria/terml";
+    changelog = "https://github.com/wllfaria/terml/blob/${version}/CHANGES.md";
     license = lib.licenses.mit;
     maintainers = [ lib.maintainers.PhilVoel ];
   };

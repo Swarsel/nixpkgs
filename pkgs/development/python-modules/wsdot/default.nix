@@ -1,9 +1,9 @@
 {
+  lib,
+  fetchFromGitHub,
   aiohttp,
   buildPythonPackage,
-  fetchFromGitHub,
   hatchling,
-  lib,
   pydantic,
   pytest-asyncio,
   pytestCheckHook,
@@ -12,7 +12,6 @@
 buildPythonPackage rec {
   pname = "wsdot";
   version = "0.0.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "ucodery";
@@ -21,6 +20,11 @@ buildPythonPackage rec {
     hash = "sha256-ZmQXa/C5AxqzAdmxqStWnCLrm3AJb/krxbDhtLYMWPw=";
   };
 
+  nativeCheckInputs = [
+    pytest-asyncio
+    pytestCheckHook
+  ];
+
   build-system = [ hatchling ];
 
   dependencies = [
@@ -28,17 +32,13 @@ buildPythonPackage rec {
     pydantic
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "wsdot" ];
 
-  nativeCheckInputs = [
-    pytest-asyncio
-    pytestCheckHook
-  ];
-
   meta = {
-    changelog = "https://github.com/ucodery/wsdot/releases/tag/${src.tag}";
     description = "Python wrapper of the wsdot.wa.gov APIs";
     homepage = "https://github.com/ucodery/wsdot";
+    changelog = "https://github.com/ucodery/wsdot/releases/tag/${src.tag}";
     license = lib.licenses.bsd3;
     maintainers = with lib.maintainers; [ dotlambda ];
   };

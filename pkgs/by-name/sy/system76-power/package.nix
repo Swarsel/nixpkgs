@@ -1,10 +1,10 @@
 {
-  pkg-config,
-  libusb1,
-  dbus,
   lib,
-  rustPlatform,
   fetchFromGitHub,
+  dbus,
+  libusb1,
+  pkg-config,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -19,6 +19,7 @@ rustPlatform.buildRustPackage (finalAttrs: {
   };
 
   nativeBuildInputs = [ pkg-config ];
+
   buildInputs = [
     dbus
     libusb1
@@ -34,17 +35,20 @@ rustPlatform.buildRustPackage (finalAttrs: {
 
   meta = {
     description = "System76 Power Management";
-    mainProgram = "system76-power";
     homepage = "https://github.com/pop-os/system76-power";
     license = lib.licenses.gpl3Plus;
+
+    maintainers = with lib.maintainers; [
+      smonson
+      ahoneybun
+    ];
+
     platforms = [
       "i686-linux"
       "x86_64-linux"
       "aarch64-linux"
     ];
-    maintainers = with lib.maintainers; [
-      smonson
-      ahoneybun
-    ];
+
+    mainProgram = "system76-power";
   };
 })

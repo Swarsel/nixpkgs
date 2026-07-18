@@ -15,8 +15,8 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-K8DsWAyqeQsK7mNDiKkRCkKbr0uT/yxPzj2atYP1Ezk=";
   };
 
-  buildInputs = [ libusb1 ];
   nativeBuildInputs = [ pkg-config ];
+  buildInputs = [ libusb1 ];
 
   installPhase = ''
     mkdir -p $out/bin
@@ -24,10 +24,10 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   meta = {
-    homepage = "https://sourceforge.net/projects/rkflashtool/";
     description = "Tools for flashing Rockchip devices";
-    platforms = lib.platforms.linux;
-    maintainers = [ ];
+    homepage = "https://sourceforge.net/projects/rkflashtool/";
     license = lib.licenses.bsd2;
+    maintainers = [ ];
+    platforms = lib.platforms.linux;
   };
 })

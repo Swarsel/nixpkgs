@@ -1,20 +1,19 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   poetry-core,
-  pytest-cov-stub,
   pytest-asyncio,
+  pytest-cov-stub,
   pytest-timeout,
-  responses,
   pytestCheckHook,
   requests,
+  responses,
 }:
 
 buildPythonPackage rec {
   pname = "pyvera";
   version = "0.3.16";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "pavoni";
@@ -22,10 +21,6 @@ buildPythonPackage rec {
     tag = version;
     hash = "sha256-WLzVOQEykST2BsVRHmcBhrsd/am0jI/f7D0PmpCTbdQ=";
   };
-
-  build-system = [ poetry-core ];
-
-  dependencies = [ requests ];
 
   nativeCheckInputs = [
     pytest-asyncio
@@ -35,6 +30,9 @@ buildPythonPackage rec {
     responses
   ];
 
+  build-system = [ poetry-core ];
+  dependencies = [ requests ];
+  pyproject = true;
   pythonImportsCheck = [ "pyvera" ];
 
   meta = {

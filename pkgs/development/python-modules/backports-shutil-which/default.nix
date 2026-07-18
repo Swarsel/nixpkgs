@@ -1,15 +1,14 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
+  buildPythonPackage,
   pytestCheckHook,
+  setuptools,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "backports-shutil-which";
   version = "3.5.2";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "minrk";
@@ -18,11 +17,12 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-smvBySS8Ek24y8X9DUGxF4AfJL2ZQ12xeDhEBsZRiP0=";
   };
 
-  build-system = [ setuptools ];
-
   nativeCheckInputs = [
     pytestCheckHook
   ];
+
+  build-system = [ setuptools ];
+  pyproject = true;
 
   meta = {
     description = "Backport of shutil.which from Python 3.3";

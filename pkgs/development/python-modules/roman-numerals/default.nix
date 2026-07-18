@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   flit-core,
   pytestCheckHook,
 }:
@@ -9,7 +9,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "roman-numerals";
   version = "4.1.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "AA-Turner";
@@ -18,13 +17,11 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-v+aPIcsggjRJ3l6Xfw97b3zcqpyWNY4XWy2+5aWyitY=";
   };
 
-  sourceRoot = "${finalAttrs.src.name}/python";
-
-  build-system = [ flit-core ];
-
   nativeCheckInputs = [ pytestCheckHook ];
-
+  build-system = [ flit-core ];
+  pyproject = true;
   pythonImportsCheck = [ "roman_numerals" ];
+  sourceRoot = "${finalAttrs.src.name}/python";
 
   meta = {
     description = "Manipulate roman numerals";

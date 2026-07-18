@@ -1,7 +1,7 @@
 {
+  lib,
   atLeast,
   backendStdenv,
-  lib,
   mkTester,
   sample-data,
   ...
@@ -12,16 +12,16 @@
     "--datadir=${sample-data.outPath + "/mnist"}"
   ];
 
-  int8 = mkTester "sample_onnx_mnist-int8" [
-    "sample_onnx_mnist"
-    "--datadir=${sample-data.outPath + "/mnist"}"
-    "--int8"
-  ];
-
   fp16 = mkTester "sample_onnx_mnist-fp16" [
     "sample_onnx_mnist"
     "--datadir=${sample-data.outPath + "/mnist"}"
     "--fp16"
+  ];
+
+  int8 = mkTester "sample_onnx_mnist-int8" [
+    "sample_onnx_mnist"
+    "--datadir=${sample-data.outPath + "/mnist"}"
+    "--int8"
   ];
 }
 // lib.optionalAttrs (atLeast "10") {

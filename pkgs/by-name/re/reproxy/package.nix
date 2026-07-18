@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   installShellFiles,
 }:
 
@@ -16,15 +16,8 @@ buildGoModule (finalAttrs: {
     hash = "sha256-dxQWuONVYidNtppLd5S1tBEPXM64JdnAhdFWzOsaG6U=";
   };
 
-  vendorHash = null;
-
   nativeBuildInputs = [ installShellFiles ];
-
-  ldflags = [
-    "-s"
-    "-w"
-    "-X main.revision=${finalAttrs.version}"
-  ];
+  vendorHash = null;
 
   checkFlags = [
     # Requires network access or fluky
@@ -37,6 +30,12 @@ buildGoModule (finalAttrs: {
   '';
 
   __darwinAllowLocalNetworking = true;
+
+  ldflags = [
+    "-s"
+    "-w"
+    "-X main.revision=${finalAttrs.version}"
+  ];
 
   meta = {
     description = "Simple edge server / reverse proxy";

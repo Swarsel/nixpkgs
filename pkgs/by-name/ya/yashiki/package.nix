@@ -1,18 +1,16 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
-  installShellFiles,
-  versionCheckHook,
-  nix-update-script,
   apple-sdk_15,
+  installShellFiles,
+  nix-update-script,
+  rustPlatform,
+  versionCheckHook,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
   pname = "yashiki";
   version = "0.14.0";
-
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "typester";
@@ -21,8 +19,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-ePZ8ONdvj3gaQps+5Ua0OLeFdzNdJhoB9yw6pC7qoEQ=";
   };
 
-  cargoHash = "sha256-JMrftBKyD188SZqEGI4fA/MrfEK8JLKSeEqrQxhSs3U=";
-
   nativeBuildInputs = [
     installShellFiles
   ];
@@ -30,6 +26,8 @@ rustPlatform.buildRustPackage (finalAttrs: {
   buildInputs = [
     apple-sdk_15
   ];
+
+  cargoHash = "sha256-JMrftBKyD188SZqEGI4fA/MrfEK8JLKSeEqrQxhSs3U=";
 
   postInstall = ''
     app="$out/Applications/Yashiki.app"
@@ -49,11 +47,13 @@ rustPlatform.buildRustPackage (finalAttrs: {
   '';
 
   doInstallCheck = true;
+
   nativeInstallCheckInputs = [
     versionCheckHook
   ];
-  versionCheckProgramArg = "version";
 
+  __structuredAttrs = true;
+  versionCheckProgramArg = "version";
   passthru.updateScript = nix-update-script { };
 
   meta = {
@@ -63,7 +63,7 @@ rustPlatform.buildRustPackage (finalAttrs: {
     license = lib.licenses.mit;
     sourceProvenance = [ lib.sourceTypes.fromSource ];
     maintainers = with lib.maintainers; [ anntnzrb ];
-    mainProgram = "yashiki";
     platforms = lib.platforms.darwin;
+    mainProgram = "yashiki";
   };
 })

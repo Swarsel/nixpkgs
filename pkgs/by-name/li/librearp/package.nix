@@ -1,22 +1,22 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitLab,
-  cmake,
-  pkg-config,
+  alsa-lib,
   cairo,
-  libxkbcommon,
+  cmake,
+  curl,
+  gcc-unwrapped,
+  libjack2,
   libxcb-cursor,
   libxcb-keysyms,
   libxcb-util,
-  libxrandr,
-  libxinerama,
   libxcursor,
-  alsa-lib,
-  libjack2,
+  libxinerama,
+  libxkbcommon,
+  libxrandr,
   lv2,
-  gcc-unwrapped,
-  curl,
+  pkg-config,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -35,6 +35,7 @@ stdenv.mkDerivation (finalAttrs: {
     cmake
     pkg-config
   ];
+
   buildInputs = [
     cairo
     libxkbcommon
@@ -66,7 +67,7 @@ stdenv.mkDerivation (finalAttrs: {
     description = "Pattern-based arpeggio generator plugin";
     homepage = "https://librearp.gitlab.io/";
     license = lib.licenses.gpl3Plus;
-    platforms = [ "x86_64-linux" ];
     maintainers = with lib.maintainers; [ magnetophon ];
+    platforms = [ "x86_64-linux" ];
   };
 })

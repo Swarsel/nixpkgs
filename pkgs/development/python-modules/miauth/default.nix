@@ -1,41 +1,36 @@
 {
   lib,
-  buildPythonPackage,
-  fetchPypi,
-
-  # build-system
-  setuptools,
-
   # dependencies
   bluepy,
+  buildPythonPackage,
   cryptography,
-
+  fetchPypi,
   # checks
   pytestCheckHook,
+  # build-system
+  setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "miauth";
   version = "0.9.7";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
     hash = "sha256-2/4nFInpdY8fb/b+sXhgT6ZPtEgBV+KHMyLnxIp6y/U=";
   };
 
+  nativeCheckInputs = [ pytestCheckHook ];
   build-system = [ setuptools ];
-
-  pythonRelaxDeps = [ "cryptography" ];
 
   dependencies = [
     bluepy
     cryptography
   ];
 
-  nativeCheckInputs = [ pytestCheckHook ];
-
+  pyproject = true;
   pythonImportsCheck = [ "miauth" ];
+  pythonRelaxDeps = [ "cryptography" ];
 
   meta = {
     description = "Authenticate and interact with Xiaomi devices over BLE";

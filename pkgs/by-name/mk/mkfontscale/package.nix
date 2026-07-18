@@ -2,12 +2,12 @@
   lib,
   stdenv,
   fetchurl,
-  pkg-config,
-  libfontenc,
   freetype,
+  libfontenc,
+  pkg-config,
+  writeScript,
   xorgproto,
   zlib,
-  writeScript,
 }:
 stdenv.mkDerivation (finalAttrs: {
   pname = "mkfontscale";
@@ -20,6 +20,7 @@ stdenv.mkDerivation (finalAttrs: {
 
   strictDeps = true;
   nativeBuildInputs = [ pkg-config ];
+
   buildInputs = [
     libfontenc
     freetype
@@ -41,13 +42,15 @@ stdenv.mkDerivation (finalAttrs: {
   meta = {
     description = "Utilities to create the fonts.scale and fonts.dir index files used by the legacy X11 font system";
     homepage = "https://gitlab.freedesktop.org/xorg/app/mkfontscale";
+
     license = with lib.licenses; [
       mit
       mitOpenGroup
       hpndSellVariant
     ];
+
     maintainers = [ ];
-    mainProgram = "mkfontscale";
     platforms = lib.platforms.unix;
+    mainProgram = "mkfontscale";
   };
 })

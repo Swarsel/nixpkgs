@@ -1,11 +1,11 @@
 {
   lib,
+  stdenv,
   fetchFromGitHub,
   libiconv,
   openssl,
   pkg-config,
   rustPlatform,
-  stdenv,
   testers,
 }:
 
@@ -15,16 +15,15 @@ let
     version = "0.4.10";
 
     src = fetchFromGitHub {
-      pname = "so-source";
       inherit (self) version;
       owner = "samtay";
       repo = "so";
       rev = "v${self.version}";
       hash = "sha256-25jZEo1C9XF4m9YzDwtecQy468nHyv2wnRuK5oY2siU=";
+      pname = "so-source";
     };
 
-    cargoHash = "sha256-cSLsfYYtdMiXGCG3jpq2Cxl8TgSb7iCWoeXNwEuv4FM=";
-
+    strictDeps = true;
     nativeBuildInputs = [ pkg-config ];
 
     buildInputs = [
@@ -34,29 +33,32 @@ let
       libiconv
     ];
 
-    strictDeps = true;
+    cargoHash = "sha256-cSLsfYYtdMiXGCG3jpq2Cxl8TgSb7iCWoeXNwEuv4FM=";
 
     passthru = {
       tests = {
         version = testers.testVersion {
-          package = self;
           command = ''
             export HOME=$TMP
             so --version
           '';
+
+          package = self;
         };
       };
     };
 
     meta = {
-      homepage = "https://github.com/samtay/so";
       description = "TUI to StackExchange network";
+      homepage = "https://github.com/samtay/so";
       changelog = "https://github.com/samtay/so/blob/main/CHANGELOG.md";
-      mainProgram = "so";
       license = lib.licenses.mit;
+
       maintainers = with lib.maintainers; [
         unsolvedcypher
       ];
+
+      mainProgram = "so";
     };
   };
 in

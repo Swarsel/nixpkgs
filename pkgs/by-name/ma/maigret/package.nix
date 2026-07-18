@@ -8,7 +8,6 @@
 python3.pkgs.buildPythonApplication (finalAttrs: {
   pname = "maigret";
   version = "0.6.2";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "soxoj";
@@ -17,13 +16,10 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     hash = "sha256-KgSf0lM8euahWRYT+acuoH6C+NN08IzkVGzytfnvHEg=";
   };
 
-  pythonRelaxDeps = true;
-
-  pythonRemoveDeps = [
-    "future-annotations"
-    "future"
-    "PyPDF2"
-    "six"
+  nativeCheckInputs = with python3.pkgs; [
+    pytest-httpserver
+    pytest-asyncio
+    pytestCheckHook
   ];
 
   build-system = with python3.pkgs; [ poetry-core ];
@@ -75,17 +71,6 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     ]
     ++ flask.optional-dependencies.async;
 
-  nativeCheckInputs = with python3.pkgs; [
-    pytest-httpserver
-    pytest-asyncio
-    pytestCheckHook
-  ];
-
-  pytestFlags = [
-    # DeprecationWarning: There is no current event loop
-    "-Wignore::DeprecationWarning"
-  ];
-
   disabledTests = [
     # Tests require network access
     "test_check_features_manually_cloudflare"
@@ -110,17 +95,34 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     "test_asyncio_progressbar_executor"
   ];
 
+  pyproject = true;
+
+  pytestFlags = [
+    # DeprecationWarning: There is no current event loop
+    "-Wignore::DeprecationWarning"
+  ];
+
   pythonImportsCheck = [ "maigret" ];
+  pythonRelaxDeps = true;
+
+  pythonRemoveDeps = [
+    "future-annotations"
+    "future"
+    "PyPDF2"
+    "six"
+  ];
 
   meta = {
     description = "Tool to collect details about an username";
     homepage = "https://maigret.readthedocs.io";
     changelog = "https://github.com/soxoj/maigret/blob/${finalAttrs.src.tag}/CHANGELOG.md";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       fab
       thtrf
     ];
+
     broken = stdenv.hostPlatform.isDarwin;
   };
 })

@@ -1,39 +1,39 @@
 {
-  config,
   lib,
   stdenv,
-  fetchgit,
-  autoreconfHook,
-  autoconf-archive,
-  pkg-config,
-  enableAlsa ? true,
   alsa-lib,
-  enableLibao ? true,
-  libao,
-  enableLame ? config.sox.enableLame or false,
-  lame,
-  enableLibmad ? true,
-  libmad,
-  enableLibogg ? true,
-  libogg,
-  libvorbis,
-  enableOpusfile ? true,
-  opusfile,
-  enableFLAC ? true,
+  amrnb,
+  amrwb,
+  autoconf-archive,
+  autoreconfHook,
+  config,
+  fetchgit,
   flac,
-  enablePNG ? true,
+  lame,
+  libao,
+  libmad,
+  libogg,
   libpng,
-  enableLibsndfile ? true,
+  libpulseaudio,
   libsndfile,
-  enableWavpack ? true,
+  libvorbis,
+  opusfile,
+  pkg-config,
   wavpack,
   # amrnb and amrwb are unfree, disabled by default
   enableAMR ? false,
-  amrnb,
-  amrwb,
+  enableAlsa ? true,
+  enableFLAC ? true,
+  enableLame ? config.sox.enableLame or false,
+  enableLibao ? true,
+  enableLibmad ? true,
+  enableLibogg ? true,
   enableLibpulseaudio ?
     stdenv.hostPlatform.isLinux && lib.meta.availableOn stdenv.hostPlatform libpulseaudio,
-  libpulseaudio,
+  enableLibsndfile ? true,
+  enableOpusfile ? true,
+  enablePNG ? true,
+  enableWavpack ? true,
 }:
 
 stdenv.mkDerivation {
@@ -41,13 +41,13 @@ stdenv.mkDerivation {
   version = "unstable-2021-05-09";
 
   src = fetchgit {
+    url = "https://git.code.sf.net/p/sox/code";
+    rev = "42b3557e13e0fe01a83465b672d89faddbe65f49";
+    hash = "sha256-9cpOwio69GvzVeDq79BSmJgds9WU5kA/KUlAkHcpN5c=";
     # not really needed, but when this src was updated from `fetchurl ->
     # fetchgit`, we spared the mass rebuild by changing this `name` and
     # therefor merge this to `master` and not to `staging`.
     name = "source";
-    url = "https://git.code.sf.net/p/sox/code";
-    rev = "42b3557e13e0fe01a83465b672d89faddbe65f49";
-    hash = "sha256-9cpOwio69GvzVeDq79BSmJgds9WU5kA/KUlAkHcpN5c=";
   };
 
   outputs = [
@@ -57,13 +57,13 @@ stdenv.mkDerivation {
     "man"
   ];
 
+  patches = [ ./0001-musl-rewind-pipe-workaround.patch ];
+
   nativeBuildInputs = [
     autoreconfHook
     autoconf-archive
     pkg-config
   ];
-
-  patches = [ ./0001-musl-rewind-pipe-workaround.patch ];
 
   buildInputs =
     lib.optional (enableAlsa && stdenv.hostPlatform.isLinux) alsa-lib
@@ -90,8 +90,8 @@ stdenv.mkDerivation {
   meta = {
     description = "Sample Rate Converter for audio";
     homepage = "https://sox.sourceforge.net/";
-    maintainers = [ ];
     license = if enableAMR then lib.licenses.unfree else lib.licenses.gpl2Plus;
+    maintainers = [ ];
     platforms = lib.platforms.unix;
   };
 }

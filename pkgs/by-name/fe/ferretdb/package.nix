@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   nixosTests,
   versionCheckHook,
 }:
@@ -23,29 +23,26 @@ buildGoModule (finalAttrs: {
   '';
 
   vendorHash = "sha256-GT6e9yd6LF6GFlGBWVAmcM6ysB/6cIGLbnM0hxfX5TE=";
-
   env.CGO_ENABLED = 0;
-
-  subPackages = [ "cmd/ferretdb" ];
-
   # tests in cmd/ferretdb are not production relevant
   doCheck = false;
-
   # the binary panics if something required wasn't set during compilation
   doInstallCheck = true;
   nativeInstallCheckInputs = [ versionCheckHook ];
-
+  subPackages = [ "cmd/ferretdb" ];
   passthru.tests = nixosTests.ferretdb;
 
   meta = {
     description = "Truly Open Source MongoDB alternative";
-    mainProgram = "ferretdb";
-    changelog = "https://github.com/FerretDB/FerretDB/releases/tag/v${finalAttrs.version}";
     homepage = "https://www.ferretdb.com/";
+    changelog = "https://github.com/FerretDB/FerretDB/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.asl20;
+
     maintainers = with lib.maintainers; [
       noisersup
       julienmalka
     ];
+
+    mainProgram = "ferretdb";
   };
 })

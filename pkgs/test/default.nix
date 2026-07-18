@@ -18,6 +18,26 @@ let
   inherit (pkgs.lib.strings) toJSON;
 in
 {
+  # Accumulate all passthru.tests from arrayUtilities into a single attribute set.
+  arrayUtilities = recurseIntoAttrs (
+    concatMapAttrs (
+      name: value:
+      optionalAttrs (value ? passthru.tests) {
+        ${name} = value.passthru.tests;
+      }
+    ) pkgs.arrayUtilities
+  );
+
+  auto-patchelf-hook = callPackage ./auto-patchelf-hook { };
+  auto-patchelf-hook-preserve-origin = callPackage ./auto-patchelf-hook-preserve-origin { };
+  auto-patchelf-structured-log = callPackage ./auto-patchelf-structured-log { };
+  build-environment-info = callPackage ./build-environment-info { };
+  buildFHSEnv = recurseIntoAttrs (callPackages ./buildFHSEnv { });
+  buildRustCrate = recurseIntoAttrs (callPackage ../build-support/rust/build-rust-crate/test { });
+  buildenv = callPackage ./buildenv.nix { };
+  cc-multilib-clang = callPackage ./cc-wrapper/multilib.nix { stdenv = pkgs.clangMultiStdenv; };
+  cc-multilib-gcc = callPackage ./cc-wrapper/multilib.nix { stdenv = pkgs.gccMultiStdenv; };
+
   cc-wrapper =
     let
       pkgNames = (attrNames pkgs);
@@ -79,9 +99,14 @@ in
     in
     recurseIntoAttrs {
       default = callPackage ./cc-wrapper { };
+      gccTests = recurseIntoAttrs gccTests;
+      llvmTests = recurseIntoAttrs llvmTests;
 
       supported = stdenv.mkDerivation {
-        name = "cc-wrapper-supported";
+        buildCommand = ''
+          touch $out
+        '';
+
         builtGCC =
           let
             sets = pipe gccTests [
@@ -100,125 +125,70 @@ in
             ];
           in
           toJSON sets;
-        buildCommand = ''
-          touch $out
-        '';
-      };
 
-      llvmTests = recurseIntoAttrs llvmTests;
-      gccTests = recurseIntoAttrs gccTests;
+        name = "cc-wrapper-supported";
+      };
     };
 
+  checkpointBuildTools = callPackage ./checkpointBuild { };
+  compress-drv = callPackage ../build-support/compress-drv/test.nix { };
+  config = callPackage ./config.nix { };
+  coq = callPackage ./coq { };
+  cross = recurseIntoAttrs (callPackage ./cross { });
+  cuda = callPackage ./cuda { };
+  cue-validation = callPackage ./cue { };
   devShellTools = callPackage ../build-support/dev-shell-tools/tests { };
+  dhall = callPackage ./dhall { };
+  dotnet = recurseIntoAttrs (callPackages ./dotnet { });
+  fetchDebianPatch = recurseIntoAttrs (callPackages ../build-support/fetchdebianpatch/tests.nix { });
 
-  stdenv-inputs = callPackage ./stdenv-inputs { };
-  stdenv = recurseIntoAttrs (callPackage ./stdenv { });
-
-  hardeningFlags = recurseIntoAttrs (callPackage ./cc-wrapper/hardening.nix { });
-  hardeningFlags-gcc = recurseIntoAttrs (
-    callPackage ./cc-wrapper/hardening.nix {
-      stdenv = pkgs.gccStdenv;
-    }
+  fetchFirefoxAddon = recurseIntoAttrs (
+    callPackages ../build-support/fetchfirefoxaddon/tests.nix { }
   );
+
+  fetchFromBitbucket = recurseIntoAttrs (callPackages ../build-support/fetchbitbucket/tests.nix { });
+  fetchFromGitHub = recurseIntoAttrs (callPackages ../build-support/fetchgithub/tests.nix { });
+
+  fetchNextcloudApp = recurseIntoAttrs (
+    callPackages ../build-support/fetchnextcloudapp/tests.nix { }
+  );
+
+  fetchPypiLegacy = recurseIntoAttrs (callPackages ../build-support/fetchpypilegacy/tests.nix { });
+  fetchgit = recurseIntoAttrs (callPackages ../build-support/fetchgit/tests.nix { });
+  fetchpatch = recurseIntoAttrs (callPackages ../build-support/fetchpatch/tests.nix { });
+
+  fetchpatch2 = recurseIntoAttrs (
+    callPackages ../build-support/fetchpatch/tests.nix { fetchpatch = pkgs.fetchpatch2; }
+  );
+
+  fetchtorrent = recurseIntoAttrs (callPackages ../build-support/fetchtorrent/tests.nix { });
+  fetchurl = recurseIntoAttrs (callPackages ../build-support/fetchurl/tests.nix { });
+  fetchzip = recurseIntoAttrs (callPackages ../build-support/fetchzip/tests.nix { });
+  go = recurseIntoAttrs (callPackage ../build-support/go/tests.nix { });
+  hardeningFlags = recurseIntoAttrs (callPackage ./cc-wrapper/hardening.nix { });
+
   hardeningFlags-clang = recurseIntoAttrs (
     callPackage ./cc-wrapper/hardening.nix {
       stdenv = pkgs.llvmPackages.stdenv;
     }
   );
 
-  config = callPackage ./config.nix { };
-
-  top-level = callPackage ./top-level { };
+  hardeningFlags-gcc = recurseIntoAttrs (
+    callPackage ./cc-wrapper/hardening.nix {
+      stdenv = pkgs.gccStdenv;
+    }
+  );
 
   haskell = callPackage ./haskell { };
-
+  home-assistant-components = recurseIntoAttrs pkgs.home-assistant.tests.components;
   hooks = recurseIntoAttrs (callPackage ./hooks { });
-
-  cc-multilib-gcc = callPackage ./cc-wrapper/multilib.nix { stdenv = pkgs.gccMultiStdenv; };
-  cc-multilib-clang = callPackage ./cc-wrapper/multilib.nix { stdenv = pkgs.clangMultiStdenv; };
-
-  compress-drv = callPackage ../build-support/compress-drv/test.nix { };
-
-  fetchurl = recurseIntoAttrs (callPackages ../build-support/fetchurl/tests.nix { });
-  fetchtorrent = recurseIntoAttrs (callPackages ../build-support/fetchtorrent/tests.nix { });
-  fetchpatch = recurseIntoAttrs (callPackages ../build-support/fetchpatch/tests.nix { });
-  fetchpatch2 = recurseIntoAttrs (
-    callPackages ../build-support/fetchpatch/tests.nix { fetchpatch = pkgs.fetchpatch2; }
-  );
-  fetchDebianPatch = recurseIntoAttrs (callPackages ../build-support/fetchdebianpatch/tests.nix { });
-  fetchzip = recurseIntoAttrs (callPackages ../build-support/fetchzip/tests.nix { });
-  fetchgit = recurseIntoAttrs (callPackages ../build-support/fetchgit/tests.nix { });
-  fetchNextcloudApp = recurseIntoAttrs (
-    callPackages ../build-support/fetchnextcloudapp/tests.nix { }
-  );
-  fetchFromBitbucket = recurseIntoAttrs (callPackages ../build-support/fetchbitbucket/tests.nix { });
-  fetchFromGitHub = recurseIntoAttrs (callPackages ../build-support/fetchgithub/tests.nix { });
-  fetchFirefoxAddon = recurseIntoAttrs (
-    callPackages ../build-support/fetchfirefoxaddon/tests.nix { }
-  );
-  fetchPypiLegacy = recurseIntoAttrs (callPackages ../build-support/fetchpypilegacy/tests.nix { });
-
-  install-shell-files = recurseIntoAttrs (callPackage ./install-shell-files { });
-
-  checkpointBuildTools = callPackage ./checkpointBuild { };
-
-  kernel-config = callPackage ./kernel.nix { };
-
-  ld-library-path = callPackage ./ld-library-path { };
-
-  cross = recurseIntoAttrs (callPackage ./cross { });
-
-  php = recurseIntoAttrs (callPackages ./php { });
-
-  pnpm = recurseIntoAttrs (callPackages ./pnpm { });
-
-  go = recurseIntoAttrs (callPackage ../build-support/go/tests.nix { });
-
-  lake = callPackage ../build-support/lake/test { };
-
-  pkg-config = recurseIntoAttrs (callPackage ../top-level/pkg-config/tests.nix { });
-
-  buildRustCrate = recurseIntoAttrs (callPackage ../build-support/rust/build-rust-crate/test { });
   importCargoLock = recurseIntoAttrs (callPackage ../build-support/rust/test/import-cargo-lock { });
+  install-shell-files = recurseIntoAttrs (callPackage ./install-shell-files { });
+  kernel-config = callPackage ./kernel.nix { };
+  lake = callPackage ../build-support/lake/test { };
+  ld-library-path = callPackage ./ld-library-path { };
+  lib-tests = import ../../lib/tests/release.nix { inherit pkgs; };
 
-  vim = callPackage ./vim { };
-
-  nixos-functions = callPackage ./nixos-functions { };
-
-  nixosOptionsDoc = recurseIntoAttrs (callPackage ../../nixos/lib/make-options-doc/tests.nix { });
-
-  buildenv = callPackage ./buildenv.nix { };
-
-  overriding = callPackage ./overriding.nix { };
-
-  texlive = recurseIntoAttrs (callPackage ./texlive { });
-
-  # TODO: Temporarily disabled recursion so we can see the performance comparison in the PR,
-  # which only runs if there's exactly the same packages before and after, and this would add packages
-  #problems = recurseIntoAttrs (callPackage ./problems { });
-  problems = callPackage ./problems { };
-
-  cuda = callPackage ./cuda { };
-
-  trivial-builders = callPackage ../build-support/trivial-builders/test/default.nix { };
-
-  vmTools = callPackage ../build-support/vm/test.nix { };
-
-  writers = callPackage ../build-support/writers/test.nix { };
-
-  testers = callPackage ../build-support/testers/test/default.nix { };
-
-  dhall = callPackage ./dhall { };
-
-  cue-validation = callPackage ./cue { };
-
-  coq = callPackage ./coq { };
-
-  dotnet = recurseIntoAttrs (callPackages ./dotnet { });
-
-  makeHardcodeGsettingsPatch = recurseIntoAttrs (callPackage ./make-hardcode-gsettings-patch { });
-
-  makeWrapper = callPackage ./make-wrapper { };
   makeBinaryWrapper = callPackage ./make-binary-wrapper {
     makeBinaryWrapper = pkgs.makeBinaryWrapper.override {
       # Enable sanitizers in the tests only, to avoid the performance cost in regular usage.
@@ -232,27 +202,24 @@ in
     };
   };
 
-  lib-tests = import ../../lib/tests/release.nix { inherit pkgs; };
-
+  makeHardcodeGsettingsPatch = recurseIntoAttrs (callPackage ./make-hardcode-gsettings-patch { });
+  makeWrapper = callPackage ./make-wrapper { };
+  nixos-functions = callPackage ./nixos-functions { };
+  nixosOptionsDoc = recurseIntoAttrs (callPackage ../../nixos/lib/make-options-doc/tests.nix { });
+  overriding = callPackage ./overriding.nix { };
+  php = recurseIntoAttrs (callPackages ./php { });
+  pkg-config = recurseIntoAttrs (callPackage ../top-level/pkg-config/tests.nix { });
   pkgs-lib = recurseIntoAttrs (callPackage ../pkgs-lib/tests { });
+  pnpm = recurseIntoAttrs (callPackages ./pnpm { });
 
-  buildFHSEnv = recurseIntoAttrs (callPackages ./buildFHSEnv { });
-
-  auto-patchelf-structured-log = callPackage ./auto-patchelf-structured-log { };
-
-  auto-patchelf-hook = callPackage ./auto-patchelf-hook { };
-
-  auto-patchelf-hook-preserve-origin = callPackage ./auto-patchelf-hook-preserve-origin { };
-
-  # Accumulate all passthru.tests from arrayUtilities into a single attribute set.
-  arrayUtilities = recurseIntoAttrs (
-    concatMapAttrs (
-      name: value:
-      optionalAttrs (value ? passthru.tests) {
-        ${name} = value.passthru.tests;
-      }
-    ) pkgs.arrayUtilities
+  prefer-remote-fetch = recurseIntoAttrs (
+    callPackages ../build-support/prefer-remote-fetch/tests.nix { }
   );
+
+  # TODO: Temporarily disabled recursion so we can see the performance comparison in the PR,
+  # which only runs if there's exactly the same packages before and after, and this would add packages
+  #problems = recurseIntoAttrs (callPackage ./problems { });
+  problems = callPackage ./problems { };
 
   # Accumulate all passthru.tests from qt5 into a single attribute set.
   qt5 = recurseIntoAttrs {
@@ -264,21 +231,18 @@ in
     wrapQtAppsHook = recurseIntoAttrs pkgs.qt6.wrapQtAppsHook.passthru.tests;
   };
 
-  srcOnly = callPackage ../build-support/src-only/tests.nix { };
-
-  systemd = callPackage ./systemd { };
-
   replaceVars = recurseIntoAttrs (callPackage ./replace-vars { });
-
-  substitute = recurseIntoAttrs (callPackage ./substitute { });
-
-  build-environment-info = callPackage ./build-environment-info { };
-
   rust-hooks = recurseIntoAttrs (callPackages ../build-support/rust/hooks/test { });
-
-  prefer-remote-fetch = recurseIntoAttrs (
-    callPackages ../build-support/prefer-remote-fetch/tests.nix { }
-  );
-
-  home-assistant-components = recurseIntoAttrs pkgs.home-assistant.tests.components;
+  srcOnly = callPackage ../build-support/src-only/tests.nix { };
+  stdenv = recurseIntoAttrs (callPackage ./stdenv { });
+  stdenv-inputs = callPackage ./stdenv-inputs { };
+  substitute = recurseIntoAttrs (callPackage ./substitute { });
+  systemd = callPackage ./systemd { };
+  testers = callPackage ../build-support/testers/test/default.nix { };
+  texlive = recurseIntoAttrs (callPackage ./texlive { });
+  top-level = callPackage ./top-level { };
+  trivial-builders = callPackage ../build-support/trivial-builders/test/default.nix { };
+  vim = callPackage ./vim { };
+  vmTools = callPackage ../build-support/vm/test.nix { };
+  writers = callPackage ../build-support/writers/test.nix { };
 }

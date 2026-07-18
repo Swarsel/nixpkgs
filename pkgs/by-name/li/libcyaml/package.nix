@@ -1,6 +1,6 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
   libyaml,
 }:
@@ -24,8 +24,8 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   meta = {
-    homepage = "https://github.com/tlsa/libcyaml";
     description = "C library for reading and writing YAML";
+    homepage = "https://github.com/tlsa/libcyaml";
     changelog = "https://github.com/tlsa/libcyaml/raw/v${finalAttrs.version}/CHANGES.md";
     license = lib.licenses.isc;
     platforms = lib.platforms.unix;

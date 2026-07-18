@@ -1,21 +1,18 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
+  # dependencies
+  awkward,
+  # tests
+  awkward-pandas,
+  buildPythonPackage,
+  cramjam,
+  fsspec,
   # build-system
   hatch-vcs,
   hatchling,
-
-  # dependencies
-  awkward,
-  cramjam,
-  fsspec,
   numpy,
   packaging,
-
-  # tests
-  awkward-pandas,
   pandas,
   pytest-timeout,
   pytestCheckHook,
@@ -28,8 +25,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "uproot";
   version = "5.7.5";
-  pyproject = true;
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "scikit-hep";
@@ -37,6 +32,19 @@ buildPythonPackage (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-McTYYA0A8P7Z7PxuTBg5upcOnMmBsfk64fHASMWegOs=";
   };
+
+  nativeCheckInputs = [
+    awkward-pandas
+    pandas
+    pytest-timeout
+    pytestCheckHook
+    rangehttpserver
+    scikit-hep-testdata
+    writableTmpDirAsHomeHook
+  ];
+
+  __darwinAllowLocalNetworking = true;
+  __structuredAttrs = true;
 
   build-system = [
     hatch-vcs
@@ -52,14 +60,11 @@ buildPythonPackage (finalAttrs: {
     xxhash
   ];
 
-  nativeCheckInputs = [
-    awkward-pandas
-    pandas
-    pytest-timeout
-    pytestCheckHook
-    rangehttpserver
-    scikit-hep-testdata
-    writableTmpDirAsHomeHook
+  disabledTestPaths = [
+    # Tests that try to download files
+    "tests/test_0066_fix_http_fallback_freeze.py"
+    "tests/test_0220_contiguous_byte_ranges_in_http.py"
+    "tests/test_1610_read_TMatrixTSym_from_ttree.py"
   ];
 
   disabledTests = [
@@ -91,15 +96,7 @@ buildPythonPackage (finalAttrs: {
     "test_decompression_threadpool_executor_for_dask"
   ];
 
-  disabledTestPaths = [
-    # Tests that try to download files
-    "tests/test_0066_fix_http_fallback_freeze.py"
-    "tests/test_0220_contiguous_byte_ranges_in_http.py"
-    "tests/test_1610_read_TMatrixTSym_from_ttree.py"
-  ];
-
-  __darwinAllowLocalNetworking = true;
-
+  pyproject = true;
   pythonImportsCheck = [ "uproot" ];
 
   meta = {

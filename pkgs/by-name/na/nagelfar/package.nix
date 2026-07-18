@@ -14,6 +14,7 @@ tcl.mkTclDerivation rec {
     url = "https://sourceforge.net/projects/nagelfar/files/Rel_${
       lib.replaceString "." "" version
     }/nagelfar${lib.replaceString "." "" version}.tar.gz";
+
     hash = "sha256-O6+SD7NLc+MgZxGDZdB02FkpjivON0itlFhiS+zoWyM=";
   };
 
@@ -32,15 +33,17 @@ tcl.mkTclDerivation rec {
   '';
 
   meta = {
-    homepage = "https://nagelfar.sourceforge.net/";
     description = "Static syntax checker (linter) for Tcl";
+
     longDescription = ''
       Provides static syntax checking, code coverage instrumentation,
       and is very extendable through its syntax database and plugins.
     '';
-    mainProgram = "nagelfar";
+
+    homepage = "https://nagelfar.sourceforge.net/";
     license = lib.licenses.gpl3Plus;
-    platforms = lib.platforms.all;
     maintainers = [ lib.maintainers.nat-418 ];
+    platforms = lib.platforms.all;
+    mainProgram = "nagelfar";
   };
 }

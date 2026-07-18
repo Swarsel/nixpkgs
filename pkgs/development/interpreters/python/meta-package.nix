@@ -1,15 +1,15 @@
 {
-  buildPythonPackage,
   lib,
+  buildPythonPackage,
   hatchling,
 }:
 {
   pname,
   version,
   dependencies ? [ ],
+  meta ? { },
   optional-dependencies ? { },
   passthru ? { },
-  meta ? { },
 }:
 
 # Create a "fake" meta package to satisfy a dependency on a package, but don't actually build it.
@@ -26,6 +26,7 @@ buildPythonPackage {
     passthru
     ;
 
+  build-system = [ hatchling ];
   pyproject = true;
 
   # Make a minimal pyproject.toml that can be built
@@ -53,6 +54,4 @@ buildPythonPackage {
     build-backend = "hatchling.build"
     EOF
   '';
-
-  build-system = [ hatchling ];
 }

@@ -8,18 +8,16 @@
 buildPythonPackage (finalAttrs: {
   pname = "ppdeep";
   version = "20260221";
-  pyproject = true;
 
   src = fetchPypi {
     inherit (finalAttrs) pname version;
     hash = "sha256-i+H0Fkt60vfEClGmZNMXZwHkCy+cG5bRju/68G3+/5Q=";
   };
 
-  build-system = [ setuptools ];
-
   # Project has no tests
   doCheck = false;
-
+  build-system = [ setuptools ];
+  pyproject = true;
   pythonImportsCheck = [ "ppdeep" ];
 
   meta = {

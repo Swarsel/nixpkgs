@@ -1,10 +1,10 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
   installShellFiles,
-  versionCheckHook,
   nix-update-script,
+  rustPlatform,
+  versionCheckHook,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -18,13 +18,12 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-dcXbyiqhj/6VXIlFmk19LocxbfSnGC3aXR70YlUXQkA=";
   };
 
-  cargoHash = "sha256-A5oYEjJvvS7hWtt9ceD9ewup8rzk8NRP0egQRrQwlzY=";
-
   nativeBuildInputs = [
     installShellFiles
     versionCheckHook
   ];
-  doInstallCheck = true;
+
+  cargoHash = "sha256-A5oYEjJvvS7hWtt9ceD9ewup8rzk8NRP0egQRrQwlzY=";
 
   postInstall = ''
     installShellCompletion --cmd xfr \
@@ -33,25 +32,29 @@ rustPlatform.buildRustPackage (finalAttrs: {
       --zsh <($out/bin/xfr --completions zsh)
   '';
 
+  doInstallCheck = true;
+  __structuredAttrs = true;
+
   passthru = {
     updateScript = nix-update-script { };
   };
 
-  __structuredAttrs = true;
-
   meta = {
     description = "Modern iperf3 alternative with a live TUI, multi-client server, and QUIC support.";
-    mainProgram = "xfr";
     homepage = "https://github.com/lance0/xfr";
     changelog = "https://github.com/lance0/xfr/releases/tag/v${finalAttrs.version}";
-    maintainers = with lib.maintainers; [
-      _0x4A6F
-      herbetom
-    ];
+
     license = with lib.licenses; [
       asl20
       mit
     ];
+
+    maintainers = with lib.maintainers; [
+      _0x4A6F
+      herbetom
+    ];
+
     platforms = lib.platforms.linux;
+    mainProgram = "xfr";
   };
 })

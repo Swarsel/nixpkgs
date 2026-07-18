@@ -1,30 +1,42 @@
 {
   lib,
   stdenv,
-  buildPythonPackage,
   fetchFromGitHub,
-  fetchpatch,
-  pytestCheckHook,
-  setuptools,
   apricot-select,
+  buildPythonPackage,
+  fetchpatch,
   networkx,
   numpy,
+  pytestCheckHook,
   scikit-learn,
   scipy,
+  setuptools,
   torch,
 }:
 
 buildPythonPackage rec {
   pname = "pomegranate";
   version = "1.1.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
-    repo = "pomegranate";
     owner = "jmschrei";
+    repo = "pomegranate";
     tag = "v${version}";
     hash = "sha256-p2Gn0FXnsAHvRUeAqx4M1KH0+XvDl3fmUZZ7MiMvPSs=";
   };
+
+  patches = [
+    # Fix tests for pytorch 2.6
+    (fetchpatch {
+      hash = "sha256-BXsVhkuL27QqK/n6Fa9oJCzrzNcL3EF6FblBeKXXSts=";
+      name = "python-2.6.patch";
+      url = "https://github.com/jmschrei/pomegranate/pull/1142/commits/9ff5d5e2c959b44e569937e777b26184d1752a7b.patch";
+    })
+  ];
+
+  nativeCheckInputs = [
+    pytestCheckHook
+  ];
 
   build-system = [ setuptools ];
 
@@ -35,21 +47,6 @@ buildPythonPackage rec {
     scikit-learn
     scipy
     torch
-  ];
-
-  pythonImportsCheck = [ "pomegranate" ];
-
-  nativeCheckInputs = [
-    pytestCheckHook
-  ];
-
-  patches = [
-    # Fix tests for pytorch 2.6
-    (fetchpatch {
-      name = "python-2.6.patch";
-      url = "https://github.com/jmschrei/pomegranate/pull/1142/commits/9ff5d5e2c959b44e569937e777b26184d1752a7b.patch";
-      hash = "sha256-BXsVhkuL27QqK/n6Fa9oJCzrzNcL3EF6FblBeKXXSts=";
-    })
   ];
 
   disabledTestPaths = lib.optionals (stdenv.hostPlatform.isDarwin && stdenv.hostPlatform.isx86_64) [
@@ -63,6 +60,9 @@ buildPythonPackage rec {
     # AssertionError: Arrays are not almost equal to 6 decimals
     "test_sample"
   ];
+
+  pyproject = true;
+  pythonImportsCheck = [ "pomegranate" ];
 
   meta = {
     description = "Probabilistic and graphical models for Python, implemented in cython for speed";

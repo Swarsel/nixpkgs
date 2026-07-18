@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   requests,
   setuptools,
 }:
@@ -9,7 +9,6 @@
 buildPythonPackage rec {
   pname = "pynamecheap";
   version = "0.0.3";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "Bemmu";
@@ -18,13 +17,11 @@ buildPythonPackage rec {
     hash = "sha256-J2WYWtZGtZiox4q9tdkLyU1nix9Jn64K0+1mw7xoLLw=";
   };
 
-  build-system = [ setuptools ];
-
-  dependencies = [ requests ];
-
   # Tests require access to api.sandbox.namecheap.com
   doCheck = false;
-
+  build-system = [ setuptools ];
+  dependencies = [ requests ];
+  pyproject = true;
   pythonImportsCheck = [ "namecheap" ];
 
   meta = {

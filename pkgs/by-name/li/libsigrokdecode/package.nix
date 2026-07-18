@@ -1,13 +1,13 @@
 {
   lib,
   stdenv,
-  fetchgit,
-  pkg-config,
   autoreconfHook,
-  glib,
-  python3,
   check,
+  fetchgit,
+  glib,
   libxcrypt,
+  pkg-config,
+  python3,
 }:
 
 stdenv.mkDerivation {
@@ -24,22 +24,26 @@ stdenv.mkDerivation {
     pkg-config
     autoreconfHook
   ];
+
   buildInputs = [
     glib
     python3
     libxcrypt
   ];
-  nativeCheckInputs = [ check ];
+
   doCheck = true;
+  nativeCheckInputs = [ check ];
 
   meta = {
     description = "Protocol decoding library for the sigrok signal analysis software suite";
     homepage = "https://sigrok.org/";
     license = lib.licenses.gpl3Plus;
-    platforms = lib.platforms.linux ++ lib.platforms.darwin;
+
     maintainers = with lib.maintainers; [
       bjornfor
       vifino
     ];
+
+    platforms = lib.platforms.linux ++ lib.platforms.darwin;
   };
 }

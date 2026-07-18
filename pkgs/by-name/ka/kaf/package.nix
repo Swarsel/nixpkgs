@@ -1,9 +1,9 @@
 {
   lib,
-  buildGoModule,
-  fetchFromGitHub,
-  installShellFiles,
   stdenv,
+  fetchFromGitHub,
+  buildGoModule,
+  installShellFiles,
 }:
 
 buildGoModule (finalAttrs: {
@@ -17,10 +17,8 @@ buildGoModule (finalAttrs: {
     hash = "sha256-gLFUv+4wGH1FOpa4DHHwSV7nSCxo+MzdNmo0I0SD/p0=";
   };
 
-  vendorHash = "sha256-U4nmC08z7xtvRdy2xzvBqTmxJhQKI0BjJDkUwDZOQg0=";
-
   nativeBuildInputs = [ installShellFiles ];
-
+  vendorHash = "sha256-U4nmC08z7xtvRdy2xzvBqTmxJhQKI0BjJDkUwDZOQg0=";
   # Many tests require a running Kafka instance
   doCheck = false;
 
@@ -33,9 +31,9 @@ buildGoModule (finalAttrs: {
 
   meta = {
     description = "Modern CLI for Apache Kafka, written in Go";
-    mainProgram = "kaf";
     homepage = "https://github.com/birdayz/kaf";
     license = lib.licenses.asl20;
     maintainers = with lib.maintainers; [ zarelit ];
+    mainProgram = "kaf";
   };
 })

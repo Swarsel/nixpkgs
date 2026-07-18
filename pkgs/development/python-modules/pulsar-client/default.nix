@@ -1,27 +1,22 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # build-system
-  setuptools,
-
+  buildPythonPackage,
+  certifi,
   # nativeBuildInputs
   cmake,
-  pkg-config,
-
-  # dependencies
-  libpulsar,
-  pybind11,
-  certifi,
-
   # optional-dependencies
   fastavro,
   grpcio,
+  # dependencies
+  libpulsar,
+  pkg-config,
   prometheus-client,
   protobuf,
+  pybind11,
   ratelimit,
-
+  # build-system
+  setuptools,
   # tests
   unittestCheckHook,
 }:
@@ -29,7 +24,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "pulsar-client";
   version = "3.10.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "apache";
@@ -41,10 +35,6 @@ buildPythonPackage (finalAttrs: {
   patches = [
     # Remove TLS bindings removed in libpulsar 4.x
     ./fix-libpulsar-4.patch
-  ];
-
-  build-system = [
-    setuptools
   ];
 
   nativeBuildInputs = [
@@ -63,9 +53,22 @@ buildPythonPackage (finalAttrs: {
     cd ..
   '';
 
+  nativeCheckInputs = [
+    unittestCheckHook
+  ]
+  ++ lib.concatAttrValues finalAttrs.passthru.optional-dependencies;
+
+  __darwinAllowLocalNetworking = true;
+
+  build-system = [
+    setuptools
+  ];
+
   dependencies = [ certifi ];
 
   optional-dependencies = {
+    avro = [ fastavro ];
+
     functions = [
       # apache-bookkeeper-client
       grpcio
@@ -73,22 +76,15 @@ buildPythonPackage (finalAttrs: {
       protobuf
       ratelimit
     ];
-    avro = [ fastavro ];
   };
 
-  nativeCheckInputs = [
-    unittestCheckHook
-  ]
-  ++ lib.concatAttrValues finalAttrs.passthru.optional-dependencies;
+  pyproject = true;
+  pythonImportsCheck = [ "pulsar" ];
 
   unittestFlagsArray = [
     "-s"
     "test"
   ];
-
-  pythonImportsCheck = [ "pulsar" ];
-
-  __darwinAllowLocalNetworking = true;
 
   meta = {
     description = "Apache Pulsar Python client library";

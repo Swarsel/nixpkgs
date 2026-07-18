@@ -1,17 +1,16 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
+  buildPythonPackage,
   colorscript,
   getch,
   prompt-toolkit,
+  setuptools,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "badges";
   version = "1.0.0-unstable-2026-01-05";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "EntySec";
@@ -21,6 +20,8 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-oiG2nx3hZqwMDjCUQYFu6SH9C1ocrZrjOIn2hC8gsVQ=";
   };
 
+  # Module has no tests
+  doCheck = false;
   build-system = [ setuptools ];
 
   dependencies = [
@@ -29,10 +30,8 @@ buildPythonPackage (finalAttrs: {
     prompt-toolkit
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "badges" ];
-
-  # Module has no tests
-  doCheck = false;
 
   meta = {
     description = "Helpers for terminal output, interactive prompts, structured tables and ASCII world map";

@@ -4,25 +4,25 @@
   fetchFromGitHub,
   autoconf-archive,
   autoreconfHook,
-  mate-common,
-  pkg-config,
   gettext,
-  itstool,
-  libxml2,
-  libcanberra-gtk3,
-  libgtop,
-  libxdamage,
-  libxpresent,
-  libxres,
-  libstartup_notification,
-  zenity,
+  gitUpdater,
   glib,
   gtk3,
+  itstool,
+  libcanberra-gtk3,
+  libgtop,
+  libstartup_notification,
+  libxdamage,
+  libxml2,
+  libxpresent,
+  libxres,
+  mate-common,
   mate-desktop,
   mate-settings-daemon,
+  pkg-config,
   wrapGAppsHook3,
   yelp-tools,
-  gitUpdater,
+  zenity,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -35,6 +35,11 @@ stdenv.mkDerivation (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-k45k49mPxy4vmDtCFHaqk0kwZ5wXVAaTj3kanK79n7I=";
   };
+
+  postPatch = ''
+    substituteInPlace src/core/util.c \
+      --replace-fail 'argvl[i++] = "zenity"' 'argvl[i++] = "${lib.getExe zenity}"'
+  '';
 
   nativeBuildInputs = [
     autoconf-archive
@@ -61,14 +66,8 @@ stdenv.mkDerivation (finalAttrs: {
     mate-settings-daemon
   ];
 
-  postPatch = ''
-    substituteInPlace src/core/util.c \
-      --replace-fail 'argvl[i++] = "zenity"' 'argvl[i++] = "${lib.getExe zenity}"'
-  '';
-
   env.NIX_CFLAGS_COMPILE = "-I${glib.dev}/include/gio-unix-2.0";
   env.ZENITY = lib.getExe zenity;
-
   enableParallelBuilding = true;
 
   passthru.updateScript = gitUpdater {

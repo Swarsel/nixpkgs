@@ -1,11 +1,11 @@
 {
   lib,
-  stdenvNoCC,
   fetchurl,
-  makeWrapper,
   jdk25_headless,
   libwebp, # Fixes https://github.com/gotson/komga/issues/1294
+  makeWrapper,
   nixosTests,
+  stdenvNoCC,
 }:
 
 stdenvNoCC.mkDerivation rec {
@@ -34,12 +34,14 @@ stdenvNoCC.mkDerivation rec {
     description = "Free and open source comics/mangas server";
     homepage = "https://komga.org/";
     license = lib.licenses.mit;
-    platforms = jdk25_headless.meta.platforms;
+    sourceProvenance = with lib.sourceTypes; [ binaryBytecode ];
+
     maintainers = with lib.maintainers; [
       tebriel
       govanify
     ];
+
+    platforms = jdk25_headless.meta.platforms;
     mainProgram = "komga";
-    sourceProvenance = with lib.sourceTypes; [ binaryBytecode ];
   };
 }

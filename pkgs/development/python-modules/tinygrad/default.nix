@@ -1,59 +1,53 @@
 {
   lib,
   stdenv,
-  config,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # patches
-  replaceVars,
   addDriverRunpath,
-  cudaPackages,
-  llvmPackages,
-  ocl-icd,
-  rocmPackages,
-
-  # build-system
-  setuptools,
-
-  # optional-dependencies
-  # testing_minimal
-  hypothesis,
-  numpy,
-  pytest-xdist,
-  torch,
-  z3-solver,
-  # testing_unit
-  capstone,
-  gguf,
-  openai,
-  safetensors,
-  tabulate,
-  tqdm,
   # testing
   blobfile,
   boto3,
   bottle,
+  buildPythonPackage,
+  # testing_unit
+  capstone,
+  config,
+  cudaPackages,
+  gguf,
+  # optional-dependencies
+  # testing_minimal
+  hypothesis,
   librosa,
+  llvmPackages,
   networkx,
   nibabel,
+  numpy,
+  ocl-icd,
   onnx,
   onnxruntime,
+  openai,
   opencv4,
   pandas,
   pillow,
   pycocotools,
-  sentencepiece,
-  tiktoken,
-  transformers,
-
+  pytest-xdist,
   # tests
   pytestCheckHook,
-  writableTmpDirAsHomeHook,
-
+  # patches
+  replaceVars,
+  rocmPackages,
+  safetensors,
+  sentencepiece,
+  # build-system
+  setuptools,
+  tabulate,
+  tiktoken,
   # passthru
   tinygrad,
-
+  torch,
+  tqdm,
+  transformers,
+  writableTmpDirAsHomeHook,
+  z3-solver,
   cudaSupport ? config.cudaSupport,
   rocmSupport ? config.rocmSupport,
 }:
@@ -61,8 +55,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "tinygrad";
   version = "0.13.0";
-  pyproject = true;
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "tinygrad";
@@ -77,30 +69,28 @@ buildPythonPackage (finalAttrs: {
     in
     [
       (replaceVars ./patch-deps-paths.patch {
-        libllvm = "${lib.getLib llvmPackages.llvm}/lib/libLLVM${libExtension}";
-        libclang = "${lib.getLib llvmPackages.libclang}/lib/libclang${libExtension}";
-
         # Use the unwrapped variant to enable the "native" features currently unavailable in the sandbox
         clang = lib.getExe llvmPackages.clang-unwrapped;
+        libclang = "${lib.getLib llvmPackages.libclang}/lib/libclang${libExtension}";
+        libllvm = "${lib.getLib llvmPackages.llvm}/lib/libLLVM${libExtension}";
       })
     ]
     ++ lib.optionals cudaSupport [
       (replaceVars ./patch-cuda-paths.patch {
         inherit (addDriverRunpath) driverLink;
-        cuda_nvrtc = lib.getLib cudaPackages.cuda_nvrtc;
-
         # `cuda_fp16.h` and co. are needed at runtime to compile kernels
         cuda_cudart = lib.getInclude cudaPackages.cuda_cudart;
+        cuda_nvrtc = lib.getLib cudaPackages.cuda_nvrtc;
       })
     ]
     ++ lib.optionals rocmSupport [
       (replaceVars ./patch-rocm-paths.patch {
-        comgr = lib.getLib rocmPackages.rocm-comgr;
         clr = lib.getLib rocmPackages.clr;
-        rocm-runtime = lib.getLib rocmPackages.rocm-runtime;
-        rocm-llvm-objdump = lib.getExe' rocmPackages.llvm.llvm "llvm-objdump";
-        llvm-objdump = lib.getExe' llvmPackages.llvm "llvm-objdump";
+        comgr = lib.getLib rocmPackages.rocm-comgr;
         hipcc = lib.getExe' rocmPackages.hipcc "hipcc";
+        llvm-objdump = lib.getExe' llvmPackages.llvm "llvm-objdump";
+        rocm-llvm-objdump = lib.getExe' rocmPackages.llvm.llvm "llvm-objdump";
+        rocm-runtime = lib.getLib rocmPackages.rocm-runtime;
       })
     ];
 
@@ -116,67 +106,38 @@ buildPythonPackage (finalAttrs: {
         "dll = c.DLL('libc', '${lib.getLib stdenv.cc.libc}/lib/libc.so.6', use_errno=True)"
   '';
 
-  __propagatedImpureHostDeps = lib.optional stdenv.hostPlatform.isDarwin "/usr/lib/libc.dylib";
-
-  build-system = [ setuptools ];
-
-  optional-dependencies = lib.fix (self: {
-    testing_minimal = [
-      hypothesis
-      numpy
-      pytest-xdist
-      torch
-      z3-solver
-    ];
-    testing_unit = self.testing_minimal ++ [
-      capstone
-      gguf
-      openai
-      safetensors
-      tabulate
-      tqdm
-    ];
-    testing = self.testing_unit ++ [
-      blobfile
-      boto3
-      bottle
-      librosa
-      networkx
-      nibabel
-      onnx
-      onnxruntime
-      opencv4
-      pandas
-      pillow
-      pycocotools
-      sentencepiece
-      tiktoken
-      transformers
-    ];
-  });
-
-  pythonImportsCheck = [
-    "tinygrad"
-    "tinygrad.runtime.autogen.libclang"
-  ]
-  ++ lib.optionals cudaSupport [
-    "tinygrad.runtime.ops_cuda"
-    "tinygrad.runtime.ops_nv"
-  ]
-  ++ lib.optionals rocmSupport [
-    "tinygrad.runtime.ops_amd"
-    "tinygrad.runtime.ops_hip"
-  ]
-  ++ lib.optionals stdenv.hostPlatform.isDarwin [
-    "tinygrad.runtime.ops_metal"
-  ];
-
   nativeCheckInputs = [
     llvmPackages.clang
     pytestCheckHook
     writableTmpDirAsHomeHook
   ]
   ++ finalAttrs.passthru.optional-dependencies.testing;
+
+  __darwinAllowLocalNetworking = true;
+  __propagatedImpureHostDeps = lib.optional stdenv.hostPlatform.isDarwin "/usr/lib/libc.dylib";
+  __structuredAttrs = true;
+  build-system = [ setuptools ];
+
+  disabledTestPaths = [
+    # Require internet access
+    "test/amd/test_llvm.py"
+    "test/amd/test_pdf.py"
+    "test/models/test_mnist.py"
+    "test/testextra/test_lr_scheduler.py"
+
+    # Files under this directory are not considered as tests by upstream and should be skipped
+    "extra/"
+  ]
+  ++ lib.optionals (stdenv.hostPlatform.isLinux && stdenv.hostPlatform.isAarch64) [
+    # Fatal Python error: Aborted
+    # in ...onnxruntime/capi/_pybind_state.py", line 32 in <module>
+    "test/models/test_onnx.py"
+  ]
+  ++ lib.optionals stdenv.hostPlatform.isDarwin [
+    # urllib.error.URLError: <urlopen error [SSL: CERTIFICATE_VERIFY_FAILED]
+    # certificate verify failed: self-signed certificate in certificate chain (_ssl.c:1032)>
+    "test/models/test_whisper.py"
+  ];
 
   disabledTests = [
     # Benign regression since safetensors >= 0.8.0
@@ -286,38 +247,63 @@ buildPythonPackage (finalAttrs: {
     "TestJitGraphSplit"
   ];
 
-  disabledTestPaths = [
-    # Require internet access
-    "test/amd/test_llvm.py"
-    "test/amd/test_pdf.py"
-    "test/models/test_mnist.py"
-    "test/testextra/test_lr_scheduler.py"
+  optional-dependencies = lib.fix (self: {
+    testing = self.testing_unit ++ [
+      blobfile
+      boto3
+      bottle
+      librosa
+      networkx
+      nibabel
+      onnx
+      onnxruntime
+      opencv4
+      pandas
+      pillow
+      pycocotools
+      sentencepiece
+      tiktoken
+      transformers
+    ];
 
-    # Files under this directory are not considered as tests by upstream and should be skipped
-    "extra/"
+    testing_minimal = [
+      hypothesis
+      numpy
+      pytest-xdist
+      torch
+      z3-solver
+    ];
+
+    testing_unit = self.testing_minimal ++ [
+      capstone
+      gguf
+      openai
+      safetensors
+      tabulate
+      tqdm
+    ];
+  });
+
+  pyproject = true;
+
+  pythonImportsCheck = [
+    "tinygrad"
+    "tinygrad.runtime.autogen.libclang"
   ]
-  ++ lib.optionals (stdenv.hostPlatform.isLinux && stdenv.hostPlatform.isAarch64) [
-    # Fatal Python error: Aborted
-    # in ...onnxruntime/capi/_pybind_state.py", line 32 in <module>
-    "test/models/test_onnx.py"
+  ++ lib.optionals cudaSupport [
+    "tinygrad.runtime.ops_cuda"
+    "tinygrad.runtime.ops_nv"
+  ]
+  ++ lib.optionals rocmSupport [
+    "tinygrad.runtime.ops_amd"
+    "tinygrad.runtime.ops_hip"
   ]
   ++ lib.optionals stdenv.hostPlatform.isDarwin [
-    # urllib.error.URLError: <urlopen error [SSL: CERTIFICATE_VERIFY_FAILED]
-    # certificate verify failed: self-signed certificate in certificate chain (_ssl.c:1032)>
-    "test/models/test_whisper.py"
+    "tinygrad.runtime.ops_metal"
   ];
 
-  __darwinAllowLocalNetworking = true;
-
   passthru = {
-    tests = {
-      withCuda = tinygrad.override { cudaSupport = true; };
-      withRocm = tinygrad.override { rocmSupport = true; };
-    };
-
     gpuCheck = tinygrad.overridePythonAttrs (old: {
-      requiredSystemFeatures = [ "cuda" ];
-
       disabledTests = (old.disabledTests or [ ]) ++ [
         # Require internet access
         "TestWhisper"
@@ -336,7 +322,14 @@ buildPythonPackage (finalAttrs: {
         # RuntimeError: Wait timeout: 30000 ms! (the signal is not set to 153, but 151)
         "--maxprocesses=1"
       ];
+
+      requiredSystemFeatures = [ "cuda" ];
     });
+
+    tests = {
+      withCuda = tinygrad.override { cudaSupport = true; };
+      withRocm = tinygrad.override { rocmSupport = true; };
+    };
   };
 
   meta = {

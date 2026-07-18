@@ -4,23 +4,23 @@ let
 in
 [
   {
-    url = "${prefix}/gpsbabelfe_disable_version_check";
     sha256 = "1kk1iq4mbmldl1jjvd4bphr0165rgn2gpqdyyd1vq8v8wjx942sb";
+    url = "${prefix}/gpsbabelfe_disable_version_check";
   }
   {
-    url = "${prefix}/gpsbabelfe_opt-in-for-usage-data-reporting";
     sha256 = "0dr3jyn8sxx9vw3w11gir6jvshlda0ldmhlq4aq313xn6d1j8qv2";
+    url = "${prefix}/gpsbabelfe_opt-in-for-usage-data-reporting";
   }
   {
-    url = "${prefix}/gpsbabelfe_do-not-check-for-newer-version";
     sha256 = "0kmmxcq1k9p84v9cjagda1cqcc9p7p48i104l3z6clc17zixwgai";
+    url = "${prefix}/gpsbabelfe_do-not-check-for-newer-version";
   }
   {
-    url = "${prefix}/htmldoc-location";
     sha256 = "0nk3gz3l0q68d7blzfkbkvr630xy8y7vlxalnzlbdigqcx7lk54f";
+    url = "${prefix}/htmldoc-location";
   }
   {
-    url = "${prefix}/Disable-donation-nagging";
     sha256 = "11j2ffa0hn5cy8xw98jndkf735ar39sf6rl28bn91pxd38xyaz5b";
+    url = "${prefix}/Disable-donation-nagging";
   }
 ]

@@ -1,4 +1,4 @@
-{ runCommand, lib }:
+{ lib, runCommand }:
 
 runCommand "openbsd-compat"
   {
@@ -6,8 +6,8 @@ runCommand "openbsd-compat"
 
     meta = {
       description = "Header-only library for running OpenBSD software on Linux";
-      platforms = lib.platforms.linux;
       maintainers = with lib.maintainers; [ artemist ];
+      platforms = lib.platforms.linux;
     };
   }
   ''

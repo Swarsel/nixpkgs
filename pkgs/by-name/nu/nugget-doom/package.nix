@@ -2,18 +2,18 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  cmake,
-  python3,
   SDL2,
   SDL2_net,
   alsa-lib,
+  cmake,
   fluidsynth,
   libebur128,
   libsndfile,
   libxmp,
-  openal,
-  yyjson,
   nix-update-script,
+  openal,
+  python3,
+  yyjson,
 }:
 stdenv.mkDerivation (finalAttrs: {
   pname = "nugget-doom";
@@ -56,7 +56,7 @@ stdenv.mkDerivation (finalAttrs: {
     changelog = "https://github.com/MrAlaux/Nugget-Doom/blob/${finalAttrs.src.rev}/CHANGELOG.md";
     license = lib.licenses.gpl2Plus;
     maintainers = with lib.maintainers; [ bandithedoge ];
-    mainProgram = "nugget-doom";
     platforms = with lib.platforms; linux ++ darwin ++ windows;
+    mainProgram = "nugget-doom";
   };
 })

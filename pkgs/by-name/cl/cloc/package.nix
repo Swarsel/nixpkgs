@@ -10,8 +10,8 @@ let
   version = "2.10";
 in
 stdenv.mkDerivation {
-  pname = "cloc";
   inherit version;
+  pname = "cloc";
 
   src = fetchFromGitHub {
     owner = "AlDanial";
@@ -20,11 +20,8 @@ stdenv.mkDerivation {
     sha256 = "sha256-B5dk22H5FeWZ+12A7iwAsJ0ORVfI1stDfue9ZgXBOg4=";
   };
 
-  setSourceRoot = ''
-    sourceRoot=$(echo */Unix)
-  '';
-
   nativeBuildInputs = [ makeWrapper ];
+
   buildInputs = with perlPackages; [
     perl
     AlgorithmDiff
@@ -38,9 +35,8 @@ stdenv.mkDerivation {
     "INSTALL=install"
   ];
 
-  postFixup = "wrapProgram $out/bin/cloc --prefix PERL5LIB : $PERL5LIB";
-
   doInstallCheck = true;
+
   installCheckPhase = ''
     runHook preInstallCheck
 
@@ -62,12 +58,18 @@ stdenv.mkDerivation {
     runHook postInstallCheck
   '';
 
+  postFixup = "wrapProgram $out/bin/cloc --prefix PERL5LIB : $PERL5LIB";
+
+  setSourceRoot = ''
+    sourceRoot=$(echo */Unix)
+  '';
+
   meta = {
     description = "Program that counts lines of source code";
     homepage = "https://github.com/AlDanial/cloc";
     license = lib.licenses.gpl2Plus;
-    platforms = lib.platforms.all;
     maintainers = with lib.maintainers; [ rycee ];
+    platforms = lib.platforms.all;
     mainProgram = "cloc";
   };
 }

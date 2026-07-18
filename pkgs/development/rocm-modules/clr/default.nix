@@ -1,36 +1,36 @@
 {
   lib,
   stdenv,
-  callPackage,
   fetchFromGitHub,
-  fetchpatch,
-  rocmUpdateScript,
-  makeWrapper,
+  callPackage,
   cmake,
-  perl,
+  fetchpatch,
+  gcc-unwrapped,
   hip-common,
   hipcc,
-  rocm-device-libs,
-  rocm-comgr,
-  rocm-runtime,
-  rocm-core,
-  roctracer,
-  rocminfo,
-  rocm-smi,
-  rocprofiler-register,
-  symlinkJoin,
-  numactl,
-  libffi,
-  zstd,
-  zlib,
-  libGL,
-  libxml2,
-  libx11,
-  python3Packages,
-  llvm,
   khronos-ocl-icd-loader,
-  gcc-unwrapped,
+  libGL,
+  libffi,
+  libx11,
+  libxml2,
+  llvm,
+  makeWrapper,
+  numactl,
+  perl,
+  python3Packages,
+  rocm-comgr,
+  rocm-core,
+  rocm-device-libs,
+  rocm-runtime,
+  rocm-smi,
+  rocmUpdateScript,
+  rocminfo,
+  rocprofiler-register,
+  roctracer,
+  symlinkJoin,
   writeShellScriptBin,
+  zlib,
+  zstd,
   localGpuTargets ? null,
 }:
 
@@ -39,16 +39,18 @@ let
   # HIP_CLANG_PATH or ROCM_PATH/llvm
   # Note: relying on ROCM_PATH/llvm is bad for cross
   hipClang = symlinkJoin {
+    postBuild = ''
+      rm -rf $out/{include,lib,share,etc,nix-support,usr}
+    '';
+
     name = "hipClang";
+
     paths = [
       # FIXME: if we don't put this first aotriton build fails with ld.lld: -flavor gnu
       # Probably wrapper jank
       llvm.bintools.bintools
       llvm.rocm-toolchain
     ];
-    postBuild = ''
-      rm -rf $out/{include,lib,share,etc,nix-support,usr}
-    '';
   };
   hipClangPath = "${hipClang}/bin";
   wrapperArgs = [
@@ -72,25 +74,52 @@ stdenv.mkDerivation (finalAttrs: {
   pname = "clr";
   version = "7.2.3";
 
+  src = fetchFromGitHub {
+    owner = "ROCm";
+    repo = "rocm-systems";
+    rev = "rocm-${finalAttrs.version}";
+    hash = "sha256-n8yWWDxE36m2NN0cmqHXQy5omYPiYoqnaNbqWm63q3E=";
+
+    sparseCheckout = [
+      "projects/clr"
+      "shared"
+    ];
+  };
+
   outputs = [
     "out"
     "icd"
   ];
 
-  __structuredAttrs = true;
-  strictDeps = true;
+  patches = [
+    ./cmake-find-x11-libgl.patch
+    (fetchpatch {
+      # [PATCH] rocclr: Extend HIP ISA compatibility checks
+      hash = "sha256-3MsDL+OQg24wH1RDhbao74RuIbzEAmduwla9KOPzQ/M=";
+      relative = "projects/clr";
+      url = "https://github.com/GZGavinZhao/rocm-systems/commit/039cb23b24d739adb8c0f9de8b550d9f557de031.patch";
+    })
+  ];
 
-  src = fetchFromGitHub {
-    owner = "ROCm";
-    repo = "rocm-systems";
-    rev = "rocm-${finalAttrs.version}";
-    sparseCheckout = [
-      "projects/clr"
-      "shared"
-    ];
-    hash = "sha256-n8yWWDxE36m2NN0cmqHXQy5omYPiYoqnaNbqWm63q3E=";
-  };
-  sourceRoot = "${finalAttrs.src.name}/projects/clr";
+  postPatch = ''
+    patchShebangs hipamd/*.sh
+    patchShebangs hipamd/src
+
+    # We're not on Windows so these are never installed to hipcc...
+    substituteInPlace hipamd/CMakeLists.txt \
+      --replace-fail "install(PROGRAMS \''${HIPCC_BIN_DIR}/hipcc.bat DESTINATION bin)" "" \
+      --replace-fail "install(PROGRAMS \''${HIPCC_BIN_DIR}/hipconfig.bat DESTINATION bin)" ""
+
+    substituteInPlace hipamd/src/hip_embed_pch.sh \
+      --replace-fail "\''$LLVM_DIR/bin/clang" "${hipClangPath}/clang" \
+      --replace-fail "\''$LLVM_DIR/bin/llvm-mc" "${lib.getExe' llvm.bintools.bintools "llvm-mc"}"
+
+    substituteInPlace opencl/khronos/icd/loader/icd_platform.h \
+      --replace-fail '#define ICD_VENDOR_PATH "/etc/OpenCL/vendors/";' \
+                     '#define ICD_VENDOR_PATH "/run/opengl-driver/etc/OpenCL/vendors/";'
+  '';
+
+  strictDeps = true;
 
   nativeBuildInputs = [
     makeWrapper
@@ -125,9 +154,6 @@ stdenv.mkDerivation (finalAttrs: {
     hipClangPath
   ];
 
-  cmakeBuildType = "RelWithDebInfo";
-  separateDebugInfo = true;
-
   cmakeFlags = [
     "-DCMAKE_POLICY_DEFAULT_CMP0072=NEW" # Prefer newer OpenGL libraries
     "-DCLR_BUILD_HIP=ON"
@@ -148,34 +174,6 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   env.LLVM_DIR = "";
-
-  patches = [
-    ./cmake-find-x11-libgl.patch
-    (fetchpatch {
-      # [PATCH] rocclr: Extend HIP ISA compatibility checks
-      hash = "sha256-3MsDL+OQg24wH1RDhbao74RuIbzEAmduwla9KOPzQ/M=";
-      url = "https://github.com/GZGavinZhao/rocm-systems/commit/039cb23b24d739adb8c0f9de8b550d9f557de031.patch";
-      relative = "projects/clr";
-    })
-  ];
-
-  postPatch = ''
-    patchShebangs hipamd/*.sh
-    patchShebangs hipamd/src
-
-    # We're not on Windows so these are never installed to hipcc...
-    substituteInPlace hipamd/CMakeLists.txt \
-      --replace-fail "install(PROGRAMS \''${HIPCC_BIN_DIR}/hipcc.bat DESTINATION bin)" "" \
-      --replace-fail "install(PROGRAMS \''${HIPCC_BIN_DIR}/hipconfig.bat DESTINATION bin)" ""
-
-    substituteInPlace hipamd/src/hip_embed_pch.sh \
-      --replace-fail "\''$LLVM_DIR/bin/clang" "${hipClangPath}/clang" \
-      --replace-fail "\''$LLVM_DIR/bin/llvm-mc" "${lib.getExe' llvm.bintools.bintools "llvm-mc"}"
-
-    substituteInPlace opencl/khronos/icd/loader/icd_platform.h \
-      --replace-fail '#define ICD_VENDOR_PATH "/etc/OpenCL/vendors/";' \
-                     '#define ICD_VENDOR_PATH "/run/opengl-driver/etc/OpenCL/vendors/";'
-  '';
 
   postInstall = ''
     chmod +x $out/bin/*
@@ -221,11 +219,20 @@ stdenv.mkDerivation (finalAttrs: {
     patchelf --add-rpath "$out/lib" "$out"/lib/*.so
   '';
 
+  __structuredAttrs = true;
+  cmakeBuildType = "RelWithDebInfo";
+
   disallowedRequisites = [
     gcc-unwrapped
   ];
 
+  separateDebugInfo = true;
+  sourceRoot = "${finalAttrs.src.name}/projects/clr";
+
   passthru = {
+    inherit hipClangPath;
+    gpuArchSuffix = "";
+
     # All known and valid general GPU targets
     # We cannot use this for each ROCm library, as each defines their own supported targets
     # See: https://github.com/ROCm/ROCm/blob/77cbac4abab13046ee93d8b5bf410684caf91145/README.md#library-target-matrix
@@ -260,23 +267,11 @@ stdenv.mkDerivation (finalAttrs: {
       "1201" # RX 9070 + XT
     ] (target: "gfx${target}");
 
-    inherit hipClangPath;
-
-    updateScript = rocmUpdateScript { inherit finalAttrs; };
-
     impureTests = {
-      # bash $(nix-build -A rocmPackages.clr.impureTests.rocm-smi)
-      rocm-smi = callPackage ./test-rocm-smi.nix {
-        inherit rocm-smi;
-        clr = finalAttrs.finalPackage;
-      };
-      # Simple subset of opencl-cts test_basic
-      opencl-cts = callPackage ./test-opencl-cts.nix {
-        clr = finalAttrs.finalPackage;
-      };
       generic-arch = callPackage ./test-isa-compat.nix {
         clr = finalAttrs.finalPackage;
         name = "generic-arch";
+
         offloadArches = [
           "gfx9-generic"
           "gfx10-1-generic"
@@ -285,25 +280,41 @@ stdenv.mkDerivation (finalAttrs: {
           "gfx12-generic"
         ];
       };
+
+      hiprtc-type-traits = callPackage ./test-hiprtc-type-traits.nix {
+        inherit rocm-smi;
+        clr = finalAttrs.finalPackage;
+      };
+
       isa-compat = callPackage ./test-isa-compat.nix {
         clr = finalAttrs.finalPackage;
         name = "isa-compat";
+
         offloadArches = [
           "gfx900"
           "gfx1010"
           "gfx1030"
         ];
       };
+
+      # Simple subset of opencl-cts test_basic
+      opencl-cts = callPackage ./test-opencl-cts.nix {
+        clr = finalAttrs.finalPackage;
+      };
+
+      # bash $(nix-build -A rocmPackages.clr.impureTests.rocm-smi)
+      rocm-smi = callPackage ./test-rocm-smi.nix {
+        inherit rocm-smi;
+        clr = finalAttrs.finalPackage;
+      };
+
       spirv = callPackage ./test-isa-compat.nix {
         clr = finalAttrs.finalPackage;
         name = "spirv";
+
         offloadArches = [
           "amdgcnspirv"
         ];
-      };
-      hiprtc-type-traits = callPackage ./test-hiprtc-type-traits.nix {
-        clr = finalAttrs.finalPackage;
-        inherit rocm-smi;
       };
     };
 
@@ -312,11 +323,13 @@ stdenv.mkDerivation (finalAttrs: {
         supported ? [ ],
       }:
       supported;
-    gpuArchSuffix = "";
+
+    updateScript = rocmUpdateScript { inherit finalAttrs; };
   }
   // lib.optionalAttrs (localGpuTargets != null) {
     inherit localGpuTargets;
     gpuArchSuffix = "-" + (builtins.concatStringsSep "-" localGpuTargets);
+
     selectGpuTargets =
       {
         supported ? [ ],
@@ -329,7 +342,7 @@ stdenv.mkDerivation (finalAttrs: {
     homepage = "https://github.com/ROCm/rocm-systems/tree/develop/projects/clr";
     license = with lib.licenses; [ mit ];
     maintainers = with lib.maintainers; [ lovesegfault ];
-    teams = [ lib.teams.rocm ];
     platforms = lib.platforms.linux;
+    teams = [ lib.teams.rocm ];
   };
 })

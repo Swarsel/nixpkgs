@@ -1,35 +1,35 @@
 {
   lib,
   stdenv,
-  version,
-  is13,
+  autoconf269,
+  buildIsHost,
   buildPackages,
+  cargo,
+  gettext,
+  gmp,
+  gnused,
+  hostIsTarget,
+  is13,
+  libmpc,
+  mpfr,
+  patchelf,
   targetPackages,
   texinfo,
+  version,
   which,
-  gettext,
-  autoconf269,
-  gnused,
-  patchelf,
-  gmp,
-  mpfr,
-  libmpc,
-  libucontext ? null,
-  libxcrypt ? null,
+  flex ? null,
+  gnat-bootstrap ? null,
   isSnapshot ? false,
   isl ? null,
-  zlib ? null,
-  gnat-bootstrap ? null,
-  flex ? null,
-  perl ? null,
   langAda ? false,
   langGo ? false,
   langRust ? false,
-  cargo,
-  withoutTargetLibc ? null,
+  libucontext ? null,
+  libxcrypt ? null,
+  perl ? null,
   threadsCross ? null,
-  buildIsHost,
-  hostIsTarget,
+  withoutTargetLibc ? null,
+  zlib ? null,
 }:
 
 let
@@ -38,9 +38,6 @@ let
 in
 
 {
-  # same for all gcc's
-  depsBuildBuild = [ buildPackages.stdenv.cc ];
-
   nativeBuildInputs = [
     texinfo
     which
@@ -54,6 +51,22 @@ in
   # The builder relies on GNU sed (for instance, Darwin's `sed' fails with
   # "-i may not be used with stdin"), and `stdenvNative' doesn't provide it.
   ++ optionals buildPlatform.isDarwin [ gnused ];
+
+  buildInputs = [
+    gmp
+    mpfr
+    libmpc
+    libxcrypt
+  ]
+  ++ [
+    targetPackages.stdenv.cc.bintools # For linking code at run-time
+  ]
+  ++ optionals (isl != null) [ isl ]
+  ++ optionals (zlib != null) [ zlib ]
+  ++ optionals (langGo && stdenv.hostPlatform.isMusl) [ libucontext ];
+
+  # same for all gcc's
+  depsBuildBuild = [ buildPackages.stdenv.cc ];
 
   # For building runtime libs
   # same for all gcc's
@@ -71,19 +84,6 @@ in
         ]
     )
     ++ optionals targetPlatform.isLinux [ patchelf ];
-
-  buildInputs = [
-    gmp
-    mpfr
-    libmpc
-    libxcrypt
-  ]
-  ++ [
-    targetPackages.stdenv.cc.bintools # For linking code at run-time
-  ]
-  ++ optionals (isl != null) [ isl ]
-  ++ optionals (zlib != null) [ zlib ]
-  ++ optionals (langGo && stdenv.hostPlatform.isMusl) [ libucontext ];
 
   depsTargetTarget = optionals (
     !withoutTargetLibc && threadsCross != { } && threadsCross.package != null

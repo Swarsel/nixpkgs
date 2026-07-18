@@ -1,13 +1,13 @@
 {
   lib,
   stdenv,
-  rocqPackages,
-  rocq-core,
-  coq,
-  which,
-  fetchzip,
   fetchurl,
+  coq,
   dune,
+  fetchzip,
+  rocq-core,
+  rocqPackages,
+  which,
 }@args0:
 
 let
@@ -40,35 +40,35 @@ in
 
 {
   pname,
-  version ? null,
-  fetcher ? null,
-  owner ? "rocq-community",
-  domain ? "github.com",
-  repo ? pname,
-  defaultVersion ? null,
-  releaseRev ? (v: v),
-  displayVersion ? { },
-  release ? { },
   buildInputs ? [ ],
-  nativeBuildInputs ? [ ],
+  defaultVersion ? null,
+  displayVersion ? { },
+  domain ? "github.com",
+  dropAttrs ? [ ],
+  dropDerivationAttrs ? [ ],
+  enableParallelBuilding ? true,
   extraBuildInputs ? [ ],
+  extraInstallFlags ? [ ],
   extraNativeBuildInputs ? [ ],
+  fetcher ? null,
+  keepAttrs ? [ ],
+  mlPlugin ? false,
+  namePrefix ? [ "rocq-core" ],
+  nativeBuildInputs ? [ ],
+  opam-name ? (concatStringsSep "-" (namePrefix ++ [ pname ])),
   overrideBuildInputs ? [ ],
   overrideNativeBuildInputs ? [ ],
-  namePrefix ? [ "rocq-core" ],
-  enableParallelBuilding ? true,
-  extraInstallFlags ? [ ],
+  owner ? "rocq-community",
+  release ? { },
+  releaseRev ? (v: v),
+  repo ? pname,
   setROCQBIN ? true,
-  mlPlugin ? false,
-  useMelquiondRemake ? null,
-  dropAttrs ? [ ],
-  keepAttrs ? [ ],
-  dropDerivationAttrs ? [ ],
-  useDuneifVersion ? (x: false),
-  useDune ? false,
-  opam-name ? (concatStringsSep "-" (namePrefix ++ [ pname ])),
   useCoq ? false,
   useCoqifVersion ? (x: false),
+  useDune ? false,
+  useDuneifVersion ? (x: false),
+  useMelquiondRemake ? null,
+  version ? null,
   ...
 }@args:
 let
@@ -177,9 +177,8 @@ stdenv.mkDerivation (
   removeAttrs (
     {
 
-      name = prefix-name + (display-pkg pname "-" fetched.version);
-
       inherit (fetched) version src;
+      inherit enableParallelBuilding;
 
       nativeBuildInputs =
         args.overrideNativeBuildInputs or (
@@ -192,9 +191,9 @@ stdenv.mkDerivation (
           ++ (args.nativeBuildInputs or [ ])
           ++ extraNativeBuildInputs
         );
+
       buildInputs =
         args.overrideBuildInputs or ([ rocq-core ] ++ (args.buildInputs or [ ]) ++ extraBuildInputs);
-      inherit enableParallelBuilding;
 
       env =
         optionalAttrs (setROCQBIN && !useCoq) {
@@ -206,6 +205,8 @@ stdenv.mkDerivation (
         }
         // (args.env or { });
 
+      name = prefix-name + (display-pkg pname "-" fetched.version);
+
       meta =
         (
           {
@@ -214,14 +215,15 @@ stdenv.mkDerivation (
           // (switch domain [
             {
               case = pred.union isGitHubDomain isGitLabDomain;
+
               out = {
                 homepage = "https://${domain}/${owner}/${repo}";
               };
             }
           ] { })
           // optionalAttrs (fetched.broken or false) {
-            rocqFilter = true;
             broken = true;
+            rocqFilter = true;
           }
         )
         // (args.meta or { });
@@ -236,6 +238,7 @@ stdenv.mkDerivation (
         dune build -p ${opam-name} ''${enableParallelBuilding:+-j $NIX_BUILD_CORES}
         runHook postBuild
       '';
+
       installPhase = ''
         runHook preInstall
         dune install --prefix=$out --libdir $OCAMLFIND_DESTDIR ${opam-name}
@@ -245,10 +248,10 @@ stdenv.mkDerivation (
       '';
     })
     // (optionalAttrs (args ? useMelquiondRemake) {
-      preConfigurePhases = [ "autoconf" ];
       configureFlags = [ "--libdir=${COQUSERCONTRIB}/${useMelquiondRemake.logpath or ""}" ];
       buildPhase = "./remake -j$NIX_BUILD_CORES";
       installPhase = "./remake install";
+      preConfigurePhases = [ "autoconf" ];
     })
     // (removeAttrs args args-to-remove)
   ) dropDerivationAttrs

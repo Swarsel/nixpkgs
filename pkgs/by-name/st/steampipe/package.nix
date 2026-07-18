@@ -1,8 +1,8 @@
 {
-  buildGoModule,
-  fetchFromGitHub,
-  installShellFiles,
   lib,
+  fetchFromGitHub,
+  buildGoModule,
+  installShellFiles,
   makeWrapper,
   nix-update-script,
   steampipe,
@@ -13,17 +13,12 @@ buildGoModule (finalAttrs: {
   pname = "steampipe";
   version = "2.3.6";
 
-  env.CGO_ENABLED = 0;
-
   src = fetchFromGitHub {
     owner = "turbot";
     repo = "steampipe";
     tag = "v${finalAttrs.version}";
     hash = "sha256-b7F3Eo+/vJq8EqWig4O3y2UkqllWhUg38pend/JKeWA=";
   };
-
-  vendorHash = "sha256-Xu5bxjmFRzABifA6GsvHbwh8CJgKrOlwfNXIH8XYz6s=";
-  proxyVendor = true;
 
   postPatch = ''
     # Patch test that relies on looking up homedir in user struct to prefer ~
@@ -37,15 +32,8 @@ buildGoModule (finalAttrs: {
     makeWrapper
   ];
 
-  ldflags = [
-    "-s"
-    "-w"
-    "-X main.version=${finalAttrs.version}"
-    "-X main.commit=${finalAttrs.src.rev}"
-    "-X main.date=unknown"
-    "-X main.builtBy=nixpkgs"
-  ];
-
+  vendorHash = "sha256-Xu5bxjmFRzABifA6GsvHbwh8CJgKrOlwfNXIH8XYz6s=";
+  env.CGO_ENABLED = 0;
   doCheck = true;
 
   checkFlags =
@@ -73,24 +61,38 @@ buildGoModule (finalAttrs: {
       --zsh <($out/bin/steampipe --install-dir $INSTALL_DIR completion zsh)
   '';
 
+  ldflags = [
+    "-s"
+    "-w"
+    "-X main.version=${finalAttrs.version}"
+    "-X main.commit=${finalAttrs.src.rev}"
+    "-X main.date=unknown"
+    "-X main.builtBy=nixpkgs"
+  ];
+
+  proxyVendor = true;
+
   passthru = {
     tests.version = testers.testVersion {
+      version = "v${finalAttrs.version}";
       command = "${lib.getExe steampipe} --version";
       package = steampipe;
-      version = "v${finalAttrs.version}";
     };
+
     updateScript = nix-update-script { };
   };
 
   meta = {
-    changelog = "https://github.com/turbot/steampipe/blob/v${finalAttrs.version}/CHANGELOG.md";
     description = "Dynamically query your cloud, code, logs & more with SQL";
     homepage = "https://steampipe.io/";
+    changelog = "https://github.com/turbot/steampipe/blob/v${finalAttrs.version}/CHANGELOG.md";
     license = lib.licenses.agpl3Only;
-    mainProgram = "steampipe";
+
     maintainers = with lib.maintainers; [
       hardselius
       anthonyroussel
     ];
+
+    mainProgram = "steampipe";
   };
 })

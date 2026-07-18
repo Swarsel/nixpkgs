@@ -1,28 +1,27 @@
 {
   lib,
   fetchFromGitHub,
-  python3,
-  gtk3,
-  wrapGAppsHook3,
+  atk,
+  gdk-pixbuf,
+  gettext,
   glibcLocales,
   gobject-introspection,
-  gettext,
-  pango,
-  gdk-pixbuf,
-  librsvg,
-  atk,
-  libnotify,
-  libappindicator-gtk3,
   gst_all_1,
+  gtk3,
+  libappindicator-gtk3,
+  libnotify,
+  librsvg,
   makeWrapper,
+  pango,
   picotts,
+  python3,
   sox,
+  wrapGAppsHook3,
 }:
 
 python3.pkgs.buildPythonApplication (finalAttrs: {
   pname = "gSpeech";
   version = "0.13.0";
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "mothsart";
@@ -30,6 +29,8 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     rev = finalAttrs.version;
     sha256 = "sha256-IR7acxstJXueIrtBqVBqznEG3Avke7m1qfv7058u59g=";
   };
+
+  strictDeps = false;
 
   nativeBuildInputs = [
     wrapGAppsHook3
@@ -77,13 +78,13 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     }
   '';
 
-  strictDeps = false;
+  format = "setuptools";
 
   meta = {
     description = "Minimal GUI for the Text To Speech 'Svox Pico'. Read clipboard or selected text in different languages and manage it : pause, stop, replay";
     homepage = "https://github.com/mothsART/gSpeech";
-    maintainers = with lib.maintainers; [ mothsart ];
     license = lib.licenses.gpl3;
+    maintainers = with lib.maintainers; [ mothsart ];
     platforms = lib.platforms.unix;
   };
 })

@@ -1,15 +1,15 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchurl,
+  cacert,
+  gdbm,
+  libiconv,
+  mbedtls,
+  openssl,
   pkg-config,
   texinfo,
-  libiconv,
-  gdbm,
-  openssl,
   zlib,
-  mbedtls,
-  cacert,
 }:
 
 stdenv.mkDerivation rec {
@@ -20,8 +20,13 @@ stdenv.mkDerivation rec {
     url = "https://github.com/shirok/Gauche/releases/download/release${
       lib.replaceStrings [ "." ] [ "_" ] version
     }/Gauche-${version}.tgz";
+
     hash = "sha256-NkPie8fIgiz9b7KJLbGF9ljo42STi8LM/O2yOeNa94M=";
   };
+
+  postPatch = ''
+    patchShebangs .
+  '';
 
   nativeBuildInputs = [
     pkg-config
@@ -37,10 +42,6 @@ stdenv.mkDerivation rec {
     cacert
   ];
 
-  postPatch = ''
-    patchShebangs .
-  '';
-
   configureFlags = [
     "--with-iconv=${libiconv}"
     "--with-dbm=gdbm"
@@ -51,17 +52,16 @@ stdenv.mkDerivation rec {
     # "--with-slib=${slibGuile}/lib/slib"
   ];
 
-  enableParallelBuilding = true;
-
   # TODO: Fix tests that fail in sandbox build
   doCheck = false;
+  enableParallelBuilding = true;
 
   meta = {
     description = "R7RS Scheme scripting engine (released version)";
     homepage = "https://practical-scheme.net/gauche/";
-    mainProgram = "gosh";
-    maintainers = with lib.maintainers; [ mnacamura ];
     license = lib.licenses.bsd3;
+    maintainers = with lib.maintainers; [ mnacamura ];
     platforms = lib.platforms.unix;
+    mainProgram = "gosh";
   };
 }

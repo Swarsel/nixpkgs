@@ -75,109 +75,76 @@ in
   # interface
 
   options.services.limesurvey = {
-    enable = mkEnableOption "Limesurvey web application";
+    config = mkOption {
+      default = { };
 
+      description = ''
+        LimeSurvey configuration. Refer to
+        <https://manual.limesurvey.org/Optional_settings>
+        for details on supported values.
+      '';
+
+      type = configType;
+    };
+
+    enable = mkEnableOption "Limesurvey web application";
     package = mkPackageOption pkgs "limesurvey" { };
 
-    encryptionKey = mkOption {
-      type = types.nullOr types.str;
-      default = null;
-      visible = false;
-      description = ''
-        This is a 32-byte key used to encrypt variables in the database.
-        You _must_ change this from the default value.
-      '';
-    };
-
-    encryptionNonce = mkOption {
-      type = types.nullOr types.str;
-      default = null;
-      visible = false;
-      description = ''
-        This is a 24-byte nonce used to encrypt variables in the database.
-        You _must_ change this from the default value.
-      '';
-    };
-
-    encryptionKeyFile = mkOption {
-      type = types.nullOr types.path;
-      default = null;
-      description = ''
-        32-byte key used to encrypt variables in the database.
-
-        Note: It should be string not a store path in order to prevent the password from being world readable
-      '';
-    };
-
-    encryptionNonceFile = mkOption {
-      type = types.nullOr types.path;
-      default = null;
-      description = ''
-        24-byte used to encrypt variables in the database.
-
-        Note: It should be string not a store path in order to prevent the password from being world readable
-      '';
-    };
-
     database = {
-      type = mkOption {
-        type = types.enum [
-          "mysql"
-          "pgsql"
-          "odbc"
-          "mssql"
-        ];
-        example = "pgsql";
-        default = "mysql";
-        description = "Database engine to use.";
+      createLocally = mkOption {
+        default = cfg.database.type == "mysql";
+        defaultText = literalExpression "true";
+
+        description = ''
+          Create the database and database user locally.
+          This currently only applies if database type "mysql" is selected.
+        '';
+
+        type = types.bool;
       };
 
       dbEngine = mkOption {
+        default = "InnoDB";
+        description = "Database storage engine to use.";
+
         type = types.enum [
           "MyISAM"
           "InnoDB"
         ];
-        default = "InnoDB";
-        description = "Database storage engine to use.";
       };
 
       host = mkOption {
-        type = types.str;
         default = "localhost";
         description = "Database host address.";
-      };
-
-      port = mkOption {
-        type = types.port;
-        default = if cfg.database.type == "pgsql" then 5442 else 3306;
-        defaultText = literalExpression "3306";
-        description = "Database host port.";
+        type = types.str;
       };
 
       name = mkOption {
-        type = types.str;
         default = "limesurvey";
         description = "Database name.";
-      };
-
-      user = mkOption {
         type = types.str;
-        default = "limesurvey";
-        description = "Database user.";
       };
 
       passwordFile = mkOption {
-        type = types.nullOr types.path;
         default = null;
-        example = "/run/keys/limesurvey-dbpassword";
+
         description = ''
           A file containing the password corresponding to
           {option}`database.user`.
         '';
+
+        example = "/run/keys/limesurvey-dbpassword";
+        type = types.nullOr types.path;
+      };
+
+      port = mkOption {
+        default = if cfg.database.type == "pgsql" then 5442 else 3306;
+        defaultText = literalExpression "3306";
+        description = "Database host port.";
+        type = types.port;
       };
 
       socket = mkOption {
-        type = types.nullOr types.path;
         default =
           if mysqlLocal then
             "/run/mysqld/mysqld.sock"
@@ -185,35 +152,86 @@ in
             "/run/postgresql"
           else
             null;
+
         defaultText = literalExpression "/run/mysqld/mysqld.sock";
         description = "Path to the unix socket file to use for authentication.";
+        type = types.nullOr types.path;
       };
 
-      createLocally = mkOption {
-        type = types.bool;
-        default = cfg.database.type == "mysql";
-        defaultText = literalExpression "true";
-        description = ''
-          Create the database and database user locally.
-          This currently only applies if database type "mysql" is selected.
-        '';
+      type = mkOption {
+        default = "mysql";
+        description = "Database engine to use.";
+        example = "pgsql";
+
+        type = types.enum [
+          "mysql"
+          "pgsql"
+          "odbc"
+          "mssql"
+        ];
+      };
+
+      user = mkOption {
+        default = "limesurvey";
+        description = "Database user.";
+        type = types.str;
       };
     };
 
-    webserver = mkOption {
-      type = types.enum [
-        "httpd"
-        "nginx"
-      ];
-      default = "httpd";
-      example = "nginx";
+    encryptionKey = mkOption {
+      default = null;
+
       description = ''
-        Webserver to configure for reverse-proxying limesurvey.
+        This is a 32-byte key used to encrypt variables in the database.
+        You _must_ change this from the default value.
       '';
+
+      type = types.nullOr types.str;
+      visible = false;
+    };
+
+    encryptionKeyFile = mkOption {
+      default = null;
+
+      description = ''
+        32-byte key used to encrypt variables in the database.
+
+        Note: It should be string not a store path in order to prevent the password from being world readable
+      '';
+
+      type = types.nullOr types.path;
+    };
+
+    encryptionNonce = mkOption {
+      default = null;
+
+      description = ''
+        This is a 24-byte nonce used to encrypt variables in the database.
+        You _must_ change this from the default value.
+      '';
+
+      type = types.nullOr types.str;
+      visible = false;
+    };
+
+    encryptionNonceFile = mkOption {
+      default = null;
+
+      description = ''
+        24-byte used to encrypt variables in the database.
+
+        Note: It should be string not a store path in order to prevent the password from being world readable
+      '';
+
+      type = types.nullOr types.path;
     };
 
     httpd.virtualHost = mkOption {
-      type = types.submodule (import ../web-servers/apache-httpd/vhost-options.nix);
+      description = ''
+        Apache configuration can be done by adapting `services.httpd.virtualHosts.<name>`.
+        See [](#opt-services.httpd.virtualHosts) for further information.
+      '';
+
       example = literalExpression ''
         {
           hostName = "survey.example.org";
@@ -222,16 +240,16 @@ in
           enableACME = true;
         }
       '';
-      description = ''
-        Apache configuration can be done by adapting `services.httpd.virtualHosts.<name>`.
-        See [](#opt-services.httpd.virtualHosts) for further information.
-      '';
+
+      type = types.submodule (import ../web-servers/apache-httpd/vhost-options.nix);
     };
 
     nginx.virtualHost = mkOption {
-      type = types.submodule (
-        recursiveUpdate (import ../web-servers/nginx/vhost-options.nix { inherit config lib; }) { }
-      );
+      description = ''
+        Nginx configuration can be done by adapting `services.nginx.virtualHosts.<name>`.
+        See [](#opt-services.nginx.virtualHosts) for further information.
+      '';
+
       example = literalExpression ''
         {
           serverName = "survey.example.org";
@@ -239,13 +257,27 @@ in
           enableACME = true;
         }
       '';
-      description = ''
-        Nginx configuration can be done by adapting `services.nginx.virtualHosts.<name>`.
-        See [](#opt-services.nginx.virtualHosts) for further information.
-      '';
+
+      type = types.submodule (
+        recursiveUpdate (import ../web-servers/nginx/vhost-options.nix { inherit config lib; }) { }
+      );
     };
 
     poolConfig = mkOption {
+      default = {
+        "pm" = "dynamic";
+        "pm.max_children" = 32;
+        "pm.max_requests" = 500;
+        "pm.max_spare_servers" = 4;
+        "pm.min_spare_servers" = 2;
+        "pm.start_servers" = 2;
+      };
+
+      description = ''
+        Options for the LimeSurvey PHP pool. See the documentation on `php-fpm.conf`
+        for details on configuration directives.
+      '';
+
       type =
         with types;
         attrsOf (oneOf [
@@ -253,28 +285,21 @@ in
           int
           bool
         ]);
-      default = {
-        "pm" = "dynamic";
-        "pm.max_children" = 32;
-        "pm.start_servers" = 2;
-        "pm.min_spare_servers" = 2;
-        "pm.max_spare_servers" = 4;
-        "pm.max_requests" = 500;
-      };
-      description = ''
-        Options for the LimeSurvey PHP pool. See the documentation on `php-fpm.conf`
-        for details on configuration directives.
-      '';
     };
 
-    config = mkOption {
-      type = configType;
-      default = { };
+    webserver = mkOption {
+      default = "httpd";
+
       description = ''
-        LimeSurvey configuration. Refer to
-        <https://manual.limesurvey.org/Optional_settings>
-        for details on supported values.
+        Webserver to configure for reverse-proxying limesurvey.
       '';
+
+      example = "nginx";
+
+      type = types.enum [
+        "httpd"
+        "nginx"
+      ];
     };
   };
 
@@ -301,6 +326,7 @@ in
         }
         {
           assertion = cfg.encryptionKey != null || cfg.encryptionKeyFile != null;
+
           message = ''
             You must set `services.limesurvey.encryptionKeyFile` to a file containing a 32-character uppercase hex string.
 
@@ -310,6 +336,7 @@ in
         }
         {
           assertion = cfg.encryptionNonce != null || cfg.encryptionNonceFile != null;
+
           message = ''
             You must set `services.limesurvey.encryptionNonceFile` to a file containing a 24-character uppercase hex string.
 
@@ -319,26 +346,79 @@ in
         }
       ];
 
-      users.users.${user} = {
-        group = group;
-        isSystemUser = true;
+      services.limesurvey.config = mapAttrs (name: mkDefault) {
+        config = {
+          config.defaultlang = "en";
+
+          force_ssl = mkIf (
+            cfg.${cfg.webserver}.virtualHost.addSSL
+            || cfg.${cfg.webserver}.virtualHost.forceSSL
+            || cfg.${cfg.webserver}.virtualHost.onlySSL
+          ) "on";
+
+          tempdir = "${stateDir}/tmp";
+          uploaddir = "${stateDir}/upload";
+          userquestionthemerootdir = "${stateDir}/upload/themes/question";
+        };
+
+        components = {
+          assetManager.basePath = "${stateDir}/tmp/assets";
+
+          db = {
+            connectionString =
+              "${cfg.database.type}:dbname=${cfg.database.name};host=${
+                if pgsqlLocal then cfg.database.socket else cfg.database.host
+              };port=${toString cfg.database.port}"
+              + optionalString mysqlLocal ";socket=${cfg.database.socket}";
+
+            password = mkIf (
+              cfg.database.passwordFile != null
+            ) "file_get_contents(\"${toString cfg.database.passwordFile}\");";
+
+            tablePrefix = "limesurvey_";
+            username = cfg.database.user;
+          };
+
+          urlManager = {
+            showScriptName = false;
+            urlFormat = "path";
+          };
+        };
+
+        runtimePath = "${stateDir}/tmp/runtime";
+      };
+
+      services.phpfpm.pools.limesurvey = {
+        inherit user group;
+        # App code cannot access credentials directly since the service starts
+        # with the root user so we copy the credentials to a place accessible to Limesurvey
+        phpEnv.CREDENTIALS_DIRECTORY = "${stateDir}/credentials";
+        phpEnv.DBENGINE = "${cfg.database.dbEngine}";
+        phpEnv.LIMESURVEY_CONFIG = "${limesurveyConfig}";
+        phpPackage = php;
+
+        settings = {
+          "listen.group" = config.services.${cfg.webserver}.group;
+          "listen.owner" = config.services.${cfg.webserver}.user;
+        }
+        // cfg.poolConfig;
       };
 
       systemd.services.limesurvey-init = {
-        wantedBy = [ "multi-user.target" ];
-        before = [ "phpfpm-limesurvey.service" ];
         after = optional mysqlLocal "mysql.service" ++ optional pgsqlLocal "postgresql.target";
+        before = [ "phpfpm-limesurvey.service" ];
         environment.DBENGINE = "${cfg.database.dbEngine}";
         environment.LIMESURVEY_CONFIG = limesurveyConfig;
+
         script = ''
           # update or install the database as required
           ${lib.getExe php} ${cfg.package}/share/limesurvey/application/commands/console.php updatedb || \
           ${lib.getExe php} ${cfg.package}/share/limesurvey/application/commands/console.php install admin password admin admin@example.com verbose
         '';
+
         serviceConfig = {
-          User = user;
           Group = group;
-          Type = "oneshot";
+
           LoadCredential = [
             "encryption_key:${
               if cfg.encryptionKeyFile != null then
@@ -353,41 +433,12 @@ in
                 pkgs.writeText "nonce" cfg.encryptionKey
             }"
           ];
-        };
-      };
 
-      services.limesurvey.config = mapAttrs (name: mkDefault) {
-        runtimePath = "${stateDir}/tmp/runtime";
-        components = {
-          db = {
-            connectionString =
-              "${cfg.database.type}:dbname=${cfg.database.name};host=${
-                if pgsqlLocal then cfg.database.socket else cfg.database.host
-              };port=${toString cfg.database.port}"
-              + optionalString mysqlLocal ";socket=${cfg.database.socket}";
-            username = cfg.database.user;
-            password = mkIf (
-              cfg.database.passwordFile != null
-            ) "file_get_contents(\"${toString cfg.database.passwordFile}\");";
-            tablePrefix = "limesurvey_";
-          };
-          assetManager.basePath = "${stateDir}/tmp/assets";
-          urlManager = {
-            urlFormat = "path";
-            showScriptName = false;
-          };
+          Type = "oneshot";
+          User = user;
         };
-        config = {
-          tempdir = "${stateDir}/tmp";
-          uploaddir = "${stateDir}/upload";
-          userquestionthemerootdir = "${stateDir}/upload/themes/question";
-          force_ssl = mkIf (
-            cfg.${cfg.webserver}.virtualHost.addSSL
-            || cfg.${cfg.webserver}.virtualHost.forceSSL
-            || cfg.${cfg.webserver}.virtualHost.onlySSL
-          ) "on";
-          config.defaultlang = "en";
-        };
+
+        wantedBy = [ "multi-user.target" ];
       };
 
       systemd.services.phpfpm-limesurvey.serviceConfig = {
@@ -397,6 +448,7 @@ in
           cp -f "''${CREDENTIALS_DIRECTORY}"/encryption_nonce "${stateDir}/credentials/encryption_nonce"
           chown ${user}:${group} "${stateDir}/credentials/encryption_nonce"
         '';
+
         LoadCredential = [
           "encryption_key:${
             if cfg.encryptionKeyFile != null then
@@ -413,21 +465,6 @@ in
         ];
       };
 
-      services.phpfpm.pools.limesurvey = {
-        inherit user group;
-        phpPackage = php;
-        phpEnv.DBENGINE = "${cfg.database.dbEngine}";
-        phpEnv.LIMESURVEY_CONFIG = "${limesurveyConfig}";
-        # App code cannot access credentials directly since the service starts
-        # with the root user so we copy the credentials to a place accessible to Limesurvey
-        phpEnv.CREDENTIALS_DIRECTORY = "${stateDir}/credentials";
-        settings = {
-          "listen.owner" = config.services.${cfg.webserver}.user;
-          "listen.group" = config.services.${cfg.webserver}.group;
-        }
-        // cfg.poolConfig;
-      };
-
       systemd.tmpfiles.rules = [
         "d ${stateDir} 0750 ${user} ${group} - -"
         "d ${stateDir}/tmp 0750 ${user} ${group} - -"
@@ -437,6 +474,11 @@ in
         "d ${stateDir}/credentials 0700 ${user} ${group} - -"
         "C ${stateDir}/upload 0750 ${user} ${group} - ${cfg.package}/share/limesurvey/upload"
       ];
+
+      users.users.${user} = {
+        group = group;
+        isSystemUser = true;
+      };
     }
 
     (mkIf mysqlLocal {
@@ -444,12 +486,14 @@ in
         enable = true;
         package = mkDefault pkgs.mariadb;
         ensureDatabases = [ cfg.database.name ];
+
         ensureUsers = [
           {
-            name = cfg.database.user;
             ensurePermissions = {
               "${cfg.database.name}.*" = "SELECT, CREATE, INSERT, UPDATE, DELETE, ALTER, DROP, INDEX";
             };
+
+            name = cfg.database.user;
           }
         ];
       };
@@ -460,10 +504,12 @@ in
         enable = true;
         adminAddr = mkDefault cfg.httpd.virtualHost.adminAddr;
         extraModules = [ "proxy_fcgi" ];
+
         virtualHosts.${cfg.httpd.virtualHost.hostName} = mkMerge [
           cfg.httpd.virtualHost
           {
             documentRoot = mkForce "${cfg.package}/share/limesurvey";
+
             extraConfig = ''
               Alias "/tmp" "${stateDir}/tmp"
               <Directory "${stateDir}">
@@ -494,6 +540,7 @@ in
           }
         ];
       };
+
       systemd.services.httpd.after =
         optional mysqlLocal "mysql.service" ++ optional pgsqlLocal "postgresql.target";
     })
@@ -501,23 +548,26 @@ in
     (mkIf (cfg.webserver == "nginx") {
       services.nginx = {
         enable = true;
+
         virtualHosts.${cfg.nginx.virtualHost.serverName} = lib.mkMerge [
           cfg.nginx.virtualHost
           {
-            root = lib.mkForce "${cfg.package}/share/limesurvey";
             locations = {
               "/" = {
                 index = "index.php";
                 tryFiles = "$uri /index.php?$args";
               };
 
-              "~ \\.php$".extraConfig = ''
-                fastcgi_pass unix:${config.services.phpfpm.pools."limesurvey".socket};
-              '';
               "/tmp".root = "/var/lib/limesurvey";
               "/upload/".root = "/var/lib/limesurvey";
 
+              "~ \\.php$".extraConfig = ''
+                fastcgi_pass unix:${config.services.phpfpm.pools."limesurvey".socket};
+              '';
+
             };
+
+            root = lib.mkForce "${cfg.package}/share/limesurvey";
           }
         ];
       };

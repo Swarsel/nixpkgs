@@ -1,7 +1,7 @@
 {
   config,
-  pkgs,
   lib,
+  pkgs,
   ...
 }:
 let
@@ -19,13 +19,13 @@ in
       kernelModules = [ "tenstorrent" ];
     };
 
-    services.udev.packages = [
-      tt-kmd
-    ];
-
     environment.systemPackages = with pkgs; [
       tt-smi
       tt-system-tools
+    ];
+
+    services.udev.packages = [
+      tt-kmd
     ];
   };
 

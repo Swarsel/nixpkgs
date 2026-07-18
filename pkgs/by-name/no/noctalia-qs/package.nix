@@ -2,27 +2,26 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  nix-update-script,
-
-  pkg-config,
-  cmake,
-  ninja,
-  spirv-tools,
-  qt6,
   breakpad,
-  jemalloc,
   cli11,
+  cmake,
+  glib,
+  jemalloc,
+  libdrm,
+  libxcb,
+  ninja,
+  nix-update-script,
+  pam,
+  pipewire,
+  pkg-config,
+  polkit,
+  qt6,
+  spirv-tools,
+  vulkan-headers,
   wayland,
   wayland-protocols,
   wayland-scanner,
-  libxcb,
-  libdrm,
   libgbm ? null,
-  vulkan-headers,
-  pipewire,
-  pam,
-  polkit,
-  glib,
 }:
 stdenv.mkDerivation (finalAttrs: {
   pname = "noctalia-qs";
@@ -75,15 +74,14 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   cmakeBuildType = "Release";
-
   passthru.updateScript = nix-update-script { };
 
   meta = {
-    homepage = "https://github.com/noctalia-dev/noctalia-qs";
     description = "Flexbile QtQuick based desktop shell toolkit";
+    homepage = "https://github.com/noctalia-dev/noctalia-qs";
     license = lib.licenses.lgpl3Only;
+    maintainers = with lib.maintainers; [ iynaix ];
     platforms = lib.platforms.linux;
     mainProgram = "quickshell";
-    maintainers = with lib.maintainers; [ iynaix ];
   };
 })

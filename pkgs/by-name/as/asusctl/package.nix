@@ -1,20 +1,20 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
-  systemd,
   coreutils,
-  gnugrep,
-  pkg-config,
   fontconfig,
+  glibc,
+  gnugrep,
   libGL,
+  libgbm,
   libinput,
   libxkbcommon,
-  libgbm,
+  pkg-config,
+  rustPlatform,
   seatd,
-  wayland,
-  glibc,
+  systemd,
   udevCheckHook,
+  wayland,
 }:
 rustPlatform.buildRustPackage (finalAttrs: {
   pname = "asusctl";
@@ -26,8 +26,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
     tag = finalAttrs.version;
     hash = "sha256-DXpuKZmjYKiQp8ULH39EYtY75muZ77YzwYmE/yF1wEY=";
   };
-
-  cargoHash = "sha256-nZDpKuL+7IIuV5q/W4qWHa7C/HEoX5YaerUMcDQQVtg=";
 
   postPatch = ''
     files="
@@ -77,6 +75,8 @@ rustPlatform.buildRustPackage (finalAttrs: {
     wayland
   ];
 
+  cargoHash = "sha256-nZDpKuL+7IIuV5q/W4qWHa7C/HEoX5YaerUMcDQQVtg=";
+
   env = {
     # force linking to all the dlopen()ed dependencies
     RUSTFLAGS = toString (
@@ -92,7 +92,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
 
   # upstream has minimal tests, so don't rebuild twice
   doCheck = false;
-  doInstallCheck = true;
 
   postInstall = ''
     make prefix=$out install-data
@@ -101,15 +100,19 @@ rustPlatform.buildRustPackage (finalAttrs: {
       --add-needed ${lib.getLib libxkbcommon}/lib/libxkbcommon.so.0
   '';
 
+  doInstallCheck = true;
+
   meta = {
     description = "Control daemon, CLI tools, and a collection of crates for interacting with ASUS ROG laptops";
     homepage = "https://github.com/OpenGamingCollective/asusctl";
     license = lib.licenses.mpl20;
-    platforms = [ "x86_64-linux" ];
+
     maintainers = with lib.maintainers; [
       k900
       aacebedo
       yuannan
     ];
+
+    platforms = [ "x86_64-linux" ];
   };
 })

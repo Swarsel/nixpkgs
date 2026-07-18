@@ -15,14 +15,15 @@ stdenv.mkDerivation (finalAttrs: {
     sha256 = "1102r39xw17kip7mjp987jy8na333gw9vxv31f7v8q05cr7d7kfb";
   };
 
+  doCheck = true;
+
   installPhase = ''
     install -Dm755 fiche -t $out/bin
   '';
 
-  doCheck = true;
-
   meta = {
     description = "Command line pastebin for sharing terminal output";
+
     longDescription = ''
       Fiche is a command line pastebin server for sharing terminal output.
       It can be used without any graphical tools from a TTY and has minimal requirements.

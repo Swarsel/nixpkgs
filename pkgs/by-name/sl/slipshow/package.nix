@@ -1,10 +1,10 @@
 {
   lib,
-  ocamlPackages,
   fetchFromGitHub,
-  versionCheckHook,
-  nixosTests,
   nix-update-script,
+  nixosTests,
+  ocamlPackages,
+  versionCheckHook,
 }:
 
 ocamlPackages.buildDunePackage rec {
@@ -45,14 +45,14 @@ ocamlPackages.buildDunePackage rec {
     sexplib
   ];
 
+  doCheck = true;
+  nativeCheckInputs = [ versionCheckHook ];
+
   # This check fails with cmdliner ≥ 2.0
   preCheck = ''
     rm -f test/compiler/dimension.t/run.t
   '';
 
-  doCheck = true;
-
-  nativeCheckInputs = [ versionCheckHook ];
   doInstallCheck = true;
 
   passthru = {
@@ -64,9 +64,9 @@ ocamlPackages.buildDunePackage rec {
     description = "Engine for displaying slips, the next-gen version of slides";
     homepage = "https://slipshow.readthedocs.io/en/latest/index.html";
     license = lib.licenses.gpl3Only;
-    downloadPage = "https://github.com/panglesd/slipshow";
     maintainers = [ lib.maintainers.ethancedwards8 ];
-    teams = [ lib.teams.ngi ];
     mainProgram = "slipshow";
+    downloadPage = "https://github.com/panglesd/slipshow";
+    teams = [ lib.teams.ngi ];
   };
 }

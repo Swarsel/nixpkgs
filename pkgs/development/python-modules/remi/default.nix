@@ -1,19 +1,18 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
-  pytestCheckHook,
-  matplotlib,
+  buildPythonPackage,
   legacy-cgi,
-  python-snap7,
+  matplotlib,
   opencv4,
+  pytestCheckHook,
+  python-snap7,
+  setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "remi";
   version = "2022.7.27";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "rawpython";
@@ -21,6 +20,13 @@ buildPythonPackage rec {
     rev = version;
     hash = "sha256-VQn+Uzp6oGSit8ot0e8B0C2N41Q8+J+o91skyVN1gDA=";
   };
+
+  nativeCheckInputs = [
+    pytestCheckHook
+    python-snap7
+    opencv4
+    matplotlib
+  ];
 
   preCheck = ''
     # for some reason, REMI already deal with these using try blocks, but they fail
@@ -49,12 +55,7 @@ buildPythonPackage rec {
     legacy-cgi
   ];
 
-  nativeCheckInputs = [
-    pytestCheckHook
-    python-snap7
-    opencv4
-    matplotlib
-  ];
+  pyproject = true;
 
   pythonImportsCheck = [
     "remi"

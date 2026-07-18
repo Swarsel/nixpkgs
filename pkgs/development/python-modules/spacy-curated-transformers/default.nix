@@ -1,10 +1,10 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
+  buildPythonPackage,
   curated-tokenizers,
   curated-transformers,
+  setuptools,
   spacy,
   torch,
 }:
@@ -12,7 +12,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "spacy-curated-transformers";
   version = "2.1.2";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "explosion";
@@ -23,10 +22,6 @@ buildPythonPackage (finalAttrs: {
 
   build-system = [ setuptools ];
 
-  pythonRelaxDeps = [
-    "thinc"
-  ];
-
   dependencies = [
     curated-tokenizers
     curated-transformers
@@ -34,9 +29,14 @@ buildPythonPackage (finalAttrs: {
     torch
   ];
 
+  pyproject = true;
   # Unit tests are hard to use, since most tests rely on downloading
   # models from Hugging Face Hub.
   pythonImportsCheck = [ "spacy_curated_transformers" ];
+
+  pythonRelaxDeps = [
+    "thinc"
+  ];
 
   meta = {
     description = "spaCy entry points for Curated Transformers";

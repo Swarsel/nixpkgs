@@ -1,9 +1,9 @@
 {
   lib,
   fetchFromGitHub,
-  rustPlatform,
   installShellFiles,
   lld,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -17,13 +17,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-/sR0kIAqXaQkksoUvgSt2q1ZMQObeiLCr3TGalYiHs0=";
   };
 
-  cargoHash = "sha256-rjtf+8ZnkpTX6by20QN2VydWuuLRMvkDB8OTPlDCagI=";
-
-  nativeBuildInputs = [
-    installShellFiles
-    lld
-  ];
-
   postPatch = ''
     substituteInPlace bear/build.rs \
       --replace-fail 'const DEFAULT_WRAPPER_PATH: &str = "/usr/local/libexec/bear";' \
@@ -31,6 +24,13 @@ rustPlatform.buildRustPackage (finalAttrs: {
       --replace-fail 'const DEFAULT_PRELOAD_PATH: &str = "/usr/local/libexec/bear/$LIB";' \
         "const DEFAULT_PRELOAD_PATH: &str = \"$out/lib\";"
   '';
+
+  nativeBuildInputs = [
+    installShellFiles
+    lld
+  ];
+
+  cargoHash = "sha256-rjtf+8ZnkpTX6by20QN2VydWuuLRMvkDB8OTPlDCagI=";
 
   postInstall = ''
     # wrapper should not end up on path
@@ -45,15 +45,17 @@ rustPlatform.buildRustPackage (finalAttrs: {
 
   meta = {
     description = "Tool that generates a compilation database for clang tooling";
-    mainProgram = "bear";
+
     longDescription = ''
       Note: the bear command is very useful to generate compilation commands
       e.g. for YouCompleteMe.  You just enter your development nix-shell
       and run `bear make`.  It's not perfect, but it gets a long way.
     '';
+
     homepage = "https://github.com/rizsotto/Bear";
     license = lib.licenses.gpl3Plus;
-    platforms = lib.platforms.unix;
     maintainers = with lib.maintainers; [ DieracDelta ];
+    platforms = lib.platforms.unix;
+    mainProgram = "bear";
   };
 })

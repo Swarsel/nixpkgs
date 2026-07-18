@@ -1,9 +1,9 @@
 {
   lib,
   fetchCrate,
-  rustPlatform,
   openssl,
   pkg-config,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -15,12 +15,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-UFkcncZJlqNa3vvrKGxpF3FSfEB4I16taJcS9RJFdrA=";
   };
 
-  cargoHash = "sha256-tB7kOAJ8TzuXfks//v0ghFbezCqxjy//Ow1Xvt4rA8o=";
-
-  prePatch = ''
-    rm .cargo/config.toml
-  '';
-
   nativeBuildInputs = [
     pkg-config
   ];
@@ -28,6 +22,12 @@ rustPlatform.buildRustPackage (finalAttrs: {
   buildInputs = [
     openssl
   ];
+
+  cargoHash = "sha256-tB7kOAJ8TzuXfks//v0ghFbezCqxjy//Ow1Xvt4rA8o=";
+
+  prePatch = ''
+    rm .cargo/config.toml
+  '';
 
   meta = {
     description = "Command-line tool for downloading APK files from various sources";

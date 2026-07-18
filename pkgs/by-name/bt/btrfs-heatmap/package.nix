@@ -1,9 +1,9 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
-  python3,
   installShellFiles,
+  python3,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -17,16 +17,19 @@ stdenv.mkDerivation (finalAttrs: {
     sha256 = "sha256-yCkuZqWwxrs2eS7EXY6pAOVVVSq7dAMxJtf581gX8vg=";
   };
 
-  buildInputs = [ python3 ];
+  outputs = [
+    "out"
+    "man"
+  ];
+
+  strictDeps = true;
+
   nativeBuildInputs = [
     python3.pkgs.wrapPython
     installShellFiles
   ];
 
-  outputs = [
-    "out"
-    "man"
-  ];
+  buildInputs = [ python3 ];
 
   installPhase = ''
     runHook preInstall
@@ -40,18 +43,19 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
-  strictDeps = true;
   __structuredAttrs = true;
   enableParallelBuilding = true;
 
   meta = {
     description = "Visualize the layout of a mounted btrfs";
-    mainProgram = "btrfs-heatmap";
     homepage = "https://github.com/knorrie/btrfs-heatmap";
     license = lib.licenses.mit;
-    platforms = lib.platforms.linux;
+
     maintainers = with lib.maintainers; [
       sandarukasa
     ];
+
+    platforms = lib.platforms.linux;
+    mainProgram = "btrfs-heatmap";
   };
 })

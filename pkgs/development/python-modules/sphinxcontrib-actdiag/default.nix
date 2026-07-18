@@ -1,16 +1,15 @@
 {
   lib,
+  actdiag,
+  blockdiag,
   buildPythonPackage,
   fetchPypi,
   sphinx,
-  actdiag,
-  blockdiag,
 }:
 
 buildPythonPackage rec {
   pname = "sphinxcontrib-actdiag";
   version = "3.0.0";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
@@ -23,8 +22,8 @@ buildPythonPackage rec {
     sphinx
   ];
 
+  format = "setuptools";
   pythonImportsCheck = [ "sphinxcontrib.actdiag" ];
-
   pythonNamespaces = [ "sphinxcontrib" ];
 
   meta = {

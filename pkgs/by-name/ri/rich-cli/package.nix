@@ -1,16 +1,15 @@
 {
   lib,
-  python3Packages,
   fetchFromGitHub,
   fetchpatch,
-  versionCheckHook,
   nix-update-script,
+  python3Packages,
+  versionCheckHook,
 }:
 
 python3Packages.buildPythonApplication (finalAttrs: {
   pname = "rich-cli";
   version = "1.8.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "Textualize";
@@ -19,16 +18,14 @@ python3Packages.buildPythonApplication (finalAttrs: {
     hash = "sha256-z1Ea8f8QNgy2CWGyQWgY2Y/tpg269R5n9Qrs1YhCHa8=";
   };
 
-  pythonRelaxDeps = [
-    "rich"
-    "textual"
-    "rich-rst"
-  ];
-
   postPatch = ''
     substituteInPlace src/rich_cli/__main__.py \
       --replace-fail 'VERSION = "1.8.0"' 'VERSION = "1.8.1"'
   '';
+
+  nativeCheckInputs = [
+    versionCheckHook
+  ];
 
   build-system = with python3Packages; [
     poetry-core
@@ -42,11 +39,15 @@ python3Packages.buildPythonApplication (finalAttrs: {
     textual
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "rich_cli" ];
 
-  nativeCheckInputs = [
-    versionCheckHook
+  pythonRelaxDeps = [
+    "rich"
+    "textual"
+    "rich-rst"
   ];
+
   versionCheckProgram = "${placeholder "out"}/bin/rich";
 
   passthru = {

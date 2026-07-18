@@ -1,23 +1,19 @@
 {
   lib,
-  mkDerivation,
-  libcMinimal,
   bsdSetupHook,
-  openbsdSetupHook,
-  makeMinimal,
   byacc,
   install,
-  tsort,
+  libcMinimal,
   lorder,
+  makeMinimal,
   mandoc,
+  mkDerivation,
+  openbsdSetupHook,
   statHook,
+  tsort,
 }:
 
 mkDerivation {
-  path = "lib/libutil";
-
-  libcMinimal = true;
-
   outputs = [
     "out"
     "man"
@@ -35,5 +31,7 @@ mkDerivation {
     statHook
   ];
 
+  libcMinimal = true;
+  path = "lib/libutil";
   meta.platforms = lib.platforms.openbsd;
 }

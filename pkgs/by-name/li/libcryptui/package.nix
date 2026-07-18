@@ -2,21 +2,21 @@
   lib,
   stdenv,
   fetchurl,
-  fetchpatch,
   autoreconfHook,
+  dbus-glib,
+  fetchpatch,
+  gcr,
   gettext,
-  pkg-config,
-  intltool,
   glib,
   gnome,
-  gtk3,
-  gtk3-x11,
-  gtk3' ? if stdenv.hostPlatform.isDarwin then gtk3-x11 else gtk3,
-  gtk-doc,
   gnupg,
   gpgme,
-  dbus-glib,
-  gcr,
+  gtk-doc,
+  gtk3,
+  gtk3-x11,
+  intltool,
+  pkg-config,
+  gtk3' ? if stdenv.hostPlatform.isDarwin then gtk3-x11 else gtk3,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -31,8 +31,8 @@ stdenv.mkDerivation (finalAttrs: {
   patches = (lib.map fetchurl (import ./debian-patches.nix)) ++ [
     # Fix build with gpgme 2.0
     (fetchpatch {
-      url = "https://gitlab.archlinux.org/archlinux/packaging/packages/libcryptui/-/raw/1-3.12.2+r71+ged4f890e-2/gpgme-2.0.patch";
       hash = "sha256-yftIixqVGUqn/VP0tfzPnhLPI7A/m61kVY5P1NDTIqQ=";
+      url = "https://gitlab.archlinux.org/archlinux/packaging/packages/libcryptui/-/raw/1-3.12.2+r71+ged4f890e-2/gpgme-2.0.patch";
     })
   ];
 
@@ -44,6 +44,7 @@ stdenv.mkDerivation (finalAttrs: {
     intltool
     autoreconfHook
   ];
+
   buildInputs = [
     glib
     gtk3'
@@ -52,11 +53,10 @@ stdenv.mkDerivation (finalAttrs: {
     dbus-glib
     gcr
   ];
-  propagatedBuildInputs = [ dbus-glib ];
 
+  propagatedBuildInputs = [ dbus-glib ];
   env.GNUPG = lib.getExe gnupg;
   env.GPGME_CONFIG = lib.getExe' (lib.getDev gpgme) "gpgme-config";
-
   enableParallelBuilding = true;
 
   preAutoreconf = ''
@@ -73,10 +73,10 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Interface components for OpenPGP";
-    mainProgram = "seahorse-daemon";
     homepage = "https://gitlab.gnome.org/GNOME/libcryptui";
     license = lib.licenses.lgpl21Plus;
     platforms = lib.platforms.unix;
+    mainProgram = "seahorse-daemon";
     # ImportError: lib/gobject-introspection/giscanner/_giscanner.cpython-312-x86_64-linux-gnu.so
     # cannot open shared object file: No such file or directory
     broken = stdenv.buildPlatform != stdenv.hostPlatform;

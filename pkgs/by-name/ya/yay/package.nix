@@ -1,11 +1,11 @@
 {
   lib,
   stdenv,
-  buildGoModule,
   fetchFromGitHub,
-  pacman,
-  libarchive,
+  buildGoModule,
   installShellFiles,
+  libarchive,
+  pacman,
 }:
 
 buildGoModule (finalAttrs: {
@@ -19,8 +19,6 @@ buildGoModule (finalAttrs: {
     hash = "sha256-ampSNPa/PkYM6zEbukToDDmLQ5Bq9gmxwgD3RsnX3vU=";
   };
 
-  vendorHash = "sha256-Lkqrtb37bq1uwIZ4PzJdSM7QOZ28JMyDx68huxHHuGg=";
-
   nativeBuildInputs = [ installShellFiles ];
 
   buildInputs = [
@@ -28,6 +26,7 @@ buildGoModule (finalAttrs: {
     libarchive
   ];
 
+  vendorHash = "sha256-Lkqrtb37bq1uwIZ4PzJdSM7QOZ28JMyDx68huxHHuGg=";
   env.CGO_ENABLED = 1;
 
   checkFlags =
@@ -64,9 +63,9 @@ buildGoModule (finalAttrs: {
   meta = {
     description = "AUR Helper written in Go";
     homepage = "https://github.com/Jguer/yay";
-    mainProgram = "yay";
-    platforms = lib.platforms.linux;
     license = with lib.licenses; [ gpl3Plus ];
     maintainers = [ ];
+    platforms = lib.platforms.linux;
+    mainProgram = "yay";
   };
 })

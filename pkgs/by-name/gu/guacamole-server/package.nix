@@ -2,16 +2,15 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  fetchpatch2,
-  pkg-config,
   autoPatchelfHook,
   autoreconfHook,
   cairo,
+  fetchpatch2,
   ffmpeg-headless,
   freerdp,
   libjpeg_turbo,
-  libpng,
   libossp_uuid,
+  libpng,
   libpulseaudio,
   libssh2,
   libtelnet,
@@ -20,10 +19,11 @@
   libwebp,
   libwebsockets,
   makeBinaryWrapper,
+  nixosTests,
   openssl,
   pango,
   perl,
-  nixosTests,
+  pkg-config,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -37,11 +37,9 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-OjTwAQzKUuXfwZXLsL9XjrJc/0be38CmAGG+CoCeNwk=";
   };
 
-  env.NIX_CFLAGS_COMPILE = toString [
-    "-Wno-error=format-truncation"
-    "-Wno-error=format-overflow"
-    "-Wno-error=deprecated-declarations"
-  ];
+  postPatch = ''
+    patchShebangs ./src/protocols/rdp/**/*.pl
+  '';
 
   strictDeps = true;
 
@@ -75,9 +73,11 @@ stdenv.mkDerivation (finalAttrs: {
     "--with-freerdp-plugin-dir=${placeholder "out"}/lib"
   ];
 
-  postPatch = ''
-    patchShebangs ./src/protocols/rdp/**/*.pl
-  '';
+  env.NIX_CFLAGS_COMPILE = toString [
+    "-Wno-error=format-truncation"
+    "-Wno-error=format-overflow"
+    "-Wno-error=deprecated-declarations"
+  ];
 
   postInstall = ''
     ln -s ${freerdp}/lib/* $out/lib/
@@ -92,11 +92,13 @@ stdenv.mkDerivation (finalAttrs: {
     description = "Clientless remote desktop gateway";
     homepage = "https://guacamole.apache.org/";
     license = lib.licenses.asl20;
-    mainProgram = "guacd";
     maintainers = [ ];
+
     platforms = [
       "x86_64-linux"
       "i686-linux"
     ];
+
+    mainProgram = "guacd";
   };
 })

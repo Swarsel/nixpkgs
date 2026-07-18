@@ -1,7 +1,7 @@
 {
   config,
-  pkgs,
   lib,
+  pkgs,
   ...
 }:
 
@@ -62,75 +62,92 @@ in
 
   options.services.vmagent = {
     enable = lib.mkOption {
-      type = lib.types.bool;
       default = false;
+
       description = ''
         Whether to enable VictoriaMetrics's `vmagent`.
 
         `vmagent` efficiently scrape metrics from Prometheus-compatible exporters
       '';
+
+      type = lib.types.bool;
     };
 
     package = lib.mkPackageOption pkgs "vmagent" { };
 
-    remoteWrite = {
-      url = lib.mkOption {
-        default = null;
-        type = lib.types.nullOr lib.types.str;
-        description = ''
-          Endpoint for prometheus compatible remote_write
-        '';
-      };
-      basicAuthUsername = lib.mkOption {
-        default = null;
-        type = lib.types.nullOr lib.types.str;
-        description = ''
-          Basic Auth username used to connect to remote_write endpoint
-        '';
-      };
-      basicAuthPasswordFile = lib.mkOption {
-        default = null;
-        type = lib.types.nullOr lib.types.str;
-        description = ''
-          File that contains the Basic Auth password used to connect to remote_write endpoint
-        '';
-      };
-    };
-
-    prometheusConfig = lib.mkOption {
-      type = lib.types.submodule { freeformType = settingsFormat.type; };
-      description = ''
-        Config for prometheus style metrics
-      '';
-    };
-
-    openFirewall = lib.mkOption {
-      type = lib.types.bool;
-      default = false;
-      description = ''
-        Whether to open the firewall for the default ports.
-      '';
-    };
-
-    extraArgs = lib.mkOption {
-      type = lib.types.listOf lib.types.str;
-      default = [ ];
-      description = ''
-        Extra args to pass to `vmagent`. See the docs:
-        <https://docs.victoriametrics.com/vmagent.html#advanced-usage>
-        or {command}`vmagent -help` for more information.
-      '';
-    };
-
     checkConfig = lib.mkOption {
-      type = lib.types.bool;
       default = true;
+
       description = ''
         Check configuration.
 
         If you use credentials stored in external files (`environmentFile`, etc),
         they will not be visible  and it will report errors, despite a correct configuration.
       '';
+
+      type = lib.types.bool;
+    };
+
+    extraArgs = lib.mkOption {
+      default = [ ];
+
+      description = ''
+        Extra args to pass to `vmagent`. See the docs:
+        <https://docs.victoriametrics.com/vmagent.html#advanced-usage>
+        or {command}`vmagent -help` for more information.
+      '';
+
+      type = lib.types.listOf lib.types.str;
+    };
+
+    openFirewall = lib.mkOption {
+      default = false;
+
+      description = ''
+        Whether to open the firewall for the default ports.
+      '';
+
+      type = lib.types.bool;
+    };
+
+    prometheusConfig = lib.mkOption {
+      description = ''
+        Config for prometheus style metrics
+      '';
+
+      type = lib.types.submodule { freeformType = settingsFormat.type; };
+    };
+
+    remoteWrite = {
+      basicAuthPasswordFile = lib.mkOption {
+        default = null;
+
+        description = ''
+          File that contains the Basic Auth password used to connect to remote_write endpoint
+        '';
+
+        type = lib.types.nullOr lib.types.str;
+      };
+
+      basicAuthUsername = lib.mkOption {
+        default = null;
+
+        description = ''
+          Basic Auth username used to connect to remote_write endpoint
+        '';
+
+        type = lib.types.nullOr lib.types.str;
+      };
+
+      url = lib.mkOption {
+        default = null;
+
+        description = ''
+          Endpoint for prometheus compatible remote_write
+        '';
+
+        type = lib.types.nullOr lib.types.str;
+      };
     };
   };
 
@@ -138,24 +155,30 @@ in
     networking.firewall.allowedTCPPorts = lib.mkIf cfg.openFirewall [ 8429 ];
 
     systemd.services.vmagent = {
-      wantedBy = [ "multi-user.target" ];
       after = [ "network.target" ];
       description = "vmagent system service";
+
       serviceConfig = {
-        DynamicUser = true;
-        User = "vmagent";
-        Group = "vmagent";
-        Type = "simple";
-        Restart = "on-failure";
         CacheDirectory = "vmagent";
+        DynamicUser = true;
+
         ExecStart = lib.escapeShellArgs (
           startCLIList
           ++ lib.optionals (cfg.prometheusConfig != { }) [ "-promscrape.config=${prometheusConfigYml}" ]
         );
+
+        Group = "vmagent";
+
         LoadCredential = lib.optional (cfg.remoteWrite.basicAuthPasswordFile != null) [
           "remote_write_basic_auth_password:${cfg.remoteWrite.basicAuthPasswordFile}"
         ];
+
+        Restart = "on-failure";
+        Type = "simple";
+        User = "vmagent";
       };
+
+      wantedBy = [ "multi-user.target" ];
     };
   };
 }

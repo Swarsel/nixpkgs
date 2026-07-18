@@ -1,9 +1,7 @@
 {
-  mkDerivation,
+  attica,
   cmake,
   extra-cmake-modules,
-  qttools,
-  attica,
   kconfig,
   kconfigwidgets,
   kglobalaccel,
@@ -12,20 +10,25 @@
   kitemviews,
   ktextwidgets,
   kwindowsystem,
+  mkDerivation,
   qtbase,
+  qttools,
   sonnet,
 }:
 
 mkDerivation {
   pname = "kxmlgui";
+
   outputs = [
     "out"
     "dev"
   ];
+
   nativeBuildInputs = [
     cmake
     extra-cmake-modules
   ];
+
   buildInputs = [
     attica
     kglobalaccel
@@ -36,6 +39,7 @@ mkDerivation {
     kwindowsystem
     sonnet
   ];
+
   propagatedBuildInputs = [
     kconfig
     kconfigwidgets

@@ -1,6 +1,6 @@
 {
-  lib,
   config,
+  lib,
   pkgs,
   utils,
   ...
@@ -21,19 +21,21 @@ in
     enable = mkEnableOption "imaginary image processing microservice";
 
     address = mkOption {
-      type = types.str;
       default = "localhost";
+
       description = ''
         Bind address. Corresponds to the `-a` flag.
         Set to `""` to bind to all addresses.
       '';
+
       example = "[::1]";
+      type = types.str;
     };
 
     port = mkOption {
-      type = types.port;
       default = 8088;
       description = "Bind port. Corresponds to the `-p` flag.";
+      type = types.port;
     };
 
     settings = mkOption {
@@ -43,7 +45,16 @@ in
         [README](https://github.com/h2non/imaginary#command-line-usage) for all
         options.
       '';
+
       type = types.submodule {
+        options = {
+          return-size = mkOption {
+            default = false;
+            description = "Return the image size in the HTTP headers.";
+            type = types.bool;
+          };
+        };
+
         freeformType =
           with types;
           attrsOf (oneOf [
@@ -52,14 +63,6 @@ in
             (nonEmptyListOf str)
             str
           ]);
-
-        options = {
-          return-size = mkOption {
-            type = types.bool;
-            default = false;
-            description = "Return the image size in the HTTP headers.";
-          };
-        };
       };
     };
   };
@@ -78,8 +81,14 @@ in
 
     systemd.services.imaginary = {
       after = [ "network.target" ];
-      wantedBy = [ "multi-user.target" ];
+
       serviceConfig = rec {
+        AmbientCapabilities = CapabilityBoundingSet;
+        BindReadOnlyPaths = lib.optional (cfg.settings ? mount) cfg.settings.mount;
+        CapabilityBoundingSet = if cfg.port < 1024 then [ "CAP_NET_BIND_SERVICE" ] else [ "" ];
+        DevicePolicy = "closed";
+        DynamicUser = true;
+
         ExecStart =
           let
             args =
@@ -94,40 +103,42 @@ in
                 );
           in
           "${pkgs.imaginary}/bin/imaginary ${utils.escapeSystemdExecArgs args}";
-        Restart = "on-failure";
-        ProtectProc = "invisible";
-        BindReadOnlyPaths = lib.optional (cfg.settings ? mount) cfg.settings.mount;
-        CapabilityBoundingSet = if cfg.port < 1024 then [ "CAP_NET_BIND_SERVICE" ] else [ "" ];
-        AmbientCapabilities = CapabilityBoundingSet;
+
+        LockPersonality = true;
+        MemoryDenyWriteExecute = true;
         NoNewPrivileges = true;
-        DynamicUser = true;
-        ProtectSystem = "strict";
-        ProtectHome = true;
-        TemporaryFileSystem = [ "/:ro" ];
-        PrivateTmp = true;
         PrivateDevices = true;
+        PrivateMounts = true;
+        PrivateTmp = true;
         PrivateUsers = cfg.port >= 1024;
-        ProtectHostname = true;
         ProtectClock = true;
-        ProtectKernelTunables = true;
-        ProtectKernelModules = true;
-        ProtectKernelLogs = true;
         ProtectControlGroups = true;
+        ProtectHome = true;
+        ProtectHostname = true;
+        ProtectKernelLogs = true;
+        ProtectKernelModules = true;
+        ProtectKernelTunables = true;
+        ProtectProc = "invisible";
+        ProtectSystem = "strict";
+        Restart = "on-failure";
+
         RestrictAddressFamilies = [
           "AF_INET"
           "AF_INET6"
         ];
+
         RestrictNamespaces = true;
-        LockPersonality = true;
-        MemoryDenyWriteExecute = true;
         RestrictRealtime = true;
-        PrivateMounts = true;
+
         SystemCallFilter = [
           "@system-service"
           "~@privileged"
         ];
-        DevicePolicy = "closed";
+
+        TemporaryFileSystem = [ "/:ro" ];
       };
+
+      wantedBy = [ "multi-user.target" ];
     };
   };
 

@@ -1,10 +1,10 @@
 {
-  buildDunePackage,
-  fetchurl,
   lib,
-  zarith,
+  fetchurl,
+  buildDunePackage,
   digestif,
   fmt,
+  zarith,
 }:
 
 buildDunePackage rec {
@@ -16,14 +16,14 @@ buildDunePackage rec {
     sha256 = "14w2pff5dy6mxnz588pxaf2k8xpkd51sbsys065wr51kbv1f36da";
   };
 
-  minimalOCamlVersion = "4.08";
-  duneVersion = "3";
-
   propagatedBuildInputs = [
     zarith
     digestif
     fmt
   ];
+
+  duneVersion = "3";
+  minimalOCamlVersion = "4.08";
 
   meta = {
     description = "Base58 encoding for Tezos";

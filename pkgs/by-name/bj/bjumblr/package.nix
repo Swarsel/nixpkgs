@@ -2,11 +2,11 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  libx11,
   cairo,
+  libsndfile,
+  libx11,
   lv2,
   pkg-config,
-  libsndfile,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -21,6 +21,7 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   nativeBuildInputs = [ pkg-config ];
+
   buildInputs = [
     libx11
     cairo
@@ -31,10 +32,10 @@ stdenv.mkDerivation (finalAttrs: {
   installFlags = [ "PREFIX=$(out)" ];
 
   meta = {
-    homepage = "https://github.com/sjaehn/BJumblr";
     description = "Pattern-controlled audio stream / sample re-sequencer LV2 plugin";
+    homepage = "https://github.com/sjaehn/BJumblr";
+    license = lib.licenses.gpl3;
     maintainers = [ lib.maintainers.magnetophon ];
     platforms = lib.platforms.linux;
-    license = lib.licenses.gpl3;
   };
 })

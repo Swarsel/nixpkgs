@@ -2,10 +2,10 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  cmake,
-  lemon-graph,
-  eigen,
   boost,
+  cmake,
+  eigen,
+  lemon-graph,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -40,7 +40,7 @@ stdenv.mkDerivation (finalAttrs: {
     description = "Placement library for electronic circuits";
     homepage = "https://github.com/Coloquinte/PlaceRoute";
     license = lib.licenses.mit;
-    platforms = lib.platforms.linux;
     maintainers = [ ];
+    platforms = lib.platforms.linux;
   };
 })

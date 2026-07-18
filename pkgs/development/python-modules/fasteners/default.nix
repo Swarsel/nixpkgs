@@ -1,9 +1,9 @@
 {
   lib,
+  fetchFromGitHub,
   buildPythonPackage,
   diskcache,
   eventlet,
-  fetchFromGitHub,
   more-itertools,
   pytestCheckHook,
   setuptools,
@@ -12,7 +12,6 @@
 buildPythonPackage rec {
   pname = "fasteners";
   version = "0.20";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "harlowja";
@@ -30,9 +29,9 @@ buildPythonPackage rec {
     pytestCheckHook
   ];
 
-  pythonImportsCheck = [ "fasteners" ];
-
   enabledTestPaths = [ "tests/" ];
+  pyproject = true;
+  pythonImportsCheck = [ "fasteners" ];
 
   meta = {
     description = "Module that provides useful locks";

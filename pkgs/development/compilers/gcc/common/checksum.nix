@@ -1,12 +1,12 @@
 {
   lib,
   stdenv,
-  nukeReferences,
-  langC,
-  langCC,
-  runtimeShell,
   buildIsHost,
   hostIsTarget,
+  langC,
+  langCC,
+  nukeReferences,
+  runtimeShell,
 }:
 
 let
@@ -18,9 +18,7 @@ in
     previousAttrs:
     lib.optionalAttrs enableChecksum {
       outputs = previousAttrs.outputs ++ lib.optionals enableChecksum [ "checksum" ];
-      # This is a separate phase because gcc assembles its phase scripts
-      # in bash instead of nix (we should fix that).
-      preFixupPhases = (previousAttrs.preFixupPhases or [ ]) ++ [ "postInstallSaveChecksumPhase" ];
+
       #
       # gcc uses an auxiliary utility `genchecksum` to md5-hash (most of) its
       # `.o` and `.a` files prior to linking (in case the linker is
@@ -44,6 +42,10 @@ in
         make -C gcc cc1-checksum.o cc1plus-checksum.o
         install -Dt $checksum/checksums/ gcc/cc*-checksum.o
       '';
+
+      # This is a separate phase because gcc assembles its phase scripts
+      # in bash instead of nix (we should fix that).
+      preFixupPhases = (previousAttrs.preFixupPhases or [ ]) ++ [ "postInstallSaveChecksumPhase" ];
     }
   )
 )

@@ -19,21 +19,15 @@ stdenv.mkDerivation (finalAttrs: {
 
   patches = [
     (fetchurl {
-      url = "https://raw.githubusercontent.com/archlinux/svntogit-community/a2ec92f05de006b56d16ac6a6c370d54a554861a/cuneiform/trunk/build-fix.patch";
       sha256 = "19cmrlx4khn30qqrpyayn7bicg8yi0wpz1x1bvqqrbvr3kwldxyj";
+      url = "https://raw.githubusercontent.com/archlinux/svntogit-community/a2ec92f05de006b56d16ac6a6c370d54a554861a/cuneiform/trunk/build-fix.patch";
     })
     (fetchurl {
-      url = "https://gitweb.gentoo.org/repo/gentoo.git/plain/app-text/cuneiform/files/cuneiform-1.1.0-gcc11.patch?id=fd8e596c6a5eab634656e265c3da5241f5ceee8c";
       sha256 = "14bp2f4dvlgxnpdza1rgszhkbxhp6p7lhgnb1s7c1x7vwdrx0ri7";
+      url = "https://gitweb.gentoo.org/repo/gentoo.git/plain/app-text/cuneiform/files/cuneiform-1.1.0-gcc11.patch?id=fd8e596c6a5eab634656e265c3da5241f5ceee8c";
     })
     ./gcc14-fix.patch
   ];
-
-  # Workaround build failure on -fno-common toolchains like upstream
-  # gcc-10. Otherwise build fails as:
-  #   ld: CMakeFiles/rbal.dir/src/statsearchbl.cpp.o:(.bss+0x0):
-  #     multiple definition of `minrow'; CMakeFiles/rbal.dir/src/linban.c.o:(.bss+0xa3a): first defined here
-  env.NIX_CFLAGS_COMPILE = "-fcommon";
 
   postPatch = ''
     rm cuneiform_src/Kern/hhh/tigerh/h/strings.h
@@ -41,6 +35,14 @@ stdenv.mkDerivation (finalAttrs: {
       'cmake_minimum_required(VERSION 2.6.2)' \
       'cmake_minimum_required(VERSION 3.10)'
   '';
+
+  nativeBuildInputs = [ cmake ];
+  buildInputs = [ imagemagick ];
+  # Workaround build failure on -fno-common toolchains like upstream
+  # gcc-10. Otherwise build fails as:
+  #   ld: CMakeFiles/rbal.dir/src/statsearchbl.cpp.o:(.bss+0x0):
+  #     multiple definition of `minrow'; CMakeFiles/rbal.dir/src/linban.c.o:(.bss+0xa3a): first defined here
+  env.NIX_CFLAGS_COMPILE = "-fcommon";
 
   # make the install path match the rpath
   postInstall = ''
@@ -50,21 +52,17 @@ stdenv.mkDerivation (finalAttrs: {
     fi
   '';
 
-  buildInputs = [ imagemagick ];
-
-  nativeBuildInputs = [ cmake ];
-
   passthru.tests = testers.testVersion {
-    package = finalAttrs.finalPackage;
     command = "cuneiform";
+    package = finalAttrs.finalPackage;
   };
 
   meta = {
     description = "Multi-language OCR system";
     homepage = "https://launchpad.net/cuneiform-linux";
     license = lib.licenses.bsd3;
-    platforms = lib.platforms.linux;
     maintainers = [ lib.maintainers.raskin ];
+    platforms = lib.platforms.linux;
     mainProgram = "cuneiform";
   };
 })

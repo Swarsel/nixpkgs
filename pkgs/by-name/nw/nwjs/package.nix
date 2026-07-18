@@ -1,4 +1,7 @@
 {
+  lib,
+  stdenv,
+  fetchurl,
   alsa-lib,
   at-spi2-core,
   atk,
@@ -9,50 +12,53 @@
   cups,
   dbus,
   expat,
-  fetchurl,
   ffmpeg,
   fontconfig,
   freetype,
   gdk-pixbuf,
   glib,
   gtk3,
-  lib,
+  libGL,
   libcap,
   libdrm,
-  libGL,
+  libgbm,
   libnotify,
   libuuid,
+  libx11,
   libxcb,
+  libxcomposite,
+  libxcursor,
+  libxdamage,
+  libxext,
+  libxfixes,
+  libxi,
   libxkbcommon,
+  libxrandr,
+  libxrender,
+  libxscrnsaver,
+  libxshmfence,
+  libxtst,
   makeWrapper,
-  libgbm,
   nspr,
   nss,
   pango,
-  sdk ? false,
   sqlite,
-  stdenv,
   systemd,
   udev,
-  libxtst,
-  libxscrnsaver,
-  libxrender,
-  libxrandr,
-  libxi,
-  libxfixes,
-  libxext,
-  libxdamage,
-  libxcursor,
-  libxcomposite,
-  libx11,
-  libxshmfence,
+  sdk ? false,
 }:
 
 let
   bits = if stdenv.hostPlatform.is64bit then "x64" else "ia32";
 
   nwEnv = buildEnv {
+    extraOutputsToInstall = [
+      "lib"
+      "out"
+    ];
+
     name = "nwjs-env";
+
     paths = [
       alsa-lib
       at-spi2-core
@@ -95,18 +101,13 @@ let
       sqlite
       udev
     ];
-
-    extraOutputsToInstall = [
-      "lib"
-      "out"
-    ];
   };
 
   version = "0.102.1";
 in
 stdenv.mkDerivation {
-  pname = "nwjs";
   inherit version;
+  pname = "nwjs";
 
   src =
     let
@@ -114,13 +115,14 @@ stdenv.mkDerivation {
     in
     fetchurl {
       url = "https://dl.nwjs.io/v${version}/nwjs-${flavor}v${version}-linux-${bits}.tar.gz";
+
       # TODO: Write an update script to update all 4 hashes.
       # nixpkgs-update: no auto update
       hash =
         {
+          "ia32" = "sha256-oODdSKNlOPSLD9vAqRwYcAgH6mumyOB5Fp6G9ifSgok=";
           "sdk-ia32" = "sha256-uzDbEq2vNC+fm95Co3lnQX7mrUXsIDWFoa0osWCn3EM=";
           "sdk-x64" = "sha256-jWw5kXYGxu7oen8fK2Q58QPhiBRC6H2ibGXkeUFW2pI=";
-          "ia32" = "sha256-oODdSKNlOPSLD9vAqRwYcAgH6mumyOB5Fp6G9ifSgok=";
           "x64" = "sha256-WhHV+xj2ngEz+i1ipBhwZD9b0EF/hdi8gMBZw5qYRGA=";
         }
         ."${flavor + bits}";
@@ -134,17 +136,6 @@ stdenv.mkDerivation {
   ];
 
   buildInputs = [ nwEnv ];
-  appendRunpaths = map (pkg: (lib.getLib pkg) + "/lib") [
-    nwEnv
-    stdenv.cc.libc
-    stdenv.cc.cc
-  ];
-
-  preFixup = ''
-    gappsWrapperArgs+=(
-      --add-flags "\''${NIXOS_OZONE_WL:+\''${WAYLAND_DISPLAY:+--ozone-platform-hint=auto --enable-features=WaylandWindowDecorations --enable-wayland-ime=true}}"
-    )
-  '';
 
   installPhase = ''
     runHook preInstall
@@ -164,16 +155,30 @@ stdenv.mkDerivation {
     runHook postInstall
   '';
 
+  preFixup = ''
+    gappsWrapperArgs+=(
+      --add-flags "\''${NIXOS_OZONE_WL:+\''${WAYLAND_DISPLAY:+--ozone-platform-hint=auto --enable-features=WaylandWindowDecorations --enable-wayland-ime=true}}"
+    )
+  '';
+
+  appendRunpaths = map (pkg: (lib.getLib pkg) + "/lib") [
+    nwEnv
+    stdenv.cc.libc
+    stdenv.cc.cc
+  ];
+
   meta = {
     description = "App runtime based on Chromium and node.js";
     homepage = "https://nwjs.io/";
+    license = lib.licenses.mit;
+    sourceProvenance = [ lib.sourceTypes.binaryNativeCode ];
+    maintainers = [ lib.maintainers.mikaelfangel ];
+
     platforms = [
       "i686-linux"
       "x86_64-linux"
     ];
-    sourceProvenance = [ lib.sourceTypes.binaryNativeCode ];
-    maintainers = [ lib.maintainers.mikaelfangel ];
+
     mainProgram = "nw";
-    license = lib.licenses.mit;
   };
 }

@@ -1,19 +1,19 @@
 {
   lib,
   stdenv,
-  rustPlatform,
   fetchFromGitHub,
-  cargo,
-  meson,
-  ninja,
-  pkg-config,
-  rustc,
-  wrapGAppsHook4,
   appstream-glib,
+  cargo,
   desktop-file-utils,
   glib,
   gtk4,
   libadwaita,
+  meson,
+  ninja,
+  pkg-config,
+  rustPlatform,
+  rustc,
+  wrapGAppsHook4,
 }:
 
 stdenv.mkDerivation rec {
@@ -25,11 +25,6 @@ stdenv.mkDerivation rec {
     repo = "paleta";
     rev = "v${version}";
     hash = "sha256-c+X49bMywstRg7cSAbbpG/vd8OUB7RhdQVRumTIBDDk=";
-  };
-
-  cargoDeps = rustPlatform.fetchCargoVendor {
-    inherit pname version src;
-    hash = "sha256-RuzqU06iyK+IN7aO+Lq/IaRLh2oFpWM1rz69Koiicgg=";
   };
 
   nativeBuildInputs = [
@@ -50,12 +45,17 @@ stdenv.mkDerivation rec {
     libadwaita
   ];
 
+  cargoDeps = rustPlatform.fetchCargoVendor {
+    inherit pname version src;
+    hash = "sha256-RuzqU06iyK+IN7aO+Lq/IaRLh2oFpWM1rz69Koiicgg=";
+  };
+
   meta = {
     description = "Extract the dominant colors from any image";
-    mainProgram = "paleta";
     homepage = "https://github.com/nate-xyz/paleta";
     license = lib.licenses.gpl3Only;
-    platforms = lib.platforms.linux;
     maintainers = with lib.maintainers; [ zendo ];
+    platforms = lib.platforms.linux;
+    mainProgram = "paleta";
   };
 }

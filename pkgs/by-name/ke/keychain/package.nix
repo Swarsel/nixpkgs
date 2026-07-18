@@ -2,17 +2,17 @@
   lib,
   stdenv,
   fetchFromGitHub,
+  coreutils,
+  findutils,
+  gawk,
+  gnugrep,
+  gnupg,
+  gnused,
   installShellFiles,
   makeWrapper,
-  coreutils,
   openssh,
-  gnupg,
   perl,
   procps,
-  gnugrep,
-  gawk,
-  findutils,
-  gnused,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -30,6 +30,7 @@ stdenv.mkDerivation (finalAttrs: {
     installShellFiles
     makeWrapper
   ];
+
   buildInputs = [ perl ];
 
   installPhase = ''
@@ -53,6 +54,7 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Manage SSH and GPG keys in a convenient and secure manner";
+
     longDescription = ''
       Keychain helps you to manage SSH and GPG keys in a convenient and secure
       manner. It acts as a frontend to ssh-agent and ssh-add, but allows you
@@ -65,10 +67,11 @@ stdenv.mkDerivation (finalAttrs: {
       for remote cron jobs to securely "hook in" to a long-running ssh-agent
       process, allowing your scripts to take advantage of key-based logins.
     '';
+
     homepage = "https://www.funtoo.org/Keychain";
     license = lib.licenses.gpl2Only;
-    platforms = lib.platforms.unix;
     maintainers = with lib.maintainers; [ sigma ];
+    platforms = lib.platforms.unix;
     mainProgram = "keychain";
   };
 })

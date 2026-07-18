@@ -27,9 +27,7 @@ stdenv.mkDerivation (finalAttrs: {
     "-DCMAKE_C_FLAGS=-fasynchronous-unwind-tables"
   ];
 
-  # aws-c-common misuses cmake modules, so we need
-  # to manually add a MODULE_PATH to its consumers
-  setupHook = ./setup-hook.sh;
+  doCheck = true;
 
   # Prevent the execution of tests known to be flaky.
   preCheck =
@@ -46,7 +44,9 @@ stdenv.mkDerivation (finalAttrs: {
       EOW
     '';
 
-  doCheck = true;
+  # aws-c-common misuses cmake modules, so we need
+  # to manually add a MODULE_PATH to its consumers
+  setupHook = ./setup-hook.sh;
 
   passthru.tests = {
     inherit nix;
@@ -56,11 +56,13 @@ stdenv.mkDerivation (finalAttrs: {
     description = "AWS SDK for C common core";
     homepage = "https://github.com/awslabs/aws-c-common";
     license = lib.licenses.asl20;
-    platforms = lib.platforms.unix;
-    # https://github.com/awslabs/aws-c-common/issues/1175
-    badPlatforms = lib.platforms.bigEndian;
+
     maintainers = with lib.maintainers; [
       r-burns
     ];
+
+    platforms = lib.platforms.unix;
+    # https://github.com/awslabs/aws-c-common/issues/1175
+    badPlatforms = lib.platforms.bigEndian;
   };
 })

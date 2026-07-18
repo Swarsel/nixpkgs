@@ -19,46 +19,76 @@ in
   options = {
     services.xserver.displayManager.xpra = {
       enable = mkOption {
-        type = types.bool;
         default = false;
         description = "Whether to enable xpra as display manager.";
+        type = types.bool;
+      };
+
+      auth = mkOption {
+        default = "pam";
+        description = "Authentication to use when connecting to xpra";
+        example = "password:value=mysecret";
+        type = types.str;
       };
 
       bindTcp = mkOption {
         default = "127.0.0.1:10000";
+        description = "Bind xpra to TCP";
         example = "0.0.0.0:10000";
         type = types.nullOr types.str;
-        description = "Bind xpra to TCP";
       };
 
       desktop = mkOption {
-        type = types.nullOr types.str;
         default = null;
-        example = "gnome-shell";
         description = "Start a desktop environment instead of seamless mode";
+        example = "gnome-shell";
+        type = types.nullOr types.str;
       };
 
-      auth = mkOption {
-        type = types.str;
-        default = "pam";
-        example = "password:value=mysecret";
-        description = "Authentication to use when connecting to xpra";
+      extraOptions = mkOption {
+        default = [ ];
+        description = "Extra xpra options";
+        type = types.listOf types.str;
       };
 
       pulseaudio = mkEnableOption "pulseaudio audio streaming";
-
-      extraOptions = mkOption {
-        description = "Extra xpra options";
-        default = [ ];
-        type = types.listOf types.str;
-      };
     };
   };
 
   ###### implementation
 
   config = mkIf cfg.enable {
-    services.xserver.videoDrivers = [ "dummy" ];
+    environment.systemPackages = [ pkgs.xpra ];
+    services.displayManager.generic.enable = true;
+
+    services.displayManager.generic.execCmd = ''
+      ${optionalString (cfg.pulseaudio) "export PULSE_COOKIE=/run/pulse/.config/pulse/cookie"}
+      exec ${pkgs.xpra}/bin/xpra ${
+        if cfg.desktop == null then "start" else "start-desktop --start=${cfg.desktop}"
+      } \
+        --daemon=off \
+        --log-dir=/var/log \
+        --log-file=xpra.log \
+        --opengl=on \
+        --clipboard=on \
+        --notifications=on \
+        --speaker=yes \
+        --mdns=no \
+        --pulseaudio=no \
+        ${optionalString (cfg.pulseaudio) "--sound-source=pulse"} \
+        --socket-dirs=/run/xpra \
+        --xvfb="xpra_Xdummy ${concatStringsSep " " dmcfg.xserverArgs}" \
+        ${optionalString (cfg.bindTcp != null) "--bind-tcp=${cfg.bindTcp}"} \
+        --auth=${cfg.auth} \
+        ${concatStringsSep " " cfg.extraOptions}
+    '';
+
+    services.pulseaudio.enable = mkDefault cfg.pulseaudio;
+    services.pulseaudio.systemWide = mkDefault cfg.pulseaudio;
+
+    services.xserver.deviceSection = ''
+      VideoRam 192000
+    '';
 
     services.xserver.monitorSection = ''
       HorizSync   1.0 - 2000.0
@@ -296,39 +326,8 @@ in
       Option "AutoAddDevices" "false"
     '';
 
-    services.xserver.deviceSection = ''
-      VideoRam 192000
-    '';
-
-    services.displayManager.generic.enable = true;
-    services.displayManager.generic.execCmd = ''
-      ${optionalString (cfg.pulseaudio) "export PULSE_COOKIE=/run/pulse/.config/pulse/cookie"}
-      exec ${pkgs.xpra}/bin/xpra ${
-        if cfg.desktop == null then "start" else "start-desktop --start=${cfg.desktop}"
-      } \
-        --daemon=off \
-        --log-dir=/var/log \
-        --log-file=xpra.log \
-        --opengl=on \
-        --clipboard=on \
-        --notifications=on \
-        --speaker=yes \
-        --mdns=no \
-        --pulseaudio=no \
-        ${optionalString (cfg.pulseaudio) "--sound-source=pulse"} \
-        --socket-dirs=/run/xpra \
-        --xvfb="xpra_Xdummy ${concatStringsSep " " dmcfg.xserverArgs}" \
-        ${optionalString (cfg.bindTcp != null) "--bind-tcp=${cfg.bindTcp}"} \
-        --auth=${cfg.auth} \
-        ${concatStringsSep " " cfg.extraOptions}
-    '';
-
     services.xserver.terminateOnReset = false;
-
-    environment.systemPackages = [ pkgs.xpra ];
-
-    services.pulseaudio.enable = mkDefault cfg.pulseaudio;
-    services.pulseaudio.systemWide = mkDefault cfg.pulseaudio;
+    services.xserver.videoDrivers = [ "dummy" ];
   };
 
 }

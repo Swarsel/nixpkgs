@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   requests,
   setuptools,
 }:
@@ -9,7 +9,6 @@
 buildPythonPackage rec {
   pname = "google-search-results";
   version = "2.4.2";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "serpapi";
@@ -18,13 +17,11 @@ buildPythonPackage rec {
     hash = "sha256-2GRhBaRE0KHNFsdMrIC87dx6yMzql+QQFSSm2Gf7xHU=";
   };
 
-  build-system = [ setuptools ];
-
-  dependencies = [ requests ];
-
   # almost all tests require an API key or network access
   doCheck = false;
-
+  build-system = [ setuptools ];
+  dependencies = [ requests ];
+  pyproject = true;
   pythonImportsCheck = [ "serpapi" ];
 
   meta = {

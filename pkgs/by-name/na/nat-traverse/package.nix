@@ -24,6 +24,7 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "NAT gateway traversal utility";
+
     longDescription = ''
       nat-traverse establishes direct connections between nodes which are
       behind NAT gateways, i.e. hosts which do not have public IP addresses.
@@ -34,10 +35,11 @@ stdenv.mkDerivation (finalAttrs: {
       isn't necessary to reconfigure the involved NAT gateways, either.
       nat-traverse works out-of-the-box.
     '';
+
     homepage = "https://www.speicherleck.de/iblech/nat-traverse/";
     license = lib.licenses.gpl3Plus;
-    platforms = lib.platforms.all;
     maintainers = [ lib.maintainers.iblech ];
+    platforms = lib.platforms.all;
     mainProgram = "nat-traverse";
   };
 })

@@ -1,6 +1,6 @@
 {
-  stdenvNoCC,
   lib,
+  stdenvNoCC,
   type,
 }:
 
@@ -12,8 +12,8 @@ assert lib.elem type [
 
 {
   modName,
-  version,
   src,
+  version,
   ...
 }@args:
 
@@ -21,14 +21,6 @@ stdenvNoCC.mkDerivation (
   args
   // rec {
     pname = args.pname or "cataclysm-dda-${type}-${modName}";
-
-    modRoot = args.modRoot or ".";
-
-    configurePhase =
-      args.configurePhase or ''
-        runHook preConfigure
-        runHook postConfigure
-      '';
 
     buildPhase =
       args.buildPhase or ''
@@ -60,9 +52,17 @@ stdenvNoCC.mkDerivation (
         runHook postInstall
       '';
 
+    configurePhase =
+      args.configurePhase or ''
+        runHook preConfigure
+        runHook postConfigure
+      '';
+
+    modRoot = args.modRoot or ".";
+
     passthru = {
-      forTiles = true;
       forCurses = type == "mod";
+      forTiles = true;
     };
   }
 )

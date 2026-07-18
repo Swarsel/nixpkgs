@@ -2,11 +2,11 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  pcsclite,
+  beidconnect,
   boost,
+  pcsclite,
   pkg-config,
   testers,
-  beidconnect,
 }:
 stdenv.mkDerivation (finalAttrs: {
   pname = "beidconnect";
@@ -19,6 +19,12 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-ZFxq/rJP0/KSsi2qsXyKY9Fmb+JxeakTdso5FsVu1/c=";
   };
 
+  postPatch = ''
+    substituteInPlace Makefile \
+      --replace-fail '$(DESTDIR)/usr/bin' '$(DESTDIR)/bin'
+  '';
+
+  strictDeps = true;
   nativeBuildInputs = [ pkg-config ];
 
   buildInputs = [
@@ -26,15 +32,7 @@ stdenv.mkDerivation (finalAttrs: {
     boost
   ];
 
-  strictDeps = true;
-
-  postPatch = ''
-    substituteInPlace Makefile \
-      --replace-fail '$(DESTDIR)/usr/bin' '$(DESTDIR)/bin'
-  '';
-
   makeFlags = [ "DESTDIR=$(out)" ];
-  sourceRoot = "${finalAttrs.src.name}/linux";
 
   postInstall = ''
     install -d \
@@ -62,13 +60,16 @@ stdenv.mkDerivation (finalAttrs: {
     install $out/etc/chromium/native-messaging-hosts/be.bosa.beidconnect.json $out/etc/opt/brave/native-messaging-hosts/
   '';
 
+  sourceRoot = "${finalAttrs.src.name}/linux";
+
   passthru.tests.version = testers.testVersion {
-    package = beidconnect;
     command = "${beidconnect}/bin/beidconnect -version";
+    package = beidconnect;
   };
 
   meta = {
     description = "BeIDConnect native messaging component";
+
     longDescription = ''
       The beidconnect is a program to help implementing digital signing services
       and/or an identity service using the Belgian eID card. It provides
@@ -78,6 +79,7 @@ stdenv.mkDerivation (finalAttrs: {
       This package contains the native code. For the WebExtension, see your
       webbrowser's extension store.
     '';
+
     homepage = "https://github.com/Fedict/fts-beidconnect/";
     license = lib.licenses.mit;
     maintainers = [ lib.maintainers.jovandeginste ];

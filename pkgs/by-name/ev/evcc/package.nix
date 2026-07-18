@@ -1,19 +1,19 @@
 {
   lib,
   stdenv,
-  buildGo126Module,
   fetchFromGitHub,
-  fetchNpmDeps,
+  buildGo126Module,
   cacert,
+  enumer,
+  fetchNpmDeps,
   git,
   go_1_26,
   gokrazy,
-  enumer,
   mockgen,
-  nodejs,
-  npmHooks,
   nix-update-script,
   nixosTests,
+  nodejs,
+  npmHooks,
 }:
 
 let
@@ -35,42 +35,12 @@ let
 in
 
 buildGo126Module rec {
-  pname = "evcc";
   inherit version src vendorHash;
-
-  npmDeps = fetchNpmDeps {
-    inherit src;
-    hash = "sha256-MhLc5RUjn8FYXiFQbGchRnf132QXwG0kSyyPsRRzu1A=";
-  };
+  pname = "evcc";
 
   nativeBuildInputs = [
     nodejs
     npmHooks.npmConfigHook
-  ];
-
-  overrideModAttrs = _: {
-    nativeBuildInputs = [
-      enumer
-      go_1_26
-      gokrazy
-      git
-      cacert
-      mockgen
-    ];
-
-    preBuild = ''
-      GOFLAGS="-mod=mod" make assets
-    '';
-  };
-
-  tags = [
-    "release"
-  ];
-
-  ldflags = [
-    "-X github.com/evcc-io/evcc/util.Version=${version}"
-    "-s"
-    "-w"
   ];
 
   preBuild = ''
@@ -95,10 +65,41 @@ buildGo126Module rec {
     in
     [ "-skip=^${lib.concatStringsSep "$|^" skippedTests}$" ];
 
+  ldflags = [
+    "-X github.com/evcc-io/evcc/util.Version=${version}"
+    "-s"
+    "-w"
+  ];
+
+  npmDeps = fetchNpmDeps {
+    inherit src;
+    hash = "sha256-MhLc5RUjn8FYXiFQbGchRnf132QXwG0kSyyPsRRzu1A=";
+  };
+
+  overrideModAttrs = _: {
+    nativeBuildInputs = [
+      enumer
+      go_1_26
+      gokrazy
+      git
+      cacert
+      mockgen
+    ];
+
+    preBuild = ''
+      GOFLAGS="-mod=mod" make assets
+    '';
+  };
+
+  tags = [
+    "release"
+  ];
+
   passthru = {
     tests = {
       inherit (nixosTests) evcc;
     };
+
     updateScript = nix-update-script { };
   };
 

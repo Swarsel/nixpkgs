@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   hatchling,
   httpx,
   nix-update-script,
@@ -9,8 +9,8 @@
   openinference-instrumentation,
   openinference-semantic-conventions,
   opentelemetry-api,
-  opentelemetry-instrumentation-httpx,
   opentelemetry-instrumentation,
+  opentelemetry-instrumentation-httpx,
   opentelemetry-semantic-conventions,
   pytest-asyncio,
   pytest-vcr,
@@ -23,33 +23,12 @@
 buildPythonPackage (finalAttrs: {
   pname = "openinference-instrumentation-openai";
   version = "0.1.52";
-  pyproject = true;
-
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "Arize-ai";
     repo = "openinference";
     tag = "python-openinference-instrumentation-openai-v${finalAttrs.version}";
     hash = "sha256-wmwqmN/rN521TaXVZfkaRzHPVhANSgKaBVc4rhXgIII=";
-  };
-
-  sourceRoot = "${finalAttrs.src.name}/python/instrumentation/${finalAttrs.pname}";
-
-  build-system = [ hatchling ];
-
-  dependencies = [
-    opentelemetry-api
-    opentelemetry-instrumentation
-    opentelemetry-semantic-conventions
-    openinference-semantic-conventions
-    openinference-instrumentation
-    typing-extensions
-    wrapt
-  ];
-
-  optional-dependencies = {
-    instruments = [ openai ];
   };
 
   nativeCheckInputs = [
@@ -62,7 +41,18 @@ buildPythonPackage (finalAttrs: {
   ]
   ++ lib.flatten (builtins.attrValues finalAttrs.passthru.optional-dependencies);
 
-  pythonImportsCheck = [ "openinference.instrumentation.openai" ];
+  __structuredAttrs = true;
+  build-system = [ hatchling ];
+
+  dependencies = [
+    opentelemetry-api
+    opentelemetry-instrumentation
+    opentelemetry-semantic-conventions
+    openinference-semantic-conventions
+    openinference-instrumentation
+    typing-extensions
+    wrapt
+  ];
 
   disabledTests = [
     # Tests want to connect to OpenAI's API
@@ -72,6 +62,13 @@ buildPythonPackage (finalAttrs: {
     "test_tool_calls"
   ];
 
+  optional-dependencies = {
+    instruments = [ openai ];
+  };
+
+  pyproject = true;
+  pythonImportsCheck = [ "openinference.instrumentation.openai" ];
+  sourceRoot = "${finalAttrs.src.name}/python/instrumentation/${finalAttrs.pname}";
   passthru.updateScript = nix-update-script { };
 
   meta = {

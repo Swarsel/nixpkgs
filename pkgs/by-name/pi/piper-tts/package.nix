@@ -1,18 +1,15 @@
 {
   lib,
-  python3Packages,
   fetchFromGitHub,
-
-  # build time
-  pkg-config,
-
   # runtime
   espeak-ng,
-
+  # build time
+  pkg-config,
+  python3Packages,
+  withAlignment ? true,
+  withHTTP ? true,
   # extras
   withTrain ? true,
-  withHTTP ? true,
-  withAlignment ? true,
 }:
 
 let
@@ -30,7 +27,6 @@ in
 python3Packages.buildPythonApplication rec {
   pname = "piper-tts";
   version = "1.4.2";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "OHF-Voice";
@@ -43,6 +39,31 @@ python3Packages.buildPythonApplication rec {
     # https://github.com/OHF-Voice/piper1-gpl/pull/17
     ./cmake-system-libs.patch
   ];
+
+  nativeBuildInputs = [
+    pkg-config
+  ];
+
+  buildInputs = [
+    espeak-ng'
+  ];
+
+  env.CMAKE_ARGS = toString [
+    (lib.cmakeFeature "UCD_STATIC_LIB" "${espeak-ng'.ucd-tools}/libucd.a")
+  ];
+
+  postBuild = lib.optionalString withTrain ''
+    cythonize --inplace src/piper/train/vits/monotonic_align/core.pyx
+  '';
+
+  postInstall = ''
+    ln -s ${espeak-ng'}/share/espeak-ng-data $out/${python3Packages.python.sitePackages}/piper/
+  ''
+  + lib.optionalString withTrain ''
+    train=$out/${python3Packages.python.sitePackages}/piper/train/vits
+    rm -v src/piper/train/vits/monotonic_align/{Makefile,setup.py,core.c,core.pyx}
+    cp -Rv src/piper/train/vits $train/
+  '';
 
   build-system =
     with python3Packages;
@@ -57,24 +78,6 @@ python3Packages.buildPythonApplication rec {
       distutils
     ];
 
-  nativeBuildInputs = [
-    pkg-config
-  ];
-
-  dontUseCmakeConfigure = true;
-
-  env.CMAKE_ARGS = toString [
-    (lib.cmakeFeature "UCD_STATIC_LIB" "${espeak-ng'.ucd-tools}/libucd.a")
-  ];
-
-  buildInputs = [
-    espeak-ng'
-  ];
-
-  postBuild = lib.optionalString withTrain ''
-    cythonize --inplace src/piper/train/vits/monotonic_align/core.pyx
-  '';
-
   dependencies =
     with python3Packages;
     [
@@ -85,7 +88,17 @@ python3Packages.buildPythonApplication rec {
     ++ lib.optionals withHTTP optional-dependencies.http
     ++ lib.optionals withAlignment optional-dependencies.alignment;
 
+  dontUseCmakeConfigure = true;
+
   optional-dependencies = {
+    alignment = with python3Packages; [
+      onnx
+    ];
+
+    http = with python3Packages; [
+      flask
+    ];
+
     train =
       with python3Packages;
       [
@@ -98,27 +111,14 @@ python3Packages.buildPythonApplication rec {
         torch
       ]
       ++ jsonargparse.optional-dependencies.signatures;
-    http = with python3Packages; [
-      flask
-    ];
-    alignment = with python3Packages; [
-      onnx
-    ];
   };
 
-  postInstall = ''
-    ln -s ${espeak-ng'}/share/espeak-ng-data $out/${python3Packages.python.sitePackages}/piper/
-  ''
-  + lib.optionalString withTrain ''
-    train=$out/${python3Packages.python.sitePackages}/piper/train/vits
-    rm -v src/piper/train/vits/monotonic_align/{Makefile,setup.py,core.c,core.pyx}
-    cp -Rv src/piper/train/vits $train/
-  '';
+  pyproject = true;
 
   meta = {
-    changelog = "https://github.com/OHF-Voice/piper1-gpl/releases/tag/v${version}";
     description = "Fast, local neural text to speech system";
     homepage = "https://github.com/OHF-Voice/piper1-gpl";
+    changelog = "https://github.com/OHF-Voice/piper1-gpl/releases/tag/v${version}";
     license = lib.licenses.gpl3Only;
     maintainers = with lib.maintainers; [ hexa ];
     mainProgram = "piper";

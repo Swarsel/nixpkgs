@@ -1,21 +1,21 @@
 {
-  buildPackages,
   lib,
   stdenv,
   fetchFromGitHub,
-  meson,
-  ninja,
-  pkg-config,
+  buildPackages,
   cairo,
   doxygen,
-  glib,
   gdk-pixbuf,
+  glib,
   libdicom,
   libjpeg,
   libpng,
   libtiff,
   libxml2,
+  meson,
+  ninja,
   openjpeg,
+  pkg-config,
   sqlite,
   zlib,
   zstd,
@@ -31,10 +31,6 @@ stdenv.mkDerivation (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-9LvQ7FG/0E0WpFyIUyrL4Fvn60iYWejjbgdKHMVOFdI=";
   };
-
-  depsBuildBuild = [
-    buildPackages.stdenv.cc
-  ];
 
   nativeBuildInputs = [
     meson
@@ -58,13 +54,17 @@ stdenv.mkDerivation (finalAttrs: {
     zstd
   ];
 
+  depsBuildBuild = [
+    buildPackages.stdenv.cc
+  ];
+
   meta = {
-    homepage = "https://openslide.org";
     description = "C library that provides a simple interface to read whole-slide images";
-    license = lib.licenses.lgpl21;
+    homepage = "https://openslide.org";
     changelog = "https://github.com/openslide/openslide/releases/tag/v${finalAttrs.version}";
-    platforms = lib.platforms.unix;
+    license = lib.licenses.lgpl21;
     maintainers = with lib.maintainers; [ lromor ];
+    platforms = lib.platforms.unix;
     mainProgram = "slidetool";
   };
 })

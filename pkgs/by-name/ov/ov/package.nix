@@ -1,20 +1,18 @@
 {
   lib,
   stdenv,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   installShellFiles,
-  pandoc,
   makeWrapper,
   nix-update-script,
+  pandoc,
   versionCheckHook,
 }:
 
 buildGoModule (finalAttrs: {
   pname = "ov";
   version = "0.54.0";
-
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "noborus";
@@ -23,15 +21,10 @@ buildGoModule (finalAttrs: {
     hash = "sha256-cIjtu4T9It+u/ZVC+XoUacvnYw51QSnbTNge1QaHr0s=";
   };
 
-  vendorHash = "sha256-eQh/S2isNvT9l+A4uK+/APcw+krsFL54OD5E6yEduxU=";
-
-  ldflags = [
-    "-s"
-    "-X=main.Version=v${finalAttrs.version}"
-    "-X=main.Revision=${finalAttrs.src.rev}"
+  outputs = [
+    "out"
+    "doc"
   ];
-
-  subPackages = [ "." ];
 
   nativeBuildInputs = [
     installShellFiles
@@ -39,10 +32,7 @@ buildGoModule (finalAttrs: {
     makeWrapper
   ];
 
-  outputs = [
-    "out"
-    "doc"
-  ];
+  vendorHash = "sha256-eQh/S2isNvT9l+A4uK+/APcw+krsFL54OD5E6yEduxU=";
 
   postInstall =
     lib.optionalString (stdenv.buildPlatform.canExecute stdenv.hostPlatform) ''
@@ -62,10 +52,21 @@ buildGoModule (finalAttrs: {
       cp $src/ov.yaml $doc/share/$name/sample-config.yaml
     '';
 
+  doInstallCheck = true;
+
   nativeInstallCheckInputs = [
     versionCheckHook
   ];
-  doInstallCheck = true;
+
+  __structuredAttrs = true;
+
+  ldflags = [
+    "-s"
+    "-X=main.Version=v${finalAttrs.version}"
+    "-X=main.Revision=${finalAttrs.src.rev}"
+  ];
+
+  subPackages = [ "." ];
 
   passthru = {
     updateScript = nix-update-script { };

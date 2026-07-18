@@ -1,21 +1,20 @@
 {
   lib,
-  meta,
-  python3Packages,
   fetchFromGitHub,
   gobject-introspection,
   libappindicator-gtk3,
   libayatana-appindicator,
   libnotify,
+  meta,
+  nix-update-script,
+  python3Packages,
   wrapGAppsHook4,
   writableTmpDirAsHomeHook,
-  nix-update-script,
   withIndicator ? true,
 }:
 python3Packages.buildPythonApplication (finalAttrs: {
   pname = "proton-vpn";
   version = "4.16.5";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "ProtonVPN";
@@ -40,6 +39,31 @@ python3Packages.buildPythonApplication (finalAttrs: {
     libayatana-appindicator
   ];
 
+  nativeCheckInputs = [
+    writableTmpDirAsHomeHook
+  ]
+  ++ (with python3Packages; [
+    pytestCheckHook
+    pytest-cov-stub
+  ]);
+
+  preCheck = ''
+    export XDG_RUNTIME_DIR=$(mktemp -d)
+  '';
+
+  postInstall = ''
+    mkdir -p $out/share/applications
+
+    # Fix the desktop file to correctly identify the wrapped app and show the icon during runtime
+    substitute ${finalAttrs.src}/rpmbuild/SOURCES/proton.vpn.app.gtk.desktop $out/share/applications/proton.vpn.app.gtk.desktop \
+      --replace-fail "StartupWMClass=protonvpn-app" "StartupWMClass=.protonvpn-app-wrapped"
+    install -Dm444 ${finalAttrs.src}/rpmbuild/SOURCES/proton-vpn-logo.svg -t $out/share/icons/hicolor/scalable/apps
+  '';
+
+  preFixup = ''
+    makeWrapperArgs+=("''${gappsWrapperArgs[@]}")
+  '';
+
   build-system = with python3Packages; [
     setuptools
   ];
@@ -55,33 +79,6 @@ python3Packages.buildPythonApplication (finalAttrs: {
     pygobject3
   ];
 
-  dontWrapGApps = true;
-
-  preFixup = ''
-    makeWrapperArgs+=("''${gappsWrapperArgs[@]}")
-  '';
-
-  postInstall = ''
-    mkdir -p $out/share/applications
-
-    # Fix the desktop file to correctly identify the wrapped app and show the icon during runtime
-    substitute ${finalAttrs.src}/rpmbuild/SOURCES/proton.vpn.app.gtk.desktop $out/share/applications/proton.vpn.app.gtk.desktop \
-      --replace-fail "StartupWMClass=protonvpn-app" "StartupWMClass=.protonvpn-app-wrapped"
-    install -Dm444 ${finalAttrs.src}/rpmbuild/SOURCES/proton-vpn-logo.svg -t $out/share/icons/hicolor/scalable/apps
-  '';
-
-  preCheck = ''
-    export XDG_RUNTIME_DIR=$(mktemp -d)
-  '';
-
-  nativeCheckInputs = [
-    writableTmpDirAsHomeHook
-  ]
-  ++ (with python3Packages; [
-    pytestCheckHook
-    pytest-cov-stub
-  ]);
-
   disabledTestPaths = [
     # Segmentation fault during widgets tests
     "tests/unit/widgets"
@@ -89,6 +86,8 @@ python3Packages.buildPythonApplication (finalAttrs: {
     "tests/unit/utils/test_safe_signal_connect.py"
   ];
 
+  dontWrapGApps = true;
+  pyproject = true;
   passthru.updateScript = nix-update-script { };
 
   meta = meta // {

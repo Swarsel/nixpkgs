@@ -1,8 +1,8 @@
 {
   lib,
   fetchFromGitHub,
-  rustPlatform,
   nix-update-script,
+  rustPlatform,
 }:
 rustPlatform.buildRustPackage (finalAttrs: {
   pname = "illuminanced";
@@ -33,10 +33,12 @@ rustPlatform.buildRustPackage (finalAttrs: {
     homepage = "https://github.com/mikhail-m1/illuminanced";
     changelog = "https://github.com/mikhail-m1/illuminanced/releases/tag/${finalAttrs.version}";
     license = lib.licenses.gpl3Only;
+
     maintainers = with lib.maintainers; [
       dynamicgoose
     ];
-    mainProgram = "illuminanced";
+
     platforms = lib.platforms.linux;
+    mainProgram = "illuminanced";
   };
 })

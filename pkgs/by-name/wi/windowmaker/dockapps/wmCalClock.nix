@@ -8,11 +8,8 @@
 }:
 
 stdenv.mkDerivation (finalAttrs: {
-  pname = "wmCalClock";
-
   inherit (dockapps-sources) version src;
-
-  sourceRoot = "${finalAttrs.src.name}/wmCalClock";
+  pname = "wmCalClock";
 
   buildInputs = [
     libx11
@@ -34,6 +31,7 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   installFlags = [ "DESTDIR=${placeholder "out"}" ];
+  sourceRoot = "${finalAttrs.src.name}/wmCalClock";
 
   meta = {
     description = "Calendar clock with antialiased text";

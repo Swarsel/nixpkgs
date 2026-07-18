@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   pytestCheckHook,
   setuptools,
 }:
@@ -9,7 +9,6 @@
 buildPythonPackage rec {
   pname = "ansicolor";
   version = "0.3.3";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "numerodix";
@@ -18,10 +17,9 @@ buildPythonPackage rec {
     hash = "sha256-ndChpcHjsGWmlw0uvPF0RvRvi99b3cnajHRXudmQXBw=";
   };
 
-  build-system = [ setuptools ];
-
   nativeCheckInputs = [ pytestCheckHook ];
-
+  build-system = [ setuptools ];
+  pyproject = true;
   pythonImportsCheck = [ "ansicolor" ];
 
   meta = {

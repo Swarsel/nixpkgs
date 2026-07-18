@@ -27,11 +27,11 @@ let
         throw "rewriteURL deleted the only URL passed to fetchurlBoot (was ${url})";
 in
 {
-  url ? head urls,
-  urls ? [ ],
-  sha256 ? "",
   hash ? "",
   name ? baseNameOf (toString url),
+  sha256 ? "",
+  url ? head urls,
+  urls ? [ ],
 }:
 
 # assert exactly one hash is set

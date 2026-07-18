@@ -1,20 +1,20 @@
 {
   lib,
-  stdenvNoCC,
   fetchFromGitHub,
   bash,
-  just,
   catppuccin-whiskers,
+  just,
   kdePackages,
-  flavor ? "mocha",
+  stdenvNoCC,
   accent ? "mauve",
+  background ? null,
+  clockEnabled ? true,
+  disableBackground ? false,
+  flavor ? "mocha",
   font ? "Noto Sans",
   fontSize ? "9",
-  background ? null,
-  disableBackground ? false,
   loginBackground ? false,
   userIcon ? false,
-  clockEnabled ? true,
 }:
 stdenvNoCC.mkDerivation (finalAttrs: {
   pname = "catppuccin-sddm";
@@ -27,7 +27,10 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     hash = "sha256-7S0DKyb+4lP+5HCPAJRw/KDls2ZO9kksdlwYSz2uQC8=";
   };
 
-  dontWrapQtApps = true;
+  postPatch = ''
+    substituteInPlace justfile \
+      --replace-fail '#!/usr/bin/env bash' '#!${lib.getExe bash}'
+  '';
 
   nativeBuildInputs = [
     just
@@ -38,11 +41,6 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     # avoid .dev outputs propagation
     kdePackages.qtsvg.out
   ];
-
-  postPatch = ''
-    substituteInPlace justfile \
-      --replace-fail '#!/usr/bin/env bash' '#!${lib.getExe bash}'
-  '';
 
   buildPhase = ''
     runHook preBuild
@@ -91,6 +89,8 @@ stdenvNoCC.mkDerivation (finalAttrs: {
 
     runHook postInstall
   '';
+
+  dontWrapQtApps = true;
 
   meta = {
     description = "Soothing pastel theme for SDDM";

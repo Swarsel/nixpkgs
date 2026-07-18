@@ -1,15 +1,15 @@
 {
   lib,
   stdenv,
-  zlib,
+  fetchFromGitHub,
   bzip2,
   xz,
-  fetchFromGitHub,
+  zlib,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
-  version = "1.1.0";
   pname = "svaba";
+  version = "1.1.0";
 
   src = fetchFromGitHub {
     owner = "walaj";
@@ -19,18 +19,18 @@ stdenv.mkDerivation (finalAttrs: {
     fetchSubmodules = true;
   };
 
-  buildInputs = [
-    zlib
-    bzip2
-    xz
-  ];
-
   postPatch = ''
     # Fix gcc-13 build failure due to missing includes
     sed -e '1i #include <cstdint>' -i \
       SeqLib/src/non_api/Histogram.h \
       src/svaba/Histogram.h
   '';
+
+  buildInputs = [
+    zlib
+    bzip2
+    xz
+  ];
 
   # Workaround build failure on -fno-common toolchains like upstream
   # gcc-10. Otherwise build fails as:
@@ -45,12 +45,8 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   meta = {
-    broken = (stdenv.hostPlatform.isLinux && stdenv.hostPlatform.isAarch64);
     description = "Structural variant and INDEL caller for DNA sequencing data, using genome-wide local assembly";
-    mainProgram = "svaba";
-    license = lib.licenses.gpl3;
-    homepage = "https://github.com/walaj/svaba";
-    platforms = lib.platforms.linux;
+
     longDescription = ''
       SvABA is a method for detecting structural variants in sequencing data
       using genome-wide local assembly. Under the hood, SvABA uses a custom
@@ -62,6 +58,12 @@ stdenv.mkDerivation (finalAttrs: {
       These contigs are then immediately aligned to the reference with BWA-MEM and parsed to identify variants.
       Sequencing reads are then realigned to the contigs with BWA-MEM, and variants are scored by their read support.
     '';
+
+    homepage = "https://github.com/walaj/svaba";
+    license = lib.licenses.gpl3;
+    platforms = lib.platforms.linux;
+    mainProgram = "svaba";
+    broken = (stdenv.hostPlatform.isLinux && stdenv.hostPlatform.isAarch64);
 
   };
 })

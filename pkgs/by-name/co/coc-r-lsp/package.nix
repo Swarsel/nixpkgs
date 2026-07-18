@@ -1,13 +1,13 @@
 {
   lib,
-  stdenvNoCC,
   fetchFromGitHub,
   fetchYarnDeps,
-  yarnConfigHook,
-  yarnBuildHook,
-  yarnInstallHook,
-  nodejs,
   nix-update-script,
+  nodejs,
+  stdenvNoCC,
+  yarnBuildHook,
+  yarnConfigHook,
+  yarnInstallHook,
 }:
 stdenvNoCC.mkDerivation (finalAttrs: {
   pname = "coc-r-lsp";
@@ -20,11 +20,6 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     hash = "sha256-pjxnNzWOqlVWNNvEF9Yx1aQa4i3BpJoenuGQmY/k1QA=";
   };
 
-  yarnOfflineCache = fetchYarnDeps {
-    inherit (finalAttrs) src;
-    hash = "sha256-BUg1ZhJn3pF2cQB6b1Fe0jsd9gi2ZyMhCt7SXtjvY54=";
-  };
-
   nativeBuildInputs = [
     yarnConfigHook
     yarnBuildHook
@@ -33,6 +28,11 @@ stdenvNoCC.mkDerivation (finalAttrs: {
   ];
 
   env.NODE_OPTIONS = "--openssl-legacy-provider";
+
+  yarnOfflineCache = fetchYarnDeps {
+    inherit (finalAttrs) src;
+    hash = "sha256-BUg1ZhJn3pF2cQB6b1Fe0jsd9gi2ZyMhCt7SXtjvY54=";
+  };
 
   passthru.updateScript = nix-update-script { };
 

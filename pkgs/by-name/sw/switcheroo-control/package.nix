@@ -1,31 +1,30 @@
 {
   lib,
-  ninja,
-  meson,
   fetchFromGitLab,
-  systemd,
+  glib,
   libdrm,
   libgudev,
+  meson,
+  ninja,
   pkg-config,
-  wrapGAppsNoGuiHook,
-  glib,
   python3Packages,
+  systemd,
+  wrapGAppsNoGuiHook,
 }:
 
 let
   version = "3.0";
 in
 python3Packages.buildPythonApplication {
-  pname = "switcheroo-control";
   inherit version;
-  pyproject = false;
+  pname = "switcheroo-control";
 
   src = fetchFromGitLab {
-    domain = "gitlab.freedesktop.org";
     owner = "hadess";
     repo = "switcheroo-control";
     tag = version;
     hash = "sha256-7P0o8fBYe4izRmNL7DimUSJfzj13KXW9we6c/A2iNo8=";
+    domain = "gitlab.freedesktop.org";
   };
 
   postPatch = ''
@@ -47,26 +46,26 @@ python3Packages.buildPythonApplication {
     glib
   ];
 
-  dependencies = [
-    python3Packages.pygobject3
-  ];
-
   mesonFlags = [
     "-Dsystemdsystemunitdir=${placeholder "out"}/etc/systemd/system"
     "-Dhwdbdir=${placeholder "out"}/etc/udev/hwdb.d"
   ];
 
-  dontWrapGApps = true;
+  dependencies = [
+    python3Packages.pygobject3
+  ];
 
+  dontWrapGApps = true;
   makeWrapperArgs = [ "\${gappsWrapperArgs[@]}" ];
+  pyproject = false;
 
   meta = {
     description = "D-Bus service to check the availability of dual-GPU";
-    mainProgram = "switcherooctl";
     homepage = "https://gitlab.freedesktop.org/hadess/switcheroo-control/";
     changelog = "https://gitlab.freedesktop.org/hadess/switcheroo-control/-/blob/${version}/NEWS";
     license = lib.licenses.gpl3Plus;
     maintainers = [ ];
     platforms = lib.platforms.linux;
+    mainProgram = "switcherooctl";
   };
 }

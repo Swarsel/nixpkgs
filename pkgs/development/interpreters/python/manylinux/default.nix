@@ -44,27 +44,27 @@ let
   manylinux2014Libs = getLibOutputs (
     with pkgs;
     {
-      "libgcc_s.so.1" = glibc;
-      "libstdc++.so.6" = stdenv.cc.cc;
-      "libm.so.6" = glibc;
-      "libdl.so.2" = glibc;
-      "librt.so.1" = glibc;
-      "libc.so.6" = glibc;
-      "libnsl.so.1" = glibc;
-      "libutil.so.1" = glibc;
-      "libpthread.so.0" = glibc;
-      "libresolv.so.2" = glibc;
+      "libGL.so.1" = libGL;
+      "libICE.so.6" = libice;
+      "libSM.so.6" = libsm;
       "libX11.so.6" = libx11;
       "libXext.so.6" = libxext;
       "libXrender.so.1" = libxrender;
-      "libICE.so.6" = libice;
-      "libSM.so.6" = libsm;
-      "libGL.so.1" = libGL;
+      "libc.so.6" = glibc;
+      "libdl.so.2" = glibc;
+      "libexpat.so.1" = expat;
+      "libgcc_s.so.1" = glibc;
+      "libglib-2.0.so.0" = glib;
       "libgobject-2.0.so.0" = glib;
       "libgthread-2.0.so.0" = glib;
-      "libglib-2.0.so.0" = glib;
+      "libm.so.6" = glibc;
+      "libnsl.so.1" = glibc;
+      "libpthread.so.0" = glibc;
+      "libresolv.so.2" = glibc;
+      "librt.so.1" = glibc;
+      "libstdc++.so.6" = stdenv.cc.cc;
+      "libutil.so.1" = glibc;
       "libz.so.1" = zlib;
-      "libexpat.so.1" = expat;
     }
   );
 
@@ -75,9 +75,9 @@ let
   manylinux1Libs = getLibOutputs (
     manylinux2010Libs
     // (with pkgs; {
-      "libpanelw.so.5" = ncurses5;
-      "libncursesw.so.5" = ncurses5;
       "libcrypt.so.1" = libxcrypt;
+      "libncursesw.so.5" = ncurses5;
+      "libpanelw.so.5" = ncurses5;
     })
   );
 
@@ -88,13 +88,12 @@ in
   # the `buildInputs` with one of these `manylinux` lists.
   # Additionally, add `autoPatchelfHook` to `nativeBuildInputs`.
   manylinux1 = lib.unique (lib.attrValues manylinux1Libs);
-  manylinux2010 = lib.unique (lib.attrValues manylinux2010Libs);
-  manylinux2014 = lib.unique (lib.attrValues manylinux2014Libs);
-
   # These are symlink trees to the relevant libs and are typically not needed
   # These exist so as to quickly test whether all required libraries are provided
   # by the mapped packages.
   manylinux1Package = createManyLinuxPackage "manylinux1" manylinux1Libs;
+  manylinux2010 = lib.unique (lib.attrValues manylinux2010Libs);
   manylinux2010Package = createManyLinuxPackage "manylinux2010" manylinux2010Libs;
+  manylinux2014 = lib.unique (lib.attrValues manylinux2014Libs);
   manylinux2014Package = createManyLinuxPackage "manylinux2014" manylinux2014Libs;
 }

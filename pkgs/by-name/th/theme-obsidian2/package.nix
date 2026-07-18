@@ -1,10 +1,10 @@
 {
   lib,
-  stdenvNoCC,
   fetchurl,
+  gitUpdater,
   gtk-engine-murrine,
   jdupes,
-  gitUpdater,
+  stdenvNoCC,
 }:
 
 stdenvNoCC.mkDerivation rec {
@@ -16,14 +16,8 @@ stdenvNoCC.mkDerivation rec {
     sha256 = "sha256-Hajz2bFcsi+9kSjxuZ6Jav8t7S6trDUF5yJivw+Vypw=";
   };
 
-  sourceRoot = ".";
-
   nativeBuildInputs = [
     jdupes
-  ];
-
-  propagatedUserEnvPkgs = [
-    gtk-engine-murrine
   ];
 
   installPhase = ''
@@ -34,16 +28,22 @@ stdenvNoCC.mkDerivation rec {
     runHook postInstall
   '';
 
+  propagatedUserEnvPkgs = [
+    gtk-engine-murrine
+  ];
+
+  sourceRoot = ".";
+
   passthru.updateScript = gitUpdater {
-    url = "https://github.com/madmaxms/theme-obsidian-2";
     rev-prefix = "v";
+    url = "https://github.com/madmaxms/theme-obsidian-2";
   };
 
   meta = {
     description = "Gnome theme based upon Adwaita-Maia dark skin";
     homepage = "https://github.com/madmaxms/theme-obsidian-2";
     license = with lib.licenses; [ gpl3Only ];
-    platforms = lib.platforms.linux;
     maintainers = [ lib.maintainers.romildo ];
+    platforms = lib.platforms.linux;
   };
 }

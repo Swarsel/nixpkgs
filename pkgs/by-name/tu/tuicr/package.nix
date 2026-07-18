@@ -1,17 +1,15 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
-  openssl,
   git,
   nix-update-script,
+  openssl,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
   pname = "tuicr";
   version = "0.19.1";
-
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "agavra";
@@ -20,10 +18,8 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-uLtwpieKBTbLLDmgE4LLNljvv69i0cBRvU1WEgy09Xo=";
   };
 
-  cargoHash = "sha256-jEPgXXlqTgVX+GutQX8JCwtLS0J3cx7RV76NdM5m6QE=";
-
   strictDeps = true;
-
+  cargoHash = "sha256-jEPgXXlqTgVX+GutQX8JCwtLS0J3cx7RV76NdM5m6QE=";
   nativeCheckInputs = [ git ];
 
   checkFlags = [
@@ -31,6 +27,7 @@ rustPlatform.buildRustPackage (finalAttrs: {
     "--skip=should_return_no_changes_for_clean_repo"
   ];
 
+  __structuredAttrs = true;
   passthru.updateScript = nix-update-script { };
 
   meta = {

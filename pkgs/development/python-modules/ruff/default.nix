@@ -1,7 +1,7 @@
 {
+  lib,
   buildPythonPackage,
   hatchling,
-  lib,
   ruff,
 }:
 
@@ -12,9 +12,6 @@ buildPythonPackage {
     src
     meta
     ;
-  pyproject = true;
-
-  build-system = [ hatchling ];
 
   postPatch =
     # Do not rely on path lookup at runtime to find the ruff binary.
@@ -43,5 +40,7 @@ buildPythonPackage {
     mkdir -p $out/bin && ln -s ${lib.getExe ruff} $out/bin/ruff
   '';
 
+  build-system = [ hatchling ];
+  pyproject = true;
   pythonImportsCheck = [ "ruff" ];
 }

@@ -1,18 +1,18 @@
 {
-  stdenv,
   lib,
-  patchelf,
+  stdenv,
   fetchFromGitHub,
-  rustPlatform,
-  makeBinaryWrapper,
-  pkg-config,
   curl,
-  openssl,
-  xz,
-  replaceVars,
   # for passthru.tests:
   gel,
+  makeBinaryWrapper,
+  openssl,
+  patchelf,
+  pkg-config,
+  replaceVars,
+  rustPlatform,
   testers,
+  xz,
 }:
 rustPlatform.buildRustPackage (finalAttrs: {
   pname = "gel";
@@ -25,10 +25,12 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-Fy4J7puunqB5TeUsafnOotoWNvtTGiMJZ06YII14zIM=";
   };
 
-  cargoDeps = rustPlatform.fetchCargoVendor {
-    inherit (finalAttrs) pname version src;
-    hash = "sha256-VRZjI8C0u+6MkQgzt0PApeUtrGR5UqvnLZxityMGnDo=";
-  };
+  patches = [
+    (replaceVars ./0001-dynamically-patchelf-binaries.patch {
+      inherit patchelf;
+      dynamicLinker = stdenv.cc.bintools.dynamicLinker;
+    })
+  ];
 
   nativeBuildInputs = [
     makeBinaryWrapper
@@ -45,39 +47,40 @@ rustPlatform.buildRustPackage (finalAttrs: {
     xz
   ];
 
-  checkFeatures = [ ];
-
-  patches = [
-    (replaceVars ./0001-dynamically-patchelf-binaries.patch {
-      inherit patchelf;
-      dynamicLinker = stdenv.cc.bintools.dynamicLinker;
-    })
-  ];
-
   env = {
     OPENSSL_NO_VENDOR = true;
   };
 
   doCheck = false;
 
+  cargoDeps = rustPlatform.fetchCargoVendor {
+    inherit (finalAttrs) pname version src;
+    hash = "sha256-VRZjI8C0u+6MkQgzt0PApeUtrGR5UqvnLZxityMGnDo=";
+  };
+
+  checkFeatures = [ ];
+
   passthru.tests.version = testers.testVersion {
-    package = gel;
     command = "gel --version";
+    package = gel;
   };
 
   meta = {
     description = "Gel cli";
     homepage = "https://docs.geldata.com/reference/cli";
     changelog = "https://github.com/geldata/gel-cli/compare/v7.7.0...v7.10.2";
+
     license = with lib.licenses; [
       asl20
       # or
       mit
     ];
+
     maintainers = with lib.maintainers; [
       ahirner
       kirillrdy
     ];
+
     mainProgram = "gel";
   };
 })

@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   gitMinimal,
   replaceVars,
   setuptools,
@@ -10,7 +10,6 @@
 buildPythonPackage rec {
   pname = "setuptools-git";
   version = "1.2";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "msabramo";
@@ -25,9 +24,9 @@ buildPythonPackage rec {
     })
   ];
 
-  build-system = [ setuptools ];
-
   doCheck = false;
+  build-system = [ setuptools ];
+  pyproject = true;
 
   meta = {
     description = "Setuptools revision control system plugin for Git";

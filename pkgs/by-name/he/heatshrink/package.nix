@@ -20,8 +20,8 @@ stdenv.mkDerivation (finalAttrs: {
   patches = [
     # Add CMake build script, wanted by prusa-slicer and libbgcode, which are the only users of this library.
     (fetchpatch {
-      url = "https://github.com/atomicobject/heatshrink/commit/0886e9ca76552b8e325841e2b820b4563e5d5aba.patch";
       hash = "sha256-13hy4+/RDaaKgQcdaSbACvMfElUIskvJ+owXqm40feY=";
+      url = "https://github.com/atomicobject/heatshrink/commit/0886e9ca76552b8e325841e2b820b4563e5d5aba.patch";
     })
   ];
 
@@ -30,6 +30,7 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   doInstallCheck = true;
+
   installCheckPhase = ''
     runHook preInstallCheck
     echo "Hello world" | \

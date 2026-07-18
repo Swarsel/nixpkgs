@@ -2,11 +2,11 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  fetchpatch,
   cmake,
-  ninja,
-  gtest,
+  fetchpatch,
   glibcLocales,
+  gtest,
+  ninja,
   prometheus-cpp,
 }:
 
@@ -23,9 +23,9 @@ stdenv.mkDerivation (finalAttrs: {
 
   patches = [
     (fetchpatch {
+      hash = "sha256-/X01AWXK0eJ59F8oSREZ7V5Cpw1y35n9uFB1mCvMOus=";
       name = "portability.patch";
       url = "https://github.com/google/benchmark/commit/b5ba9bab85d80f29a161dd634b7d234cf3722f90.patch";
-      hash = "sha256-/X01AWXK0eJ59F8oSREZ7V5Cpw1y35n9uFB1mCvMOus=";
     })
   ];
 
@@ -35,8 +35,6 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   buildInputs = [ gtest ];
-
-  nativeCheckInputs = lib.optionals (glibcLocales != null) [ glibcLocales ];
 
   cmakeFlags = [
     (lib.cmakeBool "BENCHMARK_USE_BUNDLED_GTEST" false)
@@ -65,6 +63,7 @@ stdenv.mkDerivation (finalAttrs: {
 
   # Tests fail on 32-bit due to not enough precision
   doCheck = stdenv.hostPlatform.is64bit;
+  nativeCheckInputs = lib.optionals (glibcLocales != null) [ glibcLocales ];
 
   passthru.tests = {
     inherit prometheus-cpp;
@@ -74,7 +73,7 @@ stdenv.mkDerivation (finalAttrs: {
     description = "Microbenchmark support library";
     homepage = "https://github.com/google/benchmark";
     license = lib.licenses.asl20;
-    platforms = lib.platforms.linux ++ lib.platforms.darwin ++ lib.platforms.freebsd;
     maintainers = with lib.maintainers; [ miniharinn ];
+    platforms = lib.platforms.linux ++ lib.platforms.darwin ++ lib.platforms.freebsd;
   };
 })

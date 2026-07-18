@@ -5,19 +5,26 @@
   fetchPypi,
   furl,
   hatchling,
-  pytestCheckHook,
   pytest-asyncio,
+  pytestCheckHook,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "mvg";
   version = "1.6.0";
-  pyproject = true;
 
   src = fetchPypi {
     inherit (finalAttrs) pname version;
     hash = "sha256-jpk6DUaQYtL7OHDOznhgAp0N8qao0wQI5benfPXwhJI=";
   };
+
+  # tests require network access
+  doCheck = false;
+
+  nativeCheckInputs = [
+    pytest-asyncio
+    pytestCheckHook
+  ];
 
   build-system = [ hatchling ];
 
@@ -26,14 +33,7 @@ buildPythonPackage (finalAttrs: {
     furl
   ];
 
-  nativeCheckInputs = [
-    pytest-asyncio
-    pytestCheckHook
-  ];
-
-  # tests require network access
-  doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "mvg" ];
 
   meta = {

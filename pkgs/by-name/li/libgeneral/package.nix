@@ -1,12 +1,12 @@
 {
   lib,
-  clangStdenv,
   fetchFromGitHub,
   autoreconfHook,
-  pkg-config,
+  avahi,
+  clangStdenv,
   libimobiledevice,
   libusb1,
-  avahi,
+  pkg-config,
 }:
 clangStdenv.mkDerivation (finalAttrs: {
   pname = "libgeneral";
@@ -22,6 +22,7 @@ clangStdenv.mkDerivation (finalAttrs: {
   # Do not depend on git to calculate version, instead
   # pass version via configureFlag
   patches = [ ./configure-version.patch ];
+  strictDeps = true;
 
   nativeBuildInputs = [
     autoreconfHook
@@ -32,13 +33,11 @@ clangStdenv.mkDerivation (finalAttrs: {
     "--with-version-commit-count=${finalAttrs.version}"
   ];
 
-  strictDeps = true;
-
   meta = {
     description = "Helper library used by usbmuxd2";
     homepage = "https://github.com/tihmstar/libgeneral";
     license = lib.licenses.lgpl21;
-    platforms = lib.platforms.all;
     maintainers = with lib.maintainers; [ onny ];
+    platforms = lib.platforms.all;
   };
 })

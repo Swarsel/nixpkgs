@@ -1,54 +1,53 @@
 {
-  config,
   lib,
-  buildGo125Module,
-  fetchFromGitHub,
-  fetchurl,
-  autoPatchelfHook,
-  unzip,
   stdenv,
-  vulkan-loader,
-  zlib,
-
-  # Feature flags (all enabled by default, set slim = true to disable all optional deps)
-  slim ? false,
-  enableCuda ? !slim && stdenv.hostPlatform.isLinux && config.cudaSupport,
-  enableVulkan ? !slim && stdenv.hostPlatform.isLinux,
-
+  fetchurl,
+  fetchFromGitHub,
+  autoPatchelfHook,
+  buildGo125Module,
+  config,
   # Optional dependencies
   cudaPackages,
-  gfortran,
-  pcre2,
   darwinMinVersionHook,
-  openssl,
   fftw,
+  gfortran,
   lame,
-  mpg123,
   llvmPackages,
+  mpg123,
+  openssl,
+  pcre2,
+  unzip,
+  vulkan-loader,
+  zlib,
+  enableCuda ? !slim && stdenv.hostPlatform.isLinux && config.cudaSupport,
+  enableVulkan ? !slim && stdenv.hostPlatform.isLinux,
+  # Feature flags (all enabled by default, set slim = true to disable all optional deps)
+  slim ? false,
 }:
 
 let
   bridgeVersion = "1.0.45-rc1";
 
   bridge = fetchurl {
+    hash =
+      {
+        aarch64-darwin = "sha256-QVh5HutaB/BfCYRgwXdtMVWtDcYzfL9N9qW2GhcK2aY=";
+        aarch64-linux = "sha256-KaHNmq776FtE4tF8jROV43QIyUNaYz/V1kkgMwwjcBo=";
+        x86_64-linux = "sha256-bvULCeGXNd8Alu7V32M5Me23Rh6of6L7hdPYrkOlxB0=";
+      }
+      .${stdenv.hostPlatform.system} or (throw "Unsupported system: ${stdenv.hostPlatform.system}");
+
     url =
       let
         platformDir =
           {
-            x86_64-linux = "linux_x86_64";
-            aarch64-linux = "linux_arm64";
             aarch64-darwin = "macos_arm64";
+            aarch64-linux = "linux_arm64";
+            x86_64-linux = "linux_x86_64";
           }
           .${stdenv.hostPlatform.system} or (throw "Unsupported system: ${stdenv.hostPlatform.system}");
       in
       "https://nexa-model-hub-bucket.s3.us-west-1.amazonaws.com/public/nexasdk/v${bridgeVersion}/${platformDir}/nexasdk-bridge.zip";
-    hash =
-      {
-        x86_64-linux = "sha256-bvULCeGXNd8Alu7V32M5Me23Rh6of6L7hdPYrkOlxB0=";
-        aarch64-linux = "sha256-KaHNmq776FtE4tF8jROV43QIyUNaYz/V1kkgMwwjcBo=";
-        aarch64-darwin = "sha256-QVh5HutaB/BfCYRgwXdtMVWtDcYzfL9N9qW2GhcK2aY=";
-      }
-      .${stdenv.hostPlatform.system} or (throw "Unsupported system: ${stdenv.hostPlatform.system}");
   };
 in
 buildGo125Module (finalAttrs: {
@@ -61,10 +60,6 @@ buildGo125Module (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-JioUguVO2z37BYxkXBlDEswJIh80bpOONG6EVNlq5OA=";
   };
-
-  modRoot = "runner";
-
-  vendorHash = "sha256-ovDlt8WpZB7VcNJ8Oy0YDRsreR15fMT7rIHPpd4JVGY=";
 
   nativeBuildInputs = [
     unzip
@@ -91,62 +86,14 @@ buildGo125Module (finalAttrs: {
       cudaPackages.libcublas
     ];
 
-  # libcuda.so.1 is provided by the NVIDIA driver at runtime
-  autoPatchelfIgnoreMissingDeps = lib.optionals stdenv.hostPlatform.isLinux (
-    [
-      "libcuda.so.1"
-    ]
-    ++ lib.optionals (!enableCuda) [
-      "libcudart.so.12"
-      "libcublas.so.12"
-      "libcublasLt.so.12"
-    ]
-    ++ [
-      "libavformat.so.58"
-      "libavfilter.so.7"
-      "libavcodec.so.58"
-      "libavutil.so.56"
-      "libswresample.so.3"
-    ]
-    ++ lib.optionals (!enableVulkan) [
-      "libvulkan.so.1"
-    ]
-  );
-
-  subPackages = [
-    "cmd/nexa-cli"
-    "cmd/nexa-launcher"
-  ];
+  vendorHash = "sha256-ovDlt8WpZB7VcNJ8Oy0YDRsreR15fMT7rIHPpd4JVGY=";
+  env.CGO_ENABLED = "1";
 
   preBuild = ''
     unzip ${bridge} -d build
   '';
 
-  env.CGO_ENABLED = "1";
-
-  ldflags = [
-    "-s"
-    "-w"
-    "-X main.Version=v${finalAttrs.version}"
-  ];
-
-  tags = [
-    "sonic"
-    "avx"
-  ];
-
   doCheck = false;
-
-  doInstallCheck = true;
-  # Can't use versionCheckHook because nexa requires $HOME to be set
-  installCheckPhase = ''
-    runHook preInstallCheck
-    export HOME=$TMPDIR
-    output="$($out/bin/nexa version 2>&1 || true)"
-    echo "$output"
-    echo "$output" | grep -q "${finalAttrs.version}"
-    runHook postInstallCheck
-  '';
 
   postInstall = ''
     mv $out/bin/nexa-launcher $out/bin/nexa
@@ -197,17 +144,71 @@ buildGo125Module (finalAttrs: {
     fi
   '';
 
+  doInstallCheck = true;
+
+  # Can't use versionCheckHook because nexa requires $HOME to be set
+  installCheckPhase = ''
+    runHook preInstallCheck
+    export HOME=$TMPDIR
+    output="$($out/bin/nexa version 2>&1 || true)"
+    echo "$output"
+    echo "$output" | grep -q "${finalAttrs.version}"
+    runHook postInstallCheck
+  '';
+
+  # libcuda.so.1 is provided by the NVIDIA driver at runtime
+  autoPatchelfIgnoreMissingDeps = lib.optionals stdenv.hostPlatform.isLinux (
+    [
+      "libcuda.so.1"
+    ]
+    ++ lib.optionals (!enableCuda) [
+      "libcudart.so.12"
+      "libcublas.so.12"
+      "libcublasLt.so.12"
+    ]
+    ++ [
+      "libavformat.so.58"
+      "libavfilter.so.7"
+      "libavcodec.so.58"
+      "libavutil.so.56"
+      "libswresample.so.3"
+    ]
+    ++ lib.optionals (!enableVulkan) [
+      "libvulkan.so.1"
+    ]
+  );
+
+  ldflags = [
+    "-s"
+    "-w"
+    "-X main.Version=v${finalAttrs.version}"
+  ];
+
+  modRoot = "runner";
+
+  subPackages = [
+    "cmd/nexa-cli"
+    "cmd/nexa-launcher"
+  ];
+
+  tags = [
+    "sonic"
+    "avx"
+  ];
+
   meta = {
     description = "Nexa AI SDK CLI for model management, inference, and server operations";
     homepage = "https://github.com/qualcomm/GenieX";
     changelog = "https://github.com/qualcomm/GenieX/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.asl20;
     maintainers = with lib.maintainers; [ mkg20001 ];
-    mainProgram = "nexa";
+
     platforms = [
       "x86_64-linux"
       "aarch64-linux"
       "aarch64-darwin"
     ];
+
+    mainProgram = "nexa";
   };
 })

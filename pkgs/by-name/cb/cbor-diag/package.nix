@@ -7,8 +7,6 @@
 bundlerApp {
   pname = "cbor-diag";
 
-  gemdir = ./.;
-
   exes = [
     "cbor2diag.rb"
     "cbor2json.rb"
@@ -27,16 +25,19 @@ bundlerApp {
     "yaml2cbor.rb"
   ];
 
+  gemdir = ./.;
   passthru.updateScript = bundlerUpdateScript "cbor-diag";
 
   meta = {
     description = "CBOR diagnostic utilities";
     homepage = "https://github.com/cabo/cbor-diag";
     license = with lib.licenses; asl20;
+
     maintainers = with lib.maintainers; [
       fdns
       nicknovitski
     ];
+
     platforms = lib.platforms.unix;
   };
 }

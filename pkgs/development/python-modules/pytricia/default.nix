@@ -8,7 +8,6 @@
 buildPythonPackage rec {
   pname = "pytricia";
   version = "1.3.0";
-  pyproject = true;
 
   # no tags on git repo
   src = fetchPypi {
@@ -16,11 +15,10 @@ buildPythonPackage rec {
     hash = "sha256-HDo9aQnhDUycLw/kVCokgeEJ0pqrmcwCfKf+k/jIhT8=";
   };
 
-  build-system = [ setuptools ];
-
-  pythonImportsCheck = [ "pytricia" ];
-
   doCheck = false; # no tests
+  build-system = [ setuptools ];
+  pyproject = true;
+  pythonImportsCheck = [ "pytricia" ];
 
   meta = {
     description = "Library for fast IP address lookup in Python";

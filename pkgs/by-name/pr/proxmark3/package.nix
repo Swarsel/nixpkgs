@@ -2,30 +2,30 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  pkg-config,
-  gcc-arm-embedded,
-  readline,
+  bluez5,
   bzip2,
-  openssl,
-  jansson,
+  gcc-arm-embedded,
   gd,
-  whereami,
+  jansson,
+  libsForQt5,
   lua,
   lz4,
-  udevCheckHook,
   nix-update-script,
-  withGui ? true,
-  libsForQt5,
-  withPython ? true,
+  openssl,
+  pkg-config,
   python3,
-  withBlueshark ? false,
-  bluez5,
-  withGeneric ? false,
-  withSmall ? false,
-  withoutFunctions ? [ ],
+  readline,
+  udevCheckHook,
+  whereami,
   hardwarePlatform ? if withGeneric then "PM3GENERIC" else "PM3RDV4",
   hardwarePlatformExtras ? lib.optionalString withBlueshark "BTADDON",
   standalone ? "LF_SAMYRUN",
+  withBlueshark ? false,
+  withGeneric ? false,
+  withGui ? true,
+  withPython ? true,
+  withSmall ? false,
+  withoutFunctions ? [ ],
 }:
 assert withBlueshark -> stdenv.hostPlatform.isLinux;
 stdenv.mkDerivation (finalAttrs: {
@@ -57,6 +57,7 @@ stdenv.mkDerivation (finalAttrs: {
     udevCheckHook
   ]
   ++ lib.optional withGui libsForQt5.wrapQtAppsHook;
+
   buildInputs = [
     readline
     bzip2
@@ -81,20 +82,21 @@ stdenv.mkDerivation (finalAttrs: {
   ]
   ++ lib.optional withSmall "PLATFORM_SIZE=256"
   ++ map (x: "SKIP_${x}=1") withoutFunctions;
-  enableParallelBuilding = true;
 
   doInstallCheck = true;
-
+  enableParallelBuilding = true;
   passthru.updateScript = nix-update-script { };
 
   meta = {
     description = "Client for proxmark3, powerful general purpose RFID tool";
     homepage = "https://github.com/RfidResearchGroup/proxmark3";
     license = lib.licenses.gpl3Plus;
+
     maintainers = with lib.maintainers; [
       nyanotech
       emilytrau
     ];
+
     platforms = lib.platforms.unix;
     mainProgram = "pm3";
   };

@@ -1,18 +1,13 @@
 {
-  build-idris-package,
+  lib,
   fetchFromGitHub,
+  build-idris-package,
   contrib,
   pruviloj,
-  lib,
 }:
 build-idris-package {
   pname = "js";
   version = "2018-11-27";
-
-  idrisDeps = [
-    contrib
-    pruviloj
-  ];
 
   src = fetchFromGitHub {
     owner = "rbarreiro";
@@ -20,6 +15,11 @@ build-idris-package {
     rev = "1ce91ecec69a7174c20bff927aeac3928a01ed3f";
     sha256 = "13whhccb7yjq10hnngdc8bc9z9vvyir1wjkclpz006cr4cd266ca";
   };
+
+  idrisDeps = [
+    contrib
+    pruviloj
+  ];
 
   meta = {
     description = "Js libraries for idris";

@@ -29,19 +29,19 @@ stdenv.mkDerivation (finalAttrs: {
 
   makeFlags = [ "CC=${stdenv.cc.targetPrefix}cc" ];
 
-  installFlags = [ "PREFIX=${placeholder "out"}" ];
-
   preInstall = ''
     mkdir -p $out/bin $out/share/man/man1
   '';
 
+  installFlags = [ "PREFIX=${placeholder "out"}" ];
+
   meta = {
-    homepage = "https://www.han.de/~werner/ytree.html";
     description = "Curses-based file manager similar to DOS Xtree(TM)";
+    homepage = "https://www.han.de/~werner/ytree.html";
     license = with lib.licenses; [ gpl2Plus ];
-    mainProgram = "ytree";
     maintainers = [ ];
     platforms = lib.platforms.unix;
+    mainProgram = "ytree";
   };
 })
 # TODO: X11 support

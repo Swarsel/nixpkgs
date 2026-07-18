@@ -1,18 +1,13 @@
 {
   lib,
-  stdenvNoCC,
   fetchFromGitHub,
   installFonts,
+  stdenvNoCC,
 }:
 
 stdenvNoCC.mkDerivation (finalAttrs: {
   pname = "barlow";
   version = "1.422";
-
-  outputs = [
-    "out"
-    "webfont"
-  ];
 
   src = fetchFromGitHub {
     owner = "jpt";
@@ -20,6 +15,11 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     tag = finalAttrs.version;
     hash = "sha256-FG68o6qN/296RhSNDHFXYXbkhlXSZJgGhVjzlJqsksY=";
   };
+
+  outputs = [
+    "out"
+    "webfont"
+  ];
 
   nativeBuildInputs = [ installFonts ];
 

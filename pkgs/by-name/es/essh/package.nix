@@ -18,23 +18,18 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-njBhA3CSTAlWjcgY3y+hvl19By2QGy2tHP8+FxgycIA=";
   };
 
-  __structuredAttrs = true;
-
-  cargoHash = "sha256-TlvUdlKnRA/L5oePn+YWum1wy3ktHFuXP5V+nH2QNnc=";
-
   nativeBuildInputs = [ pkg-config ];
-
   buildInputs = [ sqlite ];
-
+  cargoHash = "sha256-TlvUdlKnRA/L5oePn+YWum1wy3ktHFuXP5V+nH2QNnc=";
   nativeCheckInputs = [ versionCheckHook ];
-
-  doInstallCheck = true;
-
-  versionCheckProgramArg = [ "-V" ];
 
   checkFlags = [
     "--skip=mock_ssh_server_drives_real_connect_flow_end_to_end"
   ];
+
+  doInstallCheck = true;
+  __structuredAttrs = true;
+  versionCheckProgramArg = [ "-V" ];
 
   meta = {
     description = "SSH client to manage connections, keys and sessions";

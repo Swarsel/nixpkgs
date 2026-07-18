@@ -1,8 +1,8 @@
 {
-  stdenv,
   lib,
-  coreutils,
+  stdenv,
   bash,
+  coreutils,
   gnutar,
   writeText,
 }:
@@ -11,14 +11,14 @@ let
   stripNixStore = s: lib.removePrefix "${builtins.storeDir}/" s;
 in
 {
+  imageConfig,
+  imageLayers,
+  imageName,
   name,
+  tag,
+  image ? "${stripScheme registry}/${repository}/${imageName}:${tag}",
   registry ? "https://registry-1.docker.io/v2/",
   repository ? "library",
-  imageName,
-  tag,
-  imageLayers,
-  imageConfig,
-  image ? "${stripScheme registry}/${repository}/${imageName}:${tag}",
 }:
 
 # Make sure there are *no* slashes in the repository or container
@@ -57,23 +57,24 @@ let
   );
 in
 stdenv.mkDerivation {
-  builder = ./fetchdocker-builder.sh;
-  buildInputs = [ coreutils ];
-  preferLocalBuild = true;
-
   inherit
     name
     imageName
     repository
     tag
     ;
+
   inherit
     bash
     gnutar
     manifest
     repositories
     ;
+
   inherit imageFileStorePaths;
+  buildInputs = [ coreutils ];
+  builder = ./fetchdocker-builder.sh;
+  preferLocalBuild = true;
 
   passthru = {
     inherit image;

@@ -1,25 +1,18 @@
 {
-  mkDerivation,
+  csu,
   include,
   libcMinimal,
-  libgcc,
   libelf,
-  csu,
+  libgcc,
+  mkDerivation,
 }:
 
 mkDerivation {
-  path = "lib/libkvm";
-  extraPaths = [
-    "sys" # wants sys/${arch}
-  ];
-
   outputs = [
     "out"
     "man"
     "debug"
   ];
-
-  noLibc = true;
 
   buildInputs = [
     include
@@ -28,9 +21,16 @@ mkDerivation {
     libelf
   ];
 
+  env.MK_TESTS = "no";
+
   preBuild = ''
     export NIX_CFLAGS_COMPILE="$NIX_CFLAGS_COMPILE -B${csu}/lib"
   '';
 
-  env.MK_TESTS = "no";
+  extraPaths = [
+    "sys" # wants sys/${arch}
+  ];
+
+  noLibc = true;
+  path = "lib/libkvm";
 }

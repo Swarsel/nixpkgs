@@ -17,18 +17,10 @@ let
   configFile = settingsFormat.generate "script-exporter.yaml" cfg.settings;
 in
 {
-  port = 9172;
   extraOpts = {
     settings = mkOption {
-      type = (pkgs.formats.yaml { }).type;
       default = { };
-      example = literalExpression ''
-        {
-          scripts = [
-            { name = "sleep"; command = [ "sleep" ]; args = [ "5" ]; }
-          ];
-        }
-      '';
+
       description = ''
         Free-form configuration for script_exporter, expressed as a Nix attrset and rendered to YAML.
 
@@ -37,8 +29,21 @@ in
 
         See the official documentation for all available options: <https://github.com/ricoberger/script_exporter#configuration-file>
       '';
+
+      example = literalExpression ''
+        {
+          scripts = [
+            { name = "sleep"; command = [ "sleep" ]; args = [ "5" ]; }
+          ];
+        }
+      '';
+
+      type = (pkgs.formats.yaml { }).type;
     };
   };
+
+  port = 9172;
+
   serviceOpts = {
     serviceConfig = {
       ExecStart = ''
@@ -47,12 +52,13 @@ in
           --config.files ${configFile} \
           ${concatStringsSep " \\\n  " cfg.extraFlags}
       '';
+
       NoNewPrivileges = true;
-      ProtectHome = true;
-      ProtectSystem = "strict";
-      ProtectKernelTunables = true;
-      ProtectKernelModules = true;
       ProtectControlGroups = true;
+      ProtectHome = true;
+      ProtectKernelModules = true;
+      ProtectKernelTunables = true;
+      ProtectSystem = "strict";
     };
   };
 }

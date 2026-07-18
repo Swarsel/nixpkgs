@@ -1,11 +1,11 @@
 {
   lib,
+  fetchFromGitHub,
   aiohttp,
   aiointercept,
   aioresponses,
   buildPythonPackage,
   dateparser,
-  fetchFromGitHub,
   haversine,
   mock,
   pytest-asyncio,
@@ -18,7 +18,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "aio-georss-client";
   version = "2026.6.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "exxamalte";
@@ -27,8 +26,15 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-HstN/X3fJHJHLtduMyeUCK8epqY6yfXi8LlF75mn8+g=";
   };
 
-  __darwinAllowLocalNetworking = true;
+  nativeCheckInputs = [
+    aiointercept
+    aioresponses
+    mock
+    pytest-asyncio
+    pytestCheckHook
+  ];
 
+  __darwinAllowLocalNetworking = true;
   build-system = [ setuptools ];
 
   dependencies = [
@@ -39,14 +45,7 @@ buildPythonPackage (finalAttrs: {
     dateparser
   ];
 
-  nativeCheckInputs = [
-    aiointercept
-    aioresponses
-    mock
-    pytest-asyncio
-    pytestCheckHook
-  ];
-
+  pyproject = true;
   pythonImportsCheck = [ "aio_georss_client" ];
 
   meta = {

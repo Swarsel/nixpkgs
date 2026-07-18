@@ -1,21 +1,20 @@
 {
   lib,
-  python3Packages,
   fetchFromGitHub,
   clang-tools,
   colordiff,
+  cvise,
   flex,
   libclang,
   llvm,
-  unifdef,
+  python3Packages,
   testers,
-  cvise,
+  unifdef,
 }:
 
 python3Packages.buildPythonApplication rec {
   pname = "cvise";
   version = "2.12.0";
-  pyproject = false;
 
   src = fetchFromGitHub {
     owner = "marxin";
@@ -59,15 +58,15 @@ python3Packages.buildPythonApplication rec {
     psutil
   ];
 
-  nativeCheckInputs = [
-    python3Packages.pytestCheckHook
-    unifdef
-  ];
-
   cmakeFlags = [
     # By default `cvise` looks it up in `llvm` bin directory. But
     # `nixpkgs` moves it into a separate derivation.
     "-DCLANG_FORMAT_PATH=${clang-tools}/bin/clang-format"
+  ];
+
+  nativeCheckInputs = [
+    python3Packages.pytestCheckHook
+    unifdef
   ];
 
   disabledTests = [
@@ -75,19 +74,21 @@ python3Packages.buildPythonApplication rec {
     "test_simple_reduction"
   ];
 
+  pyproject = false;
+
   passthru = {
     tests = {
       # basic syntax check
       help-output = testers.testVersion {
-        package = cvise;
         command = "cvise --version";
+        package = cvise;
       };
     };
   };
 
   meta = {
-    homepage = "https://github.com/marxin/cvise";
     description = "Super-parallel Python port of C-Reduce";
+    homepage = "https://github.com/marxin/cvise";
     license = lib.licenses.ncsa;
     maintainers = [ ];
     platforms = lib.platforms.linux;

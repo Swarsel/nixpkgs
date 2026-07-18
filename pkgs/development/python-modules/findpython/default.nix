@@ -2,14 +2,11 @@
   lib,
   buildPythonPackage,
   fetchPypi,
-
-  # build time
-  pdm-backend,
-
   # runtime
   packaging,
+  # build time
+  pdm-backend,
   platformdirs,
-
   # tests
   pytestCheckHook,
 }:
@@ -20,13 +17,13 @@ let
 in
 buildPythonPackage {
   inherit pname version;
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
     hash = "sha256-nynmo9q9t18rOclJdywO0m6rFTCABmafNHjNqw2GfHg=";
   };
 
+  nativeCheckInputs = [ pytestCheckHook ];
   build-system = [ pdm-backend ];
 
   dependencies = [
@@ -34,16 +31,15 @@ buildPythonPackage {
     platformdirs
   ];
 
-  nativeCheckInputs = [ pytestCheckHook ];
-
+  pyproject = true;
   pythonImportsCheck = [ "findpython" ];
 
   meta = {
     description = "Utility to find python versions on your system";
-    mainProgram = "findpython";
     homepage = "https://github.com/frostming/findpython";
     changelog = "https://github.com/frostming/findpython/releases/tag/${version}";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ hexa ];
+    mainProgram = "findpython";
   };
 }

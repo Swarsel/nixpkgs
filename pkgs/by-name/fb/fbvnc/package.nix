@@ -36,10 +36,10 @@ stdenv.mkDerivation {
 
   meta = {
     description = "Framebuffer VNC client";
+    homepage = "https://github.com/zohead/fbvnc/";
     license = lib.licenses.bsd3;
     maintainers = [ lib.maintainers.raskin ];
     platforms = lib.platforms.linux;
-    homepage = "https://github.com/zohead/fbvnc/";
     mainProgram = "fbvnc";
   };
 }

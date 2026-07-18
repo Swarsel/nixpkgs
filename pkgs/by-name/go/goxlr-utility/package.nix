@@ -1,12 +1,12 @@
 {
   lib,
   fetchFromGitHub,
-  rustPlatform,
-  installShellFiles,
-  pkg-config,
-  libpulseaudio,
   dbus,
+  installShellFiles,
+  libpulseaudio,
   openssl,
+  pkg-config,
+  rustPlatform,
   speechd-minimal,
   udevCheckHook,
 }:
@@ -22,7 +22,12 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-WPEk7rMfvwN3YyUfxu3wP09rfOZQ+GMPt1OAY5jEj8Y=";
   };
 
-  cargoHash = "sha256-7s2P9kvYEfgVRFaOkkzsVHbgTaxodvG6bOw5/HTmvyI=";
+  nativeBuildInputs = [
+    pkg-config
+    installShellFiles
+    rustPlatform.bindgenHook
+    udevCheckHook
+  ];
 
   buildInputs = [
     libpulseaudio
@@ -31,16 +36,7 @@ rustPlatform.buildRustPackage (finalAttrs: {
     openssl
   ];
 
-  nativeBuildInputs = [
-    pkg-config
-    installShellFiles
-    rustPlatform.bindgenHook
-    udevCheckHook
-  ];
-
-  buildFeatures = [ "tts" ];
-
-  doInstallCheck = true;
+  cargoHash = "sha256-7s2P9kvYEfgVRFaOkkzsVHbgTaxodvG6bOw5/HTmvyI=";
 
   postInstall = ''
     install -Dm644 "50-goxlr.rules" "$out/etc/udev/rules.d/50-goxlr.rules"
@@ -60,6 +56,9 @@ rustPlatform.buildRustPackage (finalAttrs: {
     installShellCompletion --fish $completions_dir/goxlr-daemon.fish
     installShellCompletion --zsh  $completions_dir/_goxlr-daemon
   '';
+
+  doInstallCheck = true;
+  buildFeatures = [ "tts" ];
 
   meta = {
     description = "Unofficial GoXLR App replacement for Linux, Windows and MacOS";

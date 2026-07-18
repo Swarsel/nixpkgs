@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   georss-client,
   pytestCheckHook,
   setuptools,
@@ -10,7 +10,6 @@
 buildPythonPackage rec {
   pname = "georss-ingv-centro-nazionale-terremoti-client";
   version = "0.7";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "exxamalte";
@@ -20,11 +19,9 @@ buildPythonPackage rec {
   };
 
   nativeBuildInputs = [ setuptools ];
-
   propagatedBuildInputs = [ georss-client ];
-
   nativeCheckInputs = [ pytestCheckHook ];
-
+  pyproject = true;
   pythonImportsCheck = [ "georss_ingv_centro_nazionale_terremoti_client" ];
 
   meta = {

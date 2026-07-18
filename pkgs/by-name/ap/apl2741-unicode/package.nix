@@ -1,8 +1,8 @@
 {
   lib,
-  stdenvNoCC,
   fetchFromGitHub,
   installFonts,
+  stdenvNoCC,
 }:
 
 stdenvNoCC.mkDerivation {
@@ -16,15 +16,14 @@ stdenvNoCC.mkDerivation {
     hash = "sha256-/sAO+HL3zGMJZ+5SFHnkHxxevG0nJ7wo1yLTlHqYPkQ=";
   };
 
-  dontConfigure = true;
-  dontBuild = true;
-
   nativeBuildInputs = [ installFonts ];
+  dontBuild = true;
+  dontConfigure = true;
 
   meta = {
     description = "APL font based on Adrian Smith's IBM Selectric APL2741 golf-ball font";
-    license = lib.licenses.unlicense;
     homepage = "https://abrudz.github.io/APL2741/";
+    license = lib.licenses.unlicense;
     maintainers = [ lib.maintainers.sternenseemann ];
     platforms = lib.platforms.all;
   };

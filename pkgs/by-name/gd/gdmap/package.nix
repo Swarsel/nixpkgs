@@ -2,13 +2,13 @@
   lib,
   stdenv,
   fetchFromGitLab,
-  meson,
   cairo,
+  gettext,
   gtk3,
+  libxml2,
+  meson,
   ninja,
   pkg-config,
-  libxml2,
-  gettext,
   wrapGAppsHook3,
 }:
 
@@ -29,6 +29,7 @@ stdenv.mkDerivation {
     pkg-config
     wrapGAppsHook3
   ];
+
   buildInputs = [
     gtk3
     cairo
@@ -37,11 +38,11 @@ stdenv.mkDerivation {
   ];
 
   meta = {
-    homepage = "https://gitlab.com/sjohannes/gdmap";
     description = "Tool to visualize disk space (GTK 3 port of Original)";
+    homepage = "https://gitlab.com/sjohannes/gdmap";
     license = lib.licenses.gpl2Only;
-    platforms = lib.platforms.linux;
     maintainers = [ lib.maintainers.bjornfor ];
+    platforms = lib.platforms.linux;
     mainProgram = "gdmap";
   };
 }

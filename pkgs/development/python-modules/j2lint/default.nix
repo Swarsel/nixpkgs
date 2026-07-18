@@ -1,19 +1,19 @@
 {
   lib,
+  fetchFromGitHub,
   buildPythonPackage,
   jinja2,
-  setuptools,
-  fetchFromGitHub,
-  rich,
-  versionCheckHook,
-  pytestCheckHook,
   pytest-cov-stub,
+  pytestCheckHook,
+  rich,
+  setuptools,
+  versionCheckHook,
 }:
 
 buildPythonPackage rec {
   pname = "j2lint";
   version = "1.2.0";
-  pyproject = true;
+
   src = fetchFromGitHub {
     owner = "aristanetworks";
     repo = "j2lint";
@@ -21,21 +21,24 @@ buildPythonPackage rec {
     hash = "sha256-/3hd2RnyxX4CsqWvsmGB/5QoeQIsFhtG3nntHer0or8=";
   };
 
-  build-system = [ setuptools ];
-  dependencies = [
-    jinja2
-    rich
-  ];
-
   nativeCheckInputs = [
     pytest-cov-stub
     pytestCheckHook
     versionCheckHook
   ];
 
+  build-system = [ setuptools ];
+
+  dependencies = [
+    jinja2
+    rich
+  ];
+
+  pyproject = true;
+
   meta = {
-    homepage = "https://github.com/aristanetworks/j2lint";
     description = "Jinja2 Linter CLI";
+    homepage = "https://github.com/aristanetworks/j2lint";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ polyfloyd ];
   };

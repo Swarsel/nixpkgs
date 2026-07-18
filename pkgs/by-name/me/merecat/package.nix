@@ -3,12 +3,12 @@
   stdenv,
   fetchFromGitHub,
   autoreconfHook,
-  pkg-config,
   libconfuse,
   libxcrypt,
-  testers,
   merecat,
   nixosTests,
+  pkg-config,
+  testers,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -34,11 +34,12 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   passthru.tests = {
-    testVersion = testers.testVersion {
-      package = merecat;
-      command = "merecat -V";
-    };
     inherit (nixosTests) merecat;
+
+    testVersion = testers.testVersion {
+      command = "merecat -V";
+      package = merecat;
+    };
   };
 
   meta = {

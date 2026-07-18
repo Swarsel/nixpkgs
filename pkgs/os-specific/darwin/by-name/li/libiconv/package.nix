@@ -1,24 +1,20 @@
 {
   lib,
+  stdenv,
   atf,
   gperf,
   mkAppleDerivation,
   pkg-config,
-  stdenv,
 }:
 
 let
   inherit (stdenv) hostPlatform;
 in
 mkAppleDerivation (finalAttrs: {
-  releaseName = "libiconv";
-
   outputs = [
     "out"
     "dev"
   ];
-
-  xcodeHash = "sha256-fg5N+TcpyRnAf2ZKFEL0iJRy+QGs++Jmt6M3SV3oyfU=";
 
   patches = [
     # Use gperf to implement module loading statically by looking up the module functions in the static binary.
@@ -26,9 +22,6 @@ mkAppleDerivation (finalAttrs: {
     # Avoid out of bounds write with ISO-2022
     ./patches/0002-Fix-ISO-2022-out-of-bounds-write-with-encoded-charac.patch
   ];
-
-  # Propagate `out` only when there are dylibs to link (i.e., don’t propagate when doing a static build).
-  propagatedBuildOutputs = lib.optionalString (!hostPlatform.isStatic) "out";
 
   postPatch = ''
     # Work around unnecessary private API usage in libcharset.
@@ -48,7 +41,6 @@ mkAppleDerivation (finalAttrs: {
   # Dynamic builds use `dlopen` to load modules, but static builds have to link them all.
   # `gperf` is used to generate a lookup table from module to ops functions.
   nativeBuildInputs = lib.optionals hostPlatform.isStatic [ gperf ];
-
   mesonFlags = [ (lib.mesonBool "tests" finalAttrs.finalPackage.doInstallCheck) ];
 
   postBuild =
@@ -67,12 +59,10 @@ mkAppleDerivation (finalAttrs: {
       moveToOutput lib "$dev"
     '';
 
+  doInstallCheck = stdenv.buildPlatform.canExecute hostPlatform;
   # Tests have to be run in `installCheckPhase` because libiconv expects to `dlopen`
   # modules from `$out/lib/i18n`.
   nativeInstallCheckInputs = [ pkg-config ];
-  installCheckInputs = [ atf ];
-
-  doInstallCheck = stdenv.buildPlatform.canExecute hostPlatform;
 
   # Can’t use `mesonCheckPhase` because it runs the wrong hooks for `installCheckPhase`.
   installCheckPhase = ''
@@ -81,13 +71,21 @@ mkAppleDerivation (finalAttrs: {
     runHook postInstallCheck
   '';
 
+  installCheckInputs = [ atf ];
+  # Propagate `out` only when there are dylibs to link (i.e., don’t propagate when doing a static build).
+  propagatedBuildOutputs = lib.optionalString (!hostPlatform.isStatic) "out";
+  releaseName = "libiconv";
+  xcodeHash = "sha256-fg5N+TcpyRnAf2ZKFEL0iJRy+QGs++Jmt6M3SV3oyfU=";
+
   meta = {
     description = "Iconv(3) implementation";
+
     license = [
       lib.licenses.bsd2
       lib.licenses.bsd3
     ]
     ++ lib.optional finalAttrs.finalPackage.doInstallCheck lib.licenses.apple-psl10;
+
     mainProgram = "iconv";
   };
 })

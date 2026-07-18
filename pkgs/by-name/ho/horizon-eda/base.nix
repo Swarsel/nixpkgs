@@ -1,9 +1,9 @@
 {
   lib,
+  fetchFromGitHub,
   cmake,
   cppzmq,
   curl,
-  fetchFromGitHub,
   glm,
   gtkmm3,
   libarchive,
@@ -62,11 +62,13 @@ rec {
   meta = {
     description = "Free EDA software to develop printed circuit boards";
     homepage = "https://horizon-eda.org";
+    license = lib.licenses.gpl3Plus;
+
     maintainers = with lib.maintainers; [
       guserav
       jue89
     ];
-    license = lib.licenses.gpl3Plus;
+
     platforms = lib.platforms.linux;
   };
 }

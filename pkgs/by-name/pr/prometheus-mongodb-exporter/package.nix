@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   krb5,
   withGssapi ? true,
 }:
@@ -17,11 +17,11 @@ buildGoModule rec {
     hash = "sha256-FpB1xijoKoKTCteHhuPakej4PkYXcuPMD9Vmc7B6/vs=";
   };
 
-  vendorHash = "sha256-xNfwbUPJjLDLMXzEYH+xsywRc9dRLf/8/V9Zn/sYato=";
-
   buildInputs = lib.optionals withGssapi [ krb5 ];
-
-  tags = lib.optionals withGssapi [ "gssapi" ];
+  vendorHash = "sha256-xNfwbUPJjLDLMXzEYH+xsywRc9dRLf/8/V9Zn/sYato=";
+  # those check depends on docker;
+  # nixpkgs doesn't have mongodb application available;
+  doCheck = false;
 
   ldflags = [
     "-s"
@@ -33,10 +33,7 @@ buildGoModule rec {
   ];
 
   subPackages = [ "." ];
-
-  # those check depends on docker;
-  # nixpkgs doesn't have mongodb application available;
-  doCheck = false;
+  tags = lib.optionals withGssapi [ "gssapi" ];
 
   meta = {
     description = "Prometheus exporter for MongoDB including sharding, replication and storage engines";

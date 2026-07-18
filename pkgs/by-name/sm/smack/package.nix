@@ -12,10 +12,9 @@ stdenv.mkDerivation (finalAttrs: {
     url = "https://www.igniterealtime.org/downloadServlet?filename=smack/smack_${
       lib.replaceStrings [ "." ] [ "_" ] finalAttrs.version
     }.tar.gz";
+
     sha256 = "009x0qcxd4dkvwcjz2nla470pwbabwvg37wc21pslpw42ldi0bzp";
   };
-
-  sourceRoot = ".";
 
   installPhase = ''
     runHook preInstall
@@ -26,11 +25,13 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  sourceRoot = ".";
+
   meta = {
     description = "XMPP (Jabber) client library for instant messaging and presence";
     homepage = "http://www.igniterealtime.org/projects/smack/";
+    license = lib.licenses.asl20;
     sourceProvenance = with lib.sourceTypes; [ binaryBytecode ];
     platforms = lib.platforms.unix;
-    license = lib.licenses.asl20;
   };
 })

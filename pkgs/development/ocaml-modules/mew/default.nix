@@ -1,7 +1,7 @@
 {
   lib,
-  buildDunePackage,
   fetchFromGitHub,
+  buildDunePackage,
   result,
   trie,
 }:
@@ -23,9 +23,9 @@ buildDunePackage (finalAttrs: {
   ];
 
   meta = {
+    description = "Modal Editing Witch";
     homepage = "https://github.com/kandu/mew";
     license = lib.licenses.mit;
-    description = "Modal Editing Witch";
     maintainers = [ lib.maintainers.vbgl ];
   };
 

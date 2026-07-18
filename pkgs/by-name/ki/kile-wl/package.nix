@@ -1,8 +1,8 @@
 {
   lib,
   fetchFromGitLab,
-  unstableGitUpdater,
   rustPlatform,
+  unstableGitUpdater,
 }:
 
 rustPlatform.buildRustPackage {
@@ -16,19 +16,19 @@ rustPlatform.buildRustPackage {
     hash = "sha256-4iclNVd7nm6LkgvsHwWaWyi1bZL/A+bbT5OSXn70bLs=";
   };
 
-  passthru.updateScript = unstableGitUpdater {
-    url = "https://gitlab.com/snakedye/kile.git";
-    tagPrefix = "v";
-  };
-
   cargoHash = "sha256-HcwdUwhiSkULCevsHTnRyazNfHDvLZv44SFXKxrHxYY=";
+
+  passthru.updateScript = unstableGitUpdater {
+    tagPrefix = "v";
+    url = "https://gitlab.com/snakedye/kile.git";
+  };
 
   meta = {
     description = "Tiling layout generator for river";
     homepage = "https://gitlab.com/snakedye/kile";
     license = lib.licenses.mit;
-    platforms = lib.platforms.linux; # It's meant for river, a wayland compositor
     maintainers = with lib.maintainers; [ moni ];
+    platforms = lib.platforms.linux; # It's meant for river, a wayland compositor
     mainProgram = "kile";
   };
 }

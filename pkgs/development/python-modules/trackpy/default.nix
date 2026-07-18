@@ -1,9 +1,8 @@
 {
   lib,
   stdenv,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
+  buildPythonPackage,
   looseversion,
   matplotlib,
   numba,
@@ -12,12 +11,12 @@
   pytestCheckHook,
   pyyaml,
   scipy,
+  setuptools,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "trackpy";
   version = "0.7";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "soft-matter";
@@ -25,6 +24,15 @@ buildPythonPackage (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-3e+gHdn/4n8T78eA3Gjz1TdSI4Hd935U2pqd8wG+U0M=";
   };
+
+  nativeCheckInputs = [ pytestCheckHook ];
+
+  preCheck = lib.optionalString stdenv.hostPlatform.isDarwin ''
+    # specifically needed for darwin
+    export HOME=$(mktemp -d)
+    mkdir -p $HOME/.matplotlib
+    echo "backend: ps" > $HOME/.matplotlib/matplotlibrc
+  '';
 
   build-system = [
     setuptools
@@ -40,15 +48,7 @@ buildPythonPackage (finalAttrs: {
     scipy
   ];
 
-  nativeCheckInputs = [ pytestCheckHook ];
-
-  preCheck = lib.optionalString stdenv.hostPlatform.isDarwin ''
-    # specifically needed for darwin
-    export HOME=$(mktemp -d)
-    mkdir -p $HOME/.matplotlib
-    echo "backend: ps" > $HOME/.matplotlib/matplotlibrc
-  '';
-
+  pyproject = true;
   pythonImportsCheck = [ "trackpy" ];
 
   meta = {

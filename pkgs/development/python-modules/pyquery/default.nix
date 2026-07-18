@@ -14,23 +14,11 @@
 buildPythonPackage rec {
   pname = "pyquery";
   version = "2.0.1";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
     hash = "sha256-AZS7JwaxLQN9sSxRko/p67NrctnnGVZdq6WmxZUyL68=";
   };
-
-  build-system = [ setuptools ];
-
-  dependencies = [
-    cssselect
-    lxml
-  ];
-
-  __darwinAllowLocalNetworking = true;
-
-  pythonImportsCheck = [ "pyquery" ];
 
   nativeCheckInputs = [
     pytestCheckHook
@@ -40,6 +28,14 @@ buildPythonPackage rec {
       # circular dependency
       doCheck = false;
     }))
+  ];
+
+  __darwinAllowLocalNetworking = true;
+  build-system = [ setuptools ];
+
+  dependencies = [
+    cssselect
+    lxml
   ];
 
   disabledTestPaths = [
@@ -57,6 +53,9 @@ buildPythonPackage rec {
     "test_post"
     "test_session"
   ];
+
+  pyproject = true;
+  pythonImportsCheck = [ "pyquery" ];
 
   meta = {
     description = "Jquery-like library for Python";

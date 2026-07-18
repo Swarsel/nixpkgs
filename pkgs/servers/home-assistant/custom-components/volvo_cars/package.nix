@@ -5,8 +5,6 @@
 }:
 
 buildHomeAssistantComponent rec {
-  owner = "thomasddn";
-  domain = "volvo_cars";
   version = "1.5.7";
 
   src = fetchFromGitHub {
@@ -16,14 +14,18 @@ buildHomeAssistantComponent rec {
     hash = "sha256-2wRqEa7jVumbRNCGrFa0gYEzgGwUrMnW2A8JhPTTMCc=";
   };
 
+  domain = "volvo_cars";
+  owner = "thomasddn";
+
   meta = {
-    changelog = "https://github.com/thomasddn/ha-volvo-cars/releases/tag/${src.tag}";
-    homepage = "https://github.com/thomasddn/ha-volvo-cars";
     description = "Volvo Cars Home Assistant integration";
+    homepage = "https://github.com/thomasddn/ha-volvo-cars";
+    changelog = "https://github.com/thomasddn/ha-volvo-cars/releases/tag/${src.tag}";
+    license = lib.licenses.gpl3Only;
+
     maintainers = with lib.maintainers; [
       matteopacini
       seberm
     ];
-    license = lib.licenses.gpl3Only;
   };
 }

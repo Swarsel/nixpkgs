@@ -1,8 +1,8 @@
 {
-  stdenvNoCC,
   lib,
   fetchurl,
   buildFHSEnv,
+  stdenvNoCC,
 }:
 
 let
@@ -10,8 +10,8 @@ let
 
   # Unwrapped package, for putting into the FHS env
   left4gore-unwrapped = stdenvNoCC.mkDerivation {
-    pname = "left4gore-unwrapped";
     inherit version;
+    pname = "left4gore-unwrapped";
 
     src = fetchurl {
       url = "http://www.left4gore.com/dist/left4gore-${version}-linux.tar.gz";
@@ -26,29 +26,29 @@ let
 
   # FHS env, as patchelf will not work
   env = buildFHSEnv {
-    pname = "left4gore-env";
     inherit version;
-    targetPkgs = _: [ left4gore-unwrapped ];
+    pname = "left4gore-env";
     runScript = "left4gore";
+    targetPkgs = _: [ left4gore-unwrapped ];
   };
 
 in
 stdenvNoCC.mkDerivation {
-  pname = "left4gore";
   inherit version;
-
-  dontUnpack = true;
-  dontConfigure = true;
-  dontBuild = true;
+  pname = "left4gore";
 
   installPhase = ''
     mkdir -p $out/bin
     ln -s ${env}/bin/* $out/bin/left4gore
   '';
 
+  dontBuild = true;
+  dontConfigure = true;
+  dontUnpack = true;
+
   meta = {
-    homepage = "http://www.left4gore.com";
     description = "Memory patcher which adds the gore back into Left 4 Dead 2";
+    homepage = "http://www.left4gore.com";
     license = lib.licenses.unfree; # Probably the best choice
     maintainers = with lib.maintainers; [ das_j ];
   };

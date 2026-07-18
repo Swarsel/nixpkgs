@@ -1,21 +1,18 @@
 {
   lib,
   stdenv,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # build-system
-  setuptools,
-
+  buildPythonPackage,
   # tests
   nose2,
   pytestCheckHook,
+  # build-system
+  setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "setuptools-dso";
   version = "2.12.3";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "epics-base";
@@ -24,18 +21,20 @@ buildPythonPackage rec {
     hash = "sha256-M2Gca1QA9fuSvnzKLqY/RaN+NBRAiThl0tkdMbrhGVo=";
   };
 
-  build-system = [ setuptools ];
-
   nativeCheckInputs = [
     nose2
     pytestCheckHook
   ];
+
+  build-system = [ setuptools ];
 
   disabledTests = lib.optionals stdenv.hostPlatform.isDarwin [
     # distutils.compilers.C.errors.CompileError: command '/nix/store/...-clang-wrapper-21.1.2/bin/clang' failed with exit code 1
     # fatal error: 'string' file not found
     "test_cxx"
   ];
+
+  pyproject = true;
 
   meta = {
     description = "Setuptools extension for building non-Python Dynamic Shared Objects";

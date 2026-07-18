@@ -1,12 +1,12 @@
 {
-  autoreconfHook,
-  fetchFromGitHub,
-  gensio,
   lib,
+  stdenv,
+  fetchFromGitHub,
+  autoreconfHook,
+  gensio,
   libyaml,
   nix-update-script,
   pkg-config,
-  stdenv,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -20,10 +20,6 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-Axo3qa+QoBqFOLkxA6ZnEYu0M1p9LSM9h/oS8JsdwOY=";
   };
 
-  passthru = {
-    updateScript = nix-update-script { };
-  };
-
   nativeBuildInputs = [
     pkg-config
     autoreconfHook
@@ -33,6 +29,10 @@ stdenv.mkDerivation (finalAttrs: {
     gensio
     libyaml
   ];
+
+  passthru = {
+    updateScript = nix-update-script { };
+  };
 
   meta = {
     description = "Serial to network connection server";

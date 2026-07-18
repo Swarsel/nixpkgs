@@ -1,9 +1,9 @@
 {
   lib,
-  rustfmt,
-  rustPlatform,
   fetchFromGitHub,
   nix-update-script,
+  rustPlatform,
+  rustfmt,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -23,10 +23,10 @@ rustPlatform.buildRustPackage (finalAttrs: {
 
   meta = {
     description = "Code formatter for the Yew framework";
-    mainProgram = "yew-fmt";
     homepage = "https://github.com/its-the-shrimp/yew-fmt";
     changelog = "https://github.com/its-the-shrimp/yew-fmt/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.mit;
     maintainers = [ lib.maintainers.dandedotdev ];
+    mainProgram = "yew-fmt";
   };
 })

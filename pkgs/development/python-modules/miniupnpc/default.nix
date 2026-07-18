@@ -1,31 +1,32 @@
 {
-  stdenv,
   lib,
+  stdenv,
   buildPythonPackage,
+  cctools,
   fetchPypi,
   setuptools,
-  cctools,
   which,
 }:
 
 buildPythonPackage rec {
   pname = "miniupnpc";
   version = "2.3.3";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
     hash = "sha256-7l6Vffgo0vocw2TmDFg9EEOREIiPCGyRggcclqN0sq0=";
   };
 
-  build-system = [
-    setuptools
-  ];
-
   nativeBuildInputs = lib.optionals stdenv.hostPlatform.isDarwin [
     cctools
     which
   ];
+
+  build-system = [
+    setuptools
+  ];
+
+  pyproject = true;
 
   meta = {
     description = "MiniUPnP client";

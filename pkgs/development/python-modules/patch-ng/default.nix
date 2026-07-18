@@ -5,14 +5,15 @@
 }:
 
 buildPythonPackage rec {
-  version = "1.19.0"; # note: `conan` package may require a hardcoded one
-  format = "setuptools";
   pname = "patch-ng";
+  version = "1.19.0"; # note: `conan` package may require a hardcoded one
 
   src = fetchPypi {
     inherit pname version;
     sha256 = "sha256-J0hHkvSsHBX+Lz5M7PdLuYM9M7dccVtx0Zn34efR94Y=";
   };
+
+  format = "setuptools";
 
   meta = {
     description = "Library to parse and apply unified diffs";

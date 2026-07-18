@@ -1,7 +1,7 @@
 {
-  fetchurl,
   lib,
   stdenv,
+  fetchurl,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -14,10 +14,10 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   meta = {
-    homepage = "https://dbacl.sourceforge.net/";
     longDescription = "a digramic Bayesian classifier for text recognition.";
-    maintainers = [ ];
+    homepage = "https://dbacl.sourceforge.net/";
     license = lib.licenses.gpl3;
+    maintainers = [ ];
     platforms = lib.platforms.unix;
   };
 })

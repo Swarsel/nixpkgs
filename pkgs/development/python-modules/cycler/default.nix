@@ -1,20 +1,17 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # build-system
-  setuptools,
-
+  buildPythonPackage,
   # tests
   pytest-xdist,
   pytestCheckHook,
+  # build-system
+  setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "cycler";
   version = "0.12.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "matplotlib";
@@ -30,10 +27,12 @@ buildPythonPackage rec {
     pytestCheckHook
   ];
 
+  pyproject = true;
+
   meta = {
-    changelog = "https://github.com/matplotlib/cycler/releases/tag/v${version}";
     description = "Composable style cycles";
     homepage = "https://github.com/matplotlib/cycler";
+    changelog = "https://github.com/matplotlib/cycler/releases/tag/v${version}";
     license = lib.licenses.bsd3;
   };
 }

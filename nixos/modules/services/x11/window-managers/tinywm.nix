@@ -18,13 +18,15 @@ in
 
   ###### implementation
   config = mkIf cfg.enable {
+    environment.systemPackages = [ pkgs.tinywm ];
+
     services.xserver.windowManager.session = singleton {
       name = "tinywm";
+
       start = ''
         ${pkgs.tinywm}/bin/tinywm &
         waitPID=$!
       '';
     };
-    environment.systemPackages = [ pkgs.tinywm ];
   };
 }

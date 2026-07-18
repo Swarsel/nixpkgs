@@ -1,10 +1,10 @@
 {
-  stdenv,
   lib,
-  fetchzip,
+  stdenv,
   cmake,
-  pkg-config,
+  fetchzip,
   libusb1,
+  pkg-config,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -17,16 +17,6 @@ stdenv.mkDerivation (finalAttrs: {
     stripRoot = false;
   };
 
-  strictDeps = true;
-  __structuredAttrs = true;
-
-  nativeBuildInputs = [
-    cmake
-    pkg-config
-  ];
-
-  buildInputs = [ libusb1 ];
-
   postPatch = ''
     # Workaround based on
     # https://github.com/NixOS/nixpkgs/issues/144170
@@ -34,11 +24,21 @@ stdenv.mkDerivation (finalAttrs: {
     substituteInPlace libdlcr.pc.in --replace-fail "\''${prefix}/" ""
   '';
 
+  strictDeps = true;
+
+  nativeBuildInputs = [
+    cmake
+    pkg-config
+  ];
+
+  buildInputs = [ libusb1 ];
+  __structuredAttrs = true;
+
   meta = {
     description = "Dragon Labs CR-8 Host Driver and Utilities";
     homepage = "https://dragnlabs.com/";
     license = lib.licenses.lgpl3;
-    platforms = lib.platforms.unix;
     maintainers = with lib.maintainers; [ noderyos ];
+    platforms = lib.platforms.unix;
   };
 })

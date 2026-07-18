@@ -1,20 +1,19 @@
 {
   lib,
   stdenv,
-  rustPlatform,
   fetchFromGitHub,
-  pkg-config,
   bzip2,
   dbus,
-  python3,
-  versionCheckHook,
   nix-update-script,
+  pkg-config,
+  python3,
+  rustPlatform,
+  versionCheckHook,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
   pname = "rs-reticulum";
   version = "1.0.1";
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "ratspeak";
@@ -22,8 +21,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-MSvIgB/E1Ce8M8vOaXlHQGYnxFf0lT2hg8g0tx6QY/w=";
   };
-
-  cargoHash = "sha256-Kv3aVET69yI28muyaJop4YQEqOxNeyajK7j5J+jDhe0=";
 
   nativeBuildInputs = [
     pkg-config
@@ -34,11 +31,11 @@ rustPlatform.buildRustPackage (finalAttrs: {
     dbus
   ];
 
+  cargoHash = "sha256-Kv3aVET69yI28muyaJop4YQEqOxNeyajK7j5J+jDhe0=";
+
   nativeCheckInputs = [
     python3
   ];
-
-  __darwinAllowLocalNetworking = true;
 
   checkFlags = lib.optionals (stdenv.hostPlatform.isDarwin && stdenv.hostPlatform.isAarch64) [
     # Broken since 0.9.4
@@ -47,14 +44,15 @@ rustPlatform.buildRustPackage (finalAttrs: {
 
   doInstallCheck = true;
   nativeInstallCheckInputs = [ versionCheckHook ];
+  __darwinAllowLocalNetworking = true;
+  __structuredAttrs = true;
   versionCheckProgram = "${placeholder "out"}/bin/rnid-rs";
-
   passthru.updateScript = nix-update-script { };
 
   meta = {
-    changelog = "https://github.com/ratspeak/rsReticulum/releases/tag/${finalAttrs.src.tag}";
     description = "Rust implementation of the Reticulum networking stack";
     homepage = "https://github.com/ratspeak/rsReticulum";
+    changelog = "https://github.com/ratspeak/rsReticulum/releases/tag/${finalAttrs.src.tag}";
     license = lib.licenses.agpl3Only;
     maintainers = with lib.maintainers; [ drupol ];
   };

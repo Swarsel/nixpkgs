@@ -1,25 +1,25 @@
 {
   lib,
-  buildDotnetModule,
-  dotnetCorePackages,
   fetchFromGitHub,
-  makeDesktopItem,
-  copyDesktopItems,
   SDL2,
+  buildDotnetModule,
+  copyDesktopItems,
+  dotnetCorePackages,
   libGL,
-  systemd,
+  libdecor,
+  libdrm,
   libpulseaudio,
   libselinux,
-  wayland,
-  libdecor,
-  libxrandr,
-  libxi,
-  libxfixes,
-  libxext,
-  libxcursor,
   libx11,
+  libxcursor,
+  libxext,
+  libxfixes,
+  libxi,
   libxkbcommon,
-  libdrm,
+  libxrandr,
+  makeDesktopItem,
+  systemd,
+  wayland,
   withSELinux ? false,
 }:
 
@@ -28,18 +28,41 @@ buildDotnetModule rec {
   version = "1.1.1";
 
   src = fetchFromGitHub {
-    repo = "Celeste64";
     owner = "ExOK";
+    repo = "Celeste64";
     rev = "v${version}";
     hash = "sha256-XRAjDYIqYaQYCWNNT7UuLDKDBgq3vqxtCzay7pGICtA=";
   };
-  projectFile = "Celeste64.csproj";
-  dotnet-sdk = dotnetCorePackages.sdk_8_0;
-  dotnet-runtime = dotnetCorePackages.runtime_8_0;
-  nugetDeps = ./deps.json;
+
   strictDeps = true;
-  executables = [ "Celeste64" ];
   nativeBuildInputs = [ copyDesktopItems ];
+
+  postInstall = ''
+    export ICON_DIR=$out/share/icons/hicolor/256x256/apps
+    mkdir -p $ICON_DIR
+
+    cp -r $src/Content $out/lib/$pname/
+    cp $src/Content/Models/Sources/logo1.png $ICON_DIR/Celeste64.png
+  '';
+
+  desktopItems = [
+    (makeDesktopItem {
+      categories = [ "Game" ];
+      comment = meta.description;
+      desktopName = "Celeste64";
+      exec = "Celeste64";
+      genericName = "Celeste64";
+      icon = "Celeste64";
+      name = "Celeste64";
+    })
+  ];
+
+  dotnet-runtime = dotnetCorePackages.runtime_8_0;
+  dotnet-sdk = dotnetCorePackages.sdk_8_0;
+  executables = [ "Celeste64" ];
+  nugetDeps = ./deps.json;
+  projectFile = "Celeste64.csproj";
+
   runtimeDeps = [
     libdecor
     libGL
@@ -58,40 +81,24 @@ buildDotnetModule rec {
   ]
   ++ lib.optionals withSELinux [ libselinux ];
 
-  postInstall = ''
-    export ICON_DIR=$out/share/icons/hicolor/256x256/apps
-    mkdir -p $ICON_DIR
-
-    cp -r $src/Content $out/lib/$pname/
-    cp $src/Content/Models/Sources/logo1.png $ICON_DIR/Celeste64.png
-  '';
-
-  desktopItems = [
-    (makeDesktopItem {
-      name = "Celeste64";
-      exec = "Celeste64";
-      comment = meta.description;
-      desktopName = "Celeste64";
-      genericName = "Celeste64";
-      icon = "Celeste64";
-      categories = [ "Game" ];
-    })
-  ];
-
   meta = {
+    description = "Celeste 64: Fragments of the Mountain";
+    homepage = "https://github.com/ExOK/Celeste64";
+
     license = with lib.licenses; [
       unfree
       mit
     ];
+
+    maintainers = [ ];
+
     platforms = [
       "x86_64-linux"
       "aarch64-linux"
       "armv7l-linux"
     ];
-    maintainers = [ ];
+
     mainProgram = "Celeste64";
-    homepage = "https://github.com/ExOK/Celeste64";
-    description = "Celeste 64: Fragments of the Mountain";
     downloadPage = "https://maddymakesgamesinc.itch.io/celeste64";
   };
 }

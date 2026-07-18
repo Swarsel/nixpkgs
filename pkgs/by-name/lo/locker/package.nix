@@ -1,14 +1,13 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
   nix-update-script,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
   pname = "locker";
   version = "4.0.1";
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "tgirlcloud";
@@ -18,7 +17,7 @@ rustPlatform.buildRustPackage (finalAttrs: {
   };
 
   cargoHash = "sha256-gfhOOgZ8wkqbcghcCGCBMtImLfZazR2Dg/FgnjbofAg=";
-
+  __structuredAttrs = true;
   passthru.updateScript = nix-update-script { };
 
   meta = {

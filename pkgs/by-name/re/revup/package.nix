@@ -10,7 +10,6 @@ let
   self = python3Packages.buildPythonApplication {
     pname = "revup";
     version = "0.3.0";
-    pyproject = true;
 
     src = fetchPypi {
       inherit (self) pname version;
@@ -39,16 +38,19 @@ let
       pytest
     ];
 
+    pyproject = true;
+
     passthru = {
-      updateScript = gitUpdater { };
       tests.version = testers.testVersion {
         package = self;
       };
+
+      updateScript = gitUpdater { };
     };
 
     meta = {
-      homepage = "https://github.com/Skydio/revup";
       description = "Efficient git workflow and code review toolkit";
+
       longDescription = ''
         Revup provides command-line tools that allow developers to iterate
         faster on parallel changes and reduce the overhead of creating and
@@ -68,9 +70,11 @@ let
           pull requests easier to navigate
         - revup amend and revup restack save time by replacing slow rebases
       '';
+
+      homepage = "https://github.com/Skydio/revup";
       license = lib.licenses.mit;
-      mainProgram = "revup";
       maintainers = [ ];
+      mainProgram = "revup";
     };
   };
 in

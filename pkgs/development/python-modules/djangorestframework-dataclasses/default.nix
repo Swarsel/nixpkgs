@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   djangorestframework,
   pytest-django,
   pytestCheckHook,
@@ -11,7 +11,6 @@
 buildPythonPackage rec {
   pname = "djangorestframework-dataclasses";
   version = "1.4.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "oxan";
@@ -24,23 +23,22 @@ buildPythonPackage rec {
     patchShebangs manage.py
   '';
 
-  build-system = [ setuptools ];
-
-  dependencies = [ djangorestframework ];
+  env.DJANGO_SETTINGS_MODULE = "tests.django_settings";
 
   nativeCheckInputs = [
     pytest-django
     pytestCheckHook
   ];
 
-  env.DJANGO_SETTINGS_MODULE = "tests.django_settings";
-
+  build-system = [ setuptools ];
+  dependencies = [ djangorestframework ];
+  pyproject = true;
   pythonImportsCheck = [ "rest_framework_dataclasses" ];
 
   meta = {
-    changelog = "https://github.com/oxan/djangorestframework-dataclasses/blob/${src.tag}/CHANGELOG.rst";
     description = "Dataclasses serializer for Django REST framework";
     homepage = "https://github.com/oxan/djangorestframework-dataclasses";
+    changelog = "https://github.com/oxan/djangorestframework-dataclasses/blob/${src.tag}/CHANGELOG.rst";
     license = lib.licenses.bsd3;
     maintainers = [ ];
   };

@@ -3,6 +3,7 @@
   stdenv,
   fetchFromGitHub,
   cmake,
+  gitUpdater,
   kwindowsystem,
   liblxqt,
   libqtxdg,
@@ -12,7 +13,6 @@
   qttools,
   qtwayland,
   wrapQtAppsHook,
-  gitUpdater,
 }:
 
 stdenv.mkDerivation rec {
@@ -45,11 +45,11 @@ stdenv.mkDerivation rec {
   passthru.updateScript = gitUpdater { };
 
   meta = {
-    homepage = "https://github.com/lxqt/qps";
     description = "Qt based process manager";
-    mainProgram = "qps";
+    homepage = "https://github.com/lxqt/qps";
     license = lib.licenses.gpl2Plus;
     platforms = with lib.platforms; linux; # does not build on darwin
+    mainProgram = "qps";
     teams = [ lib.teams.lxqt ];
   };
 }

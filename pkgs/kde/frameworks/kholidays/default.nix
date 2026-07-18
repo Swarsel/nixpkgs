@@ -1,12 +1,13 @@
 {
-  mkKdeDerivation,
-  qttools,
-  qtdeclarative,
   bison,
   flex,
+  mkKdeDerivation,
+  qtdeclarative,
+  qttools,
 }:
 mkKdeDerivation {
   pname = "kholidays";
+  extraBuildInputs = [ qtdeclarative ];
 
   extraNativeBuildInputs = [
     qttools
@@ -14,5 +15,4 @@ mkKdeDerivation {
     bison
     flex
   ];
-  extraBuildInputs = [ qtdeclarative ];
 }

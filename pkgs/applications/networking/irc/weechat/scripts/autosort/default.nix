@@ -14,12 +14,12 @@ stdenv.mkDerivation {
     hash = "sha256-xuZUssjGd0l7lCx96d0V8LL+0O3zIxYlWMoDsdzwMf4=";
   };
 
-  dontUnpack = true;
-
   installPhase = ''
     mkdir -p $out/share
     cp $src $out/share/autosort.py
   '';
+
+  dontUnpack = true;
 
   passthru = {
     scripts = [ "autosort.py" ];

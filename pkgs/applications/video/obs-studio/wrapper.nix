@@ -1,8 +1,8 @@
 {
   lib,
+  makeWrapper,
   obs-studio,
   symlinkJoin,
-  makeWrapper,
 }:
 
 {
@@ -10,10 +10,8 @@
 }:
 
 symlinkJoin {
-  name = "wrapped-${obs-studio.name}";
-
+  inherit (obs-studio) meta;
   nativeBuildInputs = [ makeWrapper ];
-  paths = [ obs-studio ] ++ plugins;
 
   postBuild =
     let
@@ -42,7 +40,9 @@ symlinkJoin {
       echo 'Plugins are at ${pluginsJoined}/share/obs/obs-plugins' > $out/share/obs/obs-plugins-README
     '';
 
-  inherit (obs-studio) meta;
+  name = "wrapped-${obs-studio.name}";
+  paths = [ obs-studio ] ++ plugins;
+
   passthru = obs-studio.passthru // {
     passthru.unwrapped = obs-studio;
   };

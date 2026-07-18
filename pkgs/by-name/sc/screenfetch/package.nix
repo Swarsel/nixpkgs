@@ -1,20 +1,20 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
-  makeWrapper,
-  coreutils,
-  gawk,
-  procps,
-  gnused,
   bc,
+  coreutils,
+  darwin,
   findutils,
-  xdpyinfo,
-  xprop,
+  gawk,
   gnugrep,
+  gnused,
+  makeWrapper,
   ncurses,
   pciutils,
-  darwin,
+  procps,
+  xdpyinfo,
+  xprop,
 }:
 
 let
@@ -57,6 +57,12 @@ stdenv.mkDerivation (finalAttrs: {
     sha256 = "sha256-UNZMCLXhH4wDV0/fGWsB+KAi6aJVuPs6zpWXIQAqnjo=";
   };
 
+  outputs = [
+    "out"
+    "doc"
+    "man"
+  ];
+
   nativeBuildInputs = [ makeWrapper ];
 
   installPhase = ''
@@ -74,14 +80,9 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
-  outputs = [
-    "out"
-    "doc"
-    "man"
-  ];
-
   meta = {
     description = "Fetches system/theme information in terminal for Linux desktop screenshots";
+
     longDescription = ''
       screenFetch is a "Bash Screenshot Information Tool". This handy Bash
       script can be used to generate one of those nifty terminal theme
@@ -92,8 +93,9 @@ stdenv.mkDerivation (finalAttrs: {
       screenshot upon displaying info, and even customizing the screenshot
       command! This script is very easy to add to and can easily be extended.
     '';
-    license = lib.licenses.gpl3;
+
     homepage = "https://github.com/KittyKatt/screenFetch";
+    license = lib.licenses.gpl3;
     maintainers = with lib.maintainers; [ relrod ];
     platforms = lib.platforms.all;
     mainProgram = "screenfetch";

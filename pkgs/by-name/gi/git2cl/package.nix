@@ -1,8 +1,8 @@
 {
-  fetchFromGitLab,
   lib,
-  perl,
   stdenv,
+  fetchFromGitLab,
+  perl,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -17,14 +17,15 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   buildInputs = [ perl ];
+
   installPhase = ''
     install -D -m755 git2cl $out/bin/git2cl
     install -D -m644 README.md $out/share/doc/git2cl/README.md
   '';
 
   meta = {
-    homepage = "https://savannah.nongnu.org/projects/git2cl";
     description = "Convert git logs to GNU style ChangeLog files";
+    homepage = "https://savannah.nongnu.org/projects/git2cl";
     platforms = lib.platforms.unix;
     mainProgram = "git2cl";
   };

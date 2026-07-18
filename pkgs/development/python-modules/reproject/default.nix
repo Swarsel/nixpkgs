@@ -1,5 +1,6 @@
 {
   lib,
+  fetchFromGitHub,
   asdf,
   astropy,
   astropy-healpix,
@@ -8,7 +9,6 @@
   dask,
   dask-image,
   extension-helpers,
-  fetchFromGitHub,
   fsspec,
   gwcs,
   numpy,
@@ -28,7 +28,6 @@
 buildPythonPackage rec {
   pname = "reproject";
   version = "0.21.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "astropy";
@@ -36,6 +35,16 @@ buildPythonPackage rec {
     tag = "v${version}";
     hash = "sha256-IuGVipAb4x63U2k9tNHhps5Gbk+3Hi/1ZkeMTZ/vaiU=";
   };
+
+  nativeCheckInputs = [
+    pytestCheckHook
+    pytest-astropy
+    pytest-xdist
+    asdf
+    gwcs
+    shapely
+    tqdm
+  ];
 
   build-system = [
     setuptools
@@ -59,33 +68,24 @@ buildPythonPackage rec {
   ]
   ++ dask.optional-dependencies.array;
 
-  nativeCheckInputs = [
-    pytestCheckHook
-    pytest-astropy
-    pytest-xdist
-    asdf
-    gwcs
-    shapely
-    tqdm
+  disabledTestPaths = [
+    # Uses network
+    "build/lib*/reproject/interpolation/"
   ];
 
   enabledTestPaths = [
     "build/lib*"
   ];
 
-  disabledTestPaths = [
-    # Uses network
-    "build/lib*/reproject/interpolation/"
-  ];
-
+  pyproject = true;
   pythonImportsCheck = [ "reproject" ];
 
   meta = {
     description = "Reproject astronomical images";
-    downloadPage = "https://github.com/astropy/reproject";
     homepage = "https://reproject.readthedocs.io";
     changelog = "https://github.com/astropy/reproject/releases/tag/${src.tag}";
     license = lib.licenses.bsd3;
     maintainers = with lib.maintainers; [ smaret ];
+    downloadPage = "https://github.com/astropy/reproject";
   };
 }

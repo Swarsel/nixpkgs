@@ -1,11 +1,11 @@
 {
-  vimPlugins,
   lib,
-  vimUtils,
-  rustPlatform,
   stdenv,
-  nix-update-script,
   fetchFromGitHub,
+  nix-update-script,
+  rustPlatform,
+  vimPlugins,
+  vimUtils,
 }:
 let
   version = "0.0.9";
@@ -17,21 +17,19 @@ let
   };
 
   difftastic-nvim-lib = rustPlatform.buildRustPackage {
-    pname = "difftastic-nvim-lib";
     inherit version src;
+    pname = "difftastic-nvim-lib";
     cargoHash = "sha256-VSlFlLa4knQ7bH8yFHSKTTtt1cQ76dstlCdWBAtkf1I=";
+    env.RUSTFLAGS = lib.optionalString stdenv.hostPlatform.isDarwin "-C link-arg=-undefined -C link-arg=dynamic_lookup";
+
     postInstall = ''
       ln -s $out/lib/libdifftastic_nvim${stdenv.hostPlatform.extensions.sharedLibrary} $out/lib/difftastic_nvim.so
     '';
-    env.RUSTFLAGS = lib.optionalString stdenv.hostPlatform.isDarwin "-C link-arg=-undefined -C link-arg=dynamic_lookup";
   };
 in
 vimUtils.buildVimPlugin {
-  pname = "difftastic-nvim";
   inherit version src;
-  dependencies = [
-    vimPlugins.nui-nvim
-  ];
+  pname = "difftastic-nvim";
 
   postPatch = ''
     substituteInPlace lua/difftastic-nvim/binary.lua \
@@ -40,13 +38,17 @@ vimUtils.buildVimPlugin {
       "release_dir = '${difftastic-nvim-lib}/lib'"
   '';
 
+  dependencies = [
+    vimPlugins.nui-nvim
+  ];
+
   passthru = {
+    # needed for the update script
+    inherit difftastic-nvim-lib;
+
     updateScript = nix-update-script {
       attrPath = "vimPlugins.difftastic-nvim.difftastic-nvim-lib";
     };
-
-    # needed for the update script
-    inherit difftastic-nvim-lib;
 
   };
 
@@ -54,10 +56,11 @@ vimUtils.buildVimPlugin {
     description = "Neovim plugin that displays difftastic's structural diffs in a side-by-side view with syntax highlighting";
     homepage = "https://github.com/clabby/difftastic.nvim/";
     license = lib.licenses.mit;
-    platforms = lib.platforms.unix;
 
     maintainers = with lib.maintainers; [
       auscyber
     ];
+
+    platforms = lib.platforms.unix;
   };
 }

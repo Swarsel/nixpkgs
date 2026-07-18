@@ -1,7 +1,7 @@
 {
   lib,
-  stdenvNoCC,
   fetchurl,
+  stdenvNoCC,
   unzip,
 }:
 
@@ -14,8 +14,6 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     hash = "sha256-hLlbrxlhvfMARRiMhVI3+QwUJqyPEjtK6PdBkfnzhoI=";
   };
 
-  dontUnpack = true;
-
   nativeBuildInputs = [ unzip ];
 
   installPhase = ''
@@ -27,15 +25,19 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  dontUnpack = true;
+
   meta = {
     description = "Simple clipboard manager for macOS";
     homepage = "https://maccy.app";
     license = lib.licenses.mit;
     sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
+
     maintainers = with lib.maintainers; [
       emilytrau
       baongoc124
     ];
+
     platforms = lib.platforms.darwin;
   };
 })

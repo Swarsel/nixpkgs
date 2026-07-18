@@ -1,27 +1,21 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools_80,
-  requests,
-  six,
-  stone,
+  buildPythonPackage,
   mock,
   pytest-mock,
   pytestCheckHook,
-  sphinxHook,
+  requests,
+  setuptools_80,
+  six,
   sphinx-rtd-theme,
+  sphinxHook,
+  stone,
 }:
 
 buildPythonPackage rec {
   pname = "dropbox";
   version = "12.0.2";
-  pyproject = true;
-
-  outputs = [
-    "out"
-    "doc"
-  ];
 
   src = fetchFromGitHub {
     owner = "dropbox";
@@ -30,12 +24,19 @@ buildPythonPackage rec {
     hash = "sha256-9Fsh06V226vIyJhrlLkh9Xr4UGoEIISnIFCtuKqI218=";
   };
 
-  build-system = [ setuptools_80 ];
+  outputs = [
+    "out"
+    "doc"
+  ];
 
-  dependencies = [
-    requests
-    six
-    stone
+  postPatch = ''
+    substituteInPlace setup.py \
+      --replace-fail "'pytest-runner==5.2.0'," ""
+  '';
+
+  nativeBuildInputs = [
+    sphinxHook
+    sphinx-rtd-theme
   ];
 
   nativeCheckInputs = [
@@ -44,23 +45,12 @@ buildPythonPackage rec {
     pytestCheckHook
   ];
 
-  postPatch = ''
-    substituteInPlace setup.py \
-      --replace-fail "'pytest-runner==5.2.0'," ""
-  '';
+  build-system = [ setuptools_80 ];
 
-  pythonImportsCheck = [ "dropbox" ];
-
-  nativeBuildInputs = [
-    sphinxHook
-    sphinx-rtd-theme
-  ];
-
-  # Version 12.0.0 re-introduced Python 2 support and set some very restrictive version bounds
-  # https://github.com/dropbox/dropbox-sdk-python/commit/75596daf316b4a806f18057e2797a15bdf83cf6d
-  # This will be the last major version to support Python 2, so version bounds might be more reasonable again in the future.
-  pythonRelaxDeps = [
-    "stone"
+  dependencies = [
+    requests
+    six
+    stone
   ];
 
   # Set SCOPED_USER_DROPBOX_TOKEN environment variable to a valid value.
@@ -85,6 +75,16 @@ buildPythonPackage rec {
     "test_clone_when_team_linked"
     "test_bad_pins"
     "test_bad_pins_session"
+  ];
+
+  pyproject = true;
+  pythonImportsCheck = [ "dropbox" ];
+
+  # Version 12.0.0 re-introduced Python 2 support and set some very restrictive version bounds
+  # https://github.com/dropbox/dropbox-sdk-python/commit/75596daf316b4a806f18057e2797a15bdf83cf6d
+  # This will be the last major version to support Python 2, so version bounds might be more reasonable again in the future.
+  pythonRelaxDeps = [
+    "stone"
   ];
 
   meta = {

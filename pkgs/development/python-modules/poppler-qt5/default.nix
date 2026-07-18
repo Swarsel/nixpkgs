@@ -1,44 +1,26 @@
 {
   lib,
   buildPythonPackage,
-  isPy3k,
   fetchPypi,
-  sip,
-  qtbase,
-  qmake,
-  pyqt5,
-  pyqt-builder,
-  poppler,
+  isPy3k,
   pkg-config,
+  poppler,
+  pyqt-builder,
+  pyqt5,
+  qmake,
+  qtbase,
   setuptools,
+  sip,
 }:
 
 buildPythonPackage rec {
   pname = "python-poppler-qt5";
   version = "21.3.0";
 
-  disabled = !isPy3k;
-
   src = fetchPypi {
     inherit pname version;
     hash = "sha256-tHfohB8OoOCf2rby8wXPON+XfZ4ULlaTo3RgXXXdb+A=";
   };
-
-  buildInputs = [
-    qtbase.dev
-    poppler
-    pyqt-builder
-  ];
-  nativeBuildInputs = [
-    pkg-config
-    qmake
-    sip
-    setuptools
-  ];
-  propagatedBuildInputs = [ pyqt5.dev ];
-
-  pyproject = true;
-  dontConfigure = true;
 
   postPatch = ''
     cat <<EOF >> pyproject.toml
@@ -47,11 +29,27 @@ buildPythonPackage rec {
     EOF
   '';
 
+  nativeBuildInputs = [
+    pkg-config
+    qmake
+    sip
+    setuptools
+  ];
+
+  buildInputs = [
+    qtbase.dev
+    poppler
+    pyqt-builder
+  ];
+
+  propagatedBuildInputs = [ pyqt5.dev ];
   # no tests, just bindings for `poppler_qt5`
   doCheck = false;
-  pythonImportsCheck = [ "popplerqt5" ];
-
+  disabled = !isPy3k;
+  dontConfigure = true;
   dontWrapQtApps = true;
+  pyproject = true;
+  pythonImportsCheck = [ "popplerqt5" ];
 
   meta = {
     homepage = "https://github.com/frescobaldi/python-poppler-qt5";

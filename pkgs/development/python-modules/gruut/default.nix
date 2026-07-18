@@ -1,28 +1,24 @@
 {
   lib,
-  buildPythonPackage,
-  callPackage,
   fetchFromGitHub,
-
-  # build-system
-  setuptools,
-
   # dependencies
   babel,
+  buildPythonPackage,
+  callPackage,
   dateparser,
   gruut-ipa,
   jsonlines,
   networkx,
   num2words,
   numpy,
-  python-crfsuite,
-
   # optional dependencies
   pydub,
-  rapidfuzz,
-
   # checks
   pytestCheckHook,
+  python-crfsuite,
+  rapidfuzz,
+  # build-system
+  setuptools,
 }:
 
 let
@@ -47,7 +43,6 @@ in
 buildPythonPackage rec {
   pname = "gruut";
   version = "2.4.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "rhasspy";
@@ -56,7 +51,10 @@ buildPythonPackage rec {
     hash = "sha256-iwde6elsAbICZ+Rc7CPgcZTOux1hweVZc/gf4K+hP9M=";
   };
 
-  pythonRelaxDeps = true;
+  nativeCheckInputs = [
+    pytestCheckHook
+  ]
+  ++ lib.concatAttrValues optional-dependencies;
 
   build-system = [ setuptools ];
 
@@ -71,6 +69,15 @@ buildPythonPackage rec {
     python-crfsuite
   ]
   ++ optional-dependencies.en;
+
+  disabledTests = [
+    # https://github.com/rhasspy/gruut/issues/25
+    "test_lexicon_external"
+
+    # requires mishkal library
+    "test_fa"
+    "test_ar"
+  ];
 
   optional-dependencies = {
     train = [
@@ -89,27 +96,15 @@ buildPythonPackage rec {
     })
   ]);
 
-  nativeCheckInputs = [
-    pytestCheckHook
-  ]
-  ++ lib.concatAttrValues optional-dependencies;
-
-  disabledTests = [
-    # https://github.com/rhasspy/gruut/issues/25
-    "test_lexicon_external"
-
-    # requires mishkal library
-    "test_fa"
-    "test_ar"
-  ];
-
+  pyproject = true;
   pythonImportsCheck = [ "gruut" ];
+  pythonRelaxDeps = true;
 
   meta = {
     description = "Tokenizer, text cleaner, and phonemizer for many human languages";
-    mainProgram = "gruut";
     homepage = "https://github.com/rhasspy/gruut";
     license = lib.licenses.mit;
+    mainProgram = "gruut";
     teams = [ lib.teams.tts ];
   };
 }

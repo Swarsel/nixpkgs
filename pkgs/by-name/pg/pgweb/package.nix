@@ -1,10 +1,10 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
-  testers,
-  pgweb,
+  buildGoModule,
   nixosTests,
+  pgweb,
+  testers,
 }:
 
 buildGoModule (finalAttrs: {
@@ -25,11 +25,6 @@ buildGoModule (finalAttrs: {
 
   vendorHash = "sha256-7gfziA+rKwS6u63I6DaA2Fi/wvtr1rAJupSNJZB72dU=";
 
-  ldflags = [
-    "-s"
-    "-w"
-  ];
-
   checkFlags =
     let
       skippedTests = [
@@ -42,28 +37,38 @@ buildGoModule (finalAttrs: {
       "${builtins.concatStringsSep "|" skippedTests}"
     ];
 
+  ldflags = [
+    "-s"
+    "-w"
+  ];
+
   passthru.tests = {
     version = testers.testVersion {
       version = "v${finalAttrs.version}";
-      package = pgweb;
       command = "pgweb --version";
+      package = pgweb;
     };
+
     integration_test = nixosTests.pgweb;
   };
 
   meta = {
-    changelog = "https://github.com/sosedoff/pgweb/releases/tag/v${finalAttrs.version}";
     description = "Web-based database browser for PostgreSQL";
+
     longDescription = ''
       A simple postgres browser that runs as a web server. You can view data,
       run queries and examine tables and indexes.
     '';
+
     homepage = "https://sosedoff.github.io/pgweb/";
+    changelog = "https://github.com/sosedoff/pgweb/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.mit;
-    mainProgram = "pgweb";
+
     maintainers = with lib.maintainers; [
       zupo
       luisnquin
     ];
+
+    mainProgram = "pgweb";
   };
 })

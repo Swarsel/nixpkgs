@@ -3,11 +3,11 @@
   stdenv,
   fetchFromGitHub,
   autoreconfHook,
-  pkg-config,
-  wrapGAppsHook3,
   gst_all_1,
   gtk3,
   ncurses,
+  pkg-config,
+  wrapGAppsHook3,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -43,12 +43,12 @@ stdenv.mkDerivation (finalAttrs: {
   enableParallelBuilding = true;
 
   meta = {
-    broken = stdenv.hostPlatform.isDarwin;
+    inherit (ncurses.meta) platforms;
     description = "GStreamer based command line media player";
     homepage = "https://space.twc.de/~stefan/gst123.php";
     license = lib.licenses.lgpl2Plus;
-    mainProgram = "gst123";
     maintainers = with lib.maintainers; [ swesterfeld ];
-    inherit (ncurses.meta) platforms;
+    mainProgram = "gst123";
+    broken = stdenv.hostPlatform.isDarwin;
   };
 })

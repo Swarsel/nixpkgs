@@ -1,32 +1,36 @@
 {
   lib,
   buildPythonPackage,
-  fetchPypi,
   click,
   click-default-group,
-  python-dateutil,
-  sqlite-fts4,
-  tabulate,
+  fetchPypi,
+  hypothesis,
   pip,
   pluggy,
   pytestCheckHook,
-  hypothesis,
-  testers,
-  sqlite-utils,
+  python-dateutil,
   setuptools,
+  sqlite-fts4,
+  sqlite-utils,
+  tabulate,
+  testers,
 }:
 buildPythonPackage rec {
   pname = "sqlite-utils";
   version = "3.39";
-  pyproject = true;
-
-  build-system = [ setuptools ];
 
   src = fetchPypi {
     inherit version;
-    pname = "sqlite_utils";
     hash = "sha256-v6Lqwps+PrXJZHKDeXUn/rz079Spu7Mdl5oUoR75280=";
+    pname = "sqlite_utils";
   };
+
+  nativeCheckInputs = [
+    pytestCheckHook
+    hypothesis
+  ];
+
+  build-system = [ setuptools ];
 
   dependencies = [
     click
@@ -38,24 +42,21 @@ buildPythonPackage rec {
     tabulate
   ];
 
-  nativeCheckInputs = [
-    pytestCheckHook
-    hypothesis
-  ];
-
+  pyproject = true;
   pythonImportsCheck = [ "sqlite_utils" ];
-
   passthru.tests.version = testers.testVersion { package = sqlite-utils; };
 
   meta = {
     description = "Python CLI utility and library for manipulating SQLite databases";
-    mainProgram = "sqlite-utils";
     homepage = "https://github.com/simonw/sqlite-utils";
     changelog = "https://github.com/simonw/sqlite-utils/releases/tag/${version}";
     license = lib.licenses.asl20;
+
     maintainers = with lib.maintainers; [
       meatcar
       techknowlogick
     ];
+
+    mainProgram = "sqlite-utils";
   };
 }

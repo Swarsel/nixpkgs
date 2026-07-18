@@ -15,9 +15,6 @@ stdenv.mkDerivation {
     sha256 = "sha256-g4JMCbG9is7uBFv6cTBTCmRYfKWMruagtYQjYZnOFn4=";
   };
 
-  dontBuild = true;
-  dontConfigure = true;
-
   installPhase = ''
     runHook preInstall
 
@@ -28,11 +25,14 @@ stdenv.mkDerivation {
     runHook postInstall
   '';
 
+  dontBuild = true;
+  dontConfigure = true;
+
   meta = {
     description = "Minimal cross-platform standalone C headers";
     homepage = "https://github.com/floooh/sokol";
     license = lib.licenses.zlib;
-    platforms = lib.platforms.all;
     maintainers = with lib.maintainers; [ jonnybolton ];
+    platforms = lib.platforms.all;
   };
 }

@@ -17,12 +17,12 @@ stdenv.mkDerivation (finalAttrs: {
     sha256 = "sha256-X8wJwSfOo7v2SKYrKJ4RhpEmOdEkS8lPHIqCxP46VF4=";
   };
 
+  postPatch = "sed -i s#/usr#$out#g meson.build";
+
   nativeBuildInputs = [
     meson
     ninja
   ];
-
-  postPatch = "sed -i s#/usr#$out#g meson.build";
 
   postInstall = ''
     mkdir -p $out/include
@@ -30,10 +30,10 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   meta = {
-    homepage = "https://github.com/bfgroup/Lyra";
     description = "Simple to use, composable, command line parser for C++ 11 and beyond";
-    platforms = lib.platforms.unix;
+    homepage = "https://github.com/bfgroup/Lyra";
     license = lib.licenses.boost;
     maintainers = [ ];
+    platforms = lib.platforms.unix;
   };
 })

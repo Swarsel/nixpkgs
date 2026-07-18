@@ -1,19 +1,18 @@
 {
   lib,
+  stdenv,
   autoreconfHook,
   dejagnu,
   mkAppleDerivation,
-  stdenv,
   testers,
   texinfo,
-
   # test suite depends on dejagnu which cannot be used during bootstrapping
   # dejagnu also requires tcl which can't be built statically at the moment
   doCheck ? !(stdenv.hostPlatform.isStatic),
 }:
 
 mkAppleDerivation (finalAttrs: {
-  releaseName = "libffi";
+  inherit doCheck;
 
   outputs = [
     "out"
@@ -34,16 +33,9 @@ mkAppleDerivation (finalAttrs: {
     substituteInPlace src/closures.c --replace-fail /usr/lib "$out/lib"
   '';
 
-  enableParallelBuilding = true;
-
   nativeBuildInputs = [
     autoreconfHook
     texinfo
-  ];
-
-  configurePlatforms = [
-    "build"
-    "host"
   ];
 
   configureFlags = [
@@ -67,6 +59,14 @@ mkAppleDerivation (finalAttrs: {
       -install_name "$out/lib/libffi-trampoline.dylib" -Wl,-compatibility_version,1 -Wl,-current_version,1
   '';
 
+  nativeCheckInputs = [ dejagnu ];
+
+  preCheck = ''
+    # The tests use -O0 which is not compatible with -D_FORTIFY_SOURCE.
+    NIX_HARDENING_ENABLE=''${NIX_HARDENING_ENABLE/fortify3/}
+    NIX_HARDENING_ENABLE=''${NIX_HARDENING_ENABLE/fortify/}
+  '';
+
   postInstall =
     # The Darwin SDK puts the headers in `include/ffi`. Add a symlink for compatibility.
     ''
@@ -77,17 +77,14 @@ mkAppleDerivation (finalAttrs: {
       cp libffi-trampolines.dylib "$out/lib/libffi-trampolines.dylib"
     '';
 
-  preCheck = ''
-    # The tests use -O0 which is not compatible with -D_FORTIFY_SOURCE.
-    NIX_HARDENING_ENABLE=''${NIX_HARDENING_ENABLE/fortify3/}
-    NIX_HARDENING_ENABLE=''${NIX_HARDENING_ENABLE/fortify/}
-  '';
+  configurePlatforms = [
+    "build"
+    "host"
+  ];
 
   dontStrip = stdenv.hostPlatform != stdenv.buildPlatform; # Don't run the native `strip' when cross-compiling.
-
-  inherit doCheck;
-
-  nativeCheckInputs = [ dejagnu ];
+  enableParallelBuilding = true;
+  releaseName = "libffi";
 
   passthru = {
     tests = {
@@ -99,6 +96,7 @@ mkAppleDerivation (finalAttrs: {
 
   meta = {
     description = "Foreign function call interface library";
+
     longDescription = ''
       The libffi library provides a portable, high level programming
       interface to various calling conventions.  This allows a
@@ -113,6 +111,7 @@ mkAppleDerivation (finalAttrs: {
       interface.  A layer must exist above libffi that handles type
       conversions for values passed between the two languages.
     '';
+
     homepage = "https://github.com/apple-oss-distributions/libffi/";
     license = lib.licenses.mit;
     pkgConfigModules = [ "libffi" ];

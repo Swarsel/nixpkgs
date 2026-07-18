@@ -2,10 +2,10 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  zlib,
-  bzip2,
   bison,
+  bzip2,
   flex,
+  zlib,
 }:
 
 stdenv.mkDerivation {
@@ -29,11 +29,11 @@ stdenv.mkDerivation {
   enableParallelBuilding = true;
 
   meta = {
+    description = "Program for indexing and searching email messages stored in maildir, MH or mbox";
     homepage = "http://www.rc0.org.uk/mairix";
     license = lib.licenses.gpl2Plus;
-    description = "Program for indexing and searching email messages stored in maildir, MH or mbox";
-    mainProgram = "mairix";
     maintainers = [ ];
     platforms = lib.platforms.all;
+    mainProgram = "mairix";
   };
 }

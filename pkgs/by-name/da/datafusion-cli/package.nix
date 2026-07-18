@@ -1,9 +1,9 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
-  versionCheckHook,
   nix-update-script,
+  rustPlatform,
+  versionCheckHook,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -11,16 +11,16 @@ rustPlatform.buildRustPackage (finalAttrs: {
   version = "54.0.0";
 
   src = fetchFromGitHub {
-    name = "datafusion-cli-source";
     owner = "apache";
     repo = "datafusion";
     tag = finalAttrs.version;
     hash = "sha256-BWpHiLCn7idvzI2rlsre8l23TbxQU1Ma6bCjAMxQ6m8=";
+    name = "datafusion-cli-source";
   };
 
   cargoHash = "sha256-Sj/biBiJPIYwxpL+Fua0k47vOu6gyyAhcKb4ZSUli6k=";
-
-  buildAndTestSubdir = "datafusion-cli";
+  # timeout
+  doCheck = false;
 
   checkFlags = [
     # Some tests not found fake path
@@ -36,22 +36,21 @@ rustPlatform.buildRustPackage (finalAttrs: {
     "--skip=tests::test_parquet_metadata_works_with_strings"
   ];
 
-  # timeout
-  doCheck = false;
+  doInstallCheck = true;
 
   nativeInstallCheckInputs = [
     versionCheckHook
   ];
-  doInstallCheck = true;
 
+  buildAndTestSubdir = "datafusion-cli";
   passthru.updateScript = nix-update-script { };
 
   meta = {
     description = "CLI for Apache Arrow DataFusion";
-    mainProgram = "datafusion-cli";
     homepage = "https://arrow.apache.org/datafusion";
     changelog = "https://github.com/apache/datafusion/blob/${finalAttrs.src.tag}/datafusion/CHANGELOG.md";
     license = lib.licenses.asl20;
     maintainers = with lib.maintainers; [ happysalada ];
+    mainProgram = "datafusion-cli";
   };
 })

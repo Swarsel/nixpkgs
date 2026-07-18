@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   jsonpointer,
   pytestCheckHook,
 }:
@@ -9,7 +9,6 @@
 buildPythonPackage rec {
   pname = "jsonpatch";
   version = "1.33";
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "stefankoegl";
@@ -19,12 +18,10 @@ buildPythonPackage rec {
   };
 
   propagatedBuildInputs = [ jsonpointer ];
-
   nativeCheckInputs = [ pytestCheckHook ];
-
-  pythonImportsCheck = [ "jsonpatch" ];
-
   enabledTestPaths = [ "tests.py" ];
+  format = "setuptools";
+  pythonImportsCheck = [ "jsonpatch" ];
 
   meta = {
     description = "Library to apply JSON Patches according to RFC 6902";

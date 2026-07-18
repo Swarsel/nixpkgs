@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
 }:
 buildGoModule (finalAttrs: {
   pname = "alpaca-proxy";
@@ -16,24 +16,24 @@ buildGoModule (finalAttrs: {
 
   vendorHash = "sha256-pxCMomMmHqPWdjLi7C4LfcjbgdjMzJVvyhOd1YmHWTU=";
 
+  postInstall = ''
+    # executable is renamed to alpaca-proxy, to avoid collision with the alpaca python application
+    mv $out/bin/alpaca $out/bin/alpaca-proxy
+  '';
+
   ldflags = [
     "-s"
     "-w"
     "-X=main.BuildVersion=v${finalAttrs.version}"
   ];
 
-  postInstall = ''
-    # executable is renamed to alpaca-proxy, to avoid collision with the alpaca python application
-    mv $out/bin/alpaca $out/bin/alpaca-proxy
-  '';
-
   meta = {
     description = "HTTP forward proxy with PAC and NTLM authentication support";
     homepage = "https://github.com/samuong/alpaca";
     changelog = "https://github.com/samuong/alpaca/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.asl20;
-    platforms = lib.platforms.linux ++ lib.platforms.darwin;
     maintainers = with lib.maintainers; [ _1nv0k32 ];
+    platforms = lib.platforms.linux ++ lib.platforms.darwin;
     mainProgram = "alpaca-proxy";
   };
 })

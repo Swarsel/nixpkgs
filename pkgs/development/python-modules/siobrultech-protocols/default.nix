@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   pytest-asyncio,
   pytestCheckHook,
   pyyaml,
@@ -10,8 +10,6 @@
 buildPythonPackage rec {
   pname = "siobrultech-protocols";
   version = "0.14.0";
-
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "sdwilsh";
@@ -25,6 +23,8 @@ buildPythonPackage rec {
     pytestCheckHook
     pyyaml
   ];
+
+  format = "setuptools";
 
   pythonImportsCheck = [
     "siobrultech_protocols.gem.api"

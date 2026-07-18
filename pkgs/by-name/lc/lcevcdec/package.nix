@@ -1,27 +1,21 @@
 {
+  lib,
+  stdenv,
+  fetchFromGitHub,
   cctools,
   cmake,
-  fetchFromGitHub,
+  fetchpatch,
   git,
   gitUpdater,
-  fetchpatch,
-  lib,
   nlohmann_json,
   pkg-config,
   python3,
-  stdenv,
   testers,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
   pname = "lcevcdec";
   version = "4.2.0";
-
-  outputs = [
-    "out"
-    "lib"
-    "dev"
-  ];
 
   src = fetchFromGitHub {
     owner = "v-novaltd";
@@ -30,17 +24,18 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-EVp+ucydbBWlMMXbldkwDEbFlM88UIts8f/PspIqqSY=";
   };
 
+  outputs = [
+    "out"
+    "lib"
+    "dev"
+  ];
+
   postPatch = ''
     substituteInPlace cmake/tools/version_files.py \
       --replace-fail "args.git_version" '"${finalAttrs.version}"' \
       --replace-fail "args.git_hash" '"${finalAttrs.src.rev}"' \
       --replace-fail "args.git_date" '"1970-01-01"'
   '';
-
-  env = {
-    includedir = "${placeholder "dev"}/include";
-    libdir = "${placeholder "out"}/lib";
-  };
 
   nativeBuildInputs = [
     cmake
@@ -67,18 +62,23 @@ stdenv.mkDerivation (finalAttrs: {
     (lib.cmakeBool "VN_SDK_SIMD" stdenv.hostPlatform.avxSupport)
   ];
 
+  env = {
+    includedir = "${placeholder "dev"}/include";
+    libdir = "${placeholder "out"}/lib";
+  };
+
   passthru = {
-    updateScript = gitUpdater { };
     tests.pkg-config = testers.testMetaPkgConfig finalAttrs.finalPackage;
+    updateScript = gitUpdater { };
   };
 
   meta = {
-    homepage = "https://github.com/v-novaltd/LCEVCdec";
     description = "MPEG-5 LCEVC Decoder";
+    homepage = "https://github.com/v-novaltd/LCEVCdec";
     license = lib.licenses.bsd3Clear;
-    pkgConfigModules = [ "lcevc_dec" ];
     maintainers = with lib.maintainers; [ jopejoe1 ];
     # https://github.com/v-novaltd/LCEVCdec/blob/bf7e0d91c969502e90a925942510a1ca8088afec/cmake/modules/VNovaProject.cmake#L29
     platforms = lib.platforms.aarch ++ lib.platforms.x86;
+    pkgConfigModules = [ "lcevc_dec" ];
   };
 })

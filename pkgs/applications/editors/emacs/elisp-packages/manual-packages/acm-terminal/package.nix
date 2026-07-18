@@ -1,8 +1,8 @@
 {
   lib,
-  melpaBuild,
   fetchFromGitHub,
   acm,
+  melpaBuild,
   popon,
   unstableGitUpdater,
 }:
@@ -26,8 +26,8 @@ melpaBuild {
   passthru.updateScript = unstableGitUpdater { hardcodeZeroVersion = true; };
 
   meta = {
-    homepage = "https://github.com/twlz0ne/acm-terminal";
     description = "Patch for LSP bridge acm on Terminal";
+    homepage = "https://github.com/twlz0ne/acm-terminal";
     license = lib.licenses.gpl3Plus;
     maintainers = with lib.maintainers; [ kira-bruneau ];
   };

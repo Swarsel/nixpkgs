@@ -1,15 +1,15 @@
 {
   lib,
   stdenv,
-  buildNpmPackage,
   fetchFromGitHub,
+  buildNpmPackage,
+  nix-update-script,
+  nixosTests,
   nodejs_22,
   perl,
-  xcbuild,
-  writableTmpDirAsHomeHook,
   versionCheckHook,
-  nixosTests,
-  nix-update-script,
+  writableTmpDirAsHomeHook,
+  xcbuild,
 }:
 
 buildNpmPackage (finalAttrs: {
@@ -28,33 +28,17 @@ buildNpmPackage (finalAttrs: {
     rm -r bitwarden_license
   '';
 
-  nodejs = nodejs_22;
-  npmDepsFetcherVersion = 2;
-
-  npmDepsHash = "sha256-sXFSjQw9iM5Ye03BX+ZzpDfeAyLTJoG/k46NiI3O8+A=";
-
   nativeBuildInputs = lib.optionals stdenv.hostPlatform.isDarwin [
     perl
     xcbuild.xcrun
   ];
 
-  makeCacheWritable = true;
+  npmDepsHash = "sha256-sXFSjQw9iM5Ye03BX+ZzpDfeAyLTJoG/k46NiI3O8+A=";
 
   env = {
     ELECTRON_SKIP_BINARY_DOWNLOAD = "1";
     npm_config_build_from_source = "true";
   };
-
-  npmBuildScript = "build:oss:prod";
-
-  npmWorkspace = "apps/cli";
-
-  npmFlags = [ "--legacy-peer-deps" ];
-
-  npmRebuildFlags = [
-    # we'll run npm rebuild manually later
-    "--ignore-scripts"
-  ];
 
   postConfigure = ''
     # we want to build everything from source
@@ -83,17 +67,33 @@ buildNpmPackage (finalAttrs: {
   '';
 
   doInstallCheck = true;
+
   nativeInstallCheckInputs = [
     writableTmpDirAsHomeHook
     versionCheckHook
   ];
+
+  makeCacheWritable = true;
+  nodejs = nodejs_22;
+  npmBuildScript = "build:oss:prod";
+  npmDepsFetcherVersion = 2;
+  npmFlags = [ "--legacy-peer-deps" ];
+
+  npmRebuildFlags = [
+    # we'll run npm rebuild manually later
+    "--ignore-scripts"
+  ];
+
+  npmWorkspace = "apps/cli";
   versionCheckKeepEnvironment = [ "HOME" ];
 
   passthru = {
     inherit (finalAttrs) npmDeps;
+
     tests = {
       vaultwarden = nixosTests.vaultwarden.sqlite;
     };
+
     updateScript = nix-update-script {
       extraArgs = [
         "--version=stable"
@@ -103,15 +103,17 @@ buildNpmPackage (finalAttrs: {
   };
 
   meta = {
-    changelog = "https://github.com/bitwarden/clients/releases/tag/${finalAttrs.src.tag}";
     description = "Secure and free password manager for all of your devices";
     homepage = "https://bitwarden.com";
+    changelog = "https://github.com/bitwarden/clients/releases/tag/${finalAttrs.src.tag}";
     license = lib.licenses.gpl3Only;
-    mainProgram = "bw";
+
     maintainers = with lib.maintainers; [
       xiaoxiangmoe
       dotlambda
       caverav
     ];
+
+    mainProgram = "bw";
   };
 })

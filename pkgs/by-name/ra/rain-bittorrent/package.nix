@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule (finalAttrs: {
@@ -21,10 +21,12 @@ buildGoModule (finalAttrs: {
     description = "BitTorrent client and library in Go";
     homepage = "https://github.com/cenkalti/rain";
     license = lib.licenses.mit;
-    mainProgram = "rain";
+
     maintainers = with lib.maintainers; [
       justinrubek
       matthewdargan
     ];
+
+    mainProgram = "rain";
   };
 })

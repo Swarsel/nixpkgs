@@ -1,14 +1,13 @@
 {
   lib,
+  beautifulsoup4,
   buildPythonPackage,
   fetchPypi,
-  beautifulsoup4,
 }:
 
 buildPythonPackage rec {
   pname = "google";
   version = "3.0.0";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
@@ -16,17 +15,16 @@ buildPythonPackage rec {
   };
 
   propagatedBuildInputs = [ beautifulsoup4 ];
-
   # Module has no tests
   doCheck = false;
-
+  format = "setuptools";
   pythonImportsCheck = [ "googlesearch" ];
 
   meta = {
     description = "Python bindings to the Google search engine";
-    mainProgram = "google";
     homepage = "https://pypi.org/project/google/";
     license = with lib.licenses; [ bsd3 ];
     maintainers = with lib.maintainers; [ fab ];
+    mainProgram = "google";
   };
 }

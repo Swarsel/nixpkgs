@@ -1,19 +1,19 @@
 {
-  rustPlatform,
   libdeltachat,
   pkg-config,
+  rustPlatform,
   versionCheckHook,
 }:
 
 rustPlatform.buildRustPackage {
-  pname = "deltachat-rpc-server";
-
   inherit (libdeltachat)
     version
     src
     cargoDeps
     buildInputs
     ;
+
+  pname = "deltachat-rpc-server";
 
   nativeBuildInputs = [
     pkg-config
@@ -23,17 +23,16 @@ rustPlatform.buildRustPackage {
     OPENSSL_NO_VENDOR = true;
   };
 
-  cargoBuildFlags = [
-    "--package"
-    "deltachat-rpc-server"
-  ];
-
   doCheck = false;
-
   doInstallCheck = true;
 
   nativeInstallCheckInputs = [
     versionCheckHook
+  ];
+
+  cargoBuildFlags = [
+    "--package"
+    "deltachat-rpc-server"
   ];
 
   meta = libdeltachat.meta // {

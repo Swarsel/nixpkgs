@@ -21,11 +21,21 @@ stdenv.mkDerivation (finalAttrs: {
     sha256 = "1npks71ljc48w6858l9bq30kaf5nph8z0v61jkfb70xb9np850nl";
   };
 
+  postPatch = ''
+    # U was removed in python 3.11 because it had no effect
+    substituteInPlace waflib/*.py \
+      --replace "m='rU" "m='r" \
+      --replace "'rU'" "'r'"
+  '';
+
+  strictDeps = true;
+
   nativeBuildInputs = [
     pkg-config
     python311
     wafHook
   ];
+
   buildInputs = [
     fftw
     libjack2
@@ -36,23 +46,17 @@ stdenv.mkDerivation (finalAttrs: {
     alsa-lib
   ];
 
-  strictDeps = true;
   wafFlags = lib.optional (stdenv.buildPlatform != stdenv.hostPlatform) "--disable-tests";
-
-  postPatch = ''
-    # U was removed in python 3.11 because it had no effect
-    substituteInPlace waflib/*.py \
-      --replace "m='rU" "m='r" \
-      --replace "'rU'" "'r'"
-  '';
 
   meta = {
     description = "Library for audio labelling";
     homepage = "https://aubio.org/";
     license = lib.licenses.gpl2;
+
     maintainers = with lib.maintainers; [
       fpletz
     ];
+
     platforms = lib.platforms.linux ++ lib.platforms.darwin;
   };
 })

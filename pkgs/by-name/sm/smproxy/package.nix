@@ -2,11 +2,11 @@
   lib,
   stdenv,
   fetchurl,
-  pkg-config,
   libice,
   libsm,
   libxmu,
   libxt,
+  pkg-config,
   writeScript,
 }:
 stdenv.mkDerivation (finalAttrs: {
@@ -19,7 +19,6 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   strictDeps = true;
-
   nativeBuildInputs = [ pkg-config ];
 
   buildInputs = [
@@ -44,8 +43,8 @@ stdenv.mkDerivation (finalAttrs: {
     description = "allows X applications that do not support X11R6 session management to participate in an X11R6 session";
     homepage = "https://gitlab.freedesktop.org/xorg/app/smproxy";
     license = lib.licenses.mitOpenGroup;
-    mainProgram = "smproxy";
     maintainers = [ ];
     platforms = lib.platforms.unix;
+    mainProgram = "smproxy";
   };
 })

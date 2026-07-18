@@ -1,14 +1,14 @@
 {
   lib,
-  clangStdenv,
   fetchFromGitHub,
+  clangStdenv,
+  darwin,
   gnustep-back,
-  wrapGNUstepAppsHook,
   libxkbcommon,
   makeWrapper,
   wayland,
   wayland-scanner,
-  darwin,
+  wrapGNUstepAppsHook,
 }:
 
 let
@@ -56,13 +56,6 @@ stdenv.mkDerivation {
     gnustep-back
   ];
 
-  preConfigure = ''
-    mkdir -p build
-    cd build
-  '';
-
-  configureScript = "../configure";
-
   # error: "Your gnustep-base was configured for the objc-nonfragile-abi but you are not using it now."
   env.NIX_CFLAGS_COMPILE = lib.optionalString (
     !stdenv.hostPlatform.isDarwin
@@ -70,6 +63,11 @@ stdenv.mkDerivation {
 
   # ld: Seat/OwlPointer.o: undefined reference to symbol 'round@@GLIBC_2.2.5'
   env.NIX_LDFLAGS = "-lm";
+
+  preConfigure = ''
+    mkdir -p build
+    cd build
+  '';
 
   installPhase = ''
     runHook preInstall
@@ -80,6 +78,8 @@ stdenv.mkDerivation {
 
     runHook postInstall
   '';
+
+  configureScript = "../configure";
 
   meta = {
     description = "Portable Wayland compositor in Objective-C";

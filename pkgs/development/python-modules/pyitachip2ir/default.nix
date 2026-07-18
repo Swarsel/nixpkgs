@@ -8,18 +8,16 @@
 buildPythonPackage rec {
   pname = "pyitachip2ir";
   version = "0.0.7";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
     hash = "sha256-T/Q3tZTTwqlaHDR2l2nRLISC4LLrOPZZv14sRxYyqDQ=";
   };
 
-  build-system = [ setuptools ];
-
   # Package has no tests
   doCheck = false;
-
+  build-system = [ setuptools ];
+  pyproject = true;
   pythonImportsCheck = [ "pyitachip2ir" ];
 
   meta = {

@@ -2,23 +2,18 @@
   lib,
   buildPythonPackage,
   fetchPypi,
-  setuptools,
   pytestCheckHook,
+  setuptools,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "ci-py";
   version = "1.0.0";
-  pyproject = true;
-
-  __structuredAttrs = true;
 
   src = fetchPypi {
     inherit (finalAttrs) pname version;
     hash = "sha256-R/6bLsXOKGxiJDZUvvOuvLp3usEhfg698qvvgOwBXYk=";
   };
-
-  build-system = [ setuptools ];
 
   postPatch = ''
     substituteInPlace setup.py \
@@ -26,7 +21,9 @@ buildPythonPackage (finalAttrs: {
   '';
 
   nativeCheckInputs = [ pytestCheckHook ];
-
+  __structuredAttrs = true;
+  build-system = [ setuptools ];
+  pyproject = true;
   pythonImportsCheck = [ "ci" ];
 
   meta = {

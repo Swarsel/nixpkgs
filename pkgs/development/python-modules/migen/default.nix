@@ -1,17 +1,16 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
+  buildPythonPackage,
   colorama,
   pytestCheckHook,
+  setuptools,
   unstableGitUpdater,
 }:
 
 buildPythonPackage {
   pname = "migen";
   version = "0.9.2-unstable-2025-10-03";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "m-labs";
@@ -26,13 +25,10 @@ buildPythonPackage {
   ];
 
   nativeBuildInputs = [ setuptools ];
-
   propagatedBuildInputs = [ colorama ];
-
   nativeCheckInputs = [ pytestCheckHook ];
-
+  pyproject = true;
   pythonImportsCheck = [ "migen" ];
-
   passthru.updateScript = unstableGitUpdater { };
 
   meta = {

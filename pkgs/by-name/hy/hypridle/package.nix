@@ -1,19 +1,19 @@
 {
   lib,
-  gcc15Stdenv,
   fetchFromGitHub,
-  pkg-config,
   cmake,
+  gcc15Stdenv,
+  hyprland-protocols,
+  hyprlang,
+  hyprutils,
+  hyprwayland-scanner,
+  nix-update-script,
+  pkg-config,
+  sdbus-cpp_2,
+  systemdLibs,
   wayland,
   wayland-protocols,
   wayland-scanner,
-  hyprlang,
-  hyprutils,
-  hyprland-protocols,
-  hyprwayland-scanner,
-  sdbus-cpp_2,
-  systemdLibs,
-  nix-update-script,
 }:
 
 gcc15Stdenv.mkDerivation (finalAttrs: {
@@ -57,11 +57,13 @@ gcc15Stdenv.mkDerivation (finalAttrs: {
     homepage = "https://github.com/hyprwm/hypridle";
     changelog = "https://github.com/hyprwm/hypridle/releases/tag/${finalAttrs.src.tag}";
     license = lib.licenses.bsd3;
-    teams = [ lib.teams.hyprland ];
-    mainProgram = "hypridle";
+
     platforms = [
       "aarch64-linux"
       "x86_64-linux"
     ];
+
+    mainProgram = "hypridle";
+    teams = [ lib.teams.hyprland ];
   };
 })

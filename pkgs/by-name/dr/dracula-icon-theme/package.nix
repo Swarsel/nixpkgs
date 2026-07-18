@@ -1,8 +1,8 @@
 {
   lib,
-  stdenvNoCC,
   fetchFromGitHub,
   jdupes,
+  stdenvNoCC,
 }:
 
 stdenvNoCC.mkDerivation {
@@ -20,11 +20,6 @@ stdenvNoCC.mkDerivation {
     jdupes
   ];
 
-  dontDropIconThemeCache = true;
-
-  dontPatchELF = true;
-  dontRewriteSymlinks = true;
-
   installPhase = ''
     runHook preInstall
     mkdir -p $out/share/icons/Dracula
@@ -34,11 +29,15 @@ stdenvNoCC.mkDerivation {
     runHook postInstall
   '';
 
+  dontDropIconThemeCache = true;
+  dontPatchELF = true;
+  dontRewriteSymlinks = true;
+
   meta = {
     description = "Dracula Icon theme";
     homepage = "https://github.com/m4thewz/dracula-icons";
-    platforms = lib.platforms.linux;
     license = lib.licenses.gpl3Only;
     maintainers = with lib.maintainers; [ therealr5 ];
+    platforms = lib.platforms.linux;
   };
 }

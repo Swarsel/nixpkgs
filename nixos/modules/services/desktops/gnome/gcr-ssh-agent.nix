@@ -1,8 +1,8 @@
 {
   config,
-  options,
-  pkgs,
   lib,
+  pkgs,
+  options,
   ...
 }:
 let
@@ -12,17 +12,13 @@ let
   sshOpts = options.programs.ssh;
 in
 {
-  meta = {
-    teams = [ lib.teams.gnome ];
-  };
-
   options = {
     services.gnome.gcr-ssh-agent = {
       enable = lib.mkOption {
         default = config.services.gnome.gnome-keyring.enable;
         defaultText = lib.literalExpression "config.services.gnome.gnome-keyring.enable";
-        example = true;
         description = "Whether to enable GCR SSH agent.";
+        example = true;
         type = lib.types.bool;
       };
 
@@ -35,6 +31,7 @@ in
   config = lib.mkIf cfg.enable {
     assertions = lib.singleton {
       assertion = !sshCfg.startAgent;
+
       message = ''
         `${sshOpts.startAgent}' (defined in ${lib.showFiles sshOpts.startAgent.files}) and `${opts.enable}' (defined in ${lib.showFiles opts.enable.files}) cannot both be enabled at the same time.
         These options conflict because only one SSH agent can be installed at a time.'';
@@ -45,5 +42,9 @@ in
       user.services.gcr-ssh-agent.wantedBy = [ "default.target" ];
       user.sockets.gcr-ssh-agent.wantedBy = [ "sockets.target" ];
     };
+  };
+
+  meta = {
+    teams = [ lib.teams.gnome ];
   };
 }

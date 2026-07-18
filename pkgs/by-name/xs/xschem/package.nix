@@ -1,7 +1,7 @@
 {
+  lib,
   stdenv,
   fetchFromGitHub,
-  lib,
   bison,
   cairo,
   flex,
@@ -40,8 +40,8 @@ stdenv.mkDerivation (finalAttrs: {
   hardeningDisable = [ "format" ];
 
   meta = {
-    broken = stdenv.hostPlatform.isDarwin;
     description = "Schematic capture and netlisting EDA tool";
+
     longDescription = ''
       Xschem is a schematic capture program, it allows creation of
       hierarchical representation of circuits with a top down approach.
@@ -50,9 +50,11 @@ stdenv.mkDerivation (finalAttrs: {
       blocks. A VHDL or Verilog or Spice netlist can be generated from
       the drawn schematic, allowing the simulation of the circuit.
     '';
+
     homepage = "https://xschem.sourceforge.io/stefan/";
     license = lib.licenses.gpl2Plus;
     maintainers = with lib.maintainers; [ fbeffa ];
     platforms = lib.platforms.all;
+    broken = stdenv.hostPlatform.isDarwin;
   };
 })

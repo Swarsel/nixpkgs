@@ -47,13 +47,13 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   meta = {
-    broken = stdenv.hostPlatform.isDarwin;
-    changelog = "https://github.com/vimpostor/blobdrop/releases/tag/v${finalAttrs.version}";
     description = "Drag and drop files directly out of the terminal";
     homepage = "https://github.com/vimpostor/blobdrop";
+    changelog = "https://github.com/vimpostor/blobdrop/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.gpl3Only;
-    mainProgram = "blobdrop";
     maintainers = with lib.maintainers; [ tomasajt ];
     platforms = lib.platforms.all;
+    mainProgram = "blobdrop";
+    broken = stdenv.hostPlatform.isDarwin;
   };
 })

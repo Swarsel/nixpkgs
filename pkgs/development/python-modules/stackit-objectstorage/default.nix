@@ -13,16 +13,16 @@
 buildPythonPackage (finalAttrs: {
   pname = "stackit-objectstorage";
   version = "1.4.0";
-  pyproject = true;
-
-  __structuredAttrs = true;
 
   src = fetchPypi {
-    pname = "stackit_objectstorage";
     inherit (finalAttrs) version;
     hash = "sha256-SjgStN4QKxmfBhcGqAKQn55TrpsIWHadW9cg+BTIvb4=";
+    pname = "stackit_objectstorage";
   };
 
+  # Module has no tests
+  doCheck = false;
+  __structuredAttrs = true;
   build-system = [ hatchling ];
 
   dependencies = [
@@ -32,11 +32,8 @@ buildPythonPackage (finalAttrs: {
     stackit-core
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "stackit.objectstorage" ];
-
-  # Module has no tests
-  doCheck = false;
-
   passthru.updateScript = nix-update-script { };
 
   meta = {

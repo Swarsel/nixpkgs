@@ -1,17 +1,16 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  rustPlatform,
+  buildPythonPackage,
   numpy,
-  triton,
+  rustPlatform,
   torch,
+  triton,
 }:
 
 buildPythonPackage rec {
   pname = "kbnf";
   version = "0.4.2";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "Dan-wanna-M";
@@ -25,14 +24,14 @@ buildPythonPackage rec {
     cp ${./Cargo.lock} Cargo.lock
   '';
 
-  cargoDeps = rustPlatform.importCargoLock {
-    lockFile = ./Cargo.lock;
-  };
-
   build-system = [
     rustPlatform.cargoSetupHook
     rustPlatform.maturinBuildHook
   ];
+
+  cargoDeps = rustPlatform.importCargoLock {
+    lockFile = ./Cargo.lock;
+  };
 
   dependencies = [
     numpy
@@ -42,10 +41,13 @@ buildPythonPackage rec {
     efficient_logits_mask = [
       triton
     ];
+
     torch = [
       torch
     ];
   };
+
+  pyproject = true;
 
   pythonImportsCheck = [
     "kbnf"
@@ -54,10 +56,12 @@ buildPythonPackage rec {
   meta = {
     description = "Fast constrained decoding engine based on context free grammar";
     homepage = "https://pypi.org/project/kbnf/";
+
     license = with lib.licenses; [
       asl20
       mit
     ];
+
     maintainers = with lib.maintainers; [ BatteredBunny ];
   };
 }

@@ -1,15 +1,14 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
+  buildPythonPackage,
   pytestCheckHook,
+  setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "fitfile";
   version = "1.0.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "tcgoetz";
@@ -18,18 +17,19 @@ buildPythonPackage rec {
     hash = "sha256-NIshX/IkPmqviYRPT4wRF7evZwn9e7BdCI5x+2Pz7II=";
   };
 
+  nativeCheckInputs = [ pytestCheckHook ];
+
   build-system = [
     setuptools
   ];
 
-  nativeCheckInputs = [ pytestCheckHook ];
-
+  pyproject = true;
   pythonImportsCheck = [ "fitfile" ];
 
   meta = {
     description = "Python Fit file parser";
-    license = lib.licenses.gpl2Only;
     homepage = "https://github.com/tcgoetz/fit";
+    license = lib.licenses.gpl2Only;
     maintainers = with lib.maintainers; [ ethancedwards8 ];
   };
 }

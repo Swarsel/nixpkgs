@@ -1,21 +1,24 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # build-system
-  flit-core,
-
   # dependencies
   appdirs,
+  buildPythonPackage,
   cryptography,
+  # build-system
+  flit-core,
   id,
   importlib-resources,
+  # passthru
+  nix-update-script,
   platformdirs,
+  # tests
+  pretend,
   pyasn1,
   pydantic,
   pyjwt,
   pyopenssl,
+  pytestCheckHook,
   requests,
   rfc3161-client,
   rfc8785,
@@ -25,21 +28,12 @@
   sigstore-protobuf-specs,
   sigstore-rekor-types,
   tuf,
-
-  # tests
-  pretend,
-  pytestCheckHook,
   writableTmpDirAsHomeHook,
-
-  # passthru
-  nix-update-script,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "sigstore";
   version = "4.2.0";
-  pyproject = true;
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "sigstore";
@@ -48,13 +42,14 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-33JjQdYH/FptFUo0CecWItm9qH1wGQPHdk/JSdX8QfQ=";
   };
 
-  build-system = [ flit-core ];
-
-  pythonRelaxDeps = [
-    "cryptography"
-    "rich"
-    "sigstore-models"
+  nativeCheckInputs = [
+    pretend
+    pytestCheckHook
+    writableTmpDirAsHomeHook
   ];
+
+  __structuredAttrs = true;
+  build-system = [ flit-core ];
 
   dependencies = [
     appdirs
@@ -76,14 +71,6 @@ buildPythonPackage (finalAttrs: {
     sigstore-rekor-types
     tuf
   ];
-
-  nativeCheckInputs = [
-    pretend
-    pytestCheckHook
-    writableTmpDirAsHomeHook
-  ];
-
-  pythonImportsCheck = [ "sigstore" ];
 
   disabledTestPaths = [
     # AttributeError: module 'cryptography.hazmat.primitives.asymmetric.ec' has no attribute 'SECT163K1'
@@ -110,6 +97,15 @@ buildPythonPackage (finalAttrs: {
     "test_fix_bundle_upgrades_bundle"
     "test_trust_root_tuf_caches_and_requests"
     "test_regression_verify_legacy_bundle"
+  ];
+
+  pyproject = true;
+  pythonImportsCheck = [ "sigstore" ];
+
+  pythonRelaxDeps = [
+    "cryptography"
+    "rich"
+    "sigstore-models"
   ];
 
   passthru.updateScript = nix-update-script { };

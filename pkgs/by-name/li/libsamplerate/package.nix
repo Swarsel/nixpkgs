@@ -2,8 +2,8 @@
   lib,
   stdenv,
   fetchurl,
-  pkg-config,
   libsndfile,
+  pkg-config,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -15,15 +15,14 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-MljaKAUR0ktJ1rCGFbvoJNDKzJhCsOTK8RxSzysEOJM=";
   };
 
-  nativeBuildInputs = [ pkg-config ];
-  buildInputs = [ libsndfile ];
-
-  configureFlags = [ "--disable-fftw" ];
-
   outputs = [
     "dev"
     "out"
   ];
+
+  nativeBuildInputs = [ pkg-config ];
+  buildInputs = [ libsndfile ];
+  configureFlags = [ "--disable-fftw" ];
 
   meta = {
     description = "Sample Rate Converter for audio";

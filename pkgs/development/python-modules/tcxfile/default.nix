@@ -1,15 +1,14 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
+  buildPythonPackage,
   python-dateutil,
+  setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "tcxfile";
   version = "1.0.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "tcgoetz";
@@ -26,14 +25,14 @@ buildPythonPackage rec {
     python-dateutil
   ];
 
+  pyproject = true;
   # cannot run built in tests as they lack data files
-
   pythonImportsCheck = [ "tcxfile" ];
 
   meta = {
     description = "Python library to read and write Tcx files";
-    license = lib.licenses.gpl2Only;
     homepage = "https://github.com/tcgoetz/tcx";
+    license = lib.licenses.gpl2Only;
     maintainers = with lib.maintainers; [ ethancedwards8 ];
   };
 }

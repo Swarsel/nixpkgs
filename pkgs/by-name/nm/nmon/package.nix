@@ -1,7 +1,7 @@
 {
-  fetchurl,
   lib,
   stdenv,
+  fetchurl,
   ncurses,
 }:
 
@@ -15,7 +15,7 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   buildInputs = [ ncurses ];
-  dontUnpack = true;
+
   buildPhase = "${stdenv.cc.targetPrefix}cc -o nmon ${finalAttrs.src} -g -O2 -D JFS -D GETUSER -Wall -D LARGEMEM -lncurses -lm -g -D ${
     with stdenv.hostPlatform;
     if isx86 then
@@ -27,17 +27,20 @@ stdenv.mkDerivation (finalAttrs: {
     else
       "UNKNOWN"
   }";
+
   installPhase = ''
     mkdir -p $out/bin
     cp nmon $out/bin
   '';
 
+  dontUnpack = true;
+
   meta = {
     description = "AIX & Linux Performance Monitoring tool";
-    mainProgram = "nmon";
     homepage = "https://nmon.sourceforge.net";
     license = lib.licenses.gpl3Plus;
-    platforms = lib.platforms.linux;
     maintainers = with lib.maintainers; [ sveitser ];
+    platforms = lib.platforms.linux;
+    mainProgram = "nmon";
   };
 })

@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   numpy,
   pillow,
   pytestCheckHook,
@@ -14,7 +14,6 @@
 buildPythonPackage rec {
   pname = "imagehash";
   version = "4.3.2";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "JohannesBuchner";
@@ -22,6 +21,11 @@ buildPythonPackage rec {
     tag = "v${version}";
     hash = "sha256-/kYINT26ROlB3fIcyyR79nHKg9FsJRQsXQx0Bvl14ec=";
   };
+
+  nativeCheckInputs = [
+    pytestCheckHook
+    six
+  ];
 
   build-system = [ setuptools ];
 
@@ -32,11 +36,7 @@ buildPythonPackage rec {
     pywavelets
   ];
 
-  nativeCheckInputs = [
-    pytestCheckHook
-    six
-  ];
-
+  pyproject = true;
   pythonImportsCheck = [ "imagehash" ];
 
   meta = {

@@ -2,9 +2,9 @@
   lib,
   stdenv,
   fetchurl,
+  dos2unix,
   unzip,
   writeText,
-  dos2unix,
   dataPath ? "/var/lib/rainloop",
 }:
 let
@@ -14,26 +14,13 @@ let
       pname = "rainloop${lib.optionalString (edition != "") "-${edition}"}";
       version = "1.16.0";
 
-      nativeBuildInputs = [
-        unzip
-        dos2unix
-      ];
-
-      unpackPhase = ''
-        mkdir rainloop
-        unzip -q -d rainloop $src
-      '';
-
       src = fetchurl {
         url = "https://github.com/RainLoop/rainloop-webmail/releases/download/v${version}/rainloop-${edition}${
           lib.optionalString (edition != "") "-"
         }${version}.zip";
+
         sha256 = sha256;
       };
-
-      prePatch = ''
-        dos2unix ./rainloop/rainloop/v/1.16.0/app/libraries/MailSo/Base/HtmlUtils.php
-      '';
 
       patches = [
         ./fix-cve-2022-29360.patch
@@ -41,6 +28,20 @@ let
 
       postPatch = ''
         unix2dos ./rainloop/rainloop/v/1.16.0/app/libraries/MailSo/Base/HtmlUtils.php
+      '';
+
+      nativeBuildInputs = [
+        unzip
+        dos2unix
+      ];
+
+      installPhase = ''
+        mkdir $out
+        cp -r rainloop/* $out
+        rm -rf $out/data
+        cp ${includeScript} $out/include.php
+        mkdir $out/data
+        chmod 700 $out/data
       '';
 
       includeScript = writeText "include.php" ''
@@ -56,22 +57,22 @@ let
         }
       '';
 
-      installPhase = ''
-        mkdir $out
-        cp -r rainloop/* $out
-        rm -rf $out/data
-        cp ${includeScript} $out/include.php
-        mkdir $out/data
-        chmod 700 $out/data
+      prePatch = ''
+        dos2unix ./rainloop/rainloop/v/1.16.0/app/libraries/MailSo/Base/HtmlUtils.php
+      '';
+
+      unpackPhase = ''
+        mkdir rainloop
+        unzip -q -d rainloop $src
       '';
 
       meta = {
         description = "Simple, modern & fast web-based email client";
         homepage = "https://www.rainloop.net";
-        downloadPage = "https://github.com/RainLoop/rainloop-webmail/releases";
         license = with lib.licenses; if edition == "" then unfree else agpl3Only;
-        platforms = lib.platforms.all;
         maintainers = with lib.maintainers; [ das_j ];
+        platforms = lib.platforms.all;
+        downloadPage = "https://github.com/RainLoop/rainloop-webmail/releases";
       };
     };
 in
@@ -80,6 +81,7 @@ in
     edition = "community";
     sha256 = "sha256-25ScQ2OwSKAuqg8GomqDhpebhzQZjCk57h6MxUNiymc=";
   };
+
   rainloop-standard = common {
     edition = "";
     sha256 = "sha256-aYCwqFqhJEeakn4R0MUDGcSp+M47JbbCrbYaML8aeSs=";

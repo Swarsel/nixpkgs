@@ -5,19 +5,18 @@
   fetchPypi,
   h11,
   maxminddb,
-  pytestCheckHook,
-  requests-mock,
   pytest-httpserver,
+  pytestCheckHook,
   requests,
+  requests-mock,
   setuptools-scm,
-  uv-build,
   urllib3,
+  uv-build,
 }:
 
 buildPythonPackage rec {
   pname = "geoip2";
   version = "5.2.0";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
@@ -28,11 +27,6 @@ buildPythonPackage rec {
     substituteInPlace pyproject.toml \
       --replace-fail "uv_build>=0.7.19,<0.8.0" uv_build
   '';
-
-  build-system = [
-    uv-build
-    setuptools-scm
-  ];
 
   propagatedBuildInputs = [
     aiohttp
@@ -48,6 +42,12 @@ buildPythonPackage rec {
     pytest-httpserver
   ];
 
+  build-system = [
+    uv-build
+    setuptools-scm
+  ];
+
+  pyproject = true;
   pythonImportsCheck = [ "geoip2" ];
 
   meta = {

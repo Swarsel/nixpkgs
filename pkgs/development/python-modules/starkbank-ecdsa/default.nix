@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   pytestCheckHook,
   setuptools,
 }:
@@ -9,7 +9,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "starkbank-ecdsa";
   version = "2.3.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "starkbank";
@@ -18,17 +17,19 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-5yF2tVCgHJX++NncWiYfLE0P98Sxy91VN3qgc8PSLOI=";
   };
 
-  build-system = [ setuptools ];
-
   nativeCheckInputs = [ pytestCheckHook ];
 
   preCheck = ''
     cd tests
   '';
 
+  build-system = [ setuptools ];
+
   enabledTestPaths = [
     "*.py"
   ];
+
+  pyproject = true;
 
   pytestFlags = [
     "-v"

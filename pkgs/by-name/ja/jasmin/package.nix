@@ -2,12 +2,12 @@
   lib,
   stdenv,
   fetchurl,
-  unzip,
   ant,
+  callPackage,
   jdk8,
   makeWrapper,
   stripJavaArchivesHook,
-  callPackage,
+  unzip,
 }:
 
 let
@@ -54,11 +54,11 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Assembler for the Java Virtual Machine";
-    downloadPage = "https://sourceforge.net/projects/jasmin/files/latest/download";
     homepage = "https://jasmin.sourceforge.net/";
     license = lib.licenses.bsd3;
-    mainProgram = "jasmin";
     maintainers = with lib.maintainers; [ fgaz ];
     platforms = lib.platforms.all;
+    mainProgram = "jasmin";
+    downloadPage = "https://sourceforge.net/projects/jasmin/files/latest/download";
   };
 })

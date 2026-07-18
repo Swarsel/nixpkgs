@@ -1,8 +1,8 @@
 {
   lib,
   stdenv,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule {
@@ -18,8 +18,6 @@ buildGoModule {
 
   vendorHash = "sha256-LS99/DKKh+KHtbI5n8/Dw47Le5qowRQYLuCA+Apwi8I=";
 
-  passthru.updateScript = ./update.sh;
-
   checkFlags =
     let
       skippedTests = [
@@ -28,6 +26,8 @@ buildGoModule {
       ++ lib.optionals stdenv.hostPlatform.isDarwin [ "TestDialTCPTimeoutWithTOS" ];
     in
     [ "-skip=^${builtins.concatStringsSep "$|^" skippedTests}$" ];
+
+  passthru.updateScript = ./update.sh;
 
   meta = {
     description = "Collection of open-source tools for network management and monitoring mostly based around gNMI";

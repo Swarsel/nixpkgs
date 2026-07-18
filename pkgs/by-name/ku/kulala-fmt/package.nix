@@ -6,16 +6,13 @@
   kulala-core,
   makeBinaryWrapper,
   nodejs,
-  pnpm_11,
   pnpmConfigHook,
+  pnpm_11,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
   pname = "kulala-fmt";
   version = "4.3.4";
-
-  strictDeps = true;
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "mistweaverco";
@@ -24,12 +21,7 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-sARZDtrF8JihVuE2Ix/f4h/OWIbdGW48xpVJlVmTdYY=";
   };
 
-  pnpmDeps = fetchPnpmDeps {
-    inherit (finalAttrs) pname version src;
-    pnpm = pnpm_11;
-    fetcherVersion = 4;
-    hash = "sha256-wPMWFYRd3R570oAMORHTKamE0qcmIT+LFRuTiXFX97M=";
-  };
+  strictDeps = true;
 
   nativeBuildInputs = [
     makeBinaryWrapper
@@ -58,6 +50,7 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   doInstallCheck = true;
+
   installCheckPhase = ''
     runHook preInstallCheck
 
@@ -67,12 +60,21 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstallCheck
   '';
 
+  __structuredAttrs = true;
+
+  pnpmDeps = fetchPnpmDeps {
+    inherit (finalAttrs) pname version src;
+    fetcherVersion = 4;
+    hash = "sha256-wPMWFYRd3R570oAMORHTKamE0qcmIT+LFRuTiXFX97M=";
+    pnpm = pnpm_11;
+  };
+
   meta = {
     description = "Opinionated .http and .rest files linter and formatter";
     homepage = "https://github.com/mistweaverco/kulala-fmt";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ CnTeng ];
-    mainProgram = "kulala-fmt";
     platforms = nodejs.meta.platforms;
+    mainProgram = "kulala-fmt";
   };
 })

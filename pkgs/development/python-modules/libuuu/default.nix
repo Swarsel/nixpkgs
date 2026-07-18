@@ -1,29 +1,23 @@
 {
   lib,
   stdenv,
+  autoPatchelfHook,
   buildPythonPackage,
   fetchPypi,
+  pytestCheckHook,
   setuptools,
   setuptools-scm,
-  autoPatchelfHook,
   udev,
-  pytestCheckHook,
 }:
 
 buildPythonPackage rec {
   pname = "libuuu";
   version = "1.5.243";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
     hash = "sha256-k7DFVrqkHzPLjZMdWyLdfawyOSw+L7Bi4oRdeJo6lxw=";
   };
-
-  build-system = [
-    setuptools
-    setuptools-scm
-  ];
 
   nativeBuildInputs = lib.optionals stdenv.hostPlatform.isLinux [
     autoPatchelfHook
@@ -33,16 +27,8 @@ buildPythonPackage rec {
     udev
   ];
 
-  pythonRelaxDeps = [
-    "setuptools-scm"
-  ];
-
-  dependencies = [
-    setuptools-scm
-  ];
-
-  pythonImportsCheck = [
-    "libuuu"
+  nativeCheckInputs = [
+    pytestCheckHook
   ];
 
   # Prevent tests to load the plugin from the source files instead of the installed ones
@@ -50,8 +36,23 @@ buildPythonPackage rec {
     rm -rf libuuu
   '';
 
-  nativeCheckInputs = [
-    pytestCheckHook
+  build-system = [
+    setuptools
+    setuptools-scm
+  ];
+
+  dependencies = [
+    setuptools-scm
+  ];
+
+  pyproject = true;
+
+  pythonImportsCheck = [
+    "libuuu"
+  ];
+
+  pythonRelaxDeps = [
+    "setuptools-scm"
   ];
 
   meta = {

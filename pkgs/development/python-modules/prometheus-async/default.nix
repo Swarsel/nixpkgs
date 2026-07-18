@@ -1,8 +1,8 @@
 {
   lib,
+  fetchFromGitHub,
   aiohttp,
   buildPythonPackage,
-  fetchFromGitHub,
   hatch-vcs,
   hatchling,
   prometheus-client,
@@ -16,7 +16,6 @@
 buildPythonPackage rec {
   pname = "prometheus-async";
   version = "26.1.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "hynek";
@@ -24,6 +23,11 @@ buildPythonPackage rec {
     rev = version;
     hash = "sha256-wQ1RdJyD/M6VO1/6DSr9Pzd5FpB4zgNE/mIa7FH5gtk=";
   };
+
+  nativeCheckInputs = [
+    pytestCheckHook
+    pytest-asyncio
+  ];
 
   build-system = [
     hatch-vcs
@@ -42,11 +46,7 @@ buildPythonPackage rec {
     twisted = [ twisted ];
   };
 
-  nativeCheckInputs = [
-    pytestCheckHook
-    pytest-asyncio
-  ];
-
+  pyproject = true;
   pythonImportsCheck = [ "prometheus_async" ];
 
   meta = {

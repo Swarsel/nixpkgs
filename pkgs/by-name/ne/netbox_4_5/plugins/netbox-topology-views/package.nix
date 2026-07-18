@@ -1,20 +1,16 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
-  netbox,
+  buildPythonPackage,
   django,
   netaddr,
+  netbox,
   python,
+  setuptools,
 }:
 buildPythonPackage (finalAttrs: {
   pname = "netbox-topology-views";
   version = "4.5.1";
-  pyproject = true;
-  __structuredAttrs = true;
-
-  disabled = python.pythonVersion != netbox.python.pythonVersion;
 
   src = fetchFromGitHub {
     owner = "netbox-community";
@@ -22,8 +18,6 @@ buildPythonPackage (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-uKxIu8IPeEwBdRbtQaLWGwLnxvFyJ5FrScsU/ufyTuM=";
   };
-
-  build-system = [ setuptools ];
 
   nativeCheckInputs = [
     netbox
@@ -35,6 +29,10 @@ buildPythonPackage (finalAttrs: {
     export PYTHONPATH=${netbox}/opt/netbox/netbox:$PYTHONPATH
   '';
 
+  __structuredAttrs = true;
+  build-system = [ setuptools ];
+  disabled = python.pythonVersion != netbox.python.pythonVersion;
+  pyproject = true;
   pythonImportsCheck = [ "netbox_topology_views" ];
 
   meta = {
@@ -42,7 +40,7 @@ buildPythonPackage (finalAttrs: {
     homepage = "https://github.com/netbox-community/netbox-topology-views";
     changelog = "https://github.com/netbox-community/netbox-topology-views/releases/tag/${finalAttrs.src.tag}";
     license = lib.licenses.asl20;
-    platforms = lib.platforms.linux;
     maintainers = with lib.maintainers; [ felbinger ];
+    platforms = lib.platforms.linux;
   };
 })

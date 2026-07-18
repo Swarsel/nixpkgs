@@ -1,16 +1,14 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
-  makeWrapper,
   iw,
+  makeWrapper,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
   pname = "netscanner";
   version = "0.6.43";
-
-  nativeBuildInputs = [ makeWrapper ];
 
   src = fetchFromGitHub {
     owner = "Chleba";
@@ -19,6 +17,7 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-LLzv8+wAlZgXrj1Ldc+uGDfhvDYDtRU25R7UbmGb+ok=";
   };
 
+  nativeBuildInputs = [ makeWrapper ];
   cargoHash = "sha256-47bvcj+0ZRcHjyt0cpZ0PT+NRvYdvBQcTTf9tZHci2Q=";
 
   postFixup = ''

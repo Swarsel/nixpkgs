@@ -1,41 +1,41 @@
 {
-  stdenv,
   lib,
-  perl,
+  stdenv,
   fetchurl,
-  fetchpatch,
-  python3,
-  fmt_9,
-  libidn,
-  pkg-config,
-  spidermonkey_128,
+  SDL2,
   boost,
+  curl,
+  cxxtest,
+  enet,
+  fetchpatch,
+  fmt_9,
+  freetype,
+  gloox,
   icu,
-  libxml2,
+  libGL,
+  libGLU,
+  libidn,
+  libjpeg,
+  libogg,
   libpng,
   libsodium,
-  libjpeg,
-  zlib,
-  curl,
-  libogg,
   libvorbis,
-  enet,
-  miniupnpc,
-  openal,
-  libGLU,
-  libGL,
-  xorgproto,
   libx11,
   libxcursor,
+  libxml2,
+  miniupnpc,
   nspr,
-  SDL2,
-  gloox,
   nvidia-texture-tools,
+  openal,
+  perl,
+  pkg-config,
   premake5,
-  cxxtest,
-  freetype,
-  withEditor ? true,
+  python3,
+  spidermonkey_128,
   wxwidgets_3_2,
+  xorgproto,
+  zlib,
+  withEditor ? true,
 }:
 
 # You can find more instructions on how to build 0ad here:
@@ -49,9 +49,9 @@ let
     # https://bugzilla.mozilla.org/show_bug.cgi?id=1982134
     patches = old.patches or [ ] ++ [
       (fetchpatch {
+        hash = "sha256-3sTcZb34yHheqK7O9aHSwMife3uJnf3us+0sPJ2NzKs=";
         name = "fix-extra-gc-tracing.patch";
         url = "https://github.com/mozilla-firefox/firefox/commit/bf1994b05baea60f84309475cd544fe89acf82f2.patch";
-        hash = "sha256-3sTcZb34yHheqK7O9aHSwMife3uJnf3us+0sPJ2NzKs=";
       })
     ];
   });
@@ -64,6 +64,10 @@ stdenv.mkDerivation (finalAttrs: {
     url = "https://releases.wildfiregames.com/0ad-${finalAttrs.version}-unix-build.tar.xz";
     hash = "sha256-J+IXdV73apIv5Y2/WT2W5Utu0jddI/VIw1YZqmvVpCo=";
   };
+
+  patches = [
+    ./rootdir_env.patch
+  ];
 
   nativeBuildInputs = [
     python3
@@ -118,9 +122,25 @@ stdenv.mkDerivation (finalAttrs: {
     ];
   };
 
-  patches = [
-    ./rootdir_env.patch
-  ];
+  installPhase = ''
+    popd
+
+    # Copy executables.
+    install -Dm755 binaries/system/pyrogenesis "$out"/bin/0ad
+    ${lib.optionalString withEditor ''
+      install -Dm755 binaries/system/ActorEditor "$out"/bin/ActorEditor
+    ''}
+
+    # Copy l10n data.
+    install -Dm755 -t $out/share/0ad/data/l10n binaries/data/l10n/*
+
+    # Copy libraries.
+    install -Dm644 -t $out/lib/0ad        binaries/system/*.so
+
+    # Copy icon.
+    install -D build/resources/0ad.png     $out/share/icons/hicolor/128x128/apps/0ad.png
+    install -D build/resources/0ad.desktop $out/share/applications/0ad.desktop
+  '';
 
   configurePhase = ''
     runHook preConfigure
@@ -160,29 +180,10 @@ stdenv.mkDerivation (finalAttrs: {
 
   enableParallelBuilding = true;
 
-  installPhase = ''
-    popd
-
-    # Copy executables.
-    install -Dm755 binaries/system/pyrogenesis "$out"/bin/0ad
-    ${lib.optionalString withEditor ''
-      install -Dm755 binaries/system/ActorEditor "$out"/bin/ActorEditor
-    ''}
-
-    # Copy l10n data.
-    install -Dm755 -t $out/share/0ad/data/l10n binaries/data/l10n/*
-
-    # Copy libraries.
-    install -Dm644 -t $out/lib/0ad        binaries/system/*.so
-
-    # Copy icon.
-    install -D build/resources/0ad.png     $out/share/icons/hicolor/128x128/apps/0ad.png
-    install -D build/resources/0ad.desktop $out/share/applications/0ad.desktop
-  '';
-
   meta = {
     description = "Free, open-source game of ancient warfare";
     homepage = "https://play0ad.com/";
+
     license = with lib.licenses; [
       gpl2Plus
       lgpl21
@@ -190,6 +191,7 @@ stdenv.mkDerivation (finalAttrs: {
       cc-by-sa-30
       lib.licenses.zlib # otherwise masked by pkgs.zlib
     ];
+
     maintainers = with lib.maintainers; [ chvp ];
     platforms = lib.subtractLists lib.platforms.i686 lib.platforms.linux;
     mainProgram = "0ad";

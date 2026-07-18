@@ -1,18 +1,17 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
+  buildPythonPackage,
   packaging,
-  typing-extensions,
   pytestCheckHook,
+  setuptools,
   syrupy,
+  typing-extensions,
 }:
 
 buildPythonPackage rec {
   pname = "htmltools";
   version = "0.6.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "posit-dev";
@@ -20,6 +19,11 @@ buildPythonPackage rec {
     tag = "v${version}";
     hash = "sha256-psrTSy4NhhsZamB7lQDt+n6LUDiRcHD5+FFqTIIrnZc=";
   };
+
+  nativeCheckInputs = [
+    pytestCheckHook
+    syrupy
+  ];
 
   build-system = [
     setuptools
@@ -30,12 +34,8 @@ buildPythonPackage rec {
     typing-extensions
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "htmltools" ];
-
-  nativeCheckInputs = [
-    pytestCheckHook
-    syrupy
-  ];
 
   meta = {
     description = "Tools for HTML generation and output";

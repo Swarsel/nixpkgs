@@ -3,14 +3,13 @@
   fetchFromGitHub,
   buildDunePackage,
   core,
-  core_unix ? null,
   pkg-config,
   sqlite,
+  core_unix ? null,
 }:
 buildDunePackage (finalAttrs: {
   pname = "hack_parallel";
   version = "1.0.1";
-  minimalOCamlVersion = "4.08";
 
   src = fetchFromGitHub {
     owner = "rvantonder";
@@ -46,9 +45,11 @@ buildDunePackage (finalAttrs: {
     sqlite
   ];
 
+  minimalOCamlVersion = "4.08";
+
   meta = {
     description = "Core parallel and shared memory library used by Hack, Flow, and Pyre";
-    license = lib.licenses.mit;
     homepage = "https://github.com/rvantonder/hack_parallel";
+    license = lib.licenses.mit;
   };
 })

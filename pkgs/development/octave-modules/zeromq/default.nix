@@ -1,11 +1,11 @@
 {
-  buildOctavePackage,
   lib,
   fetchFromGitHub,
-  zeromq,
-  pkg-config,
   autoreconfHook,
+  buildOctavePackage,
   nix-update-script,
+  pkg-config,
+  zeromq,
 }:
 
 buildOctavePackage rec {
@@ -19,14 +19,6 @@ buildOctavePackage rec {
     sha256 = "sha256-2n/Cc4E/qYeN5Ku+Lmg/UCJhiYNbXkFIY8s4/SP2J+Y=";
   };
 
-  preAutoreconf = ''
-    cd src
-  '';
-
-  postAutoreconf = ''
-    cd ..
-  '';
-
   nativeBuildInputs = [
     pkg-config
     autoreconfHook
@@ -36,6 +28,14 @@ buildOctavePackage rec {
     zeromq
   ];
 
+  postAutoreconf = ''
+    cd ..
+  '';
+
+  preAutoreconf = ''
+    cd src
+  '';
+
   passthru.updateScript = nix-update-script {
     extraArgs = [
       "--version-regex"
@@ -44,9 +44,9 @@ buildOctavePackage rec {
   };
 
   meta = {
+    description = "ZeroMQ bindings for GNU Octave";
     homepage = "https://gnu-octave.github.io/packages/zeromq/";
     license = lib.licenses.gpl3Plus;
     maintainers = with lib.maintainers; [ ravenjoad ];
-    description = "ZeroMQ bindings for GNU Octave";
   };
 }

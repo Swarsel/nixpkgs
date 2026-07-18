@@ -1,7 +1,7 @@
 {
   lib,
-  appimageTools,
   fetchurl,
+  appimageTools,
   asar,
   python3,
 }:
@@ -10,14 +10,14 @@ let
   version = "5.57.0-latest";
 
   src = fetchurl {
-    name = "${pname}-${version}.AppImage";
     url = "https://flexbox.reconfigure.me/download/electron/linux/x64/FLEXOPTIX%20App.${version}.AppImage";
     hash = "sha256-wTrvteIXiCMk4y2JnXodn5o89XJrLGHxOpHmma4SQXY=";
+    name = "${pname}-${version}.AppImage";
   };
 
   udevRules = fetchurl {
-    url = "https://www.flexoptix.net/static/frontend/Flexoptix/default/en_US/files/99-tprogrammer.rules";
     hash = "sha256-/1ZtJT+1IMyYqw3N0bVJ/T3vbmex169lzx+SlY5WsnA=";
+    url = "https://www.flexoptix.net/static/frontend/Flexoptix/default/en_US/files/99-tprogrammer.rules";
   };
 
   appimageContents = (appimageTools.extract { inherit pname version src; }).overrideAttrs (old: {
@@ -48,8 +48,6 @@ appimageTools.wrapAppImage {
   inherit pname version;
   src = appimageContents;
 
-  extraPkgs = pkgs: [ pkgs.hidapi ];
-
   extraInstallCommands = ''
     # Add desktop convencience stuff
     install -Dm444 ${appimageContents}/flexoptix-app.desktop -t $out/share/applications
@@ -65,15 +63,19 @@ appimageTools.wrapAppImage {
     ln -s ${udevRules} $out/lib/udev/rules.d/99-tprogrammer.rules
   '';
 
+  extraPkgs = pkgs: [ pkgs.hidapi ];
+
   meta = {
     description = "Configure FLEXOPTIX Universal Transceivers in seconds";
     homepage = "https://www.flexoptix.net";
     changelog = "https://www.flexoptix.net/en/flexoptix-app/?os=linux#flexapp__modal__changelog";
     license = lib.licenses.unfree;
+
     maintainers = with lib.maintainers; [
       das_j
       helsinki-Jo
     ];
+
     platforms = [ "x86_64-linux" ];
   };
 }

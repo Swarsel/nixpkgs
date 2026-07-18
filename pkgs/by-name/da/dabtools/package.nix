@@ -3,10 +3,10 @@
   stdenv,
   fetchFromGitHub,
   cmake,
-  pkg-config,
-  libusb1,
-  rtl-sdr,
   fftw,
+  libusb1,
+  pkg-config,
+  rtl-sdr,
 }:
 
 stdenv.mkDerivation {
@@ -20,16 +20,6 @@ stdenv.mkDerivation {
     sha256 = "18nkdybgg2w6zh56g6xwmg49sifalvraz4rynw8w5d8cqi3dm9sm";
   };
 
-  nativeBuildInputs = [
-    cmake
-    pkg-config
-  ];
-  buildInputs = [
-    rtl-sdr
-    fftw
-    libusb1
-  ];
-
   #  CMake 4 is no longer retro compatible with versions < 3.5
   postPatch = ''
     substituteInPlace CMakeLists.txt src/CMakeLists.txt --replace-fail \
@@ -37,11 +27,22 @@ stdenv.mkDerivation {
       "cmake_minimum_required(VERSION 3.5)"
   '';
 
+  nativeBuildInputs = [
+    cmake
+    pkg-config
+  ];
+
+  buildInputs = [
+    rtl-sdr
+    fftw
+    libusb1
+  ];
+
   meta = {
     description = "Commandline tools for DAB and DAB+ digital radio broadcasts";
     homepage = "https://github.com/Opendigitalradio/dabtools";
     license = lib.licenses.gpl3Plus;
-    platforms = lib.platforms.linux;
     maintainers = [ lib.maintainers.markuskowa ];
+    platforms = lib.platforms.linux;
   };
 }

@@ -1,7 +1,7 @@
 {
   config,
-  pkgs,
   lib,
+  pkgs,
   ...
 }:
 let
@@ -16,15 +16,27 @@ in
       apply =
         p:
         p.override {
-          withX11 = cfg.enableX11;
           withWayland = cfg.enableWayland;
+          withX11 = cfg.enableX11;
         };
     };
 
+    enableWayland = lib.mkOption {
+      default = true;
+      description = "Whether to enable Wayland support.";
+      type = lib.types.bool;
+    };
+
+    enableX11 = lib.mkOption {
+      default = true;
+      description = "Whether to enable X11 support.";
+      type = lib.types.bool;
+    };
+
     settings = lib.mkOption {
-      type = gitIni.type;
       default = { };
       description = "Dunst configuration, see dunst(5)";
+
       example = lib.literalExpression ''
         {
           global = {
@@ -44,18 +56,8 @@ in
           };
         };
       '';
-    };
 
-    enableX11 = lib.mkOption {
-      type = lib.types.bool;
-      default = true;
-      description = "Whether to enable X11 support.";
-    };
-
-    enableWayland = lib.mkOption {
-      type = lib.types.bool;
-      default = true;
-      description = "Whether to enable Wayland support.";
+      type = gitIni.type;
     };
   };
 
@@ -68,8 +70,8 @@ in
     ];
 
     environment = {
-      systemPackages = [ cfg.package ];
       etc."xdg/dunst/dunstrc".source = gitIni.generate "dunstrc" cfg.settings;
+      systemPackages = [ cfg.package ];
     };
 
     services.dbus.packages = [ cfg.package ];

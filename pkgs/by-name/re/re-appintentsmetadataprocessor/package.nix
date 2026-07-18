@@ -6,7 +6,6 @@
 rustPlatform.buildRustPackage (finalAttrs: {
   pname = "re-appintentsmetadataprocessor";
   version = "1.0.0";
-  __structuredAttrs = true;
 
   src = fetchFromCodeberg {
     owner = "viraptor";
@@ -16,13 +15,14 @@ rustPlatform.buildRustPackage (finalAttrs: {
   };
 
   cargoHash = "sha256-mkev7O6eO2ddFoP3Gm6r+2kllnz2c9HiYADjFZXQIHo=";
+  __structuredAttrs = true;
 
   meta = {
-    mainProgram = "appintentsmetadataprocessor";
     description = "Open reimplementation of Apple's appintentsmetadataprocessor";
     homepage = "https://codeberg.org/viraptor/re-appintentsmetadataprocessor";
     license = with lib.licenses; [ mit ];
     maintainers = with lib.maintainers; [ viraptor ];
     platforms = lib.platforms.unix;
+    mainProgram = "appintentsmetadataprocessor";
   };
 })

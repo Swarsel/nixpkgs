@@ -1,34 +1,40 @@
 {
+  lib,
   stdenv,
   fetchFromGitHub,
   nix-update-source,
-  lib,
-  python3,
-  which,
-  runtimeShell,
   pylint,
+  python3,
+  runtimeShell,
+  which,
 }:
 stdenv.mkDerivation rec {
+  pname = "gup";
   version = "0.9.2";
+
   src = fetchFromGitHub {
-    hash = "sha256-bV5HauM0xmRI/9Pxp1cYLPLA8PbFvPER2y4mAMmgchs=";
     owner = "timbertson";
     repo = "gup";
     rev = "version-${version}";
+    hash = "sha256-bV5HauM0xmRI/9Pxp1cYLPLA8PbFvPER2y4mAMmgchs=";
   };
-  pname = "gup";
+
+  strictDeps = true;
+
   nativeBuildInputs = [
     python3
     which
     pylint
   ];
+
   buildInputs = [ python3 ];
-  strictDeps = true;
   buildPhase = "make python";
+
   installPhase = ''
     mkdir $out
     cp -r python/bin $out/bin
   '';
+
   passthru.updateScript = [
     runtimeShell
     "-c"
@@ -47,6 +53,7 @@ stdenv.mkDerivation rec {
         --modify-nix package.nix
     ''
   ];
+
   meta = {
     inherit (src.meta) homepage;
     description = "Better make, inspired by djb's redo";

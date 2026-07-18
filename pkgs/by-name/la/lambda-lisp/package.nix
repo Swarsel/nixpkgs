@@ -5,9 +5,9 @@
 
 {
   lib,
-  gccStdenv,
-  fetchFromGitHub,
   fetchurl,
+  fetchFromGitHub,
+  gccStdenv,
   runtimeShell,
 }:
 
@@ -19,8 +19,6 @@ stdenv.mkDerivation {
   pname = "lambda-lisp-blc";
   version = s.lambdaLispVersion;
   src = s.src;
-  flatSrc = s.flatSrc;
-  blcSrc = s.blcSrc;
 
   installPhase = ''
     runHook preInstall
@@ -62,9 +60,12 @@ stdenv.mkDerivation {
     runHook postInstallCheck
   '';
 
+  blcSrc = s.blcSrc;
+  flatSrc = s.flatSrc;
+
   meta = {
     description = "Lisp interpreter written in untyped lambda calculus";
-    homepage = "https://github.com/woodrush/lambdalisp";
+
     longDescription = ''
       LambdaLisp is a Lisp interpreter written as a closed untyped lambda calculus term.
       It is written as a lambda calculus term LambdaLisp = λx. ... which takes a string
@@ -76,6 +77,8 @@ stdenv.mkDerivation {
       consists of the beta-reduction of lambda terms, without introducing any
       non-lambda-type object.
     '';
+
+    homepage = "https://github.com/woodrush/lambdalisp";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ cafkafk ];
     platforms = [ "x86_64-linux" ];

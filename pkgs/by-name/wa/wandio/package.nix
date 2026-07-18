@@ -3,10 +3,10 @@
   stdenv,
   fetchFromGitHub,
   autoreconfHook,
-  zlib,
   bzip2,
-  xz,
   nix-update-script,
+  xz,
+  zlib,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -21,8 +21,8 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   strictDeps = true;
-
   nativeBuildInputs = [ autoreconfHook ];
+
   buildInputs = [
     zlib
     bzip2

@@ -2,15 +2,15 @@
   lib,
   stdenv,
   fetchurl,
-  pkg-config,
   gettext,
-  wrapWithXFileSearchPathHook,
-  xorgproto,
   libx11,
   libxaw,
   libxmu,
   libxt,
+  pkg-config,
+  wrapWithXFileSearchPathHook,
   writeScript,
+  xorgproto,
 }:
 stdenv.mkDerivation (finalAttrs: {
   pname = "xfontsel";
@@ -50,19 +50,23 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Allows testing the fonts available in an X server";
+
     longDescription = ''
       xfontsel provides a simple way to display the X11 core protocol fonts known to your X server,
       examine samples of each, and retrieve the X Logical Font Description ("XLFD") full name for a
       font.
     '';
+
     homepage = "https://gitlab.freedesktop.org/xorg/app/xfontsel";
+
     license = with lib.licenses; [
       x11
       hpnd
       mit
     ];
-    mainProgram = "xfontsel";
+
     maintainers = [ ];
     platforms = lib.platforms.unix;
+    mainProgram = "xfontsel";
   };
 })

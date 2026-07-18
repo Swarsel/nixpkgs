@@ -1,28 +1,22 @@
 {
   lib,
-  python3Packages,
   fetchFromGitHub,
-  nixosTests,
   fetchNpmDeps,
+  nixosTests,
   nodejs,
   npmHooks,
+  python3Packages,
 }:
 
 python3Packages.buildPythonApplication (finalAttrs: {
   pname = "isso";
   version = "0.14.0";
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "isso-comments";
     repo = "isso";
     tag = finalAttrs.version;
     hash = "sha256-8kXqqiMXxF0wCJ+AzYT8j0rjuhlXO3F6UJbump672b4=";
-  };
-
-  npmDeps = fetchNpmDeps {
-    inherit (finalAttrs) src;
-    hash = "sha256-e3r5iZLmXlf5YBPGgeNBDkdgfbNcIZIXbRLyyoyJiTU=";
   };
 
   outputs = [
@@ -36,6 +30,14 @@ python3Packages.buildPythonApplication (finalAttrs: {
       --replace "self.client.delete_cookie('localhost.local', '1')" "self.client.delete_cookie(key='1', domain='localhost')"
   '';
 
+  nativeBuildInputs = [
+    python3Packages.cffi
+    python3Packages.sphinxHook
+    python3Packages.sphinx
+    nodejs
+    npmHooks.npmConfigHook
+  ];
+
   propagatedBuildInputs = with python3Packages; [
     itsdangerous
     jinja2
@@ -45,14 +47,6 @@ python3Packages.buildPythonApplication (finalAttrs: {
     werkzeug
     bleach
     flask-caching
-  ];
-
-  nativeBuildInputs = [
-    python3Packages.cffi
-    python3Packages.sphinxHook
-    python3Packages.sphinx
-    nodejs
-    npmHooks.npmConfigHook
   ];
 
   env.NODE_PATH = "$npmDeps";
@@ -69,13 +63,20 @@ python3Packages.buildPythonApplication (finalAttrs: {
     python3Packages.pytest-cov-stub
   ];
 
+  format = "setuptools";
+
+  npmDeps = fetchNpmDeps {
+    inherit (finalAttrs) src;
+    hash = "sha256-e3r5iZLmXlf5YBPGgeNBDkdgfbNcIZIXbRLyyoyJiTU=";
+  };
+
   passthru.tests = { inherit (nixosTests) isso; };
 
   meta = {
     description = "Commenting server similar to Disqus";
-    mainProgram = "isso";
     homepage = "https://posativ.org/isso/";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ fgaz ];
+    mainProgram = "isso";
   };
 })

@@ -2,9 +2,9 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  curl,
   autoconf,
   automake,
+  curl,
   makeWrapper,
   sbcl,
 }:
@@ -27,19 +27,6 @@ stdenv.mkDerivation (finalAttrs: {
     ./0001-get-image-from-environment.patch
   ];
 
-  preConfigure = ''
-    sh bootstrap
-  '';
-
-  configureFlags = [ "--prefix=${placeholder "out"}" ];
-
-  postInstall = ''
-    wrapProgram $out/bin/ros \
-      --set image `basename $out` \
-      --add-flags 'lisp=sbcl-bin/system sbcl-bin.version=system -L sbcl-bin' \
-      --prefix PATH : ${lib.makeBinPath [ sbcl ]} --argv0 ros
-  '';
-
   nativeBuildInputs = [
     autoconf
     automake
@@ -51,13 +38,26 @@ stdenv.mkDerivation (finalAttrs: {
     curl
   ];
 
+  configureFlags = [ "--prefix=${placeholder "out"}" ];
+
+  preConfigure = ''
+    sh bootstrap
+  '';
+
+  postInstall = ''
+    wrapProgram $out/bin/ros \
+      --set image `basename $out` \
+      --add-flags 'lisp=sbcl-bin/system sbcl-bin.version=system -L sbcl-bin' \
+      --prefix PATH : ${lib.makeBinPath [ sbcl ]} --argv0 ros
+  '';
+
   meta = {
     description = "Lisp implementation installer/manager and launcher";
+    homepage = "https://github.com/roswell/roswell";
+    changelog = "https://github.com/roswell/roswell/blob/${finalAttrs.src.tag}/ChangeLog";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ hiro98 ];
     platforms = lib.platforms.unix;
-    homepage = "https://github.com/roswell/roswell";
-    changelog = "https://github.com/roswell/roswell/blob/${finalAttrs.src.tag}/ChangeLog";
     mainProgram = "ros";
   };
 })

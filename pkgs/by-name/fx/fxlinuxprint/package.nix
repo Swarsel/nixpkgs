@@ -1,10 +1,10 @@
 {
-  stdenv,
   lib,
-  fetchzip,
-  dpkg,
+  stdenv,
   autoPatchelfHook,
   cups,
+  dpkg,
+  fetchzip,
 }:
 let
   debPlatform =
@@ -29,13 +29,8 @@ stdenv.mkDerivation rec {
     dpkg
     autoPatchelfHook
   ];
+
   buildInputs = [ cups ];
-
-  sourceRoot = ".";
-  unpackCmd = "dpkg-deb -x $curSrc/fxlinuxprint_${version}_${debPlatform}.deb .";
-
-  dontConfigure = true;
-  dontBuild = true;
 
   installPhase = ''
     mkdir -p $out
@@ -46,8 +41,14 @@ stdenv.mkDerivation rec {
     mv usr/share/ppd/FujiXerox/* $out/share/cups/model
   '';
 
+  dontBuild = true;
+  dontConfigure = true;
+  sourceRoot = ".";
+  unpackCmd = "dpkg-deb -x $curSrc/fxlinuxprint_${version}_${debPlatform}.deb .";
+
   meta = {
     description = "Fuji Xerox Linux Printer Driver";
+
     longDescription = ''
       DocuPrint P365/368 d
       DocuPrint CM315/318 z
@@ -56,9 +57,10 @@ stdenv.mkDerivation rec {
       DocuCentre-VI C2271/C3370/C3371/C4471/C5571/C6671/C7771
       DocuPrint 3205 d/3208 d/3505 d/3508 d/4405 d/4408 d
     '';
+
     homepage = "https://onlinesupport.fujixerox.com";
-    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
     license = lib.licenses.unfree;
+    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
     maintainers = [ ];
     platforms = lib.platforms.linux;
   };

@@ -1,7 +1,7 @@
 {
-  fetchurl,
   lib,
   stdenv,
+  fetchurl,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -24,18 +24,22 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Store OpenPGP or GnuPG on paper";
-    mainProgram = "paperkey";
+
     longDescription = ''
       A reasonable way to achieve a long term backup of OpenPGP (GnuPG, PGP, etc)
       keys is to print them out on paper. Paper and ink have amazingly long
       retention qualities - far longer than the magnetic or optical means that
       are generally used to back up computer data.
     '';
+
     homepage = "https://www.jabberwocky.com/software/paperkey/";
     license = lib.licenses.gpl2Plus;
-    platforms = lib.platforms.unix;
+
     maintainers = with lib.maintainers; [
       peterhoeg
     ];
+
+    platforms = lib.platforms.unix;
+    mainProgram = "paperkey";
   };
 })

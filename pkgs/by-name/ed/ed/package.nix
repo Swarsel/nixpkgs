@@ -1,9 +1,9 @@
 {
   lib,
+  stdenv,
   fetchurl,
   lzip,
   runtimeShellPackage,
-  stdenv,
   testers,
 }:
 
@@ -21,28 +21,26 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-VuEH3cLyna1mkDdsFb+XUVCeHuO4JBcQ5E7b5cOhWMw=";
   };
 
+  strictDeps = true;
   nativeBuildInputs = [ lzip ];
-
   buildInputs = [ runtimeShellPackage ];
 
   configureFlags = [
     "CC=${stdenv.cc.targetPrefix}cc"
   ];
 
-  strictDeps = true;
-
   doCheck = true;
 
   passthru = {
     tests.version = testers.testVersion {
-      package = finalAttrs.finalPackage;
       command = "ed --version";
+      package = finalAttrs.finalPackage;
     };
   };
 
   meta = {
-    homepage = "https://www.gnu.org/software/ed/";
     description = "GNU implementation of the standard Unix editor";
+
     longDescription = ''
       GNU ed is a line-oriented text editor. It is used to create, display,
       modify and otherwise manipulate text files, both interactively and via
@@ -52,9 +50,11 @@ stdenv.mkDerivation (finalAttrs: {
       widely available. For most purposes, however, it is superseded by
       full-screen editors such as GNU Emacs or GNU Moe.
     '';
+
+    homepage = "https://www.gnu.org/software/ed/";
     license = lib.licenses.gpl3Plus;
-    mainProgram = "ed";
     maintainers = with lib.maintainers; [ mdaniels5757 ];
     platforms = lib.platforms.unix;
+    mainProgram = "ed";
   };
 })

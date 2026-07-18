@@ -1,16 +1,15 @@
 {
   lib,
-  rel,
-  buildKodiBinaryAddon,
   fetchFromGitHub,
-  kodi,
+  buildKodiBinaryAddon,
   bzip2,
+  kodi,
+  rel,
   zlib,
 }:
 
 buildKodiBinaryAddon rec {
   pname = "inputstream-ffmpegdirect";
-  namespace = "inputstream.ffmpegdirect";
   version = "21.3.8";
 
   src = fetchFromGitHub {
@@ -26,11 +25,13 @@ buildKodiBinaryAddon rec {
     kodi.ffmpeg
   ];
 
+  namespace = "inputstream.ffmpegdirect";
+
   meta = {
-    homepage = "https://github.com/xbmc/inputstream.ffmpegdirect/";
     description = "InputStream Client for streams that can be opened by either FFmpeg's libavformat or Kodi's cURL";
-    platforms = lib.platforms.all;
+    homepage = "https://github.com/xbmc/inputstream.ffmpegdirect/";
     license = lib.licenses.gpl2Plus;
+    platforms = lib.platforms.all;
     teams = [ lib.teams.kodi ];
   };
 }

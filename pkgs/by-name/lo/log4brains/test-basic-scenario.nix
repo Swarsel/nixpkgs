@@ -1,12 +1,10 @@
 {
-  testers,
   log4brains,
+  testers,
 }:
 testers.runCommand {
-  name = "log4brains-test-basic-scenario";
-  # the build runs for *quite* a while
-  meta.timeout = 90;
   nativeBuildInputs = [ log4brains ];
+  name = "log4brains-test-basic-scenario";
 
   script = ''
     log4brains | grep 'Log4brains CLI'
@@ -30,4 +28,7 @@ testers.runCommand {
 
     touch $out
   '';
+
+  # the build runs for *quite* a while
+  meta.timeout = 90;
 }

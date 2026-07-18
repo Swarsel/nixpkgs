@@ -1,10 +1,9 @@
 {
-  stdenv,
   lib,
-  fetchgit,
-  cmake,
-  pkg-config,
+  stdenv,
   alsa-lib,
+  cmake,
+  fetchgit,
   fftw,
   flac,
   lame,
@@ -14,6 +13,7 @@
   libsamplerate,
   libsndfile,
   libvorbis,
+  pkg-config,
   portaudio,
   qt6,
   wavpack,
@@ -35,6 +35,7 @@ stdenv.mkDerivation {
     pkg-config
     qt6.wrapQtAppsHook
   ];
+
   buildInputs = [
     alsa-lib
     fftw
@@ -60,14 +61,16 @@ stdenv.mkDerivation {
 
   meta = {
     description = "Cross-platform multitrack audio recording and audio editing suite";
-    mainProgram = "traverso";
     homepage = "https://savannah.nongnu.org/projects/traverso";
+
     license = with lib.licenses; [
       gpl2Plus
       lgpl21Plus
     ];
-    platforms = lib.platforms.all;
-    broken = stdenv.hostPlatform.isDarwin || stdenv.hostPlatform.isAarch64;
+
     maintainers = with lib.maintainers; [ coconnor ];
+    platforms = lib.platforms.all;
+    mainProgram = "traverso";
+    broken = stdenv.hostPlatform.isDarwin || stdenv.hostPlatform.isAarch64;
   };
 }

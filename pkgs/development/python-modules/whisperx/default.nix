@@ -1,35 +1,30 @@
 {
   lib,
   stdenv,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # build-system
-  setuptools,
-
+  buildPythonPackage,
   # dependencies
   ctranslate2,
+  ctranslate2-cpp, # alias for `pkgs.ctranslate2`, required due to colliding with the `ctranslate2` Python module.
   faster-whisper,
+  # native packages
+  ffmpeg,
   huggingface-hub,
   nltk,
   numpy,
   omegaconf,
   pandas,
   pyannote-audio,
+  # build-system
+  setuptools,
   torch,
   torchaudio,
   torchcodec,
   torchvision,
   transformers,
   triton,
-
-  # native packages
-  ffmpeg,
-  ctranslate2-cpp, # alias for `pkgs.ctranslate2`, required due to colliding with the `ctranslate2` Python module.
-
   # tests
   versionCheckHook,
-
   # enable GPU support
   cudaSupport ? torch.cudaSupport,
 }:
@@ -45,7 +40,6 @@ in
 buildPythonPackage (finalAttrs: {
   pname = "whisperx";
   version = "3.8.6";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "m-bain";
@@ -63,13 +57,13 @@ buildPythonPackage (finalAttrs: {
       '"ffmpeg"' '"${lib.getExe ffmpeg}"'
   '';
 
+  # No python tests in repository
+  nativeCheckInputs = [
+    versionCheckHook
+  ];
+
   build-system = [ setuptools ];
 
-  pythonRelaxDeps = [
-    "huggingface-hub"
-    "torch"
-    "torchaudio"
-  ];
   dependencies = [
     ctranslate
     faster-whisper
@@ -89,19 +83,21 @@ buildPythonPackage (finalAttrs: {
     triton
   ];
 
-  # No python tests in repository
-  nativeCheckInputs = [
-    versionCheckHook
-  ];
-
+  pyproject = true;
   pythonImportsCheck = [ "whisperx" ];
 
+  pythonRelaxDeps = [
+    "huggingface-hub"
+    "torch"
+    "torchaudio"
+  ];
+
   meta = {
-    mainProgram = "whisperx";
     description = "Automatic Speech Recognition with Word-level Timestamps (& Diarization)";
     homepage = "https://github.com/m-bain/whisperX";
     changelog = "https://github.com/m-bain/whisperX/releases/tag/${finalAttrs.src.tag}";
     license = lib.licenses.bsd2;
     maintainers = [ lib.maintainers.bengsparks ];
+    mainProgram = "whisperx";
   };
 })

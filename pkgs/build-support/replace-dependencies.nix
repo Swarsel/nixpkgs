@@ -1,7 +1,7 @@
 {
   lib,
-  runCommandLocal,
   replaceDirectDependencies,
+  runCommandLocal,
 }:
 
 # Replace some dependencies in the requisites tree of drv, propagating the change all the way up the tree, even within other replacements, without a full rebuild.
@@ -121,7 +121,7 @@ let
       );
   rootReferences = referencesOf drv;
   relevantReplacements = filter (
-    { oldDependency, newDependency }:
+    { newDependency, oldDependency }:
     if toString oldDependency == toString newDependency then
       warn "replaceDependencies: attempting to replace dependency ${oldDependency} of ${drv} with itself"
         # Attempting to replace a dependency by itself is completely useless, and would only lead to infinite recursion.
@@ -178,9 +178,10 @@ let
       in
       replaceDirectDependencies {
         drv = storePathOrKnownTargetDerivationMemo.${drv};
+
         replacements = mapAttrsToList (name: value: {
-          oldDependency = name;
           newDependency = value;
+          oldDependency = name;
         }) rewrites;
       }
     ) relevantReferences
@@ -192,7 +193,7 @@ let
     )
     // listToAttrs (
       map (
-        { oldDependency, newDependency }:
+        { newDependency, oldDependency }:
         {
           name = realisation oldDependency;
           value = rewriteMemo.${realisation newDependency};

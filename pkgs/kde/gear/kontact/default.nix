@@ -1,10 +1,10 @@
 {
-  mkKdeDerivation,
-  qtwebengine,
   akregator,
   kaddressbook,
   kmail,
   korganizer,
+  mkKdeDerivation,
+  qtwebengine,
   zanshin,
 }:
 mkKdeDerivation {
@@ -18,5 +18,6 @@ mkKdeDerivation {
     korganizer
     zanshin
   ];
+
   meta.mainProgram = "kontact";
 }

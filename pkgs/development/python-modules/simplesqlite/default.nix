@@ -1,21 +1,20 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   dataproperty,
   mbstrdecoder,
   pathvalidate,
-  sqliteschema,
+  pytestCheckHook,
   setuptools,
+  sqliteschema,
   tabledata,
   typepy,
-  pytestCheckHook,
 }:
 
 buildPythonPackage rec {
   pname = "SimpleSQLite";
   version = "1.5.4";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "thombashi";
@@ -36,6 +35,7 @@ buildPythonPackage rec {
   ];
 
   nativeCheckInputs = [ pytestCheckHook ];
+  pyproject = true;
   pythonImportsCheck = [ "simplesqlite" ];
 
   meta = {

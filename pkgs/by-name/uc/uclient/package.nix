@@ -1,12 +1,12 @@
 {
-  stdenv,
   lib,
-  fetchgit,
+  stdenv,
   cmake,
-  pkg-config,
-  libubox,
-  ucode,
+  fetchgit,
   json_c,
+  libubox,
+  pkg-config,
+  ucode,
 }:
 
 stdenv.mkDerivation {
@@ -23,6 +23,7 @@ stdenv.mkDerivation {
     cmake
     pkg-config
   ];
+
   buildInputs = [
     libubox
     ucode
@@ -40,7 +41,7 @@ stdenv.mkDerivation {
     homepage = "https://git.openwrt.org/?p=project/uclient.git;a=summary";
     license = lib.licenses.isc;
     maintainers = with lib.maintainers; [ mkg20001 ];
-    mainProgram = "uclient-fetch";
     platforms = lib.platforms.all;
+    mainProgram = "uclient-fetch";
   };
 }

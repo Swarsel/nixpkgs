@@ -1,27 +1,23 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
-
+  buildPythonPackage,
   cmdstanpy,
-  numpy,
-  matplotlib,
-  pandas,
-  holidays,
-  tqdm,
-  importlib-resources,
-
   dask,
   distributed,
-
+  holidays,
+  importlib-resources,
+  matplotlib,
+  numpy,
+  pandas,
   pytestCheckHook,
+  setuptools,
+  tqdm,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "prophet";
   version = "1.3.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "facebook";
@@ -29,10 +25,6 @@ buildPythonPackage (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-Bu+ztg6sj1jh2iair6v1CdbF0Fi4b+h8yLzB3xTMD3Y=";
   };
-
-  sourceRoot = "${finalAttrs.src.name}/python";
-
-  env.PROPHET_REPACKAGE_CMDSTAN = "false";
 
   nativeBuildInputs = [ setuptools ];
 
@@ -46,11 +38,8 @@ buildPythonPackage (finalAttrs: {
     importlib-resources
   ];
 
-  optional-dependencies.parallel = [
-    dask
-    distributed
-  ]
-  ++ dask.optional-dependencies.dataframe;
+  env.PROPHET_REPACKAGE_CMDSTAN = "false";
+  nativeCheckInputs = [ pytestCheckHook ];
 
   preCheck = ''
     # use the generated files from $out for testing
@@ -58,14 +47,20 @@ buildPythonPackage (finalAttrs: {
     rm -r prophet
   '';
 
-  nativeCheckInputs = [ pytestCheckHook ];
+  optional-dependencies.parallel = [
+    dask
+    distributed
+  ]
+  ++ dask.optional-dependencies.dataframe;
 
+  pyproject = true;
   pythonImportsCheck = [ "prophet" ];
+  sourceRoot = "${finalAttrs.src.name}/python";
 
   meta = {
-    changelog = "https://github.com/facebook/prophet/releases/tag/${finalAttrs.src.tag}";
     description = "Tool for producing high quality forecasts for time series data that has multiple seasonality with linear or non-linear growth";
     homepage = "https://facebook.github.io/prophet/";
+    changelog = "https://github.com/facebook/prophet/releases/tag/${finalAttrs.src.tag}";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ tomasajt ];
   };

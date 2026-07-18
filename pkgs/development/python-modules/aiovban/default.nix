@@ -1,18 +1,17 @@
 {
   lib,
+  fetchFromGitHub,
   aiovban-pyaudio,
   buildPythonPackage,
-  fetchFromGitHub,
+  music-assistant,
   pytestCheckHook,
   textual,
   uv-build,
-  music-assistant,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "aiovban";
   version = "1.1.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "wmbest2";
@@ -26,10 +25,6 @@ buildPythonPackage (finalAttrs: {
       --replace-fail "uv_build>=0.10.0,<0.11.0" "uv_build"
   '';
 
-  build-system = [ uv-build ];
-
-  dependencies = [ textual ];
-
   # avoid infinite recursion with aiovban-pyaudio
   doCheck = false;
 
@@ -38,6 +33,10 @@ buildPythonPackage (finalAttrs: {
     pytestCheckHook
   ]
   ++ aiovban-pyaudio.optional-dependencies.cli;
+
+  build-system = [ uv-build ];
+  dependencies = [ textual ];
+  pyproject = true;
 
   pythonImportsCheck = [
     "aiovban"
@@ -48,10 +47,10 @@ buildPythonPackage (finalAttrs: {
   });
 
   meta = {
-    changelog = "https://github.com/wmbest2/aiovban/releases/tag/${finalAttrs.src.tag}";
+    inherit (music-assistant.meta) maintainers;
     description = "Asyncio VBAN Protocol Wrapper";
     homepage = "https://github.com/wmbest2/aiovban";
+    changelog = "https://github.com/wmbest2/aiovban/releases/tag/${finalAttrs.src.tag}";
     license = lib.licenses.mit;
-    inherit (music-assistant.meta) maintainers;
   };
 })

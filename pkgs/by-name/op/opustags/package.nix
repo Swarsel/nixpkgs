@@ -1,15 +1,15 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
   cmake,
-  pkg-config,
-  libiconv,
-  libogg,
   ffmpeg,
   glibcLocales,
+  libiconv,
+  libogg,
   perl,
   perlPackages,
+  pkg-config,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -30,7 +30,6 @@ stdenv.mkDerivation (finalAttrs: {
   ++ lib.optionals stdenv.hostPlatform.isDarwin [ libiconv ];
 
   buildInputs = [ libogg ];
-
   doCheck = true;
 
   nativeCheckInputs = [
@@ -50,12 +49,12 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   meta = {
-    homepage = "https://github.com/fmang/opustags";
     description = "Ogg Opus tags editor";
-    platforms = lib.platforms.all;
-    broken = stdenv.hostPlatform.isDarwin;
-    maintainers = with lib.maintainers; [ kmein ];
+    homepage = "https://github.com/fmang/opustags";
     license = lib.licenses.bsd3;
+    maintainers = with lib.maintainers; [ kmein ];
+    platforms = lib.platforms.all;
     mainProgram = "opustags";
+    broken = stdenv.hostPlatform.isDarwin;
   };
 })

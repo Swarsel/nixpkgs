@@ -1,32 +1,32 @@
 {
-  stdenv,
   lib,
-  callPackage,
-  fetchFromGitHub,
+  stdenv,
   fetchurl,
+  fetchFromGitHub,
+  bchunk,
+  bzip2,
+  callPackage,
+  cdparanoia,
+  cmake,
+  dialog,
   fetchpatch,
+  ffmpeg,
+  libpng,
+  makeWrapper,
+  p7zip,
+  pkg-config,
+  python3,
   runCommand,
   unzip,
-  bchunk,
-  p7zip,
-  cmake,
-  pkg-config,
-  makeWrapper,
   zlib,
-  bzip2,
-  libpng,
-  dialog,
-  python3,
-  cdparanoia,
-  ffmpeg,
 }:
 
 let
   stratagus = callPackage ./stratagus.nix { };
 
   dataDownload = fetchurl {
-    url = "https://archive.org/download/warcraft-ii-tides-of-darkness_202105/Warcess.zip";
     sha256 = "0yxgvf8xpv1w2bjmny4a38pa3xcdgqckk9abj21ilkc5zqzqmm9b";
+    url = "https://archive.org/download/warcraft-ii-tides-of-darkness_202105/Warcess.zip";
   };
 
   data =
@@ -37,6 +37,7 @@ let
           bchunk
           p7zip
         ];
+
         meta.license = lib.licenses.unfree;
       }
       ''
@@ -50,8 +51,8 @@ let
 
 in
 stdenv.mkDerivation rec {
-  pname = "wargus";
   inherit (stratagus) version;
+  pname = "wargus";
 
   src = fetchFromGitHub {
     owner = "wargus";
@@ -59,11 +60,12 @@ stdenv.mkDerivation rec {
     tag = "v${version}";
     sha256 = "sha256-rU2uMhk7Hx9hrLR/iH2tHkJ2z4cVmJB3ISlvY6dfQKU=";
   };
+
   patches = [
     (fetchpatch {
+      sha256 = "sha256-9FgflNyqZUrBY1prOahicnjslMxxUrK2bLspfGeZ6Os=";
       # "change to cmake_minimum_required(VERSION 3.5) to fix CI"
       url = "https://github.com/Wargus/wargus/commit/e89e121edadaf3ab365263c68b5baec305a5c65f.patch";
-      sha256 = "sha256-9FgflNyqZUrBY1prOahicnjslMxxUrK2bLspfGeZ6Os=";
     })
   ];
 
@@ -73,15 +75,18 @@ stdenv.mkDerivation rec {
     makeWrapper
     ffmpeg
   ];
+
   buildInputs = [
     zlib
     bzip2
     libpng
   ];
+
   cmakeFlags = [
     "-DSTRATAGUS=${stratagus}/games/stratagus"
     "-DSTRATAGUS_INCLUDE_DIR=${stratagus.src}/gameheaders"
   ];
+
   postInstall = ''
     makeWrapper $out/games/wargus $out/bin/wargus \
       --prefix PATH : ${lib.makeBinPath [ "$out" ]}

@@ -6,8 +6,8 @@
 }:
 
 stdenv.mkDerivation (finalAttrs: {
-  version = "0.4";
   pname = "txtw";
+  version = "0.4";
 
   src = fetchFromGitHub {
     owner = "baskerville";
@@ -17,14 +17,13 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   buildInputs = [ cairo ];
-
   prePatch = ''sed -i "s@/usr/local@$out@" Makefile'';
 
   meta = {
     description = "Compute text widths";
     homepage = "https://github.com/baskerville/txtw";
-    maintainers = with lib.maintainers; [ lihop ];
     license = lib.licenses.unlicense;
+    maintainers = with lib.maintainers; [ lihop ];
     platforms = lib.platforms.linux;
     mainProgram = "txtw";
   };

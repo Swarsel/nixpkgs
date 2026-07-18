@@ -1,20 +1,18 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
-  pkg-config,
-  less,
   installShellFiles,
+  less,
   makeWrapper,
-  zlib,
+  pkg-config,
+  rustPlatform,
   versionCheckHook,
+  zlib,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
   pname = "bat";
   version = "0.26.1";
-
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "sharkdp";
@@ -22,8 +20,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-IbTvFT37BFo0tKOiApDL9sT+/nMD33MO3TXuho+lF2c=";
   };
-
-  cargoHash = "sha256-WRLCs1hrwFT3tya9CzKUuh5g+6fYqKDtv3yvDx8Wws8=";
 
   nativeBuildInputs = [
     pkg-config
@@ -35,17 +31,7 @@ rustPlatform.buildRustPackage (finalAttrs: {
     zlib
   ];
 
-  postInstall = ''
-    installManPage $releaseDir/build/bat-*/out/assets/manual/bat.1
-    installShellCompletion $releaseDir/build/bat-*/out/assets/completions/bat.{bash,fish,zsh}
-  '';
-
-  # Insert Nix-built `less` into PATH because the system-provided one may be too old to behave as
-  # expected with certain flag combinations.
-  postFixup = ''
-    wrapProgram "$out/bin/bat" \
-      --prefix PATH : "${lib.makeBinPath [ less ]}"
-  '';
+  cargoHash = "sha256-WRLCs1hrwFT3tya9CzKUuh5g+6fYqKDtv3yvDx8Wws8=";
 
   # Skip test cases which depends on `more`
   checkFlags = [
@@ -65,10 +51,17 @@ rustPlatform.buildRustPackage (finalAttrs: {
     "--skip=file_with_invalid_utf8_filename"
   ];
 
+  postInstall = ''
+    installManPage $releaseDir/build/bat-*/out/assets/manual/bat.1
+    installShellCompletion $releaseDir/build/bat-*/out/assets/completions/bat.{bash,fish,zsh}
+  '';
+
+  doInstallCheck = true;
+
   nativeInstallCheckInputs = [
     versionCheckHook
   ];
-  doInstallCheck = true;
+
   installCheckPhase = ''
     runHook preInstallCheck
 
@@ -81,20 +74,32 @@ rustPlatform.buildRustPackage (finalAttrs: {
     runHook postInstallCheck
   '';
 
+  # Insert Nix-built `less` into PATH because the system-provided one may be too old to behave as
+  # expected with certain flag combinations.
+  postFixup = ''
+    wrapProgram "$out/bin/bat" \
+      --prefix PATH : "${lib.makeBinPath [ less ]}"
+  '';
+
+  __structuredAttrs = true;
+
   meta = {
     description = "Cat(1) clone with syntax highlighting and Git integration";
     homepage = "https://github.com/sharkdp/bat";
     changelog = "https://github.com/sharkdp/bat/raw/v${finalAttrs.version}/CHANGELOG.md";
+
     license = with lib.licenses; [
       asl20 # or
       mit
     ];
-    mainProgram = "bat";
+
     maintainers = with lib.maintainers; [
       dywedir
       zowoq
       SuperSandro2000
       sigmasquadron
     ];
+
+    mainProgram = "bat";
   };
 })

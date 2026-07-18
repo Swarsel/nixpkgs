@@ -6,17 +6,17 @@
   cppcheck,
   doxygen,
   graphviz,
+  nix-update-script,
   pkg-config,
   python3,
-  nix-update-script,
 }:
 let
   version = "5.0.0";
   versionPrefix = "gz-cmake${lib.versions.major version}";
 in
 stdenv.mkDerivation (finalAttrs: {
-  pname = "gz-cmake";
   inherit version;
+  pname = "gz-cmake";
 
   src = fetchFromGitHub {
     owner = "gazebosim";
@@ -42,8 +42,6 @@ stdenv.mkDerivation (finalAttrs: {
     python3
   ];
 
-  doBuildExamples = false;
-
   cmakeFlags = [
     (lib.cmakeBool "BUILDSYSTEM_TESTING" finalAttrs.doCheck)
     (lib.cmakeBool "BUILD_TESTING" finalAttrs.doCheck)
@@ -51,10 +49,12 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   doCheck = true;
+  doBuildExamples = false;
 
   passthru = {
     # bulk updater selects wrong tag
     skipBulkUpdates = true;
+
     updateScript = nix-update-script {
       extraArgs = [ "--version-regex=gz-cmake(.*)" ];
     };
@@ -65,8 +65,8 @@ stdenv.mkDerivation (finalAttrs: {
     homepage = "https://github.com/gazebosim/gz-cmake";
     changelog = "https://github.com/gazebosim/gz-cmake/releases/tag/${finalAttrs.src.tag}";
     license = lib.licenses.asl20;
-    platforms = lib.platforms.unix;
     maintainers = with lib.maintainers; [ guelakais ];
+    platforms = lib.platforms.unix;
     badPlatforms = lib.platforms.darwin; # hard replicable building error
   };
 })

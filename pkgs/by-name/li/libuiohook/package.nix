@@ -2,21 +2,21 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  nixosTests,
   cmake,
-  pkg-config,
   libx11,
+  libxau,
   libxcb,
-  libxkbcommon,
-  xinput,
-  libxt,
-  libxtst,
+  libxdmcp,
+  libxext,
   libxi,
   libxinerama,
-  libxext,
-  libxdmcp,
-  libxau,
+  libxkbcommon,
   libxkbfile,
+  libxt,
+  libxtst,
+  nixosTests,
+  pkg-config,
+  xinput,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -29,6 +29,11 @@ stdenv.mkDerivation (finalAttrs: {
     rev = finalAttrs.version;
     sha256 = "1qlz55fp4i9dd8sdwmy1m8i4i1jy1s09cpmlxzrgf7v34w72ncm7";
   };
+
+  outputs = [
+    "out"
+    "test"
+  ];
 
   nativeBuildInputs = [
     cmake
@@ -50,11 +55,6 @@ stdenv.mkDerivation (finalAttrs: {
     libxkbfile
   ];
 
-  outputs = [
-    "out"
-    "test"
-  ];
-
   # We build the tests, but they're only installed when using the "test" output.
   # This will produce a "uiohook_tests" binary which can be run to test the
   # functionality of the library on the current system.
@@ -73,13 +73,13 @@ stdenv.mkDerivation (finalAttrs: {
     cp ./uiohook_tests $test/share
   '';
 
+  passthru.tests.libuiohook = nixosTests.libuiohook;
+
   meta = {
     description = "C library to provide global keyboard and mouse hooks from userland";
     homepage = "https://github.com/kwhat/libuiohook";
     license = lib.licenses.gpl3Only;
-    platforms = lib.platforms.all;
     maintainers = with lib.maintainers; [ anoa ];
+    platforms = lib.platforms.all;
   };
-
-  passthru.tests.libuiohook = nixosTests.libuiohook;
 })

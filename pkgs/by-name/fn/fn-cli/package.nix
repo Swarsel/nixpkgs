@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   docker,
 }:
 
@@ -16,13 +16,11 @@ buildGoModule (finalAttrs: {
     hash = "sha256-uw4fH3PyuAnNEhrvw0dl2jJxP4jau3tVuAjzSgeu1Lw=";
   };
 
-  vendorHash = null;
-
-  subPackages = [ "." ];
-
   buildInputs = [
     docker
   ];
+
+  vendorHash = null;
 
   preBuild = ''
     export HOME=$TMPDIR
@@ -32,11 +30,13 @@ buildGoModule (finalAttrs: {
     mv $out/bin/cli $out/bin/fn
   '';
 
+  subPackages = [ "." ];
+
   meta = {
     description = "Command-line tool for the fn project";
-    mainProgram = "fn";
     homepage = "https://fnproject.io";
     license = lib.licenses.asl20;
     maintainers = [ lib.maintainers.c4605 ];
+    mainProgram = "fn";
   };
 })

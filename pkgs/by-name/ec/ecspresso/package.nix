@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   versionCheckHook,
 }:
 
@@ -16,11 +16,12 @@ buildGoModule (finalAttrs: {
     hash = "sha256-IXvCWuE1KJFCckZjGP9LvEY0S9WzrKPqPx759YIYe4A=";
   };
 
-  subPackages = [
-    "cmd/ecspresso"
-  ];
-
   vendorHash = "sha256-bvmGvJwjh1tZcKiwIBAveN0Js61/+sh+X6lrJfUYPZ0=";
+  doInstallCheck = true;
+
+  nativeInstallCheckInputs = [
+    versionCheckHook
+  ];
 
   ldflags = [
     "-s"
@@ -29,21 +30,21 @@ buildGoModule (finalAttrs: {
     "-X github.com/kayac/ecspresso/v2.Version=${finalAttrs.version}"
   ];
 
-  doInstallCheck = true;
-
-  nativeInstallCheckInputs = [
-    versionCheckHook
+  subPackages = [
+    "cmd/ecspresso"
   ];
 
   versionCheckProgramArg = "version";
 
   meta = {
     description = "Deployment tool for ECS";
-    mainProgram = "ecspresso";
-    license = lib.licenses.mit;
     homepage = "https://github.com/kayac/ecspresso/";
+    license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       FKouhai
     ];
+
+    mainProgram = "ecspresso";
   };
 })

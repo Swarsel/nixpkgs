@@ -1,13 +1,13 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
   cmake,
   config,
-  cudaSupport ? config.cudaSupport,
-  cudaPackages ? null,
-  rocmSupport ? config.rocmSupport,
   rocmPackages,
+  cudaPackages ? null,
+  cudaSupport ? config.cudaSupport,
+  rocmSupport ? config.rocmSupport,
 }:
 
 assert cudaSupport -> cudaPackages != null;
@@ -16,9 +16,6 @@ stdenv.mkDerivation (finalAttrs: {
   pname = "umpire";
   version = "2025.12.0";
 
-  strictDeps = true;
-  __structuredAttrs = true;
-
   src = fetchFromGitHub {
     owner = "LLNL";
     repo = "umpire";
@@ -26,6 +23,8 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-9lGI5SKpDIIzZvsG/yKopfXS1PuHOQB9bwSuML2Xh/8=";
     fetchSubmodules = true;
   };
+
+  strictDeps = true;
 
   nativeBuildInputs = [
     cmake
@@ -54,13 +53,14 @@ stdenv.mkDerivation (finalAttrs: {
       "-DENABLE_HIP=ON"
     ];
 
+  __structuredAttrs = true;
   passthru = { inherit rocmSupport; };
 
   meta = {
     description = "Application-focused API for memory management on NUMA & GPU architectures";
     homepage = "https://github.com/LLNL/Umpire";
-    maintainers = with lib.maintainers; [ sheepforce ];
     license = with lib.licenses; [ mit ];
+    maintainers = with lib.maintainers; [ sheepforce ];
     platforms = lib.platforms.linux;
   };
 })

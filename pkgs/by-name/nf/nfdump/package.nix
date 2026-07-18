@@ -4,12 +4,12 @@
   fetchFromGitHub,
   autoconf,
   automake,
+  bison,
+  bzip2,
+  flex,
+  libpcap,
   libtool,
   pkg-config,
-  bzip2,
-  libpcap,
-  flex,
-  bison,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -37,12 +37,6 @@ stdenv.mkDerivation (finalAttrs: {
     libpcap
   ];
 
-  preConfigure = ''
-    # The script defaults to glibtoolize on darwin, so we pass the correct
-    # name explicitly.
-    LIBTOOLIZE=libtoolize ./autogen.sh
-  '';
-
   configureFlags = [
     "--enable-nsel"
     "--enable-sflow"
@@ -50,11 +44,19 @@ stdenv.mkDerivation (finalAttrs: {
     "--enable-nfpcapd"
   ];
 
+  preConfigure = ''
+    # The script defaults to glibtoolize on darwin, so we pass the correct
+    # name explicitly.
+    LIBTOOLIZE=libtoolize ./autogen.sh
+  '';
+
   meta = {
     description = "Tools for working with netflow data";
+
     longDescription = ''
       nfdump is a set of tools for working with netflow data.
     '';
+
     homepage = "https://github.com/phaag/nfdump";
     changelog = "https://github.com/phaag/nfdump/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.bsd3;

@@ -79,154 +79,165 @@ in
     services.ttyd = {
       enable = lib.mkEnableOption "ttyd daemon";
 
-      port = mkOption {
-        type = types.port;
-        default = 7681;
-        description = "Port to listen on (use 0 for random port)";
-      };
-
-      socket = mkOption {
+      caFile = mkOption {
+        default = null;
+        description = "SSL CA file path for client certificate verification.";
         type = types.nullOr types.path;
-        default = null;
-        example = "/var/run/ttyd.sock";
-        description = "UNIX domain socket path to bind.";
       };
 
-      interface = mkOption {
-        type = types.nullOr types.str;
+      certFile = mkOption {
         default = null;
-        example = "eth0";
-        description = "Network interface to bind.";
-      };
-
-      username = mkOption {
-        type = types.nullOr types.str;
-        default = null;
-        description = "Username for basic http authentication.";
-      };
-
-      passwordFile = mkOption {
+        description = "SSL certificate file path.";
         type = types.nullOr types.path;
-        default = null;
-        apply = value: if value == null then null else toString value;
-        description = ''
-          File containing the password to use for basic http authentication.
-          For insecurely putting the password in the globally readable store use
-          `pkgs.writeText "ttydpw" "MyPassword"`.
-        '';
       };
 
-      signal = mkOption {
-        type = types.ints.u8;
-        default = 1;
-        description = "Signal to send to the command on session close.";
-      };
-
-      entrypoint = mkOption {
-        type = types.listOf types.str;
-        default = [ "${pkgs.shadow}/bin/login" ];
-        defaultText = lib.literalExpression ''
-          [ "''${pkgs.shadow}/bin/login" ]
-        '';
-        example = lib.literalExpression ''
-          [ (lib.getExe pkgs.htop) ]
-        '';
-        description = "Which command ttyd runs.";
-        apply = lib.escapeShellArgs;
-      };
-
-      user = mkOption {
-        type = types.str;
-        # `login` needs to be run as root
-        default = "root";
-        description = "Which unix user ttyd should run as.";
-      };
-
-      writeable = mkOption {
-        type = types.nullOr types.bool;
-        default = null; # null causes an eval error, forcing the user to consider attack surface
-        example = true;
-        description = "Allow clients to write to the TTY.";
+      checkOrigin = mkOption {
+        default = false;
+        description = "Whether to allow a websocket connection from a different origin.";
+        type = types.bool;
       };
 
       clientOptions = mkOption {
-        type = types.attrsOf types.str;
         default = { };
+
+        description = ''
+          Attribute set of client options for xtermjs.
+          <https://xtermjs.org/docs/api/terminal/interfaces/iterminaloptions/>
+        '';
+
         example = lib.literalExpression ''
           {
             fontSize = "16";
             fontFamily = "Fira Code";
           }
         '';
-        description = ''
-          Attribute set of client options for xtermjs.
-          <https://xtermjs.org/docs/api/terminal/interfaces/iterminaloptions/>
-        '';
-      };
 
-      terminalType = mkOption {
-        type = types.str;
-        default = "xterm-256color";
-        description = "Terminal type to report.";
-      };
-
-      checkOrigin = mkOption {
-        type = types.bool;
-        default = false;
-        description = "Whether to allow a websocket connection from a different origin.";
-      };
-
-      maxClients = mkOption {
-        type = types.int;
-        default = 0;
-        description = "Maximum clients to support (0, no limit)";
-      };
-
-      indexFile = mkOption {
-        type = types.nullOr types.path;
-        default = null;
-        description = "Custom index.html path";
+        type = types.attrsOf types.str;
       };
 
       enableIPv6 = mkOption {
-        type = types.bool;
         default = false;
         description = "Whether or not to enable IPv6 support.";
+        type = types.bool;
       };
 
       enableSSL = mkOption {
-        type = types.bool;
         default = false;
         description = "Whether or not to enable SSL (https) support.";
+        type = types.bool;
       };
 
-      certFile = mkOption {
-        type = types.nullOr types.path;
+      entrypoint = mkOption {
+        apply = lib.escapeShellArgs;
+        default = [ "${pkgs.shadow}/bin/login" ];
+
+        defaultText = lib.literalExpression ''
+          [ "''${pkgs.shadow}/bin/login" ]
+        '';
+
+        description = "Which command ttyd runs.";
+
+        example = lib.literalExpression ''
+          [ (lib.getExe pkgs.htop) ]
+        '';
+
+        type = types.listOf types.str;
+      };
+
+      indexFile = mkOption {
         default = null;
-        description = "SSL certificate file path.";
+        description = "Custom index.html path";
+        type = types.nullOr types.path;
+      };
+
+      interface = mkOption {
+        default = null;
+        description = "Network interface to bind.";
+        example = "eth0";
+        type = types.nullOr types.str;
       };
 
       keyFile = mkOption {
-        type = types.nullOr types.path;
-        default = null;
         apply = value: if value == null then null else toString value;
+        default = null;
+
         description = ''
           SSL key file path.
           For insecurely putting the keyFile in the globally readable store use
           `pkgs.writeText "ttydKeyFile" "SSLKEY"`.
         '';
-      };
 
-      caFile = mkOption {
         type = types.nullOr types.path;
-        default = null;
-        description = "SSL CA file path for client certificate verification.";
       };
 
       logLevel = mkOption {
-        type = types.int;
         default = 7;
         description = "Set log level.";
+        type = types.int;
+      };
+
+      maxClients = mkOption {
+        default = 0;
+        description = "Maximum clients to support (0, no limit)";
+        type = types.int;
+      };
+
+      passwordFile = mkOption {
+        apply = value: if value == null then null else toString value;
+        default = null;
+
+        description = ''
+          File containing the password to use for basic http authentication.
+          For insecurely putting the password in the globally readable store use
+          `pkgs.writeText "ttydpw" "MyPassword"`.
+        '';
+
+        type = types.nullOr types.path;
+      };
+
+      port = mkOption {
+        default = 7681;
+        description = "Port to listen on (use 0 for random port)";
+        type = types.port;
+      };
+
+      signal = mkOption {
+        default = 1;
+        description = "Signal to send to the command on session close.";
+        type = types.ints.u8;
+      };
+
+      socket = mkOption {
+        default = null;
+        description = "UNIX domain socket path to bind.";
+        example = "/var/run/ttyd.sock";
+        type = types.nullOr types.path;
+      };
+
+      terminalType = mkOption {
+        default = "xterm-256color";
+        description = "Terminal type to report.";
+        type = types.str;
+      };
+
+      user = mkOption {
+        # `login` needs to be run as root
+        default = "root";
+        description = "Which unix user ttyd should run as.";
+        type = types.str;
+      };
+
+      username = mkOption {
+        default = null;
+        description = "Username for basic http authentication.";
+        type = types.nullOr types.str;
+      };
+
+      writeable = mkOption {
+        default = null; # null causes an eval error, forcing the user to consider attack surface
+        description = "Allow clients to write to the TTY.";
+        example = true;
+        type = types.nullOr types.bool;
       };
     };
   };
@@ -257,15 +268,6 @@ in
     systemd.services.ttyd = {
       description = "ttyd Web Server Daemon";
 
-      wantedBy = [ "multi-user.target" ];
-
-      serviceConfig = {
-        User = cfg.user;
-        LoadCredential = lib.optionalString (
-          cfg.passwordFile != null
-        ) "TTYD_PASSWORD_FILE:${cfg.passwordFile}";
-      };
-
       script =
         if cfg.passwordFile != null then
           ''
@@ -279,6 +281,16 @@ in
             ${pkgs.ttyd}/bin/ttyd ${lib.escapeShellArgs args} \
               ${cfg.entrypoint}
           '';
+
+      serviceConfig = {
+        LoadCredential = lib.optionalString (
+          cfg.passwordFile != null
+        ) "TTYD_PASSWORD_FILE:${cfg.passwordFile}";
+
+        User = cfg.user;
+      };
+
+      wantedBy = [ "multi-user.target" ];
     };
   };
 }

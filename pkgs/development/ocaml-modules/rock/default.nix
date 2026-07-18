@@ -1,8 +1,8 @@
 {
   lib,
   fetchurl,
-  buildDunePackage,
   bigstringaf,
+  buildDunePackage,
   hmap,
   httpaf,
   lwt,
@@ -12,8 +12,6 @@
 buildDunePackage (finalAttrs: {
   pname = "rock";
   version = "0.20.0";
-  minimalOCamlVersion = "4.08";
-  duneVersion = "3";
 
   src = fetchurl {
     url = "https://github.com/rgrinberg/opium/releases/download/${finalAttrs.version}/opium-${finalAttrs.version}.tbz";
@@ -27,6 +25,9 @@ buildDunePackage (finalAttrs: {
     lwt
     sexplib0
   ];
+
+  duneVersion = "3";
+  minimalOCamlVersion = "4.08";
 
   meta = {
     description = "Minimalist framework to build extensible HTTP servers and clients";

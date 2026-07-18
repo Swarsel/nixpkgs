@@ -12,7 +12,6 @@
 buildPythonPackage rec {
   pname = "pytest-filter-subpackage";
   version = "0.2.0";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
@@ -20,7 +19,6 @@ buildPythonPackage rec {
   };
 
   nativeBuildInputs = [ setuptools-scm ];
-
   buildInputs = [ pytest ];
 
   propagatedBuildInputs = [
@@ -29,9 +27,9 @@ buildPythonPackage rec {
   ];
 
   nativeCheckInputs = [ pytestCheckHook ];
-
   # missing some files
   disabledTests = [ "with_rst" ];
+  format = "setuptools";
 
   meta = {
     description = "Meta-package containing dependencies for testing";

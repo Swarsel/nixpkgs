@@ -1,33 +1,30 @@
 {
   lib,
-  python3Packages,
   fetchFromGitHub,
-  meson,
-  ninja,
   appstream,
-  gtksourceview5,
-  desktop-file-utils,
-  gobject-introspection,
-  wrapGAppsHook4,
+  bash,
   blueprint-compiler,
-  pkg-config,
+  desktop-file-utils,
+  glib-networking,
+  gnome,
+  gobject-introspection,
+  gtksourceview5,
   libadwaita,
   libportal-gtk4,
-  gnome,
   librsvg,
-  webp-pixbuf-loader,
   libsoup_3,
-  bash,
-  glib-networking,
-  tesseract,
+  meson,
+  ninja,
   nix-update-script,
+  pkg-config,
+  python3Packages,
+  tesseract,
+  webp-pixbuf-loader,
+  wrapGAppsHook4,
 }:
 python3Packages.buildPythonApplication (finalAttrs: {
   pname = "gradia";
   version = "1.13.0";
-  pyproject = false;
-
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "AlexanderVanhee";
@@ -35,6 +32,11 @@ python3Packages.buildPythonApplication (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-9gxxl59jceZZIja/fg7ygbhjcHUo4TEEnK/IzJLsRgM=";
   };
+
+  postPatch = ''
+    substituteInPlace meson.build \
+      --replace "/app/bin/tesseract" "${lib.getExe tesseract}"
+  '';
 
   nativeBuildInputs = [
     meson
@@ -57,17 +59,6 @@ python3Packages.buildPythonApplication (finalAttrs: {
     tesseract
   ];
 
-  postPatch = ''
-    substituteInPlace meson.build \
-      --replace "/app/bin/tesseract" "${lib.getExe tesseract}"
-  '';
-
-  dependencies = with python3Packages; [
-    pygobject3
-    pillow
-    pytesseract
-  ];
-
   postInstall = ''
     export GDK_PIXBUF_MODULE_FILE="${
       gnome._gdkPixbufCacheBuilder_DO_NOT_USE {
@@ -79,24 +70,34 @@ python3Packages.buildPythonApplication (finalAttrs: {
     }"
   '';
 
-  dontWrapGApps = true;
-
   preFixup = ''
     makeWrapperArgs+=("''${gappsWrapperArgs[@]}")
   '';
 
+  __structuredAttrs = true;
+
+  dependencies = with python3Packages; [
+    pygobject3
+    pillow
+    pytesseract
+  ];
+
+  dontWrapGApps = true;
+  pyproject = false;
   passthru.updateScript = nix-update-script { };
 
   meta = {
     description = "Make your screenshots ready for the world";
     homepage = "https://github.com/AlexanderVanhee/Gradia";
     license = lib.licenses.gpl3Plus;
+
     maintainers = with lib.maintainers; [
       Cameo007
       quadradical
       claymorwan
     ];
-    mainProgram = "gradia";
+
     platforms = lib.platforms.linux;
+    mainProgram = "gradia";
   };
 })

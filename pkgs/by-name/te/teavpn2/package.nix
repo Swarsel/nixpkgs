@@ -2,8 +2,8 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  replaceVars,
   iproute2,
+  replaceVars,
 }:
 stdenv.mkDerivation {
   pname = "teavpn2";
@@ -34,8 +34,8 @@ stdenv.mkDerivation {
     description = "Open source VPN Software";
     homepage = "https://github.com/TeaInside/teavpn2";
     license = lib.licenses.gpl2Plus;
-    mainProgram = "teavpn2";
     maintainers = with lib.maintainers; [ ludovicopiero ];
     platforms = lib.platforms.linux;
+    mainProgram = "teavpn2";
   };
 }

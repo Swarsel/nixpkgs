@@ -1,15 +1,15 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
-  pkg-config,
   c-ares,
-  python3,
-  lua5_4,
   capnproto,
-  openssl,
-  rust-bindgen,
+  lua5_4,
   nix-update-script,
+  openssl,
+  pkg-config,
+  python3,
+  rust-bindgen,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -22,6 +22,19 @@ rustPlatform.buildRustPackage (finalAttrs: {
     tag = "g3proxy-v${finalAttrs.version}";
     hash = "sha256-oVjHJPLNWV2bSJcm7La1z0M93kooYBZ+lSayYQ4aUxg=";
   };
+
+  nativeBuildInputs = [
+    pkg-config
+    python3
+    capnproto
+    rust-bindgen
+  ];
+
+  buildInputs = [
+    c-ares
+    lua5_4
+    openssl
+  ];
 
   cargoHash = "sha256-zHnvrSI3NLyL7eP5PjB0xvLC7SjG/4UifR3OlqwwVIg=";
 
@@ -43,20 +56,8 @@ rustPlatform.buildRustPackage (finalAttrs: {
     "-p"
     "g3statsd"
   ];
+
   cargoTestFlags = finalAttrs.cargoBuildFlags;
-
-  nativeBuildInputs = [
-    pkg-config
-    python3
-    capnproto
-    rust-bindgen
-  ];
-
-  buildInputs = [
-    c-ares
-    lua5_4
-    openssl
-  ];
 
   passthru.updateScript = nix-update-script {
     extraArgs = [

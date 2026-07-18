@@ -1,17 +1,16 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  pytestCheckHook,
-  flit-core,
+  buildPythonPackage,
   django,
+  flit-core,
   pytest-unmagic,
+  pytestCheckHook,
 }:
 
 buildPythonPackage rec {
   pname = "django-cte";
   version = "3.0.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "dimagi";
@@ -20,17 +19,17 @@ buildPythonPackage rec {
     hash = "sha256-pXTnk3Z+6jiqq7Q2JTpHxZSNHaTRT3lAAeuHTQIuzBM=";
   };
 
-  build-system = [
-    flit-core
-  ];
-
-  dependencies = [ django ];
-
   nativeCheckInputs = [
     pytestCheckHook
     pytest-unmagic
   ];
 
+  build-system = [
+    flit-core
+  ];
+
+  dependencies = [ django ];
+  pyproject = true;
   pythonImportsCheck = [ "django_cte" ];
 
   meta = {

@@ -1,28 +1,24 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # build-system
-  poetry-core,
-
   # dependencies
   aiohttp,
   beautifulsoup4,
+  buildPythonPackage,
   httpx,
   multidict,
-  typer,
-  yarl,
-
+  # build-system
+  poetry-core,
   # tests
   pytest-asyncio,
   pytestCheckHook,
+  typer,
+  yarl,
 }:
 
 buildPythonPackage rec {
   pname = "authcaptureproxy";
   version = "1.3.7";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "alandtse";
@@ -55,17 +51,20 @@ buildPythonPackage rec {
     "test_replace_empty_action_urls"
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "authcaptureproxy" ];
 
   meta = {
-    changelog = "https://github.com/alandtse/auth_capture_proxy/releases/tag/v${version}";
     description = "Proxy to capture authentication information from a webpage";
-    mainProgram = "auth_capture_proxy";
     homepage = "https://github.com/alandtse/auth_capture_proxy";
+    changelog = "https://github.com/alandtse/auth_capture_proxy/releases/tag/v${version}";
     license = lib.licenses.asl20;
+
     maintainers = with lib.maintainers; [
       graham33
       hexa
     ];
+
+    mainProgram = "auth_capture_proxy";
   };
 }

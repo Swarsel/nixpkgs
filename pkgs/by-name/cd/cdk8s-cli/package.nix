@@ -3,11 +3,11 @@
   stdenv,
   fetchFromGitHub,
   fetchYarnDeps,
-  yarnConfigHook,
-  yarnBuildHook,
-  yarnInstallHook,
-  nodejs,
   nix-update-script,
+  nodejs,
+  yarnBuildHook,
+  yarnConfigHook,
+  yarnInstallHook,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -19,11 +19,6 @@ stdenv.mkDerivation (finalAttrs: {
     repo = "cdk8s-cli";
     rev = "v${finalAttrs.version}";
     hash = "sha256-bSqvHUw9J9cmMqexZurVS14WFdD8budmjPGZ3Z6yOkc=";
-  };
-
-  yarnOfflineCache = fetchYarnDeps {
-    inherit (finalAttrs) src;
-    hash = "sha256-wmT/CBAebKlaue9/TVRwoe8pavA6Fl+9D+3FbUK3+SM=";
   };
 
   nativeBuildInputs = [
@@ -42,6 +37,11 @@ stdenv.mkDerivation (finalAttrs: {
     substituteInPlace $out/lib/node_modules/cdk8s-cli/package.json \
       --replace-fail '0.0.0' '${finalAttrs.version}'
   '';
+
+  yarnOfflineCache = fetchYarnDeps {
+    inherit (finalAttrs) src;
+    hash = "sha256-wmT/CBAebKlaue9/TVRwoe8pavA6Fl+9D+3FbUK3+SM=";
+  };
 
   passthru.updateScript = nix-update-script { };
 

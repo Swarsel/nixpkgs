@@ -1,9 +1,9 @@
 {
   lib,
-  ffmpeg,
-  rustPlatform,
   fetchFromGitHub,
+  ffmpeg,
   nix-update-script,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -17,18 +17,17 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-N/iX0EN5R4oG4XHhpd/VaihrEHv5uT+grAJ6/KfSORE=";
   };
 
-  cargoLock.lockFile = ./Cargo.lock;
-
   postPatch = ''
     cp ${./Cargo.lock} Cargo.lock
   '';
 
-  # Running cargo test -- . fails because it expects to have two mp4 files so that it can test the video merging functionalities
-  doCheck = false;
-
   buildInputs = [
     ffmpeg
   ];
+
+  cargoLock.lockFile = ./Cargo.lock;
+  # Running cargo test -- . fails because it expects to have two mp4 files so that it can test the video merging functionalities
+  doCheck = false;
 
   passthru.updateScript = nix-update-script {
     extraArgs = [ "--generate-lockfile" ];
@@ -37,10 +36,12 @@ rustPlatform.buildRustPackage (finalAttrs: {
   meta = {
     description = "Merge video & audio files via CLI";
     homepage = "https://github.com/TGotwig/vidmerger";
+
     license = with lib.licenses; [
       mit
       commons-clause
     ];
+
     maintainers = with lib.maintainers; [ ByteSudoer ];
     mainProgram = "vidmerger";
   };

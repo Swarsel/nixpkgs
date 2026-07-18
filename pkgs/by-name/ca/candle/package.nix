@@ -1,6 +1,6 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
   nix-update-script,
   qt5,
@@ -17,15 +17,11 @@ stdenv.mkDerivation (finalAttrs: {
     sha256 = "sha256-A53rHlabcuw/nWS7jsCyVrP3CUkmUI/UMRqpogyFOCM=";
   };
 
-  sourceRoot = "${finalAttrs.src.name}/src";
-
   patches = [
     # Store application settings in ~/.config/Candle
     # https://github.com/Denvi/Candle/pull/658
     ./658.patch
   ];
-
-  patchFlags = [ "-p2" ];
 
   nativeBuildInputs = [
     qt5.qmake
@@ -44,15 +40,16 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   doInstallCheck = true;
-
+  patchFlags = [ "-p2" ];
+  sourceRoot = "${finalAttrs.src.name}/src";
   passthru.updateScript = nix-update-script { };
 
   meta = {
     description = "GRBL controller application with G-Code visualizer written in Qt";
-    mainProgram = "candle";
     homepage = "https://github.com/Denvi/Candle";
     license = lib.licenses.gpl3;
     maintainers = with lib.maintainers; [ matti-kariluoma ];
     platforms = qt5.qtbase.meta.platforms;
+    mainProgram = "candle";
   };
 })

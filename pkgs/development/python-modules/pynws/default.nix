@@ -1,8 +1,8 @@
 {
   lib,
+  fetchFromGitHub,
   aiohttp,
   buildPythonPackage,
-  fetchFromGitHub,
   freezegun,
   metar,
   pytest-aiohttp,
@@ -17,7 +17,6 @@
 buildPythonPackage rec {
   pname = "pynws";
   version = "2.1.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "MatthewFlamm";
@@ -25,6 +24,15 @@ buildPythonPackage rec {
     tag = "v${version}";
     hash = "sha256-OKq3IdBr/YDWsmyJLHNoffVp2Q0RV+rZU5rm1Ba0FoY=";
   };
+
+  nativeCheckInputs = [
+    freezegun
+    pytest-aiohttp
+    pytest-asyncio
+    pytest-cov-stub
+    pytestCheckHook
+  ]
+  ++ lib.concatAttrValues optional-dependencies;
 
   build-system = [
     setuptools
@@ -37,16 +45,7 @@ buildPythonPackage rec {
   ];
 
   optional-dependencies.retry = [ tenacity ];
-
-  nativeCheckInputs = [
-    freezegun
-    pytest-aiohttp
-    pytest-asyncio
-    pytest-cov-stub
-    pytestCheckHook
-  ]
-  ++ lib.concatAttrValues optional-dependencies;
-
+  pyproject = true;
   pythonImportsCheck = [ "pynws" ];
 
   meta = {

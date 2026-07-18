@@ -1,12 +1,12 @@
 {
   lib,
-  fetchFromGitHub,
   stdenv,
-  rustPlatform,
-  libcosmicAppHook,
+  fetchFromGitHub,
   just,
+  libcosmicAppHook,
   nix-update-script,
   nixosTests,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -21,16 +21,13 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-TZncRQer4lXunUwdQ2xDP3DmF5B7UmfhSQvEwVodc98=";
   };
 
-  cargoHash = "sha256-qGx/3w78mgIMqRo1wJA+ULFHWdNW2LKe2Sej4f9KbVs=";
-
-  separateDebugInfo = true;
-  __structuredAttrs = true;
-
   nativeBuildInputs = [
     just
     libcosmicAppHook
   ];
 
+  cargoHash = "sha256-qGx/3w78mgIMqRo1wJA+ULFHWdNW2LKe2Sej4f9KbVs=";
+  __structuredAttrs = true;
   dontUseJustBuild = true;
   dontUseJustCheck = true;
 
@@ -42,6 +39,8 @@ rustPlatform.buildRustPackage (finalAttrs: {
     "cargo-target-dir"
     "target/${stdenv.hostPlatform.rust.cargoShortTarget}"
   ];
+
+  separateDebugInfo = true;
 
   passthru = {
     tests = {
@@ -62,11 +61,11 @@ rustPlatform.buildRustPackage (finalAttrs: {
   };
 
   meta = {
-    homepage = "https://github.com/pop-os/cosmic-app-library";
     description = "Application Template for the COSMIC Desktop Environment";
+    homepage = "https://github.com/pop-os/cosmic-app-library";
     license = lib.licenses.gpl3Only;
-    teams = [ lib.teams.cosmic ];
     platforms = lib.platforms.linux;
     mainProgram = "cosmic-app-library";
+    teams = [ lib.teams.cosmic ];
   };
 })

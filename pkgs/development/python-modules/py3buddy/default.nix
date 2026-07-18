@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   python,
   pyusb,
   udevCheckHook,
@@ -10,7 +10,6 @@
 buildPythonPackage rec {
   pname = "py3buddy";
   version = "1.0";
-  pyproject = false; # manually installed
 
   src = fetchFromGitHub {
     owner = "armijnhemel";
@@ -19,12 +18,7 @@ buildPythonPackage rec {
     hash = "sha256-KJ0xGEXHY6o2074WFZ0u7gATS+wrrjyzanYretckWYk=";
   };
 
-  dependencies = [ pyusb ];
-
   nativeBuildInputs = [ udevCheckHook ];
-
-  dontConfigure = true;
-  dontBuild = true;
 
   installPhase = ''
     runHook preInstall
@@ -37,6 +31,11 @@ buildPythonPackage rec {
   postInstall = ''
     install -D 99-ibuddy.rules $out/lib/udev/rules.d/99-ibuddy.rules
   '';
+
+  dependencies = [ pyusb ];
+  dontBuild = true;
+  dontConfigure = true;
+  pyproject = false; # manually installed
 
   meta = {
     description = "Code to work with the iBuddy MSN figurine";

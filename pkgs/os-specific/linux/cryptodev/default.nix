@@ -18,7 +18,6 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   nativeBuildInputs = kernel.moduleBuildDependencies;
-  hardeningDisable = [ "pic" ];
 
   makeFlags = kernelModuleMakeFlags ++ [
     "KERNEL_DIR=${kernel.dev}/lib/modules/${kernel.modDirVersion}/build"
@@ -26,11 +25,13 @@ stdenv.mkDerivation (finalAttrs: {
     "prefix=$(out)"
   ];
 
+  hardeningDisable = [ "pic" ];
+
   meta = {
     description = "Device that allows access to Linux kernel cryptographic drivers";
     homepage = "http://cryptodev-linux.org/";
-    maintainers = with lib.maintainers; [ moni ];
     license = lib.licenses.gpl2Plus;
+    maintainers = with lib.maintainers; [ moni ];
     platforms = lib.platforms.linux;
   };
 })

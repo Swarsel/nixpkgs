@@ -1,14 +1,14 @@
 {
+  lib,
+  stdenv,
   fetchFromGitHub,
   installShellFiles,
-  lib,
+  libsixel,
+  libx11,
+  libxrandr,
   pkg-config,
   rustPlatform,
-  stdenv,
   withSixel ? false,
-  libsixel,
-  libxrandr,
-  libx11,
   withSki ? true,
 }:
 
@@ -23,8 +23,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
     sha256 = "sha256-owP3G1Rygraifdc4iPURQ1Es0msNhYZIlfrtj0CSU6Y=";
   };
 
-  cargoHash = "sha256-6FRc/kEhGJXIZ+6GXeYj5j7QVmvZgIQgtDPvt94hlho=";
-
   nativeBuildInputs = [ installShellFiles ] ++ lib.optional stdenv.hostPlatform.isLinux pkg-config;
 
   buildInputs =
@@ -34,8 +32,7 @@ rustPlatform.buildRustPackage (finalAttrs: {
       libxrandr
     ];
 
-  buildNoDefaultFeatures = !withSki;
-  buildFeatures = lib.optional withSixel "sixel";
+  cargoHash = "sha256-6FRc/kEhGJXIZ+6GXeYj5j7QVmvZgIQgtDPvt94hlho=";
 
   checkFlags = [
     # sometimes fails on lower end machines
@@ -46,6 +43,9 @@ rustPlatform.buildRustPackage (finalAttrs: {
     installManPage man/*
     installShellCompletion completions/menyoki.{bash,fish,zsh}
   '';
+
+  buildFeatures = lib.optional withSixel "sixel";
+  buildNoDefaultFeatures = !withSki;
 
   meta = {
     description = "Screen{shot,cast} and perform ImageOps on the command line";

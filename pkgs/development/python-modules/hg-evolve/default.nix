@@ -9,15 +9,12 @@
 buildPythonPackage rec {
   pname = "hg-evolve";
   version = "11.1.10";
-  pyproject = true;
 
   src = fetchPypi {
-    pname = "hg_evolve";
     inherit version;
     hash = "sha256-ccFq7sASkOkFJ4Or5dhZpfKR0FdZAmbziDfK3FGcaYM=";
+    pname = "hg_evolve";
   };
-
-  build-system = [ setuptools ];
 
   nativeCheckInputs = [ mercurial ];
 
@@ -54,13 +51,17 @@ buildPythonPackage rec {
     runHook postCheck
   '';
 
+  build-system = [ setuptools ];
+  pyproject = true;
+
   meta = {
     description = "Enables the “changeset evolution” feature of Mercurial core";
     homepage = "https://www.mercurial-scm.org/doc/evolution/";
+    license = lib.licenses.gpl2Plus;
+
     maintainers = with lib.maintainers; [
       xavierzwirtz
       lukegb
     ];
-    license = lib.licenses.gpl2Plus;
   };
 }

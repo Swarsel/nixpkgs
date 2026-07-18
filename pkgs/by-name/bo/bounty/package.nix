@@ -1,10 +1,10 @@
 {
   lib,
   fetchFromGitHub,
-  rustPlatform,
-  openssl,
   libgit2,
+  openssl,
   pkg-config,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage {
@@ -18,16 +18,15 @@ rustPlatform.buildRustPackage {
     hash = "sha256-0f+ad7mgFskESh9yW+Y53hCFmHmINyy1XgHyB14sK54=";
   };
 
-  cargoHash = "sha256-dlfoA5bWtyHrsviPdFd6O47D/cglvhJzChOboyu1Io0=";
-
-  doCheck = true;
-
   nativeBuildInputs = [ pkg-config ];
 
   buildInputs = [
     openssl
     libgit2
   ];
+
+  cargoHash = "sha256-dlfoA5bWtyHrsviPdFd6O47D/cglvhJzChOboyu1Io0=";
+  doCheck = true;
 
   meta = {
     description = "CLI tool for bountybot.dev";

@@ -1,15 +1,14 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
+  buildPythonPackage,
   pytestCheckHook,
+  setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "chess";
   version = "1.11.2";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "niklasf";
@@ -18,13 +17,11 @@ buildPythonPackage rec {
     hash = "sha256-8LOp4HQI9UOdaj4/jwd79ftdnaO4HtzMVf1cwcYFCiA=";
   };
 
-  build-system = [ setuptools ];
-
-  pythonImportsCheck = [ "chess" ];
-
   nativeCheckInputs = [ pytestCheckHook ];
-
+  build-system = [ setuptools ];
   enabledTestPaths = [ "test.py" ];
+  pyproject = true;
+  pythonImportsCheck = [ "chess" ];
 
   meta = {
     description = "Chess library with move generation, move validation, and support for common formats";

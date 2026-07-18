@@ -1,19 +1,19 @@
 {
   lib,
-  buildDunePackage,
   fetchurl,
+  bheap,
+  buildDunePackage,
   cstruct,
+  duration,
+  fmt,
+  io-page,
+  logs,
   lwt,
-  shared-memory-ring-lwt,
-  xenstore,
   lwt-dllist,
   mirage-profile,
   mirage-runtime,
-  logs,
-  fmt,
-  bheap,
-  duration,
-  io-page,
+  shared-memory-ring-lwt,
+  xenstore,
 }:
 
 buildDunePackage (finalAttrs: {
@@ -24,9 +24,6 @@ buildDunePackage (finalAttrs: {
     url = "https://github.com/mirage/mirage-xen/releases/download/v${finalAttrs.version}/mirage-xen-${finalAttrs.version}.tbz";
     hash = "sha256-x8i2Kbz0EcifZK/lbDIFa9Kwtl1/xzbYV9h9E+EtGP4=";
   };
-
-  minimalOCamlVersion = "4.08";
-  duneVersion = "3";
 
   propagatedBuildInputs = [
     cstruct
@@ -43,10 +40,13 @@ buildDunePackage (finalAttrs: {
     duration
   ];
 
+  duneVersion = "3";
+  minimalOCamlVersion = "4.08";
+
   meta = {
     description = "Xen core platform libraries for MirageOS";
+    homepage = "https://github.com/mirage/mirage-xen";
     license = lib.licenses.isc;
     maintainers = [ lib.maintainers.sternenseemann ];
-    homepage = "https://github.com/mirage/mirage-xen";
   };
 })

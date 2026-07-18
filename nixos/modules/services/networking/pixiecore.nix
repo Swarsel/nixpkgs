@@ -11,23 +11,62 @@ let
   cfg = config.services.pixiecore;
 in
 {
-  meta.maintainers = with maintainers; [ bbigras ];
-
   options = {
     services.pixiecore = {
       enable = mkEnableOption "Pixiecore";
 
-      openFirewall = mkOption {
-        type = types.bool;
+      apiServer = mkOption {
+        description = "URI to connect to the API. Ignored unless mode is set to 'api'";
+        example = "http://localhost:8080";
+        type = types.str;
+      };
+
+      cmdLine = mkOption {
+        default = "";
+        description = "Kernel commandline arguments. Ignored unless mode is set to 'boot'";
+        type = types.str;
+      };
+
+      debug = mkOption {
         default = false;
-        description = ''
-          Open ports (67, 69, 4011 UDP and 'port', 'statusPort' TCP) in the firewall for Pixiecore.
-        '';
+        description = "Log more things that aren't directly related to booting a recognized client";
+        type = types.bool;
+      };
+
+      dhcpNoBind = mkOption {
+        default = false;
+        description = "Handle DHCP traffic without binding to the DHCP server port";
+        type = types.bool;
+      };
+
+      extraArguments = mkOption {
+        default = [ ];
+        description = "Additional command line arguments to pass to Pixiecore";
+        type = types.listOf types.str;
+      };
+
+      initrd = mkOption {
+        default = "";
+        description = "Initrd path. Ignored unless mode is set to 'boot'";
+        type = types.str or types.path;
+      };
+
+      kernel = mkOption {
+        default = "";
+        description = "Kernel path. Ignored unless mode is set to 'boot'";
+        type = types.str or types.path;
+      };
+
+      listen = mkOption {
+        default = "0.0.0.0";
+        description = "IPv4 address to listen on";
+        type = types.str;
       };
 
       mode = mkOption {
-        description = "Which mode to use";
         default = "boot";
+        description = "Which mode to use";
+
         type = types.enum [
           "api"
           "boot"
@@ -35,21 +74,26 @@ in
         ];
       };
 
-      debug = mkOption {
-        type = types.bool;
+      openFirewall = mkOption {
         default = false;
-        description = "Log more things that aren't directly related to booting a recognized client";
+
+        description = ''
+          Open ports (67, 69, 4011 UDP and 'port', 'statusPort' TCP) in the firewall for Pixiecore.
+        '';
+
+        type = types.bool;
       };
 
-      dhcpNoBind = mkOption {
-        type = types.bool;
-        default = false;
-        description = "Handle DHCP traffic without binding to the DHCP server port";
+      port = mkOption {
+        default = 80;
+        description = "Port to listen on for HTTP";
+        type = types.port;
       };
 
       quick = mkOption {
-        description = "Which quick option to use";
         default = "xyz";
+        description = "Which quick option to use";
+
         type = types.enum [
           "arch"
           "centos"
@@ -61,69 +105,21 @@ in
         ];
       };
 
-      kernel = mkOption {
-        type = types.str or types.path;
-        default = "";
-        description = "Kernel path. Ignored unless mode is set to 'boot'";
-      };
-
-      initrd = mkOption {
-        type = types.str or types.path;
-        default = "";
-        description = "Initrd path. Ignored unless mode is set to 'boot'";
-      };
-
-      cmdLine = mkOption {
-        type = types.str;
-        default = "";
-        description = "Kernel commandline arguments. Ignored unless mode is set to 'boot'";
-      };
-
-      listen = mkOption {
-        type = types.str;
-        default = "0.0.0.0";
-        description = "IPv4 address to listen on";
-      };
-
-      port = mkOption {
-        type = types.port;
-        default = 80;
-        description = "Port to listen on for HTTP";
-      };
-
       statusPort = mkOption {
-        type = types.port;
         default = 80;
         description = "HTTP port for status information (can be the same as --port)";
-      };
-
-      apiServer = mkOption {
-        type = types.str;
-        example = "http://localhost:8080";
-        description = "URI to connect to the API. Ignored unless mode is set to 'api'";
-      };
-
-      extraArguments = mkOption {
-        type = types.listOf types.str;
-        default = [ ];
-        description = "Additional command line arguments to pass to Pixiecore";
+        type = types.port;
       };
     };
   };
 
   config = mkIf cfg.enable {
-    users.groups.pixiecore = { };
-    users.users.pixiecore = {
-      description = "Pixiecore daemon user";
-      group = "pixiecore";
-      isSystemUser = true;
-    };
-
     networking.firewall = mkIf cfg.openFirewall {
       allowedTCPPorts = [
         cfg.port
         cfg.statusPort
       ];
+
       allowedUDPPorts = [
         67
         69
@@ -132,14 +128,12 @@ in
     };
 
     systemd.services.pixiecore = {
-      description = "Pixiecore server";
       after = [ "network.target" ];
-      wants = [ "network.target" ];
-      wantedBy = [ "multi-user.target" ];
+      description = "Pixiecore server";
+
       serviceConfig = {
-        User = "pixiecore";
-        Restart = "always";
         AmbientCapabilities = [ "cap_net_bind_service" ] ++ optional cfg.dhcpNoBind "cap_net_raw";
+
         ExecStart =
           let
             argString =
@@ -174,7 +168,23 @@ in
               --status-port ${toString cfg.statusPort} \
               ${escapeShellArgs cfg.extraArguments}
           '';
+
+        Restart = "always";
+        User = "pixiecore";
       };
+
+      wantedBy = [ "multi-user.target" ];
+      wants = [ "network.target" ];
+    };
+
+    users.groups.pixiecore = { };
+
+    users.users.pixiecore = {
+      description = "Pixiecore daemon user";
+      group = "pixiecore";
+      isSystemUser = true;
     };
   };
+
+  meta.maintainers = with maintainers; [ bbigras ];
 }

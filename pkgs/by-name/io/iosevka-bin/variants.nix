@@ -5,7 +5,6 @@
   IosevkaCurly = "0sr322g251lsw1bvfcfg5pim8r5lrjh56xyrn0ghd4961cccymvq";
   IosevkaCurlySlab = "1pjnk9pzn2xknikg7md94cf3m62jjzbkbsp631fkda84vxpla72y";
   IosevkaEtoile = "1k1ds0bb02rqz9p3bc85512xiihkkljal5p82bappkhha1xqr19v";
-  IosevkaSlab = "132xdhggnq06w062vsm8gq1a9phid7ajwyki7kk76d0xpvh4g91d";
   IosevkaSS01 = "1r2g1wq2yvzkiywd22x8cji4lg242fvqh2wa80fyj8cb0kza9675";
   IosevkaSS02 = "0bcjln3aif8vx1l8yfl39yaf2y29rbab21v771y0nh4zq19b3j2h";
   IosevkaSS03 = "12pps3qhrfg5i7zw2f64ajw3bkgwsa9br857981iv5p9d8fsqaa4";
@@ -24,13 +23,13 @@
   IosevkaSS16 = "1d799ggds6yrv7iwif8m9bw5b7wbzzish9yj77k8w2f0m3kkd2bm";
   IosevkaSS17 = "0fx25bnb3yr9krj3px8zs6s3nbzk75d5dx3g4wy2p103l2dw6kbr";
   IosevkaSS18 = "1a1f6k45pslin4f07phd4lqcdmqsdwmdn2cyd53zw8hbwc123hy3";
+  IosevkaSlab = "132xdhggnq06w062vsm8gq1a9phid7ajwyki7kk76d0xpvh4g91d";
   SGr-Iosevka = "1p1wrxnlwlwv84ml3y6pd76ipkivk7vg4d4lriv1jf9bc5cf92jq";
   SGr-IosevkaCurly = "0rzmixda0chbhzmacpqaln5rw83wk5i3aa2ahjh2pyw1mg5aj7ki";
   SGr-IosevkaCurlySlab = "1byvpqnjb9ima7aw1758x29nrgmsq1hwpxryh0hlyww6yr6iwdc2";
   SGr-IosevkaFixed = "1a5c67ssj83mzzs7aghmfffchlqajjk4rg5vqlrs2mzm2j03xdkf";
   SGr-IosevkaFixedCurly = "05b8msl7hxh96djrai6g1s107h3lqzrc2x9qz6qrwni90w5cyv60";
   SGr-IosevkaFixedCurlySlab = "1nbn1qp977mqg4jlzz6ba4v07f9v7xal7acpfqfw66xjjbbyys36";
-  SGr-IosevkaFixedSlab = "1rs3w2qb9bq8pjvz4lsx3gbiz40jdhjqd7m12mzfwbhmnhxk2pam";
   SGr-IosevkaFixedSS01 = "1bn3y6k6bg6kibqd9ai6imz8fanz2b8ryj74dva2vcjjhbzw8gfv";
   SGr-IosevkaFixedSS02 = "01qdpf0zj529s9yp87z54cz9gg4fmpfgrlln1iw19nzj37h2y8kw";
   SGr-IosevkaFixedSS03 = "0dyj1n82l8zmjrl9061029pjy35vmr4i46bic98m0n23xz10glb7";
@@ -49,7 +48,7 @@
   SGr-IosevkaFixedSS16 = "1i0ngdm70m2fzi7ns5j61rbv9nn3czb0spc7zwj6hg3ric2zddx7";
   SGr-IosevkaFixedSS17 = "0lsgkvfpj5j4yv5a38afllbhj4py8p2ggx3lfdhd6r8bhqkbn0xi";
   SGr-IosevkaFixedSS18 = "0yqkjckn5bycp0ckgpf8v9f6w26rpwc27zckbjab29q0l8mv6mz8";
-  SGr-IosevkaSlab = "0ph358rgb0frc4gvar432gsxh7byai9gsrv8awgp089ydjsmwzhj";
+  SGr-IosevkaFixedSlab = "1rs3w2qb9bq8pjvz4lsx3gbiz40jdhjqd7m12mzfwbhmnhxk2pam";
   SGr-IosevkaSS01 = "0kfbh35ibfcj4k38dl3mcs2caplc7s0fagqfjflhz2vwdjwdg1pj";
   SGr-IosevkaSS02 = "1y3w272bhdyk8vgahr7gayd8q1587wfgfllcr3hj0clgr2k4i64w";
   SGr-IosevkaSS03 = "1jari56mqa6r7vqqcdcpyidbsv0xl6vps3kpn4p3l02whq1d9wkl";
@@ -68,10 +67,10 @@
   SGr-IosevkaSS16 = "1mz9811kbgc27sn0njin82v2bphk6gn02gmz3mvl2hgxic97hmaz";
   SGr-IosevkaSS17 = "112hqzmfcfjj3h0yg9595k9ml0v6cwmkab9yxfjccqyzwmk12s3w";
   SGr-IosevkaSS18 = "0w0q4znxh2pv4nrdbvgwvfyk8vrm871kps2z7m20pwjl67w6rwj7";
+  SGr-IosevkaSlab = "0ph358rgb0frc4gvar432gsxh7byai9gsrv8awgp089ydjsmwzhj";
   SGr-IosevkaTerm = "041arqjjd6nir7swbnl88fshif4aj5fmn77vqi9qswmc5lz4r18z";
   SGr-IosevkaTermCurly = "1y8s9rarqcdw13lk19dz9k8dvnqcl8nbpbcah8jm313xgxs4cypx";
   SGr-IosevkaTermCurlySlab = "1dkpv5612zgxijdq5k1v5xdy9l0b2j3pj2phaxdk4px5ayk92i7k";
-  SGr-IosevkaTermSlab = "0f6i383pclkf8n89ra00qs88468vikrwbqmhan5cx5ll5s3j0p7v";
   SGr-IosevkaTermSS01 = "06snskzqlyjji01n146yp5r49xx6j7kal1rm8qplbibznrb6l7lh";
   SGr-IosevkaTermSS02 = "04s0y369xsrbsq0kl51jf6mzizc7v1y68wqpvnpxr0qnzsfrfksm";
   SGr-IosevkaTermSS03 = "1a1dsbbjsmc8bq4hxnwd1ngdd50y936c1ab9j8lj60q7xbifimka";
@@ -90,4 +89,5 @@
   SGr-IosevkaTermSS16 = "0mf3slw6xrwblv3b4afznv3aizqagj60rdcya7n1bjfdci1jzmjq";
   SGr-IosevkaTermSS17 = "0xzd8sr07a1cxknb9w8j0yskm3x9zyj5dggdsjdx4dnn5g2rxwnn";
   SGr-IosevkaTermSS18 = "0rdvxf1kbp44zh7bgp6cpm8kzwp7fr3dch5zn61rzpwrpn1brrdf";
+  SGr-IosevkaTermSlab = "0f6i383pclkf8n89ra00qs88468vikrwbqmhan5cx5ll5s3j0p7v";
 }

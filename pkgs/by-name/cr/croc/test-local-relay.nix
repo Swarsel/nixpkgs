@@ -1,9 +1,8 @@
 { stdenv, croc }:
 
 stdenv.mkDerivation {
-  name = "croc-test-local-relay";
-
   nativeBuildInputs = [ croc ];
+  __darwinAllowLocalNetworking = true;
 
   buildCommand = ''
     HOME="$(mktemp -d)"
@@ -24,10 +23,10 @@ stdenv.mkDerivation {
     [ "$MSG" = "$MSG2" ] && touch $out
   '';
 
-  __darwinAllowLocalNetworking = true;
+  name = "croc-test-local-relay";
 
   meta = {
-    timeout = 300;
     broken = stdenv.hostPlatform.isDarwin;
+    timeout = 300;
   };
 }

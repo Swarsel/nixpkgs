@@ -1,8 +1,8 @@
 {
   lib,
+  fetchFromGitHub,
   buildPythonPackage,
   coverage,
-  fetchFromGitHub,
   pytest,
   setuptools,
 }:
@@ -10,7 +10,6 @@
 buildPythonPackage rec {
   pname = "pytest-testmon";
   version = "2.2.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "tarpas";
@@ -19,15 +18,12 @@ buildPythonPackage rec {
     hash = "sha256-BVQ7rEusbW0G1C6cUeHH7fZWndSErcBQfGNdw0/4eTg=";
   };
 
-  build-system = [ setuptools ];
-
   buildInputs = [ pytest ];
-
-  dependencies = [ coverage ];
-
   # The project does not include tests since version 1.3.0
   doCheck = false;
-
+  build-system = [ setuptools ];
+  dependencies = [ coverage ];
+  pyproject = true;
   pythonImportsCheck = [ "testmon" ];
 
   meta = {

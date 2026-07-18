@@ -1,21 +1,18 @@
 {
   lib,
-  buildPythonPackage,
   apache-tvm-ffi,
-
+  buildPythonPackage,
   # build-system
   setuptools,
-
   # dependencies
   torch,
 }:
 
 buildPythonPackage (finalAttrs: {
-  pname = "torch-c-dlpack-ext";
   inherit (apache-tvm-ffi) version src;
-  pyproject = true;
-
-  sourceRoot = "${finalAttrs.src.name}/addons/torch_c_dlpack_ext";
+  pname = "torch-c-dlpack-ext";
+  # No tests
+  doCheck = false;
 
   build-system = [
     apache-tvm-ffi
@@ -26,10 +23,9 @@ buildPythonPackage (finalAttrs: {
     torch
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "torch_c_dlpack_ext" ];
-
-  # No tests
-  doCheck = false;
+  sourceRoot = "${finalAttrs.src.name}/addons/torch_c_dlpack_ext";
 
   meta = {
     description = "Ahead-Of-Time (AOT) compiled module to support faster DLPack conversion in DLPack";

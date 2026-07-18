@@ -1,18 +1,25 @@
 {
   lib,
-  python3Packages,
   fetchPypi,
+  python3Packages,
 }:
 
 python3Packages.buildPythonApplication (finalAttrs: {
   pname = "s4cmd";
   version = "2.1.0";
-  pyproject = true;
 
   src = fetchPypi {
     inherit (finalAttrs) pname version;
     sha256 = "0d4mx98i3qhvlmr9x898mjvf827smzx6x5ji6daiwgjdlxc60mj2";
   };
+
+  # Test suite requires an S3 bucket
+  doCheck = false;
+
+  # Replace upstream's s4cmd wrapper script with the built-in Nix wrapper
+  postInstall = ''
+    ln -fs $out/bin/s4cmd.py $out/bin/s4cmd
+  '';
 
   build-system = with python3Packages; [ setuptools ];
 
@@ -28,19 +35,12 @@ python3Packages.buildPythonApplication (finalAttrs: {
     sed -i 's|os.chmod("/etc.*|pass|' setup.py
   '';
 
-  # Replace upstream's s4cmd wrapper script with the built-in Nix wrapper
-  postInstall = ''
-    ln -fs $out/bin/s4cmd.py $out/bin/s4cmd
-  '';
-
-  # Test suite requires an S3 bucket
-  doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "s4cmd" ];
 
   meta = {
-    homepage = "https://github.com/bloomreach/s4cmd";
     description = "Super S3 command line tool";
+    homepage = "https://github.com/bloomreach/s4cmd";
     license = lib.licenses.asl20;
   };
 })

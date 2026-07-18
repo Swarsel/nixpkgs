@@ -9,8 +9,6 @@
 buildDunePackage rec {
   pname = "toml";
   version = "7.1.0";
-  minimalOCamlVersion = "4.08";
-  duneVersion = "3";
 
   src = fetchFromGitHub {
     owner = "ocaml-toml";
@@ -21,6 +19,8 @@ buildDunePackage rec {
 
   nativeBuildInputs = [ menhir ];
   propagatedBuildInputs = [ iso8601 ];
+  duneVersion = "3";
+  minimalOCamlVersion = "4.08";
 
   meta = {
     description = "Implementation in OCaml of the Toml minimal langage";

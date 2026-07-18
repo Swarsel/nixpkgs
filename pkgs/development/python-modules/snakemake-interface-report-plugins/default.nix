@@ -1,18 +1,14 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
+  buildPythonPackage,
   # build-system
   poetry-core,
-
-  # dependencies
-  snakemake-interface-common,
-
   # tests
   pytestCheckHook,
   snakemake,
-
+  # dependencies
+  snakemake-interface-common,
   # passthru
   snakemake-interface-report-plugins,
 }:
@@ -20,8 +16,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "snakemake-interface-report-plugins";
   version = "1.3.0";
-  pyproject = true;
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "snakemake";
@@ -29,6 +23,16 @@ buildPythonPackage (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-3ugEmdO1dcusKXXBZBRszlZXX5fhJyYSSF5Uj5CKJkQ=";
   };
+
+  # Circular dependency with snakemake
+  doCheck = false;
+
+  nativeCheckInputs = [
+    pytestCheckHook
+    snakemake
+  ];
+
+  __structuredAttrs = true;
 
   build-system = [
     poetry-core
@@ -38,17 +42,10 @@ buildPythonPackage (finalAttrs: {
     snakemake-interface-common
   ];
 
+  enabledTestPaths = [ "tests/tests.py" ];
+  pyproject = true;
   pythonImportsCheck = [ "snakemake_interface_report_plugins" ];
 
-  nativeCheckInputs = [
-    pytestCheckHook
-    snakemake
-  ];
-
-  enabledTestPaths = [ "tests/tests.py" ];
-
-  # Circular dependency with snakemake
-  doCheck = false;
   passthru.tests.pytest = snakemake-interface-report-plugins.overridePythonAttrs {
     doCheck = true;
   };

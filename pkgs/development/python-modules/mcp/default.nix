@@ -1,50 +1,44 @@
 {
   lib,
   stdenv,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # build-system
-  hatchling,
-  uv-dynamic-versioning,
-
   # dependencies
   anyio,
+  buildPythonPackage,
+  # tests
+  dirty-equals,
+  # build-system
+  hatchling,
   httpx,
   httpx-sse,
+  inline-snapshot,
   jsonschema,
   pydantic,
   pydantic-settings,
   pyjwt,
-  python-multipart,
-  sse-starlette,
-  starlette,
-  uvicorn,
-
-  # optional-dependencies
-  # cli
-  python-dotenv,
-  typer,
-  # rich
-  rich,
-  # ws
-  websockets,
-
-  # tests
-  dirty-equals,
-  inline-snapshot,
   pytest-asyncio,
   pytest-examples,
   pytest-xdist,
   pytestCheckHook,
+  # optional-dependencies
+  # cli
+  python-dotenv,
+  python-multipart,
   requests,
+  # rich
+  rich,
+  sse-starlette,
+  starlette,
+  typer,
+  uv-dynamic-versioning,
+  uvicorn,
+  # ws
+  websockets,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "mcp";
   version = "1.27.1";
-  pyproject = true;
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "modelcontextprotocol";
@@ -60,13 +54,23 @@ buildPythonPackage (finalAttrs: {
       --replace-fail "time.sleep(0.1)" "time.sleep(1)"
   '';
 
+  nativeCheckInputs = [
+    dirty-equals
+    inline-snapshot
+    pytest-asyncio
+    pytest-examples
+    pytest-xdist
+    pytestCheckHook
+    requests
+  ]
+  ++ lib.flatten (builtins.attrValues finalAttrs.passthru.optional-dependencies);
+
+  __darwinAllowLocalNetworking = true;
+  __structuredAttrs = true;
+
   build-system = [
     hatchling
     uv-dynamic-versioning
-  ];
-
-  pythonRelaxDeps = [
-    "pydantic-settings"
   ];
 
   dependencies = [
@@ -82,32 +86,6 @@ buildPythonPackage (finalAttrs: {
     starlette
     uvicorn
   ];
-
-  optional-dependencies = {
-    cli = [
-      python-dotenv
-      typer
-    ];
-    rich = [
-      rich
-    ];
-    ws = [
-      websockets
-    ];
-  };
-
-  pythonImportsCheck = [ "mcp" ];
-
-  nativeCheckInputs = [
-    dirty-equals
-    inline-snapshot
-    pytest-asyncio
-    pytest-examples
-    pytest-xdist
-    pytestCheckHook
-    requests
-  ]
-  ++ lib.flatten (builtins.attrValues finalAttrs.passthru.optional-dependencies);
 
   disabledTests = [
     # attempts to run the package manager uv
@@ -151,13 +129,34 @@ buildPythonPackage (finalAttrs: {
     "test_tool_progress"
   ];
 
-  __darwinAllowLocalNetworking = true;
+  optional-dependencies = {
+    cli = [
+      python-dotenv
+      typer
+    ];
+
+    rich = [
+      rich
+    ];
+
+    ws = [
+      websockets
+    ];
+  };
+
+  pyproject = true;
+  pythonImportsCheck = [ "mcp" ];
+
+  pythonRelaxDeps = [
+    "pydantic-settings"
+  ];
 
   meta = {
-    changelog = "https://github.com/modelcontextprotocol/python-sdk/releases/tag/${finalAttrs.src.tag}";
     description = "Official Python SDK for Model Context Protocol servers and clients";
     homepage = "https://github.com/modelcontextprotocol/python-sdk";
+    changelog = "https://github.com/modelcontextprotocol/python-sdk/releases/tag/${finalAttrs.src.tag}";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       bryanhonof
       josh

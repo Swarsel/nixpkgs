@@ -1,24 +1,24 @@
 {
-  stdenv,
   lib,
-  nixosTests,
-  nix-update-script,
-  buildGoModule,
+  stdenv,
   fetchFromGitHub,
-  installShellFiles,
-  pkg-config,
+  buildGoModule,
   gtk3,
+  installShellFiles,
   libayatana-appindicator,
   libx11,
   libxcursor,
   libxxf86vm,
-  versionCheckHook,
   netbird-management,
   netbird-proxy,
   netbird-relay,
   netbird-signal,
   netbird-ui,
   netbird-upload,
+  nix-update-script,
+  nixosTests,
+  pkg-config,
+  versionCheckHook,
   componentName ? "client",
 }:
 let
@@ -29,44 +29,50 @@ let
   */
   availableComponents = {
     client = {
-      module = "client";
       binaryName = "netbird";
+      hasCompletion = true;
       license = lib.licenses.bsd3;
+      module = "client";
       versionCheckProgramArg = "version";
-      hasCompletion = true;
     };
-    ui = {
-      module = "client/ui";
-      binaryName = "netbird-ui";
-      license = lib.licenses.bsd3;
-    };
-    upload = {
-      module = "upload-server";
-      binaryName = "netbird-upload";
-      license = lib.licenses.bsd3;
-    };
+
     management = {
-      module = "management";
       binaryName = "netbird-mgmt";
+      hasCompletion = true;
       license = lib.licenses.agpl3Only;
+      module = "management";
       versionCheckProgramArg = "--version";
-      hasCompletion = true;
     };
-    signal = {
-      module = "signal";
-      binaryName = "netbird-signal";
-      license = lib.licenses.agpl3Only;
-      hasCompletion = true;
-    };
-    relay = {
-      module = "relay";
-      binaryName = "netbird-relay";
-      license = lib.licenses.agpl3Only;
-    };
+
     proxy = {
-      module = "proxy/cmd/proxy";
       binaryName = "netbird-proxy";
       license = lib.licenses.agpl3Only;
+      module = "proxy/cmd/proxy";
+    };
+
+    relay = {
+      binaryName = "netbird-relay";
+      license = lib.licenses.agpl3Only;
+      module = "relay";
+    };
+
+    signal = {
+      binaryName = "netbird-signal";
+      hasCompletion = true;
+      license = lib.licenses.agpl3Only;
+      module = "signal";
+    };
+
+    ui = {
+      binaryName = "netbird-ui";
+      license = lib.licenses.bsd3;
+      module = "client/ui";
+    };
+
+    upload = {
+      binaryName = "netbird-upload";
+      license = lib.licenses.bsd3;
+      module = "upload-server";
     };
   };
   component = availableComponents.${componentName};
@@ -82,13 +88,13 @@ buildGoModule (finalAttrs: {
     hash = "sha256-+BGWZzw6a8Fp8NlhtbX81OA3hCTcQ9r6nLuXTsbXCZ8=";
   };
 
-  overrideModAttrs = final: prev: {
-    # override output name so that we don't download the same modules every time
-    # for every component of the monorepo
-    name = "netbird-${finalAttrs.version}-go-modules";
-  };
-
-  vendorHash = "sha256-5dZu6lmfwaUHusAlFS1qqorFbpa4anCUQDtg4Tv5mxw=";
+  postPatch = ''
+    # make it compatible with systemd's RuntimeDirectory
+    substituteInPlace client/cmd/root.go \
+      --replace-fail 'unix:///var/run/netbird.sock' 'unix:///var/run/netbird/sock'
+    substituteInPlace client/ui/client_ui.go \
+      --replace-fail 'unix:///var/run/netbird.sock' 'unix:///var/run/netbird/sock'
+  '';
 
   nativeBuildInputs = [ installShellFiles ] ++ lib.optional (componentName == "ui") pkg-config;
 
@@ -100,25 +106,9 @@ buildGoModule (finalAttrs: {
     libxxf86vm
   ];
 
-  subPackages = [ component.module ];
-
-  ldflags = [
-    "-s"
-    "-w"
-    "-X github.com/netbirdio/netbird/version.version=v${finalAttrs.version}"
-    "-X main.builtBy=nix"
-  ];
-
+  vendorHash = "sha256-5dZu6lmfwaUHusAlFS1qqorFbpa4anCUQDtg4Tv5mxw=";
   # needs network access
   doCheck = false;
-
-  postPatch = ''
-    # make it compatible with systemd's RuntimeDirectory
-    substituteInPlace client/cmd/root.go \
-      --replace-fail 'unix:///var/run/netbird.sock' 'unix:///var/run/netbird/sock'
-    substituteInPlace client/ui/client_ui.go \
-      --replace-fail 'unix:///var/run/netbird.sock' 'unix:///var/run/netbird/sock'
-  '';
 
   postInstall =
     let
@@ -148,12 +138,26 @@ buildGoModule (finalAttrs: {
   nativeInstallCheckInputs = lib.lists.optionals (component ? versionCheckProgramArg) [
     versionCheckHook
   ];
+
+  ldflags = [
+    "-s"
+    "-w"
+    "-X github.com/netbirdio/netbird/version.version=v${finalAttrs.version}"
+    "-X main.builtBy=nix"
+  ];
+
+  overrideModAttrs = final: prev: {
+    # override output name so that we don't download the same modules every time
+    # for every component of the monorepo
+    name = "netbird-${finalAttrs.version}-go-modules";
+  };
+
+  subPackages = [ component.module ];
   versionCheckProgram = "${placeholder "out"}/bin/${component.binaryName}";
   versionCheckProgramArg = component.versionCheckProgramArg or "version";
 
   passthru = {
     tests = lib.attrsets.optionalAttrs (componentName == "client") {
-      nixos = nixosTests.netbird;
       inherit
         # make sure child packages are built by `ofborg`
         netbird-management
@@ -163,20 +167,25 @@ buildGoModule (finalAttrs: {
         netbird-upload
         netbird-proxy
         ;
+
+      nixos = nixosTests.netbird;
     };
+
     updateScript = nix-update-script { };
   };
 
   meta = {
+    description = "Connect your devices into a single secure private WireGuard®-based mesh network with SSO/MFA and simple access controls";
     homepage = "https://netbird.io";
     changelog = "https://github.com/netbirdio/netbird/releases/tag/v${finalAttrs.version}";
-    description = "Connect your devices into a single secure private WireGuard®-based mesh network with SSO/MFA and simple access controls";
     license = component.license;
+
     maintainers = with lib.maintainers; [
       nazarewk
       saturn745
       loc
     ];
+
     mainProgram = component.binaryName;
   };
 })

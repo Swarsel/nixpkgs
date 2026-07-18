@@ -2,10 +2,10 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  fetchpatch,
   autoreconfHook,
-  pkg-config,
+  fetchpatch,
   libnfc,
+  pkg-config,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -21,12 +21,12 @@ stdenv.mkDerivation (finalAttrs: {
 
   patches = [
     (fetchpatch {
-      url = "https://github.com/nfc-tools/mfoc/commit/f13efb0a6deb1d97ba945d555a6a5d6be89b593f.patch";
       sha256 = "109gqzp8rdsjvj0nra686vy0dpd2bl6q5v9m4v98cpxkbz496450";
+      url = "https://github.com/nfc-tools/mfoc/commit/f13efb0a6deb1d97ba945d555a6a5d6be89b593f.patch";
     })
     (fetchpatch {
-      url = "https://github.com/nfc-tools/mfoc/commit/00eae36f891bc4580103e3b54f0bb5228af2cdef.patch";
       sha256 = "1w56aj96g776f37j53jmf3hk21x4mqik3l2bmghrdp8drixc8bzk";
+      url = "https://github.com/nfc-tools/mfoc/commit/00eae36f891bc4580103e3b54f0bb5228af2cdef.patch";
     })
   ];
 
@@ -34,14 +34,15 @@ stdenv.mkDerivation (finalAttrs: {
     autoreconfHook
     pkg-config
   ];
+
   buildInputs = [ libnfc ];
 
   meta = {
     description = "Mifare Classic Offline Cracker";
-    mainProgram = "mfoc";
-    license = lib.licenses.gpl2Plus;
     homepage = "https://github.com/nfc-tools/mfoc";
+    license = lib.licenses.gpl2Plus;
     maintainers = [ ];
     platforms = lib.platforms.unix;
+    mainProgram = "mfoc";
   };
 })

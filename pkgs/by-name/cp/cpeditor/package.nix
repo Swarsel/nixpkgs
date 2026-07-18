@@ -2,12 +2,12 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  qt6,
-  kdePackages,
-  pkg-config,
   cmake,
+  kdePackages,
   ninja,
+  pkg-config,
   python3,
+  qt6,
   runtimeShell,
 }:
 
@@ -22,6 +22,11 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-udpDsYve1QIQTT75Xk8HHBV1lTTTjauDMyfJKbShgEs=";
     fetchSubmodules = true;
   };
+
+  postPatch = ''
+    substituteInPlace src/Core/Runner.cpp --replace-fail "/bin/bash" "${runtimeShell}"
+    substituteInPlace dist/linux/cpeditor.desktop --replace-fail 'Exec=/usr/bin/cpeditor' "Exec=cpeditor"
+  '';
 
   nativeBuildInputs = [
     cmake
@@ -38,17 +43,12 @@ stdenv.mkDerivation (finalAttrs: {
     kdePackages.syntax-highlighting
   ];
 
-  postPatch = ''
-    substituteInPlace src/Core/Runner.cpp --replace-fail "/bin/bash" "${runtimeShell}"
-    substituteInPlace dist/linux/cpeditor.desktop --replace-fail 'Exec=/usr/bin/cpeditor' "Exec=cpeditor"
-  '';
-
   meta = {
     description = "IDE specially designed for competitive programming";
     homepage = "https://cpeditor.org";
     license = lib.licenses.gpl3Plus;
-    platforms = lib.platforms.linux;
     maintainers = [ lib.maintainers.wineee ];
+    platforms = lib.platforms.linux;
     mainProgram = "cpeditor";
   };
 })

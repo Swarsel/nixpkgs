@@ -1,7 +1,7 @@
 {
   config,
-  pkgs,
   lib,
+  pkgs,
   ...
 }:
 
@@ -13,12 +13,14 @@
 
     networking.enableIntel2200BGFirmware = lib.mkOption {
       default = false;
-      type = lib.types.bool;
+
       description = ''
         Turn on this option if you want firmware for the Intel
         PRO/Wireless 2200BG to be loaded automatically.  This is
         required if you want to use this device.
       '';
+
+      type = lib.types.bool;
     };
 
   };

@@ -2,28 +2,28 @@
   lib,
   buildPythonPackage,
   fetchPypi,
-
-  # build-system
-  hatchling,
-
   # dependencies
   gradio-client,
+  # build-system
+  hatchling,
   typer,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "hf-gradio";
   version = "0.4.1";
-  pyproject = true;
-  __structuredAttrs = true;
 
   # No tags on GitHub
   # https://github.com/gradio-app/hf-gradio/issues/2
   src = fetchPypi {
-    pname = "hf_gradio";
     inherit (finalAttrs) version;
     hash = "sha256-oBfZQmGPDUlaWO5FYwR/oEvvYUwA4Mt4mpptBjPP+ns=";
+    pname = "hf_gradio";
   };
+
+  # The PyPI sdist ships no test suite.
+  doCheck = false;
+  __structuredAttrs = true;
 
   build-system = [
     hatchling
@@ -34,9 +34,7 @@ buildPythonPackage (finalAttrs: {
     typer
   ];
 
-  # The PyPI sdist ships no test suite.
-  doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "hf_gradio" ];
 
   meta = {

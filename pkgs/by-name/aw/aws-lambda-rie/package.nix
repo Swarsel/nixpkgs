@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule (finalAttrs: {
@@ -16,15 +16,14 @@ buildGoModule (finalAttrs: {
   };
 
   vendorHash = "sha256-+7BuDaN1ns63cQOMKuRMjBo9GnLrmsubx/KppUsyheY=";
-
   # disabled because I lack the skill
   doCheck = false;
 
   meta = {
     description = "Locally test Lambda functions packaged as container images";
-    mainProgram = "aws-lambda-rie";
     homepage = "https://github.com/aws/aws-lambda-runtime-interface-emulator";
     license = lib.licenses.asl20;
     maintainers = [ ];
+    mainProgram = "aws-lambda-rie";
   };
 })

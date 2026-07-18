@@ -1,7 +1,8 @@
 {
   lib,
-  desktop-file-utils,
+  stdenv,
   fetchFromGitHub,
+  desktop-file-utils,
   fetchYarnDeps,
   fixup-yarn-lock,
   gjs,
@@ -13,11 +14,10 @@
   libsoup_3,
   meson,
   ninja,
+  nodejs,
   pkg-config,
-  stdenv,
   wrapGAppsHook4,
   yarn,
-  nodejs,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -31,6 +31,10 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-82Yxw8NSw82rxhuAgsdN2lCiQ/hli4tQiU6jCgGyp4U=";
     fetchSubmodules = true;
   };
+
+  postPatch = ''
+    meson rewrite kwargs set project / version '${finalAttrs.version}'
+  '';
 
   nativeBuildInputs = [
     desktop-file-utils
@@ -55,10 +59,9 @@ stdenv.mkDerivation (finalAttrs: {
     libsoup_3
   ];
 
-  yarnOfflineCache = fetchYarnDeps {
-    yarnLock = finalAttrs.src + "/yarn.lock";
-    hash = "sha256-NDGuG2rXJH0bHsD7yQMY6HAZDkMq0j63SYVz8+X3fPQ=";
-  };
+  mesonFlags = [
+    "-Dyarnrc=../.yarnrc"
+  ];
 
   preConfigure = ''
     export HOME="$PWD"
@@ -66,17 +69,14 @@ stdenv.mkDerivation (finalAttrs: {
     fixup-yarn-lock yarn.lock
   '';
 
-  mesonFlags = [
-    "-Dyarnrc=../.yarnrc"
-  ];
-
-  postPatch = ''
-    meson rewrite kwargs set project / version '${finalAttrs.version}'
-  '';
-
   postFixup = ''
     sed -i "1 a imports.package._findEffectiveEntryPointName = () => 'com.vixalien.sticky';" $out/bin/.com.vixalien.sticky-wrapped
   '';
+
+  yarnOfflineCache = fetchYarnDeps {
+    hash = "sha256-NDGuG2rXJH0bHsD7yQMY6HAZDkMq0j63SYVz8+X3fPQ=";
+    yarnLock = finalAttrs.src + "/yarn.lock";
+  };
 
   meta = {
     description = "Simple sticky notes app for GNOME";
@@ -84,7 +84,7 @@ stdenv.mkDerivation (finalAttrs: {
     changelog = "https://github.com/vixalien/sticky/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ pokon548 ];
-    mainProgram = "com.vixalien.sticky";
     platforms = lib.platforms.linux;
+    mainProgram = "com.vixalien.sticky";
   };
 })

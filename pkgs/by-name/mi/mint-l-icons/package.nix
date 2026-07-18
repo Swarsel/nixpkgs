@@ -1,11 +1,11 @@
 {
-  stdenvNoCC,
   lib,
   fetchFromGitHub,
   adwaita-icon-theme,
   gnome-icon-theme,
-  hicolor-icon-theme,
   gtk3,
+  hicolor-icon-theme,
+  stdenvNoCC,
 }:
 
 stdenvNoCC.mkDerivation {
@@ -20,19 +20,15 @@ stdenvNoCC.mkDerivation {
     hash = "sha256-nfdG1AVF/bIgRZ+9dZ14qw5cajhO3Q6oY5ZqkgTnuCA=";
   };
 
+  nativeBuildInputs = [
+    gtk3
+  ];
+
   propagatedBuildInputs = [
     adwaita-icon-theme
     gnome-icon-theme
     hicolor-icon-theme
   ];
-
-  nativeBuildInputs = [
-    gtk3
-  ];
-
-  # FIXME: https://hydra.nixos.org/build/287344480/nixlog/5
-  dontCheckForBrokenSymlinks = true;
-  dontDropIconThemeCache = true;
 
   installPhase = ''
     runHook preInstall
@@ -47,9 +43,13 @@ stdenvNoCC.mkDerivation {
     runHook postInstall
   '';
 
+  # FIXME: https://hydra.nixos.org/build/287344480/nixlog/5
+  dontCheckForBrokenSymlinks = true;
+  dontDropIconThemeCache = true;
+
   meta = {
-    homepage = "https://github.com/linuxmint/mint-l-icons";
     description = "Mint-L icon theme";
+    homepage = "https://github.com/linuxmint/mint-l-icons";
     license = lib.licenses.gpl3Plus; # from debian/copyright
     platforms = lib.platforms.linux;
     teams = [ lib.teams.cinnamon ];

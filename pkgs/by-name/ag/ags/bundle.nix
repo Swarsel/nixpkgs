@@ -14,9 +14,9 @@
   wrapGAppsHook4,
 }:
 {
-  entry ? "app.ts",
   dependencies ? [ ],
   enableGtk4 ? false,
+  entry ? "app.ts",
   ...
 }@attrs:
 stdenvNoCC.mkDerivation (
@@ -40,27 +40,6 @@ stdenvNoCC.mkDerivation (
         astal.io
       ];
 
-    preFixup = ''
-      gappsWrapperArgs+=(
-        --prefix PATH : ${
-          lib.makeBinPath (
-            dependencies
-            ++ [
-              dart-sass
-              fzf
-              gtk3
-            ]
-          )
-        }
-      )
-    ''
-    + lib.optionalString enableGtk4 ''
-      gappsWrapperArgs+=(
-        --set LD_PRELOAD "${gtk4-layer-shell}/lib/libgtk4-layer-shell.so"
-      )
-    ''
-    + (attrs.preFixup or "");
-
     installPhase =
       let
         outBin = "$out/bin/${finalAttrs.pname}";
@@ -81,5 +60,26 @@ stdenvNoCC.mkDerivation (
 
         runHook postInstall
       '';
+
+    preFixup = ''
+      gappsWrapperArgs+=(
+        --prefix PATH : ${
+          lib.makeBinPath (
+            dependencies
+            ++ [
+              dart-sass
+              fzf
+              gtk3
+            ]
+          )
+        }
+      )
+    ''
+    + lib.optionalString enableGtk4 ''
+      gappsWrapperArgs+=(
+        --set LD_PRELOAD "${gtk4-layer-shell}/lib/libgtk4-layer-shell.so"
+      )
+    ''
+    + (attrs.preFixup or "");
   }
 )

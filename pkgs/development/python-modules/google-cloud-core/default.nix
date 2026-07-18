@@ -1,20 +1,19 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
+  buildPythonPackage,
   google-api-core,
   google-auth,
   grpcio,
   grpcio-status,
   mock,
   pytestCheckHook,
+  setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "google-cloud-core";
   version = "2.5.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "googleapis";
@@ -22,6 +21,17 @@ buildPythonPackage rec {
     tag = "v${version}";
     hash = "sha256-mB0gHxyK+g+e5I/3TRVAyQzPu005ug7fTvRNxciJ9LQ=";
   };
+
+  nativeCheckInputs = [
+    mock
+    pytestCheckHook
+  ]
+  ++ optional-dependencies.grpc;
+
+  # prevent google directory from shadowing google imports
+  preCheck = ''
+    rm -r google
+  '';
 
   build-system = [ setuptools ];
 
@@ -37,17 +47,7 @@ buildPythonPackage rec {
     ];
   };
 
-  nativeCheckInputs = [
-    mock
-    pytestCheckHook
-  ]
-  ++ optional-dependencies.grpc;
-
-  # prevent google directory from shadowing google imports
-  preCheck = ''
-    rm -r google
-  '';
-
+  pyproject = true;
   pythonImportsCheck = [ "google.cloud" ];
 
   meta = {

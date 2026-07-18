@@ -1,9 +1,9 @@
 {
   lib,
-  rustPlatform,
+  stdenv,
   fetchCrate,
   installShellFiles,
-  stdenv,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -12,13 +12,12 @@ rustPlatform.buildRustPackage (finalAttrs: {
 
   src = fetchCrate {
     inherit (finalAttrs) version;
-    pname = "bpaf_cauwugo";
     hash = "sha256-9gWUu2qbscKlbWZlRbOn+rrmizegkHxPnwnAmpaV1Ww=";
+    pname = "bpaf_cauwugo";
   };
 
-  cargoHash = "sha256-05wx0lqgMIVTe6OQTCUQXmaPeGPw43wuEuuGUsGV4VM=";
-
   nativeBuildInputs = [ installShellFiles ];
+  cargoHash = "sha256-05wx0lqgMIVTe6OQTCUQXmaPeGPw43wuEuuGUsGV4VM=";
 
   postInstall = lib.optionalString (stdenv.buildPlatform.canExecute stdenv.hostPlatform) ''
     installShellCompletion --cmd cauwugo \
@@ -29,12 +28,14 @@ rustPlatform.buildRustPackage (finalAttrs: {
 
   meta = {
     description = "Alternative cargo frontend that implements dynamic shell completion for usual cargo commands";
-    mainProgram = "cauwugo";
     homepage = "https://github.com/pacak/bpaf/tree/master/bpaf_cauwugo";
+
     license = with lib.licenses; [
       mit # or
       asl20
     ];
+
     maintainers = [ ];
+    mainProgram = "cauwugo";
   };
 })

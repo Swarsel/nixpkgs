@@ -10,13 +10,6 @@ stdenv.mkDerivation (finalAttrs: {
   pname = "hyphen";
   version = "2.8.9";
 
-  nativeBuildInputs = [
-    autoreconfHook
-    perl
-  ];
-
-  strictDeps = true;
-
   src = fetchFromGitHub {
     owner = "hunspell";
     repo = "hyphen";
@@ -24,7 +17,12 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-F7PJQjEiE5t5i1gi5B8wzrwAJQl8FWzopRA8uDsaZBc=";
   };
 
-  enableParallelBuilding = true;
+  strictDeps = true;
+
+  nativeBuildInputs = [
+    autoreconfHook
+    perl
+  ];
 
   # Do not install the en_US dictionary.
   installPhase = ''
@@ -38,16 +36,20 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  enableParallelBuilding = true;
+
   meta = {
-    changelog = "https://github.com/hunspell/hyphen/blob/${finalAttrs.src.tag}/NEWS";
     description = "Text hyphenation library";
-    mainProgram = "substrings.pl";
     homepage = "https://github.com/hunspell/hyphen";
-    platforms = lib.platforms.all;
+    changelog = "https://github.com/hunspell/hyphen/blob/${finalAttrs.src.tag}/NEWS";
+
     license = with lib.licenses; [
       gpl2
       lgpl21
       mpl11
     ];
+
+    platforms = lib.platforms.all;
+    mainProgram = "substrings.pl";
   };
 })

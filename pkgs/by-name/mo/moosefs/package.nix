@@ -2,12 +2,12 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  python3,
   fuse3,
-  pkg-config,
   libpcap,
-  zlib,
   nixosTests,
+  pkg-config,
+  python3,
+  zlib,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -21,6 +21,14 @@ stdenv.mkDerivation (finalAttrs: {
     sha256 = "sha256-kWJI0lsVy4KmCIUbuIHswuN/lnMgG/eR6goya+keoy0=";
   };
 
+  # Fix the build on macOS with macFUSE installed
+  postPatch = lib.optionalString stdenv.hostPlatform.isDarwin ''
+    substituteInPlace configure --replace \
+      "/usr/local/lib/pkgconfig" "/nonexistent"
+  '';
+
+  strictDeps = true;
+
   nativeBuildInputs = [
     pkg-config
     python3
@@ -33,17 +41,9 @@ stdenv.mkDerivation (finalAttrs: {
     python3
   ];
 
-  strictDeps = true;
-
   buildFlags = lib.optionals stdenv.hostPlatform.isDarwin [
     "CPPFLAGS=-UHAVE_STRUCT_STAT_ST_BIRTHTIME"
   ];
-
-  # Fix the build on macOS with macFUSE installed
-  postPatch = lib.optionalString stdenv.hostPlatform.isDarwin ''
-    substituteInPlace configure --replace \
-      "/usr/local/lib/pkgconfig" "/nonexistent"
-  '';
 
   preBuild = lib.optionalString stdenv.hostPlatform.isDarwin ''
     substituteInPlace config.h --replace \
@@ -58,13 +58,15 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   meta = {
-    homepage = "https://moosefs.com";
     description = "Open Source, Petabyte, Fault-Tolerant, Highly Performing, Scalable Network Distributed File System";
-    platforms = lib.platforms.unix;
+    homepage = "https://moosefs.com";
     license = lib.licenses.gpl2Only;
+
     maintainers = with lib.maintainers; [
       mfossen
       markuskowa
     ];
+
+    platforms = lib.platforms.unix;
   };
 })

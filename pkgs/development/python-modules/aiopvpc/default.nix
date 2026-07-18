@@ -1,13 +1,13 @@
 {
   lib,
+  fetchFromGitHub,
   aiohttp,
   async-timeout,
   buildPythonPackage,
-  fetchFromGitHub,
   poetry-core,
   pytest-asyncio,
-  pytest-timeout,
   pytest-cov-stub,
+  pytest-timeout,
   pytestCheckHook,
   python-dotenv,
 }:
@@ -15,7 +15,6 @@
 buildPythonPackage rec {
   pname = "aiopvpc";
   version = "4.3.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "azogue";
@@ -23,13 +22,6 @@ buildPythonPackage rec {
     tag = "v${version}";
     hash = "sha256-1xeXfhoXRfJ7vrpRPeYmwcAGjL09iNCOm/f4pPvuZLU=";
   };
-
-  build-system = [ poetry-core ];
-
-  dependencies = [
-    aiohttp
-    async-timeout
-  ];
 
   nativeCheckInputs = [
     pytest-asyncio
@@ -39,6 +31,14 @@ buildPythonPackage rec {
     python-dotenv
   ];
 
+  build-system = [ poetry-core ];
+
+  dependencies = [
+    aiohttp
+    async-timeout
+  ];
+
+  pyproject = true;
   pythonImportsCheck = [ "aiopvpc" ];
 
   meta = {

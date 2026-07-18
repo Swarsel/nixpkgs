@@ -1,8 +1,12 @@
 {
   lib,
   stdenv,
+  fetchurl,
+  fetchFromGitHub,
+  _7zz,
   clangStdenv,
   lld,
+  nix-update-script,
   # Available labels: https://github.com/yaneurao/YaneuraOu/blob/59f6265cebbd4f03138091098059a881a021eefa/source/Makefile#L53-L92
   targetLabel ?
     with stdenv.hostPlatform;
@@ -30,10 +34,6 @@
       "NO_SSE"
     else
       "OTHER",
-  fetchFromGitHub,
-  fetchurl,
-  _7zz,
-  nix-update-script,
 }:
 
 # Use clangStdenv instead of the default stdenv because:
@@ -51,8 +51,6 @@ clangStdenv.mkDerivation (finalAttrs: {
     tag = "v${finalAttrs.version}git";
     hash = "sha256-uhr3jS+ttN5pF1zZpHq2xWy3sdMV19eRUhuj2uPspak=";
   };
-
-  sourceRoot = "${finalAttrs.src.name}/source";
 
   nativeBuildInputs = lib.optionals (!stdenv.hostPlatform.isDarwin) [
     lld
@@ -79,14 +77,16 @@ clangStdenv.mkDerivation (finalAttrs: {
   '';
 
   doInstallCheck = true;
+
   nativeInstallCheckInputs = [
     _7zz
   ];
+
   installCheckPhase =
     let
       nnue = fetchurl {
-        url = "https://github.com/yaneurao/YaneuraOu/releases/download/suisho5/Suisho5.7z";
         hash = "sha256-ZzTjo9KOZ7kgbDRC9tEPFhSBODJ9/4Ecre389YH3mAk=";
+        url = "https://github.com/yaneurao/YaneuraOu/releases/download/suisho5/Suisho5.7z";
       };
     in
     ''
@@ -103,6 +103,8 @@ clangStdenv.mkDerivation (finalAttrs: {
       runHook postInstallCheck
     '';
 
+  sourceRoot = "${finalAttrs.src.name}/source";
+
   passthru = {
     updateScript = nix-update-script {
       extraArgs = [
@@ -115,10 +117,12 @@ clangStdenv.mkDerivation (finalAttrs: {
     description = "USI compliant shogi engine";
     homepage = "https://github.com/yaneurao/YaneuraOu";
     license = lib.licenses.gpl3Only;
+
     maintainers = with lib.maintainers; [
       kachick
     ];
-    mainProgram = "YaneuraOu";
+
     platforms = lib.platforms.unix ++ lib.platforms.windows;
+    mainProgram = "YaneuraOu";
   };
 })

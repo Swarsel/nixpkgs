@@ -3,19 +3,16 @@
   stdenv,
   fetchFromGitHub,
   fetchPnpmDeps,
-  nodejs,
-  pnpm_10,
-  pnpmConfigHook,
   makeWrapper,
   nix-update-script,
+  nodejs,
+  pnpmConfigHook,
+  pnpm_10,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
   pname = "opentofu-mcp-server";
   version = "1.0.0-unstable-2026-06-09";
-
-  __structuredAttrs = true;
-  strictDeps = true;
 
   src = fetchFromGitHub {
     owner = "opentofu";
@@ -24,12 +21,7 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-pPeqlJ/M7ylD7bniVbw/HqsFkZywHISmzpqsQG0VhoU=";
   };
 
-  pnpmDeps = fetchPnpmDeps {
-    inherit (finalAttrs) pname version src;
-    fetcherVersion = 4;
-    pnpm = pnpm_10;
-    hash = "sha256-N9+sbSsae1wOmHkOQ1+Km97w7T+BLuZKdskWZs8c4kw=";
-  };
+  strictDeps = true;
 
   nativeBuildInputs = [
     nodejs
@@ -53,6 +45,15 @@ stdenv.mkDerivation (finalAttrs: {
       --add-flags "$out/lib/opentofu-mcp-server/dist/local.js"
     runHook postInstall
   '';
+
+  __structuredAttrs = true;
+
+  pnpmDeps = fetchPnpmDeps {
+    inherit (finalAttrs) pname version src;
+    fetcherVersion = 4;
+    hash = "sha256-N9+sbSsae1wOmHkOQ1+Km97w7T+BLuZKdskWZs8c4kw=";
+    pnpm = pnpm_10;
+  };
 
   passthru.updateScript = nix-update-script {
     extraArgs = [ "--version=branch" ];

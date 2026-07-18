@@ -44,13 +44,14 @@ in
     // {
       default = true;
     };
+
   config = lib.mkIf config.system.installer.channel.enable {
     # Pin the nixpkgs flake in the installer to our cleaned up nixpkgs source.
     # FIXME: this might be surprising and is really only needed for offline installations,
     # see discussion in https://github.com/NixOS/nixpkgs/pull/204178#issuecomment-1336289021
     nix.registry.nixpkgs.to = {
-      type = "path";
       path = "${channelSources}/nixos";
+      type = "path";
     };
 
     # Provide the NixOS/Nixpkgs sources in /etc/nixos.  This is required
@@ -59,18 +60,6 @@ in
     # early-boot services (e.g. register-nix-paths in QEMU VMs) is
     # explicit.
     systemd.services.nix-channel-init = {
-      description = "Initialize NixOS Channel";
-      # Run early so the channel is available before regular services.
-      # nix-env is invoked before nix-daemon.socket is up, so it
-      # accesses the store directly (we are root).
-      unitConfig.DefaultDependencies = false;
-      wantedBy = [ "sysinit.target" ];
-      before = [
-        "sysinit.target"
-        "shutdown.target"
-        "nix-daemon.socket"
-        "nix-daemon.service"
-      ];
       after = [
         "local-fs.target"
         # In QEMU VMs the store DB is populated by register-nix-paths.
@@ -78,12 +67,18 @@ in
         # is silently ignored by systemd.
         "register-nix-paths.service"
       ];
+
+      before = [
+        "sysinit.target"
+        "shutdown.target"
+        "nix-daemon.socket"
+        "nix-daemon.service"
+      ];
+
       conflicts = [ "shutdown.target" ];
+      description = "Initialize NixOS Channel";
       restartIfChanged = false;
-      serviceConfig = {
-        Type = "oneshot";
-        RemainAfterExit = true;
-      };
+
       script = ''
         if ! [ -e /var/lib/nixos/did-channel-init ]; then
           echo "unpacking the NixOS/Nixpkgs sources..."
@@ -97,6 +92,17 @@ in
           touch /var/lib/nixos/did-channel-init
         fi
       '';
+
+      serviceConfig = {
+        RemainAfterExit = true;
+        Type = "oneshot";
+      };
+
+      # Run early so the channel is available before regular services.
+      # nix-env is invoked before nix-daemon.socket is up, so it
+      # accesses the store directly (we are root).
+      unitConfig.DefaultDependencies = false;
+      wantedBy = [ "sysinit.target" ];
     };
   };
 }

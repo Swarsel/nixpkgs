@@ -1,10 +1,10 @@
 {
-  stdenv,
   lib,
-  fetchFromSourcehut,
+  stdenv,
   autoreconfHook,
-  pkg-config,
   check,
+  fetchFromSourcehut,
+  pkg-config,
 }:
 
 stdenv.mkDerivation {

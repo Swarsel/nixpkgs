@@ -1,11 +1,11 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
-  pkg-config,
-  openssl,
-  testers,
   hydra-cli,
+  openssl,
+  pkg-config,
+  rustPlatform,
+  testers,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -19,31 +19,31 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-6L+5rkXzjXH9JtLsrJkuV8ZMsm64Q+kcb+2pr1coBK4=";
   };
 
-  sourceRoot = "${finalAttrs.src.name}/hydra-cli";
-
-  cargoHash = "sha256-JnfonNdy87Ol6j8x3270RrVv/13vNLEa1n+/aeEbc7U=";
-
   nativeBuildInputs = [ pkg-config ];
 
   buildInputs = [
     openssl
   ];
 
+  cargoHash = "sha256-JnfonNdy87Ol6j8x3270RrVv/13vNLEa1n+/aeEbc7U=";
   __darwinAllowLocalNetworking = true;
+  sourceRoot = "${finalAttrs.src.name}/hydra-cli";
 
   passthru.tests.version = testers.testVersion {
-    package = hydra-cli;
     version = "0.3.0";
+    package = hydra-cli;
   };
 
   meta = {
     description = "Client for the Hydra CI";
-    mainProgram = "hydra-cli";
     homepage = "https://github.com/nlewo/hydra-cli";
     license = with lib.licenses; [ mit ];
+
     maintainers = with lib.maintainers; [
       lewo
       aleksana
     ];
+
+    mainProgram = "hydra-cli";
   };
 })

@@ -1,9 +1,9 @@
 {
   lib,
   stdenv,
+  fetchFromGitLab,
   appstream,
   desktop-file-utils,
-  fetchFromGitLab,
   glib,
   gobject-introspection,
   graphene,
@@ -28,11 +28,11 @@ stdenv.mkDerivation (finalAttrs: {
   version = "5.0";
 
   src = fetchFromGitLab {
-    domain = "gitlab.gnome.org";
     owner = "World";
     repo = "boatswain";
     tag = finalAttrs.version;
     hash = "sha256-XE4MxaV9BXl5EQjumO/6HhRHfAyjjc5BeYFPAa+mdWY=";
+    domain = "gitlab.gnome.org";
   };
 
   strictDeps = true;
@@ -73,9 +73,9 @@ stdenv.mkDerivation (finalAttrs: {
     changelog = "https://gitlab.gnome.org/World/boatswain/-/releases/${finalAttrs.version}";
     license = lib.licenses.gpl3Plus;
     maintainers = with lib.maintainers; [ _0xMRTT ];
-    teams = [ lib.teams.gnome-circle ];
-    mainProgram = "boatswain";
     platforms = lib.platforms.unix;
+    mainProgram = "boatswain";
     broken = stdenv.hostPlatform.isDarwin;
+    teams = [ lib.teams.gnome-circle ];
   };
 })

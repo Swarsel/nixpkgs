@@ -1,11 +1,12 @@
 {
-  stdenvNoCC,
   lib,
-  buildDotnetModule,
-  dotnetCorePackages,
-  callPackage,
   fetchFromGitHub,
+  _experimental-update-script-combinators,
+  buildDotnetModule,
+  callPackage,
+  dotnetCorePackages,
   ffmpeg,
+  gitUpdater,
   glfw,
   gtk3,
   libglvnd,
@@ -14,9 +15,8 @@
   openal,
   portaudio,
   rtmidi,
+  stdenvNoCC,
   wrapGAppsHook3,
-  _experimental-update-script-combinators,
-  gitUpdater,
 }:
 
 let
@@ -57,35 +57,35 @@ buildDotnetModule (finalAttrs: {
           libPrefix = lib.optionalString stdenvNoCC.hostPlatform.isLinux "lib";
         in
         {
-          package = buildNativeWrapper args;
           expectedName = "${libPrefix}${args.depname}";
           ourName = "${libPrefix}${args.depname}";
+          package = buildNativeWrapper args;
         };
       librariesToReplace = [
         # Unmodified native libraries that we can fully substitute
         {
-          package = glfw;
           expectedName = "libglfw";
           ourName = "libglfw";
+          package = glfw;
         }
         {
-          package = rtmidi;
           expectedName = "librtmidi";
           ourName = "librtmidi";
+          package = rtmidi;
         }
       ]
       ++ lib.optionals stdenvNoCC.hostPlatform.isLinux [
         {
-          package = openal;
           expectedName = "libopenal32";
           ourName = "libopenal";
+          package = openal;
         }
       ]
       ++ lib.optionals stdenvNoCC.hostPlatform.isDarwin [
         {
-          package = portaudio;
           expectedName = "libportaudio.2";
           ourName = "libportaudio.2";
+          package = portaudio;
         }
       ]
       ++ [
@@ -94,6 +94,7 @@ buildDotnetModule (finalAttrs: {
         (nativeWrapperToReplaceFormat { depname = "NesSndEmu"; })
         (nativeWrapperToReplaceFormat {
           depname = "NotSoFatso";
+
           extraPostPatch = ''
             # C++17 does not allow register storage class specifier
             substituteInPlace build.sh \
@@ -103,11 +104,12 @@ buildDotnetModule (finalAttrs: {
         (nativeWrapperToReplaceFormat { depname = "ShineMp3"; })
         (nativeWrapperToReplaceFormat { depname = "Stb"; })
         (nativeWrapperToReplaceFormat {
-          depname = "Vorbis";
           buildInputs = [
             libogg
             libvorbis
           ];
+
+          depname = "Vorbis";
         })
       ];
       libraryReplaceArgs = lib.strings.concatMapStringsSep " " (
@@ -130,22 +132,9 @@ buildDotnetModule (finalAttrs: {
         --replace-fail 'libopenal32' 'libopenal'
     '';
 
-  projectFile = "FamiStudio/${csprojName}.csproj";
-  nugetDeps = ./deps.json;
-  dotnet-sdk = dotnetCorePackages.sdk_8_0;
-
   nativeBuildInputs = lib.optionals stdenvNoCC.hostPlatform.isLinux [
     wrapGAppsHook3
   ];
-
-  runtimeDeps = lib.optionals stdenvNoCC.hostPlatform.isLinux [
-    gtk3
-    libglvnd
-  ];
-
-  dontWrapGApps = true;
-
-  executables = [ "FamiStudio" ];
 
   postInstall = ''
     mkdir -p $out/share/famistudio
@@ -168,22 +157,37 @@ buildDotnetModule (finalAttrs: {
         ''${makeWrapperArgs[@]}
     '';
 
+  dontWrapGApps = true;
+  dotnet-sdk = dotnetCorePackages.sdk_8_0;
+  executables = [ "FamiStudio" ];
+  nugetDeps = ./deps.json;
+  projectFile = "FamiStudio/${csprojName}.csproj";
+
+  runtimeDeps = lib.optionals stdenvNoCC.hostPlatform.isLinux [
+    gtk3
+    libglvnd
+  ];
+
   passthru.updateScript = _experimental-update-script-combinators.sequence [
     (gitUpdater { }).command
     (finalAttrs.passthru.fetch-deps)
   ];
 
   meta = {
-    homepage = "https://famistudio.org/";
     description = "NES Music Editor";
+
     longDescription = ''
       FamiStudio is very simple music editor for the Nintendo Entertainment System
       or Famicom. It is targeted at both chiptune artists and NES homebrewers.
     '';
+
+    homepage = "https://famistudio.org/";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       OPNA2608
     ];
+
     platforms = lib.platforms.unix;
     mainProgram = "FamiStudio";
   };

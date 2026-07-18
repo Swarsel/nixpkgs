@@ -1,8 +1,8 @@
 {
   lib,
   stdenv,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   hatchling,
   ncurses,
   procps,
@@ -15,7 +15,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "libtmux";
   version = "0.61.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "tmux-python";
@@ -31,8 +30,6 @@ buildPythonPackage (finalAttrs: {
       --replace-fail '"--doctest-docutils-modules",' ""
   '';
 
-  build-system = [ hatchling ];
-
   nativeCheckInputs = [
     ncurses
     procps
@@ -42,9 +39,10 @@ buildPythonPackage (finalAttrs: {
     tmux
   ];
 
-  enabledTestPaths = [ "tests" ];
-
+  __darwinAllowLocalNetworking = true;
+  build-system = [ hatchling ];
   disabledTestPaths = lib.optionals stdenv.hostPlatform.isDarwin [ "tests/test/test_retry.py" ];
+
   disabledTests = lib.optionals stdenv.hostPlatform.isDarwin [
     # basename for sleep is coreutils, not sleep
     "test_break_pane_no_name_uses_natural_name"
@@ -60,9 +58,9 @@ buildPythonPackage (finalAttrs: {
     "test_new_window_with_environment"
   ];
 
+  enabledTestPaths = [ "tests" ];
+  pyproject = true;
   pythonImportsCheck = [ "libtmux" ];
-
-  __darwinAllowLocalNetworking = true;
 
   meta = {
     description = "Typed scripting library / ORM / API wrapper for tmux";

@@ -9,6 +9,7 @@
 buildDunePackage (finalAttrs: {
   pname = "fdkaac";
   version = "0.3.3";
+
   src = fetchFromGitHub {
     owner = "savonet";
     repo = "ocaml-fdkaac";
@@ -20,9 +21,10 @@ buildDunePackage (finalAttrs: {
   propagatedBuildInputs = [ fdk_aac ];
 
   meta = {
-    description = "OCaml binding for the fdk-aac library";
     inherit (finalAttrs.src.meta) homepage;
+    description = "OCaml binding for the fdk-aac library";
     license = lib.licenses.gpl2Only;
+
     maintainers = [
       lib.maintainers.vbgl
       lib.maintainers.dandellion

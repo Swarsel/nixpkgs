@@ -2,16 +2,16 @@
   lib,
   stdenv,
   fetchFromGitLab,
-  rustPlatform,
+  cargo,
+  desktop-file-utils,
+  gst_all_1,
+  libadwaita,
   meson,
   ninja,
   pkg-config,
+  rustPlatform,
   rustc,
-  cargo,
   wrapGAppsHook4,
-  desktop-file-utils,
-  libadwaita,
-  gst_all_1,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -19,17 +19,11 @@ stdenv.mkDerivation (finalAttrs: {
   version = "1.4";
 
   src = fetchFromGitLab {
-    domain = "gitlab.gnome.org";
     owner = "fkinoshita";
     repo = "Kana";
     rev = "v${finalAttrs.version}";
     hash = "sha256-/Ri723ub8LMlhbPObC83bay63JuWIQpgxAT5UUYuwZI=";
-  };
-
-  cargoDeps = rustPlatform.fetchCargoVendor {
-    inherit (finalAttrs) src;
-    name = "kana-${finalAttrs.version}";
-    hash = "sha256-3ODkAstBZQE3eqGmRUdm3xyCoBXV41hK4ndxeDK8+Yc=";
+    domain = "gitlab.gnome.org";
   };
 
   nativeBuildInputs = [
@@ -59,12 +53,18 @@ stdenv.mkDerivation (finalAttrs: {
     stdenv.cc.isClang && lib.versionAtLeast stdenv.cc.version "16"
   ) "-Wno-error=incompatible-function-pointer-types";
 
+  cargoDeps = rustPlatform.fetchCargoVendor {
+    inherit (finalAttrs) src;
+    hash = "sha256-3ODkAstBZQE3eqGmRUdm3xyCoBXV41hK4ndxeDK8+Yc=";
+    name = "kana-${finalAttrs.version}";
+  };
+
   meta = {
     description = "Learn Japanese hiragana and katakana characters";
     homepage = "https://gitlab.gnome.org/fkinoshita/kana";
     license = lib.licenses.gpl3Plus;
-    mainProgram = "kana";
     maintainers = with lib.maintainers; [ aleksana ];
     platforms = lib.platforms.unix;
+    mainProgram = "kana";
   };
 })

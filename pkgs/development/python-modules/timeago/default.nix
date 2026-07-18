@@ -1,14 +1,13 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   pytestCheckHook,
 }:
 
 buildPythonPackage rec {
   pname = "timeago";
   version = "1.0.16";
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "hustcc";
@@ -18,9 +17,8 @@ buildPythonPackage rec {
   };
 
   nativeCheckInputs = [ pytestCheckHook ];
-
   enabledTestPaths = [ "test/testcase.py" ];
-
+  format = "setuptools";
   pythonImportsCheck = [ "timeago" ];
 
   meta = {

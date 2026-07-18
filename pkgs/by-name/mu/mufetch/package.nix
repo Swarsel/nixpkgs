@@ -1,9 +1,9 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
-  versionCheckHook,
+  buildGoModule,
   nix-update-script,
+  versionCheckHook,
   writableTmpDirAsHomeHook,
 }:
 
@@ -18,7 +18,16 @@ buildGoModule (finalAttrs: {
     hash = "sha256-iYqLfxJDh0k4tCYfEP40sf3oFLtkvThsJ7ub9KThDNE=";
   };
 
+  nativeBuildInputs = [
+    writableTmpDirAsHomeHook
+  ];
+
   vendorHash = "sha256-aXSNM6z/U+2t0aGtr5MIjTb7huAQY/yRf6Oc1udLJYI=";
+  doInstallCheck = true;
+
+  nativeInstallCheckInputs = [
+    versionCheckHook
+  ];
 
   ldflags = [
     "-s"
@@ -26,25 +35,16 @@ buildGoModule (finalAttrs: {
     "-X github.com/ashish0kumar/mufetch/cmd.version=${finalAttrs.version}"
   ];
 
-  nativeBuildInputs = [
-    writableTmpDirAsHomeHook
-  ];
-
-  doInstallCheck = true;
-  nativeInstallCheckInputs = [
-    versionCheckHook
-  ];
   versionCheckKeepEnvironment = [ "HOME" ];
-
   passthru.updateScript = nix-update-script { };
 
   meta = {
-    changelog = "https://github.com/ashish0kumar/mufetch/releases/tag/v${finalAttrs.version}";
     description = "Neofetch-style CLI for music metadata with album art display";
     homepage = "https://github.com/ashish0kumar/mufetch";
+    changelog = "https://github.com/ashish0kumar/mufetch/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ ashish0kumar ];
-    mainProgram = "mufetch";
     platforms = lib.platforms.unix;
+    mainProgram = "mufetch";
   };
 })

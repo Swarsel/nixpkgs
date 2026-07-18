@@ -1,13 +1,13 @@
 {
   lib,
-  rustPlatform,
-  fetchFromGitHub,
-  pkg-config,
-  installShellFiles,
-  dbus,
-  writableTmpDirAsHomeHook,
-  git,
   stdenv,
+  fetchFromGitHub,
+  dbus,
+  git,
+  installShellFiles,
+  pkg-config,
+  rustPlatform,
+  writableTmpDirAsHomeHook,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -22,8 +22,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
     fetchSubmodules = true;
   };
 
-  cargoHash = "sha256-mpI3Eo5fkP66Ywr/anQ3ajPrVuuK6Ku7qJ/jpVPHE6Q=";
-
   nativeBuildInputs = [
     pkg-config
     installShellFiles
@@ -33,12 +31,7 @@ rustPlatform.buildRustPackage (finalAttrs: {
     dbus
   ];
 
-  postInstall = lib.optionalString (stdenv.buildPlatform.canExecute stdenv.hostPlatform) ''
-    installShellCompletion --cmd veryl \
-      --bash <($out/bin/veryl metadata --completion bash) \
-      --fish <($out/bin/veryl metadata --completion fish) \
-      --zsh <($out/bin/veryl metadata --completion zsh)
-  '';
+  cargoHash = "sha256-mpI3Eo5fkP66Ywr/anQ3ajPrVuuK6Ku7qJ/jpVPHE6Q=";
 
   nativeCheckInputs = [
     writableTmpDirAsHomeHook
@@ -81,14 +74,23 @@ rustPlatform.buildRustPackage (finalAttrs: {
     "--skip=path::subdir_source_target"
   ];
 
+  postInstall = lib.optionalString (stdenv.buildPlatform.canExecute stdenv.hostPlatform) ''
+    installShellCompletion --cmd veryl \
+      --bash <($out/bin/veryl metadata --completion bash) \
+      --fish <($out/bin/veryl metadata --completion fish) \
+      --zsh <($out/bin/veryl metadata --completion zsh)
+  '';
+
   meta = {
     description = "Modern Hardware Description Language";
     homepage = "https://veryl-lang.org/";
     changelog = "https://github.com/veryl-lang/veryl/releases/tag/v${finalAttrs.version}";
+
     license = with lib.licenses; [
       mit
       asl20
     ];
+
     maintainers = with lib.maintainers; [ pbsds ];
     mainProgram = "veryl";
   };

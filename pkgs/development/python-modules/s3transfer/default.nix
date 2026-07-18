@@ -1,9 +1,9 @@
 {
   lib,
   stdenv,
+  fetchFromGitHub,
   botocore,
   buildPythonPackage,
-  fetchFromGitHub,
   pytestCheckHook,
   setuptools,
 }:
@@ -11,7 +11,6 @@
 buildPythonPackage rec {
   pname = "s3transfer";
   version = "0.16.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "boto";
@@ -20,16 +19,16 @@ buildPythonPackage rec {
     hash = "sha256-dpDlsZtLjd6r4kLkIDPG6ZPFFs6/4elYiHk2HDpa9+4=";
   };
 
+  nativeCheckInputs = [
+    pytestCheckHook
+  ];
+
   build-system = [
     setuptools
   ];
 
   dependencies = [
     botocore
-  ];
-
-  nativeCheckInputs = [
-    pytestCheckHook
   ];
 
   disabledTestPaths = [
@@ -42,11 +41,12 @@ buildPythonPackage rec {
     # I suspect the underlying issue here is that upstream tests aren't compatible with spawn multiprocessing, and pass on linux where the default is still fork
     lib.optionals stdenv.hostPlatform.isDarwin [ "tests/unit/test_compat.py" ];
 
-  pythonImportsCheck = [ "s3transfer" ];
-
   optional-dependencies = {
     crt = botocore.optional-dependencies.crt;
   };
+
+  pyproject = true;
+  pythonImportsCheck = [ "s3transfer" ];
 
   meta = {
     description = "Library for managing Amazon S3 transfers";

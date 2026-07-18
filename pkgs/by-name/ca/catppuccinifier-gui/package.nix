@@ -1,20 +1,20 @@
 {
   lib,
-  gtk3,
-  glib,
-  dbus,
-  nodejs,
+  fetchFromGitHub,
   cairo,
   cargo-tauri,
-  webkitgtk_4_1,
-  wrapGAppsHook3,
+  dbus,
+  desktop-file-utils,
+  fetchYarnDeps,
   gdk-pixbuf,
+  glib,
+  gtk3,
+  nodejs,
   pkg-config,
   rustPlatform,
-  fetchYarnDeps,
+  webkitgtk_4_1,
+  wrapGAppsHook3,
   yarnConfigHook,
-  fetchFromGitHub,
-  desktop-file-utils,
 }:
 rustPlatform.buildRustPackage (finalAttrs: {
   pname = "catppuccinifier-gui";
@@ -25,17 +25,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
     repo = "catppuccinifier";
     tag = finalAttrs.version;
     hash = "sha256-e8sLYp+0YhC/vAn4vag9UUaw3VYDRERGnLD1RuW1TXE=";
-  };
-
-  sourceRoot = finalAttrs.src.name + "/src/catppuccinifier-gui";
-  cargoRoot = "src-tauri";
-  buildAndTestSubdir = finalAttrs.cargoRoot;
-
-  cargoHash = "sha256-BUXqPY3jNn4YB1avtCp6MFyN1KIYqT0b1H9drOmikj0=";
-
-  yarnOfflineCache = fetchYarnDeps {
-    yarnLock = finalAttrs.src + "/src/catppuccinifier-gui/yarn.lock";
-    hash = "sha256-UfQZf2raMrgPhUQVTAW+mA/nP1XjLKx0WBbYtdeD9kY=";
   };
 
   nativeBuildInputs = [
@@ -56,11 +45,22 @@ rustPlatform.buildRustPackage (finalAttrs: {
     dbus
   ];
 
+  cargoHash = "sha256-BUXqPY3jNn4YB1avtCp6MFyN1KIYqT0b1H9drOmikj0=";
+
   postInstall = ''
     desktop-file-edit "$out/share/applications/catppuccinifier-gui.desktop" \
       --set-key "Categories" --set-value "Graphics" \
       --set-key "Comment" --set-value "Apply catppuccin flavors to your wallpapers"
   '';
+
+  buildAndTestSubdir = finalAttrs.cargoRoot;
+  cargoRoot = "src-tauri";
+  sourceRoot = finalAttrs.src.name + "/src/catppuccinifier-gui";
+
+  yarnOfflineCache = fetchYarnDeps {
+    hash = "sha256-UfQZf2raMrgPhUQVTAW+mA/nP1XjLKx0WBbYtdeD9kY=";
+    yarnLock = finalAttrs.src + "/src/catppuccinifier-gui/yarn.lock";
+  };
 
   meta = {
     description = "Apply catppuccin flavors to your wallpapers";

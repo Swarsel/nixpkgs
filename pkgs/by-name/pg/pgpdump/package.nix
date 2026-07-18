@@ -2,10 +2,10 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  supportCompressedPackets ? true,
-  zlib,
-  bzip2,
   autoreconfHook,
+  bzip2,
+  zlib,
+  supportCompressedPackets ? true,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -30,14 +30,16 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "PGP packet visualizer";
-    mainProgram = "pgpdump";
+
     longDescription = ''
       pgpdump is a PGP packet visualizer which displays the packet format of
       OpenPGP (RFC 4880) and PGP version 2 (RFC 1991).
     '';
+
     homepage = "http://www.mew.org/~kazu/proj/pgpdump/en/";
     license = lib.licenses.bsd3;
-    platforms = lib.platforms.unix;
     maintainers = [ ];
+    platforms = lib.platforms.unix;
+    mainProgram = "pgpdump";
   };
 })

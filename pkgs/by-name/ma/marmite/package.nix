@@ -1,11 +1,11 @@
 {
   lib,
-  rustPlatform,
-  fetchFromGitHub,
-  pkg-config,
-  oniguruma,
   stdenv,
+  fetchFromGitHub,
   darwin,
+  oniguruma,
+  pkg-config,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage rec {
@@ -19,8 +19,6 @@ rustPlatform.buildRustPackage rec {
     hash = "sha256-Q07xA/TYI2O+8C0/3cTpZx0bt47lS+ilhxck18hzzCw=";
   };
 
-  cargoHash = "sha256-yWl8AWond03tT1CsyCrX72AX5ysow6jPgEtFonpLSyc=";
-
   nativeBuildInputs = [
     pkg-config
   ];
@@ -28,6 +26,8 @@ rustPlatform.buildRustPackage rec {
   buildInputs = [
     oniguruma
   ];
+
+  cargoHash = "sha256-yWl8AWond03tT1CsyCrX72AX5ysow6jPgEtFonpLSyc=";
 
   env = {
     RUSTONIG_SYSTEM_LIBONIG = true;

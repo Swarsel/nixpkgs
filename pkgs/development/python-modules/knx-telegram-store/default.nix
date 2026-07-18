@@ -1,12 +1,12 @@
 {
+  lib,
+  fetchFromGitHub,
   aiosqlite,
   asyncpg,
   buildPythonPackage,
-  fetchFromGitHub,
-  lib,
   pytest-asyncio,
-  pytestCheckHook,
   pytest-cov-stub,
+  pytestCheckHook,
   setuptools,
   sqlalchemy,
 }:
@@ -14,9 +14,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "knx-telegram-store";
   version = "0.4.0";
-  pyproject = true;
-
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "XKNX";
@@ -24,6 +21,15 @@ buildPythonPackage (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-t4Bmm5n9+XSBiR2Rvm6UKAKweH9fQuZwaNqG1W2q3Co=";
   };
+
+  nativeCheckInputs = [
+    pytest-asyncio
+    pytest-cov-stub
+    pytestCheckHook
+  ]
+  ++ finalAttrs.passthru.optional-dependencies.sqlite;
+
+  __structuredAttrs = true;
 
   build-system = [
     setuptools
@@ -34,18 +40,14 @@ buildPythonPackage (finalAttrs: {
       asyncpg
       sqlalchemy
     ];
+
     sqlite = [
       aiosqlite
       sqlalchemy
     ];
   };
 
-  nativeCheckInputs = [
-    pytest-asyncio
-    pytest-cov-stub
-    pytestCheckHook
-  ]
-  ++ finalAttrs.passthru.optional-dependencies.sqlite;
+  pyproject = true;
 
   pythonImportsCheck = [
     "knx_telegram_store"

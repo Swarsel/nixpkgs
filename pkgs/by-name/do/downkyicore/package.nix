@@ -1,30 +1,30 @@
 {
   lib,
   stdenv,
-  buildDotnetModule,
-  dotnetCorePackages,
   fetchFromGitHub,
-  nix-update-script,
-  autoPatchelfHook,
-  copyDesktopItems,
-  makeDesktopItem,
-  icoutils,
   aria2,
+  autoPatchelfHook,
+  buildDotnetModule,
+  copyDesktopItems,
+  dotnetCorePackages,
   ffmpeg,
   fontconfig,
   freetype,
+  icoutils,
   icu,
   krb5,
-  openssl,
-  zlib,
-  lttng-ust_2_12,
+  libice,
+  libsm,
   libx11,
   libxcursor,
   libxext,
   libxi,
   libxrandr,
-  libice,
-  libsm,
+  lttng-ust_2_12,
+  makeDesktopItem,
+  nix-update-script,
+  openssl,
+  zlib,
 }:
 
 buildDotnetModule (finalAttrs: {
@@ -38,12 +38,10 @@ buildDotnetModule (finalAttrs: {
     hash = "sha256-fE4n/PMMkt6m/CuQrPlIIIMPgWiwtN1oh1q5AijlaS8=";
   };
 
-  projectFile = "DownKyi/DownKyi.csproj";
-  nugetDeps = ./deps.json;
-
-  dotnet-sdk = dotnetCorePackages.sdk_8_0;
-  dotnet-runtime = dotnetCorePackages.runtime_8_0;
-  executables = [ "DownKyi" ];
+  postPatch = ''
+    substituteInPlace DownKyi/DownKyi.csproj DownKyi.Core/DownKyi.Core.csproj \
+      --replace-fail net6.0 net8.0
+  '';
 
   nativeBuildInputs = [
     copyDesktopItems
@@ -68,28 +66,6 @@ buildDotnetModule (finalAttrs: {
     (lib.getLib stdenv.cc.cc)
   ];
 
-  runtimeDeps = lib.optionals stdenv.hostPlatform.isLinux [
-    libx11
-    libxcursor
-    libxext
-    libxi
-    libxrandr
-    libice
-    libsm
-  ];
-
-  postPatch = ''
-    substituteInPlace DownKyi/DownKyi.csproj DownKyi.Core/DownKyi.Core.csproj \
-      --replace-fail net6.0 net8.0
-  '';
-
-  makeWrapperArgs = [
-    "--chdir"
-    "${placeholder "out"}/lib/downkyicore"
-  ];
-
-  passthru.updateScript = nix-update-script { };
-
   # Provide system ffmpeg/aria2 binaries and license texts where the app expects them.
   postInstall = ''
     mkdir -p $out/lib/downkyicore/{aria2,ffmpeg}
@@ -107,6 +83,7 @@ buildDotnetModule (finalAttrs: {
       favicon_*_128x128x32.png \
       $out/share/icons/hicolor/128x128/apps/downkyicore.png
   '';
+
   postFixup = lib.optionalString stdenv.hostPlatform.isDarwin ''
     app="$out/Applications/DownKyi.app"
     mkdir -p "$app/Contents/MacOS" "$app/Contents/Resources"
@@ -118,17 +95,42 @@ buildDotnetModule (finalAttrs: {
 
   desktopItems = lib.optionals stdenv.hostPlatform.isLinux [
     (makeDesktopItem {
-      name = "downkyicore";
-      desktopName = "DownKyi";
-      comment = "Cross-platform Bilibili downloader";
-      exec = "DownKyi";
-      icon = "downkyicore";
       categories = [
         "Network"
         "AudioVideo"
       ];
+
+      comment = "Cross-platform Bilibili downloader";
+      desktopName = "DownKyi";
+      exec = "DownKyi";
+      icon = "downkyicore";
+      name = "downkyicore";
     })
   ];
+
+  dotnet-runtime = dotnetCorePackages.runtime_8_0;
+  dotnet-sdk = dotnetCorePackages.sdk_8_0;
+  executables = [ "DownKyi" ];
+
+  makeWrapperArgs = [
+    "--chdir"
+    "${placeholder "out"}/lib/downkyicore"
+  ];
+
+  nugetDeps = ./deps.json;
+  projectFile = "DownKyi/DownKyi.csproj";
+
+  runtimeDeps = lib.optionals stdenv.hostPlatform.isLinux [
+    libx11
+    libxcursor
+    libxext
+    libxi
+    libxrandr
+    libice
+    libsm
+  ];
+
+  passthru.updateScript = nix-update-script { };
 
   meta = {
     description = "Cross-platform Bilibili downloader built with Avalonia";

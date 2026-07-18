@@ -1,35 +1,35 @@
 {
-  stdenv,
-  buildPackages,
   lib,
+  stdenv,
   fetchurl,
-  fetchpatch,
-  zlib,
-  gdbm,
-  ncurses,
-  readline,
-  groff,
-  libyaml,
-  libffi,
-  jemalloc,
+  autoconf,
   autoreconfHook,
   bison,
-  autoconf,
-  libiconv,
-  libunwind,
   buildEnv,
-  bundler,
+  buildPackages,
+  buildRubyGem,
   bundix,
+  bundler,
+  defaultGemConfig,
+  fetchpatch,
+  gdbm,
+  gitUpdater,
+  groff,
+  jemalloc,
+  libffi,
+  libiconv,
+  libsystemtap,
+  libunwind,
+  libyaml,
+  linuxPackages,
+  makeBinaryWrapper,
+  ncurses,
+  openssl,
+  readline,
+  removeReferencesTo,
   rustPlatform,
   rustc,
-  makeBinaryWrapper,
-  buildRubyGem,
-  defaultGemConfig,
-  removeReferencesTo,
-  openssl,
-  linuxPackages,
-  libsystemtap,
-  gitUpdater,
+  zlib,
 }@args:
 
 let
@@ -50,8 +50,8 @@ let
 
   generic =
     {
-      version,
       hash,
+      version,
       cargoHash ? null,
     }:
     let
@@ -61,33 +61,33 @@ let
         stdenv.hostPlatform.isx86_64 || (!stdenv.hostPlatform.isWindows && stdenv.hostPlatform.isAarch64);
       rubyDrv = lib.makeOverridable (
         {
-          stdenv,
-          buildPackages,
           lib,
+          stdenv,
           fetchurl,
+          autoconf,
+          autoreconfHook,
+          bison,
+          buildEnv,
+          buildPackages,
+          buildRubyGem,
+          bundix,
+          bundler,
+          defaultGemConfig,
           fetchpatch,
-          rubygemsSupport ? true,
-          zlib,
-          zlibSupport ? true,
-          openssl,
-          opensslSupport ? true,
           gdbm,
-          gdbmSupport ? true,
-          ncurses,
-          readline,
-          cursesSupport ? true,
+          gitUpdater,
           groff,
-          docSupport ? true,
-          libyaml,
-          yamlSupport ? true,
-          libffi,
-          fiddleSupport ? true,
           jemalloc,
-          jemallocSupport ? false,
-          linuxPackages,
-          systemtap ? linuxPackages.systemtap,
+          libffi,
+          libiconv,
           libsystemtap,
-          dtraceSupport ? false,
+          libunwind,
+          libyaml,
+          linuxPackages,
+          makeBinaryWrapper,
+          ncurses,
+          openssl,
+          readline,
           # By default, ruby has 3 observed references to stdenv.cc:
           #
           # - If you run:
@@ -98,38 +98,52 @@ let
           #     $(nix-build -A ruby)/lib/ruby/2.6.0/x86_64-linux/rbconfig.rb
           # - In $out/lib/libruby.so and/or $out/lib/libruby.dylib
           removeReferencesTo,
-          jitSupport ? yjitSupport,
           rustPlatform,
           rustc,
-          yjitSupport ? yjitSupported,
-          autoreconfHook,
-          bison,
-          autoconf,
-          buildEnv,
-          bundler,
-          bundix,
-          libiconv,
-          libunwind,
-          makeBinaryWrapper,
-          buildRubyGem,
-          defaultGemConfig,
+          zlib,
           baseRuby ? buildPackages.ruby.override {
             docSupport = false;
             rubygemsSupport = false;
           },
+          cursesSupport ? true,
+          docSupport ? true,
+          dtraceSupport ? false,
+          fiddleSupport ? true,
+          gdbmSupport ? true,
+          jemallocSupport ? false,
+          jitSupport ? yjitSupport,
+          opensslSupport ? true,
+          rubygemsSupport ? true,
+          systemtap ? linuxPackages.systemtap,
           useBaseRuby ? stdenv.hostPlatform != stdenv.buildPlatform,
-          gitUpdater,
+          yamlSupport ? true,
+          yjitSupport ? yjitSupported,
+          zlibSupport ? true,
         }:
         stdenv.mkDerivation (finalAttrs: {
-          pname = "ruby";
           inherit version;
+          pname = "ruby";
 
           src = fetchurl {
-            url = "https://cache.ruby-lang.org/pub/ruby/${ver.majMin}/ruby-${ver}.tar.gz";
             inherit hash;
+            url = "https://cache.ruby-lang.org/pub/ruby/${ver.majMin}/ruby-${ver}.tar.gz";
           };
 
           outputs = [ "out" ] ++ lib.optional docSupport "devdoc";
+
+          patches = op useBaseRuby ./do-not-update-gems-baseruby-3.2.patch ++ [
+            # When using a baseruby, ruby always sets "libdir" to the build
+            # directory, which nix rejects due to a reference in to /build/ in
+            # the final product. Removing this reference doesn't seem to break
+            # anything and fixes cross compilation.
+            ./dont-refer-to-build-dir.patch
+          ];
+
+          # Ruby >= 2.1.0 tries to download config.{guess,sub}; copy it from autoconf instead.
+          postPatch = ''
+            sed -i configure.ac -e '/config.guess/d'
+            cp --remove-destination ${autoconf}/share/autoconf/build-aux/config.{guess,sub} tool/
+          '';
 
           strictDeps = true;
 
@@ -148,6 +162,7 @@ let
             rustc
           ]
           ++ op useBaseRuby baseRuby;
+
           buildInputs = [
             autoconf
           ]
@@ -169,57 +184,8 @@ let
             libiconv
             libunwind
           ];
+
           propagatedBuildInputs = op jemallocSupport jemalloc;
-
-          env =
-            lib.optionalAttrs (stdenv.hostPlatform != stdenv.buildPlatform && yjitSupport) {
-              # The ruby build system will use a bare `rust` command by default for its rust.
-              # We can use the Nixpkgs rust wrapper to work around the fact that our Rust builds
-              # for cross-compilation output for the build target by default.
-              NIX_RUSTFLAGS = "--target ${stdenv.hostPlatform.rust.rustcTargetSpec}";
-            }
-            // lib.optionalAttrs docSupport {
-              # Have `configure' avoid `/usr/bin/nroff' in non-chroot builds.
-              NROFF = "${groff}/bin/nroff";
-            };
-
-          enableParallelBuilding = true;
-          # /build/ruby-2.7.7/lib/fileutils.rb:882:in `chmod':
-          #   No such file or directory @ apply2files - ...-ruby-2.7.7-devdoc/share/ri/2.7.0/system/ARGF/inspect-i.ri (Errno::ENOENT)
-          # make: *** [uncommon.mk:373: do-install-all] Error 1
-          enableParallelInstalling = false;
-
-          patches = op useBaseRuby ./do-not-update-gems-baseruby-3.2.patch ++ [
-            # When using a baseruby, ruby always sets "libdir" to the build
-            # directory, which nix rejects due to a reference in to /build/ in
-            # the final product. Removing this reference doesn't seem to break
-            # anything and fixes cross compilation.
-            ./dont-refer-to-build-dir.patch
-          ];
-
-          cargoRoot = opString yjitSupport "yjit";
-
-          cargoDeps =
-            if yjitSupport then
-              rustPlatform.fetchCargoVendor {
-                inherit (finalAttrs) src cargoRoot;
-                hash =
-                  assert cargoHash != null;
-                  cargoHash;
-              }
-            else
-              null;
-
-          postUnpack = opString rubygemsSupport ''
-            rm -rf $sourceRoot/{lib,test}/rubygems*
-            cp -r ${rubygems}/lib/rubygems* $sourceRoot/lib
-          '';
-
-          # Ruby >= 2.1.0 tries to download config.{guess,sub}; copy it from autoconf instead.
-          postPatch = ''
-            sed -i configure.ac -e '/config.guess/d'
-            cp --remove-destination ${autoconf}/share/autoconf/build-aux/config.{guess,sub} tool/
-          '';
 
           configureFlags = [
             (lib.enableFeature (!stdenv.hostPlatform.isStatic) "shared")
@@ -247,6 +213,18 @@ let
             "rb_cv_bsd_qsort_r=yes"
           ];
 
+          env =
+            lib.optionalAttrs (stdenv.hostPlatform != stdenv.buildPlatform && yjitSupport) {
+              # The ruby build system will use a bare `rust` command by default for its rust.
+              # We can use the Nixpkgs rust wrapper to work around the fact that our Rust builds
+              # for cross-compilation output for the build target by default.
+              NIX_RUSTFLAGS = "--target ${stdenv.hostPlatform.rust.rustcTargetSpec}";
+            }
+            // lib.optionalAttrs docSupport {
+              # Have `configure' avoid `/usr/bin/nroff' in non-chroot builds.
+              NROFF = "${groff}/bin/nroff";
+            };
+
           preConfigure = opString docSupport ''
             # rdoc creates XDG_DATA_DIR (defaulting to $HOME/.local/share) even if
             # it's not going to be used.
@@ -264,7 +242,6 @@ let
             export GEM_HOME="$out/${finalAttrs.passthru.gemPath}"
           '';
 
-          installFlags = lib.optional docSupport "install-doc";
           # Bundler tries to create this directory
           postInstall = ''
             rbConfig=$(find $out/lib/ruby -name rbconfig.rb)
@@ -327,6 +304,8 @@ let
               $rbConfig $out/lib/libruby*
           '';
 
+          doInstallCheck = true;
+
           # TODO: this check got relaxed on darwin;
           # see https://github.com/NixOS/nixpkgs/pull/499156#issuecomment-4221517043
           installCheckPhase = ''
@@ -344,30 +323,36 @@ let
                false
             fi
           '';
-          doInstallCheck = true;
 
+          cargoDeps =
+            if yjitSupport then
+              rustPlatform.fetchCargoVendor {
+                inherit (finalAttrs) src cargoRoot;
+
+                hash =
+                  assert cargoHash != null;
+                  cargoHash;
+              }
+            else
+              null;
+
+          cargoRoot = opString yjitSupport "yjit";
           disallowedRequisites = op (!jitSupport) stdenv.cc ++ op useBaseRuby baseRuby;
+          enableParallelBuilding = true;
+          # /build/ruby-2.7.7/lib/fileutils.rb:882:in `chmod':
+          #   No such file or directory @ apply2files - ...-ruby-2.7.7-devdoc/share/ri/2.7.0/system/ARGF/inspect-i.ri (Errno::ENOENT)
+          # make: *** [uncommon.mk:373: do-install-all] Error 1
+          enableParallelInstalling = false;
+          installFlags = lib.optional docSupport "install-doc";
 
-          meta = {
-            description = "Object-oriented language for quick and easy programming";
-            homepage = "https://www.ruby-lang.org/";
-            license = lib.licenses.ruby;
-            platforms = lib.platforms.all;
-            mainProgram = "ruby";
-            knownVulnerabilities = op (lib.versionOlder ver.majMin "3.0") "This Ruby release has reached its end of life. See https://www.ruby-lang.org/en/downloads/branches/.";
-          };
+          postUnpack = opString rubygemsSupport ''
+            rm -rf $sourceRoot/{lib,test}/rubygems*
+            cp -r ${rubygems}/lib/rubygems* $sourceRoot/lib
+          '';
 
           passthru = rec {
-            version = ver;
-            rubyEngine = "ruby";
-            libPath = "lib/${rubyEngine}/${ver.libDir}";
-            gemPath = "lib/${rubyEngine}/gems/${ver.libDir}";
-            devEnv = import ./dev.nix {
-              inherit buildEnv bundler bundix;
-              ruby = finalAttrs.finalPackage;
-            };
-
             inherit rubygems;
+
             inherit
               (import ../../ruby-modules/with-packages {
                 inherit
@@ -377,6 +362,7 @@ let
                   buildRubyGem
                   buildEnv
                   ;
+
                 gemConfig = defaultGemConfig;
                 ruby = finalAttrs.finalPackage;
               })
@@ -384,9 +370,29 @@ let
               buildGems
               gems
               ;
+
+            version = ver;
+
+            devEnv = import ./dev.nix {
+              inherit buildEnv bundler bundix;
+              ruby = finalAttrs.finalPackage;
+            };
+
+            gemPath = "lib/${rubyEngine}/gems/${ver.libDir}";
+            libPath = "lib/${rubyEngine}/${ver.libDir}";
+            rubyEngine = "ruby";
           }
           // lib.optionalAttrs useBaseRuby {
             inherit baseRuby;
+          };
+
+          meta = {
+            description = "Object-oriented language for quick and easy programming";
+            homepage = "https://www.ruby-lang.org/";
+            license = lib.licenses.ruby;
+            platforms = lib.platforms.all;
+            mainProgram = "ruby";
+            knownVulnerabilities = op (lib.versionOlder ver.majMin "3.0") "This Ruby release has reached its end of life. See https://www.ruby-lang.org/en/downloads/branches/.";
           };
         })
       ) args;
@@ -395,25 +401,25 @@ let
 
 in
 {
-  mkRubyVersion = rubyVersion;
   mkRuby = generic;
+  mkRubyVersion = rubyVersion;
 
   ruby_3_3 = generic {
     version = rubyVersion "3" "3" "10" "";
-    hash = "sha256-tVW6pGejBs/I5sbtJNDSeyfpob7R2R2VUJhZ6saw6Sg=";
     cargoHash = "sha256-xE7Cv+NVmOHOlXa/Mg72CTSaZRb72lOja98JBvxPvSs=";
+    hash = "sha256-tVW6pGejBs/I5sbtJNDSeyfpob7R2R2VUJhZ6saw6Sg=";
   };
 
   ruby_3_4 = generic {
     version = rubyVersion "3" "4" "9" "";
-    hash = "sha256-e7TU9egHzCclHRTZ1ghtGCxbJYdRkeRKsVtwnNen3Zw=";
     cargoHash = "sha256-5Tp8Kth0yO89/LIcU8K01z6DdZRr8MAA0DPKqDEjIt0=";
+    hash = "sha256-e7TU9egHzCclHRTZ1ghtGCxbJYdRkeRKsVtwnNen3Zw=";
   };
 
   ruby_4_0 = generic {
     version = rubyVersion "4" "0" "6" "";
-    hash = "sha256-g30pno993yvjGiKaen4BnTVJeYJRF5iayzsysam+Jio=";
     cargoHash = "sha256-z7NwWc4TaR042hNx0xgRkh/BQEpEJtE53cfrN0qNiE0=";
+    hash = "sha256-g30pno993yvjGiKaen4BnTVJeYJRF5iayzsysam+Jio=";
   };
 
 }

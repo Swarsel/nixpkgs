@@ -1,15 +1,14 @@
 {
   lib,
-  buildPythonPackage,
-  fetchPypi,
   boto3,
+  buildPythonPackage,
   cryptography,
+  fetchPypi,
 }:
 
 buildPythonPackage rec {
   pname = "ec2instanceconnectcli";
   version = "1.0.3";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
@@ -23,7 +22,7 @@ buildPythonPackage rec {
 
   # has no tests
   doCheck = false;
-
+  format = "setuptools";
   pythonImportsCheck = [ "ec2instanceconnectcli" ];
 
   meta = {

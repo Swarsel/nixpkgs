@@ -2,15 +2,15 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  lcms,
+  blend2d,
   cmake,
+  lcms,
+  nix-update-script,
+  onetbb,
+  openjpeg,
   pkg-config,
   qt6,
   wrapGAppsHook3,
-  openjpeg,
-  onetbb,
-  blend2d,
-  nix-update-script,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -49,23 +49,23 @@ stdenv.mkDerivation (finalAttrs: {
     blend2d
   ];
 
-  # `blend2d.h` moved to `blend2d/blend2d.h` in blend2d >= 0.21.2
-  env.NIX_CFLAGS_COMPILE = "-I${blend2d.dev}/include/blend2d";
-
   cmakeFlags = [
     (lib.cmakeBool "PDF4QT_INSTALL_TO_USR" false)
   ];
 
-  dontWrapGApps = true;
+  # `blend2d.h` moved to `blend2d/blend2d.h` in blend2d >= 0.21.2
+  env.NIX_CFLAGS_COMPILE = "-I${blend2d.dev}/include/blend2d";
 
   preFixup = ''
     qtWrapperArgs+=(''${gappsWrapperArgs[@]})
   '';
 
+  dontWrapGApps = true;
   passthru.updateScript = nix-update-script { };
 
   meta = {
     description = "Open source PDF editor";
+
     longDescription = ''
       This software is consisting of PDF rendering library,
       and several applications, such as advanced document
@@ -73,11 +73,12 @@ stdenv.mkDerivation (finalAttrs: {
       manipulator application. Software is implementing PDF
       functionality based on PDF Reference 2.0.
     '';
+
     homepage = "https://jakubmelka.github.io";
     changelog = "https://github.com/JakubMelka/PDF4QT/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.mit;
-    mainProgram = "Pdf4QtViewer";
     maintainers = with lib.maintainers; [ aleksana ];
     platforms = lib.platforms.linux;
+    mainProgram = "Pdf4QtViewer";
   };
 })

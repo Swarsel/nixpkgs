@@ -7,18 +7,18 @@
   desktop-file-utils,
   glib,
   gtk4,
-  meson,
-  ninja,
-  pkg-config,
-  rustPlatform,
-  rustc,
-  wrapGAppsHook4,
   gtksourceview5,
   libadwaita,
   libpanel,
-  vte-gtk4,
-  versionCheckHook,
+  meson,
+  ninja,
   nix-update-script,
+  pkg-config,
+  rustPlatform,
+  rustc,
+  versionCheckHook,
+  vte-gtk4,
+  wrapGAppsHook4,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -30,11 +30,6 @@ stdenv.mkDerivation (finalAttrs: {
     repo = "pods";
     tag = "v${finalAttrs.version}";
     hash = "sha256-50NOkLffLbs5/qug6xzoSWSMZ3+/Lau9sTPi9za4+LA=";
-  };
-
-  cargoDeps = rustPlatform.fetchCargoVendor {
-    inherit (finalAttrs) pname version src;
-    hash = "sha256-JbYJQdli3OAxnbGApVe5+KAAcGePTTH59fdXdFx0+hA=";
   };
 
   nativeBuildInputs = [
@@ -61,6 +56,11 @@ stdenv.mkDerivation (finalAttrs: {
 
   doInstallCheck = true;
   nativeInstallCheckInputs = [ versionCheckHook ];
+
+  cargoDeps = rustPlatform.fetchCargoVendor {
+    inherit (finalAttrs) pname version src;
+    hash = "sha256-JbYJQdli3OAxnbGApVe5+KAAcGePTTH59fdXdFx0+hA=";
+  };
 
   passthru.updateScript = nix-update-script { };
 

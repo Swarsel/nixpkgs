@@ -2,9 +2,9 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  pkg-config,
-  libsForQt5,
   boost,
+  libsForQt5,
+  pkg-config,
 }:
 
 stdenv.mkDerivation rec {
@@ -18,19 +18,20 @@ stdenv.mkDerivation rec {
     hash = "sha256-/yQtwoolGhtn19I+vus27OjaZgXXfhnWKQi+rUMozCY=";
   };
 
+  postPatch = ''
+    sed -i s/-Werror// twmnd/twmnd.pro
+  '';
+
   nativeBuildInputs = [
     pkg-config
     libsForQt5.qmake
     libsForQt5.wrapQtAppsHook
   ];
+
   buildInputs = [
     libsForQt5.qtbase
     boost
   ];
-
-  postPatch = ''
-    sed -i s/-Werror// twmnd/twmnd.pro
-  '';
 
   installPhase = ''
     runHook preInstall
@@ -44,8 +45,8 @@ stdenv.mkDerivation rec {
   meta = {
     description = "Notification system for tiling window managers";
     homepage = "https://github.com/sboli/twmn";
-    platforms = with lib.platforms; linux;
-    maintainers = [ lib.maintainers.matejc ];
     license = lib.licenses.lgpl3;
+    maintainers = [ lib.maintainers.matejc ];
+    platforms = with lib.platforms; linux;
   };
 }

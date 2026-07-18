@@ -1,19 +1,16 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # build-system
-  setuptools-scm,
-
+  buildPythonPackage,
   # dependencies
   pyserial,
+  # build-system
+  setuptools-scm,
 }:
 
 buildPythonPackage rec {
   pname = "adafruit-board-toolkit";
   version = "1.1.2";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "adafruit";
@@ -21,6 +18,9 @@ buildPythonPackage rec {
     tag = version;
     hash = "sha256-xpz4+dGFcO/R/aBHub00N0oFS4w0prJl304PnbUKvAI=";
   };
+
+  # Project has not published tests yet
+  doCheck = false;
 
   build-system = [
     setuptools-scm
@@ -30,9 +30,7 @@ buildPythonPackage rec {
     pyserial
   ];
 
-  # Project has not published tests yet
-  doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "adafruit_board_toolkit" ];
 
   meta = {

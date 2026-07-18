@@ -1,6 +1,6 @@
 { buildAstalModule, json-glib }:
 buildAstalModule {
-  name = "powerprofiles";
   buildInputs = [ json-glib ];
+  name = "powerprofiles";
   meta.description = "Astal module for upowerd profiles using DBus";
 }

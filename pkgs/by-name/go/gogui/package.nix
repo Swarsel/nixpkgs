@@ -3,14 +3,14 @@
   stdenv,
   fetchFromGitHub,
   ant,
-  jdk,
-  jre,
   docbook-xsl-ns,
   docbook_xml_dtd_42,
   imagemagick,
+  jdk,
+  jre,
   libxslt,
-  stripJavaArchivesHook,
   makeWrapper,
+  stripJavaArchivesHook,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -90,11 +90,13 @@ stdenv.mkDerivation (finalAttrs: {
     description = "Graphical user interface to programs that play the board game Go and support the Go Text Protocol such as GNU Go";
     homepage = "https://github.com/Remi-Coulom/gogui";
     license = lib.licenses.gpl3Plus;
-    mainProgram = "gogui";
+
     maintainers = with lib.maintainers; [
       cleverca22
       omnipotententity
     ];
+
     platforms = lib.platforms.unix;
+    mainProgram = "gogui";
   };
 })

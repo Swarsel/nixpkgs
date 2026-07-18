@@ -1,9 +1,9 @@
 {
   lib,
+  fetchFromGitHub,
   aiohttp,
   aresponses,
   buildPythonPackage,
-  fetchFromGitHub,
   hatch-vcs,
   hatchling,
   inflection,
@@ -16,7 +16,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "python-smarttub";
   version = "0.0.48";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "mdz";
@@ -24,6 +23,12 @@ buildPythonPackage (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-+iaRZO4jPpVnE8Tj8SwjMUXS3xB7vd/ztRYNE2B48Ro=";
   };
+
+  nativeCheckInputs = [
+    aresponses
+    pytest-asyncio
+    pytestCheckHook
+  ];
 
   build-system = [
     hatch-vcs
@@ -37,12 +42,7 @@ buildPythonPackage (finalAttrs: {
     python-dateutil
   ];
 
-  nativeCheckInputs = [
-    aresponses
-    pytest-asyncio
-    pytestCheckHook
-  ];
-
+  pyproject = true;
   pythonImportsCheck = [ "smarttub" ];
 
   meta = {

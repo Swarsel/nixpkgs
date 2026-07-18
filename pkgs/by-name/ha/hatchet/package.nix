@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   nix-update-script,
   versionCheckHook,
 }:
@@ -17,16 +17,17 @@ buildGoModule (finalAttrs: {
     hash = "sha256-TdZ8yKDpphPQnjMHKVICV0vj8FSWlHsAAa6X1p1gqH0=";
   };
 
-  # Otherwise checks fail with `panic: open /etc/protocols: operation not permitted` when sandboxing is enabled on Darwin
-  # https://github.com/NixOS/nixpkgs/pull/381645#issuecomment-2656211797
-  modPostBuild = ''
-    substituteInPlace vendor/modernc.org/libc/honnef.co/go/netdb/netdb.go \
-      --replace-fail '!os.IsNotExist(err)' '!os.IsNotExist(err) && !os.IsPermission(err)'
-  '';
-
   vendorHash = "sha256-2IF6XiZvNZt97NvJc4PdgIG3sc2mw6ezkuMvQb2M3LI=";
-
   env.CGO_ENABLED = 0;
+  # the tests are using fixture files not available from the git repo.
+  doCheck = false;
+  postInstall = "mv $out/bin/main $out/bin/${finalAttrs.meta.mainProgram}";
+  doInstallCheck = true;
+
+  nativeInstallCheckInputs = [
+    versionCheckHook
+  ];
+
   ldflags = [
     "-s"
     "-w"
@@ -34,24 +35,21 @@ buildGoModule (finalAttrs: {
     "-X main.repo=${finalAttrs.src.owner}/${finalAttrs.src.repo}"
   ];
 
-  postInstall = "mv $out/bin/main $out/bin/${finalAttrs.meta.mainProgram}";
-
-  # the tests are using fixture files not available from the git repo.
-  doCheck = false;
-
-  nativeInstallCheckInputs = [
-    versionCheckHook
-  ];
-  doInstallCheck = true;
+  # Otherwise checks fail with `panic: open /etc/protocols: operation not permitted` when sandboxing is enabled on Darwin
+  # https://github.com/NixOS/nixpkgs/pull/381645#issuecomment-2656211797
+  modPostBuild = ''
+    substituteInPlace vendor/modernc.org/libc/honnef.co/go/netdb/netdb.go \
+      --replace-fail '!os.IsNotExist(err)' '!os.IsNotExist(err) && !os.IsPermission(err)'
+  '';
 
   passthru.updateScript = nix-update-script { };
 
   meta = {
+    description = "MongoDB JSON Log Analyzer";
     homepage = "https://github.com/simagix/hatchet";
     changelog = "https://github.com/simagix/hatchet/releases/tag/${finalAttrs.src.tag}";
-    description = "MongoDB JSON Log Analyzer";
-    maintainers = with lib.maintainers; [ aduh95 ];
     license = lib.licenses.asl20;
+    maintainers = with lib.maintainers; [ aduh95 ];
     mainProgram = "hatchet";
   };
 })

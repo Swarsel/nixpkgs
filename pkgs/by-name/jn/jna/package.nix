@@ -1,6 +1,6 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
   ant,
   jdk,
@@ -38,13 +38,15 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   meta = {
-    changelog = "https://github.com/java-native-access/jna/blob/${finalAttrs.version}/CHANGES.md";
     description = "Java Native Access";
     homepage = "https://github.com/java-native-access/jna";
+    changelog = "https://github.com/java-native-access/jna/blob/${finalAttrs.version}/CHANGES.md";
+
     license = with lib.licenses; [
       lgpl21
       asl20
     ];
+
     maintainers = with lib.maintainers; [ nagy ];
     platforms = lib.platforms.linux ++ lib.platforms.darwin;
   };

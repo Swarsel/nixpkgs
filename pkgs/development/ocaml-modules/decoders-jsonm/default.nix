@@ -1,19 +1,16 @@
 {
   lib,
   buildDunePackage,
+  containers,
   decoders,
   jsonm,
-  containers,
   ounit2,
 }:
 
 buildDunePackage (finalAttrs: {
-  pname = "decoders-jsonm";
-
   # sub-package built separately from the same source
   inherit (decoders) src version;
-
-  minimalOCamlVersion = "4.03.0";
+  pname = "decoders-jsonm";
 
   propagatedBuildInputs = [
     decoders
@@ -21,10 +18,13 @@ buildDunePackage (finalAttrs: {
   ];
 
   doCheck = true;
+
   checkInputs = [
     containers
     ounit2
   ];
+
+  minimalOCamlVersion = "4.03.0";
 
   meta = {
     description = "Jsonm backend for decoders";

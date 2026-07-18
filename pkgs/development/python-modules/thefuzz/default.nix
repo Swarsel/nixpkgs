@@ -2,16 +2,15 @@
   lib,
   buildPythonPackage,
   fetchPypi,
-  pytestCheckHook,
   hypothesis,
   levenshtein,
+  pytestCheckHook,
   setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "thefuzz";
   version = "0.22.1";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
@@ -24,25 +23,25 @@ buildPythonPackage rec {
       --replace-fail "import pycodestyle" ""
   '';
 
-  build-system = [ setuptools ];
-
-  dependencies = [ levenshtein ];
-
   nativeCheckInputs = [
     hypothesis
     pytestCheckHook
+  ];
+
+  build-system = [ setuptools ];
+  dependencies = [ levenshtein ];
+
+  disabledTests = [
+    # Skip linting
+    "test_pep8_conformance"
   ];
 
   optional-dependencies = {
     speedup = [ ];
   };
 
+  pyproject = true;
   pythonImportsCheck = [ "thefuzz" ];
-
-  disabledTests = [
-    # Skip linting
-    "test_pep8_conformance"
-  ];
 
   meta = {
     description = "Fuzzy string matching for Python";

@@ -1,41 +1,37 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  fetchpatch,
-
-  # build-system
-  setuptools,
+  buildPythonPackage,
   cffi,
-
+  ddt,
+  fetchpatch,
   # dependencies
   jinja2,
   junos-eznc,
   lxml,
+  mock,
   ncclient,
   netaddr,
   netmiko,
   netutils,
   paramiko,
   pyeapi,
+  # tests
+  pytestCheckHook,
   pyyaml,
   requests,
   scp,
+  # build-system
+  setuptools,
   textfsm,
   ttp,
   ttp-templates,
   typing-extensions,
-
-  # tests
-  pytestCheckHook,
-  ddt,
-  mock,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "napalm";
   version = "5.1.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "napalm-automation";
@@ -43,6 +39,12 @@ buildPythonPackage (finalAttrs: {
     tag = finalAttrs.version;
     hash = "sha256-kIQgr5W9xkdcQkscJkOiABJ5HBxZOT9D7jSKWGNoBGA=";
   };
+
+  nativeCheckInputs = [
+    pytestCheckHook
+    mock
+    ddt
+  ];
 
   build-system = [ setuptools ];
 
@@ -68,11 +70,7 @@ buildPythonPackage (finalAttrs: {
     typing-extensions
   ];
 
-  nativeCheckInputs = [
-    pytestCheckHook
-    mock
-    ddt
-  ];
+  pyproject = true;
 
   meta = {
     description = "Network Automation and Programmability Abstraction Layer with Multivendor support";

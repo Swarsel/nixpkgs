@@ -9,15 +9,15 @@
 buildPythonPackage (finalAttrs: {
   pname = "langchain-protocol";
   version = "0.0.18";
-  pyproject = true;
-  __structuredAttrs = true;
 
   # Not available vis Github yet; required by langchain-core
   src = fetchPypi {
-    pname = "langchain_protocol";
     inherit (finalAttrs) version;
     hash = "sha256-7D4ReC8e0MnbOOWp7QGw56DT+6QG+qiu9llLc8VqY+Y=";
+    pname = "langchain_protocol";
   };
+
+  __structuredAttrs = true;
 
   build-system = [
     hatchling
@@ -26,6 +26,8 @@ buildPythonPackage (finalAttrs: {
   dependencies = [
     typing-extensions
   ];
+
+  pyproject = true;
 
   pythonImportsCheck = [
     "langchain_protocol"

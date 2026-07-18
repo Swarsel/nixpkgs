@@ -1,9 +1,9 @@
 {
+  lib,
+  fetchFromGitHub,
   buildNpmPackage,
   copyDesktopItems,
   electron,
-  fetchFromGitHub,
-  lib,
   makeDesktopItem,
   unstableGitUpdater,
   writeScriptBin,
@@ -20,12 +20,14 @@ in
 buildNpmPackage rec {
   pname = "antimatter-dimensions";
   version = "0-unstable-2025-11-20";
+
   src = fetchFromGitHub {
     owner = "IvarK";
     repo = "AntimatterDimensionsSourceCode";
     rev = "8ae221fcb07db667b3d04114c2b977175966611d";
     hash = "sha256-IseAfEz+nSzY2XD15HbJWeLmYFMvAYO33bPItXJCy58=";
   };
+
   nativeBuildInputs = [
     copyDesktopItems
     # build script calls git to get git hash, message and author
@@ -37,8 +39,6 @@ buildNpmPackage rec {
   ];
 
   npmDepsHash = "sha256-aG+oysgitQvdFM0QyzJ3DBxsanBHYI+UPJPhj6bf00Q=";
-  npmFlags = [ "--legacy-peer-deps" ];
-  npmBuildScript = "build:release";
 
   installPhase = ''
     runHook preInstall
@@ -58,26 +58,29 @@ buildNpmPackage rec {
 
   desktopItems = [
     (makeDesktopItem {
-      name = "antimatter-dimensions";
+      categories = [ "Game" ];
+      comment = meta.description;
+      desktopName = electronAppName;
       exec = "antimatter-dimensions";
       icon = "antimatter-dimensions";
-      desktopName = electronAppName;
-      comment = meta.description;
-      categories = [ "Game" ];
+      name = "antimatter-dimensions";
       terminal = false;
     })
   ];
+
+  npmBuildScript = "build:release";
+  npmFlags = [ "--legacy-peer-deps" ];
 
   passthru.updateScript = unstableGitUpdater {
     hardcodeZeroVersion = true;
   };
 
   meta = {
-    homepage = "https://github.com/IvarK/AntimatterDimensionsSourceCode";
-    description = "Idle incremental game with multiple prestige layers";
-    license = lib.licenses.mit;
-    mainProgram = "antimatter-dimensions";
-    maintainers = with lib.maintainers; [ amozeo ];
     inherit (electron.meta) platforms;
+    description = "Idle incremental game with multiple prestige layers";
+    homepage = "https://github.com/IvarK/AntimatterDimensionsSourceCode";
+    license = lib.licenses.mit;
+    maintainers = with lib.maintainers; [ amozeo ];
+    mainProgram = "antimatter-dimensions";
   };
 }

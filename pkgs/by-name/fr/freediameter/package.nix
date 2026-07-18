@@ -5,11 +5,11 @@
   bison,
   cmake,
   flex,
-  pkg-config,
   gnutls,
   libgcrypt,
   libidn2,
   lksctp-tools,
+  pkg-config,
   unstableGitUpdater,
 }:
 stdenv.mkDerivation (finalAttrs: {
@@ -45,8 +45,8 @@ stdenv.mkDerivation (finalAttrs: {
     description = "Implementation of the Diameter Protocol";
     homepage = "https://github.com/freeDiameter/freeDiameter";
     license = lib.licenses.bsd3;
+    maintainers = [ ];
     platforms = lib.platforms.unix;
     teams = with lib.teams; [ ngi ];
-    maintainers = [ ];
   };
 })

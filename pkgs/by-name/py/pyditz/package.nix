@@ -1,13 +1,12 @@
 {
   lib,
-  python3Packages,
   fetchPypi,
+  python3Packages,
 }:
 
 python3Packages.buildPythonApplication (finalAttrs: {
   pname = "pyditz";
   version = "0.11";
-  pyproject = true;
 
   src = fetchPypi {
     inherit (finalAttrs) pname version;
@@ -23,11 +22,13 @@ python3Packages.buildPythonApplication (finalAttrs: {
     cerberus
   ];
 
+  pyproject = true;
+
   meta = {
-    homepage = "https://hg.sr.ht/~zondo/pyditz";
     description = "Drop-in replacement for the Ditz distributed issue tracker";
-    maintainers = with lib.maintainers; [ ilikeavocadoes ];
+    homepage = "https://hg.sr.ht/~zondo/pyditz";
     license = lib.licenses.lgpl2Plus;
+    maintainers = with lib.maintainers; [ ilikeavocadoes ];
     platforms = lib.platforms.linux;
   };
 })

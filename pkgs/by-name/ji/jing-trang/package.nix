@@ -2,9 +2,9 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  jre_headless,
-  jdk8_headless,
   ant,
+  jdk8_headless,
+  jre_headless,
   saxon,
 }:
 let
@@ -22,6 +22,10 @@ stdenv.mkDerivation (finalAttrs: {
     fetchSubmodules = true;
   };
 
+  patches = [
+    ./no-git-during-build.patch
+  ];
+
   buildInputs = [
     jdk_headless
     ant
@@ -29,12 +33,9 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   env.CLASSPATH = "lib/saxon.jar";
-
-  patches = [
-    ./no-git-during-build.patch
-  ];
-
   preBuild = "ant";
+  doCheck = true;
+  checkPhase = "ant test";
 
   installPhase = ''
     mkdir -p "$out"/{share/java,bin}
@@ -51,19 +52,18 @@ stdenv.mkDerivation (finalAttrs: {
     chmod +x "$out"/bin/*
   '';
 
-  doCheck = true;
-  checkPhase = "ant test";
-
   meta = {
     description = "RELAX NG validator in Java";
     # The homepage is www.thaiopensource.com, but it links to googlecode.com
     # for downloads and call it the "project site".
     homepage = "https://www.thaiopensource.com/relaxng/trang.html";
-    platforms = lib.platforms.unix;
+
     sourceProvenance = with lib.sourceTypes; [
       fromSource
       binaryBytecode # source bundles dependencies as jars
     ];
+
     maintainers = [ lib.maintainers.bjornfor ];
+    platforms = lib.platforms.unix;
   };
 })

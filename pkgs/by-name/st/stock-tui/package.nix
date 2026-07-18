@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   nix-update-script,
 }:
 
@@ -16,10 +16,8 @@ buildGoModule (finalAttrs: {
     hash = "sha256-5k24fBG0ZBr2JhVf30IGjLky087j203hZGEvtSzwUqQ=";
   };
 
-  subPackages = [ "cmd/stock-tui" ];
-
   vendorHash = "sha256-Use54AVRMZ9xYx8tQpcRN3th+MufuER3lCJ+JVPpYRU=";
-
+  subPackages = [ "cmd/stock-tui" ];
   passthru.updateScript = nix-update-script { };
 
   meta = {

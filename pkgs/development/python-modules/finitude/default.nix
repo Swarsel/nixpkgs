@@ -1,18 +1,17 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
+  legacy-cgi,
   prometheus-client,
   pyserial,
   pyyaml,
-  legacy-cgi,
   setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "finitude";
   version = "0.1.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "dulitz";
@@ -21,6 +20,8 @@ buildPythonPackage rec {
     hash = "sha256-yCI5UCRDhw+dJoTKyjmHbAGBm3by2AyxHKlqCywnLcs=";
   };
 
+  # Module has no tests
+  doCheck = false;
   build-system = [ setuptools ];
 
   dependencies = [
@@ -30,9 +31,7 @@ buildPythonPackage rec {
     pyyaml
   ];
 
-  # Module has no tests
-  doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "finitude" ];
 
   meta = {

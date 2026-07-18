@@ -20,9 +20,9 @@ rustPlatform.buildRustPackage (finalAttrs: {
   meta = {
     description = "Ethiopian Calendar CLI";
     homepage = "https://github.com/frectonz/mek-ut-er-ya";
-    mainProgram = "mekuteriya";
     license = lib.licenses.mit;
     maintainers = [ lib.maintainers.frectonz ];
     platforms = lib.platforms.all;
+    mainProgram = "mekuteriya";
   };
 })

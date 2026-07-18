@@ -2,8 +2,8 @@
   lib,
   fetchFromGitHub,
   mkTclDerivation,
-  tclx,
   tcl,
+  tclx,
 }:
 
 mkTclDerivation {
@@ -27,11 +27,11 @@ mkTclDerivation {
   '';
 
   meta = {
-    homepage = "https://github.com/mpcjanssen/tcl-fcgi";
     description = "Tcl interface for the FastCGI protocol";
+    homepage = "https://github.com/mpcjanssen/tcl-fcgi";
     license = lib.licenses.bsd2;
-    platforms = tclx.meta.platforms;
     maintainers = with lib.maintainers; [ nat-418 ];
+    platforms = tclx.meta.platforms;
     broken = tcl.isTcl9;
   };
 }

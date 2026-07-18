@@ -14,12 +14,16 @@ stdenv.mkDerivation rec {
     sha256 = "0i0x5jw135pli4jl9mgnr5n2rrdvml57nw84yq2999r4frza53xi";
   };
 
-  dontBuild = true;
-
-  unpackPhase = ''
-    ar x $src
-    tar xfvz data.tar.gz
+  installPhase = ''
+    mkdir -p $out/etc/udev/rules.d
+    cp opt/brother/scanner/udev-rules/type1/NN-brother-mfp-type1.rules \
+      $out/etc/udev/rules.d/${libsaneUDevRuleNumber}-brother-libsane-type1.rules
+    chmod 644 $out/etc/udev/rules.d/${libsaneUDevRuleNumber}-brother-libsane-type1.rules
   '';
+
+  dontBuild = true;
+  dontPatchELF = true;
+  dontStrip = true;
 
   /*
     Fix the following error:
@@ -41,21 +45,16 @@ stdenv.mkDerivation rec {
     sed -i -e s/SYSFS/ATTR/g opt/brother/scanner/udev-rules/type1/*.rules
   '';
 
-  installPhase = ''
-    mkdir -p $out/etc/udev/rules.d
-    cp opt/brother/scanner/udev-rules/type1/NN-brother-mfp-type1.rules \
-      $out/etc/udev/rules.d/${libsaneUDevRuleNumber}-brother-libsane-type1.rules
-    chmod 644 $out/etc/udev/rules.d/${libsaneUDevRuleNumber}-brother-libsane-type1.rules
+  unpackPhase = ''
+    ar x $src
+    tar xfvz data.tar.gz
   '';
-
-  dontStrip = true;
-  dontPatchELF = true;
 
   meta = {
     description = "Brother type1 scanners udev rules";
     homepage = "http://www.brother.com";
-    platforms = lib.platforms.linux;
     license = lib.licenses.unfree;
     maintainers = with lib.maintainers; [ jraygauthier ];
+    platforms = lib.platforms.linux;
   };
 }

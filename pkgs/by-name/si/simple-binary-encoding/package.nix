@@ -3,12 +3,11 @@
   stdenv,
   fetchFromGitHub,
   gradle,
-  jre,
-  runtimeShell,
-
+  html2text,
   # Generating the usage instructions for script
   htmlq,
-  html2text,
+  jre,
+  runtimeShell,
   txt2man,
 }:
 stdenv.mkDerivation (finalAttrs: {
@@ -22,6 +21,13 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-BYS1rkNPuECEs4Cjt8revUOcd/tCUUghR9JmYMfwqUw=";
   };
 
+  outputs = [
+    "out"
+    "benchmarks"
+    "samples"
+    "tool"
+  ];
+
   nativeBuildInputs = [
     gradle
     htmlq
@@ -29,23 +35,7 @@ stdenv.mkDerivation (finalAttrs: {
     txt2man
   ];
 
-  mitmCache = gradle.fetchDeps {
-    pname = "simple-binary-encoding";
-    pkg = finalAttrs.finalPackage;
-    data = ./deps.json;
-  };
-
-  gradleBuildTask = "build";
-
   doCheck = true;
-  gradleCheckTask = "runJavaExamples";
-
-  outputs = [
-    "out"
-    "benchmarks"
-    "samples"
-    "tool"
-  ];
 
   installPhase = ''
     runHook preInstall
@@ -98,6 +88,7 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   doInstallCheck = true;
+
   installCheckPhase = ''
     # Check that we have some usage documentation
     "$out"/bin/sbetool --help 2>&1 | grep -q Usage
@@ -121,12 +112,21 @@ stdenv.mkDerivation (finalAttrs: {
     find "$tmpdir/baseline" | grep -q '.*[.]go'
   '';
 
+  gradleBuildTask = "build";
+  gradleCheckTask = "runJavaExamples";
+
+  mitmCache = gradle.fetchDeps {
+    pname = "simple-binary-encoding";
+    data = ./deps.json;
+    pkg = finalAttrs.finalPackage;
+  };
+
   passthru.updateScript = ./update.sh;
 
   meta = {
+    description = "OSI layer 6 presentation for encoding and decoding binary application messages for low-latency financial applications";
     homepage = "https://github.com/aeron-io/simple-binary-encoding";
     license = lib.licenses.asl20;
     maintainers = with lib.maintainers; [ balsoft ];
-    description = "OSI layer 6 presentation for encoding and decoding binary application messages for low-latency financial applications";
   };
 })

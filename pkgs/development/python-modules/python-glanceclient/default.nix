@@ -1,23 +1,23 @@
 {
   lib,
   buildPythonPackage,
-  fetchPypi,
   coreutils,
-  setuptools,
-  pbr,
-  prettytable,
+  ddt,
+  fetchPypi,
   keystoneauth1,
-  requests,
-  warlock,
   openstacksdk,
   oslo-i18n,
   oslo-utils,
-  wrapt,
+  pbr,
+  prettytable,
   pyopenssl,
+  requests,
+  requests-mock,
+  setuptools,
   stestr,
   testscenarios,
-  ddt,
-  requests-mock,
+  warlock,
+  wrapt,
   writeText,
 }:
 let
@@ -47,12 +47,11 @@ let
 in
 buildPythonPackage {
   inherit pname version;
-  pyproject = true;
 
   src = fetchPypi {
-    pname = "python_glanceclient";
     inherit version;
     hash = "sha256-XOIRi/50YpNIBZFmF+U3vFsA/UyrP7e7iKT5JTlwVi0=";
+    pname = "python_glanceclient";
   };
 
   postPatch = ''
@@ -88,6 +87,7 @@ buildPythonPackage {
     runHook postCheck
   '';
 
+  pyproject = true;
   pythonImportsCheck = [ "glanceclient" ];
 
   meta = {

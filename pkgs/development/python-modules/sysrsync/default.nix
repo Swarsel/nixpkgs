@@ -1,17 +1,16 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   poetry-core,
-  setuptools,
   rsync,
+  setuptools,
   toml,
 }:
 
 buildPythonPackage rec {
   pname = "sysrsync";
   version = "1.1.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "gchamon";
@@ -34,6 +33,7 @@ buildPythonPackage rec {
     toml
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "sysrsync" ];
 
   meta = {

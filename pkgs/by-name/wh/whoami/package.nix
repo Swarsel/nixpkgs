@@ -1,9 +1,9 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
-  nixosTests,
+  buildGoModule,
   nix-update-script,
+  nixosTests,
 }:
 
 buildGoModule (finalAttrs: {
@@ -18,12 +18,9 @@ buildGoModule (finalAttrs: {
   };
 
   vendorHash = "sha256-0Qxw+MUYVgzgWB8vi3HBYtVXSq/btfh4ZfV/m1chNrA=";
-
-  ldflags = [ "-s" ];
-
   env.CGO_ENABLED = 0;
-
   doInstallCheck = true;
+
   installCheckPhase = ''
     runHook preInstallCheck
 
@@ -32,6 +29,8 @@ buildGoModule (finalAttrs: {
     runHook postInstallCheck
   '';
 
+  ldflags = [ "-s" ];
+
   passthru = {
     tests = { inherit (nixosTests) whoami; };
     updateScript = nix-update-script { };
@@ -39,13 +38,15 @@ buildGoModule (finalAttrs: {
 
   meta = {
     description = "Tiny Go server that prints os information and HTTP request to output";
-    mainProgram = "whoami";
     homepage = "https://github.com/traefik/whoami";
     changelog = "https://github.com/traefik/whoami/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.asl20;
+
     maintainers = with lib.maintainers; [
       dvcorreia
       defelo
     ];
+
+    mainProgram = "whoami";
   };
 })

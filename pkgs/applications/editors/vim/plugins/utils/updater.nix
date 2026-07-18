@@ -2,32 +2,22 @@
   lib,
   buildPythonApplication,
   makeWrapper,
-  nix,
-  nix-prefetch-github,
-  nix-prefetch-git,
-  nurl,
-  python3Packages,
-
   # optional
   neovim-unwrapped,
+  nix,
+  nix-prefetch-git,
+  nix-prefetch-github,
+  nurl,
+  python3Packages,
 }:
 buildPythonApplication {
   pname = "vim-plugins-updater";
   version = "0.1";
 
-  pyproject = false;
-
   nativeBuildInputs = [
     makeWrapper
     python3Packages.wrapPython
   ];
-
-  pythonPath = [
-    python3Packages.requests
-    python3Packages.nixpkgs-plugin-update
-  ];
-
-  dontUnpack = true;
 
   installPhase = ''
     mkdir -p $out/bin $out/lib
@@ -46,6 +36,14 @@ buildPythonApplication {
     }" --prefix PYTHONPATH : "${lib.sources.sourceByGlobs ./. [ "**/*.py" ]}" )
     wrapPythonPrograms
   '';
+
+  dontUnpack = true;
+  pyproject = false;
+
+  pythonPath = [
+    python3Packages.requests
+    python3Packages.nixpkgs-plugin-update
+  ];
 
   shellHook = ''
     export PYTHONPATH=pkgs/applications/editors/vim/plugins:$PYTHONPATH

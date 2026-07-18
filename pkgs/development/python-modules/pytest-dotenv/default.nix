@@ -9,7 +9,6 @@
 buildPythonPackage rec {
   pname = "pytest-dotenv";
   version = "0.5.2";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
@@ -18,8 +17,8 @@ buildPythonPackage rec {
 
   buildInputs = [ pytest ];
   propagatedBuildInputs = [ python-dotenv ];
-
   nativeCheckInputs = [ pytest ];
+  format = "setuptools";
 
   meta = {
     description = "Pytest plugin that parses environment files before running tests";

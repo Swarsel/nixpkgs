@@ -1,10 +1,10 @@
 {
   lib,
   stdenv,
-  rustPlatform,
   fetchFromGitHub,
-  pkg-config,
   openssl,
+  pkg-config,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -18,20 +18,20 @@ rustPlatform.buildRustPackage (finalAttrs: {
     sha256 = "sha256-jBnRVTnrSfEpN7xgMrlAsCwl62kZpHMI4IeT0rPb+zg=";
   };
 
-  cargoHash = "sha256-CfPmTmtCpBgxDH043yIedZk9dngPb5L6z7jQpmvtiEA=";
-
   nativeBuildInputs = lib.optionals stdenv.hostPlatform.isLinux [
     pkg-config
   ];
 
-  env = {
-    OPENSSL_LIB_DIR = "${lib.getLib openssl}/lib";
-    OPENSSL_DIR = "${lib.getDev openssl}";
-  };
-
   buildInputs = lib.optionals stdenv.hostPlatform.isLinux [
     openssl
   ];
+
+  cargoHash = "sha256-CfPmTmtCpBgxDH043yIedZk9dngPb5L6z7jQpmvtiEA=";
+
+  env = {
+    OPENSSL_DIR = "${lib.getDev openssl}";
+    OPENSSL_LIB_DIR = "${lib.getLib openssl}/lib";
+  };
 
   meta = {
     description = "HTTP load testing application inspired by Ansible syntax";

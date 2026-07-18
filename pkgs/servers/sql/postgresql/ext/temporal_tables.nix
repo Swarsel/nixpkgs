@@ -1,6 +1,6 @@
 {
-  fetchFromGitHub,
   lib,
+  fetchFromGitHub,
   postgresql,
   postgresqlBuildExtension,
 }:
@@ -19,8 +19,8 @@ postgresqlBuildExtension (finalAttrs: {
   meta = {
     description = "Temporal Tables PostgreSQL Extension";
     homepage = "https://github.com/arkhipov/temporal_tables";
+    license = lib.licenses.bsd2;
     maintainers = with lib.maintainers; [ ggpeti ];
     platforms = postgresql.meta.platforms;
-    license = lib.licenses.bsd2;
   };
 })

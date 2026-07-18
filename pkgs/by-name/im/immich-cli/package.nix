@@ -1,16 +1,16 @@
 {
   lib,
+  stdenv,
   immich,
   jq,
-  nodejs,
   makeWrapper,
-  stdenv,
-  versionCheckHook,
+  nodejs,
   pnpmConfigHook,
+  versionCheckHook,
 }:
 stdenv.mkDerivation (finalAttrs: {
-  pname = "immich-cli";
   inherit (immich) version src pnpmDeps;
+  pname = "immich-cli";
 
   nativeBuildInputs = [
     jq
@@ -48,11 +48,11 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   meta = {
+    inherit (nodejs.meta) platforms;
     description = "Self-hosted photo and video backup solution (command line interface)";
     homepage = "https://immich.app/docs/features/command-line-interface";
     license = lib.licenses.agpl3Only;
     maintainers = with lib.maintainers; [ jvanbruegge ];
-    inherit (nodejs.meta) platforms;
     mainProgram = "immich";
   };
 })

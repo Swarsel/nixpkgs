@@ -1,18 +1,17 @@
 {
   lib,
+  fetchFromGitHub,
   aiofiles,
   aiohttp,
   backoff,
   buildPythonPackage,
   click,
-  fetchFromGitHub,
   setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "pyprosegur";
   version = "0.0.14";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "dgomes";
@@ -21,6 +20,8 @@ buildPythonPackage rec {
     hash = "sha256-FMkz5zZ5+607gfmw4KRmCgfR+TJF2JGLRVEUzZAjTrc=";
   };
 
+  # Project has no tests
+  doCheck = false;
   build-system = [ setuptools ];
 
   dependencies = [
@@ -30,9 +31,7 @@ buildPythonPackage rec {
     click
   ];
 
-  # Project has no tests
-  doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "pyprosegur" ];
 
   meta = {

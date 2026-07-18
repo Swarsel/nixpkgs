@@ -1,9 +1,9 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
-  python3,
   pandoc,
+  python3,
 }:
 
 stdenv.mkDerivation {
@@ -18,6 +18,11 @@ stdenv.mkDerivation {
     sha256 = "19w0r3zr71ydd29amqwn8q3npgrpy5kkshyshyji2hw5hky6iy92";
   };
 
+  nativeBuildInputs = [
+    python3
+    pandoc
+  ];
+
   buildPhase = ''
     # build scripts need some love
     patchShebangs bin/preproc
@@ -29,16 +34,10 @@ stdenv.mkDerivation {
     install -Dm644 src/bgnet.html $out/share/doc/bgnet/html/index.html
   '';
 
-  nativeBuildInputs = [
-    python3
-    pandoc
-  ];
-
   meta = {
     description = "Beej’s Guide to Network Programming";
     homepage = "https://beej.us/guide/bgnet/";
     license = lib.licenses.unfree;
-
     maintainers = [ ];
   };
 }

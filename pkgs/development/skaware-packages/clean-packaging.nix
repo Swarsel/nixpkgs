@@ -20,12 +20,12 @@ let
   # Best used in conjunction with checkForRemainingFiles
   commonFileActions =
     {
-      # list of fileglobs that are removed from the source dir
-      noiseFiles,
       # files that are moved to the doc directory ($1)
       # TODO(Profpatsch): allow to set target dir with
       # { glob = …; to = "html" } (relative to docdir)
       docFiles,
+      # list of fileglobs that are removed from the source dir
+      noiseFiles,
     }:
     writeScript "common-file-actions.sh" ''
       #!${stdenv.shell}

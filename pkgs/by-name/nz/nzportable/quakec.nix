@@ -1,9 +1,9 @@
 {
   lib,
-  stdenvNoCC,
   fetchFromGitHub,
-  python3,
   nzportable,
+  python3,
+  stdenvNoCC,
 }:
 stdenvNoCC.mkDerivation {
   pname = "nzp-quakec";
@@ -58,7 +58,7 @@ stdenvNoCC.mkDerivation {
     description = "QuakeC repository for Nazi Zombies: Portable";
     homepage = "https://github.com/nzp-team/quakec";
     license = lib.licenses.gpl2Plus;
-    platforms = with lib.platforms; linux ++ darwin;
     maintainers = with lib.maintainers; [ pluiedev ];
+    platforms = with lib.platforms; linux ++ darwin;
   };
 }

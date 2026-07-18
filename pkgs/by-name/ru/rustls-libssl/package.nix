@@ -1,12 +1,12 @@
 {
   lib,
   stdenv,
-  llvmPackages,
-  rustPlatform,
   fetchFromGitHub,
-  pkg-config,
-  openssl,
+  llvmPackages,
   nixosTests,
+  openssl,
+  pkg-config,
+  rustPlatform,
 }:
 
 let
@@ -15,8 +15,8 @@ let
   libExt = stdenv.hostPlatform.extensions.sharedLibrary;
 in
 rustPlatform.buildRustPackage {
-  pname = "rustls-libssl";
   inherit version;
+  pname = "rustls-libssl";
 
   src = fetchFromGitHub {
     owner = "rustls";
@@ -25,24 +25,6 @@ rustPlatform.buildRustPackage {
     hash = "sha256-/QSFrkFVSRBmpXHc80dJFnYwvVYceAFnoCtmAGtnmqo=";
   };
 
-  # NOTE: No longer necessary in the next release.
-  sourceRoot = "source/rustls-libssl";
-
-  cargoHash = "sha256-eVdcYJnJVduRk3zK9VQ1rE6AwjaXAG1h1g/fVHr4mqQ=";
-
-  nativeBuildInputs = [
-    pkg-config # for openssl-sys
-    llvmPackages.lld # build.rs specifies LLD as linker
-  ];
-  buildInputs = [
-    openssl
-  ];
-
-  preCheck = ''
-    # tests dlopen libcrypto.so.3
-    export LD_LIBRARY_PATH=${lib.makeLibraryPath [ openssl ]}
-  '';
-
   # rustls-libssl normally wants to be swapped in for libssl, and reuses
   # libcrypto. Here, we accomplish something similar by symlinking most of
   # OpenSSL, replacing only libssl.
@@ -50,6 +32,23 @@ rustPlatform.buildRustPackage {
     "out"
     "dev"
   ];
+
+  nativeBuildInputs = [
+    pkg-config # for openssl-sys
+    llvmPackages.lld # build.rs specifies LLD as linker
+  ];
+
+  buildInputs = [
+    openssl
+  ];
+
+  cargoHash = "sha256-eVdcYJnJVduRk3zK9VQ1rE6AwjaXAG1h1g/fVHr4mqQ=";
+
+  preCheck = ''
+    # tests dlopen libcrypto.so.3
+    export LD_LIBRARY_PATH=${lib.makeLibraryPath [ openssl ]}
+  '';
+
   installPhase = ''
     mkdir -p $out/lib $dev/lib/pkgconfig
 
@@ -75,6 +74,8 @@ rustPlatform.buildRustPackage {
       $dev/lib/pkgconfig/*.pc
   '';
 
+  # NOTE: No longer necessary in the next release.
+  sourceRoot = "source/rustls-libssl";
   passthru.tests = nixosTests.rustls-libssl;
 
   meta = {
@@ -82,10 +83,12 @@ rustPlatform.buildRustPackage {
     homepage = "https://github.com/rustls/rustls-openssl-compat";
     changelog = "https://github.com/rustls/rustls-openssl-compat/releases";
     license = lib.licenses.asl20;
-    platforms = lib.platforms.linux;
+
     maintainers = with lib.maintainers; [
       stephank
       cpu
     ];
+
+    platforms = lib.platforms.linux;
   };
 }

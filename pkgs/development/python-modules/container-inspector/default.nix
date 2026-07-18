@@ -1,11 +1,11 @@
 {
   lib,
+  fetchFromGitHub,
   attrs,
   buildPythonPackage,
   click,
   commoncode,
   dockerfile-parse,
-  fetchFromGitHub,
   pytestCheckHook,
   setuptools-scm,
 }:
@@ -13,7 +13,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "container-inspector";
   version = "33.1.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "nexB";
@@ -22,8 +21,7 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-uwfqPh4e5zNO0K5rKZ2pxgOkX/KF9pzCsKdYbQuw9MA=";
   };
 
-  dontConfigure = true;
-
+  nativeCheckInputs = [ pytestCheckHook ];
   build-system = [ setuptools-scm ];
 
   dependencies = [
@@ -33,8 +31,8 @@ buildPythonPackage (finalAttrs: {
     commoncode
   ];
 
-  nativeCheckInputs = [ pytestCheckHook ];
-
+  dontConfigure = true;
+  pyproject = true;
   pythonImportsCheck = [ "container_inspector" ];
 
   meta = {

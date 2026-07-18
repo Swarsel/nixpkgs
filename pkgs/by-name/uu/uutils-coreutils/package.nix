@@ -2,19 +2,16 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  rustPlatform,
-  cargo,
-  python3Packages,
-  versionCheckHook,
-  nix-update-script,
-
-  prefix ? "uutils-",
-  buildMulticallBinary ? true,
-
-  selinuxSupport ? false,
-  libselinux,
-
   acl,
+  cargo,
+  libselinux,
+  nix-update-script,
+  python3Packages,
+  rustPlatform,
+  versionCheckHook,
+  buildMulticallBinary ? true,
+  prefix ? "uutils-",
+  selinuxSupport ? false,
 }:
 
 assert selinuxSupport -> lib.meta.availableOn stdenv.hostPlatform libselinux;
@@ -35,10 +32,12 @@ stdenv.mkDerivation (finalAttrs: {
     rm .cargo/config.toml
   '';
 
-  cargoDeps = rustPlatform.fetchCargoVendor {
-    inherit (finalAttrs) pname src version;
-    hash = "sha256-WoPqxO1TBt4eCOR3tlzuoXqH9u/mTHR5Dr/WnKLxyYM=";
-  };
+  nativeBuildInputs = [
+    cargo
+    rustPlatform.bindgenHook
+    rustPlatform.cargoSetupHook
+    python3Packages.sphinx
+  ];
 
   buildInputs =
     lib.optionals (lib.meta.availableOn stdenv.hostPlatform acl) [
@@ -47,13 +46,6 @@ stdenv.mkDerivation (finalAttrs: {
     ++ lib.optionals selinuxSupport [
       libselinux
     ];
-
-  nativeBuildInputs = [
-    cargo
-    rustPlatform.bindgenHook
-    rustPlatform.cargoSetupHook
-    python3Packages.sphinx
-  ];
 
   makeFlags = [
     "PREFIX=${placeholder "out"}"
@@ -93,24 +85,32 @@ stdenv.mkDerivation (finalAttrs: {
   }
   // lib.optionalAttrs selinuxSupport {
     SELINUX_INCLUDE_DIR = "${lib.getInclude libselinux}/include";
+
     SELINUX_LIB_DIR = lib.makeLibraryPath [
       libselinux
     ];
+
     SELINUX_STATIC = "0";
   };
 
   # too many impure/platform-dependent tests
   doCheck = false;
+  doInstallCheck = true;
 
   nativeInstallCheckInputs = [
     versionCheckHook
   ];
+
+  cargoDeps = rustPlatform.fetchCargoVendor {
+    inherit (finalAttrs) pname src version;
+    hash = "sha256-WoPqxO1TBt4eCOR3tlzuoXqH9u/mTHR5Dr/WnKLxyYM=";
+  };
+
   versionCheckProgram =
     let
       prefix' = lib.optionalString (prefix != null) prefix;
     in
     "${placeholder "out"}/bin/${prefix'}ls";
-  doInstallCheck = true;
 
   passthru = {
     updateScript = nix-update-script { };
@@ -118,18 +118,22 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Cross-platform Rust rewrite of the GNU coreutils";
+
     longDescription = ''
       uutils is an attempt at writing universal (as in cross-platform)
       CLI utils in Rust. This repo is to aggregate the GNU coreutils rewrites.
     '';
+
     homepage = "https://github.com/uutils/coreutils";
     changelog = "https://github.com/uutils/coreutils/releases/tag/${finalAttrs.version}";
+    license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       GaetanLepage
       siraben
       matthiasbeyer
     ];
-    license = lib.licenses.mit;
+
     platforms = lib.platforms.unix;
   };
 })

@@ -3,15 +3,15 @@
   stdenv,
   fetchurl,
   gettext,
+  gitUpdater,
+  glib,
+  gtk3,
+  libxfce4ui,
+  libxfce4util,
   meson,
   ninja,
   pkg-config,
-  libxfce4util,
   xfce4-panel,
-  libxfce4ui,
-  glib,
-  gtk3,
-  gitUpdater,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -41,13 +41,13 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   passthru.updateScript = gitUpdater {
-    url = "https://gitlab.xfce.org/panel-plugins/xfce4-eyes-plugin";
     rev-prefix = "xfce4-eyes-plugin-";
+    url = "https://gitlab.xfce.org/panel-plugins/xfce4-eyes-plugin";
   };
 
   meta = {
-    homepage = "https://docs.xfce.org/panel-plugins/xfce4-eyes-plugin";
     description = "Rolling eyes (following mouse pointer) plugin for the Xfce panel";
+    homepage = "https://docs.xfce.org/panel-plugins/xfce4-eyes-plugin";
     license = lib.licenses.gpl2Plus;
     platforms = lib.platforms.linux;
     teams = [ lib.teams.xfce ];

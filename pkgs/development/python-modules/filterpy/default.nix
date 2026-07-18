@@ -1,21 +1,18 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
-  numpy,
-  scipy,
-  matplotlib,
-  pytestCheckHook,
+  buildPythonPackage,
   isPy3k,
+  matplotlib,
+  numpy,
+  pytestCheckHook,
+  scipy,
+  setuptools,
 }:
 
 buildPythonPackage {
   pname = "filterpy";
   version = "1.4.5-unstable-2022-08-23";
-  pyproject = true;
-
-  disabled = !isPy3k;
 
   src = fetchFromGitHub {
     owner = "rlabbe";
@@ -25,7 +22,7 @@ buildPythonPackage {
   };
 
   patches = [ ./numpy-2.4-compat.patch ];
-
+  nativeCheckInputs = [ pytestCheckHook ];
   build-system = [ setuptools ];
 
   dependencies = [
@@ -34,16 +31,18 @@ buildPythonPackage {
     matplotlib
   ];
 
-  nativeCheckInputs = [ pytestCheckHook ];
+  disabled = !isPy3k;
 
   disabledTests = [
     # ValueError: Unable to avoid copy while creating an array as requested."
     "test_multivariate_gaussian"
   ];
 
+  pyproject = true;
+
   meta = {
-    homepage = "https://github.com/rlabbe/filterpy";
     description = "Kalman filtering and optimal estimation library";
+    homepage = "https://github.com/rlabbe/filterpy";
     license = lib.licenses.mit;
     maintainers = [ ];
   };

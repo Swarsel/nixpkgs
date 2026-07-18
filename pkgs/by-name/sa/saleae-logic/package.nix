@@ -10,30 +10,30 @@
   lib,
   stdenv,
   fetchurl,
-  unzip,
-  glib,
-  libsm,
-  libice,
-  gtk2,
-  libxext,
-  libxft,
-  fontconfig,
-  libxrender,
-  libxfixes,
-  libx11,
-  libxi,
-  libxrandr,
-  libxcursor,
-  freetype,
-  libxinerama,
-  libxcb,
-  zlib,
-  pciutils,
-  makeDesktopItem,
-  xkeyboard-config,
   dbus,
-  runtimeShell,
+  fontconfig,
+  freetype,
+  glib,
+  gtk2,
   libGL,
+  libice,
+  libsm,
+  libx11,
+  libxcb,
+  libxcursor,
+  libxext,
+  libxfixes,
+  libxft,
+  libxi,
+  libxinerama,
+  libxrandr,
+  libxrender,
+  makeDesktopItem,
+  pciutils,
+  runtimeShell,
+  unzip,
+  xkeyboard-config,
+  zlib,
 }:
 
 let
@@ -68,19 +68,9 @@ stdenv.mkDerivation rec {
   version = "1.2.18";
 
   src = fetchurl {
-    name = "saleae-logic-${version}-64bit.zip";
     url = "https://downloads.saleae.com/logic/${version}/Logic%20${version}%20(64-bit).zip";
     sha256 = "0lhair2vsg8sjvzicvfcjfmvy30q7i01xj4z02iqh7pgzpb025h8";
-  };
-
-  desktopItem = makeDesktopItem {
-    name = "saleae-logic";
-    exec = "saleae-logic";
-    icon = ""; # the package contains no icon
-    comment = "Software for Saleae logic analyzers";
-    desktopName = "Saleae Logic";
-    genericName = "Logic analyzer";
-    categories = [ "Development" ];
+    name = "saleae-logic-${version}-64bit.zip";
   };
 
   nativeBuildInputs = [ unzip ];
@@ -126,12 +116,22 @@ stdenv.mkDerivation rec {
     cp Drivers/99-SaleaeLogic.rules "$out/etc/udev/rules.d/"
   '';
 
+  desktopItem = makeDesktopItem {
+    categories = [ "Development" ];
+    comment = "Software for Saleae logic analyzers";
+    desktopName = "Saleae Logic";
+    exec = "saleae-logic";
+    genericName = "Logic analyzer";
+    icon = ""; # the package contains no icon
+    name = "saleae-logic";
+  };
+
   meta = {
     description = "Software for Saleae logic analyzers";
     homepage = "https://www.saleae.com/";
-    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
     license = lib.licenses.unfree;
-    platforms = lib.intersectLists lib.platforms.x86_64 lib.platforms.linux;
+    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
     maintainers = [ lib.maintainers.bjornfor ];
+    platforms = lib.intersectLists lib.platforms.x86_64 lib.platforms.linux;
   };
 }

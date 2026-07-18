@@ -8,7 +8,6 @@
 stdenv.mkDerivation (finalAttrs: {
   pname = "jpcre2";
   version = "10.32.01";
-  rev = finalAttrs.version;
 
   src = fetchFromGitHub {
     owner = "jpcre2";
@@ -18,11 +17,12 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   buildInputs = [ pcre2 ];
+  rev = finalAttrs.version;
 
   meta = {
-    homepage = "https://docs.neuzunix.com/jpcre2/latest/";
     description = "C++ wrapper for PCRE2 Library";
-    platforms = lib.platforms.all;
+    homepage = "https://docs.neuzunix.com/jpcre2/latest/";
     license = lib.licenses.bsd3;
+    platforms = lib.platforms.all;
   };
 })

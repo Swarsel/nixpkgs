@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   poetry-core,
   pydantic,
 }:
@@ -9,7 +9,6 @@
 buildPythonPackage rec {
   pname = "openapi-pydantic";
   version = "0.5.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "mike-oakley";
@@ -25,6 +24,8 @@ buildPythonPackage rec {
   dependencies = [
     pydantic
   ];
+
+  pyproject = true;
 
   pythonImportsCheck = [
     "openapi_pydantic"

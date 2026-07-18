@@ -1,15 +1,15 @@
 {
   lib,
   fetchFromGitHub,
-  rustPlatform,
   nix-update-script,
+  rustPlatform,
 }:
 let
   version = "2.9.0";
 in
 rustPlatform.buildRustPackage {
-  pname = "catppuccin-whiskers";
   inherit version;
+  pname = "catppuccin-whiskers";
 
   src = fetchFromGitHub {
     owner = "catppuccin";
@@ -19,17 +19,18 @@ rustPlatform.buildRustPackage {
   };
 
   cargoHash = "sha256-40IPDdxKTWYxsCfsECsXDGwfxXiTEIelxIGAFv3xlU4=";
-
   passthru.updateScript = nix-update-script { };
 
   meta = {
-    homepage = "https://github.com/catppuccin/whiskers";
     description = "Templating tool to simplify the creation of Catppuccin ports";
+    homepage = "https://github.com/catppuccin/whiskers";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       Name
       isabelroses
     ];
+
     mainProgram = "whiskers";
   };
 }

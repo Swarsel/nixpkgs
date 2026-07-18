@@ -7,7 +7,6 @@
 python3.pkgs.buildPythonApplication (finalAttrs: {
   pname = "smbclient-ng";
   version = "3.1.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "p0dalirius";
@@ -16,12 +15,8 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     hash = "sha256-y/tTAyo9ouobSRFjP53rUm2Lzm5m5IfCdX7ZOpllwTE=";
   };
 
-  pythonRelaxDeps = [
-    "impacket"
-    "pefile"
-    "rich"
-  ];
-
+  # Project has no unit tests
+  doCheck = false;
   build-system = with python3.pkgs; [ poetry-core ];
 
   dependencies = with python3.pkgs; [
@@ -31,10 +26,14 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     rich
   ];
 
-  # Project has no unit tests
-  doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "smbclientng" ];
+
+  pythonRelaxDeps = [
+    "impacket"
+    "pefile"
+    "rich"
+  ];
 
   meta = {
     description = "Tool to interact with SMB shares";

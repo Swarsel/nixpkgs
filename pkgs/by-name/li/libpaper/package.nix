@@ -6,8 +6,8 @@
 }:
 
 stdenv.mkDerivation (finalAttrs: {
-  version = "2.2.8";
   pname = "libpaper";
+  version = "2.2.8";
 
   src = fetchurl {
     url = "https://github.com/rrthomas/libpaper/releases/download/v${finalAttrs.version}/libpaper-${finalAttrs.version}.tar.gz";
@@ -36,15 +36,17 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   meta = {
-    changelog = "https://github.com/rrthomas/libpaper/releases/tag/v${finalAttrs.version}";
     description = "Library for handling paper characteristics";
     homepage = "https://github.com/rrthomas/libpaper";
+    changelog = "https://github.com/rrthomas/libpaper/releases/tag/v${finalAttrs.version}";
+
     license = with lib.licenses; [
       gpl2Only
       gpl3Plus
       mit
       publicDomain
     ];
+
     platforms = lib.platforms.unix;
   };
 })

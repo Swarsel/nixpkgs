@@ -2,9 +2,9 @@
   lib,
   stdenv,
   fetchFromGitHub,
+  libsForQt5,
   libusb1,
   pkg-config,
-  libsForQt5,
 }:
 
 stdenv.mkDerivation rec {
@@ -29,16 +29,14 @@ stdenv.mkDerivation rec {
     libsForQt5.qttools
     libsForQt5.wrapQtAppsHook
   ];
+
   buildInputs = [
     libusb1
     libsForQt5.qtbase
     libsForQt5.qtwebsockets
   ];
 
-  doInstallCheck = true;
-
   preConfigure = "mkdir -p build && cd build";
-  qmakeFlags = [ "../Moolticute.pro" ];
 
   preInstall = ''
     mkdir -p $udev/lib/udev/rules.d
@@ -46,12 +44,17 @@ stdenv.mkDerivation rec {
         sed '1d;$d' > $udev/lib/udev/rules.d/50-mooltipass.rules
   '';
 
+  doInstallCheck = true;
+  qmakeFlags = [ "../Moolticute.pro" ];
+
   meta = {
     description = "GUI app and daemon to work with Mooltipass device via USB";
+
     longDescription = ''
       To install udev rules, add `services.udev.packages = [ pkgs.moolticute.udev ]`
       into `nixos/configuration.nix`.
     '';
+
     homepage = "https://github.com/mooltipass/moolticute";
     license = lib.licenses.gpl3Plus;
     maintainers = with lib.maintainers; [ hughobrien ];

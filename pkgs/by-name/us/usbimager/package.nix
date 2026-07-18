@@ -2,14 +2,14 @@
   lib,
   stdenv,
   fetchFromGitLab,
+  glib,
+  gtk3,
+  libx11,
   pkg-config,
+  udisks,
   wrapGAppsHook3,
   withLibui ? true,
-  gtk3,
   withUdisks ? stdenv.hostPlatform.isLinux,
-  udisks,
-  glib,
-  libx11,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -23,21 +23,7 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-HTFopc2xrhp0XYubQtOwMKWTQ+3JSKAyL4mMyQ82kAs=";
   };
 
-  sourceRoot = "${finalAttrs.src.name}/src";
-
-  nativeBuildInputs = [
-    pkg-config
-    wrapGAppsHook3
-  ];
-  buildInputs =
-    lib.optionals withUdisks [
-      udisks
-      glib
-    ]
-    ++ lib.optional (!withLibui) libx11
-    ++ lib.optional withLibui gtk3;
   # libui is bundled with the source of usbimager as a compiled static library
-
   postPatch = ''
     sed -i \
       -e 's|install -m 2755 -g disk|install |g' \
@@ -45,18 +31,32 @@ stdenv.mkDerivation (finalAttrs: {
       -e 's|install -m 2755 -g $(GRP)|install |g' Makefile
   '';
 
-  postInstall = ''
-    substituteInPlace $out/share/applications/usbimager.desktop \
-      --replace-fail "Exec=/usr/bin/usbimager" "Exec=usbimager"
-  '';
+  nativeBuildInputs = [
+    pkg-config
+    wrapGAppsHook3
+  ];
 
-  dontConfigure = true;
+  buildInputs =
+    lib.optionals withUdisks [
+      udisks
+      glib
+    ]
+    ++ lib.optional (!withLibui) libx11
+    ++ lib.optional withLibui gtk3;
 
   makeFlags = [
     "PREFIX=$(out)"
   ]
   ++ lib.optional withLibui "USE_LIBUI=yes"
   ++ lib.optional withUdisks "USE_UDISKS2=yes";
+
+  postInstall = ''
+    substituteInPlace $out/share/applications/usbimager.desktop \
+      --replace-fail "Exec=/usr/bin/usbimager" "Exec=usbimager"
+  '';
+
+  dontConfigure = true;
+  sourceRoot = "${finalAttrs.src.name}/src";
 
   meta = {
     description = "Very minimal GUI app that can write compressed disk images to USB drives";
@@ -66,8 +66,8 @@ stdenv.mkDerivation (finalAttrs: {
     # windows and darwin could work, but untested
     # feel free add them if you have a machine to test
     platforms = with lib.platforms; linux;
+    mainProgram = "usbimager";
     # never built on aarch64-linux since first introduction in nixpkgs
     broken = stdenv.hostPlatform.isLinux && stdenv.hostPlatform.isAarch64;
-    mainProgram = "usbimager";
   };
 })

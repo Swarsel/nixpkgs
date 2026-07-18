@@ -2,14 +2,14 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  zlib,
-  openssl,
   libiconv,
+  openssl,
+  zlib,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
-  version = "3.49.7";
   pname = "httrack";
+  version = "3.49.7";
 
   src = fetchFromGitHub {
     owner = "xroche";

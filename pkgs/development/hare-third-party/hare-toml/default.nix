@@ -1,11 +1,11 @@
 {
+  lib,
+  stdenv,
   fetchFromCodeberg,
   fetchpatch,
   hareHook,
-  lib,
   nix-update-script,
   scdoc,
-  stdenv,
 }:
 stdenv.mkDerivation (finalAttrs: {
   pname = "hare-toml";
@@ -24,20 +24,16 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   makeFlags = [ "PREFIX=${placeholder "out"}" ];
-
-  checkTarget = "check_local";
-
   doCheck = true;
-
+  checkTarget = "check_local";
   dontConfigure = true;
-
   passthru.updateScript = nix-update-script { };
 
   meta = {
+    inherit (hareHook.meta) platforms badPlatforms;
     description = "TOML implementation for Hare";
     homepage = "https://codeberg.org/lunacb/hare-toml";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ onemoresuza ];
-    inherit (hareHook.meta) platforms badPlatforms;
   };
 })

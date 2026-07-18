@@ -1,7 +1,7 @@
 {
   lib,
-  gccStdenv,
   fetchurl,
+  gccStdenv,
   gmp,
 }:
 
@@ -18,9 +18,9 @@ gccStdenv.mkDerivation rec {
 
   meta = {
     description = "C/C++ library for numbers, a part of GiNaC";
-    mainProgram = "pi";
     homepage = "https://www.ginac.de/CLN/";
     license = lib.licenses.gpl2;
     platforms = lib.platforms.unix; # Once had cygwin problems
+    mainProgram = "pi";
   };
 }

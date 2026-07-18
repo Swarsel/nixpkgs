@@ -1,10 +1,10 @@
 {
   lib,
   stdenv,
-  fetchgit,
-  python3,
   cmake,
+  fetchgit,
   jq,
+  python3,
 }:
 
 stdenv.mkDerivation {
@@ -15,6 +15,7 @@ stdenv.mkDerivation {
     url = "https://swiftshader.googlesource.com/SwiftShader";
     rev = "3d536c0fc62b1cdea0f78c3c38d79be559855b88";
     hash = "sha256-RLc9ZJeq/97mi4/5vRnPPOPBHK2lc9/6Y7p1YVwxWkc=";
+
     # Remove 1GB of test files to get under Hydra output limit
     postFetch = ''
       rm -r $out/third_party/llvm-project/llvm/test
@@ -64,9 +65,9 @@ stdenv.mkDerivation {
     description = "High-performance CPU-based implementation of the Vulkan 1.3 graphics API";
     homepage = "https://opensource.google/projects/swiftshader";
     license = lib.licenses.asl20;
+    maintainers = [ ];
     # Should be possible to support Darwin by changing the install phase with
     # 's/Linux/Darwin/' and 's/so/dylib/' or something similar.
     platforms = lib.platforms.linux;
-    maintainers = [ ];
   };
 }

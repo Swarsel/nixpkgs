@@ -1,8 +1,8 @@
 {
   lib,
+  stdenv,
   fetchFromGitHub,
   rustPlatform,
-  stdenv,
 }:
 
 let
@@ -31,8 +31,8 @@ rustPlatform.buildRustPackage {
   '';
 
   meta = {
-    homepage = "https://github.com/zbelial/lspce";
     description = "LSP Client for Emacs implemented as a module using Rust";
+    homepage = "https://github.com/zbelial/lspce";
     license = lib.licenses.gpl3Only;
     maintainers = [ ];
   };

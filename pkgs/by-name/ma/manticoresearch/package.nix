@@ -1,20 +1,20 @@
 {
+  lib,
+  stdenv,
+  fetchFromGitHub,
   bison,
   boost,
   callPackage,
   cmake,
   croaring,
-  fetchFromGitHub,
   flex,
   icu,
-  lib,
   libstemmer,
   manticoresearch,
   mariadb-connector-c,
   nlohmann_json,
   pkg-config,
   re2,
-  stdenv,
   testers,
 }:
 
@@ -23,13 +23,16 @@ let
   uni-algo = stdenv.mkDerivation (finalAttrs: {
     pname = "uni-algo";
     version = "0.7.2";
+
     src = fetchFromGitHub {
       owner = "manticoresoftware";
       repo = "uni-algo";
       rev = "v${finalAttrs.version}";
       hash = "sha256-+V9w4UJ+3KsyZUYht6OEzms60mBHd8FewVc7f21Z9ww=";
     };
+
     nativeBuildInputs = [ cmake ];
+
     meta = {
       description = "Unicode Algorithms Implementation for C/C++";
       homepage = "https://github.com/manticoresoftware/uni-algo";
@@ -49,7 +52,6 @@ let
     };
 
     patches = [ ./cctz-cmake-policy.patch ];
-
     nativeBuildInputs = [ cmake ];
     cmakeBuildDir = "build_dir"; # Avoid conflicts with the pre-existing `BUILD` file on case-insensitive FS
 
@@ -70,14 +72,18 @@ let
       rev = "72997b0070a031c063f86a308aec77ae742706d3";
       hash = "sha256-QAIxZeMiohm/BYyO0f70En6GOv7t3yLH2pJfkUek7Js=";
     };
+
     nativeBuildInputs = [ cmake ];
+
     meta = {
       description = "Extremely fast non-cryptographic hash algorithm";
       homepage = "https://github.com/manticoresoftware/xxhash";
+
       license = with lib.licenses; [
         bsd2
         gpl2
       ];
+
       platforms = lib.platforms.all;
     };
   };
@@ -92,6 +98,16 @@ stdenv.mkDerivation (finalAttrs: {
     tag = finalAttrs.version;
     hash = "sha256-ESiM2D11o1QnctDzL7WQ+usad7nvs0YSPOpZzSfYv4Y=";
   };
+
+  postPatch = ''
+    sed -i 's/set ( Boost_USE_STATIC_LIBS ON )/set ( Boost_USE_STATIC_LIBS OFF )/' src/CMakeLists.txt
+
+    # Skip jieba, it requires a bunch of additional dependencies
+    sed -i '/with_get ( jieba /d' CMakeLists.txt
+
+    # Fill in a version number for the VERNUMBERS macro
+    sed -i 's/0\.0\.0/${finalAttrs.version}/' src/sphinxversion.h.in
+  '';
 
   nativeBuildInputs = [
     bison
@@ -113,16 +129,6 @@ stdenv.mkDerivation (finalAttrs: {
     re2
     xxhash
   ];
-
-  postPatch = ''
-    sed -i 's/set ( Boost_USE_STATIC_LIBS ON )/set ( Boost_USE_STATIC_LIBS OFF )/' src/CMakeLists.txt
-
-    # Skip jieba, it requires a bunch of additional dependencies
-    sed -i '/with_get ( jieba /d' CMakeLists.txt
-
-    # Fill in a version number for the VERNUMBERS macro
-    sed -i 's/0\.0\.0/${finalAttrs.version}/' src/sphinxversion.h.in
-  '';
 
   cmakeFlags = [
     "-DWITH_GALERA=0"
@@ -154,8 +160,8 @@ stdenv.mkDerivation (finalAttrs: {
 
   passthru.tests.version = testers.testVersion {
     inherit (finalAttrs) version;
-    package = manticoresearch;
     command = "searchd --version";
+    package = manticoresearch;
   };
 
   meta = {
@@ -163,8 +169,8 @@ stdenv.mkDerivation (finalAttrs: {
     homepage = "https://manticoresearch.com";
     changelog = "https://github.com/manticoresoftware/manticoresearch/releases/tag/${finalAttrs.version}";
     license = lib.licenses.gpl3Plus;
-    mainProgram = "searchd";
     maintainers = [ lib.maintainers.jdelStrother ];
     platforms = lib.platforms.all;
+    mainProgram = "searchd";
   };
 })

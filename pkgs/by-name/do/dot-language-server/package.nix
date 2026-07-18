@@ -1,7 +1,7 @@
 {
   lib,
-  buildNpmPackage,
   fetchFromGitHub,
+  buildNpmPackage,
 }:
 
 buildNpmPackage rec {
@@ -16,14 +16,13 @@ buildNpmPackage rec {
   };
 
   npmDepsHash = "sha256-spskj0vqfR9GoQeKyfLsQgRp6JasZeVLCVBt6wZiSP8=";
-
   npmBuildScript = "compile";
 
   meta = {
     description = "Language server for the DOT language";
-    mainProgram = "dot-language-server";
     homepage = "https://github.com/nikeee/dot-language-server";
     license = lib.licenses.mit;
     maintainers = [ ];
+    mainProgram = "dot-language-server";
   };
 }

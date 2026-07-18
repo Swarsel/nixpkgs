@@ -1,24 +1,19 @@
 {
   stdenv,
   fetchYarnDeps,
-  yarnConfigHook,
-  yarnBuildHook,
+  meta,
   nodejs,
   src,
   version,
-  meta,
+  yarnBuildHook,
+  yarnConfigHook,
 }:
 
 stdenv.mkDerivation {
-  pname = "listmonk-email-builder";
   inherit version;
-
+  inherit meta;
+  pname = "listmonk-email-builder";
   src = "${src}/frontend/email-builder";
-
-  offlineCache = fetchYarnDeps {
-    yarnLock = "${src}/frontend/email-builder/yarn.lock";
-    hash = "sha256-ANPLOL9j0gljtNtbfb+ZifVRN9vLexPddAevpeFwX4o=";
-  };
 
   nativeBuildInputs = [
     yarnConfigHook
@@ -33,5 +28,8 @@ stdenv.mkDerivation {
     runHook postInstall
   '';
 
-  inherit meta;
+  offlineCache = fetchYarnDeps {
+    hash = "sha256-ANPLOL9j0gljtNtbfb+ZifVRN9vLexPddAevpeFwX4o=";
+    yarnLock = "${src}/frontend/email-builder/yarn.lock";
+  };
 }

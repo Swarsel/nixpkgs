@@ -1,7 +1,7 @@
 {
   lib,
-  buildNpmPackage,
   fetchFromGitHub,
+  buildNpmPackage,
   nix-update-script,
 }:
 
@@ -17,14 +17,13 @@ buildNpmPackage rec {
   };
 
   npmDepsHash = "sha256-Vv3rJBDRSwWnbYFO01M0rLJM3b2gP0z8wAi9T2nRwxQ=";
-
   passthru.updateScript = nix-update-script { };
 
   meta = {
     description = "List of all the public package names on npm";
     homepage = "https://github.com/nice-registry/all-the-package-names";
     license = lib.licenses.mit;
-    mainProgram = "all-the-package-names";
     maintainers = with lib.maintainers; [ donovanglover ];
+    mainProgram = "all-the-package-names";
   };
 }

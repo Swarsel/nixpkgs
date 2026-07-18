@@ -1,28 +1,21 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # build-system
-  hatchling,
-
   # dependencies
   asgiref,
+  buildPythonPackage,
   django,
-  strawberry-graphql,
-
+  django-choices-field,
   # optional-dependencies
   django-debug-toolbar,
-  django-choices-field,
-
-  # check inputs
-  pytestCheckHook,
   django-guardian,
   django-model-utils,
   django-mptt,
   django-polymorphic,
   django-tree-queries,
   factory-boy,
+  # build-system
+  hatchling,
   pillow,
   psycopg2,
   pytest-asyncio,
@@ -30,12 +23,14 @@
   pytest-django,
   pytest-mock,
   pytest-snapshot,
+  # check inputs
+  pytestCheckHook,
+  strawberry-graphql,
 }:
 
 buildPythonPackage rec {
   pname = "strawberry-django";
   version = "0.86.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "strawberry-graphql";
@@ -48,21 +43,6 @@ buildPythonPackage rec {
     # django.core.exceptions.ImproperlyConfigured: You're using the staticfiles app without having set the required STATIC_URL setting.
     echo 'STATIC_URL = "static/"' >> tests/django_settings.py
   '';
-
-  build-system = [
-    hatchling
-  ];
-
-  dependencies = [
-    django
-    asgiref
-    strawberry-graphql
-  ];
-
-  optional-dependencies = {
-    debug-toolbar = [ django-debug-toolbar ];
-    enum = [ django-choices-field ];
-  };
 
   nativeCheckInputs = [
     pytestCheckHook
@@ -84,6 +64,22 @@ buildPythonPackage rec {
   ++ optional-dependencies.debug-toolbar
   ++ optional-dependencies.enum;
 
+  build-system = [
+    hatchling
+  ];
+
+  dependencies = [
+    django
+    asgiref
+    strawberry-graphql
+  ];
+
+  optional-dependencies = {
+    debug-toolbar = [ django-debug-toolbar ];
+    enum = [ django-choices-field ];
+  };
+
+  pyproject = true;
   pythonImportsCheck = [ "strawberry_django" ];
 
   meta = {

@@ -1,35 +1,35 @@
 {
-  stdenv,
   lib,
+  stdenv,
+  buildPackages,
   cmake,
+  cudaSupport,
+  filecheck,
+  gtest,
+  hdrhistogram_c,
+  hwloc,
+  intel-compute-runtime,
+  intel-llvm-src,
+  level-zero,
+  levelZeroSupport,
+  libbacktrace,
+  lit,
+  nativeCpuSupport,
   ninja,
+  ocl-icd,
+  opencl-headers,
+  openclSupport,
+  pkg-config,
+  python3,
+  rocmSupport,
+  symlinkJoin,
   unified-memory-framework,
   zlib,
-  libbacktrace,
-  hwloc,
-  python3,
-  symlinkJoin,
-  level-zero,
-  intel-compute-runtime,
-  opencl-headers,
-  ocl-icd,
-  hdrhistogram_c,
-  gtest,
-  pkg-config,
-  lit,
-  filecheck,
-  buildPackages,
-  rocmPackages ? { },
+  cudaPackages ? { },
   rocmGpuTargets ? lib.optionalString (rocmPackages ? clr.gpuTargets) (
     builtins.concatStringsSep ";" rocmPackages.clr.gpuTargets
   ),
-  cudaPackages ? { },
-  intel-llvm-src,
-  levelZeroSupport,
-  openclSupport,
-  cudaSupport,
-  rocmSupport,
-  nativeCpuSupport,
+  rocmPackages ? { },
 }:
 let
   rocmtoolkit_joined = symlinkJoin {
@@ -48,6 +48,7 @@ let
   # need to pull in hsakmt and comgr at runtime, only build time.
   rocmPath = symlinkJoin {
     name = "rocm-path";
+
     paths = with rocmPackages; [
       clr
       rocm-device-libs
@@ -68,13 +69,33 @@ let
   };
 in
 stdenv.mkDerivation (finalAttrs: {
-  name = "unified-runtime";
   version = "0.12.0";
-
   src = intel-llvm-src;
-  sourceRoot = "source/unified-runtime";
 
-  doCheck = true;
+  postPatch = ''
+    # `NO_CMAKE_PACKAGE_REGISTRY` prevents it from finding OpenCL, so we unset it
+    # Note that this cmake file is imported in various places, not just unified-runtime
+    # See also: https://github.com/intel/llvm/issues/19635#issuecomment-3247008981
+    substituteInPlace cmake/FetchOpenCL.cmake \
+        --replace-fail "NO_CMAKE_PACKAGE_REGISTRY" ""
+  ''
+  + lib.optionalString finalAttrs.doCheck ''
+    # These tests don't run without setting UR_DPCXX,
+    # however they aren't properly excluded, causing lit to fail.
+    rm test/adapters/hip/lit.cfg.py
+    rm test/adapters/cuda/lit.cfg.py
+
+    # Exclude tests that don't play well with the sandbox
+    cat >> test/lit.cfg.py <<'EOF'
+    # Conformance tests need to have an adapter to run on.
+    # Within the sandbox, the only possible option is the CPU adapter.
+    # If we don't have that, much of the conformance suite will fail, so we exclude it entirely.
+    ${lib.optionalString (!nativeCpuSupport) "config.excludes.add('conformance')"}
+
+    config.excludes.add('asan.cpp')
+    config.excludes.add('loader_lifetime.test')
+    EOF
+  '';
 
   nativeBuildInputs = [
     cmake
@@ -104,41 +125,6 @@ stdenv.mkDerivation (finalAttrs: {
     level-zero
     intel-compute-runtime
   ];
-
-  nativeCheckInputs = [
-    gtest
-    lit
-    filecheck
-  ];
-
-  postPatch = ''
-    # `NO_CMAKE_PACKAGE_REGISTRY` prevents it from finding OpenCL, so we unset it
-    # Note that this cmake file is imported in various places, not just unified-runtime
-    # See also: https://github.com/intel/llvm/issues/19635#issuecomment-3247008981
-    substituteInPlace cmake/FetchOpenCL.cmake \
-        --replace-fail "NO_CMAKE_PACKAGE_REGISTRY" ""
-  ''
-  + lib.optionalString finalAttrs.doCheck ''
-    # These tests don't run without setting UR_DPCXX,
-    # however they aren't properly excluded, causing lit to fail.
-    rm test/adapters/hip/lit.cfg.py
-    rm test/adapters/cuda/lit.cfg.py
-
-    # Exclude tests that don't play well with the sandbox
-    cat >> test/lit.cfg.py <<'EOF'
-    # Conformance tests need to have an adapter to run on.
-    # Within the sandbox, the only possible option is the CPU adapter.
-    # If we don't have that, much of the conformance suite will fail, so we exclude it entirely.
-    ${lib.optionalString (!nativeCpuSupport) "config.excludes.add('conformance')"}
-
-    config.excludes.add('asan.cpp')
-    config.excludes.add('loader_lifetime.test')
-    EOF
-  '';
-
-  preCheck = lib.optionalString levelZeroSupport ''
-    export LD_LIBRARY_PATH="${intel-compute-runtime.drivers}/lib''${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}"
-  '';
 
   cmakeFlags = [
     (lib.cmakeBool "FETCHCONTENT_FULLY_DISCONNECTED" true)
@@ -171,9 +157,20 @@ stdenv.mkDerivation (finalAttrs: {
     (lib.cmakeFeature "CUDA_cupti_LIBRARY" "${cudatoolkit_joined}/lib/libcupti.so")
   ];
 
-  passthru.setupVars =
-    lib.optionalAttrs rocmSupport { ROCM_PATH = rocmPath; }
-    // lib.optionalAttrs cudaSupport { CUDA_PATH = cudatoolkit_joined; };
+  doCheck = true;
+
+  nativeCheckInputs = [
+    gtest
+    lit
+    filecheck
+  ];
+
+  preCheck = lib.optionalString levelZeroSupport ''
+    export LD_LIBRARY_PATH="${intel-compute-runtime.drivers}/lib''${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}"
+  '';
+
+  name = "unified-runtime";
+  sourceRoot = "source/unified-runtime";
 
   passthru.backends =
     lib.optionals levelZeroSupport [
@@ -185,17 +182,25 @@ stdenv.mkDerivation (finalAttrs: {
     ++ lib.optional nativeCpuSupport "native_cpu"
     ++ lib.optional openclSupport "opencl";
 
+  passthru.setupVars =
+    lib.optionalAttrs rocmSupport { ROCM_PATH = rocmPath; }
+    // lib.optionalAttrs cudaSupport { CUDA_PATH = cudatoolkit_joined; };
+
   meta = {
     description = "Intel LLVM-based compiler with SYCL support";
+
     longDescription = ''
       Intel's LLVM-based compiler toolchain with Data Parallel C++ (DPC++)
       and SYCL support for heterogeneous computing across CPUs, GPUs, and FPGAs.
     '';
+
     homepage = "https://github.com/intel/llvm";
+
     license = with lib.licenses; [
       asl20
       llvm-exception
     ];
+
     maintainers = with lib.maintainers; [ blenderfreaky ];
     platforms = [ "x86_64-linux" ];
   };

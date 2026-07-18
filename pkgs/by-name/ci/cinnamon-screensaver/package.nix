@@ -2,31 +2,31 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  pkg-config,
-  meson,
-  ninja,
-  glib,
+  cairo,
+  caribou,
+  cinnamon,
+  cinnamon-desktop,
   dbus,
   gettext,
-  cinnamon-desktop,
-  cinnamon,
-  intltool,
-  libxslt,
-  gtk3,
-  libgnomekbd,
-  caribou,
-  libtool,
-  wrapGAppsHook3,
+  glib,
   gobject-introspection,
-  python3,
-  pam,
-  cairo,
-  xdotool,
-  libxrandr,
-  libxinerama,
-  libxext,
-  libx11,
+  gtk3,
+  intltool,
   iso-flags-png-320x240,
+  libgnomekbd,
+  libtool,
+  libx11,
+  libxext,
+  libxinerama,
+  libxrandr,
+  libxslt,
+  meson,
+  ninja,
+  pam,
+  pkg-config,
+  python3,
+  wrapGAppsHook3,
+  xdotool,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -45,6 +45,14 @@ stdenv.mkDerivation (finalAttrs: {
     # https://github.com/linuxmint/cinnamon-screensaver/pull/456#discussion_r1702738776.
     ./preserve-existing-gi-typelib-path.patch
   ];
+
+  postPatch = ''
+    # cscreensaver hardcodes absolute paths everywhere. Nuke from orbit.
+    find . -type f -exec sed -i \
+      -e s,/usr/share/locale,/run/current-system/sw/share/locale,g \
+      -e s,/usr/share/iso-flag-png,${iso-flags-png-320x240}/share/iso-flags-png,g \
+      {} +
+  '';
 
   nativeBuildInputs = [
     pkg-config
@@ -86,14 +94,6 @@ stdenv.mkDerivation (finalAttrs: {
     caribou
   ];
 
-  postPatch = ''
-    # cscreensaver hardcodes absolute paths everywhere. Nuke from orbit.
-    find . -type f -exec sed -i \
-      -e s,/usr/share/locale,/run/current-system/sw/share/locale,g \
-      -e s,/usr/share/iso-flag-png,${iso-flags-png-320x240}/share/iso-flags-png,g \
-      {} +
-  '';
-
   preFixup = ''
     # https://github.com/NixOS/nixpkgs/issues/101881
     gappsWrapperArgs+=(
@@ -107,12 +107,14 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   meta = {
-    homepage = "https://github.com/linuxmint/cinnamon-screensaver";
     description = "Cinnamon screen locker and screensaver program";
+    homepage = "https://github.com/linuxmint/cinnamon-screensaver";
+
     license = [
       lib.licenses.gpl2
       lib.licenses.lgpl2
     ];
+
     platforms = lib.platforms.linux;
     teams = [ lib.teams.cinnamon ];
   };

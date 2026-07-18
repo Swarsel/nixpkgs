@@ -2,11 +2,11 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  yarn-berry_4,
-  nodejs,
-  nodejs_22,
   makeBinaryWrapper,
   nix-update-script,
+  nodejs,
+  nodejs_22,
+  yarn-berry_4,
 }:
 
 let
@@ -29,11 +29,6 @@ stdenv.mkDerivation (finalAttrs: {
     # https://github.com/KaTeX/KaTeX/blob/main/package.json#L58
     ./yarn-4.14-support.patch
   ];
-
-  offlineCache = yarn-berry.fetchYarnBerryDeps {
-    inherit (finalAttrs) src patches;
-    hash = "sha256-6DxF+TtUOqW14ivBHETUMXzDspP/54k1OzbKeIJqDAQ=";
-  };
 
   nativeBuildInputs = [
     yarn-berry.yarnBerryConfigHook
@@ -65,12 +60,17 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  offlineCache = yarn-berry.fetchYarnBerryDeps {
+    inherit (finalAttrs) src patches;
+    hash = "sha256-6DxF+TtUOqW14ivBHETUMXzDspP/54k1OzbKeIJqDAQ=";
+  };
+
   passthru.updateScript = nix-update-script { };
 
   meta = {
-    changelog = "https://github.com/KaTeX/KaTeX/releases/tag/v${finalAttrs.version}";
     description = "Render TeX to HTML";
     homepage = "https://katex.org/";
+    changelog = "https://github.com/KaTeX/KaTeX/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.mit;
     maintainers = [ lib.maintainers.pyrox0 ];
     mainProgram = "katex";

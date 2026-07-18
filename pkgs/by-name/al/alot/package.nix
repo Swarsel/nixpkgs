@@ -1,26 +1,18 @@
 {
   lib,
+  fetchFromGitHub,
+  gawk,
+  gnupg,
+  notmuch,
+  procps,
   python3,
   python3Packages,
-  fetchFromGitHub,
-  gnupg,
-  gawk,
-  procps,
-  notmuch,
   withManpage ? false,
 }:
 
 python3Packages.buildPythonApplication (finalAttrs: {
   pname = "alot";
   version = "0.11";
-  pyproject = true;
-
-  outputs = [
-    "out"
-  ]
-  ++ lib.optionals withManpage [
-    "man"
-  ];
 
   src = fetchFromGitHub {
     owner = "pazz";
@@ -29,28 +21,20 @@ python3Packages.buildPythonApplication (finalAttrs: {
     hash = "sha256-mXaRzl7260uxio/BQ36BCBxgKhl1r0Rc6PwFZA8qNqc=";
   };
 
+  outputs = [
+    "out"
+  ]
+  ++ lib.optionals withManpage [
+    "man"
+  ];
+
   postPatch = ''
     substituteInPlace alot/settings/manager.py \
       --replace-fail /usr/share "$out/share"
   '';
 
-  build-system =
-    with python3Packages;
-    [
-      setuptools
-      setuptools-scm
-    ]
-    ++ lib.optional withManpage sphinx;
-
-  dependencies = with python3Packages; [
-    configobj
-    gpg
-    notmuch2
-    python-magic
-    standard-mailcap
-    twisted
-    urwid
-    urwidtrees
+  postBuild = lib.optionalString withManpage [
+    "make -C docs man"
   ];
 
   nativeCheckInputs = [
@@ -63,18 +47,6 @@ python3Packages.buildPythonApplication (finalAttrs: {
     pytestCheckHook
     mock
   ]);
-
-  postBuild = lib.optionalString withManpage [
-    "make -C docs man"
-  ];
-
-  disabledTests = [
-    # Some twisted tests need internet access
-    "test_env_set"
-    "test_no_spawn_no_stdin_attached"
-    # DatabaseLockedError
-    "test_save_named_query"
-  ];
 
   postInstall =
     let
@@ -95,13 +67,42 @@ python3Packages.buildPythonApplication (finalAttrs: {
       sed "s,/usr/bin,$out/bin,g" extra/alot.desktop > $out/share/applications/alot.desktop
     '';
 
+  build-system =
+    with python3Packages;
+    [
+      setuptools
+      setuptools-scm
+    ]
+    ++ lib.optional withManpage sphinx;
+
+  dependencies = with python3Packages; [
+    configobj
+    gpg
+    notmuch2
+    python-magic
+    standard-mailcap
+    twisted
+    urwid
+    urwidtrees
+  ];
+
+  disabledTests = [
+    # Some twisted tests need internet access
+    "test_env_set"
+    "test_no_spawn_no_stdin_attached"
+    # DatabaseLockedError
+    "test_save_named_query"
+  ];
+
+  pyproject = true;
+
   meta = {
-    homepage = "https://github.com/pazz/alot";
     description = "Terminal MUA using notmuch mail";
+    homepage = "https://github.com/pazz/alot";
     changelog = "https://github.com/pazz/alot/releases/tag/${finalAttrs.src.tag}";
-    mainProgram = "alot";
     license = lib.licenses.gpl3Plus;
-    platforms = lib.platforms.linux;
     maintainers = with lib.maintainers; [ milibopp ];
+    platforms = lib.platforms.linux;
+    mainProgram = "alot";
   };
 })

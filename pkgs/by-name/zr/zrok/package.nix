@@ -1,11 +1,11 @@
 {
   lib,
   stdenv,
-  fetchzip,
-  writeShellScript,
-  nix-update,
-  jq,
   common-updater-scripts,
+  fetchzip,
+  jq,
+  nix-update,
+  writeShellScript,
 }:
 
 let
@@ -14,19 +14,19 @@ let
 
   plat =
     {
-      x86_64-linux = "linux_amd64";
+      aarch64-darwin = "darwin_arm64";
       aarch64-linux = "linux_arm64";
       armv7l-linux = "linux_armv7";
-      aarch64-darwin = "darwin_arm64";
+      x86_64-linux = "linux_amd64";
     }
     .${system} or throwSystem;
 
   hash =
     {
-      x86_64-linux = "sha256-H/KISDC58ILi6oZlLY2HdgJR9ksEt+VeJem4VIFhqcY=";
+      aarch64-darwin = "sha256-c5vWvb8ZhGAnmlZB/kqErC6SEXClg6vNbJheAAmqV/E=";
       aarch64-linux = "sha256-kfmMi2HeZG81CocOEK+n+UwfKz245Ya4C6iXT2L85pI=";
       armv7l-linux = "sha256-AZDoQOJMBB1k9r07URj5g8249Od5P039nf3BadzCbPY=";
-      aarch64-darwin = "sha256-c5vWvb8ZhGAnmlZB/kqErC6SEXClg6vNbJheAAmqV/E=";
+      x86_64-linux = "sha256-H/KISDC58ILi6oZlLY2HdgJR9ksEt+VeJem4VIFhqcY=";
     }
     .${system} or throwSystem;
 in
@@ -35,9 +35,9 @@ stdenv.mkDerivation (finalAttrs: {
   version = "2.0.1";
 
   src = fetchzip {
+    inherit hash;
     url = "https://github.com/openziti/zrok/releases/download/v${finalAttrs.version}/zrok_${finalAttrs.version}_${plat}.tar.gz";
     stripRoot = false;
-    inherit hash;
   };
 
   installPhase = ''
@@ -68,14 +68,16 @@ stdenv.mkDerivation (finalAttrs: {
     description = "Geo-scale, next-generation sharing platform built on top of OpenZiti";
     homepage = "https://zrok.io";
     license = lib.licenses.asl20;
-    mainProgram = "zrok";
+    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
     maintainers = [ lib.maintainers.bandresen ];
+
     platforms = [
       "x86_64-linux"
       "aarch64-linux"
       "armv7l-linux"
       "aarch64-darwin"
     ];
-    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
+
+    mainProgram = "zrok";
   };
 })

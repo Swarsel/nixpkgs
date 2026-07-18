@@ -3,9 +3,9 @@
   stdenv,
   fetchFromGitHub,
   autoreconfHook,
-  pkg-config,
-  mpi,
   lwgrp,
+  mpi,
+  pkg-config,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -28,17 +28,16 @@ stdenv.mkDerivation (finalAttrs: {
     autoreconfHook
     pkg-config
   ];
+
   buildInputs = [ lwgrp ];
-
-  configureFlags = [ "--with-lwgrp=${lib.getDev lwgrp}" ];
-
   propagatedBuildInputs = [ mpi ];
+  configureFlags = [ "--with-lwgrp=${lib.getDev lwgrp}" ];
 
   meta = {
     description = "MPI datatype comparison library";
     homepage = "https://github.com/LLNL/dtcmp";
-    platforms = lib.platforms.linux;
     license = lib.licenses.bsd3;
     maintainers = [ lib.maintainers.markuskowa ];
+    platforms = lib.platforms.linux;
   };
 })

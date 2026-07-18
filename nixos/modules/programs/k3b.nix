@@ -1,15 +1,15 @@
 {
   config,
-  pkgs,
   lib,
+  pkgs,
   ...
 }:
 
 {
   options.programs.k3b = {
     enable = lib.mkOption {
-      type = lib.types.bool;
       default = false;
+
       description = ''
         Whether to enable k3b, the KDE disk burning application.
 
@@ -20,6 +20,8 @@
         `cdrecord` to correspond to the appropriate paths under
         `/run/wrappers/bin` in the "Setup External Programs" menu.
       '';
+
+      type = lib.types.bool;
     };
   };
 
@@ -34,17 +36,18 @@
 
     security.wrappers = {
       cdrdao = {
-        setuid = true;
-        owner = "root";
         group = "cdrom";
+        owner = "root";
         permissions = "u+wrx,g+x";
+        setuid = true;
         source = "${pkgs.cdrdao}/bin/cdrdao";
       };
+
       cdrecord = {
-        setuid = true;
-        owner = "root";
         group = "cdrom";
+        owner = "root";
         permissions = "u+wrx,g+x";
+        setuid = true;
         source = "${pkgs.cdrtools}/bin/cdrecord";
       };
     };

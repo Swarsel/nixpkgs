@@ -1,30 +1,30 @@
 {
   lib,
-  python3Packages,
   fetchFromGitHub,
-  wrapGAppsHook3,
-  gettext,
-  gtk3,
-  glib,
-  dbus,
-  gobject-introspection,
-  xmodmap,
-  procps,
-  gtksourceview4,
   bash,
+  dbus,
+  gettext,
+  glib,
+  gobject-introspection,
+  gtk3,
+  gtksourceview4,
+  nixosTests,
+  procps,
+  python3Packages,
   udevCheckHook,
   versionCheckHook,
-  nixosTests,
+  wrapGAppsHook3,
+  xmodmap,
   # Change the default log level to debug for easier debugging of package issues
   withDebugLogLevel ? false,
-  # Xmodmap is an optional dependency
-  # If you use Xmodmap to set keyboard mappings (or your DE does)
-  # it is required to correctly map keys
-  withXmodmap ? true,
   # Some tests are flakey under high CPU load and could cause intermittent
   # failures when building. Override this to true to run tests anyway
   # See upstream issue: https://github.com/sezanzeb/input-remapper/issues/306
   withDoCheck ? false,
+  # Xmodmap is an optional dependency
+  # If you use Xmodmap to set keyboard mappings (or your DE does)
+  # it is required to correctly map keys
+  withXmodmap ? true,
 }:
 
 let
@@ -33,7 +33,6 @@ in
 (python3Packages.buildPythonApplication rec {
   pname = "input-remapper";
   version = "2.2.0";
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "sezanzeb";
@@ -63,30 +62,12 @@ in
   ]
   ++ maybeXmodmap;
 
-  dependencies = with python3Packages; [
-    setuptools # needs pkg_resources
-    pygobject3
-    evdev
-    pkgconfig
-    pydantic
-    pydbus
-    gtksourceview4
-    psutil
-  ];
-
   # buildPythonApplication maps nativeCheckInputs to nativeInstallCheckInputs.
   nativeCheckInputs = [
     udevCheckHook
     versionCheckHook
   ]
   ++ lib.optionals withDoCheck [ python3Packages.psutil ];
-
-  versionCheckProgram = "${placeholder "out"}/bin/input-remapper-control";
-
-  pythonImportsCheck = [
-    "evdev"
-    "inputremapper"
-  ];
 
   postInstall = ''
     substituteInPlace data/99-input-remapper.rules \
@@ -108,6 +89,39 @@ in
     # Only install input-remapper prefixed binaries, we don't care about deprecated key-mapper ones
     install -m755 -D -t $out/bin/ bin/input-remapper*
   '';
+
+  installCheckPhase = ''
+    runHook preInstallCheck
+    eval "$upstreamCheck"
+    runHook postInstallCheck
+  '';
+
+  preFixup = ''
+    makeWrapperArgs+=(
+      "''${gappsWrapperArgs[@]}"
+      --prefix PATH : "${lib.makeBinPath maybeXmodmap}"
+    )
+  '';
+
+  dependencies = with python3Packages; [
+    setuptools # needs pkg_resources
+    pygobject3
+    evdev
+    pkgconfig
+    pydantic
+    pydbus
+    gtksourceview4
+    psutil
+  ];
+
+  # Nixpkgs 15.9.4.3. When using wrapGAppsHook3 with special derivers you can end up with double wrapped binaries.
+  dontWrapGApps = true;
+  format = "setuptools";
+
+  pythonImportsCheck = [
+    "evdev"
+    "inputremapper"
+  ];
 
   # Custom test script, can't use plain pytest / pytestCheckHook
   # We only run tests in the unit folder, integration tests require UI
@@ -143,30 +157,15 @@ in
       python tests/test.py --start-dir unit
   '';
 
-  installCheckPhase = ''
-    runHook preInstallCheck
-    eval "$upstreamCheck"
-    runHook postInstallCheck
-  '';
-
-  # Nixpkgs 15.9.4.3. When using wrapGAppsHook3 with special derivers you can end up with double wrapped binaries.
-  dontWrapGApps = true;
-
-  preFixup = ''
-    makeWrapperArgs+=(
-      "''${gappsWrapperArgs[@]}"
-      --prefix PATH : "${lib.makeBinPath maybeXmodmap}"
-    )
-  '';
-
+  versionCheckProgram = "${placeholder "out"}/bin/input-remapper-control";
   passthru.tests = nixosTests.input-remapper;
 
   meta = {
     description = "Easy to use tool to change the mapping of your input device buttons";
     homepage = "https://github.com/sezanzeb/input-remapper";
     license = lib.licenses.gpl3Plus;
-    platforms = lib.platforms.linux;
     maintainers = with lib.maintainers; [ LunNova ];
+    platforms = lib.platforms.linux;
     mainProgram = "input-remapper-gtk";
   };
 }).overrideAttrs

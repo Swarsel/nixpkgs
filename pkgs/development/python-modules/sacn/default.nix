@@ -7,7 +7,6 @@
 buildPythonPackage rec {
   pname = "sacn";
   version = "1.11.0";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
@@ -16,7 +15,7 @@ buildPythonPackage rec {
 
   # no tests
   doCheck = false;
-
+  format = "setuptools";
   pythonImportsCheck = [ "sacn" ];
 
   meta = {

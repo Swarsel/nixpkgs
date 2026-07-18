@@ -1,11 +1,11 @@
 {
-  rustPlatform,
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
   dbus,
-  pkg-config,
   installShellFiles,
+  pkg-config,
+  rustPlatform,
 }:
 rustPlatform.buildRustPackage (finalAttrs: {
   pname = "iio-niri";
@@ -18,8 +18,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-6kIHZuHZYDsjY0q8V99jdDkNHwNtvrq77sxGI5SLzSs=";
   };
 
-  cargoHash = "sha256-gXqAUvZ0FjU7SrCmw0CpNtELPwmI0fFpJpe3wrBuqsY=";
-
   nativeBuildInputs = [
     pkg-config
     installShellFiles
@@ -28,6 +26,8 @@ rustPlatform.buildRustPackage (finalAttrs: {
   buildInputs = [
     dbus
   ];
+
+  cargoHash = "sha256-gXqAUvZ0FjU7SrCmw0CpNtELPwmI0fFpJpe3wrBuqsY=";
 
   postInstall = lib.optionalString (stdenv.buildPlatform.canExecute stdenv.hostPlatform) ''
     installShellCompletion --cmd iio-niri \
@@ -41,7 +41,7 @@ rustPlatform.buildRustPackage (finalAttrs: {
     homepage = "https://github.com/Zhaith-Izaliel/iio-niri";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ zhaithizaliel ];
-    mainProgram = "iio-niri";
     platforms = lib.platforms.linux;
+    mainProgram = "iio-niri";
   };
 })

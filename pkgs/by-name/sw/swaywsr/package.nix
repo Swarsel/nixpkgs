@@ -1,9 +1,9 @@
 {
   lib,
   fetchFromGitHub,
-  rustPlatform,
   libxcb,
   python3,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage {
@@ -17,24 +17,24 @@ rustPlatform.buildRustPackage {
     hash = "sha256-6hGEcJz+zGfwz1q+XKQYfyJJK7lr+kCgk2/uiq1xP0M=";
   };
 
-  cargoHash = "sha256-u+aMwj+IxFY+fSAECkKr8dSPVw2q+FXZpgwwexu7BFU=";
-
   nativeBuildInputs = [ python3 ];
   buildInputs = [ libxcb ];
-
+  cargoHash = "sha256-u+aMwj+IxFY+fSAECkKr8dSPVw2q+FXZpgwwexu7BFU=";
   # has not tests
   doCheck = false;
 
   meta = {
     description = "Automatically change sway workspace names based on their contents";
-    mainProgram = "swaywsr";
+
     longDescription = ''
       Automatically sets the workspace names to match the windows on the workspace.
       The chosen name for a workspace is a composite of the app_id or WM_CLASS X11
       window property for each window in a workspace.
     '';
+
     homepage = "https://github.com/pedroscaff/swaywsr";
     license = lib.licenses.mit;
     maintainers = [ lib.maintainers.sebbadk ];
+    mainProgram = "swaywsr";
   };
 }

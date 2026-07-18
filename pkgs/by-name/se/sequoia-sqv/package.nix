@@ -1,11 +1,11 @@
 {
   lib,
   fetchFromGitLab,
+  installShellFiles,
   nettle,
   nix-update-script,
-  rustPlatform,
   pkg-config,
-  installShellFiles,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -19,8 +19,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-z8ZZf5+I8YXR6ugP3EF3zynBicQYKoDfCwWmFfrC8FA=";
   };
 
-  cargoHash = "sha256-fsD5LcJ5JTtZbajjU1yaxUGQ+tJk6tyChSmDtJ6k9Bk=";
-
   nativeBuildInputs = [
     pkg-config
     rustPlatform.bindgenHook
@@ -30,6 +28,10 @@ rustPlatform.buildRustPackage (finalAttrs: {
   buildInputs = [
     nettle
   ];
+
+  cargoHash = "sha256-fsD5LcJ5JTtZbajjU1yaxUGQ+tJk6tyChSmDtJ6k9Bk=";
+  doCheck = true;
+
   # Install shell completion files and manual pages. Unfortunately it is hard to
   # predict the paths to all of these files generated during the build, and it
   # is impossible to control these using `$OUT_DIR` or alike, as implied by
@@ -43,8 +45,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
       --bash target/*/release/build/*/out/shell-completions/sqv.bash \
       --fish target/*/release/build/*/out/shell-completions/sqv.fish
   '';
-
-  doCheck = true;
 
   passthru.updateScript = nix-update-script { };
 

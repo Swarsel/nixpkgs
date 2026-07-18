@@ -1,7 +1,7 @@
 {
   lib,
-  buildNpmPackage,
   fetchFromGitHub,
+  buildNpmPackage,
   elmPackages,
 }:
 
@@ -16,15 +16,11 @@ buildNpmPackage (finalAttrs: {
     hash = "sha256-J58NTSMo2uxpWFnPX+AGHVAqQOiRfgBxYzis/PZp1MA=";
   };
 
-  npmDepsHash = "sha256-LZynUf2M+g31mia41jw7vmGNugUUUAX/TehDxQ7j+YY=";
-
   nativeBuildInputs = [
     elmPackages.elm
   ];
 
-  npmFlags = [ "--ignore-scripts" ];
-
-  npmBuildScript = "elm";
+  npmDepsHash = "sha256-LZynUf2M+g31mia41jw7vmGNugUUUAX/TehDxQ7j+YY=";
 
   postConfigure =
     (elmPackages.fetchElmDeps {
@@ -36,6 +32,8 @@ buildNpmPackage (finalAttrs: {
       ln -sf ${lib.getExe elmPackages.elm} node_modules/.bin/elm
     '';
 
+  npmBuildScript = "elm";
+  npmFlags = [ "--ignore-scripts" ];
   passthru.updateScript = ./update.sh;
 
   meta = {

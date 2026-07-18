@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   flit-core,
   pytestCheckHook,
 }:
@@ -9,7 +9,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "ebcdic";
   version = "2.0.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "roskakori";
@@ -18,11 +17,8 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-71EMWUGoJrsc3EOVHeV4xqSJRKoA7Sz2dvmZJ1sjQCg=";
   };
 
-  sourceRoot = "${finalAttrs.src.name}/${finalAttrs.pname}";
-
-  build-system = [ flit-core ];
-
   nativeCheckInputs = [ pytestCheckHook ];
+  build-system = [ flit-core ];
 
   disabledTests = [
     # https://github.com/roskakori/CodecMapper/issues/18
@@ -32,7 +28,9 @@ buildPythonPackage (finalAttrs: {
     "test_has_ignored_codec_names"
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "ebcdic" ];
+  sourceRoot = "${finalAttrs.src.name}/${finalAttrs.pname}";
 
   meta = {
     description = "Additional EBCDIC codecs";

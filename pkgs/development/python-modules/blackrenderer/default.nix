@@ -1,20 +1,19 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
+  fonttools,
+  pillow,
+  pycairo,
   pytestCheckHook,
   setuptools,
   setuptools-scm,
-  fonttools,
   uharfbuzz,
-  pycairo,
-  pillow,
 }:
 
 buildPythonPackage rec {
   pname = "blackrenderer";
   version = "0.6.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "BlackFoundryCom";
@@ -22,6 +21,11 @@ buildPythonPackage rec {
     tag = "v${version}";
     hash = "sha256-b2W0M32Y4HUyxObjvh0yMUBe5gfcSDXnw1GfhW7hoZk=";
   };
+
+  nativeCheckInputs = [
+    pytestCheckHook
+    pillow
+  ];
 
   build-system = [
     setuptools
@@ -33,21 +37,17 @@ buildPythonPackage rec {
     uharfbuzz
   ];
 
-  optional-dependencies = {
-    cairo = [ pycairo ];
-  };
-
-  nativeCheckInputs = [
-    pytestCheckHook
-    pillow
-  ];
-
   disabledTestPaths = [
     # Wants None existing fonts
     "Tests/test_mainprog.py"
     "Tests/test_glyph_render.py"
   ];
 
+  optional-dependencies = {
+    cairo = [ pycairo ];
+  };
+
+  pyproject = true;
   pythonImportsCheck = [ "blackrenderer" ];
 
   meta = {
@@ -55,7 +55,7 @@ buildPythonPackage rec {
     homepage = "https://github.com/BlackFoundryCom/black-renderer";
     changelog = "https://github.com/BlackFoundryCom/black-renderer/releases/tag/v${version}";
     license = lib.licenses.asl20;
-    mainProgram = "blackrenderer";
     maintainers = with lib.maintainers; [ jopejoe1 ];
+    mainProgram = "blackrenderer";
   };
 }

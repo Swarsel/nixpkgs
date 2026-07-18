@@ -1,11 +1,11 @@
 {
-  qtModule,
-  stdenv,
   lib,
+  stdenv,
   bluez,
   libevdev,
   libx11,
   pkg-config,
+  qtModule,
   qtbase,
   udev,
   wrapQtAppsHook,
@@ -22,10 +22,6 @@ qtModule {
     "bin"
   ];
 
-  propagatedBuildInputs = [
-    qtbase
-  ];
-
   nativeBuildInputs = [
     pkg-config
     wrapQtAppsHook
@@ -38,6 +34,14 @@ qtModule {
     udev
   ];
 
+  propagatedBuildInputs = [
+    qtbase
+  ];
+
+  postFixup = lib.optionalString stdenv.hostPlatform.isLinux ''
+    wrapQtApp $bin/bin/servicefw
+  '';
+
   qmakeFlags = [
     "CONFIG+=git_build"
   ]
@@ -46,10 +50,6 @@ qtModule {
     "CONFIG+=udisks"
     "CONFIG+=upower"
   ];
-
-  postFixup = lib.optionalString stdenv.hostPlatform.isLinux ''
-    wrapQtApp $bin/bin/servicefw
-  '';
 
   meta = {
     maintainers = with lib.maintainers; [ OPNA2608 ];

@@ -1,11 +1,11 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
   cmake,
   cpp-utilities,
-  zlib,
   isocodes,
+  zlib,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -31,8 +31,8 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   meta = {
-    homepage = "https://github.com/Martchus/tagparser";
     description = "C++ library for reading and writing MP4/M4A/AAC (iTunes), ID3, Vorbis, Opus, FLAC and Matroska tags";
+    homepage = "https://github.com/Martchus/tagparser";
     license = lib.licenses.gpl2;
     maintainers = [ lib.maintainers.matthiasbeyer ];
     platforms = lib.platforms.all;

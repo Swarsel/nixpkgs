@@ -2,10 +2,10 @@
   lib,
   stdenv,
   fetchurl,
+  gnome,
+  gtk4,
   meson,
   ninja,
-  gtk4,
-  gnome,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -34,7 +34,7 @@ stdenv.mkDerivation (finalAttrs: {
     homepage = "https://gitlab.gnome.org/GNOME/adwaita-icon-theme-legacy";
     changelog = "https://gitlab.gnome.org/GNOME/adwaita-icon-theme-legacy/-/blob/${finalAttrs.version}/NEWS?ref_type=tags";
     license = lib.licenses.cc-by-sa-30;
-    teams = [ lib.teams.gnome ];
     platforms = lib.platforms.all;
+    teams = [ lib.teams.gnome ];
   };
 })

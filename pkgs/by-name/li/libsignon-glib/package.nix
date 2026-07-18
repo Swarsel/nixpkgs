@@ -1,32 +1,25 @@
 {
   lib,
   stdenv,
+  check,
+  docbook_xml_dtd_412,
+  docbook_xml_dtd_43,
+  docbook_xsl,
   fetchgit,
-  nix-update-script,
-  pkg-config,
+  glib,
+  gobject-introspection,
+  gtk-doc,
   meson,
   ninja,
-  vala,
+  nix-update-script,
+  pkg-config,
   python3,
-  gtk-doc,
-  docbook_xsl,
-  docbook_xml_dtd_43,
-  docbook_xml_dtd_412,
-  glib,
-  check,
-  gobject-introspection,
+  vala,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
   pname = "libsignon-glib";
   version = "2.1";
-
-  outputs = [
-    "out"
-    "dev"
-    "devdoc"
-    "py"
-  ];
 
   src = fetchgit {
     url = "https://gitlab.com/accounts-sso/libsignon-glib";
@@ -35,10 +28,22 @@ stdenv.mkDerivation (finalAttrs: {
     fetchSubmodules = true;
   };
 
+  outputs = [
+    "out"
+    "dev"
+    "devdoc"
+    "py"
+  ];
+
   patches = [
     # Remove when https://gitlab.com/accounts-sso/libsignon-glib/-/merge_requests/23 merged & in release
     ./1001-Clean-up-declarations-definitions-usage-of-0-argument-functions.patch
   ];
+
+  postPatch = ''
+    chmod +x build-aux/gen-error-map.py
+    patchShebangs build-aux/gen-error-map.py
+  '';
 
   nativeBuildInputs = [
     check
@@ -63,11 +68,6 @@ stdenv.mkDerivation (finalAttrs: {
     "-Dintrospection=true"
     "-Dpy-overrides-dir=${placeholder "py"}/${python3.sitePackages}/gi/overrides"
   ];
-
-  postPatch = ''
-    chmod +x build-aux/gen-error-map.py
-    patchShebangs build-aux/gen-error-map.py
-  '';
 
   passthru = {
     updateScript = nix-update-script { };

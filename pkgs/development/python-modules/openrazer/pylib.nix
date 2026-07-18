@@ -1,8 +1,8 @@
 {
   lib,
+  fetchFromGitHub,
   buildPythonPackage,
   dbus-python,
-  fetchFromGitHub,
   numpy,
   openrazer-daemon,
   setuptools,
@@ -15,10 +15,9 @@ buildPythonPackage (
   common
   // {
     pname = "openrazer";
-
-    sourceRoot = "${common.src.name}/pylib";
-
     nativeBuildInputs = [ setuptools ];
+    # no tests run
+    doCheck = false;
 
     dependencies = [
       dbus-python
@@ -26,8 +25,7 @@ buildPythonPackage (
       openrazer-daemon
     ];
 
-    # no tests run
-    doCheck = false;
+    sourceRoot = "${common.src.name}/pylib";
 
     meta = common.meta // {
       description = "Entirely open source Python library that allows you to manage your Razer peripherals on GNU/Linux";

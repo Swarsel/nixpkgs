@@ -1,13 +1,11 @@
 {
   lib,
-  mkDerivation,
   libcMinimal,
+  mkDerivation,
 }:
 
 mkDerivation {
-  path = "lib/librt";
-
-  libcMinimal = true;
+  inherit (libcMinimal) postPatch;
 
   outputs = [
     "out"
@@ -15,8 +13,7 @@ mkDerivation {
   ];
 
   extraPaths = [ libcMinimal.path ] ++ libcMinimal.extraPaths;
-
-  inherit (libcMinimal) postPatch;
-
+  libcMinimal = true;
+  path = "lib/librt";
   meta.platforms = lib.platforms.netbsd;
 }

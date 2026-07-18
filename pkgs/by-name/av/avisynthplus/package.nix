@@ -2,11 +2,11 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  testers,
   cmake,
-  pkg-config,
   gitUpdater,
+  pkg-config,
   soundtouch,
+  testers,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -20,13 +20,9 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-RkEZWsAKZABtl+SbRLCjMqyQoi9ainbaI9hWlpO6Fwo=";
   };
 
-  patchPhase = ''
-    substituteInPlace ./avs_core/avisynth_conf.h.in \
-        --replace-fail '@CORE_PLUGIN_INSTALL_PATH@' '/run/current-system/sw/lib'
-  '';
-
-  buildInputs = [
-    soundtouch
+  outputs = [
+    "out"
+    "dev"
   ];
 
   nativeBuildInputs = [
@@ -34,14 +30,18 @@ stdenv.mkDerivation (finalAttrs: {
     pkg-config
   ];
 
-  outputs = [
-    "out"
-    "dev"
+  buildInputs = [
+    soundtouch
   ];
 
+  patchPhase = ''
+    substituteInPlace ./avs_core/avisynth_conf.h.in \
+        --replace-fail '@CORE_PLUGIN_INSTALL_PATH@' '/run/current-system/sw/lib'
+  '';
+
   passthru = {
-    updateScript = gitUpdater { rev-prefix = "v"; };
     tests.pkg-config = testers.testMetaPkgConfig finalAttrs.finalPackage;
+    updateScript = gitUpdater { rev-prefix = "v"; };
   };
 
   meta = {
@@ -49,8 +49,8 @@ stdenv.mkDerivation (finalAttrs: {
     homepage = "https://avs-plus.net/";
     changelog = "https://github.com/AviSynth/AviSynthPlus/releases/tag/${finalAttrs.src.rev}";
     license = lib.licenses.gpl2Only;
-    pkgConfigModules = [ "avisynth" ];
-    platforms = lib.platforms.unix;
     maintainers = with lib.maintainers; [ jopejoe1 ];
+    platforms = lib.platforms.unix;
+    pkgConfigModules = [ "avisynth" ];
   };
 })

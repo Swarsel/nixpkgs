@@ -1,13 +1,12 @@
 {
   lib,
-  python3Packages,
   fetchFromGitHub,
+  python3Packages,
 }:
 
 python3Packages.buildPythonApplication {
   pname = "config-visualizer";
   version = "unstable-2022-02-23";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "precice";
@@ -16,6 +15,7 @@ python3Packages.buildPythonApplication {
     hash = "sha256-2dnpkec9hN4oAqwu+1WmDJrfeu+JbfqZ6guv3bC4H1c=";
   };
 
+  doCheck = false;
   build-system = with python3Packages; [ setuptools ];
 
   dependencies = with python3Packages; [
@@ -23,11 +23,11 @@ python3Packages.buildPythonApplication {
     pydot
   ];
 
-  doCheck = false;
+  pyproject = true;
 
   meta = {
-    homepage = "https://github.com/precice/config-visualizer";
     description = "Small python tool for visualizing the preCICE xml configuration";
+    homepage = "https://github.com/precice/config-visualizer";
     license = lib.licenses.gpl3Only;
     maintainers = with lib.maintainers; [ Scriptkiddi ];
     mainProgram = "precice-config-visualizer";

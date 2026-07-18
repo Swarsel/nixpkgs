@@ -1,29 +1,26 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
+  boto3,
+  buildPythonPackage,
   comet-ml,
   ipython,
   matplotlib,
   numpy,
+  reportlab,
   requests,
   scipy,
   selenium,
+  setuptools,
+  streamlit,
+  tqdm,
   urllib3,
   zipfile2,
-  tqdm,
-  reportlab,
-  streamlit,
-  boto3,
 }:
 
 buildPythonPackage rec {
   pname = "cometx";
   version = "3.6.6";
-
-  pyproject = true;
-  build-system = [ setuptools ];
 
   src = fetchFromGitHub {
     owner = "comet-ml";
@@ -31,6 +28,11 @@ buildPythonPackage rec {
     tag = version;
     hash = "sha256-Ub7Ucn/Xgaedymqjgiouy685PPr3tULAvJNLeqAgf78=";
   };
+
+  # WARNING: Running the tests will create experiments, models, assets, etc.
+  # on your Comet account.
+  doCheck = false;
+  build-system = [ setuptools ];
 
   dependencies = [
     comet-ml
@@ -48,10 +50,7 @@ buildPythonPackage rec {
     boto3
   ];
 
-  # WARNING: Running the tests will create experiments, models, assets, etc.
-  # on your Comet account.
-  doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "cometx" ];
 
   meta = {

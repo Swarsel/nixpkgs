@@ -1,16 +1,15 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  uv-build,
+  buildPythonPackage,
   optype,
   scipy,
+  uv-build,
 }:
 
 buildPythonPackage rec {
   pname = "scipy-stubs";
   version = "1.17.0.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "scipy";
@@ -23,6 +22,10 @@ buildPythonPackage rec {
     substituteInPlace pyproject.toml \
       --replace-fail "uv_build>=0.9.25,<0.10.0" "uv_build"
   '';
+
+  nativeCheckInputs = [
+    scipy
+  ];
 
   build-system = [
     uv-build
@@ -38,9 +41,7 @@ buildPythonPackage rec {
     ];
   };
 
-  nativeCheckInputs = [
-    scipy
-  ];
+  pyproject = true;
 
   meta = {
     description = "Typing Stubs for SciPy";

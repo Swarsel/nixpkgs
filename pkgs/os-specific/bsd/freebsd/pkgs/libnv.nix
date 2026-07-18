@@ -1,10 +1,12 @@
 { mkDerivation }:
 
 mkDerivation {
-  path = "lib/libnv";
+  MK_TESTS = "no";
+
   extraPaths = [
     "sys/contrib/libnv"
     "sys/sys"
   ];
-  MK_TESTS = "no";
+
+  path = "lib/libnv";
 }

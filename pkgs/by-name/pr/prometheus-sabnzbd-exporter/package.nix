@@ -1,15 +1,13 @@
 {
   lib,
   fetchFromGitHub,
-  python3Packages,
   nixosTests,
+  python3Packages,
 }:
 
 python3Packages.buildPythonApplication rec {
   pname = "sabnzbd_exporter";
   version = "0.1.80";
-
-  pyproject = false;
 
   src = fetchFromGitHub {
     owner = "msroest";
@@ -34,6 +32,8 @@ python3Packages.buildPythonApplication rec {
 
     runHook postInstall
   '';
+
+  pyproject = false;
 
   passthru.tests = {
     inherit (nixosTests.prometheus-exporters) sabnzbd;

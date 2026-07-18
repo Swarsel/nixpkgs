@@ -1,25 +1,21 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # build-system
-  setuptools,
-
-  # dependencies
-  psutil,
-  six,
-
+  buildPythonPackage,
   # tests
   mock,
-  pytestCheckHook,
+  # dependencies
+  psutil,
   pyocd,
+  pytestCheckHook,
+  # build-system
+  setuptools,
+  six,
 }:
 
 buildPythonPackage rec {
   pname = "pylink-square";
   version = "1.6.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "square";
@@ -33,6 +29,11 @@ buildPythonPackage rec {
     ./fix-setup-cfg-syntax.patch
   ];
 
+  nativeCheckInputs = [
+    mock
+    pytestCheckHook
+  ];
+
   build-system = [ setuptools ];
 
   dependencies = [
@@ -40,19 +41,15 @@ buildPythonPackage rec {
     six
   ];
 
-  nativeCheckInputs = [
-    mock
-    pytestCheckHook
-  ];
-
-  pythonImportsCheck = [ "pylink" ];
-
   disabledTests = [
     # AttributeError: 'called_once_with' is not a valid assertion
     "test_cp15_register_write_success"
     "test_jlink_restarted"
     "test_set_log_file_success"
   ];
+
+  pyproject = true;
+  pythonImportsCheck = [ "pylink" ];
 
   passthru.tests = {
     inherit pyocd;

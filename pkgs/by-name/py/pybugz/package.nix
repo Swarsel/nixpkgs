@@ -7,7 +7,6 @@
 python3Packages.buildPythonApplication (finalAttrs: {
   pname = "pybugz";
   version = "0.14";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "williamh";
@@ -16,18 +15,17 @@ python3Packages.buildPythonApplication (finalAttrs: {
     hash = "sha256-rhiCQPSh987QEM4aMd3R/7e6l+pm2eJDE7f5LckIuho=";
   };
 
-  build-system = [ python3Packages.flit-core ];
-
-  pythonImportsCheck = [ "bugz" ];
-
   # no tests
   doCheck = false;
+  build-system = [ python3Packages.flit-core ];
+  pyproject = true;
+  pythonImportsCheck = [ "bugz" ];
 
   meta = {
-    homepage = "https://github.com/williamh/pybugz";
     description = "Command line interface for Bugzilla";
-    mainProgram = "bugz";
+    homepage = "https://github.com/williamh/pybugz";
     license = lib.licenses.gpl2Plus;
     maintainers = [ ];
+    mainProgram = "bugz";
   };
 })

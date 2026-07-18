@@ -3,23 +3,23 @@
   stdenv,
   fetchFromGitHub,
   autoreconfHook,
-  writeShellScriptBin,
+  bluez,
   cmake,
-  pkg-config,
   curl,
   grantlee,
   hidapi,
   libgit2,
+  libsForQt5,
   libssh2,
   libusb1,
+  libxcomposite,
   libxml2,
   libxslt,
   libzip,
-  zlib,
-  libsForQt5,
-  libxcomposite,
-  bluez,
+  pkg-config,
   writeScript,
+  writeShellScriptBin,
+  zlib,
 }:
 
 let
@@ -27,21 +27,18 @@ let
 
   subsurfaceSrc = (
     fetchFromGitHub {
+      fetchSubmodules = true;
+      hash = "sha256-ILy5M2m2rKPP77x7cMiqNzpd6NOnQS8UpqZemf/SHf4=";
       owner = "Subsurface";
       repo = "subsurface";
       rev = "87a5ba9fd00712e71b90115b7566d4228a5c0d98";
-      hash = "sha256-ILy5M2m2rKPP77x7cMiqNzpd6NOnQS8UpqZemf/SHf4=";
-      fetchSubmodules = true;
     }
   );
 
   libdc = stdenv.mkDerivation {
-    pname = "libdivecomputer-ssrf";
     inherit version;
-
+    pname = "libdivecomputer-ssrf";
     src = subsurfaceSrc;
-
-    sourceRoot = "${subsurfaceSrc.name}/libdivecomputer";
 
     nativeBuildInputs = [
       autoreconfHook
@@ -56,12 +53,13 @@ let
     ];
 
     enableParallelBuilding = true;
+    sourceRoot = "${subsurfaceSrc.name}/libdivecomputer";
 
     meta = {
-      homepage = "https://www.libdivecomputer.org";
       description = "Cross-platform and open source library for communication with dive computers from various manufacturers";
-      maintainers = with lib.maintainers; [ mguentner ];
+      homepage = "https://www.libdivecomputer.org";
       license = lib.licenses.lgpl21;
+      maintainers = with lib.maintainers; [ mguentner ];
       platforms = lib.platforms.all;
     };
   };
@@ -85,10 +83,6 @@ let
       libxcomposite
     ];
 
-    dontWrapQtApps = true;
-
-    pluginsSubdir = "lib/qt-${libsForQt5.qtbase.qtCompatVersion}/plugins";
-
     installPhase = ''
       mkdir -p $out $(dirname ${pluginsSubdir}/geoservices)
       mkdir -p ${pluginsSubdir}/geoservices
@@ -96,11 +90,14 @@ let
       mv lib $out/
     '';
 
+    dontWrapQtApps = true;
+    pluginsSubdir = "lib/qt-${libsForQt5.qtbase.qtCompatVersion}/plugins";
+
     meta = {
       inherit (src.meta) homepage;
       description = "QtLocation plugin for Google maps tile API";
-      maintainers = [ ];
       license = lib.licenses.mit;
+      maintainers = [ ];
       platforms = lib.platforms.all;
     };
   };
@@ -111,14 +108,19 @@ let
 
 in
 stdenv.mkDerivation {
-  pname = "subsurface";
   inherit version;
-
+  pname = "subsurface";
   src = subsurfaceSrc;
 
   postPatch = ''
     install -m555 -t scripts ${lib.getExe get-version}
   '';
+
+  nativeBuildInputs = [
+    cmake
+    libsForQt5.wrapQtAppsHook
+    pkg-config
+  ];
 
   buildInputs = [
     bluez
@@ -138,12 +140,6 @@ stdenv.mkDerivation {
     libsForQt5.qtpositioning
   ];
 
-  nativeBuildInputs = [
-    cmake
-    libsForQt5.wrapQtAppsHook
-    pkg-config
-  ];
-
   cmakeFlags = [
     "-DLIBDC_FROM_PKGCONFIG=ON"
     "-DNO_PRINTING=OFF"
@@ -151,6 +147,7 @@ stdenv.mkDerivation {
 
   passthru = {
     inherit version libdc googlemaps;
+
     updateScript = writeScript "update-subsurface" ''
       #!/usr/bin/env nix-shell
       #!nix-shell -i bash -p git common-updater-scripts
@@ -172,16 +169,18 @@ stdenv.mkDerivation {
 
   meta = {
     description = "Divelog program";
-    mainProgram = "subsurface";
+
     longDescription = ''
       Subsurface can track single- and multi-tank dives using air, Nitrox or TriMix.
       It allows tracking of dive locations including GPS coordinates (which can also
       conveniently be entered using a map interface), logging of equipment used and
       names of other divers, and lets users rate dives and provide additional notes.
     '';
+
     homepage = "https://subsurface-divelog.org";
     license = lib.licenses.gpl2;
     maintainers = with lib.maintainers; [ mguentner ];
     platforms = lib.platforms.all;
+    mainProgram = "subsurface";
   };
 }

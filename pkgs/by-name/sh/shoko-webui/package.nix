@@ -1,13 +1,13 @@
 {
-  stdenvNoCC,
+  lib,
   fetchFromGitHub,
   fetchPnpmDeps,
-  nodejs,
-  pnpm_10,
-  pnpmConfigHook,
-  lib,
-  shoko,
   nix-update-script,
+  nodejs,
+  pnpmConfigHook,
+  pnpm_10,
+  shoko,
+  stdenvNoCC,
 }:
 let
   pnpm = pnpm_10;
@@ -28,13 +28,6 @@ stdenvNoCC.mkDerivation (finalAttrs: {
   # declaratively anyway.
   patches = [ ./no-commit-hash.patch ];
 
-  pnpmDeps = fetchPnpmDeps {
-    inherit (finalAttrs) pname version src;
-    inherit pnpm;
-    fetcherVersion = 3;
-    hash = "sha256-0ZXXfP6iHyd5zlUQruS3MZADkuucygXrUPRKNCNYA7k=";
-  };
-
   nativeBuildInputs = [
     nodejs
     pnpm
@@ -53,6 +46,13 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  pnpmDeps = fetchPnpmDeps {
+    inherit (finalAttrs) pname version src;
+    inherit pnpm;
+    fetcherVersion = 3;
+    hash = "sha256-0ZXXfP6iHyd5zlUQruS3MZADkuucygXrUPRKNCNYA7k=";
+  };
+
   passthru.updateSript = nix-update-script {
     extraArgs = [
       "--version-regex"
@@ -61,10 +61,10 @@ stdenvNoCC.mkDerivation (finalAttrs: {
   };
 
   meta = {
+    inherit (shoko.meta) license platforms;
+    description = "Web-based frontend for the Shoko anime management system";
     homepage = "https://github.com/ShokoAnime/Shoko-WebUI";
     changelog = "https://github.com/ShokoAnime/Shoko-WebUI/releases/tag/v${finalAttrs.version}";
-    description = "Web-based frontend for the Shoko anime management system";
     maintainers = with lib.maintainers; [ nanoyaki ];
-    inherit (shoko.meta) license platforms;
   };
 })

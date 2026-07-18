@@ -1,12 +1,12 @@
 {
   lib,
   stdenv,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   hypothesis,
+  msgpack,
   packaging,
   parameterized,
-  msgpack,
   pyserial,
   pytest-cov-stub,
   pytest-timeout,
@@ -14,14 +14,13 @@
   setuptools,
   setuptools-scm,
   typing-extensions,
-  wrapt,
   uptime,
+  wrapt,
 }:
 
 buildPythonPackage rec {
   pname = "python-can";
   version = "4.6.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "hardbyte";
@@ -29,6 +28,21 @@ buildPythonPackage rec {
     tag = "v${version}";
     hash = "sha256-yF/Ir9FUf9Q8GINeT0H4SixzZGetqumU5N6O3GT3M6A=";
   };
+
+  nativeCheckInputs = [
+    hypothesis
+    parameterized
+    pytest-cov-stub
+    pytest-timeout
+    pytestCheckHook
+  ]
+  ++ optional-dependencies.serial;
+
+  preCheck = ''
+    export PATH="$PATH:$out/bin";
+    # skips timing senstive tests
+    export CI=1
+  '';
 
   build-system = [
     setuptools
@@ -41,21 +55,6 @@ buildPythonPackage rec {
     typing-extensions
     wrapt
   ];
-
-  optional-dependencies = {
-    serial = [ pyserial ];
-    seeedstudio = [ pyserial ];
-    pcan = [ uptime ];
-  };
-
-  nativeCheckInputs = [
-    hypothesis
-    parameterized
-    pytest-cov-stub
-    pytest-timeout
-    pytestCheckHook
-  ]
-  ++ optional-dependencies.serial;
 
   disabledTestPaths = [
     # We don't support all interfaces
@@ -76,12 +75,13 @@ buildPythonPackage rec {
     "test_gap"
   ];
 
-  preCheck = ''
-    export PATH="$PATH:$out/bin";
-    # skips timing senstive tests
-    export CI=1
-  '';
+  optional-dependencies = {
+    pcan = [ uptime ];
+    seeedstudio = [ pyserial ];
+    serial = [ pyserial ];
+  };
 
+  pyproject = true;
   pythonImportsCheck = [ "can" ];
 
   meta = {
@@ -89,6 +89,7 @@ buildPythonPackage rec {
     homepage = "https://python-can.readthedocs.io";
     changelog = "https://github.com/hardbyte/python-can/releases/tag/${src.tag}";
     license = lib.licenses.lgpl3Only;
+
     maintainers = with lib.maintainers; [
       fab
       sorki

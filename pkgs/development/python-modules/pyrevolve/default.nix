@@ -1,19 +1,18 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   contexttimer,
-  setuptools,
-  versioneer,
   cython_0,
   numpy,
   pytestCheckHook,
+  setuptools,
+  versioneer,
 }:
 
 buildPythonPackage rec {
   pname = "pyrevolve";
   version = "2.2.7";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "devitocodes";
@@ -44,12 +43,13 @@ buildPythonPackage rec {
     rm -rf pyrevolve
   '';
 
+  pyproject = true;
   pythonImportsCheck = [ "pyrevolve" ];
 
   meta = {
+    description = "Python library to manage checkpointing for adjoints";
     homepage = "https://github.com/devitocodes/pyrevolve";
     changelog = "https://github.com/devitocodes/pyrevolve/releases/tag/${src.tag}";
-    description = "Python library to manage checkpointing for adjoints";
     license = lib.licenses.epl10;
     maintainers = [ ];
   };

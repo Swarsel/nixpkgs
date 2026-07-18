@@ -8,18 +8,16 @@
 buildPythonPackage rec {
   pname = "pysendfile";
   version = "2.0.1";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
     hash = "sha256-UQpBSycJhvujx5y3bZCkyRDHAb+0P/mDpdTpKEYFDhc=";
   };
 
-  build-system = [ setuptools ];
-
   # Tests depend on asynchat and asyncore
   doCheck = false;
-
+  build-system = [ setuptools ];
+  pyproject = true;
   pythonImportsCheck = [ "sendfile" ];
 
   meta = {

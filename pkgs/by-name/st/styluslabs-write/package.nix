@@ -1,15 +1,15 @@
 {
   lib,
-  fetchFromGitHub,
   stdenv,
-  pkg-config,
+  fetchFromGitHub,
   SDL2,
-  libxi,
-  libxcursor,
-  libx11,
-  libGL,
-  roboto,
   imagemagick,
+  libGL,
+  libx11,
+  libxcursor,
+  libxi,
+  pkg-config,
+  roboto,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -23,6 +23,7 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-cL6jU54LTkYu0mLNOgSDgChkDdg7eQaM00hTMas6cTg=";
     fetchSubmodules = true;
     leaveDotGit = true;
+
     # Delete .git folder for better reproducibility
     # TODO: fix GITCOUNT is always 1 but is not used in Linux Build anyway
     postFetch = ''
@@ -32,23 +33,6 @@ stdenv.mkDerivation (finalAttrs: {
       rm -rf $out/.git
     '';
   };
-
-  hardeningDisable = [ "format" ];
-  makeFlags = [
-    "DEBUG=0"
-    "USE_SYSTEM_SDL=1"
-  ];
-  preBuild = ''
-    makeFlagsArray+=(
-      "GITREV=$(cat ./GITREV)"
-      "GITCOUNT=$(cat ./GITCOUNT)"
-    )
-    pushd syncscribble
-  '';
-
-  postBuild = ''
-    popd
-  '';
 
   strictDeps = true;
 
@@ -64,6 +48,23 @@ stdenv.mkDerivation (finalAttrs: {
     libxcursor
     libGL
   ];
+
+  makeFlags = [
+    "DEBUG=0"
+    "USE_SYSTEM_SDL=1"
+  ];
+
+  preBuild = ''
+    makeFlagsArray+=(
+      "GITREV=$(cat ./GITREV)"
+      "GITCOUNT=$(cat ./GITCOUNT)"
+    )
+    pushd syncscribble
+  '';
+
+  postBuild = ''
+    popd
+  '';
 
   installPhase = ''
     runHook preInstall
@@ -87,10 +88,12 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   enableParallelBuilding = true;
+  hardeningDisable = [ "format" ];
 
   meta = {
-    homepage = "https://styluslabs.com/";
     description = "Cross-platform (Windows, Mac, Linux, iOS, Android) application for handwritten notes";
+    homepage = "https://styluslabs.com/";
+
     license = with lib.licenses; [
       # miniz, pugixml, stb, ugui, ulib, usvg
       mit
@@ -99,12 +102,14 @@ stdenv.mkDerivation (finalAttrs: {
       # styluslabs-write itself
       agpl3Only
     ];
+
     maintainers = with lib.maintainers; [
       lukts30
       atemu
     ];
+
     platforms = with lib.platforms; linux ++ darwin ++ windows;
-    broken = !stdenv.hostPlatform.isLinux;
     mainProgram = "Write";
+    broken = !stdenv.hostPlatform.isLinux;
   };
 })

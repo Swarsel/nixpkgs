@@ -1,16 +1,16 @@
 {
   lib,
-  buildPlatform,
-  hostPlatform,
   fetchurl,
   bash,
-  tinycc,
+  buildPlatform,
+  gnugrep,
   gnumake,
   gnupatch,
   gnused,
-  gnugrep,
   gnutar,
   gzip,
+  hostPlatform,
+  tinycc,
 }:
 
 let
@@ -28,8 +28,8 @@ let
   patches = [
     # tinycc doesn't implement backward-jumping jecxz, and it would be hard to implement
     (fetchurl {
-      url = "${liveBootstrap}/patches/sigsetjmp.patch";
       hash = "sha256-wd2Aev1zPJXy3q933aiup5p1IMKzVJBquAyl3gbK4PU=";
+      url = "${liveBootstrap}/patches/sigsetjmp.patch";
     })
   ];
 in

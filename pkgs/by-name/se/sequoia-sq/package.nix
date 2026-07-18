@@ -1,14 +1,14 @@
 {
-  fetchFromGitLab,
   lib,
-  nettle,
-  nix-update-script,
-  rustPlatform,
-  pkg-config,
+  fetchFromGitLab,
+  cacert,
   capnproto,
   installShellFiles,
+  nettle,
+  nix-update-script,
   openssl,
-  cacert,
+  pkg-config,
+  rustPlatform,
   sqlite,
 }:
 
@@ -23,8 +23,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-lM+j1KtH3U/lbPXnKALAP75YokDufbdz8s8bjb0VXUY=";
   };
 
-  cargoHash = "sha256-3z1Qm/eeVlH0/x3C8PSSPIlQaRKk1U6mRlEiKk0AaVQ=";
-
   nativeBuildInputs = [
     pkg-config
     rustPlatform.bindgenHook
@@ -38,16 +36,16 @@ rustPlatform.buildRustPackage (finalAttrs: {
     nettle
   ];
 
+  cargoHash = "sha256-3z1Qm/eeVlH0/x3C8PSSPIlQaRKk1U6mRlEiKk0AaVQ=";
+  env.ASSET_OUT_DIR = "/tmp/";
+  doCheck = true;
+
   # Needed for tests to be able to create a ~/.local/share/sequoia directory
   # Needed for avoiding "OpenSSL error" since 1.2.0
   preCheck = ''
     export HOME=$(mktemp -d)
     export SSL_CERT_FILE=${cacert}/etc/ssl/certs/ca-bundle.crt
   '';
-
-  env.ASSET_OUT_DIR = "/tmp/";
-
-  doCheck = true;
 
   postInstall = ''
     installManPage /tmp/man-pages/*.*
@@ -65,11 +63,13 @@ rustPlatform.buildRustPackage (finalAttrs: {
     homepage = "https://sequoia-pgp.org/";
     changelog = "https://gitlab.com/sequoia-pgp/sequoia-sq/-/blob/v${finalAttrs.version}/NEWS";
     license = lib.licenses.lgpl2Plus;
+
     maintainers = with lib.maintainers; [
       minijackson
       doronbehar
       dvn0
     ];
+
     mainProgram = "sq";
   };
 })

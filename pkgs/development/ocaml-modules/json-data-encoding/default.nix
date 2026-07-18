@@ -9,7 +9,7 @@
 buildDunePackage (finalAttrs: {
   pname = "json-data-encoding";
   version = "1.0.1";
-  minimalOCamlVersion = "4.10";
+
   src = fetchFromGitLab {
     owner = "nomadic-labs";
     repo = "data-encoding";
@@ -22,9 +22,11 @@ buildDunePackage (finalAttrs: {
     uri
   ];
 
+  minimalOCamlVersion = "4.10";
+
   meta = {
-    homepage = "https://gitlab.com/nomadic-labs/json-data-encoding";
     description = "Type-safe encoding to and decoding from JSON";
+    homepage = "https://gitlab.com/nomadic-labs/json-data-encoding";
     license = lib.licenses.lgpl3;
     maintainers = [ lib.maintainers.ulrikstrid ];
   };

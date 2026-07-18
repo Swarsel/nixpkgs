@@ -1,7 +1,7 @@
-{ mkDerivation, libncurses-tinfo }:
+{ libncurses-tinfo, mkDerivation }:
 mkDerivation {
-  path = "lib/libedit";
-  extraPaths = [ "contrib/libedit" ];
   buildInputs = [ libncurses-tinfo ];
   MK_TESTS = "no";
+  extraPaths = [ "contrib/libedit" ];
+  path = "lib/libedit";
 }

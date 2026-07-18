@@ -1,9 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  pytestCheckHook,
-
+  buildPythonPackage,
   geopandas,
   inequality,
   libpysal,
@@ -11,6 +9,7 @@
   networkx,
   packaging,
   pandas,
+  pytestCheckHook,
   setuptools-scm,
   shapely,
   tqdm,
@@ -19,7 +18,6 @@
 buildPythonPackage rec {
   pname = "momepy";
   version = "0.11.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "pysal";
@@ -32,8 +30,6 @@ buildPythonPackage rec {
     # see https://github.com/pysal/momepy/pull/733
     ./fix_test_elements.patch
   ];
-
-  build-system = [ setuptools-scm ];
 
   propagatedBuildInputs = [
     geopandas
@@ -48,14 +44,16 @@ buildPythonPackage rec {
   ];
 
   nativeCheckInputs = [ pytestCheckHook ];
-
-  pythonImportsCheck = [ "momepy" ];
+  build-system = [ setuptools-scm ];
 
   disabledTestPaths = [
     # this tests depends on neatnet, not packaged in nixpkgs
     # it's probably not worthy to package it just for this test
     "momepy/tests/test_continuity.py"
   ];
+
+  pyproject = true;
+  pythonImportsCheck = [ "momepy" ];
 
   meta = {
     description = "Urban Morphology Measuring Toolkit";

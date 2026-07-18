@@ -1,9 +1,9 @@
 {
   lib,
+  fetchFromGitHub,
   buildPythonPackage,
   colorama,
   distutils,
-  fetchFromGitHub,
   fickling,
   intervaltree,
   json5,
@@ -18,7 +18,6 @@
 buildPythonPackage rec {
   pname = "graphtage";
   version = "0.3.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "trailofbits";
@@ -27,7 +26,7 @@ buildPythonPackage rec {
     hash = "sha256-Bz2T8tVdVOdXt23yPITkDNL46Y5LZPhY3SXZ5bF3CHw=";
   };
 
-  pythonRelaxDeps = [ "json5" ];
+  nativeCheckInputs = [ pytestCheckHook ];
 
   build-system = [
     distutils
@@ -45,9 +44,9 @@ buildPythonPackage rec {
     typing-extensions
   ];
 
-  nativeCheckInputs = [ pytestCheckHook ];
-
+  pyproject = true;
   pythonImportsCheck = [ "graphtage" ];
+  pythonRelaxDeps = [ "json5" ];
 
   meta = {
     description = "Utility to diff tree-like files such as JSON and XML";

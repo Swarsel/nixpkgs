@@ -2,25 +2,25 @@
   lib,
   stdenv,
   fetchurl,
-  pkg-config,
-  removeReferencesTo,
-  zlib,
+  acl,
+  coreutils,
+  darwin,
+  dbus,
+  gmp,
   libjpeg,
   libpng,
   libtiff,
-  pam,
-  dbus,
-  enableSystemd ? lib.meta.availableOn stdenv.hostPlatform systemdLibs,
-  systemdLibs,
-  acl,
-  gmp,
-  darwin,
-  libusb1 ? null,
-  gnutls ? null,
-  avahi ? null,
-  libpaper ? null,
-  coreutils,
   nixosTests,
+  pam,
+  pkg-config,
+  removeReferencesTo,
+  systemdLibs,
+  zlib,
+  avahi ? null,
+  enableSystemd ? lib.meta.availableOn stdenv.hostPlatform systemdLibs,
+  gnutls ? null,
+  libpaper ? null,
+  libusb1 ? null,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -31,9 +31,6 @@ stdenv.mkDerivation (finalAttrs: {
     url = "https://github.com/OpenPrinting/cups/releases/download/v${finalAttrs.version}/cups-${finalAttrs.version}-source.tar.gz";
     hash = "sha256-ggmEsSpn+YcFeFquLdE0f+CsCXgoAB1Fg/9kV0rtY4k=";
   };
-
-  __structuredAttrs = true;
-  strictDeps = true;
 
   outputs = [
     "out"
@@ -59,6 +56,8 @@ stdenv.mkDerivation (finalAttrs: {
           --replace "kIOMainPortDefault" "kIOMasterPortDefault"
       '';
 
+  strictDeps = true;
+
   nativeBuildInputs = [
     pkg-config
     removeReferencesTo
@@ -83,10 +82,6 @@ stdenv.mkDerivation (finalAttrs: {
 
   propagatedBuildInputs = [ gmp ];
 
-  configurePlatforms = lib.optionals stdenv.hostPlatform.isLinux [
-    "build"
-    "host"
-  ];
   configureFlags = [
     "--localstatedir=/var"
     "--sysconfdir=/etc"
@@ -122,26 +117,6 @@ stdenv.mkDerivation (finalAttrs: {
     )
   '';
 
-  installFlags = [
-    # Don't try to write in /var at build time.
-    "CACHEDIR=$(TMPDIR)/dummy"
-    "LAUNCHD_DIR=$(TMPDIR)/dummy"
-    "LOGDIR=$(TMPDIR)/dummy"
-    "REQUESTS=$(TMPDIR)/dummy"
-    "STATEDIR=$(TMPDIR)/dummy"
-    # Idem for /etc.
-    "PAMDIR=$(out)/etc/pam.d"
-    "XINETD=$(out)/etc/xinetd.d"
-    "SERVERROOT=$(out)/etc/cups"
-    # Idem for /usr.
-    "MENUDIR=$(out)/share/applications"
-    "ICONDIR=$(out)/share/icons"
-    # Work around a Makefile bug.
-    "CUPS_PRIMARY_SYSTEM_GROUP=root"
-  ];
-
-  enableParallelBuilding = true;
-
   postInstall = ''
     libexec=${if stdenv.hostPlatform.isDarwin then "libexec/cups" else "lib/cups"}
     moveToOutput $libexec "$out"
@@ -169,6 +144,33 @@ stdenv.mkDerivation (finalAttrs: {
       --replace "Exec=htmlview" "Exec=xdg-open"
   '';
 
+  __structuredAttrs = true;
+
+  configurePlatforms = lib.optionals stdenv.hostPlatform.isLinux [
+    "build"
+    "host"
+  ];
+
+  enableParallelBuilding = true;
+
+  installFlags = [
+    # Don't try to write in /var at build time.
+    "CACHEDIR=$(TMPDIR)/dummy"
+    "LAUNCHD_DIR=$(TMPDIR)/dummy"
+    "LOGDIR=$(TMPDIR)/dummy"
+    "REQUESTS=$(TMPDIR)/dummy"
+    "STATEDIR=$(TMPDIR)/dummy"
+    # Idem for /etc.
+    "PAMDIR=$(out)/etc/pam.d"
+    "XINETD=$(out)/etc/xinetd.d"
+    "SERVERROOT=$(out)/etc/cups"
+    # Idem for /usr.
+    "MENUDIR=$(out)/share/applications"
+    "ICONDIR=$(out)/share/icons"
+    # Work around a Makefile bug.
+    "CUPS_PRIMARY_SYSTEM_GROUP=root"
+  ];
+
   passthru.tests = {
     inherit (nixosTests)
       cups-pdf
@@ -180,8 +182,8 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   meta = {
-    homepage = "https://openprinting.github.io/cups/";
     description = "Standards-based printing system for UNIX";
+    homepage = "https://openprinting.github.io/cups/";
     license = lib.licenses.asl20;
     maintainers = [ ];
     platforms = lib.platforms.unix;

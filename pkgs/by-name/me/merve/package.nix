@@ -1,11 +1,11 @@
 {
   lib,
-  cmake,
+  stdenv,
   fetchFromGitHub,
-  simdutf,
+  cmake,
   gtest,
   nix-update-script,
-  stdenv,
+  simdutf,
   testers,
   validatePkgConfig,
   static ? stdenv.hostPlatform.isStatic,
@@ -22,31 +22,34 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-CrdQNAAUbV9k15IFEQjYiMpwbj3iE7imjnN6HloTk40=";
   };
 
-  doCheck = true;
+  nativeBuildInputs = [
+    cmake
+    validatePkgConfig
+  ];
+
+  buildInputs = [
+    simdutf
+  ];
+
   cmakeFlags = [
     (lib.cmakeBool "BUILD_SHARED_LIBS" (!static))
     (lib.cmakeBool "MERVE_TESTING" finalAttrs.finalPackage.doCheck)
     (lib.cmakeBool "MERVE_USE_SIMDUTF" true)
   ];
 
-  nativeBuildInputs = [
-    cmake
-    validatePkgConfig
-  ];
-  buildInputs = [
-    simdutf
-  ];
+  doCheck = true;
+
   checkInputs = [
     gtest
   ];
 
   passthru = {
-    updateScript = nix-update-script { };
-
     tests.pkg-config = testers.hasPkgConfigModules {
       package = finalAttrs.finalPackage;
       versionCheck = true;
     };
+
+    updateScript = nix-update-script { };
   };
 
   meta = {

@@ -1,7 +1,7 @@
 {
   config,
-  pkgs,
   lib,
+  pkgs,
   ...
 }:
 
@@ -15,11 +15,7 @@ in
 
 {
   options.services.ocserv = {
-    enable = mkEnableOption "ocserv";
-
     config = mkOption {
-      type = types.lines;
-
       description = ''
         Configuration content to start an OCServ server.
 
@@ -78,31 +74,36 @@ in
         ipv4-netmask = 255.255.255.0
         cert-user-oid = 0.9.2342.19200300.100.1.1
       '';
+
+      type = types.lines;
     };
+
+    enable = mkEnableOption "ocserv";
   };
 
   config = mkIf cfg.enable {
-    environment.systemPackages = [ pkgs.ocserv ];
     environment.etc."ocserv/ocserv.conf".text = cfg.config;
-
+    environment.systemPackages = [ pkgs.ocserv ];
     security.pam.services.ocserv = { };
 
     systemd.services.ocserv = {
-      description = "OpenConnect SSL VPN server";
-      documentation = [ "man:ocserv(8)" ];
-      wants = [ "network-online.target" ];
       after = [
         "dbus.service"
         "network-online.target"
       ];
-      wantedBy = [ "multi-user.target" ];
+
+      description = "OpenConnect SSL VPN server";
+      documentation = [ "man:ocserv(8)" ];
 
       serviceConfig = {
-        PrivateTmp = true;
-        PIDFile = "/run/ocserv.pid";
-        ExecStart = "${pkgs.ocserv}/bin/ocserv --foreground --pid-file /run/ocesrv.pid --config /etc/ocserv/ocserv.conf";
         ExecReload = "${pkgs.coreutils}/bin/kill -HUP $MAINPID";
+        ExecStart = "${pkgs.ocserv}/bin/ocserv --foreground --pid-file /run/ocesrv.pid --config /etc/ocserv/ocserv.conf";
+        PIDFile = "/run/ocserv.pid";
+        PrivateTmp = true;
       };
+
+      wantedBy = [ "multi-user.target" ];
+      wants = [ "network-online.target" ];
     };
   };
 }

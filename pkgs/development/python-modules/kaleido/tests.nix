@@ -1,9 +1,9 @@
 {
-  runCommand,
-  python,
-  plotly,
-  pandas,
   kaleido,
+  pandas,
+  plotly,
+  python,
+  runCommand,
 }:
 
 runCommand "${kaleido.pname}-tests" {

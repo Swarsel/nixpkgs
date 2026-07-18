@@ -1,12 +1,13 @@
 {
   lib,
   stdenv,
+  fetchFromGitHub,
   buildPythonPackage,
   cryptography,
   cython,
   deprecated,
+  distutils,
   eventlet,
-  fetchFromGitHub,
   geomet,
   gevent,
   gremlinpython,
@@ -17,17 +18,15 @@
   pytz,
   pyyaml,
   scales,
+  setuptools,
   sure,
   tomli,
   twisted,
-  setuptools,
-  distutils,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "cassandra-driver";
   version = "3.30.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "apache";
@@ -36,30 +35,13 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-4ElOiADaldT/TyLqg/5ijFk9Ygb3GEF37P2d8WdAxkw=";
   };
 
-  pythonRelaxDeps = [ "geomet" ];
-
-  build-system = [
-    distutils
-    setuptools
-    cython
-    tomli
-  ];
-
   buildInputs = [ libev ];
+  # This is used to determine the version of cython that can be used
+  env.CASS_DRIVER_ALLOWED_CYTHON_VERSION = cython.version;
 
-  dependencies = [
-    deprecated
-    geomet
-  ];
-
-  optional-dependencies = {
-    cle = [ cryptography ];
-    eventlet = [ eventlet ];
-    gevent = [ gevent ];
-    graph = [ gremlinpython ];
-    metrics = [ scales ];
-    twisted = [ twisted ];
-  };
+  preBuild = ''
+    export CASS_DRIVER_BUILD_CONCURRENCY=$NIX_BUILD_CORES
+  '';
 
   nativeCheckInputs = [
     pytestCheckHook
@@ -68,15 +50,6 @@ buildPythonPackage (finalAttrs: {
     sure
   ]
   ++ lib.concatAttrValues finalAttrs.passthru.optional-dependencies;
-
-  # This is used to determine the version of cython that can be used
-  env.CASS_DRIVER_ALLOWED_CYTHON_VERSION = cython.version;
-
-  preBuild = ''
-    export CASS_DRIVER_BUILD_CONCURRENCY=$NIX_BUILD_CORES
-  '';
-
-  __darwinAllowLocalNetworking = true;
 
   # Make /etc/protocols accessible to allow socket.getprotobyname('tcp') in sandbox,
   # also /etc/resolv.conf is referenced by some tests
@@ -98,13 +71,23 @@ buildPythonPackage (finalAttrs: {
       mv cassandra .cassandra.hidden
     '';
 
-  pythonImportsCheck = [ "cassandra" ];
-
   postCheck = ''
     unset NIX_REDIRECTS LD_PRELOAD
   '';
 
-  enabledTestPaths = [ "tests/unit" ];
+  __darwinAllowLocalNetworking = true;
+
+  build-system = [
+    distutils
+    setuptools
+    cython
+    tomli
+  ];
+
+  dependencies = [
+    deprecated
+    geomet
+  ];
 
   disabledTestPaths = [
     # requires puresasl
@@ -126,6 +109,21 @@ buildPythonPackage (finalAttrs: {
     # AssertionError: [(1773409714.980824, <cassandra.connection.Timer object at 0x116cb2870>)] is not false
     "test_timer_cancellation"
   ];
+
+  enabledTestPaths = [ "tests/unit" ];
+
+  optional-dependencies = {
+    cle = [ cryptography ];
+    eventlet = [ eventlet ];
+    gevent = [ gevent ];
+    graph = [ gremlinpython ];
+    metrics = [ scales ];
+    twisted = [ twisted ];
+  };
+
+  pyproject = true;
+  pythonImportsCheck = [ "cassandra" ];
+  pythonRelaxDeps = [ "geomet" ];
 
   meta = {
     description = "Python client driver for Apache Cassandra";

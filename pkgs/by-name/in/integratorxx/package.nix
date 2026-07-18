@@ -1,9 +1,9 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
-  cmake,
   catch2_3,
+  cmake,
 }:
 
 stdenv.mkDerivation {
@@ -25,15 +25,14 @@ stdenv.mkDerivation {
     (lib.cmakeBool "BUILD_SHARED_LIBS" (!stdenv.hostPlatform.isStatic))
   ];
 
-  checkInputs = [ catch2_3 ];
-
   doCheck = true;
+  checkInputs = [ catch2_3 ];
 
   meta = {
     description = "Reusable DFT Grids for the Masses";
     homepage = "https://github.com/wavefunction91/IntegratorXX";
     license = lib.licenses.bsd3;
-    platforms = lib.platforms.linux;
     maintainers = [ lib.maintainers.sheepforce ];
+    platforms = lib.platforms.linux;
   };
 }

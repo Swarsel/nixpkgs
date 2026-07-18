@@ -1,10 +1,10 @@
 {
   lib,
+  fetchFromGitHub,
   boto3,
   buildPythonPackage,
   cryptography,
   docutils,
-  fetchFromGitHub,
   fetchpatch,
   pytestCheckHook,
   pyyaml,
@@ -14,7 +14,6 @@
 buildPythonPackage rec {
   pname = "credstash";
   version = "1.17.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "fugue";
@@ -26,10 +25,12 @@ buildPythonPackage rec {
   patches = [
     # setup_requires -> tests_requires for pytest
     (fetchpatch {
-      url = "https://github.com/fugue/credstash/commit/9c02ee43ed6e37596cafbca2fe80c532ec19d2d8.patch";
       hash = "sha256-dlybrpfLK+PqwWWhH9iXgXHYysZGmcZAFGWNOwsG0xA=";
+      url = "https://github.com/fugue/credstash/commit/9c02ee43ed6e37596cafbca2fe80c532ec19d2d8.patch";
     })
   ];
+
+  nativeBuildInputs = [ pytestCheckHook ];
   # The install phase puts an executable and a copy of the library it imports in
   # bin/credstash and bin/credstash.py, despite the fact that the library is also
   # installed to lib/python<version>/site-packages/credstash.py.
@@ -37,7 +38,6 @@ buildPythonPackage rec {
   # to import the credstash module from the resulting shell script. Removing this
   # file ensures that Python imports the module from site-packages library.
   postInstall = "rm $out/bin/credstash.py";
-
   build-system = [ setuptools ];
 
   dependencies = [
@@ -47,13 +47,13 @@ buildPythonPackage rec {
     pyyaml
   ];
 
-  nativeBuildInputs = [ pytestCheckHook ];
-
   disabledTestPaths = [
     # Tests require a region
     "integration_tests/test_credstash_lib.py"
     "tests/key_service_test.py"
   ];
+
+  pyproject = true;
 
   meta = {
     description = "Utility for managing secrets in the cloud using AWS KMS and DynamoDB";

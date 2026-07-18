@@ -16,17 +16,18 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   strictDeps = true;
-  dontBuild = true;
 
   installPhase = ''
     mkdir -p $out/share/zsh-vi-mode
     cp *.zsh $out/share/zsh-vi-mode/
   '';
 
+  dontBuild = true;
+
   meta = {
+    description = "Better and friendly vi(vim) mode plugin for ZSH";
     homepage = "https://github.com/jeffreytse/zsh-vi-mode";
     license = lib.licenses.mit;
-    description = "Better and friendly vi(vim) mode plugin for ZSH";
     maintainers = with lib.maintainers; [ kyleondy ];
     platforms = lib.platforms.all;
   };

@@ -16,9 +16,6 @@ stdenv.mkDerivation rec {
     sha256 = "sha256-7uw0IdRSxhPrLqdgECKB9eOrtFj+2HTILBhakKiRuNQ=";
   };
 
-  passthru.scripts = [ "notify_send.py" ];
-
-  dontBuild = true;
   doCheck = false;
 
   installPhase = ''
@@ -26,6 +23,9 @@ stdenv.mkDerivation rec {
     substituteInPlace $out/share/notify_send.py \
       --replace "'notify-send'" "'${libnotify}/bin/notify-send'"
   '';
+
+  dontBuild = true;
+  passthru.scripts = [ "notify_send.py" ];
 
   meta = {
     description = "WeeChat script that sends highlight and message notifications through notify-send";

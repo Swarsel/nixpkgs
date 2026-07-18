@@ -2,49 +2,47 @@
   lib,
   stdenv,
   fetchurl,
-  cups,
-  dpkg,
-  gnused,
-  makeWrapper,
-  ghostscript,
-  file,
   a2ps,
   coreutils,
+  cups,
+  dpkg,
+  file,
   gawk,
+  ghostscript,
+  gnused,
+  makeWrapper,
 }:
 
 let
   version = "1.1.4-0";
   cupsdeb = fetchurl {
-    url = "https://download.brother.com/welcome/dlf007070/hl3140cwcupswrapper-${version}.i386.deb";
     sha256 = "a76281828ca6ee86c63034673577fadcf5f24e8ed003213bdbb6bf47a7aced6f";
+    url = "https://download.brother.com/welcome/dlf007070/hl3140cwcupswrapper-${version}.i386.deb";
   };
   srcdir = "hl3140cw_cupswrapper_GPL_source_${version}";
   cupssrc = fetchurl {
-    url = "https://download.brother.com/welcome/dlf006740/${srcdir}.tar.gz";
     sha256 = "1wp85rbvbar6rqqkaffymxjpls6jx9m9230dlrpqwy5akiaxf0rl";
+    url = "https://download.brother.com/welcome/dlf006740/${srcdir}.tar.gz";
   };
   lprdeb = fetchurl {
-    url = "https://support.brother.com/g/b/files/dlf/dlf007068/hl3140cwlpr-1.1.2-1.i386.deb";
     sha256 = "601f392b52ed7080f71b780181823bb8f6abfd0591146b452ba1f23e21f9f865";
+    url = "https://support.brother.com/g/b/files/dlf/dlf007068/hl3140cwlpr-1.1.2-1.i386.deb";
   };
 in
 stdenv.mkDerivation {
-  pname = "cups-brother-hl3140cw";
   inherit version;
+  pname = "cups-brother-hl3140cw";
+
   nativeBuildInputs = [
     makeWrapper
     dpkg
   ];
+
   buildInputs = [
     cups
     ghostscript
     a2ps
   ];
-
-  unpackPhase = ''
-    tar -xvf ${cupssrc}
-  '';
 
   buildPhase = ''
     gcc -Wall ${srcdir}/brcupsconfig/brcupsconfig.c -o brcupsconfpt1
@@ -109,11 +107,15 @@ stdenv.mkDerivation {
       }
   '';
 
+  unpackPhase = ''
+    tar -xvf ${cupssrc}
+  '';
+
   meta = {
-    homepage = "http://www.brother.com/";
     description = "Brother hl3140cw printer driver";
-    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
+    homepage = "http://www.brother.com/";
     license = lib.licenses.unfree;
+    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
     platforms = lib.platforms.linux;
     downloadPage = "https://support.brother.com/g/b/downloadlist.aspx?c=eu_ot&lang=en&prod=hl3140cw_us_eu&os=128";
   };

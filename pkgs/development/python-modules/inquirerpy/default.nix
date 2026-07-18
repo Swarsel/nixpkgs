@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   pfzy,
   poetry-core,
   prompt-toolkit,
@@ -11,7 +11,6 @@
 buildPythonPackage rec {
   pname = "inquirerpy";
   version = "0.3.4";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "kazhala";
@@ -29,8 +28,6 @@ buildPythonPackage rec {
 
   nativeCheckInputs = [ pytestCheckHook ];
 
-  pythonImportsCheck = [ "InquirerPy" ];
-
   disabledTestPaths = [
     # AttributeError: '_GeneratorContextManager' object has no attribute 'close'
     "tests/prompts/"
@@ -38,6 +35,9 @@ buildPythonPackage rec {
     "tests/base/test_complex.py"
     "tests/base/test_list.py"
   ];
+
+  pyproject = true;
+  pythonImportsCheck = [ "InquirerPy" ];
 
   meta = {
     description = "Python port of Inquirer.js";

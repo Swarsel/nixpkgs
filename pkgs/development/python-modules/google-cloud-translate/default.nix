@@ -17,28 +17,12 @@
 buildPythonPackage rec {
   pname = "google-cloud-translate";
   version = "3.27.0";
-  pyproject = true;
 
   src = fetchPypi {
-    pname = "google_cloud_translate";
     inherit version;
     hash = "sha256-KueO8aqNu17JdnoI6rzjT9p7tFoHumeubg6tjP1flfc=";
+    pname = "google_cloud_translate";
   };
-
-  build-system = [ setuptools ];
-
-  pythonRelaxDeps = [
-    "protobuf"
-  ];
-
-  dependencies = [
-    google-api-core
-    google-cloud-core
-    grpc-google-iam-v1
-    proto-plus
-    protobuf
-  ]
-  ++ google-api-core.optional-dependencies.grpc;
 
   nativeCheckInputs = [
     google-cloud-testutils
@@ -52,6 +36,24 @@ buildPythonPackage rec {
     rm -r google
   '';
 
+  build-system = [ setuptools ];
+
+  dependencies = [
+    google-api-core
+    google-cloud-core
+    grpc-google-iam-v1
+    proto-plus
+    protobuf
+  ]
+  ++ google-api-core.optional-dependencies.grpc;
+
+  disabledTests = [
+    # Tests require PROJECT_ID
+    "test_list_glossaries"
+  ];
+
+  pyproject = true;
+
   pythonImportsCheck = [
     "google.cloud.translate"
     "google.cloud.translate_v2"
@@ -59,9 +61,8 @@ buildPythonPackage rec {
     "google.cloud.translate_v3beta1"
   ];
 
-  disabledTests = [
-    # Tests require PROJECT_ID
-    "test_list_glossaries"
+  pythonRelaxDeps = [
+    "protobuf"
   ];
 
   meta = {

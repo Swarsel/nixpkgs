@@ -1,9 +1,9 @@
 {
   lib,
-  buildPythonPackage,
-  click-shell,
-  click,
   fetchFromGitHub,
+  buildPythonPackage,
+  click,
+  click-shell,
   hatchling,
   iterfzf,
   pyyaml,
@@ -14,7 +14,6 @@
 buildPythonPackage rec {
   pname = "typer-shell";
   version = "1.0.3";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "FergusFettes";
@@ -23,12 +22,8 @@ buildPythonPackage rec {
     hash = "sha256-vjinzBCaEPWbroxT7OmUQIvtwlPivYO0soGqvyRXVc4=";
   };
 
-  pythonRelaxDeps = [
-    "iterfzf"
-    "rich"
-    "typer"
-  ];
-
+  # Module has no tests
+  doCheck = false;
   build-system = [ hatchling ];
 
   dependencies = [
@@ -40,10 +35,14 @@ buildPythonPackage rec {
     typer
   ];
 
-  # Module has no tests
-  doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "typer_shell" ];
+
+  pythonRelaxDeps = [
+    "iterfzf"
+    "rich"
+    "typer"
+  ];
 
   meta = {
     description = "Library for making beautiful shells/REPLs with Typer";

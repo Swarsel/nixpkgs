@@ -25,8 +25,8 @@ let
     pkgsArg: messageArg:
     pkgsArg.pkgsStatic.runCommandCC "stub-ld"
       {
-        nativeBuildInputs = [ pkgsArg.unixtools.xxd ];
         inherit messageArg;
+        nativeBuildInputs = [ pkgsArg.unixtools.xxd ];
       }
       ''
         printf "%s" "$messageArg" | xxd -i -n message >main.c
@@ -47,14 +47,16 @@ in
   options = {
     environment.stub-ld = {
       enable = mkOption {
-        type = types.bool;
         default = true;
-        example = false;
+
         description = ''
           Install a stub ELF loader to print an informative error message
           in the event that a user attempts to run an ELF binary not
           compiled for NixOS.
         '';
+
+        example = false;
+        type = types.bool;
       };
     };
   };

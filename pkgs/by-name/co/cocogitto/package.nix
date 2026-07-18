@@ -1,10 +1,10 @@
 {
   lib,
-  rustPlatform,
+  stdenv,
   fetchFromGitHub,
   installShellFiles,
-  stdenv,
   libgit2,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -18,15 +18,12 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-Z+SXB6bDxyR+Bt3Pz6uF9+sZLjbiFNYeECVFZbx40h8=";
   };
 
+  nativeBuildInputs = [ installShellFiles ];
+  buildInputs = [ libgit2 ];
   cargoHash = "sha256-TGcgiXLgxeOO44eNfd9F0VonTTJhOn1iEJwrO65wcxk=";
-
   # Test depend on git configuration that would likely exist in a normal user environment
   # and might be failing to create the test repository it works in.
   doCheck = false;
-
-  nativeBuildInputs = [ installShellFiles ];
-
-  buildInputs = [ libgit2 ];
 
   postInstall = lib.optionalString (stdenv.buildPlatform.canExecute stdenv.hostPlatform) ''
     installShellCompletion --cmd cog \
@@ -36,11 +33,11 @@ rustPlatform.buildRustPackage (finalAttrs: {
   '';
 
   meta = {
-    changelog = "https://github.com/cocogitto/cocogitto/blob/${finalAttrs.src.tag}/CHANGELOG.md";
     description = "Set of cli tools for the conventional commit and semver specifications";
-    mainProgram = "cog";
     homepage = "https://docs.cocogitto.io/";
+    changelog = "https://github.com/cocogitto/cocogitto/blob/${finalAttrs.src.tag}/CHANGELOG.md";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ gs-101 ];
+    mainProgram = "cog";
   };
 })

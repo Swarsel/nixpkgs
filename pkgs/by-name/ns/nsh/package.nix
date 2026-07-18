@@ -1,7 +1,7 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -16,22 +16,23 @@ rustPlatform.buildRustPackage (finalAttrs: {
   };
 
   cargoHash = "sha256-kbHNFVu5OIg/eKefhsYRGvlXFduB0aBVflPV9hkM4Ec=";
-
   doCheck = false;
+
+  passthru = {
+    shellPath = "/bin/nsh";
+  };
 
   meta = {
     description = "Command-line shell like fish, but POSIX compatible";
-    mainProgram = "nsh";
     homepage = "https://github.com/nuta/nsh";
     changelog = "https://github.com/nuta/nsh/raw/v${finalAttrs.version}/docs/changelog.md";
+
     license = [
       lib.licenses.cc0 # or
       lib.licenses.mit
     ];
-    maintainers = with lib.maintainers; [ cafkafk ];
-  };
 
-  passthru = {
-    shellPath = "/bin/nsh";
+    maintainers = with lib.maintainers; [ cafkafk ];
+    mainProgram = "nsh";
   };
 })

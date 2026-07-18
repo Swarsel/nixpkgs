@@ -1,32 +1,25 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  pythonAtLeast,
-
-  # build-system
-  setuptools,
-
   # dependencies
   build,
+  buildPythonPackage,
   docutils,
   flit-core,
   packaging,
   pygments,
-  requests,
-  trove-classifiers,
-
   # test
   pytestCheckHook,
+  pythonAtLeast,
+  requests,
+  # build-system
+  setuptools,
+  trove-classifiers,
 }:
 
 buildPythonPackage rec {
   pname = "pyroma";
   version = "5.0.1";
-  pyproject = true;
-
-  # https://github.com/regebro/pyroma/issues/104
-  disabled = pythonAtLeast "3.12";
 
   src = fetchFromGitHub {
     owner = "regebro";
@@ -47,6 +40,8 @@ buildPythonPackage rec {
   ];
 
   nativeCheckInputs = [ pytestCheckHook ];
+  # https://github.com/regebro/pyroma/issues/104
+  disabled = pythonAtLeast "3.12";
 
   disabledTests = [
     # tries to reach pypi
@@ -54,13 +49,14 @@ buildPythonPackage rec {
     "test_distribute"
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "pyroma" ];
 
   meta = {
     description = "Test your project's packaging friendliness";
-    mainProgram = "pyroma";
     homepage = "https://github.com/regebro/pyroma";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ kamadorueda ];
+    mainProgram = "pyroma";
   };
 }

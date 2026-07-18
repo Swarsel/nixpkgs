@@ -1,7 +1,7 @@
 {
   lib,
-  stdenvNoCC,
   fetchzip,
+  stdenvNoCC,
 }:
 
 stdenvNoCC.mkDerivation rec {
@@ -10,8 +10,8 @@ stdenvNoCC.mkDerivation rec {
 
   src = fetchzip {
     url = "https://github.com/i-tu/Hasklig/releases/download/${version}/Hasklig-${version}.zip";
-    stripRoot = false;
     hash = "sha256-jsPQtjuegMePt4tB1dZ9mq15LSxXBYwtakbq4od/sko=";
+    stripRoot = false;
   };
 
   installPhase = ''
@@ -23,10 +23,10 @@ stdenvNoCC.mkDerivation rec {
   '';
 
   meta = {
-    homepage = "https://github.com/i-tu/Hasklig";
     description = "Font with ligatures for Haskell code based off Source Code Pro";
+    homepage = "https://github.com/i-tu/Hasklig";
     license = lib.licenses.ofl;
-    platforms = lib.platforms.all;
     maintainers = with lib.maintainers; [ davidrusu ];
+    platforms = lib.platforms.all;
   };
 }

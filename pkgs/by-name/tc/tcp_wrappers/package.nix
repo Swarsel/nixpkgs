@@ -1,8 +1,8 @@
 {
-  fetchurl,
-  fetchFromGitLab,
   lib,
   stdenv,
+  fetchurl,
+  fetchFromGitLab,
   libnsl,
 }:
 
@@ -19,25 +19,8 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-lUPXre33im3gsiHMu9GVLgi1E4cX9K3oFAObtImkMV0=";
   };
 
-  debian = fetchFromGitLab {
-    domain = "salsa.debian.org";
-    owner = "md";
-    repo = "tcp-wrappers";
-    tag = "debian/${finalAttrs.version}";
-    hash = "sha256-SPJmhtgysChnxlta5l1huRq66YcEmHvx1Xs4k7iznTg=";
-  };
-
-  prePatch = ''
-    cp -r $debian/debian .
-    patches="$(cat debian/patches/series | sed 's,^,debian/patches/,') $patches"
-
-    substituteInPlace Makefile --replace-fail STRINGS STRINGDEFS
-    substituteInPlace debian/patches/13_shlib_weaksym --replace-fail STRINGS STRINGDEFS
-  '';
-
   # Fix __BEGIN_DECLS usage (even if it wasn't non-standard, this doesn't include sys/cdefs.h)
   patches = [ ./cdecls.patch ];
-
   buildInputs = [ libnsl ];
 
   makeFlags = [
@@ -61,6 +44,22 @@ stdenv.mkDerivation (finalAttrs: {
       mkdir -p "$out/man/man$i"
       cp *.$i "$out/man/man$i" ;
     done
+  '';
+
+  debian = fetchFromGitLab {
+    domain = "salsa.debian.org";
+    hash = "sha256-SPJmhtgysChnxlta5l1huRq66YcEmHvx1Xs4k7iznTg=";
+    owner = "md";
+    repo = "tcp-wrappers";
+    tag = "debian/${finalAttrs.version}";
+  };
+
+  prePatch = ''
+    cp -r $debian/debian .
+    patches="$(cat debian/patches/series | sed 's,^,debian/patches/,') $patches"
+
+    substituteInPlace Makefile --replace-fail STRINGS STRINGDEFS
+    substituteInPlace debian/patches/13_shlib_weaksym --replace-fail STRINGS STRINGDEFS
   '';
 
   meta = {

@@ -1,6 +1,6 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
   cmake,
   obs-studio,
@@ -20,6 +20,7 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   nativeBuildInputs = [ cmake ];
+
   buildInputs = [
     obs-studio
     qtbase
@@ -38,7 +39,7 @@ stdenv.mkDerivation (finalAttrs: {
     description = "Plugin for OBS Studio to freeze a source using a filter";
     homepage = "https://github.com/exeldro/obs-freeze-filter";
     license = lib.licenses.gpl2Only;
-    platforms = lib.platforms.linux;
     maintainers = with lib.maintainers; [ pschmitt ];
+    platforms = lib.platforms.linux;
   };
 })

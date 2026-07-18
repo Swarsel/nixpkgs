@@ -1,19 +1,18 @@
 {
   lib,
+  fetchFromGitHub,
   bluetooth-sensor-state-data,
   buildPythonPackage,
-  fetchFromGitHub,
   poetry-core,
   pycryptodomex,
-  pytestCheckHook,
   pytest-cov-stub,
+  pytestCheckHook,
   sensor-state-data,
 }:
 
 buildPythonPackage rec {
   pname = "atc-ble";
   version = "0.1.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "Bluetooth-Devices";
@@ -21,6 +20,11 @@ buildPythonPackage rec {
     tag = "v${version}";
     hash = "sha256-rwOFKxUlbbNIDJRdCmZpHstXwxcTnvlExgcVDdGbIVY=";
   };
+
+  nativeCheckInputs = [
+    pytestCheckHook
+    pytest-cov-stub
+  ];
 
   build-system = [ poetry-core ];
 
@@ -30,11 +34,7 @@ buildPythonPackage rec {
     sensor-state-data
   ];
 
-  nativeCheckInputs = [
-    pytestCheckHook
-    pytest-cov-stub
-  ];
-
+  pyproject = true;
   pythonImportsCheck = [ "atc_ble" ];
 
   meta = {

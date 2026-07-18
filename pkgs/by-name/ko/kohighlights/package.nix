@@ -1,12 +1,12 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
-  python312Packages,
-  qt5,
-  makeWrapper,
   copyDesktopItems,
   makeDesktopItem,
+  makeWrapper,
+  python312Packages,
+  qt5,
 }:
 
 let
@@ -15,7 +15,6 @@ in
 python3Packages.buildPythonApplication rec {
   pname = "kohighlights";
   version = "2.3.1.0";
-  pyproject = false; # manual install
 
   src = fetchFromGitHub {
     owner = "noembryo";
@@ -24,8 +23,11 @@ python3Packages.buildPythonApplication rec {
     hash = "sha256-JxUVv2gq/AcNbikF5ix1KjbCILW3fQ1PBKMlrJH3lsk=";
   };
 
-  dontWrapPythonPrograms = true;
-  dontBuild = true;
+  nativeBuildInputs = [
+    qt5.wrapQtAppsHook
+    makeWrapper
+    copyDesktopItems
+  ];
 
   buildInputs = [
     qt5.qtbase
@@ -33,32 +35,6 @@ python3Packages.buildPythonApplication rec {
   ++ lib.optionals (stdenv.hostPlatform.isLinux) [
     qt5.qtwayland
   ];
-
-  nativeBuildInputs = [
-    qt5.wrapQtAppsHook
-    makeWrapper
-    copyDesktopItems
-  ];
-
-  dependencies = with python3Packages; [
-    pyside2
-    beautifulsoup4
-    packaging
-    requests
-    future
-  ];
-
-  desktopItems = [
-    (makeDesktopItem {
-      name = "kohighlights";
-      desktopName = "KoHighlights";
-      exec = meta.mainProgram;
-      comment = meta.description;
-      categories = [ "Utility" ];
-    })
-  ];
-
-  dontWrapQtApps = true;
 
   installPhase = ''
     runHook preInstall
@@ -73,6 +49,29 @@ python3Packages.buildPythonApplication rec {
 
     runHook postInstall
   '';
+
+  dependencies = with python3Packages; [
+    pyside2
+    beautifulsoup4
+    packaging
+    requests
+    future
+  ];
+
+  desktopItems = [
+    (makeDesktopItem {
+      categories = [ "Utility" ];
+      comment = meta.description;
+      desktopName = "KoHighlights";
+      exec = meta.mainProgram;
+      name = "kohighlights";
+    })
+  ];
+
+  dontBuild = true;
+  dontWrapPythonPrograms = true;
+  dontWrapQtApps = true;
+  pyproject = false; # manual install
 
   meta = {
     description = "Utility for viewing and/or exporting KOReader's highlights";

@@ -15,14 +15,14 @@ stdenv.mkDerivation (finalAttrs: {
     sha256 = "sha256-S2aRNTJMQO/YXdCHexKQ+gZnZp2vGvsvhD5O7t3tfhw=";
   };
 
-  sourceRoot = "${finalAttrs.src.name}/src";
-
   installPhase = ''
     runHook preInstall
     install -Dm0555 *.bin -t $out/bin
     install -Dm0555 *.pl -t $out/bin
     runHook postInstall
   '';
+
+  sourceRoot = "${finalAttrs.src.name}/src";
 
   meta = {
     description = "Small utilities that are useful in advanced password cracking";

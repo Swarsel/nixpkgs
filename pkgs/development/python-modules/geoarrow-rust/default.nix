@@ -1,24 +1,23 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  rustPlatform,
-  pytestCheckHook,
-  arro3-core,
-  obstore,
-
   # tests
   arro3-compute,
+  arro3-core,
   arro3-io,
+  buildPythonPackage,
   geoarrow-types,
   geodatasets,
   geopandas,
   numpy,
+  obstore,
   pandas,
   pyarrow,
   pyogrio,
   pyproj,
   pytest-asyncio,
+  pytestCheckHook,
+  rustPlatform,
   shapely,
 }:
 let
@@ -39,21 +38,23 @@ let
   };
 
   commonMeta = {
-    homepage = "https://github.com/geoarrow/geoarrow-rs";
     changelog = "https://github.com/geoarrow/geoarrow-rs/releases/tag/py-v${version}";
+    homepage = "https://github.com/geoarrow/geoarrow-rs";
+
     license = with lib.licenses; [
       asl20
       mit
     ];
+
     maintainers = with lib.maintainers; [ daspk04 ];
   };
 
   buildGeoArrowPackage =
     {
-      pname,
-      subdir,
       description,
+      pname,
       pythonImportsCheck,
+      subdir,
       dependencies ? [ ],
     }:
     buildPythonPackage {
@@ -65,26 +66,25 @@ let
         dependencies
         pythonImportsCheck
         ;
-      pyproject = true;
 
-      sourceRoot = "${src.name}/python/${subdir}";
-      cargoRoot = "..";
-      __structuredAttrs = true;
+      postPatch = ''
+        chmod -R +w ../..
+      '';
 
       nativeBuildInputs = with rustPlatform; [
         cargoSetupHook
         maturinBuildHook
       ];
 
-      postPatch = ''
-        chmod -R +w ../..
-      '';
-
       # set target directory so maturin can find the compiled libraries in this workspace setup
       env = {
         CARGO_TARGET_DIR = "./target";
       };
 
+      __structuredAttrs = true;
+      cargoRoot = "..";
+      pyproject = true;
+      sourceRoot = "${src.name}/python/${subdir}";
       passthru.tests = { inherit geoarrow-rust-tests; };
 
       meta = commonMeta // {
@@ -94,34 +94,40 @@ let
 
   geoarrow-rust-core = buildGeoArrowPackage {
     pname = "geoarrow-rust-core";
-    subdir = "geoarrow-core";
-    description = "Core library for representing GeoArrow data in Python";
-    pythonImportsCheck = [ "geoarrow.rust.core" ];
+
     dependencies = [
       arro3-core
       pyproj
     ];
+
+    description = "Core library for representing GeoArrow data in Python";
+    pythonImportsCheck = [ "geoarrow.rust.core" ];
+    subdir = "geoarrow-core";
   };
 
   geoarrow-rust-io = buildGeoArrowPackage {
     pname = "geoarrow-rust-io";
-    subdir = "geoarrow-io";
-    description = "Rust-based readers and writers for GeoArrow in Python";
-    pythonImportsCheck = [ "geoarrow.rust.io" ];
+
     dependencies = [
       arro3-core
       obstore
       pyproj
     ];
+
+    description = "Rust-based readers and writers for GeoArrow in Python";
+    pythonImportsCheck = [ "geoarrow.rust.io" ];
+    subdir = "geoarrow-io";
   };
 
   geoarrow-rust-tests = buildPythonPackage {
-    pname = "geoarrow-rust-tests";
     inherit src version;
+    pname = "geoarrow-rust-tests";
 
-    pyproject = false;
-    dontBuild = true;
-    dontInstall = true;
+    # fix the directory name, as it is named as source for nix build
+    postPatch = ''
+      substituteInPlace python/tests/utils.py \
+        --replace-fail 'while current_dir.stem != "geoarrow-rs":' 'while current_dir.stem != "source":'
+    '';
 
     nativeCheckInputs = [
       arro3-compute
@@ -141,9 +147,6 @@ let
       shapely
     ];
 
-    # use the latest test folder (skips the tests_old folder)
-    pytestFlags = [ "python/tests" ];
-
     disabledTests = [
       # require internet access to download datasets
       "test_parse_nybb"
@@ -153,11 +156,11 @@ let
       "test_parquet_file"
     ];
 
-    # fix the directory name, as it is named as source for nix build
-    postPatch = ''
-      substituteInPlace python/tests/utils.py \
-        --replace-fail 'while current_dir.stem != "geoarrow-rs":' 'while current_dir.stem != "source":'
-    '';
+    dontBuild = true;
+    dontInstall = true;
+    pyproject = false;
+    # use the latest test folder (skips the tests_old folder)
+    pytestFlags = [ "python/tests" ];
   };
 in
 {

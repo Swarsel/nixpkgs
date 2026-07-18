@@ -1,12 +1,11 @@
 {
-  stdenv,
   lib,
+  stdenv,
+  bootstrapSdk,
   callPackage,
-
+  depsFile,
   releaseManifestFile,
   tarballHash,
-  depsFile,
-  bootstrapSdk,
 }@args:
 
 let

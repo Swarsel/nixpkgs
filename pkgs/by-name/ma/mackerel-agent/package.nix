@@ -1,10 +1,10 @@
 {
-  stdenv,
   lib,
-  buildGoModule,
+  stdenv,
   fetchFromGitHub,
-  makeWrapper,
+  buildGoModule,
   iproute2,
+  makeWrapper,
   net-tools,
 }:
 
@@ -20,30 +20,28 @@ buildGoModule (finalAttrs: {
   };
 
   nativeBuildInputs = [ makeWrapper ];
-  nativeCheckInputs = lib.optionals (!stdenv.hostPlatform.isDarwin) [ net-tools ];
   buildInputs = lib.optionals (!stdenv.hostPlatform.isDarwin) [ iproute2 ];
-
   vendorHash = "sha256-Ubk/ms/3FwH1ZqZ5uTy0MubXhrKBoeaC85Y1KKH5cIw=";
-
-  subPackages = [ "." ];
-
-  ldflags = [
-    "-X=main.version=${finalAttrs.version}"
-    "-X=main.gitcommit=v${finalAttrs.version}"
-  ];
+  doCheck = true;
+  nativeCheckInputs = lib.optionals (!stdenv.hostPlatform.isDarwin) [ net-tools ];
 
   postInstall = ''
     wrapProgram $out/bin/mackerel-agent \
       --prefix PATH : "${lib.makeBinPath finalAttrs.buildInputs}"
   '';
 
-  doCheck = true;
+  ldflags = [
+    "-X=main.version=${finalAttrs.version}"
+    "-X=main.gitcommit=v${finalAttrs.version}"
+  ];
+
+  subPackages = [ "." ];
 
   meta = {
     description = "System monitoring service for mackerel.io";
-    mainProgram = "mackerel-agent";
     homepage = "https://github.com/mackerelio/mackerel-agent";
     license = lib.licenses.asl20;
     maintainers = with lib.maintainers; [ midchildan ];
+    mainProgram = "mackerel-agent";
   };
 })

@@ -1,15 +1,14 @@
 {
   lib,
-  isPy3k,
   buildPythonPackage,
-  fetchPypi,
   defusedxml,
+  fetchPypi,
+  isPy3k,
 }:
 
 buildPythonPackage rec {
   pname = "python3-openid";
   version = "3.2.0";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
@@ -17,10 +16,9 @@ buildPythonPackage rec {
   };
 
   propagatedBuildInputs = [ defusedxml ];
-
   doCheck = false;
-
   disabled = !isPy3k;
+  format = "setuptools";
 
   meta = {
     description = "OpenID support for modern servers and consumers";

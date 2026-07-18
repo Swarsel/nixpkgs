@@ -2,18 +2,15 @@
   lib,
   fetchFromGitHub,
   buildGoModule,
-  pkg-config,
   ffmpeg-livepeer,
   gnutls,
   nix-update-script,
+  pkg-config,
 }:
 
 buildGoModule (finalAttrs: {
   pname = "livepeer";
   version = "0.8.10";
-
-  proxyVendor = true;
-  vendorHash = "sha256-Cn7GHNrFjGgzKPjSVGnoRE9Q2gd3Ji/ZrdVGB9v+0A8=";
 
   src = fetchFromGitHub {
     owner = "livepeer";
@@ -21,6 +18,10 @@ buildGoModule (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-jz8lgZItPDzAGKJrAFLiEUJ5nyTdw6kGneP6LtmWDYw=";
   };
+
+  postPatch = ''
+    rm -rf test/e2e # Require docker
+  '';
 
   nativeBuildInputs = [
     pkg-config
@@ -31,25 +32,25 @@ buildGoModule (finalAttrs: {
     gnutls
   ];
 
+  vendorHash = "sha256-Cn7GHNrFjGgzKPjSVGnoRE9Q2gd3Ji/ZrdVGB9v+0A8=";
+
   env.CGO_LDFLAGS = toString [
     "-lm"
   ];
 
   __darwinAllowLocalNetworking = true;
-
-  postPatch = ''
-    rm -rf test/e2e # Require docker
-  '';
-
+  proxyVendor = true;
   passthru.updateScript = nix-update-script { };
 
   meta = {
     description = "Official Go implementation of the Livepeer protocol";
     homepage = "https://livepeer.org";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       bot-wxt1221
     ];
+
     mainProgram = "livepeer";
   };
 })

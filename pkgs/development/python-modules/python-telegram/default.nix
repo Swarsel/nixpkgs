@@ -1,11 +1,11 @@
 {
   lib,
   stdenv,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   pytestCheckHook,
-  setuptools-scm,
   setuptools,
+  setuptools-scm,
   tdlib,
   telegram-text,
 }:
@@ -13,7 +13,6 @@
 buildPythonPackage rec {
   pname = "python-telegram";
   version = "0.19.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "alexander-akhmetov";
@@ -31,6 +30,7 @@ buildPythonPackage rec {
                 "\"${tdlib}/lib/libtdjson${stdenv.hostPlatform.extensions.sharedLibrary}\""
   '';
 
+  nativeCheckInputs = [ pytestCheckHook ];
   build-inputs = [ setuptools ];
 
   dependencies = [
@@ -38,10 +38,8 @@ buildPythonPackage rec {
     telegram-text
   ];
 
-  nativeCheckInputs = [ pytestCheckHook ];
-
   disabledTests = [ "TestGetTdjsonTdlibPath" ];
-
+  pyproject = true;
   pythonImportsCheck = [ "telegram.client" ];
 
   meta = {

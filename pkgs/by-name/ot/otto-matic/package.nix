@@ -2,10 +2,10 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  sdl3,
-  libGL,
   cmake,
+  libGL,
   makeWrapper,
+  sdl3,
   unstableGitUpdater,
 }:
 

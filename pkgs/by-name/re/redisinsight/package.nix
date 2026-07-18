@@ -1,21 +1,18 @@
 {
   lib,
   stdenv,
-
   fetchFromGitHub,
-  fetchYarnDeps,
-  makeDesktopItem,
-
   copyDesktopItems,
   dart-sass,
+  electron_41,
+  fetchYarnDeps,
+  libsecret,
+  makeDesktopItem,
   makeWrapper,
   nodejs-slim_24,
   pkg-config,
-  yarnConfigHook,
-
-  electron_41,
-  libsecret,
   sqlite,
+  yarnConfigHook,
 }:
 
 let
@@ -40,25 +37,13 @@ stdenv.mkDerivation (finalAttrs: {
     ./remove-cpu-features.patch
   ];
 
-  baseOfflineCache = fetchYarnDeps {
-    name = "redisinsight-${finalAttrs.version}-base-offline-cache";
-    inherit (finalAttrs) src patches;
-    hash = "sha256-lfCasq3C0jD4wNpguxSOxwrR0Sx3ZfwK95Ib31TShSQ=";
-  };
+  postPatch = ''
+    substituteInPlace redisinsight/api/config/default.ts \
+      --replace-fail "process['resourcesPath']" "\"$out/share/redisinsight\""
 
-  innerOfflineCache = fetchYarnDeps {
-    name = "redisinsight-${finalAttrs.version}-inner-offline-cache";
-    inherit (finalAttrs) src patches;
-    postPatch = "cd redisinsight";
-    hash = "sha256-vdBSquVsIeMh5eZMRxYdVz3iuhM27RgEtI6FZqjCP74=";
-  };
-
-  apiOfflineCache = fetchYarnDeps {
-    name = "redisinsight-${finalAttrs.version}-api-offline-cache";
-    inherit (finalAttrs) src patches;
-    postPatch = "cd redisinsight/api";
-    hash = "sha256-8u4igcegknwydNsVLcPv6E5/uwQJpwNWhIpCujfoXqk=";
-  };
+    # has irrelevant files
+    rm -r resources/app
+  '';
 
   nativeBuildInputs = [
     copyDesktopItems
@@ -74,41 +59,6 @@ stdenv.mkDerivation (finalAttrs: {
     sqlite # for `sqlite3` node module
     libsecret # for `keytar` node module
   ];
-
-  postPatch = ''
-    substituteInPlace redisinsight/api/config/default.ts \
-      --replace-fail "process['resourcesPath']" "\"$out/share/redisinsight\""
-
-    # has irrelevant files
-    rm -r resources/app
-  '';
-
-  # will run yarnConfigHook manually later
-  dontYarnInstallDeps = true;
-
-  configurePhase = ''
-    runHook preConfigure
-
-    yarnOfflineCache="$baseOfflineCache" yarnConfigHook
-    cd redisinsight
-    yarnOfflineCache="$innerOfflineCache" yarnConfigHook
-    cd api
-    yarnOfflineCache="$apiOfflineCache" yarnConfigHook
-    cd ../..
-
-    export npm_config_nodedir=${electron.headers}
-    export npm_config_sqlite=${lib.getDev sqlite}
-    export ELECTRON_SKIP_BINARY_DOWNLOAD=1
-    npm rebuild --verbose --no-progress
-    cd redisinsight
-    npm rebuild --verbose --no-progress
-    export npm_config_nodedir=${nodejs}
-    cd api
-    npm rebuild --verbose --no-progress
-    cd ../..
-
-    runHook postConfigure
-  '';
 
   buildPhase = ''
     runHook preBuild
@@ -159,26 +109,75 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  apiOfflineCache = fetchYarnDeps {
+    inherit (finalAttrs) src patches;
+    postPatch = "cd redisinsight/api";
+    hash = "sha256-8u4igcegknwydNsVLcPv6E5/uwQJpwNWhIpCujfoXqk=";
+    name = "redisinsight-${finalAttrs.version}-api-offline-cache";
+  };
+
+  baseOfflineCache = fetchYarnDeps {
+    inherit (finalAttrs) src patches;
+    hash = "sha256-lfCasq3C0jD4wNpguxSOxwrR0Sx3ZfwK95Ib31TShSQ=";
+    name = "redisinsight-${finalAttrs.version}-base-offline-cache";
+  };
+
+  configurePhase = ''
+    runHook preConfigure
+
+    yarnOfflineCache="$baseOfflineCache" yarnConfigHook
+    cd redisinsight
+    yarnOfflineCache="$innerOfflineCache" yarnConfigHook
+    cd api
+    yarnOfflineCache="$apiOfflineCache" yarnConfigHook
+    cd ../..
+
+    export npm_config_nodedir=${electron.headers}
+    export npm_config_sqlite=${lib.getDev sqlite}
+    export ELECTRON_SKIP_BINARY_DOWNLOAD=1
+    npm rebuild --verbose --no-progress
+    cd redisinsight
+    npm rebuild --verbose --no-progress
+    export npm_config_nodedir=${nodejs}
+    cd api
+    npm rebuild --verbose --no-progress
+    cd ../..
+
+    runHook postConfigure
+  '';
+
   desktopItems = [
     (makeDesktopItem {
-      name = "redisinsight";
-      exec = "redisinsight %u";
-      icon = "redisinsight";
-      desktopName = "RedisInsight";
-      genericName = "RedisInsight Redis Client";
-      comment = finalAttrs.meta.description;
       categories = [ "Development" ];
+      comment = finalAttrs.meta.description;
+      desktopName = "RedisInsight";
+      exec = "redisinsight %u";
+      genericName = "RedisInsight Redis Client";
+      icon = "redisinsight";
+      name = "redisinsight";
       startupWMClass = "redisinsight";
     })
   ];
+
+  # will run yarnConfigHook manually later
+  dontYarnInstallDeps = true;
+
+  innerOfflineCache = fetchYarnDeps {
+    inherit (finalAttrs) src patches;
+    postPatch = "cd redisinsight";
+    hash = "sha256-vdBSquVsIeMh5eZMRxYdVz3iuhM27RgEtI6FZqjCP74=";
+    name = "redisinsight-${finalAttrs.version}-inner-offline-cache";
+  };
 
   meta = {
     description = "Developer GUI for Redis";
     homepage = "https://github.com/redis/RedisInsight";
     license = lib.licenses.sspl;
+
     maintainers = with lib.maintainers; [
       tomasajt
     ];
+
     platforms = lib.platforms.linux;
     teams = [ lib.teams.redis ];
   };

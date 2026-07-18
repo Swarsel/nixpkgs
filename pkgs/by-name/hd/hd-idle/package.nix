@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   installShellFiles,
 }:
 
@@ -16,9 +16,8 @@ buildGoModule (finalAttrs: {
     sha256 = "sha256-Q9EMRXzJTkPMMvehrIyiowytjKNfovtiSH4sAO6fzIo=";
   };
 
-  vendorHash = null;
-
   nativeBuildInputs = [ installShellFiles ];
+  vendorHash = null;
 
   postInstall = ''
     installManPage debian/hd-idle.8
@@ -26,10 +25,10 @@ buildGoModule (finalAttrs: {
 
   meta = {
     description = "Spins down external disks after a period of idle time";
-    mainProgram = "hd-idle";
     homepage = "https://github.com/adelolmo/hd-idle";
     license = lib.licenses.gpl3Plus;
-    platforms = lib.platforms.linux;
     maintainers = [ lib.maintainers.rycee ];
+    platforms = lib.platforms.linux;
+    mainProgram = "hd-idle";
   };
 })

@@ -1,8 +1,8 @@
 {
-  pkgsStatic,
   lib,
-  requireFile,
   emptyFile,
+  pkgsStatic,
+  requireFile,
 }:
 let
   name = "this-is-a-test";
@@ -10,8 +10,8 @@ let
     requireFile:
     requireFile {
       inherit name;
-      url = "this-is-a-test";
       hash = lib.fakeHash;
+      url = "this-is-a-test";
     };
   requireFile-native = requireFileTest requireFile;
   requireFile-static = requireFileTest pkgsStatic.requireFile;

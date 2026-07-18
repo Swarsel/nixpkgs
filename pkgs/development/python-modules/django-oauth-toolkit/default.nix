@@ -1,27 +1,24 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
-
+  buildPythonPackage,
   # propagates
   django,
-  jwcrypto,
-  requests,
-  oauthlib,
-
   # tests
   djangorestframework,
+  jwcrypto,
+  oauthlib,
   pytest-cov-stub,
   pytest-django,
   pytest-mock,
   pytestCheckHook,
+  requests,
+  setuptools,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "django-oauth-toolkit";
   version = "3.3.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "jazzband";
@@ -29,19 +26,6 @@ buildPythonPackage (finalAttrs: {
     tag = finalAttrs.version;
     hash = "sha256-eRQzAFUvSgoDiP7LW/+hMrNxHuXVxY+wc/E3VU/zeXo=";
   };
-
-  build-system = [ setuptools ];
-
-  dependencies = [
-    django
-    jwcrypto
-    oauthlib
-    requests
-  ];
-
-  preCheck = ''
-    export DJANGO_SETTINGS_MODULE=tests.settings
-  '';
 
   # xdist is disabled right now because it can cause race conditions on high core machines
   # https://github.com/jazzband/django-oauth-toolkit/issues/1300
@@ -54,10 +38,25 @@ buildPythonPackage (finalAttrs: {
     pytestCheckHook
   ];
 
+  preCheck = ''
+    export DJANGO_SETTINGS_MODULE=tests.settings
+  '';
+
+  build-system = [ setuptools ];
+
+  dependencies = [
+    django
+    jwcrypto
+    oauthlib
+    requests
+  ];
+
   disabledTests = [
     # Failed to get a valid response from authentication server. Status code: 404, Reason: Not Found.
     "test_response_when_auth_server_response_return_404"
   ];
+
+  pyproject = true;
 
   meta = {
     description = "OAuth2 goodies for the Djangonauts";

@@ -21,40 +21,62 @@ let
 in
 {
   options.services.firewalld.settings = mkOption {
+    default = { };
+
     description = ''
       FirewallD config file.
       See {manpage}`firewalld.conf(5)`.
     '';
-    default = { };
+
     type = submodule {
-      freeformType = attrsOf (oneOf [
-        bool
-        nonEmptyStr
-      ]);
       options = {
-        DefaultZone = mkOption {
-          type = nonEmptyStr;
-          description = "Default zone for connections.";
-          default = "public";
-        };
-        CleanupOnExit = mkOption {
-          type = bool;
-          description = "Whether to clean up firewall rules when firewalld stops.";
-          default = true;
-        };
         CleanupModulesOnExit = mkOption {
-          type = bool;
-          description = "Whether to unload all firewall-related kernel modules when firewalld stops.";
           default = false;
+          description = "Whether to unload all firewall-related kernel modules when firewalld stops.";
+          type = bool;
         };
-        IPv6_rpfilter = mkOption {
+
+        CleanupOnExit = mkOption {
+          default = true;
+          description = "Whether to clean up firewall rules when firewalld stops.";
+          type = bool;
+        };
+
+        DefaultZone = mkOption {
+          default = "public";
+          description = "Default zone for connections.";
+          type = nonEmptyStr;
+        };
+
+        FirewallBackend = mkOption {
+          default = "nftables";
+
+          description = ''
+            The firewall backend implementation.
+            This applies to all firewalld primitives.
+            The only exception is direct and passthrough rules which always use the traditional iptables, ip6tables, and ebtables backends.
+
+            ::: {.caution}
+            The iptables backend is deprecated.
+            It will be removed in a future release.
+            :::
+          '';
+
           type = enum [
-            "strict"
-            "loose"
-            "strict-forward"
-            "loose-forward"
-            "no"
+            "nftables"
+            "iptables"
           ];
+        };
+
+        FlushAllOnReload = mkOption {
+          default = true;
+          description = "Whether to flush all runtime rules on a reload.";
+          type = bool;
+        };
+
+        IPv6_rpfilter = mkOption {
+          default = "strict";
+
           description = ''
             Performs reverse path filtering (RPF) on IPv6 packets as per RFC 3704.
 
@@ -80,17 +102,34 @@ in
 
             The rp_filter for IPv4 is controlled using sysctl.
           '';
-          default = "strict";
+
+          type = enum [
+            "strict"
+            "loose"
+            "strict-forward"
+            "loose-forward"
+            "no"
+          ];
         };
+
         IndividualCalls = mkOption {
-          type = bool;
+          default = false;
+
           description = ''
             Whether to use individual -restore calls to apply changes to the firewall.
             The use of individual calls increases the time that is needed to apply changes and to start the daemon, but is good for debugging as error messages are more specific.
           '';
-          default = false;
+
+          type = bool;
         };
+
         LogDenied = mkOption {
+          default = "off";
+
+          description = ''
+            Add logging rules right before reject and drop rules in the INPUT, FORWARD and OUTPUT chains for the default rules and also final reject and drop rules in zones for the configured link-layer packet type.
+          '';
+
           type = enum [
             "all"
             "unicast"
@@ -98,34 +137,52 @@ in
             "multicast"
             "off"
           ];
-          description = ''
-            Add logging rules right before reject and drop rules in the INPUT, FORWARD and OUTPUT chains for the default rules and also final reject and drop rules in zones for the configured link-layer packet type.
-          '';
-          default = "off";
         };
-        FirewallBackend = mkOption {
-          type = enum [
-            "nftables"
-            "iptables"
-          ];
-          description = ''
-            The firewall backend implementation.
-            This applies to all firewalld primitives.
-            The only exception is direct and passthrough rules which always use the traditional iptables, ip6tables, and ebtables backends.
 
-            ::: {.caution}
-            The iptables backend is deprecated.
-            It will be removed in a future release.
-            :::
-          '';
-          default = "nftables";
-        };
-        FlushAllOnReload = mkOption {
+        NftablesCounters = mkOption {
+          default = false;
+          description = "Whether to add a counter to every nftables rule.";
           type = bool;
-          description = "Whether to flush all runtime rules on a reload.";
-          default = true;
         };
+
+        NftablesFlowtable = mkOption {
+          default = "off";
+
+          description = ''
+            This may improve forwarded traffic throughput by enabling nftables flowtable.
+            It is a software fastpath and avoids calling nftables rule evaluation for data packets.
+            Its value is a space separate list of interfaces.
+          '';
+
+          type = separatedString " ";
+        };
+
+        NftablesTableOwner = mkOption {
+          default = true;
+
+          description = ''
+            If enabled, the generated nftables rule set will be owned exclusively by firewalld.
+            This prevents other entities from mistakenly (or maliciously) modifying firewalld's rule set.
+            If you intend to modify firewalld's rules, set this to `false`.
+          '';
+
+          type = bool;
+        };
+
+        RFC3964_IPv4 = mkOption {
+          default = true;
+
+          description = ''
+            Whether to filter IPv6 traffic with 6to4 destination addresses that correspond to IPv4 addresses that should not be routed over the public internet.
+          '';
+
+          type = bool;
+        };
+
         ReloadPolicy = mkOption {
+          default = "INPUT:DROP,FORWARD:DROP,OUTPUT:DROP";
+          description = "The policy during reload.";
+
           type =
             let
               policy = enum [
@@ -135,50 +192,26 @@ in
               ];
             in
             either policy commas;
-          description = "The policy during reload.";
-          default = "INPUT:DROP,FORWARD:DROP,OUTPUT:DROP";
         };
-        RFC3964_IPv4 = mkOption {
-          type = bool;
-          description = ''
-            Whether to filter IPv6 traffic with 6to4 destination addresses that correspond to IPv4 addresses that should not be routed over the public internet.
-          '';
-          default = true;
-        };
+
         StrictForwardPorts = mkOption {
-          type = bool;
+          default = false;
+
           description = ''
             If enabled, the generated destination NAT (DNAT) rules will NOT accept traffic that was DNAT'd by other entities, e.g. docker.
             Firewalld will be strict and not allow published container ports until they're explicitly allowed via firewalld.
             If set to `false`, then docker (and podman) integrates seamlessly with firewalld.
             Published container ports are implicitly allowed.
           '';
-          default = false;
-        };
-        NftablesFlowtable = mkOption {
-          type = separatedString " ";
-          description = ''
-            This may improve forwarded traffic throughput by enabling nftables flowtable.
-            It is a software fastpath and avoids calling nftables rule evaluation for data packets.
-            Its value is a space separate list of interfaces.
-          '';
-          default = "off";
-        };
-        NftablesCounters = mkOption {
+
           type = bool;
-          description = "Whether to add a counter to every nftables rule.";
-          default = false;
-        };
-        NftablesTableOwner = mkOption {
-          type = bool;
-          description = ''
-            If enabled, the generated nftables rule set will be owned exclusively by firewalld.
-            This prevents other entities from mistakenly (or maliciously) modifying firewalld's rule set.
-            If you intend to modify firewalld's rules, set this to `false`.
-          '';
-          default = true;
         };
       };
+
+      freeformType = attrsOf (oneOf [
+        bool
+        nonEmptyStr
+      ]);
     };
   };
 
@@ -186,6 +219,7 @@ in
     assertions = [
       {
         assertion = cfg.settings.FirewallBackend == "nftables" -> config.networking.nftables.enable;
+
         message = ''
           FirewallD uses nftables as the firewall backend (by default), but nftables support isn't enabled.
           Please read the description of networking.nftables.enable for possible problems.

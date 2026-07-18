@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   testers,
   woodpecker-plugin-git,
 }:
@@ -18,17 +18,15 @@ buildGoModule (finalAttrs: {
   };
 
   vendorHash = "sha256-zCcYAWO0hn6iLxTxOsjn2bS0+sHuzpq3K24N9jd+qPY=";
-
   env.CGO_ENABLED = "0";
+  # Checks fail because they require network access.
+  doCheck = false;
 
   ldflags = [
     "-s"
     "-w"
     "-X main.version=${finalAttrs.version}"
   ];
-
-  # Checks fail because they require network access.
-  doCheck = false;
 
   passthru.tests.version = testers.testVersion { package = woodpecker-plugin-git; };
 
@@ -37,10 +35,12 @@ buildGoModule (finalAttrs: {
     homepage = "https://woodpecker-ci.org/";
     changelog = "https://github.com/woodpecker-ci/plugin-git/releases/tag/${finalAttrs.version}";
     license = lib.licenses.asl20;
-    mainProgram = "plugin-git";
+
     maintainers = with lib.maintainers; [
       ambroisie
       marcusramberg
     ];
+
+    mainProgram = "plugin-git";
   };
 })

@@ -2,49 +2,49 @@
   lib,
   stdenv,
   fetchurl,
-  meson,
-  ninja,
+  exempi,
+  gdk-pixbuf,
   gettext,
+  gi-docgen,
+  glib,
+  gnome,
+  gnome-desktop,
+  gobject-introspection,
+  gsettings-desktop-schemas,
+  gtk3,
   itstool,
-  pkg-config,
-  libxml2,
+  lcms2,
+  libexif,
+  libhandy,
+  libheif,
   libjpeg,
+  libjxl,
   libpeas,
   libportal-gtk3,
-  gnome,
-  gtk3,
-  libhandy,
-  glib,
-  gsettings-desktop-schemas,
-  gnome-desktop,
-  lcms2,
-  gdk-pixbuf,
-  exempi,
-  shared-mime-info,
-  wrapGAppsHook3,
-  libjxl,
   librsvg,
+  libxml2,
+  meson,
+  ninja,
+  pkg-config,
+  shared-mime-info,
   webp-pixbuf-loader,
-  libheif,
-  libexif,
-  gobject-introspection,
-  gi-docgen,
+  wrapGAppsHook3,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
   pname = "eog";
   version = "50.1";
 
+  src = fetchurl {
+    url = "mirror://gnome/sources/eog/${lib.versions.major finalAttrs.version}/eog-${finalAttrs.version}.tar.xz";
+    hash = "sha256-b17m11ZUi4jiWph+DQbavDxsMlmPt99J+wiUXB/pSlU=";
+  };
+
   outputs = [
     "out"
     "dev"
     "devdoc"
   ];
-
-  src = fetchurl {
-    url = "mirror://gnome/sources/eog/${lib.versions.major finalAttrs.version}/eog-${finalAttrs.version}.tar.xz";
-    hash = "sha256-b17m11ZUi4jiWph+DQbavDxsMlmPt99J+wiUXB/pSlU=";
-  };
 
   patches = [
     # Fix path to libeog.so in the gir file.
@@ -127,8 +127,8 @@ stdenv.mkDerivation (finalAttrs: {
     homepage = "https://gitlab.gnome.org/GNOME/eog";
     changelog = "https://gitlab.gnome.org/GNOME/eog/-/blob/${finalAttrs.version}/NEWS?ref_type=tags";
     license = lib.licenses.gpl2Plus;
-    teams = [ lib.teams.gnome ];
     platforms = lib.platforms.unix;
     mainProgram = "eog";
+    teams = [ lib.teams.gnome ];
   };
 })

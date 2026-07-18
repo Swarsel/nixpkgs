@@ -11,7 +11,6 @@
 buildPythonPackage rec {
   pname = "cftime";
   version = "1.6.5";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
@@ -30,6 +29,7 @@ buildPythonPackage rec {
     pytestCheckHook
   ];
 
+  format = "setuptools";
   pythonImportsCheck = [ "cftime" ];
 
   meta = {

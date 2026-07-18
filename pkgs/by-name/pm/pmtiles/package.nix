@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
 }:
 buildGoModule (finalAttrs: {
   pname = "pmtiles";
@@ -16,6 +16,10 @@ buildGoModule (finalAttrs: {
 
   vendorHash = "sha256-0u/04mpqhpRideIf8eOzgC7ZWNp4P2c2ssQvyWlcD4M=";
 
+  postInstall = ''
+    mv $out/bin/go-pmtiles $out/bin/pmtiles
+  '';
+
   ldflags = [
     "-s"
     "-w"
@@ -23,16 +27,12 @@ buildGoModule (finalAttrs: {
     "-X main.commit=v${finalAttrs.version}"
   ];
 
-  postInstall = ''
-    mv $out/bin/go-pmtiles $out/bin/pmtiles
-  '';
-
   meta = {
     description = "Single-file utility for creating and working with PMTiles archives";
     homepage = "https://github.com/protomaps/go-pmtiles";
     license = lib.licenses.bsd3;
     maintainers = with lib.maintainers; [ theaninova ];
-    teams = [ lib.teams.geospatial ];
     mainProgram = "pmtiles";
+    teams = [ lib.teams.geospatial ];
   };
 })

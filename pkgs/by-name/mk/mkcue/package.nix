@@ -14,15 +14,14 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   env.CXXFLAGS = "-std=c++98";
-
   preInstall = "mkdir -pv $out/bin";
   postInstall = "chmod -v +w $out/bin/mkcue";
 
   meta = {
     description = "Generates CUE sheets from a CD TOC";
     license = lib.licenses.lgpl2Plus;
-    platforms = lib.platforms.linux;
     maintainers = with lib.maintainers; [ pSub ];
+    platforms = lib.platforms.linux;
     mainProgram = "mkcue";
   };
 })

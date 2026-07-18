@@ -1,12 +1,8 @@
 {
   lib,
   stdenv,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # build-system
-  uv-build,
-
+  buildPythonPackage,
   # dependencies
   filelock,
   fonttools,
@@ -18,6 +14,8 @@
   piexif,
   pillow,
   platformdirs,
+  # tests
+  pytestCheckHook,
   regex,
   requests,
   safetensors,
@@ -29,16 +27,14 @@
   transformers,
   twine,
   urllib3,
-
-  # tests
-  pytestCheckHook,
+  # build-system
+  uv-build,
   writableTmpDirAsHomeHook,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "mflux";
   version = "0.15.4";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "filipstrand";
@@ -52,16 +48,15 @@ buildPythonPackage (finalAttrs: {
       --replace-fail "uv_build>=0.7.19,<0.8.0" "uv_build"
   '';
 
+  nativeCheckInputs = [
+    pytestCheckHook
+    writableTmpDirAsHomeHook
+  ];
+
   build-system = [
     uv-build
   ];
 
-  pythonRelaxDeps = [
-    "huggingface-hub"
-    "mlx"
-    "pillow"
-    "transformers"
-  ];
   dependencies = [
     filelock
     fonttools
@@ -84,13 +79,6 @@ buildPythonPackage (finalAttrs: {
     transformers
     twine
     urllib3
-  ];
-
-  pythonImportsCheck = [ "mflux" ];
-
-  nativeCheckInputs = [
-    pytestCheckHook
-    writableTmpDirAsHomeHook
   ];
 
   disabledTests = [
@@ -148,6 +136,16 @@ buildPythonPackage (finalAttrs: {
   ++ lib.optionals stdenv.hostPlatform.isDarwin [
     # Hangs indefinitely
     "test_depth_pro_generation"
+  ];
+
+  pyproject = true;
+  pythonImportsCheck = [ "mflux" ];
+
+  pythonRelaxDeps = [
+    "huggingface-hub"
+    "mlx"
+    "pillow"
+    "transformers"
   ];
 
   meta = {

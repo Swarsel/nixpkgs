@@ -1,37 +1,33 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  fetchpatch,
-
-  # Native build inputs
-  cython,
-  which,
-
+  bitarray,
+  buildPythonPackage,
   # Propagated build inputs
   cffi,
-  hydra-core,
-  omegaconf,
-  sacrebleu,
-  numpy,
-  regex,
-  torch,
-  tqdm,
-  bitarray,
-  torchaudio,
-  scikit-learn,
-  packaging,
-
+  # Native build inputs
+  cython,
   # Check inputs
   expecttest,
+  fetchpatch,
+  hydra-core,
   hypothesis,
+  numpy,
+  omegaconf,
+  packaging,
   pytestCheckHook,
+  regex,
+  sacrebleu,
+  scikit-learn,
+  torch,
+  torchaudio,
+  tqdm,
+  which,
 }:
 
 buildPythonPackage rec {
   pname = "fairseq";
   version = "0.12.3";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "pytorch";
@@ -43,20 +39,14 @@ buildPythonPackage rec {
   patches = [
     # https://github.com/facebookresearch/fairseq/pull/5359
     (fetchpatch {
-      url = "https://github.com/facebookresearch/fairseq/commit/2fa0768c2115b0a4c207cfa3e1b3e4ff3ad9a00c.patch";
       hash = "sha256-aYYP/knQX6q6vhyA6q9uOOYfRhDAuJCo9QJWfFEDuuA=";
+      url = "https://github.com/facebookresearch/fairseq/commit/2fa0768c2115b0a4c207cfa3e1b3e4ff3ad9a00c.patch";
     })
   ];
 
   nativeBuildInputs = [
     cython
     which
-  ];
-
-  pythonRelaxDeps = [
-    "hydra-core"
-    "omegaconf"
-    "torchaudio"
   ];
 
   propagatedBuildInputs = [
@@ -80,14 +70,15 @@ buildPythonPackage rec {
     pytestCheckHook
   ];
 
-  pythonImportsCheck = [ "fairseq" ];
-
   preCheck = ''
     export HOME=$TMPDIR
     cd tests
   '';
 
-  pytestFlags = [ "--import-mode=append" ];
+  disabledTestPaths = [
+    # ValueError: mutable default ... for field bar is not allowed: use default_factory
+    "test_dataclass_utils.py"
+  ];
 
   disabledTests = [
     # this test requires xformers
@@ -106,18 +97,23 @@ buildPythonPackage rec {
     "test_multilingual_translation_latent_depth"
   ];
 
-  disabledTestPaths = [
-    # ValueError: mutable default ... for field bar is not allowed: use default_factory
-    "test_dataclass_utils.py"
+  pyproject = true;
+  pytestFlags = [ "--import-mode=append" ];
+  pythonImportsCheck = [ "fairseq" ];
+
+  pythonRelaxDeps = [
+    "hydra-core"
+    "omegaconf"
+    "torchaudio"
   ];
 
   meta = {
     description = "Facebook AI Research Sequence-to-Sequence Toolkit";
     homepage = "https://github.com/pytorch/fairseq";
     license = lib.licenses.mit;
-    platforms = lib.platforms.linux;
-    hydraPlatforms = [ ];
     maintainers = with lib.maintainers; [ happysalada ];
+    platforms = lib.platforms.linux;
     broken = true; # requires numpy1 which is incompatible with sacrebleu depending on numpy2
+    hydraPlatforms = [ ];
   };
 }

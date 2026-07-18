@@ -1,25 +1,25 @@
 {
-  callPackage,
-  fetchurl,
-  stdenv,
   lib,
+  stdenv,
+  fetchurl,
+  callPackage,
 }:
 
 let
   version = "3.15.1";
 
   sources = rec {
-    x86_64-linux = {
-      url = "https://www.sdrplay.com/software/SDRplay_RSP_API-Linux-${version}.run";
-      hash = "sha256-CTcyv10Xz9G2LqHh4qOW9tKBEcB+rztE2R7xJIU4QBQ=";
-    };
-
     aarch64-darwin = {
-      url = "https://www.sdrplay.com/software/SDRplayAPI-macos-installer-universal-3.15.1.pkg";
       hash = "sha256-XRSM7aH653XS0t9bP89G3uJ7YiLiU1xMBjwvLqL3rMM=";
+      url = "https://www.sdrplay.com/software/SDRplayAPI-macos-installer-universal-3.15.1.pkg";
     };
 
     aarch64-linux = x86_64-linux;
+
+    x86_64-linux = {
+      hash = "sha256-CTcyv10Xz9G2LqHh4qOW9tKBEcB+rztE2R7xJIU4QBQ=";
+      url = "https://www.sdrplay.com/software/SDRplay_RSP_API-Linux-${version}.run";
+    };
   };
 
   platforms = lib.attrNames sources;
@@ -29,8 +29,8 @@ let
 in
 
 callPackage package {
-  pname = "sdrplay";
   inherit version;
+  pname = "sdrplay";
 
   src =
     let
@@ -46,16 +46,17 @@ callPackage package {
 
   meta = {
     inherit platforms;
-
     description = "SDRplay API";
+
     longDescription = ''
       Proprietary library and api service for working with SDRplay devices. For documentation and licensing details see
       https://www.sdrplay.com/docs/SDRplay_API_Specification_v${lib.concatStringsSep "." (lib.take 2 (builtins.splitVersion version))}.pdf
     '';
 
     homepage = "https://www.sdrplay.com/downloads/";
-    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
     license = lib.licenses.unfree;
+    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
+
     maintainers = with lib.maintainers; [
       pmenke
       zaninime

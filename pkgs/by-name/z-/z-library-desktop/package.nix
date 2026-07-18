@@ -3,16 +3,16 @@
   stdenv,
   fetchurl,
   fetchFromGitHub,
-  makeBinaryWrapper,
-  replaceVars,
-  dpkg,
   asar,
-  electron,
-  darwin,
-  libsecret,
-  pkg-config,
   buildNpmPackage,
+  darwin,
+  dpkg,
+  electron,
+  libsecret,
+  makeBinaryWrapper,
+  pkg-config,
   removeReferencesTo,
+  replaceVars,
   xcbuild,
 }:
 
@@ -78,11 +78,11 @@ stdenv.mkDerivation (finalAttrs: {
   passthru.updateScript = ./update.rb;
 
   meta = {
-    homepage = "https://z-library.sk";
     description = "Client for the online library Z-Library";
+    homepage = "https://z-library.sk";
     license = lib.licenses.unfree; # Maintainers on AUR emailed the dev to confirm: https://pastebin.com/ss4Nr8pW
-    platforms = lib.platforms.all;
     maintainers = with lib.maintainers; [ ulysseszhan ];
+    platforms = lib.platforms.all;
     mainProgram = "Z-Library";
   };
 })

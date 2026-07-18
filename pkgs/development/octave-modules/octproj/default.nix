@@ -1,9 +1,9 @@
 {
-  buildOctavePackage,
   lib,
+  buildOctavePackage,
   fetchFromBitbucket,
-  proj, # >= 6.3.0
   nix-update-script,
+  proj, # >= 6.3.0
 }:
 
 buildOctavePackage rec {
@@ -17,15 +17,15 @@ buildOctavePackage rec {
     sha256 = "sha256-0QDlpfqFTSndUPkOslugDBM0UBKiusZwKGFuDrco7X4=";
   };
 
+  propagatedBuildInputs = [
+    proj
+  ];
+
   # The sed changes below allow for the package to be compiled.
   patchPhase = ''
     sed -i s/"error(errorText)"/"error(\"%s\", errorText)"/g src/*.cc
     sed -i s/"warning(errorText)"/"warning(\"%s\", errorText)"/g src/*.cc
   '';
-
-  propagatedBuildInputs = [
-    proj
-  ];
 
   passthru.updateScript = nix-update-script {
     extraArgs = [
@@ -35,9 +35,9 @@ buildOctavePackage rec {
   };
 
   meta = {
+    description = "GNU Octave bindings to PROJ library for cartographic projections and CRS transformations";
     homepage = "https://gnu-octave.github.io/packages/octproj/";
     license = lib.licenses.gpl3Plus;
     maintainers = with lib.maintainers; [ ravenjoad ];
-    description = "GNU Octave bindings to PROJ library for cartographic projections and CRS transformations";
   };
 }

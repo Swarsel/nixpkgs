@@ -14,12 +14,6 @@ stdenv.mkDerivation rec {
     sha256 = "0l7xh4abw5sb4d37r0ylr3vwb88fpx2zrvfm5ql0c7yrv5q59fjz";
   };
 
-  # Script that creates the sqlite database from the allcurves textfile
-  spkg-install = fetchurl {
-    url = "https://raw.githubusercontent.com/sagemath/sage/07d6c37d18811e2b377a9689790a7c5e24da16ba/build/pkgs/${pname}/spkg-install.py";
-    sha256 = "116g684i6mvs11fvb6fzfsr4fn903axn31vigdyb8bgpf8l4hvc5";
-  };
-
   installPhase = ''
     # directory layout as spkg-install.py expects
     dir="$PWD"
@@ -34,8 +28,15 @@ stdenv.mkDerivation rec {
     ${python3.interpreter} ${spkg-install}
   '';
 
+  # Script that creates the sqlite database from the allcurves textfile
+  spkg-install = fetchurl {
+    sha256 = "116g684i6mvs11fvb6fzfsr4fn903axn31vigdyb8bgpf8l4hvc5";
+    url = "https://raw.githubusercontent.com/sagemath/sage/07d6c37d18811e2b377a9689790a7c5e24da16ba/build/pkgs/${pname}/spkg-install.py";
+  };
+
   meta = {
     description = "Databases of elliptic curves";
+
     longDescription = ''
       Includes two databases:
 
@@ -44,6 +45,7 @@ stdenv.mkDerivation rec {
          http://sage.math.washington.edu/cremona/INDEX.html
        * William Stein's database of interesting curves
     '';
+
     license = lib.licenses.gpl2;
     platforms = lib.platforms.all;
     teams = [ lib.teams.sage ];

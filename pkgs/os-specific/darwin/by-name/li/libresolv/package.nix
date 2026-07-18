@@ -15,8 +15,6 @@ let
   Libc = sourceRelease "Libc";
 
   privateHeaders = stdenvNoCC.mkDerivation {
-    name = "libresolv-deps-private-headers";
-
     buildCommand = ''
       install -D -t "$out/include/mach-o" \
         '${dyld}/include/mach-o/dyld_priv.h'
@@ -29,11 +27,11 @@ let
       const dyld_build_version_t dyld_2024_SU_E_os_versions = { 1 /* macOS */, 150400 };
       EOF
     '';
+
+    name = "libresolv-deps-private-headers";
   };
 in
 mkAppleDerivation {
-  releaseName = "libresolv";
-
   outputs = [
     "out"
     "dev"
@@ -48,13 +46,14 @@ mkAppleDerivation {
       --replace-fail '<md5.h>' '<CommonCrypto/CommonDigest.h>'
   '';
 
-  xcodeHash = "sha256-pQ1eFMPnSy8M3pfvv+sPyale9xDlVCMif0EWO8PO7zg=";
-
   env.NIX_CFLAGS_COMPILE = "-I${privateHeaders}/include -I${configd}/dnsinfo -I${Libinfo}/lookup.subproj -I${Libnotify}";
 
   postInstall = ''
     ln -s ../nameser.h "''${!outputDev}/include/arpa"
   '';
+
+  releaseName = "libresolv";
+  xcodeHash = "sha256-pQ1eFMPnSy8M3pfvv+sPyale9xDlVCMif0EWO8PO7zg=";
 
   meta = {
     description = "Libresolv implementation for Darwin";

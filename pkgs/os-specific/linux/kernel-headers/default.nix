@@ -1,16 +1,16 @@
 {
-  stdenvNoCC,
   lib,
-  buildPackages,
   fetchurl,
-  perl,
-  elf-header,
   bison,
+  buildPackages,
+  elf-header,
   flex,
-  rsync,
-  writeTextFile,
-  nix-update-script,
   linux_latest,
+  nix-update-script,
+  perl,
+  rsync,
+  stdenvNoCC,
+  writeTextFile,
 }:
 
 let
@@ -21,14 +21,17 @@ let
   # compatibility header in gnulib for most BSDs, but not for Darwin, so we
   # synthesize one here.
   darwin-endian-h = writeTextFile {
+    destination = "/include/endian.h";
     name = "endian-h";
+
     text = ''
       #include <byteswap.h>
     '';
-    destination = "/include/endian.h";
   };
   darwin-byteswap-h = writeTextFile {
+    destination = "/include/byteswap.h";
     name = "byteswap-h";
+
     text = ''
       #pragma once
       #include <libkern/OSByteOrder.h>
@@ -36,30 +39,23 @@ let
       #define bswap_32 OSSwapInt32
       #define bswap_64 OSSwapInt64
     '';
-    destination = "/include/byteswap.h";
   };
 
   makeLinuxHeaders =
     {
       src,
       version,
-      patches ? [ ],
       passthru ? { },
+      patches ? [ ],
     }:
     stdenvNoCC.mkDerivation {
       inherit src;
-
-      pname = "linux-headers";
       inherit version;
-
-      env.ARCH = stdenvNoCC.hostPlatform.linuxArch;
-
+      inherit patches;
+      inherit passthru;
+      pname = "linux-headers";
       strictDeps = true;
-      enableParallelBuilding = true;
 
-      # It may look odd that we use `stdenvNoCC`, and yet explicit depend on a cc.
-      # We do this so we have a build->build, not build->host, C compiler.
-      depsBuildBuild = [ buildPackages.stdenv.cc ];
       # `elf-header` is null when libc provides `elf.h`.
       nativeBuildInputs = [
         perl
@@ -74,14 +70,6 @@ let
         darwin-endian-h
         darwin-byteswap-h
       ];
-
-      extraIncludeDirs = lib.optionals (with stdenvNoCC.hostPlatform; isPower && is32bit && isBigEndian) [
-        "ppc"
-      ];
-
-      inherit patches;
-
-      hardeningDisable = lib.optional stdenvNoCC.buildPlatform.isDarwin "format";
 
       makeFlags = [
         "SHELL=bash"
@@ -104,6 +92,8 @@ let
         # Let's hardcode subset of the output of `getconf` for this case.
         "HOST_LFS_CFLAGS=-D_FILE_OFFSET_BITS=64"
       ];
+
+      env.ARCH = stdenvNoCC.hostPlatform.linuxArch;
 
       # Skip clean on darwin, case-sensitivity issues.
       buildPhase =
@@ -142,7 +132,16 @@ let
         echo "${version}-default" > $out/include/config/kernel.release
       '';
 
-      inherit passthru;
+      # It may look odd that we use `stdenvNoCC`, and yet explicit depend on a cc.
+      # We do this so we have a build->build, not build->host, C compiler.
+      depsBuildBuild = [ buildPackages.stdenv.cc ];
+      enableParallelBuilding = true;
+
+      extraIncludeDirs = lib.optionals (with stdenvNoCC.hostPlatform; isPower && is32bit && isBigEndian) [
+        "ppc"
+      ];
+
+      hardeningDisable = lib.optional stdenvNoCC.buildPlatform.isDarwin "format";
 
       meta = {
         description = "Header files and scripts for Linux kernel";
@@ -161,13 +160,16 @@ in
     in
     makeLinuxHeaders {
       inherit version;
+
       src = fetchurl {
         url = "mirror://kernel/linux/kernel/v${lib.versions.major version}.x/linux-${version}.tar.xz";
         hash = "sha256-u39tgLOHx1e30Uu5MCj8uQ95PFwNNnc27oFaEAs4kfA=";
       };
+
       patches = [
         ./no-relocs.patch # for building x86 kernel headers on non-ELF platforms
       ];
+
       passthru.updateScript = nix-update-script {
         extraArgs = [
           "--version"

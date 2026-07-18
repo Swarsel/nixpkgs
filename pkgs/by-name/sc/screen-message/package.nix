@@ -3,8 +3,8 @@
   stdenv,
   fetchFromGitHub,
   autoreconfHook,
-  pkg-config,
   gtk3,
+  pkg-config,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -22,17 +22,17 @@ stdenv.mkDerivation (finalAttrs: {
     autoreconfHook
     pkg-config
   ];
-  buildInputs = [ gtk3 ];
 
+  buildInputs = [ gtk3 ];
   # screen-message installs its binary in $(prefix)/games per default
   makeFlags = [ "execgamesdir=$(out)/bin" ];
 
   meta = {
-    homepage = "https://www.joachim-breitner.de/en/projects#screen-message";
     description = "Displays a short text fullscreen in an X11 window";
+    homepage = "https://www.joachim-breitner.de/en/projects#screen-message";
     license = lib.licenses.gpl2Plus;
     maintainers = [ lib.maintainers.fpletz ];
-    mainProgram = "sm";
     platforms = lib.platforms.unix;
+    mainProgram = "sm";
   };
 })

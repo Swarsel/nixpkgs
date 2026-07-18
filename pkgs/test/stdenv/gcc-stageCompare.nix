@@ -9,9 +9,9 @@
 #
 
 {
+  lib,
   stdenv,
   pkgs,
-  lib,
 }:
 
 with pkgs;
@@ -19,8 +19,9 @@ with pkgs;
 let
   gcc-stageCompare =
     (gcc-unwrapped.override {
-      reproducibleBuild = true;
       profiledCompiler = false;
+      reproducibleBuild = true;
+
       stdenv = overrideCC stdenv (wrapCCWith {
         cc = stdenv.cc;
       });

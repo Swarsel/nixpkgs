@@ -17,11 +17,11 @@ buildGoModule (finalAttrs: {
     hash = "sha256-Rpym9YckgJ583zgPpC/mQW1IGgQUppemFhAecgy3M8A=";
   };
 
+  vendorHash = "sha256-g+yaVIx4jxpAQ/+WrGKxhVeliYx7nLQe/zsGpxV4Fn4=";
+
   postInstall = ''
     mv $out/bin/cli $out/bin/docker-color-output
   '';
-
-  vendorHash = "sha256-g+yaVIx4jxpAQ/+WrGKxhVeliYx7nLQe/zsGpxV4Fn4=";
 
   passthru = {
     updateScript = nix-update-script { };
@@ -29,12 +29,12 @@ buildGoModule (finalAttrs: {
 
   meta = {
     description = "Add color to the Docker CLI";
-    mainProgram = "docker-color-output";
-    license = lib.licenses.mit;
     homepage = "https://github.com/devemio/docker-color-output";
     # Note that due to inconsistent tag names (see above comment),
     # we might want to check the URL before committing.
     changelog = "https://github.com/devemio/docker-color-output/releases/tag/v${finalAttrs.version}";
+    license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ sguimmara ];
+    mainProgram = "docker-color-output";
   };
 })

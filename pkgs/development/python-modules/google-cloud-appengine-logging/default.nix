@@ -15,19 +15,20 @@
 buildPythonPackage rec {
   pname = "google-cloud-appengine-logging";
   version = "1.10.0";
-  pyproject = true;
 
   src = fetchPypi {
-    pname = "google_cloud_appengine_logging";
     inherit version;
     hash = "sha256-tVY+dgEKNuat8cxIliDCnuT7O5hrAG0jfpoGHrDwq7c=";
+    pname = "google_cloud_appengine_logging";
   };
 
-  build-system = [ setuptools ];
-
-  pythonRelaxDeps = [
-    "protobuf"
+  nativeCheckInputs = [
+    mock
+    pytestCheckHook
+    pytest-asyncio
   ];
+
+  build-system = [ setuptools ];
 
   dependencies = [
     google-api-core
@@ -37,15 +38,15 @@ buildPythonPackage rec {
   ]
   ++ google-api-core.optional-dependencies.grpc;
 
-  nativeCheckInputs = [
-    mock
-    pytestCheckHook
-    pytest-asyncio
-  ];
+  pyproject = true;
 
   pythonImportsCheck = [
     "google.cloud.appengine_logging"
     "google.cloud.appengine_logging_v1"
+  ];
+
+  pythonRelaxDeps = [
+    "protobuf"
   ];
 
   meta = {

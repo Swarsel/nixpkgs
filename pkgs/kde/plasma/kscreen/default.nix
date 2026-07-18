@@ -1,17 +1,20 @@
 {
+  dbus,
+  kitemmodels,
   mkKdeDerivation,
   pkg-config,
+  plasma5support,
   qtsensors,
   qtwayland,
-  kitemmodels,
-  plasma5support,
   wayland-protocols,
-  dbus,
 }:
 mkKdeDerivation {
   pname = "kscreen";
 
-  extraNativeBuildInputs = [ pkg-config ];
+  postFixup = ''
+    substituteInPlace $out/share/kglobalaccel/org.kde.kscreen.desktop \
+      --replace-fail dbus-send ${dbus}/bin/dbus-send
+  '';
 
   extraBuildInputs = [
     qtsensors
@@ -23,9 +26,6 @@ mkKdeDerivation {
     wayland-protocols
   ];
 
-  postFixup = ''
-    substituteInPlace $out/share/kglobalaccel/org.kde.kscreen.desktop \
-      --replace-fail dbus-send ${dbus}/bin/dbus-send
-  '';
+  extraNativeBuildInputs = [ pkg-config ];
   meta.mainProgram = "kscreen-console";
 }

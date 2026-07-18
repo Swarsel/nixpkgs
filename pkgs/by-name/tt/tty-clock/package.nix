@@ -24,23 +24,22 @@ stdenv.mkDerivation {
     #  https://github.com/xorg62/tty-clock/pull/100
     (fetchpatch {
       name = "ncurses-6.2.patch";
-      url = "https://github.com/xorg62/tty-clock/commit/4cfd73080da1964557484da620c401745d73881c.patch";
       sha256 = "13pj1v6yrfc4vynsa746974kixfxxsy2jzzpl73c8bp7msr9d3md";
+      url = "https://github.com/xorg62/tty-clock/commit/4cfd73080da1964557484da620c401745d73881c.patch";
     })
   ];
 
   nativeBuildInputs = [ pkg-config ];
   buildInputs = [ ncurses ];
-
   makeFlags = [ "PREFIX=$(out)" ];
 
   meta = {
-    broken = stdenv.hostPlatform.isDarwin;
+    description = "Digital clock in ncurses";
     homepage = "https://github.com/xorg62/tty-clock";
     license = lib.licenses.bsd3;
-    description = "Digital clock in ncurses";
-    platforms = lib.platforms.all;
     maintainers = [ lib.maintainers.koral ];
+    platforms = lib.platforms.all;
     mainProgram = "tty-clock";
+    broken = stdenv.hostPlatform.isDarwin;
   };
 }

@@ -1,28 +1,26 @@
 {
-  rocq-core,
-  mkRocqDerivation,
-  mathcomp-boot,
   lib,
+  mathcomp-boot,
+  mkRocqDerivation,
+  rocq-core,
   version ? null,
 }:
 
 mkRocqDerivation {
 
-  namePrefix = [
-    "rocq-core"
-    "mathcomp"
-  ];
-  pname = "finmap";
-  owner = "math-comp";
   inherit version;
+  pname = "finmap";
+  propagatedBuildInputs = [ mathcomp-boot ];
+
   defaultVersion =
     let
       case = rocq: mc: out: {
+        inherit out;
+
         cases = [
           rocq
           mc
         ];
-        inherit out;
       };
     in
     with lib.versions;
@@ -32,11 +30,17 @@ mkRocqDerivation {
         (case (range "9.0" "9.1") (range "2.3" "2.5") "2.2.2")
       ]
       null;
+
+  namePrefix = [
+    "rocq-core"
+    "mathcomp"
+  ];
+
+  owner = "math-comp";
+
   release = {
     "2.2.2".sha256 = "sha256-G5fSdx4MhOXtQ2H8lpyK5FuIbWAZNc7vRL3hcYmGA2o=";
   };
-
-  propagatedBuildInputs = [ mathcomp-boot ];
 
   meta = {
     description = "Finset and finmap library";

@@ -1,12 +1,12 @@
 {
+  lib,
   stdenv,
   fetchFromGitHub,
-  lib,
-  makeWrapper,
-  ocamlbuild,
   findlib,
-  ocaml,
+  makeWrapper,
   num,
+  ocaml,
+  ocamlbuild,
   zarith,
 }:
 
@@ -27,29 +27,31 @@ stdenv.mkDerivation rec {
     findlib
     ocaml
   ];
+
   propagatedBuildInputs = [
     zarith
     num
   ];
 
-  installFlags = [ "INSTALL_DIR=$(out)" ];
-
-  createFindlibDestdir = true;
-
   postInstall = ''
     wrapProgram $out/bin/lem --set LEMLIB $out/share/lem/library
   '';
 
+  createFindlibDestdir = true;
+  installFlags = [ "INSTALL_DIR=$(out)" ];
+
   meta = {
-    homepage = "https://github.com/rems-project/lem";
     description = "Tool for lightweight executable mathematics";
-    mainProgram = "lem";
-    maintainers = [ ];
+    homepage = "https://github.com/rems-project/lem";
+
     license = with lib.licenses; [
       bsd3
       gpl2
     ];
+
+    maintainers = [ ];
     platforms = ocaml.meta.platforms;
+    mainProgram = "lem";
     broken = !(lib.versionAtLeast ocaml.version "4.07");
   };
 }

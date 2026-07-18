@@ -7,7 +7,6 @@
 python3.pkgs.buildPythonApplication (finalAttrs: {
   pname = "kanjidraw";
   version = "0.2.3";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "obfusk";
@@ -15,10 +14,6 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     rev = "v${finalAttrs.version}";
     sha256 = "03ag8vkbf85qww857ii8hcnn8bh5qa7rsmhka0v9vfxk272ifbyq";
   };
-
-  build-system = with python3.pkgs; [ setuptools ];
-
-  dependencies = with python3.pkgs; [ tkinter ];
 
   postPatch = ''
     substituteInPlace Makefile --replace-fail /bin/bash bash
@@ -28,11 +23,14 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     make test
   '';
 
+  build-system = with python3.pkgs; [ setuptools ];
+  dependencies = with python3.pkgs; [ tkinter ];
+  pyproject = true;
   pythonImportsCheck = [ "kanjidraw" ];
 
   meta = {
     description = "Handwritten kanji recognition";
-    mainProgram = "kanjidraw";
+
     longDescription = ''
       kanjidraw is a simple Python library + GUI for matching (the strokes of a)
       handwritten kanji against its database.
@@ -43,11 +41,15 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
       The database is based on KanjiVG and the algorithms are based on the
       Kanji draw Android app.
     '';
+
     homepage = "https://github.com/obfusk/kanjidraw";
+
     license = with lib.licenses; [
       agpl3Plus # code
       cc-by-sa-30 # data.json
     ];
+
     maintainers = [ lib.maintainers.obfusk ];
+    mainProgram = "kanjidraw";
   };
 })

@@ -25,11 +25,13 @@ in
     hardware.parallels = {
 
       enable = mkOption {
-        type = types.bool;
         default = false;
+
         description = ''
           This enables Parallels Tools for Linux guests.
         '';
+
+        type = types.bool;
       };
 
       package = lib.mkPackageOption pkgs "prl-tools" { };
@@ -39,24 +41,27 @@ in
 
   config = mkIf config.hardware.parallels.enable {
 
+    boot.extraModulePackages = [ prl-tools ];
+    environment.systemPackages = [ prl-tools ];
+    services.timesyncd.enable = false;
     services.udev.packages = [ prl-tools ];
 
-    environment.systemPackages = [ prl-tools ];
+    systemd.services.prlshprint = {
+      bindsTo = [ "cups.service" ];
+      description = "Parallels Printing Tool";
+      path = [ prl-tools ];
 
-    boot.extraModulePackages = [ prl-tools ];
+      serviceConfig = {
+        ExecStart = "${prl-tools}/bin/prlshprint";
+        WorkingDirectory = "${prl-tools}/bin";
+      };
 
-    services.timesyncd.enable = false;
-
-    # Parallels Desktop 26+ mounts shared folders under /mnt/psf by default.
-    # prltoolsd tries to create subdirectories there at runtime, which fails
-    # if /mnt/psf does not exist. Create it declaratively via tmpfiles.
-    systemd.tmpfiles.rules = [
-      "d /mnt/psf 0755 root root - -"
-    ];
+      wantedBy = [ "multi-user.target" ];
+    };
 
     systemd.services.prltoolsd = {
       description = "Parallels Tools Service";
-      wantedBy = [ "multi-user.target" ];
+
       # prltoolsd mount scripts invoke coreutils (tail, mkdir, chmod)
       # and gnused (sed) without inheriting the service PATH in all
       # code paths. Make them available alongside prl-tools.
@@ -65,32 +70,33 @@ in
         pkgs.coreutils
         pkgs.gnused
       ];
+
       serviceConfig = {
         ExecStart = "${prl-tools}/bin/prltoolsd -f";
         PIDFile = "/var/run/prltoolsd.pid";
         WorkingDirectory = "${prl-tools}/bin";
       };
+
+      wantedBy = [ "multi-user.target" ];
     };
 
-    systemd.services.prlshprint = {
-      description = "Parallels Printing Tool";
-      wantedBy = [ "multi-user.target" ];
-      bindsTo = [ "cups.service" ];
-      path = [ prl-tools ];
-      serviceConfig = {
-        ExecStart = "${prl-tools}/bin/prlshprint";
-        WorkingDirectory = "${prl-tools}/bin";
-      };
-    };
+    # Parallels Desktop 26+ mounts shared folders under /mnt/psf by default.
+    # prltoolsd tries to create subdirectories there at runtime, which fails
+    # if /mnt/psf does not exist. Create it declaratively via tmpfiles.
+    systemd.tmpfiles.rules = [
+      "d /mnt/psf 0755 root root - -"
+    ];
 
     systemd.user.services.prlcc = {
       description = "Parallels Control Center";
-      wantedBy = [ "graphical-session.target" ];
       path = [ prl-tools ];
+
       serviceConfig = {
         ExecStart = "${prl-tools}/bin/prlcc";
         WorkingDirectory = "${prl-tools}/bin";
       };
+
+      wantedBy = [ "graphical-session.target" ];
     };
   };
 

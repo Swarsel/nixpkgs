@@ -1,21 +1,20 @@
 {
   lib,
   stdenv,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   future,
   ipython,
   numpy,
   pyserial,
-  pyusb,
   pytestCheckHook,
+  pyusb,
   udevCheckHook,
 }:
 
 buildPythonPackage rec {
   pname = "rfcat";
   version = "2.0.1";
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "atlas0fd00m";
@@ -23,6 +22,10 @@ buildPythonPackage rec {
     tag = "v${version}";
     hash = "sha256-hdRsVbDXRC1EOhBoFJ9T5ZE6hwOgDWSdN5sIpxJ0x3E=";
   };
+
+  nativeBuildInputs = [
+    udevCheckHook
+  ];
 
   propagatedBuildInputs = [
     future
@@ -32,24 +35,21 @@ buildPythonPackage rec {
     pyusb
   ];
 
-  nativeBuildInputs = [
-    udevCheckHook
-  ];
+  nativeCheckInputs = [ pytestCheckHook ];
 
   postInstall = lib.optionalString stdenv.hostPlatform.isLinux ''
     mkdir -p $out/etc/udev/rules.d
     cp etc/udev/rules.d/20-rfcat.rules $out/etc/udev/rules.d
   '';
 
-  nativeCheckInputs = [ pytestCheckHook ];
-
+  format = "setuptools";
   pythonImportsCheck = [ "rflib" ];
 
   meta = {
     description = "Swiss Army knife of sub-GHz ISM band radio";
     homepage = "https://github.com/atlas0fd00m/rfcat";
+    changelog = "https://github.com/atlas0fd00m/rfcat/releases/tag/v${version}";
     license = lib.licenses.bsd3;
     maintainers = [ ];
-    changelog = "https://github.com/atlas0fd00m/rfcat/releases/tag/v${version}";
   };
 }

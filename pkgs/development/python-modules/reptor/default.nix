@@ -1,11 +1,11 @@
 {
   lib,
+  fetchFromGitHub,
   buildPythonPackage,
   certifi,
   cvss,
   deepl,
   django,
-  fetchFromGitHub,
   gql,
   pytestCheckHook,
   pyyaml,
@@ -14,8 +14,8 @@
   setuptools,
   sqlparse,
   termcolor,
-  tomli-w,
   tomli,
+  tomli-w,
   tomlkit,
   urllib3,
   writableTmpDirAsHomeHook,
@@ -25,7 +25,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "reptor";
   version = "0.34";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "Syslifters";
@@ -34,7 +33,14 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-L4w9QWyj+NyImQKLKWfdosLl+qytPqa+eyRw6p/4GgA=";
   };
 
-  pythonRelaxDeps = true;
+  nativeCheckInputs = [
+    pytestCheckHook
+  ]
+  ++ lib.flatten (builtins.attrValues finalAttrs.passthru.optional-dependencies);
+
+  preCheck = ''
+    export PATH="$PATH:$out/bin";
+  '';
 
   build-system = [ setuptools ];
 
@@ -53,26 +59,19 @@ buildPythonPackage (finalAttrs: {
     xmltodict
   ];
 
+  disabledTestMarks = [
+    # Tests need network access
+    "integration"
+  ];
+
   optional-dependencies = {
     ghostwriter = [ gql ] ++ gql.optional-dependencies.aiohttp;
     translate = [ deepl ];
   };
 
-  nativeCheckInputs = [
-    pytestCheckHook
-  ]
-  ++ lib.flatten (builtins.attrValues finalAttrs.passthru.optional-dependencies);
-
-  preCheck = ''
-    export PATH="$PATH:$out/bin";
-  '';
-
+  pyproject = true;
   pythonImportsCheck = [ "reptor" ];
-
-  disabledTestMarks = [
-    # Tests need network access
-    "integration"
-  ];
+  pythonRelaxDeps = true;
 
   meta = {
     description = "Module to do automated pentest reporting with SysReptor";

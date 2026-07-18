@@ -1,33 +1,29 @@
 {
   lib,
-  pkgs,
   fetchFromGitHub,
   buildPythonPackage,
-
-  # build system
-  setuptools,
-
   # dependencies
   chardet,
   click,
+  matplotlib,
   numpy,
   opencv-python-headless,
   openpyxl,
   pandas,
   pdfminer-six,
   pillow,
+  pkgs,
   pypdf,
   pypdfium2,
-  tabulate,
-
   # tests
   pytestCheckHook,
-  matplotlib,
+  # build system
+  setuptools,
+  tabulate,
 }:
 buildPythonPackage (finalAttrs: {
   pname = "camelot-py";
   version = "1.0.9";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "camelot-dev";
@@ -43,7 +39,10 @@ buildPythonPackage (finalAttrs: {
       --replace-fail '@ghostscript@' ${lib.getExe pkgs.ghostscript_headless}
   '';
 
-  pythonRelaxDeps = [ "pypdf" ];
+  nativeCheckInputs = [
+    pytestCheckHook
+    matplotlib
+  ];
 
   build-system = [ setuptools ];
 
@@ -62,10 +61,6 @@ buildPythonPackage (finalAttrs: {
     chardet
   ];
 
-  nativeCheckInputs = [
-    pytestCheckHook
-    matplotlib
-  ];
   disabledTests = [
     # Assertion Error: <Cell cords> != <Cell other_cords>
     "test_repr_ghostscript"
@@ -80,14 +75,16 @@ buildPythonPackage (finalAttrs: {
     "test_pages_ghostscript_custom_backend"
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "camelot" ];
+  pythonRelaxDeps = [ "pypdf" ];
 
   meta = {
     description = "Python library to extract tabular data from PDFs";
-    mainProgram = "camelot";
     homepage = "http://camelot-py.readthedocs.io";
     changelog = "https://github.com/camelot-dev/camelot/blob/${finalAttrs.src.tag}/HISTORY.md";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ _2gn ];
+    mainProgram = "camelot";
   };
 })

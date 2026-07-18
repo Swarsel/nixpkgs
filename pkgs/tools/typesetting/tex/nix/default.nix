@@ -2,57 +2,47 @@ pkgs:
 
 rec {
 
-  runLaTeX =
+  animateDot =
+    dotGraph: nrFrames:
+    pkgs.stdenv.mkDerivation {
+      inherit dotGraph nrFrames;
+      builder = ./animatedot.sh;
+      name = "dot-frames";
+    };
+
+  dot2pdf =
     {
-      rootFile,
-      generatePDF ? true, # generate PDF, not DVI
-      generatePS ? false, # generate PS in addition to DVI
-      extraFiles ? [ ],
-      compressBlanksInIndex ? true,
-      packages ? [ ],
-      texPackages ? { },
-      copySources ? false,
+      dotGraph,
     }:
 
-    assert generatePDF -> !generatePS;
-
-    let
-      tex =
-        pkgs.texlive.combine
-          # always include basic stuff you need for LaTeX
-          ({ inherit (pkgs.texlive) scheme-basic; } // texPackages);
-    in
-
     pkgs.stdenv.mkDerivation {
-      name = "doc";
-
-      builder = ./run-latex.sh;
-      copyIncludes = ./copy-includes.pl;
-
-      inherit
-        rootFile
-        generatePDF
-        generatePS
-        extraFiles
-        compressBlanksInIndex
-        copySources
-        ;
-
-      includes =
-        map
-          (x: [
-            x.key
-            (baseNameOf (toString x.key))
-          ])
-          (findLaTeXIncludes {
-            inherit rootFile;
-          });
+      inherit dotGraph fontsConf;
 
       buildInputs = [
-        tex
         pkgs.perl
-      ]
-      ++ packages;
+        pkgs.graphviz
+      ];
+
+      builder = ./dot2pdf.sh;
+      name = "pdf";
+    };
+
+  dot2ps =
+    {
+      dotGraph,
+    }:
+
+    pkgs.stdenv.mkDerivation {
+      inherit dotGraph;
+
+      buildInputs = [
+        pkgs.perl
+        pkgs.graphviz
+        pkgs.ghostscript
+      ];
+
+      builder = ./dot2ps.sh;
+      name = "ps";
     };
 
   # Returns the closure of the "dependencies" of a LaTeX source file.
@@ -65,8 +55,6 @@ rec {
     }:
 
     builtins.genericClosure {
-      startSet = [ { key = rootFile; } ];
-
       operator =
         { key, ... }:
 
@@ -79,8 +67,8 @@ rec {
           # what extensions we use to look for it.
           deps = import (
             pkgs.runCommand "latex-includes" {
-              rootFile = baseNameOf (toString rootFile);
               src = key;
+              rootFile = baseNameOf (toString rootFile);
             } "${pkgs.perl}/bin/perl ${./find-includes.pl}"
           );
 
@@ -113,6 +101,8 @@ rec {
 
         in
         pkgs.lib.foldr foundDeps [ ] deps;
+
+      startSet = [ { key = rootFile; } ];
     };
 
   findLhs2TeXIncludes =
@@ -122,8 +112,6 @@ rec {
     }:
 
     builtins.genericClosure {
-      startSet = [ { key = rootFile; } ];
-
       operator =
         { key, ... }:
 
@@ -139,38 +127,18 @@ rec {
         pkgs.lib.concatMap (x: lib.optionals (builtins.pathExists x) [ { key = x; } ]) (
           map (x: dirOf key + ("/" + x)) deps
         );
+
+      startSet = [ { key = rootFile; } ];
     };
 
-  dot2pdf =
-    {
-      dotGraph,
-    }:
-
-    pkgs.stdenv.mkDerivation {
-      name = "pdf";
-      builder = ./dot2pdf.sh;
-      inherit dotGraph fontsConf;
-      buildInputs = [
-        pkgs.perl
-        pkgs.graphviz
-      ];
-    };
-
-  dot2ps =
-    {
-      dotGraph,
-    }:
-
-    pkgs.stdenv.mkDerivation {
-      name = "ps";
-      builder = ./dot2ps.sh;
-      inherit dotGraph;
-      buildInputs = [
-        pkgs.perl
-        pkgs.graphviz
-        pkgs.ghostscript
-      ];
-    };
+  # Some tools (like dot) need a fontconfig configuration file.
+  # This should be extended to allow the called to add additional
+  # fonts.
+  fontsConf = pkgs.makeFontsConf {
+    fontDirectories = [
+      "${pkgs.ghostscript.fonts}/share/fonts"
+    ];
+  };
 
   lhs2tex =
     {
@@ -178,14 +146,16 @@ rec {
       flags ? null,
     }:
     pkgs.stdenv.mkDerivation {
-      name = "tex";
-      builder = ./lhs2tex.sh;
       inherit source flags;
+
       buildInputs = [
         pkgs.lhs2tex
         pkgs.perl
       ];
+
+      builder = ./lhs2tex.sh;
       copyIncludes = ./copy-includes.pl;
+
       includes =
         map
           (x: [
@@ -195,36 +165,8 @@ rec {
           (findLhs2TeXIncludes {
             rootFile = source;
           });
-    };
 
-  animateDot =
-    dotGraph: nrFrames:
-    pkgs.stdenv.mkDerivation {
-      name = "dot-frames";
-      builder = ./animatedot.sh;
-      inherit dotGraph nrFrames;
-    };
-
-  # Wrap a piece of TeX code in a document.  Useful when generating
-  # inline images from TeX code.
-  wrapSimpleTeX =
-    {
-      preamble ? null,
-      body,
-      name ? baseNameOf (toString body),
-    }:
-
-    pkgs.stdenv.mkDerivation {
-      inherit name preamble body;
-      buildCommand = ''
-        touch $out
-        echo '\documentclass{article}' >> $out
-        echo '\pagestyle{empty}' >> $out
-        if test -n "$preamble"; then cat $preamble >> $out; fi
-        echo '\begin{document}' >> $out
-        cat $body >> $out
-        echo '\end{document}' >> $out
-      '';
+      name = "tex";
     };
 
   # Convert a Postscript file to a PNG image, trimming it so that
@@ -235,7 +177,6 @@ rec {
     }:
 
     pkgs.stdenv.mkDerivation {
-      name = "png";
       inherit postscript;
 
       buildInputs = [
@@ -262,49 +203,120 @@ rec {
           $input \
           "$out/$(basename $input .ps).png"
       ''; # */
+
+      name = "png";
     };
 
-  # Convert a piece of TeX code to a PNG image.
-  simpleTeXToPNG =
+  runLaTeX =
     {
-      preamble ? null,
-      body,
+      rootFile,
+      compressBlanksInIndex ? true,
+      copySources ? false,
+      extraFiles ? [ ],
+      generatePDF ? true, # generate PDF, not DVI
+      generatePS ? false, # generate PS in addition to DVI
       packages ? [ ],
+      texPackages ? { },
     }:
 
-    postscriptToPNG {
-      postscript = runLaTeX {
-        rootFile = wrapSimpleTeX {
-          inherit body preamble;
-        };
-        inherit packages;
-        generatePDF = false;
-        generatePS = true;
-      };
+    assert generatePDF -> !generatePS;
+
+    let
+      tex =
+        pkgs.texlive.combine
+          # always include basic stuff you need for LaTeX
+          ({ inherit (pkgs.texlive) scheme-basic; } // texPackages);
+    in
+
+    pkgs.stdenv.mkDerivation {
+      inherit
+        rootFile
+        generatePDF
+        generatePS
+        extraFiles
+        compressBlanksInIndex
+        copySources
+        ;
+
+      buildInputs = [
+        tex
+        pkgs.perl
+      ]
+      ++ packages;
+
+      builder = ./run-latex.sh;
+      copyIncludes = ./copy-includes.pl;
+
+      includes =
+        map
+          (x: [
+            x.key
+            (baseNameOf (toString x.key))
+          ])
+          (findLaTeXIncludes {
+            inherit rootFile;
+          });
+
+      name = "doc";
     };
 
   # Convert a piece of TeX code to a PDF.
   simpleTeXToPDF =
     {
-      preamble ? null,
       body,
       packages ? [ ],
+      preamble ? null,
     }:
 
     runLaTeX {
+      inherit packages;
+
       rootFile = wrapSimpleTeX {
         inherit body preamble;
       };
-      inherit packages;
     };
 
-  # Some tools (like dot) need a fontconfig configuration file.
-  # This should be extended to allow the called to add additional
-  # fonts.
-  fontsConf = pkgs.makeFontsConf {
-    fontDirectories = [
-      "${pkgs.ghostscript.fonts}/share/fonts"
-    ];
-  };
+  # Convert a piece of TeX code to a PNG image.
+  simpleTeXToPNG =
+    {
+      body,
+      packages ? [ ],
+      preamble ? null,
+    }:
+
+    postscriptToPNG {
+      postscript = runLaTeX {
+        inherit packages;
+        generatePDF = false;
+        generatePS = true;
+
+        rootFile = wrapSimpleTeX {
+          inherit body preamble;
+        };
+      };
+    };
+
+  # Wrap a piece of TeX code in a document.  Useful when generating
+  # inline images from TeX code.
+  wrapSimpleTeX =
+    {
+      body,
+      name ? baseNameOf (toString body),
+      preamble ? null,
+    }:
+
+    pkgs.stdenv.mkDerivation {
+      inherit name preamble body;
+
+      buildCommand = ''
+        touch $out
+        echo '\documentclass{article}' >> $out
+        echo '\pagestyle{empty}' >> $out
+        if test -n "$preamble"; then cat $preamble >> $out; fi
+        echo '\begin{document}' >> $out
+        cat $body >> $out
+        echo '\end{document}' >> $out
+      '';
+    };
 
 }

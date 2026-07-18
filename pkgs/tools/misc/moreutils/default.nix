@@ -1,16 +1,16 @@
 {
   lib,
   stdenv,
-  fetchgit,
-  libxml2,
-  libxslt,
+  cctools,
   docbook-xsl,
   docbook_xml_dtd_44,
+  fetchgit,
+  gitUpdater,
+  libxml2,
+  libxslt,
   makeWrapper,
   parallel, # for its priority
   perl, # for pod2man
-  cctools,
-  gitUpdater,
 }:
 
 stdenv.mkDerivation rec {
@@ -24,6 +24,7 @@ stdenv.mkDerivation rec {
   };
 
   strictDeps = true;
+
   nativeBuildInputs = [
     makeWrapper
     perl
@@ -32,6 +33,7 @@ stdenv.mkDerivation rec {
     docbook-xsl
     docbook_xml_dtd_44
   ];
+
   buildInputs = [
     (perl.withPackages (p: [
       p.IPCRun
@@ -58,13 +60,14 @@ stdenv.mkDerivation rec {
   meta = {
     description = "Growing collection of the unix tools that nobody thought to write long ago when unix was young";
     homepage = "https://joeyh.name/code/moreutils/";
+    license = lib.licenses.gpl2Plus;
+
     maintainers = with lib.maintainers; [
       koral
       pSub
     ];
-    platforms = lib.platforms.all;
-    license = lib.licenses.gpl2Plus;
 
+    platforms = lib.platforms.all;
     # If somebody explicitly installs GNU parallel, they probably want
     # its parallel executable instead of moreutils'.
     priority = (parallel.meta.priority or lib.meta.defaultPriority) + 1;

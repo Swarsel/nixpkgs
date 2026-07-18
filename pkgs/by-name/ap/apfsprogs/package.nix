@@ -2,9 +2,9 @@
   lib,
   stdenv,
   fetchFromGitHub,
+  nix-update-script,
   nixosTests,
   testers,
-  nix-update-script,
 }:
 let
   tools = [
@@ -33,6 +33,8 @@ stdenv.mkDerivation (finalAttrs: {
         'v${finalAttrs.version}'
   '';
 
+  strictDeps = true;
+
   buildPhase = ''
     runHook preBuild
     make -C apfs-snap $makeFlags
@@ -55,9 +57,9 @@ stdenv.mkDerivation (finalAttrs: {
     let
       mkVersionTest = tool: {
         "version-${tool}" = testers.testVersion {
-          package = finalAttrs.finalPackage;
-          command = "${tool} -v";
           version = "v${finalAttrs.version}";
+          command = "${tool} -v";
+          package = finalAttrs.finalPackage;
         };
       };
       versionTestList = map mkVersionTest tools;
@@ -71,14 +73,12 @@ stdenv.mkDerivation (finalAttrs: {
 
   passthru.updateScript = nix-update-script { };
 
-  strictDeps = true;
-
   meta = {
     description = "Experimental APFS tools for linux";
     homepage = "https://github.com/linux-apfs/apfsprogs";
     changelog = "https://github.com/linux-apfs/apfsprogs/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.gpl2Only;
-    platforms = lib.platforms.linux;
     maintainers = with lib.maintainers; [ Luflosi ];
+    platforms = lib.platforms.linux;
   };
 })

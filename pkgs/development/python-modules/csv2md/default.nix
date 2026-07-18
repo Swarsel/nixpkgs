@@ -8,7 +8,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "csv2md";
   version = "1.7.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "lzakharov";
@@ -18,7 +17,7 @@ buildPythonPackage (finalAttrs: {
   };
 
   build-system = [ setuptools ];
-
+  pyproject = true;
   pythonImportsCheck = [ "csv2md" ];
 
   meta = {

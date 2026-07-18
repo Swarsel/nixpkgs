@@ -2,16 +2,16 @@
   lib,
   stdenv,
   fetchurl,
+  alsa-lib,
   autoPatchelfHook,
-  makeWrapper,
-  unzip,
   libGL,
   libice,
   libsm,
   libx11,
   libxrandr,
+  makeWrapper,
+  unzip,
   zlib,
-  alsa-lib,
 }:
 
 stdenv.mkDerivation {
@@ -22,8 +22,6 @@ stdenv.mkDerivation {
     url = "https://update.rigsofrods.org/rigs-of-rods-linux-2022-12.zip";
     hash = "sha256-jj152fd4YHlU6YCVCnN6DKRfmi5+ORpMQVDacy/TPeE=";
   };
-
-  sourceRoot = ".";
 
   nativeBuildInputs = [
     autoPatchelfHook
@@ -41,12 +39,6 @@ stdenv.mkDerivation {
     zlib
   ];
 
-  runtimeDependencies = [
-    alsa-lib
-  ];
-
-  noDumpEnvVars = true;
-
   installPhase = ''
     runHook preInstall
 
@@ -60,14 +52,24 @@ stdenv.mkDerivation {
     runHook postInstall
   '';
 
+  noDumpEnvVars = true;
+
+  runtimeDependencies = [
+    alsa-lib
+  ];
+
+  sourceRoot = ".";
+
   meta = {
     description = "Free/libre soft-body physics simulator mainly targeted at simulating vehicle physics";
     homepage = "https://www.rigsofrods.org";
     license = lib.licenses.gpl3Plus;
+
     maintainers = with lib.maintainers; [
       raskin
       wegank
     ];
+
     platforms = [ "x86_64-linux" ];
   };
 }

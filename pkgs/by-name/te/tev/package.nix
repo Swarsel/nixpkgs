@@ -1,25 +1,25 @@
 {
   lib,
   stdenv,
+  fetchFromGitHub,
   cmake,
   darwin,
   dbus,
-  fetchFromGitHub,
   lcms2,
   libGL,
   libffi,
+  libx11,
+  libxcursor,
+  libxi,
+  libxinerama,
   libxkbcommon,
+  libxrandr,
   nasm,
   perl,
   pkg-config,
   wayland,
   wayland-protocols,
   wayland-scanner,
-  libxrandr,
-  libxi,
-  libxinerama,
-  libxcursor,
-  libx11,
 }:
 
 stdenv.mkDerivation rec {
@@ -30,8 +30,8 @@ stdenv.mkDerivation rec {
     owner = "Tom94";
     repo = "tev";
     tag = "v${version}";
-    fetchSubmodules = true;
     hash = "sha256-+11GpyUCtVvIeSTEJx6WTvN6aUcvuF/lDlA/+6IduKQ=";
+    fetchSubmodules = true;
   };
 
   postPatch = lib.optionalString stdenv.hostPlatform.isLinux (
@@ -78,17 +78,19 @@ stdenv.mkDerivation rec {
 
   meta = {
     description = "High dynamic range (HDR) image viewer for people who care about colors";
-    mainProgram = "tev";
+
     longDescription = ''
       High dynamic range (HDR) image viewer for people who care about colors. It is
       - Lightning fast: starts up instantly, loads hundreds of images in seconds.
       - Accurate: understands color profiles and displays HDR.
       - Versatile: supports many formats, histograms, pixel peeping, tonemaps, etc.
     '';
-    changelog = "https://github.com/Tom94/tev/releases/tag/v${version}";
+
     homepage = "https://github.com/Tom94/tev";
+    changelog = "https://github.com/Tom94/tev/releases/tag/v${version}";
     license = lib.licenses.gpl3;
     maintainers = with lib.maintainers; [ tom94 ];
     platforms = lib.platforms.unix;
+    mainProgram = "tev";
   };
 }

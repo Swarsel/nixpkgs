@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   setuptools,
   typing-extensions,
 }:
@@ -9,7 +9,6 @@
 buildPythonPackage rec {
   pname = "tls-client";
   version = "1.0.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "FlorianREGAZ";
@@ -19,12 +18,10 @@ buildPythonPackage rec {
   };
 
   nativeBuildInputs = [ setuptools ];
-
   propagatedBuildInputs = [ typing-extensions ];
-
   # Module has no tests
   doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "tls_client" ];
 
   meta = {

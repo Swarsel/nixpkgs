@@ -1,14 +1,21 @@
 {
   lib,
   fetchFromGitHub,
-  buildGoModule,
   buildEnv,
+  buildGoModule,
 }:
 
 let
   package = buildGoModule rec {
     pname = "nomad-autoscaler";
     version = "0.3.6";
+
+    src = fetchFromGitHub {
+      owner = "hashicorp";
+      repo = "nomad-autoscaler";
+      rev = "v${version}";
+      sha256 = "sha256-fK5GsszNhz/WP0zVk2lOfU/gwYijdQa5qhNYO33RhXc=";
+    };
 
     outputs = [
       "out"
@@ -25,13 +32,6 @@ let
       "target_value"
       "threshold"
     ];
-
-    src = fetchFromGitHub {
-      owner = "hashicorp";
-      repo = "nomad-autoscaler";
-      rev = "v${version}";
-      sha256 = "sha256-fK5GsszNhz/WP0zVk2lOfU/gwYijdQa5qhNYO33RhXc=";
-    };
 
     vendorHash = "sha256-Duzjpl011mj/SNoX/jQGMXwqUHPDz7iIMygRmK1vC3Q=";
 
@@ -82,6 +82,7 @@ let
     # they want newer versions of the plugins without having to modify
     # the output logic
     doInstallCheck = true;
+
     installCheckPhase = ''
       rmdir bin/plugins || {
         echo "Not all plugins were extracted"
@@ -96,10 +97,10 @@ let
 
     meta = {
       description = "Autoscaling daemon for Nomad";
-      mainProgram = "nomad-autoscaler";
       homepage = "https://github.com/hashicorp/nomad-autoscaler";
       license = lib.licenses.mpl20;
       maintainers = [ ];
+      mainProgram = "nomad-autoscaler";
     };
   };
 

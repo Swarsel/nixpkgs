@@ -1,8 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
+  buildPythonPackage,
   # pythonPackages
   pytestCheckHook,
   pyyaml,
@@ -11,7 +10,6 @@
 buildPythonPackage {
   pname = "oyaml";
   version = "unstable-2021-12-03";
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "wimglenn";
@@ -21,9 +19,8 @@ buildPythonPackage {
   };
 
   propagatedBuildInputs = [ pyyaml ];
-
   nativeCheckInputs = [ pytestCheckHook ];
-
+  format = "setuptools";
   pythonImportsCheck = [ "oyaml" ];
 
   meta = {

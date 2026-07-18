@@ -17,7 +17,6 @@ rustPlatform.buildRustPackage {
   };
 
   cargoHash = "sha256-RgRmbQVZK/4U37CO8AjNQOqR/SXvL1TQU03LX7LnqPY=";
-
   buildFeatures = lib.optional withCitation [ "citation" ];
 
   meta = {
@@ -25,7 +24,7 @@ rustPlatform.buildRustPackage {
     homepage = "https://github.com/estin/simple-completion-language-server";
     license = [ lib.licenses.mit ];
     maintainers = [ lib.maintainers.kpbaks ];
-    mainProgram = "simple-completion-language-server";
     platforms = lib.platforms.all;
+    mainProgram = "simple-completion-language-server";
   };
 }

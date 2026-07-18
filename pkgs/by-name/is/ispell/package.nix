@@ -15,11 +15,6 @@ stdenv.mkDerivation (finalAttrs: {
     sha256 = "sha256-F8kWM9TIB1rMUDFjoWRj/FSrHHRTKArTnNPbdceD66Y=";
   };
 
-  buildInputs = [
-    bison
-    ncurses
-  ];
-
   postPatch = ''
     cat >> local.h <<EOF
     ${lib.optionalString (!stdenv.hostPlatform.isDarwin) "#define USG"}
@@ -37,6 +32,11 @@ stdenv.mkDerivation (finalAttrs: {
     #define HAS_RENAME
     EOF
   '';
+
+  buildInputs = [
+    bison
+    ncurses
+  ];
 
   env.NIX_CFLAGS_COMPILE = "-std=gnu17"; # Doesn't compile with C23
 

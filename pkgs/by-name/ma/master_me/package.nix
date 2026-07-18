@@ -17,11 +17,16 @@ stdenv.mkDerivation (finalAttrs: {
     owner = "trummerschlunk";
     repo = "master_me";
     tag = finalAttrs.version;
-    fetchSubmodules = true;
     hash = "sha256-eesMXxRcCgzhSQ+WUqM00EuKYhFxysjH+RWKHKGYzUM=";
+    fetchSubmodules = true;
   };
 
+  postPatch = ''
+    patchShebangs ./dpf/utils/
+  '';
+
   nativeBuildInputs = [ pkg-config ];
+
   buildInputs = [
     libGL
     python3
@@ -32,21 +37,16 @@ stdenv.mkDerivation (finalAttrs: {
     libxrandr
   ];
 
+  makeFlags = [ "PREFIX=${placeholder "out"}" ];
   enableParallelBuilding = true;
 
-  postPatch = ''
-    patchShebangs ./dpf/utils/
-  '';
-
-  makeFlags = [ "PREFIX=${placeholder "out"}" ];
-
   meta = {
-    homepage = "https://github.com/trummerschlunk/master_me";
     description = "Automatic mastering plugin for live streaming, podcasts and internet radio";
+    homepage = "https://github.com/trummerschlunk/master_me";
+    license = lib.licenses.gpl3Plus;
     maintainers = with lib.maintainers; [ magnetophon ];
     platforms = lib.platforms.all;
-    broken = stdenv.hostPlatform.isDarwin; # error: no type or protocol named 'NSPasteboardType'
-    license = lib.licenses.gpl3Plus;
     mainProgram = "master_me";
+    broken = stdenv.hostPlatform.isDarwin; # error: no type or protocol named 'NSPasteboardType'
   };
 })

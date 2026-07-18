@@ -2,19 +2,19 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  meson,
-  ninja,
-  vala,
-  wrapGAppsHook3,
-  pkg-config,
-  pantheon,
-  libhandy,
-  libportal,
+  desktop-file-utils,
   glib,
   gtk3,
-  desktop-file-utils,
+  libhandy,
+  libportal,
+  meson,
+  ninja,
+  pantheon,
+  pkg-config,
   scrot,
   tesseract,
+  vala,
+  wrapGAppsHook3,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -61,7 +61,7 @@ stdenv.mkDerivation (finalAttrs: {
     homepage = "https://textsnatcher.rf.gd/";
     changelog = "https://github.com/RajSolai/TextSnatcher/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.gpl3Only;
-    mainProgram = "com.github.rajsolai.textsnatcher";
     platforms = lib.platforms.linux;
+    mainProgram = "com.github.rajsolai.textsnatcher";
   };
 })

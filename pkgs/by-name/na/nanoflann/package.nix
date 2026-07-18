@@ -7,8 +7,8 @@
 }:
 
 stdenv.mkDerivation (finalAttrs: {
-  version = "1.7.1";
   pname = "nanoflann";
+  version = "1.7.1";
 
   src = fetchFromGitHub {
     owner = "jlblancoc";
@@ -27,8 +27,8 @@ stdenv.mkDerivation (finalAttrs: {
   checkTarget = "test";
 
   meta = {
-    homepage = "https://github.com/jlblancoc/nanoflann";
     description = "Header only C++ library for approximate nearest neighbor search";
+
     longDescription = ''
       nanoflann is a C++11 header-only library for building KD-Trees of datasets
       with different topologies: R2, R3 (point clouds), SO(2) and SO(3) (2D and
@@ -41,6 +41,8 @@ stdenv.mkDerivation (finalAttrs: {
       license terms, nanoflann is distributed under the BSD license. Please, for
       bugs use the issues button or fork and open a pull request.
     '';
+
+    homepage = "https://github.com/jlblancoc/nanoflann";
     changelog = "https://github.com/jlblancoc/nanoflann/blob/v${finalAttrs.version}/CHANGELOG.md";
     license = lib.licenses.bsd2;
     maintainers = [ ];

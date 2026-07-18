@@ -1,16 +1,9 @@
 {
   lib,
   stdenv,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # build-system
-  setuptools,
-
-  # dependencies
-  torch,
-  torchcodec,
-
+  buildPythonPackage,
+  cudaPackages,
   # tests
   expecttest,
   inflect,
@@ -21,14 +14,16 @@
   requests,
   scipy,
   sentencepiece,
+  # build-system
+  setuptools,
   soundfile,
-  unidecode,
-
+  # dependencies
+  torch,
   # passthru
   torchaudio,
-
+  torchcodec,
+  unidecode,
   cudaSupport ? torch.cudaSupport,
-  cudaPackages,
   rocmSupport ? torch.rocmSupport,
 }:
 
@@ -38,7 +33,6 @@ in
 buildPythonPackage.override { inherit (torch) stdenv; } (finalAttrs: {
   pname = "torchaudio";
   version = "2.11.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "pytorch";
@@ -46,44 +40,6 @@ buildPythonPackage.override { inherit (torch) stdenv; } (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-TncROn9wfn5HOaIvupS2/KD9JCgwfHyfnbZRc+SiqJ0=";
   };
-
-  env = {
-    # CTC seems to be missing no matter what. No obvious flag to force its compilation.
-    TORCHAUDIO_TEST_ALLOW_SKIP_IF_NO_CTC_DECODER = 1;
-
-    # CUDA
-    USE_CUDA = cudaSupport;
-    TORCH_CUDA_ARCH_LIST = "${lib.concatStringsSep ";" torch.cudaCapabilities}";
-    TORCHAUDIO_TEST_ALLOW_SKIP_IF_NO_CUCTC_DECODER = 1;
-    TORCHAUDIO_TEST_ALLOW_SKIP_IF_NO_CUDA = 1;
-    TORCHAUDIO_TEST_ALLOW_SKIP_IF_NO_MULTIGPU_CUDA = 1;
-
-    # ROCM
-    USE_ROCM = rocmSupport;
-    PYTORCH_ROCM_ARCH = lib.optionalString rocmSupport torch.gpuTargetString;
-    ROCM_PATH = lib.optionalString rocmSupport torch.rocmtoolkit_joined;
-
-    # demucs is not packaged in nixpkgs and is archived anyway
-    TORCHAUDIO_TEST_ALLOW_SKIP_IF_NO_MOD_demucs = true;
-
-    # fairseq is unmaintained and broken in nixpkgs
-    TORCHAUDIO_TEST_ALLOW_SKIP_IF_NO_MOD_fairseq = true;
-
-    # Fails even on python>3.10 with:
-    #   RuntimeError: Test is known to fail for Python 3.10, disabling for now
-    #   See: https://github.com/pytorch/audio/pull/2224#issuecomment-1048329450
-    TORCHAUDIO_TEST_ALLOW_SKIP_IF_ON_PYTHON_310 = true;
-
-    # Fails on aarch64-linux and darwin with:
-    #   RuntimeError: `fbgemm` is not available
-    # `fbgemm` is indeed an x86_64-linux-only feature
-    # in some x86_64-linux build environments this is also needed
-    TORCHAUDIO_TEST_ALLOW_SKIP_IF_NO_QUANTIZATION = 1;
-  };
-
-  build-system = [
-    setuptools
-  ];
 
   nativeBuildInputs = lib.optionals cudaSupport [
     cudaPackages.cuda_nvcc
@@ -93,12 +49,33 @@ buildPythonPackage.override { inherit (torch) stdenv; } (finalAttrs: {
     cudaPackages.cuda_cudart
   ];
 
-  dependencies = [
-    torch
-    torchcodec
-  ];
-
-  pythonImportsCheck = [ "torchaudio" ];
+  env = {
+    PYTORCH_ROCM_ARCH = lib.optionalString rocmSupport torch.gpuTargetString;
+    ROCM_PATH = lib.optionalString rocmSupport torch.rocmtoolkit_joined;
+    # CTC seems to be missing no matter what. No obvious flag to force its compilation.
+    TORCHAUDIO_TEST_ALLOW_SKIP_IF_NO_CTC_DECODER = 1;
+    TORCHAUDIO_TEST_ALLOW_SKIP_IF_NO_CUCTC_DECODER = 1;
+    TORCHAUDIO_TEST_ALLOW_SKIP_IF_NO_CUDA = 1;
+    # demucs is not packaged in nixpkgs and is archived anyway
+    TORCHAUDIO_TEST_ALLOW_SKIP_IF_NO_MOD_demucs = true;
+    # fairseq is unmaintained and broken in nixpkgs
+    TORCHAUDIO_TEST_ALLOW_SKIP_IF_NO_MOD_fairseq = true;
+    TORCHAUDIO_TEST_ALLOW_SKIP_IF_NO_MULTIGPU_CUDA = 1;
+    # Fails on aarch64-linux and darwin with:
+    #   RuntimeError: `fbgemm` is not available
+    # `fbgemm` is indeed an x86_64-linux-only feature
+    # in some x86_64-linux build environments this is also needed
+    TORCHAUDIO_TEST_ALLOW_SKIP_IF_NO_QUANTIZATION = 1;
+    # Fails even on python>3.10 with:
+    #   RuntimeError: Test is known to fail for Python 3.10, disabling for now
+    #   See: https://github.com/pytorch/audio/pull/2224#issuecomment-1048329450
+    TORCHAUDIO_TEST_ALLOW_SKIP_IF_ON_PYTHON_310 = true;
+    TORCH_CUDA_ARCH_LIST = "${lib.concatStringsSep ";" torch.cudaCapabilities}";
+    # CUDA
+    USE_CUDA = cudaSupport;
+    # ROCM
+    USE_ROCM = rocmSupport;
+  };
 
   nativeCheckInputs = [
     expecttest
@@ -112,6 +89,15 @@ buildPythonPackage.override { inherit (torch) stdenv; } (finalAttrs: {
     librosa
     requests
     soundfile
+  ];
+
+  build-system = [
+    setuptools
+  ];
+
+  dependencies = [
+    torch
+    torchcodec
   ];
 
   disabledTestPaths = [
@@ -152,28 +138,35 @@ buildPythonPackage.override { inherit (torch) stdenv; } (finalAttrs: {
     "test_lfilter_shape_6"
   ];
 
+  pyproject = true;
+  pythonImportsCheck = [ "torchaudio" ];
+
   passthru.gpuCheck = torchaudio.overridePythonAttrs (old: {
     pname = "${finalAttrs.pname}-gpuCheck";
-    requiredSystemFeatures = [ "cuda" ];
 
     env = (old.env or { }) // {
       TORCHAUDIO_TEST_ALLOW_SKIP_IF_NO_CUCTC_DECODER = 0;
       TORCHAUDIO_TEST_ALLOW_SKIP_IF_NO_CUDA = 0;
     };
+
+    requiredSystemFeatures = [ "cuda" ];
   });
 
   meta = {
     description = "PyTorch audio library";
     homepage = "https://pytorch.org/audio";
-    downloadPage = "https://github.com/pytorch/audio";
     changelog = "https://github.com/pytorch/audio/releases/tag/${finalAttrs.src.tag}";
     license = lib.licenses.bsd2;
-    platforms =
-      lib.platforms.linux ++ lib.optionals (!cudaSupport && !rocmSupport) lib.platforms.darwin;
+
     maintainers = with lib.maintainers; [
       GaetanLepage
       caniko
       junjihashimoto
     ];
+
+    platforms =
+      lib.platforms.linux ++ lib.optionals (!cudaSupport && !rocmSupport) lib.platforms.darwin;
+
+    downloadPage = "https://github.com/pytorch/audio";
   };
 })

@@ -1,7 +1,7 @@
 {
+  lib,
   fetchFromGitHub,
   jre,
-  lib,
   makeWrapper,
   maven,
   nix-update-script,
@@ -11,11 +11,6 @@ maven.buildMavenPackage (finalAttrs: {
   pname = "h2";
   version = "2.4.240";
 
-  outputs = [
-    "out"
-    "doc"
-  ];
-
   src = fetchFromGitHub {
     owner = "h2database";
     repo = "h2database";
@@ -23,11 +18,12 @@ maven.buildMavenPackage (finalAttrs: {
     hash = "sha256-Cy6MoumJBhhcYT6dCHWeOfmhjGRkdNvSONdIiZaf6uU=";
   };
 
-  mvnParameters = "-f h2/pom.xml";
-  mvnHash = "sha256-j4Uso/bl4UhQbJc7Wre0btgC+9RKvuCHkn9euQFuTxk=";
+  outputs = [
+    "out"
+    "doc"
+  ];
 
   nativeBuildInputs = [ makeWrapper ];
-
   doCheck = false;
 
   installPhase = ''
@@ -41,6 +37,9 @@ maven.buildMavenPackage (finalAttrs: {
     cp -r h2/src/docsrc/* $doc/share/doc/h2
   '';
 
+  mvnHash = "sha256-j4Uso/bl4UhQbJc7Wre0btgC+9RKvuCHkn9euQFuTxk=";
+  mvnParameters = "-f h2/pom.xml";
+
   passthru.updateScript = nix-update-script {
     extraArgs = [
       "--version-regex"
@@ -53,11 +52,13 @@ maven.buildMavenPackage (finalAttrs: {
     homepage = "https://h2database.com/html/main.html";
     changelog = "https://h2database.com/html/changelog.html";
     license = lib.licenses.mpl20;
-    platforms = lib.platforms.unix;
+
     maintainers = with lib.maintainers; [
       mahe
       anthonyroussel
     ];
+
+    platforms = lib.platforms.unix;
     mainProgram = "h2";
   };
 })

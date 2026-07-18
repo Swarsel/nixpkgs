@@ -9,11 +9,11 @@
   buildPythonPackage,
   faker,
   fetchPypi,
+  hatchling,
   itsdangerous,
   motor,
-  hatchling,
-  pytest-asyncio,
   pytest-aiohttp,
+  pytest-asyncio,
   pytestCheckHook,
   redis,
   url-normalize,
@@ -22,13 +22,20 @@
 buildPythonPackage rec {
   pname = "aiohttp-client-cache";
   version = "0.14.3";
-  pyproject = true;
 
   src = fetchPypi {
-    pname = "aiohttp_client_cache";
     inherit version;
     hash = "sha256-Mp9AOMao7QtBACOYC20aLEhK8z5meonOJFyJnWLB+6E=";
+    pname = "aiohttp_client_cache";
   };
+
+  nativeCheckInputs = [
+    faker
+    pytest-asyncio
+    pytest-aiohttp
+    pytestCheckHook
+  ]
+  ++ lib.concatAttrValues optional-dependencies;
 
   build-system = [ hatchling ];
 
@@ -37,6 +44,11 @@ buildPythonPackage rec {
     attrs
     itsdangerous
     url-normalize
+  ];
+
+  disabledTestPaths = [
+    # Tests require running instances of the services
+    "test/integration/*"
   ];
 
   optional-dependencies = {
@@ -48,35 +60,25 @@ buildPythonPackage rec {
       motor
       redis
     ];
+
     dynamodb = [
       aioboto3
       aiobotocore
     ];
+
     filesystem = [
       aiofiles
       aiosqlite
     ];
+
     mongodb = [ motor ];
     redis = [ redis ];
     sqlite = [ aiosqlite ];
   };
 
-  nativeCheckInputs = [
-    faker
-    pytest-asyncio
-    pytest-aiohttp
-    pytestCheckHook
-  ]
-  ++ lib.concatAttrValues optional-dependencies;
-
+  pyproject = true;
   pytestFlags = [ "--asyncio-mode=auto" ];
-
   pythonImportsCheck = [ "aiohttp_client_cache" ];
-
-  disabledTestPaths = [
-    # Tests require running instances of the services
-    "test/integration/*"
-  ];
 
   meta = {
     description = "Async persistent cache for aiohttp requests";

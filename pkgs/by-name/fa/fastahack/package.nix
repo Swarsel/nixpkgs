@@ -2,8 +2,8 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  runCommand,
   fastahack,
+  runCommand,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -37,7 +37,7 @@ stdenv.mkDerivation (finalAttrs: {
     changelog = "https://github.com/ekg/fastahack/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ natsukium ];
-    mainProgram = "fastahack";
     platforms = lib.platforms.unix;
+    mainProgram = "fastahack";
   };
 })

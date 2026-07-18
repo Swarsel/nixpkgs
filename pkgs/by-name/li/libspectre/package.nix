@@ -1,10 +1,10 @@
 {
-  fetchurl,
   lib,
   stdenv,
-  pkg-config,
-  ghostscript,
+  fetchurl,
   cairo,
+  ghostscript,
+  pkg-config,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -30,7 +30,6 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   meta = {
-    homepage = "http://libspectre.freedesktop.org/";
     description = "PostScript rendering library";
 
     longDescription = ''
@@ -39,6 +38,7 @@ stdenv.mkDerivation (finalAttrs: {
       handling and rendering Postscript documents.
     '';
 
+    homepage = "http://libspectre.freedesktop.org/";
     license = lib.licenses.gpl2Plus;
     platforms = lib.platforms.unix;
   };

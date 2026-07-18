@@ -2,12 +2,12 @@
   lib,
   stdenv,
   fetchurl,
-  fetchpatch,
   autoreconfHook,
-  libvorbis,
-  speex,
+  fetchpatch,
   flac,
+  libvorbis,
   pkg-config,
+  speex,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -22,7 +22,7 @@ stdenv.mkDerivation (finalAttrs: {
   patches =
     let
       fetchDebPatch =
-        { name, hash }:
+        { hash, name }:
         fetchpatch {
           inherit name hash;
           url = "https://salsa.debian.org/multimedia-team/libfishsound/-/raw/f25f31a13dd2ce008614427889b08e6f2222898f/debian/patches/${name}";
@@ -30,18 +30,23 @@ stdenv.mkDerivation (finalAttrs: {
     in
     map fetchDebPatch [
       {
-        name = "0001-Patch-configure.ac-to-specify-config-macro-dir.patch";
         hash = "sha256-3cijMhgxqwFisc5nt8826QUwOqPI7H425QkDcjnD4iM=";
+        name = "0001-Patch-configure.ac-to-specify-config-macro-dir.patch";
       }
       {
-        name = "0002-flac-set-vendor_string.length-0.patch";
         hash = "sha256-8195rU9IAhFL3MgB4jLwtJv6BWgz22A38+RmIymIQoo=";
+        name = "0002-flac-set-vendor_string.length-0.patch";
       }
       {
-        name = "0003-Fix-incompatible-flac-callback-types.patch";
         hash = "sha256-BxG1hlThzhJ6VeGcsNpDEtVyKSJTLGFKeHFpFoXW54A=";
+        name = "0003-Fix-incompatible-flac-callback-types.patch";
       }
     ];
+
+  nativeBuildInputs = [
+    pkg-config
+    autoreconfHook
+  ];
 
   propagatedBuildInputs = [
     libvorbis
@@ -49,14 +54,9 @@ stdenv.mkDerivation (finalAttrs: {
     flac
   ];
 
-  nativeBuildInputs = [
-    pkg-config
-    autoreconfHook
-  ];
-
   meta = {
-    homepage = "https://xiph.org/fishsound/";
     description = "Simple programming interface for decoding and encoding audio data using Xiph.org codecs (FLAC, Speex and Vorbis)";
+
     longDescription = ''
       libfishsound by itself is designed to handle raw codec streams from a lower level layer such as UDP datagrams. When these codecs are used in files, they are commonly encapsulated in Ogg to produce Ogg FLAC, Speex and Ogg Vorbis files.
 
@@ -64,7 +64,9 @@ stdenv.mkDerivation (finalAttrs: {
 
       FishSound has been developed and tested on GNU/Linux, Darwin/MacOSX and Win32. It probably also works on other Unix-like systems via GNU autoconf. For Win32: nmake Makefiles, Visual Studio .NET 2003 solution files and Visual C++ 6.0 workspace files are all provided in the source distribution.
     '';
-    platforms = lib.platforms.unix;
+
+    homepage = "https://xiph.org/fishsound/";
     license = lib.licenses.bsd3;
+    platforms = lib.platforms.unix;
   };
 })

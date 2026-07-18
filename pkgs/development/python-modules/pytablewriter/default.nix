@@ -1,10 +1,10 @@
 {
   lib,
+  fetchFromGitHub,
   buildPythonPackage,
   dataproperty,
   dominate,
   elasticsearch,
-  fetchFromGitHub,
   loguru,
   mbstrdecoder,
   pandas,
@@ -24,7 +24,6 @@
 buildPythonPackage rec {
   pname = "pytablewriter";
   version = "1.2.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "thombashi";
@@ -32,6 +31,11 @@ buildPythonPackage rec {
     tag = "v${version}";
     hash = "sha256-YuuSMKTSG3oybvA6TDWNnGg4EiDAw2tRlM0S9mBQlkc=";
   };
+
+  nativeCheckInputs = [
+    pytestCheckHook
+  ]
+  ++ lib.concatAttrValues optional-dependencies;
 
   build-system = [ setuptools-scm ];
 
@@ -42,6 +46,21 @@ buildPythonPackage rec {
     tabledata
     tcolorpy
     typepy
+  ];
+
+  disabledTestPaths = [
+    "test/writer/binary/test_excel_writer.py"
+    "test/writer/binary/test_sqlite_writer.py"
+    "test/writer/test_elasticsearch_writer.py"
+  ];
+
+  disabledTests = [
+    # Circular dependency
+    "test_normal_from_file"
+    "test_normal_from_text"
+    "test_normal_clear_theme"
+    # Test compares CLI output
+    "test_normal"
   ];
 
   optional-dependencies = {
@@ -57,12 +76,15 @@ buildPythonPackage rec {
       xlsxwriter
       xlwt
     ];
+
     es = [ elasticsearch ];
     es8 = [ elasticsearch ];
+
     excel = [
       xlwt
       xlsxwriter
     ];
+
     html = [ dominate ];
     logging = [ loguru ];
     # from = [
@@ -79,27 +101,8 @@ buildPythonPackage rec {
     yaml = [ pyyaml ];
   };
 
-  nativeCheckInputs = [
-    pytestCheckHook
-  ]
-  ++ lib.concatAttrValues optional-dependencies;
-
+  pyproject = true;
   pythonImportsCheck = [ "pathvalidate" ];
-
-  disabledTests = [
-    # Circular dependency
-    "test_normal_from_file"
-    "test_normal_from_text"
-    "test_normal_clear_theme"
-    # Test compares CLI output
-    "test_normal"
-  ];
-
-  disabledTestPaths = [
-    "test/writer/binary/test_excel_writer.py"
-    "test/writer/binary/test_sqlite_writer.py"
-    "test/writer/test_elasticsearch_writer.py"
-  ];
 
   meta = {
     description = "Library to write a table in various formats";

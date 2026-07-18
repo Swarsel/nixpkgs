@@ -1,19 +1,14 @@
 {
   lib,
-  mkMesonDerivation,
-
   doxygen,
-
+  mkMesonDerivation,
   # Configuration Options
-
   version,
 }:
 
 mkMesonDerivation (finalAttrs: {
-  pname = "nix-internal-api-docs";
   inherit version;
-
-  workDir = ./.;
+  pname = "nix-internal-api-docs";
 
   nativeBuildInputs = [
     doxygen
@@ -28,6 +23,8 @@ mkMesonDerivation (finalAttrs: {
     mkdir -p ''${!outputDoc}/nix-support
     echo "doc internal-api-docs $out/share/doc/nix/internal-api/html" >> ''${!outputDoc}/nix-support/hydra-build-products
   '';
+
+  workDir = ./.;
 
   meta = {
     platforms = lib.platforms.all;

@@ -2,21 +2,18 @@
   lib,
   stdenv,
   fetchFromGitHub,
-
-  # nativeBuildInputs
-  ninja,
-  makeWrapper,
-
   # buildInputs
   fmt,
   libbfd,
   libunwind,
-  rsync,
-
-  versionCheckHook,
-  nix-update-script,
-  runCommand,
   lua-language-server,
+  makeWrapper,
+  # nativeBuildInputs
+  ninja,
+  nix-update-script,
+  rsync,
+  runCommand,
+  versionCheckHook,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -30,22 +27,6 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-c8YxTNmvloN9oabdbl5ZKgXqhxeZ9eVBt3B0Q9wA/GQ=";
     fetchSubmodules = true;
   };
-
-  nativeBuildInputs = [
-    ninja
-    makeWrapper
-  ];
-
-  buildInputs = [
-    fmt
-    libbfd
-    libunwind
-  ]
-  ++ lib.optionals stdenv.hostPlatform.isDarwin [
-    rsync
-  ];
-
-  env.NIX_LDFLAGS = "-lfmt";
 
   postPatch = ''
     # filewatch tests are failing on darwin
@@ -93,9 +74,21 @@ stdenv.mkDerivation (finalAttrs: {
     ''
   );
 
-  ninjaFlags = [
-    "-fcompile/ninja/${if stdenv.hostPlatform.isDarwin then "macos" else "linux"}.ninja"
+  nativeBuildInputs = [
+    ninja
+    makeWrapper
   ];
+
+  buildInputs = [
+    fmt
+    libbfd
+    libunwind
+  ]
+  ++ lib.optionals stdenv.hostPlatform.isDarwin [
+    rsync
+  ];
+
+  env.NIX_LDFLAGS = "-lfmt";
 
   postBuild = ''
     popd
@@ -122,17 +115,20 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
-  # some tests require local networking
-  __darwinAllowLocalNetworking = true;
+  doInstallCheck = true;
 
   nativeInstallCheckInputs = [
     versionCheckHook
   ];
-  doInstallCheck = true;
+
+  # some tests require local networking
+  __darwinAllowLocalNetworking = true;
+
+  ninjaFlags = [
+    "-fcompile/ninja/${if stdenv.hostPlatform.isDarwin then "macos" else "linux"}.ninja"
+  ];
 
   passthru = {
-    updateScript = nix-update-script { };
-
     tests.smoke = runCommand "lua-language-server-smoke-test" { } ''
       export XDG_CACHE_HOME=$(mktemp -d)
 
@@ -149,6 +145,8 @@ stdenv.mkDerivation (finalAttrs: {
       echo "$RESPONSE" | grep -q '"capabilities"'
       touch $out
     '';
+
+    updateScript = nix-update-script { };
   };
 
   meta = {
@@ -156,11 +154,13 @@ stdenv.mkDerivation (finalAttrs: {
     homepage = "https://github.com/luals/lua-language-server";
     changelog = "https://github.com/LuaLS/lua-language-server/blob/${finalAttrs.version}/changelog.md";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       gepbird
       yvnth
     ];
-    mainProgram = "lua-language-server";
+
     platforms = lib.platforms.linux ++ lib.platforms.darwin;
+    mainProgram = "lua-language-server";
   };
 })

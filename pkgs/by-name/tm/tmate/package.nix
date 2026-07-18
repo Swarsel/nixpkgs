@@ -4,15 +4,15 @@
   fetchFromGitHub,
   autoreconfHook,
   cmake,
-  libtool,
-  pkg-config,
-  zlib,
-  openssl,
   libevent,
-  ncurses,
-  ruby,
-  msgpack-c,
   libssh,
+  libtool,
+  msgpack-c,
+  ncurses,
+  openssl,
+  pkg-config,
+  ruby,
+  zlib,
 }:
 
 stdenv.mkDerivation {
@@ -51,11 +51,11 @@ stdenv.mkDerivation {
   dontUseCmakeConfigure = true;
 
   meta = {
-    homepage = "https://tmate.io/";
     description = "Instant Terminal Sharing";
+    homepage = "https://tmate.io/";
     license = lib.licenses.mit;
-    platforms = lib.platforms.unix;
     maintainers = with lib.maintainers; [ ck3d ];
+    platforms = lib.platforms.unix;
     mainProgram = "tmate";
   };
 }

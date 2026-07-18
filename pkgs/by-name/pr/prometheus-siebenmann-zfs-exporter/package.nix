@@ -1,11 +1,10 @@
 {
-  buildGoModule,
   lib,
   fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule {
-  __structuredAttrs = true;
   pname = "prometheus-siebenmann-zfs-exporter";
   version = "unstable-2022-08-17";
 
@@ -17,12 +16,13 @@ buildGoModule {
   };
 
   vendorHash = "sha256-YjEK/nKqoMch0UygoCkk8mAclRFhsjodFVHhN49zeW4=";
+  __structuredAttrs = true;
 
   meta = {
     description = "ZFS Exporter for the Prometheus monitoring system (Siebenmann/cks-upstream variant)";
-    mainProgram = "zfs_exporter";
     homepage = "https://github.com/siebenmann/zfs_exporter";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ podocarp ];
+    mainProgram = "zfs_exporter";
   };
 }

@@ -15,8 +15,6 @@ buildGoModule (finalAttrs: {
     sha256 = "sha256-GsloUZFgrOrJc23vKv+8iSeyIEKblaukPSCpZGRtSL4=";
   };
 
-  vendorHash = "sha256-BHiEVyi3FXPovYy3iDP8q+y+LgfI4ElDPVZexd7nnuo=";
-
   postPatch = ''
     # fix default configuration file location
     substituteInPlace \
@@ -29,11 +27,7 @@ buildGoModule (finalAttrs: {
       --replace-fail "AssetsPath = \"./assets\"" "AssetsPath = \"$out/share/assets\""
   '';
 
-  ldflags = [
-    "-s"
-    "-w"
-    "-X github.com/CrunchyData/pg_featureserv/conf.setVersion=${finalAttrs.version}"
-  ];
+  vendorHash = "sha256-BHiEVyi3FXPovYy3iDP8q+y+LgfI4ElDPVZexd7nnuo=";
 
   postInstall = ''
     mkdir -p $out/share
@@ -43,11 +37,17 @@ buildGoModule (finalAttrs: {
     cp config/pg_featureserv.toml.example $out/share/config/pg_featureserv.toml
   '';
 
+  ldflags = [
+    "-s"
+    "-w"
+    "-X github.com/CrunchyData/pg_featureserv/conf.setVersion=${finalAttrs.version}"
+  ];
+
   meta = {
     description = "Lightweight RESTful Geospatial Feature Server for PostGIS in Go";
-    mainProgram = "pg_featureserv";
     homepage = "https://github.com/CrunchyData/pg_featureserv";
     license = lib.licenses.asl20;
+    mainProgram = "pg_featureserv";
     teams = [ lib.teams.geospatial ];
   };
 })

@@ -1,11 +1,11 @@
 {
   lib,
   stdenv,
-  fetchFromCodeberg,
-  autoreconfHook,
   atf,
-  pkg-config,
+  autoreconfHook,
+  fetchFromCodeberg,
   kyua,
+  pkg-config,
 }:
 stdenv.mkDerivation (finalAttrs: {
   pname = "mlmmj";
@@ -38,9 +38,9 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   meta = {
-    homepage = "http://mlmmj.org";
     description = "Mailing List Management Made Joyful";
-    platforms = lib.platforms.linux;
+    homepage = "http://mlmmj.org";
     license = lib.licenses.mit;
+    platforms = lib.platforms.linux;
   };
 })

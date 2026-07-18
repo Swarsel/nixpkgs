@@ -2,12 +2,12 @@
   lib,
   stdenv,
   fetchFromGitHub,
+  cmake,
   fetchpatch,
+  jemalloc,
   pkg-config,
   zlib,
-  cmake,
   enableJemalloc ? !stdenv.hostPlatform.isMusl,
-  jemalloc,
 }:
 
 stdenv.mkDerivation rec {
@@ -27,13 +27,12 @@ stdenv.mkDerivation rec {
   ];
 
   buildInputs = [ zlib ] ++ lib.optional enableJemalloc jemalloc;
-
   # Note: tcmalloc and mimalloc are also supported (and normal malloc)
   cmakeFlags = lib.optional enableJemalloc "-DUSE_ALTERNATIVE_MALLOC=jemalloc";
 
   meta = {
     description = "Lightweight high-performance multi-threaded web server";
-    mainProgram = "lwan";
+
     longDescription = "A lightweight and speedy web server with a low memory
       footprint (~500KiB for 10k idle connections), with minimal system calls and
       memory allocation.  Lwan contains a hand-crafted HTTP request parser. Files are
@@ -43,8 +42,10 @@ stdenv.mkDerivation rec {
       compressing small files.  Features include: mustache templating engine and IPv6
       support.
     ";
+
     homepage = "https://lwan.ws/";
     license = lib.licenses.gpl2Plus;
     platforms = lib.platforms.linux;
+    mainProgram = "lwan";
   };
 }

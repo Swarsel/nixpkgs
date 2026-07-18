@@ -2,13 +2,13 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  cmake,
-  pkg-config,
   cli11,
+  cmake,
   gtest,
   libcap,
   libseccomp,
   nlohmann_json,
+  pkg-config,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -43,8 +43,8 @@ stdenv.mkDerivation (finalAttrs: {
     description = "Simple OCI runtime mainly used by linyaps";
     homepage = "https://github.com/OpenAtom-Linyaps/linyaps-box";
     license = lib.licenses.lgpl3Plus;
+    maintainers = with lib.maintainers; [ wineee ];
     platforms = lib.platforms.linux;
     mainProgram = "ll-box";
-    maintainers = with lib.maintainers; [ wineee ];
   };
 })

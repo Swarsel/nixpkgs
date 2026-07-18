@@ -26,7 +26,7 @@ stdenv.mkDerivation (finalAttrs: {
     description = "Convert MySQL dump files to PostgreSQL-loadable files";
     homepage = "https://pgfoundry.org/projects/mysql2pgsql/";
     license = lib.licenses.bsdOriginal;
-    mainProgram = "mysql2psql";
     platforms = lib.platforms.unix;
+    mainProgram = "mysql2psql";
   };
 })

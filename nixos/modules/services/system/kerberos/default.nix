@@ -1,7 +1,7 @@
 {
   config,
-  pkgs,
   lib,
+  pkgs,
   ...
 }:
 
@@ -31,8 +31,19 @@ in
     services.kerberos_server = {
       enable = lib.mkEnableOption "the kerberos authentication server";
 
+      extraKDCArgs = mkOption {
+        default = [ ];
+
+        description = ''
+          Extra arguments to pass to the KDC process. See {manpage}`kdc(8)`.
+        '';
+
+        type = listOf str;
+      };
+
       settings = mkOption {
-        type = format.type;
+        default = { };
+
         description = ''
           Settings for the kerberos server of choice.
 
@@ -40,21 +51,13 @@ in
           - Heimdal: {manpage}`kdc.conf(5)`
           - MIT Kerberos: <https://web.mit.edu/kerberos/krb5-1.21/doc/admin/conf_files/kdc_conf.html>
         '';
-        default = { };
-      };
 
-      extraKDCArgs = mkOption {
-        type = listOf str;
-        description = ''
-          Extra arguments to pass to the KDC process. See {manpage}`kdc(8)`.
-        '';
-        default = [ ];
+        type = format.type;
       };
     };
   };
 
   config = lib.mkIf cfg.enable {
-    environment.systemPackages = [ package ];
     assertions = [
       {
         assertion = cfg.settings.realms != { };
@@ -73,11 +76,14 @@ in
             property = a: !elem "all" a || (length a <= 1) || (length a <= 2 && elem "get-keys" a);
           in
           builtins.all property accesses;
+
         message = "Cannot specify \"all\" in a list with additional permissions other than \"get-keys\"";
       }
     ];
 
+    environment.systemPackages = [ package ];
     systemd.slices.system-kerberos-server = { };
+
     systemd.targets.kerberos-server = {
       wantedBy = [ "multi-user.target" ];
     };

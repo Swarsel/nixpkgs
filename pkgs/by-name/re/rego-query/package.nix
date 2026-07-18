@@ -18,9 +18,6 @@ buildGoModule (finalAttrs: {
   };
 
   vendorHash = "sha256-fOq62QRx7BoE7RJielTnu1dtvkLy2FkzG59uuMQVLc4=";
-
-  subPackages = [ "cmd/rq" ];
-
   nativeCheckInputs = [ which ];
 
   postCheck = lib.optionalString (stdenv.buildPlatform.canExecute stdenv.hostPlatform) ''
@@ -30,12 +27,14 @@ buildGoModule (finalAttrs: {
     smoketest/smoketest.sh
   '';
 
+  subPackages = [ "cmd/rq" ];
+
   meta = {
     description = "CLI tool for evaluating Rego Queries";
-    mainProgram = "rq";
     homepage = "https://sr.ht/~charles/rq";
     changelog = "https://git.sr.ht/~charles/rq/tree/${finalAttrs.src.rev}/item/CHANGELOG.md";
     license = lib.licenses.bsd3;
     maintainers = with lib.maintainers; [ refi64 ];
+    mainProgram = "rq";
   };
 })

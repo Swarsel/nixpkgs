@@ -1,9 +1,9 @@
 {
   lib,
-  rustPlatform,
   fetchCrate,
-  pkg-config,
   openssl,
+  pkg-config,
+  rustPlatform,
   zlib,
 }:
 
@@ -16,8 +16,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-hrkkDRJvXe2fltWjEW2A0/uKVFWq+9O+wRphsJjT1tE=";
   };
 
-  cargoHash = "sha256-pdFoawDRzJ8gPYAAQHwrCVYeaa1ShSqYA8nwpCAnS1s=";
-
   nativeBuildInputs = [
     pkg-config
   ];
@@ -27,23 +25,26 @@ rustPlatform.buildRustPackage (finalAttrs: {
     zlib
   ];
 
-  buildFeatures = [ "fix" ];
-
+  cargoHash = "sha256-pdFoawDRzJ8gPYAAQHwrCVYeaa1ShSqYA8nwpCAnS1s=";
   # The tests require network access which is not available in sandboxed Nix builds.
   doCheck = false;
+  buildFeatures = [ "fix" ];
 
   meta = {
     description = "Audit Cargo.lock files for crates with security vulnerabilities";
-    mainProgram = "cargo-audit";
     homepage = "https://rustsec.org";
     changelog = "https://github.com/rustsec/rustsec/blob/cargo-audit/v${finalAttrs.version}/cargo-audit/CHANGELOG.md";
+
     license = with lib.licenses; [
       mit # or
       asl20
     ];
+
     maintainers = with lib.maintainers; [
       basvandijk
       jk
     ];
+
+    mainProgram = "cargo-audit";
   };
 })

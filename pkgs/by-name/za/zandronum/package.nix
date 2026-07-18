@@ -1,28 +1,28 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitLab,
-  cmake,
-  pkg-config,
-  makeWrapper,
-  callPackage,
-  soundfont-fluid,
-  sdl12-compat,
-  libGL,
-  libopus,
-  glew,
   bzip2,
-  zlib,
-  libjpeg,
+  callPackage,
+  cmake,
+  copyDesktopItems,
   fluidsynth,
   fmodex,
-  openssl,
-  gtk2,
-  python3,
   game-music-emu,
-  copyDesktopItems,
-  makeDesktopItem,
+  glew,
+  gtk2,
   imagemagick,
+  libGL,
+  libjpeg,
+  libopus,
+  makeDesktopItem,
+  makeWrapper,
+  openssl,
+  pkg-config,
+  python3,
+  sdl12-compat,
+  soundfont-fluid,
+  zlib,
   serverOnly ? false,
 }:
 
@@ -38,16 +38,25 @@ stdenv.mkDerivation (finalAttrs: {
   version = "3.2.1";
 
   src = fetchFromGitLab {
-    domain = "foss.heptapod.net";
     owner = "zandronum";
     repo = "zandronum-stable";
     tag = "ZA_${finalAttrs.version}";
     hash = "sha256-A5sfZMiCypBxAUOsoB8yuinZf7b9D7+HH9rpVs3esgA=";
+    domain = "foss.heptapod.net";
   };
 
   # zandronum tries to download sqlite now when running cmake, don't let it
   patches = [
     ./zan_configure_impurity.patch
+  ];
+
+  nativeBuildInputs = [
+    cmake
+    pkg-config
+    makeWrapper
+    python3
+    copyDesktopItems
+    imagemagick
   ];
 
   # I have no idea why would SDL and libjpeg be needed for the server part!
@@ -70,14 +79,10 @@ stdenv.mkDerivation (finalAttrs: {
     gtk2
   ];
 
-  nativeBuildInputs = [
-    cmake
-    pkg-config
-    makeWrapper
-    python3
-    copyDesktopItems
-    imagemagick
-  ];
+  cmakeFlags = [
+    "-DFORCE_INTERNAL_GME=OFF"
+  ]
+  ++ (if serverOnly then [ "-DSERVERONLY=ON" ] else [ "-DFMOD_LIBRARY=${fmod}/lib/libfmodex.so" ]);
 
   preConfigure = ''
     ln -s ${sqlite}/* sqlite/
@@ -90,25 +95,6 @@ stdenv.mkDerivation (finalAttrs: {
       -e "s@FluidR3_GM.sf2@FluidR3_GM2-2.sf2@g" \
       src/sound/music_fluidsynth_mididevice.cpp
   '';
-
-  cmakeFlags = [
-    "-DFORCE_INTERNAL_GME=OFF"
-  ]
-  ++ (if serverOnly then [ "-DSERVERONLY=ON" ] else [ "-DFMOD_LIBRARY=${fmod}/lib/libfmodex.so" ]);
-
-  hardeningDisable = [ "format" ];
-
-  desktopItems = [
-    (makeDesktopItem {
-      name = "zandronum";
-      desktopName = "Zandronum";
-      exec = "zandronum";
-      icon = "zandronum";
-      mimeTypes = [ "application/x-doom-wad" ];
-      categories = [ "Game" ];
-      comment = finalAttrs.meta.description;
-    })
-  ];
 
   # Won't work well without C or en_US. Setting LANG might not be enough if the user is making use of LC_* so wrap with LC_ALL instead
   installPhase = ''
@@ -140,16 +126,30 @@ stdenv.mkDerivation (finalAttrs: {
       $out/lib/zandronum/zandronum
   '';
 
+  desktopItems = [
+    (makeDesktopItem {
+      categories = [ "Game" ];
+      comment = finalAttrs.meta.description;
+      desktopName = "Zandronum";
+      exec = "zandronum";
+      icon = "zandronum";
+      mimeTypes = [ "application/x-doom-wad" ];
+      name = "zandronum";
+    })
+  ];
+
+  hardeningDisable = [ "format" ];
+
   passthru = {
     inherit fmod sqlite;
   };
 
   meta = {
-    homepage = "https://zandronum.com/";
     description = "Multiplayer oriented port, based off Skulltag, for Doom and Doom II by id Software";
-    mainProgram = "zandronum-server";
-    maintainers = with lib.maintainers; [ lassulus ];
+    homepage = "https://zandronum.com/";
     license = lib.licenses.sleepycat;
+    maintainers = with lib.maintainers; [ lassulus ];
     platforms = lib.platforms.linux;
+    mainProgram = "zandronum-server";
   };
 })

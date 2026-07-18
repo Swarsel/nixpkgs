@@ -1,17 +1,16 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
+  buildPythonPackage,
   mock,
   netaddr,
   pytestCheckHook,
+  setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "pyeapi";
   version = "1.0.4";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "arista-eosplus";
@@ -20,17 +19,15 @@ buildPythonPackage rec {
     hash = "sha256-eGNBQSnYMC9YVCw5mBRH6XRq139AcqFm6HnO2FUzLEE=";
   };
 
-  build-system = [ setuptools ];
-
-  dependencies = [ netaddr ];
-
   nativeCheckInputs = [
     mock
     pytestCheckHook
   ];
 
+  build-system = [ setuptools ];
+  dependencies = [ netaddr ];
   enabledTestPaths = [ "test/unit" ];
-
+  pyproject = true;
   pythonImportsCheck = [ "pyeapi" ];
 
   meta = {

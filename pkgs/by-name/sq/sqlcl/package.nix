@@ -1,10 +1,10 @@
 {
   lib,
   stdenv,
-  makeWrapper,
   fetchurl,
-  unzip,
   jdk,
+  makeWrapper,
+  unzip,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -21,8 +21,6 @@ stdenv.mkDerivation (finalAttrs: {
     unzip
   ];
 
-  unpackCmd = "unzip $curSrc";
-
   installPhase = ''
     mkdir -p $out/libexec
     mv * $out/libexec/
@@ -32,8 +30,11 @@ stdenv.mkDerivation (finalAttrs: {
       --chdir "$out/libexec/bin"
   '';
 
+  unpackCmd = "unzip $curSrc";
+
   meta = {
     description = "Oracle's Oracle DB CLI client";
+
     longDescription = ''
       Oracle SQL Developer Command Line (SQLcl) is a free command line
       interface for Oracle Database. It allows you to interactively or batch
@@ -41,9 +42,10 @@ stdenv.mkDerivation (finalAttrs: {
       completion, and command recall for a feature-rich experience, all while
       also supporting your previously written SQL*Plus scripts.
     '';
+
     homepage = "https://www.oracle.com/database/sqldeveloper/technologies/sqlcl/";
     license = lib.licenses.unfreeRedistributable;
-    platforms = [ "x86_64-linux" ];
     maintainers = with lib.maintainers; [ misterio77 ];
+    platforms = [ "x86_64-linux" ];
   };
 })

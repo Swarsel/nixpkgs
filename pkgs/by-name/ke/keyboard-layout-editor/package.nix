@@ -34,24 +34,6 @@ stdenv.mkDerivation rec {
     wrapGAppsHook3
   ];
 
-  gradleUpdateScript = ''
-    runHook preBuild
-
-    gradle nixDownloadDeps -Dos.family=linux -Dos.arch=amd64
-    gradle nixDownloadDeps -Dos.family=linux -Dos.arch=aarch64
-    gradle nixDownloadDeps -Dos.name='mac os x' -Dos.arch=amd64
-    gradle nixDownloadDeps -Dos.name='mac os x' -Dos.arch=aarch64
-  '';
-
-  mitmCache = gradle_8.fetchDeps {
-    inherit pname;
-    data = ./deps.json;
-  };
-
-  __darwinAllowLocalNetworking = true;
-
-  gradleBuildTask = "fatJar";
-
   installPhase = ''
     runHook preInstall
 
@@ -69,16 +51,35 @@ stdenv.mkDerivation rec {
     runHook postInstall
   '';
 
+  __darwinAllowLocalNetworking = true;
+  gradleBuildTask = "fatJar";
+
+  gradleUpdateScript = ''
+    runHook preBuild
+
+    gradle nixDownloadDeps -Dos.family=linux -Dos.arch=amd64
+    gradle nixDownloadDeps -Dos.family=linux -Dos.arch=aarch64
+    gradle nixDownloadDeps -Dos.name='mac os x' -Dos.arch=amd64
+    gradle nixDownloadDeps -Dos.name='mac os x' -Dos.arch=aarch64
+  '';
+
+  mitmCache = gradle_8.fetchDeps {
+    inherit pname;
+    data = ./deps.json;
+  };
+
   meta = {
     description = "Keyboard layout editor for XKB";
     homepage = "https://github.com/vgresak/keyboard-layout-editor";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ fliegendewurst ];
-    mainProgram = "keyboard-layout-editor";
+
     platforms = [
       "x86_64-linux"
       "aarch64-linux"
       "aarch64-darwin"
     ];
+
+    mainProgram = "keyboard-layout-editor";
   };
 }

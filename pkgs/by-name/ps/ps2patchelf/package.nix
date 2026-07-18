@@ -1,13 +1,13 @@
 {
+  lib,
   fetchFromGitHub,
   buildDotnetModule,
   dotnetCorePackages,
-  lib,
 }:
 
 buildDotnetModule rec {
-  version = "1.0.0";
   pname = "PS2PatchElf";
+  version = "1.0.0";
 
   src = fetchFromGitHub {
     owner = "CaptainSwag101";
@@ -21,20 +21,17 @@ buildDotnetModule rec {
     ./patches/fix_arg_check.patch
   ];
 
-  dotnet-sdk = dotnetCorePackages.sdk_8_0;
   dotnet-runtime = dotnetCorePackages.runtime_8_0;
-
+  dotnet-sdk = dotnetCorePackages.sdk_8_0;
   dotnetFlags = [ "-p:TargetFramework=net8.0" ];
-
   nugetDeps = ./deps.json;
-
   projectFile = "PS2PatchElf/PS2PatchElf.csproj";
 
   meta = {
-    homepage = "https://github.com/CaptainSwag101/PS2PatchElf/";
     description = "Very basic tool for converting PCSX2 .pnach cheats to game executable patches";
+    homepage = "https://github.com/CaptainSwag101/PS2PatchElf/";
+    license = lib.licenses.mit;
     maintainers = [ lib.maintainers.gigahawk ];
     mainProgram = "PS2PatchElf";
-    license = lib.licenses.mit;
   };
 }

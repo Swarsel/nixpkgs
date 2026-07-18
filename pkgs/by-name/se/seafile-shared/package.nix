@@ -8,11 +8,11 @@
   libevent,
   libsearpc,
   libuuid,
+  libwebsockets,
   pkg-config,
   python3,
   sqlite,
   vala,
-  libwebsockets,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -53,21 +53,23 @@ stdenv.mkDerivation (finalAttrs: {
     "--with-python3"
   ];
 
-  pythonPath = with python3.pkgs; [
-    pysearpc
-  ];
-
   postFixup = ''
     wrapPythonPrograms
   '';
 
+  pythonPath = with python3.pkgs; [
+    pysearpc
+  ];
+
   meta = {
-    homepage = "https://github.com/haiwen/seafile";
     description = "Shared components of Seafile: seafile-daemon, libseafile, libseafile python bindings, manuals, and icons";
+    homepage = "https://github.com/haiwen/seafile";
     license = lib.licenses.gpl2Plus;
-    platforms = lib.platforms.linux;
+
     maintainers = with lib.maintainers; [
       schmittlauch
     ];
+
+    platforms = lib.platforms.linux;
   };
 })

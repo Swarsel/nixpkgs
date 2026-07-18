@@ -1,15 +1,15 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitLab,
-  pkg-config,
+  execline,
+  gnupg,
+  gnused,
   makeWrapper,
   nettle,
   openssl,
+  pkg-config,
+  rustPlatform,
   sqlite,
-  gnupg,
-  execline,
-  gnused,
 }:
 
 rustPlatform.buildRustPackage rec {
@@ -23,8 +23,6 @@ rustPlatform.buildRustPackage rec {
     hash = "sha256-K9aeWrqJGPx2RymCXWNdNUTXXtO4NNm6Rd3jz+YxEi0=";
   };
 
-  cargoHash = "sha256-d+Ew05pYpUepqsYLTcI3j2qcplXn2hDACyzXXDx6hNg=";
-
   nativeBuildInputs = [
     rustPlatform.bindgenHook
     pkg-config
@@ -36,6 +34,10 @@ rustPlatform.buildRustPackage rec {
     openssl
     sqlite
   ];
+
+  cargoHash = "sha256-d+Ew05pYpUepqsYLTcI3j2qcplXn2hDACyzXXDx6hNg=";
+  # gpgconf: error creating socket directory
+  doCheck = false;
 
   postInstall = ''
     # Wrap to find gpg-agent from GnuPG.
@@ -56,9 +58,6 @@ rustPlatform.buildRustPackage rec {
     ln -s gpg $out/bin/gpg2
     ln -s ${lib.getExe' gnupg "gpg"} $out/bin/gpg-g10code
   '';
-
-  # gpgconf: error creating socket directory
-  doCheck = false;
 
   meta = {
     description = "Sequoia's reimplementation of the GnuPG interface";

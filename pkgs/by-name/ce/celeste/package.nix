@@ -1,21 +1,21 @@
 {
   lib,
   stdenv,
-  rustPlatform,
   fetchFromGitHub,
-  just,
-  pkg-config,
-  wrapGAppsHook4,
   cairo,
   dbus,
   gdk-pixbuf,
   glib,
   graphene,
   gtk4,
+  just,
   libadwaita,
   librclone,
   pango,
+  pkg-config,
   rclone,
+  rustPlatform,
+  wrapGAppsHook4,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -28,8 +28,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
     rev = "v${finalAttrs.version}";
     hash = "sha256-Yj2PvAlAkwLaSE27KnzEmiRAD5K/YVGbF4+N3uhDVT8=";
   };
-
-  cargoHash = "sha256-OBGDnhpVLOPdYhofWfeaueklt7KBkLhM02JNvuvUQ2Q=";
 
   # rust 2024 requires that you put an unsafe block around std::env::set_var
   patches = [ ./missing-unsafe-block.patch ];
@@ -54,8 +52,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
       --replace-warn 'edition = "2021"' 'edition = "2024"'
   '';
 
-  env.RUSTC_BOOTSTRAP = 1;
-
   nativeBuildInputs = [
     just
     pkg-config
@@ -75,11 +71,19 @@ rustPlatform.buildRustPackage (finalAttrs: {
     pango
   ];
 
+  cargoHash = "sha256-OBGDnhpVLOPdYhofWfeaueklt7KBkLhM02JNvuvUQ2Q=";
+
   env.NIX_CFLAGS_COMPILE = toString (
     lib.optionals stdenv.hostPlatform.isDarwin [
       "-Wno-error=incompatible-function-pointer-types"
     ]
   );
+
+  env.RUSTC_BOOTSTRAP = 1;
+
+  postInstall = ''
+    just install
+  '';
 
   preFixup = ''
     gappsWrapperArgs+=(
@@ -87,16 +91,12 @@ rustPlatform.buildRustPackage (finalAttrs: {
     )
   '';
 
-  postInstall = ''
-    just install
-  '';
-
   meta = {
-    changelog = "https://github.com/hwittenborn/celeste/blob/${finalAttrs.src.rev}/CHANGELOG.md";
     description = "GUI file synchronization client that can sync with any cloud provider";
-    mainProgram = "celeste";
     homepage = "https://github.com/hwittenborn/celeste";
+    changelog = "https://github.com/hwittenborn/celeste/blob/${finalAttrs.src.rev}/CHANGELOG.md";
     license = lib.licenses.gpl3Only;
     maintainers = with lib.maintainers; [ dotlambda ];
+    mainProgram = "celeste";
   };
 })

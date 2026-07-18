@@ -3,11 +3,11 @@
   stdenv,
   fetchFromGitHub,
   asciidoctor,
+  binlore,
+  esh,
   gawk,
   gnused,
   runtimeShell,
-  binlore,
-  esh,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -21,6 +21,16 @@ stdenv.mkDerivation (finalAttrs: {
     sha256 = "1ddaji5nplf1dyvgkrhqjy8m5djaycqcfhjv30yprj1avjymlj6w";
   };
 
+  postPatch = ''
+    patchShebangs .
+    substituteInPlace esh \
+        --replace '"/bin/sh"' '"${runtimeShell}"' \
+        --replace '"awk"' '"${gawk}/bin/awk"' \
+        --replace 'sed' '${gnused}/bin/sed'
+    substituteInPlace tests/test-dump.exp \
+        --replace '#!/bin/sh' '#!${runtimeShell}'
+  '';
+
   nativeBuildInputs = [ asciidoctor ];
 
   buildInputs = [
@@ -32,16 +42,6 @@ stdenv.mkDerivation (finalAttrs: {
     "prefix=$(out)"
     "DESTDIR="
   ];
-
-  postPatch = ''
-    patchShebangs .
-    substituteInPlace esh \
-        --replace '"/bin/sh"' '"${runtimeShell}"' \
-        --replace '"awk"' '"${gawk}/bin/awk"' \
-        --replace 'sed' '${gnused}/bin/sed'
-    substituteInPlace tests/test-dump.exp \
-        --replace '#!/bin/sh' '#!${runtimeShell}'
-  '';
 
   doCheck = true;
   checkTarget = "test";
@@ -56,10 +56,10 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Simple templating engine based on shell";
-    mainProgram = "esh";
     homepage = "https://github.com/jirutka/esh";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ mnacamura ];
     platforms = lib.platforms.unix;
+    mainProgram = "esh";
   };
 })

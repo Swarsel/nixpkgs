@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   nix-update-script,
 }:
 
@@ -16,18 +16,18 @@ buildGoModule (finalAttrs: {
     hash = "sha256-hCnwNSOu9aSdWC5Gtr0nytmQQnkMS6i84pICBrN2VVg=";
   };
 
-  subPackages = [ "." ];
-
   vendorHash = "sha256-bM8BEdq5EY5RtsCNkRNTsc9dGgAEZkGHcUOip2LwKik=";
 
   checkFlags = [
     "-short"
   ];
 
+  subPackages = [ "." ];
   passthru.updateScript = nix-update-script { };
 
   meta = {
     description = "Utility for ensuring secure connections to Google Cloud SQL instances";
+
     longDescription = ''
       The Cloud SQL Auth Proxy is a utility for ensuring secure connections to your Cloud SQL instances.
       It provides IAM authorization, allowing you to control who can connect to your instance through IAM permissions,
@@ -36,12 +36,15 @@ buildGoModule (finalAttrs: {
       on connecting to a Cloud SQL instance, or the [About the Proxy](https://cloud.google.com/sql/docs/mysql/sql-proxy)
       page for details on how the Cloud SQL Proxy works.
     '';
+
     homepage = "https://github.com/GoogleCloudPlatform/cloud-sql-proxy";
     license = lib.licenses.asl20;
+
     maintainers = with lib.maintainers; [
       nicknovitski
       totoroot
     ];
+
     mainProgram = "cloud-sql-proxy";
   };
 })

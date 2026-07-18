@@ -1,11 +1,11 @@
 {
   lib,
+  fetchFromGitHub,
   aiohttp,
   aioresponses,
   bleak-retry-connector,
   bluetooth-data-tools,
   buildPythonPackage,
-  fetchFromGitHub,
   habluetooth,
   orjson,
   pytest-asyncio,
@@ -18,7 +18,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "aioshelly";
   version = "13.26.2";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "home-assistant-libs";
@@ -26,6 +25,12 @@ buildPythonPackage (finalAttrs: {
     tag = finalAttrs.version;
     hash = "sha256-LNMFFi3afbDFezr32zr85lNX1TIdo8BF04yDfc2AIA0=";
   };
+
+  nativeCheckInputs = [
+    aioresponses
+    pytest-asyncio
+    pytestCheckHook
+  ];
 
   build-system = [ setuptools ];
 
@@ -39,12 +44,7 @@ buildPythonPackage (finalAttrs: {
     zeroconf
   ];
 
-  nativeCheckInputs = [
-    aioresponses
-    pytest-asyncio
-    pytestCheckHook
-  ];
-
+  pyproject = true;
   pythonImportsCheck = [ "aioshelly" ];
 
   meta = {

@@ -1,7 +1,7 @@
 {
   lib,
-  fetchzip,
   stdenv,
+  fetchzip,
   php,
   phpCfg ? null,
   withMariaDB ? false,
@@ -23,6 +23,12 @@ stdenv.mkDerivation (finalAttrs: {
     url = "https://github.com/flyspray/flyspray/releases/download/v${finalAttrs.version}/flyspray-${finalAttrs.version}.tgz";
     hash = "sha256-VNukYtHqf1OqWoyR+GXxgoX2GjTD4RfJ0SaGoDyHLJ4=";
   };
+
+  postInstall = ''
+    DIR="$out/share/php/flyspray"
+    mkdir -p "$DIR"
+    cp -Tr "$src" "$DIR"
+  '';
 
   php =
     php.buildEnv {
@@ -49,12 +55,6 @@ stdenv.mkDerivation (finalAttrs: {
     // lib.optionalAttrs (phpCfg != null) {
       extraConfig = phpCfg;
     };
-
-  postInstall = ''
-    DIR="$out/share/php/flyspray"
-    mkdir -p "$DIR"
-    cp -Tr "$src" "$DIR"
-  '';
 
   meta = {
     description = "Lightweight, web-based bug tracking system written in PHP for assisting with software development and project managements";

@@ -3,18 +3,18 @@
   stdenv,
   fetchurl,
   gettext,
+  gitUpdater,
+  glib,
+  gnutls,
+  gtk3,
+  libgcrypt,
+  libxfce4ui,
+  libxfce4util,
   meson,
   ninja,
   pkg-config,
-  xfce4-panel,
-  libxfce4ui,
-  libxfce4util,
   xfce4-exo,
-  glib,
-  gtk3,
-  gnutls,
-  libgcrypt,
-  gitUpdater,
+  xfce4-panel,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -47,13 +47,13 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   passthru.updateScript = gitUpdater {
-    url = "https://gitlab.xfce.org/panel-plugins/xfce4-mailwatch-plugin";
     rev-prefix = "xfce4-mailwatch-plugin-";
+    url = "https://gitlab.xfce.org/panel-plugins/xfce4-mailwatch-plugin";
   };
 
   meta = {
-    homepage = "https://docs.xfce.org/panel-plugins/xfce4-mailwatch-plugin";
     description = "Mail watcher plugin for Xfce panel";
+    homepage = "https://docs.xfce.org/panel-plugins/xfce4-mailwatch-plugin";
     license = lib.licenses.gpl2Plus;
     platforms = lib.platforms.linux;
     teams = [ lib.teams.xfce ];

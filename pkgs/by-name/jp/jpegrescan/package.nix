@@ -2,18 +2,15 @@
   lib,
   stdenv,
   fetchFromGitHub,
+  libjpeg_original,
   makeWrapper,
   perl,
   perlPackages,
-  libjpeg_original,
 }:
 
 stdenv.mkDerivation {
   pname = "jpegrescan";
   version = "unstable-2019-03-27";
-
-  dontBuild = true;
-  dontConfigure = true;
 
   src = fetchFromGitHub {
     owner = "kud";
@@ -22,9 +19,9 @@ stdenv.mkDerivation {
     sha256 = "0cnl46z28lkqc5x27b8rpghvagahivrqcfvhzcsv9w1qs8qbd6dm";
   };
 
-  patchPhase = ''
-    patchShebangs jpegrescan
-  '';
+  nativeBuildInputs = [ makeWrapper ];
+  buildInputs = [ perl ];
+  propagatedBuildInputs = [ perlPackages.FileSlurp ];
 
   installPhase = ''
     mkdir -p $out/share/jpegrescan
@@ -38,11 +35,12 @@ stdenv.mkDerivation {
       --prefix PERL5LIB : $PERL5LIB
   '';
 
-  propagatedBuildInputs = [ perlPackages.FileSlurp ];
+  dontBuild = true;
+  dontConfigure = true;
 
-  nativeBuildInputs = [ makeWrapper ];
-
-  buildInputs = [ perl ];
+  patchPhase = ''
+    patchShebangs jpegrescan
+  '';
 
   meta = {
     description = "Losslessly shrink any JPEG file";

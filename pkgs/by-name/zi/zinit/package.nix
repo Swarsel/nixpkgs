@@ -1,9 +1,9 @@
 {
-  stdenvNoCC,
   lib,
   fetchFromGitHub,
   installShellFiles,
   nix-update-script,
+  stdenvNoCC,
 }:
 
 stdenvNoCC.mkDerivation (finalAttrs: {
@@ -24,10 +24,7 @@ stdenvNoCC.mkDerivation (finalAttrs: {
   ];
 
   strictDeps = true;
-
   nativeBuildInputs = [ installShellFiles ];
-
-  dontBuild = true;
 
   installPhase = ''
     runHook preInstall
@@ -61,21 +58,25 @@ stdenvNoCC.mkDerivation (finalAttrs: {
       --replace-fail "ZINIT[MAN_DIR]:=\''${ZPFX}/man" "ZINIT[MAN_DIR]:=$man/share/man"
   '';
 
+  dontBuild = true;
+
   passthru = {
     updateScript = nix-update-script { };
   };
 
   meta = {
-    homepage = "https://github.com/zdharma-continuum/zinit";
     description = "Flexible zsh plugin manager";
+    homepage = "https://github.com/zdharma-continuum/zinit";
     changelog = "https://github.com/zdharma-continuum/zinit/blob/${finalAttrs.src.rev}/doc/CHANGELOG.md";
     license = lib.licenses.mit;
-    platforms = lib.platforms.unix;
+
     maintainers = with lib.maintainers; [
       pasqui23
       sei40kr
       moraxyc
       kaynetik
     ];
+
+    platforms = lib.platforms.unix;
   };
 })

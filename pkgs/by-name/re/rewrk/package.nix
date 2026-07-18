@@ -1,7 +1,7 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -15,11 +15,11 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-Bqr5kmIIx+12hW4jpINcv0GBJBbMAkd4di/hZSXlT18=";
   };
 
-  cargoLock.lockFile = ./Cargo.lock;
-
   postPatch = ''
     ln -s ${./Cargo.lock} Cargo.lock
   '';
+
+  cargoLock.lockFile = ./Cargo.lock;
 
   meta = {
     description = "More modern http framework benchmarker supporting HTTP/1 and HTTP/2 benchmarks";

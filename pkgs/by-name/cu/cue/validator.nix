@@ -1,7 +1,7 @@
 {
+  lib,
   cue,
   writeShellScript,
-  lib,
 }:
 # `document` must be a fragment of definition or structure that the input data will be matched against.
 # `document` must exist in the Cue schema file provided (`cueSchemaFile`).

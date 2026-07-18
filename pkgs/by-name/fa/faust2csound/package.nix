@@ -1,11 +1,9 @@
 {
-  faust,
   csound,
+  faust,
 }:
 
 faust.wrapWithBuildEnv {
-
-  baseName = "faust2csound";
 
   propagatedBuildInputs = [
     csound
@@ -17,5 +15,7 @@ faust.wrapWithBuildEnv {
   preFixup = ''
     NIX_CFLAGS_COMPILE="$(printf '%s' "$NIX_CFLAGS_COMPILE" | sed 's%${csound}/include%${csound}/include/csound%')"
   '';
+
+  baseName = "faust2csound";
 
 }

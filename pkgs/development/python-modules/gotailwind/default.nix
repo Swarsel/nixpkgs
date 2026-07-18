@@ -1,11 +1,11 @@
 {
   lib,
+  fetchFromGitHub,
   aiohttp,
   aioresponses,
   awesomeversion,
   backoff,
   buildPythonPackage,
-  fetchFromGitHub,
   mashumaro,
   orjson,
   poetry-core,
@@ -21,7 +21,6 @@
 buildPythonPackage rec {
   pname = "gotailwind";
   version = "0.4.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "frenck";
@@ -35,6 +34,15 @@ buildPythonPackage rec {
     substituteInPlace pyproject.toml \
       --replace-fail "0.0.0" "${version}"
   '';
+
+  nativeCheckInputs = [
+    aioresponses
+    pytest-asyncio
+    pytest-cov-stub
+    pytestCheckHook
+    syrupy
+  ]
+  ++ lib.concatAttrValues optional-dependencies;
 
   build-system = [ poetry-core ];
 
@@ -52,15 +60,7 @@ buildPythonPackage rec {
     cli = [ typer ];
   };
 
-  nativeCheckInputs = [
-    aioresponses
-    pytest-asyncio
-    pytest-cov-stub
-    pytestCheckHook
-    syrupy
-  ]
-  ++ lib.concatAttrValues optional-dependencies;
-
+  pyproject = true;
   pythonImportsCheck = [ "gotailwind" ];
 
   meta = {

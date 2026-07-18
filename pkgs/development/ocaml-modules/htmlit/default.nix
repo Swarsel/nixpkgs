@@ -8,12 +8,12 @@ buildTopkgPackage rec {
   pname = "htmlit";
   version = "0.2.0";
 
-  minimalOCamlVersion = "4.14.0";
-
   src = fetchurl {
     url = "https://erratique.ch/software/htmlit/releases/htmlit-${version}.tbz";
     hash = "sha256-i+7gYle8G2y78GeoAnlNY5dpdONLhltuswusCbMmB/c=";
   };
+
+  minimalOCamlVersion = "4.14.0";
 
   meta = {
     description = "HTML generation combinators for OCaml";

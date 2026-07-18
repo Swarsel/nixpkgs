@@ -1,8 +1,8 @@
 {
   lib,
-  stdenvNoCC,
   fetchurl,
   _7zz,
+  stdenvNoCC,
 }:
 
 stdenvNoCC.mkDerivation (finalAttrs: {
@@ -13,8 +13,6 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     url = "https://github.com/pallotron/yubiswitch/releases/download/v${finalAttrs.version}/yubiswitch_${finalAttrs.version}.dmg";
     hash = "sha256-ee7l8jj1pJdj+SjMNWcLfHV//G0FG9bdBkNcxUh8Zuk=";
   };
-
-  sourceRoot = ".";
 
   nativeBuildInputs = [ _7zz ];
 
@@ -27,13 +25,15 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  sourceRoot = ".";
+
   meta = {
     description = "The macOS status bar application to enable/disable Yubikeys.";
     homepage = "https://github.com/pallotron/yubiswitch";
     changelog = "https://github.com/pallotron/yubiswitch/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.gpl3Plus;
     sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
-    platforms = lib.platforms.darwin;
     maintainers = with lib.maintainers; [ sheeeng ];
+    platforms = lib.platforms.darwin;
   };
 })

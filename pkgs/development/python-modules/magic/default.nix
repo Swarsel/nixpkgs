@@ -6,19 +6,16 @@
 }:
 
 buildPythonPackage {
-  format = "setuptools";
   inherit (pkgs.file) pname version src;
+  buildInputs = [ pkgs.file ];
+  preConfigure = "cd python";
+  # No test suite
+  doCheck = false;
+  format = "setuptools";
 
   patchPhase = ''
     substituteInPlace python/magic.py --replace "find_library('magic')" "'${pkgs.file}/lib/libmagic${stdenv.hostPlatform.extensions.sharedLibrary}'"
   '';
-
-  buildInputs = [ pkgs.file ];
-
-  preConfigure = "cd python";
-
-  # No test suite
-  doCheck = false;
 
   meta = {
     description = "Python wrapper around libmagic";

@@ -1,12 +1,13 @@
 {
   lib,
-  stdenvNoCC,
   fetchFromGitLab,
   nix-update-script,
+  stdenvNoCC,
 }:
 stdenvNoCC.mkDerivation (finalAttrs: {
   pname = "plasmavantage";
   version = "0.31";
+
   src = fetchFromGitLab {
     owner = "Scias";
     repo = "plasmavantage";
@@ -15,10 +16,6 @@ stdenvNoCC.mkDerivation (finalAttrs: {
   };
 
   strictDeps = true;
-  __structuredAttrs = true;
-
-  dontConfigure = true;
-  dontBuild = true;
 
   installPhase = ''
     runHook preInstall
@@ -29,6 +26,9 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  __structuredAttrs = true;
+  dontBuild = true;
+  dontConfigure = true;
   passthru.updateScript = nix-update-script { };
 
   meta = {

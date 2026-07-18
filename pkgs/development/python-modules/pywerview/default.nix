@@ -1,8 +1,8 @@
 {
   lib,
+  fetchFromGitHub,
   beautifulsoup4,
   buildPythonPackage,
-  fetchFromGitHub,
   impacket,
   ldap3-bleeding-edge,
   lxml,
@@ -14,7 +14,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "pywerview";
   version = "0.7.6";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "the-useless-one";
@@ -23,6 +22,8 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-i4YV6PfcazoW8z2Awbn8ake4qhA/m43UzECqiEO4QLg=";
   };
 
+  # Module has no tests
+  doCheck = false;
   build-system = [ setuptools ];
 
   dependencies = [
@@ -38,9 +39,7 @@ buildPythonPackage (finalAttrs: {
     kerberos = [ ldap3-bleeding-edge ] ++ ldap3-bleeding-edge.optional-dependencies.kerberos;
   };
 
-  # Module has no tests
-  doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "pywerview" ];
 
   meta = {

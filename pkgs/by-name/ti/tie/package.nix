@@ -23,11 +23,11 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   meta = {
-    homepage = "https://www.ctan.org/tex-archive/web/tie";
     description = "Allow multiple web change files";
-    mainProgram = "tie";
-    platforms = lib.platforms.all;
-    maintainers = [ ];
+    homepage = "https://www.ctan.org/tex-archive/web/tie";
     license = lib.licenses.abstyles;
+    maintainers = [ ];
+    platforms = lib.platforms.all;
+    mainProgram = "tie";
   };
 })

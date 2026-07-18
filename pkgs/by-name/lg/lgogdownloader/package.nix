@@ -2,20 +2,19 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  cmake,
-  pkg-config,
-  curl,
   boost,
-  liboauth,
-  jsoncpp,
-  htmlcxx,
-  rhash,
-  tinyxml-2,
+  cmake,
+  curl,
   help2man,
   html-tidy,
+  htmlcxx,
+  jsoncpp,
+  liboauth,
+  pkg-config,
   qt6,
+  rhash,
   testers,
-
+  tinyxml-2,
   enableGui ? false,
 }:
 
@@ -69,12 +68,12 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Unofficial downloader to GOG.com for Linux users. It uses the same API as the official GOGDownloader";
-    mainProgram = "lgogdownloader";
     homepage = "https://github.com/Sude-/lgogdownloader";
     license = lib.licenses.wtfpl;
+    maintainers = with lib.maintainers; [ _0x4A6F ];
     # qtbase requires a sandbox profile with read access to /usr/share/icu.
     # To prevent build failures in CI, we disable Darwin support when the GUI is enabled.
     platforms = lib.platforms.linux ++ lib.optionals (!enableGui) lib.platforms.darwin;
-    maintainers = with lib.maintainers; [ _0x4A6F ];
+    mainProgram = "lgogdownloader";
   };
 })

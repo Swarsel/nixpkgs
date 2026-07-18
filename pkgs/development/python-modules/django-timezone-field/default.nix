@@ -1,20 +1,19 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  poetry-core,
+  buildPythonPackage,
   django,
   djangorestframework,
-  pytestCheckHook,
+  poetry-core,
   pytest-django,
   pytest-lazy-fixtures,
+  pytestCheckHook,
   pytz,
 }:
 
 buildPythonPackage rec {
   pname = "django-timezone-field";
   version = "7.2.2";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "mfogel";
@@ -23,25 +22,25 @@ buildPythonPackage rec {
     hash = "sha256-EGjBzKTYXTShrPIHfBIm1LqzYGuxew7ptvlGppXOYSY=";
   };
 
-  build-system = [ poetry-core ];
-
-  dependencies = [ django ];
-
-  pythonImportsCheck = [
-    # Requested setting USE_DEPRECATED_PYTZ, but settings are not configured.
-    #"timezone_field"
-  ];
-
-  preCheck = ''
-    export DJANGO_SETTINGS_MODULE=tests.settings
-  '';
-
   nativeCheckInputs = [
     djangorestframework
     pytestCheckHook
     pytest-django
     pytest-lazy-fixtures
     pytz
+  ];
+
+  preCheck = ''
+    export DJANGO_SETTINGS_MODULE=tests.settings
+  '';
+
+  build-system = [ poetry-core ];
+  dependencies = [ django ];
+  pyproject = true;
+
+  pythonImportsCheck = [
+    # Requested setting USE_DEPRECATED_PYTZ, but settings are not configured.
+    #"timezone_field"
   ];
 
   meta = {

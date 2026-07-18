@@ -1,8 +1,6 @@
 {
-  stdenvNoCC,
   lib,
   fetchFromGitHub,
-  makeWrapper,
   apk-tools,
   coreutils,
   findutils,
@@ -10,7 +8,9 @@
   gnused,
   gnutar,
   gzip,
+  makeWrapper,
   rsync,
+  stdenvNoCC,
   util-linux,
   wget,
 }:
@@ -26,8 +26,6 @@ stdenvNoCC.mkDerivation (finalAttrs: {
   };
 
   nativeBuildInputs = [ makeWrapper ];
-
-  dontBuild = true;
   makeFlags = [ "PREFIX=$(out)" ];
 
   postInstall = ''
@@ -47,12 +45,14 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     }
   '';
 
+  dontBuild = true;
+
   meta = {
-    homepage = "https://github.com/alpinelinux/alpine-make-rootfs";
     description = "Make customized Alpine Linux rootfs (base image) for containers";
-    mainProgram = "alpine-make-rootfs";
-    maintainers = with lib.maintainers; [ danielsidhion ];
+    homepage = "https://github.com/alpinelinux/alpine-make-rootfs";
     license = lib.licenses.mit;
+    maintainers = with lib.maintainers; [ danielsidhion ];
     platforms = lib.platforms.linux;
+    mainProgram = "alpine-make-rootfs";
   };
 })

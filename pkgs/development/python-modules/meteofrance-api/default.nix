@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   poetry-core,
   pytestCheckHook,
   pytz,
@@ -12,7 +12,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "meteofrance-api";
   version = "1.5.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "hacf-fr";
@@ -21,19 +20,17 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-zvfFMxXbCul14OXaoRdjMWKW3FYyTUcYGklHgb04nvA=";
   };
 
+  nativeCheckInputs = [
+    pytestCheckHook
+    requests-mock
+  ];
+
   build-system = [ poetry-core ];
 
   dependencies = [
     pytz
     requests
   ];
-
-  nativeCheckInputs = [
-    pytestCheckHook
-    requests-mock
-  ];
-
-  pythonImportsCheck = [ "meteofrance_api" ];
 
   disabledTests = [
     # Tests require network access
@@ -50,6 +47,9 @@ buildPythonPackage (finalAttrs: {
     "test_observation"
     "test_workflow"
   ];
+
+  pyproject = true;
+  pythonImportsCheck = [ "meteofrance_api" ];
 
   meta = {
     description = "Module to access information from the Meteo-France API";

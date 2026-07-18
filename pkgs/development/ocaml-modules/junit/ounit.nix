@@ -5,9 +5,8 @@
 }:
 
 buildDunePackage {
-  pname = "junit_ounit";
-
   inherit (junit) src version meta;
+  pname = "junit_ounit";
 
   propagatedBuildInputs = [
     junit

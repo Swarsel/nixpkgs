@@ -1,7 +1,7 @@
 {
   lib,
-  buildDunePackage,
   fetchurl,
+  buildDunePackage,
 }:
 
 buildDunePackage (finalAttrs: {
@@ -14,13 +14,15 @@ buildDunePackage (finalAttrs: {
   };
 
   meta = {
-    homepage = "https://github.com/janestreet/result";
     description = "Compatibility Result module";
+
     longDescription = ''
       Projects that want to use the new result type defined in OCaml >= 4.03
       while staying compatible with older version of OCaml should use the
       Result module defined in this library.
     '';
+
+    homepage = "https://github.com/janestreet/result";
     license = lib.licenses.bsd3;
   };
 })

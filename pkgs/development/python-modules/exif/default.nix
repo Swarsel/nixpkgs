@@ -1,16 +1,15 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitLab,
+  baseline,
+  buildPythonPackage,
   plum-py,
   pytestCheckHook,
-  baseline,
 }:
 
 buildPythonPackage rec {
   pname = "exif";
   version = "1.6.0";
-  format = "setuptools";
 
   src = fetchFromGitLab {
     owner = "TNThieding";
@@ -26,6 +25,7 @@ buildPythonPackage rec {
     baseline
   ];
 
+  format = "setuptools";
   pythonImportsCheck = [ "exif" ];
 
   meta = {

@@ -1,9 +1,9 @@
 {
   lib,
-  stdenvNoCC,
   fetchurl,
   _7zz,
   nix-update-script,
+  stdenvNoCC,
 }:
 
 stdenvNoCC.mkDerivation (finalAttrs: {
@@ -15,13 +15,8 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     hash = "sha256-nkwJl4xMhbdodBRtwyG2IcmDlTJnErOvEycjcdAMP2o=";
   };
 
-  dontBuild = true;
-  dontFixup = true;
-
   # AlDente.dmg is APFS formatted, unpack with 7zz
   nativeBuildInputs = [ _7zz ];
-
-  sourceRoot = "AlDente.app";
 
   installPhase = ''
     runHook preInstall
@@ -32,6 +27,9 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  dontBuild = true;
+  dontFixup = true;
+  sourceRoot = "AlDente.app";
   passthru.updateScript = nix-update-script { };
 
   meta = {
@@ -41,6 +39,7 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     license = lib.licenses.unfree;
     sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
     maintainers = with lib.maintainers; [ stepbrobd ];
+
     platforms = [
       "aarch64-darwin"
     ];

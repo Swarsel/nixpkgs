@@ -1,18 +1,14 @@
 {
   lib,
-  mkCoqDerivation,
   coq,
+  mkCoqDerivation,
   version ? null,
 }:
 
 mkCoqDerivation {
-  pname = "pocklington";
-  owner = "coq-community";
-
-  release."8.12.0".rev = "v8.12.0";
-  release."8.12.0".hash = "sha256-0xBrw9+4g14niYdNqp0nx00fPJoSSnaDSDEaIVpPfjs=";
-
   inherit version;
+  pname = "pocklington";
+
   defaultVersion =
     with lib.versions;
     lib.switch coq.coq-version [
@@ -22,10 +18,14 @@ mkCoqDerivation {
       }
     ] null;
 
+  owner = "coq-community";
+  release."8.12.0".hash = "sha256-0xBrw9+4g14niYdNqp0nx00fPJoSSnaDSDEaIVpPfjs=";
+  release."8.12.0".rev = "v8.12.0";
+
   meta = {
     description = "Pocklington's criterion for primality in Coq";
-    maintainers = with lib.maintainers; [ siraben ];
     license = lib.licenses.mit;
+    maintainers = with lib.maintainers; [ siraben ];
     platforms = lib.platforms.unix;
   };
 }

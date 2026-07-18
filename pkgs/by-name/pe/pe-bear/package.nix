@@ -29,7 +29,6 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Portable Executable reversing tool with a friendly GUI";
-    mainProgram = "PE-bear";
     homepage = "https://hshrzd.wordpress.com/pe-bear/";
 
     license = with lib.licenses; [
@@ -45,5 +44,6 @@ stdenv.mkDerivation (finalAttrs: {
 
     maintainers = [ lib.maintainers.blitz ];
     platforms = lib.platforms.linux;
+    mainProgram = "PE-bear";
   };
 })

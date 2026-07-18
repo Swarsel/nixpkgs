@@ -2,41 +2,41 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  nix-update-script,
   cmake,
-  pkg-config,
+  cubeb,
+  curl,
+  faudio,
+  ffmpeg,
   git,
-  qt6Packages,
-  openal,
   glew,
-  vulkan-headers,
-  vulkan-loader,
+  glslang,
+  hidapi,
+  libevdev,
   libpng,
   libsm,
-  ffmpeg,
-  libevdev,
   libusb1,
-  zlib,
-  curl,
-  python3,
-  pugixml,
-  protobuf_33,
   llvm,
-  cubeb,
+  miniupnpc,
+  nix-update-script,
+  openal,
   opencv,
-  enableDiscordRpc ? false,
-  faudioSupport ? true,
-  faudio,
+  pkg-config,
+  protobuf_33,
+  pugixml,
+  python3,
+  qt6Packages,
+  rtmidi,
   sdl3,
-  waylandSupport ? true,
+  vulkan-headers,
+  vulkan-loader,
+  vulkan-memory-allocator,
   wayland,
   wrapGAppsHook3,
-  miniupnpc,
-  rtmidi,
-  glslang,
+  zlib,
   zstd,
-  hidapi,
-  vulkan-memory-allocator,
+  enableDiscordRpc ? false,
+  faudioSupport ? true,
+  waylandSupport ? true,
 }:
 
 let
@@ -55,55 +55,15 @@ stdenv.mkDerivation (finalAttrs: {
     owner = "RPCS3";
     repo = "rpcs3";
     rev = "96f73f4497fd6fdafd40dc50f24c95c90cd4acc9";
+    hash = "sha256-KTF2Oj1p+EplRgWQ/We8mqu60h161/1gniKWjVAvAso=";
+
     postCheckout = ''
       cd $out/3rdparty
       git submodule update --init \
         fusion/fusion asmjit/asmjit yaml-cpp/yaml-cpp SoundTouch/soundtouch stblib/stb \
         feralinteractive/feralinteractive wolfssl/wolfssl
     '';
-    hash = "sha256-KTF2Oj1p+EplRgWQ/We8mqu60h161/1gniKWjVAvAso=";
   };
-
-  passthru.updateScript = nix-update-script { extraArgs = [ "--version=branch" ]; };
-
-  preConfigure = ''
-    cat > ./rpcs3/git-version.h <<EOF
-    #define RPCS3_GIT_VERSION "nixpkgs-${lib.sources.shortRev finalAttrs.src.rev}"
-    #define RPCS3_GIT_FULL_BRANCH "RPCS3/rpcs3/master"
-    #define RPCS3_GIT_BRANCH "HEAD"
-    #define RPCS3_GIT_VERSION_NO_UPDATE 1
-    EOF
-  '';
-
-  cmakeFlags = [
-    (lib.cmakeBool "BUILD_SHARED_LIBS" false)
-    (lib.cmakeBool "USE_SYSTEM_ZLIB" true)
-    (lib.cmakeBool "USE_SYSTEM_LIBUSB" true)
-    (lib.cmakeBool "USE_SYSTEM_LIBPNG" true)
-    (lib.cmakeBool "USE_SYSTEM_FFMPEG" true)
-    (lib.cmakeBool "USE_SYSTEM_CURL" true)
-    (lib.cmakeBool "USE_SYSTEM_FAUDIO" true)
-    (lib.cmakeBool "USE_SYSTEM_OPENAL" true)
-    (lib.cmakeBool "USE_SYSTEM_PUGIXML" true)
-    (lib.cmakeBool "USE_SYSTEM_PROTOBUF" true)
-    (lib.cmakeBool "USE_SYSTEM_SDL" true)
-    (lib.cmakeBool "USE_SYSTEM_OPENCV" true)
-    (lib.cmakeBool "USE_SYSTEM_CUBEB" true)
-    (lib.cmakeBool "USE_SYSTEM_MINIUPNPC" true)
-    (lib.cmakeBool "USE_SYSTEM_RTMIDI" true)
-    (lib.cmakeBool "USE_SYSTEM_GLSLANG" true)
-    (lib.cmakeBool "USE_SYSTEM_ZSTD" true)
-    (lib.cmakeBool "USE_SYSTEM_HIDAPI" true)
-    (lib.cmakeBool "USE_SYSTEM_VULKAN_MEMORY_ALLOCATOR" true)
-    (lib.cmakeBool "USE_SDL" true)
-    (lib.cmakeBool "WITH_LLVM" true)
-    (lib.cmakeBool "BUILD_LLVM" false)
-    (lib.cmakeBool "USE_NATIVE_INSTRUCTIONS" false)
-    (lib.cmakeBool "USE_DISCORD_RPC" enableDiscordRpc)
-    (lib.cmakeBool "USE_FAUDIO" faudioSupport)
-  ];
-
-  dontWrapGApps = true;
 
   nativeBuildInputs = [
     cmake
@@ -149,10 +109,41 @@ stdenv.mkDerivation (finalAttrs: {
     qtwayland
   ];
 
-  doInstallCheck = true;
+  cmakeFlags = [
+    (lib.cmakeBool "BUILD_SHARED_LIBS" false)
+    (lib.cmakeBool "USE_SYSTEM_ZLIB" true)
+    (lib.cmakeBool "USE_SYSTEM_LIBUSB" true)
+    (lib.cmakeBool "USE_SYSTEM_LIBPNG" true)
+    (lib.cmakeBool "USE_SYSTEM_FFMPEG" true)
+    (lib.cmakeBool "USE_SYSTEM_CURL" true)
+    (lib.cmakeBool "USE_SYSTEM_FAUDIO" true)
+    (lib.cmakeBool "USE_SYSTEM_OPENAL" true)
+    (lib.cmakeBool "USE_SYSTEM_PUGIXML" true)
+    (lib.cmakeBool "USE_SYSTEM_PROTOBUF" true)
+    (lib.cmakeBool "USE_SYSTEM_SDL" true)
+    (lib.cmakeBool "USE_SYSTEM_OPENCV" true)
+    (lib.cmakeBool "USE_SYSTEM_CUBEB" true)
+    (lib.cmakeBool "USE_SYSTEM_MINIUPNPC" true)
+    (lib.cmakeBool "USE_SYSTEM_RTMIDI" true)
+    (lib.cmakeBool "USE_SYSTEM_GLSLANG" true)
+    (lib.cmakeBool "USE_SYSTEM_ZSTD" true)
+    (lib.cmakeBool "USE_SYSTEM_HIDAPI" true)
+    (lib.cmakeBool "USE_SYSTEM_VULKAN_MEMORY_ALLOCATOR" true)
+    (lib.cmakeBool "USE_SDL" true)
+    (lib.cmakeBool "WITH_LLVM" true)
+    (lib.cmakeBool "BUILD_LLVM" false)
+    (lib.cmakeBool "USE_NATIVE_INSTRUCTIONS" false)
+    (lib.cmakeBool "USE_DISCORD_RPC" enableDiscordRpc)
+    (lib.cmakeBool "USE_FAUDIO" faudioSupport)
+  ];
 
-  preFixup = ''
-    qtWrapperArgs+=("''${gappsWrapperArgs[@]}")
+  preConfigure = ''
+    cat > ./rpcs3/git-version.h <<EOF
+    #define RPCS3_GIT_VERSION "nixpkgs-${lib.sources.shortRev finalAttrs.src.rev}"
+    #define RPCS3_GIT_FULL_BRANCH "RPCS3/rpcs3/master"
+    #define RPCS3_GIT_BRANCH "HEAD"
+    #define RPCS3_GIT_VERSION_NO_UPDATE 1
+    EOF
   '';
 
   postInstall = ''
@@ -162,12 +153,19 @@ stdenv.mkDerivation (finalAttrs: {
     install -D ${./99-dualsense-controllers.rules} $out/etc/udev/rules.d/99-dualsense-controllers.rules
   '';
 
+  doInstallCheck = true;
+
+  preFixup = ''
+    qtWrapperArgs+=("''${gappsWrapperArgs[@]}")
+  '';
+
+  dontWrapGApps = true;
+  passthru.updateScript = nix-update-script { extraArgs = [ "--version=branch" ]; };
+
   meta = {
     description = "PS3 emulator/debugger";
     homepage = "https://rpcs3.net/";
-    maintainers = with lib.maintainers; [
-      ilian
-    ];
+
     license = [
       lib.licenses.gpl2Only
       # Vendors wolfSSL, which changed its licence from
@@ -187,10 +185,16 @@ stdenv.mkDerivation (finalAttrs: {
       lib.licenses.gpl3Plus
       lib.licenses.unfree
     ];
+
+    maintainers = with lib.maintainers; [
+      ilian
+    ];
+
     platforms = [
       "x86_64-linux"
       "aarch64-linux"
     ];
+
     mainProgram = "rpcs3";
   };
 })

@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   cmake,
   setuptools,
 }:
@@ -9,7 +9,6 @@
 buildPythonPackage rec {
   pname = "tlsh";
   version = "5.0.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "trendmicro";
@@ -25,15 +24,14 @@ buildPythonPackage rec {
 
   nativeBuildInputs = [ cmake ];
 
-  build-system = [ setuptools ];
-
-  # no test data
-  doCheck = false;
-
   postConfigure = ''
     cd ../py_ext
   '';
 
+  # no test data
+  doCheck = false;
+  build-system = [ setuptools ];
+  pyproject = true;
   pythonImportsCheck = [ "tlsh" ];
 
   meta = {

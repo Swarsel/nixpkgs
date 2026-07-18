@@ -2,9 +2,9 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  pkg-config,
-  libmpdclient,
   curl,
+  libmpdclient,
+  pkg-config,
 }:
 
 stdenv.mkDerivation (finalAttrs: {

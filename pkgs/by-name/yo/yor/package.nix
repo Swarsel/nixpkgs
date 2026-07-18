@@ -1,7 +1,7 @@
 {
-  buildGoModule,
-  fetchFromGitHub,
   lib,
+  fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule (finalAttrs: {
@@ -17,8 +17,6 @@ buildGoModule (finalAttrs: {
 
   vendorHash = "sha256-uT/jGD4hDVes4h+mlSIT2p+C9TjxnUWsmKv9haPjjLc=";
 
-  doCheck = false;
-
   # https://github.com/bridgecrewio/yor/blob/main/set-version.sh
   preBuild = ''
     cat << EOF > src/common/version.go
@@ -27,6 +25,8 @@ buildGoModule (finalAttrs: {
     const Version = "${finalAttrs.version}"
     EOF
   '';
+
+  doCheck = false;
 
   ldflags = [
     "-s"

@@ -1,13 +1,12 @@
 {
-  stdenv,
   lib,
-  gitUpdater,
+  stdenv,
   fetchFromGitHub,
-  nixosTests,
   accountsservice,
   cmake,
   dbus,
   dbus-test-runner,
+  gitUpdater,
   glib,
   gobject-introspection,
   gtest,
@@ -19,6 +18,7 @@
   libsForQt5,
   libxml2,
   lomiri,
+  nixosTests,
   pkg-config,
   python3,
   systemd,
@@ -88,6 +88,15 @@ stdenv.mkDerivation (finalAttrs: {
     lomiri-schemas
   ]);
 
+  cmakeFlags = [
+    (lib.cmakeBool "ENABLE_TESTS" finalAttrs.finalPackage.doCheck)
+    (lib.cmakeBool "ENABLE_LOMIRI_FEATURES" true)
+    (lib.cmakeBool "GSETTINGS_LOCALINSTALL" true)
+    (lib.cmakeBool "GSETTINGS_COMPILE" true)
+  ];
+
+  doCheck = stdenv.buildPlatform.canExecute stdenv.hostPlatform;
+
   nativeCheckInputs = [
     dbus
     (python3.withPackages (ps: with ps; [ python-dbusmock ]))
@@ -102,17 +111,7 @@ stdenv.mkDerivation (finalAttrs: {
     lomiri.gmenuharness
   ];
 
-  cmakeFlags = [
-    (lib.cmakeBool "ENABLE_TESTS" finalAttrs.finalPackage.doCheck)
-    (lib.cmakeBool "ENABLE_LOMIRI_FEATURES" true)
-    (lib.cmakeBool "GSETTINGS_LOCALINSTALL" true)
-    (lib.cmakeBool "GSETTINGS_COMPILE" true)
-  ];
-
   dontWrapQtApps = true;
-
-  doCheck = stdenv.buildPlatform.canExecute stdenv.hostPlatform;
-
   # Starts & talks to D-Bus, breaks under parallelism
   enableParallelChecking = false;
 
@@ -123,19 +122,23 @@ stdenv.mkDerivation (finalAttrs: {
         "lomiri"
       ];
     };
+
     tests = {
-      startup = nixosTests.ayatana-indicators;
       lomiri = nixosTests.lomiri.desktop-ayatana-indicator-sound;
+      startup = nixosTests.ayatana-indicators;
     };
+
     updateScript = gitUpdater { };
   };
 
   meta = {
     description = "Ayatana Indicator for managing system sound";
+
     longDescription = ''
       Ayatana Indicator Sound that provides easy control of the PulseAudio
       sound daemon.
     '';
+
     homepage = "https://github.com/AyatanaIndicators/ayatana-indicator-sound";
     changelog = "https://github.com/AyatanaIndicators/ayatana-indicator-sound/blob/${finalAttrs.version}/ChangeLog";
     license = lib.licenses.gpl3Only;

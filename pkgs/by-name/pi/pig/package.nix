@@ -2,10 +2,10 @@
   lib,
   stdenv,
   fetchurl,
-  makeWrapper,
+  bash,
   hadoop,
   jre,
-  bash,
+  makeWrapper,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -40,10 +40,7 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   meta = {
-    homepage = "https://pig.apache.org/";
     description = "High-level language for Apache Hadoop";
-    mainProgram = "pig";
-    license = lib.licenses.asl20;
 
     longDescription = ''
       Apache Pig is a platform for analyzing large data sets that consists of a
@@ -53,7 +50,10 @@ stdenv.mkDerivation (finalAttrs: {
       which in turns enables them to handle very large data sets.
     '';
 
-    platforms = lib.platforms.linux;
+    homepage = "https://pig.apache.org/";
+    license = lib.licenses.asl20;
     maintainers = [ ];
+    platforms = lib.platforms.linux;
+    mainProgram = "pig";
   };
 })

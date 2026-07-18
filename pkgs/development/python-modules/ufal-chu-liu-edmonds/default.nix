@@ -2,22 +2,19 @@
   lib,
   buildPythonPackage,
   fetchPypi,
-  setuptools,
   numpy,
+  setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "ufal-chu-liu-edmonds";
   version = "1.0.3";
-  pyproject = true;
 
   src = fetchPypi {
-    pname = "ufal.chu_liu_edmonds";
     inherit version;
     hash = "sha256-v3tv6cYWoFPPgaO6KXR2uUk3MsZ458Tz5wKeFW8fzNE=";
+    pname = "ufal.chu_liu_edmonds";
   };
-
-  build-system = [ setuptools ];
 
   nativeCheckInputs = [ numpy ];
 
@@ -28,6 +25,8 @@ buildPythonPackage rec {
     runHook postCheck
   '';
 
+  build-system = [ setuptools ];
+  pyproject = true;
   pythonImportsCheck = [ "ufal.chu_liu_edmonds" ];
 
   meta = {

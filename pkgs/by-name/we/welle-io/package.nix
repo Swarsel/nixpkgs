@@ -2,20 +2,20 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  fetchpatch,
   cmake,
+  faad2,
+  fetchpatch,
+  fftwSinglePrec,
+  flac,
+  lame,
+  libusb-compat-0_1,
+  mpg123,
   pkg-config,
   qt6,
-  faad2,
   rtl-sdr,
   soapysdr-with-plugins,
-  libusb-compat-0_1,
-  fftwSinglePrec,
-  lame,
-  mpg123,
   unixtools,
   withFlac ? true,
-  flac,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -32,9 +32,9 @@ stdenv.mkDerivation (finalAttrs: {
   patches = [
     # https://github.com/AlbrechtL/welle.io/pull/853
     (fetchpatch {
+      hash = "sha256-e282lwCstwsRFGCtFT39CBn1jTvkA9bxa5t6Nk8mc98=";
       name = "cmake3_16.patch";
       url = "https://github.com/AlbrechtL/welle.io/commit/c7581c251b5fe2408b45365e0f2c5efc7f01fd19.patch";
-      hash = "sha256-e282lwCstwsRFGCtFT39CBn1jTvkA9bxa5t6Nk8mc98=";
     })
   ];
 
@@ -70,11 +70,13 @@ stdenv.mkDerivation (finalAttrs: {
   meta = {
     description = "DAB/DAB+ Software Radio";
     homepage = "https://www.welle.io/";
+    license = lib.licenses.gpl2Only;
+
     maintainers = with lib.maintainers; [
       ck3d
       markuskowa
     ];
-    license = lib.licenses.gpl2Only;
+
     platforms = [
       "x86_64-linux"
       "i686-linux"

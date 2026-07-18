@@ -1,16 +1,14 @@
 {
   lib,
-  buildNpmPackage,
   fetchFromGitHub,
-
+  buildNpmPackage,
+  copyDesktopItems,
   electron,
+  makeBinaryWrapper,
+  makeDesktopItem,
   p7zip,
   # there's a setting "use zenity for dialogs"
   zenity,
-
-  copyDesktopItems,
-  makeBinaryWrapper,
-  makeDesktopItem,
 }:
 buildNpmPackage (finalAttrs: {
   pname = "figma-linux";
@@ -33,17 +31,6 @@ buildNpmPackage (finalAttrs: {
   env = {
     ELECTRON_SKIP_BINARY_DOWNLOAD = "1";
   };
-
-  desktopItems = [
-    (makeDesktopItem {
-      name = "figma-linux";
-      desktopName = "Figma Linux";
-      comment = "Unofficial Figma desktop application for Linux";
-      exec = "figma-linux %U";
-      icon = "figma-linux";
-      terminal = false;
-    })
-  ];
 
   installPhase = ''
     runHook preInstall
@@ -78,14 +65,27 @@ buildNpmPackage (finalAttrs: {
     runHook postInstall
   '';
 
+  desktopItems = [
+    (makeDesktopItem {
+      comment = "Unofficial Figma desktop application for Linux";
+      desktopName = "Figma Linux";
+      exec = "figma-linux %U";
+      icon = "figma-linux";
+      name = "figma-linux";
+      terminal = false;
+    })
+  ];
+
   meta = {
     description = "Unofficial Electron-based Figma desktop app for Linux";
     homepage = "https://github.com/Figma-Linux/figma-linux";
-    platforms = lib.platforms.linux;
     license = lib.licenses.gpl2Plus;
+
     maintainers = with lib.maintainers; [
       kashw2
     ];
+
+    platforms = lib.platforms.linux;
     mainProgram = "figma-linux";
   };
 })

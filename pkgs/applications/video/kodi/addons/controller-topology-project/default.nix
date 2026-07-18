@@ -2,8 +2,8 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  toKodiAddon,
   addonDir,
+  toKodiAddon,
 }:
 let
   drv = stdenv.mkDerivation rec {
@@ -33,8 +33,8 @@ let
     '';
 
     meta = {
-      homepage = "https://github.com/kodi-game/controller-topology-project";
       description = "Models how controllers connect to and map to each other for all gaming history";
+      homepage = "https://github.com/kodi-game/controller-topology-project";
       license = with lib.licenses; [ odbl ];
       teams = [ lib.teams.kodi ];
     };

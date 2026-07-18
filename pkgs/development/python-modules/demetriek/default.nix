@@ -1,11 +1,11 @@
 {
   lib,
+  fetchFromGitHub,
   aiohttp,
   aresponses,
   awesomeversion,
   backoff,
   buildPythonPackage,
-  fetchFromGitHub,
   mashumaro,
   orjson,
   poetry-core,
@@ -19,7 +19,6 @@
 buildPythonPackage rec {
   pname = "demetriek";
   version = "1.3.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "frenck";
@@ -34,6 +33,15 @@ buildPythonPackage rec {
       --replace-fail "0.0.0" "${version}"
   '';
 
+  nativeCheckInputs = [
+    aresponses
+    pytest-asyncio
+    pytest-cov-stub
+    pytestCheckHook
+    syrupy
+  ];
+
+  __darwinAllowLocalNetworking = true;
   build-system = [ poetry-core ];
 
   dependencies = [
@@ -45,17 +53,8 @@ buildPythonPackage rec {
     yarl
   ];
 
-  nativeCheckInputs = [
-    aresponses
-    pytest-asyncio
-    pytest-cov-stub
-    pytestCheckHook
-    syrupy
-  ];
-
+  pyproject = true;
   pythonImportsCheck = [ "demetriek" ];
-
-  __darwinAllowLocalNetworking = true;
 
   meta = {
     description = "Python client for LaMetric TIME devices";

@@ -1,8 +1,8 @@
 {
-  buildPythonPackage,
-  fetchFromGitHub,
-  htmltools,
   lib,
+  fetchFromGitHub,
+  buildPythonPackage,
+  htmltools,
   pytestCheckHook,
   setuptools,
 }:
@@ -10,7 +10,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "faicons";
   version = "0.2.2";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "posit-dev";
@@ -19,22 +18,23 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-okkZ8anirjcZcZeB3XjvNJpiYQEau+o6dmCGqFBD8XY=";
   };
 
+  nativeCheckInputs = [
+    pytestCheckHook
+  ];
+
   build-system = [ setuptools ];
 
   dependencies = [
     htmltools
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "faicons" ];
 
-  nativeCheckInputs = [
-    pytestCheckHook
-  ];
-
   meta = {
-    changelog = "https://github.com/posit-dev/py-faicons/blob/${finalAttrs.src.tag}/CHANGELOG.md";
     description = "Interface to Font-Awesome for use in Shiny";
     homepage = "https://github.com/posit-dev/py-faicons";
+    changelog = "https://github.com/posit-dev/py-faicons/blob/${finalAttrs.src.tag}/CHANGELOG.md";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ dotlambda ];
   };

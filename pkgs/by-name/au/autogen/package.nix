@@ -1,15 +1,15 @@
 {
   lib,
   stdenv,
-  buildPackages,
   fetchurl,
-  fetchpatch,
   autoreconfHook,
-  which,
-  pkg-config,
-  perl,
+  buildPackages,
+  fetchpatch,
   guile_2_2,
   libxml2,
+  perl,
+  pkg-config,
+  which,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -21,19 +21,29 @@ stdenv.mkDerivation (finalAttrs: {
     sha256 = "16mlbdys8q4ckxlvxyhwkdnh1ay9f6g0cyp1kylkpalgnik398gq";
   };
 
+  outputs = [
+    "bin"
+    "dev"
+    "lib"
+    "out"
+    "man"
+    "info"
+  ];
+
   patches =
     let
       dp =
         {
-          ver ? "1%255.18.16-5",
           name,
           sha256,
+          ver ? "1%255.18.16-5",
         }:
         fetchurl {
+          inherit name sha256;
+
           url =
             "https://salsa.debian.org/debian/autogen/-/raw/debian/${ver}"
             + "/debian/patches/${name}?inline=false";
-          inherit name sha256;
         };
     in
     [
@@ -69,25 +79,16 @@ stdenv.mkDerivation (finalAttrs: {
       # patch meanwhile.
       (fetchpatch {
         name = "guile-3.patch";
-        url = "https://gitweb.gentoo.org/repo/gentoo.git/plain/sys-devel/autogen/files/autogen-5.18.16-guile-3.patch?id=43bcc61c56a5a7de0eaf806efec7d8c0e4c01ae7";
         sha256 = "18d7y1f6164dm1wlh7rzbacfygiwrmbc35a7qqsbdawpkhydm5lr";
+        url = "https://gitweb.gentoo.org/repo/gentoo.git/plain/sys-devel/autogen/files/autogen-5.18.16-guile-3.patch?id=43bcc61c56a5a7de0eaf806efec7d8c0e4c01ae7";
       })
       (fetchpatch {
-        name = "lfs64.patch";
-        url = "https://cygwin.com/cgit/cygwin-packages/autogen/plain/5.16.2-cygwin17.patch?id=6f39882873b3d1290ba3739e0557a84bfe05ba60";
-        stripLen = 1;
         hash = "sha256-6dk2imqForUHKhI82CTronWaS3KUWW/EKfA/JZZcRe0=";
+        name = "lfs64.patch";
+        stripLen = 1;
+        url = "https://cygwin.com/cgit/cygwin-packages/autogen/plain/5.16.2-cygwin17.patch?id=6f39882873b3d1290ba3739e0557a84bfe05ba60";
       })
     ];
-
-  outputs = [
-    "bin"
-    "dev"
-    "lib"
-    "out"
-    "man"
-    "info"
-  ];
 
   nativeBuildInputs = [
     which
@@ -100,14 +101,11 @@ stdenv.mkDerivation (finalAttrs: {
     buildPackages.buildPackages.autogen
     buildPackages.texinfo
   ];
+
   buildInputs = [
     guile_2_2
     libxml2
   ];
-
-  preConfigure = ''
-    export MAN_PAGE_DATE=$(date '+%Y-%m-%d' -d "@$SOURCE_DATE_EPOCH")
-  '';
 
   configureFlags = [
     "--with-libxml2=${libxml2.dev}"
@@ -129,8 +127,11 @@ stdenv.mkDerivation (finalAttrs: {
   # See: https://sourceforge.net/p/autogen/bugs/187/
   ++ lib.optionals stdenv.hostPlatform.isDarwin [ "ac_cv_func_utimensat=no" ];
 
-  #doCheck = true; # not reliable
+  preConfigure = ''
+    export MAN_PAGE_DATE=$(date '+%Y-%m-%d' -d "@$SOURCE_DATE_EPOCH")
+  '';
 
+  #doCheck = true; # not reliable
   postInstall = ''
     mkdir -p $dev/bin
     mv $bin/bin/autoopts-config $dev/bin
@@ -152,12 +153,14 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Automated text and program generation tool";
+    homepage = "https://www.gnu.org/software/autogen/";
+
     license = with lib.licenses; [
       gpl3Plus
       lgpl3Plus
     ];
-    homepage = "https://www.gnu.org/software/autogen/";
-    platforms = lib.platforms.all;
+
     maintainers = [ ];
+    platforms = lib.platforms.all;
   };
 })

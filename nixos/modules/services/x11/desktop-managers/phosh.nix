@@ -9,77 +9,83 @@ let
 
   phocConfigType = lib.types.submodule {
     options = {
-      xwayland = lib.mkOption {
-        description = ''
-          Whether to enable XWayland support.
-
-          To start XWayland immediately, use `immediate`.
-        '';
-        type = lib.types.enum [
-          "true"
-          "false"
-          "immediate"
-        ];
-        default = "false";
-      };
       cursorTheme = lib.mkOption {
+        default = "default";
+
         description = ''
           Cursor theme to use in Phosh.
         '';
+
         type = lib.types.str;
-        default = "default";
       };
+
       outputs = lib.mkOption {
-        description = ''
-          Output configurations.
-        '';
-        type = lib.types.attrsOf phocOutputType;
         default = {
           DSI-1 = {
             scale = 2;
           };
         };
+
+        description = ''
+          Output configurations.
+        '';
+
+        type = lib.types.attrsOf phocOutputType;
+      };
+
+      xwayland = lib.mkOption {
+        default = "false";
+
+        description = ''
+          Whether to enable XWayland support.
+
+          To start XWayland immediately, use `immediate`.
+        '';
+
+        type = lib.types.enum [
+          "true"
+          "false"
+          "immediate"
+        ];
       };
     };
   };
 
   phocOutputType = lib.types.submodule {
     options = {
+      mode = lib.mkOption {
+        default = null;
+
+        description = ''
+          Default video mode.
+        '';
+
+        example = "768x1024";
+        type = lib.types.nullOr lib.types.str;
+      };
+
       modeline = lib.mkOption {
+        default = [ ];
+
         description = ''
           One or more modelines.
         '';
-        type = lib.types.either lib.types.str (lib.types.listOf lib.types.str);
-        default = [ ];
+
         example = [
           "87.25 720 776 848  976 1440 1443 1453 1493 -hsync +vsync"
           "65.13 768 816 896 1024 1024 1025 1028 1060 -HSync +VSync"
         ];
+
+        type = lib.types.either lib.types.str (lib.types.listOf lib.types.str);
       };
-      mode = lib.mkOption {
-        description = ''
-          Default video mode.
-        '';
-        type = lib.types.nullOr lib.types.str;
-        default = null;
-        example = "768x1024";
-      };
-      scale = lib.mkOption {
-        description = ''
-          Display scaling factor.
-        '';
-        type =
-          lib.types.nullOr (lib.types.addCheck (lib.types.either lib.types.int lib.types.float) (x: x > 0))
-          // {
-            description = "null or positive integer or float";
-          };
-        default = null;
-        example = 2;
-      };
+
       rotate = lib.mkOption {
+        default = null;
+
         description = ''
           Screen transformation.
         '';
+
         type = lib.types.enum [
           "90"
           "180"
@@ -90,7 +96,22 @@ let
           "flipped-270"
           null
         ];
+      };
+
+      scale = lib.mkOption {
         default = null;
+
+        description = ''
+          Display scaling factor.
+        '';
+
+        example = 2;
+
+        type =
+          lib.types.nullOr (lib.types.addCheck (lib.types.either lib.types.int lib.types.float) (x: x > 0))
+          // {
+            description = "null or positive integer or float";
+          };
       };
     };
   };
@@ -127,75 +148,73 @@ in
 
 {
 
-  meta = {
-    maintainers = with lib.maintainers; [ armelclo ];
-  };
-
   options = {
     services.xserver.desktopManager.phosh = {
       enable = lib.mkOption {
-        type = lib.types.bool;
         default = false;
         description = "Enable the Phone Shell.";
+        type = lib.types.bool;
       };
 
       package = lib.mkPackageOption pkgs "phosh" { };
 
-      user = lib.mkOption {
-        description = "The user to run the Phosh service.";
-        type = lib.types.str;
-        example = "alice";
-      };
-
       group = lib.mkOption {
         description = "The group to run the Phosh service.";
-        type = lib.types.str;
         example = "users";
+        type = lib.types.str;
       };
 
       phocConfig = lib.mkOption {
+        default = { };
+
         description = ''
           Configurations for the Phoc compositor.
         '';
+
         type = lib.types.oneOf [
           lib.types.lines
           lib.types.path
           phocConfigType
         ];
-        default = { };
+      };
+
+      user = lib.mkOption {
+        description = "The user to run the Phosh service.";
+        example = "alice";
+        type = lib.types.str;
       };
     };
   };
 
   config = lib.mkIf cfg.enable {
+    environment.etc."phosh/phoc.ini".source =
+      if builtins.isPath cfg.phocConfig then
+        cfg.phocConfig
+      else if builtins.isString cfg.phocConfig then
+        pkgs.writeText "phoc.ini" cfg.phocConfig
+      else
+        pkgs.writeText "phoc.ini" (renderPhocConfig cfg.phocConfig);
+
+    environment.systemPackages = [
+      pkgs.phoc
+      cfg.package
+      pkgs.stevia
+    ];
+
+    programs.feedbackd.enable = true;
+    security.pam.services.phosh = { };
+    services.displayManager.sessionPackages = [ cfg.package ];
+    services.gnome.core-os-services.enable = true;
+    services.gnome.core-shell.enable = true;
+    services.graphical-desktop.enable = true;
+    systemd.packages = [ cfg.package ];
+
     # Inspired by https://gitlab.gnome.org/World/Phosh/phosh/-/blob/main/data/phosh.service
     # Parts taken from nixos/modules/services/wayland/cage.nix
     systemd.services.phosh = {
-      wantedBy = [ "graphical.target" ];
       after = [ "getty@tty1.service" ];
       conflicts = [ "getty@tty1.service" ];
-      serviceConfig = {
-        ExecStart = "${cfg.package}/bin/phosh-session";
-        User = cfg.user;
-        Group = cfg.group;
-        PAMName = "login";
-        WorkingDirectory = "~";
-        Restart = "always";
 
-        TTYPath = "/dev/tty1";
-        TTYReset = "yes";
-        TTYVHangup = "yes";
-        TTYVTDisallocate = "yes";
-
-        # Fail to start if not controlling the tty.
-        StandardInput = "tty-fail";
-        StandardOutput = "journal";
-        StandardError = "journal";
-
-        # Log this user with utmp, letting it show up with commands 'w' and 'who'.
-        UtmpIdentifier = "tty1";
-        UtmpMode = "user";
-      };
       environment = {
         # We are running without a display manager, so need to provide
         # a value for XDG_CURRENT_DESKTOP.
@@ -211,42 +230,43 @@ in
         XDG_SESSION_DESKTOP = "phosh";
         XDG_SESSION_TYPE = "wayland";
       };
+
+      serviceConfig = {
+        ExecStart = "${cfg.package}/bin/phosh-session";
+        Group = cfg.group;
+        PAMName = "login";
+        Restart = "always";
+        StandardError = "journal";
+        # Fail to start if not controlling the tty.
+        StandardInput = "tty-fail";
+        StandardOutput = "journal";
+        TTYPath = "/dev/tty1";
+        TTYReset = "yes";
+        TTYVHangup = "yes";
+        TTYVTDisallocate = "yes";
+        User = cfg.user;
+        # Log this user with utmp, letting it show up with commands 'w' and 'who'.
+        UtmpIdentifier = "tty1";
+        UtmpMode = "user";
+        WorkingDirectory = "~";
+      };
+
+      wantedBy = [ "graphical.target" ];
     };
 
     xdg.portal = {
       enable = true;
+      configPackages = lib.mkDefault [ pkgs.phosh ];
+
       extraPortals = [
         pkgs.xdg-desktop-portal-phosh
         pkgs.xdg-desktop-portal-gnome
         pkgs.xdg-desktop-portal-gtk
       ];
-      configPackages = lib.mkDefault [ pkgs.phosh ];
     };
+  };
 
-    environment.systemPackages = [
-      pkgs.phoc
-      cfg.package
-      pkgs.stevia
-    ];
-
-    systemd.packages = [ cfg.package ];
-
-    programs.feedbackd.enable = true;
-
-    security.pam.services.phosh = { };
-
-    services.graphical-desktop.enable = true;
-
-    services.gnome.core-shell.enable = true;
-    services.gnome.core-os-services.enable = true;
-    services.displayManager.sessionPackages = [ cfg.package ];
-
-    environment.etc."phosh/phoc.ini".source =
-      if builtins.isPath cfg.phocConfig then
-        cfg.phocConfig
-      else if builtins.isString cfg.phocConfig then
-        pkgs.writeText "phoc.ini" cfg.phocConfig
-      else
-        pkgs.writeText "phoc.ini" (renderPhocConfig cfg.phocConfig);
+  meta = {
+    maintainers = with lib.maintainers; [ armelclo ];
   };
 }

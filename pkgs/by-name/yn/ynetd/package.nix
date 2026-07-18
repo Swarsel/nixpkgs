@@ -31,8 +31,8 @@ stdenv.mkDerivation (finalAttrs: {
     description = "Small server for binding programs to TCP ports";
     homepage = "https://yx7.cc/code/";
     license = lib.licenses.mit;
-    platforms = lib.platforms.unix;
     maintainers = [ lib.maintainers.haylin ];
+    platforms = lib.platforms.unix;
     mainProgram = "ynetd";
   };
 })

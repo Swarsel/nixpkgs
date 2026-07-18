@@ -1,14 +1,12 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule (finalAttrs: {
   pname = "kapowbang";
   version = "0.7.1";
-
-  subPackages = [ "." ];
 
   src = fetchFromGitHub {
     owner = "BBVA";
@@ -18,12 +16,12 @@ buildGoModule (finalAttrs: {
   };
 
   vendorHash = "sha256-vvC9l/6b7AIEmCMVdeKMyi9ThIcAzjtV+uaQ4oSJZuU=";
-
   doCheck = false;
+  subPackages = [ "." ];
 
   meta = {
-    homepage = "https://github.com/BBVA/kapow";
     description = "Expose command-line tools over HTTP";
+    homepage = "https://github.com/BBVA/kapow";
     license = lib.licenses.asl20;
     maintainers = with lib.maintainers; [ nilp0inter ];
     mainProgram = "kapow";

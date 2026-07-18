@@ -1,6 +1,6 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
   cmake,
   flac,
@@ -37,20 +37,20 @@ stdenv.mkDerivation (finalAttrs: {
     libsForQt5.qtwayland
   ];
 
-  # wrapQtAppsHook doesn't automatically find noson-gui
-  dontWrapQtApps = true;
-
   preFixup = ''
     wrapProgram "$out/bin/noson-app" --prefix LD_LIBRARY_PATH : ${lib.makeLibraryPath [ libpulseaudio ]}
     wrapQtApp "$out/lib/noson/noson-gui"
   '';
 
+  # wrapQtAppsHook doesn't automatically find noson-gui
+  dontWrapQtApps = true;
+
   meta = {
     description = "SONOS controller for Linux (and macOS)";
     homepage = "https://janbar.github.io/noson-app/";
-    mainProgram = "noson-app";
-    platforms = with lib.platforms; linux ++ darwin;
     license = lib.licenses.gpl3Only;
     maintainers = [ ];
+    platforms = with lib.platforms; linux ++ darwin;
+    mainProgram = "noson-app";
   };
 })

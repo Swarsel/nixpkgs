@@ -1,4 +1,6 @@
 {
+  lib,
+  fetchFromGitHub,
   bpylist2,
   buildPythonPackage,
   coloredlogs,
@@ -8,7 +10,6 @@
   daemonize,
   developer-disk-image,
   fastapi,
-  fetchFromGitHub,
   gpxpy,
   hexdump,
   hyperframe,
@@ -16,7 +17,6 @@
   inquirer3,
   ipsw-parser,
   ipython,
-  lib,
   nest-asyncio,
   opack2,
   packaging,
@@ -51,7 +51,6 @@
 buildPythonPackage rec {
   pname = "pymobiledevice3";
   version = "7.7.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "doronz88";
@@ -59,6 +58,11 @@ buildPythonPackage rec {
     tag = "v${version}";
     hash = "sha256-dBzBvwjto0pr0EWOKStEPXbdlX1mOxBFsU1CkmQLhNw=";
   };
+
+  nativeCheckInputs = [
+    pytest-asyncio
+    pytestCheckHook
+  ];
 
   build-system = [
     setuptools
@@ -109,23 +113,18 @@ buildPythonPackage rec {
     sslpsk-pmd3
   ];
 
-  pythonImportsCheck = [ "pymobiledevice3" ];
-
-  nativeCheckInputs = [
-    pytest-asyncio
-    pytestCheckHook
-  ];
-
   # Upstream only runs tests marked with 'cli' in CI:
   # https://github.com/doronz88/pymobiledevice3/blob/v4.27.1/.github/workflows/python-app.yml#L45
   enabledTestMarks = [ "cli" ];
+  pyproject = true;
+  pythonImportsCheck = [ "pymobiledevice3" ];
 
   meta = {
-    changelog = "https://github.com/doronz88/pymobiledevice3/releases/tag/${src.tag}";
     description = "Pure python3 implementation for working with iDevices (iPhone, etc.)";
     homepage = "https://github.com/doronz88/pymobiledevice3";
+    changelog = "https://github.com/doronz88/pymobiledevice3/releases/tag/${src.tag}";
     license = lib.licenses.gpl3Plus;
-    mainProgram = "pymobiledevice3";
     maintainers = [ lib.maintainers.dotlambda ];
+    mainProgram = "pymobiledevice3";
   };
 }

@@ -1,8 +1,8 @@
 {
   lib,
   stdenv,
-  copyDesktopItems,
   fetchFromGitHub,
+  copyDesktopItems,
   libGL,
   makeDesktopItem,
   makeWrapper,
@@ -25,20 +25,6 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-p6gIGWkcv4jJacF4baK8Uej2kwwPnd/ylvgmUHHPXnI=";
   };
 
-  __structuredAttrs = true;
-  strictDeps = true;
-
-  buildInputs = [
-    libGL
-    sdl3
-  ];
-
-  nativeBuildInputs = [
-    pkg-config
-  ]
-  ++ lib.optional isLinux copyDesktopItems
-  ++ lib.optional isDarwin makeWrapper;
-
   postPatch = ''
     substituteInPlace platforms/shared/makefiles/Makefile.common \
       --replace-fail 'GIT_VERSION := $(shell git describe --abbrev=7 --dirty --always --tags)' \
@@ -51,27 +37,23 @@ stdenv.mkDerivation (finalAttrs: {
                      'db_path = std::string(exe_path) + "/../opt/gearboy/gamecontrollerdb.txt";'
   '';
 
+  strictDeps = true;
+
+  nativeBuildInputs = [
+    pkg-config
+  ]
+  ++ lib.optional isLinux copyDesktopItems
+  ++ lib.optional isDarwin makeWrapper;
+
+  buildInputs = [
+    libGL
+    sdl3
+  ];
+
   makeFlags =
     lib.optional isLinux "-Cplatforms/linux"
     ++ lib.optional isDarwin "-Cplatforms/macos"
     ++ lib.optional stdenv.cc.isClang "USE_CLANG=1";
-
-  enableParallelBuilding = true;
-
-  desktopItems = lib.optionals isLinux [
-    (makeDesktopItem {
-      type = "Application";
-      name = "Gearboy";
-      desktopName = "Gearboy";
-      genericName = "Game Boy Emulator";
-      comment = finalAttrs.meta.description;
-      exec = finalAttrs.meta.mainProgram;
-      categories = [
-        "Game"
-        "Emulator"
-      ];
-    })
-  ];
 
   installPhase = ''
     runHook preInstall
@@ -95,11 +77,31 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  doInstallCheck = true;
+
   nativeInstallCheckInputs = [
     versionCheckHook
   ];
-  doInstallCheck = true;
 
+  __structuredAttrs = true;
+
+  desktopItems = lib.optionals isLinux [
+    (makeDesktopItem {
+      categories = [
+        "Game"
+        "Emulator"
+      ];
+
+      comment = finalAttrs.meta.description;
+      desktopName = "Gearboy";
+      exec = finalAttrs.meta.mainProgram;
+      genericName = "Game Boy Emulator";
+      name = "Gearboy";
+      type = "Application";
+    })
+  ];
+
+  enableParallelBuilding = true;
   passthru.updateScript = nix-update-script { };
 
   meta = {

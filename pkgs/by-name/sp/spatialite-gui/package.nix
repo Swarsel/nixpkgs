@@ -2,9 +2,8 @@
   lib,
   stdenv,
   fetchurl,
-  pkg-config,
-  desktopToDarwinBundle,
   curl,
+  desktopToDarwinBundle,
   freexl,
   geos,
   libpq,
@@ -17,6 +16,7 @@
   lz4,
   minizip,
   openjpeg,
+  pkg-config,
   proj,
   sqlite,
   virtualpg,
@@ -62,18 +62,18 @@ stdenv.mkDerivation (finalAttrs: {
     zstd
   ];
 
-  enableParallelBuilding = true;
-
   postFixup = lib.optionalString stdenv.hostPlatform.isDarwin ''
     rm -fr $out/share
   '';
+
+  enableParallelBuilding = true;
 
   meta = {
     description = "Graphical user interface for SpatiaLite";
     homepage = "https://www.gaia-gis.it/fossil/spatialite_gui";
     license = lib.licenses.gpl3Plus;
     platforms = lib.platforms.unix;
-    teams = [ lib.teams.geospatial ];
     mainProgram = "spatialite_gui";
+    teams = [ lib.teams.geospatial ];
   };
 })

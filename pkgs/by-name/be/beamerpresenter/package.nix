@@ -3,22 +3,22 @@
   stdenv,
   fetchFromGitHub,
   cmake,
-  pkg-config,
-  wrapGAppsHook3,
-  gst_all_1,
-  zlib,
-  qt6,
-  qt6Packages,
   # only required when using mupdf
   freetype,
+  gst_all_1,
   gumbo,
   jbig2dec,
   mupdf,
   openjpeg,
+  pkg-config,
+  qt6,
+  qt6Packages,
+  wrapGAppsHook3,
+  zlib,
+  useExternalRenderer ? false,
+  useMupdf ? true,
   # choose renderer: mupdf or poppler or both (not recommended)
   usePoppler ? false,
-  useMupdf ? true,
-  useExternalRenderer ? false,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -38,8 +38,6 @@ stdenv.mkDerivation (finalAttrs: {
     wrapGAppsHook3
     qt6.wrapQtAppsHook
   ];
-
-  dontWrapGApps = true;
 
   buildInputs = [
     gst_all_1.gst-libav
@@ -82,18 +80,23 @@ stdenv.mkDerivation (finalAttrs: {
     qtWrapperArgs+=("''${gappsWrapperArgs[@]}")
   '';
 
+  dontWrapGApps = true;
+
   meta = {
     description = "Modular multi screen pdf presentation viewer";
     homepage = "https://github.com/beamerpresenter/BeamerPresenter";
+
     license = with lib.licenses; [
       agpl3Only
       gpl3Plus
     ];
-    platforms = lib.platforms.all;
+
     maintainers = with lib.maintainers; [
       euxane
       dotlambda
     ];
+
+    platforms = lib.platforms.all;
     mainProgram = "beamerpresenter";
   };
 })

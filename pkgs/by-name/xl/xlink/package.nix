@@ -2,10 +2,10 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  fetchpatch,
   cmake,
-  pkg-config,
+  fetchpatch,
   libusb1,
+  pkg-config,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -29,8 +29,8 @@ stdenv.mkDerivation (finalAttrs: {
     ./001-remove-hunter.patch
     # Bump CMakeLists.txt to 3.10
     (fetchpatch {
-      url = "https://github.com/luxonis/XLink/commit/160c6c918c07e28a6a8c5c080a257f7619223304.patch?full_index=1";
       hash = "sha256-1VMCteJf/an20fI3UTT/X9cH96dCxPRQolfN+e+6jnU=";
+      url = "https://github.com/luxonis/XLink/commit/160c6c918c07e28a6a8c5c080a257f7619223304.patch?full_index=1";
     })
   ];
 
@@ -85,7 +85,7 @@ stdenv.mkDerivation (finalAttrs: {
     description = "Library for communication with Myriad VPUs";
     homepage = "https://github.com/luxonis/XLink";
     license = lib.licenses.asl20;
-    platforms = lib.platforms.all;
     maintainers = with lib.maintainers; [ phodina ];
+    platforms = lib.platforms.all;
   };
 })

@@ -1,22 +1,22 @@
 {
   lib,
-  stdenvNoCC,
-  buildDotnetModule,
   fetchFromGitHub,
-  dotnetCorePackages,
-  makeDesktopItem,
-  copyDesktopItems,
-  makeWrapper,
-  ffmpeg,
-  alsa-lib,
   SDL2,
-  lttng-ust,
-  numactl,
+  alsa-lib,
+  buildDotnetModule,
+  copyDesktopItems,
+  dotnetCorePackages,
+  ffmpeg,
   libglvnd,
   libxi,
+  lttng-ust,
+  makeDesktopItem,
+  makeWrapper,
+  nix-update-script,
+  numactl,
+  stdenvNoCC,
   udev,
   vulkan-loader,
-  nix-update-script,
   nativeWayland ? false,
 }:
 
@@ -31,16 +31,45 @@ buildDotnetModule rec {
     hash = "sha256-hdrbbPl7ClNx73bsjoN5u4bEmvl/sdcjgFnZ/uxYbOk=";
   };
 
-  projectFile = "osu.Desktop/osu.Desktop.csproj";
-  nugetDeps = ./deps.json;
-
-  dotnet-sdk = dotnetCorePackages.sdk_8_0;
-  dotnet-runtime = dotnetCorePackages.runtime_8_0;
-
   nativeBuildInputs = [
     copyDesktopItems
     makeWrapper
   ];
+
+  desktopItems = [
+    (makeDesktopItem {
+      categories = [ "Game" ];
+      comment = "Rhythm is just a *click* away (no score submission or multiplayer, see osu-lazer-bin)";
+      desktopName = "osu!";
+      exec = "osu!";
+      icon = "osu";
+      name = "osu";
+      type = "Application";
+    })
+  ];
+
+  dotnet-runtime = dotnetCorePackages.runtime_8_0;
+  dotnet-sdk = dotnetCorePackages.sdk_8_0;
+  executables = [ "osu!" ];
+
+  fixupPhase = ''
+    runHook preFixup
+
+    wrapProgram $out/bin/osu! \
+      ${lib.optionalString nativeWayland "--set SDL_VIDEODRIVER wayland"} \
+      --set OSU_EXTERNAL_UPDATE_PROVIDER 1
+
+    for i in 16 32 48 64 96 128 256 512 1024; do
+      install -D ./assets/lazer.png $out/share/icons/hicolor/''${i}x$i/apps/osu.png
+    done
+
+    ln -sft $out/lib/${pname} ${SDL2}/lib/libSDL2${stdenvNoCC.hostPlatform.extensions.sharedLibrary}
+
+    runHook postFixup
+  '';
+
+  nugetDeps = ./deps.json;
+  projectFile = "osu.Desktop/osu.Desktop.csproj";
 
   runtimeDeps = [
     ffmpeg
@@ -65,36 +94,6 @@ buildDotnetModule rec {
     vulkan-loader
   ];
 
-  executables = [ "osu!" ];
-
-  fixupPhase = ''
-    runHook preFixup
-
-    wrapProgram $out/bin/osu! \
-      ${lib.optionalString nativeWayland "--set SDL_VIDEODRIVER wayland"} \
-      --set OSU_EXTERNAL_UPDATE_PROVIDER 1
-
-    for i in 16 32 48 64 96 128 256 512 1024; do
-      install -D ./assets/lazer.png $out/share/icons/hicolor/''${i}x$i/apps/osu.png
-    done
-
-    ln -sft $out/lib/${pname} ${SDL2}/lib/libSDL2${stdenvNoCC.hostPlatform.extensions.sharedLibrary}
-
-    runHook postFixup
-  '';
-
-  desktopItems = [
-    (makeDesktopItem {
-      desktopName = "osu!";
-      name = "osu";
-      exec = "osu!";
-      icon = "osu";
-      comment = "Rhythm is just a *click* away (no score submission or multiplayer, see osu-lazer-bin)";
-      type = "Application";
-      categories = [ "Game" ];
-    })
-  ];
-
   passthru.updateScript = nix-update-script {
     extraArgs = [
       "--version-regex=(.*)-lazer"
@@ -104,16 +103,19 @@ buildDotnetModule rec {
   meta = {
     description = "Rhythm is just a *click* away (no score submission or multiplayer, see osu-lazer-bin)";
     homepage = "https://osu.ppy.sh";
+
     license = with lib.licenses; [
       mit
       cc-by-nc-40
       unfreeRedistributable # osu-framework contains libbass.so in repository
     ];
+
     maintainers = with lib.maintainers; [
       gepbird
       thiagokokada
       Guanran928
     ];
+
     platforms = [ "x86_64-linux" ];
     mainProgram = "osu!";
   };

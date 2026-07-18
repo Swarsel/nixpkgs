@@ -1,22 +1,19 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
-  pygments,
+  buildPythonPackage,
   gitMinimal,
-  mercurial,
-  subversion,
-  p4,
   less,
+  mercurial,
+  p4,
+  pygments,
+  setuptools,
+  subversion,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "ydiff";
   version = "1.5";
-  pyproject = true;
-
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "ymattw";
@@ -24,6 +21,17 @@ buildPythonPackage (finalAttrs: {
     tag = finalAttrs.version;
     hash = "sha256-9a7M6+CqGRvO1yainImN2RQVH3XMxE9PTLXJGKekXLg=";
   };
+
+  nativeCheckInputs = [ pygments ];
+
+  checkPhase = ''
+    runHook preCheck
+    make reg # We don't want the linter or coverage check.
+    runHook postCheck
+  '';
+
+  __structuredAttrs = true;
+  build-system = [ setuptools ];
 
   patchPhase = ''
     substituteInPlace ydiff.py \
@@ -39,32 +47,27 @@ buildPythonPackage (finalAttrs: {
     patchShebangs tests/*.sh
   '';
 
-  build-system = [ setuptools ];
-
-  nativeCheckInputs = [ pygments ];
-
-  checkPhase = ''
-    runHook preCheck
-    make reg # We don't want the linter or coverage check.
-    runHook postCheck
-  '';
-
+  pyproject = true;
   pythonImportsCheck = [ "ydiff" ];
 
   meta = {
     description = "View colored, incremental diff in workspace or from stdin with side by side and auto pager support (Was \"cdiff\")";
-    mainProgram = "ydiff";
+
     longDescription = ''
       Term based tool to view colored, incremental diff in a version
       controlled workspace (supports Git, Mercurial, Perforce and Svn
       so far) or from stdin, with side by side (similar to diff -y)
       and auto pager support.
     '';
+
     homepage = "https://github.com/ymattw/ydiff";
     license = lib.licenses.bsd3;
+
     maintainers = with lib.maintainers; [
       de11n
       despsyched
     ];
+
+    mainProgram = "ydiff";
   };
 })

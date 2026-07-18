@@ -1,16 +1,15 @@
 {
   lib,
   fetchFromGitHub,
-  python3Packages,
   nebula,
-  nixosTests,
   nix-update-script,
+  nixosTests,
+  python3Packages,
 }:
 
 python3Packages.buildPythonApplication (finalAttrs: {
   pname = "nebula-lighthouse-service";
   version = "2.0.2";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "manuels";
@@ -44,6 +43,8 @@ python3Packages.buildPythonApplication (finalAttrs: {
     nebula
   ];
 
+  pyproject = true;
+
   pythonImportsCheck = [
     "nebula_lighthouse_service"
   ];
@@ -56,16 +57,20 @@ python3Packages.buildPythonApplication (finalAttrs: {
 
   meta = {
     description = "Public Nebula VPN Lighthouse Service";
+
     longDescription = ''
       In case you don't have a publicly accessible server to run your own Nebula VPN lighthouse,
       you can use a public nebula-lighthouse-service instance without passing traffic through it.
     '';
+
     homepage = "https://github.com/manuels/nebula-lighthouse-service";
     license = lib.licenses.agpl3Only;
-    platforms = lib.platforms.linux;
+
     maintainers = with lib.maintainers; [
       bloominstrong
     ];
+
+    platforms = lib.platforms.linux;
     mainProgram = "nebula-lighthouse-service";
   };
 })

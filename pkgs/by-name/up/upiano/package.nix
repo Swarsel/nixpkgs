@@ -1,26 +1,21 @@
 {
   lib,
-  python3,
   fetchFromGitHub,
+  python3,
 }:
 
 python3.pkgs.buildPythonApplication (finalAttrs: {
   pname = "upiano";
   version = "0.1.2";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "eliasdorneles";
     repo = "upiano";
     tag = "v${finalAttrs.version}";
     hash = "sha256-5WhflvUCjzW4ZJ+PLUTMbKcUnQa3ChkDjl0R5YvjBWk=";
-    forceFetchGit = true;
     fetchLFS = true;
+    forceFetchGit = true;
   };
-
-  pythonRelaxDeps = [
-    "textual"
-  ];
 
   nativeBuildInputs = with python3.pkgs; [
     poetry-core
@@ -31,8 +26,14 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     textual
   ];
 
+  pyproject = true;
+
   pythonImportsCheck = [
     "upiano"
+  ];
+
+  pythonRelaxDeps = [
+    "textual"
   ];
 
   meta = {

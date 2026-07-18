@@ -1,17 +1,16 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   click,
+  lsof,
   psutil,
   pytestCheckHook,
-  lsof,
 }:
 
 buildPythonPackage rec {
   pname = "daemonocle";
   version = "1.2.3";
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "jnrbsn";
@@ -41,16 +40,19 @@ buildPythonPackage rec {
     "test_exec_worker"
   ];
 
+  format = "setuptools";
   pythonImportsCheck = [ "daemonocle" ];
 
   meta = {
     description = "Python library for creating super fancy Unix daemons";
+
     longDescription = ''
       daemonocle is a library for creating your own Unix-style daemons
       written in Python.  It solves many problems that other daemon
       libraries have and provides some really useful features you don't
       often see in other daemons.
     '';
+
     homepage = "https://github.com/jnrbsn/daemonocle";
     license = lib.licenses.mit;
     maintainers = [ ];

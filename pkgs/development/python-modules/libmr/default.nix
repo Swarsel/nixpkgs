@@ -1,20 +1,19 @@
 {
   lib,
   buildPythonPackage,
+  cython,
   fetchPypi,
   numpy,
-  cython,
 }:
 
 buildPythonPackage rec {
   pname = "libmr";
   version = "0.1.9";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
-    extension = "zip";
     sha256 = "43ccd86693b725fa3abe648c8cdcef17ba5fa46b5528168829e5f9b968dfeb70";
+    extension = "zip";
   };
 
   propagatedBuildInputs = [
@@ -24,6 +23,7 @@ buildPythonPackage rec {
 
   # No tests in the pypi tarball
   doCheck = false;
+  format = "setuptools";
 
   meta = {
     description = "LibMR provides core MetaRecognition and Weibull fitting functionality";

@@ -15,39 +15,25 @@ in
       enable = lib.mkEnableOption "schroot, a lightweight virtualisation tool";
       package = lib.mkPackageOption pkgs "schroot" { };
 
-      settings = lib.mkOption {
-        type = iniFmt.type;
-        default = { };
-        example = {
-          "noble" = {
-            type = "directory";
-            description = "Ubuntu 24.04 Noble";
-            directory = "/srv/chroot/noble";
-            users = "my-user";
-            root-users = "my-user";
-            personality = "linux";
-            preserve-environment = false;
-            profile = "my-profile";
-            shell = "/bin/bash";
-          };
-        };
-        description = ''
-          Schroot configuration settings.
-          For more details, see {manpage}`schroot.conf(5)`.
-        '';
-      };
-
       profiles = lib.mkOption {
+        default = { };
+        description = "Custom configuration profiles for schroot.";
+
         type = lib.types.attrsOf (
           lib.types.submodule {
             options = {
               copyfiles = lib.mkOption {
-                type = lib.types.listOf lib.types.str;
-                example = [ "/etc/resolv.conf" ];
                 description = "A list of files to copy into the chroot from the host system.";
+                example = [ "/etc/resolv.conf" ];
+                type = lib.types.listOf lib.types.str;
               };
+
               fstab = lib.mkOption {
-                type = lib.types.path;
+                description = ''
+                  A file in the format described in {manpage}`fstab(5)`, used to mount filesystems inside the chroot.
+                  The mount location is relative to the root of the chroot.
+                '';
+
                 example = lib.literalExpression ''
                   pkgs.writeText "my-schroot-fstab" '''
                     /proc           /proc           none    rw,bind         0       0
@@ -62,13 +48,15 @@ in
                     /run/wrappers   /run/wrappers   none    rw,bind         0       0
                   '''
                 '';
-                description = ''
-                  A file in the format described in {manpage}`fstab(5)`, used to mount filesystems inside the chroot.
-                  The mount location is relative to the root of the chroot.
-                '';
+
+                type = lib.types.path;
               };
+
               nssdatabases = lib.mkOption {
-                type = lib.types.listOf lib.types.str;
+                description = ''
+                  System databases (as described in /etc/nsswitch.conf on GNU/Linux systems) to copy into the chroot from the host.
+                '';
+
                 example = [
                   "passwd"
                   "shadow"
@@ -79,27 +67,46 @@ in
                   "networks"
                   "hosts"
                 ];
-                description = ''
-                  System databases (as described in /etc/nsswitch.conf on GNU/Linux systems) to copy into the chroot from the host.
-                '';
+
+                type = lib.types.listOf lib.types.str;
               };
             };
           }
         );
+      };
+
+      settings = lib.mkOption {
         default = { };
-        description = "Custom configuration profiles for schroot.";
+
+        description = ''
+          Schroot configuration settings.
+          For more details, see {manpage}`schroot.conf(5)`.
+        '';
+
+        example = {
+          "noble" = {
+            description = "Ubuntu 24.04 Noble";
+            directory = "/srv/chroot/noble";
+            personality = "linux";
+            preserve-environment = false;
+            profile = "my-profile";
+            root-users = "my-user";
+            shell = "/bin/bash";
+            type = "directory";
+            users = "my-user";
+          };
+        };
+
+        type = iniFmt.type;
       };
     };
   };
 
   config = lib.mkIf cfg.enable {
     environment = {
-      systemPackages = [ cfg.package ];
-
       etc = {
         # schroot requires this directory to exist
         "schroot/chroot.d/.keep".text = "";
-
         "schroot/schroot.conf".source = iniFmt.generate "schroot.conf" cfg.settings;
       }
       // (lib.attrsets.concatMapAttrs (
@@ -115,13 +122,15 @@ in
           "schroot/${name}/nssdatabases".text = (lib.strings.concatStringsSep "\n" nssdatabases) + "\n";
         }
       ) cfg.profiles);
+
+      systemPackages = [ cfg.package ];
     };
 
     security.wrappers.schroot = {
-      source = "${cfg.package}/bin/schroot";
-      owner = "root";
       group = "root";
+      owner = "root";
       setuid = true;
+      source = "${cfg.package}/bin/schroot";
     };
 
     # Schroot requires these directories to exist

@@ -1,8 +1,8 @@
 {
   lib,
-  buildPythonPackage,
-  fetchFromGitHub,
   fetchurl,
+  fetchFromGitHub,
+  buildPythonPackage,
   openssl,
   perl,
   pkg-config,
@@ -16,18 +16,12 @@
 buildPythonPackage (finalAttrs: {
   pname = "cloudcheck";
   version = "11.1.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "blacklanternsecurity";
     repo = "cloudcheck";
     tag = "v${finalAttrs.version}";
     hash = "sha256-rOMr7J6XZGjWq11Mlr3gkE7IpBlBeQ30gJ5uGXfbxTI=";
-  };
-
-  cargoDeps = rustPlatform.fetchCargoVendor {
-    inherit (finalAttrs) pname version src;
-    hash = "sha256-OmWW3+nCx8a0X25kKQ97+MJlCb7mOh9WN4zI+3oOTd4=";
   };
 
   nativeBuildInputs = with rustPlatform; [
@@ -37,16 +31,16 @@ buildPythonPackage (finalAttrs: {
     pkg-config
   ];
 
+  buildInputs = [ openssl ];
+
   env.SWAGGER_UI_DOWNLOAD_URL =
     let
       swaggerUi = fetchurl {
-        url = "https://github.com/swagger-api/swagger-ui/archive/refs/tags/v5.17.14.zip";
         hash = "sha256-SBJE0IEgl7Efuu73n3HZQrFxYX+cn5UU5jrL4T5xzNw=";
+        url = "https://github.com/swagger-api/swagger-ui/archive/refs/tags/v5.17.14.zip";
       };
     in
     "file://${swaggerUi}";
-
-  buildInputs = [ openssl ];
 
   nativeCheckInputs = [
     pydantic
@@ -55,7 +49,14 @@ buildPythonPackage (finalAttrs: {
     requests
   ];
 
-  pythonImportsCheck = [ "cloudcheck" ];
+  preCheck = ''
+    rm -rf cloudcheck
+  '';
+
+  cargoDeps = rustPlatform.fetchCargoVendor {
+    inherit (finalAttrs) pname version src;
+    hash = "sha256-OmWW3+nCx8a0X25kKQ97+MJlCb7mOh9WN4zI+3oOTd4=";
+  };
 
   disabledTestPaths = [
     # Test requires network access
@@ -70,9 +71,8 @@ buildPythonPackage (finalAttrs: {
     "test_lookup_with_ssl_verification_disabled"
   ];
 
-  preCheck = ''
-    rm -rf cloudcheck
-  '';
+  pyproject = true;
+  pythonImportsCheck = [ "cloudcheck" ];
 
   meta = {
     description = "Module to check whether an IP address or hostname belongs to popular cloud providers";

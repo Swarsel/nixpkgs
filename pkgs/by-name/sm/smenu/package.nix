@@ -6,8 +6,8 @@
 }:
 
 stdenv.mkDerivation (finalAttrs: {
-  version = "1.5.0";
   pname = "smenu";
+  version = "1.5.0";
 
   src = fetchFromGitHub {
     owner = "p-gen";
@@ -19,13 +19,15 @@ stdenv.mkDerivation (finalAttrs: {
   buildInputs = [ ncurses ];
 
   meta = {
-    homepage = "https://github.com/p-gen/smenu";
     description = "Terminal selection utility";
+
     longDescription = ''
       Terminal utility that allows you to use words coming from the standard
       input to create a nice selection window just below the cursor. Once done,
       your selection will be sent to standard output.
     '';
+
+    homepage = "https://github.com/p-gen/smenu";
     license = lib.licenses.gpl2Only;
     maintainers = with lib.maintainers; [ matthiasbeyer ];
     platforms = lib.platforms.unix;

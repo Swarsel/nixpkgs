@@ -2,16 +2,16 @@
   lib,
   stdenv,
   fetchurl,
-  fetchpatch,
   autoconf,
   bison,
   boost,
+  fetchpatch,
   flex,
   gputils,
   texinfo,
   zlib,
-  withGputils ? false,
   excludePorts ? [ ],
+  withGputils ? false,
 }:
 
 assert
@@ -54,7 +54,31 @@ stdenv.mkDerivation (finalAttrs: {
     "man"
   ];
 
-  enableParallelBuilding = true;
+  patches = [
+    # Fix build with gcc15
+    # https://sourceforge.net/p/sdcc/bugs/3846/
+    (fetchpatch {
+      hash = "sha256-xGilNetecPBj2VV3ebmln5BKqs3OoWFf6y2S3TBTHMQ=";
+      name = "sdcc-fix-aslink-elf-signature.patch";
+      url = "https://src.fedoraproject.org/rpms/sdcc/raw/4a7c2a7e32369461eb451fc6f4d678a010135afc/f/sdcc-4.4.0-aslink.patch";
+    })
+  ];
+
+  # sdcc 4.5.0 massively rewrote sim/ucsim/Makefile.in, and lost the `.PHONY`
+  # rule in the process. As a result, on macOS (which uses a case-insensitive
+  # filesystem), the INSTALL file keeps the `install` target in the ucsim
+  # directory from running. Nothing else creates the `man` output, causing the
+  # entire build to fail.
+  #
+  # TODO: remove this when updating to the next release - it's been fixed in
+  # upstream sdcc r15384 <https://sourceforge.net/p/sdcc/code/15384/>.
+  postPatch = ''
+    if grep -q '\.PHONY:.*install' sim/ucsim/Makefile.in; then
+      echo 'Upstream has added `.PHONY: install` rule; must remove `postPatch` from the Nix file.' >&2
+      exit 1
+    fi
+    echo '.PHONY: install' >> sim/ucsim/Makefile.in
+  '';
 
   nativeBuildInputs = [
     autoconf
@@ -70,33 +94,6 @@ stdenv.mkDerivation (finalAttrs: {
   ++ lib.optionals withGputils [
     gputils
   ];
-
-  patches = [
-    # Fix build with gcc15
-    # https://sourceforge.net/p/sdcc/bugs/3846/
-    (fetchpatch {
-      name = "sdcc-fix-aslink-elf-signature.patch";
-      url = "https://src.fedoraproject.org/rpms/sdcc/raw/4a7c2a7e32369461eb451fc6f4d678a010135afc/f/sdcc-4.4.0-aslink.patch";
-      hash = "sha256-xGilNetecPBj2VV3ebmln5BKqs3OoWFf6y2S3TBTHMQ=";
-    })
-  ];
-
-  # sdcc 4.5.0 massively rewrote sim/ucsim/Makefile.in, and lost the `.PHONY`
-  # rule in the process. As a result, on macOS (which uses a case-insensitive
-  # filesystem), the INSTALL file keeps the `install` target in the ucsim
-  # directory from running. Nothing else creates the `man` output, causing the
-  # entire build to fail.
-  #
-  # TODO: remove this when updating to the next release - it's been fixed in
-  # upstream sdcc r15384 <https://sourceforge.net/p/sdcc/code/15384/>.
-
-  postPatch = ''
-    if grep -q '\.PHONY:.*install' sim/ucsim/Makefile.in; then
-      echo 'Upstream has added `.PHONY: install` rule; must remove `postPatch` from the Nix file.' >&2
-      exit 1
-    fi
-    echo '.PHONY: install' >> sim/ucsim/Makefile.in
-  '';
 
   configureFlags =
     let
@@ -115,9 +112,11 @@ stdenv.mkDerivation (finalAttrs: {
     fi
   '';
 
+  enableParallelBuilding = true;
+
   meta = {
-    homepage = "https://sdcc.sourceforge.net/";
     description = "Small Device C Compiler";
+
     longDescription = ''
       SDCC is a retargettable, optimizing ANSI - C compiler suite that targets
       the Intel MCS51 based microprocessors (8031, 8032, 8051, 8052, etc.),
@@ -126,12 +125,16 @@ stdenv.mkDerivation (finalAttrs: {
       2000/3000, Rabbit 3000A). Work is in progress on supporting the Microchip
       PIC16 and PIC18 targets. It can be retargeted for other microprocessors.
     '';
+
+    homepage = "https://sdcc.sourceforge.net/";
     license = if withGputils then lib.licenses.unfreeRedistributable else lib.licenses.gpl2Plus;
-    mainProgram = "sdcc";
+
     maintainers = with lib.maintainers; [
       bjornfor
       yorickvp
     ];
+
     platforms = lib.platforms.all;
+    mainProgram = "sdcc";
   };
 })

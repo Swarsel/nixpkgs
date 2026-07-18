@@ -1,16 +1,14 @@
 {
   lib,
-  stdenvNoCC,
   fetchurl,
+  stdenvNoCC,
 }:
 
 stdenvNoCC.mkDerivation {
   pname = "zscaler-cacert";
-
   # check it on the DHL keyserver homepage ('validity period')
   # and using openssl:
   # openssl x509 -startdate -noout -in ZscalerRootCertificate-2048-SHA256.crt
-
   version = "0-unstable-2025-02-02";
 
   src = fetchurl {
@@ -18,13 +16,12 @@ stdenvNoCC.mkDerivation {
     hash = "sha256-HrQ7am1IteSP1O3mz3weay1NQG8aj3EUt1ZjYRbOEQA=";
   };
 
-  dontUnpack = true;
-
-  dontBuild = true;
-
   installPhase = ''
     install -Dm644 $src $out/etc/ssl/certs/zscaler-ca.crt
   '';
+
+  dontBuild = true;
+  dontUnpack = true;
 
   meta = {
     description = "ZScaler Root CA certificate";

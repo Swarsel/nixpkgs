@@ -9,8 +9,8 @@ let
   version = "8.57";
 in
 maven.buildMavenPackage {
-  pname = "megabasterd";
   inherit version;
+  pname = "megabasterd";
 
   src = fetchFromGitHub {
     owner = "tonikelope";
@@ -18,8 +18,6 @@ maven.buildMavenPackage {
     tag = "v${version}";
     hash = "sha256-6PKBzQA3lBa9/7J8bymGmnW3OPsRV4GgZ7dc7H6fOuE=";
   };
-
-  mvnHash = "sha256-JZ8INISDHPVhxylKwQc2DybPqxfwcGpkWxDhq8Fpqt8=";
 
   nativeBuildInputs = [ makeWrapper ];
 
@@ -36,6 +34,8 @@ maven.buildMavenPackage {
 
     runHook postInstall
   '';
+
+  mvnHash = "sha256-JZ8INISDHPVhxylKwQc2DybPqxfwcGpkWxDhq8Fpqt8=";
 
   meta = {
     description = "Yet another unofficial (and ugly) cross-platform MEGA downloader/uploader/streaming suite";

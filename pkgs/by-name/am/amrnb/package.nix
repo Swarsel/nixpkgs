@@ -8,10 +8,6 @@
 stdenv.mkDerivation {
   pname = "amrnb";
   version = "11.0.0.0";
-  srcAmr = fetchurl {
-    url = "https://www.3gpp.org/ftp/Specs/latest/Rel-11/26_series/26104-b00.zip";
-    sha256 = "1wf8ih0hk7w20vdlnw7jb7w73v15hbxgbvmq4wq7h2ghn0j8ppr3";
-  };
 
   src = fetchurl {
     url = "http://www.penguin.cz/~utx/ftp/amr/amrnb-11.0.0.0.tar.bz2";
@@ -29,9 +25,14 @@ stdenv.mkDerivation {
     cp $srcAmr 26104-b00.zip
   '';
 
+  srcAmr = fetchurl {
+    sha256 = "1wf8ih0hk7w20vdlnw7jb7w73v15hbxgbvmq4wq7h2ghn0j8ppr3";
+    url = "https://www.3gpp.org/ftp/Specs/latest/Rel-11/26_series/26104-b00.zip";
+  };
+
   meta = {
-    homepage = "http://www.penguin.cz/~utx/amr";
     description = "AMR Narrow-Band Codec";
+    homepage = "http://www.penguin.cz/~utx/amr";
     # The wrapper code is free, but not the libraries from 3gpp.
     # It's a source code reference implementation with patents and licenses on
     # some countries, not redistributable.

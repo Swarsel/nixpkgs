@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   poetry-core,
   pydantic,
   pytestCheckHook,
@@ -11,7 +11,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "countryinfo";
   version = "1.0.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "porimol";
@@ -20,8 +19,7 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-PE9XiVH6XE+OSySL5Lo0MPWyIEX8xgeHQB7MttMfmz8=";
   };
 
-  pythonRelaxDeps = [ "typer" ];
-
+  nativeCheckInputs = [ pytestCheckHook ];
   build-system = [ poetry-core ];
 
   dependencies = [
@@ -29,9 +27,9 @@ buildPythonPackage (finalAttrs: {
     typer
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "countryinfo" ];
-
-  nativeCheckInputs = [ pytestCheckHook ];
+  pythonRelaxDeps = [ "typer" ];
 
   meta = {
     description = "Data about countries, ISO info and states/provinces within them";

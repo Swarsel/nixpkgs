@@ -5,13 +5,10 @@
 }:
 
 stdenv.mkDerivation {
-  pname = "corepack-nodejs";
   inherit (nodejs) version;
-
+  pname = "corepack-nodejs";
   nativeBuildInputs = [ nodejs.corepack ];
   buildInputs = [ nodejs ];
-
-  dontUnpack = true;
 
   installPhase = ''
     mkdir -p $out/bin
@@ -19,6 +16,8 @@ stdenv.mkDerivation {
     # Enabling npm caused some crashes - leaving out for now
     # corepack enable --install-directory $out/bin npm
   '';
+
+  dontUnpack = true;
 
   meta = {
     description = "Wrappers for npm, pnpm and Yarn via Node.js Corepack";

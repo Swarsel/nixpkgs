@@ -1,9 +1,9 @@
 {
   lib,
+  fetchFromGitHub,
   buildPythonPackage,
   certifi,
   cryptography,
-  fetchFromGitHub,
   poetry-core,
   pycryptodome,
   pytestCheckHook,
@@ -15,7 +15,6 @@
 buildPythonPackage rec {
   pname = "nethsm";
   version = "2.1.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "Nitrokey";
@@ -24,7 +23,10 @@ buildPythonPackage rec {
     hash = "sha256-1bU3C8dlErDpHQIqsEabi92VPC91/wTNvZnx2dDHcmw=";
   };
 
-  pythonRelaxDeps = true;
+  nativeCheckInputs = [
+    pycryptodome
+    pytestCheckHook
+  ];
 
   build-system = [ poetry-core ];
 
@@ -36,13 +38,6 @@ buildPythonPackage rec {
     urllib3
   ];
 
-  nativeCheckInputs = [
-    pycryptodome
-    pytestCheckHook
-  ];
-
-  pythonImportsCheck = [ "nethsm" ];
-
   disabledTestPaths = [
     # Tests require a running Docker instance
     "tests/test_nethsm_config.py"
@@ -52,6 +47,10 @@ buildPythonPackage rec {
     "tests/test_nethsm_system.py"
     "tests/test_nethsm_users.py"
   ];
+
+  pyproject = true;
+  pythonImportsCheck = [ "nethsm" ];
+  pythonRelaxDeps = true;
 
   meta = {
     description = "Client-side Python SDK for NetHSM";

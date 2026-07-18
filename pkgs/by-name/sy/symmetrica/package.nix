@@ -1,6 +1,6 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitLab,
   autoreconfHook,
   pkg-config,
@@ -38,9 +38,9 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Collection of routines for representation theory and combinatorics";
-    license = lib.licenses.isc;
-    teams = [ lib.teams.sage ];
-    platforms = lib.platforms.unix;
     homepage = "https://gitlab.com/sagemath/symmetrica";
+    license = lib.licenses.isc;
+    platforms = lib.platforms.unix;
+    teams = [ lib.teams.sage ];
   };
 })

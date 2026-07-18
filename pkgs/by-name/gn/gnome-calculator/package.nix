@@ -1,29 +1,29 @@
 {
-  stdenv,
   lib,
+  stdenv,
+  fetchurl,
   appstream,
   blueprint-compiler,
-  meson,
-  ninja,
-  vala,
-  gettext,
-  itstool,
-  fetchurl,
   fetchpatch,
-  pkg-config,
-  libxml2,
-  gtk4,
+  gettext,
   glib,
-  gtksourceview5,
-  wrapGAppsHook4,
-  gnome,
-  mpfr,
   gmp,
-  libsoup_3,
-  libmpc,
-  libadwaita,
+  gnome,
   gsettings-desktop-schemas,
+  gtk4,
+  gtksourceview5,
+  itstool,
+  libadwaita,
   libgee,
+  libmpc,
+  libsoup_3,
+  libxml2,
+  meson,
+  mpfr,
+  ninja,
+  pkg-config,
+  vala,
+  wrapGAppsHook4,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -38,8 +38,8 @@ stdenv.mkDerivation (finalAttrs: {
   patches = [
     # Fix tests with GNU MPC 1.4.0
     (fetchpatch {
-      url = "https://gitlab.gnome.org/GNOME/gnome-calculator/-/commit/c9bf69ce3688390a584ca7571ea5fcda5aea8863.patch";
       hash = "sha256-FoV6SUprVdNcRORpoi+bNMTjzMM8bmXuze+6C9lqF8E=";
+      url = "https://gitlab.gnome.org/GNOME/gnome-calculator/-/commit/c9bf69ce3688390a584ca7571ea5fcda5aea8863.patch";
     })
   ];
 
@@ -83,11 +83,11 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   meta = {
-    homepage = "https://apps.gnome.org/Calculator/";
     description = "Application that solves mathematical equations and is suitable as a default application in a Desktop environment";
-    mainProgram = "gnome-calculator";
-    teams = [ lib.teams.gnome ];
+    homepage = "https://apps.gnome.org/Calculator/";
     license = lib.licenses.gpl3Plus;
     platforms = lib.platforms.unix;
+    mainProgram = "gnome-calculator";
+    teams = [ lib.teams.gnome ];
   };
 })

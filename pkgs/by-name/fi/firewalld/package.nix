@@ -4,8 +4,8 @@
   fetchFromGitHub,
   autoconf,
   automake,
-  docbook_xml_dtd_42,
   docbook-xsl-nons,
+  docbook_xml_dtd_42,
   glib,
   gobject-introspection,
   gtk3,
@@ -18,13 +18,13 @@
   libxml2,
   libxslt,
   networkmanager,
+  nixosTests,
   pkg-config,
   python3,
   qt6,
   sysctl,
   wrapGAppsNoGuiHook,
   withGui ? false,
-  nixosTests,
 }:
 
 let
@@ -44,9 +44,6 @@ in
 stdenv.mkDerivation (finalAttrs: {
   pname = "firewalld";
   version = "2.5.0";
-
-  __structuredAttrs = true;
-  strictDeps = true;
 
   src = fetchFromGitHub {
     owner = "firewalld";
@@ -73,6 +70,8 @@ stdenv.mkDerivation (finalAttrs: {
           --replace-fail /usr "$out"
     done
   '';
+
+  strictDeps = true;
 
   nativeBuildInputs = [
     autoconf
@@ -109,14 +108,6 @@ stdenv.mkDerivation (finalAttrs: {
     qt6.qtbase
   ];
 
-  preConfigure = ''
-    ./autogen.sh
-  '';
-
-  ac_cv_path_MODPROBE = lib.getExe' kmod "modprobe";
-  ac_cv_path_RMMOD = lib.getExe' kmod "rmmod";
-  ac_cv_path_SYSCTL = lib.getExe' sysctl "sysctl";
-
   configureFlags = [
     "--with-iptables=${lib.getExe' iptables "iptables"}"
     "--with-iptables-restore=${lib.getExe' iptables "iptables-restore"}"
@@ -127,6 +118,10 @@ stdenv.mkDerivation (finalAttrs: {
     "--with-ipset=${lib.getExe' ipset "ipset"}"
   ];
 
+  preConfigure = ''
+    ./autogen.sh
+  '';
+
   postInstall = ''
     rm -r $out/share/firewalld/testsuite
   ''
@@ -136,9 +131,6 @@ stdenv.mkDerivation (finalAttrs: {
     rm $out/share/applications/firewall-config.desktop
     rm $out/share/metainfo/org.firewalld.firewall-config.metainfo.xml
   '';
-
-  dontWrapGApps = true;
-  dontWrapQtApps = true;
 
   preFixup = ''
     makeWrapperArgs+=("''${gappsWrapperArgs[@]}")
@@ -153,6 +145,13 @@ stdenv.mkDerivation (finalAttrs: {
     wrapPythonProgramsIn "$out/bin" "$out ${pythonPath}"
   '';
 
+  __structuredAttrs = true;
+  ac_cv_path_MODPROBE = lib.getExe' kmod "modprobe";
+  ac_cv_path_RMMOD = lib.getExe' kmod "rmmod";
+  ac_cv_path_SYSCTL = lib.getExe' sysctl "sysctl";
+  dontWrapGApps = true;
+  dontWrapQtApps = true;
+
   passthru.tests = {
     inherit (nixosTests) firewalld firewall-firewalld;
   };
@@ -160,9 +159,9 @@ stdenv.mkDerivation (finalAttrs: {
   meta = {
     description = "Firewall daemon with D-Bus interface";
     homepage = "https://firewalld.org";
-    downloadPage = "https://github.com/firewalld/firewalld/releases";
     license = lib.licenses.gpl2Plus;
     maintainers = with lib.maintainers; [ prince213 ];
     platforms = lib.platforms.linux;
+    downloadPage = "https://github.com/firewalld/firewalld/releases";
   };
 })

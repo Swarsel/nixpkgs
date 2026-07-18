@@ -9,21 +9,21 @@
 buildPythonPackage rec {
   pname = "littleutils";
   version = "0.2.4";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
     hash = "sha256-x4NbAQIM7ULikRGLfXj7FrwtmhtPP0LzyzeHu02lPRk=";
   };
 
+  # Module has no tests
+  doCheck = false;
+
   build-system = [
     setuptools
     setuptools-scm
   ];
 
-  # Module has no tests
-  doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "littleutils" ];
 
   meta = {

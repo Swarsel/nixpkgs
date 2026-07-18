@@ -2,33 +2,33 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  pkg-config,
   autoreconfHook,
-  gtk-doc,
-  gettext,
-  yelp-tools,
   caja,
-  gtk3,
-  glib,
-  libxml2,
-  libarchive,
-  libsecret,
-  poppler,
-  mate-desktop,
-  itstool,
-  hicolor-icon-theme,
-  texlive,
-  wrapGAppsHook3,
-  enableEpub ? true,
-  webkitgtk_4_1,
-  enableDjvu ? true,
   djvulibre,
-  enablePostScript ? true,
-  libspectre,
-  enableXps ? true,
-  libgxps,
-  enableImages ? false,
+  gettext,
   gitUpdater,
+  glib,
+  gtk-doc,
+  gtk3,
+  hicolor-icon-theme,
+  itstool,
+  libarchive,
+  libgxps,
+  libsecret,
+  libspectre,
+  libxml2,
+  mate-desktop,
+  pkg-config,
+  poppler,
+  texlive,
+  webkitgtk_4_1,
+  wrapGAppsHook3,
+  yelp-tools,
+  enableDjvu ? true,
+  enableEpub ? true,
+  enableImages ? false,
+  enablePostScript ? true,
+  enableXps ? true,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -39,8 +39,8 @@ stdenv.mkDerivation (finalAttrs: {
     owner = "mate-desktop";
     repo = "atril";
     tag = "v${finalAttrs.version}";
-    fetchSubmodules = true;
     hash = "sha256-d5wkMsO3iR3qudL6JXmybDWkdvRgc53FFuf9S6wPEtU=";
+    fetchSubmodules = true;
   };
 
   nativeBuildInputs = [
@@ -82,11 +82,8 @@ stdenv.mkDerivation (finalAttrs: {
     ++ lib.optionals enableXps [ "--enable-xps" ]
     ++ lib.optionals enableImages [ "--enable-pixbuf" ];
 
-  env.NIX_CFLAGS_COMPILE = "-I${glib.dev}/include/gio-unix-2.0";
-
   makeFlags = [ "cajaextensiondir=$$out/lib/caja/extensions-2.0" ];
-
-  enableParallelBuilding = true;
+  env.NIX_CFLAGS_COMPILE = "-I${glib.dev}/include/gio-unix-2.0";
 
   postInstall = ''
     substituteInPlace $out/share/thumbnailers/atril.thumbnailer \
@@ -94,9 +91,11 @@ stdenv.mkDerivation (finalAttrs: {
       --replace-fail "Exec=atril-thumbnailer" "Exec=$out/bin/atril-thumbnailer"
   '';
 
+  enableParallelBuilding = true;
+
   passthru.updateScript = gitUpdater {
-    rev-prefix = "v";
     odd-unstable = true;
+    rev-prefix = "v";
   };
 
   meta = {

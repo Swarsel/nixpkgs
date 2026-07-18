@@ -1,10 +1,9 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
-
-  versionCheckHook,
+  buildGoModule,
   nix-update-script,
+  versionCheckHook,
 }:
 buildGoModule (finalAttrs: {
   pname = "lazyhetzner";
@@ -15,8 +14,8 @@ buildGoModule (finalAttrs: {
     repo = "lazyhetzner";
     tag = "v${finalAttrs.version}";
     hash = "sha256-yQgDegmwDD70mX38SInP2KhO3GdLpFY6Hr/JxP4RRoI=";
-
     leaveDotGit = true;
+
     postFetch = ''
       cd "$out"
       git rev-parse HEAD > $out/COMMIT
@@ -27,12 +26,6 @@ buildGoModule (finalAttrs: {
 
   vendorHash = "sha256-g+HWDhMNrPUsszmosClthEHS60Cp7zjt+50Jt9zqfTE=";
 
-  ldflags = [
-    "-s"
-    "-w"
-    "-X github.com/grammeaway/lazyhetzner/cmd.version=v${finalAttrs.version}"
-  ];
-
   preBuild = ''
     ldflags+=" -X github.com/grammeaway/lazyhetzner/cmd.commit=$(cat COMMIT)"
     ldflags+=" -X github.com/grammeaway/lazyhetzner/cmd.date=$(cat SOURCE_DATE_EPOCH)"
@@ -40,8 +33,14 @@ buildGoModule (finalAttrs: {
 
   doInstallCheck = true;
   nativeInstallCheckInputs = [ versionCheckHook ];
-  versionCheckProgramArg = "version";
 
+  ldflags = [
+    "-s"
+    "-w"
+    "-X github.com/grammeaway/lazyhetzner/cmd.version=v${finalAttrs.version}"
+  ];
+
+  versionCheckProgramArg = "version";
   passthru.updateScript = nix-update-script { };
 
   meta = {

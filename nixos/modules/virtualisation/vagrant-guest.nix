@@ -16,9 +16,6 @@ let
   '';
 in
 {
-  # Enable the OpenSSH daemon.
-  services.openssh.enable = true;
-
   # Packages used by Vagrant
   environment.systemPackages = with pkgs; [
     findutils
@@ -29,33 +26,39 @@ in
     rsync
   ];
 
+  security.sudo.wheelNeedsPassword = false;
+  security.sudo-rs.wheelNeedsPassword = false;
+  # Enable the OpenSSH daemon.
+  services.openssh.enable = true;
+
+  systemd.services.install-vagrant-ssh-key = {
+    after = [ "fs.target" ];
+    description = "Vagrant SSH key install (if needed)";
+
+    serviceConfig = {
+      ExecStart = "${install-vagrant-ssh-key}/bin/install-vagrant-ssh-key";
+      # So it won't be (needlessly) restarted:
+      RemainAfterExit = true;
+      User = "vagrant";
+    };
+
+    wantedBy = [ "multi-user.target" ];
+    wants = [ "fs.target" ];
+  };
+
   users.extraUsers.vagrant = {
-    isNormalUser = true;
     createHome = true;
     description = "Vagrant user account";
+
     extraGroups = [
       "users"
       "wheel"
     ];
+
     home = "/home/vagrant";
+    isNormalUser = true;
     password = "vagrant";
-    useDefaultShell = true;
     uid = 1000;
+    useDefaultShell = true;
   };
-
-  systemd.services.install-vagrant-ssh-key = {
-    description = "Vagrant SSH key install (if needed)";
-    after = [ "fs.target" ];
-    wants = [ "fs.target" ];
-    wantedBy = [ "multi-user.target" ];
-    serviceConfig = {
-      ExecStart = "${install-vagrant-ssh-key}/bin/install-vagrant-ssh-key";
-      User = "vagrant";
-      # So it won't be (needlessly) restarted:
-      RemainAfterExit = true;
-    };
-  };
-
-  security.sudo.wheelNeedsPassword = false;
-  security.sudo-rs.wheelNeedsPassword = false;
 }

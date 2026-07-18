@@ -8,7 +8,6 @@
 buildPythonPackage rec {
   pname = "jdcal";
   version = "1.4.1";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
@@ -20,6 +19,8 @@ buildPythonPackage rec {
   checkPhase = ''
     py.test
   '';
+
+  format = "setuptools";
 
   meta = {
     description = "Module containing functions for converting between Julian dates and calendar dates";

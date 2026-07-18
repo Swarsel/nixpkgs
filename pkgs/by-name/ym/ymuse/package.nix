@@ -2,14 +2,14 @@
   lib,
   fetchFromGitHub,
   buildGoModule,
-  wrapGAppsHook3,
-  pkg-config,
+  gdk-pixbuf,
+  gettext,
   glib,
   gobject-introspection,
   gtk3,
-  gdk-pixbuf,
-  gettext,
   librsvg,
+  pkg-config,
+  wrapGAppsHook3,
 }:
 
 buildGoModule (finalAttrs: {
@@ -22,8 +22,6 @@ buildGoModule (finalAttrs: {
     rev = "v${finalAttrs.version}";
     hash = "sha256-WbIeqOAhdqxU8EvHEsG7ASwy5xZG1domZKT5ccOggHg=";
   };
-
-  vendorHash = "sha256-YT4JiieVI6/t4inezE3K2WQBI51W+/MoWr7R/uBzn+8=";
 
   nativeBuildInputs = [
     pkg-config
@@ -38,6 +36,10 @@ buildGoModule (finalAttrs: {
     gtk3
     librsvg
   ];
+
+  vendorHash = "sha256-YT4JiieVI6/t4inezE3K2WQBI51W+/MoWr7R/uBzn+8=";
+  # IDK how to deal with tests that open up display.
+  doCheck = false;
 
   postInstall = ''
     install -Dm644 ./resources/com.yktoo.ymuse.desktop -t $out/share/applications
@@ -61,15 +63,12 @@ buildGoModule (finalAttrs: {
     done
   '';
 
-  # IDK how to deal with tests that open up display.
-  doCheck = false;
-
   meta = {
-    homepage = "https://yktoo.com/en/software/ymuse/";
     description = "GTK client for Music Player Daemon (MPD)";
+    homepage = "https://yktoo.com/en/software/ymuse/";
     license = lib.licenses.asl20;
     maintainers = [ ];
-    mainProgram = "ymuse";
     platforms = lib.platforms.unix;
+    mainProgram = "ymuse";
   };
 })

@@ -1,18 +1,16 @@
 {
   lib,
-  buildGoModule,
-  fetchFromGitHub,
   fetchurl,
-  runCommand,
+  fetchFromGitHub,
+  buildGoModule,
   jq,
+  runCommand,
   testers,
 }:
 
 buildGoModule (finalAttrs: {
   pname = "lark-cli";
   version = "1.0.58";
-
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "larksuite";
@@ -21,16 +19,12 @@ buildGoModule (finalAttrs: {
     hash = "sha256-MqaxcmzX/79vM2EI8wD4ZAFsUfqWvPAovlpmuDP1IWU=";
   };
 
-  vendorHash = "sha256-M0/Y62Y+M/P1B/YIDjX5bEyB/GKihCWQakTWVd7zvBg=";
-
-  subPackages = [ "." ];
-
   postPatch =
     let
       metaDataRaw = fetchurl {
+        hash = "sha256-W6KOtDW6gkZIqGa0A5QL0rVjVkRjM+gwW4S3AddPN1M=";
         name = "meta_dataraw.json";
         url = "https://web.archive.org/web/20260626061256/https://open.feishu.cn/api/tools/open/api_definition?protocol=meta&client_version=v${finalAttrs.version}";
-        hash = "sha256-W6KOtDW6gkZIqGa0A5QL0rVjVkRjM+gwW4S3AddPN1M=";
       };
 
       metaData =
@@ -46,9 +40,13 @@ buildGoModule (finalAttrs: {
       cp ${metaData} internal/registry/meta_data.json
     '';
 
+  vendorHash = "sha256-M0/Y62Y+M/P1B/YIDjX5bEyB/GKihCWQakTWVd7zvBg=";
+
   postInstall = ''
     mv $out/bin/cli $out/bin/lark-cli
   '';
+
+  __structuredAttrs = true;
 
   ldflags = [
     "-s"
@@ -57,10 +55,12 @@ buildGoModule (finalAttrs: {
     "-X github.com/larksuite/cli/internal/build.Date=2026-06-01"
   ];
 
+  subPackages = [ "." ];
+
   passthru.tests.version = testers.testVersion {
-    package = finalAttrs.finalPackage;
-    command = "lark-cli --version";
     version = "v${finalAttrs.version}";
+    command = "lark-cli --version";
+    package = finalAttrs.finalPackage;
   };
 
   meta = {

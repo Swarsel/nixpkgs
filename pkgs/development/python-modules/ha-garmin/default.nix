@@ -1,19 +1,18 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
+  buildPythonPackage,
   curl-cffi,
   pydantic,
   pytest-asyncio,
   pytestCheckHook,
   requests,
+  setuptools,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "ha-garmin";
   version = "0.1.29";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "cyberjunky";
@@ -21,6 +20,11 @@ buildPythonPackage (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-mny9QnmgRaCFZf4pExdIGDlljw6nSPhU8kB9rzSHymg=";
   };
+
+  nativeCheckInputs = [
+    pytest-asyncio
+    pytestCheckHook
+  ];
 
   build-system = [ setuptools ];
 
@@ -30,16 +34,12 @@ buildPythonPackage (finalAttrs: {
     requests
   ];
 
-  nativeCheckInputs = [
-    pytest-asyncio
-    pytestCheckHook
-  ];
-
   disabledTests = [
     # Upstream test relies on a field not present in the test fixture
     "test_fetch_core_data_sleep_fields"
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "ha_garmin" ];
 
   meta = {

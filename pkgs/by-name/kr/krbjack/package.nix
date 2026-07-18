@@ -7,7 +7,6 @@
 python3.pkgs.buildPythonApplication (finalAttrs: {
   pname = "krbjack";
   version = "1.2.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "almandin";
@@ -16,9 +15,8 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     hash = "sha256-rvK0I8WlXqJtau9f+6ximfzYCjX21dPIyDN56IMI0gE=";
   };
 
-  pythonRelaxDeps = [
-    "impacket"
-  ];
+  # Project has no tests
+  doCheck = false;
 
   build-system = with python3.pkgs; [
     poetry-core
@@ -31,11 +29,14 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     scapy
   ];
 
-  # Project has no tests
-  doCheck = false;
+  pyproject = true;
 
   pythonImportsCheck = [
     "krbjack"
+  ];
+
+  pythonRelaxDeps = [
+    "impacket"
   ];
 
   meta = {

@@ -1,9 +1,9 @@
 {
   lib,
+  fetchFromGitHub,
   aiohttp,
   aresponses,
   buildPythonPackage,
-  fetchFromGitHub,
   pytest-asyncio,
   pytestCheckHook,
   setuptools,
@@ -12,7 +12,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "pytautulli";
   version = "23.1.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "ludeeus";
@@ -36,10 +35,6 @@ buildPythonPackage (finalAttrs: {
       --replace-fail "import async_timeout" ""
   '';
 
-  build-system = [ setuptools ];
-
-  dependencies = [ aiohttp ];
-
   nativeCheckInputs = [ pytestCheckHook ];
 
   checkInputs = [
@@ -47,11 +42,15 @@ buildPythonPackage (finalAttrs: {
     pytest-asyncio
   ];
 
+  build-system = [ setuptools ];
+  dependencies = [ aiohttp ];
+
   disabledTests = [
     # api url mismatch (port missing)
     "test_api_url"
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "pytautulli" ];
 
   meta = {

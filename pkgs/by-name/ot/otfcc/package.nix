@@ -17,8 +17,6 @@ stdenv.mkDerivation rec {
     sha256 = "1nrkzpqklfpqsccji4ans40rj88l80cv7dpxwx4g577xrvk13a0f";
   };
 
-  nativeBuildInputs = [ premake5 ];
-
   patches = [
     ./fix-aarch64.patch
     ./move-makefiles.patch
@@ -29,6 +27,7 @@ stdenv.mkDerivation rec {
       --replace-fail 'flags { "StaticRuntime" }' 'staticruntime "On"'
   '';
 
+  nativeBuildInputs = [ premake5 ];
   buildFlags = lib.optionals stdenv.hostPlatform.isAarch64 [ "config=release_arm" ];
 
   installPhase = ''
@@ -42,7 +41,7 @@ stdenv.mkDerivation rec {
     description = "Optimized OpenType builder and inspector";
     homepage = "https://github.com/caryll/otfcc";
     license = lib.licenses.asl20;
-    platforms = lib.platforms.unix;
     maintainers = [ ];
+    platforms = lib.platforms.unix;
   };
 }

@@ -2,25 +2,25 @@
   lib,
   stdenv,
   fetchFromGitHub,
+  SDL2,
+  boost,
   cmake,
   doxygen,
-  graphviz,
-  makeWrapper,
-  boost,
-  SDL2,
-  python3,
   freetype,
-  openal,
+  glew,
+  graphviz,
+  libGL,
+  libGLU,
+  libjpeg,
   libogg,
-  libvorbis,
-  zlib,
   libpng,
   libtiff,
-  libjpeg,
-  libGLU,
-  libGL,
-  glew,
+  libvorbis,
   libxslt,
+  makeWrapper,
+  openal,
+  python3,
+  zlib,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -33,6 +33,13 @@ stdenv.mkDerivation (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-/pLNOkxjuh/vdQQZQ9BzPCMygYPMDJDJuSXxn5lJt2o=";
   };
+
+  nativeBuildInputs = [
+    cmake
+    doxygen
+    graphviz
+    makeWrapper
+  ];
 
   buildInputs = [
     (boost.override {
@@ -52,13 +59,6 @@ stdenv.mkDerivation (finalAttrs: {
     libvorbis
     openal
     zlib
-  ];
-
-  nativeBuildInputs = [
-    cmake
-    doxygen
-    graphviz
-    makeWrapper
   ];
 
   # as of 0.5.0.1 FreeOrion doesn't work with "-DOpenGL_GL_PREFERENCE=GLVND"
@@ -84,11 +84,13 @@ stdenv.mkDerivation (finalAttrs: {
   meta = {
     description = "Free, open source, turn-based space empire and galactic conquest (4X) computer game";
     homepage = "https://www.freeorion.org/";
+
     license = with lib.licenses; [
       gpl2Only
       cc-by-sa-30
     ];
-    platforms = lib.platforms.linux;
+
     maintainers = [ ];
+    platforms = lib.platforms.linux;
   };
 })

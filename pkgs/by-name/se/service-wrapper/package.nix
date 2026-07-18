@@ -1,9 +1,9 @@
 {
   lib,
   stdenv,
-  runCommand,
-  replaceVarsWith,
   coreutils,
+  replaceVarsWith,
+  runCommand,
 }:
 
 let
@@ -17,6 +17,7 @@ runCommand "${pname}-${version}"
     script = replaceVarsWith {
       src = ./service-wrapper.sh;
       isExecutable = true;
+
       replacements = {
         inherit (stdenv) shell;
         inherit coreutils;
@@ -25,10 +26,10 @@ runCommand "${pname}-${version}"
 
     meta = {
       description = "Convenient wrapper for the systemctl commands, borrow from Ubuntu";
-      mainProgram = "service";
       license = lib.licenses.gpl2Plus;
-      platforms = lib.platforms.linux;
       maintainers = with lib.maintainers; [ DerTim1 ];
+      platforms = lib.platforms.linux;
+      mainProgram = "service";
       # Shellscript has been modified but upstream source is: https://git.launchpad.net/ubuntu/+source/init-system-helpers
     };
   }

@@ -54,17 +54,20 @@ stdenv.mkDerivation (finalAttrs: {
   meta = {
     description = "GZDoom's music system as a standalone library";
     homepage = "https://github.com/ZDoom/ZMusic";
+
     license = with lib.licenses; [
       free
       gpl3Plus
       lgpl21Plus
       lgpl3Plus
     ];
-    platforms = lib.platforms.unix;
+
     maintainers = with lib.maintainers; [
       lassulus
       Gliczy
       r4v3n6101
     ];
+
+    platforms = lib.platforms.unix;
   };
 })

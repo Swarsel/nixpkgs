@@ -1,30 +1,26 @@
 {
   lib,
-  python3Packages,
   fetchPypi,
+  python3Packages,
 }:
 
 python3Packages.buildPythonApplication (finalAttrs: {
   pname = "zfs-autobackup";
   version = "3.3";
-  pyproject = true;
 
   src = fetchPypi {
     inherit (finalAttrs) version;
-    pname = "zfs_autobackup";
     hash = "sha256-nAc1mdrtIEmUS0uMqOdvV07xP02MFj6F5uCTiCXtnMs=";
+    pname = "zfs_autobackup";
   };
-
-  build-system = with python3Packages; [ setuptools ];
-
-  dependencies = with python3Packages; [ colorama ];
-
-  pythonRemoveDeps = [ "argparse" ];
 
   # tests need zfs filesystem
   doCheck = false;
-
+  build-system = with python3Packages; [ setuptools ];
+  dependencies = with python3Packages; [ colorama ];
+  pyproject = true;
   pythonImportsCheck = [ "zfs_autobackup" ];
+  pythonRemoveDeps = [ "argparse" ];
 
   meta = {
     description = "ZFS backup, replicationand snapshot tool";

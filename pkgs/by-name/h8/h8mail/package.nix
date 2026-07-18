@@ -1,13 +1,12 @@
 {
   lib,
-  python3,
   fetchFromGitHub,
+  python3,
 }:
 
 python3.pkgs.buildPythonApplication (finalAttrs: {
   pname = "h8mail";
   version = "2.5.6";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "khast3x";
@@ -25,6 +24,7 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     requests
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "h8mail" ];
 
   meta = {

@@ -1,14 +1,13 @@
 {
   lib,
-  rel,
+  addonUpdateScript,
   buildKodiAddon,
   fetchzip,
-  addonUpdateScript,
+  rel,
 }:
 
 buildKodiAddon rec {
   pname = "somafm";
-  namespace = "plugin.audio.somafm";
   version = "2.0.1";
 
   src = fetchzip {
@@ -16,16 +15,19 @@ buildKodiAddon rec {
     sha256 = "sha256-auPLm7QFabU4tXJPjTl17KpE+lqWM2Edbd2HrXPRx40=";
   };
 
+  namespace = "plugin.audio.somafm";
+
   passthru = {
     pythonPath = "resources/lib";
+
     updateScript = addonUpdateScript {
       attrPath = "kodi.packages.somafm";
     };
   };
 
   meta = {
-    homepage = "https://github.com/Soma-FM-Kodi-Add-On/plugin.audio.somafm";
     description = "SomaFM addon for Kodi";
+    homepage = "https://github.com/Soma-FM-Kodi-Add-On/plugin.audio.somafm";
     license = lib.licenses.gpl3Plus;
     teams = [ lib.teams.kodi ];
   };

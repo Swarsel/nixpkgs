@@ -1,18 +1,18 @@
 {
   lib,
   stdenv,
-  copyDesktopItems,
   fetchFromGitLab,
-  fetchpatch,
-  pkg-config,
-  luajit_2_0,
-  libGL,
-  libGLU,
   alsa-lib,
-  libxrandr,
-  libx11,
+  copyDesktopItems,
+  fetchpatch,
   glfw2,
   glfw3,
+  libGL,
+  libGLU,
+  libx11,
+  libxrandr,
+  luajit_2_0,
+  pkg-config,
   useGlfw3 ? false,
 }:
 
@@ -21,35 +21,36 @@ stdenv.mkDerivation {
   version = "1.0.0-5";
 
   src = fetchFromGitLab {
-    domain = "salsa.debian.org";
     owner = "games-team";
     repo = "pax-britannica";
     rev = "00ccbac55fe6ff1217e0870d69ea403b05292c53";
     hash = "sha256-j69di+3P+vaFzv8Zke1MdABMkLtknTNvlfPk1YVUfmU=";
+    domain = "salsa.debian.org";
   };
 
   patches = [
     (fetchpatch {
-      url = "https://sources.debian.org/data/main/p/pax-britannica/1.0.0-5/debian/patches/compile_for_linux.patch";
       hash = "sha256-XncjmJrBakz5/w90O6rDif2rWSoAVKzuPEj9wN2VNvQ=";
+      url = "https://sources.debian.org/data/main/p/pax-britannica/1.0.0-5/debian/patches/compile_for_linux.patch";
     })
     (fetchpatch {
-      url = "https://sources.debian.org/data/main/p/pax-britannica/1.0.0-5/debian/patches/add_manpage.patch";
       hash = "sha256-c8O6t0Zv/ln7WiPdbN3sYGsb7SL9Rmeo+94DsjpfgvY=";
+      url = "https://sources.debian.org/data/main/p/pax-britannica/1.0.0-5/debian/patches/add_manpage.patch";
     })
     (fetchpatch {
-      url = "https://sources.debian.org/data/main/p/pax-britannica/1.0.0-5/debian/patches/load_resources_from_usr_share.patch";
       hash = "sha256-61Yt4Rq1I/Ofu640XsDDo0il275B+ozqH0Z6P18XT6Q=";
+      url = "https://sources.debian.org/data/main/p/pax-britannica/1.0.0-5/debian/patches/load_resources_from_usr_share.patch";
     })
     (fetchpatch {
-      url = "https://sources.debian.org/data/main/p/pax-britannica/1.0.0-5/debian/patches/add_desktop_entry.patch";
       hash = "sha256-QSQEBoCw7KTOLgy7TaFvQRpR17HoggTOCxhfTG+kIOA=";
+      url = "https://sources.debian.org/data/main/p/pax-britannica/1.0.0-5/debian/patches/add_desktop_entry.patch";
     })
   ]
   ++ lib.optional useGlfw3 (fetchpatch {
-    url = "https://sources.debian.org/data/main/p/pax-britannica/1.0.0-5/debian/patches/glfw3.patch";
     hash = "sha256-hj00vnW/i7lxFc4CGlRz6Havkg45gGgIg6MmCXcMsSg=";
+    url = "https://sources.debian.org/data/main/p/pax-britannica/1.0.0-5/debian/patches/glfw3.patch";
   });
+
   postPatch = ''
     substituteInPlace Makefile \
       --replace-fail '-DEXTRA_LOADERS=\"../extra_loaders.h\"' '-DEXTRA_LOADERS=\\\"../extra_loaders.h\\\"'
@@ -64,6 +65,7 @@ stdenv.mkDerivation {
     pkg-config
     copyDesktopItems
   ];
+
   buildInputs = [
     luajit_2_0
     libGL
@@ -73,6 +75,7 @@ stdenv.mkDerivation {
     libxrandr
     (if useGlfw3 then glfw3 else glfw2)
   ];
+
   makeFlags =
     if stdenv.hostPlatform.isLinux then
       [ "linux" ]
@@ -89,14 +92,14 @@ stdenv.mkDerivation {
     )
   '';
 
-  desktopItems = [ "pax-britannica.desktop" ];
-
   installPhase = ''
     mkdir -p $out/{bin,share/pax-britannica,share/pixmaps}
     cp -ar *.lua audio components dokidoki scripts sprites $out/share/pax-britannica/
     cp pax-britannica.png $out/share/pixmaps/
     cp pax-britannica $out/bin/
   '';
+
+  desktopItems = [ "pax-britannica.desktop" ];
 
   meta = {
     description = "One-button multi-player real-time strategy game";

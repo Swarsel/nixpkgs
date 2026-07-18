@@ -8,20 +8,18 @@
 buildPythonPackage rec {
   pname = "stdlib-list";
   version = "0.12.0";
-  pyproject = true;
 
   src = fetchPypi {
-    pname = "stdlib_list";
     inherit version;
     hash = "sha256-UXgk8n7onlkdiufB3Z/zT2curlDuiG6jG7iBbXdTVnU=";
+    pname = "stdlib_list";
   };
-
-  build-system = [ flit-core ];
-
-  pythonImportsCheck = [ "stdlib_list" ];
 
   # tests see mismatches to our standard library
   doCheck = false;
+  build-system = [ flit-core ];
+  pyproject = true;
+  pythonImportsCheck = [ "stdlib_list" ];
 
   meta = {
     description = "List of Python Standard Libraries";

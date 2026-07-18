@@ -2,8 +2,8 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  perlPackages,
   makeWrapper,
+  perlPackages,
 }:
 
 stdenv.mkDerivation {
@@ -19,8 +19,6 @@ stdenv.mkDerivation {
 
   nativeBuildInputs = [ makeWrapper ];
   buildInputs = [ perlPackages.perl ];
-
-  dontBuild = true;
 
   installPhase = ''
     runHook preInstall
@@ -47,6 +45,8 @@ stdenv.mkDerivation {
     wrapProgram $out/bin/QuickScan \
       --set PERL5LIB "$out/share/$pname:${with perlPackages; makePerlPath [ Tk ]}"
   '';
+
+  dontBuild = true;
 
   meta = {
     description = "Linux configuration checker for systems to be used for real-time audio";

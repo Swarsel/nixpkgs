@@ -1,10 +1,10 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
   cmake,
-  pkg-config,
   isa-l,
+  pkg-config,
   zlib,
 }:
 stdenv.mkDerivation (finalAttrs: {
@@ -26,6 +26,7 @@ stdenv.mkDerivation (finalAttrs: {
     cmake
     pkg-config
   ];
+
   buildInputs = [
     zlib
     isa-l
@@ -33,10 +34,10 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Read aligner for short reads";
-    mainProgram = "strobealign";
-    license = lib.licenses.mit;
     homepage = "https://github.com/ksahlin/strobealign";
+    license = lib.licenses.mit;
     maintainers = [ lib.maintainers.jbedo ];
     platforms = lib.platforms.unix;
+    mainProgram = "strobealign";
   };
 })

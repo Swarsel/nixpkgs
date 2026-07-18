@@ -1,7 +1,7 @@
 {
-  fetchFromGitHub,
-  stdenv,
   lib,
+  stdenv,
+  fetchFromGitHub,
   cups,
   hamlib,
   pkg-config,
@@ -21,7 +21,11 @@ stdenv.mkDerivation (finalAttrs: {
     fetchSubmodules = true;
   };
 
-  env.NIX_LDFLAGS = "-lhamlib";
+  nativeBuildInputs = [
+    pkg-config
+    qt6.qmake
+    qt6.wrapQtAppsHook
+  ];
 
   buildInputs = [
     hamlib
@@ -36,11 +40,7 @@ stdenv.mkDerivation (finalAttrs: {
     cups
   ];
 
-  nativeBuildInputs = [
-    pkg-config
-    qt6.qmake
-    qt6.wrapQtAppsHook
-  ];
+  env.NIX_LDFLAGS = "-lhamlib";
 
   postInstall = lib.optionalString stdenv.hostPlatform.isDarwin ''
     mkdir -p $out/{Applications,bin}
@@ -50,12 +50,14 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Amateur radio logbook software";
-    mainProgram = "qlog";
-    license = with lib.licenses; [ gpl3Only ];
     homepage = "https://github.com/foldynl/QLog";
+    license = with lib.licenses; [ gpl3Only ];
+
     maintainers = with lib.maintainers; [
       oliver-koss
     ];
+
     platforms = with lib.platforms; unix;
+    mainProgram = "qlog";
   };
 })

@@ -2,15 +2,15 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  pcsclite,
-  pkg-config,
   cmake,
-  zlib,
-  pandoc,
+  cmocka,
   doxygen,
   graphviz,
   openssl,
-  cmocka,
+  pandoc,
+  pcsclite,
+  pkg-config,
+  zlib,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -69,12 +69,12 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "C library + command-line for Open- / GlobalPlatform smart cards";
-    mainProgram = "gpshell";
     homepage = "https://github.com/kaoh/globalplatform";
     # Clarify license for GPShell
     # https://github.com/kaoh/globalplatform/issues/81
     license = lib.licenses.gpl3Plus;
-    platforms = lib.platforms.linux ++ lib.platforms.darwin;
     maintainers = with lib.maintainers; [ stargate01 ];
+    platforms = lib.platforms.linux ++ lib.platforms.darwin;
+    mainProgram = "gpshell";
   };
 })

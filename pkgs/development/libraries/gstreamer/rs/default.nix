@@ -2,37 +2,37 @@
   lib,
   stdenv,
   fetchFromGitLab,
-  rustPlatform,
-  meson,
-  ninja,
-  python3,
-  pkg-config,
-  rustc,
+  apple-sdk_gstreamer,
+  cairo,
   cargo,
   cargo-c,
-  lld,
-  nasm,
   cmake,
-  gstreamer,
-  gst-plugins-base,
-  gst-plugins-bad,
-  gtk4,
-  cairo,
   csound,
   dav1d,
+  gst-plugins-bad,
+  gst-plugins-base,
+  gst-plugins-good,
+  gstreamer,
+  gtk4,
+  hotdoc,
   libsodium,
   libwebp,
+  lld,
+  meson,
+  nasm,
+  ninja,
+  nix-update-script,
   openssl,
   pango,
-  gst-plugins-good,
-  nix-update-script,
+  pkg-config,
+  python3,
+  rustPlatform,
+  rustc,
+  # Checks meson.is_cross_build(), so even canExecute isn't enough.
+  enableDocumentation ? stdenv.hostPlatform == stdenv.buildPlatform && plugins == null,
   # specifies a limited subset of plugins to build (the default `null` means all plugins supported on the stdenv platform)
   plugins ? null,
   withGtkPlugins ? true,
-  # Checks meson.is_cross_build(), so even canExecute isn't enough.
-  enableDocumentation ? stdenv.hostPlatform == stdenv.buildPlatform && plugins == null,
-  hotdoc,
-  apple-sdk_gstreamer,
 }:
 
 let
@@ -40,63 +40,59 @@ let
   validPlugins = {
     # audio
     audiofx = [ ];
+    # net
+    aws = [ openssl ];
+    # video
+    cdg = [ ];
     claxon = [ ];
+    closedcaption = [ pango ];
     csound = [ csound ];
-    lewton = [ ];
-    spotify = [ ];
-
+    dav1d = [ dav1d ];
+    # utils
+    fallbackswitch = [ gtk4 ];
+    ffv1 = [ ];
     # generic
     file = [ ];
-    sodium = [ libsodium ];
-    threadshare = [ ];
-
     # mux
     flavors = [ ];
     fmp4 = [ ];
-    mp4 = [ ];
-
-    # net
-    aws = [ openssl ];
+    gif = [ ];
+    gtk4 = [ gtk4 ];
     hlssink3 = [ ];
+    hsv = [ ];
+    json = [ ];
+    lewton = [ ];
+    livesync = [ gtk4 ];
+    mp4 = [ ];
     ndi = [ ];
     onvif = [ pango ];
+    png = [ ];
     raptorq = [ ];
+    rav1e = [ ];
+    regex = [ ];
     reqwest = [ openssl ];
     rtp = [ ];
+    sodium = [ libsodium ];
+    spotify = [ ];
+    # text
+    textahead = [ ];
+    textwrap = [ ];
+    threadshare = [ ];
+    togglerecord = [ gtk4 ];
+    tracers = [ ];
+    uriplaylistbin = [ ];
+    videofx = [ cairo ];
+    webp = [ libwebp ];
+
     webrtc = [
       gst-plugins-bad
       openssl
     ];
+
     webrtchttp = [
       gst-plugins-bad
       openssl
     ];
-
-    # text
-    textahead = [ ];
-    json = [ ];
-    regex = [ ];
-    textwrap = [ ];
-
-    # utils
-    fallbackswitch = [ gtk4 ];
-    livesync = [ gtk4 ];
-    togglerecord = [ gtk4 ];
-    tracers = [ ];
-    uriplaylistbin = [ ];
-
-    # video
-    cdg = [ ];
-    closedcaption = [ pango ];
-    dav1d = [ dav1d ];
-    ffv1 = [ ];
-    gif = [ ];
-    gtk4 = [ gtk4 ];
-    hsv = [ ];
-    png = [ ];
-    rav1e = [ ];
-    videofx = [ cairo ];
-    webp = [ libwebp ];
   };
 
   selectedPlugins =
@@ -137,24 +133,18 @@ stdenv.mkDerivation (finalAttrs: {
   pname = "gst-plugins-rs";
   version = "0.14.4";
 
-  outputs = [
-    "out"
-    "dev"
-  ];
-
   src = fetchFromGitLab {
-    domain = "gitlab.freedesktop.org";
     owner = "gstreamer";
     repo = "gst-plugins-rs";
     rev = finalAttrs.version;
     hash = "sha256-MZyYHMq6gFJkVxlrmeXUjOmRYsQBHj0848cnF+7mtbU=";
+    domain = "gitlab.freedesktop.org";
   };
 
-  cargoDeps = rustPlatform.fetchCargoVendor {
-    inherit (finalAttrs) src;
-    name = "gst-plugins-rs-${finalAttrs.version}";
-    hash = "sha256-T+fdu+Oe07Uf1YoRGYl2DMb1QgdSZVLwcOqH4bBNGXU=";
-  };
+  outputs = [
+    "out"
+    "dev"
+  ];
 
   strictDeps = true;
 
@@ -183,8 +173,6 @@ stdenv.mkDerivation (finalAttrs: {
     hotdoc
   ];
 
-  env = lib.optionalAttrs stdenv.hostPlatform.isDarwin { NIX_CFLAGS_LINK = "-fuse-ld=lld"; };
-
   buildInputs = [
     gstreamer
     gst-plugins-base
@@ -194,21 +182,13 @@ stdenv.mkDerivation (finalAttrs: {
   ]
   ++ lib.concatMap (plugin: lib.getAttr plugin validPlugins) selectedPlugins;
 
-  checkInputs = [
-    gst-plugins-good
-    gst-plugins-bad
-  ];
-
   mesonFlags = (map (plugin: lib.mesonEnable plugin true) selectedPlugins) ++ [
     (lib.mesonOption "sodium-source" "system")
     (lib.mesonEnable "tests" finalAttrs.finalPackage.doCheck)
     (lib.mesonEnable "doc" enableDocumentation)
   ];
 
-  # turn off all auto plugins since we use a list of plugins we generate
-  mesonAutoFeatures = "disabled";
-
-  doCheck = stdenv.buildPlatform.canExecute stdenv.hostPlatform;
+  env = lib.optionalAttrs stdenv.hostPlatform.isDarwin { NIX_CFLAGS_LINK = "-fuse-ld=lld"; };
 
   # csound lib dir must be manually specified for it to build
   preConfigure = ''
@@ -220,7 +200,12 @@ stdenv.mkDerivation (finalAttrs: {
     export CSOUND_LIB_DIR=${lib.getLib csound}/lib
   '';
 
-  mesonCheckFlags = [ "--verbose" ];
+  doCheck = stdenv.buildPlatform.canExecute stdenv.hostPlatform;
+
+  checkInputs = [
+    gst-plugins-good
+    gst-plugins-bad
+  ];
 
   preCheck = ''
     # Fontconfig error: No writable cache directories
@@ -233,11 +218,22 @@ stdenv.mkDerivation (finalAttrs: {
 
   doInstallCheck =
     (lib.elem "webp" selectedPlugins) && !stdenv.hostPlatform.isStatic && stdenv.hostPlatform.isElf;
+
   installCheckPhase = ''
     runHook preInstallCheck
     readelf -a $out/lib/gstreamer-1.0/libgstrswebp.so | grep -F 'Shared library: [libwebpdemux.so'
     runHook postInstallCheck
   '';
+
+  cargoDeps = rustPlatform.fetchCargoVendor {
+    inherit (finalAttrs) src;
+    hash = "sha256-T+fdu+Oe07Uf1YoRGYl2DMb1QgdSZVLwcOqH4bBNGXU=";
+    name = "gst-plugins-rs-${finalAttrs.version}";
+  };
+
+  # turn off all auto plugins since we use a list of plugins we generate
+  mesonAutoFeatures = "disabled";
+  mesonCheckFlags = [ "--verbose" ];
 
   passthru = {
     updateScript = nix-update-script {
@@ -252,15 +248,17 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "GStreamer plugins written in Rust";
-    mainProgram = "gst-webrtc-signalling-server";
     homepage = "https://gitlab.freedesktop.org/gstreamer/gst-plugins-rs";
+
     license = with lib.licenses; [
       mpl20
       asl20
       mit
       lgpl21Plus
     ];
-    platforms = lib.platforms.unix;
+
     maintainers = with lib.maintainers; [ tmarkus ];
+    platforms = lib.platforms.unix;
+    mainProgram = "gst-webrtc-signalling-server";
   };
 })

@@ -1,6 +1,6 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchurl,
   autoPatchelfHook,
   beamPackages,
@@ -41,10 +41,7 @@ stdenv.mkDerivation rec {
   };
 
   nativeBuildInputs = lib.optionals stdenv.hostPlatform.isElf [ autoPatchelfHook ];
-
   buildInputs = lib.optionals stdenv.hostPlatform.isElf [ (lib.getLib stdenv.cc.cc) ];
-
-  sourceRoot = ".";
 
   installPhase = ''
     runHook preInstall
@@ -52,21 +49,25 @@ stdenv.mkDerivation rec {
     runHook postInstall
   '';
 
+  sourceRoot = ".";
   passthru.updateScript = ./update.sh;
 
   meta = {
     description = "IDE-first library for the semantic analysis of Erlang code, including LSP server, linting and refactoring tools";
     homepage = "https://github.com/WhatsApp/erlang-language-platform/";
+
     license = with lib.licenses; [
       mit
       asl20
     ];
+
+    sourceProvenance = [ lib.sourceTypes.binaryNativeCode ];
+    maintainers = with lib.maintainers; [ offsetcyan ];
+
     platforms = [
       "aarch64-linux"
       "x86_64-linux"
       "aarch64-darwin"
     ];
-    maintainers = with lib.maintainers; [ offsetcyan ];
-    sourceProvenance = [ lib.sourceTypes.binaryNativeCode ];
   };
 }

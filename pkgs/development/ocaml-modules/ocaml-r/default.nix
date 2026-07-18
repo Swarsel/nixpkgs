@@ -1,13 +1,13 @@
 {
   lib,
   fetchurl,
-  fetchpatch,
-  buildDunePackage,
-  pkg-config,
-  dune-configurator,
-  stdio,
   R,
   alcotest,
+  buildDunePackage,
+  dune-configurator,
+  fetchpatch,
+  pkg-config,
+  stdio,
 }:
 
 buildDunePackage (finalAttrs: {
@@ -22,12 +22,12 @@ buildDunePackage (finalAttrs: {
   # Compatibility with R 4.6
   patches = [
     (fetchpatch {
-      url = "https://github.com/pveber/ocaml-r/commit/c70704dd9ff1ed6b4035beef3316dc95275aaf4f.patch";
       hash = "sha256-I3SX+6gVo9l7epeFhtae8Ji4q51mr53sv7MPxvRBdJg=";
+      url = "https://github.com/pveber/ocaml-r/commit/c70704dd9ff1ed6b4035beef3316dc95275aaf4f.patch";
     })
     (fetchpatch {
-      url = "https://github.com/pveber/ocaml-r/commit/c90ce656bd55236e74907f2ef5bc70ff11a0cedc.patch";
       hash = "sha256-ACU4d8Npq1IXR3hysk6npHHU8ZRcAgRkHg/c+Sb8dkM=";
+      url = "https://github.com/pveber/ocaml-r/commit/c90ce656bd55236e74907f2ef5bc70ff11a0cedc.patch";
     })
   ];
 
@@ -35,6 +35,7 @@ buildDunePackage (finalAttrs: {
     pkg-config
     R
   ];
+
   buildInputs = [
     dune-configurator
     stdio

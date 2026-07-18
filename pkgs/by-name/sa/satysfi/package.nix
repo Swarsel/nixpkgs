@@ -1,12 +1,12 @@
 {
   lib,
   fetchFromGitHub,
-  ocaml-ng,
   ipaexfont,
   junicode,
   libpng,
-  lmodern,
   lmmath,
+  lmodern,
+  ocaml-ng,
   which,
 }:
 let
@@ -17,27 +17,30 @@ let
       rev = "v2.3.1+satysfi";
       sha256 = "1s8wcqdkl1alvfcj67lhn3qdz8ikvd1v64f4q6bi4c0qj9lmp30k";
     };
+
     nativeBuildInputs = [ which ] ++ o.nativeBuildInputs;
   });
   yojson-with-position = ocamlPackages.buildDunePackage {
+    inherit (ocamlPackages.yojson) meta;
     pname = "yojson-with-position";
     version = "1.4.2";
+
     src = fetchFromGitHub {
       owner = "gfngfn";
       repo = "yojson-with-position";
       rev = "v1.4.2+satysfi";
       sha256 = "17s5xrnpim54d1apy972b5l08bph4c0m5kzbndk600fl0vnlirnl";
     };
+
     nativeBuildInputs = [ ocamlPackages.cppo ];
     propagatedBuildInputs = [ ocamlPackages.biniou ];
-    inherit (ocamlPackages.yojson) meta;
   };
   ocamlPackages = ocaml-ng.ocamlPackages_4_14;
   version = "0.0.11";
 in
 ocamlPackages.buildDunePackage {
-  pname = "satysfi";
   inherit version;
+  pname = "satysfi";
 
   src = fetchFromGitHub {
     owner = "gfngfn";
@@ -46,12 +49,6 @@ ocamlPackages.buildDunePackage {
     hash = "sha256-eeeoUVTGId56SQvrmmMc7nwH/blrXgwcw3+0FLbvc34=";
     fetchSubmodules = true;
   };
-
-  preConfigure = ''
-    substituteInPlace src/frontend/main.ml --replace-fail \
-    '/usr/local/share/satysfi"; "/usr/share/satysfi' \
-    $out/share/satysfi
-  '';
 
   nativeBuildInputs = with ocamlPackages; [
     menhir
@@ -75,6 +72,12 @@ ocamlPackages.buildDunePackage {
     otfed
   ]);
 
+  preConfigure = ''
+    substituteInPlace src/frontend/main.ml --replace-fail \
+    '/usr/local/share/satysfi"; "/usr/share/satysfi' \
+    $out/share/satysfi
+  '';
+
   postInstall = ''
     mkdir -p $out/share/satysfi/dist/fonts
     cp -r lib-satysfi/dist/ $out/share/satysfi/
@@ -89,13 +92,15 @@ ocamlPackages.buildDunePackage {
   '';
 
   meta = {
-    homepage = "https://github.com/gfngfn/SATySFi";
     description = "Statically-typed, functional typesetting system";
+    homepage = "https://github.com/gfngfn/SATySFi";
     changelog = "https://github.com/gfngfn/SATySFi/blob/v${version}/CHANGELOG.md";
     license = lib.licenses.lgpl3Only;
+
     maintainers = with lib.maintainers; [
       mt-caret
     ];
+
     platforms = lib.platforms.all;
     mainProgram = "satysfi";
   };

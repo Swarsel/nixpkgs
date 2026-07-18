@@ -1,16 +1,16 @@
 {
-  stdenv,
   lib,
-  buildGoModule,
+  stdenv,
   fetchFromGitHub,
+  buildGoModule,
+  installShellFiles,
   makeWrapper,
   runCommand,
   runtimeShell,
+  terraform-providers,
   versionCheckHook,
   writableTmpDirAsHomeHook,
   writeText,
-  terraform-providers,
-  installShellFiles,
 }:
 
 let
@@ -25,15 +25,6 @@ let
       hash = "sha256-WuSvKev+kLbW0TVRJacEtX2o0fueZ5c2UYcVXQo4Q9Q=";
     };
 
-    vendorHash = "sha256-t4RVH90TSTwxNPR2tKQsk8qd6d2OP8MmjAjgIZx7OVY=";
-    ldflags = [
-      "-s"
-      "-w"
-      "-X"
-      "github.com/opentofu/opentofu/version.dev=no"
-    ];
-
-    nativeBuildInputs = [ installShellFiles ];
     patches = [ ./provider-path-1_12.patch ];
 
     postPatch = ''
@@ -41,43 +32,55 @@ let
         --replace-fail "go 1.26.4" "go 1.26.3"
     '';
 
-    passthru = {
-      inherit plugins;
-      tests = {
-        inherit opentofu_plugins_test;
-      };
-    };
-
-    # https://github.com/posener/complete/blob/9a4745ac49b29530e07dc2581745a218b646b7a3/cmd/install/bash.go#L8
-    postInstall = ''
-      installShellCompletion --bash --name tofu <(echo complete -C tofu tofu)
-    '';
-
-    __darwinAllowLocalNetworking = true;
+    nativeBuildInputs = [ installShellFiles ];
+    vendorHash = "sha256-t4RVH90TSTwxNPR2tKQsk8qd6d2OP8MmjAjgIZx7OVY=";
 
     nativeCheckInputs = [
       writableTmpDirAsHomeHook
       versionCheckHook
     ];
 
-    doInstallCheck = true;
-    versionCheckProgramArg = "version";
-
     preCheck = ''
       export TF_SKIP_REMOTE_TESTS=1
     '';
 
+    # https://github.com/posener/complete/blob/9a4745ac49b29530e07dc2581745a218b646b7a3/cmd/install/bash.go#L8
+    postInstall = ''
+      installShellCompletion --bash --name tofu <(echo complete -C tofu tofu)
+    '';
+
+    doInstallCheck = true;
+    __darwinAllowLocalNetworking = true;
+
+    ldflags = [
+      "-s"
+      "-w"
+      "-X"
+      "github.com/opentofu/opentofu/version.dev=no"
+    ];
+
     subPackages = [ "./cmd/..." ];
+    versionCheckProgramArg = "version";
+
+    passthru = {
+      inherit plugins;
+
+      tests = {
+        inherit opentofu_plugins_test;
+      };
+    };
 
     meta = {
       description = "Tool for building, changing, and versioning infrastructure";
       homepage = "https://opentofu.org/";
       changelog = "https://github.com/opentofu/opentofu/blob/v${version}/CHANGELOG.md";
       license = lib.licenses.mpl20;
+
       maintainers = with lib.maintainers; [
         nickcao
         zowoq
       ];
+
       mainProgram = "tofu";
     };
   };
@@ -126,9 +129,9 @@ let
           );
 
           passthru = {
-            withPlugins = newplugins: withPlugins (x: newplugins x ++ actualPlugins);
             full = withPlugins (p: lib.filter lib.isDerivation (lib.attrValues p.actualProviders));
-
+            override = x: (pluggable (opentofu.override x)).withPlugins plugins;
+            overrideAttrs = f: (pluggable (opentofu.overrideAttrs f)).withPlugins plugins;
             # Expose wrappers around the override* functions of the terraform
             # derivation.
             #
@@ -150,8 +153,7 @@ let
             #
             # See nixpkgs#158620 for details.
             overrideDerivation = f: (pluggable (opentofu.overrideDerivation f)).withPlugins plugins;
-            overrideAttrs = f: (pluggable (opentofu.overrideAttrs f)).withPlugins plugins;
-            override = x: (pluggable (opentofu.override x)).withPlugins plugins;
+            withPlugins = newplugins: withPlugins (x: newplugins x ++ actualPlugins);
           };
         in
         # Don't bother wrapping unless we actually have plugins, since the wrapper will stop automatic downloading
@@ -165,12 +167,6 @@ let
             stdenv.mkDerivation {
               inherit (opentofu) meta pname version;
               nativeBuildInputs = [ makeWrapper ];
-
-              # Expose the passthru set with the override functions
-              # defined above, as well as any passthru values already
-              # set on `terraform` at this point (relevant in case a
-              # user overrides attributes).
-              passthru = opentofu.passthru // passthru;
 
               buildCommand = ''
                 # Create wrappers for terraform plugins because OpenTofu only
@@ -198,6 +194,12 @@ let
                   --set NIX_TERRAFORM_PLUGIN_DIR $out/libexec/terraform-providers \
                   --prefix PATH : "${lib.makeBinPath wrapperInputs}"
               '';
+
+              # Expose the passthru set with the override functions
+              # defined above, as well as any passthru values already
+              # set on `terraform` at this point (relevant in case a
+              # user overrides attributes).
+              passthru = opentofu.passthru // passthru;
             }
           );
     in

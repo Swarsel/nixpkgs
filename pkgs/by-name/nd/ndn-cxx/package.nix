@@ -2,15 +2,15 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  fetchpatch,
+  boost,
   doxygen,
+  fetchpatch,
+  openssl,
   pkg-config,
   python3,
   python3Packages,
-  wafHook,
-  boost,
-  openssl,
   sqlite,
+  wafHook,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -26,9 +26,9 @@ stdenv.mkDerivation (finalAttrs: {
 
   patches = [
     (fetchpatch {
+      hash = "sha256-ikVIJ8Jza17k/sa/wtu2EUGLEhUMloMOkBrMN9W9BPY=";
       name = "fix-gcc15.patch";
       url = "https://github.com/named-data/ndn-cxx/commit/0ba3d3a9d9701be4baa3969fe50e97e89d11249b.patch";
-      hash = "sha256-ikVIJ8Jza17k/sa/wtu2EUGLEhUMloMOkBrMN9W9BPY=";
     })
   ];
 
@@ -46,6 +46,14 @@ stdenv.mkDerivation (finalAttrs: {
     sqlite
   ];
 
+  doCheck = false; # some tests fail in upstream, some fail because of the sandbox environment
+
+  checkPhase = ''
+    runHook preCheck
+    LD_PRELOAD=build/libndn-cxx.so build/unit-tests
+    runHook postCheck
+  '';
+
   wafConfigureFlags = [
     "--with-openssl=${openssl.dev}"
     "--boost-includes=${boost.dev}/include"
@@ -53,16 +61,9 @@ stdenv.mkDerivation (finalAttrs: {
     "--with-tests"
   ];
 
-  doCheck = false; # some tests fail in upstream, some fail because of the sandbox environment
-  checkPhase = ''
-    runHook preCheck
-    LD_PRELOAD=build/libndn-cxx.so build/unit-tests
-    runHook postCheck
-  '';
-
   meta = {
-    homepage = "https://named-data.net/";
     description = "Named Data Networking (NDN) or Content Centric Networking (CCN) abstraction";
+
     longDescription = ''
       ndn-cxx is a C++ library, implementing Named Data Networking (NDN)
       primitives that can be used to implement various NDN applications.
@@ -76,10 +77,14 @@ stdenv.mkDerivation (finalAttrs: {
       traversing fewer network hops, eliminating redundant requests,
       and consuming less resources overall.
     '';
+
+    homepage = "https://named-data.net/";
     license = lib.licenses.lgpl3;
-    platforms = lib.platforms.unix;
+
     maintainers = with lib.maintainers; [
       bertof
     ];
+
+    platforms = lib.platforms.unix;
   };
 })

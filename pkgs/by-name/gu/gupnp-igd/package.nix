@@ -2,37 +2,33 @@
   lib,
   stdenv,
   fetchurl,
-  pkg-config,
-  meson,
-  ninja,
+  docbook_xml_dtd_412,
+  docbook_xsl,
   gettext,
+  glib,
+  gnome,
   gobject-introspection,
   gtk-doc,
-  docbook_xsl,
-  docbook_xml_dtd_412,
-  glib,
   gupnp_1_6,
-  gnome,
+  meson,
+  ninja,
+  pkg-config,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
   pname = "gupnp-igd";
   version = "1.6.0";
 
-  outputs = [
-    "out"
-    "dev"
-  ]
-  ++ lib.optionals (stdenv.buildPlatform == stdenv.hostPlatform) [ "devdoc" ];
-
   src = fetchurl {
     url = "mirror://gnome/sources/gupnp-igd/${lib.versions.majorMinor finalAttrs.version}/gupnp-igd-${finalAttrs.version}.tar.xz";
     hash = "sha256-QJmXgzmrIhJtSWjyozK20JT8RMeHl4YHgfH8LxF3G3Q=";
   };
 
-  depsBuildBuild = [
-    pkg-config
-  ];
+  outputs = [
+    "out"
+    "dev"
+  ]
+  ++ lib.optionals (stdenv.buildPlatform == stdenv.hostPlatform) [ "devdoc" ];
 
   nativeBuildInputs = [
     pkg-config
@@ -55,10 +51,13 @@ stdenv.mkDerivation (finalAttrs: {
     "-Dintrospection=${lib.boolToString (stdenv.buildPlatform == stdenv.hostPlatform)}"
   ];
 
+  depsBuildBuild = [
+    pkg-config
+  ];
+
   # Seems to get stuck sometimes.
   # https://github.com/NixOS/nixpkgs/issues/119288
   # doCheck = true;
-
   passthru = {
     updateScript = gnome.updateScript {
       packageName = "gupnp-igd";

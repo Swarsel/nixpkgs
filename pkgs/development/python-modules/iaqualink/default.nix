@@ -1,11 +1,11 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   hatch-vcs,
   hatchling,
-  httpx-retries,
   httpx,
+  httpx-retries,
   pytest-cov-stub,
   pytestCheckHook,
   pyyaml,
@@ -16,7 +16,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "iaqualink";
   version = "0.7.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "flz";
@@ -24,6 +23,14 @@ buildPythonPackage (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-Bn4dcfTRkY+qc/c39ip+vZvlbqll7qZOl7phMgw9EjY=";
   };
+
+  nativeCheckInputs = [
+    pytest-cov-stub
+    pytestCheckHook
+    respx
+    typer
+  ]
+  ++ lib.flatten (builtins.attrValues finalAttrs.passthru.optional-dependencies);
 
   build-system = [
     hatch-vcs
@@ -43,14 +50,7 @@ buildPythonPackage (finalAttrs: {
     ];
   };
 
-  nativeCheckInputs = [
-    pytest-cov-stub
-    pytestCheckHook
-    respx
-    typer
-  ]
-  ++ lib.flatten (builtins.attrValues finalAttrs.passthru.optional-dependencies);
-
+  pyproject = true;
   pythonImportsCheck = [ "iaqualink" ];
 
   meta = {

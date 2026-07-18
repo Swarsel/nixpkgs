@@ -92,25 +92,29 @@
         platform.rust
     )
     {
+      IsNoStdTarget = [ "isNoStdTarget" ];
+      toRustTarget = [ "rustcTarget" ];
+      toRustTargetForUseInEnvVars = [ "cargoEnvVarTarget" ];
+      toRustTargetSpec = [ "rustcTargetSpec" ];
+      toRustTargetSpecShort = [ "cargoShortTarget" ];
+
       toTargetArch = [
         "platform"
         "arch"
       ];
-      toTargetOs = [
-        "platform"
-        "os"
-      ];
+
       toTargetFamily = [
         "platform"
         "target-family"
       ];
+
+      toTargetOs = [
+        "platform"
+        "os"
+      ];
+
       toTargetVendor = [
         "platform"
         "vendor"
       ];
-      toRustTarget = [ "rustcTarget" ];
-      toRustTargetSpec = [ "rustcTargetSpec" ];
-      toRustTargetSpecShort = [ "cargoShortTarget" ];
-      toRustTargetForUseInEnvVars = [ "cargoEnvVarTarget" ];
-      IsNoStdTarget = [ "isNoStdTarget" ];
     }

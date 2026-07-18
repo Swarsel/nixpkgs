@@ -7,7 +7,6 @@
 python3.pkgs.buildPythonApplication (finalAttrs: {
   pname = "mongoaudit";
   version = "0.1.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "stampery";
@@ -16,6 +15,7 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     hash = "sha256-RZBAldCHl7ApYQWhuvs/djhGWuQ+EdpVMCnP0QrfZJ4=";
   };
 
+  nativeCheckInputs = with python3.pkgs; [ pytestCheckHook ];
   build-system = with python3.pkgs; [ setuptools ];
 
   dependencies = with python3.pkgs; [
@@ -24,8 +24,7 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     urwid
   ];
 
-  nativeCheckInputs = with python3.pkgs; [ pytestCheckHook ];
-
+  pyproject = true;
   pythonImportsCheck = [ "mongoaudit" ];
 
   meta = {

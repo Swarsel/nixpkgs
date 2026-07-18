@@ -3,14 +3,12 @@
   stdenv,
   fetchFromGitHub,
   fetchYarnDeps,
+  fixup-yarn-lock,
   nixosTests,
+  nodejs,
   writableTmpDirAsHomeHook,
   writeText,
-
-  fixup-yarn-lock,
-  nodejs,
   yarn,
-
   # Custom application configuration placed to theme/config.theme.js file.
   # For the list of available configuration options see
   # https://github.com/osm-search/nominatim-ui/blob/master/dist/config.defaults.js
@@ -39,11 +37,6 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-TliTWDKdIp7Z0uYw5P65i06NQAUNwNymUsSYrihVZFE=";
   };
 
-  offlineCache = fetchYarnDeps {
-    yarnLock = "${finalAttrs.src}/yarn.lock";
-    hash = "sha256-IqwsXEd9RSJhkA4BONTJT4xYMTyG9+zddIpD47v6AFc=";
-  };
-
   nativeBuildInputs = [
     writableTmpDirAsHomeHook
 
@@ -51,18 +44,6 @@ stdenv.mkDerivation (finalAttrs: {
     nodejs
     yarn
   ];
-
-  configurePhase = ''
-    runHook preConfigure
-
-    yarn config --offline set yarn-offline-mirror $offlineCache
-    fixup-yarn-lock yarn.lock
-
-    yarn install --offline --frozen-lockfile --frozen-engines --ignore-scripts
-    patchShebangs node_modules
-
-    runHook postConfigure
-  '';
 
   buildPhase = ''
     runHook preBuild
@@ -84,6 +65,23 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  configurePhase = ''
+    runHook preConfigure
+
+    yarn config --offline set yarn-offline-mirror $offlineCache
+    fixup-yarn-lock yarn.lock
+
+    yarn install --offline --frozen-lockfile --frozen-engines --ignore-scripts
+    patchShebangs node_modules
+
+    runHook postConfigure
+  '';
+
+  offlineCache = fetchYarnDeps {
+    hash = "sha256-IqwsXEd9RSJhkA4BONTJT4xYMTyG9+zddIpD47v6AFc=";
+    yarnLock = "${finalAttrs.src}/yarn.lock";
+  };
+
   passthru.tests = {
     inherit (nixosTests) nominatim;
   };
@@ -91,11 +89,12 @@ stdenv.mkDerivation (finalAttrs: {
   meta = {
     description = "Debugging user interface for Nominatim geocoder";
     homepage = "https://github.com/osm-search/nominatim-ui";
+    changelog = "https://github.com/osm-search/nominatim-ui/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.gpl2;
+
     teams = with lib.teams; [
       geospatial
       ngi
     ];
-    changelog = "https://github.com/osm-search/nominatim-ui/releases/tag/v${finalAttrs.version}";
   };
 })

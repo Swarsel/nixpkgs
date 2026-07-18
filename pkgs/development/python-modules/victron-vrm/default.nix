@@ -1,9 +1,9 @@
 {
+  lib,
+  fetchFromGitHub,
   aiohttp,
   buildPythonPackage,
-  fetchFromGitHub,
   hatchling,
-  lib,
   pydantic,
   pytest-asyncio,
   pytestCheckHook,
@@ -14,7 +14,6 @@
 buildPythonPackage rec {
   pname = "victron-vrm";
   version = "0.1.12";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "KSoft-Si";
@@ -22,6 +21,14 @@ buildPythonPackage rec {
     tag = "v${version}";
     hash = "sha256-In4yL5e6DZkP/8JeM1FhoMuhsqQ6uZE3fFLyfnLzgZQ=";
   };
+
+  # tests connect to vrmapi.victronenergy.com
+  doCheck = false;
+
+  nativeCheckInputs = [
+    pytest-asyncio
+    pytestCheckHook
+  ];
 
   build-system = [ hatchling ];
 
@@ -32,22 +39,14 @@ buildPythonPackage rec {
     victron-mqtt
   ];
 
+  pyproject = true;
+  pythonImportsCheck = [ "victron_vrm" ];
   pythonRelaxDeps = [ "victron-mqtt" ];
 
-  pythonImportsCheck = [ "victron_vrm" ];
-
-  nativeCheckInputs = [
-    pytest-asyncio
-    pytestCheckHook
-  ];
-
-  # tests connect to vrmapi.victronenergy.com
-  doCheck = false;
-
   meta = {
-    changelog = "https://github.com/KSoft-Si/vrm-client/releases/tag/${src.tag}";
     description = "Async Python client for the Victron Energy VRM API";
     homepage = "https://github.com/KSoft-Si/vrm-client";
+    changelog = "https://github.com/KSoft-Si/vrm-client/releases/tag/${src.tag}";
     license = lib.licenses.mit;
     maintainers = [ lib.maintainers.dotlambda ];
   };

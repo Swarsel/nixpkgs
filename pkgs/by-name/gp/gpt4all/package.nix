@@ -1,19 +1,19 @@
 {
   lib,
-  config,
   stdenv,
-  fetchFromGitHub,
   fetchurl,
+  fetchFromGitHub,
+  autoAddDriverRunpath,
   cmake,
-  qt6,
+  config,
   duckx,
   fmt,
+  qt6,
   shaderc,
   vulkan-headers,
   wayland,
-  cudaSupport ? config.cudaSupport,
   cudaPackages ? { },
-  autoAddDriverRunpath,
+  cudaSupport ? config.cudaSupport,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -21,16 +21,11 @@ stdenv.mkDerivation (finalAttrs: {
   version = "3.10.0";
 
   src = fetchFromGitHub {
-    fetchSubmodules = true;
-    hash = "sha256-OAD/uSCL/3OXmYVG+iGJK4zD2s0dDaPf59DF23AbSFU=";
     owner = "nomic-ai";
     repo = "gpt4all";
     tag = "v${finalAttrs.version}";
-  };
-
-  embed_model = fetchurl {
-    url = "https://gpt4all.io/models/gguf/nomic-embed-text-v1.5.f16.gguf";
-    hash = "sha256-969vZoAvTfhu2hD+m7z8dcOVYr7Ujvas5xmiUc8cL9s=";
+    hash = "sha256-OAD/uSCL/3OXmYVG+iGJK4zD2s0dDaPf59DF23AbSFU=";
+    fetchSubmodules = true;
   };
 
   patches = [
@@ -41,8 +36,6 @@ stdenv.mkDerivation (finalAttrs: {
     substituteInPlace CMakeLists.txt \
       --replace-fail "duckx::duckx QXlsx" "duckx QXlsx"
   '';
-
-  sourceRoot = "${finalAttrs.src.name}/gpt4all-chat";
 
   nativeBuildInputs = [
     cmake
@@ -101,14 +94,23 @@ stdenv.mkDerivation (finalAttrs: {
       --replace-fail 'Exec=chat' 'Exec=${finalAttrs.meta.mainProgram}'
   '';
 
+  embed_model = fetchurl {
+    hash = "sha256-969vZoAvTfhu2hD+m7z8dcOVYr7Ujvas5xmiUc8cL9s=";
+    url = "https://gpt4all.io/models/gguf/nomic-embed-text-v1.5.f16.gguf";
+  };
+
+  sourceRoot = "${finalAttrs.src.name}/gpt4all-chat";
+
   meta = {
-    changelog = "https://github.com/nomic-ai/gpt4all/releases/tag/v${finalAttrs.version}";
     description = "Free-to-use, locally running, privacy-aware chatbot. No GPU or internet required";
     homepage = "https://github.com/nomic-ai/gpt4all";
+    changelog = "https://github.com/nomic-ai/gpt4all/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.mit;
-    mainProgram = "gpt4all";
+
     maintainers = with lib.maintainers; [
       titaniumtown
     ];
+
+    mainProgram = "gpt4all";
   };
 })

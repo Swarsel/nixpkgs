@@ -18,9 +18,9 @@ buildDunePackage (finalAttrs: {
 
   meta = {
     description = "Parser and printer for the opam file syntax";
-    license = lib.licenses.lgpl21;
-    maintainers = with lib.maintainers; [ vbgl ];
     homepage = "https://github.com/ocaml/opam-file-format/";
     changelog = "https://github.com/ocaml/opam-file-format/raw/${finalAttrs.version}/CHANGES";
+    license = lib.licenses.lgpl21;
+    maintainers = with lib.maintainers; [ vbgl ];
   };
 })

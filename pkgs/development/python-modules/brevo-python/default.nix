@@ -1,19 +1,18 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
+  buildPythonPackage,
   certifi,
+  pytestCheckHook,
   python-dateutil,
+  setuptools,
   six,
   urllib3,
-  pytestCheckHook,
 }:
 
 buildPythonPackage rec {
   pname = "brevo-python";
   version = "1.2.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "getbrevo";
@@ -21,6 +20,10 @@ buildPythonPackage rec {
     tag = "v${version}";
     hash = "sha256-VYj1r69pgKgNCXzxRqvwlj5w+y3IIu21bsZJAe/7zf8=";
   };
+
+  nativeCheckInputs = [
+    pytestCheckHook
+  ];
 
   build-system = [ setuptools ];
 
@@ -31,15 +34,12 @@ buildPythonPackage rec {
     urllib3
   ];
 
-  nativeCheckInputs = [
-    pytestCheckHook
-  ];
-
   disabledTestPaths = [
     # broken import; https://github.com/getbrevo/brevo-python/issues/2
     "test/test_configuration.py"
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "brevo_python" ];
 
   meta = {

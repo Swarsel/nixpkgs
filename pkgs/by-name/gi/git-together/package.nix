@@ -1,9 +1,9 @@
 {
   lib,
   fetchFromGitHub,
-  rustPlatform,
   openssl,
   pkg-config,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -19,15 +19,13 @@ rustPlatform.buildRustPackage (finalAttrs: {
 
   nativeBuildInputs = [ pkg-config ];
   buildInputs = [ openssl ];
-
+  cargoHash = "sha256-5LKKjHzIlXw0bUmF7GDCVW0cptCxohq6CNPIrMZKorM=";
   env.OPENSSL_NO_VENDOR = true;
 
-  cargoHash = "sha256-5LKKjHzIlXw0bUmF7GDCVW0cptCxohq6CNPIrMZKorM=";
-
   meta = {
-    changelog = "https://github.com/kejadlen/git-together/releases/tag/v${finalAttrs.version}";
     description = "Better commit attribution while pairing without messing with your git workflow";
     homepage = "https://github.com/kejadlen/git-together";
+    changelog = "https://github.com/kejadlen/git-together/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ sentientmonkey ];
     mainProgram = "git-together";

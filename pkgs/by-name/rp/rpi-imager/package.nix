@@ -1,14 +1,14 @@
 {
   lib,
   stdenv,
+  fetchFromGitHub,
   cmake,
   curl,
-  fetchFromGitHub,
   gnutls,
   libarchive,
   libtasn1,
-  libusb1,
   liburing,
+  libusb1,
   nix-update-script,
   pkg-config,
   qt6,
@@ -40,10 +40,6 @@ stdenv.mkDerivation (finalAttrs: {
 
     substituteInPlace src/CMakeLists.txt \
       --replace-fail 'qt_add_lupdate(TS_FILES ''${TRANSLATIONS} SOURCE_TARGETS ''${PROJECT_NAME} OPTIONS -no-obsolete -locations none)' ""
-  '';
-
-  preConfigure = ''
-    cd src
   '';
 
   nativeBuildInputs =
@@ -96,25 +92,30 @@ stdenv.mkDerivation (finalAttrs: {
     (lib.cmakeBool "GENERATE_TIMEZONES_FROM_IANA" false)
   ];
 
-  qtWrapperArgs = [
-    "--unset QT_QPA_PLATFORMTHEME"
-    "--unset QT_STYLE_OVERRIDE"
-  ];
+  env.LANG = "C.UTF-8";
 
-  dontWrapGApps = true;
+  preConfigure = ''
+    cd src
+  '';
 
   preFixup = ''
     qtWrapperArgs+=("''${gappsWrapperArgs[@]}")
   '';
 
-  env.LANG = "C.UTF-8";
+  dontWrapGApps = true;
+
+  qtWrapperArgs = [
+    "--unset QT_QPA_PLATFORMTHEME"
+    "--unset QT_STYLE_OVERRIDE"
+  ];
 
   passthru = {
     tests.version = testers.testVersion {
-      package = finalAttrs.finalPackage;
-      command = "QT_QPA_PLATFORM=offscreen rpi-imager --version";
       version = "v${finalAttrs.version}";
+      command = "QT_QPA_PLATFORM=offscreen rpi-imager --version";
+      package = finalAttrs.finalPackage;
     };
+
     updateScript = nix-update-script { };
   };
 
@@ -123,13 +124,15 @@ stdenv.mkDerivation (finalAttrs: {
     homepage = "https://github.com/raspberrypi/rpi-imager/";
     changelog = "https://github.com/raspberrypi/rpi-imager/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.asl20;
-    mainProgram = "rpi-imager";
+
     maintainers = with lib.maintainers; [
       anthonyroussel
       agustinmista
     ];
+
     platforms = lib.platforms.linux ++ lib.platforms.darwin;
     # could not find xz
     badPlatforms = lib.platforms.darwin;
+    mainProgram = "rpi-imager";
   };
 })

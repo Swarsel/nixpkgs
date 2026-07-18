@@ -1,7 +1,7 @@
 {
   lib,
-  stdenvNoCC,
   fetchFromGitHub,
+  stdenvNoCC,
 }:
 
 stdenvNoCC.mkDerivation rec {
@@ -23,8 +23,8 @@ stdenvNoCC.mkDerivation rec {
   '';
 
   meta = {
-    homepage = "https://github.com/niXman/yas";
     description = "Yet Another Serialization";
+    homepage = "https://github.com/niXman/yas";
     license = lib.licenses.boost;
     maintainers = [ ];
     platforms = lib.platforms.all;

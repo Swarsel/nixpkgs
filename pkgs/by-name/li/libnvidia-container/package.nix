@@ -1,28 +1,29 @@
 {
-  stdenv,
   lib,
-  addDriverRunpath,
+  stdenv,
   fetchFromGitHub,
-  pkg-config,
+  addDriverRunpath,
+  applyPatches,
   elfutils,
+  go,
   libcap,
   libseccomp,
-  rpcsvc-proto,
   libtirpc,
   makeWrapper,
+  nvidia-modprobe,
+  pkg-config,
   removeReferencesTo,
   replaceVars,
-  applyPatches,
-  nvidia-modprobe,
-  go,
+  rpcsvc-proto,
 }:
 let
   modprobeVersion = "550.54.14";
   patchedModprobe = applyPatches {
     src = nvidia-modprobe.src.override {
-      version = modprobeVersion;
       hash = "sha256-iBRMkvOXacs/llTtvc/ZC5i/q9gc8lMuUHxMbu8A+Kg=";
+      version = modprobeVersion;
     };
+
     patches = [
       (replaceVars ./modprobe.patch {
         inherit modprobeVersion;
@@ -101,32 +102,6 @@ stdenv.mkDerivation (finalAttrs: {
       --replace-fail ldconfig true
   '';
 
-  # Recreate library symlinks which ldconfig would have created
-  postFixup = ''
-    for lib in libnvidia-container libnvidia-container-go; do
-      rm -f "$out/lib/$lib.so"
-      ln -s "$out/lib/$lib.so.${finalAttrs.version}" "$out/lib/$lib.so.1"
-      ln -s "$out/lib/$lib.so.1" "$out/lib/$lib.so"
-    done
-  '';
-
-  enableParallelBuilding = true;
-
-  preBuild = ''
-    HOME="$(mktemp -d)"
-  '';
-
-  env = {
-    NIX_CFLAGS_COMPILE = toString [ "-I${lib.getInclude libtirpc}/include/tirpc" ];
-    CGO_ENABLED = "1"; # Needed for cross-compilation
-    GOFLAGS = "-trimpath"; # Don't include paths to Go stdlib to resulting binary
-    inherit (go) GOARCH GOOS;
-    NIX_LDFLAGS = toString [
-      "-L${lib.getLib libtirpc}/lib"
-      "-ltirpc"
-    ];
-  };
-
   nativeBuildInputs = [
     pkg-config
     go
@@ -151,6 +126,22 @@ stdenv.mkDerivation (finalAttrs: {
     "CFLAGS=-DWITH_TIRPC"
   ];
 
+  env = {
+    inherit (go) GOARCH GOOS;
+    CGO_ENABLED = "1"; # Needed for cross-compilation
+    GOFLAGS = "-trimpath"; # Don't include paths to Go stdlib to resulting binary
+    NIX_CFLAGS_COMPILE = toString [ "-I${lib.getInclude libtirpc}/include/tirpc" ];
+
+    NIX_LDFLAGS = toString [
+      "-L${lib.getLib libtirpc}/lib"
+      "-ltirpc"
+    ];
+  };
+
+  preBuild = ''
+    HOME="$(mktemp -d)"
+  '';
+
   postInstall =
     let
       inherit (addDriverRunpath) driverLink;
@@ -164,17 +155,30 @@ stdenv.mkDerivation (finalAttrs: {
       remove-references-to -t "${go}" $out/lib/libnvidia-container-go.so.${finalAttrs.version}
       wrapProgram $out/bin/nvidia-container-cli --prefix LD_LIBRARY_PATH : ${libraryPath}
     '';
+
+  # Recreate library symlinks which ldconfig would have created
+  postFixup = ''
+    for lib in libnvidia-container libnvidia-container-go; do
+      rm -f "$out/lib/$lib.so"
+      ln -s "$out/lib/$lib.so.${finalAttrs.version}" "$out/lib/$lib.so.1"
+      ln -s "$out/lib/$lib.so.1" "$out/lib/$lib.so"
+    done
+  '';
+
   disallowedReferences = [ go ];
+  enableParallelBuilding = true;
 
   meta = {
-    homepage = "https://github.com/NVIDIA/libnvidia-container";
     description = "NVIDIA container runtime library";
+    homepage = "https://github.com/NVIDIA/libnvidia-container";
     license = lib.licenses.asl20;
-    platforms = lib.platforms.linux;
-    mainProgram = "nvidia-container-cli";
+
     maintainers = with lib.maintainers; [
       cpcloud
       msanft
     ];
+
+    platforms = lib.platforms.linux;
+    mainProgram = "nvidia-container-cli";
   };
 })

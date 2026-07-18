@@ -1,27 +1,22 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # build-system
-  setuptools,
-
+  buildPythonPackage,
   # dependencies
   django,
-  pytz,
-
   # optional-dependencies
   django-taggit,
-
   # tests
   pytest-django,
   pytestCheckHook,
+  pytz,
+  # build-system
+  setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "django-modelcluster";
   version = "6.5";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "wagtail";
@@ -29,15 +24,6 @@ buildPythonPackage rec {
     tag = "v${version}";
     hash = "sha256-jIEiwWuC+sudUHsHuG975nxrlC2yKZN/QjdvMKEeL6s=";
   };
-
-  build-system = [ setuptools ];
-
-  dependencies = [
-    django
-    pytz
-  ];
-
-  optional-dependencies.taggit = [ django-taggit ];
 
   env.DJANGO_SETTINGS_MODULE = "tests.settings";
 
@@ -47,6 +33,15 @@ buildPythonPackage rec {
   ]
   ++ optional-dependencies.taggit;
 
+  build-system = [ setuptools ];
+
+  dependencies = [
+    django
+    pytz
+  ];
+
+  optional-dependencies.taggit = [ django-taggit ];
+  pyproject = true;
   pythonImportsCheck = [ "modelcluster" ];
 
   meta = {

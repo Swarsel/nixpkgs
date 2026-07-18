@@ -1,8 +1,8 @@
 {
   config,
   lib,
-  options,
   pkgs,
+  options,
   ...
 }:
 let
@@ -10,9 +10,9 @@ let
   mpdCfg = config.services.mpd;
 
   endpointUrls = {
+    "jamendo" = "http://postaudioscrobbler.jamendo.com";
     "last.fm" = "http://post.audioscrobbler.com";
     "libre.fm" = "http://turtle.libre.fm";
-    "jamendo" = "http://postaudioscrobbler.jamendo.com";
     "listenbrainz" = "http://proxy.listenbrainz.org";
   };
 
@@ -86,44 +86,79 @@ in
 
     enable = lib.mkEnableOption "mpdscribble, an MPD client which submits info about tracks being played to Last.fm (formerly AudioScrobbler)";
 
-    proxy = lib.mkOption {
-      default = null;
-      type = lib.types.nullOr lib.types.str;
-      description = ''
-        HTTP proxy URL.
-      '';
-    };
+    endpoints = lib.mkOption {
+      default = { };
 
-    verbose = lib.mkOption {
-      default = 1;
-      type = lib.types.int;
       description = ''
-        Log level for the mpdscribble daemon.
+        Endpoints to scrobble to.
+        If the endpoint is one of "${lib.concatStringsSep "\", \"" (lib.attrNames endpointUrls)}" the url is set automatically.
       '';
-    };
 
-    journalInterval = lib.mkOption {
-      default = 600;
-      example = 60;
-      type = lib.types.int;
-      description = ''
-        How often should mpdscribble save the journal file? [seconds]
-      '';
+      example = {
+        "last.fm" = {
+          passwordFile = "/run/secrets/lastfm_password";
+          username = "foo";
+        };
+      };
+
+      type = (
+        let
+          endpoint =
+            { name, ... }:
+            {
+              options = {
+                passwordFile = lib.mkOption {
+                  description = "File containing the password, either as MD5SUM or cleartext.";
+                  type = lib.types.nullOr lib.types.str;
+                };
+
+                url = lib.mkOption {
+                  default = endpointUrls.${name} or "";
+                  description = "The url endpoint where the scrobble API is listening.";
+                  type = lib.types.str;
+                };
+
+                username = lib.mkOption {
+                  description = ''
+                    Username for the scrobble service.
+                  '';
+
+                  type = lib.types.str;
+                };
+              };
+            };
+        in
+        lib.types.attrsOf (lib.types.submodule endpoint)
+      );
     };
 
     host = lib.mkOption {
       default = (
         if mpdCfg.settings.bind_to_address != "any" then mpdCfg.settings.bind_to_address else "localhost"
       );
+
       defaultText = lib.literalExpression ''
         if config.services.mpd.settings.bind_to_address != "any"
         then config.services.mpd.settings.bind_to_address
         else "localhost"
       '';
-      type = lib.types.str;
+
       description = ''
         Host for the mpdscribble daemon to search for a mpd daemon on.
       '';
+
+      type = lib.types.str;
+    };
+
+    journalInterval = lib.mkOption {
+      default = 600;
+
+      description = ''
+        How often should mpdscribble save the journal file? [seconds]
+      '';
+
+      example = 60;
+      type = lib.types.int;
     };
 
     passwordFile = lib.mkOption {
@@ -134,65 +169,50 @@ in
           } mpdCfg.credentials).passwordFile
         else
           null;
+
       defaultText = lib.literalMD ''
         The first password file with read access configured for MPD when using a local instance,
         otherwise `null`.
       '';
-      type = lib.types.nullOr lib.types.str;
+
       description = ''
         File containing the password for the mpd daemon.
         If there is a local mpd configured using {option}`services.mpd.credentials`
         the default is automatically set to a matching passwordFile of the local mpd.
       '';
+
+      type = lib.types.nullOr lib.types.str;
     };
 
     port = lib.mkOption {
       default = mpdCfg.settings.port;
       defaultText = lib.literalExpression "config.services.mpd.settings.port";
-      type = lib.types.port;
+
       description = ''
         Port for the mpdscribble daemon to search for a mpd daemon on.
       '';
+
+      type = lib.types.port;
     };
 
-    endpoints = lib.mkOption {
-      type = (
-        let
-          endpoint =
-            { name, ... }:
-            {
-              options = {
-                url = lib.mkOption {
-                  type = lib.types.str;
-                  default = endpointUrls.${name} or "";
-                  description = "The url endpoint where the scrobble API is listening.";
-                };
-                username = lib.mkOption {
-                  type = lib.types.str;
-                  description = ''
-                    Username for the scrobble service.
-                  '';
-                };
-                passwordFile = lib.mkOption {
-                  type = lib.types.nullOr lib.types.str;
-                  description = "File containing the password, either as MD5SUM or cleartext.";
-                };
-              };
-            };
-        in
-        lib.types.attrsOf (lib.types.submodule endpoint)
-      );
-      default = { };
-      example = {
-        "last.fm" = {
-          username = "foo";
-          passwordFile = "/run/secrets/lastfm_password";
-        };
-      };
+    proxy = lib.mkOption {
+      default = null;
+
       description = ''
-        Endpoints to scrobble to.
-        If the endpoint is one of "${lib.concatStringsSep "\", \"" (lib.attrNames endpointUrls)}" the url is set automatically.
+        HTTP proxy URL.
       '';
+
+      type = lib.types.nullOr lib.types.str;
+    };
+
+    verbose = lib.mkOption {
+      default = 1;
+
+      description = ''
+        Log level for the mpdscribble daemon.
+      '';
+
+      type = lib.types.int;
     };
 
   };
@@ -203,16 +223,18 @@ in
     systemd.services.mpdscribble = {
       after = [ "network.target" ] ++ (lib.optional localMpd "mpd.service");
       description = "mpdscribble mpd scrobble client";
-      wantedBy = [ "multi-user.target" ];
+
       serviceConfig = {
         DynamicUser = true;
-        StateDirectory = "mpdscribble";
-        RuntimeDirectory = "mpdscribble";
-        RuntimeDirectoryMode = "700";
+        ExecStart = "${pkgs.mpdscribble}/bin/mpdscribble --no-daemon --conf ${cfgFile}";
         # TODO use LoadCredential= instead of running preStart with full privileges?
         ExecStartPre = "+${preStart}";
-        ExecStart = "${pkgs.mpdscribble}/bin/mpdscribble --no-daemon --conf ${cfgFile}";
+        RuntimeDirectory = "mpdscribble";
+        RuntimeDirectoryMode = "700";
+        StateDirectory = "mpdscribble";
       };
+
+      wantedBy = [ "multi-user.target" ];
     };
   };
 

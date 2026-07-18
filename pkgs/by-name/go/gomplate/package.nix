@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule (finalAttrs: {
@@ -16,11 +16,6 @@ buildGoModule (finalAttrs: {
   };
 
   vendorHash = "sha256-yy6+mbLy8HpLp6sPjf07S7ufrqLKmjzIA3NoeKUOeIc=";
-
-  ldflags = [
-    "-s"
-    "-X github.com/${finalAttrs.src.owner}/${finalAttrs.pname}/v4/version.Version=${finalAttrs.version}"
-  ];
 
   preCheck = ''
     # some tests require network access
@@ -38,15 +33,22 @@ buildGoModule (finalAttrs: {
     rm $out/bin/gen
   '';
 
+  ldflags = [
+    "-s"
+    "-X github.com/${finalAttrs.src.owner}/${finalAttrs.pname}/v4/version.Version=${finalAttrs.version}"
+  ];
+
   meta = {
     description = "Flexible commandline tool for template rendering";
-    mainProgram = "gomplate";
     homepage = "https://gomplate.ca/";
     changelog = "https://github.com/hairyhenderson/gomplate/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       ris
       jlesquembre
     ];
+
+    mainProgram = "gomplate";
   };
 })

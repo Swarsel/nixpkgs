@@ -1,10 +1,10 @@
 {
   lib,
+  fetchFromGitHub,
   bleak,
   bleak-retry-connector,
   buildPythonPackage,
   cryptography,
-  fetchFromGitHub,
   fetchpatch,
   setuptools,
   wheel,
@@ -13,7 +13,6 @@
 buildPythonPackage rec {
   pname = "py-dormakaba-dkey";
   version = "1.0.6";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "emontnemery";
@@ -25,9 +24,9 @@ buildPythonPackage rec {
   patches = [
     # https://github.com/emontnemery/py-dormakaba-dkey/pull/45
     (fetchpatch {
+      hash = "sha256-JGsaLQNbUfz0uK/MeGnR2XTJDs4RnTOEg7BavfDPArg=";
       name = "relax-setuptools-dependency.patch";
       url = "https://github.com/emontnemery/py-dormakaba-dkey/commit/cfda4be71d39f2cfd1c0d4f7fff9018050c57f1a.patch";
-      hash = "sha256-JGsaLQNbUfz0uK/MeGnR2XTJDs4RnTOEg7BavfDPArg=";
     })
   ];
 
@@ -44,7 +43,7 @@ buildPythonPackage rec {
 
   # Module has no tests
   doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "py_dormakaba_dkey" ];
 
   meta = {

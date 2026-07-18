@@ -1,11 +1,11 @@
 {
-  autoreconfHook,
-  fetchFromGitHub,
-  gitUpdater,
   lib,
+  stdenv,
+  fetchFromGitHub,
+  autoreconfHook,
+  gitUpdater,
   libiconv,
   libintl,
-  stdenv,
   testers,
   tzdata,
   validatePkgConfig,
@@ -22,9 +22,10 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-knc9PejugU6K4EQflfz91keZr3ZJqZu2TKFQFFJrxiI=";
   };
 
-  configureFlags = lib.optionals (!lib.systems.equals stdenv.buildPlatform stdenv.hostPlatform) [
-    "ac_cv_func_malloc_0_nonnull=yes"
-    "ac_cv_func_realloc_0_nonnull=yes"
+  outputs = [
+    "out"
+    "dev"
+    "man"
   ];
 
   nativeBuildInputs = [
@@ -37,17 +38,10 @@ stdenv.mkDerivation (finalAttrs: {
     libintl
   ];
 
-  nativeCheckInputs = [
-    tzdata
+  configureFlags = lib.optionals (!lib.systems.equals stdenv.buildPlatform stdenv.hostPlatform) [
+    "ac_cv_func_malloc_0_nonnull=yes"
+    "ac_cv_func_realloc_0_nonnull=yes"
   ];
-
-  outputs = [
-    "out"
-    "dev"
-    "man"
-  ];
-
-  enableParallelBuilding = true;
 
   doCheck =
     stdenv.buildPlatform.canExecute stdenv.hostPlatform
@@ -55,6 +49,12 @@ stdenv.mkDerivation (finalAttrs: {
     &&
       # musl does not support TZDIR, used by the tzdata setup hook.
       !stdenv.hostPlatform.isMusl;
+
+  nativeCheckInputs = [
+    tzdata
+  ];
+
+  enableParallelBuilding = true;
 
   passthru = {
     tests.pkg-config = testers.testMetaPkgConfig finalAttrs.finalPackage;
@@ -65,7 +65,7 @@ stdenv.mkDerivation (finalAttrs: {
     description = "Vertical Blanking Interval (VBI) utilities";
     homepage = "https://github.com/zapping-vbi/zvbi";
     changelog = "https://github.com/zapping-vbi/zvbi/blob/${finalAttrs.src.rev}/ChangeLog";
-    pkgConfigModules = [ "zvbi-0.2" ];
+
     license =
       with lib.licenses;
       AND [
@@ -80,6 +80,8 @@ stdenv.mkDerivation (finalAttrs: {
         lgpl2Plus
         mit
       ];
+
     maintainers = with lib.maintainers; [ jopejoe1 ];
+    pkgConfigModules = [ "zvbi-0.2" ];
   };
 })

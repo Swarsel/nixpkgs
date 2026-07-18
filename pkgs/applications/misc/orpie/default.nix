@@ -16,17 +16,17 @@ ocamlPackages.buildDunePackage rec {
   };
 
   patches = [ ./prefix.patch ];
-
-  preConfigure = ''
-    substituteInPlace src/orpie/install.ml.in --replace '@prefix@' $out
-  '';
-
   nativeBuildInputs = [ ocamlPackages.camlp5 ];
+
   buildInputs = with ocamlPackages; [
     curses
     num
     gsl
   ];
+
+  preConfigure = ''
+    substituteInPlace src/orpie/install.ml.in --replace '@prefix@' $out
+  '';
 
   meta = {
     inherit (src.meta) homepage;

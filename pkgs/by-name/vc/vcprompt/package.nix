@@ -32,9 +32,9 @@ stdenv.mkDerivation {
   meta = {
     description = "Program that prints barebones information about the current working directory for various version control systems";
     homepage = "https://github.com/powerman/vcprompt";
+    license = lib.licenses.gpl2Plus;
     maintainers = [ ];
     platforms = with lib.platforms; linux ++ darwin;
-    license = lib.licenses.gpl2Plus;
     mainProgram = "vcprompt";
   };
 }

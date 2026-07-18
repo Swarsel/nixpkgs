@@ -1,10 +1,10 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
-  runCommand,
+  buildGoModule,
   cbtemulator,
   google-cloud-bigtable-tool,
+  runCommand,
 }:
 
 buildGoModule (finalAttrs: {
@@ -18,18 +18,17 @@ buildGoModule (finalAttrs: {
     hash = "sha256-prDwy65pxWDrIJOURe2JHo4sY4yP8IE1Rp1pLUL/IAA=";
   };
 
-  # There's a go.{mod,sum} in the root and in the "bigtable" subdir.
-  # We only ever use things in that subdir.
-  sourceRoot = "${finalAttrs.src.name}/bigtable";
-  env.GOWORK = "off";
-
   vendorHash = "sha256-EDfxT56LKEu/iXPp5RJXb4UIRV2jFFNxh3ZINPbwKTM=";
-
-  subPackages = [ "cmd/emulator" ];
+  env.GOWORK = "off";
 
   postInstall = ''
     mv $out/bin/emulator $out/bin/cbtemulator
   '';
+
+  # There's a go.{mod,sum} in the root and in the "bigtable" subdir.
+  # We only ever use things in that subdir.
+  sourceRoot = "${finalAttrs.src.name}/bigtable";
+  subPackages = [ "cmd/emulator" ];
 
   passthru = {
     # Sets up a table and family, then inserts, and ensures it gets back the value.
@@ -67,7 +66,7 @@ buildGoModule (finalAttrs: {
     homepage = "https://github.com/googleapis/google-cloud-go/blob/bigtable/v${finalAttrs.version}/bigtable/cmd/emulator/cbtemulator.go";
     license = lib.licenses.asl20;
     maintainers = [ lib.maintainers.flokli ];
-    mainProgram = "cbtemulator";
     platforms = lib.platforms.all;
+    mainProgram = "cbtemulator";
   };
 })

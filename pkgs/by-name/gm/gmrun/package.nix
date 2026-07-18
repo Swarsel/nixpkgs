@@ -24,21 +24,23 @@ stdenv.mkDerivation (finalAttrs: {
 
   doCheck = true;
 
-  enableParallelBuilding = true;
-
   # Problem with component size on wayland
   preFixup = ''
     gappsWrapperArgs+=(--set-default GDK_BACKEND x11)
   '';
 
+  enableParallelBuilding = true;
+
   meta = {
     description = "Gnome Completion-Run Utility";
+
     longDescription = ''
       A simple program which provides a "run program" window, featuring a bash-like TAB completion.
       It uses GTK interface.
       Also, supports CTRL-R / CTRL-S / "!" for searching through history.
       Running commands in a terminal with CTRL-Enter. URL handlers.
     '';
+
     homepage = "https://github.com/wdlkmpx/gmrun";
     license = lib.licenses.isc;
     maintainers = with lib.maintainers; [ aleksana ];

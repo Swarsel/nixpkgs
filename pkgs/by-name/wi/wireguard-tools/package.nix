@@ -1,14 +1,14 @@
 {
   lib,
   stdenv,
+  bash,
   fetchzip,
-  nixosTests,
-  iptables,
   iproute2,
+  iptables,
   makeWrapper,
+  nixosTests,
   openresolv,
   procps,
-  bash,
   wireguard-go,
 }:
 
@@ -26,10 +26,7 @@ stdenv.mkDerivation (finalAttrs: {
     "man"
   ];
 
-  sourceRoot = "${finalAttrs.src.name}/src";
-
   nativeBuildInputs = [ makeWrapper ];
-
   buildInputs = [ bash ];
 
   makeFlags = [
@@ -70,13 +67,16 @@ stdenv.mkDerivation (finalAttrs: {
     done
   '';
 
+  sourceRoot = "${finalAttrs.src.name}/src";
+
   passthru = {
-    updateScript = ./update.sh;
     tests = nixosTests.wireguard;
+    updateScript = ./update.sh;
   };
 
   meta = {
     description = "Tools for the WireGuard secure network tunnel";
+
     longDescription = ''
       Supplies the main userspace tooling for using and configuring WireGuard tunnels, including the wg(8) and wg-quick(8) utilities.
       - wg : the configuration utility for getting and setting the configuration of WireGuard tunnel interfaces. The interfaces
@@ -84,14 +84,17 @@ stdenv.mkDerivation (finalAttrs: {
         and ip-route(8). The wg utility provides a series of sub-commands for changing WireGuard-specific aspects of WireGuard interfaces.
       - wg-quick : an extremely simple script for easily bringing up a WireGuard interface, suitable for a few common use cases.
     '';
-    downloadPage = "https://git.zx2c4.com/wireguard-tools/refs/";
+
     homepage = "https://www.wireguard.com/";
     license = lib.licenses.gpl2Only;
+
     maintainers = with lib.maintainers; [
       zx2c4
       ma27
     ];
-    mainProgram = "wg";
+
     platforms = lib.platforms.unix;
+    mainProgram = "wg";
+    downloadPage = "https://git.zx2c4.com/wireguard-tools/refs/";
   };
 })

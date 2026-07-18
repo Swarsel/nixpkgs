@@ -11,9 +11,12 @@
 buildPythonPackage {
   inherit (opentelemetry-instrumentation) version src;
   pname = "opentelemetry-instrumentation-logging";
-  pyproject = true;
 
-  sourceRoot = "${opentelemetry-instrumentation.src.name}/instrumentation/opentelemetry-instrumentation-logging";
+  nativeCheckInputs = [
+    opentelemetry-test-utils
+    pytest-benchmark
+    pytestCheckHook
+  ];
 
   build-system = [ hatchling ];
 
@@ -22,20 +25,17 @@ buildPythonPackage {
     opentelemetry-instrumentation
   ];
 
-  nativeCheckInputs = [
-    opentelemetry-test-utils
-    pytest-benchmark
-    pytestCheckHook
-  ];
+  pyproject = true;
 
   pytestFlags = [
     "--benchmark-disable"
   ];
 
   pythonImportsCheck = [ "opentelemetry.instrumentation.logging" ];
+  sourceRoot = "${opentelemetry-instrumentation.src.name}/instrumentation/opentelemetry-instrumentation-logging";
 
   meta = opentelemetry-instrumentation.meta // {
-    homepage = "https://github.com/open-telemetry/opentelemetry-python-contrib/blob/main/instrumentation/opentelemetry-instrumentation-logging";
     description = "Logging instrumentation for OpenTelemetry";
+    homepage = "https://github.com/open-telemetry/opentelemetry-python-contrib/blob/main/instrumentation/opentelemetry-instrumentation-logging";
   };
 }

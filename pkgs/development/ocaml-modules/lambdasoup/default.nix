@@ -2,17 +2,15 @@
   lib,
   fetchFromGitHub,
   buildDunePackage,
-  ocaml,
   camlp-streams,
   markup,
+  ocaml,
   ounit2,
 }:
 
 buildDunePackage (finalAttrs: {
   pname = "lambdasoup";
   version = "1.1.1";
-
-  minimalOCamlVersion = "4.03";
 
   src = fetchFromGitHub {
     owner = "aantron";
@@ -28,6 +26,7 @@ buildDunePackage (finalAttrs: {
 
   doCheck = lib.versionAtLeast ocaml.version "4.08";
   checkInputs = [ ounit2 ];
+  minimalOCamlVersion = "4.03";
 
   meta = {
     description = "Functional HTML scraping and rewriting with CSS in OCaml";

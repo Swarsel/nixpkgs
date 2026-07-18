@@ -80,66 +80,27 @@ in
   ];
 
   options = {
+    boot.initrd.services.resolved.enable = mkOption {
+      default = config.boot.initrd.systemd.network.enable;
+      defaultText = "config.boot.initrd.systemd.network.enable";
+
+      description = ''
+        Whether to enable resolved for stage 1 networking.
+        Uses the toplevel 'services.resolved' options for 'resolved.conf'
+      '';
+    };
+
     services.resolved = {
       enable = lib.mkEnableOption "the Systemd DNS resolver daemon (systemd-resolved)";
 
-      settings.Resolve = mkOption {
-        description = ''
-          Settings option for systemd-resolved.
-          See {manpage}`resolved.conf(5)` for all available options.
-        '';
-        default = { };
-        type = types.submodule {
-          freeformType = types.attrsOf unitOption;
-          options = {
-            DNS = mkOption {
-              type = unitOption;
-              default = config.networking.nameservers;
-              defaultText = literalExpression "config.networking.nameservers";
-              description = ''
-                List of IP addresses to query as recursive DNS resolvers.
-              '';
-            };
-
-            DNSOverTLS = mkOption {
-              type = unitOption;
-              default = false;
-              description = ''
-                Whether to use TLS encryption for DNS queries. Requires
-                nameservers that support DNS-over-TLS.
-              '';
-            };
-
-            DNSSEC = mkOption {
-              type = unitOption;
-              default = false;
-              description = ''
-                Whether to validate DNSSEC for DNS lookups.
-              '';
-            };
-
-            Domains = mkOption {
-              type = unitOption;
-              default = config.networking.search;
-              defaultText = literalExpression "config.networking.search";
-              example = [
-                "scope.example.com"
-                "example.com"
-              ];
-              description = ''
-                List of search domains used to complete unqualified name lookups.
-              '';
-            };
-          };
-        };
-      };
-
       dnsDelegates = mkOption {
+        default = { };
+
         description = ''
           dns-delegate files to be created.
           See {manpage}`systemd.dns-delegate(5)` for more info.
         '';
-        default = { };
+
         type = types.attrsOf (
           types.submodule {
             options.Delegate = mkOption {
@@ -147,6 +108,7 @@ in
                 Settings option for systemd dns-delegate files.
                 See {manpage}`systemd.dns-delegate(5)` for all available options.
               '';
+
               type = types.submodule {
                 freeformType = types.attrsOf unitOption;
               };
@@ -155,15 +117,69 @@ in
         );
       };
 
-    };
+      settings.Resolve = mkOption {
+        default = { };
 
-    boot.initrd.services.resolved.enable = mkOption {
-      default = config.boot.initrd.systemd.network.enable;
-      defaultText = "config.boot.initrd.systemd.network.enable";
-      description = ''
-        Whether to enable resolved for stage 1 networking.
-        Uses the toplevel 'services.resolved' options for 'resolved.conf'
-      '';
+        description = ''
+          Settings option for systemd-resolved.
+          See {manpage}`resolved.conf(5)` for all available options.
+        '';
+
+        type = types.submodule {
+          options = {
+            DNS = mkOption {
+              default = config.networking.nameservers;
+              defaultText = literalExpression "config.networking.nameservers";
+
+              description = ''
+                List of IP addresses to query as recursive DNS resolvers.
+              '';
+
+              type = unitOption;
+            };
+
+            DNSOverTLS = mkOption {
+              default = false;
+
+              description = ''
+                Whether to use TLS encryption for DNS queries. Requires
+                nameservers that support DNS-over-TLS.
+              '';
+
+              type = unitOption;
+            };
+
+            DNSSEC = mkOption {
+              default = false;
+
+              description = ''
+                Whether to validate DNSSEC for DNS lookups.
+              '';
+
+              type = unitOption;
+            };
+
+            Domains = mkOption {
+              default = config.networking.search;
+              defaultText = literalExpression "config.networking.search";
+
+              description = ''
+                List of search domains used to complete unqualified name lookups.
+              '';
+
+              example = [
+                "scope.example.com"
+                "example.com"
+              ];
+
+              type = unitOption;
+            };
+          };
+
+          freeformType = types.attrsOf unitOption;
+        };
+      };
+
     };
 
   };
@@ -178,37 +194,11 @@ in
         }
       ];
 
-      users.users.systemd-resolve.group = "systemd-resolve";
-
-      # add resolve to nss hosts database if enabled and nscd enabled
-      # system.nssModules is configured in nixos/modules/system/boot/systemd.nix
-      # added with order 501 to allow modules to go before with mkBefore
-      system.nssDatabases.hosts = (mkOrder 501 [ "resolve [!UNAVAIL=return]" ]);
-
-      systemd.additionalUpstreamSystemUnits = [
-        "systemd-resolved.service"
-        "systemd-resolved-monitor.socket"
-        "systemd-resolved-varlink.socket"
-      ];
-
-      systemd.services.systemd-resolved = {
-        wantedBy = [ "sysinit.target" ];
-        aliases = [ "dbus-org.freedesktop.resolve1.service" ];
-        reloadTriggers = [
-          config.environment.etc."systemd/resolved.conf".source
-        ]
-        ++ mapAttrsToList (
-          name: _: config.environment.etc."systemd/dns-delegate.d/${name}.dns-delegate".source
-        ) cfg.dnsDelegates;
-        stopIfChanged = false;
-      };
-
       environment.etc = {
-        "systemd/resolved.conf".text = resolvedConf;
-
         # symlink the dynamic stub resolver of resolv.conf as recommended by upstream:
         # https://www.freedesktop.org/software/systemd/man/systemd-resolved.html#/etc/resolv.conf
         "resolv.conf".source = "/run/systemd/resolve/stub-resolv.conf";
+        "systemd/resolved.conf".text = resolvedConf;
       }
       // optionalAttrs dnsmasqResolve {
         "dnsmasq-resolv.conf".source = "/run/systemd/resolve/resolv.conf";
@@ -222,16 +212,41 @@ in
 
       # If networkmanager is enabled, ask it to interface with resolved.
       networking.networkmanager.dns = "systemd-resolved";
-
       # Since we explicitly provide a resolv.conf, disable resolvconf
       networking.resolvconf.enable = false;
-
       # ... but we still set the package for correct compatibility.
       networking.resolvconf.package = config.systemd.package;
 
       nix.firewall.extraNftablesRules = [
         "ip daddr { 127.0.0.53, 127.0.0.54 } udp dport 53 accept comment \"systemd-resolved listening IPs\""
       ];
+
+      # add resolve to nss hosts database if enabled and nscd enabled
+      # system.nssModules is configured in nixos/modules/system/boot/systemd.nix
+      # added with order 501 to allow modules to go before with mkBefore
+      system.nssDatabases.hosts = (mkOrder 501 [ "resolve [!UNAVAIL=return]" ]);
+
+      systemd.additionalUpstreamSystemUnits = [
+        "systemd-resolved.service"
+        "systemd-resolved-monitor.socket"
+        "systemd-resolved-varlink.socket"
+      ];
+
+      systemd.services.systemd-resolved = {
+        aliases = [ "dbus-org.freedesktop.resolve1.service" ];
+
+        reloadTriggers = [
+          config.environment.etc."systemd/resolved.conf".source
+        ]
+        ++ mapAttrsToList (
+          name: _: config.environment.etc."systemd/dns-delegate.d/${name}.dns-delegate".source
+        ) cfg.dnsDelegates;
+
+        stopIfChanged = false;
+        wantedBy = [ "sysinit.target" ];
+      };
+
+      users.users.systemd-resolve.group = "systemd-resolve";
 
     })
 
@@ -245,26 +260,29 @@ in
       ];
 
       boot.initrd.systemd = {
-        contents = {
-          "/etc/systemd/resolved.conf".text = resolvedConf;
-        };
-
-        tmpfiles.settings.systemd-resolved-stub."/etc/resolv.conf".L.argument =
-          "/run/systemd/resolve/stub-resolv.conf";
-
         additionalUpstreamUnits = [
           "systemd-resolved.service"
           "systemd-resolved-monitor.socket"
           "systemd-resolved-varlink.socket"
         ];
 
-        users.systemd-resolve = { };
-        groups.systemd-resolve = { };
-        storePaths = [ "${config.boot.initrd.systemd.package}/lib/systemd/systemd-resolved" ];
-        services.systemd-resolved = {
-          wantedBy = [ "sysinit.target" ];
-          aliases = [ "dbus-org.freedesktop.resolve1.service" ];
+        contents = {
+          "/etc/systemd/resolved.conf".text = resolvedConf;
         };
+
+        groups.systemd-resolve = { };
+
+        services.systemd-resolved = {
+          aliases = [ "dbus-org.freedesktop.resolve1.service" ];
+          wantedBy = [ "sysinit.target" ];
+        };
+
+        storePaths = [ "${config.boot.initrd.systemd.package}/lib/systemd/systemd-resolved" ];
+
+        tmpfiles.settings.systemd-resolved-stub."/etc/resolv.conf".L.argument =
+          "/run/systemd/resolve/stub-resolv.conf";
+
+        users.systemd-resolve = { };
       };
 
     })

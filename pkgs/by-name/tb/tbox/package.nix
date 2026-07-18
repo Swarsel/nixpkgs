@@ -31,7 +31,7 @@ stdenv.mkDerivation (finalAttrs: {
     description = "Glib-like multi-platform c library";
     homepage = "https://docs.tboox.org";
     license = lib.licenses.asl20;
-    platforms = lib.platforms.linux;
     maintainers = with lib.maintainers; [ wineee ];
+    platforms = lib.platforms.linux;
   };
 })

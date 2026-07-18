@@ -1,13 +1,13 @@
 {
-  buildOctavePackage,
   lib,
   fetchFromGitHub,
-  nix-update-script,
+  autoreconfHook,
+  buildOctavePackage,
   # Build-time dependencies
   ncurses, # >= 5
-  units,
+  nix-update-script,
   pkg-config,
-  autoreconfHook,
+  units,
 }:
 
 buildOctavePackage rec {
@@ -34,15 +34,16 @@ buildOctavePackage rec {
     units
   ];
 
+  postAutoreconf = ''
+    popd
+  '';
+
   # autoreconfHook provides an autoreconfPhase that is run as a
   # preconfigurePhase, which means it runs AFTER the source is un-tarred, and
   # before buildOctavePackage's buildPhase re-tars it up into a format for later
   # consumption by Octave's "pkg build" command.
   preAutoreconf = ''
     pushd src
-  '';
-  postAutoreconf = ''
-    popd
   '';
 
   passthru.updateScript = nix-update-script {
@@ -53,9 +54,9 @@ buildOctavePackage rec {
   };
 
   meta = {
+    description = "Miscellaneous tools that don't fit somewhere else";
     homepage = "https://gnu-octave.github.io/packages/miscellaneous/";
     license = lib.licenses.gpl3Plus;
     maintainers = with lib.maintainers; [ ravenjoad ];
-    description = "Miscellaneous tools that don't fit somewhere else";
   };
 }

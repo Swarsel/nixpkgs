@@ -2,10 +2,10 @@
   lib,
   stdenv,
   fetchFromGitHub,
+  git,
   libxcb,
   libxcb-util,
   libxcb-wm,
-  git,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -33,8 +33,8 @@ stdenv.mkDerivation (finalAttrs: {
   meta = {
     description = "Outputs X window titles";
     homepage = "https://github.com/baskerville/xtitle";
-    maintainers = with lib.maintainers; [ meisternu ];
     license = lib.licenses.unlicense;
+    maintainers = with lib.maintainers; [ meisternu ];
     platforms = lib.platforms.linux;
     mainProgram = "xtitle";
   };

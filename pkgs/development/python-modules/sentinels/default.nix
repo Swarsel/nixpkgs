@@ -2,15 +2,14 @@
   lib,
   buildPythonPackage,
   fetchPypi,
-  hatchling,
   hatch-vcs,
+  hatchling,
   pytestCheckHook,
 }:
 
 buildPythonPackage rec {
   pname = "sentinels";
   version = "1.1.1";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
@@ -22,18 +21,19 @@ buildPythonPackage rec {
     sed -i "/testpaths/d" pyproject.toml
   '';
 
+  nativeCheckInputs = [ pytestCheckHook ];
+
   build-system = [
     hatchling
     hatch-vcs
   ];
 
-  nativeCheckInputs = [ pytestCheckHook ];
-
+  pyproject = true;
   pythonImportsCheck = [ "sentinels" ];
 
   meta = {
-    homepage = "https://github.com/vmalloc/sentinels/";
     description = "Various objects to denote special meanings in python";
+    homepage = "https://github.com/vmalloc/sentinels/";
     license = lib.licenses.bsd3;
     maintainers = with lib.maintainers; [ gador ];
   };

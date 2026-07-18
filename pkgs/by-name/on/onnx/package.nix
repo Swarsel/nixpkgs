@@ -1,18 +1,15 @@
 {
   lib,
   stdenv,
-  python3Packages,
   fetchFromGitHub,
-
   # nativeBuildInputs
   cmake,
-  ninja,
-
-  # buildInputs
-  protobuf,
-
   # checkInputs
   gtest,
+  ninja,
+  # buildInputs
+  protobuf,
+  python3Packages,
 }:
 let
   inherit (lib)
@@ -29,9 +26,6 @@ let
     ;
 in
 stdenv.mkDerivation (finalAttrs: {
-  __structuredAttrs = true;
-  strictDeps = true;
-
   pname = "onnx";
   version = "1.21.0";
 
@@ -46,6 +40,8 @@ stdenv.mkDerivation (finalAttrs: {
     "out"
     "dist" # Python wheel output
   ];
+
+  strictDeps = true;
 
   nativeBuildInputs = [
     build
@@ -63,8 +59,7 @@ stdenv.mkDerivation (finalAttrs: {
     python3Packages.protobuf
   ];
 
-  # Declared in setup.py
-  cmakeBuildDir = ".setuptools-cmake-build";
+  cmakeFlags = mapAttrsToList cmakeFeature finalAttrs.env;
 
   # Python setup.py just takes stuff from the environment.
   env = {
@@ -77,11 +72,8 @@ stdenv.mkDerivation (finalAttrs: {
     ONNX_ML = "1";
     ONNX_NAMESPACE = "onnx";
     ONNX_USE_PROTOBUF_SHARED_LIBS = "1";
-
     nanobind_DIR = "${python3Packages.nanobind}/${python.sitePackages}/nanobind/cmake";
   };
-
-  cmakeFlags = mapAttrsToList cmakeFeature finalAttrs.env;
 
   preConfigure = ''
     export MAX_JOBS=$NIX_BUILD_CORES
@@ -103,7 +95,6 @@ stdenv.mkDerivation (finalAttrs: {
 
   # NOTE: Python specific tests happen in the python package.
   doCheck = true;
-
   checkInputs = [ gtest ];
 
   preCheck = ''
@@ -116,11 +107,16 @@ stdenv.mkDerivation (finalAttrs: {
     find "$out/include/onnx" -type d -empty -delete
   '';
 
+  __structuredAttrs = true;
+  # Declared in setup.py
+  cmakeBuildDir = ".setuptools-cmake-build";
+
   meta = {
     description = "Open Neural Network Exchange";
     homepage = "https://onnx.ai";
-    license = licenses.asl20;
     changelog = "https://github.com/onnx/onnx/releases/tag/v${finalAttrs.version}";
+    license = licenses.asl20;
+
     maintainers = with maintainers; [
       acairncross
       connorbaker

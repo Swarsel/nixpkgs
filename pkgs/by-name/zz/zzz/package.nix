@@ -1,8 +1,8 @@
 {
-  asciidoctor,
-  fetchFromGitHub,
   lib,
   stdenv,
+  fetchFromGitHub,
+  asciidoctor,
 }:
 stdenv.mkDerivation (finalAttrs: {
   pname = "zzz";
@@ -29,10 +29,10 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Simple program to suspend or hibernate your computer";
-    mainProgram = "zzz";
     homepage = "https://github.com/jirutka/zzz";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ aanderse ];
     platforms = lib.platforms.linux;
+    mainProgram = "zzz";
   };
 })

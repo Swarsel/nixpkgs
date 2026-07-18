@@ -8,7 +8,6 @@
 buildPythonPackage rec {
   pname = "sgp4";
   version = "2.26";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
@@ -16,12 +15,12 @@ buildPythonPackage rec {
   };
 
   nativeCheckInputs = [ numpy ];
-
+  format = "setuptools";
   pythonImportsCheck = [ "sgp4" ];
 
   meta = {
-    homepage = "https://github.com/brandon-rhodes/python-sgp4";
     description = "Python version of the SGP4 satellite position library";
+    homepage = "https://github.com/brandon-rhodes/python-sgp4";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ zane ];
   };

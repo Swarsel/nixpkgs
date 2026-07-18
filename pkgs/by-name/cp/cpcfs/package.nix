@@ -20,7 +20,11 @@ stdenv.mkDerivation (finalAttrs: {
     sha256 = "0rfbry0qy8mv746mzk9zdfffkdgq4w7invgb5cszjma2cp83q3i2";
   };
 
-  sourceRoot = "${finalAttrs.src.name}/src";
+  postPatch = ''
+    substituteInPlace Makefile \
+      --replace '-ltermcap' '-lncurses' \
+      --replace '-L /usr/lib/termcap' ' '
+  '';
 
   nativeBuildInputs = [
     makeWrapper
@@ -31,12 +35,6 @@ stdenv.mkDerivation (finalAttrs: {
 
   env.NIX_CFLAGS_COMPILE = "-std=gnu89";
 
-  postPatch = ''
-    substituteInPlace Makefile \
-      --replace '-ltermcap' '-lncurses' \
-      --replace '-L /usr/lib/termcap' ' '
-  '';
-
   installPhase = ''
     runHook preInstall
     mkdir -p $out/bin
@@ -46,12 +44,14 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  sourceRoot = "${finalAttrs.src.name}/src";
+
   meta = {
     description = "Manipulating CPC dsk images and files";
-    mainProgram = "cpcfs";
     homepage = "https://github.com/derikz/cpcfs/";
     license = lib.licenses.bsd2;
     maintainers = [ ];
     platforms = lib.platforms.all;
+    mainProgram = "cpcfs";
   };
 })

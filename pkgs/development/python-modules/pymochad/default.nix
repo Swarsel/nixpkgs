@@ -1,20 +1,19 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
+  fixtures,
+  mock,
   pbr,
+  pytestCheckHook,
   setuptools,
   six,
-  pytestCheckHook,
-  mock,
-  fixtures,
   testtools,
 }:
 
 buildPythonPackage rec {
   pname = "pymochad";
   version = "0.3.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "mtreinish";
@@ -25,6 +24,13 @@ buildPythonPackage rec {
 
   env.PBR_VERSION = version;
 
+  nativeCheckInputs = [
+    pytestCheckHook
+    mock
+    fixtures
+    testtools
+  ];
+
   build-system = [
     pbr
     setuptools
@@ -34,12 +40,7 @@ buildPythonPackage rec {
     six
   ];
 
-  nativeCheckInputs = [
-    pytestCheckHook
-    mock
-    fixtures
-    testtools
-  ];
+  pyproject = true;
 
   pythonImportsCheck = [
     "pymochad"

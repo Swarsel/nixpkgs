@@ -1,8 +1,8 @@
 {
   lib,
+  fetchFromGitHub,
   aiohttp,
   buildPythonPackage,
-  fetchFromGitHub,
   pyserial,
   pytestCheckHook,
   setuptools,
@@ -12,7 +12,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "aqualogic";
   version = "3.4";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "swilson";
@@ -21,6 +20,10 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-hBg02Wypd+MyqM2SUD53djhm5OMP2QAmsp8Stf+UT2c=";
   };
 
+  # With 3.4 the event loop is not terminated after the first test
+  # https://github.com/swilson/aqualogic/issues/9
+  doCheck = false;
+  nativeCheckInputs = [ pytestCheckHook ];
   build-system = [ setuptools ];
 
   dependencies = [
@@ -29,12 +32,7 @@ buildPythonPackage (finalAttrs: {
     websockets
   ];
 
-  nativeCheckInputs = [ pytestCheckHook ];
-
-  # With 3.4 the event loop is not terminated after the first test
-  # https://github.com/swilson/aqualogic/issues/9
-  doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "aqualogic" ];
 
   meta = {

@@ -1,16 +1,16 @@
 {
   lib,
   stdenv,
+  cairo,
+  cmake,
   fetchFromSourcehut,
   meson,
   ninja,
-  cmake,
   pkg-config,
-  wayland-scanner,
-  wayland-protocols,
-  wayland,
-  cairo,
   scdoc,
+  wayland,
+  wayland-protocols,
+  wayland-scanner,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -23,10 +23,6 @@ stdenv.mkDerivation (finalAttrs: {
     rev = "v${finalAttrs.version}";
     sha256 = "sha256-aHA4kXHYH+KvAJSep5X3DqsiK6WFpXr3rGQl/KNiUcY=";
   };
-
-  depsBuildBuild = [
-    pkg-config
-  ];
 
   nativeBuildInputs = [
     meson
@@ -41,6 +37,10 @@ stdenv.mkDerivation (finalAttrs: {
     wayland-protocols
     wayland
     cairo
+  ];
+
+  depsBuildBuild = [
+    pkg-config
   ];
 
   meta = {

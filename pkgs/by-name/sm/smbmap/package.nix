@@ -7,7 +7,6 @@
 python3.pkgs.buildPythonApplication (finalAttrs: {
   pname = "smbmap";
   version = "1.10.8";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "ShawnDEvans";
@@ -16,6 +15,8 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     hash = "sha256-jJDDrHBZWlDOQ/gI6x2Vy+ljXm+9lcBIt8XG/npNa6M=";
   };
 
+  # Project has no tests
+  doCheck = false;
   build-system = with python3.pkgs; [ setuptools ];
 
   dependencies = with python3.pkgs; [
@@ -26,9 +27,7 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     termcolor
   ];
 
-  # Project has no tests
-  doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "smbmap" ];
 
   meta = {

@@ -1,15 +1,14 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  unittestCheckHook,
+  buildPythonPackage,
   setuptools,
+  unittestCheckHook,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "pyleri";
   version = "1.5.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "cesbit";
@@ -18,10 +17,9 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-EmdQdUKFkt3sERU0Q4JOdoiFIvtRIRIl4V4BTId7Ngo=";
   };
 
-  build-system = [ setuptools ];
-
   nativeCheckInputs = [ unittestCheckHook ];
-
+  build-system = [ setuptools ];
+  pyproject = true;
   pythonImportsCheck = [ "pyleri" ];
 
   meta = {

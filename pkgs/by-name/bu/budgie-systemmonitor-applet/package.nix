@@ -1,11 +1,11 @@
 {
   lib,
   stdenv,
-  budgie-desktop,
   fetchFromGitHub,
+  budgie-desktop,
   glib,
-  gtk3,
   gtk-layer-shell,
+  gtk3,
   libgee,
   libgtop,
   libpeas2,
@@ -30,6 +30,14 @@ stdenv.mkDerivation (finalAttrs: {
   # Remove if/when https://github.com/prateekmedia/budgie-systemmonitor-applet/pull/3 is merged
   patches = [ ./install-schemas-to-datadir.patch ];
 
+  postPatch = ''
+    # https://github.com/BuddiesOfBudgie/budgie-desktop/issues/749
+    # https://github.com/prateekmedia/budgie-systemmonitor-applet/issues/4
+    substituteInPlace meson.build \
+      --replace-fail "dependency('libpeas-1.0', version: '>= 1.8.0')" "dependency('libpeas-2')" \
+      --replace-fail "dependency('budgie-1.0', version: '>= 2')" "dependency('budgie-3.0')"
+  '';
+
   strictDeps = true;
 
   nativeBuildInputs = [
@@ -49,14 +57,6 @@ stdenv.mkDerivation (finalAttrs: {
     libgtop
     libpeas2
   ];
-
-  postPatch = ''
-    # https://github.com/BuddiesOfBudgie/budgie-desktop/issues/749
-    # https://github.com/prateekmedia/budgie-systemmonitor-applet/issues/4
-    substituteInPlace meson.build \
-      --replace-fail "dependency('libpeas-1.0', version: '>= 1.8.0')" "dependency('libpeas-2')" \
-      --replace-fail "dependency('budgie-1.0', version: '>= 2')" "dependency('budgie-3.0')"
-  '';
 
   passthru = {
     updateScript = nix-update-script { };

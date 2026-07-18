@@ -1,20 +1,15 @@
 {
   lib,
-  stdenvNoCC,
   fetchFromGitHub,
+  installFonts,
   mkfontdir,
   mkfontscale,
-  installFonts,
+  stdenvNoCC,
 }:
 
 stdenvNoCC.mkDerivation {
   pname = "beon";
   version = "2024-02-26";
-
-  outputs = [
-    "out"
-    "webfont"
-  ];
 
   src = fetchFromGitHub {
     owner = "noirblancrouge";
@@ -23,7 +18,10 @@ stdenvNoCC.mkDerivation {
     hash = "sha256-jBLVVykHFJamOVF6GSRnQqYixqOrw5K1oV1B3sl4Zoc=";
   };
 
-  dontBuild = true;
+  outputs = [
+    "out"
+    "webfont"
+  ];
 
   nativeBuildInputs = [
     mkfontscale
@@ -31,16 +29,19 @@ stdenvNoCC.mkDerivation {
     installFonts
   ];
 
+  preInstall = "rm -r docs/proof";
+
   installPhase = ''
     runHook preInstall
     runHook postInstall
   '';
 
-  preInstall = "rm -r docs/proof";
   postInstall = ''
     mkfontdir $out/share/fonts
     mkfontscale $out/share/fonts
   '';
+
+  dontBuild = true;
 
   meta = {
     description = "Neon stencil typeface";

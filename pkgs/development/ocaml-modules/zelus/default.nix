@@ -1,27 +1,16 @@
 {
   lib,
   stdenv,
-  ocaml,
-  buildDunePackage,
   fetchFromGitHub,
+  buildDunePackage,
   menhir,
   menhirLib,
+  ocaml,
 }:
 
 buildDunePackage rec {
   pname = "zelus";
   version = "2.2";
-
-  env =
-    # Fix build with gcc15
-    lib.optionalAttrs
-      (
-        lib.versionAtLeast ocaml.version "4.10" && lib.versionOlder ocaml.version "4.14"
-        || lib.versions.majorMinor ocaml.version == "5.0"
-      )
-      {
-        NIX_CFLAGS_COMPILE = "-std=gnu11";
-      };
 
   src = fetchFromGitHub {
     owner = "INRIA";
@@ -43,11 +32,22 @@ buildDunePackage rec {
     menhirLib
   ];
 
+  env =
+    # Fix build with gcc15
+    lib.optionalAttrs
+      (
+        lib.versionAtLeast ocaml.version "4.10" && lib.versionOlder ocaml.version "4.14"
+        || lib.versions.majorMinor ocaml.version == "5.0"
+      )
+      {
+        NIX_CFLAGS_COMPILE = "-std=gnu11";
+      };
+
   meta = {
     description = "Synchronous language with ODEs";
     homepage = "https://zelus.di.ens.fr";
     license = lib.licenses.inria-zelus;
-    mainProgram = "zeluc";
     maintainers = with lib.maintainers; [ wegank ];
+    mainProgram = "zeluc";
   };
 }

@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   flit-core,
   pytestCheckHook,
 }:
@@ -9,7 +9,6 @@
 buildPythonPackage rec {
   pname = "aiomultiprocess";
   version = "0.9.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "omnilib";
@@ -23,11 +22,8 @@ buildPythonPackage rec {
     ./python314-compat.patch
   ];
 
-  build-system = [ flit-core ];
-
   nativeCheckInputs = [ pytestCheckHook ];
-
-  enabledTestPaths = [ "aiomultiprocess/tests/*.py" ];
+  build-system = [ flit-core ];
 
   disabledTests = [
     # tests are flaky and make the whole test suite time out
@@ -38,10 +34,13 @@ buildPythonPackage rec {
     "test_spawn_method"
   ];
 
+  enabledTestPaths = [ "aiomultiprocess/tests/*.py" ];
+  pyproject = true;
   pythonImportsCheck = [ "aiomultiprocess" ];
 
   meta = {
     description = "Python module to improve performance";
+
     longDescription = ''
       aiomultiprocess presents a simple interface, while running a full
       AsyncIO event loop on each child process, enabling levels of
@@ -49,6 +48,7 @@ buildPythonPackage rec {
       process can execute multiple coroutines at once, limited only by
       the workload and number of cores available.
     '';
+
     homepage = "https://github.com/omnilib/aiomultiprocess";
     license = with lib.licenses; [ mit ];
     maintainers = [ lib.maintainers.fab ];

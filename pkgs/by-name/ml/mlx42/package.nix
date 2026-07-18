@@ -4,8 +4,8 @@
   fetchFromGitHub,
   cmake,
   glfw,
-  enableShared ? !stdenv.hostPlatform.isStatic,
   enableDebug ? false,
+  enableShared ? !stdenv.hostPlatform.isStatic,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -24,9 +24,7 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   strictDeps = true;
-
   nativeBuildInputs = [ cmake ];
-
   buildInputs = [ glfw ];
 
   cmakeFlags = [
@@ -40,9 +38,9 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   meta = {
-    changelog = "https://github.com/codam-coding-college/MLX42/releases/tag/v${finalAttrs.version}";
     description = "Simple cross-platform graphics library that uses GLFW and OpenGL";
     homepage = "https://github.com/codam-coding-college/MLX42";
+    changelog = "https://github.com/codam-coding-college/MLX42/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.gpl2Only;
     maintainers = with lib.maintainers; [ tomasajt ];
     platforms = lib.platforms.unix;

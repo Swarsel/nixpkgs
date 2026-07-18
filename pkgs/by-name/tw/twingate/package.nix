@@ -1,15 +1,15 @@
 {
-  autoPatchelfHook,
-  curl,
-  dpkg,
-  dbus,
-  fetchurl,
   lib,
-  libnl,
-  udev,
-  cryptsetup,
   stdenv,
+  fetchurl,
+  autoPatchelfHook,
+  cryptsetup,
+  curl,
+  dbus,
+  dpkg,
+  libnl,
   nixosTests,
+  udev,
 }:
 
 stdenv.mkDerivation rec {
@@ -21,19 +21,6 @@ stdenv.mkDerivation rec {
     hash = "sha256-Sk2pALZtcraNpca6wkDiPCvWgU0hYlSeiwwszfZeKeM=";
   };
 
-  buildInputs = [
-    dbus
-    curl
-    libnl
-    udev
-    cryptsetup
-  ];
-
-  nativeBuildInputs = [
-    dpkg
-    autoPatchelfHook
-  ];
-
   postPatch = ''
     while read file; do
       substituteInPlace "$file" \
@@ -41,6 +28,19 @@ stdenv.mkDerivation rec {
         --replace "/usr/sbin" "$out/bin"
     done < <(find etc usr/lib usr/share -type f)
   '';
+
+  nativeBuildInputs = [
+    dpkg
+    autoPatchelfHook
+  ];
+
+  buildInputs = [
+    dbus
+    curl
+    libnl
+    udev
+    cryptsetup
+  ];
 
   installPhase = ''
     mkdir $out

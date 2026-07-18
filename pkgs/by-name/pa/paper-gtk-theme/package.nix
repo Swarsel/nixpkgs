@@ -7,8 +7,8 @@
 }:
 
 stdenv.mkDerivation {
-  version = "2016-08-16";
   pname = "paper-gtk-theme";
+  version = "2016-08-16";
 
   src = fetchFromGitHub {
     owner = "snwh";
@@ -17,24 +17,24 @@ stdenv.mkDerivation {
     sha256 = "0dqllzjk9ggnbh8vvy2c81p3wq6cj73r30hk7gqhrn8i91w8p896";
   };
 
-  nativeBuildInputs = [ autoreconfHook ];
-
-  buildInputs = [ gtk_engines ];
-
   postPatch = ''
     substituteInPlace Makefile.am --replace '$(DESTDIR)'/usr $out
   '';
 
+  nativeBuildInputs = [ autoreconfHook ];
+  buildInputs = [ gtk_engines ];
   preferLocalBuild = true;
 
   meta = {
     description = "Modern desktop theme suite featuring a mostly flat with a minimal use of shadows for depth";
     homepage = "https://snwh.org/paper";
     license = lib.licenses.gpl3;
-    platforms = lib.platforms.linux;
+
     maintainers = [
       lib.maintainers.simonvandel
       lib.maintainers.romildo
     ];
+
+    platforms = lib.platforms.linux;
   };
 }

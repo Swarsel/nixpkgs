@@ -2,15 +2,14 @@
   lib,
   stdenv,
   binutils,
-  busybox,
   bootstrapTools,
+  busybox,
   hello,
 }:
 
 derivation {
-  name = "test-bootstrap-tools";
   inherit (stdenv.hostPlatform) system; # We cannot "cross test"
-  builder = busybox;
+
   args = [
     "ash"
     "-e"
@@ -67,4 +66,7 @@ derivation {
     make
     make install
   '';
+
+  builder = busybox;
+  name = "test-bootstrap-tools";
 }

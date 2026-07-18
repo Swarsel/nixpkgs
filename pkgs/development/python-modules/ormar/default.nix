@@ -1,5 +1,6 @@
 {
   lib,
+  fetchFromGitHub,
   aiomysql,
   aiopg,
   aiosqlite,
@@ -8,7 +9,6 @@
   cryptography,
   databases,
   fastapi,
-  fetchFromGitHub,
   httpx,
   mysqlclient,
   nest-asyncio,
@@ -25,7 +25,6 @@
 buildPythonPackage rec {
   pname = "ormar";
   version = "0.21.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "collerek";
@@ -33,12 +32,6 @@ buildPythonPackage rec {
     tag = version;
     hash = "sha256-DjqjHvRmlFyOQt1FlqZ9iT1zy25FdizRrXfKwMy2uI0=";
   };
-
-  pythonRelaxDeps = [
-    "databases"
-    "pydantic"
-    "SQLAlchemy"
-  ];
 
   nativeBuildInputs = [
     poetry-core
@@ -51,26 +44,6 @@ buildPythonPackage rec {
     sqlalchemy
     psycopg2
   ];
-
-  optional-dependencies = {
-    postgresql = [ asyncpg ];
-    postgres = [ asyncpg ];
-    aiopg = [ aiopg ];
-    mysql = [ aiomysql ];
-    sqlite = [ aiosqlite ];
-    orjson = [ orjson ];
-    crypto = [ cryptography ];
-    all = [
-      aiomysql
-      aiopg
-      aiosqlite
-      asyncpg
-      cryptography
-      mysqlclient
-      orjson
-      pymysql
-    ];
-  };
 
   nativeCheckInputs = [ pytestCheckHook ];
 
@@ -128,7 +101,36 @@ buildPythonPackage rec {
     "test_quering_of_related_model_works_but_no_result"
   ];
 
+  optional-dependencies = {
+    aiopg = [ aiopg ];
+
+    all = [
+      aiomysql
+      aiopg
+      aiosqlite
+      asyncpg
+      cryptography
+      mysqlclient
+      orjson
+      pymysql
+    ];
+
+    crypto = [ cryptography ];
+    mysql = [ aiomysql ];
+    orjson = [ orjson ];
+    postgres = [ asyncpg ];
+    postgresql = [ asyncpg ];
+    sqlite = [ aiosqlite ];
+  };
+
+  pyproject = true;
   pythonImportsCheck = [ "ormar" ];
+
+  pythonRelaxDeps = [
+    "databases"
+    "pydantic"
+    "SQLAlchemy"
+  ];
 
   meta = {
     description = "Async ORM with fastapi in mind and pydantic validation";

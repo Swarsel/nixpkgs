@@ -1,7 +1,7 @@
 {
   lib,
-  elasticsearch-curator,
   fetchFromGitHub,
+  elasticsearch-curator,
   nix-update-script,
   python3,
   testers,
@@ -10,7 +10,6 @@
 python3.pkgs.buildPythonApplication (finalAttrs: {
   pname = "elasticsearch-curator";
   version = "8.0.21";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "elastic";
@@ -19,7 +18,10 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     hash = "sha256-yVOZBz4AJNjmpxRp3t03KwDzp/3W8uJiHwuSRJbfLvk=";
   };
 
-  pythonRelaxDeps = [ "es-client" ];
+  nativeCheckInputs = with python3.pkgs; [
+    requests
+    pytestCheckHook
+  ];
 
   build-system = with python3.pkgs; [ hatchling ];
 
@@ -32,11 +34,6 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     pyyaml
     six
     voluptuous
-  ];
-
-  nativeCheckInputs = with python3.pkgs; [
-    requests
-    pytestCheckHook
   ];
 
   disabledTestPaths = [
@@ -70,19 +67,21 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     "test_api_key_set"
   ];
 
+  pyproject = true;
+  pythonRelaxDeps = [ "es-client" ];
+
   passthru = {
     tests.version = testers.testVersion {
-      package = elasticsearch-curator;
       command = "${lib.getExe elasticsearch-curator} --version";
+      package = elasticsearch-curator;
     };
+
     updateScript = nix-update-script { };
   };
 
   meta = {
     description = "Curate, or manage, your Elasticsearch indices and snapshots";
-    homepage = "https://github.com/elastic/curator";
-    changelog = "https://github.com/elastic/curator/releases/tag/v${finalAttrs.version}";
-    license = lib.licenses.asl20;
+
     longDescription = ''
       Elasticsearch Curator helps you curate, or manage, your Elasticsearch
       indices and snapshots by:
@@ -95,7 +94,11 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
 
       * Perform various actions on the items which remain in the actionable list.
     '';
-    mainProgram = "curator";
+
+    homepage = "https://github.com/elastic/curator";
+    changelog = "https://github.com/elastic/curator/releases/tag/v${finalAttrs.version}";
+    license = lib.licenses.asl20;
     maintainers = with lib.maintainers; [ basvandijk ];
+    mainProgram = "curator";
   };
 })

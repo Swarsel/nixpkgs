@@ -1,34 +1,32 @@
 {
   lib,
-  mkCoqDerivation,
   coq,
   mathcomp,
+  mkCoqDerivation,
   stdlib,
   version ? null,
 }:
 
 mkCoqDerivation {
+  inherit version;
   pname = "gaia";
 
-  release."1.11".hash = "sha256:0gwb0blf37sv9gb0qpn34dab71zdcx7jsnqm3j9p58qw65cgsqn5";
-  release."1.12".hash = "sha256:0c6cim4x6f9944g8v0cp0lxs244lrhb04ms4y2s6y1wh321zj5mi";
-  release."1.13".hash = "sha256:0i8ix2rbw10v34bi0yrx0z89ng96ydqbxm8rv2rnfgy4d1b27x6q";
-  release."1.14".hash = "sha256-wgeQC0fIN3PSmRY1K6/KTy+rJmqqxdo3Bhsz1vjVAes=";
-  release."1.15".hash = "sha256:04zchnkvaq2mzpcilpspn5l947689gj3m0w20m0nd7w4drvlahnw";
-  release."1.17".hash = "sha256-2VzdopXgKS/wC5Rd1/Zlr12J5bSIGINFjG1nrMjDrGE=";
-  release."2.2".hash = "sha256-y8LlQg9d9rfPFjzS9Xu3BW/H3tPiOC+Eb/zwXJGW9d4=";
-  release."2.3".hash = "sha256-inWJok0F3SZpVfoyMfpRXHVHn4z2aY8JjCKKhdVTnoc=";
-  releaseRev = (v: "v${v}");
+  propagatedBuildInputs = [
+    mathcomp.boot
+    mathcomp.fingroup
+    mathcomp.algebra
+    stdlib
+  ];
 
-  inherit version;
   defaultVersion =
     let
       case = coq: mc: out: {
+        inherit out;
+
         cases = [
           coq
           mc
         ];
-        inherit out;
       };
     in
     with lib.versions;
@@ -42,16 +40,19 @@ mkCoqDerivation {
       ]
       null;
 
-  propagatedBuildInputs = [
-    mathcomp.boot
-    mathcomp.fingroup
-    mathcomp.algebra
-    stdlib
-  ];
+  release."1.11".hash = "sha256:0gwb0blf37sv9gb0qpn34dab71zdcx7jsnqm3j9p58qw65cgsqn5";
+  release."1.12".hash = "sha256:0c6cim4x6f9944g8v0cp0lxs244lrhb04ms4y2s6y1wh321zj5mi";
+  release."1.13".hash = "sha256:0i8ix2rbw10v34bi0yrx0z89ng96ydqbxm8rv2rnfgy4d1b27x6q";
+  release."1.14".hash = "sha256-wgeQC0fIN3PSmRY1K6/KTy+rJmqqxdo3Bhsz1vjVAes=";
+  release."1.15".hash = "sha256:04zchnkvaq2mzpcilpspn5l947689gj3m0w20m0nd7w4drvlahnw";
+  release."1.17".hash = "sha256-2VzdopXgKS/wC5Rd1/Zlr12J5bSIGINFjG1nrMjDrGE=";
+  release."2.2".hash = "sha256-y8LlQg9d9rfPFjzS9Xu3BW/H3tPiOC+Eb/zwXJGW9d4=";
+  release."2.3".hash = "sha256-inWJok0F3SZpVfoyMfpRXHVHn4z2aY8JjCKKhdVTnoc=";
+  releaseRev = (v: "v${v}");
 
   meta = {
     description = "Implementation of books from Bourbaki's Elements of Mathematics in Coq";
-    maintainers = with lib.maintainers; [ Zimmi48 ];
     license = lib.licenses.mit;
+    maintainers = with lib.maintainers; [ Zimmi48 ];
   };
 }

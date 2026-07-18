@@ -1,27 +1,26 @@
 {
   lib,
   buildPythonPackage,
+  configupdater,
   fetchPypi,
-  setuptools,
-  setuptools-scm,
-  wheel,
   importlib-metadata,
   myst-parser,
-  pyscaffold,
-  configupdater,
   pre-commit,
+  pyscaffold,
   pytest,
   pytest-cov,
   pytest-xdist,
+  setuptools,
+  setuptools-scm,
   tox,
   twine,
   virtualenv,
+  wheel,
 }:
 
 buildPythonPackage rec {
   pname = "pyscaffoldext-markdown";
   version = "0.5";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
@@ -55,6 +54,7 @@ buildPythonPackage rec {
     ];
   };
 
+  pyproject = true;
   pythonImportsCheck = [ "pyscaffoldext.markdown" ];
 
   meta = {

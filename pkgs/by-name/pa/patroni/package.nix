@@ -1,11 +1,10 @@
 {
-  fetchFromGitHub,
   lib,
+  fetchFromGitHub,
   nix-update-script,
   nixosTests,
   python3Packages,
   versionCheckHook,
-
   extras ? [
     # upstream requires one of: psycopg, psycopg2
     "psycopg2"
@@ -24,7 +23,6 @@
 python3Packages.buildPythonApplication (finalAttrs: {
   pname = "patroni";
   version = "4.1.4";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "zalando";
@@ -33,11 +31,15 @@ python3Packages.buildPythonApplication (finalAttrs: {
     hash = "sha256-KCixqBMXJTl+Ins8B+VQ3qRxNSgEGlZz3XRYp4qDUHs=";
   };
 
-  build-system = with python3Packages; [ setuptools ];
+  nativeCheckInputs =
+    (with python3Packages; [
+      pytestCheckHook
+      versionCheckHook
+    ])
+    ++ lib.concatAttrValues finalAttrs.passthru.optional-dependencies;
 
-  pythonRelaxDeps = [
-    "ydiff" # requires <1.5
-  ];
+  __darwinAllowLocalNetworking = true;
+  build-system = with python3Packages; [ setuptools ];
 
   dependencies =
     (with python3Packages; [
@@ -63,41 +65,40 @@ python3Packages.buildPythonApplication (finalAttrs: {
     psycopg2 = [ psycopg2 ];
     psycopg2-binary = [ psycopg2-binary ];
     psycopg3 = [ psycopg ];
+
     raft = [
       cryptography
       pysyncobj
     ];
+
     systemd = [ systemd-python ];
     zookeeper = [ kazoo ];
   };
 
+  pyproject = true;
   pythonImportsCheck = [ "patroni" ];
 
-  nativeCheckInputs =
-    (with python3Packages; [
-      pytestCheckHook
-      versionCheckHook
-    ])
-    ++ lib.concatAttrValues finalAttrs.passthru.optional-dependencies;
-
-  __darwinAllowLocalNetworking = true;
+  pythonRelaxDeps = [
+    "ydiff" # requires <1.5
+  ];
 
   passthru = {
     tests.patroni = nixosTests.patroni;
-
     updateScript = nix-update-script { };
   };
 
   meta = {
-    changelog = "https://github.com/patroni/patroni/blob/${finalAttrs.src.tag}/docs/releases.rst";
     description = "Template for PostgreSQL HA with ZooKeeper, etcd or Consul";
     homepage = "https://patroni.readthedocs.io/en/latest/";
+    changelog = "https://github.com/patroni/patroni/blob/${finalAttrs.src.tag}/docs/releases.rst";
     license = lib.licenses.mit;
-    mainProgram = "patroni";
+
     maintainers = with lib.maintainers; [
       de11n
       despsyched
     ];
+
     platforms = lib.platforms.unix;
+    mainProgram = "patroni";
   };
 })

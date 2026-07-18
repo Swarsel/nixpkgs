@@ -41,11 +41,11 @@ stdenv.mkDerivation (finalAttrs: {
       testWith = enabled.overrideAttrs;
     in
     {
+      with-bash = testWith { extraTestArgs = "--shell ${lib.getExe bash}"; };
       # Enable tests in all variations
       # Some of these may log failures, which are later treated as SKIPPED.
       # This is normal. Look for "0 failures" and a successful derivation build.
       with-bin-sh = enabled;
-      with-bash = testWith { extraTestArgs = "--shell ${lib.getExe bash}"; };
       # with-dash: Broken as of shellspec 0.28.1, dash 0.5.13.1
       # with-dash = testWith { extraTestArgs = "--shell ${lib.getExe dash}"; };
       with-ksh = testWith { extraTestArgs = "--shell ${lib.getExe ksh}"; };

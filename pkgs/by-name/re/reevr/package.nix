@@ -2,9 +2,8 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  cmake,
-  pkg-config,
   alsa-lib,
+  cmake,
   fontconfig,
   freetype,
   libx11,
@@ -15,10 +14,10 @@
   libxinerama,
   libxrandr,
   libxtst,
+  pkg-config,
   writableTmpDirAsHomeHook,
-
-  buildVST3 ? true,
   buildLV2 ? true,
+  buildVST3 ? true,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -29,8 +28,8 @@ stdenv.mkDerivation (finalAttrs: {
     owner = "tiagolr";
     repo = "reevr";
     tag = "v${finalAttrs.version}";
-    fetchSubmodules = true;
     hash = "sha256-uOaImmc8MXhH6P3IN53LGntsWAbsVnqkz8TUk67aYcU=";
+    fetchSubmodules = true;
   };
 
   nativeBuildInputs = [
@@ -54,8 +53,6 @@ stdenv.mkDerivation (finalAttrs: {
     libxrandr
     libxtst
   ];
-
-  enableParallelBuilding = true;
 
   cmakeFlags = [
     (lib.cmakeBool "COPY_PLUGIN_AFTER_BUILD" false)
@@ -97,15 +94,19 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  enableParallelBuilding = true;
+
   meta = {
     description = "Convolution reverb with pre and post modulation";
     homepage = "https://github.com/tiagolr/reevr";
     changelog = "https://github.com/tiagolr/reevr/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.gpl3Plus;
+
     maintainers = with lib.maintainers; [
       magnetophon
       mrtnvgr
     ];
+
     platforms = lib.platforms.all;
   };
 })

@@ -1,20 +1,20 @@
 {
   lib,
   stdenv,
-  buildNpmPackage,
   fetchFromGitHub,
-  makeWrapper,
-  electron_42,
-  cacert,
-  makeDesktopItem,
-  copyDesktopItems,
-  commandLineArgs ? [ ],
-  nix-update-script,
   _experimental-update-script-combinators,
-  writeShellApplication,
-  nix,
-  jq,
+  buildNpmPackage,
+  cacert,
+  copyDesktopItems,
+  electron_42,
   gnugrep,
+  jq,
+  makeDesktopItem,
+  makeWrapper,
+  nix,
+  nix-update-script,
+  writeShellApplication,
+  commandLineArgs ? [ ],
 }:
 
 let
@@ -31,8 +31,6 @@ buildNpmPackage (finalAttrs: {
     hash = "sha256-icFWpyfdnm0wIkTVa2ijcnBcDmxrutV38vN3/8AY4cg=";
   };
 
-  npmDepsHash = "sha256-SSpw8bBbf6saWwR3ZpqMrbrdjDJTCeARBAlHO65O+Zc=";
-
   postPatch = ''
     substituteInPlace package.json \
       --replace-fail 'npm run install:esbuild && ' "" \
@@ -48,6 +46,13 @@ buildNpmPackage (finalAttrs: {
       --replace-fail 'process.resourcesPath' "'$out/share/lib/shogihome/resources'"
   '';
 
+  nativeBuildInputs = lib.optionals stdenv.hostPlatform.isLinux [
+    makeWrapper
+    copyDesktopItems
+  ];
+
+  npmDepsHash = "sha256-SSpw8bBbf6saWwR3ZpqMrbrdjDJTCeARBAlHO65O+Zc=";
+
   env = {
     ELECTRON_SKIP_BINARY_DOWNLOAD = "1";
     npm_config_build_from_source = "true";
@@ -57,15 +62,6 @@ buildNpmPackage (finalAttrs: {
     # Prevent "unable to get local issuer certificate" error
     NODE_EXTRA_CA_CERTS = "${cacert}/etc/ssl/certs/ca-bundle.crt";
   };
-
-  nativeBuildInputs = lib.optionals stdenv.hostPlatform.isLinux [
-    makeWrapper
-    copyDesktopItems
-  ];
-
-  makeCacheWritable = true;
-
-  dontNpmBuild = true;
 
   buildPhase = ''
     runHook preBuild
@@ -113,20 +109,22 @@ buildNpmPackage (finalAttrs: {
 
   desktopItems = [
     (makeDesktopItem {
-      name = "shogihome";
-      exec = "shogihome %U";
-      icon = "shogihome";
-      desktopName = "ShogiHome";
-      genericName = "Shogi Frontend";
-      comment = finalAttrs.meta.description;
       categories = [ "Game" ];
-
+      comment = finalAttrs.meta.description;
+      desktopName = "ShogiHome";
+      exec = "shogihome %U";
+      genericName = "Shogi Frontend";
+      icon = "shogihome";
+      name = "shogihome";
       # The project was renamed "shogihome" from "electron-shogi."
       # Some references to "electron-shogi" remain for compatibility.
       # ref: https://github.com/sunfish-shogi/shogihome/commit/e5bbc4d43d231df23ac31c655adb64e11890993e
       startupWMClass = "electron-shogi";
     })
   ];
+
+  dontNpmBuild = true;
+  makeCacheWritable = true;
 
   passthru = {
     updateScript = _experimental-update-script-combinators.sequence [
@@ -137,15 +135,18 @@ buildNpmPackage (finalAttrs: {
       })
       (lib.getExe (writeShellApplication {
         name = "${finalAttrs.pname}-electron-updater";
+
+        runtimeEnv = {
+          PKG_FILE = toString ./package.nix;
+          PNAME = finalAttrs.pname;
+        };
+
         runtimeInputs = [
           nix
           jq
           gnugrep
         ];
-        runtimeEnv = {
-          PNAME = finalAttrs.pname;
-          PKG_FILE = toString ./package.nix;
-        };
+
         text = ''
           new_src="$(nix-build --attr "pkgs.$PNAME.src" --no-out-link)"
           new_electron_major="$(jq '.devDependencies.electron' "$new_src/package.json" | grep --perl-regexp --only-matching '\d+' | head -n 1)"
@@ -158,15 +159,18 @@ buildNpmPackage (finalAttrs: {
   meta = {
     description = "Shogi frontend supporting USI engines";
     homepage = "https://sunfish-shogi.github.io/shogihome/";
+
     license =
       with lib.licenses;
       AND [
         mit
         asl20 # for icons
       ];
+
     maintainers = with lib.maintainers; [
       kachick
     ];
+
     mainProgram = "shogihome";
   };
 })

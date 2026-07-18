@@ -1,15 +1,15 @@
 {
-  fetchFromGitHub,
   lib,
   stdenv,
-  libunwind,
-  libraw1394,
-  libjpeg,
-  libiec61883,
-  libdv,
-  libavc1394,
-  pkg-config,
+  fetchFromGitHub,
   autoreconfHook,
+  libavc1394,
+  libdv,
+  libiec61883,
+  libjpeg,
+  libraw1394,
+  libunwind,
+  pkg-config,
 }:
 
 stdenv.mkDerivation {
@@ -24,6 +24,11 @@ stdenv.mkDerivation {
     sha256 = "17qy76fjpzrbxm4pj0ljx5lbimxryv24fvr13jwkh24j85dxailn";
   };
 
+  nativeBuildInputs = [
+    autoreconfHook
+    pkg-config
+  ];
+
   buildInputs = [
     libunwind
     libraw1394
@@ -31,11 +36,6 @@ stdenv.mkDerivation {
     libiec61883
     libdv
     libavc1394
-  ];
-
-  nativeBuildInputs = [
-    autoreconfHook
-    pkg-config
   ];
 
   meta = {
@@ -50,7 +50,6 @@ stdenv.mkDerivation {
     '';
 
     homepage = "https://github.com/ddennedy/dvgrab"; # Formerly http://www.kinodv.org/
-
     license = lib.licenses.gpl2Plus;
     platforms = lib.platforms.gnu ++ lib.platforms.linux;
     mainProgram = "dvgrab";

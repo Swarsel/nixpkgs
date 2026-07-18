@@ -4,9 +4,9 @@
 {
   lib,
   glib,
+  harfbuzz,
   pango,
   python3,
-  harfbuzz,
 }:
 
 let

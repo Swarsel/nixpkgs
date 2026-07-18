@@ -1,8 +1,8 @@
 {
   lib,
+  fetchFromGitHub,
   buildDotnetModule,
   dotnetCorePackages,
-  fetchFromGitHub,
   versionCheckHook,
 }:
 
@@ -17,10 +17,15 @@ buildDotnetModule (finalAttrs: {
     hash = "sha256-B/2krGBYp/6qgINRyX/38tHlEy9JxmQMAIPsDNjZF5k=";
   };
 
-  projectFile = "DiscordChatExporter.Cli/DiscordChatExporter.Cli.csproj";
-  nugetDeps = ./deps.json;
-  dotnet-sdk = dotnetCorePackages.sdk_10_0;
+  doInstallCheck = true;
+  nativeInstallCheckInputs = [ versionCheckHook ];
+
+  postFixup = ''
+    ln -s $out/bin/DiscordChatExporter.Cli $out/bin/discordchatexporter-cli
+  '';
+
   dotnet-runtime = dotnetCorePackages.runtime_10_0;
+  dotnet-sdk = dotnetCorePackages.sdk_10_0;
 
   dotnetBuildFlags = [
     # workaround for https://github.com/belav/csharpier/pull/1696
@@ -28,22 +33,17 @@ buildDotnetModule (finalAttrs: {
     "-p:FirstTargetFrameworks=workaround-for-csharpier-pr-1696"
   ];
 
-  postFixup = ''
-    ln -s $out/bin/DiscordChatExporter.Cli $out/bin/discordchatexporter-cli
-  '';
-
-  doInstallCheck = true;
-  nativeInstallCheckInputs = [ versionCheckHook ];
-
+  nugetDeps = ./deps.json;
+  projectFile = "DiscordChatExporter.Cli/DiscordChatExporter.Cli.csproj";
   passthru.updateScript = ./updater.sh;
 
   meta = {
-    changelog = "https://github.com/Tyrrrz/DiscordChatExporter/releases/tag/${finalAttrs.version}";
     description = "Tool to export Discord chat logs to a file";
     homepage = "https://github.com/Tyrrrz/DiscordChatExporter";
+    changelog = "https://github.com/Tyrrrz/DiscordChatExporter/releases/tag/${finalAttrs.version}";
     license = lib.licenses.gpl3Plus;
-    mainProgram = "discordchatexporter-cli";
     maintainers = with lib.maintainers; [ phanirithvij ];
     platforms = lib.platforms.unix;
+    mainProgram = "discordchatexporter-cli";
   };
 })

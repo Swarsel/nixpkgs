@@ -1,22 +1,21 @@
 {
   lib,
-  buildPythonPackage,
-  pythonAtLeast,
   fetchFromGitHub,
-  setuptools,
   aiohttp,
   attrs,
+  buildPythonPackage,
   defusedxml,
-  pytest-asyncio_0,
   pytest-aiohttp,
+  pytest-asyncio_0,
   pytest-mock,
   pytestCheckHook,
+  pythonAtLeast,
+  setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "arcam-fmj";
   version = "2.1.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "elupus";
@@ -25,19 +24,19 @@ buildPythonPackage rec {
     hash = "sha256-Oa/uCktLITzh3ZNW8RSCt6lYax0VmbAGW+coGnoiTpo=";
   };
 
+  nativeCheckInputs = [
+    pytest-asyncio_0
+    pytest-aiohttp
+    pytest-mock
+    pytestCheckHook
+  ];
+
   build-system = [ setuptools ];
 
   dependencies = [
     aiohttp
     attrs
     defusedxml
-  ];
-
-  nativeCheckInputs = [
-    pytest-asyncio_0
-    pytest-aiohttp
-    pytest-mock
-    pytestCheckHook
   ];
 
   disabledTests = lib.optionals (pythonAtLeast "3.12") [
@@ -53,6 +52,8 @@ buildPythonPackage rec {
     "test_unsupported_zone"
   ];
 
+  pyproject = true;
+
   pythonImportsCheck = [
     "arcam.fmj"
     "arcam.fmj.client"
@@ -62,10 +63,10 @@ buildPythonPackage rec {
 
   meta = {
     description = "Python library for speaking to Arcam receivers";
-    mainProgram = "arcam-fmj";
     homepage = "https://github.com/elupus/arcam_fmj";
     changelog = "https://github.com/elupus/arcam_fmj/releases/tag/${src.tag}";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ dotlambda ];
+    mainProgram = "arcam-fmj";
   };
 }

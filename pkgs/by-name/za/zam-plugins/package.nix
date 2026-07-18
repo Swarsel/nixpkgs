@@ -3,17 +3,17 @@
   stdenv,
   fetchFromGitHub,
   boost,
-  libx11,
-  libGL,
-  liblo,
-  libjack2,
+  fftwFloat,
   ladspa-header,
+  libGL,
+  libjack2,
+  liblo,
+  libsamplerate,
+  libsndfile,
+  libx11,
   lv2,
   pkg-config,
   rubberband,
-  libsndfile,
-  fftwFloat,
-  libsamplerate,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -28,7 +28,16 @@ stdenv.mkDerivation (finalAttrs: {
     fetchSubmodules = true;
   };
 
+  postPatch = ''
+    patchShebangs ./dpf/utils/generate-ttl.sh
+    for f in plugins/*/Makefile; do
+      substituteInPlace "$f" \
+        --replace-quiet 'pkg-config' '${stdenv.cc.targetPrefix}pkg-config'
+    done
+  '';
+
   nativeBuildInputs = [ pkg-config ];
+
   buildInputs = [
     boost
     libx11
@@ -43,14 +52,6 @@ stdenv.mkDerivation (finalAttrs: {
     libsamplerate
   ];
 
-  postPatch = ''
-    patchShebangs ./dpf/utils/generate-ttl.sh
-    for f in plugins/*/Makefile; do
-      substituteInPlace "$f" \
-        --replace-quiet 'pkg-config' '${stdenv.cc.targetPrefix}pkg-config'
-    done
-  '';
-
   makeFlags = [
     "PREFIX=${placeholder "out"}"
   ];
@@ -58,8 +59,8 @@ stdenv.mkDerivation (finalAttrs: {
   enableParallelBuilding = true;
 
   meta = {
-    homepage = "https://www.zamaudio.com/?p=976";
     description = "Collection of LV2/LADSPA/VST/JACK audio plugins by ZamAudio";
+    homepage = "https://www.zamaudio.com/?p=976";
     license = lib.licenses.gpl2Plus;
     maintainers = [ lib.maintainers.magnetophon ];
     platforms = lib.platforms.linux;

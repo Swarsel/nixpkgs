@@ -2,6 +2,10 @@
   lib,
   stdenv,
   fetchFromGitLab,
+  SDL2,
+  SDL2_image,
+  SDL2_mixer,
+  SDL2_ttf,
   boost,
   freefont_ttf,
   fribidi,
@@ -11,10 +15,6 @@
   lua,
   pkg-config,
   povray,
-  SDL2,
-  SDL2_image,
-  SDL2_mixer,
-  SDL2_ttf,
   zlib,
 }:
 
@@ -62,9 +62,6 @@ stdenv.mkDerivation (finalAttrs: {
     zlib
   ];
 
-  enableParallelBuilding = true;
-
-  __structuredAttrs = true;
   makeFlags = [
     "PREFIX=$(out)"
     "POVRAY=povray Work_Threads=$(NIX_BUILD_CORES)"
@@ -75,12 +72,15 @@ stdenv.mkDerivation (finalAttrs: {
     "-I${lib.getDev SDL2_mixer}/include/SDL2"
   ];
 
+  __structuredAttrs = true;
+  enableParallelBuilding = true;
+
   meta = {
     description = "Rearrange dominoes on different platforms to start a chain reaction";
     homepage = "https://domino-chain.gitlab.io/";
     license = lib.licenses.gpl3Plus;
     maintainers = with lib.maintainers; [ fgaz ];
-    mainProgram = "domino-chain";
     platforms = lib.platforms.all;
+    mainProgram = "domino-chain";
   };
 })

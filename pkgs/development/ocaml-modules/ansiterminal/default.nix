@@ -1,7 +1,7 @@
 {
   lib,
-  buildDunePackage,
   fetchurl,
+  buildDunePackage,
 }:
 
 buildDunePackage (finalAttrs: {
@@ -21,16 +21,20 @@ buildDunePackage (finalAttrs: {
 
   meta = {
     description = "Module allowing to use the colors and cursor movements on ANSI terminals";
+
     longDescription = ''
       ANSITerminal is a module allowing to use the colors and cursor
       movements on ANSI terminals. It also works on the windows shell (but
       this part is currently work in progress).
     '';
+
     homepage = "https://github.com/Chris00/ANSITerminal";
+
     license = with lib.licenses; [
       lgpl3Plus
       ocamlLgplLinkingException
     ];
+
     maintainers = [ lib.maintainers.jirkamarsik ];
   };
 })

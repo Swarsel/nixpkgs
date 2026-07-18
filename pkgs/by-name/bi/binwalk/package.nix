@@ -1,27 +1,28 @@
 {
+  lib,
+  stdenv,
+  fetchFromGitHub,
   bzip2,
   cabextract,
   dmg2img,
   dtc,
   dumpifs,
-  enableUnfree ? false,
-  fetchFromGitHub,
   fontconfig,
   gnutar,
   jefferson,
-  lib,
+  lz4,
   lzfse,
   lzo,
   lzop,
-  lz4,
+  makeBinaryWrapper,
   openssl_3,
+  p7zip,
   pkg-config,
   python3,
   rustPlatform,
   sasquatch,
   sleuthkit,
   srec2bin,
-  stdenv,
   ubi_reader,
   ucl,
   uefi-firmware-parser,
@@ -33,8 +34,7 @@
   xz,
   zlib,
   zstd,
-  p7zip,
-  makeBinaryWrapper,
+  enableUnfree ? false,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -47,8 +47,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-em+jOnhCZH5EEJrhXTHmxiwpMcBr5oNU1+5IJ1H/oco=";
   };
-
-  cargoHash = "sha256-cnJVeuvNNApEHqgZDcSgqkH3DKAr8+HkqXUH9defTCA=";
 
   nativeBuildInputs = [
     pkg-config
@@ -69,7 +67,7 @@ rustPlatform.buildRustPackage (finalAttrs: {
     zlib
   ];
 
-  dontUseCargoParallelTests = true;
+  cargoHash = "sha256-cnJVeuvNNApEHqgZDcSgqkH3DKAr8+HkqXUH9defTCA=";
 
   # skip broken tests
   checkFlags = [
@@ -92,10 +90,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
     "--skip=extractors::common::Chroot::create_symlink"
     "--skip=extractors::common::Chroot::make_executable"
   ];
-
-  nativeInstallCheckInputs = [ versionCheckHook ];
-  doInstallCheck = true;
-  versionCheckProgramArg = "-V";
 
   postInstall = ''
     wrapProgram $out/bin/binwalk --suffix PATH : ${
@@ -124,16 +118,23 @@ rustPlatform.buildRustPackage (finalAttrs: {
     }
   '';
 
+  doInstallCheck = true;
+  nativeInstallCheckInputs = [ versionCheckHook ];
+  dontUseCargoParallelTests = true;
+  versionCheckProgramArg = "-V";
+
   meta = {
     description = "Firmware Analysis Tool";
     homepage = "https://github.com/ReFirmLabs/binwalk";
     changelog = "https://github.com/ReFirmLabs/binwalk/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.mit;
-    platforms = lib.platforms.unix;
+
     maintainers = with lib.maintainers; [
       koral
       felbinger
     ];
+
+    platforms = lib.platforms.unix;
     mainProgram = "binwalk";
   };
 })

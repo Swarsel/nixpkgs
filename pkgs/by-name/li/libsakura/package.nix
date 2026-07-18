@@ -17,10 +17,7 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-QkVZXb9m4iMTeFYUOK1u+9HM0oMu48bwe7AovafanVU=";
   };
 
-  sourceRoot = "${finalAttrs.src.name}/${finalAttrs.pname}";
-
   strictDeps = true;
-  __structuredAttrs = true;
 
   nativeBuildInputs = [
     cmake
@@ -38,12 +35,15 @@ stdenv.mkDerivation (finalAttrs: {
     (lib.cmakeBool "ENABLE_TEST" false)
   ];
 
+  __structuredAttrs = true;
+  sourceRoot = "${finalAttrs.src.name}/${finalAttrs.pname}";
+
   meta = {
+    description = "Thread-safe library for signal processing in radio astronomy";
     homepage = "https://tnakazato.github.io/sakura/";
     changelog = "https://github.com/tnakazato/sakura/releases/tag/${finalAttrs.pname}-${finalAttrs.version}";
-    description = "Thread-safe library for signal processing in radio astronomy";
-    maintainers = with lib.maintainers; [ kiranshila ];
     license = lib.licenses.lgpl3Plus;
+    maintainers = with lib.maintainers; [ kiranshila ];
     platforms = lib.platforms.unix;
   };
 })

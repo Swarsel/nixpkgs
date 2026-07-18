@@ -14,22 +14,22 @@ stdenv.mkDerivation {
     sha256 = "0sgbgv7ljfr0lwwwrb9wsnav7mw7jmr3k8mygwza15icass6dsdq";
   };
 
-  configureFlags = [
-    "--enable-dddmp"
-    "--enable-obj"
-  ];
-
   patches = [
     ./cudd.patch
   ];
 
   nativeBuildInputs = [ autoreconfHook ];
 
+  configureFlags = [
+    "--enable-dddmp"
+    "--enable-obj"
+  ];
+
   meta = {
-    homepage = "https://davidkebo.com/cudd";
     description = "Binary Decision Diagram (BDD) library";
+    homepage = "https://davidkebo.com/cudd";
     license = lib.licenses.bsd3;
-    platforms = lib.platforms.all;
     maintainers = with lib.maintainers; [ chessai ];
+    platforms = lib.platforms.all;
   };
 }

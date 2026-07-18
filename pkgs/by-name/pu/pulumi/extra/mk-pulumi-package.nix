@@ -1,27 +1,23 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   python3Packages,
 }:
 let
   mkBasePackage =
     {
+      cmd,
+      env,
+      extraLdflags,
       pname,
       src,
-      version,
       vendorHash,
-      cmd,
-      extraLdflags,
-      env,
+      version,
       ...
     }@args:
     buildGoModule (
       {
-        sourceRoot = "${src.name}/provider";
-
-        subPackages = [ "cmd/${cmd}" ];
-
         doCheck = false;
 
         ldflags = [
@@ -29,6 +25,9 @@ let
           "-w"
         ]
         ++ extraLdflags;
+
+        sourceRoot = "${src.name}/provider";
+        subPackages = [ "cmd/${cmd}" ];
       }
       // args
     );
@@ -58,16 +57,6 @@ let
             src
             version
             ;
-          pyproject = true;
-
-          sourceRoot = "${src.name}/sdk/python";
-
-          propagatedBuildInputs = [
-            parver
-            pulumi
-            semver
-            setuptools
-          ];
 
           postPatch = ''
             if [[ -e "pyproject.toml" ]]; then
@@ -82,6 +71,13 @@ let
             fi
           '';
 
+          propagatedBuildInputs = [
+            parver
+            pulumi
+            semver
+            setuptools
+          ];
+
           # Auto-generated; upstream does not have any tests.
           # Verify that the version substitution works
           checkPhase = ''
@@ -93,33 +89,36 @@ let
             runHook postCheck
           '';
 
+          pyproject = true;
+
           pythonImportsCheck = [
             (builtins.replaceStrings [ "-" ] [ "_" ] pname)
           ];
+
+          sourceRoot = "${src.name}/sdk/python";
         }
         // args
       )
     ) { };
 in
 {
-  owner,
-  repo,
-  rev,
-  version,
-  hash,
-  vendorHash,
   cmdGen,
   cmdRes,
   extraLdflags,
-  env ? { },
+  hash,
   meta,
+  owner,
+  repo,
+  rev,
+  vendorHash,
+  version,
+  env ? { },
   fetchSubmodules ? false,
   pythonArgs ? { },
   ...
 }@args:
 let
   src = fetchFromGitHub {
-    name = "source-${repo}-${rev}";
     inherit
       owner
       repo
@@ -127,6 +126,8 @@ let
       hash
       fetchSubmodules
       ;
+
+    name = "source-${repo}-${rev}";
   };
 
   pulumi-gen = mkBasePackage {
@@ -138,20 +139,18 @@ let
       env
       ;
 
-    cmd = cmdGen;
     pname = cmdGen;
+    cmd = cmdGen;
   };
 in
 mkBasePackage (
   {
-    pname = repo;
     inherit env src;
+    pname = repo;
 
     nativeBuildInputs = [
       pulumi-gen
     ];
-
-    cmd = cmdRes;
 
     postConfigure = ''
       pushd ..
@@ -164,10 +163,11 @@ mkBasePackage (
       VERSION=v${version} go generate cmd/${cmdRes}/main.go
     '';
 
+    cmd = cmdRes;
+
     passthru.sdks.python = mkPythonPackage (
       {
         inherit meta src version;
-
         pname = repo;
       }
       // pythonArgs

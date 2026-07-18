@@ -1,9 +1,9 @@
 {
   lib,
+  fetchFromGitHub,
   anyio,
   buildPythonPackage,
   dirty-equals,
-  fetchFromGitHub,
   pytest-mock,
   pytest-timeout,
   pytestCheckHook,
@@ -14,7 +14,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "watchfiles";
   version = "1.1.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "samuelcolvin";
@@ -23,22 +22,10 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-UlQnCYSNU9H4x31KenSfYExGun94ekrOCwajORemSco=";
   };
 
-  cargoDeps = rustPlatform.fetchCargoVendor {
-    inherit (finalAttrs) pname src version;
-    hash = "sha256-6sxtH7KrwAWukPjLSMAebguPmeAHbC7YHOn1QiRPigs=";
-  };
-
   nativeBuildInputs = [
     rustPlatform.cargoSetupHook
     rustPlatform.maturinBuildHook
   ];
-
-  dependencies = [ anyio ];
-
-  # Tests need these permissions in order to use the FSEvents API on macOS.
-  sandboxProfile = ''
-    (allow mach-lookup (global-name "com.apple.FSEvents"))
-  '';
 
   nativeCheckInputs = [
     dirty-equals
@@ -52,12 +39,25 @@ buildPythonPackage (finalAttrs: {
     rm -rf watchfiles
   '';
 
+  cargoDeps = rustPlatform.fetchCargoVendor {
+    inherit (finalAttrs) pname src version;
+    hash = "sha256-6sxtH7KrwAWukPjLSMAebguPmeAHbC7YHOn1QiRPigs=";
+  };
+
+  dependencies = [ anyio ];
+
   disabledTests = [
     #  BaseExceptionGroup: unhandled errors in a TaskGroup (1 sub-exception)
     "test_awatch_interrupt_raise"
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "watchfiles" ];
+
+  # Tests need these permissions in order to use the FSEvents API on macOS.
+  sandboxProfile = ''
+    (allow mach-lookup (global-name "com.apple.FSEvents"))
+  '';
 
   meta = {
     description = "File watching and code reload";

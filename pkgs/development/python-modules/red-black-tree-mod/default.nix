@@ -8,7 +8,6 @@
 buildPythonPackage rec {
   pname = "red-black-tree-mod";
   version = "1.22";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
@@ -16,10 +15,9 @@ buildPythonPackage rec {
   };
 
   nativeBuildInputs = [ setuptools ];
-
   # Module has no test
   doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "red_black_dict_mod" ];
 
   meta = {

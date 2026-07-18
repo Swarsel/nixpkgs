@@ -1,8 +1,8 @@
 {
   lib,
+  fetchFromGitHub,
   buildPythonPackage,
   callPackage,
-  fetchFromGitHub,
   httpx,
   sanic,
   setuptools,
@@ -12,7 +12,6 @@
 buildPythonPackage rec {
   pname = "sanic-testing";
   version = "24.6.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "sanic-org";
@@ -26,6 +25,15 @@ buildPythonPackage rec {
     "testsout"
   ];
 
+  # Check in passthru.tests.pytest to escape infinite recursion with sanic
+  doCheck = false;
+
+  postInstall = ''
+    mkdir $testsout
+    cp -R tests $testsout/tests
+  '';
+
+  doInstallCheck = false;
   build-system = [ setuptools ];
 
   dependencies = [
@@ -34,15 +42,7 @@ buildPythonPackage rec {
     websockets
   ];
 
-  postInstall = ''
-    mkdir $testsout
-    cp -R tests $testsout/tests
-  '';
-
-  # Check in passthru.tests.pytest to escape infinite recursion with sanic
-  doCheck = false;
-
-  doInstallCheck = false;
+  pyproject = true;
 
   passthru.tests = {
     pytest = callPackage ./tests.nix { };

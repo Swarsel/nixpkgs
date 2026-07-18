@@ -1,16 +1,16 @@
 {
-  nix,
-  nixfmt,
-  makeWrapper,
-  python3Packages,
   lib,
-  nix-prefetch-scripts,
-  luarocks-nix,
   lua5_1,
   lua5_2,
   lua5_3,
   lua5_4,
   luajit,
+  luarocks-nix,
+  makeWrapper,
+  nix,
+  nix-prefetch-scripts,
+  nixfmt,
+  python3Packages,
 }:
 let
 
@@ -33,9 +33,12 @@ in
 
 python3Packages.buildPythonApplication {
   inherit pname version;
-  pyproject = true;
-
   src = lib.cleanSource ./.;
+
+  postFixup = ''
+    wrapProgram $out/bin/luarocks-packages-updater \
+     --prefix PATH : "${path}"
+  '';
 
   build-system = [
     python3Packages.setuptools
@@ -45,10 +48,7 @@ python3Packages.buildPythonApplication {
     python3Packages.nixpkgs-plugin-update
   ];
 
-  postFixup = ''
-    wrapProgram $out/bin/luarocks-packages-updater \
-     --prefix PATH : "${path}"
-  '';
+  pyproject = true;
 
   shellHook = ''
     export PATH="${path}:$PATH"
@@ -56,9 +56,9 @@ python3Packages.buildPythonApplication {
 
   meta = {
     inherit (attrs.project) description;
-    license = lib.licenses.gpl3Only;
     homepage = attrs.project.urls.Homepage;
-    mainProgram = "luarocks-packages-updater";
+    license = lib.licenses.gpl3Only;
     maintainers = with lib.maintainers; [ teto ];
+    mainProgram = "luarocks-packages-updater";
   };
 }

@@ -1,10 +1,9 @@
 {
-  mkKdeDerivation,
   kpmcore,
+  mkKdeDerivation,
 }:
 mkKdeDerivation {
   pname = "partitionmanager";
-
   propagatedUserEnvPkgs = [ kpmcore ];
 
   passthru = {

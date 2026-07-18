@@ -2,19 +2,19 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  nix-update-script,
-  vala,
-  pkg-config,
-  python3,
+  desktop-file-utils,
   glib,
   gtk3,
+  libgee,
+  libx11,
+  libxtst,
   meson,
   ninja,
-  libgee,
+  nix-update-script,
   pantheon,
-  desktop-file-utils,
-  libxtst,
-  libx11,
+  pkg-config,
+  python3,
+  vala,
   wrapGAppsHook3,
 }:
 
@@ -28,6 +28,11 @@ stdenv.mkDerivation (finalAttrs: {
     rev = finalAttrs.version;
     sha256 = "1zkr7x022khn5g3sq2dkxzy1hiiz66vl81s3i5sb9qr88znh79p1";
   };
+
+  postPatch = ''
+    chmod +x meson/post_install.py
+    patchShebangs meson/post_install.py
+  '';
 
   nativeBuildInputs = [
     desktop-file-utils
@@ -48,11 +53,6 @@ stdenv.mkDerivation (finalAttrs: {
     libxtst
   ];
 
-  postPatch = ''
-    chmod +x meson/post_install.py
-    patchShebangs meson/post_install.py
-  '';
-
   passthru = {
     updateScript = nix-update-script { };
   };
@@ -61,9 +61,9 @@ stdenv.mkDerivation (finalAttrs: {
     description = "Insert emoji anywhere, even in non-native apps - designed for elementary OS";
     homepage = "https://github.com/cassidyjames/ideogram";
     license = lib.licenses.gpl2Plus;
-    teams = [ lib.teams.pantheon ];
     platforms = lib.platforms.linux;
     mainProgram = "com.github.cassidyjames.ideogram";
+    teams = [ lib.teams.pantheon ];
   };
 
 })

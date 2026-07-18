@@ -1,10 +1,10 @@
 {
+  lib,
+  fetchFromGitHub,
   aiohttp,
   buildPythonPackage,
-  fetchFromGitHub,
   hatch-regex-commit,
   hatchling,
-  lib,
   mashumaro,
   orjson,
   pytest-asyncio,
@@ -15,7 +15,6 @@
 buildPythonPackage rec {
   pname = "aiontfy";
   version = "0.8.5";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "tr4nt0r";
@@ -23,6 +22,12 @@ buildPythonPackage rec {
     tag = "v${version}";
     hash = "sha256-LDt8JapUQcojMWyW931zt3U4QMwQew4wOly2AyYvbkI=";
   };
+
+  nativeCheckInputs = [
+    pytest-asyncio
+    pytest-cov-stub
+    pytestCheckHook
+  ];
 
   build-system = [
     hatch-regex-commit
@@ -35,18 +40,13 @@ buildPythonPackage rec {
     orjson
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "aiontfy" ];
 
-  nativeCheckInputs = [
-    pytest-asyncio
-    pytest-cov-stub
-    pytestCheckHook
-  ];
-
   meta = {
-    changelog = "https://github.com/tr4nt0r/aiontfy/releases/tag/${src.tag}";
     description = "Async ntfy client library";
     homepage = "https://github.com/tr4nt0r/aiontfy";
+    changelog = "https://github.com/tr4nt0r/aiontfy/releases/tag/${src.tag}";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ dotlambda ];
   };

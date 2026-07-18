@@ -2,10 +2,10 @@
   lib,
   stdenv,
   fetchFromGitHub,
+  SDL2,
+  alsa-lib,
   cmake,
   nixosTests,
-  alsa-lib,
-  SDL2,
 }:
 
 stdenv.mkDerivation (finalAttrs: {

@@ -1,7 +1,7 @@
 {
+  config,
   lib,
   pkgs,
-  config,
   ...
 }:
 
@@ -36,39 +36,13 @@ let
   getLoadCredentialList = lib.mapAttrsToList (n: v: "${n}_FILE:${v}") cfg.credentials;
 in
 {
-  meta.maintainers = with maintainers; [
-    gepbird
-    ymstnt
-  ];
-
   options.services.pocket-id = {
     enable = mkEnableOption "Pocket ID server";
-
     package = mkPackageOption pkgs "pocket-id" { };
 
-    environmentFile = mkOption {
-      type = path;
-      description = ''
-        Path to an environment file to be loaded.
-        This can be used to securely store tokens and secrets outside of the world-readable Nix store.
-
-        See [PocketID environment variables](https://pocket-id.org/docs/configuration/environment-variables).
-
-        Example contents of the file:
-        MAXMIND_LICENSE_KEY=your-license-key
-
-        Alternatively you can use `services.pocket-id.credentials` to define each variable in separate files.
-      '';
-      default = "/dev/null";
-      example = "/var/lib/secrets/pocket-id";
-    };
-
     credentials = mkOption {
-      type = attrsOf path;
       default = { };
-      example = {
-        ENCRYPTION_KEY = "/run/secrets/pocket-id/encryption-key";
-      };
+
       description = ''
         Credentials which are loaded from the contents of the specified file paths.
 
@@ -80,41 +54,50 @@ in
 
         Alternatively you can use `services.pocket-id.environmentFile` to define all the variables in a single file.
       '';
+
+      example = {
+        ENCRYPTION_KEY = "/run/secrets/pocket-id/encryption-key";
+      };
+
+      type = attrsOf path;
+    };
+
+    dataDir = mkOption {
+      default = "/var/lib/pocket-id";
+
+      description = ''
+        The directory where Pocket ID will store its data, such as the database when using SQLite.
+      '';
+
+      type = path;
+    };
+
+    environmentFile = mkOption {
+      default = "/dev/null";
+
+      description = ''
+        Path to an environment file to be loaded.
+        This can be used to securely store tokens and secrets outside of the world-readable Nix store.
+
+        See [PocketID environment variables](https://pocket-id.org/docs/configuration/environment-variables).
+
+        Example contents of the file:
+        MAXMIND_LICENSE_KEY=your-license-key
+
+        Alternatively you can use `services.pocket-id.credentials` to define each variable in separate files.
+      '';
+
+      example = "/var/lib/secrets/pocket-id";
+      type = path;
+    };
+
+    group = mkOption {
+      default = "pocket-id";
+      description = "Group account under which Pocket ID runs.";
+      type = str;
     };
 
     settings = mkOption {
-      type = submodule {
-        freeformType = format.type;
-
-        options = {
-          APP_URL = mkOption {
-            type = str;
-            description = ''
-              The URL where you will access the app.
-            '';
-            default = "http://localhost";
-          };
-
-          TRUST_PROXY = mkOption {
-            type = bool;
-            description = ''
-              Whether the app is behind a reverse proxy.
-            '';
-            default = false;
-          };
-
-          ANALYTICS_DISABLED = mkOption {
-            type = bool;
-            description = ''
-              Whether to disable analytics.
-
-              See the [analytics documentation](https://pocket-id.org/docs/configuration/analytics/).
-            '';
-            default = false;
-          };
-        };
-      };
-
       default = { };
 
       description = ''
@@ -122,26 +105,50 @@ in
 
         See [PocketID environment variables](https://pocket-id.org/docs/configuration/environment-variables).
       '';
-    };
 
-    dataDir = mkOption {
-      type = path;
-      default = "/var/lib/pocket-id";
-      description = ''
-        The directory where Pocket ID will store its data, such as the database when using SQLite.
-      '';
+      type = submodule {
+        options = {
+          ANALYTICS_DISABLED = mkOption {
+            default = false;
+
+            description = ''
+              Whether to disable analytics.
+
+              See the [analytics documentation](https://pocket-id.org/docs/configuration/analytics/).
+            '';
+
+            type = bool;
+          };
+
+          APP_URL = mkOption {
+            default = "http://localhost";
+
+            description = ''
+              The URL where you will access the app.
+            '';
+
+            type = str;
+          };
+
+          TRUST_PROXY = mkOption {
+            default = false;
+
+            description = ''
+              Whether the app is behind a reverse proxy.
+            '';
+
+            type = bool;
+          };
+        };
+
+        freeformType = format.type;
+      };
     };
 
     user = mkOption {
-      type = str;
       default = "pocket-id";
       description = "User account under which Pocket ID runs.";
-    };
-
-    group = mkOption {
       type = str;
-      default = "pocket-id";
-      description = "Group account under which Pocket ID runs.";
     };
   };
 
@@ -152,6 +159,7 @@ in
           # Converted to assert 2026-01-08
           setting: {
             assertion = !(cfg.settings ? "${setting}");
+
             message = ''
               `services.pocket-id.settings.${setting}` is deprecated.
               See [v1 migration guide](https://pocket-id.org/docs/setup/major-releases/migrate-v1).
@@ -168,6 +176,112 @@ in
           "INTERNAL_BACKEND_URL"
         ]
     );
+
+    systemd.services = {
+      pocket-id = {
+        after = [ "network.target" ];
+        description = "Pocket ID";
+
+        restartTriggers = [
+          cfg.package
+          cfg.environmentFile
+          settingsFile
+        ];
+
+        script = ''
+          ${exportAllCredentials cfg.credentials}
+          exec ${getExe cfg.package}
+        '';
+
+        serviceConfig = {
+          # Hardening
+          AmbientCapabilities = "";
+          CapabilityBoundingSet = "";
+          DeviceAllow = "";
+          DevicePolicy = "closed";
+
+          EnvironmentFile = [
+            cfg.environmentFile
+            settingsFile
+          ];
+
+          Group = cfg.group;
+          LoadCredential = getLoadCredentialList;
+          #IPAddressDeny = "any"; # provides the service through network
+          LockPersonality = true;
+          MemoryDenyWriteExecute = true;
+          NoNewPrivileges = true;
+          PrivateDevices = true;
+          PrivateNetwork = false; # provides the service through network
+          PrivateTmp = true;
+          PrivateUsers = true;
+          ProcSubset = "pid";
+          ProtectClock = true;
+          ProtectControlGroups = true;
+          ProtectHome = true;
+          ProtectHostname = true;
+          ProtectKernelLogs = true;
+          ProtectKernelModules = true;
+          ProtectKernelTunables = true;
+          ProtectProc = "invisible";
+          ProtectSystem = "strict";
+          ReadWritePaths = [ cfg.dataDir ];
+          RemoveIPC = true;
+          Restart = "always";
+          RestartSec = 1;
+
+          RestrictAddressFamilies = [
+            "AF_UNIX"
+            "AF_INET"
+            "AF_INET6"
+          ];
+
+          RestrictNamespaces = true;
+          RestrictRealtime = true;
+          RestrictSUIDSGID = true;
+          SystemCallArchitectures = "native";
+
+          SystemCallFilter = concatStringsSep " " [
+            "~"
+            "@clock"
+            "@cpu-emulation"
+            "@debug"
+            "@module"
+            "@mount"
+            "@obsolete"
+            "@privileged"
+            "@raw-io"
+            "@reboot"
+            "@resources"
+            "@swap"
+          ];
+
+          Type = "simple";
+          UMask = "0077";
+          User = cfg.user;
+          WorkingDirectory = cfg.dataDir;
+        };
+
+        wantedBy = [ "multi-user.target" ];
+      };
+    };
+
+    systemd.tmpfiles.rules = [
+      "d ${cfg.dataDir} 0755 ${cfg.user} ${cfg.group}"
+    ];
+
+    users.groups = optionalAttrs (cfg.group == "pocket-id") {
+      pocket-id = { };
+    };
+
+    users.users = optionalAttrs (cfg.user == "pocket-id") {
+      pocket-id = {
+        description = "Pocket ID backend user";
+        group = cfg.group;
+        home = cfg.dataDir;
+        isSystemUser = true;
+      };
+    };
 
     warnings =
       (concatMap
@@ -200,104 +314,10 @@ in
           "LDAP_ATTRIBUTE_ADMIN_GROUP"
         ]
       );
-
-    systemd.tmpfiles.rules = [
-      "d ${cfg.dataDir} 0755 ${cfg.user} ${cfg.group}"
-    ];
-
-    systemd.services = {
-      pocket-id = {
-        description = "Pocket ID";
-        after = [ "network.target" ];
-        wantedBy = [ "multi-user.target" ];
-        restartTriggers = [
-          cfg.package
-          cfg.environmentFile
-          settingsFile
-        ];
-
-        script = ''
-          ${exportAllCredentials cfg.credentials}
-          exec ${getExe cfg.package}
-        '';
-
-        serviceConfig = {
-          Type = "simple";
-          User = cfg.user;
-          Group = cfg.group;
-          WorkingDirectory = cfg.dataDir;
-          Restart = "always";
-          RestartSec = 1;
-          EnvironmentFile = [
-            cfg.environmentFile
-            settingsFile
-          ];
-          LoadCredential = getLoadCredentialList;
-
-          # Hardening
-          AmbientCapabilities = "";
-          CapabilityBoundingSet = "";
-          DeviceAllow = "";
-          DevicePolicy = "closed";
-          #IPAddressDeny = "any"; # provides the service through network
-          LockPersonality = true;
-          MemoryDenyWriteExecute = true;
-          NoNewPrivileges = true;
-          PrivateDevices = true;
-          PrivateNetwork = false; # provides the service through network
-          PrivateTmp = true;
-          PrivateUsers = true;
-          ProcSubset = "pid";
-          ProtectClock = true;
-          ProtectControlGroups = true;
-          ProtectHome = true;
-          ProtectHostname = true;
-          ProtectKernelLogs = true;
-          ProtectKernelModules = true;
-          ProtectKernelTunables = true;
-          ProtectProc = "invisible";
-          ProtectSystem = "strict";
-          ReadWritePaths = [ cfg.dataDir ];
-          RemoveIPC = true;
-          RestrictAddressFamilies = [
-            "AF_UNIX"
-            "AF_INET"
-            "AF_INET6"
-          ];
-          RestrictNamespaces = true;
-          RestrictRealtime = true;
-          RestrictSUIDSGID = true;
-          SystemCallArchitectures = "native";
-          SystemCallFilter = concatStringsSep " " [
-            "~"
-            "@clock"
-            "@cpu-emulation"
-            "@debug"
-            "@module"
-            "@mount"
-            "@obsolete"
-            "@privileged"
-            "@raw-io"
-            "@reboot"
-            "@resources"
-            "@swap"
-          ];
-          UMask = "0077";
-        };
-      };
-    };
-
-    users.users = optionalAttrs (cfg.user == "pocket-id") {
-      pocket-id = {
-        isSystemUser = true;
-        group = cfg.group;
-        description = "Pocket ID backend user";
-        home = cfg.dataDir;
-      };
-    };
-
-    users.groups = optionalAttrs (cfg.group == "pocket-id") {
-      pocket-id = { };
-    };
   };
+
+  meta.maintainers = with maintainers; [
+    gepbird
+    ymstnt
+  ];
 }

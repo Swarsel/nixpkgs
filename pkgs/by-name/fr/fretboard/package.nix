@@ -1,9 +1,10 @@
 {
   lib,
+  stdenv,
+  fetchFromGitHub,
   blueprint-compiler,
   cargo,
   desktop-file-utils,
-  fetchFromGitHub,
   glib,
   gtk4,
   libadwaita,
@@ -13,7 +14,6 @@
   pkg-config,
   rustPlatform,
   rustc,
-  stdenv,
   wrapGAppsHook4,
 }:
 
@@ -26,11 +26,6 @@ stdenv.mkDerivation (finalAttrs: {
     repo = "fretboard";
     rev = "v${finalAttrs.version}";
     hash = "sha256-LTUZPOecX1OiLcfdiY/P2ffq91QcnFjW6knM9H/Z+Lc=";
-  };
-
-  cargoDeps = rustPlatform.fetchCargoVendor {
-    inherit (finalAttrs) pname version src;
-    hash = "sha256-Gl78z9FR/sB14uFDLKgnfN4B5yOi6A6MH64gDXcLiWA=";
   };
 
   nativeBuildInputs = [
@@ -57,17 +52,22 @@ stdenv.mkDerivation (finalAttrs: {
     ]
   );
 
+  cargoDeps = rustPlatform.fetchCargoVendor {
+    inherit (finalAttrs) pname version src;
+    hash = "sha256-Gl78z9FR/sB14uFDLKgnfN4B5yOi6A6MH64gDXcLiWA=";
+  };
+
   passthru = {
     updateScript = nix-update-script { };
   };
 
   meta = {
-    changelog = "https://github.com/bragefuglseth/fretboard/releases/tag/v${finalAttrs.version}";
     description = "Look up guitar chords";
     homepage = "https://apps.gnome.org/Fretboard/";
+    changelog = "https://github.com/bragefuglseth/fretboard/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.gpl3Plus;
+    platforms = lib.platforms.unix;
     mainProgram = "fretboard";
     teams = [ lib.teams.gnome-circle ];
-    platforms = lib.platforms.unix;
   };
 })

@@ -16,12 +16,22 @@ in
 {
   options.services.nginx.sso = {
     enable = lib.mkEnableOption "nginx-sso service";
-
     package = lib.mkPackageOption pkgs "nginx-sso" { };
 
     configuration = lib.mkOption {
-      type = format.type;
       default = { };
+
+      description = ''
+        nginx-sso configuration
+        ([documentation](https://github.com/Luzifer/nginx-sso/wiki/Main-Configuration))
+        as a Nix attribute set.
+
+        Options containing secret data should be set to an attribute set
+        with the singleton attribute `_secret` - a string value set to the path
+        to the file containing the secret value which should be used in the
+        configuration.
+      '';
+
       example = lib.literalExpression ''
         {
           listen = { addr = "127.0.0.1"; port = 8080; };
@@ -42,39 +52,35 @@ in
           };
         }
       '';
-      description = ''
-        nginx-sso configuration
-        ([documentation](https://github.com/Luzifer/nginx-sso/wiki/Main-Configuration))
-        as a Nix attribute set.
 
-        Options containing secret data should be set to an attribute set
-        with the singleton attribute `_secret` - a string value set to the path
-        to the file containing the secret value which should be used in the
-        configuration.
-      '';
+      type = format.type;
     };
   };
 
   config = lib.mkIf cfg.enable {
     systemd.services.nginx-sso = {
-      description = "Nginx SSO Backend";
       after = [ "network.target" ];
-      wantedBy = [ "multi-user.target" ];
+      description = "Nginx SSO Backend";
       preStart = secretsReplacement.script;
+
       serviceConfig = {
-        StateDirectory = "nginx-sso";
-        WorkingDirectory = "/var/lib/nginx-sso";
-        RuntimeDirectory = "nginx-sso";
-        RuntimeDirectoryMode = "0700"; # Contains secrets
+        DynamicUser = true;
+
         ExecStart = ''
           ${lib.getExe cfg.package} \
             --config ${configPath} \
             --frontend-dir ${lib.getBin cfg.package}/share/frontend
         '';
+
         LoadCredential = secretsReplacement.credentials;
         Restart = "always";
-        DynamicUser = true;
+        RuntimeDirectory = "nginx-sso";
+        RuntimeDirectoryMode = "0700"; # Contains secrets
+        StateDirectory = "nginx-sso";
+        WorkingDirectory = "/var/lib/nginx-sso";
       };
+
+      wantedBy = [ "multi-user.target" ];
     };
   };
 }

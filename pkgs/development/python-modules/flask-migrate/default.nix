@@ -1,8 +1,8 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
   alembic,
+  buildPythonPackage,
   flask,
   flask-script,
   flask-sqlalchemy,
@@ -13,7 +13,6 @@
 buildPythonPackage rec {
   pname = "flask-migrate";
   version = "4.1.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "miguelgrinberg";
@@ -30,12 +29,13 @@ buildPythonPackage rec {
     flask-sqlalchemy
   ];
 
-  pythonImportsCheck = [ "flask_migrate" ];
-
   nativeCheckInputs = [
     pytestCheckHook
     flask-script
   ];
+
+  pyproject = true;
+  pythonImportsCheck = [ "flask_migrate" ];
 
   meta = {
     description = "SQLAlchemy database migrations for Flask applications using Alembic";

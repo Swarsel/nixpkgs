@@ -1,10 +1,10 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
+  distribution,
   nix-update-script,
   testers,
-  distribution,
 }:
 
 buildGoModule (finalAttrs: {
@@ -29,29 +29,33 @@ buildGoModule (finalAttrs: {
       ];
     in
     [ "-skip=^${builtins.concatStringsSep "$|^" skippedTests}$" ];
+
   __darwinAllowLocalNetworking = true;
 
   passthru = {
     tests.version = testers.testVersion {
-      package = distribution;
       version = "v${finalAttrs.version}";
+      package = distribution;
     };
+
     updateScript = nix-update-script { };
   };
 
   meta = {
     description = "Toolkit to pack, ship, store, and deliver container content";
+
     longDescription = ''
       Distribution is a Open Source Registry implementation for storing and distributing container
       images and other content using the OCI Distribution Specification. The goal of this project
       is to provide a simple, secure, and scalable base for building a large scale registry solution
       or running a simple private registry.
     '';
+
     homepage = "https://distribution.github.io/distribution/";
     changelog = "https://github.com/distribution/distribution/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.asl20;
     maintainers = with lib.maintainers; [ katexochen ];
-    mainProgram = "registry";
     platforms = lib.platforms.unix;
+    mainProgram = "registry";
   };
 })

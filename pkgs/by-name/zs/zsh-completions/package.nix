@@ -16,6 +16,7 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   strictDeps = true;
+
   installPhase = ''
     install -D --target-directory=$out/share/zsh/site-functions src/*
 
@@ -26,6 +27,7 @@ stdenv.mkDerivation (finalAttrs: {
   meta = {
     description = "Additional completion definitions for zsh";
     homepage = "https://github.com/zsh-users/zsh-completions";
+
     license = with lib.licenses; [
       asl20
       bsd3
@@ -33,7 +35,8 @@ stdenv.mkDerivation (finalAttrs: {
       mit
       mit-modern
     ];
-    platforms = lib.platforms.unix;
+
     maintainers = [ lib.maintainers.olejorgenb ];
+    platforms = lib.platforms.unix;
   };
 })

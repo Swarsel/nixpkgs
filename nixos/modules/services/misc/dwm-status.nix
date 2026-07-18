@@ -34,9 +34,34 @@ in
       };
 
       settings = lib.mkOption {
+        default = { };
+
+        description = ''
+          Config options for dwm-status, see <https://github.com/Gerschtli/dwm-status#configuration>
+          for available options.
+        '';
+
+        example = {
+          order = [
+            "battery"
+            "cpu_load"
+            "time"
+          ];
+
+          time = {
+            format = "%F %a %r";
+            update_seconds = true;
+          };
+        };
+
         type = lib.types.submodule {
-          freeformType = format.type;
           options.order = lib.mkOption {
+            default = [ ];
+
+            description = ''
+              List of enabled features in order.
+            '';
+
             type = lib.types.listOf (
               lib.types.enum [
                 "audio"
@@ -47,28 +72,10 @@ in
                 "time"
               ]
             );
-            default = [ ];
-            description = ''
-              List of enabled features in order.
-            '';
           };
+
+          freeformType = format.type;
         };
-        default = { };
-        example = {
-          order = [
-            "battery"
-            "cpu_load"
-            "time"
-          ];
-          time = {
-            format = "%F %a %r";
-            update_seconds = true;
-          };
-        };
-        description = ''
-          Config options for dwm-status, see <https://github.com/Gerschtli/dwm-status#configuration>
-          for available options.
-        '';
       };
     };
   };
@@ -78,9 +85,9 @@ in
 
     systemd.user.services.dwm-status = {
       description = "Highly performant and configurable DWM status service";
-      wantedBy = [ "graphical-session.target" ];
       partOf = [ "graphical-session.target" ];
       serviceConfig.ExecStart = "${cfg.package}/bin/dwm-status ${configFile} --quiet";
+      wantedBy = [ "graphical-session.target" ];
     };
   };
 }

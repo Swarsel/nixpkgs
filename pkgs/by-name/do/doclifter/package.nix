@@ -1,10 +1,10 @@
 {
-  fetchurl,
   lib,
+  stdenv,
+  fetchurl,
   libxml2,
   makeWrapper,
   python3,
-  stdenv,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -24,15 +24,14 @@ stdenv.mkDerivation (finalAttrs: {
       --replace-fail 'Queue.Queue' 'queue.Queue'
   '';
 
+  strictDeps = true;
+
   nativeBuildInputs = [
     python3
     makeWrapper
   ];
 
   buildInputs = [ python3 ];
-
-  strictDeps = true;
-
   makeFlags = [ "PREFIX=$(out)" ];
 
   preInstall = ''
@@ -45,11 +44,11 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   meta = {
-    changelog = "https://gitlab.com/esr/doclifter/-/blob/2.21/NEWS";
     description = "Lift documents in nroff markups to XML-DocBook";
     homepage = "http://www.catb.org/esr/doclifter";
+    changelog = "https://gitlab.com/esr/doclifter/-/blob/2.21/NEWS";
     license = lib.licenses.bsd2;
-    mainProgram = "doclifter";
     platforms = lib.platforms.unix;
+    mainProgram = "doclifter";
   };
 })

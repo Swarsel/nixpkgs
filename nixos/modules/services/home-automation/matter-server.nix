@@ -1,7 +1,7 @@
 {
+  config,
   lib,
   pkgs,
-  config,
   ...
 }:
 let
@@ -12,26 +12,25 @@ let
 in
 
 {
-  meta.maintainers = with lib.maintainers; [ leonm1 ];
-
   options.services.matter-server = {
     enable = lib.mkEnableOption "Matter-server";
-
     package = lib.mkPackageOption pkgs "python-matter-server" { };
 
-    port = lib.mkOption {
-      type = lib.types.port;
-      default = 5580;
-      description = "Port to expose the matter-server service on.";
-    };
+    extraArgs = lib.mkOption {
+      default = { };
 
-    openFirewall = lib.mkOption {
-      type = lib.types.bool;
-      default = false;
-      description = "Whether to open the port in the firewall.";
+      description = ''
+        Attribute set of extra arguments to pass to the matter-server executable.
+        See <https://github.com/home-assistant-libs/python-matter-server?tab=readme-ov-file#running-the-development-server> for options.
+      '';
+
+      type = lib.types.attrs;
     };
 
     logLevel = lib.mkOption {
+      default = "info";
+      description = "Verbosity of logs from the matter-server";
+
       type = lib.types.enum [
         "critical"
         "error"
@@ -39,17 +38,18 @@ in
         "info"
         "debug"
       ];
-      default = "info";
-      description = "Verbosity of logs from the matter-server";
     };
 
-    extraArgs = lib.mkOption {
-      type = lib.types.attrs;
-      default = { };
-      description = ''
-        Attribute set of extra arguments to pass to the matter-server executable.
-        See <https://github.com/home-assistant-libs/python-matter-server?tab=readme-ov-file#running-the-development-server> for options.
-      '';
+    openFirewall = lib.mkOption {
+      default = false;
+      description = "Whether to open the port in the firewall.";
+      type = lib.types.bool;
+    };
+
+    port = lib.mkOption {
+      default = 5580;
+      description = "Port to expose the matter-server service on.";
+      type = lib.types.port;
     };
   };
 
@@ -59,13 +59,13 @@ in
     systemd.services.matter-server = {
       after = [ "network-online.target" ];
       before = [ "home-assistant.service" ];
-      wants = [ "network-online.target" ];
-      wantedBy = [ "multi-user.target" ];
       description = "Matter Server";
+
       environment = {
         HOME = storagePath;
         SSL_CERT_FILE = "${pkgs.cacert}/etc/ssl/certs/ca-bundle.crt";
       };
+
       script = ''
         # `python-matter-server` writes to /data even when a storage-path is
         # specified. This symlinks /data at the systemd-managed
@@ -83,37 +83,30 @@ in
           lib.concatStringsSep " " (
             lib.cli.toCommandLineGNU { } (
               {
-                port = cfg.port;
-                vendorid = vendorId;
-                storage-path = storagePath;
                 log-level = cfg.logLevel;
-                paa-root-cert-dir = "$CERT_DIR";
                 ota-provider-dir = "$OTA_UPDATE_DIR";
+                paa-root-cert-dir = "$CERT_DIR";
+                port = cfg.port;
+                storage-path = storagePath;
+                vendorid = vendorId;
               }
               // cfg.extraArgs
             )
           )
         }
       '';
+
       serviceConfig = {
-        # Start with a clean root filesystem, and allowlist what the container
-        # is permitted to access.
-        # See https://discourse.nixos.org/t/hardening-systemd-services/17147/14.
-        RuntimeDirectory = [ "matter-server/root" ];
-        RootDirectory = "%t/matter-server/root";
-        CacheDirectory = [ "matter-server" ];
+        # Hardening bits
+        AmbientCapabilities = "";
 
         BindReadOnlyPaths = [
           "/nix/store" # To allow the binary to find its dependencies.
           "/run/dbus"
           "/etc/resolv.conf" # For DNS resolution.
         ];
-        # Let systemd manage `/var/lib/matter-server` for us inside the
-        # ephemeral TemporaryFileSystem.
-        StateDirectory = storageDir;
 
-        # Hardening bits
-        AmbientCapabilities = "";
+        CacheDirectory = [ "matter-server" ];
         CapabilityBoundingSet = "";
         DevicePolicy = "closed";
         DynamicUser = true;
@@ -132,15 +125,26 @@ in
         ProtectKernelModules = true;
         ProtectKernelTunables = true;
         ProtectProc = "invisible";
+
         RestrictAddressFamilies = [
           "AF_INET"
           "AF_INET6"
           "AF_NETLINK"
           "AF_UNIX"
         ];
+
         RestrictNamespaces = true;
         RestrictRealtime = true;
         RestrictSUIDSGID = true;
+        RootDirectory = "%t/matter-server/root";
+        # Start with a clean root filesystem, and allowlist what the container
+        # is permitted to access.
+        # See https://discourse.nixos.org/t/hardening-systemd-services/17147/14.
+        RuntimeDirectory = [ "matter-server/root" ];
+        # Let systemd manage `/var/lib/matter-server` for us inside the
+        # ephemeral TemporaryFileSystem.
+        StateDirectory = storageDir;
+
         SystemCallFilter = lib.concatStringsSep " " [
           "~" # Blocklist
           "@clock"
@@ -155,8 +159,14 @@ in
           "@resources"
           "@swap"
         ];
+
         UMask = "0077";
       };
+
+      wantedBy = [ "multi-user.target" ];
+      wants = [ "network-online.target" ];
     };
   };
+
+  meta.maintainers = with lib.maintainers; [ leonm1 ];
 }

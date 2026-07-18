@@ -1,7 +1,7 @@
 {
   config,
-  pkgs,
   lib,
+  pkgs,
   ...
 }:
 let
@@ -16,13 +16,12 @@ in
 
   config = mkIf cfg.enable {
     systemd.packages = [ cfg.package ];
-
     # https://github.com/NixOS/nixpkgs/issues/81138
     systemd.user.services.systemd-lock-handler.wantedBy = [ "default.target" ];
   };
 
   meta = {
-    maintainers = with lib.maintainers; [ liff ];
     doc = ./systemd-lock-handler.md;
+    maintainers = with lib.maintainers; [ liff ];
   };
 }

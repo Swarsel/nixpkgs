@@ -1,9 +1,9 @@
 {
-  maven,
   lib,
   fetchFromGitHub,
   jre_headless,
   makeWrapper,
+  maven,
   nix-update-script,
 }:
 maven.buildMavenPackage rec {
@@ -17,11 +17,6 @@ maven.buildMavenPackage rec {
     hash = "sha256-Vg56Dz9U0eAJw+7u90MSZWmMIZttWYGXAwsXZsEfTj8=";
   };
 
-  mvnHash = "sha256-tdh8hRqGXI3zuwy55dC3La9dm2naqeCEZT4qcw37iDI=";
-
-  # Tests use MockServer which needs to bind to a local port
-  __darwinAllowLocalNetworking = true;
-
   nativeBuildInputs = [ makeWrapper ];
 
   installPhase = ''
@@ -32,18 +27,23 @@ maven.buildMavenPackage rec {
     runHook postInstall
   '';
 
+  # Tests use MockServer which needs to bind to a local port
+  __darwinAllowLocalNetworking = true;
+  mvnHash = "sha256-tdh8hRqGXI3zuwy55dC3La9dm2naqeCEZT4qcw37iDI=";
   passthru.updateScript = nix-update-script { };
 
   meta = {
-    homepage = "https://github.com/adorsys/keycloak-config-cli";
     description = "Import YAML/JSON-formatted configuration files into Keycloak";
+    homepage = "https://github.com/adorsys/keycloak-config-cli";
     license = lib.licenses.asl20;
+
     maintainers = with lib.maintainers; [
       jefferyoo
       anish
       vitorpavani
     ];
-    mainProgram = "keycloak-config-cli";
+
     platforms = jre_headless.meta.platforms;
+    mainProgram = "keycloak-config-cli";
   };
 }

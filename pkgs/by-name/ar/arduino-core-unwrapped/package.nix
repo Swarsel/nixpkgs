@@ -1,41 +1,41 @@
 {
-  stdenv,
   lib,
-  fetchFromGitHub,
+  stdenv,
   fetchurl,
-  jdk,
+  fetchFromGitHub,
   ant,
-  stripJavaArchivesHook,
+  atk,
+  cairo,
+  expat,
+  fontconfig,
+  freetype,
+  gcc,
+  gdk-pixbuf,
+  glib,
+  gtk2,
+  gtk3,
+  jdk,
+  libpng12,
+  libsm,
   libusb-compat-0_1,
   libusb1,
-  unzip,
-  zlib,
+  libx11,
+  libxext,
+  libxft,
+  libxinerama,
+  libxxf86vm,
   ncurses,
+  pango,
   readline,
-  withGui ? false,
-  gtk3,
-  wrapGAppsHook3,
-  withTeensyduino ? false,
+  stripJavaArchivesHook,
+  udev,
+  unzip,
   # Packages needed for Teensyduino
   upx,
-  fontconfig,
-  libxxf86vm,
-  libxinerama,
-  libxft,
-  libxext,
-  libx11,
-  libsm,
-  gcc,
-  atk,
-  glib,
-  pango,
-  gdk-pixbuf,
-  gtk2,
-  libpng12,
-  expat,
-  freetype,
-  cairo,
-  udev,
+  wrapGAppsHook3,
+  zlib,
+  withGui ? false,
+  withTeensyduino ? false,
 }:
 
 assert withTeensyduino -> withGui;
@@ -48,20 +48,20 @@ let
   # Some .so-files are later copied from .jar-s to $HOME, so patch them beforehand
   patchelfInJars =
     lib.optional (stdenv.hostPlatform.system == "aarch64-linux") {
-      jar = "share/arduino/lib/jssc-2.8.0-arduino4.jar";
       file = "libs/linux/libjSSC-2.8_aarch64.so";
+      jar = "share/arduino/lib/jssc-2.8.0-arduino4.jar";
     }
     ++ lib.optional (builtins.match "armv[67]l-linux" stdenv.hostPlatform.system != null) {
-      jar = "share/arduino/lib/jssc-2.8.0-arduino4.jar";
       file = "libs/linux/libjSSC-2.8_armhf.so";
+      jar = "share/arduino/lib/jssc-2.8.0-arduino4.jar";
     }
     ++ lib.optional (stdenv.hostPlatform.system == "x86_64-linux") {
-      jar = "share/arduino/lib/jssc-2.8.0-arduino4.jar";
       file = "libs/linux/libjSSC-2.8_x86_64.so";
+      jar = "share/arduino/lib/jssc-2.8.0-arduino4.jar";
     }
     ++ lib.optional (stdenv.hostPlatform.system == "i686-linux") {
-      jar = "share/arduino/lib/jssc-2.8.0-arduino4.jar";
       file = "libs/linux/libjSSC-2.8_x86.so";
+      jar = "share/arduino/lib/jssc-2.8.0-arduino4.jar";
     };
   # abiVersion 6 is default, but we need 5 for `avrdude_bin` executable
   ncurses5 = ncurses.override { abiVersion = "5"; };
@@ -103,6 +103,7 @@ in
 stdenv.mkDerivation rec {
   pname =
     (if withTeensyduino then "teensyduino" else "arduino") + lib.optionalString (!withGui) "-core";
+
   version = "1.8.19";
 
   src = fetchFromGitHub {
@@ -110,31 +111,6 @@ stdenv.mkDerivation rec {
     repo = "Arduino";
     rev = version;
     sha256 = "sha256-I+PvfGc5F8H/NJOGRa18z7dKyKcO8I8Cg7Tj5yxkYAQ=";
-  };
-
-  teensyduino_version = "156";
-  teensyduino_src = fetchurl {
-    url = "https://www.pjrc.com/teensy/td_${teensyduino_version}/TeensyduinoInstall.${teensy_architecture}";
-    sha256 =
-      {
-        linux64 = "sha256-4DbhmmYrx+rCBpDrYFaC0A88Qv9UEeNlQAkFi3zAstk=";
-        linux32 = "sha256-DlRPOtDxmMPv2Qzhib7vNZdKNZCxmm9YmVNnwUKXK/E=";
-        linuxarm = "sha256-d+DbpER/4lFPcPDFeMG5f3WaUGn8pFchdIDo7Hm0XWs=";
-        linuxaarch64 = "sha256-8keQzhWq7QlAGIbfHEe3lfxpJleMMvBORuPaNrLmM6Y=";
-      }
-      .${teensy_architecture} or (throw "No arduino binaries for ${teensy_architecture}");
-  };
-  # Used because teensyduino requires jars be a specific size
-  arduino_dist_src = fetchurl {
-    url = "https://downloads.arduino.cc/arduino-${version}-${teensy_architecture}.tar.xz";
-    sha256 =
-      {
-        linux64 = "sha256-62i93B0cASC+L8oTUKA+40Uxzzf1GEeyEhC25wVFvJs=";
-        linux32 = "sha256-wSxtx3BqXMQCeWQDK8PHkWLlQqQM1Csao8bIk98FrFg=";
-        linuxarm = "sha256-lJ/R1ePq7YtDk3bvloFcn8jswrJH+L63tvH5QpTqfXs=";
-        linuxaarch64 = "sha256-gm8cDjLKNfpcaeO7fw6Kyv1TnWV/ZmH4u++nun9X6jo=";
-      }
-      .${teensy_architecture} or (throw "No arduino binaries for ${teensy_architecture}");
   };
 
   # the glib setup hook will populate GSETTINGS_SCHEMAS_PATH,
@@ -146,6 +122,7 @@ stdenv.mkDerivation rec {
     wrapGAppsHook3
     unzip
   ];
+
   buildInputs = [
     jdk
     ant
@@ -156,8 +133,6 @@ stdenv.mkDerivation rec {
     readline
   ]
   ++ lib.optionals withTeensyduino [ upx ];
-  downloadSrcList = builtins.attrValues externalDownloads;
-  downloadDstList = builtins.attrNames externalDownloads;
 
   buildPhase = ''
     # Copy pre-downloaded files to proper locations
@@ -181,21 +156,6 @@ stdenv.mkDerivation rec {
     cd ../build && ant
     cd ..
   '';
-
-  # This will be patched into `arduino` wrapper script
-  # Java loads gtk dynamically, so we need to provide it using LD_LIBRARY_PATH
-  dynamicLibraryPath = lib.makeLibraryPath [ gtk3 ];
-  javaPath = lib.makeBinPath [ jdk ];
-
-  # Everything else will be patched into rpath
-  rpath = lib.makeLibraryPath [
-    zlib
-    libusb-compat-0_1
-    libusb1
-    readline
-    ncurses5
-    stdenv.cc.cc
-  ];
 
   installPhase = ''
     mkdir -p $out/share/arduino
@@ -247,10 +207,6 @@ stdenv.mkDerivation rec {
     ''}
   '';
 
-  # So we don't accidentally mess with firmware files
-  dontStrip = true;
-  dontPatchELF = true;
-
   preFixup = ''
     for file in $(find $out -type f \( -perm /0111 -o -name \*.so\* \) ); do
       patchelf --set-interpreter "$(cat $NIX_CC/nix-support/dynamic-linker)" "$file" || true
@@ -258,7 +214,7 @@ stdenv.mkDerivation rec {
     done
 
     ${lib.concatMapStringsSep "\n" (
-      { jar, file }:
+      { file, jar }:
       ''
         jar xvf $out/${jar} ${file}
         patchelf --set-rpath $rpath ${file}
@@ -280,16 +236,65 @@ stdenv.mkDerivation rec {
     ''}
   '';
 
+  # Used because teensyduino requires jars be a specific size
+  arduino_dist_src = fetchurl {
+    sha256 =
+      {
+        linux32 = "sha256-wSxtx3BqXMQCeWQDK8PHkWLlQqQM1Csao8bIk98FrFg=";
+        linux64 = "sha256-62i93B0cASC+L8oTUKA+40Uxzzf1GEeyEhC25wVFvJs=";
+        linuxaarch64 = "sha256-gm8cDjLKNfpcaeO7fw6Kyv1TnWV/ZmH4u++nun9X6jo=";
+        linuxarm = "sha256-lJ/R1ePq7YtDk3bvloFcn8jswrJH+L63tvH5QpTqfXs=";
+      }
+      .${teensy_architecture} or (throw "No arduino binaries for ${teensy_architecture}");
+
+    url = "https://downloads.arduino.cc/arduino-${version}-${teensy_architecture}.tar.xz";
+  };
+
+  dontPatchELF = true;
+  # So we don't accidentally mess with firmware files
+  dontStrip = true;
+  downloadDstList = builtins.attrNames externalDownloads;
+  downloadSrcList = builtins.attrValues externalDownloads;
+  # This will be patched into `arduino` wrapper script
+  # Java loads gtk dynamically, so we need to provide it using LD_LIBRARY_PATH
+  dynamicLibraryPath = lib.makeLibraryPath [ gtk3 ];
+  javaPath = lib.makeBinPath [ jdk ];
+
+  # Everything else will be patched into rpath
+  rpath = lib.makeLibraryPath [
+    zlib
+    libusb-compat-0_1
+    libusb1
+    readline
+    ncurses5
+    stdenv.cc.cc
+  ];
+
+  teensyduino_src = fetchurl {
+    sha256 =
+      {
+        linux32 = "sha256-DlRPOtDxmMPv2Qzhib7vNZdKNZCxmm9YmVNnwUKXK/E=";
+        linux64 = "sha256-4DbhmmYrx+rCBpDrYFaC0A88Qv9UEeNlQAkFi3zAstk=";
+        linuxaarch64 = "sha256-8keQzhWq7QlAGIbfHEe3lfxpJleMMvBORuPaNrLmM6Y=";
+        linuxarm = "sha256-d+DbpER/4lFPcPDFeMG5f3WaUGn8pFchdIDo7Hm0XWs=";
+      }
+      .${teensy_architecture} or (throw "No arduino binaries for ${teensy_architecture}");
+
+    url = "https://www.pjrc.com/teensy/td_${teensyduino_version}/TeensyduinoInstall.${teensy_architecture}";
+  };
+
+  teensyduino_version = "156";
+
   meta = {
     description = "Open-source electronics prototyping platform";
-    mainProgram = "arduino";
     homepage = "https://www.arduino.cc/";
     license = if withTeensyduino then lib.licenses.unfreeRedistributable else lib.licenses.gpl2;
+
     sourceProvenance = with lib.sourceTypes; [
       binaryBytecode
       binaryNativeCode
     ];
-    platforms = lib.platforms.linux;
+
     maintainers = with lib.maintainers; [
       antono
       auntie
@@ -297,5 +302,8 @@ stdenv.mkDerivation rec {
       bjornfor
       bergey
     ];
+
+    platforms = lib.platforms.linux;
+    mainProgram = "arduino";
   };
 }

@@ -1,15 +1,14 @@
 {
-  stdenv,
   lib,
-  python3,
+  stdenv,
   fetchPypi,
   ffmpeg,
+  python3,
 }:
 
 python3.pkgs.buildPythonApplication (finalAttrs: {
   pname = "sigal";
   version = "2.5";
-  pyproject = true;
 
   src = fetchPypi {
     inherit (finalAttrs) version pname;
@@ -51,13 +50,17 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     "--prefix PATH : ${lib.makeBinPath [ ffmpeg ]}"
   ];
 
+  pyproject = true;
+
   meta = {
     description = "Yet another simple static gallery generator";
-    mainProgram = "sigal";
     homepage = "http://sigal.saimon.org/";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       matthiasbeyer
     ];
+
+    mainProgram = "sigal";
   };
 })

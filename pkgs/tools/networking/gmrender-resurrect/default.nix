@@ -3,15 +3,15 @@
   stdenv,
   fetchFromGitHub,
   autoreconfHook,
-  pkg-config,
-  makeWrapper,
-  gstreamer,
+  gst-libav,
+  gst-plugins-bad,
   gst-plugins-base,
   gst-plugins-good,
-  gst-plugins-bad,
   gst-plugins-ugly,
-  gst-libav,
+  gstreamer,
   libupnp,
+  makeWrapper,
+  pkg-config,
 }:
 
 let
@@ -27,8 +27,8 @@ let
   ];
 in
 stdenv.mkDerivation {
-  pname = "gmrender-resurrect";
   inherit version;
+  pname = "gmrender-resurrect";
 
   src = fetchFromGitHub {
     owner = "hzeller";
@@ -37,14 +37,15 @@ stdenv.mkDerivation {
     sha256 = "sha256-e8X/Ab4E6FmPpbRx4y8UZbuPTFaq2hz4Ye8dbKTqGUc=";
   };
 
-  buildInputs = [
-    gstreamer
-    libupnp
-  ];
   nativeBuildInputs = [
     autoreconfHook
     pkg-config
     makeWrapper
+  ];
+
+  buildInputs = [
+    gstreamer
+    libupnp
   ];
 
   postInstall = ''
@@ -55,13 +56,15 @@ stdenv.mkDerivation {
 
   meta = {
     description = "Resource efficient UPnP/DLNA renderer, optimal for Raspberry Pi, CuBox or a general MediaServer";
-    mainProgram = "gmediarender";
     homepage = "https://github.com/hzeller/gmrender-resurrect";
     license = lib.licenses.gpl2Plus;
-    platforms = lib.platforms.linux;
+
     maintainers = with lib.maintainers; [
       koral
       hzeller
     ];
+
+    platforms = lib.platforms.linux;
+    mainProgram = "gmediarender";
   };
 }

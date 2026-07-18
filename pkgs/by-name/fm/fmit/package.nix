@@ -2,15 +2,15 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  qt6,
   fftw,
   itstool,
-  alsaSupport ? true,
+  qt6,
   alsa-lib ? null,
+  alsaSupport ? true,
   jackSupport ? false,
   libjack2 ? null,
-  portaudioSupport ? false,
   portaudio ? null,
+  portaudioSupport ? false,
 }:
 
 assert alsaSupport -> alsa-lib != null;
@@ -28,11 +28,18 @@ stdenv.mkDerivation (finalAttrs: {
     sha256 = "sha256-fi5/JCgum+TYexUuTRZNFWPPsR87P73gfYhozQYx3Rw=";
   };
 
+  postPatch = ''
+    substituteInPlace fmit.pro \
+      --replace-fail 'FMITVERSIONPRO = $$system(git describe --tags --always)' 'FMITVERSIONPRO = ${finalAttrs.version}' \
+      --replace-fail 'FMITBRANCHGITPRO = $$system(git rev-parse --abbrev-ref HEAD)' 'FMITBRANCHGITPRO = master'
+  '';
+
   nativeBuildInputs = [
     qt6.qmake
     itstool
     qt6.wrapQtAppsHook
   ];
+
   buildInputs = [
     fftw
     qt6.qtbase
@@ -42,12 +49,6 @@ stdenv.mkDerivation (finalAttrs: {
   ++ lib.optionals alsaSupport [ alsa-lib ]
   ++ lib.optionals jackSupport [ libjack2 ]
   ++ lib.optionals portaudioSupport [ portaudio ];
-
-  postPatch = ''
-    substituteInPlace fmit.pro \
-      --replace-fail 'FMITVERSIONPRO = $$system(git describe --tags --always)' 'FMITVERSIONPRO = ${finalAttrs.version}' \
-      --replace-fail 'FMITBRANCHGITPRO = $$system(git rev-parse --abbrev-ref HEAD)' 'FMITBRANCHGITPRO = master'
-  '';
 
   qmakeFlags = [
     "PREFIXSHORTCUT=${placeholder "out"}"
@@ -64,10 +65,12 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Free Musical Instrument Tuner";
+
     longDescription = ''
       FMIT is a graphical utility for tuning musical instruments, with error
       and volume history, and advanced features.
     '';
+
     homepage = "http://gillesdegottex.github.io/fmit/";
     license = lib.licenses.gpl3Plus;
     maintainers = [ ];

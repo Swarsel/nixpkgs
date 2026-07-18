@@ -1,9 +1,9 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
-  runCommandLocal,
   mbrola-voices,
+  runCommandLocal,
 }:
 
 let
@@ -11,16 +11,16 @@ let
   version = "3.3-unstable-2024-01-29";
 
   meta = {
+    description = "Speech synthesizer based on the concatenation of diphones";
+    homepage = "https://github.com/numediart/MBROLA";
     license = lib.licenses.agpl3Plus;
     maintainers = with lib.maintainers; [ davidak ];
     platforms = lib.platforms.all;
-    description = "Speech synthesizer based on the concatenation of diphones";
-    homepage = "https://github.com/numediart/MBROLA";
   };
 
   bin = stdenv.mkDerivation {
-    pname = "${pname}-bin";
     inherit version;
+    pname = "${pname}-bin";
 
     src = fetchFromGitHub {
       owner = "numediart";

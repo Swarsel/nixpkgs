@@ -5,8 +5,8 @@
 }:
 
 stdenv.mkDerivation (finalAttrs: {
-  version = "1.0.7";
   pname = "libaal";
+  version = "1.0.7";
 
   src = fetchurl {
     url = "mirror://sourceforge/reiser4/libaal-${finalAttrs.version}.tar.gz";
@@ -20,8 +20,8 @@ stdenv.mkDerivation (finalAttrs: {
   enableParallelBuilding = true;
 
   meta = {
-    homepage = "http://www.namesys.com/";
     description = "Support library for Reiser4";
+    homepage = "http://www.namesys.com/";
     license = lib.licenses.gpl2;
     maintainers = [ ];
     platforms = with lib.platforms; linux;

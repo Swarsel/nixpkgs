@@ -1,16 +1,16 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  flit-core,
-  pytestCheckHook,
-  borgbackup,
   appdirs,
   arrow,
+  borgbackup,
+  buildPythonPackage,
   docopt,
+  flit-core,
   inform,
   nestedtext,
   parametrize-from-file,
+  pytestCheckHook,
   quantiphy,
   requests,
   shlib,
@@ -20,7 +20,6 @@
 buildPythonPackage rec {
   pname = "emborg";
   version = "1.43";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "KenKundert";
@@ -28,6 +27,10 @@ buildPythonPackage rec {
     tag = "v${version}";
     hash = "sha256-b/nzAkWFOGPqr/cMX38WIQaOz7n+9d6gtMIgtFAd+yY=";
   };
+
+  postPatch = ''
+    patchShebangs .
+  '';
 
   nativeBuildInputs = [ flit-core ];
 
@@ -40,6 +43,9 @@ buildPythonPackage rec {
     requests
   ];
 
+  # this disables testing fuse mounts
+  env.MISSING_DEPENDENCIES = "fuse";
+
   nativeCheckInputs = [
     nestedtext
     parametrize-from-file
@@ -49,13 +55,7 @@ buildPythonPackage rec {
     borgbackup
   ];
 
-  # this disables testing fuse mounts
-  env.MISSING_DEPENDENCIES = "fuse";
-
-  postPatch = ''
-    patchShebangs .
-  '';
-
+  pyproject = true;
   pythonImportsCheck = [ "emborg" ];
 
   meta = {

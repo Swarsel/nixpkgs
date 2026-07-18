@@ -3,8 +3,8 @@
   stdenv,
   fetchFromGitHub,
   cmake,
-  pkg-config,
   mbelib,
+  pkg-config,
   serialdv,
 }:
 
@@ -42,8 +42,8 @@ stdenv.mkDerivation (finalAttrs: {
     description = "Digital Speech Decoder (DSD) rewritten as a C++ library";
     homepage = "https://github.com/f4exb/dsdcc";
     license = lib.licenses.gpl3;
-    mainProgram = "dsdccx";
     maintainers = with lib.maintainers; [ alexwinter ];
     platforms = lib.platforms.unix;
+    mainProgram = "dsdccx";
   };
 })

@@ -2,11 +2,11 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  cmake,
-  pkg-config,
   SDL2,
   SDL2_ttf,
+  cmake,
   gtk3,
+  pkg-config,
   testers,
   enableShared ? !stdenv.hostPlatform.isStatic,
 }:
@@ -54,20 +54,22 @@ stdenv.mkDerivation (finalAttrs: {
 
   passthru.tests = {
     cmake-config = testers.hasCmakeConfigModules {
-      package = finalAttrs.finalPackage;
       moduleNames = [ "nfd" ];
+      package = finalAttrs.finalPackage;
     };
   };
 
   meta = {
-    homepage = "https://github.com/btzy/nativefiledialog-extended";
     description = "Cross platform native file dialog library with C and C++ bindings";
+
     longDescription = ''
       A small C library with that portably invokes native file open, folder
       select and file save dialogs. Write dialog code once and have it pop up
       native dialogs on all supported platforms. Avoid linking large
       dependencies like wxWidgets and Qt.
     '';
+
+    homepage = "https://github.com/btzy/nativefiledialog-extended";
     license = lib.licenses.zlib;
     maintainers = with lib.maintainers; [ yzx9 ];
     platforms = with lib.platforms; linux ++ darwin;

@@ -1,39 +1,38 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
+  blas,
+  boost,
   cmake,
-  pkg-config,
+  config,
+  costa,
+  ctestCheckHook,
+  cudaPackages,
+  dftd4,
+  eigen,
+  gfortran,
+  gsl,
+  hdf5,
+  jonquil,
+  lapack,
+  libvdwxc,
+  libxc,
+  llvmPackages,
+  mctc-lib,
   mpi,
   mpiCheckPhaseHook,
-  ctestCheckHook,
-  gfortran,
-  blas,
-  lapack,
-  gsl,
-  libxc,
-  hdf5,
-  spglib,
-  spfft,
-  spla,
-  costa,
-  umpire,
-  scalapack,
-  boost,
-  eigen,
-  libvdwxc,
-  dftd4,
-  simple-dftd3,
-  mctc-lib,
-  jonquil,
-  toml-f,
   multicharge,
-  enablePython ? false,
-  pythonPackages ? null,
-  llvmPackages,
-  cudaPackages,
+  pkg-config,
   rocmPackages,
-  config,
+  scalapack,
+  simple-dftd3,
+  spfft,
+  spglib,
+  spla,
+  toml-f,
+  umpire,
+  enablePython ? false,
   gpuBackend ? (
     if config.cudaSupport then
       "cuda"
@@ -42,6 +41,7 @@
     else
       "none"
   ),
+  pythonPackages ? null,
 }:
 
 assert builtins.elem gpuBackend [
@@ -55,9 +55,6 @@ stdenv.mkDerivation (finalAttrs: {
   pname = "SIRIUS";
   version = "7.10.0";
 
-  strictDeps = true;
-  __structuredAttrs = true;
-
   src = fetchFromGitHub {
     owner = "electronic-structure";
     repo = "SIRIUS";
@@ -69,6 +66,8 @@ stdenv.mkDerivation (finalAttrs: {
     "out"
     "dev"
   ];
+
+  strictDeps = true;
 
   nativeBuildInputs = [
     cmake
@@ -141,11 +140,6 @@ stdenv.mkDerivation (finalAttrs: {
     ]
   );
 
-  env.CXXFLAGS = toString [
-    # GCC 13: error: 'uintptr_t' in namespace 'std' does not name a type
-    "-include cstdint"
-  ];
-
   cmakeFlags = [
     "-DSIRIUS_USE_SCALAPACK=ON"
     "-DSIRIUS_USE_VDWXC=ON"
@@ -167,7 +161,17 @@ stdenv.mkDerivation (finalAttrs: {
     "-DSIRIUS_CREATE_PYTHON_MODULE=ON"
   ];
 
+  env.CXXFLAGS = toString [
+    # GCC 13: error: 'uintptr_t' in namespace 'std' does not name a type
+    "-include cstdint"
+  ];
+
   doCheck = !umpire.passthru.rocmSupport;
+
+  nativeCheckInputs = [
+    mpiCheckPhaseHook
+    ctestCheckHook
+  ];
 
   # Can not run parallel checks generally as it requires exactly multiples of 4 MPI ranks
   # Even cpu_serial tests had to be disabled as they require scalapack routines in the sandbox
@@ -177,16 +181,13 @@ stdenv.mkDerivation (finalAttrs: {
     "integration_test"
   ];
 
-  nativeCheckInputs = [
-    mpiCheckPhaseHook
-    ctestCheckHook
-  ];
+  __structuredAttrs = true;
 
   meta = {
     description = "Domain specific library for electronic structure calculations";
     homepage = "https://github.com/electronic-structure/SIRIUS";
     license = lib.licenses.bsd2;
-    platforms = lib.platforms.linux;
     maintainers = [ lib.maintainers.sheepforce ];
+    platforms = lib.platforms.linux;
   };
 })

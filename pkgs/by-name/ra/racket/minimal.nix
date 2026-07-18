@@ -2,18 +2,15 @@
   lib,
   stdenv,
   fetchurl,
-
+  callPackage,
   libiconvReal,
   libz,
   lz4,
   ncurses,
   openssl,
   sqlite,
-
-  disableDocs ? false,
-
-  callPackage,
   writers,
+  disableDocs ? false,
 }:
 
 let
@@ -23,12 +20,12 @@ let
 in
 
 stdenv.mkDerivation (finalAttrs: {
-  pname = "racket";
   inherit (manifest) version;
+  pname = "racket";
 
   src = fetchurl {
-    url = "https://mirror.racket-lang.org/installers/${manifest.version}/${manifest.minimal.filename}";
     inherit (manifest.minimal) sha256;
+    url = "https://mirror.racket-lang.org/installers/${manifest.version}/${manifest.minimal.filename}";
   };
 
   buildInputs = [
@@ -39,22 +36,6 @@ stdenv.mkDerivation (finalAttrs: {
     openssl
     sqlite.out
   ];
-
-  preConfigure =
-    /*
-      The configure script forces using `libtool -o` as AR on Darwin. But, the
-      `-o` option is only available from Apple libtool. GNU ar works here.
-    */
-    lib.optionalString isDarwin ''
-      substituteInPlace src/ChezScheme/zlib/configure \
-          --replace-fail 'ARFLAGS="-o"' 'AR=ar; ARFLAGS="rc"'
-    ''
-    + ''
-      mkdir src/build
-      cd src/build
-    '';
-
-  configureScript = "../configure";
 
   configureFlags = [
     # > docs failure: ftype-ref: ftype mismatch for #<ftype-pointer>
@@ -76,10 +57,19 @@ stdenv.mkDerivation (finalAttrs: {
     "--enable-xonx"
   ];
 
-  # The upstream script builds static libraries by default.
-  dontAddStaticConfigureFlags = true;
-
-  dontStrip = isDarwin;
+  preConfigure =
+    /*
+      The configure script forces using `libtool -o` as AR on Darwin. But, the
+      `-o` option is only available from Apple libtool. GNU ar works here.
+    */
+    lib.optionalString isDarwin ''
+      substituteInPlace src/ChezScheme/zlib/configure \
+          --replace-fail 'ARFLAGS="-o"' 'AR=ar; ARFLAGS="rc"'
+    ''
+    + ''
+      mkdir src/build
+      cd src/build
+    '';
 
   postFixup =
     let
@@ -92,13 +82,29 @@ stdenv.mkDerivation (finalAttrs: {
       $out/bin/racket -U -u ${configureInstallation}
     '';
 
+  configureScript = "../configure";
+  # The upstream script builds static libraries by default.
+  dontAddStaticConfigureFlags = true;
+  dontStrip = isDarwin;
+
   passthru = {
+    # Tests #
+    tests = builtins.mapAttrs (name: path: callPackage path { racket = finalAttrs.finalPackage; }) {
+      get-version-and-variant = ./tests/get-version-and-variant.nix;
+      load-openssl = ./tests/load-openssl.nix;
+      ## Nixpkgs supports ##
+      nix-write-script = ./tests/nix-write-script.nix;
+      ## Basic ##
+      write-greeting = ./tests/write-greeting.nix;
+    };
+
     # Functionalities #
     updateScript = {
-      command = ./update.py;
       attrPath = "racket";
+      command = ./update.py;
       supportedFeatures = [ "commit" ];
     };
+
     writeScript =
       nameOrPath:
       {
@@ -112,22 +118,13 @@ stdenv.mkDerivation (finalAttrs: {
           interpreter = "${lib.getExe finalAttrs.finalPackage}";
         }
       ) nameOrPath;
+
     writeScriptBin = name: finalAttrs.passthru.writeScript "/bin/${name}";
-
-    # Tests #
-    tests = builtins.mapAttrs (name: path: callPackage path { racket = finalAttrs.finalPackage; }) {
-      ## Basic ##
-      write-greeting = ./tests/write-greeting.nix;
-      get-version-and-variant = ./tests/get-version-and-variant.nix;
-      load-openssl = ./tests/load-openssl.nix;
-
-      ## Nixpkgs supports ##
-      nix-write-script = ./tests/nix-write-script.nix;
-    };
   };
 
   meta = {
     description = "Programmable programming language (minimal distribution)";
+
     longDescription = ''
       Racket is a full-spectrum programming language. It goes beyond
       Lisp and Scheme with dialects that support objects, types,
@@ -140,8 +137,10 @@ stdenv.mkDerivation (finalAttrs: {
       This minimal distribution includes just enough of Racket that you can
       use `raco pkg` to install more.
     '';
+
     homepage = "https://racket-lang.org/";
     changelog = "https://github.com/racket/racket/releases/tag/v${finalAttrs.version}";
+
     /*
       > Racket is distributed under the MIT license and the Apache version 2.0
       > license, at your option.
@@ -153,17 +152,19 @@ stdenv.mkDerivation (finalAttrs: {
       asl20
       mit
     ];
+
     sourceProvenance = with lib.sourceTypes; [
       fromSource
       binaryBytecode
     ];
+
     maintainers = with lib.maintainers; [ rc-zb ];
-    mainProgram = "racket";
     platforms = lib.platforms.all;
     /*
       > checking size of void *... 0
       > Something has gone wrong getting the pointer size; see config.log
     */
     badPlatforms = lib.platforms.darwin;
+    mainProgram = "racket";
   };
 })

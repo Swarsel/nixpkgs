@@ -1,28 +1,38 @@
 {
   lib,
   stdenv,
-  buildPythonPackage,
-  fetchPypi,
-  numpy,
   astropy,
+  buildPythonPackage,
   extension-helpers,
+  fetchPypi,
+  hypothesis,
+  numpy,
+  pytest-doctestplus,
+  pytestCheckHook,
   setuptools,
   setuptools-scm,
-  pytestCheckHook,
-  pytest-doctestplus,
-  hypothesis,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "astropy-healpix";
   version = "1.1.3";
-  pyproject = true;
 
   src = fetchPypi {
     inherit (finalAttrs) version;
-    pname = "astropy_healpix";
     hash = "sha256-9SDYOr6CFdPo4aN7K9kRce42pvVfEQ1aLbhj112Bs7c=";
+    pname = "astropy_healpix";
   };
+
+  nativeCheckInputs = [
+    pytestCheckHook
+    pytest-doctestplus
+    hypothesis
+  ];
+
+  # tests must be run in the build directory
+  preCheck = ''
+    cd build/lib*
+  '';
 
   build-system = [
     extension-helpers
@@ -36,18 +46,8 @@ buildPythonPackage (finalAttrs: {
     astropy
   ];
 
-  nativeCheckInputs = [
-    pytestCheckHook
-    pytest-doctestplus
-    hypothesis
-  ];
-
   disabledTests = lib.optional (!stdenv.hostPlatform.isDarwin) "test_interpolate_bilinear_skycoord";
-
-  # tests must be run in the build directory
-  preCheck = ''
-    cd build/lib*
-  '';
+  pyproject = true;
 
   meta = {
     description = "BSD-licensed HEALPix for Astropy";

@@ -1,17 +1,16 @@
 {
-  coreutils,
+  lib,
+  stdenv,
   fetchFromGitHub,
+  coreutils,
   fontconfig,
   gawk,
   getopt,
   i3lock-color,
   imagemagick,
   installShellFiles,
-  lib,
   makeWrapper,
   scrot,
-  stdenv,
-
   screenshotCommand ? "",
 }:
 
@@ -26,11 +25,6 @@ stdenv.mkDerivation {
     hash = "sha256-ISymKlxLE4/ChDiyjnavFx4T5hEVI62cCxYLWrWiHrg=";
   };
 
-  nativeBuildInputs = [
-    makeWrapper
-    installShellFiles
-  ];
-
   postPatch = ''
     sed -i i3lock-fancy \
       -e 's|icon="/usr/share/i3lock-fancy/icons/lockdark.png"|icon="'$out'/share/i3lock-fancy/icons/lockdark.png"|' \
@@ -41,6 +35,11 @@ stdenv.mkDerivation {
     sed -i i3lock-fancy \
       -e "s|shot=(import -silent -window root)|shot=(${screenshotCommand})|";
   '';
+
+  nativeBuildInputs = [
+    makeWrapper
+    installShellFiles
+  ];
 
   installPhase = ''
     runHook preInstall
@@ -72,9 +71,9 @@ stdenv.mkDerivation {
   meta = {
     description = "Bash script that takes a screenshot of the desktop, blurs the background and adds a lock icon and text";
     homepage = "https://github.com/meskarune/i3lock-fancy";
-    maintainers = [ lib.maintainers.reedrw ];
-    mainProgram = "i3lock-fancy";
     license = lib.licenses.mit;
+    maintainers = [ lib.maintainers.reedrw ];
     platforms = lib.platforms.linux;
+    mainProgram = "i3lock-fancy";
   };
 }

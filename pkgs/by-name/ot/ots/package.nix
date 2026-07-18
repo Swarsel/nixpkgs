@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule (finalAttrs: {
@@ -24,10 +24,10 @@ buildGoModule (finalAttrs: {
 
   meta = {
     description = "Share end-to-end encrypted secrets with others via a one-time URL";
-    mainProgram = "ots";
     homepage = "https://ots.sniptt.com";
     changelog = "https://github.com/sniptt-official/ots/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.asl20;
     maintainers = with lib.maintainers; [ elliot ];
+    mainProgram = "ots";
   };
 })

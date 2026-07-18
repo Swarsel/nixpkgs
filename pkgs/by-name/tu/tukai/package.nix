@@ -1,11 +1,11 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
-  pkg-config,
-  writableTmpDirAsHomeHook,
-  versionCheckHook,
   nix-update-script,
+  pkg-config,
+  rustPlatform,
+  versionCheckHook,
+  writableTmpDirAsHomeHook,
 }:
 rustPlatform.buildRustPackage (finalAttrs: {
   pname = "tukai";
@@ -18,18 +18,17 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-YJtna4NIk9mmwymepFSZB8viUSPDU4XouRE5GCujSmk=";
   };
 
-  cargoHash = "sha256-1V1DrewPGDJWmOoYdtK1HS/t83zFac/tgatfDTKxAmA=";
-
   nativeBuildInputs = [
     pkg-config
     writableTmpDirAsHomeHook
   ];
 
+  cargoHash = "sha256-1V1DrewPGDJWmOoYdtK1HS/t83zFac/tgatfDTKxAmA=";
+  doInstallCheck = true;
+
   nativeInstallCheckInputs = [
     versionCheckHook
   ];
-
-  doInstallCheck = true;
 
   passthru.updateScript = nix-update-script { };
 
@@ -38,9 +37,11 @@ rustPlatform.buildRustPackage (finalAttrs: {
     homepage = "https://github.com/hlsxx/tukai";
     changelog = "https://github.com/hlsxx/tukai/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       rein
     ];
+
     mainProgram = "tukai";
   };
 })

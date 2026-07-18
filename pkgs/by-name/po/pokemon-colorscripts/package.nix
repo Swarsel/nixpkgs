@@ -1,7 +1,7 @@
 {
+  lib,
   stdenv,
   fetchFromGitLab,
-  lib,
   python3,
 }:
 
@@ -16,14 +16,14 @@ stdenv.mkDerivation {
     hash = "sha256-gKVmpHKt7S2XhSxLDzbIHTjJMoiIk69Fch202FZffqU=";
   };
 
-  buildInputs = [
-    python3
-  ];
-
   postPatch = ''
     patchShebangs --build ./install.sh
     substituteInPlace install.sh --replace-fail "/usr/local" "$out"
   '';
+
+  buildInputs = [
+    python3
+  ];
 
   installPhase = ''
     runHook preInstall

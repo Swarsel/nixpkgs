@@ -1,17 +1,16 @@
 {
   lib,
+  fetchFromGitHub,
   beautifulsoup4,
   buildPythonPackage,
-  fetchFromGitHub,
   python-dateutil,
-  setuptools,
   requests,
+  setuptools,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "socid-extractor";
   version = "0.1.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "soxoj";
@@ -20,8 +19,8 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-ZYLoHFyRnSHP3Od/cMOx690KFbJoEYK3cICjzbSfLm0=";
   };
 
-  pythonRelaxDeps = [ "beautifulsoup4" ];
-
+  # Test require network access
+  doCheck = false;
   build-system = [ setuptools ];
 
   dependencies = [
@@ -30,10 +29,9 @@ buildPythonPackage (finalAttrs: {
     requests
   ];
 
-  # Test require network access
-  doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "socid_extractor" ];
+  pythonRelaxDeps = [ "beautifulsoup4" ];
 
   meta = {
     description = "Python module to extract details from personal pages";

@@ -1,12 +1,12 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
-  pkg-config,
-  gobject-introspection,
   blueprint-compiler,
-  wrapGAppsHook4,
+  buildGoModule,
+  gobject-introspection,
   libadwaita,
+  pkg-config,
+  wrapGAppsHook4,
 }:
 
 buildGoModule (finalAttrs: {
@@ -20,8 +20,6 @@ buildGoModule (finalAttrs: {
     hash = "sha256-+KvFBzoIYmSbuazstJae8lC0xdPtXLhFWawlc+iGGoU=";
   };
 
-  vendorHash = "sha256-a99zmJ89QN+bf1WgAin+Eoqaizb7vyesb4uxt5L8qNY=";
-
   nativeBuildInputs = [
     pkg-config
     gobject-introspection
@@ -30,6 +28,7 @@ buildGoModule (finalAttrs: {
   ];
 
   buildInputs = [ libadwaita ];
+  vendorHash = "sha256-a99zmJ89QN+bf1WgAin+Eoqaizb7vyesb4uxt5L8qNY=";
 
   # generate files requested by go:generate
   # don't generate in goModules because buildInputs isn't available
@@ -49,6 +48,7 @@ buildGoModule (finalAttrs: {
 
   meta = {
     description = "Watch torrents with your friends";
+
     longDescription = ''
       Multiplex is an app to watch torrents together, providing an experience similar
       to Apple's SharePlay and Amazon's Prime Video Watch Party.
@@ -61,12 +61,15 @@ buildGoModule (finalAttrs: {
       - Bypass internet restrictions by optionally separating the hTorrent HTTP to
         BitTorrent gateway and user interface into two separate components.
     '';
+
     homepage = "https://github.com/pojntfx/multiplex";
+
     license = with lib.licenses; [
       agpl3Plus
       cc0
     ];
-    mainProgram = "multiplex";
+
     maintainers = with lib.maintainers; [ aleksana ];
+    mainProgram = "multiplex";
   };
 })

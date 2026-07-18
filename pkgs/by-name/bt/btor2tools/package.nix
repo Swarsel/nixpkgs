@@ -1,8 +1,8 @@
 {
   lib,
   stdenv,
-  cmake,
   fetchFromGitHub,
+  cmake,
   fixDarwinDylibNames,
 }:
 
@@ -17,7 +17,21 @@ stdenv.mkDerivation {
     sha256 = "sha256-RVjZ5HM2yQ3eAICFuzwvNeQDXzWzzSiCCslIWMJi6U8=";
   };
 
+  outputs = [
+    "out"
+    "dev"
+    "lib"
+  ];
+
   nativeBuildInputs = [ cmake ] ++ lib.optional stdenv.hostPlatform.isDarwin fixDarwinDylibNames;
+
+  cmakeFlags = [
+    # RPATH of binary /nix/store/.../bin/btorsim contains a forbidden reference to /build/
+    "-DCMAKE_SKIP_BUILD_RPATH=ON"
+  ]
+  ++ lib.optionals stdenv.hostPlatform.isDarwin [
+    "-DCMAKE_BUILD_WITH_INSTALL_NAME_DIR=ON"
+  ];
 
   installPhase = ''
     mkdir -p $out $dev/include/btor2parser/ $lib/lib
@@ -38,25 +52,11 @@ stdenv.mkDerivation {
     runHook postInstallCheck
   '';
 
-  outputs = [
-    "out"
-    "dev"
-    "lib"
-  ];
-
-  cmakeFlags = [
-    # RPATH of binary /nix/store/.../bin/btorsim contains a forbidden reference to /build/
-    "-DCMAKE_SKIP_BUILD_RPATH=ON"
-  ]
-  ++ lib.optionals stdenv.hostPlatform.isDarwin [
-    "-DCMAKE_BUILD_WITH_INSTALL_NAME_DIR=ON"
-  ];
-
   meta = {
     description = "Generic parser and tool package for the BTOR2 format";
     homepage = "https://github.com/hwmcc/btor2tools";
     license = lib.licenses.mit;
-    platforms = lib.platforms.unix;
     maintainers = with lib.maintainers; [ thoughtpolice ];
+    platforms = lib.platforms.unix;
   };
 }

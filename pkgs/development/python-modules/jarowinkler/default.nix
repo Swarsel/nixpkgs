@@ -1,18 +1,16 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
-  rapidfuzz,
+  buildPythonPackage,
   hypothesis,
   pytestCheckHook,
+  rapidfuzz,
+  setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "jarowinkler";
   version = "2.0.1";
-
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "maxbachmann";
@@ -22,7 +20,6 @@ buildPythonPackage rec {
   };
 
   nativeBuildInputs = [ setuptools ];
-
   propagatedBuildInputs = [ rapidfuzz ];
 
   nativeCheckInputs = [
@@ -30,6 +27,7 @@ buildPythonPackage rec {
     pytestCheckHook
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "jarowinkler" ];
 
   meta = {

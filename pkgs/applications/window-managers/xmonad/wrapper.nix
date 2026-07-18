@@ -1,19 +1,19 @@
 {
   stdenv,
   ghcWithPackages,
-  xmessage,
   makeWrapper,
   packages,
+  xmessage,
 }:
 
 let
   xmonadEnv = ghcWithPackages (self: [ self.xmonad ] ++ packages self);
 in
 stdenv.mkDerivation {
-  pname = "xmonad-with-packages";
   inherit (xmonadEnv) version;
-
+  pname = "xmonad-with-packages";
   nativeBuildInputs = [ makeWrapper ];
+  allowSubstitutes = false;
 
   buildCommand = ''
     install -D ${xmonadEnv}/share/man/man1/xmonad.1.gz $out/share/man/man1/xmonad.1.gz
@@ -24,5 +24,4 @@ stdenv.mkDerivation {
 
   # trivial derivation
   preferLocalBuild = true;
-  allowSubstitutes = false;
 }

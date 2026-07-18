@@ -1,27 +1,26 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  django,
-  setuptools,
-  django-classy-tags,
-  django-formtools,
-  django-treebeard,
-  django-sekizai,
-  djangocms-admin-style,
-  python,
+  buildPythonPackage,
   dj-database-url,
+  django,
+  django-classy-tags,
+  django-cms,
+  django-formtools,
+  django-sekizai,
+  django-treebeard,
+  djangocms-admin-style,
   djangocms-text-ckeditor,
   fetchpatch,
-  django-cms,
   gettext,
   iptools,
+  python,
+  setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "django-cms";
   version = "5.0.6";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "django-cms";
@@ -30,17 +29,10 @@ buildPythonPackage rec {
     hash = "sha256-pYxIW/GGBIKzsQs2QJiRkScDPzSf3YXC+HkDsfAgg/w=";
   };
 
-  build-system = [ setuptools ];
-
-  dependencies = [
-    django
-    django-classy-tags
-    django-formtools
-    django-treebeard
-    django-sekizai
-    djangocms-admin-style
-  ];
-
+  # Tests depend on djangocms-text-ckeditor and djangocms-admin-style,
+  # which depends on this package.
+  # To avoid infinite recursion, we only enable tests when building passthru.tests.
+  doCheck = false;
   nativeCheckInputs = [ gettext ];
 
   checkInputs = [
@@ -60,18 +52,25 @@ buildPythonPackage rec {
     runHook postCheck
   '';
 
-  # Tests depend on djangocms-text-ckeditor and djangocms-admin-style,
-  # which depends on this package.
-  # To avoid infinite recursion, we only enable tests when building passthru.tests.
-  doCheck = false;
+  build-system = [ setuptools ];
+
+  dependencies = [
+    django
+    django-classy-tags
+    django-formtools
+    django-treebeard
+    django-sekizai
+    djangocms-admin-style
+  ];
+
+  pyproject = true;
+  pythonImportsCheck = [ "cms" ];
 
   passthru.tests = {
     runTests = django-cms.overridePythonAttrs (_: {
       doCheck = true;
     });
   };
-
-  pythonImportsCheck = [ "cms" ];
 
   meta = {
     description = "Lean enterprise content management powered by Django";

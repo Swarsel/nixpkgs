@@ -1,14 +1,14 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
-  yq,
-  pkg-config,
   cmake,
-  openssl,
-  zstd,
-  versionCheckHook,
   nix-update-script,
+  openssl,
+  pkg-config,
+  rustPlatform,
+  versionCheckHook,
+  yq,
+  zstd,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -26,8 +26,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
     tomlq -ti 'del(.bench)' crates/proksi/Cargo.toml
   '';
 
-  cargoHash = "sha256-MYyPYZFmbQZszYViaGZdbUZWM739MN14J1ckyR8hXZc=";
-
   nativeBuildInputs = [
     pkg-config
     cmake # required for libz-ng-sys
@@ -39,8 +37,12 @@ rustPlatform.buildRustPackage (finalAttrs: {
     zstd
   ];
 
-  cargoBuildFlags = [ "--package=proksi" ];
-  cargoTestFlags = finalAttrs.cargoBuildFlags;
+  cargoHash = "sha256-MYyPYZFmbQZszYViaGZdbUZWM739MN14J1ckyR8hXZc=";
+
+  env = {
+    OPENSSL_NO_VENDOR = true;
+    ZSTD_SYS_USE_PKG_CONFIG = true;
+  };
 
   checkFlags = [
     # requires network access
@@ -52,24 +54,22 @@ rustPlatform.buildRustPackage (finalAttrs: {
     "--skip=config::tests::"
   ];
 
-  env = {
-    OPENSSL_NO_VENDOR = true;
-    ZSTD_SYS_USE_PKG_CONFIG = true;
-  };
-
-  nativeInstallCheckInputs = [ versionCheckHook ];
   doInstallCheck = true;
-
+  nativeInstallCheckInputs = [ versionCheckHook ];
+  cargoBuildFlags = [ "--package=proksi" ];
+  cargoTestFlags = finalAttrs.cargoBuildFlags;
   passthru.updateScript = nix-update-script { extraArgs = [ "--version-regex=proksi-v(.*)" ]; };
 
   meta = {
     description = "Batteries-included CDN, reverse proxy and Load Balancer using Cloudflare Pingora";
     homepage = "https://github.com/luizfonseca/proksi";
     changelog = "https://github.com/luizfonseca/proksi/blob/proksi-v${finalAttrs.version}/CHANGELOG.md";
+
     license = with lib.licenses; [
       mit
       asl20
     ];
+
     maintainers = with lib.maintainers; [ defelo ];
     mainProgram = "proksi";
   };

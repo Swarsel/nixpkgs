@@ -2,9 +2,9 @@
   lib,
   stdenv,
   fetchurl,
+  bzip2,
   groff,
   ncurses,
-  bzip2,
   zlib,
 }:
 
@@ -17,6 +17,8 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-ObCzFOLpJ73wDR7aS5hl79EouoUDBfmHrsBJxP1Yopw=";
   };
 
+  postPatch = "patchShebangs build utils/build";
+
   nativeBuildInputs =
     # configure script needs `clear`
     [
@@ -28,19 +30,6 @@ stdenv.mkDerivation (finalAttrs: {
     bzip2
     zlib
   ];
-
-  postPatch = "patchShebangs build utils/build";
-
-  configurePhase =
-    # configure for maximum resolution
-    ''
-      runHook preConfigure
-      cat > std-params.h << EOF
-      #define HD_MODE 1
-      #define MAXPAGES 64
-      EOF
-      runHook postConfigure
-    '';
 
   buildPhase = ''
     runHook preBuild
@@ -57,12 +46,23 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  configurePhase =
+    # configure for maximum resolution
+    ''
+      runHook preConfigure
+      cat > std-params.h << EOF
+      #define HD_MODE 1
+      #define MAXPAGES 64
+      EOF
+      runHook postConfigure
+    '';
+
   meta = {
-    broken = stdenv.hostPlatform.isDarwin;
     description = "RF Signal Propagation, Loss, And Terrain analysis tool for the electromagnetic spectrum between 20 MHz and 20 GHz";
-    license = lib.licenses.gpl2Only;
     homepage = "https://www.qsl.net/kd2bd/splat.html";
+    license = lib.licenses.gpl2Only;
     platforms = lib.platforms.x86_64;
+    broken = stdenv.hostPlatform.isDarwin;
   };
 
 })

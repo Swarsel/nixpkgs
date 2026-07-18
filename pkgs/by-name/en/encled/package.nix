@@ -1,6 +1,6 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
   python3,
 }:
@@ -17,17 +17,18 @@ stdenv.mkDerivation {
 
   buildInputs = [ python3 ];
 
-  dontBuild = true;
   installPhase = ''
     install -Dm0755 -t $out/bin/ encled
     install -Dm0644 -t $out/share/man/man8 encled.8
   '';
 
+  dontBuild = true;
+
   meta = {
     description = "Control fault/locate indicators in disk slots in enclosures";
-    mainProgram = "encled";
     homepage = "https://github.com/amarao/sdled";
     license = lib.licenses.gpl2Plus;
     maintainers = [ ];
+    mainProgram = "encled";
   };
 }

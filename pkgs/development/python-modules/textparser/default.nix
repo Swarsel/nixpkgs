@@ -2,14 +2,13 @@
   lib,
   buildPythonPackage,
   fetchPypi,
-  setuptools-scm,
   pytestCheckHook,
+  setuptools-scm,
 }:
 
 buildPythonPackage rec {
   pname = "textparser";
   version = "0.24.0";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
@@ -17,14 +16,13 @@ buildPythonPackage rec {
   };
 
   nativeBuildInputs = [ setuptools-scm ];
-
   nativeCheckInputs = [ pytestCheckHook ];
-
+  format = "setuptools";
   pythonImportsCheck = [ "textparser" ];
 
   meta = {
-    homepage = "https://github.com/eerimoq/textparser";
     description = "Text parser";
+    homepage = "https://github.com/eerimoq/textparser";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ gray-heron ];
   };

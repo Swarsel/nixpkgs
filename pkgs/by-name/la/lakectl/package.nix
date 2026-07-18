@@ -1,7 +1,7 @@
 {
   lib,
-  buildGo126Module,
   fetchFromGitHub,
+  buildGo126Module,
   nix-update-script,
 }:
 
@@ -16,15 +16,7 @@ buildGo126Module (finalAttrs: {
     hash = "sha256-5/2iI5/87x+VJ1MbYw7zPEDeTm1XVuLmSsI6KssRGRE=";
   };
 
-  subPackages = [ "cmd/lakectl" ];
-  proxyVendor = true;
   vendorHash = "sha256-UNDIqP79CG2+M8HKkHT1l7X2/Dt6YDTQzADR5T7klUg=";
-
-  ldflags = [
-    "-s"
-    "-w"
-    "-X github.com/treeverse/lakefs/pkg/version.Version=${finalAttrs.version}"
-  ];
 
   preBuild = ''
     go generate ./pkg/api/apigen ./pkg/auth
@@ -51,6 +43,14 @@ buildGo126Module (finalAttrs: {
     runHook postInstallCheck
   '';
 
+  ldflags = [
+    "-s"
+    "-w"
+    "-X github.com/treeverse/lakefs/pkg/version.Version=${finalAttrs.version}"
+  ];
+
+  proxyVendor = true;
+  subPackages = [ "cmd/lakectl" ];
   passthru.updateScript = nix-update-script { };
 
   meta = {

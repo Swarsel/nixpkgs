@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule (finalAttrs: {
@@ -25,15 +25,19 @@ buildGoModule (finalAttrs: {
 
   meta = {
     description = "User-friendly launcher for Bazel";
-    mainProgram = "bazelisk";
+
     longDescription = ''
       BEWARE: This package does not work on NixOS.
     '';
+
     homepage = "https://github.com/bazelbuild/bazelisk";
     changelog = "https://github.com/bazelbuild/bazelisk/releases/tag/${finalAttrs.src.tag}";
     license = lib.licenses.asl20;
+
     maintainers = with lib.maintainers; [
       hythera
     ];
+
+    mainProgram = "bazelisk";
   };
 })

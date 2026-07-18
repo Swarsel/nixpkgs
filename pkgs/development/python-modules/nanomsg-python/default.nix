@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   nanomsg,
   setuptools,
 }:
@@ -9,7 +9,6 @@
 buildPythonPackage {
   pname = "nanomsg-python";
   version = "1.0.20190114";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "tonysimpson";
@@ -18,13 +17,11 @@ buildPythonPackage {
     hash = "sha256-NHurZWiW/Csp6NyuSV+oD16+L2uPUZWGzb2nWi9b/uE=";
   };
 
-  build-system = [ setuptools ];
-
   buildInputs = [ nanomsg ];
-
   # Tests requires network connections
   doCheck = false;
-
+  build-system = [ setuptools ];
+  pyproject = true;
   pythonImportsCheck = [ "nanomsg" ];
 
   meta = {

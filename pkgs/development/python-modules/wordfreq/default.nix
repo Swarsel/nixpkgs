@@ -1,21 +1,20 @@
 {
   lib,
-  buildPythonPackage,
-  poetry-core,
-  regex,
-  langcodes,
-  ftfy,
-  msgpack,
-  mecab-python3,
-  jieba,
-  pytestCheckHook,
   fetchFromGitHub,
+  buildPythonPackage,
+  ftfy,
+  jieba,
+  langcodes,
+  mecab-python3,
+  msgpack,
+  poetry-core,
+  pytestCheckHook,
+  regex,
 }:
 
 buildPythonPackage rec {
   pname = "wordfreq";
   version = "3.0.2";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "rspeer";
@@ -36,12 +35,15 @@ buildPythonPackage rec {
   ];
 
   nativeCheckInputs = [ pytestCheckHook ];
+
   disabledTests = [
     # These languages require additional dictionaries that aren't packaged
     "test_languages"
     "test_japanese"
     "test_korean"
   ];
+
+  pyproject = true;
 
   meta = {
     description = "Library for looking up the frequencies of words in many languages, based on many sources of data";

@@ -1,7 +1,7 @@
 {
-  buildGoModule,
-  fetchFromGitHub,
   lib,
+  fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule (finalAttrs: {
@@ -25,14 +25,16 @@ buildGoModule (finalAttrs: {
 
   meta = {
     description = "Fetcher for Javascript files";
-    mainProgram = "subjs";
+
     longDescription = ''
       subjs fetches Javascript files from a list of URLs or subdomains.
       Analyzing Javascript files can help you find undocumented endpoints,
       secrets and more.
     '';
+
     homepage = "https://github.com/lc/subjs";
     license = with lib.licenses; [ mit ];
     maintainers = with lib.maintainers; [ fab ];
+    mainProgram = "subjs";
   };
 })

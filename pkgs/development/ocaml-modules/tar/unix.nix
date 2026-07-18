@@ -1,15 +1,15 @@
 {
   buildDunePackage,
-  tar,
   fpath,
+  git,
   logs,
   lwt,
-  git,
+  tar,
 }:
 
 buildDunePackage {
-  pname = "tar-unix";
   inherit (tar) version src doCheck;
+  pname = "tar-unix";
 
   propagatedBuildInputs = [
     tar

@@ -16,7 +16,6 @@ rustPlatform.buildRustPackage {
   };
 
   cargoHash = "sha256-23mroUZFF4tPV92NhPlauGgTwLXsoxtE+Paqj5zsp7Q=";
-
   # Doc tests are broken on 0.3.3
   doCheck = false;
 
@@ -24,7 +23,7 @@ rustPlatform.buildRustPackage {
     description = "Unformat code into perfect rectangles";
     homepage = "https://github.com/fprasx/cargo-unfmt";
     license = lib.licenses.gpl3Plus;
-    mainProgram = "cargo-unfmt";
     maintainers = with lib.maintainers; [ cafkafk ];
+    mainProgram = "cargo-unfmt";
   };
 }

@@ -2,17 +2,17 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  nix-update-script,
-  meson,
-  ninja,
-  vala,
-  pkg-config,
-  pantheon,
-  python3,
   gettext,
   glib,
   gtk3,
   libgee,
+  meson,
+  ninja,
+  nix-update-script,
+  pantheon,
+  pkg-config,
+  python3,
+  vala,
   wrapGAppsHook3,
 }:
 
@@ -26,6 +26,13 @@ stdenv.mkDerivation (finalAttrs: {
     tag = finalAttrs.version;
     sha256 = "00azc5ck17zkdypfza6x1viknwhimd9fqgk2ybff3mx6aphmla7a";
   };
+
+  postPatch = ''
+    substituteInPlace data/com.github.arshubham.cipher.desktop.in \
+      --replace "gio" "${glib.bin}/bin/gio"
+    chmod +x meson/post_install.py
+    patchShebangs meson/post_install.py
+  '';
 
   nativeBuildInputs = [
     gettext
@@ -44,13 +51,6 @@ stdenv.mkDerivation (finalAttrs: {
     libgee
   ];
 
-  postPatch = ''
-    substituteInPlace data/com.github.arshubham.cipher.desktop.in \
-      --replace "gio" "${glib.bin}/bin/gio"
-    chmod +x meson/post_install.py
-    patchShebangs meson/post_install.py
-  '';
-
   passthru = {
     updateScript = nix-update-script { };
   };
@@ -58,10 +58,10 @@ stdenv.mkDerivation (finalAttrs: {
   meta = {
     description = "Simple application for encoding and decoding text, designed for elementary OS";
     homepage = "https://github.com/arshubham/cipher";
-    maintainers = with lib.maintainers; [ xiorcale ];
-    teams = [ lib.teams.pantheon ];
-    platforms = lib.platforms.linux;
     license = lib.licenses.gpl3Plus;
+    maintainers = with lib.maintainers; [ xiorcale ];
+    platforms = lib.platforms.linux;
     mainProgram = "com.github.arshubham.cipher";
+    teams = [ lib.teams.pantheon ];
   };
 })

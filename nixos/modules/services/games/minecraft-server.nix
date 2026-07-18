@@ -68,18 +68,34 @@ in
     services.minecraft-server = {
 
       enable = lib.mkOption {
-        type = lib.types.bool;
         default = false;
+
         description = ''
           If enabled, start a Minecraft Server. The server
           data will be loaded from and saved to
           {option}`services.minecraft-server.dataDir`.
         '';
+
+        type = lib.types.bool;
+      };
+
+      package = lib.mkPackageOption pkgs "minecraft-server" {
+        example = "pkgs.minecraft-server_1_12_2";
+      };
+
+      dataDir = lib.mkOption {
+        default = "/var/lib/minecraft";
+
+        description = ''
+          Directory to store Minecraft database and other state/data files.
+        '';
+
+        type = lib.types.path;
       };
 
       declarative = lib.mkOption {
-        type = lib.types.bool;
         default = false;
+
         description = ''
           Whether to use a declarative Minecraft server configuration.
           Only if set to `true`, the options
@@ -87,71 +103,55 @@ in
           {option}`services.minecraft-server.serverProperties` will be
           applied.
         '';
+
+        type = lib.types.bool;
       };
 
       eula = lib.mkOption {
-        type = lib.types.bool;
         default = false;
+
         description = ''
           Whether you agree to [Mojangs EULA](https://www.minecraft.net/eula).
           This option must be set to `true` to run Minecraft server.
         '';
+
+        type = lib.types.bool;
       };
 
-      dataDir = lib.mkOption {
-        type = lib.types.path;
-        default = "/var/lib/minecraft";
-        description = ''
-          Directory to store Minecraft database and other state/data files.
-        '';
+      jvmOpts = lib.mkOption {
+        default = "-Xmx2048M -Xms2048M";
+        description = "JVM options for the Minecraft server.";
+
+        # Example options from https://minecraft.wiki/w/Tutorial:Server_startup_script
+        example =
+          "-Xms4092M -Xmx4092M -XX:+UseG1GC -XX:+CMSIncrementalPacing "
+          + "-XX:+CMSClassUnloadingEnabled -XX:ParallelGCThreads=2 "
+          + "-XX:MinHeapFreeRatio=5 -XX:MaxHeapFreeRatio=10";
+
+        type = lib.types.separatedString " ";
       };
 
       openFirewall = lib.mkOption {
-        type = lib.types.bool;
         default = false;
+
         description = ''
           Whether to open ports in the firewall for the server.
         '';
-      };
 
-      whitelist = lib.mkOption {
-        type =
-          let
-            minecraftUUID =
-              lib.types.strMatching "[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}"
-              // {
-                description = "Minecraft UUID";
-              };
-          in
-          lib.types.attrsOf minecraftUUID;
-        default = { };
-        description = ''
-          Whitelisted players, only has an effect when
-          {option}`services.minecraft-server.declarative` is
-          `true` and the whitelist is enabled
-          via {option}`services.minecraft-server.serverProperties` by
-          setting `white-list` to `true`.
-          This is a mapping from Minecraft usernames to UUIDs.
-          You can use <https://mcuuid.net/> to get a
-          Minecraft UUID for a username.
-        '';
-        example = lib.literalExpression ''
-          {
-            username1 = "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx";
-            username2 = "yyyyyyyy-yyyy-yyyy-yyyy-yyyyyyyyyyyy";
-          };
-        '';
+        type = lib.types.bool;
       };
 
       serverProperties = lib.mkOption {
-        type =
-          with lib.types;
-          attrsOf (oneOf [
-            bool
-            int
-            str
-          ]);
         default = { };
+
+        description = ''
+          Minecraft server properties for the server.properties file. Only has
+          an effect when {option}`services.minecraft-server.declarative`
+          is set to `true`. See
+          <https://minecraft.wiki/w/Server.properties#Java_Edition>
+          for documentation on these values.
+        '';
+
         example = lib.literalExpression ''
           {
             server-port = 43000;
@@ -164,100 +164,88 @@ in
             "rcon.password" = "hunter2";
           }
         '';
+
+        type =
+          with lib.types;
+          attrsOf (oneOf [
+            bool
+            int
+            str
+          ]);
+      };
+
+      whitelist = lib.mkOption {
+        default = { };
+
         description = ''
-          Minecraft server properties for the server.properties file. Only has
-          an effect when {option}`services.minecraft-server.declarative`
-          is set to `true`. See
-          <https://minecraft.wiki/w/Server.properties#Java_Edition>
-          for documentation on these values.
+          Whitelisted players, only has an effect when
+          {option}`services.minecraft-server.declarative` is
+          `true` and the whitelist is enabled
+          via {option}`services.minecraft-server.serverProperties` by
+          setting `white-list` to `true`.
+          This is a mapping from Minecraft usernames to UUIDs.
+          You can use <https://mcuuid.net/> to get a
+          Minecraft UUID for a username.
         '';
-      };
 
-      package = lib.mkPackageOption pkgs "minecraft-server" {
-        example = "pkgs.minecraft-server_1_12_2";
-      };
+        example = lib.literalExpression ''
+          {
+            username1 = "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx";
+            username2 = "yyyyyyyy-yyyy-yyyy-yyyy-yyyyyyyyyyyy";
+          };
+        '';
 
-      jvmOpts = lib.mkOption {
-        type = lib.types.separatedString " ";
-        default = "-Xmx2048M -Xms2048M";
-        # Example options from https://minecraft.wiki/w/Tutorial:Server_startup_script
-        example =
-          "-Xms4092M -Xmx4092M -XX:+UseG1GC -XX:+CMSIncrementalPacing "
-          + "-XX:+CMSClassUnloadingEnabled -XX:ParallelGCThreads=2 "
-          + "-XX:MinHeapFreeRatio=5 -XX:MaxHeapFreeRatio=10";
-        description = "JVM options for the Minecraft server.";
+        type =
+          let
+            minecraftUUID =
+              lib.types.strMatching "[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}"
+              // {
+                description = "Minecraft UUID";
+              };
+          in
+          lib.types.attrsOf minecraftUUID;
       };
     };
   };
 
   config = lib.mkIf cfg.enable {
 
-    users.users.minecraft = {
-      description = "Minecraft server service user";
-      home = cfg.dataDir;
-      createHome = true;
-      isSystemUser = true;
-      group = "minecraft";
-    };
-    users.groups.minecraft = { };
+    assertions = [
+      {
+        assertion = cfg.eula;
 
-    systemd.sockets.minecraft-server = {
-      bindsTo = [ "minecraft-server.service" ];
-      socketConfig = {
-        ListenFIFO = "/run/minecraft-server.stdin";
-        SocketMode = "0660";
-        SocketUser = "minecraft";
-        SocketGroup = "minecraft";
-        RemoveOnStop = true;
-        FlushPending = true;
-      };
-    };
+        message =
+          "You must agree to Mojangs EULA to run minecraft-server."
+          + " Read https://account.mojang.com/documents/minecraft_eula and"
+          + " set `services.minecraft-server.eula` to `true` if you agree.";
+      }
+    ];
+
+    networking.firewall = lib.mkIf cfg.openFirewall (
+      if cfg.declarative then
+        {
+          allowedTCPPorts = [
+            serverPort
+          ]
+          ++ lib.optional (queryPort != null) queryPort
+          ++ lib.optional (rconPort != null) rconPort;
+
+          allowedUDPPorts = [ serverPort ];
+        }
+      else
+        {
+          allowedTCPPorts = [ defaultServerPort ];
+          allowedUDPPorts = [ defaultServerPort ];
+        }
+    );
 
     systemd.services.minecraft-server = {
-      description = "Minecraft Server Service";
-      wantedBy = [ "multi-user.target" ];
-      requires = [ "minecraft-server.socket" ];
       after = [
         "network.target"
         "minecraft-server.socket"
       ];
 
-      serviceConfig = {
-        ExecStart = "${cfg.package}/bin/minecraft-server ${cfg.jvmOpts}";
-        ExecStop = "${stopScript} $MAINPID";
-        Restart = "always";
-        User = "minecraft";
-        WorkingDirectory = cfg.dataDir;
-
-        StandardInput = "socket";
-        StandardOutput = "journal";
-        StandardError = "journal";
-
-        # Hardening
-        CapabilityBoundingSet = [ "" ];
-        DeviceAllow = [ "" ];
-        LockPersonality = true;
-        PrivateDevices = true;
-        PrivateTmp = true;
-        PrivateUsers = true;
-        ProtectClock = true;
-        ProtectControlGroups = true;
-        ProtectHome = true;
-        ProtectHostname = true;
-        ProtectKernelLogs = true;
-        ProtectKernelModules = true;
-        ProtectKernelTunables = true;
-        ProtectProc = "invisible";
-        RestrictAddressFamilies = [
-          "AF_INET"
-          "AF_INET6"
-        ];
-        RestrictNamespaces = true;
-        RestrictRealtime = true;
-        RestrictSUIDSGID = true;
-        SystemCallArchitectures = "native";
-        UMask = "0077";
-      };
+      description = "Minecraft Server Service";
 
       preStart = ''
         ln -sf ${eulaFile} eula.txt
@@ -293,34 +281,71 @@ in
             fi
           ''
       );
+
+      requires = [ "minecraft-server.socket" ];
+
+      serviceConfig = {
+        # Hardening
+        CapabilityBoundingSet = [ "" ];
+        DeviceAllow = [ "" ];
+        ExecStart = "${cfg.package}/bin/minecraft-server ${cfg.jvmOpts}";
+        ExecStop = "${stopScript} $MAINPID";
+        LockPersonality = true;
+        PrivateDevices = true;
+        PrivateTmp = true;
+        PrivateUsers = true;
+        ProtectClock = true;
+        ProtectControlGroups = true;
+        ProtectHome = true;
+        ProtectHostname = true;
+        ProtectKernelLogs = true;
+        ProtectKernelModules = true;
+        ProtectKernelTunables = true;
+        ProtectProc = "invisible";
+        Restart = "always";
+
+        RestrictAddressFamilies = [
+          "AF_INET"
+          "AF_INET6"
+        ];
+
+        RestrictNamespaces = true;
+        RestrictRealtime = true;
+        RestrictSUIDSGID = true;
+        StandardError = "journal";
+        StandardInput = "socket";
+        StandardOutput = "journal";
+        SystemCallArchitectures = "native";
+        UMask = "0077";
+        User = "minecraft";
+        WorkingDirectory = cfg.dataDir;
+      };
+
+      wantedBy = [ "multi-user.target" ];
     };
 
-    networking.firewall = lib.mkIf cfg.openFirewall (
-      if cfg.declarative then
-        {
-          allowedUDPPorts = [ serverPort ];
-          allowedTCPPorts = [
-            serverPort
-          ]
-          ++ lib.optional (queryPort != null) queryPort
-          ++ lib.optional (rconPort != null) rconPort;
-        }
-      else
-        {
-          allowedUDPPorts = [ defaultServerPort ];
-          allowedTCPPorts = [ defaultServerPort ];
-        }
-    );
+    systemd.sockets.minecraft-server = {
+      bindsTo = [ "minecraft-server.service" ];
 
-    assertions = [
-      {
-        assertion = cfg.eula;
-        message =
-          "You must agree to Mojangs EULA to run minecraft-server."
-          + " Read https://account.mojang.com/documents/minecraft_eula and"
-          + " set `services.minecraft-server.eula` to `true` if you agree.";
-      }
-    ];
+      socketConfig = {
+        FlushPending = true;
+        ListenFIFO = "/run/minecraft-server.stdin";
+        RemoveOnStop = true;
+        SocketGroup = "minecraft";
+        SocketMode = "0660";
+        SocketUser = "minecraft";
+      };
+    };
+
+    users.groups.minecraft = { };
+
+    users.users.minecraft = {
+      createHome = true;
+      description = "Minecraft server service user";
+      group = "minecraft";
+      home = cfg.dataDir;
+      isSystemUser = true;
+    };
 
   };
 }

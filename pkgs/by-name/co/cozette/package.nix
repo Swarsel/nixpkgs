@@ -1,9 +1,9 @@
 {
   lib,
-  stdenvNoCC,
-  fetchzip,
-  writeText,
   bdf2psf,
+  fetchzip,
+  stdenvNoCC,
+  writeText,
   codepoints ? (import ./default-codepoints.nix),
 }:
 
@@ -18,6 +18,7 @@ stdenvNoCC.mkDerivation rec {
     url = "https://github.com/the-moonwitch/Cozette/releases/download/v.${version}/CozetteFonts-v-${
       builtins.replaceStrings [ "." ] [ "-" ] version
     }.zip";
+
     hash = "sha256-Njh6V5wTBKM/1QKmPwG1qiOYyAJSVQXLTBLN03V6DaE=";
   };
 
@@ -55,7 +56,7 @@ stdenvNoCC.mkDerivation rec {
     homepage = "https://github.com/the-moonwitch/cozette";
     changelog = "https://github.com/the-moonwitch/Cozette/blob/v.${version}/CHANGELOG.md";
     license = lib.licenses.mit;
-    platforms = lib.platforms.all;
     maintainers = with lib.maintainers; [ brettlyons ];
+    platforms = lib.platforms.all;
   };
 }

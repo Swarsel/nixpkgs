@@ -1,14 +1,14 @@
 {
+  lib,
+  stdenv,
   fetchFromGitHub,
   gtest,
-  lib,
+  pkg-config,
   python3,
   readline,
-  stdenv,
   yosys,
-  zlib,
   yosys-symbiflow,
-  pkg-config,
+  zlib,
 }:
 let
 
@@ -38,44 +38,27 @@ let
   ];
 
   static_gtest = gtest.overrideAttrs (old: {
-    dontDisableStatic = true;
     cmakeFlags = old.cmakeFlags ++ [ "-DBUILD_SHARED_LIBS=OFF" ];
+    dontDisableStatic = true;
   });
 
 in
 lib.genAttrs plugins (
   plugin:
   stdenv.mkDerivation rec {
-    pname = "yosys-symbiflow-${plugin}-plugin";
     inherit src version plugin;
-    enableParallelBuilding = true;
+    pname = "yosys-symbiflow-${plugin}-plugin";
 
     nativeBuildInputs = [
       python3
       pkg-config
     ];
+
     buildInputs = [
       yosys
       readline
       zlib
     ];
-
-    # xdc has an incorrect path to a test which has yet to be patched
-    doCheck = plugin != "xdc";
-    nativeCheckInputs = [ static_gtest ];
-
-    # A Makefile rule tries to wget-fetch a yosys script from github.
-    # Link the script from our yosys sources in preBuild instead, so that
-    # the Makefile rule is a no-op.
-    preBuild = ''
-      ln -s ${yosys.src}/passes/pmgen/pmgen.py pmgen.py
-    '';
-
-    # Providing a symlink avoids the need for patching the test makefile
-    postUnpack = ''
-      mkdir -p source/third_party/googletest/build/
-      ln -s ${static_gtest}/lib source/third_party/googletest/build/lib
-    '';
 
     makeFlags = [
       "PLUGIN_LIST=${plugin}"
@@ -86,7 +69,17 @@ lib.genAttrs plugins (
       "YOSYS_DATA_DIR=\${out}/share/yosys/"
     ];
 
-    checkTarget = "test";
+    # A Makefile rule tries to wget-fetch a yosys script from github.
+    # Link the script from our yosys sources in preBuild instead, so that
+    # the Makefile rule is a no-op.
+    preBuild = ''
+      ln -s ${yosys.src}/passes/pmgen/pmgen.py pmgen.py
+    '';
+
+    # xdc has an incorrect path to a test which has yet to be patched
+    doCheck = plugin != "xdc";
+    nativeCheckInputs = [ static_gtest ];
+
     checkFlags = [
       (
         "NIX_YOSYS_PLUGIN_DIRS=\${NIX_BUILD_TOP}/source/${plugin}-plugin/build"
@@ -97,16 +90,26 @@ lib.genAttrs plugins (
       )
     ];
 
+    checkTarget = "test";
+    enableParallelBuilding = true;
     installFlags = buildFlags;
+
+    # Providing a symlink avoids the need for patching the test makefile
+    postUnpack = ''
+      mkdir -p source/third_party/googletest/build/
+      ln -s ${static_gtest}/lib source/third_party/googletest/build/lib
+    '';
 
     meta = {
       description = "Symbiflow ${plugin} plugin for Yosys";
       license = lib.licenses.isc;
-      platforms = lib.platforms.all;
+
       maintainers = with lib.maintainers; [
         ollieB
         thoughtpolice
       ];
+
+      platforms = lib.platforms.all;
     };
   }
 )

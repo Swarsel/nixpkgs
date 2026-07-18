@@ -1,8 +1,8 @@
 {
-  runCommand,
   cargo,
-  rustc,
   cargo-show-asm,
+  runCommand,
+  rustc,
 }:
 runCommand "test-basic"
   {

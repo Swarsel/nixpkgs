@@ -1,15 +1,15 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitLab,
-  gitUpdater,
-  testers,
   cmake,
   cmake-extras,
   curl,
   dbus,
   dbus-test-runner,
+  doxygen,
   dpkg,
+  gitUpdater,
   gobject-introspection,
   gtest,
   json-glib,
@@ -19,19 +19,26 @@
   pkg-config,
   properties-cpp,
   python3,
+  python3Packages,
+  sphinx,
   systemd,
+  testers,
   ubports-click,
   validatePkgConfig,
   zeitgeist,
   withDocumentation ? true,
-  doxygen,
-  python3Packages,
-  sphinx,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
   pname = "lomiri-app-launch";
   version = "0.2.0";
+
+  src = fetchFromGitLab {
+    owner = "ubports";
+    repo = "development/core/lomiri-app-launch";
+    tag = finalAttrs.version;
+    hash = "sha256-MPBgqui3RIOdiK/lmslhg23RlMqDAjYaTQAJ53+93sU=";
+  };
 
   outputs = [
     "out"
@@ -40,13 +47,6 @@ stdenv.mkDerivation (finalAttrs: {
   ++ lib.optionals withDocumentation [
     "doc"
   ];
-
-  src = fetchFromGitLab {
-    owner = "ubports";
-    repo = "development/core/lomiri-app-launch";
-    tag = finalAttrs.version;
-    hash = "sha256-MPBgqui3RIOdiK/lmslhg23RlMqDAjYaTQAJ53+93sU=";
-  };
 
   patches = [
     # Use /run/current-system/sw/bin fallback for desktop file Exec= lookups, propagate to launched applications
@@ -94,20 +94,6 @@ stdenv.mkDerivation (finalAttrs: {
     zeitgeist
   ];
 
-  nativeCheckInputs = [
-    dbus
-    (python3.withPackages (
-      ps: with ps; [
-        python-dbusmock
-      ]
-    ))
-  ];
-
-  checkInputs = [
-    dbus-test-runner
-    gtest
-  ];
-
   cmakeFlags = [
     (lib.cmakeBool "ENABLE_MIRCLIENT" false)
     (lib.cmakeBool "ENABLE_TESTS" finalAttrs.finalPackage.doCheck)
@@ -132,6 +118,20 @@ stdenv.mkDerivation (finalAttrs: {
 
   doCheck = stdenv.buildPlatform.canExecute stdenv.hostPlatform;
 
+  nativeCheckInputs = [
+    dbus
+    (python3.withPackages (
+      ps: with ps; [
+        python-dbusmock
+      ]
+    ))
+  ];
+
+  checkInputs = [
+    dbus-test-runner
+    gtest
+  ];
+
   postInstall = lib.optionalString withDocumentation ''
     mkdir -p $doc/share/doc/lomiri-app-launch
     mv ../docs/_build/html $doc/share/doc/lomiri-app-launch/
@@ -147,10 +147,12 @@ stdenv.mkDerivation (finalAttrs: {
     homepage = "https://gitlab.com/ubports/development/core/lomiri-app-launch";
     changelog = "https://gitlab.com/ubports/development/core/lomiri-app-launch/-/blob/${finalAttrs.version}/ChangeLog";
     license = lib.licenses.gpl3Only;
-    teams = [ lib.teams.lomiri ];
     platforms = lib.platforms.linux;
+
     pkgConfigModules = [
       "lomiri-app-launch-0"
     ];
+
+    teams = [ lib.teams.lomiri ];
   };
 })

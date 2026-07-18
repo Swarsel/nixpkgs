@@ -1,24 +1,21 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  bluez,
+  buildPythonPackage,
+  dbus,
+  # dependencies
+  dbus-python,
+  gobject-introspection,
+  networkmanager,
+  pygobject3,
+  pytestCheckHook,
   runCommand,
-
   # build-system
   setuptools,
   setuptools-scm,
-
-  # dependencies
-  dbus-python,
-
   # checks
   doCheck ? true,
-  dbus,
-  gobject-introspection,
-  pygobject3,
-  bluez,
-  networkmanager,
-  pytestCheckHook,
 }:
 
 let
@@ -30,9 +27,9 @@ let
   '';
 in
 buildPythonPackage rec {
+  inherit doCheck;
   pname = "python-dbusmock";
   version = "0.37.2";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "martinpitt";
@@ -40,15 +37,6 @@ buildPythonPackage rec {
     tag = version;
     hash = "sha256-Q149NcbpbIgXCd7WujALC9I9vAM/tZh+enTJh0d84Kg=";
   };
-
-  build-system = [
-    setuptools
-    setuptools-scm
-  ];
-
-  dependencies = [ dbus-python ];
-
-  inherit doCheck;
 
   nativeCheckInputs = [
     dbus
@@ -60,6 +48,13 @@ buildPythonPackage rec {
     pytestCheckHook
   ];
 
+  build-system = [
+    setuptools
+    setuptools-scm
+  ];
+
+  dependencies = [ dbus-python ];
+
   disabledTests = [
     # wants to call upower, which is a reverse-dependency
     "test_dbusmock_test_template"
@@ -68,10 +63,12 @@ buildPythonPackage rec {
     "test_session_service_activation"
   ];
 
+  pyproject = true;
+
   meta = {
-    changelog = "https://github.com/martinpitt/python-dbusmock/releases/tag/${src.tag}";
     description = "Mock D-Bus objects for tests";
     homepage = "https://github.com/martinpitt/python-dbusmock";
+    changelog = "https://github.com/martinpitt/python-dbusmock/releases/tag/${src.tag}";
     license = lib.licenses.lgpl3Plus;
     maintainers = [ ];
     platforms = lib.platforms.linux;

@@ -1,26 +1,26 @@
 {
   lib,
   stdenv,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   cmake,
-  ninja,
   duckdb,
   fsspec,
   google-cloud-storage,
   ipython,
+  ninja,
   numpy,
   openssl,
   pandas,
   psutil,
   pyarrow,
   pybind11,
+  pytest-reraise,
+  pytestCheckHook,
   pytz,
   scikit-build-core,
   setuptools-scm,
   typing-extensions,
-  pytest-reraise,
-  pytestCheckHook,
 }:
 
 buildPythonPackage rec {
@@ -28,7 +28,6 @@ buildPythonPackage rec {
     pname
     version # nixpkgs-update: no auto update
     ;
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "duckdb";
@@ -59,44 +58,21 @@ buildPythonPackage rec {
     ninja
   ];
 
-  dontUseCmakeConfigure = true;
-
-  build-system = [
-    pybind11
-    scikit-build-core
-    setuptools-scm
-  ];
-
   buildInputs = [
     duckdb
     openssl
   ];
 
-  dependencies = [
-    typing-extensions
-  ];
-
-  optional-dependencies = {
-    all = [
-      # FIXME package adbc_driver_manager
-      ipython
-      fsspec
-      numpy
-      pandas
-      pyarrow
-    ];
-  };
-
-  env = {
-    DUCKDB_BUILD_UNITY = 1;
-    # default to disabled extension autoload/autoinstall
-    CMAKE_DEFINE_DUCKDB_EXTENSION_AUTOLOAD_DEFAULT = "0";
-    CMAKE_DEFINE_DUCKDB_EXTENSION_AUTOINSTALL_DEFAULT = "0";
-  };
-
   cmakeFlags = [
     (lib.cmakeFeature "OVERRIDE_GIT_DESCRIBE" "v${version}-0-g${duckdb.rev}")
   ];
+
+  env = {
+    CMAKE_DEFINE_DUCKDB_EXTENSION_AUTOINSTALL_DEFAULT = "0";
+    # default to disabled extension autoload/autoinstall
+    CMAKE_DEFINE_DUCKDB_EXTENSION_AUTOLOAD_DEFAULT = "0";
+    DUCKDB_BUILD_UNITY = 1;
+  };
 
   nativeCheckInputs = [
     fsspec
@@ -108,12 +84,21 @@ buildPythonPackage rec {
   ]
   ++ optional-dependencies.all;
 
-  # test flags from .github/workflows/Python.yml
-  pytestFlags = [
-    "--verbose"
-    "-Wignore::DeprecationWarning"
+  # remove duckdb dir to prevent import confusion by pytest
+  preCheck = ''
+    export HOME="$(mktemp -d)"
+    rm -rf duckdb
+  '';
+
+  build-system = [
+    pybind11
+    scikit-build-core
+    setuptools-scm
   ];
-  enabledTestPaths = if stdenv.hostPlatform.isDarwin then [ "tests/fast" ] else [ "tests" ];
+
+  dependencies = [
+    typing-extensions
+  ];
 
   disabledTestPaths = [
     # avoid dependency on adbc_driver_manager
@@ -141,11 +126,27 @@ buildPythonPackage rec {
     "test_query_progress"
   ];
 
-  # remove duckdb dir to prevent import confusion by pytest
-  preCheck = ''
-    export HOME="$(mktemp -d)"
-    rm -rf duckdb
-  '';
+  dontUseCmakeConfigure = true;
+  enabledTestPaths = if stdenv.hostPlatform.isDarwin then [ "tests/fast" ] else [ "tests" ];
+
+  optional-dependencies = {
+    all = [
+      # FIXME package adbc_driver_manager
+      ipython
+      fsspec
+      numpy
+      pandas
+      pyarrow
+    ];
+  };
+
+  pyproject = true;
+
+  # test flags from .github/workflows/Python.yml
+  pytestFlags = [
+    "--verbose"
+    "-Wignore::DeprecationWarning"
+  ];
 
   pythonImportsCheck = [ "duckdb" ];
 
@@ -153,6 +154,7 @@ buildPythonPackage rec {
     description = "Python binding for DuckDB";
     homepage = "https://duckdb.org/";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       cameronraysmith
       cpcloud

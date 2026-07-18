@@ -3,10 +3,10 @@
   stdenv,
   fetchurl,
   cmake,
-  pcre2,
-  zlib,
-  python3,
   openssl,
+  pcre2,
+  python3,
+  zlib,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -23,27 +23,28 @@ stdenv.mkDerivation (finalAttrs: {
       --replace-fail "cmake_minimum_required(VERSION 2.6)" "cmake_minimum_required(VERSION 3.10)"
   '';
 
+  strictDeps = true;
+
   nativeBuildInputs = [
     cmake
     python3
   ];
+
   buildInputs = [
     pcre2
     zlib
     openssl
   ];
 
-  strictDeps = true;
-
   cmakeFlags = [
     "--no-warn-unused-cli"
   ];
 
   meta = {
-    homepage = "http://cppcms.com";
     description = "High Performance C++ Web Framework";
-    platforms = lib.platforms.linux;
+    homepage = "http://cppcms.com";
     license = lib.licenses.mit;
     maintainers = [ lib.maintainers.juliendehos ];
+    platforms = lib.platforms.linux;
   };
 })

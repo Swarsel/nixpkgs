@@ -17,13 +17,13 @@ buildGoModule (finalAttrs: {
 
   vendorHash = "sha256-/enY0qERFzAIJNcuw1djRGoAcmtz7R5Ikvlts0f7rLc=";
 
-  subPackages = [ "cmd/tendermint" ];
-
   preBuild = ''
     makeFlagsArray+=(
       "-ldflags=-s -w -X github.com/tendermint/tendermint/version.GitCommit=${finalAttrs.src.rev}"
     )
   '';
+
+  subPackages = [ "cmd/tendermint" ];
 
   meta = {
     description = "Byzantine-Fault Tolerant State Machines. Or Blockchain, for short";

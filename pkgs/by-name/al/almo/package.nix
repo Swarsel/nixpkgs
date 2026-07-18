@@ -1,7 +1,7 @@
 {
   lib,
-  fetchFromGitHub,
   stdenv,
+  fetchFromGitHub,
   gcc,
   python312Packages,
 }:
@@ -16,18 +16,18 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-eNigZUeUz6ZjQsn+0S6+Orv0WoLbqGgoA3+wG5ZcSBI=";
   };
 
+  # remove darwin-only linker flag on linux
+  postPatch = lib.optionalString (!stdenv.hostPlatform.isDarwin) ''
+    substituteInPlace scripts/pybind.sh \
+      --replace-fail " -undefined dynamic_lookup" ""
+  '';
+
   buildInputs = [
     gcc
     python312Packages.pybind11
   ];
 
   makeFlags = [ "all" ];
-
-  # remove darwin-only linker flag on linux
-  postPatch = lib.optionalString (!stdenv.hostPlatform.isDarwin) ''
-    substituteInPlace scripts/pybind.sh \
-      --replace-fail " -undefined dynamic_lookup" ""
-  '';
 
   installPhase = ''
     runHook preInstall
@@ -39,11 +39,11 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Markdown parser and static site generator";
-    license = lib.licenses.mit;
-    platforms = lib.platforms.all;
     homepage = "https://github.com/abap34/almo";
     changelog = "https://github.com/abap34/almo/releases/tag/${finalAttrs.src.tag}";
+    license = lib.licenses.mit;
     maintainers = [ ];
+    platforms = lib.platforms.all;
     mainProgram = "almo";
   };
 })

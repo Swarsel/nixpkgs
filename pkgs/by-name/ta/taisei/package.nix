@@ -2,36 +2,33 @@
   lib,
   stdenv,
   fetchFromGitHub,
-
+  cglm,
+  cmake,
   # Build depends
   docutils,
-  meson,
-  ninja,
-  pkg-config,
-  python3Packages,
-  opusfile,
-  openssl,
+  freetype,
   gamemode,
-  shaderc,
-  makeWrapper,
-  cmake,
-  mimalloc,
+  gettext,
   glslang,
   libogg,
+  libpng,
+  libunibreak,
+  libwebp,
   makeBinaryWrapper,
-  gettext,
-
+  makeWrapper,
+  meson,
+  mimalloc,
+  ninja,
+  openssl,
+  opusfile,
+  pkg-config,
+  python3Packages,
   # Runtime depends
   sdl3,
-  cglm,
-  freetype,
-  libpng,
-  libwebp,
+  shaderc,
+  spirv-cross,
   zlib,
   zstd,
-  spirv-cross,
-  libunibreak,
-
   gamemodeSupport ? stdenv.hostPlatform.isLinux,
 }:
 
@@ -46,6 +43,8 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-xjEfSrtxZBBWUU8nv0fyNAofHSGVTeO3CBR/BhKSGHg=";
     fetchSubmodules = true;
   };
+
+  strictDeps = true;
 
   nativeBuildInputs = [
     docutils
@@ -80,9 +79,6 @@ stdenv.mkDerivation (finalAttrs: {
   ]
   ++ lib.optional gamemodeSupport gamemode;
 
-  # Forced to use builtin-sincos because the symbol isn't available otherwise
-  env.NIX_CFLAGS_COMPILE = lib.optionalString stdenv.hostPlatform.isDarwin " -Dsincos=__builtin_sincos";
-
   mesonFlags = [
     (lib.mesonEnable "shader_transpiler_dxbc" false)
     (lib.mesonEnable "package_data" false)
@@ -93,6 +89,9 @@ stdenv.mkDerivation (finalAttrs: {
     (lib.mesonEnable "install_relocatable" stdenv.hostPlatform.isDarwin)
     (lib.mesonEnable "shader_transpiler" stdenv.hostPlatform.isDarwin)
   ];
+
+  # Forced to use builtin-sincos because the symbol isn't available otherwise
+  env.NIX_CFLAGS_COMPILE = lib.optionalString stdenv.hostPlatform.isDarwin " -Dsincos=__builtin_sincos";
 
   preConfigure = ''
     patchShebangs .
@@ -113,27 +112,30 @@ stdenv.mkDerivation (finalAttrs: {
         makeBinaryWrapper $out/Applications/Taisei.app/Contents/MacOS/Taisei $out/bin/taisei
       '';
 
-  strictDeps = true;
-
   meta = {
     description = "Free and open-source Touhou Project clone and fangame";
-    mainProgram = "taisei";
+
     longDescription = ''
       Taisei is an open clone of the Tōhō Project series. Tōhō is a one-man
       project of shoot-em-up games set in an isolated world full of Japanese
       folklore.
     '';
+
     homepage = "https://taisei-project.org/";
+    changelog = "https://github.com/taisei-project/taisei/releases/tag/${finalAttrs.src.tag}";
+
     license = with lib.licenses; [
       mit
       cc-by-40
     ];
+
     maintainers = with lib.maintainers; [
       lambda-11235
       Gliczy
       philocalyst
     ];
+
     platforms = lib.platforms.all;
-    changelog = "https://github.com/taisei-project/taisei/releases/tag/${finalAttrs.src.tag}";
+    mainProgram = "taisei";
   };
 })

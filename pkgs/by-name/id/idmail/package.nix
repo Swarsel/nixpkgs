@@ -1,12 +1,12 @@
 {
+  lib,
+  fetchFromGitHub,
   binaryen,
   cargo-leptos,
-  fetchFromGitHub,
-  lib,
-  rustc,
   makeWrapper,
   nix-update-script,
   rustPlatform,
+  rustc,
   tailwindcss_3,
   wasm-bindgen-cli_0_2_106,
 }:
@@ -21,13 +21,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-b18Ic+wffCPfp1cDTxDe7IBigbS4X6t7KaAy7P4Uh28=";
   };
 
-  cargoHash = "sha256-FU9CfOJ9tNY+97OZDw2qYZHTPoFp9Ch2VigXaxBnFCw=";
-
-  env = {
-    RUSTC_BOOTSTRAP = 1;
-    RUSTFLAGS = "--cfg=web_sys_unstable_apis";
-  };
-
   nativeBuildInputs = [
     wasm-bindgen-cli_0_2_106
     binaryen
@@ -36,6 +29,14 @@ rustPlatform.buildRustPackage (finalAttrs: {
     tailwindcss_3
     makeWrapper
   ];
+
+  cargoHash = "sha256-FU9CfOJ9tNY+97OZDw2qYZHTPoFp9Ch2VigXaxBnFCw=";
+
+  env = {
+    RUSTC_BOOTSTRAP = 1;
+    RUSTFLAGS = "--cfg=web_sys_unstable_apis";
+  };
+
   buildPhase = ''
     runHook preBuild
 
@@ -62,10 +63,12 @@ rustPlatform.buildRustPackage (finalAttrs: {
     homepage = "https://github.com/oddlama/idmail";
     changelog = "https://github.com/oddlama/idmail/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       oddlama
       patrickdag
     ];
+
     mainProgram = "idmail";
   };
 })

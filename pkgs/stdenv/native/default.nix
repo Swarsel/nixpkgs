@@ -1,8 +1,8 @@
 {
   lib,
-  localSystem,
-  crossSystem,
   config,
+  crossSystem,
+  localSystem,
   overlays,
 }:
 
@@ -99,17 +99,36 @@ let
   # /usr etc.).
   makeStdenv =
     {
-      cc,
       fetchurl,
+      cc,
+      extraNativeBuildInputs ? [ ],
       extraPath ? [ ],
       overrides ? (self: super: { }),
-      extraNativeBuildInputs ? [ ],
     }:
 
     genericStdenv {
+      inherit
+        shell
+        cc
+        overrides
+        ;
+
       buildPlatform = localSystem;
+
+      extraNativeBuildInputs =
+        extraNativeBuildInputs
+        ++ (
+          if system == "i686-cygwin" then
+            extraNativeBuildInputsCygwin
+          else if system == "x86_64-cygwin" then
+            extraNativeBuildInputsCygwin
+          else
+            [ ]
+        );
+
+      fetchurlBoot = fetchurl;
       hostPlatform = localSystem;
-      targetPlatform = localSystem;
+      initialPath = extraPath ++ path;
 
       preHook =
         if system == "i686-freebsd" then
@@ -127,26 +146,7 @@ let
         else
           prehookBase;
 
-      extraNativeBuildInputs =
-        extraNativeBuildInputs
-        ++ (
-          if system == "i686-cygwin" then
-            extraNativeBuildInputsCygwin
-          else if system == "x86_64-cygwin" then
-            extraNativeBuildInputsCygwin
-          else
-            [ ]
-        );
-
-      initialPath = extraPath ++ path;
-
-      fetchurlBoot = fetchurl;
-
-      inherit
-        shell
-        cc
-        overrides
-        ;
+      targetPlatform = localSystem;
     };
 
 in
@@ -157,12 +157,6 @@ in
     { }:
     rec {
       __raw = true;
-
-      stdenv = makeStdenv {
-        cc = null;
-        fetchurl = null;
-      };
-      stdenvNoCC = stdenv;
 
       cc =
         let
@@ -175,29 +169,38 @@ in
             .${system} or "/usr";
         in
         import ../../build-support/cc-wrapper {
-          name = "cc-native";
-          nativeTools = true;
-          nativeLibc = true;
-          expand-response-params = "";
           inherit lib nativePrefix;
-          runtimeShell = shell;
+          inherit stdenvNoCC;
+
           bintools = import ../../build-support/bintools-wrapper {
-            name = "bintools";
             inherit lib stdenvNoCC nativePrefix;
-            nativeTools = true;
-            nativeLibc = true;
             expand-response-params = "";
+            name = "bintools";
+            nativeLibc = true;
+            nativeTools = true;
             runtimeShell = shell;
           };
-          inherit stdenvNoCC;
+
+          expand-response-params = "";
+          name = "cc-native";
+          nativeLibc = true;
+          nativeTools = true;
+          runtimeShell = shell;
         };
 
       fetchurl = import ../../build-support/fetchurl {
         inherit lib stdenvNoCC;
+        inherit (config) hashedMirrors rewriteURL;
         # Curl should be in /usr/bin or so.
         curl = null;
-        inherit (config) hashedMirrors rewriteURL;
       };
+
+      stdenv = makeStdenv {
+        cc = null;
+        fetchurl = null;
+      };
+
+      stdenvNoCC = stdenv;
 
     }
   )
@@ -205,6 +208,7 @@ in
   # First build a stdenv based only on tools outside the store.
   (prevStage: {
     inherit config overlays;
+
     stdenv =
       makeStdenv {
         inherit (prevStage) cc fetchurl;
@@ -219,11 +223,12 @@ in
   # don't have, so we mustn't rely on the native environment providing it).
   (prevStage: {
     inherit config overlays;
+
     stdenv = makeStdenv {
       inherit (prevStage.stdenv) cc fetchurl;
+      extraNativeBuildInputs = if localSystem.isLinux then [ prevStage.patchelf ] else [ ];
       extraPath = [ prevStage.xz ];
       overrides = self: super: { inherit (prevStage) fetchurl xz; };
-      extraNativeBuildInputs = if localSystem.isLinux then [ prevStage.patchelf ] else [ ];
     };
   })
 

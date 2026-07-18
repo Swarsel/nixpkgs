@@ -1,7 +1,7 @@
 {
   config,
-  pkgs,
   lib,
+  pkgs,
   ...
 }:
 
@@ -17,26 +17,31 @@ in
   };
 
   config = lib.mkIf cfg.enable {
+    services.dbus.packages = [ cfg.package ];
+
     systemd.services.oddjobd = {
-      wantedBy = [ "multi-user.target" ];
+      enable = true;
+
       after = [
         "network.target"
         "dbus.service"
       ];
+
       description = "DBUS Odd-job Daemon";
-      enable = true;
+
       documentation = [
         "man:oddjobd(8)"
         "man:oddjobd.conf(5)"
       ];
-      serviceConfig = {
-        Type = "simple";
-        PIDFile = "/run/oddjobd.pid";
-        ExecStart = "${lib.getBin cfg.package}/bin/oddjobd -n -p /run/oddjobd.pid -t 300";
-      };
-    };
 
-    services.dbus.packages = [ cfg.package ];
+      serviceConfig = {
+        ExecStart = "${lib.getBin cfg.package}/bin/oddjobd -n -p /run/oddjobd.pid -t 300";
+        PIDFile = "/run/oddjobd.pid";
+        Type = "simple";
+      };
+
+      wantedBy = [ "multi-user.target" ];
+    };
   };
 
   meta.maintainers = with lib.maintainers; [ SohamG ];

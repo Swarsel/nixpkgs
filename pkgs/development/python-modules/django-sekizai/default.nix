@@ -1,16 +1,15 @@
 {
   lib,
-  fetchPypi,
   buildPythonPackage,
   django-classy-tags,
-  pytestCheckHook,
+  fetchPypi,
   pytest-django,
+  pytestCheckHook,
 }:
 
 buildPythonPackage rec {
   pname = "django-sekizai";
   version = "4.1.0";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
@@ -18,15 +17,15 @@ buildPythonPackage rec {
   };
 
   propagatedBuildInputs = [ django-classy-tags ];
+  env.DJANGO_SETTINGS_MODULE = "tests.settings";
 
   checkInputs = [
     pytestCheckHook
     pytest-django
   ];
 
+  format = "setuptools";
   pythonImportsCheck = [ "sekizai" ];
-
-  env.DJANGO_SETTINGS_MODULE = "tests.settings";
 
   meta = {
     description = "Define placeholders where your blocks get rendered and append to those blocks";

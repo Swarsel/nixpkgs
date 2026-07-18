@@ -1,35 +1,35 @@
 {
   lib,
-  llvmPackages,
   fetchFromGitHub,
-  cmake,
-  ninja,
-  pkg-config,
-  python3,
-  nix-update-script,
-  xxhash,
-  fmt,
-  libxml2,
-  openssl,
-  range-v3,
-  catch2_3,
-  nasm,
-  buildEnv,
-  writeText,
-  pkgsCross,
-  libclang,
-  libllvm,
   alsa-lib,
-  libdrm,
+  buildEnv,
+  catch2_3,
+  cmake,
+  fmt,
   libGL,
-  wayland,
-  libxrender,
-  libxrandr,
+  libclang,
+  libdrm,
+  libllvm,
   libx11,
-  xorgproto,
   libxcb,
-  withQt ? true,
+  libxml2,
+  libxrandr,
+  libxrender,
+  llvmPackages,
+  nasm,
+  ninja,
+  nix-update-script,
+  openssl,
+  pkg-config,
+  pkgsCross,
+  python3,
   qt6,
+  range-v3,
+  wayland,
+  writeText,
+  xorgproto,
+  xxhash,
+  withQt ? true,
 }:
 
 let
@@ -49,7 +49,14 @@ let
   pkgsCross32 = pkgsCross.gnu32;
   pkgsCross64 = pkgsCross.gnu64;
   devRootFS = buildEnv {
+    postBuild = ''
+      mkdir -p $out/usr
+      ln -s $out/include $out/usr/
+    '';
+
+    ignoreCollisions = true;
     name = "fex-dev-rootfs";
+
     paths = [
       pkgsCross64.stdenv.cc.libc_dev
       pkgsCross32.stdenv.cc.libc_dev
@@ -57,16 +64,11 @@ let
       pkgsCross32.stdenv.cc.cc
     ]
     ++ libForwardingInputs;
-    ignoreCollisions = true;
+
     pathsToLink = [
       "/include"
       "/lib"
     ];
-
-    postBuild = ''
-      mkdir -p $out/usr
-      ln -s $out/include $out/usr/
-    '';
   };
 
   toolchain32 = writeText "toolchain_nix_x86_32.txt" ''
@@ -106,8 +108,8 @@ llvmPackages.stdenv.mkDerivation (finalAttrs: {
     repo = "FEX";
     tag = "FEX-${finalAttrs.version}";
     hash = "sha256-N4iiDa9DbET/8wzFmp9FoFQfm0ZmtUT76sipmi8LE/0=";
-
     leaveDotGit = true;
+
     postFetch = ''
       cd $out
       git reset
@@ -178,6 +180,8 @@ llvmPackages.stdenv.mkDerivation (finalAttrs: {
       unittests/ASM/Secondary/07_XX_04.asm
   '';
 
+  strictDeps = true;
+
   nativeBuildInputs = [
     cmake
     ninja
@@ -219,13 +223,6 @@ llvmPackages.stdenv.mkDerivation (finalAttrs: {
     (lib.cmakeFeature "X86_DEV_ROOTFS" "${devRootFS}")
   ];
 
-  strictDeps = true;
-
-  # Running the tests isn't supported on non-4K pagesize systems, but the build
-  # itself doesn't require 4K pagesize. So, to avoid breaking the build, enable
-  # checkPhase by default (so that the check inputs are included) and then
-  # manually disable it if we're running on a non-4K pagesize system.
-  doCheck = true;
   preConfigure = ''
     if [ "$(getconf PAGESIZE)" != "4096" ]; then
       echo "Disabling checkPhase due to non-4K pagesize environment"
@@ -237,8 +234,17 @@ llvmPackages.stdenv.mkDerivation (finalAttrs: {
     fi
   '';
 
+  # Running the tests isn't supported on non-4K pagesize systems, but the build
+  # itself doesn't require 4K pagesize. So, to avoid breaking the build, enable
+  # checkPhase by default (so that the check inputs are included) and then
+  # manually disable it if we're running on a non-4K pagesize system.
+  doCheck = true;
   nativeCheckInputs = [ nasm ];
   checkInputs = [ catch2_3 ];
+
+  preFixup = lib.optionalString withQt ''
+    wrapQtApp $out/bin/FEXConfig
+  '';
 
   # List not exhaustive, e.g. because they depend on an x86 compiler or some
   # other difficult-to-build test binaries.
@@ -252,9 +258,6 @@ llvmPackages.stdenv.mkDerivation (finalAttrs: {
   # Avoid wrapping anything other than FEXConfig, since the wrapped executables
   # don't seem to work when registered as binfmts.
   dontWrapQtApps = true;
-  preFixup = lib.optionalString withQt ''
-    wrapQtApp $out/bin/FEXConfig
-  '';
 
   passthru = {
     updateScript = nix-update-script { };
@@ -264,9 +267,9 @@ llvmPackages.stdenv.mkDerivation (finalAttrs: {
     description = "Fast usermode x86 and x86-64 emulator for Arm64 Linux";
     homepage = "https://fex-emu.com/";
     changelog = "https://github.com/FEX-Emu/FEX/releases/tag/FEX-${finalAttrs.version}";
-    platforms = [ "aarch64-linux" ];
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ andre4ik3 ];
+    platforms = [ "aarch64-linux" ];
     mainProgram = "FEXBash";
   };
 })

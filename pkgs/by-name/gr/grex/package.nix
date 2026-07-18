@@ -16,8 +16,8 @@ rustPlatform.buildRustPackage (finalAttrs: {
   };
 
   cargoHash = "sha256-UR+JieKyVSzjegOQqXWXYLfXy2DVpKw/ApLZwtA1ZUY=";
-
   doInstallCheck = true;
+
   installCheckPhase = ''
     $out/bin/grex --help > /dev/null
   '';
@@ -27,10 +27,12 @@ rustPlatform.buildRustPackage (finalAttrs: {
     homepage = "https://github.com/pemistahl/grex";
     changelog = "https://github.com/pemistahl/grex/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.asl20;
-    mainProgram = "grex";
+
     maintainers = with lib.maintainers; [
       SuperSandro2000
       mfrw
     ];
+
+    mainProgram = "grex";
   };
 })

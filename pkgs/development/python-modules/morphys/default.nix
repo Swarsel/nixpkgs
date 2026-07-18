@@ -1,12 +1,11 @@
 {
-  buildPythonPackage,
-  fetchFromGitHub,
   lib,
+  fetchFromGitHub,
+  buildPythonPackage,
 }:
 buildPythonPackage {
   pname = "morphys";
   version = "1.0";
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "mkalinski";
@@ -15,6 +14,7 @@ buildPythonPackage {
     sha256 = "1da8s04m5wwih9cvkrks3ymb8v082lia47f274hxmfhi6ma3qc8b";
   };
 
+  format = "setuptools";
   pythonImportsCheck = [ "morphys" ];
 
   meta = {

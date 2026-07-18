@@ -3,12 +3,12 @@
   stdenv,
   fetchurl,
   cmake,
+  giflib,
+  libjpeg,
+  libpng,
+  libtiff,
   pkg-config,
   zlib,
-  libpng,
-  libjpeg,
-  giflib,
-  libtiff,
 }:
 
 stdenv.mkDerivation rec {
@@ -16,10 +16,16 @@ stdenv.mkDerivation rec {
   version = "0.4.8";
 
   src = fetchurl {
-    name = "${pname}-snixource-${version}.tar.gz";
     url = "mirror://sourceforge/${pname}/${pname}-${version}.tar.gz";
     sha256 = "sha256-gaWNvBLuUUy0o+HWCOyG6KmzxDrYCY6PV3WbA/jjH64=";
+    name = "${pname}-snixource-${version}.tar.gz";
   };
+
+  outputs = [
+    "out"
+    "dev"
+    "doc"
+  ];
 
   patches = [
     ./cmake4.patch
@@ -29,6 +35,7 @@ stdenv.mkDerivation rec {
     cmake
     pkg-config
   ];
+
   buildInputs = [
     zlib
     libpng
@@ -38,12 +45,6 @@ stdenv.mkDerivation rec {
   ];
 
   doCheck = true;
-
-  outputs = [
-    "out"
-    "dev"
-    "doc"
-  ];
 
   installPhase = ''
     mkdir -p $out/lib

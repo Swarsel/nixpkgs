@@ -19,20 +19,20 @@ let
   };
 
   defaultPHPSettings = {
+    "date.timezone" = config.time.timeZone;
     log_errors = "on";
+    memory_limit = "${toString cfg.settings.php_memory_limit}M";
     post_max_size = "100M";
     upload_max_filesize = "100M";
-    memory_limit = "${toString cfg.settings.php_memory_limit}M";
-    "date.timezone" = config.time.timeZone;
   };
 
   phpIni =
     pkgs.runCommand "php.ini"
       {
         inherit (package) phpPackage;
+        passAsFile = [ "phpOptions" ];
         phpOptions = toKeyValue cfg.phpOptions;
         preferLocalBuild = true;
-        passAsFile = [ "phpOptions" ];
       }
       ''
         cat $phpPackage/etc/php.ini $phpOptionsPath > $out
@@ -68,114 +68,112 @@ in
 {
   options.services.librenms = with lib; {
     enable = mkEnableOption "LibreNMS network monitoring system";
-
     package = lib.mkPackageOption pkgs "librenms" { };
 
-    finalPackage = lib.mkOption {
-      type = lib.types.package;
-      readOnly = true;
-      default = package;
-      defaultText = lib.literalExpression "package";
+    dataDir = mkOption {
+      default = "/var/lib/librenms";
+
       description = ''
-        The final package used by the module. This is the package that has all overrides.
+        Path of the LibreNMS state directory.
       '';
+
+      type = types.path;
     };
 
-    user = mkOption {
-      type = types.str;
-      default = "librenms";
-      description = ''
-        Name of the LibreNMS user.
-      '';
-    };
+    database = {
+      createLocally = mkOption {
+        default = false;
 
-    group = mkOption {
-      type = types.str;
-      default = "librenms";
-      description = ''
-        Name of the LibreNMS group.
-      '';
-    };
+        description = ''
+          Whether to create a local database automatically.
+        '';
 
-    hostname = mkOption {
-      type = types.str;
-      default = config.networking.fqdnOrHostName;
-      defaultText = literalExpression "config.networking.fqdnOrHostName";
-      description = ''
-        The hostname to serve LibreNMS on.
-      '';
-    };
+        type = types.bool;
+      };
 
-    pollerThreads = mkOption {
-      type = types.int;
-      default = 16;
-      description = ''
-        Amount of threads of the cron-poller.
-      '';
-    };
+      database = mkOption {
+        default = "librenms";
 
-    enableOneMinutePolling = mkOption {
-      type = types.bool;
-      default = false;
-      description = ''
-        Enables the [1-Minute Polling](https://docs.librenms.org/Support/1-Minute-Polling/).
-        Changing this option will automatically convert your existing rrd files.
-      '';
-    };
+        description = ''
+          Name of the database on the MySQL/MariaDB server.
+        '';
 
-    enableLocalBilling = mkOption {
-      type = types.bool;
-      default = true;
-      description = ''
-        Enable billing Cron-Jobs on the local instance. Enabled by default, but you may disable it
-        on some nodes within a distributed poller setup. See [the docs](https://docs.librenms.org/Extensions/Distributed-Poller/#discovery)
-        for more informations about billing with distributed pollers.
-      '';
-    };
+        type = types.str;
+      };
 
-    useDistributedPollers = mkOption {
-      type = types.bool;
-      default = false;
-      description = ''
-        Enables [distributed pollers](https://docs.librenms.org/Extensions/Distributed-Poller/)
-        for this LibreNMS instance. This will enable a local `rrdcached` and `memcached` server.
+      host = mkOption {
+        default = "localhost";
 
-        To use this feature, make sure to configure your firewall that the distributed pollers
-        can reach the local `mysql`, `rrdcached` and `memcached` ports.
-      '';
+        description = ''
+          Hostname or IP of the MySQL/MariaDB server.
+          Ignored if 'socket' is defined.
+        '';
+      };
+
+      passwordFile = mkOption {
+        default = null;
+
+        description = ''
+          A file containing the password for the user of the MySQL/MariaDB server.
+          Must be readable for the LibreNMS user.
+          Ignored if 'socket' is defined, mandatory otherwise.
+        '';
+
+        example = "/run/secrets/mysql.pass";
+        type = types.nullOr types.path;
+      };
+
+      port = mkOption {
+        default = 3306;
+
+        description = ''
+          Port of the MySQL/MariaDB server.
+          Ignored if 'socket' is defined.
+        '';
+
+        type = types.port;
+      };
+
+      socket = mkOption {
+        default = null;
+
+        description = ''
+          A unix socket to mysql, accessible by the librenms user.
+          Useful when mysql is on the localhost.
+        '';
+
+        example = "/run/mysqld/mysqld.sock";
+        type = types.nullOr types.str;
+      };
+
+      username = mkOption {
+        default = "librenms";
+
+        description = ''
+          Name of the user on the MySQL/MariaDB server.
+          Ignored if 'socket' is defined.
+        '';
+
+        type = types.str;
+      };
     };
 
     distributedPoller = {
       enable = mkOption {
-        type = types.bool;
         default = false;
+
         description = ''
           Configure this LibreNMS instance as a [distributed poller](https://docs.librenms.org/Extensions/Distributed-Poller/).
           This will disable all web features and just configure the poller features.
           Use the `mysql` database of your main LibreNMS instance in the database settings.
         '';
-      };
 
-      name = mkOption {
-        type = types.nullOr types.str;
-        default = null;
-        description = ''
-          Custom name of this poller.
-        '';
-      };
-
-      group = mkOption {
-        type = types.str;
-        default = "0";
-        example = "1,2";
-        description = ''
-          Group(s) of this poller.
-        '';
+        type = types.bool;
       };
 
       distributedBilling = mkOption {
-        type = types.bool;
         default = false;
+
         description = ''
           Enable distributed billing on this poller.
 
@@ -183,58 +181,196 @@ in
           billing should only be calculated on a single node per poller group. You can disable billing on
           some nodes with the `services.librenms.enableLocalBilling` option.
         '';
+
+        type = types.bool;
+      };
+
+      group = mkOption {
+        default = "0";
+
+        description = ''
+          Group(s) of this poller.
+        '';
+
+        example = "1,2";
+        type = types.str;
       };
 
       memcachedHost = mkOption {
-        type = types.str;
         description = ''
           Hostname or IP of the `memcached` server.
         '';
+
+        type = types.str;
       };
 
       memcachedPort = mkOption {
-        type = types.port;
         default = 11211;
+
         description = ''
           Port of the `memcached` server.
         '';
+
+        type = types.port;
+      };
+
+      name = mkOption {
+        default = null;
+
+        description = ''
+          Custom name of this poller.
+        '';
+
+        type = types.nullOr types.str;
       };
 
       rrdcachedHost = mkOption {
-        type = types.str;
         description = ''
           Hostname or IP of the `rrdcached` server.
         '';
+
+        type = types.str;
       };
 
       rrdcachedPort = mkOption {
-        type = types.port;
         default = 42217;
+
         description = ''
           Port of the `memcached` server.
         '';
+
+        type = types.port;
       };
     };
 
+    enableLocalBilling = mkOption {
+      default = true;
+
+      description = ''
+        Enable billing Cron-Jobs on the local instance. Enabled by default, but you may disable it
+        on some nodes within a distributed poller setup. See [the docs](https://docs.librenms.org/Extensions/Distributed-Poller/#discovery)
+        for more informations about billing with distributed pollers.
+      '';
+
+      type = types.bool;
+    };
+
+    enableOneMinutePolling = mkOption {
+      default = false;
+
+      description = ''
+        Enables the [1-Minute Polling](https://docs.librenms.org/Support/1-Minute-Polling/).
+        Changing this option will automatically convert your existing rrd files.
+      '';
+
+      type = types.bool;
+    };
+
+    environmentFile = mkOption {
+      default = null;
+
+      description = ''
+        File containing env-vars to be substituted into the final config. Useful for secrets.
+        Does not apply to settings defined in `extraConfig`.
+      '';
+
+      type = types.nullOr types.str;
+    };
+
+    extraConfig = mkOption {
+      default = null;
+
+      description = ''
+        Additional config for LibreNMS that will be appended to the `config.php`. See
+        <https://github.com/librenms/librenms/blob/master/misc/config_definitions.json>
+        for possible options. Useful if you want to use PHP-Functions in your config.
+      '';
+
+      type = types.nullOr types.str;
+    };
+
+    finalPackage = lib.mkOption {
+      default = package;
+      defaultText = lib.literalExpression "package";
+
+      description = ''
+        The final package used by the module. This is the package that has all overrides.
+      '';
+
+      readOnly = true;
+      type = lib.types.package;
+    };
+
+    group = mkOption {
+      default = "librenms";
+
+      description = ''
+        Name of the LibreNMS group.
+      '';
+
+      type = types.str;
+    };
+
+    hostname = mkOption {
+      default = config.networking.fqdnOrHostName;
+      defaultText = literalExpression "config.networking.fqdnOrHostName";
+
+      description = ''
+        The hostname to serve LibreNMS on.
+      '';
+
+      type = types.str;
+    };
+
+    logDir = mkOption {
+      default = "/var/log/librenms";
+
+      description = ''
+        Path of the LibreNMS logging directory.
+      '';
+
+      type = types.path;
+    };
+
+    nginx = mkOption {
+      default = { };
+
+      description = ''
+        With this option, you can customize the nginx virtualHost settings.
+      '';
+
+      example = literalExpression ''
+        {
+          serverAliases = [
+            "librenms.''${config.networking.domain}"
+          ];
+          # To enable encryption and let let's encrypt take care of certificate
+          forceSSL = true;
+          enableACME = true;
+          # To set the LibreNMS virtualHost as the default virtualHost;
+          default = true;
+        }
+      '';
+
+      type = types.submodule (
+        recursiveUpdate (import ../web-servers/nginx/vhost-options.nix { inherit config lib; }) { }
+      );
+    };
+
     phpOptions = mkOption {
-      type =
-        with types;
-        attrsOf (oneOf [
-          str
-          int
-        ]);
       defaultText = literalExpression (
         generators.toPretty { } (
           defaultPHPSettings
           // {
-            "zend_extension" = lib.literalExpression "opcache";
-            "opcache.enable" = lib.literalExpression "1";
-            "opcache.memory_consumption" = lib.literalExpression "256";
             "date.timezone" = lib.literalExpression "config.time.timeZone";
             memory_limit = lib.literalExpression "\${toString cfg.settings.php_memory_limit}M";
+            "opcache.enable" = lib.literalExpression "1";
+            "opcache.memory_consumption" = lib.literalExpression "256";
+            "zend_extension" = lib.literalExpression "opcache";
           }
         )
       );
+
       description = ''
         Options for PHP's php.ini file for librenms.
 
@@ -259,9 +395,40 @@ in
         }
         ```
       '';
+
+      type =
+        with types;
+        attrsOf (oneOf [
+          str
+          int
+        ]);
+    };
+
+    pollerThreads = mkOption {
+      default = 16;
+
+      description = ''
+        Amount of threads of the cron-poller.
+      '';
+
+      type = types.int;
     };
 
     poolConfig = mkOption {
+      default = {
+        "pm" = "dynamic";
+        "pm.max_children" = 32;
+        "pm.max_requests" = 500;
+        "pm.max_spare_servers" = 4;
+        "pm.min_spare_servers" = 2;
+        "pm.start_servers" = 2;
+      };
+
+      description = ''
+        Options for the LibreNMS PHP pool. See the documentation on `php-fpm.conf`
+        for details on configuration directives.
+      '';
+
       type =
         with types;
         attrsOf (oneOf [
@@ -269,159 +436,52 @@ in
           int
           bool
         ]);
-      default = {
-        "pm" = "dynamic";
-        "pm.max_children" = 32;
-        "pm.start_servers" = 2;
-        "pm.min_spare_servers" = 2;
-        "pm.max_spare_servers" = 4;
-        "pm.max_requests" = 500;
-      };
-      description = ''
-        Options for the LibreNMS PHP pool. See the documentation on `php-fpm.conf`
-        for details on configuration directives.
-      '';
-    };
-
-    nginx = mkOption {
-      type = types.submodule (
-        recursiveUpdate (import ../web-servers/nginx/vhost-options.nix { inherit config lib; }) { }
-      );
-      default = { };
-      example = literalExpression ''
-        {
-          serverAliases = [
-            "librenms.''${config.networking.domain}"
-          ];
-          # To enable encryption and let let's encrypt take care of certificate
-          forceSSL = true;
-          enableACME = true;
-          # To set the LibreNMS virtualHost as the default virtualHost;
-          default = true;
-        }
-      '';
-      description = ''
-        With this option, you can customize the nginx virtualHost settings.
-      '';
-    };
-
-    dataDir = mkOption {
-      type = types.path;
-      default = "/var/lib/librenms";
-      description = ''
-        Path of the LibreNMS state directory.
-      '';
-    };
-
-    logDir = mkOption {
-      type = types.path;
-      default = "/var/log/librenms";
-      description = ''
-        Path of the LibreNMS logging directory.
-      '';
-    };
-
-    database = {
-      createLocally = mkOption {
-        type = types.bool;
-        default = false;
-        description = ''
-          Whether to create a local database automatically.
-        '';
-      };
-
-      host = mkOption {
-        default = "localhost";
-        description = ''
-          Hostname or IP of the MySQL/MariaDB server.
-          Ignored if 'socket' is defined.
-        '';
-      };
-
-      port = mkOption {
-        type = types.port;
-        default = 3306;
-        description = ''
-          Port of the MySQL/MariaDB server.
-          Ignored if 'socket' is defined.
-        '';
-      };
-
-      database = mkOption {
-        type = types.str;
-        default = "librenms";
-        description = ''
-          Name of the database on the MySQL/MariaDB server.
-        '';
-      };
-
-      username = mkOption {
-        type = types.str;
-        default = "librenms";
-        description = ''
-          Name of the user on the MySQL/MariaDB server.
-          Ignored if 'socket' is defined.
-        '';
-      };
-
-      passwordFile = mkOption {
-        type = types.nullOr types.path;
-        default = null;
-        example = "/run/secrets/mysql.pass";
-        description = ''
-          A file containing the password for the user of the MySQL/MariaDB server.
-          Must be readable for the LibreNMS user.
-          Ignored if 'socket' is defined, mandatory otherwise.
-        '';
-      };
-
-      socket = mkOption {
-        type = types.nullOr types.str;
-        default = null;
-        example = "/run/mysqld/mysqld.sock";
-        description = ''
-          A unix socket to mysql, accessible by the librenms user.
-          Useful when mysql is on the localhost.
-        '';
-      };
-    };
-
-    environmentFile = mkOption {
-      type = types.nullOr types.str;
-      default = null;
-      description = ''
-        File containing env-vars to be substituted into the final config. Useful for secrets.
-        Does not apply to settings defined in `extraConfig`.
-      '';
     };
 
     settings = mkOption {
-      type = types.submodule {
-        freeformType = settingsFormat.type;
-        options = { };
-      };
+      default = { };
+
       description = ''
         Attrset of the LibreNMS configuration.
         See <https://docs.librenms.org/Support/Configuration/> for reference.
         All possible options are listed [here](https://github.com/librenms/librenms/blob/master/resources/definitions/config_definitions.json).
         See <https://docs.librenms.org/Extensions/Authentication/> for setting other authentication methods.
       '';
-      default = { };
+
       example = {
         base_url = "/librenms/";
         top_devices = true;
         top_ports = false;
       };
+
+      type = types.submodule {
+        options = { };
+        freeformType = settingsFormat.type;
+      };
     };
 
-    extraConfig = mkOption {
-      type = types.nullOr types.str;
-      default = null;
+    useDistributedPollers = mkOption {
+      default = false;
+
       description = ''
-        Additional config for LibreNMS that will be appended to the `config.php`. See
-        <https://github.com/librenms/librenms/blob/master/misc/config_definitions.json>
-        for possible options. Useful if you want to use PHP-Functions in your config.
+        Enables [distributed pollers](https://docs.librenms.org/Extensions/Distributed-Poller/)
+        for this LibreNMS instance. This will enable a local `rrdcached` and `memcached` server.
+
+        To use this feature, make sure to configure your firewall that the distributed pollers
+        can reach the local `mysql`, `rrdcached` and `memcached` ports.
       '';
+
+      type = types.bool;
+    };
+
+    user = mkOption {
+      default = "librenms";
+
+      description = ''
+        Name of the LibreNMS user.
+      '';
+
+      type = types.str;
     };
   };
 
@@ -441,81 +501,138 @@ in
       }
     ];
 
-    users.users.${cfg.user} = {
-      group = "${cfg.group}";
-      isSystemUser = true;
+    environment.systemPackages = [
+      artisanWrapper
+      lnmsWrapper
+    ];
+
+    security.wrappers = {
+      fping = {
+        group = "root";
+        owner = "root";
+        setuid = true;
+        source = "${pkgs.fping}/bin/fping";
+      };
     };
 
-    users.groups.${cfg.group} = { };
+    services.cron = {
+      enable = true;
+
+      systemCronJobs =
+        let
+          env = "PHPRC=${phpIni}";
+        in
+        [
+          # based on crontab provided by LibreNMS
+          "33 */6 * * * ${cfg.user} ${env} ${package}/cronic ${package}/discovery-wrapper.py 1"
+          "*/5 * * * * ${cfg.user} ${env} ${package}/discovery.php -h new >> /dev/null 2>&1"
+
+          "${
+            if cfg.enableOneMinutePolling then "*" else "*/5"
+          } * * * * ${cfg.user} ${env} ${package}/cronic ${package}/poller-wrapper.py ${toString cfg.pollerThreads}"
+          "* * * * * ${cfg.user} ${env} ${package}/alerts.php >> /dev/null 2>&1"
+
+          "*/5 * * * * ${cfg.user} ${env} ${package}/check-services.php >> /dev/null 2>&1"
+
+          # extra: fast ping
+          "* * * * * ${cfg.user} ${env} ${package}/ping.php >> /dev/null 2>&1"
+
+          # daily.sh tasks are split to exclude update
+          "19 0 * * * ${cfg.user} ${env} ${package}/daily.sh cleanup >> /dev/null 2>&1"
+          "19 0 * * * ${cfg.user} ${env} ${package}/daily.sh notifications >> /dev/null 2>&1"
+          "19 0 * * * ${cfg.user} ${env} ${package}/daily.sh peeringdb >> /dev/null 2>&1"
+          "19 0 * * * ${cfg.user} ${env} ${package}/daily.sh mac_oui >> /dev/null 2>&1"
+        ]
+        ++ lib.optionals cfg.enableLocalBilling [
+          "*/5 * * * * ${cfg.user} ${env} ${package}/poll-billing.php >> /dev/null 2>&1"
+          "01 * * * * ${cfg.user} ${env} ${package}/billing-calculate.php >> /dev/null 2>&1"
+        ];
+    };
 
     services.librenms.phpOptions = lib.mapAttrs (lib.const lib.mkOptionDefault) defaultPHPSettings;
 
     services.librenms.settings = {
-      # basic configs
-      "user" = cfg.user;
-      "own_hostname" = cfg.hostname;
-      "base_url" = lib.mkDefault "/";
       "auth_mechanism" = lib.mkDefault "mysql";
-
-      # disable auto update function (won't work with NixOS)
-      "update" = false;
-
-      # enable fast ping by default
-      "ping_rrd_step" = 60;
-
+      "base_url" = lib.mkDefault "/";
+      "own_hostname" = cfg.hostname;
       # set default memory limit to 1G
       "php_memory_limit" = lib.mkDefault 1024;
-
+      # enable fast ping by default
+      "ping_rrd_step" = 60;
+      "rrd.heartbeat" = if cfg.enableOneMinutePolling then 120 else 600;
       # one minute polling
       "rrd.step" = if cfg.enableOneMinutePolling then 60 else 300;
-      "rrd.heartbeat" = if cfg.enableOneMinutePolling then 120 else 600;
+      # disable auto update function (won't work with NixOS)
+      "update" = false;
+      # basic configs
+      "user" = cfg.user;
     }
     // (lib.optionalAttrs cfg.distributedPoller.enable {
+      "distributed_billing" = cfg.distributedPoller.distributedBilling;
       "distributed_poller" = true;
+      "distributed_poller_group" = cfg.distributedPoller.group;
+      "distributed_poller_memcached_host" = cfg.distributedPoller.memcachedHost;
+      "distributed_poller_memcached_port" = cfg.distributedPoller.memcachedPort;
+
       "distributed_poller_name" = lib.mkIf (
         cfg.distributedPoller.name != null
       ) cfg.distributedPoller.name;
-      "distributed_poller_group" = cfg.distributedPoller.group;
-      "distributed_billing" = cfg.distributedPoller.distributedBilling;
-      "distributed_poller_memcached_host" = cfg.distributedPoller.memcachedHost;
-      "distributed_poller_memcached_port" = cfg.distributedPoller.memcachedPort;
+
       "rrdcached" =
         "${cfg.distributedPoller.rrdcachedHost}:${toString cfg.distributedPoller.rrdcachedPort}";
     })
     // (lib.optionalAttrs cfg.useDistributedPollers {
+      "distributed_billing" = lib.mkDefault true;
       "distributed_poller" = true;
       # still enable a local poller with distributed polling
       "distributed_poller_group" = lib.mkDefault "0";
-      "distributed_billing" = lib.mkDefault true;
       "distributed_poller_memcached_host" = "localhost";
       "distributed_poller_memcached_port" = 11211;
       "rrdcached" = "localhost:42217";
     });
+
+    services.logrotate = {
+      enable = true;
+
+      settings."${cfg.logDir}/librenms.log" = {
+        compress = true;
+        create = "0640 ${cfg.user} ${cfg.group}";
+        delaycompress = true;
+        frequency = "weekly";
+        missingok = true;
+        notifempty = true;
+        rotate = 6;
+        su = "${cfg.user} ${cfg.group}";
+      };
+    };
 
     services.memcached = lib.mkIf cfg.useDistributedPollers {
       enable = true;
       listen = "0.0.0.0";
     };
 
-    systemd.services.rrdcached = lib.mkIf cfg.useDistributedPollers {
-      description = "rrdcached";
-      after = [ "librenms-setup.service" ];
-      wantedBy = [ "multi-user.target" ];
-      serviceConfig = {
-        Type = "forking";
-        User = cfg.user;
-        Group = cfg.group;
-        LimitNOFILE = 16384;
-        RuntimeDirectory = "rrdcached";
-        PidFile = "/run/rrdcached/rrdcached.pid";
-        # rrdcached params from https://docs.librenms.org/Extensions/Distributed-Poller/#config-sample
-        ExecStart = "${pkgs.rrdtool}/bin/rrdcached -l 0:42217 -R -j ${cfg.dataDir}/rrdcached-journal/ -F -b ${cfg.dataDir}/rrd -B -w 1800 -z 900 -p /run/rrdcached/rrdcached.pid";
-      };
-    };
-
     services.mysql = lib.mkIf cfg.database.createLocally {
       enable = true;
       package = lib.mkDefault pkgs.mariadb;
+      ensureDatabases = [ cfg.database.database ];
+
+      ensureUsers = [
+        {
+          ensurePermissions = {
+            "${cfg.database.database}.*" = "ALL PRIVILEGES";
+          };
+
+          name = cfg.database.username;
+        }
+      ];
+
+      initialScript = lib.mkIf cfg.useDistributedPollers (
+        pkgs.writeText "mysql-librenms-init" ''
+          CREATE USER IF NOT EXISTS '${cfg.database.username}'@'%';
+          GRANT ALL PRIVILEGES ON ${cfg.database.database}.* TO '${cfg.database.username}'@'%';
+        ''
+      );
+
       settings.mysqld = {
         innodb_file_per_table = 1;
         lower_case_table_names = 0;
@@ -523,121 +640,78 @@ in
       // (lib.optionalAttrs cfg.useDistributedPollers {
         bind-address = "0.0.0.0";
       });
-      ensureDatabases = [ cfg.database.database ];
-      ensureUsers = [
-        {
-          name = cfg.database.username;
-          ensurePermissions = {
-            "${cfg.database.database}.*" = "ALL PRIVILEGES";
-          };
-        }
-      ];
-      initialScript = lib.mkIf cfg.useDistributedPollers (
-        pkgs.writeText "mysql-librenms-init" ''
-          CREATE USER IF NOT EXISTS '${cfg.database.username}'@'%';
-          GRANT ALL PRIVILEGES ON ${cfg.database.database}.* TO '${cfg.database.username}'@'%';
-        ''
-      );
     };
 
     services.nginx = lib.mkIf (!cfg.distributedPoller.enable) {
       enable = true;
+
       virtualHosts."${cfg.hostname}" = lib.mkMerge [
         cfg.nginx
         {
-          root = lib.mkForce "${package}/html";
           locations."/" = {
             index = "index.php";
             tryFiles = "$uri $uri/ /index.php?$query_string";
           };
+
           locations."~ .php$".extraConfig = ''
             fastcgi_pass unix:${config.services.phpfpm.pools."librenms".socket};
             fastcgi_split_path_info ^(.+\.php)(/.+)$;
           '';
+
+          root = lib.mkForce "${package}/html";
         }
       ];
     };
 
     services.phpfpm.pools.librenms = lib.mkIf (!cfg.distributedPoller.enable) {
-      user = cfg.user;
-      group = cfg.group;
       inherit (package) phpPackage;
+      group = cfg.group;
       phpOptions = toKeyValue cfg.phpOptions;
+
       settings = {
+        "listen.group" = config.services.nginx.group;
         "listen.mode" = "0660";
         "listen.owner" = config.services.nginx.user;
-        "listen.group" = config.services.nginx.group;
       }
       // cfg.poolConfig;
+
+      user = cfg.user;
     };
 
     systemd.services.librenms-scheduler = {
       description = "LibreNMS Scheduler";
       path = [ pkgs.unixtools.whereis ];
-      serviceConfig = {
-        Type = "oneshot";
-        WorkingDirectory = package;
-        User = cfg.user;
-        Group = cfg.group;
-        ExecStart = "${artisanWrapper}/bin/librenms-artisan schedule:run";
-      };
-    };
 
-    systemd.timers.librenms-scheduler = {
-      description = "LibreNMS Scheduler";
-      wantedBy = [ "timers.target" ];
-      timerConfig = {
-        OnCalendar = "minutely";
-        AccuracySec = "1second";
+      serviceConfig = {
+        ExecStart = "${artisanWrapper}/bin/librenms-artisan schedule:run";
+        Group = cfg.group;
+        Type = "oneshot";
+        User = cfg.user;
+        WorkingDirectory = package;
       };
     };
 
     systemd.services.librenms-setup = {
-      description = "Preparation tasks for LibreNMS";
-      before = [ "phpfpm-librenms.service" ];
       after = [
         "systemd-tmpfiles-setup.service"
         "network.target"
       ]
       ++ (lib.optional (cfg.database.host == "localhost") "mysql.service");
-      wantedBy = [ "multi-user.target" ];
-      restartTriggers = [
-        package
-        configFile
-      ];
+
+      before = [ "phpfpm-librenms.service" ];
+      description = "Preparation tasks for LibreNMS";
+
       path = [
         pkgs.mariadb
         pkgs.unixtools.whereis
         pkgs.gnused
       ];
-      serviceConfig = {
-        Type = "oneshot";
-        RemainAfterExit = true;
-        EnvironmentFile = lib.mkIf (cfg.environmentFile != null) [ cfg.environmentFile ];
-        User = cfg.user;
-        Group = cfg.group;
-        ExecStartPre = lib.mkIf cfg.database.createLocally [
-          "!${
-            pkgs.writeShellScript "librenms-db-init" (
-              if !isNull cfg.database.socket then
-                ''
-                  echo "ALTER USER '${cfg.database.username}'@'localhost' IDENTIFIED VIA unix_socket;" | ${pkgs.mariadb}/bin/mysql --socket='${cfg.database.socket}'
-                  ${lib.optionalString cfg.useDistributedPollers ''
-                    echo "ALTER USER '${cfg.database.username}'@'%' IDENTIFIED VIA unix_socket;" | ${pkgs.mariadb}/bin/mysql --socket='${cfg.database.socket}'
-                  ''}
-                ''
-              else
-                ''
-                  DB_PASSWORD=$(cat ${cfg.database.passwordFile} | tr -d '\n')
-                  echo "ALTER USER '${cfg.database.username}'@'localhost' IDENTIFIED BY '$DB_PASSWORD';" | ${pkgs.mariadb}/bin/mysql
-                  ${lib.optionalString cfg.useDistributedPollers ''
-                    echo "ALTER USER '${cfg.database.username}'@'%' IDENTIFIED BY '$DB_PASSWORD';" | ${pkgs.mariadb}/bin/mysql
-                  ''}
-                ''
-            )
-          }"
-        ];
-      };
+
+      restartTriggers = [
+        package
+        configFile
+      ];
+
       script =
         let
           nginxHasSSL =
@@ -733,68 +807,69 @@ in
           # to make sure to not read an outdated .env file
           ${artisanWrapper}/bin/librenms-artisan config:cache
         '';
-    };
 
-    services.logrotate = {
-      enable = true;
-      settings."${cfg.logDir}/librenms.log" = {
-        su = "${cfg.user} ${cfg.group}";
-        create = "0640 ${cfg.user} ${cfg.group}";
-        rotate = 6;
-        frequency = "weekly";
-        compress = true;
-        delaycompress = true;
-        missingok = true;
-        notifempty = true;
-      };
-    };
+      serviceConfig = {
+        EnvironmentFile = lib.mkIf (cfg.environmentFile != null) [ cfg.environmentFile ];
 
-    services.cron = {
-      enable = true;
-      systemCronJobs =
-        let
-          env = "PHPRC=${phpIni}";
-        in
-        [
-          # based on crontab provided by LibreNMS
-          "33 */6 * * * ${cfg.user} ${env} ${package}/cronic ${package}/discovery-wrapper.py 1"
-          "*/5 * * * * ${cfg.user} ${env} ${package}/discovery.php -h new >> /dev/null 2>&1"
-
-          "${
-            if cfg.enableOneMinutePolling then "*" else "*/5"
-          } * * * * ${cfg.user} ${env} ${package}/cronic ${package}/poller-wrapper.py ${toString cfg.pollerThreads}"
-          "* * * * * ${cfg.user} ${env} ${package}/alerts.php >> /dev/null 2>&1"
-
-          "*/5 * * * * ${cfg.user} ${env} ${package}/check-services.php >> /dev/null 2>&1"
-
-          # extra: fast ping
-          "* * * * * ${cfg.user} ${env} ${package}/ping.php >> /dev/null 2>&1"
-
-          # daily.sh tasks are split to exclude update
-          "19 0 * * * ${cfg.user} ${env} ${package}/daily.sh cleanup >> /dev/null 2>&1"
-          "19 0 * * * ${cfg.user} ${env} ${package}/daily.sh notifications >> /dev/null 2>&1"
-          "19 0 * * * ${cfg.user} ${env} ${package}/daily.sh peeringdb >> /dev/null 2>&1"
-          "19 0 * * * ${cfg.user} ${env} ${package}/daily.sh mac_oui >> /dev/null 2>&1"
-        ]
-        ++ lib.optionals cfg.enableLocalBilling [
-          "*/5 * * * * ${cfg.user} ${env} ${package}/poll-billing.php >> /dev/null 2>&1"
-          "01 * * * * ${cfg.user} ${env} ${package}/billing-calculate.php >> /dev/null 2>&1"
+        ExecStartPre = lib.mkIf cfg.database.createLocally [
+          "!${
+            pkgs.writeShellScript "librenms-db-init" (
+              if !isNull cfg.database.socket then
+                ''
+                  echo "ALTER USER '${cfg.database.username}'@'localhost' IDENTIFIED VIA unix_socket;" | ${pkgs.mariadb}/bin/mysql --socket='${cfg.database.socket}'
+                  ${lib.optionalString cfg.useDistributedPollers ''
+                    echo "ALTER USER '${cfg.database.username}'@'%' IDENTIFIED VIA unix_socket;" | ${pkgs.mariadb}/bin/mysql --socket='${cfg.database.socket}'
+                  ''}
+                ''
+              else
+                ''
+                  DB_PASSWORD=$(cat ${cfg.database.passwordFile} | tr -d '\n')
+                  echo "ALTER USER '${cfg.database.username}'@'localhost' IDENTIFIED BY '$DB_PASSWORD';" | ${pkgs.mariadb}/bin/mysql
+                  ${lib.optionalString cfg.useDistributedPollers ''
+                    echo "ALTER USER '${cfg.database.username}'@'%' IDENTIFIED BY '$DB_PASSWORD';" | ${pkgs.mariadb}/bin/mysql
+                  ''}
+                ''
+            )
+          }"
         ];
-    };
 
-    security.wrappers = {
-      fping = {
-        setuid = true;
-        owner = "root";
-        group = "root";
-        source = "${pkgs.fping}/bin/fping";
+        Group = cfg.group;
+        RemainAfterExit = true;
+        Type = "oneshot";
+        User = cfg.user;
       };
+
+      wantedBy = [ "multi-user.target" ];
     };
 
-    environment.systemPackages = [
-      artisanWrapper
-      lnmsWrapper
-    ];
+    systemd.services.rrdcached = lib.mkIf cfg.useDistributedPollers {
+      after = [ "librenms-setup.service" ];
+      description = "rrdcached";
+
+      serviceConfig = {
+        # rrdcached params from https://docs.librenms.org/Extensions/Distributed-Poller/#config-sample
+        ExecStart = "${pkgs.rrdtool}/bin/rrdcached -l 0:42217 -R -j ${cfg.dataDir}/rrdcached-journal/ -F -b ${cfg.dataDir}/rrd -B -w 1800 -z 900 -p /run/rrdcached/rrdcached.pid";
+        Group = cfg.group;
+        LimitNOFILE = 16384;
+        PidFile = "/run/rrdcached/rrdcached.pid";
+        RuntimeDirectory = "rrdcached";
+        Type = "forking";
+        User = cfg.user;
+      };
+
+      wantedBy = [ "multi-user.target" ];
+    };
+
+    systemd.timers.librenms-scheduler = {
+      description = "LibreNMS Scheduler";
+
+      timerConfig = {
+        AccuracySec = "1second";
+        OnCalendar = "minutely";
+      };
+
+      wantedBy = [ "timers.target" ];
+    };
 
     systemd.tmpfiles.rules = [
       "d ${cfg.logDir}                               0750 ${cfg.user} ${cfg.group} - -"
@@ -819,6 +894,13 @@ in
     ++ lib.optionals cfg.useDistributedPollers [
       "d ${cfg.dataDir}/rrdcached-journal            0700 ${cfg.user} ${cfg.group} - -"
     ];
+
+    users.groups.${cfg.group} = { };
+
+    users.users.${cfg.user} = {
+      group = "${cfg.group}";
+      isSystemUser = true;
+    };
 
   };
 

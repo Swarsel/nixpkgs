@@ -1,19 +1,18 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   hatchling,
-  uv-dynamic-versioning,
   httpx,
   pytest-asyncio,
   pytest-mock,
   pytestCheckHook,
+  uv-dynamic-versioning,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "egauge-async";
   version = "0.5.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "neggert";
@@ -21,6 +20,12 @@ buildPythonPackage (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-MbOjyHxCZpJDZIRyWShk2+X1Di8zX4JjyEpLUnHfdzE=";
   };
+
+  nativeCheckInputs = [
+    pytest-asyncio
+    pytest-mock
+    pytestCheckHook
+  ];
 
   build-system = [
     hatchling
@@ -31,15 +36,11 @@ buildPythonPackage (finalAttrs: {
     httpx
   ];
 
-  nativeCheckInputs = [
-    pytest-asyncio
-    pytest-mock
-    pytestCheckHook
-  ];
-
   disabledTestMarks = [
     "integration"
   ];
+
+  pyproject = true;
 
   pythonImportsCheck = [
     "egauge_async"

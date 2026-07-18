@@ -1,8 +1,8 @@
 {
   lib,
   stdenv,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   installShellFiles,
 }:
 
@@ -17,17 +17,8 @@ buildGoModule (finalAttrs: {
     hash = "sha256-jiIjim17x9Q6e5+XSR6xHYg/VOJILfCeLRXdEopQwKE=";
   };
 
-  vendorHash = "sha256-Ktsk01YqBHVZDOu+Xp1p3sVDwqozl35iLYbVavpiWq0=";
-
-  ldflags = [
-    "-s"
-    "-w"
-  ];
-
-  # "dagger" directory contains its own go module, which should be excluded from the build
-  excludedPackages = [ "dagger" ];
-
   nativeBuildInputs = [ installShellFiles ];
+  vendorHash = "sha256-Ktsk01YqBHVZDOu+Xp1p3sVDwqozl35iLYbVavpiWq0=";
 
   postInstall = lib.optionalString (stdenv.buildPlatform.canExecute stdenv.hostPlatform) ''
     installShellCompletion --cmd ${finalAttrs.meta.mainProgram} \
@@ -35,6 +26,14 @@ buildGoModule (finalAttrs: {
       --fish <($out/bin/${finalAttrs.meta.mainProgram} completion fish) \
       --zsh <($out/bin/${finalAttrs.meta.mainProgram} completion zsh)
   '';
+
+  # "dagger" directory contains its own go module, which should be excluded from the build
+  excludedPackages = [ "dagger" ];
+
+  ldflags = [
+    "-s"
+    "-w"
+  ];
 
   meta = {
     description = "Security scanner that detects misconfigurations and vulnerabilities in build pipelines of repositories";

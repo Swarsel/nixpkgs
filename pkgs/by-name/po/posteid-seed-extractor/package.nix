@@ -1,7 +1,7 @@
 {
   lib,
-  python3Packages,
   fetchFromGitHub,
+  python3Packages,
 }:
 
 python3Packages.buildPythonApplication {
@@ -14,6 +14,12 @@ python3Packages.buildPythonApplication {
     rev = "667e2997a98aa3273a6bf6b4b34ca77715120e7f";
     hash = "sha256-smNwp67HYbZuMrl0uf2X2yox2JqeEV6WzIBp4dALwgw=";
   };
+
+  installPhase = ''
+    runHook preInstall
+    install -Dm755 extractor.py $out/bin/posteid-seed-extractor
+    runHook postInstall
+  '';
 
   pyproject = false;
 
@@ -33,17 +39,11 @@ python3Packages.buildPythonApplication {
     wrapt
   ];
 
-  installPhase = ''
-    runHook preInstall
-    install -Dm755 extractor.py $out/bin/posteid-seed-extractor
-    runHook postInstall
-  '';
-
   meta = {
-    homepage = "https://github.com/simone36050/PosteID-seed-extractor";
     description = "Extract OTP seed instead of using PosteID app";
-    mainProgram = "posteid-seed-extractor";
+    homepage = "https://github.com/simone36050/PosteID-seed-extractor";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ aciceri ];
+    mainProgram = "posteid-seed-extractor";
   };
 }

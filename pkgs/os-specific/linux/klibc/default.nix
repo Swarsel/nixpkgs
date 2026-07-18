@@ -4,8 +4,8 @@
   fetchurl,
   buildPackages,
   linuxHeaders,
-  perl,
   nixosTests,
+  perl,
 }:
 
 let
@@ -25,15 +25,8 @@ stdenv.mkDerivation rec {
   };
 
   patches = [ ./no-reinstall-kernel-headers.patch ];
-
-  depsBuildBuild = [ buildPackages.stdenv.cc ];
-  nativeBuildInputs = [ perl ];
   strictDeps = true;
-
-  hardeningDisable = [
-    "format"
-    "stackprotector"
-  ];
+  nativeBuildInputs = [ perl ];
 
   makeFlags =
     commonMakeFlags
@@ -59,6 +52,13 @@ stdenv.mkDerivation rec {
     done
   '';
 
+  depsBuildBuild = [ buildPackages.stdenv.cc ];
+
+  hardeningDisable = [
+    "format"
+    "stackprotector"
+  ];
+
   passthru.tests = {
     # uses klibc's ipconfig
     inherit (nixosTests) initrd-network-ssh;
@@ -66,10 +66,10 @@ stdenv.mkDerivation rec {
 
   meta = {
     description = "Minimalistic libc subset for initramfs usage";
-    mainProgram = "klcc";
     homepage = "https://kernel.org/pub/linux/libs/klibc/";
-    maintainers = with lib.maintainers; [ fpletz ];
     license = lib.licenses.bsd3;
+    maintainers = with lib.maintainers; [ fpletz ];
     platforms = lib.platforms.linux;
+    mainProgram = "klcc";
   };
 }

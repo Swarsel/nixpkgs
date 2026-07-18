@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule (finalAttrs: {
@@ -15,8 +15,8 @@ buildGoModule (finalAttrs: {
     hash = "sha256-mS7vb1geYqzj6KnkOE7j/HRdqmdipfTsFufK3v6AgdM=";
   };
 
-  proxyVendor = true;
   vendorHash = "sha256-e8IkL+HRAWDKiw/Za899y1cuvKlaM6gUGToKvIsTZD8=";
+  proxyVendor = true;
 
   meta = {
     description = "Terminal application to manage Docker and Docker Swarm";

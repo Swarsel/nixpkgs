@@ -1,19 +1,20 @@
 {
-  clang,
-  fetchurl,
   lib,
+  stdenv,
+  fetchurl,
+  clang,
   libffi,
   llvm,
   makeWrapper,
   openssl,
   pkg-config,
   readline,
-  stdenv,
 }:
 
 stdenv.mkDerivation {
   pname = "PicoLisp";
   version = "24.3.30";
+
   src = fetchurl {
     url = "https://www.software-lab.de/picoLisp-24.3.tgz";
     sha256 = "sha256-FB43DAjHBFgxdysoLzBXLxii52a2CCh1skZP/RTzfdc=";
@@ -23,6 +24,7 @@ stdenv.mkDerivation {
     makeWrapper
     pkg-config
   ];
+
   buildInputs = [
     clang
     libffi
@@ -30,7 +32,7 @@ stdenv.mkDerivation {
     openssl
     readline
   ];
-  sourceRoot = "pil21";
+
   preBuild = ''
     cd src
   ''
@@ -51,6 +53,8 @@ stdenv.mkDerivation {
     ln -s "$out/lib/picolisp/man/man1/picolisp.1" "$out/man/picolisp.1"
     substituteInPlace $out/bin/pil --replace-fail /usr $out
   '';
+
+  sourceRoot = "pil21";
 
   meta = {
     description = "Pragmatic programming language";

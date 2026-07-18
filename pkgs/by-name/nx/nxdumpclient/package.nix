@@ -2,24 +2,21 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  vala,
+  blueprint-compiler,
+  desktop-file-utils,
+  glib,
+  gtk4,
+  gusb,
+  libadwaita,
   meson,
   ninja,
-  pkg-config,
-  desktop-file-utils,
-  gusb,
-  gtk4,
-  glib,
-  wrapGAppsHook4,
-  blueprint-compiler,
-  libadwaita,
   nix-update-script,
+  pkg-config,
+  vala,
+  wrapGAppsHook4,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
-  __structuredAttrs = true;
-  strictDeps = true;
-
   pname = "nxdumpclient";
   version = "1.1.4";
 
@@ -29,6 +26,8 @@ stdenv.mkDerivation (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-6jekESpsV6sDhBh23D7d5/BlGWI1G5SYgWudNvQKzqc=";
   };
+
+  strictDeps = true;
 
   nativeBuildInputs = [
     vala
@@ -51,6 +50,7 @@ stdenv.mkDerivation (finalAttrs: {
     (lib.mesonEnable "libportal" false)
   ];
 
+  __structuredAttrs = true;
   passthru.updateScript = nix-update-script { };
 
   meta = {
@@ -58,7 +58,7 @@ stdenv.mkDerivation (finalAttrs: {
     homepage = "https://github.com/v1993/nxdumpclient";
     license = lib.licenses.gpl3Only;
     maintainers = with lib.maintainers; [ ranidspace ];
-    mainProgram = "nxdumpclient";
     platforms = lib.platforms.linux;
+    mainProgram = "nxdumpclient";
   };
 })

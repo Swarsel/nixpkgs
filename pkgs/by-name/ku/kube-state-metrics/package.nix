@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule (finalAttrs: {
@@ -23,8 +23,8 @@ buildGoModule (finalAttrs: {
   ];
 
   meta = {
-    homepage = "https://github.com/kubernetes/kube-state-metrics";
     description = "Add-on agent to generate and expose k8s cluster-level metrics";
+    homepage = "https://github.com/kubernetes/kube-state-metrics";
     license = lib.licenses.asl20;
     maintainers = [ lib.maintainers.eskytthe ];
     platforms = lib.platforms.unix;

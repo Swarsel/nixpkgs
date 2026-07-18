@@ -2,13 +2,13 @@
   lib,
   stdenv,
   fetchurl,
-  pkg-config,
-  xorgproto,
-  xbitmaps,
   libx11,
   libxcursor,
   libxmu,
+  pkg-config,
   writeScript,
+  xbitmaps,
+  xorgproto,
 }:
 stdenv.mkDerivation (finalAttrs: {
   pname = "xsetroot";
@@ -20,7 +20,6 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   strictDeps = true;
-
   nativeBuildInputs = [ pkg-config ];
 
   buildInputs = [
@@ -46,10 +45,12 @@ stdenv.mkDerivation (finalAttrs: {
     description = "Root window parameter setting utility for X";
     homepage = "https://gitlab.freedesktop.org/xorg/app/xsetroot";
     license = lib.licenses.mitOpenGroup;
-    mainProgram = "xsetroot";
+
     maintainers = with lib.maintainers; [
       nick-linux
     ];
+
     platforms = lib.platforms.unix;
+    mainProgram = "xsetroot";
   };
 })

@@ -1,8 +1,8 @@
 {
-  options,
   config,
   lib,
   pkgs,
+  options,
   ...
 }:
 let
@@ -15,25 +15,31 @@ let
 
   hardeningOptions = lib.mkOption {
     description = "Configuration for hardening the systemd service.";
+
     type = lib.types.submodule {
       options = {
         ProtectHome = lib.mkOption {
+          default = true;
+
           description = ''
             Whether to make the home directories inaccessible to the service.
             See <link xlink:href="https://www.freedesktop.org/software/systemd/man/latest/systemd.exec.html#ProtectHome="/> for more details.
           '';
-          type = lib.types.either lib.types.str lib.types.bool;
-          default = true;
+
           example = "read-only";
+          type = lib.types.either lib.types.str lib.types.bool;
         };
+
         ProtectSystem = lib.mkOption {
+          default = true;
+
           description = ''
             Whether to make several system directories inaccessible to the service.
             See <link xlink:href="https://www.freedesktop.org/software/systemd/man/latest/systemd.exec.html#ProtectSystem="/> for more details.
           '';
-          type = lib.types.either lib.types.str lib.types.bool;
-          default = true;
+
           example = "full";
+          type = lib.types.either lib.types.str lib.types.bool;
         };
       };
     };
@@ -47,50 +53,56 @@ in
     package = lib.mkOption {
       default = pkgs.gocron;
       defaultText = lib.literalExpression "pkgs.gocron";
-      type = lib.types.package;
+
       description = ''
         gocron package to use.
       '';
-    };
 
-    openFirewall = lib.mkOption {
-      description = "Whether to open the firewall port to access the web ui.";
-      type = lib.types.bool;
-      default = false;
-    };
-
-    user = lib.mkOption {
-      description = "Unix User to run the server under";
-      type = lib.types.str;
-      default = defaultUser;
-    };
-
-    group = lib.mkOption {
-      description = "Unix Group to run the server under";
-      type = lib.types.str;
-      default = defaultGroup;
+      type = lib.types.package;
     };
 
     extraGroups = lib.mkOption {
-      type = lib.types.listOf lib.types.str;
       default = [ ];
-      example = [ "backup" ];
+
       description = ''
         Additional groups for the systemd service.
       '';
+
+      example = [ "backup" ];
+      type = lib.types.listOf lib.types.str;
+    };
+
+    group = lib.mkOption {
+      default = defaultGroup;
+      description = "Unix Group to run the server under";
+      type = lib.types.str;
     };
 
     hardening = hardeningOptions;
 
+    openFirewall = lib.mkOption {
+      default = false;
+      description = "Whether to open the firewall port to access the web ui.";
+      type = lib.types.bool;
+    };
+
     settings = lib.mkOption {
-      # Setting this type allows for correct merging behavior
-      type = settingsFormat.type;
       default = { };
+
       description = ''
         Configuration for gocron, see
         <link xlink:href="https://github.com/flohoss/gocron/blob/main/config/config.yaml"/>
         for supported settings.
       '';
+
+      # Setting this type allows for correct merging behavior
+      type = settingsFormat.type;
+    };
+
+    user = lib.mkOption {
+      default = defaultUser;
+      description = "Unix User to run the server under";
+      type = lib.types.str;
     };
   };
 
@@ -102,23 +114,26 @@ in
       }
     ];
 
+    networking.firewall.allowedTCPPorts = lib.mkIf cfg.openFirewall [ cfg.settings.server.port ];
+
     services.gocron.settings = {
-      time_zone = if timeZone != null then timeZone else lib.mkDefault "Etc/UTC";
+      db.location = lib.mkDefault "/var/lib/gocron";
+
       server = {
         address = lib.mkDefault "127.0.0.1";
         port = lib.mkDefault 8156;
       };
-      db.location = lib.mkDefault "/var/lib/gocron";
+
+      time_zone = if timeZone != null then timeZone else lib.mkDefault "Etc/UTC";
     };
 
     systemd.services.gocron = {
       after = [ "network.target" ];
-      wantedBy = [ "multi-user.target" ];
+
       serviceConfig = {
-        ExecStart = "${lib.getExe pkgs.gocron} --config '${gocronConf}'";
-        User = cfg.user;
-        Group = cfg.group;
         DeviceAllow = "";
+        ExecStart = "${lib.getExe pkgs.gocron} --config '${gocronConf}'";
+        Group = cfg.group;
         LockPersonality = true;
         MemoryDenyWriteExecute = true;
         MountAPIVFS = true;
@@ -139,31 +154,36 @@ in
         ProtectProc = "invisible";
         ProtectSystem = cfg.hardening.ProtectSystem;
         RemoveIPC = true;
+
         RestrictAddressFamilies = [
           "AF_INET"
           "AF_INET6"
         ];
+
         RestrictNamespaces = true;
         RestrictRealtime = true;
         RestrictSUIDSGID = true;
-        UMask = "0077";
         StateDirectory = lib.mkIf (cfg.settings.db.location == "/var/lib/gocron") "gocron";
         SystemCallArchitectures = "native";
         SystemCallErrorNumber = "EPERM";
+
         SystemCallFilter = [
           "@system-service"
         ];
+
+        UMask = "0077";
+        User = cfg.user;
       };
-    };
 
-    networking.firewall.allowedTCPPorts = lib.mkIf cfg.openFirewall [ cfg.settings.server.port ];
-
-    users.users.${cfg.user} = {
-      isSystemUser = true;
-      inherit (cfg) group;
+      wantedBy = [ "multi-user.target" ];
     };
 
     users.groups.${cfg.group} = { };
+
+    users.users.${cfg.user} = {
+      inherit (cfg) group;
+      isSystemUser = true;
+    };
 
     meta = {
       buildDocsInSandbox = true;

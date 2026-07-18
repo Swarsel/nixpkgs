@@ -1,14 +1,14 @@
 {
+  lib,
+  stdenv,
+  fetchurl,
   coreutils,
   dpkg,
-  fetchurl,
   gnugrep,
   gnused,
   makeWrapper,
   mfcl8690cdwlpr,
   perl,
-  lib,
-  stdenv,
 }:
 
 stdenv.mkDerivation rec {
@@ -24,8 +24,6 @@ stdenv.mkDerivation rec {
     dpkg
     makeWrapper
   ];
-
-  dontUnpack = true;
 
   installPhase = ''
     dpkg-deb -x $src $out
@@ -54,13 +52,17 @@ stdenv.mkDerivation rec {
     ln $dir/cupswrapper/brother_mfcl8690cdw_printer_en.ppd $out/share/cups/model
   '';
 
+  dontUnpack = true;
+
   meta = {
     description = "Brother MFC-L8690CDW CUPS wrapper driver";
     homepage = "https://www.brother.com/";
     license = lib.licenses.unfree;
-    platforms = lib.platforms.linux;
+
     maintainers = with lib.maintainers; [
       nick-linux
     ];
+
+    platforms = lib.platforms.linux;
   };
 }

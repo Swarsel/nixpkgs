@@ -1,23 +1,22 @@
 {
   lib,
+  azure-core,
   buildPythonPackage,
   fetchPypi,
-  setuptools,
-  wheel,
-  azure-core,
   isodate,
+  setuptools,
   typing-extensions,
+  wheel,
 }:
 
 buildPythonPackage rec {
   pname = "azure-keyvault-securitydomain";
   version = "1.0.0b1";
-  pyproject = true;
 
   src = fetchPypi {
-    pname = "azure_keyvault_securitydomain";
     inherit version;
     hash = "sha256-MpGhked4qUfkso7QEyeJKpOu3PjgoN1nTPEWyxEEN3Y=";
+    pname = "azure_keyvault_securitydomain";
   };
 
   build-system = [
@@ -30,6 +29,8 @@ buildPythonPackage rec {
     isodate
     typing-extensions
   ];
+
+  pyproject = true;
 
   pythonImportsCheck = [
     "azure.keyvault.securitydomain"

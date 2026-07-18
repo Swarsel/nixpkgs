@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   nix-update-script,
   versionCheckHook,
 }:
@@ -16,18 +16,16 @@ buildGoModule (finalAttrs: {
     hash = "sha256-jaUpNPRh3mZPz2z9+1mG5337NHaakP+4HOWENCzIfTY=";
   };
 
+  vendorHash = "sha256-qak4USPwOxPHJ2GriVKhjdGazW4YkM3OaoMlqKPbtag=";
   # Requires network access.
   doCheck = false;
-
-  vendorHash = "sha256-qak4USPwOxPHJ2GriVKhjdGazW4YkM3OaoMlqKPbtag=";
+  doInstallCheck = true;
+  nativeInstallCheckInputs = [ versionCheckHook ];
 
   ldflags = [
     "-X main.buildSource=nix"
     "-X main.version=${finalAttrs.version}"
   ];
-
-  nativeInstallCheckInputs = [ versionCheckHook ];
-  doInstallCheck = true;
 
   passthru.updateScript = nix-update-script { };
 

@@ -1,10 +1,10 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
+  dex-oidc,
   nixosTests,
   testers,
-  dex-oidc,
 }:
 
 buildGoModule (finalAttrs: {
@@ -20,9 +20,10 @@ buildGoModule (finalAttrs: {
 
   vendorHash = "sha256-1D20aZhNUi7MUPfRTmSV4CZjLr0lUzbX4TI2LFcPY3U=";
 
-  subPackages = [
-    "cmd/dex"
-  ];
+  postInstall = ''
+    mkdir -p $out/share
+    cp -r $src/web $out/share/web
+  '';
 
   ldflags = [
     "-w"
@@ -30,17 +31,17 @@ buildGoModule (finalAttrs: {
     "-X main.version=${finalAttrs.src.rev}"
   ];
 
-  postInstall = ''
-    mkdir -p $out/share
-    cp -r $src/web $out/share/web
-  '';
+  subPackages = [
+    "cmd/dex"
+  ];
 
   passthru.tests = {
     inherit (nixosTests) dex-oidc;
+
     version = testers.testVersion {
-      package = dex-oidc;
-      command = "dex version";
       version = "v${finalAttrs.version}";
+      command = "dex version";
+      package = dex-oidc;
     };
   };
 
@@ -48,10 +49,12 @@ buildGoModule (finalAttrs: {
     description = "OpenID Connect and OAuth2 identity provider with pluggable connectors";
     homepage = "https://github.com/dexidp/dex";
     license = lib.licenses.asl20;
+
     maintainers = with lib.maintainers; [
       benley
       techknowlogick
     ];
+
     mainProgram = "dex";
   };
 })

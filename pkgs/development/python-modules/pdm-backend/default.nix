@@ -1,8 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
+  buildPythonPackage,
   # tests
   editables,
   gitMinimal,
@@ -14,7 +13,6 @@
 buildPythonPackage rec {
   pname = "pdm-backend";
   version = "2.4.9";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "pdm-project";
@@ -24,8 +22,6 @@ buildPythonPackage rec {
   };
 
   env.PDM_BUILD_SCM_VERSION = version;
-
-  pythonImportsCheck = [ "pdm.backend" ];
 
   nativeCheckInputs = [
     editables
@@ -44,12 +40,14 @@ buildPythonPackage rec {
     git config --global user.email nixbld@localhost
   '';
 
+  pyproject = true;
+  pythonImportsCheck = [ "pdm.backend" ];
   setupHook = ./setup-hook.sh;
 
   meta = {
+    description = "Yet another PEP 517 backend";
     homepage = "https://github.com/pdm-project/pdm-backend";
     changelog = "https://github.com/pdm-project/pdm-backend/releases/tag/${version}";
-    description = "Yet another PEP 517 backend";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ hexa ];
   };

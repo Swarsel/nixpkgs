@@ -1,9 +1,9 @@
 {
-  fetchFromGitHub,
   lib,
+  stdenv,
+  fetchFromGitHub,
   nix-update-script,
   rustPlatform,
-  stdenv,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -65,10 +65,12 @@ rustPlatform.buildRustPackage (finalAttrs: {
   meta = {
     description = "RetroArch Shaders for All";
     homepage = "https://github.com/SnowflakePowered/librashader";
+
     license = with lib.licenses; [
       mpl20
       gpl3Only
     ];
+
     maintainers = with lib.maintainers; [ nadiaholmquist ];
     platforms = lib.platforms.all;
   };

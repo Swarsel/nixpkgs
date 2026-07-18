@@ -2,15 +2,15 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  makeWrapper,
   gradle_8,
   jdk17,
   jogl,
+  libGL,
+  libxxf86vm,
+  makeWrapper,
   rsync,
   stripJavaArchivesHook,
   wrapGAppsHook3,
-  libGL,
-  libxxf86vm,
 }:
 let
   # Force use of JDK 17, see https://github.com/processing/processing4/issues/1043
@@ -40,43 +40,6 @@ stdenv.mkDerivation rec {
     ./use-nixpkgs-jogl.patch
   ];
 
-  nativeBuildInputs = [
-    gradle
-    makeWrapper
-    stripJavaArchivesHook
-    wrapGAppsHook3
-  ];
-  buildInputs = [
-    jdk
-    jogl
-    rsync
-    libGL
-    libxxf86vm
-  ];
-
-  mitmCache = gradle.fetchDeps {
-    inherit pname;
-    data = ./deps.json;
-  };
-
-  gradleFlags = [ "-Dfile.encoding=utf-8" ];
-
-  gradleBuildTask = "createDistributable";
-  gradleUpdateTask = "createDistributable";
-  enableParallelUpdating = false;
-
-  # Need to run the entire createDistributable task, otherwise the buildPhase fails at the compose checkRuntime step
-  gradleUpdateScript = ''
-    runHook preBuild
-    runHook preGradleUpdate
-
-    gradle createDistributable
-
-    runHook postGradleUpdate
-  '';
-
-  dontWrapGApps = true;
-
   postPatch = ''
     substituteInPlace app/build.gradle.kts \
       --replace-fail "https://github.com/processing/processing-examples/archive/refs/heads/main.zip" "https://github.com/processing/processing-examples/archive/b10c9e9a05a0d6c20d233ca7f30d315b5047720e.zip" \
@@ -85,6 +48,21 @@ stdenv.mkDerivation rec {
     substituteInPlace core/build.gradle.kts \
       --replace-fail "@@joglPath@@" "${jogl}"
   '';
+
+  nativeBuildInputs = [
+    gradle
+    makeWrapper
+    stripJavaArchivesHook
+    wrapGAppsHook3
+  ];
+
+  buildInputs = [
+    jdk
+    jogl
+    rsync
+    libGL
+    libxxf86vm
+  ];
 
   buildPhase = ''
     runHook preBuild
@@ -126,19 +104,44 @@ stdenv.mkDerivation rec {
     ln -s $out/bin/Processing $out/bin/processing
   '';
 
+  dontWrapGApps = true;
+  enableParallelUpdating = false;
+  gradleBuildTask = "createDistributable";
+  gradleFlags = [ "-Dfile.encoding=utf-8" ];
+
+  # Need to run the entire createDistributable task, otherwise the buildPhase fails at the compose checkRuntime step
+  gradleUpdateScript = ''
+    runHook preBuild
+    runHook preGradleUpdate
+
+    gradle createDistributable
+
+    runHook postGradleUpdate
+  '';
+
+  gradleUpdateTask = "createDistributable";
+
+  mitmCache = gradle.fetchDeps {
+    inherit pname;
+    data = ./deps.json;
+  };
+
   meta = {
     description = "Language and IDE for electronic arts";
     homepage = "https://processing.org";
+
     license = with lib.licenses; [
       gpl2Only
       lgpl21Only
     ];
-    mainProgram = "Processing";
-    platforms = lib.platforms.linux;
-    maintainers = with lib.maintainers; [ evan-goode ];
+
     sourceProvenance = with lib.sourceTypes; [
       fromSource
       binaryBytecode
     ];
+
+    maintainers = with lib.maintainers; [ evan-goode ];
+    platforms = lib.platforms.linux;
+    mainProgram = "Processing";
   };
 }

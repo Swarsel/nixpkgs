@@ -1,8 +1,8 @@
 {
   lib,
+  fetchFromGitHub,
   buildPythonPackage,
   docopt,
-  fetchFromGitHub,
   freezegun,
   mock,
   pyjwt,
@@ -16,7 +16,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "notifications-python-client";
   version = "12.1.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "alphagov";
@@ -30,14 +29,6 @@ buildPythonPackage (finalAttrs: {
       --replace-fail "pytest-runner" ""
   '';
 
-  build-system = [ setuptools ];
-
-  dependencies = [
-    docopt
-    pyjwt
-    requests
-  ];
-
   nativeCheckInputs = [
     freezegun
     mock
@@ -46,6 +37,15 @@ buildPythonPackage (finalAttrs: {
     requests-mock
   ];
 
+  build-system = [ setuptools ];
+
+  dependencies = [
+    docopt
+    pyjwt
+    requests
+  ];
+
+  pyproject = true;
   pythonImportsCheck = [ "notifications_python_client" ];
 
   meta = {

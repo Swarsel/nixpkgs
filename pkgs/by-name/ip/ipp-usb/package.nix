@@ -1,10 +1,10 @@
 {
-  buildGoModule,
-  avahi,
-  libusb1,
-  pkg-config,
   lib,
   fetchFromGitHub,
+  avahi,
+  buildGoModule,
+  libusb1,
+  pkg-config,
   ronn,
 }:
 buildGoModule (finalAttrs: {
@@ -36,6 +36,7 @@ buildGoModule (finalAttrs: {
     pkg-config
     ronn
   ];
+
   buildInputs = [
     libusb1
     avahi
@@ -43,20 +44,20 @@ buildGoModule (finalAttrs: {
 
   vendorHash = null;
 
-  doInstallCheck = true;
-
   postInstall = ''
     # to accommodate the makefile
     cp $out/bin/ipp-usb .
     make install DESTDIR=$out
   '';
 
+  doInstallCheck = true;
+
   meta = {
     description = "Daemon to use the IPP everywhere protocol with USB printers";
-    mainProgram = "ipp-usb";
     homepage = "https://github.com/OpenPrinting/ipp-usb";
+    license = lib.licenses.bsd2;
     maintainers = [ lib.maintainers.symphorien ];
     platforms = lib.platforms.linux;
-    license = lib.licenses.bsd2;
+    mainProgram = "ipp-usb";
   };
 })

@@ -1,12 +1,12 @@
 {
   lib,
+  fetchFromGitHub,
   buildPythonPackage,
   colcon,
-  fetchFromGitHub,
-  pytestCheckHook,
   pytest-cov-stub,
   pytest-repeat,
   pytest-rerunfailures,
+  pytestCheckHook,
   scspell,
   setuptools,
   writableTmpDirAsHomeHook,
@@ -14,7 +14,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "colcon-ros-domain-id-coordinator";
   version = "0.2.4";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "colcon";
@@ -22,11 +21,6 @@ buildPythonPackage (finalAttrs: {
     tag = finalAttrs.version;
     hash = "sha256-B7BBBng/fODqVtneVgjoPgU6Cyon66PQa2QcGuRLfFU=";
   };
-  build-system = [ setuptools ];
-
-  dependencies = [
-    colcon
-  ];
 
   nativeCheckInputs = [
     pytestCheckHook
@@ -37,9 +31,17 @@ buildPythonPackage (finalAttrs: {
     writableTmpDirAsHomeHook
   ];
 
+  build-system = [ setuptools ];
+
+  dependencies = [
+    colcon
+  ];
+
   disabledTestPaths = [
     "test/test_flake8.py"
   ];
+
+  pyproject = true;
 
   pythonImportsCheck = [
     "colcon_ros_domain_id_coordinator"

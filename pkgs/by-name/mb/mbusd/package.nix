@@ -17,15 +17,15 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-RQRSqlbPwBhw0SiNSP+euMVAwVBJo3lx0qB5gyWA+cM=";
   };
 
-  nativeBuildInputs = [
-    cmake
-    pkg-config
-  ];
-
   postPatch = ''
     substituteInPlace CMakeLists.txt \
       --replace-fail "cmake_minimum_required(VERSION 3.2)" "cmake_minimum_required(VERSION 3.10)"
   '';
+
+  nativeBuildInputs = [
+    cmake
+    pkg-config
+  ];
 
   meta = {
     description = "Modbus TCP to Modbus RTU (RS-232/485) gateway";

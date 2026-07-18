@@ -3,11 +3,11 @@
   stdenv,
   fetchFromGitHub,
   fetchYarnDeps,
-  yarnConfigHook,
-  yarnBuildHook,
-  yarnInstallHook,
-  nodejs,
   nix-update-script,
+  nodejs,
+  yarnBuildHook,
+  yarnConfigHook,
+  yarnInstallHook,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -26,17 +26,17 @@ stdenv.mkDerivation (finalAttrs: {
       --replace-fail "4.2.1" "${finalAttrs.version}";
   '';
 
-  yarnOfflineCache = fetchYarnDeps {
-    inherit (finalAttrs) src;
-    hash = "sha256-9JkzWhsXUrjnMcDDJfqm+tZ+WV5j3CHJbpn9j7v/KLg=";
-  };
-
   nativeBuildInputs = [
     yarnConfigHook
     yarnBuildHook
     yarnInstallHook
     nodejs
   ];
+
+  yarnOfflineCache = fetchYarnDeps {
+    inherit (finalAttrs) src;
+    hash = "sha256-9JkzWhsXUrjnMcDDJfqm+tZ+WV5j3CHJbpn9j7v/KLg=";
+  };
 
   passthru.updateScript = nix-update-script { };
 

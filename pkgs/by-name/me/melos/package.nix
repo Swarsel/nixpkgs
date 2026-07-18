@@ -6,6 +6,7 @@
 buildDartApplication (finalAttrs: {
   pname = "melos";
   version = "8.2.0";
+
   src = fetchFromGitHub {
     owner = "invertase";
     repo = "melos";
@@ -19,8 +20,6 @@ buildDartApplication (finalAttrs: {
     ./add-generic-main.patch
   ];
 
-  pubspecLock = lib.importJSON ./pubspec.lock.json;
-
   # hard code the path to the melos templates
   preBuild = ''
     substituteInPlace packages/melos/lib/src/common/utils.dart \
@@ -31,21 +30,24 @@ buildDartApplication (finalAttrs: {
     cp --recursive packages/melos/templates $out/
   '';
 
+  pubspecLock = lib.importJSON ./pubspec.lock.json;
+
   passthru = {
     updateScript = {
       command = [
         ./update.sh
         ./.
       ];
+
       supportedFeatures = [ "commit" ];
     };
   };
 
   meta = {
-    homepage = "https://github.com/invertase/melos";
     description = "Tool for managing Dart projects with multiple packages";
-    mainProgram = "melos";
+    homepage = "https://github.com/invertase/melos";
     license = lib.licenses.asl20;
     maintainers = [ lib.maintainers.eymeric ];
+    mainProgram = "melos";
   };
 })

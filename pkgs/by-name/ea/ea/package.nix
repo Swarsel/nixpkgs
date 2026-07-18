@@ -3,9 +3,9 @@
   stdenv,
   fetchFromGitHub,
   fetchpatch,
-  rustPlatform,
   installShellFiles,
   libiconv,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -19,26 +19,26 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-VXSSe5d7VO3LfjumzN9a7rrKRedOtOzTdLVQWgV1ED8=";
   };
 
-  cargoPatches = [
-    # https://github.com/dduan/ea/pull/64
-    (fetchpatch {
-      name = "update-guard.patch";
-      url = "https://github.com/dduan/ea/commit/068aa36d7a472c7a4bac855f2404e7094dec7d58.patch";
-      hash = "sha256-iK3fjB6zSDqe0yMUIFjP1nEFLYLFg7dy6+b0T6mC1GA=";
-    })
-  ];
-
-  cargoHash = "sha256-Sv+bwqb9FmcBk3XUu0QLJr6hyV6JUnVzL7RXh0pbe2s=";
-
   nativeBuildInputs = [ installShellFiles ];
 
   buildInputs = lib.optionals stdenv.hostPlatform.isDarwin [
     libiconv
   ];
 
+  cargoHash = "sha256-Sv+bwqb9FmcBk3XUu0QLJr6hyV6JUnVzL7RXh0pbe2s=";
+
   postInstall = ''
     installManPage docs/ea.1
   '';
+
+  cargoPatches = [
+    # https://github.com/dduan/ea/pull/64
+    (fetchpatch {
+      hash = "sha256-iK3fjB6zSDqe0yMUIFjP1nEFLYLFg7dy6+b0T6mC1GA=";
+      name = "update-guard.patch";
+      url = "https://github.com/dduan/ea/commit/068aa36d7a472c7a4bac855f2404e7094dec7d58.patch";
+    })
+  ];
 
   meta = {
     description = "Makes file paths from CLI output actionable";

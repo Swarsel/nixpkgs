@@ -2,10 +2,10 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  libusb1,
   abseil-cpp,
-  flatbuffers,
   fetchpatch,
+  flatbuffers,
+  libusb1,
   xxd,
 }:
 let
@@ -13,16 +13,19 @@ let
   # Compile as a shared library
   flatbuffers_23_5_26 = flatbuffers.overrideAttrs (oldAttrs: rec {
     version = "23.5.26";
-    cmakeFlags = (oldAttrs.cmakeFlags or [ ]) ++ [ "-DFLATBUFFERS_BUILD_SHAREDLIB=ON" ];
-    env = (oldAttrs.env or { }) // {
-      NIX_CXXSTDLIB_COMPILE = "-std=c++17";
-    };
-    configureFlags = (oldAttrs.configureFlags or [ ]) ++ [ "--enable-shared" ];
+
     src = fetchFromGitHub {
       owner = "google";
       repo = "flatbuffers";
       rev = "v${version}";
       hash = "sha256-e+dNPNbCHYDXUS/W+hMqf/37fhVgEGzId6rhP3cToTE=";
+    };
+
+    configureFlags = (oldAttrs.configureFlags or [ ]) ++ [ "--enable-shared" ];
+    cmakeFlags = (oldAttrs.cmakeFlags or [ ]) ++ [ "-DFLATBUFFERS_BUILD_SHAREDLIB=ON" ];
+
+    env = (oldAttrs.env or { }) // {
+      NIX_CXXSTDLIB_COMPILE = "-std=c++17";
     };
   });
 in
@@ -39,9 +42,9 @@ stdenv.mkDerivation {
 
   patches = [
     (fetchpatch {
+      hash = "sha256-mMODpQmikfXtsQvtgh26cy97EiykYNLngSjidOBt/3I=";
       name = "fix-makefile-to-compile-with-latest-tensorflow.patch";
       url = "https://patch-diff.githubusercontent.com/raw/google-coral/libedgetpu/pull/66.patch";
-      hash = "sha256-mMODpQmikfXtsQvtgh26cy97EiykYNLngSjidOBt/3I=";
     })
     ./fix-abseil-20250512.0.patch
     ./cstdint.patch
@@ -53,11 +56,7 @@ stdenv.mkDerivation {
       --replace-fail "plugdev" "coral"
   '';
 
-  makeFlags = [
-    "-f"
-    "makefile_build/Makefile"
-    "libedgetpu"
-  ];
+  nativeBuildInputs = [ xxd ];
 
   buildInputs = [
     abseil-cpp
@@ -65,22 +64,22 @@ stdenv.mkDerivation {
     flatbuffers_23_5_26
   ];
 
-  doInstallCheck = true;
-
-  nativeBuildInputs = [ xxd ];
+  makeFlags = [
+    "-f"
+    "makefile_build/Makefile"
+    "libedgetpu"
+  ];
 
   env = {
     NIX_CXXSTDLIB_COMPILE = "-std=c++17";
 
     TFROOT = fetchFromGitHub {
+      hash = "sha256-UPvK5Kc/FNVJq3FchN5IIBBObvcHtAPVv0ARzWzA35M=";
       owner = "tensorflow";
       repo = "tensorflow";
       rev = "v2.16.1";
-      hash = "sha256-UPvK5Kc/FNVJq3FchN5IIBBObvcHtAPVv0ARzWzA35M=";
     };
   };
-
-  enableParallelBuilding = true;
 
   installPhase = ''
     runHook preInstall
@@ -91,9 +90,12 @@ stdenv.mkDerivation {
     runHook postInstall
   '';
 
+  doInstallCheck = true;
+  enableParallelBuilding = true;
+
   meta = {
-    homepage = "https://github.com/google-coral/libedgetpu";
     description = "Userspace level runtime driver for Coral devices";
+    homepage = "https://github.com/google-coral/libedgetpu";
     license = lib.licenses.asl20;
     maintainers = with lib.maintainers; [ frenetic00 ];
     platforms = lib.platforms.linux;

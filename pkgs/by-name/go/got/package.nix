@@ -2,25 +2,25 @@
   lib,
   stdenv,
   fetchurl,
-  pkg-config,
-  libressl,
+  apple-sdk_15,
+  autoPatchelfHook,
+  bison,
   libbsd,
   libevent,
-  libuuid,
-  libossp_uuid,
   libmd,
-  zlib,
+  libossp_uuid,
+  libressl,
+  libuuid,
   ncurses,
-  bison,
-  autoPatchelfHook,
-  testers,
-  signify,
-  apple-sdk_15,
   nix-update-script,
-  withSsh ? true,
   openssh,
+  pkg-config,
+  signify,
+  testers,
+  zlib,
   # Default editor to use when neither VISUAL nor EDITOR are defined
   defaultEditor ? null,
+  withSsh ? true,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -52,13 +52,6 @@ stdenv.mkDerivation (finalAttrs: {
     apple-sdk_15
   ];
 
-  preConfigure = lib.optionalString stdenv.hostPlatform.isDarwin ''
-    # The configure script assumes dependencies on Darwin are installed via
-    # Homebrew or MacPorts and hardcodes assumptions about the paths of
-    # dependencies which fails the nixpkgs configurePhase.
-    substituteInPlace configure --replace-fail 'xdarwin' 'xhomebrew'
-  '';
-
   env.NIX_CFLAGS_COMPILE = toString (
     lib.optionals (defaultEditor != null) [
       ''-DGOT_DEFAULT_EDITOR="${lib.getExe defaultEditor}"''
@@ -82,18 +75,26 @@ stdenv.mkDerivation (finalAttrs: {
     ]
   );
 
+  preConfigure = lib.optionalString stdenv.hostPlatform.isDarwin ''
+    # The configure script assumes dependencies on Darwin are installed via
+    # Homebrew or MacPorts and hardcodes assumptions about the paths of
+    # dependencies which fails the nixpkgs configurePhase.
+    substituteInPlace configure --replace-fail 'xdarwin' 'xhomebrew'
+  '';
+
   passthru = {
-    updateScript = nix-update-script {
-      extraArgs = [ "--url=https://github.com/ThomasAdam/got-portable" ];
-    };
     tests.version = testers.testVersion {
       package = finalAttrs.finalPackage;
+    };
+
+    updateScript = nix-update-script {
+      extraArgs = [ "--url=https://github.com/ThomasAdam/got-portable" ];
     };
   };
 
   meta = {
-    changelog = "https://gameoftrees.org/releases/CHANGES";
     description = "Version control system which prioritizes ease of use and simplicity over flexibility";
+
     longDescription = ''
       Game of Trees (Got) is a version control system which prioritizes
       ease of use and simplicity over flexibility.
@@ -103,13 +104,17 @@ stdenv.mkDerivation (finalAttrs: {
       Got. It will always remain possible to work with both Got and Git
       on the same repository.
     '';
+
     homepage = "https://gameoftrees.org";
+    changelog = "https://gameoftrees.org/releases/CHANGES";
     license = lib.licenses.isc;
+
     maintainers = with lib.maintainers; [
       abbe
       afh
     ];
-    mainProgram = "got";
+
     platforms = with lib.platforms; darwin ++ linux;
+    mainProgram = "got";
   };
 })

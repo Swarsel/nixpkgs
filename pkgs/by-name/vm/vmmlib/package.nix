@@ -2,38 +2,23 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  cmake,
-  pkg-config,
   boost,
+  cmake,
   lapack,
+  pkg-config,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
-  version = "1.14.0";
   pname = "vmmlib";
+  version = "1.14.0";
 
   src = fetchFromGitHub {
     owner = "Eyescale";
     repo = "vmmlib";
     tag = finalAttrs.version;
     hash = "sha256-QEfeQcE66XbsFTN/Fojgldem5C+RhbOBmRyBX3sfUrg=";
-
     fetchSubmodules = true;
   };
-
-  cmakeFlags = [
-    # Prevent -Werror=deprecated-copy from failing the build
-    "-DCMAKE_CXX_FLAGS=-Wno-error=deprecated-copy"
-  ];
-
-  nativeBuildInputs = [
-    pkg-config
-    cmake
-  ];
-  buildInputs = [
-    boost
-    lapack
-  ];
 
   postPatch = ''
     substituteInPlace CMakeLists.txt \
@@ -43,12 +28,25 @@ stdenv.mkDerivation (finalAttrs: {
       --replace-fail "cmake_minimum_required(VERSION 3.1 FATAL_ERROR)" "cmake_minimum_required(VERSION 3.10)"
   '';
 
-  doCheck = !stdenv.hostPlatform.isDarwin;
+  nativeBuildInputs = [
+    pkg-config
+    cmake
+  ];
 
+  buildInputs = [
+    boost
+    lapack
+  ];
+
+  cmakeFlags = [
+    # Prevent -Werror=deprecated-copy from failing the build
+    "-DCMAKE_CXX_FLAGS=-Wno-error=deprecated-copy"
+  ];
+
+  doCheck = !stdenv.hostPlatform.isDarwin;
   checkTarget = "test";
 
   meta = {
-    broken = stdenv.hostPlatform.isDarwin;
     description = "Vector and matrix math library implemented using C++ templates";
 
     longDescription = ''
@@ -60,9 +58,10 @@ stdenv.mkDerivation (finalAttrs: {
       computations and frustum culling classes, and spatial data structures
     '';
 
-    license = lib.licenses.bsd2;
     homepage = "https://github.com/VMML/vmmlib/";
+    license = lib.licenses.bsd2;
     maintainers = [ lib.maintainers.adev ];
     platforms = lib.platforms.all;
+    broken = stdenv.hostPlatform.isDarwin;
   };
 })

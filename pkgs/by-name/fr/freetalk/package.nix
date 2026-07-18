@@ -2,20 +2,20 @@
   lib,
   stdenv,
   fetchurl,
-  guile,
-  pkg-config,
+  argp-standalone,
+  curl,
   glib,
-  loudmouth,
   gmp,
+  guile,
+  jansson,
   libidn,
-  readline,
   libtool,
   libunwind,
+  loudmouth,
   ncurses,
-  curl,
-  jansson,
+  pkg-config,
+  readline,
   texinfo,
-  argp-standalone,
 }:
 stdenv.mkDerivation (finalAttrs: {
   pname = "freetalk";
@@ -30,6 +30,7 @@ stdenv.mkDerivation (finalAttrs: {
     pkg-config
     texinfo
   ];
+
   buildInputs = [
     guile
     glib
@@ -51,10 +52,10 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Console XMPP client";
-    mainProgram = "freetalk";
     license = lib.licenses.gpl3Plus;
     maintainers = with lib.maintainers; [ raskin ];
     platforms = lib.platforms.unix;
+    mainProgram = "freetalk";
     downloadPage = "https://www.gnu.org/software/freetalk/";
   };
 })

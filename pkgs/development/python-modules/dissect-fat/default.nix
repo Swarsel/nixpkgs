@@ -1,9 +1,9 @@
 {
   lib,
+  fetchFromGitHub,
   buildPythonPackage,
   dissect-cstruct,
   dissect-util,
-  fetchFromGitHub,
   setuptools,
   setuptools-scm,
 }:
@@ -11,7 +11,6 @@
 buildPythonPackage rec {
   pname = "dissect-fat";
   version = "3.13";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "fox-it";
@@ -19,6 +18,9 @@ buildPythonPackage rec {
     tag = version;
     hash = "sha256-BxxC+ebD8xYrBVuYmXdxPcU2JDJgWAtEBlVGqE8oVec=";
   };
+
+  # dissect.fat.exceptions.InvalidBPB: Invalid BS_jmpBoot
+  doCheck = false;
 
   build-system = [
     setuptools
@@ -30,9 +32,7 @@ buildPythonPackage rec {
     dissect-util
   ];
 
-  # dissect.fat.exceptions.InvalidBPB: Invalid BS_jmpBoot
-  doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "dissect.fat" ];
 
   meta = {

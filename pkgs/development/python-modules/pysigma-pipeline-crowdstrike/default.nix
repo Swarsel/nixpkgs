@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   poetry-core,
   pysigma,
   pytestCheckHook,
@@ -10,7 +10,6 @@
 buildPythonPackage rec {
   pname = "pysigma-pipeline-crowdstrike";
   version = "3.0.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "SigmaHQ";
@@ -19,20 +18,18 @@ buildPythonPackage rec {
     hash = "sha256-c7+4/55rrVVVdw2Yy8emoiWkyKlCgP4PKdAa1XW+aYM=";
   };
 
-  pythonRelaxDeps = [ "pysigma" ];
-
-  build-system = [ poetry-core ];
-
-  dependencies = [ pysigma ];
-
   nativeCheckInputs = [ pytestCheckHook ];
-
-  pythonImportsCheck = [ "sigma.pipelines.crowdstrike" ];
+  build-system = [ poetry-core ];
+  dependencies = [ pysigma ];
 
   disabledTests = [
     # Windows binary not mocked
     "test_crowdstrike_pipeline_parentimage"
   ];
+
+  pyproject = true;
+  pythonImportsCheck = [ "sigma.pipelines.crowdstrike" ];
+  pythonRelaxDeps = [ "pysigma" ];
 
   meta = {
     description = "Library to support CrowdStrike pipeline for pySigma";

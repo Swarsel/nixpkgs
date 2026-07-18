@@ -1,7 +1,7 @@
 {
+  lib,
   stdenv,
   fetchurl,
-  lib,
   unzip,
   # To select only certain themes, pass `selected_themes` as a list of strings.
   # reference ./shas.nix for available themes
@@ -27,21 +27,18 @@ let
   srcs = lib.lists.forEach selectedThemes (
     name:
     (fetchurl {
-      url = themeShas.${name}.url;
       sha256 = themeShas.${name}.sha;
+      url = themeShas.${name}.url;
     })
   );
 in
 stdenv.mkDerivation {
-  pname = "adi1090x-plymouth-themes";
   inherit version srcs;
+  pname = "adi1090x-plymouth-themes";
 
   nativeBuildInputs = [
     unzip
   ];
-
-  sourceRoot = ".";
-  unpackCmd = "tar xzf $curSrc";
 
   installPhase = ''
     mkdir -p $out/share/plymouth/themes
@@ -51,17 +48,22 @@ stdenv.mkDerivation {
     find $out/share/plymouth/themes/ -name \*.plymouth -exec sed -i "s@\/usr\/@$out\/@" {} \;
   '';
 
+  sourceRoot = ".";
+  unpackCmd = "tar xzf $curSrc";
+
   meta = {
     description = "Plymouth boot themes from adi1090x";
+
     longDescription = ''
       A variety of plymouth boot screens by adi1090x.  Using the default value
       of `selected_themes` will install all themes (~524M).  Consider overriding
       this with a list of the string names of each theme to install.  Check
       ./shas.nix for available themes.
     '';
+
     homepage = "https://github.com/adi1090x/plymouth-themes";
     license = lib.licenses.gpl3;
-    platforms = lib.platforms.linux;
     maintainers = with lib.maintainers; [ slwst ];
+    platforms = lib.platforms.linux;
   };
 }

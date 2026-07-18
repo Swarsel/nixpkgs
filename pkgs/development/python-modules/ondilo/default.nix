@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   oauthlib,
   requests,
   requests-oauthlib,
@@ -11,7 +11,6 @@
 buildPythonPackage rec {
   pname = "ondilo";
   version = "0.5.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "JeromeHXP";
@@ -20,6 +19,8 @@ buildPythonPackage rec {
     hash = "sha256-l9pmamJbB/FAqB49S4vQAan9Wgj3qu1J2pboQO1Hg/Q=";
   };
 
+  # Project has no tests
+  doCheck = false;
   build-system = [ setuptools ];
 
   dependencies = [
@@ -28,9 +29,7 @@ buildPythonPackage rec {
     requests-oauthlib
   ];
 
-  # Project has no tests
-  doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "ondilo" ];
 
   meta = {

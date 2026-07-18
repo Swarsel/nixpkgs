@@ -1,14 +1,13 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   pytest,
 }:
 
 buildPythonPackage rec {
   pname = "mutf8";
   version = "1.0.6";
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "TkTech";
@@ -24,6 +23,7 @@ buildPythonPackage rec {
     pytest
   '';
 
+  format = "setuptools";
   pythonImportsCheck = [ "mutf8" ];
 
   meta = {

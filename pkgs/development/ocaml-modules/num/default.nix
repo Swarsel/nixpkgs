@@ -1,16 +1,17 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
-  ocaml,
   findlib,
+  ocaml,
   withStatic ? false,
 }:
 
 stdenv.mkDerivation (
   rec {
-    version = "1.6";
     pname = "ocaml${ocaml.version}-num";
+    version = "1.6";
+
     src = fetchFromGitHub {
       owner = "ocaml";
       repo = "num";
@@ -25,22 +26,21 @@ stdenv.mkDerivation (
       substituteInPlace src/Makefile --replace-fail "cp META.num META" "mv META.num META"
     '';
 
+    strictDeps = true;
+
     nativeBuildInputs = [
       ocaml
       findlib
     ];
 
-    strictDeps = true;
-
     createFindlibDestdir = true;
-
     installTargets = "findlib-install";
 
     meta = {
-      description = "Legacy Num library for arbitrary-precision integer and rational arithmetic";
-      license = lib.licenses.lgpl21;
       inherit (ocaml.meta) platforms;
       inherit (src.meta) homepage;
+      description = "Legacy Num library for arbitrary-precision integer and rational arithmetic";
+      license = lib.licenses.lgpl21;
     };
   }
   // (lib.optionalAttrs (lib.versions.majorMinor ocaml.version == "4.06") {

@@ -1,12 +1,12 @@
 {
   lib,
-  rustPlatform,
-  fetchFromGitHub,
   stdenv,
-  pkg-config,
-  oniguruma,
-  writableTmpDirAsHomeHook,
+  fetchFromGitHub,
   nix-update-script,
+  oniguruma,
+  pkg-config,
+  rustPlatform,
+  writableTmpDirAsHomeHook,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -20,11 +20,9 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-9uq/MEa3t44pKBv8GaHDA8cZk8pI4ruFebVUWrPUxgc=";
   };
 
-  cargoHash = "sha256-RMGrBLgFvJ8YBblWsPC41Eva7wPRM400jAM137waWUI=";
-
   nativeBuildInputs = [ pkg-config ];
-
   buildInputs = [ oniguruma ];
+  cargoHash = "sha256-RMGrBLgFvJ8YBblWsPC41Eva7wPRM400jAM137waWUI=";
 
   env = {
     OPENSSL_NO_VENDOR = true;

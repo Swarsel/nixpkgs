@@ -1,15 +1,14 @@
 {
   stdenv,
-  sage-with-env,
-  python3,
   jupyter-kernel-specs,
+  python3,
+  sage-with-env,
 }:
 
 stdenv.mkDerivation rec {
-  version = src.version;
   pname = "sagedoc";
+  version = src.version;
   src = sage-with-env.env.lib.src;
-
   strictDeps = true;
 
   nativeBuildInputs = with python3.pkgs; [
@@ -17,20 +16,6 @@ stdenv.mkDerivation rec {
     cython
     sphinx
   ];
-
-  unpackPhase = ''
-    export SAGE_DOC_OVERRIDE="$PWD/share/doc/sage"
-    export SAGE_DOC_SRC_OVERRIDE="$PWD/docsrc"
-
-    cp -r "${src}/src/doc" "$SAGE_DOC_SRC_OVERRIDE"
-    chmod -R 755 "$SAGE_DOC_SRC_OVERRIDE"
-
-    # Tools needed for meson to run the bootstrap script
-    cp -r "${src}/tools/bootstrap-docs.py" "$SAGE_DOC_SRC_OVERRIDE"
-    cp -r "${src}/build/sage_bootstrap" "$SAGE_DOC_SRC_OVERRIDE"
-    chmod -R 755 "$SAGE_DOC_SRC_OVERRIDE/sage_bootstrap/env.py"
-    sed "/assert/d" "${src}/build/sage_bootstrap/env.py" > "$SAGE_DOC_SRC_OVERRIDE/sage_bootstrap/env.py"
-  '';
 
   preConfigure = ''
     cd docsrc
@@ -54,7 +39,15 @@ stdenv.mkDerivation rec {
     meson compile -C $SAGE_DOC_OVERRIDE doc-html
   '';
 
-  enableParallelBuilding = true;
+  doCheck = true;
+
+  checkPhase = ''
+    # sagemath_doc_html tests assume sage tests are being run, so we
+    # compromise: we run standard tests, but only on files containing
+    # relevant tests. as of Sage 9.6, there are only 4 such files.
+    grep -PRl "#.*(optional|needs).*sagemath_doc_html" ${src}/src/sage{,_docbuild} | \
+      xargs ${sage-with-env}/bin/sage -t --optional=sage,sagemath_doc_html
+  '';
 
   installPhase = ''
     cd "$SAGE_DOC_OVERRIDE"
@@ -72,12 +65,19 @@ stdenv.mkDerivation rec {
     mv html/en/_static{.tmp,}
   '';
 
-  doCheck = true;
-  checkPhase = ''
-    # sagemath_doc_html tests assume sage tests are being run, so we
-    # compromise: we run standard tests, but only on files containing
-    # relevant tests. as of Sage 9.6, there are only 4 such files.
-    grep -PRl "#.*(optional|needs).*sagemath_doc_html" ${src}/src/sage{,_docbuild} | \
-      xargs ${sage-with-env}/bin/sage -t --optional=sage,sagemath_doc_html
+  enableParallelBuilding = true;
+
+  unpackPhase = ''
+    export SAGE_DOC_OVERRIDE="$PWD/share/doc/sage"
+    export SAGE_DOC_SRC_OVERRIDE="$PWD/docsrc"
+
+    cp -r "${src}/src/doc" "$SAGE_DOC_SRC_OVERRIDE"
+    chmod -R 755 "$SAGE_DOC_SRC_OVERRIDE"
+
+    # Tools needed for meson to run the bootstrap script
+    cp -r "${src}/tools/bootstrap-docs.py" "$SAGE_DOC_SRC_OVERRIDE"
+    cp -r "${src}/build/sage_bootstrap" "$SAGE_DOC_SRC_OVERRIDE"
+    chmod -R 755 "$SAGE_DOC_SRC_OVERRIDE/sage_bootstrap/env.py"
+    sed "/assert/d" "${src}/build/sage_bootstrap/env.py" > "$SAGE_DOC_SRC_OVERRIDE/sage_bootstrap/env.py"
   '';
 }

@@ -1,11 +1,11 @@
 {
+  lib,
   stdenv,
   fetchFromGitHub,
   cmake,
   kdePackages,
   libepoxy,
   libxcb,
-  lib,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -24,6 +24,7 @@ stdenv.mkDerivation (finalAttrs: {
     kdePackages.extra-cmake-modules
     kdePackages.wrapQtAppsHook
   ];
+
   buildInputs = [
     kdePackages.kcmutils
     kdePackages.kwin

@@ -1,8 +1,8 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
   installShellFiles,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -16,16 +16,14 @@ rustPlatform.buildRustPackage (finalAttrs: {
     sha256 = "sha256-gs6uytX4rm2JrJ4UbtHJDg+b+Z1ZjcsuUR0b13jQIy4=";
   };
 
-  cargoHash = "sha256-TpAl7lMaQGSH9oMNqYIxnajsfh1HAdyU2suSFRfWYPs=";
-
   nativeBuildInputs = [ installShellFiles ];
+  cargoHash = "sha256-TpAl7lMaQGSH9oMNqYIxnajsfh1HAdyU2suSFRfWYPs=";
+  env.GEN_ARTIFACTS = "artifacts";
 
   postInstall = ''
     installManPage artifacts/mmtc.1
     installShellCompletion artifacts/mmtc.{bash,fish} --zsh artifacts/_mmtc
   '';
-
-  env.GEN_ARTIFACTS = "artifacts";
 
   meta = {
     description = "Minimal mpd terminal client that aims to be simple yet highly configurable";

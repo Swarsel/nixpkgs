@@ -2,11 +2,11 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  python3Packages,
   autoconf,
   automake,
   mpi,
   nix-update-script,
+  python3Packages,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -20,12 +20,12 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-KuDf1VhLQRDDY3NZaNaHDVGipLmB8+1K36/W1fKnno0=";
   };
 
-  enableParallelBuilding = true;
   nativeBuildInputs = [
     autoconf
     automake
     python3Packages.wrapPython
   ];
+
   buildInputs = [
     mpi
   ]
@@ -33,7 +33,6 @@ stdenv.mkDerivation (finalAttrs: {
     python
     plotly
   ]);
-  pythonPath = (with python3Packages; [ plotly ]);
 
   preConfigure = ''
     patchShebangs autogen.sh
@@ -46,6 +45,9 @@ stdenv.mkDerivation (finalAttrs: {
     wrapPythonPrograms
   '';
 
+  enableParallelBuilding = true;
+  pythonPath = (with python3Packages; [ plotly ]);
+
   passthru = {
     updateScript = nix-update-script { };
   };
@@ -54,13 +56,15 @@ stdenv.mkDerivation (finalAttrs: {
     description = "MPI based benchmark for network diagnostics";
     homepage = "https://github.com/cea-hpc/hp2p";
     changelog = "https://github.com/cea-hpc/hp2p/releases/tag/${finalAttrs.version}";
-    platforms = lib.platforms.unix;
     license = lib.licenses.cecill-c;
     maintainers = [ lib.maintainers.bzizou ];
-    mainProgram = "hp2p.exe";
+    platforms = lib.platforms.unix;
+
     badPlatforms = [
       # hp2p_algo_cpp.cpp:38:10: error: no member named 'random_shuffle' in namespace 'std'
       lib.systems.inspect.patterns.isDarwin
     ];
+
+    mainProgram = "hp2p.exe";
   };
 })

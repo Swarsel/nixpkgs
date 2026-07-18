@@ -1,11 +1,11 @@
 {
-  stdenv,
-  buildPythonPackage,
-  fetchFromGitHub,
-  python,
-  bootstrapped-pip,
   lib,
+  stdenv,
+  fetchFromGitHub,
+  bootstrapped-pip,
+  buildPythonPackage,
   pipInstallHook,
+  python,
   setuptoolsBuildHook,
 }:
 
@@ -15,8 +15,6 @@ let
 
   # Create an sdist of setuptools
   sdist = stdenv.mkDerivation rec {
-    name = "${pname}-${version}-sdist.tar.gz";
-
     src = fetchFromGitHub {
       owner = "pypa";
       repo = pname;
@@ -43,15 +41,12 @@ let
       echo "Moving sdist..."
       mv dist/${name} $out
     '';
+
+    name = "${pname}-${version}-sdist.tar.gz";
   };
 in
 buildPythonPackage {
   inherit pname version;
-  # Because of bootstrapping we don't use the setuptoolsBuildHook that comes with format="setuptools" directly.
-  # Instead, we override it to remove setuptools to avoid a circular dependency.
-  # The same is done for pip and the pipInstallHook.
-  format = "other";
-
   src = sdist;
 
   nativeBuildInputs = [
@@ -67,25 +62,31 @@ buildPythonPackage {
     export SETUPTOOLS_INSTALL_WINDOWS_SPECIFIC_FILES=0
   '';
 
-  pipInstallFlags = [ "--ignore-installed" ];
-
-  # Adds setuptools to nativeBuildInputs causing infinite recursion.
-  catchConflicts = false;
-
   # Requires pytest, causing infinite recursion.
   doCheck = false;
+  # Adds setuptools to nativeBuildInputs causing infinite recursion.
+  catchConflicts = false;
+  # Because of bootstrapping we don't use the setuptoolsBuildHook that comes with format="setuptools" directly.
+  # Instead, we override it to remove setuptools to avoid a circular dependency.
+  # The same is done for pip and the pipInstallHook.
+  format = "other";
+  pipInstallFlags = [ "--ignore-installed" ];
 
   meta = {
     description = "Utilities to facilitate the installation of Python packages";
     homepage = "https://pypi.org/project/setuptools/";
+
     license = with lib.licenses; [
       psfl
       zpl20
     ];
+
+    platforms = python.meta.platforms;
+
     knownVulnerabilities = [
       "CVE-2025-47273"
     ];
-    platforms = python.meta.platforms;
+
     priority = 10;
   };
 }

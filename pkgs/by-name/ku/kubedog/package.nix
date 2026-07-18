@@ -1,9 +1,9 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
-  testers,
+  buildGoModule,
   kubedog,
+  testers,
 }:
 
 buildGoModule (finalAttrs: {
@@ -18,8 +18,8 @@ buildGoModule (finalAttrs: {
   };
 
   vendorHash = "sha256-kCS7nMFskBw6LTV5EgPSufxo78OyfW9Zdqe5rZytgKE=";
-
-  subPackages = [ "cmd/kubedog" ];
+  # There are no tests.
+  doCheck = false;
 
   ldflags = [
     "-s"
@@ -27,13 +27,12 @@ buildGoModule (finalAttrs: {
     "-X github.com/werf/kubedog.Version=${finalAttrs.src.rev}"
   ];
 
-  # There are no tests.
-  doCheck = false;
+  subPackages = [ "cmd/kubedog" ];
 
   passthru.tests.version = testers.testVersion {
-    package = kubedog;
-    command = "kubedog version";
     version = finalAttrs.src.rev;
+    command = "kubedog version";
+    package = kubedog;
   };
 
   meta = {
@@ -41,10 +40,11 @@ buildGoModule (finalAttrs: {
       A tool to watch and follow Kubernetes resources in CI/CD deployment
       pipelines
     '';
-    mainProgram = "kubedog";
+
     homepage = "https://github.com/werf/kubedog";
     changelog = "https://github.com/werf/kubedog/releases/tag/${finalAttrs.src.rev}";
     license = lib.licenses.asl20;
     maintainers = with lib.maintainers; [ azahi ];
+    mainProgram = "kubedog";
   };
 })

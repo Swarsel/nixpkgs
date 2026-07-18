@@ -3,7 +3,6 @@
   stdenv,
   autoreconfHook,
   fetchFromGitea,
-  writeShellScript,
   glib,
   gobject-introspection,
   gtk-doc,
@@ -13,6 +12,7 @@
   openssl,
   pkg-config,
   python3,
+  writeShellScript,
   xmlsec,
   zlib,
 }:
@@ -22,11 +22,11 @@ stdenv.mkDerivation (finalAttrs: {
   version = "2.9.0";
 
   src = fetchFromGitea {
-    domain = "git.entrouvert.org";
     owner = "entrouvert";
     repo = "lasso";
     rev = "v${finalAttrs.version}";
     hash = "sha256-fDMM9DJBzxz6DX4cNK3DEE28FBT8gCF9C9DQfUNNFaY=";
+    domain = "git.entrouvert.org";
   };
 
   postPatch =
@@ -65,11 +65,11 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   meta = {
-    homepage = "https://lasso.entrouvert.org/";
     description = "Liberty Alliance Single Sign-On library";
+    homepage = "https://lasso.entrouvert.org/";
     changelog = "https://git.entrouvert.org/entrouvert/lasso/raw/tag/v${finalAttrs.version}/NEWS";
     license = lib.licenses.gpl2Plus;
-    platforms = lib.platforms.linux;
     maintainers = with lib.maintainers; [ womfoo ];
+    platforms = lib.platforms.linux;
   };
 })

@@ -5,8 +5,8 @@
   jdk8,
   jre8,
   makeBinaryWrapper,
-  runCommand,
   python3Packages,
+  runCommand,
   writeText,
 }:
 let
@@ -22,9 +22,6 @@ stdenv.mkDerivation (finalAttrs: {
     sha256 = "sha256-pA39A/2OLxdBjzxhpGDB2uqQIRkUW9zpfQmoHwOqBCg=";
   };
 
-  # don't do anything?
-  unpackPhase = "${jdk}/bin/jar xf $src favicon.png";
-
   nativeBuildInputs = [ makeBinaryWrapper ];
 
   installPhase = ''
@@ -37,6 +34,9 @@ stdenv.mkDerivation (finalAttrs: {
       --add-flags "-jar $out/share/elasticmq-server/elasticmq-server.jar"
   '';
 
+  # don't do anything?
+  unpackPhase = "${jdk}/bin/jar xf $src favicon.png";
+
   passthru.tests.elasticmqTest = import ./elasticmq-test.nix {
     inherit runCommand python3Packages writeText;
     elasticmq-server = finalAttrs.finalPackage;
@@ -46,8 +46,8 @@ stdenv.mkDerivation (finalAttrs: {
     description = "Message queueing system with Java, Scala and Amazon SQS-compatible interfaces";
     homepage = "https://github.com/softwaremill/elasticmq";
     changelog = "https://github.com/softwaremill/elasticmq/releases/tag/v${finalAttrs.version}";
-    sourceProvenance = with lib.sourceTypes; [ binaryBytecode ];
     license = lib.licenses.asl20;
+    sourceProvenance = with lib.sourceTypes; [ binaryBytecode ];
     platforms = lib.platforms.unix;
     mainProgram = "elasticmq-server";
   };

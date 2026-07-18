@@ -38,12 +38,12 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   meta = {
+    description = "Advanced multiversioned deduplicating archiver, with HW acceleration, encryption and paranoid-level tests";
     homepage = "https://github.com/fcorbelli/zpaqfranz";
     changelog = "https://github.com/fcorbelli/zpaqfranz/releases/tag/${finalAttrs.version}";
-    description = "Advanced multiversioned deduplicating archiver, with HW acceleration, encryption and paranoid-level tests";
-    mainProgram = "zpaqfranz";
     license = with lib.licenses; [ mit ];
     maintainers = [ ];
     platforms = lib.platforms.unix;
+    mainProgram = "zpaqfranz";
   };
 })

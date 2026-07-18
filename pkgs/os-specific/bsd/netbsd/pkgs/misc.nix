@@ -1,7 +1,7 @@
-{ mkDerivation, defaultMakeFlags }:
+{ defaultMakeFlags, mkDerivation }:
 
 mkDerivation {
-  path = "share/misc";
-  noCC = true;
   makeFlags = defaultMakeFlags ++ [ "BINDIR=$(out)/share" ];
+  noCC = true;
+  path = "share/misc";
 }

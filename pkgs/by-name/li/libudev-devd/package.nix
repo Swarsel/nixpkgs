@@ -1,16 +1,15 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
+  evdev-proto,
+  freebsd,
   meson,
   ninja,
   pkg-config,
-  evdev-proto,
-  freebsd,
 }:
 
 stdenv.mkDerivation rec {
-  name = "libudev-devd";
   version = "0.6.0";
 
   src = fetchFromGitHub {
@@ -35,13 +34,17 @@ stdenv.mkDerivation rec {
     "-Denable-gpl=true"
   ];
 
+  name = "libudev-devd";
+
   meta = {
     description = "libudev-compatible interface for devd";
     homepage = "https://github.com/wulf7/libudev-devd";
+
     license = with lib.licenses; [
       bsd2
       gpl2
     ];
+
     maintainers = with lib.maintainers; [ artemist ];
     platforms = lib.platforms.freebsd;
   };

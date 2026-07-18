@@ -1,11 +1,11 @@
 {
   lib,
-  callPackage,
+  stdenv,
   fetchurl,
+  callPackage,
+  jre,
   makeWrapper,
   nixosTests,
-  stdenv,
-  jre,
   unzip,
 }:
 stdenv.mkDerivation (finalAttrs: {
@@ -16,8 +16,6 @@ stdenv.mkDerivation (finalAttrs: {
     url = "mirror://sourceforge/geoserver/GeoServer/${finalAttrs.version}/geoserver-${finalAttrs.version}-bin.zip";
     hash = "sha256-bQECI2MEk8OcALk21bbv/V/yNbOrHKlhcpoVy37U1i0=";
   };
-
-  sourceRoot = ".";
 
   patches = [
     # set GEOSERVER_DATA_DIR to current working directory if not provided
@@ -54,12 +52,17 @@ stdenv.mkDerivation (finalAttrs: {
       runHook postInstall
     '';
 
+  sourceRoot = ".";
+
   passthru =
     let
       geoserver = finalAttrs.finalPackage;
       extensions = lib.attrsets.filterAttrs (n: v: lib.isDerivation v) (callPackage ./extensions.nix { });
     in
     {
+      tests.geoserver = nixosTests.geoserver;
+      updateScript = ./update.sh;
+
       withExtensions =
         selector:
         let
@@ -68,9 +71,11 @@ stdenv.mkDerivation (finalAttrs: {
         geoserver.overrideAttrs (
           finalAttrs: previousAttrs: {
             pname = previousAttrs.pname + "-with-extensions";
+
             buildInputs = lib.lists.unique (
               (previousAttrs.buildInputs or [ ]) ++ lib.lists.concatMap (drv: drv.buildInputs) selectedExtensions
             );
+
             postInstall = (previousAttrs.postInstall or "") + ''
               for extension in ${toString selectedExtensions} ; do
                 cp -r $extension/* $out
@@ -80,16 +85,14 @@ stdenv.mkDerivation (finalAttrs: {
             '';
           }
         );
-      tests.geoserver = nixosTests.geoserver;
-      updateScript = ./update.sh;
     };
 
   meta = {
     description = "Open source server for sharing geospatial data";
     homepage = "https://geoserver.org/";
-    sourceProvenance = with lib.sourceTypes; [ binaryBytecode ];
     license = lib.licenses.gpl2Plus;
-    teams = [ lib.teams.geospatial ];
+    sourceProvenance = with lib.sourceTypes; [ binaryBytecode ];
     platforms = lib.platforms.all;
+    teams = [ lib.teams.geospatial ];
   };
 })

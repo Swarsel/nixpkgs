@@ -2,41 +2,38 @@
   lib,
   stdenv,
   fetchFromGitHub,
+  appstream-glib,
+  check,
+  desktop-file-utils,
+  file,
+  gettext,
+  girara,
+  gitUpdater,
+  glib,
+  gnome,
+  gtk-mac-integration,
+  gtk3,
+  json-glib,
+  libheif,
+  libintl,
+  libjxl,
+  librsvg,
+  libseccomp,
+  libxml2,
   meson,
   ninja,
-  wrapGAppsHook3,
   pkg-config,
-  gitUpdater,
-  appstream-glib,
-  json-glib,
-  desktop-file-utils,
   python3,
-  gtk3,
-  girara,
-  gettext,
-  gnome,
-  libheif,
-  libjxl,
-  libxml2,
-  check,
   sqlite,
-  glib,
   texlive,
-  libintl,
-  libseccomp,
-  file,
-  librsvg,
-  gtk-mac-integration,
-  webp-pixbuf-loader,
   versionCheckHook,
+  webp-pixbuf-loader,
+  wrapGAppsHook3,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
   pname = "zathura";
   version = "2026.05.20";
-
-  strictDeps = true;
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "pwmt";
@@ -52,20 +49,7 @@ stdenv.mkDerivation (finalAttrs: {
     "out"
   ];
 
-  # Flag list:
-  # https://github.com/pwmt/zathura/blob/master/meson_options.txt
-  mesonFlags = [
-    "-Dmanpages=enabled"
-    "-Dconvert-icon=enabled"
-    "-Dsynctex=enabled"
-    "-Dtests=disabled"
-    # by default, zathura searches for zathurarc under $out/etc
-    "-Dsysconfdir=/etc"
-    # Make sure tests are enabled for doCheck
-    # (lib.mesonEnable "tests" finalAttrs.finalPackage.doCheck)
-    (lib.mesonEnable "seccomp" stdenv.hostPlatform.isLinux)
-    (lib.mesonEnable "landlock" stdenv.hostPlatform.isLinux)
-  ];
+  strictDeps = true;
 
   nativeBuildInputs = [
     meson
@@ -94,6 +78,21 @@ stdenv.mkDerivation (finalAttrs: {
   ++ lib.optional stdenv.hostPlatform.isLinux libseccomp
   ++ lib.optional stdenv.hostPlatform.isDarwin gtk-mac-integration;
 
+  # Flag list:
+  # https://github.com/pwmt/zathura/blob/master/meson_options.txt
+  mesonFlags = [
+    "-Dmanpages=enabled"
+    "-Dconvert-icon=enabled"
+    "-Dsynctex=enabled"
+    "-Dtests=disabled"
+    # by default, zathura searches for zathurarc under $out/etc
+    "-Dsysconfdir=/etc"
+    # Make sure tests are enabled for doCheck
+    # (lib.mesonEnable "tests" finalAttrs.finalPackage.doCheck)
+    (lib.mesonEnable "seccomp" stdenv.hostPlatform.isLinux)
+    (lib.mesonEnable "landlock" stdenv.hostPlatform.isLinux)
+  ];
+
   # add support for more image formats
   env.GDK_PIXBUF_MODULE_FILE = gnome._gdkPixbufCacheBuilder_DO_NOT_USE {
     extraLoaders = [
@@ -105,18 +104,17 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   doCheck = !stdenv.hostPlatform.isDarwin;
-
-  nativeInstallCheckInputs = [ versionCheckHook ];
   doInstallCheck = true;
-
+  nativeInstallCheckInputs = [ versionCheckHook ];
+  __structuredAttrs = true;
   passthru.updateScript = gitUpdater { };
 
   meta = {
-    homepage = "https://pwmt.org/projects/zathura";
     description = "Core component for zathura PDF viewer";
+    homepage = "https://pwmt.org/projects/zathura";
     license = lib.licenses.zlib;
-    platforms = lib.platforms.unix;
     maintainers = with lib.maintainers; [ mithicspirit ];
+    platforms = lib.platforms.unix;
     mainProgram = "zathura";
   };
 })

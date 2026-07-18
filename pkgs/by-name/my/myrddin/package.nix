@@ -1,11 +1,11 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
-  pkg-config,
-  bison,
   binutils,
+  bison,
   makeWrapper,
+  pkg-config,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -13,11 +13,16 @@ stdenv.mkDerivation (finalAttrs: {
   version = "0.3.1";
 
   src = fetchFromGitHub {
-    repo = "mc";
     owner = "oridb";
+    repo = "mc";
     rev = "r${finalAttrs.version}";
     sha256 = "7ImjiG/rIKGPHq3Vh/mftY7pqw/vfOxD3LJeT87HmCk=";
   };
+
+  postPatch = ''
+    substituteInPlace mk/c.mk \
+      --replace "-Werror" ""
+  '';
 
   nativeBuildInputs = [
     bison
@@ -25,14 +30,15 @@ stdenv.mkDerivation (finalAttrs: {
     makeWrapper
   ];
 
-  postPatch = ''
-    substituteInPlace mk/c.mk \
-      --replace "-Werror" ""
-  '';
-
   buildPhase = ''
     make bootstrap -j$NIX_BUILD_CORES
     make -j$NIX_BUILD_CORES
+  '';
+
+  doCheck = true;
+
+  checkPhase = ''
+    make check
   '';
 
   postInstall = ''
@@ -41,18 +47,13 @@ stdenv.mkDerivation (finalAttrs: {
     done
   '';
 
-  checkPhase = ''
-    make check
-  '';
-
-  doCheck = true;
-
   meta = {
     description = "Systems language that is both powerful and fun to use";
     homepage = "https://myrlang.org/";
     license = lib.licenses.mit;
     maintainers = [ ];
     platforms = lib.platforms.all;
+
     # darwin: never built on Hydra https://hydra.nixos.org/job/nixpkgs/trunk/myrddin.x86_64-darwin
     broken =
       (stdenv.hostPlatform.isLinux && stdenv.hostPlatform.isAarch64) || stdenv.hostPlatform.isDarwin;

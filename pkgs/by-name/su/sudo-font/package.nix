@@ -1,23 +1,23 @@
 {
   lib,
-  stdenvNoCC,
   fetchzip,
   installFonts,
+  stdenvNoCC,
 }:
 
 stdenvNoCC.mkDerivation (finalAttrs: {
   pname = "sudo-font";
   version = "3.6";
 
-  outputs = [
-    "out"
-    "webfont"
-  ];
-
   src = fetchzip {
     url = "https://github.com/jenskutilek/sudo-font/releases/download/v${finalAttrs.version}/sudo.zip";
     hash = "sha256-4jw1MGxV/a78U7jAfnRLxfZFOqDzyTctCaqKT/s1mMU=";
   };
+
+  outputs = [
+    "out"
+    "webfont"
+  ];
 
   nativeBuildInputs = [ installFonts ];
 

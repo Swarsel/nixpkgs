@@ -9,8 +9,6 @@ buildDunePackage (finalAttrs: {
   pname = "bitstring";
   version = "4.1.1";
 
-  duneVersion = "3";
-
   src = fetchFromGitHub {
     owner = "xguerin";
     repo = "bitstring";
@@ -19,6 +17,7 @@ buildDunePackage (finalAttrs: {
   };
 
   propagatedBuildInputs = [ stdlib-shims ];
+  duneVersion = "3";
 
   meta = {
     description = "This library adds Erlang-style bitstrings and matching over bitstrings as a syntax extension and library for OCaml";

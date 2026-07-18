@@ -1,8 +1,8 @@
 {
   lib,
-  stdenvNoCC,
   fetchurl,
   installFonts,
+  stdenvNoCC,
   unzip,
 }:
 
@@ -15,8 +15,6 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     hash = "sha256-hkARhb8T6VgGAybYkVuPuebjhuk1dwiBJ1bZMwvYpMY=";
   };
 
-  sourceRoot = ".";
-
   outputs = [
     "out"
     "webfont"
@@ -27,13 +25,14 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     unzip
   ];
 
+  sourceRoot = ".";
   passthru = { inherit (finalAttrs) pname version; };
 
   meta = {
     description = "Creative Commons symbol font";
     homepage = "https://www.ctrl.blog/entry/creative-commons-unicode-fallback-font.html";
-    maintainers = with lib.maintainers; [ qyliss ];
     license = lib.licenses.publicDomain;
+    maintainers = with lib.maintainers; [ qyliss ];
     platforms = lib.platforms.all;
   };
 })

@@ -17,8 +17,6 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-S/0hAAt9zzj8pP5juFDvT0Z2B+GKpFnBsIVdJjSEakI=";
   };
 
-  dontWrapQtApps = true;
-
   postPatch = ''
     substituteInPlace package/contents/config/main.xml package/contents/ui/configNotifications.qml \
          --replace-fail "/usr/share/sounds" "${kdePackages.ocean-sound-theme}/share/sounds"
@@ -36,6 +34,7 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  dontWrapQtApps = true;
   passthru.updateScript = nix-update-script { };
 
   meta = {

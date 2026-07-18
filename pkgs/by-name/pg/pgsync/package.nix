@@ -5,10 +5,9 @@
 }:
 
 bundlerApp {
-  gemdir = ./.;
   pname = "pgsync";
   exes = [ "pgsync" ];
-
+  gemdir = ./.;
   passthru.updateScript = bundlerUpdateScript "pgsync";
 
   meta = {

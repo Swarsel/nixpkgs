@@ -1,11 +1,11 @@
 {
   lib,
+  fetchFromGitHub,
   beautifulsoup4,
   buildPythonPackage,
   deprecated,
   docutils,
   extract-msg,
-  fetchFromGitHub,
   lief,
   myst-parser,
   neo4j,
@@ -20,8 +20,8 @@
   reportlab,
   requests,
   rtfde,
-  sphinx-autodoc-typehints,
   sphinx,
+  sphinx-autodoc-typehints,
   urllib3,
   validators,
 }:
@@ -29,9 +29,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "pymisp";
   version = "2.5.34.1";
-  pyproject = true;
-
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "MISP";
@@ -40,6 +37,12 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-68XJ6lqoNGnUneNIu0ZOKZhrumrt6CPLAt45UaZC5q0=";
   };
 
+  nativeCheckInputs = [
+    pytestCheckHook
+  ]
+  ++ lib.flatten (builtins.attrValues finalAttrs.passthru.optional-dependencies);
+
+  __structuredAttrs = true;
   build-system = [ poetry-core ];
 
   dependencies = [
@@ -47,36 +50,6 @@ buildPythonPackage (finalAttrs: {
     python-dateutil
     requests
   ];
-
-  optional-dependencies = {
-    brotli = [ urllib3 ];
-    docs = [
-      docutils
-      myst-parser
-      sphinx
-      sphinx-autodoc-typehints
-    ];
-    email = [
-      extract-msg
-      oletools
-      rtfde
-    ];
-    fileobjects = [
-      lief
-      pure-magic-rs
-      pydeep2
-    ];
-    neo4j = [ neo4j ];
-    openioc = [ beautifulsoup4 ];
-    pdfexport = [ reportlab ];
-    url = [ pyfaup-rs ];
-    virustotal = [ validators ];
-  };
-
-  nativeCheckInputs = [
-    pytestCheckHook
-  ]
-  ++ lib.flatten (builtins.attrValues finalAttrs.passthru.optional-dependencies);
 
   disabledTestPaths = [
     # Test requires network access
@@ -105,8 +78,37 @@ buildPythonPackage (finalAttrs: {
     "test_to_dict_json_format"
   ];
 
-  pythonImportsCheck = [ "pymisp" ];
+  optional-dependencies = {
+    brotli = [ urllib3 ];
 
+    docs = [
+      docutils
+      myst-parser
+      sphinx
+      sphinx-autodoc-typehints
+    ];
+
+    email = [
+      extract-msg
+      oletools
+      rtfde
+    ];
+
+    fileobjects = [
+      lief
+      pure-magic-rs
+      pydeep2
+    ];
+
+    neo4j = [ neo4j ];
+    openioc = [ beautifulsoup4 ];
+    pdfexport = [ reportlab ];
+    url = [ pyfaup-rs ];
+    virustotal = [ validators ];
+  };
+
+  pyproject = true;
+  pythonImportsCheck = [ "pymisp" ];
   passthru.updateScript = nix-update-script { };
 
   meta = {

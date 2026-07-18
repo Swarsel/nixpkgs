@@ -2,12 +2,12 @@
   lib,
   stdenv,
   fetchzip,
-  pkg-config,
   gpm,
   libxext,
   libxft,
   libxt,
   ncurses5,
+  pkg-config,
   slang,
 }:
 
@@ -20,7 +20,18 @@ stdenv.mkDerivation rec {
     sha256 = "sha256-vzeX0P+2+IuKtrX+2lQDeJj7VMDS6XurD2pb2jhxy2Q=";
   };
 
+  postPatch = ''
+    for i in autoconf/Makefile autoconf/Makefile.in \
+             doc/tm/Makefile src/Makefile.in; do
+      sed -e 's|/bin/cp|cp|' -i $i
+    done
+    for i in autoconf/aclocal.m4 configure; do
+      sed -e 's|ncurses5|ncurses|' -i $i
+    done
+  '';
+
   nativeBuildInputs = [ pkg-config ];
+
   buildInputs = [
     gpm
     libxext
@@ -42,22 +53,13 @@ stdenv.mkDerivation rec {
     "rgrep"
   ];
 
-  postPatch = ''
-    for i in autoconf/Makefile autoconf/Makefile.in \
-             doc/tm/Makefile src/Makefile.in; do
-      sed -e 's|/bin/cp|cp|' -i $i
-    done
-    for i in autoconf/aclocal.m4 configure; do
-      sed -e 's|ncurses5|ncurses|' -i $i
-    done
-  '';
-
   postInstall = ''
     install -D src/objs/rgrep $out/bin
   '';
 
   meta = {
     description = "Programmable text editor written around S-Lang";
+
     longDescription = ''
       JED is a freely available text editor for Unix, VMS, MSDOS, OS/2, BeOS,
       QNX, and win9X/NT platforms. Although it is a powerful editor designed for
@@ -92,6 +94,7 @@ stdenv.mkDerivation rec {
         modes; directory editor (dired); mail; rmail; ispell; and much, much
         more
     '';
+
     homepage = "https://www.jedsoft.org/jed/index.html";
     license = lib.licenses.gpl2Plus;
     platforms = slang.meta.platforms;

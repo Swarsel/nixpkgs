@@ -2,24 +2,24 @@
   lib,
   stdenv,
   fetchurl,
+  alsa-lib,
   autoPatchelfHook,
   curl,
   curlWithGnuTls,
   dpkg,
-  makeBinaryWrapper,
-  alsa-lib,
   e2fsprogs,
   fontconfig,
   fribidi,
   gmp,
   gnutls,
   harfbuzz,
-  libdrm,
   libGL,
+  libdrm,
   libgpg-error,
   libpq,
   libthai,
   libxrandr,
+  makeBinaryWrapper,
   nss,
   p11-kit,
   unixodbc,
@@ -49,14 +49,16 @@ stdenv.mkDerivation (finalAttrs: {
     (curlWithGnuTls.overrideAttrs (previousAttrs: rec {
       # Version 8.10.0 is the latest that can be easily patched to include the "CURL_GNUTLS_3" symbol
       version = "8.10.0";
+
       src = fetchurl {
+        hash = "sha256-5rFC8OhelUdZ034mo2J+IngTdZW+gOOoYMQ1PkM15aA=";
+
         urls = [
           "https://curl.haxx.se/download/curl-${version}.tar.xz"
           "https://github.com/curl/curl/releases/download/curl-${
             builtins.replaceStrings [ "." ] [ "_" ] version
           }/curl-${version}.tar.xz"
         ];
-        hash = "sha256-5rFC8OhelUdZ034mo2J+IngTdZW+gOOoYMQ1PkM15aA=";
       };
 
       # Keep the "CURL_GNUTLS_3" symbol which is sought by libwbhttpsclient.so
@@ -140,8 +142,8 @@ stdenv.mkDerivation (finalAttrs: {
   meta = {
     description = "Webull desktop trading application";
     homepage = "https://www.webull.com/trading-platforms/desktop-app";
-    sourceProvenance = [ lib.sourceTypes.binaryNativeCode ];
     license = lib.licenses.unfree;
+    sourceProvenance = [ lib.sourceTypes.binaryNativeCode ];
     maintainers = [ lib.maintainers.fauxmight ];
     platforms = [ "x86_64-linux" ];
     mainProgram = "webull-desktop";

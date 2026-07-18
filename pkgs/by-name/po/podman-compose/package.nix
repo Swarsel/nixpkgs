@@ -1,20 +1,26 @@
 {
   lib,
-  python3Packages,
   fetchFromGitHub,
+  python3Packages,
 }:
 
 python3Packages.buildPythonApplication (finalAttrs: {
-  version = "1.6.0";
   pname = "podman-compose";
-  pyproject = true;
+  version = "1.6.0";
 
   src = fetchFromGitHub {
-    repo = "podman-compose";
     owner = "containers";
+    repo = "podman-compose";
     tag = "v${finalAttrs.version}";
     hash = "sha256-zkXLZfYWpIaQYoUU7GcGnkuTBmhzpJkyojbzFuTR5FI=";
   };
+
+  propagatedBuildInputs = [ python3Packages.pypaBuildHook ];
+
+  nativeCheckInputs = with python3Packages; [
+    pytestCheckHook
+    parameterized
+  ];
 
   build-system = [
     python3Packages.setuptools
@@ -25,26 +31,20 @@ python3Packages.buildPythonApplication (finalAttrs: {
     pyyaml
   ];
 
-  propagatedBuildInputs = [ python3Packages.pypaBuildHook ];
-
-  nativeCheckInputs = with python3Packages; [
-    pytestCheckHook
-    parameterized
-  ];
-
   disabledTestPaths = [
     "tests/integration" # requires running podman
   ];
 
-  # versionCheckHook requires podman executable
+  pyproject = true;
 
+  # versionCheckHook requires podman executable
   meta = {
     description = "Implementation of docker-compose with podman backend";
     homepage = "https://github.com/containers/podman-compose";
     license = lib.licenses.gpl2Only;
-    platforms = lib.platforms.unix;
     maintainers = [ lib.maintainers.sikmir ];
-    teams = [ lib.teams.podman ];
+    platforms = lib.platforms.unix;
     mainProgram = "podman-compose";
+    teams = [ lib.teams.podman ];
   };
 })

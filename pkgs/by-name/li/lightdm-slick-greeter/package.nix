@@ -2,22 +2,22 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  meson,
-  ninja,
-  pkg-config,
-  python3,
-  vala,
-  wrapGAppsHook3,
-  lightdm,
   gtk3,
-  pixman,
   libcanberra,
   libgnomekbd,
   libx11,
   libxext,
-  linkFarm,
+  lightdm,
   lightdm-slick-greeter,
+  linkFarm,
+  meson,
+  ninja,
   numlockx,
+  pixman,
+  pkg-config,
+  python3,
+  vala,
+  wrapGAppsHook3,
   xapp-symbolic-icons,
 }:
 
@@ -31,6 +31,23 @@ stdenv.mkDerivation (finalAttrs: {
     rev = finalAttrs.version;
     hash = "sha256-WP4OsiTEmACDXq5xNbJNEm28vdA3PQ8IscGiyaeyvwk=";
   };
+
+  postPatch = ''
+    substituteInPlace src/slick-greeter.vala \
+      --replace-fail "/usr/bin/numlockx" "${numlockx}/bin/numlockx" \
+      --replace-fail "/usr/share/xsessions/" "/run/current-system/sw/share/xsessions/" \
+      --replace-fail "/usr/share/wayland-sessions/" "/run/current-system/sw/share/wayland-sessions/" \
+      --replace-fail "/usr/bin/slick-greeter" "${placeholder "out"}/bin/slick-greeter"
+
+    substituteInPlace src/session-list.vala \
+      --replace-fail "/usr/share" "${placeholder "out"}/share"
+
+    # We prefer stable path here.
+    substituteInPlace data/x.dm.slick-greeter.gschema.xml \
+      --replace-fail "/usr/share/onboard" "/run/current-system/sw/share/onboard"
+
+    patchShebangs files/usr/bin/*
+  '';
 
   nativeBuildInputs = [
     meson
@@ -52,27 +69,6 @@ stdenv.mkDerivation (finalAttrs: {
     libxext
   ];
 
-  pythonPath = [
-    python3.pkgs.pygobject3 # for slick-greeter-check-hidpi
-  ];
-
-  postPatch = ''
-    substituteInPlace src/slick-greeter.vala \
-      --replace-fail "/usr/bin/numlockx" "${numlockx}/bin/numlockx" \
-      --replace-fail "/usr/share/xsessions/" "/run/current-system/sw/share/xsessions/" \
-      --replace-fail "/usr/share/wayland-sessions/" "/run/current-system/sw/share/wayland-sessions/" \
-      --replace-fail "/usr/bin/slick-greeter" "${placeholder "out"}/bin/slick-greeter"
-
-    substituteInPlace src/session-list.vala \
-      --replace-fail "/usr/share" "${placeholder "out"}/share"
-
-    # We prefer stable path here.
-    substituteInPlace data/x.dm.slick-greeter.gschema.xml \
-      --replace-fail "/usr/share/onboard" "/run/current-system/sw/share/onboard"
-
-    patchShebangs files/usr/bin/*
-  '';
-
   mesonFlags = [
     "--sbindir=${placeholder "out"}/bin"
   ];
@@ -90,10 +86,14 @@ stdenv.mkDerivation (finalAttrs: {
     )
   '';
 
+  pythonPath = [
+    python3.pkgs.pygobject3 # for slick-greeter-check-hidpi
+  ];
+
   passthru.xgreeters = linkFarm "lightdm-slick-greeter-xgreeters" [
     {
-      path = "${lightdm-slick-greeter}/share/xgreeters/slick-greeter.desktop";
       name = "lightdm-slick-greeter.desktop";
+      path = "${lightdm-slick-greeter}/share/xgreeters/slick-greeter.desktop";
     }
   ];
 
@@ -101,10 +101,12 @@ stdenv.mkDerivation (finalAttrs: {
     description = "Slick-looking LightDM greeter";
     homepage = "https://github.com/linuxmint/slick-greeter";
     license = lib.licenses.gpl3Only;
+
     maintainers = with lib.maintainers; [
       water-sucks
       bobby285271
     ];
+
     platforms = lib.platforms.linux;
   };
 })

@@ -1,15 +1,14 @@
 {
   lib,
+  fetchFromGitHub,
   buildPythonPackage,
   e3-core,
-  fetchFromGitHub,
   setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "e3-testsuite";
   version = "27.2";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "AdaCore";
@@ -19,15 +18,14 @@ buildPythonPackage rec {
   };
 
   build-system = [ setuptools ];
-
   dependencies = [ e3-core ];
-
+  pyproject = true;
   pythonImportsCheck = [ "e3" ];
 
   meta = {
     description = "Generic testsuite framework in Python";
-    changelog = "https://github.com/AdaCore/e3-testsuite/releases/tag/${src.tag}";
     homepage = "https://github.com/AdaCore/e3-testsuite/";
+    changelog = "https://github.com/AdaCore/e3-testsuite/releases/tag/${src.tag}";
     license = lib.licenses.gpl3Only;
     maintainers = with lib.maintainers; [ heijligen ];
     platforms = lib.platforms.linux;

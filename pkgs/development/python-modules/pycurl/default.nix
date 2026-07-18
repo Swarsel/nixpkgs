@@ -1,27 +1,24 @@
 {
   lib,
   stdenv,
-  buildPythonPackage,
-  isPyPy,
   fetchFromGitHub,
-  fetchpatch2,
-  curl,
-  openssl,
   bottle,
-  pytestCheckHook,
+  buildPythonPackage,
+  curl,
+  fetchpatch2,
   flaky,
   flask,
+  isPyPy,
   numpy,
-  websockets,
+  openssl,
+  pytestCheckHook,
   setuptools,
+  websockets,
 }:
 
 buildPythonPackage rec {
   pname = "pycurl";
   version = "7.46.0";
-  pyproject = true;
-
-  disabled = isPyPy; # https://github.com/pycurl/pycurl/issues/208
 
   src = fetchFromGitHub {
     owner = "pycurl";
@@ -32,19 +29,11 @@ buildPythonPackage rec {
 
   patches = [
     (fetchpatch2 {
+      hash = "sha256-EBXgGiaMtXTsgJOOrzzZFJ7Q/ofAlc4zuipoEpfdFqU=";
       name = "pycurl-curl-8.21.0-ws-support.patch";
       url = "https://github.com/pycurl/pycurl/commit/c78fd8aba82e2f8037275063138eaa7706c111af.diff?full_index=1";
-      hash = "sha256-EBXgGiaMtXTsgJOOrzzZFJ7Q/ofAlc4zuipoEpfdFqU=";
     })
   ];
-
-  preConfigure = ''
-    substituteInPlace setup.py \
-      --replace-fail '--static-libs' '--libs'
-    export PYCURL_SSL_LIBRARY=openssl
-  '';
-
-  build-system = [ setuptools ];
 
   nativeBuildInputs = [ curl ];
 
@@ -53,7 +42,11 @@ buildPythonPackage rec {
     openssl
   ];
 
-  pythonImportsCheck = [ "pycurl" ];
+  preConfigure = ''
+    substituteInPlace setup.py \
+      --replace-fail '--static-libs' '--libs'
+    export PYCURL_SSL_LIBRARY=openssl
+  '';
 
   nativeCheckInputs = [
     bottle
@@ -64,16 +57,13 @@ buildPythonPackage rec {
     pytestCheckHook
   ];
 
-  __darwinAllowLocalNetworking = true;
-
-  enabledTestPaths = [
-    # don't pick up the tests directory below examples/
-    "tests"
-  ];
-
   preCheck = ''
     export HOME=$TMPDIR
   '';
+
+  __darwinAllowLocalNetworking = true;
+  build-system = [ setuptools ];
+  disabled = isPyPy; # https://github.com/pycurl/pycurl/issues/208
 
   disabledTests = [
     # tests that require network access
@@ -96,17 +86,28 @@ buildPythonPackage rec {
     "cadata_test"
   ];
 
+  enabledTestPaths = [
+    # don't pick up the tests directory below examples/
+    "tests"
+  ];
+
+  pyproject = true;
+  pythonImportsCheck = [ "pycurl" ];
+
   meta = {
     description = "Python Interface To The cURL library";
     homepage = "http://pycurl.io/";
+
     changelog =
       "https://github.com/pycurl/pycurl/blob/REL_"
       + lib.replaceStrings [ "." ] [ "_" ] version
       + "/ChangeLog";
+
     license = with lib.licenses; [
       lgpl2Only
       mit
     ];
+
     maintainers = [ ];
   };
 }

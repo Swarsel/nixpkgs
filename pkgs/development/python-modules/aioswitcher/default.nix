@@ -1,9 +1,9 @@
 {
   lib,
+  fetchFromGitHub,
   aiohttp,
   assertpy,
   buildPythonPackage,
-  fetchFromGitHub,
   freezegun,
   poetry-core,
   pycryptodome,
@@ -19,7 +19,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "aioswitcher";
   version = "6.1.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "TomerFi";
@@ -27,21 +26,6 @@ buildPythonPackage (finalAttrs: {
     tag = finalAttrs.version;
     hash = "sha256-7jwrZqPRB9PLiDM3jN7VALiNtxPeTO4UQkb4LvU0BtE=";
   };
-
-  __darwinAllowLocalNetworking = true;
-
-  build-system = [ poetry-core ];
-
-  pythonRelaxDeps = [ "aiohttp" ];
-
-  dependencies = [
-    aiohttp
-    pycryptodome
-  ];
-
-  preCheck = ''
-    export TZ=Asia/Jerusalem
-  '';
 
   nativeCheckInputs = [
     assertpy
@@ -52,6 +36,18 @@ buildPythonPackage (finalAttrs: {
     pytestCheckHook
     pytz
     time-machine
+  ];
+
+  preCheck = ''
+    export TZ=Asia/Jerusalem
+  '';
+
+  __darwinAllowLocalNetworking = true;
+  build-system = [ poetry-core ];
+
+  dependencies = [
+    aiohttp
+    pycryptodome
   ];
 
   disabledTests = [
@@ -71,7 +67,9 @@ buildPythonPackage (finalAttrs: {
     "test_seconds_to_iso_time_with_a_nagative_value_should_throw_an_error"
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "aioswitcher" ];
+  pythonRelaxDeps = [ "aiohttp" ];
 
   meta = {
     description = "Python module to interact with Switcher water heater";

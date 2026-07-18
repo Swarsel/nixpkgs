@@ -1,18 +1,16 @@
 {
   lib,
   buildPythonPackage,
-  sage-src,
   cython,
   jinja2,
   pkgconfig, # the python module, not the pkg-config alias
+  sage-src,
 }:
 
 buildPythonPackage rec {
-  version = src.version;
-  format = "setuptools";
   pname = "sage-setup";
+  version = src.version;
   src = sage-src;
-
   nativeBuildInputs = [ cython ];
   buildInputs = [ pkgconfig ];
   propagatedBuildInputs = [ jinja2 ];
@@ -22,6 +20,7 @@ buildPythonPackage rec {
   '';
 
   doCheck = false; # sagelib depends on sage-setup, but sage-setup's tests depend on sagelib
+  format = "setuptools";
 
   meta = {
     description = "Build system of the Sage library";

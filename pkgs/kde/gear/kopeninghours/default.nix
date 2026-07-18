@@ -1,18 +1,14 @@
 {
-  mkKdeDerivation,
-  qtdeclarative,
   bison,
-  flex,
   boost,
+  flex,
+  mkKdeDerivation,
   python3,
+  qtdeclarative,
 }:
 mkKdeDerivation {
   pname = "kopeninghours";
 
-  extraNativeBuildInputs = [
-    bison
-    flex
-  ];
   extraBuildInputs = [
     qtdeclarative
     (boost.override {
@@ -20,5 +16,10 @@ mkKdeDerivation {
       python = python3;
     })
     python3
+  ];
+
+  extraNativeBuildInputs = [
+    bison
+    flex
   ];
 }

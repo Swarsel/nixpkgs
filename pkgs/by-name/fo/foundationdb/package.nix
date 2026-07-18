@@ -1,20 +1,20 @@
 {
+  lib,
   stdenv,
   fetchFromGitHub,
-  lib,
-  fetchpatch,
-  cmake,
-  ninja,
-  python3,
-  openjdk,
-  mono,
-  openssl,
   boost186,
-  pkg-config,
-  msgpack-cxx,
-  toml11,
-  jemalloc,
+  cmake,
   doctest,
+  fetchpatch,
+  jemalloc,
+  mono,
+  msgpack-cxx,
+  ninja,
+  openjdk,
+  openssl,
+  pkg-config,
+  python3,
+  toml11,
   zlib,
 }:
 let
@@ -39,6 +39,13 @@ stdenv.mkDerivation rec {
     hash = "sha256-OaV7YyBggeX3vrnI2EYwlWdIGRHOAeP5OZN0Rmd/dnw=";
   };
 
+  outputs = [
+    "out"
+    "dev"
+    "lib"
+    "pythonsrc"
+  ];
+
   patches = [
     ./disable-flowbench.patch
     ./don-t-use-static-boost-libs.patch
@@ -47,18 +54,16 @@ stdenv.mkDerivation rec {
     # GetMsgpack: add 4+ versions of upstream
     # https://github.com/apple/foundationdb/pull/10935
     (fetchpatch {
-      url = "https://github.com/apple/foundationdb/commit/c35a23d3f6b65698c3b888d76de2d93a725bff9c.patch";
       hash = "sha256-bneRoZvCzJp0Hp/G0SzAyUyuDrWErSpzv+ickZQJR5w=";
+      url = "https://github.com/apple/foundationdb/commit/c35a23d3f6b65698c3b888d76de2d93a725bff9c.patch";
     })
     # Add a dependency that prevents bindingtester to run before the python bindings are generated
     # https://github.com/apple/foundationdb/pull/11859
     (fetchpatch {
-      url = "https://github.com/apple/foundationdb/commit/8d04c97a74c6b83dd8aa6ff5af67587044c2a572.patch";
       hash = "sha256-ZLIcmcfirm1+96DtTIr53HfM5z38uTLZrRNHAmZL6rc=";
+      url = "https://github.com/apple/foundationdb/commit/8d04c97a74c6b83dd8aa6ff5af67587044c2a572.patch";
     })
   ];
-
-  hardeningDisable = [ "fortify" ];
 
   postPatch = ''
     # allow using any msgpack-cxx version
@@ -75,17 +80,6 @@ stdenv.mkDerivation rec {
       --replace-fail 'find_package(Boost 1.78.0 EXACT ' 'find_package(Boost '
   '';
 
-  buildInputs = [
-    boost
-    jemalloc
-    msgpack-cxx
-    openssl
-    toml11
-    zlib
-  ];
-
-  checkInputs = [ doctest ];
-
   nativeBuildInputs = [
     cmake
     mono
@@ -95,7 +89,14 @@ stdenv.mkDerivation rec {
     python3
   ];
 
-  separateDebugInfo = true;
+  buildInputs = [
+    boost
+    jemalloc
+    msgpack-cxx
+    openssl
+    toml11
+    zlib
+  ];
 
   cmakeFlags = [
     "-DFDB_RELEASE=TRUE"
@@ -128,6 +129,8 @@ stdenv.mkDerivation rec {
     "-DOPENSSL_CRYPTO_LIBRARY=${openssl.out}/lib/libcrypto.so"
     "-DOPENSSL_SSL_LIBRARY=${openssl.out}/lib/libssl.so"
   ];
+
+  checkInputs = [ doctest ];
 
   # the install phase for cmake is pretty wonky right now since it's not designed to
   # coherently install packages as most linux distros expect -- it's designed to build
@@ -162,23 +165,21 @@ stdenv.mkDerivation rec {
     mv lib/fdb-java-*.jar $lib/share/java/fdb-java.jar
   '';
 
-  outputs = [
-    "out"
-    "dev"
-    "lib"
-    "pythonsrc"
-  ];
+  hardeningDisable = [ "fortify" ];
+  separateDebugInfo = true;
 
   meta = {
     description = "Open source, distributed, transactional key-value store";
     homepage = "https://www.foundationdb.org";
     license = lib.licenses.asl20;
-    platforms = [ "x86_64-linux" ] ++ lib.optionals (!(avxEnabled version)) [ "aarch64-linux" ];
-    # Fails when cross-compiling with "/bin/sh: gcc-ar: not found"
-    broken = stdenv.buildPlatform != stdenv.hostPlatform;
+
     maintainers = with lib.maintainers; [
       thoughtpolice
       kornholi
     ];
+
+    platforms = [ "x86_64-linux" ] ++ lib.optionals (!(avxEnabled version)) [ "aarch64-linux" ];
+    # Fails when cross-compiling with "/bin/sh: gcc-ar: not found"
+    broken = stdenv.buildPlatform != stdenv.hostPlatform;
   };
 }

@@ -2,9 +2,9 @@
   lib,
   fetchurl,
   buildDunePackage,
+  cmdliner,
   cppo,
   ocp-indent,
-  cmdliner,
   re,
 }:
 
@@ -18,6 +18,7 @@ buildDunePackage (finalAttrs: {
   };
 
   nativeBuildInputs = [ cppo ];
+
   buildInputs = [
     cmdliner
     re
@@ -26,8 +27,8 @@ buildDunePackage (finalAttrs: {
   propagatedBuildInputs = [ ocp-indent ];
 
   meta = {
-    homepage = "https://www.typerex.org/ocp-index.html";
     description = "Simple and light-weight documentation extractor for OCaml";
+    homepage = "https://www.typerex.org/ocp-index.html";
     changelog = "https://github.com/OCamlPro/ocp-index/raw/${finalAttrs.version}/CHANGES.md";
     license = lib.licenses.lgpl3;
     maintainers = with lib.maintainers; [ vbgl ];

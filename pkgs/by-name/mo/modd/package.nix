@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule {
@@ -24,9 +24,9 @@ buildGoModule {
 
   meta = {
     description = "Flexible developer tool that runs processes and responds to filesystem changes";
-    mainProgram = "modd";
     homepage = "https://github.com/cortesi/modd";
     license = lib.licenses.mit;
     maintainers = [ ];
+    mainProgram = "modd";
   };
 }

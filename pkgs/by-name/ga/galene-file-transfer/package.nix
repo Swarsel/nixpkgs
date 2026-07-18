@@ -1,14 +1,14 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
-  gitUpdater,
-  nixosTests,
-  writeShellApplication,
   _experimental-update-script-combinators,
+  buildGoModule,
   galene,
+  gitUpdater,
   nix,
+  nixosTests,
   sd,
+  writeShellApplication,
 }:
 
 buildGoModule (finalAttrs: {
@@ -22,9 +22,8 @@ buildGoModule (finalAttrs: {
     hash = "sha256-T3OtEsHysAmHwvDIkxqXMKLqIeXEeX9uhEG4WFUgQL4=";
   };
 
-  vendorHash = "sha256-Z2IYZtB2PAxJD8993reu+ldTG3LdPLNMbr9pP2NUBMA=";
-
   strictDeps = true;
+  vendorHash = "sha256-Z2IYZtB2PAxJD8993reu+ldTG3LdPLNMbr9pP2NUBMA=";
 
   ldflags = [
     "-s"
@@ -33,15 +32,24 @@ buildGoModule (finalAttrs: {
 
   passthru = {
     tests.vm = nixosTests.galene.file-transfer;
+
+    updateScript = _experimental-update-script-combinators.sequence [
+      finalAttrs.passthru.updateScriptSrc.command
+      (lib.getExe finalAttrs.passthru.updateScriptVendor)
+    ];
+
     updateScriptSrc = gitUpdater {
       rev-prefix = "galene-file-transfer-";
     };
+
     updateScriptVendor = writeShellApplication {
       name = "update-galene-file-transfer-vendorHash";
+
       runtimeInputs = [
         nix
         sd
       ];
+
       text = ''
         export UPDATE_NIX_ATTR_PATH="''${UPDATE_NIX_ATTR_PATH:-galene-file-transfer}"
 
@@ -58,18 +66,14 @@ buildGoModule (finalAttrs: {
         ${sd.meta.mainProgram} --string-mode "$oldhash" "$newhash" "$fname"
       '';
     };
-    updateScript = _experimental-update-script-combinators.sequence [
-      finalAttrs.passthru.updateScriptSrc.command
-      (lib.getExe finalAttrs.passthru.updateScriptVendor)
-    ];
   };
 
   meta = {
+    inherit (galene.meta) maintainers;
     description = "Command-line file transfer client for the Galene videoconferencing server";
     homepage = "https://github.com/jech/galene-file-transfer";
     changelog = "https://github.com/jech/galene-file-transfer/raw/${finalAttrs.src.rev}/CHANGES";
     license = lib.licenses.mit;
     platforms = lib.platforms.linux;
-    inherit (galene.meta) maintainers;
   };
 })

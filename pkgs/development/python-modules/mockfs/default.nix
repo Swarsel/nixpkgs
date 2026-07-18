@@ -1,17 +1,16 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
-  setuptools-scm,
+  buildPythonPackage,
   importlib-metadata,
   pytestCheckHook,
+  setuptools,
+  setuptools-scm,
 }:
 
 buildPythonPackage rec {
   pname = "mockfs";
   version = "2.0.2";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "mockfs";
@@ -26,10 +25,9 @@ buildPythonPackage rec {
   ];
 
   propagatedBuildInputs = [ importlib-metadata ];
-
-  pythonImportsCheck = [ "mockfs" ];
-
   nativeCheckInputs = [ pytestCheckHook ];
+  pyproject = true;
+  pythonImportsCheck = [ "mockfs" ];
 
   meta = {
     description = "Simple mock filesystem for use in unit tests";

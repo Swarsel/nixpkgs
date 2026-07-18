@@ -8,7 +8,6 @@
 buildPythonPackage rec {
   pname = "sexpdata";
   version = "1.0.2";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
@@ -16,9 +15,8 @@ buildPythonPackage rec {
   };
 
   nativeBuildInputs = [ setuptools ];
-
   doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "sexpdata" ];
 
   meta = {

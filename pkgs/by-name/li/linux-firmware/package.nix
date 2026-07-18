@@ -1,10 +1,10 @@
 {
-  stdenvNoCC,
+  lib,
   fetchFromGitLab,
   fetchpatch,
-  lib,
   python3,
   rdfind,
+  stdenvNoCC,
   which,
   writeShellScriptBin,
 }:
@@ -32,10 +32,6 @@ stdenvNoCC.mkDerivation rec {
     hash = "sha256-nSoJhgI4hAxtNmnj5M6ticzuBSt9uNAYcmc1VR/yXxE=";
   };
 
-  postUnpack = ''
-    patchShebangs .
-  '';
-
   nativeBuildInputs = [
     gitStub
     python3
@@ -43,22 +39,26 @@ stdenvNoCC.mkDerivation rec {
     which
   ];
 
+  makeFlags = [ "DESTDIR=$(out)" ];
+  # Firmware blobs do not need fixing and should not be modified
+  dontFixup = true;
+
   installTargets = [
     "install"
     "dedup"
   ];
-  makeFlags = [ "DESTDIR=$(out)" ];
 
-  # Firmware blobs do not need fixing and should not be modified
-  dontFixup = true;
+  postUnpack = ''
+    patchShebangs .
+  '';
 
   meta = {
     description = "Binary firmware collection packaged by kernel.org";
     homepage = "https://git.kernel.org/pub/scm/linux/kernel/git/firmware/linux-firmware.git";
     license = lib.licenses.unfreeRedistributableFirmware;
-    platforms = lib.platforms.unix;
-    maintainers = with lib.maintainers; [ fpletz ];
-    priority = 6; # give precedence to kernel firmware
     sourceProvenance = with lib.sourceTypes; [ binaryFirmware ];
+    maintainers = with lib.maintainers; [ fpletz ];
+    platforms = lib.platforms.unix;
+    priority = 6; # give precedence to kernel firmware
   };
 }

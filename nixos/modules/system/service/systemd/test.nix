@@ -3,8 +3,8 @@
 
 {
   evalSystem,
-  runCommand,
   hello,
+  runCommand,
   ...
 }:
 
@@ -16,53 +16,11 @@ let
     in
     {
 
-      # Test input
+      boot.loader.grub.enable = false;
 
-      system.services.foo = {
-        process = {
-          argv = [
-            hello'
-            "--greeting"
-            "hoi"
-          ];
-        };
-      };
-      system.services.bar = {
-        process = {
-          argv = [
-            hello'
-            "--greeting"
-            "hoi"
-          ];
-        };
-        systemd.service = {
-          serviceConfig.X-Bar = "lol crossbar whatever";
-        };
-        services.db = {
-          process = {
-            argv = [
-              hello'
-              "--greeting"
-              "Hi, I'm a database, would you believe it"
-            ];
-          };
-          systemd.service = {
-            serviceConfig.RestartSec = "42";
-          };
-        };
-      };
-
-      # Test that systemd.mainExecStart overrides process.argv
-      # and allows systemd's specifier and variable substitution
-      system.services.argv-with-subst = {
-        process = {
-          argv = [
-            hello'
-            "--greeting"
-            "This should be ignored"
-          ];
-        };
-        systemd.mainExecStart = ''/bin/sh -c "echo %n and ''${HOME}"'';
+      fileSystems."/" = {
+        device = "/test/dummy";
+        fsType = "auto";
       };
 
       # Test that process.argv escapes % and $ by default
@@ -87,17 +45,66 @@ let
               "Fun $1 fact, remainder is often expressed as m%n"
             ];
           };
+
           systemd.mainExecStart =
             config.systemd.lib.escapeSystemdExecArgs config.process.argv + " --systemd-unit %n";
         };
 
+      # Test that systemd.mainExecStart overrides process.argv
+      # and allows systemd's specifier and variable substitution
+      system.services.argv-with-subst = {
+        process = {
+          argv = [
+            hello'
+            "--greeting"
+            "This should be ignored"
+          ];
+        };
+
+        systemd.mainExecStart = ''/bin/sh -c "echo %n and ''${HOME}"'';
+      };
+
+      system.services.bar = {
+        process = {
+          argv = [
+            hello'
+            "--greeting"
+            "hoi"
+          ];
+        };
+
+        services.db = {
+          process = {
+            argv = [
+              hello'
+              "--greeting"
+              "Hi, I'm a database, would you believe it"
+            ];
+          };
+
+          systemd.service = {
+            serviceConfig.RestartSec = "42";
+          };
+        };
+
+        systemd.service = {
+          serviceConfig.X-Bar = "lol crossbar whatever";
+        };
+      };
+
+      # Test input
+      system.services.foo = {
+        process = {
+          argv = [
+            hello'
+            "--greeting"
+            "hoi"
+          ];
+        };
+      };
+
       # irrelevant stuff
       system.stateVersion = "25.05";
-      fileSystems."/" = {
-        device = "/test/dummy";
-        fsType = "auto";
-      };
-      boot.loader.grub.enable = false;
     }
   );
 

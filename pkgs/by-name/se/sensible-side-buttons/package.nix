@@ -1,19 +1,18 @@
 {
   lib,
+  stdenv,
   fetchurl,
   undmg,
-  stdenv,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
   pname = "sensible-side-buttons-bin";
   version = "1.0.6";
+
   src = fetchurl {
     url = "https://github.com/archagon/sensible-side-buttons/releases/download/${finalAttrs.version}/SensibleSideButtons-${finalAttrs.version}.dmg";
     hash = "sha256-Hys678R6wf+M4eg6892rgU3Xxua5dLc9zjaU7HQ1iBs=";
   };
-
-  sourceRoot = "SensibleSideButtons.app";
 
   nativeBuildInputs = [ undmg ];
 
@@ -27,6 +26,8 @@ stdenv.mkDerivation (finalAttrs: {
 
     runHook postInstall
   '';
+
+  sourceRoot = "SensibleSideButtons.app";
 
   meta = {
     description = "Utilize mouse side navigation buttons";

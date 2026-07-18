@@ -1,11 +1,11 @@
 {
   lib,
   stdenv,
-  buildPackages,
   fetchFromGitHub,
   buildGoModule,
-  nix-update-script,
+  buildPackages,
   installShellFiles,
+  nix-update-script,
 }:
 buildGoModule (finalAttrs: {
   pname = "gh-classroom";
@@ -18,15 +18,8 @@ buildGoModule (finalAttrs: {
     hash = "sha256-h/GLgqHN8dGWRCAjBOCqh5nUlj1RSx77obGZ2s1vV6o=";
   };
 
-  vendorHash = "sha256-anYKlaODkRYee8uvaraIbMLwRqdW2xkKo1DEG8FTwtU=";
-
-  ldflags = [
-    "-s"
-    "-w"
-    "-X main.Version=${finalAttrs.version}"
-  ];
-
   nativeBuildInputs = [ installShellFiles ];
+  vendorHash = "sha256-anYKlaODkRYee8uvaraIbMLwRqdW2xkKo1DEG8FTwtU=";
 
   postInstall = lib.optionalString (stdenv.hostPlatform.emulatorAvailable buildPackages) (
     let
@@ -40,11 +33,17 @@ buildGoModule (finalAttrs: {
     ''
   );
 
+  ldflags = [
+    "-s"
+    "-w"
+    "-X main.Version=${finalAttrs.version}"
+  ];
+
   passthru.updateScript = nix-update-script { };
 
   meta = {
-    homepage = "https://github.com/github/gh-classroom";
     description = "Extension for the GitHub CLI, that enhances it for educators using GitHub classroom";
+    homepage = "https://github.com/github/gh-classroom";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ _0x5a4 ];
     mainProgram = "gh-classroom";

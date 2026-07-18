@@ -8,7 +8,7 @@
   options.services.sdrplayApi = {
     enable = lib.mkOption {
       default = false;
-      example = true;
+
       description = ''
         Whether to enable the SDRplay API service and udev rules.
 
@@ -17,23 +17,28 @@
         `soapysdr-with-plugins = super.soapysdr.override { extraPackages = [ super.soapysdrplay ]; };`
         :::
       '';
+
+      example = true;
       type = lib.types.bool;
     };
   };
 
   config = lib.mkIf config.services.sdrplayApi.enable {
+    services.udev.packages = [ pkgs.sdrplay ];
+
     systemd.services.sdrplayApi = {
-      description = "SDRplay API Service";
       after = [ "network.target" ];
-      wantedBy = [ "multi-user.target" ];
+      description = "SDRplay API Service";
+
       serviceConfig = {
-        ExecStart = "${pkgs.sdrplay}/bin/sdrplay_apiService";
         DynamicUser = true;
+        ExecStart = "${pkgs.sdrplay}/bin/sdrplay_apiService";
         Restart = "on-failure";
         RestartSec = "1s";
       };
+
+      wantedBy = [ "multi-user.target" ];
     };
-    services.udev.packages = [ pkgs.sdrplay ];
 
   };
 }

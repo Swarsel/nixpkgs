@@ -1,23 +1,22 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitLab,
-  gitUpdater,
-  nixosTests,
-  testers,
   boost,
   cmake,
   cmake-extras,
   doxygen,
-  gst_all_1,
   gdk-pixbuf,
+  gitUpdater,
+  gst_all_1,
   gtest,
-  makeFontsConf,
   libapparmor,
   libexif,
   libqtdbustest,
   librsvg,
   lomiri-api,
+  makeFontsConf,
+  nixosTests,
   persistent-cache-cpp,
   pkg-config,
   python3,
@@ -25,6 +24,7 @@
   qtdeclarative,
   shared-mime-info,
   taglib,
+  testers,
   validatePkgConfig,
   wrapGAppsHook3,
   xvfb-run,
@@ -122,18 +122,6 @@ stdenv.mkDerivation (finalAttrs: {
     # maybe add ugly to cover all kinds of formats?
   ]);
 
-  nativeCheckInputs = [
-    shared-mime-info
-    xvfb-run
-  ];
-
-  checkInputs = [
-    gtest
-    libqtdbustest
-  ];
-
-  dontWrapQtApps = true;
-
   cmakeFlags = [
     (lib.cmakeBool "ENABLE_QT6" withQt6)
     (lib.cmakeBool "GSETTINGS_LOCALINSTALL" true)
@@ -144,7 +132,15 @@ stdenv.mkDerivation (finalAttrs: {
 
   doCheck = stdenv.buildPlatform.canExecute stdenv.hostPlatform;
 
-  enableParallelChecking = false;
+  nativeCheckInputs = [
+    shared-mime-info
+    xvfb-run
+  ];
+
+  checkInputs = [
+    gtest
+    libqtdbustest
+  ];
 
   preCheck = ''
     # Fontconfig warnings breaks some tests
@@ -163,6 +159,9 @@ stdenv.mkDerivation (finalAttrs: {
       --prefix XDG_DATA_DIRS : ${lib.makeSearchPath "share" [ shared-mime-info ]}
     )
   '';
+
+  dontWrapQtApps = true;
+  enableParallelChecking = false;
 
   passthru = {
     tests = {
@@ -184,22 +183,27 @@ stdenv.mkDerivation (finalAttrs: {
       # music app relies on thumbnailer to extract embedded cover art
       music-app = nixosTests.lomiri-music-app;
     };
+
     updateScript = gitUpdater { };
   };
 
   meta = {
     description = "D-Bus service for out of process thumbnailing";
-    mainProgram = "lomiri-thumbnailer-admin";
     homepage = "https://gitlab.com/ubports/development/core/lomiri-thumbnailer";
     changelog = "https://gitlab.com/ubports/development/core/lomiri-thumbnailer/-/blob/${finalAttrs.version}/ChangeLog";
+
     license = with lib.licenses; [
       gpl3Only
       lgpl3Only
     ];
-    teams = [ lib.teams.lomiri ];
+
     platforms = lib.platforms.linux;
+    mainProgram = "lomiri-thumbnailer-admin";
+
     pkgConfigModules = [
       "liblomiri-thumbnailer-qt${lib.optionalString withQt6 "6"}"
     ];
+
+    teams = [ lib.teams.lomiri ];
   };
 })

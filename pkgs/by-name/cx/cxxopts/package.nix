@@ -2,8 +2,8 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  fetchpatch2,
   cmake,
+  fetchpatch2,
   icu,
   pkg-config,
   testers,
@@ -22,12 +22,20 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-baM6EX9D0yfrKxuPXyUUV9RqdrVLyygeG6x57xN8lc4=";
   };
 
-  propagatedBuildInputs = lib.optionals enableUnicodeHelp [ icu.dev ];
-  cmakeFlags = [
-    "-DCXXOPTS_BUILD_EXAMPLES=OFF"
-    "-DCXXOPTS_CXX_STANDARD=17"
-  ]
-  ++ lib.optional enableUnicodeHelp "-DCXXOPTS_USE_UNICODE_HELP=TRUE";
+  patches = [
+    (fetchpatch2 {
+      hash = "sha256-bqd3H66Op1/EkN2HLd84Obky4Y2ndPPY8MGZ5fqtdk4=";
+      name = "fix-icu-uc-typo-in-pkgconfig.patch";
+      url = "https://github.com/jarro2783/cxxopts/commit/e98c73d665915b292a0592bf34fcbe8522035bc1.patch?full_index=1";
+    })
+  ];
+
+  # https://github.com/jarro2783/cxxopts/issues/332
+  postPatch = ''
+    substituteInPlace packaging/pkgconfig.pc.in \
+      --replace-fail '$'{prefix}/@CMAKE_INSTALL_INCLUDEDIR@ @CMAKE_INSTALL_FULL_INCLUDEDIR@
+  '';
+
   nativeBuildInputs = [
     cmake
   ]
@@ -36,24 +44,17 @@ stdenv.mkDerivation (finalAttrs: {
     validatePkgConfig
   ];
 
-  doCheck = true;
+  propagatedBuildInputs = lib.optionals enableUnicodeHelp [ icu.dev ];
 
+  cmakeFlags = [
+    "-DCXXOPTS_BUILD_EXAMPLES=OFF"
+    "-DCXXOPTS_CXX_STANDARD=17"
+  ]
+  ++ lib.optional enableUnicodeHelp "-DCXXOPTS_USE_UNICODE_HELP=TRUE";
+
+  doCheck = true;
   # Conflict on case-insensitive filesystems.
   dontUseCmakeBuildDir = true;
-
-  # https://github.com/jarro2783/cxxopts/issues/332
-  postPatch = ''
-    substituteInPlace packaging/pkgconfig.pc.in \
-      --replace-fail '$'{prefix}/@CMAKE_INSTALL_INCLUDEDIR@ @CMAKE_INSTALL_FULL_INCLUDEDIR@
-  '';
-
-  patches = [
-    (fetchpatch2 {
-      url = "https://github.com/jarro2783/cxxopts/commit/e98c73d665915b292a0592bf34fcbe8522035bc1.patch?full_index=1";
-      name = "fix-icu-uc-typo-in-pkgconfig.patch";
-      hash = "sha256-bqd3H66Op1/EkN2HLd84Obky4Y2ndPPY8MGZ5fqtdk4=";
-    })
-  ];
 
   passthru = {
     tests.pkg-config = testers.hasPkgConfigModules {
@@ -63,11 +64,11 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   meta = {
-    homepage = "https://github.com/jarro2783/cxxopts";
     description = "Lightweight C++ GNU-style option parser library";
+    homepage = "https://github.com/jarro2783/cxxopts";
     license = lib.licenses.mit;
     maintainers = [ lib.maintainers.spease ];
-    pkgConfigModules = [ "cxxopts" ];
     platforms = lib.platforms.all;
+    pkgConfigModules = [ "cxxopts" ];
   };
 })

@@ -17,9 +17,11 @@ let
       // {
         dir = "bin";
         isExecutable = true;
+
         nativeBuildInputs = [
           pkgs.installShellFiles
         ];
+
         postInstall = ''
           installManPage ${args.manPage}
         '';
@@ -27,36 +29,44 @@ let
     );
 
   nixos-generate-config = makeProg {
+    manPage = ./manpages/nixos-generate-config.8;
     name = "nixos-generate-config";
-    src = ./nixos-generate-config.pl;
+
     replacements = {
+      inherit (config.system.nixos-generate-config) configuration desktopConfiguration flake;
+
+      bcachefs =
+        if pkgs.bcachefs-tools.meta.broken then
+          lib.getExe' pkgs.coreutils "false"
+        else
+          lib.getExe pkgs.bcachefs-tools;
+
+      btrfs = lib.getExe pkgs.btrfs-progs;
+      detectvirt = lib.getExe' config.systemd.package "systemd-detect-virt";
+      hostPlatformSystem = pkgs.stdenv.hostPlatform.system;
+
       perl = lib.getExe (
         pkgs.perl.withPackages (p: [
           p.FileSlurp
           p.ConfigIniFiles
         ])
       );
-      hostPlatformSystem = pkgs.stdenv.hostPlatform.system;
-      detectvirt = lib.getExe' config.systemd.package "systemd-detect-virt";
-      bcachefs =
-        if pkgs.bcachefs-tools.meta.broken then
-          lib.getExe' pkgs.coreutils "false"
-        else
-          lib.getExe pkgs.bcachefs-tools;
-      btrfs = lib.getExe pkgs.btrfs-progs;
-      inherit (config.system.nixos-generate-config) configuration desktopConfiguration flake;
+
       xserverEnabled = config.services.xserver.enable;
     };
-    manPage = ./manpages/nixos-generate-config.8;
+
+    src = ./nixos-generate-config.pl;
   };
 
   nixos-version = makeProg {
+    manPage = ./manpages/nixos-version.8;
     name = "nixos-version";
-    src = ./nixos-version.sh;
+
     replacements = {
       inherit (pkgs) runtimeShell;
       inherit (config.system.nixos) version codeName revision;
       inherit (config.system) configurationRevision;
+
       json = builtins.toJSON (
         {
           nixosVersion = config.system.nixos.version;
@@ -69,7 +79,8 @@ let
         }
       );
     };
-    manPage = ./manpages/nixos-version.8;
+
+    src = ./nixos-version.sh;
   };
 
   nixos-install = pkgs.nixos-install.override { };
@@ -215,72 +226,6 @@ let
   '';
 in
 {
-  options.system.nixos-generate-config = {
-
-    flake = lib.mkOption {
-      internal = true;
-      type = lib.types.str;
-      default = defaultFlakeTemplate;
-      description = ''
-        The NixOS module that `nixos-generate-config`
-        saves to `/etc/nixos/flake.nix` if --flake is set.
-
-        This is an internal option. No backward compatibility is guaranteed.
-        Use at your own risk!
-
-        Note that this string gets spliced into a Perl script. The perl
-        variable `$bootLoaderConfig` can be used to
-        splice in the boot loader configuration.
-      '';
-    };
-
-    configuration = lib.mkOption {
-      internal = true;
-      type = lib.types.str;
-      default = defaultConfigTemplate;
-      description = ''
-        The NixOS module that `nixos-generate-config`
-        saves to `/etc/nixos/configuration.nix`.
-
-        This is an internal option. No backward compatibility is guaranteed.
-        Use at your own risk!
-
-        Note that this string gets spliced into a Perl script. The perl
-        variable `$bootLoaderConfig` can be used to
-        splice in the boot loader configuration.
-      '';
-    };
-
-    desktopConfiguration = lib.mkOption {
-      internal = true;
-      type = lib.types.listOf lib.types.lines;
-      default = [ ];
-      description = ''
-        Text to preseed the desktop configuration that `nixos-generate-config`
-        saves to `/etc/nixos/configuration.nix`.
-
-        This is an internal option. No backward compatibility is guaranteed.
-        Use at your own risk!
-
-        Note that this string gets spliced into a Perl script. The perl
-        variable `$bootLoaderConfig` can be used to
-        splice in the boot loader configuration.
-      '';
-    };
-  };
-
-  options.system.disableInstallerTools = lib.mkOption {
-    internal = true;
-    type = lib.types.bool;
-    default = false;
-    description = ''
-      Disable nixos-rebuild, nixos-generate-config, nixos-installer
-      and other NixOS tools. This is useful to shrink embedded,
-      read-only systems which are not expected to rebuild or
-      reconfigure themselves. Use at your own risk!
-    '';
-  };
-
   imports =
     let
       mkToolModule =
@@ -304,20 +249,20 @@ in
       (mkToolModule { name = "nixos-build-vms"; })
       (mkToolModule { name = "nixos-enter"; })
       (mkToolModule {
-        name = "nixos-generate-config";
         package = config.system.build.nixos-generate-config;
+        name = "nixos-generate-config";
       })
       (mkToolModule {
-        name = "nixos-install";
         package = config.system.build.nixos-install;
+        name = "nixos-install";
       })
       (mkToolModule {
-        name = "nixos-option";
         package = pkgs.nixos-option.override { nix = config.nix.package; };
+        name = "nixos-option";
       })
       (mkToolModule {
-        name = "nixos-rebuild";
         package = config.system.build.nixos-rebuild;
+        name = "nixos-rebuild";
       })
       (
         { config, ... }:
@@ -335,20 +280,94 @@ in
           '';
 
           config = lib.mkIf config.system.tools.nixos-rebuild.enableRun0Elevation {
-            security.run0.enable = lib.mkDefault true;
             environment.systemPackages = [ pkgs.polkit-stdin-agent ];
+            security.run0.enable = lib.mkDefault true;
           };
         }
       )
       (mkToolModule {
-        name = "nixos-version";
         package = nixos-version;
+        name = "nixos-version";
       })
       (lib.mkRemovedOptionModule [ "system" "rebuild" "enableNg" ] ''
         The Bash implementation of nixos-rebuild has been removed in favor of the new Python implementation.
         If you have any issues with the new implementation, please create an issue in GitHub and tag the maintainers of 'nixos-rebuild-ng'.
       '')
     ];
+
+  options.system.disableInstallerTools = lib.mkOption {
+    default = false;
+
+    description = ''
+      Disable nixos-rebuild, nixos-generate-config, nixos-installer
+      and other NixOS tools. This is useful to shrink embedded,
+      read-only systems which are not expected to rebuild or
+      reconfigure themselves. Use at your own risk!
+    '';
+
+    internal = true;
+    type = lib.types.bool;
+  };
+
+  options.system.nixos-generate-config = {
+
+    configuration = lib.mkOption {
+      default = defaultConfigTemplate;
+
+      description = ''
+        The NixOS module that `nixos-generate-config`
+        saves to `/etc/nixos/configuration.nix`.
+
+        This is an internal option. No backward compatibility is guaranteed.
+        Use at your own risk!
+
+        Note that this string gets spliced into a Perl script. The perl
+        variable `$bootLoaderConfig` can be used to
+        splice in the boot loader configuration.
+      '';
+
+      internal = true;
+      type = lib.types.str;
+    };
+
+    desktopConfiguration = lib.mkOption {
+      default = [ ];
+
+      description = ''
+        Text to preseed the desktop configuration that `nixos-generate-config`
+        saves to `/etc/nixos/configuration.nix`.
+
+        This is an internal option. No backward compatibility is guaranteed.
+        Use at your own risk!
+
+        Note that this string gets spliced into a Perl script. The perl
+        variable `$bootLoaderConfig` can be used to
+        splice in the boot loader configuration.
+      '';
+
+      internal = true;
+      type = lib.types.listOf lib.types.lines;
+    };
+
+    flake = lib.mkOption {
+      default = defaultFlakeTemplate;
+
+      description = ''
+        The NixOS module that `nixos-generate-config`
+        saves to `/etc/nixos/flake.nix` if --flake is set.
+
+        This is an internal option. No backward compatibility is guaranteed.
+        Use at your own risk!
+
+        Note that this string gets spliced into a Perl script. The perl
+        variable `$bootLoaderConfig` can be used to
+        splice in the boot loader configuration.
+      '';
+
+      internal = true;
+      type = lib.types.str;
+    };
+  };
 
   config = {
     documentation.man.man-db.skipPackages = [ nixos-version ];

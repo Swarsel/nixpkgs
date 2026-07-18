@@ -1,8 +1,8 @@
 {
   lib,
-  stdenvNoCC,
   fetchurl,
   nix-update-script,
+  stdenvNoCC,
   unzip,
 }:
 
@@ -15,8 +15,6 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     hash = "sha256-tYFyBG2G2Am+1HdS+pyOKr9MoAEpaYmITad04CyWL3Y=";
   };
 
-  sourceRoot = ".";
-
   nativeBuildInputs = [ unzip ];
 
   installPhase = ''
@@ -28,6 +26,7 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  sourceRoot = ".";
   passthru.updateScript = nix-update-script { };
 
   meta = {
@@ -35,10 +34,11 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     homepage = "https://subler.org/";
     changelog = "https://github.com/SublerApp/Subler/releases/tag/${finalAttrs.version}";
     license = lib.licenses.gpl2Only;
+    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
     maintainers = with lib.maintainers; [ delafthi ];
+
     platforms = [
       "aarch64-darwin"
     ];
-    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
   };
 })

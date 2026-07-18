@@ -1,16 +1,15 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  python-memcached,
+  buildPythonPackage,
   pytestCheckHook,
+  python-memcached,
   setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "cymruwhois";
   version = "1.6";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "JustinAzoff";
@@ -19,25 +18,25 @@ buildPythonPackage rec {
     hash = "sha256-d9m668JYI9mxUycoVWyaDCR7SOca+ebymZxWtgSPWNU=";
   };
 
+  nativeCheckInputs = [ pytestCheckHook ];
   build-system = [ setuptools ];
 
-  optional-dependencies = {
-    CACHE = [ python-memcached ];
-  };
-
-  nativeCheckInputs = [ pytestCheckHook ];
-
-  pythonImportsCheck = [ "cymruwhois" ];
+  disabledTestPaths = [
+    # £Failed: 'yield' keyword is allowed in fixtures, but not in tests (test_common)
+    "tests/test_common_lookups.py"
+  ];
 
   disabledTests = [
     # AssertionError
     "test_doctest"
   ];
 
-  disabledTestPaths = [
-    # £Failed: 'yield' keyword is allowed in fixtures, but not in tests (test_common)
-    "tests/test_common_lookups.py"
-  ];
+  optional-dependencies = {
+    CACHE = [ python-memcached ];
+  };
+
+  pyproject = true;
+  pythonImportsCheck = [ "cymruwhois" ];
 
   meta = {
     description = "Python client for the whois.cymru.com service";

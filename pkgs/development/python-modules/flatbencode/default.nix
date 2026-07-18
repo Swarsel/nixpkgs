@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   hypothesis,
   pytestCheckHook,
   setuptools,
@@ -10,7 +10,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "flatbencode";
   version = "0.2.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "acatton";
@@ -19,15 +18,16 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-1/4w41E8IKygJTBcQOexiDytV6BvVBwIjajKz2uCfu8=";
   };
 
-  build-system = [
-    setuptools
-  ];
-
   nativeCheckInputs = [
     hypothesis
     pytestCheckHook
   ];
 
+  build-system = [
+    setuptools
+  ];
+
+  pyproject = true;
   pythonImportsCheck = [ "flatbencode" ];
 
   meta = {

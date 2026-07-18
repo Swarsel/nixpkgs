@@ -1,16 +1,16 @@
 {
-  fetchFromGitHub,
   lib,
+  fetchFromGitHub,
+  bash,
   buildGoModule,
-  makeWrapper,
   coreutils,
   git,
-  openssh,
-  bash,
-  gnused,
-  gnugrep,
   gitUpdater,
+  gnugrep,
+  gnused,
+  makeWrapper,
   nixosTests,
+  openssh,
 }:
 buildGoModule (finalAttrs: {
   pname = "buildkite-agent";
@@ -23,22 +23,13 @@ buildGoModule (finalAttrs: {
     hash = "sha256-k1q/7KRaIv5SE7CYFAzV8JB+czmX/bvwBp8JY9t77tI=";
   };
 
-  vendorHash = "sha256-lRh5cAbg2yr+nvIaSRg3tG0tLvl7aDjyIoIjS1BvXNM=";
-
   postPatch = ''
     substituteInPlace clicommand/agent_start.go --replace /bin/bash ${bash}/bin/bash
   '';
 
   nativeBuildInputs = [ makeWrapper ];
-
+  vendorHash = "sha256-lRh5cAbg2yr+nvIaSRg3tG0tLvl7aDjyIoIjS1BvXNM=";
   doCheck = false;
-
-  # buildkite-agent expects the `buildVersion` variable to be set to something
-  # other than its sentinel, otherwise the agent will not work correctly as of
-  # https://github.com/buildkite/agent/pull/3123
-  ldflags = [
-    "-X github.com/buildkite/agent/v3/version.buildNumber=nix"
-  ];
 
   postInstall = ''
     # Fix binary name
@@ -57,12 +48,20 @@ buildGoModule (finalAttrs: {
       }'
   '';
 
+  # buildkite-agent expects the `buildVersion` variable to be set to something
+  # other than its sentinel, otherwise the agent will not work correctly as of
+  # https://github.com/buildkite/agent/pull/3123
+  ldflags = [
+    "-X github.com/buildkite/agent/v3/version.buildNumber=nix"
+  ];
+
   passthru = {
     tests.smoke-test = nixosTests.buildkite-agents;
   };
 
   meta = {
     description = "Build runner for buildkite.com";
+
     longDescription = ''
       The buildkite-agent is a small, reliable, and cross-platform build runner
       that makes it easy to run automated builds on your own infrastructure.
@@ -70,8 +69,10 @@ buildGoModule (finalAttrs: {
       build jobs, reporting back the status code and output log of the job,
       and uploading the job's artifacts.
     '';
+
     homepage = "https://buildkite.com/docs/agent";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       pawelpacana
       zimbatm
@@ -79,6 +80,7 @@ buildGoModule (finalAttrs: {
       techknowlogick
       cbrxyz
     ];
+
     platforms = with lib.platforms; unix ++ darwin;
   };
 })

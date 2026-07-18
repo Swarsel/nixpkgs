@@ -1,7 +1,7 @@
 {
   lib,
-  rustPlatform,
   fetchCrate,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -14,17 +14,18 @@ rustPlatform.buildRustPackage (finalAttrs: {
   };
 
   cargoHash = "sha256-HtgJsvl+BkvTapGxi7B/0QMEUolOw4gGndj4/9w7Z4Y=";
-
   cargoBuildFlags = [ "--features=cli" ];
 
   meta = {
     description = "Represent numbers in French language";
     homepage = "https://github.com/evenfurther/french-numbers";
+
     license = with lib.licenses; [
       asl20 # or
       mit
     ];
-    mainProgram = "french-numbers";
+
     maintainers = with lib.maintainers; [ samueltardieu ];
+    mainProgram = "french-numbers";
   };
 })

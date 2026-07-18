@@ -1,12 +1,12 @@
 {
+  lib,
   stdenv,
   fetchFromGitHub,
-  lib,
   nettle,
   nix-update-script,
-  rustPlatform,
   pkg-config,
   runCommand,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage rec {
@@ -20,7 +20,10 @@ rustPlatform.buildRustPackage rec {
     hash = "sha256-/PdbCBpEWig+acLvrN5nhJ6ca+tAh2bpqDLTRJoFuWU=";
   };
 
-  cargoHash = "sha256-Qi46nlgX/k2rRAvCToXkfZpjt7ERu25/4WUIIQUOC/I=";
+  outputs = [
+    "out"
+    "dev"
+  ];
 
   patches = [
     ./objdump.patch
@@ -32,19 +35,13 @@ rustPlatform.buildRustPackage rec {
   ];
 
   propagatedBuildInputs = [ nettle ];
-
+  cargoHash = "sha256-Qi46nlgX/k2rRAvCToXkfZpjt7ERu25/4WUIIQUOC/I=";
+  # Ensure the generated .pc file gets the correct prefix
+  env.PREFIX = placeholder "out";
   # Tests will parse the symbols, on darwin we have two issues:
   # - library name is hardcoded to librpm_sequoia.so
   # - The output of the objdump differs and the parsing logic needs to be adapted
   doCheck = !stdenv.hostPlatform.isDarwin;
-
-  outputs = [
-    "out"
-    "dev"
-  ];
-
-  # Ensure the generated .pc file gets the correct prefix
-  env.PREFIX = placeholder "out";
 
   # Install extra files, the same as this is done on fedora:
   # https://src.fedoraproject.org/rpms/rust-rpm-sequoia/blob/f41/f/rust-rpm-sequoia.spec#_81

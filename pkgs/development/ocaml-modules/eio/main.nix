@@ -3,12 +3,11 @@
   stdenv,
   buildDunePackage,
   eio,
-  eio_posix,
   eio_linux,
+  eio_posix,
 }:
 
 buildDunePackage {
-  pname = "eio_main";
   inherit (eio)
     meta
     src
@@ -16,9 +15,7 @@ buildDunePackage {
     version
     ;
 
-  minimalOCamlVersion = "5.0";
-
-  dontStrip = true;
+  pname = "eio_main";
 
   propagatedBuildInputs = [
     eio_posix
@@ -26,4 +23,7 @@ buildDunePackage {
   ++ lib.optionals stdenv.hostPlatform.isLinux [
     eio_linux
   ];
+
+  dontStrip = true;
+  minimalOCamlVersion = "5.0";
 }

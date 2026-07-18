@@ -1,10 +1,10 @@
 {
   lib,
+  fetchFromGitHub,
   boto3,
   botocore,
   buildPythonPackage,
   dateparser,
-  fetchFromGitHub,
   matplotlib,
   numpy,
   pandas,
@@ -17,7 +17,6 @@
 buildPythonPackage {
   pname = "prometrix";
   version = "0.1.18-unstable-2024-04-30";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "robusta-dev";
@@ -27,11 +26,9 @@ buildPythonPackage {
     hash = "sha256-g8ZqgL9ETVwpKLMQS7s7A4GpSGfaFEDLOr8JBvFl2C4=";
   };
 
-  pythonRelaxDeps = [
-    "pydantic"
-    "urllib3"
-  ];
-
+  # Fixture is missing
+  # https://github.com/robusta-dev/prometrix/issues/9
+  doCheck = false;
   build-system = [ poetry-core ];
 
   dependencies = [
@@ -46,18 +43,22 @@ buildPythonPackage {
     requests
   ];
 
-  # Fixture is missing
-  # https://github.com/robusta-dev/prometrix/issues/9
-  doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "prometrix" ];
+
+  pythonRelaxDeps = [
+    "pydantic"
+    "urllib3"
+  ];
 
   meta = {
     description = "Unified Prometheus client";
+
     longDescription = ''
       This Python package provides a unified Prometheus client that can be used
       to connect to and query various types of Prometheus instances.
     '';
+
     homepage = "https://github.com/robusta-dev/prometrix";
     license = lib.licenses.mit;
     maintainers = [ ];

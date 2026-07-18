@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   poetry-core,
   requests,
 }:
@@ -9,7 +9,6 @@
 buildPythonPackage rec {
   pname = "yalesmartalarmclient";
   version = "0.4.3";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "domwillcode";
@@ -18,13 +17,11 @@ buildPythonPackage rec {
     hash = "sha256-a0rzPEixJXLBfN+kJRPYiJiHY1BKxg/mM14RO3RiVdA=";
   };
 
-  build-system = [ poetry-core ];
-
-  dependencies = [ requests ];
-
   # Project has no tests
   doCheck = false;
-
+  build-system = [ poetry-core ];
+  dependencies = [ requests ];
+  pyproject = true;
   pythonImportsCheck = [ "yalesmartalarmclient" ];
 
   meta = {

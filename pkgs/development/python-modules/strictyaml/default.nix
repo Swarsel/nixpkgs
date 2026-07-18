@@ -2,14 +2,13 @@
   lib,
   buildPythonPackage,
   fetchPypi,
-  ruamel-yaml,
   python-dateutil,
+  ruamel-yaml,
 }:
 
 buildPythonPackage rec {
   pname = "strictyaml";
   version = "1.7.3";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
@@ -29,7 +28,7 @@ buildPythonPackage rec {
   # Library tested with external tool
   # https://hitchdev.com/approach/contributing-to-hitch-libraries/
   doCheck = false;
-
+  format = "setuptools";
   pythonImportsCheck = [ "strictyaml" ];
 
   meta = {

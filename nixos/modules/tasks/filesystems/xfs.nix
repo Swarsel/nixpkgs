@@ -16,13 +16,6 @@ in
 {
   config = mkIf (config.boot.supportedFilesystems.xfs or false) {
 
-    system.fsPackages = [ pkgs.xfsprogs.bin ];
-
-    systemd = {
-      packages = [ pkgs.xfsprogs.out ];
-      services.xfs_scrub_all.path = [ pkgs.util-linux.bin ]; # lsblk
-    };
-
     boot.initrd.availableKernelModules = mkIf inInitrd [
       "xfs"
       "crc32c"
@@ -39,5 +32,11 @@ in
     '';
 
     boot.initrd.systemd.initrdBin = mkIf inInitrd [ pkgs.xfsprogs.bin ];
+    system.fsPackages = [ pkgs.xfsprogs.bin ];
+
+    systemd = {
+      packages = [ pkgs.xfsprogs.out ];
+      services.xfs_scrub_all.path = [ pkgs.util-linux.bin ]; # lsblk
+    };
   };
 }

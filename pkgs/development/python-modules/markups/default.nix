@@ -1,8 +1,8 @@
 {
   lib,
+  fetchFromGitHub,
   buildPythonPackage,
   docutils,
-  fetchFromGitHub,
   markdown,
   pygments,
   pytestCheckHook,
@@ -15,7 +15,6 @@
 buildPythonPackage rec {
   pname = "markups";
   version = "4.1.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "retext-project";
@@ -24,6 +23,7 @@ buildPythonPackage rec {
     hash = "sha256-kQ1L8l/ONT4qOA/xfx85WyA7pDveaKoXWGZbljYxO/4=";
   };
 
+  nativeCheckInputs = [ pytestCheckHook ];
   build-system = [ setuptools ];
 
   dependencies = [
@@ -35,13 +35,12 @@ buildPythonPackage rec {
     textile
   ];
 
-  nativeCheckInputs = [ pytestCheckHook ];
-
   disabledTests = [
     # AssertionError: '.selector .ch { color: #408080' not found in 'pre...
     "test_get_pygments_stylesheet"
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "markups" ];
 
   meta = {

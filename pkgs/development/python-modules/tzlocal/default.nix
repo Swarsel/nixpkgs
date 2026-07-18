@@ -3,16 +3,14 @@
   stdenv,
   buildPythonPackage,
   fetchPypi,
-  setuptools,
   pytest-mock,
   pytestCheckHook,
+  setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "tzlocal";
   version = "5.3.1"; # version needs to be compatible with APScheduler
-
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
@@ -33,6 +31,7 @@ buildPythonPackage rec {
   ]
   ++ lib.optional stdenv.hostPlatform.isDarwin "test_assert_tz_offset";
 
+  pyproject = true;
   pythonImportsCheck = [ "tzlocal" ];
 
   meta = {

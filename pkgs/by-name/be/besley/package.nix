@@ -1,17 +1,12 @@
 {
   lib,
-  stdenvNoCC,
   fetchFromGitHub,
   installFonts,
+  stdenvNoCC,
 }:
 stdenvNoCC.mkDerivation {
   pname = "besley";
   version = "4.0-unstable-2023-01-09";
-
-  outputs = [
-    "out"
-    "webfont"
-  ];
 
   src = fetchFromGitHub {
     owner = "indestructible-type";
@@ -20,13 +15,18 @@ stdenvNoCC.mkDerivation {
     hash = "sha256-N6QU3Pd6EnIrdbRtDT3mW5ny683DBWo0odADJBSdA2E=";
   };
 
+  outputs = [
+    "out"
+    "webfont"
+  ];
+
   nativeBuildInputs = [ installFonts ];
 
   meta = {
-    homepage = "https://indestructibletype.com/Besley.html";
     description = "Besley an antique slab serif font by indestructible type*";
+    homepage = "https://indestructibletype.com/Besley.html";
     license = lib.licenses.ofl;
-    platforms = lib.platforms.all;
     maintainers = with lib.maintainers; [ gavink97 ];
+    platforms = lib.platforms.all;
   };
 }

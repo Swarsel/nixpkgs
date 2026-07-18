@@ -2,12 +2,12 @@
   lib,
   stdenv,
   fetchFromGitHub,
+  assimp,
+  boost,
   cmake,
   doxygen,
-  boost,
   eigen,
   jrl-cmakemodules,
-  assimp,
   octomap,
   pkg-config,
   qhull,
@@ -24,6 +24,12 @@ stdenv.mkDerivation (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-lCTybqJPP7CuqdACjzuiR/kufu6fJxKhpa71/Z3oWXA=";
   };
+
+  outputs = [
+    "dev"
+    "out"
+    "doc"
+  ];
 
   strictDeps = true;
 
@@ -52,11 +58,6 @@ stdenv.mkDerivation (finalAttrs: {
 
   doCheck = true;
 
-  outputs = [
-    "dev"
-    "out"
-    "doc"
-  ];
   postFixup = ''
     moveToOutput share/ament_index "$dev"
     moveToOutput share/coal "$dev"

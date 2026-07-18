@@ -2,19 +2,19 @@
   lib,
   stdenv,
   fetchFromGitHub,
+  ffmpeg,
+  flac,
+  gst_all_1,
+  lame,
+  libsForQt5,
+  nodejs,
+  opus-tools,
+  pulseaudio,
   python3Packages,
   sox,
-  flac,
-  lame,
-  ffmpeg,
   vorbis-tools,
-  pulseaudio,
-  nodejs,
   yt-dlp,
-  opus-tools,
-  gst_all_1,
   enableSonos ? true,
-  libsForQt5,
 }:
 let
   packages = [
@@ -34,7 +34,6 @@ in
 python3Packages.buildPythonApplication {
   pname = "mkchromecast-unstable";
   version = "2025-12-21";
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "muammar";
@@ -43,7 +42,15 @@ python3Packages.buildPythonApplication {
     hash = "sha256-UMzOIxgeTpAFQZtYirOYPoVcKgiKdGx2zwVyWmo32w4=";
   };
 
+  postPatch = ''
+    substituteInPlace setup.py \
+      --replace 'platform.system() == "Darwin"' 'False' \
+      --replace 'platform.system() == "Linux"' 'True'
+  '';
+
+  nativeBuildInputs = [ libsForQt5.wrapQtAppsHook ];
   buildInputs = lib.optional stdenv.hostPlatform.isLinux libsForQt5.qtwayland;
+
   propagatedBuildInputs =
     with python3Packages;
     (
@@ -59,24 +66,9 @@ python3Packages.buildPythonApplication {
       ++ lib.optionals enableSonos [ soco ]
     );
 
-  postPatch = ''
-    substituteInPlace setup.py \
-      --replace 'platform.system() == "Darwin"' 'False' \
-      --replace 'platform.system() == "Linux"' 'True'
-  '';
-
-  nativeBuildInputs = [ libsForQt5.wrapQtAppsHook ];
-
   # Relies on an old version (0.7.7) of PyChromecast unavailable in Nixpkgs.
   # Is also I/O bound and impure, testing an actual device, so we disable.
   doCheck = false;
-
-  dontWrapQtApps = true;
-
-  makeWrapperArgs = [
-    "\${qtWrapperArgs[@]}"
-    "--prefix PATH : ${lib.makeBinPath packages}"
-  ];
 
   postInstall = ''
     substituteInPlace $out/${python3Packages.python.sitePackages}/mkchromecast/video.py \
@@ -88,9 +80,17 @@ python3Packages.buildPythonApplication {
       --replace './bin/audiodevice' '${placeholder "out"}/bin/audiodevice'
   '';
 
+  dontWrapQtApps = true;
+  format = "setuptools";
+
+  makeWrapperArgs = [
+    "\${qtWrapperArgs[@]}"
+    "--prefix PATH : ${lib.makeBinPath packages}"
+  ];
+
   meta = {
-    homepage = "https://mkchromecast.com/";
     description = "Cast macOS and Linux Audio/Video to your Google Cast and Sonos Devices";
+    homepage = "https://mkchromecast.com/";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ shou ];
     mainProgram = "mkchromecast";

@@ -3,8 +3,8 @@
   stdenv,
   fetchurl,
   fetchpatch,
-  libtool,
   libtommath,
+  libtool,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -19,13 +19,9 @@ stdenv.mkDerivation (finalAttrs: {
   patches = [
     (fetchpatch {
       name = "CVE-2019-17362.patch";
-      url = "https://github.com/libtom/libtomcrypt/pull/508/commits/25c26a3b7a9ad8192ccc923e15cf62bf0108ef94.patch";
       sha256 = "1bwsj0pwffxw648wd713z3xcyrbxc2z646psrzp38ys564fjh5zf";
+      url = "https://github.com/libtom/libtomcrypt/pull/508/commits/25c26a3b7a9ad8192ccc923e15cf62bf0108ef94.patch";
     })
-  ];
-
-  buildInputs = [
-    libtommath
   ];
 
   postPatch = ''
@@ -33,6 +29,10 @@ stdenv.mkDerivation (finalAttrs: {
       --replace-fail "LIBTOOL:=glibtool" "LIBTOOL:=libtool" \
       --replace-fail libtool "${lib.getExe libtool}"
   '';
+
+  buildInputs = [
+    libtommath
+  ];
 
   preBuild = ''
     makeFlagsArray+=(PREFIX=$out \
@@ -42,18 +42,19 @@ stdenv.mkDerivation (finalAttrs: {
       INSTALL_USER=$(id -u))
   '';
 
-  makefile = "makefile.shared";
-
   enableParallelBuilding = true;
+  makefile = "makefile.shared";
 
   meta = {
     description = "Fairly comprehensive, modular and portable cryptographic toolkit";
     homepage = "https://www.libtom.net/LibTomCrypt/";
     changelog = "https://github.com/libtom/libtomcrypt/raw/v${finalAttrs.version}/changes";
+
     license = with lib.licenses; [
       publicDomain
       wtfpl
     ];
+
     maintainers = [ ];
     platforms = lib.platforms.all;
   };

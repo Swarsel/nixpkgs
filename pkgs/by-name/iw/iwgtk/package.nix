@@ -2,13 +2,13 @@
   lib,
   stdenv,
   fetchFromGitHub,
+  gtk4,
   meson,
   ninja,
   pkg-config,
+  qrencode,
   scdoc,
   wrapGAppsHook4,
-  gtk4,
-  qrencode,
 }:
 
 stdenv.mkDerivation (finalAttrs: {

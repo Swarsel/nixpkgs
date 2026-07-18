@@ -1,8 +1,8 @@
 {
-  php,
-  fetchFromGitHub,
   lib,
+  fetchFromGitHub,
   nixosTests,
+  php,
 }:
 
 php.buildComposerProject2 (finalAttrs: {
@@ -16,9 +16,24 @@ php.buildComposerProject2 (finalAttrs: {
     hash = "sha256-T/eHJeEosRRWPSxvDpBkeGEx8zwqFz/v2CflhjLqpO4=";
   };
 
+  vendorHash = "sha256-rwCLPLJwVaykWimmuZ7wM2KLZqDE1YIhMbD7q86w0OE=";
+
+  postInstall = ''
+    # Make available the console utility, as Kimai doesn't list this in
+    # composer.json.
+    mkdir -p "$out"/share/php/kimai "$out"/bin
+    ln -s "$out"/share/php/kimai/bin/console "$out"/bin/console
+
+    # Install bundled assets. This is normally done in the `composer install`
+    # post-install script, but it's being skipped.
+    (cd "$out"/share/php/kimai && php ./bin/console assets:install)
+  '';
+
+  composerNoPlugins = false;
+
   php = php.buildEnv {
     extensions = (
-      { enabled, all }:
+      { all, enabled }:
       enabled
       ++ (with all; [
         gd
@@ -38,33 +53,21 @@ php.buildComposerProject2 (finalAttrs: {
     '';
   };
 
-  vendorHash = "sha256-rwCLPLJwVaykWimmuZ7wM2KLZqDE1YIhMbD7q86w0OE=";
-
-  composerNoPlugins = false;
-  postInstall = ''
-    # Make available the console utility, as Kimai doesn't list this in
-    # composer.json.
-    mkdir -p "$out"/share/php/kimai "$out"/bin
-    ln -s "$out"/share/php/kimai/bin/console "$out"/bin/console
-
-    # Install bundled assets. This is normally done in the `composer install`
-    # post-install script, but it's being skipped.
-    (cd "$out"/share/php/kimai && php ./bin/console assets:install)
-  '';
-
   passthru.tests = {
     kimai = nixosTests.kimai;
   };
 
   meta = {
     description = "Web-based multi-user time-tracking application";
-    homepage = "https://www.kimai.org/";
-    license = lib.licenses.agpl3Plus;
+
     longDescription = "
       Kimai is a web-based multi-user time-tracking application. Works great for
       everyone: freelancers, companies, organizations - everyone can track their
       times, generate reports, create invoices and do so much more.
     ";
+
+    homepage = "https://www.kimai.org/";
+    license = lib.licenses.agpl3Plus;
     maintainers = with lib.maintainers; [ peat-psuwit ];
     platforms = lib.platforms.all;
   };

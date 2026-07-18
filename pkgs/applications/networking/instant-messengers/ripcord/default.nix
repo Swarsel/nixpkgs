@@ -2,26 +2,26 @@
   lib,
   stdenv,
   fetchurl,
-  makeFontsConf,
+  alsa-lib,
   appimageTools,
-  qtbase,
-  qtsvg,
-  qtmultimedia,
-  qtwebsockets,
-  qtimageformats,
-  wrapQtAppsHook,
   autoPatchelfHook,
   desktop-file-utils,
   imagemagick,
-  twemoji-color-font,
-  xkeyboard-config,
-  libxscrnsaver,
-  libxcursor,
-  libx11,
-  libsodium,
-  libopus,
   libGL,
-  alsa-lib,
+  libopus,
+  libsodium,
+  libx11,
+  libxcursor,
+  libxscrnsaver,
+  makeFontsConf,
+  qtbase,
+  qtimageformats,
+  qtmultimedia,
+  qtsvg,
+  qtwebsockets,
+  twemoji-color-font,
+  wrapQtAppsHook,
+  xkeyboard-config,
 }:
 
 stdenv.mkDerivation rec {
@@ -31,9 +31,9 @@ stdenv.mkDerivation rec {
   src =
     let
       appimage = fetchurl {
-        url = "https://cancel.fm/dl/Ripcord-${version}-x86_64.AppImage";
-        sha256 = "sha256-4yDLPEBDsPKWtLwdpmSyl3b5XCwLAr2/EVtNRrFmmJk=";
         name = "${pname}-${version}.AppImage";
+        sha256 = "sha256-4yDLPEBDsPKWtLwdpmSyl3b5XCwLAr2/EVtNRrFmmJk=";
+        url = "https://cancel.fm/dl/Ripcord-${version}-x86_64.AppImage";
       };
     in
     appimageTools.extract {
@@ -47,6 +47,7 @@ stdenv.mkDerivation rec {
     imagemagick
     wrapQtAppsHook
   ];
+
   buildInputs = [
     libsodium
     libopus
@@ -62,10 +63,6 @@ stdenv.mkDerivation rec {
     libxcursor
     xkeyboard-config
   ];
-
-  fontsConf = makeFontsConf {
-    fontDirectories = [ twemoji-color-font ];
-  };
 
   installPhase = ''
     runHook preInstall
@@ -97,12 +94,16 @@ stdenv.mkDerivation rec {
     runHook postInstall
   '';
 
+  fontsConf = makeFontsConf {
+    fontDirectories = [ twemoji-color-font ];
+  };
+
   meta = {
     description = "Desktop chat client for Slack and Discord";
     homepage = "https://cancel.fm/ripcord/";
-    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
     # See: https://cancel.fm/ripcord/shareware-redistribution/
     license = lib.licenses.unfreeRedistributable;
+    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
     maintainers = [ ];
     platforms = [ "x86_64-linux" ];
   };

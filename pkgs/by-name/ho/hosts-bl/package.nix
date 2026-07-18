@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule {
@@ -22,11 +22,11 @@ buildGoModule {
   vendorHash = null;
 
   meta = {
-    homepage = "https://github.com/ScriptTiger/Hosts-BL";
     description = "Simple tool to handle hosts file black lists";
-    mainProgram = "Hosts-BL";
+    homepage = "https://github.com/ScriptTiger/Hosts-BL";
+    license = lib.licenses.mit;
     maintainers = [ lib.maintainers.puffnfresh ];
     platforms = lib.platforms.unix;
-    license = lib.licenses.mit;
+    mainProgram = "Hosts-BL";
   };
 }

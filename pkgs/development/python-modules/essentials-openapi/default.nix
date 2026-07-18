@@ -1,7 +1,8 @@
 {
-  buildPythonPackage,
-  fetchFromGitHub,
   lib,
+  stdenv,
+  fetchFromGitHub,
+  buildPythonPackage,
   click,
   essentials,
   flask,
@@ -14,12 +15,10 @@
   pyyaml,
   rich,
   setuptools,
-  stdenv,
 }:
 buildPythonPackage rec {
   pname = "essentials-openapi";
   version = "1.4.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "Neoteroi";
@@ -30,6 +29,12 @@ buildPythonPackage rec {
 
   nativeBuildInputs = [ hatchling ];
 
+  propagatedBuildInputs = [
+    pyyaml
+    essentials
+    markupsafe
+  ];
+
   nativeCheckInputs = [
     flask
     httpx
@@ -39,10 +44,11 @@ buildPythonPackage rec {
     setuptools
   ];
 
-  propagatedBuildInputs = [
-    pyyaml
-    essentials
-    markupsafe
+  disabledTestPaths = lib.optionals stdenv.hostPlatform.isDarwin [
+    # These tests start a server using a hardcoded port, and since
+    # multiple Python versions are always built simultaneously, this
+    # failure is quite likely to occur.
+    "tests/test_cli.py"
   ];
 
   optional-dependencies = {
@@ -54,24 +60,19 @@ buildPythonPackage rec {
     ];
   };
 
+  pyproject = true;
+  pythonImportsCheck = [ "openapidocs" ];
+
   pythonRelaxDeps = [
     "markupsafe"
   ];
 
-  pythonImportsCheck = [ "openapidocs" ];
-
-  disabledTestPaths = lib.optionals stdenv.hostPlatform.isDarwin [
-    # These tests start a server using a hardcoded port, and since
-    # multiple Python versions are always built simultaneously, this
-    # failure is quite likely to occur.
-    "tests/test_cli.py"
-  ];
-
   meta = {
-    homepage = "https://github.com/Neoteroi/essentials-openapi";
     description = "Functions to handle OpenAPI Documentation";
+    homepage = "https://github.com/Neoteroi/essentials-openapi";
     changelog = "https://github.com/Neoteroi/essentials-openapi/releases/${src.tag}";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       aldoborrero
       zimbatm

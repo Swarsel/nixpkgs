@@ -1,11 +1,11 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   gitMinimal,
+  nix-update-script,
   python3,
   versionCheckHook,
-  nix-update-script,
 }:
 buildGoModule (finalAttrs: {
   pname = "databricks-cli";
@@ -26,21 +26,19 @@ buildGoModule (finalAttrs: {
 
   vendorHash = "sha256-1K722pdIXdYkc2HMlnjyjrZb/L2iUoRx2vY1szcF7aY=";
 
-  subPackages = [ "." ];
-
-  ldflags = [
-    "-X github.com/databricks/cli/internal/build.buildVersion=${finalAttrs.version}"
-    "-X github.com/databricks/cli/internal/build.buildTag=v${finalAttrs.version}"
-    "-X github.com/databricks/cli/internal/build.buildSummary=v${finalAttrs.version}"
-    "-X github.com/databricks/cli/internal/build.buildMajor=${lib.versions.major finalAttrs.version}"
-    "-X github.com/databricks/cli/internal/build.buildMinor=${lib.versions.minor finalAttrs.version}"
-    "-X github.com/databricks/cli/internal/build.buildPatch=${lib.versions.patch finalAttrs.version}"
-    "-X github.com/databricks/cli/internal/build.buildIsSnapshot=false"
-  ];
-
   postBuild = ''
     mv "$GOPATH/bin/cli" "$GOPATH/bin/databricks"
   '';
+
+  nativeCheckInputs = [
+    gitMinimal
+    (python3.withPackages (
+      ps: with ps; [
+        setuptools
+        wheel
+      ]
+    ))
+  ];
 
   checkFlags =
     "-skip="
@@ -67,29 +65,32 @@ buildGoModule (finalAttrs: {
       "TestCacheDirEnvVar"
     ]);
 
-  nativeCheckInputs = [
-    gitMinimal
-    (python3.withPackages (
-      ps: with ps; [
-        setuptools
-        wheel
-      ]
-    ))
-  ];
-
   preCheck = ''
     # Some tested depends on git and remote url
     git init
     git remote add origin https://github.com/databricks/cli.git
   '';
 
-  __darwinAllowLocalNetworking = true;
+  doInstallCheck = true;
 
   nativeInstallCheckInputs = [
     versionCheckHook
   ];
+
+  __darwinAllowLocalNetworking = true;
+
+  ldflags = [
+    "-X github.com/databricks/cli/internal/build.buildVersion=${finalAttrs.version}"
+    "-X github.com/databricks/cli/internal/build.buildTag=v${finalAttrs.version}"
+    "-X github.com/databricks/cli/internal/build.buildSummary=v${finalAttrs.version}"
+    "-X github.com/databricks/cli/internal/build.buildMajor=${lib.versions.major finalAttrs.version}"
+    "-X github.com/databricks/cli/internal/build.buildMinor=${lib.versions.minor finalAttrs.version}"
+    "-X github.com/databricks/cli/internal/build.buildPatch=${lib.versions.patch finalAttrs.version}"
+    "-X github.com/databricks/cli/internal/build.buildIsSnapshot=false"
+  ];
+
+  subPackages = [ "." ];
   versionCheckProgram = "${placeholder "out"}/bin/databricks";
-  doInstallCheck = true;
 
   passthru = {
     updateScript = nix-update-script { };
@@ -97,13 +98,15 @@ buildGoModule (finalAttrs: {
 
   meta = {
     description = "Databricks CLI";
-    mainProgram = "databricks";
     homepage = "https://github.com/databricks/cli";
     changelog = "https://github.com/databricks/cli/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.databricks;
+
     maintainers = with lib.maintainers; [
       kfollesdal
       taranarmo
     ];
+
+    mainProgram = "databricks";
   };
 })

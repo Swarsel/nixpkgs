@@ -2,12 +2,12 @@
   lib,
   stdenv,
   fetchFromGitHub,
+  check,
   cmake,
-  pkg-config,
   glib,
   libbsd,
-  check,
   pcre,
+  pkg-config,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -21,6 +21,13 @@ stdenv.mkDerivation (finalAttrs: {
     sha256 = "sha256-bHm6JeWmpg42VZQXikHl+BMx9zimRLBQWemTqOxyLhw=";
   };
 
+  postPatch = ''
+    substituteInPlace CMakeLists.txt \
+      --replace-fail "CMAKE_MINIMUM_REQUIRED(VERSION 3.1)" "cmake_minimum_required(VERSION 3.10)"
+    substituteInPlace tests/CMakeLists.txt \
+      --replace-fail "CMAKE_MINIMUM_REQUIRED(VERSION 3.0)" "cmake_minimum_required(VERSION 3.10)"
+  '';
+
   nativeBuildInputs = [
     cmake
     pkg-config
@@ -33,19 +40,12 @@ stdenv.mkDerivation (finalAttrs: {
     pcre
   ];
 
-  postPatch = ''
-    substituteInPlace CMakeLists.txt \
-      --replace-fail "CMAKE_MINIMUM_REQUIRED(VERSION 3.1)" "cmake_minimum_required(VERSION 3.10)"
-    substituteInPlace tests/CMakeLists.txt \
-      --replace-fail "CMAKE_MINIMUM_REQUIRED(VERSION 3.0)" "cmake_minimum_required(VERSION 3.10)"
-  '';
-
   meta = {
-    homepage = "https://github.com/n0la/rcon";
     description = "Source RCON client for command line";
+    homepage = "https://github.com/n0la/rcon";
+    license = lib.licenses.bsd2;
     maintainers = [ ];
     platforms = with lib.platforms; linux ++ darwin;
-    license = lib.licenses.bsd2;
     mainProgram = "rcon";
   };
 })

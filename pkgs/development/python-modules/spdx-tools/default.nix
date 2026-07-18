@@ -1,9 +1,9 @@
 {
   lib,
+  fetchFromGitHub,
   beartype,
   buildPythonPackage,
   click,
-  fetchFromGitHub,
   license-expression,
   ply,
   pytestCheckHook,
@@ -19,7 +19,6 @@
 buildPythonPackage (finalAttrs: {
   pname = "spdx-tools";
   version = "0.8.5";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "spdx";
@@ -27,6 +26,8 @@ buildPythonPackage (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-dHR5Lx8KDmfQLS4I+6oO5kucEUXsFhAaHSPpxJbxlu4=";
   };
+
+  nativeCheckInputs = [ pytestCheckHook ];
 
   build-system = [
     setuptools
@@ -45,10 +46,6 @@ buildPythonPackage (finalAttrs: {
     xmltodict
   ];
 
-  nativeCheckInputs = [ pytestCheckHook ];
-
-  pythonImportsCheck = [ "spdx_tools.spdx" ];
-
   disabledTestPaths = [
     # Test depends on the currently not packaged pyshacl module
     "tests/spdx3/validation/json_ld/test_shacl_validation.py"
@@ -59,6 +56,9 @@ buildPythonPackage (finalAttrs: {
     "test_spdx2_convert_to_spdx3"
     "test_json_writer"
   ];
+
+  pyproject = true;
+  pythonImportsCheck = [ "spdx_tools.spdx" ];
 
   meta = {
     description = "SPDX parser and tools";

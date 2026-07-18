@@ -1,24 +1,24 @@
 {
+  lib,
   stdenv,
   fetchFromGitHub,
-  lib,
-  python3,
-  meson,
-  ninja,
-  git,
-  btor2tools,
-  symfpu,
-  gtest,
-  gmp,
-  cadical,
-  cadical' ? cadical.override { version = "2.1.3"; },
-  cryptominisat,
-  kissat,
-  zlib,
-  pkg-config,
-  cmake,
   aiger,
+  btor2tools,
+  cadical,
+  cmake,
+  cryptominisat,
+  git,
+  gmp,
+  gtest,
+  kissat,
+  meson,
   mpfr,
+  ninja,
+  pkg-config,
+  python3,
+  symfpu,
+  zlib,
+  cadical' ? cadical.override { version = "2.1.3"; },
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -33,7 +33,6 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   strictDeps = true;
-  __structuredAttrs = true;
 
   nativeBuildInputs = [
     meson
@@ -66,11 +65,12 @@ stdenv.mkDerivation (finalAttrs: {
     (lib.strings.mesonEnable "testing" finalAttrs.finalPackage.doCheck)
   ];
 
-  nativeCheckInputs = [ python3 ];
-  checkInputs = [ gtest ];
   # two tests fail on darwin
   doCheck = stdenv.hostPlatform.isLinux;
+  nativeCheckInputs = [ python3 ];
+  checkInputs = [ gtest ];
   doInstallCheck = true;
+
   installCheckPhase = ''
     runHook preInstallCheck
 
@@ -94,12 +94,14 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstallCheck
   '';
 
+  __structuredAttrs = true;
+
   meta = {
     description = "SMT solver for fixed-size bit-vectors, floating-point arithmetic, arrays, and uninterpreted functions";
-    mainProgram = "bitwuzla";
     homepage = "https://bitwuzla.github.io";
     license = lib.licenses.mit;
-    platforms = lib.platforms.unix;
     maintainers = with lib.maintainers; [ symphorien ];
+    platforms = lib.platforms.unix;
+    mainProgram = "bitwuzla";
   };
 })

@@ -1,9 +1,9 @@
 {
   lib,
-  buildDunePackage,
-  fetchzip,
   bos,
+  buildDunePackage,
   cmdliner,
+  fetchzip,
   fmt,
   fpath,
   menhir,
@@ -40,18 +40,18 @@ buildDunePackage (finalAttrs: {
     sedlex
   ];
 
+  doCheck = true;
+
   checkInputs = [
     writableTmpDirAsHomeHook
   ];
 
-  doCheck = true;
-
   meta = {
     description = "Library to work with the scfg configuration file";
     homepage = "https://ocaml.org/p/scfg/";
-    downloadPage = "https://git.zapashcanon.fr/zapashcanon/scfg";
     changelog = "https://git.zapashcanon.fr/zapashcanon/scfg/src/tag/${finalAttrs.version}/CHANGES.md";
     license = lib.licenses.isc;
     maintainers = [ lib.maintainers.ethancedwards8 ];
+    downloadPage = "https://git.zapashcanon.fr/zapashcanon/scfg";
   };
 })

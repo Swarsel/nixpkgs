@@ -1,34 +1,34 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  poetry-core,
   apkinspector,
-  networkx,
-  pygments,
-  lxml,
+  asn1crypto,
+  buildPythonPackage,
+  click,
   colorama,
   cryptography,
   dataset,
   frida-python,
-  loguru,
-  matplotlib,
-  asn1crypto,
-  click,
-  mutf8,
-  pyyaml,
-  pydot,
   ipython,
+  loguru,
+  lxml,
+  matplotlib,
+  mutf8,
+  networkx,
   oscrypto,
+  poetry-core,
+  pydot,
+  pygments,
   pyqt5,
   pytestCheckHook,
   python-magic,
+  pyyaml,
   qt5,
+  # Deprecated in 24.11.
+  doCheck ? true,
   # This is usually used as a library, and it'd be a shame to force the GUI
   # libraries to the closure if GUI is not desired.
   withGui ? false,
-  # Deprecated in 24.11.
-  doCheck ? true,
 }:
 
 assert lib.warnIf (!doCheck) "python3Packages.androguard: doCheck is deprecated" true;
@@ -36,20 +36,29 @@ assert lib.warnIf (!doCheck) "python3Packages.androguard: doCheck is deprecated"
 buildPythonPackage rec {
   pname = "androguard";
   version = "4.1.3";
-  pyproject = true;
 
   src = fetchFromGitHub {
-    repo = "androguard";
     owner = "androguard";
+    repo = "androguard";
     tag = "v${version}";
     sha256 = "sha256-qz6x7UgYXal1DbQGzi4iKnSGEn873rKibKme/pF7tLk=";
   };
 
+  nativeBuildInputs = lib.optionals withGui [ qt5.wrapQtAppsHook ];
+
+  nativeCheckInputs = [
+    pytestCheckHook
+    pyqt5
+    python-magic
+  ];
+
+  preFixup = lib.optionalString withGui ''
+    makeWrapperArgs+=("''${qtWrapperArgs[@]}")
+  '';
+
   build-system = [
     poetry-core
   ];
-
-  nativeBuildInputs = lib.optionals withGui [ qt5.wrapQtAppsHook ];
 
   dependencies = [
     apkinspector
@@ -76,18 +85,9 @@ buildPythonPackage rec {
     pyqt5
   ];
 
-  nativeCheckInputs = [
-    pytestCheckHook
-    pyqt5
-    python-magic
-  ];
-
+  pyproject = true;
   # If it won't be verbose, you'll see nothing going on for a long time.
   pytestFlags = [ "--verbose" ];
-
-  preFixup = lib.optionalString withGui ''
-    makeWrapperArgs+=("''${qtWrapperArgs[@]}")
-  '';
 
   meta = {
     description = "Tool and Python library to interact with Android Files";

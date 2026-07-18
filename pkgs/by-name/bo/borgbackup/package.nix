@@ -1,20 +1,20 @@
 {
   lib,
   stdenv,
+  fetchFromGitHub,
   acl,
   e2fsprogs,
-  fetchFromGitHub,
+  installShellFiles,
   libb2,
   lz4,
+  nix-update-script,
+  nixosTests,
   openssh,
   openssl,
   python3,
+  versionCheckHook,
   xxhash,
   zstd,
-  installShellFiles,
-  nixosTests,
-  nix-update-script,
-  versionCheckHook,
 }:
 
 let
@@ -23,7 +23,6 @@ in
 python.pkgs.buildPythonApplication (finalAttrs: {
   pname = "borgbackup";
   version = "1.4.4";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "borgbackup";
@@ -32,17 +31,17 @@ python.pkgs.buildPythonApplication (finalAttrs: {
     hash = "sha256-pMZr9cVr84b948b5Iuevpy6AtMeYo/Ma8uFLuagAYy4=";
   };
 
+  outputs = [
+    "out"
+    "doc"
+    "man"
+  ];
+
   postPatch = ''
     # sandbox does not support setuid/setgid/sticky bits
     substituteInPlace src/borg/testsuite/archiver.py \
       --replace-fail "0o4755" "0o0755"
   '';
-
-  build-system = with python.pkgs; [
-    cython
-    setuptools-scm
-    pkgconfig
-  ];
 
   nativeBuildInputs = with python.pkgs; [
     # docs
@@ -52,11 +51,6 @@ python.pkgs.buildPythonApplication (finalAttrs: {
 
     # shell completions
     installShellFiles
-  ];
-
-  sphinxBuilders = [
-    "singlehtml"
-    "man"
   ];
 
   buildInputs = [
@@ -70,34 +64,6 @@ python.pkgs.buildPythonApplication (finalAttrs: {
     acl
   ];
 
-  dependencies =
-    with python.pkgs;
-    [
-      msgpack
-      packaging
-    ]
-    ++ lib.optionals stdenv.hostPlatform.isLinux [
-      pyfuse3
-    ];
-
-  makeWrapperArgs = [
-    ''--prefix PATH ':' "${openssh}/bin"''
-  ];
-
-  preInstallSphinx = ''
-    # remove invalid outputs for manpages
-    rm .sphinx/man/man/_static/jquery.js
-    rm .sphinx/man/man/_static/_sphinx_javascript_frameworks_compat.js
-    rmdir .sphinx/man/man/_static/
-  '';
-
-  postInstall = ''
-    installShellCompletion --cmd borg \
-      --bash scripts/shell_completions/bash/borg \
-      --fish scripts/shell_completions/fish/borg.fish \
-      --zsh scripts/shell_completions/zsh/_borg
-  '';
-
   nativeCheckInputs = with python.pkgs; [
     e2fsprogs
     py
@@ -107,11 +73,32 @@ python.pkgs.buildPythonApplication (finalAttrs: {
     versionCheckHook
   ];
 
-  pytestFlags = [
-    "--benchmark-skip"
-    "--pyargs"
-    "borg.testsuite"
+  preCheck = ''
+    export HOME=$TEMP
+  '';
+
+  postInstall = ''
+    installShellCompletion --cmd borg \
+      --bash scripts/shell_completions/bash/borg \
+      --fish scripts/shell_completions/fish/borg.fish \
+      --zsh scripts/shell_completions/zsh/_borg
+  '';
+
+  build-system = with python.pkgs; [
+    cython
+    setuptools-scm
+    pkgconfig
   ];
+
+  dependencies =
+    with python.pkgs;
+    [
+      msgpack
+      packaging
+    ]
+    ++ lib.optionals stdenv.hostPlatform.isLinux [
+      pyfuse3
+    ];
 
   disabledTests = [
     # fuse: device not found, try 'modprobe fuse' first
@@ -134,19 +121,33 @@ python.pkgs.buildPythonApplication (finalAttrs: {
     "test_file_status_excluded"
   ];
 
-  preCheck = ''
-    export HOME=$TEMP
+  makeWrapperArgs = [
+    ''--prefix PATH ':' "${openssh}/bin"''
+  ];
+
+  preInstallSphinx = ''
+    # remove invalid outputs for manpages
+    rm .sphinx/man/man/_static/jquery.js
+    rm .sphinx/man/man/_static/_sphinx_javascript_frameworks_compat.js
+    rmdir .sphinx/man/man/_static/
   '';
+
+  pyproject = true;
+
+  pytestFlags = [
+    "--benchmark-skip"
+    "--pyargs"
+    "borg.testsuite"
+  ];
+
+  sphinxBuilders = [
+    "singlehtml"
+    "man"
+  ];
 
   passthru.tests = {
     inherit (nixosTests) borgbackup;
   };
-
-  outputs = [
-    "out"
-    "doc"
-    "man"
-  ];
 
   passthru.updateScript = nix-update-script {
     # Only match tags formatted as x.y.z (e.g., 1.2.3)
@@ -157,14 +158,16 @@ python.pkgs.buildPythonApplication (finalAttrs: {
   };
 
   meta = {
-    changelog = "https://github.com/borgbackup/borg/blob/${finalAttrs.src.rev}/docs/changes.rst";
     description = "Deduplicating archiver with compression and encryption";
     homepage = "https://www.borgbackup.org";
+    changelog = "https://github.com/borgbackup/borg/blob/${finalAttrs.src.rev}/docs/changes.rst";
     license = lib.licenses.bsd3;
-    platforms = lib.platforms.unix; # Darwin and FreeBSD mentioned on homepage
-    mainProgram = "borg";
+
     maintainers = with lib.maintainers; [
       dotlambda
     ];
+
+    platforms = lib.platforms.unix; # Darwin and FreeBSD mentioned on homepage
+    mainProgram = "borg";
   };
 })

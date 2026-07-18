@@ -1,7 +1,7 @@
 {
   lib,
-  mkKdeDerivation,
   fetchurl,
+  mkKdeDerivation,
 }:
 mkKdeDerivation rec {
   pname = "plasma-wayland-protocols";

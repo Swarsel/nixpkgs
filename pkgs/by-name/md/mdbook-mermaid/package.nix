@@ -19,13 +19,15 @@ rustPlatform.buildRustPackage (finalAttrs: {
 
   meta = {
     description = "Preprocessor for mdbook to add mermaid.js support";
-    mainProgram = "mdbook-mermaid";
     homepage = "https://github.com/badboy/mdbook-mermaid";
     changelog = "https://github.com/badboy/mdbook-mermaid/blob/v${finalAttrs.version}/CHANGELOG.md";
     license = lib.licenses.mpl20;
+
     maintainers = with lib.maintainers; [
       xrelkd
       matthiasbeyer
     ];
+
+    mainProgram = "mdbook-mermaid";
   };
 })

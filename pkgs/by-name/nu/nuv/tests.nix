@@ -1,6 +1,6 @@
 {
-  runCommand,
   nuv,
+  runCommand,
   version,
 }:
 

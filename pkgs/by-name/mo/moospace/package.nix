@@ -21,10 +21,6 @@ stdenv.mkDerivation {
     faust2lv2
   ];
 
-  patchPhase = "mv mooSpace_faust.dsp mooSpace.dsp";
-
-  dontWrapQtApps = true;
-
   buildPhase = ''
     faust2jaqt -time -vec -t 0 mooSpace.dsp
     faust2lv2  -time -vec -t 0 -gui mooSpace.dsp
@@ -38,6 +34,9 @@ stdenv.mkDerivation {
     mkdir -p $out/lib/lv2
     cp -r mooSpace.lv2 $out/lib/lv2
   '';
+
+  dontWrapQtApps = true;
+  patchPhase = "mv mooSpace_faust.dsp mooSpace.dsp";
 
   meta = {
     description = "Variable reverb audio effect, jack and lv2";

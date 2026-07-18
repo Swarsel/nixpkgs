@@ -3,71 +3,34 @@
   stdenv,
   fetchurl,
   curlWithGnuTls,
-  zlib,
-  glib,
-  libxrender,
-  libxi,
-  libxext,
-  libx11,
-  libsm,
-  libice,
-  libxcb,
   dbus,
   fontconfig,
-  libGL,
   freetype,
-  xkeyboard_config,
+  glib,
+  libGL,
+  libice,
+  libsm,
+  libx11,
+  libxcb,
+  libxext,
+  libxi,
+  libxrender,
   makeDesktopItem,
   makeWrapper,
+  xkeyboard_config,
+  zlib,
 }:
 
 stdenv.mkDerivation rec {
   pname = "robo3t";
   version = "1.4.3";
-  rev = "48f7dfd";
 
   src = fetchurl {
     url = "https://github.com/Studio3T/robomongo/releases/download/v${version}/robo3t-${version}-linux-x86_64-${rev}.tar.gz";
     sha256 = "sha256-pH4q/O3bq45ZZn+s/12iScd0WbfkcLjK4MBdVCMXK00=";
   };
 
-  icon = fetchurl {
-    url = "https://github.com/Studio3T/robomongo/raw/${rev}/install/macosx/robomongo.iconset/icon_128x128.png";
-    sha256 = "sha256-2PkUxBq2ow0wl09k8B6LJJUQ+y4GpnmoAeumKN1u5xg=";
-  };
-
-  desktopItem = makeDesktopItem {
-    name = "robo3t";
-    exec = "robo3t";
-    icon = icon;
-    comment = "Query GUI for mongodb";
-    desktopName = "Robo3T";
-    genericName = "MongoDB management tool";
-    categories = [
-      "Development"
-      "IDE"
-    ];
-  };
-
   nativeBuildInputs = [ makeWrapper ];
-
-  ldLibraryPath = lib.makeLibraryPath [
-    stdenv.cc.cc
-    zlib
-    glib
-    libxi
-    libxcb
-    libxrender
-    libx11
-    libsm
-    libice
-    libxext
-    dbus
-    fontconfig
-    freetype
-    libGL
-    curlWithGnuTls
-  ];
 
   installPhase = ''
     runHook preInstall
@@ -97,13 +60,52 @@ stdenv.mkDerivation rec {
     runHook postInstall
   '';
 
+  desktopItem = makeDesktopItem {
+    categories = [
+      "Development"
+      "IDE"
+    ];
+
+    comment = "Query GUI for mongodb";
+    desktopName = "Robo3T";
+    exec = "robo3t";
+    genericName = "MongoDB management tool";
+    icon = icon;
+    name = "robo3t";
+  };
+
+  icon = fetchurl {
+    sha256 = "sha256-2PkUxBq2ow0wl09k8B6LJJUQ+y4GpnmoAeumKN1u5xg=";
+    url = "https://github.com/Studio3T/robomongo/raw/${rev}/install/macosx/robomongo.iconset/icon_128x128.png";
+  };
+
+  ldLibraryPath = lib.makeLibraryPath [
+    stdenv.cc.cc
+    zlib
+    glib
+    libxi
+    libxcb
+    libxrender
+    libx11
+    libsm
+    libice
+    libxext
+    dbus
+    fontconfig
+    freetype
+    libGL
+    curlWithGnuTls
+  ];
+
+  rev = "48f7dfd";
+
   meta = {
-    homepage = "https://robomongo.org/";
     description = "Query GUI for mongodb. Formerly called Robomongo";
-    platforms = [ "x86_64-linux" ];
-    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
+    homepage = "https://robomongo.org/";
     license = lib.licenses.gpl3Only;
+    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
     maintainers = with lib.maintainers; [ eperuffo ];
+    platforms = [ "x86_64-linux" ];
     mainProgram = "robo3t";
   };
 }

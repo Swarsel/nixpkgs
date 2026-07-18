@@ -2,10 +2,10 @@
   lib,
   stdenv,
   fetchFromGitHub,
+  fftwSinglePrec,
   libsForQt5,
   pkg-config,
   sigutils,
-  fftwSinglePrec,
 }:
 
 stdenv.mkDerivation {
@@ -18,8 +18,6 @@ stdenv.mkDerivation {
     rev = "826b3eeae5b682dc063f53b427caa9c7c48131ea";
     sha256 = "sha256-cyFLsP+8GbALdlgEnVX4201Qq/KAxb/Vv+sJqbFpvUk=";
   };
-
-  dontWrapQtApps = true;
 
   postPatch = ''
     substituteInPlace SuWidgets.pri \
@@ -37,6 +35,8 @@ stdenv.mkDerivation {
     fftwSinglePrec
   ];
 
+  dontWrapQtApps = true;
+
   qmakeFlags = [
     "SuWidgetsLib.pro"
   ];
@@ -45,10 +45,12 @@ stdenv.mkDerivation {
     description = "Sigutils-related widgets";
     homepage = "https://github.com/BatchDrake/SuWidgets";
     license = lib.licenses.gpl3;
-    platforms = lib.platforms.all;
+
     maintainers = with lib.maintainers; [
       polygon
       oxapentane
     ];
+
+    platforms = lib.platforms.all;
   };
 }

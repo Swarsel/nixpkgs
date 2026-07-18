@@ -22,7 +22,7 @@ rustPlatform.buildRustPackage (finalAttrs: {
     homepage = "https://github.com/efernau/rot8";
     license = lib.licenses.mit;
     maintainers = [ lib.maintainers.smona ];
-    mainProgram = "rot8";
     platforms = lib.platforms.linux;
+    mainProgram = "rot8";
   };
 })

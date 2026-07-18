@@ -1,7 +1,7 @@
 {
+  config,
   lib,
   pkgs,
-  config,
   ...
 }:
 
@@ -14,9 +14,9 @@ in
 {
   options.services.libeufin = {
     settings = lib.mkOption {
+      default = { };
       description = "Global configuration options for the libeufin bank system config file.";
       type = lib.types.submodule { freeformType = settingsFormat.type; };
-      default = { };
     };
   };
 

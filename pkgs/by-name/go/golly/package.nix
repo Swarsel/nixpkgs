@@ -2,48 +2,23 @@
   lib,
   stdenv,
   fetchurl,
+  SDL2,
+  libGL,
+  libGLU,
+  libx11,
+  python3,
   wrapGAppsHook3,
   wxwidgets_3_2,
-  python3,
   zlib,
-  libGLU,
-  libGL,
-  libx11,
-  SDL2,
 }:
 stdenv.mkDerivation (finalAttrs: {
   pname = "golly";
   version = "5.0";
 
   src = fetchurl {
-    hash = "sha256-WDXN5CgVP5uEC6lKQ1nlyybrMC56wBoJfNf1pcgwNhE=";
     url = "mirror://sourceforge/project/golly/golly/golly-${finalAttrs.version}/golly-${finalAttrs.version}-src.tar.gz";
+    hash = "sha256-WDXN5CgVP5uEC6lKQ1nlyybrMC56wBoJfNf1pcgwNhE=";
   };
-
-  buildInputs = [
-    wxwidgets_3_2
-    python3
-    zlib
-    libGLU
-    libGL
-    libx11
-    SDL2
-  ];
-
-  nativeBuildInputs = [
-    (python3.withPackages (ps: [
-      ps.setuptools
-      ps.distutils
-    ]))
-    wrapGAppsHook3
-  ];
-
-  # fails nondeterministically on darwin
-  enableParallelBuilding = false;
-
-  setSourceRoot = ''
-    sourceRoot=$(echo */gui-wx)
-  '';
 
   postPatch = ''
     substituteInPlace wxprefs.cpp \
@@ -55,6 +30,24 @@ stdenv.mkDerivation (finalAttrs: {
       --replace-fail '-lGL ' "" \
       --replace-fail '-lGLU' ""
   '';
+
+  nativeBuildInputs = [
+    (python3.withPackages (ps: [
+      ps.setuptools
+      ps.distutils
+    ]))
+    wrapGAppsHook3
+  ];
+
+  buildInputs = [
+    wxwidgets_3_2
+    python3
+    zlib
+    libGLU
+    libGL
+    libx11
+    SDL2
+  ];
 
   makeFlags = [
     "-f"
@@ -83,15 +76,24 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  # fails nondeterministically on darwin
+  enableParallelBuilding = false;
+
+  setSourceRoot = ''
+    sourceRoot=$(echo */gui-wx)
+  '';
+
   meta = {
     description = "Cellular automata simulation program";
+    homepage = "https://golly.sourceforge.io/";
     license = lib.licenses.gpl2Plus;
+
     maintainers = with lib.maintainers; [
       raskin
       siraben
     ];
+
     platforms = lib.platforms.unix;
-    homepage = "https://golly.sourceforge.io/";
     downloadPage = "https://sourceforge.net/projects/golly/files/golly";
   };
 })

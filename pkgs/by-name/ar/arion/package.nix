@@ -1,10 +1,10 @@
 {
-  pkgs,
   lib,
-  haskellPackages,
-  haskell,
-  runCommand,
   buildPackages,
+  haskell,
+  haskellPackages,
+  pkgs,
+  runCommand,
 }:
 
 let
@@ -29,10 +29,6 @@ let
   inherit (haskellPackages) arion-compose;
 
   cabalOverrides = o: {
-    buildTools = (o.buildTools or [ ]) ++ [ buildPackages.makeWrapper ];
-    passthru = (o.passthru or { }) // {
-      inherit eval build;
-    };
     src = arion-compose.src;
 
     # PYTHONPATH
@@ -44,7 +40,6 @@ let
     # system as far as I can tell, so I don't expect this to break a
     # feature, but rather to make the program more robustly self-
     # contained.
-
     postInstall = o.postInstall or "" + ''
       mkdir -p $out/libexec
       mv $out/bin/arion $out/libexec
@@ -53,6 +48,12 @@ let
         --prefix PATH : ${lib.makeBinPath [ pkgs.docker-compose ]} \
         ;
     '';
+
+    buildTools = (o.buildTools or [ ]) ++ [ buildPackages.makeWrapper ];
+
+    passthru = (o.passthru or { }) // {
+      inherit eval build;
+    };
   };
 
   # Unpacked sources for evaluation by `eval`

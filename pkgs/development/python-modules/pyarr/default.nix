@@ -1,19 +1,18 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   overrides,
   poetry-core,
-  requests,
   pytestCheckHook,
-  types-requests,
+  requests,
   responses,
+  types-requests,
 }:
 
 buildPythonPackage rec {
   pname = "pyarr";
   version = "5.2.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "totaldebug";
@@ -41,8 +40,6 @@ buildPythonPackage rec {
     responses
   ];
 
-  pythonImportsCheck = [ "pyarr" ];
-
   disabledTests = [
     # Tests require a running sonarr instance
     "test_add"
@@ -53,6 +50,9 @@ buildPythonPackage rec {
     "test_post"
     "test_upd"
   ];
+
+  pyproject = true;
+  pythonImportsCheck = [ "pyarr" ];
 
   meta = {
     description = "Python client for Servarr API's (Sonarr, Radarr, Readarr, Lidarr)";

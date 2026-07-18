@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   httpx,
   poetry-core,
   pytest-asyncio,
@@ -12,7 +12,6 @@
 buildPythonPackage rec {
   pname = "notifications-android-tv";
   version = "1.2.2";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "engrbm87";
@@ -21,20 +20,18 @@ buildPythonPackage rec {
     hash = "sha256-JUvxxVCiQtywAWU5AYnPm4SueIWIXkzLxPYveVXpc2E=";
   };
 
-  pythonRelaxDeps = [ "httpx" ];
-
   nativeBuildInputs = [ poetry-core ];
-
   propagatedBuildInputs = [ httpx ];
-
-  pythonImportsCheck = [ "notifications_android_tv" ];
-
   nativeCheckInputs = [ pytestCheckHook ];
 
   checkInputs = [
     pytest-asyncio
     pytest-httpx
   ];
+
+  pyproject = true;
+  pythonImportsCheck = [ "notifications_android_tv" ];
+  pythonRelaxDeps = [ "httpx" ];
 
   meta = {
     description = "Python API for sending notifications to Android/Fire TVs";

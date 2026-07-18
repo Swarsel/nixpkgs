@@ -1,14 +1,14 @@
 {
+  lib,
   stdenv,
   fetchFromGitHub,
   cmake,
-  gtest,
-  zlib,
   copyPkgconfigItems,
-  makePkgconfigItem,
-  lib,
-  testers,
   ctestCheckHook,
+  gtest,
+  makePkgconfigItem,
+  testers,
+  zlib,
 }:
 stdenv.mkDerivation (finalAttrs: {
   pname = "kaitai-struct-cpp-stl-runtime";
@@ -21,12 +21,12 @@ stdenv.mkDerivation (finalAttrs: {
     sha256 = "sha256-2glGPf08bkzvnkLpQIaG2qiy/yO+bZ14hjIaCKou2vU=";
   };
 
-  doCheck = true;
-
   outputs = [
     "out"
     "dev"
   ];
+
+  strictDeps = true;
 
   nativeBuildInputs = [
     cmake
@@ -39,23 +39,26 @@ stdenv.mkDerivation (finalAttrs: {
     gtest
   ];
 
-  strictDeps = true;
+  doCheck = true;
 
   # https://github.com/kaitai-io/kaitai_struct_cpp_stl_runtime/issues/82
   pkgconfigItems = [
     (makePkgconfigItem rec {
-      name = "kaitai-struct-cpp-stl-runtime";
       inherit (finalAttrs) version;
+      inherit (finalAttrs.meta) description;
       cflags = [ "-I${variables.includedir}" ];
+
       libs = [
         "-L${variables.libdir}"
         "-lkaitai_struct_cpp_stl_runtime"
       ];
+
+      name = "kaitai-struct-cpp-stl-runtime";
+
       variables = {
         includedir = "${placeholder "dev"}/include";
         libdir = "${placeholder "out"}/lib";
       };
-      inherit (finalAttrs.meta) description;
     })
   ];
 
@@ -64,10 +67,10 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   meta = {
-    pkgConfigModules = [ "kaitai-struct-cpp-stl-runtime" ];
     description = "Kaitai Struct C++ STL Runtime Library";
     homepage = "https://github.com/kaitai-io/kaitai_struct_cpp_stl_runtime";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ fzakaria ];
+    pkgConfigModules = [ "kaitai-struct-cpp-stl-runtime" ];
   };
 })

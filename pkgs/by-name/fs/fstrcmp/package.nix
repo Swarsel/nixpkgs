@@ -1,11 +1,11 @@
 {
   lib,
   stdenv,
+  autoreconfHook,
   fetchzip,
-  libtool,
   ghostscript,
   groff,
-  autoreconfHook,
+  libtool,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -17,8 +17,6 @@ stdenv.mkDerivation (finalAttrs: {
     sha256 = "0yg3y3k0wz50gmhgigfi2dx725w1gc8snb95ih7vpcnj6kabgz9a";
   };
 
-  patches = [ ./cross.patch ];
-
   outputs = [
     "out"
     "dev"
@@ -26,6 +24,8 @@ stdenv.mkDerivation (finalAttrs: {
     "man"
     "devman"
   ];
+
+  patches = [ ./cross.patch ];
 
   nativeBuildInputs = [
     libtool
@@ -38,16 +38,18 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Make fuzzy comparisons of strings and byte arrays";
-    mainProgram = "fstrcmp";
+
     longDescription = ''
       The fstrcmp project provides a library that is used to make fuzzy
       comparisons of strings and byte arrays, including multi-byte character
       strings.
     '';
+
     homepage = "https://fstrcmp.sourceforge.net/";
-    downloadPage = "https://sourceforge.net/projects/fstrcmp/";
     license = lib.licenses.gpl3;
     maintainers = [ lib.maintainers.sephalon ];
     platforms = lib.platforms.unix;
+    mainProgram = "fstrcmp";
+    downloadPage = "https://sourceforge.net/projects/fstrcmp/";
   };
 })

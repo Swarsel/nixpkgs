@@ -1,12 +1,12 @@
 {
   lib,
   stdenv,
-  callPackage,
   fetchurl,
-  writeShellScript,
+  callPackage,
+  common-updater-scripts,
   curl,
   jq,
-  common-updater-scripts,
+  writeShellScript,
 }:
 let
   pname = "proton-pass";
@@ -14,15 +14,17 @@ let
 
   passthru = {
     sources = {
-      "x86_64-linux" = fetchurl {
-        url = "https://proton.me/download/pass/linux/x64/proton-pass_${version}_amd64.deb";
-        hash = "sha256-6WYiqEJquq64b1fNv8HcQcT4/VCwtEkK4YrfAXDC6nY=";
-      };
       "aarch64-darwin" = fetchurl {
-        url = "https://proton.me/download/pass/macos/ProtonPass_${version}.dmg";
         hash = "sha256-CwdiHEqKnk+ELoavs1p6ND48e2rvEFBqbXQs79ihQ4M=";
+        url = "https://proton.me/download/pass/macos/ProtonPass_${version}.dmg";
+      };
+
+      "x86_64-linux" = fetchurl {
+        hash = "sha256-6WYiqEJquq64b1fNv8HcQcT4/VCwtEkK4YrfAXDC6nY=";
+        url = "https://proton.me/download/pass/linux/x64/proton-pass_${version}_amd64.deb";
       };
     };
+
     updateScript = writeShellScript "update-proton-pass" ''
       set -o errexit
       export PATH="${
@@ -47,13 +49,15 @@ let
     description = "Desktop application for Proton Pass";
     homepage = "https://proton.me/pass";
     license = lib.licenses.gpl3Plus;
+    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
+
     maintainers = with lib.maintainers; [
       luftmensch-luftmensch
       massimogengarelli
       shunueda
     ];
+
     platforms = builtins.attrNames passthru.sources;
-    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
     mainProgram = "proton-pass";
   };
 in

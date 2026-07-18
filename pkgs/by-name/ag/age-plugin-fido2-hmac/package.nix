@@ -1,11 +1,11 @@
 {
   lib,
-  buildGoModule,
-  fetchFromGitHub,
   stdenv,
+  fetchFromGitHub,
+  buildGoModule,
+  libcbor,
   libfido2,
   openssl,
-  libcbor,
 }:
 let
   darwin_arch = if stdenv.hostPlatform.system == "aarch64-darwin" then "arm64" else "amd64";
@@ -33,17 +33,15 @@ buildGoModule (finalAttrs: {
     hash = "sha256-3lhGGw7QI1aij6IU7AeoxwgcVsCNKyrmsKBockb0kRw=";
   };
 
+  buildInputs = [ libfido2 ];
   vendorHash = "sha256-kHv5epwaiBE69rcblICofGoVULuLQT1h0sK4jWwtX9w=";
+  postConfigure = lib.optional stdenv.hostPlatform.isDarwin darwin_configure;
 
   ldflags = [
     "-s"
     "-w"
     "-X main.version=v${finalAttrs.version}"
   ];
-
-  buildInputs = [ libfido2 ];
-
-  postConfigure = lib.optional stdenv.hostPlatform.isDarwin darwin_configure;
 
   meta = {
     description = "Age plugin to encrypt files with fido2 tokens using the hmac-secret extension and non-discoverable credentials";

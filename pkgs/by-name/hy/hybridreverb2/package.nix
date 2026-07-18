@@ -2,22 +2,22 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  cmake,
-  pkg-config,
-  lv2,
   alsa-lib,
-  libjack2,
+  at-spi2-core,
+  cmake,
+  curl,
+  dbus,
+  fftwFloat,
   freetype,
-  libx11,
   gtk3,
+  libepoxy,
+  libjack2,
   libpthread-stubs,
+  libx11,
   libxdmcp,
   libxkbcommon,
-  libepoxy,
-  at-spi2-core,
-  dbus,
-  curl,
-  fftwFloat,
+  lv2,
+  pkg-config,
 }:
 
 let
@@ -31,13 +31,6 @@ in
 stdenv.mkDerivation rec {
   inherit pname version;
 
-  impulseDB = fetchFromGitHub {
-    inherit owner;
-    repo = "HybridReverb2-impulse-response-database";
-    rev = "v${DBversion}";
-    sha256 = "sha256-PyGrMNhrL2cRjb2UPPwEaJ6vZBV2sDG1mKFCNdfqjsI=";
-  };
-
   src = fetchFromGitHub {
     inherit owner;
     repo = "HybridReverb2";
@@ -50,6 +43,7 @@ stdenv.mkDerivation rec {
     pkg-config
     cmake
   ];
+
   buildInputs = [
     lv2
     alsa-lib
@@ -72,16 +66,23 @@ stdenv.mkDerivation rec {
     "-DHybridReverb2_UseLocalDatabase=ON"
   ];
 
-  enableParallelBuilding = true;
-
   postInstall = ''
     mkdir -p $out/share/HybridReverb2/
     cp  -r ${impulseDB}/* $out/share/HybridReverb2/
   '';
 
+  enableParallelBuilding = true;
+
+  impulseDB = fetchFromGitHub {
+    inherit owner;
+    repo = "HybridReverb2-impulse-response-database";
+    rev = "v${DBversion}";
+    sha256 = "sha256-PyGrMNhrL2cRjb2UPPwEaJ6vZBV2sDG1mKFCNdfqjsI=";
+  };
+
   meta = {
-    homepage = "https://github.com/jpcima/HybridReverb2";
     description = "Reverb effect using hybrid impulse convolution";
+    homepage = "https://github.com/jpcima/HybridReverb2";
     license = lib.licenses.gpl2Plus;
     maintainers = [ lib.maintainers.magnetophon ];
     platforms = lib.platforms.linux;

@@ -15,14 +15,8 @@ buildGoModule rec {
     hash = "sha256-koNf75sK3jd/gkUWm+pgbORuZGYBjsNCvQikjLAOvnU=";
   };
 
-  vendorHash = "sha256-PY6m92/8bzbYjkGvbNtL1W9sMayjPOyWVvJPwKAnLc8=";
-
-  subPackages = [
-    "cmd/imapgoose"
-    "cmd/capcheck"
-  ];
-
   nativeBuildInputs = [ installShellFiles ];
+  vendorHash = "sha256-PY6m92/8bzbYjkGvbNtL1W9sMayjPOyWVvJPwKAnLc8=";
 
   postInstall = ''
     installManPage imapgoose.1
@@ -31,8 +25,14 @@ buildGoModule rec {
     installShellCompletion --zsh contrib/_imapgoose
   '';
 
+  subPackages = [
+    "cmd/imapgoose"
+    "cmd/capcheck"
+  ];
+
   meta = {
     description = "IMAP to Maildir synchronization tool";
+
     longDescription = ''
       ImapGoose is a daemon that continuously keeps local mailboxes in sync
       with an IMAP server. It monitors both the IMAP server and local
@@ -43,14 +43,17 @@ buildGoModule rec {
       mailboxes per connection and automatically reconnects with exponential
       back-off when network issues occur.
     '';
+
     homepage = "https://git.sr.ht/~whynothugo/ImapGoose";
     changelog = "https://git.sr.ht/~whynothugo/ImapGoose/refs/v${version}";
     license = lib.licenses.isc;
-    platforms = lib.platforms.unix;
-    mainProgram = "imapgoose";
+
     maintainers = with lib.maintainers; [
       philocalyst
       bobberb
     ];
+
+    platforms = lib.platforms.unix;
+    mainProgram = "imapgoose";
   };
 }

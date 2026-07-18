@@ -3,24 +3,19 @@
   buildPythonPackage,
   fetchPypi,
   ncurses,
-  x256,
   setuptools,
+  x256,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "unicurses";
   version = "3.1.2";
-  pyproject = true;
 
   src = fetchPypi {
     inherit (finalAttrs) version;
-    pname = "Uni-Curses";
     hash = "sha256-M4mjdmy2NSf5KiTVYznPy86bVgZB5u1vDi6GIH1Frc4=";
+    pname = "Uni-Curses";
   };
-
-  build-system = [ setuptools ];
-
-  dependencies = [ x256 ];
 
   # Necessary because ctypes.util.find_library does not find the ncurses libraries
   postPatch = ''
@@ -29,6 +24,9 @@ buildPythonPackage (finalAttrs: {
       --replace-fail "find_library('panelw')" '"${ncurses}/lib/libpanelw.so.6"'
   '';
 
+  build-system = [ setuptools ];
+  dependencies = [ x256 ];
+  pyproject = true;
   pythonImportsCheck = [ "unicurses" ];
 
   meta = {

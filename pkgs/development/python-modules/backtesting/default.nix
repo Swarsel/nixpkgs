@@ -1,18 +1,17 @@
 {
   lib,
+  bokeh,
   buildPythonPackage,
   fetchPypi,
-  setuptools,
-  setuptools-scm,
   numpy,
   pandas,
-  bokeh,
+  setuptools,
+  setuptools-scm,
 }:
 
 buildPythonPackage rec {
   pname = "backtesting";
   version = "0.6.5";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
@@ -23,6 +22,9 @@ buildPythonPackage rec {
     substituteInPlace setup.py \
       --replace-fail "'setuptools_git'," ""
   '';
+
+  # No tests
+  doCheck = false;
 
   build-system = [
     setuptools
@@ -35,8 +37,7 @@ buildPythonPackage rec {
     bokeh
   ];
 
-  # No tests
-  doCheck = false;
+  pyproject = true;
 
   meta = {
     description = "Backtest trading strategies in Python";

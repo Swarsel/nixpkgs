@@ -2,9 +2,9 @@
   lib,
   stdenv,
   fetchzip,
-  makeWrapper,
-  makeDesktopItem,
   jdk8,
+  makeDesktopItem,
+  makeWrapper,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -16,8 +16,6 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-k6cnyiRyU4B5UdsVnY9LpzTO/o7Q9/aRS0Il2jV4PQ0=";
     stripRoot = false;
   };
-
-  dontBuild = true;
 
   nativeBuildInputs = [ makeWrapper ];
 
@@ -37,33 +35,40 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   desktopItem = makeDesktopItem rec {
-    name = "ffdec";
-    exec = name;
-    icon = name;
-    desktopName = "JPEXS Free Flash Decompiler";
-    genericName = "Flash Decompiler";
-    comment = finalAttrs.meta.description;
     categories = [
       "Development"
       "Java"
     ];
+
+    comment = finalAttrs.meta.description;
+    desktopName = "JPEXS Free Flash Decompiler";
+    exec = name;
+    genericName = "Flash Decompiler";
+    icon = name;
+    name = "ffdec";
     startupWMClass = "com-jpexs-decompiler-flash-gui-Main";
   };
 
+  dontBuild = true;
+
   meta = {
     description = "Flash SWF decompiler and editor";
-    mainProgram = "ffdec";
+
     longDescription = ''
       Open-source Flash SWF decompiler and editor. Extract resources,
       convert SWF to FLA, edit ActionScript, replace images, sounds,
       texts or fonts.
     '';
+
     homepage = "https://github.com/jindrapetrik/jpexs-decompiler";
-    sourceProvenance = with lib.sourceTypes; [ binaryBytecode ];
     license = lib.licenses.gpl3;
-    platforms = jdk8.meta.platforms;
+    sourceProvenance = with lib.sourceTypes; [ binaryBytecode ];
+
     maintainers = with lib.maintainers; [
       xrtxn
     ];
+
+    platforms = jdk8.meta.platforms;
+    mainProgram = "ffdec";
   };
 })

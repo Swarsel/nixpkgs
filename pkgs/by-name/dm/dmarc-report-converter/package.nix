@@ -1,8 +1,8 @@
 {
   lib,
+  fetchFromGitHub,
   buildGoModule,
   dmarc-report-converter,
-  fetchFromGitHub,
   testers,
 }:
 
@@ -18,7 +18,6 @@ buildGoModule (finalAttrs: {
   };
 
   vendorHash = null;
-
   checkFlags = [ "-mod=vendor ./cmd/... ./pkg/..." ];
 
   ldflags = [

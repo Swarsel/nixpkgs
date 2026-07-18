@@ -1,8 +1,8 @@
 {
   lib,
-  easy-format,
-  buildDunePackage,
   fetchurl,
+  buildDunePackage,
+  easy-format,
 }:
 
 buildDunePackage (finalAttrs: {
@@ -23,8 +23,8 @@ buildDunePackage (finalAttrs: {
   propagatedBuildInputs = [ easy-format ];
 
   meta = {
-    homepage = "https://github.com/mjambon/dum";
     description = "Inspect the runtime representation of arbitrary OCaml values";
+
     longDescription = ''
       Dum is a library for inspecting the runtime representation of
       arbitrary OCaml values. Shared or cyclic data are detected
@@ -32,6 +32,8 @@ buildDunePackage (finalAttrs: {
       terminate. This makes it possible to print values such as closures,
       objects or exceptions in depth and without risk.
     '';
+
+    homepage = "https://github.com/mjambon/dum";
     license = lib.licenses.lgpl21Plus;
     maintainers = [ ];
   };

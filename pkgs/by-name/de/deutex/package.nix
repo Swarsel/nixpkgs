@@ -1,10 +1,10 @@
 {
-  stdenv,
   lib,
-  autoreconfHook,
+  stdenv,
   fetchFromGitHub,
-  pkg-config,
+  autoreconfHook,
   libpng,
+  pkg-config,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -30,13 +30,15 @@ stdenv.mkDerivation (finalAttrs: {
   meta = {
     description = "Command-line tool to create and modify WAD files for games built on the original Doom engine";
     homepage = "https://github.com/Doom-Utils/deutex";
+
     license = with lib.licenses; [
       gpl2Plus
       hpnd
       lgpl21Plus
     ];
+
     maintainers = with lib.maintainers; [ thetaoofsu ];
-    mainProgram = "deutex";
     platforms = lib.platforms.unix;
+    mainProgram = "deutex";
   };
 })

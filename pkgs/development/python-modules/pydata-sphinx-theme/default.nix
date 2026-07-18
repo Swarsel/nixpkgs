@@ -1,12 +1,12 @@
 {
   lib,
-  buildPythonPackage,
-  fetchPypi,
-  sphinx,
   accessible-pygments,
   beautifulsoup4,
+  buildPythonPackage,
   docutils,
+  fetchPypi,
   packaging,
+  sphinx,
   typing-extensions,
 }:
 
@@ -14,15 +14,13 @@ buildPythonPackage rec {
   pname = "pydata-sphinx-theme";
   version = "0.16.1";
 
-  format = "wheel";
-
   src = fetchPypi {
     inherit version;
-    format = "wheel";
-    dist = "py3";
-    python = "py3";
-    pname = "pydata_sphinx_theme";
     hash = "sha256-IlMx6KxLMmgsGPysWlem9xfE5jLOpd0OJHtVFV+uzN4=";
+    dist = "py3";
+    format = "wheel";
+    pname = "pydata_sphinx_theme";
+    python = "py3";
   };
 
   propagatedBuildInputs = [
@@ -34,6 +32,7 @@ buildPythonPackage rec {
     typing-extensions
   ];
 
+  format = "wheel";
   pythonImportsCheck = [ "pydata_sphinx_theme" ];
 
   meta = {

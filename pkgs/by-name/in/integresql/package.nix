@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
 }:
 
 buildGoModule (finalAttrs: {
@@ -16,6 +16,11 @@ buildGoModule (finalAttrs: {
   };
 
   vendorHash = "sha256-8qI7mLgQB0GK2QV6tZmWU8hJX+Ax1YhEPisQbjGoJRc=";
+  doCheck = false;
+
+  postInstall = ''
+    mv $out/bin/server $out/bin/integresql
+  '';
 
   ldflags = [
     "-s"
@@ -23,12 +28,6 @@ buildGoModule (finalAttrs: {
     "-X github.com/allaboutapps/integresql/internal/config.Commit=${finalAttrs.src.rev}"
     "-X github.com/allaboutapps/integresql/internal/config.ModuleName=github.com/allaboutapps/integresql"
   ];
-
-  postInstall = ''
-    mv $out/bin/server $out/bin/integresql
-  '';
-
-  doCheck = false;
 
   meta = {
     description = "Manages isolated PostgreSQL databases for your integration tests";

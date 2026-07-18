@@ -10,10 +10,7 @@ let
 in
 
 {
-  meta.maintainers = with lib.maintainers; [ doronbehar ];
-
   ###### interface
-
   options = {
     services.ddccontrol = {
       enable = lib.mkEnableOption ''
@@ -22,6 +19,7 @@ in
         This [enables `hardware.i2c`](#opt-hardware.i2c.enable), so note to add
         yourself to [`hardware.i2c.group`](#opt-hardware.i2c.group).
       '';
+
       package =
         lib.mkPackageOption pkgs
           "package with which to control brightness; added also to [services.dbus.packages](#opt-services.dbus.packages)."
@@ -33,22 +31,23 @@ in
   };
 
   ###### implementation
-
   config = lib.mkIf cfg.enable {
-    boot.kernelModules = [
-      "ddcci_backlight"
-    ];
     boot.extraModulePackages = [
       config.boot.kernelPackages.ddcci-driver
     ];
-    # Load the i2c-dev module
-    hardware.i2c = {
-      enable = true;
-    };
+
+    boot.kernelModules = [
+      "ddcci_backlight"
+    ];
 
     environment.systemPackages = [
       cfg.package
     ];
+
+    # Load the i2c-dev module
+    hardware.i2c = {
+      enable = true;
+    };
 
     services.dbus.packages = [
       cfg.package
@@ -58,4 +57,6 @@ in
       cfg.package
     ];
   };
+
+  meta.maintainers = with lib.maintainers; [ doronbehar ];
 }

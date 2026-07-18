@@ -1,22 +1,20 @@
 {
   lib,
   stdenv,
+  bzip2,
   coreutils,
   findutils,
-  nix,
-  xz,
-  bzip2,
-  gnused,
   gnugrep,
-  openssl,
-  lighttpd,
+  gnused,
   iproute2,
+  lighttpd,
+  nix,
+  openssl,
+  xz,
 }:
 stdenv.mkDerivation {
-  version = "2014-06-29-1";
   pname = "nix-binary-cache";
-
-  dontUnpack = true;
+  version = "2014-06-29-1";
 
   installPhase = ''
     mkdir -p "$out/bin"
@@ -55,16 +53,20 @@ stdenv.mkDerivation {
     chmod a+x "$out/bin/nix-binary-cache-start"
   '';
 
+  dontUnpack = true;
+
   meta = {
     description = "Set of scripts to serve the Nix store as a binary cache";
+
     longDescription = ''
       This package installs a CGI script that serves Nix store path in the
       binary cache format. It also installs a launcher called
       nix-binary-cache-start that can be run without any setup to launch
       a binary cache and get the example arguments for its usage.
     '';
-    maintainers = [ lib.maintainers.raskin ];
+
     license = lib.licenses.gpl2Plus;
+    maintainers = [ lib.maintainers.raskin ];
     platforms = lib.platforms.all;
     hydraPlatforms = [ ];
   };

@@ -3,22 +3,22 @@
   stdenv,
   fetchFromGitHub,
   SDL2,
-  libavif,
-  libpng,
-  libjpeg,
-  libogg,
-  libx11,
+  apple-sdk_15,
+  cmake,
   flac,
   glew,
-  openal,
-  cmake,
-  pkg-config,
-  libmad,
-  libuuid,
-  minizip,
+  libavif,
   libicns,
-  apple-sdk_15,
+  libjpeg,
+  libmad,
+  libogg,
+  libpng,
+  libuuid,
+  libx11,
+  minizip,
   nix-update-script,
+  openal,
+  pkg-config,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -62,8 +62,6 @@ stdenv.mkDerivation (finalAttrs: {
           ""
     '';
 
-  enableParallelBuilding = true;
-
   nativeBuildInputs = [
     cmake
     pkg-config
@@ -103,10 +101,12 @@ stdenv.mkDerivation (finalAttrs: {
     ln -s "$out/Applications/Endless Sky.app/Contents/MacOS/Endless Sky" "$out/bin/endless-sky"
   '';
 
+  enableParallelBuilding = true;
   passthru.updateScript = nix-update-script { };
 
   meta = {
     description = "Sandbox-style space exploration game similar to Elite, Escape Velocity, or Star Control";
+
     longDescription = ''
       Endless Sky is a sandbox-style space exploration game. You start as the captain
       of a tiny spaceship and can choose what to do from there. The game includes a
@@ -115,20 +115,24 @@ stdenv.mkDerivation (finalAttrs: {
       systems, upgrade your ship, recruit a fleet, and uncover alien civilisations
       beyond the boundaries of human space.
     '';
-    mainProgram = "endless-sky";
+
     homepage = "https://endless-sky.github.io/";
     changelog = "https://github.com/endless-sky/endless-sky/blob/v${finalAttrs.version}/changelog";
+
     license = with lib.licenses; [
       gpl3Plus
       cc-by-sa-30
       cc-by-sa-40
       publicDomain
     ];
+
     maintainers = with lib.maintainers; [
       _360ied
       lilacious
       philocalyst
     ];
+
     platforms = lib.platforms.all;
+    mainProgram = "endless-sky";
   };
 })

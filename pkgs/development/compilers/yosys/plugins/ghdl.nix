@@ -1,18 +1,17 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
-  pkg-config,
-  yosys,
-  readline,
-  zlib,
   ghdl,
+  pkg-config,
+  readline,
+  yosys,
+  zlib,
 }:
 
 stdenv.mkDerivation {
   pname = "yosys-ghdl";
   version = "0-unstable-2025-05-23";
-  plugin = "ghdl";
 
   src = fetchFromGitHub {
     owner = "ghdl";
@@ -21,27 +20,31 @@ stdenv.mkDerivation {
     hash = "sha256-TFMUqIXJzgpnZ8cDlVb47btPqsCNJil0MN4Tdt83140=";
   };
 
+  nativeBuildInputs = [
+    pkg-config
+  ];
+
   buildInputs = [
     yosys
     readline
     zlib
     ghdl
   ];
-  nativeBuildInputs = [
-    pkg-config
-  ];
 
   doCheck = true;
+
   installPhase = ''
     mkdir -p $out/share/yosys/plugins
     cp ghdl.so $out/share/yosys/plugins/ghdl.so
   '';
 
+  plugin = "ghdl";
+
   meta = {
     description = "GHDL plugin for Yosys";
     homepage = "https://github.com/ghdl/ghdl-yosys-plugin";
     license = lib.licenses.isc;
-    platforms = lib.platforms.all;
     maintainers = with lib.maintainers; [ thoughtpolice ];
+    platforms = lib.platforms.all;
   };
 }

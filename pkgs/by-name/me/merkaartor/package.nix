@@ -2,22 +2,21 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  fetchpatch,
-
   cmake,
-  pkg-config,
+  exiv2,
+  fetchpatch,
   gdal,
+  gpsd,
+  libproxy,
+  pkg-config,
   proj,
   protobuf,
   qt6,
-  withGeoimage ? true,
-  exiv2,
-  withGpsdlib ? (!stdenv.hostPlatform.isDarwin),
-  gpsd,
-  withLibproxy ? false,
-  libproxy,
-  withZbar ? false,
   zbar,
+  withGeoimage ? true,
+  withGpsdlib ? (!stdenv.hostPlatform.isDarwin),
+  withLibproxy ? false,
+  withZbar ? false,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -35,8 +34,8 @@ stdenv.mkDerivation (finalAttrs: {
     # Fix for GDAL 3.12
     # https://github.com/openstreetmap/merkaartor/pull/316
     (fetchpatch {
-      url = "https://github.com/openstreetmap/merkaartor/commit/28cca84e9f5db0aaba87c2084ed32f9677598823.diff";
       hash = "sha256-so0La5djYhWF6NqLpShWa3vGl5A2jkS3Xwg5Pe1yse4=";
+      url = "https://github.com/openstreetmap/merkaartor/commit/28cca84e9f5db0aaba87c2084ed32f9677598823.diff";
     })
   ];
 
@@ -81,8 +80,8 @@ stdenv.mkDerivation (finalAttrs: {
     description = "OpenStreetMap editor";
     homepage = "https://merkaartor.be/";
     license = lib.licenses.gpl2Plus;
+    platforms = lib.platforms.unix;
     mainProgram = "merkaartor";
     teams = [ lib.teams.geospatial ];
-    platforms = lib.platforms.unix;
   };
 })

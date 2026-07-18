@@ -1,6 +1,6 @@
 {
-  runCommand,
   ratchet,
+  runCommand,
 }:
 let
   inherit (ratchet) pname version;

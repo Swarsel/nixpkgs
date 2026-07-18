@@ -1,27 +1,26 @@
 {
   lib,
   fetchFromGitLab,
-  python3,
   appstream,
   blueprint-compiler,
   desktop-file-utils,
+  gitUpdater,
   glib,
+  gobject-introspection,
+  gtk4,
+  libadwaita,
+  librsvg,
   libxml2,
   meson,
   ninja,
   pkg-config,
+  python3,
   wrapGAppsHook4,
-  gobject-introspection,
-  libadwaita,
-  librsvg,
-  gtk4,
-  gitUpdater,
 }:
 
 python3.pkgs.buildPythonApplication (finalAttrs: {
   pname = "saldo";
   version = "0.8.4";
-  pyproject = false;
 
   src = fetchFromGitLab {
     owner = "tabos";
@@ -62,14 +61,15 @@ python3.pkgs.buildPythonApplication (finalAttrs: {
     schwifty
   ];
 
+  pyproject = false;
   passthru.updateScript = gitUpdater { };
 
   meta = {
-    changelog = "https://gitlab.com/tabos/saldo/-/blob/${finalAttrs.src.tag}/NEWS";
     description = "Banking application for small screens";
     homepage = "https://www.tabos.org/projects/saldo/";
+    changelog = "https://gitlab.com/tabos/saldo/-/blob/${finalAttrs.src.tag}/NEWS";
     license = lib.licenses.gpl3Plus;
-    mainProgram = "org.tabos.saldo";
     maintainers = with lib.maintainers; [ dotlambda ];
+    mainProgram = "org.tabos.saldo";
   };
 })

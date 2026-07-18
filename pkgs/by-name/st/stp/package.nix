@@ -1,25 +1,25 @@
 {
   lib,
   stdenv,
-  cmake,
-  boost,
-  bison,
-  flex,
-  pkg-config,
   fetchFromGitHub,
-  fetchpatch,
-  symlinkJoin,
-  perl,
-  python3,
-  zlib,
-  minisat,
-  cryptominisat,
-  gmp,
+  bison,
+  boost,
   cadical_2,
+  cmake,
+  cryptominisat,
+  fetchpatch,
+  flex,
+  gmp,
   gtest,
   lit,
-  outputcheck,
+  minisat,
   nix-update-script,
+  outputcheck,
+  perl,
+  pkg-config,
+  python3,
+  symlinkJoin,
+  zlib,
   useCadical ? true,
 }:
 
@@ -33,13 +33,20 @@ stdenv.mkDerivation (finalAttrs: {
     tag = "${finalAttrs.version}_cadical";
     hash = "sha256-fNx3/VS2bimlVwCejEZtNGDqVKnwBm0O2YkIUQm6eDM=";
   };
+
+  outputs = [
+    "dev"
+    "out"
+  ];
+
   patches = [
     # Python 3.12+ compatibility for build: https://github.com/stp/stp/pull/450
     (fetchpatch {
-      url = "https://github.com/stp/stp/commit/fb185479e760b6ff163512cb6c30ac9561aadc0e.patch";
       hash = "sha256-guFgeWOrxRrxkU7kMvd5+nmML0rwLYW196m1usE2qiA=";
+      url = "https://github.com/stp/stp/commit/fb185479e760b6ff163512cb6c30ac9561aadc0e.patch";
     })
   ];
+
   postPatch = ''
     substituteInPlace CMakeLists.txt \
       --replace-fail GIT-hash-notfound "$version"
@@ -62,6 +69,14 @@ stdenv.mkDerivation (finalAttrs: {
       --replace-fail 'include_directories(''${CADICAL_DIR}/)' 'include_directories(''${CADICAL_DIR}/include)'
   '';
 
+  nativeBuildInputs = [
+    cmake
+    bison
+    flex
+    perl
+    pkg-config
+  ];
+
   buildInputs = [
     boost
     zlib
@@ -71,19 +86,12 @@ stdenv.mkDerivation (finalAttrs: {
   ]
   ++ lib.optional (!useCadical) cryptominisat;
 
-  nativeBuildInputs = [
-    cmake
-    bison
-    flex
-    perl
-    pkg-config
-  ];
-
   cmakeFlags =
     let
       # STP expects Cadical dependencies to all be in the same place.
       cadicalDependency = symlinkJoin {
         name = "stp-${finalAttrs.version}-cadical";
+
         paths = [
           cadical_2.lib
           cadical_2.dev
@@ -111,11 +119,6 @@ stdenv.mkDerivation (finalAttrs: {
   # https://github.com/stp/stp/issues/498#issuecomment-2611251631
   env.CFLAGS = toString [ "-fsigned-char" ];
 
-  outputs = [
-    "dev"
-    "out"
-  ];
-
   preConfigure = ''
     python_install_dir=$out/${python3.sitePackages}
     mkdir -p $python_install_dir
@@ -130,13 +133,13 @@ stdenv.mkDerivation (finalAttrs: {
     ln -s ${outputcheck} deps/OutputCheck
   '';
 
+  doCheck = true;
+
   nativeCheckInputs = [
     gtest
     lit
     outputcheck
   ];
-
-  doCheck = true;
 
   postInstall = ''
     # Clean up installed gtest/gmock files that shouldn't be there.
@@ -152,6 +155,7 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   doInstallCheck = true;
+
   postInstallCheck = ''
     $out/bin/stp --version | tee /dev/stderr | grep -F "STP version $version"
 
@@ -175,11 +179,13 @@ stdenv.mkDerivation (finalAttrs: {
   meta = {
     description = "Simple Theorem Prover";
     homepage = "https://stp.github.io/";
+    license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       McSinyx
       numinit
     ];
+
     platforms = with lib.platforms; linux ++ darwin;
-    license = lib.licenses.mit;
   };
 })

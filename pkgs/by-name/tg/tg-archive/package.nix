@@ -1,7 +1,7 @@
 {
   lib,
-  python3,
   fetchFromGitHub,
+  python3,
 }:
 
 let
@@ -19,9 +19,6 @@ python3.pkgs.buildPythonApplication {
     hash = "sha256-GAy3dKkrrLO9IlRBUYaKxm4AswQK4cYUKIjezcBok/k=";
   };
 
-  pyproject = true;
-  pythonRelaxDeps = true;
-
   propagatedBuildInputs = with python3.pkgs; [
     setuptools
     telethon
@@ -34,9 +31,13 @@ python3.pkgs.buildPythonApplication {
     pytz
   ];
 
+  pyproject = true;
+
   pythonImportsCheck = [
     "tgarchive"
   ];
+
+  pythonRelaxDeps = true;
 
   meta = {
     description = "Tool for exporting Telegram group chats into static websites like mailing list archives";

@@ -1,15 +1,15 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
-  glib,
-  meson,
-  ninja,
-  wrapGAppsHook3,
   desktop-file-utils,
+  glib,
   gobject-introspection,
   gtk3,
+  meson,
+  ninja,
   python3,
+  wrapGAppsHook3,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -49,24 +49,24 @@ stdenv.mkDerivation (finalAttrs: {
     python3.pkgs.gatt
   ];
 
+  preFixup = ''
+    buildPythonPath "$out ''${pythonPath[*]}"
+    gappsWrapperArgs+=(--prefix PYTHONPATH : "$program_PYTHONPATH")
+  '';
+
   pythonPath = with python3.pkgs; [
     gatt
     pybluez
     requests
   ];
 
-  preFixup = ''
-    buildPythonPath "$out ''${pythonPath[*]}"
-    gappsWrapperArgs+=(--prefix PYTHONPATH : "$program_PYTHONPATH")
-  '';
-
   meta = {
     description = "GTK app to sync InfiniTime watch with PinePhone";
-    mainProgram = "siglo";
     homepage = "https://github.com/theironrobin/siglo";
     changelog = "https://github.com/theironrobin/siglo/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.mpl20;
     maintainers = [ ];
     platforms = lib.platforms.linux;
+    mainProgram = "siglo";
   };
 })

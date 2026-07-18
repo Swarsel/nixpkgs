@@ -3,15 +3,13 @@
   stdenv,
   fetchurl,
   pkg-config,
-
+  testers,
   # Optional Dependencies
   alsa-lib ? null,
-  db ? null,
-  libuuid ? null,
-  libffado ? null,
   celt_0_7 ? null,
-
-  testers,
+  db ? null,
+  libffado ? null,
+  libuuid ? null,
 }:
 
 let
@@ -33,30 +31,34 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-eykOnce5JirDKNQe74DBBTyXAT76y++jBHfLmypUReo=";
   };
 
-  configureFlags = [
-    (lib.enableFeature (optLibffado != null) "firewire")
-  ];
-
   nativeBuildInputs = [ pkg-config ];
+
   buildInputs = [
     optAlsaLib
     optDb
     optLibffado
     optCelt
   ];
+
   propagatedBuildInputs = [ optLibuuid ];
+
+  configureFlags = [
+    (lib.enableFeature (optLibffado != null) "firewire")
+  ];
 
   passthru.tests.pkg-config = testers.testMetaPkgConfig finalAttrs.finalPackage;
 
   meta = {
-    broken = stdenv.hostPlatform.isDarwin;
     description = "JACK audio connection kit";
     homepage = "https://jackaudio.org";
+
     license = with lib.licenses; [
       gpl2Plus
       lgpl21
     ];
-    pkgConfigModules = [ "jack" ];
+
     platforms = lib.platforms.unix;
+    broken = stdenv.hostPlatform.isDarwin;
+    pkgConfigModules = [ "jack" ];
   };
 })

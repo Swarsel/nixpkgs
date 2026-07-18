@@ -1,16 +1,16 @@
 {
   lib,
   stdenv,
+  copyDesktopItems,
   fetchzip,
   jdk25,
-  unzip,
-  copyDesktopItems,
-  makeDesktopItem,
-  makeBinaryWrapper,
   libGL,
-  libxxf86vm,
-  libxrender,
   libx11,
+  libxrender,
+  libxxf86vm,
+  makeBinaryWrapper,
+  makeDesktopItem,
+  unzip,
 }:
 
 let
@@ -18,9 +18,9 @@ let
     attrs:
     attrs.${stdenv.hostPlatform.system} or (throw "Unsupported system: ${stdenv.hostPlatform.system}");
   platform = selectSystem {
-    "x86_64-linux" = "linux-x86-64";
-    "aarch64-linux" = "linux-aarch64";
     "aarch64-darwin" = "macosx-aarch64";
+    "aarch64-linux" = "linux-aarch64";
+    "x86_64-linux" = "linux-x86-64";
   };
 
   runtimeDeps = [
@@ -41,32 +41,15 @@ stdenv.mkDerivation (finalAttrs: {
     stripRoot = false;
   };
 
+  postPatch = ''
+    patchShebangs ./build/script/package-weasis.sh
+  '';
+
   nativeBuildInputs = [
     copyDesktopItems
     makeBinaryWrapper
   ]
   ++ lib.optional stdenv.hostPlatform.isDarwin unzip;
-
-  desktopItems = [
-    (makeDesktopItem {
-      name = "DICOMizer";
-      exec = "Dicomizer";
-      icon = "Dicomizer";
-      desktopName = "DICOMizer";
-      comment = "Convert standard images into DICOM";
-    })
-    (makeDesktopItem {
-      name = "Weasis";
-      exec = "Weasis";
-      icon = "Weasis";
-      desktopName = "Weasis";
-      comment = finalAttrs.meta.description;
-    })
-  ];
-
-  postPatch = ''
-    patchShebangs ./build/script/package-weasis.sh
-  '';
 
   buildPhase = ''
     runHook preBuild
@@ -98,15 +81,34 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  desktopItems = [
+    (makeDesktopItem {
+      comment = "Convert standard images into DICOM";
+      desktopName = "DICOMizer";
+      exec = "Dicomizer";
+      icon = "Dicomizer";
+      name = "DICOMizer";
+    })
+    (makeDesktopItem {
+      comment = finalAttrs.meta.description;
+      desktopName = "Weasis";
+      exec = "Weasis";
+      icon = "Weasis";
+      name = "Weasis";
+    })
+  ];
+
   meta = {
     description = "Multipurpose standalone and web-based DICOM viewer with a highly modular architecture";
     homepage = "https://weasis.org";
     # Using changelog from releases as it is more accurate
     changelog = "https://github.com/nroduit/Weasis/releases/tag/v${finalAttrs.version}";
+
     license = with lib.licenses; [
       asl20
       epl20
     ];
+
     maintainers = [ ];
     platforms = lib.platforms.linux ++ lib.platforms.darwin;
     mainProgram = "Weasis";

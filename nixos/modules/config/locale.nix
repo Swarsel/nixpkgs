@@ -19,12 +19,55 @@ in
 {
   options = {
 
+    location = {
+
+      latitude = lib.mkOption {
+        description = ''
+          Your current latitude, between
+          `-90.0` and `90.0`. Must be provided
+          along with longitude.
+        '';
+
+        type = lib.types.float;
+      };
+
+      longitude = lib.mkOption {
+        description = ''
+          Your current longitude, between
+          between `-180.0` and `180.0`. Must be
+          provided along with latitude.
+        '';
+
+        type = lib.types.float;
+      };
+
+      provider = lib.mkOption {
+        default = "manual";
+
+        description = ''
+          The location provider to use for determining your location. If set to
+          `manual` you must also provide latitude/longitude.
+        '';
+
+        type = lib.types.enum [
+          "manual"
+          "geoclue2"
+        ];
+      };
+
+    };
+
     time = {
+
+      hardwareClockInLocalTime = lib.mkOption {
+        default = false;
+        description = "If set, keep the hardware clock in local time instead of UTC.";
+        type = lib.types.bool;
+      };
 
       timeZone = lib.mkOption {
         default = null;
-        type = timezone;
-        example = "America/New_York";
+
         description = ''
           The time zone used when displaying times and dates. See <https://en.wikipedia.org/wiki/List_of_tz_database_time_zones>
           for a comprehensive list of possible values for this setting.
@@ -32,46 +75,9 @@ in
           If null, the timezone will default to UTC and can be set imperatively
           using timedatectl.
         '';
-      };
 
-      hardwareClockInLocalTime = lib.mkOption {
-        default = false;
-        type = lib.types.bool;
-        description = "If set, keep the hardware clock in local time instead of UTC.";
-      };
-
-    };
-
-    location = {
-
-      latitude = lib.mkOption {
-        type = lib.types.float;
-        description = ''
-          Your current latitude, between
-          `-90.0` and `90.0`. Must be provided
-          along with longitude.
-        '';
-      };
-
-      longitude = lib.mkOption {
-        type = lib.types.float;
-        description = ''
-          Your current longitude, between
-          between `-180.0` and `180.0`. Must be
-          provided along with latitude.
-        '';
-      };
-
-      provider = lib.mkOption {
-        type = lib.types.enum [
-          "manual"
-          "geoclue2"
-        ];
-        default = "manual";
-        description = ''
-          The location provider to use for determining your location. If set to
-          `manual` you must also provide latitude/longitude.
-        '';
+        example = "America/New_York";
+        type = timezone;
       };
 
     };
@@ -79,19 +85,12 @@ in
 
   config = {
 
-    environment.sessionVariables.TZDIR = "/etc/zoneinfo";
-
-    services.geoclue2.enable = lib.mkIf (lcfg.provider == "geoclue2") true;
-
-    # This way services are restarted when tzdata changes.
-    systemd.globalEnvironment.TZDIR = tzdir;
-
     environment.etc = {
       zoneinfo.source = tzdir;
     }
     // lib.optionalAttrs (config.time.timeZone != null) {
-      localtime.source = "/etc/zoneinfo/${config.time.timeZone}";
       localtime.mode = "direct-symlink";
+      localtime.source = "/etc/zoneinfo/${config.time.timeZone}";
     }
     // lib.optionalAttrs config.time.hardwareClockInLocalTime {
       # Mirrors timedated
@@ -102,6 +101,11 @@ in
         LOCAL
       '';
     };
+
+    environment.sessionVariables.TZDIR = "/etc/zoneinfo";
+    services.geoclue2.enable = lib.mkIf (lcfg.provider == "geoclue2") true;
+    # This way services are restarted when tzdata changes.
+    systemd.globalEnvironment.TZDIR = tzdir;
   };
 
 }

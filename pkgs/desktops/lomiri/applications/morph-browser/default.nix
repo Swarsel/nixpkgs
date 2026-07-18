@@ -1,12 +1,11 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitLab,
-  gitUpdater,
-  nixosTests,
   cmake,
   ctestCheckHook,
   gettext,
+  gitUpdater,
   libapparmor,
   libpsl,
   lomiri-action-api,
@@ -15,17 +14,18 @@
   lomiri-ui-extras,
   lomiri-ui-toolkit,
   mesa,
+  nixosTests,
   pkg-config,
   qqc2-suru-style,
-  qt5compat ? null,
   qtbase,
   qtdeclarative,
-  qtquickcontrols2 ? null,
-  qtsystems ? null,
   qttools,
   qtwebengine,
   wrapQtAppsHook,
   xvfb-run,
+  qt5compat ? null,
+  qtquickcontrols2 ? null,
+  qtsystems ? null,
   withDocumentation ? true,
 }:
 
@@ -110,12 +110,6 @@ stdenv.mkDerivation (finalAttrs: {
     qt5compat
   ];
 
-  nativeCheckInputs = [
-    ctestCheckHook
-    mesa.llvmpipeHook # ShapeMaterial needs an OpenGL context: https://gitlab.com/ubports/development/core/lomiri-ui-toolkit/-/issues/35
-    xvfb-run
-  ];
-
   cmakeFlags = [
     (lib.cmakeBool "CLICK_MODE" false)
     (lib.cmakeBool "ENABLE_QT6" withQt6)
@@ -127,12 +121,10 @@ stdenv.mkDerivation (finalAttrs: {
     # Hard dependency on Qt5 still
     && (!withQt6);
 
-  disabledTests = [
-    # Don't care about linter failures
-    "flake8"
-
-    # Flaky
-    "tst_HistoryModelTests"
+  nativeCheckInputs = [
+    ctestCheckHook
+    mesa.llvmpipeHook # ShapeMaterial needs an OpenGL context: https://gitlab.com/ubports/development/core/lomiri-ui-toolkit/-/issues/35
+    xvfb-run
   ];
 
   preCheck = ''
@@ -161,16 +153,23 @@ stdenv.mkDerivation (finalAttrs: {
     ln -s $out/share/{morph-browser/morph-browser-splash.svg,lomiri-app-launch/splash/morph-browser.svg}
   '';
 
+  disabledTests = [
+    # Don't care about linter failures
+    "flake8"
+
+    # Flaky
+    "tst_HistoryModelTests"
+  ];
+
   passthru = {
     updateScript = gitUpdater { };
   }
   // lib.optionalAttrs withQt6 {
     tests = {
-      # Test of morph-browser itself
-      standalone = if withQt6 then nixosTests.morph-browser.qt6 else nixosTests.morph-browser.qt5;
-
       # Interactions between the Lomiri ecosystem and this browser
       inherit (nixosTests.lomiri) desktop-basics desktop-appinteractions;
+      # Test of morph-browser itself
+      standalone = if withQt6 then nixosTests.morph-browser.qt6 else nixosTests.morph-browser.qt5;
     };
   };
 
@@ -178,12 +177,14 @@ stdenv.mkDerivation (finalAttrs: {
     description = "Lightweight web browser tailored for Ubuntu Touch";
     homepage = "https://gitlab.com/ubports/development/core/morph-browser";
     changelog = "https://gitlab.com/ubports/development/core/morph-browser/-/blob/${finalAttrs.version}/ChangeLog";
+
     license = with lib.licenses; [
       gpl3Only
       cc-by-sa-30
     ];
+
+    platforms = lib.platforms.linux;
     mainProgram = "morph-browser";
     teams = [ lib.teams.lomiri ];
-    platforms = lib.platforms.linux;
   };
 })

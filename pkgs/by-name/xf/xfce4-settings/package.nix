@@ -1,17 +1,15 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitLab,
-  gettext,
-  pkg-config,
-  xfce4-dev-tools,
-  wayland-scanner,
-  wrapGAppsHook3,
-  xfce4-exo,
+  bashNonInteractive,
+  colord,
   garcon,
-  gtk3,
-  gtk-layer-shell,
+  gettext,
+  gitUpdater,
   glib,
+  gtk-layer-shell,
+  gtk3,
   libnotify,
   libx11,
   libxext,
@@ -19,19 +17,21 @@
   libxfce4util,
   libxklavier,
   libxml2,
-  bashNonInteractive,
-  withXrandr ? true,
+  pkg-config,
   upower,
+  wayland-scanner,
+  wlr-protocols,
+  wrapGAppsHook3,
+  xapp,
+  xf86-input-libinput,
+  xfce4-dev-tools,
+  xfce4-exo,
+  xfconf,
+  withColord ? true,
   # Disabled by default on upstream and actually causes issues:
   # https://gitlab.xfce.org/xfce/xfce4-settings/-/issues/222
   withUpower ? false,
-  wlr-protocols,
-  xapp,
-  xfconf,
-  xf86-input-libinput,
-  colord,
-  withColord ? true,
-  gitUpdater,
+  withXrandr ? true,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -39,16 +39,14 @@ stdenv.mkDerivation (finalAttrs: {
   version = "4.20.4";
 
   src = fetchFromGitLab {
-    domain = "gitlab.xfce.org";
     owner = "xfce";
     repo = "xfce4-settings";
     tag = "xfce4-settings-${finalAttrs.version}";
     hash = "sha256-EAiu29wctXg0EjdFVJOl+0nh1A0l2E44v+i/o5l/PQ8=";
+    domain = "gitlab.xfce.org";
   };
 
-  depsBuildBuild = [
-    pkg-config
-  ];
+  strictDeps = true;
 
   nativeBuildInputs = [
     gettext
@@ -80,8 +78,6 @@ stdenv.mkDerivation (finalAttrs: {
   ++ lib.optionals withUpower [ upower ]
   ++ lib.optionals withColord [ colord ];
 
-  strictDeps = true;
-
   configureFlags = [
     "--enable-sound-settings"
     (lib.enableFeature withXrandr "xrandr")
@@ -89,19 +85,23 @@ stdenv.mkDerivation (finalAttrs: {
   ++ lib.optionals withUpower [ "--enable-upower-glib" ]
   ++ lib.optionals withColord [ "--enable-colord" ];
 
+  depsBuildBuild = [
+    pkg-config
+  ];
+
   enableParallelBuilding = true;
 
   passthru.updateScript = gitUpdater {
-    rev-prefix = "xfce4-settings-";
     odd-unstable = true;
+    rev-prefix = "xfce4-settings-";
   };
 
   meta = {
     description = "Settings manager for Xfce";
     homepage = "https://gitlab.xfce.org/xfce/xfce4-settings";
     license = lib.licenses.gpl2Plus;
-    mainProgram = "xfce4-settings-manager";
     platforms = lib.platforms.linux;
+    mainProgram = "xfce4-settings-manager";
     teams = [ lib.teams.xfce ];
   };
 })

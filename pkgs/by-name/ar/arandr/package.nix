@@ -2,13 +2,13 @@
   lib,
   fetchFromGitLab,
   fetchpatch,
-  python3Packages,
   gobject-introspection,
   gsettings-desktop-schemas,
   gtk3,
+  nix-update-script,
+  python3Packages,
   wrapGAppsHook3,
   xrandr,
-  nix-update-script,
 }:
 
 let
@@ -22,7 +22,6 @@ in
 buildPythonApplication (finalAttrs: {
   pname = "arandr";
   version = "0.1.11";
-  pyproject = true;
 
   src = fetchFromGitLab {
     owner = "arandr";
@@ -37,9 +36,9 @@ buildPythonApplication (finalAttrs: {
 
     # fixes build with setuptools 81+, while keeping it backwards compatible
     (fetchpatch {
+      hash = "sha256-b9U8b4rdkN5lWDVpv50szaVS0rAZVSy7q6IXNVLvq3A=";
       name = "arandr-0.1.11-setuptools-81.patch";
       url = "https://gitweb.gentoo.org/repo/gentoo.git/plain/x11-misc/arandr/files/arandr-0.1.11-setuptools-81.patch";
-      hash = "sha256-b9U8b4rdkN5lWDVpv50szaVS0rAZVSy7q6IXNVLvq3A=";
     })
   ];
 
@@ -48,20 +47,13 @@ buildPythonApplication (finalAttrs: {
     wrapGAppsHook3
   ];
 
-  propagatedBuildInputs = [
-    xrandr
-  ];
-
   buildInputs = [
     gsettings-desktop-schemas
     gtk3
   ];
 
-  build-system = [ setuptools ];
-
-  dependencies = [
-    docutils
-    pygobject3
+  propagatedBuildInputs = [
+    xrandr
   ];
 
   preBuild = ''
@@ -71,11 +63,19 @@ buildPythonApplication (finalAttrs: {
   # no tests
   doCheck = false;
 
-  dontWrapGApps = true;
-
   preFixup = ''
     makeWrapperArgs+=("''${gappsWrapperArgs[@]}")
   '';
+
+  build-system = [ setuptools ];
+
+  dependencies = [
+    docutils
+    pygobject3
+  ];
+
+  dontWrapGApps = true;
+  pyproject = true;
 
   passthru.updateScript = nix-update-script {
     extraArgs = [
@@ -84,13 +84,15 @@ buildPythonApplication (finalAttrs: {
   };
 
   meta = {
-    changelog = "https://gitlab.com/arandr/arandr/-/blob/${finalAttrs.src.tag}/ChangeLog";
     description = "Simple visual front end for XRandR";
     homepage = "https://christian.amsuess.com/tools/arandr/";
+    changelog = "https://gitlab.com/arandr/arandr/-/blob/${finalAttrs.src.tag}/ChangeLog";
     license = lib.licenses.gpl3Plus;
-    mainProgram = "arandr";
+
     maintainers = with lib.maintainers; [
       gepbird
     ];
+
+    mainProgram = "arandr";
   };
 })

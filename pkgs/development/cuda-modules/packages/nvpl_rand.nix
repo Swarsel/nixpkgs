@@ -1,6 +1,5 @@
 { buildRedist }:
 buildRedist {
-  redistName = "nvpl";
   pname = "nvpl_rand";
 
   outputs = [
@@ -9,6 +8,8 @@ buildRedist {
     "include"
     "lib"
   ];
+
+  redistName = "nvpl";
 
   meta = {
     description = "Collection of efficient pseudorandom and quasirandom number generators for ARM CPUs";

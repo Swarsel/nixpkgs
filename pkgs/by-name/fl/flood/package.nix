@@ -1,12 +1,12 @@
 {
   lib,
-  buildNpmPackage,
   fetchFromGitHub,
-  nixosTests,
-  pnpm_10,
+  buildNpmPackage,
   fetchPnpmDeps,
-  pnpmConfigHook,
   nix-update-script,
+  nixosTests,
+  pnpmConfigHook,
+  pnpm_10,
 }:
 buildNpmPackage (finalAttrs: {
   pname = "flood";
@@ -20,24 +20,27 @@ buildNpmPackage (finalAttrs: {
   };
 
   nativeBuildInputs = [ pnpm_10 ];
+  dontNpmPrune = true;
   npmConfigHook = pnpmConfigHook;
   npmDeps = finalAttrs.pnpmDeps;
-  dontNpmPrune = true;
+
   pnpmDeps = fetchPnpmDeps {
     inherit (finalAttrs)
       pname
       version
       src
       ;
-    pnpm = pnpm_10;
+
     fetcherVersion = 4;
     hash = "sha256-yNRC5sCBn002gxUfHMUvh3DZeVYOokfz4MTvqXR2MzI=";
+    pnpm = pnpm_10;
   };
 
   passthru = {
     tests = {
       inherit (nixosTests) flood;
     };
+
     updateScript = nix-update-script { };
   };
 
@@ -46,12 +49,14 @@ buildNpmPackage (finalAttrs: {
     homepage = "https://flood.js.org";
     changelog = "https://github.com/jesec/flood/releases/${finalAttrs.src.tag}";
     license = lib.licenses.gpl3Only;
+
     maintainers = with lib.maintainers; [
       azahi
       thiagokokada
       winter
       ners
     ];
+
     mainProgram = "flood";
   };
 })

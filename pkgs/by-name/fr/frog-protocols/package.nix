@@ -1,11 +1,11 @@
 {
-  fetchFromGitHub,
   lib,
+  stdenv,
+  fetchFromGitHub,
   meson,
   ninja,
-  unstableGitUpdater,
-  stdenv,
   testers,
+  unstableGitUpdater,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -25,18 +25,20 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   passthru = {
-    updateScript = unstableGitUpdater { };
     tests.pkg-config = testers.hasPkgConfigModules { package = finalAttrs.finalPackage; };
+    updateScript = unstableGitUpdater { };
   };
 
   meta = {
     description = "Wayland protocols but much more iterative";
     homepage = "https://github.com/misyltoad/frog-protocols";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       getchoo
       Scrumplex
     ];
+
     platforms = lib.platforms.all;
     pkgConfigModules = [ "frog-protocols" ];
   };

@@ -2,12 +2,12 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  autoreconfHook,
-  wxwidgets_3_2,
-  subversion,
   apr,
   aprutil,
+  autoreconfHook,
   python3,
+  subversion,
+  wxwidgets_3_2,
 }:
 
 stdenv.mkDerivation {

@@ -2,15 +2,14 @@
   lib,
   buildPythonPackage,
   fetchPypi,
-  setuptools,
   python-dateutil,
   pytz,
+  setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "snaptime";
   version = "0.2.4";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
@@ -18,16 +17,16 @@ buildPythonPackage rec {
   };
 
   nativeBuildInputs = [ setuptools ];
+  # no tests on Pypi, no tags on github
+  doCheck = false;
 
   dependencies = [
     python-dateutil
     pytz
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "snaptime" ];
-
-  # no tests on Pypi, no tags on github
-  doCheck = false;
 
   meta = {
     description = "Transform timestamps with a simple DSL";

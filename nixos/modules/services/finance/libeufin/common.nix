@@ -1,21 +1,22 @@
 # TODO: create a common module generator for Taler and Libeufin?
 libeufinComponent:
 {
+  config,
   lib,
   pkgs,
-  config,
   ...
 }:
 {
   options.services.libeufin.${libeufinComponent} = {
     enable = lib.mkEnableOption "libeufin core banking system and web interface";
     package = lib.mkPackageOption pkgs "libeufin" { };
-    debug = lib.mkEnableOption "debug logging";
     createLocalDatabase = lib.mkEnableOption "automatic creation of a local postgres database";
+    debug = lib.mkEnableOption "debug logging";
+
     openFirewall = lib.mkOption {
-      type = lib.types.bool;
       default = false;
       description = "Whether to open ports in the firewall";
+      type = lib.types.bool;
     };
   };
 
@@ -38,27 +39,61 @@ libeufinComponent:
       bankHost = lib.elemAt (lib.splitString "/" cfg.settings.libeufin-bank.BASE_URL) 2;
     in
     lib.mkIf cfg.enable {
+      assertions = [
+        {
+          assertion =
+            cfg.createLocalDatabase || (cfg.settings."libeufin-${libeufinComponent}db-postgres" ? CONFIG);
+
+          message = "Libeufin ${libeufinComponent} database is not configured.";
+        }
+      ];
+
+      environment.systemPackages = [ cfg.package ];
+
+      networking.firewall = lib.mkIf cfg.openFirewall {
+        allowedTCPPorts = [
+          bankPort
+        ];
+      };
+
       services.libeufin.settings = cfg.settings;
+
+      services.postgresql = lib.mkIf cfg.createLocalDatabase {
+        enable = true;
+        ensureDatabases = [ dbName ];
+
+        ensureUsers = [
+          { name = serviceName; }
+          {
+            ensureDBOwnership = true;
+            name = dbName;
+          }
+        ];
+      };
 
       # TODO add system-libeufin.slice?
       systemd.services = {
         # Main service
         "${serviceName}" = {
+          after = [ "libeufin-dbinit.service" ];
+          requires = [ "libeufin-dbinit.service" ];
+
           serviceConfig = {
             DynamicUser = true;
+
             ExecStart =
               let
                 args = lib.cli.toCommandLineShellGNU { } {
-                  c = configFile;
                   L = if cfg.debug then "debug" else null;
+                  c = configFile;
                 };
               in
               "${lib.getExe' cfg.package "libeufin-${libeufinComponent}"} serve ${args}";
+
             Restart = "on-failure";
             RestartSec = "10s";
           };
-          requires = [ "libeufin-dbinit.service" ];
-          after = [ "libeufin-dbinit.service" ];
+
           wantedBy = [ "multi-user.target" ];
         };
 
@@ -81,34 +116,27 @@ libeufinComponent:
               account:
               let
                 args = lib.cli.toCommandLineShellGNU { } {
-                  c = configFile;
                   inherit (account) username password name;
-                  payto_uri = "payto://x-taler-bank/${bankHost}/${account.username}?receiver-name=${account.name}";
+                  c = configFile;
                   exchange = lib.toLower account.username == "exchange";
+                  payto_uri = "payto://x-taler-bank/${bankHost}/${account.username}?receiver-name=${account.name}";
                 };
               in
               "${lib.getExe' cfg.package "libeufin-bank"} create-account ${args}"
             ) cfg.initialAccounts;
 
             args = lib.cli.toCommandLineShellGNU { } {
-              c = configFile;
               L = if cfg.debug then "debug" else null;
+              c = configFile;
             };
           in
           {
+            after = [ "network.target" ] ++ lib.optionals cfg.createLocalDatabase [ "postgresql.target" ];
+
             path = [
               (if cfg.createLocalDatabase then config.services.postgresql.package else pkgs.postgresql)
             ];
-            serviceConfig = {
-              Type = "oneshot";
-              DynamicUser = true;
-              StateDirectory = "libeufin-dbinit";
-              StateDirectoryMode = "0750";
-              User = dbName;
-            };
-            script = lib.optionalString cfg.enable ''
-              ${lib.getExe' cfg.package "libeufin-${libeufinComponent}"} dbinit ${args}
-            '';
+
             # Grant DB permissions after schemas have been created
             postStart = ''
               psql -U "${dbName}" -f "${dbScript}"
@@ -122,38 +150,22 @@ libeufinComponent:
                 echo "Bank initialisation complete"
               fi
             '';
+
             requires = lib.optionals cfg.createLocalDatabase [ "postgresql.target" ];
-            after = [ "network.target" ] ++ lib.optionals cfg.createLocalDatabase [ "postgresql.target" ];
+
+            script = lib.optionalString cfg.enable ''
+              ${lib.getExe' cfg.package "libeufin-${libeufinComponent}"} dbinit ${args}
+            '';
+
+            serviceConfig = {
+              DynamicUser = true;
+              StateDirectory = "libeufin-dbinit";
+              StateDirectoryMode = "0750";
+              Type = "oneshot";
+              User = dbName;
+            };
           };
       };
-
-      networking.firewall = lib.mkIf cfg.openFirewall {
-        allowedTCPPorts = [
-          bankPort
-        ];
-      };
-
-      environment.systemPackages = [ cfg.package ];
-
-      services.postgresql = lib.mkIf cfg.createLocalDatabase {
-        enable = true;
-        ensureDatabases = [ dbName ];
-        ensureUsers = [
-          { name = serviceName; }
-          {
-            name = dbName;
-            ensureDBOwnership = true;
-          }
-        ];
-      };
-
-      assertions = [
-        {
-          assertion =
-            cfg.createLocalDatabase || (cfg.settings."libeufin-${libeufinComponent}db-postgres" ? CONFIG);
-          message = "Libeufin ${libeufinComponent} database is not configured.";
-        }
-      ];
 
     };
 }

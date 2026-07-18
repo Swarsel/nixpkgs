@@ -1,34 +1,36 @@
 {
+  lib,
   coreutils,
   flatten-references-graph,
-  lib,
   jq,
   runCommand,
 }:
 {
   closureRoots,
+  debug ? false,
   excludePaths ? [ ],
   # This could be a path to (or a derivation producing a path to)
   # a json file containing the pipeline
   pipeline ? [ ],
-  debug ? false,
 }:
 if closureRoots == [ ] then
   builtins.toFile "docker-layers-empty" "[]"
 else
   runCommand "docker-layers"
     {
-      __structuredAttrs = true;
-      # graph, exclude_paths and pipeline are expected by the
-      # flatten_references_graph executable.
-      exportReferencesGraph.graph = closureRoots;
-      exclude_paths = excludePaths;
       inherit pipeline;
+
       nativeBuildInputs = [
         coreutils
         flatten-references-graph
         jq
       ];
+
+      __structuredAttrs = true;
+      exclude_paths = excludePaths;
+      # graph, exclude_paths and pipeline are expected by the
+      # flatten_references_graph executable.
+      exportReferencesGraph.graph = closureRoots;
     }
     ''
       . .attrs.sh

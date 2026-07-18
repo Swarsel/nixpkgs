@@ -1,17 +1,18 @@
 {
   stdenv,
   fetchurl,
-  darwin,
-  meta,
-  pname,
-  version,
-  url,
-  hash,
-  passthru,
   _7zz,
+  darwin,
+  hash,
+  meta,
+  passthru,
+  pname,
+  url,
+  version,
 }:
 stdenv.mkDerivation {
   inherit meta pname version;
+  inherit passthru;
 
   src = fetchurl {
     inherit url hash;
@@ -21,8 +22,6 @@ stdenv.mkDerivation {
     darwin.sigtool
     _7zz
   ];
-
-  sourceRoot = ".";
 
   installPhase = ''
     runHook preInstall
@@ -48,6 +47,7 @@ stdenv.mkDerivation {
 
   # LM Studio ships Scripts inside the App Bundle, which may be messed up by standard fixups
   dontFixup = true;
+  sourceRoot = ".";
 
   # undmg doesn't support APFS and 7zz does break the xattr. Took that approach from https://github.com/NixOS/nixpkgs/blob/a3c6ed7ad2649c1a55ffd94f7747e3176053b833/pkgs/by-name/in/insomnia/package.nix#L52
   # NOTE (djmaxus): even with hdiutil, a check `xattr -lr LM\ Studio.app` returns nothing,
@@ -55,6 +55,4 @@ stdenv.mkDerivation {
   unpackPhase = ''
     7zz x -snld $src
   '';
-
-  inherit passthru;
 }

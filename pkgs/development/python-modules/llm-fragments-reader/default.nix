@@ -1,22 +1,21 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
+  buildPythonPackage,
   httpx,
   httpx-sse,
   llm,
   llm-fragments-reader,
-  pytestCheckHook,
   pytest-asyncio,
   pytest-httpx,
+  pytestCheckHook,
+  setuptools,
   writableTmpDirAsHomeHook,
 }:
 
 buildPythonPackage rec {
   pname = "llm-fragments-reader";
   version = "0.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "simonw";
@@ -25,18 +24,16 @@ buildPythonPackage rec {
     hash = "sha256-2xdvOpMGsTtnerrlGiVSHoJrM+GQ7Zgv+zn2SAwYAL4=";
   };
 
-  build-system = [ setuptools ];
-
-  dependencies = [ llm ];
-
   nativeCheckInputs = [
     pytestCheckHook
     pytest-httpx
     writableTmpDirAsHomeHook
   ];
 
+  build-system = [ setuptools ];
+  dependencies = [ llm ];
+  pyproject = true;
   pythonImportsCheck = [ "llm_fragments_reader" ];
-
   passthru.tests = llm.mkPluginTest llm-fragments-reader;
 
   meta = {

@@ -2,10 +2,10 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  perl,
-  which,
   openssl,
+  perl,
   sqlite,
+  which,
 }:
 
 # Instead of writing directly into $HOME, we change the default db location
@@ -35,23 +35,22 @@ stdenv.mkDerivation (finalAttrs: {
     done
   '';
 
-  buildInputs = [
-    openssl
-    sqlite
-  ];
-
   nativeBuildInputs = [
     perl
     which
+  ];
+
+  buildInputs = [
+    openssl
+    sqlite
   ];
 
   makeFlags = [
     "INSTALL_PREFIX=$(out)"
   ];
 
-  enableParallelBuilding = true;
-
   doCheck = true;
+  enableParallelBuilding = true;
 
   meta = {
     description = "CLI utility to find duplicate files";

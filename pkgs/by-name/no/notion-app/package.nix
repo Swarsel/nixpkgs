@@ -1,7 +1,7 @@
 {
   lib,
-  stdenvNoCC,
   fetchurl,
+  stdenvNoCC,
   unzip,
 }:
 let
@@ -10,11 +10,9 @@ in
 stdenvNoCC.mkDerivation (finalAttrs: {
   pname = "notion-app";
   version = info.version;
-
   src = fetchurl { inherit (info) url hash; };
-
-  sourceRoot = ".";
   nativeBuildInputs = [ unzip ];
+
   installPhase = ''
     runHook preInstall
 
@@ -24,19 +22,22 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  sourceRoot = ".";
   passthru.updateScript = ./update/update.mjs;
 
   meta = {
     description = "App to write, plan, collaborate, and get organised";
     homepage = "https://www.notion.so/";
     license = lib.licenses.unfree;
+    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
+
     maintainers = with lib.maintainers; [
       xiaoxiangmoe
       pradyuman
     ];
+
     platforms = [
       "aarch64-darwin"
     ];
-    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
   };
 })

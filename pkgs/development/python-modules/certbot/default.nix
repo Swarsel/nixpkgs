@@ -1,31 +1,30 @@
 {
   lib,
   stdenv,
-  buildPythonPackage,
-  python,
-  runCommand,
   fetchFromGitHub,
-  configargparse,
   acme,
+  buildPythonPackage,
+  configargparse,
   configobj,
   cryptography,
+  dialog,
   distro,
+  gnureadline,
   josepy,
   parsedatetime,
   pyrfc3339,
-  setuptools,
-  dialog,
-  gnureadline,
   pytest-xdist,
   pytestCheckHook,
+  python,
   python-dateutil,
+  runCommand,
+  setuptools,
   writeShellScriptBin,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "certbot";
   version = "5.6.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "certbot";
@@ -33,21 +32,6 @@ buildPythonPackage (finalAttrs: {
     tag = "v${finalAttrs.version}";
     hash = "sha256-knaEk4bjC0cdnMiO4ENvaDm/i/3tn6ZOJPdyqJxLKOs=";
   };
-
-  sourceRoot = "${finalAttrs.src.name}/certbot";
-
-  build-system = [ setuptools ];
-
-  dependencies = [
-    configargparse
-    acme
-    configobj
-    cryptography
-    distro
-    josepy
-    parsedatetime
-    pyrfc3339
-  ];
 
   buildInputs = [
     dialog
@@ -65,9 +49,18 @@ buildPythonPackage (finalAttrs: {
     '')
   ];
 
-  pytestFlags = [
-    "-pno:cacheprovider"
-    "-Wignore::DeprecationWarning"
+  __darwinAllowLocalNetworking = true;
+  build-system = [ setuptools ];
+
+  dependencies = [
+    configargparse
+    acme
+    configobj
+    cryptography
+    distro
+    josepy
+    parsedatetime
+    pyrfc3339
   ];
 
   disabledTests = [
@@ -75,9 +68,15 @@ buildPythonPackage (finalAttrs: {
     "test_lock_order"
   ];
 
-  __darwinAllowLocalNetworking = true;
-
   makeWrapperArgs = [ "--prefix PATH : ${dialog}/bin" ];
+  pyproject = true;
+
+  pytestFlags = [
+    "-pno:cacheprovider"
+    "-Wignore::DeprecationWarning"
+  ];
+
+  sourceRoot = "${finalAttrs.src.name}/certbot";
 
   # certbot.withPlugins has a similar calling convention as python*.withPackages
   # it gets invoked with a lambda, and invokes that lambda with the python package set matching certbot's:
@@ -98,12 +97,12 @@ buildPythonPackage (finalAttrs: {
       '';
 
   meta = {
+    description = "ACME client that can obtain certs and extensibly update server configurations";
     homepage = "https://github.com/certbot/certbot";
     changelog = "https://github.com/certbot/certbot/blob/${finalAttrs.src.tag}/certbot/CHANGELOG.md";
-    description = "ACME client that can obtain certs and extensibly update server configurations";
+    license = with lib.licenses; [ asl20 ];
+    maintainers = with lib.maintainers; [ miniharinn ];
     platforms = lib.platforms.unix;
     mainProgram = "certbot";
-    maintainers = with lib.maintainers; [ miniharinn ];
-    license = with lib.licenses; [ asl20 ];
   };
 })

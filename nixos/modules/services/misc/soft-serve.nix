@@ -15,17 +15,17 @@ in
   options = {
     services.soft-serve = {
       enable = lib.mkEnableOption "soft-serve";
-
       package = lib.mkPackageOption pkgs "soft-serve" { };
 
       settings = lib.mkOption {
-        type = format.type;
         default = { };
+
         description = ''
           The contents of the configuration file for soft-serve.
 
           See <${docUrl}>.
         '';
+
         example = lib.literalExpression ''
           {
             name = "user's repos";
@@ -39,6 +39,8 @@ in
             stats.listen_addr = ":23233";
           }
         '';
+
+        type = format.type;
       };
     };
   };
@@ -46,55 +48,57 @@ in
   config = lib.mkIf cfg.enable {
 
     systemd.services.soft-serve = {
+      after = [ "network-online.target" ];
       description = "Soft Serve git server";
       documentation = [ docUrl ];
-      requires = [ "network-online.target" ];
-      after = [ "network-online.target" ];
-      wantedBy = [ "multi-user.target" ];
-
-      environment.SOFT_SERVE_DATA_PATH = stateDir;
       environment.SOFT_SERVE_CONFIG_LOCATION = configFile;
+      environment.SOFT_SERVE_DATA_PATH = stateDir;
+      requires = [ "network-online.target" ];
 
       serviceConfig = {
-        Type = "simple";
+        CapabilityBoundingSet = "";
         DynamicUser = true;
-        Restart = "always";
-        ExecStart = "${lib.getExe cfg.package} serve";
-
         # Hooks must be executable, but DynamicUser mounts /var/lib/private as noexec
         ExecPaths = "${stateDir}/repos";
-
-        StateDirectory = "soft-serve";
-        WorkingDirectory = stateDir;
-        ProcSubset = "pid";
-        ProtectProc = "invisible";
-        UMask = "0027";
-        CapabilityBoundingSet = "";
-        ProtectHome = true;
+        ExecStart = "${lib.getExe cfg.package} serve";
+        LockPersonality = true;
+        MemoryDenyWriteExecute = true;
         PrivateDevices = true;
+        PrivateMounts = true;
         PrivateUsers = true;
-        ProtectHostname = true;
+        ProcSubset = "pid";
         ProtectClock = true;
-        ProtectKernelTunables = true;
-        ProtectKernelModules = true;
-        ProtectKernelLogs = true;
         ProtectControlGroups = true;
+        ProtectHome = true;
+        ProtectHostname = true;
+        ProtectKernelLogs = true;
+        ProtectKernelModules = true;
+        ProtectKernelTunables = true;
+        ProtectProc = "invisible";
+        Restart = "always";
+
         RestrictAddressFamilies = [
           "AF_UNIX"
           "AF_INET"
           "AF_INET6"
         ];
+
         RestrictNamespaces = true;
-        LockPersonality = true;
-        MemoryDenyWriteExecute = true;
         RestrictRealtime = true;
-        PrivateMounts = true;
+        StateDirectory = "soft-serve";
         SystemCallArchitectures = "native";
+
         SystemCallFilter = [
           "@system-service"
           "~@cpu-emulation @debug @keyring @module @mount @obsolete @privileged @raw-io @reboot @setuid @swap"
         ];
+
+        Type = "simple";
+        UMask = "0027";
+        WorkingDirectory = stateDir;
       };
+
+      wantedBy = [ "multi-user.target" ];
     };
   };
 

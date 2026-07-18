@@ -1,21 +1,21 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitLab,
   gettext,
-  meson,
-  ninja,
-  pkg-config,
-  vala,
-  wrapGAppsHook3,
+  gitUpdater,
   glib,
   gtk3,
   gtksourceview4,
   libxfce4ui,
   libxfce4util,
+  meson,
+  ninja,
+  pkg-config,
+  vala,
+  wrapGAppsHook3,
   xfce4-panel,
   xfconf,
-  gitUpdater,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -23,11 +23,11 @@ stdenv.mkDerivation (finalAttrs: {
   version = "1.12.0";
 
   src = fetchFromGitLab {
-    domain = "gitlab.xfce.org";
     owner = "panel-plugins";
     repo = "xfce4-notes-plugin";
     tag = "xfce4-notes-plugin-${finalAttrs.version}";
     hash = "sha256-q8XQSLhnD7rnRfmNEunc4rKpFSWg9Ja4W7fs5lrnhZ0=";
+    domain = "gitlab.xfce.org";
   };
 
   strictDeps = true;
@@ -54,8 +54,8 @@ stdenv.mkDerivation (finalAttrs: {
   passthru.updateScript = gitUpdater { rev-prefix = "xfce4-notes-plugin-"; };
 
   meta = {
-    homepage = "https://docs.xfce.org/panel-plugins/xfce4-notes-plugin";
     description = "Sticky notes plugin for Xfce panel";
+    homepage = "https://docs.xfce.org/panel-plugins/xfce4-notes-plugin";
     license = lib.licenses.gpl2Plus;
     platforms = lib.platforms.linux;
     teams = [ lib.teams.xfce ];

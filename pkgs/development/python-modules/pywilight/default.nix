@@ -9,7 +9,6 @@
 buildPythonPackage rec {
   pname = "pywilight";
   version = "0.0.74";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
@@ -23,7 +22,7 @@ buildPythonPackage rec {
 
   # Module has no tests
   doCheck = false;
-
+  format = "setuptools";
   pythonImportsCheck = [ "pywilight" ];
 
   meta = {

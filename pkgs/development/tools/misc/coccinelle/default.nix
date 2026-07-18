@@ -1,10 +1,10 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
+  autoreconfHook,
   ocamlPackages,
   pkg-config,
-  autoreconfHook,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -12,11 +12,18 @@ stdenv.mkDerivation (finalAttrs: {
   version = "1.3.1";
 
   src = fetchFromGitHub {
+    owner = "coccinelle";
     repo = "coccinelle";
     rev = finalAttrs.version;
-    owner = "coccinelle";
     hash = "sha256-ZNWuloXhAXWNNoVWLOuDbC3e6KNL7nzM2346tB04qXA=";
   };
+
+  postPatch = ''
+    # Ensure dependencies from Nixpkgs are picked up.
+    rm -rf bundles/
+  '';
+
+  strictDeps = true;
 
   nativeBuildInputs = with ocamlPackages; [
     autoreconfHook
@@ -33,15 +40,9 @@ stdenv.mkDerivation (finalAttrs: {
     stdcompat
   ];
 
-  strictDeps = true;
-
-  postPatch = ''
-    # Ensure dependencies from Nixpkgs are picked up.
-    rm -rf bundles/
-  '';
-
   meta = {
     description = "Program to apply semantic patches to C code";
+
     longDescription = ''
       Coccinelle is a program matching and transformation engine which
       provides the language SmPL (Semantic Patch Language) for
@@ -58,7 +59,7 @@ stdenv.mkDerivation (finalAttrs: {
 
     homepage = "https://coccinelle.gitlabpages.inria.fr/website/";
     license = lib.licenses.gpl2Only;
-    platforms = lib.platforms.unix;
     maintainers = [ lib.maintainers.thoughtpolice ];
+    platforms = lib.platforms.unix;
   };
 })

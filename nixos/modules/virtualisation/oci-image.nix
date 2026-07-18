@@ -15,37 +15,31 @@ in
   ];
 
   config = {
-    # Use a priority just below mkOptionDefault (1500) instead of lib.mkDefault
-    # to avoid breaking existing configs using that.
-    virtualisation.diskSize = lib.mkOverride 1490 (8 * 1024);
-    virtualisation.diskSizeAutoSupported = false;
-
-    system.nixos.tags = [ "oci" ];
     image.extension = "qcow2";
-    system.build.image = config.system.build.OCIImage;
+
     system.build.OCIImage = import ../../lib/make-disk-image.nix {
       inherit config lib pkgs;
       inherit (config.virtualisation) diskSize;
-      name = "oci-image";
       baseName = config.image.baseName;
       configFile = ./oci-config-user.nix;
       format = "qcow2";
+      name = "oci-image";
       partitionTableType = if cfg.efi then "efi" else "legacy";
     };
 
+    system.build.image = config.system.build.OCIImage;
+    system.nixos.tags = [ "oci" ];
+
     systemd.services.fetch-ssh-keys = {
-      description = "Fetch authorized_keys for root user";
-
-      wantedBy = [ "sshd.service" ];
-      before = [ "sshd.service" ];
-
       after = [ "network-online.target" ];
-      wants = [ "network-online.target" ];
+      before = [ "sshd.service" ];
+      description = "Fetch authorized_keys for root user";
 
       path = [
         pkgs.coreutils
         pkgs.curl
       ];
+
       script = ''
         mkdir -m 0700 -p /root/.ssh
         if [ -f /root/.ssh/authorized_keys ]; then
@@ -59,12 +53,21 @@ in
           chmod 600 /root/.ssh/authorized_keys
         fi
       '';
+
       serviceConfig = {
-        Type = "oneshot";
         RemainAfterExit = true;
         StandardError = "journal+console";
         StandardOutput = "journal+console";
+        Type = "oneshot";
       };
+
+      wantedBy = [ "sshd.service" ];
+      wants = [ "network-online.target" ];
     };
+
+    # Use a priority just below mkOptionDefault (1500) instead of lib.mkDefault
+    # to avoid breaking existing configs using that.
+    virtualisation.diskSize = lib.mkOverride 1490 (8 * 1024);
+    virtualisation.diskSizeAutoSupported = false;
   };
 }

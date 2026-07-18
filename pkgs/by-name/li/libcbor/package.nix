@@ -35,10 +35,6 @@ stdenv.mkDerivation (finalAttrs: {
     cmocka # cmake expects cmocka module
   ];
 
-  # BUILD file already exists in the source; this causes issues on
-  # case‐insensitive Darwin systems.
-  cmakeBuildDir = "build.dir";
-
   cmakeFlags =
     lib.optional finalAttrs.finalPackage.doCheck "-DWITH_TESTS=ON"
     ++ lib.optional (!stdenv.hostPlatform.isStatic) "-DBUILD_SHARED_LIBS=ON";
@@ -46,24 +42,27 @@ stdenv.mkDerivation (finalAttrs: {
   # Tests are restricted while pkgsStatic.cmocka is broken. Tracked at:
   # https://github.com/NixOS/nixpkgs/issues/213623
   doCheck = !stdenv.hostPlatform.isStatic && stdenv.hostPlatform == stdenv.buildPlatform;
-
   nativeCheckInputs = [ cmocka ];
+  # BUILD file already exists in the source; this causes issues on
+  # case‐insensitive Darwin systems.
+  cmakeBuildDir = "build.dir";
 
   passthru.tests = {
     inherit libfido2 mysql84;
     openssh = (openssh.override { withFIDO = true; });
+
     systemd = (
       systemd.override {
-        withFido2 = true;
         withCryptsetup = true;
+        withFido2 = true;
       }
     );
   };
 
   meta = {
-    changelog = "https://github.com/PJK/libcbor/blob/${finalAttrs.src.tag}/CHANGELOG.md";
     description = "CBOR protocol implementation for C and others";
     homepage = "https://github.com/PJK/libcbor";
+    changelog = "https://github.com/PJK/libcbor/blob/${finalAttrs.src.tag}/CHANGELOG.md";
     license = lib.licenses.mit;
     maintainers = [ ];
   };

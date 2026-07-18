@@ -1,17 +1,15 @@
 {
   lib,
   stdenv,
-  fetchPypi,
   buildPythonPackage,
-  rustPlatform,
+  fetchPypi,
   libiconv,
+  rustPlatform,
 }:
 
 buildPythonPackage rec {
   pname = "regress";
   version = "2025.10.1";
-
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
@@ -29,6 +27,8 @@ buildPythonPackage rec {
     inherit pname version src;
     hash = "sha256-DOnKFVg+5cIv0T3mKzF8O9jj5+ZenQrLjTltfd+Tm9U=";
   };
+
+  pyproject = true;
 
   meta = {
     description = "Python bindings to the Rust regress crate, exposing ECMA regular expressions";

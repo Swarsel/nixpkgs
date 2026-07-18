@@ -2,13 +2,13 @@
   lib,
   stdenv,
   fetchurl,
-  pkg-config,
   gettext,
-  xorgproto,
   libx11,
   libxau,
   libxmu,
+  pkg-config,
   writeScript,
+  xorgproto,
 }:
 stdenv.mkDerivation (finalAttrs: {
   pname = "xhost";
@@ -46,17 +46,21 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "X server access control program";
+
     longDescription = ''
       xhost is used to manage the list of host names or user names allowed to make connections to
       the X server.
     '';
+
     homepage = "https://gitlab.freedesktop.org/xorg/app/xhost";
+
     license = with lib.licenses; [
       mit
       icu
     ];
-    mainProgram = "xhost";
+
     maintainers = [ ];
     platforms = lib.platforms.unix;
+    mainProgram = "xhost";
   };
 })

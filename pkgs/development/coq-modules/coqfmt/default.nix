@@ -1,27 +1,29 @@
 {
+  lib,
   coq,
   coq-lsp,
-  ocamlPackages,
-  lib,
-  mkCoqDerivation,
-  version ? null,
   makeWrapper,
+  mkCoqDerivation,
+  ocamlPackages,
+  version ? null,
 }:
 
 mkCoqDerivation rec {
-  pname = "coqfmt";
-  owner = "toku-sa-n";
-
   inherit version;
-  displayVersion.coqfmt = v: "master-${v}";
+  pname = "coqfmt";
+  nativeBuildInputs = [ makeWrapper ];
 
-  release."master" = {
-    rev = "c26ce64d6ad1a1c3cafee38ab4889ad3b68a5c33";
-    hash = "sha256-4Q0z/KUHrJZKeKJDqa9mkxfy9LrGh2xPt561muUFYAY=";
-  };
-  namePrefix = [ ];
+  buildInputs = with ocamlPackages; [
+    dune-build-info
+    coq-lsp
+  ];
 
-  useDune = true;
+  installPhase = ''
+    runHook preInstall
+    dune install -p ${pname} --prefix=$out --libdir $OCAMLFIND_DESTDIR
+    wrapProgram $out/bin/coqfmt --prefix OCAMLPATH : $OCAMLPATH
+    runHook postInstall
+  '';
 
   defaultVersion =
     with lib.versions;
@@ -32,19 +34,16 @@ mkCoqDerivation rec {
       }
     ] null;
 
-  installPhase = ''
-    runHook preInstall
-    dune install -p ${pname} --prefix=$out --libdir $OCAMLFIND_DESTDIR
-    wrapProgram $out/bin/coqfmt --prefix OCAMLPATH : $OCAMLPATH
-    runHook postInstall
-  '';
+  displayVersion.coqfmt = v: "master-${v}";
+  namePrefix = [ ];
+  owner = "toku-sa-n";
 
-  nativeBuildInputs = [ makeWrapper ];
+  release."master" = {
+    hash = "sha256-4Q0z/KUHrJZKeKJDqa9mkxfy9LrGh2xPt561muUFYAY=";
+    rev = "c26ce64d6ad1a1c3cafee38ab4889ad3b68a5c33";
+  };
 
-  buildInputs = with ocamlPackages; [
-    dune-build-info
-    coq-lsp
-  ];
+  useDune = true;
 
   meta = {
     description = "CLI tool to format your Coq source code";

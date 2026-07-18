@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   iso8601,
   requests,
   setuptools,
@@ -11,7 +11,6 @@
 buildPythonPackage {
   pname = "clx-sdk-xms";
   version = "1.0.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "clxcommunications";
@@ -28,8 +27,8 @@ buildPythonPackage {
     requests
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "clx.xms" ];
-
   passthru.updateScript = unstableGitUpdater { };
 
   meta = {

@@ -1,10 +1,10 @@
 {
   lib,
+  fetchFromGitHub,
   appdirs,
   beautifulsoup4,
   buildPythonPackage,
   colorlog,
-  fetchFromGitHub,
   git,
   jsonschema,
   lxml,
@@ -29,7 +29,6 @@ in
 buildPythonPackage rec {
   pname = "online-judge-api-client";
   version = "10.10.1";
-  format = "setuptools";
 
   src = fetchFromGitHub {
     owner = "online-judge-tools";
@@ -39,6 +38,7 @@ buildPythonPackage rec {
   };
 
   patches = [ ./fix-paths.patch ];
+
   postPatch = ''
     substituteInPlace onlinejudge/service/library_checker.py \
       --subst-var-by git               ${git} \
@@ -57,6 +57,7 @@ buildPythonPackage rec {
 
   # Requires internet access
   doCheck = false;
+  format = "setuptools";
 
   pythonImportsCheck = [
     "onlinejudge"
@@ -65,9 +66,9 @@ buildPythonPackage rec {
 
   meta = {
     description = "API client to develop tools for competitive programming";
-    mainProgram = "oj-api";
     homepage = "https://github.com/online-judge-tools/api-client";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ sei40kr ];
+    mainProgram = "oj-api";
   };
 }

@@ -3,11 +3,11 @@
   stdenv,
   fetchFromGitHub,
   cmake,
-  pkg-config,
+  curl,
   gtk3,
   gtkmm3,
-  curl,
   gumbo, # litehtml dependency
+  pkg-config,
 }:
 
 stdenv.mkDerivation {
@@ -45,12 +45,12 @@ stdenv.mkDerivation {
   '';
 
   meta = {
-    broken = stdenv.cc.isClang; # https://github.com/litehtml/litebrowser-linux/issues/19
     description = "Simple browser based on the litehtml engine";
-    mainProgram = "litebrowser";
     homepage = "https://github.com/litehtml/litebrowser-linux";
     license = lib.licenses.bsd3;
-    platforms = lib.platforms.unix;
     maintainers = with lib.maintainers; [ fgaz ];
+    platforms = lib.platforms.unix;
+    mainProgram = "litebrowser";
+    broken = stdenv.cc.isClang; # https://github.com/litehtml/litebrowser-linux/issues/19
   };
 }

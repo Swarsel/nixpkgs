@@ -11,62 +11,32 @@ let
 in
 {
 
-  meta = {
-    maintainers = with lib.maintainers; [ moraxyc ];
-  };
-
   options = {
     services.artalk = {
       enable = lib.mkEnableOption "artalk, a comment system";
-      configFile = lib.mkOption {
-        type = lib.types.str;
-        default = "/etc/artalk/config.yml";
-        description = "Artalk config file path. If it is not exist, Artalk will generate one.";
-      };
+      package = lib.mkPackageOption pkgs "artalk" { };
+
       allowModify = lib.mkOption {
-        type = lib.types.bool;
         default = true;
         description = "allow Artalk store the settings to config file persistently";
+        type = lib.types.bool;
       };
-      workdir = lib.mkOption {
+
+      configFile = lib.mkOption {
+        default = "/etc/artalk/config.yml";
+        description = "Artalk config file path. If it is not exist, Artalk will generate one.";
         type = lib.types.str;
-        default = "/var/lib/artalk";
-        description = "Artalk working directory";
-      };
-      user = lib.mkOption {
-        type = lib.types.str;
-        default = "artalk";
-        description = "Artalk user name.";
       };
 
       group = lib.mkOption {
-        type = lib.types.str;
         default = "artalk";
         description = "Artalk group name.";
+        type = lib.types.str;
       };
 
-      package = lib.mkPackageOption pkgs "artalk" { };
       settings = lib.mkOption {
-        type = lib.types.submodule {
-          freeformType = settingsFormat.type;
-          options = {
-            host = lib.mkOption {
-              type = lib.types.str;
-              default = "0.0.0.0";
-              description = ''
-                Artalk server listen host
-              '';
-            };
-            port = lib.mkOption {
-              type = lib.types.port;
-              default = 23366;
-              description = ''
-                Artalk server listen port
-              '';
-            };
-          };
-        };
         default = { };
+
         description = ''
           The artalk configuration.
 
@@ -76,23 +46,54 @@ in
           containing the attribute `_secret` - a string pointing to a file
           containing the value the option should be set to.
         '';
+
+        type = lib.types.submodule {
+          options = {
+            host = lib.mkOption {
+              default = "0.0.0.0";
+
+              description = ''
+                Artalk server listen host
+              '';
+
+              type = lib.types.str;
+            };
+
+            port = lib.mkOption {
+              default = 23366;
+
+              description = ''
+                Artalk server listen port
+              '';
+
+              type = lib.types.port;
+            };
+          };
+
+          freeformType = settingsFormat.type;
+        };
+      };
+
+      user = lib.mkOption {
+        default = "artalk";
+        description = "Artalk user name.";
+        type = lib.types.str;
+      };
+
+      workdir = lib.mkOption {
+        default = "/var/lib/artalk";
+        description = "Artalk working directory";
+        type = lib.types.str;
       };
     };
   };
 
   config = lib.mkIf cfg.enable {
-    users.users.artalk = lib.optionalAttrs (cfg.user == "artalk") {
-      description = "artalk user";
-      isSystemUser = true;
-      group = cfg.group;
-    };
-    users.groups.artalk = lib.optionalAttrs (cfg.group == "artalk") { };
-
     environment.systemPackages = [ cfg.package ];
 
     systemd.services.artalk = {
       after = [ "network.target" ];
-      wantedBy = [ "multi-user.target" ];
+
       preStart = ''
         umask 0077
         ${utils.genJqSecretsReplacementSnippet cfg.settings "/run/artalk/new"}
@@ -112,19 +113,34 @@ in
             rm /run/artalk/new
           ''
       );
+
       serviceConfig = {
-        User = cfg.user;
-        Group = cfg.group;
-        Type = "simple";
+        AmbientCapabilities = [ "CAP_NET_BIND_SERVICE" ];
+        ConfigurationDirectory = [ "artalk" ];
         ExecStart = "${lib.getExe cfg.package} server --config ${cfg.configFile} --workdir ${cfg.workdir} --host ${cfg.settings.host} --port ${toString cfg.settings.port}";
+        Group = cfg.group;
+        ProtectHome = "yes";
         Restart = "on-failure";
         RestartSec = "5s";
-        ConfigurationDirectory = [ "artalk" ];
-        StateDirectory = [ "artalk" ];
         RuntimeDirectory = [ "artalk" ];
-        AmbientCapabilities = [ "CAP_NET_BIND_SERVICE" ];
-        ProtectHome = "yes";
+        StateDirectory = [ "artalk" ];
+        Type = "simple";
+        User = cfg.user;
       };
+
+      wantedBy = [ "multi-user.target" ];
     };
+
+    users.groups.artalk = lib.optionalAttrs (cfg.group == "artalk") { };
+
+    users.users.artalk = lib.optionalAttrs (cfg.user == "artalk") {
+      description = "artalk user";
+      group = cfg.group;
+      isSystemUser = true;
+    };
+  };
+
+  meta = {
+    maintainers = with lib.maintainers; [ moraxyc ];
   };
 }

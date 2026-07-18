@@ -2,40 +2,40 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  fetchpatch,
-  fetchzip,
-  makeWrapper,
-  premake5,
-  writeShellApplication,
-  runCommandLocal,
-  symlinkJoin,
-  writeText,
-  imagemagick,
+  SDL2,
   bzip2,
   curl,
+  egl-wayland,
   envsubst,
+  fetchpatch,
+  fetchzip,
   flac,
   fmt,
   freetype,
+  imagemagick,
   irrlicht,
-  libevent,
-  libdecor,
-  libgit2,
   libGL,
   libGLU,
+  libdecor,
+  libevent,
+  libgit2,
   libjpeg,
   libpng,
   libvorbis,
   libx11,
   libxkbcommon,
   libxxf86vm,
+  makeWrapper,
   mono,
   nlohmann_json,
   openal,
-  SDL2,
+  premake5,
+  runCommandLocal,
   sqlite,
+  symlinkJoin,
   wayland,
-  egl-wayland,
+  writeShellApplication,
+  writeText,
   zenity,
   covers_url ? "https://pics.projectignis.org:2096/pics/cover/{}.jpg",
   fields_url ? "https://pics.projectignis.org:2096/pics/field/{}.png",
@@ -47,8 +47,8 @@
 let
   archLabel =
     {
-      "x86_64-linux" = "x64";
       "aarch64-linux" = "arm64";
+      "x86_64-linux" = "x64";
     }
     .${stdenv.hostPlatform.system}
       or (throw "${stdenv.hostPlatform.system} is an unsupported arch label for edopro");
@@ -61,17 +61,17 @@ let
   deps = import ./deps.nix;
 
   edopro-src = fetchFromGitHub {
+    fetchSubmodules = true;
+    hash = deps.edopro-hash;
     owner = "edo9300";
     repo = "edopro";
     rev = deps.edopro-rev;
-    fetchSubmodules = true;
-    hash = deps.edopro-hash;
   };
 in
 let
   assets = fetchzip {
-    url = "https://github.com/ProjectIgnis/edopro-assets/releases/download/${deps.edopro-version}/ProjectIgnis-EDOPro-${deps.edopro-version}-linux.tar.gz";
     hash = deps.assets-hash;
+    url = "https://github.com/ProjectIgnis/edopro-assets/releases/download/${deps.edopro-version}/ProjectIgnis-EDOPro-${deps.edopro-version}-linux.tar.gz";
   };
 
   irrlicht-edopro = stdenv.mkDerivation {
@@ -93,12 +93,12 @@ let
       wayland
     ];
 
-    enableParallelBuilding = true;
-    buildFlags = [ "NDEBUG=1" ];
     makeFlags = [
       "-C"
       "source/Irrlicht"
     ];
+
+    buildFlags = [ "NDEBUG=1" ];
 
     installPhase = ''
       runHook preInstall
@@ -109,11 +109,13 @@ let
       runHook postInstall
     '';
 
+    enableParallelBuilding = true;
+
     meta = {
       inherit (irrlicht.meta) description platforms;
+      inherit maintainers;
       homepage = "https://github.com/edo9300/irrlicht1-8-4";
       license = lib.licenses.agpl3Plus;
-      inherit maintainers;
     };
   };
 
@@ -148,25 +150,21 @@ let
     stdenv.mkDerivation {
       pname = "ocgcore-edopro";
       version = deps.edopro-version;
-
       src = edopro-src;
-      sourceRoot = "${edopro-src.name}/ocgcore";
 
       nativeBuildInputs = [
         premake5
       ];
 
-      enableParallelBuilding = true;
+      makeFlags = [
+        "-C"
+        "build"
+      ];
 
       buildFlags = [
         "verbose=true"
         "config=release"
         "ocgcoreshared"
-      ];
-
-      makeFlags = [
-        "-C"
-        "build"
       ];
 
       # To make sure linking errors are discovered at build time, not when edopro runs into them during loading
@@ -180,11 +178,14 @@ let
         runHook postInstall
       '';
 
+      enableParallelBuilding = true;
+      sourceRoot = "${edopro-src.name}/ocgcore";
+
       meta = {
+        inherit maintainers;
         description = "YGOPro script engine";
         homepage = "https://github.com/edo9300/ygopro-core";
         license = lib.licenses.agpl3Plus;
-        inherit maintainers;
         platforms = lib.platforms.unix;
       };
     };
@@ -192,8 +193,30 @@ let
   edopro = stdenv.mkDerivation {
     pname = "edopro";
     version = deps.edopro-version;
-
     src = edopro-src;
+
+    patches = [
+      # fmt::localtime was deprecated and removed
+      # Remove when version > 41.0.2
+      (fetchpatch {
+        hash = "sha256-wiZRCwSTp9/G97a+zaYjJgmDrc57/5bSBSYur1dcTfA=";
+        name = "0001-edopro-No-longer-depend-on-fmt-for-localtime.patch";
+        url = "https://github.com/edo9300/edopro/commit/c40951ba09f8a8b88d1d4b9b15ca9338da01522c.patch";
+      })
+    ];
+
+    # nixpkgs' gcc stack currently appears to not support LTO
+    # Override where bundled ocgcore get looked up in, so we can supply ours
+    # (can't use --prebuilt-core or let it build a core on its own without making core updates impossible)
+    postPatch = ''
+      substituteInPlace premake5.lua \
+        --replace-fail 'flags "LinkTimeOptimization"' 'linktimeoptimization "Off"'
+
+      substituteInPlace gframe/game.cpp \
+        --replace-fail 'ocgcore = LoadOCGcore(Utils::GetWorkingDirectory())' 'ocgcore = LoadOCGcore("${lib.getLib ocgcore}/lib/")'
+
+      touch ocgcore/premake5.lua
+    '';
 
     nativeBuildInputs = [
       makeWrapper
@@ -218,28 +241,23 @@ let
       sqlite
     ];
 
-    patches = [
-      # fmt::localtime was deprecated and removed
-      # Remove when version > 41.0.2
-      (fetchpatch {
-        name = "0001-edopro-No-longer-depend-on-fmt-for-localtime.patch";
-        url = "https://github.com/edo9300/edopro/commit/c40951ba09f8a8b88d1d4b9b15ca9338da01522c.patch";
-        hash = "sha256-wiZRCwSTp9/G97a+zaYjJgmDrc57/5bSBSYur1dcTfA=";
-      })
+    makeFlags = [
+      "-C"
+      "build"
     ];
 
-    # nixpkgs' gcc stack currently appears to not support LTO
-    # Override where bundled ocgcore get looked up in, so we can supply ours
-    # (can't use --prebuilt-core or let it build a core on its own without making core updates impossible)
-    postPatch = ''
-      substituteInPlace premake5.lua \
-        --replace-fail 'flags "LinkTimeOptimization"' 'linktimeoptimization "Off"'
+    buildFlags = [
+      "verbose=true"
+      "config=release_${archLabel}"
+      "ygoprodll"
+    ];
 
-      substituteInPlace gframe/game.cpp \
-        --replace-fail 'ocgcore = LoadOCGcore(Utils::GetWorkingDirectory())' 'ocgcore = LoadOCGcore("${lib.getLib ocgcore}/lib/")'
-
-      touch ocgcore/premake5.lua
-    '';
+    env = {
+      # remove after release 40.1.4+
+      # https://discord.com/channels/170601678658076672/792223685112889344/1286043823293599785
+      CXXFLAGS = "-include cstdint";
+      LDFLAGS = "-I ${irrlicht-edopro}/include -L ${irrlicht-edopro}/bin";
+    };
 
     preBuild = ''
       premake5 gmake2 \
@@ -250,23 +268,6 @@ let
         --no-core \
         --sound=sfml
     '';
-
-    enableParallelBuilding = true;
-    env = {
-      # remove after release 40.1.4+
-      # https://discord.com/channels/170601678658076672/792223685112889344/1286043823293599785
-      CXXFLAGS = "-include cstdint";
-      LDFLAGS = "-I ${irrlicht-edopro}/include -L ${irrlicht-edopro}/bin";
-    };
-    buildFlags = [
-      "verbose=true"
-      "config=release_${archLabel}"
-      "ygoprodll"
-    ];
-    makeFlags = [
-      "-C"
-      "build"
-    ];
 
     installPhase = ''
       runHook preInstall
@@ -291,12 +292,15 @@ let
       runHook postInstall
     '';
 
+    enableParallelBuilding = true;
+
     meta = {
+      inherit maintainers;
       description = "Bleeding-edge automatic duel simulator, a fork of the YGOPro client";
       homepage = "https://projectignis.github.io";
       changelog = "https://github.com/edo9300/edopro/releases";
       license = lib.licenses.agpl3Plus;
-      mainProgram = "ygoprodll";
+
       # This is likely a very easy app to port if you're interested.
       # We just have no way to test on other platforms.
       platforms = [
@@ -306,7 +310,8 @@ let
         # It is possible but we have decided against it for now.  In theory if we added more logic to the update script it could work.
         "aarch64-linux"
       ];
-      inherit maintainers;
+
+      mainProgram = "ygoprodll";
     };
   };
 
@@ -348,10 +353,12 @@ let
     in
     writeShellApplication {
       name = "edopro";
+
       runtimeInputs = [
         envsubst
         zenity
       ];
+
       text = ''
         export EDOPRO_VERSION="${deps.edopro-version}"
         export EDOPRO_BASE_DIR="''${XDG_DATA_HOME:-$HOME/.local/share}/edopro"
@@ -400,10 +407,6 @@ in
 symlinkJoin {
   pname = "edopro-application";
   version = deps.edopro-version;
-  paths = [
-    edopro-script
-    edopro-desktop
-  ];
 
   postBuild = ''
     for size in 16 32 48 64 128 256 512 1024; do
@@ -416,6 +419,11 @@ symlinkJoin {
     done
   '';
 
+  paths = [
+    edopro-script
+    edopro-desktop
+  ];
+
   passthru.updateScript = ./update.py;
 
   meta = {
@@ -427,6 +435,7 @@ symlinkJoin {
       platforms
       maintainers
       ;
+
     # To differentiate it from the original YGOPro
     mainProgram = "edopro";
   };

@@ -2,9 +2,9 @@
   stdenv,
   fetchFromGitHub,
   autoreconfHook,
-  pkg-config,
   openssl,
   openwsman,
+  pkg-config,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -18,6 +18,10 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-pTA5p5+Fuiw2lQaaSKnp/29HMy8NZNTFwP5K/+sJ9OU=";
   };
 
+  postPatch = ''
+    touch AUTHORS NEWS README
+  '';
+
   nativeBuildInputs = [
     autoreconfHook
     pkg-config
@@ -28,12 +32,16 @@ stdenv.mkDerivation (finalAttrs: {
     openssl
   ];
 
-  postPatch = ''
-    touch AUTHORS NEWS README
-  '';
-
   meta = {
+    inherit (openwsman.meta)
+      homepage
+      license
+      maintainers
+      platforms
+      ;
+
     description = "Openwsman command-line client";
+
     longDescription = ''
       Openwsman provides a command-line tool, wsman, to perform basic
       operations on the command-line. These operations include Get, Put,
@@ -41,12 +49,7 @@ stdenv.mkDerivation (finalAttrs: {
       also has several switches to allow for optional features of the
       WS-Management specification and Testing.
     '';
+
     downloadPage = "https://github.com/Openwsman/wsmancli/releases";
-    inherit (openwsman.meta)
-      homepage
-      license
-      maintainers
-      platforms
-      ;
   };
 })

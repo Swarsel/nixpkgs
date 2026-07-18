@@ -1,24 +1,26 @@
 {
   lib,
   buildPythonPackage,
-  lndir,
-  or-tools,
   immutabledict,
+  lndir,
   numpy,
+  or-tools,
   pandas,
   protobuf,
 }:
 
 buildPythonPackage {
-  pname = "ortools";
   inherit (or-tools) version;
-  format = "other";
-
+  pname = "ortools";
   src = or-tools.python;
-
-  dontBuild = true;
-
   nativeBuildInputs = [ lndir ];
+
+  propagatedBuildInputs = [
+    immutabledict
+    numpy
+    pandas
+    protobuf
+  ];
 
   installPhase = ''
     runHook preInstall
@@ -27,12 +29,8 @@ buildPythonPackage {
     runHook postInstall
   '';
 
-  propagatedBuildInputs = [
-    immutabledict
-    numpy
-    pandas
-    protobuf
-  ];
+  dontBuild = true;
+  format = "other";
 
   pythonImportsCheck = [
     "ortools"

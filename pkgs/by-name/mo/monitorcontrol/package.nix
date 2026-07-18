@@ -1,7 +1,7 @@
 {
   lib,
-  fetchurl,
   stdenv,
+  fetchurl,
   undmg,
 }:
 
@@ -19,6 +19,11 @@ stdenv.mkDerivation rec {
 
   nativeBuildInputs = [ undmg ];
 
+  installPhase = ''
+    mkdir -p "$out/Applications/MonitorControl.app"
+    cp -R . "$out/Applications/MonitorControl.app"
+  '';
+
   sourceRoot = "MonitorControl.app";
 
   unpackCmd = ''
@@ -27,20 +32,17 @@ stdenv.mkDerivation rec {
     runHook postUnpack
   '';
 
-  installPhase = ''
-    mkdir -p "$out/Applications/MonitorControl.app"
-    cp -R . "$out/Applications/MonitorControl.app"
-  '';
-
   meta = {
     description = "MacOS system extension to control brightness and volume of external displays with native OSD";
     longDescription = "Controls your external display brightness and volume and shows native OSD. Use menulet sliders or the keyboard, including native Apple keys!";
     homepage = "https://github.com/MonitorControl/MonitorControl#readme";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       cbleslie
       cottand
     ];
+
     platforms = lib.platforms.darwin;
   };
 }

@@ -2,9 +2,9 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  qt6,
   cmake,
   gitUpdater,
+  qt6,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -15,8 +15,8 @@ stdenv.mkDerivation (finalAttrs: {
     owner = "francescmaestre";
     repo = "gitqlient";
     rev = "faa3e2c19205123944bb88427a569c6f1b4366a1";
-    fetchSubmodules = true;
     hash = "sha256-CBgzTwJWssL0NaNqfesHkOG4pi6QQYxjxWHFcG00U0U=";
+    fetchSubmodules = true;
   };
 
   patches = [
@@ -35,18 +35,18 @@ stdenv.mkDerivation (finalAttrs: {
     qt6.qtbase
   ];
 
+  env.NIX_CFLAGS_COMPILE = "-Wno-error=deprecated-declarations"; # QCheckBox::stateChanged is deprecated
+
   passthru.updateScript = gitUpdater {
     rev-prefix = "v";
   };
 
-  env.NIX_CFLAGS_COMPILE = "-Wno-error=deprecated-declarations"; # QCheckBox::stateChanged is deprecated
-
   meta = {
-    homepage = "https://github.com/francescmaestre/GitQlient";
     description = "Multi-platform Git client written with Qt";
+    homepage = "https://github.com/francescmaestre/GitQlient";
     license = lib.licenses.lgpl2Plus;
-    platforms = lib.platforms.linux;
     maintainers = with lib.maintainers; [ romildo ];
+    platforms = lib.platforms.linux;
     mainProgram = "gitqlient";
   };
 })

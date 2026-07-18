@@ -1,18 +1,17 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools-scm,
-  jaraco-functools,
-  jaraco-context,
+  buildPythonPackage,
   jaraco-collections,
+  jaraco-context,
+  jaraco-functools,
   pytest8_3CheckHook,
+  setuptools-scm,
 }:
 
 buildPythonPackage rec {
   pname = "jaraco-test";
   version = "5.6.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "jaraco";
@@ -26,6 +25,7 @@ buildPythonPackage rec {
       --replace-fail '"coherent.licensed",' ""
   '';
 
+  nativeCheckInputs = [ pytest8_3CheckHook ];
   build-system = [ setuptools-scm ];
 
   dependencies = [
@@ -34,8 +34,7 @@ buildPythonPackage rec {
     jaraco-collections
   ];
 
-  nativeCheckInputs = [ pytest8_3CheckHook ];
-
+  pyproject = true;
   pythonImportsCheck = [ "jaraco.test" ];
 
   meta = {

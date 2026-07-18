@@ -1,10 +1,10 @@
 {
   lib,
   stdenv,
-  python3,
   fetchFromGitHub,
   installShellFiles,
   pipenv,
+  python3,
   runCommand,
   versionCheckHook,
   writableTmpDirAsHomeHook,
@@ -34,7 +34,6 @@ in
 buildPythonApplication rec {
   pname = "pipenv";
   version = "2026.5.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "pypa";
@@ -42,16 +41,6 @@ buildPythonApplication rec {
     tag = "v${version}";
     hash = "sha256-+8xUbpGIEuFboeK+JVVAt46gNcw1tfkmnTYt/IrISik=";
   };
-
-  env.LC_ALL = "en_US.UTF-8";
-
-  build-system = [
-    setuptools
-  ];
-
-  nativeBuildInputs = [
-    installShellFiles
-  ];
 
   postPatch = ''
     # pipenv invokes python in a subprocess to create a virtualenv
@@ -62,7 +51,12 @@ buildPythonApplication rec {
       --replace "sys.executable" "'${pythonEnv.interpreter}'"
   '';
 
+  nativeBuildInputs = [
+    installShellFiles
+  ];
+
   propagatedBuildInputs = runtimeDeps python3.pkgs;
+  env.LC_ALL = "en_US.UTF-8";
 
   nativeCheckInputs = [
     mock
@@ -75,15 +69,28 @@ buildPythonApplication rec {
     writableTmpDirAsHomeHook
   ];
 
-  disabledTests = [
-    # this test wants access to the internet
-    "test_download_file"
+  postInstall = lib.optionalString (stdenv.buildPlatform.canExecute stdenv.hostPlatform) ''
+    installShellCompletion --cmd pipenv \
+      --bash <(_PIPENV_COMPLETE=bash_source $out/bin/pipenv) \
+      --zsh <(_PIPENV_COMPLETE=zsh_source $out/bin/pipenv) \
+      --fish <(_PIPENV_COMPLETE=fish_source $out/bin/pipenv)
+  '';
+
+  build-system = [
+    setuptools
   ];
 
   disabledTestPaths = [
     # many of these tests want access to the internet
     "tests/integration"
   ];
+
+  disabledTests = [
+    # this test wants access to the internet
+    "test_download_file"
+  ];
+
+  pyproject = true;
 
   passthru.tests = {
     verify-venv-patch = runCommand "${pname}-test-verify-venv-patch" { } ''
@@ -98,13 +105,6 @@ buildPythonApplication rec {
       touch $out
     '';
   };
-
-  postInstall = lib.optionalString (stdenv.buildPlatform.canExecute stdenv.hostPlatform) ''
-    installShellCompletion --cmd pipenv \
-      --bash <(_PIPENV_COMPLETE=bash_source $out/bin/pipenv) \
-      --zsh <(_PIPENV_COMPLETE=zsh_source $out/bin/pipenv) \
-      --fish <(_PIPENV_COMPLETE=fish_source $out/bin/pipenv)
-  '';
 
   meta = {
     description = "Python Development Workflow for Humans";

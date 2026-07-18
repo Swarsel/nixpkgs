@@ -1,34 +1,34 @@
 {
-  bdbSupport ? true, # build support for Berkeley DB repositories
-  httpServer ? false, # build Apache DAV module
-  httpSupport ? true, # client must support http
-  pythonBindings ? false,
-  perlBindings ? false,
-  javahlBindings ? false,
-  saslSupport ? false,
   lib,
   stdenv,
   fetchurl,
-  fetchpatch,
   apr,
   aprutil,
-  zlib,
-  sqlite,
-  openssl,
-  lz4,
-  utf8proc,
   autoconf,
-  libtool,
-  apacheHttpd ? null,
   expat,
-  swig ? null,
-  jdk ? null,
-  python3 ? null,
-  py3c ? null,
-  perl ? null,
-  sasl ? null,
-  serf ? null,
+  fetchpatch,
+  libtool,
+  lz4,
   nixosTests,
+  openssl,
+  sqlite,
+  utf8proc,
+  zlib,
+  apacheHttpd ? null,
+  bdbSupport ? true, # build support for Berkeley DB repositories
+  httpServer ? false, # build Apache DAV module
+  httpSupport ? true, # client must support http
+  javahlBindings ? false,
+  jdk ? null,
+  perl ? null,
+  perlBindings ? false,
+  py3c ? null,
+  python3 ? null,
+  pythonBindings ? false,
+  sasl ? null,
+  saslSupport ? false,
+  serf ? null,
+  swig ? null,
 }:
 
 assert bdbSupport -> aprutil.bdbSupport;
@@ -39,17 +39,18 @@ assert javahlBindings -> jdk != null && perl != null;
 let
   common =
     {
-      version,
       hash,
+      version,
       extraPatches ? [ ],
     }:
     stdenv.mkDerivation (finalAttrs: {
       inherit version;
+      inherit perlBindings pythonBindings;
       pname = "subversion${lib.optionalString (!bdbSupport && perlBindings && pythonBindings) "-client"}";
 
       src = fetchurl {
-        url = "mirror://apache/subversion/subversion-${finalAttrs.version}.tar.bz2";
         inherit hash;
+        url = "mirror://apache/subversion/subversion-${finalAttrs.version}.tar.bz2";
       };
 
       # Can't do separate $lib and $bin, as libs reference bins
@@ -58,6 +59,32 @@ let
         "dev"
         "man"
       ];
+
+      patches = [
+        ./apr-1.patch
+
+        # swig-4.4 support:
+        #   https://lists.apache.org/thread/7rtyfcmg737bnmnrwf6bjmlxx4wpq2og
+        (fetchpatch {
+          hash = "sha256-0X9y/0qDDctKo1vu86pKu3k79zIqhOhQU9rvyG4v6jg=";
+          name = "swig-4.4.patch";
+          url = "https://github.com/apache/subversion/commit/bf72420e86059a894fa3aacbbd6e3bee9286e46e.patch";
+        })
+      ]
+      ++ extraPatches;
+
+      # Remove vendored swig-3 files as these will shadow the swig provided
+      # ones and result in compile errors.
+      # Also remove the generated Perl wrappers from the release tarball
+      # so they are rebuilt with the same SWIG runtime as libsvn_swig_perl.
+      postPatch = ''
+        rm subversion/bindings/swig/proxy/{perlrun.swg,pyrun.swg,python.swg,rubydef.swg,rubyhead.swg,rubytracking.swg,runtime.swg,swigrun.swg}
+      ''
+      + lib.optionalString perlBindings ''
+        rm subversion/bindings/swig/perl/native/{core.c,svn_*.c}
+      '';
+
+      strictDeps = true;
 
       nativeBuildInputs = [
         autoconf
@@ -83,49 +110,6 @@ let
       ++ lib.optional perlBindings perl
       ++ lib.optional saslSupport sasl;
 
-      strictDeps = true;
-
-      patches = [
-        ./apr-1.patch
-
-        # swig-4.4 support:
-        #   https://lists.apache.org/thread/7rtyfcmg737bnmnrwf6bjmlxx4wpq2og
-        (fetchpatch {
-          name = "swig-4.4.patch";
-          url = "https://github.com/apache/subversion/commit/bf72420e86059a894fa3aacbbd6e3bee9286e46e.patch";
-          hash = "sha256-0X9y/0qDDctKo1vu86pKu3k79zIqhOhQU9rvyG4v6jg=";
-        })
-      ]
-      ++ extraPatches;
-
-      # Remove vendored swig-3 files as these will shadow the swig provided
-      # ones and result in compile errors.
-      # Also remove the generated Perl wrappers from the release tarball
-      # so they are rebuilt with the same SWIG runtime as libsvn_swig_perl.
-      postPatch = ''
-        rm subversion/bindings/swig/proxy/{perlrun.swg,pyrun.swg,python.swg,rubydef.swg,rubyhead.swg,rubytracking.swg,runtime.swg,swigrun.swg}
-      ''
-      + lib.optionalString perlBindings ''
-        rm subversion/bindings/swig/perl/native/{core.c,svn_*.c}
-      '';
-
-      env = {
-        # We are hitting the following issue even with APR 1.6.x
-        # -> https://issues.apache.org/jira/browse/SVN-4813
-        # "-P" CPPFLAG is needed to build Python bindings and subversionClient
-        CPPFLAGS = toString [ "-P" ];
-      }
-      // lib.optionalAttrs stdenv.hostPlatform.isDarwin {
-        CXX = "clang++";
-        CC = "clang";
-        CPP = "clang -E";
-        CXXCPP = "clang++ -E";
-      };
-
-      preConfigure = ''
-        ./autogen.sh
-      '';
-
       configureFlags = [
         (lib.withFeature bdbSupport "berkeley-db")
         (lib.withFeatureAs httpServer "apxs" "${apacheHttpd.dev}/bin/apxs")
@@ -142,9 +126,29 @@ let
         "--with-jdk=${jdk}"
       ];
 
+      env = {
+        # We are hitting the following issue even with APR 1.6.x
+        # -> https://issues.apache.org/jira/browse/SVN-4813
+        # "-P" CPPFLAG is needed to build Python bindings and subversionClient
+        CPPFLAGS = toString [ "-P" ];
+      }
+      // lib.optionalAttrs stdenv.hostPlatform.isDarwin {
+        CC = "clang";
+        CPP = "clang -E";
+        CXX = "clang++";
+        CXXCPP = "clang++ -E";
+      };
+
+      preConfigure = ''
+        ./autogen.sh
+      '';
+
       preBuild = ''
         makeFlagsArray=(APACHE_LIBEXECDIR=$out/modules)
       '';
+
+      doCheck = false; # fails 10 out of ~2300 tests
+      nativeCheckInputs = [ python3 ];
 
       postInstall =
         lib.optionalString pythonBindings ''
@@ -167,26 +171,20 @@ let
           done
         '';
 
-      inherit perlBindings pythonBindings;
-
       enableParallelBuilding = true;
       # Missing install dependencies:
       # libtool:   error: error: relink 'libsvn_ra_serf-1.la' with the above command before installing it
       # make: *** [build-outputs.mk:1316: install-serf-lib] Error 1
       enableParallelInstalling = false;
-
-      nativeCheckInputs = [ python3 ];
-      doCheck = false; # fails 10 out of ~2300 tests
-
       passthru.tests = { inherit (nixosTests) svnserve; };
 
       meta = {
         description = "Version control system intended to be a compelling replacement for CVS in the open source community";
-        license = lib.licenses.asl20;
         homepage = "https://subversion.apache.org/";
-        mainProgram = "svn";
+        license = lib.licenses.asl20;
         maintainers = [ ];
         platforms = lib.platforms.linux ++ lib.platforms.darwin;
+        mainProgram = "svn";
       };
     });
 

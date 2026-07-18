@@ -1,7 +1,7 @@
 {
-  buildPythonPackage,
-  fetchFromGitHub,
   lib,
+  fetchFromGitHub,
+  buildPythonPackage,
   jinja2,
   mock,
   packaging,
@@ -14,7 +14,6 @@
 buildPythonPackage rec {
   pname = "stone";
   version = "3.3.9";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "dropbox";
@@ -28,6 +27,11 @@ buildPythonPackage rec {
       --replace-fail "'pytest-runner == 5.3.2'," ""
   '';
 
+  nativeCheckInputs = [
+    pytestCheckHook
+    mock
+  ];
+
   build-system = [ setuptools ];
 
   dependencies = [
@@ -37,11 +41,7 @@ buildPythonPackage rec {
     packaging
   ];
 
-  nativeCheckInputs = [
-    pytestCheckHook
-    mock
-  ];
-
+  pyproject = true;
   pythonImportsCheck = [ "stone" ];
 
   meta = {

@@ -1,13 +1,13 @@
 {
   lib,
   stdenv,
-  gcc13Stdenv,
   fetchFromGitHub,
-  libx11,
-  xorgproto,
   cairo,
+  gcc13Stdenv,
+  libx11,
   lv2,
   pkg-config,
+  xorgproto,
 }:
 let
   # see: https://github.com/brummer10/GxMatchEQ.lv2/issues/8
@@ -26,6 +26,7 @@ buildStdenv.mkDerivation (finalAttrs: {
   };
 
   nativeBuildInputs = [ pkg-config ];
+
   buildInputs = [
     libx11
     xorgproto
@@ -35,14 +36,13 @@ buildStdenv.mkDerivation (finalAttrs: {
 
   # error: format not a string literal and no format arguments [-Werror=format-security]
   hardeningDisable = [ "format" ];
-
   installFlags = [ "INSTALL_DIR=$(out)/lib/lv2" ];
 
   meta = {
-    homepage = "https://github.com/brummer10/GxMatchEQ.lv2";
     description = "Matching Equalizer to apply EQ curve from one source to another source";
-    maintainers = with lib.maintainers; [ magnetophon ];
+    homepage = "https://github.com/brummer10/GxMatchEQ.lv2";
     license = lib.licenses.gpl3;
+    maintainers = with lib.maintainers; [ magnetophon ];
     platforms = lib.platforms.linux;
   };
 })

@@ -1,6 +1,6 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
   coursier,
 }:
@@ -10,13 +10,12 @@ stdenv.mkDerivation {
   version = "unstable-2021-07-28";
 
   src = fetchFromGitHub {
-    repo = "scala-runners";
     owner = "dwijnand";
+    repo = "scala-runners";
     rev = "9bf096ca81f4974d7327e291eac291e22b344a8f";
     sha256 = "032fds5nr102h1lc81n9jc60jmxzivi4md4hcjrlqn076hfhj4ax";
   };
 
-  dontBuild = true;
   installPhase = ''
     mkdir -p $out/bin $out/lib
     sed -i -e "s| cs | ${coursier}/bin/cs |" scala-runner
@@ -27,11 +26,13 @@ stdenv.mkDerivation {
     ln -s $out/lib/scala-runner $out/bin/scaladoc
   '';
 
+  dontBuild = true;
+
   meta = {
-    homepage = "https://github.com/dwijnand/scala-runners";
     description = "Alternative implementation of the Scala distribution's runners";
+    homepage = "https://github.com/dwijnand/scala-runners";
     license = lib.licenses.asl20;
-    platforms = lib.platforms.all;
     maintainers = with lib.maintainers; [ hrhino ];
+    platforms = lib.platforms.all;
   };
 }

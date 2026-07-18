@@ -1,17 +1,17 @@
 # Run with:
 # nix-build -A tests.trivial-builders.writeShellApplication
 {
-  writeShellApplication,
-  writeTextFile,
-  runCommand,
   lib,
-  linkFarm,
   diffutils,
   hello,
+  linkFarm,
+  runCommand,
+  writeShellApplication,
+  writeTextFile,
 }:
 let
   checkShellApplication =
-    args@{ name, expected, ... }:
+    args@{ expected, name, ... }:
     let
       writeShellApplicationArgs = removeAttrs args [ "expected" ];
       script = writeShellApplication writeShellApplicationArgs;
@@ -33,6 +33,91 @@ let
     '';
 in
 linkFarm "writeShellApplication-tests" {
+  test-argument-forwarding = checkShellApplication {
+    derivationArgs.MY_BUILD_TIME_VARIABLE = "puppy";
+
+    derivationArgs.postCheck = ''
+      if [[ "$MY_BUILD_TIME_VARIABLE" != puppy ]]; then
+        echo "\$MY_BUILD_TIME_VARIABLE is not set to 'puppy'!"
+        exit 1
+      fi
+    '';
+
+    expected = "";
+    name = "test-argument-forwarding";
+    text = "";
+    meta.description = "Test checking that `writeShellApplication` forwards extra arguments to `stdenv.mkDerivation`";
+  };
+
+  test-bash-options-nounset = checkShellApplication {
+    # Don't use `nounset`:
+    bashOptions = [ ];
+    # Don't warn about the undefined variable at build time:
+    excludeShellChecks = [ "SC2154" ];
+    expected = "";
+    name = "test-bash-options-nounset";
+
+    text = ''
+      echo -n "$someUndefinedVariable"
+    '';
+  };
+
+  test-bash-options-pipefail = checkShellApplication {
+    # Don't use `pipefail`:
+    bashOptions = [
+      "errexit"
+      "nounset"
+    ];
+
+    expected = "";
+    name = "test-bash-options-pipefail";
+
+    text = ''
+      touch my-test-file
+      echo puppy | grep doggy | sed 's/doggy/puppy/g'
+      #            ^^^^^^^^^^ This will fail.
+      true
+    '';
+  };
+
+  test-check-phase = checkShellApplication {
+    checkPhase = ''
+      echo "echo -n hello" > $target
+    '';
+
+    expected = "hello";
+    name = "test-check-phase";
+    text = "";
+  };
+
+  test-exclude-shell-checks = writeShellApplication {
+    excludeShellChecks = [ "SC2016" ];
+    name = "test-exclude-shell-checks";
+
+    text = ''
+      # Triggers SC2016: Expressions don't expand in single quotes, use double
+      # quotes for that.
+      echo '$SHELL'
+    '';
+  };
+
+  test-inherit-path-no-runtimeInputs = checkShellApplication {
+    expected = "PATH is not empty";
+    inheritPath = true;
+    name = "test-inherit-path-no-runtimeInputs";
+    runtimeInputs = [ ];
+
+    text = ''
+      extra_colon_pattern='(^:|:$)'
+      if [[ ''${PATH} =~ $extra_colon_pattern ]]; then
+        echo "PATH should not start or end with a colon: $PATH"
+      fi
+      if [[ ''${#PATH} -gt 0 ]]; then
+        echo -n "PATH is not empty"
+      fi
+    '';
+  };
+
   test-meta =
     let
       args = {
@@ -46,59 +131,25 @@ linkFarm "writeShellApplication-tests" {
     assert script.meta.description == args.meta.description;
     script;
 
-  test-runtime-inputs = checkShellApplication {
-    name = "test-runtime-inputs";
-    text = ''
-      hello
-    '';
-    runtimeInputs = [ hello ];
-    expected = "Hello, world!\n";
-  };
-
-  test-runtime-env = checkShellApplication {
-    name = "test-runtime-env";
-    runtimeEnv = {
-      MY_COOL_ENV_VAR = "my-cool-env-value";
-      MY_OTHER_COOL_ENV_VAR = "my-other-cool-env-value";
-      # Check that we can serialize a bunch of different types:
-      BOOL = true;
-      INT = 1;
-      LIST = [
-        1
-        2
-        3
-      ];
-      MAP = {
-        a = "a";
-        b = "b";
-      };
-    };
-    text = ''
-      echo "$MY_COOL_ENV_VAR"
-      echo "$MY_OTHER_COOL_ENV_VAR"
-    '';
-    expected = ''
-      my-cool-env-value
-      my-other-cool-env-value
-    '';
-  };
-
   test-no-inherit-path-no-runtimeInputs = checkShellApplication {
-    name = "test-no-inherit-path-no-runtimeInputs";
+    expected = "PATH is empty";
     inheritPath = false;
+    name = "test-no-inherit-path-no-runtimeInputs";
     runtimeInputs = [ ];
+
     text = ''
       if [[ ''${#PATH} -eq 0 ]]; then
         echo -n "PATH is empty"
       fi
     '';
-    expected = "PATH is empty";
   };
 
   test-no-inherit-path-runtimeInputs = checkShellApplication {
-    name = "test-no-inherit-path-runtimeInputs";
+    expected = "PATH is not empty";
     inheritPath = false;
+    name = "test-no-inherit-path-runtimeInputs";
     runtimeInputs = [ hello ];
+
     text = ''
       extra_colon_pattern='(^:|:$)'
       if [[ ''${PATH} =~ $extra_colon_pattern ]]; then
@@ -108,84 +159,50 @@ linkFarm "writeShellApplication-tests" {
         echo -n "PATH is not empty"
       fi
     '';
-    expected = "PATH is not empty";
   };
 
-  test-inherit-path-no-runtimeInputs = checkShellApplication {
-    name = "test-inherit-path-no-runtimeInputs";
-    inheritPath = true;
-    runtimeInputs = [ ];
+  test-runtime-env = checkShellApplication {
+    expected = ''
+      my-cool-env-value
+      my-other-cool-env-value
+    '';
+
+    name = "test-runtime-env";
+
+    runtimeEnv = {
+      # Check that we can serialize a bunch of different types:
+      BOOL = true;
+      INT = 1;
+
+      LIST = [
+        1
+        2
+        3
+      ];
+
+      MAP = {
+        a = "a";
+        b = "b";
+      };
+
+      MY_COOL_ENV_VAR = "my-cool-env-value";
+      MY_OTHER_COOL_ENV_VAR = "my-other-cool-env-value";
+    };
+
     text = ''
-      extra_colon_pattern='(^:|:$)'
-      if [[ ''${PATH} =~ $extra_colon_pattern ]]; then
-        echo "PATH should not start or end with a colon: $PATH"
-      fi
-      if [[ ''${#PATH} -gt 0 ]]; then
-        echo -n "PATH is not empty"
-      fi
+      echo "$MY_COOL_ENV_VAR"
+      echo "$MY_OTHER_COOL_ENV_VAR"
     '';
-    expected = "PATH is not empty";
   };
 
-  test-check-phase = checkShellApplication {
-    name = "test-check-phase";
-    text = "";
-    checkPhase = ''
-      echo "echo -n hello" > $target
-    '';
-    expected = "hello";
-  };
+  test-runtime-inputs = checkShellApplication {
+    expected = "Hello, world!\n";
+    name = "test-runtime-inputs";
+    runtimeInputs = [ hello ];
 
-  test-argument-forwarding = checkShellApplication {
-    name = "test-argument-forwarding";
-    text = "";
-    derivationArgs.MY_BUILD_TIME_VARIABLE = "puppy";
-    derivationArgs.postCheck = ''
-      if [[ "$MY_BUILD_TIME_VARIABLE" != puppy ]]; then
-        echo "\$MY_BUILD_TIME_VARIABLE is not set to 'puppy'!"
-        exit 1
-      fi
-    '';
-    meta.description = "Test checking that `writeShellApplication` forwards extra arguments to `stdenv.mkDerivation`";
-    expected = "";
-  };
-
-  test-exclude-shell-checks = writeShellApplication {
-    name = "test-exclude-shell-checks";
-    excludeShellChecks = [ "SC2016" ];
     text = ''
-      # Triggers SC2016: Expressions don't expand in single quotes, use double
-      # quotes for that.
-      echo '$SHELL'
+      hello
     '';
-  };
-
-  test-bash-options-pipefail = checkShellApplication {
-    name = "test-bash-options-pipefail";
-    text = ''
-      touch my-test-file
-      echo puppy | grep doggy | sed 's/doggy/puppy/g'
-      #            ^^^^^^^^^^ This will fail.
-      true
-    '';
-    # Don't use `pipefail`:
-    bashOptions = [
-      "errexit"
-      "nounset"
-    ];
-    expected = "";
-  };
-
-  test-bash-options-nounset = checkShellApplication {
-    name = "test-bash-options-nounset";
-    text = ''
-      echo -n "$someUndefinedVariable"
-    '';
-    # Don't use `nounset`:
-    bashOptions = [ ];
-    # Don't warn about the undefined variable at build time:
-    excludeShellChecks = [ "SC2154" ];
-    expected = "";
   };
 
 }

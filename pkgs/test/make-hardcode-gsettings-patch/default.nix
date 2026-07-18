@@ -1,19 +1,19 @@
 {
-  runCommandLocal,
   lib,
-  git,
   clang-tools,
+  git,
   makeHardcodeGsettingsPatch,
+  runCommandLocal,
 }:
 
 let
   mkTest =
     {
-      name,
+      args,
       expected,
+      name,
       src,
       patches ? [ ],
-      args,
     }:
 
     let
@@ -53,46 +53,54 @@ let
       '';
 in
 {
-  basic = mkTest {
-    name = "basic";
-    src = ./fixtures/example-project;
-    args = {
-      schemaIdToVariableMapping = {
-        "org.gnome.evolution-data-server.addressbook" = "EDS";
-        "org.gnome.evolution.calendar" = "EVO";
-        "org.gnome.seahorse.nautilus.window" = "SEANAUT";
-      };
-    };
-    expected = ./fixtures/example-project-patched;
-  };
-
   patches = mkTest {
-    name = "patches";
     src = ./fixtures/example-project-wrapped-settings-constructor;
+
     patches = [
       # Avoid using wrapper function, which the generator cannot handle.
       ./fixtures/example-project-wrapped-settings-constructor-resolve.patch
     ];
+
     args = {
       schemaIdToVariableMapping = {
         "org.gnome.evolution-data-server.addressbook" = "EDS";
       };
     };
+
     expected = ./fixtures/example-project-wrapped-settings-constructor-patched;
+    name = "patches";
   };
 
-  existsFn = mkTest {
-    name = "exists-fn";
+  basic = mkTest {
     src = ./fixtures/example-project;
+
     args = {
       schemaIdToVariableMapping = {
         "org.gnome.evolution-data-server.addressbook" = "EDS";
         "org.gnome.evolution.calendar" = "EVO";
         "org.gnome.seahorse.nautilus.window" = "SEANAUT";
       };
-      schemaExistsFunction = "e_ews_common_utils_gsettings_schema_exists";
     };
+
+    expected = ./fixtures/example-project-patched;
+    name = "basic";
+  };
+
+  existsFn = mkTest {
+    src = ./fixtures/example-project;
+
+    args = {
+      schemaExistsFunction = "e_ews_common_utils_gsettings_schema_exists";
+
+      schemaIdToVariableMapping = {
+        "org.gnome.evolution-data-server.addressbook" = "EDS";
+        "org.gnome.evolution.calendar" = "EVO";
+        "org.gnome.seahorse.nautilus.window" = "SEANAUT";
+      };
+    };
+
     expected = ./fixtures/example-project-patched-with-exists-fn;
+    name = "exists-fn";
   };
 
 }

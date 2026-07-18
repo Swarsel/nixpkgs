@@ -1,14 +1,14 @@
 {
   lib,
-  rustPlatform,
-  fetchFromGitHub,
-  pkg-config,
-  openssl,
   stdenv,
+  fetchFromGitHub,
   libiconv,
   nix,
-  testers,
   nixtract,
+  openssl,
+  pkg-config,
+  rustPlatform,
+  testers,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -22,8 +22,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-36ciPNSlB1LU+UXP8MLakrBRRqbyiVFN8Jp/JbCe1OY=";
   };
 
-  cargoHash = "sha256-vG661ZXL87FiMy8yLOI7cagvunhzJhAsBR+VF6RfBxU=";
-
   nativeBuildInputs = [ pkg-config ];
 
   buildInputs = [
@@ -33,6 +31,7 @@ rustPlatform.buildRustPackage (finalAttrs: {
     libiconv
   ];
 
+  cargoHash = "sha256-vG661ZXL87FiMy8yLOI7cagvunhzJhAsBR+VF6RfBxU=";
   nativeCheckInputs = [ nix ];
 
   checkFlags = [
@@ -49,11 +48,13 @@ rustPlatform.buildRustPackage (finalAttrs: {
   meta = {
     description = "CLI tool to extract the graph of derivations from a Nix flake";
     homepage = "https://github.com/tweag/nixtract";
+
     license = with lib.licenses; [
       mit # or
       asl20
     ];
-    mainProgram = "nixtract";
+
     maintainers = with lib.maintainers; [ aleksana ];
+    mainProgram = "nixtract";
   };
 })

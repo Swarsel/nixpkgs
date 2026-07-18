@@ -1,9 +1,9 @@
 {
   lib,
-  buildPythonPackage,
-  fetchPypi,
   aiohttp,
   aiozoneinfo,
+  buildPythonPackage,
+  fetchPypi,
   lxml,
   poetry-core,
 }:
@@ -11,13 +11,14 @@
 buildPythonPackage rec {
   pname = "pytrafikverket";
   version = "1.1.1";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
     hash = "sha256-yfo36fAVC2LaresQ1QcXq2EGhGtkVzNbWvD6lynhusQ=";
   };
 
+  # Project has no tests
+  doCheck = false;
   build-system = [ poetry-core ];
 
   dependencies = [
@@ -26,9 +27,7 @@ buildPythonPackage rec {
     lxml
   ];
 
-  # Project has no tests
-  doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "pytrafikverket" ];
 
   meta = {

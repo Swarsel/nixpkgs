@@ -11,7 +11,6 @@
 buildPythonPackage rec {
   pname = "iso8601";
   version = "2.1.0";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
@@ -27,7 +26,7 @@ buildPythonPackage rec {
   ];
 
   enabledTestPaths = [ "iso8601" ];
-
+  pyproject = true;
   pythonImportsCheck = [ "iso8601" ];
 
   meta = {

@@ -1,11 +1,11 @@
 {
-  stdenv,
   lib,
-  qt6,
+  stdenv,
   fetchFromGitHub,
   cmake,
-  pkg-config,
   jsoncpp,
+  pkg-config,
+  qt6,
   readline,
 }:
 
@@ -20,11 +20,16 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-m2lVRSNaklB0Xfqgtyc0lNWXfTD8wTWsE06eGv4FOBE=";
   };
 
+  postPatch = ''
+    find . -type f -exec sed -i "s|/opt/med|$out/share/med|g" {} +
+  '';
+
   nativeBuildInputs = [
     qt6.wrapQtAppsHook
     cmake
     pkg-config
   ];
+
   buildInputs = [
     qt6.qtbase
     qt6.qttools
@@ -33,17 +38,13 @@ stdenv.mkDerivation (finalAttrs: {
     readline
   ];
 
-  postPatch = ''
-    find . -type f -exec sed -i "s|/opt/med|$out/share/med|g" {} +
-  '';
-
   meta = {
     description = "GUI game memory scanner and editor";
     homepage = "https://github.com/allencch/med";
     changelog = "https://github.com/allencch/med/releases/tag/${finalAttrs.version}";
+    license = lib.licenses.bsd3;
     maintainers = with lib.maintainers; [ zebreus ];
     platforms = lib.platforms.linux;
-    license = lib.licenses.bsd3;
     mainProgram = "med";
   };
 })

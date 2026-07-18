@@ -1,8 +1,8 @@
 {
   lib,
   stdenv,
-  crystal_1_17,
   fetchFromGitHub,
+  crystal_1_17,
   # https://crystal-lang.org/2019/09/06/parallelism-in-crystal/
   multithreading ? true,
   static ? stdenv.hostPlatform.isStatic,
@@ -28,10 +28,12 @@ crystal.buildCrystalPackage rec {
     description = "Gay sharks at your local terminal - lolcat-like CLI tool";
     homepage = "https://blahaj.geopjr.dev";
     license = lib.licenses.bsd2;
+
     maintainers = with lib.maintainers; [
       aleksana
       cafkafk
     ];
+
     mainProgram = "blahaj";
   };
 }

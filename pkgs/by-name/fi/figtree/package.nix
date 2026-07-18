@@ -1,8 +1,8 @@
 {
   lib,
-  stdenvNoCC,
   fetchFromGitHub,
   installFonts,
+  stdenvNoCC,
 }:
 
 stdenvNoCC.mkDerivation (finalAttrs: {
@@ -16,23 +16,24 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     hash = "sha256-owzoM0zfKYxLJCQbL1eUE0cdSLVmm+QNRUGxbsNJ37I=";
   };
 
-  sourceRoot = "source/fonts";
-
   outputs = [
     "out"
     "webfont"
   ];
 
   nativeBuildInputs = [ installFonts ];
+  sourceRoot = "source/fonts";
 
   meta = {
-    homepage = "https://github.com/erikdkennedy/figtree";
     description = "Simple and friendly geometric sans serif font";
-    platforms = lib.platforms.all;
+    homepage = "https://github.com/erikdkennedy/figtree";
+    license = lib.licenses.ofl;
+
     maintainers = with lib.maintainers; [
       mrcjkb
       ners
     ];
-    license = lib.licenses.ofl;
+
+    platforms = lib.platforms.all;
   };
 })

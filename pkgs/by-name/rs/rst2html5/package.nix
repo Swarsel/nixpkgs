@@ -1,19 +1,20 @@
 {
   lib,
-  python3,
   fetchPypi,
+  python3,
 }:
 
 python3.pkgs.buildPythonPackage rec {
   pname = "rst2html5";
   version = "2.0.1";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
     hash = "sha256-MJmYyF+rAo8vywGizNyIbbCvxDmCYueVoC6pxNDzKuk=";
   };
 
+  # Tests are not shipped as PyPI releases
+  doCheck = false;
   build-system = with python3.pkgs; [ poetry-core ];
 
   dependencies = with python3.pkgs; [
@@ -23,9 +24,7 @@ python3.pkgs.buildPythonPackage rec {
     pygments
   ];
 
-  # Tests are not shipped as PyPI releases
-  doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "rst2html5" ];
 
   meta = {

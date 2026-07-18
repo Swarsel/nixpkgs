@@ -1,7 +1,7 @@
 {
   lib,
-  buildDunePackage,
   fetchFromGitHub,
+  buildDunePackage,
   result,
   seq,
 }:
@@ -9,8 +9,6 @@
 buildDunePackage rec {
   pname = "tiny_httpd";
   version = "0.16";
-
-  minimalOCamlVersion = "4.08";
 
   src = fetchFromGitHub {
     owner = "c-cube";
@@ -21,10 +19,11 @@ buildDunePackage rec {
 
   buildInputs = [ result ];
   propagatedBuildInputs = [ seq ];
+  minimalOCamlVersion = "4.08";
 
   meta = {
-    description = "Minimal HTTP server using good old threads";
     inherit (src.meta) homepage;
+    description = "Minimal HTTP server using good old threads";
     license = lib.licenses.mit;
     maintainers = [ lib.maintainers.vbgl ];
     mainProgram = "http_of_dir";

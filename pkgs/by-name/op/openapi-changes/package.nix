@@ -1,7 +1,7 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
+  buildGoModule,
   git,
   gitUpdater,
   makeWrapper,
@@ -18,6 +18,10 @@ buildGoModule (finalAttrs: {
     hash = "sha256-zPDZFJuru67rw4xFSa4tMucmHiin27a112wdCpIpjiQ=";
   };
 
+  nativeBuildInputs = [ makeWrapper ];
+  vendorHash = "sha256-0Bu/UXE+EfPMEpyWh9etFCq6jpXHbRUoZOblu8T65HY=";
+  nativeCheckInputs = [ git ];
+
   # skip tests that require a git repository and fail in the sandbox
   checkFlags =
     let
@@ -33,11 +37,6 @@ buildGoModule (finalAttrs: {
       "^(${lib.concatStringsSep "|" skippedTests})$"
     ];
 
-  nativeBuildInputs = [ makeWrapper ];
-
-  nativeCheckInputs = [ git ];
-  __darwinAllowLocalNetworking = true;
-
   # tests require a git repository
   preCheck = ''
     export HOME=$(mktemp -d)
@@ -52,7 +51,7 @@ buildGoModule (finalAttrs: {
     wrapProgram $out/bin/openapi-changes --prefix PATH : ${lib.makeBinPath [ git ]}
   '';
 
-  vendorHash = "sha256-0Bu/UXE+EfPMEpyWh9etFCq6jpXHbRUoZOblu8T65HY=";
+  __darwinAllowLocalNetworking = true;
 
   passthru.updateScript = gitUpdater {
     rev-prefix = "v";

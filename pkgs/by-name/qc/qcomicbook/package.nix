@@ -2,10 +2,10 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  fetchpatch,
   cmake,
-  pkg-config,
+  fetchpatch,
   libsForQt5,
+  pkg-config,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -22,9 +22,9 @@ stdenv.mkDerivation (finalAttrs: {
   patches = [
     # https://github.com/stolowski/QComicBook/pull/45
     (fetchpatch {
+      hash = "sha256-q0X2i21JgtBfRfyMGpuUyB9GtIiWiFo6IWME6EBMSwk=";
       name = "cmake-4-compatibility.patch";
       url = "https://github.com/stolowski/QComicBook/commit/424a188f63171842ce8fad86fa85c4e03e405618.patch?full_index=1";
-      hash = "sha256-q0X2i21JgtBfRfyMGpuUyB9GtIiWiFo6IWME6EBMSwk=";
     })
   ];
 
@@ -47,10 +47,7 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   meta = {
-    homepage = "https://github.com/stolowski/QComicBook";
     description = "Comic book reader in Qt5";
-    mainProgram = "qcomicbook";
-    license = lib.licenses.gpl2;
 
     longDescription = ''
       QComicBook is a viewer for PDF files and comic book archives containing
@@ -60,7 +57,10 @@ stdenv.mkDerivation (finalAttrs: {
       mouse or keyboard navigation etc.
     '';
 
-    platforms = lib.platforms.linux;
+    homepage = "https://github.com/stolowski/QComicBook";
+    license = lib.licenses.gpl2;
     maintainers = with lib.maintainers; [ greydot ];
+    platforms = lib.platforms.linux;
+    mainProgram = "qcomicbook";
   };
 })

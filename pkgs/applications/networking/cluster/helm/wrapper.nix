@@ -1,7 +1,7 @@
 {
-  symlinkJoin,
   lib,
   makeWrapper,
+  symlinkJoin,
   writeText,
 }:
 
@@ -10,8 +10,8 @@ helm:
 let
   wrapper =
     {
-      plugins ? [ ],
       extraMakeWrapperArgs ? "",
+      plugins ? [ ],
     }:
     let
 
@@ -24,7 +24,7 @@ let
       };
     in
     symlinkJoin {
-      name = "helm-${lib.getVersion helm}";
+      nativeBuildInputs = [ makeWrapper ];
 
       # Remove the symlinks created by symlinkJoin which we need to perform
       # extra actions upon
@@ -32,6 +32,9 @@ let
         wrapProgram "$out/bin/helm" \
           "--set" "HELM_PLUGINS" "${pluginsDir}" ${extraMakeWrapperArgs}
       '';
+
+      name = "helm-${lib.getVersion helm}";
+
       paths = [
         helm
         pluginsDir
@@ -39,7 +42,6 @@ let
 
       preferLocalBuild = true;
 
-      nativeBuildInputs = [ makeWrapper ];
       passthru = {
         inherit pluginsDir;
         unwrapped = helm;

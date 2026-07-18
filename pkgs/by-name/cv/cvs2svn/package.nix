@@ -1,19 +1,18 @@
 {
   lib,
   fetchurl,
+  breezy,
+  cvs,
+  git,
+  installShellFiles,
   makeWrapper,
   pypy2Packages,
-  cvs,
   subversion,
-  git,
-  breezy,
-  installShellFiles,
 }:
 
 pypy2Packages.buildPythonApplication rec {
   pname = "cvs2svn";
   version = "2.5.0";
-  format = "setuptools";
 
   src = fetchurl {
     url = "https://github.com/mhagger/cvs2svn/releases/download/${version}/cvs2svn-${version}.tar.gz";
@@ -25,6 +24,8 @@ pypy2Packages.buildPythonApplication rec {
     installShellFiles
   ];
 
+  doCheck = false; # Couldn't find node 'transaction...' in expected output tree
+
   nativeCheckInputs = [
     subversion
     git
@@ -32,8 +33,6 @@ pypy2Packages.buildPythonApplication rec {
   ];
 
   checkPhase = "${pypy2Packages.python.interpreter} run-tests.py";
-
-  doCheck = false; # Couldn't find node 'transaction...' in expected output tree
 
   postInstall = ''
     for i in bzr svn git; do
@@ -44,14 +43,18 @@ pypy2Packages.buildPythonApplication rec {
     done
   '';
 
+  format = "setuptools";
+
   meta = {
     description = "Tool to convert CVS repositories to Subversion repositories";
     homepage = "https://github.com/mhagger/cvs2svn";
+    license = lib.licenses.asl20;
+
     maintainers = with lib.maintainers; [
       makefu
       viraptor
     ];
+
     platforms = lib.platforms.unix;
-    license = lib.licenses.asl20;
   };
 }

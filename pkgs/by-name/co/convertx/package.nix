@@ -1,16 +1,10 @@
 {
-  stdenvNoCC,
   lib,
   fetchFromGitHub,
-
-  # Build deps
-  bun,
-  tailwindcss_4,
-  typescript,
-  makeBinaryWrapper,
-
   # Runtime deps
   assimp,
+  # Build deps
+  bun,
   calibre,
   dasel,
   ffmpeg-headless,
@@ -21,12 +15,16 @@
   libjxl,
   libreoffice,
   libva,
+  makeBinaryWrapper,
   pandoc,
   perl5Packages,
   potrace,
   python3,
   resvg,
+  stdenvNoCC,
+  tailwindcss_4,
   texliveBasic,
+  typescript,
   vips,
   vtracer,
 }:
@@ -44,11 +42,8 @@ let
   };
 
   node_modules = stdenvNoCC.mkDerivation (finalAttrs: {
-    pname = "${pname}-node_modules";
     inherit version src;
-
-    dontConfigure = true;
-    dontFixup = true;
+    pname = "${pname}-node_modules";
 
     nativeBuildInputs = [
       bun
@@ -71,6 +66,8 @@ let
       cp package.json $out/lib
     '';
 
+    dontConfigure = true;
+    dontFixup = true;
     outputHash = pin."${stdenvNoCC.system}";
     outputHashMode = "recursive";
   });
@@ -83,8 +80,6 @@ stdenvNoCC.mkDerivation {
     tailwindcss_4
     typescript
   ];
-
-  dontConfigure = true;
 
   buildPhase = ''
     runHook preBuild
@@ -141,15 +136,19 @@ stdenvNoCC.mkDerivation {
       }
   '';
 
+  dontConfigure = true;
+
   meta = {
     description = "Self-hosted online file converter";
     homepage = "https://github.com/C4illin/ConvertX/tree/main";
-    license = lib.licenses.agpl3Only;
-    platforms = lib.platforms.linux;
     changelog = "https://github.com/C4illin/ConvertX/blob/main/CHANGELOG.md";
-    mainProgram = "convertx";
+    license = lib.licenses.agpl3Only;
+
     maintainers = with lib.maintainers; [
       EpicEric
     ];
+
+    platforms = lib.platforms.linux;
+    mainProgram = "convertx";
   };
 }

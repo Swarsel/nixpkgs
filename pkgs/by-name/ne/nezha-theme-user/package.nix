@@ -1,11 +1,11 @@
 {
   lib,
-  buildNpmPackage,
   fetchFromGitHub,
+  buildNpmPackage,
   fetchPnpmDeps,
+  nix-update-script,
   pnpmConfigHook,
   pnpm_11,
-  nix-update-script,
 }:
 
 let
@@ -32,16 +32,6 @@ buildNpmPackage (finalAttrs: {
 
   nativeBuildInputs = [ pnpm ];
 
-  npmDeps = null;
-  pnpmDeps = fetchPnpmDeps {
-    inherit (finalAttrs) pname version src;
-    inherit pnpm;
-    fetcherVersion = 4;
-    hash = "sha256-5lzMFY+PYHSQTWSewfLaspgeRq5PwWnU0ZzHYPzSMwE=";
-  };
-  npmConfigHook = pnpmConfigHook;
-
-  dontNpmInstall = true;
   installPhase = ''
     runHook preInstall
 
@@ -50,12 +40,23 @@ buildNpmPackage (finalAttrs: {
     runHook postInstall
   '';
 
+  dontNpmInstall = true;
+  npmConfigHook = pnpmConfigHook;
+  npmDeps = null;
+
+  pnpmDeps = fetchPnpmDeps {
+    inherit (finalAttrs) pname version src;
+    inherit pnpm;
+    fetcherVersion = 4;
+    hash = "sha256-5lzMFY+PYHSQTWSewfLaspgeRq5PwWnU0ZzHYPzSMwE=";
+  };
+
   passthru.updateScript = nix-update-script { };
 
   meta = {
     description = "Nezha monitoring user frontend based on next.js";
-    changelog = "https://github.com/hamster1963/nezha-dash-v2/releases/tag/v${finalAttrs.version}";
     homepage = "https://github.com/hamster1963/nezha-dash-v2";
+    changelog = "https://github.com/hamster1963/nezha-dash-v2/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.asl20;
     maintainers = with lib.maintainers; [ moraxyc ];
   };

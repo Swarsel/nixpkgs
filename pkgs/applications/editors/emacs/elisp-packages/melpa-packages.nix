@@ -68,33 +68,12 @@ let
 
           # upstream issue: missing file header
           bufshow = markBroken super.bufshow;
-
-          # upstream issue: missing file header
-          speech-tagger = markBroken super.speech-tagger;
-
-          # upstream issue: missing file header
-          textmate = markBroken super.textmate;
-
-          # upstream issue: missing file header
-          window-numbering = markBroken super.window-numbering;
-
-          # upstream issue: missing file header
-          voca-builder = markBroken super.voca-builder;
-
-          # upstream issue: missing file header
-          initsplit = markBroken super.initsplit;
-
-          # upstream issue: missing file header
-          jsfmt = markBroken super.jsfmt;
-
-          # upstream issue: missing file header
-          maxframe = markBroken super.maxframe;
-
           # upstream issue: missing file header
           connection = markBroken super.connection;
-
           # upstream issue: missing file header
           dictionary = markBroken super.dictionary;
+          # upstream issue: missing file header
+          elmine = markBroken super.elmine;
 
           # upstream issue: missing file header
           fold-dwim =
@@ -105,703 +84,43 @@ let
             if super.gl-conf-mode.version == "0.3" then markBroken super.gl-conf-mode else super.gl-conf-mode;
 
           # upstream issue: missing file header
+          ido-complete-space-or-hyphen = markBroken super.ido-complete-space-or-hyphen;
+          # upstream issue: missing file header
+          initsplit = markBroken super.initsplit;
+          # upstream issue: missing file header
+          jsfmt = markBroken super.jsfmt;
+
+          # upstream issue: missing file header
           ligo-mode =
             if super.ligo-mode.version == "0.3" then markBroken super.ligo-mode else super.ligo-mode;
 
           # upstream issue: missing file header
           link = markBroken super.link;
-
+          # upstream issue: missing file header
+          maxframe = markBroken super.maxframe;
           # upstream issue: missing file header
           org-dp = if super.org-dp.version == "1" then markBroken super.org-dp else super.org-dp;
-
           # upstream issue: missing file header
           revbufs = if super.revbufs.version == "1.2" then markBroken super.revbufs else super.revbufs;
-
           # upstream issue: missing file header
-          elmine = markBroken super.elmine;
-
+          speech-tagger = markBroken super.speech-tagger;
           # upstream issue: missing file header
-          ido-complete-space-or-hyphen = markBroken super.ido-complete-space-or-hyphen;
+          textmate = markBroken super.textmate;
+          # upstream issue: missing file header
+          voca-builder = markBroken super.voca-builder;
+          # upstream issue: missing file header
+          window-numbering = markBroken super.window-numbering;
 
         }
         // {
-          # Expects bash to be at /bin/bash
-          ac-rtags = ignoreCompilationError (fix-rtags super.ac-rtags); # elisp error
-
-          age = super.age.overrideAttrs (attrs: {
-            postPatch = attrs.postPatch or "" + ''
-              substituteInPlace age.el \
-                --replace-fail 'age-program (executable-find "age")' 'age-program "${lib.getExe pkgs.age}"'
-            '';
-          });
-
-          airline-themes = super.airline-themes.override {
-            inherit (self.melpaPackages) powerline;
-          };
-
-          # https://github.com/Golevka/emacs-clang-complete-async/issues/90
-          auto-complete-clang-async =
-            (addPackageRequires super.auto-complete-clang-async [ self.auto-complete ]).overrideAttrs
-              (old: {
-                buildInputs = old.buildInputs ++ [ pkgs.llvmPackages.llvm ];
-                env = old.env or { } // {
-                  CFLAGS = "-I${lib.getLib pkgs.llvmPackages.libclang}/include";
-                  LDFLAGS = "-L${lib.getLib pkgs.llvmPackages.libclang}/lib";
-                };
-              });
-
-          # part of a larger package
-          caml = dontConfigure super.caml;
-
-          # part of a larger package
-          # upstream issue: missing package version
-          cmake-mode = dontConfigure super.cmake-mode;
-
-          company-rtags = ignoreCompilationError (fix-rtags super.company-rtags); # elisp error
-
-          easy-kill-extras = super.easy-kill-extras.override {
-            inherit (self.melpaPackages) easy-kill;
-          };
-
-          dune = dontConfigure super.dune;
-
-          emacsql = super.emacsql.overrideAttrs (
-            old:
-            lib.optionalAttrs (lib.versionOlder old.version "20241115.1939") {
-              buildInputs = old.buildInputs ++ [ pkgs.sqlite ];
-
-              postBuild = ''
-                pushd sqlite
-                make
-                popd
-              '';
-
-              postInstall =
-                (old.postInstall or "")
-                + "\n"
-                + ''
-                  install -m=755 -D sqlite/emacsql-sqlite \
-                    $out/share/emacs/site-lisp/elpa/emacsql-${old.version}/sqlite/emacsql-sqlite
-                '';
-
-              stripDebugList = [ "share" ];
-            }
-          );
-
-          emacsql-sqlite = super.emacsql-sqlite.overrideAttrs (
-            old:
-            lib.optionalAttrs (lib.versionOlder old.version "20240808.2016") {
-              buildInputs = old.buildInputs ++ [ pkgs.sqlite ];
-
-              postBuild = ''
-                pushd sqlite
-                make
-                popd
-              '';
-
-              postInstall =
-                (old.postInstall or "")
-                + "\n"
-                + ''
-                  install -m=755 -D sqlite/emacsql-sqlite \
-                    $out/share/emacs/site-lisp/elpa/emacsql-sqlite-${old.version}/sqlite/emacsql-sqlite
-                '';
-
-              stripDebugList = [ "share" ];
-            }
-          );
-
-          epkg = super.epkg.overrideAttrs (old: {
-            postPatch = ''
-              substituteInPlace lisp/epkg.el \
-                --replace '(call-process "sqlite3"' '(call-process "${pkgs.sqlite}/bin/sqlite3"'
-            '';
-          });
-
-          erlang = super.erlang.overrideAttrs (attrs: {
-            nativeBuildInputs = attrs.nativeBuildInputs or [ ] ++ [
-              pkgs.perl
-            ];
-            buildInputs = attrs.buildInputs or [ ] ++ [
-              pkgs.ncurses
-            ];
-          });
-
-          # https://github.com/syl20bnr/evil-escape/pull/86
-          evil-escape = super.evil-escape.overrideAttrs (attrs: {
-            postPatch = ''
-              substituteInPlace evil-escape.el \
-                --replace ' ;;; evil' ';;; evil'
-            '';
-            packageRequires = with self; [ evil ];
-          });
-
-          ess-R-data-view = super.ess-R-data-view.override {
-            inherit (self.melpaPackages) ess ctable popup;
-          };
-
-          flycheck-rtags = ignoreCompilationError (fix-rtags super.flycheck-rtags); # elisp error
-
-          pdf-tools = super.pdf-tools.overrideAttrs (old: {
-            # Temporary work around for:
-            #   - https://github.com/vedang/pdf-tools/issues/102
-            #   - https://github.com/vedang/pdf-tools/issues/103
-            #   - https://github.com/vedang/pdf-tools/issues/109
-            env = old.env or { } // {
-              CXXFLAGS = "-std=c++17";
-            };
-
-            nativeBuildInputs = old.nativeBuildInputs ++ [
-              pkgs.autoconf
-              pkgs.automake
-              pkgs.pkg-config
-              pkgs.removeReferencesTo
-            ];
-            buildInputs = old.buildInputs ++ [
-              pkgs.libpng
-              pkgs.zlib
-              pkgs.poppler
-            ];
-            preBuild = ''
-              make server/epdfinfo
-              remove-references-to ${
-                lib.concatStringsSep " " (
-                  map (output: "-t " + output) (
-                    [
-                      pkgs.glib.dev
-                      pkgs.libpng.dev
-                      pkgs.poppler.dev
-                      pkgs.zlib.dev
-                      pkgs.cairo.dev
-                    ]
-                    ++ lib.optional pkgs.stdenv.hostPlatform.isLinux pkgs.stdenv.cc.libc.dev
-                  )
-                )
-              } server/epdfinfo
-            '';
-            recipe = pkgs.writeText "recipe" ''
-              (pdf-tools
-              :repo "politza/pdf-tools" :fetcher github
-              :files ("lisp/pdf-*.el" "server/epdfinfo"))
-            '';
-          });
-
-          # Build same version as Haskell package
-          hindent = (externalSrc super.hindent pkgs.haskellPackages.hindent).overrideAttrs (attrs: {
-            packageRequires = [ self.haskell-mode ];
-          });
-
-          hotfuzz = super.hotfuzz.overrideAttrs (old: {
-            nativeBuildInputs = (old.nativeBuildInputs or [ ]) ++ [ pkgs.cmake ];
-
-            dontUseCmakeBuildDir = true;
-
-            preBuild = ''
-              make -j$NIX_BUILD_CORES
-            '';
-
-            postInstall =
-              (old.postInstall or "")
-              + "\n"
-              + ''
-                install hotfuzz-module.so $out/share/emacs/site-lisp/elpa/hotfuzz-*
-              '';
-          });
-
-          irony = super.irony.overrideAttrs (old: {
-            cmakeFlags = old.cmakeFlags or [ ] ++ [ "-DCMAKE_INSTALL_BINDIR=bin" ];
-            env = old.env or { } // {
-              NIX_CFLAGS_COMPILE = "-UCLANG_RESOURCE_DIR";
-            };
-            preConfigure = ''
-              pushd server
-            '';
-            preBuild = ''
-              make
-              install -D bin/irony-server $out/bin/irony-server
-              popd
-            '';
-            checkPhase = ''
-              pushd server
-              make check
-              popd
-            '';
-            preFixup = ''
-              rm -rf $out/share/emacs/site-lisp/elpa/*/server
-            '';
-            dontUseCmakeBuildDir = true;
-            doCheck = pkgs.stdenv.hostPlatform.isLinux;
-            buildInputs = old.buildInputs ++ [ pkgs.llvmPackages.libclang ];
-            nativeBuildInputs = old.nativeBuildInputs ++ [
-              pkgs.cmake
-              pkgs.llvmPackages.llvm
-            ];
-          });
-
-          # tries to write a log file to $HOME
-          insert-shebang = mkHome super.insert-shebang;
-
-          ivy-rtags = ignoreCompilationError (fix-rtags super.ivy-rtags); # elisp error
-
-          jinx = super.jinx.overrideAttrs (
-            old:
-            let
-              libExt = pkgs.stdenv.hostPlatform.extensions.sharedLibrary;
-            in
-            {
-              nativeBuildInputs = (old.nativeBuildInputs or [ ]) ++ [
-                pkgs.pkg-config
-              ];
-
-              buildInputs = (old.buildInputs or [ ]) ++ [ pkgs.enchant_2 ];
-
-              postBuild = ''
-                NIX_CFLAGS_COMPILE="$($PKG_CONFIG --cflags enchant-2) $NIX_CFLAGS_COMPILE"
-                $CC -shared -o jinx-mod${libExt} jinx-mod.c -lenchant-2
-              '';
-
-              postInstall =
-                (old.postInstall or "")
-                + "\n"
-                + ''
-                  outd=$(echo $out/share/emacs/site-lisp/elpa/jinx-*)
-                  install -m444 --target-directory=$outd jinx-mod${libExt}
-                  rm $outd/jinx-mod.c $outd/emacs-module.h
-                '';
-
-              meta = old.meta // {
-                maintainers = [ lib.maintainers.DamienCassou ];
-              };
-            }
-          );
-
-          sqlite3 = super.sqlite3.overrideAttrs (old: {
-            buildInputs = (old.buildInputs or [ ]) ++ [ pkgs.sqlite ];
-
-            postBuild = ''
-              make
-            '';
-
-            postInstall =
-              (old.postInstall or "")
-              + "\n"
-              + ''
-                outd=$out/share/emacs/site-lisp/elpa/sqlite3-*
-                install -m444 -t $outd sqlite3-api.so
-                rm $outd/*.c $outd/*.h
-              '';
-
-            meta = old.meta // {
-              maintainers = [ lib.maintainers.DamienCassou ];
-            };
-          });
-
-          evil-magit = buildWithGit super.evil-magit;
-
-          eopengrok = buildWithGit super.eopengrok;
-
-          forge = buildWithGit super.forge;
-
-          gnuplot = super.gnuplot.overrideAttrs (attrs: {
-            postPatch = attrs.postPatch or "" + ''
-              substituteInPlace gnuplot.el \
-                --replace-fail 'gnuplot-program "gnuplot"' 'gnuplot-program "${lib.getExe pkgs.gnuplot}"'
-            '';
-          });
-
-          gnuplot-mode = super.gnuplot-mode.overrideAttrs (attrs: {
-            postPatch = attrs.postPatch or "" + ''
-              substituteInPlace gnuplot-mode.el \
-                --replace-fail 'gnuplot-program "gnuplot"' 'gnuplot-program "${lib.getExe pkgs.gnuplot}"'
-            '';
-          });
-
-          magit = buildWithGit super.magit;
-
-          magit-find-file = buildWithGit super.magit-find-file;
-
-          magit-gh-pulls = buildWithGit super.magit-gh-pulls;
-
-          magit-imerge = buildWithGit super.magit-imerge;
-
-          magit-lfs = buildWithGit super.magit-lfs;
-
-          magit-org-todos = buildWithGit super.magit-org-todos;
-
-          magit-tbdiff = buildWithGit super.magit-tbdiff;
-
-          magit-topgit = ignoreCompilationError (buildWithGit super.magit-topgit); # elisp error
-
-          magit-vcsh = buildWithGit super.magit-vcsh;
-
-          magit-gerrit = buildWithGit super.magit-gerrit;
-
-          magit-annex = buildWithGit super.magit-annex;
-
-          magit-todos = buildWithGit super.magit-todos;
-
-          magit-filenotify = buildWithGit super.magit-filenotify;
-
-          magit-gitflow = buildWithGit super.magit-gitflow;
-
-          magithub = ignoreCompilationError (buildWithGit super.magithub); # elisp error
-
-          magit-svn = buildWithGit super.magit-svn;
-
-          kubernetes = buildWithGit super.kubernetes;
-
-          kubernetes-evil = buildWithGit super.kubernetes-evil;
-
-          egg = buildWithGit super.egg;
-
-          kapacitor = buildWithGit super.kapacitor;
-
-          gerrit = buildWithGit super.gerrit;
-
-          gerrit-download = buildWithGit super.gerrit-download;
-
-          github-pullrequest = buildWithGit super.github-pullrequest;
-
-          jist = buildWithGit super.jist;
-
-          mandoku = addPackageRequires super.mandoku [ self.git ]; # upstream is archived
-
-          magit-p4 = buildWithGit super.magit-p4;
-
-          magit-rbr = buildWithGit super.magit-rbr;
-
-          magit-diff-flycheck = buildWithGit super.magit-diff-flycheck;
-
-          magit-reviewboard = buildWithGit super.magit-reviewboard;
-
-          magit-patch-changelog = buildWithGit super.magit-patch-changelog;
-
-          magit-circleci = buildWithGit super.magit-circleci;
-
-          # https://github.com/dandavison/magit-delta/issues/30
-          magit-delta = addPackageRequires (buildWithGit super.magit-delta) [ self.dash ];
-
-          orgit = buildWithGit super.orgit;
-
-          orgit-forge = buildWithGit super.orgit-forge;
-
-          ormolu = super.ormolu.overrideAttrs (attrs: {
-            postPatch = attrs.postPatch or "" + ''
-              substituteInPlace ormolu.el \
-                --replace-fail 'ormolu-process-path "ormolu"' 'ormolu-process-path "${lib.getExe pkgs.ormolu}"'
-            '';
-          });
-
-          ox-rss = buildWithGit super.ox-rss;
-
-          python-isort = super.python-isort.overrideAttrs (attrs: {
-            postPatch = attrs.postPatch or "" + ''
-              substituteInPlace python-isort.el \
-                --replace '-isort-command "isort"' '-isort-command "${lib.getExe pkgs.isort}"'
-            '';
-          });
-
-          # upstream issue: missing file header
-          # elisp error
-          mhc = (ignoreCompilationError super.mhc).override {
-            inherit (self.melpaPackages) calfw;
-          };
-
-          # missing .NET
-          nemerle = markBroken super.nemerle;
-
-          # part of a larger package
-          notmuch = dontConfigure super.notmuch;
-
-          pikchr-mode = super.pikchr-mode.overrideAttrs (attrs: {
-            postPatch = attrs.postPatch or "" + ''
-              substituteInPlace pikchr-mode.el \
-                --replace '"pikchr")' '"${lib.getExe pkgs.pikchr}")'
-            '';
-          });
-
-          rtags = ignoreCompilationError (dontConfigure (externalSrc super.rtags pkgs.rtags)); # elisp error
-
-          rtags-xref = dontConfigure super.rtags;
-
-          rime = super.rime.overrideAttrs (old: {
-            buildInputs = (old.buildInputs or [ ]) ++ [ pkgs.librime ];
-            preBuild = (old.preBuild or "") + ''
-              make lib CC=$CC MODULE_FILE_SUFFIX=${pkgs.stdenv.hostPlatform.extensions.sharedLibrary}
-            '';
-            postInstall = (old.postInstall or "") + ''
-              install -m444 -t $out/share/emacs/site-lisp/elpa/rime-* librime-emacs.*
-            '';
-          });
-
-          # https://github.com/projectional-haskell/structured-haskell-mode/issues/165
-          shm =
-            (addPackageRequires super.shm [
-              self.haskell-mode
-              self.hindent
-            ]).overrideAttrs
-              (attrs: {
-                propagatedUserEnvPkgs = attrs.propagatedUserEnvPkgs or [ ] ++ [
-                  pkgs.haskellPackages.structured-haskell-mode
-                ];
-              });
-
-          # Telega has a server portion for it's network protocol
-          # elisp error
-          telega = (ignoreCompilationError super.telega).overrideAttrs (old: {
-            buildInputs = old.buildInputs ++ [
-              pkgs.tdlib
-              pkgs.zlib
-            ];
-            nativeBuildInputs = old.nativeBuildInputs ++ [ pkgs.pkg-config ];
-
-            postPatch = ''
-              substituteInPlace telega-customize.el \
-                --replace 'defcustom telega-server-command "telega-server"' \
-                          "defcustom telega-server-command \"$out/bin/telega-server\""
-
-              substituteInPlace telega-sticker.el --replace '"dwebp' '"${pkgs.libwebp}/bin/dwebp'
-              substituteInPlace telega-sticker.el --replace '"ffmpeg' '"${pkgs.ffmpeg}/bin/ffmpeg'
-
-              substituteInPlace telega-vvnote.el --replace '"ffmpeg' '"${pkgs.ffmpeg}/bin/ffmpeg'
-            '';
-
-            postBuild = ''
-              pushd server
-              make
-              popd
-            '';
-
-            postInstall =
-              (old.postInstall or "")
-              + "\n"
-              + ''
-                mkdir -p $out/bin
-                install -m755 -Dt $out/bin server/telega-server
-              '';
-          });
-
-          tokei = super.tokei.overrideAttrs (attrs: {
-            postPatch = attrs.postPatch or "" + ''
-              substituteInPlace tokei.el \
-                --replace 'tokei-program "tokei"' 'tokei-program "${lib.getExe pkgs.tokei}"'
-            '';
-          });
-
-          treemacs = super.treemacs.overrideAttrs (attrs: {
-            postPatch = (attrs.postPatch or "") + ''
-              substituteInPlace src/elisp/treemacs-customization.el \
-                --replace 'treemacs-python-executable (treemacs--find-python3)' 'treemacs-python-executable "${lib.getExe pkgs.python3}"'
-            '';
-          });
-
-          treemacs-magit = super.treemacs-magit.overrideAttrs (attrs: {
-            # searches for Git at build time
-            nativeBuildInputs = (attrs.nativeBuildInputs or [ ]) ++ [ pkgs.git ];
-          });
-
-          typst-mode = super.typst-mode.overrideAttrs (attrs: {
-            postPatch = attrs.postPatch or "" + ''
-              substituteInPlace typst-mode.el \
-                --replace 'typst-executable-location  "typst"' 'typst-executable-location "${lib.getExe pkgs.typst}"'
-            '';
-          });
-
-          units-mode = super.units-mode.overrideAttrs (attrs: {
-            postPatch = attrs.postPatch or "" + ''
-              substituteInPlace units-mode.el \
-                --replace-fail 'units-binary-path "units"' 'units-binary-path "${lib.getExe pkgs.units}"'
-            '';
-          });
-
-          vdiff-magit = super.vdiff-magit.overrideAttrs (attrs: {
-            nativeBuildInputs = (attrs.nativeBuildInputs or [ ]) ++ [ pkgs.git ];
-          });
-
-          zig-mode = super.zig-mode.overrideAttrs (attrs: {
-            postPatch = attrs.postPatch or "" + ''
-              substituteInPlace zig-mode.el \
-                --replace-fail 'zig-zig-bin "zig"' 'zig-zig-bin "${lib.getExe pkgs.zig}"'
-            '';
-          });
-
-          zmq = super.zmq.overrideAttrs (old: {
-            stripDebugList = [ "share" ];
-            preBuild = ''
-              export EZMQ_LIBDIR=$(mktemp -d)
-              make
-            '';
-            nativeBuildInputs = old.nativeBuildInputs or [ ] ++ [
-              pkgs.autoconf
-              pkgs.automake
-              pkgs.pkg-config
-              pkgs.libtool
-            ];
-            buildInputs = old.buildInputs or [ ] ++ [
-              (pkgs.zeromq.override { enableDrafts = true; })
-            ];
-            postInstall =
-              (old.postInstall or "")
-              + "\n"
-              + ''
-                mv $EZMQ_LIBDIR/emacs-zmq.* $out/share/emacs/site-lisp/elpa/zmq-*
-                rm -r $out/share/emacs/site-lisp/elpa/zmq-*/src
-                rm $out/share/emacs/site-lisp/elpa/zmq-*/Makefile
-              '';
-          });
-
-          # Map legacy renames from emacs2nix since code generation was ported to emacs lisp
-          _0blayout = super."0blayout";
-          desktop-plus = super."desktop+";
-          ghub-plus = super."ghub+";
-          git-gutter-plus = super."git-gutter+";
-          git-gutter-fringe-plus = super."git-gutter-fringe+";
-          ido-completing-read-plus = super."ido-completing-read+";
-          image-plus = super."image+";
-          image-dired-plus = super."image-dired+";
-          markdown-mode-plus = super."markdown-mode+";
-          package-plus = super."package+";
-          rect-plus = super."rect+";
-
-          # upstream issue: missing file header
-          instapaper = markBroken super.instapaper;
-
-          # upstream issue: doesn't build
-          magit-stgit = markBroken super.magit-stgit;
-
-          # upstream issue: missing file header
-          melancholy-theme = markBroken super.melancholy-theme;
-
-          # upstream issue: doesn't build
-          eterm-256color = markBroken super.eterm-256color;
-
-          # upstream issue: doesn't build
-          per-buffer-theme = markBroken super.per-buffer-theme;
-
-          # upstream issue: missing file header
-          qiita = markBroken super.qiita;
-
-          # upstream issue: missing file header
-          sql-presto = markBroken super.sql-presto;
-
-          editorconfig = super.editorconfig.overrideAttrs (attrs: {
-            propagatedUserEnvPkgs = [ pkgs.editorconfig-core-c ];
-          });
-
-          # missing dependencies
-          evil-search-highlight-persist = super.evil-search-highlight-persist.overrideAttrs (attrs: {
-            packageRequires = with self; [
-              evil
-              highlight
-            ];
-          });
-
-          hamlet-mode = super.hamlet-mode.overrideAttrs (attrs: {
-            patches = [
-              # Fix build; maintainer email fails to parse
-              (pkgs.fetchpatch {
-                url = "https://github.com/lightquake/hamlet-mode/commit/253495d1330d6ec88d97fac136c78f57c650aae0.patch";
-                sha256 = "dSxS5yuXzCW96CUyvJWwjkhf1FMGBfiKKoBxeDVdz9Y=";
-              })
-            ];
-          });
-
-          helm-rtags = ignoreCompilationError (fix-rtags super.helm-rtags); # elisp error
-
-          # tries to write to $HOME
-          php-auto-yasnippets = mkHome super.php-auto-yasnippets;
-
-          racer = super.racer.overrideAttrs (attrs: {
-            postPatch = attrs.postPatch or "" + ''
-              substituteInPlace racer.el \
-                --replace /usr/local/src/rust/src ${pkgs.rustPlatform.rustcSrc}
-            '';
-          });
-
-          spaceline = super.spaceline.override {
-            inherit (self.melpaPackages) powerline;
-          };
-
-          vterm = super.vterm.overrideAttrs (old: {
-            nativeBuildInputs = old.nativeBuildInputs ++ [ pkgs.cmake ];
-            buildInputs = old.buildInputs ++ [
-              self.emacs
-              pkgs.libvterm-neovim
-            ];
-            cmakeFlags = [
-              "-DEMACS_SOURCE=${self.emacs.src}"
-              "-DUSE_SYSTEM_LIBVTERM=ON"
-            ];
-            # we need the proper out directory to exist, so we do this in the
-            # postInstall instead of postBuild
-            postInstall =
-              (old.postInstall or "")
-              + "\n"
-              + ''
-                make
-                install -m444 -t $out/share/emacs/site-lisp/elpa/vterm-** ../*.so
-                rm -rf $out/share/emacs/site-lisp/elpa/vterm-**/{CMake*,build,*.c,*.h}
-              '';
-          });
-
-          w3m = super.w3m.override (args: {
-            melpaBuild =
-              drv:
-              args.melpaBuild (
-                drv
-                // {
-                  prePatch =
-                    let
-                      w3m = "${lib.getBin pkgs.w3m}/bin/w3m";
-                    in
-                    ''
-                      substituteInPlace w3m.el \
-                      --replace 'defcustom w3m-command nil' \
-                      'defcustom w3m-command "${w3m}"'
-                    '';
-                }
-              );
-          });
-
-          wordnut = super.wordnut.overrideAttrs (attrs: {
-            postPatch = attrs.postPatch or "" + ''
-              substituteInPlace wordnut.el \
-                --replace 'wordnut-cmd "wn"' 'wordnut-cmd "${lib.getExe pkgs.wordnet}"'
-            '';
-          });
-
-          mozc = super.mozc.overrideAttrs (attrs: {
-            postPatch = attrs.postPatch or "" + ''
-              substituteInPlace src/unix/emacs/mozc.el \
-                --replace '"mozc_emacs_helper"' '"${pkgs.mozc}/bin/mozc_emacs_helper"'
-            '';
-          });
-
-          # Build a helper executable that interacts with the macOS Dictionary.app
-          osx-dictionary =
-            if pkgs.stdenv.hostPlatform.isDarwin then
-              super.osx-dictionary.overrideAttrs (old: {
-                postBuild = (old.postBuild or "") + ''
-                  $CXX -O3 -framework CoreServices -framework Foundation osx-dictionary.m -o osx-dictionary-cli
-                '';
-                postInstall =
-                  (old.postInstall or "")
-                  + "\n"
-                  + ''
-                    outd=$out/share/emacs/site-lisp/elpa/osx-dictionary-*
-                    mkdir -p $out/bin
-                    install -m444 -t $out/bin osx-dictionary-cli
-                    rm $outd/osx-dictionary.m
-                  '';
-              })
-            else
-              super.osx-dictionary;
-
           # keep-sorted start block=yes newline_separated=yes
           # https://github.com/skeeto/at-el/issues/9
           "@" = ignoreCompilationErrorIfOlder super."@" "20240923.1318";
 
           "git-gutter-fringe+" = ignoreCompilationError super."git-gutter-fringe+"; # elisp error
+
+          # Map legacy renames from emacs2nix since code generation was ported to emacs lisp
+          _0blayout = super."0blayout";
 
           abgaben = addPackageRequires (mkHome super.abgaben) [ self.mu4e ];
 
@@ -816,8 +135,22 @@ let
             + old.preBuild or "";
           });
 
+          # Expects bash to be at /bin/bash
+          ac-rtags = ignoreCompilationError (fix-rtags super.ac-rtags); # elisp error
+
           # Optimizer error: too much on the stack
           ack-menu = ignoreCompilationError super.ack-menu;
+
+          age = super.age.overrideAttrs (attrs: {
+            postPatch = attrs.postPatch or "" + ''
+              substituteInPlace age.el \
+                --replace-fail 'age-program (executable-find "age")' 'age-program "${lib.getExe pkgs.age}"'
+            '';
+          });
+
+          airline-themes = super.airline-themes.override {
+            inherit (self.melpaPackages) powerline;
+          };
 
           # https://github.com/gongo/airplay-el/issues/2
           airplay = addPackageRequires super.airplay [ self.request-deferred ];
@@ -852,6 +185,18 @@ let
 
           # missing optional dependencies
           auto-complete-auctex = addPackageRequires (mkHome super.auto-complete-auctex) [ self.auctex ];
+
+          # https://github.com/Golevka/emacs-clang-complete-async/issues/90
+          auto-complete-clang-async =
+            (addPackageRequires super.auto-complete-clang-async [ self.auto-complete ]).overrideAttrs
+              (old: {
+                buildInputs = old.buildInputs ++ [ pkgs.llvmPackages.llvm ];
+
+                env = old.env or { } // {
+                  CFLAGS = "-I${lib.getLib pkgs.llvmPackages.libclang}/include";
+                  LDFLAGS = "-L${lib.getLib pkgs.llvmPackages.libclang}/lib";
+                };
+              });
 
           # depends on distel which is not on any ELPA https://github.com/massemanet/distel/issues/21
           auto-complete-distel = ignoreCompilationError super.auto-complete-distel;
@@ -918,6 +263,9 @@ let
           # https://github.com/kiwanami/emacs-calfw/pull/106
           calfw-org = addPackageRequires super.calfw-org [ self.calfw ];
 
+          # part of a larger package
+          caml = dontConfigure super.caml;
+
           cardano-tx = ignoreCompilationError super.cardano-tx; # elisp error
 
           cardano-wallet = ignoreCompilationError super.cardano-wallet; # elisp error
@@ -952,9 +300,9 @@ let
             finalAttrs: previousAttrs: {
               patches = previousAttrs.patches or [ ] ++ [
                 (pkgs.fetchpatch {
+                  hash = "sha256-OYP5LaZmCUJFgFk1Pf30e7sml8fC+xI4HSyDz7lck7E=";
                   name = "add-missing-end-parenthesis.patch";
                   url = "https://github.com/llaisdy/clingo-mode/pull/3/commits/063445a24afb176c3f16af7a2763771dbdc4ecf6.patch";
-                  hash = "sha256-OYP5LaZmCUJFgFk1Pf30e7sml8fC+xI4HSyDz7lck7E=";
                 })
               ];
             }
@@ -964,6 +312,10 @@ let
 
           # https://github.com/atilaneves/cmake-ide/issues/176
           cmake-ide = addPackageRequires super.cmake-ide [ self.dash ];
+
+          # part of a larger package
+          # upstream issue: missing package version
+          cmake-mode = dontConfigure super.cmake-mode;
 
           code-review = ignoreCompilationError super.code-review; # elisp error
 
@@ -976,9 +328,9 @@ let
                     previousAttrs.patches or [ ]
                     ++ [
                       (pkgs.fetchpatch {
+                        hash = "sha256-cCHY8Ak2fHuuhymjSF7w2MLPDJa84mBUdKg27mB9yto=";
                         name = "remove-unused-dash.patch";
                         url = "https://github.com/abingham/emacs-codesearch/commit/bd24a152ab6ea9f69443ae8e5b7351bb2f990fb6.patch";
-                        hash = "sha256-cCHY8Ak2fHuuhymjSF7w2MLPDJa84mBUdKg27mB9yto=";
                       })
                     ]
                   else
@@ -999,6 +351,8 @@ let
 
           # qmltypes-table.el causing native-compiler-error-empty-byte
           company-qml = ignoreCompilationError super.company-qml;
+
+          company-rtags = ignoreCompilationError (fix-rtags super.company-rtags); # elisp error
 
           # https://github.com/neuromage/ycm.el/issues/6
           company-ycm = ignoreCompilationError (addPackageRequires super.company-ycm [ self.company ]);
@@ -1057,6 +411,8 @@ let
 
           describe-number = ignoreCompilationError super.describe-number; # elisp error
 
+          desktop-plus = super."desktop+";
+
           # missing optional dependencies: text-translator, not on any ELPA
           dic-lookup-w3m = ignoreCompilationError super.dic-lookup-w3m;
 
@@ -1075,14 +431,26 @@ let
           # elisp error and missing optional dependencies
           drupal-mode = ignoreCompilationError super.drupal-mode;
 
+          dune = dontConfigure super.dune;
+
           e2wm-pkgex4pl = ignoreCompilationError super.e2wm-pkgex4pl; # elisp error
+
+          easy-kill-extras = super.easy-kill-extras.override {
+            inherit (self.melpaPackages) easy-kill;
+          };
 
           ecb = ignoreCompilationError super.ecb; # elisp error
 
           # Optimizer error: too much on the stack
           edit-color-stamp = ignoreCompilationError super.edit-color-stamp;
 
+          editorconfig = super.editorconfig.overrideAttrs (attrs: {
+            propagatedUserEnvPkgs = [ pkgs.editorconfig-core-c ];
+          });
+
           edts = ignoreCompilationError (mkHome super.edts); # elisp error
+
+          egg = buildWithGit super.egg;
 
           eimp = super.eimp.overrideAttrs (old: {
             postPatch =
@@ -1122,12 +490,58 @@ let
           elscreen = super.elscreen.overrideAttrs (old: {
             patches = old.patches or [ ] ++ [
               (pkgs.fetchpatch {
+                hash = "sha256-7JoDGtFECZEkB3xmMBXZcx6oStkEV06soiqOkDevWtM=";
                 name = "do-not-require-unneeded-wl.patch";
                 url = "https://github.com/knu/elscreen/pull/34/commits/2ffbeb11418d1b98809909c389e7010666d511fd.patch";
-                hash = "sha256-7JoDGtFECZEkB3xmMBXZcx6oStkEV06soiqOkDevWtM=";
               })
             ];
           });
+
+          emacsql = super.emacsql.overrideAttrs (
+            old:
+            lib.optionalAttrs (lib.versionOlder old.version "20241115.1939") {
+              buildInputs = old.buildInputs ++ [ pkgs.sqlite ];
+
+              postBuild = ''
+                pushd sqlite
+                make
+                popd
+              '';
+
+              postInstall =
+                (old.postInstall or "")
+                + "\n"
+                + ''
+                  install -m=755 -D sqlite/emacsql-sqlite \
+                    $out/share/emacs/site-lisp/elpa/emacsql-${old.version}/sqlite/emacsql-sqlite
+                '';
+
+              stripDebugList = [ "share" ];
+            }
+          );
+
+          emacsql-sqlite = super.emacsql-sqlite.overrideAttrs (
+            old:
+            lib.optionalAttrs (lib.versionOlder old.version "20240808.2016") {
+              buildInputs = old.buildInputs ++ [ pkgs.sqlite ];
+
+              postBuild = ''
+                pushd sqlite
+                make
+                popd
+              '';
+
+              postInstall =
+                (old.postInstall or "")
+                + "\n"
+                + ''
+                  install -m=755 -D sqlite/emacsql-sqlite \
+                    $out/share/emacs/site-lisp/elpa/emacsql-sqlite-${old.version}/sqlite/emacsql-sqlite
+                '';
+
+              stripDebugList = [ "share" ];
+            }
+          );
 
           embark-vc = buildWithGit super.embark-vc;
 
@@ -1141,8 +555,34 @@ let
 
           enotify = ignoreCompilationError super.enotify; # elisp error
 
+          eopengrok = buildWithGit super.eopengrok;
+
+          epkg = super.epkg.overrideAttrs (old: {
+            postPatch = ''
+              substituteInPlace lisp/epkg.el \
+                --replace '(call-process "sqlite3"' '(call-process "${pkgs.sqlite}/bin/sqlite3"'
+            '';
+          });
+
           # https://github.com/leathekd/ercn/issues/6
           ercn = addPackageRequiresIfOlder super.ercn [ self.dash ] "20250317.2338";
+
+          erlang = super.erlang.overrideAttrs (attrs: {
+            nativeBuildInputs = attrs.nativeBuildInputs or [ ] ++ [
+              pkgs.perl
+            ];
+
+            buildInputs = attrs.buildInputs or [ ] ++ [
+              pkgs.ncurses
+            ];
+          });
+
+          ess-R-data-view = super.ess-R-data-view.override {
+            inherit (self.melpaPackages) ess ctable popup;
+          };
+
+          # upstream issue: doesn't build
+          eterm-256color = markBroken super.eterm-256color;
 
           # missing optional dependencies
           eval-in-repl = addPackageRequires super.eval-in-repl (
@@ -1174,6 +614,18 @@ let
           # https://github.com/PythonNut/evil-easymotion/issues/74
           evil-easymotion = addPackageRequires super.evil-easymotion [ self.evil ];
 
+          # https://github.com/syl20bnr/evil-escape/pull/86
+          evil-escape = super.evil-escape.overrideAttrs (attrs: {
+            postPatch = ''
+              substituteInPlace evil-escape.el \
+                --replace ' ;;; evil' ';;; evil'
+            '';
+
+            packageRequires = with self; [ evil ];
+          });
+
+          evil-magit = buildWithGit super.evil-magit;
+
           evil-mu4e = addPackageRequires super.evil-mu4e [ self.mu4e ];
 
           # https://github.com/VanLaser/evil-nl-break-undo/issues/2
@@ -1183,6 +635,14 @@ let
 
           evil-python-movement = ignoreCompilationError super.evil-python-movement; # elisp error
 
+          # missing dependencies
+          evil-search-highlight-persist = super.evil-search-highlight-persist.overrideAttrs (attrs: {
+            packageRequires = with self; [
+              evil
+              highlight
+            ];
+          });
+
           evil-tex = mkHome super.evil-tex;
 
           # Error: Bytecode overflow
@@ -1190,6 +650,8 @@ let
 
           # https://github.com/agzam/exwm-edit/issues/32
           exwm-edit = addPackageRequires super.exwm-edit [ self.exwm ];
+
+          flycheck-rtags = ignoreCompilationError (fix-rtags super.flycheck-rtags); # elisp error
 
           # https://github.com/syl20bnr/flymake-elixir/issues/4
           flymake-elixir = addPackageRequires super.flymake-elixir [ self.flymake-easy ];
@@ -1204,6 +666,8 @@ let
           flyparens = ignoreCompilationError super.flyparens; # elisp error
 
           fold-dwim-org = ignoreCompilationError super.fold-dwim-org; # elisp error
+
+          forge = buildWithGit super.forge;
 
           forge-llm = buildWithGit super.forge-llm;
 
@@ -1232,10 +696,22 @@ let
             self.flycheck
           ];
 
+          gerrit = buildWithGit super.gerrit;
+
+          gerrit-download = buildWithGit super.gerrit-download;
+
           gh-notify = buildWithGit super.gh-notify;
+
+          ghub-plus = super."ghub+";
 
           # https://gitlab.com/emacs-stuff/git-commit-insert-issue/-/issues/24
           git-commit-insert-issue = addPackageRequires super.git-commit-insert-issue [ self.glab ];
+
+          git-gutter-fringe-plus = super."git-gutter-fringe+";
+
+          git-gutter-plus = super."git-gutter+";
+
+          github-pullrequest = buildWithGit super.github-pullrequest;
 
           # https://github.com/nlamirault/emacs-gitlab/issues/68
           gitlab = addPackageRequires super.gitlab [ self.f ];
@@ -1247,6 +723,20 @@ let
           global-tags = addPackageRequires super.global-tags [ self.s ];
 
           gnosis = ignoreCompilationError (mkHome super.gnosis); # doing db stuff when compiling
+
+          gnuplot = super.gnuplot.overrideAttrs (attrs: {
+            postPatch = attrs.postPatch or "" + ''
+              substituteInPlace gnuplot.el \
+                --replace-fail 'gnuplot-program "gnuplot"' 'gnuplot-program "${lib.getExe pkgs.gnuplot}"'
+            '';
+          });
+
+          gnuplot-mode = super.gnuplot-mode.overrideAttrs (attrs: {
+            postPatch = attrs.postPatch or "" + ''
+              substituteInPlace gnuplot-mode.el \
+                --replace-fail 'gnuplot-program "gnuplot"' 'gnuplot-program "${lib.getExe pkgs.gnuplot}"'
+            '';
+          });
 
           go = ignoreCompilationError super.go; # elisp error
 
@@ -1263,12 +753,22 @@ let
           # missing optional dependencies
           gumshoe = addPackageRequires super.gumshoe [ self.perspective ];
 
+          hamlet-mode = super.hamlet-mode.overrideAttrs (attrs: {
+            patches = [
+              # Fix build; maintainer email fails to parse
+              (pkgs.fetchpatch {
+                sha256 = "dSxS5yuXzCW96CUyvJWwjkhf1FMGBfiKKoBxeDVdz9Y=";
+                url = "https://github.com/lightquake/hamlet-mode/commit/253495d1330d6ec88d97fac136c78f57c650aae0.patch";
+              })
+            ];
+          });
+
           helm-chrome-control = super.helm-chrome-control.overrideAttrs (old: {
             patches = old.patches or [ ] ++ [
               (pkgs.fetchpatch {
+                hash = "sha256-tF+IaICbveYJvd3Tjx52YBBztpjifZdCA4O+Z2r1M3s=";
                 name = "require-helm-core-instead-of-helm.patch";
                 url = "https://github.com/xuchunyang/helm-chrome-control/pull/2/commits/7765cd2483adef5cfa6cf77f52259ad6e1dd0daf.patch";
-                hash = "sha256-tF+IaICbveYJvd3Tjx52YBBztpjifZdCA4O+Z2r1M3s=";
               })
             ];
           });
@@ -1314,13 +814,37 @@ let
           # https://github.com/cosmicexplorer/helm-rg/issues/36
           helm-rg = ignoreCompilationError super.helm-rg; # elisp error
 
+          helm-rtags = ignoreCompilationError (fix-rtags super.helm-rtags); # elisp error
+
           # https://github.com/yasuyk/helm-spaces/issues/1
           helm-spaces = fixRequireHelmCore super.helm-spaces;
 
           hideshow-org = ignoreCompilationError super.hideshow-org; # elisp error
 
+          # Build same version as Haskell package
+          hindent = (externalSrc super.hindent pkgs.haskellPackages.hindent).overrideAttrs (attrs: {
+            packageRequires = [ self.haskell-mode ];
+          });
+
           # https://github.com/purcell/hippie-expand-slime/issues/2
           hippie-expand-slime = addPackageRequires super.hippie-expand-slime [ self.slime ];
+
+          hotfuzz = super.hotfuzz.overrideAttrs (old: {
+            nativeBuildInputs = (old.nativeBuildInputs or [ ]) ++ [ pkgs.cmake ];
+
+            preBuild = ''
+              make -j$NIX_BUILD_CORES
+            '';
+
+            postInstall =
+              (old.postInstall or "")
+              + "\n"
+              + ''
+                install hotfuzz-module.so $out/share/emacs/site-lisp/elpa/hotfuzz-*
+              '';
+
+            dontUseCmakeBuildDir = true;
+          });
 
           hyperbole = ignoreCompilationError (addPackageRequires (mkHome super.hyperbole) [ self.el-mock ]); # elisp error
 
@@ -1331,8 +855,14 @@ let
           # elisp error and missing optional dependencies
           identica-mode = ignoreCompilationError super.identica-mode;
 
+          ido-completing-read-plus = super."ido-completing-read+";
+
           # missing optional dependencies
           idris-mode = addPackageRequires super.idris-mode [ self.flycheck ];
+
+          image-dired-plus = super."image-dired+";
+
+          image-plus = super."image+";
 
           imbot = ignoreCompilationError super.imbot; # elisp error
 
@@ -1341,16 +871,62 @@ let
           # TODO report to upstream
           inlineR = addPackageRequires super.inlineR [ self.ess ];
 
+          # tries to write a log file to $HOME
+          insert-shebang = mkHome super.insert-shebang;
+
           # https://github.com/duelinmarkers/insfactor.el/issues/7
           insfactor = addPackageRequires super.insfactor [ self.cider ];
 
+          # upstream issue: missing file header
+          instapaper = markBroken super.instapaper;
+
           iregister = super.iregister.overrideAttrs (old: {
-            recipe = "";
             files = ''(:defaults (:exclude ".bump-version.el"))'';
+            recipe = "";
+          });
+
+          irony = super.irony.overrideAttrs (old: {
+            nativeBuildInputs = old.nativeBuildInputs ++ [
+              pkgs.cmake
+              pkgs.llvmPackages.llvm
+            ];
+
+            buildInputs = old.buildInputs ++ [ pkgs.llvmPackages.libclang ];
+            cmakeFlags = old.cmakeFlags or [ ] ++ [ "-DCMAKE_INSTALL_BINDIR=bin" ];
+
+            env = old.env or { } // {
+              NIX_CFLAGS_COMPILE = "-UCLANG_RESOURCE_DIR";
+            };
+
+            preConfigure = ''
+              pushd server
+            '';
+
+            preBuild = ''
+              make
+              install -D bin/irony-server $out/bin/irony-server
+              popd
+            '';
+
+            doCheck = pkgs.stdenv.hostPlatform.isLinux;
+
+            checkPhase = ''
+              pushd server
+              make check
+              popd
+            '';
+
+            preFixup = ''
+              rm -rf $out/share/emacs/site-lisp/elpa/*/server
+            '';
+
+            dontUseCmakeBuildDir = true;
           });
 
           # https://github.com/wandersoncferreira/ivy-clojuredocs/issues/5
           ivy-clojuredocs = addPackageRequires super.ivy-clojuredocs [ self.parseedn ];
+
+          ivy-rtags = ignoreCompilationError (fix-rtags super.ivy-rtags); # elisp error
 
           # TODO report to upstream
           jack-connect = addPackageRequires super.jack-connect [ self.dash ];
@@ -1361,6 +937,40 @@ let
 
           # https://github.com/fred-o/jekyll-modes/issues/6
           jekyll-modes = addPackageRequires super.jekyll-modes [ self.poly-markdown ];
+
+          jinx = super.jinx.overrideAttrs (
+            old:
+            let
+              libExt = pkgs.stdenv.hostPlatform.extensions.sharedLibrary;
+            in
+            {
+              nativeBuildInputs = (old.nativeBuildInputs or [ ]) ++ [
+                pkgs.pkg-config
+              ];
+
+              buildInputs = (old.buildInputs or [ ]) ++ [ pkgs.enchant_2 ];
+
+              postBuild = ''
+                NIX_CFLAGS_COMPILE="$($PKG_CONFIG --cflags enchant-2) $NIX_CFLAGS_COMPILE"
+                $CC -shared -o jinx-mod${libExt} jinx-mod.c -lenchant-2
+              '';
+
+              postInstall =
+                (old.postInstall or "")
+                + "\n"
+                + ''
+                  outd=$(echo $out/share/emacs/site-lisp/elpa/jinx-*)
+                  install -m444 --target-directory=$outd jinx-mod${libExt}
+                  rm $outd/jinx-mod.c $outd/emacs-module.h
+                '';
+
+              meta = old.meta // {
+                maintainers = [ lib.maintainers.DamienCassou ];
+              };
+            }
+          );
+
+          jist = buildWithGit super.jist;
 
           jq-mode = super.jq-mode.overrideAttrs (attrs: {
             postPatch = attrs.postPatch or "" + ''
@@ -1383,9 +993,9 @@ let
                   previousAttrs.patches or [ ]
                   ++ [
                     (pkgs.fetchpatch {
+                      hash = "sha256-pB1ht03XCh+BWKHhxBAp701qt/KWAMJ2SQQaN3FgMjU=";
                       name = "fix-compilation-error.patch";
                       url = "https://github.com/Fabiokleis/kanagawa-emacs/commit/83c2b5c292198b46a06ec0ad62619d83fd965433.patch";
-                      hash = "sha256-pB1ht03XCh+BWKHhxBAp701qt/KWAMJ2SQQaN3FgMjU=";
                     })
                   ]
                 else
@@ -1393,9 +1003,15 @@ let
             }
           );
 
+          kapacitor = buildWithGit super.kapacitor;
+
           keystore-mode = ignoreCompilationError super.keystore-mode; # elisp error
 
           kite = ignoreCompilationError super.kite; # elisp error
+
+          kubernetes = buildWithGit super.kubernetes;
+
+          kubernetes-evil = buildWithGit super.kubernetes-evil;
 
           # missing optional dependencies
           laas = addPackageRequires super.laas [ self.math-symbol-lists ];
@@ -1413,18 +1029,21 @@ let
               libExt = pkgs.stdenv.hostPlatform.extensions.sharedLibrary;
             in
             prevAttrs: {
-              buildInputs = prevAttrs.buildInputs ++ [
-                pkgs.librime
-              ];
               nativeBuildInputs = prevAttrs.nativeBuildInputs ++ [
                 pkgs.which
               ];
+
+              buildInputs = prevAttrs.buildInputs ++ [
+                pkgs.librime
+              ];
+
               postBuild =
                 prevAttrs.postBuild or ""
                 + "\n"
                 + ''
                   make CC=$CC SUFFIX=${libExt}
                 '';
+
               postInstall =
                 prevAttrs.postInstall or ""
                 + "\n"
@@ -1447,8 +1066,58 @@ let
             self.flycheck
           ];
 
+          magit = buildWithGit super.magit;
+
+          magit-annex = buildWithGit super.magit-annex;
+
+          magit-circleci = buildWithGit super.magit-circleci;
+
+          # https://github.com/dandavison/magit-delta/issues/30
+          magit-delta = addPackageRequires (buildWithGit super.magit-delta) [ self.dash ];
+
+          magit-diff-flycheck = buildWithGit super.magit-diff-flycheck;
+
+          magit-filenotify = buildWithGit super.magit-filenotify;
+
+          magit-find-file = buildWithGit super.magit-find-file;
+
+          magit-gerrit = buildWithGit super.magit-gerrit;
+
+          magit-gh-pulls = buildWithGit super.magit-gh-pulls;
+
+          magit-gitflow = buildWithGit super.magit-gitflow;
+
           # https://gitlab.com/arvidnl/magit-gitlab/-/issues/8
           magit-gitlab = addPackageRequires super.magit-gitlab [ self.glab ];
+
+          magit-imerge = buildWithGit super.magit-imerge;
+
+          magit-lfs = buildWithGit super.magit-lfs;
+
+          magit-org-todos = buildWithGit super.magit-org-todos;
+
+          magit-p4 = buildWithGit super.magit-p4;
+
+          magit-patch-changelog = buildWithGit super.magit-patch-changelog;
+
+          magit-rbr = buildWithGit super.magit-rbr;
+
+          magit-reviewboard = buildWithGit super.magit-reviewboard;
+
+          # upstream issue: doesn't build
+          magit-stgit = markBroken super.magit-stgit;
+
+          magit-svn = buildWithGit super.magit-svn;
+
+          magit-tbdiff = buildWithGit super.magit-tbdiff;
+
+          magit-todos = buildWithGit super.magit-todos;
+
+          magit-topgit = ignoreCompilationError (buildWithGit super.magit-topgit); # elisp error
+
+          magit-vcsh = buildWithGit super.magit-vcsh;
+
+          magithub = ignoreCompilationError (buildWithGit super.magithub); # elisp error
 
           # missing optional dependencies
           magnatune = addPackageRequires super.magnatune [ self.helm ];
@@ -1457,10 +1126,30 @@ let
 
           malinka = ignoreCompilationError super.malinka; # elisp error
 
+          mandoku = addPackageRequires super.mandoku [ self.git ]; # upstream is archived
+
+          markdown-mode-plus = super."markdown-mode+";
+
           mastodon = ignoreCompilationError super.mastodon; # elisp error
+
+          # upstream issue: missing file header
+          melancholy-theme = markBroken super.melancholy-theme;
 
           # https://github.com/org2blog/org2blog/issues/339
           metaweblog = addPackageRequiresIfOlder super.metaweblog [ self.xml-rpc ] "20250204.1820";
+
+          # upstream issue: missing file header
+          # elisp error
+          mhc = (ignoreCompilationError super.mhc).override {
+            inherit (self.melpaPackages) calfw;
+          };
+
+          mozc = super.mozc.overrideAttrs (attrs: {
+            postPatch = attrs.postPatch or "" + ''
+              substituteInPlace src/unix/emacs/mozc.el \
+                --replace '"mozc_emacs_helper"' '"${pkgs.mozc}/bin/mozc_emacs_helper"'
+            '';
+          });
 
           mu-cite = ignoreCompilationError super.mu-cite; # elisp error
 
@@ -1493,9 +1182,9 @@ let
           nand2tetris = super.nand2tetris.overrideAttrs (old: {
             patches = old.patches or [ ] ++ [
               (pkgs.fetchpatch {
+                hash = "sha256-8OJXN9MuwBbL0afus53WroIxtIzHY7Bryv5ZGcS/inI=";
                 name = "remove-unneeded-require.patch";
                 url = "https://github.com/CestDiego/nand2tetris.el/pull/16/commits/d06705bf52f3cf41f55498d88fe15a1064bc2cfa.patch";
-                hash = "sha256-8OJXN9MuwBbL0afus53WroIxtIzHY7Bryv5ZGcS/inI=";
               })
             ];
           });
@@ -1506,15 +1195,18 @@ let
           navorski = super.navorski.overrideAttrs (old: {
             patches = old.patches or [ ] ++ [
               (pkgs.fetchpatch {
+                hash = "sha256-CZxOSGuJXATonHMSLGCzO4kOlQqRAOcNNq0i4Qh21y8=";
                 name = "stop-using-assoc.patch";
                 url = "https://github.com/roman/navorski.el/pull/12/commits/b7b6c331898cae239c176346ac87c8551b1e0c72.patch";
-                hash = "sha256-CZxOSGuJXATonHMSLGCzO4kOlQqRAOcNNq0i4Qh21y8=";
               })
             ];
           });
 
           # empty tools/ncl-mode-keywords.el causing native-compiler-error-empty-byte
           ncl-mode = ignoreCompilationError super.ncl-mode;
+
+          # missing .NET
+          nemerle = markBroken super.nemerle;
 
           # missing optional dependencies
           netease-cloud-music = addPackageRequires super.netease-cloud-music [ self.async ];
@@ -1527,6 +1219,9 @@ let
           noflet = ignoreCompilationError super.noflet; # elisp error
 
           norns = ignoreCompilationError super.norns; # elisp error
+
+          # part of a larger package
+          notmuch = dontConfigure super.notmuch;
 
           # missing optional dependencies
           nu-mode = addPackageRequires super.nu-mode [ self.evil ];
@@ -1565,9 +1260,9 @@ let
                   previousAttrs.patches or [ ]
                   ++ [
                     (pkgs.fetchpatch {
+                      hash = "sha256-Diw9DgjANDWu6CBMOlRaihQLOzeAr7VcJPZT579dpYU=";
                       name = "catch-error-for-optional-dep-org-roam.patch";
                       url = "https://github.com/org-noter/org-noter/commit/761c551ecc88fec57e840d346c6af5f5b94591d5.patch";
-                      hash = "sha256-Diw9DgjANDWu6CBMOlRaihQLOzeAr7VcJPZT579dpYU=";
                     })
                   ]
                 else
@@ -1616,10 +1311,42 @@ let
           # as broken if emacs hasn't been compiled with the flag.
           org-xlatex = if self.emacs.withXwidgets then super.org-xlatex else markBroken super.org-xlatex;
 
+          orgit = buildWithGit super.orgit;
+
+          orgit-forge = buildWithGit super.orgit-forge;
+
           # Optimizer error: too much on the stack
           orgnav = ignoreCompilationError super.orgnav;
 
           origami-predef = ignoreCompilationError super.origami-predef; # elisp error
+
+          ormolu = super.ormolu.overrideAttrs (attrs: {
+            postPatch = attrs.postPatch or "" + ''
+              substituteInPlace ormolu.el \
+                --replace-fail 'ormolu-process-path "ormolu"' 'ormolu-process-path "${lib.getExe pkgs.ormolu}"'
+            '';
+          });
+
+          # Build a helper executable that interacts with the macOS Dictionary.app
+          osx-dictionary =
+            if pkgs.stdenv.hostPlatform.isDarwin then
+              super.osx-dictionary.overrideAttrs (old: {
+                postBuild = (old.postBuild or "") + ''
+                  $CXX -O3 -framework CoreServices -framework Foundation osx-dictionary.m -o osx-dictionary-cli
+                '';
+
+                postInstall =
+                  (old.postInstall or "")
+                  + "\n"
+                  + ''
+                    outd=$out/share/emacs/site-lisp/elpa/osx-dictionary-*
+                    mkdir -p $out/bin
+                    install -m444 -t $out/bin osx-dictionary-cli
+                    rm $outd/osx-dictionary.m
+                  '';
+              })
+            else
+              super.osx-dictionary;
 
           # https://github.com/DarwinAwardWinner/mac-pseudo-daemon/issues/9
           osx-pseudo-daemon = addPackageRequiresIfOlder super.osx-pseudo-daemon [
@@ -1628,6 +1355,10 @@ let
 
           # missing optional dependencies
           outlook = addPackageRequires super.outlook [ self.mu4e ];
+
+          ox-rss = buildWithGit super.ox-rss;
+
+          package-plus = super."package+";
 
           pastery = ignoreCompilationError super.pastery; # elisp error
 
@@ -1641,7 +1372,67 @@ let
               '';
           });
 
+          pdf-tools = super.pdf-tools.overrideAttrs (old: {
+            nativeBuildInputs = old.nativeBuildInputs ++ [
+              pkgs.autoconf
+              pkgs.automake
+              pkgs.pkg-config
+              pkgs.removeReferencesTo
+            ];
+
+            buildInputs = old.buildInputs ++ [
+              pkgs.libpng
+              pkgs.zlib
+              pkgs.poppler
+            ];
+
+            # Temporary work around for:
+            #   - https://github.com/vedang/pdf-tools/issues/102
+            #   - https://github.com/vedang/pdf-tools/issues/103
+            #   - https://github.com/vedang/pdf-tools/issues/109
+            env = old.env or { } // {
+              CXXFLAGS = "-std=c++17";
+            };
+
+            preBuild = ''
+              make server/epdfinfo
+              remove-references-to ${
+                lib.concatStringsSep " " (
+                  map (output: "-t " + output) (
+                    [
+                      pkgs.glib.dev
+                      pkgs.libpng.dev
+                      pkgs.poppler.dev
+                      pkgs.zlib.dev
+                      pkgs.cairo.dev
+                    ]
+                    ++ lib.optional pkgs.stdenv.hostPlatform.isLinux pkgs.stdenv.cc.libc.dev
+                  )
+                )
+              } server/epdfinfo
+            '';
+
+            recipe = pkgs.writeText "recipe" ''
+              (pdf-tools
+              :repo "politza/pdf-tools" :fetcher github
+              :files ("lisp/pdf-*.el" "server/epdfinfo"))
+            '';
+          });
+
+          # upstream issue: doesn't build
+          per-buffer-theme = markBroken super.per-buffer-theme;
+
           pgdevenv = ignoreCompilationError super.pgdevenv; # elisp error
+
+          # tries to write to $HOME
+          php-auto-yasnippets = mkHome super.php-auto-yasnippets;
+
+          pikchr-mode = super.pikchr-mode.overrideAttrs (attrs: {
+            postPatch = attrs.postPatch or "" + ''
+              substituteInPlace pikchr-mode.el \
+                --replace '"pikchr")' '"${lib.getExe pkgs.pikchr}")'
+            '';
+          });
 
           pinot = ignoreCompilationError super.pinot; # elisp error
 
@@ -1667,6 +1458,23 @@ let
           # https://github.com/tumashu/pyim-basedict/issues/4
           pyim-basedict = addPackageRequires super.pyim-basedict [ self.pyim ];
 
+          python-isort = super.python-isort.overrideAttrs (attrs: {
+            postPatch = attrs.postPatch or "" + ''
+              substituteInPlace python-isort.el \
+                --replace '-isort-command "isort"' '-isort-command "${lib.getExe pkgs.isort}"'
+            '';
+          });
+
+          # upstream issue: missing file header
+          qiita = markBroken super.qiita;
+
+          racer = super.racer.overrideAttrs (attrs: {
+            postPatch = attrs.postPatch or "" + ''
+              substituteInPlace racer.el \
+                --replace /usr/local/src/rust/src ${pkgs.rustPlatform.rustcSrc}
+            '';
+          });
+
           # TODO report to upstream
           realgud-lldb = super.realgud-lldb.overrideAttrs (old: {
             preBuild =
@@ -1677,14 +1485,32 @@ let
               '';
           });
 
+          rect-plus = super."rect+";
+
           # empty .yas-compiled-snippets.el causing native-compiler-error-empty-byte
           requirejs = ignoreCompilationError super.requirejs;
 
           rhtml-mode = ignoreCompilationError super.rhtml-mode; # elisp error
 
+          rime = super.rime.overrideAttrs (old: {
+            buildInputs = (old.buildInputs or [ ]) ++ [ pkgs.librime ];
+
+            preBuild = (old.preBuild or "") + ''
+              make lib CC=$CC MODULE_FILE_SUFFIX=${pkgs.stdenv.hostPlatform.extensions.sharedLibrary}
+            '';
+
+            postInstall = (old.postInstall or "") + ''
+              install -m444 -t $out/share/emacs/site-lisp/elpa/rime-* librime-emacs.*
+            '';
+          });
+
           roguel-ike = ignoreCompilationError super.roguel-ike; # elisp error
 
           rpm-spec-mode = ignoreCompilationError super.rpm-spec-mode; # elisp error
+
+          rtags = ignoreCompilationError (dontConfigure (externalSrc super.rtags pkgs.rtags)); # elisp error
+
+          rtags-xref = dontConfigure super.rtags;
 
           # missing optional dependencies
           # https://github.com/emacs-rustic/rustic/pull/93
@@ -1712,6 +1538,18 @@ let
             ]
           );
 
+          # https://github.com/projectional-haskell/structured-haskell-mode/issues/165
+          shm =
+            (addPackageRequires super.shm [
+              self.haskell-mode
+              self.hindent
+            ]).overrideAttrs
+              (attrs: {
+                propagatedUserEnvPkgs = attrs.propagatedUserEnvPkgs or [ ] ++ [
+                  pkgs.haskellPackages.structured-haskell-mode
+                ];
+              });
+
           slack = mkHome super.slack;
 
           # https://github.com/ffevotte/slurm.el/issues/14
@@ -1729,12 +1567,40 @@ let
           # elisp error and missing optional dependencies
           soundklaus = ignoreCompilationError super.soundklaus;
 
+          spaceline = super.spaceline.override {
+            inherit (self.melpaPackages) powerline;
+          };
+
           # missing optional dependencies
           sparql-mode = addPackageRequires super.sparql-mode [ self.company ];
 
           speechd-el = ignoreCompilationError super.speechd-el; # elisp error
 
           spu = ignoreCompilationError super.spu; # elisp error
+
+          # upstream issue: missing file header
+          sql-presto = markBroken super.sql-presto;
+
+          sqlite3 = super.sqlite3.overrideAttrs (old: {
+            buildInputs = (old.buildInputs or [ ]) ++ [ pkgs.sqlite ];
+
+            postBuild = ''
+              make
+            '';
+
+            postInstall =
+              (old.postInstall or "")
+              + "\n"
+              + ''
+                outd=$out/share/emacs/site-lisp/elpa/sqlite3-*
+                install -m444 -t $outd sqlite3-api.so
+                rm $outd/*.c $outd/*.h
+              '';
+
+            meta = old.meta // {
+              maintainers = [ lib.maintainers.DamienCassou ];
+            };
+          });
 
           # missing optional dependencies
           ssh-tunnels = addPackageRequires super.ssh-tunnels [ self.helm ];
@@ -1749,6 +1615,42 @@ let
 
           symex = ignoreCompilationError super.symex; # elisp error
 
+          # Telega has a server portion for it's network protocol
+          # elisp error
+          telega = (ignoreCompilationError super.telega).overrideAttrs (old: {
+            postPatch = ''
+              substituteInPlace telega-customize.el \
+                --replace 'defcustom telega-server-command "telega-server"' \
+                          "defcustom telega-server-command \"$out/bin/telega-server\""
+
+              substituteInPlace telega-sticker.el --replace '"dwebp' '"${pkgs.libwebp}/bin/dwebp'
+              substituteInPlace telega-sticker.el --replace '"ffmpeg' '"${pkgs.ffmpeg}/bin/ffmpeg'
+
+              substituteInPlace telega-vvnote.el --replace '"ffmpeg' '"${pkgs.ffmpeg}/bin/ffmpeg'
+            '';
+
+            nativeBuildInputs = old.nativeBuildInputs ++ [ pkgs.pkg-config ];
+
+            buildInputs = old.buildInputs ++ [
+              pkgs.tdlib
+              pkgs.zlib
+            ];
+
+            postBuild = ''
+              pushd server
+              make
+              popd
+            '';
+
+            postInstall =
+              (old.postInstall or "")
+              + "\n"
+              + ''
+                mkdir -p $out/bin
+                install -m755 -Dt $out/bin server/telega-server
+              '';
+          });
+
           term-alert = mkHome super.term-alert;
 
           # https://github.com/colonelpanic8/term-manager/issues/9
@@ -1761,17 +1663,98 @@ let
 
           timp = ignoreCompilationError super.timp; # elisp error
 
+          tokei = super.tokei.overrideAttrs (attrs: {
+            postPatch = attrs.postPatch or "" + ''
+              substituteInPlace tokei.el \
+                --replace 'tokei-program "tokei"' 'tokei-program "${lib.getExe pkgs.tokei}"'
+            '';
+          });
+
           tommyh-theme = ignoreCompilationError super.tommyh-theme; # elisp error
 
           tramp-hdfs = ignoreCompilationError super.tramp-hdfs; # elisp error
 
+          treemacs = super.treemacs.overrideAttrs (attrs: {
+            postPatch = (attrs.postPatch or "") + ''
+              substituteInPlace src/elisp/treemacs-customization.el \
+                --replace 'treemacs-python-executable (treemacs--find-python3)' 'treemacs-python-executable "${lib.getExe pkgs.python3}"'
+            '';
+          });
+
+          treemacs-magit = super.treemacs-magit.overrideAttrs (attrs: {
+            # searches for Git at build time
+            nativeBuildInputs = (attrs.nativeBuildInputs or [ ]) ++ [ pkgs.git ];
+          });
+
           twtxt = ignoreCompilationError super.twtxt; # needs to read ~/twtxt.txt
+
+          typst-mode = super.typst-mode.overrideAttrs (attrs: {
+            postPatch = attrs.postPatch or "" + ''
+              substituteInPlace typst-mode.el \
+                --replace 'typst-executable-location  "typst"' 'typst-executable-location "${lib.getExe pkgs.typst}"'
+            '';
+          });
+
+          units-mode = super.units-mode.overrideAttrs (attrs: {
+            postPatch = attrs.postPatch or "" + ''
+              substituteInPlace units-mode.el \
+                --replace-fail 'units-binary-path "units"' 'units-binary-path "${lib.getExe pkgs.units}"'
+            '';
+          });
 
           universal-emotions-emoticons = ignoreCompilationError super.universal-emotions-emoticons; # elisp error
 
           use-package-el-get = addPackageRequires super.use-package-el-get [ self.el-get ];
 
           vala-mode = ignoreCompilationError super.vala-mode; # elisp error
+
+          vdiff-magit = super.vdiff-magit.overrideAttrs (attrs: {
+            nativeBuildInputs = (attrs.nativeBuildInputs or [ ]) ++ [ pkgs.git ];
+          });
+
+          vterm = super.vterm.overrideAttrs (old: {
+            nativeBuildInputs = old.nativeBuildInputs ++ [ pkgs.cmake ];
+
+            buildInputs = old.buildInputs ++ [
+              self.emacs
+              pkgs.libvterm-neovim
+            ];
+
+            cmakeFlags = [
+              "-DEMACS_SOURCE=${self.emacs.src}"
+              "-DUSE_SYSTEM_LIBVTERM=ON"
+            ];
+
+            # we need the proper out directory to exist, so we do this in the
+            # postInstall instead of postBuild
+            postInstall =
+              (old.postInstall or "")
+              + "\n"
+              + ''
+                make
+                install -m444 -t $out/share/emacs/site-lisp/elpa/vterm-** ../*.so
+                rm -rf $out/share/emacs/site-lisp/elpa/vterm-**/{CMake*,build,*.c,*.h}
+              '';
+          });
+
+          w3m = super.w3m.override (args: {
+            melpaBuild =
+              drv:
+              args.melpaBuild (
+                drv
+                // {
+                  prePatch =
+                    let
+                      w3m = "${lib.getBin pkgs.w3m}/bin/w3m";
+                    in
+                    ''
+                      substituteInPlace w3m.el \
+                      --replace 'defcustom w3m-command nil' \
+                      'defcustom w3m-command "${w3m}"'
+                    '';
+                }
+              );
+          });
 
           # needs network during compilation
           wandbox = ignoreCompilationError super.wandbox; # needs network
@@ -1784,6 +1767,13 @@ let
           weechat-alert = ignoreCompilationError super.weechat-alert; # elisp error
 
           weibo = ignoreCompilationError super.weibo; # elisp error
+
+          wordnut = super.wordnut.overrideAttrs (attrs: {
+            postPatch = attrs.postPatch or "" + ''
+              substituteInPlace wordnut.el \
+                --replace 'wordnut-cmd "wn"' 'wordnut-cmd "${lib.getExe pkgs.wordnet}"'
+            '';
+          });
 
           workgroups2 = ignoreCompilationError super.workgroups2; # elisp error
 
@@ -1818,9 +1808,44 @@ let
             ]
           );
 
+          zig-mode = super.zig-mode.overrideAttrs (attrs: {
+            postPatch = attrs.postPatch or "" + ''
+              substituteInPlace zig-mode.el \
+                --replace-fail 'zig-zig-bin "zig"' 'zig-zig-bin "${lib.getExe pkgs.zig}"'
+            '';
+          });
+
+          zmq = super.zmq.overrideAttrs (old: {
+            nativeBuildInputs = old.nativeBuildInputs or [ ] ++ [
+              pkgs.autoconf
+              pkgs.automake
+              pkgs.pkg-config
+              pkgs.libtool
+            ];
+
+            buildInputs = old.buildInputs or [ ] ++ [
+              (pkgs.zeromq.override { enableDrafts = true; })
+            ];
+
+            preBuild = ''
+              export EZMQ_LIBDIR=$(mktemp -d)
+              make
+            '';
+
+            postInstall =
+              (old.postInstall or "")
+              + "\n"
+              + ''
+                mv $EZMQ_LIBDIR/emacs-zmq.* $out/share/emacs/site-lisp/elpa/zmq-*
+                rm -r $out/share/emacs/site-lisp/elpa/zmq-*/src
+                rm $out/share/emacs/site-lisp/elpa/zmq-*/Makefile
+              '';
+
+            stripDebugList = [ "share" ];
+          });
+
           # missing optional dependencies
           zotxt = addPackageRequires super.zotxt [ self.org-noter ];
-
           # keep-sorted end
         };
 

@@ -3,24 +3,24 @@
   stdenv,
   fetchFromGitHub,
   buildGoModule,
-  makeWrapper,
   cacert,
-  moreutils,
-  jq,
+  cctools,
   git,
-  pkg-config,
-  runCommand,
-  nodejs_22,
-  nodejs-slim_22,
-  node-gyp,
-  libsecret,
+  jq,
   libkrb5,
+  libsecret,
   libx11,
   libxkbfile,
-  ripgrep,
-  cctools,
+  makeWrapper,
+  moreutils,
   nixosTests,
+  node-gyp,
+  nodejs-slim_22,
+  nodejs_22,
+  pkg-config,
   prefetch-npm-deps,
+  ripgrep,
+  runCommand,
 }:
 let
 
@@ -30,9 +30,9 @@ let
 
   vsBuildTarget =
     {
-      x86_64-linux = "linux-x64";
-      aarch64-linux = "linux-arm64";
       aarch64-darwin = "darwin-arm64";
+      aarch64-linux = "linux-arm64";
+      x86_64-linux = "linux-x64";
     }
     .${system} or (throw "Unsupported system ${system}");
 
@@ -41,86 +41,12 @@ stdenv.mkDerivation (finalAttrs: {
   pname = "openvscode-server";
   version = "1.109.5";
 
-  executableName = "openvscode-server";
-  longName = "OpenVSCode Server";
-
   src = fetchFromGitHub {
     owner = "gitpod-io";
     repo = "openvscode-server";
     rev = "openvscode-server-v${finalAttrs.version}";
     hash = "sha256-FWexstn6pmKPkMuoXOWr4+levM+3FK74q1HLu4kFWTc=";
   };
-
-  ## fetchNpmDeps doesn't correctly process git dependencies
-  ## presumably because of https://github.com/npm/cli/issues/5170
-  ## therefore, we're fetching all the node_module folders into
-  ## a single FOD, and unpack it in configurePhase
-  nodeModules =
-    runCommand "openvscode-server-node-modules"
-      {
-        inherit (finalAttrs) src nativeBuildInputs;
-        outputHashMode = "recursive";
-        outputHashAlgo = "sha256";
-        outputHash = "sha256-DMjqFMdp7ocGdvMEmrKqB8RhF+BTN/9ybOKQAeuSG/o=";
-        env = {
-          FORCE_EMPTY_CACHE = true;
-          FORCE_GIT_DEPS = true;
-          npm_config_progress = false;
-          npm_config_cafile = "${cacert}/etc/ssl/certs/ca-bundle.crt";
-        };
-      }
-      ''
-        runPhase unpackPhase
-        export HOME=$TMPDIR/home
-        mkdir $out
-        for p in $(find -name package-lock.json)
-        do (
-          echo "Prefetching $p"
-          ${prefetch-npm-deps}/bin/prefetch-npm-deps "$p" "$out/$(dirname $p)"
-        )
-        done
-      '';
-
-  env = {
-    NODE_OPTIONS = "--openssl-legacy-provider";
-    NODE_ENV = "development";
-
-    # skip unnecessary binary downloads
-    PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD = "1";
-    ELECTRON_SKIP_BINARY_DOWNLOAD = "1";
-
-    # ensure the correct node-gyp (from nixpkgs) is used
-    NIX_NODEJS_BUILDNPMPACKAGE = "1";
-    npm_config_nodedir = nodejs;
-    npm_config_node_gyp = "${nodejs}/lib/node_modules/npm/node_modules/node-gyp/bin/node-gyp.js";
-    npm_config_offline = true;
-    npm_config_progress = false;
-
-    # for --fixup-lockfile
-    prefetchNpmDeps = "${prefetch-npm-deps}/bin/prefetch-npm-deps";
-    forceGitDeps = true;
-
-  };
-  nativeBuildInputs = [
-    nodejs
-    nodejs-slim_22.python
-    pkg-config
-    makeWrapper
-    git
-    jq
-    moreutils
-  ];
-
-  buildInputs =
-    lib.optionals (!stdenv.hostPlatform.isDarwin) [ libsecret ]
-    ++ [
-      libx11
-      libxkbfile
-      libkrb5
-    ]
-    ++ lib.optionals stdenv.hostPlatform.isDarwin [
-      cctools
-    ];
 
   # remove all built-in extensions, as these are 3rd party extensions that
   # get downloaded from vscode marketplace
@@ -143,12 +69,69 @@ stdenv.mkDerivation (finalAttrs: {
     ln -s ${nodejs}/bin/node .build/node/v${nodejs.version}/${vsBuildTarget}/node
   '';
 
+  nativeBuildInputs = [
+    nodejs
+    nodejs-slim_22.python
+    pkg-config
+    makeWrapper
+    git
+    jq
+    moreutils
+  ];
+
+  buildInputs =
+    lib.optionals (!stdenv.hostPlatform.isDarwin) [ libsecret ]
+    ++ [
+      libx11
+      libxkbfile
+      libkrb5
+    ]
+    ++ lib.optionals stdenv.hostPlatform.isDarwin [
+      cctools
+    ];
+
+  env = {
+    ELECTRON_SKIP_BINARY_DOWNLOAD = "1";
+    # ensure the correct node-gyp (from nixpkgs) is used
+    NIX_NODEJS_BUILDNPMPACKAGE = "1";
+    NODE_ENV = "development";
+    NODE_OPTIONS = "--openssl-legacy-provider";
+    # skip unnecessary binary downloads
+    PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD = "1";
+    forceGitDeps = true;
+    npm_config_node_gyp = "${nodejs}/lib/node_modules/npm/node_modules/node-gyp/bin/node-gyp.js";
+    npm_config_nodedir = nodejs;
+    npm_config_offline = true;
+    npm_config_progress = false;
+    # for --fixup-lockfile
+    prefetchNpmDeps = "${prefetch-npm-deps}/bin/prefetch-npm-deps";
+
+  };
+
   preConfigure = ''
     export HOME=$TMPDIR/home
     mkdir -p $HOME
     mkdir -p $TMPDIR
     cp -R $nodeModules $TMPDIR/cache
     chmod -R +w $TMPDIR/cache
+  '';
+
+  buildPhase = ''
+    runHook preBuild
+
+    npm run gulp vscode-reh-web-${vsBuildTarget}-min
+
+    runHook postBuild
+  '';
+
+  installPhase = ''
+    runHook preInstall
+
+    mkdir -p $out
+    cp -R -T ../vscode-reh-web-${vsBuildTarget} $out
+    ln -sf ${nodejs}/bin/node $out
+
+    runHook postInstall
   '';
 
   configurePhase = ''
@@ -209,23 +192,40 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postConfigure
   '';
 
-  buildPhase = ''
-    runHook preBuild
+  executableName = "openvscode-server";
+  longName = "OpenVSCode Server";
 
-    npm run gulp vscode-reh-web-${vsBuildTarget}-min
+  ## fetchNpmDeps doesn't correctly process git dependencies
+  ## presumably because of https://github.com/npm/cli/issues/5170
+  ## therefore, we're fetching all the node_module folders into
+  ## a single FOD, and unpack it in configurePhase
+  nodeModules =
+    runCommand "openvscode-server-node-modules"
+      {
+        inherit (finalAttrs) src nativeBuildInputs;
 
-    runHook postBuild
-  '';
+        env = {
+          FORCE_EMPTY_CACHE = true;
+          FORCE_GIT_DEPS = true;
+          npm_config_cafile = "${cacert}/etc/ssl/certs/ca-bundle.crt";
+          npm_config_progress = false;
+        };
 
-  installPhase = ''
-    runHook preInstall
-
-    mkdir -p $out
-    cp -R -T ../vscode-reh-web-${vsBuildTarget} $out
-    ln -sf ${nodejs}/bin/node $out
-
-    runHook postInstall
-  '';
+        outputHash = "sha256-DMjqFMdp7ocGdvMEmrKqB8RhF+BTN/9ybOKQAeuSG/o=";
+        outputHashAlgo = "sha256";
+        outputHashMode = "recursive";
+      }
+      ''
+        runPhase unpackPhase
+        export HOME=$TMPDIR/home
+        mkdir $out
+        for p in $(find -name package-lock.json)
+        do (
+          echo "Prefetching $p"
+          ${prefetch-npm-deps}/bin/prefetch-npm-deps "$p" "$out/$(dirname $p)"
+        )
+        done
+      '';
 
   passthru.tests = {
     inherit (nixosTests) openvscode-server;
@@ -233,21 +233,26 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Run VS Code on a remote machine";
+
     longDescription = ''
       Run upstream VS Code on a remote machine with access through a modern web
       browser from any device, anywhere.
     '';
+
     homepage = "https://github.com/gitpod-io/openvscode-server";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       dguenther
       emilytrau
     ];
+
     platforms = [
       "x86_64-linux"
       "aarch64-linux"
       "aarch64-darwin"
     ];
+
     mainProgram = "openvscode-server";
   };
 })

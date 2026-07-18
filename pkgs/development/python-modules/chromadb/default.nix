@@ -1,93 +1,75 @@
 {
   lib,
   stdenv,
-  buildPythonPackage,
-  fetchFromGitHub,
   fetchurl,
-
-  # build inputs
-  cargo,
-  openssl,
-  pkg-config,
-  protobuf,
-  rustc,
-  rustPlatform,
-  zstd-c,
-
+  fetchFromGitHub,
   # dependencies
   bcrypt,
   build,
+  buildPythonPackage,
+  # build inputs
+  cargo,
+  # optional dependencies
+  chroma-hnswlib,
   fastapi,
   grpcio,
+  # tests
+  hnswlib,
   httpx,
+  hypothesis,
   importlib-resources,
   jsonschema,
   kubernetes,
   mmh3,
+  nix-update-script,
+  # passthru
+  nixosTests,
   numpy,
   onnxruntime,
+  openssl,
   opentelemetry-api,
   opentelemetry-exporter-otlp-proto-grpc,
   opentelemetry-instrumentation-fastapi,
   opentelemetry-sdk,
   orjson,
   overrides,
+  pandas,
+  pkg-config,
   posthog,
+  protobuf,
+  psutil,
   pybase64,
   pydantic,
   pydantic-settings,
   pypika,
+  pytest-asyncio,
+  pytest-xdist,
+  pytestCheckHook,
   pyyaml,
   requests,
+  rustPlatform,
+  rustc,
+  sqlite,
+  starlette,
   tenacity,
   tokenizers,
   tqdm,
   typer,
   typing-extensions,
   uvicorn,
-
-  # optional dependencies
-  chroma-hnswlib,
-
-  # tests
-  hnswlib,
-  hypothesis,
-  pandas,
-  psutil,
-  pytest-asyncio,
-  pytest-xdist,
-  pytestCheckHook,
-  sqlite,
-  starlette,
   writableTmpDirAsHomeHook,
-
-  # passthru
-  nixosTests,
-  nix-update-script,
+  zstd-c,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "chromadb";
   version = "1.5.9";
-  pyproject = true;
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "chroma-core";
     repo = "chroma";
     tag = finalAttrs.version;
     hash = "sha256-qJixjywcmJwq1B8kYTIevBk6MMZ/YgOt92VBPag3kiw=";
-  };
-
-  cargoDeps = rustPlatform.fetchCargoVendor {
-    inherit (finalAttrs) pname version src;
-    hash = "sha256-b7YwZGsqPT58b8aArZMwJs1r7CRttjvn2wF/+yL6Ytg=";
-  };
-
-  # Can't use fetchFromGitHub as the build expects a zipfile
-  swagger-ui = fetchurl {
-    url = "https://github.com/swagger-api/swagger-ui/archive/refs/tags/v5.22.0.zip";
-    hash = "sha256-H+kXxA/6rKzYA19v7Zlx2HbIg/DGicD5FDIs0noVGSk=";
   };
 
   postPatch =
@@ -112,13 +94,6 @@ buildPythonPackage (finalAttrs: {
       sed -i '1i #![recursion_limit = "256"]' rust/segment/src/lib.rs
     '';
 
-  pythonRelaxDeps = [
-    "fastapi"
-    "posthog"
-  ];
-
-  build-system = [ rustPlatform.maturinBuildHook ];
-
   nativeBuildInputs = [
     cargo
     pkg-config
@@ -131,6 +106,44 @@ buildPythonPackage (finalAttrs: {
     openssl
     zstd-c
   ];
+
+  env = {
+    SWAGGER_UI_DOWNLOAD_URL = "file://${finalAttrs.swagger-ui}";
+    ZSTD_SYS_USE_PKG_CONFIG = true;
+  };
+
+  # Test collection breaks on aarch64-linux
+  doCheck = with stdenv.buildPlatform; !(isAarch && isLinux);
+
+  nativeCheckInputs = [
+    chroma-hnswlib
+    hnswlib
+    hypothesis
+    pandas
+    psutil
+    pytest-asyncio
+    pytest-xdist
+    pytestCheckHook
+    sqlite
+    starlette
+    writableTmpDirAsHomeHook
+  ];
+
+  # Skip the distributed and integration tests
+  # See https://github.com/chroma-core/chroma/issues/5315
+  preCheck = ''
+    (($(ulimit -n) < 1024)) && ulimit -n 1024
+    export CHROMA_RUST_BINDINGS_TEST_ONLY=1
+  '';
+
+  __darwinAllowLocalNetworking = true;
+  __structuredAttrs = true;
+  build-system = [ rustPlatform.maturinBuildHook ];
+
+  cargoDeps = rustPlatform.fetchCargoVendor {
+    inherit (finalAttrs) pname version src;
+    hash = "sha256-b7YwZGsqPT58b8aArZMwJs1r7CRttjvn2wF/+yL6Ytg=";
+  };
 
   dependencies = [
     bcrypt
@@ -165,51 +178,31 @@ buildPythonPackage (finalAttrs: {
     uvicorn
   ];
 
-  optional-dependencies = {
-    dev = [ chroma-hnswlib ];
-  };
+  disabledTestPaths = [
+    # Tests require network access
+    "chromadb/test/distributed"
+    "chromadb/test/ef"
+    "chromadb/test/property/test_cross_version_persist.py"
+    "chromadb/test/stress"
+    "chromadb/test/api/test_schema_e2e.py"
 
-  nativeCheckInputs = [
-    chroma-hnswlib
-    hnswlib
-    hypothesis
-    pandas
-    psutil
-    pytest-asyncio
-    pytest-xdist
-    pytestCheckHook
-    sqlite
-    starlette
-    writableTmpDirAsHomeHook
-  ];
+    # Excessively slow
+    "chromadb/test/property/test_add.py"
+    "chromadb/test/property/test_persist.py"
 
-  # Disable on aarch64-linux due to broken onnxruntime
-  # https://github.com/microsoft/onnxruntime/issues/10038
-  pythonImportsCheck = lib.optionals finalAttrs.doCheck [ "chromadb" ];
+    # ValueError: An instance of Chroma already exists for ephemeral with different settings
+    "chromadb/test/test_chroma.py"
 
-  # Test collection breaks on aarch64-linux
-  doCheck = with stdenv.buildPlatform; !(isAarch && isLinux);
+    # RuntimeError: There is no current event loop in thread 'MainThread'.
+    # https://github.com/chroma-core/chroma/issues/6659
+    "chromadb/test/test_client.py::test_http_client_with_inconsistent_host_settings[async_client]"
+    "chromadb/test/test_client.py::test_http_client_with_inconsistent_port_settings[async_client]"
+    "chromadb/test/test_client.py::test_http_client[async_client]"
 
-  env = {
-    ZSTD_SYS_USE_PKG_CONFIG = true;
-    SWAGGER_UI_DOWNLOAD_URL = "file://${finalAttrs.swagger-ui}";
-  };
-
-  pytestFlags = [
-    "-v"
-    "-Wignore:DeprecationWarning"
-    "-Wignore:PytestCollectionWarning"
-  ];
-
-  # Skip the distributed and integration tests
-  # See https://github.com/chroma-core/chroma/issues/5315
-  preCheck = ''
-    (($(ulimit -n) < 1024)) && ulimit -n 1024
-    export CHROMA_RUST_BINDINGS_TEST_ONLY=1
-  '';
-
-  enabledTestPaths = [
-    "chromadb/test"
+    # ValueError: Could not connect to a Chroma server.
+    "chromadb/test/property/test_add_mcmr.py::test_add_small[single-region]"
+    "chromadb/test/property/test_add_mcmr.py::test_add_medium[single-region]"
+    "chromadb/test/property/test_add_mcmr.py::test_add_large[single-region]"
   ];
 
   disabledTests = [
@@ -244,34 +237,36 @@ buildPythonPackage (finalAttrs: {
     "test_add_then_delete_n_minus_1"
   ];
 
-  disabledTestPaths = [
-    # Tests require network access
-    "chromadb/test/distributed"
-    "chromadb/test/ef"
-    "chromadb/test/property/test_cross_version_persist.py"
-    "chromadb/test/stress"
-    "chromadb/test/api/test_schema_e2e.py"
-
-    # Excessively slow
-    "chromadb/test/property/test_add.py"
-    "chromadb/test/property/test_persist.py"
-
-    # ValueError: An instance of Chroma already exists for ephemeral with different settings
-    "chromadb/test/test_chroma.py"
-
-    # RuntimeError: There is no current event loop in thread 'MainThread'.
-    # https://github.com/chroma-core/chroma/issues/6659
-    "chromadb/test/test_client.py::test_http_client_with_inconsistent_host_settings[async_client]"
-    "chromadb/test/test_client.py::test_http_client_with_inconsistent_port_settings[async_client]"
-    "chromadb/test/test_client.py::test_http_client[async_client]"
-
-    # ValueError: Could not connect to a Chroma server.
-    "chromadb/test/property/test_add_mcmr.py::test_add_small[single-region]"
-    "chromadb/test/property/test_add_mcmr.py::test_add_medium[single-region]"
-    "chromadb/test/property/test_add_mcmr.py::test_add_large[single-region]"
+  enabledTestPaths = [
+    "chromadb/test"
   ];
 
-  __darwinAllowLocalNetworking = true;
+  optional-dependencies = {
+    dev = [ chroma-hnswlib ];
+  };
+
+  pyproject = true;
+
+  pytestFlags = [
+    "-v"
+    "-Wignore:DeprecationWarning"
+    "-Wignore:PytestCollectionWarning"
+  ];
+
+  # Disable on aarch64-linux due to broken onnxruntime
+  # https://github.com/microsoft/onnxruntime/issues/10038
+  pythonImportsCheck = lib.optionals finalAttrs.doCheck [ "chromadb" ];
+
+  pythonRelaxDeps = [
+    "fastapi"
+    "posthog"
+  ];
+
+  # Can't use fetchFromGitHub as the build expects a zipfile
+  swagger-ui = fetchurl {
+    hash = "sha256-H+kXxA/6rKzYA19v7Zlx2HbIg/DGicD5FDIs0noVGSk=";
+    url = "https://github.com/swagger-api/swagger-ui/archive/refs/tags/v5.22.0.zip";
+  };
 
   passthru = {
     tests = {
@@ -293,10 +288,12 @@ buildPythonPackage (finalAttrs: {
     homepage = "https://github.com/chroma-core/chroma";
     changelog = "https://github.com/chroma-core/chroma/releases/tag/${finalAttrs.src.tag}";
     license = lib.licenses.asl20;
+
     maintainers = with lib.maintainers; [
       fab
       sarahec
     ];
+
     mainProgram = "chroma";
   };
 })

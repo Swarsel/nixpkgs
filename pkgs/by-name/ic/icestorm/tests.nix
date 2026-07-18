@@ -2,13 +2,12 @@
 # yosys and nextpnr (which itself depends on this package), so they cannot be
 # ran during the check phase.
 {
-  runCommand,
   icestorm,
   nextpnr,
-  yosys,
-
   pname,
+  runCommand,
   src,
+  yosys,
 }:
 
 runCommand "${pname}-test-examples"

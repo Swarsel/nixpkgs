@@ -1,7 +1,7 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
+  rustPlatform,
 }:
 
 let
@@ -16,9 +16,7 @@ let
 in
 rustPlatform.buildRustPackage {
   inherit pname version src;
-
   cargoHash = "sha256-cQWmtZFvpgFt49cKXEKUJoZ4d8w4AcwA9ud/W/rmOP8=";
-
   # No tests
   doCheck = false;
 
@@ -26,8 +24,8 @@ rustPlatform.buildRustPackage {
     description = "Map sway workspace names to icons defined depending on the windows inside of the workspace";
     homepage = "https://github.com/Lyr-7D1h/swayest_workstyle";
     license = lib.licenses.mit;
-    mainProgram = "sworkstyle";
     maintainers = [ ];
     platforms = lib.platforms.linux;
+    mainProgram = "sworkstyle";
   };
 }

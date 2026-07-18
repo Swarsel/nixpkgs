@@ -1,14 +1,13 @@
 {
   lib,
-  fetchPypi,
   buildPythonPackage,
+  fetchPypi,
   setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "distro";
   version = "1.9.0";
-  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
@@ -16,17 +15,16 @@ buildPythonPackage rec {
   };
 
   nativeBuildInputs = [ setuptools ];
-
   # tests are very targeted at individual linux distributions
   doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "distro" ];
 
   meta = {
-    homepage = "https://github.com/nir0s/distro";
     description = "Linux Distribution - a Linux OS platform information API";
-    mainProgram = "distro";
+    homepage = "https://github.com/nir0s/distro";
     license = lib.licenses.asl20;
     maintainers = [ ];
+    mainProgram = "distro";
   };
 }

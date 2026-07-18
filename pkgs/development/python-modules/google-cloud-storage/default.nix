@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   google-api-core,
   google-auth,
   google-cloud-core,
@@ -17,8 +17,8 @@
   opentelemetry-api,
   proto-plus,
   protobuf,
-  pytestCheckHook,
   pytest-asyncio,
+  pytestCheckHook,
   requests,
   setuptools,
 }:
@@ -26,7 +26,6 @@
 buildPythonPackage rec {
   pname = "google-cloud-storage";
   version = "3.12.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "googleapis";
@@ -35,7 +34,22 @@ buildPythonPackage rec {
     hash = "sha256-4rmrRvYW9FOpvYY4a+vbDzQRcLXfFHGSCnv7yL6S1FM=";
   };
 
-  sourceRoot = "${src.name}/packages/google-cloud-storage";
+  nativeCheckInputs = [
+    google-cloud-iam
+    google-cloud-kms
+    google-cloud-testutils
+    mock
+    pytestCheckHook
+    pytest-asyncio
+  ];
+
+  preCheck = ''
+    # prevent google directory from shadowing google imports
+    rm -r google
+
+    # requires docker and network
+    rm tests/conformance/test_conformance.py
+  '';
 
   build-system = [ setuptools ];
 
@@ -48,32 +62,13 @@ buildPythonPackage rec {
     requests
   ];
 
-  optional-dependencies = {
-    grpc = [
-      google-api-core
-      grpc-google-iam-v1
-      grpcio
-      grpcio-status
-      proto-plus
-      protobuf
-    ]
-    ++ google-api-core.optional-dependencies.grpc;
-    protobuf = [ protobuf ];
-    tracing = [ opentelemetry-api ];
-  };
-
-  nativeCheckInputs = [
-    google-cloud-iam
-    google-cloud-kms
-    google-cloud-testutils
-    mock
-    pytestCheckHook
-    pytest-asyncio
-  ];
-
-  enabledTestPaths = [
-    "tests/unit/"
-    "tests/system/"
+  disabledTestPaths = [
+    "tests/unit/test_bucket.py"
+    "tests/system/test_blob.py"
+    "tests/system/test_bucket.py"
+    "tests/system/test_fileio.py"
+    "tests/system/test_kms_integration.py"
+    "tests/unit/test_transfer_manager.py"
   ];
 
   disabledTests = [
@@ -108,24 +103,29 @@ buildPythonPackage rec {
     "test_sequential_cache_priming_multi_region"
   ];
 
-  disabledTestPaths = [
-    "tests/unit/test_bucket.py"
-    "tests/system/test_blob.py"
-    "tests/system/test_bucket.py"
-    "tests/system/test_fileio.py"
-    "tests/system/test_kms_integration.py"
-    "tests/unit/test_transfer_manager.py"
+  enabledTestPaths = [
+    "tests/unit/"
+    "tests/system/"
   ];
 
-  preCheck = ''
-    # prevent google directory from shadowing google imports
-    rm -r google
+  optional-dependencies = {
+    grpc = [
+      google-api-core
+      grpc-google-iam-v1
+      grpcio
+      grpcio-status
+      proto-plus
+      protobuf
+    ]
+    ++ google-api-core.optional-dependencies.grpc;
 
-    # requires docker and network
-    rm tests/conformance/test_conformance.py
-  '';
+    protobuf = [ protobuf ];
+    tracing = [ opentelemetry-api ];
+  };
 
+  pyproject = true;
   pythonImportsCheck = [ "google.cloud.storage" ];
+  sourceRoot = "${src.name}/packages/google-cloud-storage";
 
   meta = {
     description = "Google Cloud Storage API client library";

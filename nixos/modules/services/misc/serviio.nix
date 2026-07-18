@@ -32,27 +32,33 @@ in
     services.serviio = {
 
       enable = lib.mkOption {
-        type = lib.types.bool;
         default = false;
+
         description = ''
           Whether to enable the Serviio Media Server.
         '';
-      };
 
-      openFirewall = lib.mkOption {
         type = lib.types.bool;
-        default = false;
-        description = ''
-          Open ports in the firewall for the Serviio Media Server.
-        '';
       };
 
       dataDir = lib.mkOption {
-        type = lib.types.path;
         default = "/var/lib/serviio";
+
         description = ''
           The directory where serviio stores its state, data, etc.
         '';
+
+        type = lib.types.path;
+      };
+
+      openFirewall = lib.mkOption {
+        default = false;
+
+        description = ''
+          Open ports in the firewall for the Serviio Media Server.
+        '';
+
+        type = lib.types.bool;
       };
 
     };
@@ -61,38 +67,41 @@ in
   ###### implementation
 
   config = lib.mkIf cfg.enable {
-    systemd.services.serviio = {
-      description = "Serviio Media Server";
-      after = [ "network.target" ];
-      wantedBy = [ "multi-user.target" ];
-      path = [ pkgs.serviio ];
-      serviceConfig = {
-        User = "serviio";
-        Group = "serviio";
-        ExecStart = "${serviioStart}";
-        ExecStop = "${serviioStart} -stop";
-      };
-    };
-
-    users.users.serviio = {
-      group = "serviio";
-      home = cfg.dataDir;
-      description = "Serviio Media Server User";
-      createHome = true;
-      isSystemUser = true;
-    };
-
-    users.groups.serviio = { };
-
     networking.firewall = lib.mkIf cfg.openFirewall {
       allowedTCPPorts = [
         8895 # serve UPnP responses
         23423 # console
         23424 # mediabrowser
       ];
+
       allowedUDPPorts = [
         1900 # UPnP service discovery
       ];
+    };
+
+    systemd.services.serviio = {
+      after = [ "network.target" ];
+      description = "Serviio Media Server";
+      path = [ pkgs.serviio ];
+
+      serviceConfig = {
+        ExecStart = "${serviioStart}";
+        ExecStop = "${serviioStart} -stop";
+        Group = "serviio";
+        User = "serviio";
+      };
+
+      wantedBy = [ "multi-user.target" ];
+    };
+
+    users.groups.serviio = { };
+
+    users.users.serviio = {
+      createHome = true;
+      description = "Serviio Media Server User";
+      group = "serviio";
+      home = cfg.dataDir;
+      isSystemUser = true;
     };
   };
 }

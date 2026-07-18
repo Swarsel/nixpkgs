@@ -2,8 +2,8 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  obs-studio,
   cmake,
+  obs-studio,
   qt6,
 }:
 
@@ -18,19 +18,20 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-0E2pNRg4vwXK54aYuWYZyuRJaNrpwX7X0Dq6V8B/SgA=";
   };
 
+  nativeBuildInputs = [
+    cmake
+  ];
+
   buildInputs = [
     obs-studio
     qt6.qtbase
-  ];
-  dontWrapQtApps = true;
-
-  nativeBuildInputs = [
-    cmake
   ];
 
   postInstall = ''
     rm -rf "$out/obs-plugins" "$out/data"
   '';
+
+  dontWrapQtApps = true;
 
   meta = {
     description = "OBS plugin that creates countdown timers";

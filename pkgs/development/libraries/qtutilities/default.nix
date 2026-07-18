@@ -1,11 +1,11 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
   cmake,
-  qttools,
   cpp-utilities,
   qtbase,
+  qttools,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -23,6 +23,7 @@ stdenv.mkDerivation (finalAttrs: {
     cmake
     qttools
   ];
+
   buildInputs = [
     qtbase
     cpp-utilities
@@ -36,8 +37,8 @@ stdenv.mkDerivation (finalAttrs: {
   dontWrapQtApps = true;
 
   meta = {
-    homepage = "https://github.com/Martchus/qtutilities";
     description = "Common Qt related C++ classes and routines used by @Martchus' applications such as dialogs, widgets and models Topics";
+    homepage = "https://github.com/Martchus/qtutilities";
     license = lib.licenses.gpl2Plus;
     maintainers = with lib.maintainers; [ doronbehar ];
     platforms = lib.platforms.linux ++ lib.platforms.darwin;

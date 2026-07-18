@@ -2,12 +2,12 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  intltool,
-  pkg-config,
   glib,
   gtk3,
-  lua,
+  intltool,
   libwnck,
+  lua,
+  pkg-config,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -25,6 +25,7 @@ stdenv.mkDerivation (finalAttrs: {
     intltool
     pkg-config
   ];
+
   buildInputs = [
     glib
     gtk3
@@ -40,6 +41,7 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Window matching utility";
+
     longDescription = ''
       Devilspie2 is a window matching utility, allowing the user to
       perform scripted actions on windows as they are created. For
@@ -47,6 +49,7 @@ stdenv.mkDerivation (finalAttrs: {
       positioned at a specific screen position, or position a window
       on a specific workspace.
     '';
+
     homepage = "https://www.nongnu.org/devilspie2/";
     license = lib.licenses.gpl3;
     platforms = lib.platforms.linux;

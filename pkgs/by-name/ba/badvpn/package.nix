@@ -2,12 +2,12 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  cmake,
-  openssl,
-  nss,
-  pkg-config,
-  nspr,
   bash,
+  cmake,
+  nspr,
+  nss,
+  openssl,
+  pkg-config,
   debug ? false,
 }:
 
@@ -26,6 +26,7 @@ stdenv.mkDerivation (finalAttrs: {
     cmake
     pkg-config
   ];
+
   buildInputs = [
     openssl
     nss

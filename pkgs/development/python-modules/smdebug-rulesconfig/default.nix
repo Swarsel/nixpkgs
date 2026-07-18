@@ -7,16 +7,15 @@
 buildPythonPackage rec {
   pname = "smdebug-rulesconfig";
   version = "1.0.1";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit version;
-    pname = "smdebug_rulesconfig";
     sha256 = "1mpwjfvpmryqqwlbyf500584jclgm3vnxa740yyfzkvb5vmyc6bs";
+    pname = "smdebug_rulesconfig";
   };
 
   doCheck = false;
-
+  format = "setuptools";
   pythonImportsCheck = [ "smdebug_rulesconfig" ];
 
   meta = {

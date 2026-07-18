@@ -1,10 +1,10 @@
 {
-  python3Packages,
   nixosTests,
-  withUI ? false,
-  withTesserocr ? false,
-  withRapidocr ? false,
+  python3Packages,
   withCPU ? false,
+  withRapidocr ? false,
+  withTesserocr ? false,
+  withUI ? false,
 }:
 
 (python3Packages.toPythonApplication (

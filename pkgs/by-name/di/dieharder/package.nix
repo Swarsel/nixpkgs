@@ -20,12 +20,11 @@ stdenv.mkDerivation (finalAttrs: {
     ./stdint.patch
   ];
 
+  buildInputs = [ gsl ];
   # Workaround build failure on -fno-common toolchains:
   #   ld: include/dieharder/parse.h:21: multiple definition of `splitbuf';
   #     include/dieharder/parse.h:21: first defined here
   env.NIX_CFLAGS_COMPILE = "-fcommon";
-
-  buildInputs = [ gsl ];
 
   passthru = {
     tests.version = testers.testVersion { package = finalAttrs.finalPackage; };
@@ -33,10 +32,10 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Random Number Generator test suite";
-    mainProgram = "dieharder";
     homepage = "https://webhome.phy.duke.edu/~rgb/General/dieharder.php";
     license = lib.licenses.gpl2Plus;
     maintainers = with lib.maintainers; [ zhaofengli ];
     platforms = lib.platforms.unix;
+    mainProgram = "dieharder";
   };
 })

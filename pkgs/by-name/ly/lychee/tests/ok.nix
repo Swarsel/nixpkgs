@@ -9,9 +9,11 @@ let
   '';
 in
 testers.lycheeLinkCheck rec {
-  site = sitePkg + "/dist";
   relocatable = false;
+
   remap = {
     "https://example.com" = site;
   };
+
+  site = sitePkg + "/dist";
 }

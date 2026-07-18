@@ -1,12 +1,12 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchurl,
   atk,
   cairo,
   desktop-file-utils,
-  evolution-data-server-gtk4,
   evolution,
+  evolution-data-server-gtk4,
   gcr_4,
   gettext,
   glib,
@@ -69,10 +69,10 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Small GTK application to allow to keep a diary of your life";
-    mainProgram = "almanah";
     homepage = "https://gitlab.gnome.org/GNOME/almanah";
     license = lib.licenses.gpl3Plus;
     platforms = lib.platforms.unix;
+    mainProgram = "almanah";
     teams = [ lib.teams.gnome ];
   };
 })

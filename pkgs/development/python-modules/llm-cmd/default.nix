@@ -1,22 +1,21 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  # build-system
-  setuptools,
+  buildPythonPackage,
   llm,
+  llm-cmd,
   # dependencies
   prompt-toolkit,
   pygments,
   # tests
   pytestCheckHook,
-  llm-cmd,
+  # build-system
+  setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "llm-cmd";
   version = "0.2a0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "simonw";
@@ -28,6 +27,10 @@ buildPythonPackage rec {
   # Only needed until https://github.com/simonw/llm-cmd/pull/18 is merged and released
   patches = [ ./fix-test.patch ];
 
+  nativeCheckInputs = [
+    pytestCheckHook
+  ];
+
   build-system = [ setuptools ];
 
   dependencies = [
@@ -36,9 +39,7 @@ buildPythonPackage rec {
     pygments
   ];
 
-  nativeCheckInputs = [
-    pytestCheckHook
-  ];
+  pyproject = true;
 
   pythonImportsCheck = [
     "llm_cmd"
@@ -51,6 +52,7 @@ buildPythonPackage rec {
     homepage = "https://github.com/simonw/llm-cmd";
     changelog = "https://github.com/simonw/llm-cmd/releases/tag/${version}";
     license = lib.licenses.asl20;
+
     maintainers = with lib.maintainers; [
       erethon
       philiptaron

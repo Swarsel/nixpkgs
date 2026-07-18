@@ -1,32 +1,31 @@
 {
   lib,
   stdenv,
-  fetchFromGitHub,
-  fetchpatch,
   fetchurl,
-  cmake,
-  pkg-config,
-  kdePackages,
-  qt6,
-  libsecret,
+  fetchFromGitHub,
   amneziawg-go,
-  openvpn,
-  shadowsocks-rust,
-  cloak-pt,
-  wireguard-tools,
-  libssh,
-  zlib,
-  openssl,
-  tun2socks,
-  xray,
-  nix-update-script,
   bash,
   callPackage,
+  cloak-pt,
+  cmake,
+  fetchpatch,
+  kdePackages,
+  libsecret,
+  libssh,
+  nix-update-script,
+  openssl,
+  openvpn,
+  pkg-config,
+  qt6,
+  shadowsocks-rust,
+  tun2socks,
+  wireguard-tools,
+  xray,
+  zlib,
 }:
 let
   amneziawg' = amneziawg-go.overrideAttrs (
     finalAttrs: prevAttrs: {
-      name = "amneziawg-go";
       version = "0.2.16";
 
       src = fetchFromGitHub {
@@ -37,6 +36,7 @@ let
       };
 
       vendorHash = "sha256-ZO8sLOaEY3bii9RSxzXDTCcwlsQEYmZDI+X1WPXbE9c=";
+      name = "amneziawg-go";
     }
   );
 
@@ -82,8 +82,6 @@ in
 stdenv.mkDerivation (finalAttrs: {
   pname = "amnezia-vpn";
   version = "4.8.19.0";
-
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "amnezia-vpn";
@@ -170,17 +168,19 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  __structuredAttrs = true;
+
   passthru = {
     updateScript = nix-update-script { };
   };
 
   meta = {
     description = "Amnezia VPN Client";
-    downloadPage = "https://amnezia.org/en/downloads";
     homepage = "https://github.com/amnezia-vpn/amnezia-client";
     license = lib.licenses.gpl3;
-    mainProgram = "AmneziaVPN";
     maintainers = with lib.maintainers; [ sund3RRR ];
     platforms = lib.platforms.linux;
+    mainProgram = "AmneziaVPN";
+    downloadPage = "https://amnezia.org/en/downloads";
   };
 })

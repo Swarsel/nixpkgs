@@ -10,16 +10,11 @@
 buildPythonPackage (finalAttrs: {
   pname = "click-threading";
   version = "0.5.0";
-  pyproject = true;
 
   src = fetchPypi {
     inherit (finalAttrs) pname version;
     hash = "sha256-rc/mI8AqWVwQfDFAcvZ6Inj+TrQLcsDRoskDzHivNDk=";
   };
-
-  build-system = [ setuptools ];
-
-  dependencies = [ click ];
 
   nativeCheckInputs = [ pytestCheckHook ];
 
@@ -27,6 +22,9 @@ buildPythonPackage (finalAttrs: {
     rm -rf docs
   '';
 
+  build-system = [ setuptools ];
+  dependencies = [ click ];
+  pyproject = true;
   pythonImportsCheck = [ "click_threading" ];
 
   meta = {

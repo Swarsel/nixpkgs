@@ -1,25 +1,24 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  pytestCheckHook,
   aiofiles,
   aiohttp,
   backports-datetime-fromisoformat,
+  buildPythonPackage,
   click,
   click-log,
   emoji,
+  freezegun,
   glom,
   jinja2,
+  pytestCheckHook,
   pyyaml,
-  freezegun,
   setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "dinghy";
   version = "1.4.1";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "nedbat";
@@ -47,17 +46,20 @@ buildPythonPackage rec {
     pytestCheckHook
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "dinghy.cli" ];
 
   meta = {
     description = "GitHub activity digest tool";
-    mainProgram = "dinghy";
     homepage = "https://github.com/nedbat/dinghy";
     changelog = "https://github.com/nedbat/dinghy/blob/${src.tag}/CHANGELOG.rst";
     license = lib.licenses.asl20;
+
     maintainers = with lib.maintainers; [
       trundle
       veehaitch
     ];
+
+    mainProgram = "dinghy";
   };
 }

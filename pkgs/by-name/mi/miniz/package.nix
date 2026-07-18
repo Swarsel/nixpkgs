@@ -1,11 +1,11 @@
 {
   lib,
-  fetchFromGitHub,
-  nix-update-script,
   stdenv,
+  fetchFromGitHub,
+  cmake,
+  nix-update-script,
   testers,
   validatePkgConfig,
-  cmake,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -18,9 +18,9 @@ stdenv.mkDerivation (finalAttrs: {
     rev = finalAttrs.version;
     hash = "sha256-/MAJWZXZ+pbelFduGE75rK/x9qEzxSFEj8RJWe3JUv0=";
   };
-  passthru.updateScript = nix-update-script { };
 
   strictDeps = true;
+
   nativeBuildInputs = [
     cmake
     validatePkgConfig
@@ -36,6 +36,8 @@ stdenv.mkDerivation (finalAttrs: {
     package = finalAttrs.finalPackage;
     versionCheck = true;
   };
+
+  passthru.updateScript = nix-update-script { };
 
   meta = {
     description = "Single C source file zlib-replacement library";

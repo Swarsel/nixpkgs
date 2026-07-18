@@ -5,15 +5,15 @@ lib.makeScope pkgs.newScope (
     inherit (final) callPackage;
   in
   {
-    makeGaugePlugin = callPackage ./make-gauge-plugin.nix { };
-    testGaugePlugins = callPackage ./test-gauge-plugins.nix { };
     dotnet = callPackage ./dotnet { };
+    go = callPackage ./go { };
     html-report = callPackage ./html-report { };
     java = callPackage ./java { };
     js = callPackage ./js { };
+    makeGaugePlugin = callPackage ./make-gauge-plugin.nix { };
     ruby = callPackage ./ruby { };
-    go = callPackage ./go { };
     screenshot = callPackage ./screenshot { };
+    testGaugePlugins = callPackage ./test-gauge-plugins.nix { };
     xml-report = callPackage ./xml-report { };
   }
 )

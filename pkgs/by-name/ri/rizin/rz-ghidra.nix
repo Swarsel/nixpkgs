@@ -3,14 +3,14 @@
   stdenv,
   fetchFromGitHub,
   cmake,
-  # buildInputs
-  rizin,
+  cutter,
   openssl,
   pugixml,
+  qt6,
+  # buildInputs
+  rizin,
   # optional buildInputs
   enableCutterPlugin ? true,
-  cutter,
-  qt6,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -26,6 +26,7 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   nativeBuildInputs = [ cmake ];
+
   buildInputs = [
     openssl
     pugixml
@@ -38,8 +39,6 @@ stdenv.mkDerivation (finalAttrs: {
     qt6.qtsvg
   ];
 
-  dontWrapQtApps = true;
-
   cmakeFlags = [
     "-DUSE_SYSTEM_PUGIXML=ON"
   ]
@@ -48,14 +47,16 @@ stdenv.mkDerivation (finalAttrs: {
     "-DCUTTER_INSTALL_PLUGDIR=share/rizin/cutter/plugins/native"
   ];
 
+  dontWrapQtApps = true;
+
   meta = {
-    # errors out with undefined symbols from Cutter
-    broken = enableCutterPlugin && stdenv.hostPlatform.isDarwin;
+    inherit (rizin.meta) platforms;
     description = "Deep ghidra decompiler and sleigh disassembler integration for rizin";
     homepage = finalAttrs.src.meta.homepage;
     changelog = "${finalAttrs.src.meta.homepage}/releases/tag/${finalAttrs.src.rev}";
     license = lib.licenses.lgpl3;
     maintainers = with lib.maintainers; [ chayleaf ];
-    inherit (rizin.meta) platforms;
+    # errors out with undefined symbols from Cutter
+    broken = enableCutterPlugin && stdenv.hostPlatform.isDarwin;
   };
 })

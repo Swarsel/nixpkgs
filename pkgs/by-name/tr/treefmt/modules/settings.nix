@@ -1,26 +1,29 @@
 {
   lib,
-  pkgs,
   config,
   modulesPath,
+  pkgs,
   ...
 }:
 let
   settingsFormat = pkgs.formats.toml { };
 in
 {
+  config.configFile = lib.mkOptionDefault (settingsFormat.generate "treefmt.toml" config.settings);
+
   options.settings = lib.mkOption {
-    type = lib.types.submoduleWith {
-      specialArgs = { inherit modulesPath; };
-      modules = [
-        { freeformType = settingsFormat.type; }
-      ];
-    };
     default = { };
+
     description = ''
       Settings used to build a treefmt config file.
     '';
-  };
 
-  config.configFile = lib.mkOptionDefault (settingsFormat.generate "treefmt.toml" config.settings);
+    type = lib.types.submoduleWith {
+      modules = [
+        { freeformType = settingsFormat.type; }
+      ];
+
+      specialArgs = { inherit modulesPath; };
+    };
+  };
 }

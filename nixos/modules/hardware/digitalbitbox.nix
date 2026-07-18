@@ -11,11 +11,13 @@ in
 {
   options.hardware.digitalbitbox = {
     enable = lib.mkOption {
-      type = lib.types.bool;
       default = false;
+
       description = ''
         Enables udev rules for Digital Bitbox devices.
       '';
+
+      type = lib.types.bool;
     };
 
     package = lib.mkPackageOption pkgs "digitalbitbox" {

@@ -1,7 +1,7 @@
 {
   lib,
-  stdenvNoCC,
   fetchurl,
+  stdenvNoCC,
 }:
 stdenvNoCC.mkDerivation (finalAttrs: {
   pname = "dbip-asn-lite";
@@ -12,8 +12,6 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     hash = "sha256-0atjAs5hTACcd1UtTYJtx6FihJTtpfjFD6vYHvIl8VM=";
   };
 
-  dontUnpack = true;
-
   installPhase = ''
     runHook preBuild
 
@@ -23,6 +21,7 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     runHook postBuild
   '';
 
+  dontUnpack = true;
   passthru.mmdb = "${finalAttrs.finalPackage}/share/dbip/dbip-asn-lite.mmdb";
 
   meta = {

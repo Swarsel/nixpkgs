@@ -1,16 +1,16 @@
 {
-  stdenv,
   lib,
-  autoreconfHook,
+  stdenv,
   fetchFromGitHub,
-  pkg-config,
-  networkmanager,
-  libsecret,
+  autoreconfHook,
   gtk3,
   gtk4,
-  libnma-gtk4,
   intltool,
+  libnma-gtk4,
+  libsecret,
+  networkmanager,
   openssh,
+  pkg-config,
   sshpass,
 }:
 
@@ -30,6 +30,8 @@ stdenv.mkDerivation (finalAttrs: {
       --replace-fail /usr/bin/sshpass ${lib.getExe sshpass} \
       --replace-fail /usr/bin/ssh ${lib.getExe openssh}
   '';
+
+  strictDeps = true;
 
   nativeBuildInputs = [
     autoreconfHook
@@ -51,19 +53,18 @@ stdenv.mkDerivation (finalAttrs: {
     "--enable-absolute-paths"
   ];
 
-  strictDeps = true;
-
   passthru = {
     networkManagerPlugin = "VPN/nm-ssh-service.name";
   };
 
   meta = {
+    inherit (networkmanager.meta) platforms;
     description = "SSH VPN integration for NetworkManager";
     homepage = "https://github.com/danfruehauf/NetworkManager-ssh";
     license = lib.licenses.gpl2Plus;
+
     maintainers = with lib.maintainers; [
       zhangxy
     ];
-    inherit (networkmanager.meta) platforms;
   };
 })

@@ -1,6 +1,6 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
 }:
 
@@ -15,20 +15,20 @@ stdenv.mkDerivation (finalAttrs: {
     sha256 = "sha256-xzOE+Pnx0qb3B9vWWrF5Q0nhUo0QYBUO6j6al8N3deY=";
   };
 
-  dontBuild = true;
-
   installPhase = ''
     runHook preInstall
     install -Dm755 -t $out/bin disfetch
     runHook postInstall
   '';
 
+  dontBuild = true;
+
   meta = {
     description = "Yet another *nix distro fetching program, but less complex";
     homepage = "https://github.com/q60/disfetch";
     license = lib.licenses.mit;
-    platforms = lib.platforms.all;
     maintainers = with lib.maintainers; [ vel ];
+    platforms = lib.platforms.all;
     mainProgram = "disfetch";
   };
 })

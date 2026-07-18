@@ -2,8 +2,8 @@
   lib,
   stdenv,
   fetchurl,
-  fetchpatch,
   cmake,
+  fetchpatch,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -19,9 +19,9 @@ stdenv.mkDerivation (finalAttrs: {
     # cmake-4 compatibility:
     #   https://github.com/selmf/unarr/pull/30
     (fetchpatch {
+      hash = "sha256-u3shRgtRcHYxvXAHmYyQH1HLYV1PgWaJBY7BZCOYiL4=";
       name = "cmake-4.patch";
       url = "https://github.com/selmf/unarr/commit/1df8ab3d281409e9fe6bed8bf485976bb47f5bef.patch";
-      hash = "sha256-u3shRgtRcHYxvXAHmYyQH1HLYV1PgWaJBY7BZCOYiL4=";
     })
   ];
 
@@ -36,8 +36,8 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   meta = {
-    homepage = "https://github.com/selmf/unarr";
     description = "Lightweight decompression library with support for rar, tar and zip archives";
+    homepage = "https://github.com/selmf/unarr";
     license = lib.licenses.lgpl3Plus;
     maintainers = with lib.maintainers; [ wegank ];
     platforms = lib.platforms.unix;

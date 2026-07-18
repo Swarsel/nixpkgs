@@ -1,17 +1,16 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
+  buildPythonPackage,
   humanize,
   jinja2,
   pytestCheckHook,
+  setuptools,
 }:
 
 buildPythonPackage rec {
   pname = "jinja2-humanize-extension";
   version = "0.4.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "metwork-framework";
@@ -19,6 +18,10 @@ buildPythonPackage rec {
     tag = "v${version}";
     hash = "sha256-bSSwPCPLIWIRhIgaSwHnVTj5mpvwn259GXYeGr5NHBQ=";
   };
+
+  nativeCheckInputs = [
+    pytestCheckHook
+  ];
 
   build-system = [
     setuptools
@@ -29,12 +32,10 @@ buildPythonPackage rec {
     jinja2
   ];
 
+  pyproject = true;
+
   pythonImportsCheck = [
     "jinja2_humanize_extension"
-  ];
-
-  nativeCheckInputs = [
-    pytestCheckHook
   ];
 
   meta = {

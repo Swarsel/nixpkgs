@@ -1,23 +1,21 @@
 {
   lib,
-  python3Packages,
   fetchFromGitHub,
-
+  btrfs-progs,
+  coreutils,
+  dbus,
+  efibootmgr,
+  hidapi,
+  kmod,
+  lsof,
+  python3Packages,
   # dependencies
   systemd,
-  hidapi,
-  coreutils,
-  kmod,
-  efibootmgr,
-  dbus,
-  lsof,
-  btrfs-progs,
   util-linux,
 }:
 python3Packages.buildPythonApplication (finalAttrs: {
   pname = "handheld-daemon";
   version = "4.1.10";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "hhd-dev";
@@ -78,6 +76,14 @@ python3Packages.buildPythonApplication (finalAttrs: {
       --replace-fail '"modprobe"' '"${lib.getExe' kmod "modprobe"}"'
   '';
 
+  # This package doesn't have upstream tests.
+  doCheck = false;
+
+  postInstall = ''
+    install -Dm644 usr/lib/udev/rules.d/83-hhd.rules -t $out/lib/udev/rules.d/
+    install -Dm644 usr/lib/udev/hwdb.d/83-hhd.hwdb -t $out/lib/udev/hwdb.d/
+  '';
+
   build-system = with python3Packages; [
     setuptools
   ];
@@ -94,28 +100,24 @@ python3Packages.buildPythonApplication (finalAttrs: {
     dbus-python
   ];
 
-  # This package doesn't have upstream tests.
-  doCheck = false;
+  pyproject = true;
 
   pythonImportsCheck = [
     "hhd"
     "adjustor"
   ];
 
-  postInstall = ''
-    install -Dm644 usr/lib/udev/rules.d/83-hhd.rules -t $out/lib/udev/rules.d/
-    install -Dm644 usr/lib/udev/hwdb.d/83-hhd.hwdb -t $out/lib/udev/hwdb.d/
-  '';
-
   meta = {
-    homepage = "https://github.com/hhd-dev/hhd/";
     description = "Linux support for handheld gaming devices like the Legion Go, ROG Ally, and GPD Win";
-    platforms = lib.platforms.linux;
+    homepage = "https://github.com/hhd-dev/hhd/";
     changelog = "https://github.com/hhd-dev/hhd/releases/tag/${finalAttrs.src.tag}";
     license = lib.licenses.lgpl21Plus;
+
     maintainers = with lib.maintainers; [
       toast
     ];
+
+    platforms = lib.platforms.linux;
     mainProgram = "hhd";
   };
 })

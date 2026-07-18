@@ -1,11 +1,11 @@
 {
   lib,
-  rustPlatform,
+  stdenv,
   fetchFromGitHub,
-  pkg-config,
   dbus,
   openssl,
-  stdenv,
+  pkg-config,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -19,8 +19,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-X2PIXP5W42ihT50BLApfULQxeUOAqDaNzn9tdxFir3A=";
   };
 
-  cargoHash = "sha256-ROzRR1wQQNpweFcPzRnOMKjb6HTmViVbFR/zWugSYrU=";
-
   nativeBuildInputs = [
     pkg-config
   ];
@@ -29,6 +27,8 @@ rustPlatform.buildRustPackage (finalAttrs: {
     dbus
     openssl
   ];
+
+  cargoHash = "sha256-ROzRR1wQQNpweFcPzRnOMKjb6HTmViVbFR/zWugSYrU=";
 
   postInstall = ''
     mkdir --parents $out/etc/systemd/user

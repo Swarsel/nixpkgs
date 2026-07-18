@@ -29,23 +29,24 @@ let
     options = {
       enable = lib.mkEnableOption "this proxy";
 
+      host = lib.mkOption {
+        description = "Proxy host or IP address.";
+        type = lib.types.str;
+      };
+
+      port = lib.mkOption {
+        description = "Proxy port";
+        type = lib.types.port;
+      };
+
       type = lib.mkOption {
+        description = "Proxy type.";
+
         type = lib.types.enum [
           "http"
           "socks4"
           "socks5"
         ];
-        description = "Proxy type.";
-      };
-
-      host = lib.mkOption {
-        type = lib.types.str;
-        description = "Proxy host or IP address.";
-      };
-
-      port = lib.mkOption {
-        type = lib.types.port;
-        description = "Proxy port";
       };
     };
   };
@@ -54,7 +55,6 @@ in
 {
 
   ###### interface
-
   options = {
 
     programs.proxychains = {
@@ -66,13 +66,19 @@ in
       };
 
       chain = {
+        length = lib.mkOption {
+          default = null;
+
+          description = ''
+            Chain length for random chain.
+          '';
+
+          type = lib.types.nullOr lib.types.int;
+        };
+
         type = lib.mkOption {
-          type = lib.types.enum [
-            "dynamic"
-            "strict"
-            "random"
-          ];
           default = "strict";
+
           description = ''
             `dynamic` - Each connection will be done via chained proxies
             all proxies chained in the order as they appear in the list
@@ -88,56 +94,22 @@ in
             `random` - Each connection will be done via random proxy
             (or proxy chain, see {option}`programs.proxychains.chain.length`) from the list.
           '';
+
+          type = lib.types.enum [
+            "dynamic"
+            "strict"
+            "random"
+          ];
         };
-        length = lib.mkOption {
-          type = lib.types.nullOr lib.types.int;
-          default = null;
-          description = ''
-            Chain length for random chain.
-          '';
-        };
-      };
-
-      proxyDNS = lib.mkOption {
-        type = lib.types.bool;
-        default = true;
-        description = "Proxy DNS requests - no leak for DNS data.";
-      };
-
-      quietMode = lib.mkEnableOption "Quiet mode (no output from the library)";
-
-      remoteDNSSubnet = lib.mkOption {
-        type = lib.types.enum [
-          10
-          127
-          224
-        ];
-        default = 224;
-        description = ''
-          Set the class A subnet number to use for the internal remote DNS mapping, uses the reserved 224.x.x.x range by default.
-        '';
-      };
-
-      tcpReadTimeOut = lib.mkOption {
-        type = lib.types.int;
-        default = 15000;
-        description = "Connection read time-out in milliseconds.";
-      };
-
-      tcpConnectTimeOut = lib.mkOption {
-        type = lib.types.int;
-        default = 8000;
-        description = "Connection time-out in milliseconds.";
       };
 
       localnet = lib.mkOption {
-        type = lib.types.str;
         default = "127.0.0.0/255.0.0.0";
         description = "By default enable localnet for loopback address ranges.";
+        type = lib.types.str;
       };
 
       proxies = lib.mkOption {
-        type = lib.types.attrsOf (lib.types.submodule proxyOptions);
         description = ''
           Proxies to be used by proxychains.
         '';
@@ -150,37 +122,73 @@ in
             };
           }
         '';
+
+        type = lib.types.attrsOf (lib.types.submodule proxyOptions);
+      };
+
+      proxyDNS = lib.mkOption {
+        default = true;
+        description = "Proxy DNS requests - no leak for DNS data.";
+        type = lib.types.bool;
+      };
+
+      quietMode = lib.mkEnableOption "Quiet mode (no output from the library)";
+
+      remoteDNSSubnet = lib.mkOption {
+        default = 224;
+
+        description = ''
+          Set the class A subnet number to use for the internal remote DNS mapping, uses the reserved 224.x.x.x range by default.
+        '';
+
+        type = lib.types.enum [
+          10
+          127
+          224
+        ];
+      };
+
+      tcpConnectTimeOut = lib.mkOption {
+        default = 8000;
+        description = "Connection time-out in milliseconds.";
+        type = lib.types.int;
+      };
+
+      tcpReadTimeOut = lib.mkOption {
+        default = 15000;
+        description = "Connection read time-out in milliseconds.";
+        type = lib.types.int;
       };
 
     };
 
   };
 
-  ###### implementation
-
-  meta.maintainers = with lib.maintainers; [ sorki ];
-
   config = lib.mkIf cfg.enable {
 
     assertions = lib.singleton {
       assertion = cfg.chain.type != "random" && cfg.chain.length == null;
+
       message = ''
         Option `programs.proxychains.chain.length`
         only makes sense with `programs.proxychains.chain.type` = "random".
       '';
     };
 
+    environment.etc."proxychains.conf".text = configFile;
+    environment.systemPackages = [ cfg.package ];
+
     programs.proxychains.proxies = lib.mkIf config.services.tor.client.enable {
       torproxy = lib.mkDefault {
         enable = true;
-        type = "socks4";
         host = "127.0.0.1";
         port = 9050;
+        type = "socks4";
       };
     };
-
-    environment.etc."proxychains.conf".text = configFile;
-    environment.systemPackages = [ cfg.package ];
   };
+
+  ###### implementation
+  meta.maintainers = with lib.maintainers; [ sorki ];
 
 }

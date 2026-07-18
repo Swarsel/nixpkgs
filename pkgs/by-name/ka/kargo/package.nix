@@ -1,10 +1,10 @@
 {
   lib,
-  buildGoModule,
+  stdenv,
   fetchFromGitHub,
+  buildGoModule,
   installShellFiles,
   kargo,
-  stdenv,
   testers,
   writableTmpDirAsHomeHook,
 }:
@@ -20,9 +20,26 @@ buildGoModule (finalAttrs: {
     hash = "sha256-MiNoh5YuywlNKvvNezMaMXOJVhf/IuYGe1NkwOyR7Oo=";
   };
 
+  nativeBuildInputs = [
+    installShellFiles
+    writableTmpDirAsHomeHook
+  ];
+
   vendorHash = "sha256-tucXuZhcCVplFAmRzWJtxbBQccxiVTAheTA55wHMkyw=";
 
-  subPackages = [ "cmd/cli" ];
+  installPhase = ''
+    runHook preInstall
+    mkdir -p $out/bin
+    install -Dm755 "$GOPATH/bin/cli" -T $out/bin/kargo
+    runHook postInstall
+  '';
+
+  postInstall = lib.optionalString (stdenv.buildPlatform.canExecute stdenv.hostPlatform) ''
+    installShellCompletion --cmd kargo \
+      --bash <($out/bin/kargo completion bash) \
+      --fish <($out/bin/kargo completion fish) \
+      --zsh <($out/bin/kargo completion zsh)
+  '';
 
   ldflags =
     let
@@ -37,38 +54,23 @@ buildGoModule (finalAttrs: {
       "-X ${package_url}.gitTreeState=clean"
     ];
 
-  nativeBuildInputs = [
-    installShellFiles
-    writableTmpDirAsHomeHook
-  ];
-
-  installPhase = ''
-    runHook preInstall
-    mkdir -p $out/bin
-    install -Dm755 "$GOPATH/bin/cli" -T $out/bin/kargo
-    runHook postInstall
-  '';
+  subPackages = [ "cmd/cli" ];
 
   passthru.tests.version = testers.testVersion {
-    package = kargo;
     command = "HOME=$TMPDIR ${finalAttrs.meta.mainProgram} version --client";
+    package = kargo;
   };
-
-  postInstall = lib.optionalString (stdenv.buildPlatform.canExecute stdenv.hostPlatform) ''
-    installShellCompletion --cmd kargo \
-      --bash <($out/bin/kargo completion bash) \
-      --fish <($out/bin/kargo completion fish) \
-      --zsh <($out/bin/kargo completion zsh)
-  '';
 
   meta = {
     description = "Application lifecycle orchestration";
-    mainProgram = "kargo";
-    downloadPage = "https://github.com/akuity/kargo";
     homepage = "https://kargo.akuity.io";
     license = lib.licenses.asl20;
+
     maintainers = with lib.maintainers; [
       bbigras
     ];
+
+    mainProgram = "kargo";
+    downloadPage = "https://github.com/akuity/kargo";
   };
 })

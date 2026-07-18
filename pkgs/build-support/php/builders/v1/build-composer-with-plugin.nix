@@ -1,11 +1,11 @@
 {
+  lib,
+  cacert,
+  makeBinaryWrapper,
+  nix-update-script,
+  php,
   stdenvNoCC,
   writeText,
-  lib,
-  makeBinaryWrapper,
-  php,
-  cacert,
-  nix-update-script,
 }:
 
 let
@@ -13,28 +13,32 @@ let
     pluginName: pluginVersion:
     writeText "composer.json" (
       builtins.toJSON {
-        name = "nix/plugin";
-        description = "Nix Composer plugin";
-        license = "MIT";
-        require = {
-          "${pluginName}" = "${pluginVersion}";
-        };
         config = {
           "allow-plugins" = {
             "${pluginName}" = true;
           };
         };
+
+        description = "Nix Composer plugin";
+        license = "MIT";
+        name = "nix/plugin";
+
         repositories = [
           {
-            type = "path";
-            url = "./src";
             options = {
               versions = {
                 "${pluginName}" = "${pluginVersion}";
               };
             };
+
+            type = "path";
+            url = "./src";
           }
         ];
+
+        require = {
+          "${pluginName}" = "${pluginVersion}";
+        };
       }
     );
 
@@ -46,12 +50,8 @@ let
       composer = finalAttrs.composer or phpDrv.packages.composer;
     in
     {
-      composerLock = previousAttrs.composerLock or null;
-      composerNoDev = previousAttrs.composerNoDev or true;
-      composerNoPlugins = previousAttrs.composerNoPlugins or true;
-      composerNoScripts = previousAttrs.composerNoScripts or true;
-      composerStrictValidation = previousAttrs.composerStrictValidation or true;
-      composerGlobal = true;
+      patches = previousAttrs.patches or [ ];
+      strictDeps = previousAttrs.strictDeps or true;
 
       nativeBuildInputs = (previousAttrs.nativeBuildInputs or [ ]) ++ [
         composer
@@ -60,17 +60,6 @@ let
       ];
 
       buildInputs = (previousAttrs.buildInputs or [ ]) ++ [ phpDrv ];
-
-      patches = previousAttrs.patches or [ ];
-      strictDeps = previousAttrs.strictDeps or true;
-
-      # Should we keep these empty phases?
-      configurePhase =
-        previousAttrs.configurePhase or ''
-          runHook preConfigure
-
-          runHook postConfigure
-        '';
 
       buildPhase =
         previousAttrs.buildPhase or ''
@@ -99,6 +88,7 @@ let
         '';
 
       doInstallCheck = previousAttrs.doInstallCheck or false;
+
       installCheckPhase =
         previousAttrs.installCheckPhase or ''
           runHook preInstallCheck
@@ -108,19 +98,24 @@ let
           runHook postInstallCheck
         '';
 
+      composerGlobal = true;
+      composerLock = previousAttrs.composerLock or null;
+      composerNoDev = previousAttrs.composerNoDev or true;
+      composerNoPlugins = previousAttrs.composerNoPlugins or true;
+      composerNoScripts = previousAttrs.composerNoScripts or true;
+      composerStrictValidation = previousAttrs.composerStrictValidation or true;
+
+      # Should we keep these empty phases?
+      configurePhase =
+        previousAttrs.configurePhase or ''
+          runHook preConfigure
+
+          runHook postConfigure
+        '';
+
       vendor = previousAttrs.vendor or stdenvNoCC.mkDerivation {
-        pname = "${finalAttrs.pname}-vendor";
-        pluginName = finalAttrs.pname;
-
         inherit (finalAttrs) version src;
-
-        composerLock = previousAttrs.composerLock or null;
-        composerNoDev = previousAttrs.composerNoDev or true;
-        composerNoPlugins = previousAttrs.composerNoPlugins or true;
-        composerNoScripts = previousAttrs.composerNoScripts or true;
-        composerStrictValidation = previousAttrs.composerStrictValidation or true;
-        composerGlobal = true;
-        composerJson = composerJsonBuilder finalAttrs.pname finalAttrs.version;
+        pname = "${finalAttrs.pname}-vendor";
 
         nativeBuildInputs = [
           cacert
@@ -128,18 +123,25 @@ let
           phpDrv.composerHooks.composerWithPluginVendorHook
         ];
 
-        dontPatchShebangs = true;
-        doCheck = true;
-        doInstallCheck = true;
-
         env = {
           COMPOSER_CACHE_DIR = "/dev/null";
           COMPOSER_HTACCESS_PROTECT = "0";
         };
 
-        outputHashMode = "recursive";
-        outputHashAlgo = "sha256";
+        doCheck = true;
+        doInstallCheck = true;
+        composerGlobal = true;
+        composerJson = composerJsonBuilder finalAttrs.pname finalAttrs.version;
+        composerLock = previousAttrs.composerLock or null;
+        composerNoDev = previousAttrs.composerNoDev or true;
+        composerNoPlugins = previousAttrs.composerNoPlugins or true;
+        composerNoScripts = previousAttrs.composerNoScripts or true;
+        composerStrictValidation = previousAttrs.composerStrictValidation or true;
+        dontPatchShebangs = true;
         outputHash = finalAttrs.vendorHash;
+        outputHashAlgo = "sha256";
+        outputHashMode = "recursive";
+        pluginName = finalAttrs.pname;
       };
 
       # Projects providing a lockfile from upstream can be automatically updated.

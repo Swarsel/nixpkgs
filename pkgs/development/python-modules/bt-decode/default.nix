@@ -1,18 +1,15 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
+  pytestCheckHook,
   rustPlatform,
   toml,
-  pytestCheckHook,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "bt-decode";
   version = "0.8.0";
-  pyproject = true;
-
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "latent-to";
@@ -21,19 +18,20 @@ buildPythonPackage (finalAttrs: {
     hash = "sha256-jpCnYKoTVq2NCxE1vZhJzSagXtx43efDSdA5jWsZ95k=";
   };
 
-  cargoDeps = rustPlatform.fetchCargoVendor {
-    inherit (finalAttrs) pname version src;
-    hash = "sha256-qj4S1104HaFs6JePwgBjAI/4z7aH71Wq9CDvnSxlXmM=";
-  };
-
   nativeBuildInputs = with rustPlatform; [
     cargoSetupHook
     maturinBuildHook
   ];
 
-  dependencies = [ toml ];
-
   nativeCheckInputs = [ pytestCheckHook ];
+  __structuredAttrs = true;
+
+  cargoDeps = rustPlatform.fetchCargoVendor {
+    inherit (finalAttrs) pname version src;
+    hash = "sha256-qj4S1104HaFs6JePwgBjAI/4z7aH71Wq9CDvnSxlXmM=";
+  };
+
+  dependencies = [ toml ];
 
   # these tests compare against bittensor, which is not in nixpkgs
   disabledTestPaths = [
@@ -44,6 +42,7 @@ buildPythonPackage (finalAttrs: {
     "tests/test_decode_subnet_info.py"
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "bt_decode" ];
 
   meta = {

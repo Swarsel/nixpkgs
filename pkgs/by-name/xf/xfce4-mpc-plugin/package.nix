@@ -3,16 +3,16 @@
   stdenv,
   fetchurl,
   gettext,
+  gitUpdater,
+  glib,
+  gtk3,
+  libmpd,
+  libxfce4ui,
+  libxfce4util,
   meson,
   ninja,
   pkg-config,
-  libmpd,
-  libxfce4util,
   xfce4-panel,
-  libxfce4ui,
-  glib,
-  gtk3,
-  gitUpdater,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -43,15 +43,15 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   passthru.updateScript = gitUpdater {
-    url = "https://gitlab.xfce.org/panel-plugins/xfce4-mpc-plugin";
     rev-prefix = "xfce4-mpc-plugin-";
+    url = "https://gitlab.xfce.org/panel-plugins/xfce4-mpc-plugin";
   };
 
   meta = {
-    homepage = "https://docs.xfce.org/panel-plugins/xfce4-mpc-plugin";
     description = "MPD plugin for Xfce panel";
-    platforms = lib.platforms.linux;
+    homepage = "https://docs.xfce.org/panel-plugins/xfce4-mpc-plugin";
     license = lib.licenses.bsd0;
+    platforms = lib.platforms.linux;
     teams = [ lib.teams.xfce ];
   };
 })

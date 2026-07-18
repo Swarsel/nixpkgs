@@ -2,19 +2,19 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  nix-update-script,
-  meson,
-  ninja,
-  pkg-config,
-  vala,
-  libadwaita,
-  libcanberra,
-  libgee,
   glib,
   granite7,
   gtk4,
+  libadwaita,
+  libcanberra,
+  libgee,
+  meson,
+  ninja,
+  nix-update-script,
+  pkg-config,
   pulseaudio,
   switchboard,
+  vala,
 }:
 
 stdenv.mkDerivation rec {
@@ -27,6 +27,8 @@ stdenv.mkDerivation rec {
     tag = version;
     hash = "sha256-jiaxb8aQuGrPcIaR28L2i2J3z4eL+OdrbCJ/abuXvuY=";
   };
+
+  strictDeps = true;
 
   nativeBuildInputs = [
     glib
@@ -45,8 +47,6 @@ stdenv.mkDerivation rec {
     pulseaudio
     switchboard
   ];
-
-  strictDeps = true;
 
   passthru = {
     updateScript = nix-update-script { };

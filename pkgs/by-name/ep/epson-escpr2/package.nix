@@ -19,19 +19,20 @@ stdenv.mkDerivation {
     hash = "sha256-jSh2HVb490CYJ/C+Eh1T5TmnBF7hmBmsGHuVbiWTHQ0=";
   };
 
-  buildInputs = [ cups ];
-  nativeBuildInputs = [
-    autoreconfHook
-  ];
-
   patches = [
     # Fixes "implicit declaration of function" errors
     # source of patch: https://aur.archlinux.org/packages/epson-inkjet-printer-escpr2
     (fetchurl {
-      url = "https://aur.archlinux.org/cgit/aur.git/plain/bug_x86_64.patch?h=epson-inkjet-printer-escpr2&id=8fbca325d6d39fa3ffe001f90a432380bdeacc2f";
       sha256 = "sha256-V8ejK33qyHPX4x8EOgR+XWW44KR8DQwHx2w+O71gQwo=";
+      url = "https://aur.archlinux.org/cgit/aur.git/plain/bug_x86_64.patch?h=epson-inkjet-printer-escpr2&id=8fbca325d6d39fa3ffe001f90a432380bdeacc2f";
     })
   ];
+
+  nativeBuildInputs = [
+    autoreconfHook
+  ];
+
+  buildInputs = [ cups ];
 
   configureFlags = [
     "--with-cupsfilterdir=${placeholder "out"}/lib/cups/filter"
@@ -41,19 +42,23 @@ stdenv.mkDerivation {
   passthru.updateScript = ./update.sh;
 
   meta = {
-    homepage = "http://download.ebz.epson.net/dsc/search/01/search/";
     description = "ESC/P-R 2 Driver (generic driver)";
+
     longDescription = ''
       Epson Inkjet Printer Driver 2 (ESC/P-R 2) for Linux and the
       corresponding PPD files.
 
       Refer to the description of epson-escpr for usage.
     '';
+
+    homepage = "http://download.ebz.epson.net/dsc/search/01/search/";
     license = lib.licenses.gpl2Plus;
+
     maintainers = with lib.maintainers; [
       ma9e
       ma27
     ];
+
     platforms = lib.platforms.linux;
   };
 }

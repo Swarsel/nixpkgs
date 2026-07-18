@@ -1,16 +1,14 @@
 {
   lib,
-  buildDunePackage,
   fetchurl,
   alcotest,
+  buildDunePackage,
   type_eq,
 }:
 
 buildDunePackage rec {
   pname = "type_id";
   version = "0.0.1";
-
-  minimalOCamlVersion = "4.08.1";
 
   src = fetchurl {
     url = "https://github.com/skolemlabs/${pname}/releases/download/${version}/${pname}-${version}.tbz";
@@ -21,11 +19,13 @@ buildDunePackage rec {
     type_eq
   ];
 
+  doCheck = true;
+
   checkInputs = [
     alcotest
   ];
 
-  doCheck = true;
+  minimalOCamlVersion = "4.08.1";
 
   meta = {
     description = "Type identifiers, useful for runtime type-safe casting/coersions";

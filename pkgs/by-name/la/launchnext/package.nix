@@ -1,8 +1,8 @@
 {
   lib,
-  stdenvNoCC,
   fetchzip,
   nix-update-script,
+  stdenvNoCC,
 }:
 stdenvNoCC.mkDerivation (finalAttrs: {
   pname = "launchnext";
@@ -14,10 +14,6 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     stripRoot = false;
   };
 
-  dontConfigure = true;
-  dontBuild = true;
-  doInstallCheck = true;
-
   installPhase = ''
     runHook preInstall
 
@@ -27,16 +23,21 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  doInstallCheck = true;
+  dontBuild = true;
+  dontConfigure = true;
   passthru.updateScript = nix-update-script { };
 
   meta = {
     description = "Bring Launchpad back in MacOS26+, highly customizable, powerful, free";
     homepage = "https://closex.org/launchnext/";
     license = lib.licenses.gpl3Only;
+    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
+
     maintainers = with lib.maintainers; [
       Renna42
     ];
+
     platforms = lib.platforms.darwin;
-    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
   };
 })

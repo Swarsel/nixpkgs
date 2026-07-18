@@ -1,14 +1,13 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   hatchling,
   httpx,
 }:
 buildPythonPackage rec {
   pname = "gotenberg-client";
   version = "0.14.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "stumpylog";
@@ -17,6 +16,8 @@ buildPythonPackage rec {
     hash = "sha256-BS/QGapok9iaFNfI3G55F0H4CKHPHS85Qs4G6nt043s=";
   };
 
+  # requires running gotenberg service
+  doCheck = false;
   build-system = [ hatchling ];
 
   dependencies = [
@@ -24,9 +25,7 @@ buildPythonPackage rec {
   ]
   ++ httpx.optional-dependencies.http2;
 
-  # requires running gotenberg service
-  doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "gotenberg_client" ];
 
   meta = {

@@ -1,7 +1,7 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -21,7 +21,7 @@ rustPlatform.buildRustPackage (finalAttrs: {
     description = "Easily add emojis to your git commit messages";
     homepage = "https://github.com/zeenix/gimoji";
     license = lib.licenses.mit;
-    mainProgram = "gimoji";
     maintainers = with lib.maintainers; [ a-kenji ];
+    mainProgram = "gimoji";
   };
 })

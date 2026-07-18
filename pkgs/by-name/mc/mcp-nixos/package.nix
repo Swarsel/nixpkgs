@@ -8,7 +8,6 @@
 python3Packages.buildPythonApplication (finalAttrs: {
   pname = "mcp-nixos";
   version = "2.4.3";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "utensils";
@@ -19,9 +18,15 @@ python3Packages.buildPythonApplication (finalAttrs: {
 
   patches = [
     (fetchpatch {
-      url = "https://github.com/utensils/mcp-nixos/commit/0ef99b6a5674e60ca315dc55a0f458673bb1e4fa.patch";
       sha256 = "sha256-f57qS6V8mSv2kLKiudSG2enAofeUZwKvjfdowmGRIxw=";
+      url = "https://github.com/utensils/mcp-nixos/commit/0ef99b6a5674e60ca315dc55a0f458673bb1e4fa.patch";
     })
+  ];
+
+  nativeCheckInputs = with python3Packages; [
+    pytestCheckHook
+    pytest-asyncio
+    pytest-cov-stub
   ];
 
   build-system = [ python3Packages.hatchling ];
@@ -31,12 +36,6 @@ python3Packages.buildPythonApplication (finalAttrs: {
     fastmcp
     mcp
     requests
-  ];
-
-  nativeCheckInputs = with python3Packages; [
-    pytestCheckHook
-    pytest-asyncio
-    pytest-cov-stub
   ];
 
   disabledTestPaths = [
@@ -49,6 +48,7 @@ python3Packages.buildPythonApplication (finalAttrs: {
     "test_valid_channel"
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "mcp_nixos" ];
 
   meta = {

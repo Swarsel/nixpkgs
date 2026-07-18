@@ -1,17 +1,16 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  setuptools,
-  wheel,
+  buildPythonPackage,
   mock,
   pytestCheckHook,
+  setuptools,
+  wheel,
 }:
 
 buildPythonPackage rec {
   pname = "polling";
   version = "0.3.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "justiniso";
@@ -25,12 +24,13 @@ buildPythonPackage rec {
     wheel
   ];
 
-  pythonImportsCheck = [ "polling" ];
-
   nativeCheckInputs = [
     mock
     pytestCheckHook
   ];
+
+  pyproject = true;
+  pythonImportsCheck = [ "polling" ];
 
   meta = {
     description = "Powerful polling utility in Python";

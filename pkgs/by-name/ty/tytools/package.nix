@@ -21,6 +21,7 @@ stdenv.mkDerivation (finalAttrs: {
     installShellFiles
     qt6.wrapQtAppsHook
   ];
+
   buildInputs = [
     qt6.qtbase
   ];
@@ -50,7 +51,7 @@ stdenv.mkDerivation (finalAttrs: {
     description = "Collection of tools to manage Teensy boards";
     homepage = "https://koromix.dev/tytools";
     license = lib.licenses.unlicense;
-    platforms = lib.platforms.unix;
     maintainers = with lib.maintainers; [ ahuzik ];
+    platforms = lib.platforms.unix;
   };
 })

@@ -1,21 +1,21 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchurl,
-  replaceVars,
-  vpnc,
-  pkg-config,
-  networkmanager,
-  libsecret,
+  file,
+  glib,
+  gnome,
   gtk3,
   gtk4,
-  withGnome ? true,
-  gnome,
-  glib,
   kmod,
-  file,
   libnma,
   libnma-gtk4,
+  libsecret,
+  networkmanager,
+  pkg-config,
+  replaceVars,
+  vpnc,
+  withGnome ? true,
 }:
 
 stdenv.mkDerivation rec {
@@ -32,6 +32,8 @@ stdenv.mkDerivation rec {
       inherit vpnc kmod;
     })
   ];
+
+  strictDeps = true;
 
   nativeBuildInputs = [
     pkg-config
@@ -57,20 +59,19 @@ stdenv.mkDerivation rec {
     "--enable-absolute-paths"
   ];
 
-  strictDeps = true;
-
   passthru = {
+    networkManagerPlugin = "VPN/nm-vpnc-service.name";
+
     updateScript = gnome.updateScript {
-      packageName = pname;
       attrPath = "networkmanager-vpnc";
+      packageName = pname;
       versionPolicy = "odd-unstable";
     };
-    networkManagerPlugin = "VPN/nm-vpnc-service.name";
   };
 
   meta = {
-    description = "NetworkManager's VPNC plugin";
     inherit (networkmanager.meta) maintainers teams platforms;
+    description = "NetworkManager's VPNC plugin";
     license = lib.licenses.gpl2Plus;
   };
 }

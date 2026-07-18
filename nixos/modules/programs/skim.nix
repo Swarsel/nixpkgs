@@ -1,7 +1,7 @@
 {
-  pkgs,
   config,
   lib,
+  pkgs,
   ...
 }:
 let
@@ -24,8 +24,8 @@ in
   options = {
     programs.skim = {
       enable = mkEnableOption "skim fuzzy finder";
-      keybindings = mkEnableOption "skim keybindings";
       package = mkPackageOption pkgs "skim" { };
+      keybindings = mkEnableOption "skim keybindings";
     };
   };
 
@@ -36,12 +36,12 @@ in
       source ${cfg.package}/share/skim/key-bindings.bash
     '';
 
-    programs.zsh.interactiveShellInit = optionalString cfg.keybindings ''
-      source ${cfg.package}/share/skim/key-bindings.zsh
-    '';
-
     programs.fish.interactiveShellInit = optionalString cfg.keybindings ''
       source ${cfg.package}/share/skim/key-bindings.fish && skim_key_bindings
+    '';
+
+    programs.zsh.interactiveShellInit = optionalString cfg.keybindings ''
+      source ${cfg.package}/share/skim/key-bindings.zsh
     '';
   };
 }

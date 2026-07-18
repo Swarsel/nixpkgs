@@ -1,6 +1,6 @@
-{ mkDerivation, libgeom }:
+{ libgeom, mkDerivation }:
 mkDerivation {
-  path = "sbin/bsdlabel";
-  extraPaths = [ "sys/geom" ];
   buildInputs = [ libgeom ];
+  extraPaths = [ "sys/geom" ];
+  path = "sbin/bsdlabel";
 }

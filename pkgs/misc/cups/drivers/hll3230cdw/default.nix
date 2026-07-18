@@ -1,18 +1,19 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchurl,
-  perl,
-  gnused,
-  dpkg,
-  makeWrapper,
   autoPatchelfHook,
+  dpkg,
+  gnused,
   libredirect,
+  makeWrapper,
+  perl,
 }:
 
 stdenv.mkDerivation rec {
   pname = "cups-brother-hll3230cdw";
   version = "1.0.2";
+
   src = fetchurl {
     url = "https://download.brother.com/welcome/dlf103925/hll3230cdwpdrv-${version}-0.i386.deb";
     sha256 = "9d49abc584bf22bc381510618a34107ead6ab14562b51831fefd6009947aa5a9";
@@ -29,8 +30,6 @@ stdenv.mkDerivation rec {
     gnused
     libredirect
   ];
-
-  unpackPhase = "dpkg-deb -x $src .";
 
   installPhase = ''
     runHook preInstall
@@ -60,7 +59,6 @@ stdenv.mkDerivation rec {
   # also uses this format string to print configuration locations.  Here the
   # wrapper output is processed to point into the correct location in the
   # store.
-
   postFixup = ''
     substituteInPlace $out/opt/brother/Printers/hll3230cdw/lpd/filter_hll3230cdw \
       --replace "my \$BR_PRT_PATH =" "my \$BR_PRT_PATH = \"$out/opt/brother/Printers/hll3230cdw/\"; #" \
@@ -82,16 +80,20 @@ stdenv.mkDerivation rec {
       --replace \"\$"@"\" \"\$"@\" | LD_PRELOAD= ${gnused}/bin/sed -E '/^(function list :|resource file :).*/{s#/opt#$out/opt#}'"
   '';
 
+  unpackPhase = "dpkg-deb -x $src .";
+
   meta = {
     description = "Brother HL-L3230CDW printer driver";
+    homepage = "http://www.brother.com/";
     license = lib.licenses.unfree;
     sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
     maintainers = with lib.maintainers; [ aplund ];
+
     platforms = [
       "x86_64-linux"
       "i686-linux"
     ];
-    homepage = "http://www.brother.com/";
+
     downloadPage = "https://support.brother.com/g/b/downloadend.aspx?c=us&lang=en&prod=hll3230cdw_us_eu_as&os=128&dlid=dlf103925_000&flang=4&type3=10283";
   };
 }

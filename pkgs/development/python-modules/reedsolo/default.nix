@@ -1,20 +1,17 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
+  buildPythonPackage,
   # build-system
   cython,
-  setuptools,
-
   # tests
   pytestCheckHook,
+  setuptools,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "reedsolo";
   version = "1.7.0";
-  pyproject = true;
 
   # Pypi does not have the tests
   src = fetchFromGitHub {
@@ -34,6 +31,8 @@ buildPythonPackage (finalAttrs: {
   disabledTestPaths = [
     "tests/test_creedsolo.py" # TODO: package creedsolo
   ];
+
+  pyproject = true;
 
   meta = {
     description = "Pure-python universal errors-and-erasures Reed-Solomon Codec";

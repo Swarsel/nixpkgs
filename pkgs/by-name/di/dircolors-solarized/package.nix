@@ -1,7 +1,7 @@
 {
-  fetchFromGitHub,
   lib,
   stdenv,
+  fetchFromGitHub,
   unstableGitUpdater,
 }:
 
@@ -16,8 +16,6 @@ stdenv.mkDerivation {
     hash = "sha256-2uZ2vpnMyoWk1TdHE6sbUGXhw1zTwfbk2KRIma6F5DA=";
   };
 
-  dontBuild = true;
-
   installPhase = ''
     runHook preInstall
 
@@ -28,6 +26,7 @@ stdenv.mkDerivation {
     runHook postInstall
   '';
 
+  dontBuild = true;
   passthru.updateScript = unstableGitUpdater { };
 
   meta = {

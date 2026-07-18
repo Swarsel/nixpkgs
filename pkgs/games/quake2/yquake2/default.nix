@@ -1,16 +1,16 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
-  buildEnv,
-  makeWrapper,
-  copyDesktopItems,
-  makeDesktopItem,
   SDL2,
-  libGL,
+  buildEnv,
+  copyDesktopItems,
   curl,
-  openalSupport ? true,
+  libGL,
+  makeDesktopItem,
+  makeWrapper,
   openal,
+  openalSupport ? true,
 }:
 
 let
@@ -48,6 +48,8 @@ let
         --replace "\"libopenal.so.1\"" "\"${openal}/lib/libopenal.so.1\""
     '';
 
+    nativeBuildInputs = [ copyDesktopItems ];
+
     buildInputs = [
       SDL2
       libGL
@@ -60,10 +62,6 @@ let
       "WITH_SYSTEMWIDE=yes"
       "WITH_SYSTEMDIR=\${out}/share/games/quake2"
     ];
-
-    nativeBuildInputs = [ copyDesktopItems ];
-
-    enableParallelBuilding = true;
 
     installPhase = ''
       runHook preInstall
@@ -80,24 +78,27 @@ let
 
     desktopItems = [
       (makeDesktopItem {
-        name = "yquake2";
-        exec = "yquake2";
-        icon = "yamagi-quake2";
-        desktopName = "yquake2";
-        comment = "Yamagi Quake II client";
         categories = [
           "Game"
           "Shooter"
         ];
+
+        comment = "Yamagi Quake II client";
+        desktopName = "yquake2";
+        exec = "yquake2";
+        icon = "yamagi-quake2";
+        name = "yquake2";
       })
     ];
+
+    enableParallelBuilding = true;
 
     meta = {
       description = "Yamagi Quake II client";
       homepage = "https://www.yamagi.org/quake2/";
       license = lib.licenses.gpl2Plus;
-      platforms = lib.platforms.unix;
       maintainers = with lib.maintainers; [ tadfisher ];
+      platforms = lib.platforms.unix;
     };
   };
 
@@ -105,27 +106,27 @@ in
 {
   inherit yquake2;
 
+  yquake2-all-games = wrapper {
+    description = "Yamagi Quake II with all add-on games";
+    games = lib.attrValues games;
+    name = "yquake2-all-games";
+  };
+
   yquake2-ctf = wrapper {
+    inherit (games.ctf) description;
     games = [ games.ctf ];
     name = "yquake2-ctf";
-    inherit (games.ctf) description;
   };
 
   yquake2-ground-zero = wrapper {
+    inherit (games.ground-zero) description;
     games = [ games.ground-zero ];
     name = "yquake2-ground-zero";
-    inherit (games.ground-zero) description;
   };
 
   yquake2-the-reckoning = wrapper {
+    inherit (games.the-reckoning) description;
     games = [ games.the-reckoning ];
     name = "yquake2-the-reckoning";
-    inherit (games.the-reckoning) description;
-  };
-
-  yquake2-all-games = wrapper {
-    games = lib.attrValues games;
-    name = "yquake2-all-games";
-    description = "Yamagi Quake II with all add-on games";
   };
 }

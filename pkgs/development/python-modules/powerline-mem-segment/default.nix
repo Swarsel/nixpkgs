@@ -8,7 +8,6 @@
 buildPythonPackage rec {
   pname = "powerline-mem-segment";
   version = "2.4.1";
-  format = "setuptools";
 
   src = fetchPypi {
     inherit pname version;
@@ -16,7 +15,7 @@ buildPythonPackage rec {
   };
 
   propagatedBuildInputs = [ psutil ];
-
+  format = "setuptools";
   pythonImportsCheck = [ "powerlinemem" ];
 
   meta = {

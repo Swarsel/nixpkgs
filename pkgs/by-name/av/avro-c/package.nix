@@ -1,10 +1,10 @@
 {
   lib,
   stdenv,
-  cmake,
   fetchurl,
-  pkg-config,
+  cmake,
   jansson,
+  pkg-config,
   snappy,
   xz,
   zlib,

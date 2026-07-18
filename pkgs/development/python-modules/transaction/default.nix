@@ -2,15 +2,14 @@
   lib,
   fetchFromGitHub,
   buildPythonPackage,
+  pytestCheckHook,
   setuptools,
   zope-interface,
-  pytestCheckHook,
 }:
 
 buildPythonPackage rec {
   pname = "transaction";
   version = "5.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "zopefoundation";
@@ -24,6 +23,10 @@ buildPythonPackage rec {
       --replace-fail "setuptools<74" "setuptools"
   '';
 
+  nativeCheckInputs = [
+    pytestCheckHook
+  ];
+
   build-system = [
     setuptools
   ];
@@ -32,10 +35,7 @@ buildPythonPackage rec {
     zope-interface
   ];
 
-  nativeCheckInputs = [
-    pytestCheckHook
-  ];
-
+  pyproject = true;
   pythonImportsCheck = [ "transaction" ];
 
   meta = {

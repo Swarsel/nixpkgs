@@ -5,8 +5,8 @@
   SDL2,
   autoconf,
   autoconf-archive,
-  autoreconfHook,
   automake,
+  autoreconfHook,
   libogg,
   libtool,
   libvorbis,
@@ -50,13 +50,13 @@ stdenv.mkDerivation (finalAttrs: {
     zlib
   ];
 
-  enableParallelBuilding = true;
-
-  makeFlags = [ "NIX_DESTDIR=$(out)" ]; # see postPatch
   configureFlags = lib.optional (!enableTools) "--disable-tools";
+  makeFlags = [ "NIX_DESTDIR=$(out)" ]; # see postPatch
+  enableParallelBuilding = true;
 
   meta = {
     description = "Recreation of Ultima VII for modern operating systems";
+
     longDescription = ''
       Ultima VII, an RPG from the early 1990's, still has a huge following. But,
       being a DOS game with a very nonstandard memory manager, it is difficult
@@ -67,6 +67,7 @@ stdenv.mkDerivation (finalAttrs: {
       as close to (or perhaps even surpassing) its original splendor as is
       possible.
     '';
+
     homepage = "http://exult.info";
     license = lib.licenses.gpl2Plus;
     maintainers = [ ];

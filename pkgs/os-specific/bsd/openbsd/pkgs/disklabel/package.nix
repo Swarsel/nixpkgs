@@ -1,13 +1,14 @@
 {
   lib,
-  mkDerivation,
   mandoc,
+  mkDerivation,
 }:
 mkDerivation {
-  path = "sbin/disklabel";
   extraNativeBuildInputs = [
     mandoc
   ];
-  meta.platforms = lib.platforms.openbsd;
+
+  path = "sbin/disklabel";
   meta.mainProgram = "disklabel";
+  meta.platforms = lib.platforms.openbsd;
 }

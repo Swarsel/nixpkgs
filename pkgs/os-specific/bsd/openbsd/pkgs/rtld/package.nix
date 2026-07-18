@@ -4,35 +4,35 @@
 }:
 
 mkDerivation {
-  path = "libexec/ld.so";
-  extraPaths = [
-    "lib/libc/string"
-    "lib/csu/os-note-elf.h"
+  outputs = [
+    "out"
+    "man"
   ];
+
   patches = [
     ./ldso-fix-makefile.patch
   ];
-
-  libcMinimal = true;
-
-  NIX_CFLAGS_COMPILE = "-Wno-error";
-
-  makeFlags = [ "STACK_PROTECTOR=1" ];
 
   # -fret-clean requires OpenBSD-specific patches to the compiler.
   postPatch = ''
     find . -type f -exec sed -i 's/-fret-clean//g' {} \;
   '';
 
+  makeFlags = [ "STACK_PROTECTOR=1" ];
+
   # DESTDIR is overridden in bsdSetupHook, just fixup afterwards
   postInstall = ''
     mv $out/bin $out/libexec
   '';
 
-  outputs = [
-    "out"
-    "man"
+  NIX_CFLAGS_COMPILE = "-Wno-error";
+
+  extraPaths = [
+    "lib/libc/string"
+    "lib/csu/os-note-elf.h"
   ];
 
+  libcMinimal = true;
+  path = "libexec/ld.so";
   meta.platforms = lib.platforms.openbsd;
 }

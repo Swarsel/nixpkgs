@@ -1,13 +1,13 @@
 # For building the multiple addons that are in the kikit repo.
 {
   stdenv,
-  bc,
-  kikit,
-  zip,
-  python3,
   addonName,
   addonPath,
+  bc,
+  kikit,
+  python3,
   strip-nondeterminism,
+  zip,
 }:
 let
   # This python is only used when building the package, it's not the python
@@ -19,21 +19,22 @@ let
   # The following different addons can be built from the same source.
   targetSpecs = {
     "kikit" = {
+      description = "KiCad plugin and a CLI tool to automate several tasks in a standard KiCad workflow";
       makeTarget = "pcm-kikit";
       resultZip = "pcm-kikit.zip";
-      description = "KiCad plugin and a CLI tool to automate several tasks in a standard KiCad workflow";
     };
+
     "kikit-library" = {
+      description = "KiKit uses these symbols and footprints to annotate your boards (e.g., to place a tab in a panel)";
       makeTarget = "pcm-lib";
       resultZip = "pcm-kikit-lib.zip";
-      description = "KiKit uses these symbols and footprints to annotate your boards (e.g., to place a tab in a panel)";
     };
   };
   targetSpec = targetSpecs.${addonName};
 in
 stdenv.mkDerivation {
-  pname = "kicadaddon-${addonName}";
   inherit (kikit-module) src version;
+  pname = "kicadaddon-${addonName}";
 
   nativeBuildInputs = [
     python
@@ -41,6 +42,7 @@ stdenv.mkDerivation {
     zip
     strip-nondeterminism
   ];
+
   propagatedBuildInputs = [ kikit-module ];
 
   buildPhase = ''

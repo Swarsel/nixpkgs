@@ -3,9 +3,9 @@
   stdenv,
   fetchFromGitHub,
   fetchYarnDeps,
+  fixup-yarn-lock,
   makeWrapper,
   nodejs,
-  fixup-yarn-lock,
   yarn,
 }:
 
@@ -20,29 +20,12 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-/XUqCL2F1iMYUoCbGgL9YKs+8wIFHvmh2O0LMbDU8yE=";
   };
 
-  offlineCache = fetchYarnDeps {
-    yarnLock = "${finalAttrs.src}/yarn.lock";
-    hash = "sha256-pxeYumHuomOFyCi8XhYTYQNcsGOUvjOg36bFD0yhdLk=";
-  };
-
   nativeBuildInputs = [
     makeWrapper
     nodejs
     fixup-yarn-lock
     yarn
   ];
-
-  configurePhase = ''
-    runHook preConfigure
-
-    export HOME=$(mktemp -d)
-    yarn config --offline set yarn-offline-mirror $offlineCache
-    fixup-yarn-lock yarn.lock
-    yarn --offline --frozen-lockfile --ignore-platform --ignore-scripts --no-progress --non-interactive install
-    patchShebangs node_modules
-
-    runHook postConfigure
-  '';
 
   buildPhase = ''
     runHook preBuild
@@ -66,12 +49,29 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  configurePhase = ''
+    runHook preConfigure
+
+    export HOME=$(mktemp -d)
+    yarn config --offline set yarn-offline-mirror $offlineCache
+    fixup-yarn-lock yarn.lock
+    yarn --offline --frozen-lockfile --ignore-platform --ignore-scripts --no-progress --non-interactive install
+    patchShebangs node_modules
+
+    runHook postConfigure
+  '';
+
+  offlineCache = fetchYarnDeps {
+    hash = "sha256-pxeYumHuomOFyCi8XhYTYQNcsGOUvjOg36bFD0yhdLk=";
+    yarnLock = "${finalAttrs.src}/yarn.lock";
+  };
+
   meta = {
-    changelog = "https://github.com/manuc66/node-hp-scan-to/releases/tag/${finalAttrs.src.rev}";
     description = "Allow to send scan from device to computer for some HP All-in-One Printers";
     homepage = "https://github.com/manuc66/node-hp-scan-to";
+    changelog = "https://github.com/manuc66/node-hp-scan-to/releases/tag/${finalAttrs.src.rev}";
     license = lib.licenses.mit;
-    mainProgram = "node-hp-scan-to";
     maintainers = with lib.maintainers; [ jonas-w ];
+    mainProgram = "node-hp-scan-to";
   };
 })

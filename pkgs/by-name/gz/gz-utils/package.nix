@@ -2,22 +2,18 @@
   lib,
   stdenv,
   fetchFromGitHub,
-
-  # nativeBuildInputs
-  cmake,
-  gz-cmake,
-  doxygen,
-  graphviz,
-
   # buildInputs
   cli11,
-  spdlog,
-
-  # nativeCheckInputs
-  python3,
-
+  # nativeBuildInputs
+  cmake,
+  doxygen,
+  graphviz,
   # checkInputs
   gtest,
+  gz-cmake,
+  # nativeCheckInputs
+  python3,
+  spdlog,
 }:
 stdenv.mkDerivation (finalAttrs: {
   pname = "gz-utils";
@@ -67,18 +63,16 @@ stdenv.mkDerivation (finalAttrs: {
     cp -r doxygen/html $doc
   '';
 
-  nativeCheckInputs = [ python3 ];
-
-  checkInputs = [ gtest ];
-
   doCheck = true;
+  nativeCheckInputs = [ python3 ];
+  checkInputs = [ gtest ];
 
   meta = {
     description = "General purpose utility classes and functions for the Gazebo libraries";
     homepage = "https://gazebosim.org/home";
     changelog = "https://github.com/gazebosim/gz-utils/blob/${finalAttrs.src.tag}/Changelog.md";
     license = lib.licenses.asl20;
-    platforms = lib.platforms.unix ++ lib.platforms.windows;
     maintainers = with lib.maintainers; [ guelakais ];
+    platforms = lib.platforms.unix ++ lib.platforms.windows;
   };
 })

@@ -21,13 +21,15 @@ stdenv.mkDerivation rec {
   '';
 
   meta = {
-    homepage = "https://github.com/iwalton3/default-shader-pack";
     description = "Preconfigured set of MPV shaders and configurations for MPV Shim media clients";
+    homepage = "https://github.com/iwalton3/default-shader-pack";
+
     license = with lib.licenses; [
       gpl3Plus
       mit
       unlicense
     ];
+
     maintainers = with lib.maintainers; [ devusb ];
   };
 }

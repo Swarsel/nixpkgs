@@ -1,9 +1,9 @@
 {
   lib,
-  rustPlatform,
   fetchFromGitHub,
-  pkg-config,
   openssl,
+  pkg-config,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage (finalAttrs: {
@@ -17,11 +17,10 @@ rustPlatform.buildRustPackage (finalAttrs: {
     sha256 = "oyRdXvVnCfdFM8lI1eCDHHYNWcJc0Qg0TKxQXUqNo40=";
   };
 
+  nativeBuildInputs = [ pkg-config ];
+  buildInputs = [ openssl ];
   cargoHash = "sha256-mRLTQYkKXxhcwI2Ra/HCkxejDl3nnraJw+VCqRgCUig=";
 
-  nativeBuildInputs = [ pkg-config ];
-
-  buildInputs = [ openssl ];
   meta = {
     description = "Simple todo cli program written in rust";
     homepage = "https://github.com/sioodmy/todo";

@@ -1,20 +1,20 @@
 {
   lib,
-  rustPlatform,
-  fetchurl,
-  wrapGAppsHook4,
-  meson,
-  vala,
-  pkg-config,
-  ninja,
-  itstool,
-  gnome,
-  gtk4,
-  libadwaita,
   stdenv,
-  rustc,
+  fetchurl,
   cargo,
   desktop-file-utils,
+  gnome,
+  gtk4,
+  itstool,
+  libadwaita,
+  meson,
+  ninja,
+  pkg-config,
+  rustPlatform,
+  rustc,
+  vala,
+  wrapGAppsHook4,
   writableTmpDirAsHomeHook,
 }:
 
@@ -27,13 +27,7 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-bRXfaKYSjPDJnlmJCK+MZntzPcQAPvTSHUtMSkK9Lak=";
   };
 
-  cargoDeps = rustPlatform.fetchCargoVendor {
-    inherit (finalAttrs) pname version src;
-    hash = "sha256-OcuhISJhm8uvcJjki86FSNiT5AoqUrILZaHcn1oZVtk=";
-  };
-
   strictDeps = true;
-  __structuredArgs = true;
 
   nativeBuildInputs = [
     itstool
@@ -53,12 +47,19 @@ stdenv.mkDerivation (finalAttrs: {
     libadwaita
   ];
 
+  doCheck = true;
+
   nativeCheckInputs = [
     writableTmpDirAsHomeHook
     rustPlatform.cargoCheckHook
   ];
 
-  doCheck = true;
+  __structuredArgs = true;
+
+  cargoDeps = rustPlatform.fetchCargoVendor {
+    inherit (finalAttrs) pname version src;
+    hash = "sha256-OcuhISJhm8uvcJjki86FSNiT5AoqUrILZaHcn1oZVtk=";
+  };
 
   passthru = {
     updateScript = gnome.updateScript {
@@ -67,12 +68,12 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   meta = {
+    description = "Obtain the 2048 tile";
     homepage = "https://gitlab.gnome.org/GNOME/gnome-2048";
     changelog = "https://gitlab.gnome.org/GNOME/gnome-2048/-/blob/${finalAttrs.version}/NEWS?ref_type=tags";
-    description = "Obtain the 2048 tile";
-    mainProgram = "gnome-2048";
-    teams = [ lib.teams.gnome ];
     license = lib.licenses.gpl3Plus;
     platforms = lib.platforms.linux;
+    mainProgram = "gnome-2048";
+    teams = [ lib.teams.gnome ];
   };
 })

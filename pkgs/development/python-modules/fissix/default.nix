@@ -1,9 +1,9 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  flit-core,
   appdirs,
+  buildPythonPackage,
+  flit-core,
   pytestCheckHook,
 }:
 
@@ -12,9 +12,8 @@ let
 in
 
 buildPythonPackage {
-  pname = "fissix";
   inherit version;
-  pyproject = true;
+  pname = "fissix";
 
   src = fetchFromGitHub {
     owner = "amyreese";
@@ -23,23 +22,22 @@ buildPythonPackage {
     hash = "sha256-geGctke+1PWFqJyiH1pQ0zWj9wVIjV/SQ5njOOk9gOw=";
   };
 
-  build-system = [ flit-core ];
-
-  dependencies = [ appdirs ];
-
   nativeCheckInputs = [ pytestCheckHook ];
 
   preCheck = ''
     export HOME=$(mktemp -d)
   '';
 
+  build-system = [ flit-core ];
+  dependencies = [ appdirs ];
+  pyproject = true;
   pythonImportsCheck = [ "fissix" ];
 
   meta = {
     description = "Backport of latest lib2to3, with enhancements";
     homepage = "https://github.com/amyreese/fissix";
-    sourceProvenance = [ lib.sourceTypes.fromSource ];
     license = lib.licenses.psfl;
+    sourceProvenance = [ lib.sourceTypes.fromSource ];
     maintainers = [ lib.maintainers.emily ];
   };
 }

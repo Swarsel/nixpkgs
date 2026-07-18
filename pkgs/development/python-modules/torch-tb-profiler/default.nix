@@ -1,7 +1,7 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
+  buildPythonPackage,
   pandas,
   pytestCheckHook,
   setuptools,
@@ -12,31 +12,29 @@
 let
   version = "0.4.0";
   repo = fetchFromGitHub {
+    hash = "sha256-nAtqGCv8q3Tati3NOGWWLb+gXdvO3qmECeC1WG2Mt3M=";
     owner = "pytorch";
     repo = "kineto";
     tag = "v${version}";
-    hash = "sha256-nAtqGCv8q3Tati3NOGWWLb+gXdvO3qmECeC1WG2Mt3M=";
   };
 in
 buildPythonPackage {
-  pname = "torch_tb_profiler";
   inherit version;
-  pyproject = true;
-
+  pname = "torch_tb_profiler";
   # See https://discourse.nixos.org/t/extracting-sub-directory-from-fetchgit-or-fetchurl-or-any-derivation/8830.
   src = "${repo}/tb_plugin";
+
+  nativeCheckInputs = [
+    pytestCheckHook
+    torch
+    torchvision
+  ];
 
   build-system = [ setuptools ];
 
   dependencies = [
     pandas
     tensorboard
-  ];
-
-  nativeCheckInputs = [
-    pytestCheckHook
-    torch
-    torchvision
   ];
 
   disabledTests = [
@@ -51,6 +49,7 @@ buildPythonPackage {
     "test_profiler_api_without_step"
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "torch_tb_profiler" ];
 
   meta = {

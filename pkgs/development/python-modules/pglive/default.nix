@@ -1,19 +1,18 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-  poetry-core,
-  pyqtgraph,
+  buildPythonPackage,
   numpy,
+  poetry-core,
   pyqt5,
   pyqt6,
+  pyqtgraph,
   pyside6,
 }:
 
 buildPythonPackage rec {
   pname = "pglive";
   version = "0.9.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "domarm-comat";
@@ -31,6 +30,9 @@ buildPythonPackage rec {
     numpy
   ];
 
+  pyproject = true;
+  pythonImportsCheck = [ "pglive" ];
+
   pythonRelaxDeps = [
     "numpy"
     "pyqtgraph"
@@ -42,12 +44,10 @@ buildPythonPackage rec {
     pyside6 = [ pyside6 ];
   };
 
-  pythonImportsCheck = [ "pglive" ];
-
   meta = {
-    changelog = "https://github.com/domarm-comat/pglive/releases/tag/${src.tag}";
     description = "Live plot for PyqtGraph";
     homepage = "https://github.com/domarm-comat/pglive";
+    changelog = "https://github.com/domarm-comat/pglive/releases/tag/${src.tag}";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ fsagbuya ];
   };

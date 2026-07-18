@@ -87,153 +87,137 @@ in
     services.fail2ban = {
       enable = lib.mkOption {
         default = false;
-        type = lib.types.bool;
+
         description = ''
           Whether to enable the fail2ban service.
 
           See the documentation of [](#opt-services.fail2ban.jails)
           for what jails are enabled by default.
         '';
+
+        type = lib.types.bool;
       };
 
       package = lib.mkPackageOption pkgs "fail2ban" {
         example = "fail2ban_0_11";
       };
 
-      packageFirewall = lib.mkOption {
-        default = config.networking.firewall.package;
-        defaultText = lib.literalExpression "config.networking.firewall.package";
-        type = lib.types.package;
-        description = "The firewall package used by fail2ban service. Defaults to the package for your firewall (iptables or nftables).";
-      };
-
-      extraPackages = lib.mkOption {
-        default = [ ];
-        type = lib.types.listOf lib.types.package;
-        example = lib.literalExpression "[ pkgs.ipset ]";
-        description = ''
-          Extra packages to be made available to the fail2ban service. The example contains
-          the packages needed by the `iptables-ipset-proto6` action.
-        '';
-      };
-
-      bantime = lib.mkOption {
-        default = "10m";
-        type = lib.types.str;
-        example = "1h";
-        description = "Number of seconds that a host is banned.";
-      };
-
-      maxretry = lib.mkOption {
-        default = 3;
-        type = lib.types.ints.unsigned;
-        description = "Number of failures before a host gets banned.";
-      };
-
       banaction = lib.mkOption {
         default = if config.networking.nftables.enable then "nftables-multiport" else "iptables-multiport";
         defaultText = lib.literalExpression ''if config.networking.nftables.enable then "nftables-multiport" else "iptables-multiport"'';
-        type = lib.types.str;
+
         description = ''
           Default banning action (e.g. iptables, iptables-new, iptables-multiport,
           iptables-ipset-proto6-allports, shorewall, etc). It is used to
           define action_* variables. Can be overridden globally or per
           section within jail.local file
         '';
+
+        type = lib.types.str;
       };
 
       banaction-allports = lib.mkOption {
         default = if config.networking.nftables.enable then "nftables-allports" else "iptables-allports";
         defaultText = lib.literalExpression ''if config.networking.nftables.enable then "nftables-allports" else "iptables-allports"'';
-        type = lib.types.str;
+
         description = ''
           Default banning action (e.g. iptables, iptables-new, iptables-multiport,
           shorewall, etc) for "allports" jails. It is used to define action_* variables. Can be overridden
           globally or per section within jail.local file
         '';
+
+        type = lib.types.str;
+      };
+
+      bantime = lib.mkOption {
+        default = "10m";
+        description = "Number of seconds that a host is banned.";
+        example = "1h";
+        type = lib.types.str;
       };
 
       bantime-increment.enable = lib.mkOption {
         default = false;
-        type = lib.types.bool;
+
         description = ''
           "bantime.increment" allows to use database for searching of previously banned ip's to increase
           a default ban time using special formula, default it is banTime * 1, 2, 4, 8, 16, 32 ...
         '';
-      };
 
-      bantime-increment.rndtime = lib.mkOption {
-        default = null;
-        type = lib.types.nullOr lib.types.str;
-        example = "8m";
-        description = ''
-          "bantime.rndtime" is the max number of seconds using for mixing with random time
-          to prevent "clever" botnets calculate exact time IP can be unbanned again
-        '';
-      };
-
-      bantime-increment.maxtime = lib.mkOption {
-        default = null;
-        type = lib.types.nullOr lib.types.str;
-        example = "48h";
-        description = ''
-          "bantime.maxtime" is the max number of seconds using the ban time can reach (don't grows further)
-        '';
+        type = lib.types.bool;
       };
 
       bantime-increment.factor = lib.mkOption {
         default = null;
-        type = lib.types.nullOr lib.types.str;
-        example = "4";
+
         description = ''
           "bantime.factor" is a coefficient to calculate exponent growing of the formula or common multiplier,
           default value of factor is 1 and with default value of formula, the ban time grows by 1, 2, 4, 8, 16 ...
         '';
+
+        example = "4";
+        type = lib.types.nullOr lib.types.str;
       };
 
       bantime-increment.formula = lib.mkOption {
         default = null;
-        type = lib.types.nullOr lib.types.str;
-        example = "ban.Time * math.exp(float(ban.Count+1)*banFactor)/math.exp(1*banFactor)";
+
         description = ''
           "bantime.formula" used by default to calculate next value of ban time, default value below,
           the same ban time growing will be reached by multipliers 1, 2, 4, 8, 16, 32 ...
         '';
+
+        example = "ban.Time * math.exp(float(ban.Count+1)*banFactor)/math.exp(1*banFactor)";
+        type = lib.types.nullOr lib.types.str;
+      };
+
+      bantime-increment.maxtime = lib.mkOption {
+        default = null;
+
+        description = ''
+          "bantime.maxtime" is the max number of seconds using the ban time can reach (don't grows further)
+        '';
+
+        example = "48h";
+        type = lib.types.nullOr lib.types.str;
       };
 
       bantime-increment.multipliers = lib.mkOption {
         default = null;
-        type = lib.types.nullOr lib.types.str;
-        example = "1 2 4 8 16 32 64";
+
         description = ''
           "bantime.multipliers" used to calculate next value of ban time instead of formula, corresponding
           previously ban count and given "bantime.factor" (for multipliers default is 1);
           following example grows ban time by 1, 2, 4, 8, 16 ... and if last ban count greater as multipliers count,
           always used last multiplier (64 in example), for factor '1' and original ban time 600 - 10.6 hours
         '';
+
+        example = "1 2 4 8 16 32 64";
+        type = lib.types.nullOr lib.types.str;
       };
 
       bantime-increment.overalljails = lib.mkOption {
         default = null;
-        type = lib.types.nullOr lib.types.bool;
-        example = true;
+
         description = ''
           "bantime.overalljails" (if true) specifies the search of IP in the database will be executed
           cross over all jails, if false (default), only current jail of the ban IP will be searched.
         '';
+
+        example = true;
+        type = lib.types.nullOr lib.types.bool;
       };
 
-      ignoreIP = lib.mkOption {
-        default = [ ];
-        type = lib.types.listOf lib.types.str;
-        example = [
-          "192.168.0.0/16"
-          "2001:DB8::42"
-        ];
+      bantime-increment.rndtime = lib.mkOption {
+        default = null;
+
         description = ''
-          "ignoreIP" can be a list of IP addresses, CIDR masks or DNS hosts. Fail2ban will not ban a host which
-          matches an address in this list. Several addresses can be defined using space (and/or comma) separator.
+          "bantime.rndtime" is the max number of seconds using for mixing with random time
+          to prevent "clever" botnets calculate exact time IP can be unbanned again
         '';
+
+        example = "8m";
+        type = lib.types.nullOr lib.types.str;
       };
 
       daemonSettings = lib.mkOption {
@@ -249,14 +233,64 @@ in
             };
           }
         '';
+
         description = ''
           The contents of Fail2ban's main configuration file.
           It's generally not necessary to change it.
         '';
       };
 
+      extraPackages = lib.mkOption {
+        default = [ ];
+
+        description = ''
+          Extra packages to be made available to the fail2ban service. The example contains
+          the packages needed by the `iptables-ipset-proto6` action.
+        '';
+
+        example = lib.literalExpression "[ pkgs.ipset ]";
+        type = lib.types.listOf lib.types.package;
+      };
+
+      ignoreIP = lib.mkOption {
+        default = [ ];
+
+        description = ''
+          "ignoreIP" can be a list of IP addresses, CIDR masks or DNS hosts. Fail2ban will not ban a host which
+          matches an address in this list. Several addresses can be defined using space (and/or comma) separator.
+        '';
+
+        example = [
+          "192.168.0.0/16"
+          "2001:DB8::42"
+        ];
+
+        type = lib.types.listOf lib.types.str;
+      };
+
       jails = lib.mkOption {
         default = { };
+
+        description = ''
+          The configuration of each Fail2ban “jail”.  A jail
+          consists of an action (such as blocking a port using
+          {command}`iptables`) that is triggered when a
+          filter applied to a log file triggers more than a certain
+          number of times in a certain time period.  Actions are
+          defined in {file}`/etc/fail2ban/action.d`,
+          while filters are defined in
+          {file}`/etc/fail2ban/filter.d`.
+
+          NixOS comes with a default `sshd` jail;
+          for it to work well,
+          [](#opt-services.openssh.settings.LogLevel) should be set to
+          `"VERBOSE"` or higher so that fail2ban
+          can observe failed login attempts.
+          This module sets it to `"VERBOSE"` if
+          not set otherwise, so enabling fail2ban can make SSH logs
+          more verbose.
+        '';
+
         example = lib.literalExpression ''
           {
             apache-nohome-iptables = {
@@ -283,6 +317,7 @@ in
             };
           };
         '';
+
         type =
           with lib.types;
           attrsOf (
@@ -297,15 +332,13 @@ in
                     };
 
                     filter = lib.mkOption {
-                      type = nullOr (either str configFormat.type);
-
                       default = null;
                       description = "Content of the filter used for this jail.";
+                      type = nullOr (either str configFormat.type);
                     };
 
                     settings = lib.mkOption {
                       inherit (settingsFormat) type;
-
                       default = { };
                       description = "Additional settings for this jail.";
                     };
@@ -314,25 +347,19 @@ in
               )
             )
           );
-        description = ''
-          The configuration of each Fail2ban “jail”.  A jail
-          consists of an action (such as blocking a port using
-          {command}`iptables`) that is triggered when a
-          filter applied to a log file triggers more than a certain
-          number of times in a certain time period.  Actions are
-          defined in {file}`/etc/fail2ban/action.d`,
-          while filters are defined in
-          {file}`/etc/fail2ban/filter.d`.
+      };
 
-          NixOS comes with a default `sshd` jail;
-          for it to work well,
-          [](#opt-services.openssh.settings.LogLevel) should be set to
-          `"VERBOSE"` or higher so that fail2ban
-          can observe failed login attempts.
-          This module sets it to `"VERBOSE"` if
-          not set otherwise, so enabling fail2ban can make SSH logs
-          more verbose.
-        '';
+      maxretry = lib.mkOption {
+        default = 3;
+        description = "Number of failures before a host gets banned.";
+        type = lib.types.ints.unsigned;
+      };
+
+      packageFirewall = lib.mkOption {
+        default = config.networking.firewall.package;
+        defaultText = lib.literalExpression "config.networking.firewall.package";
+        description = "The firewall package used by fail2ban service. Defaults to the package for your firewall (iptables or nftables).";
+        type = lib.types.package;
       };
 
     };
@@ -345,85 +372,35 @@ in
     assertions = [
       {
         assertion = cfg.bantime-increment.formula == null || cfg.bantime-increment.multipliers == null;
+
         message = ''
           Options `services.fail2ban.bantime-increment.formula` and `services.fail2ban.bantime-increment.multipliers` cannot be both specified.
         '';
       }
     ];
 
-    warnings = lib.mkIf (!config.networking.firewall.enable && !config.networking.nftables.enable) [
-      "fail2ban can not be used without a firewall"
-    ];
-
-    environment.systemPackages = [ cfg.package ];
-
     environment.etc = {
-      "fail2ban/fail2ban.local".source = fail2banConf;
-      "fail2ban/jail.local".source = jailConf;
+      "fail2ban/action.d".source = "${cfg.package}/etc/fail2ban/action.d/*.conf";
       "fail2ban/fail2ban.conf".source = "${cfg.package}/etc/fail2ban/fail2ban.conf";
+      "fail2ban/fail2ban.local".source = fail2banConf;
+      "fail2ban/filter.d".source = "${cfg.package}/etc/fail2ban/filter.d/*.conf";
       "fail2ban/jail.conf".source = "${cfg.package}/etc/fail2ban/jail.conf";
+      "fail2ban/jail.local".source = jailConf;
       "fail2ban/paths-common.conf".source = "${cfg.package}/etc/fail2ban/paths-common.conf";
       "fail2ban/paths-nixos.conf".source = pathsConf;
-      "fail2ban/action.d".source = "${cfg.package}/etc/fail2ban/action.d/*.conf";
-      "fail2ban/filter.d".source = "${cfg.package}/etc/fail2ban/filter.d/*.conf";
     }
     // (lib.mapAttrs' mkFilter (
       lib.filterAttrs (_: v: v.filter != null && !builtins.isString v.filter) attrsJails
     ));
 
-    systemd.packages = [ cfg.package ];
-    systemd.services.fail2ban = {
-      wantedBy = [ "multi-user.target" ];
-      partOf = lib.optional config.networking.firewall.enable "firewall.service";
-
-      restartTriggers = [
-        fail2banConf
-        jailConf
-        pathsConf
-      ];
-
-      path = [
-        cfg.package
-        cfg.packageFirewall
-        pkgs.iproute2
-      ]
-      ++ cfg.extraPackages;
-
-      serviceConfig = {
-        # Capabilities
-        CapabilityBoundingSet = [
-          "CAP_AUDIT_READ"
-          "CAP_DAC_READ_SEARCH"
-          "CAP_NET_ADMIN"
-          "CAP_NET_RAW"
-        ];
-        # Security
-        NoNewPrivileges = true;
-        # Directory
-        RuntimeDirectory = "fail2ban";
-        RuntimeDirectoryMode = "0750";
-        StateDirectory = "fail2ban";
-        StateDirectoryMode = "0750";
-        LogsDirectory = "fail2ban";
-        LogsDirectoryMode = "0750";
-        # Sandboxing
-        ProtectSystem = "strict";
-        ProtectHome = true;
-        PrivateTmp = true;
-        PrivateDevices = true;
-        ProtectHostname = true;
-        ProtectKernelTunables = true;
-        ProtectKernelModules = true;
-        ProtectControlGroups = true;
-      };
-    };
+    environment.systemPackages = [ cfg.package ];
 
     # Defaults for the daemon settings
     services.fail2ban.daemonSettings.Definition = {
-      logtarget = lib.mkDefault "SYSLOG";
-      socket = lib.mkDefault "/run/fail2ban/fail2ban.sock";
-      pidfile = lib.mkDefault "/run/fail2ban/fail2ban.pid";
       dbfile = lib.mkDefault "/var/lib/fail2ban/fail2ban.sqlite3";
+      logtarget = lib.mkDefault "SYSLOG";
+      pidfile = lib.mkDefault "/run/fail2ban/fail2ban.pid";
+      socket = lib.mkDefault "/run/fail2ban/fail2ban.sock";
     };
 
     # Add some reasonable default jails.  The special "DEFAULT" jail
@@ -442,10 +419,10 @@ in
           // {
             # Miscellaneous options
             inherit (cfg) banaction maxretry bantime;
-            ignoreip = "127.0.0.1/8 ${lib.optionalString config.networking.enableIPv6 "::1"} ${lib.concatStringsSep " " cfg.ignoreIP}";
             backend = "systemd";
             # Actions
             banaction_allports = cfg.banaction-allports;
+            ignoreip = "127.0.0.1/8 ${lib.optionalString config.networking.enableIPv6 "::1"} ${lib.concatStringsSep " " cfg.ignoreIP}";
           };
       }
 
@@ -460,5 +437,58 @@ in
     # Benefits from verbose sshd logging to observe failed login attempts,
     # so we set that here unless the user overrode it.
     services.openssh.settings.LogLevel = lib.mkDefault "VERBOSE";
+    systemd.packages = [ cfg.package ];
+
+    systemd.services.fail2ban = {
+      partOf = lib.optional config.networking.firewall.enable "firewall.service";
+
+      path = [
+        cfg.package
+        cfg.packageFirewall
+        pkgs.iproute2
+      ]
+      ++ cfg.extraPackages;
+
+      restartTriggers = [
+        fail2banConf
+        jailConf
+        pathsConf
+      ];
+
+      serviceConfig = {
+        # Capabilities
+        CapabilityBoundingSet = [
+          "CAP_AUDIT_READ"
+          "CAP_DAC_READ_SEARCH"
+          "CAP_NET_ADMIN"
+          "CAP_NET_RAW"
+        ];
+
+        LogsDirectory = "fail2ban";
+        LogsDirectoryMode = "0750";
+        # Security
+        NoNewPrivileges = true;
+        PrivateDevices = true;
+        PrivateTmp = true;
+        ProtectControlGroups = true;
+        ProtectHome = true;
+        ProtectHostname = true;
+        ProtectKernelModules = true;
+        ProtectKernelTunables = true;
+        # Sandboxing
+        ProtectSystem = "strict";
+        # Directory
+        RuntimeDirectory = "fail2ban";
+        RuntimeDirectoryMode = "0750";
+        StateDirectory = "fail2ban";
+        StateDirectoryMode = "0750";
+      };
+
+      wantedBy = [ "multi-user.target" ];
+    };
+
+    warnings = lib.mkIf (!config.networking.firewall.enable && !config.networking.nftables.enable) [
+      "fail2ban can not be used without a firewall"
+    ];
   };
 }

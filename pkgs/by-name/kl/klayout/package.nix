@@ -2,19 +2,19 @@
   lib,
   stdenv,
   fetchFromGitHub,
+  curl,
+  expat,
   installShellFiles,
-  nix-update-script,
-  python3,
-  python3Packages,
-  ruby,
-  which,
-  perl,
   libgit2,
   libpng,
-  expat,
-  curl,
-  zlib,
+  nix-update-script,
+  perl,
+  python3,
+  python3Packages,
   qt6,
+  ruby,
+  which,
+  zlib,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -28,14 +28,11 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-RjMH6hrc0jyCLgG1D6cztBp5Fb3W5HgTxVTfI2bxgCs=";
   };
 
-  strictDeps = true;
-
   postPatch = ''
     patchShebangs --build .
   '';
 
-  dontUseQmakeConfigure = true;
-  dontWrapQtApps = stdenv.hostPlatform.isDarwin;
+  strictDeps = true;
 
   nativeBuildInputs = [
     (python3.withPackages (ps: [ ps.tomli ]))
@@ -64,6 +61,11 @@ stdenv.mkDerivation (finalAttrs: {
     curl
     zlib
   ];
+
+  env = {
+    NIX_CFLAGS_COMPILE = toString [ "-Wno-parentheses" ];
+    NIX_LDFLAGS = lib.optionalString stdenv.hostPlatform.isDarwin "-headerpad_max_install_names";
+  };
 
   buildPhase = ''
     runHook preBuild
@@ -103,31 +105,28 @@ stdenv.mkDerivation (finalAttrs: {
     wrapQtApp "$out/Applications/klayout.app/Contents/MacOS/klayout"
   '';
 
-  env = {
-    NIX_CFLAGS_COMPILE = toString [ "-Wno-parentheses" ];
-    NIX_LDFLAGS = lib.optionalString stdenv.hostPlatform.isDarwin "-headerpad_max_install_names";
-  };
-
   # Installation is handled manually in buildPhase/postBuild via build.sh -prefix
   dontInstall = true;
-
+  dontUseQmakeConfigure = true;
+  dontWrapQtApps = stdenv.hostPlatform.isDarwin;
   # Fix for: "gsiDeclQMessageLogger.cc: error: format not a string literal"
   hardeningDisable = [ "format" ];
 
   passthru = {
-    updateScript = nix-update-script { };
     tests = {
       pythonPackage = python3Packages.klayout;
     };
+
+    updateScript = nix-update-script { };
   };
 
   meta = {
     description = "High performance layout viewer and editor with support for GDS and OASIS";
-    mainProgram = "klayout";
-    license = with lib.licenses; [ gpl2Plus ];
     homepage = "https://www.klayout.de/";
     changelog = "https://www.klayout.de/development.html#${finalAttrs.version}";
-    platforms = lib.platforms.linux ++ lib.platforms.darwin;
+    license = with lib.licenses; [ gpl2Plus ];
     maintainers = [ ];
+    platforms = lib.platforms.linux ++ lib.platforms.darwin;
+    mainProgram = "klayout";
   };
 })

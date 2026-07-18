@@ -1,12 +1,12 @@
 {
   lib,
-  stdenvNoCC,
-  dpkg,
   fetchurl,
-  nixosTests,
-  systemd,
   autoPatchelfHook,
+  dpkg,
   jdk25_headless,
+  nixosTests,
+  stdenvNoCC,
+  systemd,
 }:
 
 stdenvNoCC.mkDerivation (finalAttrs: {
@@ -49,17 +49,19 @@ stdenvNoCC.mkDerivation (finalAttrs: {
   };
 
   meta = {
-    homepage = "https://www.ui.com";
     description = "Controller for Ubiquiti UniFi access points";
-    sourceProvenance = with lib.sourceTypes; [ binaryBytecode ];
+    homepage = "https://www.ui.com";
     license = lib.licenses.unfree;
-    platforms = [
-      "x86_64-linux"
-      "aarch64-linux"
-    ];
+    sourceProvenance = with lib.sourceTypes; [ binaryBytecode ];
+
     maintainers = with lib.maintainers; [
       globin
       patryk27
+    ];
+
+    platforms = [
+      "x86_64-linux"
+      "aarch64-linux"
     ];
   };
 })

@@ -1,21 +1,21 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
-  meson,
-  gettext,
-  glib,
-  gjs,
-  ninja,
-  gtk4,
-  webkitgtk_6_0,
-  gsettings-desktop-schemas,
-  wrapGAppsHook4,
   desktop-file-utils,
-  gobject-introspection,
+  gettext,
+  gjs,
+  glib,
   glib-networking,
-  pkg-config,
+  gobject-introspection,
+  gsettings-desktop-schemas,
+  gtk4,
   libadwaita,
+  meson,
+  ninja,
+  pkg-config,
+  webkitgtk_6_0,
+  wrapGAppsHook4,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -55,10 +55,12 @@ stdenv.mkDerivation (finalAttrs: {
     homepage = "https://johnfactotum.github.io/foliate";
     changelog = "https://github.com/johnfactotum/foliate/releases/tag/${finalAttrs.version}";
     license = lib.licenses.gpl3Only;
+
     maintainers = with lib.maintainers; [
       onny
       aleksana
     ];
+
     mainProgram = "foliate";
   };
 })

@@ -1,7 +1,7 @@
 {
   config,
-  pkgs,
   lib,
+  pkgs,
   ...
 }:
 
@@ -45,8 +45,8 @@ let
     if checkConfigEnabled then
       pkgs.runCommand "${name}-${replaceStrings [ " " ] [ "" ] what}-checked"
         {
-          preferLocalBuild = true;
           nativeBuildInputs = [ cfg.package.cli ];
+          preferLocalBuild = true;
         }
         ''
           ln -s ${file} $out
@@ -59,10 +59,14 @@ let
 
   # This becomes the main config file for Prometheus
   promConfig = {
+    alerting = {
+      inherit (cfg) alertmanagers;
+    };
+
     global = filterValidPrometheus cfg.globalConfig;
-    scrape_configs = filterValidPrometheus cfg.scrapeConfigs;
-    remote_write = filterValidPrometheus cfg.remoteWrite;
     remote_read = filterValidPrometheus cfg.remoteRead;
+    remote_write = filterValidPrometheus cfg.remoteWrite;
+
     rule_files = optionals (!(cfg.enableAgentMode)) (
       map (promtoolCheck "check rules" "rules") (
         cfg.ruleFiles
@@ -71,9 +75,8 @@ let
         ]
       )
     );
-    alerting = {
-      inherit (cfg) alertmanagers;
-    };
+
+    scrape_configs = filterValidPrometheus cfg.scrapeConfigs;
   };
 
   prometheusYml =
@@ -150,27 +153,19 @@ let
   mkOpt =
     type: description:
     mkOption {
-      type = types.nullOr type;
       default = null;
       description = description;
+      type = types.nullOr type;
     };
 
   mkSdConfigModule =
     extraOptions:
     types.submodule {
       options = {
-        basic_auth = mkOpt promTypes.basic_auth ''
-          Optional HTTP basic authentication information.
-        '';
-
         authorization =
           mkOpt
             (types.submodule {
               options = {
-                type = mkDefOpt types.str "Bearer" ''
-                  Sets the authentication type.
-                '';
-
                 credentials = mkOpt types.str ''
                   Sets the credentials. It is mutually exclusive with `credentials_file`.
                 '';
@@ -179,11 +174,23 @@ let
                   Sets the credentials to the credentials read from the configured file.
                   It is mutually exclusive with `credentials`.
                 '';
+
+                type = mkDefOpt types.str "Bearer" ''
+                  Sets the authentication type.
+                '';
               };
             })
             ''
               Optional `Authorization` header configuration.
             '';
+
+        basic_auth = mkOpt promTypes.basic_auth ''
+          Optional HTTP basic authentication information.
+        '';
+
+        follow_redirects = mkDefOpt types.bool "true" ''
+          Configure whether HTTP requests follow HTTP 3xx redirects.
+        '';
 
         oauth2 = mkOpt promtypes.oauth2 ''
           Optional OAuth 2.0 configuration.
@@ -192,10 +199,6 @@ let
 
         proxy_url = mkOpt types.str ''
           Optional proxy URL.
-        '';
-
-        follow_redirects = mkDefOpt types.bool "true" ''
-          Configure whether HTTP requests follow HTTP 3xx redirects.
         '';
 
         tls_config = mkOpt promTypes.tls_config ''
@@ -211,14 +214,6 @@ let
 
   promTypes.globalConfig = types.submodule {
     options = {
-      scrape_interval = mkDefOpt types.str "1m" ''
-        How frequently to scrape targets by default.
-      '';
-
-      scrape_timeout = mkDefOpt types.str "10s" ''
-        How long until a scrape request times out.
-      '';
-
       evaluation_interval = mkDefOpt types.str "1m" ''
         How frequently to evaluate rules by default.
       '';
@@ -232,38 +227,52 @@ let
       query_log_file = mkOpt types.str ''
         Path to the file prometheus should write its query log to.
       '';
+
+      scrape_interval = mkDefOpt types.str "1m" ''
+        How frequently to scrape targets by default.
+      '';
+
+      scrape_timeout = mkDefOpt types.str "10s" ''
+        How long until a scrape request times out.
+      '';
     };
   };
 
   promTypes.basic_auth = types.submodule {
     options = {
+      password = mkOpt types.str "HTTP password";
+      password_file = mkOpt types.str "HTTP password file";
+
       username = mkOption {
-        type = types.str;
         description = ''
           HTTP username
         '';
+
+        type = types.str;
       };
-      password = mkOpt types.str "HTTP password";
-      password_file = mkOpt types.str "HTTP password file";
     };
   };
 
   promTypes.sigv4 = types.submodule {
     options = {
-      region = mkOpt types.str ''
-        The AWS region.
-      '';
       access_key = mkOpt types.str ''
         The Access Key ID.
       '';
-      secret_key = mkOpt types.str ''
-        The Secret Access Key.
-      '';
+
       profile = mkOpt types.str ''
         The named AWS profile used to authenticate.
       '';
+
+      region = mkOpt types.str ''
+        The AWS region.
+      '';
+
       role_arn = mkOpt types.str ''
         The AWS role ARN.
+      '';
+
+      secret_key = mkOpt types.str ''
+        The Secret Access Key.
       '';
     };
   };
@@ -278,6 +287,10 @@ let
         Certificate file for client cert authentication to the server.
       '';
 
+      insecure_skip_verify = mkOpt types.bool ''
+        Disable validation of the server certificate.
+      '';
+
       key_file = mkOpt types.str ''
         Key file for client cert authentication to the server.
       '';
@@ -285,10 +298,6 @@ let
       server_name = mkOpt types.str ''
         ServerName extension to indicate the name of the server.
         http://tools.ietf.org/html/rfc4366#section-3.1
-      '';
-
-      insecure_skip_verify = mkOpt types.bool ''
-        Disable validation of the server certificate.
       '';
     };
   };
@@ -307,16 +316,16 @@ let
         Read the client secret from a file. It is mutually exclusive with `client_secret`.
       '';
 
+      endpoint_params = mkOpt (types.attrsOf types.str) ''
+        Optional parameters to append to the token URL.
+      '';
+
       scopes = mkOpt (types.listOf types.str) ''
         Scopes for the token request.
       '';
 
       token_url = mkOpt types.str ''
         The URL to fetch the token from.
-      '';
-
-      endpoint_params = mkOpt (types.attrsOf types.str) ''
-        Optional parameters to append to the token URL.
       '';
     };
   };
@@ -325,30 +334,70 @@ let
   promTypes.scrape_config = types.submodule {
     options = {
       authorization = mkOption {
-        type = types.nullOr types.attrs;
         default = null;
+
         description = ''
           Sets the `Authorization` header on every scrape request with the configured credentials.
         '';
+
+        type = types.nullOr types.attrs;
       };
-      job_name = mkOption {
-        type = types.str;
-        description = ''
-          The job name assigned to scraped metrics by default.
-        '';
-      };
-      scrape_interval = mkOpt types.str ''
-        How frequently to scrape targets from this job. Defaults to the
-        globally configured default.
+
+      azure_sd_configs = mkOpt (types.listOf promTypes.azure_sd_config) ''
+        List of Azure service discovery configurations.
       '';
 
-      scrape_timeout = mkOpt types.str ''
-        Per-target timeout when scraping this job. Defaults to the
-        globally configured default.
+      basic_auth = mkOpt promTypes.basic_auth ''
+        Sets the `Authorization` header on every scrape request with the
+        configured username and password.
+        password and password_file are mutually exclusive.
       '';
 
-      scrape_protocols = mkOpt (types.listOf types.str) ''
-        The protocols to negotiate during a scrape with the client.
+      bearer_token = mkOpt types.str ''
+        Sets the `Authorization` header on every scrape request with
+        the configured bearer token. It is mutually exclusive with
+        {option}`bearer_token_file`.
+      '';
+
+      bearer_token_file = mkOpt types.str ''
+        Sets the `Authorization` header on every scrape request with
+        the bearer token read from the configured file. It is mutually
+        exclusive with {option}`bearer_token`.
+      '';
+
+      body_size_limit = mkDefOpt types.str "0" ''
+        An uncompressed response body larger than this many bytes will cause the
+        scrape to fail. 0 means no limit. Example: 100MB.
+        This is an experimental feature, this behaviour could
+        change or be removed in the future.
+      '';
+
+      consul_sd_configs = mkOpt (types.listOf promTypes.consul_sd_config) ''
+        List of Consul service discovery configurations.
+      '';
+
+      digitalocean_sd_configs = mkOpt (types.listOf promTypes.digitalocean_sd_config) ''
+        List of DigitalOcean service discovery configurations.
+      '';
+
+      dns_sd_configs = mkOpt (types.listOf promTypes.dns_sd_config) ''
+        List of DNS service discovery configurations.
+      '';
+
+      docker_sd_configs = mkOpt (types.listOf promTypes.docker_sd_config) ''
+        List of Docker service discovery configurations.
+      '';
+
+      dockerswarm_sd_configs = mkOpt (types.listOf promTypes.dockerswarm_sd_config) ''
+        List of Docker Swarm service discovery configurations.
+      '';
+
+      ec2_sd_configs = mkOpt (types.listOf promTypes.ec2_sd_config) ''
+        List of EC2 service discovery configurations.
+      '';
+
+      eureka_sd_configs = mkOpt (types.listOf promTypes.eureka_sd_config) ''
+        List of Eureka service discovery configurations.
       '';
 
       fallback_scrape_protocol = mkOpt types.str ''
@@ -356,8 +405,19 @@ let
         invalid Content-Type.
       '';
 
-      metrics_path = mkDefOpt types.str "/metrics" ''
-        The HTTP resource path on which to fetch metrics from targets.
+      file_sd_configs = mkOpt (types.listOf promTypes.file_sd_config) ''
+        List of file service discovery configurations.
+      '';
+
+      gce_sd_configs = mkOpt (types.listOf promTypes.gce_sd_config) ''
+        List of Google Compute Engine service discovery configurations.
+
+        See [the relevant Prometheus configuration docs](https://prometheus.io/docs/prometheus/latest/configuration/configuration/#gce_sd_config)
+        for more detail.
+      '';
+
+      hetzner_sd_configs = mkOpt (types.listOf promTypes.hetzner_sd_config) ''
+        List of Hetzner service discovery configurations.
       '';
 
       honor_labels = mkDefOpt types.bool "false" ''
@@ -391,97 +451,17 @@ let
         by the target will be ignored.
       '';
 
-      scheme =
-        mkDefOpt
-          (types.enum [
-            "http"
-            "https"
-          ])
-          "http"
-          ''
-            The URL scheme with which to fetch metrics from targets.
-          '';
-
-      params = mkOpt (types.attrsOf (types.listOf types.str)) ''
-        Optional HTTP URL parameters.
-      '';
-
-      basic_auth = mkOpt promTypes.basic_auth ''
-        Sets the `Authorization` header on every scrape request with the
-        configured username and password.
-        password and password_file are mutually exclusive.
-      '';
-
-      bearer_token = mkOpt types.str ''
-        Sets the `Authorization` header on every scrape request with
-        the configured bearer token. It is mutually exclusive with
-        {option}`bearer_token_file`.
-      '';
-
-      bearer_token_file = mkOpt types.str ''
-        Sets the `Authorization` header on every scrape request with
-        the bearer token read from the configured file. It is mutually
-        exclusive with {option}`bearer_token`.
-      '';
-
-      tls_config = mkOpt promTypes.tls_config ''
-        Configures the scrape request's TLS settings.
-      '';
-
-      proxy_url = mkOpt types.str ''
-        Optional proxy URL.
-      '';
-
-      azure_sd_configs = mkOpt (types.listOf promTypes.azure_sd_config) ''
-        List of Azure service discovery configurations.
-      '';
-
-      consul_sd_configs = mkOpt (types.listOf promTypes.consul_sd_config) ''
-        List of Consul service discovery configurations.
-      '';
-
-      digitalocean_sd_configs = mkOpt (types.listOf promTypes.digitalocean_sd_config) ''
-        List of DigitalOcean service discovery configurations.
-      '';
-
-      docker_sd_configs = mkOpt (types.listOf promTypes.docker_sd_config) ''
-        List of Docker service discovery configurations.
-      '';
-
-      dockerswarm_sd_configs = mkOpt (types.listOf promTypes.dockerswarm_sd_config) ''
-        List of Docker Swarm service discovery configurations.
-      '';
-
-      dns_sd_configs = mkOpt (types.listOf promTypes.dns_sd_config) ''
-        List of DNS service discovery configurations.
-      '';
-
-      ec2_sd_configs = mkOpt (types.listOf promTypes.ec2_sd_config) ''
-        List of EC2 service discovery configurations.
-      '';
-
-      eureka_sd_configs = mkOpt (types.listOf promTypes.eureka_sd_config) ''
-        List of Eureka service discovery configurations.
-      '';
-
-      file_sd_configs = mkOpt (types.listOf promTypes.file_sd_config) ''
-        List of file service discovery configurations.
-      '';
-
-      gce_sd_configs = mkOpt (types.listOf promTypes.gce_sd_config) ''
-        List of Google Compute Engine service discovery configurations.
-
-        See [the relevant Prometheus configuration docs](https://prometheus.io/docs/prometheus/latest/configuration/configuration/#gce_sd_config)
-        for more detail.
-      '';
-
-      hetzner_sd_configs = mkOpt (types.listOf promTypes.hetzner_sd_config) ''
-        List of Hetzner service discovery configurations.
-      '';
-
       http_sd_configs = mkOpt (types.listOf promTypes.http_sd_config) ''
         List of HTTP service discovery configurations.
       '';
+
+      job_name = mkOption {
+        description = ''
+          The job name assigned to scraped metrics by default.
+        '';
+
+        type = types.str;
+      };
 
       kubernetes_sd_configs = mkOpt (types.listOf promTypes.kubernetes_sd_config) ''
         List of Kubernetes service discovery configurations.
@@ -489,71 +469,6 @@ let
 
       kuma_sd_configs = mkOpt (types.listOf promTypes.kuma_sd_config) ''
         List of Kuma service discovery configurations.
-      '';
-
-      lightsail_sd_configs = mkOpt (types.listOf promTypes.lightsail_sd_config) ''
-        List of Lightsail service discovery configurations.
-      '';
-
-      linode_sd_configs = mkOpt (types.listOf promTypes.linode_sd_config) ''
-        List of Linode service discovery configurations.
-      '';
-
-      marathon_sd_configs = mkOpt (types.listOf promTypes.marathon_sd_config) ''
-        List of Marathon service discovery configurations.
-      '';
-
-      nerve_sd_configs = mkOpt (types.listOf promTypes.nerve_sd_config) ''
-        List of AirBnB's Nerve service discovery configurations.
-      '';
-
-      openstack_sd_configs = mkOpt (types.listOf promTypes.openstack_sd_config) ''
-        List of OpenStack service discovery configurations.
-      '';
-
-      puppetdb_sd_configs = mkOpt (types.listOf promTypes.puppetdb_sd_config) ''
-        List of PuppetDB service discovery configurations.
-      '';
-
-      scaleway_sd_configs = mkOpt (types.listOf promTypes.scaleway_sd_config) ''
-        List of Scaleway service discovery configurations.
-      '';
-
-      serverset_sd_configs = mkOpt (types.listOf promTypes.serverset_sd_config) ''
-        List of Zookeeper Serverset service discovery configurations.
-      '';
-
-      triton_sd_configs = mkOpt (types.listOf promTypes.triton_sd_config) ''
-        List of Triton Serverset service discovery configurations.
-      '';
-
-      uyuni_sd_configs = mkOpt (types.listOf promTypes.uyuni_sd_config) ''
-        List of Uyuni Serverset service discovery configurations.
-      '';
-
-      static_configs = mkOpt (types.listOf promTypes.static_config) ''
-        List of labeled target groups for this job.
-      '';
-
-      relabel_configs = mkOpt (types.listOf promTypes.relabel_config) ''
-        List of relabel configurations.
-      '';
-
-      metric_relabel_configs = mkOpt (types.listOf promTypes.relabel_config) ''
-        List of metric relabel configurations.
-      '';
-
-      body_size_limit = mkDefOpt types.str "0" ''
-        An uncompressed response body larger than this many bytes will cause the
-        scrape to fail. 0 means no limit. Example: 100MB.
-        This is an experimental feature, this behaviour could
-        change or be removed in the future.
-      '';
-
-      sample_limit = mkDefOpt types.int "0" ''
-        Per-scrape limit on number of scraped samples that will be accepted.
-        If more than this number of samples are present after metric relabelling
-        the entire scrape will be treated as failed. 0 means no limit.
       '';
 
       label_limit = mkDefOpt types.int "0" ''
@@ -574,12 +489,111 @@ let
         entire scrape will be treated as failed. 0 means no limit.
       '';
 
+      lightsail_sd_configs = mkOpt (types.listOf promTypes.lightsail_sd_config) ''
+        List of Lightsail service discovery configurations.
+      '';
+
+      linode_sd_configs = mkOpt (types.listOf promTypes.linode_sd_config) ''
+        List of Linode service discovery configurations.
+      '';
+
+      marathon_sd_configs = mkOpt (types.listOf promTypes.marathon_sd_config) ''
+        List of Marathon service discovery configurations.
+      '';
+
+      metric_relabel_configs = mkOpt (types.listOf promTypes.relabel_config) ''
+        List of metric relabel configurations.
+      '';
+
+      metrics_path = mkDefOpt types.str "/metrics" ''
+        The HTTP resource path on which to fetch metrics from targets.
+      '';
+
+      nerve_sd_configs = mkOpt (types.listOf promTypes.nerve_sd_config) ''
+        List of AirBnB's Nerve service discovery configurations.
+      '';
+
+      openstack_sd_configs = mkOpt (types.listOf promTypes.openstack_sd_config) ''
+        List of OpenStack service discovery configurations.
+      '';
+
+      params = mkOpt (types.attrsOf (types.listOf types.str)) ''
+        Optional HTTP URL parameters.
+      '';
+
+      proxy_url = mkOpt types.str ''
+        Optional proxy URL.
+      '';
+
+      puppetdb_sd_configs = mkOpt (types.listOf promTypes.puppetdb_sd_config) ''
+        List of PuppetDB service discovery configurations.
+      '';
+
+      relabel_configs = mkOpt (types.listOf promTypes.relabel_config) ''
+        List of relabel configurations.
+      '';
+
+      sample_limit = mkDefOpt types.int "0" ''
+        Per-scrape limit on number of scraped samples that will be accepted.
+        If more than this number of samples are present after metric relabelling
+        the entire scrape will be treated as failed. 0 means no limit.
+      '';
+
+      scaleway_sd_configs = mkOpt (types.listOf promTypes.scaleway_sd_config) ''
+        List of Scaleway service discovery configurations.
+      '';
+
+      scheme =
+        mkDefOpt
+          (types.enum [
+            "http"
+            "https"
+          ])
+          "http"
+          ''
+            The URL scheme with which to fetch metrics from targets.
+          '';
+
+      scrape_interval = mkOpt types.str ''
+        How frequently to scrape targets from this job. Defaults to the
+        globally configured default.
+      '';
+
+      scrape_protocols = mkOpt (types.listOf types.str) ''
+        The protocols to negotiate during a scrape with the client.
+      '';
+
+      scrape_timeout = mkOpt types.str ''
+        Per-target timeout when scraping this job. Defaults to the
+        globally configured default.
+      '';
+
+      serverset_sd_configs = mkOpt (types.listOf promTypes.serverset_sd_config) ''
+        List of Zookeeper Serverset service discovery configurations.
+      '';
+
+      static_configs = mkOpt (types.listOf promTypes.static_config) ''
+        List of labeled target groups for this job.
+      '';
+
       target_limit = mkDefOpt types.int "0" ''
         Per-scrape config limit on number of unique targets that will be
         accepted. If more than this number of targets are present after target
         relabeling, Prometheus will mark the targets as failed without scraping them.
         0 means no limit. This is an experimental feature, this behaviour could
         change in the future.
+      '';
+
+      tls_config = mkOpt promTypes.tls_config ''
+        Configures the scrape request's TLS settings.
+      '';
+
+      triton_sd_configs = mkOpt (types.listOf promTypes.triton_sd_config) ''
+        List of Triton Serverset service discovery configurations.
+      '';
+
+      uyuni_sd_configs = mkOpt (types.listOf promTypes.uyuni_sd_config) ''
+        List of Uyuni Serverset service discovery configurations.
       '';
     };
   };
@@ -593,10 +607,6 @@ let
   # here.
   promTypes.azure_sd_config = types.submodule {
     options = {
-      environment = mkDefOpt types.str "AzurePublicCloud" ''
-        The Azure environment.
-      '';
-
       authentication_method =
         mkDefOpt
           (types.enum [
@@ -609,17 +619,6 @@ let
             See <https://docs.microsoft.com/en-us/azure/active-directory/managed-identities-azure-resources/overview>
           '';
 
-      subscription_id = mkOption {
-        type = types.str;
-        description = ''
-          The subscription ID.
-        '';
-      };
-
-      tenant_id = mkOpt types.str ''
-        Optional tenant ID. Only required with authentication_method OAuth.
-      '';
-
       client_id = mkOpt types.str ''
         Optional client ID. Only required with authentication_method OAuth.
       '';
@@ -628,8 +627,12 @@ let
         Optional client secret. Only required with authentication_method OAuth.
       '';
 
-      refresh_interval = mkDefOpt types.str "300s" ''
-        Refresh interval to re-read the instance list.
+      environment = mkDefOpt types.str "AzurePublicCloud" ''
+        The Azure environment.
+      '';
+
+      follow_redirects = mkDefOpt types.bool "true" ''
+        Configure whether HTTP requests follow HTTP 3xx redirects.
       '';
 
       port = mkDefOpt types.port "80" ''
@@ -642,8 +645,20 @@ let
         Optional proxy URL.
       '';
 
-      follow_redirects = mkDefOpt types.bool "true" ''
-        Configure whether HTTP requests follow HTTP 3xx redirects.
+      refresh_interval = mkDefOpt types.str "300s" ''
+        Refresh interval to re-read the instance list.
+      '';
+
+      subscription_id = mkOption {
+        description = ''
+          The subscription ID.
+        '';
+
+        type = types.str;
+      };
+
+      tenant_id = mkOpt types.str ''
+        Optional tenant ID. Only required with authentication_method OAuth.
       '';
 
       tls_config = mkOpt promTypes.tls_config ''
@@ -653,41 +668,6 @@ let
   };
 
   promTypes.consul_sd_config = mkSdConfigModule {
-    server = mkDefOpt types.str "localhost:8500" ''
-      Consul server to query.
-    '';
-
-    token = mkOpt types.str "Consul token";
-
-    datacenter = mkOpt types.str "Consul datacenter";
-
-    scheme = mkDefOpt types.str "http" "Consul scheme";
-
-    username = mkOpt types.str "Consul username";
-
-    password = mkOpt types.str "Consul password";
-
-    tls_config = mkOpt promTypes.tls_config ''
-      Configures the Consul request's TLS settings.
-    '';
-
-    services = mkOpt (types.listOf types.str) ''
-      A list of services for which targets are retrieved.
-    '';
-
-    tags = mkOpt (types.listOf types.str) ''
-      An optional list of tags used to filter nodes for a given
-      service. Services must contain all tags in the list.
-    '';
-
-    node_meta = mkOpt (types.attrsOf types.str) ''
-      Node metadata used to filter nodes for a given service.
-    '';
-
-    tag_separator = mkDefOpt types.str "," ''
-      The string by which Consul tags are joined into the tag label.
-    '';
-
     allow_stale = mkOpt types.bool ''
       Allow stale Consul results
       (see <https://www.consul.io/api/index.html#consistency-modes>).
@@ -695,12 +675,46 @@ let
       Will reduce load on Consul.
     '';
 
+    datacenter = mkOpt types.str "Consul datacenter";
+
+    node_meta = mkOpt (types.attrsOf types.str) ''
+      Node metadata used to filter nodes for a given service.
+    '';
+
+    password = mkOpt types.str "Consul password";
+
     refresh_interval = mkDefOpt types.str "30s" ''
       The time after which the provided names are refreshed.
 
       On large setup it might be a good idea to increase this value
       because the catalog will change all the time.
     '';
+
+    scheme = mkDefOpt types.str "http" "Consul scheme";
+
+    server = mkDefOpt types.str "localhost:8500" ''
+      Consul server to query.
+    '';
+
+    services = mkOpt (types.listOf types.str) ''
+      A list of services for which targets are retrieved.
+    '';
+
+    tag_separator = mkDefOpt types.str "," ''
+      The string by which Consul tags are joined into the tag label.
+    '';
+
+    tags = mkOpt (types.listOf types.str) ''
+      An optional list of tags used to filter nodes for a given
+      service. Services must contain all tags in the list.
+    '';
+
+    tls_config = mkOpt promTypes.tls_config ''
+      Configures the Consul request's TLS settings.
+    '';
+
+    token = mkOpt types.str "Consul token";
+    username = mkOpt types.str "Consul username";
   };
 
   promTypes.digitalocean_sd_config = mkSdConfigModule {
@@ -717,37 +731,28 @@ let
     extraOptions:
     mkSdConfigModule (
       {
-        host = mkOption {
-          type = types.str;
-          description = ''
-            Address of the Docker daemon.
-          '';
-        };
-
-        port = mkDefOpt types.port "80" ''
-          The port to scrape metrics from, when `role` is nodes, and for discovered
-          tasks and services that don't have published ports.
-        '';
-
         filters =
           mkOpt
             (types.listOf (
               types.submodule {
                 options = {
                   name = mkOption {
-                    type = types.str;
                     description = ''
                       Name of the filter. The available filters are listed in the upstream documentation:
                       Services: <https://docs.docker.com/engine/api/v1.40/#operation/ServiceList>
                       Tasks: <https://docs.docker.com/engine/api/v1.40/#operation/TaskList>
                       Nodes: <https://docs.docker.com/engine/api/v1.40/#operation/NodeList>
                     '';
-                  };
-                  values = mkOption {
+
                     type = types.str;
+                  };
+
+                  values = mkOption {
                     description = ''
                       Value for the filter.
                     '';
+
+                    type = types.str;
                   };
                 };
               }
@@ -755,6 +760,19 @@ let
             ''
               Optional filters to limit the discovery process to a subset of available resources.
             '';
+
+        host = mkOption {
+          description = ''
+            Address of the Docker daemon.
+          '';
+
+          type = types.str;
+        };
+
+        port = mkDefOpt types.port "80" ''
+          The port to scrape metrics from, when `role` is nodes, and for discovered
+          tasks and services that don't have published ports.
+        '';
 
         refresh_interval = mkDefOpt types.str "60s" ''
           The time after which the containers are refreshed.
@@ -771,25 +789,35 @@ let
 
   promTypes.dockerswarm_sd_config = mkDockerSdConfigModule {
     role = mkOption {
+      description = ''
+        Role of the targets to retrieve. Must be `services`, `tasks`, or `nodes`.
+      '';
+
       type = types.enum [
         "services"
         "tasks"
         "nodes"
       ];
-      description = ''
-        Role of the targets to retrieve. Must be `services`, `tasks`, or `nodes`.
-      '';
     };
   };
 
   promTypes.dns_sd_config = types.submodule {
     options = {
       names = mkOption {
-        type = types.listOf types.str;
         description = ''
           A list of DNS SRV record names to be queried.
         '';
+
+        type = types.listOf types.str;
       };
+
+      port = mkOpt types.port ''
+        The port number used if the query type is not SRV.
+      '';
+
+      refresh_interval = mkDefOpt types.str "30s" ''
+        The time after which the provided names are refreshed.
+      '';
 
       type =
         mkDefOpt
@@ -804,55 +832,18 @@ let
           ''
             The type of DNS query to perform.
           '';
-
-      port = mkOpt types.port ''
-        The port number used if the query type is not SRV.
-      '';
-
-      refresh_interval = mkDefOpt types.str "30s" ''
-        The time after which the provided names are refreshed.
-      '';
     };
   };
 
   promTypes.ec2_sd_config = types.submodule {
     options = {
-      region = mkOption {
-        type = types.str;
-        description = ''
-          The AWS Region. If blank, the region from the instance metadata is used.
-        '';
-      };
-      endpoint = mkOpt types.str ''
-        Custom endpoint to be used.
-      '';
-
       access_key = mkOpt types.str ''
         The AWS API key id. If blank, the environment variable
         `AWS_ACCESS_KEY_ID` is used.
       '';
 
-      secret_key = mkOpt types.str ''
-        The AWS API key secret. If blank, the environment variable
-         `AWS_SECRET_ACCESS_KEY` is used.
-      '';
-
-      profile = mkOpt types.str ''
-        Named AWS profile used to connect to the API.
-      '';
-
-      role_arn = mkOpt types.str ''
-        AWS Role ARN, an alternative to using AWS API keys.
-      '';
-
-      refresh_interval = mkDefOpt types.str "60s" ''
-        Refresh interval to re-read the instance list.
-      '';
-
-      port = mkDefOpt types.port "80" ''
-        The port to scrape metrics from. If using the public IP
-        address, this must instead be specified in the relabeling
-        rule.
+      endpoint = mkOpt types.str ''
+        Custom endpoint to be used.
       '';
 
       filters =
@@ -861,19 +852,22 @@ let
             types.submodule {
               options = {
                 name = mkOption {
-                  type = types.str;
                   description = ''
                     See [this list](https://docs.aws.amazon.com/AWSEC2/latest/APIReference/API_DescribeInstances.html)
                     for the available filters.
                   '';
+
+                  type = types.str;
                 };
 
                 values = mkOption {
-                  type = types.listOf types.str;
                   default = [ ];
+
                   description = ''
                     Value of the filter.
                   '';
+
+                  type = types.listOf types.str;
                 };
               };
             }
@@ -881,27 +875,60 @@ let
           ''
             Filters can be used optionally to filter the instance list by other criteria.
           '';
+
+      port = mkDefOpt types.port "80" ''
+        The port to scrape metrics from. If using the public IP
+        address, this must instead be specified in the relabeling
+        rule.
+      '';
+
+      profile = mkOpt types.str ''
+        Named AWS profile used to connect to the API.
+      '';
+
+      refresh_interval = mkDefOpt types.str "60s" ''
+        Refresh interval to re-read the instance list.
+      '';
+
+      region = mkOption {
+        description = ''
+          The AWS Region. If blank, the region from the instance metadata is used.
+        '';
+
+        type = types.str;
+      };
+
+      role_arn = mkOpt types.str ''
+        AWS Role ARN, an alternative to using AWS API keys.
+      '';
+
+      secret_key = mkOpt types.str ''
+        The AWS API key secret. If blank, the environment variable
+         `AWS_SECRET_ACCESS_KEY` is used.
+      '';
     };
   };
 
   promTypes.eureka_sd_config = mkSdConfigModule {
     server = mkOption {
-      type = types.str;
       description = ''
         The URL to connect to the Eureka server.
       '';
+
+      type = types.str;
     };
   };
 
   promTypes.file_sd_config = types.submodule {
     options = {
       files = mkOption {
-        type = types.listOf types.str;
         description = ''
           Patterns for files from which target groups are extracted. Refer
           to the Prometheus documentation for permitted filename patterns
           and formats.
         '';
+
+        type = types.listOf types.str;
       };
 
       refresh_interval = mkDefOpt types.str "5m" ''
@@ -912,36 +939,29 @@ let
 
   promTypes.gce_sd_config = types.submodule {
     options = {
-      # Use `mkOption` instead of `mkOpt` for project and zone because they are
-      # required configuration values for `gce_sd_config`.
-      project = mkOption {
-        type = types.str;
-        description = ''
-          The GCP Project.
-        '';
-      };
-
-      zone = mkOption {
-        type = types.str;
-        description = ''
-          The zone of the scrape targets. If you need multiple zones use multiple
-          gce_sd_configs.
-        '';
-      };
-
       filter = mkOpt types.str ''
         Filter can be used optionally to filter the instance list by other
         criteria Syntax of this filter string is described here in the filter
         query parameter section: <https://cloud.google.com/compute/docs/reference/latest/instances/list>.
       '';
 
-      refresh_interval = mkDefOpt types.str "60s" ''
-        Refresh interval to re-read the cloud instance list.
-      '';
-
       port = mkDefOpt types.port "80" ''
         The port to scrape metrics from. If using the public IP address, this
         must instead be specified in the relabeling rule.
+      '';
+
+      # Use `mkOption` instead of `mkOpt` for project and zone because they are
+      # required configuration values for `gce_sd_config`.
+      project = mkOption {
+        description = ''
+          The GCP Project.
+        '';
+
+        type = types.str;
+      };
+
+      refresh_interval = mkDefOpt types.str "60s" ''
+        Refresh interval to re-read the cloud instance list.
       '';
 
       tag_separator = mkDefOpt types.str "," ''
@@ -950,21 +970,19 @@ let
         See the GCP documentation on network tags for more information:
         <https://cloud.google.com/vpc/docs/add-remove-network-tags>
       '';
+
+      zone = mkOption {
+        description = ''
+          The zone of the scrape targets. If you need multiple zones use multiple
+          gce_sd_configs.
+        '';
+
+        type = types.str;
+      };
     };
   };
 
   promTypes.hetzner_sd_config = mkSdConfigModule {
-    role = mkOption {
-      type = types.enum [
-        "robot"
-        "hcloud"
-      ];
-      description = ''
-        The Hetzner role of entities that should be discovered.
-        One of `robot` or `hcloud`.
-      '';
-    };
-
     port = mkDefOpt types.port "80" ''
       The port to scrape metrics from.
     '';
@@ -972,37 +990,50 @@ let
     refresh_interval = mkDefOpt types.str "60s" ''
       The time after which the servers are refreshed.
     '';
+
+    role = mkOption {
+      description = ''
+        The Hetzner role of entities that should be discovered.
+        One of `robot` or `hcloud`.
+      '';
+
+      type = types.enum [
+        "robot"
+        "hcloud"
+      ];
+    };
   };
 
   promTypes.http_sd_config = types.submodule {
     options = {
-      url = mkOption {
-        type = types.str;
-        description = ''
-          URL from which the targets are fetched.
-        '';
-      };
-
-      refresh_interval = mkDefOpt types.str "60s" ''
-        Refresh interval to re-query the endpoint.
-      '';
-
       basic_auth = mkOpt promTypes.basic_auth ''
         Authentication information used to authenticate to the API server.
         password and password_file are mutually exclusive.
-      '';
-
-      proxy_url = mkOpt types.str ''
-        Optional proxy URL.
       '';
 
       follow_redirects = mkDefOpt types.bool "true" ''
         Configure whether HTTP requests follow HTTP 3xx redirects.
       '';
 
+      proxy_url = mkOpt types.str ''
+        Optional proxy URL.
+      '';
+
+      refresh_interval = mkDefOpt types.str "60s" ''
+        Refresh interval to re-query the endpoint.
+      '';
+
       tls_config = mkOpt promTypes.tls_config ''
         Configures the scrape request's TLS settings.
       '';
+
+      url = mkOption {
+        description = ''
+          URL from which the targets are fetched.
+        '';
+
+        type = types.str;
+      };
     };
   };
 
@@ -1012,20 +1043,6 @@ let
       of the cluster and will discover API servers automatically and use the pod's
       CA certificate and bearer token file at /var/run/secrets/kubernetes.io/serviceaccount/.
     '';
-
-    role = mkOption {
-      type = types.enum [
-        "endpoints"
-        "service"
-        "pod"
-        "node"
-        "ingress"
-      ];
-      description = ''
-        The Kubernetes role of entities that should be discovered.
-        One of endpoints, service, pod, node, or ingress.
-      '';
-    };
 
     kubeconfig_file = mkOpt types.str ''
       Optional path to a kubeconfig file.
@@ -1045,25 +1062,41 @@ let
           Optional namespace discovery. If omitted, all namespaces are used.
         '';
 
+    role = mkOption {
+      description = ''
+        The Kubernetes role of entities that should be discovered.
+        One of endpoints, service, pod, node, or ingress.
+      '';
+
+      type = types.enum [
+        "endpoints"
+        "service"
+        "pod"
+        "node"
+        "ingress"
+      ];
+    };
+
     selectors =
       mkOpt
         (types.listOf (
           types.submodule {
             options = {
-              role = mkOption {
-                type = types.str;
-                description = ''
-                  Selector role
-                '';
-              };
+              field = mkOpt types.str ''
+                Selector field
+              '';
 
               label = mkOpt types.str ''
                 Selector label
               '';
 
-              field = mkOpt types.str ''
-                Selector field
-              '';
+              role = mkOption {
+                description = ''
+                  Selector role
+                '';
+
+                type = types.str;
+              };
             };
           }
         ))
@@ -1084,55 +1117,56 @@ let
   };
 
   promTypes.kuma_sd_config = mkSdConfigModule {
-    server = mkOption {
-      type = types.str;
-      description = ''
-        Address of the Kuma Control Plane's MADS xDS server.
-      '';
-    };
+    fetch_timeout = mkDefOpt types.str "2m" ''
+      The time after which the monitoring assignments are refreshed.
+    '';
 
     refresh_interval = mkDefOpt types.str "30s" ''
       The time to wait between polling update requests.
     '';
 
-    fetch_timeout = mkDefOpt types.str "2m" ''
-      The time after which the monitoring assignments are refreshed.
-    '';
+    server = mkOption {
+      description = ''
+        Address of the Kuma Control Plane's MADS xDS server.
+      '';
+
+      type = types.str;
+    };
   };
 
   promTypes.lightsail_sd_config = types.submodule {
     options = {
-      region = mkOpt types.str ''
-        The AWS region. If blank, the region from the instance metadata is used.
+      access_key = mkOpt types.str ''
+        The AWS API keys. If blank, the environment variable `AWS_ACCESS_KEY_ID` is used.
       '';
 
       endpoint = mkOpt types.str ''
         Custom endpoint to be used.
       '';
 
-      access_key = mkOpt types.str ''
-        The AWS API keys. If blank, the environment variable `AWS_ACCESS_KEY_ID` is used.
-      '';
-
-      secret_key = mkOpt types.str ''
-        The AWS API keys. If blank, the environment variable `AWS_SECRET_ACCESS_KEY` is used.
+      port = mkDefOpt types.port "80" ''
+        The port to scrape metrics from. If using the public IP address, this must
+        instead be specified in the relabeling rule.
       '';
 
       profile = mkOpt types.str ''
         Named AWS profile used to connect to the API.
       '';
 
-      role_arn = mkOpt types.str ''
-        AWS Role ARN, an alternative to using AWS API keys.
-      '';
-
       refresh_interval = mkDefOpt types.str "60s" ''
         Refresh interval to re-read the instance list.
       '';
 
-      port = mkDefOpt types.port "80" ''
-        The port to scrape metrics from. If using the public IP address, this must
-        instead be specified in the relabeling rule.
+      region = mkOpt types.str ''
+        The AWS region. If blank, the region from the instance metadata is used.
+      '';
+
+      role_arn = mkOpt types.str ''
+        AWS Role ARN, an alternative to using AWS API keys.
+      '';
+
+      secret_key = mkOpt types.str ''
+        The AWS API keys. If blank, the environment variable `AWS_SECRET_ACCESS_KEY` is used.
       '';
     };
   };
@@ -1142,27 +1176,16 @@ let
       The port to scrape metrics from.
     '';
 
-    tag_separator = mkDefOpt types.str "," ''
-      The string by which Linode Instance tags are joined into the tag label.
-    '';
-
     refresh_interval = mkDefOpt types.str "60s" ''
       The time after which the linode instances are refreshed.
+    '';
+
+    tag_separator = mkDefOpt types.str "," ''
+      The string by which Linode Instance tags are joined into the tag label.
     '';
   };
 
   promTypes.marathon_sd_config = mkSdConfigModule {
-    servers = mkOption {
-      type = types.listOf types.str;
-      description = ''
-        List of URLs to be used to contact Marathon servers. You need to provide at least one server URL.
-      '';
-    };
-
-    refresh_interval = mkDefOpt types.str "30s" ''
-      Polling interval.
-    '';
-
     auth_token = mkOpt types.str ''
       Optional authentication information for token-based authentication:
       <https://docs.mesosphere.com/1.11/security/ent/iam-api/#passing-an-authentication-token>
@@ -1174,22 +1197,36 @@ let
       <https://docs.mesosphere.com/1.11/security/ent/iam-api/#passing-an-authentication-token>
       It is mutually exclusive with `auth_token` and other authentication mechanisms.
     '';
+
+    refresh_interval = mkDefOpt types.str "30s" ''
+      Polling interval.
+    '';
+
+    servers = mkOption {
+      description = ''
+        List of URLs to be used to contact Marathon servers. You need to provide at least one server URL.
+      '';
+
+      type = types.listOf types.str;
+    };
   };
 
   promTypes.nerve_sd_config = types.submodule {
     options = {
-      servers = mkOption {
-        type = types.listOf types.str;
-        description = ''
-          The Zookeeper servers.
-        '';
-      };
-
       paths = mkOption {
-        type = types.listOf types.str;
         description = ''
           Paths can point to a single service, or the root of a tree of services.
         '';
+
+        type = types.listOf types.str;
+      };
+
+      servers = mkOption {
+        description = ''
+          The Zookeeper servers.
+        '';
+
+        type = types.listOf types.str;
       };
 
       timeout = mkDefOpt types.str "10s" ''
@@ -1227,61 +1264,17 @@ let
         '';
       in
       {
-        role = mkOption {
-          type = types.str;
-          description = ''
-            The OpenStack role of entities that should be discovered.
-          '';
-        };
-
-        region = mkOption {
-          type = types.str;
-          description = ''
-            The OpenStack Region.
-          '';
-        };
-
-        identity_endpoint = mkOpt types.str ''
-          identity_endpoint specifies the HTTP endpoint that is required to work with
-          the Identity API of the appropriate version. While it's ultimately needed by
-          all of the identity services, it will often be populated by a provider-level
-          function.
-        '';
-
-        username = mkOpt types.str userDescription;
-        userid = mkOpt types.str userDescription;
-
-        password = mkOpt types.str ''
-          password for the Identity V2 and V3 APIs. Consult with your provider's
-          control panel to discover your account's preferred method of authentication.
-        '';
-
-        domain_name = mkOpt types.str domainDescription;
-        domain_id = mkOpt types.str domainDescription;
-
-        project_name = mkOpt types.str projectDescription;
-        project_id = mkOpt types.str projectDescription;
-
-        application_credential_name = mkOpt types.str applicationDescription;
-        application_credential_id = mkOpt types.str applicationDescription;
-
-        application_credential_secret = mkOpt types.str ''
-          The application_credential_secret field is required if using an application
-          credential to authenticate.
-        '';
-
         all_tenants = mkDefOpt types.bool "false" ''
           Whether the service discovery should list all instances for all projects.
           It is only relevant for the 'instance' role and usually requires admin permissions.
         '';
 
-        refresh_interval = mkDefOpt types.str "60s" ''
-          Refresh interval to re-read the instance list.
-        '';
+        application_credential_id = mkOpt types.str applicationDescription;
+        application_credential_name = mkOpt types.str applicationDescription;
 
-        port = mkDefOpt types.port "80" ''
-          The port to scrape metrics from. If using the public IP address, this must
-          instead be specified in the relabeling rule.
+        application_credential_secret = mkOpt types.str ''
+          The application_credential_secret field is required if using an application
+          credential to authenticate.
         '';
 
         availability =
@@ -1296,28 +1289,59 @@ let
               The availability of the endpoint to connect to. Must be one of public, admin or internal.
             '';
 
+        domain_id = mkOpt types.str domainDescription;
+        domain_name = mkOpt types.str domainDescription;
+
+        identity_endpoint = mkOpt types.str ''
+          identity_endpoint specifies the HTTP endpoint that is required to work with
+          the Identity API of the appropriate version. While it's ultimately needed by
+          all of the identity services, it will often be populated by a provider-level
+          function.
+        '';
+
+        password = mkOpt types.str ''
+          password for the Identity V2 and V3 APIs. Consult with your provider's
+          control panel to discover your account's preferred method of authentication.
+        '';
+
+        port = mkDefOpt types.port "80" ''
+          The port to scrape metrics from. If using the public IP address, this must
+          instead be specified in the relabeling rule.
+        '';
+
+        project_id = mkOpt types.str projectDescription;
+        project_name = mkOpt types.str projectDescription;
+
+        refresh_interval = mkDefOpt types.str "60s" ''
+          Refresh interval to re-read the instance list.
+        '';
+
+        region = mkOption {
+          description = ''
+            The OpenStack Region.
+          '';
+
+          type = types.str;
+        };
+
+        role = mkOption {
+          description = ''
+            The OpenStack role of entities that should be discovered.
+          '';
+
+          type = types.str;
+        };
+
         tls_config = mkOpt promTypes.tls_config ''
           TLS configuration.
         '';
+
+        userid = mkOpt types.str userDescription;
+        username = mkOpt types.str userDescription;
       };
   };
 
   promTypes.puppetdb_sd_config = mkSdConfigModule {
-    url = mkOption {
-      type = types.str;
-      description = ''
-        The URL of the PuppetDB root query endpoint.
-      '';
-    };
-
-    query = mkOption {
-      type = types.str;
-      description = ''
-        Puppet Query Language (PQL) query. Only resources are supported.
-        <https://puppet.com/docs/puppetdb/latest/api/query/v4/pql.html>
-      '';
-    };
-
     include_parameters = mkDefOpt types.bool "false" ''
       Whether to include the parameters as meta labels.
       Due to the differences between parameter types and Prometheus labels,
@@ -1328,22 +1352,83 @@ let
       that you don't have secrets exposed as parameters if you enable this.
     '';
 
+    port = mkDefOpt types.port "80" ''
+      The port to scrape metrics from.
+    '';
+
+    query = mkOption {
+      description = ''
+        Puppet Query Language (PQL) query. Only resources are supported.
+        <https://puppet.com/docs/puppetdb/latest/api/query/v4/pql.html>
+      '';
+
+      type = types.str;
+    };
+
     refresh_interval = mkDefOpt types.str "60s" ''
       Refresh interval to re-read the resources list.
     '';
 
-    port = mkDefOpt types.port "80" ''
-      The port to scrape metrics from.
-    '';
+    url = mkOption {
+      description = ''
+        The URL of the PuppetDB root query endpoint.
+      '';
+
+      type = types.str;
+    };
   };
 
   promTypes.scaleway_sd_config = types.submodule {
     options = {
       access_key = mkOption {
-        type = types.str;
         description = ''
           Access key to use. <https://console.scaleway.com/project/credentials>
         '';
+
+        type = types.str;
+      };
+
+      api_url = mkDefOpt types.str "https://api.scaleway.com" ''
+        API URL to use when doing the server listing requests.
+      '';
+
+      follow_redirects = mkDefOpt types.bool "true" ''
+        Configure whether HTTP requests follow HTTP 3xx redirects.
+      '';
+
+      name_filter = mkOpt types.str ''
+        Specify a name filter (works as a LIKE) to apply on the server listing request.
+      '';
+
+      port = mkDefOpt types.port "80" ''
+        The port to scrape metrics from.
+      '';
+
+      project_id = mkOption {
+        description = ''
+          Project ID of the targets.
+        '';
+
+        type = types.str;
+      };
+
+      proxy_url = mkOpt types.str ''
+        Optional proxy URL.
+      '';
+
+      refresh_interval = mkDefOpt types.str "60s" ''
+        Refresh interval to re-read the managed targets list.
+      '';
+
+      role = mkOption {
+        description = ''
+          Role of the targets to retrieve. Must be `instance` or `baremetal`.
+        '';
+
+        type = types.enum [
+          "instance"
+          "baremetal"
+        ];
       };
 
       secret_key = mkOpt types.str ''
@@ -1356,57 +1441,16 @@ let
         It is mutually exclusive with `secret_key`.
       '';
 
-      project_id = mkOption {
-        type = types.str;
-        description = ''
-          Project ID of the targets.
-        '';
-      };
-
-      role = mkOption {
-        type = types.enum [
-          "instance"
-          "baremetal"
-        ];
-        description = ''
-          Role of the targets to retrieve. Must be `instance` or `baremetal`.
-        '';
-      };
-
-      port = mkDefOpt types.port "80" ''
-        The port to scrape metrics from.
-      '';
-
-      api_url = mkDefOpt types.str "https://api.scaleway.com" ''
-        API URL to use when doing the server listing requests.
-      '';
-
-      zone = mkDefOpt types.str "fr-par-1" ''
-        Zone is the availability zone of your targets (e.g. fr-par-1).
-      '';
-
-      name_filter = mkOpt types.str ''
-        Specify a name filter (works as a LIKE) to apply on the server listing request.
-      '';
-
       tags_filter = mkOpt (types.listOf types.str) ''
         Specify a tag filter (a server needs to have all defined tags to be listed) to apply on the server listing request.
       '';
 
-      refresh_interval = mkDefOpt types.str "60s" ''
-        Refresh interval to re-read the managed targets list.
-      '';
-
-      proxy_url = mkOpt types.str ''
-        Optional proxy URL.
-      '';
-
-      follow_redirects = mkDefOpt types.bool "true" ''
-        Configure whether HTTP requests follow HTTP 3xx redirects.
-      '';
-
       tls_config = mkOpt promTypes.tls_config ''
         TLS configuration.
+      '';
+
+      zone = mkDefOpt types.str "fr-par-1" ''
+        Zone is the availability zone of your targets (e.g. fr-par-1).
       '';
     };
   };
@@ -1417,38 +1461,28 @@ let
   promTypes.triton_sd_config = types.submodule {
     options = {
       account = mkOption {
-        type = types.str;
         description = ''
           The account to use for discovering new targets.
         '';
+
+        type = types.str;
       };
 
-      role =
-        mkDefOpt
-          (types.enum [
-            "container"
-            "cn"
-          ])
-          "container"
-          ''
-            The type of targets to discover, can be set to:
-            - "container" to discover virtual machines (SmartOS zones, lx/KVM/bhyve branded zones) running on Triton
-            - "cn" to discover compute nodes (servers/global zones) making up the Triton infrastructure
-          '';
-
       dns_suffix = mkOption {
-        type = types.str;
         description = ''
           The DNS suffix which should be applied to target.
         '';
+
+        type = types.str;
       };
 
       endpoint = mkOption {
-        type = types.str;
         description = ''
           The Triton discovery endpoint (e.g. `cmon.us-east-3b.triton.zone`). This is
           often the same value as dns_suffix.
         '';
+
+        type = types.str;
       };
 
       groups = mkOpt (types.listOf types.str) ''
@@ -1464,65 +1498,85 @@ let
         The interval which should be used for refreshing targets.
       '';
 
-      version = mkDefOpt types.int "1" ''
-        The Triton discovery API version.
-      '';
+      role =
+        mkDefOpt
+          (types.enum [
+            "container"
+            "cn"
+          ])
+          "container"
+          ''
+            The type of targets to discover, can be set to:
+            - "container" to discover virtual machines (SmartOS zones, lx/KVM/bhyve branded zones) running on Triton
+            - "cn" to discover compute nodes (servers/global zones) making up the Triton infrastructure
+          '';
 
       tls_config = mkOpt promTypes.tls_config ''
         TLS configuration.
+      '';
+
+      version = mkDefOpt types.int "1" ''
+        The Triton discovery API version.
       '';
     };
   };
 
   promTypes.uyuni_sd_config = mkSdConfigModule {
-    server = mkOption {
-      type = types.str;
-      description = ''
-        The URL to connect to the Uyuni server.
-      '';
-    };
-
-    username = mkOption {
-      type = types.str;
-      description = ''
-        Credentials are used to authenticate the requests to Uyuni API.
-      '';
-    };
-
-    password = mkOption {
-      type = types.str;
-      description = ''
-        Credentials are used to authenticate the requests to Uyuni API.
-      '';
-    };
-
     entitlement = mkDefOpt types.str "monitoring_entitled" ''
       The entitlement string to filter eligible systems.
+    '';
+
+    password = mkOption {
+      description = ''
+        Credentials are used to authenticate the requests to Uyuni API.
+      '';
+
+      type = types.str;
+    };
+
+    refresh_interval = mkDefOpt types.str "60s" ''
+      Refresh interval to re-read the managed targets list.
     '';
 
     separator = mkDefOpt types.str "," ''
       The string by which Uyuni group names are joined into the groups label
     '';
 
-    refresh_interval = mkDefOpt types.str "60s" ''
-      Refresh interval to re-read the managed targets list.
-    '';
+    server = mkOption {
+      description = ''
+        The URL to connect to the Uyuni server.
+      '';
+
+      type = types.str;
+    };
+
+    username = mkOption {
+      description = ''
+        Credentials are used to authenticate the requests to Uyuni API.
+      '';
+
+      type = types.str;
+    };
   };
 
   promTypes.static_config = types.submodule {
     options = {
-      targets = mkOption {
-        type = types.listOf types.str;
-        description = ''
-          The targets specified by the target group.
-        '';
-      };
       labels = mkOption {
-        type = types.attrsOf types.str;
         default = { };
+
         description = ''
           Labels assigned to all metrics scraped from the targets.
         '';
+
+        type = types.attrsOf types.str;
+      };
+
+      targets = mkOption {
+        description = ''
+          The targets specified by the target group.
+        '';
+
+        type = types.listOf types.str;
       };
     };
   };
@@ -1533,34 +1587,6 @@ let
 
   promTypes.relabel_config = types.submodule {
     options = {
-      source_labels = mkOpt (types.listOf types.str) ''
-        The source labels select values from existing labels. Their content
-        is concatenated using the configured separator and matched against
-        the configured regular expression.
-      '';
-
-      separator = mkDefOpt types.str ";" ''
-        Separator placed between concatenated source label values.
-      '';
-
-      target_label = mkOpt types.str ''
-        Label to which the resulting value is written in a replace action.
-        It is mandatory for replace actions.
-      '';
-
-      regex = mkDefOpt types.str "(.*)" ''
-        Regular expression against which the extracted value is matched.
-      '';
-
-      modulus = mkOpt types.int ''
-        Modulus to take of the hash of the source label values.
-      '';
-
-      replacement = mkDefOpt types.str "$1" ''
-        Replacement value against which a regex replace is performed if the
-        regular expression matches.
-      '';
-
       action =
         mkDefOpt
           (types.enum [
@@ -1578,6 +1604,34 @@ let
           ''
             Action to perform based on regex matching.
           '';
+
+      modulus = mkOpt types.int ''
+        Modulus to take of the hash of the source label values.
+      '';
+
+      regex = mkDefOpt types.str "(.*)" ''
+        Regular expression against which the extracted value is matched.
+      '';
+
+      replacement = mkDefOpt types.str "$1" ''
+        Replacement value against which a regex replace is performed if the
+        regular expression matches.
+      '';
+
+      separator = mkDefOpt types.str ";" ''
+        Separator placed between concatenated source label values.
+      '';
+
+      source_labels = mkOpt (types.listOf types.str) ''
+        The source labels select values from existing labels. Their content
+        is concatenated using the configured separator and matched against
+        the configured regular expression.
+      '';
+
+      target_label = mkOpt types.str ''
+        Label to which the resulting value is written in a replace action.
+        It is mandatory for replace actions.
+      '';
     };
   };
 
@@ -1587,81 +1641,27 @@ let
 
   promTypes.remote_write = types.submodule {
     options = {
-      url = mkOption {
-        type = types.str;
-        description = ''
-          ServerName extension to indicate the name of the server.
-          http://tools.ietf.org/html/rfc4366#section-3.1
-        '';
-      };
-      remote_timeout = mkOpt types.str ''
-        Timeout for requests to the remote write endpoint.
-      '';
-      headers = mkOpt (types.attrsOf types.str) ''
-        Custom HTTP headers to be sent along with each remote write request.
-        Be aware that headers that are set by Prometheus itself can't be overwritten.
-      '';
-      write_relabel_configs = mkOpt (types.listOf promTypes.relabel_config) ''
-        List of remote write relabel configurations.
-      '';
-      name = mkOpt types.str ''
-        Name of the remote write config, which if specified must be unique among remote write configs.
-        The name will be used in metrics and logging in place of a generated value to help users distinguish between
-        remote write configs.
-      '';
       basic_auth = mkOpt promTypes.basic_auth ''
         Sets the `Authorization` header on every remote write request with the
         configured username and password.
         password and password_file are mutually exclusive.
       '';
+
       bearer_token = mkOpt types.str ''
         Sets the `Authorization` header on every remote write request with
         the configured bearer token. It is mutually exclusive with `bearer_token_file`.
       '';
+
       bearer_token_file = mkOpt types.str ''
         Sets the `Authorization` header on every remote write request with the bearer token
         read from the configured file. It is mutually exclusive with `bearer_token`.
       '';
-      sigv4 = mkOpt promTypes.sigv4 ''
-        Configures AWS Signature Version 4 settings.
+
+      headers = mkOpt (types.attrsOf types.str) ''
+        Custom HTTP headers to be sent along with each remote write request.
+        Be aware that headers that are set by Prometheus itself can't be overwritten.
       '';
-      tls_config = mkOpt promTypes.tls_config ''
-        Configures the remote write request's TLS settings.
-      '';
-      proxy_url = mkOpt types.str "Optional Proxy URL.";
-      queue_config =
-        mkOpt
-          (types.submodule {
-            options = {
-              capacity = mkOpt types.int ''
-                Number of samples to buffer per shard before we block reading of more
-                samples from the WAL. It is recommended to have enough capacity in each
-                shard to buffer several requests to keep throughput up while processing
-                occasional slow remote requests.
-              '';
-              max_shards = mkOpt types.int ''
-                Maximum number of shards, i.e. amount of concurrency.
-              '';
-              min_shards = mkOpt types.int ''
-                Minimum number of shards, i.e. amount of concurrency.
-              '';
-              max_samples_per_send = mkOpt types.int ''
-                Maximum number of samples per send.
-              '';
-              batch_send_deadline = mkOpt types.str ''
-                Maximum time a sample will wait in buffer.
-              '';
-              min_backoff = mkOpt types.str ''
-                Initial retry delay. Gets doubled for every retry.
-              '';
-              max_backoff = mkOpt types.str ''
-                Maximum retry delay.
-              '';
-            };
-          })
-          ''
-            Configures the queue used to write to remote storage.
-          '';
+
       metadata_config =
         mkOpt
           (types.submodule {
@@ -1669,6 +1669,7 @@ let
               send = mkOpt types.bool ''
                 Whether metric metadata is sent to remote storage or not.
               '';
+
               send_interval = mkOpt types.str ''
                 How frequently metric metadata is sent to remote storage.
               '';
@@ -1679,55 +1680,139 @@ let
             Metadata configuration is subject to change at any point
             or be removed in future releases.
           '';
+
+      name = mkOpt types.str ''
+        Name of the remote write config, which if specified must be unique among remote write configs.
+        The name will be used in metrics and logging in place of a generated value to help users distinguish between
+        remote write configs.
+      '';
+
+      proxy_url = mkOpt types.str "Optional Proxy URL.";
+
+      queue_config =
+        mkOpt
+          (types.submodule {
+            options = {
+              batch_send_deadline = mkOpt types.str ''
+                Maximum time a sample will wait in buffer.
+              '';
+
+              capacity = mkOpt types.int ''
+                Number of samples to buffer per shard before we block reading of more
+                samples from the WAL. It is recommended to have enough capacity in each
+                shard to buffer several requests to keep throughput up while processing
+                occasional slow remote requests.
+              '';
+
+              max_backoff = mkOpt types.str ''
+                Maximum retry delay.
+              '';
+
+              max_samples_per_send = mkOpt types.int ''
+                Maximum number of samples per send.
+              '';
+
+              max_shards = mkOpt types.int ''
+                Maximum number of shards, i.e. amount of concurrency.
+              '';
+
+              min_backoff = mkOpt types.str ''
+                Initial retry delay. Gets doubled for every retry.
+              '';
+
+              min_shards = mkOpt types.int ''
+                Minimum number of shards, i.e. amount of concurrency.
+              '';
+            };
+          })
+          ''
+            Configures the queue used to write to remote storage.
+          '';
+
+      remote_timeout = mkOpt types.str ''
+        Timeout for requests to the remote write endpoint.
+      '';
+
+      sigv4 = mkOpt promTypes.sigv4 ''
+        Configures AWS Signature Version 4 settings.
+      '';
+
+      tls_config = mkOpt promTypes.tls_config ''
+        Configures the remote write request's TLS settings.
+      '';
+
+      url = mkOption {
+        description = ''
+          ServerName extension to indicate the name of the server.
+          http://tools.ietf.org/html/rfc4366#section-3.1
+        '';
+
+        type = types.str;
+      };
+
+      write_relabel_configs = mkOpt (types.listOf promTypes.relabel_config) ''
+        List of remote write relabel configurations.
+      '';
     };
   };
 
   promTypes.remote_read = types.submodule {
     options = {
-      url = mkOption {
-        type = types.str;
-        description = ''
-          ServerName extension to indicate the name of the server.
-          http://tools.ietf.org/html/rfc4366#section-3.1
-        '';
-      };
-      name = mkOpt types.str ''
-        Name of the remote read config, which if specified must be unique among remote read configs.
-        The name will be used in metrics and logging in place of a generated value to help users distinguish between
-        remote read configs.
-      '';
-      required_matchers = mkOpt (types.attrsOf types.str) ''
-        An optional list of equality matchers which have to be
-        present in a selector to query the remote read endpoint.
-      '';
-      remote_timeout = mkOpt types.str ''
-        Timeout for requests to the remote read endpoint.
-      '';
-      headers = mkOpt (types.attrsOf types.str) ''
-        Custom HTTP headers to be sent along with each remote read request.
-        Be aware that headers that are set by Prometheus itself can't be overwritten.
-      '';
-      read_recent = mkOpt types.bool ''
-        Whether reads should be made for queries for time ranges that
-        the local storage should have complete data for.
-      '';
       basic_auth = mkOpt promTypes.basic_auth ''
         Sets the `Authorization` header on every remote read request with the
         configured username and password.
         password and password_file are mutually exclusive.
       '';
+
       bearer_token = mkOpt types.str ''
         Sets the `Authorization` header on every remote read request with
         the configured bearer token. It is mutually exclusive with `bearer_token_file`.
       '';
+
       bearer_token_file = mkOpt types.str ''
         Sets the `Authorization` header on every remote read request with the bearer token
         read from the configured file. It is mutually exclusive with `bearer_token`.
       '';
+
+      headers = mkOpt (types.attrsOf types.str) ''
+        Custom HTTP headers to be sent along with each remote read request.
+        Be aware that headers that are set by Prometheus itself can't be overwritten.
+      '';
+
+      name = mkOpt types.str ''
+        Name of the remote read config, which if specified must be unique among remote read configs.
+        The name will be used in metrics and logging in place of a generated value to help users distinguish between
+        remote read configs.
+      '';
+
+      proxy_url = mkOpt types.str "Optional Proxy URL.";
+
+      read_recent = mkOpt types.bool ''
+        Whether reads should be made for queries for time ranges that
+        the local storage should have complete data for.
+      '';
+
+      remote_timeout = mkOpt types.str ''
+        Timeout for requests to the remote read endpoint.
+      '';
+
+      required_matchers = mkOpt (types.attrsOf types.str) ''
+        An optional list of equality matchers which have to be
+        present in a selector to query the remote read endpoint.
+      '';
+
       tls_config = mkOpt promTypes.tls_config ''
         Configures the remote read request's TLS settings.
       '';
-      proxy_url = mkOpt types.str "Optional Proxy URL.";
+
+      url = mkOption {
+        description = ''
+          ServerName extension to indicate the name of the server.
+          http://tools.ietf.org/html/rfc4366#section-3.1
+        '';
+
+        type = types.str;
+      };
     };
   };
 
@@ -1749,120 +1834,26 @@ in
   options.services.prometheus = {
 
     enable = mkEnableOption "Prometheus monitoring daemon";
-
     package = mkPackageOption pkgs "prometheus" { };
 
-    port = mkOption {
-      type = types.port;
-      default = 9090;
+    alertmanagerNotificationQueueCapacity = mkOption {
+      default = 10000;
+
       description = ''
-        Port to listen on.
+        The capacity of the queue for pending alert manager notifications.
       '';
-    };
 
-    listenAddress = mkOption {
-      type = types.str;
-      default = "0.0.0.0";
-      description = ''
-        Address to listen on for the web interface, API, and telemetry.
-      '';
-    };
-
-    stateDir = mkOption {
-      type = types.str;
-      default = "prometheus2";
-      description = ''
-        Directory below `/var/lib` to store Prometheus metrics data.
-        This directory will be created automatically using systemd's StateDirectory mechanism.
-      '';
-    };
-
-    extraFlags = mkOption {
-      type = types.listOf types.str;
-      default = [ ];
-      description = ''
-        Extra commandline options when launching Prometheus.
-      '';
-    };
-
-    enableReload = mkOption {
-      default = false;
-      type = types.bool;
-      description = ''
-        Reload prometheus when configuration file changes (instead of restart).
-
-        The following property holds: switching to a configuration
-        (`switch-to-configuration`) that changes the prometheus
-        configuration only finishes successfully when prometheus has finished
-        loading the new configuration.
-      '';
-    };
-
-    enableAgentMode = mkEnableOption "agent mode";
-
-    configText = mkOption {
-      type = types.nullOr types.lines;
-      default = null;
-      description = ''
-        If non-null, this option defines the text that is written to
-        prometheus.yml. If null, the contents of prometheus.yml is generated
-        from the structured config options.
-      '';
-    };
-
-    globalConfig = mkOption {
-      type = promTypes.globalConfig;
-      default = { };
-      description = ''
-        Parameters that are valid in all  configuration contexts. They
-        also serve as defaults for other configuration sections
-      '';
-    };
-
-    remoteRead = mkOption {
-      type = types.listOf promTypes.remote_read;
-      default = [ ];
-      description = ''
-        Parameters of the endpoints to query from.
-        See [the official documentation](https://prometheus.io/docs/prometheus/latest/configuration/configuration/#remote_read) for more information.
-      '';
-    };
-
-    remoteWrite = mkOption {
-      type = types.listOf promTypes.remote_write;
-      default = [ ];
-      description = ''
-        Parameters of the endpoints to send samples to.
-        See [the official documentation](https://prometheus.io/docs/prometheus/latest/configuration/configuration/#remote_write) for more information.
-      '';
-    };
-
-    rules = mkOption {
-      type = types.listOf types.str;
-      default = [ ];
-      description = ''
-        Alerting and/or Recording rules to evaluate at runtime.
-      '';
-    };
-
-    ruleFiles = mkOption {
-      type = types.listOf types.path;
-      default = [ ];
-      description = ''
-        Any additional rules files to include in this configuration.
-      '';
-    };
-
-    scrapeConfigs = mkOption {
-      type = types.listOf promTypes.scrape_config;
-      default = [ ];
-      description = ''
-        A list of scrape configurations.
-      '';
+      type = types.int;
     };
 
     alertmanagers = mkOption {
-      type = types.listOf types.attrs;
+      default = [ ];
+
+      description = ''
+        A list of alertmanagers to send alerts to.
+        See [the official documentation](https://prometheus.io/docs/prometheus/latest/configuration/configuration/#alertmanager_config) for more information.
+      '';
+
       example = literalExpression ''
         [ {
           scheme = "https";
@@ -1874,44 +1865,13 @@ in
           } ];
         } ]
       '';
-      default = [ ];
-      description = ''
-        A list of alertmanagers to send alerts to.
-        See [the official documentation](https://prometheus.io/docs/prometheus/latest/configuration/configuration/#alertmanager_config) for more information.
-      '';
-    };
 
-    alertmanagerNotificationQueueCapacity = mkOption {
-      type = types.int;
-      default = 10000;
-      description = ''
-        The capacity of the queue for pending alert manager notifications.
-      '';
-    };
-
-    webExternalUrl = mkOption {
-      type = types.nullOr types.str;
-      default = null;
-      example = "https://example.com/";
-      description = ''
-        The URL under which Prometheus is externally reachable (for example,
-        if Prometheus is served via a reverse proxy).
-      '';
-    };
-
-    webConfigFile = mkOption {
-      type = types.nullOr types.path;
-      default = null;
-      description = ''
-        Specifies which file should be used as web.config.file and be passed on startup.
-        See <https://prometheus.io/docs/prometheus/latest/configuration/https/> for valid options.
-      '';
+      type = types.listOf types.attrs;
     };
 
     checkConfig = mkOption {
-      type = with types; either bool (enum [ "syntax-only" ]);
       default = true;
-      example = "syntax-only";
+
       description = ''
         Check configuration with `promtool check`. The call to `promtool` is
         subject to sandboxing by Nix.
@@ -1923,15 +1883,176 @@ in
         To resolve this, you may set this option to `"syntax-only"`
         in order to only syntax check the Prometheus configuration.
       '';
+
+      example = "syntax-only";
+      type = with types; either bool (enum [ "syntax-only" ]);
+    };
+
+    configText = mkOption {
+      default = null;
+
+      description = ''
+        If non-null, this option defines the text that is written to
+        prometheus.yml. If null, the contents of prometheus.yml is generated
+        from the structured config options.
+      '';
+
+      type = types.nullOr types.lines;
+    };
+
+    enableAgentMode = mkEnableOption "agent mode";
+
+    enableReload = mkOption {
+      default = false;
+
+      description = ''
+        Reload prometheus when configuration file changes (instead of restart).
+
+        The following property holds: switching to a configuration
+        (`switch-to-configuration`) that changes the prometheus
+        configuration only finishes successfully when prometheus has finished
+        loading the new configuration.
+      '';
+
+      type = types.bool;
+    };
+
+    extraFlags = mkOption {
+      default = [ ];
+
+      description = ''
+        Extra commandline options when launching Prometheus.
+      '';
+
+      type = types.listOf types.str;
+    };
+
+    globalConfig = mkOption {
+      default = { };
+
+      description = ''
+        Parameters that are valid in all  configuration contexts. They
+        also serve as defaults for other configuration sections
+      '';
+
+      type = promTypes.globalConfig;
+    };
+
+    listenAddress = mkOption {
+      default = "0.0.0.0";
+
+      description = ''
+        Address to listen on for the web interface, API, and telemetry.
+      '';
+
+      type = types.str;
+    };
+
+    port = mkOption {
+      default = 9090;
+
+      description = ''
+        Port to listen on.
+      '';
+
+      type = types.port;
+    };
+
+    remoteRead = mkOption {
+      default = [ ];
+
+      description = ''
+        Parameters of the endpoints to query from.
+        See [the official documentation](https://prometheus.io/docs/prometheus/latest/configuration/configuration/#remote_read) for more information.
+      '';
+
+      type = types.listOf promTypes.remote_read;
+    };
+
+    remoteWrite = mkOption {
+      default = [ ];
+
+      description = ''
+        Parameters of the endpoints to send samples to.
+        See [the official documentation](https://prometheus.io/docs/prometheus/latest/configuration/configuration/#remote_write) for more information.
+      '';
+
+      type = types.listOf promTypes.remote_write;
     };
 
     retentionTime = mkOption {
-      type = types.nullOr types.str;
       default = null;
-      example = "15d";
+
       description = ''
         How long to retain samples in storage.
       '';
+
+      example = "15d";
+      type = types.nullOr types.str;
+    };
+
+    ruleFiles = mkOption {
+      default = [ ];
+
+      description = ''
+        Any additional rules files to include in this configuration.
+      '';
+
+      type = types.listOf types.path;
+    };
+
+    rules = mkOption {
+      default = [ ];
+
+      description = ''
+        Alerting and/or Recording rules to evaluate at runtime.
+      '';
+
+      type = types.listOf types.str;
+    };
+
+    scrapeConfigs = mkOption {
+      default = [ ];
+
+      description = ''
+        A list of scrape configurations.
+      '';
+
+      type = types.listOf promTypes.scrape_config;
+    };
+
+    stateDir = mkOption {
+      default = "prometheus2";
+
+      description = ''
+        Directory below `/var/lib` to store Prometheus metrics data.
+        This directory will be created automatically using systemd's StateDirectory mechanism.
+      '';
+
+      type = types.str;
+    };
+
+    webConfigFile = mkOption {
+      default = null;
+
+      description = ''
+        Specifies which file should be used as web.config.file and be passed on startup.
+        See <https://prometheus.io/docs/prometheus/latest/configuration/https/> for valid options.
+      '';
+
+      type = types.nullOr types.path;
+    };
+
+    webExternalUrl = mkOption {
+      default = null;
+
+      description = ''
+        The URL under which Prometheus is externally reachable (for example,
+        if Prometheus is served via a reverse proxy).
+      '';
+
+      example = "https://example.com/";
+      type = types.nullOr types.str;
     };
   };
 
@@ -1945,6 +2066,7 @@ in
         in
         {
           assertion = legacy == null;
+
           message = ''
             Do not specify the port for Prometheus to listen on in the
             listenAddress option; use the port option instead:
@@ -1955,34 +2077,24 @@ in
       )
     ];
 
-    users.groups.prometheus.gid = config.ids.gids.prometheus;
-    users.users.prometheus = {
-      description = "Prometheus daemon user";
-      uid = config.ids.uids.prometheus;
-      group = "prometheus";
-    };
     environment.etc."prometheus/prometheus.yaml" = mkIf cfg.enableReload {
       source = prometheusYml;
     };
+
     systemd.services.prometheus = {
-      wantedBy = [ "multi-user.target" ];
       after = [ "network.target" ];
+
       serviceConfig = {
-        ExecStart =
-          "${lib.getExe cfg.package}"
-          + optionalString (length cmdlineArgs != 0) (" \\\n  " + concatStringsSep " \\\n  " cmdlineArgs);
-        ExecReload = mkIf cfg.enableReload "+${reload}/bin/reload-prometheus";
-        User = "prometheus";
-        Restart = "always";
-        RuntimeDirectory = "prometheus";
-        RuntimeDirectoryMode = "0700";
-        WorkingDirectory = workingDir;
-        StateDirectory = cfg.stateDir;
-        StateDirectoryMode = "0700";
         # Hardening
         CapabilityBoundingSet = [ "" ];
         DeviceAllow = [ "/dev/null rw" ];
         DevicePolicy = "strict";
+        ExecReload = mkIf cfg.enableReload "+${reload}/bin/reload-prometheus";
+
+        ExecStart =
+          "${lib.getExe cfg.package}"
+          + optionalString (length cmdlineArgs != 0) (" \\\n  " + concatStringsSep " \\\n  " cmdlineArgs);
+
         LockPersonality = true;
         MemoryDenyWriteExecute = true;
         NoNewPrivileges = true;
@@ -1999,21 +2111,35 @@ in
         ProtectProc = "invisible";
         ProtectSystem = "full";
         RemoveIPC = true;
+        Restart = "always";
+
         RestrictAddressFamilies = [
           "AF_INET"
           "AF_INET6"
           "AF_UNIX"
         ];
+
         RestrictNamespaces = true;
         RestrictRealtime = true;
         RestrictSUIDSGID = true;
+        RuntimeDirectory = "prometheus";
+        RuntimeDirectoryMode = "0700";
+        StateDirectory = cfg.stateDir;
+        StateDirectoryMode = "0700";
         SystemCallArchitectures = "native";
+
         SystemCallFilter = [
           "@system-service"
           "~@privileged"
         ];
+
+        User = "prometheus";
+        WorkingDirectory = workingDir;
       };
+
+      wantedBy = [ "multi-user.target" ];
     };
+
     # prometheus-config-reload will activate after prometheus. However, what we
     # don't want is that on startup it immediately reloads prometheus because
     # prometheus itself might have just started.
@@ -2026,17 +2152,27 @@ in
     # that this service has changed (restartTriggers) and needs to be reloaded
     # (reloadIfChanged). The reload command then reloads prometheus.
     systemd.services.prometheus-config-reload = mkIf cfg.enableReload {
-      wantedBy = [ "prometheus.service" ];
       after = [ "prometheus.service" ];
       reloadIfChanged = true;
       restartTriggers = [ prometheusYml ];
+
       serviceConfig = {
-        Type = "oneshot";
+        ExecReload = [ "${triggerReload}/bin/trigger-reload-prometheus" ];
+        ExecStart = "${pkgs.logger}/bin/logger 'prometheus-config-reload will only reload prometheus when reloaded itself.'";
         RemainAfterExit = true;
         TimeoutSec = 60;
-        ExecStart = "${pkgs.logger}/bin/logger 'prometheus-config-reload will only reload prometheus when reloaded itself.'";
-        ExecReload = [ "${triggerReload}/bin/trigger-reload-prometheus" ];
+        Type = "oneshot";
       };
+
+      wantedBy = [ "prometheus.service" ];
+    };
+
+    users.groups.prometheus.gid = config.ids.gids.prometheus;
+
+    users.users.prometheus = {
+      description = "Prometheus daemon user";
+      group = "prometheus";
+      uid = config.ids.uids.prometheus;
     };
   };
 }

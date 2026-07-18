@@ -3,28 +3,28 @@
 }:
 
 rsyslog.override {
-  withKrb5 = false;
-  withSystemd = false;
-  withJemalloc = false;
-  withMysql = false;
-  withPostgres = false;
-  withDbi = false;
-  withNetSnmp = false;
-  withUuid = false;
   withCurl = false;
-  withGnutls = false;
+  withCzmq = false;
+  withDbi = false;
   withGcrypt = false;
-  withLognorm = false;
-  withMaxminddb = false;
-  withOpenssl = false;
-  withRelp = false;
+  withGnutls = false;
+  withHadoop = false;
+  withHiredis = false;
+  withJemalloc = false;
+  withKrb5 = false;
   withKsi = false;
   withLogging = false;
-  withNet = false;
-  withHadoop = false;
-  withRdkafka = false;
+  withLognorm = false;
+  withMaxminddb = false;
   withMongo = false;
-  withCzmq = false;
+  withMysql = false;
+  withNet = false;
+  withNetSnmp = false;
+  withOpenssl = false;
+  withPostgres = false;
   withRabbitmq = false;
-  withHiredis = false;
+  withRdkafka = false;
+  withRelp = false;
+  withSystemd = false;
+  withUuid = false;
 }

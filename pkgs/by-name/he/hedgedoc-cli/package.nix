@@ -2,10 +2,10 @@
   lib,
   stdenv,
   fetchFromGitHub,
+  curl,
+  jq,
   makeBinaryWrapper,
   wget,
-  jq,
-  curl,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -23,6 +23,14 @@ stdenv.mkDerivation (finalAttrs: {
     makeBinaryWrapper
   ];
 
+  checkPhase = ''
+    runHook preCheck
+
+    hedgedoc-cli help
+
+    runHook postCheck
+  '';
+
   installPhase = ''
     runHook preInstall
 
@@ -38,19 +46,11 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
-  checkPhase = ''
-    runHook preCheck
-
-    hedgedoc-cli help
-
-    runHook postCheck
-  '';
-
   meta = {
     description = "Hedgedoc CLI";
     homepage = "https://github.com/hedgedoc/cli";
     license = lib.licenses.agpl3Only;
-    mainProgram = "hedgedoc-cli";
     maintainers = [ ];
+    mainProgram = "hedgedoc-cli";
   };
 })

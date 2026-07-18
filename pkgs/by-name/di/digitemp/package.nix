@@ -1,8 +1,8 @@
 {
-  fetchFromGitHub,
-  fetchpatch,
   lib,
   stdenv,
+  fetchFromGitHub,
+  fetchpatch,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -18,12 +18,10 @@ stdenv.mkDerivation (finalAttrs: {
 
   patches = [
     (fetchpatch {
-      url = "https://github.com/bcl/digitemp/commit/fa56b0f78d12f97ac44e0a367d413a9e88611d1c.patch?full_index=1";
       hash = "sha256-1xyVcZKVPtQDPw48i+4Jv9fQCOq46IQZA2wCa5ukr00=";
+      url = "https://github.com/bcl/digitemp/commit/fa56b0f78d12f97ac44e0a367d413a9e88611d1c.patch?full_index=1";
     })
   ];
-
-  enableParallelBuilding = true;
 
   makeFlags = [
     "LOCK=no"
@@ -38,8 +36,11 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  enableParallelBuilding = true;
+
   meta = {
     description = "Temperature logging and reporting using Maxim's iButtons and 1-Wire protocol";
+
     longDescription = ''
       DigiTemp is a command line application used for reading 1-wire sensors like
       the DS18S20 temperature sensor, or DS2438 battery monitor. DigiTemp supports
@@ -57,6 +58,7 @@ stdenv.mkDerivation (finalAttrs: {
       configuration file (.digitemprc) in the current directory. DigiTemp can
       repeatedly read the sensors and output to stdout and/or to a logfile.
     '';
+
     homepage = "https://www.digitemp.com";
     license = lib.licenses.gpl2Plus;
     maintainers = [ ];

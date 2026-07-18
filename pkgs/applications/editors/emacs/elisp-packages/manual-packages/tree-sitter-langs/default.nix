@@ -1,11 +1,11 @@
 {
   lib,
   stdenv,
+  final,
   melpaStablePackages,
   runCommand,
   tree-sitter-grammars,
   plugins ? map (g: tree-sitter-grammars.${g}) (lib.importJSON ./default-grammars.json),
-  final,
 }:
 
 let

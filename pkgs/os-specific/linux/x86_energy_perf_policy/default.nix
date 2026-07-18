@@ -7,7 +7,6 @@
 stdenv.mkDerivation {
   pname = "x86_energy_perf_policy";
   version = kernel.version;
-
   src = kernel.src;
 
   postPatch = ''
@@ -15,20 +14,22 @@ stdenv.mkDerivation {
     sed -i 's,/usr,,g' Makefile
   '';
 
+  makeFlags = [ "DESTDIR=$(out)" ];
+
   preInstall = ''
     mkdir -p $out/bin $out/share/man/man8
   '';
 
-  makeFlags = [ "DESTDIR=$(out)" ];
-
   meta = {
     description = "Set the energy versus performance policy preference bias on recent X86 processors";
-    mainProgram = "x86_energy_perf_policy";
     homepage = "https://www.kernel.org/";
     license = lib.licenses.gpl2Only;
+
     platforms = [
       "i686-linux"
       "x86_64-linux"
     ]; # x86-specific
+
+    mainProgram = "x86_energy_perf_policy";
   };
 }

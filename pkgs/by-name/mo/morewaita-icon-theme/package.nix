@@ -1,11 +1,11 @@
 {
   lib,
-  stdenvNoCC,
   fetchFromGitHub,
   adwaita-icon-theme,
   gtk3,
-  xdg-utils,
   nix-update-script,
+  stdenvNoCC,
+  xdg-utils,
 }:
 stdenvNoCC.mkDerivation (finalAttrs: {
   pname = "morewaita-icon-theme";
@@ -47,9 +47,11 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     description = "Adwaita style extra icons theme for Gnome Shell";
     homepage = "https://github.com/somepaulo/MoreWaita";
     license = with lib.licenses; [ gpl3Only ];
-    platforms = lib.platforms.linux;
+
     maintainers = with lib.maintainers; [
       pkosel
     ];
+
+    platforms = lib.platforms.linux;
   };
 })

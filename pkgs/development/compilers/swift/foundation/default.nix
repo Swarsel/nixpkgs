@@ -1,24 +1,23 @@
 {
   lib,
   stdenv,
-  fetchpatch,
+  Dispatch,
   callPackage,
   cmake,
-  ninja,
-  swift,
-  Dispatch,
+  curl,
+  fetchpatch,
   icu,
   libxml2,
-  curl,
+  ninja,
+  swift,
 }:
 
 let
   sources = callPackage ../sources.nix { };
 in
 stdenv.mkDerivation {
-  pname = "swift-corelibs-foundation";
-
   inherit (sources) version;
+  pname = "swift-corelibs-foundation";
   src = sources.swift-corelibs-foundation;
 
   outputs = [
@@ -31,11 +30,13 @@ stdenv.mkDerivation {
     ninja
     swift
   ];
+
   buildInputs = [
     icu
     libxml2
     curl
   ];
+
   propagatedBuildInputs = [ Dispatch ];
 
   preConfigure = ''
@@ -62,10 +63,10 @@ stdenv.mkDerivation {
 
   meta = {
     description = "Core utilities, internationalization, and OS independence for Swift";
-    mainProgram = "plutil";
     homepage = "https://github.com/apple/swift-corelibs-foundation";
-    platforms = lib.platforms.linux;
     license = lib.licenses.asl20;
+    platforms = lib.platforms.linux;
+    mainProgram = "plutil";
     teams = [ lib.teams.swift ];
   };
 }

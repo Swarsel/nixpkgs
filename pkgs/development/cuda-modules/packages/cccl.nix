@@ -1,14 +1,12 @@
 {
+  lib,
   buildRedist,
   cudaAtLeast,
   cudaOlder,
-  lib,
   fetchpatch,
 }:
 buildRedist {
-  redistName = "cuda";
   pname = if cudaAtLeast "13.3" then "cccl" else "cuda_cccl";
-
   # Restrict header-only packages to a single output.
   # Also, when using multiple outputs (i.e., `out`, `dev`, and `include`), something isn't being patched correctly,
   # so libnvshmem fails to build, complaining about being unable to find the thrust include directory. This is likely
@@ -16,36 +14,27 @@ buildRedist {
   # directory with the include directory rather than be in a separate output.
   outputs = [ "out" ];
 
-  prePatch = lib.optionalString (cudaAtLeast "13.0") ''
-    nixLog "removing top-level $PWD/include/nv directory"
-    rm -rfv "$PWD/include/nv"
-    nixLog "un-nesting top-level $PWD/include/cccl directory"
-    mv -v "$PWD/include/cccl"/* "$PWD/include/"
-    nixLog "removing empty $PWD/include/cccl directory"
-    rmdir -v "$PWD/include/cccl"
-  '';
-
   patches =
     lib.optionals (cudaAtLeast "12.9" && cudaOlder "13.0") [
       # Fix missing _CCCL_PP_SPLICE_WITH_IMPL20 in preprocessor.h
       # https://github.com/NVIDIA/cccl/issues/4967
       # https://github.com/NVIDIA/cccl/pull/4972
       (fetchpatch {
-        name = "fix-missing-_CCCL_PP_SPLICE_WITH_IMPL20";
-        url = "https://github.com/NVIDIA/cccl/commit/2c2276d8b19d737cb16811ce2eb761030f472e60.patch";
-        stripLen = 1;
         hash = "sha256-hYfMFsd7Y8CwuNGaPYG6uEB+lg1TmWSIIU5ToVMULKY=";
+        name = "fix-missing-_CCCL_PP_SPLICE_WITH_IMPL20";
+        stripLen = 1;
+        url = "https://github.com/NVIDIA/cccl/commit/2c2276d8b19d737cb16811ce2eb761030f472e60.patch";
       })
     ]
     ++ lib.optionals (cudaAtLeast "13.2") [
       # Fix onnxruntime compilation error: https://github.com/microsoft/onnxruntime/issues/28023
       # Backport: https://github.com/NVIDIA/cccl/pull/8771
       (fetchpatch {
-        name = "fix-invalid-cpp-syntax";
-        url = "https://github.com/NVIDIA/cccl/commit/8e41eeabe54ab9ae48ad5640cfa7153b0a1071af.patch";
-        stripLen = 2;
         extraPrefix = "include/";
         hash = "sha256-eko1GSD2NPSLtbQ3diwgKMbuS6wU9lHDOajLJy5lBwM=";
+        name = "fix-invalid-cpp-syntax";
+        stripLen = 2;
+        url = "https://github.com/NVIDIA/cccl/commit/8e41eeabe54ab9ae48ad5640cfa7153b0a1071af.patch";
       })
     ];
 
@@ -56,12 +45,25 @@ buildRedist {
     ln -srv "''${!outputInclude:?}/include" "''${!outputInclude:?}/include/cccl"
   '';
 
+  prePatch = lib.optionalString (cudaAtLeast "13.0") ''
+    nixLog "removing top-level $PWD/include/nv directory"
+    rm -rfv "$PWD/include/nv"
+    nixLog "un-nesting top-level $PWD/include/cccl directory"
+    mv -v "$PWD/include/cccl"/* "$PWD/include/"
+    nixLog "removing empty $PWD/include/cccl directory"
+    rmdir -v "$PWD/include/cccl"
+  '';
+
+  redistName = "cuda";
+
   meta = {
     description = "Building blocks that make it easier to write safe and efficient CUDA C++ code";
+
     longDescription = ''
       The goal of CCCL is to provide CUDA C++ developers with building blocks that make it easier to write safe and
       efficient code.
     '';
+
     homepage = "https://github.com/NVIDIA/cccl";
     changelog = "https://github.com/NVIDIA/cccl/releases";
   };

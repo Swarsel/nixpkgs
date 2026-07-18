@@ -1,22 +1,22 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
-  python3,
-  makeWrapper,
-  eigen_3_4_0,
-  fftw,
-  libtiff,
-  libpng,
-  zlib,
   ants,
   bc,
-  qt5,
+  eigen_3_4_0,
+  fftw,
+  less,
   libGL,
   libGLU,
+  libpng,
+  libtiff,
   libx11,
   libxext,
-  less,
+  makeWrapper,
+  python3,
+  qt5,
+  zlib,
   withGui ? true,
 }:
 
@@ -31,6 +31,25 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-X/slZuDyVzfsfq3F2uZ0tqOUmK+qEqSwGy8eAJ1bVbg=";
     fetchSubmodules = true;
   };
+
+  postPatch = ''
+    patchShebangs --build ./build ./configure ./run_tests
+    patchShebangs --host ./bin/*
+
+    # patching interpreters before fixup is needed for tests:
+    patchShebangs testing/binaries/data/vectorstats/*py
+
+    substituteInPlace ./run_tests  \
+      --replace-fail 'git submodule update --init $datadir >> $LOGFILE 2>&1' ""
+
+    # reduce build noise
+    substituteInPlace ./configure \
+      --replace-fail "[ '-Wall' ]" "[]"
+
+    # fix error output (cuts off after a few lines otherwise)
+    substituteInPlace ./build  \
+      --replace-fail 'stderr=subprocess.PIPE' 'stderr=None'
+  '';
 
   nativeBuildInputs = [
     makeWrapper
@@ -57,41 +76,23 @@ stdenv.mkDerivation (finalAttrs: {
     qt5.qtsvg
   ];
 
-  nativeInstallCheckInputs = [ bc ];
-
-  postPatch = ''
-    patchShebangs --build ./build ./configure ./run_tests
-    patchShebangs --host ./bin/*
-
-    # patching interpreters before fixup is needed for tests:
-    patchShebangs testing/binaries/data/vectorstats/*py
-
-    substituteInPlace ./run_tests  \
-      --replace-fail 'git submodule update --init $datadir >> $LOGFILE 2>&1' ""
-
-    # reduce build noise
-    substituteInPlace ./configure \
-      --replace-fail "[ '-Wall' ]" "[]"
-
-    # fix error output (cuts off after a few lines otherwise)
-    substituteInPlace ./build  \
-      --replace-fail 'stderr=subprocess.PIPE' 'stderr=None'
-  '';
-
-  configurePhase = ''
-    runHook preConfigure
-    export EIGEN_CFLAGS="-isystem ${eigen_3_4_0}/include/eigen3"
-    unset LD  # similar to https://github.com/MRtrix3/mrtrix3/issues/1519
-    ./configure ${lib.optionalString (!withGui) "-nogui"};
-    runHook postConfigure
-  '';
-
   buildPhase = ''
     runHook preBuild
     ./build
     (cd testing && ../build)
     runHook postBuild
   '';
+
+  installPhase = ''
+    runHook preInstall
+    mkdir -p $out
+    cp -ar lib $out/lib
+    cp -ar bin $out/bin
+    runHook postInstall
+  '';
+
+  doInstallCheck = true;
+  nativeInstallCheckInputs = [ bc ];
 
   installCheckPhase = ''
     runHook preInstallCheck
@@ -101,15 +102,6 @@ stdenv.mkDerivation (finalAttrs: {
     # can also `./run_tests scripts`, but this fails due to lack of FSL package
     # (and there's no convenient way to disable individual tests)
     runHook postInstallCheck
-  '';
-  doInstallCheck = true;
-
-  installPhase = ''
-    runHook preInstall
-    mkdir -p $out
-    cp -ar lib $out/lib
-    cp -ar bin $out/bin
-    runHook postInstall
   '';
 
   preFixup =
@@ -126,12 +118,20 @@ stdenv.mkDerivation (finalAttrs: {
         done
       '';
 
+  configurePhase = ''
+    runHook preConfigure
+    export EIGEN_CFLAGS="-isystem ${eigen_3_4_0}/include/eigen3"
+    unset LD  # similar to https://github.com/MRtrix3/mrtrix3/issues/1519
+    ./configure ${lib.optionalString (!withGui) "-nogui"};
+    runHook postConfigure
+  '';
+
   meta = {
-    broken = (stdenv.hostPlatform.isLinux && stdenv.hostPlatform.isAarch64);
-    homepage = "https://github.com/MRtrix3/mrtrix3";
     description = "Suite of tools for diffusion imaging";
+    homepage = "https://github.com/MRtrix3/mrtrix3";
+    license = lib.licenses.mpl20;
     maintainers = with lib.maintainers; [ bcdarwin ];
     platforms = lib.platforms.linux;
-    license = lib.licenses.mpl20;
+    broken = (stdenv.hostPlatform.isLinux && stdenv.hostPlatform.isAarch64);
   };
 })

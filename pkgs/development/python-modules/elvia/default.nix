@@ -1,8 +1,8 @@
 {
   lib,
+  fetchFromGitHub,
   aiohttp,
   buildPythonPackage,
-  fetchFromGitHub,
   pytest-asyncio,
   pytestCheckHook,
   setuptools,
@@ -12,7 +12,6 @@
 buildPythonPackage rec {
   pname = "elvia";
   version = "0.1.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "andersem";
@@ -21,6 +20,11 @@ buildPythonPackage rec {
     hash = "sha256-oGXs+EwEIykkq8KjK7qNnZfLj4ZoKlgkldUiJlAI1gA=";
   };
 
+  nativeCheckInputs = [
+    pytest-asyncio
+    pytestCheckHook
+  ];
+
   build-system = [ setuptools ];
 
   dependencies = [
@@ -28,11 +32,7 @@ buildPythonPackage rec {
     typing-extensions
   ];
 
-  nativeCheckInputs = [
-    pytest-asyncio
-    pytestCheckHook
-  ];
-
+  pyproject = true;
   pythonImportsCheck = [ "elvia" ];
 
   meta = {

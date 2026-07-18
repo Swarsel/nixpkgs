@@ -1,33 +1,28 @@
 {
   lib,
+  cdparanoia,
+  cdrdao,
+  cdrtools,
+  dvdplusrwtools,
+  flac,
+  lame,
+  libburn,
+  libdvdcss,
+  libdvdread,
+  libmad,
+  libsamplerate,
+  libsndfile,
+  libvorbis,
   mkKdeDerivation,
+  normalize,
   pkg-config,
   qtwebengine,
   shared-mime-info,
-  libdvdread,
-  flac,
-  libmad,
-  libsndfile,
-  lame,
-  libvorbis,
-  libsamplerate,
-  cdrdao,
-  cdrtools,
-  cdparanoia,
-  dvdplusrwtools,
-  libburn,
-  libdvdcss,
-  normalize,
   sox,
   vcdimager,
 }:
 mkKdeDerivation {
   pname = "k3b";
-
-  extraNativeBuildInputs = [
-    pkg-config
-    shared-mime-info
-  ];
 
   # FIXME: Musicbrainz 2.x???, musepack
   extraBuildInputs = [
@@ -39,6 +34,11 @@ mkKdeDerivation {
     lame
     libvorbis
     libsamplerate
+  ];
+
+  extraNativeBuildInputs = [
+    pkg-config
+    shared-mime-info
   ];
 
   qtWrapperArgs = [

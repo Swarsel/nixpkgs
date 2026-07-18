@@ -22,6 +22,42 @@ in
   ###### interface
 
   options = {
+    boot.blacklistedKernelModules = mkOption {
+      apply = mods: lib.attrNames (lib.filterAttrs (_: v: v) mods);
+      default = { };
+
+      description = ''
+        Set of names of kernel modules that should not be loaded
+        automatically by the hardware probing code. This can either be
+        a list of modules or an attrset. In an attrset, names that are
+        set to `true` represent modules that will be blacklisted.
+      '';
+
+      example = [
+        "cirrusfb"
+        "i2c_piix4"
+      ];
+
+      type = attrNamesToTrue;
+    };
+
+    boot.extraModprobeConfig = mkOption {
+      default = "";
+
+      description = ''
+        Any additional configuration to be appended to the generated
+        {file}`modprobe.conf`.  This is typically used to
+        specify module options.  See
+        {manpage}`modprobe.d(5)` for details.
+      '';
+
+      example = ''
+        options parport_pc io=0x378 irq=7 dma=1
+      '';
+
+      type = types.lines;
+    };
+
     boot.modprobeConfig.enable =
       mkEnableOption "modprobe config. This is useful for systems like containers which do not require a kernel"
       // {
@@ -34,47 +70,13 @@ in
         default = true;
       };
 
-    boot.blacklistedKernelModules = mkOption {
-      type = attrNamesToTrue;
-      default = { };
-      example = [
-        "cirrusfb"
-        "i2c_piix4"
-      ];
-      description = ''
-        Set of names of kernel modules that should not be loaded
-        automatically by the hardware probing code. This can either be
-        a list of modules or an attrset. In an attrset, names that are
-        set to `true` represent modules that will be blacklisted.
-      '';
-      apply = mods: lib.attrNames (lib.filterAttrs (_: v: v) mods);
-    };
-
-    boot.extraModprobeConfig = mkOption {
-      default = "";
-      example = ''
-        options parport_pc io=0x378 irq=7 dma=1
-      '';
-      description = ''
-        Any additional configuration to be appended to the generated
-        {file}`modprobe.conf`.  This is typically used to
-        specify module options.  See
-        {manpage}`modprobe.d(5)` for details.
-      '';
-      type = types.lines;
-    };
-
   };
 
   ###### implementation
 
   config = mkIf config.boot.modprobeConfig.enable {
 
-    environment.etc."modprobe.d/ubuntu.conf" =
-      mkIf config.boot.modprobeConfig.useUbuntuModuleBlacklist
-        {
-          source = "${pkgs.kmod-blacklist-ubuntu}/modprobe.conf";
-        };
+    environment.etc."modprobe.d/debian.conf".source = pkgs.kmod-debian-aliases;
 
     environment.etc."modprobe.d/nixos.conf".text = ''
       ${flip concatMapStrings config.boot.blacklistedKernelModules (name: ''
@@ -82,10 +84,15 @@ in
       '')}
       ${config.boot.extraModprobeConfig}
     '';
-    environment.etc."modprobe.d/debian.conf".source = pkgs.kmod-debian-aliases;
 
     environment.etc."modprobe.d/systemd.conf".source =
       "${config.systemd.package}/lib/modprobe.d/systemd.conf";
+
+    environment.etc."modprobe.d/ubuntu.conf" =
+      mkIf config.boot.modprobeConfig.useUbuntuModuleBlacklist
+        {
+          source = "${pkgs.kmod-blacklist-ubuntu}/modprobe.conf";
+        };
 
     environment.systemPackages = [ pkgs.kmod ];
 

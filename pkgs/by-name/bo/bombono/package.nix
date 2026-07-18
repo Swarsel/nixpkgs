@@ -2,15 +2,13 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  pkg-config,
-  fetchpatch,
-  fetchpatch2,
-  scons,
   boost183,
+  cdrkit,
   dvdauthor,
   dvdplusrwtools,
   enca,
-  cdrkit,
+  fetchpatch,
+  fetchpatch2,
   ffmpeg_6,
   gettext,
   gtk2,
@@ -18,6 +16,8 @@
   libdvdread,
   libxmlxx,
   mjpegtools,
+  pkg-config,
+  scons,
   wrapGAppsHook3,
 }:
 
@@ -35,15 +35,15 @@ stdenv.mkDerivation {
   patches = [
     (fetchpatch {
       name = "bombono-dvd-1.2.4-scons3.patch";
-      url = "https://svnweb.mageia.org/packages/cauldron/bombono-dvd/current/SOURCES/bombono-dvd-1.2.4-scons-python3.patch?revision=1447925&view=co&pathrev=1484457";
       sha256 = "sha256-5OKBWrRZvHem2MTdAObfdw76ig3Z4ZdDFtq4CJoJISA=";
+      url = "https://svnweb.mageia.org/packages/cauldron/bombono-dvd/current/SOURCES/bombono-dvd-1.2.4-scons-python3.patch?revision=1447925&view=co&pathrev=1484457";
     })
 
     # Fix compilation errors having ffmpeg 2:5.1
     # https://github.com/bombono-dvd/bombono-dvd/pull/28
     (fetchpatch2 {
-      url = "https://github.com/bombono-dvd/bombono-dvd/commit/9f2cde1ddc22705bf58264739685086755b2138b.patch?full_index=1";
       hash = "sha256-ks6c04HEYF4nPfSOjzG+dUt9v7ZmNBb0XH6byPYqX5I=";
+      url = "https://github.com/bombono-dvd/bombono-dvd/commit/9f2cde1ddc22705bf58264739685086755b2138b.patch?full_index=1";
     })
   ];
 
@@ -74,10 +74,6 @@ stdenv.mkDerivation {
     mjpegtools
   ];
 
-  prefixKey = "PREFIX=";
-
-  enableParallelBuilding = true;
-
   postInstall = ''
     # fix iso authoring
     install -Dt  $out/share/bombono/resources/scons_authoring tools/scripts/SConsTwin.py
@@ -90,6 +86,9 @@ stdenv.mkDerivation {
       ]
     }
   '';
+
+  enableParallelBuilding = true;
+  prefixKey = "PREFIX=";
 
   meta = {
     description = "DVD authoring program for personal computers";

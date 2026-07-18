@@ -1,8 +1,8 @@
 {
-  stdenvNoCC,
   lib,
   fetchFromGitHub,
   isabelle,
+  stdenvNoCC,
 }:
 
 stdenvNoCC.mkDerivation rec {
@@ -33,8 +33,8 @@ stdenvNoCC.mkDerivation rec {
   meta = {
     description = "Linter component for Isabelle";
     homepage = "https://github.com/isabelle-prover/isabelle-linter";
-    maintainers = with lib.maintainers; [ jvanbruegge ];
     license = lib.licenses.mit;
+    maintainers = with lib.maintainers; [ jvanbruegge ];
     platforms = lib.platforms.all;
   };
 }

@@ -1,11 +1,11 @@
 {
   lib,
-  buildGoModule,
   fetchFromGitHub,
-  pkg-config,
+  buildGoModule,
   fuse,
-  versionCheckHook,
   nix-update-script,
+  pkg-config,
+  versionCheckHook,
 }:
 
 buildGoModule (finalAttrs: {
@@ -19,14 +19,6 @@ buildGoModule (finalAttrs: {
     hash = "sha256-jewvap5dYDpW7kqN2BvJuaqXG8C+gya9y6NxwPQhR4I=";
   };
 
-  vendorHash = "sha256-gDBDN+loVtsTTj8J1sFlWqMgcdlKepj/16hLkiQEmTs=";
-
-  ldflags = [
-    "-s"
-    "-w"
-    "-X main.version=${finalAttrs.version}"
-  ];
-
   nativeBuildInputs = [
     pkg-config
   ];
@@ -35,11 +27,17 @@ buildGoModule (finalAttrs: {
     fuse
   ];
 
+  vendorHash = "sha256-gDBDN+loVtsTTj8J1sFlWqMgcdlKepj/16hLkiQEmTs=";
   # Integration tests fail (requires connection to relays)
   doCheck = false;
-
-  nativeInstallCheckInputs = [ versionCheckHook ];
   doInstallCheck = true;
+  nativeInstallCheckInputs = [ versionCheckHook ];
+
+  ldflags = [
+    "-s"
+    "-w"
+    "-X main.version=${finalAttrs.version}"
+  ];
 
   passthru.updateScript = nix-update-script { };
 

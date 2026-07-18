@@ -1,13 +1,13 @@
 {
+  lib,
+  fetchFromGitHub,
   appstream,
   appstream-glib,
   desktop-file-utils,
-  fetchFromGitHub,
   gettext,
   gobject-introspection,
   gtk4,
   gtksourceview5,
-  lib,
   libadwaita,
   libportal,
   librsvg,
@@ -22,7 +22,6 @@
 python3Packages.buildPythonApplication (finalAttrs: {
   pname = "setzer";
   version = "66";
-  pyproject = false;
 
   src = fetchFromGitHub {
     owner = "cvfosammmm";
@@ -52,6 +51,14 @@ python3Packages.buildPythonApplication (finalAttrs: {
     webkitgtk_6_0
   ];
 
+  checkPhase = ''
+    runHook preCheck
+
+    meson test --print-errorlogs
+
+    runHook postCheck
+  '';
+
   dependencies = with python3Packages; [
     bibtexparser
     numpy
@@ -63,19 +70,13 @@ python3Packages.buildPythonApplication (finalAttrs: {
     pyxdg
   ];
 
-  checkPhase = ''
-    runHook preCheck
-
-    meson test --print-errorlogs
-
-    runHook postCheck
-  '';
+  pyproject = false;
 
   meta = {
     description = "LaTeX editor written in Python with Gtk";
-    mainProgram = "setzer";
     homepage = "https://www.cvfosammmm.org/setzer/";
     license = lib.licenses.gpl3Plus;
     maintainers = with lib.maintainers; [ dotlambda ];
+    mainProgram = "setzer";
   };
 })

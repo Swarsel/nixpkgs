@@ -1,9 +1,9 @@
 {
   lib,
-  undmg,
-  makeWrapper,
   fetchurl,
+  makeWrapper,
   stdenvNoCC,
+  undmg,
 }:
 
 stdenvNoCC.mkDerivation (finalAttrs: {
@@ -20,7 +20,6 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     makeWrapper
   ];
 
-  sourceRoot = ".";
   installPhase = ''
     runHook preInstall
 
@@ -37,8 +36,11 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  sourceRoot = ".";
+
   meta = {
     description = "Full featured system emulator and virtual machine host for iOS and macOS";
+
     longDescription = ''
       UTM is a full featured system emulator and virtual machine host for iOS
       and macOS. It is based off of QEMU. In short, it allows you to run
@@ -60,15 +62,18 @@ stdenvNoCC.mkDerivation (finalAttrs: {
 
       See https://docs.getutm.app/ for more information.
     '';
+
     homepage = "https://mac.getutm.app/";
     changelog = "https://github.com/utmapp/utm/releases/tag/v${finalAttrs.version}";
-    mainProgram = "UTM";
     license = lib.licenses.asl20;
-    platforms = lib.platforms.darwin; # 11.3 is the minimum supported version as of UTM 4.
     sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
+
     maintainers = with lib.maintainers; [
       rrbutani
       wegank
     ];
+
+    platforms = lib.platforms.darwin; # 11.3 is the minimum supported version as of UTM 4.
+    mainProgram = "UTM";
   };
 })

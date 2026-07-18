@@ -1,25 +1,25 @@
 {
   lib,
   buildPythonPackage,
+  colander,
   fetchPypi,
   setuptools,
-  colander,
   sqlalchemy,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "colanderalchemy";
   version = "0.3.4";
-  pyproject = true;
-
-  __structuredAttrs = true;
 
   src = fetchPypi {
     inherit (finalAttrs) version;
-    pname = "ColanderAlchemy";
     hash = "sha256-dA1DXmqXxIPjzgGWo24C41vpmwF04JVU3XxqAZlj3AA=";
+    pname = "ColanderAlchemy";
   };
 
+  # Tests are not included in Pypi
+  doCheck = false;
+  __structuredAttrs = true;
   build-system = [ setuptools ];
 
   dependencies = [
@@ -27,9 +27,7 @@ buildPythonPackage (finalAttrs: {
     sqlalchemy
   ];
 
-  # Tests are not included in Pypi
-  doCheck = false;
-
+  pyproject = true;
   pythonImportsCheck = [ "colanderalchemy" ];
 
   meta = {

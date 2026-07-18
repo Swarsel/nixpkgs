@@ -1,30 +1,25 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # build-system
-  cmake,
-  setuptools,
-  setuptools-scm,
-  pybind11,
-
+  buildPythonPackage,
   # dependencies
   cffi,
-  numpy,
-
+  # build-system
+  cmake,
   # native dependencies
   libsamplerate,
-
+  numpy,
+  pybind11,
   # tests
   pytestCheckHook,
   pythonAtLeast,
+  setuptools,
+  setuptools-scm,
 }:
 
 buildPythonPackage (finalAttrs: {
   pname = "samplerate";
   version = "0.2.4";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "tuxu";
@@ -40,6 +35,13 @@ buildPythonPackage (finalAttrs: {
       --replace-fail "add_subdirectory(external)" "find_package(pybind11 REQUIRED)"
   '';
 
+  buildInputs = [ libsamplerate ];
+  nativeCheckInputs = [ pytestCheckHook ];
+
+  preCheck = ''
+    rm -rf samplerate
+  '';
+
   build-system = [
     cmake
     setuptools
@@ -47,22 +49,10 @@ buildPythonPackage (finalAttrs: {
     pybind11
   ];
 
-  dontUseCmakeConfigure = true;
-
-  buildInputs = [ libsamplerate ];
-
   dependencies = [
     cffi
     numpy
   ];
-
-  pythonImportsCheck = [ "samplerate" ];
-
-  nativeCheckInputs = [ pytestCheckHook ];
-
-  preCheck = ''
-    rm -rf samplerate
-  '';
 
   disabledTests = lib.optionals (pythonAtLeast "3.14") [
     # ValueError: cannot resize an array that references or is referenced
@@ -70,6 +60,10 @@ buildPythonPackage (finalAttrs: {
     "test_process"
     "test_resize"
   ];
+
+  dontUseCmakeConfigure = true;
+  pyproject = true;
+  pythonImportsCheck = [ "samplerate" ];
 
   meta = {
     description = "Python bindings for libsamplerate based on CFFI and NumPy";

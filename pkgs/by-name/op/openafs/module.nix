@@ -2,17 +2,17 @@
   lib,
   stdenv,
   fetchurl,
-  fetchpatch,
-  which,
   autoconf,
   automake,
-  flex,
   bison,
-  kernel,
+  fetchpatch,
+  flex,
   glibc,
-  perl,
-  libtool_2,
+  kernel,
   libkrb5,
+  libtool_2,
+  perl,
+  which,
 }:
 
 let
@@ -23,20 +23,20 @@ let
 
 in
 stdenv.mkDerivation {
+  inherit src;
   pname = "openafs";
   version = "${version}-${kernel.modDirVersion}";
-  inherit src;
 
   patches = [
     # Linux: pagevec.h renamed to folio_batch.h
     (fetchpatch {
-      url = "https://github.com/openafs/openafs/commit/d47c438aec49e417066a7bef00bd82078014f5ea.patch";
       hash = "sha256-LPURZovpl6KbigzP4mNjgHvPlXYKY5Pxh8sj9RT2W08=";
+      url = "https://github.com/openafs/openafs/commit/d47c438aec49e417066a7bef00bd82078014f5ea.patch";
     })
     # Linux: Add comment for d_alias configure test
     (fetchpatch {
-      url = "https://github.com/openafs/openafs/commit/fd157926f08d10afe981d85654395bbf083ea7a3.patch";
       hash = "sha256-gJ+ylIEZwJcpTWc5hmIXS/QcxtICqjaEzZsl2QegjhY=";
+      url = "https://github.com/openafs/openafs/commit/fd157926f08d10afe981d85654395bbf083ea7a3.patch";
     })
   ];
 
@@ -52,8 +52,6 @@ stdenv.mkDerivation {
   ++ kernel.moduleBuildDependencies;
 
   buildInputs = [ libkrb5 ];
-
-  hardeningDisable = [ "pic" ];
 
   configureFlags = [
     "--with-linux-kernel-build=${kernelBuildDir}"
@@ -84,14 +82,18 @@ stdenv.mkDerivation {
     xz -f ${modDestDir}/libafs.ko
   '';
 
+  hardeningDisable = [ "pic" ];
+
   meta = {
     description = "Open AFS client kernel module";
     homepage = "https://www.openafs.org";
     license = lib.licenses.ipl10;
-    platforms = lib.platforms.linux;
+
     maintainers = with lib.maintainers; [
       andersk
       spacefrogg
     ];
+
+    platforms = lib.platforms.linux;
   };
 }

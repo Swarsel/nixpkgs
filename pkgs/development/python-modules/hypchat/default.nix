@@ -1,19 +1,16 @@
 {
   lib,
   buildPythonPackage,
-  pythonAtLeast,
   fetchPypi,
+  python-dateutil,
+  pythonAtLeast,
   requests,
   six,
-  python-dateutil,
 }:
 
 buildPythonPackage rec {
   pname = "hypchat";
   version = "0.21";
-  format = "setuptools";
-
-  disabled = pythonAtLeast "3.12";
 
   src = fetchPypi {
     inherit pname version;
@@ -25,6 +22,9 @@ buildPythonPackage rec {
     six
     python-dateutil
   ];
+
+  disabled = pythonAtLeast "3.12";
+  format = "setuptools";
 
   meta = {
     license = lib.licenses.mit;

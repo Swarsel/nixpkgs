@@ -1,6 +1,6 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchFromGitHub,
   ncurses,
 }:
@@ -17,6 +17,7 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   buildInputs = [ ncurses ];
+
   installFlags = [
     "BINDIR=${placeholder "out"}/bin"
     "MANDIR=${placeholder "out"}/share/man/man8"
@@ -25,10 +26,10 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "Simple monitoring of system events";
-    mainProgram = "eventstat";
     homepage = "https://github.com/ColinIanKing/eventstat";
     license = lib.licenses.gpl2Plus;
-    platforms = lib.platforms.linux;
     maintainers = [ ];
+    platforms = lib.platforms.linux;
+    mainProgram = "eventstat";
   };
 })

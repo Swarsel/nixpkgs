@@ -1,8 +1,8 @@
 {
-  curl,
-  fetchFromGitHub,
-  fetchpatch,
   lib,
+  fetchFromGitHub,
+  curl,
+  fetchpatch,
   lz4,
   postgresql,
   postgresqlBuildExtension,
@@ -25,8 +25,8 @@ postgresqlBuildExtension (finalAttrs: {
     # https://github.com/citusdata/citus/pull/7221
     # Fixes build for PG 16 + 17 on darwin
     (fetchpatch {
-      url = "https://github.com/citusdata/citus/commit/0f28a69f12418d211ffba5f7ddd222fd0c47daeb.patch";
       hash = "sha256-8JAM+PUswzbdlAZUpRApgO0eBsMbUHFdFGsdATsG88I=";
+      url = "https://github.com/citusdata/citus/commit/0f28a69f12418d211ffba5f7ddd222fd0c47daeb.patch";
     })
   ];
 
@@ -37,9 +37,19 @@ postgresqlBuildExtension (finalAttrs: {
 
   passthru.tests.extension = postgresqlTestExtension {
     inherit (finalAttrs) finalPackage;
+
+    asserts = [
+      {
+        description = "Distributed table can be queried successfully.";
+        expected = "1000";
+        query = "SELECT count(*) FROM examples";
+      }
+    ];
+
     postgresqlExtraSettings = ''
       shared_preload_libraries=citus
     '';
+
     sql = ''
       CREATE EXTENSION citus;
 
@@ -53,16 +63,16 @@ postgresqlBuildExtension (finalAttrs: {
 
       INSERT INTO examples (shard_key) SELECT shard % 10 FROM generate_series(1,1000) shard;
     '';
-    asserts = [
-      {
-        query = "SELECT count(*) FROM examples";
-        expected = "1000";
-        description = "Distributed table can be queried successfully.";
-      }
-    ];
   };
 
   meta = {
+    inherit (postgresql.meta) platforms;
+    description = "Distributed PostgreSQL as an extension";
+    homepage = "https://www.citusdata.com/";
+    changelog = "https://github.com/citusdata/citus/blob/${finalAttrs.src.rev}/CHANGELOG.md";
+    license = lib.licenses.agpl3Only;
+    maintainers = [ ];
+
     # "Our soft policy for Postgres version compatibility is to support Citus'
     # latest release with Postgres' 3 latest releases."
     # https://www.citusdata.com/updates/v12-0/#deprecated_features
@@ -74,11 +84,5 @@ postgresqlBuildExtension (finalAttrs: {
         lib.warnIf (finalAttrs.version != "13.0.3") "Is postgresql18Packages.citus still broken?" (
           lib.versionAtLeast postgresql.version "18"
         );
-    description = "Distributed PostgreSQL as an extension";
-    homepage = "https://www.citusdata.com/";
-    changelog = "https://github.com/citusdata/citus/blob/${finalAttrs.src.rev}/CHANGELOG.md";
-    license = lib.licenses.agpl3Only;
-    maintainers = [ ];
-    inherit (postgresql.meta) platforms;
   };
 })

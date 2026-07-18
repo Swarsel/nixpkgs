@@ -1,18 +1,15 @@
 {
   lib,
-  buildDunePackage,
   fetchFromGitHub,
-
+  buildDunePackage,
   # propagatedBuildInputs,
   calendar,
-
   nix-update-script,
 }:
 
 buildDunePackage (finalAttrs: {
   pname = "easy_logging";
   version = "0.8.2";
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "sapristi";
@@ -26,6 +23,7 @@ buildDunePackage (finalAttrs: {
   ];
 
   doCheck = true;
+
   # Only run the tests for the `easy_logging` package itself.
   # The other directories belong to the separate `easy_logging_yojson` package, which is not built
   # here and pulls in additional dependencies.
@@ -37,6 +35,7 @@ buildDunePackage (finalAttrs: {
     runHook postCheck
   '';
 
+  __structuredAttrs = true;
   passthru.updateScript = nix-update-script { };
 
   meta = {

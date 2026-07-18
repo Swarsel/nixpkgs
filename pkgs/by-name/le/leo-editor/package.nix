@@ -1,11 +1,11 @@
 {
   lib,
   stdenv,
-  python3,
   fetchFromGitHub,
-  makeWrapper,
-  makeDesktopItem,
   libsForQt5,
+  makeDesktopItem,
+  makeWrapper,
+  python3,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -19,8 +19,6 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-A7eFYdmKd4E515xRI4fuLs8wuC9sZu1qd2qMZXs7Ko0=";
   };
 
-  dontBuild = true;
-
   nativeBuildInputs = [
     libsForQt5.wrapQtAppsHook
     makeWrapper
@@ -32,20 +30,40 @@ stdenv.mkDerivation (finalAttrs: {
     docutils
   ];
 
+  installPhase = ''
+    runHook preInstall
+
+    mkdir -p "$out/share/icons/hicolor/32x32/apps"
+    cp leo/Icons/leoapp32.png "$out/share/icons/hicolor/32x32/apps"
+
+    mkdir -p "$out/share/applications"
+    cp $desktopItem/share/applications/* $out/share/applications
+
+    mkdir -p $out/share/leo-editor
+    mv * $out/share/leo-editor
+
+    makeWrapper ${python3.interpreter} $out/bin/leo \
+      --set PYTHONPATH "$PYTHONPATH:$out/share/leo-editor" \
+      --add-flags "-O $out/share/leo-editor/launchLeo.py"
+
+    wrapQtApp $out/bin/leo
+
+    runHook postInstall
+  '';
+
   desktopItem = makeDesktopItem {
-    name = "leo-editor";
-    exec = "leo %U";
-    icon = "leoapp32";
-    type = "Application";
-    comment = finalAttrs.meta.description;
-    desktopName = "Leo";
-    genericName = "Text Editor";
     categories = [
       "Application"
       "Development"
       "IDE"
     ];
-    startupNotify = false;
+
+    comment = finalAttrs.meta.description;
+    desktopName = "Leo";
+    exec = "leo %U";
+    genericName = "Text Editor";
+    icon = "leoapp32";
+
     mimeTypes = [
       "text/plain"
       "text/asp"
@@ -80,38 +98,25 @@ stdenv.mkDerivation (finalAttrs: {
       "text/xml"
       "text/x-asm"
     ];
+
+    name = "leo-editor";
+    startupNotify = false;
+    type = "Application";
   };
 
-  installPhase = ''
-    runHook preInstall
-
-    mkdir -p "$out/share/icons/hicolor/32x32/apps"
-    cp leo/Icons/leoapp32.png "$out/share/icons/hicolor/32x32/apps"
-
-    mkdir -p "$out/share/applications"
-    cp $desktopItem/share/applications/* $out/share/applications
-
-    mkdir -p $out/share/leo-editor
-    mv * $out/share/leo-editor
-
-    makeWrapper ${python3.interpreter} $out/bin/leo \
-      --set PYTHONPATH "$PYTHONPATH:$out/share/leo-editor" \
-      --add-flags "-O $out/share/leo-editor/launchLeo.py"
-
-    wrapQtApp $out/bin/leo
-
-    runHook postInstall
-  '';
+  dontBuild = true;
 
   meta = {
-    homepage = "https://leo-editor.github.io/leo-editor/";
     description = "Powerful folding editor";
     longDescription = "Leo is a PIM, IDE and outliner that accelerates the work flow of programmers, authors and web designers.";
+    homepage = "https://leo-editor.github.io/leo-editor/";
     license = lib.licenses.mit;
+
     maintainers = with lib.maintainers; [
       leonardoce
       kashw2
     ];
+
     mainProgram = "leo";
   };
 })

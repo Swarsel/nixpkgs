@@ -1,10 +1,10 @@
 {
   lib,
+  fetchFromGitHub,
   buildPythonPackage,
   cmake-build-extension,
-  fetchFromGitHub,
-  pythonRelaxDepsHook,
   pyside6,
+  pythonRelaxDepsHook,
   qt6,
   setuptools,
   setuptools-scm,
@@ -14,7 +14,6 @@
 buildPythonPackage rec {
   pname = "pyside6-qtads";
   version = "4.5.0";
-  pyproject = true;
 
   src = fetchFromGitHub {
     owner = "mborgerson";
@@ -43,6 +42,8 @@ buildPythonPackage rec {
       --replace-quiet '""' ""
   '';
 
+  nativeBuildInputs = [ pythonRelaxDepsHook ];
+
   buildInputs = [
     qt6.qtbase
     qt6.qtquick3d
@@ -59,15 +60,12 @@ buildPythonPackage rec {
     shiboken6
   ];
 
-  nativeBuildInputs = [ pythonRelaxDepsHook ];
-
-  # cmake-build-extension will configure
-  dontUseCmakeConfigure = true;
-
-  dontWrapQtApps = true;
   # runtime deps check fails on the pyside6-essentials virtual package
   dontCheckRuntimeDeps = true;
-
+  # cmake-build-extension will configure
+  dontUseCmakeConfigure = true;
+  dontWrapQtApps = true;
+  pyproject = true;
   pythonImportsCheck = [ "PySide6QtAds" ];
 
   meta = {

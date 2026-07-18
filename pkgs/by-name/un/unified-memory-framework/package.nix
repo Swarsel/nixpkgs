@@ -1,30 +1,59 @@
 {
+  lib,
   stdenv,
   fetchFromGitHub,
-  lib,
-  cmake,
-  ninja,
-  level-zero,
-  hwloc,
   autoconf,
-  onetbb,
-  numactl,
-  jemalloc,
-  pkg-config,
-  cudaPackages,
-  useJemalloc ? true,
+  cmake,
   config,
-  cudaSupport ? config.cudaSupport,
   ctestCheckHook,
-  gtest,
+  cudaPackages,
   gbenchmark,
+  gtest,
+  hwloc,
+  jemalloc,
+  level-zero,
+  ninja,
+  numactl,
+  onetbb,
+  pkg-config,
   python3,
   sphinx,
   buildDocs ? true,
+  cudaSupport ? config.cudaSupport,
+  useJemalloc ? true,
 }:
 stdenv.mkDerivation (finalAttrs: {
   pname = "unified-memory-framework";
   version = "1.1.0";
+
+  src = fetchFromGitHub {
+    owner = "oneapi-src";
+    repo = "unified-memory-framework";
+    tag = "v${finalAttrs.version}";
+    hash = "sha256-1Z65rNsUNeaeSJmxwpEHPbiU4KEDvyrWL9LyAWFsR1c=";
+  };
+
+  postPatch = ''
+    # The CMake tries to find out the version via git.
+    # Since we're not in a clone, git describe won't work.
+    substituteInPlace cmake/helpers.cmake \
+      --replace-fail "git describe --always" "echo v${finalAttrs.version}"
+
+    # By default, it'd try to install into the CMake binary dir,
+    # causing the package to link to /build
+    substituteInPlace CMakeLists.txt \
+      --replace-fail "\''${jemalloc_targ_BINARY_DIR}" "$out/jemalloc"
+
+    # $<BUILD_INTERFACE:hwloc> only links hwloc at build time, so the installed
+    # cmake targets omit it. Downstream static consumers (e.g. UR adapters in
+    # intel-llvm) then fail to link. Export hwloc unconditionally instead.
+    substituteInPlace src/CMakeLists.txt \
+      --replace-fail \
+        'set(UMF_LIBS umf_utils umf_ba umf_coarse $<BUILD_INTERFACE:''${UMF_HWLOC_NAME}>)' \
+        'set(UMF_LIBS umf_utils umf_ba umf_coarse ''${UMF_HWLOC_NAME})'
+  '';
+
+  strictDeps = true;
 
   nativeBuildInputs = [
     cmake
@@ -56,50 +85,6 @@ stdenv.mkDerivation (finalAttrs: {
     hwloc
   ];
 
-  src = fetchFromGitHub {
-    owner = "oneapi-src";
-    repo = "unified-memory-framework";
-    tag = "v${finalAttrs.version}";
-    hash = "sha256-1Z65rNsUNeaeSJmxwpEHPbiU4KEDvyrWL9LyAWFsR1c=";
-  };
-
-  strictDeps = true;
-  __structuredAttrs = true;
-
-  postPatch = ''
-    # The CMake tries to find out the version via git.
-    # Since we're not in a clone, git describe won't work.
-    substituteInPlace cmake/helpers.cmake \
-      --replace-fail "git describe --always" "echo v${finalAttrs.version}"
-
-    # By default, it'd try to install into the CMake binary dir,
-    # causing the package to link to /build
-    substituteInPlace CMakeLists.txt \
-      --replace-fail "\''${jemalloc_targ_BINARY_DIR}" "$out/jemalloc"
-
-    # $<BUILD_INTERFACE:hwloc> only links hwloc at build time, so the installed
-    # cmake targets omit it. Downstream static consumers (e.g. UR adapters in
-    # intel-llvm) then fail to link. Export hwloc unconditionally instead.
-    substituteInPlace src/CMakeLists.txt \
-      --replace-fail \
-        'set(UMF_LIBS umf_utils umf_ba umf_coarse $<BUILD_INTERFACE:''${UMF_HWLOC_NAME}>)' \
-        'set(UMF_LIBS umf_utils umf_ba umf_coarse ''${UMF_HWLOC_NAME})'
-  '';
-
-  # If included, jemalloc needs to be vendored, as they don't support using a pre-built version
-  # and they compile with specific flags that the nixpkgs version doesn't (and shouldn't) set.
-  # autoconf wants to write files, so we copy the source to the build directory
-  # where we can make it writable
-  preConfigure = lib.optionalString useJemalloc ''
-    # by default this will point to /build/jemalloc
-    cp -r ${jemalloc.src} ../jemalloc
-    chmod -R u+w ../jemalloc
-  '';
-
-  preInstall = lib.optionalString useJemalloc ''
-    mkdir -p $out/jemalloc
-  '';
-
   cmakeFlags = [
     (lib.cmakeBool "UMF_BUILD_CUDA_PROVIDER" cudaSupport)
     (lib.cmakeBool "UMF_BUILD_LEVEL_ZERO_PROVIDER" true)
@@ -121,13 +106,6 @@ stdenv.mkDerivation (finalAttrs: {
     (lib.cmakeFeature "FETCHCONTENT_SOURCE_DIR_JEMALLOC_TARG" "../../jemalloc")
   ];
 
-  nativeCheckInputs = [
-    ctestCheckHook
-  ];
-
-  doCheck = true;
-  dontUseNinjaCheck = true;
-
   env = lib.optionalAttrs finalAttrs.doCheck {
     NIX_LDFLAGS = "-rpath ${
       lib.makeLibraryPath [
@@ -135,6 +113,28 @@ stdenv.mkDerivation (finalAttrs: {
       ]
     }";
   };
+
+  # If included, jemalloc needs to be vendored, as they don't support using a pre-built version
+  # and they compile with specific flags that the nixpkgs version doesn't (and shouldn't) set.
+  # autoconf wants to write files, so we copy the source to the build directory
+  # where we can make it writable
+  preConfigure = lib.optionalString useJemalloc ''
+    # by default this will point to /build/jemalloc
+    cp -r ${jemalloc.src} ../jemalloc
+    chmod -R u+w ../jemalloc
+  '';
+
+  doCheck = true;
+
+  nativeCheckInputs = [
+    ctestCheckHook
+  ];
+
+  preInstall = lib.optionalString useJemalloc ''
+    mkdir -p $out/jemalloc
+  '';
+
+  __structuredAttrs = true;
 
   disabledTests = [
     # These tests try to access sysfs, which is unavailable in the sandbox
@@ -147,21 +147,27 @@ stdenv.mkDerivation (finalAttrs: {
     "test_provider_file_memory_ipc"
   ];
 
+  dontUseNinjaCheck = true;
+
   meta = {
-    homepage = "https://github.com/oneapi-src/unified-memory-framework";
-    changelog = "https://github.com/oneapi-src/unified-memory-framework/releases/tag/v${finalAttrs.version}";
     description = "Library for constructing allocators and memory pools";
+
     longDescription = ''
       A library for constructing allocators and memory pools.
       It also contains broadly useful abstractions and utilities for memory management.
       UMF allows users to manage multiple memory pools characterized by different attributes,
       allowing certain allocation types to be isolated from others and allocated using different hardware resources as required.
     '';
-    platforms = lib.platforms.all;
+
+    homepage = "https://github.com/oneapi-src/unified-memory-framework";
+    changelog = "https://github.com/oneapi-src/unified-memory-framework/releases/tag/v${finalAttrs.version}";
+
     license = [
       lib.licenses.asl20
       lib.licenses.llvm-exception
     ];
+
     maintainers = [ lib.maintainers.kilyanni ];
+    platforms = lib.platforms.all;
   };
 })

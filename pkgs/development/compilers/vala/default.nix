@@ -1,32 +1,32 @@
 {
-  stdenv,
   lib,
+  stdenv,
   fetchurl,
-  pkg-config,
-  flex,
-  bison,
-  libxslt,
   autoconf,
   autoreconfHook,
-  gnome,
-  graphviz,
+  bison,
+  expat,
+  flex,
   glib,
+  gnome,
+  gobject-introspection,
+  graphviz,
   libiconv,
   libintl,
   libtool,
-  expat,
+  libxslt,
+  pkg-config,
   replaceVars,
   vala,
-  gobject-introspection,
 }:
 
 let
   generic = lib.makeOverridable (
     {
-      version,
       hash,
-      extraNativeBuildInputs ? [ ],
+      version,
       extraBuildInputs ? [ ],
+      extraNativeBuildInputs ? [ ],
       withGraphviz ? false,
     }:
     let
@@ -42,37 +42,27 @@ let
 
     in
     stdenv.mkDerivation rec {
-      pname = "vala";
       inherit version;
-
-      setupHook = replaceVars ./setup-hook.sh {
-        apiVersion = lib.versions.majorMinor version;
-      };
+      pname = "vala";
 
       src = fetchurl {
-        url = "mirror://gnome/sources/vala/${lib.versions.majorMinor version}/vala-${version}.tar.xz";
         inherit hash;
+        url = "mirror://gnome/sources/vala/${lib.versions.majorMinor version}/vala-${version}.tar.xz";
       };
-
-      postPatch = ''
-        patchShebangs tests
-      '';
-
-      # If we're disabling graphviz, apply the patches and corresponding
-      # configure flag. We also need to override the path to the valac compiler
-      # so that it can be used to regenerate documentation.
-      patches = lib.optionals disableGraphviz [ graphvizPatch ];
-      configureFlags = lib.optional disableGraphviz "--disable-graphviz";
-      # when cross-compiling ./compiler/valac is valac for host
-      # so add the build vala in nativeBuildInputs
-      preBuild = lib.optionalString (
-        disableGraphviz && (stdenv.buildPlatform == stdenv.hostPlatform)
-      ) "buildFlagsArray+=(\"VALAC=$(pwd)/compiler/valac\")";
 
       outputs = [
         "out"
         "devdoc"
       ];
+
+      # If we're disabling graphviz, apply the patches and corresponding
+      # configure flag. We also need to override the path to the valac compiler
+      # so that it can be used to regenerate documentation.
+      patches = lib.optionals disableGraphviz [ graphvizPatch ];
+
+      postPatch = ''
+        patchShebangs tests
+      '';
 
       nativeBuildInputs = [
         pkg-config
@@ -94,9 +84,20 @@ let
       ++ lib.optional withGraphviz graphviz
       ++ extraBuildInputs;
 
-      enableParallelBuilding = true;
+      configureFlags = lib.optional disableGraphviz "--disable-graphviz";
+
+      # when cross-compiling ./compiler/valac is valac for host
+      # so add the build vala in nativeBuildInputs
+      preBuild = lib.optionalString (
+        disableGraphviz && (stdenv.buildPlatform == stdenv.hostPlatform)
+      ) "buildFlagsArray+=(\"VALAC=$(pwd)/compiler/valac\")";
 
       doCheck = false; # fails, requires dbus daemon
+      enableParallelBuilding = true;
+
+      setupHook = replaceVars ./setup-hook.sh {
+        apiVersion = lib.versions.majorMinor version;
+      };
 
       passthru = {
         updateScript = gnome.updateScript {
@@ -105,8 +106,9 @@ let
               roundUpToEven = num: num + lib.mod num 2;
             in
             "vala_${lib.versions.major version}_${toString (roundUpToEven (lib.toInt (lib.versions.minor version)))}";
-          packageName = "vala";
+
           freeze = true;
+          packageName = "vala";
         };
       };
 
@@ -114,11 +116,13 @@ let
         description = "Compiler for GObject type system";
         homepage = "https://vala.dev";
         license = lib.licenses.lgpl21Plus;
-        platforms = lib.platforms.unix;
+
         maintainers = with lib.maintainers; [
           antono
           jtojnar
         ];
+
+        platforms = lib.platforms.unix;
         teams = [ lib.teams.pantheon ];
       };
     }
@@ -126,10 +130,10 @@ let
 
 in
 rec {
+  vala = vala_0_56;
+
   vala_0_56 = generic {
     version = "0.56.18";
     hash = "sha256-8q/+fUCrY9uOe57MP2vcnC/H4xNMhP8teV9IL+kmo4I=";
   };
-
-  vala = vala_0_56;
 }

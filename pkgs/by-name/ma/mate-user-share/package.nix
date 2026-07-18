@@ -2,19 +2,19 @@
   lib,
   stdenv,
   fetchurl,
-  pkg-config,
-  gettext,
-  itstool,
-  gtk3,
+  apacheHttpdPackages,
   caja,
   dbus-glib,
+  gettext,
+  gitUpdater,
+  gtk3,
+  hicolor-icon-theme,
+  itstool,
+  libcanberra-gtk3,
   libnotify,
   libxml2,
-  libcanberra-gtk3,
-  apacheHttpdPackages,
-  hicolor-icon-theme,
+  pkg-config,
   wrapGAppsHook3,
-  gitUpdater,
 }:
 
 let
@@ -50,32 +50,32 @@ stdenv.mkDerivation (finalAttrs: {
     #apacheHttpd
   ];
 
-  preConfigure = ''
-    sed -e 's,^LoadModule dnssd_module.\+,LoadModule dnssd_module ${mod_dnssd}/modules/mod_dnssd.so,' \
-      -e 's,''${HTTP_MODULES_PATH},${apacheHttpd}/modules,' \
-      -i data/dav_user_2.4.conf
-  '';
-
   configureFlags = [
     "--with-httpd=${apacheHttpd.out}/bin/httpd"
     "--with-modules-path=${apacheHttpd}/modules"
     "--with-cajadir=$(out)/lib/caja/extensions-2.0"
   ];
 
+  preConfigure = ''
+    sed -e 's,^LoadModule dnssd_module.\+,LoadModule dnssd_module ${mod_dnssd}/modules/mod_dnssd.so,' \
+      -e 's,''${HTTP_MODULES_PATH},${apacheHttpd}/modules,' \
+      -i data/dav_user_2.4.conf
+  '';
+
   enableParallelBuilding = true;
 
   passthru.updateScript = gitUpdater {
-    url = "https://git.mate-desktop.org/mate-user-share";
     odd-unstable = true;
     rev-prefix = "v";
+    url = "https://git.mate-desktop.org/mate-user-share";
   };
 
   meta = {
     description = "User level public file sharing for the MATE desktop";
-    mainProgram = "mate-file-share-properties";
     homepage = "https://github.com/mate-desktop/mate-user-share";
     license = with lib.licenses; [ gpl2Plus ];
     platforms = lib.platforms.unix;
+    mainProgram = "mate-file-share-properties";
     teams = [ lib.teams.mate ];
   };
 })

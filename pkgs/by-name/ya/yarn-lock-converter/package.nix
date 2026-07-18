@@ -2,12 +2,12 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  nodejs,
-  testers,
-  yarn-lock-converter,
-  yarn-berry_3,
   makeBinaryWrapper,
   nix-update-script,
+  nodejs,
+  testers,
+  yarn-berry_3,
+  yarn-lock-converter,
 }:
 stdenv.mkDerivation (finalAttrs: {
   pname = "yarn-lock-converter";
@@ -18,11 +18,6 @@ stdenv.mkDerivation (finalAttrs: {
     repo = "yarn-lock-converter";
     tag = "v${finalAttrs.version}";
     hash = "sha256-AFetTjQZwXjlgLFE9YWHt82j3y8Ej25HYLed3tw/IxU=";
-  };
-
-  offlineCache = yarn-berry_3.fetchYarnBerryDeps {
-    inherit (finalAttrs) src;
-    hash = "sha256-dpZJYiRJzd6QbrRJccXpEkkNgtbBJ669lY5UQmcy8Yg=";
   };
 
   nativeBuildInputs = [
@@ -49,10 +44,16 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  offlineCache = yarn-berry_3.fetchYarnBerryDeps {
+    inherit (finalAttrs) src;
+    hash = "sha256-dpZJYiRJzd6QbrRJccXpEkkNgtbBJ669lY5UQmcy8Yg=";
+  };
+
   passthru = {
     tests.version = testers.testVersion {
       package = yarn-lock-converter;
     };
+
     updateScript = nix-update-script { };
   };
 

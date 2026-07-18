@@ -2,11 +2,11 @@
   lib,
   stdenv,
   fetchurl,
+  autoreconfHook,
+  dns-root-data,
   openssl,
   perl,
   which,
-  dns-root-data,
-  autoreconfHook,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -18,16 +18,16 @@ stdenv.mkDerivation (finalAttrs: {
     sha256 = "sha256-tST6IZlLboNCAM64wn8bhL2lmC/jVwbwWBlsB525TV0=";
   };
 
-  postPatch = ''
-    patchShebangs doc/doxyparse.pl
-  '';
-
   outputs = [
     "out"
     "dev"
     "man"
     "examples"
   ];
+
+  postPatch = ''
+    patchShebangs doc/doxyparse.pl
+  '';
 
   nativeBuildInputs = [
     perl
@@ -48,8 +48,8 @@ stdenv.mkDerivation (finalAttrs: {
     "ac_cv_func_realloc_0_nonnull=yes"
   ];
 
-  nativeCheckInputs = [ which ];
   doCheck = false; # fails. missing some files
+  nativeCheckInputs = [ which ];
 
   postInstall = ''
     # Only 'drill' stays in $out
@@ -64,7 +64,7 @@ stdenv.mkDerivation (finalAttrs: {
     homepage = "https://www.nlnetlabs.nl/projects/ldns/";
     license = lib.licenses.bsd3;
     maintainers = [ ];
-    mainProgram = "drill";
     platforms = lib.platforms.unix;
+    mainProgram = "drill";
   };
 })

@@ -1,17 +1,8 @@
 {
   lib,
-  buildPythonPackage,
   fetchFromGitHub,
-
-  # build-system
-  setuptools,
-  torch,
-
+  buildPythonPackage,
   cudaPackages,
-
-  # nativeBuildInputs
-  pybind11,
-
   # dependencies
   fastparquet,
   flash-attn,
@@ -19,18 +10,21 @@
   numpy,
   pandas,
   pillow,
+  # nativeBuildInputs
+  pybind11,
   pygments,
   regex,
   rich,
   safetensors,
+  # build-system
+  setuptools,
   tokenizers,
+  torch,
   websockets,
 }:
 buildPythonPackage.override { inherit (torch) stdenv; } (finalAttrs: {
   pname = "exllamav2";
   version = "0.3.2";
-  pyproject = true;
-  __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "turboderp-org";
@@ -39,19 +33,9 @@ buildPythonPackage.override { inherit (torch) stdenv; } (finalAttrs: {
     hash = "sha256-WbpbANenOuy6F0qAKVKAmolHjgRKfPxSVud8FZG1TXw=";
   };
 
-  build-system = [
-    setuptools
-    torch
-  ];
-
   nativeBuildInputs = [
     ninja
   ];
-
-  preConfigure = ''
-    export MAX_JOBS="$NIX_BUILD_CORES"
-    export NVCC_THREADS=2
-  '';
 
   buildInputs = [
     pybind11
@@ -69,6 +53,20 @@ buildPythonPackage.override { inherit (torch) stdenv; } (finalAttrs: {
     TORCH_CUDA_ARCH_LIST = lib.concatStringsSep ";" torch.cudaCapabilities;
   };
 
+  preConfigure = ''
+    export MAX_JOBS="$NIX_BUILD_CORES"
+    export NVCC_THREADS=2
+  '';
+
+  # Tests require GPU hardware and external model files
+  doCheck = false;
+  __structuredAttrs = true;
+
+  build-system = [
+    setuptools
+    torch
+  ];
+
   dependencies = [
     fastparquet
     flash-attn
@@ -85,16 +83,16 @@ buildPythonPackage.override { inherit (torch) stdenv; } (finalAttrs: {
     websockets
   ];
 
+  pyproject = true;
   pythonImportsCheck = [ "exllamav2" ];
 
-  # Tests require GPU hardware and external model files
-  doCheck = false;
-
   meta = {
-    homepage = "https://github.com/turboderp-org/exllamav2";
     description = "Inference library for running LLMs locally on modern consumer-class GPUs";
+    homepage = "https://github.com/turboderp-org/exllamav2";
     changelog = "https://github.com/turboderp-org/exllamav2/releases/tag/${finalAttrs.src.tag}";
     license = lib.licenses.mit;
+    maintainers = with lib.maintainers; [ BatteredBunny ];
+
     platforms = [
       "x86_64-windows"
       "x86_64-linux"
@@ -103,6 +101,5 @@ buildPythonPackage.override { inherit (torch) stdenv; } (finalAttrs: {
     # Package requires CUDA or ROCm for functionality
     # ROCm support is partially implemented but untested
     broken = !torch.cudaSupport;
-    maintainers = with lib.maintainers; [ BatteredBunny ];
   };
 })

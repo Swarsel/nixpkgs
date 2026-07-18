@@ -14,12 +14,9 @@
 }:
 
 buildDunePackage (finalAttrs: {
-  pname = "name_matcher_parser";
   inherit (charon) version;
-  __structuredAttrs = true;
-
   inherit (charon) src;
-
+  pname = "name_matcher_parser";
   nativeBuildInputs = [ menhir ];
 
   propagatedBuildInputs = [
@@ -31,6 +28,7 @@ buildDunePackage (finalAttrs: {
 
   # No test suite is defined for this package.
   doCheck = false;
+  __structuredAttrs = true;
 
   meta = {
     description = "Parser to define name matchers";

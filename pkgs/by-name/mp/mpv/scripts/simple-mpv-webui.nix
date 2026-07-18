@@ -1,7 +1,7 @@
 {
   lib,
-  buildLua,
   fetchFromGitHub,
+  buildLua,
   gitUpdater,
 }:
 buildLua rec {
@@ -13,12 +13,12 @@ buildLua rec {
     repo = "simple-mpv-webui";
     rev = "v${version}";
     hash = "sha256-I8lwpo3Hfpy3UnPMmHEJCdArVQnNL245NkxsYVmnMF0=";
+
     sparseCheckout = [
       "main.lua"
       "webui-page"
     ];
   };
-  passthru.updateScript = gitUpdater { rev-prefix = "v"; };
 
   postInstall = ''
     rm -f $out/share/mpv/scripts/webui/setup.cfg
@@ -26,19 +26,23 @@ buildLua rec {
 
   scriptPath = ".";
   passthru.scriptName = "webui";
+  passthru.updateScript = gitUpdater { rev-prefix = "v"; };
 
   meta = {
     description = "Web based user interface with controls for the mpv mediaplayer";
-    homepage = "https://github.com/open-dynaMIX/simple-mpv-webui";
-    maintainers = with lib.maintainers; [
-      cript0nauta
-      zopieux
-    ];
+
     longDescription = ''
       You can access the webui when accessing http://127.0.0.1:8080 or
       http://[::1]:8080 in your webbrowser. By default it listens on
       0.0.0.0:8080 and [::0]:8080
     '';
+
+    homepage = "https://github.com/open-dynaMIX/simple-mpv-webui";
     license = lib.licenses.mit;
+
+    maintainers = with lib.maintainers; [
+      cript0nauta
+      zopieux
+    ];
   };
 }

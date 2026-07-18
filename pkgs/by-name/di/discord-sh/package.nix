@@ -1,12 +1,12 @@
 {
   lib,
-  stdenvNoCC,
   fetchFromGitHub,
-  makeWrapper,
-  curl,
-  jq,
   coreutils,
+  curl,
   file,
+  jq,
+  makeWrapper,
+  stdenvNoCC,
 }:
 
 stdenvNoCC.mkDerivation rec {
@@ -20,10 +20,6 @@ stdenvNoCC.mkDerivation rec {
     sha256 = "sha256-z57uMbH6PI68aTMAjA8UIPEefV8sQRR4cS0eK6Ypxuk=";
   };
 
-  # ignore Makefile by disabling buildPhase. Upstream Makefile tries to download
-  # binaries from the internet for linting
-  dontBuild = true;
-
   # discord.sh looks for the .webhook file in the source code directory, which
   # isn't mutable on Nix
   postPatch = ''
@@ -32,16 +28,6 @@ stdenvNoCC.mkDerivation rec {
   '';
 
   nativeBuildInputs = [ makeWrapper ];
-
-  doInstallCheck = true;
-
-  installCheckPhase = ''
-    runHook preInstallCheck
-
-    $out/bin/discord.sh --help
-
-    runHook postInstallCheck
-  '';
 
   installPhase = ''
     runHook preInstall
@@ -58,12 +44,26 @@ stdenvNoCC.mkDerivation rec {
     runHook postInstall
   '';
 
+  doInstallCheck = true;
+
+  installCheckPhase = ''
+    runHook preInstallCheck
+
+    $out/bin/discord.sh --help
+
+    runHook postInstallCheck
+  '';
+
+  # ignore Makefile by disabling buildPhase. Upstream Makefile tries to download
+  # binaries from the internet for linting
+  dontBuild = true;
+
   meta = {
     description = "Write-only command-line Discord webhook integration written in 100% Bash script";
-    mainProgram = "discord.sh";
     homepage = "https://github.com/fieu/discord.sh";
     license = lib.licenses.gpl3;
-    platforms = lib.platforms.unix;
     maintainers = with lib.maintainers; [ matthewcroughan ];
+    platforms = lib.platforms.unix;
+    mainProgram = "discord.sh";
   };
 }

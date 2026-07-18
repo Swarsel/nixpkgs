@@ -2,11 +2,11 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  gitMinimal,
-  mercurial,
-  makeWrapper,
-  nix-update-script,
   fetchpatch,
+  gitMinimal,
+  makeWrapper,
+  mercurial,
+  nix-update-script,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -22,8 +22,8 @@ stdenv.mkDerivation (finalAttrs: {
 
   patches = [
     (fetchpatch {
-      url = "https://github.com/frej/fast-export/commit/a3d0562737e1e711659e03264e45cb47a5a2f46d.patch?full_index=1";
       hash = "sha256-vZOHnb5lXO22ElCK4oWQKCcPIqRyZV5axWfZqa84V1Y=";
+      url = "https://github.com/frej/fast-export/commit/a3d0562737e1e711659e03264e45cb47a5a2f46d.patch?full_index=1";
     })
   ];
 
@@ -31,8 +31,16 @@ stdenv.mkDerivation (finalAttrs: {
     gitMinimal
     makeWrapper
   ];
+
   buildInputs = [
     mercurial.python
+    mercurial
+  ];
+
+  # deliberately not adding git or hg into nativeInstallCheckInputs - package should
+  # be able to work without them in runtime env
+  nativeCheckInputs = [
+    gitMinimal
     mercurial
   ];
 
@@ -57,13 +65,6 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   doInstallCheck = true;
-  # deliberately not adding git or hg into nativeInstallCheckInputs - package should
-  # be able to work without them in runtime env
-
-  nativeCheckInputs = [
-    gitMinimal
-    mercurial
-  ];
 
   installCheckPhase = ''
     mkdir repo-hg
